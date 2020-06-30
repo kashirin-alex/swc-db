@@ -392,17 +392,11 @@ void Blocks::init_blocks(int& err) {
     return;
   }
 
-  DB::Cell::Key prev_key_end;
-  if(!range->is_any_begin()) {
-    cellstores.get_prev_key_end(0, prev_key_end);
-    range->set_prev_key_end(prev_key_end);
-  }
-
   Block::Ptr blk = nullptr;
   for(auto cs_blk : blocks) {
     if(blk == nullptr) {
       m_block = blk = Block::make(cs_blk->interval, ptr());
-      m_block->_set_prev_key_end(prev_key_end);
+      m_block->_set_prev_key_end(range->prev_range_end);
       m_blocks_idx.push_back(blk);
     } else if(blk->_cond_key_end(cs_blk->interval.key_begin) 
                                             != Condition::EQ) {

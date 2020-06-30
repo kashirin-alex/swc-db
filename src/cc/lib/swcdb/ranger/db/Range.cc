@@ -98,18 +98,6 @@ uint24_t Range::known_interval_count() {
           : m_interval.key_end.count;
 }
 
-void Range::get_prev_key_end(DB::Cell::Key& key) {
-  m_mutex_intval.lock();
-  key.copy(m_prev_key_end);
-  m_mutex_intval.unlock();
-}
-  
-void Range::set_prev_key_end(const DB::Cell::Key& key) {
-  m_mutex_intval.lock();
-  m_prev_key_end.copy(key);
-  m_mutex_intval.unlock();
-}
-
 bool Range::align(const DB::Cells::Interval& interval) {
   LockAtomic::Unique::scope lock(m_mutex_intval);
   return m_interval.align(interval);
@@ -501,9 +489,9 @@ std::string Range::to_string() {
   s.append(" ");
   s.append(blocks.to_string());
   s.append(" prev=");
-  m_mutex_intval.lock();
-  s.append(m_prev_key_end.to_string());
+  s.append(prev_range_end.to_string());
   s.append(" ");
+  m_mutex_intval.lock();
   s.append(m_interval.to_string());
   m_mutex_intval.unlock();
   s.append(")");
@@ -566,7 +554,10 @@ void Range::load(int &err, const ResponseCallback::Ptr& cb) {
  
   if(!err) {
     blocks.load(err);
+
     if(!err) {
+      blocks.cellstores.get_prev_key_end(0, prev_range_end);
+
       m_interval.free();
       if(type == Types::Range::DATA)
         blocks.expand_and_align(m_interval);
@@ -661,16 +652,16 @@ void Range::run_add_queue() {
           }
           continue;
         }
+      }
 
-        if(!m_prev_key_end.empty() && 
-            DB::KeySeq::compare(cfg->key_seq, m_prev_key_end, cell.key)
-             != Condition::GT) {
-          if(params->range_prev_end.empty()) {
-            params->range_prev_end.copy(m_prev_key_end);
-            params->err = Error::RANGE_BAD_INTERVAL;
-          }
-          continue;
+      if(!prev_range_end.empty() && 
+          DB::KeySeq::compare(cfg->key_seq, prev_range_end, cell.key)
+           != Condition::GT) {
+        if(params->range_prev_end.empty()) {
+          params->range_prev_end.copy(prev_range_end);
+          params->err = Error::RANGE_BAD_INTERVAL;
         }
+        continue;
       }
 
       if(!(cell.control & DB::Cells::HAVE_TIMESTAMP)) {

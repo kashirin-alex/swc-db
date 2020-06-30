@@ -64,6 +64,7 @@ class Range final : public std::enable_shared_from_this<Range> {
   const Types::Range  type;
   const uint8_t       meta_cid;
   Blocks              blocks;
+  DB::Cell::Key       prev_range_end;
 
   Range(const ColumnCfg* cfg, const rid_t rid);
 
@@ -91,10 +92,6 @@ class Range final : public std::enable_shared_from_this<Range> {
   bool is_any_end();
 
   uint24_t known_interval_count();
-
-  void get_prev_key_end(DB::Cell::Key& key);
-  
-  void set_prev_key_end(const DB::Cell::Key& key);
 
   bool align(const DB::Cells::Interval& interval);
   
@@ -171,7 +168,6 @@ class Range final : public std::enable_shared_from_this<Range> {
   const std::string             m_path;
   LockAtomic::Unique            m_mutex_intval;
   DB::Cells::Interval           m_interval;
-  DB::Cell::Key                 m_prev_key_end;
 
   std::shared_mutex             m_mutex;
 

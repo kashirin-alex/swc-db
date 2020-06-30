@@ -502,7 +502,7 @@ void CompactRange::write_cells(int& err, InBlock* in_block) {
 
 void CompactRange::add_cs(int& err) {
   if(cellstores.empty())
-    range->get_prev_key_end(cs_writer->prev_key_end);
+    cs_writer->prev_key_end.copy(range->prev_range_end);
   else
     cs_writer->prev_key_end.copy(cellstores.back()->interval.key_end);
 
