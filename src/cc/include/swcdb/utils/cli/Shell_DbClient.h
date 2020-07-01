@@ -63,7 +63,7 @@ class DbClient : public Interface {
     options.push_back(
       new Option(
         "list columns", 
-        {"list|get column|s [NAME|ID,..];"},
+        {"list|get column|s [NAME|ID,..] || [Comparator'NAME(expression)',];"},
         [ptr=this](std::string& cmd){return ptr->list_columns(cmd);}, 
         new re2::RE2(
           "(?i)^(get|list)\\s+((column(|s))|(schema|s))(.*|$)")
@@ -238,14 +238,17 @@ class DbClient : public Interface {
   // LIST COLUMN/s
   bool list_columns(std::string& cmd) {
     std::vector<DB::Schema::Ptr> schemas;  
+    Protocol::Mngr::Params::ColumnListReq params;
     std::string message;
-    client::SQL::parse_list_columns(err, cmd, schemas, message, "list");
+    client::SQL::parse_list_columns(err, cmd, schemas, params, message, "list");
     if(err) 
       return error(message);
 
-    if(schemas.empty()) { // get all schema
+    if(!params.patterns.empty() || schemas.empty()) { 
+      // get all schemas or on patterns 
       std::promise<int> res;
       Protocol::Mngr::Req::ColumnList::request(
+        params,
         [&schemas, await=&res]
         (const client::ConnQueue::ReqBase::Ptr& req, int error, 
          const Protocol::Mngr::Params::ColumnListRsp& rsp) {
@@ -261,6 +264,12 @@ class DbClient : public Interface {
         return error(message);
       }
     }
+
+    std::sort(
+      schemas.begin(), schemas.end(),
+      [](const DB::Schema::Ptr& s1, const DB::Schema::Ptr& s2) {
+        return s1->cid < s2->cid;
+      }); 
 
     Mutex::scope lock(Logger::logger.mutex);
     for(auto& schema : schemas) {

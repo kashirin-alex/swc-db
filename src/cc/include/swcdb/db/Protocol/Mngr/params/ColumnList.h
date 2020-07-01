@@ -9,7 +9,7 @@
 
 
 #include "swcdb/core/Serializable.h"
-#include "swcdb/db/Columns/Schema.h"
+#include "swcdb/db/Columns/Schemas.h"
 #include <vector>
 
 namespace SWC { namespace Protocol { namespace Mngr { namespace Params {
@@ -21,6 +21,8 @@ class ColumnListReq  : public Serializable {
   ColumnListReq();
 
   virtual ~ColumnListReq();
+
+  std::vector<DB::Schemas::Pattern> patterns;
 
   private:
     

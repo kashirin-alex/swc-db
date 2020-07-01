@@ -82,12 +82,24 @@ void Schemas::all(std::vector<Schema::Ptr>& entries) {
   entries.resize(i + size());
   for(const auto& it : *this) 
     entries[i++] = it.second;
+}
 
-  std::sort(
-    entries.begin(), entries.end(),
-    [](const Schema::Ptr& s1, const Schema::Ptr& s2) {
-      return s1->cid < s2->cid;
-    }); 
+void Schemas::matching(const std::vector<Schemas::Pattern>& patterns,
+                       std::vector<Schema::Ptr>& entries) {
+  Mutex::scope lock(m_mutex);
+  for(const auto& it : *this) {
+    for(auto& pattern : patterns) {
+      if(Condition::is_matching_extended(
+          pattern.comp,
+          (const uint8_t*)pattern.value.data(), pattern.value.size(),
+          (const uint8_t*)it.second->col_name.data(), 
+          it.second->col_name.size() )
+        ) {
+        entries.push_back(it.second);
+        break;
+      }
+    }
+  }
 }
 
 void Schemas::reset() {

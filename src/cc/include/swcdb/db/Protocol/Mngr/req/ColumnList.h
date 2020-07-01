@@ -23,6 +23,10 @@ class ColumnList: public client::ConnQueue::ReqBase {
 
   static void request(const Cb_t& cb, const uint32_t timeout = 10000);
 
+  static void request(const Params::ColumnListReq& params,
+                      const ColumnList::Cb_t& cb, 
+                      const uint32_t timeout = 10000);
+
   ColumnList(const Params::ColumnListReq& params, const Cb_t& cb, 
              const uint32_t timeout);
 

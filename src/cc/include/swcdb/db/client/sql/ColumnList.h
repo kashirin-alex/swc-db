@@ -8,6 +8,7 @@
 #define swcdb_client_sql_ColumnList_h
 
 #include "swcdb/db/client/sql/Reader.h"
+#include "swcdb/db/Columns/Schemas.h"
 
 
 namespace SWC { namespace client { namespace SQL {
@@ -15,6 +16,9 @@ namespace SWC { namespace client { namespace SQL {
 class ColumnList final : public Reader {
 
   public:
+  
+  std::vector<DB::Schemas::Pattern> patterns;
+
   ColumnList(const std::string& sql, std::vector<DB::Schema::Ptr>& schemas,
               std::string& message);
 

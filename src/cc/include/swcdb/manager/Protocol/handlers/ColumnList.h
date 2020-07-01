@@ -24,7 +24,9 @@ void column_list(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     req_params.decode(&ptr, &remain); // opt for list cid range
 
     if(Env::Mngr::mngd_columns()->is_schemas_mngr(err) && !err)
-      Env::Mngr::schemas()->all(rsp.schemas);
+      req_params.patterns.empty()
+        ? Env::Mngr::schemas()->all(rsp.schemas)
+        : Env::Mngr::schemas()->matching(req_params.patterns, rsp.schemas);
     else if(!err)
       err = Error::MNGR_NOT_ACTIVE;
 

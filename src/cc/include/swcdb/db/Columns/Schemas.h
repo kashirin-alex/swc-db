@@ -7,6 +7,8 @@
 #ifndef swcdb_db_Columns_Schemas_h
 #define swcdb_db_Columns_Schemas_h
 
+#include "swcdb/core/Mutex.h"
+#include "swcdb/core/Comparators.h"
 #include "swcdb/db/Columns/Schema.h"
 
 #include <vector>
@@ -17,6 +19,14 @@ namespace SWC { namespace DB {
 
 class Schemas : private std::unordered_map<cid_t, Schema::Ptr> {
   public:
+
+  struct Pattern {
+    Pattern() {}
+    Pattern(Condition::Comp comp, const std::string& value) 
+            : comp(comp), value(value) { }
+    Condition::Comp comp; 
+    std::string     value;
+  };
 
   Schemas();
 
@@ -33,6 +43,9 @@ class Schemas : private std::unordered_map<cid_t, Schema::Ptr> {
   Schema::Ptr get(const std::string& name);
 
   void all(std::vector<Schema::Ptr>& entries);
+
+  void matching(const std::vector<Pattern>& patterns, 
+                std::vector<Schema::Ptr>& entries);
 
   void reset();
 

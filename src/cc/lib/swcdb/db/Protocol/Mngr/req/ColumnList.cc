@@ -16,7 +16,13 @@ namespace SWC { namespace Protocol { namespace Mngr { namespace Req {
 
 SWC_SHOULD_INLINE
 void ColumnList::request(const ColumnList::Cb_t& cb, const uint32_t timeout) {
-  std::make_shared<ColumnList>(Params::ColumnListReq(), cb, timeout)->run();
+  request(Params::ColumnListReq(), cb, timeout);
+}
+
+SWC_SHOULD_INLINE
+void ColumnList::request(const Params::ColumnListReq& params,
+                         const ColumnList::Cb_t& cb, const uint32_t timeout) {
+  std::make_shared<ColumnList>(params, cb, timeout)->run();
 }
 
 ColumnList::ColumnList(const Params::ColumnListReq& params, 

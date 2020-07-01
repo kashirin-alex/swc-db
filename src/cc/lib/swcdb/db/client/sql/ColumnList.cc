@@ -4,6 +4,7 @@
  */
 
 
+#include "swcdb/core/Error.h"
 #include "swcdb/db/client/sql/ColumnList.h"
 
 
@@ -70,13 +71,31 @@ ColumnList::~ColumnList() {}
   
 void ColumnList::read_columns(std::vector<DB::Schema::Ptr>& cols, const char* stop) {
   std::string col_name;
+  Condition::Comp comp;
   while(remain && !err) {
     if(found_char(',') || found_char(' '))
       continue;
-    read(col_name, stop);
-    if(col_name.empty())
-      break;
-    cols.push_back(get_schema(col_name));
+    
+    found_comparator(comp = Condition::NONE, true);
+    if(cols.empty() && (!patterns.empty() || comp != Condition::NONE)) {
+      read(col_name, stop, true);
+      if(col_name.empty()) {
+        error_msg(
+          Error::SQL_PARSE_ERROR, 
+          "expected column name(expression) after comparator"
+        );
+        break;
+      }
+      if(comp == Condition::NONE)
+        comp = Condition::EQ;
+      patterns.emplace_back(comp, col_name);
+
+    } else {
+      read(col_name, stop);
+      if(col_name.empty())
+        break;
+      cols.push_back(get_schema(col_name));
+    }
     col_name.clear();
   }
 }
