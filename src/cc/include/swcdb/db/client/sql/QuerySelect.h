@@ -35,6 +35,9 @@ class QuerySelect final : public Reader {
 
   cid_t add_column(const std::string& col);
 
+  void add_column(const std::vector<DB::Schemas::Pattern>& patterns, 
+                  std::vector<cid_t>& cols);
+
   void read_cells_intervals(const std::vector<cid_t>& cols);
   
   void read_cells_interval(DB::Specs::Interval& spec);

@@ -213,15 +213,16 @@ void QuerySelect::read_columns_intervals() {
     bool col_names_set = false;
     bool processed = false;
     bool possible_and = false;
-    
+    Condition::Comp comp;
+    std::vector<DB::Schemas::Pattern> schema_patterns;
+
     std::string col_name;
     std::vector<cid_t> cols;
 
     while(remain && !err) {
-
-      if(possible_and) {        
-        if(found_space())
-          continue;
+      if(found_space())
+        continue;
+      if(possible_and) {
         if(found_token(TOKEN_AND, LEN_AND))
           possible_and = false;
         else
@@ -234,7 +235,7 @@ void QuerySelect::read_columns_intervals() {
       }
 
       if(token_col && !col_names_set) {
-        //"col(, 1 2, "3 4" ,)"  = >> ["1","2","3 4"]
+        //"col(, 1 2 ,re"aa$, =^"Ds", "3 4")" => ["1","2", [patterns], "3 4"]
         if(found_space())
           continue;
         
@@ -247,6 +248,11 @@ void QuerySelect::read_columns_intervals() {
           continue;
 
         if(found_char(')')) {
+          if(!schema_patterns.empty()) {
+            add_column(schema_patterns, cols);
+            schema_patterns.clear();
+          }
+
           if(cols.empty()) {
             error_msg(Error::SQL_PARSE_ERROR, "missing col 'id|name'");
             break;
@@ -260,10 +266,20 @@ void QuerySelect::read_columns_intervals() {
           break;
         }
 
-        read(col_name, ",)");
-        if(col_name.empty())
-          continue;
-        cols.push_back(add_column(col_name));
+        found_comparator(comp = Condition::NONE, true);
+        read(col_name, ",)", comp == Condition::RE);
+        if(comp != Condition::NONE) {
+          if(col_name.empty()) {
+            error_msg(
+              Error::SQL_PARSE_ERROR, 
+              "expected column name(expression) after comparator"
+            );
+            break;
+          }
+          schema_patterns.emplace_back(comp, col_name);
+        } else if(!col_name.empty()) {
+          cols.push_back(add_column(col_name));
+        }
         col_name.clear();
         continue;
       }
@@ -302,8 +318,6 @@ void QuerySelect::read_columns_intervals() {
         possible_and = true;
       }
       
-      --remain;
-      ++ptr;
     }
 
 }
@@ -318,6 +332,25 @@ cid_t QuerySelect::add_column(const std::string& col) {
     }
     specs.columns.push_back(DB::Specs::Column::make_ptr(schema->cid, {}));
     return schema->cid;
+}
+
+void QuerySelect::add_column(const std::vector<DB::Schemas::Pattern>& patterns, 
+                             std::vector<cid_t>& cols) {
+  auto schemas = get_schema(patterns);
+  if(err)
+    return;
+    
+  bool found;
+  for(auto& schema : schemas) {
+    found = false;
+    for(auto& col : specs.columns) {
+      if(found = schema->cid == col->cid) 
+        break;
+    }
+    if(!found)
+      specs.columns.push_back(DB::Specs::Column::make_ptr(schema->cid, {}));
+    cols.push_back(schema->cid);
+  }
 }
 
 void QuerySelect::read_cells_intervals(const std::vector<cid_t>& cols) {

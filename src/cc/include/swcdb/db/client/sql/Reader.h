@@ -8,7 +8,7 @@
 #define swcdb_client_sql_Reader_h
 
 #include "swcdb/db/Cells/CellKey.h"
-#include "swcdb/db/Columns/Schema.h"
+#include "swcdb/db/Columns/Schemas.h"
 
 
 namespace SWC { namespace client { namespace SQL {
@@ -62,6 +62,9 @@ class Reader {
 
   DB::Schema::Ptr get_schema(const std::string& col);
 
+  std::vector<DB::Schema::Ptr> 
+  get_schema(const  std::vector<DB::Schemas::Pattern>& patterns);
+  
   void read(std::string& buf, const char* stop = 0, bool keep_escape=false);
 
   void read_uint8_t(uint8_t& value, bool& was_set);

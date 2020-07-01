@@ -151,6 +151,18 @@ DB::Schema::Ptr Reader::get_schema(const std::string& col) {
   return schema;
 }
 
+std::vector<DB::Schema::Ptr> 
+Reader::get_schema(const std::vector<DB::Schemas::Pattern>& patterns) {
+  auto schemas = Env::Clients::get()->schemas->get(err, patterns);
+  if(err) {
+    std::string msg("problem getting columns on patterns=[");
+    for(auto& p : patterns)
+      msg.append(Condition::to_string(p.comp, true) + "'" + p.value + "', ");
+    error_msg(err, msg + "] schema");
+  }
+  return schemas;
+}
+
 void Reader::read(std::string& buf, const char* stop, bool keep_escape) {
   uint32_t escape = 0;
   bool quote_1 = false;
