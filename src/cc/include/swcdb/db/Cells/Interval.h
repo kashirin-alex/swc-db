@@ -91,7 +91,7 @@ class Interval final {
 
   void encode(uint8_t **ptr) const;
 
-  void decode(const uint8_t **ptr, size_t *remain, bool owner=false);
+  void decode(const uint8_t **ptr, size_t *remain, bool owner);
 
   std::string to_string() const;
 

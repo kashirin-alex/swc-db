@@ -71,7 +71,7 @@ class RangeLoaded : public Serializable {
     
   void internal_decode(const uint8_t** bufp, size_t* remainp) {
     if(intval = Serialization::decode_bool(bufp, remainp))
-      interval.decode(bufp, remainp);
+      interval.decode(bufp, remainp, false);
   }
 
 };

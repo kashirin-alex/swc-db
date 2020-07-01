@@ -54,7 +54,7 @@ void ReportRsp::Range::encode(uint8_t** bufp) const {
 
 void ReportRsp::Range::decode(const uint8_t** bufp, size_t* remainp) {
   rid = Serialization::decode_vi64(bufp, remainp);
-  interval.decode(bufp, remainp);
+  interval.decode(bufp, remainp, false);
 }
 
 void ReportRsp::Range::display(std::ostream& out, bool pretty, 
