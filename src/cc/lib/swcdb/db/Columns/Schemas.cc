@@ -6,7 +6,6 @@
 
 #include "swcdb/core/Error.h"
 #include "swcdb/db/Columns/Schemas.h"
-#include <algorithm>
 
 
 namespace SWC { namespace DB {
@@ -88,6 +87,8 @@ void Schemas::matching(const std::vector<Schemas::Pattern>& patterns,
                        std::vector<Schema::Ptr>& entries) {
   Mutex::scope lock(m_mutex);
   for(const auto& it : *this) {
+    if(Types::MetaColumn::is_data(it.second->cid))
+      continue;
     for(auto& pattern : patterns) {
       if(Condition::is_matching_extended(
           pattern.comp,

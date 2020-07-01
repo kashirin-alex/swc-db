@@ -12,6 +12,7 @@
 #include "swcdb/db/Types/KeySeq.h"
 #include "swcdb/db/Types/Column.h"
 #include "swcdb/db/Types/Encoding.h"
+#include "swcdb/db/Types/MetaColumn.h"
 
 
 namespace SWC { namespace DB {

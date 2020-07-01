@@ -28,11 +28,18 @@ class Schemas final : private DB::Schemas {
   
   DB::Schema::Ptr get(int& err, const std::string& name);
 
+  std::vector<DB::Schema::Ptr> 
+  get(int& err, const std::vector<DB::Schemas::Pattern>& patterns);
+
   private:
 
   void _request(int& err, cid_t cid, DB::Schema::Ptr& schema);
 
   void _request(int& err, const std::string& name, DB::Schema::Ptr& schema);
+  
+  void _request(int& err, 
+                const std::vector<DB::Schemas::Pattern>& patterns,
+                std::vector<DB::Schema::Ptr>& schemas);
 
   std::unordered_map<cid_t, uint64_t>  m_track; // .second {time,queue(promises)}
   Property::V_GINT32::Ptr              m_expiry_ms;
