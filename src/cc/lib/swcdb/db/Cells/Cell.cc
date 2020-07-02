@@ -367,14 +367,14 @@ void Cell::display(std::ostream& out,
     const uint8_t* ptr = value;
     size_t remain = vlen;
     DB::Cell::Key de_key;
-    de_key.decode(&ptr, &remain);
+    de_key.decode(&ptr, &remain, false);
     out << "end=";
     de_key.display(out, true);
     out << " rid=" << Serialization::decode_vi64(&ptr, &remain);
-    de_key.decode(&ptr, &remain);
+    de_key.decode(&ptr, &remain, false);
     out << " min=";
     de_key.display(out, true);
-    de_key.decode(&ptr, &remain);
+    de_key.decode(&ptr, &remain, false);
     out << " max=";
     de_key.display(out, true);
 

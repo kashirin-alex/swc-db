@@ -72,7 +72,7 @@ class Key final {
 
   void encode(uint8_t** bufp) const;
 
-  void decode(const uint8_t** bufp, size_t* remainp, bool owner=false);
+  void decode(const uint8_t** bufp, size_t* remainp, bool owner);
 
   void convert_to(std::vector<std::string>& key) const;
 

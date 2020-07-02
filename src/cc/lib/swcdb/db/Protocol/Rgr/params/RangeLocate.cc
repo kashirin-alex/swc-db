@@ -60,11 +60,11 @@ void RangeLocateReq::internal_encode(uint8_t** bufp) const {
 void RangeLocateReq::internal_decode(const uint8_t** bufp, size_t* remainp) {
   cid = Serialization::decode_vi64(bufp, remainp);
   rid = Serialization::decode_vi64(bufp, remainp);
-  range_begin.decode(bufp, remainp);
-  range_end.decode(bufp, remainp);
+  range_begin.decode(bufp, remainp, false);
+  range_end.decode(bufp, remainp, false);
   flags = Serialization::decode_i8(bufp, remainp);
   if(flags & NEXT_RANGE)
-    range_offset.decode(bufp, remainp);
+    range_offset.decode(bufp, remainp, false);
 }
 
 

@@ -54,7 +54,7 @@ class RangeLocateScan : public ReqScan {
     size_t remain = cell.vlen;
     const uint8_t * ptr = cell.value;
     DB::Cell::Key key_end;
-    key_end.decode(&ptr, &remain);
+    key_end.decode(&ptr, &remain, false);
 
     if(key_end.count > any_is && range_begin.count > any_is && 
        !spec.is_matching_begin(key_seq, key_end)) {

@@ -36,7 +36,7 @@ class RangeLocateScanCommit : public RangeLocateScan {
     size_t remain = cell.vlen;
     const uint8_t * ptr = cell.value;
     DB::Cell::Key key_end;
-    key_end.decode(&ptr, &remain);
+    key_end.decode(&ptr, &remain, false);
     bool match;
     if(match = key_end.count == any_is || 
                DB::KeySeq::compare(key_seq, 

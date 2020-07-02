@@ -236,8 +236,8 @@ void Interval::encode(uint8_t** bufp) const {
 }
 
 void Interval::decode(const uint8_t** bufp, size_t* remainp) {
-  range_begin.decode(bufp, remainp);
-  range_end.decode(bufp, remainp);
+  range_begin.decode(bufp, remainp, false);
+  range_end.decode(bufp, remainp, false);
 
   key_start.decode(bufp, remainp);
   key_finish.decode(bufp, remainp);
@@ -249,7 +249,7 @@ void Interval::decode(const uint8_t** bufp, size_t* remainp) {
 
   flags.decode(bufp, remainp);
 
-  offset_key.decode(bufp, remainp);
+  offset_key.decode(bufp, remainp, false);
   offset_rev = Serialization::decode_vi64(bufp, remainp);
 }
 

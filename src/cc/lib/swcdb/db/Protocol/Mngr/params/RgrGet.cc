@@ -60,8 +60,8 @@ void RgrGetReq::internal_decode(const uint8_t** bufp, size_t* remainp) {
   cid = Serialization::decode_vi64(bufp, remainp);
   rid = Serialization::decode_vi64(bufp, remainp);
   if(!rid) {
-    range_begin.decode(bufp, remainp);
-    range_end.decode(bufp, remainp);
+    range_begin.decode(bufp, remainp, false);
+    range_end.decode(bufp, remainp, false);
     next_range = Serialization::decode_bool(bufp, remainp);
   }
 }
