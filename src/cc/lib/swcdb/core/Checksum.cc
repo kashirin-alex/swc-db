@@ -33,11 +33,11 @@ namespace SWC {
 #define SWC_F32_DO8(buf, i)  SWC_F32_DO4(buf, i); SWC_F32_DO4(buf, i + 8);
 #define SWC_F32_DO16(buf, i) SWC_F32_DO8(buf, i); SWC_F32_DO8(buf, i + 16);
 
-uint32_t fletcher32(const void *data8, size_t len8) {
+uint32_t fletcher32(const void* data8, size_t len8) {
   /* data may not be aligned properly and would segfault on
    * many systems if cast and used as 16-bit words
    */
-  const uint8_t *data = (const uint8_t *)data8;
+  const uint8_t* data = (const uint8_t*)data8;
   uint32_t sum1 = 0xffff, sum2 = 0xffff;
   size_t len = len8 / 2; /* loop works on 16-bit words */
 
@@ -78,7 +78,7 @@ uint32_t fletcher32(const void *data8, size_t len8) {
 }
 
 
-bool checksum_i32_chk(uint32_t checksum, const uint8_t *base, uint32_t len) {
+bool checksum_i32_chk(uint32_t checksum, const uint8_t* base, uint32_t len) {
   uint32_t computed = fletcher32(base, len);
   if(checksum == computed)
     return true;
@@ -88,27 +88,32 @@ bool checksum_i32_chk(uint32_t checksum, const uint8_t *base, uint32_t len) {
 }
 
 SWC_SHOULD_INLINE
-bool checksum_i32_chk(uint32_t checksum, const uint8_t *base, uint32_t len, 
+bool checksum_i32_chk(uint32_t checksum, const uint8_t* base, uint32_t len, 
                       uint32_t offset) {
-  memset((void *)(base+offset), 0, 4);
+  memset((void*)(base + offset), 0, 4);
   return checksum_i32_chk(checksum, base, len);
 }
 
 SWC_SHOULD_INLINE
-void checksum_i32(const uint8_t *start, size_t len, uint8_t **ptr) {
+void checksum_i32(const uint8_t* start, size_t len, uint8_t** ptr) {
   Serialization::encode_i32(ptr, fletcher32(start, len));
 }
 
 SWC_SHOULD_INLINE
-void checksum_i32(const uint8_t *start, const uint8_t *end, uint8_t **ptr) {
+void checksum_i32(const uint8_t* start, size_t len, uint8_t** ptr,
+                  uint32_t& checksum) {
+  Serialization::encode_i32(ptr, checksum = fletcher32(start, len));
+}
+
+SWC_SHOULD_INLINE
+void checksum_i32(const uint8_t* start, const uint8_t* end, uint8_t** ptr) {
   checksum_i32(start, end-start, ptr);
 }
 
 SWC_SHOULD_INLINE
-void checksum_i32(const uint8_t *start, const uint8_t *end, uint8_t **ptr, 
+void checksum_i32(const uint8_t* start, const uint8_t* end, uint8_t** ptr, 
                   uint32_t& checksum) {
-  checksum = fletcher32(start, end-start);
-  Serialization::encode_i32(ptr, checksum);
+  Serialization::encode_i32(ptr, checksum = fletcher32(start, end-start));
 }
 
 
