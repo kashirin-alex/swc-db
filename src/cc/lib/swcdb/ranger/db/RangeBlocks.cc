@@ -395,16 +395,16 @@ void Blocks::init_blocks(int& err) {
   Block::Ptr blk = nullptr;
   for(auto cs_blk : blocks) {
     if(blk == nullptr) {
-      m_block = blk = Block::make(cs_blk->interval, ptr());
+      m_block = blk = Block::make(cs_blk->header.interval, ptr());
       m_block->_set_prev_key_end(range->prev_range_end);
       m_blocks_idx.push_back(blk);
-    } else if(blk->_cond_key_end(cs_blk->interval.key_begin) 
+    } else if(blk->_cond_key_end(cs_blk->header.interval.key_begin) 
                                             != Condition::EQ) {
-      blk->_add(Block::make(cs_blk->interval, ptr()));
+      blk->_add(Block::make(cs_blk->header.interval, ptr()));
       blk = blk->next;
       m_blocks_idx.push_back(blk);
     } else {
-      blk->_set_key_end(cs_blk->interval.key_end);
+      blk->_set_key_end(cs_blk->header.interval.key_end);
     }
   }
   if(!m_block) {

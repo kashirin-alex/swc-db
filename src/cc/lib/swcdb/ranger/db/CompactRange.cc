@@ -17,7 +17,7 @@ struct CompactRange::InBlock {
 
   InBlock(const Types::KeySeq key_seq, size_t size, InBlock* inblock = nullptr)
           : has_last(inblock != nullptr), 
-            cells(size), count(0), interval(key_seq), err(Error::OK),
+            cells(size), header(key_seq), err(Error::OK),
             last_cell(0) {
     if(has_last)
       inblock->move_last(this);
@@ -32,11 +32,11 @@ struct CompactRange::InBlock {
   ~InBlock() { }
 
   size_t cell_avg_size() const {
-    return cells.fill()/count;
+    return cells.fill()/header.cells_count;
   }
 
   void add(const DB::Cells::Cell& cell) {
-    ++count;
+    ++header.cells_count;
     cells.set_mark(); // start of last cell
     cell.write(cells);
     last_cell = cells.mark;
@@ -59,7 +59,7 @@ struct CompactRange::InBlock {
     cell.read(&ptr, &remain); 
     to->add(cell);
 
-    --count;
+    --header.cells_count;
     cells.ptr = (uint8_t*)last_cell;
     cells.mark = 0;
   }
@@ -72,31 +72,31 @@ struct CompactRange::InBlock {
     DB::Cells::Cell cell;
     while(remain) {
       cell.read(&ptr, &remain); 
-      interval.align(cell.key);
-      interval.expand(cell.timestamp);
+      header.interval.align(cell.key);
+      header.interval.expand(cell.timestamp);
       
       if(set_begin) {
-        interval.expand_begin(cell);
+        header.interval.expand_begin(cell);
         set_begin = false;
       }
     }
     if(!any_end)
-      interval.expand_end(cell);
+      header.interval.expand_end(cell);
   }
 
   void finalize_encode(Types::Encoding encoding) {
+    header.encoder = encoding;
     DynamicBuffer output;
-    CellStore::Block::Write::encode(err, encoding, cells, output, count);
+    CellStore::Block::Write::encode(err, cells, output, header);
     if(err)
       return;
     cells.free();
     cells.take_ownership(output);
   }
 
-  const uint8_t        has_last;
-  DynamicBuffer        cells;
-  uint32_t             count;
-  DB::Cells::Interval  interval;
+  const uint8_t             has_last;
+  DynamicBuffer             cells;
+  CellStore::Block::Header  header;
 
   int                  err;
 
@@ -217,9 +217,9 @@ bool CompactRange::selector(const Types::KeySeq key_seq,
 
 bool CompactRange::reached_limits() {
   return m_stopped 
-      || (m_inblock->count > 1 && 
+      || (m_inblock->header.cells_count > 1 && 
           m_inblock->cells.fill() + m_inblock->cell_avg_size() >= blk_size)
-      || m_inblock->count >= blk_cells + 1;
+      || m_inblock->header.cells_count >= blk_cells + 1;
 }
 
 bool CompactRange::add_cell_and_more(const DB::Cells::Cell& cell) {
@@ -258,7 +258,7 @@ void CompactRange::response(int& err) {
     range->blocks.commitlog.commit_new_fragment(true);
   }
 
-  auto in_block = m_inblock->count <= 1 ? nullptr : m_inblock;
+  auto in_block = m_inblock->header.cells_count <= 1 ? nullptr : m_inblock;
   if(in_block) {
     m_inblock = new InBlock(range->cfg->key_seq, blk_size, in_block);
     m_inblock->set_offset(spec);
@@ -484,12 +484,12 @@ csid_t CompactRange::create_cs(int& err) {
 void CompactRange::write_cells(int& err, InBlock* in_block) {
   if(cs_writer == nullptr) {
     if(create_cs(err) == 1 && range->is_any_begin())
-      in_block->interval.key_begin.free();
+      in_block->header.interval.key_begin.free();
     if(err)
       return;
   }
 
-  cs_writer->block(err, in_block->interval, in_block->cells);
+  cs_writer->block_write(err, in_block->cells, in_block->header);
   if(err)
     return;
 
@@ -521,7 +521,7 @@ void CompactRange::finalize() {
   int err = Error::OK;
   bool empty_cs = false;
 
-  if(m_inblock->count) {
+  if(m_inblock->header.cells_count) {
     // first or/and last block of any-type set with empty-key
     bool any_begin = false;
     if(cs_writer == nullptr) {
@@ -530,8 +530,7 @@ void CompactRange::finalize() {
         return quit();
     }
     m_inblock->finalize_interval(any_begin, range->is_any_end());
-    cs_writer->block(
-      err, m_inblock->interval, m_inblock->cells, m_inblock->count);
+    cs_writer->block_encode(err, m_inblock->cells, m_inblock->header);
  
   } else if(!cellstores.size() && cs_writer == nullptr) {
     // as an initial empty range cs with range intervals
@@ -540,9 +539,10 @@ void CompactRange::finalize() {
     if(err)
       return quit();
     range->get_interval(
-      m_inblock->interval.key_begin, m_inblock->interval.key_end);
-    cs_writer->block(
-      err, m_inblock->interval, m_inblock->cells, m_inblock->count);
+      m_inblock->header.interval.key_begin, 
+      m_inblock->header.interval.key_end
+    );
+    cs_writer->block_encode(err, m_inblock->cells, m_inblock->header);
   }
   if(err)
     return quit();

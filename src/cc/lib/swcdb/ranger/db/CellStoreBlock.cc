@@ -27,27 +27,15 @@ Read::Ptr Read::make(int& err, FS::SmartFd::Ptr& smartfd,
                      const DB::Cells::Interval& interval, 
                      const uint64_t offset, 
                      const uint32_t cell_revs) {
-  Types::Encoding encoder;
-  size_t size_plain;
-  size_t size_enc; 
-  uint32_t cells_count; 
-  uint32_t checksum_data;
-  
-  load_header(
-    err, smartfd, offset, 
-    encoder, size_plain, size_enc, cells_count, checksum_data
-  );
-  
-  return err ? nullptr : new Read(
-    interval, offset + HEADER_SIZE, cell_revs, 
-    encoder, size_plain, size_enc, cells_count, checksum_data
-  );
+  Header header(interval.key_seq);
+  header.interval.copy(interval);
+  header.offset_data = offset;
+  load_header(err, smartfd, header);  
+  return err ? nullptr : new Read(cell_revs, header);
 }
 
 void Read::load_header(int& err, FS::SmartFd::Ptr& smartfd, 
-                       const uint64_t offset, Types::Encoding& encoder,
-                       size_t& size_plain, size_t& size_enc, 
-                       uint32_t& cells_count, uint32_t& checksum_data) {
+                       Header& header) {
   auto fs_if = Env::FsInterface::interface();
   auto fs = Env::FsInterface::fs();
   err = Error::OK;
@@ -55,49 +43,39 @@ void Read::load_header(int& err, FS::SmartFd::Ptr& smartfd,
 
     if(err) {
       SWC_LOGF(LOG_WARN, "Retrying to err=%d(%s) %s blk-offset=%lld", 
-        err, Error::get_text(err), smartfd->to_string().c_str(), offset);
+        err, Error::get_text(err), smartfd->to_string().c_str(),
+        header.offset_data);
       fs_if->close(err, smartfd);
       err = Error::OK;
     }
 
     if(!smartfd->valid() && !fs_if->open(err, smartfd) && err)
-      break;
+      return;
     if(err)
       continue;
     
-    uint8_t buf[HEADER_SIZE];
+    uint8_t buf[Header::SIZE];
     const uint8_t *ptr = buf;
-    if(fs->pread(err, smartfd, offset, buf, HEADER_SIZE) != HEADER_SIZE)
+    if(fs->pread(err, smartfd, header.offset_data, buf, 
+                 Header::SIZE) != Header::SIZE)
       continue;
 
-    size_t remain = HEADER_SIZE;
-    encoder = (Types::Encoding)Serialization::decode_i8(&ptr, &remain);
-    size_enc = Serialization::decode_i32(&ptr, &remain);
-    size_plain = Serialization::decode_i32(&ptr, &remain);
-    if(!size_enc) 
-      size_enc = size_plain;
-    cells_count = Serialization::decode_i32(&ptr, &remain);
-    checksum_data = Serialization::decode_i32(&ptr, &remain);
-
+    size_t remain = Header::SIZE;
+    header.decode(&ptr, &remain);
     if(!checksum_i32_chk(
-      Serialization::decode_i32(&ptr, &remain), buf, HEADER_SIZE-4)) {
+      Serialization::decode_i32(&ptr, &remain), buf, Header::SIZE - 4)) {
       err = Error::CHECKSUM_MISMATCH;
       continue;
     }
-    break;
+    header.offset_data += Header::SIZE;
+    return;
   }
 }
 
-Read::Read(const DB::Cells::Interval& interval, const uint64_t offset_data,
-           const uint32_t cell_revs, const Types::Encoding encoder,
-           const size_t size_plain, const size_t size_enc, 
-           const uint32_t cells_count, const uint32_t checksum_data)
-          : interval(interval), offset_data(offset_data), 
-            cell_revs(cell_revs), encoder(encoder), 
-            size_plain(size_plain), size_enc(size_enc), 
-            cells_count(cells_count), checksum_data(checksum_data),
+Read::Read(const uint32_t cell_revs, const Header& header)
+          : cell_revs(cell_revs), header(header),
             m_state(State::NONE), m_processing(0),
-            m_cells_remain(cells_count), m_err(Error::OK) {
+            m_cells_remain(header.cells_count), m_err(Error::OK) {
 }
 
 Read::~Read() { 
@@ -108,7 +86,7 @@ bool Read::load(const QueueRunnable::Call_t& cb) {
     Mutex::scope lock(m_mutex);
     ++m_processing;
     if(m_state == State::NONE) {
-      if(size_enc) {
+      if(header.size_enc) {
         m_state = State::LOADING;
         return true;
       } else {
@@ -140,7 +118,7 @@ void Read::load_cells(int& err, Ranger::Block::Ptr cells_block) {
   if(m_buffer.size) {
     m_cells_remain -= cells_block->load_cells(
       m_buffer.base, m_buffer.size, 
-      cell_revs, cells_count, 
+      cell_revs, header.cells_count, 
       was_splitted,
       true
     );
@@ -149,7 +127,7 @@ void Read::load_cells(int& err, Ranger::Block::Ptr cells_block) {
   processing_decrement();
 
   if(!was_splitted && 
-     (!m_cells_remain || Env::Resources.need_ram(size_plain)))
+     (!m_cells_remain || Env::Resources.need_ram(header.size_plain)))
     release();
 }
 
@@ -166,7 +144,7 @@ size_t Read::release() {
       released += m_buffer.size;
       m_state = State::NONE;
       m_buffer.free();
-      m_cells_remain = cells_count;
+      m_cells_remain = header.cells_count;
     }
     m_mutex.unlock(support);
   }
@@ -200,20 +178,12 @@ bool Read::loaded(int& err) {
 }
 
 size_t Read::size_bytes(bool only_loaded) {
-  return only_loaded && !loaded() ? 0 : size_plain;
+  return only_loaded && !loaded() ? 0 : header.size_plain;
 }
 
 std::string Read::to_string() {
-  std::string s("Block(offset=");
-  s.append(std::to_string(offset_data));
-  if(size_plain) {
-    s.append(" encoder=");
-    s.append(Types::to_string(encoder));
-    s.append(" enc/size=");
-    s.append(std::to_string(size_enc));
-    s.append("/");
-    s.append(std::to_string(size_plain));
-  }
+  std::string s("Block(");
+  s.append(header.to_string());
   {
     Mutex::scope lock(m_mutex);
     s.append(" state=");
@@ -230,8 +200,6 @@ std::string Read::to_string() {
       s.append(")");
     }
   }
-  s.append(" ");
-  s.append(interval.to_string());
   s.append(")");
   return s;
 }
@@ -256,19 +224,23 @@ void Read::load(int& err, FS::SmartFd::Ptr smartfd) {
       continue;
 
     m_buffer.free();
-    if(fs->pread(err, smartfd, offset_data, &m_buffer, size_enc) 
-        != size_enc)
+    if(fs->pread(err, smartfd, header.offset_data, &m_buffer, 
+                 header.size_enc) != header.size_enc)
       continue;
     
-    if(!checksum_i32_chk(checksum_data, m_buffer.base, size_enc)) {
+    if(!checksum_i32_chk(header.checksum_data, 
+                         m_buffer.base, header.size_enc)) {
       err = Error::CHECKSUM_MISMATCH;
       continue;
     }
 
-    if(encoder != Types::Encoding::PLAIN) {
-      StaticBuffer decoded_buf(size_plain);
+    if(header.encoder != Types::Encoding::PLAIN) {
+      StaticBuffer decoded_buf(header.size_plain);
       Encoder::decode(
-        err, encoder, m_buffer.base, size_enc, decoded_buf.base, size_plain);
+        err, header.encoder, 
+        m_buffer.base, header.size_enc, 
+        decoded_buf.base, header.size_plain
+      );
       if(err)
         continue;
       m_buffer.set(decoded_buf);
@@ -299,42 +271,34 @@ void Read::run_queued() {
 
 
 
-Write::Write(const uint64_t offset, const DB::Cells::Interval& interval)
-            : offset(offset), interval(interval) { 
+Write::Write(const Header& header)
+            : header(header) {
 }
 
 Write::~Write() { }
 
-void Write::encode(int& err, Types::Encoding encoder, DynamicBuffer& cells, 
-                   DynamicBuffer& output, const uint32_t cell_count) {
+void Write::encode(int& err, DynamicBuffer& cells, DynamicBuffer& output, 
+                   Header& header) {
+  header.size_plain = cells.fill();
   size_t len_enc = 0;
-  Encoder::encode(err, encoder, cells.base, cells.fill(), 
-                  &len_enc, output, HEADER_SIZE);
+  Encoder::encode(err, header.encoder, cells.base, header.size_plain, 
+                  &len_enc, output, Header::SIZE);
   if(err)
     return;
-  if(!len_enc)
-    encoder = Types::Encoding::PLAIN;
+  if(!len_enc) {
+    header.encoder = Types::Encoding::PLAIN;
+    header.size_enc = header.size_plain;
+  } else {
+    header.size_enc = len_enc;
+  }
 
-  uint8_t * ptr = output.base;
-  size_t data_fill = output.fill() - HEADER_SIZE;
-  
-  *ptr = (uint8_t)encoder;
-  Serialization::encode_i32(&++ptr, len_enc);
-  Serialization::encode_i32(&ptr, cells.fill());
-  Serialization::encode_i32(&ptr, cell_count);
-  if(data_fill)
-    checksum_i32(output.base + HEADER_SIZE, data_fill, &ptr);
-  else
-    Serialization::encode_i32(&ptr, 0);
-
-  checksum_i32(output.base, ptr, &ptr);
+  uint8_t* ptr = output.base;
+  header.encode(&ptr);
 }
 
 std::string Write::to_string() {
-  std::string s("Block(offset=");
-  s.append(std::to_string(offset));
-  s.append(" ");
-  s.append(interval.to_string());
+  std::string s("Block(");
+  s.append(header.to_string());
   s.append(")");
   return s;
 }

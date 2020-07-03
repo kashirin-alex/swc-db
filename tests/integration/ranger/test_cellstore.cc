@@ -64,10 +64,9 @@ size_t write_cs(SWC::csid_t csid, SWC::Ranger::RangePtr range, int any) {
   hdlr_err(err);
 
   SWC::DynamicBuffer buff;
-  Cells::Interval blk_intval(range->cfg->key_seq);
+  SWC::Ranger::CellStore::Block::Header header(range->cfg->key_seq);
   Cells::Cell cell;
 
-  uint32_t cell_count = 0;
   int64_t rev;
   int expected_blocks = 0;
   SWC::DB::Cell::Key expected_key;
@@ -92,11 +91,11 @@ size_t write_cs(SWC::csid_t csid, SWC::Ranger::RangePtr range, int any) {
       cell.set_value(v);
 
       cell.write(buff);
-      ++cell_count;
-      blk_intval.expand(cell);   
-      if(blk_intval.key_begin.get_string(0).compare("") == 0) {
+      ++header.cells_count;
+      header.interval.expand(cell);   
+      if(header.interval.key_begin.get_string(0).compare("") == 0) {
         std::cout << cell.to_string() << "\n";
-        std::cout << "expand: " << blk_intval.to_string() << "\n";
+        std::cout << "expand: " << header.interval.to_string() << "\n";
         exit(1);
       }
 
@@ -105,29 +104,32 @@ size_t write_cs(SWC::csid_t csid, SWC::Ranger::RangePtr range, int any) {
         expected_key.copy(cell.key);
 
       if(buff.fill() >= range->cfg->block_size() 
-        || cell_count >= range->cfg->block_cells() 
+        || header.cells_count >= range->cfg->block_cells() 
         || (num_cells == i && group_fractions == g)) {
 
         ++expected_blocks;
         std::cout << "adding   block:"
-                  << " cell_count=" << cell_count
+                  << " cell_count=" << header.cells_count
                   << " buff.fill()=" << buff.fill()
-                  << " cell_count=" << cell_count
+                  << " cell_count=" << header.cells_count
                   << " num-blk=" << expected_blocks
                   << std::flush;
         if(any == -1 && expected_blocks == 1)
-          blk_intval.key_begin.free();
+          header.interval.key_begin.free();
 
         else if(any == 1 && i == num_cells && group_fractions == g)
-          blk_intval.key_end.free();
+          header.interval.key_end.free();
 
-        cs_writer.block(err, blk_intval, buff, cell_count);
-        blk_intval.free();
+        cs_writer.block_encode(err, buff, header);
+        std::cout << " cs-size=" << cs_writer.size << "\n";
+        SWC_PRINT << "Write::block_encode header(" << header.to_string() 
+                  << ")" << SWC_PRINT_CLOSE;
+
         buff.free();
         hdlr_err(err);
 
-        cell_count = 0;
-        std::cout << " cs-size=" << cs_writer.size << "\n";
+        header.interval.free();
+        header.cells_count = 0;
       }
     }
   }

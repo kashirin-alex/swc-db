@@ -8,6 +8,7 @@
 #define swc_ranger_db_CellStoreBlock_h
 
 #include "swcdb/core/QueueRunnable.h"
+#include "swcdb/ranger/db/CellStoreBlockHeader.h"
 
 
 namespace SWC { namespace Ranger { namespace CellStore {
@@ -20,9 +21,6 @@ namespace Block {
               i32(cells), i32(checksum-data), i32(checksum)
       data:   [cell]
 */
-
-static const uint8_t HEADER_SIZE=21;
-
 
 
 class Read final {  
@@ -42,26 +40,14 @@ class Read final {
                   const uint32_t cell_revs);
 
   static void load_header(int& err, FS::SmartFd::Ptr& smartfd, 
-                          const uint64_t offset, Types::Encoding& encoder,
-                          size_t& size_plain, size_t& size_enc, 
-                          uint32_t& cells_count, uint32_t& checksum_data);
+                          Header& header);
 
 
-  const DB::Cells::Interval  interval;
-  const uint64_t             offset_data;
   const uint32_t             cell_revs;
 
-  const Types::Encoding      encoder;
-  const size_t               size_plain;
-  const size_t               size_enc;
-  const uint32_t             cells_count;
-  const uint32_t             checksum_data;
+  const Header               header;
 
-  explicit Read(const DB::Cells::Interval& interval, 
-                const uint64_t offset_data, const uint32_t cell_revs, 
-                const Types::Encoding encoder,
-                const size_t size_plain, const size_t size_enc, 
-                const uint32_t cells_count, const uint32_t checksum_data);
+  explicit Read(const uint32_t cell_revs, const Header& header);
   
   Read(const Read&) = delete;
 
@@ -115,22 +101,25 @@ class Write final {
   public:
   typedef std::shared_ptr<Write> Ptr;
 
-  Write(const uint64_t offset, const DB::Cells::Interval& interval);
+  Write(const Header& header);
 
   ~Write();
 
-  static void encode(int& err, Types::Encoding encoder, DynamicBuffer& cells, 
-                     DynamicBuffer& output, const uint32_t cell_count);
+  static void encode(int& err, DynamicBuffer& cells, DynamicBuffer& output, 
+                     Header& header);
 
   std::string to_string();
 
-  const uint64_t            offset;
-  const DB::Cells::Interval interval;
+  const Header  header;
 
 };
 
 
 
 }}}} // namespace SWC::Ranger::CellStore::Block
+
+
+
+#include "swcdb/ranger/db/CellStoreBlockHeader.cc"
 
 #endif // swc_ranger_db_CellStoreBlock_h

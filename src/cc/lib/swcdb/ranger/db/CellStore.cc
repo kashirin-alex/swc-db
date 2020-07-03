@@ -40,8 +40,8 @@ Read::Ptr Read::make(int& err, const csid_t csid,
 }
 
 bool Read::load_trailer(int& err, FS::SmartFd::Ptr& smartfd, 
-                         size_t& blks_idx_size, 
                          uint32_t& cell_revs, 
+                         uint32_t& blks_idx_count, 
                          uint64_t& blks_idx_offset, 
                          bool close_after, bool chk_base) {
   auto fs_if = Env::FsInterface::interface();
@@ -74,8 +74,8 @@ bool Read::load_trailer(int& err, FS::SmartFd::Ptr& smartfd,
     
     uint8_t buf[TRAILER_SIZE];
     const uint8_t *ptr = buf;
-    if(fs->pread(err, smartfd, length-TRAILER_SIZE, buf, TRAILER_SIZE)
-        != TRAILER_SIZE) {
+    if(fs->pread(err, smartfd, length - TRAILER_SIZE, buf, 
+                 TRAILER_SIZE) != TRAILER_SIZE) {
       if(chk_base)
         break;
       continue;
@@ -83,8 +83,10 @@ bool Read::load_trailer(int& err, FS::SmartFd::Ptr& smartfd,
 
     size_t remain = TRAILER_SIZE;
     int8_t version = Serialization::decode_i8(&ptr, &remain);
-    blks_idx_size = Serialization::decode_i32(&ptr, &remain);
     cell_revs = Serialization::decode_i32(&ptr, &remain);
+    blks_idx_count = Serialization::decode_i32(&ptr, &remain);
+    blks_idx_offset = Serialization::decode_i64(&ptr, &remain);
+
     if(!checksum_i32_chk(Serialization::decode_i32(&ptr, &remain), 
                          buf, TRAILER_SIZE-4)) {
       err = Error::CHECKSUM_MISMATCH;
@@ -92,8 +94,6 @@ bool Read::load_trailer(int& err, FS::SmartFd::Ptr& smartfd,
         break;
       continue;
     }
-    
-    blks_idx_offset = length-blks_idx_size-TRAILER_SIZE;      
     loaded = true;
     break;
   }
@@ -108,9 +108,10 @@ void Read::load_blocks_index(int& err, FS::SmartFd::Ptr& smartfd,
                               DB::Cells::Interval& interval, 
                               std::vector<Block::Read::Ptr>& blocks, 
                               bool chk_base) {
-  size_t blks_idx_size = 0;
   uint32_t cell_revs = 0;
-  uint64_t offset = 0;
+  uint32_t blks_idx_count = 0;
+  uint64_t offset_fixed = 0;
+  uint64_t offset;
 
   auto fs_if = Env::FsInterface::interface();
   auto fs = Env::FsInterface::fs();
@@ -118,6 +119,17 @@ void Read::load_blocks_index(int& err, FS::SmartFd::Ptr& smartfd,
   StaticBuffer read_buf;
   bool trailer = false;
   err = Error::OK;
+
+  const uint8_t* ptr;
+  size_t remain;
+
+  Types::Encoding idx_encoder;
+  size_t idx_size_plain;
+  size_t idx_size_enc;
+  uint32_t idx_checksum_data;
+
+  uint32_t blks_count;
+  Block::Header header(interval.key_seq);
 
   while(err != Error::FS_EOF) {
     if(err) {
@@ -128,89 +140,84 @@ void Read::load_blocks_index(int& err, FS::SmartFd::Ptr& smartfd,
     }
     
     if(!trailer) {
-      if(!load_trailer(
-          err, smartfd, blks_idx_size, cell_revs, offset, false, chk_base))
+      if(!load_trailer(err, smartfd, cell_revs, blks_idx_count, offset_fixed, 
+                       false, chk_base))
         break;
       trailer = true;
     }
+    offset = offset_fixed;
 
     if(!smartfd->valid() && !fs_if->open(err, smartfd) && err)
       return;
     if(err)
       continue;
 
-    read_buf.free();
-    if(fs->pread(err, smartfd, offset, &read_buf, blks_idx_size) 
-        != blks_idx_size)  {
-      if(chk_base)
-        break;
-      trailer = false;
-      continue;
-    }
+    for(uint32_t i=0; i < blks_idx_count; ++i) {
+      
+      for(auto blk : blocks)
+        delete blk;
+      blocks.clear();
 
-    const uint8_t *ptr = read_buf.base;
-    size_t remain = blks_idx_size;
-
-    Types::Encoding encoder 
-      = (Types::Encoding)Serialization::decode_i8(&ptr, &remain);
-    uint32_t sz_enc = Serialization::decode_i32(&ptr, &remain);
-    uint32_t sz = Serialization::decode_vi32(&ptr, &remain);
-    uint32_t blks_count = Serialization::decode_vi32(&ptr, &remain);
-  
-    if(!checksum_i32_chk(Serialization::decode_i32(&ptr, &remain),
-                         read_buf.base, ptr-read_buf.base) ) {
-      err = Error::CHECKSUM_MISMATCH;
-      if(chk_base)
-        break;
-      trailer = false;
-      continue;
-    }
-  
-    if(encoder != Types::Encoding::PLAIN) {
-      StaticBuffer decoded_buf(sz);
-      Encoder::decode(err, encoder, ptr, sz_enc, decoded_buf.base, sz);
-      if(err) {
-        if(chk_base)
-          break;
+      read_buf.free();
+      if(fs->pread(err, smartfd, offset, &read_buf, 
+                   IDX_BLKS_HEADER_SIZE) != IDX_BLKS_HEADER_SIZE)  {
         trailer = false;
-        continue;
+        break;
       }
-      read_buf.set(decoded_buf);
       ptr = read_buf.base;
-      remain = sz;
-    }
-
-    prev_key_end.decode(&ptr, &remain, true);
-
-    for(auto blk : blocks)
-      delete blk;
-    blocks.clear();
-
-    const uint8_t* chk_ptr;
-    Block::Read::Ptr blk;
-    for(int n = 0; n < blks_count; ++n) {
-      chk_ptr = ptr;
-
-      blk = Block::Read::make(
-        err, smartfd,
-        DB::Cells::Interval(interval.key_seq, &ptr, &remain),
-        Serialization::decode_vi64(&ptr, &remain),
-        cell_revs
-      );
-      if(err || !blk) 
-        return; // or continue do-again 
-      blocks.push_back(blk);
-
-      if(!checksum_i32_chk(Serialization::decode_i32(&ptr, &remain), 
-                           chk_ptr, ptr-chk_ptr)) {
-        err = Error::CHECKSUM_MISMATCH;   
-        if(chk_base)
-          break;
-        trailer = false;
-        continue;
+      remain = IDX_BLKS_HEADER_SIZE;
+      
+      idx_encoder = (Types::Encoding)Serialization::decode_i8(&ptr, &remain);
+      idx_size_enc = Serialization::decode_i32(&ptr, &remain);
+      idx_size_plain = Serialization::decode_i32(&ptr, &remain);
+      idx_checksum_data = Serialization::decode_i32(&ptr, &remain);
+      if(!checksum_i32_chk(Serialization::decode_i32(&ptr, &remain),
+                           read_buf.base, IDX_BLKS_HEADER_SIZE - 4)) {
+        err = Error::CHECKSUM_MISMATCH;
+        break;
       }
-      interval.expand(blk->interval);
-      interval.align(blk->interval);
+      offset += IDX_BLKS_HEADER_SIZE;
+
+      read_buf.free();
+      if(fs->pread(err, smartfd, offset, &read_buf, 
+                   idx_size_enc) != idx_size_enc)  {
+        trailer = false;
+        break;
+      }
+      if(!checksum_i32_chk(idx_checksum_data, read_buf.base, idx_size_enc)) {
+        err = Error::CHECKSUM_MISMATCH;
+        trailer = false;
+        break;
+      }
+      offset += idx_size_enc;
+        
+      if(idx_encoder != Types::Encoding::PLAIN) {
+        StaticBuffer decoded_buf(idx_size_plain);
+        Encoder::decode(err, idx_encoder, read_buf.base, idx_size_enc,
+                        decoded_buf.base, idx_size_plain);
+        if(err)
+          break;
+        read_buf.set(decoded_buf);
+      }
+
+      ptr = read_buf.base;
+      remain = idx_size_plain;
+      if(i == 0)
+        prev_key_end.decode(&ptr, &remain, true);
+      blks_count = Serialization::decode_vi32(&ptr, &remain);
+
+      for(uint32_t blk_i = 0; blk_i < blks_count; ++blk_i) {
+        header.decode_idx(&ptr, &remain);
+        interval.expand(header.interval);
+        interval.align(header.interval);
+        blocks.push_back(new Block::Read(cell_revs, header));
+      }
+
+    }
+    if(!trailer || err) {
+      if(chk_base)
+        break;
+      continue;
     }
     break;
   }
@@ -241,11 +248,11 @@ void Read::load_cells(BlockLoader* loader) {
 
   std::vector<Block::Read::Ptr>  applicable;
   for(auto blk : blocks) {  
-    if(loader->block->is_consist(blk->interval)) {
+    if(loader->block->is_consist(blk->header.interval)) {
       loader->add(blk);
       applicable.push_back(blk);
-    } else if(!blk->interval.key_end.empty() && 
-              !loader->block->is_in_end(blk->interval.key_end))
+    } else if(!blk->header.interval.key_end.empty() && 
+              !loader->block->is_in_end(blk->header.interval.key_end))
       break;
   }
   
@@ -373,6 +380,7 @@ Write::Write(const csid_t csid, const std::string& filepath,
                   filepath, FS::OpenFlags::OPEN_FLAG_OVERWRITE)
               ), 
               encoder(range->cfg->block_enc()), 
+              block_size(range->cfg->block_size()), 
               cell_revs(cell_revs), 
               size(0),
               interval(range->cfg->key_seq) {
@@ -387,18 +395,20 @@ void Write::create(int& err, int32_t bufsz, uint8_t blk_replicas,
       err, smartfd, bufsz, blk_replicas, blksz));
 }
 
-void Write::block(int& err, const DB::Cells::Interval& blk_intval, 
-                  DynamicBuffer& cells_buff, uint32_t cell_count) {
+void Write::block_encode(int& err, DynamicBuffer& cells_buff, 
+                         Block::Header& header) {
+  header.encoder = encoder;
   DynamicBuffer output;
-  Block::Write::encode(err, encoder, cells_buff, output, cell_count);
+  Block::Write::encode(err, cells_buff, output, header);
   if(err)
     return;
-  block(err, blk_intval, output);
+  block_write(err, output, header);
 }
 
-void Write::block(int& err, const DB::Cells::Interval& blk_intval, 
-                  DynamicBuffer& blk_buff) {
-  m_blocks.emplace_back(new Block::Write(size, blk_intval));
+void Write::block_write(int& err, DynamicBuffer& blk_buff, 
+                        Block::Header& header) {
+  header.offset_data = size + Block::Header::SIZE;
+  m_blocks.emplace_back(new Block::Write(header));
   block(err, blk_buff);
 }
 
@@ -415,73 +425,91 @@ void Write::block(int& err, DynamicBuffer& blk_buff) {
   );
 }
 
-uint32_t Write::write_blocks_index(int& err) {
-  uint32_t len_data = prev_key_end.encoded_length();
+void Write::write_blocks_index(int& err, uint32_t& blks_idx_count) {
   interval.free();
-  for(auto blk : m_blocks) {
-    len_data += Serialization::encoded_length_vi64(blk->offset) 
-              + blk->interval.encoded_length()
-              + 4;
-              
-    interval.expand(blk->interval);
-    interval.align(blk->interval);
-  }
+  if(m_blocks.empty())
+    return;
 
-  StaticBuffer raw_buffer(len_data);
-  uint8_t* ptr = raw_buffer.base;
-  prev_key_end.encode(&ptr);
+  blks_idx_count = 0;
+  uint32_t blks_count = 0;
+  uint32_t len_data = 0;
+  Block::Write::Ptr blk;
 
-  uint8_t * chk_ptr;
-  for(auto blk : m_blocks) {
-    chk_ptr = ptr;
-    Serialization::encode_vi64(&ptr, blk->offset);
-    blk->interval.encode(&ptr);
-    checksum_i32(chk_ptr, ptr, &ptr);
-  }
-  
-  uint32_t len_header = 9 + Serialization::encoded_length_vi32(len_data) 
-              + Serialization::encoded_length_vi32(m_blocks.size());
+  auto it = m_blocks.begin();
+  auto it_last = it;
+  do {
+    blk = *it;
+    interval.expand(blk->header.interval);
+    interval.align(blk->header.interval);
 
-  DynamicBuffer buffer_write;
-  size_t len_enc = 0;
-  Encoder::encode(err, encoder, raw_buffer.base, len_data, 
-                  &len_enc, buffer_write, len_header);
-  raw_buffer.free();
-  if(err)
-    return 0;
+    if(!blks_idx_count && !blks_count) 
+      len_data += prev_key_end.encoded_length();
+    ++blks_count;
+    len_data += blk->header.encoded_length_idx();
 
-  uint8_t* header_ptr = buffer_write.base;
-  *header_ptr++ = (uint8_t)(len_enc? encoder: Types::Encoding::PLAIN);
-  Serialization::encode_i32(&header_ptr, len_enc);
-  Serialization::encode_vi32(&header_ptr, len_data);
-  Serialization::encode_vi32(&header_ptr, m_blocks.size());
-  checksum_i32(buffer_write.base, header_ptr, &header_ptr);
+    if(++it == m_blocks.end() || len_data >= block_size) {
+      len_data += Serialization::encoded_length_vi32(blks_count);
 
-  StaticBuffer buff_write(buffer_write);
-  Env::FsInterface::fs()->append(
-    err,
-    smartfd, 
-    buff_write, 
-    FS::Flags::FLUSH
-  );
-  if(err)
-    return buff_write.size;
+      StaticBuffer raw_buffer(len_data);
+      uint8_t* ptr = raw_buffer.base;
 
-  size += buff_write.size;
-  return buff_write.size;
+      if(!blks_idx_count)
+        prev_key_end.encode(&ptr);
+      ++blks_idx_count;
+      Serialization::encode_vi32(&ptr, blks_count);
+
+      for(; it_last < it; ++it_last)
+        (*it_last)->header.encode_idx(&ptr);
+
+      DynamicBuffer buffer_write;
+      size_t len_enc = 0;
+      Encoder::encode(err, encoder, raw_buffer.base, len_data,
+                      &len_enc, buffer_write, IDX_BLKS_HEADER_SIZE);
+      raw_buffer.free();
+      if(err)
+        return;
+      if(!len_enc) {
+        encoder = Types::Encoding::PLAIN;
+        len_enc = len_data;
+      }
+
+      uint8_t* header_ptr = buffer_write.base;
+      Serialization::encode_i8(&header_ptr, (uint8_t)encoder);
+      Serialization::encode_i32(&header_ptr, len_enc);
+      Serialization::encode_i32(&header_ptr, len_data);
+      checksum_i32(
+        buffer_write.base + IDX_BLKS_HEADER_SIZE, len_enc, &header_ptr);
+      checksum_i32(buffer_write.base, header_ptr, &header_ptr);
+      
+      StaticBuffer buff_write(buffer_write);
+      Env::FsInterface::fs()->append(
+        err,
+        smartfd,
+        buff_write,
+        FS::Flags::FLUSH
+      );
+      if(err)
+        return;
+
+      size += buff_write.size;
+      blks_count = len_data = 0;
+    }
+  } while (it < m_blocks.end());
 }
 
 void Write::write_trailer(int& err) {
-  uint32_t blk_idx_sz = write_blocks_index(err);
+  uint64_t blks_idx_offset = size;
+  uint32_t blks_idx_count = 0;
+  write_blocks_index(err, blks_idx_count);
   if(err)
     return;
 
   StaticBuffer buff_write(TRAILER_SIZE);
   uint8_t* ptr = buff_write.base;
-
-  *ptr++ = VERSION;
-  Serialization::encode_i32(&ptr, blk_idx_sz);
+  Serialization::encode_i8(&ptr, VERSION);
   Serialization::encode_i32(&ptr, cell_revs);
+  Serialization::encode_i32(&ptr, blks_idx_count);
+  Serialization::encode_i64(&ptr, blks_idx_offset);
   checksum_i32(buff_write.base, ptr, &ptr);
   
   Env::FsInterface::fs()->append(
@@ -555,15 +583,16 @@ Read::Ptr create_initial(int& err, const RangePtr& range) {
   if(err)
     return nullptr;
   
-  DB::Cells::Interval interval(range->cfg->key_seq);
-  range->get_interval(interval);
+
+  Block::Header header(range->cfg->key_seq);
+  range->get_interval(header.interval);
 
   DynamicBuffer cells_buff;
-  writer.block(err, interval, cells_buff, 0);
+  writer.block_encode(err, cells_buff, header);
   if(!err) {
     writer.finalize(err);
     if(!err) {
-      auto cs = Read::make(err, 1, range, writer.interval, true);
+      auto cs = Read::make(err, 1, range, header.interval, true);
       if(!err) 
         return cs;
       delete cs;

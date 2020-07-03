@@ -16,20 +16,26 @@ namespace CellStore {
 
 /* file-format: 
     [blocks]: 
-      header: i8(encoder), i32(enc-len), i32(len), i32(cells), i32(checksum)
+      header: i8(encoder), i32(enc-len), i32(len), i32(cells), 
+              i32(checksum-data), i32(checksum)
       data:   [cell]
-    blocks-index:
-      header: i8(encoder), i32(enc-len), vi32(len), vi32(blocks), i32(checksum)
-      data:   prev_key_end, [vi64(offset), interval, i32(checksum)]
-    trailer : i8(version), i32(blocks-index-len), i32(cell-revs), i32(checksum)
+    [idx-blocks]:
+      header:   i8(encoder), i32(enc-len), i32(len), 
+                i32(checksum-data), i32(checksum) 
+      idx-data: (1st ? prev_key_end,), vi32(blocks)
+                [blocks]:
+                  vi64(offset), interval, 
+                  i8(encoder), vi32(enc-len), vi32(len), 
+                  vi32(cells), vi32(checksum-data)
+    trailer : i8(version), i32(cell-revs), i32(idx-blocks), i64(idx-offset), 
+              i32(checksum)
       (trailer-offset) = fileLength - TRAILER_SIZE
-      (blocks-index-offset) = (trailer-offset) - (blocks-index-len)
 */
 
 
-static const uint8_t  TRAILER_SIZE=13;
-static const int8_t   VERSION=1;
-
+static const int8_t   VERSION = 1;
+static const uint8_t  TRAILER_SIZE = 21;
+static const uint8_t  IDX_BLKS_HEADER_SIZE = 17;
 
 
 class Read final {
@@ -42,8 +48,8 @@ class Read final {
                          bool chk_base=false);
 
   static bool load_trailer(int& err, FS::SmartFd::Ptr& smartfd, 
-                           size_t& blks_idx_size, 
                            uint32_t& cell_revs, 
+                           uint32_t& blks_idx_count, 
                            uint64_t& blks_idx_offset, 
                            bool close_after=false, bool chk_base=false);
 
@@ -115,6 +121,7 @@ class Write final {
   FS::SmartFd::Ptr          smartfd;
   Types::Encoding           encoder;
   uint32_t                  cell_revs;
+  uint32_t                  block_size;
   size_t                    size;
   DB::Cells::Interval       interval;
   DB::Cell::Key             prev_key_end;
@@ -129,11 +136,11 @@ class Write final {
   void create(int& err, 
               int32_t bufsz=-1, uint8_t blk_replicas=0, int64_t blksz=-1);
 
-  void block(int& err, const DB::Cells::Interval& blk_intval, 
-             DynamicBuffer& cells_buff, uint32_t cell_count);
+  void block_encode(int& err, DynamicBuffer& cells_buff, 
+                    Block::Header& header);
 
-  void block(int& err, const DB::Cells::Interval& blk_intval, 
-             DynamicBuffer& blk_buff);
+  void block_write(int& err, DynamicBuffer& blk_buff, 
+                   Block::Header& header);
 
   void finalize(int& err);
 
@@ -145,7 +152,7 @@ class Write final {
   
   void block(int& err, DynamicBuffer& blk_buff);
 
-  uint32_t write_blocks_index(int& err);
+  void write_blocks_index(int& err, uint32_t& blks_idx_count);
 
   void write_trailer(int& err);
 
