@@ -12,7 +12,7 @@ set(VER_GEN_PATH ${CMAKE_CURRENT_SOURCE_DIR}/thriftgen-${THRIFT_VERSION})
 if(THRIFT_CPP_FOUND)
   set(THRIFT_CPP_GEN_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../../cc/include/swcdb/thrift)
 
-  if(NOT EXISTS ${THRIFT_CPP_GEN_PATH}/gen-cpp)
+  if(NOT EXISTS ${THRIFT_CPP_GEN_PATH}/gen-cpp OR NOT EXISTS ${VER_GEN_PATH}/gen-cpp)
     if(THRIFT_COMPILER_FOUND)
       execute_process(COMMAND rm -rf ${VER_GEN_PATH}/gen-cpp )
       execute_process(COMMAND mkdir -p ${VER_GEN_PATH}/gen-cpp )
@@ -22,8 +22,9 @@ if(THRIFT_CPP_FOUND)
 
     if(EXISTS ${VER_GEN_PATH}/gen-cpp)  # set current gen-cpp/ included path
       execute_process(COMMAND rm -rf  ${THRIFT_CPP_GEN_PATH}/gen-cpp )
-      execute_process(COMMAND cp -r   ${VER_GEN_PATH}/gen-cpp ${THRIFT_CPP_GEN_PATH}/)
+      execute_process(COMMAND cp -r  ${VER_GEN_PATH}/gen-cpp ${THRIFT_CPP_GEN_PATH}/)
     endif()
+
   endif()
 
   if(EXISTS ${THRIFT_CPP_GEN_PATH}/gen-cpp)

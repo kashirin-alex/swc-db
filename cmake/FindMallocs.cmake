@@ -44,7 +44,15 @@ else()  # TCMALLOC_MINIMAL default if found
     set(Tcmalloc_static_NAMES libtcmalloc_minimal.a)
   endif ()
 
-  SET_DEPS(NAME "TCMALLOC" REQUIRED TRUE LIB_PATHS "" INC_PATHS "" STATIC ${Tcmalloc_static_NAMES} SHARED ${Tcmalloc_NAMES} INCLUDE ${Tcmalloc_header_NAMES})  
+  SET_DEPS(
+    NAME "TCMALLOC" 
+    REQUIRED FALSE 
+    LIB_PATHS "" 
+    INC_PATHS "" 
+    STATIC ${Tcmalloc_static_NAMES} 
+    SHARED ${Tcmalloc_NAMES} 
+    INCLUDE ${Tcmalloc_header_NAMES}
+  )  
   if (TCMALLOC_FOUND)
     if (TCMALLOC_LIBRARIES_SHARED MATCHES "tcmalloc_minimal")
       SET (MALLOC_FLAGS ${MALLOC_FLAGS} -DTCMALLOC_MINIMAL)
