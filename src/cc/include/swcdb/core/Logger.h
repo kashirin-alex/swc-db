@@ -64,48 +64,26 @@ class LogWriter final {
 
   uint32_t seconds();
 
+  void log(uint8_t priority, const char* fmt, ...)
+      __attribute__((format(printf, 3, 4)));
+
+  void log(uint8_t priority, const char* filen, int fline, 
+           const char* fmt, ...)
+      __attribute__((format(printf, 5, 6)));
+
   template<typename T>
-  void log(uint8_t priority, const T& msg) {
+  void msg(uint8_t priority, const T& message) {
     Mutex::scope lock(mutex);
     std::cout << seconds() << ' ' << get_name(priority) 
-              << ": " << msg << std::endl;
+              << ": " << message << std::endl;
   }
 
   template<typename T>
-  void log(uint8_t priority, const char* filen, int fline, const T& msg) {
+  void msg(uint8_t priority, const char* filen, int fline, const T& message) {
     Mutex::scope lock(mutex);
     std::cout << seconds() << ' ' << get_name(priority) 
               << ": (" << filen << ':' << fline << ") "
-              << msg << std::endl;
-  }
-
-  template<typename... Args> 
-  void log(uint8_t priority, const char *format, 
-           Args... args) {
-    Mutex::scope lock(mutex);
-    std::cout << seconds() << ' ' << get_name(priority) << ": ";
-    std::printf(format, args...);
-    std::cout << std::endl;
-  }
-
-  template<typename... Args> 
-  void log(uint8_t priority, const char* filen, int fline, const char *format,
-           Args... args) {
-    Mutex::scope lock(mutex);
-    std::cout << seconds() << ' ' << get_name(priority)
-              << ": (" << filen << ':' << fline << ") ";
-    std::printf(format, args...);
-    std::cout << std::endl;
-  }
-
-  template<typename T>
-  void debug(const T& msg) {
-    log(LOG_DEBUG, msg);
-  }
-
-  template<typename... Args> 
-  void debug(const char *format, Args... args) {
-    log(LOG_DEBUG, format, args...);
+              << message << std::endl;
   }
 
   private:
@@ -133,20 +111,23 @@ extern LogWriter logger;
 
 #ifndef SWC_DISABLE_LOG_ALL
 
-#define SWC_LOG(priority, msg) \
+#define SWC_LOG(priority, message) \
   if(::SWC::Logger::logger.is_enabled(priority)) { \
     if(::SWC::Logger::logger.show_line_numbers()) \
-      ::SWC::Logger::logger.log(priority, __FILE__, __LINE__, msg); \
+      ::SWC::Logger::logger.msg(priority, __FILE__, __LINE__, message); \
     else \
-      ::SWC::Logger::logger.log(priority, msg); \
+      ::SWC::Logger::logger.msg(priority, message); \
   }
 
 #define SWC_LOGF(priority, fmt, ...) \
   if(::SWC::Logger::logger.is_enabled(priority)) { \
+    Mutex::scope lock(::SWC::Logger::logger.mutex); \
+    std::cout << ::SWC::Logger::logger.seconds() \
+              << ' ' << ::SWC::Logger::logger.get_name(priority) << ": "; \
     if(::SWC::Logger::logger.show_line_numbers()) \
-      ::SWC::Logger::logger.log(priority, __FILE__, __LINE__, fmt, __VA_ARGS__); \
-    else \
-      ::SWC::Logger::logger.log(priority, fmt, __VA_ARGS__); \
+      std::cout << "(" << __FILE__ << ':' << __LINE__ << ") "; \
+    printf(fmt, __VA_ARGS__); \
+    std::cout << std::endl; \
   }
 
 
@@ -190,23 +171,6 @@ extern LogWriter logger;
 #define SWC_PRINT_CLOSE std::endl; }
 //
 
-/*
-#define HT_LOG_ENTER \
-  if(::SWC::Logger::logger.is_enabled(LOG_DEBUG)) {\
-    if(::SWC::Logger::logger.show_line_numbers()) \
-      ::SWC::Logger::logger.debug("(%s:%d) %s() ENTER", __FILE__, __LINE__, __PRETTY_FUNCTION__);\
-    else \
-      ::SWC::Logger::logger.debug("%s() ENTER", __PRETTY_FUNCTION__); \
-  }
-
-#define HT_LOG_EXIT \
-  if(::SWC::Logger::logger.is_enabled(LOG_DEBUG)) { \
-    if(::SWC::Logger::logger.show_line_numbers()) \
-      ::SWC::Logger::logger.debug("(%s:%d) %s() EXIT", __FILE__, __LINE__, __PRETTY_FUNCTION__); \
-    else \
-      ::SWC::Logger::logger.debug("%s() EXIT", __PRETTY_FUNCTION__); \
-  }
-*/
 
 #else // SWC_DISABLE_LOGGING
 
@@ -218,24 +182,11 @@ extern LogWriter logger;
 #define SWC_LOG_FATAL(msg)
 #define SWC_LOG_FATAL(msg, ...)
 
-//#define HT_LOG_ENTER
-//#define HT_LOG_EXIT
-
 #endif // SWC_DISABLE_LOGGING
 
 
 
 
-
-/*
-// helpers for printing a char pointer field
-#define HT_DUMP_CSTR(_os_, _label_, _str_) \
-  if (!_str_) _os_ <<" " #_label_ "=[NULL]"; \
-  else _os_ <<" " #_label_ "='"<< (_str_) << "'";
-
-#define HT_DUMP_CSTR_FIELD(_os_, _obj_, _field_) \
-  HT_DUMP_CSTR(_os_, _field_, _obj_._field_)
-*/
 
 
 

@@ -4,6 +4,7 @@
  */
 
 #include "swcdb/core/Logger.h"
+#include <stdarg.h>
 
 
 
@@ -159,5 +160,32 @@ void LogWriter::renew_files() {
     ::fdopen(0, "wt");
   }*/
 }
+
+void LogWriter::log(uint8_t priority, const char* fmt, ...) {
+  va_list ap;
+  va_start(ap, fmt);
+  {
+    Mutex::scope lock(mutex);
+    std::cout << seconds() << ' ' << get_name(priority) << ": ";
+    vprintf(fmt, ap);
+    std::cout << std::endl;
+  }
+  va_end(ap);
+}
+
+void LogWriter::log(uint8_t priority, const char* filen, int fline, 
+                    const char* fmt, ...) {
+  va_list ap;
+  va_start(ap, fmt);
+  {
+    Mutex::scope lock(mutex);
+    std::cout << seconds() << ' ' << get_name(priority)
+              << ": (" << filen << ':' << fline << ") ";
+    vprintf(fmt, ap);
+    std::cout << std::endl;
+  }
+  va_end(ap);
+}
+
 
 }}
