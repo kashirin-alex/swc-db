@@ -11,7 +11,13 @@
 
 #include <queue>
 
+#if defined(USE_GNU_READLINE)
+#include <readline/readline.h>
+#include <readline/history.h>
+#else
 #include <editline.h> // github.com/troglobit/editline
+#endif
+
 int el_hist_size = 4000;
 
 namespace SWC { namespace Utils { namespace shell {

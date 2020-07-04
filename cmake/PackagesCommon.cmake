@@ -2,7 +2,7 @@
 # Copyright Since 2019 SWC-DB© [author: Kashirin Alex kashirin.alex@gmail.com]
 # License details at <https://github.com/kashirin-alex/swc-db/#license>
 
-SET_DEPS(NAME "ASIO"  REQUIRED TRUE LIB_PATHS "" INC_PATHS "" STATIC  SHARED  INCLUDE asio.hpp)
+SET_DEPS(NAME "ASIO"  REQUIRED TRUE LIB_PATHS "" INC_PATHS ${ASIO_INCLUDE_PATH} STATIC  SHARED  INCLUDE asio.hpp)
 
 SET_DEPS(NAME "RE2" REQUIRED TRUE LIB_PATHS "" INC_PATHS "" STATIC libre2.a SHARED re2 INCLUDE re2/re2.h)
 #INSTALL_LIBS(lib ${RE2_LIBRARIES_SHARED})
@@ -27,8 +27,24 @@ SET_DEPS(
 )
 #INSTALL_LIBS(lib ${SSL_LIBRARIES_SHARED})
 
-SET_DEPS(NAME "EDITLINE" REQUIRED TRUE LIB_PATHS "" INC_PATHS "" STATIC libeditline.a SHARED editline INCLUDE editline.h)
 
+if(USE_GNU_READLINE)
+  SET_DEPS(
+    NAME "EDITLINE" 
+    REQUIRED TRUE 
+    LIB_PATHS "" INC_PATHS "" 
+    STATIC libreadline.a 
+    SHARED readline 
+    INCLUDE readline/readline.h readline/history.h)
+else()
+  SET_DEPS(
+    NAME "EDITLINE" 
+    REQUIRED TRUE 
+    LIB_PATHS "" INC_PATHS "" 
+    STATIC libeditline.a
+    SHARED editline 
+    INCLUDE editline.h)
+endif()
 
 
 find_package(FileSystems REQUIRED)
