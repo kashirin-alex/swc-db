@@ -53,12 +53,18 @@ endif ()
 
 # C flags
 SET (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_LARGEFILE_SOURCE -m64 -D_FILE_OFFSET_BITS=64")
+SET (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wformat -Wformat-security -Werror -Wfatal-errors")
 
 # C++ flags
 SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++2a")
 # SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -U__STRICT_ANSI__")
 # SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_REENTRANT")
 SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_LARGEFILE_SOURCE -m64 -D_FILE_OFFSET_BITS=64")
+SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DASIO_STANDALONE")
+
+#SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wformat -Wformat-security -Werror -Wfatal-errors") #  -Werror=format 
+#SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -Wall -Wformat -Wformat-security -Werror")
+#SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -Wno-error=unused-function")
 
 # -----------------  OPTIMIZATIONS and BUILD TYPE
 
@@ -70,12 +76,12 @@ endif ()
 
 message(STATUS "Optimization Level: " ${O_LEVEL})
 if(NOT O_LEVEL AND NOT O_LEVEL STREQUAL "0")
-  SET (CMAKE_CXX_FLAGS_RELEASE        "-O3 -DNDEBUG")
+  SET (CMAKE_CXX_FLAGS_RELEASE      "-O3 -DNDEBUG")
   SET (CMAKE_C_FLAGS_RELEASE        "-O3 -DNDEBUG")
 
 else()
-  SET (CMAKE_CXX_FLAGS_RELEASE        "-DNDEBUG")
-  SET (CMAKE_CXX_FLAGS_DEBUG          "")
+  SET (CMAKE_CXX_FLAGS_RELEASE      "-DNDEBUG")
+  SET (CMAKE_CXX_FLAGS_DEBUG        "")
   SET (CMAKE_C_FLAGS_RELEASE        "-DNDEBUG")
   SET (CMAKE_C_FLAGS_DEBUG          "")
 
@@ -128,16 +134,19 @@ endif ()
 
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
-set(LOOKUP_LIB_PATHS   
+set(LOOKUP_LIB_PATHS
+  ${LOOKUP_LIB_PATHS}
   /opt/local/lib 
   /usr/local/lib  
   /usr/lib  
   /lib 
 )
 
-set(LOOKUP_INCLUDE_PATHS 
+set(LOOKUP_INCLUDE_PATHS
+  ${LOOKUP_INCLUDE_PATHS}
   /opt/local/include 
   /usr/local/include 
+  /usr/local/lib
   /usr/include
 )      
 
