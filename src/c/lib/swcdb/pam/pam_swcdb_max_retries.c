@@ -122,7 +122,7 @@ bool swcdb_pam_confirm_state(swc_pam_cfg* cfg, const char* pam_rhost) {
   if(!swcdb_pam_connect(&client, cfg))
     return allowed;
   
-  gchar* key;
+  gchar* key = NULL;
   gint len = g_snprintf(key, 256, cfg->key, pam_rhost);
   if(!len) {
     swcdb_pam_disconnect(&client, cfg);
@@ -130,12 +130,14 @@ bool swcdb_pam_confirm_state(swc_pam_cfg* cfg, const char* pam_rhost) {
   }
   
 
-  gchar* sql;
+  gchar* sql = NULL;
   len = g_snprintf(sql, 1024,
     "select where col('%s')=(cells=(key=%s limit=1))", 
     cfg->column, key
   );
-  if(!len) {
+  if(!len || !sql) {
+    if(sql)
+      g_free(sql);
     g_free(key);
     swcdb_pam_disconnect(&client, cfg);
     return allowed;
@@ -153,7 +155,7 @@ bool swcdb_pam_confirm_state(swc_pam_cfg* cfg, const char* pam_rhost) {
     if(cells->len > 0) {
       swcdb_thriftCell* cell = g_ptr_array_index(cells, 0);
       char *last;
-      tries = strtoll(cell->v->data, &last, 0);
+      tries = strtoll((const char*)cell->v->data, &last, 0);
       g_clear_object(&cell);
     }
 
@@ -181,8 +183,9 @@ bool swcdb_pam_confirm_state(swc_pam_cfg* cfg, const char* pam_rhost) {
 
   gchar* update;
   len = g_snprintf(update, 1024,
-    "update %scell(INSERT,'%s', %s, '', '%s%d')", 
-    cfg->column, key, 
+    "update cell(INSERT,'%s', %s, '', '%s%d')", 
+    cfg->column, 
+    key, 
     adj ? "=" : "+", 
     adj ? cfg->maxtries : 1
   );
@@ -222,9 +225,11 @@ void swcdb_pam_reduce_attempt(swc_pam_cfg* cfg, const char* pam_rhost) {
   if(!swcdb_pam_connect(&client, cfg))
     return;
 
-  gchar* key;
+  gchar* key = NULL;
   gint len = g_snprintf(key, 256, cfg->key, pam_rhost);
-  if(!len) {
+  if(!len || !key) {
+    if(key)
+      g_free(key);
     swcdb_pam_disconnect(&client, cfg);
     return;
   }

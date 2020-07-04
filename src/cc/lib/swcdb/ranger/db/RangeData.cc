@@ -66,7 +66,7 @@ void read(int& err, const uint8_t **ptr, size_t* remain,
   cellstores.decode(err, ptr, remain);
 
   if(*ptr != ptr_end){
-    SWC_LOGF(LOG_WARN, "decode overrun remain=%d", remain);
+    SWC_LOGF(LOG_WARN, "decode overrun remain=%lu", *remain);
     cellstores.clear();
   }
 }

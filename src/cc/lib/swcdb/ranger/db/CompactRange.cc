@@ -241,7 +241,7 @@ void CompactRange::response(int& err) {
   size_t c = total_cells ? total_cells.load() : 1;
   profile.finished();
   SWC_LOGF(LOG_INFO, 
-    "COMPACT-PROGRESS %d/%d blocks=%lld avg(i=%lld e=%lld w=%lld)us %s err=%d",
+    "COMPACT-PROGRESS %lu/%lu blocks=%lu avg(i=%ld e=%ld w=%ld)us %s err=%d",
     range->cfg->cid, range->rid,
     total_blocks.load(), 
     (time_intval / total_blocks)/1000, 
@@ -584,7 +584,7 @@ void CompactRange::finalize() {
     }
     if(!ok)
       SWC_LOGF(LOG_WARN, 
-        "COMPACT-SPLIT %d/%d fail(versions-over-cs) cs-count=%d",
+        "COMPACT-SPLIT %lu/%lu fail(versions-over-cs) cs-count=%lu",
         range->cfg->cid, range->rid, cellstores.size());
   }
   
@@ -601,7 +601,7 @@ void CompactRange::mngr_create_range(uint32_t split_at) {
      const Protocol::Mngr::Params::RangeCreateRsp& rsp) {
       
       SWC_LOGF(LOG_DEBUG, 
-        "Compact::Mngr::Req::RangeCreate err=%d(%s) %d/%d", 
+        "Compact::Mngr::Req::RangeCreate err=%d(%s) %lu/%lu", 
         rsp.err, Error::get_text(rsp.err), cid, rsp.rid);
 
       if(rsp.err && 
@@ -629,7 +629,7 @@ void CompactRange::mngr_remove_range(const RangePtr& new_range) {
      const Protocol::Mngr::Params::RangeRemoveRsp& rsp) {
       
       SWC_LOGF(LOG_DEBUG, 
-        "Compact::Mngr::Req::RangeRemove err=%d(%s) %d/%d", 
+        "Compact::Mngr::Req::RangeRemove err=%d(%s) %lu/%lu", 
         rsp.err, Error::get_text(rsp.err), 
         new_range->cfg->cid, new_range->rid);
       
@@ -653,14 +653,14 @@ void CompactRange::split(rid_t new_rid, uint32_t split_at) {
     return quit();
 
   int64_t ts = Time::now_ns();
-  SWC_LOGF(LOG_INFO, "COMPACT-SPLIT %d/%d new-rid=%d", 
+  SWC_LOGF(LOG_INFO, "COMPACT-SPLIT %lu/%lu new-rid=%lu", 
            range->cfg->cid, range->rid, new_rid);
 
   auto new_range = col->get_range(err, new_rid, true);
   if(!err)
     new_range->create_folders(err);
   if(err) {
-    SWC_LOGF(LOG_INFO, "COMPACT-SPLIT cancelled err=%d %d/%d new-rid=%d", 
+    SWC_LOGF(LOG_INFO, "COMPACT-SPLIT cancelled err=%d %lu/%lu new-rid=%lu", 
             err, range->cfg->cid, range->rid, new_rid);
     err = Error::OK;
     col->remove(err, new_rid, false);
@@ -719,7 +719,7 @@ void CompactRange::split(rid_t new_rid, uint32_t split_at) {
          const Protocol::Mngr::Params::RangeUnloadedRsp& rsp) {
       
           SWC_LOGF(LOG_DEBUG, 
-            "Compact::Mngr::Req::RangeUnloaded err=%d(%s) %d/%d", 
+            "Compact::Mngr::Req::RangeUnloaded err=%d(%s) %lu/%lu", 
             rsp.err, Error::get_text(rsp.err), cid, new_rid);
           if(rsp.err && 
              rsp.err != Error::COLUMN_NOT_EXISTS &&
@@ -732,7 +732,7 @@ void CompactRange::split(rid_t new_rid, uint32_t split_at) {
     }
   );
 
-  SWC_LOGF(LOG_INFO, "COMPACT-SPLITTED %d/%d took=%lldns new-end=%s", 
+  SWC_LOGF(LOG_INFO, "COMPACT-SPLITTED %lu/%lu took=%ldns new-end=%s", 
             range->cfg->cid, range->rid, Time::now_ns() - ts,
             cellstores.back()->interval.key_end.to_string().c_str());
   finished(true);
@@ -754,7 +754,7 @@ void CompactRange::completion() {
   auto ptr = shared();
   for(int chk = 0; ptr.use_count() > 2; ++chk) { // insure sane
     if(chk == 3000) {
-      SWC_LOGF(LOG_INFO, "COMPACT-STOPPING %d/%d use_count=%d", 
+      SWC_LOGF(LOG_INFO, "COMPACT-STOPPING %lu/%lu use_count=%ld", 
                 range->cfg->cid, range->rid, ptr.use_count());
       chk = 0;
     }
@@ -766,8 +766,8 @@ void CompactRange::finished(bool clear) {
   completion();
 
   SWC_LOGF(LOG_INFO, 
-    "COMPACT-FINISHED %d/%d cells=%lld blocks=%lld "
-    "(total=%lld intval=%lld encode=%lld write=%lld)ms %s",
+    "COMPACT-FINISHED %lu/%lu cells=%lu blocks=%lu "
+    "(total=%ld intval=%ld encode=%ld write=%ld)ms %s",
     range->cfg->cid, range->rid, total_cells.load(), total_blocks.load(),
     (Time::now_ns() - profile.ts_start)/1000000, 
     time_intval/1000000, time_encode/1000000, time_write/1000000,
@@ -791,7 +791,7 @@ void CompactRange::quit() {
     Env::FsInterface::interface()->rmdir(
       err, range->get_path(Range::CELLSTORES_TMP_DIR));
   }
-  SWC_LOGF(LOG_INFO, "COMPACT-ERROR cancelled %d/%d", 
+  SWC_LOGF(LOG_INFO, "COMPACT-ERROR cancelled %lu/%lu", 
            range->cfg->cid, range->rid);
 
   compactor->compacted(range);

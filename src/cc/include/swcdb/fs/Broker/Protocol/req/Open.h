@@ -47,7 +47,7 @@ class Open : public Base {
       fs->fd_open_incr();
     }
 
-    SWC_LOGF(LOG_DEBUG, "open %s error='%d' fds-open=%lld", 
+    SWC_LOGF(LOG_DEBUG, "open %s error='%d' fds-open=%lu", 
              smartfd->to_string().c_str(), error, fs->fds_open());
     
     cb(error, smartfd);

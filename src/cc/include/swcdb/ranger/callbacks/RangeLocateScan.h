@@ -142,7 +142,7 @@ class RangeLocateScan : public ReqScan {
     }
     
     profile.finished();
-    SWC_LOGF(LOG_DEBUG, "Range(%lld/%lld) err=%d(%s) flags(%d) Locator-%s", 
+    SWC_LOGF(LOG_DEBUG, "Range(%lu/%lu) err=%d(%s) flags(%d) Locator-%s", 
       range->cfg->cid, range->rid, err, Error::get_text(err),
       (int)flags, profile.to_string().c_str());
   }

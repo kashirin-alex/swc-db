@@ -42,7 +42,7 @@ void Read::load_header(int& err, FS::SmartFd::Ptr& smartfd,
   while(err != Error::FS_EOF) {
 
     if(err) {
-      SWC_LOGF(LOG_WARN, "Retrying to err=%d(%s) %s blk-offset=%lld", 
+      SWC_LOGF(LOG_WARN, "Retrying to err=%d(%s) %s blk-offset=%lu", 
         err, Error::get_text(err), smartfd->to_string().c_str(),
         header.offset_data);
       fs_if->close(err, smartfd);

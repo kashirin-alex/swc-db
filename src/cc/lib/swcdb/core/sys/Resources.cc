@@ -71,9 +71,9 @@ void Resources::checker() {
 
   if(size_t bytes = need_ram()) {
     if(release) {
-      SWC_LOGF(LOG_DEBUG, "Resources release=%lld", bytes);
+      SWC_LOGF(LOG_DEBUG, "Resources release=%lu", bytes);
       size_t released_bytes = release(bytes);
-      SWC_LOGF(LOG_DEBUG, "Resources released=%lld", released_bytes);
+      SWC_LOGF(LOG_DEBUG, "Resources released=%lu", released_bytes);
       if(released_bytes >= bytes)
         return schedule();
     }

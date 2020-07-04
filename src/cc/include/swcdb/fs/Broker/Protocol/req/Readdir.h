@@ -46,7 +46,7 @@ class Readdir : public Base {
       params.get_listing(listing);
     }
 
-    SWC_LOGF(LOG_DEBUG, "readdir path='%s' error='%d' sz='%d'",
+    SWC_LOGF(LOG_DEBUG, "readdir path='%s' error='%d' sz='%lu'",
                name.c_str(), error, listing.size());
     
     cb(error, listing);

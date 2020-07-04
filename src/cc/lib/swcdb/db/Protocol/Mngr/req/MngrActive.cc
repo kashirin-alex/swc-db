@@ -70,8 +70,8 @@ bool MngrActive::run(uint32_t timeout) {
   if(hosts.empty()) {
     Env::Clients::get()->mngrs_groups->hosts(role, cid, hosts, group_host);
     if(hosts.empty()) {
-      SWC_LOGF(LOG_WARN, "Empty cfg of mngr.host for role=%d cid=%d", 
-                role, cid);
+      SWC_LOGF(LOG_WARN, "Empty cfg of mngr.host for role=%d cid=%lu", 
+               role, cid);
       run_within(5000);
       return false;
     }

@@ -22,7 +22,7 @@ void rgr_mng_id(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     req_params.decode(&ptr, &remain);
 
     if(!Env::Mngr::role()->is_active_role(Types::MngrRole::RANGERS)) {
-      SWC_LOGF(LOG_DEBUG, "MNGR NOT ACTIVE, flag=%d rgrid=%d %s",
+      SWC_LOGF(LOG_DEBUG, "MNGR NOT ACTIVE, flag=%d rgrid=%lu %s",
                 req_params.flag, req_params.rgrid, 
                 req_params.to_string().c_str());
         
@@ -40,7 +40,7 @@ void rgr_mng_id(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
       case Params::RgrMngId::Flag::RS_REQ: {
         rgrid_t rgrid = rangers->rgr_set_id(req_params.endpoints);
 
-        SWC_LOGF(LOG_DEBUG, "RS_REQ, rgrid=%d %s",
+        SWC_LOGF(LOG_DEBUG, "RS_REQ, rgrid=%lu %s",
                   req_params.rgrid, req_params.to_string().c_str());
 
         auto cbp = CommBuf::make(
@@ -53,12 +53,12 @@ void rgr_mng_id(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
 
       case Params::RgrMngId::Flag::RS_ACK: {
         if(rangers->rgr_ack_id(req_params.rgrid, req_params.endpoints)){
-          SWC_LOGF(LOG_DEBUG, "RS_ACK, rgrid=%d %s",
+          SWC_LOGF(LOG_DEBUG, "RS_ACK, rgrid=%lu %s",
                     req_params.rgrid, req_params.to_string().c_str());
           conn->response_ok(ev);
 
         } else {
-          SWC_LOGF(LOG_DEBUG, "RS_ACK(MNGR_REREQ) rgrid=%d %s",
+          SWC_LOGF(LOG_DEBUG, "RS_ACK(MNGR_REREQ) rgrid=%lu %s",
                     req_params.rgrid, req_params.to_string().c_str());
             
           auto cbp = CommBuf::make(
@@ -72,7 +72,7 @@ void rgr_mng_id(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
 
       case Params::RgrMngId::Flag::RS_DISAGREE: {
         rgrid_t rgrid = rangers->rgr_had_id(req_params.rgrid, req_params.endpoints);
-        SWC_LOGF(LOG_DEBUG, "RS_DISAGREE, rgr_had_id=%d > rgrid=%d %s", 
+        SWC_LOGF(LOG_DEBUG, "RS_DISAGREE, rgr_had_id=%lu > rgrid=%lu %s", 
                   req_params.rgrid, rgrid, req_params.to_string().c_str());
 
         if(rgrid) {
@@ -90,7 +90,7 @@ void rgr_mng_id(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
       case Params::RgrMngId::Flag::RS_SHUTTINGDOWN: {
         rangers->rgr_shutdown(req_params.rgrid, req_params.endpoints);
 
-        SWC_LOGF(LOG_DEBUG, "RS_SHUTTINGDOWN, rgrid=%d %s",
+        SWC_LOGF(LOG_DEBUG, "RS_SHUTTINGDOWN, rgrid=%lu %s",
                   req_params.rgrid, req_params.to_string().c_str());
       
         auto cbp = CommBuf::make(

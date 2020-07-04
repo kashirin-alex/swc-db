@@ -333,7 +333,7 @@ void Fragment::load_cells(int& err, DB::Cells::MutableVec& cells) {
         cell.read(&buf, &remain);
 
       } catch(std::exception) {
-        SWC_LOGF(LOG_ERROR, "Cell trunclated at count=%llu/%llu remain=%llu, %s",
+        SWC_LOGF(LOG_ERROR, "Cell trunclated at count=%lu/%u remain=%lu, %s",
                 count, cells_count, remain, to_string().c_str());
         break;
       }
@@ -364,7 +364,7 @@ void Fragment::split(int& err, const DB::Cell::Key& key,
 
       } catch(...) {
         SWC_LOGF(LOG_ERROR, 
-          "Cell trunclated at count=%llu/%llu remain=%llu, %s",
+          "Cell trunclated at count=%lu/%u remain=%lu, %s",
           count, cells_count, remain, to_string().c_str());
         break;
       }

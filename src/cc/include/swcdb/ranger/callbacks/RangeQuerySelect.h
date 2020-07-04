@@ -82,7 +82,7 @@ class RangeQuerySelect : public ReqScan {
     }
 
     profile.finished();
-    SWC_LOGF(LOG_INFO, "Range(%lld/%lld) err=%d(%s) Select-%s", 
+    SWC_LOGF(LOG_INFO, "Range(%lu/%lu) err=%d(%s) Select-%s", 
       range->cfg->cid, range->rid, err, Error::get_text(err),
       profile.to_string().c_str());
   }

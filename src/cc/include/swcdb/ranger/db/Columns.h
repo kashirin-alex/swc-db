@@ -155,7 +155,7 @@ class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
         }
         if(validation)
           SWC_LOGF(LOG_WARN, 
-            "Unload-Validation cid=%d remained", col->cfg.cid);
+            "Unload-Validation cid=%lu remained", col->cfg.cid);
         col->unload_all(to_unload, cb);
       }
       r_promise.get_future().wait();

@@ -147,7 +147,7 @@ size_t Block::load_cells(const uint8_t* buf, size_t remain,
       
     } catch(...) {
       SWC_LOGF(LOG_ERROR, 
-        "Cell trunclated at count=%llu/%llu remain=%llu %s < key <= %s",
+        "Cell trunclated at count=%lu/%lu remain=%lu %s < key <= %s",
         count, avail, remain, 
         m_prev_key_end.to_string().c_str(), m_key_end.to_string().c_str());
       break;

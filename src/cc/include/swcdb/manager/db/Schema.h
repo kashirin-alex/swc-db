@@ -116,7 +116,7 @@ DB::Schema::Ptr load(int &err, cid_t cid,
   }
 
   if(schema == nullptr && err != Error::SERVER_SHUTTING_DOWN && recover){
-    SWC_LOGF(LOG_WARN, "Missing Column(cid=%d) Schema", cid);
+    SWC_LOGF(LOG_WARN, "Missing Column(cid=%lu) Schema", cid);
 
     schema = DB::Schema::make();
     schema->cid = cid;
@@ -143,7 +143,7 @@ DB::Schema::Ptr load(int &err, cid_t cid,
       schema->col_name.append(std::to_string(cid));
     }
 
-    SWC_LOGF(LOG_WARN, "Missing Column(cid=%d) Schema set to %s", 
+    SWC_LOGF(LOG_WARN, "Missing Column(cid=%lu) Schema set to %s", 
               cid, schema->to_string().c_str());
     save(err, schema, replication);
   }

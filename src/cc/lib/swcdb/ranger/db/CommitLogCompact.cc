@@ -69,7 +69,7 @@ void Compact::Group::load() {
     frag->release();
     if(err)
       SWC_LOGF(LOG_ERROR, 
-        "COMPACT-LOG-ERROR %d/%d err=%d(%s) %s", 
+        "COMPACT-LOG-ERROR %lu/%lu err=%d(%s) %s", 
         compact->log->range->cfg->cid, compact->log->range->rid,
         err, Error::get_text(err), frag->to_string().c_str()
       );
@@ -204,7 +204,7 @@ Compact::Compact(Fragments* log, int repetition,
   m_workers = m_groups.size();
   
   SWC_LOGF(LOG_INFO, 
-    "COMPACT-LOG-START %d/%d w=%lld frags=%lld(%lld)/%lld repetition=%d",
+    "COMPACT-LOG-START %lu/%lu w=%lu frags=%lu(%lu)/%lu repetition=%d",
     log->range->cfg->cid, log->range->rid, 
     m_groups.size(), nfrags, ngroups, log->size(), repetition
   );
@@ -221,8 +221,8 @@ void Compact::finished(Group* group, size_t cells_count) {
   m_mutex.unlock();
 
   SWC_LOGF(LOG_INFO,
-    "COMPACT-LOG-PROGRESS %d/%d running=%d "
-    "worker=%d %lldus cells=%lld(%lldns)",
+    "COMPACT-LOG-PROGRESS %lu/%lu running=%d "
+    "worker=%u %ldus cells=%lu(%ldns)",
     log->range->cfg->cid, log->range->rid, running, 
     group->worker, (Time::now_ns() - group->ts)/1000,
     cells_count, cells_count ? (Time::now_ns() - group->ts)/cells_count: 0
@@ -239,8 +239,8 @@ void Compact::finished(Group* group, size_t cells_count) {
 
   auto took = Time::now_ns() - ts;
   SWC_LOGF(LOG_INFO, 
-    "COMPACT-LOG-FINISH %d/%d w=%lld frags=%lld(%lld)/%lld"
-    " repetition=%d %lldns",
+    "COMPACT-LOG-FINISH %lu/%lu w=%ld frags=%ld(%ld)/%ld"
+    " repetition=%ld %ldns",
     log->range->cfg->cid, log->range->rid, 
     m_groups.size(), nfrags, ngroups, log->size(), repetition, took
   );

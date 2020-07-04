@@ -96,7 +96,7 @@ size_t FileSystemLocal::length(int& err, const std::string& name) {
     len = 0;
     return len;
   }
-  SWC_LOGF(LOG_DEBUG, "length len='%lld' path='%s'", len, abspath.c_str());
+  SWC_LOGF(LOG_DEBUG, "length len='%lu' path='%s'", len, abspath.c_str());
   return len;
 }
 
@@ -195,7 +195,7 @@ void FileSystemLocal::create(int& err, SmartFd::Ptr& smartfd,
                              int64_t blksz) {
   std::string abspath;
   get_abspath(smartfd->filepath(), abspath);
-  SWC_LOGF(LOG_DEBUG, "create %s bufsz=%d replication=%d blksz=%lld",
+  SWC_LOGF(LOG_DEBUG, "create %s bufsz=%d replication=%d blksz=%ld",
             smartfd->to_string().c_str(), bufsz, replication, blksz);
 
   int oflags = O_WRONLY | O_CREAT
@@ -221,7 +221,7 @@ void FileSystemLocal::create(int& err, SmartFd::Ptr& smartfd,
     return;
   }
   fd_open_incr();
-  SWC_LOGF(LOG_DEBUG, "created %s bufsz=%d replication=%d blksz=%lld",
+  SWC_LOGF(LOG_DEBUG, "created %s bufsz=%d replication=%d blksz=%ld",
             smartfd->to_string().c_str(), bufsz, replication, blksz);
 
 #if defined(__APPLE__)
@@ -274,7 +274,7 @@ void FileSystemLocal::open(int& err, SmartFd::Ptr& smartfd, int32_t bufsz) {
   
 size_t FileSystemLocal::read(int& err, SmartFd::Ptr& smartfd, 
                              void *dst, size_t amount) {
-  SWC_LOGF(LOG_DEBUG, "read %s amount=%lld", 
+  SWC_LOGF(LOG_DEBUG, "read %s amount=%lu", 
             smartfd->to_string().c_str(), amount);
   ssize_t nread = 0;
   errno = 0;
@@ -283,7 +283,7 @@ size_t FileSystemLocal::read(int& err, SmartFd::Ptr& smartfd,
   uint64_t offset;
   if ((offset = (uint64_t)lseek(smartfd->fd(), 0, SEEK_CUR)) == (uint64_t)-1) {
     err = errno;
-    SWC_LOGF(LOG_ERROR, "read, lseek failed: %d(%s), %s offset=%llu", 
+    SWC_LOGF(LOG_ERROR, "read, lseek failed: %d(%s), %s offset=%lu", 
               errno, strerror(errno), smartfd->to_string().c_str(), offset);
     return nread;
   }
@@ -299,7 +299,7 @@ size_t FileSystemLocal::read(int& err, SmartFd::Ptr& smartfd,
     if(nread != amount)
       err = Error::FS_EOF;
     smartfd->pos(smartfd->pos()+nread);
-    SWC_LOGF(LOG_DEBUG, "read(ed) %s amount=%llu eof=%d", 
+    SWC_LOGF(LOG_DEBUG, "read(ed) %s amount=%lu eof=%d", 
               smartfd->to_string().c_str(), nread, err == Error::FS_EOF);
   }
   return nread;
@@ -308,7 +308,7 @@ size_t FileSystemLocal::read(int& err, SmartFd::Ptr& smartfd,
 size_t FileSystemLocal::pread(int& err, SmartFd::Ptr& smartfd, 
                               uint64_t offset, void *dst, 
                               size_t amount) {
-  SWC_LOGF(LOG_DEBUG, "pread %s offset=%llu amount=%lld", 
+  SWC_LOGF(LOG_DEBUG, "pread %s offset=%lu amount=%lu", 
             smartfd->to_string().c_str(), offset, amount);
 
   errno = 0;
@@ -322,7 +322,7 @@ size_t FileSystemLocal::pread(int& err, SmartFd::Ptr& smartfd,
     if(nread != amount)
       err = Error::FS_EOF;
     smartfd->pos(offset+nread);
-    SWC_LOGF(LOG_DEBUG, "pread(ed) %s amount=%llu  eof=%d", 
+    SWC_LOGF(LOG_DEBUG, "pread(ed) %s amount=%lu  eof=%d", 
               smartfd->to_string().c_str(), nread, err == Error::FS_EOF);
   }
   return nread;
@@ -330,7 +330,7 @@ size_t FileSystemLocal::pread(int& err, SmartFd::Ptr& smartfd,
 
 size_t FileSystemLocal::append(int& err, SmartFd::Ptr& smartfd, 
                                StaticBuffer& buffer, Flags flags) {
-  SWC_LOGF(LOG_DEBUG, "append %s amount=%lld flags=%d", 
+  SWC_LOGF(LOG_DEBUG, "append %s amount=%u flags=%d", 
             smartfd->to_string().c_str(), buffer.size, flags);
     
   ssize_t nwritten = 0;
@@ -364,13 +364,13 @@ size_t FileSystemLocal::append(int& err, SmartFd::Ptr& smartfd,
     }
   }
     
-  SWC_LOGF(LOG_DEBUG, "appended %s written=%llu", 
+  SWC_LOGF(LOG_DEBUG, "appended %s written=%ld", 
             smartfd->to_string().c_str(), nwritten);
   return nwritten;
 }
 
 void FileSystemLocal::seek(int& err, SmartFd::Ptr& smartfd, size_t offset) {
-  SWC_LOGF(LOG_DEBUG, "seek %s offset=%llu", 
+  SWC_LOGF(LOG_DEBUG, "seek %s offset=%lu", 
             smartfd->to_string().c_str(), offset);
     
   errno = 0;

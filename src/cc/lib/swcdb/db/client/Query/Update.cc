@@ -471,7 +471,7 @@ void Update::Locator::commit_data(
         profile.add(rsp.err);
 
         if(rsp.err) {
-          SWC_LOGF(LOG_DEBUG, "Commit RETRYING %s buffs=%d", 
+          SWC_LOGF(LOG_DEBUG, "Commit RETRYING %s buffs=%ld", 
                    rsp.to_string().c_str(), workload.use_count());
 
           if(rsp.err == Error::REQUEST_TIMEOUT) {

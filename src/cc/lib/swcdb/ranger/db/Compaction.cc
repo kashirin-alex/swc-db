@@ -154,7 +154,7 @@ void Compaction::compact(const RangePtr& range) {
   if(stopped() || !do_compaction)
     return compacted(range);
     
-  SWC_LOGF(LOG_INFO, "COMPACT-STARTED %d/%d %s", 
+  SWC_LOGF(LOG_INFO, "COMPACT-STARTED %lu/%lu %s", 
            range->cfg->cid, range->rid, need.c_str());
 
   auto req = std::make_shared<CompactRange>(
@@ -218,7 +218,7 @@ void Compaction::_schedule(uint32_t t_ms) {
       }
   }); 
 
-  SWC_LOGF(LOG_DEBUG, "Ranger compaction scheduled in ms=%d", t_ms);
+  SWC_LOGF(LOG_DEBUG, "Ranger compaction scheduled in ms=%u", t_ms);
 }
 
 

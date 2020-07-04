@@ -50,7 +50,7 @@ class ReadAll : public Base {
         buf.reset(new StaticBuffer(ev->data_ext));
     }
 
-    SWC_LOGF(LOG_DEBUG, "read-all %s amount='%d' error='%d'", 
+    SWC_LOGF(LOG_DEBUG, "read-all %s amount='%u' error='%d'", 
                           name.c_str(), 
                           error ? 0 : (buffer ? buffer->size : buf->size),
                           error);

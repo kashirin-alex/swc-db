@@ -236,7 +236,7 @@ size_t FileSystemHadoopJVM::length(int& err, const std::string& name) {
   len = fileInfo->mSize;
   hdfsFreeFileInfo(fileInfo, 1);
 
-  SWC_LOGF(LOG_DEBUG, "length len='%lld' path='%s'", len, abspath.c_str());
+  SWC_LOGF(LOG_DEBUG, "length len='%lu' path='%s'", len, abspath.c_str());
   return len;
 }
 
@@ -334,7 +334,7 @@ void FileSystemHadoopJVM::create(int& err, SmartFd::Ptr& smartfd,
                                  int64_t blksz) {
   std::string abspath;
   get_abspath(smartfd->filepath(), abspath);
-  SWC_LOGF(LOG_DEBUG, "create %s bufsz=%d replication=%d blksz=%lld",
+  SWC_LOGF(LOG_DEBUG, "create %s bufsz=%d replication=%d blksz=%ld",
             smartfd->to_string().c_str(), bufsz, replication, blksz);
 
   int oflags = O_WRONLY;
@@ -353,7 +353,7 @@ void FileSystemHadoopJVM::create(int& err, SmartFd::Ptr& smartfd,
     err = errno;
     hadoop_fd->file(fd);
     hadoop_fd->fd(-1);
-    SWC_LOGF(LOG_ERROR, "create failed: %d(%s) blksz=%lld, %s ", 
+    SWC_LOGF(LOG_ERROR, "create failed: %d(%s) blksz=%ld, %s ", 
               errno, strerror(errno), blksz, smartfd->to_string().c_str());
                 
     if(err == EACCES || err == ENOENT)
@@ -365,7 +365,7 @@ void FileSystemHadoopJVM::create(int& err, SmartFd::Ptr& smartfd,
   hadoop_fd->file(fd);
   hadoop_fd->fd(++m_nxt_fd);
   fd_open_incr();
-  SWC_LOGF(LOG_DEBUG, "created %s bufsz=%d replication=%d blksz=%lld",
+  SWC_LOGF(LOG_DEBUG, "created %s bufsz=%d replication=%d blksz=%ld",
             smartfd->to_string().c_str(), bufsz, replication, blksz);
 }
 
@@ -405,7 +405,7 @@ size_t FileSystemHadoopJVM::read(int& err, SmartFd::Ptr& smartfd,
 
   auto hadoop_fd = get_fd(smartfd);
     
-  SWC_LOGF(LOG_DEBUG, "read %s amount=%lld file-%lld", 
+  SWC_LOGF(LOG_DEBUG, "read %s amount=%lu file-%lu", 
             hadoop_fd->to_string().c_str(), 
             amount, (size_t) hadoop_fd->file());
   ssize_t nread = 0;
@@ -416,7 +416,7 @@ size_t FileSystemHadoopJVM::read(int& err, SmartFd::Ptr& smartfd,
   if ((offset = (uint64_t)hdfsTell(m_filesystem, hadoop_fd->file()))
                 == (uint64_t)-1) {
     err = errno;
-    SWC_LOGF(LOG_ERROR, "read, tell failed: %d(%s), %s offset=%llu", 
+    SWC_LOGF(LOG_ERROR, "read, tell failed: %d(%s), %s offset=%lu", 
               errno, strerror(errno), smartfd->to_string().c_str(), offset);
     return nread;
   }
@@ -432,7 +432,7 @@ size_t FileSystemHadoopJVM::read(int& err, SmartFd::Ptr& smartfd,
     if(nread != amount)
       err = Error::FS_EOF;
     hadoop_fd->pos(hadoop_fd->pos()+nread);
-    SWC_LOGF(LOG_DEBUG, "read(ed) %s amount=%llu eof=%d", 
+    SWC_LOGF(LOG_DEBUG, "read(ed) %s amount=%ld eof=%d", 
               smartfd->to_string().c_str(), nread, err == Error::FS_EOF);
   }
   return nread;
@@ -443,9 +443,9 @@ size_t FileSystemHadoopJVM::pread(int& err, SmartFd::Ptr& smartfd,
                                uint64_t offset, void *dst, size_t amount) {
 
   auto hadoop_fd = get_fd(smartfd);
-  SWC_LOGF(LOG_DEBUG, "pread %s offset=%llu amount=%lld file-%lld", 
+  SWC_LOGF(LOG_DEBUG, "pread %s offset=%lu amount=%lu file-%lu", 
             hadoop_fd->to_string().c_str(),
-            offset, amount, (size_t) hadoop_fd->file());
+            offset, amount, (size_t)hadoop_fd->file());
 
   errno = 0;
   ssize_t nread = (ssize_t)hdfsPread(
@@ -459,7 +459,7 @@ size_t FileSystemHadoopJVM::pread(int& err, SmartFd::Ptr& smartfd,
     if(nread != amount)
       err = Error::FS_EOF;
     hadoop_fd->pos(offset+nread);
-    SWC_LOGF(LOG_DEBUG, "pread(ed) %s amount=%llu eof=%d", 
+    SWC_LOGF(LOG_DEBUG, "pread(ed) %s amount=%lu eof=%d", 
                smartfd->to_string().c_str(), nread, err == Error::FS_EOF);
   }
   return nread;
@@ -469,7 +469,7 @@ size_t FileSystemHadoopJVM::append(int& err, SmartFd::Ptr& smartfd,
                                 StaticBuffer& buffer, Flags flags) {
 
   auto hadoop_fd = get_fd(smartfd);
-  SWC_LOGF(LOG_DEBUG, "append %s amount=%lld flags=%d", 
+  SWC_LOGF(LOG_DEBUG, "append %s amount=%u flags=%d", 
             hadoop_fd->to_string().c_str(), buffer.size, flags);
     
   ssize_t nwritten = 0;
@@ -479,7 +479,7 @@ size_t FileSystemHadoopJVM::append(int& err, SmartFd::Ptr& smartfd,
   if ((offset = (uint64_t)hdfsTell(m_filesystem, hadoop_fd->file()))
           == (uint64_t)-1) {
     err = errno;
-    SWC_LOGF(LOG_ERROR, "write, tell failed: %d(%s), %s offset=%llu", 
+    SWC_LOGF(LOG_ERROR, "write, tell failed: %d(%s), %s offset=%lu", 
               errno, strerror(errno), smartfd->to_string().c_str(), offset);
     return nwritten;
   }
@@ -503,7 +503,7 @@ size_t FileSystemHadoopJVM::append(int& err, SmartFd::Ptr& smartfd,
       return nwritten;
     }
   }
-  SWC_LOGF(LOG_DEBUG, "appended %s amount=%llu", 
+  SWC_LOGF(LOG_DEBUG, "appended %s amount=%ld", 
             smartfd->to_string().c_str(), nwritten);
   return nwritten;
 }
@@ -511,7 +511,7 @@ size_t FileSystemHadoopJVM::append(int& err, SmartFd::Ptr& smartfd,
 void FileSystemHadoopJVM::seek(int& err, SmartFd::Ptr& smartfd, size_t offset) {
 
   auto hadoop_fd = get_fd(smartfd);
-  SWC_LOGF(LOG_DEBUG, "seek %s offset=%llu", 
+  SWC_LOGF(LOG_DEBUG, "seek %s offset=%lu", 
             hadoop_fd->to_string().c_str(), offset);
     
   errno = 0;

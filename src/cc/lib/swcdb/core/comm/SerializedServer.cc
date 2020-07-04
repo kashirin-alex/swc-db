@@ -20,10 +20,10 @@ Acceptor::Acceptor(asio::ip::tcp::acceptor& acceptor,
   //non_blocking(true);
 
   SWC_LOGF(
-    LOG_INFO, "Listening On: [%s]:%d fd=%d %s", 
+    LOG_INFO, "Listening On: [%s]:%d fd=%lu %s", 
     local_endpoint().address().to_string().c_str(), 
     local_endpoint().port(), 
-    (ssize_t)native_handle(),
+    (size_t)native_handle(),
     is_plain ? "PLAIN" : "SECURE"
   );
   if(is_plain)
@@ -31,10 +31,10 @@ Acceptor::Acceptor(asio::ip::tcp::acceptor& acceptor,
 }
 
 void Acceptor::stop() {
-  SWC_LOGF(LOG_INFO, "Stopping to Listen On: [%s]:%d fd=%d", 
+  SWC_LOGF(LOG_INFO, "Stopping to Listen On: [%s]:%d fd=%lu", 
            local_endpoint().address().to_string().c_str(), 
            local_endpoint().port(), 
-           (ssize_t)native_handle());
+           (size_t)native_handle());
 
   if(is_open())
     close();

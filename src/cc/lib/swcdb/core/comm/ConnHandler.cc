@@ -76,7 +76,7 @@ void ConnHandler::new_connection() {
     endpoint_remote = sock->remote_endpoint();
     endpoint_local = sock->local_endpoint();
   }
-  SWC_LOGF(LOG_DEBUG, "new_connection local=%s, remote=%s, executor=%d",
+  SWC_LOGF(LOG_DEBUG, "new_connection local=%s, remote=%s, executor=%lu",
             endpoint_local_str().c_str(), endpoint_remote_str().c_str(),
             (size_t)&sock->get_executor().context());
   connected = true;
@@ -322,7 +322,7 @@ void ConnHandler::recved_header_pre(asio::error_code ec,
       ev->type = Event::Type::ERROR;
       ev->error = Error::REQUEST_TRUNCATED_HEADER;
       ev->header = CommHeader();
-      SWC_LOGF(LOG_WARN, "read, REQUEST HEADER_PREFIX_TRUNCATED: remain=%d", 
+      SWC_LOGF(LOG_WARN, "read, REQUEST HEADER_PREFIX_TRUNCATED: remain=%lu", 
                filled);
     }
   }
@@ -365,7 +365,8 @@ void ConnHandler::recved_header(const Event::Ptr& ev, asio::error_code ec,
     ev->type = Event::Type::ERROR;
     ev->error = Error::REQUEST_TRUNCATED_HEADER;
     ev->header = CommHeader();
-    SWC_LOGF(LOG_WARN, "read, REQUEST HEADER_TRUNCATED: len=%d", ev->header.header_len);
+    SWC_LOGF(LOG_WARN, "read, REQUEST HEADER_TRUNCATED: len=%d", 
+             ev->header.header_len);
   }
 
   if(ec || !ev->header.buffers)
@@ -417,7 +418,7 @@ void ConnHandler::recved_buffer(const Event::Ptr& ev, asio::error_code ec,
       ev->data.free();
       ev->data_ext.free();
       SWC_LOGF(LOG_WARN, "read, REQUEST PAYLOAD_TRUNCATED: n(%d) error=(%s) %s", 
-               (int16_t)n, ec.message().c_str(), ev->to_str().c_str());
+               n, ec.message().c_str(), ev->to_str().c_str());
     }
   }
   

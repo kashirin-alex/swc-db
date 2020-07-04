@@ -42,7 +42,7 @@ class Close : public Base {
     smartfd->pos(0);
     fs->fd_open_decr();
 
-    SWC_LOGF(LOG_DEBUG, "close %s error='%d' fds-open=%lld", 
+    SWC_LOGF(LOG_DEBUG, "close %s error='%d' fds-open=%lu", 
              smartfd->to_string().c_str(), error, fs->fds_open());
 
     cb(error, smartfd);

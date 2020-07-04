@@ -333,7 +333,7 @@ void Range::unload(const Callback::RangeUnloaded_t& cb, bool completely) {
     Env::FsInterface::interface()->remove(
       err, DB::RangeBase::get_path_ranger(m_path));
     
-  SWC_LOGF(LOG_INFO, "UNLOADED RANGE cid=%d rid=%d err=%d(%s)", 
+  SWC_LOGF(LOG_INFO, "UNLOADED RANGE cid=%lu rid=%lu err=%d(%s)", 
                       cfg->cid, rid, err, Error::get_text(err));
   cb(err);
 }

@@ -40,7 +40,7 @@ int main() {
       if(!schema->__isset_cid || schema->cid == 0) // unexplained (cid=0)
         continue;
       puts    ("schema: ");
-      printf  ("  cid=%d \n",   schema->cid);
+      printf  ("  cid=%lu \n",  (guint64)schema->cid);
       g_printf("  name=%s \n",  schema->col_name);
       g_clear_object(&schema);
     }

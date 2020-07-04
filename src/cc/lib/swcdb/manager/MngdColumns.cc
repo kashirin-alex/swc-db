@@ -259,7 +259,7 @@ bool MngdColumns::initialize() {
             if(!err)
               Env::Mngr::schemas()->add(err, schema);
             else
-              SWC_LOGF(LOG_ERROR, "Schema cid=%d err=%d(%s)", 
+              SWC_LOGF(LOG_ERROR, "Schema cid=%lu err=%d(%s)", 
                        cid, err, Error::get_text(err));
           }
           --pending;
@@ -401,7 +401,7 @@ void MngdColumns::remove(int &err, cid_t cid) {
     return remove(err, cid, 0);
   if(!col->do_remove())
     return;
-  SWC_LOGF(LOG_DEBUG, "DELETING cid=%d", cid);
+  SWC_LOGF(LOG_DEBUG, "DELETING cid=%lu", cid);
     
   std::vector<rgrid_t> rgrids;
   col->assigned(rgrids);

@@ -107,7 +107,7 @@ int run() {
       std::thread([server]{ server->serve(); }).detach();
 
       SWC_LOGF(
-        LOG_INFO, "Listening On: [%s]:%d fd=%d %s", 
+        LOG_INFO, "Listening On: [%s]:%d fd=%ld %s", 
         endpoint.address().to_string().c_str(), endpoint.port(), 
         (ssize_t)server->getServerTransport()->getSocketFD(),
         is_plain ? "PLAIN" : "SECURE"

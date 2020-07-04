@@ -21,7 +21,7 @@ class Create : public Base {
         const Callback::CreateCb_t& cb=0) 
         : fs(fs), smartfd(smartfd), cb(cb) {
     SWC_LOGF(LOG_DEBUG, 
-      "create %s bufsz(%d) replication(%d) blksz(%d)", 
+      "create %s bufsz(%d) replication(%d) blksz(%ld)", 
       smartfd->to_string().c_str(), bufsz, replication, blksz);
     
     cbp = CommBuf::make(
@@ -53,7 +53,7 @@ class Create : public Base {
       fs->fd_open_incr();
     }
 
-    SWC_LOGF(LOG_DEBUG, "create %s error='%d' fds-open=%lld", 
+    SWC_LOGF(LOG_DEBUG, "create %s error='%d' fds-open=%lu", 
              smartfd->to_string().c_str(), error, fs->fds_open());
     
     cb(error, smartfd);

@@ -26,7 +26,7 @@ Read::Ptr Read::make(int& err, const csid_t csid,
   }
   if(err)
     SWC_LOGF(LOG_ERROR, 
-      "CellStore load_blocks_index err=%d(%s) csid=%d range(%d/%d) %s", 
+      "CellStore load_blocks_index err=%d(%s) csid=%u range(%lu/%lu) %s", 
       err, Error::get_text(err), csid, range->cfg->cid, range->rid, 
       interval.to_string().c_str());
 

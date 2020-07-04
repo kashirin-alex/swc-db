@@ -81,7 +81,7 @@ FileSystem::~FileSystem() {
 
 void FileSystem::stop() {
   if(fds_count.load())
-    SWC_LOGF(LOG_WARN, "FS %s remained with open-fds=%lld", 
+    SWC_LOGF(LOG_WARN, "FS %s remained with open-fds=%lu", 
              to_string().c_str(), fds_count.load());  
 }
 
