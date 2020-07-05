@@ -165,10 +165,10 @@ void run(size_t thread_id){
     std::string data_end("567890");
     size_t file_blk = block_sz-data_start.length()-data_end.length();
     size_t written = 0;
-    for(int i=0;i<num_blocks;++i){
+    for(size_t i=0;i<num_blocks;++i){
       file_sz += block_sz;
       std::string data = data_start;
-      for(int i=0;i<file_blk;++i)
+      for(size_t i=0;i<file_blk;++i)
         data.append("+");
       data.append(data_end);
       StaticBuffer buffer(data.data(), data.length(), false);
@@ -295,7 +295,7 @@ void run(size_t thread_id){
 
     // pread >>
     size_t pread_offset = 0;
-    for(int i=0;i<num_blocks;++i){
+    for(size_t i=0;i<num_blocks;++i){
       err = Error::OK;
       uint8_t buf_start[data_start.length()];
       if (Env::FsInterface::fs()->pread(err, smartfd, pread_offset, buf_start, data_start.length())

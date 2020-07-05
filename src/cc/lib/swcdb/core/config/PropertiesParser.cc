@@ -315,7 +315,8 @@ void Parser::Options::free() {
 
 
 Parser::Parser(bool unregistered) 
-              : m_unregistered(unregistered), config("", 0, false) { 
+              : config("", 0, false),
+                m_unregistered(unregistered) { 
 }
   
 Parser::~Parser() {

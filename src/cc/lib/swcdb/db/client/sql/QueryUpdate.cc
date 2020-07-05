@@ -12,11 +12,11 @@ namespace SWC { namespace client { namespace SQL {
 
 namespace {
   
-  static const char*    TOKEN_CELL = "cell";
+  static const char     TOKEN_CELL[] = "cell";
   static const uint8_t  LEN_CELL = 4;
-  static const char*    TOKEN_UPDATE = "update";
+  static const char     TOKEN_UPDATE[] = "update";
   static const uint8_t  LEN_UPDATE = 6;
-  static const char*    TOKEN_LOAD = "load";
+  static const char     TOKEN_LOAD[] = "load";
   static const uint8_t  LEN_LOAD = 4;
 }
 
@@ -99,11 +99,11 @@ void QueryUpdate::parse_display_flags(uint8_t& display_flags) {
       if(found_space())
         continue;    
 
-      if(any = found_token("DISPLAY_SPECS", 13)) {
+      if((any = found_token("DISPLAY_SPECS", 13))) {
         display_flags |= DB::DisplayFlag::SPECS;
         continue;
       }
-      if(any = found_token("DISPLAY_STATS", 13)) {
+      if((any = found_token("DISPLAY_STATS", 13))) {
         display_flags |= DB::DisplayFlag::STATS;
         continue;
       }

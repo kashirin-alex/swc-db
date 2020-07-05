@@ -35,8 +35,8 @@ void Compact::Group::load_more() {
     if(error || compact->log->stopping) {
       more = false;
       m_read_idx = read_frags.size();
-    } else if(more = m_read_idx < read_frags.size() &&
-                     m_loading < Fragments::MAX_PRELOAD) {
+    } else if((more = m_read_idx < read_frags.size() &&
+                      m_loading < Fragments::MAX_PRELOAD)) {
       ++m_loading;
       frag = read_frags[m_read_idx];
       ++m_read_idx;

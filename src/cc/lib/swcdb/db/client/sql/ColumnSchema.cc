@@ -28,15 +28,15 @@ int ColumnSchema::parse(ColumnSchema::Func* func) {
       continue;
 
     if(!token_cmd) {
-      if(token_cmd = (found_token("add", 3)    || 
-                      found_token("create", 6))) {
+      if((token_cmd = (found_token("add", 3)    || 
+                       found_token("create", 6)))) {
         *func = Func::CREATE;
-      } else if(token_cmd = (found_token("modify", 6) || 
+      } else if((token_cmd = (found_token("modify", 6) || 
                               found_token("update", 6) || 
-                              found_token("change", 6))) {
+                              found_token("change", 6)))) {
         *func = Func::MODIFY;
-      } else if(token_cmd = (found_token("delete", 6) || 
-                             found_token("remove", 6))) {
+      } else if((token_cmd = (found_token("delete", 6) || 
+                              found_token("remove", 6)))) {
         *func = Func::DELETE;
       }
     }
@@ -56,7 +56,7 @@ int ColumnSchema::parse(ColumnSchema::Func func, bool token_cmd) {
     if(found_space())
       continue;
 
-    if(!token_cmd && 
+    if(!token_cmd && (
        (func == Func::CREATE && (found_token("add", 3)    || 
                                  found_token("create", 6))) || 
        (func == Func::MODIFY && (found_token("modify", 6) || 
@@ -64,7 +64,7 @@ int ColumnSchema::parse(ColumnSchema::Func func, bool token_cmd) {
                                  found_token("change", 6))) || 
        (func == Func::DELETE && (found_token("delete", 6) || 
                                  found_token("remove", 6)))
-      ) {   
+      )) {   
       token_cmd = true;
       continue;
     } 
@@ -110,7 +110,7 @@ void ColumnSchema::read_schema_options(ColumnSchema::Func func) {
     if(found_space())
       continue;    
 
-    if(any = found_token("cid", 3)) {
+    if((any = found_token("cid", 3))) {
       expect_eq();
       if(err)
         return;
@@ -121,7 +121,7 @@ void ColumnSchema::read_schema_options(ColumnSchema::Func func) {
       continue;
     }
 
-    if(any = found_token("name", 4)) {
+    if((any = found_token("name", 4))) {
       expect_eq();
       if(err)
         return;
@@ -130,7 +130,7 @@ void ColumnSchema::read_schema_options(ColumnSchema::Func func) {
       continue;
     }
 
-    if(any = found_token("type", 4)) {
+    if((any = found_token("type", 4))) {
       expect_eq();
       if(err)
         return;
@@ -143,7 +143,7 @@ void ColumnSchema::read_schema_options(ColumnSchema::Func func) {
       buff.clear();
       continue;
     }
-    if(any = found_token("seq", 3)) {
+    if((any = found_token("seq", 3))) {
       expect_eq();
       if(err)
         return;
@@ -157,7 +157,7 @@ void ColumnSchema::read_schema_options(ColumnSchema::Func func) {
       continue;
     }
 
-    if(any = found_token("revision", 8)) {
+    if((any = found_token("revision", 8))) {
       expect_eq();
       if(err)
         return;
@@ -165,7 +165,7 @@ void ColumnSchema::read_schema_options(ColumnSchema::Func func) {
       continue;
     }
 
-    if(any = found_token("cell_versions", 13)) {
+    if((any = found_token("cell_versions", 13))) {
       expect_eq();
       if(err)
         return;
@@ -173,7 +173,7 @@ void ColumnSchema::read_schema_options(ColumnSchema::Func func) {
       continue;
     }
 
-    if(any = found_token("cell_ttl", 8)) {
+    if((any = found_token("cell_ttl", 8))) {
       expect_eq();
       if(err)
         return;
@@ -181,7 +181,7 @@ void ColumnSchema::read_schema_options(ColumnSchema::Func func) {
       continue;
     }
 
-    if(any = found_token("blk_encoding", 12)) {
+    if((any = found_token("blk_encoding", 12))) {
       expect_eq();
       if(err)
         return;
@@ -195,7 +195,7 @@ void ColumnSchema::read_schema_options(ColumnSchema::Func func) {
       continue;
     }
 
-    if(any = found_token("blk_size", 8)) {
+    if((any = found_token("blk_size", 8))) {
       expect_eq();
       if(err)
         return;
@@ -203,7 +203,7 @@ void ColumnSchema::read_schema_options(ColumnSchema::Func func) {
       continue;
     }
 
-    if(any = found_token("blk_cells", 9)) {
+    if((any = found_token("blk_cells", 9))) {
       expect_eq();
       if(err)
         return;
@@ -211,7 +211,7 @@ void ColumnSchema::read_schema_options(ColumnSchema::Func func) {
       continue;
     }
 
-    if(any = found_token("cs_replication", 14)) {
+    if((any = found_token("cs_replication", 14))) {
       expect_eq();
       if(err)
         return;
@@ -219,7 +219,7 @@ void ColumnSchema::read_schema_options(ColumnSchema::Func func) {
       continue;
     }
 
-    if(any = found_token("cs_size", 7)) {
+    if((any = found_token("cs_size", 7))) {
       expect_eq();
       if(err)
         return;
@@ -227,7 +227,7 @@ void ColumnSchema::read_schema_options(ColumnSchema::Func func) {
       continue;
     }
 
-    if(any = found_token("cs_max", 6)) {
+    if((any = found_token("cs_max", 6))) {
       expect_eq();
       if(err)
         return;
@@ -235,7 +235,7 @@ void ColumnSchema::read_schema_options(ColumnSchema::Func func) {
       continue;
     }
 
-    if(any = found_token("compact", 7)) {
+    if((any = found_token("compact", 7))) {
       expect_eq();
       if(err)
         return;
@@ -243,7 +243,7 @@ void ColumnSchema::read_schema_options(ColumnSchema::Func func) {
       continue;
     }
 
-    if(any = found_token("log_rollout", 11)) {
+    if((any = found_token("log_rollout", 11))) {
       expect_eq();
       if(err)
         return;

@@ -56,13 +56,11 @@ void RangeQuerySelectReq::internal_decode(const uint8_t** bufp,
 
 RangeQuerySelectRsp::RangeQuerySelectRsp(
                 int err, bool reached_limit, uint64_t offset)
-              : err(err), 
-                reached_limit(reached_limit), offset(offset) {  
+              : err(err), reached_limit(reached_limit), offset(offset) {  
 }
 
 RangeQuerySelectRsp::RangeQuerySelectRsp(StaticBuffer& data)
-                    : data(data), 
-                      err(0), reached_limit(false), offset(0) {
+              : err(0), reached_limit(false), offset(0), data(data) {
 }
 
 RangeQuerySelectRsp::~RangeQuerySelectRsp() { }

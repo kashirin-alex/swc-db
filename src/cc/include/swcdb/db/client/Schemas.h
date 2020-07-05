@@ -41,8 +41,8 @@ class Schemas final : private DB::Schemas {
                 const std::vector<DB::Schemas::Pattern>& patterns,
                 std::vector<DB::Schema::Ptr>& schemas);
 
-  std::unordered_map<cid_t, uint64_t>  m_track; // .second {time,queue(promises)}
-  Property::V_GINT32::Ptr              m_expiry_ms;
+  std::unordered_map<cid_t, int64_t>  m_track; // .second {time,queue(promises)}
+  Property::V_GINT32::Ptr             m_expiry_ms;
   
 };
 

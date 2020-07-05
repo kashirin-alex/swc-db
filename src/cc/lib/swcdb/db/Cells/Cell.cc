@@ -102,8 +102,10 @@ void Cell::free() {
 }
 
 void Cell::set_time_order_desc(bool desc) {
-  if(desc)  control |= TS_DESC;
-  else      control != TS_DESC;
+  if(desc)  
+    control |= TS_DESC;
+  else if(control & TS_DESC)  
+    control -= TS_DESC;
 }
 
 void Cell::set_timestamp(int64_t ts) {
@@ -206,7 +208,7 @@ void Cell::read(const uint8_t** bufp, size_t* remainp, bool owner) {
     revision = timestamp;
 
   free();
-  if(vlen = Serialization::decode_vi32(bufp, remainp)) {
+  if((vlen = Serialization::decode_vi32(bufp, remainp))) {
     value = (own = owner) ? _value(*bufp) : (uint8_t *)*bufp;
     *bufp += vlen;
     SWC_ASSERT(*remainp >= vlen);
@@ -281,7 +283,7 @@ int64_t Cell::get_revision() const {
         : (control & REV_IS_TS ? timestamp : AUTO_ASSIGN );
 }
 
-bool Cell::has_expired(const uint64_t ttl) const {
+bool Cell::has_expired(const int64_t ttl) const {
   return ttl && control & HAVE_TIMESTAMP && Time::now_ns() >= timestamp + ttl;
 }
 

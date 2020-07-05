@@ -12,7 +12,10 @@ namespace SWC { namespace Manager {
 MngrRole::MngrRole(const EndPoints& endpoints)
     : m_local_endpoints(endpoints),
       m_local_token(endpoints_hash(m_local_endpoints)),
+      m_checkin(false),
       m_check_timer(asio::high_resolution_timer(*Env::IoCtx::io()->ptr())),
+      m_mngr_inchain(
+        std::make_shared<client::ConnQueue>(Env::IoCtx::io()->shared())),
       cfg_conn_probes(Env::Config::settings()->get<Property::V_GINT32>(
         "swc.mngr.role.connection.probes")),
       cfg_conn_timeout(Env::Config::settings()->get<Property::V_GINT32>(
@@ -21,15 +24,12 @@ MngrRole::MngrRole(const EndPoints& endpoints)
         "swc.mngr.role.connection.fallback.failures")),
       cfg_req_timeout(Env::Config::settings()->get<Property::V_GINT32>(
         "swc.mngr.role.request.timeout")),
-      cfg_check_interval(Env::Config::settings()->get<Property::V_GINT32>(
-        "swc.mngr.role.check.interval")),
       cfg_delay_updated(Env::Config::settings()->get<Property::V_GINT32>(
         "swc.mngr.role.check.delay.updated")),
+      cfg_check_interval(Env::Config::settings()->get<Property::V_GINT32>(
+        "swc.mngr.role.check.interval")),
       cfg_delay_fallback(Env::Config::settings()->get<Property::V_GINT32>(
-        "swc.mngr.role.check.delay.fallback")),
-      m_checkin(false),
-      m_mngr_inchain(
-        std::make_shared<client::ConnQueue>(Env::IoCtx::io()->shared())) {
+        "swc.mngr.role.check.delay.fallback")) {
   schedule_checkin(3000);
 }
 
@@ -311,7 +311,7 @@ void MngrRole::_apply_cfg() {
       ++pr;
       bool found = false;
       for(auto& host : m_states) {
-        if(found = has_endpoint(endpoints, host->endpoints)) {
+        if((found = has_endpoint(endpoints, host->endpoints))) {
           host->priority = pr;
           break;
         }
@@ -380,7 +380,7 @@ void MngrRole::fill_states() {
   fill_states(states, 0, nullptr);
 }
 
-void MngrRole::managers_checker(int next, size_t total, bool flw) {
+void MngrRole::managers_checker(size_t next, size_t total, bool flw) {
     // set manager followed(in-chain) local manager, incl. last's is first
   if(!total) {
     m_checkin = false;
@@ -392,7 +392,7 @@ void MngrRole::managers_checker(int next, size_t total, bool flw) {
     std::shared_lock lock(m_mutex);
     if(!m_run)
       return;
-    if(next == m_states.size())
+    if((next == m_states.size()))
       next = 0;
     host_chk = m_states.at(next);
     ++next;
@@ -424,8 +424,9 @@ void MngrRole::managers_checker(int next, size_t total, bool flw) {
   );
 }
 
-void MngrRole::manager_checker(MngrStatus::Ptr host, int next, size_t total, 
-                               bool flw, const ConnHandlerPtr& conn) {
+void MngrRole::manager_checker(MngrStatus::Ptr host, 
+                               size_t next, size_t total, bool flw, 
+                               const ConnHandlerPtr& conn) {
   if(!conn || !conn->is_open()) {
     if(host->state == Types::MngrState::ACTIVE
        && ++host->failures <= cfg_conn_fb_failures->get()) {   

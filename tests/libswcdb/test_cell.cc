@@ -186,7 +186,6 @@ int main() {
 
    std::cout << "\n---Write Serialized Buffer-----\n";
    
-   const uint8_t * ptr_state;
    SWC::DynamicBuffer buff;
 
    for(auto it=cells.begin();it<cells.end();++it){

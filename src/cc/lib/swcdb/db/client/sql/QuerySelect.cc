@@ -12,46 +12,42 @@ namespace SWC { namespace client { namespace SQL {
 
 namespace {
     
-  static const char*    TOKEN_SELECT = "select";
+  static const char     TOKEN_SELECT[] = "select";
   static const uint8_t  LEN_SELECT = 6;
-  static const char*    TOKEN_DUMP = "dump";
+  static const char     TOKEN_DUMP[] = "dump";
   static const uint8_t  LEN_DUMP = 4;
-  static const char*    TOKEN_WHERE = "where";
+  static const char     TOKEN_WHERE[] = "where";
   static const uint8_t  LEN_WHERE = 5;
-  static const char*    TOKEN_COL = "col";
+  static const char     TOKEN_COL[] = "col";
   static const uint8_t  LEN_COL = 3;
-  static const char*    TOKEN_CELLS = "cells";
+  static const char     TOKEN_CELLS[] = "cells";
   static const uint8_t  LEN_CELLS = 5;
 
   
-  static const char*    TOKEN_RANGE = "range";
+  static const char     TOKEN_RANGE[] = "range";
   static const uint8_t  LEN_RANGE = 5;
-  static const char*    TOKEN_KEY = "key";
+  static const char     TOKEN_KEY[] = "key";
   static const uint8_t  LEN_KEY = 3;
-  static const char*    TOKEN_VALUE = "value";
+  static const char     TOKEN_VALUE[] = "value";
   static const uint8_t  LEN_VALUE = 5;
-  static const char*    TOKEN_TIMESTAMP = "timestamp";
+  static const char     TOKEN_TIMESTAMP[] = "timestamp";
   static const uint8_t  LEN_TIMESTAMP = 9;
-  static const char*    TOKEN_OFFSET_KEY = "offset_key";
+  static const char     TOKEN_OFFSET_KEY[] = "offset_key";
   static const uint8_t  LEN_OFFSET_KEY = 10;
-  static const char*    TOKEN_OFFSET_REV = "offset_rev";
+  static const char     TOKEN_OFFSET_REV[] = "offset_rev";
   static const uint8_t  LEN_OFFSET_REV = 10;
 
-  static const char*    TOKEN_LIMIT = "limit";
+  static const char     TOKEN_LIMIT[] = "limit";
   static const uint8_t  LEN_LIMIT = 5;
-  static const char*    TOKEN_OFFSET = "offset";
+  static const char     TOKEN_OFFSET[] = "offset";
   static const uint8_t  LEN_OFFSET = 6;
-  static const char*    TOKEN_MAX_VERS = "max_versions";
+  static const char     TOKEN_MAX_VERS[] = "max_versions";
   static const uint8_t  LEN_MAX_VERS = 12;
-  static const char*    TOKEN_MAX_BUFF = "max_buffer";
+  static const char     TOKEN_MAX_BUFF[] = "max_buffer";
   static const uint8_t  LEN_MAX_BUFF = 10;
-  static const char*    TOKEN_LIMIT_BY = "limit_by";
-  static const uint8_t  LEN_LIMIT_BY = 8;
-  static const char*    TOKEN_OFFSET_BY = "offset_by";
-  static const uint8_t  LEN_OFFSET_BY = 9;
-  static const char*    TOKEN_ONLY_DELETES = "only_deletes";
+  static const char     TOKEN_ONLY_DELETES[] = "only_deletes";
   static const uint8_t  LEN_ONLY_DELETES = 12;
-  static const char*    TOKEN_ONLY_KEYS = "only_keys";
+  static const char     TOKEN_ONLY_KEYS[] = "only_keys";
   static const uint8_t  LEN_ONLY_KEYS = 9;
 
 }
@@ -99,7 +95,8 @@ int QuerySelect::parse_select() {
 
 int QuerySelect::parse_dump(std::string& filepath) {
 
-    "dump col='ID|NAME' into 'filepath.ext' where [cells=(Interval Flags) AND];";
+    //dump col='ID|NAME' into 'filepath.ext'
+    // where [cells=(Interval Flags) AND];
     bool token_cmd = false;
     bool token_col = false;
 
@@ -163,11 +160,11 @@ void QuerySelect::parse_output_flags(uint8_t& output_flags) {
       if(found_space())
         continue;    
 
-      if(any = found_token("OUTPUT_NO_TS", 12)) {
+      if((any = found_token("OUTPUT_NO_TS", 12))) {
         output_flags |= DB::OutputFlag::NO_TS;
         continue;
       }
-      if(any = found_token("OUTPUT_NO_VALUE", 15)) {
+      if((any = found_token("OUTPUT_NO_VALUE", 15))) {
         output_flags |= DB::OutputFlag::NO_VALUE;
         continue;
       }
@@ -181,23 +178,23 @@ void QuerySelect::parse_display_flags(uint8_t& display_flags) {
       if(found_space())
         continue;    
 
-      if(any = found_token("DISPLAY_TIMESTAMP", 17)) {
+      if((any = found_token("DISPLAY_TIMESTAMP", 17))) {
         display_flags |= DB::DisplayFlag::TIMESTAMP;
         continue;
       }
-      if(any = found_token("DISPLAY_DATETIME", 16)) {
+      if((any = found_token("DISPLAY_DATETIME", 16))) {
         display_flags |= DB::DisplayFlag::DATETIME;
         continue;
       }
-      if(any = found_token("DISPLAY_BINARY", 14)) {
+      if((any = found_token("DISPLAY_BINARY", 14))) {
         display_flags |= DB::DisplayFlag::BINARY;
         continue;
       }
-      if(any = found_token("DISPLAY_SPECS", 13)) {
+      if((any = found_token("DISPLAY_SPECS", 13))) {
         display_flags |= DB::DisplayFlag::SPECS;
         continue;
       }
-      if(any = found_token("DISPLAY_STATS", 13)) {
+      if((any = found_token("DISPLAY_STATS", 13))) {
         display_flags |= DB::DisplayFlag::STATS;
         continue;
       }
@@ -344,7 +341,7 @@ void QuerySelect::add_column(const std::vector<DB::Schemas::Pattern>& patterns,
   for(auto& schema : schemas) {
     found = false;
     for(auto& col : specs.columns) {
-      if(found = schema->cid == col->cid) 
+      if((found = schema->cid == col->cid)) 
         break;
     }
     if(!found)
@@ -813,7 +810,7 @@ void QuerySelect::read_flags(DB::Specs::Flags& flags) {
       if(found_space())
         continue;    
 
-      if(any = found_token(TOKEN_LIMIT, LEN_LIMIT)) {
+      if((any = found_token(TOKEN_LIMIT, LEN_LIMIT))) {
         expect_eq();
         int64_t v;
         read_int64_t(v, was_set = false);
@@ -823,7 +820,7 @@ void QuerySelect::read_flags(DB::Specs::Flags& flags) {
         }
         continue;
       }
-      if(any = found_token(TOKEN_OFFSET, LEN_OFFSET)) {
+      if((any = found_token(TOKEN_OFFSET, LEN_OFFSET))) {
         expect_eq();
         int64_t v;
         read_int64_t(v, was_set = false);
@@ -833,23 +830,23 @@ void QuerySelect::read_flags(DB::Specs::Flags& flags) {
         }
         continue;
       }
-      if(any = found_token(TOKEN_MAX_VERS, LEN_MAX_VERS)) {
+      if((any = found_token(TOKEN_MAX_VERS, LEN_MAX_VERS))) {
         expect_eq();
         read_uint32_t(flags.max_versions, flags.was_set);
         continue;
       }
-      if(any = found_token(TOKEN_MAX_BUFF, LEN_MAX_BUFF)) {
+      if((any = found_token(TOKEN_MAX_BUFF, LEN_MAX_BUFF))) {
         expect_eq();
         read_uint32_t(flags.max_buffer, flags.was_set);
         continue;
       }
 
-      if(any = found_token(TOKEN_ONLY_DELETES, LEN_ONLY_DELETES)) {
+      if((any = found_token(TOKEN_ONLY_DELETES, LEN_ONLY_DELETES))) {
         flags.set_only_deletes();
         flags.was_set = true;
         continue;
       }
-      if(any = found_token(TOKEN_ONLY_KEYS, LEN_ONLY_KEYS)) { 
+      if((any = found_token(TOKEN_ONLY_KEYS, LEN_ONLY_KEYS))) { 
         flags.set_only_keys();
         flags.was_set = true;
         continue;

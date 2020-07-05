@@ -45,7 +45,7 @@ class CompactRange final : public ReqScan {
   void initial_commitlog_done(CompactRange::Ptr ptr, 
                               const CommitLog::Compact* compact);
 
-  bool is_slow_req(uint64_t& median) const;
+  bool is_slow_req(int64_t& median) const;
 
   void commitlog(int tnum);
 

@@ -10,7 +10,7 @@
 ***
 
 
-### GUIDE - WIKI PAGES
+### GUIDE
 * ###### [SWC-DB WIKI PAGES](https://github.com/kashirin-alex/swc-db/wiki)
 
 

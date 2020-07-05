@@ -50,7 +50,7 @@ class Rgr : public Interface {
       host_or_ips.end()
     );
     
-    uint32_t port;
+    uint32_t port = 0;
     at = host_or_ips.find_first_of("|");
     if(at != std::string::npos) {
       std::string port_str = host_or_ips.substr(at+1);
@@ -58,7 +58,7 @@ class Rgr : public Interface {
       try {
         if((port = std::stol(port_str)) > UINT16_MAX )
           err = ERANGE;
-      } catch(std::exception e ) {
+      } catch(const std::exception& e ) {
         err = ERANGE;
       }
       if(err) {
@@ -67,6 +67,10 @@ class Rgr : public Interface {
       }
     } else {
       port = Env::Config::settings()->get_i16("swc.rgr.port");
+    }
+    if(!port) {
+      message.append("Bad value='"+std::to_string(port)+ "' for port\n");
+      return error(message);
     }
     
     std::vector<std::string> ips;
@@ -92,7 +96,7 @@ class Rgr : public Interface {
         message.append("Empty endpoints\n");
         err = EINVAL;
       }
-    } catch(Exception& e) {
+    } catch(const Exception& e) {
       err = e.code();
       message.append(e.what());
       message.append("\n");

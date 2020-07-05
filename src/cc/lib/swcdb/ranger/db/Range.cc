@@ -16,12 +16,12 @@ namespace SWC { namespace Ranger {
 
 Range::Range(const ColumnCfg* cfg, const rid_t rid)
             : cfg(cfg), rid(rid), 
-              m_path(DB::RangeBase::get_path(cfg->cid, rid)),
-              m_interval(cfg->key_seq),
-              m_state(State::NOTLOADED), 
               type(Types::MetaColumn::get_range_type(cfg->cid)),
               meta_cid(Types::MetaColumn::get_sys_cid(cfg->key_seq, type)),
               blocks(cfg->key_seq), 
+              m_path(DB::RangeBase::get_path(cfg->cid, rid)),
+              m_interval(cfg->key_seq),
+              m_state(State::NOTLOADED), 
               m_compacting(COMPACT_NONE), m_require_compact(false),
               m_inbytes(0) { 
 }
@@ -597,7 +597,7 @@ void Range::loaded_ack(int err, const ResponseCallback::Ptr& cb) {
 bool Range::wait(uint8_t from_state) {
   bool waited;
   std::unique_lock lock_wait(m_mutex);
-  if(waited = (m_compacting >= from_state)) {
+  if((waited = (m_compacting >= from_state))) {
     m_cv.wait(
       lock_wait, 
       [from_state, &compacting=m_compacting]() {

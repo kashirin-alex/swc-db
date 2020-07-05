@@ -209,9 +209,11 @@ void Key::remove(uint32_t idx, bool recursive) {
 }
 
 std::string Key::get_string(uint32_t idx) const {
-  const char* fraction;
-  uint32_t length;
+  const char* fraction = 0;
+  uint32_t length = 0;
   get(idx, &fraction, &length);
+  if(!fraction)
+    length = 0;
   return std::string(fraction, length);
 }
 
@@ -225,8 +227,6 @@ void Key::get(uint32_t idx, const char** fraction, uint32_t* length) const {
       return;
     }
   }
-  *fraction = 0;
-  *length = 0;
 }
 
 bool Key::equal(const Key& other) const {
@@ -254,7 +254,7 @@ void Key::encode(uint8_t** bufp) const {
 
 void Key::decode(const uint8_t** bufp, size_t* remainp, bool owner) {
   free();
-  if(count = Serialization::decode_vi24(bufp, remainp)) {
+  if((count = Serialization::decode_vi24(bufp, remainp))) {
     uint24_t n=count;
     const uint8_t* ptr_start = *bufp;
     do *bufp += Serialization::decode_vi24(bufp); 

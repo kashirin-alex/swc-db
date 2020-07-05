@@ -13,7 +13,9 @@ namespace SWC{ namespace Stats {
 
 class Stat {
   public:
-  Stat(): m_count(0), m_avg(0), m_max(0), m_min(-1) {}
+
+  Stat(): m_count(0), m_avg(0), m_min(-1), m_max(0) {}
+
   virtual ~Stat(){}
 
   void add(uint64_t v){

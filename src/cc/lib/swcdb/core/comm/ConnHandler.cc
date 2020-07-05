@@ -522,7 +522,7 @@ void ConnHandlerPlain::close() {
   bool once;
   {
     Mutex::scope lock(m_mutex);
-    if(once = connected)
+    if((once = connected))
       connected = false;
   }
   if(once) {
@@ -586,7 +586,7 @@ void ConnHandlerSSL::close() {
   bool once;
   {
     Mutex::scope lock(m_mutex);
-    if(once = connected)
+    if((once = connected))
       connected = false;
   }
   if(once) {

@@ -357,9 +357,9 @@ void FileSystemHadoopJVM::create(int& err, SmartFd::Ptr& smartfd,
               errno, strerror(errno), blksz, smartfd->to_string().c_str());
                 
     if(err == EACCES || err == ENOENT)
-      err == Error::FS_PATH_NOT_FOUND;
+      err = Error::FS_PATH_NOT_FOUND;
     else if (err == EPERM)
-      err == Error::FS_PERMISSION_DENIED;
+      err = Error::FS_PERMISSION_DENIED;
     return;
   }
   hadoop_fd->file(fd);
@@ -389,9 +389,9 @@ void FileSystemHadoopJVM::open(int& err, SmartFd::Ptr& smartfd, int32_t bufsz) {
               errno, strerror(errno), smartfd->to_string().c_str());
                 
     if(err == EACCES || err == ENOENT)
-      err == Error::FS_PATH_NOT_FOUND;
+      err = Error::FS_PATH_NOT_FOUND;
     else if (err == EPERM)
-      err == Error::FS_PERMISSION_DENIED;
+      err = Error::FS_PERMISSION_DENIED;
     return;
   }
   hadoop_fd->file(fd);
@@ -402,14 +402,10 @@ void FileSystemHadoopJVM::open(int& err, SmartFd::Ptr& smartfd, int32_t bufsz) {
   
 size_t FileSystemHadoopJVM::read(int& err, SmartFd::Ptr& smartfd, 
               void *dst, size_t amount) {
-
   auto hadoop_fd = get_fd(smartfd);
-    
   SWC_LOGF(LOG_DEBUG, "read %s amount=%lu file-%lu", 
             hadoop_fd->to_string().c_str(), 
             amount, (size_t) hadoop_fd->file());
-  ssize_t nread = 0;
-  errno = 0;
 
   /* 
   uint64_t offset;
@@ -421,48 +417,52 @@ size_t FileSystemHadoopJVM::read(int& err, SmartFd::Ptr& smartfd,
     return nread;
   }
   */
-    
-  nread = (ssize_t)hdfsRead(m_filesystem, hadoop_fd->file(), dst, (tSize)amount);
+  size_t ret;
+  errno = 0;
+  ssize_t nread = (ssize_t)hdfsRead(m_filesystem, hadoop_fd->file(), 
+                                    dst, (tSize)amount);
   if (nread == -1) {
     nread = 0;
+    ret = 0;
     err = errno;
     SWC_LOGF(LOG_ERROR, "read failed: %d(%s), %s", 
               errno, strerror(errno), smartfd->to_string().c_str());
   } else {
-    if(nread != amount)
+    if((ret = nread) != amount)
       err = Error::FS_EOF;
     hadoop_fd->pos(hadoop_fd->pos()+nread);
     SWC_LOGF(LOG_DEBUG, "read(ed) %s amount=%ld eof=%d", 
               smartfd->to_string().c_str(), nread, err == Error::FS_EOF);
   }
-  return nread;
+  return ret;
 }
 
   
 size_t FileSystemHadoopJVM::pread(int& err, SmartFd::Ptr& smartfd, 
                                uint64_t offset, void *dst, size_t amount) {
-
   auto hadoop_fd = get_fd(smartfd);
   SWC_LOGF(LOG_DEBUG, "pread %s offset=%lu amount=%lu file-%lu", 
             hadoop_fd->to_string().c_str(),
             offset, amount, (size_t)hadoop_fd->file());
 
+  size_t ret;
   errno = 0;
   ssize_t nread = (ssize_t)hdfsPread(
     m_filesystem, hadoop_fd->file(), (tOffset)offset, dst, (tSize)amount);
   if (nread == -1) {
+    ret = 0;
     nread = 0;
     err = errno;
     SWC_LOGF(LOG_ERROR, "pread failed: %d(%s), %s", 
               errno, strerror(errno), smartfd->to_string().c_str());
   } else {
-    if(nread != amount)
+    if((ret = nread) != amount)
       err = Error::FS_EOF;
     hadoop_fd->pos(offset+nread);
     SWC_LOGF(LOG_DEBUG, "pread(ed) %s amount=%lu eof=%d", 
                smartfd->to_string().c_str(), nread, err == Error::FS_EOF);
   }
-  return nread;
+  return ret;
 }
 
 size_t FileSystemHadoopJVM::append(int& err, SmartFd::Ptr& smartfd, 

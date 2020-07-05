@@ -184,7 +184,7 @@ class AppHandler final : virtual public BrokerIf {
       req->commit();
       req->wait();
     }
-    if(err = req->result->error())
+    if((err = req->result->error()))
       Converter::exception(err);
   }
 
@@ -410,7 +410,6 @@ class AppHandler final : virtual public BrokerIf {
       req = std::make_shared<client::Query::Update>();
 
     int err = Error::OK;
-    size_t cells_bytes;
     DB::Cells::Cell dbcell;
     cid_t cid;
     // req->columns_onfractions
@@ -445,7 +444,7 @@ class AppHandler final : virtual public BrokerIf {
       req->commit();
       req->wait();
     }
-    if(err = req->result->error())
+    if((err = req->result->error()))
       Converter::exception(err);
   }
 
@@ -483,8 +482,8 @@ class AppHandler final : virtual public BrokerIf {
   void updater_close(const client::Query::Update::Ptr& req) {
     req->commit_if_need();
     req->wait();
-    int err;
-    if(err = req->result->error())
+    int err = req->result->error();
+    if(err)
       Converter::exception(err);
   }
 
@@ -498,8 +497,8 @@ class AppHandler final : virtual public BrokerIf {
       },
       300000
     );
-    
-    if(int err = res.get_future().get()) 
+    int err = res.get_future().get();
+    if(err) 
       Converter::exception(err);
 
     if(schema->cid != DB::Schema::NO_CID)
@@ -523,7 +522,7 @@ class AppHandler final : virtual public BrokerIf {
         },
         300000
       );
-      if(err = res.get_future().get())
+      if((err = res.get_future().get()))
         Converter::exception(err);
     }
     
@@ -550,7 +549,7 @@ class AppHandler final : virtual public BrokerIf {
         },
         300000
       );
-      if(err = res.get_future().get())
+      if((err = res.get_future().get()))
         Converter::exception(err);
     }
     
@@ -596,7 +595,7 @@ class AppHandler final : virtual public BrokerIf {
         cell.c = schema->col_name;
         dbcell->key.convert_to(cell.k);
         cell.ts = dbcell->timestamp;
-        if(cell.__isset.v = with_value) {
+        if((cell.__isset.v = with_value)) {
           if(dbcell->vlen)
             cell.v = std::string((const char*)dbcell->value, dbcell->vlen);
         }
@@ -626,7 +625,7 @@ class AppHandler final : virtual public BrokerIf {
         
         dbcell->key.convert_to(cell.k);
         cell.ts = dbcell->timestamp;
-        if(cell.__isset.v = with_value) {
+        if((cell.__isset.v = with_value)) {
           if(dbcell->vlen)
             cell.v = std::string((const char*)dbcell->value, dbcell->vlen);
         }
@@ -661,7 +660,7 @@ class AppHandler final : virtual public BrokerIf {
         auto& cell = it->cells.emplace_back();
         cell.c = schema->col_name;
         cell.ts = dbcell->timestamp;
-        if(cell.__isset.v = with_value) {
+        if((cell.__isset.v = with_value)) {
           if(dbcell->vlen)
             cell.v = std::string((const char*)dbcell->value, dbcell->vlen);
         }
@@ -698,7 +697,7 @@ class AppHandler final : virtual public BrokerIf {
         auto& cell = fraction_cells->cells.emplace_back();
         cell.c = schema->col_name;
         cell.ts = dbcell->timestamp;
-        if(cell.__isset.v = with_value) {
+        if((cell.__isset.v = with_value)) {
           if(dbcell->vlen)
             cell.v = std::string((const char*)dbcell->value, dbcell->vlen);
         }

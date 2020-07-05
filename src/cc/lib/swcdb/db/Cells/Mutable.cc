@@ -33,11 +33,10 @@ Mutable::Mutable(const Types::KeySeq key_seq,
 }
 
 Mutable::Mutable(Mutable& other)
-                : buckets(other.buckets), 
-                  key_seq(other.key_seq),
-                  _bytes(other.size_bytes()), _size(other.size()),
-                  type(other.type), max_revs(other.max_revs), 
-                  ttl(other.ttl) {
+                : key_seq(other.key_seq), type(other.type), 
+                  max_revs(other.max_revs), ttl(other.ttl), 
+                  buckets(other.buckets), 
+                  _bytes(other.size_bytes()), _size(other.size()) {
   other.buckets.clear();
   other.free();
 }
@@ -426,7 +425,7 @@ void Mutable::scan_version_multi(ReqScan* req) const {
   bool chk_align;
   uint32_t rev;
   size_t offset;
-  if(chk_align = !req->spec.offset_key.empty()) {
+  if((chk_align = !req->spec.offset_key.empty())) {
     rev = req->spec.flags.max_versions;
     offset = _narrow(req->spec.offset_key);// ?req->spec.key_start
    } else {
@@ -797,7 +796,7 @@ size_t Mutable::_narrow(const DB::Cell::Key& key, size_t offset) const {
   if(key.empty() || _size <= narrow_sz) 
     return 0;
   size_t step = _size;
-  if(1 < offset < _size) {
+  if(1 < offset && offset < _size) {
     if((step -= offset) <= narrow_sz)
       step = narrow_sz;
   } else {

@@ -18,6 +18,7 @@ class Compaction final {
 
   const Property::V_GUINT8::Ptr   cfg_read_ahead;
   const Property::V_GUINT8::Ptr   cfg_max_range;
+  const Property::V_GINT32::Ptr   cfg_check_interval;
 
   explicit Compaction();
 
@@ -62,7 +63,6 @@ class Compaction final {
   size_t                          m_idx_cid;
   size_t                          m_idx_rid;
 
-  const Property::V_GINT32::Ptr   cfg_check_interval;
 };
 
 

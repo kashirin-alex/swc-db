@@ -20,11 +20,11 @@ class RgrMngId: public client::ConnQueue::ReqBase {
 
   RgrMngId(asio::io_context* io, const std::function<void()>& cb = 0) 
           : client::ConnQueue::ReqBase(false, nullptr),
-            m_timer(asio::high_resolution_timer(*io)),
             cfg_check_interval(
               Env::Config::settings()->get<Property::V_GINT32>(
                 "swc.rgr.id.validation.interval")), 
             cb_shutdown(cb),
+            m_timer(asio::high_resolution_timer(*io)),
             m_run(true) {
   }
   

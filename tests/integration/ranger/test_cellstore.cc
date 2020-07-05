@@ -50,7 +50,7 @@ void apply_key(const std::string& idn,
 }
 
 void read_cs(SWC::csid_t csid, SWC::Ranger::RangePtr range, 
-             int expected_blocks, 
+             size_t expected_blocks, 
              const SWC::DB::Cell::Key& expected_key);
 
 size_t write_cs(SWC::csid_t csid, SWC::Ranger::RangePtr range, int any) {
@@ -71,9 +71,9 @@ size_t write_cs(SWC::csid_t csid, SWC::Ranger::RangePtr range, int any) {
   int expected_blocks = 0;
   SWC::DB::Cell::Key expected_key;
 
-  for(auto i=1; i<=num_cells; ++i) {
+  for(size_t i=1; i<=num_cells; ++i) {
 
-    for(int g=1; g<=group_fractions; ++g) {
+    for(size_t g=1; g<=group_fractions; ++g) {
       
 
       rev = SWC::Time::now_ns();
@@ -147,7 +147,7 @@ size_t write_cs(SWC::csid_t csid, SWC::Ranger::RangePtr range, int any) {
 }
 
 void read_cs(SWC::csid_t csid, SWC::Ranger::RangePtr range, 
-             int expected_blocks, 
+             size_t expected_blocks, 
              const SWC::DB::Cell::Key& expected_key) {
   int err = SWC::Error::OK;  
   
@@ -250,7 +250,7 @@ int main(int argc, char** argv) {
     err, range->get_path(range->CELLSTORES_DIR));
 
   size_t expected_blocks = 0;
-  for(auto i=1; i<=num_cellstores; ++i) {
+  for(size_t i=1; i<=num_cellstores; ++i) {
     expected_blocks += write_cs(
       i, range, 
       i == 1 ? -1 : (i == num_cellstores ? 1 : 0) // -1:first 1:last

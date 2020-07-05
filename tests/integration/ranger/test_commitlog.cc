@@ -87,7 +87,7 @@ int main(int argc, char** argv) {
 
   int err = Error::OK;
   int num_cells = 1000000;
-  int versions = 3;
+  uint32_t versions = 3;
 
   auto range = std::make_shared<Ranger::Range>(&col_cfg, 1);
   Ranger::CommitLog::Fragments commitlog(col_cfg.key_seq);
@@ -114,7 +114,7 @@ int main(int argc, char** argv) {
                 << " until=" << t*num+num << "\n";
       DB::Cells::Cell cell;
       int64_t rev;
-      for(int v=0;v<versions;++v) {
+      for(uint32_t v=0;v<versions;++v) {
       for(auto i=t*num;i<t*num+num;++i){
 
         std::string n = std::to_string(i);
@@ -222,7 +222,7 @@ int main(int argc, char** argv) {
   int added_num = 1000000;
   DB::Cells::Cell cell;
   int64_t rev;
-  for(int v=0;v<versions;++v) {
+  for(uint32_t v=0;v<versions;++v) {
     for(auto i=0;i<added_num;++i){
 
         std::string n = std::to_string(i)+"-added";

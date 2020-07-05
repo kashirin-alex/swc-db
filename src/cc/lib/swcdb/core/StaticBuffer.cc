@@ -72,7 +72,7 @@ void StaticBuffer::set(StaticBuffer& other) {
   free();
   base = other.base;
   size = other.size;
-  if(own = other.own) {
+  if((own = other.own)) {
     other.own = false;
     other.base = 0;
     other.size = 0;
@@ -83,7 +83,7 @@ void StaticBuffer::set(DynamicBuffer &dbuf) {
   free();
   base = dbuf.base;
   size = dbuf.fill();
-  if(own = dbuf.own) {
+  if((own = dbuf.own)) {
     dbuf.base = dbuf.ptr = dbuf.mark = 0;
     dbuf.size = 0;
   }

@@ -63,7 +63,7 @@ class RangeLocateScan : public ReqScan {
     }
     //return true; // without aligned min-max
 
-    rid_t rid = Serialization::decode_vi64(&ptr, &remain); // rid
+    Serialization::decode_vi64(&ptr, &remain); // rid_t rid = 
 
     DB::Cell::KeyVec aligned_min;
     aligned_min.decode(&ptr, &remain);

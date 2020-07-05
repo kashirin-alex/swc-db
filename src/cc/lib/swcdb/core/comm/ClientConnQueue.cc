@@ -140,7 +140,7 @@ void ConnQueue::put(const ConnQueue::ReqBase::Ptr& req) {
   {
     Mutex::scope lock(m_mutex);
     push(req);
-    if(make_conn = (!m_conn || !m_conn->is_open())) {
+    if((make_conn = (!m_conn || !m_conn->is_open()))) {
       if(m_connecting)
         return;
       m_connecting = true;
@@ -249,8 +249,8 @@ void ConnQueue::schedule_close() {
   ConnHandlerPtr conn;
   {
     Mutex::scope lock(m_mutex);
-    if(closing = empty() && m_delayed.empty() &&
-                 (!m_conn || !m_conn->due())) {
+    if((closing = empty() && m_delayed.empty() &&
+                 (!m_conn || !m_conn->due()))) {
       conn = m_conn;
       m_conn = nullptr;
     }

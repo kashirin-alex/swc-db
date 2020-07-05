@@ -21,8 +21,8 @@ class Read : public Base {
   
   Read(uint32_t timeout, SmartFd::Ptr& smartfd, void* dst, size_t len, 
        bool allocated, const Callback::ReadCb_t& cb=0)
-      : smartfd(smartfd), buffer(dst), allocated(allocated),
-        cb(cb), amount(0) {
+      : buffer(dst), allocated(allocated), amount(0), 
+        smartfd(smartfd), cb(cb) {
     SWC_LOGF(LOG_DEBUG, "read len=%lu timeout=%d %s", 
               len, timeout, smartfd->to_string().c_str());
 

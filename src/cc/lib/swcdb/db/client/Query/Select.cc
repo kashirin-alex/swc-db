@@ -345,9 +345,8 @@ Select::Scanner::Scanner(
         const Types::Range type, const cid_t cid, 
         const ScannerColumn::Ptr& col, const ReqBase::Ptr& parent, 
         const DB::Cell::Key* range_offset, const rid_t rid)
-      : type(type), cid(cid), col(col), parent(parent), 
-        range_offset(range_offset ? *range_offset : DB::Cell::Key()), 
-        rid(rid) {
+      : type(type), cid(cid), col(col), parent(parent), rid(rid),
+        range_offset(range_offset ? *range_offset : DB::Cell::Key()) {
 }
 
 Select::Scanner::~Scanner() {}

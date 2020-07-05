@@ -215,9 +215,9 @@ void FileSystemLocal::create(int& err, SmartFd::Ptr& smartfd,
               errno, strerror(errno), smartfd->to_string().c_str());
 
     if(err == EACCES || err == ENOENT)
-      err == Error::FS_PATH_NOT_FOUND;
+      err = Error::FS_PATH_NOT_FOUND;
     else if (err == EPERM)
-      err == Error::FS_PERMISSION_DENIED;
+      err = Error::FS_PERMISSION_DENIED;
     return;
   }
   fd_open_incr();
@@ -257,9 +257,9 @@ void FileSystemLocal::open(int& err, SmartFd::Ptr& smartfd, int32_t bufsz) {
               errno, strerror(errno), smartfd->to_string().c_str());
                 
     if(err == EACCES || err == ENOENT)
-      err == Error::FS_PATH_NOT_FOUND;
+      err = Error::FS_PATH_NOT_FOUND;
     else if (err == EPERM)
-      err == Error::FS_PERMISSION_DENIED;
+      err = Error::FS_PERMISSION_DENIED;
     return;
   }
   fd_open_incr();
@@ -276,9 +276,6 @@ size_t FileSystemLocal::read(int& err, SmartFd::Ptr& smartfd,
                              void *dst, size_t amount) {
   SWC_LOGF(LOG_DEBUG, "read %s amount=%lu", 
             smartfd->to_string().c_str(), amount);
-  ssize_t nread = 0;
-  errno = 0;
-    
   /*
   uint64_t offset;
   if ((offset = (uint64_t)lseek(smartfd->fd(), 0, SEEK_CUR)) == (uint64_t)-1) {
@@ -289,20 +286,23 @@ size_t FileSystemLocal::read(int& err, SmartFd::Ptr& smartfd,
   }
   */
     
-  nread = FileUtils::read(smartfd->fd(), dst, amount);
+  size_t ret;
+  errno = 0;
+  ssize_t nread = FileUtils::read(smartfd->fd(), dst, amount);
   if (nread == -1) {
+    ret = 0;
     nread = 0;
     err = errno;
     SWC_LOGF(LOG_ERROR, "read failed: %d(%s), %s", 
               errno, strerror(errno), smartfd->to_string().c_str());
   } else {
-    if(nread != amount)
+    if((ret = nread) != amount)
       err = Error::FS_EOF;
     smartfd->pos(smartfd->pos()+nread);
     SWC_LOGF(LOG_DEBUG, "read(ed) %s amount=%lu eof=%d", 
               smartfd->to_string().c_str(), nread, err == Error::FS_EOF);
   }
-  return nread;
+  return ret;
 }
 
 size_t FileSystemLocal::pread(int& err, SmartFd::Ptr& smartfd, 
@@ -311,21 +311,23 @@ size_t FileSystemLocal::pread(int& err, SmartFd::Ptr& smartfd,
   SWC_LOGF(LOG_DEBUG, "pread %s offset=%lu amount=%lu", 
             smartfd->to_string().c_str(), offset, amount);
 
+  size_t ret;
   errno = 0;
   ssize_t nread = FileUtils::pread(smartfd->fd(), (off_t)offset, dst, amount);
   if (nread == -1) {
+    ret = 0;
     nread = 0;
     err = errno;
     SWC_LOGF(LOG_ERROR, "pread failed: %d(%s), %s", 
               errno, strerror(errno), smartfd->to_string().c_str());
   } else {
-    if(nread != amount)
+    if((ret = nread) != amount)
       err = Error::FS_EOF;
     smartfd->pos(offset+nread);
     SWC_LOGF(LOG_DEBUG, "pread(ed) %s amount=%lu  eof=%d", 
               smartfd->to_string().c_str(), nread, err == Error::FS_EOF);
   }
-  return nread;
+  return ret;
 }
 
 size_t FileSystemLocal::append(int& err, SmartFd::Ptr& smartfd, 

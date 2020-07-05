@@ -181,7 +181,7 @@ void Settings::init_process() {
   bool daemon = has("daemon");
 
   if(daemon) {
-    if(pid_t p = fork())
+    if(fork())
       exit(0);
   }
   auto pid = getpid();

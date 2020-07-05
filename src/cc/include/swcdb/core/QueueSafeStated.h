@@ -54,7 +54,7 @@ class QueueSafeStated final : private std::queue<ItemT> {
 
   bool activating() {
     Mutex::scope lock(m_mutex);
-    return (m_state || QBase::empty()) ? false : m_state = true;
+    return (m_state || QBase::empty()) ? false : (m_state = true);
   }
 
   bool deactivating() {

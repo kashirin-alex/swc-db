@@ -113,8 +113,7 @@ compare<Types::KeySeq::FC_VOLUME>(const Cell::Key& key,
 }
 
 
-static 
-SWC_SHOULD_NOT_INLINE
+extern inline
 Condition::Comp 
 compare(const Types::KeySeq seq, const Cell::Key& key, 
                                  const Cell::Key& other) {
@@ -205,8 +204,7 @@ compare<Types::KeySeq::FC_VOLUME>(
 }
 
 
-static 
-SWC_SHOULD_NOT_INLINE
+extern inline
 Condition::Comp 
 compare(const Types::KeySeq seq, const Cell::Key& key, const Cell::Key& other,
         int32_t max, bool empty_ok=false, bool empty_eq=false) {
@@ -299,8 +297,7 @@ compare<Types::KeySeq::FC_VOLUME>(
 }
 
 
-static 
-SWC_SHOULD_NOT_INLINE
+extern inline
 bool 
 compare(const Types::KeySeq seq, 
         const Cell::Key& key, const Cell::KeyVec& other,
@@ -376,8 +373,7 @@ align(const Cell::Key& key, Cell::KeyVec& start, Cell::KeyVec& finish) {
 }
 
 
-static 
-SWC_SHOULD_NOT_INLINE
+extern inline
 bool 
 align(const Types::KeySeq seq, const Cell::Key& key, 
       Cell::KeyVec& start, Cell::KeyVec& finish) {
@@ -433,8 +429,7 @@ align(Cell::KeyVec& key, const Cell::KeyVec& other, Condition::Comp comp) {
 }
 
 
-static 
-SWC_SHOULD_NOT_INLINE
+extern inline
 bool 
 align(const Types::KeySeq seq, Cell::KeyVec& key, 
       const Cell::KeyVec& other, Condition::Comp comp) {
@@ -486,8 +481,7 @@ is_matching<Types::KeySeq::VOLUME>(Condition::Comp comp,
   return Condition::is_matching_volume(comp, p1, p1_len, p2, p2_len);
 }
 
-static 
-SWC_SHOULD_NOT_INLINE
+extern inline
 bool
 is_matching(const Types::KeySeq seq, Condition::Comp comp,
             const uint8_t *p1, uint32_t p1_len, 
@@ -553,8 +547,7 @@ is_matching(const Specs::Key& key, const Cell::Key &other) {
 }
 
 
-static 
-SWC_SHOULD_NOT_INLINE
+extern inline
 bool 
 is_matching(const Types::KeySeq seq, const Specs::Key& key, 
                                      const Cell::Key &other) {

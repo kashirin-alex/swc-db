@@ -15,8 +15,8 @@ const std::string column_pre("thrift-client-test");
 const int num_columns = 5;
 const int num_cells = 10;
 const int num_fractions = 26; // a=1 and z=26
-const int total_cells = num_columns*num_cells*num_fractions;
-int batches = 1; // changed on test
+const size_t total_cells = num_columns*num_cells*num_fractions;
+size_t batches = 1; // changed on test
 
 
 
@@ -309,7 +309,7 @@ void sql_update_with_id(Client& client) {
   std::cout << " updater_id="<< updater_id << std::endl;
   assert(updater_id);
 
-  for(int b=1; b<=batches;++b) {
+  for(size_t b=1; b<=batches;++b) {
     sql_update(client, updater_id, b);
   }
   client.updater_close(updater_id);

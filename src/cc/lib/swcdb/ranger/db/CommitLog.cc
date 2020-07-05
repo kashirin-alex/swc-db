@@ -15,7 +15,7 @@ namespace SWC { namespace Ranger { namespace CommitLog {
 
 
 Fragments::Fragments(const Types::KeySeq key_seq)  
-                    : m_cells(key_seq), stopping(false), 
+                    : stopping(false), m_cells(key_seq), 
                       m_commiting(false), m_deleting(false), 
                       m_compacting(false), m_sem(5) { 
 }
@@ -266,7 +266,7 @@ void Fragments::load_cells(BlockLoader* loader, bool& is_final,
 
     uint8_t base = vol;
     _load_cells(loader, frags, vol);
-    if(is_final = base == vol) {
+    if((is_final = base == vol)) {
       std::shared_lock lock(m_mutex_cells);
       loader->block->load_cells(m_cells);
     }
@@ -547,7 +547,7 @@ bool Fragments::_need_compact_major() {
   if(!need) {
     size_t sz_bytes = 0;
     for(auto frag : *this) {
-      if(need = (sz_bytes += frag->size_bytes_encoded()) > ok)
+      if((need = (sz_bytes += frag->size_bytes_encoded()) > ok))
         break;
     }
   }

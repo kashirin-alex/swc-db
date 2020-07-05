@@ -109,13 +109,13 @@ void check_delete(int num_of_cols, bool modified) {
   );
 }
 
-void check_get(int num_of_cols, bool modified, Types::Encoding blk_encoding, bool exist = true, bool verbose=false){
+void check_get(size_t num_of_cols, bool modified, Types::Encoding blk_encoding, bool exist = true, bool verbose=false){
   std::cout << "########### get_schema_by_name ###########\n";
   std::shared_ptr<Stats::Stat> latency = std::make_shared<Stats::Stat>();
   
   std::vector<std::shared_ptr<ExpctedRsp>> expected;
 
-  for(int n=1; n<=num_of_cols;++n){
+  for(size_t n=1; n<=num_of_cols;++n){
     expected.push_back(std::make_shared<ExpctedRsp>(
       get_name(n, modified), 
       blk_encoding,
@@ -244,13 +244,13 @@ void check_get(int num_of_cols, bool modified, Types::Encoding blk_encoding, boo
 }
 
 
-void chk(Protocol::Mngr::Req::ColumnMng::Func func, int num_of_cols, 
+void chk(Protocol::Mngr::Req::ColumnMng::Func func, size_t num_of_cols, 
          Types::Encoding blk_encoding, bool modified, bool verbose=false) {
 
   std::cout << "########### chk func=" << func << " ###########\n";
   std::shared_ptr<Stats::Stat> latency = std::make_shared<Stats::Stat>();
 
-  for(int n=1;n<=num_of_cols;++n) {
+  for(size_t n=1;n<=num_of_cols;++n) {
     
     auto schema = DB::Schema::make();
     schema->col_name = get_name(n, modified);
@@ -316,13 +316,13 @@ void chk(Protocol::Mngr::Req::ColumnMng::Func func, int num_of_cols,
             << "\n";
 }
 
-void chk_rename(int num_of_cols, bool verbose=false){
+void chk_rename(size_t num_of_cols, bool verbose=false){
   std::cout << "########### chk_rename ###########\n";
   std::shared_ptr<Stats::Stat> latency = std::make_shared<Stats::Stat>();
   
   std::vector<std::shared_ptr<ExpctedRsp>> expected;
 
-  for(int n=1; n<=num_of_cols;++n){
+  for(size_t n=1; n<=num_of_cols;++n){
     std::string name = get_name(n, false);
     Protocol::Mngr::Req::ColumnGet::schema(
       name, 

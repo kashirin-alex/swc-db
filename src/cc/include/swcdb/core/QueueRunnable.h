@@ -51,7 +51,7 @@ class QueueRunnable final : private std::queue<std::function<void()>> {
 
   bool need_run() {
     Mutex::scope lock(m_mutex);
-    return (m_runs || QBase::empty()) ? false : m_runs = true;
+    return (m_runs || QBase::empty()) ? false : (m_runs = true);
   }
 
   void run() {

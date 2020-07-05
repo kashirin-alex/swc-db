@@ -140,8 +140,8 @@ bool Interval::equal(const Interval& other) const {
           key_start.equal(other.key_start) &&
           key_finish.equal(other.key_finish) &&
           value.equal(other.value) &&
-          offset_key.equal(offset_key) &&
-          offset_rev == offset_rev ;
+          offset_key.equal(other.offset_key) &&
+          offset_rev == other.offset_rev ;
 }
 
 bool Interval::is_matching(const Types::KeySeq key_seq, 
@@ -270,39 +270,43 @@ void Interval::apply_possible_range_begin(DB::Cell::Key& begin) const {
   } else if(!key_start.empty()) {
     std::string_view fraction;
     Condition::Comp comp;
-    int32_t ok = -1;
-    for(int idx=0; idx < key_start.size(); ++idx) {
+    size_t ok;
+    bool found = false;
+    for(size_t idx=0; idx < key_start.size(); ++idx) {
       fraction = key_start.get(idx, comp);
       if(fraction.size() && 
         (comp == Condition::EQ || comp == Condition::PF || 
          comp == Condition::GT || comp == Condition::GE)) {
         begin.add(fraction);
         ok = idx;
+        found = true;
       } else
-          begin.add("", 0);
+        begin.add("", 0);
     }
-    if(!++ok)
+    if(!found)
       begin.free();
-    else if(ok != key_start.size() && ok != begin.count)
+    else if(++ok != key_start.size() && ok != begin.count)
       begin.remove(ok, true);
 
   } else if(!key_finish.empty()) {
     std::string_view fraction;
     Condition::Comp comp;
-    int32_t ok = -1;
-    for(int idx=0; idx < key_finish.size(); ++idx) {
+    size_t ok;
+    bool found = false;
+    for(size_t idx=0; idx < key_finish.size(); ++idx) {
       fraction = key_finish.get(idx, comp);
       if(fraction.size() && 
         (comp == Condition::EQ || 
          comp == Condition::GT || comp == Condition::GE)) {
         begin.add(fraction);
         ok = idx;
+        found = true;
       } else
-          begin.add("", 0);
+        begin.add("", 0);
     }
-    if(!++ok)
+    if(!found)
       begin.free();
-    else if(ok != key_finish.size() && ok != begin.count)
+    else if(++ok != key_finish.size() && ok != begin.count)
       begin.remove(ok, true);
   }
 }
@@ -315,8 +319,9 @@ void Interval::apply_possible_range_end(DB::Cell::Key& end) const {
   } else if(key_eq && !key_start.empty()) {
     std::string_view fraction;
     Condition::Comp comp;
-    int32_t ok = -1;
-    for(int idx=0; idx < key_start.size(); ++idx) {
+    size_t ok;
+    bool found = false;
+    for(size_t idx=0; idx < key_start.size(); ++idx) {
       fraction = key_start.get(idx, comp);
       if(fraction.length() && 
         (comp == Condition::LT || 
@@ -324,12 +329,13 @@ void Interval::apply_possible_range_end(DB::Cell::Key& end) const {
          comp == Condition::EQ)) {
         end.add(fraction);
         ok = idx;
+        found = true;
       } else
-          end.add("", 0);
+        end.add("", 0);
     }
-    if(!++ok)
+    if(!found)
       end.free();
-    else if(ok == key_start.size())
+    else if(++ok == key_start.size())
       end.add("", 0);
     else if(++ok < key_start.size() && ok != end.count)
       end.remove(ok, true);

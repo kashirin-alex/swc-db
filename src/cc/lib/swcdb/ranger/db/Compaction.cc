@@ -13,12 +13,7 @@ namespace SWC { namespace Ranger {
 
 
 Compaction::Compaction() 
-          : m_check_timer(
-              asio::high_resolution_timer(
-                *RangerEnv::maintenance_io()->ptr())),
-            m_run(true), m_running(0), m_scheduled(false),
-            m_idx_cid(0), m_idx_rid(0), 
-            cfg_read_ahead(
+          : cfg_read_ahead(
               Env::Config::settings()->get<Property::V_GUINT8>(
                 "swc.rgr.compaction.read.ahead")),
             cfg_max_range(
@@ -26,7 +21,12 @@ Compaction::Compaction()
                 "swc.rgr.compaction.range.max")), 
             cfg_check_interval(
               Env::Config::settings()->get<Property::V_GINT32>(
-                "swc.rgr.compaction.check.interval")) {
+                "swc.rgr.compaction.check.interval")),
+            m_check_timer(
+              asio::high_resolution_timer(
+                *RangerEnv::maintenance_io()->ptr())),
+            m_run(true), m_running(0), m_scheduled(false),
+            m_idx_cid(0), m_idx_rid(0)  {
 }
 
 Compaction::~Compaction() { }
@@ -125,29 +125,30 @@ void Compaction::compact(const RangePtr& range) {
   bool do_compaction = false;
   std::string need;
 
-  if(do_compaction = range->compact_required() && commitlog.cells_count()) {
+  if((do_compaction = range->compact_required() && commitlog.cells_count())) {
     need.append("Required");
 
-  } else if(do_compaction = (value = commitlog.size_bytes(true)) >= allow_sz) {
+  } else if((do_compaction = (value = commitlog.size_bytes(true)) 
+                                                    >= allow_sz)) {
     need.append("LogBytes=");
     need.append(std::to_string(value-allow_sz));
 
-  } else if(do_compaction = (value = commitlog.size()) > cs_size/blk_size) {
+  } else if((do_compaction = (value = commitlog.size()) > cs_size/blk_size)) {
     need.append("LogCount=");
     need.append(std::to_string(value-cs_size/blk_size));
 
-  } else if(do_compaction = range->blocks.cellstores.need_compaction(
-                    cs_size + allow_sz,  blk_size + (blk_size / 100) * perc)) {
+  } else if((do_compaction = range->blocks.cellstores.need_compaction(
+                cs_size + allow_sz,  blk_size + (blk_size / 100) * perc))) {
     need.append("CsResize");
 
-  } else if(do_compaction = cell_ttl && 
-            (int64_t)(value = range->blocks.cellstores.get_ts_earliest())
-            != DB::Cells::AUTO_ASSIGN && 
-            (int64_t)value < Time::now_ns()-cell_ttl*100) {
+  } else if((do_compaction = cell_ttl && 
+             (int64_t)(value = range->blocks.cellstores.get_ts_earliest())
+                != DB::Cells::AUTO_ASSIGN && 
+             value < Time::now_ns()-cell_ttl*100)) {
     need.append("CsTTL");
 
-  } else if(do_compaction = range->blocks.cellstores.get_cell_revs() 
-                              > cell_revs) {
+  } else if((do_compaction = range->blocks.cellstores.get_cell_revs() 
+                              > cell_revs)) {
     need.append("CsVersions");
   }
 

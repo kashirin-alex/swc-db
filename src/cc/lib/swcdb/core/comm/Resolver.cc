@@ -211,7 +211,7 @@ void get_networks(const Strings& networks,
                   std::vector<Network>& nets, asio::error_code& ec) {
   for(auto& net : networks) {
     Network n;
-    if(n.is_v4 = net.find_first_of(":") == std::string::npos)
+    if((n.is_v4 = net.find_first_of(":") == std::string::npos))
       n.v4 = asio::ip::make_network_v4(net, ec);
     else
       n.v6 = asio::ip::make_network_v6(net, ec);

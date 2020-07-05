@@ -86,6 +86,7 @@ void column_get(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
 
   } catch (Exception &e) {
     SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
+    flag = Params::ColumnGetReq::Flag::ID_BY_NAME;
     try {
       mngr_update_response(conn, ev, e.code(), flag, nullptr);
     } catch (Exception &e) {

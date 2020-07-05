@@ -56,9 +56,10 @@ class MngrRole final {
 
   void fill_states();
 
-  void managers_checker(int next, size_t total, bool flw);
+  void managers_checker(size_t next, size_t total, bool flw);
 
-  void manager_checker(MngrStatus::Ptr host, int next, size_t total, bool flw,
+  void manager_checker(MngrStatus::Ptr host, 
+                       size_t next, size_t total, bool flw, 
                        const ConnHandlerPtr& conn);
   
   void update_state(const EndPoint& endpoint, Types::MngrState state);

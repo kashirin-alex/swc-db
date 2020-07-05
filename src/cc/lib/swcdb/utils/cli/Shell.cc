@@ -45,7 +45,7 @@ int run() {
 }
 
 Interface::Interface(const char* prompt, const char* history)
-                    : prompt(prompt), history(history), err(Error::OK) {
+                    : err(Error::OK), prompt(prompt), history(history) {
   init();
 }
   
@@ -79,7 +79,7 @@ int Interface::run() {
     do {
       c = *ptr;
       ++ptr;
-      if(next_line = c == 0)
+      if((next_line = c == 0))
         c = '\n';
 
       if(c == '\n' && cmd_end) {
@@ -88,7 +88,7 @@ int Interface::run() {
           add_history(run_cmd.c_str());
           write_history(history);
           run_cmd.pop_back();
-          if(stop = !cmd_option(run_cmd))
+          if((stop = !cmd_option(run_cmd)))
             break;
           queue.pop();
         }

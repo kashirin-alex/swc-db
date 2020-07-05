@@ -16,7 +16,6 @@ namespace SWC { namespace FsBroker { namespace Handler {
 void read_all(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
 
   int err = Error::OK;
-  size_t offset = 0;
   StaticBuffer rbuf;
   try {
 

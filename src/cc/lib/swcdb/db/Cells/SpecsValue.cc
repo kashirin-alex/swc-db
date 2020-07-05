@@ -67,7 +67,7 @@ void Value::set(const uint8_t* data_n, const uint32_t size_n,
   free();
   own   = owner;
   comp = comp_n;
-  if(size = size_n)
+  if((size = size_n))
     data = own ? (uint8_t*)memcpy(new uint8_t[size], data_n, size) 
                : (uint8_t*)data_n;
 }

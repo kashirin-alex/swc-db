@@ -103,7 +103,7 @@ void Column::internal_decode(const uint8_t** bufp, size_t* remainp) {
   uint32_t sz = Serialization::decode_vi32(bufp, remainp);
   free();
   intervals.resize(sz);
-  for (auto i=0;i<sz;++i)
+  for (uint32_t i=0; i<sz; ++i)
     intervals[i] = Interval::make_ptr(bufp, remainp);
 }
 

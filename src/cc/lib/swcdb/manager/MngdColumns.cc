@@ -161,6 +161,9 @@ void MngdColumns::update_status(
           schema, err);
       }
     }
+    
+    default:
+      break;
   }
 }
 

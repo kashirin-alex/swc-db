@@ -219,10 +219,10 @@ Fragment::Fragment(const FS::SmartFd::Ptr& smartfd,
                     size_plain(size_plain), size_enc(size_enc), 
                     cell_revs(cell_revs), cells_count(cells_count),
                     data_checksum(data_checksum), offset_data(offset_data),
-                    m_smartfd(smartfd), m_state(state), 
+                    m_state(state), m_smartfd(smartfd), 
                     m_processing(m_state == State::WRITING), 
-                    m_cells_remain(cells_count), 
-                    m_err(Error::OK) {
+                    m_err(Error::OK),
+                    m_cells_remain(cells_count) {
 }
 
 SWC_SHOULD_INLINE
@@ -332,7 +332,7 @@ void Fragment::load_cells(int& err, DB::Cells::MutableVec& cells) {
       try {
         cell.read(&buf, &remain);
 
-      } catch(std::exception) {
+      } catch(...) {
         SWC_LOGF(LOG_ERROR, "Cell trunclated at count=%lu/%u remain=%lu, %s",
                 count, cells_count, remain, to_string().c_str());
         break;

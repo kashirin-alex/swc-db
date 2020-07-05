@@ -163,8 +163,8 @@ class Range final {
   const std::string     m_path;
 
   std::shared_mutex     m_mutex;
-  rgrid_t               m_rgrid;
   State                 m_state;
+  rgrid_t               m_rgrid;
   Files::RgrData::Ptr   m_last_rgr;
 
   DB::Cell::Key         m_key_begin;

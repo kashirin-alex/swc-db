@@ -94,7 +94,7 @@ class Serialized final :
         const ServerConnections::NewCb_t& cb,
         const std::chrono::milliseconds& timeout,
         uint32_t probes, uint32_t tries, 
-        int next,
+        size_t next,
         bool preserve=false
   );
 

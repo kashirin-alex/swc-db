@@ -87,7 +87,7 @@ void CommHeader::decode(const uint8_t** bufp, size_t* remainp) {
   timeout_ms = Serialization::decode_i32(bufp, remainp);
   command = Serialization::decode_i16(bufp, remainp);
     
-  if(buffers = Serialization::decode_i8(bufp, remainp)) {
+  if((buffers = Serialization::decode_i8(bufp, remainp))) {
     data_size = Serialization::decode_vi32(bufp, remainp);
     data_chksum = Serialization::decode_i32(bufp, remainp);    
     if(buffers > 1) {

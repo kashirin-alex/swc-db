@@ -303,11 +303,10 @@ class FileReader {
     DynamicBuffer buffer_remain;
     DynamicBuffer buffer_write;
     bool ok;
-    size_t s_sz;
     size_t cell_pos = 0;
     size_t cell_mark = 0;
     std::vector<std::string> header;
-    bool                     has_ts;
+    bool                     has_ts = false;
 
     do {
       err = Error::OK;
@@ -426,7 +425,7 @@ class FileReader {
       return false;
 
     has_ts = strncasecmp(header.front().data(), "timestamp", 9) == 0;
-    if(header.size() < 6 + has_ts)
+    if(header.size() < size_t(6 + has_ts))
       return false;
 
     ++ptr; // header's newline

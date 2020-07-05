@@ -32,14 +32,13 @@ void column_compact(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     rsp_params.err = e.code();
   }
   
-  send_response:
-    try {
-      auto cbp = CommBuf::make(rsp_params);
-      cbp->header.initialize_from_request_header(ev->header);
-      conn->send_response(cbp);
-    } catch (Exception &e) {
-      SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
-    }
+  try {
+    auto cbp = CommBuf::make(rsp_params);
+    cbp->header.initialize_from_request_header(ev->header);
+    conn->send_response(cbp);
+  } catch (Exception &e) {
+    SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
+  }
   
 }
   

@@ -33,8 +33,8 @@ class RgrMngId  : public Common::Params::HostEndPoints {
             : rgrid(rgrid), flag(flag) {
     }
     RgrMngId(rgrid_t rgrid, Flag flag, const EndPoints& endpoints) 
-            : rgrid(rgrid), flag(flag),
-              Common::Params::HostEndPoints(endpoints) {     
+            : Common::Params::HostEndPoints(endpoints), 
+              rgrid(rgrid), flag(flag) {     
     }
 
     virtual ~RgrMngId() {}

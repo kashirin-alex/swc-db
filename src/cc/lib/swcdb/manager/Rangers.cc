@@ -501,7 +501,7 @@ void Rangers::assign_range(const Ranger::Ptr& rgr, const Range::Ptr& range,
   if(!last_rgr)
     return assign_range(rgr, range);
 
-  bool id_due;
+  bool id_due = false;
   Ranger::Ptr rs_last = nullptr;
   {
     std::lock_guard lock(m_mutex);
@@ -519,7 +519,6 @@ void Rangers::assign_range(const Ranger::Ptr& rgr, const Range::Ptr& range,
     rs_last = m_rangers.emplace_back(new Ranger(0, last_rgr->endpoints));
     rs_last->init_queue();
     rs_last->state = Ranger::State::AWAIT;
-    id_due = false;
   }
     
   auto req = std::make_shared<Protocol::Rgr::Req::AssignIdNeeded>(

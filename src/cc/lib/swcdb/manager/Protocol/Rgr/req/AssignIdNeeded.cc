@@ -13,7 +13,7 @@ AssignIdNeeded::AssignIdNeeded(const Manager::Ranger::Ptr& rs_chk,
                                const Manager::Ranger::Ptr& rs_nxt, 
                                const Manager::Range::Ptr& range) 
                               : client::ConnQueue::ReqBase(false), 
-                                rs_chk(rs_chk), rs_nxt(rs_nxt), range(range) {
+                                rs_nxt(rs_nxt), range(range), rs_chk(rs_chk) {
   cbp = CommBuf::make();
   cbp->header.set(ASSIGN_ID_NEEDED, 60000);
 }

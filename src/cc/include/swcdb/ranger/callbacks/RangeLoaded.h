@@ -39,7 +39,7 @@ class RangeLoaded : public ResponseCallback {
 
     try {
       Protocol::Rgr::Params::RangeLoaded params(range->cfg->key_seq);
-      if(params.intval = range->type == Types::Range::MASTER)
+      if((params.intval = range->type == Types::Range::MASTER))
         range->get_interval(params.interval);
         
       auto cbp = CommBuf::make(params, 4);

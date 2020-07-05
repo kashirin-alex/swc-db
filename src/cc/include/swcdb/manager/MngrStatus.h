@@ -20,12 +20,12 @@ class MngrStatus : public Protocol::Common::Params::HostEndPoints {
   MngrStatus() {}
 
   MngrStatus(uint8_t role, cid_t begin, cid_t end,
-             const EndPoints& points, 
-             ConnHandlerPtr c, uint32_t pr)
-             : role(role), cid_begin(begin), cid_end(end), 
-               Protocol::Common::Params::HostEndPoints(points), 
-               conn(c), priority(pr), state(Types::MngrState::NOTSET),
-               failures(0) { }
+             const EndPoints& points, ConnHandlerPtr c, uint32_t pr)
+             : Protocol::Common::Params::HostEndPoints(points), 
+               priority(pr), state(Types::MngrState::NOTSET), role(role), 
+               cid_begin(begin), cid_end(end), 
+               conn(c), failures(0) { 
+  }
   
   virtual ~MngrStatus(){ }
 

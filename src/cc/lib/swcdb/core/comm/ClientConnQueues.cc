@@ -10,8 +10,8 @@ namespace SWC { namespace client {
 Host::Host(const ConnQueuesPtr queues, const EndPoints& endpoints, 
            const Property::V_GINT32::Ptr keepalive_ms, 
            const Property::V_GINT32::Ptr again_delay_ms)
-          : queues(queues), endpoints(endpoints), 
-            ConnQueue(queues->service->io(), keepalive_ms, again_delay_ms) {
+          : ConnQueue(queues->service->io(), keepalive_ms, again_delay_ms),
+            endpoints(endpoints), queues(queues) {
 }
 
 Host::~Host() {

@@ -17,7 +17,7 @@ const uint8_t SYS_CID_END = 9;
 const uint8_t HEADER_SIZE = 13;
 const uint8_t HEADER_OFFSET_CHKSUM = 9;
 const uint8_t VERSION = 1;
-const std::string schema_file = "schema.data";
+static const char schema_file[] = "schema.data";
 
 /* file-format: 
     header: i8(version), i32(data-len), 
@@ -90,7 +90,7 @@ void load(int &err, const std::string& filepath, DB::Schema::Ptr& schema) {
   const uint8_t *ptr = read_buf.base;
   size_t remain = read_buf.size;
   
-  int8_t version = Serialization::decode_i8(&ptr, &remain);
+  Serialization::decode_i8(&ptr, &remain); // int8_t version = 
   size_t sz = Serialization::decode_i32(&ptr, &remain);
 
   size_t chksum_data = Serialization::decode_i32(&ptr, &remain);
@@ -122,7 +122,7 @@ DB::Schema::Ptr load(int &err, cid_t cid,
     schema->cid = cid;
 
     if(cid <= SYS_CID_END) {
-      err == Error::OK;
+      err = Error::OK;
       schema->col_name.append("SYS_");
       if(cid == 9) {
         schema->col_name.append("STATS");

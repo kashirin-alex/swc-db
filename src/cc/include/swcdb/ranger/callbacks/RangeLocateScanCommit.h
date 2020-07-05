@@ -38,9 +38,9 @@ class RangeLocateScanCommit : public RangeLocateScan {
     DB::Cell::Key key_end;
     key_end.decode(&ptr, &remain, false);
     bool match;
-    if(match = key_end.count == any_is || 
-               DB::KeySeq::compare(key_seq, 
-                key_end, range_begin) != Condition::GT)
+    if((match = key_end.count == any_is || 
+                DB::KeySeq::compare(key_seq,
+                  key_end, range_begin) != Condition::GT))
       stop = true;
     return match;
   }

@@ -105,7 +105,7 @@ void check(SWC::Types::KeySeq key_seq, SWC::Types::Column typ,
      num_revs, reverse, num_cells, gen_historic, Cells::INSERT, typ, time_order_desc);
   /// 
 
-  int expected_sz = num_cells;
+  size_t expected_sz = num_cells;
   if(SWC::Types::is_counter(typ))
    expected_sz *= 1;
   else 
@@ -167,10 +167,13 @@ void check(SWC::Types::KeySeq key_seq, SWC::Types::Column typ,
     //std::cout << "v='" << std::string((const char*)cell.value, cell.vlen) <<"'\n";
     ++counted;
   }
-  if(SWC::Types::is_counter(typ) ? count == num_cells : count != 3*max_versions ) {
+  if(SWC::Types::is_counter(typ) 
+      ? count == num_cells : count != (size_t)3*max_versions ) {
     //std::cerr << "\n" << cells_mutable->to_string(true);
-    std::cout << " skips=" << skips << " count="<< count << " counted=" << counted << " \n";
-    std::cerr << "\nBad scan, expected=" << 3*max_versions << " result=" << count << "\n";
+    std::cout << " skips=" << skips 
+              << " count="<< count << " counted=" << counted << " \n";
+    std::cerr << "\nBad scan, expected=" << 3*max_versions 
+              << " result=" << count << "\n";
     std::cerr << specs.to_string() <<"\n";
     exit(1);
   }

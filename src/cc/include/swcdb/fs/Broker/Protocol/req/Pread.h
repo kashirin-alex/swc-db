@@ -22,8 +22,8 @@ class Pread : public Base {
   Pread(uint32_t timeout, SmartFd::Ptr& smartfd, 
         uint64_t offset, void* dst, size_t len, bool allocated,
         const Callback::PreadCb_t& cb=0)
-      : smartfd(smartfd), buffer(dst), allocated(allocated), 
-        cb(cb), amount(0) {
+      : buffer(dst), allocated(allocated), amount(0), 
+        smartfd(smartfd), cb(cb) {
     SWC_LOGF(LOG_DEBUG, "pread offset=%lu len=%lu timeout=%d %s", 
               offset, len, timeout, smartfd->to_string().c_str());
     cbp = CommBuf::make(Params::PreadReq(smartfd->fd(), offset, len));

@@ -44,7 +44,7 @@ class MngrActive : public client::ConnQueue::ReqBase {
 
   private:
   DispatchHandler::Ptr            hdlr;
-  int                             nxt;
+  size_t                          nxt;
   client::Mngr::Hosts             hosts;
   client::Mngr::Groups::GroupHost group_host;
   asio::high_resolution_timer     timer;

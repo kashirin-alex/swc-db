@@ -72,7 +72,7 @@ void Key::set(const DB::Cell::Key &cell_key, Condition::Comp comp) {
   const uint8_t* ptr = cell_key.data;
   for(auto it=begin(); it < end(); ++it) {
     it->comp = comp;
-    if(len = Serialization::decode_vi32(&ptr)) {
+    if((len = Serialization::decode_vi32(&ptr))) {
       it->append((const char*)ptr, len);
       ptr += len;
     }

@@ -79,6 +79,8 @@ EndPoints FileSystemBroker::get_endpoints() {
   );
 }
 
+
+
 FileSystemBroker::FileSystemBroker()
   : FileSystem(
       Env::Config::settings()->get<Property::V_GINT32>(
@@ -91,12 +93,12 @@ FileSystemBroker::FileSystemBroker()
       "FS-BROKER", m_io->shared(), std::make_shared<AppContext>())),
     m_type_underlying(fs_type(
       Env::Config::settings()->get_str("swc.fs.broker.underlying"))),
+    m_endpoints(get_endpoints()),
+    m_run(true),
     cfg_timeout(Env::Config::settings()->get<Property::V_GINT32>(
       "swc.fs.broker.timeout")),
-    cfg_timeout_ratio(Env::Config::settings()->get<Property::V_GINT32>(
-      "swc.fs.broker.timeout.bytes.ratio")),
-    m_endpoints(get_endpoints()),
-    m_run(true) {
+    cfg_timeout_ratio(Env::Config::settings()->get<Property::V_GINT32>( 
+      "swc.fs.broker.timeout.bytes.ratio")) {
   m_io->run(m_io);
 }
 

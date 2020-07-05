@@ -25,13 +25,12 @@ class Ranger : public Protocol::Common::Params::HostEndPoints {
   };
   typedef std::shared_ptr<Ranger> Ptr;
 
-  Ranger(): rgrid(0), state(State::NONE), 
-            failures(0), total_ranges(0) {}
+  Ranger(): rgrid(0), state(State::NONE), failures(0), total_ranges(0) {  
+  }
                        
   Ranger(rgrid_t rgrid, const EndPoints& endpoints)
-        : rgrid(rgrid), state(State::NONE), 
-          failures(0), total_ranges(0),
-          Protocol::Common::Params::HostEndPoints(endpoints) {
+        : Protocol::Common::Params::HostEndPoints(endpoints),
+          rgrid(rgrid), state(State::NONE), failures(0), total_ranges(0) {
   }
 
   virtual ~Ranger(){}

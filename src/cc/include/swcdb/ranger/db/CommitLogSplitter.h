@@ -78,7 +78,7 @@ class Splitter final {
     Fragment::Ptr frag;
     do {
       err = Error::OK;
-      if(loaded = (frag = m_queue.front())->loaded(err))
+      if((loaded = (frag = m_queue.front())->loaded(err)))
         frag->split(err, key, log_left, log_right); 
 
       if(!err && !loaded)

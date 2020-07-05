@@ -123,7 +123,7 @@ class Cell final {
 
   int64_t get_revision() const;
 
-  bool has_expired(const uint64_t ttl) const;
+  bool has_expired(const int64_t ttl) const;
 
   std::string to_string(Types::Column typ = Types::Column::PLAIN) const;
 

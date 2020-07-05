@@ -28,12 +28,12 @@ class Range final : public std::enable_shared_from_this<Range> {
 
   public:
 
-  static constexpr const char* RANGE_FILE = "range.data";
-  static constexpr const char* CELLSTORES_DIR = "cs";
-  static constexpr const char* CELLSTORES_BAK_DIR = "cs_bak";
-  static constexpr const char* CELLSTORES_TMP_DIR = "cs_tmp";
-  static constexpr const char* LOG_DIR = "log"; 
-  static constexpr const char* LOG_TMP_DIR = "log_tmp"; 
+  static constexpr const char[] RANGE_FILE = "range.data";
+  static constexpr const char[] CELLSTORES_DIR = "cs";
+  static constexpr const char[] CELLSTORES_BAK_DIR = "cs_bak";
+  static constexpr const char[] CELLSTORES_TMP_DIR = "cs_tmp";
+  static constexpr const char[] LOG_DIR = "log"; 
+  static constexpr const char[] LOG_TMP_DIR = "log_tmp"; 
 
   struct ReqAdd final {
     public:

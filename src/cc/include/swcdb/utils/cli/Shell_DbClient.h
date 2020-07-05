@@ -174,7 +174,7 @@ class DbClient : public Interface {
       300000
     );
     
-    if(err = res.get_future().get()) {
+    if((err = res.get_future().get())) {
       message.append(Error::get_text(err));
       message.append("\n");
       return error(message);
@@ -206,7 +206,7 @@ class DbClient : public Interface {
         },
         300000
       );
-      if(err = res.get_future().get()) {
+      if((err = res.get_future().get())) {
         message.append(Error::get_text(err));
         message.append("\n");
         return error(message);
@@ -258,7 +258,7 @@ class DbClient : public Interface {
         },
         300000
       );
-      if(err = res.get_future().get()) {
+      if((err = res.get_future().get())) {
         message.append(Error::get_text(err));
         message.append("\n");
         return error(message);
@@ -456,7 +456,7 @@ class DbClient : public Interface {
       return error(message);
     
     writer.initialize();
-    if(err = writer.err)
+    if((err = writer.err))
       return error(Error::get_text(err));
 
     if(display_flags & DB::DisplayFlag::SPECS) {
@@ -502,7 +502,7 @@ class DbClient : public Interface {
                      size_t took, size_t bytes,
                      size_t cells_count, size_t resend_cells = 0) const {
     FlowRate::Data rate(bytes, took);
-    SWC_PRINT;
+    SWC_PRINT << std::endl << std::endl;
     rate.print_cells_statistics(std::cout, cells_count, resend_cells);
     profile.print(std::cout);
     std::cout << SWC_PRINT_CLOSE;

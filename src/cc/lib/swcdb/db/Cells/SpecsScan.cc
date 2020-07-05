@@ -73,7 +73,7 @@ void Scan::internal_decode(const uint8_t** bufp, size_t* remainp) {
   uint32_t sz = Serialization::decode_vi32(bufp, remainp);
   free();
   columns.resize(sz);
-  for(auto i=0;i<sz;++i)
+  for(uint32_t i=0; i<sz; ++i)
     columns[i] = Column::make_ptr(bufp, remainp);
   flags.decode(bufp, remainp);
 }

@@ -82,7 +82,7 @@ void load(int& err, CellStore::Readers& cellstores) {
     const uint8_t *ptr = read_buf.base;
     size_t remain = read_buf.size;
 
-    int8_t version = Serialization::decode_i8(&ptr, &remain);
+    Serialization::decode_i8(&ptr, &remain); //int8_t version = 
     size_t sz = Serialization::decode_i32(&ptr, &remain);
 
     size_t chksum_data = Serialization::decode_i32(&ptr, &remain);

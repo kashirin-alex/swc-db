@@ -19,7 +19,7 @@ class Length : public Base {
 
   Length(uint32_t timeout, const std::string& name, 
          const Callback::LengthCb_t& cb=0) 
-        : name(name), cb(cb), length(0) {
+        : length(0), name(name), cb(cb) {
     SWC_LOGF(LOG_DEBUG, "length path='%s'", name.c_str());
 
     cbp = CommBuf::make(Params::LengthReq(name));

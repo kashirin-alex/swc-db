@@ -73,8 +73,7 @@ const Clients& Clients::ref() {
 }
 
 Clients::Clients(const client::Clients::Ptr& clients) 
-          : m_clients(clients),
-            cfg_send_buff_sz(Env::Config::settings()->get<Property::V_GINT32>(
+          : cfg_send_buff_sz(Env::Config::settings()->get<Property::V_GINT32>(
               "swc.client.send.buffer")), 
             cfg_send_ahead(Env::Config::settings()->get<Property::V_GUINT8>(
               "swc.client.send.ahead")), 
@@ -88,7 +87,9 @@ Clients::Clients(const client::Clients::Ptr& clients)
             cfg_recv_ahead(Env::Config::settings()->get<Property::V_GUINT8>(
               "swc.client.recv.ahead")),
             cfg_recv_timeout(Env::Config::settings()->get<Property::V_GINT32>(
-              "swc.client.recv.timeout")) {
+              "swc.client.recv.timeout")),
+
+            m_clients(clients) {
 }
 
 Clients::~Clients() { }

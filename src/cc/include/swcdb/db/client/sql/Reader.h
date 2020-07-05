@@ -15,12 +15,11 @@ namespace SWC { namespace client { namespace SQL {
 
 namespace {
     
-
-  static const char*    TOKEN_AND = "and";
+  static const char     TOKEN_AND[] = "and";
   static const uint8_t  LEN_AND = 3;
-  static const char*    TOKEN_BOOL_FALSE = "false";
+  static const char     TOKEN_BOOL_FALSE[] = "false";
   static const uint8_t  LEN_BOOL_FALSE = 5;
-  static const char*    TOKEN_BOOL_TRUE = "true";
+  static const char     TOKEN_BOOL_TRUE[] = "true";
   static const uint8_t  LEN_BOOL_TRUE = 4;
 
 }

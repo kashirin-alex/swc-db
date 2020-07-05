@@ -22,10 +22,10 @@ void Settings::init_post_cmd_args() {}
 }
 
 
-void load_check_compare(const Types::KeySeq key_seq, int chks, int fractions) {
+void load_check_compare(const Types::KeySeq key_seq, int chks, size_t fractions) {
   DB::Cell::Key key1;
   DB::Cell::Key key2;
-  for(auto b=0;b<fractions;++b)
+  for(size_t b=0;b<fractions;++b)
     key1.add(std::to_string(std::rand()));
   key2.copy(key1);
 
@@ -42,10 +42,10 @@ void load_check_compare(const Types::KeySeq key_seq, int chks, int fractions) {
 }
 
 
-void load_check_compare_max(const Types::KeySeq key_seq, int chks, int fractions) {
+void load_check_compare_max(const Types::KeySeq key_seq, int chks, size_t fractions) {
   DB::Cell::Key key1;
   DB::Cell::Key key2;
-  for(auto b=0;b<fractions;++b)
+  for(size_t b=0;b<fractions;++b)
     key1.add(std::to_string(std::rand()));
   key2.copy(key1);
 
@@ -61,11 +61,11 @@ void load_check_compare_max(const Types::KeySeq key_seq, int chks, int fractions
             << "\n";
 }
 
-void load_check_compare_to_vec(const Types::KeySeq key_seq, int chks, int fractions) {
+void load_check_compare_to_vec(const Types::KeySeq key_seq, int chks, size_t fractions) {
   DB::Cell::Key key1;
   DB::Cell::KeyVec key2;
   std::string f;
-  for(auto b=0;b<fractions;++b) {
+  for(size_t b=0;b<fractions;++b) {
     f = std::to_string(std::rand());
     key1.add(f);
     key2.add(f);
@@ -83,11 +83,11 @@ void load_check_compare_to_vec(const Types::KeySeq key_seq, int chks, int fracti
             << "\n";
 }
 
-void load_check_align(const Types::KeySeq key_seq, int chks, int fractions) {
+void load_check_align(const Types::KeySeq key_seq, int chks, size_t fractions) {
 
   DB::Cell::KeyVec key;
   DB::Cell::KeyVec key1;
-  for(auto b=0;b<fractions;++b)
+  for(size_t b=0;b<fractions;++b)
     key1.add(std::to_string(std::rand()));
 
   auto ts = Time::now_ns();
@@ -104,12 +104,12 @@ void load_check_align(const Types::KeySeq key_seq, int chks, int fractions) {
             << "\n";
 }
 
-void load_check_align_min_max(const Types::KeySeq key_seq, int chks, int fractions) {
+void load_check_align_min_max(const Types::KeySeq key_seq, int chks, size_t fractions) {
 
   DB::Cell::Key key;
   DB::Cell::KeyVec min;
   DB::Cell::KeyVec max;
-  for(auto b=0;b<fractions;++b)
+  for(size_t b=0;b<fractions;++b)
     key.add(std::to_string(std::rand()));
 
   auto ts = Time::now_ns();

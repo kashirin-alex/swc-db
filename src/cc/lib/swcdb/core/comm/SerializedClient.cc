@@ -209,7 +209,7 @@ void Serialized::get_connection(
       const ServerConnections::NewCb_t& cb,
       const std::chrono::milliseconds& timeout, 
       uint32_t probes, uint32_t tries, 
-      int next, bool preserve) {
+      size_t next, bool preserve) {
           
   if(next == endpoints.size())
     next = 0;

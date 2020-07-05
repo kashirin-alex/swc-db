@@ -122,7 +122,7 @@ class CountIt {
   };
 
   CountIt(SEQ seq, ssize_t min, ssize_t max) 
-          : min(min), max(max), seq(seq) {
+          : seq(seq), min(min), max(max) {
     reset();
   }
   
@@ -171,12 +171,9 @@ void apply_key(ssize_t i, ssize_t f, uint32_t fraction_size,
   fractions.resize(f);
 
   for(ssize_t fn=0; fn<f; ++fn) {
-    std::string& fraction_value = fractions[fn];
-    fraction_value.append(std::to_string(fn ? fn : i));
-    for(uint32_t len = fraction_value.length(); 
-        fraction_value.length() < fraction_size; 
-        fraction_value.insert(0, "0")
-      );
+    std::string& fraction = fractions[fn];
+    fraction.append(std::to_string(fn ? fn : i));
+    for(; fraction.length() < fraction_size; fraction.insert(0, "0"));
   }
   key.free();
   key.add(fractions);
@@ -191,10 +188,7 @@ void apply_key(ssize_t i, ssize_t f, uint32_t fraction_size,
     DB::Specs::Fraction& fraction = key[fn];
     fraction.comp = comp;
     fraction.append(std::to_string(fn ? fn : i));
-    for(uint32_t len = fraction.length(); 
-        fraction.length() < fraction_size; 
-        fraction.insert(0, "0")
-      );
+    for(; fraction.length() < fraction_size; fraction.insert(0, "0"));
   }
 }
 
@@ -244,7 +238,6 @@ void update_data(DB::Schema::Ptr& schema, uint8_t flag) {
 
   uint64_t ts = Time::now_ns();
   uint64_t ts_progress = ts;
-  size_t col_sz;
   //uint64_t key_count = 0;
   CountIt cell_num(seq, 0, cells);
   CountIt f_num(seq, (tree ? 1 : fractions), fractions+1);
@@ -301,7 +294,7 @@ void update_data(DB::Schema::Ptr& schema, uint8_t flag) {
   SWC_ASSERT(added_count && added_bytes);
   
   FlowRate::Data rate(added_bytes, Time::now_ns() - ts);
-  SWC_PRINT;
+  SWC_PRINT << std::endl << std::endl;
   rate.print_cells_statistics(std::cout, added_count, resend_cells);
   req->result->profile.print(std::cout);
   std::cout << SWC_PRINT_CLOSE;
@@ -322,7 +315,6 @@ void select_data(DB::Schema::Ptr& schema) {
   bool reverse = settings->get_bool("gen-reverse");
   auto seq = reverse ? CountIt::REVERSE : CountIt::REGULAR;
   
-  uint32_t value = settings->get_i32("gen-value-size");
   uint32_t progress = settings->get_i32("gen-progress");
   bool cellatime = settings->get_bool("gen-cell-a-time");
 
@@ -413,7 +405,7 @@ void select_data(DB::Schema::Ptr& schema) {
   }
 
   FlowRate::Data rate(select_bytes, Time::now_ns() - ts);
-  SWC_PRINT;
+  SWC_PRINT << std::endl << std::endl;
   rate.print_cells_statistics(std::cout, select_count, 0);
   req->result->profile.print(std::cout);
   std::cout << SWC_PRINT_CLOSE;

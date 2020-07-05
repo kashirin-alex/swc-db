@@ -9,17 +9,19 @@
 
 namespace SWC {
 
+
 IoContext::Ptr IoContext::make(const std::string name, int32_t size) {
   auto ptr = std::make_shared<IoContext>(name, size);
   ptr->run(ptr);
   return ptr;
 }
 
-IoContext::IoContext(const std::string name, int32_t size) 
-                    : m_name(name), running(true), m_size(size),
-                      m_pool(asio::thread_pool(size)),
+IoContext::IoContext(const std::string name, int32_t size)  
+                    : running(true), m_name(name), 
                       m_ioctx(std::make_shared<asio::io_context>(size)),
-                      m_wrk(asio::make_work_guard(*m_ioctx.get())) { 
+                      m_pool(asio::thread_pool(size)),
+                      m_wrk(asio::make_work_guard(*m_ioctx.get())),
+                      m_size(size) { 
     SWC_ASSERT(size>0);
 }
   

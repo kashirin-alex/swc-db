@@ -26,7 +26,7 @@ void test_encode_decode(const Specs::Scan& ss){
   uint8_t* ptr = base;
 
   ss.internal_encode(&ptr);
-  if(ptr-base != len) {
+  if(size_t(ptr - base) != len) {
     std::cout << "\n Encode/Decode \n";
     std::cout << "ERROR, encode wrote less than expected\n";
     exit(1);    

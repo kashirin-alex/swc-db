@@ -382,7 +382,7 @@ int main(int argc, char** argv) {
   size_t ncells = settings->get_i64("ncells");
   uint32_t nfractions = settings->get_i32("nfractions");
   uint32_t cell_versions = settings->get_i32("cell-versions");
-  uint32_t value = settings->get_i32("value-size");
+  //uint32_t value = settings->get_i32("value-size");
 
   SWC::Test test;
 

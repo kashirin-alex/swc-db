@@ -115,10 +115,10 @@ CompactRange::CompactRange(Compaction::Ptr compactor, const RangePtr& range,
               blk_cells(range->cfg->block_cells()), 
               blk_encoding(range->cfg->block_enc()),
               m_inblock(new InBlock(range->cfg->key_seq, blk_size)),
-              m_getting(true),
               state_default(range->blocks.cellstores.blocks_count() > 1 
                 ? Range::COMPACT_COMPACTING : Range::COMPACT_PREPARING),
               req_last_time(0),
+              m_getting(true),
               m_chk_timer(
                 asio::high_resolution_timer(*Env::IoCtx::io()->ptr())) {
   spec.flags.max_versions = range->cfg->cell_versions();
@@ -238,7 +238,6 @@ void CompactRange::response(int& err) {
   req_last_time = Time::now_ns() - req_ts;
   req_ts = Time::now_ns();
 
-  size_t c = total_cells ? total_cells.load() : 1;
   profile.finished();
   SWC_LOGF(LOG_INFO, 
     "COMPACT-PROGRESS %lu/%lu blocks=%lu avg(i=%ld e=%ld w=%ld)us %s err=%d",
@@ -251,7 +250,7 @@ void CompactRange::response(int& err) {
   );
 
   bool finishing;
-  if(finishing = !reached_limits()) {
+  if((finishing = !reached_limits())) {
     stop_check_timer();
     range->compacting(state_default = Range::COMPACT_APPLYING);
     range->blocks.wait_processing();
@@ -276,7 +275,7 @@ void CompactRange::response(int& err) {
     : commitlog(1);
 }
 
-bool CompactRange::is_slow_req(uint64_t& median) const {
+bool CompactRange::is_slow_req(int64_t& median) const {
   median = (total_cells
     ? (Time::now_ns() - profile.ts_start) / total_cells : 10000) 
     * blk_cells * 3;
@@ -317,7 +316,7 @@ void CompactRange::commitlog_done(const CommitLog::Compact* compact) {
       tnum += compact->repetition + 1;
     delete compact;
 
-    uint64_t median;
+    int64_t median;
     range->compacting(tnum && is_slow_req(median)
       ? Range::COMPACT_PREPARING : state_default.load() );
     if(tnum && !m_stopped && !m_chk_final && range->is_loaded())
@@ -334,7 +333,7 @@ void CompactRange::progress_check_timer() {
   if(m_stopped || m_chk_final)
     return;
 
-  uint64_t median;
+  int64_t median;
   bool slow = is_slow_req(median);
   if(!range->compacting_is(Range::COMPACT_APPLYING)) {
     range->compacting(slow? Range::COMPACT_PREPARING : state_default.load());
@@ -535,7 +534,7 @@ void CompactRange::finalize() {
   } else if(!cellstores.size() && cs_writer == nullptr) {
     // as an initial empty range cs with range intervals
     empty_cs = true;
-    csid_t csid = create_cs(err);
+    create_cs(err); //csid_t csid = 
     if(err)
       return quit();
     range->get_interval(

@@ -82,7 +82,7 @@ bool Read::load_trailer(int& err, FS::SmartFd::Ptr& smartfd,
     }
 
     size_t remain = TRAILER_SIZE;
-    int8_t version = Serialization::decode_i8(&ptr, &remain);
+    Serialization::decode_i8(&ptr, &remain); // int8_t version = 
     cell_revs = Serialization::decode_i32(&ptr, &remain);
     blks_idx_count = Serialization::decode_i32(&ptr, &remain);
     blks_idx_offset = Serialization::decode_i64(&ptr, &remain);
