@@ -16,10 +16,10 @@ if(THRIFT_PY_GEN_PATH)
 set(PY_PKG_PATH ${CMAKE_CURRENT_BINARY_DIR}/swcdb)
 
 execute_process(COMMAND cp -r ${CMAKE_CURRENT_SOURCE_DIR}/swcdb/pkg  ${PY_PKG_PATH}/)
+execute_process(COMMAND rm -rf  ${PY_PKG_PATH}/MANIFEST )
 configure_file(swcdb/setup.py.in ${PY_PKG_PATH}/setup.py @ONLY)
 configure_file(swcdb/requirements.txt.in ${PY_PKG_PATH}/requirements.txt @ONLY)
 configure_file(swcdb/README.md ${PY_PKG_PATH}/README.txt @ONLY)
-#configure_file(swcdb/MANIFEST ${PY_PKG_PATH}/MANIFEST @ONLY)
 
 
 list(GET PYTHON_EXECUTABLES 0 py)
