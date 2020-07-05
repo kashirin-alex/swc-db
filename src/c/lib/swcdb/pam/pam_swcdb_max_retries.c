@@ -16,7 +16,7 @@
 #include <security/pam_modules.h>
 
 
-static const char* SWCDB_PAM_NAME = "SWC-DB PAM: ";
+static const char SWCDB_PAM_NAME[] = "SWC-DB PAM: ";
 
 struct _swc_pam_cfg {
   gchar *  host;

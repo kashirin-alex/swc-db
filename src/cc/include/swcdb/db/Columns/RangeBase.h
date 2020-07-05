@@ -15,9 +15,9 @@ namespace SWC { namespace DB {
 class RangeBase final {
   public:
 
-  static constexpr const char* COLUMN_DIR = "C"; 
-  static constexpr const char* RANGE_DIR = "/R"; 
-  static constexpr const char* RANGER_FILE = "ranger.data";
+  static constexpr const char COLUMN_DIR[]  = "C"; 
+  static constexpr const char RANGE_DIR[]   = "/R"; 
+  static constexpr const char RANGER_FILE[] = "ranger.data";
   // (swc.fs.path.data)+COLUMN_DIR+/+{cid}+/RANGE_DIR+/+{rid}+/+(types)
   
   static const char* get_column_path() {

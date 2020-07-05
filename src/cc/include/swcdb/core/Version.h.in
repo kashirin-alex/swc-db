@@ -5,8 +5,8 @@
 #ifndef swc_core_Version_h
 #define swc_core_Version_h
 
-inline const char* SWCDB_VERSION    = "SWC-DB v@SWCDB_VERSION@";
-inline const char* SWCDB_COPYRIGHT  = "@SWCDB_COPYRIGHT@";
+inline const char SWCDB_VERSION[]    = "SWC-DB v@SWCDB_VERSION@";
+inline const char SWCDB_COPYRIGHT[]  = "@SWCDB_COPYRIGHT@";
 
 namespace SWC {
 
