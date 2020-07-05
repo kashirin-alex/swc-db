@@ -108,7 +108,7 @@ endif()
 
 ########### HADOOP_JVM FILESYSTEM ###########
 
-if(HADOOP_JVM_LIBRARIES_SHARED AND JAVA_LIBRARIES_SHARED)
+if(HADOOP_JVM_LIBRARIES_SHARED) # static require (AND JAVA_LIBRARIES_SHARED)
   set(FILE_SYSTEMS ${FILE_SYSTEMS} hadoop_jvm)
   set(swcdb_fsHadoop_jvm_sources
     HadoopJVM/FileSystem.cc

@@ -89,8 +89,8 @@ if(NOT WITHOUT_THRIFT_C)
       SET_DEPS(
         NAME      "PAM"
         REQUIRED  FALSE 
-        LIB_PATHS "/lib/x86_64-linux-gnu/"
-        SHARED    libpam.so.0.83.1 libpam_misc.so.0.82.0
+        LIB_PATHS /lib/x86_64-linux-gnu/
+        SHARED    libpam.so.0 libpam_misc.so.0
         INCLUDE   security/pam_appl.h security/pam_misc.h
       )
     endif(NOT WITHOUT_PAM)

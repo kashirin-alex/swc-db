@@ -2,27 +2,43 @@
 # Copyright Since 2019 SWC-DB© [author: Kashirin Alex kashirin.alex@gmail.com]
 # License details at <https://github.com/kashirin-alex/swc-db/#license>
 
+
+
+
+
+set(java_home)
+if(JAVA_INSTALL_PATH)
+  set(java_home ${JAVA_INSTALL_PATH})
+else()
+  set(java_home $ENV{JAVA_HOME})
+endif()
+
 SET_DEPS(
-  NAME "JAVA" 
-  
-  LIB_PATHS $ENV{JAVA_HOME}/jre/lib/amd64
-            $ENV{JAVA_HOME}/jre/lib/amd64/server  
-            $ENV{JAVA_HOME}/lib/server
-            $ENV{JAVA_HOME}/lib
-  INC_PATHS $ENV{JAVA_HOME}/include
+  NAME "JAVA"
+  LIB_PATHS ${java_home}/jre/lib/amd64
+            ${java_home}/jre/lib/amd64/server  
+            ${java_home}/lib/server
+            ${java_home}/lib
+  INC_PATHS ${java_home}/include
   # STATIC libjvm.a libjava.a libverify.a # libjawt.a 
   SHARED    jvm java verify # jawt(requires Xrender, Xtst, Xi)
   INCLUDE   jni.h
 )
 
+
+
+
+set(hadoop_home)
+if(HADOOP_INSTALL_PATH)
+  set(hadoop_home ${HADOOP_INSTALL_PATH})
+else()
+  set(hadoop_home $ENV{HADOOP_HOME})
+endif()
+
 SET_DEPS(
   NAME "HADOOP_JVM" 
-  LIB_PATHS /opt/mapr/lib  
-            $ENV{HADOOP_HOME}/lib/native
-            ${HADOOP_LIB_PATH}/lib/native
-  INC_PATHS $ENV{HADOOP_HOME}/include 
-            /opt/mapr/hadoop/hadoop-0.20.2/src/c++/libhdfs
-            ${HADOOP_INCLUDE_PATH}/include 
+  LIB_PATHS ${hadoop_home}/lib/native
+  INC_PATHS ${hadoop_home}/include 
   STATIC    libhdfs.a 
   SHARED    hdfs 
   INCLUDE   hdfs.h
@@ -32,20 +48,23 @@ SET_DEPS(
 
 SET_DEPS(
   NAME      "HADOOP" 
-  LIB_PATHS ""
-  INC_PATHS ""
+  LIB_PATHS ${hadoop_home}/lib/native
+  INC_PATHS ${hadoop_home}/include 
   STATIC    libhdfspp.a
   SHARED    hdfspp 
   INCLUDE   hdfspp/hdfspp.h
 )
-SET_DEPS(
-  NAME      "PROTOBUF" 
-  LIB_PATHS ""
-  INC_PATHS ""
-  STATIC    libprotobuf.a
-  SHARED    protobuf 
-  INCLUDE   google/protobuf/stubs/common.h
-)
+if(HADOOP_HADOOP)
+  SET_DEPS(
+    NAME      "PROTOBUF"
+    REQUIRED  TRUE
+    LIB_PATHS ""
+    INC_PATHS ""
+    STATIC    libprotobuf.a
+    SHARED    protobuf
+    INCLUDE   google/protobuf/stubs/common.h
+  )
+endif()
 
 
 
