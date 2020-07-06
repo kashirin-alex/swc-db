@@ -179,7 +179,8 @@ void test_vi24() {
 }
 
 void chk_vi32(uint32_t n) {
-  uint8_t buf[5], *p = buf;
+  uint8_t buf[5] = {0};
+  uint8_t* p = buf;
   const uint8_t *p2 = buf;
   encode_vi32(&p, n);
   HT_TRY("decoding vint32",
@@ -223,7 +224,8 @@ void test_vi32() {
 }
 
 void chk_vi64(uint64_t n) {
-  uint8_t buf[10], *p = buf;
+  uint8_t buf[10] = {0};
+  uint8_t* p = buf;
   const uint8_t *p2 = buf;
   encode_vi64(&p, n);
   HT_TRY("decoding vint32",
