@@ -20,31 +20,33 @@ ColumnSchema::ColumnSchema(const std::string& sql, DB::Schema::Ptr& schema,
 ColumnSchema::~ColumnSchema() {}
 
 int ColumnSchema::parse(ColumnSchema::Func* func) {
-  bool token_cmd = false;
 
   while(remain && !err) {
  
     if(found_space())
       continue;
 
-    if(!token_cmd) {
-      if((token_cmd = (found_token("add", 3)    || 
-                       found_token("create", 6)))) {
-        *func = Func::CREATE;
-      } else if((token_cmd = (found_token("modify", 6) || 
-                              found_token("update", 6) || 
-                              found_token("change", 6)))) {
-        *func = Func::MODIFY;
-      } else if((token_cmd = (found_token("delete", 6) || 
-                              found_token("remove", 6)))) {
-        *func = Func::DELETE;
-      }
+    if(found_token("add", 3) || 
+       found_token("create", 6)) {
+      return parse((*func = Func::CREATE), true);
     }
-    if(!token_cmd)
-      expect_token("CREATE|MODIFY|DELETE", 20, token_cmd);
+
+    if(found_token("modify", 6) || 
+       found_token("update", 6) || 
+       found_token("change", 6)) {
+      return parse((*func = Func::MODIFY), true);
+    }
+
+    if(found_token("delete", 6) || 
+       found_token("remove", 6)) {
+      return parse((*func = Func::DELETE), true);
+    }
+
+    bool token_cmd = false;
+    expect_token("CREATE|MODIFY|DELETE", 20, token_cmd);
     break;
   }
-  return parse(*func, true);
+  return err;
 }
 
 int ColumnSchema::parse(ColumnSchema::Func func, bool token_cmd) {

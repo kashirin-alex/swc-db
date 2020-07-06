@@ -63,7 +63,7 @@ void decode(int& err, Types::Encoding encoder,
   }
 }
 
-void encode(int& err, Types::Encoding encoder, 
+void encode(int&, Types::Encoding encoder, 
             const uint8_t* src, size_t src_sz, 
             size_t* sz_enc, DynamicBuffer& output, 
             uint32_t reserve) {

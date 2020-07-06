@@ -225,7 +225,7 @@ void ConnHandler::write(ConnHandler::Pending* pending) {
       delete pending;
       do_async_write(
         cbuf->get_buffers(),
-        [cbuf, hdlr, conn=ptr()] (const asio::error_code& ec, uint32_t len) { 
+        [cbuf, hdlr, conn=ptr()] (const asio::error_code& ec, uint32_t) { 
           if(!ec)
             conn->write_next();
 
@@ -277,7 +277,7 @@ void ConnHandler::write(ConnHandler::Pending* pending) {
   write_commbuf:
     do_async_write(
       cbuf->get_buffers(),
-      [cbuf, conn=ptr()] (const asio::error_code& ec, uint32_t len) {
+      [cbuf, conn=ptr()] (const asio::error_code& ec, uint32_t) {
         return ec ? conn->do_close() : conn->write_next();
       }
     );

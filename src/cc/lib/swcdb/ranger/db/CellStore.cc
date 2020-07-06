@@ -272,7 +272,7 @@ void Read::run_queued() {
     });
 }
 
-void Read::get_blocks(int& err, std::vector<Block::Read::Ptr>& to) const {
+void Read::get_blocks(int&, std::vector<Block::Read::Ptr>& to) const {
   to.insert(to.end(), blocks.begin(), blocks.end());
 }
 

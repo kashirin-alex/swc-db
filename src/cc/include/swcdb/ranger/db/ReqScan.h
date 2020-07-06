@@ -82,7 +82,7 @@ class ReqScanBlockLoader : public ReqScan {
     return true;
   }
 
-  bool add_cell_and_more(const DB::Cells::Cell& cell) override {
+  bool add_cell_and_more(const DB::Cells::Cell&) override {
     return !reached_limits();
   }
 };

@@ -40,12 +40,12 @@ void Report::handle_no_conn() {
   cb_no_conn();
 }
 
-bool Report::run(uint32_t timeout) {
+bool Report::run() {
   Env::Clients::get()->rgr->get(endpoints)->put(req());
   return true;
 }
 
-void Report::handle(ConnHandlerPtr conn, const Event::Ptr& ev) {
+void Report::handle(ConnHandlerPtr, const Event::Ptr& ev) {
 
   if(ev->type == Event::Type::DISCONNECT){
     handle_no_conn();

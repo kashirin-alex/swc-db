@@ -92,7 +92,7 @@ class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
       it->second->change_rgr(rgrid_old, rgrid);
   }
 
-  void remove(int &err, const cid_t cid) {
+  void remove(int&, const cid_t cid) {
     Mutex::scope lock(m_mutex);
     auto it = find(cid);
     if (it != end())

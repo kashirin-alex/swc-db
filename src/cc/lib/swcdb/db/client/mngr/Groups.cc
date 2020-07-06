@@ -132,11 +132,6 @@ Groups::Groups(const Groups::Vec& groups, const std::vector<Network>& nets)
                : Vec(groups), m_nets(nets) {
 }
 
-
-Groups::Groups(const Groups& groups) 
-               : Vec(groups), m_nets(groups.m_nets) {
-}
-
 Groups::~Groups() { }
 
 Groups::Ptr Groups::init() {

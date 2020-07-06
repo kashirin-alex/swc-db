@@ -10,12 +10,12 @@ namespace SWC {
 
 DispatchHandler::~DispatchHandler() { }
 
-void DispatchHandler::handle(ConnHandlerPtr conn, const Event::Ptr& ev) { 
-  SWC_LOGF(LOG_WARN, "handle(virtual): %s", ev->to_str().c_str());
-  return;
+void DispatchHandler::handle(ConnHandlerPtr, const Event::Ptr& ev) { 
+  SWC_LOG_OUT(LOG_WARN) << "DispatchHandler(handle is Virtual!)\n"
+                        << ev->to_str() << SWC_LOG_OUT_END;
 }
     
-bool DispatchHandler::run(uint32_t timeout) { 
+bool DispatchHandler::run() { 
   return false; 
 }
   

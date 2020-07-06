@@ -447,7 +447,7 @@ void Mutable::scan_version_multi(ReqScan* req) const {
                                              req->spec.offset_key, cell.key)) {
       case Condition::LT: {
         req->profile.skip_cell();
-        continue;
+        break;
       }
       case Condition::EQ: {
         if(!rev ||
@@ -457,13 +457,16 @@ void Mutable::scan_version_multi(ReqScan* req) const {
           //if(req->offset && req->selector(cell, stop))
           //  --req->offset;
           req->profile.skip_cell();
-          continue;
+          break;
         }
+        continue;
       }
       default:
         chk_align = false;
         break;
     }
+    if(chk_align)
+      continue;
 
     if(!req->selector(key_seq, cell, stop)) {
       req->profile.skip_cell();

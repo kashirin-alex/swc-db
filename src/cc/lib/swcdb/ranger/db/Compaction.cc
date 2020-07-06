@@ -213,7 +213,7 @@ void Compaction::_schedule(uint32_t t_ms) {
   m_check_timer.expires_from_now(set_in);
 
   m_check_timer.async_wait(
-    [this](const asio::error_code ec) {
+    [this](const asio::error_code& ec) {
       if(ec != asio::error::operation_aborted){
         run();
       }

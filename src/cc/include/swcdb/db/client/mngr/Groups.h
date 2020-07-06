@@ -70,8 +70,6 @@ class Groups final : private std::vector<Group::Ptr>,
 
   Groups();
 
-  Groups(const Groups& groups);
-
   Groups(const Vec& groups, const std::vector<Network>& nets);
 
   ~Groups();

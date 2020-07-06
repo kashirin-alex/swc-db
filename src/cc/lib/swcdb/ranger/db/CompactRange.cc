@@ -210,7 +210,7 @@ bool CompactRange::with_block() {
 }
 
 bool CompactRange::selector(const Types::KeySeq key_seq, 
-                            const DB::Cells::Cell& cell, bool& stop) {
+                            const DB::Cells::Cell& cell, bool&) {
   return spec.is_matching(
     key_seq, cell.key, cell.timestamp, cell.control & DB::Cells::TS_DESC);
 }
@@ -345,7 +345,7 @@ void CompactRange::progress_check_timer() {
   Mutex::scope lock(m_mutex);
   m_chk_timer.expires_from_now(std::chrono::milliseconds(median));
   m_chk_timer.async_wait(
-    [ptr=shared()](const asio::error_code ec) {
+    [ptr=shared()](const asio::error_code& ec) {
       if(ec == asio::error::operation_aborted)
         return;
       ptr->progress_check_timer();
@@ -710,7 +710,7 @@ void CompactRange::split(rid_t new_rid, uint32_t split_at) {
   new_range = nullptr;
   col->unload(
     new_rid, 
-    [new_rid, cid=range->cfg->cid](int err) { 
+    [new_rid, cid=range->cfg->cid](int) { 
       Protocol::Mngr::Req::RangeUnloaded::request(
         cid, new_rid,
         [cid, new_rid]

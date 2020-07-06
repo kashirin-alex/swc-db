@@ -22,7 +22,7 @@ RangeLoad::RangeLoad(const Manager::Ranger::Ptr& rgr,
   
 RangeLoad::~RangeLoad() { }
 
-void RangeLoad::handle(ConnHandlerPtr conn, const Event::Ptr& ev) {
+void RangeLoad::handle(ConnHandlerPtr, const Event::Ptr& ev) {
       
   if(was_called)
     return;

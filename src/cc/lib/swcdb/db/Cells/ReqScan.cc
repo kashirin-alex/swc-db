@@ -52,7 +52,7 @@ bool ReqScan::offset_adjusted() {
 }
 
 bool ReqScan::selector(const Types::KeySeq key_seq,  
-                       const DB::Cells::Cell& cell, bool& stop) {
+                       const DB::Cells::Cell& cell, bool&) {
   return spec.is_matching(key_seq, cell);
 }
 

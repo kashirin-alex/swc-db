@@ -130,7 +130,8 @@ class AppContext final : public SWC::AppContext {
 
       case Event::Type::MESSAGE: {
         uint8_t cmd = ev->header.command >= Protocol::Mngr::MAX_CMD
-                      ? Protocol::Mngr::NOT_IMPLEMENTED : ev->header.command;
+                        ? (uint8_t)Protocol::Mngr::NOT_IMPLEMENTED 
+                        : ev->header.command;
         asio::post(
           *Env::IoCtx::io()->ptr(), 
           [cmd, conn, ev]() { 

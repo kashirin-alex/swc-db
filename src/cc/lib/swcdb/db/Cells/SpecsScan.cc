@@ -45,7 +45,7 @@ void Scan::free() {
 }
 
 bool Scan::equal(const Scan &other) {
-  if(columns.size() != other.columns.size())
+  if(columns.size() != other.columns.size() || !other.flags.equal(flags))
     return false;
 
   auto it2=other.columns.begin();

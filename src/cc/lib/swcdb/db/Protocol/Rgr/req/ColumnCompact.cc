@@ -21,7 +21,7 @@ ColumnCompact::ColumnCompact(cid_t cid)
 
 ColumnCompact::~ColumnCompact() { }
 
-void ColumnCompact::handle(ConnHandlerPtr conn, const Event::Ptr& ev) {
+void ColumnCompact::handle(ConnHandlerPtr, const Event::Ptr& ev) {
 
   if(was_called)
     return;

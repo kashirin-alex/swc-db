@@ -25,8 +25,8 @@ struct Data {
   double      time = 0;
   const char* time_base = "";
   
-  Data(size_t in_bytes, size_t in_ns, 
-       size_t epochs_bytes = 0, size_t epochs_ns = 0) {
+  Data(size_t in_bytes, size_t in_ns) { 
+          // size_t epochs_bytes = 0, size_t epochs_ns = 0
     
     if(in_ns < 100000) {
       time = in_ns;

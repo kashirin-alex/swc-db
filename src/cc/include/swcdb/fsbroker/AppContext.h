@@ -89,7 +89,7 @@ class AppContext final : public SWC::AppContext {
     }
   }
   
-  void init(const EndPoints& endpoints) override {
+  void init(const EndPoints&) override {
     int sig = 0;
     Env::IoCtx::io()->set_signals();
     shutting_down(std::error_code(), sig);
@@ -119,7 +119,8 @@ class AppContext final : public SWC::AppContext {
 
       case Event::Type::MESSAGE: {
       uint8_t cmd = ev->header.command >= FS::Protocol::Cmd::FUNCTION_MAX 
-                    ? FS::Protocol::Cmd::NOT_IMPLEMENTED : ev->header.command;
+                      ? (uint8_t)FS::Protocol::Cmd::NOT_IMPLEMENTED 
+                      : ev->header.command;
         asio::post(
           *Env::IoCtx::io()->ptr(), 
           [cmd, conn, ev]() { 

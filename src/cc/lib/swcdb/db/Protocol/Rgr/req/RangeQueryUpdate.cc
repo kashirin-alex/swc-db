@@ -46,12 +46,12 @@ void RangeQueryUpdate::handle_no_conn() {
   cb(req(), Params::RangeQueryUpdateRsp(Error::COMM_NOT_CONNECTED));
 }
 
-bool RangeQueryUpdate::run(uint32_t timeout) {
+bool RangeQueryUpdate::run() {
   Env::Clients::get()->rgr->get(endpoints)->put(req());
   return true;
 }
 
-void RangeQueryUpdate::handle(ConnHandlerPtr conn, const Event::Ptr& ev) {
+void RangeQueryUpdate::handle(ConnHandlerPtr, const Event::Ptr& ev) {
   
   if(ev->type == Event::Type::DISCONNECT) {
     handle_no_conn();

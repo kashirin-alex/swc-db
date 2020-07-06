@@ -17,10 +17,6 @@ Flags::Flags(): limit(0), offset(0),
                 options(0), was_set(false) {
 }
 
-Flags::Flags(const Flags &other) {
-  copy(other);
-}
-
 void Flags::copy(const Flags &other) {
   limit           = other.limit;
   offset          = other.offset;

@@ -315,8 +315,9 @@ void FileSystemHadoop::rename(int& err, const std::string& from,
   errno = 0;
   if (true) { // hdfsRename(m_filesystem, abspath_from.c_str(), abspath_to.c_str())
       // == -1) {
+    err = errno;
     SWC_LOGF(LOG_ERROR, "rename('%s' to '%s') failed - %s", 
-              abspath_from.c_str(), abspath_to.c_str(), strerror(errno));
+              abspath_from.c_str(), abspath_to.c_str(), strerror(err));
     return;
   }
   SWC_LOGF(LOG_DEBUG, "rename('%s' to '%s')", 

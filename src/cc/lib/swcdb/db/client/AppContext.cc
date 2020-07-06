@@ -13,11 +13,10 @@ AppContext::AppContext() { }
 
 AppContext::~AppContext() { }
 
-void AppContext::handle(ConnHandlerPtr conn, const Event::Ptr& ev) {
+void AppContext::handle(ConnHandlerPtr, const Event::Ptr&) {
     //if(ev->type != Event::Type::DISCONNECT){
     // std::cout << "ClientAppContext, handle: " << ev->to_str() << "\n";
     //}
-  return;
 }
 
 }}

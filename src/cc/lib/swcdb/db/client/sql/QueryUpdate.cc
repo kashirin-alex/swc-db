@@ -135,8 +135,8 @@ void QueryUpdate::read_cells() {
         if(err) 
           return;
 
-        bool on_fraction;
-        cid_t cid;
+        bool on_fraction = false;
+        cid_t cid = DB::Schema::NO_CID;
         DB::Cells::Cell cell;
         read_cell(cid, cell, on_fraction);
 

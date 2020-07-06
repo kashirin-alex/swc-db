@@ -237,7 +237,7 @@ void check(SWC::Types::KeySeq key_seq, SWC::Types::Column typ,
 
 
 
-int main(int argc, char** argv) {
+int main() {
 
   std::vector<size_t> cell_numbers = {
     1000,

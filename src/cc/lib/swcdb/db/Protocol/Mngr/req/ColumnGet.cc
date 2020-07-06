@@ -63,7 +63,7 @@ void ColumnGet::handle_no_conn() {
   run();
 }
 
-bool ColumnGet::run(uint32_t timeout) {
+bool ColumnGet::run() {
   if(endpoints.empty()) {
     // ColumnGet not like ColumnList (can be any mngr if by cid)
     Env::Clients::get()->mngrs_groups->select(
@@ -77,7 +77,7 @@ bool ColumnGet::run(uint32_t timeout) {
   return true;
 }
 
-void ColumnGet::handle(ConnHandlerPtr conn, const Event::Ptr& ev) {
+void ColumnGet::handle(ConnHandlerPtr, const Event::Ptr& ev) {
 
   if(ev->type == Event::Type::DISCONNECT) {
     handle_no_conn();

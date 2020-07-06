@@ -39,7 +39,7 @@ void ColumnList::handle_no_conn() {
   run();
 }
 
-bool ColumnList::run(uint32_t timeout) {
+bool ColumnList::run() {
   if(endpoints.empty()) {
     Env::Clients::get()->mngrs_groups->select(
       Types::MngrRole::SCHEMAS, endpoints); 
@@ -52,7 +52,7 @@ bool ColumnList::run(uint32_t timeout) {
   return true;
 }
 
-void ColumnList::handle(ConnHandlerPtr conn, const Event::Ptr& ev) {
+void ColumnList::handle(ConnHandlerPtr, const Event::Ptr& ev) {
 
   if(ev->type == Event::Type::DISCONNECT) {
     handle_no_conn();

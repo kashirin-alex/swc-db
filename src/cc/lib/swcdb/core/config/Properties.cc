@@ -42,6 +42,7 @@ namespace SWC {
     prs.parse_filedata(in);
 
     load_from(prs.get_options(), only_guarded);
+    (void)allow_unregistered;
   } 
   
   void Properties::reload(const std::string& fname, 

@@ -26,16 +26,16 @@ class Rename : public Base {
 
   std::promise<void> promise(){
     std::promise<void>  r_promise;
-    cb = [await=&r_promise](int err){await->set_value();};
+    cb = [await=&r_promise](int){ await->set_value(); };
     return r_promise;
   }
 
-  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override { 
+  void handle(ConnHandlerPtr, const Event::Ptr& ev) override { 
 
     const uint8_t *ptr;
     size_t remain;
 
-    if(!Base::is_rsp(conn, ev, Cmd::FUNCTION_RENAME, &ptr, &remain))
+    if(!Base::is_rsp(ev, Cmd::FUNCTION_RENAME, &ptr, &remain))
       return;
 
     SWC_LOGF(LOG_DEBUG, "rename '%s' to '%s' error='%d'", 

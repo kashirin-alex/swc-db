@@ -69,7 +69,7 @@ class RgrMngId: public client::ConnQueue::ReqBase {
     set(200);
   }
 
-  bool run(uint32_t timeout=0) override {
+  bool run() override {
     if(endpoints.empty()) {
       Env::Clients::get()->mngrs_groups->select(
         Types::MngrRole::RANGERS, endpoints);
@@ -82,7 +82,7 @@ class RgrMngId: public client::ConnQueue::ReqBase {
     return true;
   }
 
-  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override {
+  void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
 
     if(ev->error != Error::OK || ev->header.command != RGR_MNG_ID) {
       set(1000);
@@ -188,7 +188,7 @@ class RgrMngId: public client::ConnQueue::ReqBase {
       std::chrono::milliseconds(ms ? ms : cfg_check_interval->get()));
 
     m_timer.async_wait(
-      [this](const asio::error_code ec) {
+      [this](const asio::error_code& ec) {
         if(ec != asio::error::operation_aborted)
           request();
       }

@@ -366,7 +366,7 @@ void test_ser() {
 
 } // local namespace
 
-int main(int argc, char *argv[]) {
+int main() {
   try {
     test_ser();
   }

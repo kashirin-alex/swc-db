@@ -23,7 +23,7 @@ RangeUnload::RangeUnload(const Ranger::RangePtr& range,
 
 RangeUnload::~RangeUnload() { }
 
-void RangeUnload::handle(ConnHandlerPtr conn, const Event::Ptr& ev) {
+void RangeUnload::handle(ConnHandlerPtr, const Event::Ptr& ev) {
       
   if(was_called)
     return;

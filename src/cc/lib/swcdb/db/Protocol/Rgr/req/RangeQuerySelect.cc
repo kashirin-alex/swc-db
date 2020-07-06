@@ -39,12 +39,12 @@ void RangeQuerySelect::handle_no_conn() {
   cb(req(), Params::RangeQuerySelectRsp(Error::COMM_NOT_CONNECTED));
 }
 
-bool RangeQuerySelect::run(uint32_t timeout) {
+bool RangeQuerySelect::run() {
   Env::Clients::get()->rgr->get(endpoints)->put(req());
   return true;
 }
 
-void RangeQuerySelect::handle(ConnHandlerPtr conn, const Event::Ptr& ev) {
+void RangeQuerySelect::handle(ConnHandlerPtr, const Event::Ptr& ev) {
   
   if(ev->type == Event::Type::DISCONNECT) {
     handle_no_conn();

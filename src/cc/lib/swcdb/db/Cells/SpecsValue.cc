@@ -145,7 +145,23 @@ std::string Value::to_string() const {
 
 void Value::display(std::ostream& out, bool pretty) const {
   out << "size=" << size << " " << Condition::to_string(comp, true)
-      << '"' << std::string((const char*)data, size) << '"'; 
+      << '"';
+  if(size) {
+    char hex[5];
+    hex[4] = '\0';
+    const uint8_t* end = data + size;
+    for(const uint8_t* ptr = data; ptr < end; ++ptr) {
+      if(*ptr == '"')
+        out << '\\';
+      if(!pretty || (31 < *ptr && *ptr < 127)) {
+        out << *ptr;
+      } else {
+        sprintf(hex, "0x%X", *ptr);
+        out << hex;
+      }
+    }
+  }  
+  out << '"';
 }
 
 }}}

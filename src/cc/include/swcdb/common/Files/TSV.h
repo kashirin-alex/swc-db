@@ -404,7 +404,7 @@ class FileReader {
       err = Error::SQL_BAD_LOAD_FILE_FORMAT;
   }
 
-  bool header_read(const uint8_t** bufp, size_t* remainp, Types::Column typ,
+  bool header_read(const uint8_t** bufp, size_t* remainp, Types::Column, //typ
                    bool& has_ts, std::vector<std::string>& header) {
     const uint8_t* ptr = *bufp;
     size_t remain = *remainp;

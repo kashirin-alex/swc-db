@@ -65,7 +65,7 @@ void Rangers::schedule_assignment_check(uint32_t t_ms) {
   m_assign_timer.expires_from_now(set_in);
 
   m_assign_timer.async_wait(
-    [this](const asio::error_code ec) {
+    [this](const asio::error_code& ec) {
       if (ec != asio::error::operation_aborted) {
         assign_ranges();
       }
@@ -146,7 +146,7 @@ rgrid_t Rangers::rgr_had_id(rgrid_t rgrid, const EndPoints& endpoints) {
   return rgr_set_id(endpoints, new_id_required ? 0 : rgrid);
 }
 
-void Rangers::rgr_shutdown(rgrid_t rgrid, const EndPoints& endpoints) {
+void Rangers::rgr_shutdown(rgrid_t, const EndPoints& endpoints) {
   Ranger::Ptr removed = nullptr;
   {
     std::lock_guard lock(m_mutex);

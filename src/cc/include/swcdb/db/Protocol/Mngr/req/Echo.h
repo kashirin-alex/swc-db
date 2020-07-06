@@ -44,11 +44,11 @@ class Echo : public DispatchHandler {
   
   virtual ~Echo() { }
   
-  bool run(uint32_t timeout=60000) override {
+  bool run() override {
     return conn->send_request(cbp, shared_from_this());
   }
 
-  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override {
+  void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
       
     //SWC_LOGF(LOG_DEBUG, "handle: %s", ev->to_str().c_str());
 

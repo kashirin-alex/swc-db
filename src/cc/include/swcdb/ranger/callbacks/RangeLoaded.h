@@ -56,8 +56,7 @@ class RangeLoaded : public ResponseCallback {
     
     send_error:
       RangerEnv::columns()->unload_range(err, cid, rid, 
-        [berr=err, ptr=shared_from_this()]
-        (int err){
+        [berr=err, ptr=shared_from_this()] (int) {
           ptr->send_error(berr, "");
           RangerEnv::in_process(-1);
         }

@@ -113,7 +113,7 @@ void Read::load(FS::SmartFd::Ptr smartfd, const QueueRunnable::Call_t& cb) {
   run_queued();
 }
 
-void Read::load_cells(int& err, Ranger::Block::Ptr cells_block) {
+void Read::load_cells(int&, Ranger::Block::Ptr cells_block) {
   bool was_splitted = false;
   if(m_buffer.size) {
     m_cells_remain -= cells_block->load_cells(

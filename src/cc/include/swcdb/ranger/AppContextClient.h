@@ -15,7 +15,7 @@ class AppContext final : public SWC::AppContext {
   AppContext() {}
   virtual ~AppContext(){}
 
-  void disconnected(const ConnHandlerPtr& conn) {};
+  void disconnected(const ConnHandlerPtr&) {};
 
   void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override {
     

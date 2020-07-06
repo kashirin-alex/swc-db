@@ -25,8 +25,6 @@ class Flags {
 
   explicit Flags();
 
-  explicit Flags(const Flags &other);
-
   void copy(const Flags &other);
 
   ~Flags();

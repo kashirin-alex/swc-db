@@ -64,6 +64,7 @@ std::string type_to_string(Types::Fs typ) {
 FileSystem::FileSystem(const Property::V_GINT32::Ptr cfg_fds_max,
                        bool setting_applied) 
                       : cfg_fds_max(cfg_fds_max), fds_count(0) { 
+  (void)setting_applied;
 }
   
 FileSystem::FileSystem(const std::string& root, 
@@ -74,6 +75,7 @@ FileSystem::FileSystem(const std::string& root,
         normalize_pathname(
           Env::Config::settings()->get_str("swc.fs.path.data"))),
       cfg_fds_max(cfg_fds_max), fds_count(0) { 
+  (void)setting_applied;
 }
 
 FileSystem::~FileSystem() { 

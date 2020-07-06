@@ -254,6 +254,7 @@ void load_check_key(int chks, int num_fractions, int chk_count) {
                     << " avg(insert)=" << took_insert/chks 
                     << " avg(get)=" << took_get/chks 
                     << " total=" << took_add+took_remove+took_insert+took_get
+                    << " chk_count=" << chk_count
                     <<  "\n";
   
 }
@@ -311,6 +312,7 @@ void load_check_key_vec(int chks, int num_fractions, int chk_count) {
                     << " avg(insert)=" << took_insert/chks 
                     << " avg(get)=" << took_get/chks 
                     << " total=" << took_add+took_remove+took_insert+took_get
+                    << " chk_count=" << chk_count
                     <<  "\n";
   
 }
@@ -368,6 +370,7 @@ void load_check_vec(int chks, int num_fractions, int chk_count) {
                     << " avg(insert)=" << took_insert/chks 
                     << " avg(get)=" << took_get/chks 
                     << " total=" << took_add+took_remove+took_insert+took_get
+                    << " chk_count=" << chk_count
                     <<  "\n";
 }
 

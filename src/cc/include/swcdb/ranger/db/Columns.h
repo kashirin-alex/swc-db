@@ -53,7 +53,7 @@ class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
     return col;
   }
 
-  Column::Ptr get_column(int &err, const cid_t cid) {
+  Column::Ptr get_column(int&, const cid_t cid) {
     Mutex::scope lock(m_mutex);
     auto it = find(cid);
     return it == end() ? nullptr : it->second;
@@ -135,7 +135,7 @@ class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
 
       std::promise<void>  r_promise;
       Callback::RangeUnloaded_t cb 
-        = [&to_unload, &r_promise](int err){
+        = [&to_unload, &r_promise](int) {
           if(--to_unload == 0)
             r_promise.set_value();
       };

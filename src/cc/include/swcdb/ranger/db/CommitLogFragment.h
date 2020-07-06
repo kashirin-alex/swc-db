@@ -62,7 +62,7 @@ class Fragment final {
                         DynamicBuffer& cells, 
                         StaticBuffer::Ptr& buffer);
 
-  static void write(int& err, FS::SmartFd::Ptr& smartfd, 
+  static void write(int& err, 
                     const uint8_t version,
                     const DB::Cells::Interval& interval, 
                     Types::Encoding& encoder,

@@ -22,7 +22,7 @@ class DispatchHandler : public std::enable_shared_from_this<DispatchHandler> {
 
   virtual void handle(ConnHandlerPtr conn, const Event::Ptr& ev);
     
-  virtual bool run(uint32_t timeout=0);
+  virtual bool run();
   
   ~DispatchHandler();
 };

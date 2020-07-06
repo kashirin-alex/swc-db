@@ -24,7 +24,7 @@ class ColumnUpdate : public client::ConnQueue::ReqBase {
   virtual ~ColumnUpdate() { }
   
   void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override {
-    if(was_called || !is_rsp(conn, ev))
+    if(was_called || !is_rsp(ev))
       return;
 
     if(ev->header.command == COLUMN_UPDATE && ev->response_code() == Error::OK){

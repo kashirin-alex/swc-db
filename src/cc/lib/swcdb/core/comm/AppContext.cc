@@ -5,6 +5,7 @@
  */
 
 
+#include "swcdb/core/Logger.h"
 #include "swcdb/core/comm/AppContext.h"
 #include <iostream>
 
@@ -14,9 +15,9 @@ AppContext::AppContext() { }
 
 AppContext::~AppContext(){}
 
-void AppContext::handle(ConnHandlerPtr conn, const Event::Ptr& ev) {
-  ev->display();
-  std::cerr << "AppContext(handle is Virtual!)\n";
+void AppContext::handle(ConnHandlerPtr, const Event::Ptr& ev) {
+  SWC_LOG_OUT(LOG_WARN) << "AppContext(handle is Virtual!)\n"
+                        << ev->to_str() << SWC_LOG_OUT_END;
 }
 
 void AppContext::init(const EndPoints& endpoints) {

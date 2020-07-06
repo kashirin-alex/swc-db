@@ -41,7 +41,7 @@ void ServerConnections::reusable(ConnHandlerPtr& conn, bool preserve) {
 }
 
 void ServerConnections::connection(ConnHandlerPtr& conn,  
-                                   const std::chrono::milliseconds& timeout,
+                                   const std::chrono::milliseconds&,
                                    bool preserve) {
 
   SWC_LOGF(LOG_DEBUG, "Connecting Sync: %s, addr=[%s]:%d %s", 
@@ -76,7 +76,7 @@ void ServerConnections::connection(ConnHandlerPtr& conn,
   //          m_srv_name.c_str(), to_string(conn).c_str());
 }
 
-void ServerConnections::connection(const std::chrono::milliseconds& timeout,
+void ServerConnections::connection(const std::chrono::milliseconds&,
                                    const NewCb_t& cb, bool preserve) {
 
   SWC_LOGF(LOG_DEBUG, "Connecting Async: %s, addr=[%s]:%d %s", 

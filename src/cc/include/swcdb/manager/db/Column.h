@@ -83,7 +83,7 @@ class Column final : private std::vector<Range::Ptr> {
       err = Error::COLUMN_NOT_READY;
   }
   
-  Range::Ptr get_range(int &err, const rid_t rid, bool initialize=false) {
+  Range::Ptr get_range(int&, const rid_t rid, bool initialize=false) {
     std::scoped_lock lock(m_mutex);
 
     auto it = std::find_if(begin(), end(), [rid](const Range::Ptr& range) 
@@ -97,7 +97,7 @@ class Column final : private std::vector<Range::Ptr> {
     return nullptr;
   }
 
-  Range::Ptr get_range(int &err, 
+  Range::Ptr get_range(int&, 
                        const DB::Cell::Key& range_begin, 
                        const DB::Cell::Key& range_end, 
                        bool next_range) {

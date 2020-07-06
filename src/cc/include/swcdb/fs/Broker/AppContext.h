@@ -17,14 +17,14 @@ class AppContext final : public SWC::AppContext {
 
   virtual ~AppContext(){}
     
-  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override {
+  void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
     
     if(ev->type == Event::Type::DISCONNECT)
       return;
       
     const uint8_t *ptr;
     size_t remain;
-    if(Protocol::Req::Base().is_rsp(conn, ev, ev->header.command, &ptr, &remain))
+    if(Protocol::Req::Base().is_rsp(ev, ev->header.command, &ptr, &remain))
       SWC_LOGF(LOG_WARN, "Unhandled %s", ev->to_str().c_str());
   }
 };

@@ -20,13 +20,15 @@ class RangeIsLoaded : public DispatchHandler {
 
   RangeIsLoaded(const ConnHandlerPtr& conn, 
                 const Manager::Range::Ptr& range,
-                const RangeIsLoaded_t& cb)
-                : conn(conn), range(range), cb(cb), was_called(false) { 
+                const RangeIsLoaded_t& cb,
+                uint32_t timeout=60000)
+                : conn(conn), range(range), cb(cb), timeout(timeout), 
+                  was_called(false) { 
   }
   
   virtual ~RangeIsLoaded() { }
   
-  bool run(uint32_t timeout=60000) override {
+  bool run() override {
     auto cbp = CommBuf::make(
       Params::RangeIsLoaded(range->cfg->cid, range->rid));
     cbp->header.set(RANGE_IS_LOADED, timeout);
@@ -56,6 +58,7 @@ class RangeIsLoaded : public DispatchHandler {
   ConnHandlerPtr            conn;
   Manager::Range::Ptr       range;
   RangeIsLoaded_t           cb;
+  uint32_t                  timeout;
   std::atomic<bool>         was_called;
 };
 

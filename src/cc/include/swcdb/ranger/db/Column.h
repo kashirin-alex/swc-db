@@ -28,7 +28,7 @@ class Column final : private std::unordered_map<rid_t, RangePtr> {
         : cfg(cid, schema) { 
   }
 
-  void init(int &err) { }
+  void init(int&) { }
 
   ~Column() { }
 

@@ -24,8 +24,8 @@ class MngrColumnGet : public client::ConnQueue::ReqBase {
   
   virtual ~MngrColumnGet() { }
   
-  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override {
-    if(was_called || !is_rsp(conn, ev))
+  void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
+    if(was_called || !is_rsp(ev))
       return;
 
     if(ev->header.command == COLUMN_GET) {

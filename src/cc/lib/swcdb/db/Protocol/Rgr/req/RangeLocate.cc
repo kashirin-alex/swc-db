@@ -36,12 +36,12 @@ void RangeLocate::handle_no_conn() {
   cb(req(), Params::RangeLocateRsp(Error::COMM_NOT_CONNECTED));
 }
 
-bool RangeLocate::run(uint32_t timeout) {
+bool RangeLocate::run() {
   Env::Clients::get()->rgr->get(endpoints)->put(req());
   return true;
 }
 
-void RangeLocate::handle(ConnHandlerPtr conn, const Event::Ptr& ev) {
+void RangeLocate::handle(ConnHandlerPtr, const Event::Ptr& ev) {
 
   if(ev->type == Event::Type::DISCONNECT) {
     handle_no_conn();

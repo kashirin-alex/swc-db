@@ -26,7 +26,7 @@ namespace Test {
 
 /* INPUTS */
 
-const int64_t now_ns() {
+int64_t now_ns() {
   return (int64_t)std::chrono::duration_cast<std::chrono::nanoseconds>(
     std::chrono::system_clock::now().time_since_epoch()).count();
 }

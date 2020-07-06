@@ -116,7 +116,7 @@ void Resources::refresh_stats() {
 void Resources::schedule() {
   m_timer->expires_from_now(std::chrono::milliseconds(ram.chk_ms));
   m_timer->async_wait(
-    [this](const asio::error_code ec) {
+    [this](const asio::error_code& ec) {
       if(ec != asio::error::operation_aborted) {
         checker();
       }

@@ -46,7 +46,7 @@ void RgrGet::handle_no_conn() {
   run();
 }
 
-bool RgrGet::run(uint32_t timeout) {
+bool RgrGet::run() {
   if(endpoints.empty()) {
     Env::Clients::get()->mngrs_groups->select(cid, endpoints); 
     if(endpoints.empty()) {
@@ -58,7 +58,7 @@ bool RgrGet::run(uint32_t timeout) {
   return true;
 }
 
-void RgrGet::handle(ConnHandlerPtr conn, const Event::Ptr& ev) {
+void RgrGet::handle(ConnHandlerPtr, const Event::Ptr& ev) {
 
   if(ev->type == Event::Type::DISCONNECT){
     handle_no_conn();

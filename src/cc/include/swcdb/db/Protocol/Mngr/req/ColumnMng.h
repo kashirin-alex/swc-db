@@ -43,7 +43,7 @@ class ColumnMng: public client::ConnQueue::ReqBase {
 
   void handle_no_conn() override;
 
-  bool run(uint32_t timeout=0) override;
+  bool run() override;
 
   void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
 

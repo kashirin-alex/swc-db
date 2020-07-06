@@ -39,7 +39,7 @@ class Range final {
           m_state(State::NOTSET), m_rgrid(0), m_last_rgr(nullptr) { 
   }
 
-  void init(int &err) { }
+  void init(int&) { }
 
   ~Range() { }
   

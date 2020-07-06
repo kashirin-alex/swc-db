@@ -21,7 +21,7 @@ PeriodicTimer::~PeriodicTimer() {
 void PeriodicTimer::schedule() {
   m_timer.expires_from_now(std::chrono::milliseconds(m_ms->get()));
   m_timer.async_wait(
-    [this](const asio::error_code ec) {
+    [this](const asio::error_code& ec) {
       if(ec != asio::error::operation_aborted) {
         m_call();
         schedule();

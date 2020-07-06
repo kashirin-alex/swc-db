@@ -28,18 +28,18 @@ class ReadAll : public Base {
   std::promise<void> promise() {
     std::promise<void>  r_promise;
     cb = [await=&r_promise]
-         (int err, const std::string& name, StaticBuffer::Ptr buf) {
+         (int, const std::string&, const StaticBuffer::Ptr&) {
            await->set_value();
           };
     return r_promise;
   }
 
-  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override {
+  void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
 
     const uint8_t *ptr;
     size_t remain;
 
-    if(!Base::is_rsp(conn, ev, Cmd::FUNCTION_READ_ALL, &ptr, &remain))
+    if(!Base::is_rsp(ev, Cmd::FUNCTION_READ_ALL, &ptr, &remain))
       return;
       
     StaticBuffer::Ptr buf = nullptr;

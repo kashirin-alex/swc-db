@@ -174,7 +174,7 @@ void Key::encode(uint8_t** bufp) const {
     it->encode(bufp);
 }
 
-void Key::decode(const uint8_t** bufp, size_t* remainp, bool owner) {
+void Key::decode(const uint8_t** bufp, size_t* remainp) {
   clear();
   resize(Serialization::decode_vi32(bufp, remainp));
   for(auto it = begin(); it < end(); ++it)

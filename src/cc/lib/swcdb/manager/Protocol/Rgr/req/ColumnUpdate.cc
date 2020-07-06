@@ -20,7 +20,7 @@ ColumnUpdate::ColumnUpdate(const Manager::Ranger::Ptr& rgr,
   
 ColumnUpdate::~ColumnUpdate() { }
 
-void ColumnUpdate::handle(ConnHandlerPtr conn, const Event::Ptr& ev) {
+void ColumnUpdate::handle(ConnHandlerPtr, const Event::Ptr& ev) {
       
   if(was_called)
     return;

@@ -34,7 +34,7 @@ void MngrState::handle(ConnHandlerPtr conn, const Event::Ptr& ev) {
     disconnected(conn);
     return;
   }
-  if(client::ConnQueue::ReqBase::is_timeout(conn, ev))
+  if(client::ConnQueue::ReqBase::is_timeout(ev))
     return;
 
   if(ev->header.command == MNGR_STATE && ev->response_code() == Error::OK){

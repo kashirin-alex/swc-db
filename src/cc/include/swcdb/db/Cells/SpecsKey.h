@@ -91,7 +91,7 @@ class Key final : public std::vector<Fraction> {
   
   void encode(uint8_t** bufp) const;
 
-  void decode(const uint8_t** bufp, size_t* remainp, bool owner = true);
+  void decode(const uint8_t** bufp, size_t* remainp);
 
   std::string to_string() const;
 

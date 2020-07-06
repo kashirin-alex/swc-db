@@ -22,19 +22,20 @@ ConnQueueReqBase::Ptr ConnQueueReqBase::req() {
 ConnQueueReqBase::~ConnQueueReqBase() {}
 
 void ConnQueueReqBase::handle(ConnHandlerPtr conn, const Event::Ptr& ev) {
-  if(was_called || !is_rsp(conn, ev))
+  if(was_called || !is_rsp(ev))
     return;
+  (void)conn;
   // SWC_LOGF(LOG_DEBUG, "handle: %s", ev->to_str().c_str());
 }
 
-bool ConnQueueReqBase::is_timeout(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
+bool ConnQueueReqBase::is_timeout(const Event::Ptr& ev) {
   bool out = ev->error == Error::Code::REQUEST_TIMEOUT;
   if(out)
     request_again();
   return out;
 }
 
-bool ConnQueueReqBase::is_rsp(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
+bool ConnQueueReqBase::is_rsp(const Event::Ptr& ev) {
   if(ev->type == Event::Type::DISCONNECT 
      || ev->error == Error::Code::REQUEST_TIMEOUT) {
     if(!was_called)
@@ -171,7 +172,7 @@ void ConnQueue::delay(const ConnQueue::ReqBase::Ptr& req) {
   }
   tm->expires_from_now(std::chrono::milliseconds(cfg_again_delay_ms->get()));
   tm->async_wait(
-    [req, tm](const asio::error_code ec) {
+    [req, tm](const asio::error_code&) {
       req->queue->delay_proceed(req, tm);
     }
   );

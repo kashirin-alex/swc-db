@@ -50,7 +50,7 @@ class RangeUnloaded: public client::ConnQueue::ReqBase {
     run();
   }
 
-  bool run(uint32_t timeout=0) override {
+  bool run() override {
     if(endpoints.empty()) {
       Env::Clients::get()->mngrs_groups->select(cid, endpoints); 
       if(endpoints.empty()) {
@@ -62,7 +62,7 @@ class RangeUnloaded: public client::ConnQueue::ReqBase {
     return true;
   }
 
-  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override {
+  void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
 
     if(ev->type == Event::Type::DISCONNECT){
       handle_no_conn();

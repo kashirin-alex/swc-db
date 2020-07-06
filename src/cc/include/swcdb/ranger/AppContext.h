@@ -143,7 +143,8 @@ class AppContext final : public SWC::AppContext {
 
       case Event::Type::MESSAGE: {
         uint8_t cmd = ev->header.command >= Protocol::Rgr::MAX_CMD
-                    ? Protocol::Rgr::NOT_IMPLEMENTED : ev->header.command;
+                        ? (uint8_t)Protocol::Rgr::NOT_IMPLEMENTED 
+                        : ev->header.command;
         
         if(cmd == Protocol::Rgr::ASSIGN_ID_NEEDED) {
           Protocol::Rgr::Handler::assign_id(conn, ev, id_mngr);

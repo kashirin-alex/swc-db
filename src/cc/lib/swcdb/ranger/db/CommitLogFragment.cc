@@ -30,15 +30,15 @@ Fragment::Ptr Fragment::make_read(int& err, const std::string& filepath,
                                   const Types::KeySeq key_seq) {
   auto smartfd = FS::SmartFd::make_ptr(filepath, 0);
     
-  uint8_t               version;
+  uint8_t               version = 0;
   DB::Cells::Interval   interval(key_seq);
-  Types::Encoding       encoder;
-  size_t                size_plain;
-  size_t                size_enc;
-  uint32_t              cell_revs;
-  uint32_t              cells_count;
-  uint32_t              data_checksum;
-  uint32_t              offset_data;
+  Types::Encoding       encoder = Types::Encoding::UNKNOWN;
+  size_t                size_plain = 0;
+  size_t                size_enc = 0;
+  uint32_t              cell_revs = 0;
+  uint32_t              cells_count = 0;
+  uint32_t              data_checksum = 0;
+  uint32_t              offset_data = 0;
 
   load_header(
     err, smartfd, 
@@ -137,12 +137,12 @@ Fragment::Ptr Fragment::make_write(int& err, const std::string& filepath,
     
   const uint8_t version = VERSION;
   const size_t  size_plain = cells.fill();
-  size_t        size_enc;
-  uint32_t      data_checksum;
-  uint32_t      offset_data;
+  size_t        size_enc = 0;
+  uint32_t      data_checksum = 0;
+  uint32_t      offset_data = 0;
 
   write(
-    err, smartfd, 
+    err,
     version, interval, 
     encoder, size_plain, size_enc, 
     cell_revs, cells_count, data_checksum, offset_data, 
@@ -162,7 +162,7 @@ Fragment::Ptr Fragment::make_write(int& err, const std::string& filepath,
   return frag;
 }
 
-void Fragment::write(int& err, FS::SmartFd::Ptr& smartfd, 
+void Fragment::write(int& err,
                      const uint8_t version,
                      const DB::Cells::Interval& interval, 
                      Types::Encoding& encoder,
@@ -171,10 +171,10 @@ void Fragment::write(int& err, FS::SmartFd::Ptr& smartfd,
                      uint32_t& data_checksum, uint32_t& offset_data,
                      DynamicBuffer& cells, StaticBuffer::Ptr& buffer) {
   uint32_t header_extlen = interval.encoded_length()+HEADER_EXT_FIXED_SIZE;
-  offset_data = HEADER_SIZE + header_extlen;
+  offset_data += HEADER_SIZE;
+  offset_data += header_extlen;
 
   DynamicBuffer output;
-  size_enc = 0;
   err = Error::OK;
   Encoder::encode(err, encoder, cells.base, size_plain, 
                   &size_enc, output, offset_data);
@@ -251,7 +251,7 @@ void Fragment::write(int err, uint8_t blk_replicas, int64_t blksz,
 
     Env::FsInterface::fs()->write(
       [this, blk_replicas, blksz, buff_write, sem]
-      (int err, const FS::SmartFd::Ptr& smartfd) {
+      (int err, const FS::SmartFd::Ptr&) {
         write(err, blk_replicas, blksz, buff_write, sem);
       }, 
       m_smartfd, blk_replicas, blksz, *buff_write.get()
@@ -300,7 +300,7 @@ void Fragment::load(const QueueRunnable::Call_t& cb) {
     asio::post(*Env::IoCtx::io()->ptr(), [ptr=ptr()](){ ptr->load(); } );
 }
 
-void Fragment::load_cells(int& err, Ranger::Block::Ptr cells_block) {
+void Fragment::load_cells(int&, Ranger::Block::Ptr cells_block) {
   bool was_splitted = false;
   if(m_buffer.size) {
     m_cells_remain -= cells_block->load_cells(
@@ -318,7 +318,7 @@ void Fragment::load_cells(int& err, Ranger::Block::Ptr cells_block) {
     release();
 }
 
-void Fragment::load_cells(int& err, DB::Cells::MutableVec& cells) {
+void Fragment::load_cells(int&, DB::Cells::MutableVec& cells) {
   if(m_buffer.size) {
     size_t count = 0;
     DB::Cells::Cell cell;
@@ -349,7 +349,7 @@ void Fragment::load_cells(int& err, DB::Cells::MutableVec& cells) {
   processing_decrement();
 }
 
-void Fragment::split(int& err, const DB::Cell::Key& key, 
+void Fragment::split(int&, const DB::Cell::Key& key, 
                      Fragments::Ptr log_left, Fragments::Ptr log_right) {
   if(m_buffer.size) {
     size_t count = 0;
