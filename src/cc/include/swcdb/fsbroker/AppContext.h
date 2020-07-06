@@ -159,7 +159,7 @@ class AppContext final : public SWC::AppContext {
     m_srv->stop_accepting(); // no further requests accepted
 
     int err;
-    for(FS::SmartFd::Ptr fd; fd = Env::Fds::get()->pop_next(); ) {
+    for(FS::SmartFd::Ptr fd; (fd = Env::Fds::get()->pop_next()); ) {
       if(fd->valid()) {
         err = Error::OK;
         if(fd->flags() & O_WRONLY)

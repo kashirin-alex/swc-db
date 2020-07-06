@@ -22,7 +22,7 @@ Rangers::~Rangers() {
   
 void Rangers::clear() {
   Mutex::scope lock(m_mutex);
-  clear();
+  Map::clear();
 }
   
 void Rangers::clear_expired() {

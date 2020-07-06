@@ -59,7 +59,7 @@ DB::Schema::Ptr Schemas::get(int& err, const std::string& name) {
   DB::Schema::Ptr schema;
   Mutex::scope lock(m_mutex);
 
-  if(schema = _get(name)) {
+  if((schema = _get(name))) {
     auto it = m_track.find(schema->cid);
     if(it != m_track.end() && Time::now_ms() - it->second < m_expiry_ms->get())
       return schema;

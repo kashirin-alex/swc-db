@@ -79,6 +79,11 @@ class ConnQueue :
 
   std::string to_string();
 
+  protected:
+  
+  const Property::V_GINT32::Ptr  cfg_keepalive_ms;
+  const Property::V_GINT32::Ptr  cfg_again_delay_ms;
+
   private:
   
   void exec_queue();
@@ -95,9 +100,6 @@ class ConnQueue :
   asio::high_resolution_timer*                      m_timer; 
   std::unordered_set<asio::high_resolution_timer*>  m_delayed;
 
-  protected:
-  const Property::V_GINT32::Ptr  cfg_keepalive_ms;
-  const Property::V_GINT32::Ptr  cfg_again_delay_ms;
 
 };
 

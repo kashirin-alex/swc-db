@@ -225,7 +225,7 @@ Exception::Exception(const Exception& ex)
                       prev(ex.prev ? new Exception(*ex.prev) : 0) {
 }
 
-Exception::~Exception() throw() { 
+Exception::~Exception() { 
   if(prev) { 
     delete prev; 
     prev = 0; 

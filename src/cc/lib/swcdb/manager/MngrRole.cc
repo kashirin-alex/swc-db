@@ -392,7 +392,7 @@ void MngrRole::managers_checker(size_t next, size_t total, bool flw) {
     std::shared_lock lock(m_mutex);
     if(!m_run)
       return;
-    if((next == m_states.size()))
+    if(next == m_states.size())
       next = 0;
     host_chk = m_states.at(next);
     ++next;

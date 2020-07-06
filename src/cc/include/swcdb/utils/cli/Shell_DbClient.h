@@ -436,8 +436,7 @@ class DbClient : public Interface {
     DB::Cells::TSV::FileWriter writer(Env::FsInterface::interface());
     
     auto req = std::make_shared<client::Query::Select>(
-      [this, &writer] 
-      (const client::Query::Select::Result::Ptr& result) {
+      [&writer] (const client::Query::Select::Result::Ptr& result) {
         writer.write(result);   
         // writer.err ? req->stop();
       },

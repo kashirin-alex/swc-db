@@ -270,7 +270,8 @@ void Key::convert_to(std::vector<std::string>& key) const {
   key.clear();
   key.resize(count);
   for(auto it = key.begin(); it<key.end(); ++it, ptr+=len) {
-    it->assign((const char*)ptr, len = Serialization::decode_vi24(&ptr));
+    len = Serialization::decode_vi24(&ptr);
+    it->assign((const char*)ptr, len);
   }
 }
 
@@ -280,7 +281,8 @@ void Key::convert_to(std::vector<KeyVec::Fraction>& key) const {
   key.clear();
   key.resize(count);
   for(auto it = key.begin(); it<key.end(); ++it, ptr+=len) {
-    it->assign(ptr, len = Serialization::decode_vi24(&ptr));
+    len = Serialization::decode_vi24(&ptr);
+    it->assign(ptr, len);
   }
 }
 
@@ -297,8 +299,8 @@ bool Key::equal(const std::vector<std::string>& key) const {
   uint24_t len;
   const uint8_t* ptr = data;
   for(auto it = key.begin(); it<key.end(); ++it, ptr+=len) {
-    if(!Condition::eq(ptr, len = Serialization::decode_vi24(&ptr),
-                      (const uint8_t*)it->data(), it->length()))
+    len = Serialization::decode_vi24(&ptr);
+    if(!Condition::eq(ptr, len, (const uint8_t*)it->data(), it->length()))
       return false;
   }
   return true;

@@ -94,8 +94,7 @@ class FileWriter {
     std::string f_len;
     const uint8_t* ptr = cell.key.data;
     for(uint32_t n=1; n<=cell.key.count; ++n, ptr+=len) {
-      len = Serialization::decode_vi32(&ptr);
-      f_len = std::to_string(len);
+      f_len = std::to_string((len = Serialization::decode_vi32(&ptr)));
       buffer.add(f_len.data(), f_len.length());
       if(n < cell.key.count)
         buffer.add(",", 1);
@@ -104,8 +103,7 @@ class FileWriter {
   
     ptr = cell.key.data;
     for(uint32_t n=1; n<=cell.key.count; ++n, ptr+=len) {
-      len = Serialization::decode_vi32(&ptr);
-      if(len)
+      if((len = Serialization::decode_vi32(&ptr)))
         buffer.add(ptr, len);
       if(n < cell.key.count)
         buffer.add(",", 1);

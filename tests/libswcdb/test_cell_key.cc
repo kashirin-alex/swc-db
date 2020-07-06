@@ -112,16 +112,17 @@ void test_basic(){
 
   std::string_view vw;
   vw = spec_key.get(0, comp);
-  std::cout << vw << "(" << vw.length() <<"),"  << " " << comp << ",";
+  std::cout << vw << "(" << vw.length() <<")"  << " " << (int)comp << ",";
   vw = spec_key.get(1, comp);
-  std::cout << vw << "(" << vw.length() <<"),"  << " " << comp << ",";
+  std::cout << vw << "(" << vw.length() <<")"  << " " << (int)comp << ",";
   vw = spec_key.get(2, comp);
-  std::cout << vw << "(" << vw.length() <<"),"  << " " << comp << ",";
+  std::cout << vw << "(" << vw.length() <<")"  << " " << (int)comp << ",";
   vw = spec_key.get(3, comp);
-  std::cout << vw << "(" << vw.length() <<"),"  << " " << comp << ",";
+  std::cout << vw << "(" << vw.length() <<")"  << " " << (int)comp << ",";
   std::cout << "\nfractions-count=" <<  spec_key.size() <<"\n";
   std::cout <<  spec_key.to_string() <<"\n";
 
+  std::cout <<  key.to_string() <<"\n";
   std::cout << "spec_key.is_matching(key) \n";
   if(!DB::KeySeq::is_matching(SWC::Types::KeySeq::VOLUME, spec_key, key))
     exit(1);

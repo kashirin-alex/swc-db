@@ -64,7 +64,11 @@ SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DASIO_STANDALONE")
 
 SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -Wall  -Werror") #  -Wextra
 SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -Wformat -Wformat-security")
-SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -Wno-error=odr -Wno-error=lto-type-mismatch")
+SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -Wno-error=odr")
+
+if (NOT CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+  SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -Wno-error=lto-type-mismatch")
+endif()
 
 # -----------------  OPTIMIZATIONS and BUILD TYPE
 
@@ -94,9 +98,15 @@ else()
       SET (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O2")
     
     if (O_LEVEL STREQUAL "2")
-      SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -flto -fuse-linker-plugin -ffat-lto-objects")
+    
+      SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -flto")
+      SET (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -flto")
+      if (NOT CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+        SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fuse-linker-plugin -ffat-lto-objects")
+        SET (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fuse-linker-plugin -ffat-lto-objects")
+      endif()
+
       SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -floop-interchange")
-      SET (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -flto -fuse-linker-plugin -ffat-lto-objects")
       SET (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -floop-interchange")
     endif ()
 
@@ -105,11 +115,16 @@ else()
     SET (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3")
     
     if(O_LEVEL MATCHES "[4-7]")
-      SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -flto -fuse-linker-plugin -ffat-lto-objects")
+
+      SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -flto")
+      SET (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -flto")
+      if (NOT CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+        SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fuse-linker-plugin -ffat-lto-objects")
+        SET (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fuse-linker-plugin -ffat-lto-objects")
+      endif()
       # SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-early-inlining")
       # SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsection-anchors")
-      SET (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -flto -fuse-linker-plugin -ffat-lto-objects")
-    
+
       if(O_LEVEL MATCHES "[5-7]")
         set(BUILD_LINKING "STATIC")
         if(NOT TEST_LINKING)

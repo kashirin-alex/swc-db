@@ -71,14 +71,14 @@ std::string ConnQueueReqBase::to_string() {
 ConnQueue::ConnQueue(IOCtxPtr ioctx,
                      const Property::V_GINT32::Ptr keepalive_ms, 
                      const Property::V_GINT32::Ptr again_delay_ms) 
-                    : m_ioctx(ioctx), m_conn(nullptr), 
+                    : cfg_keepalive_ms(keepalive_ms),
+                      cfg_again_delay_ms(again_delay_ms),
+                      m_ioctx(ioctx), m_conn(nullptr), 
                       m_connecting(false), m_qrunning(false),
                       m_timer(cfg_keepalive_ms
                         ? new asio::high_resolution_timer(*m_ioctx.get()) 
                         : nullptr
-                      ),
-                      cfg_keepalive_ms(keepalive_ms),
-                      cfg_again_delay_ms(again_delay_ms) {
+                      ) {
 }
 
 ConnQueue::~ConnQueue() {

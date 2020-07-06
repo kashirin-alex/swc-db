@@ -98,7 +98,7 @@ class Test {
     SWC_LOG(LOG_DEBUG, "create_column");
 
     int err = Error::OK;
-    if(schema = Env::Clients::get()->schemas->get(err, col_name))
+    if((schema = Env::Clients::get()->schemas->get(err, col_name)))
       return delete_column([this](){ create_column(); });
 
     schema = DB::Schema::make();

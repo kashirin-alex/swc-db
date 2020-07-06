@@ -74,10 +74,9 @@ compare(const Cell::Key& key,  const Cell::Key& other) {
     uint24_t sz1;
     uint24_t sz2;
     for(Condition::Comp comp; min; --min, p1 += sz1, p2 += sz2) {
-      if((comp = condition<T_seq>(
-            p1, sz1 = Serialization::decode_vi24(&p1), 
-            p2, sz2 = Serialization::decode_vi24(&p2) 
-          )) != Condition::EQ)
+      sz1 = Serialization::decode_vi24(&p1);
+      sz2 = Serialization::decode_vi24(&p2);
+      if((comp = condition<T_seq>(p1, sz1, p2, sz2)) != Condition::EQ)
         return comp;
     }
   }
@@ -498,7 +497,7 @@ is_matching(const Types::KeySeq seq, Condition::Comp comp,
 
     default:
       SWC_ASSERT(seq != Types::KeySeq::UNKNOWN);
-      return Condition::NONE;
+      return false;
   }
 }
 ///
@@ -517,10 +516,11 @@ is_matching(const Specs::Key& key, const Cell::Key &other) {
   uint32_t len;
   auto it = key.cbegin();
   for(uint24_t c = other.count; c && it < key.cend(); ++it, --c, ptr += len) {
+    len = Serialization::decode_vi24(&ptr);
     if(!is_matching<T_seq>(
         comp = it->comp, 
         (const uint8_t*)it->data(), it->size(),
-        ptr, len = Serialization::decode_vi24(&ptr) ))
+        ptr, len ))
       return false;
   }
   if(key.size() == other.count || ( // [,,>=''] spec incl. prior-match
@@ -563,7 +563,7 @@ is_matching(const Types::KeySeq seq, const Specs::Key& key,
 
     default:
       SWC_ASSERT(seq != Types::KeySeq::UNKNOWN);
-      return Condition::NONE;
+      return false;
   }
 }
 ///

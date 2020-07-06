@@ -31,7 +31,7 @@ class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
 
   typedef Columns* Ptr;
 
-  explicit Columns() : m_state(State::OK) { }
+  explicit Columns()  { } //: m_state(State::OK)
 
   ~Columns() { }
 
@@ -171,7 +171,7 @@ class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
     iterator it;
     do {
       if(!(req = m_q_remove.front())->ev->expired()) {
-        if(col = get_column(err = Error::OK, req->cid)) {
+        if((col = get_column(err = Error::OK, req->cid))) {
           col->remove_all(err);
           {
             Mutex::scope lock(m_mutex);
@@ -221,7 +221,7 @@ class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
 
   private:
   Mutex                           m_mutex;
-  State                           m_state;
+  // State                           m_state;
   QueueSafe<ColumnsReqDelete*>    m_q_remove;
 
 };

@@ -74,7 +74,7 @@ class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
         return range;
     }
     for(it = begin(); it != end(); ++it) {
-      if(range = it->second->get_next_unassigned())
+      if((range = it->second->get_next_unassigned()))
         return range;
     }
     return range;

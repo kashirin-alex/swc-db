@@ -27,6 +27,10 @@ struct RangeEndPoints final {
 class Rangers final 
     : private std::unordered_map<
         cid_t, std::unordered_map<rid_t, RangeEndPoints*>> {
+  
+  typedef std::unordered_map<
+    cid_t, std::unordered_map<rid_t, RangeEndPoints*>> Map;
+    
   public:
 
   Rangers(const Property::V_GINT32::Ptr expiry_ms);

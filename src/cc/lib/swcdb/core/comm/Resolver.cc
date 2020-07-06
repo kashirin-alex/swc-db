@@ -147,8 +147,8 @@ EndPoints get_endpoints(uint16_t defaul_port,
       
     for (rp = result; rp != NULL; rp = rp->ai_next) {
       char c_addr[INET6_ADDRSTRLEN];
-      const char * s;
-      switch(rp->ai_family){
+      const char * s = nullptr;
+      switch(rp->ai_family) {
         case AF_INET: {
           s = inet_ntop(AF_INET,
             &(((struct sockaddr_in *)rp->ai_addr)->sin_addr),  
@@ -164,7 +164,7 @@ EndPoints get_endpoints(uint16_t defaul_port,
        default:
          break;
       }
-      if(s == NULL) 
+      if(!s) 
         SWC_THROWF(Error::COMM_SOCKET_ERROR, 
                   "Bad IP for host: %s, address-info: ", 
                   hostname.c_str(), rp->ai_addr);

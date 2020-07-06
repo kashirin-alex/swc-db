@@ -31,7 +31,7 @@ void count_all_cells(size_t num_cells,
   );
   req->spec.flags.limit = num_cells * blocks.range->cfg->cell_versions();
     
-  req->cb = [req, &chk, blocks=&blocks](int err){
+  req->cb = [req, &chk](int err) { // , blocks=&blocks
     std::cout << " err=" <<  err 
               << "(" << SWC::Error::get_text(err) << ") \n" ;
     if(req->cells.size() != req->spec.flags.limit) {
@@ -187,7 +187,7 @@ int main(int argc, char** argv) {
     req->cells.reset(1, 0, SWC::Types::Column::PLAIN);
     req->spec.flags.limit = num_cells;
     
-    req->cb = [req, &chk, i, blocks=&blocks](int err){
+    req->cb = [req, &chk, i](int err) { // , blocks=&blocks
       std::cout << " chk=" << i 
                 << " err=" <<  err 
                 << "(" << SWC::Error::get_text(err) << ") \n" ;
