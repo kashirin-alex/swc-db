@@ -14,7 +14,7 @@
 namespace SWC{ namespace FS {
 
  
-bool apply_hadoop() {
+Config apply_hadoop() {
   Env::Config::settings()->file_desc.add_options()
     ("swc.fs.hadoop.path.root", str(""), 
       "Hadoop FileSystem's base root path")
@@ -36,7 +36,13 @@ bool apply_hadoop() {
     Env::Config::settings()->get_str("swc.fs.hadoop.cfg", ""),
     "swc.fs.hadoop.cfg.dyn"
   );
-  return true;
+  
+  Config config;
+  config.path_root = Env::Config::settings()->get_str(
+    "swc.fs.hadoop.path.root");
+  config.cfg_fds_max = Env::Config::settings()->get<Property::V_GINT32>(
+    "swc.fs.hadoop.fds.max");
+  return config;
 }
 
 
@@ -61,12 +67,7 @@ SmartFdHadoop::~SmartFdHadoop() { }
 
 
 FileSystemHadoop::FileSystemHadoop() 
-    : FileSystem(
-        Env::Config::settings()->get_str("swc.fs.hadoop.path.root"),
-        Env::Config::settings()->get<Property::V_GINT32>(
-          "swc.fs.hadoop.fds.max"),
-        apply_hadoop()
-      ),
+    : FileSystem(apply_hadoop()),
       m_run(true), m_nxt_fd(0) {
 
   setup_connection();

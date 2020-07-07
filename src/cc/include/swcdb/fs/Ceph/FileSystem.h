@@ -11,7 +11,7 @@
 
 namespace SWC{ namespace FS {
 
-bool apply_ceph();
+Config apply_ceph();
 
 
 class FileSystemCeph final : public FileSystem {

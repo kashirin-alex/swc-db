@@ -15,7 +15,7 @@
 namespace SWC{ namespace FS {
 
 
-bool apply_local() {
+Config apply_local() {
   Env::Config::settings()->file_desc.add_options()
     ("swc.fs.local.path.root", str(""), "Local FileSystem's base root path")
     ("swc.fs.local.cfg.dyn", strs(), "Dyn-config file")
@@ -26,19 +26,20 @@ bool apply_local() {
     Env::Config::settings()->get_str("swc.fs.local.cfg", ""),
     "swc.fs.local.cfg.dyn"
   );
-  return true;
+
+  Config config;
+  config.path_root = Env::Config::settings()->get_str(
+    "swc.fs.local.path.root");
+  config.cfg_fds_max = Env::Config::settings()->get<Property::V_GINT32>(
+    "swc.fs.local.fds.max");
+  return config;
 }
 
 
 FileSystemLocal::FileSystemLocal()
-    : FileSystem(
-        Env::Config::settings()->get_str("swc.fs.local.path.root"),
-        Env::Config::settings()->get<Property::V_GINT32>(
-          "swc.fs.local.fds.max"),
-        apply_local()
-      ),
-      m_directio(
-        Env::Config::settings()->get_bool("swc.fs.local.DirectIO", false)) {
+                : FileSystem(apply_local()) {
+  m_directio = Env::Config::settings()->get_bool(
+    "swc.fs.local.DirectIO", false);
 }
 
 FileSystemLocal::~FileSystemLocal() { }

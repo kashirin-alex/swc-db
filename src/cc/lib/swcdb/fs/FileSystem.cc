@@ -61,21 +61,13 @@ std::string type_to_string(Types::Fs typ) {
 }
 
 
-FileSystem::FileSystem(const Property::V_GINT32::Ptr cfg_fds_max,
-                       bool setting_applied) 
-                      : cfg_fds_max(cfg_fds_max), fds_count(0) { 
-  (void)setting_applied;
-}
-  
-FileSystem::FileSystem(const std::string& root, 
-                       const Property::V_GINT32::Ptr cfg_fds_max, 
-                       bool setting_applied)
-    : path_root(normalize_pathname(root)),
+FileSystem::FileSystem(const Config& config)
+    : path_root(config.path_root.empty() 
+        ? "" : normalize_pathname(config.path_root)),
       path_data(
         normalize_pathname(
           Env::Config::settings()->get_str("swc.fs.path.data"))),
-      cfg_fds_max(cfg_fds_max), fds_count(0) { 
-  (void)setting_applied;
+      cfg_fds_max(config.cfg_fds_max), fds_count(0) {
 }
 
 FileSystem::~FileSystem() { 

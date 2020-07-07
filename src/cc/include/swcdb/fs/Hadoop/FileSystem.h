@@ -12,7 +12,7 @@
 
 namespace SWC{ namespace FS {
 
-bool apply_hadoop();
+Config apply_hadoop();
 
 
 

@@ -11,7 +11,7 @@
 namespace SWC{ namespace FS {
 
  
-bool apply_hadoop_jvm() {
+Config apply_hadoop_jvm() {
   Env::Config::settings()->file_desc.add_options()
     ("swc.fs.hadoop_jvm.path.root", str(""), 
       "HadoopJVM FileSystem's base root path")
@@ -32,7 +32,13 @@ bool apply_hadoop_jvm() {
     Env::Config::settings()->get_str("swc.fs.hadoop_jvm.cfg", ""),
     "swc.fs.hadoop_jvm.cfg.dyn"
   );
-  return true;
+
+  Config config;
+  config.path_root = Env::Config::settings()->get_str(
+    "swc.fs.hadoop_jvm.path.root");
+  config.cfg_fds_max = Env::Config::settings()->get<Property::V_GINT32>(
+    "swc.fs.hadoop_jvm.fds.max");
+  return config;
 }
 
 
@@ -67,12 +73,7 @@ void SmartFdHadoopJVM::file(const hdfsFile& file) {
 
 
 FileSystemHadoopJVM::FileSystemHadoopJVM() 
-    : FileSystem(
-        Env::Config::settings()->get_str("swc.fs.hadoop_jvm.path.root"),
-        Env::Config::settings()->get<Property::V_GINT32>(
-          "swc.fs.hadoop_jvm.fds.max"),
-        apply_hadoop_jvm()
-      ),
+    : FileSystem(apply_hadoop_jvm()),
       m_run(true), m_nxt_fd(0) { 
   setup_connection();
 }

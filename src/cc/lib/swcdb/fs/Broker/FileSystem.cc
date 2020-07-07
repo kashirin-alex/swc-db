@@ -33,7 +33,7 @@
 namespace SWC{ namespace FS {
 
 
-bool apply_broker() {
+Config apply_broker() {
   Env::Config::settings()->file_desc.add_options()
     ("swc.fs.broker.cfg.dyn", strs(), "Dyn-config file")
     ("swc.fs.broker.host", str(), "FsBroker host (default by hostname)") 
@@ -49,7 +49,10 @@ bool apply_broker() {
     Env::Config::settings()->get_str("swc.fs.broker.cfg", ""),
     "swc.fs.broker.cfg.dyn"
   );
-  return true;
+  Config config;
+  config.cfg_fds_max = Env::Config::settings()->get<Property::V_GINT32>(
+    "swc.fs.broker.fds.max");
+  return config;
 }
 
 
@@ -82,11 +85,7 @@ EndPoints FileSystemBroker::get_endpoints() {
 
 
 FileSystemBroker::FileSystemBroker()
-  : FileSystem(
-      Env::Config::settings()->get<Property::V_GINT32>(
-        "swc.fs.broker.fds.max"),
-      apply_broker()
-    ),
+  : FileSystem(apply_broker()),
     m_io(std::make_shared<IoContext>("FsBroker",
       Env::Config::settings()->get_i32("swc.fs.broker.handlers"))),
     m_service(std::make_shared<client::Serialized>(

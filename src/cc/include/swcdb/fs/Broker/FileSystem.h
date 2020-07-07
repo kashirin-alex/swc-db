@@ -17,7 +17,7 @@ class Base;
 typedef std::shared_ptr<Base> BasePtr;
 }}
 
-bool apply_broker();
+Config apply_broker();
 
 
 class FileSystemBroker final : public FileSystem {
