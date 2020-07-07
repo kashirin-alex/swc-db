@@ -52,7 +52,7 @@ class AppContext final : virtual public BrokerIfFactory {
     m_cv.wait(lock_wait, [this]{return !m_run;});
   }
 
-  BrokerIf* getHandler(const thrift::TConnectionInfo&) { //connInfo
+  BrokerIf* getHandler(const thrift::TConnectionInfo&) override { //connInfo
     return new AppHandler;
   }
 

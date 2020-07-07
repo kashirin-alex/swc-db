@@ -42,6 +42,7 @@ ADD_TEST_TARGET(
 ADD_TEST_TARGET(
   NAME      key_comparator_impl_src
   SRCS      test_key_comparator.cc
+            ${SWC_VERSION_SRC}
   SHARED    ${SWC_LIB_CORE_SHARED}
   STATIC    ${SWC_LIB_CORE_STATIC}
   FLAGS     "-DSWC_IMPL_SOURCE"

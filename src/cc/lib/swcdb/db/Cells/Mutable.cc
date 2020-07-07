@@ -516,7 +516,7 @@ void Mutable::scan_test_use(const Specs::Interval& specs,
       cell.write(result);
       if(++count == specs.flags.limit) 
         // specs.flags.limit_by && specs.flags.max_versions
-          break;
+        break;
     } else 
       ++skips;
   }

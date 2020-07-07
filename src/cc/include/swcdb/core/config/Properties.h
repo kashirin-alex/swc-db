@@ -20,7 +20,6 @@ namespace SWC {
 class Properties {
 
   typedef std::map<std::string, Property::Value::Ptr>   Map;
-  typedef std::pair<std::string, Property::Value::Ptr>  MapPair;
   typedef std::map<std::string, std::string>  AliasMap;
   typedef std::pair<Map::iterator, bool>      InsRet;
   

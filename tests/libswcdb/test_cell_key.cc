@@ -213,7 +213,7 @@ void load_check_key(int chks, int num_fractions, int chk_count) {
 
     auto ts = std::chrono::system_clock::now();
     for(auto b=0;b<num_fractions;++b)
-      key.add(std::to_string(b+(2^60)));
+      key.add(std::to_string(b+(1LL << 60)));
     took_add += std::chrono::duration_cast<std::chrono::nanoseconds>(
                     std::chrono::system_clock::now() - ts).count();
 
@@ -231,7 +231,7 @@ void load_check_key(int chks, int num_fractions, int chk_count) {
 
     ts = std::chrono::system_clock::now();
     for(auto b=0;b<num_fractions;++b)
-      key.insert(0, std::to_string(b+(2^60)));
+      key.insert(0, std::to_string(b+(1LL << 60)));
     took_insert += std::chrono::duration_cast<std::chrono::nanoseconds>(
                     std::chrono::system_clock::now() - ts).count();
   }
@@ -240,7 +240,7 @@ void load_check_key(int chks, int num_fractions, int chk_count) {
   
   DB::Cell::Key key;
   for(auto b=0; b<num_fractions; ++b)
-    key.add(std::to_string(b+(2^60)));
+    key.add(std::to_string(b+(1LL << 60)));
     
   size_t sz = sizeof(key)+key.size;
 
@@ -270,7 +270,7 @@ void load_check_key_vec(int chks, int num_fractions, int chk_count) {
 
     auto ts = std::chrono::system_clock::now();
     for(auto b=0;b<num_fractions;++b)
-      key.add(std::to_string(b+(2^60)));
+      key.add(std::to_string(b+(1LL << 60)));
     took_add += std::chrono::duration_cast<std::chrono::nanoseconds>(
                     std::chrono::system_clock::now() - ts).count();
 
@@ -288,7 +288,7 @@ void load_check_key_vec(int chks, int num_fractions, int chk_count) {
 
     ts = std::chrono::system_clock::now();
     for(auto b=0;b<num_fractions;++b)
-      key.insert(0, std::to_string(b+(2^60)));
+      key.insert(0, std::to_string(b+(1LL << 60)));
     took_insert += std::chrono::duration_cast<std::chrono::nanoseconds>(
                     std::chrono::system_clock::now() - ts).count();
   }
@@ -298,7 +298,7 @@ void load_check_key_vec(int chks, int num_fractions, int chk_count) {
   DB::Cell::KeyVec key;
   size_t sz = sizeof(key);
   for(auto b=0; b<num_fractions; ++b) {
-    key.add(std::to_string(b+(2^60)));
+    key.add(std::to_string(b+(1LL << 60)));
     sz += sizeof(key.back()) + key.back().length();
   }
 
@@ -327,7 +327,7 @@ void load_check_vec(int chks, int num_fractions, int chk_count) {
 
     auto ts = std::chrono::system_clock::now();
     for(auto b=0;b<num_fractions;++b)
-      key.push_back(std::to_string(b+(2^60)));
+      key.push_back(std::to_string(b+(1LL << 60)));
     took_add += std::chrono::duration_cast<std::chrono::nanoseconds>(
                     std::chrono::system_clock::now() - ts).count();
 
@@ -346,7 +346,7 @@ void load_check_vec(int chks, int num_fractions, int chk_count) {
     
     ts = std::chrono::system_clock::now();
     for(auto b=0;b<num_fractions;++b)
-      key.insert(key.begin(), std::to_string(b+(2^60)));
+      key.insert(key.begin(), std::to_string(b+(1LL << 60)));
     took_insert += std::chrono::duration_cast<std::chrono::nanoseconds>(
                     std::chrono::system_clock::now() - ts).count();
   }
@@ -355,7 +355,7 @@ void load_check_vec(int chks, int num_fractions, int chk_count) {
   std::vector<std::string> key;
   size_t sz = 0;
   for(auto b=0; b<num_fractions; ++b) {
-    key.push_back(std::to_string(b+(2^60)));
+    key.push_back(std::to_string(b+(1LL << 60)));
     sz += sizeof(key.back()) + key.back().length();
   }
   sz += sizeof(key);

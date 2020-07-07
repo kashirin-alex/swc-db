@@ -181,7 +181,7 @@ bool swcdb_pam_confirm_state(swc_pam_cfg* cfg, const char* pam_rhost) {
   bool adj = tries < 0;
   allowed = tries == 0 || !adj || tries <= cfg->maxtries;
 
-  gchar* update;
+  gchar* update = NULL;
   len = g_snprintf(update, 1024,
     "update cell(INSERT,'%s', %s, '', '%s%d')", 
     cfg->column, 
@@ -190,7 +190,7 @@ bool swcdb_pam_confirm_state(swc_pam_cfg* cfg, const char* pam_rhost) {
     adj ? cfg->maxtries : 1
   );
   g_free(key);
-  if(!len) {
+  if(!len || !update) {
     swcdb_pam_disconnect(&client, cfg);
     return allowed;
   }
@@ -234,10 +234,10 @@ void swcdb_pam_reduce_attempt(swc_pam_cfg* cfg, const char* pam_rhost) {
     return;
   }
 
-  gchar* update;
+  gchar* update = NULL;
   len = g_snprintf(update, 1024,
     "update cell(INSERT,'%s', %s, '', '=0'", cfg->column, key);
-  if(!len) {
+  if(!len || !update) {
     g_free(key);
     swcdb_pam_disconnect(&client, cfg);
     return;

@@ -212,7 +212,7 @@ std::string ParserConfig::position_name(int n) {
 }
 
 bool ParserConfig::has(const std::string& name) const {
-  for(const MapPair& info : options) {
+  for(const auto& info : options) {
     if(name.compare(info.first) == 0)
       return true;
     for(const std::string& alias : info.second.aliases)
@@ -223,7 +223,7 @@ bool ParserConfig::has(const std::string& name) const {
 }
 
 bool ParserConfig::has(const std::string& name, std::string& alias_to) const {
-  for(const MapPair& info : options) {
+  for(const auto& info : options) {
     if(name.compare(info.first) == 0)
       return true;
     for(const std::string& alias : info.second.aliases)
@@ -236,7 +236,7 @@ bool ParserConfig::has(const std::string& name, std::string& alias_to) const {
 }
 
 Property::Value::Ptr ParserConfig::get_default(const std::string& name){
-  for(const MapPair& info : options) {
+  for(const auto& info : options) {
     if(name.compare(info.first) == 0)
       return info.second.value;
     for(const std::string& alias : info.second.aliases)
