@@ -20,8 +20,6 @@ namespace SWC{ namespace Config {
 
 
 void Settings::init_app_options() {
-  ((Property::V_GENUM*) cmdline_desc.get_default("swc.logging.level") 
-    )->set(LOG_ERROR); // default level for utils
 
   init_comm_options();
   init_client_options();
@@ -47,7 +45,11 @@ void Settings::init_app_options() {
 
 }
 
-void Settings::init_post_cmd_args(){ }
+void Settings::init_post_cmd_args() {
+  auto loglevel = get<Property::V_GENUM>("swc.logging.level");
+  if(loglevel->is_default())
+    loglevel->set(LOG_WARN);
+}
 
 }}
 

@@ -2,6 +2,12 @@
 # Copyright Since 2019 SWC-DB© [author: Kashirin Alex kashirin.alex@gmail.com]
 # License details at <https://github.com/kashirin-alex/swc-db/#license>
 
+
+
+get_property(SWC_VERSION_SRC GLOBAL PROPERTY SWC_VERSION_SRC)
+
+
+
 add_subdirectory(core)          #ifndef swc_core_path_FileName_h
 
 

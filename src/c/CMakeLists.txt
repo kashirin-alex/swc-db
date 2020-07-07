@@ -6,6 +6,7 @@ SET (CMAKE_C_FLAGS "${CMAKE_C_FLAGS}\
  -ffile-prefix-map=${CMAKE_CURRENT_SOURCE_DIR}/include/=\
  -ffile-prefix-map=${CMAKE_CURRENT_SOURCE_DIR}/lib/="
 )
+get_property(SWC_VERSION_SRC GLOBAL PROPERTY SWC_VERSION_SRC)
 
 include_directories(
   include

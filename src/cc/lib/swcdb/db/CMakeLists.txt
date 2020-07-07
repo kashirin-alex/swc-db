@@ -2,7 +2,11 @@
 # Copyright Since 2019 SWC-DB© [author: Kashirin Alex kashirin.alex@gmail.com]
 # License details at <https://github.com/kashirin-alex/swc-db/#license>
 
+
+
 set(swcdb_sources
+  ${SWC_VERSION_SRC}
+
   Cells/Mutable.cc
   Cells/Result.cc
   Cells/MapMutable.cc

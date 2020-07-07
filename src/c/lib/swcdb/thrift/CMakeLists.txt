@@ -9,6 +9,7 @@ ADD_LIB_TARGET(
   NAME    swcdb_thrift_c
   SRCS    ${THRIFT_C_GEN_PATH}/gen-c_glib/swcdb_thrift_service_types.c
           ${THRIFT_C_GEN_PATH}/gen-c_glib/swcdb_thrift_service.c
+          ${SWC_VERSION_SRC}
   SHARED  ${THRIFT_C_LIBRARIES_SHARED}
   STATIC  ${THRIFT_C_LIBRARIES_STATIC}
 )

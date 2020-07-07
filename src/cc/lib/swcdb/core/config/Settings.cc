@@ -5,6 +5,7 @@
  */
 
 
+#include "swcdb/Version.h"
 #include "swcdb/core/config/Settings.h"
 
 #include "swcdb/core/FileUtils.h"
@@ -53,7 +54,7 @@ void Settings::init(int argc, char *argv[]) {
   }
 
   if(!get_bool("quiet") && !has("daemon"))
-    SWC_PRINT << SWC::COPYRIGHT << SWC_PRINT_CLOSE;
+    SWC_PRINT << swcdb_copyrights() << SWC_PRINT_CLOSE;
 
   auto loglevel = get<Property::V_GENUM>("swc.logging.level");
   if(get_bool("debug")) {
@@ -123,8 +124,8 @@ void Settings::parse_args(int argc, char *argv[]) {
   }
 
   if (has("version")) {
-    SWC_PRINT << SWC::VERSION << '\n' 
-              << SWC::COPYRIGHT << SWC_PRINT_CLOSE;
+    SWC_PRINT << swcdb_version() << '\n' 
+              << swcdb_copyrights() << SWC_PRINT_CLOSE;
     std::quick_exit(EXIT_SUCCESS);
   }
 
@@ -196,14 +197,13 @@ void Settings::init_process() {
   if(daemon || get_gbool("verbose")) {
     SWC_LOG_OUT(LOG_NOTICE) 
       << "Initialized " << executable << " "
-      << SWC::VERSION << "\n"
-      << SWC::COPYRIGHT << '\n' 
+      << swcdb_version() << "\n" << swcdb_copyrights() << '\n' 
       << "Process Settings: \n" << to_string_all() << SWC_LOG_OUT_END;
   }
 }
 
 std::string Settings::usage_str(const char *usage) {
-  std::string tmp(SWC::COPYRIGHT);
+  std::string tmp(swcdb_copyrights());
   tmp += '\n';
   tmp.append(usage ? usage : "Usage: %s [options]\n\nOptions:");
 

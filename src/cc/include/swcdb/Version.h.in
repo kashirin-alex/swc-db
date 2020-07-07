@@ -1,0 +1,24 @@
+/*
+ * Copyright Since 2019 SWC-DB© [author: Kashirin Alex kashirin.alex@gmail.com]
+ * License details at <https://github.com/kashirin-alex/swc-db/#license>
+ */
+
+#ifndef swc_core_Version_h
+#define swc_core_Version_h
+
+
+
+#define SWCDB_SET_VERSION   "SWC-DB v@SWCDB_VERSION@";
+
+#define SWCDB_SET_COPYRIGHT "@SWCDB_COPYRIGHT@";
+
+
+
+const char* swcdb_version();
+
+const char* swcdb_copyrights();
+
+
+#endif
+
+

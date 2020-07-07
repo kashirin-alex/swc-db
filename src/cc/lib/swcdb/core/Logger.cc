@@ -36,21 +36,21 @@ const char* LogWriter::get_name(uint8_t priority) {
 }
 
 uint8_t LogWriter::from_string(const std::string& loglevel) {
-  if(loglevel == "info")
+  if(strncasecmp(loglevel.c_str(), "info", loglevel.length()) == 0)
     return LOG_INFO;
-  if(loglevel == "debug")
+  if(strncasecmp(loglevel.c_str(), "debug", loglevel.length()) == 0)
     return LOG_DEBUG;
-  if(loglevel == "notice")
+  if(strncasecmp(loglevel.c_str(), "notice", loglevel.length()) == 0)
     return LOG_NOTICE;
-  if(loglevel == "warn")
+  if(strncasecmp(loglevel.c_str(), "warn", loglevel.length()) == 0)
     return LOG_WARN;
-  if(loglevel == "error")
+  if(strncasecmp(loglevel.c_str(), "error", loglevel.length()) == 0)
     return LOG_ERROR;
-  if(loglevel == "crit")
+  if(strncasecmp(loglevel.c_str(), "crit", loglevel.length()) == 0)
     return LOG_CRIT;
-  if(loglevel == "alert")
+  if(strncasecmp(loglevel.c_str(), "alert", loglevel.length()) == 0)
     return LOG_ALERT;
-  if(loglevel == "fatal")
+  if(strncasecmp(loglevel.c_str(), "fatal", loglevel.length()) == 0)
     return LOG_FATAL;
   return -1;
 }

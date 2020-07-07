@@ -49,7 +49,6 @@
 #endif
 
 
-#include "swcdb/core/Version.h"
 #include "swcdb/core/BitFieldInt.h" // for u/int24/40/48/56_t
 
 #endif

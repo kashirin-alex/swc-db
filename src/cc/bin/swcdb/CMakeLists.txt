@@ -3,16 +3,15 @@
 # License details at <https://github.com/kashirin-alex/swc-db/#license>
 
 
-#add_subdirectory(manager)
-#add_subdirectory(ranger)
-
-#add_subdirectory(thriftbroker)
+get_property(SWC_VERSION_SRC GLOBAL PROPERTY SWC_VERSION_SRC)
 
 get_property(SWC_LIB_CORE_SHARED GLOBAL PROPERTY SWC_LIB_CORE_SHARED)
 get_property(SWC_LIB_CORE_STATIC GLOBAL PROPERTY SWC_LIB_CORE_STATIC)
 
 get_property(SWC_LIB_FS_SHARED GLOBAL PROPERTY SWC_LIB_FS_SHARED)
 get_property(SWC_LIB_FS_STATIC GLOBAL PROPERTY SWC_LIB_FS_STATIC)
+
+
 
 set(SHARED ${SWC_LIB_CORE_SHARED} ${SWC_LIB_FS_SHARED})
 set(STATIC ${SWC_LIB_CORE_STATIC} ${SWC_LIB_FS_STATIC})
@@ -32,10 +31,18 @@ endif()
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${BUILTIN_FS_FLAGS}")
 
 
+
+#add_subdirectory(manager)
+#add_subdirectory(ranger)
+#add_subdirectory(thriftbroker)
+
+
+
 # swcdbRanger
 ADD_EXEC_TARGET(
   NAME    swcdbRanger
   SRCS    ranger/main.cc
+          ${SWC_VERSION_SRC}
   TARGETS ${TARGETS}
 
   SHARED  ${SHARED}
@@ -48,6 +55,7 @@ ADD_EXEC_TARGET(
 ADD_EXEC_TARGET(
   NAME    swcdbManager
   SRCS    manager/main.cc
+          ${SWC_VERSION_SRC}
   TARGETS ${TARGETS}
 
   SHARED  ${SHARED}
@@ -61,6 +69,7 @@ if(THRIFT_CPP_GEN_PATH)
 ADD_EXEC_TARGET(
   NAME    swcdbThriftBroker
   SRCS    thriftbroker/main.cc
+          ${SWC_VERSION_SRC}
   TARGETS ${TARGETS}
 
   SHARED ${SHARED} ${THRIFT_CPP_LIBRARIES_SHARED}
@@ -74,6 +83,7 @@ endif()
 ADD_EXEC_TARGET(
   NAME    swcdbFsBroker
   SRCS    fsbroker/main.cc
+          ${SWC_VERSION_SRC}
   TARGETS swcdb_core 
           swcdb_core_config 
           swcdb_core_comm 
@@ -93,6 +103,7 @@ ADD_EXEC_TARGET(
 ADD_EXEC_TARGET(
   NAME    swcdb
   SRCS    utils/main.cc
+          ${SWC_VERSION_SRC}
   TARGETS ${SHARED_TARGETS}
 
   SHARED  ${SHARED}
@@ -106,6 +117,7 @@ ADD_EXEC_TARGET(
 ADD_EXEC_TARGET(
   NAME    swcdb_load_generator
   SRCS    utils/load_generator.cc
+          ${SWC_VERSION_SRC}
   TARGETS ${TARGETS}
 
   SHARED  ${SHARED}

@@ -9,6 +9,7 @@ set(CORE_LIBS_STATIC_FLAGS "")
 ADD_LIB_TARGET(
   NAME    pam_swcdb_max_retries
   SRCS    pam_swcdb_max_retries.c
+          ${SWC_VERSION_SRC}
   TARGETS swcdb_thrift_c 
   SHARED  ${PAM_LIBRARIES_SHARED}
   ONLY_SHARED TRUE

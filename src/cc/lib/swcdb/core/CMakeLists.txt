@@ -2,11 +2,6 @@
 # Copyright Since 2019 SWC-DB© [author: Kashirin Alex kashirin.alex@gmail.com]
 # License details at <https://github.com/kashirin-alex/swc-db/#license>
 
-configure_file(
-  ../../../include/swcdb/core/Version.h.in 
-  ${CMAKE_CURRENT_SOURCE_DIR}/../../../include/swcdb/core/Version.h @ONLY
-)
-
 
 set(SWC_LIB_CORE_SHARED ${RE2_LIBRARIES_SHARED} 
                         ${ZLIB_LIBRARIES_SHARED} ${SNAPPY_LIBRARIES_SHARED} ${ZSTD_LIBRARIES_SHARED})
@@ -20,7 +15,9 @@ set_property(GLOBAL PROPERTY SWC_LIB_CORE_SHARED ${SWC_LIB_CORE_SHARED} ${SSL_LI
 set_property(GLOBAL PROPERTY SWC_LIB_CORE_STATIC ${SWC_LIB_CORE_STATIC} ${SSL_LIBRARIES_STATIC} )
 
 
+
 set(swcdb_core_sources
+  ${SWC_VERSION_SRC}
   Time.cc
   String.cc
   Error.cc
@@ -43,6 +40,7 @@ ADD_LIB_TARGET(
 
 
 set(swcdb_core_config_sources
+  ${SWC_VERSION_SRC}
   config/Settings.cc
   config/Properties.cc
   config/Property.cc
@@ -56,6 +54,7 @@ ADD_LIB_TARGET(
 
 
 set(swcdb_core_comm_sources
+  ${SWC_VERSION_SRC}
   comm/Settings.cc
   comm/SerializedServer.cc
   comm/SerializedClient.cc
@@ -83,6 +82,7 @@ ADD_LIB_TARGET(
 
 
 set(swcdb_core_sys_sources
+  ${SWC_VERSION_SRC}
   sys/Resources.cc
 )
 ADD_LIB_TARGET(

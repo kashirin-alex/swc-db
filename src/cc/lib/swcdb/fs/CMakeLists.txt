@@ -2,13 +2,17 @@
 # Copyright Since 2019 SWC-DB© [author: Kashirin Alex kashirin.alex@gmail.com]
 # License details at <https://github.com/kashirin-alex/swc-db/#license>
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${BUILTIN_FS_FLAGS}")
 
 set(FILE_SYSTEMS "")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${BUILTIN_FS_FLAGS}")
+
+
+
 
 ########### FILESYSTEM CORE/BASE ###########
 
 set(swcdb_fscore_sources
+  ${SWC_VERSION_SRC}
   Dirent.cc
   SmartFd.cc
   Settings.cc
@@ -28,6 +32,7 @@ ADD_LIB_TARGET(
 
 set(FILE_SYSTEMS ${FILE_SYSTEMS} broker)
 set(swcdb_fsBroker_sources
+  ${SWC_VERSION_SRC}
   Broker/FileSystem.cc
 )
 ADD_LIB_TARGET(
@@ -43,6 +48,7 @@ ADD_LIB_TARGET(
 
 set(FILE_SYSTEMS ${FILE_SYSTEMS} local)
 set(swcdb_fsLocal_sources
+  ${SWC_VERSION_SRC}
   Local/FileSystem.cc
 )
 ADD_LIB_TARGET(
@@ -58,6 +64,7 @@ ADD_LIB_TARGET(
 
 # set(FILE_SYSTEMS ${FILE_SYSTEMS} ceph)
 #set(swcdb_fsCeph_sources
+# ${SWC_VERSION_SRC}
 # Ceph/FileSystem.cc
 #)
 #ADD_LIB_TARGET(
@@ -75,6 +82,7 @@ if(HADOOP_LIBRARIES_SHARED AND PROTOBUF_LIBRARIES_SHARED)
 
   set(FILE_SYSTEMS ${FILE_SYSTEMS} hadoop)
   set(swcdb_fsHadoop_sources
+    ${SWC_VERSION_SRC}
     Hadoop/FileSystem.cc
   )
 
@@ -111,6 +119,7 @@ endif()
 if(HADOOP_JVM_LIBRARIES_SHARED) # static require (AND JAVA_LIBRARIES_SHARED)
   set(FILE_SYSTEMS ${FILE_SYSTEMS} hadoop_jvm)
   set(swcdb_fsHadoop_jvm_sources
+    ${SWC_VERSION_SRC}
     HadoopJVM/FileSystem.cc
   )
   ADD_LIB_TARGET(

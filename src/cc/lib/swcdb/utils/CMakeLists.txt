@@ -12,6 +12,7 @@ if(USE_GNU_READLINE)
 endif()
 
 set(swcdb_utils_shell_sources
+  ${SWC_VERSION_SRC}
   cli/Shell.cc
 )
 ADD_LIB_TARGET(
