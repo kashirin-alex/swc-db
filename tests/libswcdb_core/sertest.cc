@@ -143,7 +143,7 @@ void test_i64() {
       SWC_ASSERT(len == 0));
   }
   ns = Time::now_ns() - ns;
-  std::cout << "i64 took=" << ns .
+  std::cout << "i64 took=" << ns
             << " avg=" << double(ns) / double(UINT64_MAX) << "\n";
 }
 
