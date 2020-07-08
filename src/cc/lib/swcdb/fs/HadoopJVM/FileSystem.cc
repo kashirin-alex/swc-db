@@ -85,6 +85,7 @@ void FileSystemHadoopJVM::setup_connection() {
     SWC_LOGF(LOG_ERROR, 
       "FS-HadoopJVM, unable to initialize connection to hadoop_jvm, try=%d",
       ++tries);
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
   }
   
   std::string abspath;
@@ -462,7 +463,7 @@ size_t FileSystemHadoopJVM::pread(int& err, SmartFd::Ptr& smartfd,
       err = Error::FS_EOF;
     hadoop_fd->pos(offset+nread);
     SWC_LOGF(LOG_DEBUG, "pread(ed) %s amount=%lu eof=%d", 
-               smartfd->to_string().c_str(), nread, err == Error::FS_EOF);
+               smartfd->to_string().c_str(), ret, err == Error::FS_EOF);
   }
   return ret;
 }
@@ -544,7 +545,7 @@ void FileSystemHadoopJVM::sync(int& err, SmartFd::Ptr& smartfd) {
 
   if (hdfsHSync(m_filesystem, hadoop_fd->file()) != Error::OK) {
     err = errno;
-    SWC_LOGF(LOG_ERROR, "flush failed: %d(%s), %s", 
+    SWC_LOGF(LOG_ERROR, "sync failed: %d(%s), %s", 
               errno, strerror(errno), smartfd->to_string().c_str());
   }
 }
