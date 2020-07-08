@@ -52,8 +52,12 @@ endif ()
 
 
 # C flags
+SET (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu11")
 SET (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_LARGEFILE_SOURCE -m64 -D_FILE_OFFSET_BITS=64")
-SET (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wformat -Wformat-security -Werror -Wfatal-errors")
+SET (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Werror") # -Wextra
+SET (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wformat -Wformat-security")
+
+#SET (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wformat -Wformat-security -Werror -Wfatal-errors")
 
 # C++ flags
 SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++2a")
@@ -62,12 +66,12 @@ SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++2a")
 SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_LARGEFILE_SOURCE -m64 -D_FILE_OFFSET_BITS=64")
 SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DASIO_STANDALONE")
 
-SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -Wall  -Werror -Wextra")
-SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -Wformat -Wformat-security")
-SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -Wno-error=odr")
+SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror -Wextra")
+SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wformat -Wformat-security")
+SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=odr")
 
 if (NOT CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-  SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -Wno-error=lto-type-mismatch")
+  SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=lto-type-mismatch")
 endif()
 
 # -----------------  OPTIMIZATIONS and BUILD TYPE
