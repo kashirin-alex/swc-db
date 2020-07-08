@@ -90,13 +90,13 @@ class FileSystemCeph final : public FileSystem {
 }}
 
 
-extern "C" { 
+extern "C" {
 SWC::FS::FileSystem* fs_make_new_ceph();
 void fs_apply_cfg_ceph(SWC::Env::Config::Ptr env);
 }
 
 #ifdef SWC_IMPL_SOURCE
-#include "swcdb/fs/HadoopJVM/FileSystem.cc"
+#include "swcdb/fs/Ceph/FileSystem.cc"
 #endif 
 
 #endif  // swc_fs_Ceph_FileSystem_h

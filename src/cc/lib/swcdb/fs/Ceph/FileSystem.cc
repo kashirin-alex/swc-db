@@ -678,7 +678,7 @@ void FileSystemCeph::close(int& err, SmartFd::Ptr& smartfd) {
 
 
 
-extern "C" { 
+extern "C" {
 SWC::FS::FileSystem* fs_make_new_ceph() {
   return (SWC::FS::FileSystem*)(new SWC::FS::FileSystemCeph());
 };
