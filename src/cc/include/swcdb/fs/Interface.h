@@ -13,11 +13,11 @@
 #include "swcdb/fs/Local/FileSystem.h"
 #endif
 
-/*
+
 #if defined (BUILTIN_FS_CEPH) || defined (BUILTIN_FS_ALL)
 #include "swcdb/fs/Ceph/FileSystem.h"
 #endif
-*/
+
 
 #if defined (BUILTIN_FS_HADOOP) || defined (BUILTIN_FS_ALL)
 #include "swcdb/fs/Hadoop/FileSystem.h"

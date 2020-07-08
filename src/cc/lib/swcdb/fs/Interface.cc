@@ -56,7 +56,7 @@ FileSystem::Ptr Interface::use_filesystem(){
       fs_name.append("hadoop_jvm");
       break;
     }
-/* 
+
     case Types::Fs::CEPH:{
 #if defined (BUILTIN_FS_CEPH) || defined (BUILTIN_FS_ALL)
       return std::make_shared<FileSystemCeph>();
@@ -64,7 +64,7 @@ FileSystem::Ptr Interface::use_filesystem(){
       fs_name.append("ceph");
       break;
     }
-*/
+
     case Types::Fs::CUSTOM: {
       fs_name.append("custom");
       break;
@@ -72,7 +72,7 @@ FileSystem::Ptr Interface::use_filesystem(){
 
     default:
       SWC_THROWF(Error::CONFIG_BAD_VALUE, 
-        "Unimplemented FileSystem name=%s type=%d", 
+        "Not implemented FileSystem name=%s type=%d", 
         fs_name.c_str(), (int)m_type);
   }
     

@@ -5,6 +5,16 @@
 
 
 
+SET_DEPS(
+  NAME      "CEPH" 
+  LIB_PATHS 
+  INC_PATHS 
+  STATIC    libcephfs.a
+  SHARED    cephfs 
+  INCLUDE   cephfs/libcephfs.h
+)
+
+
 
 set(java_home)
 if(JAVA_INSTALL_PATH)

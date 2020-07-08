@@ -62,16 +62,23 @@ ADD_LIB_TARGET(
 
 ########### CEPH FILESYSTEM ###########
 
-# set(FILE_SYSTEMS ${FILE_SYSTEMS} ceph)
-#set(swcdb_fsCeph_sources
-# ${SWC_VERSION_SRC}
-# Ceph/FileSystem.cc
-#)
-#ADD_LIB_TARGET(
-#  NAME     swcdb_fs_ceph
-#  SRCS     ${swcdb_fsCeph_sources}
-#  TARGETS  swcdb_fs swcdb_core swcdb_core_config
-#)
+if(CEPH_LIBRARIES_SHARED)
+  set(FILE_SYSTEMS ${FILE_SYSTEMS} ceph)
+  set(swcdb_fsCeph_sources
+    ${SWC_VERSION_SRC}
+    Ceph/FileSystem.cc
+  )
+  if(NOT CEPH_LIBRARIES_STATIC)
+    set(CEPH_LIBRARIES_STATIC ${CEPH_LIBRARIES_SHARED})
+  endif()
+  ADD_LIB_TARGET(
+    NAME     swcdb_fs_ceph
+    SRCS     ${swcdb_fsCeph_sources}
+    TARGETS  swcdb_fs swcdb_core swcdb_core_config
+    SHARED    ${CEPH_LIBRARIES_SHARED}
+    STATIC    ${CEPH_LIBRARIES_STATIC}
+  )
+endif()
 #########################
 
 
