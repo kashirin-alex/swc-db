@@ -7,7 +7,7 @@
 #define swc_app_thriftbroker_AppHandler_h
 
 #include "swcdb/db/client/sql/SQL.h"
-#include "swcdb/thrift/Converter.h"
+#include "swcdb/thrift/utils/Converter.h"
 
 namespace SWC { 
 namespace thrift = apache::thrift;

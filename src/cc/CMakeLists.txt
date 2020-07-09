@@ -24,7 +24,3 @@ include_directories(
 
 add_subdirectory(lib/swcdb)
 add_subdirectory(bin/swcdb)
-
-install(DIRECTORY etc/swcdb      DESTINATION etc)
-install(DIRECTORY include/swcdb  DESTINATION include)
-

@@ -3,8 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swcdb_thrift_Converter_h
-#define swcdb_thrift_Converter_h
+#ifndef swcdb_thrift_utils_Converter_h
+#define swcdb_thrift_utils_Converter_h
 
 
 namespace SWC {  namespace Thrift { namespace Converter {
@@ -164,4 +164,4 @@ void set(const Schema& schema, DB::Schema::Ptr& dbschema) {
 
 }}
 
-#endif // swcdb_thrift_Converter_h
+#endif // swcdb_thrift_utils_Converter_h
