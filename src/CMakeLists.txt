@@ -15,7 +15,7 @@ add_subdirectory(py)
 
 
 
-install(DIRECTORY cc/etc/swcdb      DESTINATION etc)
+install(DIRECTORY etc/swcdb      DESTINATION etc)
 
 
 install(FILES     cc/include/swcdb/Version.h  DESTINATION include/swcdb)
