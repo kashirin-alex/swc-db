@@ -12,59 +12,10 @@
 namespace SWC { namespace DB { namespace KeySeq {
 
 
-///
-template<Types::KeySeq T_seq>
-inline
-SWC_ATTRIBS((SWC_ATTR_INLINE))
-Condition::Comp 
-condition(const uint8_t *p1, uint32_t p1_len, 
-          const uint8_t *p2, uint32_t p2_len) noexcept;
-
-template<>
-inline
-SWC_ATTRIBS((SWC_ATTR_INLINE))
-Condition::Comp 
-condition<Types::KeySeq::LEXIC>(const uint8_t *p1, uint32_t p1_len, 
-                                const uint8_t *p2, uint32_t p2_len) noexcept {
-  return Condition::condition_lexic(p1, p1_len, p2, p2_len);
-}
-
-template<> 
-inline
-SWC_ATTRIBS((SWC_ATTR_INLINE))
-Condition::Comp 
-condition<Types::KeySeq::VOLUME>(const uint8_t *p1, uint32_t p1_len, 
-                                 const uint8_t *p2, uint32_t p2_len) noexcept {
-  return Condition::condition_volume(p1, p1_len, p2, p2_len);
-}
-
-inline
-SWC_ATTRIBS((SWC_ATTR_INLINE))
-Condition::Comp  
-condition(const Types::KeySeq seq, 
-          const uint8_t *p1, uint32_t p1_len, 
-          const uint8_t *p2, uint32_t p2_len) noexcept {
-  switch(seq) {
-
-    case Types::KeySeq::LEXIC:
-    case Types::KeySeq::FC_LEXIC:
-      return condition<Types::KeySeq::LEXIC>(p1, p1_len, p2, p2_len);
-      
-    case Types::KeySeq::VOLUME:
-    case Types::KeySeq::FC_VOLUME:
-      return condition<Types::KeySeq::VOLUME>(p1, p1_len, p2, p2_len);
-
-    default:
-      //SWC_ASSERT(seq != Types::KeySeq::UNKNOWN);
-      return Condition::NONE;
-  }
-}
-///
 
 
 ///
 template<Types::KeySeq T_seq>
-static 
 SWC_SHOULD_NOT_INLINE
 Condition::Comp 
 compare(const Cell::Key& key,  const Cell::Key& other) {
@@ -111,8 +62,6 @@ compare<Types::KeySeq::FC_VOLUME>(const Cell::Key& key,
   return compare<Types::KeySeq::VOLUME>(key, other);
 }
 
-
-extern inline
 Condition::Comp 
 compare(const Types::KeySeq seq, const Cell::Key& key, 
                                  const Cell::Key& other) {
@@ -141,7 +90,6 @@ compare(const Types::KeySeq seq, const Cell::Key& key,
 
 ///
 template<Types::KeySeq T_seq>
-static 
 SWC_SHOULD_NOT_INLINE
 Condition::Comp 
 compare(const Cell::Key& key, const Cell::Key& other,
@@ -202,11 +150,9 @@ compare<Types::KeySeq::FC_VOLUME>(
   return compare<Types::KeySeq::VOLUME>(key, other, max, empty_ok, empty_eq);
 }
 
-
-extern inline
 Condition::Comp 
 compare(const Types::KeySeq seq, const Cell::Key& key, const Cell::Key& other,
-        int32_t max, bool empty_ok=false, bool empty_eq=false) {
+        int32_t max, bool empty_ok, bool empty_eq) {
   switch(seq) {
 
     case Types::KeySeq::LEXIC:
@@ -236,7 +182,6 @@ compare(const Types::KeySeq seq, const Cell::Key& key, const Cell::Key& other,
 
 ///
 template<Types::KeySeq T_seq> 
-static 
 SWC_SHOULD_NOT_INLINE
 bool
 compare(const Cell::Key& key, const Cell::KeyVec& other, 
@@ -296,11 +241,10 @@ compare<Types::KeySeq::FC_VOLUME>(
 }
 
 
-extern inline
 bool 
 compare(const Types::KeySeq seq, 
         const Cell::Key& key, const Cell::KeyVec& other,
-        Condition::Comp break_if, uint32_t max = 0, bool empty_ok=false) {
+        Condition::Comp break_if, uint32_t max, bool empty_ok) {
   switch(seq) {
 
     case Types::KeySeq::LEXIC:
@@ -330,7 +274,6 @@ compare(const Types::KeySeq seq,
 
 ///
 template<Types::KeySeq T_seq>
-static 
 SWC_SHOULD_NOT_INLINE
 bool
 align(const Cell::Key& key, Cell::KeyVec& start, Cell::KeyVec& finish) {
@@ -372,7 +315,6 @@ align(const Cell::Key& key, Cell::KeyVec& start, Cell::KeyVec& finish) {
 }
 
 
-extern inline
 bool 
 align(const Types::KeySeq seq, const Cell::Key& key, 
       Cell::KeyVec& start, Cell::KeyVec& finish) {
@@ -397,7 +339,6 @@ align(const Types::KeySeq seq, const Cell::Key& key,
 
 ///
 template<Types::KeySeq T_seq> 
-static 
 SWC_SHOULD_NOT_INLINE
 bool
 align(Cell::KeyVec& key, const Cell::KeyVec& other, Condition::Comp comp) {
@@ -428,7 +369,6 @@ align(Cell::KeyVec& key, const Cell::KeyVec& other, Condition::Comp comp) {
 }
 
 
-extern inline
 bool 
 align(const Types::KeySeq seq, Cell::KeyVec& key, 
       const Cell::KeyVec& other, Condition::Comp comp) {
@@ -451,62 +391,11 @@ align(const Types::KeySeq seq, Cell::KeyVec& key,
 
 
 
-///
-template<Types::KeySeq T_seq> 
-inline
-SWC_ATTRIBS((SWC_ATTR_INLINE))
-bool
-is_matching(Condition::Comp comp,
-            const uint8_t *p1, uint32_t p1_len, 
-            const uint8_t *p2, uint32_t p2_len);
-
-template<>
-inline
-SWC_ATTRIBS((SWC_ATTR_INLINE))
-bool
-is_matching<Types::KeySeq::LEXIC>(Condition::Comp comp,
-                                  const uint8_t *p1, uint32_t p1_len, 
-                                  const uint8_t *p2, uint32_t p2_len) {
-  return Condition::is_matching_lexic(comp, p1, p1_len, p2, p2_len);
-}
-
-template<>
-inline
-SWC_ATTRIBS((SWC_ATTR_INLINE))
-bool
-is_matching<Types::KeySeq::VOLUME>(Condition::Comp comp,
-                                   const uint8_t *p1, uint32_t p1_len, 
-                                   const uint8_t *p2, uint32_t p2_len) {
-  return Condition::is_matching_volume(comp, p1, p1_len, p2, p2_len);
-}
-
-extern inline
-bool
-is_matching(const Types::KeySeq seq, Condition::Comp comp,
-            const uint8_t *p1, uint32_t p1_len, 
-            const uint8_t *p2, uint32_t p2_len) {
-  switch(seq) {
-
-    case Types::KeySeq::LEXIC:
-    case Types::KeySeq::FC_LEXIC:
-      return is_matching<Types::KeySeq::LEXIC>(comp, p1, p1_len, p2, p2_len);
-      
-    case Types::KeySeq::VOLUME:
-    case Types::KeySeq::FC_VOLUME:
-      return is_matching<Types::KeySeq::VOLUME>(comp, p1, p1_len, p2, p2_len);
-
-    default:
-      SWC_ASSERT(seq != Types::KeySeq::UNKNOWN);
-      return false;
-  }
-}
-///
 
 
 
 ///
 template<Types::KeySeq T_seq> 
-static 
 SWC_SHOULD_NOT_INLINE
 bool
 is_matching(const Specs::Key& key, const Cell::Key &other) {
@@ -547,7 +436,6 @@ is_matching(const Specs::Key& key, const Cell::Key &other) {
 }
 
 
-extern inline
 bool 
 is_matching(const Types::KeySeq seq, const Specs::Key& key, 
                                      const Cell::Key &other) {

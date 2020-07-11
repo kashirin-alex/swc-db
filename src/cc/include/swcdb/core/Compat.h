@@ -16,11 +16,10 @@
 #include <memory>
 #include <string>
 
-// SWC_ATTRIBS((SWC_ATTR_NOTHROW, SWC_ATTR_INLINE))
+
 #define SWC_ATTRIBS(attrs) __attribute__(attrs)
 #define SWC_ATTR_NOTHROW __nothrow__
 #define SWC_ATTR_INLINE __always_inline__ //, __artificial__
-#define SWC_ATTR_NOINLINE __noinline__
 
 #define SWC_NOEXCEPT noexcept(true)
 
@@ -33,7 +32,7 @@
 #endif
 
 # define SWC_SHOULD_NOT_INLINE  \
-  SWC_ATTRIBS((SWC_ATTR_NOINLINE)) 
+  SWC_ATTRIBS((__noinline__, __noclone__))
   
 
 #if defined (__GLIBC__) && (__GLIBC__ >= 2) && (__GLIBC_MINOR__ >= 23)
