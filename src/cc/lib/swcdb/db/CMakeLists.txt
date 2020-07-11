@@ -9,7 +9,9 @@ set(swcdb_sources
 
   Cells/Mutable.cc
   Cells/Result.cc
+  Cells/MutableVec.cc
   Cells/MapMutable.cc
+  
   Cells/Interval.cc
   Cells/CellKeyVec.cc
   Cells/CellKey.cc
