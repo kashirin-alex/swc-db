@@ -15,7 +15,8 @@
 namespace SWC {
 
 
-  std::string format(const char *fmt, ...);
+  std::string format(const char *fmt, ...)
+              __attribute__((format(printf, 1, 2)));
 
 
   template <class SequenceT>

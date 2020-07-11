@@ -99,7 +99,7 @@ void CommHeader::decode(const uint8_t** bufp, size_t* remainp) {
   checksum = Serialization::decode_i32(bufp, remainp);
   if(!checksum_i32_chk(checksum, base, header_len-4))
     SWC_THROWF(Error::COMM_HEADER_CHECKSUM_MISMATCH, 
-              "header-checksum decoded-len=%d", *bufp-base);
+              "header-checksum decoded-len=%lu", *bufp-base);
 }
 
 void CommHeader::initialize_from_request_header(const CommHeader &req_header) {

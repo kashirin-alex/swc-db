@@ -67,7 +67,7 @@ extern SWC_CAN_INLINE
 void decode_needed(size_t* remainp, size_t len) {
   if(*remainp < len)
       SWC_THROWF(Error::SERIALIZATION_INPUT_OVERRUN, 
-                "Need %llu bytes but only %llu remain", len, *remainp);
+                "Need %lu bytes but only %lu remain", len, *remainp);
   *remainp -= len;          
 }
 

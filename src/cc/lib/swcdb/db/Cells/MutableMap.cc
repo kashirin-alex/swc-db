@@ -149,7 +149,7 @@ void MutableMap::add(const cid_t cid, const Cell& cell) {
 
   auto it = find(cid);
   if(it == end())
-    SWC_THROWF(ENOKEY, "Map Missing column=%d (1st do create)", cid);
+    SWC_THROWF(ENOKEY, "Map Missing column=%lu (1st do create)", cid);
   it->second->add(cell);
 }
 

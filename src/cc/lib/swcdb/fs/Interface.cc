@@ -99,7 +99,7 @@ FileSystem::Ptr Interface::use_filesystem(){
   void* f_cfg_ptr = dlsym(handle, handler_name.c_str());
   if (err != NULL || f_cfg_ptr == nullptr)
     SWC_THROWF(Error::CONFIG_BAD_VALUE, 
-              "Shared Lib %s, link(%s) fail: %s handle=%d\n", 
+              "Shared Lib %s, link(%s) fail: %s handle=%lu\n", 
               fs_lib.c_str(), handler_name.c_str(), err, (size_t)handle);
   ((fs_apply_cfg_t*)f_cfg_ptr)(Env::Config::get());
     
@@ -108,7 +108,7 @@ FileSystem::Ptr Interface::use_filesystem(){
   void* f_new_ptr = dlsym(handle, handler_name.c_str());
   if (err != NULL || f_new_ptr == nullptr)
     SWC_THROWF(Error::CONFIG_BAD_VALUE, 
-              "Shared Lib %s, link(%s) fail: %s handle=%d\n", 
+              "Shared Lib %s, link(%s) fail: %s handle=%lu\n", 
               fs_lib.c_str(), handler_name.c_str(), err, (size_t)handle);
     
   loaded_dl = {.lib=handle, .cfg=f_cfg_ptr, .make=f_new_ptr};

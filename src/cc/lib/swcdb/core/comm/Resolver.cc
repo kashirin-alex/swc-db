@@ -165,9 +165,8 @@ EndPoints get_endpoints(uint16_t defaul_port,
          break;
       }
       if(!s) 
-        SWC_THROWF(Error::COMM_SOCKET_ERROR, 
-                  "Bad IP for host: %s, address-info: ", 
-                  hostname.c_str(), rp->ai_addr);
+        SWC_THROWF(Error::COMM_SOCKET_ERROR, "Bad IP for host: %s",  
+                    hostname.c_str());
         
       endpoints.emplace_back(asio::ip::make_address(c_addr), port);
     }
