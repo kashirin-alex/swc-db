@@ -7,7 +7,7 @@
 #ifndef swc_db_client_Query_Update_h
 #define swc_db_client_Query_Update_h
 
-#include "swcdb/db/Cells/MapMutable.h" 
+#include "swcdb/db/Cells/MutableMap.h" 
 #include "swcdb/db/Types/Range.h"
 
 #include "swcdb/db/Protocol/Mngr/req/RgrGet.h"
@@ -43,7 +43,7 @@ struct Update final {
   
   typedef std::shared_ptr<Update> Ptr;
 
-  DB::Cells::MapMutable errored;
+  DB::Cells::MutableMap errored;
   Profiling             profile;
   
   uint32_t completion();
@@ -84,8 +84,8 @@ class Update final : public std::enable_shared_from_this<Update> {
   uint32_t                    timeout_ratio;
   
   const Cb_t                  cb;
-  DB::Cells::MapMutable::Ptr  columns;
-  DB::Cells::MapMutable::Ptr  columns_onfractions;
+  DB::Cells::MutableMap::Ptr  columns;
+  DB::Cells::MutableMap::Ptr  columns_onfractions;
 
   Result::Ptr                 result;
 
@@ -94,8 +94,8 @@ class Update final : public std::enable_shared_from_this<Update> {
 
   Update(const Cb_t& cb=0);
 
-  Update(const DB::Cells::MapMutable::Ptr& columns, 
-         const DB::Cells::MapMutable::Ptr& columns_onfractions, 
+  Update(const DB::Cells::MutableMap::Ptr& columns, 
+         const DB::Cells::MutableMap::Ptr& columns_onfractions, 
          const Cb_t& cb=0);
 
   virtual ~Update();

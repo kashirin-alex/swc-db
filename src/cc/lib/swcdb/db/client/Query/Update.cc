@@ -63,13 +63,13 @@ Update::Update(const Cb_t& cb)
           timeout(Env::Clients::ref().cfg_send_timeout->get()), 
           timeout_ratio(Env::Clients::ref().cfg_send_timeout_ratio->get()),
           cb(cb),
-          columns(std::make_shared<DB::Cells::MapMutable>()),
-          columns_onfractions(std::make_shared<DB::Cells::MapMutable>()),
+          columns(std::make_shared<DB::Cells::MutableMap>()),
+          columns_onfractions(std::make_shared<DB::Cells::MutableMap>()),
           result(std::make_shared<Result>()) { 
 }
 
-Update::Update(const DB::Cells::MapMutable::Ptr& columns, 
-         const DB::Cells::MapMutable::Ptr& columns_onfractions, 
+Update::Update(const DB::Cells::MutableMap::Ptr& columns, 
+         const DB::Cells::MutableMap::Ptr& columns_onfractions, 
          const Cb_t& cb)
         : buff_sz(Env::Clients::ref().cfg_send_buff_sz->get()), 
           buff_ahead(Env::Clients::ref().cfg_send_ahead->get()), 

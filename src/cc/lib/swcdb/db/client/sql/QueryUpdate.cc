@@ -21,8 +21,8 @@ namespace {
 }
 
 QueryUpdate::QueryUpdate(const std::string& sql, 
-                         DB::Cells::MapMutable& columns, 
-                         DB::Cells::MapMutable& columns_onfractions,
+                         DB::Cells::MutableMap& columns, 
+                         DB::Cells::MutableMap& columns_onfractions,
                          std::string& message)
                         : Reader(sql, message), 
                           columns(columns), 

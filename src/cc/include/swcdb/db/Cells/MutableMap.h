@@ -3,8 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */ 
 
-#ifndef swcdb_db_Cells_MapMutable_h
-#define swcdb_db_Cells_MapMutable_h
+#ifndef swcdb_db_Cells_MutableMap_h
+#define swcdb_db_Cells_MutableMap_h
 
 #include "swcdb/core/Mutex.h"
 #include "swcdb/db/Columns/Schema.h"
@@ -73,21 +73,21 @@ class ColCells final {
 
 
 
-class MapMutable final : private std::unordered_map<cid_t, ColCells::Ptr> {
+class MutableMap final : private std::unordered_map<cid_t, ColCells::Ptr> {
   public:
   
-  typedef std::shared_ptr<MapMutable>               Ptr;
+  typedef std::shared_ptr<MutableMap>               Ptr;
   typedef std::unordered_map<cid_t, ColCells::Ptr>  Columns;
   
-  explicit MapMutable();
+  explicit MutableMap();
 
-  MapMutable(const MapMutable&) = delete;
+  MutableMap(const MutableMap&) = delete;
 
-  MapMutable(const MapMutable&&) = delete;
+  MutableMap(const MutableMap&&) = delete;
 
-  MapMutable& operator=(const MapMutable&) = delete;
+  MutableMap& operator=(const MutableMap&) = delete;
   
-  ~MapMutable();
+  ~MutableMap();
 
   bool create(const Schema::Ptr& schema);
 
@@ -128,7 +128,7 @@ class MapMutable final : private std::unordered_map<cid_t, ColCells::Ptr> {
 }}}
 
 #ifdef SWC_IMPL_SOURCE
-#include "swcdb/db/Cells/MapMutable.cc"
+#include "swcdb/db/Cells/MutableMap.cc"
 #endif 
 
-#endif // swcdb_db_Cells_MapMutable_h
+#endif // swcdb_db_Cells_MutableMap_h
