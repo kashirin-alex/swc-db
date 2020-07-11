@@ -14,9 +14,6 @@
 #include "swcdb/db/Cells/CellKeyVec.h"
 #include "swcdb/db/Cells/SpecsKey.h"
 
-# define SWC_CAN_INLINE  \
-  SWC_ATTRIBS((SWC_ATTR_INLINE)) \
-  inline
 
 
 namespace SWC { namespace DB { namespace KeySeq {
@@ -148,7 +145,7 @@ is_matching(const Types::KeySeq seq, Condition::Comp comp,
 
 }}}
 
-# undef SWC_CAN_INLINE
+
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/db/Cells/KeyComparator.cc"

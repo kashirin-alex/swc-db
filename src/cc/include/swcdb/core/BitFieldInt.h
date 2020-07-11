@@ -6,10 +6,6 @@
 #ifndef swc_core_BitFieldInt_H
 #define swc_core_BitFieldInt_H
 
-# define SWC_CAN_INLINE  \
-  __attribute__((__always_inline__, __artificial__)) \
-  extern inline
-
 namespace SWC {
 
 
@@ -234,14 +230,14 @@ struct BitFieldInt final {
 
 
 template<typename T, uint8_t SZ>
-SWC_CAN_INLINE 
+extern SWC_CAN_INLINE 
 std::ostream& operator<<(std::ostream& out, const BitFieldInt<T, SZ>& v) {
   out << v.data;
   return out;
 }
 
 template<class T, uint8_t SZ>
-SWC_CAN_INLINE 
+extern SWC_CAN_INLINE 
 std::string to_string(const BitFieldInt<T, SZ>& v) {
   return std::to_string(v.data);
 }
@@ -250,7 +246,7 @@ std::string to_string(const BitFieldInt<T, SZ>& v) {
 /* BitFieldInt<T, SZ> = BitFieldInt<T, SZ> op IN_T */
 #define SWC_BITFIELD_op_T(_op_) \
 template<class T, uint8_t SZ, typename IN_T> \
-SWC_CAN_INLINE \
+extern SWC_CAN_INLINE \
 BitFieldInt<T, SZ> \
 operator _op_ (const BitFieldInt<T, SZ>& v1, \
                const IN_T& v2) { \
@@ -269,7 +265,7 @@ SWC_BITFIELD_op_T(^);
 /* IN_T = IN_T op BitFieldInt<T, SZ>*/
 #define SWC_T_op_BITFIELD(_op_) \
 template<typename IN_T, class T, uint8_t SZ> \
-SWC_CAN_INLINE \
+extern SWC_CAN_INLINE \
 BitFieldInt<T, SZ> \
 operator _op_ (const IN_T& v1, \
                const BitFieldInt<T, SZ>& v2) { \
@@ -290,7 +286,7 @@ SWC_T_op_BITFIELD(^);
 /* BitFieldInt<T, SZ> = BitFieldInt<T1, SZ1> op BitFieldInt<T2, SZ2> */
 #define SWC_BITFIELD1_op_BITFIELD2(_op_) \
 template<class T1, uint8_t SZ1, class T2, uint8_t SZ2> \
-SWC_CAN_INLINE \
+extern SWC_CAN_INLINE \
 BitFieldInt<T1, SZ1> \
 operator _op_ (const BitFieldInt<T1, SZ1>& v1, \
                const BitFieldInt<T2, SZ2>& v2) { \
@@ -311,7 +307,7 @@ SWC_BITFIELD1_op_BITFIELD2(^);
 /* bool IN_T vs BitFieldInt<T, SZ> */
 #define SWC_T_vs_BITFIELD(_vs_) \
 template<typename IN_T, class T, uint8_t SZ> \
-SWC_CAN_INLINE \
+extern SWC_CAN_INLINE \
 bool operator _vs_ (const IN_T& v1, const BitFieldInt<T, SZ>& v2) { \
   return v1 _vs_ v2.data; \
 }
@@ -327,7 +323,7 @@ SWC_T_vs_BITFIELD(>);
 /* bool BitFieldInt<T, SZ> vs IN_T */
 #define SWC_BITFIELD_vs_T(_vs_) \
 template<class T, uint8_t SZ, typename IN_T> \
-SWC_CAN_INLINE \
+extern SWC_CAN_INLINE \
 bool operator _vs_ (const BitFieldInt<T, SZ>& v1, const IN_T& v2) { \
   return v1.data _vs_ v2; \
 }
@@ -343,7 +339,7 @@ SWC_BITFIELD_vs_T(>);
 /* bool BitFieldInt<T1, SZ1> vs BitFieldInt<T2, SZ2> */
 #define SWC_BITFIELD1_vs_BITFIELD2(_vs_) \
 template<class T1, uint8_t SZ1, class T2, uint8_t SZ2> \
-SWC_CAN_INLINE \
+extern SWC_CAN_INLINE \
 bool operator _vs_ (const BitFieldInt<T1, SZ1>& v1, \
                     const BitFieldInt<T2, SZ2>& v2) { \
   return v1.data _vs_ v2.data; \
@@ -408,5 +404,4 @@ static const int56_t   INT56_MAX(UINT56_MAX / 2);   // 36028797018963967
 static const int56_t   INT56_MIN(INT56_MAX + 1);    // -36028797018963968
 
 
-# undef SWC_CAN_INLINE 
 #endif

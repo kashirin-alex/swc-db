@@ -12,10 +12,6 @@
 #include <re2/re2.h>
 
 
-# define SWC_CAN_INLINE  \
-  SWC_ATTRIBS((SWC_ATTR_INLINE)) \
-  extern inline
-
 
 
 namespace SWC { 
@@ -29,7 +25,7 @@ _memcomp(const uint8_t* s1, const uint8_t* s2, size_t count) {
   return 0;
 }
   
-SWC_CAN_INLINE   
+extern SWC_CAN_INLINE   
 int
 memcomp(const uint8_t* s1, const uint8_t* s2, size_t count) {
   return _memcomp(s1, s2, count);
@@ -56,7 +52,7 @@ enum Comp {
   VLT  = 0xC    // [  v<  ]  :   -vlt           (vol lower-than)
 };
 
-SWC_CAN_INLINE 
+extern SWC_CAN_INLINE 
 Comp from(const char** buf, uint32_t* remainp, bool extended=false) {
   Comp comp = Comp::NONE;
 
@@ -130,7 +126,7 @@ Comp from(const char** buf, uint32_t* remainp, bool extended=false) {
   return comp;
 };
 
-SWC_CAN_INLINE 
+extern SWC_CAN_INLINE 
 std::string to_string(Comp comp, bool extended=false) {
   
   if(extended) switch (comp) {
@@ -168,14 +164,14 @@ std::string to_string(Comp comp, bool extended=false) {
   }
 };
 
-SWC_CAN_INLINE 
+extern SWC_CAN_INLINE 
 std::string to_string(uint8_t comp) {
   return to_string((Comp)comp);
 };
 
 
 
-SWC_CAN_INLINE 
+extern SWC_CAN_INLINE 
 Comp condition_lexic(const uint8_t *p1, uint32_t p1_len, 
                      const uint8_t *p2, uint32_t p2_len) noexcept {
   int diff = memcmp(p1, p2, p1_len < p2_len ? p1_len: p2_len);
@@ -188,7 +184,7 @@ Comp condition_lexic(const uint8_t *p1, uint32_t p1_len,
           ;
 }
 
-SWC_CAN_INLINE 
+extern SWC_CAN_INLINE 
 Comp condition_volume(const uint8_t *p1, uint32_t p1_len, 
                       const uint8_t *p2, uint32_t p2_len) noexcept {
   int diff;
@@ -210,84 +206,84 @@ Comp condition_volume(const uint8_t *p1, uint32_t p1_len,
 
 
 
-SWC_CAN_INLINE 
+extern SWC_CAN_INLINE 
 Comp condition(bool vol, const uint8_t *p1, uint32_t p1_len, 
                          const uint8_t *p2, uint32_t p2_len) noexcept {
   return (vol ? condition_volume : condition_lexic)
         (p1, p1_len, p2, p2_len);
 }
 
-SWC_CAN_INLINE 
+extern SWC_CAN_INLINE 
 bool pf(const uint8_t *p1, uint32_t p1_len, 
         const uint8_t *p2, uint32_t p2_len) noexcept {
   return p1_len <= p2_len && memcmp(p1, p2, p1_len) == 0;
 }
 
-SWC_CAN_INLINE 
+extern SWC_CAN_INLINE 
 bool gt_lexic(const uint8_t *p1, uint32_t p1_len, 
               const uint8_t *p2, uint32_t p2_len) noexcept {
   int diff = memcmp(p1, p2, p1_len < p2_len? p1_len: p2_len);
   return diff < 0 || (diff == 0 && p1_len < p2_len);
 }
 
-SWC_CAN_INLINE 
+extern SWC_CAN_INLINE 
 bool gt_volume(const uint8_t *p1, uint32_t p1_len, 
                const uint8_t *p2, uint32_t p2_len) noexcept{
   return p1_len < p2_len || (p1_len == p2_len && memcmp(p1, p2, p2_len) < 0);
 }
 
-SWC_CAN_INLINE 
+extern SWC_CAN_INLINE 
 bool ge_lexic(const uint8_t *p1, uint32_t p1_len, 
               const uint8_t *p2, uint32_t p2_len) noexcept {
   int diff = memcmp(p1, p2, p1_len < p2_len? p1_len: p2_len);
   return diff < 0 || (diff == 0 && p1_len <= p2_len);
 }
 
-SWC_CAN_INLINE 
+extern SWC_CAN_INLINE 
 bool ge_volume(const uint8_t *p1, uint32_t p1_len, 
                const uint8_t *p2, uint32_t p2_len) noexcept {
   return p1_len < p2_len || (p1_len == p2_len && memcmp(p1, p2, p2_len) <= 0);
 }
 
-SWC_CAN_INLINE 
+extern SWC_CAN_INLINE 
 bool eq(const uint8_t *p1, uint32_t p1_len, 
         const uint8_t *p2, uint32_t p2_len) noexcept {
   return p1_len == p2_len && memcmp(p1, p2, p1_len) == 0;
 }
 
-SWC_CAN_INLINE 
+extern SWC_CAN_INLINE 
 bool le_lexic(const uint8_t *p1, uint32_t p1_len, 
               const uint8_t *p2, uint32_t p2_len) noexcept {
   int diff = memcmp(p1, p2, p1_len < p2_len? p1_len: p2_len);
   return diff > 0 || (diff == 0 && p1_len >= p2_len);
 }
 
-SWC_CAN_INLINE 
+extern SWC_CAN_INLINE 
 bool le_volume(const uint8_t *p1, uint32_t p1_len, 
                const uint8_t *p2, uint32_t p2_len) noexcept {
   return p1_len > p2_len || (p1_len == p2_len && memcmp(p1, p2, p1_len) >= 0);
 }
 
-SWC_CAN_INLINE 
+extern SWC_CAN_INLINE 
 bool lt_lexic(const uint8_t *p1, uint32_t p1_len, 
               const uint8_t *p2, uint32_t p2_len) noexcept {
   int diff = memcmp(p1, p2, p1_len < p2_len? p1_len: p2_len);
   return diff > 0 || (diff == 0 && p1_len > p2_len);
 } 
 
-SWC_CAN_INLINE 
+extern SWC_CAN_INLINE 
 bool lt_volume(const uint8_t *p1, uint32_t p1_len, 
                const uint8_t *p2, uint32_t p2_len) noexcept {
   return p1_len > p2_len || (p1_len == p2_len && memcmp(p1, p2, p1_len) > 0);
 } 
 
-SWC_CAN_INLINE 
+extern SWC_CAN_INLINE 
 bool ne(const uint8_t *p1, uint32_t p1_len, 
         const uint8_t *p2, uint32_t p2_len) noexcept {
   return !eq(p1, p1_len, p2, p2_len);
 }
 
-SWC_CAN_INLINE 
+extern SWC_CAN_INLINE 
 bool re(const uint8_t *p1, uint32_t p1_len, 
         const uint8_t *p2, uint32_t p2_len) {
   return re2::RE2::PartialMatch(
@@ -296,7 +292,7 @@ bool re(const uint8_t *p1, uint32_t p1_len,
   );
 }
 
-SWC_CAN_INLINE 
+extern SWC_CAN_INLINE 
 bool re(const RE2* regex, const uint8_t *p2, uint32_t p2_len) {
   return RE2::PartialMatch(
     re2::StringPiece((const char *)p2, p2_len), 
@@ -305,7 +301,7 @@ bool re(const RE2* regex, const uint8_t *p2, uint32_t p2_len) {
 }
 
 
-SWC_CAN_INLINE 
+extern SWC_CAN_INLINE 
 bool is_matching_lexic(uint8_t comp, 
                        const uint8_t *p1, uint32_t p1_len, 
                        const uint8_t *p2, uint32_t p2_len) {
@@ -340,7 +336,7 @@ bool is_matching_lexic(uint8_t comp,
   }
 }
 
-SWC_CAN_INLINE 
+extern SWC_CAN_INLINE 
 bool is_matching_volume(uint8_t comp, 
                         const uint8_t *p1, uint32_t p1_len, 
                         const uint8_t *p2, uint32_t p2_len) {
@@ -376,7 +372,7 @@ bool is_matching_volume(uint8_t comp,
 }
 
 
-SWC_CAN_INLINE 
+extern SWC_CAN_INLINE 
 bool is_matching_lexic(uint8_t comp, 
                        const char *p1, uint32_t p1_len, 
                        const char *p2, uint32_t p2_len) {
@@ -384,7 +380,7 @@ bool is_matching_lexic(uint8_t comp,
     comp, (const uint8_t *)p1, p1_len, (const uint8_t *)p2, p2_len);
 }
 
-SWC_CAN_INLINE 
+extern SWC_CAN_INLINE 
 bool is_matching_volume(uint8_t comp, 
                         const char *p1, uint32_t p1_len, 
                         const char *p2, uint32_t p2_len) {
@@ -393,7 +389,7 @@ bool is_matching_volume(uint8_t comp,
 }
 
 
-SWC_CAN_INLINE 
+extern SWC_CAN_INLINE 
 bool is_matching(bool volumetric, uint8_t comp, 
                  const uint8_t *p1, uint32_t p1_len, 
                  const uint8_t *p2, uint32_t p2_len) {
@@ -402,7 +398,7 @@ bool is_matching(bool volumetric, uint8_t comp,
     : is_matching_lexic(comp, p1, p1_len, p2, p2_len);
 }
 
-SWC_CAN_INLINE 
+extern SWC_CAN_INLINE 
 bool is_matching(bool volumetric, uint8_t comp, 
                  const char *p1, uint32_t p1_len, 
                  const char *p2, uint32_t p2_len) {
@@ -410,7 +406,7 @@ bool is_matching(bool volumetric, uint8_t comp,
                     (const uint8_t *)p1, p1_len, (const uint8_t *)p2, p2_len);
 }
 
-SWC_CAN_INLINE 
+extern SWC_CAN_INLINE 
 bool is_matching_extended(uint8_t comp, 
                           const uint8_t *p1, uint32_t p1_len, 
                           const uint8_t *p2, uint32_t p2_len) {
@@ -460,37 +456,37 @@ bool is_matching_extended(uint8_t comp,
 
 // const int64_t
 
-SWC_CAN_INLINE 
+extern SWC_CAN_INLINE 
 bool gt(const int64_t p1, const int64_t p2) {
   return p1 < p2;
 }
 
-SWC_CAN_INLINE 
+extern SWC_CAN_INLINE 
 bool ge(const int64_t p1, const int64_t p2) {
   return p1 <= p2;
 }
 
-SWC_CAN_INLINE 
+extern SWC_CAN_INLINE 
 bool eq(const int64_t p1, const int64_t p2) {
   return p1 == p2;
 }
 
-SWC_CAN_INLINE 
+extern SWC_CAN_INLINE 
 bool le(const int64_t p1, const int64_t p2) {
   return p1 >= p2;
 }
 
-SWC_CAN_INLINE 
+extern SWC_CAN_INLINE 
 bool lt(const int64_t p1, const int64_t p2) {
   return p1 > p2;
 }
 
-SWC_CAN_INLINE 
+extern SWC_CAN_INLINE 
 bool ne(const int64_t p1, const int64_t p2) {
   return p1 != p2;
 }
 
-SWC_CAN_INLINE 
+extern SWC_CAN_INLINE 
 bool is_matching(uint8_t comp, const int64_t p1, const int64_t p2) {
   switch (comp) {
 
@@ -522,6 +518,6 @@ bool is_matching(uint8_t comp, const int64_t p1, const int64_t p2) {
 } }
 
 
-# undef SWC_CAN_INLINE 
+
 
 #endif
