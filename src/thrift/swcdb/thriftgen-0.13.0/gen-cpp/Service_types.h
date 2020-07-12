@@ -177,6 +177,8 @@ class Exception;
 
 class Schema;
 
+class SchemaPattern;
+
 class SpecSchemas;
 
 class SpecFlags;
@@ -409,10 +411,59 @@ void swap(Schema &a, Schema &b);
 
 std::ostream& operator<<(std::ostream& out, const Schema& obj);
 
+typedef struct _SchemaPattern__isset {
+  _SchemaPattern__isset() : comp(false), value(false) {}
+  bool comp :1;
+  bool value :1;
+} _SchemaPattern__isset;
+
+class SchemaPattern : public virtual ::apache::thrift::TBase {
+ public:
+
+  SchemaPattern(const SchemaPattern&);
+  SchemaPattern& operator=(const SchemaPattern&);
+  SchemaPattern() : comp((Comp::type)0), value() {
+  }
+
+  virtual ~SchemaPattern() noexcept;
+  Comp::type comp;
+  std::string value;
+
+  _SchemaPattern__isset __isset;
+
+  void __set_comp(const Comp::type val);
+
+  void __set_value(const std::string& val);
+
+  bool operator == (const SchemaPattern & rhs) const
+  {
+    if (!(comp == rhs.comp))
+      return false;
+    if (!(value == rhs.value))
+      return false;
+    return true;
+  }
+  bool operator != (const SchemaPattern &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const SchemaPattern & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(SchemaPattern &a, SchemaPattern &b);
+
+std::ostream& operator<<(std::ostream& out, const SchemaPattern& obj);
+
 typedef struct _SpecSchemas__isset {
-  _SpecSchemas__isset() : cids(false), names(false) {}
+  _SpecSchemas__isset() : cids(false), names(false), patterns(false) {}
   bool cids :1;
   bool names :1;
+  bool patterns :1;
 } _SpecSchemas__isset;
 
 class SpecSchemas : public virtual ::apache::thrift::TBase {
@@ -426,12 +477,15 @@ class SpecSchemas : public virtual ::apache::thrift::TBase {
   virtual ~SpecSchemas() noexcept;
   std::vector<int64_t>  cids;
   std::vector<std::string>  names;
+  std::vector<SchemaPattern>  patterns;
 
   _SpecSchemas__isset __isset;
 
   void __set_cids(const std::vector<int64_t> & val);
 
   void __set_names(const std::vector<std::string> & val);
+
+  void __set_patterns(const std::vector<SchemaPattern> & val);
 
   bool operator == (const SpecSchemas & rhs) const
   {
@@ -442,6 +496,10 @@ class SpecSchemas : public virtual ::apache::thrift::TBase {
     if (__isset.names != rhs.__isset.names)
       return false;
     else if (__isset.names && !(names == rhs.names))
+      return false;
+    if (__isset.patterns != rhs.__isset.patterns)
+      return false;
+    else if (__isset.patterns && !(patterns == rhs.patterns))
       return false;
     return true;
   }

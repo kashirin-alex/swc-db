@@ -474,6 +474,27 @@ void spec_compact_test_column(Client& client) {
     std::cout << " " << r << std::endl;
 }
 
+void spec_list_columns(Client& client) {
+  std::cout << std::endl << "test: spec_list_columns: " << std::endl;
+  
+  SpecSchemas spec;
+  spec.__isset.patterns = true;
+  auto& pattern = spec.patterns.emplace_back();
+  pattern.value = column_pre;
+  pattern.comp = Comp::PF;
+  //pattern.__isset.comp = pattern.__isset.value = true;
+
+  Schemas schemas;
+  client.list_columns(schemas, spec);
+
+  assert(schemas.size() == num_columns);
+  std::cout << std::endl << "schemas.size=" << schemas.size() << std::endl;
+  for(auto& schema : schemas) {
+    schema.printTo(std::cout << " ");
+    std::cout << std::endl;
+  }
+}
+
 void spec_update(Client& client, size_t updater_id=0, int batch=0) {
   std::cout << std::endl << "test: spec_update";
   if(updater_id)
@@ -636,6 +657,7 @@ int main() {
   Test::spec_compact_test_column(client);
   Test::spec_select(client);
   
+  Test::spec_list_columns(client);
   Test::spec_delete_test_column(client);
 
 

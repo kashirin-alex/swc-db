@@ -6,13 +6,17 @@
 # IF .thrift instruction change with version it is prefered .thrift by versions
 set(VER_GEN_PATH ${CMAKE_CURRENT_SOURCE_DIR}/thriftgen-${THRIFT_VERSION})
 
+set(found_version_gen FALSE)
+if(EXISTS ${VER_GEN_PATH})
+  set(found_version_gen TRUE)
+endif()
 
 
 # SET THRIFT CPP BROKER & CLIENT SOURCES
 if(THRIFT_CPP_FOUND)
   set(THRIFT_CPP_GEN_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../../cc/include/swcdb/thrift)
 
-  if(NOT EXISTS ${THRIFT_CPP_GEN_PATH}/gen-cpp OR NOT EXISTS ${VER_GEN_PATH}/gen-cpp)
+  if(NOT EXISTS ${THRIFT_CPP_GEN_PATH}/gen-cpp OR NOT ${found_version_gen})
     if(THRIFT_COMPILER_FOUND)
       execute_process(COMMAND rm -rf ${VER_GEN_PATH}/gen-cpp )
       execute_process(COMMAND mkdir -p ${VER_GEN_PATH}/gen-cpp )
@@ -38,7 +42,7 @@ endif(THRIFT_CPP_FOUND)
 if(THRIFT_C_FOUND)
   set(THRIFT_C_GEN_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../../c/include/swcdb/thrift)
 
-  if(NOT EXISTS ${THRIFT_C_GEN_PATH}/gen-c_glib)
+  if(NOT EXISTS ${THRIFT_C_GEN_PATH}/gen-c_glib OR NOT ${found_version_gen})
     if(THRIFT_COMPILER_FOUND)
       execute_process(COMMAND rm -rf ${VER_GEN_PATH}/gen-c_glib )
       execute_process(COMMAND mkdir -p ${VER_GEN_PATH}/gen-c_glib )
@@ -63,7 +67,7 @@ endif(THRIFT_C_FOUND)
 if(PYTHON_EXECUTABLES)
   set(THRIFT_PY_GEN_PATH ${CMAKE_CURRENT_BINARY_DIR}/../../py/swcdb/pkg/thrift)
 
-  if(NOT EXISTS ${THRIFT_PY_GEN_PATH}/gen)
+  if(NOT EXISTS ${THRIFT_PY_GEN_PATH}/gen OR NOT ${found_version_gen})
     if(THRIFT_COMPILER_FOUND)
       execute_process(COMMAND rm -rf ${VER_GEN_PATH}/gen-py )
       execute_process(COMMAND mkdir -p ${VER_GEN_PATH}/gen-py )

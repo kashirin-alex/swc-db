@@ -194,28 +194,7 @@ class AppHandler final : virtual public BrokerIf {
   void list_columns(Schemas& _return, const SpecSchemas& spec) {
     int err = Error::OK;
     std::vector<DB::Schema::Ptr> dbschemas;
-    DB::Schema::Ptr schema = 0;
-
-    for(auto& cid : spec.cids) {
-      schema = Env::Clients::get()->schemas->get(err, cid);
-      if(!schema && !err)
-        err = Error::COLUMN_SCHEMA_MISSING;
-      if(err)
-        Converter::exception(
-          err, "problem getting column cid='"+std::to_string(cid)+"' schema");
-      dbschemas.push_back(schema);
-    }
-
-    for(auto& name : spec.names) {
-      schema = Env::Clients::get()->schemas->get(err, name);
-      if(!schema && !err)
-        err = Error::COLUMN_SCHEMA_MISSING;
-      if(err)
-        Converter::exception(
-          err, "problem getting column name='"+name+"' schema");
-      dbschemas.push_back(schema);
-    }
-
+    get_schemas(err, spec, dbschemas);
     process_results(err, dbschemas, _return);
   }
   
@@ -228,28 +207,7 @@ class AppHandler final : virtual public BrokerIf {
   void compact_columns(CompactResults& _return, const SpecSchemas& spec) {
     int err = Error::OK;
     std::vector<DB::Schema::Ptr> dbschemas;
-    DB::Schema::Ptr schema = 0;
-
-    for(auto& cid : spec.cids) {
-      schema = Env::Clients::get()->schemas->get(err, cid);
-      if(!schema && !err)
-        err = Error::COLUMN_SCHEMA_MISSING;
-      if(err)
-        Converter::exception(
-          err, "problem getting column cid='"+std::to_string(cid)+"' schema");
-      dbschemas.push_back(schema);
-    }
-
-    for(auto& name : spec.names) {
-      schema = Env::Clients::get()->schemas->get(err, name);
-      if(!schema && !err)
-        err = Error::COLUMN_SCHEMA_MISSING;
-      if(err)
-        Converter::exception(
-          err, "problem getting column name='"+name+"' schema");
-      dbschemas.push_back(schema);
-    }
-
+    get_schemas(err, spec, dbschemas);
     process_results(err, dbschemas, _return);
   }
 
@@ -487,6 +445,45 @@ class AppHandler final : virtual public BrokerIf {
       Converter::exception(err);
   }
 
+  void get_schemas(int& err, const SpecSchemas& spec, 
+                   std::vector<DB::Schema::Ptr>& dbschemas) {
+    if(!spec.patterns.empty()) {
+      std::vector<DB::Schemas::Pattern> dbpatterns;
+      dbpatterns.resize(spec.patterns.size());
+      size_t i = 0;
+      for(auto& pattern : spec.patterns) {
+        dbpatterns[i].comp  = (Condition::Comp)(uint8_t)pattern.comp;
+        dbpatterns[i].value = pattern.value;
+        ++i;
+      }
+      Env::Clients::get()->schemas->get(err, dbpatterns, dbschemas);
+      if(err)
+        Converter::exception(
+          err, "problem getting columns schemas on patterns");
+    }
+
+    DB::Schema::Ptr schema = 0;
+    for(auto& cid : spec.cids) {
+      schema = Env::Clients::get()->schemas->get(err, cid);
+      if(!schema && !err)
+        err = Error::COLUMN_SCHEMA_MISSING;
+      if(err)
+        Converter::exception(
+          err, "problem getting column cid='"+std::to_string(cid)+"' schema");
+      dbschemas.push_back(schema);
+    }
+
+    for(auto& name : spec.names) {
+      schema = Env::Clients::get()->schemas->get(err, name);
+      if(!schema && !err)
+        err = Error::COLUMN_SCHEMA_MISSING;
+      if(err)
+        Converter::exception(
+          err, "problem getting column name='"+name+"' schema");
+      dbschemas.push_back(schema);
+    }
+  }
+  
   void mng_column(Protocol::Mngr::Req::ColumnMng::Func func, 
                   DB::Schema::Ptr& schema) {
     std::promise<int> res;

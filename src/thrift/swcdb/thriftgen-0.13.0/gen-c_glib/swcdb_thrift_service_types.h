@@ -230,6 +230,33 @@ GType swcdb_thrift_schema_get_type (void);
 #define SWCDB_THRIFT_IS_SCHEMA_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SCHEMA))
 #define SWCDB_THRIFT_SCHEMA_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SCHEMA, swcdb_thriftSchemaClass))
 
+/* struct SchemaPattern */
+struct _swcdb_thriftSchemaPattern
+{ 
+  ThriftStruct parent; 
+
+  /* public */
+  swcdb_thriftComp comp;
+  gboolean __isset_comp;
+  gchar * value;
+  gboolean __isset_value;
+};
+typedef struct _swcdb_thriftSchemaPattern swcdb_thriftSchemaPattern;
+
+struct _swcdb_thriftSchemaPatternClass
+{
+  ThriftStructClass parent;
+};
+typedef struct _swcdb_thriftSchemaPatternClass swcdb_thriftSchemaPatternClass;
+
+GType swcdb_thrift_schema_pattern_get_type (void);
+#define SWCDB_THRIFT_TYPE_SCHEMA_PATTERN (swcdb_thrift_schema_pattern_get_type())
+#define SWCDB_THRIFT_SCHEMA_PATTERN(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_SCHEMA_PATTERN, swcdb_thriftSchemaPattern))
+#define SWCDB_THRIFT_SCHEMA_PATTERN_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_SCHEMA_PATTERN, swcdb_thriftSchemaPatternClass))
+#define SWCDB_THRIFT_IS_SCHEMA_PATTERN(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_SCHEMA_PATTERN))
+#define SWCDB_THRIFT_IS_SCHEMA_PATTERN_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SCHEMA_PATTERN))
+#define SWCDB_THRIFT_SCHEMA_PATTERN_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SCHEMA_PATTERN, swcdb_thriftSchemaPatternClass))
+
 /* struct SpecSchemas */
 struct _swcdb_thriftSpecSchemas
 { 
@@ -240,6 +267,8 @@ struct _swcdb_thriftSpecSchemas
   gboolean __isset_cids;
   GPtrArray * names;
   gboolean __isset_names;
+  GPtrArray * patterns;
+  gboolean __isset_patterns;
 };
 typedef struct _swcdb_thriftSpecSchemas swcdb_thriftSpecSchemas;
 

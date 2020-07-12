@@ -28,6 +28,9 @@ class Schemas final : private DB::Schemas {
   
   DB::Schema::Ptr get(int& err, const std::string& name);
 
+  void get(int& err, const std::vector<DB::Schemas::Pattern>& patterns,
+           std::vector<DB::Schema::Ptr>& schemas);
+
   std::vector<DB::Schema::Ptr> 
   get(int& err, const std::vector<DB::Schemas::Pattern>& patterns);
 

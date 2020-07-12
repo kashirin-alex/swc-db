@@ -76,9 +76,9 @@ DB::Schema::Ptr Schemas::get(int& err, const std::string& name) {
   return schema;
 }
 
-std::vector<DB::Schema::Ptr> 
-Schemas::get(int& err, const std::vector<DB::Schemas::Pattern>& patterns) {
-  std::vector<DB::Schema::Ptr> schemas;
+void 
+Schemas::get(int& err, const std::vector<DB::Schemas::Pattern>& patterns,
+             std::vector<DB::Schema::Ptr>& schemas) {
   _request(err, patterns, schemas);
 
   if(!err && schemas.empty()) {
@@ -91,6 +91,12 @@ Schemas::get(int& err, const std::vector<DB::Schemas::Pattern>& patterns) {
       _replace(schema);
     }
   }
+}
+
+std::vector<DB::Schema::Ptr> 
+Schemas::get(int& err, const std::vector<DB::Schemas::Pattern>& patterns) {
+  std::vector<DB::Schema::Ptr> schemas;
+  get(err, patterns, schemas);
   return schemas;
 }
 

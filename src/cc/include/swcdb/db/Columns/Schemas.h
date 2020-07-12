@@ -45,7 +45,8 @@ class Schemas : private std::unordered_map<cid_t, Schema::Ptr> {
   void all(std::vector<Schema::Ptr>& entries);
 
   void matching(const std::vector<Pattern>& patterns, 
-                std::vector<Schema::Ptr>& entries);
+                std::vector<Schema::Ptr>& entries,
+                bool no_sys=true);
 
   void reset();
 

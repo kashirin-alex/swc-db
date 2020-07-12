@@ -84,10 +84,11 @@ void Schemas::all(std::vector<Schema::Ptr>& entries) {
 }
 
 void Schemas::matching(const std::vector<Schemas::Pattern>& patterns,
-                       std::vector<Schema::Ptr>& entries) {
+                       std::vector<Schema::Ptr>& entries, bool no_sys) {
   Mutex::scope lock(m_mutex);
   for(const auto& it : *this) {
-    if(!Types::MetaColumn::is_data(it.second->cid))
+    if(no_sys && 
+       (!Types::MetaColumn::is_data(it.second->cid) || it.second->cid == 9))
       continue;
     for(auto& pattern : patterns) {
       if(Condition::is_matching_extended(

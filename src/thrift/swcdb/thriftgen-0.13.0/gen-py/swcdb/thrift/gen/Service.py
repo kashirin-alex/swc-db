@@ -1691,11 +1691,11 @@ class sql_list_columns_result(object):
             if fid == 0:
                 if ftype == TType.LIST:
                     self.success = []
-                    (_etype154, _size151) = iprot.readListBegin()
-                    for _i155 in range(_size151):
-                        _elem156 = Schema()
-                        _elem156.read(iprot)
-                        self.success.append(_elem156)
+                    (_etype161, _size158) = iprot.readListBegin()
+                    for _i162 in range(_size158):
+                        _elem163 = Schema()
+                        _elem163.read(iprot)
+                        self.success.append(_elem163)
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
@@ -1718,8 +1718,8 @@ class sql_list_columns_result(object):
         if self.success is not None:
             oprot.writeFieldBegin('success', TType.LIST, 0)
             oprot.writeListBegin(TType.STRUCT, len(self.success))
-            for iter157 in self.success:
-                iter157.write(oprot)
+            for iter164 in self.success:
+                iter164.write(oprot)
             oprot.writeListEnd()
             oprot.writeFieldEnd()
         if self.e is not None:
@@ -1859,11 +1859,11 @@ class sql_compact_columns_result(object):
             if fid == 0:
                 if ftype == TType.LIST:
                     self.success = []
-                    (_etype161, _size158) = iprot.readListBegin()
-                    for _i162 in range(_size158):
-                        _elem163 = CompactResult()
-                        _elem163.read(iprot)
-                        self.success.append(_elem163)
+                    (_etype168, _size165) = iprot.readListBegin()
+                    for _i169 in range(_size165):
+                        _elem170 = CompactResult()
+                        _elem170.read(iprot)
+                        self.success.append(_elem170)
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
@@ -1886,8 +1886,8 @@ class sql_compact_columns_result(object):
         if self.success is not None:
             oprot.writeFieldBegin('success', TType.LIST, 0)
             oprot.writeListBegin(TType.STRUCT, len(self.success))
-            for iter164 in self.success:
-                iter164.write(oprot)
+            for iter171 in self.success:
+                iter171.write(oprot)
             oprot.writeListEnd()
             oprot.writeFieldEnd()
         if self.e is not None:
@@ -2027,11 +2027,11 @@ class sql_select_result(object):
             if fid == 0:
                 if ftype == TType.LIST:
                     self.success = []
-                    (_etype168, _size165) = iprot.readListBegin()
-                    for _i169 in range(_size165):
-                        _elem170 = Cell()
-                        _elem170.read(iprot)
-                        self.success.append(_elem170)
+                    (_etype175, _size172) = iprot.readListBegin()
+                    for _i176 in range(_size172):
+                        _elem177 = Cell()
+                        _elem177.read(iprot)
+                        self.success.append(_elem177)
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
@@ -2054,8 +2054,8 @@ class sql_select_result(object):
         if self.success is not None:
             oprot.writeFieldBegin('success', TType.LIST, 0)
             oprot.writeListBegin(TType.STRUCT, len(self.success))
-            for iter171 in self.success:
-                iter171.write(oprot)
+            for iter178 in self.success:
+                iter178.write(oprot)
             oprot.writeListEnd()
             oprot.writeFieldEnd()
         if self.e is not None:
@@ -2195,17 +2195,17 @@ class sql_select_rslt_on_column_result(object):
             if fid == 0:
                 if ftype == TType.MAP:
                     self.success = {}
-                    (_ktype173, _vtype174, _size172) = iprot.readMapBegin()
-                    for _i176 in range(_size172):
-                        _key177 = iprot.readString()
-                        _val178 = []
-                        (_etype182, _size179) = iprot.readListBegin()
-                        for _i183 in range(_size179):
-                            _elem184 = CCell()
-                            _elem184.read(iprot)
-                            _val178.append(_elem184)
+                    (_ktype180, _vtype181, _size179) = iprot.readMapBegin()
+                    for _i183 in range(_size179):
+                        _key184 = iprot.readString()
+                        _val185 = []
+                        (_etype189, _size186) = iprot.readListBegin()
+                        for _i190 in range(_size186):
+                            _elem191 = CCell()
+                            _elem191.read(iprot)
+                            _val185.append(_elem191)
                         iprot.readListEnd()
-                        self.success[_key177] = _val178
+                        self.success[_key184] = _val185
                     iprot.readMapEnd()
                 else:
                     iprot.skip(ftype)
@@ -2228,11 +2228,11 @@ class sql_select_rslt_on_column_result(object):
         if self.success is not None:
             oprot.writeFieldBegin('success', TType.MAP, 0)
             oprot.writeMapBegin(TType.STRING, TType.LIST, len(self.success))
-            for kiter185, viter186 in self.success.items():
-                oprot.writeString(kiter185)
-                oprot.writeListBegin(TType.STRUCT, len(viter186))
-                for iter187 in viter186:
-                    iter187.write(oprot)
+            for kiter192, viter193 in self.success.items():
+                oprot.writeString(kiter192)
+                oprot.writeListBegin(TType.STRUCT, len(viter193))
+                for iter194 in viter193:
+                    iter194.write(oprot)
                 oprot.writeListEnd()
             oprot.writeMapEnd()
             oprot.writeFieldEnd()
@@ -2373,11 +2373,11 @@ class sql_select_rslt_on_key_result(object):
             if fid == 0:
                 if ftype == TType.LIST:
                     self.success = []
-                    (_etype191, _size188) = iprot.readListBegin()
-                    for _i192 in range(_size188):
-                        _elem193 = kCells()
-                        _elem193.read(iprot)
-                        self.success.append(_elem193)
+                    (_etype198, _size195) = iprot.readListBegin()
+                    for _i199 in range(_size195):
+                        _elem200 = kCells()
+                        _elem200.read(iprot)
+                        self.success.append(_elem200)
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
@@ -2400,8 +2400,8 @@ class sql_select_rslt_on_key_result(object):
         if self.success is not None:
             oprot.writeFieldBegin('success', TType.LIST, 0)
             oprot.writeListBegin(TType.STRUCT, len(self.success))
-            for iter194 in self.success:
-                iter194.write(oprot)
+            for iter201 in self.success:
+                iter201.write(oprot)
             oprot.writeListEnd()
             oprot.writeFieldEnd()
         if self.e is not None:
@@ -3267,17 +3267,17 @@ class update_args(object):
             if fid == 1:
                 if ftype == TType.MAP:
                     self.cells = {}
-                    (_ktype196, _vtype197, _size195) = iprot.readMapBegin()
-                    for _i199 in range(_size195):
-                        _key200 = iprot.readI64()
-                        _val201 = []
-                        (_etype205, _size202) = iprot.readListBegin()
-                        for _i206 in range(_size202):
-                            _elem207 = UCell()
-                            _elem207.read(iprot)
-                            _val201.append(_elem207)
+                    (_ktype203, _vtype204, _size202) = iprot.readMapBegin()
+                    for _i206 in range(_size202):
+                        _key207 = iprot.readI64()
+                        _val208 = []
+                        (_etype212, _size209) = iprot.readListBegin()
+                        for _i213 in range(_size209):
+                            _elem214 = UCell()
+                            _elem214.read(iprot)
+                            _val208.append(_elem214)
                         iprot.readListEnd()
-                        self.cells[_key200] = _val201
+                        self.cells[_key207] = _val208
                     iprot.readMapEnd()
                 else:
                     iprot.skip(ftype)
@@ -3299,11 +3299,11 @@ class update_args(object):
         if self.cells is not None:
             oprot.writeFieldBegin('cells', TType.MAP, 1)
             oprot.writeMapBegin(TType.I64, TType.LIST, len(self.cells))
-            for kiter208, viter209 in self.cells.items():
-                oprot.writeI64(kiter208)
-                oprot.writeListBegin(TType.STRUCT, len(viter209))
-                for iter210 in viter209:
-                    iter210.write(oprot)
+            for kiter215, viter216 in self.cells.items():
+                oprot.writeI64(kiter215)
+                oprot.writeListBegin(TType.STRUCT, len(viter216))
+                for iter217 in viter216:
+                    iter217.write(oprot)
                 oprot.writeListEnd()
             oprot.writeMapEnd()
             oprot.writeFieldEnd()
@@ -3681,11 +3681,11 @@ class list_columns_result(object):
             if fid == 0:
                 if ftype == TType.LIST:
                     self.success = []
-                    (_etype214, _size211) = iprot.readListBegin()
-                    for _i215 in range(_size211):
-                        _elem216 = Schema()
-                        _elem216.read(iprot)
-                        self.success.append(_elem216)
+                    (_etype221, _size218) = iprot.readListBegin()
+                    for _i222 in range(_size218):
+                        _elem223 = Schema()
+                        _elem223.read(iprot)
+                        self.success.append(_elem223)
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
@@ -3708,8 +3708,8 @@ class list_columns_result(object):
         if self.success is not None:
             oprot.writeFieldBegin('success', TType.LIST, 0)
             oprot.writeListBegin(TType.STRUCT, len(self.success))
-            for iter217 in self.success:
-                iter217.write(oprot)
+            for iter224 in self.success:
+                iter224.write(oprot)
             oprot.writeListEnd()
             oprot.writeFieldEnd()
         if self.e is not None:
@@ -3850,11 +3850,11 @@ class compact_columns_result(object):
             if fid == 0:
                 if ftype == TType.LIST:
                     self.success = []
-                    (_etype221, _size218) = iprot.readListBegin()
-                    for _i222 in range(_size218):
-                        _elem223 = CompactResult()
-                        _elem223.read(iprot)
-                        self.success.append(_elem223)
+                    (_etype228, _size225) = iprot.readListBegin()
+                    for _i229 in range(_size225):
+                        _elem230 = CompactResult()
+                        _elem230.read(iprot)
+                        self.success.append(_elem230)
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
@@ -3877,8 +3877,8 @@ class compact_columns_result(object):
         if self.success is not None:
             oprot.writeFieldBegin('success', TType.LIST, 0)
             oprot.writeListBegin(TType.STRUCT, len(self.success))
-            for iter224 in self.success:
-                iter224.write(oprot)
+            for iter231 in self.success:
+                iter231.write(oprot)
             oprot.writeListEnd()
             oprot.writeFieldEnd()
         if self.e is not None:
@@ -4019,11 +4019,11 @@ class scan_result(object):
             if fid == 0:
                 if ftype == TType.LIST:
                     self.success = []
-                    (_etype228, _size225) = iprot.readListBegin()
-                    for _i229 in range(_size225):
-                        _elem230 = Cell()
-                        _elem230.read(iprot)
-                        self.success.append(_elem230)
+                    (_etype235, _size232) = iprot.readListBegin()
+                    for _i236 in range(_size232):
+                        _elem237 = Cell()
+                        _elem237.read(iprot)
+                        self.success.append(_elem237)
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
@@ -4046,8 +4046,8 @@ class scan_result(object):
         if self.success is not None:
             oprot.writeFieldBegin('success', TType.LIST, 0)
             oprot.writeListBegin(TType.STRUCT, len(self.success))
-            for iter231 in self.success:
-                iter231.write(oprot)
+            for iter238 in self.success:
+                iter238.write(oprot)
             oprot.writeListEnd()
             oprot.writeFieldEnd()
         if self.e is not None:
@@ -4188,17 +4188,17 @@ class scan_rslt_on_column_result(object):
             if fid == 0:
                 if ftype == TType.MAP:
                     self.success = {}
-                    (_ktype233, _vtype234, _size232) = iprot.readMapBegin()
-                    for _i236 in range(_size232):
-                        _key237 = iprot.readString()
-                        _val238 = []
-                        (_etype242, _size239) = iprot.readListBegin()
-                        for _i243 in range(_size239):
-                            _elem244 = CCell()
-                            _elem244.read(iprot)
-                            _val238.append(_elem244)
+                    (_ktype240, _vtype241, _size239) = iprot.readMapBegin()
+                    for _i243 in range(_size239):
+                        _key244 = iprot.readString()
+                        _val245 = []
+                        (_etype249, _size246) = iprot.readListBegin()
+                        for _i250 in range(_size246):
+                            _elem251 = CCell()
+                            _elem251.read(iprot)
+                            _val245.append(_elem251)
                         iprot.readListEnd()
-                        self.success[_key237] = _val238
+                        self.success[_key244] = _val245
                     iprot.readMapEnd()
                 else:
                     iprot.skip(ftype)
@@ -4221,11 +4221,11 @@ class scan_rslt_on_column_result(object):
         if self.success is not None:
             oprot.writeFieldBegin('success', TType.MAP, 0)
             oprot.writeMapBegin(TType.STRING, TType.LIST, len(self.success))
-            for kiter245, viter246 in self.success.items():
-                oprot.writeString(kiter245)
-                oprot.writeListBegin(TType.STRUCT, len(viter246))
-                for iter247 in viter246:
-                    iter247.write(oprot)
+            for kiter252, viter253 in self.success.items():
+                oprot.writeString(kiter252)
+                oprot.writeListBegin(TType.STRUCT, len(viter253))
+                for iter254 in viter253:
+                    iter254.write(oprot)
                 oprot.writeListEnd()
             oprot.writeMapEnd()
             oprot.writeFieldEnd()
@@ -4367,11 +4367,11 @@ class scan_rslt_on_key_result(object):
             if fid == 0:
                 if ftype == TType.LIST:
                     self.success = []
-                    (_etype251, _size248) = iprot.readListBegin()
-                    for _i252 in range(_size248):
-                        _elem253 = kCells()
-                        _elem253.read(iprot)
-                        self.success.append(_elem253)
+                    (_etype258, _size255) = iprot.readListBegin()
+                    for _i259 in range(_size255):
+                        _elem260 = kCells()
+                        _elem260.read(iprot)
+                        self.success.append(_elem260)
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
@@ -4394,8 +4394,8 @@ class scan_rslt_on_key_result(object):
         if self.success is not None:
             oprot.writeFieldBegin('success', TType.LIST, 0)
             oprot.writeListBegin(TType.STRUCT, len(self.success))
-            for iter254 in self.success:
-                iter254.write(oprot)
+            for iter261 in self.success:
+                iter261.write(oprot)
             oprot.writeListEnd()
             oprot.writeFieldEnd()
         if self.e is not None:

@@ -84,11 +84,6 @@ enum SchemaFunc {
   MODIFY = 7
 }
 
-struct SpecSchemas {
-  1: optional list<i64>     cids
-  2: optional list<string>  names
-}
-
 
 enum Comp {
   NONE = 0x0,   // [      ]  :   none           (no comparison aplied)
@@ -107,6 +102,19 @@ enum Comp {
   VLE  = 0xB,   // [  v<= ]  :   -vle           (vol lower-equal)
   VLT  = 0xC    // [  v<  ]  :   -vlt           (vol lower-than)
 }
+
+
+struct SchemaPattern {
+  1: Comp   comp
+  2: string value
+}
+
+struct SpecSchemas {
+  1: optional list<i64>             cids
+  2: optional list<string>          names
+  3: optional list<SchemaPattern>   patterns
+}
+
 
 enum SpecFlagsOpt {
   NONE              = 0,
