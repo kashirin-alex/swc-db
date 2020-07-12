@@ -48,6 +48,7 @@
 <a href="#Typedef_Key">Key</a><br/>
 <a href="#Struct_Schema">Schema</a><br/>
 <a href="#Enum_SchemaFunc">SchemaFunc</a><br/>
+<a href="#Struct_SchemaPattern">SchemaPattern</a><br/>
 <a href="#Typedef_Schemas">Schemas</a><br/>
 <a href="#Struct_SpecColumn">SpecColumn</a><br/>
 <a href="#Struct_SpecFlags">SpecFlags</a><br/>
@@ -102,6 +103,8 @@
 <tr><td><code>ZLIB</code></td><td><code>2</code></td><td>
 </td></tr>
 <tr><td><code>SNAPPY</code></td><td><code>3</code></td><td>
+</td></tr>
+<tr><td><code>UNKNOWN</code></td><td><code>255</code></td><td>
 </td></tr>
 </table></div>
 <div class="definition"><h3 id="Enum_SchemaFunc">Enumeration: SchemaFunc</h3>
@@ -229,10 +232,15 @@
 <tr><td>12</td><td>log_rollout_ratio</td><td><code>i8</code></td><td></td><td>optional</td><td></td></tr>
 <tr><td>13</td><td>compact_percent</td><td><code>i8</code></td><td></td><td>optional</td><td></td></tr>
 <tr><td>14</td><td>revision</td><td><code>i64</code></td><td></td><td>optional</td><td></td></tr>
+</tbody></table><br/></div><div class="definition"><h3 id="Struct_SchemaPattern">Struct: SchemaPattern</h3>
+<table class="table-bordered table-striped table-condensed"><thead><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr></thead><tbody>
+<tr><td>1</td><td>comp</td><td><code><a href="#Enum_Comp">Comp</a></code></td><td></td><td>default</td><td></td></tr>
+<tr><td>2</td><td>value</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
 </tbody></table><br/></div><div class="definition"><h3 id="Struct_SpecSchemas">Struct: SpecSchemas</h3>
 <table class="table-bordered table-striped table-condensed"><thead><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr></thead><tbody>
 <tr><td>1</td><td>cids</td><td><code>list&lt;<code>i64</code>&gt;</code></td><td></td><td>optional</td><td></td></tr>
 <tr><td>2</td><td>names</td><td><code>list&lt;<code>string</code>&gt;</code></td><td></td><td>optional</td><td></td></tr>
+<tr><td>3</td><td>patterns</td><td><code>list&lt;<code><a href="#Struct_SchemaPattern">SchemaPattern</a></code>&gt;</code></td><td></td><td>optional</td><td></td></tr>
 </tbody></table><br/></div><div class="definition"><h3 id="Struct_SpecFlags">Struct: SpecFlags</h3>
 <table class="table-bordered table-striped table-condensed"><thead><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr></thead><tbody>
 <tr><td>1</td><td>limit</td><td><code>i64</code></td><td></td><td>optional</td><td></td></tr>
