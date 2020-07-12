@@ -175,7 +175,7 @@ void Compaction::compacted(const RangePtr& range, bool all) {
       SWC_LOGF(LOG_ERROR, "%s", range->to_string().c_str());
     SWC_ASSERT(!range->blocks.size());
 
-  } else if(size_t bytes = Env::Resources.need_ram()) {
+  } else if(size_t bytes = RangerEnv::res().need_ram()) {
     range->blocks.release(bytes);
   }
 

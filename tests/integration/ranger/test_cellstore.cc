@@ -7,7 +7,6 @@
 
 #include "swcdb/fs/Interface.h"
 #include "swcdb/db/client/Clients.h"
-#include "swcdb/core/sys/Resources.h"
 
 #include "swcdb/ranger/RangerEnv.h"
 
@@ -220,14 +219,6 @@ int main(int argc, char** argv) {
       SWC::Env::IoCtx::io()->shared(),
       std::make_shared<SWC::client::AppContext>()
     )
-  );
-
-  SWC::Env::Resources.init(
-    SWC::Env::IoCtx::io()->ptr(),
-    SWC::Env::Config::settings()->get<SWC::Property::V_GINT32>(
-      "swc.rgr.ram.percent"),
-    SWC::Env::Config::settings()->get<SWC::Property::V_GINT32>(
-      "swc.rgr.ram.release.rate")
   );
 
   SWC::RangerEnv::init();

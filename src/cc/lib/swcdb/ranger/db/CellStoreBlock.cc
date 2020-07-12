@@ -127,7 +127,7 @@ void Read::load_cells(int&, Ranger::Block::Ptr cells_block) {
   processing_decrement();
 
   if(!was_splitted && 
-     (!m_cells_remain || Env::Resources.need_ram(header.size_plain)))
+     (!m_cells_remain || RangerEnv::res().need_ram(header.size_plain)))
     release();
 }
 

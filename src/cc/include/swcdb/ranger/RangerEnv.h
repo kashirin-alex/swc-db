@@ -7,6 +7,7 @@
 #ifndef swcdb_ranger_RangerEnv_h
 #define swcdb_ranger_RangerEnv_h
 
+#include "swcdb/common/sys/Resources.h"
 #include "swcdb/fs/Interface.h"
 #include "swcdb/common/Files/RgrData.h"
 
@@ -56,6 +57,11 @@ class RangerEnv final {
     return m_env->mnt_io.get();
   }
 
+  SWC_CAN_INLINE 
+  static Resources& res() {
+    return m_env->_resources;
+  }
+
   static bool compaction_available();
 
   static void compaction_schedule(uint32_t ms);
@@ -84,6 +90,7 @@ class RangerEnv final {
   Ranger::Compaction*         _compaction;
   Ranger::Columns*            _columns;
   client::Query::Update::Ptr  _updater;
+  Resources                   _resources;
 
   explicit RangerEnv();
 
@@ -130,7 +137,14 @@ RangerEnv::RangerEnv()
           "swc.rgr.maintenance.handlers"))),
       _compaction(nullptr),
       _columns(new Ranger::Columns()),
-      _updater(std::make_shared<client::Query::Update>()) {          
+      _updater(std::make_shared<client::Query::Update>()),  
+      _resources(
+        Env::IoCtx::io()->ptr(),
+        Env::Config::settings()->get<Property::V_GINT32>(
+          "swc.rgr.ram.percent"),
+        Env::Config::settings()->get<Property::V_GINT32>(
+          "swc.rgr.ram.release.rate"),
+        [this](size_t bytes) { return _columns->release(bytes); }) {
 }
 
 RangerEnv::~RangerEnv() {
@@ -155,6 +169,8 @@ void RangerEnv::shuttingdown() {
   m_env->_updater->wait();
   
   m_env->_columns->unload_all(false);
+
+  m_env->_resources.stop();
 
   m_env->m_shuttingdown = true;
 }

@@ -5,7 +5,6 @@
 
 
 #include "swcdb/core/Checksum.h"
-#include "swcdb/core/sys/Resources.h"
 #include "swcdb/ranger/db/RangeBlock.h"
 #include "swcdb/ranger/db/RangeBlocks.h"
 

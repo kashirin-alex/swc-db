@@ -79,13 +79,3 @@ ADD_LIB_TARGET(
   STATIC    ${SSL_LIBRARIES_STATIC}
 )
 
-
-set(swcdb_core_sys_sources
-  ${SWC_VERSION_SRC}
-  sys/Resources.cc
-)
-ADD_LIB_TARGET(
-  NAME      swcdb_core_sys
-  SRCS      ${swcdb_core_sys_sources}
-  TARGETS   swcdb_core swcdb_core_config swcdb_core_comm
-)

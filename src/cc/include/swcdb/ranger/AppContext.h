@@ -6,7 +6,6 @@
 #ifndef swc_ranger_AppContext_h
 #define swc_ranger_AppContext_h
 
-#include "swcdb/core/sys/Resources.h"
 
 #include "swcdb/core/comm/AppContext.h"
 #include "swcdb/core/comm/AppHandler.h"
@@ -80,13 +79,6 @@ class AppContext final : public SWC::AppContext {
       )
     );
     RangerEnv::init();
-
-    Env::Resources.init(
-      Env::IoCtx::io()->ptr(),
-      settings->get<Property::V_GINT32>("swc.rgr.ram.percent"),
-      settings->get<Property::V_GINT32>("swc.rgr.ram.release.rate"),
-      [](size_t bytes) { return RangerEnv::columns()->release(bytes); }
-    );
 
     auto period = settings->get<Property::V_GINT32>("swc.cfg.dyn.period");
     if(period->get()) {
@@ -205,8 +197,6 @@ class AppContext final : public SWC::AppContext {
     while(RangerEnv::in_process())
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
     RangerEnv::columns()->unload_all(true); //re-check
-    
-    Env::Resources.stop();
     
     Env::Clients::get()->rgr->stop();
     Env::Clients::get()->mngr->stop();

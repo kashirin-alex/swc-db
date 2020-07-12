@@ -481,7 +481,7 @@ bool Fragments::_need_roll() const {
   return (m_cells.size() >= cells || m_cells.size_bytes() >= bytes) && 
          (m_cells.size_bytes() >= bytes * ratio ||
           m_cells.size() >= cells * ratio ||
-          Env::Resources.need_ram(bytes) );
+          RangerEnv::res().need_ram(bytes) );
 }
 
 size_t Fragments::_need_compact(std::vector<Fragments::Vec>& groups,

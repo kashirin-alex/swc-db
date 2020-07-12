@@ -370,7 +370,7 @@ void CompactRange::request_more() {
       return;
     size_t sz = m_q_write.size() + m_q_intval.size() + m_q_encode.size();
     if(sz && (sz >= compactor->cfg_read_ahead->get() ||
-             (sz > Env::Resources.avail_ram()/blk_size &&
+             (sz > RangerEnv::res().avail_ram()/blk_size &&
               range->blocks.release(sz * blk_size) < sz * blk_size)))
       return;
     m_getting = true;

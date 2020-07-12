@@ -276,7 +276,7 @@ void Fragment::write(int err, uint8_t blk_replicas, int64_t blksz,
   }
   if(keep)
     run_queued();
-  else if(Env::Resources.need_ram(size_plain))
+  else if(RangerEnv::res().need_ram(size_plain))
     release();
 }
 
@@ -314,7 +314,7 @@ void Fragment::load_cells(int&, Ranger::Block::Ptr cells_block) {
   }
   processing_decrement();
 
-  if(!m_cells_remain || Env::Resources.need_ram(size_plain))
+  if(!m_cells_remain || RangerEnv::res().need_ram(size_plain))
     release();
 }
 

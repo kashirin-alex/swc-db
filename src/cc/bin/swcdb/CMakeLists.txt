@@ -20,7 +20,7 @@ set(FLAGS )
 set(TARGETS )
 
 set(SHARED_TARGETS 
-  "swcdb_core;swcdb_core_config;swcdb_core_comm;swcdb_core_sys;swcdb_fs;swcdb;${BUILTIN_FS_TARGETS}")
+  "swcdb_core;swcdb_core_config;swcdb_core_comm;swcdb_fs;swcdb;${BUILTIN_FS_TARGETS}")
 
 if(SWC_IMPL_SOURCE)
   set(FLAGS "-DSWC_IMPL_SOURCE")
@@ -87,7 +87,6 @@ ADD_EXEC_TARGET(
   TARGETS swcdb_core 
           swcdb_core_config 
           swcdb_core_comm 
-          swcdb_core_sys 
           swcdb_fs 
           ${BUILTIN_FS_TARGETS}
 

@@ -158,7 +158,7 @@ void Blocks::scan(ReqScan::Ptr req, Block::Ptr blk_ptr) {
           (blk = blk_ptr = eval)->processing_increment();
 
           for(uint8_t n=1; eval->next && n <= req->readahead; ++n) {
-            if(Env::Resources.need_ram(range->cfg->block_size() * 10 * n))
+            if(RangerEnv::res().need_ram(range->cfg->block_size() * 10 * n))
               break;
             if((eval = eval->next)->loaded()) 
               continue;
@@ -178,7 +178,7 @@ void Blocks::scan(ReqScan::Ptr req, Block::Ptr blk_ptr) {
         nxt_blks.clear();
       }
 
-      if(Env::Resources.need_ram(range->cfg->block_size() * 3))
+      if(RangerEnv::res().need_ram(range->cfg->block_size() * 3))
         release_prior(blk); // release_and_merge(blk);
     }
 
@@ -227,7 +227,7 @@ bool Blocks::_split(Block::Ptr blk, bool loaded) {
       m_blocks_idx.insert(m_blocks_idx.begin()+(++offset), blk);
       if(!blk->loaded()) {
         if((preload = range->is_loaded() && range->compacting() &&
-                      !Env::Resources.need_ram(range->cfg->block_size() * 10)))
+                  !RangerEnv::res().need_ram(range->cfg->block_size() * 10)))
           blk->processing_increment();
         break;
       }

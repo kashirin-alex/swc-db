@@ -177,7 +177,7 @@ Compact::Compact(Fragments* log, int repetition,
   for(auto frags : groups)
     nfrags += frags.size();
     
-  uint32_t blks = (Env::Resources.avail_ram() /log->range->cfg->block_size());
+  uint32_t blks = RangerEnv::res().avail_ram() / log->range->cfg->block_size();
   if(blks < nfrags)
     log->range->blocks.release((nfrags-blks) * log->range->cfg->block_size());
   if(!blks)
