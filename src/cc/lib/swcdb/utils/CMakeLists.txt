@@ -14,6 +14,7 @@ endif()
 set(swcdb_utils_shell_sources
   ${SWC_VERSION_SRC}
   cli/Shell.cc
+  cli/Shell_DbClient.cc
 )
 ADD_LIB_TARGET(
   NAME    swcdb_utils_shell

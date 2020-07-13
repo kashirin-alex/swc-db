@@ -198,6 +198,10 @@ void QuerySelect::parse_display_flags(uint8_t& display_flags) {
         display_flags |= DB::DisplayFlag::STATS;
         continue;
       }
+      if((any = found_token("DISPLAY_COLUMN", 14))) {
+        display_flags |= DB::DisplayFlag::COLUMN;
+        continue;
+      }
     }
 }
 

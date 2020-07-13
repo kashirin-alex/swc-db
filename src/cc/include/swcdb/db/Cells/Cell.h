@@ -22,7 +22,8 @@ enum DisplayFlag {
   DATETIME      = 0x04,
   BINARY        = 0x08,
   SPECS         = 0x10,
-  STATS         = 0x20
+  STATS         = 0x20,
+  COLUMN        = 0x40
 };
 
 enum OutputFlag {
