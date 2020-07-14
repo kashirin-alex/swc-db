@@ -22,7 +22,8 @@ if(THRIFT_CPP_FOUND)
       execute_process(COMMAND mkdir -p ${VER_GEN_PATH}/gen-cpp )
 
       message(STATUS "Generating Thrift C++:")
-      execute_process(COMMAND thrift -r --gen cpp -o ${VER_GEN_PATH}/
+      execute_process(COMMAND thrift -r --gen cpp 
+                      -o ${VER_GEN_PATH}/
                       ${CMAKE_CURRENT_SOURCE_DIR}/Broker.thrift)
       message(STATUS "    ${VER_GEN_PATH}/gen-cpp")
     endif()
@@ -51,7 +52,8 @@ if(THRIFT_C_FOUND)
       execute_process(COMMAND mkdir -p ${VER_GEN_PATH}/gen-c_glib )
 
       message(STATUS "Generating Thrift C-GLIB:")
-      execute_process(COMMAND thrift -r --gen c_glib  -o ${VER_GEN_PATH}/
+      execute_process(COMMAND thrift -r --gen c_glib  
+                      -o ${VER_GEN_PATH}/
                       ${CMAKE_CURRENT_SOURCE_DIR}/Service.thrift)
       message(STATUS "    ${VER_GEN_PATH}/gen-c_glib")
     endif()
@@ -79,7 +81,8 @@ if(MAVEN_FOUND)
       execute_process(COMMAND mkdir -p ${VER_GEN_PATH}/gen-java )
       
       message(STATUS "Generating Thrift JAVA:")
-      execute_process(COMMAND thrift -r --gen java -o ${VER_GEN_PATH}/
+      execute_process(COMMAND thrift -r --gen java:generated_annotations=suppress 
+                      -o ${VER_GEN_PATH}/
                       ${CMAKE_CURRENT_SOURCE_DIR}/Service.thrift)
       message(STATUS "    ${VER_GEN_PATH}/gen-java")
     endif()
@@ -108,7 +111,8 @@ if(PYTHON_EXECUTABLES)
       execute_process(COMMAND mkdir -p ${VER_GEN_PATH}/gen-py )
 
       message(STATUS "Generating Thrift PYTHON:")
-      execute_process(COMMAND thrift -r --gen py:slots,no_utf8strings -o ${VER_GEN_PATH}/
+      execute_process(COMMAND thrift -r --gen py:slots,no_utf8strings 
+                      -o ${VER_GEN_PATH}/
                       ${CMAKE_CURRENT_SOURCE_DIR}/Service.thrift)
       message(STATUS "    ${VER_GEN_PATH}/gen-py")
     endif()

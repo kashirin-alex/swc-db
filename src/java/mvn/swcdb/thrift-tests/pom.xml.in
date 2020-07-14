@@ -23,6 +23,7 @@
 			<version>@SWCDB_VERSION@</version>
 		</dependency>
 
+    <!--
 		<dependency>
 			<groupId>org.apache.thrift</groupId>
 			<artifactId>libthrift</artifactId>
@@ -34,7 +35,7 @@
       <artifactId>javax.annotation-api</artifactId>
       <version>1.2</version>
     </dependency>
-
+    -->
 
   </dependencies>
   

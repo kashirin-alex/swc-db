@@ -26,11 +26,13 @@
 			<version>@THRIFT_VERSION@</version>
 		</dependency>
 
+    <!--
     <dependency>
       <groupId>javax.annotation</groupId>
       <artifactId>javax.annotation-api</artifactId>
       <version>1.2</version>
     </dependency>
+    -->
 
   </dependencies>
   
