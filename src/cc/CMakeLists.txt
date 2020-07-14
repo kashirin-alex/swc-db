@@ -5,6 +5,7 @@
 
 SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}\
  -ffile-prefix-map=${CMAKE_CURRENT_SOURCE_DIR}/include/=\
+ -ffile-prefix-map=${CMAKE_CURRENT_SOURCE_DIR}/bin/=\
  -ffile-prefix-map=${CMAKE_CURRENT_SOURCE_DIR}/lib/="
 )
 

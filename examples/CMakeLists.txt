@@ -19,7 +19,7 @@ include_directories(
 
 
 # example - geospatial_analysis-xyz_and_properties
-ADD_EXEC_TARGET(
+ADD_TEST_EXEC(
   NAME    geospatial_analysis-xyz_and_properties
   SRCS    geospatial_analysis-xyz_and_properties.cc
   TARGETS swcdb

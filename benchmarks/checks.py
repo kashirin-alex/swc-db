@@ -55,7 +55,7 @@ columns = [
 ]
 csv_file = open('benchmarks.csv', 'w')
 csv_writer = csv.writer(csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-csv_writer.writerow()
+csv_writer.writerow(columns)
 csv_file.flush()
 
 field_op = {
@@ -123,7 +123,7 @@ class BenchMark:
     def load_generator(self, args):
         insert, select, delete, select_empty = args
         cmd = [
-            swcdb_cfg['install_path'][0], '/bin/swcdb_load_generator -l=warn --gen-progress=0 --gen-key-tree=false',
+            swcdb_cfg['install_path'][0], '/bin/swcdb_load_generator --gen-progress=0 --gen-key-tree=false',
             ' --gen-select=', str(select),
             ' --gen-insert=', str(insert),
             ' --gen-delete=', str(delete),

@@ -1,0 +1,41 @@
+#
+# Copyright Since 2019 SWC-DB© [author: Kashirin Alex kashirin.alex@gmail.com]
+# License details at <https://github.com/kashirin-alex/swc-db/#license>
+
+
+
+
+if(NOT SWC_WITHOUT_JAVA AND THRIFT_JAVA_GEN_PATH AND MAVEN_FOUND)
+  execute_process(COMMAND cp -r ${CMAKE_CURRENT_SOURCE_DIR}/mvn  ${CMAKE_CURRENT_BINARY_DIR}/)
+
+	set(MODULES_PLACE_HOLDER "")
+	set(MODULES_PLACE_HOLDER "${MODULES_PLACE_HOLDER} \n <module>thrift</module>")
+
+	if(JAVARE_FOUND)
+		set(MODULES_PLACE_HOLDER "${MODULES_PLACE_HOLDER} \n <module>thrift-tests</module>")
+    set_property(GLOBAL PROPERTY THRIFT_JAVA_TEST 
+			${CMAKE_CURRENT_BINARY_DIR}/mvn/swcdb/thrift-tests/target/thrift-tests-0.3.0-bundled.jar
+		)
+	endif()
+
+	configure_file(
+		${CMAKE_CURRENT_SOURCE_DIR}/mvn/swcdb/pom.xml.in
+		${CMAKE_CURRENT_BINARY_DIR}/mvn/swcdb/pom.xml @ONLY)
+	configure_file(
+		${CMAKE_CURRENT_SOURCE_DIR}/mvn/swcdb/thrift/pom.xml.in
+		${CMAKE_CURRENT_BINARY_DIR}/mvn/swcdb/thrift/pom.xml @ONLY)
+	configure_file(
+		${CMAKE_CURRENT_SOURCE_DIR}/mvn/swcdb/thrift-tests/pom.xml.in
+		${CMAKE_CURRENT_BINARY_DIR}/mvn/swcdb/thrift-tests/pom.xml @ONLY)
+
+	add_custom_target(MVN_build ALL 
+					          mvn -f mvn/swcdb/pom.xml -Dmaven.test.skip=true 
+				            package)
+
+	install(
+    FILES			 	${CMAKE_CURRENT_BINARY_DIR}/mvn/swcdb/thrift/target/thrift-${SWCDB_VERSION}-v${THRIFT_VERSION}-bundled.jar
+    DESTINATION lib/java/	
+		RENAME 			swcdb-thrift-${SWCDB_VERSION}-v${THRIFT_VERSION}-bundled.jar
+	)
+endif()
+

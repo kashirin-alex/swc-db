@@ -13,29 +13,7 @@ SET_DEPS(
   SHARED    cephfs 
   INCLUDE   cephfs/libcephfs.h
 )
-
-
-
-set(java_home)
-if(JAVA_INSTALL_PATH)
-  set(java_home ${JAVA_INSTALL_PATH})
-else()
-  set(java_home $ENV{JAVA_HOME})
-endif()
-
-SET_DEPS(
-  NAME "JAVA"
-  LIB_PATHS ${java_home}/jre/lib/amd64
-            ${java_home}/jre/lib/amd64/server  
-            ${java_home}/lib/server
-            ${java_home}/lib
-  INC_PATHS ${java_home}/include
-  # STATIC libjvm.a libjava.a libverify.a # libjawt.a 
-  SHARED    jvm java verify # jawt(requires Xrender, Xtst, Xi)
-  INCLUDE   jni.h
-)
-
-
+#########
 
 
 set(hadoop_home)
@@ -53,7 +31,7 @@ SET_DEPS(
   SHARED    hdfs 
   INCLUDE   hdfs.h
 )
-
+###########
 
 
 SET_DEPS(
@@ -75,7 +53,7 @@ if(HADOOP_HADOOP)
     INCLUDE   google/protobuf/stubs/common.h
   )
 endif()
-
+############
 
 
 

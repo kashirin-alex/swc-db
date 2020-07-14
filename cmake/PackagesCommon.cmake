@@ -47,13 +47,17 @@ else()
 endif()
 
 
+
+
+find_package(Languages REQUIRED)
+
+
 find_package(FileSystems REQUIRED)
 
 
 find_package(Thrift REQUIRED)
 
 
-find_package(Languages REQUIRED)
 
 
 
@@ -84,9 +88,5 @@ find_package(Languages REQUIRED)
 
 
 #SET_DEPS(NAME "NCURSESW" REQUIRED TRUE LIB_PATHS "" INC_PATHS "" STATIC libncursesw.a SHARED ncursesw INCLUDE ncurses.h)
-
-
-# find_package(Doxygen)
-
 
 # find_package(Libssh REQUIRED)

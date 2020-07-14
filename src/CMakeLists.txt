@@ -13,6 +13,8 @@ add_subdirectory(c)
 
 add_subdirectory(py)
 
+add_subdirectory(java)
+
 
 
 install(DIRECTORY etc/swcdb      DESTINATION etc)

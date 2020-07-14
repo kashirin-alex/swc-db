@@ -9,7 +9,7 @@ add_test(
 )
 
 
-
+###
 if(THRIFT_CPP_FOUND)
   ADD_TEST_TARGET(
     NAME      thrift_cc_client
@@ -19,6 +19,7 @@ if(THRIFT_CPP_FOUND)
 endif()
 
 
+###
 if(THRIFT_C_FOUND)
   include_directories(
     ../../../src/c/include
@@ -33,6 +34,16 @@ if(THRIFT_C_FOUND)
   )
 endif()
 
+
+###
+get_property(THRIFT_JAVA_TEST GLOBAL PROPERTY THRIFT_JAVA_TEST)
+if(THRIFT_JAVA_TEST)
+  add_test(thrift_java_client
+	  java -cp 
+      ${CMAKE_INSTALL_PREFIX}/lib/java/swcdb-thrift-${SWCDB_VERSION}-v${THRIFT_VERSION}-bundled.jar:${THRIFT_JAVA_TEST}
+      org.swcdb.thrift.Tests
+  )
+endif()
 
 
 add_test(

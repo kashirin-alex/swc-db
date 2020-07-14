@@ -4,9 +4,10 @@
 
 
 
-SET (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} \
+SET (CMAKE_C_FLAGS "${CMAKE_C_FLAGS}\
  -ffile-prefix-map=${CMAKE_CURRENT_SOURCE_DIR}/include/=\
- -ffile-prefix-map=${CMAKE_CURRENT_SOURCE_DIR}/lib/="
+ -ffile-prefix-map=${CMAKE_CURRENT_SOURCE_DIR}/lib/=\
+ -ffile-prefix-map=${CMAKE_CURRENT_SOURCE_DIR}/bin/="
 )
 
 configure_file(

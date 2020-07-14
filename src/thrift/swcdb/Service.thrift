@@ -11,9 +11,9 @@
 namespace cpp     SWC.Thrift
 namespace py      swcdb.thrift.gen
 namespace c_glib  swcdb_thrift
+namespace java    org.swcdb.thrift.gen
 
 /*
-namespace java  org.swcdb.thrift
 namespace perl  SWC.thrift
 namespace php   SWC
 namespace rb    SWC.thrift

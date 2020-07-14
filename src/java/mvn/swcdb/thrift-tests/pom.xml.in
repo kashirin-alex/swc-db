@@ -1,0 +1,63 @@
+  <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.swcdb</groupId>
+    <artifactId>uber</artifactId>
+    <version>@SWCDB_VERSION@</version>
+	  <relativePath>../</relativePath>
+  </parent>
+
+  <name>SWC-DB Thrift Tests - v@THRIFT_VERSION@ </name>
+  <artifactId>thrift-tests</artifactId>
+  <version>@SWCDB_VERSION@</version>
+  <packaging>jar</packaging>
+
+  
+  <dependencies>
+    
+		<dependency>
+			<groupId>org.swcdb</groupId>
+			<artifactId>thrift</artifactId>
+			<version>@SWCDB_VERSION@</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.thrift</groupId>
+			<artifactId>libthrift</artifactId>
+			<version>@THRIFT_VERSION@</version>
+		</dependency>
+
+    <dependency>
+      <groupId>javax.annotation</groupId>
+      <artifactId>javax.annotation-api</artifactId>
+      <version>1.2</version>
+    </dependency>
+
+
+  </dependencies>
+  
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <version>3.0.0</version>
+        <executions>
+          <execution>
+            <id>jar-with-deps</id>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <descriptors>
+            <descriptor>assembly.xml</descriptor>
+          </descriptors>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>

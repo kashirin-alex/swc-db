@@ -9,7 +9,7 @@ install(FILES sbin/swcdb_cluster DESTINATION sbin
 )
 
 
-if(THRIFT_PY_GEN_PATH)
+if(NOT SWC_WITHOUT_PY AND THRIFT_PY_GEN_PATH)
 
 #### PREPARE SWC-DB PKG DIR
 
