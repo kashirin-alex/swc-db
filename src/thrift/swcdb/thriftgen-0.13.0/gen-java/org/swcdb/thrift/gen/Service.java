@@ -7143,7 +7143,7 @@ public class Service {
      */
     public sql_select_rslt_on_column_result(sql_select_rslt_on_column_result other) {
       if (other.isSetSuccess()) {
-        java.util.Map<java.lang.String,java.util.List<CCell>> __this__success = new java.util.TreeMap<java.lang.String,java.util.List<CCell>>();
+        java.util.Map<java.lang.String,java.util.List<CCell>> __this__success = new java.util.HashMap<java.lang.String,java.util.List<CCell>>(other.success.size());
         for (java.util.Map.Entry<java.lang.String, java.util.List<CCell>> other_element : other.success.entrySet()) {
 
           java.lang.String other_element_key = other_element.getKey();
@@ -7178,7 +7178,7 @@ public class Service {
 
     public void putToSuccess(java.lang.String key, java.util.List<CCell> val) {
       if (this.success == null) {
-        this.success = new java.util.TreeMap<java.lang.String,java.util.List<CCell>>();
+        this.success = new java.util.HashMap<java.lang.String,java.util.List<CCell>>();
       }
       this.success.put(key, val);
     }
@@ -7444,7 +7444,7 @@ public class Service {
               if (schemeField.type == org.apache.thrift.protocol.TType.MAP) {
                 {
                   org.apache.thrift.protocol.TMap _map204 = iprot.readMapBegin();
-                  struct.success = new java.util.TreeMap<java.lang.String,java.util.List<CCell>>();
+                  struct.success = new java.util.HashMap<java.lang.String,java.util.List<CCell>>(2*_map204.size);
                   @org.apache.thrift.annotation.Nullable java.lang.String _key205;
                   @org.apache.thrift.annotation.Nullable java.util.List<CCell> _val206;
                   for (int _i207 = 0; _i207 < _map204.size; ++_i207)
@@ -7573,7 +7573,7 @@ public class Service {
         if (incoming.get(0)) {
           {
             org.apache.thrift.protocol.TMap _map215 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.LIST, iprot.readI32());
-            struct.success = new java.util.TreeMap<java.lang.String,java.util.List<CCell>>();
+            struct.success = new java.util.HashMap<java.lang.String,java.util.List<CCell>>(2*_map215.size);
             @org.apache.thrift.annotation.Nullable java.lang.String _key216;
             @org.apache.thrift.annotation.Nullable java.util.List<CCell> _val217;
             for (int _i218 = 0; _i218 < _map215.size; ++_i218)
@@ -12828,7 +12828,7 @@ public class Service {
     public update_args(update_args other) {
       __isset_bitfield = other.__isset_bitfield;
       if (other.isSetCells()) {
-        java.util.Map<java.lang.Long,java.util.List<UCell>> __this__cells = new java.util.TreeMap<java.lang.Long,java.util.List<UCell>>();
+        java.util.Map<java.lang.Long,java.util.List<UCell>> __this__cells = new java.util.HashMap<java.lang.Long,java.util.List<UCell>>(other.cells.size());
         for (java.util.Map.Entry<java.lang.Long, java.util.List<UCell>> other_element : other.cells.entrySet()) {
 
           java.lang.Long other_element_key = other_element.getKey();
@@ -12862,7 +12862,7 @@ public class Service {
 
     public void putToCells(long key, java.util.List<UCell> val) {
       if (this.cells == null) {
-        this.cells = new java.util.TreeMap<java.lang.Long,java.util.List<UCell>>();
+        this.cells = new java.util.HashMap<java.lang.Long,java.util.List<UCell>>();
       }
       this.cells.put(key, val);
     }
@@ -13122,7 +13122,7 @@ public class Service {
               if (schemeField.type == org.apache.thrift.protocol.TType.MAP) {
                 {
                   org.apache.thrift.protocol.TMap _map230 = iprot.readMapBegin();
-                  struct.cells = new java.util.TreeMap<java.lang.Long,java.util.List<UCell>>();
+                  struct.cells = new java.util.HashMap<java.lang.Long,java.util.List<UCell>>(2*_map230.size);
                   long _key231;
                   @org.apache.thrift.annotation.Nullable java.util.List<UCell> _val232;
                   for (int _i233 = 0; _i233 < _map230.size; ++_i233)
@@ -13248,7 +13248,7 @@ public class Service {
         if (incoming.get(0)) {
           {
             org.apache.thrift.protocol.TMap _map241 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.I64, org.apache.thrift.protocol.TType.LIST, iprot.readI32());
-            struct.cells = new java.util.TreeMap<java.lang.Long,java.util.List<UCell>>();
+            struct.cells = new java.util.HashMap<java.lang.Long,java.util.List<UCell>>(2*_map241.size);
             long _key242;
             @org.apache.thrift.annotation.Nullable java.util.List<UCell> _val243;
             for (int _i244 = 0; _i244 < _map241.size; ++_i244)
@@ -17689,7 +17689,7 @@ public class Service {
      */
     public scan_rslt_on_column_result(scan_rslt_on_column_result other) {
       if (other.isSetSuccess()) {
-        java.util.Map<java.lang.String,java.util.List<CCell>> __this__success = new java.util.TreeMap<java.lang.String,java.util.List<CCell>>();
+        java.util.Map<java.lang.String,java.util.List<CCell>> __this__success = new java.util.HashMap<java.lang.String,java.util.List<CCell>>(other.success.size());
         for (java.util.Map.Entry<java.lang.String, java.util.List<CCell>> other_element : other.success.entrySet()) {
 
           java.lang.String other_element_key = other_element.getKey();
@@ -17724,7 +17724,7 @@ public class Service {
 
     public void putToSuccess(java.lang.String key, java.util.List<CCell> val) {
       if (this.success == null) {
-        this.success = new java.util.TreeMap<java.lang.String,java.util.List<CCell>>();
+        this.success = new java.util.HashMap<java.lang.String,java.util.List<CCell>>();
       }
       this.success.put(key, val);
     }
@@ -17990,7 +17990,7 @@ public class Service {
               if (schemeField.type == org.apache.thrift.protocol.TType.MAP) {
                 {
                   org.apache.thrift.protocol.TMap _map272 = iprot.readMapBegin();
-                  struct.success = new java.util.TreeMap<java.lang.String,java.util.List<CCell>>();
+                  struct.success = new java.util.HashMap<java.lang.String,java.util.List<CCell>>(2*_map272.size);
                   @org.apache.thrift.annotation.Nullable java.lang.String _key273;
                   @org.apache.thrift.annotation.Nullable java.util.List<CCell> _val274;
                   for (int _i275 = 0; _i275 < _map272.size; ++_i275)
@@ -18119,7 +18119,7 @@ public class Service {
         if (incoming.get(0)) {
           {
             org.apache.thrift.protocol.TMap _map283 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.LIST, iprot.readI32());
-            struct.success = new java.util.TreeMap<java.lang.String,java.util.List<CCell>>();
+            struct.success = new java.util.HashMap<java.lang.String,java.util.List<CCell>>(2*_map283.size);
             @org.apache.thrift.annotation.Nullable java.lang.String _key284;
             @org.apache.thrift.annotation.Nullable java.util.List<CCell> _val285;
             for (int _i286 = 0; _i286 < _map283.size; ++_i286)

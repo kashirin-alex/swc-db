@@ -113,7 +113,7 @@ public class FCells implements org.apache.thrift.TBase<FCells, FCells._Fields>, 
    */
   public FCells(FCells other) {
     if (other.isSetF()) {
-      java.util.Map<java.nio.ByteBuffer,FCells> __this__f = new java.util.TreeMap<java.nio.ByteBuffer,FCells>();
+      java.util.Map<java.nio.ByteBuffer,FCells> __this__f = new java.util.HashMap<java.nio.ByteBuffer,FCells>(other.f.size());
       for (java.util.Map.Entry<java.nio.ByteBuffer, FCells> other_element : other.f.entrySet()) {
 
         java.nio.ByteBuffer other_element_key = other_element.getKey();
@@ -152,7 +152,7 @@ public class FCells implements org.apache.thrift.TBase<FCells, FCells._Fields>, 
 
   public void putToF(java.nio.ByteBuffer key, FCells val) {
     if (this.f == null) {
-      this.f = new java.util.TreeMap<java.nio.ByteBuffer,FCells>();
+      this.f = new java.util.HashMap<java.nio.ByteBuffer,FCells>();
     }
     this.f.put(key, val);
   }
@@ -436,7 +436,7 @@ public class FCells implements org.apache.thrift.TBase<FCells, FCells._Fields>, 
             if (schemeField.type == org.apache.thrift.protocol.TType.MAP) {
               {
                 org.apache.thrift.protocol.TMap _map128 = iprot.readMapBegin();
-                struct.f = new java.util.TreeMap<java.nio.ByteBuffer,FCells>();
+                struct.f = new java.util.HashMap<java.nio.ByteBuffer,FCells>(2*_map128.size);
                 @org.apache.thrift.annotation.Nullable java.nio.ByteBuffer _key129;
                 @org.apache.thrift.annotation.Nullable FCells _val130;
                 for (int _i131 = 0; _i131 < _map128.size; ++_i131)
@@ -567,7 +567,7 @@ public class FCells implements org.apache.thrift.TBase<FCells, FCells._Fields>, 
       if (incoming.get(0)) {
         {
           org.apache.thrift.protocol.TMap _map139 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-          struct.f = new java.util.TreeMap<java.nio.ByteBuffer,FCells>();
+          struct.f = new java.util.HashMap<java.nio.ByteBuffer,FCells>(2*_map139.size);
           @org.apache.thrift.annotation.Nullable java.nio.ByteBuffer _key140;
           @org.apache.thrift.annotation.Nullable FCells _val141;
           for (int _i142 = 0; _i142 < _map139.size; ++_i142)

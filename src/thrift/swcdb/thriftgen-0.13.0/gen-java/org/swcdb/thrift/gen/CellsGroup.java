@@ -124,7 +124,7 @@ public class CellsGroup implements org.apache.thrift.TBase<CellsGroup, CellsGrou
       this.cells = __this__cells;
     }
     if (other.isSetCcells()) {
-      java.util.Map<java.lang.String,java.util.List<CCell>> __this__ccells = new java.util.TreeMap<java.lang.String,java.util.List<CCell>>();
+      java.util.Map<java.lang.String,java.util.List<CCell>> __this__ccells = new java.util.HashMap<java.lang.String,java.util.List<CCell>>(other.ccells.size());
       for (java.util.Map.Entry<java.lang.String, java.util.List<CCell>> other_element : other.ccells.entrySet()) {
 
         java.lang.String other_element_key = other_element.getKey();
@@ -209,7 +209,7 @@ public class CellsGroup implements org.apache.thrift.TBase<CellsGroup, CellsGrou
 
   public void putToCcells(java.lang.String key, java.util.List<CCell> val) {
     if (this.ccells == null) {
-      this.ccells = new java.util.TreeMap<java.lang.String,java.util.List<CCell>>();
+      this.ccells = new java.util.HashMap<java.lang.String,java.util.List<CCell>>();
     }
     this.ccells.put(key, val);
   }
@@ -634,7 +634,7 @@ public class CellsGroup implements org.apache.thrift.TBase<CellsGroup, CellsGrou
             if (schemeField.type == org.apache.thrift.protocol.TType.MAP) {
               {
                 org.apache.thrift.protocol.TMap _map149 = iprot.readMapBegin();
-                struct.ccells = new java.util.TreeMap<java.lang.String,java.util.List<CCell>>();
+                struct.ccells = new java.util.HashMap<java.lang.String,java.util.List<CCell>>(2*_map149.size);
                 @org.apache.thrift.annotation.Nullable java.lang.String _key150;
                 @org.apache.thrift.annotation.Nullable java.util.List<CCell> _val151;
                 for (int _i152 = 0; _i152 < _map149.size; ++_i152)
@@ -852,7 +852,7 @@ public class CellsGroup implements org.apache.thrift.TBase<CellsGroup, CellsGrou
       if (incoming.get(1)) {
         {
           org.apache.thrift.protocol.TMap _map170 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.LIST, iprot.readI32());
-          struct.ccells = new java.util.TreeMap<java.lang.String,java.util.List<CCell>>();
+          struct.ccells = new java.util.HashMap<java.lang.String,java.util.List<CCell>>(2*_map170.size);
           @org.apache.thrift.annotation.Nullable java.lang.String _key171;
           @org.apache.thrift.annotation.Nullable java.util.List<CCell> _val172;
           for (int _i173 = 0; _i173 < _map170.size; ++_i173)
