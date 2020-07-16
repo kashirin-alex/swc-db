@@ -17,6 +17,7 @@ import org.swcdb.thrift.gen.Service;
 
 public class Client extends Service.Client {
 
+  ///
   public static Client create(String host, int port, int timeout_ms,
                               boolean do_open, int max_framesize)
                               throws TTransportException, TException {
@@ -42,6 +43,7 @@ public class Client extends Service.Client {
         new TSocket(host, port)), 
         do_open);
   }
+  ///
 
 
   public Client(TFramedTransport transport, boolean do_open) 
@@ -52,14 +54,18 @@ public class Client extends Service.Client {
       this.transport.open();
   }
 
-  void open() throws TTransportException, TException {
-    if(!transport.isOpen())
+  public boolean is_open() throws TTransportException, TException {
+    return transport.isOpen();
+  }
+
+  public void open() throws TTransportException, TException {
+    if(!is_open())
       transport.open();
   }
 
-  void close() {
+  public void close() {
     try {
-      if(transport.isOpen())
+      if(is_open())
         transport.close();
     } catch (java.lang.Exception e) { }
   }

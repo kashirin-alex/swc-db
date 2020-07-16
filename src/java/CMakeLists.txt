@@ -10,6 +10,7 @@ if(NOT SWC_WITHOUT_JAVA AND THRIFT_JAVA_GEN_PATH AND MAVEN_FOUND)
 
 	set(MODULES_PLACE_HOLDER "")
 	set(MODULES_PLACE_HOLDER "${MODULES_PLACE_HOLDER} \n <module>thrift</module>")
+	set(MODULES_PLACE_HOLDER "${MODULES_PLACE_HOLDER} \n <module>jdbc</module>")
 
 	if(JAVARE_FOUND)
 		set(MODULES_PLACE_HOLDER "${MODULES_PLACE_HOLDER} \n <module>thrift-tests</module>")
@@ -28,14 +29,29 @@ if(NOT SWC_WITHOUT_JAVA AND THRIFT_JAVA_GEN_PATH AND MAVEN_FOUND)
 		${CMAKE_CURRENT_SOURCE_DIR}/mvn/swcdb/thrift-tests/pom.xml.in
 		${CMAKE_CURRENT_BINARY_DIR}/mvn/swcdb/thrift-tests/pom.xml @ONLY)
 
+	configure_file(
+		${CMAKE_CURRENT_SOURCE_DIR}/mvn/swcdb/jdbc/pom.xml.in
+		${CMAKE_CURRENT_BINARY_DIR}/mvn/swcdb/jdbc/pom.xml @ONLY)
+	configure_file(
+		${CMAKE_CURRENT_SOURCE_DIR}/mvn/swcdb/jdbc/thrift/pom.xml.in
+		${CMAKE_CURRENT_BINARY_DIR}/mvn/swcdb/jdbc/thrift/pom.xml @ONLY)
+
+
 	add_custom_target(MVN_build ALL 
 					          mvn -f mvn/swcdb/pom.xml -Dmaven.test.skip=true 
 				            package)
+
 
 	install(
     FILES			 	${CMAKE_CURRENT_BINARY_DIR}/mvn/swcdb/thrift/target/thrift-${SWCDB_VERSION}-v${THRIFT_VERSION}-bundled.jar
     DESTINATION lib/java/	
 		RENAME 			swcdb-thrift-${SWCDB_VERSION}-v${THRIFT_VERSION}-bundled.jar
 	)
+	install(
+    FILES			 	${CMAKE_CURRENT_BINARY_DIR}/mvn/swcdb/jdbc/thrift/target/jdbc.thrift-${SWCDB_VERSION}-v${THRIFT_VERSION}-bundled.jar
+    DESTINATION lib/java/	
+		RENAME 			swcdb-jdbc-thrift-${SWCDB_VERSION}-v${THRIFT_VERSION}-bundled.jar
+	)
+
 endif()
 

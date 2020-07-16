@@ -1,0 +1,54 @@
+  <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.swcdb</groupId>
+    <artifactId>jdbc</artifactId>
+    <version>@SWCDB_VERSION@</version>
+	  <relativePath>../</relativePath>
+  </parent>
+
+  <name>SWC-DB JDBC - Thrift v@THRIFT_VERSION@</name>
+  <artifactId>jdbc.thrift</artifactId>
+  <version>@SWCDB_VERSION@</version>
+  <packaging>jar</packaging>
+
+  <properties>
+    <thrift.version>v@THRIFT_VERSION@</thrift.version>
+  </properties>
+
+  <dependencies>
+		<dependency>
+			<groupId>org.swcdb</groupId>
+			<artifactId>thrift</artifactId>
+			<version>@SWCDB_VERSION@</version>
+		</dependency>
+  </dependencies>
+  
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <version>3.0.0</version>
+        <executions>
+          <execution>
+            <id>jar-with-deps</id>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+			      <configuration>
+				      <classifier>v@THRIFT_VERSION@</classifier>
+			      </configuration>
+          </execution>
+        </executions>
+        <configuration>
+          <descriptors>
+            <descriptor>assembly.xml</descriptor>
+          </descriptors>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>
