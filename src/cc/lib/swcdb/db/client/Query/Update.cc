@@ -4,6 +4,7 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */ 
 
+#include "swcdb/core/CompletionCounter.h"
 #include "swcdb/db/Types/MetaColumn.h"
 #include "swcdb/db/client/Clients.h"
 #include "swcdb/db/client/Query/Update.h"
@@ -454,11 +455,11 @@ void Update::Locator::commit_data(
       const ReqBase::Ptr& base) {
   bool more = true;
   DynamicBuffer::Ptr cells_buff;
-  auto workload = std::make_shared<bool>();
+  auto workload = std::make_shared<CompletionCounter<>>();
   while(more && 
        (cells_buff = col->get_buff(
-         *key_start.get(), key_finish, updater->buff_sz, more)) 
-                                                        != nullptr) {
+         *key_start.get(), key_finish, updater->buff_sz, more)) != nullptr) {
+    workload->increment();
     updater->result->completion_incr();
 
     Protocol::Rgr::Req::RangeQueryUpdate::request(
@@ -473,7 +474,7 @@ void Update::Locator::commit_data(
 
         if(rsp.err) {
           SWC_LOGF(LOG_DEBUG, "Commit RETRYING %s buffs=%ld", 
-                   rsp.to_string().c_str(), workload.use_count());
+                   rsp.to_string().c_str(), workload->count());
 
           if(rsp.err == Error::REQUEST_TIMEOUT) {
             SWC_LOGF(LOG_DEBUG, " %s", req->to_string().c_str());
@@ -486,7 +487,7 @@ void Update::Locator::commit_data(
               *cells_buff.get(), rsp.range_prev_end, rsp.range_end);
             locator->updater->result->add_resend_count(resend);
 
-            if(workload.use_count() == 1) {
+            if(workload->is_last()) {
               auto nxt_start = locator->col->get_key_next(rsp.range_end);
               if(nxt_start != nullptr) {
                 std::make_shared<Locator>(
@@ -500,7 +501,7 @@ void Update::Locator::commit_data(
             locator->updater->result->add_resend_count(
               locator->col->add(*cells_buff.get())
             );
-            if(workload.use_count() == 1) {
+            if(workload->is_last()) {
               base->request_again();
               return;
             }
