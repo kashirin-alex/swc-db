@@ -803,18 +803,17 @@ size_t Mutable::_narrow(const DB::Cell::Key& key, size_t offset) const {
     if(DB::KeySeq::compare(
         key_seq, (*ConstIterator(&buckets, offset).item)->key, key)
         == Condition::GT) {
-      if(step < narrow_sz)
+      if(step < narrow_sz + max_revs)
         return offset;
       if(offset + (step >>= 1) >= _size)
         offset = _size - (step >>= 1);
       else 
         offset += step; 
+      if(offset > max_revs)
+        offset -= max_revs;
       goto try_narrow;
     }
-    if((step >>= 1) == 0)
-      ++step;  
-
-    if(offset < step)
+    if(((step >>= 1) += max_revs) >= offset)
       return 0;
     offset -= step;
   goto try_narrow;
