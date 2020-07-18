@@ -77,6 +77,8 @@ class Read final {
 
   size_t size_bytes(bool only_loaded=false);
 
+  size_t size_bytes_enc(bool only_loaded=false);
+
   std::string to_string();
 
   

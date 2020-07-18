@@ -132,11 +132,11 @@ void Readers::get_prev_key_end(uint32_t idx, DB::Cell::Key& key) const {
 
 bool Readers::need_compaction(size_t cs_sz, size_t blk_size) const {
   size_t  sz;
+  size_t  sz_enc;
   for(auto cs : *this) {
-    sz = cs->size_bytes(true);
-    if(!sz)
+    if(!(sz_enc = cs->size_bytes_enc(false)) || !(sz = cs->size_bytes(false)))
       continue;
-    if(sz > cs_sz || sz/cs->blocks_count() > blk_size)
+    if(sz_enc > cs_sz || sz/cs->blocks_count() > blk_size)
       return true;
   }
   return false;

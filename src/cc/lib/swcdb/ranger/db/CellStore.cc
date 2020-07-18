@@ -324,6 +324,13 @@ size_t Read::size_bytes(bool only_loaded) const {
   return size;
 }
 
+size_t Read::size_bytes_enc(bool only_loaded) const {
+  size_t size = 0;
+  for(auto blk : blocks)
+    size += blk->size_bytes_enc(only_loaded);
+  return size;
+}
+
 SWC_SHOULD_INLINE
 size_t Read::blocks_count() const {
   return blocks.size();

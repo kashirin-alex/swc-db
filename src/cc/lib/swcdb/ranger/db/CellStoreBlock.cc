@@ -181,6 +181,10 @@ size_t Read::size_bytes(bool only_loaded) {
   return only_loaded && !loaded() ? 0 : header.size_plain;
 }
 
+size_t Read::size_bytes_enc(bool only_loaded) {
+  return only_loaded && !loaded() ? 0 : header.size_enc;
+}
+
 std::string Read::to_string() {
   std::string s("Block(");
   s.append(header.to_string());
