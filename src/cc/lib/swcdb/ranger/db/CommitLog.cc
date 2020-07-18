@@ -355,12 +355,12 @@ void Fragments::remove(int &err) {
 }
 
 void Fragments::unload() {
+  stopping = true;
   {
     std::unique_lock lock_wait(m_mutex);
     if(m_commiting || m_compacting)
       m_cv.wait(lock_wait, [this]{ return !m_commiting && !m_compacting; });
   }
-  stopping = true;
   std::scoped_lock lock(m_mutex);
   for(auto frag : *this)
     delete frag;
