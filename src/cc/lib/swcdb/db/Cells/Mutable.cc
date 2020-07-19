@@ -808,12 +808,12 @@ size_t Mutable::_narrow(const DB::Cell::Key& key, size_t offset) const {
       if(offset + (step >>= 1) >= _size)
         offset = _size - (step >>= 1);
       else 
-        offset += step; 
-      if(offset > max_revs)
-        offset -= max_revs;
+        offset += step;
       goto try_narrow;
     }
-    if(((step >>= 1) += max_revs) >= offset)
+    if((step >>= 1) <= narrow_sz)
+      step += max_revs;
+    if(offset < step)
       return 0;
     offset -= step;
   goto try_narrow;
