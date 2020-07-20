@@ -59,6 +59,15 @@ size_t MutableVec::size_bytes() const {
   return sz;
 }
 
+size_t MutableVec::size_of_internal() const {
+  size_t sz = 0;
+  for(auto it = begin(); it < end(); ++it) {
+    sz += (*it)->size_of_internal();
+    sz += sizeof(*it);
+  }
+  return sz;
+}
+
 bool MutableVec::split(Mutable& cells, MutableVec::iterator it) {
   if(cells.size() >= split_size) {
     cells.split(**insert(it, new Mutable(key_seq, max_revs, ttl, type)));

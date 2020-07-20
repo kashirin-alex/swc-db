@@ -26,6 +26,8 @@ class KeyVec final : public std::vector<std::basic_string<uint8_t>> {
 
   void free();
 
+  size_t size_of_internal() const;
+
   KeyVec(const KeyVec&) = delete;
 
   KeyVec(const KeyVec&&) = delete;

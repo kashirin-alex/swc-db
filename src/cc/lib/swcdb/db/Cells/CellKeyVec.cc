@@ -17,6 +17,15 @@ void KeyVec::free() {
   clear();
 }
 
+size_t KeyVec::size_of_internal() const {
+  size_t sz = 0;
+  for(auto& f : *this) {
+    sz += sizeof(f);
+    sz += f.length();
+  }
+  return sz;
+}
+
 void KeyVec::copy(const KeyVec &other) {
   free();
   assign(other.cbegin(), other.cend());

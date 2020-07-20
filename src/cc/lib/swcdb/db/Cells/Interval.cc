@@ -52,6 +52,12 @@ void Interval::free() {
   aligned_max.free();
 }
 
+size_t Interval::size_of_internal() const {
+  return key_begin.size + key_end.size + 
+         aligned_min.size_of_internal() + 
+         aligned_min.size_of_internal();
+}
+
 void Interval::set_key_begin(const DB::Cell::Key& key) {
   key_begin.copy(key);
   was_set = true;

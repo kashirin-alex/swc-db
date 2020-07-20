@@ -57,6 +57,8 @@ class MutableVec final : private std::vector<Mutable*> {
   
   size_t size_bytes() const;
 
+  size_t size_of_internal() const;
+  
   bool split(Mutable& cells, iterator it);
 
   void add_sorted(const Cell& cell);

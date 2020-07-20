@@ -105,6 +105,12 @@ size_t Mutable::size_bytes() const {
   return _bytes;
 }
 
+size_t Mutable::size_of_internal() const {
+  return  _bytes
+        + _size * (_cell_sz + sizeof(Cell)) 
+        + buckets.size() * (_bucket_sz + sizeof(Bucket));
+}
+
 SWC_SHOULD_INLINE
 bool Mutable::empty() const {
   return !_size;

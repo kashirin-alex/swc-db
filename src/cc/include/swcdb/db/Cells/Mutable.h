@@ -139,6 +139,8 @@ class Mutable final {
   
   size_t size_bytes() const;
 
+  size_t size_of_internal() const;
+  
   bool empty() const;
 
   Cell*& front();

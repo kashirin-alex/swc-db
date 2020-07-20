@@ -41,6 +41,8 @@ class Interval final {
 
   void free();
   
+  size_t size_of_internal() const;
+
   void set_key_begin(const DB::Cell::Key& key);
 
   void set_key_end(const DB::Cell::Key& key);
