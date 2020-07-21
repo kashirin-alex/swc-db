@@ -29,9 +29,19 @@ Block::Block(const DB::Cells::Interval& interval,
                   blocks->range->cfg->cell_ttl(), 
                   blocks->range->cfg->column_type())),
               m_state(state), m_processing(0) {
+  RangerEnv::res().adj_mem_usage(size_of());
 }
 
-Block::~Block() { }
+Block::~Block() {
+  RangerEnv::res().adj_mem_usage(-ssize_t(
+    size_of() +
+    (m_cells.empty() ? 0 : m_cells.size_of_internal())
+  ));
+}
+
+size_t Block::size_of() const {
+  return sizeof(*this) + m_key_end.size;
+}
 
 SWC_SHOULD_INLINE
 Block::Ptr Block::ptr() {
@@ -107,7 +117,9 @@ bool Block::add_logged(const DB::Cells::Cell& cell) {
   
   if(loaded()) {
     std::scoped_lock lock(m_mutex);
+    ssize_t sz = m_cells.size_of_internal();
     m_cells.add_raw(cell);
+    RangerEnv::res().adj_mem_usage(ssize_t(m_cells.size_of_internal()) - sz);
     splitter();
   }
   return true;
@@ -138,6 +150,7 @@ size_t Block::load_cells(const uint8_t* buf, size_t remain,
     synced = false;
   else if(!synced && m_cells.empty())
     synced = true;
+  ssize_t sz = m_cells.size_of_internal();
 
   while(remain) {
     ++count;
@@ -170,11 +183,16 @@ size_t Block::load_cells(const uint8_t* buf, size_t remain,
     else
       m_cells.add_raw(cell, &offset_hint);
       
-    if(++added % 100 == 0 && splitter()) {
-      was_splitted = true;
-      offset_hint = 0;
+    if(++added % 1000 == 0) {
+      RangerEnv::res().adj_mem_usage(ssize_t(m_cells.size_of_internal()) - sz);
+      if(splitter()) {
+        was_splitted = true;
+        offset_hint = 0;
+      }
+      sz = m_cells.size_of_internal();
     }
   }
+  RangerEnv::res().adj_mem_usage(ssize_t(m_cells.size_of_internal()) - sz);
   return added;
 }
 
@@ -242,8 +260,10 @@ Block::Ptr Block::_split(bool loaded) {
     blocks,
     loaded ? State::LOADED : State::NONE
   );
-
+  ssize_t sz = loaded ? 0 : m_cells.size_of_internal();
   m_cells.split(blk->m_cells, m_key_end, blk->m_key_end, loaded);
+  if(sz)
+    RangerEnv::res().adj_mem_usage(ssize_t(m_cells.size_of_internal()) - sz);
 
   _add(blk);
   return blk;
@@ -280,11 +300,13 @@ size_t Block::release() {
     Mutex::scope lock(m_mutex_state);
     if(!m_processing && m_state == State::LOADED) {
       m_state = State::NONE;
-      released += _size_bytes();
+      released += m_cells.size_of_internal();
       m_cells.free();
     }
     m_mutex.unlock();
   }
+  if(released)
+    RangerEnv::res().adj_mem_usage(-ssize_t(released));
   return released;
 }
 
@@ -324,12 +346,12 @@ size_t Block::_size() const {
   
 size_t Block::size_bytes() {
   std::shared_lock lock(m_mutex);
-  return _size_bytes();
+  return m_cells.size_bytes();
 }
   
-SWC_SHOULD_INLINE
-size_t Block::_size_bytes() const {
-  return m_cells.size_bytes() + m_cells.size() * m_cells._cell_sz;
+size_t Block::size_of_internal() {
+  std::shared_lock lock(m_mutex);
+  return m_cells.size_of_internal();
 }
 
 /*
@@ -347,7 +369,7 @@ bool Block::_need_split() const {
   auto sz = _size();
   return sz > 1 && 
     (sz >= blocks->range->cfg->block_cells() * 2 || 
-     _size_bytes() >= blocks->range->cfg->block_size() * 2) && 
+     m_cells.size_bytes() >= blocks->range->cfg->block_size() * 2) && 
     !m_cells.has_one_key();
 }
 

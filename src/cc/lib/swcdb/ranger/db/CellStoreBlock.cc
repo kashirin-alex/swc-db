@@ -76,9 +76,18 @@ Read::Read(const uint32_t cell_revs, const Header& header)
           : cell_revs(cell_revs), header(header),
             m_state(State::NONE), m_processing(0),
             m_cells_remain(header.cells_count), m_err(Error::OK) {
+  RangerEnv::res().adj_mem_usage(size_of());
 }
 
 Read::~Read() { 
+  RangerEnv::res().adj_mem_usage(-ssize_t(
+    size_of() + 
+    (m_buffer.size && m_state != State::NONE ? header.size_plain : 0)
+  ));
+}
+
+size_t Read::size_of() const {
+  return sizeof(*this) + header.interval.size_of_internal();
 }
 
 bool Read::load(const QueueRunnable::Call_t& cb) {
@@ -88,6 +97,7 @@ bool Read::load(const QueueRunnable::Call_t& cb) {
     if(m_state == State::NONE) {
       if(header.size_enc) {
         m_state = State::LOADING;
+        RangerEnv::res().adj_mem_usage(header.size_plain);
         return true;
       } else {
         // a zero cells type cs (initial of any to any block)  
@@ -148,6 +158,8 @@ size_t Read::release() {
     }
     m_mutex.unlock(support);
   }
+  if(released)
+    RangerEnv::res().adj_mem_usage(-ssize_t(header.size_plain));
   return released;
 }
 
@@ -256,10 +268,12 @@ void Read::load(int& err, FS::SmartFd::Ptr smartfd) {
   if((m_err = err) == Error::FS_PATH_NOT_FOUND) {
     m_err = Error::OK;
     m_buffer.free();
+    RangerEnv::res().adj_mem_usage(-ssize_t(header.size_plain));
   }
   if(m_err) {
     m_state = State::NONE;
     m_buffer.free();
+    RangerEnv::res().adj_mem_usage(-ssize_t(header.size_plain));
   } else {
     m_state = State::LOADED;
   }

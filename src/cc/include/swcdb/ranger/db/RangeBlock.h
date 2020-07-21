@@ -54,6 +54,8 @@ class Block final {
 
   ~Block();
 
+  size_t size_of() const;
+
   Ptr ptr();
 
   void schema_update();
@@ -124,7 +126,7 @@ class Block final {
   
   size_t size_bytes();
 
-  size_t _size_bytes() const;
+  size_t size_of_internal();
 
   //bool need_split();
 

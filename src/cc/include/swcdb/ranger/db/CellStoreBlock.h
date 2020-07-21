@@ -57,6 +57,8 @@ class Read final {
 
   ~Read();
   
+  size_t size_of() const;
+  
   bool load(const QueueRunnable::Call_t& cb);
 
   void load(FS::SmartFd::Ptr smartfd, const QueueRunnable::Call_t& cb);

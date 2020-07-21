@@ -237,11 +237,22 @@ Read::Read(const csid_t csid,
             interval(interval), 
             blocks(blocks), 
             m_smartfd(smartfd) {       
+  RangerEnv::res().adj_mem_usage(size_of());
 }
 
 Read::~Read() {
   for(auto blk : blocks)
     delete blk;
+  RangerEnv::res().adj_mem_usage(-ssize_t(size_of()));
+}
+
+size_t Read::size_of() const {
+  return sizeof(*this) 
+        + prev_key_end.size 
+        + interval.size_of_internal() 
+        + blocks.size() * sizeof(Block::Read::Ptr)
+        + sizeof(*m_smartfd.get())
+      ;
 }
 
 void Read::load_cells(BlockLoader* loader) {
@@ -409,6 +420,9 @@ void Write::block_encode(int& err, DynamicBuffer& cells_buff,
   Block::Write::encode(err, cells_buff, output, header);
   if(err)
     return;
+
+  RangerEnv::res().adj_mem_usage(
+    Block::Header::SIZE + header.size_enc);
   block_write(err, output, header);
 }
 
@@ -417,6 +431,9 @@ void Write::block_write(int& err, DynamicBuffer& blk_buff,
   header.offset_data = size + Block::Header::SIZE;
   m_blocks.emplace_back(new Block::Write(header));
   block(err, blk_buff);
+
+  RangerEnv::res().adj_mem_usage(
+    -ssize_t(Block::Header::SIZE + header.size_enc));
 }
 
 

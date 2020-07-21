@@ -21,7 +21,10 @@ Compact::Group::Group(Compact* compact, uint8_t worker)
                         m_sem(5) {
 }
 
-Compact::Group::~Group() { }
+Compact::Group::~Group() {
+  if(!m_cells.empty())
+    RangerEnv::res().adj_mem_usage(-ssize_t(m_cells.size_of_internal()));
+}
 
 void Compact::Group::run() {
   asio::post(*Env::IoCtx::io()->ptr(), [this]() { load_more(); });
@@ -56,12 +59,15 @@ void Compact::Group::load() {
   int err;
   Fragment::Ptr frag;
   bool finished;
+  ssize_t sz;
   do {
     frag = m_queue.front();
 
     err = Error::OK;
     if(!compact->log->stopping && !error) {
+      sz = m_cells.size_of_internal();
       frag->load_cells(err, m_cells);
+      RangerEnv::res().adj_mem_usage(ssize_t(m_cells.size_of_internal()) - sz);
       m_remove.push_back(frag);
     } else {
       frag->processing_decrement();
@@ -93,17 +99,19 @@ void Compact::Group::write() {
     return;
   size_t total_cells_count = 0;
   int err = Error::OK;
+  ssize_t sz;
   do {
     DynamicBuffer cells;
     uint32_t cells_count = 0;
     DB::Cells::Interval interval(m_cells.key_seq);
     auto buff_write = std::make_shared<StaticBuffer>();
-
+    sz = m_cells.size_of_internal();
     m_cells.write_and_free(
       cells, cells_count, interval, 
       compact->log->range->cfg->block_size(), 
       compact->log->range->cfg->block_cells()
     );
+    RangerEnv::res().adj_mem_usage(ssize_t(m_cells.size_of_internal()) - sz);
     total_cells_count += cells_count;
 
     auto frag = Fragment::make_write(

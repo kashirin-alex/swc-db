@@ -52,17 +52,35 @@ class Resources final {
 
   SWC_CAN_INLINE 
   size_t need_ram() const {
-    return ram.used > ram.allowed ? ram.used - ram.allowed : 0;
+    return ram.used > ram.allowed 
+            ? ram.used - ram.allowed 
+            : (ram.used_reg > ram.allowed
+                ? ram.used_reg - ram.allowed
+              : 0);
   }
 
   SWC_CAN_INLINE 
   size_t avail_ram() const {
-    return ram.allowed > ram.used  ? ram.allowed - ram.used : 0;
+    return ram.allowed > ram.used_reg 
+            ? (ram.allowed > ram.used ? ram.allowed - ram.used_reg : 0)
+            : 0;
   }
 
   SWC_CAN_INLINE 
   bool need_ram(uint32_t sz) const {
-    return ram.free < sz * 2 || ram.used + sz > ram.allowed;
+    return ram.free < sz * 2 || 
+           (ram.used_reg + sz > ram.allowed || ram.used + sz > ram.allowed);
+  }
+
+  void adj_mem_usage(ssize_t sz) {
+    if(sz) {
+      m_mutex.lock();
+      if(sz < 0 && ram.used_reg < size_t(-sz))
+        ram.used_reg = 0;
+      else 
+        ram.used_reg += sz;
+      m_mutex.unlock();
+    }
   }
 
   void stop() {
@@ -81,7 +99,7 @@ class Resources final {
 
   void malloc_release() {
   #if defined TCMALLOC_MINIMAL || defined TCMALLOC
-      if(!avail_ram()) {
+      if(ram.used > ram.allowed) {
         auto inst = MallocExtension::instance();
         inst->SetMemoryReleaseRate(cfg_ram_release_rate->get());
         inst->ReleaseFreeMemory();
@@ -96,10 +114,8 @@ class Resources final {
     if(size_t bytes = need_ram()) {
       if(m_release_call) {
         size_t released_bytes = m_release_call(bytes);
-        SWC_LOGF(LOG_DEBUG, "Resources::ram release=%lu/%lu", 
-                  released_bytes, bytes);
-        if(released_bytes >= bytes)
-          return schedule();
+        SWC_LOGF(LOG_DEBUG, "Resources::ram release=%lu/%lu %s", 
+                  released_bytes, bytes, to_string().c_str());
       }
 
       malloc_release();
@@ -126,7 +142,7 @@ class Resources final {
     buffer.close();
     rss *= page_size;
     ram.used = ram.used > ram.allowed || ram.used > rss 
-              ? (ram.used * 4 + rss) / 5 : rss;
+                ? (ram.used + rss) / 2 : rss;
   }
 
   void schedule() {
@@ -143,6 +159,7 @@ class Resources final {
     std::atomic<size_t>   total    = 0;
     std::atomic<size_t>   free     = 0;
     std::atomic<size_t>   used     = 0;
+    std::atomic<size_t>   used_reg = 0;
     std::atomic<size_t>   allowed  = 0;
     std::atomic<uint32_t> chk_ms   = 0;
 
@@ -155,6 +172,8 @@ class Resources final {
       s.append(" free=");
       s.append(std::to_string(free/base));
       s.append(" used=");
+      s.append(std::to_string(used_reg/base));
+      s.append("/");
       s.append(std::to_string(used/base));
       s.append(" allowed=");
       s.append(std::to_string(allowed/base));      
@@ -171,8 +190,9 @@ class Resources final {
   const std::function<size_t(size_t)> m_release_call;
   int8_t                              next_major_chk;
 
-  uint32_t                      page_size;
-  Component                     ram;
+  LockAtomic::Unique                  m_mutex;
+  uint32_t                            page_size;
+  Component                           ram;
   // Component                     storage;
   
 #if defined TCMALLOC_MINIMAL || defined TCMALLOC

@@ -33,7 +33,10 @@ void Fragments::init(const RangePtr& for_range) {
   );
 }
 
-Fragments::~Fragments() { }
+Fragments::~Fragments() { 
+  if(!m_cells.empty())
+    RangerEnv::res().adj_mem_usage(-ssize_t(m_cells.size_of_internal()));
+}
 
 void Fragments::schema_update() {
   std::scoped_lock lock(m_mutex_cells);
@@ -49,7 +52,9 @@ void Fragments::add(const DB::Cells::Cell& cell) {
   bool roll;
   {
     std::scoped_lock lock(m_mutex_cells);
+    ssize_t sz = m_cells.size_of_internal();
     m_cells.add_raw(cell);
+    RangerEnv::res().adj_mem_usage(ssize_t(m_cells.size_of_internal()) - sz);
     roll = _need_roll();
   }
 
@@ -88,13 +93,17 @@ void Fragments::commit_new_fragment(bool finalize) {
     DB::Cells::Interval interval(range->cfg->key_seq);
     auto buff_write = std::make_shared<StaticBuffer>();
     size_t nxt_id = next_id();
+    ssize_t sz;
     {
       std::scoped_lock lock(m_mutex);
       {
         std::scoped_lock lock2(m_mutex_cells);
+        sz = m_cells.size_of_internal();
         m_cells.write_and_free(
           cells, cells_count, interval,
           range->cfg->block_size(), range->cfg->block_cells());
+        RangerEnv::res().adj_mem_usage(
+          ssize_t(m_cells.size_of_internal()) - sz);
         if(m_deleting || !cells.fill())
           break;
 

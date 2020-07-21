@@ -151,6 +151,7 @@ Fragment::Ptr Fragment::make_write(int& err, const std::string& filepath,
   if(err)
     return nullptr;
 
+  RangerEnv::res().adj_mem_usage(size_plain);
   auto frag = new Fragment(
     smartfd, 
     version, interval, 
@@ -223,6 +224,7 @@ Fragment::Fragment(const FS::SmartFd::Ptr& smartfd,
                     m_processing(m_state == State::WRITING), 
                     m_err(Error::OK),
                     m_cells_remain(cells_count) {
+  RangerEnv::res().adj_mem_usage(size_of());
 }
 
 SWC_SHOULD_INLINE
@@ -230,7 +232,19 @@ Fragment::Ptr Fragment::ptr() {
   return this;
 }
 
-Fragment::~Fragment() { }
+Fragment::~Fragment() {
+  RangerEnv::res().adj_mem_usage(-ssize_t(
+    size_of() + 
+    (m_buffer.size && m_state != State::NONE ? size_plain : 0)
+  ));
+}
+
+size_t Fragment::size_of() const {
+  return sizeof(*this) 
+        + interval.size_of_internal()
+        + sizeof(*m_smartfd.get())
+      ;
+}
 
 SWC_SHOULD_INLINE
 const std::string& Fragment::get_filepath() const {
@@ -269,15 +283,14 @@ void Fragment::write(int err, uint8_t blk_replicas, int64_t blksz,
   {
     Mutex::scope lock(m_mutex);
     keep = --m_processing || !m_queue.empty();
-    m_err = err;
-    if((m_state = !m_err && keep ? State::LOADED : State::NONE) 
-                                              != State::LOADED)
+    if((m_state = !(m_err = err) && keep
+                    ? State::LOADED : State::NONE) == State::NONE) {
       m_buffer.free();
+      RangerEnv::res().adj_mem_usage(-ssize_t(size_plain));
+    }
   }
   if(keep)
     run_queued();
-  else if(RangerEnv::res().need_ram(size_plain))
-    release();
 }
 
 void Fragment::load(const QueueRunnable::Call_t& cb) {
@@ -291,6 +304,7 @@ void Fragment::load(const QueueRunnable::Call_t& cb) {
       if(m_state == State::LOADING || m_state == State::WRITING)
         return;
       m_state = State::LOADING;
+      RangerEnv::res().adj_mem_usage(size_plain);
     }
   }
 
@@ -404,6 +418,8 @@ size_t Fragment::release() {
     }
     m_mutex.unlock(support);
   }
+  if(released)
+    RangerEnv::res().adj_mem_usage(-ssize_t(size_plain));
   return released;
 }
 
@@ -547,8 +563,10 @@ void Fragment::load() {
     Mutex::scope lock(m_mutex);
     m_err = err == Error::FS_PATH_NOT_FOUND ? Error::OK : err;
     m_state = m_err ? State::NONE : State::LOADED;
-    if(err)
+    if(err) {
       m_buffer.free();
+      RangerEnv::res().adj_mem_usage(-ssize_t(size_plain));
+    }
   }
   if(err)
     SWC_LOGF(LOG_ERROR, "CommitLog::Fragment load %s", to_string().c_str());

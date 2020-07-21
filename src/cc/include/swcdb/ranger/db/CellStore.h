@@ -80,6 +80,8 @@ class Read final {
 
   ~Read();
 
+  size_t size_of() const;
+
   void load_cells(BlockLoader* loader);
 
   void run_queued();

@@ -100,6 +100,8 @@ class Fragment final {
 
   ~Fragment();
 
+  size_t size_of() const;
+
   const std::string& get_filepath() const;
 
   void write(int err, uint8_t blk_replicas, int64_t blksz, 
