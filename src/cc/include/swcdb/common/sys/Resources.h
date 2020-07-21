@@ -129,7 +129,7 @@ class Resources final {
 
   void malloc_release() {
   #if defined TCMALLOC_MINIMAL || defined TCMALLOC
-      if(ram.used > ram.allowed) {
+      if(ram.used > ram.allowed || is_low_mem_state()) {
         auto inst = MallocExtension::instance();
         inst->SetMemoryReleaseRate(cfg_ram_release_rate->get());
         inst->ReleaseFreeMemory();
@@ -141,11 +141,18 @@ class Resources final {
   void checker() {
     refresh_stats();
 
-    if(size_t bytes = is_low_mem_state() ? 0 : need_ram()) {
+    bool try_release;
+    size_t bytes;
+    if((try_release = is_low_mem_state()))
+      bytes = 0;
+    else
+      try_release = (bytes = need_ram());
+
+    if(try_release) {
       if(m_release_call) {
         size_t released_bytes = m_release_call(bytes);
-        SWC_LOGF(LOG_DEBUG, "Resources::ram release=%lu/%lu %s", 
-                  released_bytes, bytes, to_string().c_str());
+        SWC_LOGF(LOG_DEBUG, "%s mem-released=%lu/%lu", 
+                  to_string().c_str(), released_bytes, bytes);
       }
 
       malloc_release();
@@ -155,7 +162,7 @@ class Resources final {
   }
 
   void refresh_stats() {
-    if(++next_major_chk % (is_low_mem_state() ? 10 : 100)) {
+    if(++next_major_chk % (is_low_mem_state() ? 10 : 100) == 0) {
       page_size = sysconf(_SC_PAGE_SIZE);
     
       std::ifstream buffer("/proc/meminfo");
@@ -197,6 +204,9 @@ class Resources final {
       ram.chk_ms  = ram.allowed / 3000; //~= ram-buff   
       if(ram.chk_ms > MAX_RAM_CHK_INTVAL_MS)
         ram.chk_ms = MAX_RAM_CHK_INTVAL_MS;
+      
+      if(next_major_chk % 100 == 0 && is_low_mem_state())
+        SWC_LOGF(LOG_WARN, "Low-Memory state %s", to_string().c_str());
     }
 
     std::ifstream buffer("/proc/self/statm");
@@ -214,8 +224,14 @@ class Resources final {
     m_timer.expires_from_now(std::chrono::milliseconds(ram.chk_ms));
     m_timer.async_wait(
       [this](const asio::error_code& ec) {
-        if(ec != asio::error::operation_aborted) {
+        if(ec == asio::error::operation_aborted)
+          return;
+        try {
           checker();
+        } catch(const std::exception& e) {
+          SWC_LOGF(LOG_ERROR, "Resources:checker what=(%s) %s", 
+                   e.what(), to_string().c_str());
+          schedule();
         }
     }); 
   }
