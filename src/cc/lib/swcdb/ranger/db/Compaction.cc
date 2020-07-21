@@ -68,7 +68,7 @@ void Compaction::run(bool continuing) {
 
   RangePtr range  = nullptr;
   for(Column::Ptr col = nullptr; 
-      !stopped() && 
+      !stopped() && !RangerEnv::res().is_low_mem_state() &&
       (col || (col = RangerEnv::columns()->get_next(m_idx_cid)) ); ) {
 
     if(col->removing()) {

@@ -170,7 +170,9 @@ size_t Fragments::need_compact(std::vector<Fragments::Vec>& groups,
 }
 
 bool Fragments::try_compact(int tnum) {
-  if(stopping || !range->compact_possible(true))
+  if(stopping || 
+     RangerEnv::res().is_low_mem_state() ||
+     !range->compact_possible(true))
     return false;
 
   std::vector<Fragments::Vec> groups;

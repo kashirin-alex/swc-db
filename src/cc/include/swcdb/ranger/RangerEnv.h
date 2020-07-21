@@ -141,7 +141,9 @@ RangerEnv::RangerEnv()
       _resources(
         Env::IoCtx::io()->ptr(),
         Env::Config::settings()->get<Property::V_GINT32>(
-          "swc.rgr.ram.percent"),
+          "swc.rgr.ram.allowed.percent"),
+        Env::Config::settings()->get<Property::V_GINT32>(
+          "swc.rgr.ram.reserved.percent"),
         Env::Config::settings()->get<Property::V_GINT32>(
           "swc.rgr.ram.release.rate"),
         [this](size_t bytes) { return _columns->release(bytes); }) {

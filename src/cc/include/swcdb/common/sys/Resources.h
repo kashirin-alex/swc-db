@@ -25,13 +25,15 @@ class Resources final {
   public:
   
   Resources(asio::io_context* io, 
-            Property::V_GINT32::Ptr ram_percent, 
+            Property::V_GINT32::Ptr ram_percent_allowed,
+            Property::V_GINT32::Ptr ram_percent_reserved,
             Property::V_GINT32::Ptr ram_release_rate,
             const std::function<size_t(size_t)>& release_call=0)
-            : cfg_ram_percent(ram_percent),
+            : cfg_ram_percent_allowed(ram_percent_allowed),
+              cfg_ram_percent_reserved(ram_percent_reserved),
               cfg_ram_release_rate(ram_release_rate),
               m_timer(*io), m_release_call(release_call), 
-              next_major_chk(-1), ram(MAX_RAM_CHK_INTVAL_MS) {
+              next_major_chk(99), ram(MAX_RAM_CHK_INTVAL_MS) {
 
 #if defined TCMALLOC_MINIMAL || defined TCMALLOC
     release_rate_default = MallocExtension::instance()->GetMemoryReleaseRate();
@@ -51,24 +53,33 @@ class Resources final {
   ~Resources() { }
 
   SWC_CAN_INLINE 
+  bool is_low_mem_state() const {
+    return ram.free < ram.reserved;
+  }
+
+  SWC_CAN_INLINE 
   size_t need_ram() const {
-    return ram.used > ram.allowed 
-            ? ram.used - ram.allowed 
-            : (ram.used_reg > ram.allowed
-                ? ram.used_reg - ram.allowed
-              : 0);
+    return is_low_mem_state() 
+            ? ram.used_reg.load()
+            : (ram.used > ram.allowed 
+                ? ram.used - ram.allowed 
+                : (ram.used_reg > ram.allowed
+                    ? ram.used_reg - ram.allowed
+                    : 0
+                  )
+              );
   }
 
   SWC_CAN_INLINE 
   size_t avail_ram() const {
-    return ram.allowed > ram.used_reg 
+    return !is_low_mem_state() && ram.allowed > ram.used_reg 
             ? (ram.allowed > ram.used ? ram.allowed - ram.used_reg : 0)
             : 0;
   }
 
   SWC_CAN_INLINE 
   bool need_ram(uint32_t sz) const {
-    return ram.free < sz * 2 || 
+    return is_low_mem_state() || ram.free < sz * 2 || 
            (ram.used_reg + sz > ram.allowed || ram.used + sz > ram.allowed);
   }
 
@@ -79,6 +90,25 @@ class Resources final {
         ram.used_reg = 0;
       else 
         ram.used_reg += sz;
+      m_mutex.unlock();
+    }
+  }
+
+  void more_mem_usage(size_t sz) {
+    if(sz) {
+      m_mutex.lock();
+      ram.used_reg += sz;
+      m_mutex.unlock();
+    }
+  }
+
+  void less_mem_usage(size_t sz) {
+    if(sz) {
+      m_mutex.lock();
+      if(ram.used_reg < sz)
+        ram.used_reg = 0;
+      else 
+        ram.used_reg -= sz;
       m_mutex.unlock();
     }
   }
@@ -111,7 +141,7 @@ class Resources final {
   void checker() {
     refresh_stats();
 
-    if(size_t bytes = need_ram()) {
+    if(size_t bytes = is_low_mem_state() ? 0 : need_ram()) {
       if(m_release_call) {
         size_t released_bytes = m_release_call(bytes);
         SWC_LOGF(LOG_DEBUG, "Resources::ram release=%lu/%lu %s", 
@@ -125,24 +155,59 @@ class Resources final {
   }
 
   void refresh_stats() {
-    if(!++next_major_chk) {
+    if(++next_major_chk % (is_low_mem_state() ? 10 : 100)) {
       page_size = sysconf(_SC_PAGE_SIZE);
     
+      std::ifstream buffer("/proc/meminfo");
+      if(buffer.is_open()) {
+        size_t sz = 0;
+        std::string tmp;
+        uint8_t looking(2);
+        Component::Bytes* metric(nullptr);
+        do {
+          buffer >> tmp;
+          if(tmp.length() == 9 && 
+             memcmp(tmp.c_str(), "MemTotal:", 9) == 0) {
+            metric = &ram.total;
+          } else 
+          if(tmp.length() == 13 && 
+              memcmp(tmp.c_str(), "MemAvailable:", 13) == 0) {
+            metric = &ram.free;
+          }
+          if(metric) {
+            buffer >> sz >> tmp;            
+            metric->store(
+              sz * (tmp.front() == 'k' 
+                    ? 1024 
+                    : (tmp.front() == 'm' ? 1048576 : 0))
+            );
+            metric = nullptr;
+            --looking;
+          }
+        } while (looking && !buffer.eof());
+        buffer.close();
+      }
+      /*
       ram.total   = page_size * sysconf(_SC_PHYS_PAGES); 
       ram.free    = page_size * sysconf(_SC_AVPHYS_PAGES);
-      ram.allowed = (ram.total/100) * cfg_ram_percent->get();
+      */
+      ram.allowed = (ram.total/100) * cfg_ram_percent_allowed->get();
+      ram.reserved = (ram.total/100) * cfg_ram_percent_reserved->get();
+
       ram.chk_ms  = ram.allowed / 3000; //~= ram-buff   
       if(ram.chk_ms > MAX_RAM_CHK_INTVAL_MS)
         ram.chk_ms = MAX_RAM_CHK_INTVAL_MS;
     }
 
-    size_t sz = 0, rss = 0;
     std::ifstream buffer("/proc/self/statm");
-    buffer >> sz >> rss;
-    buffer.close();
-    rss *= page_size;
-    ram.used = ram.used > ram.allowed || ram.used > rss 
-                ? (ram.used + rss) / 2 : rss;
+    if(buffer.is_open()) {
+      size_t sz = 0, rss = 0;
+      buffer >> sz >> rss;
+      buffer.close();
+      rss *= page_size;
+      ram.used = ram.used > ram.allowed || ram.used > rss
+                  ? (ram.used + rss) / 2 : rss;
+    }
   }
 
   void schedule() {
@@ -156,11 +221,13 @@ class Resources final {
   }
 
   struct Component final {
-    std::atomic<size_t>   total    = 0;
-    std::atomic<size_t>   free     = 0;
-    std::atomic<size_t>   used     = 0;
-    std::atomic<size_t>   used_reg = 0;
-    std::atomic<size_t>   allowed  = 0;
+    typedef std::atomic<size_t> Bytes;
+    Bytes   total    = 0;
+    Bytes   free     = 0;
+    Bytes   used     = 0;
+    Bytes   used_reg = 0;
+    Bytes   allowed  = 0;
+    Bytes   reserved = 0;
     std::atomic<uint32_t> chk_ms   = 0;
 
     Component(uint32_t ms): chk_ms(ms) { }
@@ -176,14 +243,17 @@ class Resources final {
       s.append("/");
       s.append(std::to_string(used/base));
       s.append(" allowed=");
-      s.append(std::to_string(allowed/base));      
+      s.append(std::to_string(allowed/base));  
+      s.append(" reserved=");
+      s.append(std::to_string(reserved/base));      
       s.append(")");
       return s;
     }
   };
 
 
-  Property::V_GINT32::Ptr             cfg_ram_percent;
+  Property::V_GINT32::Ptr             cfg_ram_percent_allowed;
+  Property::V_GINT32::Ptr             cfg_ram_percent_reserved;
   Property::V_GINT32::Ptr             cfg_ram_release_rate;
   asio::high_resolution_timer         m_timer; 
   
