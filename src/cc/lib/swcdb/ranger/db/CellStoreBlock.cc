@@ -290,10 +290,20 @@ void Read::run_queued() {
 
 
 Write::Write(const Header& header)
-            : header(header) {
+            : header(header), released(false) {
+  RangerEnv::res().adj_mem_usage(
+    sizeof(Write::Ptr) + sizeof(Write)
+    + header.interval.size_of_internal()
+  );
 }
 
-Write::~Write() { }
+Write::~Write() { 
+  RangerEnv::res().adj_mem_usage(-ssize_t(
+    sizeof(Write::Ptr) + sizeof(Write)
+    + header.interval.size_of_internal()
+    + (released ? 0 : header.size_enc)
+  ));
+}
 
 void Write::encode(int& err, DynamicBuffer& cells, DynamicBuffer& output, 
                    Header& header) {
@@ -309,6 +319,7 @@ void Write::encode(int& err, DynamicBuffer& cells, DynamicBuffer& output,
   } else {
     header.size_enc = len_enc;
   }
+  RangerEnv::res().adj_mem_usage(header.size_enc);
 
   uint8_t* ptr = output.base;
   header.encode(&ptr);

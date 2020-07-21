@@ -421,19 +421,17 @@ void Write::block_encode(int& err, DynamicBuffer& cells_buff,
   if(err)
     return;
 
-  RangerEnv::res().adj_mem_usage(
-    Block::Header::SIZE + header.size_enc);
   block_write(err, output, header);
 }
 
 void Write::block_write(int& err, DynamicBuffer& blk_buff, 
                         Block::Header& header) {
   header.offset_data = size + Block::Header::SIZE;
-  m_blocks.emplace_back(new Block::Write(header));
+  auto& blk = m_blocks.emplace_back(new Block::Write(header));
   block(err, blk_buff);
 
-  RangerEnv::res().adj_mem_usage(
-    -ssize_t(Block::Header::SIZE + header.size_enc));
+  blk->released = true;
+  RangerEnv::res().adj_mem_usage(-ssize_t(blk->header.size_enc));
 }
 
 

@@ -115,6 +115,7 @@ class Write final {
   std::string to_string();
 
   const Header  header;
+  bool          released;
 
 };
 
