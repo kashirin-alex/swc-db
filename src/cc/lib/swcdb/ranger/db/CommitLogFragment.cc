@@ -151,7 +151,7 @@ Fragment::Ptr Fragment::make_write(int& err, const std::string& filepath,
   if(err)
     return nullptr;
 
-  RangerEnv::res().adj_mem_usage(size_plain);
+  RangerEnv::res().more_mem_usage(size_plain);
   auto frag = new Fragment(
     smartfd, 
     version, interval, 
@@ -224,7 +224,7 @@ Fragment::Fragment(const FS::SmartFd::Ptr& smartfd,
                     m_processing(m_state == State::WRITING), 
                     m_err(Error::OK),
                     m_cells_remain(cells_count) {
-  RangerEnv::res().adj_mem_usage(size_of());
+  RangerEnv::res().more_mem_usage(size_of());
 }
 
 SWC_SHOULD_INLINE
@@ -233,10 +233,10 @@ Fragment::Ptr Fragment::ptr() {
 }
 
 Fragment::~Fragment() {
-  RangerEnv::res().adj_mem_usage(-ssize_t(
+  RangerEnv::res().less_mem_usage(
     size_of() + 
     (m_buffer.size && m_state != State::NONE ? size_plain : 0)
-  ));
+  );
 }
 
 size_t Fragment::size_of() const {
@@ -286,7 +286,7 @@ void Fragment::write(int err, uint8_t blk_replicas, int64_t blksz,
     if((m_state = !(m_err = err) && keep
                     ? State::LOADED : State::NONE) == State::NONE) {
       m_buffer.free();
-      RangerEnv::res().adj_mem_usage(-ssize_t(size_plain));
+      RangerEnv::res().less_mem_usage(size_plain);
     }
   }
   if(keep)
@@ -304,7 +304,7 @@ void Fragment::load(const QueueRunnable::Call_t& cb) {
       if(m_state == State::LOADING || m_state == State::WRITING)
         return;
       m_state = State::LOADING;
-      RangerEnv::res().adj_mem_usage(size_plain);
+      RangerEnv::res().more_mem_usage(size_plain);
     }
   }
 
@@ -419,7 +419,7 @@ size_t Fragment::release() {
     m_mutex.unlock(support);
   }
   if(released)
-    RangerEnv::res().adj_mem_usage(-ssize_t(size_plain));
+    RangerEnv::res().less_mem_usage(size_plain);
   return released;
 }
 
@@ -565,7 +565,7 @@ void Fragment::load() {
     m_state = m_err ? State::NONE : State::LOADED;
     if(err) {
       m_buffer.free();
-      RangerEnv::res().adj_mem_usage(-ssize_t(size_plain));
+      RangerEnv::res().less_mem_usage(size_plain);
     }
   }
   if(err)

@@ -31,7 +31,7 @@ void Settings::init_app_options(){
     ("swc.rgr.maintenance.handlers", i32(2), "Number of Maintenance Handlers")
     ("swc.rgr.ram.allowed.percent", g_i32(33), 
      "Memory RSS % allowed without freeing/releasing")
-    ("swc.rgr.ram.reserved.percent", g_i32(10), 
+    ("swc.rgr.ram.reserved.percent", g_i32(33), 
      "Memory Total % reserved, threshold of low-memory enter state")
     ("swc.rgr.ram.release.rate", g_i32(100), 
      "Memory release-rate (malloc dependable)")

@@ -29,14 +29,14 @@ Block::Block(const DB::Cells::Interval& interval,
                   blocks->range->cfg->cell_ttl(), 
                   blocks->range->cfg->column_type())),
               m_state(state), m_processing(0) {
-  RangerEnv::res().adj_mem_usage(size_of());
+  RangerEnv::res().more_mem_usage(size_of());
 }
 
 Block::~Block() {
-  RangerEnv::res().adj_mem_usage(-ssize_t(
+  RangerEnv::res().less_mem_usage(
     size_of() +
     (m_cells.empty() ? 0 : m_cells.size_of_internal())
-  ));
+  );
 }
 
 size_t Block::size_of() const {
@@ -306,7 +306,7 @@ size_t Block::release() {
     m_mutex.unlock();
   }
   if(released)
-    RangerEnv::res().adj_mem_usage(-ssize_t(released));
+    RangerEnv::res().less_mem_usage(released);
   return released;
 }
 

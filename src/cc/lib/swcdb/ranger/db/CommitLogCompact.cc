@@ -23,7 +23,7 @@ Compact::Group::Group(Compact* compact, uint8_t worker)
 
 Compact::Group::~Group() {
   if(!m_cells.empty())
-    RangerEnv::res().adj_mem_usage(-ssize_t(m_cells.size_of_internal()));
+    RangerEnv::res().less_mem_usage(m_cells.size_of_internal());
 }
 
 void Compact::Group::run() {

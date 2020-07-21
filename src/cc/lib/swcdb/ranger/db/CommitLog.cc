@@ -35,7 +35,7 @@ void Fragments::init(const RangePtr& for_range) {
 
 Fragments::~Fragments() { 
   if(!m_cells.empty())
-    RangerEnv::res().adj_mem_usage(-ssize_t(m_cells.size_of_internal()));
+    RangerEnv::res().less_mem_usage(m_cells.size_of_internal());
 }
 
 void Fragments::schema_update() {
@@ -102,8 +102,7 @@ void Fragments::commit_new_fragment(bool finalize) {
         m_cells.write_and_free(
           cells, cells_count, interval,
           range->cfg->block_size(), range->cfg->block_cells());
-        RangerEnv::res().adj_mem_usage(
-          ssize_t(m_cells.size_of_internal()) - sz);
+        RangerEnv::res().adj_mem_usage(ssize_t(m_cells.size_of_internal())-sz);
         if(m_deleting || !cells.fill())
           break;
 

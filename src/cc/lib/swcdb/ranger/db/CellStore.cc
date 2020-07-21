@@ -237,13 +237,13 @@ Read::Read(const csid_t csid,
             interval(interval), 
             blocks(blocks), 
             m_smartfd(smartfd) {       
-  RangerEnv::res().adj_mem_usage(size_of());
+  RangerEnv::res().more_mem_usage(size_of());
 }
 
 Read::~Read() {
   for(auto blk : blocks)
     delete blk;
-  RangerEnv::res().adj_mem_usage(-ssize_t(size_of()));
+  RangerEnv::res().less_mem_usage(size_of());
 }
 
 size_t Read::size_of() const {
@@ -431,7 +431,7 @@ void Write::block_write(int& err, DynamicBuffer& blk_buff,
   block(err, blk_buff);
 
   blk->released = true;
-  RangerEnv::res().adj_mem_usage(-ssize_t(blk->header.size_enc));
+  RangerEnv::res().less_mem_usage(blk->header.size_enc);
 }
 
 
