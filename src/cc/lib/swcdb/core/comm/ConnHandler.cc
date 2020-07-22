@@ -504,6 +504,7 @@ ConnHandlerPlain::ConnHandlerPlain(AppContext::Ptr& app_ctx,
                                    SocketPlain& socket)
                                   : ConnHandler(app_ctx), 
                                     m_sock(std::move(socket)) {
+  m_sock.lowest_layer().set_option(asio::ip::tcp::no_delay(true));
 }
 
 ConnHandlerPlain::~ConnHandlerPlain() {
@@ -568,6 +569,7 @@ ConnHandlerSSL::ConnHandlerSSL(AppContext::Ptr& app_ctx,
                                SocketPlain& socket)
                               : ConnHandler(app_ctx), 
                                 m_sock(std::move(socket), ssl_ctx) {
+  m_sock.lowest_layer().set_option(asio::ip::tcp::no_delay(true));
 }
 
 ConnHandlerSSL::~ConnHandlerSSL() { 
@@ -602,7 +604,7 @@ bool ConnHandlerSSL::is_open() {
 
 void ConnHandlerSSL::handshake() {
   m_sock.async_handshake(
-    asio::ssl::stream_base::server,
+    SocketSSL::server,
     [ptr=ptr()](const asio::error_code& ec) {
       if(!ec) {
         ptr->accept_requests();
@@ -622,11 +624,11 @@ void ConnHandlerSSL::set_verify(
 
 void ConnHandlerSSL::handshake_client(
             const std::function<void(const asio::error_code&)> cb) {
-  m_sock.async_handshake(asio::ssl::stream_base::client, cb);
+  m_sock.async_handshake(SocketSSL::client, cb);
 }
 
 void ConnHandlerSSL::handshake_client(asio::error_code& ec) {
-  m_sock.handshake(asio::ssl::stream_base::client, ec);
+  m_sock.handshake(SocketSSL::client, ec);
 }
 
 

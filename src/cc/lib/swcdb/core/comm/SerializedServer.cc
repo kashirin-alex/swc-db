@@ -16,8 +16,7 @@ Acceptor::Acceptor(asio::ip::tcp::acceptor& acceptor,
                   : asio::ip::tcp::acceptor(std::move(acceptor)), 
                     m_app_ctx(app_ctx) {
   set_option(asio::ip::tcp::acceptor::reuse_address(true));
-  //set_option(asio::ip::tcp::no_delay(true));
-  //non_blocking(true);
+  set_option(asio::ip::tcp::no_delay(true));
 
   SWC_LOGF(
     LOG_INFO, "Listening On: [%s]:%d fd=%lu %s", 
@@ -55,8 +54,7 @@ void Acceptor::do_accept() {
                     ec.value(), ec.message().c_str());
         return;
       }
-      //new_sock.set_option(asio::ip::tcp::no_delay(true));
-      //new_sock.non_blocking(true);
+      
       auto conn = std::make_shared<ConnHandlerPlain>(m_app_ctx, new_sock);
       conn->new_connection();
       conn->accept_requests();
@@ -85,8 +83,7 @@ void AcceptorSSL::do_accept() {
                     ec.value(), ec.message().c_str());
         return;
       }
-      //new_sock.set_option(asio::ip::tcp::no_delay(true));
-      //new_sock.non_blocking(true);
+
       m_ssl_cfg->make_server(m_app_ctx, new_sock);
       do_accept();
     }
