@@ -277,7 +277,19 @@ void ConnHandler::write(ConnHandler::Pending* pending) {
     do_async_write(
       cbuf->get_buffers(),
       [cbuf, conn=ptr()] (const asio::error_code& ec, uint32_t) {
-        return ec ? conn->do_close() : conn->write_next();
+        if(ec) {
+          /*
+          SWC_LOGF(LOG_WARN,
+            "ConnHandler::received error_code=%d(%s) remote=%s local=%s", 
+            ec.value(), ec.message().c_str(), 
+            conn->endpoint_remote_str().c_str(), 
+            conn->endpoint_local_str().c_str()
+          );
+          */
+          conn->do_close();
+        } else {
+          conn->write_next();
+        }
       }
     );
 }
@@ -429,6 +441,13 @@ void ConnHandler::recved_buffer(const Event::Ptr& ev, asio::error_code ec,
 
 void ConnHandler::received(const Event::Ptr& ev, const asio::error_code& ec) {
   if(ec) {
+    /*
+    SWC_LOGF(LOG_WARN, 
+      "ConnHandler::read error_code=%d(%s) remote=%s local=%s", 
+      ec.value(), ec.message().c_str(), 
+      endpoint_remote_str().c_str(), endpoint_local_str().c_str()
+    );
+    */
     do_close();
     return;
   }
@@ -512,24 +531,23 @@ ConnHandlerPlain::~ConnHandlerPlain() {
 }
 
 void ConnHandlerPlain::do_close() {
-  if(connected) {
+  if(connected)
     close();
-    ConnHandler::do_close();
-  }
 }
 
 void ConnHandlerPlain::close() {
-  bool once;
   {
     Mutex::scope lock(m_mutex);
-    if((once = connected))
-      connected = false;
+    if(!connected)
+      return;
+    connected = false;
   }
-  if(once) {
-    if(m_sock.is_open())
-      try{ m_sock.close(); } catch(...) { }
-    disconnected();
+  if(m_sock.is_open()) {
+    try{ m_sock.cancel(); } catch(...) { }
+    try{ m_sock.close();  } catch(...) { }
   }
+  disconnected();
+  ConnHandler::do_close();
 }
 
 bool ConnHandlerPlain::is_open() {
@@ -577,24 +595,38 @@ ConnHandlerSSL::~ConnHandlerSSL() {
 }
 
 void ConnHandlerSSL::do_close() {
-  if(connected) {
+  if(connected)
     close();
-    ConnHandler::do_close();
-  }
 }
 
 void ConnHandlerSSL::close() {
-  bool once;
   {
     Mutex::scope lock(m_mutex);
-    if((once = connected))
-      connected = false;
+    if(!connected)
+      return;
+    connected = false;
   }
-  if(once) {
-    if(m_sock.lowest_layer().is_open())
-      try{ m_sock.lowest_layer().close(); } catch(...) { }
+  if(m_sock.lowest_layer().is_open()) {
+    try{ m_sock.lowest_layer().cancel(); } catch(...) { }
+    try{ m_sock.lowest_layer().close();  } catch(...) { }
+  }
+  disconnected();
+  ConnHandler::do_close();
+
+  /* ssl-segment (if protocol is shutdown)
+  if(m_sock.lowest_layer().is_open()) {
+    m_sock.async_shutdown([this, ptr=ptr()](const asio::error_code&) {
+      if(m_sock.lowest_layer().is_open()) {
+        try{ m_sock.lowest_layer().cancel(); } catch(...) { }
+        try{ m_sock.lowest_layer().close();  } catch(...) { }
+      }
+      disconnected();
+      ConnHandler::do_close();
+    });
+  } else {
     disconnected();
-  }
+    ConnHandler::do_close();
+  } */
 }
 
 bool ConnHandlerSSL::is_open() {
