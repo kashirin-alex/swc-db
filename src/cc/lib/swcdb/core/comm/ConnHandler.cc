@@ -26,7 +26,7 @@ ConnHandler::Pending::~Pending() {
 
 SWC_SHOULD_INLINE
 ConnHandler::ConnHandler(AppContext::Ptr& app_ctx) 
-                        : connected(false), 
+                        : connected(true), 
                           app_ctx(app_ctx), m_next_req_id(0),
                           m_accepting(false), m_reading(false) {
 }
@@ -79,7 +79,6 @@ void ConnHandler::new_connection() {
   SWC_LOGF(LOG_DEBUG, "new_connection local=%s, remote=%s, executor=%lu",
             endpoint_local_str().c_str(), endpoint_remote_str().c_str(),
             (size_t)&sock->get_executor().context());
-  connected = true;
   run(Event::make(Event::Type::ESTABLISHED, Error::OK)); 
 }
 
@@ -602,33 +601,21 @@ bool ConnHandlerSSL::is_open() {
   return connected && m_sock.lowest_layer().is_open();
 }
 
-void ConnHandlerSSL::handshake() {
-  m_sock.async_handshake(
-    SocketSSL::server,
-    [ptr=ptr()](const asio::error_code& ec) {
-      if(!ec) {
-        ptr->accept_requests();
-      } else {
-        SWC_LOGF(LOG_DEBUG, "handshake error=%d(%s)", 
-                ec.value(), ec.message().c_str());
-        ptr->do_close();
-      }
-    }
-  );
+void ConnHandlerSSL::handshake(
+                  SocketSSL::handshake_type typ,
+                  const std::function<void(const asio::error_code&)>& cb) {
+  m_sock.async_handshake(typ, cb);
+}
+
+void ConnHandlerSSL::handshake(
+                  SocketSSL::handshake_type typ,
+                  asio::error_code& ec) {
+  m_sock.handshake(typ, ec);
 }
 
 void ConnHandlerSSL::set_verify(
-    const std::function<bool(bool, asio::ssl::verify_context&)>& cb) {
+        const std::function<bool(bool, asio::ssl::verify_context&)>& cb) {
   m_sock.set_verify_callback(cb);
-}
-
-void ConnHandlerSSL::handshake_client(
-            const std::function<void(const asio::error_code&)> cb) {
-  m_sock.async_handshake(SocketSSL::client, cb);
-}
-
-void ConnHandlerSSL::handshake_client(asio::error_code& ec) {
-  m_sock.handshake(SocketSSL::client, ec);
 }
 
 

@@ -93,8 +93,19 @@ void ConfigSSL::make_server(AppContext::Ptr& app_ctx,
 
 
   auto conn = std::make_shared<ConnHandlerSSL>(app_ctx, ctx, socket);
-  conn->new_connection();
-  conn->handshake();
+  conn->handshake(
+    SocketSSL::server,
+    [conn] (const asio::error_code& ec) {
+      if(!ec) {
+        conn->new_connection();
+        conn->accept_requests();
+      } else {
+        SWC_LOGF(LOG_DEBUG, "handshake error=%d(%s)", 
+                  ec.value(), ec.message().c_str());
+        conn->do_close();
+      }
+    }
+  );
 }
 
 
@@ -126,7 +137,6 @@ ConfigSSL::make_client(AppContext::Ptr& app_ctx,
     ctx.set_verify_mode(asio::ssl::verify_peer);
 
   auto conn = std::make_shared<ConnHandlerSSL>(app_ctx, ctx, socket);
-  conn->new_connection();
   
   if(!subject_name.empty())
     conn->set_verify(asio::ssl::host_name_verification(subject_name));
@@ -134,12 +144,12 @@ ConfigSSL::make_client(AppContext::Ptr& app_ctx,
   return conn;
 }
 
-std::shared_ptr<ConnHandlerSSL> 
+ConnHandlerPtr
 ConfigSSL::make_client(AppContext::Ptr& app_ctx, 
                        SocketPlain& socket, 
                        asio::error_code& ec) const {
   auto conn = make_client(app_ctx, socket);
-  conn->handshake_client(ec);
+  conn->handshake(SocketSSL::client, ec);
   return conn;
 }
 
@@ -148,9 +158,10 @@ ConfigSSL::make_client(AppContext::Ptr& app_ctx,
                        SocketPlain& socket,
                        const HandshakeCb_t& cb) const {
   auto conn = make_client(app_ctx, socket);
-  conn->handshake_client([conn, cb](const asio::error_code& ec) {
-    cb(conn, ec); 
-  });
+  conn->handshake(
+    SocketSSL::client,
+    [conn, cb](const asio::error_code& ec) { cb(conn, ec); }
+  );
 }
 
 void ConfigSSL::load_file(std::string filepath, std::string& to) const {

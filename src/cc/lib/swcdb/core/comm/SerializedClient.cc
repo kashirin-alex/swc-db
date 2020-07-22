@@ -59,18 +59,17 @@ void ServerConnections::connection(ConnHandlerPtr& conn,
   if(ec || !sock.is_open())
     return;
 
-  if(m_ssl_cfg) {
-    conn = m_ssl_cfg->make_client(m_ctx, sock, ec);
-    if(ec || !conn->is_open())
-      return;
-  } else {
-    conn = std::make_shared<ConnHandlerPlain>(m_ctx, sock);
+  conn = m_ssl_cfg  ? m_ssl_cfg->make_client(m_ctx, sock, ec) 
+                    : std::make_shared<ConnHandlerPlain>(m_ctx, sock);
+  if(!ec && conn->is_open()) {
     conn->new_connection();
+    if(preserve)
+      push(conn);
+    // SWC_LOGF(LOG_DEBUG, "New connection: %s, %s", 
+    //          m_srv_name.c_str(), to_string(conn).c_str());
+  } else {
+    conn = nullptr;
   }
-  if(preserve)
-    push(conn);
-  // SWC_LOGF(LOG_DEBUG, "New connection: %s, %s", 
-  //          m_srv_name.c_str(), to_string(conn).c_str());
 }
 
 void ServerConnections::connection(const std::chrono::milliseconds&,
@@ -99,6 +98,7 @@ void ServerConnections::connection(const std::chrono::milliseconds&,
             if(ec || !conn->is_open()) {
               cb(nullptr);
             } else {
+              conn->new_connection();
               if(preserve)
                 ptr->push(conn);
               cb(conn);

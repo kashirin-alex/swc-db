@@ -212,14 +212,14 @@ class ConnHandlerSSL final : public ConnHandler {
 
   bool is_open() override;
 
-  void handshake();
+  void handshake(SocketSSL::handshake_type typ, 
+                 const std::function<void(const asio::error_code&)>& cb);
+
+  void handshake(SocketSSL::handshake_type typ, 
+                 asio::error_code& ec);
 
   void set_verify(
     const std::function<bool(bool, asio::ssl::verify_context&)>& cb);
-
-  void handshake_client(const std::function<void(const asio::error_code&)> cb);
-
-  void handshake_client(asio::error_code& ec);
 
   protected:
 
