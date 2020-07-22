@@ -31,6 +31,6 @@ mv cluster.crt ${CONFIG_PATH}/;
 mv server.key ${CONFIG_PATH}/;
 cat rootCA.crt > ${CONFIG_PATH}/ca.pem;
 
-rm rootCA.crt rootCA.key server.csr;
+rm rootCA.crt rootCA.key server.csr rootCA.srl;
 
 openssl verify -CAfile ${CONFIG_PATH}/ca.pem ${CONFIG_PATH}/cluster.crt

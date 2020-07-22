@@ -47,7 +47,10 @@ bool ConfigSSL::need_ssl(const EndPoint& endpoint) const {
 }
 
 
-void ConfigSSL::configure_server(asio::ssl::context& ctx) const {
+void ConfigSSL::make_server(AppContext::Ptr& app_ctx, 
+                            SocketPlain& socket) const {
+  asio::ssl::context ctx(asio::ssl::context::tlsv13_server);
+  
   ctx.set_options(//asio::ssl::context::default_workarounds | 
       asio::ssl::context::no_compression
     | asio::ssl::context::no_sslv2
@@ -80,25 +83,25 @@ void ConfigSSL::configure_server(asio::ssl::context& ctx) const {
   }
 
   SSL_CTX_set_ecdh_auto(ctx.native_handle(), 1);
-  //SSL_CTX_set_tmp_dh(
-  //  ctx.native_handle(), EC_KEY_new_by_curve_name (NID_X9_62_prime256v1));
-  //ctx.use_tmp_dh_file("dh2048.pem");
-  
-  //ctx.set_verify_mode(asio::ssl::verify_peer);
-}
+  /*
+  SSL_CTX_set_tmp_dh(
+    ctx.native_handle(), EC_KEY_new_by_curve_name (NID_X9_62_prime256v1));
+  ctx.use_tmp_dh_file("dh2048.pem");
+  ctx.set_verify_mode(
+    asio::ssl::verify_client_once | asio::ssl::verify_fail_if_no_peer_cert);
+  */
 
-SWC_SHOULD_INLINE
-void ConfigSSL::make_server(AppContext::Ptr& app_ctx, SocketPlain& socket) {
-  asio::ssl::context ssl_ctx(asio::ssl::context::tlsv13_server);
-  configure_server(ssl_ctx);
-      
-  auto conn = std::make_shared<ConnHandlerSSL>(app_ctx, ssl_ctx, socket);
+
+  auto conn = std::make_shared<ConnHandlerSSL>(app_ctx, ctx, socket);
   conn->new_connection();
   conn->handshake();
 }
 
 
-void ConfigSSL::configure_client(asio::ssl::context& ctx) const {
+std::shared_ptr<ConnHandlerSSL>  
+ConfigSSL::make_client(AppContext::Ptr& app_ctx, 
+                       SocketPlain& socket) const {
+  asio::ssl::context ctx(asio::ssl::context::tlsv13_client);
   ctx.set_options(
       asio::ssl::context::no_compression
     | asio::ssl::context::no_sslv2
@@ -119,55 +122,35 @@ void ConfigSSL::configure_client(asio::ssl::context& ctx) const {
       asio::const_buffer(ca.data(), ca.length()));
   }
 
-  //ctx.set_verify_mode(asio::ssl::verify_peer);
-}
+  if(!subject_name.empty())
+    ctx.set_verify_mode(asio::ssl::verify_peer);
 
-std::shared_ptr<ConnHandlerSSL> ConfigSSL::make_client(
-      AppContext::Ptr& app_ctx, SocketPlain& socket, asio::error_code& ec) {
-  asio::ssl::context ssl_ctx(asio::ssl::context::tlsv13_client);
-  configure_client(ssl_ctx);
-  auto conn = std::make_shared<ConnHandlerSSL>(app_ctx, ssl_ctx, socket);
+  auto conn = std::make_shared<ConnHandlerSSL>(app_ctx, ctx, socket);
   conn->new_connection();
   
   if(!subject_name.empty())
-    conn->set_verify(
-      [this, conn](bool preverified, asio::ssl::verify_context& ctx) { 
-        return verify(preverified, ctx); 
-    });
-
-  conn->handshake_client(ec);
+    conn->set_verify(asio::ssl::host_name_verification(subject_name));
 
   return conn;
 }
 
-void ConfigSSL::make_client(AppContext::Ptr& app_ctx, SocketPlain& socket,
-                            const HandshakeCb_t& cb) { 
-  asio::ssl::context ssl_ctx(asio::ssl::context::tlsv13_client);
-  configure_client(ssl_ctx);
-  auto conn = std::make_shared<ConnHandlerSSL>(app_ctx, ssl_ctx, socket);
-  conn->new_connection();
-
-  if(!subject_name.empty())
-    conn->set_verify(
-      [this, conn](bool preverified, asio::ssl::verify_context& ctx) { 
-        return verify(preverified, ctx); 
-    });
-
-  conn->handshake_client(
-    [conn, cb](const asio::error_code& ec) { cb(conn, ec); } );
+std::shared_ptr<ConnHandlerSSL> 
+ConfigSSL::make_client(AppContext::Ptr& app_ctx, 
+                       SocketPlain& socket, 
+                       asio::error_code& ec) const {
+  auto conn = make_client(app_ctx, socket);
+  conn->handshake_client(ec);
+  return conn;
 }
 
-bool ConfigSSL::verify(bool preverified, asio::ssl::verify_context& ctx) {
-  //OR return asio::ssl::rfc2818_verification(name);
-  if(preverified)
-    return false;
-  char name[256];
-  X509* cert = X509_STORE_CTX_get_current_cert(ctx.native_handle());
-  X509_NAME_oneline(X509_get_subject_name(cert), name, 256);
-  preverified = strcmp(((const char*)name)+4, subject_name.c_str()) == 0;
-  SWC_LOGF(LOG_DEBUG, "verify state=%d crt(%s)==%s ", 
-            preverified, ((const char*)name)+4, subject_name.c_str());
-  return preverified; 
+void 
+ConfigSSL::make_client(AppContext::Ptr& app_ctx, 
+                       SocketPlain& socket,
+                       const HandshakeCb_t& cb) const {
+  auto conn = make_client(app_ctx, socket);
+  conn->handshake_client([conn, cb](const asio::error_code& ec) {
+    cb(conn, ec); 
+  });
 }
 
 void ConfigSSL::load_file(std::string filepath, std::string& to) const {

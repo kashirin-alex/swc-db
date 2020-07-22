@@ -30,21 +30,20 @@ class ConfigSSL final {
   bool need_ssl(const EndPoint& endpoint) const;
 
 
-  void configure_server(asio::ssl::context& ctx) const;
-  
-  void make_server(AppContext::Ptr& app_ctx, SocketPlain& socket);
+  void make_server(AppContext::Ptr& app_ctx,
+                   SocketPlain& socket) const;
 
 
-  void configure_client(asio::ssl::context& ctx) const;
+  std::shared_ptr<ConnHandlerSSL> 
+  make_client(AppContext::Ptr& app_ctx, SocketPlain& socket) const;
 
-  std::shared_ptr<ConnHandlerSSL> make_client(AppContext::Ptr& app_ctx, 
-                                              SocketPlain& socket, 
-                                              asio::error_code& ec);
+  std::shared_ptr<ConnHandlerSSL> 
+  make_client(AppContext::Ptr& app_ctx, SocketPlain& socket,
+              asio::error_code& ec) const;
 
-  void make_client(AppContext::Ptr& app_ctx, SocketPlain& socket, 
-                   const HandshakeCb_t& cb);
-
-  bool verify(bool preverified, asio::ssl::verify_context& ctx);
+  void 
+  make_client(AppContext::Ptr& app_ctx, SocketPlain& socket, 
+              const HandshakeCb_t& cb) const;
 
   private:
   
