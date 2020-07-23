@@ -119,9 +119,8 @@ class AppContext final : public SWC::AppContext {
         
       case Event::Type::DISCONNECT:
         m_srv->connection_del(conn);
-        if(Env::Mngr::role()->disconnection(
-          conn->endpoint_remote, conn->endpoint_local, true))
-          return;
+        Env::Mngr::role()->disconnection(
+          conn->endpoint_remote, conn->endpoint_local, true);
         return;
 
       case Event::Type::ERROR:

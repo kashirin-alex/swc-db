@@ -38,7 +38,8 @@ class MngrRole final {
 
   void update_manager_addr(uint64_t hash, const EndPoint& mngr_host);
   
-  bool disconnection(const EndPoint& endpoint_server, const EndPoint& endpoint_client, 
+  void disconnection(const EndPoint& endpoint_server, 
+                     const EndPoint& endpoint_client, 
                      bool srv=false);
   
   bool require_sync();

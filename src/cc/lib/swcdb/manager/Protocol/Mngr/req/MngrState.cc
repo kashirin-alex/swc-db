@@ -21,17 +21,17 @@ MngrState::MngrState(const ResponseCallback::Ptr& cb,
   
 MngrState::~MngrState() { }
 
-void MngrState::disconnected(const ConnHandlerPtr& conn) {
-  Env::Mngr::role()->disconnection(
-    conn->endpoint_remote, conn->endpoint_local);
+void MngrState::disconnected(const ConnHandlerPtr&) {
+  //Env::Mngr::role()->disconnection(
+  //  conn->endpoint_remote, conn->endpoint_local);
 }
 
 void MngrState::handle(ConnHandlerPtr conn, const Event::Ptr& ev) {
   if(was_called)
     return;
 
-  if(ev->type == Event::Type::DISCONNECT){
-    disconnected(conn);
+  if(ev->type == Event::Type::DISCONNECT) {
+    //disconnected(conn);
     return;
   }
   if(client::ConnQueue::ReqBase::is_timeout(ev))

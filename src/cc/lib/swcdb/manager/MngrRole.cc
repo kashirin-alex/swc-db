@@ -219,7 +219,7 @@ void MngrRole::update_manager_addr(uint64_t hash, const EndPoint& mngr_host) {
   }
 }
   
-bool MngrRole::disconnection(const EndPoint& endpoint_server, 
+void MngrRole::disconnection(const EndPoint& endpoint_server, 
                              const EndPoint& endpoint_client, 
                              bool srv) {
   EndPoints endpoints;
@@ -235,7 +235,7 @@ bool MngrRole::disconnection(const EndPoint& endpoint_server,
   }
   MngrStatus::Ptr host_set = get_host(endpoints);
   if(!host_set)
-    return false;
+    return;
 
   schedule_checkin(
     host_set->state == Types::MngrState::ACTIVE ? 
@@ -250,7 +250,7 @@ bool MngrRole::disconnection(const EndPoint& endpoint_server,
   if(host_set->state != Types::MngrState::ACTIVE)
     update_state(endpoint_server, Types::MngrState::OFF);
   // m_major_updates = true;
-  return true;
+  return;
 }
   
 bool MngrRole::require_sync() {
