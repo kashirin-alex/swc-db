@@ -33,4 +33,4 @@ cat rootCA.crt > ${CONFIG_PATH}/ca.pem;
 
 rm rootCA.crt rootCA.key server.csr rootCA.srl;
 
-openssl verify -CAfile ${CONFIG_PATH}/ca.pem ${CONFIG_PATH}/cluster.crt
+openssl verify -CAfile ${CONFIG_PATH}/ca.pem ${CONFIG_PATH}/cluster.crt;
