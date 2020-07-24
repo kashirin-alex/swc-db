@@ -13,6 +13,21 @@ namespace SWC {
 
 uint32_t fletcher32(const void* data8, size_t len8);
 
+extern SWC_CAN_INLINE 
+uint32_t summing32(const void* data8, size_t len8) {
+  uint32_t sum = 0;
+  const uint8_t* ptr = (const uint8_t*)data8;
+  for(const uint8_t* end = ptr + len8; 
+      ptr < end; 
+      sum += *ptr, ++ptr
+  );
+  return sum;
+}
+
+extern SWC_CAN_INLINE 
+uint32_t checksum32(const void* data8, size_t len8) {
+  return fletcher32(data8, len8);
+}
 
 bool checksum_i32_chk(uint32_t checksum, const uint8_t* base, uint32_t len);
 

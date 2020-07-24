@@ -20,6 +20,7 @@
  */
 
 
+#include "swcdb/core/Checksum.h"
 #include "swcdb/core/Logger.h"
 #include "swcdb/core/Serialization.h"
 
@@ -79,7 +80,7 @@ uint32_t fletcher32(const void* data8, size_t len8) {
 
 
 bool checksum_i32_chk(uint32_t checksum, const uint8_t* base, uint32_t len) {
-  uint32_t computed = fletcher32(base, len);
+  uint32_t computed = checksum32(base, len);
   if(checksum == computed)
     return true;
   SWC_LOGF(LOG_ERROR, "checksum_i32_chk, original(%u) != computed(%u)", 
@@ -96,13 +97,13 @@ bool checksum_i32_chk(uint32_t checksum, const uint8_t* base, uint32_t len,
 
 SWC_SHOULD_INLINE
 void checksum_i32(const uint8_t* start, size_t len, uint8_t** ptr) {
-  Serialization::encode_i32(ptr, fletcher32(start, len));
+  Serialization::encode_i32(ptr, checksum32(start, len));
 }
 
 SWC_SHOULD_INLINE
 void checksum_i32(const uint8_t* start, size_t len, uint8_t** ptr,
                   uint32_t& checksum) {
-  Serialization::encode_i32(ptr, checksum = fletcher32(start, len));
+  Serialization::encode_i32(ptr, checksum = checksum32(start, len));
 }
 
 SWC_SHOULD_INLINE
@@ -113,7 +114,7 @@ void checksum_i32(const uint8_t* start, const uint8_t* end, uint8_t** ptr) {
 SWC_SHOULD_INLINE
 void checksum_i32(const uint8_t* start, const uint8_t* end, uint8_t** ptr, 
                   uint32_t& checksum) {
-  Serialization::encode_i32(ptr, checksum = fletcher32(start, end-start));
+  Serialization::encode_i32(ptr, checksum = checksum32(start, end-start));
 }
 
 

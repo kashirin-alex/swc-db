@@ -404,11 +404,12 @@ operator<<(std::ostream& out, const ExceptionMessagesRenderer& r);
 
 
 // Probably should be in its own file, but...
-#define SWC_EXPECT(_e_, _code_) do { if (_e_); else { \
+#define SWC_EXPECT(_e_, _code_) \
+  if (!(_e_)) { \
     if (_code_ == ::SWC::Error::FAILED_EXPECTATION) \
       SWC_LOG_FATAL("failed expectation: " #_e_); \
-    SWC_THROW(_code_, "failed expectation: " #_e_); } \
-} while (0)
+    SWC_THROW(_code_, "failed expectation: " #_e_); \
+  }
 
 // A short cut for SWC_EXPECT(expr, ::SWC::Error::FAILED_EXPECTATION)
 // unlike assert, it cannot be turned off

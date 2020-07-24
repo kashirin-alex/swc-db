@@ -38,4 +38,9 @@ add_test(properties_parser_test ${TEST_DIFF}
 #  TARGETS   swcdb_core 
 #)
 
+ADD_TEST_TARGET(
+  NAME      checksum
+  SRCS      checksum.cc
+  TARGETS   swcdb_core 
+)
 
