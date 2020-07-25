@@ -14,7 +14,7 @@ include_directories(
   ../src/cc/lib
 )
 
-set(TEST_DIFF ${CMAKE_CURRENT_SOURCE_DIR}/testutils/testdiff)
+set(TEST_DIFF bash ${CMAKE_CURRENT_SOURCE_DIR}/testutils/testdiff)
 
 get_property(SWC_VERSION_SRC GLOBAL PROPERTY SWC_VERSION_SRC)
 get_property(SWC_LIB_CORE_SHARED GLOBAL PROPERTY SWC_LIB_CORE_SHARED)

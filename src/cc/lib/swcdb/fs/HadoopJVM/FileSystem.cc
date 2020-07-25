@@ -248,8 +248,8 @@ void FileSystemHadoopJVM::mkdirs(int& err, const std::string& name) {
   SWC_LOGF(LOG_DEBUG, "mkdirs path='%s'", abspath.c_str());
   
   errno = 0;
-  hdfsCreateDirectory(m_filesystem, abspath.c_str());
-  err = errno;
+  err = hdfsCreateDirectory(m_filesystem, abspath.c_str()) == 0
+          ? Error::OK : errno;
 }
 
 void FileSystemHadoopJVM::readdir(int& err, const std::string& name, 

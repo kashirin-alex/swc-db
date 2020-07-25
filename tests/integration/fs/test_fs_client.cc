@@ -364,10 +364,16 @@ int main(int argc, char** argv) {
   
   for(size_t chk=1;chk<=2;++chk) {
     int err = Error::OK;
-    // make data-root
+    // mkdirs data-root
     Env::FsInterface::fs()->mkdirs(err, "a/child/folder");
     if(err != Error::OK){ 
-      std::cerr << "ERROR(make data-root) mkdirs err=" << err << "\n";
+      std::cerr << "ERROR(mkdirs data-root) mkdirs err=" << err << "\n";
+      exit(1);
+    }
+    // aswell, mkdir -pf 
+    Env::FsInterface::fs()->mkdirs(err, "a/child/folder");
+    if(err != Error::OK) { 
+      std::cerr << "ERROR(mkdirs -p data-root) mkdirs err=" << err << "\n";
       exit(1);
     }
 
@@ -377,7 +383,10 @@ int main(int argc, char** argv) {
       threads.push_back(new std::thread([t](){run(t);}));
     
     std::cout << "--2--\n";
-    for(auto& t : threads) t->join();
+    for(auto& t : threads) {
+      t->join();
+      delete t;
+    }
     std::cout << "--3--\n";
 
   
