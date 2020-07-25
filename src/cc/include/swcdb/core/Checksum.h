@@ -8,41 +8,73 @@
 #define swc_core_Checksum_h
 
 #include "swcdb/core/Compat.h"
+#include "swcdb/core/Serialization.h"
+
+
 
 namespace SWC {
 
-uint32_t fletcher32(const void* data8, size_t len8);
+// Fletcher 8-bit implementation (32-bit checksum)
+SWC_SHOULD_NOT_INLINE
+static 
+uint32_t fletcher32(const uint8_t* data, size_t len) {
+   uint32_t sum1 = 0, sum2 = 0;
+   for(; len; --len, ++data)
+      (sum2 += ((sum1 += *data) %= 0xff)) %= 0xff;
+   return (sum2 <<= 8) | sum1;
+}
+
 
 extern SWC_CAN_INLINE 
-uint32_t summing32(const void* data8, size_t len8) {
-  uint32_t sum = 0;
-  const uint8_t* ptr = (const uint8_t*)data8;
-  for(const uint8_t* end = ptr + len8; 
-      ptr < end; 
-      sum += *ptr, ++ptr
-  );
-  return sum;
+uint32_t checksum32(const uint8_t* data8, size_t len8) {
+  return fletcher32((const uint8_t*)data8, len8);
+}
+
+
+
+extern SWC_CAN_INLINE 
+void checksum_i32(const uint8_t* start, size_t len, uint8_t** ptr) {
+  Serialization::encode_i32(ptr, checksum32(start, len));
 }
 
 extern SWC_CAN_INLINE 
-uint32_t checksum32(const void* data8, size_t len8) {
-  return fletcher32(data8, len8);
+void checksum_i32(const uint8_t* start, const uint8_t* end, uint8_t** ptr) {
+  Serialization::encode_i32(ptr, checksum32(start, end-start));
 }
 
-bool checksum_i32_chk(uint32_t checksum, const uint8_t* base, uint32_t len);
 
-bool checksum_i32_chk(uint32_t checksum, const uint8_t* base, uint32_t len, 
-                      uint32_t offset);
-
-void checksum_i32(const uint8_t* start, size_t len, uint8_t** ptr);
-
+extern SWC_CAN_INLINE 
 void checksum_i32(const uint8_t* start, size_t len, uint8_t** ptr,
-                  uint32_t& checksum);
+                  uint32_t& checksum) {
+  Serialization::encode_i32(ptr, checksum = checksum32(start, len));
+}
 
-void checksum_i32(const uint8_t* start, const uint8_t* end, uint8_t** ptr);
-
+extern SWC_CAN_INLINE 
 void checksum_i32(const uint8_t* start, const uint8_t* end, uint8_t** ptr, 
-                  uint32_t& checksum);
+                  uint32_t& checksum) {
+  Serialization::encode_i32(ptr, checksum = checksum32(start, end-start));
+}
+
+
+
+void checksum_i32_chk_err(uint32_t checksum, uint32_t computed);
+
+extern SWC_CAN_INLINE 
+bool checksum_i32_chk(uint32_t checksum, const uint8_t* base, uint32_t len) {
+  uint32_t computed = checksum32(base, len);
+  if(checksum == computed)
+    return true;
+  checksum_i32_chk_err(checksum, computed);
+  return false;
+}
+
+extern SWC_CAN_INLINE 
+bool checksum_i32_chk(uint32_t checksum, const uint8_t* base, uint32_t len, 
+                      uint32_t offset) {
+  memset((void*)(base + offset), 0, 4);
+  return checksum_i32_chk(checksum, base, len);
+}
+
 
 
 } // namespace SWC
