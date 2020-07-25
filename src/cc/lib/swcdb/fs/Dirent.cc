@@ -27,18 +27,18 @@ std::string Dirent::to_string() const {
 }
 
 size_t Dirent::internal_encoded_length() const {
-  return 13 + Serialization::encoded_length_vstr(name);
+  return 13 + Serialization::encoded_length_bytes(name.size());
 }
 
 void Dirent::internal_encode(uint8_t** bufp) const {
-  Serialization::encode_vstr(bufp, name);
+  Serialization::encode_bytes(bufp, name.c_str(), name.size());
   Serialization::encode_i64(bufp, length);
   Serialization::encode_i32(bufp, last_modification_time);
   Serialization::encode_bool(bufp, is_dir);
 }
 
 void Dirent::internal_decode(const uint8_t** bufp, size_t* remainp) {
-  name = Serialization::decode_vstr(bufp, remainp);
+  name = Serialization::decode_bytes_string(bufp, remainp);
   length = Serialization::decode_i64(bufp, remainp);
   last_modification_time = Serialization::decode_i32(bufp, remainp);
   is_dir = Serialization::decode_bool(bufp, remainp);

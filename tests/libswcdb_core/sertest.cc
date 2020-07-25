@@ -277,27 +277,16 @@ void test_vi64() {
             << " avg=" << (double)ns / c << " c=" << c << "\n";
 }
 
-void test_str16() {
+void test_bytes_string() {
   uint8_t buf[128], *p = buf;
-  const char *input = "the quick brown fox jumps over a lazy dog";
-  encode_str16(&p, input);
+  const char* input = "the quick brown fox jumps over a lazy dog";
+  encode_bytes(&p, input, strlen(input));
   const uint8_t *p2 = buf;
   size_t len = sizeof(buf);
-  HT_TRY("testing str16",
-    SWC_ASSERT(!strcmp(decode_str16(&p2, &len), input));
-    SWC_ASSERT(p2 - buf == (int)(encoded_length_str16(input)));
-    SWC_ASSERT(len == sizeof(buf) - (p2 - buf)));
-}
-
-void test_vstr() {
-  uint8_t buf[128], *p = buf;
-  const char *input = "the quick brown fox jumps over a lazy dog";
-  encode_vstr(&p, input);
-  const uint8_t *p2 = buf;
-  size_t len = sizeof(buf);
-  HT_TRY("testing vstr",
-    SWC_ASSERT(!strcmp(decode_vstr(&p2, &len), input));
-    SWC_ASSERT(p2 - buf == (int)(encoded_length_vstr(input)));
+  auto s = decode_bytes_string(&p2, &len);
+  HT_TRY("testing bytes_string",
+    SWC_ASSERT(!strcmp(s.c_str(), input));
+    SWC_ASSERT(p2 - buf == (int)(encoded_length_bytes(strlen(input))));
     SWC_ASSERT(len == sizeof(buf) - (p2 - buf)));
 }
 
@@ -341,13 +330,13 @@ void test_bad_vi64() {
   }
 }
 
-void test_bad_vstr() {
+void test_bad_bytes_string() {
   try {
-    uint8_t buf[20] = {0x0f, 't', 'h', 'e', ' ', 'b', 'r', 'o', 'w', 'n', ' ',
+    uint8_t buf[20] = {0x14, 't', 'h', 'e', ' ', 'b', 'r', 'o', 'w', 'n', ' ',
                        'f', 'o', 'x', ' ', 'j', 'u', 'm', 'p', 's'};
     const uint8_t *p = buf;
     size_t len = sizeof(buf);
-    decode_vstr(&p, &len);
+    decode_bytes_string(&p, &len);
   }
   catch (Exception &e) {
     SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
@@ -364,13 +353,12 @@ void test_ser() {
   test_vi24();
   test_vi32();
   test_vi64();
-  test_str16();
-  test_vstr();
+  test_bytes_string();
   
   test_bad_vi24();
   test_bad_vi32();
   test_bad_vi64();
-  test_bad_vstr();
+  test_bad_bytes_string();
 }
 
 } // local namespace

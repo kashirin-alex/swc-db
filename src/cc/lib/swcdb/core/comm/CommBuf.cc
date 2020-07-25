@@ -36,10 +36,11 @@ CommBuf::Ptr CommBuf::make(StaticBuffer& buffer, uint32_t reserve) {
 }
 
 SWC_SHOULD_INLINE
-CommBuf::Ptr CommBuf::create_error_message(int error, const char *msg) {
-  auto cbp = CommBuf::make(4 + Serialization::encoded_length_str16(msg));
+CommBuf::Ptr 
+CommBuf::create_error_message(int error, const char *msg, uint16_t len) {
+  auto cbp = CommBuf::make(4 + Serialization::encoded_length_bytes(len));
   Serialization::encode_i32(&cbp->data_ptr, error);
-  Serialization::encode_str16(&cbp->data_ptr, msg);
+  Serialization::encode_bytes(&cbp->data_ptr, msg, len);
   return cbp;
 }
 

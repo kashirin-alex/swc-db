@@ -26,7 +26,7 @@ size_t ColumnGetReq::internal_encoded_length() const {
   return 1 +  
         (flag == Flag::SCHEMA_BY_ID 
         ? Serialization::encoded_length_vi64(cid)
-        : Serialization::encoded_length_vstr(name.length()));
+        : Serialization::encoded_length_bytes(name.size()));
 }
 
 void ColumnGetReq::internal_encode(uint8_t** bufp) const {
@@ -35,7 +35,7 @@ void ColumnGetReq::internal_encode(uint8_t** bufp) const {
   if(flag == Flag::SCHEMA_BY_ID)
     Serialization::encode_vi64(bufp, cid);
   else
-    Serialization::encode_vstr(bufp, name.data(), name.length());
+    Serialization::encode_bytes(bufp, name.c_str(), name.size());
 }
 
 void ColumnGetReq::internal_decode(const uint8_t** bufp, size_t* remainp) {
@@ -44,7 +44,7 @@ void ColumnGetReq::internal_decode(const uint8_t** bufp, size_t* remainp) {
   if(flag == Flag::SCHEMA_BY_ID)
     cid = Serialization::decode_vi64(bufp, remainp);
   else
-    name = Serialization::decode_vstr(bufp, remainp);
+    name = Serialization::decode_bytes_string(bufp, remainp);
 }
 
 

@@ -25,20 +25,20 @@ class RenameReq : public Serializable {
   private:
 
   size_t internal_encoded_length() const {
-  return Serialization::encoded_length_vstr(from)
-       + Serialization::encoded_length_vstr(to);
+  return Serialization::encoded_length_bytes(from.size())
+       + Serialization::encoded_length_bytes(to.size());
   }
 
   void internal_encode(uint8_t** bufp) const {
-    Serialization::encode_vstr(bufp, from);
-    Serialization::encode_vstr(bufp, to);
+    Serialization::encode_bytes(bufp, from.c_str(), from.size());
+    Serialization::encode_bytes(bufp, to.c_str(), to.size());
   }
 
   void internal_decode(const uint8_t** bufp, size_t* remainp) {
     from.clear();
-    from.append(Serialization::decode_vstr(bufp, remainp));
+    from.append(Serialization::decode_bytes_string(bufp, remainp));
     to.clear();
-    to.append(Serialization::decode_vstr(bufp, remainp));
+    to.append(Serialization::decode_bytes_string(bufp, remainp));
   }
 
 };

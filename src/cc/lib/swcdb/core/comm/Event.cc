@@ -38,11 +38,17 @@ int32_t Event::response_code() {
   if (type == Event::ERROR)
     return error;
 
-  const uint8_t *msg = data.base;
+  const uint8_t *ptr = data.base;
   size_t remaining = data.size;
 
-  try { return Serialization::decode_i32(&msg, &remaining); }
-  catch (Exception &e) { return e.code(); }
+  try { 
+    return Serialization::decode_i32(&ptr, &remaining); 
+    /* opt
+    std::string msg = Serialization::decode_bytes_string(&ptr, &remaining);
+    */
+  } catch (Exception &e) { 
+    return e.code(); 
+  }
 }
 
 std::string Event::to_str() const {

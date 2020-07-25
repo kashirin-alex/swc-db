@@ -26,20 +26,20 @@ class OpenReq : public Serializable {
   private:
 
   size_t internal_encoded_length() const {
-    return 8 + Serialization::encoded_length_vstr(fname);
+    return 8 + Serialization::encoded_length_bytes(fname.size());
   }
 
   void internal_encode(uint8_t** bufp) const {
     Serialization::encode_i32(bufp, flags);
     Serialization::encode_i32(bufp, bufsz);
-    Serialization::encode_vstr(bufp, fname);
+    Serialization::encode_bytes(bufp, fname.c_str(), fname.size());
   }
 
   void internal_decode(const uint8_t** bufp, size_t* remainp) {
     flags = Serialization::decode_i32(bufp, remainp);
     bufsz = (int32_t)Serialization::decode_i32(bufp, remainp);
     fname.clear();
-    fname.append(Serialization::decode_vstr(bufp, remainp));
+    fname.append(Serialization::decode_bytes_string(bufp, remainp));
   }
 
 };

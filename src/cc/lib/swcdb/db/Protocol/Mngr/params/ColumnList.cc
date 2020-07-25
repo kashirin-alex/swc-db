@@ -18,7 +18,7 @@ ColumnListReq::~ColumnListReq() { }
 size_t ColumnListReq::internal_encoded_length() const {
   size_t sz = Serialization::encoded_length_vi32(patterns.size());
   for(auto& pattern : patterns)
-    sz += 1 + Serialization::encoded_length_vstr(pattern.value.length());
+    sz += 1 + Serialization::encoded_length_bytes(pattern.value.size());
   return sz;
 }
   
@@ -27,8 +27,8 @@ void ColumnListReq::internal_encode(uint8_t** bufp) const {;
 
   for(auto& pattern : patterns) {
     Serialization::encode_i8(bufp, (uint8_t)pattern.comp);
-    Serialization::encode_vstr(
-      bufp, pattern.value.data(), pattern.value.length());
+    Serialization::encode_bytes(
+      bufp, pattern.value.c_str(), pattern.value.size());
   }
 }
   
@@ -39,7 +39,7 @@ void ColumnListReq::internal_decode(const uint8_t** bufp, size_t* remainp) {
   patterns.resize(sz);
   for(auto& pattern : patterns) {
     pattern.comp = (Condition::Comp)Serialization::decode_i8(bufp, remainp);
-    pattern.value = Serialization::decode_vstr(bufp, remainp);
+    pattern.value = Serialization::decode_bytes_string(bufp, remainp);
   }
 }
 

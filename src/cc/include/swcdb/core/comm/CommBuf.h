@@ -32,7 +32,7 @@ class CommBuf final {
 
   static Ptr make(StaticBuffer& buffer, uint32_t reserve=0);
 
-  static Ptr create_error_message(int error, const char *msg);
+  static Ptr create_error_message(int error, const char *msg, uint16_t len);
 
 
   CommBuf(uint32_t reserve=0);

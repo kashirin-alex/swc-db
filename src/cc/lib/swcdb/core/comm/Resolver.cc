@@ -24,7 +24,7 @@ void encode(const EndPoint& endpoint, uint8_t** bufp) {
   }
     
   auto v6_bytes = endpoint.address().to_v6().to_bytes();
-  Serialization::encode_bytes(bufp, v6_bytes.data(), 16);
+  Serialization::encode_bytes_fixed(bufp, v6_bytes.data(), 16);
 }
   
 EndPoint decode(const uint8_t** bufp, size_t* remainp) {
@@ -36,7 +36,7 @@ EndPoint decode(const uint8_t** bufp, size_t* remainp) {
         Serialization::decode_i32(bufp, remainp)), 
         port);
   
-  uint8_t* bytes = Serialization::decode_bytes(bufp, remainp, 16);
+  const uint8_t* bytes = Serialization::decode_bytes_fixed(bufp, remainp, 16);
   asio::ip::address_v6::bytes_type v6_bytes;
   std::memcpy(v6_bytes.data(), bytes, 16);
 

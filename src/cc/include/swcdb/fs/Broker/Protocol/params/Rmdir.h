@@ -23,16 +23,16 @@ class RmdirReq : public Serializable {
   private:
 
   size_t internal_encoded_length() const {
-  return Serialization::encoded_length_vstr(dname);
+  return Serialization::encoded_length_bytes(dname.size());
   }
 
   void internal_encode(uint8_t** bufp) const {
-    Serialization::encode_vstr(bufp, dname);
+    Serialization::encode_bytes(bufp, dname.c_str(), dname.size());
   }
 
   void internal_decode(const uint8_t** bufp, size_t* remainp) {
     dname.clear();
-    dname.append(Serialization::decode_vstr(bufp, remainp));
+    dname.append(Serialization::decode_bytes_string(bufp, remainp));
   }
 
 };

@@ -24,15 +24,15 @@ class ReadAllReq : public Serializable {
   private:
 
   size_t internal_encoded_length() const {
-      return Serialization::encoded_length_vstr(name);
+      return Serialization::encoded_length_bytes(name.size());
   }
 
   void internal_encode(uint8_t** bufp) const {
-    Serialization::encode_vstr(bufp, name);
+    Serialization::encode_bytes(bufp, name.c_str(), name.size());
   }
 
   void internal_decode(const uint8_t** bufp, size_t* remainp) {
-    name = Serialization::decode_vstr(bufp, remainp);
+    name = Serialization::decode_bytes_string(bufp, remainp);
   }
   
 };

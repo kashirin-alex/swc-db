@@ -115,10 +115,8 @@ bool ConnHandler::send_error(int error, const std::string& msg,
 
   size_t max_msg_size = std::numeric_limits<int16_t>::max();
   auto cbp = CommBuf::create_error_message(
-    error, msg.length() < max_msg_size ? 
-      msg.c_str() 
-    :  msg.substr(0, max_msg_size).c_str()
-  );
+    error, msg.c_str(),
+    msg.length() < max_msg_size ?  msg.length() : max_msg_size);
   if(ev)
     cbp->header.initialize_from_request_header(ev->header);
   return send_response(cbp);

@@ -47,7 +47,7 @@ Schema::Schema(const Schema& other)
 
 Schema::Schema(const uint8_t** bufp, size_t* remainp)
   : cid(Serialization::decode_vi64(bufp, remainp)),
-    col_name(Serialization::decode_vstr(bufp, remainp)),
+    col_name(Serialization::decode_bytes_string(bufp, remainp)),
 
     col_seq((Types::KeySeq)Serialization::decode_i8(bufp, remainp)),
     col_type((Types::Column)Serialization::decode_i8(bufp, remainp)),
@@ -93,7 +93,7 @@ bool Schema::equal(const Ptr& other, bool with_rev) {
 
 size_t Schema::encoded_length() const {
   return Serialization::encoded_length_vi64(cid)
-       + Serialization::encoded_length_vstr(col_name.length())
+       + Serialization::encoded_length_bytes(col_name.size())
        + 2
        + Serialization::encoded_length_vi32(cell_versions)
        + Serialization::encoded_length_vi32(cell_ttl)
@@ -108,7 +108,7 @@ size_t Schema::encoded_length() const {
  
 void Schema::encode(uint8_t** bufp) const {
   Serialization::encode_vi64(bufp, cid);
-  Serialization::encode_vstr(bufp, col_name.data(), col_name.length());
+  Serialization::encode_bytes(bufp, col_name.c_str(), col_name.size());
   
   Serialization::encode_i8(bufp, (uint8_t)col_seq);
   Serialization::encode_i8(bufp, (uint8_t)col_type);

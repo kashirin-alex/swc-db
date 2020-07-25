@@ -312,157 +312,53 @@ uint64_t decode_vi64(const uint8_t** bufp) {
 }
 
 
+
 extern SWC_CAN_INLINE 
-size_t encoded_length_bytes32(int32_t len) {
-  return len + 4;
+size_t encoded_length_bytes(size_t len) {
+  return encoded_length_vi64(len) + len;
 }
 
 extern SWC_CAN_INLINE 
-void encode_bytes32(uint8_t** bufp, const void* data, int32_t len) {
-  encode_i32(bufp, len);
+void encode_bytes(uint8_t** bufp, const void* data, size_t len) {
+  encode_vi64(bufp, len);
   memcopy(bufp, (const uint8_t*)data, len);
 }
 
-
 extern SWC_CAN_INLINE 
-uint8_t* decode_bytes32(const uint8_t** bufp, size_t* remainp, uint32_t* lenp) {
-  *lenp = decode_i32(bufp, remainp);
+const uint8_t* decode_bytes(const uint8_t** bufp, size_t* remainp,
+                            size_t* lenp) {
+  *lenp = decode_vi64(bufp, remainp);
   decode_needed(remainp, *lenp);
-  uint8_t* out = (uint8_t *)*bufp;
+  const uint8_t* out = *bufp;
   *bufp += *lenp;
   return out;
 }
 
 extern SWC_CAN_INLINE 
-void encode_bytes(uint8_t** bufp, const void* data, int32_t len) {
+std::string decode_bytes_string(const uint8_t** bufp, size_t* remainp) {
+  size_t len;
+  const char* s = (const char*)decode_bytes(bufp, remainp, &len);
+  return std::string(s, len);
+}
+
+
+
+extern SWC_CAN_INLINE 
+void encode_bytes_fixed(uint8_t** bufp, const void* data, 
+                        uint32_t len) {
   memcopy(bufp, (const uint8_t*)data, len);
 }
 
 extern SWC_CAN_INLINE 
-uint8_t* decode_bytes(const uint8_t** bufp, size_t* remainp, uint32_t len) {
+const uint8_t* decode_bytes_fixed(const uint8_t** bufp, size_t* remainp, 
+                                  uint32_t len) {
   decode_needed(remainp, len);
-  uint8_t* out = (uint8_t *)*bufp;
+  const uint8_t* out = *bufp;
   *bufp += len;
   return out;
 }
 
-extern SWC_CAN_INLINE 
-size_t encoded_length_str16(const char* str) {
-  return 2 + (!str ? 0 : strlen(str)) + 1;
-}
 
-extern SWC_CAN_INLINE 
-size_t encoded_length_str16(const std::string& str) {
-  return 2 + str.length() + 1;
-}
-
-extern SWC_CAN_INLINE 
-void encode_str16(uint8_t** bufp, const void* str, uint16_t len) {
-  encode_i16(bufp, len);
-  if(len) 
-    memcopy(bufp, (const uint8_t*)str, len);
-  **bufp = 0;
-  ++*bufp;
-}
-
-extern SWC_CAN_INLINE 
-void encode_str16(uint8_t** bufp, const char* str) {
-  uint16_t len = !str ? 0 : strlen(str);
-  encode_str16(bufp, str, len);
-}
-
-template <class StringT>
-SWC_CAN_INLINE 
-void encode_str16(uint8_t** bufp, const StringT& str) {
-  encode_str16(bufp, str.c_str(), str.length());
-}
-
-extern SWC_CAN_INLINE 
-char* decode_str16(const uint8_t** bufp, size_t* remainp, uint16_t *lenp) {
-  *lenp = decode_i16(bufp, remainp);
-  decode_needed(remainp, *lenp+1);
-  char* str = (char *)*bufp;
-  *bufp += *lenp;
-  if(**bufp != 0)
-    SWC_THROW_OVERRUN("str16");
-  ++*bufp;
-  return str;
-}
-
-extern SWC_CAN_INLINE 
-const char* decode_str16(const uint8_t** bufp, size_t* remainp) {
-  uint16_t len;
-  return decode_str16(bufp, remainp, &len);
-}
-
-template <class StringT>
-SWC_CAN_INLINE
-StringT decode_str16(const uint8_t** bufp, size_t* remainp) {
-  uint16_t len;
-  char* str = decode_str16(bufp, remainp, &len);
-  return StringT(str, len); // RVO hopeful
-}
-
-extern SWC_CAN_INLINE 
-size_t encoded_length_vstr(size_t len) {
-  return encoded_length_vi64(len) + len + 1;
-}
-
-extern SWC_CAN_INLINE 
-size_t encoded_length_vstr(const char* s) {
-  return encoded_length_vstr(s ? strlen(s) : 0);
-}
-
-extern SWC_CAN_INLINE 
-size_t encoded_length_vstr(const std::string& s) {
-  return encoded_length_vstr(s.length());
-}
-
-extern SWC_CAN_INLINE 
-void encode_vstr(uint8_t** bufp, const void* buf, size_t len) {
-  encode_vi64(bufp, len);
-  if(len) 
-    memcopy(bufp, (const uint8_t*)buf, len);
-  **bufp = 0;
-  ++*bufp;
-}
-
-extern SWC_CAN_INLINE 
-void encode_vstr(uint8_t** bufp, const char* s) {
-  encode_vstr(bufp, s, s ? strlen(s) : 0);
-}
-
-template <class StringT>
-SWC_CAN_INLINE 
-void encode_vstr(uint8_t** bufp, const StringT& s) {
-  encode_vstr(bufp, s.data(), s.length());
-}
-
-extern SWC_CAN_INLINE 
-char* decode_vstr(const uint8_t** bufp, size_t* remainp, uint32_t* lenp) {
-  *lenp = decode_vi64(bufp, remainp);
-  decode_needed(remainp, *lenp+1);
-  char* buf = (char *)*bufp;
-  *bufp += *lenp;
-  if(**bufp != 0)
-    SWC_THROW_OVERRUN("vstr");
-  ++*bufp;
-  return buf;
-}
-
-extern SWC_CAN_INLINE 
-char* decode_vstr(const uint8_t** bufp, size_t* remainp) {
-  uint32_t len;
-  return decode_vstr(bufp, remainp, &len);
-}
-
-template <class StringT>
-SWC_CAN_INLINE
-StringT decode_vstr(const uint8_t** bufp, size_t* remainp) {
-  uint32_t len;
-  char* buf = decode_vstr(bufp, remainp, &len);
-  return StringT(buf, len); // RVO
-}
 
 extern SWC_CAN_INLINE 
 void encode_double(uint8_t** bufp, double val) {
