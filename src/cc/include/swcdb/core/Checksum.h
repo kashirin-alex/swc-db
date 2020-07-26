@@ -17,13 +17,14 @@ namespace SWC {
 // Fletcher 8-bit by 16-bit implementation (32-bit checksum)
 SWC_SHOULD_NOT_INLINE
 static 
-uint32_t fletcher32(const void *data8, size_t len8) {
-  size_t len = len8 >> 1;
-  bool align = len8 % 2 != 0;
-  const uint16_t* data = (const uint16_t *)data8;
-    
+uint32_t fletcher32(const void *data8, size_t len) {
   uint32_t c0 = 0, c1 = 0;
-  for(uint16_t i; len > 360; len -= 360) {
+
+  const uint16_t* data = (const uint16_t *)data8;
+  bool align = len & 0x01;
+  len >>= 1;
+
+  for(uint16_t i; len >= 360; len -= 360) {
     for(i = 360; i; --i, ++data)
       c1 += (c0 += *data);
     c0 %= 65535;
@@ -31,14 +32,10 @@ uint32_t fletcher32(const void *data8, size_t len8) {
   }
   
   if(align || len) {
-    for(;; ++data, --len) { 
-      if(!len) {
-        if(align)
-          c1 += (c0  += *(const uint8_t*)data);
-        break;
-      }
+    for(;len; ++data, --len)
       c1 += (c0 += *data);
-    }
+    if(align)
+      c1 += (c0 += *(const uint8_t*)data);
     c0 %= 65535;
     c1 %= 65535;
   }
