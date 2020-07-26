@@ -2,11 +2,12 @@
 
 
 ### ABSTRACT
-https://alex.kashirin.family/swc-DB.pdf
+https://alex.kashirin.family/swc-DB.pdf(https://alex.kashirin.family/swc-DB.pdf)
 
 
 ***
-##### **_USE SIDEBAR TO NAVIGATE TO GUIDE SECTIONS_**
+##### **_USE WIKI-PAGES, THIS SITE IS NOT READY_**
+[WIKI-PAGES](https://github.com/kashirin-alex/swc-db/wiki)
 ***
 
 
