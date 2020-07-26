@@ -6,7 +6,7 @@ if(SWC_DOCUMENTATION)
 
   find_package(Doxygen REQUIRED)
 
-  configure_file(doc/Doxyfile ${CMAKE_CURRENT_BINARY_DIR} @ONLY)
+  configure_file(Doxyfile ${CMAKE_CURRENT_BINARY_DIR} @ONLY)
   add_custom_target(doc ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
 
 

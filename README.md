@@ -30,7 +30,7 @@
 
 ### LICENSE
 
-    SWC-DB Copyright (C) since 2019 [author: Kashirin Alex kashirin.alex@gmail.com]
+    SWC-DB Copyright (C) since 2019 [Kashirin Alex kashirin.alex@gmail.com]
     SWC-DB is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, GPLv3 version.
@@ -41,7 +41,8 @@
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with this program. If not, see <https://github.com/kashirin-alex/swc-db/blob/master/LICENSE>.
+    along with this program. 
+    If not, see <https://github.com/kashirin-alex/swc-db/blob/master/LICENSE>.
 
 
 ###### Non-Commercial License
@@ -50,7 +51,7 @@
 
 ###### Commercial License
 
-    For a Commercial Purpose License, in-case GPLv3 License limit your commercial activites.
-    You are welcome send an email to kashirin.alex@gmail.com with your Commercial requirements.
+    For a Commercial Purpose License in-case activities limited by GPLv3.
+    You are welcome to inquiry with requirements via kashirin.alex@gmail.com
 
 ***
