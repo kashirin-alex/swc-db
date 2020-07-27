@@ -7,7 +7,7 @@
 #include "swcdb/utils/cli/Shell_DbClient.h"
 #include "swcdb/utils/cli/Shell_Manager.h"
 #include "swcdb/utils/cli/Shell_Ranger.h"
-#include "swcdb/utils/cli/Shell_FsBroker.h"
+#include "swcdb/utils/cli/Shell_Fs.h"
 
 #include <queue>
 
@@ -32,8 +32,8 @@ int run() {
   if(settings->has("manager"))
     return Mngr().run();
   
-  if(settings->has("fsbroker"))
-    return FsBroker().run();
+  if(settings->has("filesystem"))
+    return Fs().run();
 
   try {
     return DbClient().run();
@@ -44,7 +44,7 @@ int run() {
   return 1;
 }
 
-Interface::Interface(const char* prompt, const char* history)
+Interface::Interface(const std::string& prompt, const std::string& history)
                     : err(Error::OK), prompt(prompt), history(history) {
   init();
 }
@@ -56,10 +56,10 @@ Interface::~Interface() {
 
 int Interface::run() {
   
-  read_history(history);
+  read_history(history.c_str());
   char* line;
   char* ptr;
-  const char* prompt_state = prompt;
+  const char* prompt_state = prompt.c_str();
   char c;
     
   bool stop = false;
@@ -86,18 +86,18 @@ int Interface::run() {
         while(!queue.empty()) {
           auto& run_cmd = queue.front();
           add_history(run_cmd.c_str());
-          write_history(history);
+          write_history(history.c_str());
           run_cmd.pop_back();
           if((stop = !cmd_option(run_cmd)))
             break;
           queue.pop();
         }
         cmd_end = false;
-        prompt_state = prompt;
+        prompt_state = prompt.c_str();
         break;
 
       } else if(!comment && c == '\n' && cmd.empty()) {
-        prompt_state = prompt;
+        prompt_state = prompt.c_str();
         break;
 
       } else if(c == ' ' && cmd.empty()) {

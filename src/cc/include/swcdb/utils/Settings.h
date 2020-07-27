@@ -37,9 +37,9 @@ void Settings::init_app_options() {
    ("lib-path",  str(install_path+"/lib/"), "Path to utilities libraries")
    ("lib",  str(), "Utility-Library of the custom command")
 
-   ("ranger,rgr",   "Work with Ranger")
-   ("manager,mngr", "Work with Manager")
-   ("fsbroker",     "Work with FsBroker")
+   ("ranger,rgr",    "Work with Ranger")
+   ("manager,mngr",  "Work with Manager")
+   ("filesystem,fs", "Work with FileSystem type by swc.fs='type'")
    // default work with DbClient
   ;
 

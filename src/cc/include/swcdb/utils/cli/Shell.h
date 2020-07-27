@@ -22,8 +22,8 @@ int run();
 class Interface {
 
   public:
-  Interface(const char* prompt="CLI>", 
-            const char* history="/tmp/.swc-cli-history");
+  Interface(const std::string& prompt="CLI>", 
+            const std::string& history="/tmp/.swc-cli-history");
   
   virtual ~Interface();
 
@@ -65,8 +65,8 @@ class Interface {
 
   bool cmd_option(std::string& cmd) const;
 
-  const char*  prompt;
-  const char*  history;
+  const std::string   prompt;
+  const std::string   history;
 }; 
 
 
