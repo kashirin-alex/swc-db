@@ -70,6 +70,8 @@ class Interval {
   
   void free() ;
 
+  size_t size_of_internal() const;
+
   //void expand(const Cells::Cell& cell);
 
   bool equal(const Interval& other) const;

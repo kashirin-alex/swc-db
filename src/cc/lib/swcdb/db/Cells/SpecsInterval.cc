@@ -120,6 +120,13 @@ void Interval::free() {
   offset_key.free();
 }
 
+size_t Interval::size_of_internal() const {
+  return range_begin.size + range_end.size
+        + key_start.size_of_internal() + key_finish.size_of_internal()
+        + value.size
+        + offset_key.size;
+}
+
 /*
 void Interval::expand(const Cells::Cell& cell) {
   if(key_start.empty() || !key_start.is_matching(cell.key)){

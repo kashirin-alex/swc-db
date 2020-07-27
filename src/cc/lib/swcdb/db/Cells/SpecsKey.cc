@@ -55,6 +55,15 @@ void Key::free() {
   clear();
 }
 
+size_t Key::size_of_internal() const {
+  size_t sz = 0;
+  for(auto& f : *this) {
+    sz += sizeof(f);
+    sz += f.size();
+  }
+  return sz;
+}
+
 void Key::copy(const Key &other) {
   clear();
   assign(other.begin(), other.end());

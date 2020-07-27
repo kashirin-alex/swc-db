@@ -44,6 +44,8 @@ class Key final : public std::vector<Fraction> {
 
   void free();
 
+  size_t size_of_internal() const;
+
   void copy(const Key &other);
 
   bool equal(const Key &other) const;
