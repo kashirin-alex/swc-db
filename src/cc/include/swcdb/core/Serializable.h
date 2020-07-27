@@ -8,6 +8,9 @@
 #define swc_core_Serializable_h
 
 #include "swcdb/core/Compat.h"
+#include "swcdb/core/Serialization.h"
+#include "swcdb/core/Compat.h"
+#include "swcdb/core/Error.h"
 
 namespace SWC {
 
@@ -16,13 +19,13 @@ class Serializable {
 
   public:
 
-  ~Serializable() { }
+  virtual ~Serializable() { }
 
-  virtual size_t encoded_length() const;
+  size_t encoded_length() const;
 
-  virtual void encode(uint8_t** bufp) const;
+  void encode(uint8_t** bufp) const;
 
-  virtual void decode(const uint8_t** bufp, size_t* remainp);
+  void decode(const uint8_t** bufp, size_t* remainp);
 
 
   protected:
@@ -37,13 +40,43 @@ class Serializable {
 };
 
 
+SWC_CAN_INLINE
+extern
+size_t Serializable::encoded_length() const {
+  size_t length = internal_encoded_length();
+  return Serialization::encoded_length_vi32(length) + length;
+}
+
+SWC_CAN_INLINE
+extern
+void Serializable::encode(uint8_t** bufp) const {
+  Serialization::encode_vi32(bufp, internal_encoded_length());
+  internal_encode(bufp);
+}
+
+SWC_CAN_INLINE
+extern
+void Serializable::decode(const uint8_t** bufp, size_t* remainp) {
+  size_t len = Serialization::decode_vi32(bufp, remainp);
+  if(len > *remainp) 
+    SWC_THROWF(Error::PROTOCOL_ERROR, 
+               "Buffer-Trunclated remain=%lu len=%lu", *remainp, len);
+  *remainp -= len;
+
+  const uint8_t* end = *bufp + len;
+  internal_decode(bufp, &len);
+
+  if(len)
+    SWC_THROWF(Error::PROTOCOL_ERROR, 
+                "Bad Decode missing=%lu in buffer", len);
+  if(*bufp > end)
+    SWC_THROWF(Error::PROTOCOL_ERROR, 
+               "Bad Decode buffer overrun by=%lu", *bufp - end);
 }
 
 
+}
 
-#ifdef SWC_IMPL_SOURCE
-#include "swcdb/core/Serializable.cc"
-#endif 
 
 
 #endif

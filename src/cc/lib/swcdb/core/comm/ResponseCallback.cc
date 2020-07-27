@@ -9,14 +9,8 @@
 
 namespace SWC {
 
-ResponseCallback::ResponseCallback(const ConnHandlerPtr& conn, 
-                                   const Event::Ptr& ev)
-                                  : m_conn(conn), m_ev(ev) { 
-}
-    
-ResponseCallback::~ResponseCallback() { }
 
-void ResponseCallback::run() {}
+void ResponseCallback::run() { }
 
 void ResponseCallback::response(int& err) {
   m_conn->send_error(err , "", m_ev);

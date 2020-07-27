@@ -10,6 +10,7 @@
 #include "swcdb/core/Compat.h"
 
 #include <iostream>
+#include <chrono>
 
 
 namespace SWC { namespace Time {
@@ -17,9 +18,19 @@ namespace SWC { namespace Time {
 
 void checkings();
 
-int64_t now_ms();
+SWC_CAN_INLINE
+extern
+int64_t now_ms() {
+  return (int64_t)std::chrono::duration_cast<std::chrono::milliseconds>(
+    std::chrono::system_clock::now().time_since_epoch()).count();
+}
 
-int64_t now_ns();
+SWC_CAN_INLINE
+extern
+int64_t now_ns() {
+  return (int64_t)std::chrono::duration_cast<std::chrono::nanoseconds>(
+    std::chrono::system_clock::now().time_since_epoch()).count();
+}
 
 int64_t parse_ns(int& err, const std::string& buf);
 

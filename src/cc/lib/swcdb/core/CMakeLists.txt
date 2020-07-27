@@ -27,7 +27,6 @@ set(swcdb_core_sources
   DynamicBuffer.cc
   Encoder.cc
   FileUtils.cc
-  Serializable.cc
   Semaphore.cc
 )
 ADD_LIB_TARGET(

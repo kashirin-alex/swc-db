@@ -17,9 +17,11 @@ class ResponseCallback: public std::enable_shared_from_this<ResponseCallback> {
 
   typedef std::shared_ptr<ResponseCallback> Ptr;
 
-  ResponseCallback(const ConnHandlerPtr& conn, const Event::Ptr& ev);
+  ResponseCallback(const ConnHandlerPtr& conn, const Event::Ptr& ev)
+                  : m_conn(conn), m_ev(ev) {
+  }
     
-  virtual ~ResponseCallback();
+  virtual ~ResponseCallback() { };
 
   virtual void run();
 
@@ -32,6 +34,7 @@ class ResponseCallback: public std::enable_shared_from_this<ResponseCallback> {
   protected:
   ConnHandlerPtr m_conn;
   Event::Ptr     m_ev;
+
 };
 
 
