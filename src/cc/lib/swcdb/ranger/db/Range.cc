@@ -24,14 +24,21 @@ Range::Range(const ColumnCfg* cfg, const rid_t rid)
               m_state(State::NOTLOADED), 
               m_compacting(COMPACT_NONE), m_require_compact(false),
               m_inbytes(0) { 
+  RangerEnv::res().more_mem_usage(size_of());
 }
 
 void Range::init() {
   blocks.init(shared_from_this());
 }
 
-Range::~Range() { }
-  
+Range::~Range() {
+  RangerEnv::res().less_mem_usage(size_of());
+}
+
+size_t Range::size_of() const {
+  return sizeof(*this) + sizeof(RangePtr);
+}
+
 const std::string Range::get_path(const std::string suff) const {
   std::string s(m_path);
   s.append(suff);

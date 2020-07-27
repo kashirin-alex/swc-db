@@ -23,9 +23,16 @@ class RangeQuerySelect : public ReqScan {
       spec.col_type = range->cfg->column_type();
     if(!spec.flags.max_versions)
       spec.flags.max_versions = range->cfg->cell_versions();
+    RangerEnv::res().more_mem_usage(size_of());
   }
 
-  virtual ~RangeQuerySelect() { }
+  virtual ~RangeQuerySelect() { 
+    RangerEnv::res().less_mem_usage(size_of());
+  }
+
+  size_t size_of() const {
+    return sizeof(*this) + sizeof(Ptr) + spec.size_of_internal();
+  }
 
   void ensure_size() {
     if(!profile.cells_count || cells.size >= spec.flags.max_buffer)
@@ -47,26 +54,29 @@ class RangeQuerySelect : public ReqScan {
     ensure_size();
     auto sz = cells.fill();
     cell.write(cells, only_keys);
-    profile.add_cell(cells.fill() - sz);
+    profile.add_cell((sz = cells.fill() - sz));
+    RangerEnv::res().more_mem_usage(sz);
     return !reached_limits();
   }
 
   void response(int &err) override {
-      
     if(!err) {
       if(RangerEnv::is_shuttingdown())
         err = Error::SERVER_SHUTTING_DOWN;
       else if(range->deleted())
         err = Error::COLUMN_MARKED_REMOVED;
     }
-    if(err == Error::COLUMN_MARKED_REMOVED)
+    if(err == Error::COLUMN_MARKED_REMOVED) {
+      RangerEnv::res().less_mem_usage(cells.fill());
       cells.free();
+    }
     
     Protocol::Rgr::Params::RangeQuerySelectRsp params(
       err, err ? false : reached_limits(), offset);
 
     CommBuf::Ptr cbp;
     if(!cells.empty()) {
+      RangerEnv::res().less_mem_usage(cells.fill());
       StaticBuffer sndbuf(cells);
       cbp = CommBuf::make(params, sndbuf);
     } else {

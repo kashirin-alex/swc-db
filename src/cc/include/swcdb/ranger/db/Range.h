@@ -37,11 +37,24 @@ class Range final : public std::enable_shared_from_this<Range> {
 
   struct ReqAdd final {
     public:
+
     ReqAdd(StaticBuffer& input, const Callback::RangeQueryUpdate::Ptr& cb) 
-          : input(input), cb(cb) {}
-    ~ReqAdd() {}
+          : input(input), cb(cb) {
+      RangerEnv::res().more_mem_usage(size_of());
+    }
+
+    ~ReqAdd() {
+      RangerEnv::res().less_mem_usage(size_of());
+    }
+
+    size_t size_of() const {
+      return sizeof(*this) + sizeof(this) + 
+             sizeof(*cb.get()) + input.size;
+    }
+
     StaticBuffer                          input;
     const Callback::RangeQueryUpdate::Ptr cb;
+
   };
 
   enum State {
@@ -71,7 +84,9 @@ class Range final : public std::enable_shared_from_this<Range> {
   void init();
 
   ~Range();
-  
+
+  size_t size_of() const;
+
   const std::string get_path(const std::string suff) const;
 
   const std::string get_path_cs(const csid_t csid) const;

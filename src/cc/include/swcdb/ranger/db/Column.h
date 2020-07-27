@@ -25,12 +25,19 @@ class Column final : private std::unordered_map<rid_t, RangePtr> {
   const ColumnCfg  cfg;
 
   Column(const cid_t cid, const DB::Schema& schema) 
-        : cfg(cid, schema) { 
+        : cfg(cid, schema) {
+    RangerEnv::res().more_mem_usage(size_of());
   }
 
   void init(int&) { }
 
-  ~Column() { }
+  ~Column() { 
+    RangerEnv::res().less_mem_usage(size_of());
+  }
+
+  size_t size_of() const {
+    return sizeof(*this) + sizeof(Ptr);
+  }
 
   void schema_update(const DB::Schema& schema) {
     bool compact = cfg.c_versions > schema.cell_versions || 
