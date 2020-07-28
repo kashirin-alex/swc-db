@@ -311,16 +311,23 @@ void Interface::remove(int& err, const std::string& name) {
   }
 }
   
-void Interface::rename(int& err, const std::string& from , 
+void Interface::rename(int& err, const std::string& from, 
                        const std::string& to) {
   for(;;) {
     m_fs->rename(err = Error::OK, from, to);
     switch(err) {
       case Error::OK:
       case EACCES:
-      case ENOENT:
       case Error::SERVER_SHUTTING_DOWN:
         return;
+      case ENOENT: {
+        int e_err;
+        if(!exists(e_err, from) && !e_err && exists(e_err, to) && !e_err) {
+          err = Error::OK;
+          return;
+        }
+        [[fallthrough]];
+      }
       default:
         hold_delay();
         SWC_LOGF(LOG_WARN, "rename, retrying to err=%d(%s)", 

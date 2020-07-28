@@ -391,7 +391,7 @@ void FileSystemHadoopJVM::rename(int& err, const std::string& from,
   if(!err) {
     errno = 0;
     if(hdfsRename(fs->srv, abspath_from.c_str(), abspath_to.c_str()) == -1)
-      need_reconnect(err = errno, fs);
+      need_reconnect(err = errno == EIO ? ENOENT : errno, fs);
   }
   SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG, 
     "rename('%s' to '%s') - %d(%s)", 
