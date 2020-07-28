@@ -43,21 +43,33 @@ struct SmartFdHadoopJVM final : public SmartFd {
 class FileSystemHadoopJVM final : public FileSystem {
   public:
 
+  struct Service {
+    typedef std::shared_ptr<Service> Ptr;
+    
+    Service(hdfsFS srv) : srv(srv) { }
+
+    ~Service() { if(srv) hdfsDisconnect(srv); }
+
+    hdfsFS  srv;
+  };
+
   FileSystemHadoopJVM();
 
-  void setup_connection();
-
-  bool initialize();
-
   virtual ~FileSystemHadoopJVM();
-
-  void stop() override;
 
   Types::Fs get_type() override;
 
   std::string to_string() override;
 
+  void stop() override;
 
+  Service::Ptr setup_connection();
+
+  bool initialize(Service::Ptr& fs);
+
+  Service::Ptr get_fs(int& err);
+
+  void need_reconnect(int& err, Service::Ptr& fs);
 
 
   bool exists(int& err, const std::string& name) override;
@@ -101,10 +113,15 @@ class FileSystemHadoopJVM final : public FileSystem {
   void close(int& err, SmartFd::Ptr& smartfd) override;
 
   private:
-  hdfsFS                m_filesystem;
-  std::atomic<bool>     m_run;
-  std::atomic<int32_t>  m_nxt_fd;
 
+  std::atomic<bool>       m_run;
+  std::atomic<int32_t>    m_nxt_fd;
+  
+  std::mutex              m_mutex;
+  std::condition_variable m_cv;
+  bool                    m_connecting;
+
+  Service::Ptr            m_fs;
   
   int hdfs_cfg_min_blk_sz = 1048576;
 };
