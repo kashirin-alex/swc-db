@@ -84,7 +84,8 @@ class Key final {
 
   std::string to_string() const;
   
-  void display(std::ostream& out, bool pretty=true) const;
+  void display(std::ostream& out, bool pretty=true,
+               const char* sep = ",") const;
 
   void display_details(std::ostream& out, bool pretty=true) const;
 

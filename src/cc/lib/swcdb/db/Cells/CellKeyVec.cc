@@ -169,7 +169,7 @@ std::string KeyVec::to_string() const {
   std::string s("Key(");
   s.append("sz=");
   s.append(std::to_string(size()));
-  s.append(" fractions=[");
+  s.append(" [");
   char hex[5];
   for(auto it = cbegin(); it < cend(); ) {
     s += '"';
@@ -185,7 +185,7 @@ std::string KeyVec::to_string() const {
     }
     s += '"';
     if(++it < cend())
-      s.append(", ");
+      s.append(",");
   }
   s.append("])");
   return s;

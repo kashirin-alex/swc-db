@@ -320,7 +320,7 @@ void Key::display_details(std::ostream& out, bool pretty) const {
   display(out, pretty);
 }
 
-void Key::display(std::ostream& out, bool pretty) const {
+void Key::display(std::ostream& out, bool pretty, const char* sep) const {
   out << '['; 
   if(!count) {
     out << ']'; 
@@ -344,7 +344,7 @@ void Key::display(std::ostream& out, bool pretty) const {
     }
     out << '"';
     if(++n < count)
-      out << ", "; 
+      out << sep; 
   }
   out << ']'; 
   
