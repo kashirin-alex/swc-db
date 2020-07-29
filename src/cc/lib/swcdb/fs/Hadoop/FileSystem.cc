@@ -471,7 +471,7 @@ size_t FileSystemHadoop::append(int& err, SmartFd::Ptr& smartfd,
                                 StaticBuffer& buffer, Flags flags) {
 
   auto hadoop_fd = get_fd(smartfd);
-  SWC_LOGF(LOG_DEBUG, "append %s amount=%u flags=%d", 
+  SWC_LOGF(LOG_DEBUG, "append %s amount=%lu flags=%d", 
             hadoop_fd->to_string().c_str(), buffer.size, flags);
     
   ssize_t nwritten = 0;

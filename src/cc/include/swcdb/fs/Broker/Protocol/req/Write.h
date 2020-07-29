@@ -19,7 +19,7 @@ class Write : public Base {
         const Callback::WriteCb_t& cb=0) 
         : smartfd(smartfd), cb(cb) {
     SWC_LOGF(LOG_DEBUG, 
-      "write amount=%d %s replication(%u) blksz(%ld)", 
+      "write amount=%lu %s replication(%u) blksz(%ld)", 
       buffer.size, smartfd->to_string().c_str(), replication, blksz);
 
     cbp = CommBuf::make(

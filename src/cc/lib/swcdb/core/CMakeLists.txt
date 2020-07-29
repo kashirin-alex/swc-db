@@ -23,8 +23,6 @@ set(swcdb_core_sources
   Error.cc
   Logger.cc
   Checksum.cc
-  StaticBuffer.cc
-  DynamicBuffer.cc
   Encoder.cc
   FileUtils.cc
   Semaphore.cc

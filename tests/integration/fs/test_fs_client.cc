@@ -171,7 +171,7 @@ void run(size_t thread_id){
       for(size_t i=0;i<file_blk;++i)
         data.append("+");
       data.append(data_end);
-      StaticBuffer buffer(data.data(), data.length(), false);
+      StaticBuffer buffer((uint8_t*)data.data(), data.length(), false);
       size_t amount = Env::FsInterface::fs()->append(err, smartfd, buffer, FS::Flags::FLUSH);
       written += amount;
       if(err != Error::OK || amount!=data.length() || smartfd->pos() != written) { 

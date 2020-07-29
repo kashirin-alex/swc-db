@@ -7,7 +7,7 @@
 #ifndef swc_db_protocol_rgr_params_RangeQuerySelect_h
 #define swc_db_protocol_rgr_params_RangeQuerySelect_h
 
-#include "swcdb/core/StaticBuffer.h"
+#include "swcdb/core/Buffer.h"
 #include "swcdb/core/Serializable.h"
 #include "swcdb/db/Cells/SpecsInterval.h"
 

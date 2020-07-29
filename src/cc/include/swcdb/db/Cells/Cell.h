@@ -9,7 +9,7 @@
 
 #include <memory>
 #include "swcdb/core/Serialization.h"
-#include "swcdb/core/DynamicBuffer.h"
+#include "swcdb/core/Buffer.h"
 
 #include "swcdb/db/Types/Column.h"
 #include "swcdb/db/Cells/CellKey.h"

@@ -583,7 +583,7 @@ size_t FileSystemHadoopJVM::append(int& err, SmartFd::Ptr& smartfd,
     }
   }
   SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG, 
-    "append %d(%s) amount=%u flags=%d %s", 
+    "append %d(%s) amount=%lu flags=%d %s", 
     err, strerror(err), buffer.size, flags,
     hadoop_fd->to_string().c_str());
   return nwritten;

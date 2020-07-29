@@ -9,7 +9,7 @@
 
 #include <vector>
 
-#include "swcdb/core/DynamicBuffer.h"
+#include "swcdb/core/Buffer.h"
 
 #include "swcdb/db/Cells/Cell.h"
 
@@ -86,8 +86,8 @@ class FileWriter {
     std::string ts;
     if(!(output_flags & OutputFlag::NO_TS)) {
       ts = std::to_string(cell.timestamp);
-      buffer.add(ts.data(), ts.length());
-      buffer.add("\t", 1); //
+      buffer.add((const uint8_t*)ts.c_str(), ts.length());
+      buffer.add('\t'); //
     }
 
     uint32_t len = 0;
@@ -95,59 +95,59 @@ class FileWriter {
     const uint8_t* ptr = cell.key.data;
     for(uint32_t n=1; n<=cell.key.count; ++n, ptr+=len) {
       f_len = std::to_string((len = Serialization::decode_vi32(&ptr)));
-      buffer.add(f_len.data(), f_len.length());
+      buffer.add((const uint8_t*)f_len.c_str(), f_len.length());
       if(n < cell.key.count)
-        buffer.add(",", 1);
+        buffer.add(',');
     }
-    buffer.add("\t", 1); //
+    buffer.add('\t'); //
   
     ptr = cell.key.data;
     for(uint32_t n=1; n<=cell.key.count; ++n, ptr+=len) {
       if((len = Serialization::decode_vi32(&ptr)))
         buffer.add(ptr, len);
       if(n < cell.key.count)
-        buffer.add(",", 1);
+        buffer.add(',');
     }
-    buffer.add("\t", 1); //
+    buffer.add('\t'); //
 
     std::string flag = DB::Cells::to_string((DB::Cells::Flag)cell.flag);
-    buffer.add(flag.data(), flag.length());
+    buffer.add((const uint8_t*)flag.c_str(), flag.length());
 
     if(output_flags & OutputFlag::NO_VALUE || 
       cell.flag == Flag::DELETE || cell.flag == Flag::DELETE_VERSION) {
-      buffer.add("\n", 1);
+      buffer.add('\n');
       return;
     }
-    buffer.add("\t", 1); //
+    buffer.add('\t'); //
 
     if(Types::is_counter(typ)) {
       uint8_t op;
       int64_t eq_rev = TIMESTAMP_NULL;
       int64_t v = cell.get_counter(op, eq_rev);
       std::string counter = (v > 0 ? "+" : "") + std::to_string(v);
-      buffer.add(counter.data(), counter.length());
+      buffer.add((const uint8_t*)counter.c_str(), counter.length());
 
       if(op & OP_EQUAL) {
-        buffer.add("\t", 1); //
-        buffer.add("=", 1);
+        buffer.add('\t'); //
+        buffer.add('=');
         if(eq_rev != TIMESTAMP_NULL) {
           ts = std::to_string(eq_rev);
-          buffer.add("\t", 1); //
-          buffer.add(ts.data(), ts.length());
+          buffer.add('\t'); //
+          buffer.add((const uint8_t*)ts.c_str(), ts.length());
         }
       }
     } else {
   
-      buffer.add(cell.control & TS_DESC ? "D" : "A", 1);
-      buffer.add("\t", 1); //
+      buffer.add(cell.control & TS_DESC ? 'D' : 'A');
+      buffer.add('\t'); //
 
       std::string value_length = std::to_string(cell.vlen);
-      buffer.add(value_length.data(), value_length.length());
-      buffer.add("\t", 1);
+      buffer.add((const uint8_t*)value_length.c_str(), value_length.length());
+      buffer.add('\t');
       buffer.add(cell.value, cell.vlen);
     }
 
-    buffer.add("\n", 1);
+    buffer.add('\n');
   }
 
   void write_header(Types::Column typ, DynamicBuffer& header_buffer) {
@@ -164,7 +164,7 @@ class FileWriter {
         : "ORDER\tVLEN\tVALUE");
 
     header.append("\n");
-    header_buffer.add(header.data(), header.length());
+    header_buffer.add((const uint8_t*)header.c_str(), header.length());
   }
 
   void write(Types::Column typ) {

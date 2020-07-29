@@ -8,7 +8,7 @@
 
 #include <asio.hpp>
 #include "swcdb/core/Serializable.h"
-#include "swcdb/core/StaticBuffer.h"
+#include "swcdb/core/Buffer.h"
 #include "swcdb/core/comm/CommHeader.h"
 
 #include <memory>

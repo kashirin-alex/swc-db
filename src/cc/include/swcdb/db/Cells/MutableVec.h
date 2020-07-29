@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "swcdb/core/Compat.h"
-#include "swcdb/core/DynamicBuffer.h"
+#include "swcdb/core/Buffer.h"
 #include "swcdb/db/Cells/Mutable.h"
 
 

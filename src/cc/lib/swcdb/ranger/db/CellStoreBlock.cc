@@ -251,7 +251,7 @@ void Read::load(int& err, FS::SmartFd::Ptr smartfd) {
     }
 
     if(header.encoder != Types::Encoding::PLAIN) {
-      StaticBuffer decoded_buf(header.size_plain);
+      StaticBuffer decoded_buf((size_t)header.size_plain);
       Encoder::decode(
         err, header.encoder, 
         m_buffer.base, header.size_enc, 

@@ -472,7 +472,7 @@ void Write::write_blocks_index(int& err, uint32_t& blks_idx_count) {
     if(++it == m_blocks.end() || len_data >= block_size) {
       len_data += Serialization::encoded_length_vi32(blks_count);
 
-      StaticBuffer raw_buffer(len_data);
+      StaticBuffer raw_buffer((size_t)len_data);
       uint8_t* ptr = raw_buffer.base;
 
       if(!blks_idx_count)
@@ -526,7 +526,7 @@ void Write::write_trailer(int& err) {
   if(err)
     return;
 
-  StaticBuffer buff_write(TRAILER_SIZE);
+  StaticBuffer buff_write((size_t)TRAILER_SIZE);
   uint8_t* ptr = buff_write.base;
   Serialization::encode_i8(&ptr, VERSION);
   Serialization::encode_i32(&ptr, cell_revs);

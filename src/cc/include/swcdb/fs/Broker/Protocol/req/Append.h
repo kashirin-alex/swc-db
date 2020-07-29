@@ -20,7 +20,7 @@ class Append : public Base {
   Append(uint32_t timeout, SmartFd::Ptr& smartfd, 
          StaticBuffer& buffer, Flags flags, const Callback::AppendCb_t& cb=0) 
         : amount(0), smartfd(smartfd), cb(cb) {
-    SWC_LOGF(LOG_DEBUG, "append flags=%d timeout=%d amount=%u %s", 
+    SWC_LOGF(LOG_DEBUG, "append flags=%d timeout=%d amount=%lu %s", 
               flags, timeout, buffer.size, smartfd->to_string().c_str());
 
     cbp = CommBuf::make(

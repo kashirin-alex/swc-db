@@ -1,0 +1,300 @@
+/*
+ * Copyright Since 2019 SWC-DB© [author: Kashirin Alex kashirin.alex@gmail.com]
+ * License details at <https://github.com/kashirin-alex/swc-db/#license>
+ */
+
+
+#ifndef swc_core_Buffer_h
+#define swc_core_Buffer_h
+
+#include "swcdb/core/Compat.h"
+
+
+namespace SWC {
+
+
+template<typename T>
+class Buffer {
+  public:
+
+  typedef T                         value_type;
+  typedef Buffer<value_type>        BufferT;
+  typedef std::shared_ptr<BufferT>  Ptr;
+
+  
+  explicit Buffer() SWC_NOEXCEPT 
+                  : own(false), size(0), base(nullptr) { 
+  }
+
+  Buffer(size_t sz) 
+        : own(sz), size(sz), base(own ? allocate(size) : nullptr) {
+  }
+
+  Buffer(value_type* data, size_t sz, bool take_ownership) SWC_NOEXCEPT
+        : own(take_ownership), size(sz), base(data) {
+  }
+  
+  Buffer(BufferT& other) SWC_NOEXCEPT
+        : own(other.own), size(other.size), base(other.base) {
+    if(own) {
+      other.own = false;
+      other.base = nullptr;
+    }
+  }
+
+  template<typename OtherT>
+  Buffer(OtherT& other) SWC_NOEXCEPT;
+
+
+  ~Buffer() {
+    if(own && base)
+      delete [] base;
+  }
+
+  SWC_CAN_INLINE
+  static value_type* allocate(size_t sz) {
+    return new value_type[sz];
+  }
+
+  template<size_t SizeOfT=sizeof(value_type)>
+  SWC_CAN_INLINE
+  static void memcopy(value_type* ptr, const value_type* other, size_t sz) {
+    memcpy(ptr, other, sz * SizeOfT);
+  }
+
+  void free() SWC_NOEXCEPT {
+    if(own && base)
+      delete [] base;
+    size = 0;
+    base = nullptr;
+  }
+
+  void reallocate(size_t len) {
+    free();
+    own = true;
+    base = allocate(size = len);
+  }
+
+  void grow(size_t len) {
+    if(base) {
+      size_t            size_old = size;
+      const value_type* base_old = base;
+      memcopy((base = allocate(size += len)), base_old, size_old);
+     if(own)
+        delete [] base_old;
+    } else {
+      base = allocate(size = len);
+    }
+    own = true;
+  }
+
+  void set(value_type* data, size_t len, bool take_ownership) SWC_NOEXCEPT {
+    free();
+    own = take_ownership;
+    size = len;
+    base = data;
+  }
+  
+  void set(BufferT& other) SWC_NOEXCEPT {
+    free();
+    base = other.base;
+    size = other.size;
+    if((own = other.own)) {
+      other.own = false;
+      other.base = nullptr;
+    }
+  }
+
+  template<typename OtherT>
+  void set(OtherT& other) SWC_NOEXCEPT;
+
+  bool          own;
+  size_t        size;
+  value_type*   base;
+  
+};
+
+
+
+template<typename BufferT>
+class BufferDyn : public BufferT {
+  public:
+
+  using value_type  = typename BufferT::value_type;
+  typedef std::shared_ptr<BufferDyn> Ptr;
+
+
+  explicit BufferDyn() SWC_NOEXCEPT 
+                    : ptr(nullptr), mark(nullptr)  { 
+  }
+
+  BufferDyn(size_t sz) 
+            : BufferT(sz), ptr(BufferT::base), mark(BufferT::base) { 
+  }
+
+  ~BufferDyn() { }
+
+  void free() {
+    BufferT::free();
+    ptr = mark = nullptr;
+  }
+
+  template<size_t SizeOfT=sizeof(value_type)>
+  SWC_CAN_INLINE
+  static size_t address_offset(size_t len) SWC_NOEXCEPT { 
+    return len / SizeOfT; 
+  }
+
+  value_type* release(size_t* lenp) SWC_NOEXCEPT {
+    value_type* rbuf = BufferT::base;
+    if(lenp)
+      *lenp = fill();
+    BufferT::size = 0;
+    BufferT::base = ptr = mark = nullptr;
+    return rbuf;
+  }
+
+  SWC_CAN_INLINE
+  size_t remaining() const SWC_NOEXCEPT { 
+    return ptr ? BufferT::size - fill() : 0;
+  }
+
+  SWC_CAN_INLINE
+  size_t fill() const SWC_NOEXCEPT { 
+    return address_offset(ptr - BufferT::base); 
+  }
+
+  SWC_CAN_INLINE
+  bool empty() const SWC_NOEXCEPT { 
+    return ptr == BufferT::base; 
+  }
+
+  SWC_CAN_INLINE
+  void set_mark() SWC_NOEXCEPT {
+    mark = ptr;
+  }
+
+  SWC_CAN_INLINE
+  void clear() SWC_NOEXCEPT {
+    ptr = BufferT::base;
+  }
+
+  void ensure(size_t len) {
+    if(len > remaining()) {
+      size_t offset_mark = address_offset(mark - BufferT::base);
+      size_t offset_ptr = address_offset(ptr - BufferT::base);
+      
+      //BufferT::grow(len - remaining()); // actual new required size
+      BufferT::grow((fill() + len) * 3 / 2);
+      
+      mark = BufferT::base + offset_mark;
+      ptr = BufferT::base + offset_ptr;
+    }
+  }
+  
+  value_type* add_unchecked(const value_type* data, size_t len) SWC_NOEXCEPT {
+    if(!data)
+      return ptr;
+    value_type* rptr = ptr;
+    BufferT::memcopy(ptr, data, len);
+    ptr += len;
+    return rptr;
+  }
+
+  SWC_CAN_INLINE
+  value_type* add(const value_type* data, size_t len) {
+    ensure(len);
+    return add_unchecked(data, len);
+  }
+
+  SWC_CAN_INLINE
+  void add(const value_type data) {
+    ensure(1);
+    *ptr = data;
+    ++ptr;
+  }
+
+  SWC_CAN_INLINE
+  void set(const value_type* data, size_t len) {
+    clear();
+    ensure(len);
+    add_unchecked(data, len);
+  }
+
+  void take_ownership(BufferDyn<BufferT>& other) SWC_NOEXCEPT { 
+    free();
+    BufferT::own = other.own;
+    BufferT::size = other.size;
+    other.size = 0;
+    BufferT::base = other.base;
+    ptr = other.ptr;
+    mark = other.mark;
+    other.base = other.ptr = other.mark = nullptr;
+  }
+
+  value_type*  ptr;
+  value_type*  mark;
+};
+
+
+
+
+
+typedef Buffer <uint8_t>          StaticBuffer;
+typedef BufferDyn <StaticBuffer>  DynamicBuffer;
+
+
+
+// StaticBuffer specializations to DynamicBuffer
+template<> 
+template<> 
+SWC_CAN_INLINE
+StaticBuffer::Buffer(DynamicBuffer& other) SWC_NOEXCEPT
+                    : own(other.own), size(other.fill()), base(other.base) {
+  if(own) {
+    other.own = false;
+    other.size = 0;
+    other.base = other.ptr = other.mark = nullptr;
+  }
+} 
+
+template<> 
+template<>
+SWC_CAN_INLINE
+void StaticBuffer::set(DynamicBuffer& other) SWC_NOEXCEPT {
+  free();
+  base = other.base;
+  size = other.fill();
+  if((own = other.own)) {
+    other.own = false;
+    other.size = 0;
+    other.base = other.ptr = other.mark = nullptr;
+  }
+}
+
+
+// specializations to StaticBuffer
+template<>
+template<size_t SizeOf=1>
+SWC_CAN_INLINE
+void StaticBuffer::memcopy(value_type* ptr, 
+                           const value_type* other, size_t sz) {
+  memcpy(ptr, other, sz);
+}
+
+
+// specializations to DynamicBuffer
+template<>
+template<size_t SizeOf=1>
+SWC_CAN_INLINE
+size_t DynamicBuffer::address_offset(size_t len) SWC_NOEXCEPT { 
+  return len;
+}
+
+
+
+
+} // namespace SWC
+
+
+#endif /* swc_core_Buffer_h */

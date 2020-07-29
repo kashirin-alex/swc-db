@@ -8,7 +8,7 @@
 #define swc_ranger_db_RangeData_h
 
 
-#include "swcdb/core/DynamicBuffer.h"
+#include "swcdb/core/Buffer.h"
 
 namespace SWC { namespace Ranger { namespace RangeData {
 

@@ -9,7 +9,7 @@
 
 
 #include "swcdb/core/Serialization.h"
-#include "swcdb/core/DynamicBuffer.h"
+#include "swcdb/core/Buffer.h"
 #include "swcdb/core/Time.h"
 #include "swcdb/core/Checksum.h"
 

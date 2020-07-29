@@ -7,7 +7,7 @@
 #include <algorithm>
 
 #include "swcdb/core/Error.h"
-#include "swcdb/core/DynamicBuffer.h"
+#include "swcdb/core/Buffer.h"
 #include "swcdb/core/Encoder.h"
 
 #include <snappy.h>

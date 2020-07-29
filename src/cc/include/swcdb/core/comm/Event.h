@@ -10,7 +10,7 @@
 #include "swcdb/core/comm/CommHeader.h"
 
 #include "swcdb/core/Time.h"
-#include "swcdb/core/StaticBuffer.h"
+#include "swcdb/core/Buffer.h"
 
 #include <memory>
 

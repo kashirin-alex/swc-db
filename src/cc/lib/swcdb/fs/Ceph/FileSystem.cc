@@ -566,7 +566,7 @@ size_t FileSystemCeph::pread(int& err, SmartFd::Ptr& smartfd,
 size_t FileSystemCeph::append(int& err, SmartFd::Ptr& smartfd, 
                                 StaticBuffer& buffer, Flags flags) {
 
-  SWC_LOGF(LOG_DEBUG, "append %s amount=%u flags=%d", 
+  SWC_LOGF(LOG_DEBUG, "append %s amount=%lu flags=%d", 
             smartfd->to_string().c_str(), buffer.size, flags);
     
   ssize_t nwritten = 0;
