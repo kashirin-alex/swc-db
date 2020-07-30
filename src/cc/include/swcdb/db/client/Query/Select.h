@@ -134,15 +134,15 @@ class Select final : public std::enable_shared_from_this<Select> {
 
   bool wait_on_partials() const;
 
-  void response_partial();
-
   void wait();
 
   void scan(int& err);
 
   private:
 
-  bool        m_rsp_partial_runs;
+  bool m_rsp_partial_runs;
+
+  void response_partial();
 
 
   class ScannerColumn final 

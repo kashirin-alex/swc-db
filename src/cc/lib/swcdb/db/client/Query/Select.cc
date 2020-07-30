@@ -203,10 +203,18 @@ void Select::response(int err) {
   
   result->profile.finished();
 
-  if(result->notify)
-    response_partial();
-  else if(cb)
+  if(result->notify) {
+    bool call;
+    {
+      std::unique_lock lock(result->mutex);
+      if((call = !m_rsp_partial_runs))
+        m_rsp_partial_runs = true;
+    }
+    if(call)
+      response_partial();
+  } else if(cb) {
     cb(result);
+  }
 
   std::unique_lock lock(result->mutex);
   result->cv.notify_all();
@@ -216,15 +224,27 @@ void Select::response_partials() {
   if(!result->notify)
     return;
     
-  response_partial();
+  {
+    std::unique_lock lock(result->mutex);
+    if(m_rsp_partial_runs) {
+      if(wait_on_partials()) {
+        result->cv.wait(
+          lock,
+          [selector=shared_from_this()] () {
+            return !selector->m_rsp_partial_runs || 
+                   !selector->wait_on_partials();
+          }
+        );
+      }
+      return;
+    }
+    m_rsp_partial_runs = true;
+  }
 
-  std::unique_lock lock(result->mutex);
-  if(!m_rsp_partial_runs || !wait_on_partials())
-    return;
-  result->cv.wait(
-    lock, 
-    [selector=shared_from_this()] () { 
-      return !selector->m_rsp_partial_runs || !selector->wait_on_partials();
+  asio::post(
+    *default_io().get(), 
+    [selector=shared_from_this()] () {
+      selector->response_partial();
     }
   );
 }
@@ -234,12 +254,6 @@ bool Select::wait_on_partials() const {
 }
 
 void Select::response_partial() {
-  {
-    std::unique_lock lock(result->mutex);
-    if(m_rsp_partial_runs)
-      return;
-    m_rsp_partial_runs = true;
-  }
     
   cb(result);
 
