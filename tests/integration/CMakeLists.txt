@@ -34,3 +34,5 @@ add_subdirectory("ranger")
 add_subdirectory("client")
 
 add_subdirectory("thrift")
+
+add_subdirectory("utils")
