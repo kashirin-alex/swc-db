@@ -21,6 +21,24 @@ class Buffer {
   typedef Buffer<value_type>        BufferT;
   typedef std::shared_ptr<BufferT>  Ptr;
 
+
+  SWC_CAN_INLINE
+  static value_type* allocate(size_t sz) {
+    return new value_type[sz];
+  }
+
+  template<size_t SizeOfT=sizeof(value_type)>
+  SWC_CAN_INLINE
+  static size_t length_base_bytes(size_t len8) SWC_NOEXCEPT { 
+    return len8 / SizeOfT; 
+  }
+
+  template<size_t SizeOfT=sizeof(value_type)>
+  SWC_CAN_INLINE
+  static size_t length_base_byte(size_t sz) {
+    return sz * SizeOfT;
+  }
+
   
   explicit Buffer() SWC_NOEXCEPT 
                   : own(false), size(0), base(nullptr) { 
@@ -51,17 +69,6 @@ class Buffer {
       delete [] base;
   }
 
-  SWC_CAN_INLINE
-  static value_type* allocate(size_t sz) {
-    return new value_type[sz];
-  }
-
-  template<size_t SizeOfT=sizeof(value_type)>
-  SWC_CAN_INLINE
-  static void memcopy(value_type* ptr, const value_type* other, size_t sz) {
-    memcpy(ptr, other, sz * SizeOfT);
-  }
-
   void free() SWC_NOEXCEPT {
     if(own && base)
       delete [] base;
@@ -79,7 +86,8 @@ class Buffer {
     if(base) {
       size_t            size_old = size;
       const value_type* base_old = base;
-      memcopy((base = allocate(size += len)), base_old, size_old);
+      base = allocate(size += len);
+      memcpy(base, base_old, length_base_byte(size_old));
      if(own)
         delete [] base_old;
     } else {
@@ -139,12 +147,6 @@ class BufferDyn : public BufferT {
     ptr = mark = nullptr;
   }
 
-  template<size_t SizeOfT=sizeof(value_type)>
-  SWC_CAN_INLINE
-  static size_t address_offset(size_t len) SWC_NOEXCEPT { 
-    return len / SizeOfT; 
-  }
-
   value_type* release(size_t* lenp) SWC_NOEXCEPT {
     value_type* rbuf = BufferT::base;
     if(lenp)
@@ -161,7 +163,7 @@ class BufferDyn : public BufferT {
 
   SWC_CAN_INLINE
   size_t fill() const SWC_NOEXCEPT { 
-    return address_offset(ptr - BufferT::base); 
+    return BufferT::length_base_bytes(ptr - BufferT::base); 
   }
 
   SWC_CAN_INLINE
@@ -181,8 +183,8 @@ class BufferDyn : public BufferT {
 
   void ensure(size_t len) {
     if(len > remaining()) {
-      size_t offset_mark = address_offset(mark - BufferT::base);
-      size_t offset_ptr = address_offset(ptr - BufferT::base);
+      size_t offset_mark = BufferT::length_base_bytes(mark - BufferT::base);
+      size_t offset_ptr = BufferT::length_base_bytes(ptr - BufferT::base);
       
       //BufferT::grow(len - remaining()); // actual new required size
       BufferT::grow((fill() + len) * 3 / 2);
@@ -196,7 +198,7 @@ class BufferDyn : public BufferT {
     if(!data)
       return ptr;
     value_type* rptr = ptr;
-    BufferT::memcopy(ptr, data, len);
+    memcpy(ptr, data, BufferT::length_base_byte(len));
     ptr += len;
     return rptr;
   }
@@ -244,6 +246,21 @@ typedef Buffer <uint8_t>          StaticBuffer;
 typedef BufferDyn <StaticBuffer>  DynamicBuffer;
 
 
+// StaticBuffer specializations to SizeOf
+template<>
+template<size_t SizeOf=1>
+SWC_CAN_INLINE
+size_t StaticBuffer::length_base_bytes(size_t len8) SWC_NOEXCEPT { 
+  return len8;
+}
+
+template<>
+template<size_t SizeOf=1>
+SWC_CAN_INLINE
+size_t StaticBuffer::length_base_byte(size_t sz) SWC_NOEXCEPT { 
+  return sz;
+}
+
 
 // StaticBuffer specializations to DynamicBuffer
 template<> 
@@ -273,25 +290,7 @@ void StaticBuffer::set(DynamicBuffer& other) SWC_NOEXCEPT {
 }
 
 
-// specializations to StaticBuffer
-template<>
-template<size_t SizeOf=1>
-SWC_CAN_INLINE
-void StaticBuffer::memcopy(value_type* ptr, 
-                           const value_type* other, size_t sz) {
-  memcpy(ptr, other, sz);
-}
-
-
-// specializations to DynamicBuffer
-template<>
-template<size_t SizeOf=1>
-SWC_CAN_INLINE
-size_t DynamicBuffer::address_offset(size_t len) SWC_NOEXCEPT { 
-  return len;
-}
-
-
+  
 
 
 } // namespace SWC
