@@ -157,8 +157,8 @@ void Blocks::scan(ReqScan::Ptr req, Block::Ptr blk_ptr) {
             continue;
           (blk = blk_ptr = eval)->processing_increment();
 
-          for(uint8_t n=1; eval->next && n <= req->readahead; ++n) {
-            if(RangerEnv::res().need_ram(range->cfg->block_size() * 10 * n))
+          for(uint8_t n=0; eval->next && n < req->readahead;) {
+            if(RangerEnv::res().need_ram(range->cfg->block_size() * 10*(++n)))
               break;
             if((eval = eval->next)->loaded()) 
               continue;
@@ -172,17 +172,19 @@ void Blocks::scan(ReqScan::Ptr req, Block::Ptr blk_ptr) {
       if(!blk)
         break;
 
-      if(!nxt_blks.empty()) {
-        asio::post(*Env::IoCtx::io()->ptr(), 
-          [this, req, nxt_blks]() { preload(req, nxt_blks); } );
-        nxt_blks.clear();
-      }
-
       if(RangerEnv::res().need_ram(range->cfg->block_size() * 3))
         release_prior(blk); // release_and_merge(blk);
     }
 
-    if(blk->scan(req)) // true (queued || responded)
+    bool state = blk->scan(req); // true (queued || responded)
+    
+    if(!nxt_blks.empty()) {
+      asio::post(*Env::IoCtx::io()->ptr(),
+        [this, req, nxt_blks]() { preload(req, nxt_blks); } );
+      nxt_blks.clear();
+    }
+
+    if(state)
       return;
   }
 
