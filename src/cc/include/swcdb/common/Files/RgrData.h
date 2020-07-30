@@ -99,7 +99,7 @@ class RgrData final {
                + Serialization::encoded_length_vi64(rgrid.load());
     for(auto& endpoint : endpoints)
       len += Serialization::encoded_length(endpoint);
-    dst_buf.ensure(HEADER_SIZE+len);
+    dst_buf.ensure(HEADER_SIZE + len);
 
     Serialization::encode_i8(&dst_buf.ptr, version);
     Serialization::encode_i32(&dst_buf.ptr, len);

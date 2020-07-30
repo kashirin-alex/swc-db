@@ -17,7 +17,7 @@ struct CompactRange::InBlock {
 
   InBlock(const Types::KeySeq key_seq, size_t size, InBlock* inblock = nullptr)
           : has_last(inblock != nullptr), 
-            cells(size), header(key_seq), err(Error::OK),
+            cells(size + 1000000), header(key_seq), err(Error::OK),
             last_cell(0) {
     if(has_last)
       inblock->move_last(this);

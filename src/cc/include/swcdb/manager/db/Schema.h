@@ -43,7 +43,7 @@ void remove(int &err, cid_t cid){
 void write(SWC::DynamicBuffer &dst_buf, const DB::Schema::Ptr& schema) {
     
   size_t sz = schema->encoded_length();
-  dst_buf.ensure(HEADER_SIZE+sz);
+  dst_buf.ensure(HEADER_SIZE + sz);
 
   Serialization::encode_i8(&dst_buf.ptr, VERSION);
   Serialization::encode_i32(&dst_buf.ptr, sz);

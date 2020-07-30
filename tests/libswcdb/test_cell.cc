@@ -76,7 +76,7 @@ void check_load() {
 
 
   ts = SWC::Time::now_ns();
-  SWC::DynamicBuffer buff;
+  SWC::DynamicBuffer buff(chks * cell.encoded_length());
   for(auto n = chks; n; --n)
     cell.write(buff);
   ts = SWC::Time::now_ns() - ts;

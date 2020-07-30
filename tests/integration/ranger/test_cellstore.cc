@@ -62,7 +62,7 @@ size_t write_cs(SWC::csid_t csid, SWC::Ranger::RangePtr range, int any) {
   cs_writer.create(err);
   hdlr_err(err);
 
-  SWC::DynamicBuffer buff;
+  SWC::DynamicBuffer buff(range->cfg->block_size());
   SWC::Ranger::CellStore::Block::Header header(range->cfg->key_seq);
   Cells::Cell cell;
 
@@ -124,7 +124,7 @@ size_t write_cs(SWC::csid_t csid, SWC::Ranger::RangePtr range, int any) {
         SWC_PRINT << "Write::block_encode header(" << header.to_string() 
                   << ")" << SWC_PRINT_CLOSE;
 
-        buff.free();
+        buff.clear();
         hdlr_err(err);
 
         header.interval.free();

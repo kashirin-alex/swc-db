@@ -23,6 +23,10 @@ class RangeQuerySelect : public ReqScan {
       spec.col_type = range->cfg->column_type();
     if(!spec.flags.max_versions)
       spec.flags.max_versions = range->cfg->cell_versions();
+    if(!spec.flags.max_buffer || 
+       spec.flags.max_buffer > range->cfg->block_size())
+      spec.flags.max_buffer = range->cfg->block_size();
+
     RangerEnv::res().more_mem_usage(size_of());
   }
 
@@ -35,17 +39,25 @@ class RangeQuerySelect : public ReqScan {
   }
 
   void ensure_size() {
-    if(!profile.cells_count || cells.size >= spec.flags.max_buffer)
-      return;
-    size_t add = (cells.fill() / profile.cells_count) 
-                  * (spec.flags.limit ? spec.flags.limit : 3);
-    if(cells.size + add < spec.flags.max_buffer)
-      cells.ensure(add);
+    if(profile.cells_count) {
+      size_t avg = cells.fill() / profile.cells_count;
+      if(cells.size + avg < spec.flags.max_buffer) {
+        //return cells.ensure(spec.flags.max_buffer + (avg << 1));
+        //if(!spec.flags.limit)
+        //  return cells.ensure(spec.flags.max_buffer + avg);
+
+        size_t add = cells.size + (avg <<= 2);
+        cells.ensure((add += add >> 1) < spec.flags.max_buffer
+          ? add
+          : spec.flags.max_buffer + avg
+        );
+      }
+    }
   }
 
   bool reached_limits() override {
     return (spec.flags.limit && spec.flags.limit <= profile.cells_count) || 
-      (spec.flags.max_buffer && profile.cells_count && 
+      (profile.cells_count && 
        spec.flags.max_buffer <= profile.cells_bytes + 
                                 profile.cells_bytes / profile.cells_count);
   }

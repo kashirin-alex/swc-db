@@ -64,16 +64,20 @@ class FileWriter {
 
         cells.free();
         result->get_cells(cid, cells);
-        
-        for(auto cell : cells) {
-          ++cells_count;
-          cells_bytes += cell->encoded_length();
-          write(*cell, col_type);
 
+        cells_count += cells.size();
+        cells_bytes += cells.size_bytes();
+        
+        buffer.ensure(12582912);
+
+
+        for(auto cell : cells) {
+          write(*cell, col_type);
           if(buffer.fill() >= 8388608) {
             write(col_type);
             if(err)
               break;
+            buffer.ensure(12582912);
           }
         }
       }
@@ -81,7 +85,7 @@ class FileWriter {
   }
 
   void write(const Cell &cell, Types::Column typ) {
-    buffer.ensure(1024);
+    buffer.ensure(8096);
 
     std::string ts;
     if(!(output_flags & OutputFlag::NO_TS)) {

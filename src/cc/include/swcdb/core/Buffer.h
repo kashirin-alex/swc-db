@@ -186,8 +186,8 @@ class BufferDyn : public BufferT {
       size_t offset_mark = BufferT::length_base_bytes(mark - BufferT::base);
       size_t offset_ptr = BufferT::length_base_bytes(ptr - BufferT::base);
       
-      //BufferT::grow(len - remaining()); // actual new required size
-      BufferT::grow((fill() + len) * 3 / 2);
+      BufferT::grow(len - remaining()); // actual size required to add
+      //BufferT::grow((fill() + len) * 3 / 2); // grow by 1.5
       
       mark = BufferT::base + offset_mark;
       ptr = BufferT::base + offset_ptr;

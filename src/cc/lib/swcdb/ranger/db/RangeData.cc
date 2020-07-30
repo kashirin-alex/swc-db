@@ -20,7 +20,7 @@ namespace SWC { namespace Ranger { namespace RangeData {
 void write(SWC::DynamicBuffer &dst_buf, CellStore::Readers& cellstores) {
 
   size_t sz = cellstores.encoded_length();
-  dst_buf.ensure(HEADER_SIZE+sz);
+  dst_buf.ensure(HEADER_SIZE + sz);
 
   Serialization::encode_i8(&dst_buf.ptr, VERSION);
   Serialization::encode_i32(&dst_buf.ptr, sz);
