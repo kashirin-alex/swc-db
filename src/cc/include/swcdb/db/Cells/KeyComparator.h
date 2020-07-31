@@ -76,6 +76,13 @@ extern SWC_CAN_INLINE
 Condition::Comp
 condition(const Types::KeySeq seq, 
           const uint8_t *p1, uint32_t p1_len, 
+          const uint8_t *p2, uint32_t p2_len)
+          noexcept __attribute__((optimize("-O3")));
+
+extern SWC_CAN_INLINE
+Condition::Comp
+condition(const Types::KeySeq seq, 
+          const uint8_t *p1, uint32_t p1_len, 
           const uint8_t *p2, uint32_t p2_len) noexcept {
   switch(seq) {
 
@@ -94,6 +101,7 @@ condition(const Types::KeySeq seq,
 ///
 
 
+
 ///
 template<Types::KeySeq T_seq> 
 SWC_CAN_INLINE
@@ -103,8 +111,7 @@ is_matching(Condition::Comp comp,
             const uint8_t *p2, uint32_t p2_len) noexcept;
 
 template<>
-inline
-SWC_ATTRIBS((SWC_ATTR_INLINE))
+SWC_CAN_INLINE
 bool
 is_matching<Types::KeySeq::LEXIC>(Condition::Comp comp,
                                   const uint8_t *p1, uint32_t p1_len, 
@@ -121,6 +128,14 @@ is_matching<Types::KeySeq::VOLUME>(Condition::Comp comp,
   return Condition::is_matching_volume(comp, p1, p1_len, p2, p2_len);
 }
 
+
+extern SWC_CAN_INLINE
+bool
+is_matching(const Types::KeySeq seq, Condition::Comp comp,
+            const uint8_t *p1, uint32_t p1_len, 
+            const uint8_t *p2, uint32_t p2_len) 
+            noexcept __attribute__((optimize("-O3")));
+            
 extern SWC_CAN_INLINE
 bool
 is_matching(const Types::KeySeq seq, Condition::Comp comp,

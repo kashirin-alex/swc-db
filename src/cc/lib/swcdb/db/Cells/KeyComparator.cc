@@ -16,7 +16,7 @@ namespace SWC { namespace DB { namespace KeySeq {
 
 ///
 template<Types::KeySeq T_seq>
-SWC_SHOULD_NOT_INLINE
+SWC_CAN_INLINE
 Condition::Comp 
 compare(const Cell::Key& key,  const Cell::Key& other) {
   if(uint24_t min = key.count < other.count ? key.count : other.count) {
@@ -37,8 +37,7 @@ compare(const Cell::Key& key,  const Cell::Key& other) {
 }
 
 template<>
-inline 
-SWC_ATTRIBS((SWC_ATTR_INLINE))
+SWC_CAN_INLINE
 Condition::Comp 
 compare<Types::KeySeq::FC_LEXIC>(const Cell::Key& key, 
                                  const Cell::Key& other) {
@@ -50,8 +49,7 @@ compare<Types::KeySeq::FC_LEXIC>(const Cell::Key& key,
 }
 
 template<>
-inline 
-SWC_ATTRIBS((SWC_ATTR_INLINE))
+SWC_CAN_INLINE
 Condition::Comp 
 compare<Types::KeySeq::FC_VOLUME>(const Cell::Key& key, 
                                   const Cell::Key& other) {
@@ -90,7 +88,7 @@ compare(const Types::KeySeq seq, const Cell::Key& key,
 
 ///
 template<Types::KeySeq T_seq>
-SWC_SHOULD_NOT_INLINE
+SWC_CAN_INLINE
 Condition::Comp 
 compare(const Cell::Key& key, const Cell::Key& other,
         uint24_t max, bool empty_ok, bool empty_eq) {
@@ -119,8 +117,7 @@ compare(const Cell::Key& key, const Cell::Key& other,
 }
 
 template<>
-inline 
-SWC_ATTRIBS((SWC_ATTR_INLINE))
+SWC_CAN_INLINE
 Condition::Comp 
 compare<Types::KeySeq::FC_LEXIC>(
         const Cell::Key& key, const Cell::Key& other,
@@ -135,8 +132,7 @@ compare<Types::KeySeq::FC_LEXIC>(
 }
 
 template<>
-inline 
-SWC_ATTRIBS((SWC_ATTR_INLINE))
+SWC_CAN_INLINE
 Condition::Comp 
 compare<Types::KeySeq::FC_VOLUME>(
         const Cell::Key& key, const Cell::Key& other,
@@ -182,7 +178,7 @@ compare(const Types::KeySeq seq, const Cell::Key& key, const Cell::Key& other,
 
 ///
 template<Types::KeySeq T_seq> 
-SWC_SHOULD_NOT_INLINE
+SWC_CAN_INLINE
 bool
 compare(const Cell::Key& key, const Cell::KeyVec& other, 
         Condition::Comp break_if, uint32_t max, bool empty_ok) {
@@ -209,8 +205,7 @@ compare(const Cell::Key& key, const Cell::KeyVec& other,
 }
 
 template<>
-inline 
-SWC_ATTRIBS((SWC_ATTR_INLINE))
+SWC_CAN_INLINE
 bool
 compare<Types::KeySeq::FC_LEXIC>(
         const Cell::Key& key, const Cell::KeyVec& other, 
@@ -225,8 +220,7 @@ compare<Types::KeySeq::FC_LEXIC>(
 }
 
 template<>
-inline 
-SWC_ATTRIBS((SWC_ATTR_INLINE))
+SWC_CAN_INLINE
 bool
 compare<Types::KeySeq::FC_VOLUME>(
         const Cell::Key& key, const Cell::KeyVec& other, 
@@ -396,7 +390,7 @@ align(const Types::KeySeq seq, Cell::KeyVec& key,
 
 ///
 template<Types::KeySeq T_seq> 
-SWC_SHOULD_NOT_INLINE
+SWC_CAN_INLINE
 bool
 is_matching(const Specs::Key& key, const Cell::Key &other) {
   Condition::Comp comp = Condition::NONE;

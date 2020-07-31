@@ -22,6 +22,8 @@ void Settings::init_post_cmd_args() {}
 }
 
 
+SWC_SHOULD_NOT_INLINE
+static 
 void load_check_compare(const Types::KeySeq key_seq, int chks, size_t fractions) {
   DB::Cell::Key key1;
   DB::Cell::Key key2;
@@ -42,6 +44,8 @@ void load_check_compare(const Types::KeySeq key_seq, int chks, size_t fractions)
 }
 
 
+SWC_SHOULD_NOT_INLINE
+static 
 void load_check_compare_max(const Types::KeySeq key_seq, int chks, size_t fractions) {
   DB::Cell::Key key1;
   DB::Cell::Key key2;
@@ -61,6 +65,8 @@ void load_check_compare_max(const Types::KeySeq key_seq, int chks, size_t fracti
             << "\n";
 }
 
+SWC_SHOULD_NOT_INLINE
+static 
 void load_check_compare_to_vec(const Types::KeySeq key_seq, int chks, size_t fractions) {
   DB::Cell::Key key1;
   DB::Cell::KeyVec key2;
@@ -83,6 +89,8 @@ void load_check_compare_to_vec(const Types::KeySeq key_seq, int chks, size_t fra
             << "\n";
 }
 
+SWC_SHOULD_NOT_INLINE
+static 
 void load_check_align(const Types::KeySeq key_seq, int chks, size_t fractions) {
 
   DB::Cell::KeyVec key;
@@ -104,6 +112,8 @@ void load_check_align(const Types::KeySeq key_seq, int chks, size_t fractions) {
             << "\n";
 }
 
+SWC_SHOULD_NOT_INLINE
+static 
 void load_check_align_min_max(const Types::KeySeq key_seq, int chks, size_t fractions) {
 
   DB::Cell::Key key;
@@ -139,6 +149,12 @@ void load_check_align_min_max(const Types::KeySeq key_seq, int chks, size_t frac
             << " probes=" << probe \
             << " " _name_ << "\n";
 
+SWC_SHOULD_NOT_INLINE
+static 
+void load_check_condition_base1()  __attribute__((optimize("-O3")));
+
+SWC_SHOULD_NOT_INLINE
+static 
 void load_check_condition_base1() {
   
   uint64_t ns;
@@ -160,6 +176,12 @@ void load_check_condition_base1() {
   }
 }
 
+SWC_SHOULD_NOT_INLINE
+static 
+void load_check_condition_base2()  __attribute__((optimize("-O3")));
+
+SWC_SHOULD_NOT_INLINE
+static 
 void load_check_condition_base2() {
   
   uint64_t ns;
@@ -183,6 +205,12 @@ void load_check_condition_base2() {
   }
 }
 
+SWC_SHOULD_NOT_INLINE
+static 
+void load_check_condition_base3()  __attribute__((optimize("-O3")));
+
+SWC_SHOULD_NOT_INLINE
+static 
 void load_check_condition_base3() {
   
   uint64_t ns;
