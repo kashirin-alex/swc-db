@@ -61,10 +61,15 @@ class ReqScan : public ResponseCallback {
     uint64_t cells_count      = 0;
     uint64_t cells_bytes      = 0;
     uint64_t cells_skipped    = 0;
-    uint64_t blocks_scanned   = 0;
-    uint64_t block_time_scan  = 0;
+
+    uint64_t blocks_located   = 0;
+    uint64_t block_time_locate= 0;
+
     uint64_t blocks_loaded    = 0;
     uint64_t block_time_load  = 0;
+
+    uint64_t blocks_scanned   = 0;
+    uint64_t block_time_scan  = 0;
 
     void finished() {
       ts_finish = Time::now_ns();
@@ -79,14 +84,19 @@ class ReqScan : public ResponseCallback {
       ++cells_skipped;
     }
     
-    void add_block_scan(int64_t ts) {
-      ++blocks_scanned;
-      block_time_scan += Time::now_ns() - ts;
+    void add_block_locate(int64_t ts) {
+      ++blocks_located;
+      block_time_locate += Time::now_ns() - ts;
     }
 
     void add_block_load(int64_t ts) {
       ++blocks_loaded;
       block_time_load += Time::now_ns() - ts;
+    }
+
+    void add_block_scan(int64_t ts) {
+      ++blocks_scanned;
+      block_time_scan += Time::now_ns() - ts;
     }
 
     std::string to_string() const {
@@ -98,11 +108,15 @@ class ReqScan : public ResponseCallback {
       s.append(std::to_string(cells_bytes));
       s.append(" skip=");
       s.append(std::to_string(cells_skipped));
-      s.append(") blocks(loaded=");
+      s.append(") blocks(located=");
+      s.append(std::to_string(blocks_located));
+      s.append(" loaded=");
       s.append(std::to_string(blocks_loaded));
       s.append(" scanned=");
       s.append(std::to_string(blocks_scanned));
-      s.append(") block(load=");
+      s.append(") block(locate=");
+      s.append(std::to_string(block_time_locate));
+      s.append("ns load=");
       s.append(std::to_string(block_time_load));
       s.append("ns scan=");
       s.append(std::to_string(block_time_scan));

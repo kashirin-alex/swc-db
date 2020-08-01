@@ -69,8 +69,6 @@ class Blocks final {
 
   void scan(ReqScan::Ptr req, Block::Ptr blk_ptr = nullptr);
 
-  //void split(Block::Ptr blk, bool loaded=true);
-
   bool _split(Block::Ptr blk, bool loaded=true);
 
   size_t cells_count();
@@ -80,12 +78,6 @@ class Blocks final {
   size_t size_bytes();
 
   size_t size_bytes_total(bool only_loaded=false);
-
-  void release_prior(Block::Ptr ptr, size_t num);
-
-  /*
-  void release_and_merge(Block::Ptr ptr);
-  */
 
   size_t release(size_t bytes=0);
 

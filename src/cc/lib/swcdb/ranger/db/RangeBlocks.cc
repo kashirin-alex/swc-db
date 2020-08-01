@@ -141,6 +141,8 @@ void Blocks::scan(ReqScan::Ptr req, Block::Ptr blk_ptr) {
   std::vector<Block::Ptr> nxt_blks;
 
   for(Block::Ptr eval, blk=nullptr; ; blk = nullptr) {
+    int64_t ts = Time::now_ns();
+
     if(req->with_block() && req->block) {
       (blk = blk_ptr = (Block*)req->block)->processing_increment();
       req->block = nullptr;
@@ -167,19 +169,24 @@ void Blocks::scan(ReqScan::Ptr req, Block::Ptr blk_ptr) {
           }
           break;
         }
+
+        if(!blk)
+          break;
+
+        size_t need = range->cfg->block_size() * (req->readahead+1) * 6;
+        if(RangerEnv::res().need_ram(need)) {
+          size_t sz;
+          for(Block::Ptr prev = blk;
+             (prev = prev->prev) && (sz = prev->release()) < need;
+             need -= sz);
+        }
       }
-
-      if(!blk)
-        break;
-
-      if(RangerEnv::res().need_ram(
-          range->cfg->block_size() * (req->readahead + 1) * 5))
-        release_prior(blk, (req->readahead + 1) * 5); 
-        // release_and_merge(blk);
     }
 
+    req->profile.add_block_locate(ts);
+
     bool state = blk->scan(req); // true (queued || responded)
-    
+
     if(!nxt_blks.empty()) {
       asio::post(*Env::IoCtx::io()->ptr(),
         [this, req, nxt_blks]() { preload(req, nxt_blks); } );
@@ -204,21 +211,6 @@ void Blocks::preload(const ReqScan::Ptr& req,
       nxt_blk->processing_decrement();
   }
 }
-
-/*
-void Blocks::split(Block::Ptr blk, bool loaded) {
-  bool support;
-  if(blk->need_split() && m_mutex.try_full_lock(support) {
-    auto offset = _get_block_idx(blk);
-    do {
-      if((blk = blk->split(loaded)) == nullptr)
-        break;
-      m_blocks_idx.insert(m_blocks_idx.begin()+(++offset), blk);
-    } while(blk->need_split());
-    m_mutex.unlock(support);
-  }
-}
-*/
 
 bool Blocks::_split(Block::Ptr blk, bool loaded) {
   // call is under blk lock
@@ -270,36 +262,27 @@ size_t Blocks::size_bytes_total(bool only_loaded) {
         + commitlog.size_bytes(only_loaded);  
 }
 
-void Blocks::release_prior(Block::Ptr blk, size_t num) {
-  size_t n = num;
-  for(bool support; n && m_mutex.try_full_lock(support); --n) {
-    blk = blk->prev;
-    m_mutex.unlock(support);
-    if(blk)
-      blk->release();
-    else 
-      break;
-  }
-  if(RangerEnv::res().need_ram(range->cfg->block_size() * num)) {
-    int err = Error::OK;
-    auto col = RangerEnv::columns()->get_column(err, range->cfg->cid);
-    if(!err)
-      col->release(range->cfg->block_size() * num);
-  }
-}
-
 size_t Blocks::release(size_t bytes) {
   size_t released = cellstores.release(bytes);
   if(!bytes || released < bytes) {
 
     released += commitlog.release(bytes ? bytes-released : bytes);
     if(!bytes || released < bytes) {
-
-      Mutex::scope lock(m_mutex);
-      for(Block::Ptr blk=m_block; blk; blk=blk->next) {
-        released += blk->release();
-        if(bytes && released >= bytes)
-          break;
+      bool support;
+      bool ok;
+      if(bytes) {
+        ok = m_mutex.try_full_lock(support);
+      } else {
+        support = m_mutex.lock();
+        ok = true;
+      }
+      if(ok) {
+        for(Block::Ptr blk=m_block; blk; blk=blk->next) {
+          released += blk->release();
+          if(bytes && released >= bytes)
+            break;
+        }
+        m_mutex.unlock(support);
       }
     }
   }
@@ -408,15 +391,15 @@ void Blocks::init_blocks(int& err) {
   for(auto cs_blk : blocks) {
     if(blk == nullptr) {
       m_block = blk = Block::make(cs_blk->header.interval, ptr());
-      m_block->_set_prev_key_end(range->prev_range_end);
+      m_block->set_prev_key_end(range->prev_range_end);
       m_blocks_idx.push_back(blk);
-    } else if(blk->_cond_key_end(cs_blk->header.interval.key_begin) 
+    } else if(blk->cond_key_end(cs_blk->header.interval.key_begin) 
                                             != Condition::EQ) {
       blk->_add(Block::make(cs_blk->header.interval, ptr()));
       blk = blk->next;
       m_blocks_idx.push_back(blk);
     } else {
-      blk->_set_key_end(cs_blk->header.interval.key_end);
+      blk->set_key_end(cs_blk->header.interval.key_end);
     }
   }
   if(!m_block) {
