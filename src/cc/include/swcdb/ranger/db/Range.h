@@ -204,24 +204,6 @@ class Range final : public std::enable_shared_from_this<Range> {
 
 
 
-//#ifdef SWC_IMPL_SOURCE
-#include "swcdb/ranger/db/Range.cc"
-
-#include "swcdb/ranger/db/RangeBlock.cc"
-#include "swcdb/ranger/db/RangeBlocks.cc"
-#include "swcdb/ranger/db/RangeBlockLoader.cc"
-
-#include "swcdb/ranger/db/CellStoreReaders.cc"
-#include "swcdb/ranger/db/CellStore.cc"
-#include "swcdb/ranger/db/CellStoreBlock.cc"
-
-#include "swcdb/ranger/db/CommitLog.cc"
-#include "swcdb/ranger/db/CommitLogFragment.cc"
-#include "swcdb/ranger/db/CommitLogCompact.cc"
-
-#include "swcdb/ranger/db/RangeData.cc"
-
-//#endif 
 
 
 #endif //swcdb_ranger_db_Range_h

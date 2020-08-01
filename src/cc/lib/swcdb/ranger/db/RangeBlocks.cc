@@ -158,7 +158,7 @@ void Blocks::scan(ReqScan::Ptr req, Block::Ptr blk_ptr) {
           (blk = blk_ptr = eval)->processing_increment();
 
           for(uint8_t n=0; eval->next && n < req->readahead;) {
-            if(RangerEnv::res().need_ram(range->cfg->block_size() * 10*(++n)))
+            if(RangerEnv::res().need_ram(range->cfg->block_size() * 6*(++n)))
               break;
             if((eval = eval->next)->loaded()) 
               continue;
@@ -172,8 +172,10 @@ void Blocks::scan(ReqScan::Ptr req, Block::Ptr blk_ptr) {
       if(!blk)
         break;
 
-      if(RangerEnv::res().need_ram(range->cfg->block_size() * 3))
-        release_prior(blk); // release_and_merge(blk);
+      if(RangerEnv::res().need_ram(
+          range->cfg->block_size() * (req->readahead + 1) * 5))
+        release_prior(blk, (req->readahead + 1) * 5); 
+        // release_and_merge(blk);
     }
 
     bool state = blk->scan(req); // true (queued || responded)
@@ -268,14 +270,22 @@ size_t Blocks::size_bytes_total(bool only_loaded) {
         + commitlog.size_bytes(only_loaded);  
 }
 
-void Blocks::release_prior(Block::Ptr blk) {
-  bool support;
-  if(m_mutex.try_full_lock(support)) {
+void Blocks::release_prior(Block::Ptr blk, size_t num) {
+  size_t n = num;
+  for(bool support; n && m_mutex.try_full_lock(support); --n) {
     blk = blk->prev;
     m_mutex.unlock(support);
+    if(blk)
+      blk->release();
+    else 
+      break;
   }
-  if(blk)
-    blk->release();
+  if(RangerEnv::res().need_ram(range->cfg->block_size() * num)) {
+    int err = Error::OK;
+    auto col = RangerEnv::columns()->get_column(err, range->cfg->cid);
+    if(!err)
+      col->release(range->cfg->block_size() * num);
+  }
 }
 
 size_t Blocks::release(size_t bytes) {

@@ -81,7 +81,7 @@ class Blocks final {
 
   size_t size_bytes_total(bool only_loaded=false);
 
-  void release_prior(Block::Ptr ptr);
+  void release_prior(Block::Ptr ptr, size_t num);
 
   /*
   void release_and_merge(Block::Ptr ptr);
