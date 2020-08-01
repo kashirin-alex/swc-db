@@ -21,13 +21,13 @@ Block::Ptr Block::make(const DB::Cells::Interval& interval,
 Block::Block(const DB::Cells::Interval& interval, 
              Blocks* blocks, State state)
             : blocks(blocks), next(nullptr), prev(nullptr),
-              m_key_end(interval.key_end),  
               m_cells(
                 DB::Cells::Mutable(
                   blocks->range->cfg->key_seq, 
                   blocks->range->cfg->cell_versions(), 
                   blocks->range->cfg->cell_ttl(), 
                   blocks->range->cfg->column_type())),
+              m_key_end(interval.key_end),  
               m_state(state), m_processing(0) {
   RangerEnv::res().more_mem_usage(size_of());
 }
@@ -40,7 +40,7 @@ Block::~Block() {
 }
 
 size_t Block::size_of() const {
-  return sizeof(*this) + m_key_end.size;
+  return sizeof(*this);
 }
 
 SWC_SHOULD_INLINE
@@ -57,6 +57,31 @@ void Block::schema_update() {
   );
 }
 
+SWC_SHOULD_INLINE
+void Block::set_prev_key_end(const DB::Cell::Key& key) {
+  m_prev_key_end.copy(key);
+}
+
+Condition::Comp Block::cond_key_end(const DB::Cell::Key& key) const {
+  LockAtomic::Unique::scope lock(m_mutex_intval);
+  return DB::KeySeq::compare(m_cells.key_seq, m_key_end, key);
+}
+
+void Block::set_key_end(const DB::Cell::Key& key) {
+  LockAtomic::Unique::scope lock(m_mutex_intval);
+  m_key_end.copy(key);
+}
+
+void Block::free_key_end() {
+  LockAtomic::Unique::scope lock(m_mutex_intval);
+  m_key_end.free();
+}
+
+void Block::get_key_end(DB::Cell::Key& key) const {
+  LockAtomic::Unique::scope lock(m_mutex_intval);
+  key.copy(m_key_end);
+}
+
 bool Block::is_consist(const DB::Cells::Interval& intval) const {
   return 
     (intval.key_end.empty() || m_prev_key_end.empty() ||
@@ -67,7 +92,7 @@ bool Block::is_consist(const DB::Cells::Interval& intval) const {
 }
 
 bool Block::is_in_end(const DB::Cell::Key& key) const {
-  std::shared_lock lock(m_mutex);
+  LockAtomic::Unique::scope lock(m_mutex_intval);
   return _is_in_end(key);
 }
 
@@ -79,7 +104,7 @@ bool Block::_is_in_end(const DB::Cell::Key& key) const {
 
 bool Block::is_next(const DB::Specs::Interval& spec) const {
   if(includes_end(spec)) {
-    std::shared_lock lock(m_mutex);
+    LockAtomic::Unique::scope lock(m_mutex_intval);
     return (spec.offset_key.empty() || _is_in_end(spec.offset_key)) && 
             _includes_begin(spec);
   }
@@ -88,7 +113,7 @@ bool Block::is_next(const DB::Specs::Interval& spec) const {
 
 bool Block::includes(const DB::Specs::Interval& spec) const {
   if(includes_end(spec)) {
-    std::shared_lock lock(m_mutex);
+    LockAtomic::Unique::scope lock(m_mutex_intval);
     return _includes_begin(spec);
   }
   return false;
@@ -261,7 +286,12 @@ Block::Ptr Block::_split(bool loaded) {
     loaded ? State::LOADED : State::NONE
   );
   ssize_t sz = loaded ? 0 : m_cells.size_of_internal();
-  m_cells.split(blk->m_cells, m_key_end, blk->m_key_end, loaded);
+  m_cells.split(blk->m_cells, loaded);
+  {
+    LockAtomic::Unique::scope lock(m_mutex_intval);
+    blk->m_key_end.copy(m_key_end);
+    m_key_end.copy(m_cells.back()->key);
+  }
   if(sz)
     RangerEnv::res().adj_mem_usage(ssize_t(m_cells.size_of_internal()) - sz);
 
@@ -275,23 +305,8 @@ void Block::_add(Block::Ptr blk) {
     blk->next = next;
     next->prev = blk;
   }
-  blk->_set_prev_key_end(m_key_end);
+  get_key_end(blk->m_prev_key_end);
   next = blk;
-}
-
-SWC_SHOULD_INLINE
-void Block::_set_prev_key_end(const DB::Cell::Key& key) {
-  m_prev_key_end.copy(key);
-}
-
-SWC_SHOULD_INLINE
-Condition::Comp Block::_cond_key_end(const DB::Cell::Key& key) const {
-  return DB::KeySeq::compare(m_cells.key_seq, m_key_end, key);
-}
-
-SWC_SHOULD_INLINE
-void Block::_set_key_end(const DB::Cell::Key& key) {
-  m_key_end.copy(key);
 }
 
 size_t Block::release() {
@@ -354,28 +369,12 @@ size_t Block::size_of_internal() {
   return m_cells.size_of_internal();
 }
 
-/*
-bool Block::need_split() {
-  bool ok;
-  if(ok = loaded() && ok = m_mutex.try_lock_shared()) {
-    ok = _need_split();
-    m_mutex.unlock_shared();
-  }
-  return ok;
-}
-*/
-
 bool Block::_need_split() const {
   auto sz = _size();
   return sz > 1 && 
     (sz >= blocks->range->cfg->block_cells() * 2 || 
      m_cells.size_bytes() >= blocks->range->cfg->block_size() * 2) && 
     !m_cells.has_one_key();
-}
-
-SWC_SHOULD_INLINE
-void Block::free_key_end() {
-  m_key_end.free();
 }
 
 std::string Block::to_string() {
@@ -389,9 +388,12 @@ std::string Block::to_string() {
   s.append(" ");
   s.append(m_prev_key_end.to_string());
   s.append(" < key <= ");
-  
-  if(m_mutex.try_lock()) {
+  {
+    LockAtomic::Unique::scope lock(m_mutex_intval);
     s.append(m_key_end.to_string());
+  }
+
+  if(m_mutex.try_lock()) {
     s.append(" ");
     s.append(m_cells.to_string());
     m_mutex.unlock();
@@ -409,7 +411,7 @@ std::string Block::to_string() {
 }
 
 bool Block::_scan(const ReqScan::Ptr& req, bool synced) {
-  // m_key_end incl. req->spec // ?has-changed(split)
+  // if(is_next(req->spec)) // ?has-changed(split)
   uint64_t ts = Time::now_ns();
   {
     std::shared_lock lock(m_mutex);

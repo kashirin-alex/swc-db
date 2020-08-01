@@ -60,6 +60,16 @@ class Block final {
 
   void schema_update();
 
+  void set_prev_key_end(const DB::Cell::Key& key);
+
+  Condition::Comp cond_key_end(const DB::Cell::Key& key) const;
+
+  void set_key_end(const DB::Cell::Key& key);
+  
+  void free_key_end();
+  
+  void get_key_end(DB::Cell::Key& key) const;
+
   bool is_consist(const DB::Cells::Interval& intval) const;
   
   bool is_in_end(const DB::Cell::Key& key) const;
@@ -96,18 +106,6 @@ class Block final {
 
   void _add(Ptr blk);
 
-  void _set_prev_key_end(const DB::Cell::Key& key);
-  
-  Condition::Comp _cond_key_end(const DB::Cell::Key& key) const;
-
-  void _set_key_end(const DB::Cell::Key& key);
-  
-  /*
-  void expand_next_and_release(DB::Cell::Key& key_begin);
-
-  void merge_and_release(Ptr blk);
-  */
-
   size_t release();
 
   void processing_increment();
@@ -128,11 +126,7 @@ class Block final {
 
   size_t size_of_internal();
 
-  //bool need_split();
-
   bool _need_split() const;
-
-  void free_key_end();
 
   std::string to_string();
   
@@ -142,20 +136,23 @@ class Block final {
 
   void run_queue(int& err);
 
-  mutable std::shared_mutex m_mutex;
-  DB::Cell::Key             m_prev_key_end;
-  DB::Cell::Key             m_key_end;
-  DB::Cells::Mutable        m_cells;
 
-  Mutex                     m_mutex_state;
-  State                     m_state;
-  std::atomic<size_t>       m_processing;
+  mutable std::shared_mutex   m_mutex;
+  DB::Cells::Mutable          m_cells;
+
+  mutable LockAtomic::Unique  m_mutex_intval;
+  DB::Cell::Key               m_prev_key_end;
+  DB::Cell::Key               m_key_end;
+
+  Mutex                       m_mutex_state;
+  State                       m_state;
+  std::atomic<size_t>         m_processing;
 
   struct ReqQueue {
     ReqScan::Ptr  req;
     const int64_t ts;
   };
-  QueueSafe<ReqQueue>       m_queue;
+  QueueSafe<ReqQueue>         m_queue;
 
 };
 

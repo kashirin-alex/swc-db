@@ -218,8 +218,7 @@ class Mutable final {
   void expand_end(Interval& interval) const;
   
 
-  void split(Mutable& cells, DB::Cell::Key& end_1st, DB::Cell::Key& end_2nd, 
-             bool loaded);
+  void split(Mutable& cells, bool loaded);
 
   void split(Mutable& cells);
 

@@ -559,9 +559,7 @@ void Mutable::expand_end(Interval& interval) const {
 }
 
 
-void Mutable::split(Mutable& cells, 
-                    DB::Cell::Key& end_1st, DB::Cell::Key& end_2nd, 
-                    bool loaded) {
+void Mutable::split(Mutable& cells, bool loaded) {
   Cell* from_cell = *ConstIterator(&buckets, _size / 2).item;
   size_t count = _size;
   bool from_set = false;
@@ -590,9 +588,6 @@ void Mutable::split(Mutable& cells,
   }
 
   _remove(it_start, count, !loaded);
-
-  end_2nd.copy(end_1st);
-  end_1st.copy(back()->key);
 }
 
 void Mutable::split(Mutable& cells) {
