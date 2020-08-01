@@ -113,6 +113,10 @@ class Resources final {
     }
   }
 
+  uint32_t concurrency() const {
+    return m_concurrency;
+  }
+
   void stop() {
     m_timer.cancel();
   }
@@ -207,6 +211,9 @@ class Resources final {
       
       if(next_major_chk % 100 == 0 && is_low_mem_state())
         SWC_LOGF(LOG_WARN, "Low-Memory state %s", to_string().c_str());
+      
+      if(size_t concurrency = std::thread::hardware_concurrency())
+        m_concurrency = concurrency;
     }
 
     std::ifstream buffer("/proc/self/statm");
@@ -280,6 +287,8 @@ class Resources final {
   uint32_t                            page_size;
   Component                           ram;
   // Component                     storage;
+  
+  std::atomic<uint32_t>               m_concurrency = 0;
   
 #if defined TCMALLOC_MINIMAL || defined TCMALLOC
   double release_rate_default; 

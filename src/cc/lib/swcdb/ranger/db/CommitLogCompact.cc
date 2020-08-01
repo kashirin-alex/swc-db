@@ -205,7 +205,7 @@ Compact::Compact(Fragments* log, int repetition,
       }
       --blks;
     }
-    if(!blks)
+    if(!blks || m_groups.size() >= RangerEnv::res().concurrency()/2 )
       break;
   }
   

@@ -329,6 +329,8 @@ void Range::unload(const Callback::RangeUnloaded_t& cb, bool completely) {
     m_state = State::UNLOADING;
   }
 
+  blocks.commitlog.stopping = true;
+
   wait();
   wait_queue();
 
@@ -353,6 +355,8 @@ void Range::remove(int &err, bool meta) {
   if(meta)
     on_change(err, true);
 
+  blocks.commitlog.stopping = true;
+  
   wait();
   wait_queue();
   blocks.remove(err);
