@@ -31,7 +31,8 @@ class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
 
   typedef Columns* Ptr;
 
-  explicit Columns()  { } //: m_state(State::OK)
+  explicit Columns() : m_releasing(false) { //: m_state(State::OK)
+  }
 
   ~Columns() { }
 
@@ -187,6 +188,10 @@ class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
   
   size_t release(size_t bytes=0) {
     size_t released = 0;
+    if(m_releasing)
+      return released;
+    m_releasing = true;
+
     Column::Ptr col;
     iterator it;
     for(size_t offset = 0; ; ++offset) {
@@ -204,6 +209,7 @@ class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
       if(bytes && released >= bytes)
         break;
     }
+    m_releasing = false;
     return released;
   }
 
@@ -221,6 +227,7 @@ class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
 
   private:
   Mutex                           m_mutex;
+  std::atomic<bool>               m_releasing;
   // State                           m_state;
   QueueSafe<ColumnsReqDelete*>    m_q_remove;
 

@@ -25,7 +25,7 @@ class Column final : private std::unordered_map<rid_t, RangePtr> {
   const ColumnCfg  cfg;
 
   Column(const cid_t cid, const DB::Schema& schema) 
-        : cfg(cid, schema) {
+        : cfg(cid, schema), m_releasing(false) {
     RangerEnv::res().more_mem_usage(size_of());
   }
 
@@ -174,13 +174,17 @@ class Column final : private std::unordered_map<rid_t, RangePtr> {
 
   size_t release(size_t bytes=0) {
     size_t released = 0;
+    if(m_releasing)
+      return released;
+    m_releasing = true;
+
     RangePtr range;
     iterator it;
     for(size_t offset = 0; ; ++offset) {
       {
         Mutex::scope lock(m_mutex);
         if(cfg.deleting)
-          return released;
+          break;
         it = begin();
         for(size_t i=0; i<offset && it != end(); ++it, ++i);
         if(it == end())
@@ -193,6 +197,7 @@ class Column final : private std::unordered_map<rid_t, RangePtr> {
       if(bytes && released >= bytes)
         break;
     }
+    m_releasing = false;
     return released;
   }
 
@@ -213,7 +218,8 @@ class Column final : private std::unordered_map<rid_t, RangePtr> {
 
   private:
 
-  Mutex   m_mutex;
+  Mutex             m_mutex;
+  std::atomic<bool> m_releasing;
 };
 
 }}
