@@ -252,7 +252,8 @@ bool DbClient::list_columns(std::string& cmd) {
       (const client::ConnQueue::ReqBase::Ptr&, int error, 
        const Protocol::Mngr::Params::ColumnListRsp& rsp) {
         if(!error)
-          schemas = rsp.schemas;
+          schemas.insert(
+            schemas.end(), rsp.schemas.begin(), rsp.schemas.end());
         await->set_value(error);
       },
       300000

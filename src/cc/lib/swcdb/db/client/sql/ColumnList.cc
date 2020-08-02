@@ -69,16 +69,17 @@ int ColumnList::parse_list_columns(const char* expect_cmd) {
 
 ColumnList::~ColumnList() {}
   
-void ColumnList::read_columns(std::vector<DB::Schema::Ptr>& cols, const char* stop) {
+void ColumnList::read_columns(std::vector<DB::Schema::Ptr>& cols, 
+                              const char* stop) {
   std::string col_name;
   Condition::Comp comp;
   while(remain && !err) {
-    if(found_char(',') || found_char(' '))
+    if(found_char(',') || found_space())
       continue;
     
     found_comparator(comp = Condition::NONE, true);
-    if(cols.empty() && (!patterns.empty() || comp != Condition::NONE)) {
-      read(col_name, stop, true);
+    if(comp != Condition::NONE) {
+      read(col_name, stop, comp == Condition::RE);
       if(col_name.empty()) {
         error_msg(
           Error::SQL_PARSE_ERROR, 
@@ -86,8 +87,6 @@ void ColumnList::read_columns(std::vector<DB::Schema::Ptr>& cols, const char* st
         );
         break;
       }
-      if(comp == Condition::NONE)
-        comp = Condition::EQ;
       patterns.emplace_back(comp, col_name);
 
     } else {
