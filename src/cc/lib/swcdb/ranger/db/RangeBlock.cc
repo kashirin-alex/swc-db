@@ -417,17 +417,19 @@ std::string Block::to_string() {
 
 Block::ScanState Block::_scan(const ReqScan::Ptr& req, bool synced) {
   // if(is_next(req->spec)) // ?has-changed(split)
+  int err = Error::OK;
   uint64_t ts = Time::now_ns();
-  {
+  try {
     std::shared_lock lock(m_mutex);
     m_cells.scan(req.get());
+  } catch (const Exception& e) {
+    err = e.code();
   }
   req->profile.add_block_scan(ts);
 
   processing_decrement();
 
-  if(req->reached_limits()) {
-    int err = Error::OK;
+  if(err || req->reached_limits()) {
     if(req->with_block())
       req->block = ptr();
     blocks->processing_decrement();
