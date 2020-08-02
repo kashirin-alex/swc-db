@@ -127,20 +127,20 @@ void Blocks::scan(ReqScan::Ptr req, Block::Ptr blk_ptr) {
   }    
 
   int err = Error::OK;
-  {
-    Mutex::scope lock(m_mutex);
-    if(!m_block) 
-      init_blocks(err);
-  }
+  bool support = m_mutex.lock();
+  if(!m_block)
+    init_blocks(err);
+  m_mutex.unlock(support);
+
   if(err) {
     processing_decrement();
     req->response(err);
     return;
   }
 
-  std::vector<Block::Ptr> nxt_blks;
+  const size_t need = range->cfg->block_size() * 4;
 
-  for(Block::Ptr eval, blk=nullptr; ; blk = nullptr) {
+  for(Block::Ptr blk = nullptr; ; blk = nullptr) {
     int64_t ts = Time::now_ns();
 
     if(req->with_block() && req->block) {
@@ -148,53 +148,70 @@ void Blocks::scan(ReqScan::Ptr req, Block::Ptr blk_ptr) {
       req->block = nullptr;
 
     } else {
-      {
-        Mutex::scope lock(m_mutex);
-        eval = blk_ptr ? blk_ptr->next 
-               : (req->spec.offset_key.empty() 
-                  ? m_block 
-                  : *(m_blocks_idx.begin()+_narrow(req->spec.offset_key)));
-        for(; eval; eval=eval->next) {
-          if(eval->removed() || !eval->is_next(req->spec)) 
-            continue;
-          (blk = blk_ptr = eval)->processing_increment();
+      if(blk_ptr && RangerEnv::res().need_ram(need * (req->readahead + 1)))
+        blk_ptr->release();
 
-          for(uint8_t n=0; eval->next && n < req->readahead;) {
-            if(RangerEnv::res().need_ram(range->cfg->block_size() * 6*(++n)))
-              break;
-            if((eval = eval->next)->loaded()) 
-              continue;
-            nxt_blks.push_back(eval); 
-            eval->processing_increment();
-          }
-          break;
-        }
+      support = m_mutex.lock();
+      blk_ptr = blk_ptr 
+        ? blk_ptr->next 
+        : (req->spec.offset_key.empty()
+            ? m_block 
+            : *(m_blocks_idx.begin() + _narrow(req->spec.offset_key)));
+      m_mutex.unlock(support);
 
-        if(!blk)
-          break;
+      while(blk_ptr && (blk_ptr->removed() || !blk_ptr->is_next(req->spec))) {
+        support = m_mutex.lock();
+        blk_ptr = blk_ptr->next;
+        m_mutex.unlock(support);
+      }
 
-        size_t need = range->cfg->block_size() * (req->readahead+1) * 6;
-        if(RangerEnv::res().need_ram(need)) {
+      if(blk_ptr) {
+        (blk = blk_ptr)->processing_increment();
+
+        if(RangerEnv::res().need_ram(need * (req->readahead + 1))) {
           size_t sz;
-          for(Block::Ptr prev = blk;
-             (prev = prev->prev) && (sz = prev->release()) < need;
-             need -= sz);
+          size_t _need = need * (req->readahead + 1);
+          for(Block::Ptr prev = blk; ; _need -= sz ) {
+            support = m_mutex.lock();
+            prev = prev->prev;
+            m_mutex.unlock(support);
+            if(!prev || (sz = prev->release()) > _need)
+              break;
+          }
         }
       }
     }
 
     req->profile.add_block_locate(ts);
+    if(!blk)
+      break;
 
-    bool state = blk->scan(req); // true (queued || responded)
+    switch(blk->scan(req)) {
 
-    if(!nxt_blks.empty()) {
-      asio::post(*Env::IoCtx::io()->ptr(),
-        [this, req, nxt_blks]() { preload(req, nxt_blks); } );
-      nxt_blks.clear();
+      case Block::ScanState::RESPONDED:
+        return;
+
+      case Block::ScanState::QUEUED: {
+        for(size_t n=0; 
+            n < req->readahead && 
+            !RangerEnv::res().need_ram(need * (++n))
+            && m_mutex.try_full_lock(support); ) {
+          blk = blk->next;
+          m_mutex.unlock(support);
+          if(!blk)
+            break;
+          if(blk->need_load() && blk->includes(req->spec)) {
+            blk->processing_increment();
+            blk->preload();
+          }
+        }
+        return;
+      }
+
+      default:
+        break;
     }
 
-    if(state)
-      return;
   }
 
   processing_decrement();
@@ -202,15 +219,6 @@ void Blocks::scan(ReqScan::Ptr req, Block::Ptr blk_ptr) {
   req->response(err);
 }
 
-void Blocks::preload(const ReqScan::Ptr& req, 
-                     const std::vector<Block::Ptr>& blks) {
-  for(auto nxt_blk : blks) {
-    if(nxt_blk->includes(req->spec))
-      nxt_blk->preload();
-    else
-      nxt_blk->processing_decrement();
-  }
-}
 
 bool Blocks::_split(Block::Ptr blk, bool loaded) {
   // call is under blk lock

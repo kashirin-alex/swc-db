@@ -43,9 +43,8 @@ class ReqScan  : public DB::Cells::ReqScan {
           : DB::Cells::ReqScan(conn, ev, spec),
             type(Type::QUERY), 
             release_block(false), 
-            readahead(!spec.flags.limit || 
-                      spec.flags.offset ||
-                      spec.flags.limit > 1),
+            readahead((!spec.flags.limit || spec.flags.offset)//?>block_cells
+                        ? 2 : spec.flags.limit > 1),
             block(nullptr) {
   }
 

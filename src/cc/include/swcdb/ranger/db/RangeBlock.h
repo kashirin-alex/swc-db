@@ -28,10 +28,17 @@ class Block final {
   typedef Block* Ptr;
   
   enum State {
-    NONE,
-    LOADING,
-    LOADED,
-    REMOVED
+    NONE    = 0x00,
+    LOADING = 0x01,
+    LOADED  = 0x02,
+    REMOVED = 0x03,
+  };
+
+  enum ScanState {
+    UKNOWN    = 0x00,
+    QUEUED    = 0x01,
+    RESPONDED = 0x02,
+    SYNCED    = 0x03
   };
     
   Blocks*     blocks;
@@ -96,7 +103,7 @@ class Block final {
 
   bool splitter();
 
-  bool scan(const ReqScan::Ptr& req);
+  ScanState scan(const ReqScan::Ptr& req);
   
   void loaded(int err, const BlockLoader* loader);
   
@@ -116,6 +123,8 @@ class Block final {
 
   bool loaded();
 
+  bool need_load();
+
   bool processing() const;
 
   size_t size();
@@ -132,7 +141,7 @@ class Block final {
   
   private:
 
-  bool _scan(const ReqScan::Ptr& req, bool synced=false);
+  ScanState _scan(const ReqScan::Ptr& req, bool synced=false);
 
   void run_queue(int& err);
 

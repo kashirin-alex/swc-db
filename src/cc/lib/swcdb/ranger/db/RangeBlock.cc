@@ -226,7 +226,7 @@ bool Block::splitter() {
   return _need_split() && blocks->_split(ptr(), false);
 }
 
-bool Block::scan(const ReqScan::Ptr& req) {
+Block::ScanState Block::scan(const ReqScan::Ptr& req) {
   bool loaded;
   {
     Mutex::scope lock(m_mutex_state);
@@ -234,7 +234,7 @@ bool Block::scan(const ReqScan::Ptr& req) {
     if(!(loaded = m_state == State::LOADED)) {
       m_queue.push({.req=req, .ts=Time::now_ns()});
       if(m_state != State::NONE)
-        return true;
+        return ScanState::QUEUED;
       m_state = State::LOADING;
     }
   }
@@ -242,7 +242,7 @@ bool Block::scan(const ReqScan::Ptr& req) {
   if(loaded) switch(req->type) {
     case ReqScan::Type::BLK_PRELOAD: {
       processing_decrement();
-      return false;
+      return ScanState::RESPONDED;
     }
     default:
       return _scan(req, true);
@@ -250,7 +250,7 @@ bool Block::scan(const ReqScan::Ptr& req) {
 
   auto loader = new BlockLoader(ptr());
   loader->run();
-  return true;
+  return ScanState::QUEUED;
 }
 
 void Block::loaded(int err, const BlockLoader* loader) {
@@ -345,6 +345,11 @@ bool Block::loaded() {
   return m_state == State::LOADED;
 }
 
+bool Block::need_load() {
+  Mutex::scope lock(m_mutex_state);
+  return m_state == State::NONE;
+}
+
 bool Block::processing() const {
   return m_processing;
 }
@@ -410,7 +415,7 @@ std::string Block::to_string() {
   return s;
 }
 
-bool Block::_scan(const ReqScan::Ptr& req, bool synced) {
+Block::ScanState Block::_scan(const ReqScan::Ptr& req, bool synced) {
   // if(is_next(req->spec)) // ?has-changed(split)
   uint64_t ts = Time::now_ns();
   {
@@ -427,7 +432,7 @@ bool Block::_scan(const ReqScan::Ptr& req, bool synced) {
       req->block = ptr();
     blocks->processing_decrement();
     req->response(err);
-    return true;
+    return ScanState::RESPONDED;
   }
 
   if(req->release_block)
@@ -436,7 +441,7 @@ bool Block::_scan(const ReqScan::Ptr& req, bool synced) {
   if(!synced)
     blocks->scan(req, ptr());
   
-  return false;
+  return ScanState::SYNCED;
 }
 
 void Block::run_queue(int& err) {
