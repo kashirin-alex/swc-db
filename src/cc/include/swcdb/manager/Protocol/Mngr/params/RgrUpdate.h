@@ -17,7 +17,7 @@ class RgrUpdate : public Serializable {
 
     RgrUpdate() {}
 
-    RgrUpdate(Manager::RangerList hosts, bool sync_all) 
+    RgrUpdate(const Manager::RangerList& hosts, bool sync_all) 
               : hosts(hosts), sync_all(sync_all) {}
 
     std::string to_string() const {

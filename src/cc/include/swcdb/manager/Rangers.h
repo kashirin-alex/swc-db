@@ -8,6 +8,7 @@
 #define swc_manager_Rangers_h
 
 #include "swcdb/manager/Ranger.h"
+#include "swcdb/manager/RangersResources.h"
 
 
 namespace SWC { namespace Manager {
@@ -23,8 +24,10 @@ class Rangers final {
 
   void stop(bool shuttingdown=true);
 
-  void schedule_assignment_check(uint32_t t_ms = 10000);
+  void schedule_check(uint32_t t_ms = 10000);
 
+  void rgr_report(rgrid_t rgrid, 
+                  const Protocol::Rgr::Params::ReportResRsp& rsp);
 
   void rgr_get(const rgrid_t rgrid, EndPoints& endpoints);
 
@@ -79,10 +82,11 @@ class Rangers final {
   std::atomic<bool>             m_run; 
 
   std::mutex                    m_mutex_timer;
-  asio::high_resolution_timer   m_assign_timer; 
+  asio::high_resolution_timer   m_timer; 
 
   std::mutex                    m_mutex;
   RangerList                    m_rangers;
+  RangersResources              m_rangers_resources;
 
   std::mutex                    m_mutex_assign;
   bool                          m_runs_assign;

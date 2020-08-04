@@ -63,6 +63,9 @@ void Settings::init_app_options(){
 
     ("swc.mngr.schema.replication", g_i8(3), 
      "Save schema under N-replications (fs-dependent)")
+
+    ("swc.mngr.rangers.resource.interval.check", g_i32(120000), 
+     "Rangers Resources check interval in ms")
   ;
   
 }

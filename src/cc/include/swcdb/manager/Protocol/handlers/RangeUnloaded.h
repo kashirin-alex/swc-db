@@ -43,7 +43,7 @@ void range_unloaded(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
       goto send_response;
     range->set_state(Manager::Range::State::NOTSET, 0);
     
-    Env::Mngr::rangers()->schedule_assignment_check(1);
+    Env::Mngr::rangers()->schedule_check(1);
 
   } catch (Exception &e) {
     SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;

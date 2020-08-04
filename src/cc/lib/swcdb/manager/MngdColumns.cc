@@ -62,7 +62,7 @@ void MngdColumns::active(const std::vector<cid_t>& cols) {
     m_cols_active = cols;
   }
 
-  Env::Mngr::rangers()->schedule_assignment_check(
+  Env::Mngr::rangers()->schedule_check(
     initialize() ? 500 : cfg_delay_cols_init->get());
 
   // if(m_schemas_mngr) (scheduled on column changes ) + chk(cid) LOAD_ACK
