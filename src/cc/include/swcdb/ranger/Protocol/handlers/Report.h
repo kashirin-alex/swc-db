@@ -31,7 +31,45 @@ void report(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     }
 
     switch(params.flags) {
-      case Params::ReportReq::RANGES: {
+      case Params::ReportReq::COLUMN | Params::ReportReq::RANGES:
+      case Params::ReportReq::COLUMN: {
+        int err = Error::OK;
+        auto col = RangerEnv::columns()->get_column(err, params.cid);
+        Protocol::Rgr::Params::ReportRsp rsp_params(
+          col ? err : Error::COLUMN_NOT_EXISTS);
+        
+        if(rsp_params.err) {      
+          cbp = CommBuf::make(rsp_params);
+          goto send_response;
+        }
+        
+        rsp_params.rgrid = rgrid;
+        rsp_params.endpoints.assign(
+          rgr_data->endpoints.begin(), rgr_data->endpoints.end());
+
+        auto c = new Protocol::Rgr::Params::ReportRsp::Column();
+        rsp_params.columns.push_back(c);
+        c->cid = col->cfg.cid;
+        c->col_seq = col->cfg.key_seq;
+        c->mem_bytes = 0;
+
+        Ranger::RangePtr range;
+        for(rid_t ridx = 0; (range=col->get_next(ridx)); ++ridx) {
+          if(params.flags & Params::ReportReq::RANGES) {
+            auto r = new Protocol::Rgr::Params::ReportRsp::Range(c->col_seq);
+            c->ranges.push_back(r);
+            r->rid = range->rid;
+            range->get_interval(r->interval);
+          }
+          c->mem_bytes += range->blocks.size_bytes_total(true);
+        }
+        cbp = CommBuf::make(rsp_params);
+        break;
+      }
+
+      case Params::ReportReq::COLUMNS:
+      case Params::ReportReq::RANGES:
+      case Params::ReportReq::COLUMNS | Params::ReportReq::RANGES: {
         Protocol::Rgr::Params::ReportRsp rsp_params(Error::OK);
         
         rsp_params.rgrid = rgrid;
@@ -46,11 +84,15 @@ void report(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
           rsp_params.columns.push_back(c);
           c->cid = col->cfg.cid;
           c->col_seq = col->cfg.key_seq;
+          c->mem_bytes = 0;
           for(rid_t ridx = 0; (range=col->get_next(ridx)); ++ridx) {
-            auto r = new Protocol::Rgr::Params::ReportRsp::Range(c->col_seq);
-            c->ranges.push_back(r);
-            r->rid = range->rid;
-            range->get_interval(r->interval);
+            if(params.flags & Params::ReportReq::RANGES) {
+              auto r = new Protocol::Rgr::Params::ReportRsp::Range(c->col_seq);
+              c->ranges.push_back(r);
+              r->rid = range->rid;
+              range->get_interval(r->interval);
+            }
+            c->mem_bytes += range->blocks.size_bytes_total(true);
           }
         }
         cbp = CommBuf::make(rsp_params);

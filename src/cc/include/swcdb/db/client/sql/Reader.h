@@ -31,8 +31,6 @@ class Reader {
 
   ~Reader();
 
-  protected:
-
   bool is_char(const char* stop) const;
 
   bool found_char(const char c);

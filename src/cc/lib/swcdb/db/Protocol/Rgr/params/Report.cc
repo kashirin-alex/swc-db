@@ -7,25 +7,37 @@
 
 
 #include "swcdb/db/Protocol/Rgr/params/Report.h"
+#include "swcdb/db/Columns/Schema.h"
 
 
 namespace SWC { namespace Protocol { namespace Rgr { namespace Params {
 
 
-ReportReq::ReportReq(uint8_t flags): flags(flags) {}
+ReportReq::ReportReq(uint8_t flags)
+                    : flags(flags) {
+}
+
+ReportReq::ReportReq(uint8_t flags, cid_t cid)
+                    : flags(flags), cid(cid) {
+}
+
 
 ReportReq::~ReportReq(){ }
 
 size_t ReportReq::internal_encoded_length() const {
-  return 1;
+  return 1 + (flags & COLUMN ? Serialization::encoded_length_vi64(cid) : 0);
 }
   
 void ReportReq::internal_encode(uint8_t** bufp) const {
   Serialization::encode_i8(bufp, flags);
+  if(flags & COLUMN)
+    Serialization::encode_vi64(bufp, cid);
 }
   
 void ReportReq::internal_decode(const uint8_t** bufp, size_t* remainp) {
   flags = Serialization::decode_i8(bufp, remainp);
+  if(flags & COLUMN)
+    cid = Serialization::decode_vi64(bufp, remainp);
 }
 
 
@@ -86,6 +98,7 @@ ReportRsp::Column::~Column() {
 
 size_t ReportRsp::Column::encoded_length () const {
   size_t sz = Serialization::encoded_length_vi64(cid) + 1
+            + Serialization::encoded_length_vi64(mem_bytes)
             + Serialization::encoded_length_vi64(ranges.size());
   for(auto r : ranges)
     sz += r->encoded_length();
@@ -95,6 +108,7 @@ size_t ReportRsp::Column::encoded_length () const {
 void ReportRsp::Column::encode(uint8_t** bufp) const {
   Serialization::encode_vi64(bufp, cid);
   Serialization::encode_i8(bufp, (uint8_t)col_seq);
+  Serialization::encode_vi64(bufp, mem_bytes);
   Serialization::encode_vi64(bufp, ranges.size());
   for(auto r : ranges)
     r->encode(bufp);
@@ -103,6 +117,7 @@ void ReportRsp::Column::encode(uint8_t** bufp) const {
 void ReportRsp::Column::decode(const uint8_t** bufp, size_t* remainp) {
   cid = Serialization::decode_vi64(bufp, remainp);
   col_seq = (Types::KeySeq)Serialization::decode_i8(bufp, remainp);
+  mem_bytes = Serialization::decode_vi64(bufp, remainp);
   for(int64_t n = Serialization::decode_vi64(bufp, remainp); n; --n) {
     auto r = new Range(col_seq);
     r->decode(bufp, remainp);
@@ -115,8 +130,12 @@ void ReportRsp::Column::display(std::ostream& out, bool pretty,
                                 std::string offset) const {  
   out << offset << "**************************************" << std::endl;
   out << offset << "cid(" << cid << ") seq(" 
-      << Types::to_string(col_seq) << ")" 
-      << " ranges(" << ranges.size() << "):" << std::endl;
+      << Types::to_string(col_seq) << ") in-memory(" 
+      << mem_bytes << " bytes) ranges("
+      << ranges.size() << ')';
+  if(!ranges.empty())
+    out << ':';
+  out << std::endl;
   for(auto& r : ranges)
     r->display(out, pretty, offset+" ");
 }
@@ -200,7 +219,14 @@ void ReportRsp::internal_decode(const uint8_t** bufp, size_t* remainp) {
 
 ReportResRsp::ReportResRsp(int err) : err(err), mem(0), cpu(0), ranges(0) { }
 
-ReportResRsp::~ReportResRsp() {
+ReportResRsp::~ReportResRsp() { }
+
+void ReportResRsp::display(std::ostream& out, const std::string& offset) const {
+  out << offset 
+      << "Ranger(mem="
+      << mem << "MB cpu=" 
+      << cpu << "Mhz ranges=" 
+      << ranges << ")" << std::endl;
 }
 
 size_t ReportResRsp::internal_encoded_length() const {

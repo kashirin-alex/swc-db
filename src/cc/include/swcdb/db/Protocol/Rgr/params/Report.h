@@ -15,17 +15,24 @@
 
 namespace SWC { namespace Protocol { namespace Rgr { namespace Params {
 
+
+
 class ReportReq : public Serializable {
   public:
   
   static const uint8_t RANGES     = 0x1;
-  static const uint8_t RESOURCES  = 0x4;
+  static const uint8_t COLUMNS    = 0x2;
+  static const uint8_t COLUMN     = 0x4;
+  static const uint8_t RESOURCES  = 0x8;
 
-  ReportReq(uint8_t flags=0x1);
+  ReportReq(uint8_t flags = COLUMNS);
+
+  ReportReq(uint8_t flags, cid_t cid);
 
   virtual ~ReportReq();
 
   uint8_t flags;
+  cid_t   cid;
 
   private:
 
@@ -69,6 +76,7 @@ class ReportRsp  : public Serializable {
 
     cid_t                cid;
     Types::KeySeq        col_seq;
+    uint64_t             mem_bytes;
     std::vector<Range*>  ranges;
 
     ~Column();
@@ -121,6 +129,8 @@ class ReportResRsp  : public Serializable {
   uint32_t    mem;
   uint32_t    cpu;
   size_t      ranges;
+
+  void display(std::ostream& out, const std::string& offset="") const;
 
   private:
 
