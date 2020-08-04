@@ -14,49 +14,80 @@ namespace SWC { namespace Protocol { namespace Rgr { namespace Handler {
 
 
 void report(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
-  Protocol::Rgr::Params::ReportRsp rsp_params(Error::OK);
+  CommBuf::Ptr cbp;
 
   try {
     Params::ReportReq params;
-    const uint8_t *ptr = ev->data.base;
+    const uint8_t* ptr = ev->data.base;
     size_t remain = ev->data.size;
     params.decode(&ptr, &remain);
 
     auto rgr_data = RangerEnv::rgr_data();
-    if(!(rsp_params.rgrid = rgr_data->rgrid)) {
-      rsp_params.err = Error::RS_NOT_READY;
+    rgrid_t rgrid;
+    if(!(rgrid = rgr_data->rgrid)) {
+      Protocol::Rgr::Params::ReportRsp rsp_params(Error::RS_NOT_READY);
+      cbp = CommBuf::make(rsp_params);
       goto send_response;
     }
-    rsp_params.endpoints.assign(
-      rgr_data->endpoints.begin(), rgr_data->endpoints.end());
 
-    if(params.flags & Params::ReportReq::RANGES) {
-      Ranger::Column::Ptr col;
-      Ranger::RangePtr range;
-      auto columns = RangerEnv::columns();
-      for(cid_t cidx = 0; (col=columns->get_next(cidx)) != nullptr; ++cidx) {
-        auto c = new Protocol::Rgr::Params::ReportRsp::Column();
-        rsp_params.columns.push_back(c);
-        c->cid = col->cfg.cid;
-        c->col_seq = col->cfg.key_seq;
-        for(rid_t ridx = 0; (range=col->get_next(ridx)) != nullptr; ++ridx) {
-          auto r = new Protocol::Rgr::Params::ReportRsp::Range(c->col_seq);
-          c->ranges.push_back(r);
-          r->rid = range->rid;
-          range->get_interval(r->interval);
+    switch(params.flags) {
+      case Params::ReportReq::RANGES: {
+        Protocol::Rgr::Params::ReportRsp rsp_params(Error::OK);
+        
+        rsp_params.rgrid = rgrid;
+        rsp_params.endpoints.assign(
+          rgr_data->endpoints.begin(), rgr_data->endpoints.end());
+
+        Ranger::Column::Ptr col;
+        Ranger::RangePtr range;
+        auto columns = RangerEnv::columns();
+        for(cid_t cidx = 0; (col=columns->get_next(cidx)); ++cidx) {
+          auto c = new Protocol::Rgr::Params::ReportRsp::Column();
+          rsp_params.columns.push_back(c);
+          c->cid = col->cfg.cid;
+          c->col_seq = col->cfg.key_seq;
+          for(rid_t ridx = 0; (range=col->get_next(ridx)); ++ridx) {
+            auto r = new Protocol::Rgr::Params::ReportRsp::Range(c->col_seq);
+            c->ranges.push_back(r);
+            r->rid = range->rid;
+            range->get_interval(r->interval);
+          }
         }
+        cbp = CommBuf::make(rsp_params);
+        break;
       }
 
+      case Params::ReportReq::RESOURCES: {
+        Protocol::Rgr::Params::ReportResRsp rsp_params(Error::OK);
+        rsp_params.mem = RangerEnv::res().available_mem_mb();
+        rsp_params.cpu = RangerEnv::res().available_cpu_mhz();
+
+        rsp_params.ranges = 0;
+        Ranger::Column::Ptr col;
+        auto columns = RangerEnv::columns();
+        for(cid_t cidx = 0; (col=columns->get_next(cidx)); ++cidx) {
+          rsp_params.ranges += col->ranges_count(); 
+          // *= (Master | Meta) ratio
+        }
+        cbp = CommBuf::make(rsp_params);
+        break;
+      }
+
+      default: {
+        Protocol::Rgr::Params::ReportRsp rsp_params(Error::NOT_IMPLEMENTED);
+        cbp = CommBuf::make(rsp_params);
+        break;
+      }
     }
 
   } catch (Exception &e) {
     SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
-    rsp_params.err = e.code();
+    Protocol::Rgr::Params::ReportRsp rsp_params(e.code());
+    cbp = CommBuf::make(rsp_params);
   }
 
   send_response:
   try{
-    auto cbp = CommBuf::make(rsp_params);
     cbp->header.initialize_from_request_header(ev->header);
     conn->send_response(cbp);
   } catch (Exception &e) {

@@ -39,6 +39,11 @@ class Column final : private std::unordered_map<rid_t, RangePtr> {
     return sizeof(*this) + sizeof(Ptr);
   }
 
+  size_t ranges_count() {
+    Mutex::scope lock(m_mutex);
+    return size();
+  }
+
   void schema_update(const DB::Schema& schema) {
     bool compact = cfg.c_versions > schema.cell_versions || 
                    (schema.cell_ttl && cfg.c_ttl > schema.cell_ttl);

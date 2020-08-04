@@ -17,6 +17,7 @@ namespace SWC { namespace Protocol { namespace Rgr { namespace Params {
 
 class ReportReq : public Serializable {
   public:
+  
   static const uint8_t RANGES     = 0x1;
   static const uint8_t RESOURCES  = 0x4;
 
@@ -106,7 +107,32 @@ class ReportRsp  : public Serializable {
   void internal_decode(const uint8_t** bufp, size_t* remainp);
 
 };
+
+
+
+class ReportResRsp  : public Serializable {
+  public:
   
+  explicit ReportResRsp(int err=Error::OK);
+
+  virtual ~ReportResRsp();
+
+  int         err; 
+  uint32_t    mem;
+  uint32_t    cpu;
+  size_t      ranges;
+
+  private:
+
+  size_t internal_encoded_length() const;
+
+  void internal_encode(uint8_t** bufp) const;
+    
+  void internal_decode(const uint8_t** bufp, size_t* remainp);
+
+};
+
+
 
 }}}}
 

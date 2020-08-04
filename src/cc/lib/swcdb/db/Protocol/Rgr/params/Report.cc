@@ -196,4 +196,38 @@ void ReportRsp::internal_decode(const uint8_t** bufp, size_t* remainp) {
 }
 
 
+
+
+ReportResRsp::ReportResRsp(int err) : err(err), mem(0), cpu(0), ranges(0) { }
+
+ReportResRsp::~ReportResRsp() {
+}
+
+size_t ReportResRsp::internal_encoded_length() const {
+  size_t sz = Serialization::encoded_length_vi32(err);
+  if(!err) {
+    sz += Serialization::encoded_length_vi32(mem)
+        + Serialization::encoded_length_vi32(cpu)
+        + Serialization::encoded_length_vi64(ranges);
+  }
+  return sz;
+}
+  
+void ReportResRsp::internal_encode(uint8_t** bufp) const {
+  Serialization::encode_vi32(bufp, err);
+  if(!err) {
+    Serialization::encode_vi32(bufp, mem);
+    Serialization::encode_vi32(bufp, cpu);
+    Serialization::encode_vi64(bufp, ranges);
+  }
+}
+  
+void ReportResRsp::internal_decode(const uint8_t** bufp, size_t* remainp) {
+  if(!(err = Serialization::decode_vi32(bufp, remainp))) {
+    mem = Serialization::decode_vi32(bufp, remainp);
+    cpu = Serialization::decode_vi32(bufp, remainp);
+    ranges = Serialization::decode_vi64(bufp, remainp);
+  }
+}
+
 }}}}
