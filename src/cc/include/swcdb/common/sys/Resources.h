@@ -113,8 +113,19 @@ class Resources final {
     }
   }
 
+  SWC_CAN_INLINE 
   uint32_t concurrency() const {
     return m_concurrency;
+  }
+
+  SWC_CAN_INLINE 
+  uint32_t available_cpu_mhz() const {
+    return m_cpu_mhz;
+  }
+
+  SWC_CAN_INLINE 
+  uint32_t available_mem_mb() const {
+    return (ram.total - ram.reserved) / 1024 / 1024;
   }
 
   void stop() {
@@ -212,8 +223,21 @@ class Resources final {
       if(next_major_chk % 100 == 0 && is_low_mem_state())
         SWC_LOGF(LOG_WARN, "Low-Memory state %s", to_string().c_str());
       
-      if(size_t concurrency = std::thread::hardware_concurrency())
-        m_concurrency = concurrency;
+      size_t concurrency = !m_concurrency || next_major_chk % 100 == 0
+        ? std::thread::hardware_concurrency() : 0;
+      if(concurrency) {
+        std::ifstream buffer(
+          "/sys/devices/system/cpu/cpufreq/policy0/cpuinfo_max_freq");
+        if(buffer.is_open()) {
+          size_t khz = 0;
+          buffer >> khz;
+          buffer.close();
+          if(khz) {
+            m_cpu_mhz = concurrency * (khz/1000);
+            m_concurrency = concurrency;
+          }
+        }
+      }
     }
 
     std::ifstream buffer("/proc/self/statm");
@@ -289,6 +313,7 @@ class Resources final {
   // Component                     storage;
   
   std::atomic<uint32_t>               m_concurrency = 0;
+  std::atomic<uint32_t>               m_cpu_mhz = 0;
   
 #if defined TCMALLOC_MINIMAL || defined TCMALLOC
   double release_rate_default; 
