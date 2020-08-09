@@ -8,6 +8,7 @@
 #define swc_manager_db_Column_h
 
 #include "swcdb/manager/db/Range.h"
+#include "swcdb/db/Types/MngrColumnState.h"
 
 #include <memory>
 #include <unordered_map>
@@ -19,11 +20,8 @@ class Column final : private std::vector<Range::Ptr> {
   
   public:
 
-  enum State {
-    OK,
-    LOADING,
-    DELETED
-  };
+  using State = Types::MngrColumn::State;
+
   typedef std::shared_ptr<Column> Ptr;
   
   static bool create(int &err, const cid_t cid) {
@@ -71,6 +69,11 @@ class Column final : private std::vector<Range::Ptr> {
   void set_loading() {
     std::scoped_lock lock(m_mutex);
     _set_loading();
+  }
+
+  State state() {
+    std::shared_lock lock(m_mutex);
+    return m_state;
   }
 
   void state(int& err) {

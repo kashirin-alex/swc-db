@@ -9,6 +9,7 @@
 
 #include <shared_mutex>
 
+#include "swcdb/db/Types/MngrRangeState.h"
 #include "swcdb/common/Files/RgrData.h"
 #include "swcdb/db/Cells/CellKey.h"
 #include "swcdb/db/Cells/Interval.h"
@@ -23,13 +24,7 @@ class Range final {
 
   typedef std::shared_ptr<Range> Ptr;
 
-  enum State {
-    NOTSET,
-    DELETED,
-    ASSIGNED,
-    CREATED,
-    QUEUED
-  };
+  using State = Types::MngrRange::State;
 
   const ColumnCfg*  cfg;
   const rid_t       rid;

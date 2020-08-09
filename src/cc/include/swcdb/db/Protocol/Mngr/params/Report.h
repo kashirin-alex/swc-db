@@ -9,6 +9,8 @@
 
 #include "swcdb/core/Serializable.h"
 #include "swcdb/db/Columns/Schema.h"
+#include "swcdb/db/Types/MngrColumnState.h"
+#include "swcdb/db/Types/MngrRangeState.h"
 
 #include <vector>
 
@@ -74,9 +76,9 @@ class RspColumnStatus : public Serializable {
 
   struct RangeStatus {
 
-    int32_t status;
-    rid_t   rid;
-    rgrid_t rgr_id;
+    Types::MngrRange::State state;
+    rid_t                   rid;
+    rgrid_t                 rgr_id;
     
     size_t encoded_length() const;
 
@@ -90,7 +92,7 @@ class RspColumnStatus : public Serializable {
 
   void display(std::ostream& out, const std::string& offset = "") const;
 
-  int                      status;
+  Types::MngrColumn::State state;
   std::vector<RangeStatus> ranges;
 
   private:

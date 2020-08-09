@@ -64,40 +64,41 @@ void ReqColumnStatus::internal_decode(const uint8_t** bufp, size_t* remainp) {
 
 
 size_t RspColumnStatus::RangeStatus::encoded_length() const { 
-  return  Serialization::encoded_length_vi32(status)
+  return  1
         + Serialization::encoded_length_vi64(rid)
         + Serialization::encoded_length_vi64(rgr_id);
 }
 
 void RspColumnStatus::RangeStatus::encode(uint8_t** bufp) const {
-  Serialization::encode_vi32(bufp, status);
+  Serialization::encode_i8(bufp, (uint8_t)state);
   Serialization::encode_vi64(bufp, rid);
   Serialization::encode_vi64(bufp, rgr_id);
 }
 
 void RspColumnStatus::RangeStatus::decode(const uint8_t** bufp, 
                                           size_t* remainp) {
-  status = Serialization::decode_vi32(bufp, remainp);
+  state = (Types::MngrRange::State)Serialization::decode_i8(bufp, remainp);
   rid = Serialization::decode_vi64(bufp, remainp);
   rgr_id = Serialization::decode_vi64(bufp, remainp);
 }
 
 void RspColumnStatus::RangeStatus::display(std::ostream& out, 
                                            const std::string& offset) const {
-  out << offset 
-      << "status=" << status 
-      << " rid=" << rid
-      << " rgr_id=" << rgr_id;
+  out << offset << "state=" << Types::to_string(state) 
+                << " rid=" << rid
+                << " rgr_id=" << rgr_id;
 }
 
 
 
-RspColumnStatus::RspColumnStatus(): status(Error::OK) { }
+RspColumnStatus::RspColumnStatus()
+                  : state(Types::MngrColumn::State::NOTSET) { 
+}
 
 RspColumnStatus::~RspColumnStatus() { }
 
 size_t RspColumnStatus::internal_encoded_length() const {
-  size_t sz = Serialization::encoded_length_vi32(status);
+  size_t sz = 1;
   sz += Serialization::encoded_length_vi64(ranges.size());
   for(auto& r : ranges)
     sz += r.encoded_length();
@@ -105,14 +106,14 @@ size_t RspColumnStatus::internal_encoded_length() const {
 }
   
 void RspColumnStatus::internal_encode(uint8_t** bufp) const {
-  Serialization::encode_vi32(bufp, status);
+  Serialization::encode_i8(bufp, (uint8_t)state);
   Serialization::encode_vi64(bufp, ranges.size());
   for(auto& r : ranges)
     r.encode(bufp);
 }
   
 void RspColumnStatus::internal_decode(const uint8_t** bufp, size_t* remainp) {
-  status = Serialization::decode_vi32(bufp, remainp);
+  state = (Types::MngrColumn::State)Serialization::decode_i8(bufp, remainp);
   ranges.resize(Serialization::decode_vi64(bufp, remainp));
   for(auto& r : ranges)
     r.decode(bufp, remainp);
@@ -124,7 +125,8 @@ void RspColumnStatus::internal_decode(const uint8_t** bufp, size_t* remainp) {
 
 
 void RspColumnStatus::display(std::ostream& out, const std::string& offset) const {
-  out << offset << "column-status=" << status << " ranges=" << ranges.size();
+  out << offset << "column-status=" << Types::to_string(state) 
+                << " ranges=" << ranges.size();
   for(auto& r : ranges) 
     r.display(out << '\n', offset + "  ");
 }

@@ -40,31 +40,30 @@ void report(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
         params.decode(&ptr, &remain);
         
         Env::Mngr::mngd_columns()->is_active(err, params.cid); 
-        if(err)
-          goto send_error;
+        if(err) {
+          if(err == Error::COLUMN_NOT_READY)
+            err = Error::OK;
+          else
+            goto send_error;
+        }
           
         Params::Report::RspColumnStatus rsp_params;
         auto col = Env::Mngr::columns()->get_column(err, params.cid);
-        if(!err) {
-          col->state(err);
-          if(err == Error::COLUMN_NOT_READY) {
-            err = Error::OK;
-            rsp_params.status = Error::COLUMN_NOT_READY;
-          }
-        }
         if(err)
           goto send_error;
+
         std::vector<Manager::Range::Ptr> ranges;
         col->get_ranges(ranges);
         rsp_params.ranges.resize(ranges.size());
         size_t i = 0; 
         for(auto& r : ranges) {
           auto& set_r = rsp_params.ranges[i];
-          set_r.status = r->state();
+          set_r.state = r->state();
           set_r.rid = r->rid;
           set_r.rgr_id = r->get_rgr_id();
           ++i;
         }
+        rsp_params.state = col->state();
         cbp = CommBuf::make(rsp_params, 4);
         cbp->append_i32(err);
         goto send_response;
