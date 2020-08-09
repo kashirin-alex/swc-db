@@ -43,6 +43,11 @@ class Range final {
 
   ~Range() { }
   
+  State state() {
+    std::shared_lock lock(m_mutex);
+    return m_state;
+  }
+
   bool deleted() {
     std::shared_lock lock(m_mutex);
     return m_state == State::DELETED;

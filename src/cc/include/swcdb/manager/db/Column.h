@@ -83,6 +83,11 @@ class Column final : private std::vector<Range::Ptr> {
       err = Error::COLUMN_NOT_READY;
   }
   
+  void get_ranges(std::vector<Range::Ptr>& ranges) {
+    std::shared_lock lock(m_mutex);
+    ranges.assign(begin(), end());
+  }
+
   Range::Ptr get_range(int&, const rid_t rid, bool initialize=false) {
     std::scoped_lock lock(m_mutex);
 

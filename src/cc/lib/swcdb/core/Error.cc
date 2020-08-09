@@ -115,9 +115,9 @@ std::map<const int, const char *> text_map {
   { Error::BAD_SCHEMA,           "bad schema" },
   { Error::BAD_KEY,              "bad key" },
 
-  { Error::SQL_PARSE_ERROR,           "HQL parse error" },
-  { Error::SQL_BAD_LOAD_FILE_FORMAT,  "HQL bad load file format" },
-  { Error::SQL_BAD_COMMAND,           "HQL bad command" },
+  { Error::SQL_PARSE_ERROR,           "SQL parse error" },
+  { Error::SQL_BAD_LOAD_FILE_FORMAT,  "SQL bad load file format" },
+  { Error::SQL_BAD_COMMAND,           "SQL bad command" },
 
   { Error::CLIENT_DATA_REMAINED,      "Data remained on client input" },
 

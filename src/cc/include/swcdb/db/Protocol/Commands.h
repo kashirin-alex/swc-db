@@ -49,8 +49,9 @@ namespace Mngr {
     RANGE_CREATE         = 0x0B,
     RANGE_UNLOADED       = 0x0C,
     RANGE_REMOVE         = 0x0D,
-    DO_ECHO              = 0x0E,
-    MAX_CMD              = 0x0F
+    REPORT               = 0x0E,
+    DO_ECHO              = 0x0F,
+    MAX_CMD              = 0x10
   };
 
 }

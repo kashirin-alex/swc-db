@@ -64,6 +64,8 @@ set(swcdb_sources
   Protocol/Mngr/req/ColumnList.cc
   Protocol/Mngr/params/ColumnMng.cc
   Protocol/Mngr/req/ColumnMng.cc
+  Protocol/Mngr/params/Report.cc
+  Protocol/Mngr/req/Report.cc
   
   client/Settings.cc
   client/Clients.cc
