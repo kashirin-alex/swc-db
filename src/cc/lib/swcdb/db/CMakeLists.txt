@@ -39,6 +39,7 @@ set(swcdb_sources
   Types/MngrRole.cc
   Types/MngrColumnState.cc
   Types/MngrRangeState.cc
+  Types/MngrRangerState.cc
 
   Protocol/Common/params/HostEndPoints.cc
 

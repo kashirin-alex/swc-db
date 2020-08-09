@@ -14,6 +14,13 @@
 namespace SWC { namespace Protocol { namespace Mngr { namespace Req {
 
  
+Report::Report(Params::Report::Function func, const uint32_t timeout)
+              : client::ConnQueue::ReqBase(false) {
+  cbp = CommBuf::make(1);
+  cbp->append_i8((uint8_t)func);
+  cbp->header.set(REPORT, timeout);
+}
+
 Report::Report(const Serializable& params, 
                Params::Report::Function func, 
                const uint32_t timeout) 
@@ -108,5 +115,81 @@ void ColumnStatus::handle(ConnHandlerPtr, const Event::Ptr& ev) {
 
   cb(req(), err, rsp_params);
 }
+
+
+
+SWC_SHOULD_INLINE
+void RangersStatus::request(cid_t cid, const RangersStatus::Cb_t& cb, 
+                            const uint32_t timeout) {
+  std::make_shared<RangersStatus>(cid, cb, timeout)->run();
+}
+
+SWC_SHOULD_INLINE
+RangersStatus::Ptr 
+RangersStatus::make(cid_t cid, const RangersStatus::Cb_t& cb, 
+                    const uint32_t timeout) {
+  return std::make_shared<RangersStatus>(cid, cb, timeout);
+}
+
+RangersStatus::RangersStatus(cid_t cid, const Cb_t& cb, const uint32_t timeout) 
+                            : Report(
+                                Params::Report::Function::RANGERS_STATUS,
+                                timeout
+                              ), cb(cb), cid(cid) {
+}
+
+RangersStatus::~RangersStatus() { }
+
+bool RangersStatus::run() {
+  if(endpoints.empty()) {
+    bool no_cid = cid == DB::Schema::NO_CID;
+    if(no_cid)
+      Env::Clients::get()->mngrs_groups->select(
+        Types::MngrRole::RANGERS, endpoints);
+    else
+      Env::Clients::get()->mngrs_groups->select(cid, endpoints); 
+
+    if(endpoints.empty()) {
+      if(no_cid)
+        MngrActive::make(Types::MngrRole::RANGERS, shared_from_this())->run();
+      else
+        MngrActive::make(cid, shared_from_this())->run();
+      return false;
+    }
+  }
+  Env::Clients::get()->mngr->get(endpoints)->put(req());
+  return true;
+}
+
+void RangersStatus::handle(ConnHandlerPtr, const Event::Ptr& ev) {
+
+  if(ev->type == Event::Type::DISCONNECT){
+    handle_no_conn();
+    return;
+  }
+  
+  Params::Report::RspRangersStatus rsp_params;
+  int err = ev->type == Event::Type::ERROR ? ev->error : Error::OK;
+  if(!err) {
+    try {
+      const uint8_t *ptr = ev->data.base;
+      size_t remain = ev->data.size;
+
+      err = Serialization::decode_i32(&ptr, &remain);
+      if(!err)
+        rsp_params.decode(&ptr, &remain);
+
+    } catch (Exception &e) {
+      SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
+      err = e.code();
+    }
+  }
+
+  cb(req(), err, rsp_params);
+}
+
+
+
+
 
 }}}}

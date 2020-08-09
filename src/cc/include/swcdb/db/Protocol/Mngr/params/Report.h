@@ -11,8 +11,9 @@
 #include "swcdb/db/Columns/Schema.h"
 #include "swcdb/db/Types/MngrColumnState.h"
 #include "swcdb/db/Types/MngrRangeState.h"
+#include "swcdb/db/Types/MngrRangerState.h"
+#include "swcdb/db/Protocol/Common/params/HostEndPoints.h"
 
-#include <vector>
 
 
 namespace SWC { namespace Protocol { namespace Mngr { namespace Params { namespace Report {
@@ -20,7 +21,8 @@ namespace SWC { namespace Protocol { namespace Mngr { namespace Params { namespa
 
 enum Function {
   CLUSTER_STATUS  = 0x00,
-  COLUMN_STATUS   = 0x01
+  COLUMN_STATUS   = 0x01,
+  RANGERS_STATUS  = 0x02
 };
 
 
@@ -94,6 +96,47 @@ class RspColumnStatus : public Serializable {
 
   Types::MngrColumn::State state;
   std::vector<RangeStatus> ranges;
+
+  private:
+
+  size_t internal_encoded_length() const;
+    
+  void internal_encode(uint8_t** bufp) const;
+    
+  void internal_decode(const uint8_t** bufp, size_t* remainp);
+
+};
+
+
+
+class RspRangersStatus : public Serializable {
+  public:
+
+  RspRangersStatus();
+
+  virtual ~RspRangersStatus();
+
+  struct Ranger final : public Common::Params::HostEndPoints {
+
+    Types::MngrRanger::State state;
+    rgrid_t                  rgr_id;
+    int32_t                  failures;
+    uint64_t                 interm_ranges;
+    uint16_t                 load_scale;
+
+    size_t encoded_length() const;
+
+    void encode(uint8_t** bufp) const;
+
+    void decode(const uint8_t** bufp, size_t* remainp);
+
+    void display(std::ostream& out, const std::string& offset) const;
+
+  };
+
+  void display(std::ostream& out, const std::string& offset = "") const;
+
+  std::vector<Ranger> rangers;
 
   private:
 

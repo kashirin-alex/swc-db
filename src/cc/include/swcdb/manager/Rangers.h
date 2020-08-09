@@ -31,6 +31,8 @@ class Rangers final {
 
   void rgr_get(const rgrid_t rgrid, EndPoints& endpoints);
 
+  void rgr_get(const Ranger::Ptr& rgr, EndPoints& endpoints);
+
   void rgr_list(const rgrid_t rgrid, RangerList& rangers);
 
   rgrid_t rgr_set_id(const EndPoints& endpoints, rgrid_t opt_rgrid=0);

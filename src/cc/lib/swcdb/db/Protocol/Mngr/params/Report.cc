@@ -123,11 +123,87 @@ void RspColumnStatus::internal_decode(const uint8_t** bufp, size_t* remainp) {
   );
 }
 
-
-void RspColumnStatus::display(std::ostream& out, const std::string& offset) const {
+void RspColumnStatus::display(std::ostream& out, 
+                              const std::string& offset) const {
   out << offset << "column-status=" << Types::to_string(state) 
                 << " ranges=" << ranges.size();
   for(auto& r : ranges) 
+    r.display(out << '\n', offset + "  ");
+}
+
+
+
+
+
+size_t RspRangersStatus::Ranger::encoded_length() const { 
+  return  1
+        + Serialization::encoded_length_vi64(rgr_id)
+        + Serialization::encoded_length_vi32(failures)
+        + Serialization::encoded_length_vi64(interm_ranges)
+        + 2
+        + Common::Params::HostEndPoints::internal_encoded_length();
+}
+
+void RspRangersStatus::Ranger::encode(uint8_t** bufp) const {
+  Serialization::encode_i8(bufp, (uint8_t)state);
+  Serialization::encode_vi64(bufp, rgr_id);
+  Serialization::encode_vi32(bufp, failures);
+  Serialization::encode_vi64(bufp, interm_ranges);
+  Serialization::encode_i16(bufp, load_scale);
+  Common::Params::HostEndPoints::internal_encode(bufp);
+}
+
+void RspRangersStatus::Ranger::decode(const uint8_t** bufp, size_t* remainp) {
+  state = (Types::MngrRanger::State)Serialization::decode_i8(bufp, remainp);
+  rgr_id = Serialization::decode_vi64(bufp, remainp);
+  failures = Serialization::decode_vi32(bufp, remainp);
+  interm_ranges = Serialization::decode_vi64(bufp, remainp);
+  load_scale = Serialization::decode_i16(bufp, remainp);
+  Common::Params::HostEndPoints::internal_decode(bufp, remainp);
+}
+
+void RspRangersStatus::Ranger::display(std::ostream& out, 
+                                       const std::string& offset) const {
+  out << offset << "state=" << Types::to_string(state) 
+                << " rgr_id=" << rgr_id
+                << " failures=" << failures
+                << " interm_ranges=" << interm_ranges
+                << " load_scale=" << load_scale
+                << " " << Common::Params::HostEndPoints::to_string();
+}
+
+
+RspRangersStatus::RspRangersStatus() { }
+
+RspRangersStatus::~RspRangersStatus() { }
+
+size_t RspRangersStatus::internal_encoded_length() const {
+  size_t sz = Serialization::encoded_length_vi64(rangers.size());
+  for(auto& r : rangers)
+    sz += r.encoded_length();
+  return sz;
+}
+  
+void RspRangersStatus::internal_encode(uint8_t** bufp) const {
+  Serialization::encode_vi64(bufp, rangers.size());
+  for(auto& r : rangers)
+    r.encode(bufp);
+}
+  
+void RspRangersStatus::internal_decode(const uint8_t** bufp, size_t* remainp) {
+  rangers.resize(Serialization::decode_vi64(bufp, remainp));
+  for(auto& r : rangers)
+    r.decode(bufp, remainp);
+  std::sort(
+    rangers.begin(), rangers.end(), 
+    [](const Ranger& l, const Ranger& r) { return l.rgr_id < r.rgr_id; } 
+  );
+}
+
+void RspRangersStatus::display(std::ostream& out, 
+                               const std::string& offset) const {
+  out << offset << "rangers=" << rangers.size();
+  for(auto& r : rangers) 
     r.display(out << '\n', offset + "  ");
 }
 

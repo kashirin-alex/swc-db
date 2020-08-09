@@ -7,6 +7,7 @@
 #ifndef swc_manager_Ranger_h
 #define swc_manager_Ranger_h
 
+#include "swcdb/db/Types/MngrRangerState.h"
 #include "swcdb/db/Protocol/Common/params/HostEndPoints.h"
 
 
@@ -17,12 +18,8 @@ class Ranger : public Protocol::Common::Params::HostEndPoints {
 
   public:
 
-  enum State {
-    NONE,
-    AWAIT,
-    ACK,
-    REMOVED
-  };
+  using State = Types::MngrRanger::State;
+
   typedef std::shared_ptr<Ranger> Ptr;
 
   Ranger(): rgrid(0), state(State::NONE), 
@@ -60,14 +57,14 @@ class Ranger : public Protocol::Common::Params::HostEndPoints {
 
   size_t internal_encoded_length() const {
     size_t len = 3
-      + Serialization::encoded_length_vi64(rgrid)
+      + Serialization::encoded_length_vi64(rgrid.load())
       + Protocol::Common::Params::HostEndPoints::internal_encoded_length();
     return len;
   }
 
   void internal_encode(uint8_t** bufp) const {
-    Serialization::encode_i8(bufp, (uint8_t)state);
-    Serialization::encode_vi64(bufp, rgrid);
+    Serialization::encode_i8(bufp, (uint8_t)state.load());
+    Serialization::encode_vi64(bufp, rgrid.load());
     Serialization::encode_i16(bufp, load_scale.load());
     Protocol::Common::Params::HostEndPoints::internal_encode(bufp);
   }
@@ -103,8 +100,8 @@ class Ranger : public Protocol::Common::Params::HostEndPoints {
     return true;
   }
 
-  rgrid_t    rgrid;
-  State      state;
+  std::atomic<rgrid_t>  rgrid;
+  std::atomic<State>    state;
 
   std::atomic<int32_t>  failures;
   std::atomic<size_t>   interm_ranges;

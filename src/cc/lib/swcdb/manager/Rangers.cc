@@ -109,6 +109,11 @@ void Rangers::rgr_get(const rgrid_t rgrid, EndPoints& endpoints) {
   }
 }
 
+void Rangers::rgr_get(const Ranger::Ptr& rgr, EndPoints& endpoints) {
+  std::lock_guard lock(m_mutex);
+  endpoints = rgr->endpoints;
+}
+
 void Rangers::rgr_list(const rgrid_t rgrid, RangerList& rangers) {
   std::lock_guard lock(m_mutex);
   for(auto& rgr : m_rangers) {
@@ -217,12 +222,13 @@ void Rangers::update_status(RangerList new_rgr_status, bool sync_all) {
         chg = false;
         if(rs_new->rgrid != h->rgrid) { 
           if(rangers_mngr)
-            rs_new->rgrid = rgr_set(rs_new->endpoints, rs_new->rgrid)->rgrid;
+            rs_new->rgrid = rgr_set(
+              rs_new->endpoints, rs_new->rgrid)->rgrid.load();
           
           if(rangers_mngr && rs_new->rgrid != h->rgrid)
             Env::Mngr::columns()->change_rgr(h->rgrid, rs_new->rgrid);
 
-          h->rgrid = rs_new->rgrid;
+          h->rgrid = rs_new->rgrid.load();
           chg = true;
         }
         for(auto& endpoint: rs_new->endpoints) {

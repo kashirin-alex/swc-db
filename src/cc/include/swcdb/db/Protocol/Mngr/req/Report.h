@@ -18,6 +18,8 @@ namespace SWC { namespace Protocol { namespace Mngr { namespace Req {
 class Report: public client::ConnQueue::ReqBase {
   public:
   
+  Report(Params::Report::Function func, const uint32_t timeout);
+
   Report(const Serializable& params, Params::Report::Function func, 
          const uint32_t timeout);
 
@@ -66,6 +68,37 @@ class ColumnStatus: public Report {
 
 };
 
+
+
+
+class RangersStatus: public Report {
+  public:
+  
+  typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&, 
+                             const int&, 
+                             const Params::Report::RspRangersStatus&)> Cb_t;
+ 
+  static void request(cid_t cid, const Cb_t& cb, 
+                      const uint32_t timeout = 10000);
+
+  static Ptr make(cid_t cid, const Cb_t& cb, 
+                  const uint32_t timeout = 10000);
+
+  RangersStatus(cid_t cid, const Cb_t& cb, 
+                const uint32_t timeout);
+
+  virtual ~RangersStatus();
+
+  bool run() override;
+
+  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
+
+  private:
+
+  const Cb_t  cb;
+  cid_t       cid;
+
+};
 
 
 

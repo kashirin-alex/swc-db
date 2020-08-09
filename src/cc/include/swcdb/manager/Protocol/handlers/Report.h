@@ -35,6 +35,30 @@ void report(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
         goto send_response;
       }
 
+      case Params::Report::Function::RANGERS_STATUS: {
+        auto& mngr_rangers = *Env::Mngr::rangers();
+
+        Manager::RangerList rangers;
+        mngr_rangers.rgr_list(0, rangers);
+        
+        Params::Report::RspRangersStatus rsp_params;
+        rsp_params.rangers.resize(rangers.size());
+        size_t i = 0;
+        for(auto& rgr : rangers) {
+          auto& r = rsp_params.rangers[i];
+          r.state = rgr->state;
+          r.rgr_id = rgr->rgrid;
+          r.failures = rgr->failures;
+          r.interm_ranges = rgr->interm_ranges;
+          r.load_scale = rgr->load_scale;
+          mngr_rangers.rgr_get(rgr, r.endpoints);
+          ++i;
+        }
+        cbp = CommBuf::make(rsp_params, 4);
+        cbp->append_i32(err);
+        goto send_response;
+      }
+
       case Params::Report::Function::COLUMN_STATUS: {
         Params::Report::ReqColumnStatus params;
         params.decode(&ptr, &remain);
