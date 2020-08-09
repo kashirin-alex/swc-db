@@ -54,8 +54,10 @@ class CommBuf final {
 
   std::vector<asio::const_buffer> get_buffers();
 
+  void append_i8(uint8_t ival);
+
   void append_i32(uint32_t ival);
-  
+
   CommHeader    header;
   uint8_t*      data_ptr;
 

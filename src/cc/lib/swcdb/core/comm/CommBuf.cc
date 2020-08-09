@@ -125,6 +125,11 @@ std::vector<asio::const_buffer> CommBuf::get_buffers() {
 }
 
 SWC_SHOULD_INLINE
+void CommBuf::append_i8(uint8_t ival) {
+  Serialization::encode_i8(&data_ptr, ival);
+}
+
+SWC_SHOULD_INLINE
 void CommBuf::append_i32(uint32_t ival) {
   Serialization::encode_i32(&data_ptr, ival);
 }
