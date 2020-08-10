@@ -134,6 +134,16 @@ void ConnQueue::stop() {
   }
 }
 
+EndPoint ConnQueue::get_endpoint_remote() {
+  Mutex::scope lock(m_mutex);
+  return m_conn && m_conn->is_open() ? m_conn->endpoint_remote : EndPoint();
+}
+
+EndPoint ConnQueue::get_endpoint_local() {
+  Mutex::scope lock(m_mutex);
+  return m_conn && m_conn->is_open() ? m_conn->endpoint_local : EndPoint();
+}
+
 void ConnQueue::put(const ConnQueue::ReqBase::Ptr& req) {
   if(!req->queue) 
     req->queue = shared_from_this();
