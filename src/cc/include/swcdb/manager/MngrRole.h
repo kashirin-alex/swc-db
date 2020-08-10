@@ -31,6 +31,10 @@ class MngrRole final {
 
   MngrStatus::Ptr active_mngr_role(uint8_t role);
 
+  void get_states(MngrsStatus& states);
+  
+  EndPoint get_inchain_endpoint() const;
+
   void req_mngr_inchain(const client::ConnQueue::ReqBase::Ptr& req);
 
   void fill_states(const MngrsStatus& states, uint64_t token, 

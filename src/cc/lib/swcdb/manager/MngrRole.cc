@@ -90,6 +90,15 @@ MngrStatus::Ptr MngrRole::active_mngr_role(uint8_t role) {
   return nullptr;
 }
 
+void MngrRole::get_states(MngrsStatus& states) {
+  std::shared_lock lock(m_mutex);
+  states.assign(m_states.begin(), m_states.end());
+}
+
+EndPoint MngrRole::get_inchain_endpoint() const {
+  return m_mngr_inchain->get_endpoint_remote();
+}
+
 void MngrRole::req_mngr_inchain(const client::ConnQueue::ReqBase::Ptr& req) {
   m_mngr_inchain->put(req);
 }
