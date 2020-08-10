@@ -12,18 +12,23 @@
 #include "swcdb/db/Types/MngrColumnState.h"
 #include "swcdb/db/Types/MngrRangeState.h"
 #include "swcdb/db/Types/MngrRangerState.h"
+#include "swcdb/db/Types/MngrState.h"
+#include "swcdb/db/Types/MngrRole.h"
 #include "swcdb/db/Protocol/Common/params/HostEndPoints.h"
 
 
 
-namespace SWC { namespace Protocol { namespace Mngr { namespace Params { namespace Report {
+namespace SWC { namespace Protocol { namespace Mngr { namespace Params { 
+namespace Report {
 
 
 enum Function {
   CLUSTER_STATUS  = 0x00,
   COLUMN_STATUS   = 0x01,
-  RANGERS_STATUS  = 0x02
+  RANGERS_STATUS  = 0x02,
+  MANAGERS_STATUS = 0x03
 };
+
 
 
 class RspClusterStatus : public Serializable {
@@ -150,7 +155,51 @@ class RspRangersStatus : public Serializable {
 
 
 
-}}}}}
+class RspManagersStatus : public Serializable {
+  public:
+
+  RspManagersStatus();
+
+  virtual ~RspManagersStatus();
+
+  struct Manager final : public Common::Params::HostEndPoints {
+
+    uint32_t            priority;
+    Types::MngrState    state;
+    uint8_t             role;
+    cid_t               cid_begin;
+    cid_t               cid_end;
+    int                 failures;
+
+    size_t encoded_length() const;
+
+    void encode(uint8_t** bufp) const;
+
+    void decode(const uint8_t** bufp, size_t* remainp);
+
+    void display(std::ostream& out, const std::string& offset) const;
+
+  };
+
+
+  void display(std::ostream& out, const std::string& offset = "") const;
+
+  std::vector<Manager>  managers;
+  EndPoint              inchain;
+
+  private:
+
+  size_t internal_encoded_length() const;
+    
+  void internal_encode(uint8_t** bufp) const;
+    
+  void internal_decode(const uint8_t** bufp, size_t* remainp);
+
+};
+
+
+}
+}}}}
 
 
 

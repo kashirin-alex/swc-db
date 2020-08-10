@@ -10,7 +10,8 @@
 
 
 
-namespace SWC { namespace Protocol { namespace Mngr { namespace Params { namespace Report {
+namespace SWC { namespace Protocol { namespace Mngr { namespace Params { 
+namespace Report {
 
 
 
@@ -209,4 +210,92 @@ void RspRangersStatus::display(std::ostream& out,
 
 
 
-}}}}}
+
+
+size_t RspManagersStatus::Manager::encoded_length() const { 
+  return  Serialization::encoded_length_vi32(priority)
+        + 2
+        + Serialization::encoded_length_vi64(cid_begin)
+        + Serialization::encoded_length_vi64(cid_end)
+        + Serialization::encoded_length_vi32(failures)
+        + Common::Params::HostEndPoints::internal_encoded_length();
+}
+
+void RspManagersStatus::Manager::encode(uint8_t** bufp) const {
+  Serialization::encode_vi32(bufp, priority);
+  Serialization::encode_i8(bufp, (uint8_t)state);
+  Serialization::encode_i8(bufp, role);
+  Serialization::encode_vi64(bufp, cid_begin);
+  Serialization::encode_vi64(bufp, cid_end);
+  Serialization::encode_vi32(bufp, failures);
+  Common::Params::HostEndPoints::internal_encode(bufp);
+}
+
+void RspManagersStatus::Manager::decode(const uint8_t** bufp, size_t* remainp) {
+  priority = Serialization::decode_vi32(bufp, remainp);
+  state = (Types::MngrState)Serialization::decode_i8(bufp, remainp);
+  role = Serialization::decode_i8(bufp, remainp);
+  cid_begin = Serialization::decode_vi64(bufp, remainp);
+  cid_end = Serialization::decode_vi64(bufp, remainp);
+  failures = Serialization::decode_vi32(bufp, remainp);
+  Common::Params::HostEndPoints::internal_decode(bufp, remainp);
+}
+
+void RspManagersStatus::Manager::display(std::ostream& out, 
+                                       const std::string& offset) const {
+  out << offset << "role=" << Types::MngrRole::to_string(role)
+                << " " << cid_begin << "<cid<" << cid_end
+                << " priority=" << priority
+                << " state=" << Types::to_string(state) 
+                << " " << Common::Params::HostEndPoints::to_string();
+}
+
+
+RspManagersStatus::RspManagersStatus() { }
+
+RspManagersStatus::~RspManagersStatus() { }
+
+size_t RspManagersStatus::internal_encoded_length() const {
+  size_t sz = Serialization::encoded_length_vi64(managers.size());
+  for(auto& m : managers)
+    sz += m.encoded_length();
+  sz += Serialization::encoded_length(inchain);
+  return sz;
+}
+  
+void RspManagersStatus::internal_encode(uint8_t** bufp) const {
+  Serialization::encode_vi64(bufp, managers.size());
+  for(auto& m : managers)
+    m.encode(bufp);
+  Serialization::encode(inchain, bufp);
+}
+  
+void RspManagersStatus::internal_decode(const uint8_t** bufp, size_t* remainp) {
+  managers.resize(Serialization::decode_vi64(bufp, remainp));
+  for(auto& m : managers)
+    m.decode(bufp, remainp);
+  std::sort(
+    managers.begin(), managers.end(), 
+    [](const Manager& l, const Manager& r) {
+      return l.role == r.role && l.cid_begin == r.cid_begin 
+              ? l.priority < r.priority
+              : l.role > r.role && l.cid_begin < r.cid_begin;
+    } 
+  );
+  inchain = Serialization::decode(bufp, remainp);
+}
+
+void RspManagersStatus::display(std::ostream& out, 
+                               const std::string& offset) const {
+  out << offset << "managers=" << managers.size() 
+                << " inchain=" << inchain;
+  for(auto& m : managers) 
+    m.display(out << '\n', offset + "  ");
+}
+
+
+
+
+
+}
+}}}}
