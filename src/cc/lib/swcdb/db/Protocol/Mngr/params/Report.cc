@@ -244,7 +244,7 @@ void RspManagersStatus::Manager::decode(const uint8_t** bufp, size_t* remainp) {
 void RspManagersStatus::Manager::display(std::ostream& out, 
                                        const std::string& offset) const {
   out << offset << "role=" << Types::MngrRole::to_string(role)
-                << " " << cid_begin << "<cid<" << cid_end
+                << " " << cid_begin << "<=CID<=" << cid_end
                 << " priority=" << priority
                 << " state=" << Types::to_string(state) 
                 << " " << Common::Params::HostEndPoints::to_string();
