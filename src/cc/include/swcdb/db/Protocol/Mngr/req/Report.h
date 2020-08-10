@@ -20,6 +20,9 @@ class Report: public client::ConnQueue::ReqBase {
   
   Report(Params::Report::Function func, const uint32_t timeout);
 
+  Report(const EndPoints& endpoints, Params::Report::Function func, 
+         const uint32_t timeout);
+
   Report(const Serializable& params, Params::Report::Function func, 
          const uint32_t timeout);
 
@@ -99,6 +102,40 @@ class RangersStatus: public Report {
   cid_t       cid;
 
 };
+
+
+
+
+class ManagersStatus: public Report {
+  public:
+  
+  typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&, 
+                             const int&, 
+                             const Params::Report::RspManagersStatus&)> Cb_t;
+ 
+  static void request(const EndPoints& endpoints, const Cb_t& cb, 
+                      const uint32_t timeout = 10000);
+
+  static Ptr make(const EndPoints& endpoints, const Cb_t& cb, 
+                  const uint32_t timeout = 10000);
+
+  ManagersStatus(const EndPoints& endpoints, const Cb_t& cb, 
+                 const uint32_t timeout);
+
+  virtual ~ManagersStatus();
+
+  bool run() override;
+
+  void handle_no_conn() override;
+
+  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
+
+  private:
+
+  const Cb_t  cb;
+
+};
+
 
 
 
