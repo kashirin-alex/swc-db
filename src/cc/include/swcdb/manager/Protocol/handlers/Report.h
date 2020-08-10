@@ -35,6 +35,33 @@ void report(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
         goto send_response;
       }
 
+      case Params::Report::Function::MANAGERS_STATUS: {
+        auto& role = *Env::Mngr::role();
+
+        Manager::MngrsStatus mngrs;
+        role.get_states(mngrs);
+        
+        Params::Report::RspManagersStatus rsp_params;
+        rsp_params.managers.resize(mngrs.size());
+        size_t i = 0;
+        for(auto& mngr : mngrs) {
+          auto& m = rsp_params.managers[i];
+          m.priority = mngr->priority;
+          m.state = mngr->state;
+          m.role = mngr->role;
+          m.cid_begin = mngr->cid_begin;
+          m.cid_end = mngr->cid_end;
+          m.failures = mngr->failures;
+          m.endpoints = mngr->endpoints;
+          ++i;
+        }
+        rsp_params.inchain = role.get_inchain_endpoint();
+          
+        cbp = CommBuf::make(rsp_params, 4);
+        cbp->append_i32(err);
+        goto send_response;
+      }
+
       case Params::Report::Function::RANGERS_STATUS: {
         auto& mngr_rangers = *Env::Mngr::rangers();
 
