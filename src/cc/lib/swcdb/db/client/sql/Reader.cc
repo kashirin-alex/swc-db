@@ -210,6 +210,16 @@ void Reader::read_uint8_t(uint8_t& value, bool& was_set) {
     value = (uint8_t)v;
 }
 
+void Reader::read_uint16_t(uint16_t& value, bool& was_set) {
+  int64_t v;
+  read_int64_t(v, was_set);
+  if (v > UINT16_MAX || v < INT16_MIN)
+    error_msg(Error::SQL_PARSE_ERROR, " unsigned 16-bit integer out of range");
+  else
+    value = (uint16_t)v;
+}
+
+
 void Reader::read_uint32_t(uint32_t& value, bool& was_set) {
   int64_t v;
   read_int64_t(v, was_set);

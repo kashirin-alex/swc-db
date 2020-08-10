@@ -66,6 +66,8 @@ class Reader {
 
   void read_uint8_t(uint8_t& value, bool& was_set);
 
+  void read_uint16_t(uint16_t& value, bool& was_set);
+
   void read_uint32_t(uint32_t& value, bool& was_set);
 
   void read_int64_t(int64_t& value, bool& was_set);
