@@ -29,7 +29,10 @@ void report(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
 
       case Params::Report::Function::CLUSTER_STATUS: {
         uint8_t status = 0;
-        //all ready ? Env::Mngr::mngd_columns()->is_active(rsp_params.err, params.cid); 
+        /* all ready ? 
+         Env::Mngr::mngd_columns()->mngd_columns(
+          rsp_params.err, params.cid); 
+        */
         cbp = CommBuf::make(Params::Report::RspClusterStatus(status), 4);
         cbp->append_i32(err);
         goto send_response;
@@ -90,17 +93,11 @@ void report(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
         Params::Report::ReqColumnStatus params;
         params.decode(&ptr, &remain);
         
-        Env::Mngr::mngd_columns()->is_active(err, params.cid); 
-        if(err) {
-          if(err == Error::COLUMN_NOT_READY)
-            err = Error::OK;
-          else
-            goto send_error;
-        }
-          
         Params::Report::RspColumnStatus rsp_params;
-        auto col = Env::Mngr::columns()->get_column(err, params.cid);
-        if(err)
+        auto col = Env::Mngr::mngd_columns()->get_column(err, params.cid);
+        if(err == Error::COLUMN_NOT_READY)
+          err = Error::OK;
+        else if(err)
           goto send_error;
 
         std::vector<Manager::Range::Ptr> ranges;

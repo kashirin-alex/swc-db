@@ -23,15 +23,8 @@ void range_unloaded(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     params.decode(&ptr, &remain);
     std::cout << "RangeUnloaded: " << params.to_string() << "\n";
 
-    Env::Mngr::mngd_columns()->is_active(rsp_params.err, params.cid); 
-    if(rsp_params.err)
-      goto send_response;
-
-    auto col = Env::Mngr::columns()->get_column(rsp_params.err, params.cid);
-    if(rsp_params.err)
-      goto send_response;
-
-    col->state(rsp_params.err);
+    auto col = Env::Mngr::mngd_columns()->get_column(
+      rsp_params.err, params.cid);
     if(rsp_params.err) {
       if(rsp_params.err == Error::COLUMN_MARKED_REMOVED)
         goto send_response;

@@ -47,7 +47,6 @@ bool MngdColumns::is_schemas_mngr(int& err) {
 }
 
 bool MngdColumns::has_active() {
-  std::shared_lock lock(m_mutex);
   return m_cid_active;
 }
 
@@ -58,19 +57,23 @@ bool MngdColumns::is_active(cid_t cid) {
         (!m_cid_end   || m_cid_end >= cid);
 }
 
-void MngdColumns::is_active(int& err, cid_t cid, bool for_schema) {
+Column::Ptr MngdColumns::get_column(int& err, cid_t cid) {
+  Column::Ptr col;
   if(!is_active(cid)) {
     err = Error::MNGR_NOT_ACTIVE;
-    return;
+    return col;
   }
-  if((is_schemas_mngr(err) && err) || for_schema)
-    return;
+  if(is_schemas_mngr(err) && err)
+    return col;
 
-  Column::Ptr col = Env::Mngr::columns()->get_column(err, cid);
-  if(col)
-    col->state(err);
-  else
-    err = Error::COLUMN_NOT_EXISTS;
+  col = Env::Mngr::columns()->get_column(err, cid);
+  if(!err) {
+    if(col)
+      col->state(err);
+    else
+      err = Error::COLUMN_NOT_EXISTS;
+  }
+  return col;
 }
 
 void MngdColumns::change_active(const cid_t cid_begin, const cid_t cid_end, 

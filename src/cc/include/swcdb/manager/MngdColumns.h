@@ -48,7 +48,7 @@ class MngdColumns final {
 
   bool is_active(cid_t cid);
 
-  void is_active(int& err, cid_t cid, bool for_schema=false);
+  Column::Ptr get_column(int& err, cid_t cid);
 
   void change_active(const cid_t cid_begin, const cid_t cid_end, 
                      bool has_cols);
@@ -104,7 +104,7 @@ class MngdColumns final {
   std::shared_mutex             m_mutex;
   std::atomic<bool>             m_run; 
   std::atomic<bool>             m_schemas_set;
-  bool                          m_cid_active;
+  std::atomic<bool>             m_cid_active;
   cid_t                         m_cid_begin;
   cid_t                         m_cid_end;
 

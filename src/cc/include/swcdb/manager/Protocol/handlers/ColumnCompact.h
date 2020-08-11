@@ -22,7 +22,7 @@ void column_compact(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     Params::ColumnCompactReq params;
     params.decode(&ptr, &remain);
 
-    Env::Mngr::mngd_columns()->is_active(rsp_params.err, params.cid); 
+    Env::Mngr::mngd_columns()->get_column(rsp_params.err, params.cid);
     if(rsp_params.err)
       goto send_response;
 

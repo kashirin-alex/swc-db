@@ -539,40 +539,41 @@ void MngrRole::apply_role_changes() {
     role_new = m_local_active_role;
   }
 
-  if(role_old != role_new) {
+  Env::Mngr::mngd_columns()->change_active(cid_begin, cid_end, has_cols);
 
-    if(role_new & Types::MngrRole::RANGERS) {
-      if(!(role_old & Types::MngrRole::RANGERS))
-        Env::Mngr::rangers()->schedule_check(1);
+  if(role_old == role_new)
+    return;
 
-    } else if(role_old & Types::MngrRole::RANGERS) {
-      SWC_LOG(LOG_INFO, "Manager(RANGERS) role has been decommissioned");
-    }
+  if(role_new & Types::MngrRole::RANGERS) {
+    if(!(role_old & Types::MngrRole::RANGERS))
+      Env::Mngr::rangers()->schedule_check(1);
 
-    if(role_new & Types::MngrRole::SCHEMAS) {
-      if(!(role_old & Types::MngrRole::SCHEMAS))
-        Env::Mngr::mngd_columns()->initialize();
-      else // if other-hosts cid roles change
-        Env::Mngr::mngd_columns()->columns_load_chk_ack();
-
-    } else if(role_old & Types::MngrRole::SCHEMAS && 
-              !(role_new & Types::MngrRole::SCHEMAS)) {
-      Env::Mngr::mngd_columns()->reset(true);
-      SWC_LOG(LOG_INFO, "Manager(SCHEMAS) role has been decommissioned");
-    }
-
-    if(role_old & Types::MngrRole::COLUMNS && 
-       (role_new & Types::MngrRole::NO_COLUMNS || !has_cols)) {
-      SWC_LOG(LOG_INFO, "Manager(COLUMNS) role has been decommissioned");
-    }
-
-    if(!(role_new & Types::MngrRole::RANGERS) && 
-        (role_new & Types::MngrRole::NO_COLUMNS || !has_cols)) {
-      Env::Mngr::rangers()->stop(false);
-    }
+  } else if(role_old & Types::MngrRole::RANGERS) {
+    SWC_LOG(LOG_INFO, "Manager(RANGERS) role has been decommissioned");
   }
 
-  Env::Mngr::mngd_columns()->change_active(cid_begin, cid_end, has_cols);
+  if(role_new & Types::MngrRole::SCHEMAS) {
+    if(!(role_old & Types::MngrRole::SCHEMAS))
+      Env::Mngr::mngd_columns()->initialize();
+    else // if other-hosts cid roles change
+      Env::Mngr::mngd_columns()->columns_load_chk_ack();
+
+  } else if(role_old & Types::MngrRole::SCHEMAS &&
+            !(role_new & Types::MngrRole::SCHEMAS)) {
+    Env::Mngr::mngd_columns()->reset(true);
+    SWC_LOG(LOG_INFO, "Manager(SCHEMAS) role has been decommissioned");
+  }
+
+  if(role_old & Types::MngrRole::COLUMNS &&
+     (role_new & Types::MngrRole::NO_COLUMNS || !has_cols)) {
+    SWC_LOG(LOG_INFO, "Manager(COLUMNS) role has been decommissioned");
+  }
+
+  if(!(role_new & Types::MngrRole::RANGERS) &&
+      (role_new & Types::MngrRole::NO_COLUMNS || !has_cols)) {
+    Env::Mngr::rangers()->stop(false);
+  }
+
 }
   
 void MngrRole::set_mngr_inchain(const ConnHandlerPtr& mngr) {

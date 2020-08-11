@@ -21,16 +21,9 @@ void rgr_get(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     size_t remain = ev->data.size;
     params.decode(&ptr, &remain);
 
-    Env::Mngr::mngd_columns()->is_active(rsp_params.err, params.cid); 
-    if(rsp_params.err != Error::OK)
-      goto send_response;
-
-    auto col = Env::Mngr::columns()->get_column(rsp_params.err, params.cid);
-    if(rsp_params.err != Error::OK)
-      goto send_response;
-
-    col->state(rsp_params.err);
-    if(rsp_params.err != Error::OK)
+    auto col = Env::Mngr::mngd_columns()->get_column(
+      rsp_params.err, params.cid);
+    if(rsp_params.err)
       goto send_response;
     
     Manager::Range::Ptr range;
