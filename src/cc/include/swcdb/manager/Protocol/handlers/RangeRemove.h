@@ -23,7 +23,8 @@ void range_remove(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     params.decode(&ptr, &remain);
     std::cout << "RangeRemove: " << params.to_string() << "\n";
 
-    auto col = Env::Mngr::columns()->get_column(rsp_params.err, params.cid);
+    auto col = Env::Mngr::mngd_columns()->get_column(
+      rsp_params.err, params.cid);
     if(rsp_params.err && rsp_params.err == Error::COLUMN_MARKED_REMOVED)
       goto send_response;
 
