@@ -39,13 +39,20 @@ class MngdColumns final {
 
   void stop();
 
+  void reset(bool schemas_mngr);
+
+
   bool is_schemas_mngr(int& err);
 
-  void active(const std::vector<cid_t>& cols);
+  bool has_active();
+
+  bool is_active(cid_t cid);
 
   void is_active(int& err, cid_t cid, bool for_schema=false);
 
-  bool has_active();
+  void change_active(const cid_t cid_begin, const cid_t cid_end, 
+                     bool has_cols);
+
 
   void require_sync();
 
@@ -64,18 +71,16 @@ class MngdColumns final {
   std::string to_string();
 
 
-  private:
+  bool initialize();
 
-  bool manage(cid_t cid);
+  void columns_load_chk_ack();
+
+  private:
 
   void check_assignment();
 
-  bool initialize();
-
 
   void columns_load();
-
-  void columns_load_chk_ack();
 
   bool load_pending(cid_t cid, ColumnFunction& pending);
 
@@ -98,9 +103,10 @@ class MngdColumns final {
   
   std::shared_mutex             m_mutex;
   std::atomic<bool>             m_run; 
-  std::atomic<bool>             m_schemas_mngr;
-  std::atomic<bool>             m_columns_set;
-  std::vector<cid_t>            m_cols_active;
+  std::atomic<bool>             m_schemas_set;
+  bool                          m_cid_active;
+  cid_t                         m_cid_begin;
+  cid_t                         m_cid_end;
 
   std::mutex                    m_mutex_columns;
   QueueSafe<ColumnReq::Ptr>     m_actions;

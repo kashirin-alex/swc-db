@@ -70,15 +70,17 @@ void Rangers::schedule_check(uint32_t t_ms) {
         if(Env::Mngr::role()->is_active_role(Types::MngrRole::RANGERS)) {
           std::lock_guard lock(m_mutex);
           m_rangers_resources.check(m_rangers);
+          schedule_check(m_rangers_resources.cfg_rgr_res_check->get());
         }
-        assign_ranges();
+        if(Env::Mngr::mngd_columns()->has_active())
+          assign_ranges();
       }
   });
 
   if(t_ms > 10000)
     SWC_LOGF(LOG_DEBUG, "%s", to_string().c_str());
 
-  SWC_LOGF(LOG_DEBUG, "Rangers assign_ranges scheduled in ms=%d", t_ms);
+  SWC_LOGF(LOG_DEBUG, "Rangers scheduled in ms=%d", t_ms);
 }
 
 
@@ -150,6 +152,7 @@ bool Rangers::rgr_ack_id(rgrid_t rgrid, const EndPoints& endpoints) {
   if(new_ack) {
     RangerList hosts({new_ack});
     changes(hosts);
+    schedule_check(500);
   }
   return ack;
 }
@@ -189,6 +192,7 @@ void Rangers::rgr_shutdown(rgrid_t, const EndPoints& endpoints) {
   if(removed) {
     RangerList hosts({removed});
     changes(hosts);
+    schedule_check(500);
   }
 }
 

@@ -12,7 +12,7 @@ namespace SWC { namespace Manager {
 MngrRole::MngrRole(const EndPoints& endpoints)
     : m_local_endpoints(endpoints),
       m_local_token(endpoints_hash(m_local_endpoints)),
-      m_checkin(false),
+      m_checkin(false), m_local_active_role(Types::MngrRole::NONE),
       m_check_timer(asio::high_resolution_timer(*Env::IoCtx::io()->ptr())),
       m_mngr_inchain(
         std::make_shared<client::ConnQueue>(Env::IoCtx::io()->shared())),
@@ -64,8 +64,7 @@ bool MngrRole::is_active(cid_t cid) {
 }
 
 bool MngrRole::is_active_role(uint8_t role) {
-  auto host = active_mngr_role(role);
-  return host && has_endpoint(host->endpoints, m_local_endpoints);
+  return m_local_active_role.load() & role;
 }
 
 MngrStatus::Ptr MngrRole::active_mngr(cid_t cid) {
@@ -215,7 +214,7 @@ void MngrRole::fill_states(const MngrsStatus& states, uint64_t token,
     new_recs ? cfg_delay_updated->get() : cfg_check_interval->get());
     
   SWC_LOGF(LOG_DEBUG, "%s", to_string().c_str());
-  set_active_columns();
+  apply_role_changes();
 }
 
 void MngrRole::update_manager_addr(uint64_t hash, const EndPoint& mngr_host) {
@@ -270,6 +269,8 @@ bool MngrRole::require_sync() {
 }
 
 void MngrRole::stop() {
+  Env::Mngr::rangers()->stop();
+  Env::Mngr::mngd_columns()->stop();
   {
     std::lock_guard lock(m_mutex_timer);
     m_check_timer.cancel();
@@ -510,31 +511,68 @@ bool MngrRole::is_group_off(const MngrStatus::Ptr& other) {
   return offline;
 }
 
-void MngrRole::set_active_columns() {
-  client::Mngr::Groups::Vec groups;
+void MngrRole::apply_role_changes() {
+  MngrStatus::Ptr host_local;
+  uint8_t role_old, role_new;
+  bool has_cols = false;
+  cid_t cid_begin = DB::Schema::NO_CID;
+  cid_t cid_end = DB::Schema::NO_CID;
   {
     std::shared_lock lock(m_mutex);
-    groups = m_local_groups;
+    role_old = m_local_active_role;
+
+    for(auto& host : m_states) {
+      if(has_endpoint(host->endpoints, m_local_endpoints)) {
+        host_local = host;
+        break;
+      }
+    }
+    if(host_local && host_local->state == Types::MngrState::ACTIVE) {
+      m_local_active_role = host_local->role;
+      if((has_cols = m_local_active_role & Types::MngrRole::COLUMNS)) {
+        cid_begin = host_local->cid_begin;
+        cid_end = host_local->cid_end;
+      }
+    } else {
+      m_local_active_role = Types::MngrRole::NONE;
+    }
+    role_new = m_local_active_role;
   }
 
-  std::vector<cid_t> active;
-  for(auto& group : groups) {
-    cid_t cid =   !group->cid_begin ?  1  : group->cid_begin;
-    cid_t cid_end = !group->cid_end ? cid : group->cid_end;
+  if(role_old != role_new) {
 
-    if(!group->cid_end && is_active(cid))
-      active.push_back(group->cid_end);
-      
-    for(;cid <= cid_end; ++cid) { 
-      auto c_it = std::find_if(active.begin(), active.end(),  
-                              [cid](const cid_t& cid_set) 
-                              {return cid_set == cid;});
-      if(c_it == active.end() && is_active(cid))
-        active.push_back(cid);
+    if(role_new & Types::MngrRole::RANGERS) {
+      if(!(role_old & Types::MngrRole::RANGERS))
+        Env::Mngr::rangers()->schedule_check(1);
+
+    } else if(role_old & Types::MngrRole::RANGERS) {
+      SWC_LOG(LOG_INFO, "Manager(RANGERS) role has been decommissioned");
+    }
+
+    if(role_new & Types::MngrRole::SCHEMAS) {
+      if(!(role_old & Types::MngrRole::SCHEMAS))
+        Env::Mngr::mngd_columns()->initialize();
+      else // if other-hosts cid roles change
+        Env::Mngr::mngd_columns()->columns_load_chk_ack();
+
+    } else if(role_old & Types::MngrRole::SCHEMAS && 
+              !(role_new & Types::MngrRole::SCHEMAS)) {
+      Env::Mngr::mngd_columns()->reset(true);
+      SWC_LOG(LOG_INFO, "Manager(SCHEMAS) role has been decommissioned");
+    }
+
+    if(role_old & Types::MngrRole::COLUMNS && 
+       (role_new & Types::MngrRole::NO_COLUMNS || !has_cols)) {
+      SWC_LOG(LOG_INFO, "Manager(COLUMNS) role has been decommissioned");
+    }
+
+    if(!(role_new & Types::MngrRole::RANGERS) && 
+        (role_new & Types::MngrRole::NO_COLUMNS || !has_cols)) {
+      Env::Mngr::rangers()->stop(false);
     }
   }
 
-  Env::Mngr::mngd_columns()->active(active);
+  Env::Mngr::mngd_columns()->change_active(cid_begin, cid_end, has_cols);
 }
   
 void MngrRole::set_mngr_inchain(const ConnHandlerPtr& mngr) {

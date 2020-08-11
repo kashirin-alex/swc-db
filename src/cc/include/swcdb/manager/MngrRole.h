@@ -77,7 +77,7 @@ class MngrRole final {
   
   bool is_group_off(const MngrStatus::Ptr& other);
 
-  void set_active_columns();
+  void apply_role_changes();
   
   void set_mngr_inchain(const ConnHandlerPtr& mngr);
 
@@ -89,6 +89,7 @@ class MngrRole final {
   MngrsStatus                     m_states;
   std::atomic<uint8_t>            m_checkin;
   client::Mngr::Groups::Vec       m_local_groups;
+  std::atomic<uint8_t>            m_local_active_role;
   bool                            m_major_updates = false;
   std::unordered_map<uint64_t,  EndPoint> m_mngrs_client_srv;
   

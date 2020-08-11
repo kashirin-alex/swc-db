@@ -13,7 +13,8 @@ namespace SWC { namespace Manager {
 
 
 MngdColumns::MngdColumns()
-    : m_run(true), m_schemas_mngr(false), m_columns_set(false), 
+    : m_run(true), m_schemas_set(false), m_cid_active(false), 
+      m_cid_begin(DB::Schema::NO_CID), m_cid_end(DB::Schema::NO_CID),
       cfg_schema_replication(Env::Config::settings()->get<Property::V_GUINT8>(
         "swc.mngr.schema.replication")),
       cfg_delay_cols_init(Env::Config::settings()->get<Property::V_GINT32>(
@@ -26,50 +27,39 @@ void MngdColumns::stop() {
   m_run = false;
 }
 
+void MngdColumns::reset(bool schemas_mngr) {
+  if(schemas_mngr) {
+    std::scoped_lock lock(m_mutex);
+    m_schemas_set = false;
+    if(!m_cid_active)
+      Env::Mngr::schemas()->reset();
+  }
+}
+
+
 bool MngdColumns::is_schemas_mngr(int& err) {
-  if(m_schemas_mngr) {
-    if(!m_columns_set)
+  if(Env::Mngr::role()->is_active_role(Types::MngrRole::SCHEMAS)) {
+    if(!m_schemas_set)
       err = Error::MNGR_NOT_INITIALIZED; 
     return true;
   }
   return false;
 }
 
-void MngdColumns::active(const std::vector<cid_t>& cols) {
-  if(!m_run)
-    return;
-  
-  bool schemas_mngr = Env::Mngr::role()->is_active_role(
-    Types::MngrRole::SCHEMAS);
-  if(m_schemas_mngr && !schemas_mngr) {
-    m_schemas_mngr = false;
-    m_columns_set = false;
-    SWC_LOG(LOG_INFO, "Manager(schemas) has been decommissioned");
-  }
+bool MngdColumns::has_active() {
+  std::shared_lock lock(m_mutex);
+  return m_cid_active;
+}
 
-  {
-    std::scoped_lock lock(m_mutex);
-    if(cols.empty() && !m_cols_active.empty()) {
-      if(!schemas_mngr)
-        Env::Mngr::schemas()->reset();
-      Env::Mngr::columns()->reset();
-      Env::Mngr::rangers()->stop(false);
-      m_cols_active.clear();
-      SWC_LOG(LOG_INFO, "Manager(columns) has been decommissioned");
-    }
-    if(cols == m_cols_active && schemas_mngr == m_schemas_mngr)
-      return;
-    m_cols_active = cols;
-  }
-
-  Env::Mngr::rangers()->schedule_check(
-    initialize() ? 500 : cfg_delay_cols_init->get());
-
-  // if(m_schemas_mngr) (scheduled on column changes ) + chk(cid) LOAD_ACK
+bool MngdColumns::is_active(cid_t cid) {
+  std::shared_lock lock(m_mutex);
+  return m_cid_active && cid &&
+        (!m_cid_begin || m_cid_begin <= cid) &&
+        (!m_cid_end   || m_cid_end >= cid);
 }
 
 void MngdColumns::is_active(int& err, cid_t cid, bool for_schema) {
-  if(!Env::Mngr::role()->is_active(cid)) {
+  if(!is_active(cid)) {
     err = Error::MNGR_NOT_ACTIVE;
     return;
   }
@@ -83,15 +73,40 @@ void MngdColumns::is_active(int& err, cid_t cid, bool for_schema) {
     err = Error::COLUMN_NOT_EXISTS;
 }
 
-bool MngdColumns::has_active() {
-  std::shared_lock lock(m_mutex);
-  return !m_cols_active.empty();
+void MngdColumns::change_active(const cid_t cid_begin, const cid_t cid_end, 
+                                bool has_cols) {
+  if(!has_cols) {
+    std::scoped_lock lock(m_mutex);
+    if(m_cid_active) {
+      m_cid_active = false;
+      Env::Mngr::columns()->reset();
+      if(!Env::Mngr::role()->is_active_role(Types::MngrRole::SCHEMAS))
+        Env::Mngr::schemas()->reset();
+    }
+    return;
+  }
+
+  {
+    std::scoped_lock lock(m_mutex);
+    if(m_cid_active && cid_begin == m_cid_begin && cid_end == m_cid_end)
+      return;
+    m_cid_begin = cid_begin;
+    m_cid_end = cid_end;
+    m_cid_active = true;
+  }
+
+  if(m_run)
+    Env::Mngr::rangers()->schedule_check(cfg_delay_cols_init->get());
+
+  //if(Env::Mngr::role()->is_active_role(Types::MngrRole::SCHEMAS)) 
+  //  (scheduled on column changes ) + chk(cid) LOAD_ACK
 }
+
 
 void MngdColumns::require_sync() {
   Env::Mngr::rangers()->sync();
     
-  if(m_schemas_mngr) {
+  if(Env::Mngr::role()->is_active_role(Types::MngrRole::SCHEMAS)) {
     columns_load();
   } else {
     auto schema = DB::Schema::make();
@@ -110,11 +125,14 @@ void MngdColumns::action(const ColumnReq::Ptr& new_req) {
 void MngdColumns::update_status(
                     Protocol::Mngr::Params::ColumnMng::Function func, 
                     DB::Schema::Ptr& schema, int err, bool initial) {
-  if(!initial && m_schemas_mngr)
+  bool schemas_mngr = Env::Mngr::role()->is_active_role(
+    Types::MngrRole::SCHEMAS);
+
+  if(!initial && schemas_mngr)
     return update_status_ack(func, schema, err);
 
   err = Error::OK;
-  if(!manage(schema->cid))
+  if(!is_active(schema->cid))
     return update(func, schema, err);
 
   switch(func) {
@@ -135,11 +153,11 @@ void MngdColumns::update_status(
           std::lock_guard lock(m_mutex_columns);
           m_cid_pending_load.emplace_back(co_func, schema->cid);
         }
-        if(!m_schemas_mngr)
+        if(!schemas_mngr)
           Env::Mngr::schemas()->replace(schema);
         Env::Mngr::rangers()->assign_ranges();
 
-      } else if(m_schemas_mngr) {
+      } else if(schemas_mngr) {
         update_status(co_func, schema, err);
 
       } else {
@@ -149,7 +167,7 @@ void MngdColumns::update_status(
     }
 
     case Protocol::Mngr::Params::ColumnMng::Function::MODIFY: {
-      if(m_schemas_mngr) {
+      if(schemas_mngr) {
         if(!Env::Mngr::rangers()->update(schema, true))
           update_status(
             Protocol::Mngr::Params::ColumnMng::Function::INTERNAL_ACK_MODIFY, 
@@ -182,7 +200,7 @@ void MngdColumns::remove(int &err, cid_t cid, rgrid_t rgrid) {
       update(
         Protocol::Mngr::Params::ColumnMng::Function::INTERNAL_ACK_DELETE,
         schema, err);
-    if(!m_schemas_mngr)
+    if(!Env::Mngr::role()->is_active_role(Types::MngrRole::SCHEMAS))
       Env::Mngr::schemas()->remove(cid);
   }
 }
@@ -193,35 +211,14 @@ std::string MngdColumns::to_string() {
   return s;
 }
 
-bool MngdColumns::manage(cid_t cid) {
-  std::shared_lock lock(m_mutex);
-
-  if(m_cols_active.empty()) 
-    return false; 
-
-  if(*m_cols_active.begin() == 0 && *(m_cols_active.end()-1) < cid) 
-    // from till-end
-    return true;
-
-  return std::find_if(m_cols_active.begin(), m_cols_active.end(),  
-                      [cid](const cid_t& cid_set) 
-                      {return cid_set == cid;}) != m_cols_active.end();
-}
-
 bool MngdColumns::initialize() {
-  if(m_columns_set) {
-    if(m_schemas_mngr)
-      columns_load_chk_ack();
-    return true;
-  }
-  
-  m_schemas_mngr = Env::Mngr::role()->is_active_role(
-    Types::MngrRole::SCHEMAS);
-  if(!m_schemas_mngr || m_columns_set)
+  if(m_schemas_set)
     return true;
 
   {
     std::scoped_lock lock1(m_mutex);
+    if(m_schemas_set)
+      return false;
     std::scoped_lock lock2(m_mutex_columns);
     
     int err = Error::OK;
@@ -272,9 +269,10 @@ bool MngdColumns::initialize() {
 
     while(pending) // keep_locking
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    
+    m_schemas_set = true;
   }
   
-  m_columns_set = true;
   columns_load();
   return true;
 }
@@ -500,7 +498,7 @@ void MngdColumns::actions_run() {
     if(!m_run) {
       err = Error::SERVER_SHUTTING_DOWN;
 
-    } else if(!m_columns_set) {
+    } else if(!m_schemas_set) {
       err = Error::MNGR_NOT_INITIALIZED;
 
     } else if(req->schema->col_name.empty()) {

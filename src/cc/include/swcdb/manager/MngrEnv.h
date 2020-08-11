@@ -75,8 +75,6 @@ class Mngr final {
 namespace SWC { namespace Env {
 
 void Mngr::stop() {
-  m_env->m_rangers.stop();
-  m_env->m_mngd_columns.stop();
   m_env->m_role.stop();
 }
 

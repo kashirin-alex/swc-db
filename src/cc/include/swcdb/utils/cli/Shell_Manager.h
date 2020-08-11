@@ -44,7 +44,7 @@ class Mngr : public Interface {
     options.push_back(
       new Option(
         "rangers-status", 
-        {"report rangers status of column or rangers manager",
+        {"report rangers status by Manager of column or Rangers-Role",
         "rangers-status [without | cid=CID | name=NAME];"},
         [ptr=this](std::string& cmd){return ptr->rangers_status(cmd);}, 
         new re2::RE2("(?i)^(report-rangers|rangers-status)")
@@ -123,29 +123,28 @@ class Mngr : public Interface {
       std::promise<void>  r_promise;
       Protocol::Mngr::Req::ManagersStatus::request(
         endpoints,
-        [this, await=&r_promise] 
+        [this, endpoints, await=&r_promise] 
         (const client::ConnQueue::ReqBase::Ptr& req, const int& error,
          const Protocol::Mngr::Params::Report::RspManagersStatus& rsp) {
-          if(!(err = error)) {
+          {
             Mutex::scope lock(Logger::logger.mutex);
-            std::cout << "# by Manager(" 
-                      << (req->queue 
-                          ? req->queue->get_endpoint_remote() 
-                          : EndPoint() 
-                          ) << ") ";
-            rsp.display(std::cout);
+            std::cout << "# by Manager(";
+            if(error) {
+              for(auto& p : endpoints)
+                std::cout << p << ',';
+              std::cout << ") - \033[31mERROR\033[00m: " << error
+                        << "(" << Error::get_text(error) << ")";
+            } else {
+              std::cout << (req->queue ? req->queue->get_endpoint_remote()
+                                       : EndPoint()) << ") ";
+              rsp.display(std::cout);
+            }
             std::cout << '\n';
           }
           await->set_value();
         }
       );
       r_promise.get_future().wait();
-
-      if(err) {
-        message.append(Error::get_text(err));
-        message.append("\n");
-        return error(message);
-      }
     }
     return true;
   }
