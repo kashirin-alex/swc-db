@@ -23,6 +23,16 @@ class Mngr : public Interface {
 
     options.push_back(
       new Option(
+        "cluster", 
+        {"report cluster-status state by error",
+        "cluster;"},
+        [ptr=this](std::string& cmd){return ptr->cluster_status(cmd);}, 
+        new re2::RE2("(?i)^(cluster)(\\s|$)")
+      )
+    );
+
+    options.push_back(
+      new Option(
         "status", 
         {"report managers status by mngr-endpoint, of Schema-Role or by All",
         "status [Schemas(default) | ALL | endpoint=HOST/IP(|PORT)];"},
@@ -57,6 +67,45 @@ class Mngr : public Interface {
         std::make_shared<client::AppContext>()
       )
     );
+  }
+
+  bool cluster_status(std::string&) {
+    std::string message;
+
+    client::Mngr::Hosts hosts;
+    auto groups = Env::Clients::get()->mngrs_groups->get_groups();
+    for(auto& g : groups) {
+      auto tmp =  g->get_hosts();
+      hosts.insert(hosts.end(), tmp.begin(), tmp.end());
+    }
+    if(hosts.empty()) {
+      err = Error::FAILED_EXPECTATION;
+      message.append("Empty swc.mngr.host config\n");
+      return error(message);
+    }
+
+    for(auto& endpoints : hosts) {
+      std::promise<void>  r_promise;
+      Protocol::Mngr::Req::ClusterStatus::request(
+        endpoints,
+        [this, await=&r_promise] 
+        (const client::ConnQueue::ReqBase::Ptr&, const int& error) {
+          err = error;
+          await->set_value();
+        }
+      );
+      r_promise.get_future().wait();
+      if(err) {
+        SWC_PRINT << "code=" << err 
+                  << " msg=" << Error::get_text(err) << SWC_PRINT_CLOSE;
+        message.append(Error::get_text(err));
+        message.append("\n");
+        return error(message);
+      }
+    }
+    SWC_PRINT << "code=" << err 
+              << " msg=" << Error::get_text(err) << SWC_PRINT_CLOSE;
+    return true;
   }
 
   bool managers_status(std::string& cmd) {

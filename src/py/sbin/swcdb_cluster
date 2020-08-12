@@ -192,6 +192,35 @@ def swcdb_stop_proc(task, name, c):
     #
 
 
+@fabric.task(hosts=[swcdb_source_host])
+def wait_ready(c, on_start=False):
+    swcdb_print_start("wait-ready", c)
+    if on_start:
+        time.sleep(5)
+    confirm = False
+    check = 1
+    while True:
+        res = c.local(
+                "echo 'cluster;quit;' "
+                "| /opt/swcdb/bin/swcdb --mngr --quiet -l=warn;",
+                hide=True)
+        if not confirm:
+            print("cluster-status check=" + str(check) + ":" +
+                  " rslt=(" + res.stdout.strip().split("\n")[0] + ")")
+        if res.stdout.strip().startswith("code=0"):
+            if confirm:
+                break
+            confirm = True
+            time.sleep(1)
+            continue
+        elif confirm:
+            confirm = False
+        time.sleep(3)
+        check += 1
+    swcdb_print_finish("wait-ready", c)
+    #
+    
+
 # DEPLOY
 
 
@@ -347,7 +376,7 @@ def stop_thriftbrokers(c):
 
 # START
 
-@fabric.task
+@fabric.task(hosts=[swcdb_source_host])
 def start(c):
     for name, run in [
             ("fsbrokers",       start_fsbrokers),
@@ -357,6 +386,9 @@ def start(c):
         print("-- starting " + name + " --")
         run(c)
         time.sleep(swcdb_cfg["swc.cluster.role.delay.start"])
+    
+    print("-- wait for ready --")
+    wait_ready(c, True)
     #
 
 
