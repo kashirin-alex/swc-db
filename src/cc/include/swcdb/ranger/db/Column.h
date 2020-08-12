@@ -117,10 +117,7 @@ class Column final : private std::unordered_map<rid_t, RangePtr> {
       if((it = begin()) == end())
         break;
       ++unloaded;
-      asio::post(
-        *Env::IoCtx::io()->ptr(), 
-        [cb, range=it->second](){range->unload(cb, false);}
-      );
+      Env::IoCtx::post([cb, range=it->second](){range->unload(cb, false);});
       erase(it);
     }
 

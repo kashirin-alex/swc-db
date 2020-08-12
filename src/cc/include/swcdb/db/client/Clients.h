@@ -18,7 +18,7 @@
 namespace SWC { namespace client {
 
 
-IOCtxPtr default_io();
+IOCtxPtr& default_io();
 
 
 class Clients final {

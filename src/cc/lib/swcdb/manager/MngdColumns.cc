@@ -122,7 +122,7 @@ void MngdColumns::require_sync() {
 
 void MngdColumns::action(const ColumnReq::Ptr& new_req) {
   if(m_actions.push_and_is_1st(new_req))
-    asio::post(*Env::IoCtx::io()->ptr(), [this]() { actions_run(); });
+    Env::IoCtx::post([this]() { actions_run(); });
 }
 
 void MngdColumns::update_status(
@@ -252,7 +252,7 @@ bool MngdColumns::initialize() {
         break;
 
       ++pending;
-      asio::post(*Env::IoCtx::io()->ptr(), 
+      Env::IoCtx::post(
         [&pending, entries=hdlr_entries, 
          replicas=cfg_schema_replication->get()]() { 
           DB::Schema::Ptr schema;

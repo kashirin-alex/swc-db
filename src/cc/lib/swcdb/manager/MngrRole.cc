@@ -283,8 +283,7 @@ void MngrRole::stop() {
     std::shared_lock lock(m_mutex);
     for(auto& host : m_states) {
       if(host->conn && host->conn->is_open())
-        asio::post(
-          *Env::IoCtx::io()->ptr(), [conn=host->conn]() {conn->do_close();});
+        Env::IoCtx::post([conn=host->conn]() {conn->do_close();});
     }
   }
 }

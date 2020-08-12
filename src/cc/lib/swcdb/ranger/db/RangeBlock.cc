@@ -130,10 +130,7 @@ bool Block::includes_end(const DB::Specs::Interval& spec) const {
 }
     
 void Block::preload() {
-  asio::post(
-    *Env::IoCtx::io()->ptr(), 
-    [this](){ scan(std::make_shared<ReqScanBlockLoader>());}
-  );
+  Env::IoCtx::post([this](){ scan(std::make_shared<ReqScanBlockLoader>());} );
 }
 
 bool Block::add_logged(const DB::Cells::Cell& cell) {
@@ -458,8 +455,7 @@ void Block::run_queue(int& err) {
       default: {
         if(!err) {
           q.req->profile.add_block_load(q.ts);
-          asio::post(*Env::IoCtx::io()->ptr(),
-                     [this, req=q.req]() { _scan(req); } );
+          Env::IoCtx::post([this, req=q.req]() { _scan(req); } );
           break;
         }
         blocks->processing_decrement();

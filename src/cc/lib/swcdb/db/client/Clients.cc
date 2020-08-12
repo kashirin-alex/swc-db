@@ -8,7 +8,7 @@
 
 namespace SWC { namespace client {
 
-IOCtxPtr default_io() {
+IOCtxPtr& default_io() {
   if(!Env::IoCtx::ok())
     Env::IoCtx::init(8);
   return Env::IoCtx::io()->shared();

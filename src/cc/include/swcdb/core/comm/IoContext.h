@@ -31,9 +31,15 @@ class IoContext final {
 
   void do_run();
   
-  IOCtxPtr shared();
+  IOCtxPtr& shared();
 
   asio::io_context* ptr();
+
+  template <typename T_Handler>
+  SWC_CAN_INLINE
+  void post(T_Handler&& handler) const {
+    asio::post(*m_ioctx.get(), handler);
+  }
 
   void set_signals();
 
@@ -70,7 +76,13 @@ class IoCtx final {
   static bool ok();
   
   static IoContext::Ptr io();
-  
+
+  template <typename T_Handler>
+  SWC_CAN_INLINE
+  static void post(T_Handler&& handler)  {
+    m_env->m_io->post(handler);
+  }
+
   static bool stopping();
 
   IoCtx(int32_t size);

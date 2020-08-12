@@ -281,10 +281,7 @@ void Read::load(int& err, FS::SmartFd::Ptr smartfd) {
 
 void Read::run_queued() {
   if(m_queue.need_run())
-    asio::post(
-      *Env::IoCtx::io()->ptr(), 
-      [this](){ m_queue.run(); }
-    );
+    Env::IoCtx::post([this](){ m_queue.run(); });
 }
 
 

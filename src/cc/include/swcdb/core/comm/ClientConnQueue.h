@@ -57,7 +57,7 @@ class ConnQueue :
 
   typedef ConnQueueReqBase ReqBase;
 
-  ConnQueue(IOCtxPtr ioctx,
+  ConnQueue(const IOCtxPtr& ioctx,
             const Property::V_GINT32::Ptr keepalive_ms=nullptr, 
             const Property::V_GINT32::Ptr again_delay_ms=nullptr);
 

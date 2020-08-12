@@ -311,7 +311,7 @@ void Fragment::load(const QueueRunnable::Call_t& cb) {
   if(loaded)
     cb();
   else
-    asio::post(*Env::IoCtx::io()->ptr(), [ptr=ptr()](){ ptr->load(); } );
+    Env::IoCtx::post([ptr=ptr()](){ ptr->load(); } );
 }
 
 void Fragment::load_cells(int&, Ranger::Block::Ptr cells_block) {
@@ -577,10 +577,7 @@ void Fragment::load() {
 
 void Fragment::run_queued() {
   if(m_queue.need_run())
-    asio::post(
-      *Env::IoCtx::io()->ptr(), 
-      [this](){ m_queue.run(); }
-    );
+    Env::IoCtx::post([this](){ m_queue.run(); });
 }
 
 

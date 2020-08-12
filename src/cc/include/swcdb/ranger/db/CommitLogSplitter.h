@@ -69,7 +69,7 @@ class Splitter final {
 
   void loaded() {
     if(m_queue.activating())
-      asio::post(*Env::IoCtx::io()->ptr(), [this](){ split(); });
+      Env::IoCtx::post([this](){ split(); });
   }
 
   void split() {

@@ -240,13 +240,8 @@ void Select::response_partials() {
     }
     m_rsp_partial_runs = true;
   }
-
-  asio::post(
-    *default_io().get(), 
-    [selector=shared_from_this()] () {
-      selector->response_partial();
-    }
-  );
+  Env::IoCtx::post(
+    [selector=shared_from_this()] () { selector->response_partial(); });
 }
 
 bool Select::wait_on_partials() const {

@@ -47,7 +47,7 @@ void Rangers::stop(bool shuttingdown) {
   {
     std::lock_guard lock(m_mutex);
     for(auto& h : m_rangers)
-      asio::post(*Env::IoCtx::io()->ptr(), [h]() { h->stop(); });
+      Env::IoCtx::post([h]() { h->stop(); });
   }
 }
 
@@ -428,7 +428,7 @@ bool Rangers::runs_assign(bool stop) {
 void Rangers::assign_ranges() {
   if(!m_run || runs_assign(false))
     return;
-  asio::post(*Env::IoCtx::io()->ptr(), [this]() { assign_ranges_run(); });
+  Env::IoCtx::post([this]() { assign_ranges_run(); });
 }
 
 void Rangers::assign_ranges_run() {

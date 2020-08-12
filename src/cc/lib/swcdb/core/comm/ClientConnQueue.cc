@@ -69,7 +69,7 @@ std::string ConnQueueReqBase::to_string() {
 }
 
 
-ConnQueue::ConnQueue(IOCtxPtr ioctx,
+ConnQueue::ConnQueue(const IOCtxPtr& ioctx,
                      const Property::V_GINT32::Ptr keepalive_ms, 
                      const Property::V_GINT32::Ptr again_delay_ms) 
                     : cfg_keepalive_ms(keepalive_ms),

@@ -133,12 +133,7 @@ class AppContext final : public SWC::AppContext {
         uint8_t cmd = ev->header.command >= Protocol::Mngr::MAX_CMD
                         ? (uint8_t)Protocol::Mngr::NOT_IMPLEMENTED 
                         : ev->header.command;
-        asio::post(
-          *Env::IoCtx::io()->ptr(), 
-          [cmd, conn, ev]() { 
-            handlers[cmd](conn, ev); 
-          }
-        );
+        Env::IoCtx::post([cmd, conn, ev]() { handlers[cmd](conn, ev); });
         return;
       }
 

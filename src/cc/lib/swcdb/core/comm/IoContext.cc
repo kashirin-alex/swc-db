@@ -44,7 +44,7 @@ void IoContext::do_run() {
 }
   
 SWC_SHOULD_INLINE
-IOCtxPtr IoContext::shared() {
+IOCtxPtr& IoContext::shared() {
   return m_ioctx;
 }
 

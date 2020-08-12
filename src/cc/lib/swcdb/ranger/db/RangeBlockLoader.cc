@@ -38,7 +38,7 @@ void BlockLoader::loaded_blk() {
       return;
     m_processing = true;
   }
-  asio::post(*Env::IoCtx::io()->ptr(), [this](){ load_cellstores_cells(); });
+  Env::IoCtx::post([this](){ load_cellstores_cells(); });
 }
 
 void BlockLoader::load_cellstores_cells() {
@@ -132,7 +132,7 @@ void BlockLoader::loaded_frag(CommitLog::Fragment::Ptr frag) {
       return;
     m_processing = true;
   }
-  asio::post(*Env::IoCtx::io()->ptr(), [this](){ load_log_cells(); });
+  Env::IoCtx::post([this](){ load_log_cells(); });
 }
 
 void BlockLoader::load_log_cells() { 
@@ -152,7 +152,7 @@ void BlockLoader::load_log_cells() {
     }
     frag->load_cells(err = Error::OK, block);
     if(more && check_log())
-      asio::post(*Env::IoCtx::io()->ptr(), [this](){ load_log(false, true); });
+      Env::IoCtx::post([this](){ load_log(false, true); });
   }
 
   if(check_log())

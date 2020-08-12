@@ -278,9 +278,7 @@ void Read::load_cells(BlockLoader* loader) {
 
 void Read::run_queued() {
   if(m_queue.need_run())
-    asio::post(*Env::IoCtx::io()->ptr(), [this]() {
-      m_queue.run([this]() { release_fd(); });
-    });
+    Env::IoCtx::post([this]() { m_queue.run([this]() { release_fd(); }); });
 }
 
 void Read::get_blocks(int&, std::vector<Block::Read::Ptr>& to) const {

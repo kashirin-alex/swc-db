@@ -145,12 +145,7 @@ class AppContext final : public SWC::AppContext {
           try{conn->send_error(Error::RS_NOT_READY, "", ev);}catch(...){}
 
         } else {
-          asio::post(
-            *Env::IoCtx::io()->ptr(), 
-            [cmd, conn, ev]() { 
-              handlers[cmd](conn, ev); 
-            }
-          );
+          Env::IoCtx::post([cmd, conn, ev]() { handlers[cmd](conn, ev); });
         }
         break;
       }
