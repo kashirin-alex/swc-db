@@ -218,13 +218,20 @@ void MngrRole::fill_states(const MngrsStatus& states, uint64_t token,
 }
 
 void MngrRole::update_manager_addr(uint64_t hash, const EndPoint& mngr_host) {
-  std::scoped_lock lock(m_mutex);
+  bool major_updates;
+  {
+    std::scoped_lock lock(m_mutex);
 
-  bool new_srv = m_mngrs_client_srv.emplace(hash, mngr_host).second;
-  if(new_srv) {
-    //m_major_updates = true;
-    schedule_checkin(500);
+    bool new_srv = m_mngrs_client_srv.emplace(hash, mngr_host).second;
+    if(new_srv) {
+      //m_major_updates = true;
+      schedule_checkin(500);
+    }
+    major_updates = m_major_updates;
+    m_major_updates = false;
   }
+  if(major_updates)
+    Env::Mngr::mngd_columns()->require_sync();
 }
   
 void MngrRole::disconnection(const EndPoint& endpoint_server, 
@@ -257,15 +264,8 @@ void MngrRole::disconnection(const EndPoint& endpoint_server,
             endpoint_client.port());
   if(host_set->state != Types::MngrState::ACTIVE)
     update_state(endpoint_server, Types::MngrState::OFF);
-  // m_major_updates = true;
+    // m_major_updates = true;
   return;
-}
-  
-bool MngrRole::require_sync() {
-  std::scoped_lock lock(m_mutex);
-  bool current = m_major_updates;
-  m_major_updates = false;
-  return current;
 }
 
 void MngrRole::stop() {

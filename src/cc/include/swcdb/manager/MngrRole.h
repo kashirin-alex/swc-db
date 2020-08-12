@@ -45,8 +45,6 @@ class MngrRole final {
   void disconnection(const EndPoint& endpoint_server, 
                      const EndPoint& endpoint_client, 
                      bool srv=false);
-  
-  bool require_sync();
 
   void stop();
 

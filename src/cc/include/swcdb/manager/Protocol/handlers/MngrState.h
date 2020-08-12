@@ -29,9 +29,6 @@ void mngr_state(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
 
     conn->response_ok(ev);
 
-    if(Env::Mngr::role()->require_sync())
-      Env::Mngr::mngd_columns()->require_sync();
-
   } catch (Exception &e) {
     SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
   }
