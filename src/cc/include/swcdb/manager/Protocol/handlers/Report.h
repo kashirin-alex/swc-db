@@ -28,14 +28,29 @@ void report(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     switch(func) {
 
       case Params::Report::Function::CLUSTER_STATUS: {
-        uint8_t status = 0;
-        /* all ready ? 
-         Env::Mngr::mngd_columns()->mngd_columns(
-          rsp_params.err, params.cid); 
-        */
-        cbp = CommBuf::make(Params::Report::RspClusterStatus(status), 4);
-        cbp->append_i32(err);
-        goto send_response;
+        
+        if(Env::Mngr::mngd_columns()->is_schemas_mngr(err) && err)
+          goto function_send_response;
+
+        if(Env::Mngr::mngd_columns()->has_cid_pending_load()) {
+          err = Error::MNGR_NOT_INITIALIZED;
+          goto function_send_response;
+        }
+
+        if(Env::Mngr::role()->is_active_role(Types::MngrRole::RANGERS) &&
+           Env::Mngr::rangers()->empty()) {
+          err = Error::MNGR_NOT_INITIALIZED;
+          goto function_send_response;
+        }
+
+        if(Env::Mngr::mngd_columns()->has_active()) {
+          Env::Mngr::columns()->state(err);
+        }
+        
+        function_send_response:
+          cbp = CommBuf::make(4);
+          cbp->append_i32(err);
+          goto send_response;
       }
 
       case Params::Report::Function::MANAGERS_STATUS: {

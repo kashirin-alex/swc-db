@@ -15,34 +15,6 @@ namespace Report {
 
 
 
-RspClusterStatus::RspClusterStatus(uint8_t status) 
-                                  : status(status) {
-}
-
-RspClusterStatus::~RspClusterStatus() { }
-
-std::string RspClusterStatus::to_string() const {
-  std::string s("Cluster(status=");
-  s.append(std::to_string((int)status));
-  s.append(")");
-  return s;
-}
-
-size_t RspClusterStatus::internal_encoded_length() const {
-  return 1;
-}
-  
-void RspClusterStatus::internal_encode(uint8_t** bufp) const {
-  Serialization::encode_i8(bufp, status);
-}
-  
-void RspClusterStatus::internal_decode(const uint8_t** bufp, size_t* remainp) {
-  status = Serialization::decode_i8(bufp, remainp);
-}
-
-
-
-
 ReqColumnStatus::ReqColumnStatus(cid_t cid)
                                 : cid(cid) { }
 

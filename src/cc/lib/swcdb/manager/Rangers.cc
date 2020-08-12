@@ -51,6 +51,11 @@ void Rangers::stop(bool shuttingdown) {
   }
 }
 
+bool Rangers::empty() {
+  std::lock_guard lock(m_mutex);
+  return m_rangers.empty();
+}
+
 void Rangers::schedule_check(uint32_t t_ms) {
   if(!m_run)
     return;

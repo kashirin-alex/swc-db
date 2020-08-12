@@ -46,6 +46,8 @@ class MngdColumns final {
 
   bool has_active();
 
+  bool has_cid_pending_load();
+  
   bool is_active(cid_t cid);
 
   Column::Ptr get_column(int& err, cid_t cid);

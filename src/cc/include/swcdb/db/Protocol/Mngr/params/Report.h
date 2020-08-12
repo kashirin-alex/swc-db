@@ -31,28 +31,6 @@ enum Function {
 
 
 
-class RspClusterStatus : public Serializable {
-  public:
-
-  RspClusterStatus(uint8_t status);
-
-  virtual ~RspClusterStatus();
-
-  std::string to_string() const;
-
-  uint8_t status;
-
-  private:
-
-  size_t internal_encoded_length() const;
-    
-  void internal_encode(uint8_t** bufp) const;
-    
-  void internal_decode(const uint8_t** bufp, size_t* remainp);
-
-};
-
-
 
 class ReqColumnStatus : public Serializable {
   public:

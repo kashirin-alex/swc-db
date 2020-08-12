@@ -53,6 +53,70 @@ void Report::clear_endpoints() {
 
 
 SWC_SHOULD_INLINE
+void ClusterStatus::request(const EndPoints& endpoints, 
+                            const ClusterStatus::Cb_t& cb, 
+                            const uint32_t timeout) {
+  std::make_shared<ClusterStatus>(endpoints, cb, timeout)->run();
+}
+
+SWC_SHOULD_INLINE
+ClusterStatus::Ptr 
+ClusterStatus::make(const EndPoints& endpoints,
+                    const ClusterStatus::Cb_t& cb, 
+                    const uint32_t timeout) {
+  return std::make_shared<ClusterStatus>(endpoints, cb, timeout);
+}
+
+ClusterStatus::ClusterStatus(const EndPoints& endpoints, 
+                             const Cb_t& cb, const uint32_t timeout)
+                            : Report(
+                                endpoints,
+                                Params::Report::Function::CLUSTER_STATUS,
+                                timeout
+                              ), cb(cb) {
+}
+
+ClusterStatus::~ClusterStatus() { }
+
+bool ClusterStatus::run() {
+  Env::Clients::get()->mngr->get(endpoints)->put(req());
+  return true;
+}
+
+void ClusterStatus::handle_no_conn() {
+  cb(req(), Error::COMM_CONNECT_ERROR);
+}
+
+void ClusterStatus::handle(ConnHandlerPtr, const Event::Ptr& ev) {
+
+  if(ev->type == Event::Type::DISCONNECT) {
+    if(!was_called)
+      handle_no_conn();
+    return;
+  }
+  was_called = true;
+  
+  int err = ev->type == Event::Type::ERROR ? ev->error : Error::OK;
+  if(!err) {
+    try {
+      const uint8_t *ptr = ev->data.base;
+      size_t remain = ev->data.size;
+
+      err = Serialization::decode_i32(&ptr, &remain);
+
+    } catch (Exception &e) {
+      SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
+      err = e.code();
+    }
+  }
+
+  cb(req(), err);
+}
+
+ 
+
+
+SWC_SHOULD_INLINE
 void ColumnStatus::request(cid_t cid, const ColumnStatus::Cb_t& cb, 
                            const uint32_t timeout) {
   request(Params::Report::ReqColumnStatus(cid), cb, timeout);

@@ -24,6 +24,8 @@ class Rangers final {
 
   void stop(bool shuttingdown=true);
 
+  bool empty();
+  
   void schedule_check(uint32_t t_ms = 10000);
 
   void rgr_report(rgrid_t rgrid, 

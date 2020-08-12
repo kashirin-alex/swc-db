@@ -35,11 +35,18 @@ class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
 
   Columns()  {}
 
+  ~Columns() { }
+
   void reset() {
     Mutex::scope lock(m_mutex);
     clear();
   }
-  ~Columns() { }
+
+  void state(int& err) {
+    Mutex::scope lock(m_mutex);
+    for(auto it = begin(); !err && it != end(); ++it)
+      it->second->state(err);
+  }
 
   bool is_an_initialization(int &err, const DB::Schema::Ptr& schema) {
     Column::Ptr col = nullptr;

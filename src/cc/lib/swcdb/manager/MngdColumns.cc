@@ -50,6 +50,11 @@ bool MngdColumns::has_active() {
   return m_cid_active;
 }
 
+bool MngdColumns::has_cid_pending_load() {
+  std::lock_guard lock(m_mutex_columns);
+  return !m_cid_pending_load.empty();
+}
+
 bool MngdColumns::is_active(cid_t cid) {
   std::shared_lock lock(m_mutex);
   return m_cid_active && cid &&
@@ -65,7 +70,7 @@ Column::Ptr MngdColumns::get_column(int& err, cid_t cid) {
   }
   if(is_schemas_mngr(err) && err)
     return col;
-
+    
   col = Env::Mngr::columns()->get_column(err, cid);
   if(!err) {
     if(col)

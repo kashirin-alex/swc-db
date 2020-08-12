@@ -38,6 +38,39 @@ class Report: public client::ConnQueue::ReqBase {
 };
 
 
+
+
+class ClusterStatus: public Report {
+  public:
+  
+  typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&, 
+                             const int&)> Cb_t;
+ 
+  static void request(const EndPoints& endpoints, 
+                      const Cb_t& cb, const uint32_t timeout = 10000);
+
+  static Ptr make(const EndPoints& endpoints, 
+                  const Cb_t& cb, const uint32_t timeout = 10000);
+
+  ClusterStatus(const EndPoints& endpoints, 
+                const Cb_t& cb, const uint32_t timeout);
+
+  virtual ~ClusterStatus();
+
+  bool run() override;
+
+  void handle_no_conn() override;
+
+  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
+
+  private:
+
+  const Cb_t  cb;
+
+};
+
+
+
   
 class ColumnStatus: public Report {
   public:
