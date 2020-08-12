@@ -95,19 +95,20 @@ void Compact::Group::load() {
 }
 
 void Compact::Group::write() {
-  if(compact->log->stopping || error || m_cells.empty())
-    return;
   size_t total_cells_count = 0;
-  int err = Error::OK;
+  int err;
   ssize_t sz;
+  uint32_t cells_count;
+  if(compact->log->stopping || error || m_cells.empty())
+    goto finished_write;
+
   do {
     DynamicBuffer cells;
-    uint32_t cells_count = 0;
     DB::Cells::Interval interval(m_cells.key_seq);
     auto buff_write = std::make_shared<StaticBuffer>();
     sz = m_cells.size_of_internal();
     m_cells.write_and_free(
-      cells, cells_count, interval, 
+      cells, cells_count = 0, interval, 
       compact->log->range->cfg->block_size(), 
       compact->log->range->cfg->block_cells()
     );
@@ -115,7 +116,7 @@ void Compact::Group::write() {
     total_cells_count += cells_count;
 
     auto frag = Fragment::make_write(
-      err, 
+      err = Error::OK, 
       compact->get_filepath(compact->log->next_id()),
       interval, 
       compact->log->range->cfg->block_enc(), 
@@ -140,8 +141,9 @@ void Compact::Group::write() {
     );
   } while(!error && !m_cells.empty());
 
-  m_sem.wait_all();
-  compact->finished(this, total_cells_count);
+  finished_write:
+    m_sem.wait_all();
+    compact->finished(this, total_cells_count);
 }
 
 void Compact::Group::finalize() {
