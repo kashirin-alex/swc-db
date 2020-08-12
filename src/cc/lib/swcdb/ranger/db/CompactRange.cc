@@ -264,8 +264,7 @@ void CompactRange::response(int& err) {
   }
 
   if(m_q_intval.push_and_is_1st(in_block))
-    asio::post(*RangerEnv::maintenance_io()->ptr(), 
-      [ptr=shared()](){ ptr->process_interval(); });
+    RangerEnv::maintenance_post([ptr=shared()](){ ptr->process_interval(); });
 
   if(m_stopped || !in_block)
     return;
@@ -376,7 +375,7 @@ void CompactRange::request_more() {
     m_getting = true;
   }
 
-  asio::post(*RangerEnv::maintenance_io()->ptr(), 
+  RangerEnv::maintenance_post(
     [ptr=shared()](){ ptr->range->scan_internal(ptr->get_req_scan()); });
 }
 
@@ -391,8 +390,7 @@ void CompactRange::process_interval() {
       in_block->finalize_interval(false, false);
     }
     if(m_q_encode.push_and_is_1st(in_block))
-      asio::post(*RangerEnv::maintenance_io()->ptr(), 
-        [ptr=shared()](){ ptr->process_encode(); });
+      RangerEnv::maintenance_post([ptr=shared()](){ ptr->process_encode(); });
   } while(m_q_intval.pop_and_more() && !m_stopped);
   time_intval += Time::now_ns() - start;
   request_more();
@@ -409,8 +407,7 @@ void CompactRange::process_encode() {
       in_block->finalize_encode(blk_encoding);
     }
     if(m_q_write.push_and_is_1st(in_block))
-      asio::post(*RangerEnv::maintenance_io()->ptr(), 
-        [ptr=shared()](){ ptr->process_write(); });
+      RangerEnv::maintenance_post([ptr=shared()](){ ptr->process_write(); });
   } while(m_q_encode.pop_and_more() && !m_stopped);
   time_encode += Time::now_ns() - start;
   request_more();

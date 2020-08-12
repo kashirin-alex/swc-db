@@ -57,6 +57,12 @@ class RangerEnv final {
     return m_env->mnt_io.get();
   }
 
+  template <typename T_Handler>
+  SWC_CAN_INLINE
+  static void maintenance_post(T_Handler&& handler)  {
+    m_env->mnt_io->post(handler);
+  }
+
   SWC_CAN_INLINE 
   static Resources& res() {
     return m_env->_resources;

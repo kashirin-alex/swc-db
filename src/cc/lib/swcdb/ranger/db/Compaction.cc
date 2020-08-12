@@ -92,8 +92,7 @@ void Compaction::run(bool continuing) {
       std::scoped_lock lock(m_mutex); 
       ++m_running;
     }
-    asio::post(*RangerEnv::maintenance_io()->ptr(), 
-      [this, range](){ compact(range); } );
+    RangerEnv::maintenance_post([this, range](){ compact(range); } );
     
     if(!available())
       return;
@@ -187,7 +186,7 @@ void Compaction::compacted() {
   std::scoped_lock lock(m_mutex);
 
   if(m_running && m_running-- == cfg_max_range->get()) {
-    asio::post(*RangerEnv::maintenance_io()->ptr(), [this](){ run(true); });
+    RangerEnv::maintenance_post([this](){ run(true); });
     return;
   }
   if(m_run) {
