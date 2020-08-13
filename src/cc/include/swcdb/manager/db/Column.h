@@ -42,7 +42,7 @@ class Column final : private std::vector<Range::Ptr> {
   const ColumnCfg  cfg;
 
   Column(const DB::Schema::Ptr& schema) 
-        : cfg(schema), m_state(State::LOADING) {
+        : cfg(schema), m_state(State::LOADING), m_check_ts(0) {
   }
 
   ~Column() { }
@@ -258,6 +258,33 @@ class Column final : private std::vector<Range::Ptr> {
         rgrids.push_back(rgrid);
     }
   }
+
+  void reset_health_check() {
+    std::shared_lock lock(m_mutex);
+    m_check_ts = 0;
+  }
+
+  bool need_health_check(int64_t ts, uint32_t ms) {
+    std::shared_lock lock(m_mutex);
+    if(m_state == State::OK && m_check_ts + ms < ts) {
+      m_check_ts = ts;
+      return true;
+    }
+    return false;
+  }
+
+  void need_health_check(int64_t ts, uint32_t ms, 
+                         std::vector<Range::Ptr> &ranges, 
+                         rgrid_t rgrid = 0, size_t max = 0) {
+    std::shared_lock lock(m_mutex);
+    for(auto& range : *this) {
+      if(range->need_health_check(ts, ms, rgrid)) {
+        ranges.push_back(range);
+        if(max && ranges.size() == max)
+          return;
+      }
+    }
+  }
   
   void remove_range(rid_t rid) {
     std::scoped_lock lock(m_mutex);
@@ -353,8 +380,10 @@ class Column final : private std::vector<Range::Ptr> {
   }
 
   void _set_loading() {
-    if(m_state == State::OK)
+    if(m_state == State::OK) {
       m_state = State::LOADING;
+      m_check_ts = 0;
+    }
   }
   
   rid_t _get_next_rid() {
@@ -379,12 +408,15 @@ class Column final : private std::vector<Range::Ptr> {
       if(!range->assigned())
         return;
     }
-    if(m_state == State::LOADING)
+    if(m_state == State::LOADING) {
       m_state = State::OK;
+      m_check_ts = Time::now_ms();
+    }
   }
 
   std::shared_mutex         m_mutex;
   std::atomic<State>        m_state;
+  int64_t                   m_check_ts;
 
   std::unordered_map<rgrid_t, int64_t>   m_schemas_rev;
 

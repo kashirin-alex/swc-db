@@ -31,7 +31,8 @@ class Range final {
 
   Range(const ColumnCfg* cfg, const rid_t rid)
         : cfg(cfg), rid(rid), m_path(DB::RangeBase::get_path(cfg->cid, rid)),
-          m_state(State::NOTSET), m_rgrid(0), m_last_rgr(nullptr) { 
+          m_state(State::NOTSET), m_check_ts(0),
+          m_rgrid(0), m_last_rgr(nullptr) { 
   }
 
   void init(int&) { }
@@ -63,10 +64,21 @@ class Range final {
     return m_state == State::NOTSET;
   }
 
+  bool need_health_check(int64_t ts, uint32_t ms, rgrid_t rgrid) {
+    std::shared_lock lock(m_mutex);
+    if(m_state == State::ASSIGNED && 
+       (!rgrid || m_rgrid == rgrid) && m_check_ts + ms < ts) {
+      m_check_ts = ts;
+      return true;
+    }
+    return false;
+  }
+
   void set_state(State new_state, rgrid_t rgrid) {
     std::scoped_lock lock(m_mutex);
     m_state = new_state;
     m_rgrid = rgrid;
+    m_check_ts = m_state == State::ASSIGNED ? Time::now_ms() : 0;
   }
   
   void set_deleted() {
@@ -164,6 +176,7 @@ class Range final {
 
   std::shared_mutex     m_mutex;
   State                 m_state;
+  int64_t               m_check_ts;
   rgrid_t               m_rgrid;
   Files::RgrData::Ptr   m_last_rgr;
 

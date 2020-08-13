@@ -22,17 +22,21 @@ namespace SWC { namespace Manager {
 
 
 Rangers::Rangers()
-    : m_run(true),
-      m_timer(asio::high_resolution_timer(*Env::IoCtx::io()->ptr())),
-      m_runs_assign(false), m_assignments(0),
-      cfg_rgr_failures(Env::Config::settings()->get<Property::V_GINT32>(
+    : cfg_rgr_failures(Env::Config::settings()->get<Property::V_GINT32>(
         "swc.mngr.ranges.assign.Rgr.remove.failures")),
       cfg_delay_rgr_chg(Env::Config::settings()->get<Property::V_GINT32>(
         "swc.mngr.ranges.assign.delay.onRangerChange")),
       cfg_chk_assign(Env::Config::settings()->get<Property::V_GINT32>(
         "swc.mngr.ranges.assign.interval.check")),
       cfg_assign_due(Env::Config::settings()->get<Property::V_GINT32>(
-        "swc.mngr.ranges.assign.due")) { 
+        "swc.mngr.ranges.assign.due")),
+      cfg_column_health_chk(Env::Config::settings()->get<Property::V_GINT32>(
+        "swc.mngr.column.health.interval.check")),
+      cfg_column_health_chkers(Env::Config::settings()->get<Property::V_GINT32>(
+        "swc.mngr.column.health.checks")),
+      m_run(true),
+      m_timer(asio::high_resolution_timer(*Env::IoCtx::io()->ptr())),
+      m_runs_assign(false), m_assignments(0) { 
 }
 
 Rangers::~Rangers() { }
@@ -77,8 +81,11 @@ void Rangers::schedule_check(uint32_t t_ms) {
           m_rangers_resources.check(m_rangers);
           schedule_check(m_rangers_resources.cfg_rgr_res_check->get());
         }
-        if(Env::Mngr::mngd_columns()->has_active())
+        if(Env::Mngr::mngd_columns()->has_active()) {
           assign_ranges();
+          health_check_columns();
+          schedule_check(cfg_column_health_chk->get());
+        }
       }
   });
 
@@ -104,6 +111,14 @@ void Rangers::rgr_report(rgrid_t rgrid,
     changes(changed);
 }
 
+Ranger::Ptr Rangers::rgr_get(const rgrid_t rgrid) {
+  std::lock_guard lock(m_mutex);
+  for(auto& rgr : m_rangers) {
+    if(rgr->rgrid == rgrid)
+      return rgr;
+  }
+  return nullptr;
+}
 
 void Rangers::rgr_get(const rgrid_t rgrid, EndPoints& endpoints) {
   std::lock_guard lock(m_mutex);
@@ -155,8 +170,7 @@ bool Rangers::rgr_ack_id(rgrid_t rgrid, const EndPoints& endpoints) {
   }
 
   if(new_ack) {
-    RangerList hosts({new_ack});
-    changes(hosts);
+    changes({new_ack});
     schedule_check(500);
   }
   return ack;
@@ -195,8 +209,7 @@ void Rangers::rgr_shutdown(rgrid_t, const EndPoints& endpoints) {
     }
   }
   if(removed) {
-    RangerList hosts({removed});
-    changes(hosts);
+    changes({removed});
     schedule_check(500);
   }
 }
@@ -325,7 +338,7 @@ void Rangers::assign_range(const Ranger::Ptr& rgr, const Range::Ptr& range) {
 
 void Rangers::range_loaded(Ranger::Ptr rgr, Range::Ptr range, 
                            int err, bool failure, bool verbose) {
-  bool run_assign = m_assignments-- > cfg_assign_due->get();           
+  bool run_assign = m_assignments-- > cfg_assign_due->get();
 
   if(!range->deleted()) {
     if(err) {
@@ -408,6 +421,28 @@ void Rangers::column_compact(int& err, const cid_t cid) {
   }
 }
 
+void Rangers::need_health_check(const Column::Ptr& col) {
+  {
+    std::lock_guard lock(m_mutex_assign);
+    auto it = std::find_if(
+      m_columns_check.begin(), m_columns_check.end(), 
+      [col](const ColumnHealthCheck::Ptr chk) { return chk->col == col; });
+    if(it != m_columns_check.end())
+      return;
+  }
+  col->reset_health_check();
+  health_check_columns();
+}
+
+void Rangers::health_check_finished(const ColumnHealthCheck::Ptr& chk) {
+  {
+    std::lock_guard lock(m_mutex_assign);
+    auto it = std::find(m_columns_check.begin(), m_columns_check.end(), chk);
+    if(it != m_columns_check.end())
+      m_columns_check.erase(it);
+  }
+  health_check_columns();
+}
 
 std::string Rangers::to_string() {
   std::string s("Rangers:");
@@ -504,6 +539,8 @@ void Rangers::next_rgr(Files::RgrData::Ptr& last_rgr, Ranger::Ptr& rs_set) {
       if((rgr = *it)->failures >= cfg_rgr_failures->get()) {
         m_rangers.erase(it);
         Env::Mngr::columns()->set_rgr_unassigned(rgr->rgrid);
+        rgr->state = Ranger::State::REMOVED;
+        _changes({rgr});
         continue;
       }
       ++it;
@@ -548,21 +585,39 @@ void Rangers::assign_range(const Ranger::Ptr& rgr, const Range::Ptr& range,
         break;
       }
     }
-  }
-  if(!rs_last) {
-    std::lock_guard lock(m_mutex);
-    rs_last = m_rangers.emplace_back(new Ranger(0, last_rgr->endpoints));
-    rs_last->init_queue();
-    rs_last->state = Ranger::State::AWAIT;
+    if(!rs_last) {
+      rs_last = m_rangers.emplace_back(new Ranger(0, last_rgr->endpoints));
+      rs_last->init_queue();
+      rs_last->state = Ranger::State::AWAIT;
+    }
   }
     
   auto req = std::make_shared<Protocol::Rgr::Req::AssignIdNeeded>(
     rs_last, rgr, range);
-  if(id_due)
+  if(id_due) {
+    std::lock_guard lock(m_mutex);
     rs_last->pending_id(req);
-  else
+  } else {
     rs_last->put(req);
+  }
 }
+
+
+void Rangers::health_check_columns() {
+  if(!m_mutex_assign.try_lock())
+    return;
+  int64_t ts = Time::now_ms();
+  uint32_t intval = cfg_column_health_chk->get();
+  for(Column::Ptr col; 
+      m_columns_check.size() < size_t(cfg_column_health_chkers->get()) &&
+      (col = Env::Mngr::columns()->get_need_health_check(ts, intval)); ) {
+    m_columns_check.emplace_back(
+      new ColumnHealthCheck(col, ts, intval));
+    Env::IoCtx::post([chk=m_columns_check.back()]() { chk->run(); });
+  }
+  m_mutex_assign.unlock();
+}
+
 
 Ranger::Ptr Rangers::rgr_set(const EndPoints& endpoints, rgrid_t opt_rgrid) {
   for(auto it=m_rangers.begin();it<m_rangers.end(); ++it) {
@@ -605,30 +660,35 @@ Ranger::Ptr Rangers::rgr_set(const EndPoints& endpoints, rgrid_t opt_rgrid) {
 }
 
 
-void Rangers::changes(RangerList& hosts, bool sync_all) {
+void Rangers::changes(const RangerList& hosts, bool sync_all) {
   {
     std::lock_guard lock(m_mutex);
-    if(!hosts.empty()) {
-      // batches of 1000 hosts a req
-      for(auto it = hosts.cbegin(); it < hosts.cend(); ) {
-        auto from = it;
-        Env::Mngr::role()->req_mngr_inchain(
-          std::make_shared<Protocol::Mngr::Req::RgrUpdate>(
-            RangerList(from, (it+=1000) < hosts.cend() ? it : hosts.cend()),
-            sync_all
-          )
-        );
-      }
-
-      SWC_LOG_OUT(LOG_INFO) << "Rangers::changes:\n";
-      for(auto& h : hosts)
-        std::cout << " " << h->to_string() << "\n";
-      std::cout << SWC_LOG_OUT_END;
-    }
+    _changes(hosts, sync_all);
   }
     
   if(Env::Mngr::mngd_columns()->has_active())
     schedule_check(cfg_delay_rgr_chg->get());
+}
+
+void Rangers::_changes(const RangerList& hosts, bool sync_all) {
+  if(hosts.empty()) 
+    return;
+
+  // batches of 1000 hosts a req
+  for(auto it = hosts.cbegin(); it < hosts.cend(); ) {
+    auto from = it;
+    Env::Mngr::role()->req_mngr_inchain(
+      std::make_shared<Protocol::Mngr::Req::RgrUpdate>(
+        RangerList(from, (it+=1000) < hosts.cend() ? it : hosts.cend()),
+        sync_all
+      )
+    );
+  }
+
+  SWC_LOG_OUT(LOG_INFO) << "Rangers::changes:\n";
+  for(auto& h : hosts)
+    std::cout << " " << h->to_string() << "\n";
+  std::cout << SWC_LOG_OUT_END;
 }
 
 

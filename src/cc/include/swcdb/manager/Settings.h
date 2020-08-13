@@ -61,6 +61,11 @@ void Settings::init_app_options(){
     ("swc.mngr.ranges.assign.due", g_i32(100), 
      "Total allowed ranges due on Ranger assignment")
 
+    ("swc.mngr.column.health.interval.check", g_i32(300000), 
+     "Column Health Check Interval in ms")
+    ("swc.mngr.column.health.checks", g_i32(2), 
+     "Number of concurrent Column Health Checks")
+
     ("swc.mngr.schema.replication", g_i8(3), 
      "Save schema under N-replications (fs-dependent)")
 

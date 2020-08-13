@@ -99,6 +99,15 @@ class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
       it->second->change_rgr(rgrid_old, rgrid);
   }
 
+  Column::Ptr get_need_health_check(int64_t ts, uint32_t ms) {
+    Mutex::scope lock(m_mutex);
+    for(auto it = begin(); it != end(); ++it) {
+      if(it->second->need_health_check(ts, ms))
+        return it->second;
+    }
+    return nullptr;
+  }
+
   void remove(int&, const cid_t cid) {
     Mutex::scope lock(m_mutex);
     auto it = find(cid);

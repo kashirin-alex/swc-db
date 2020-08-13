@@ -9,6 +9,7 @@
 
 #include "swcdb/manager/Ranger.h"
 #include "swcdb/manager/RangersResources.h"
+#include "swcdb/manager/ColumnHealthCheck.h"
 
 
 namespace SWC { namespace Manager {
@@ -17,6 +18,14 @@ namespace SWC { namespace Manager {
 
 class Rangers final {
   public:
+
+  const Property::V_GINT32::Ptr cfg_rgr_failures;
+  const Property::V_GINT32::Ptr cfg_delay_rgr_chg;
+  const Property::V_GINT32::Ptr cfg_chk_assign;
+  const Property::V_GINT32::Ptr cfg_assign_due;
+
+  const Property::V_GINT32::Ptr cfg_column_health_chk;
+  const Property::V_GINT32::Ptr cfg_column_health_chkers;
 
   Rangers();
 
@@ -30,6 +39,8 @@ class Rangers final {
 
   void rgr_report(rgrid_t rgrid, 
                   const Protocol::Rgr::Params::ReportResRsp& rsp);
+
+  Ranger::Ptr rgr_get(const rgrid_t rgrid);
 
   void rgr_get(const rgrid_t rgrid, EndPoints& endpoints);
 
@@ -66,6 +77,12 @@ class Rangers final {
   
   void column_compact(int& err, const cid_t cid);
 
+
+  void need_health_check(const Column::Ptr& col);
+
+  void health_check_finished(const ColumnHealthCheck::Ptr& chk);
+
+
   std::string to_string();
 
   private:
@@ -79,9 +96,14 @@ class Rangers final {
   void assign_range(const Ranger::Ptr& rgr, const Range::Ptr& range, 
                     const Files::RgrData::Ptr& last_rgr);
 
+  void health_check_columns();
+
   Ranger::Ptr rgr_set(const EndPoints& endpoints, rgrid_t opt_rgrid=0);
 
-  void changes(RangerList& hosts, bool sync_all=false);
+  void changes(const RangerList& hosts, bool sync_all=false);
+
+  void _changes(const RangerList& hosts, bool sync_all=false);
+  
   
   std::atomic<bool>             m_run; 
 
@@ -95,11 +117,7 @@ class Rangers final {
   std::mutex                    m_mutex_assign;
   bool                          m_runs_assign;
   std::atomic<int>              m_assignments; 
-  
-  const Property::V_GINT32::Ptr cfg_rgr_failures;
-  const Property::V_GINT32::Ptr cfg_delay_rgr_chg;
-  const Property::V_GINT32::Ptr cfg_chk_assign;
-  const Property::V_GINT32::Ptr cfg_assign_due;
+  ColumnHealthChecks            m_columns_check;
   
 };
 

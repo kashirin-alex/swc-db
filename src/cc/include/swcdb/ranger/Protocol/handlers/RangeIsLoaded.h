@@ -24,7 +24,7 @@ void range_is_loaded(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     int err = Error::OK;
     auto range = RangerEnv::columns()->get_range(err, params.cid, params.rid);
       
-    if(range != nullptr && range->is_loaded()){
+    if(range != nullptr && range->is_loaded()) {
       conn->response_ok(ev);
     } else {
       if(err == Error::OK)

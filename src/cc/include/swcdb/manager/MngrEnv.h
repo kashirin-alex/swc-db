@@ -69,6 +69,7 @@ class Mngr final {
 #include "swcdb/manager/MngrRole.cc"
 #include "swcdb/manager/Rangers.cc"
 #include "swcdb/manager/MngdColumns.cc"
+#include "swcdb/manager/ColumnHealthCheck.cc"
 
 
 

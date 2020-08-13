@@ -13,53 +13,46 @@
 namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
 
 
-class RangeIsLoaded : public DispatchHandler {
+class RangeIsLoaded : public client::ConnQueue::ReqBase {
   public:
   
-  typedef std::function<void(bool)> RangeIsLoaded_t;
+  const Manager::ColumnHealthCheck::RangerCheck::Ptr   checker;
+  const Manager::Range::Ptr                            range;
 
-  RangeIsLoaded(const ConnHandlerPtr& conn, 
-                const Manager::Range::Ptr& range,
-                const RangeIsLoaded_t& cb,
-                uint32_t timeout=60000)
-                : conn(conn), range(range), cb(cb), timeout(timeout), 
-                  was_called(false) { 
+  RangeIsLoaded(const Manager::ColumnHealthCheck::RangerCheck::Ptr& checker,
+                const Manager::Range::Ptr& range, uint32_t timeout=60000)
+                : client::ConnQueue::ReqBase(false), 
+                  checker(checker), range(range) { 
+    cbp = CommBuf::make(Params::RangeIsLoaded(range->cfg->cid, range->rid));
+    cbp->header.set(RANGE_IS_LOADED, timeout);
   }
   
   virtual ~RangeIsLoaded() { }
   
-  bool run() override {
-    auto cbp = CommBuf::make(
-      Params::RangeIsLoaded(range->cfg->cid, range->rid));
-    cbp->header.set(RANGE_IS_LOADED, timeout);
-    return conn->send_request(cbp, shared_from_this());
+  bool valid() override {
+    return checker->rgr->state == Types::MngrRanger::State::ACK && 
+           range->assigned();
   }
 
-  void disconnected() {};
-
-  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override {
-    
-    // SWC_LOGF(LOG_DEBUG, "handle: %s", ev->to_str().c_str());
-    
-    if(ev->type == Event::Type::DISCONNECT){
-      if(!was_called)
-        cb(false);
+  void handle_no_conn() {
+    if(was_called)
       return;
-    }
-
-    if(ev->header.command == RANGE_IS_LOADED){
-      was_called = true;
-      cb(ev->response_code() == Error::OK);
-    }
-
+    was_called = true;
+    checker->handle(range, Error::COMM_CONNECT_ERROR);
   }
 
-  private:
-  ConnHandlerPtr            conn;
-  Manager::Range::Ptr       range;
-  RangeIsLoaded_t           cb;
-  uint32_t                  timeout;
-  std::atomic<bool>         was_called;
+  void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
+    if(was_called)
+      return;
+    was_called = true;
+
+    checker->handle(
+      range, 
+      ev->type == Event::Type::DISCONNECT
+        ? Error::COMM_NOT_CONNECTED
+        : ev->response_code());
+  }
+
 };
 
 }}}}
