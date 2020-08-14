@@ -18,9 +18,9 @@ class ReportRes : public client::ConnQueue::ReqBase {
   
   virtual ~ReportRes();
 
-  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
-  
   void handle_no_conn() override;
+
+  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
 
   private:
 

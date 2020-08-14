@@ -10,7 +10,6 @@
 #include "swcdb/db/client/Clients.h"
 #include "swcdb/db/client/AppContext.h"
 #include "swcdb/db/Protocol/Rgr/req/Report.h"
-#include "swcdb/db/Protocol/Rgr/req/ReportRes.h"
 #include "swcdb/db/client/sql/Reader.h"
 
 
@@ -36,7 +35,7 @@ class Rgr : public Interface {
     options.push_back(
       new Option(
         "report", 
-        {"report loaded column or all on Ranger and opt. ranges",
+        {"report loaded column or all and opt. ranges on a Ranger",
         "report [cid=NUM/column='name'] [ranges] endpoint/hostname[|port];"},
         [ptr=this](std::string& cmd){return ptr->report(cmd);}, 
         new re2::RE2("(?i)^(report)")
@@ -115,17 +114,11 @@ class Rgr : public Interface {
 
     std::promise<void>  r_promise;
     Protocol::Rgr::Req::ReportRes::request(
-      Protocol::Rgr::Params::ReportReq(
-        Protocol::Rgr::Params::ReportReq::RESOURCES), 
       endpoints, 
-      [this, await=&r_promise]() {
-        await->set_value();
-        err = Error::COMM_CONNECT_ERROR;
-      },
       [this, await=&r_promise] 
-      (const client::ConnQueue::ReqBase::Ptr&, 
-       const Protocol::Rgr::Params::ReportResRsp& rsp) {
-        if(!(err = rsp.err)) {
+      (const client::ConnQueue::ReqBase::Ptr&, const int& error,
+       const Protocol::Rgr::Params::Report::RspRes& rsp) {
+        if(!(err = error)) {
           Mutex::scope lock(Logger::logger.mutex);
           rsp.display(std::cout);
         }
@@ -148,6 +141,7 @@ class Rgr : public Interface {
     size_t at = cmd.find_first_of(" ");
     cmd = cmd.substr(at+1);
     cid_t cid = DB::Schema::NO_CID;
+
     client::SQL::Reader reader(cmd, message);
     while(reader.found_space());
     if(reader.found_token("cid", 3)) {
@@ -178,12 +172,8 @@ class Rgr : public Interface {
       cid = schema->cid;
     }
 
-    auto flags(cid == DB::Schema::NO_CID 
-      ? Protocol::Rgr::Params::ReportReq::COLUMNS
-      : Protocol::Rgr::Params::ReportReq::COLUMN);
     while(reader.found_space());
-    if(reader.found_token("ranges", 6))
-      flags |= Protocol::Rgr::Params::ReportReq::RANGES;
+    bool ranges = reader.found_token("ranges", 6);
 
     while(reader.found_space());
     std::string host_or_ips(reader.ptr, reader.remain);
@@ -192,24 +182,84 @@ class Rgr : public Interface {
     if(err)
       return r;
 
+    auto func = cid == DB::Schema::NO_CID 
+      ? (ranges ? Protocol::Rgr::Params::Report::Function::COLUMNS_RANGES
+                : Protocol::Rgr::Params::Report::Function::CIDS)
+      : (ranges ? Protocol::Rgr::Params::Report::Function::COLUMN_RANGES
+                : Protocol::Rgr::Params::Report::Function::COLUMN_RIDS);
+
     std::promise<void>  r_promise;
-    Protocol::Rgr::Req::Report::request(
-      Protocol::Rgr::Params::ReportReq(flags, cid), 
-      endpoints, 
-      [this, await=&r_promise]() {
-        await->set_value();
-        err = Error::COMM_CONNECT_ERROR;
-      },
-      [this, await=&r_promise] 
-      (const client::ConnQueue::ReqBase::Ptr&, 
-       const Protocol::Rgr::Params::ReportRsp& rsp) {
-        if(!(err = rsp.err)) {
-          Mutex::scope lock(Logger::logger.mutex);
-          rsp.display(std::cout);
-        }
-        await->set_value();
+
+    switch(func) {
+      case Protocol::Rgr::Params::Report::Function::COLUMNS_RANGES: {
+        Protocol::Rgr::Req::ReportColumnsRanges::request(
+          endpoints, 
+          [this, await=&r_promise] 
+          (const client::ConnQueue::ReqBase::Ptr&, const int& error,
+           const Protocol::Rgr::Params::Report::RspColumnsRanges& rsp) {
+            if(!(err = error)) {
+              Mutex::scope lock(Logger::logger.mutex);
+              rsp.display(std::cout);
+            }
+            await->set_value();
+          }
+        );
+        break;
       }
-    );
+      case Protocol::Rgr::Params::Report::Function::CIDS: {
+        Protocol::Rgr::Req::ReportCids::request(
+          endpoints, 
+          [this, await=&r_promise] 
+          (const client::ConnQueue::ReqBase::Ptr&, const int& error,
+           const Protocol::Rgr::Params::Report::RspCids& rsp) {
+            if(!(err = error)) {
+              Mutex::scope lock(Logger::logger.mutex);
+              rsp.display(std::cout);
+            }
+            await->set_value();
+          }
+        );
+        break;
+      }
+      case Protocol::Rgr::Params::Report::Function::COLUMN_RANGES: {
+        Protocol::Rgr::Req::ReportColumnsRanges::request(
+          endpoints, 
+          cid,
+          [this, await=&r_promise]
+          (const client::ConnQueue::ReqBase::Ptr&, const int& error,
+           const Protocol::Rgr::Params::Report::RspColumnsRanges& rsp) {
+            if(!(err = error)) {
+              Mutex::scope lock(Logger::logger.mutex);
+              rsp.display(std::cout);
+            }
+            await->set_value();
+          }
+        );
+        break;
+      }
+      case Protocol::Rgr::Params::Report::Function::COLUMN_RIDS: {
+        Protocol::Rgr::Req::ReportColumnRids::request(
+          endpoints, 
+          cid,
+          [this, await=&r_promise]
+          (const client::ConnQueue::ReqBase::Ptr&, const int& error,
+           const Protocol::Rgr::Params::Report::RspColumnRids& rsp) {
+            if(!(err = error)) {
+              Mutex::scope lock(Logger::logger.mutex);
+              rsp.display(std::cout);
+            }
+            await->set_value();
+          }
+        );
+        break;
+      }
+      default: {
+        err = Error::NOT_IMPLEMENTED;
+        r_promise.set_value();
+        break;
+      }
+    }
+
     r_promise.get_future().wait();
 
     if(err) {
@@ -219,6 +269,7 @@ class Rgr : public Interface {
     }
     return true;
   }
+  
 };
 
 

@@ -92,10 +92,10 @@ class RangersResources final : private std::vector<RangerResources> {
     m_mutex.unlock();
   }
 
-  bool add_and_more(rgrid_t rgrid, 
-                    const Protocol::Rgr::Params::ReportResRsp& rsp) {
+  bool add_and_more(rgrid_t rgrid, int err,
+                    const Protocol::Rgr::Params::Report::RspRes& rsp) {
     LockAtomic::Unique::scope lock(m_mutex);
-    if(!rsp.err)
+    if(!err)
       emplace_back(rgrid, rsp.mem, rsp.cpu, rsp.ranges);
     return m_due ? --m_due : false;
   }

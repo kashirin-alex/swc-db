@@ -44,6 +44,12 @@ class Column final : private std::unordered_map<rid_t, RangePtr> {
     return size();
   }
 
+  void get_rids(std::vector<rid_t>& rids) {
+    Mutex::scope lock(m_mutex);
+    for(auto it = begin(); it != end(); ++it)
+      rids.push_back(it->first);
+  }
+
   void schema_update(const DB::Schema& schema) {
     bool compact = cfg.c_versions > schema.cell_versions || 
                    (schema.cell_ttl && cfg.c_ttl > schema.cell_ttl);

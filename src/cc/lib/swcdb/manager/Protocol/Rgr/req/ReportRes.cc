@@ -9,47 +9,51 @@
 
 namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
 
+
 ReportRes::ReportRes(const Manager::Ranger::Ptr& rgr)
-                          : client::ConnQueue::ReqBase(false), 
-                            rgr(rgr) {
-  cbp = CommBuf::make(Params::ReportReq(Params::ReportReq::RESOURCES));
+                     : client::ConnQueue::ReqBase(false), rgr(rgr) {
+  cbp = CommBuf::make(1);
+  cbp->append_i8((uint8_t)Params::Report::Function::RESOURCES);
   cbp->header.set(REPORT, 60000);
 }
-  
+
 ReportRes::~ReportRes() { }
 
-void ReportRes::handle(ConnHandlerPtr, const Event::Ptr& ev) {
-  if(was_called || ev->header.command != REPORT)
-    return;
-  was_called = true;
-
-  Protocol::Rgr::Params::ReportResRsp params;
-  
-  if(ev->type == Event::Type::DISCONNECT)
-    params.err = Error::COMM_NOT_CONNECTED;
-  else if(ev->error)
-    params.err = ev->error;
-  
-  if(!params.err) {
-    try {
-      const uint8_t *ptr = ev->data.base;
-      size_t remain = ev->data.size;
-      params.decode(&ptr, &remain);
-    } catch(Exception& e) {
-      params.err = e.code();
-    }
-  }
-  
-  Env::Mngr::rangers()->rgr_report(rgr->rgrid, params);
-}
-  
 void ReportRes::handle_no_conn() {  
   if(was_called)
     return;
+  was_called = true;
   Env::Mngr::rangers()->rgr_report(
     rgr->rgrid, 
-    Protocol::Rgr::Params::ReportResRsp(Error::COMM_NOT_CONNECTED)
+    Error::COMM_NOT_CONNECTED,
+    Protocol::Rgr::Params::Report::RspRes()
   );
+}
+
+void ReportRes::handle(ConnHandlerPtr, const Event::Ptr& ev) {
+  if(ev->type == Event::Type::DISCONNECT)
+    return handle_no_conn();
+  if(was_called || ev->header.command != REPORT)
+    return;
+  was_called = true;
+  
+  Params::Report::RspRes rsp_params;
+  int err = ev->type == Event::Type::ERROR ? ev->error : Error::OK;
+  if(!err) {
+    try {
+      const uint8_t *ptr = ev->data.base;
+      size_t remain = ev->data.size;
+
+      err = Serialization::decode_i32(&ptr, &remain);
+      if(!err)
+        rsp_params.decode(&ptr, &remain);
+
+    } catch (Exception &e) {
+      SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
+      err = e.code();
+    }
+  }
+  Env::Mngr::rangers()->rgr_report(rgr->rgrid, err, rsp_params);
 }
 
 

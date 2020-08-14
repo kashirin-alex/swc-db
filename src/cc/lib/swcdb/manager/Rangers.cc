@@ -96,9 +96,9 @@ void Rangers::schedule_check(uint32_t t_ms) {
 }
 
 
-void Rangers::rgr_report(rgrid_t rgrid, 
-                         const Protocol::Rgr::Params::ReportResRsp& rsp) {
-  if(m_rangers_resources.add_and_more(rgrid, rsp))
+void Rangers::rgr_report(rgrid_t rgrid, int err,
+                         const Protocol::Rgr::Params::Report::RspRes& rsp) {
+  if(m_rangers_resources.add_and_more(rgrid, err, rsp))
     return;
 
   m_rangers_resources.evaluate();

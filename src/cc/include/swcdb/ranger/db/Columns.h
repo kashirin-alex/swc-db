@@ -54,6 +54,13 @@ class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
     return col;
   }
 
+  void get_cids(std::vector<cid_t>& cids) {
+    Mutex::scope lock(m_mutex);
+    for(auto it = begin(); it != end(); ++it)
+      cids.push_back(it->first);
+  }
+
+
   Column::Ptr get_column(int&, const cid_t cid) {
     Mutex::scope lock(m_mutex);
     auto it = find(cid);

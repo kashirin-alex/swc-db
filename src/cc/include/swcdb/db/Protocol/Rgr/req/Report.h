@@ -13,38 +13,142 @@
 
 namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
 
+
   
 class Report: public client::ConnQueue::ReqBase {
   public:
-  
-  typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&, 
-                             const Params::ReportRsp&)> Cb_t;
-  typedef std::function<void()> Cb_no_conn_t;
 
-  static void request(const Params::ReportReq& params, 
-                      const EndPoints& endpoints,
-                      const Cb_no_conn_t& cb_no_conn, const Cb_t& cb, 
-                      const uint32_t timeout = 10000);
-
-  Report(const Params::ReportReq& params, 
-         const EndPoints& endpoints, 
-         const Cb_no_conn_t& cb_no_conn, const Cb_t& cb, 
+  Report(const EndPoints& endpoints, Params::Report::Function func, 
          const uint32_t timeout);
+
+  Report(const EndPoints& endpoints, Params::Report::Function func, 
+         const Serializable& params, const uint32_t timeout);
 
   virtual ~Report();
 
-  void handle_no_conn() override;
-
   bool run() override;
+
+  protected:
+
+  EndPoints   endpoints;
+
+};
+
+
+  
+class ReportRes: public Report {
+  public:
+  
+  typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&, 
+                             const int&, 
+                             const Params::Report::RspRes&)> Cb_t;
+
+  static void request(const EndPoints& endpoints, const Cb_t& cb, 
+                      const uint32_t timeout = 10000);
+
+  ReportRes(const EndPoints& endpoints, const Cb_t& cb, 
+            const uint32_t timeout);
+
+  virtual ~ReportRes();
+
+  void handle_no_conn() override;
 
   void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
 
   private:
 
-  EndPoints     endpoints;
-  Cb_no_conn_t  cb_no_conn;
   const Cb_t    cb;
+
 };
+
+
+
+class ReportCids: public Report {
+  public:
+  
+  typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&, 
+                             const int&,
+                             const Params::Report::RspCids&)> Cb_t;
+ 
+  static void request(const EndPoints& endpoints, const Cb_t& cb, 
+                      const uint32_t timeout = 10000);
+
+  ReportCids(const EndPoints& endpoints, const Cb_t& cb, 
+             const uint32_t timeout);
+
+  virtual ~ReportCids();
+
+  void handle_no_conn() override;
+
+  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
+
+  private:
+
+  const Cb_t  cb;
+
+};
+
+
+
+class ReportColumnRids: public Report {
+  public:
+  
+  typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&, 
+                             const int&, 
+                             const Params::Report::RspColumnRids&)> Cb_t;
+ 
+  static void request(const EndPoints& endpoints, cid_t cid, const Cb_t& cb,
+                      const uint32_t timeout = 10000);
+
+  ReportColumnRids(const EndPoints& endpoints, cid_t cid, const Cb_t& cb, 
+                   const uint32_t timeout);
+
+  virtual ~ReportColumnRids();
+
+  void handle_no_conn() override;
+
+  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
+
+  private:
+
+  const Cb_t  cb;
+
+};
+
+
+
+class ReportColumnsRanges: public Report {
+  public:
+  
+  typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&, 
+                             const int&, 
+                             const Params::Report::RspColumnsRanges&)> Cb_t;
+ 
+  static void request(const EndPoints& endpoints, const Cb_t& cb,
+                      const uint32_t timeout = 10000);
+
+  static void request(const EndPoints& endpoints, cid_t cid, const Cb_t& cb,
+                      const uint32_t timeout = 10000);
+
+  ReportColumnsRanges(const EndPoints& endpoints, const Cb_t& cb, 
+                      const uint32_t timeout);
+
+  ReportColumnsRanges(const EndPoints& endpoints, cid_t cid, const Cb_t& cb, 
+                      const uint32_t timeout);
+
+  virtual ~ReportColumnsRanges();
+
+  void handle_no_conn() override;
+
+  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
+
+  private:
+
+  const Cb_t  cb;
+
+};
+
+
 
 
 }}}}

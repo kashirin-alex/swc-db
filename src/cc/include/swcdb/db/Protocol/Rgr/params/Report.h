@@ -14,24 +14,26 @@
 
 
 namespace SWC { namespace Protocol { namespace Rgr { namespace Params {
+namespace Report {
+
+
+enum Function {
+  RESOURCES        = 0x00,
+  CIDS             = 0x01,
+  COLUMN_RIDS      = 0x02,
+  COLUMN_RANGES    = 0x03,
+  COLUMNS_RANGES   = 0x04,
+};
 
 
 
-class ReportReq : public Serializable {
+class ReqColumn : public Serializable {
   public:
-  
-  static const uint8_t RANGES     = 0x1;
-  static const uint8_t COLUMNS    = 0x2;
-  static const uint8_t COLUMN     = 0x4;
-  static const uint8_t RESOURCES  = 0x8;
 
-  ReportReq(uint8_t flags = COLUMNS);
+  ReqColumn(cid_t cid = 0);
 
-  ReportReq(uint8_t flags, cid_t cid);
+  virtual ~ReqColumn();
 
-  virtual ~ReportReq();
-
-  uint8_t flags;
   cid_t   cid;
 
   private:
@@ -46,7 +48,78 @@ class ReportReq : public Serializable {
 
 
 
-class ReportRsp  : public Serializable {
+class RspRes  : public Serializable {
+  public:
+  
+  RspRes();
+
+  virtual ~RspRes();
+
+  uint32_t    mem;
+  uint32_t    cpu;
+  size_t      ranges;
+
+  void display(std::ostream& out, const std::string& offset="") const;
+
+  private:
+
+  size_t internal_encoded_length() const;
+
+  void internal_encode(uint8_t** bufp) const;
+    
+  void internal_decode(const uint8_t** bufp, size_t* remainp);
+
+};
+
+
+
+class RspCids  : public Serializable {
+  public:
+
+  RspCids();
+
+  virtual ~RspCids();
+
+  mutable std::vector<cid_t> cids;
+
+  void display(std::ostream& out, const std::string& offset = "") const;
+
+  private:
+
+  size_t internal_encoded_length() const;
+
+  void internal_encode(uint8_t** bufp) const;
+    
+  void internal_decode(const uint8_t** bufp, size_t* remainp);
+
+};
+
+
+
+class RspColumnRids  : public Serializable {
+  public:
+
+  RspColumnRids();
+
+  virtual ~RspColumnRids();
+
+  mutable std::vector<rid_t> rids;
+
+  void display(std::ostream& out, const std::string& offset = "") const;
+
+  private:
+
+  size_t internal_encoded_length() const;
+
+  void internal_encode(uint8_t** bufp) const;
+    
+  void internal_decode(const uint8_t** bufp, size_t* remainp);
+
+};
+
+
+
+class RspColumnsRanges  : public Serializable {
   public:
   
   struct Range {
@@ -67,7 +140,7 @@ class ReportRsp  : public Serializable {
     void decode(const uint8_t** bufp, size_t* remainp);
   
     void display(std::ostream& out, bool pretty=true, 
-                 std::string offset = "") const;
+                 const std::string& offset = "") const;
   };
 
   struct Column {
@@ -88,23 +161,24 @@ class ReportRsp  : public Serializable {
     void decode(const uint8_t** bufp, size_t* remainp);
     
     void display(std::ostream& out, bool pretty=true, 
-                 std::string offset = "") const;
+                 const std::string& offset = "") const;
   };
 
 
-  explicit ReportRsp(int err=Error::OK);
+  explicit RspColumnsRanges();
 
-  ReportRsp& operator=(const ReportRsp& other) = delete;
+  RspColumnsRanges(rgrid_t rgrid, const EndPoints& endpoints);
 
-  virtual ~ReportRsp();
+  RspColumnsRanges& operator=(const RspColumnsRanges& other) = delete;
 
-  int                  err; 
+  virtual ~RspColumnsRanges();
+
   rgrid_t              rgrid; 
   EndPoints            endpoints;
   std::vector<Column*> columns;
 
   void display(std::ostream& out, bool pretty=true, 
-               std::string offset = "") const;
+               const std::string& offset = "") const;
 
   private:
 
@@ -117,33 +191,7 @@ class ReportRsp  : public Serializable {
 };
 
 
-
-class ReportResRsp  : public Serializable {
-  public:
-  
-  explicit ReportResRsp(int err=Error::OK);
-
-  virtual ~ReportResRsp();
-
-  int         err; 
-  uint32_t    mem;
-  uint32_t    cpu;
-  size_t      ranges;
-
-  void display(std::ostream& out, const std::string& offset="") const;
-
-  private:
-
-  size_t internal_encoded_length() const;
-
-  void internal_encode(uint8_t** bufp) const;
-    
-  void internal_decode(const uint8_t** bufp, size_t* remainp);
-
-};
-
-
-
+}
 }}}}
 
 #ifdef SWC_IMPL_SOURCE
