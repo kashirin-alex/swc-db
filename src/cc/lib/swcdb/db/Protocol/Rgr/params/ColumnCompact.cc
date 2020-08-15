@@ -38,7 +38,7 @@ void ColumnCompactReq::internal_decode(const uint8_t** bufp, size_t* remainp) {
 
 
 
-ColumnCompactRsp::ColumnCompactRsp(): err(0) {}
+ColumnCompactRsp::ColumnCompactRsp(int err): err(err) {}
 
 ColumnCompactRsp::~ColumnCompactRsp() { }
 

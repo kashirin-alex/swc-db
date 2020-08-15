@@ -58,7 +58,7 @@ class RangeRemoveReq : public Serializable {
 class RangeRemoveRsp : public Serializable {
   public:
 
-  RangeRemoveRsp(): err(Error::OK) {}
+  RangeRemoveRsp(int err = Error::OK): err(err) { }
 
   virtual ~RangeRemoveRsp() {}
   

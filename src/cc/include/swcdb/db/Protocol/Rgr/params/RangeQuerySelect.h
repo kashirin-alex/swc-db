@@ -46,10 +46,10 @@ class RangeQuerySelectReq : public Serializable {
 class RangeQuerySelectRsp  : public Serializable {
   public:
 
-  RangeQuerySelectRsp(int err=Error::OK, bool reached_limit=false, 
+  RangeQuerySelectRsp(int err = Error::OK, bool reached_limit=false, 
                       uint64_t offset=0);
   
-  RangeQuerySelectRsp(StaticBuffer& data);
+  RangeQuerySelectRsp(int err, StaticBuffer& data);
 
   virtual ~RangeQuerySelectRsp();
 

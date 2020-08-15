@@ -17,7 +17,7 @@ class Echo : public DispatchHandler {
   typedef std::function<void(bool)> EchoCb_t;
 
   Echo(const ConnHandlerPtr& conn, const EchoCb_t& cb, size_t buf_sz=0)
-       : conn(conn), cb(cb), was_called(false) { 
+       : conn(conn), cb(cb) { 
 
     if(!buf_sz) {
       cbp = CommBuf::make();
@@ -49,25 +49,14 @@ class Echo : public DispatchHandler {
   }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
-      
     //SWC_LOGF(LOG_DEBUG, "handle: %s", ev->to_str().c_str());
 
-    if(ev->type == Event::Type::DISCONNECT){
-      if(!was_called)
-        cb(false);
-      return;
-    }
-
-    if(ev->header.command == DO_ECHO){
-      was_called = true;
-      cb(ev->error == Error::OK);
-    }
+    cb(ev->header.command == DO_ECHO && !ev->error);
   }
 
   private:
   ConnHandlerPtr        conn;
   EchoCb_t              cb;
-  std::atomic<bool>     was_called;
   CommBuf::Ptr          cbp;
 };
 

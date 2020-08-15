@@ -634,7 +634,7 @@ void Range::run_add_queue() {
     m_inbytes += remain = req->input.size;
     intval_chg = false;
 
-    auto params = new Protocol::Rgr::Params::RangeQueryUpdateRsp;
+    auto params = new Protocol::Rgr::Params::RangeQueryUpdateRsp(Error::OK);
     if(req->cb->expired(remain/100000))
       params->err = Error::REQUEST_TIMEOUT;
       

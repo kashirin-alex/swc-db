@@ -17,7 +17,7 @@ class MngrColumnGet : public client::ConnQueue::ReqBase {
   typedef std::function<void(int, const Params::ColumnGetRsp&)> Cb_t;
 
   MngrColumnGet(const Params::ColumnGetReq& params, const Cb_t& cb) 
-               : cb(cb) {
+                : client::ConnQueue::ReqBase(true), cb(cb) {
     cbp = CommBuf::make(params);
     cbp->header.set(COLUMN_GET, 60000);
   }
@@ -25,28 +25,23 @@ class MngrColumnGet : public client::ConnQueue::ReqBase {
   virtual ~MngrColumnGet() { }
   
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
-    if(was_called || !is_rsp(ev))
+    if(!is_rsp(ev))
       return;
 
-    if(ev->header.command == COLUMN_GET) {
-      
-      Params::ColumnGetRsp rsp_params;
-      int err = ev->error != Error::OK? ev->error: ev->response_code();
-
-      if(err == Error::OK){
-        try{
-          const uint8_t *ptr = ev->data.base+4;
-          size_t remain = ev->data.size-4;
-          rsp_params.decode(&ptr, &remain);
-        } catch (Exception &e) {
-          SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
-          err = e.code();
-        }
+    Params::ColumnGetRsp rsp_params;
+    int err = ev->response_code();
+    if(!err) {
+      try {
+        const uint8_t *ptr = ev->data.base + 4;
+        size_t remain = ev->data.size - 4;
+        rsp_params.decode(&ptr, &remain);
+      } catch (Exception &e) {
+        SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
+        err = e.code();
       }
-      cb(err, rsp_params);
-      was_called = true;
-      return;
     }
+
+    cb(err, rsp_params);
   }
 
   private:

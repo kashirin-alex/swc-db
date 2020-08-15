@@ -21,27 +21,18 @@ ColumnDelete::ColumnDelete(const Manager::Ranger::Ptr& rgr, cid_t cid)
 ColumnDelete::~ColumnDelete() { }
   
 void ColumnDelete::handle(ConnHandlerPtr, const Event::Ptr& ev) {
+  if(ev->type == Event::Type::DISCONNECT)
+    return handle_no_conn();
 
-  if(was_called)
-    return;
-
-  if(ev->type == Event::Type::DISCONNECT) {
-    handle_no_conn();
-    return;
-  }
-
-  if(ev->header.command == COLUMN_DELETE) {
-    int err = ev->error != Error::OK ? ev->error : ev->response_code();
-    if(err == Error::OK) {
-      was_called = true;
-      remove(err);
-    } else 
-      request_again();
-    return;
+  int err = ev->response_code();
+  if(!err) {
+    remove(err);
+  } else {
+    request_again();
   }
 }
 
-void ColumnDelete::handle_no_conn() { 
+void ColumnDelete::handle_no_conn() {
   remove(Error::OK);
 }
   

@@ -57,21 +57,15 @@ ReportRes::ReportRes(const EndPoints& endpoints, const Cb_t& cb,
 ReportRes::~ReportRes() { }
 
 void ReportRes::handle_no_conn() {
-  if(was_called)
-    return;
-  was_called = true;
   cb(req(), Error::COMM_CONNECT_ERROR, Params::Report::RspRes());
 }
 
 void ReportRes::handle(ConnHandlerPtr, const Event::Ptr& ev) {
   if(ev->type == Event::Type::DISCONNECT)
     return handle_no_conn();
-  if(was_called)
-    return;
-  was_called = true;
-  
+
   Params::Report::RspRes rsp_params;
-  int err = ev->type == Event::Type::ERROR ? ev->error : Error::OK;
+  int err = ev->error;
   if(!err) {
     try {
       const uint8_t *ptr = ev->data.base;
@@ -111,21 +105,15 @@ ReportCids::ReportCids(const EndPoints& endpoints, const Cb_t& cb,
 ReportCids::~ReportCids() { }
 
 void ReportCids::handle_no_conn() {
-  if(was_called)
-    return;
-  was_called = true;
   cb(req(), Error::COMM_CONNECT_ERROR, Params::Report::RspCids());
 }
 
 void ReportCids::handle(ConnHandlerPtr, const Event::Ptr& ev) {
   if(ev->type == Event::Type::DISCONNECT)
     return handle_no_conn();
-  if(was_called)
-    return;
-  was_called = true;
   
   Params::Report::RspCids rsp_params;
-  int err = ev->type == Event::Type::ERROR ? ev->error : Error::OK;
+  int err = ev->error;
   if(!err) {
     try {
       const uint8_t *ptr = ev->data.base;
@@ -166,21 +154,15 @@ ReportColumnRids::ReportColumnRids(const EndPoints& endpoints, cid_t cid,
 ReportColumnRids::~ReportColumnRids() { }
 
 void ReportColumnRids::handle_no_conn() {
-  if(was_called)
-    return;
-  was_called = true;
   cb(req(), Error::COMM_CONNECT_ERROR, Params::Report::RspColumnRids());
 }
 
 void ReportColumnRids::handle(ConnHandlerPtr, const Event::Ptr& ev) {
   if(ev->type == Event::Type::DISCONNECT)
     return handle_no_conn();
-  if(was_called)
-    return;
-  was_called = true;
   
   Params::Report::RspColumnRids rsp_params;
-  int err = ev->type == Event::Type::ERROR ? ev->error : Error::OK;
+  int err = ev->error;
   if(!err) {
     try {
       const uint8_t *ptr = ev->data.base;
@@ -243,21 +225,15 @@ ReportColumnsRanges::ReportColumnsRanges(
 ReportColumnsRanges::~ReportColumnsRanges() { }
 
 void ReportColumnsRanges::handle_no_conn() {
-  if(was_called)
-    return;
-  was_called = true;
   cb(req(), Error::COMM_CONNECT_ERROR, Params::Report::RspColumnsRanges());
 }
 
 void ReportColumnsRanges::handle(ConnHandlerPtr, const Event::Ptr& ev) {
   if(ev->type == Event::Type::DISCONNECT)
     return handle_no_conn();
-  if(was_called)
-    return;
-  was_called = true;
   
   Params::Report::RspColumnsRanges rsp_params;
-  int err = ev->type == Event::Type::ERROR ? ev->error : Error::OK;
+  int err = ev->error;
   if(!err) {
     try {
       const uint8_t *ptr = ev->data.base;

@@ -59,8 +59,8 @@ RangeQuerySelectRsp::RangeQuerySelectRsp(
               : err(err), reached_limit(reached_limit), offset(offset) {  
 }
 
-RangeQuerySelectRsp::RangeQuerySelectRsp(StaticBuffer& data)
-              : err(0), reached_limit(false), offset(0), data(data) {
+RangeQuerySelectRsp::RangeQuerySelectRsp(int err, StaticBuffer& data)
+              : err(err), reached_limit(false), offset(0), data(data) {
 }
 
 RangeQuerySelectRsp::~RangeQuerySelectRsp() { }

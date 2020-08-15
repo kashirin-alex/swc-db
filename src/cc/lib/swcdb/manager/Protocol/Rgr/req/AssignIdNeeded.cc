@@ -21,20 +21,10 @@ AssignIdNeeded::AssignIdNeeded(const Manager::Ranger::Ptr& rs_chk,
 AssignIdNeeded::~AssignIdNeeded() { }
 
 void AssignIdNeeded::handle(ConnHandlerPtr, const Event::Ptr& ev) {
+  if(!valid() || ev->type == Event::Type::DISCONNECT)
+    return handle_no_conn();
 
-  if(was_called)
-    return;
-  was_called = true;
-
-  if(!valid() || ev->type == Event::Type::DISCONNECT) {
-    handle_no_conn();
-      return;
-  }
-
-  if(ev->header.command == ASSIGN_ID_NEEDED) {
-    rsp(ev->error != Error::OK ? ev->error : ev->response_code());
-    return;
-  }
+  rsp(ev->response_code());
 }
 
 bool AssignIdNeeded::valid() {

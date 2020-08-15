@@ -23,20 +23,9 @@ RangeUnload::RangeUnload(const Ranger::RangePtr& range,
 
 RangeUnload::~RangeUnload() { }
 
-void RangeUnload::handle(ConnHandlerPtr, const Event::Ptr& ev) {
-      
-  if(was_called)
-    return;
-  was_called = true;
-
-  if(!valid()) {
-    unloaded(Error::RS_DELETED_RANGE); 
-  } else if(ev->type == Event::Type::DISCONNECT
-          || ev->header.command == RANGE_UNLOAD) {
-    unloaded(Error::OK); 
-  }
+void RangeUnload::handle(ConnHandlerPtr, const Event::Ptr&) {
+  unloaded(valid() ? Error::OK : Error::RS_DELETED_RANGE);
 }
-
 
 bool RangeUnload::valid() {
   return !range->deleted();

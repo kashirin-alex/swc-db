@@ -53,19 +53,15 @@ bool ColumnList::run() {
 }
 
 void ColumnList::handle(ConnHandlerPtr, const Event::Ptr& ev) {
-
-  if(ev->type == Event::Type::DISCONNECT) {
-    handle_no_conn();
-    return;
-  }
+  if(ev->type == Event::Type::DISCONNECT)
+    return handle_no_conn();
 
   Params::ColumnListRsp rsp_params;
-  int err = ev->error != Error::OK? ev->error: ev->response_code();
-
-  if(err == Error::OK) {
-    try{
-      const uint8_t *ptr = ev->data.base+4;
-      size_t remain = ev->data.size-4;
+  int err = ev->response_code();
+  if(!err) {
+    try {
+      const uint8_t *ptr = ev->data.base + 4;
+      size_t remain = ev->data.size - 4;
       rsp_params.decode(&ptr, &remain);
     } catch (Exception &e) {
       SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;

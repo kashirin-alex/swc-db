@@ -58,7 +58,7 @@ class RangeUnloadedReq : public Serializable {
 class RangeUnloadedRsp : public Serializable {
   public:
 
-  RangeUnloadedRsp(): err(0) {}
+  RangeUnloadedRsp(int err = Error::OK): err(err) {}
 
   virtual ~RangeUnloadedRsp() {}
   

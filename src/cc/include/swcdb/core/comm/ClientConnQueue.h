@@ -22,7 +22,7 @@ class ConnQueueReqBase : public DispatchHandler {
 
   typedef std::shared_ptr<ConnQueueReqBase> Ptr;
 
-  ConnQueueReqBase(bool insistent=true, const CommBuf::Ptr& cbp=nullptr);
+  ConnQueueReqBase(bool insistent, const CommBuf::Ptr& cbp=nullptr);
 
   Ptr req();
 
@@ -44,7 +44,6 @@ class ConnQueueReqBase : public DispatchHandler {
     
   const bool            insistent;
   CommBuf::Ptr          cbp;
-  std::atomic<bool>     was_called;
   ConnQueuePtr          queue;
 };
 

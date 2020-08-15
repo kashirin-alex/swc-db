@@ -227,7 +227,7 @@ void ConnHandler::write(ConnHandler::Pending* pending) {
             conn->write_next();
 
           auto ev = Event::make(
-            Event::Type::MESSAGE, ec ? Error::COMM_SEND_ERROR : Error::OK);
+            Event::Type::ERROR, ec ? Error::COMM_SEND_ERROR : Error::OK);
           ev->header.initialize_from_request_header(cbuf->header);
           hdlr->handle(conn, ev);
           if(ec)
@@ -423,6 +423,7 @@ void ConnHandler::recved_buffer(const Event::Ptr& ev, asio::error_code ec,
     if(filled != buffer->size || 
        !checksum_i32_chk(checksum, buffer->base, buffer->size)) {
       ec = asio::error::eof;
+      ev->type = Event::Type::ERROR;
       ev->error = Error::REQUEST_TRUNCATED_PAYLOAD;
       ev->data.free();
       ev->data_ext.free();
@@ -466,7 +467,7 @@ void ConnHandler::received(const Event::Ptr& ev, const asio::error_code& ec) {
 }
 
 void ConnHandler::disconnected() {
-  Event::Ptr ev = Event::make(Event::Type::DISCONNECT, Error::OK);
+  auto ev = Event::make(Event::Type::DISCONNECT, Error::COMM_NOT_CONNECTED);
   Pending* pending;
   while(!m_outgoing.deactivating(&pending)) {
     if(pending->hdlr)

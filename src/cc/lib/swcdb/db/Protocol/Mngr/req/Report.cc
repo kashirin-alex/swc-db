@@ -88,15 +88,10 @@ void ClusterStatus::handle_no_conn() {
 }
 
 void ClusterStatus::handle(ConnHandlerPtr, const Event::Ptr& ev) {
+  if(ev->type == Event::Type::DISCONNECT)
+    return handle_no_conn();
 
-  if(ev->type == Event::Type::DISCONNECT) {
-    if(!was_called)
-      handle_no_conn();
-    return;
-  }
-  was_called = true;
-  
-  int err = ev->type == Event::Type::ERROR ? ev->error : Error::OK;
+  int err = ev->error;
   if(!err) {
     try {
       const uint8_t *ptr = ev->data.base;
@@ -162,14 +157,11 @@ bool ColumnStatus::run() {
 }
 
 void ColumnStatus::handle(ConnHandlerPtr, const Event::Ptr& ev) {
-
-  if(ev->type == Event::Type::DISCONNECT){
-    handle_no_conn();
-    return;
-  }
+  if(ev->type == Event::Type::DISCONNECT)
+    return handle_no_conn();
   
   Params::Report::RspColumnStatus rsp_params;
-  int err = ev->type == Event::Type::ERROR ? ev->error : Error::OK;
+  int err = ev->error;
   if(!err) {
     try {
       const uint8_t *ptr = ev->data.base;
@@ -234,14 +226,11 @@ bool RangersStatus::run() {
 }
 
 void RangersStatus::handle(ConnHandlerPtr, const Event::Ptr& ev) {
-
-  if(ev->type == Event::Type::DISCONNECT){
-    handle_no_conn();
-    return;
-  }
+  if(ev->type == Event::Type::DISCONNECT)
+    return handle_no_conn();
   
   Params::Report::RspRangersStatus rsp_params;
-  int err = ev->type == Event::Type::ERROR ? ev->error : Error::OK;
+  int err = ev->error;
   if(!err) {
     try {
       const uint8_t *ptr = ev->data.base;
@@ -306,16 +295,11 @@ void ManagersStatus::handle_no_conn() {
 }
 
 void ManagersStatus::handle(ConnHandlerPtr, const Event::Ptr& ev) {
-
-  if(ev->type == Event::Type::DISCONNECT) {
-    if(!was_called)
-      handle_no_conn();
-    return;
-  }
-  was_called = true;
+  if(ev->type == Event::Type::DISCONNECT)
+    return handle_no_conn();
   
   Params::Report::RspManagersStatus rsp_params;
-  int err = ev->type == Event::Type::ERROR ? ev->error : Error::OK;
+  int err = ev->error;
   if(!err) {
     try {
       const uint8_t *ptr = ev->data.base;

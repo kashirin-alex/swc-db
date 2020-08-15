@@ -39,7 +39,7 @@ MngrActive::MngrActive(const uint8_t& role, const cid_t& cid,
   cbp->header.set(MNGR_ACTIVE, timeout_ms);
 }
 
-MngrActive::~MngrActive(){ }
+MngrActive::~MngrActive() { }
 
 void MngrActive::run_within(uint32_t t_ms) {
   timer.cancel();
@@ -53,7 +53,7 @@ void MngrActive::run_within(uint32_t t_ms) {
   );
 }
 
-void MngrActive::handle_no_conn() { 
+void MngrActive::handle_no_conn() {
   if(hosts.size() == ++nxt) {
     nxt = 0;
     hosts.clear();
@@ -82,11 +82,9 @@ bool MngrActive::run() {
 }
 
 void MngrActive::handle(ConnHandlerPtr, const Event::Ptr& ev) {
-  
   // SWC_LOGF(LOG_DEBUG, " handle: %s", ev->to_str().c_str());
 
-  if(ev->error == Error::OK && ev->header.command == MNGR_ACTIVE) {
-
+  if(!ev->error) {
     try {
       const uint8_t *ptr = ev->data.base;
       size_t remain = ev->data.size;

@@ -22,23 +22,12 @@ ColumnCompact::ColumnCompact(cid_t cid)
 ColumnCompact::~ColumnCompact() { }
 
 void ColumnCompact::handle(ConnHandlerPtr, const Event::Ptr& ev) {
+  if(ev->type == Event::Type::DISCONNECT)
+    return handle_no_conn();
 
-  if(was_called)
-    return;
-
-  if(ev->type == Event::Type::DISCONNECT) {
-    handle_no_conn();
-    return;
-  }
-
-  if(ev->header.command != COLUMN_COMPACT)
-    return;
-  
-  Params::ColumnCompactRsp rsp_params;
-  if(ev->type == Event::Type::ERROR) {
-    rsp_params.err = ev->error;
-  } else {
-    try{
+  Params::ColumnCompactRsp rsp_params(ev->error);
+  if(!rsp_params.err) {
+    try {
       const uint8_t *ptr = ev->data.base;
       size_t remain = ev->data.size;
       rsp_params.decode(&ptr, &remain);
@@ -46,10 +35,9 @@ void ColumnCompact::handle(ConnHandlerPtr, const Event::Ptr& ev) {
       SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
       rsp_params.err = e.code();
     }
-  }      
-  if(!rsp_params.err)
-    was_called = true;
-  else 
+  }
+
+  if(rsp_params.err)
     request_again();
 }
 

@@ -84,7 +84,7 @@ class RgrMngId: public client::ConnQueue::ReqBase {
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
 
-    if(ev->error != Error::OK || ev->header.command != RGR_MNG_ID) {
+    if(ev->error) {
       set(1000);
       return;
     }
@@ -92,7 +92,7 @@ class RgrMngId: public client::ConnQueue::ReqBase {
     if(ev->response_code() == Error::OK) {
       set(0);
       return;
-    }      
+    }
     
     Params::RgrMngId rsp_params;
     try {
@@ -102,6 +102,8 @@ class RgrMngId: public client::ConnQueue::ReqBase {
  
     } catch (Exception &e) {
       SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
+      set(500);
+      return;
     }
         
     if(rsp_params.flag == Params::RgrMngId::Flag::MNGR_REREQ) {

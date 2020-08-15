@@ -58,7 +58,7 @@ class RangeCreateReq : public Serializable {
 class RangeCreateRsp : public Serializable {
   public:
 
-  RangeCreateRsp(): err(0), rid(0) {}
+  RangeCreateRsp(int err = Error::OK): err(err), rid(0) { }
 
   virtual ~RangeCreateRsp() {}
 

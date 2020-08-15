@@ -23,27 +23,22 @@ RangeLoad::RangeLoad(const Manager::Ranger::Ptr& rgr,
 RangeLoad::~RangeLoad() { }
 
 void RangeLoad::handle(ConnHandlerPtr, const Event::Ptr& ev) {
-      
-  if(was_called)
-    return;
-  was_called = true;
+  if(!valid() || ev->type == Event::Type::DISCONNECT)
+    return handle_no_conn();
 
-  if(!valid() || ev->type == Event::Type::DISCONNECT) {
-    handle_no_conn();
-    return;
+  Params::RangeLoaded params(range->cfg->key_seq);
+  int err = ev->response_code();
+  if(!err) {
+    try {
+      const uint8_t *ptr = ev->data.base + 4;
+      size_t remain = ev->data.size - 4;
+      params.decode(&ptr, &remain);
+    } catch(Exception& e) {
+      SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
+      err = e.code();
+    }
   }
-
-  if(ev->header.command == RANGE_LOAD) {
-    int err = ev->error != Error::OK? ev->error: ev->response_code();
-    if(err)
-      return loaded(err, false, DB::Cells::Interval(range->cfg->key_seq));
-      
-    const uint8_t *ptr = ev->data.base+4;
-    size_t remain = ev->data.size-4;
-    Params::RangeLoaded params(range->cfg->key_seq);
-    params.decode(&ptr, &remain);
-    loaded(err, false, params.interval); 
-  }
+  loaded(err, false, params.interval);
 }
 
 bool RangeLoad::valid() {

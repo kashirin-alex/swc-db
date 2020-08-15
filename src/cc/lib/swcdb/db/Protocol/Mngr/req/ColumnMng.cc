@@ -69,13 +69,10 @@ bool ColumnMng::run() {
 }
 
 void ColumnMng::handle(ConnHandlerPtr, const Event::Ptr& ev) {
+  if(ev->type == Event::Type::DISCONNECT)
+    return handle_no_conn();
 
-  if(ev->type == Event::Type::DISCONNECT){
-    handle_no_conn();
-    return;
-  }
-
-  cb(req(), ev->error != Error::OK? ev->error: ev->response_code());
+  cb(req(), ev->response_code());
 }
 
 void ColumnMng::clear_endpoints() {

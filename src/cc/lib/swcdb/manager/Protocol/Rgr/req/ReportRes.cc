@@ -19,10 +19,7 @@ ReportRes::ReportRes(const Manager::Ranger::Ptr& rgr)
 
 ReportRes::~ReportRes() { }
 
-void ReportRes::handle_no_conn() {  
-  if(was_called)
-    return;
-  was_called = true;
+void ReportRes::handle_no_conn() {
   Env::Mngr::rangers()->rgr_report(
     rgr->rgrid, 
     Error::COMM_NOT_CONNECTED,
@@ -33,12 +30,9 @@ void ReportRes::handle_no_conn() {
 void ReportRes::handle(ConnHandlerPtr, const Event::Ptr& ev) {
   if(ev->type == Event::Type::DISCONNECT)
     return handle_no_conn();
-  if(was_called || ev->header.command != REPORT)
-    return;
-  was_called = true;
   
   Params::Report::RspRes rsp_params;
-  int err = ev->type == Event::Type::ERROR ? ev->error : Error::OK;
+  int err = ev->error;
   if(!err) {
     try {
       const uint8_t *ptr = ev->data.base;

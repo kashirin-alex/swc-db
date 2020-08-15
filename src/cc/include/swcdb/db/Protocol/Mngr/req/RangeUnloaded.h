@@ -63,27 +63,21 @@ class RangeUnloaded: public client::ConnQueue::ReqBase {
   }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
+    if(ev->type == Event::Type::DISCONNECT)
+      return handle_no_conn();
 
-    if(ev->type == Event::Type::DISCONNECT){
-      handle_no_conn();
-      return;
+    Params::RangeUnloadedRsp rsp_params(ev->error);
+    if(!rsp_params.err) {
+      try {
+        const uint8_t *ptr = ev->data.base;
+        size_t remain = ev->data.size;
+        rsp_params.decode(&ptr, &remain);
+      } catch (Exception &e) {
+        SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
+        rsp_params.err = e.code();
+      }
     }
 
-    Params::RangeUnloadedRsp rsp_params;
-    if(ev->type == Event::Type::ERROR){
-      rsp_params.err = ev->error;
-      cb(req(), rsp_params);
-      return;
-    }
-
-    try{
-      const uint8_t *ptr = ev->data.base;
-      size_t remain = ev->data.size;
-      rsp_params.decode(&ptr, &remain);
-    } catch (Exception &e) {
-      SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
-      rsp_params.err = e.code();
-    }
     cb(req(), rsp_params);
   }
 

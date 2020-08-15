@@ -11,7 +11,7 @@ namespace SWC { namespace client {
 
 ConnQueueReqBase::ConnQueueReqBase(bool insistent, const CommBuf::Ptr& cbp)
                                   : insistent(insistent), cbp(cbp), 
-                                    was_called(false), queue(nullptr){
+                                    queue(nullptr) {
 }
 
 SWC_SHOULD_INLINE
@@ -21,10 +21,9 @@ ConnQueueReqBase::Ptr ConnQueueReqBase::req() {
 
 ConnQueueReqBase::~ConnQueueReqBase() {}
 
-void ConnQueueReqBase::handle(ConnHandlerPtr conn, const Event::Ptr& ev) {
-  if(was_called || !is_rsp(ev))
+void ConnQueueReqBase::handle(ConnHandlerPtr, const Event::Ptr& ev) {
+  if(!is_rsp(ev))
     return;
-  (void)conn;
   // SWC_LOGF(LOG_DEBUG, "handle: %s", ev->to_str().c_str());
 }
 
@@ -36,10 +35,9 @@ bool ConnQueueReqBase::is_timeout(const Event::Ptr& ev) {
 }
 
 bool ConnQueueReqBase::is_rsp(const Event::Ptr& ev) {
-  if(ev->type == Event::Type::DISCONNECT 
-     || ev->error == Error::Code::REQUEST_TIMEOUT) {
-    if(!was_called)
-      request_again();
+  if(ev->type == Event::Type::DISCONNECT || 
+     ev->error == Error::Code::REQUEST_TIMEOUT) {
+    request_again();
     return false;
   }
   return true;
@@ -54,12 +52,10 @@ void ConnQueueReqBase::request_again() {
 
 bool ConnQueueReqBase::valid() { return true; }
 
-void ConnQueueReqBase::handle_no_conn() {}
+void ConnQueueReqBase::handle_no_conn() { }
 
 std::string ConnQueueReqBase::to_string() {
   std::string s("ReqBase(");
-  s.append(" called=");
-  s.append(std::to_string(was_called.load()));
   s.append(" insistent=");
   s.append(std::to_string(insistent));
   s.append(" ");
@@ -129,8 +125,7 @@ void ConnQueue::stop() {
       req = front();
       pop();
     }
-    if(!req->was_called)
-      req->handle_no_conn();
+    req->handle_no_conn();
   }
 }
 

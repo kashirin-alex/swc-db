@@ -21,22 +21,12 @@ ColumnUpdate::ColumnUpdate(const Manager::Ranger::Ptr& rgr,
 ColumnUpdate::~ColumnUpdate() { }
 
 void ColumnUpdate::handle(ConnHandlerPtr, const Event::Ptr& ev) {
-      
-  if(was_called)
-    return;
-  was_called = true;
+  if(ev->type == Event::Type::DISCONNECT)
+    return handle_no_conn();
 
-  if(ev->type == Event::Type::DISCONNECT) {
-    handle_no_conn();
-    return;
-  }
-
-  if(ev->header.command == SCHEMA_UPDATE){
-    updated(ev->error != Error::OK? ev->error: ev->response_code(), false);
-    return; 
-  }
+  updated(ev->response_code(), false);
 }
-  
+
 void ColumnUpdate::handle_no_conn() {
   updated(Error::COMM_NOT_CONNECTED, true);
 }

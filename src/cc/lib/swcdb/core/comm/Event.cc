@@ -35,7 +35,7 @@ bool Event::expired(int64_t within) const {
 }
 
 int32_t Event::response_code() {
-  if (type == Event::ERROR)
+  if(error || type == Event::ERROR)
     return error;
 
   const uint8_t *ptr = data.base;

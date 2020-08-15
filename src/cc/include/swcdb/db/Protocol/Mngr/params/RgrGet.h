@@ -46,7 +46,9 @@ class RgrGetReq : public Serializable {
 class RgrGetRsp : public Common::Params::HostEndPoints {
   public:
 
-  RgrGetRsp(cid_t cid=0, rid_t rid=0);
+  RgrGetRsp(int err = Error::OK);
+
+  RgrGetRsp(cid_t cid, rid_t rid);
 
   virtual ~RgrGetRsp();
 

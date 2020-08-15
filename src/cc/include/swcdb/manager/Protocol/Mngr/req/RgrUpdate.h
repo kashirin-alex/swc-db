@@ -15,7 +15,8 @@ namespace SWC { namespace Protocol { namespace Mngr { namespace Req {
 class RgrUpdate : public client::ConnQueue::ReqBase {
   public:
 
-  RgrUpdate(const Manager::RangerList &hosts, bool sync_all) {
+  RgrUpdate(const Manager::RangerList &hosts, bool sync_all)
+            : client::ConnQueue::ReqBase(true) {
     cbp = CommBuf::make(Params::RgrUpdate(hosts, sync_all));
     cbp->header.set(RGR_UPDATE, 60000);
   }
@@ -23,16 +24,11 @@ class RgrUpdate : public client::ConnQueue::ReqBase {
   virtual ~RgrUpdate() { }
 
   void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override {
-    if(was_called || !is_rsp(ev))
+    if(!is_rsp(ev))
       return;
 
-    if(ev->header.command == RGR_UPDATE 
-      && ev->response_code() == Error::OK){
-      was_called = true;
-      return;
-    }
-
-    conn->do_close();
+    if(ev->response_code() != Error::OK)
+      conn->do_close();
   }
 
 };

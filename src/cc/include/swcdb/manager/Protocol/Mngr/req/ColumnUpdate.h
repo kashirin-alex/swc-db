@@ -16,7 +16,7 @@ class ColumnUpdate : public client::ConnQueue::ReqBase {
   public:
 
   ColumnUpdate(Params::ColumnMng::Function function, DB::Schema::Ptr schema, 
-               int err) {
+               int err) : client::ConnQueue::ReqBase(true) {
     cbp = CommBuf::make(Params::ColumnUpdate(function, schema, err));
     cbp->header.set(COLUMN_UPDATE, 60000);
   }
@@ -24,15 +24,11 @@ class ColumnUpdate : public client::ConnQueue::ReqBase {
   virtual ~ColumnUpdate() { }
   
   void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override {
-    if(was_called || !is_rsp(ev))
+    if(!is_rsp(ev))
       return;
 
-    if(ev->header.command == COLUMN_UPDATE && ev->response_code() == Error::OK){
-      was_called = true;
-      return;
-    }
-
-    conn->do_close();
+    if(ev->response_code() != Error::OK)
+      conn->do_close();
   }
   
 };

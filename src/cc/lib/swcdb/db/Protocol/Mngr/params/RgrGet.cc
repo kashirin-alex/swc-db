@@ -67,9 +67,11 @@ void RgrGetReq::internal_decode(const uint8_t** bufp, size_t* remainp) {
 }
 
 
+RgrGetRsp::RgrGetRsp(int err)
+                    : err(err), cid(0), rid(0) { }
 
 RgrGetRsp::RgrGetRsp(cid_t cid, rid_t rid)
-                    : err(0), cid(cid), rid(rid) { }
+                    : err(Error::OK), cid(cid), rid(rid) { }
 
 RgrGetRsp::~RgrGetRsp() { }
 

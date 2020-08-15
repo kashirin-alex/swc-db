@@ -40,7 +40,7 @@ class ColumnCompactReq : public Serializable {
 class ColumnCompactRsp : public Serializable {
   public:
 
-  ColumnCompactRsp();
+  ColumnCompactRsp(int err = Error::OK);
 
   virtual ~ColumnCompactRsp();
 

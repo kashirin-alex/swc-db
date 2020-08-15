@@ -35,22 +35,11 @@ class RangeIsLoaded : public client::ConnQueue::ReqBase {
   }
 
   void handle_no_conn() {
-    if(was_called)
-      return;
-    was_called = true;
     checker->handle(range, Error::COMM_CONNECT_ERROR);
   }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
-    if(was_called)
-      return;
-    was_called = true;
-
-    checker->handle(
-      range, 
-      ev->type == Event::Type::DISCONNECT
-        ? Error::COMM_NOT_CONNECTED
-        : ev->response_code());
+    checker->handle(range, ev->response_code());
   }
 
 };

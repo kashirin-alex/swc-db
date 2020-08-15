@@ -48,7 +48,7 @@ class RangeLocateReq : public Serializable {
 class RangeLocateRsp  : public Serializable {
   public:
 
-  RangeLocateRsp(int err=Error::OK);
+  RangeLocateRsp(int err = Error::OK);
 
   virtual ~RangeLocateRsp();
 
