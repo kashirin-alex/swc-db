@@ -169,6 +169,7 @@ void RangerEnv::start() {
 }
 
 void RangerEnv::shuttingdown() {
+  m_env->m_shuttingdown = true;
   
   m_env->_compaction->stop();
   m_env->mnt_io->stop();
@@ -179,8 +180,6 @@ void RangerEnv::shuttingdown() {
   m_env->_columns->unload_all(false);
 
   m_env->_resources.stop();
-
-  m_env->m_shuttingdown = true;
 }
 
 
