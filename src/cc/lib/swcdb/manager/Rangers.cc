@@ -530,11 +530,13 @@ void Rangers::next_rgr(Files::RgrData::Ptr& last_rgr, Ranger::Ptr& rs_set) {
   size_t num_rgr;
   size_t avg_ranges;
   Ranger::Ptr rgr;
+  size_t not_ack = 0;
 
-  while(!rs_set && m_rangers.size()) {
+  while(!rs_set && m_rangers.size() > not_ack) {
 
     avg_ranges = 0;
     num_rgr = 0;
+    not_ack = 0;
     for(auto it=m_rangers.begin(); it<m_rangers.end(); ) {
       if((rgr = *it)->failures >= cfg_rgr_failures->get()) {
         m_rangers.erase(it);
@@ -544,8 +546,10 @@ void Rangers::next_rgr(Files::RgrData::Ptr& last_rgr, Ranger::Ptr& rs_set) {
         continue;
       }
       ++it;
-      if(rgr->state != Ranger::State::ACK)
+      if(rgr->state != Ranger::State::ACK) {
+        ++not_ack;
         continue;
+      }
       avg_ranges += rgr->interm_ranges;
       ++num_rgr;
     }
