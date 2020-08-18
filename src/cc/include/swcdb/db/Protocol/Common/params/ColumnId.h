@@ -15,8 +15,8 @@ namespace SWC { namespace Protocol { namespace Common { namespace Params {
 class ColumnId : public Serializable {
   public:
 
-  ColumnId(cid_t cid = 0)
-           : cid(cid){
+  ColumnId(cid_t cid = DB::Schema::NO_CID)
+          : cid(cid){
   }
              
   virtual ~ColumnId() {}
