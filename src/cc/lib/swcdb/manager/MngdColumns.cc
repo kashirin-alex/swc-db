@@ -62,6 +62,15 @@ bool MngdColumns::is_active(cid_t cid) {
         (!m_cid_end   || m_cid_end >= cid);
 }
 
+bool MngdColumns::active(cid_t& cid_begin, cid_t& cid_end) {
+  std::shared_lock lock(m_mutex);
+  if(!m_cid_active)
+    return false;
+  cid_begin = m_cid_begin;
+  cid_end = m_cid_end;
+  return true;
+}
+
 Column::Ptr MngdColumns::get_column(int& err, cid_t cid) {
   Column::Ptr col;
   if(!is_active(cid)) {
@@ -578,3 +587,6 @@ void MngdColumns::actions_run() {
 
 
 }} // namespace Manager
+
+#include "swcdb/manager/Protocol/Rgr/req/ColumnsUnload.cc"
+#include "swcdb/manager/Protocol/Rgr/req/RangeUnload.cc"

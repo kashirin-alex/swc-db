@@ -50,6 +50,8 @@ class MngdColumns final {
   
   bool is_active(cid_t cid);
 
+  bool active(cid_t& cid_begin, cid_t& cid_end);
+
   Column::Ptr get_column(int& err, cid_t cid);
 
   void change_active(const cid_t cid_begin, const cid_t cid_end, 
