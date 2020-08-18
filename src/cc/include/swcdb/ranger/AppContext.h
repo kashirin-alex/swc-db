@@ -32,6 +32,7 @@
 #include "swcdb/ranger/Protocol/handlers/ColumnDelete.h"
 #include "swcdb/ranger/Protocol/handlers/ColumnCompact.h"
 #include "swcdb/ranger/Protocol/handlers/Report.h"
+#include "swcdb/ranger/Protocol/handlers/ColumnsUnload.h"
 
 
 namespace SWC { namespace Ranger {
@@ -53,6 +54,7 @@ class AppContext final : public SWC::AppContext {
     &Protocol::Rgr::Handler::range_query_update,
     &Protocol::Rgr::Handler::range_query_select,
     &Protocol::Rgr::Handler::report,
+    &Protocol::Rgr::Handler::columns_unload,
     //&Handler::debug,
     //&Handler::status,
     //&Handler::shutdown

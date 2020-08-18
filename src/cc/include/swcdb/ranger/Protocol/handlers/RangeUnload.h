@@ -25,8 +25,7 @@ void range_unload(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     RangerEnv::columns()->unload_range(err, params.cid, params.rid, 
       [conn, ev](int err) {
         if(!err)
-          conn->response_ok(ev); 
-          // + remove cid if no ranges left
+          conn->response_ok(ev);
         else
           conn->send_error(err, "", ev);
       }
