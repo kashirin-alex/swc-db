@@ -15,10 +15,11 @@ namespace SWC { namespace Types {
 namespace MngrRanger {
 
   enum State {
-    NONE    = 0,
-    AWAIT   = 1,
-    ACK     = 2,
-    REMOVED = 3
+    NONE            = 0,
+    AWAIT           = 1,
+    ACK             = 2,
+    REMOVED         = 3,
+    MARKED_OFFLINE  = 4
   };
 
 }

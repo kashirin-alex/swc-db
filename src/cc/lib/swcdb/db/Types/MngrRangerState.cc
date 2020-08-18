@@ -26,6 +26,9 @@ std::string to_string(MngrRanger::State state) {
     case MngrRanger::State::REMOVED:
       return std::string("REMOVED");
 
+    case MngrRanger::State::MARKED_OFFLINE:
+      return std::string("MARKED_OFFLINE");
+
     default:
       return std::string("uknown");
   }
