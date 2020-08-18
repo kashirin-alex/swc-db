@@ -11,6 +11,7 @@
 #include "swcdb/manager/Protocol/Rgr/req/RangeLoad.h"
 #include "swcdb/manager/Protocol/Rgr/req/ColumnUpdate.h"
 #include "swcdb/manager/Protocol/Rgr/req/ColumnDelete.h"
+#include "swcdb/manager/Protocol/Rgr/req/ColumnsUnload.h"
 
 #include "swcdb/db/Protocol/Rgr/req/ColumnCompact.h"
 
@@ -267,14 +268,20 @@ void Rangers::update_status(RangerList new_rgr_status, bool sync_all) {
             break;
           }
         }
-        if(rs_new->state == Ranger::State::ACK) {
-          if(rs_new->state != h->state) {
-            h->state = Ranger::State::ACK;
-            chg = true;
+        if(rs_new->state != h->state) {
+          if(rs_new->state == Ranger::State::ACK) {
+            if(h->state == Ranger::State::MARKED_OFFLINE) {
+              cid_t cid_begin, cid_end = DB::Schema::NO_CID;
+              if(Env::Mngr::mngd_columns()->active(cid_begin, cid_end))
+                h->put(std::make_shared<Protocol::Rgr::Req::ColumnsUnload>(
+                  h, cid_begin, cid_end)); 
+            }
+          } else {
+            Env::Mngr::columns()->set_rgr_unassigned(h->rgrid);
+            if(rs_new->state == Ranger::State::REMOVED)
+              m_rangers.erase(it);
           }
-        } else {
-          Env::Mngr::columns()->set_rgr_unassigned(h->rgrid);
-          m_rangers.erase(it);
+          h->state = rs_new->state.load();
           chg = true;
         }
 
@@ -537,21 +544,18 @@ void Rangers::next_rgr(Files::RgrData::Ptr& last_rgr, Ranger::Ptr& rs_set) {
     avg_ranges = 0;
     num_rgr = 0;
     not_ack = 0;
-    for(auto it=m_rangers.begin(); it<m_rangers.end(); ) {
+    for(auto it=m_rangers.begin(); it<m_rangers.end(); ++it) {
       if((rgr = *it)->failures >= cfg_rgr_failures->get()) {
-        m_rangers.erase(it);
         Env::Mngr::columns()->set_rgr_unassigned(rgr->rgrid);
-        rgr->state = Ranger::State::REMOVED;
+        rgr->state = Ranger::State::MARKED_OFFLINE;
         _changes({rgr});
-        continue;
-      }
-      ++it;
-      if(rgr->state != Ranger::State::ACK) {
         ++not_ack;
-        continue;
+      } else if(rgr->state != Ranger::State::ACK) {
+        ++not_ack;
+      } else {
+        avg_ranges += rgr->interm_ranges;
+        ++num_rgr;
       }
-      avg_ranges += rgr->interm_ranges;
-      ++num_rgr;
     }
     if(num_rgr)
       avg_ranges /= num_rgr;
@@ -578,14 +582,18 @@ void Rangers::assign_range(const Ranger::Ptr& rgr, const Range::Ptr& range,
     return assign_range(rgr, range);
 
   bool id_due = false;
+  bool last_offline = false;
   Ranger::Ptr rs_last = nullptr;
   {
     std::lock_guard lock(m_mutex);
     for(auto& rs_chk : m_rangers) {
       if(has_endpoint(rs_chk->endpoints, last_rgr->endpoints)) {
         rs_last = rs_chk;
-        id_due = rs_last->state == Ranger::State::AWAIT;
-        rs_last->state = Ranger::State::AWAIT;
+        last_offline = rs_last->state == Ranger::State::MARKED_OFFLINE;
+        if(!last_offline) {
+          id_due = rs_last->state == Ranger::State::AWAIT;
+          rs_last->state = Ranger::State::AWAIT;
+        }
         break;
       }
     }
@@ -595,6 +603,9 @@ void Rangers::assign_range(const Ranger::Ptr& rgr, const Range::Ptr& range,
       rs_last->state = Ranger::State::AWAIT;
     }
   }
+  
+  if(last_offline) 
+    return assign_range(rgr, range);
     
   auto req = std::make_shared<Protocol::Rgr::Req::AssignIdNeeded>(
     rs_last, rgr, range);
