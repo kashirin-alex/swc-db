@@ -71,6 +71,12 @@ class Column final : private std::vector<Range::Ptr> {
     _set_loading();
   }
 
+  void set_unloaded(const Range::Ptr& range) {
+    std::scoped_lock lock(m_mutex);
+    range->set_state(Range::State::NOTSET, 0);
+    _set_loading();
+  }
+
   State state() {
     std::shared_lock lock(m_mutex);
     return m_state;

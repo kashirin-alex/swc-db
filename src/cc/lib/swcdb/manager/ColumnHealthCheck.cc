@@ -60,7 +60,7 @@ void ColumnHealthCheck::RangerCheck::handle(const Range::Ptr& range, int err) {
   if(err == Error::RS_NOT_LOADED_RANGE ||
      (err == Error::COMM_CONNECT_ERROR && 
       ++rgr->failures > Env::Mngr::rangers()->cfg_rgr_failures->get())) {
-    range->set_state(Range::State::NOTSET, 0); 
+    col_checker->col->set_unloaded(range); 
   }
 
   if(err) {
@@ -152,6 +152,14 @@ void ColumnHealthCheck::run() {
       return;
   }
   
+  /*
+  if(col->state() == Error::OK) {
+    // match ranger's rids to mngr assignments (dup. unload from all Rangers)
+    RangerList rangers;
+    Env::Mngr::rangers()->rgr_get(0, rangers);
+  }
+  */
+
   SWC_LOGF(LOG_DEBUG, "Column-Health FINISH cid(%lu)", col->cfg.cid);
   Env::Mngr::rangers()->health_check_finished(shared_from_this());
 }
