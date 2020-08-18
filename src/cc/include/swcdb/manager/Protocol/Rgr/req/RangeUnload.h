@@ -15,24 +15,26 @@ namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
 class RangeUnload : public client::ConnQueue::ReqBase {
   public:
 
-  RangeUnload(const Manager::Range::Ptr& range, 
-              const ResponseCallback::Ptr& cb,
+  RangeUnload(const Manager::Ranger::Ptr& rgr,
+              const Manager::Column::Ptr& col, 
+              const Manager::Range::Ptr& range,
               uint32_t timeout=60000);
 
   virtual ~RangeUnload();
 
+  bool valid() override;
+
   void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
 
-  bool valid() override;
-  
   void handle_no_conn() override;
 
-  void unloaded(int err, const ResponseCallback::Ptr& cb);
+  void unloaded(int err);
 
   private:
-
-  ResponseCallback::Ptr cb;
-  Manager::Range::Ptr   range;
+  
+  const Manager::Ranger::Ptr rgr;
+  const Manager::Column::Ptr col;
+  const Manager::Range::Ptr  range;
    
 };
 
