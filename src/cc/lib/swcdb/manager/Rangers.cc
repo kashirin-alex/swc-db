@@ -232,6 +232,7 @@ void Rangers::update_status(RangerList new_rgr_status, bool sync_all) {
     Ranger::Ptr h;
     bool found;
     bool chg;
+    bool load_scale_updated = false;
 
     std::lock_guard lock(m_mutex);
 
@@ -287,7 +288,7 @@ void Rangers::update_status(RangerList new_rgr_status, bool sync_all) {
 
         if(rs_new->load_scale != h->load_scale) { 
           h->load_scale = rs_new->load_scale.load();
-          h->interm_ranges = 0;
+          load_scale_updated = true;
           chg = true;
         }
 
@@ -305,6 +306,11 @@ void Rangers::update_status(RangerList new_rgr_status, bool sync_all) {
             changed.push_back(rs_new);
         }
       }
+    }
+
+    if(load_scale_updated) {
+      for(auto& h : m_rangers)
+        h->interm_ranges = 0;
     }
   }
 
