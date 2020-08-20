@@ -25,11 +25,20 @@ void range_create(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
 
     auto col = Env::Mngr::mngd_columns()->get_column(
       rsp_params.err, params.cid);
-    if(rsp_params.err && rsp_params.err == Error::COLUMN_MARKED_REMOVED)
-      goto send_response;
+    if(rsp_params.err) {
+      if(rsp_params.err == Error::COLUMN_MARKED_REMOVED ||
+         rsp_params.err == Error::MNGR_NOT_ACTIVE ||
+         rsp_params.err == Error::COLUMN_NOT_EXISTS)
+        goto send_response;
+    }
 
     auto range = col->create_new_range(params.rgrid);
-    rsp_params.rid = range->rid;
+    if(range && range->rid) {
+      rsp_params.rid = range->rid;
+      rsp_params.err = Error::OK;
+    } else {
+      rsp_params.err = Error::RANGE_NOT_FOUND;
+    }
 
   } catch (Exception &e) {
     SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;

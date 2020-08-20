@@ -26,13 +26,17 @@ void range_unloaded(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     auto col = Env::Mngr::mngd_columns()->get_column(
       rsp_params.err, params.cid);
     if(rsp_params.err) {
-      if(rsp_params.err == Error::COLUMN_MARKED_REMOVED)
+      if(rsp_params.err == Error::COLUMN_MARKED_REMOVED ||
+         rsp_params.err == Error::MNGR_NOT_ACTIVE ||
+         rsp_params.err == Error::COLUMN_NOT_EXISTS)
         goto send_response;
       rsp_params.err = Error::OK;
     }
 
     auto range = col->get_range(rsp_params.err, params.rid);
-    if(rsp_params.err || range == nullptr)
+    if(!range && !rsp_params.err)
+      rsp_params.err = Error::RANGE_NOT_FOUND;
+    if(rsp_params.err)
       goto send_response;
     range->set_state(Manager::Range::State::NOTSET, 0);
     

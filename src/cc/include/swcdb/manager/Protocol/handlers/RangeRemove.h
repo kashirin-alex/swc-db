@@ -25,8 +25,13 @@ void range_remove(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
 
     auto col = Env::Mngr::mngd_columns()->get_column(
       rsp_params.err, params.cid);
-    if(rsp_params.err && rsp_params.err == Error::COLUMN_MARKED_REMOVED)
-      goto send_response;
+    if(rsp_params.err) {
+      if(rsp_params.err == Error::COLUMN_MARKED_REMOVED ||
+         rsp_params.err == Error::MNGR_NOT_ACTIVE ||
+         rsp_params.err == Error::COLUMN_NOT_EXISTS)
+        goto send_response;
+      rsp_params.err = Error::OK;
+    }
 
     col->remove_range(params.rid);
 
