@@ -600,14 +600,14 @@ void CompactRange::mngr_create_range(uint32_t split_at) {
         "Compact::Mngr::Req::RangeCreate err=%d(%s) %lu/%lu", 
         rsp.err, Error::get_text(rsp.err), cid, rsp.rid);
 
-      if(rsp.err && 
+      if(!ptr->m_stopped && rsp.err && 
          rsp.err != Error::COLUMN_NOT_EXISTS &&
          rsp.err != Error::COLUMN_MARKED_REMOVED &&
          rsp.err != Error::COLUMN_NOT_READY) {
         req->request_again();
         return;
       }
-      if(rsp.rid && (!rsp.err || rsp.err == Error::COLUMN_NOT_READY))
+      if((!rsp.err || rsp.err == Error::COLUMN_NOT_READY) && rsp.rid)
         ptr->split(rsp.rid, split_at);
       else 
         ptr->apply_new();
@@ -707,17 +707,17 @@ void CompactRange::split(rid_t new_rid, uint32_t split_at) {
   new_range = nullptr;
   col->unload(
     new_rid, 
-    [new_rid, cid=range->cfg->cid](int) { 
+    [new_rid, cid=range->cfg->cid, ptr=shared()](int) { 
       Protocol::Mngr::Req::RangeUnloaded::request(
         cid, new_rid,
-        [cid, new_rid]
+        [cid, new_rid, ptr]
         (const client::ConnQueue::ReqBase::Ptr& req, 
          const Protocol::Mngr::Params::RangeUnloadedRsp& rsp) {
       
           SWC_LOGF(LOG_DEBUG, 
             "Compact::Mngr::Req::RangeUnloaded err=%d(%s) %lu/%lu", 
             rsp.err, Error::get_text(rsp.err), cid, new_rid);
-          if(rsp.err && 
+          if(!ptr->m_stopped && rsp.err && 
              rsp.err != Error::COLUMN_NOT_EXISTS &&
              rsp.err != Error::COLUMN_MARKED_REMOVED &&
              rsp.err != Error::COLUMN_NOT_READY) {
