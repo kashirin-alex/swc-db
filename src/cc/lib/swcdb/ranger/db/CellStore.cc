@@ -300,8 +300,7 @@ size_t Read::release(size_t bytes) {
 }
 
 void Read::release_fd() { 
-  if(m_smartfd->valid() && 
-     Env::FsInterface::interface()->need_fds() && !processing()) {
+  if(m_smartfd->valid() && Env::FsInterface::interface()->need_fds()) {
     int err = Error::OK;
     close(err); 
   }
