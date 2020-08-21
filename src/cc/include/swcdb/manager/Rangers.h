@@ -62,8 +62,6 @@ class Rangers final {
   void update_status(RangerList new_rgr_status, bool sync_all);
 
 
-  void assign_range_chk_last(int err, const Ranger::Ptr& rs_chk);
-
   void assign_range(const Ranger::Ptr& rgr, const Range::Ptr& range);
 
   void range_loaded(Ranger::Ptr rgr, Range::Ptr range, 
@@ -92,9 +90,6 @@ class Rangers final {
   void assign_ranges_run();
 
   void next_rgr(Files::RgrData::Ptr& last_rgr, Ranger::Ptr& rs_set);
-
-  void assign_range(const Ranger::Ptr& rgr, const Range::Ptr& range, 
-                    const Files::RgrData::Ptr& last_rgr);
 
   void health_check_columns();
 

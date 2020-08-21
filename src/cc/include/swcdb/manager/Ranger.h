@@ -88,18 +88,6 @@ class Ranger : public Protocol::Common::Params::HostEndPoints {
     m_queue->stop();
   }
 
-  void pending_id(const client::ConnQueue::ReqBase::Ptr& req) {
-    m_pending_id.push(req);
-  }
-
-  bool pending_id_pop(client::ConnQueue::ReqBase::Ptr& req) {
-    if(m_pending_id.empty())
-      return false;
-    req = m_pending_id.front();
-    m_pending_id.pop();
-    return true;
-  }
-
   std::atomic<rgrid_t>  rgrid;
   std::atomic<State>    state;
 
@@ -110,7 +98,6 @@ class Ranger : public Protocol::Common::Params::HostEndPoints {
   
   private:
   client::Host::Ptr m_queue = nullptr;
-  std::queue<client::ConnQueue::ReqBase::Ptr> m_pending_id;
 
 };
 typedef std::vector<Ranger::Ptr>  RangerList;

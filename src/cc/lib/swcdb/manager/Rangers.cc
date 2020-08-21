@@ -7,7 +7,6 @@
 #include "swcdb/manager/Rangers.h"
 #include "swcdb/manager/Protocol/Mngr/req/RgrUpdate.h"
 
-#include "swcdb/manager/Protocol/Rgr/req/AssignIdNeeded.h"
 #include "swcdb/manager/Protocol/Rgr/req/RangeLoad.h"
 #include "swcdb/manager/Protocol/Rgr/req/ColumnUpdate.h"
 #include "swcdb/manager/Protocol/Rgr/req/ColumnDelete.h"
@@ -320,25 +319,6 @@ void Rangers::update_status(RangerList new_rgr_status, bool sync_all) {
   );
 }
 
-
-void Rangers::assign_range_chk_last(int err, const Ranger::Ptr& rs_chk) {
-  client::ConnQueue::ReqBase::Ptr req;
-  for(;;) {
-    {
-      std::lock_guard lock(m_mutex);
-      if(!rs_chk->pending_id_pop(req))
-        return;
-    }
-
-    auto qreq = std::dynamic_pointer_cast<
-      Protocol::Rgr::Req::AssignIdNeeded>(req);
-    if(!err) 
-      range_loaded(qreq->rs_nxt, qreq->range, Error::RS_NOT_READY);
-    else
-      assign_range(qreq->rs_nxt, qreq->range);
-  }
-}
-
 void Rangers::assign_range(const Ranger::Ptr& rgr, const Range::Ptr& range) {
   rgr->put(
     std::make_shared<Protocol::Rgr::Req::RangeLoad>(
@@ -513,14 +493,14 @@ void Rangers::assign_ranges_run() {
     }
 
     range->set_state(Range::State::QUEUED, rgr->rgrid);
-    assign_range(rgr, range, last_rgr);
+    ++rgr->interm_ranges;
+    assign_range(rgr, range);
     if(++m_assignments > cfg_assign_due->get()) {
       runs_assign(true);
       return;
     }
   }
 
-  // balance/check-assigments if not runs :for ranger cid-rid state
   schedule_check(cfg_chk_assign->get());
 }
 
@@ -576,53 +556,7 @@ void Rangers::next_rgr(Files::RgrData::Ptr& last_rgr, Ranger::Ptr& rs_set) {
       rs_set = rgr;
     }
   }
-
-  if(rs_set)
-    ++rs_set->interm_ranges;
-  return;
 }
-
-void Rangers::assign_range(const Ranger::Ptr& rgr, const Range::Ptr& range, 
-                           const Files::RgrData::Ptr& last_rgr) {
-  if(!last_rgr)
-    return assign_range(rgr, range);
-
-  bool id_due = false;
-  bool last_offline = false;
-  Ranger::Ptr rs_last = nullptr;
-  {
-    std::lock_guard lock(m_mutex);
-    for(auto& rs_chk : m_rangers) {
-      if(has_endpoint(rs_chk->endpoints, last_rgr->endpoints)) {
-        rs_last = rs_chk;
-        last_offline = rs_last->state == Ranger::State::MARKED_OFFLINE;
-        if(!last_offline) {
-          id_due = rs_last->state == Ranger::State::AWAIT;
-          rs_last->state = Ranger::State::AWAIT;
-        }
-        break;
-      }
-    }
-    if(!rs_last) {
-      rs_last = m_rangers.emplace_back(new Ranger(0, last_rgr->endpoints));
-      rs_last->init_queue();
-      rs_last->state = Ranger::State::AWAIT;
-    }
-  }
-  
-  if(last_offline) 
-    return assign_range(rgr, range);
-    
-  auto req = std::make_shared<Protocol::Rgr::Req::AssignIdNeeded>(
-    rs_last, rgr, range);
-  if(id_due) {
-    std::lock_guard lock(m_mutex);
-    rs_last->pending_id(req);
-  } else {
-    rs_last->put(req);
-  }
-}
-
 
 void Rangers::health_check_columns() {
   if(!m_mutex_assign.try_lock())
@@ -719,7 +653,6 @@ void Rangers::_changes(const RangerList& hosts, bool sync_all) {
 
 
 
-#include "swcdb/manager/Protocol/Rgr/req/AssignIdNeeded.cc"
 #include "swcdb/manager/Protocol/Rgr/req/RangeLoad.cc"
 #include "swcdb/manager/Protocol/Rgr/req/ColumnUpdate.cc"
 #include "swcdb/manager/Protocol/Rgr/req/ColumnDelete.cc"
