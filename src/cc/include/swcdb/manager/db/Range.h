@@ -66,7 +66,7 @@ class Range final {
 
   bool need_health_check(int64_t ts, uint32_t ms, rgrid_t rgrid) {
     std::shared_lock lock(m_mutex);
-    if(m_state == State::ASSIGNED && 
+    if((m_state == State::ASSIGNED || m_state == State::QUEUED) &&
        (!rgrid || m_rgrid == rgrid) && m_check_ts + ms < ts) {
       m_check_ts = ts;
       return true;
@@ -78,7 +78,8 @@ class Range final {
     std::scoped_lock lock(m_mutex);
     m_state = new_state;
     m_rgrid = rgrid;
-    m_check_ts = m_state == State::ASSIGNED ? Time::now_ms() : 0;
+    m_check_ts = m_state == State::ASSIGNED || m_state == State::QUEUED
+                  ? Time::now_ms() : 0;
   }
   
   void set_deleted() {
