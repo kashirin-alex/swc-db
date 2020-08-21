@@ -167,7 +167,8 @@ void Interface::get_structured_ids(int& err, const std::string& base_path,
       try {
         entries.push_back((int64_t)strtoll(id_name.c_str(), NULL, 0));
       } catch(...){
-        SWC_LOGF(LOG_ERROR, "Error converting id_name=%s to int64", id_name.c_str());
+        SWC_LOGF(LOG_ERROR, "Error converting id_name=%s to int64", 
+                  id_name.c_str());
       }
       continue;
     }
@@ -191,7 +192,6 @@ void Interface::readdir(int& err, const std::string& base_path,
     m_fs->readdir(err = Error::OK, base_path, found_dirs);
     switch(err) {
       case Error::OK:
-      case EACCES:
       case ENOENT:
       case Error::SERVER_SHUTTING_DOWN: {
         dirs = found_dirs;
@@ -199,8 +199,8 @@ void Interface::readdir(int& err, const std::string& base_path,
       }
       default:
         hold_delay();
-        SWC_LOGF(LOG_WARN, "readdir, retrying to err=%d(%s)",
-                  err, Error::get_text(err));
+        SWC_LOGF(LOG_WARN, "readdir, retrying to err=%d(%s) dir(%s)",
+                  err, Error::get_text(err), base_path.c_str());
     }
   }
 }
@@ -214,8 +214,8 @@ bool Interface::exists(int& err, const std::string& name) {
         return state;
       default:
         hold_delay();
-        SWC_LOGF(LOG_WARN, "exists, retrying to err=%d(%s)",
-                  err, Error::get_text(err));
+        SWC_LOGF(LOG_WARN, "exists, retrying to err=%d(%s) path(%s)",
+                  err, Error::get_text(err), name.c_str());
     }
   }
 }
@@ -243,8 +243,8 @@ void Interface::mkdirs(int& err, const std::string& name) {
         return;
       default:
         hold_delay();
-        SWC_LOGF(LOG_WARN, "mkdirs, retrying to err=%d(%s)",
-                  err, Error::get_text(err));
+        SWC_LOGF(LOG_WARN, "mkdirs, retrying to err=%d(%s) dir(%s)",
+                  err, Error::get_text(err), name.c_str());
     }
   }
 }
@@ -254,14 +254,13 @@ void Interface::rmdir(int& err, const std::string& name) {
     m_fs->rmdir(err = Error::OK, name);
     switch(err) {
       case Error::OK:
-      case EACCES:
       case ENOENT:
       case Error::SERVER_SHUTTING_DOWN:
         return;
       default:
         hold_delay();
-        SWC_LOGF(LOG_WARN, "rmdir, retrying to err=%d(%s)",
-                  err, Error::get_text(err));
+        SWC_LOGF(LOG_WARN, "rmdir, retrying to err=%d(%s) dir(%s)",
+                  err, Error::get_text(err), name.c_str());
     }
   }
 }
@@ -299,14 +298,13 @@ void Interface::remove(int& err, const std::string& name) {
     m_fs->remove(err = Error::OK, name);
     switch(err) {
       case Error::OK:
-      case EACCES:
       case ENOENT:
       case Error::SERVER_SHUTTING_DOWN:
         return;
       default:
         hold_delay();
-        SWC_LOGF(LOG_WARN, "remove, retrying to err=%d(%s)",
-                  err, Error::get_text(err));
+        SWC_LOGF(LOG_WARN, "remove, retrying to err=%d(%s) file(%s)",
+                  err, Error::get_text(err), name.c_str());
     }
   }
 }
@@ -317,7 +315,6 @@ void Interface::rename(int& err, const std::string& from,
     m_fs->rename(err = Error::OK, from, to);
     switch(err) {
       case Error::OK:
-      case EACCES:
       case Error::SERVER_SHUTTING_DOWN:
         return;
       case ENOENT: {
@@ -328,10 +325,15 @@ void Interface::rename(int& err, const std::string& from,
         }
         [[fallthrough]];
       }
+      case ENOTEMPTY: { // overwrite dir like rename of file 
+        int e_err;
+        rmdir(e_err, to);
+        [[fallthrough]];
+      }
       default:
         hold_delay();
-        SWC_LOGF(LOG_WARN, "rename, retrying to err=%d(%s)", 
-                  err, Error::get_text(err));
+        SWC_LOGF(LOG_WARN, "rename, retrying to err=%d(%s) from(%s) to(%s)", 
+                  err, Error::get_text(err), from.c_str(), to.c_str());
     }
   }
 } 
@@ -347,8 +349,8 @@ size_t Interface::length(int& err, const std::string& name) {
         return length;
       default:
         hold_delay();
-        SWC_LOGF(LOG_WARN, "length, retrying to err=%d(%s)", 
-                  err, Error::get_text(err));
+        SWC_LOGF(LOG_WARN, "length, retrying to err=%d(%s) file(%s)", 
+                  err, Error::get_text(err), name.c_str());
     }
   }
 }
@@ -369,8 +371,8 @@ void Interface::write(int& err, SmartFd::Ptr smartfd,
       }
       default:
         hold_delay();
-        SWC_LOGF(LOG_WARN, "write, retrying to err=%d(%s)", 
-                err, Error::get_text(err));
+        SWC_LOGF(LOG_WARN, "write, retrying to err=%d(%s) file(%s)", 
+                err, Error::get_text(err), smartfd->filepath().c_str());
     }
   }
 }
@@ -387,8 +389,8 @@ void Interface::read(int& err, const std::string& name, StaticBuffer* dst) {
         return;
       default:
         hold_delay();
-        SWC_LOGF(LOG_WARN, "read-all, retrying to err=%d(%s)", 
-                err, Error::get_text(err));
+        SWC_LOGF(LOG_WARN, "read-all, retrying to err=%d(%s) file(%s)",
+                err, Error::get_text(err), name.c_str());
     }
   }
 }
@@ -442,8 +444,8 @@ void Interface::close(int& err, SmartFd::Ptr smartfd) {
         return;
       default:
         hold_delay();
-        SWC_LOGF(LOG_WARN, "close, retrying to err=%d(%s)", 
-                 err, Error::get_text(err));
+        SWC_LOGF(LOG_WARN, "close, retrying to err=%d(%s) file(%s)", 
+                 err, Error::get_text(err), smartfd->filepath().c_str());
     }
   }
 }
