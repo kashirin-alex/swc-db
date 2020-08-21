@@ -331,7 +331,11 @@ void Rangers::assign_range(const Ranger::Ptr& rgr, const Range::Ptr& range) {
 
 void Rangers::range_loaded(Ranger::Ptr rgr, Range::Ptr range, 
                            int err, bool failure, bool verbose) {
-  bool run_assign = m_assignments-- > cfg_assign_due->get();
+  bool run_assign;
+  {
+    std::lock_guard lock(m_mutex);
+    run_assign = m_assignments-- == cfg_assign_due->get();
+  }
 
   if(!range->deleted()) {
     if(err) {
@@ -339,8 +343,11 @@ void Rangers::range_loaded(Ranger::Ptr rgr, Range::Ptr range,
         ++rgr->failures;
 
       range->set_state(Range::State::NOTSET, 0); 
-      if(!run_assign) 
+      if(!run_assign)
         schedule_check(2000);
+      if(verbose)
+        SWC_LOGF(LOG_INFO, "RANGE-STATUS %d(%s), %s", 
+                  err, Error::get_text(err), range->to_string().c_str());
 
     } else {
       rgr->failures = 0;
@@ -348,9 +355,6 @@ void Rangers::range_loaded(Ranger::Ptr rgr, Range::Ptr range,
       range->clear_last_rgr();
       Env::Mngr::mngd_columns()->load_pending(range->cfg->cid);
     }
-    if(verbose)
-      SWC_LOGF(LOG_INFO, "RANGE-STATUS %d(%s), %s", 
-                err, Error::get_text(err), range->to_string().c_str());
   }
 
   if(run_assign)
@@ -468,13 +472,12 @@ void Rangers::assign_ranges_run() {
   int err;
   Range::Ptr range;
 
-  for(;;) {
+  for(bool more;;) {
     {
       std::lock_guard lock(m_mutex);
       if(m_rangers.empty() || !m_run) {
         runs_assign(true);
-        schedule_check();
-        return;
+        return schedule_check();
       }
     }
 
@@ -485,73 +488,60 @@ void Rangers::assign_ranges_run() {
 
     Files::RgrData::Ptr last_rgr = range->get_last_rgr(err = Error::OK);
     Ranger::Ptr rgr = nullptr;
-    next_rgr(last_rgr, rgr);
+    next_rgr(last_rgr->endpoints, rgr);
     if(!rgr) {
       runs_assign(true);
-      schedule_check();
-      return;
+      return schedule_check();
     }
 
     range->set_state(Range::State::QUEUED, rgr->rgrid);
     ++rgr->interm_ranges;
-    assign_range(rgr, range);
-    if(++m_assignments > cfg_assign_due->get()) {
-      runs_assign(true);
-      return;
+    {
+      std::lock_guard lock(m_mutex);
+      if(!(more = ++m_assignments < cfg_assign_due->get()))
+        runs_assign(true);
     }
+    assign_range(rgr, range);
+    if(!more)
+      return;
   }
 
   schedule_check(cfg_chk_assign->get());
 }
 
-void Rangers::next_rgr(Files::RgrData::Ptr& last_rgr, Ranger::Ptr& rs_set) {
+void Rangers::next_rgr(const EndPoints& last_rgr, Ranger::Ptr& rs_set) {
+  size_t n_rgrs = 0;
+  size_t avg_ranges = 0;
+  Ranger::Ptr rgr;
   std::lock_guard lock(m_mutex);
 
-  if(last_rgr->endpoints.size()) {
-      for(auto& rgr : m_rangers) {
-        if(rgr->state == Ranger::State::ACK
-          && rgr->failures < cfg_rgr_failures->get() 
-          && has_endpoint(rgr->endpoints, last_rgr->endpoints)) {
-          rs_set = rgr;
-          last_rgr = nullptr;
-          break;
-        }
-     }
-  } else 
-    last_rgr = nullptr;
-    
-  size_t num_rgr;
-  size_t avg_ranges;
-  Ranger::Ptr rgr;
-  size_t not_ack = 0;
+  for(auto it=m_rangers.begin(); it<m_rangers.end(); ++it) {
+    if((rgr = *it)->state == Ranger::State::MARKED_OFFLINE) {
+      continue;
 
-  while(!rs_set && m_rangers.size() > not_ack) {
+    } else if(rgr->failures >= cfg_rgr_failures->get()) {
+      Env::Mngr::columns()->set_rgr_unassigned(rgr->rgrid);
+      rgr->state = Ranger::State::MARKED_OFFLINE;
+      _changes({rgr});
 
-    avg_ranges = 0;
-    num_rgr = 0;
-    not_ack = 0;
-    for(auto it=m_rangers.begin(); it<m_rangers.end(); ++it) {
-      if((rgr = *it)->failures >= cfg_rgr_failures->get()) {
-        Env::Mngr::columns()->set_rgr_unassigned(rgr->rgrid);
-        rgr->state = Ranger::State::MARKED_OFFLINE;
-        _changes({rgr});
-        ++not_ack;
-      } else if(rgr->state != Ranger::State::ACK) {
-        ++not_ack;
-      } else {
-        avg_ranges += rgr->interm_ranges;
-        ++num_rgr;
+    } else if(rgr->state == Ranger::State::ACK) {
+      if(!last_rgr.empty() && has_endpoint(rgr->endpoints, last_rgr)) {
+        rs_set = rgr;
+        return;
       }
+      avg_ranges += rgr->interm_ranges;
+      ++n_rgrs;
     }
-    if(num_rgr)
-      avg_ranges /= num_rgr;
+  }
+  if(!n_rgrs)
+    return;
 
-    uint16_t best = 0;
-    for(auto it=m_rangers.begin(); it<m_rangers.end(); ++it) {
-      if((rgr = *it)->state != Ranger::State::ACK ||
-         avg_ranges < rgr->interm_ranges ||
-         rgr->load_scale < best)
-        continue;
+  avg_ranges /= n_rgrs;
+  uint16_t best = 0;
+  for(auto it=m_rangers.begin(); it<m_rangers.end(); ++it) {
+    if((rgr = *it)->state == Ranger::State::ACK &&
+        avg_ranges >= rgr->interm_ranges &&
+        rgr->load_scale >= best) {
       best = rgr->load_scale;
       rs_set = rgr;
     }

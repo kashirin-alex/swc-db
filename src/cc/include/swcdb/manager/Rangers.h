@@ -89,7 +89,7 @@ class Rangers final {
 
   void assign_ranges_run();
 
-  void next_rgr(Files::RgrData::Ptr& last_rgr, Ranger::Ptr& rs_set);
+  void next_rgr(const EndPoints& last_rgr, Ranger::Ptr& rs_set);
 
   void health_check_columns();
 
@@ -111,7 +111,7 @@ class Rangers final {
 
   std::mutex                    m_mutex_assign;
   bool                          m_runs_assign;
-  std::atomic<int>              m_assignments; 
+  int32_t                       m_assignments; 
   ColumnHealthChecks            m_columns_check;
   
 };
