@@ -220,6 +220,8 @@ class Mutable final {
 
   void split(Mutable& cells, bool loaded);
 
+  bool can_split() const;
+  
   void split(Mutable& cells);
 
   private:

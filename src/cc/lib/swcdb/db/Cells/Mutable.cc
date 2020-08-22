@@ -590,6 +590,10 @@ void Mutable::split(Mutable& cells, bool loaded) {
   _remove(it_start, count, !loaded);
 }
 
+bool Mutable::can_split() const {
+  return buckets.size() > 1;
+}
+
 void Mutable::split(Mutable& cells) {
   size_t split_at = buckets.size() / 2;
   if(!split_at)

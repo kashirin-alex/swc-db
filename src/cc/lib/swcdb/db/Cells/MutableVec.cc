@@ -69,7 +69,7 @@ size_t MutableVec::size_of_internal() const {
 }
 
 bool MutableVec::split(Mutable& cells, MutableVec::iterator it) {
-  if(cells.size() >= split_size) {
+  if(cells.size() >= split_size && cells.can_split()) {
     cells.split(**insert(it, new Mutable(key_seq, max_revs, ttl, type)));
     return true;
   }
