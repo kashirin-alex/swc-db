@@ -270,21 +270,21 @@ void Reader::read_key(DB::Cell::Key& key) {
 
 void Reader::error_msg(int error, const std::string& msg) {
   err = error;
-  auto at = sql.length() - remain + 5;
+  auto at = sql.length() - remain + 1;
   message.append("error=");
   message.append(std::to_string(err));
   message.append("(");
   message.append(Error::get_text(err));
   message.append(")\n");
   
-  message.append(" SQL=");
+  message.append(" SQL='");
   message.append(sql);
-  message.append("\n");
-  message.insert(message.length(), at, ' ');
+  message.append("'\n");
+  message.insert(message.length(), at + 5, ' ');
   message.append("^ at=");
   message.append(std::to_string(at));
   message.append("\n");
-  message.insert(message.end(), at, ' ');
+  message.insert(message.end(), at + 5, ' ');
   message.append(msg);
   message.append("\n");
 }
