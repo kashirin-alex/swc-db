@@ -115,6 +115,8 @@ void Compaction::compact(const RangePtr& range) {
 
   uint32_t cs_size = range->cfg->cellstore_size(); 
   uint32_t blk_size = range->cfg->block_size();
+  if(cs_size < blk_size)
+    blk_size = cs_size;
   uint8_t perc = range->cfg->compact_percent(); 
   uint32_t allow_sz = (cs_size  / 100) * perc; 
   uint32_t cell_revs = range->cfg->cell_versions();
