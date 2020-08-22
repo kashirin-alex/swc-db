@@ -55,8 +55,7 @@ bool ConnQueueReqBase::valid() { return true; }
 void ConnQueueReqBase::handle_no_conn() { }
 
 std::string ConnQueueReqBase::to_string() {
-  std::string s("ReqBase(");
-  s.append(" insistent=");
+  std::string s("ReqBase(insistent=");
   s.append(std::to_string(insistent));
   s.append(" ");
   s.append(cbp->header.to_string());

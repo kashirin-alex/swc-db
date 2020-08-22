@@ -477,7 +477,7 @@ void Update::Locator::commit_data(
                    rsp.to_string().c_str(), workload->count());
 
           if(rsp.err == Error::REQUEST_TIMEOUT) {
-            SWC_LOGF(LOG_DEBUG, " %s", req->to_string().c_str());
+            SWC_LOGF(LOG_DEBUG, "%s", req->to_string().c_str());
             req->request_again();
             return;
           }

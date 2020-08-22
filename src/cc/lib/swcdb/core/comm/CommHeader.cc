@@ -114,7 +114,7 @@ void CommHeader::initialize_from_request_header(const CommHeader &req_header) {
 }
 
 std::string CommHeader::to_string() const {
-  std::string s = " version=" + std::to_string((int)version);
+  std::string s = "version=" + std::to_string((int)version);
   s += " header_len=" + std::to_string((int)header_len);
   s += " flags=" + std::to_string((int)flags);
   s += " id=" + std::to_string((int)id);
