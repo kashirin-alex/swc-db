@@ -114,6 +114,8 @@ void Compaction::compact(const RangePtr& range) {
   auto& commitlog  = range->blocks.commitlog;
 
   uint32_t cs_size = range->cfg->cellstore_size(); 
+  size_t cs_max = range->cfg->cellstore_max();
+  
   uint32_t blk_size = range->cfg->block_size();
   if(cs_size < blk_size)
     blk_size = cs_size;
@@ -138,8 +140,9 @@ void Compaction::compact(const RangePtr& range) {
     need.append("LogCount=");
     need.append(std::to_string(value-cs_size/blk_size));
 
-  } else if((do_compaction = range->blocks.cellstores.need_compaction(
-                cs_size + allow_sz,  blk_size + (blk_size / 100) * perc))) {
+  } else if((do_compaction = range->blocks.cellstores.size() > cs_max ||
+                             range->blocks.cellstores.need_compaction(
+                cs_size + allow_sz,  blk_size + (blk_size / 100) * perc) )) {
     need.append("CsResize");
 
   } else if((do_compaction = cell_ttl && 
