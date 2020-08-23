@@ -427,26 +427,24 @@ size_t Blocks::_get_block_idx(Block::Ptr blk) const {
 }
 
 size_t Blocks::_narrow(const DB::Cell::Key& key) const {
-    size_t offset = 0;
-    if(m_blocks_idx.size() < MAX_IDX_NARROW || key.empty())
-      return offset;
-      
-    for(size_t sz = offset = m_blocks_idx.size() >> 1;;) {
-      if(!(*(m_blocks_idx.begin() + offset))->is_in_end(key)) {
-        if(sz < MAX_IDX_NARROW)
-          break;
-        offset += sz >>= 1; 
-        continue;
-      }
-      if((sz >>= 1) == 0)
-        ++sz;  
-      if(offset < sz) {
-        offset = 0;
-        break;
-      }
-      offset -= sz;
-    }
+  size_t offset = 0;
+  if(key.empty() || m_blocks_idx.size() <= MAX_IDX_NARROW)
     return offset;
+  
+  size_t step = offset = m_blocks_idx.size() >> 1;
+  try_narrow:
+    if(!(*(m_blocks_idx.begin() + offset))->is_in_end(key)) {
+      if(step < MAX_IDX_NARROW)
+        return offset;
+      offset += step >>= 1;
+      goto try_narrow;
+    }
+    if((step >>= 1) <= MAX_IDX_NARROW)
+      ++step;
+    if(offset < step)
+      return 0;
+    offset -= step;
+  goto try_narrow;
 }
 
 
