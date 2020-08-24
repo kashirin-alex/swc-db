@@ -1,46 +1,41 @@
 /*
  * Copyright Since 2019 SWC-DB© [author: Kashirin Alex kashirin.alex@gmail.com]
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
- * Copyright (C) 2007-2016 Hypertable, Inc.
- *
- * This file is part of Hypertable.
- *
- * Hypertable is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 3
- * of the License, or any later version.
- *
- * Hypertable is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
- * 02110-1301, USA.
  */
 
-/** @file
- * Error codes, Exception handling, error logging.
- *
- * This file contains all error codes used in Hypertable, the Exception
- * base class and macros for logging and error handling.
- */
 
 #include "swcdb/core/Error.h"
 #include <map>
+#include <future>
+//#include <format>
+#include <regex>
+#include <variant>
+
 
 
 namespace SWC {
 
+
 namespace {
 
 std::map<const int, const char *> text_map {
+
+  { Error::EXCEPTION_BAD,               "Bad Exception" },
+  { Error::EXCEPTION_UNKNOWN,           "Unknown Exception" },
   { Error::UNPOSSIBLE,                  "But that's unpossible!" },
-  { Error::EXTERNAL,                    "External error" },
-  { Error::FAILED_EXPECTATION,          "failed expectation" },
+  { Error::FAILED_EXPECTATION,          "Failed Expectation" },
+
   { Error::OK,                          "ok" },
+
+  { Error::IO_ERROR,                    "i/o error" },
+  { Error::BAD_MEMORY_ALLOCATION,       "bad memory allocation"},
+  { Error::BAD_FUNCTION,                "bad function"},
+  { Error::BAD_POINTER,                 "bad pointer"},
+  { Error::BAD_CAST,                    "bad cast"},
+  { Error::BAD_FORMAT,                  "bad format"},
+  { Error::BAD_REGEXP,                  "bad regexp"},
+  { Error::BAD_LOGIC,                   "bad logic"},
+  
 
   { Error::COMM_NOT_CONNECTED,          "COMM not connected" },
   { Error::COMM_BROKEN_CONNECTION,      "COMM broken connection" },
@@ -111,7 +106,6 @@ std::map<const int, const char *> text_map {
   { Error::RS_DELETED_RANGE,        "Ranger range state deleted"},
   { Error::RS_NOT_READY,            "Ranger is not ready, lacks id"},
 
-  { Error::IO_ERROR,              " i/o error" },
   { Error::BAD_SCHEMA,           "bad schema" },
   { Error::BAD_KEY,              "bad key" },
 
@@ -144,7 +138,6 @@ std::map<const int, const char *> text_map {
         
   { Error::COMMAND_PARSE_ERROR,         "command parse error" },
   { Error::REQUEST_MALFORMED,           "malformed request" },
-  { Error::BAD_MEMORY_ALLOCATION,       "bad memory allocation"},
   { Error::BAD_SCAN_SPEC,               "bad scan specification"},
   { Error::NOT_IMPLEMENTED,             "not implemented"},
   { Error::VERSION_MISMATCH,            "version mismatch"},
@@ -177,138 +170,181 @@ std::map<const int, const char *> text_map {
 
 const char* Error::get_text(const int& err) {
   const char * text;
-  return (text = err < 2048 ? strerror(err) : text_map[err])
-          ? text : "ERROR NOT REGISTERED";
-}
-
-
-ExceptionMessageRenderer::ExceptionMessageRenderer(const Exception& e) 
-                                                  : ex(e) { }
-std::ostream& 
-ExceptionMessageRenderer::render(std::ostream& out) const {
-  return ex.render_message(out);
-}
-
-ExceptionMessagesRenderer::ExceptionMessagesRenderer(const Exception& e, 
-                                                     const char *sep)
-                                                    : ex(e), separator(sep) { }
-std::ostream&
-ExceptionMessagesRenderer::render(std::ostream& out) const {
-  return ex.render_messages(out, separator);
-}
-
-
-Exception::Exception(int error, int l, const char *fn, const char *fl)
-                    : Parent(""), 
-                      m_error(error), m_line(l), m_func(fn), m_file(fl), 
-                      prev(0) {
-}
-
-Exception::Exception(int error, const std::string& msg, int l, const char *fn,
-                     const char *fl)
-                    : Parent(msg), 
-                      m_error(error), m_line(l), m_func(fn), m_file(fl), 
-                      prev(0) {
-}
-
-Exception::Exception(int error, const std::string& msg, const Exception& ex, 
-                     int l, const char *fn, const char *fl)
-                     : Parent(msg), 
-                       m_error(error), m_line(l), m_func(fn), m_file(fl),
-                       prev(new Exception(ex)) {
-}
-
-Exception::Exception(const Exception& ex)
-                    : Parent(ex), 
-                      m_error(ex.m_error), m_line(ex.m_line), 
-                      m_func(ex.m_func), m_file(ex.m_file),
-                      prev(ex.prev ? new Exception(*ex.prev) : 0) {
-}
-
-Exception::~Exception() { 
-  if(prev) { 
-    delete prev; 
-    prev = 0; 
-  } 
-}
-
-int Exception::code() const { 
-  return m_error; 
-}
-
-int Exception::line() const { 
-  return m_line; 
-}
-
-const char* Exception::func() const { 
-  return m_func; 
-}
-
-const char* Exception::file() const { 
-  return m_file; 
-}
-
-std::ostream& Exception::render_message(std::ostream& out) const {
-  return out << what(); // override for custom exceptions
-}
-
-std::ostream &
-Exception::render_messages(std::ostream &out, const char *sep) const {
-  out << message() <<" - "<< Error::get_text(m_error);
-
-  for (Exception *p = prev; p; p = p->prev)
-    out << sep << p->message();
-  out << std::endl;
-  return out;
-}
-
-ExceptionMessageRenderer Exception::message() const {
-  return ExceptionMessageRenderer(*this);
-}
-
-ExceptionMessagesRenderer Exception::messages(const char *sep) const {
-  return ExceptionMessagesRenderer(*this, sep);
+  return (text = err <= SYS_END
+            ? strerror(err)
+            : (err <= FUTURE_END
+                ? std::future_error(
+                    std::future_errc(err - FUTURE_BEGIN)).what()
+                : text_map[err])
+          ) ? text : "ERROR NOT REGISTERED";
 }
 
 
 
 
-std::ostream 
-&operator<<(std::ostream &out, const Exception &e) {
-  out <<"SWC::Exception: "<< e.message() <<" - "
-      << Error::get_text(e.code());
+const Exception Exception::make(const std::exception_ptr& eptr, 
+                                const std::string& msg, 
+                                const Exception* prev) {
+  try {
+    std::rethrow_exception(eptr);
 
-  if (e.line()) {
-    out <<"\n\tat "<< e.func() <<" (" << e.file();
+  } catch (const Exception& e) {
+    return Exception(e);
+
+
+  } catch (const std::ios_base::failure& e) {
+    return Exception(Error::IO_ERROR, msg, prev, e.what());
+
+  /* stdc++=20+
+  } catch (const std::format_error& e) {
+    return Exception(Error::BAD_FORMAT, msg, prev, e.what());
+  */
+
+  } catch (const std::regex_error& e) {
+    return Exception(Error::BAD_REGEXP, msg, prev, e.what());
+  
+  } catch (const std::overflow_error& e) {
+    return Exception(EOVERFLOW, msg, prev, e.what());
+
+  } catch (const std::range_error& e) {
+    return Exception(ERANGE, msg, prev, e.what());
+
+  } catch (const std::system_error& e) {
+    return Exception(e.code().value(), msg, prev, e.what());
+
+
+  } catch (const std::invalid_argument& e) {
+    return Exception(EINVAL, msg, prev, e.what());
+
+  } catch (const std::domain_error& e) {
+    return Exception(EDOM, msg, prev, e.what());
+
+  } catch (const std::length_error& e) {
+    return Exception(EOVERFLOW, msg, prev, e.what());
+
+  } catch (const std::out_of_range& e) {
+    return Exception(ERANGE, msg, prev, e.what());
+
+  } catch (const std::future_error& e) {
+    return Exception(FUTURE_BEGIN + e.code().value(), msg, prev, e.what());
+  
+  } catch (const std::logic_error& e) {
+    return Exception(Error::BAD_LOGIC, msg, prev, e.what());
+
+
+  } catch (const std::bad_optional_access& e) {
+    return Exception(EINVAL, msg, prev, e.what());
+
+  } catch (const std::bad_variant_access& e) {
+    return Exception(ERANGE, msg, prev, e.what());
+
+  } catch (const std::bad_exception& e) {
+    return Exception(Error::EXCEPTION_BAD, msg, prev, e.what());
+
+  } catch (const std::bad_alloc& e) {
+    return Exception(Error::BAD_MEMORY_ALLOCATION, msg, prev, e.what());
+
+  } catch (const std::bad_function_call& e) {
+    return Exception(Error::BAD_FUNCTION, msg, prev, e.what());
+
+  } catch (const std::bad_weak_ptr& e) {
+    return Exception(Error::BAD_POINTER, msg, prev, e.what());
+
+  } catch (const std::bad_cast& e) {
+    return Exception(Error::BAD_CAST, msg, prev, e.what());
+
+  } catch (const std::bad_typeid& e) {
+    return Exception(Error::BAD_POINTER, msg, prev, e.what());
+
+  } catch (const std::exception& e) {
+    return Exception(Error::EXCEPTION_UNKNOWN, msg, prev, e.what());
+
+  } catch(...) { }
+
+  /* instead std::rethrow_exception(eptr) :
+    std::exception_ptr missing exception ptr access let to cast
+    typeid(std::system_error) == *e.__cxa_exception_type() 
+    or if e=std::dynamic_pointer_cast<std::system_error>(eptr.get());
+  */
+  return Exception(Error::EXCEPTION_UNKNOWN, msg, prev);
+}
+
+Exception::Exception(int code, const std::string& msg, 
+                     int line, const char* func, const char* file,
+                     const std::string& inner_msg)
+                    : _code(code), _msg(msg), 
+                    _line(line), _func(func), _file(file),
+                    _inner_msg(inner_msg), 
+                    _prev(nullptr) {
+}
+
+Exception::Exception(int code, const std::string& msg, const Exception* prev,
+                     const std::string& inner_msg)
+                    : _code(code), _msg(msg), 
+                      _line(0), _func(0), _file(0), 
+                      _inner_msg(inner_msg), 
+                      _prev(prev ? new Exception(*prev) : prev) {
+}
+
+Exception::Exception(int code, const std::string& msg, const Exception* prev,
+                     int line , const char* func, const char* file,
+                     const std::string& inner_msg)
+                    : _code(code), _msg(msg), 
+                      _line(line), _func(func), _file(file), 
+                      _inner_msg(inner_msg), 
+                      _prev(prev ? new Exception(*prev) : prev) {
+}
+
+Exception::Exception(int code, const std::string& msg, const Exception& prev,
+                     int line, const char* func, const char* file,
+                     const std::string& inner_msg)
+                    : _code(code), _msg(msg), 
+                      _line(line), _func(func), _file(file), 
+                      _inner_msg(inner_msg), 
+                      _prev(new Exception(prev)) {
+}
+
+Exception::Exception(const Exception& other) 
+                    : _code(other._code), _msg(other._msg), 
+                      _line(other._line), _func(other._func), _file(other._file),
+                      _inner_msg(other._inner_msg),
+                      _prev(other._prev) {
+  other._prev = nullptr;
+}
+
+Exception::~Exception() {
+  if(_prev)
+    delete _prev;
+}
+
+std::string Exception::message() const {
+  std::stringstream ss;
+  render(ss);
+  return ss.str().c_str();
+}
+
+void Exception::render(std::ostream& out) const {
+  size_t n = 1;
+  render_base(out << '#' << n << " ");
+  for(const Exception* p = _prev; p; p = p->_prev)
+    p->render_base(out << '#' << ++n << " ");
+}
+
+void Exception::render_base(std::ostream& out) const {
+  out << "SWC::Exception: " << _msg 
+      << " " << _code << "(" << Error::get_text(_code);
+  if(!_inner_msg.empty())
+    out << ", " << _inner_msg;
+  out << ")";
+
+  if(_line) {
+    out << "\n\tat " << (_func ? _func : "-") 
+        << " (" << (_file ? _file : "-");
     if (Logger::logger.show_line_numbers())
-      out <<':'<< e.line();
-    out <<')';
+      out << ':'<< _line;
+    out << ')';
   }
-
-  int prev_code = e.code();
-  for (Exception *prev = e.prev; prev; prev = prev->prev) {
-    out <<"\n\tat "<< (prev->func() ? prev->func() : "-") <<" ("
-        << (prev->file() ? prev->file() : "-") ;
-    if(Logger::logger.show_line_numbers())
-      out  <<':'<< prev->line();
-    out <<"): " << prev->message();
-
-    if (prev->code() != prev_code) {
-      out <<" - "<< Error::get_text(prev->code());
-      prev_code = prev->code();
-    }
-  }
-  return out;
 }
 
-std::ostream& 
-operator<<(std::ostream& out, const ExceptionMessageRenderer& r) {
-  return r.render(out);
-}
-
-std::ostream& 
-operator<<(std::ostream& out, const ExceptionMessagesRenderer& r) {
-  return r.render(out);
-}
 
 }

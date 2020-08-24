@@ -1,35 +1,10 @@
 /*
  * Copyright Since 2019 SWC-DB© [author: Kashirin Alex kashirin.alex@gmail.com]
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
- * Copyright (C) 2007-2016 Hypertable, Inc.
- *
- * This file is part of Hypertable.
- *
- * Hypertable is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 3
- * of the License, or any later version.
- *
- * Hypertable is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
- * 02110-1301, USA.
  */
 
-/** @file
- * Error codes, Exception handling, error logging.
- *
- * This file contains all error codes used in Hypertable, the Exception
- * base class and macros for logging and error handling.
- */
-
-#ifndef swc_core_ERROR_H
-#define swc_core_ERROR_H
+#ifndef swc_core_Error_h
+#define swc_core_Error_h
 
 #include "swcdb/core/Compat.h"
 #include "swcdb/core/String.h"
@@ -41,369 +16,291 @@ namespace SWC {
 
 namespace Error {
 
-// error codes staring 2048
-#define CODE_START 0x800  
-    
+#define SYS_BEGIN     0
+#define SYS_END       2048  
+
+#define FUTURE_BEGIN  2049
+#define FUTURE_END    2059
+
+#define APP_BEGIN     3000
+#define APP_END       INT32_MAX  
+
 enum Code {
-  UNPOSSIBLE                                   = -3,
-  EXTERNAL                                     = -2,
+  EXCEPTION_BAD                                = -4,
+  EXCEPTION_UNKNOWN                            = -3,
+  UNPOSSIBLE                                   = -2,
   FAILED_EXPECTATION                           = -1,
+
   OK                                           = 0,
 
-  IO_ERROR                                     = CODE_START+0x1,
-  BAD_MEMORY_ALLOCATION                        = CODE_START+0x2,
+  IO_ERROR                                     = APP_BEGIN + 0,
+  BAD_MEMORY_ALLOCATION                        = APP_BEGIN + 1,
+  BAD_FUNCTION                                 = APP_BEGIN + 2,
+  BAD_POINTER                                  = APP_BEGIN + 3,
+  BAD_CAST                                     = APP_BEGIN + 4,
+  BAD_FORMAT                                   = APP_BEGIN + 5,
+  BAD_REGEXP                                   = APP_BEGIN + 6,
+  BAD_LOGIC                                    = APP_BEGIN + 7,
 
-  PROTOCOL_ERROR                               = CODE_START+0x3,
-  REQUEST_TRUNCATED_HEADER                     = CODE_START+0x4,
-  REQUEST_TRUNCATED_PAYLOAD                    = CODE_START+0x5,
-  REQUEST_TIMEOUT                              = CODE_START+0x6,
-  REQUEST_MALFORMED                            = CODE_START+0x7,
-  NOT_IMPLEMENTED                              = CODE_START+0x8,
-  VERSION_MISMATCH                             = CODE_START+0x9,
-  CHECKSUM_MISMATCH                            = CODE_START+0xa,
+  PROTOCOL_ERROR                               = APP_BEGIN + 10,
+  REQUEST_TRUNCATED_HEADER                     = APP_BEGIN + 11,
+  REQUEST_TRUNCATED_PAYLOAD                    = APP_BEGIN + 12,
+  REQUEST_TIMEOUT                              = APP_BEGIN + 13,
+  REQUEST_MALFORMED                            = APP_BEGIN + 14,
+  NOT_IMPLEMENTED                              = APP_BEGIN + 15,
+  VERSION_MISMATCH                             = APP_BEGIN + 16,
+  CHECKSUM_MISMATCH                            = APP_BEGIN + 17,
 
-  MNGR_NOT_ACTIVE                              = CODE_START+0x0f+0x1,
-  MNGR_NOT_INITIALIZED                         = CODE_START+0x0f+0x2,
-  RS_NOT_READY                                 = CODE_START+0x0f+0x3,
-  RS_NOT_LOADED_RANGE                          = CODE_START+0x0f+0x4,
-  RS_DELETED_RANGE                             = CODE_START+0x0f+0x5,
+  MNGR_NOT_ACTIVE                              = APP_BEGIN + 20,
+  MNGR_NOT_INITIALIZED                         = APP_BEGIN + 21,
+  RS_NOT_READY                                 = APP_BEGIN + 22,
+  RS_NOT_LOADED_RANGE                          = APP_BEGIN + 23,
+  RS_DELETED_RANGE                             = APP_BEGIN + 24,
       
-  ENCODER_ENCODE                               = CODE_START+0x1f+0x6,
-  ENCODER_DECODE                               = CODE_START+0x1f+0x7,
+  ENCODER_ENCODE                               = APP_BEGIN + 30,
+  ENCODER_DECODE                               = APP_BEGIN + 31,
 
-  BLOCK_COMPRESSOR_UNSUPPORTED_TYPE            = CODE_START+0x1f+0x1,
-  BLOCK_COMPRESSOR_TRUNCATED                   = CODE_START+0x1f+0x2,
-  BLOCK_COMPRESSOR_BAD_HEADER                  = CODE_START+0x1f+0x3,
-  BLOCK_COMPRESSOR_BAD_MAGIC                   = CODE_START+0x1f+0x4,
-  BLOCK_COMPRESSOR_CHECKSUM_MISMATCH           = CODE_START+0x1f+0x5,
-  BLOCK_COMPRESSOR_INIT_ERROR                  = CODE_START+0x1f+0x8,
-  BLOCK_COMPRESSOR_INVALID_ARG                 = CODE_START+0x1f+0x9,
+  BLOCK_COMPRESSOR_UNSUPPORTED_TYPE            = APP_BEGIN + 35,
+  BLOCK_COMPRESSOR_TRUNCATED                   = APP_BEGIN + 36,
+  BLOCK_COMPRESSOR_BAD_HEADER                  = APP_BEGIN + 37,
+  BLOCK_COMPRESSOR_BAD_MAGIC                   = APP_BEGIN + 38,
+  BLOCK_COMPRESSOR_CHECKSUM_MISMATCH           = APP_BEGIN + 39,
+  BLOCK_COMPRESSOR_INIT_ERROR                  = APP_BEGIN + 40,
+  BLOCK_COMPRESSOR_INVALID_ARG                 = APP_BEGIN + 41,
       
       
 
-  CANCELLED                                    = CODE_START+0x2f+0x1,
-  DOUBLE_UNGET                                 = CODE_START+0x2f+0x2,
-  NO_RESPONSE                                  = CODE_START+0x2f+0x3,
-  NOT_ALLOWED                                  = CODE_START+0x2f+0x4,
-  INDUCED_FAILURE                              = CODE_START+0x2f+0x5,
-  SERVER_SHUTTING_DOWN                         = CODE_START+0x2f+0x6,
-  ALREADY_EXISTS                               = CODE_START+0x2f+0x7,
-  CLOSED                                       = CODE_START+0x2f+0x8,
-  DUPLICATE_RANGE                              = CODE_START+0x2f+0x9,
-  BAD_FORMAT                                   = CODE_START+0x2f+0xa,
-  INVALID_ARGUMENT                             = CODE_START+0x2f+0xb,
-  INVALID_OPERATION                            = CODE_START+0x2f+0xc,
-  UNSUPPORTED_OPERATION                        = CODE_START+0x2f+0xd,
-  NOTHING_TO_DO                                = CODE_START+0x2f+0xf,
+  CANCELLED                                    = APP_BEGIN + 50,
+  DOUBLE_UNGET                                 = APP_BEGIN + 51,
+  NO_RESPONSE                                  = APP_BEGIN + 52,
+  NOT_ALLOWED                                  = APP_BEGIN + 53,
+  INDUCED_FAILURE                              = APP_BEGIN + 54,
+  SERVER_SHUTTING_DOWN                         = APP_BEGIN + 55,
+  ALREADY_EXISTS                               = APP_BEGIN + 56,
+  CLOSED                                       = APP_BEGIN + 57,
+  DUPLICATE_RANGE                              = APP_BEGIN + 58,
+  INVALID_ARGUMENT                             = APP_BEGIN + 60,
+  INVALID_OPERATION                            = APP_BEGIN + 61,
+  UNSUPPORTED_OPERATION                        = APP_BEGIN + 62,
+  NOTHING_TO_DO                                = APP_BEGIN + 63,
 
-  INCOMPATIBLE_OPTIONS                         = CODE_START+0x3f+0x1,
-  BAD_VALUE                                    = CODE_START+0x3f+0x2,
-  SCHEMA_GENERATION_MISMATCH                   = CODE_START+0x3f+0x3,
-  INVALID_METHOD_IDENTIFIER                    = CODE_START+0x3f+0x4,
-  SERVER_NOT_READY                             = CODE_START+0x3f+0x5,
+  INCOMPATIBLE_OPTIONS                         = APP_BEGIN + 64,
+  BAD_VALUE                                    = APP_BEGIN + 65,
+  SCHEMA_GENERATION_MISMATCH                   = APP_BEGIN + 66,
+  INVALID_METHOD_IDENTIFIER                    = APP_BEGIN + 67,
+  SERVER_NOT_READY                             = APP_BEGIN + 68,
 
-  CONFIG_BAD_ARGUMENT                          = CODE_START+0x4f+0x1,
-  CONFIG_BAD_CFG_FILE                          = CODE_START+0x4f+0x2,
-  CONFIG_GET_ERROR                             = CODE_START+0x4f+0x3,
-  CONFIG_BAD_VALUE                             = CODE_START+0x4f+0x4,
+  CONFIG_BAD_ARGUMENT                          = APP_BEGIN + 69,
+  CONFIG_BAD_CFG_FILE                          = APP_BEGIN + 70,
+  CONFIG_GET_ERROR                             = APP_BEGIN + 71,
+  CONFIG_BAD_VALUE                             = APP_BEGIN + 72,
 
-  COLUMN_SCHEMA_NAME_EXISTS                    = CODE_START+0x5f+0x1,
-  COLUMN_SCHEMA_NAME_NOT_EXISTS                = CODE_START+0x5f+0x2,
-  COLUMN_UNKNOWN_GET_FLAG                      = CODE_START+0x5f+0x3,
-  COLUMN_REACHED_ID_LIMIT                      = CODE_START+0x5f+0x4,
-  COLUMN_SCHEMA_BAD_SAVE                       = CODE_START+0x5f+0x5,
-  COLUMN_SCHEMA_NAME_EMPTY                     = CODE_START+0x5f+0x6,
-  COLUMN_SCHEMA_NAME_NOT_CORRES                = CODE_START+0x5f+0x7,
-  COLUMN_SCHEMA_ID_EMPTY                       = CODE_START+0x5f+0x8,
-  COLUMN_SCHEMA_NOT_DIFFERENT                  = CODE_START+0x5f+0x9,
-  COLUMN_SCHEMA_MISSING                        = CODE_START+0x5f+0xA,
-  COLUMN_MARKED_REMOVED                        = CODE_START+0x5f+0xB,
-  COLUMN_NOT_EXISTS                            = CODE_START+0x5f+0xC,
-  COLUMN_NOT_READY                             = CODE_START+0x5f+0xD,
-  COLUMN_CHANGE_INCOMPATIBLE                   = CODE_START+0x5f+0xE,
-  COLUMN_SCHEMA_IS_SYSTEM                      = CODE_START+0x5f+0xF,
+  COLUMN_SCHEMA_NAME_EXISTS                    = APP_BEGIN + 80,
+  COLUMN_SCHEMA_NAME_NOT_EXISTS                = APP_BEGIN + 81,
+  COLUMN_UNKNOWN_GET_FLAG                      = APP_BEGIN + 82,
+  COLUMN_REACHED_ID_LIMIT                      = APP_BEGIN + 83,
+  COLUMN_SCHEMA_BAD_SAVE                       = APP_BEGIN + 84,
+  COLUMN_SCHEMA_NAME_EMPTY                     = APP_BEGIN + 85,
+  COLUMN_SCHEMA_NAME_NOT_CORRES                = APP_BEGIN + 86,
+  COLUMN_SCHEMA_ID_EMPTY                       = APP_BEGIN + 87,
+  COLUMN_SCHEMA_NOT_DIFFERENT                  = APP_BEGIN + 88,
+  COLUMN_SCHEMA_MISSING                        = APP_BEGIN + 89,
+  COLUMN_MARKED_REMOVED                        = APP_BEGIN + 90,
+  COLUMN_NOT_EXISTS                            = APP_BEGIN + 91,
+  COLUMN_NOT_READY                             = APP_BEGIN + 92,
+  COLUMN_CHANGE_INCOMPATIBLE                   = APP_BEGIN + 93,
+  COLUMN_SCHEMA_IS_SYSTEM                      = APP_BEGIN + 94,
 
-  SYNTAX_ERROR                                 = CODE_START+0x6f+0x1,
-  COMMAND_PARSE_ERROR                          = CODE_START+0x6f+0x2,
-  SCHEMA_PARSE_ERROR                           = CODE_START+0x6f+0x3,
-  BAD_SCAN_SPEC                                = CODE_START+0x6f+0x4,
-  BAD_SCHEMA                                   = CODE_START+0x6f+0x5,
-  BAD_KEY                                      = CODE_START+0x6f+0xf,
+  SYNTAX_ERROR                                 = APP_BEGIN + 100,
+  COMMAND_PARSE_ERROR                          = APP_BEGIN + 101,
+  SCHEMA_PARSE_ERROR                           = APP_BEGIN + 102,
+  BAD_SCAN_SPEC                                = APP_BEGIN + 103,
+  BAD_SCHEMA                                   = APP_BEGIN + 104,
+  BAD_KEY                                      = APP_BEGIN + 105,
       
-  RANGE_NOT_FOUND                              = CODE_START+0x7f+0x1,
-  RANGE_CS_BAD                                 = CODE_START+0x7f+0x2,
-  RANGE_CELLSTORES                             = CODE_START+0x7f+0x3,
-  RANGE_COMMITLOG                              = CODE_START+0x7f+0x4,
-  RANGE_BAD_INTERVAL                           = CODE_START+0x7f+0x5,
+  RANGE_NOT_FOUND                              = APP_BEGIN + 110,
+  RANGE_CS_BAD                                 = APP_BEGIN + 111,
+  RANGE_CELLSTORES                             = APP_BEGIN + 112,
+  RANGE_COMMITLOG                              = APP_BEGIN + 113,
+  RANGE_BAD_INTERVAL                           = APP_BEGIN + 114,
 
-  COMM_NOT_CONNECTED                           = 0x00010001,
-  COMM_BROKEN_CONNECTION                       = 0x00010002,
-  COMM_CONNECT_ERROR                           = 0x00010003,
-  COMM_ALREADY_CONNECTED                       = 0x00010004,
+  COMM_NOT_CONNECTED                           = APP_BEGIN + 120,
+  COMM_BROKEN_CONNECTION                       = APP_BEGIN + 121,
+  COMM_CONNECT_ERROR                           = APP_BEGIN + 122,
+  COMM_ALREADY_CONNECTED                       = APP_BEGIN + 123,
 
-  COMM_SEND_ERROR                              = 0x00010006,
-  COMM_RECEIVE_ERROR                           = 0x00010007,
-  COMM_POLL_ERROR                              = 0x00010008,
-  COMM_CONFLICTING_ADDRESS                     = 0x00010009,
-  COMM_SOCKET_ERROR                            = 0x0001000A,
-  COMM_BIND_ERROR                              = 0x0001000B,
-  COMM_LISTEN_ERROR                            = 0x0001000C,
-  COMM_HEADER_CHECKSUM_MISMATCH                = 0x0001000D,
-  COMM_PAYLOAD_CHECKSUM_MISMATCH               = 0x0001000E,
-  COMM_BAD_HEADER                              = 0x0001000F,
-  COMM_INVALID_PROXY                           = 0x00010010,
+  COMM_SEND_ERROR                              = APP_BEGIN + 124,
+  COMM_RECEIVE_ERROR                           = APP_BEGIN + 125,
+  COMM_POLL_ERROR                              = APP_BEGIN + 126,
+  COMM_CONFLICTING_ADDRESS                     = APP_BEGIN + 127,
+  COMM_SOCKET_ERROR                            = APP_BEGIN + 128,
+  COMM_BIND_ERROR                              = APP_BEGIN + 129,
+  COMM_LISTEN_ERROR                            = APP_BEGIN + 130,
+  COMM_HEADER_CHECKSUM_MISMATCH                = APP_BEGIN + 131,
+  COMM_PAYLOAD_CHECKSUM_MISMATCH               = APP_BEGIN + 132,
+  COMM_BAD_HEADER                              = APP_BEGIN + 133,
+  COMM_INVALID_PROXY                           = APP_BEGIN + 134,
 
 
-  SERIALIZATION_INPUT_OVERRUN                  = 0x00080001,
-  SERIALIZATION_VERSION_MISMATCH               = 0x00080004,
+  SERIALIZATION_INPUT_OVERRUN                  = APP_BEGIN + 140,
+  SERIALIZATION_VERSION_MISMATCH               = APP_BEGIN + 141,
 
-  FS_BAD_FILE_HANDLE                           = 0x00020001,
-  FS_IO_ERROR                                  = 0x00020002,
-  FS_FILE_NOT_FOUND                            = 0x00020003,
-  FS_BAD_FILENAME                              = 0x00020004,
-  FS_PERMISSION_DENIED                         = 0x00020005,
-  FS_INVALID_ARGUMENT                          = 0x00020006,
-  FS_INVALID_CONFIG                            = 0x00020007,
-  FS_EOF                                       = 0x00020008,
-  FS_PATH_NOT_FOUND                            = 0x00020009,
+  FS_BAD_FILE_HANDLE                           = APP_BEGIN + 150,
+  FS_IO_ERROR                                  = APP_BEGIN + 151,
+  FS_FILE_NOT_FOUND                            = APP_BEGIN + 152,
+  FS_BAD_FILENAME                              = APP_BEGIN + 153,
+  FS_PERMISSION_DENIED                         = APP_BEGIN + 154,
+  FS_INVALID_ARGUMENT                          = APP_BEGIN + 155,
+  FS_INVALID_CONFIG                            = APP_BEGIN + 156,
+  FS_EOF                                       = APP_BEGIN + 157,
+  FS_PATH_NOT_FOUND                            = APP_BEGIN + 158,
       
-  SQL_PARSE_ERROR                              = 0x00060001,
-  SQL_BAD_LOAD_FILE_FORMAT                     = 0x00060002,
-  SQL_BAD_COMMAND                              = 0x00060003,
+  SQL_PARSE_ERROR                              = APP_BEGIN + 159,
+  SQL_BAD_LOAD_FILE_FORMAT                     = APP_BEGIN + 160,
+  SQL_BAD_COMMAND                              = APP_BEGIN + 161,
 
-  CLIENT_DATA_REMAINED                         = 0x00070001
+  CLIENT_DATA_REMAINED                         = APP_BEGIN + 170,
 
 };
 
-/** Returns a descriptive error message
-*
-* @param err The error code
-* @return The descriptive error message of this code
-*/
 const char* get_text(const int& err);
-
-} // namespace Error
-
-
-class Exception;
-
-/** Helper class to render an exception message a la IO manipulators */
-struct ExceptionMessageRenderer final {
-  ExceptionMessageRenderer(const Exception& e);
-
-  std::ostream& render(std::ostream& out) const;
-
-  const Exception& ex;
-};
-
-/** Helper class to render an exception message a la IO manipulators
-  *
-  * When printing an Exception, this class also appends a separator. This
-  * is used for printing chained Exceptions   
-*/
-struct ExceptionMessagesRenderer final  {
-  ExceptionMessagesRenderer(const Exception& e, const char* sep = ": ");
-
-  std::ostream& render(std::ostream& out) const;
-
-  const Exception& ex;
-  const char *separator;
-};
-
-/**
-  * This is a generic exception class for Hypertable.  It takes an error code
-  * as a constructor argument and translates it into an error message.
-  * Exceptions can be "chained".
-*/
-class Exception final : public std::runtime_error {
-  /** Do not allow assignments */
-  const Exception& operator=(const Exception& );
-
-  /** The error code */
-  int m_error;
-
-  /** The source code line where the exception was thrown */
-  int m_line;
-
-  /** The function name where the exception was thrown */
-  const char *m_func;
-
-  /** The source code file where the exception was thrown */
-  const char *m_file;
-
-  public:
-  typedef std::runtime_error Parent;
-
-  /** Constructor
-    * @param error The error code
-    * @param l The source code line
-    * @param fn The function name
-    * @param fl The file name
-  */
-  Exception(int error, int l = 0, const char *fn = 0, const char *fl = 0);
-
-  /** Constructor
-    * @param error The error code
-    * @param msg An additional error message
-    * @param l The source code line
-    * @param fn The function name
-    * @param fl The file name
-    */
-  Exception(int error, const std::string& msg, int l = 0, const char *fn = 0,
-            const char *fl = 0);
-
-  /** Constructor
-    * @param error The error code
-    * @param msg An additional error message
-    * @param ex The previous exception in the exception chain
-    * @param l The source code line
-    * @param fn The function name
-    * @param fl The file name
-  */
-  Exception(int error, const std::string& msg, const Exception& ex, int l = 0,
-            const char *fn = 0, const char *fl = 0);
-
-  /** Copy constructor
-    * @param ex The exception that is copied
-    */
-  Exception(const Exception& ex);
-
-  /** Destructor */
-  ~Exception();
-
-  /** Returns the error code
-    * @return The error code of this exception.
-    * @sa Error::get_text to retrieve a descriptive error string
-    */
-  int code() const;
-
-  /** Returns the source code line number where the exception was thrown
-    * @return The line number
-    */
-  int line() const;
-
-  /** Returns the name of the function which threw the Exception
-    * @return The function name
-    */
-  const char *func() const;
-
-  /** Returns the source code line number where the exception was thrown
-    * @return The file name
-    */
-  const char *file() const;
-
-  /** Renders an Exception to an ostream
-    *
-    * @param out Reference to the ostream
-    */
-  virtual std::ostream& render_message(std::ostream& out) const;
-
-  // render messages for the entire exception chain
-  /** Renders multiple Exceptions to an ostream
-    * @param out Reference to the ostream
-    * @param sep The separator between the Exceptions, i.e. ':'
-    */
-  virtual std::ostream& render_messages(std::ostream& out,
-                                        const char *sep) const;
-
-  /** Retrieves a Renderer for this Exception */
-  ExceptionMessageRenderer message() const;
-
-  /** Retrieves a Renderer for chained Exceptions */
-  ExceptionMessagesRenderer messages(const char *sep = ": ") const;
-
-  /** The previous exception in the exception chain */
-  Exception *prev;
-};
-
-
-
-/** Global operator to print an Exception to a std::ostream */
-std::ostream& 
-operator<<(std::ostream& out, const Exception&);
-
-/** Global helper operator to print an Exception to a std::ostream */
-std::ostream& 
-operator<<(std::ostream& out, const ExceptionMessageRenderer& r);
-
-/** Global helper operator to print an Exception to a std::ostream */
-std::ostream& 
-operator<<(std::ostream& out, const ExceptionMessagesRenderer& r);
 
 }
 
 
-/* Convenience macro to create an exception stack trace */
-#define HT_EXCEPTION(_code_, _msg_) \
-  ::SWC::Exception(_code_, _msg_, __LINE__, __PRETTY_FUNCTION__, __FILE__)
 
-/* Convenience macro to create an chained exception */
-#define HT_EXCEPTION2(_code_, _ex_, _msg_) \
-  ::SWC::Exception(_code_, _msg_, _ex_, __LINE__, __PRETTY_FUNCTION__, __FILE__)
 
-/* Convenience macro to throw an exception */
-#define SWC_THROW(_code_, _msg_) throw HT_EXCEPTION(_code_, _msg_)
+class Exception : public std::exception {
+  public:
 
-/* Convenience macro to throw an exception */
-#define HT_THROW_(_code_) SWC_THROW(_code_, "")
+  static const Exception make(const std::exception_ptr& eptr,
+                              const std::string& msg, 
+                              const Exception* prev = nullptr);
 
-/* Convenience macro to throw a chained exception */
-#define HT_THROW2(_code_, _ex_, _msg_) throw HT_EXCEPTION2(_code_, _ex_, _msg_)
+  Exception(int code, const std::string& msg,
+            int line = 0, const char* func = 0, const char* file = 0,
+            const std::string& inner_msg = "");
 
-/* Convenience macro to throw a chained exception */
-#define HT_THROW2_(_code_, _ex_) HT_THROW2(_code_, _ex_, "")
+  Exception(int code, const std::string& msg, const Exception* prev,
+            const std::string& inner_msg);
 
-/* Convenience macro to throw an exception with a printf-like message */
-#define SWC_THROWF(_code_, _fmt_, ...) \
-  throw HT_EXCEPTION(_code_, ::SWC::format(_fmt_, __VA_ARGS__))
+  Exception(int code, const std::string& msg, const Exception* prev,
+            int line = 0, const char* func = 0, const char* file = 0,
+            const std::string& inner_msg = "");
 
-/* Convenience macro to throw a chained exception with a printf-like message */
-#define HT_THROW2F(_code_, _ex_, _fmt_, ...) \
-  throw HT_EXCEPTION2(_code_, _ex_, ::SWC::format(_fmt_, __VA_ARGS__))
+  Exception(int code, const std::string& msg, const Exception& prev,
+            int line = 0, const char* func = 0, const char* file = 0,
+            const std::string& inner_msg = "");
 
-/* Convenience macro to catch and rethrow exceptions with a printf-like
- * message */
-#define HT_RETHROWF(_fmt_, ...) \
-  catch (::SWC::Exception& e) { HT_THROW2F(e.code(), e, _fmt_, __VA_ARGS__); } \
-  catch (std::bad_alloc& e) { \
-    SWC_THROWF(::SWC::Error::BAD_MEMORY_ALLOCATION, _fmt_, __VA_ARGS__); \
-  } \
-  catch (std::exception& e) { \
-    SWC_THROWF(::SWC::Error::EXTERNAL, "caught std::exception: %s " _fmt_,  e.what(), \
-              __VA_ARGS__); \
-  } \
-  catch (...) { \
-    SWC_LOGF(::SWC::LOG_ERROR, "caught unknown exception " _fmt_, __VA_ARGS__); \
-    throw; \
+  Exception(const Exception& other);
+
+  const Exception& operator=(const Exception& ) = delete;
+
+  ~Exception();
+
+  int code() const noexcept {
+    return _code;
   }
 
-/* Convenience macro to catch and rethrow exceptions */
-#define HT_RETHROW(_s_) HT_RETHROWF("%s", _s_)
+  virtual const char* what() const noexcept override {
+    return _msg.c_str();
+  }
 
-/* Convenience macro to execute a code block and rethrow all exceptions */
-#define HT_TRY(_s_, _code_) do { \
-  try { _code_; } \
-  HT_RETHROW(_s_) \
-} while (0)
+  int line() const noexcept {
+    return _line;
+  }
 
-/* Convenience macros for catching and logging exceptions in destructors */
-#define SWC_LOG_EXCEPTION(_s_) \
-  catch (::SWC::Exception& e) { SWC_LOG_OUT(::SWC::LOG_ERROR) << e <<", "<< _s_ << SWC_LOG_OUT_END; } \
-  catch (std::bad_alloc& e) { \
-    SWC_LOG_OUT(::SWC::LOG_ERROR) << "Out of memory, " << _s_ << SWC_LOG_OUT_END; } \
-  catch (std::exception& e) { \
-    SWC_LOG_OUT(::SWC::LOG_ERROR) << "Caught exception: " << e.what() <<", "<< _s_ << SWC_LOG_OUT_END; } \
-  catch (...) { \
-    SWC_LOG_OUT(::SWC::LOG_ERROR) << "Caught unknown exception, " << _s_ << SWC_LOG_OUT_END; }
+  const char* func() const noexcept {
+    return _func;
+  }
 
-/* Convenience macro to execute code and log all exceptions */
-#define SWC_TRY_OR_LOG(_s_, _code_) do { \
-  try { _code_; } \
-  SWC_LOG_EXCEPTION(_s_) \
-} while (0)
+  const char* file() const noexcept {
+    return _file;
+  }
+
+  const char* inner_what() const noexcept {
+    return _inner_msg.c_str();
+  }
+
+  std::string message() const;
+
+  void render(std::ostream& out) const;
+
+  void render_base(std::ostream& out) const;
+
+  private:
+
+  const int           _code;
+  const std::string   _msg;
+  const int           _line; 
+  const char*         _func; 
+  const char*         _file;
+  const std::string   _inner_msg;
+  mutable const  Exception*  _prev;
+
+};
 
 
-// Probably should be in its own file, but...
+SWC_CAN_INLINE
+std::ostream& operator<<(std::ostream& out, const SWC::Exception& e) {
+  e.render(out);
+  return out;
+}
+
+
+} //  namespace SWC
+
+
+
+// EXCEPTION HELPERS
+#define SWC_EXCEPTION(_code_, _msg_) \
+  ::SWC::Exception(\
+    _code_, _msg_, __LINE__, __PRETTY_FUNCTION__, __FILE__)
+  
+#define SWC_EXCEPTION2(_code_, _ex_, _msg_) \
+  ::SWC::Exception(\
+    _code_, _msg_, _ex_, __LINE__, __PRETTY_FUNCTION__, __FILE__)
+
+
+#define SWC_CURRENT_EXCEPTION(_msg_) \
+  ::SWC::Exception::make(std::current_exception(), _msg_)
+
+
+/* preferred:
+try {
+  --code--
+} catch (...) {
+  const Exception& e = SWC_CURRENT_EXCEPTION("INFO..");
+  err = e.code();
+}
+*/
+
+
+// THROW HELPERS
+#define SWC_THROW(_code_, _msg_) throw SWC_EXCEPTION(_code_, _msg_)
+
+#define SWC_THROWF(_code_, _fmt_, ...) \
+  throw SWC_EXCEPTION(_code_, ::SWC::format(_fmt_, __VA_ARGS__))
+
+#define SWC_THROW2F(_code_, _ex_, _fmt_, ...) \
+  throw SWC_EXCEPTION2(_code_, _ex_, ::SWC::format(_fmt_, __VA_ARGS__))
+
+
+// LOG HELPERS
+#define SWC_LOG_CURRENT_EXCEPTION(_s_) \
+  SWC_LOG_OUT(::SWC::LOG_ERROR) << SWC_CURRENT_EXCEPTION(_s_) \
+                                << SWC_LOG_OUT_END
+
+
+// TRY HELPERS
+#define SWC_TRY(_s_, _code_) \
+  try { _code_; } catch(...) { throw SWC_CURRENT_EXCEPTION(_s_); }
+
+#define SWC_TRY_OR_LOG(_s_, _code_) \
+  try { _code_; } catch(...) { SWC_LOG_CURRENT_EXCEPTION(_s_); }
+
+
+// CONDITION HELPERS
 #define SWC_EXPECT(_e_, _code_) \
   if (!(_e_)) { \
     if (_code_ == ::SWC::Error::FAILED_EXPECTATION) \
@@ -411,9 +308,8 @@ operator<<(std::ostream& out, const ExceptionMessagesRenderer& r);
     SWC_THROW(_code_, "failed expectation: " #_e_); \
   }
 
-// A short cut for SWC_EXPECT(expr, ::SWC::Error::FAILED_EXPECTATION)
-// unlike assert, it cannot be turned off
 #define SWC_ASSERT(_e_) SWC_EXPECT(_e_, ::SWC::Error::FAILED_EXPECTATION)
+
 
 
 
@@ -421,4 +317,5 @@ operator<<(std::ostream& out, const ExceptionMessagesRenderer& r);
 #include "swcdb/core/Error.cc"
 #endif 
 
-#endif
+
+#endif // swc_core_Error_h

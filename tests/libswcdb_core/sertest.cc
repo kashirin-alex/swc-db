@@ -37,7 +37,7 @@ void test_i8() {
   *buf = input;
   const uint8_t *p = buf;
   size_t len = sizeof(buf);
-  HT_TRY("decoding i8",
+  SWC_TRY("decoding i8",
     SWC_ASSERT(decode_i8(&p, &len) == input);
     SWC_ASSERT(p - buf == 1);
     SWC_ASSERT(len == 0));
@@ -49,7 +49,7 @@ void test_i16() {
   encode_i16(&p, input);
   const uint8_t *p2 = buf;
   size_t len = sizeof(buf);
-  HT_TRY("decoding i16",
+  SWC_TRY("decoding i16",
     SWC_ASSERT(decode_i16(&p2, &len) == input);
     SWC_ASSERT(p2 - buf == 2);
     SWC_ASSERT(len == 0));
@@ -60,7 +60,7 @@ void test_i16() {
     const uint8_t *p2 = buf;
     size_t len = 2;
     encode_i16(&p, n);
-    HT_TRY("decoding i32",
+    SWC_TRY("decoding i32",
       SWC_ASSERT(decode_i16(&p2, &len) == n);
       SWC_ASSERT(len == 0));
   }
@@ -75,7 +75,7 @@ void test_i24() {
   encode_i24(&p, 0xfebabe);
   const uint8_t *p2 = buf;
   size_t len = sizeof(buf);
-  HT_TRY("decoding i24",
+  SWC_TRY("decoding i24",
     SWC_ASSERT(decode_i24(&p2, &len) == input);
     SWC_ASSERT(p2 - buf == 3);
     SWC_ASSERT(len == 0));
@@ -86,7 +86,7 @@ void test_i24() {
     const uint8_t *p2 = buf;
     size_t len = 3;
     encode_i24(&p, n);
-    HT_TRY("decoding i24",
+    SWC_TRY("decoding i24",
       SWC_ASSERT(decode_i24(&p2, &len) == n);
       SWC_ASSERT(len == 0));
   }
@@ -101,7 +101,7 @@ void test_i32() {
   encode_i32(&p, 0xcafebabe);
   const uint8_t *p2 = buf;
   size_t len = sizeof(buf);
-  HT_TRY("decoding i32",
+  SWC_TRY("decoding i32",
     SWC_ASSERT(decode_i32(&p2, &len) == input);
     SWC_ASSERT(p2 - buf == 4);
     SWC_ASSERT(len == 0));
@@ -112,7 +112,7 @@ void test_i32() {
     const uint8_t *p2 = buf;
     size_t len = 4;
     encode_i32(&p, n);
-    HT_TRY("decoding i32",
+    SWC_TRY("decoding i32",
       SWC_ASSERT(decode_i32(&p2, &len) == n);
       SWC_ASSERT(len == 0));
   }
@@ -127,7 +127,7 @@ void test_i64() {
   encode_i64(&p, input);
   const uint8_t *p2 = buf;
   size_t len = sizeof(buf);
-  HT_TRY("decoding i64",
+  SWC_TRY("decoding i64",
     SWC_ASSERT(decode_i64(&p2, &len) == input);
     SWC_ASSERT(p2 - buf == 8);
     SWC_ASSERT(len == 0));
@@ -138,7 +138,7 @@ void test_i64() {
     const uint8_t *p2 = buf;
     size_t len = 8;
     encode_i64(&p, n);
-    HT_TRY("decoding i64",
+    SWC_TRY("decoding i64",
       SWC_ASSERT(decode_i64(&p2, &len) == n);
       SWC_ASSERT(len == 0));
   }
@@ -151,7 +151,7 @@ void chk_vi24(uint24_t n) {
   uint8_t buf[4], *p = buf;
   const uint8_t *p2 = buf;
   encode_vi24(&p, n);
-  HT_TRY("decoding vint24",
+  SWC_TRY("decoding vint24",
     SWC_ASSERT(decode_vi24(&p2) == n);
     SWC_ASSERT(p2-buf == encoded_length_vi24(n)));
 }
@@ -165,7 +165,7 @@ void test_vi24() {
   encode_vi24(&p, 0xfebabe);
   const uint8_t *p2 = buf;
   size_t len = sizeof(buf);
-  HT_TRY("decoding vint24",
+  SWC_TRY("decoding vint24",
     SWC_ASSERT(decode_vi24(&p2, &len) == input);
     SWC_ASSERT(p2 - buf == 4);
     SWC_ASSERT(len == 0));
@@ -188,7 +188,7 @@ void chk_vi32(uint32_t n) {
   uint8_t* p = buf;
   const uint8_t *p2 = buf;
   encode_vi32(&p, n);
-  HT_TRY("decoding vint32",
+  SWC_TRY("decoding vint32",
     SWC_ASSERT(decode_vi32(&p2) == n);
     SWC_ASSERT(p2-buf == encoded_length_vi32(n)));
 }
@@ -200,7 +200,7 @@ void test_vi32() {
   encode_vi32(&p, 0xcafebabe);
   const uint8_t *p2 = buf;
   size_t len = sizeof(buf);
-  HT_TRY("decoding vint32",
+  SWC_TRY("decoding vint32",
     SWC_ASSERT(decode_vi32(&p2, &len) == input);
     SWC_ASSERT(p2 - buf == 5);
     SWC_ASSERT(len == 0));
@@ -235,7 +235,7 @@ void chk_vi64(uint64_t n) {
   uint8_t* p = buf;
   const uint8_t *p2 = buf;
   encode_vi64(&p, n);
-  HT_TRY("decoding vint32",
+  SWC_TRY("decoding vint32",
     SWC_ASSERT(decode_vi64(&p2) == n);
     SWC_ASSERT(p2-buf == encoded_length_vi64(n)));
 }
@@ -247,7 +247,7 @@ void test_vi64() {
   encode_vi64(&p, input);
   const uint8_t *p2 = buf;
   size_t len = sizeof(buf);
-  HT_TRY("decoding vint64",
+  SWC_TRY("decoding vint64",
     SWC_ASSERT(decode_vi64(&p2, &len) == input);
     SWC_ASSERT(p2 - buf == 10);
     SWC_ASSERT(len == 0));
@@ -284,7 +284,7 @@ void test_bytes_string() {
   const uint8_t *p2 = buf;
   size_t len = sizeof(buf);
   auto s = decode_bytes_string(&p2, &len);
-  HT_TRY("testing bytes_string",
+  SWC_TRY("testing bytes_string",
     SWC_ASSERT(!strcmp(s.c_str(), input));
     SWC_ASSERT(p2 - buf == (int)(encoded_length_bytes(strlen(input))));
     SWC_ASSERT(len == sizeof(buf) - (p2 - buf)));
