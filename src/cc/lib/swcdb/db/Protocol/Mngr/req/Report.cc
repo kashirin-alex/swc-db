@@ -99,7 +99,8 @@ void ClusterStatus::handle(ConnHandlerPtr, const Event::Ptr& ev) {
 
       err = Serialization::decode_i32(&ptr, &remain);
 
-    } catch (Exception &e) {
+    } catch(...) {
+      const Exception& e = SWC_CURRENT_EXCEPTION("");
       SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
       err = e.code();
     }
@@ -171,7 +172,8 @@ void ColumnStatus::handle(ConnHandlerPtr, const Event::Ptr& ev) {
       if(!err)
         rsp_params.decode(&ptr, &remain);
 
-    } catch (Exception &e) {
+    } catch(...) {
+      const Exception& e = SWC_CURRENT_EXCEPTION("");
       SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
       err = e.code();
     }
@@ -240,7 +242,8 @@ void RangersStatus::handle(ConnHandlerPtr, const Event::Ptr& ev) {
       if(!err)
         rsp_params.decode(&ptr, &remain);
 
-    } catch (Exception &e) {
+    } catch(...) {
+      const Exception& e = SWC_CURRENT_EXCEPTION("");
       SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
       err = e.code();
     }
@@ -309,7 +312,8 @@ void ManagersStatus::handle(ConnHandlerPtr, const Event::Ptr& ev) {
       if(!err)
         rsp_params.decode(&ptr, &remain);
 
-    } catch (Exception &e) {
+    } catch(...) {
+      const Exception& e = SWC_CURRENT_EXCEPTION("");
       SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
       err = e.code();
     }

@@ -419,7 +419,10 @@ Block::ScanState Block::_scan(const ReqScan::Ptr& req, bool synced) {
   try {
     std::shared_lock lock(m_mutex);
     m_cells.scan(req.get());
-  } catch (const Exception& e) {
+
+  } catch (...) {
+    const Exception& e = SWC_CURRENT_EXCEPTION("");
+    SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
     err = e.code();
   }
   req->profile.add_block_scan(ts);

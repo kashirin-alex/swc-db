@@ -32,7 +32,8 @@ void range_query_update(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     if(!err && !ev->data_ext.size)
       err = Error::INVALID_ARGUMENT;
 
-  } catch (Exception &e) {
+  } catch(...) {
+    const Exception& e = SWC_CURRENT_EXCEPTION("");
     SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
     err = e.code();
   }
@@ -46,9 +47,9 @@ void range_query_update(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     }
       
     range->add(new Ranger::Range::ReqAdd(ev->data_ext, cb));
-  }
-  catch (Exception &e) {
-    SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
+
+  } catch(...) {
+    SWC_LOG_CURRENT_EXCEPTION("");
   }
   
 }

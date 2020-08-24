@@ -57,7 +57,8 @@ void read_all(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
       if(fd != -1 && (smartfd = Env::Fds::get()->remove(fd)))
         fs->close(!err ? err : errtmp, smartfd);
 
-  } catch (Exception &e) {
+  } catch(...) {
+    const Exception& e = SWC_CURRENT_EXCEPTION("");
     SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
     err = e.code();
   }
@@ -71,8 +72,8 @@ void read_all(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     cbp->append_i32(err);
     conn->send_response(cbp);
 
-  } catch (Exception &e) {
-    SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
+  } catch(...) {
+    SWC_LOG_CURRENT_EXCEPTION("");
   }
 
 }

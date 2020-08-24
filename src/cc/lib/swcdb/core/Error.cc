@@ -331,8 +331,11 @@ void Exception::render(std::ostream& out) const {
 }
 
 void Exception::render_base(std::ostream& out) const {
-  out << "SWC::Exception: " << _msg 
-      << " " << _code << "(" << Error::get_text(_code);
+  out << "SWC::Exception: ";
+  if(!_msg.empty()) 
+    out << _msg << " ";
+
+  out << _code << "(" << Error::get_text(_code);
   if(!_inner_msg.empty())
     out << ", " << _inner_msg;
   out << ")";

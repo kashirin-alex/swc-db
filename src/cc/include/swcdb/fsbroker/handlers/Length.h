@@ -27,7 +27,8 @@ void length(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
 
     length = Env::FsInterface::fs()->length(err, params.fname);
       
-  } catch (Exception &e) {
+  } catch(...) {
+    const Exception& e = SWC_CURRENT_EXCEPTION("");
     SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
     err = e.code();
   }
@@ -40,8 +41,9 @@ void length(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     cbp->header.initialize_from_request_header(ev->header);
     cbp->append_i32(err);
     conn->send_response(cbp);
-  } catch (Exception &e) {
-    SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
+
+  } catch(...) {
+    SWC_LOG_CURRENT_EXCEPTION("");
   }
 
 }

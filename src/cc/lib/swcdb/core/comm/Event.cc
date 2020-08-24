@@ -46,7 +46,9 @@ int32_t Event::response_code() {
     /* opt
     std::string msg = Serialization::decode_bytes_string(&ptr, &remaining);
     */
-  } catch (Exception &e) { 
+  } catch(...) {
+    const Exception& e = SWC_CURRENT_EXCEPTION("");
+    SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
     return e.code(); 
   }
 }

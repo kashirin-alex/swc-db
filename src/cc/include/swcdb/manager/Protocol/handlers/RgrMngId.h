@@ -106,9 +106,9 @@ void rgr_mng_id(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
         break;
     }
 
-  } catch (Exception &e) {
-    SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
-  }  
+  } catch(...) {
+    SWC_LOG_CURRENT_EXCEPTION("");
+  }
 }
   
 

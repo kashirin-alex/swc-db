@@ -23,8 +23,9 @@ void column_delete(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
 
     RangerEnv::columns()
       ->remove(new Ranger::ColumnsReqDelete(params.cid, conn, ev));
-  } catch (Exception &e) {
-    SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
+
+  } catch(...) {
+    SWC_LOG_CURRENT_EXCEPTION("");
   }
   
 }

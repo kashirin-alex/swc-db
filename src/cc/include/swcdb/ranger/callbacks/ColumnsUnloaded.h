@@ -37,9 +37,9 @@ class ColumnsUnloaded : public ResponseCallback {
       auto cbp = CommBuf::make(m_rsp_params);
       cbp->header.initialize_from_request_header(m_ev->header);
       m_conn->send_response(cbp);
-    }
-    catch (Exception &e) {
-      SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
+
+    } catch(...) {
+      SWC_LOG_CURRENT_EXCEPTION("");
     }
   }
 

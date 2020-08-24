@@ -62,7 +62,8 @@ void rgr_get(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     rsp_params.cid = range->cfg->cid;
     rsp_params.rid = range->rid;
 
-  } catch (Exception &e) {
+  } catch(...) {
+    const Exception& e = SWC_CURRENT_EXCEPTION("");
     SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
     rsp_params.err = e.code();
   }
@@ -77,8 +78,8 @@ void rgr_get(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
       auto cbp = CommBuf::make(rsp_params);
       cbp->header.initialize_from_request_header(ev->header);
       conn->send_response(cbp);
-    } catch (Exception &e) {
-      SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
+    } catch(...) {
+      SWC_LOG_CURRENT_EXCEPTION("");
     }
 }
 

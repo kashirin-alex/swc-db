@@ -35,7 +35,9 @@ class MngrColumnGet : public client::ConnQueue::ReqBase {
         const uint8_t *ptr = ev->data.base + 4;
         size_t remain = ev->data.size - 4;
         rsp_params.decode(&ptr, &remain);
-      } catch (Exception &e) {
+
+      } catch(...) {
+        const Exception& e = SWC_CURRENT_EXCEPTION("");
         SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
         err = e.code();
       }

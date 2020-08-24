@@ -171,9 +171,10 @@ void Settings::load_files_by(const std::string& fileprop,
       auto it = std::find(m_dyn_files.begin(), m_dyn_files.end(), fname);
       if(it == m_dyn_files.end())
         m_dyn_files.push_back({.filename=fname, .modified=0});
-    } catch (std::exception &e) {
-      SWC_LOGF(LOG_WARN, "%s has bad cfg file %s: %s",
-                fileprop.c_str(), it->c_str(), e.what());
+    } catch(...) {
+      const Exception& e = SWC_CURRENT_EXCEPTION("");
+      SWC_LOG_OUT(LOG_WARN) << fileprop << " has bad cfg file " << *it << ": " 
+        << e << SWC_LOG_OUT_END;
     }
   }
 }

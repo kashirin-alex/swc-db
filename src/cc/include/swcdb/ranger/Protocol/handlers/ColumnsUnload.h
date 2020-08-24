@@ -28,15 +28,16 @@ void columns_unload(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     );
     return;
 
-  } catch (Exception &e) {
-    err = e.code();
+  } catch(...) {
+    const Exception& e = SWC_CURRENT_EXCEPTION("");
     SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
+    err = e.code();
   }
   
   try {
     conn->send_error(err, "", ev);
-  } catch (Exception &e) {
-    SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
+  } catch(...) {
+    SWC_LOG_CURRENT_EXCEPTION("");
   }
 }
   

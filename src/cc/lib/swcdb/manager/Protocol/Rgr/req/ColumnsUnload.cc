@@ -37,7 +37,8 @@ void ColumnsUnload::handle(ConnHandlerPtr, const Event::Ptr& ev) {
       rsp_params.decode(&ptr, &remain);
       err = rsp_params.err;
 
-    } catch (Exception &e) {
+    } catch(...) {
+      const Exception& e = SWC_CURRENT_EXCEPTION("");
       SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
       err = e.code();
     }

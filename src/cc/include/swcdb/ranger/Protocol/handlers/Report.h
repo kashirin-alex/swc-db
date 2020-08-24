@@ -151,7 +151,8 @@ void report(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     
     }
     
-  } catch (Exception &e) {
+  } catch(...) {
+    const Exception& e = SWC_CURRENT_EXCEPTION("");
     SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
     err = e.code();
   }
@@ -166,8 +167,8 @@ void report(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     try {
       cbp->header.initialize_from_request_header(ev->header);
       conn->send_response(cbp);
-    } catch (Exception &e) {
-      SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
+    } catch(...) {
+      SWC_LOG_CURRENT_EXCEPTION("");
     }
 }
   

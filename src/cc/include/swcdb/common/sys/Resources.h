@@ -259,9 +259,9 @@ class Resources final {
           return;
         try {
           checker();
-        } catch(const std::exception& e) {
-          SWC_LOGF(LOG_ERROR, "Resources:checker what=(%s) %s", 
-                   e.what(), to_string().c_str());
+        } catch(...) {
+          const Exception& e = SWC_CURRENT_EXCEPTION("Resources:checker");
+          SWC_LOG_OUT(LOG_ERROR) << to_string() << e << SWC_LOG_OUT_END;
           schedule();
         }
     }); 

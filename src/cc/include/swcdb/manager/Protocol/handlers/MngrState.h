@@ -29,8 +29,8 @@ void mngr_state(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
 
     conn->response_ok(ev);
 
-  } catch (Exception &e) {
-    SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
+  } catch(...) {
+    SWC_LOG_CURRENT_EXCEPTION("");
   }
 }
   

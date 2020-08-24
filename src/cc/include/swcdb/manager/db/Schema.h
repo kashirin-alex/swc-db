@@ -110,8 +110,8 @@ DB::Schema::Ptr load(int &err, cid_t cid,
   DB::Schema::Ptr schema = nullptr;
   try{
     load(err, filepath(cid), schema);
-  } catch (const std::exception& e) {
-    SWC_LOGF(LOG_ERROR, "schema load exception (%s)", e.what());
+  } catch(...) {
+    SWC_LOG_CURRENT_EXCEPTION("schema load");
     schema = nullptr;
   }
 

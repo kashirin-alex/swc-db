@@ -99,8 +99,8 @@ void MngrActive::handle(ConnHandlerPtr, const Event::Ptr& ev) {
         return;
       }
 
-    } catch (Exception &e) {
-      SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
+    } catch(...) {
+      SWC_LOG_CURRENT_EXCEPTION("");
     }
   }
 

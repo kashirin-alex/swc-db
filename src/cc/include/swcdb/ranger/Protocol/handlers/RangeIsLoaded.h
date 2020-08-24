@@ -31,8 +31,8 @@ void range_is_loaded(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
         err = Error::RS_NOT_LOADED_RANGE;
       conn->send_error(err, "", ev);
     }
-  } catch (Exception &e) {
-    SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
+  } catch(...) {
+    SWC_LOG_CURRENT_EXCEPTION("");
   }
 }
   

@@ -27,15 +27,16 @@ void column_mng(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     if(!err)
       err = Error::MNGR_NOT_ACTIVE;
 
-  } catch (Exception &e) {
+  } catch(...) {
+    const Exception& e = SWC_CURRENT_EXCEPTION("");
     SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
     err = e.code();
   }
 
   try{
     conn->send_error(err , "", ev);
-  } catch (Exception &e) {
-    SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
+  } catch(...) {
+    SWC_LOG_CURRENT_EXCEPTION("");
   }
 }
   

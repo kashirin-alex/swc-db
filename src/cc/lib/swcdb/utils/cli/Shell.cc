@@ -37,8 +37,8 @@ int run() {
 
   try {
     return DbClient().run();
-  } catch (std::exception& e) {
-    SWC_PRINT << e.what() << SWC_PRINT_CLOSE;
+  } catch(...) {
+    SWC_PRINT << SWC_CURRENT_EXCEPTION("") << SWC_PRINT_CLOSE;
   }
 
   return 1;

@@ -26,8 +26,8 @@ void mngr_active(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
       ? Env::Mngr::role()->active_mngr(params.cid)
       : Env::Mngr::role()->active_mngr_role(params.role);
 
-  } catch (Exception &e) {
-    SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
+  } catch(...) {
+    SWC_LOG_CURRENT_EXCEPTION("");
   }
 
   try {
@@ -36,8 +36,8 @@ void mngr_active(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     cbp->header.initialize_from_request_header(ev->header);
     conn->send_response(cbp);
 
-  } catch (Exception &e) {
-    SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
+  } catch(...) {
+    SWC_LOG_CURRENT_EXCEPTION("");
   }
 }
 

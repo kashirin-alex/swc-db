@@ -48,9 +48,9 @@ class RangeLoaded : public ResponseCallback {
       m_conn->send_response(cbp);
       RangerEnv::in_process(-1);
       return;
-    }
-    catch (Exception &e) {
-      SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
+
+    } catch(...) {
+      SWC_LOG_CURRENT_EXCEPTION("");
       err = Error::COMM_SEND_ERROR;
     }
     

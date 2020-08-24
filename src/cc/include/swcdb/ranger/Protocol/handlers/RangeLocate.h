@@ -29,7 +29,8 @@ void range_locate(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     if(!err && (range == nullptr || !range->is_loaded()))
       err = Error::RS_NOT_LOADED_RANGE;
 
-  } catch (Exception &e) {
+  } catch(...) {
+    const Exception& e = SWC_CURRENT_EXCEPTION("");
     SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
     err = e.code();
   }
@@ -69,9 +70,9 @@ void range_locate(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
         req->spec.range_offset.copy(params.range_offset);
     }
     range->scan(req);
-    
-  } catch (Exception &e) {
-    SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
+  
+  } catch(...) {
+    SWC_LOG_CURRENT_EXCEPTION("");
   }
   
 }

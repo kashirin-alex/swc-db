@@ -24,8 +24,8 @@ void rgr_update(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     conn->response_ok(ev);
     Env::Mngr::rangers()->update_status(params.hosts, params.sync_all);
 
-  } catch (Exception &e) {
-    SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
+  } catch(...) {
+    SWC_LOG_CURRENT_EXCEPTION("");
   }
 }
   

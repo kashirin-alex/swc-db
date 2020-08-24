@@ -25,7 +25,7 @@ class RgrMngId: public client::ConnQueue::ReqBase {
                 "swc.rgr.id.validation.interval")), 
             cb_shutdown(cb),
             m_timer(asio::high_resolution_timer(*io)),
-            m_run(true) {
+            m_run(true), m_failures(0) {
   }
   
   virtual ~RgrMngId() { }
@@ -86,6 +86,18 @@ class RgrMngId: public client::ConnQueue::ReqBase {
 
     if(ev->error) {
       set(1000);
+      /* 
+      ++m_failures >? #3
+        m_failures = 0;
+        > all ranges:
+          > LastRgr this
+            > UnloadRange cb
+              > req Mngr RangeUnloaded
+          > LastRgr not this
+            > UnloadRange cb
+              > req LastRgr UnloadRangeAvoidDup 
+                > LastRgr req Mngr RangeUnloaded
+      */
       return;
     }
 
@@ -99,9 +111,9 @@ class RgrMngId: public client::ConnQueue::ReqBase {
       const uint8_t *ptr = ev->data.base;
       size_t remain = ev->data.size;
       rsp_params.decode(&ptr, &remain);
- 
-    } catch (Exception &e) {
-      SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
+
+    } catch(...) {
+      SWC_LOG_CURRENT_EXCEPTION("");
       set(500);
       return;
     }
@@ -209,6 +221,7 @@ class RgrMngId: public client::ConnQueue::ReqBase {
   std::mutex                    m_mutex;
   asio::high_resolution_timer   m_timer;
   bool                          m_run;
+  std::atomic<size_t>           m_failures;
 
 };
 

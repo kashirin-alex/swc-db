@@ -51,12 +51,10 @@ namespace SWC {
     try {
       load(fname, filedesc, cmddesc, true);
 
-    } catch (std::exception &e) {
-      SWC_LOGF(LOG_WARN, "CONFIG_BAD_CFG_FILE %s: %s", 
-               fname.c_str(), e.what());
-    } catch (...) {
-      SWC_LOGF(LOG_WARN, "CONFIG_BAD_CFG_FILE %s: err(UNKNOWN)",
-               fname.c_str());
+    } catch(...) {
+      const Exception& e = SWC_CURRENT_EXCEPTION("");
+      SWC_LOG_OUT(LOG_WARN) << "CONFIG_BAD_CFG_FILE " << fname << ": " 
+        << e << SWC_LOG_OUT_END;
     }
   }
 

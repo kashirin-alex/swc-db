@@ -29,7 +29,8 @@ void range_query_select(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     if(!err && (!range || !range->is_loaded()))
       err = Error::RS_NOT_LOADED_RANGE;
 
-  } catch (Exception &e) {
+  } catch(...) {
+    const Exception& e = SWC_CURRENT_EXCEPTION("");
     SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
     err = e.code();
   }
@@ -50,8 +51,9 @@ void range_query_select(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     range->scan(
       std::make_shared<Ranger::Callback::RangeQuerySelect>(
         conn, ev, params.interval, range) );
-  } catch (Exception &e) {
-    SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
+
+  } catch(...) {
+    SWC_LOG_CURRENT_EXCEPTION("");
   }
   
 }

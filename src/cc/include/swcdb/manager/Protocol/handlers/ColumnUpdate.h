@@ -26,8 +26,8 @@ void column_update(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     Env::Mngr::mngd_columns()->update_status(
       params.function, params.schema, params.err);
 
-  } catch (Exception &e) {
-    SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
+  } catch(...) {
+    SWC_LOG_CURRENT_EXCEPTION("");
   }
 }
 

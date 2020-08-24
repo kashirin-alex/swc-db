@@ -21,7 +21,9 @@ Read::Ptr Read::make(int& err, const csid_t csid,
   try {
     load_blocks_index(
       err, smartfd, prev_key_end, interval_by_blks, blocks, chk_base);
-  } catch(Exception& e) {
+  } catch(...) {
+    const Exception& e = SWC_CURRENT_EXCEPTION("");
+    SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
     err = e.code();
   }
   if(err)

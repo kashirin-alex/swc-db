@@ -30,9 +30,9 @@ void column_update(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
         SWC_LOGF(LOG_DEBUG, "updated %s", col->cfg.to_string().c_str());
     }
     conn->response_ok(ev);
-  }
-  catch (Exception &e) {
-    SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
+
+  } catch(...) {
+    SWC_LOG_CURRENT_EXCEPTION("");
   }
   
 }

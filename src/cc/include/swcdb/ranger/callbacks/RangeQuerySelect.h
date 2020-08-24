@@ -98,9 +98,8 @@ class RangeQuerySelect : public ReqScan {
     
     try {
       m_conn->send_response(cbp);
-    }
-    catch (Exception &e) {
-      SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
+    } catch(...) {
+      SWC_LOG_CURRENT_EXCEPTION("");
     }
 
     profile.finished();

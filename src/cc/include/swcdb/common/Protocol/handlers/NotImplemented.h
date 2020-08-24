@@ -16,9 +16,9 @@ void not_implemented(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
       cbp->header.initialize_from_request_header(ev->header);
       cbp->append_i32(Error::NOT_IMPLEMENTED);
       conn->send_response(cbp);
-    }
-    catch (Exception &e) {
-      SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
+
+    } catch (...) {
+      SWC_LOG_CURRENT_EXCEPTION("");
     }
 }
 

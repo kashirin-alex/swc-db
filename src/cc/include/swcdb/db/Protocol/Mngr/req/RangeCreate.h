@@ -72,7 +72,9 @@ class RangeCreate: public client::ConnQueue::ReqBase {
         const uint8_t *ptr = ev->data.base;
         size_t remain = ev->data.size;
         rsp_params.decode(&ptr, &remain);
-      } catch (Exception &e) {
+
+      } catch(...) {
+        const Exception& e = SWC_CURRENT_EXCEPTION("");
         SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
         rsp_params.err = e.code();
       }

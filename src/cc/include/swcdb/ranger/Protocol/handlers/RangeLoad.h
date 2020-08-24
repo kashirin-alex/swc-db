@@ -29,9 +29,9 @@ void range_load(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
       std::make_shared<Ranger::Callback::RangeLoaded>(
         conn, ev, params.cid, params.rid)
     );
-       
-  } catch (Exception &e) {
-    SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
+     
+  } catch(...) {
+    SWC_LOG_CURRENT_EXCEPTION("");
   }
   
 }

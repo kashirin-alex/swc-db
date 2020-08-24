@@ -499,7 +499,8 @@ void MngdColumns::update_status_ack(
 
     try {
       err ? req->response(err) : req->response_ok();
-    } catch (std::exception &e) {
+    } catch(...) {
+      const Exception& e = SWC_CURRENT_EXCEPTION("");
       SWC_LOGF(LOG_ERROR, "Column Pending func=%d cb err=%s %s", 
                func, e.what(), req->schema->to_string().c_str());
     }
@@ -576,7 +577,8 @@ void MngdColumns::actions_run() {
     } else {
       try{
         req->response(err);
-      } catch (std::exception &e) {
+      } catch(...) {
+        const Exception& e = SWC_CURRENT_EXCEPTION("");
         SWC_LOGF(LOG_ERROR, "Column Action cb err=%s func=%d %s", 
                   e.what(), req->function, req->schema->to_string().c_str());
       }

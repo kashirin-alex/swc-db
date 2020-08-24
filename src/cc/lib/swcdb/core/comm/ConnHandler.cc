@@ -178,8 +178,10 @@ std::string ConnHandler::to_string() {
     s.append(" (hash=");
     s.append(std::to_string(endpoint_remote_hash()));
     s.append(")");
-  } catch(...){
-    s.append("Exception");
+  } catch(...) {
+    const Exception& e = SWC_CURRENT_EXCEPTION("");
+    SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
+    s.append(e.message());
   }
   s.append(" local=");
   try{
@@ -187,8 +189,10 @@ std::string ConnHandler::to_string() {
     s.append(" (hash=");
     s.append(std::to_string(endpoint_local_hash()));
     s.append(")");
-  } catch(...){
-    s.append("Exception");
+  } catch(...) {
+    const Exception& e = SWC_CURRENT_EXCEPTION("");
+    SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
+    s.append(e.message());
   }
   return s;
 }

@@ -26,9 +26,10 @@ void rename(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
 
     Env::FsInterface::fs()->rename(err, params.from, params.to);
 
-  } catch (Exception &e) {
-    err = e.code();
+  } catch(...) {
+    const Exception& e = SWC_CURRENT_EXCEPTION("");
     SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
+    err = e.code();
   }
   
   if(ev->expired())
@@ -40,8 +41,8 @@ void rename(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     cbp->append_i32(err);
     conn->send_response(cbp);
 
-  } catch (Exception &e) {
-    SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
+  } catch(...) {
+    SWC_LOG_CURRENT_EXCEPTION("");
   }
 
 }

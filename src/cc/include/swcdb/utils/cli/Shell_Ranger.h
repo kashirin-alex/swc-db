@@ -66,8 +66,9 @@ class Rgr : public Interface {
       try {
         if((port = std::stol(port_str)) > UINT16_MAX )
           err = ERANGE;
-      } catch(const std::exception& e ) {
-        err = ERANGE;
+      } catch(...) {
+        const Exception& e = SWC_CURRENT_EXCEPTION("");
+        err = e.code();
       }
       if(err) {
         message.append("Bad value='"+port_str+ "' for port\n");
@@ -94,7 +95,8 @@ class Rgr : public Interface {
         message.append("Empty endpoints\n");
         err = EINVAL;
       }
-    } catch(const Exception& e) {
+    } catch(...) {
+      const Exception& e = SWC_CURRENT_EXCEPTION("");
       err = e.code();
       message.append(e.what());
       message.append("\n");
