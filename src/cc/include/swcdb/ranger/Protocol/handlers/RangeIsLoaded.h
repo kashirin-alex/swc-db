@@ -28,7 +28,7 @@ void range_is_loaded(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
       conn->response_ok(ev);
     } else {
       if(err == Error::OK)
-        err = Error::RS_NOT_LOADED_RANGE;
+        err = Error::RGR_NOT_LOADED_RANGE;
       conn->send_error(err, "", ev);
     }
   } catch(...) {

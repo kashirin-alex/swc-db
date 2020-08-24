@@ -12,18 +12,25 @@
 #include <ostream>
 #include <stdexcept>
 
+
+
+#define SWC_ERRNO_SYS_BEGIN     0
+#define SWC_ERRNO_SYS_END       2048  
+
+#define SWC_ERRNO_FUTURE_BEGIN  2049
+#define SWC_ERRNO_FUTURE_END    2059
+
+#define SWC_ERRNO_EAI_BEGIN     2060
+#define SWC_ERRNO_EAI_END       2080
+
+#define SWC_ERRNO_APP_BEGIN     3000
+#define SWC_ERRNO_APP_END       3100  
+
+
+
 namespace SWC {
 
 namespace Error {
-
-#define SYS_BEGIN     0
-#define SYS_END       2048  
-
-#define FUTURE_BEGIN  2049
-#define FUTURE_END    2059
-
-#define APP_BEGIN     3000
-#define APP_END       INT32_MAX  
 
 enum Code {
   EXCEPTION_BAD                                = -4,
@@ -33,137 +40,86 @@ enum Code {
 
   OK                                           = 0,
 
-  IO_ERROR                                     = APP_BEGIN + 0,
-  BAD_MEMORY_ALLOCATION                        = APP_BEGIN + 1,
-  BAD_FUNCTION                                 = APP_BEGIN + 2,
-  BAD_POINTER                                  = APP_BEGIN + 3,
-  BAD_CAST                                     = APP_BEGIN + 4,
-  BAD_FORMAT                                   = APP_BEGIN + 5,
-  BAD_REGEXP                                   = APP_BEGIN + 6,
-  BAD_LOGIC                                    = APP_BEGIN + 7,
+  IO_ERROR                                     = SWC_ERRNO_APP_BEGIN + 0,
+  BAD_MEMORY_ALLOCATION                        = SWC_ERRNO_APP_BEGIN + 1,
+  BAD_FUNCTION                                 = SWC_ERRNO_APP_BEGIN + 2,
+  BAD_POINTER                                  = SWC_ERRNO_APP_BEGIN + 3,
+  BAD_CAST                                     = SWC_ERRNO_APP_BEGIN + 4,
+  BAD_FORMAT                                   = SWC_ERRNO_APP_BEGIN + 5,
+  BAD_REGEXP                                   = SWC_ERRNO_APP_BEGIN + 6,
+  BAD_LOGIC                                    = SWC_ERRNO_APP_BEGIN + 7,
+  
+  CANCELLED                                    = SWC_ERRNO_APP_BEGIN + 8,
+  NOT_ALLOWED                                  = SWC_ERRNO_APP_BEGIN + 9,
+  INVALID_ARGUMENT                             = SWC_ERRNO_APP_BEGIN + 10,
+  INCOMPATIBLE_OPTIONS                         = SWC_ERRNO_APP_BEGIN + 11,
 
-  PROTOCOL_ERROR                               = APP_BEGIN + 10,
-  REQUEST_TRUNCATED_HEADER                     = APP_BEGIN + 11,
-  REQUEST_TRUNCATED_PAYLOAD                    = APP_BEGIN + 12,
-  REQUEST_TIMEOUT                              = APP_BEGIN + 13,
-  REQUEST_MALFORMED                            = APP_BEGIN + 14,
-  NOT_IMPLEMENTED                              = APP_BEGIN + 15,
-  VERSION_MISMATCH                             = APP_BEGIN + 16,
-  CHECKSUM_MISMATCH                            = APP_BEGIN + 17,
+  SERIALIZATION_INPUT_OVERRUN                  = SWC_ERRNO_APP_BEGIN + 12,
+  CHECKSUM_MISMATCH                            = SWC_ERRNO_APP_BEGIN + 13,
 
-  MNGR_NOT_ACTIVE                              = APP_BEGIN + 20,
-  MNGR_NOT_INITIALIZED                         = APP_BEGIN + 21,
-  RS_NOT_READY                                 = APP_BEGIN + 22,
-  RS_NOT_LOADED_RANGE                          = APP_BEGIN + 23,
-  RS_DELETED_RANGE                             = APP_BEGIN + 24,
+  COMM_NOT_CONNECTED                           = SWC_ERRNO_APP_BEGIN + 14,
+  COMM_CONNECT_ERROR                           = SWC_ERRNO_APP_BEGIN + 15,
+  COMM_SEND_ERROR                              = SWC_ERRNO_APP_BEGIN + 16,
+  COMM_HEADER_CHECKSUM_MISMATCH                = SWC_ERRNO_APP_BEGIN + 17,
+  COMM_BAD_HEADER                              = SWC_ERRNO_APP_BEGIN + 18,
+
+  PROTOCOL_ERROR                               = SWC_ERRNO_APP_BEGIN + 19,
+  REQUEST_TRUNCATED_HEADER                     = SWC_ERRNO_APP_BEGIN + 20,
+  REQUEST_TRUNCATED_PAYLOAD                    = SWC_ERRNO_APP_BEGIN + 21,
+  REQUEST_TIMEOUT                              = SWC_ERRNO_APP_BEGIN + 22,
+  NOT_IMPLEMENTED                              = SWC_ERRNO_APP_BEGIN + 23,
       
-  ENCODER_ENCODE                               = APP_BEGIN + 30,
-  ENCODER_DECODE                               = APP_BEGIN + 31,
+  ENCODER_ENCODE                               = SWC_ERRNO_APP_BEGIN + 24,
+  ENCODER_DECODE                               = SWC_ERRNO_APP_BEGIN + 25,
 
-  BLOCK_COMPRESSOR_UNSUPPORTED_TYPE            = APP_BEGIN + 35,
-  BLOCK_COMPRESSOR_TRUNCATED                   = APP_BEGIN + 36,
-  BLOCK_COMPRESSOR_BAD_HEADER                  = APP_BEGIN + 37,
-  BLOCK_COMPRESSOR_BAD_MAGIC                   = APP_BEGIN + 38,
-  BLOCK_COMPRESSOR_CHECKSUM_MISMATCH           = APP_BEGIN + 39,
-  BLOCK_COMPRESSOR_INIT_ERROR                  = APP_BEGIN + 40,
-  BLOCK_COMPRESSOR_INVALID_ARG                 = APP_BEGIN + 41,
+  CONFIG_BAD_CFG_FILE                          = SWC_ERRNO_APP_BEGIN + 26,
+  CONFIG_GET_ERROR                             = SWC_ERRNO_APP_BEGIN + 27,
+  CONFIG_BAD_VALUE                             = SWC_ERRNO_APP_BEGIN + 28,
+
+  SERVER_NOT_READY                             = SWC_ERRNO_APP_BEGIN + 29,
+  SERVER_SHUTTING_DOWN                         = SWC_ERRNO_APP_BEGIN + 30,
       
-      
+  MNGR_NOT_ACTIVE                              = SWC_ERRNO_APP_BEGIN + 31,
+  MNGR_NOT_INITIALIZED                         = SWC_ERRNO_APP_BEGIN + 32,
 
-  CANCELLED                                    = APP_BEGIN + 50,
-  DOUBLE_UNGET                                 = APP_BEGIN + 51,
-  NO_RESPONSE                                  = APP_BEGIN + 52,
-  NOT_ALLOWED                                  = APP_BEGIN + 53,
-  INDUCED_FAILURE                              = APP_BEGIN + 54,
-  SERVER_SHUTTING_DOWN                         = APP_BEGIN + 55,
-  ALREADY_EXISTS                               = APP_BEGIN + 56,
-  CLOSED                                       = APP_BEGIN + 57,
-  DUPLICATE_RANGE                              = APP_BEGIN + 58,
-  INVALID_ARGUMENT                             = APP_BEGIN + 60,
-  INVALID_OPERATION                            = APP_BEGIN + 61,
-  UNSUPPORTED_OPERATION                        = APP_BEGIN + 62,
-  NOTHING_TO_DO                                = APP_BEGIN + 63,
+  RGR_NOT_READY                                = SWC_ERRNO_APP_BEGIN + 33,
+  RGR_NOT_LOADED_RANGE                         = SWC_ERRNO_APP_BEGIN + 34,
+  RGR_DELETED_RANGE                            = SWC_ERRNO_APP_BEGIN + 35,
 
-  INCOMPATIBLE_OPTIONS                         = APP_BEGIN + 64,
-  BAD_VALUE                                    = APP_BEGIN + 65,
-  SCHEMA_GENERATION_MISMATCH                   = APP_BEGIN + 66,
-  INVALID_METHOD_IDENTIFIER                    = APP_BEGIN + 67,
-  SERVER_NOT_READY                             = APP_BEGIN + 68,
+  FS_BAD_FILE_HANDLE                           = SWC_ERRNO_APP_BEGIN + 36,
+  FS_PERMISSION_DENIED                         = SWC_ERRNO_APP_BEGIN + 37,
+  FS_EOF                                       = SWC_ERRNO_APP_BEGIN + 38,
+  FS_PATH_NOT_FOUND                            = SWC_ERRNO_APP_BEGIN + 39,
 
-  CONFIG_BAD_ARGUMENT                          = APP_BEGIN + 69,
-  CONFIG_BAD_CFG_FILE                          = APP_BEGIN + 70,
-  CONFIG_GET_ERROR                             = APP_BEGIN + 71,
-  CONFIG_BAD_VALUE                             = APP_BEGIN + 72,
+  COLUMN_NOT_READY                             = SWC_ERRNO_APP_BEGIN + 40,
+  COLUMN_NOT_EXISTS                            = SWC_ERRNO_APP_BEGIN + 41,
+  COLUMN_REACHED_ID_LIMIT                      = SWC_ERRNO_APP_BEGIN + 42,
+  COLUMN_MARKED_REMOVED                        = SWC_ERRNO_APP_BEGIN + 43,
+  COLUMN_UNKNOWN_GET_FLAG                      = SWC_ERRNO_APP_BEGIN + 44,
+  COLUMN_SCHEMA_NAME_EXISTS                    = SWC_ERRNO_APP_BEGIN + 45,
+  COLUMN_SCHEMA_NAME_NOT_EXISTS                = SWC_ERRNO_APP_BEGIN + 46,
+  COLUMN_SCHEMA_BAD_SAVE                       = SWC_ERRNO_APP_BEGIN + 47,
+  COLUMN_SCHEMA_NAME_EMPTY                     = SWC_ERRNO_APP_BEGIN + 48,
+  COLUMN_SCHEMA_NAME_NOT_CORRES                = SWC_ERRNO_APP_BEGIN + 49,
+  COLUMN_SCHEMA_ID_EMPTY                       = SWC_ERRNO_APP_BEGIN + 50,
+  COLUMN_SCHEMA_NOT_DIFFERENT                  = SWC_ERRNO_APP_BEGIN + 51,
+  COLUMN_SCHEMA_MISSING                        = SWC_ERRNO_APP_BEGIN + 52,
+  COLUMN_SCHEMA_IS_SYSTEM                      = SWC_ERRNO_APP_BEGIN + 53,
+  COLUMN_CHANGE_INCOMPATIBLE                   = SWC_ERRNO_APP_BEGIN + 54,
 
-  COLUMN_SCHEMA_NAME_EXISTS                    = APP_BEGIN + 80,
-  COLUMN_SCHEMA_NAME_NOT_EXISTS                = APP_BEGIN + 81,
-  COLUMN_UNKNOWN_GET_FLAG                      = APP_BEGIN + 82,
-  COLUMN_REACHED_ID_LIMIT                      = APP_BEGIN + 83,
-  COLUMN_SCHEMA_BAD_SAVE                       = APP_BEGIN + 84,
-  COLUMN_SCHEMA_NAME_EMPTY                     = APP_BEGIN + 85,
-  COLUMN_SCHEMA_NAME_NOT_CORRES                = APP_BEGIN + 86,
-  COLUMN_SCHEMA_ID_EMPTY                       = APP_BEGIN + 87,
-  COLUMN_SCHEMA_NOT_DIFFERENT                  = APP_BEGIN + 88,
-  COLUMN_SCHEMA_MISSING                        = APP_BEGIN + 89,
-  COLUMN_MARKED_REMOVED                        = APP_BEGIN + 90,
-  COLUMN_NOT_EXISTS                            = APP_BEGIN + 91,
-  COLUMN_NOT_READY                             = APP_BEGIN + 92,
-  COLUMN_CHANGE_INCOMPATIBLE                   = APP_BEGIN + 93,
-  COLUMN_SCHEMA_IS_SYSTEM                      = APP_BEGIN + 94,
+  RANGE_NOT_FOUND                              = SWC_ERRNO_APP_BEGIN + 55,
+  RANGE_CELLSTORES                             = SWC_ERRNO_APP_BEGIN + 56,
+  RANGE_COMMITLOG                              = SWC_ERRNO_APP_BEGIN + 57,
+  RANGE_BAD_INTERVAL                           = SWC_ERRNO_APP_BEGIN + 58,
 
-  SYNTAX_ERROR                                 = APP_BEGIN + 100,
-  COMMAND_PARSE_ERROR                          = APP_BEGIN + 101,
-  SCHEMA_PARSE_ERROR                           = APP_BEGIN + 102,
-  BAD_SCAN_SPEC                                = APP_BEGIN + 103,
-  BAD_SCHEMA                                   = APP_BEGIN + 104,
-  BAD_KEY                                      = APP_BEGIN + 105,
-      
-  RANGE_NOT_FOUND                              = APP_BEGIN + 110,
-  RANGE_CS_BAD                                 = APP_BEGIN + 111,
-  RANGE_CELLSTORES                             = APP_BEGIN + 112,
-  RANGE_COMMITLOG                              = APP_BEGIN + 113,
-  RANGE_BAD_INTERVAL                           = APP_BEGIN + 114,
+  SQL_PARSE_ERROR                              = SWC_ERRNO_APP_BEGIN + 59,
+  SQL_BAD_LOAD_FILE_FORMAT                     = SWC_ERRNO_APP_BEGIN + 60,
 
-  COMM_NOT_CONNECTED                           = APP_BEGIN + 120,
-  COMM_BROKEN_CONNECTION                       = APP_BEGIN + 121,
-  COMM_CONNECT_ERROR                           = APP_BEGIN + 122,
-  COMM_ALREADY_CONNECTED                       = APP_BEGIN + 123,
-
-  COMM_SEND_ERROR                              = APP_BEGIN + 124,
-  COMM_RECEIVE_ERROR                           = APP_BEGIN + 125,
-  COMM_POLL_ERROR                              = APP_BEGIN + 126,
-  COMM_CONFLICTING_ADDRESS                     = APP_BEGIN + 127,
-  COMM_SOCKET_ERROR                            = APP_BEGIN + 128,
-  COMM_BIND_ERROR                              = APP_BEGIN + 129,
-  COMM_LISTEN_ERROR                            = APP_BEGIN + 130,
-  COMM_HEADER_CHECKSUM_MISMATCH                = APP_BEGIN + 131,
-  COMM_PAYLOAD_CHECKSUM_MISMATCH               = APP_BEGIN + 132,
-  COMM_BAD_HEADER                              = APP_BEGIN + 133,
-  COMM_INVALID_PROXY                           = APP_BEGIN + 134,
-
-
-  SERIALIZATION_INPUT_OVERRUN                  = APP_BEGIN + 140,
-  SERIALIZATION_VERSION_MISMATCH               = APP_BEGIN + 141,
-
-  FS_BAD_FILE_HANDLE                           = APP_BEGIN + 150,
-  FS_IO_ERROR                                  = APP_BEGIN + 151,
-  FS_FILE_NOT_FOUND                            = APP_BEGIN + 152,
-  FS_BAD_FILENAME                              = APP_BEGIN + 153,
-  FS_PERMISSION_DENIED                         = APP_BEGIN + 154,
-  FS_INVALID_ARGUMENT                          = APP_BEGIN + 155,
-  FS_INVALID_CONFIG                            = APP_BEGIN + 156,
-  FS_EOF                                       = APP_BEGIN + 157,
-  FS_PATH_NOT_FOUND                            = APP_BEGIN + 158,
-      
-  SQL_PARSE_ERROR                              = APP_BEGIN + 159,
-  SQL_BAD_LOAD_FILE_FORMAT                     = APP_BEGIN + 160,
-  SQL_BAD_COMMAND                              = APP_BEGIN + 161,
-
-  CLIENT_DATA_REMAINED                         = APP_BEGIN + 170,
+  CLIENT_DATA_REMAINED                         = SWC_ERRNO_APP_BEGIN + 61,
 
 };
 
-const char* get_text(const int& err);
+const char* get_text(const int err);
 
 }
 

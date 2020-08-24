@@ -199,6 +199,7 @@ bool Interface::help(std::string&) const {
 
 bool Interface::error(const std::string& message) {
   SWC_PRINT << "\033[31mERROR\033[00m: " << message 
+            << " error=" << err << '(' << Error::get_text(err) << ')' 
             << SWC_PRINT_CLOSE;
   return true; /// ? err
 }

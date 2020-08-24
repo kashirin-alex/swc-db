@@ -139,10 +139,11 @@ EndPoints get_endpoints(uint16_t defaul_port,
     hints.ai_protocol = 0;    
     hints.ai_flags = 0; //AI_CANONNAME | AI_ALL | AI_ADDRCONFIG;
 
+    errno = 0;
     int x =  getaddrinfo(hostname.c_str(), NULL, &hints, &result);
-    if(x != 0){
-      SWC_THROWF(Error::COMM_SOCKET_ERROR, 
-                "Bad addr-info for host: %s", hostname.c_str());
+    if(x != 0) {
+      x = x == EAI_SYSTEM ? errno : (SWC_ERRNO_EAI_BEGIN + (-x));
+      SWC_THROWF(x, "Bad addr-info for host: %s", hostname.c_str());
     }
       
     for (rp = result; rp != NULL; rp = rp->ai_next) {
@@ -164,9 +165,10 @@ EndPoints get_endpoints(uint16_t defaul_port,
        default:
          break;
       }
-      if(!s) 
-        SWC_THROWF(Error::COMM_SOCKET_ERROR, "Bad IP for host: %s",  
-                    hostname.c_str());
+      if(!s) {
+        x = SWC_ERRNO_EAI_BEGIN + (-EAFNOSUPPORT);
+        SWC_THROWF(x, "Bad IP for host: %s", hostname.c_str());
+      }
         
       endpoints.emplace_back(asio::ip::make_address(c_addr), port);
     }

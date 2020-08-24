@@ -26,7 +26,7 @@ void rgr_get(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     if(rsp_params.err)
       goto send_response;
     
-    //if(params.had_err == Error::RS_NOT_LOADED_RANGE)
+    //if(params.had_err == Error::RGR_NOT_LOADED_RANGE)
     //  Env::Mngr::rangers()->need_health_check(col);
     
     Manager::Range::Ptr range;
@@ -55,7 +55,7 @@ void rgr_get(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     Env::Mngr::rangers()->rgr_get(
       range->get_rgr_id(), rsp_params.endpoints);
     if(rsp_params.endpoints.empty()) {
-      rsp_params.err = Error::RS_NOT_READY;
+      rsp_params.err = Error::RGR_NOT_READY;
       goto send_response;
     }
 

@@ -31,7 +31,7 @@ class RangeLoaded : public ResponseCallback {
     if(!err) {
       range =  RangerEnv::columns()->get_range(err, cid, rid);
       if(err || !range || !range->is_loaded())
-        err = Error::RS_NOT_LOADED_RANGE;
+        err = Error::RGR_NOT_LOADED_RANGE;
     }
     if(err)
       goto send_error;

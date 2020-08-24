@@ -148,7 +148,7 @@ void Range::scan(const ReqScan::Ptr& req) {
     wait(COMPACT_APPLYING);
 
     blocks.processing_increment();
-    int err = is_loaded() ? Error::OK : Error::RS_NOT_LOADED_RANGE;
+    int err = is_loaded() ? Error::OK : Error::RGR_NOT_LOADED_RANGE;
     ReqScan::Ptr qreq;
     do {
       if(!(qreq = std::move(m_q_scans.front()))->expired()) {
@@ -215,7 +215,7 @@ void Range::load(const ResponseCallback::Ptr& cb) {
 }
 
 void Range::take_ownership(int &err, const ResponseCallback::Ptr& cb) {
-  if(err == Error::RS_DELETED_RANGE)
+  if(err == Error::RGR_DELETED_RANGE)
     return loaded(err, cb);
 
   RangerEnv::rgr_data()->set_rgr(
@@ -510,7 +510,7 @@ void Range::loaded(int &err, const ResponseCallback::Ptr& cb) {
   {
     std::shared_lock lock(m_mutex);
     if(m_state == State::DELETED)
-      err = Error::RS_DELETED_RANGE;
+      err = Error::RGR_DELETED_RANGE;
   }
   blocks.processing_decrement();
   cb->response(err);
@@ -540,7 +540,7 @@ void Range::load(int &err, const ResponseCallback::Ptr& cb) {
     std::scoped_lock lock(m_mutex);
     if(m_state != State::LOADING) { 
       // state has changed since load request
-      err = Error::RS_NOT_LOADED_RANGE;
+      err = Error::RGR_NOT_LOADED_RANGE;
       return;
     }
   }
@@ -640,7 +640,7 @@ void Range::run_add_queue() {
       
     if(m_state != State::LOADED && m_state != State::UNLOADING)
        params->err = m_state == State::DELETED 
-                  ? Error::COLUMN_MARKED_REMOVED : Error::RS_NOT_LOADED_RANGE;
+        ? Error::COLUMN_MARKED_REMOVED : Error::RGR_NOT_LOADED_RANGE;
 
     if(!params->err) while(remain) {
       cell.read(&ptr, &remain);

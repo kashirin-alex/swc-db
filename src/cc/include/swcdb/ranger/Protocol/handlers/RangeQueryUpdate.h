@@ -27,7 +27,7 @@ void range_query_update(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     range = RangerEnv::columns()->get_range(err, params.cid, params.rid);
       
     if(!err && (!range || !range->is_loaded()))
-      err = Error::RS_NOT_LOADED_RANGE;
+      err = Error::RGR_NOT_LOADED_RANGE;
 
     if(!err && !ev->data_ext.size)
       err = Error::INVALID_ARGUMENT;

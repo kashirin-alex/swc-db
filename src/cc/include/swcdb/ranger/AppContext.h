@@ -144,7 +144,7 @@ class AppContext final : public SWC::AppContext {
           Protocol::Rgr::Handler::assign_id(conn, ev, id_mngr);
         
         } else if(!RangerEnv::rgr_data()->rgrid) {
-          try{conn->send_error(Error::RS_NOT_READY, "", ev);}catch(...){}
+          try{conn->send_error(Error::RGR_NOT_READY, "", ev);}catch(...){}
 
         } else {
           Env::IoCtx::post([cmd, conn, ev]() { handlers[cmd](conn, ev); });

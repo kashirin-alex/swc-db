@@ -139,7 +139,6 @@ DB::Schema::Ptr Reader::get_schema(const std::string& col) {
       [](unsigned char c){ return !std::isdigit(c); } ) != col.end()){
     schema = Env::Clients::get()->schemas->get(err, col);
   } else {
-    errno = 0;
     try { 
       schema = Env::Clients::get()->schemas->get(err, std::stoll(col));
     } catch(...) {

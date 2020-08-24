@@ -411,7 +411,7 @@ void Blocks::init_blocks(int& err) {
     }
   }
   if(!m_block) {
-    err = Error::RS_NOT_LOADED_RANGE;
+    err = Error::RGR_NOT_LOADED_RANGE;
     return;
   }
 

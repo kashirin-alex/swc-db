@@ -573,7 +573,7 @@ bool Select::Scanner::located_on_ranger(
 
     SWC_LOGF(LOG_DEBUG, "Located-oRgr RETRYING %s", 
                         rsp.to_string().c_str());                      
-    if(rsp.err == Error::RS_NOT_LOADED_RANGE || 
+    if(rsp.err == Error::RGR_NOT_LOADED_RANGE || 
        rsp.err == Error::RANGE_NOT_FOUND  || 
        rsp.err == Error::SERVER_SHUTTING_DOWN ||
        rsp.err == Error::COMM_NOT_CONNECTED) {
@@ -634,7 +634,7 @@ void Select::Scanner::select(const EndPoints& endpoints, rid_t rid,
       
       if(rsp.err) {
         SWC_LOGF(LOG_DEBUG, "Select RETRYING %s", rsp.to_string().c_str());
-        if(rsp.err == Error::RS_NOT_LOADED_RANGE || 
+        if(rsp.err == Error::RGR_NOT_LOADED_RANGE || 
            rsp.err == Error::SERVER_SHUTTING_DOWN ||
            rsp.err == Error::COMM_NOT_CONNECTED) {
           Env::Clients::get()->rangers.remove(scanner->col->cid, rid);

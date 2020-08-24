@@ -323,7 +323,7 @@ bool Update::Locator::located_on_ranger(
       const Protocol::Rgr::Params::RangeLocateRsp& rsp) {
   SWC_LOGF(LOG_DEBUG, "LocatedRange-onRgr %s", rsp.to_string().c_str());
 
-  if(rsp.err == Error::RS_NOT_LOADED_RANGE || 
+  if(rsp.err == Error::RGR_NOT_LOADED_RANGE || 
      rsp.err == Error::RANGE_NOT_FOUND || //onMngr can be COLUMN_NOT_EXISTS
          rsp.err == Error::SERVER_SHUTTING_DOWN ||
      rsp.err == Error::COMM_NOT_CONNECTED) {

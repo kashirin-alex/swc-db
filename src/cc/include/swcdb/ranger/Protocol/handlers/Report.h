@@ -76,7 +76,7 @@ void report(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
         auto rgr_data = RangerEnv::rgr_data();
         rgrid_t rgrid;
         if(!(rgrid = rgr_data->rgrid)) {
-          err = Error::RS_NOT_READY;
+          err = Error::RGR_NOT_READY;
           goto send_error;
         }
 
@@ -114,7 +114,7 @@ void report(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
         auto rgr_data = RangerEnv::rgr_data();
         rgrid_t rgrid;
         if(!(rgrid = rgr_data->rgrid)) {
-          err = Error::RS_NOT_READY;
+          err = Error::RGR_NOT_READY;
           goto send_error;
         }
 

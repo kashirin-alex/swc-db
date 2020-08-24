@@ -57,7 +57,7 @@ void ColumnHealthCheck::RangerCheck::handle(const Range::Ptr& range, int err) {
     more = sz < 10 ? 10 - sz  : 0;
   }
 
-  if(err == Error::RS_NOT_LOADED_RANGE ||
+  if(err == Error::RGR_NOT_LOADED_RANGE ||
      (err == Error::COMM_CONNECT_ERROR && 
       ++rgr->failures > Env::Mngr::rangers()->cfg_rgr_failures->get())) {
     col_checker->col->set_unloaded(range); 

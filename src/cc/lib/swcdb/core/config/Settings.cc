@@ -143,8 +143,7 @@ void Settings::parse_file(const std::string& name, const std::string& onchg) {
   fname.append(name);
   
   if(!FileUtils::exists(fname))
-    SWC_THROWF(Error::FS_FILE_NOT_FOUND, 
-              "cfg file=%s not found", fname.c_str());
+    SWC_THROWF(ENOENT, "cfg file=%s not found", fname.c_str());
     
   load(fname, file_desc, cmdline_desc, false);
   load_files_by(onchg, false);

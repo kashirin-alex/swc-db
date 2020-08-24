@@ -24,7 +24,7 @@ RangeUnload::RangeUnload(const Ranger::RangePtr& range,
 RangeUnload::~RangeUnload() { }
 
 void RangeUnload::handle(ConnHandlerPtr, const Event::Ptr&) {
-  unloaded(valid() ? Error::OK : Error::RS_DELETED_RANGE);
+  unloaded(valid() ? Error::OK : Error::RGR_DELETED_RANGE);
 }
 
 bool RangeUnload::valid() {
