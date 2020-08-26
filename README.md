@@ -2,7 +2,7 @@
 #### SWC-DB© (_Super Wide Column Database_) - High Performance Scalable Database
 
 
-* ##### [Changelog](https://github.com/kashirin-alex/swc-db/CHANGELOG.md)
+* ##### [Changelog](https://github.com/kashirin-alex/swc-db/blob/master/CHANGELOG.md)
 * ##### Work in-progress
     * ##### soon due a Production Release 
 
