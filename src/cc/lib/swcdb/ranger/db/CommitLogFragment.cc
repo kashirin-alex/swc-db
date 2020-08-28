@@ -227,11 +227,6 @@ Fragment::Fragment(const FS::SmartFd::Ptr& smartfd,
   RangerEnv::res().more_mem_usage(size_of());
 }
 
-SWC_SHOULD_INLINE
-Fragment::Ptr Fragment::ptr() {
-  return this;
-}
-
 Fragment::~Fragment() {
   RangerEnv::res().less_mem_usage(
     size_of() + 
@@ -290,10 +285,10 @@ void Fragment::write(int err, uint8_t blk_replicas, int64_t blksz,
     }
   }
   if(keep)
-    run_queued();
+    Env::IoCtx::post([this](){ run_queued(); });
 }
 
-void Fragment::load(const QueueRunnable::Call_t& cb) {
+void Fragment::load(const std::function<void()>& cb) {
   bool loaded;
   {
     Mutex::scope lock(m_mutex);
@@ -304,14 +299,13 @@ void Fragment::load(const QueueRunnable::Call_t& cb) {
       if(m_state == State::LOADING || m_state == State::WRITING)
         return;
       m_state = State::LOADING;
-      RangerEnv::res().more_mem_usage(size_plain);
     }
   }
 
   if(loaded)
     cb();
   else
-    Env::IoCtx::post([ptr=ptr()](){ ptr->load(); } );
+    Env::IoCtx::post([this](){ load(); } );
 }
 
 void Fragment::load_cells(int&, Ranger::Block::Ptr cells_block) {
@@ -516,6 +510,8 @@ std::string Fragment::to_string() {
 }
 
 void Fragment::load() {
+  RangerEnv::res().more_mem_usage(size_plain);
+
   auto fs_if = Env::FsInterface::interface();
   auto fs = Env::FsInterface::fs();
 
@@ -576,8 +572,13 @@ void Fragment::load() {
 
 
 void Fragment::run_queued() {
-  if(m_queue.need_run())
-    Env::IoCtx::post([this](){ m_queue.run(); });
+  for(std::function<void()> call;;) {
+    Mutex::scope lock(m_mutex);
+    if(m_queue.empty())
+      return;
+    Env::IoCtx::post([call = m_queue.front()](){ call(); });
+    m_queue.pop();
+  }
 }
 
 

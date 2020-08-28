@@ -96,8 +96,6 @@ class Fragment final {
   
   Fragment& operator=(const Fragment&) = delete;
 
-  Ptr ptr();
-
   ~Fragment();
 
   size_t size_of() const;
@@ -107,7 +105,7 @@ class Fragment final {
   void write(int err, uint8_t blk_replicas, int64_t blksz, 
              const StaticBuffer::Ptr& buff_write, Semaphore* sem);
 
-  void load(const QueueRunnable::Call_t& cb);
+  void load(const std::function<void()>& cb);
   
   void load_cells(int& err, Ranger::Block::Ptr cells_block);
   
@@ -148,17 +146,17 @@ class Fragment final {
 
   void _run_queued();
   
-  Mutex             m_mutex;
-  State             m_state;
-  FS::SmartFd::Ptr  m_smartfd;
-  
-  StaticBuffer      m_buffer;
-  size_t            m_processing;
-  int               m_err;
 
-  std::atomic<uint32_t> m_cells_remain;
-  QueueRunnable         m_queue;
+  Mutex                             m_mutex;
+  State                             m_state;
+  FS::SmartFd::Ptr                  m_smartfd;
   
+  StaticBuffer                      m_buffer;
+  size_t                            m_processing;
+  int                               m_err;
+  std::atomic<uint32_t>             m_cells_remain;
+
+  std::queue<std::function<void()>> m_queue;
 
 };
 
