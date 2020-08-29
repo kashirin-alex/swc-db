@@ -8,7 +8,6 @@
 #define swc_ranger_db_CommitLogFragment_h
 
 #include "swcdb/core/Semaphore.h"
-#include "swcdb/core/QueueRunnable.h"
 
 namespace SWC { namespace Ranger { namespace CommitLog {
 

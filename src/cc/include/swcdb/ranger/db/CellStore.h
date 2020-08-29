@@ -8,6 +8,7 @@
 #define swc_ranger_db_CellStore_h
 
 #include "swcdb/ranger/db/CellStoreBlock.h"
+#include "swcdb/core/QueueRunnable.h"
 
 
 namespace SWC { namespace Ranger {

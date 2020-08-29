@@ -90,7 +90,7 @@ size_t Read::size_of() const {
   return sizeof(*this) + header.interval.size_of_internal();
 }
 
-bool Read::load(const QueueRunnable::Call_t& cb) {
+bool Read::load(const std::function<void()>& cb) {
   {
     Mutex::scope lock(m_mutex);
     ++m_processing;
@@ -113,14 +113,14 @@ bool Read::load(const QueueRunnable::Call_t& cb) {
   return false;
 }
 
-void Read::load(FS::SmartFd::Ptr smartfd, const QueueRunnable::Call_t& cb) {
+void Read::load(FS::SmartFd::Ptr smartfd, const std::function<void()>& cb) {
   int err = Error::OK;
   load(err, smartfd);
   if(err)
     SWC_LOGF(LOG_ERROR, "CellStore::Block load %s", to_string().c_str());
 
   cb();
-  run_queued();
+  Env::IoCtx::post([this](){ run_queued(); });
 }
 
 void Read::load_cells(int&, Ranger::Block::Ptr cells_block) {
@@ -280,8 +280,13 @@ void Read::load(int& err, FS::SmartFd::Ptr smartfd) {
 }
 
 void Read::run_queued() {
-  if(m_queue.need_run())
-    Env::IoCtx::post([this](){ m_queue.run(); });
+  for(std::function<void()> call;;) {
+    Mutex::scope lock(m_mutex);
+    if(m_queue.empty())
+      return;
+    Env::IoCtx::post([call = m_queue.front()](){ call(); });
+    m_queue.pop();
+  }
 }
 
 

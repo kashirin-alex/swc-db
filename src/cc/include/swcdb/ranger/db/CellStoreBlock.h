@@ -7,7 +7,6 @@
 #ifndef swc_ranger_db_CellStoreBlock_h
 #define swc_ranger_db_CellStoreBlock_h
 
-#include "swcdb/core/QueueRunnable.h"
 #include "swcdb/ranger/db/CellStoreBlockHeader.h"
 
 
@@ -59,9 +58,9 @@ class Read final {
   
   size_t size_of() const;
   
-  bool load(const QueueRunnable::Call_t& cb);
+  bool load(const std::function<void()>& cb);
 
-  void load(FS::SmartFd::Ptr smartfd, const QueueRunnable::Call_t& cb);
+  void load(FS::SmartFd::Ptr smartfd, const std::function<void()>& cb);
 
   void load_cells(int& err, Ranger::Block::Ptr cells_block);
 
@@ -90,13 +89,14 @@ class Read final {
 
   void run_queued();
 
-  Mutex                       m_mutex;
-  State                       m_state;
-  size_t                      m_processing;
-  StaticBuffer                m_buffer;
-  std::atomic<uint32_t>       m_cells_remain;
-  int                         m_err;
-  QueueRunnable               m_queue;
+  Mutex                             m_mutex;
+  State                             m_state;
+  size_t                            m_processing;
+  StaticBuffer                      m_buffer;
+  std::atomic<uint32_t>             m_cells_remain;
+  int                               m_err;
+  std::queue<std::function<void()>> m_queue;
+
 };
 
 
