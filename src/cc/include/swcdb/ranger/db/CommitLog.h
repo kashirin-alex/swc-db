@@ -120,6 +120,8 @@ class Fragments final : private std::vector<Fragment::Ptr> {
 
   size_t _size_bytes(bool only_loaded=false);
 
+  size_t _narrow(const DB::Cell::Key& key) const;
+  
   std::shared_mutex           m_mutex_cells;
   DB::Cells::MutableVec       m_cells;
 
@@ -129,7 +131,7 @@ class Fragments final : private std::vector<Fragment::Ptr> {
   std::condition_variable_any m_cv;
   bool                        m_compacting;
   Semaphore                   m_sem;
-
+  uint64_t                    m_last_id;
 };
 
 

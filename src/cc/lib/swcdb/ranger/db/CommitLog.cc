@@ -12,12 +12,13 @@
 
 namespace SWC { namespace Ranger { namespace CommitLog {
 
+static const uint8_t MAX_FRAGMENTS_NARROW = 20;
 
 
 Fragments::Fragments(const Types::KeySeq key_seq)  
                     : stopping(false), m_cells(key_seq), 
                       m_commiting(false), m_deleting(false), 
-                      m_compacting(false), m_sem(5) { 
+                      m_compacting(false), m_sem(5), m_last_id(0) { 
 }
 
 void Fragments::init(const RangePtr& for_range) {
@@ -151,14 +152,15 @@ void Fragments::add(Fragment::Ptr frag) {
 }
 
 void Fragments::_add(Fragment::Ptr frag) {
-  push_back(frag);
-  
-  std::sort(begin(), end(),
-    [seq=m_cells.key_seq] (const Fragment::Ptr& f1, const Fragment::Ptr& f2) {
-      return DB::KeySeq::compare(seq, 
-        f1->interval.key_begin, f2->interval.key_begin) == Condition::GT; 
+  for(auto it = begin() + _narrow(frag->interval.key_begin); it<end(); ++it) {
+    if(DB::KeySeq::compare(m_cells.key_seq, 
+        (*it)->interval.key_begin, frag->interval.key_begin)
+         != Condition::GT) {
+      insert(it, frag);
+      return;
     }
-  );
+  }
+  push_back(frag);
 }
 
 size_t Fragments::need_compact(std::vector<Fragments::Vec>& groups,
@@ -445,7 +447,14 @@ bool Fragments::processing() {
 
 uint64_t Fragments::next_id() {
   std::scoped_lock lock(m_mutex);
-  return Time::now_ns();
+  uint64_t new_id = Time::now_ns();
+  if(m_last_id == new_id) {
+    ++new_id;
+    SWC_LOG_OUT(LOG_WARN) // debug
+      << " Fragments::next_id was the same id=" 
+      << new_id << SWC_LOG_OUT_END;
+  }
+  return m_last_id = new_id;
 }
 
 std::string Fragments::to_string() {
@@ -588,6 +597,27 @@ size_t Fragments::_size_bytes(bool only_loaded) {
   return size;
 }
 
+size_t Fragments::_narrow(const DB::Cell::Key& key) const {
+  size_t offset = 0;
+  if(key.empty() || Vec::size() <= MAX_FRAGMENTS_NARROW)
+    return offset;
+  
+  size_t step = offset = Vec::size() >> 1;
+  try_narrow:
+    if(DB::KeySeq::compare(m_cells.key_seq, 
+        (*(begin() + offset))->interval.key_begin, key) == Condition::GT) {
+      if(step < MAX_FRAGMENTS_NARROW)
+        return offset;
+      offset += step >>= 1;
+      goto try_narrow;
+    }
+    if((step >>= 1) <= MAX_FRAGMENTS_NARROW)
+      ++step;
+    if(offset < step)
+      return 0;
+    offset -= step;
+  goto try_narrow;
+}
 
 
 }}} // namespace SWC::Ranger::CommitLog
