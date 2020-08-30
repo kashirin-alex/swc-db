@@ -281,11 +281,14 @@ void Read::load(int& err, FS::SmartFd::Ptr smartfd) {
 
 void Read::run_queued() {
   for(std::function<void()> call;;) {
-    Mutex::scope lock(m_mutex);
-    if(m_queue.empty())
-      return;
-    Env::IoCtx::post([call = m_queue.front()](){ call(); });
-    m_queue.pop();
+    {
+      Mutex::scope lock(m_mutex);
+      if(m_queue.empty())
+        return;
+      call = m_queue.front();
+      m_queue.pop();
+    }
+    call();
   }
 }
 
