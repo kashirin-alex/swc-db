@@ -27,6 +27,10 @@ if(THRIFT_C_FOUND)
     ${GLIB_INCLUDE_PATHS}/glib-2.0
     ${GLIB_INCLUDE_PATHS}/../lib/glib-2.0/include/
   )
+
+  # gcc-10.2, pcre/sljit/sljitNativeX86_64.c:183:12: error: writing 1 byte into a region of size 0
+  SET (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-stringop-overflow")
+  
   ADD_TEST_TARGET(
     NAME      thrift_c_client_c
     SRCS      client.c

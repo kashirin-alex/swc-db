@@ -148,7 +148,8 @@ void test_i64() {
 }
 
 void chk_vi24(uint24_t n) {
-  uint8_t buf[4], *p = buf;
+  uint8_t buf[4] = {0};
+  uint8_t *p = buf;
   const uint8_t *p2 = buf;
   encode_vi24(&p, n);
   SWC_TRY("decoding vint24",
