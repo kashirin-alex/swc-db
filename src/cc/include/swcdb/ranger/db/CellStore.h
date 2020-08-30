@@ -8,7 +8,6 @@
 #define swc_ranger_db_CellStore_h
 
 #include "swcdb/ranger/db/CellStoreBlock.h"
-#include "swcdb/core/QueueRunnable.h"
 
 
 namespace SWC { namespace Ranger {
@@ -91,8 +90,6 @@ class Read final {
 
   size_t release(size_t bytes);
 
-  void release_fd();
-
   void close(int &err);
 
   void remove(int &err);
@@ -111,8 +108,12 @@ class Read final {
 
   void _run_queued();
 
-  FS::SmartFd::Ptr     m_smartfd;
-  QueueRunnable        m_queue;
+  void _release_fd();
+
+  mutable Mutex                     m_mutex;
+  FS::SmartFd::Ptr                  m_smartfd;
+  bool                              m_q_running;
+  std::queue<std::function<void()>> m_queue;
 
 };
 

@@ -238,7 +238,7 @@ Read::Read(const csid_t csid,
             prev_key_end(prev_key_end), 
             interval(interval), 
             blocks(blocks), 
-            m_smartfd(smartfd) {       
+            m_smartfd(smartfd), m_q_running(false) {       
   RangerEnv::res().more_mem_usage(size_of());
 }
 
@@ -269,18 +269,32 @@ void Read::load_cells(BlockLoader* loader) {
       break;
   }
   
-  QueueRunnable::Call_t cb;
+  std::function<void()> cb;
   for(auto blk : applicable) {
     if(blk->load(cb = [loader](){ loader->loaded_blk(); })) {
+      Mutex::scope lock(m_mutex);
       m_queue.push([blk, cb, fd=m_smartfd](){ blk->load(fd, cb); });
-      run_queued();
+      if(!m_q_running) {
+        m_q_running = true;
+        Env::IoCtx::post([this]() { _run_queued(); } );
+      }
     }
   }
 }
 
-void Read::run_queued() {
-  if(m_queue.need_run())
-    Env::IoCtx::post([this]() { m_queue.run([this]() { release_fd(); }); });
+void Read::_run_queued() {
+  for(std::function<void()> call;;) {
+    {
+      Mutex::scope lock(m_mutex);
+      if(m_queue.empty()) {
+        m_q_running = false;
+        return _release_fd();
+      }
+      call = m_queue.front();
+      m_queue.pop();
+    }
+    call();
+  }
 }
 
 void Read::get_blocks(int&, std::vector<Block::Read::Ptr>& to) const {
@@ -294,14 +308,16 @@ size_t Read::release(size_t bytes) {
     if(bytes && released >= bytes)
       break;
   }
-  if(m_queue.empty()) {
-    m_queue.push([](){});
-    run_queued();
+
+  {
+    Mutex::scope lock(m_mutex);
+    if(!m_q_running && m_queue.empty())
+      _release_fd();
   }
   return released;
 }
 
-void Read::release_fd() { 
+void Read::_release_fd() { 
   if(m_smartfd->valid() && Env::FsInterface::interface()->need_fds()) {
     int err = Error::OK;
     close(err); 
@@ -319,8 +335,16 @@ void Read::remove(int &err) {
 } 
 
 bool Read::processing() const {
-  if(m_queue.running())
-    return true;
+  bool support;
+  bool busy = !m_mutex.try_full_lock(support);
+  if(busy) 
+    return busy;
+    
+  busy = m_q_running || !m_queue.empty();
+  m_mutex.unlock(support);
+  if(busy) 
+    return busy;
+
   for(auto blk : blocks)
     if(blk->processing())
       return true;
@@ -370,7 +394,10 @@ std::string Read::to_string() const {
   s.append("]");
 
   s.append(" queue=");
-  s.append(std::to_string(m_queue.size()));
+  {
+    Mutex::scope lock(m_mutex);
+    s.append(std::to_string(m_queue.size()));
+  }
 
   s.append(" processing=");
   s.append(std::to_string(processing()));
