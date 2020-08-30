@@ -15,6 +15,10 @@ set(swcdb_utils_shell_sources
   ${SWC_VERSION_SRC}
   cli/Shell.cc
   cli/Shell_DbClient.cc
+  cli/Shell_Manager.cc
+  cli/Shell_Ranger.cc
+  cli/Shell_Fs.cc
+  
 )
 ADD_LIB_TARGET(
   NAME    swcdb_utils_shell
