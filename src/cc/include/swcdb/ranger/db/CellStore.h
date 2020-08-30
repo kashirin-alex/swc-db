@@ -84,8 +84,6 @@ class Read final {
 
   void load_cells(BlockLoader* loader);
 
-  void run_queued();
-
   void get_blocks(int& err, std::vector<Block::Read::Ptr>& to) const;
 
   size_t release(size_t bytes);
@@ -110,10 +108,18 @@ class Read final {
 
   void _release_fd();
 
-  mutable Mutex                     m_mutex;
-  FS::SmartFd::Ptr                  m_smartfd;
-  bool                              m_q_running;
-  std::queue<std::function<void()>> m_queue;
+  mutable Mutex      m_mutex;
+  FS::SmartFd::Ptr   m_smartfd;
+  bool               m_q_running;
+
+  struct CsQueue {
+    CsQueue() { }
+    CsQueue(BlockLoader* loader, Block::Read* block)
+            : loader(loader), block(block) { }
+    BlockLoader* loader;
+    Block::Read* block;
+  };
+  std::queue<CsQueue> m_queue;
 
 };
 

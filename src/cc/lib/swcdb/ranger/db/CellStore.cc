@@ -269,11 +269,10 @@ void Read::load_cells(BlockLoader* loader) {
       break;
   }
   
-  std::function<void()> cb;
   for(auto blk : applicable) {
-    if(blk->load(cb = [loader](){ loader->loaded_blk(); })) {
+    if(blk->load(loader)) {
       Mutex::scope lock(m_mutex);
-      m_queue.push([blk, cb, fd=m_smartfd](){ blk->load(fd, cb); });
+      m_queue.emplace(loader, blk);
       if(!m_q_running) {
         m_q_running = true;
         Env::IoCtx::post([this]() { _run_queued(); } );
@@ -283,17 +282,17 @@ void Read::load_cells(BlockLoader* loader) {
 }
 
 void Read::_run_queued() {
-  for(std::function<void()> call;;) {
+  for(CsQueue q;;) {
     {
       Mutex::scope lock(m_mutex);
       if(m_queue.empty()) {
         m_q_running = false;
         return _release_fd();
       }
-      call = m_queue.front();
+      q = m_queue.front();
       m_queue.pop();
     }
-    call();
+    q.block->load(m_smartfd, q.loader);
   }
 }
 

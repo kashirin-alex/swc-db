@@ -58,9 +58,9 @@ class Read final {
   
   size_t size_of() const;
   
-  bool load(const std::function<void()>& cb);
+  bool load(BlockLoader* loader);
 
-  void load(FS::SmartFd::Ptr smartfd, const std::function<void()>& cb);
+  void load(FS::SmartFd::Ptr smartfd, BlockLoader* loader);
 
   void load_cells(int& err, Ranger::Block::Ptr cells_block);
 
@@ -85,17 +85,17 @@ class Read final {
   
   private:
   
-  void load(int& err, FS::SmartFd::Ptr smartfd);
+  void _load(int& err, FS::SmartFd::Ptr smartfd);
 
-  void run_queued();
+  void _run_queued();
 
-  Mutex                             m_mutex;
-  State                             m_state;
-  size_t                            m_processing;
-  StaticBuffer                      m_buffer;
-  std::atomic<uint32_t>             m_cells_remain;
-  int                               m_err;
-  std::queue<std::function<void()>> m_queue;
+  Mutex                    m_mutex;
+  State                    m_state;
+  size_t                   m_processing;
+  StaticBuffer             m_buffer;
+  std::atomic<uint32_t>    m_cells_remain;
+  int                      m_err;
+  std::queue<BlockLoader*> m_queue;
 
 };
 

@@ -90,7 +90,7 @@ size_t Read::size_of() const {
   return sizeof(*this) + header.interval.size_of_internal();
 }
 
-bool Read::load(const std::function<void()>& cb) {
+bool Read::load(BlockLoader* loader) {
   {
     Mutex::scope lock(m_mutex);
     ++m_processing;
@@ -105,22 +105,22 @@ bool Read::load(const std::function<void()>& cb) {
       }
     }
     if(m_state != State::LOADED) {
-      m_queue.push(cb);
+      m_queue.push(loader);
       return false;
     }
   }
-  cb();
+  loader->loaded_blk();
   return false;
 }
 
-void Read::load(FS::SmartFd::Ptr smartfd, const std::function<void()>& cb) {
+void Read::load(FS::SmartFd::Ptr smartfd, BlockLoader* loader) {
   int err = Error::OK;
-  load(err, smartfd);
+  _load(err, smartfd);
   if(err)
     SWC_LOGF(LOG_ERROR, "CellStore::Block load %s", to_string().c_str());
 
-  cb();
-  Env::IoCtx::post([this](){ run_queued(); });
+  loader->loaded_blk();
+  Env::IoCtx::post([this](){ _run_queued(); });
 }
 
 void Read::load_cells(int&, Ranger::Block::Ptr cells_block) {
@@ -220,7 +220,7 @@ std::string Read::to_string() {
   return s;
 }
 
-void Read::load(int& err, FS::SmartFd::Ptr smartfd) {
+void Read::_load(int& err, FS::SmartFd::Ptr smartfd) {
   auto fs_if = Env::FsInterface::interface();
   auto fs = Env::FsInterface::fs();
   err = Error::OK;
@@ -279,16 +279,16 @@ void Read::load(int& err, FS::SmartFd::Ptr smartfd) {
   }
 }
 
-void Read::run_queued() {
-  for(std::function<void()> call;;) {
+void Read::_run_queued() {
+  for(BlockLoader* loader;;) {
     {
       Mutex::scope lock(m_mutex);
       if(m_queue.empty())
         return;
-      call = m_queue.front();
+      loader = m_queue.front();
       m_queue.pop();
     }
-    call();
+    loader->loaded_blk();
   }
 }
 
