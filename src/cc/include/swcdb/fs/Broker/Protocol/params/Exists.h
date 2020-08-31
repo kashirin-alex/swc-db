@@ -57,7 +57,8 @@ class ExistsRsp : public Serializable {
 }}}}
 
 
-#ifdef SWC_IMPL_SOURCE
+#if defined(SWC_IMPL_SOURCE) or \
+    (defined(FS_BROKER_APP) and !defined(BUILTIN_FS_BROKER))
 #include "swcdb/fs/Broker/Protocol/params/Exists.cc"
 #endif 
 
