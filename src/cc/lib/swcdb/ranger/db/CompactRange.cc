@@ -118,7 +118,7 @@ CompactRange::CompactRange(Compaction::Ptr compactor, const RangePtr& range,
               state_default(range->blocks.cellstores.blocks_count() > 1 
                 ? Range::COMPACT_COMPACTING : Range::COMPACT_PREPARING),
               req_last_time(0),
-              m_getting(true),
+              m_getting(true), m_log_sz(0),
               m_chk_timer(
                 asio::high_resolution_timer(*Env::IoCtx::io()->ptr())) {
   spec.flags.max_versions = range->cfg->cell_versions();
@@ -158,7 +158,8 @@ void CompactRange::initialize() {
 
 void CompactRange::initial_commitlog(int tnum) {
   auto ptr = shared();
-  if(range->blocks.commitlog.size() < CommitLog::Fragments::MIN_COMPACT)
+  m_log_sz = range->blocks.commitlog.size();
+  if(m_log_sz < CommitLog::Fragments::MIN_COMPACT)
     return initial_commitlog_done(ptr, nullptr);
 
   std::vector<CommitLog::Fragments::Vec> groups;
@@ -282,7 +283,8 @@ bool CompactRange::is_slow_req(int64_t& median) const {
 }
 
 void CompactRange::commitlog(int tnum) {
-  if(range->blocks.commitlog.size() - fragments_old.size()
+  size_t log_sz = range->blocks.commitlog.size();
+  if((log_sz > m_log_sz ? log_sz - m_log_sz : m_log_sz - log_sz)
       < CommitLog::Fragments::MIN_COMPACT)
     return commitlog_done(nullptr);
 
@@ -297,8 +299,9 @@ void CompactRange::commitlog(int tnum) {
       }
     );
   } else {
+    m_log_sz = log_sz;
     commitlog_done(nullptr);
-  } 
+  }
 }
 
 void CompactRange::commitlog_done(const CommitLog::Compact* compact) {

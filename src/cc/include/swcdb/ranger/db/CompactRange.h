@@ -118,6 +118,7 @@ class CompactRange final : public ReqScan {
 
   Mutex                           m_mutex;
   bool                            m_getting;
+  size_t                          m_log_sz;
   asio::high_resolution_timer     m_chk_timer;
 
 };
