@@ -7,6 +7,8 @@
 #define swc_fs_Broker_Protocol_params_Mkdirs_h
 
 
+#include "swcdb/core/Serializable.h"
+
 
 namespace SWC { namespace FS { namespace Protocol { namespace Params {
 
@@ -14,29 +16,28 @@ namespace SWC { namespace FS { namespace Protocol { namespace Params {
 class MkdirsReq : public Serializable {
   public:
 
-  MkdirsReq() {}
+  MkdirsReq();
 
-  MkdirsReq(const std::string& dirname) : dirname(dirname) {}
+  MkdirsReq(const std::string& dirname);
 
   std::string dirname;
 
   private:
 
-  size_t internal_encoded_length() const {
-  return Serialization::encoded_length_bytes(dirname.size());
-  }
+  size_t internal_encoded_length() const;
 
-  void internal_encode(uint8_t** bufp) const {
-    Serialization::encode_bytes(bufp, dirname.c_str(), dirname.size());
-  }
+  void internal_encode(uint8_t** bufp) const;
 
-  void internal_decode(const uint8_t** bufp, size_t* remainp) {
-    dirname.clear();
-    dirname.append(Serialization::decode_bytes_string(bufp, remainp));
-  }
+  void internal_decode(const uint8_t** bufp, size_t* remainp);
 
 };
 
 }}}}
+
+
+#ifdef SWC_IMPL_SOURCE
+#include "swcdb/fs/Broker/Protocol/params/Mkdirs.cc"
+#endif 
+
 
 #endif // swc_fs_Broker_Protocol_params_Mkdirs_h

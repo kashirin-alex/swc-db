@@ -7,6 +7,8 @@
 #define swc_fs_Broker_Protocol_params_Seek_h
 
 
+#include "swcdb/core/Serializable.h"
+
 
 namespace SWC { namespace FS { namespace Protocol { namespace Params {
 
@@ -14,29 +16,20 @@ namespace SWC { namespace FS { namespace Protocol { namespace Params {
 class SeekReq : public Serializable {
   public:
 
-  SeekReq() {}
+  SeekReq();
 
-  SeekReq(int32_t fd, size_t offset)
-          : fd(fd), offset(offset) {}
+  SeekReq(int32_t fd, size_t offset);
 
   int32_t   fd;
   uint64_t  offset;
 
   private:
 
-  size_t internal_encoded_length() const {
-    return 12;
-  }
+  size_t internal_encoded_length() const;
 
-  void internal_encode(uint8_t** bufp) const {
-    Serialization::encode_i32(bufp, fd);
-    Serialization::encode_i64(bufp, offset);
-  }
+  void internal_encode(uint8_t** bufp) const;
 
-  void internal_decode(const uint8_t** bufp, size_t* remainp) {
-    fd = (int32_t)Serialization::decode_i32(bufp, remainp);
-    offset = Serialization::decode_i64(bufp, remainp);
-  }
+  void internal_decode(const uint8_t** bufp, size_t* remainp);
   
 };
 
@@ -46,28 +39,28 @@ class SeekReq : public Serializable {
 class SeekRsp : public Serializable {
   public:
 
-  SeekRsp() {}
+  SeekRsp();
 
-  SeekRsp(size_t offset) : offset(offset) {}
+  SeekRsp(size_t offset);
   
   uint64_t offset;
   
   private:
   
-  size_t internal_encoded_length() const {
-    return 8;
-  }
+  size_t internal_encoded_length() const;
 
-  void internal_encode(uint8_t** bufp) const {
-    Serialization::encode_i64(bufp, offset);
-  }
+  void internal_encode(uint8_t** bufp) const;
 
-  void internal_decode(const uint8_t** bufp, size_t* remainp) {
-    offset = Serialization::decode_i64(bufp, remainp);
-  }
+  void internal_decode(const uint8_t** bufp, size_t* remainp);
   
 };
 
 }}}}
+
+
+#ifdef SWC_IMPL_SOURCE
+#include "swcdb/fs/Broker/Protocol/params/Seek.cc"
+#endif 
+
 
 #endif // swc_fs_Broker_Protocol_params_Seek_h

@@ -7,6 +7,8 @@
 #define swc_fs_Broker_Protocol_params_Read_h
 
 
+#include "swcdb/core/Serializable.h"
+
 
 namespace SWC { namespace FS { namespace Protocol { namespace Params {
 
@@ -14,29 +16,20 @@ namespace SWC { namespace FS { namespace Protocol { namespace Params {
 class ReadReq : public Serializable {
   public:
 
-  ReadReq() {}
+  ReadReq();
 
-  ReadReq(int32_t fd, uint32_t amount)
-          : fd(fd), amount(amount) {}
+  ReadReq(int32_t fd, uint32_t amount);
 
-  int32_t   fd {};
+  int32_t   fd;
   uint32_t  amount;
 
   private:
 
-  size_t internal_encoded_length() const {
-      return 8;
-  }
+  size_t internal_encoded_length() const;
 
-  void internal_encode(uint8_t** bufp) const {
-    Serialization::encode_i32(bufp, fd);
-    Serialization::encode_i32(bufp, amount);
-  }
+  void internal_encode(uint8_t** bufp) const;
 
-  void internal_decode(const uint8_t** bufp, size_t* remainp) {
-    fd = (int32_t)Serialization::decode_i32(bufp, remainp);
-    amount = Serialization::decode_i32(bufp, remainp);
-  }
+  void internal_decode(const uint8_t** bufp, size_t* remainp);
   
 };
 
@@ -45,30 +38,29 @@ class ReadReq : public Serializable {
 class ReadRsp : public Serializable {
   public:
 
-  ReadRsp() {}
+  ReadRsp();
 
-  ReadRsp(uint64_t offset) 
-          : offset(offset) {}
+  ReadRsp(uint64_t offset);
 
   uint64_t offset;
 
   private:
 
-  size_t internal_encoded_length() const {
-      return 8;
-  }
+  size_t internal_encoded_length() const;
 
-  void internal_encode(uint8_t** bufp) const {
-    Serialization::encode_i64(bufp, offset);
-  }
+  void internal_encode(uint8_t** bufp) const;
 
-  void internal_decode(const uint8_t** bufp, size_t* remainp) {
-    offset = Serialization::decode_i64(bufp, remainp);
-  }
+  void internal_decode(const uint8_t** bufp, size_t* remainp);
   
 
 };
 
 }}}}
+
+
+#ifdef SWC_IMPL_SOURCE
+#include "swcdb/fs/Broker/Protocol/params/Read.cc"
+#endif 
+
 
 #endif // swc_fs_Broker_Protocol_params_Read_h

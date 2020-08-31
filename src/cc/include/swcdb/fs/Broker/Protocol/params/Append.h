@@ -3,9 +3,12 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
+
 #ifndef swc_fs_Broker_Protocol_params_Append_h
 #define swc_fs_Broker_Protocol_params_Append_h
 
+
+#include "swcdb/core/Serializable.h"
 
 
 namespace SWC { namespace FS { namespace Protocol { namespace Params {
@@ -14,29 +17,20 @@ namespace SWC { namespace FS { namespace Protocol { namespace Params {
 class AppendReq : public Serializable {
   public:
 
-  AppendReq() : fd(-1), flags(0) {}
+  AppendReq();
 
-  AppendReq(int32_t fd, uint8_t flags)
-            : fd(fd), flags(flags) {}
+  AppendReq(int32_t fd, uint8_t flags);
 
-  int32_t fd ;
+  int32_t fd;
   uint8_t flags;
 
   private:
 
-  size_t internal_encoded_length() const {
-      return 5;
-  }
+  size_t internal_encoded_length() const;
 
-  void internal_encode(uint8_t** bufp) const {
-    Serialization::encode_i32(bufp, fd);
-    Serialization::encode_i8(bufp, flags);
-  }
+  void internal_encode(uint8_t** bufp) const;
 
-  void internal_decode(const uint8_t** bufp, size_t* remainp) {
-    fd = (int32_t)Serialization::decode_i32(bufp, remainp);
-    flags = Serialization::decode_i8(bufp, remainp);
-  }
+  void internal_decode(const uint8_t** bufp, size_t* remainp);
   
 };
 
@@ -46,32 +40,29 @@ class AppendReq : public Serializable {
 class AppendRsp : public Serializable {
   public:
 
-  AppendRsp() {}
+  AppendRsp();
 
-  AppendRsp(uint64_t offset, uint32_t amount)
-           : offset(offset), amount(amount) {}
+  AppendRsp(uint64_t offset, uint32_t amount);
 
   uint64_t offset {};
   uint32_t amount {};
 
   private:
 
-  size_t internal_encoded_length() const {
-      return 12;
-  }
+  size_t internal_encoded_length() const;
 
-  void internal_encode(uint8_t** bufp) const {
-    Serialization::encode_i64(bufp, offset);
-    Serialization::encode_i32(bufp, amount);
-  }
+  void internal_encode(uint8_t** bufp) const;
 
-  void internal_decode(const uint8_t** bufp, size_t* remainp) {
-    offset = Serialization::decode_i64(bufp, remainp);
-    amount = Serialization::decode_i32(bufp, remainp);
-  }
+  void internal_decode(const uint8_t** bufp, size_t* remainp);
 
 };
 
 }}}}
+
+
+#ifdef SWC_IMPL_SOURCE
+#include "swcdb/fs/Broker/Protocol/params/Append.cc"
+#endif 
+
 
 #endif // swc_fs_Broker_Protocol_params_Append_h

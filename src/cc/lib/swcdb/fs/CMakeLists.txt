@@ -34,6 +34,24 @@ set(FILE_SYSTEMS ${FILE_SYSTEMS} broker)
 set(swcdb_fsBroker_sources
   ${SWC_VERSION_SRC}
   Broker/FileSystem.cc
+  Broker/Protocol/params/Append.cc
+  Broker/Protocol/params/Close.cc
+  Broker/Protocol/params/Create.cc
+  Broker/Protocol/params/Exists.cc
+  Broker/Protocol/params/Flush.cc
+  Broker/Protocol/params/Length.cc
+  Broker/Protocol/params/Mkdirs.cc
+  Broker/Protocol/params/Open.cc
+  Broker/Protocol/params/Pread.cc
+  Broker/Protocol/params/Read.cc
+  Broker/Protocol/params/ReadAll.cc
+  Broker/Protocol/params/Readdir.cc
+  Broker/Protocol/params/Remove.cc
+  Broker/Protocol/params/Rename.cc
+  Broker/Protocol/params/Rmdir.cc
+  Broker/Protocol/params/Seek.cc
+  Broker/Protocol/params/Sync.cc
+  Broker/Protocol/params/Write.cc
 )
 ADD_LIB_TARGET(
   NAME      swcdb_fs_broker

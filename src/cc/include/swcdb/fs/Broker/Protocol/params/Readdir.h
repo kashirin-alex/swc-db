@@ -7,6 +7,9 @@
 #define swc_fs_Broker_Protocol_params_Readdir_h
 
 
+#include "swcdb/core/Serializable.h"
+#include "swcdb/fs/Dirent.h"
+
 
 namespace SWC { namespace FS { namespace Protocol { namespace Params {
 
@@ -14,67 +17,49 @@ namespace SWC { namespace FS { namespace Protocol { namespace Params {
 class ReaddirReq : public Serializable {
   public:
 
-  ReaddirReq() {}
+  ReaddirReq();
 
-  ReaddirReq(const std::string& dirname) : dirname(dirname) {}
+  ReaddirReq(const std::string& dirname);
 
   std::string dirname;
 
   private:
 
-  size_t internal_encoded_length() const {
-    return Serialization::encoded_length_bytes(dirname.size());
-  }
+  size_t internal_encoded_length() const;
 
-  void internal_encode(uint8_t** bufp) const {
-    Serialization::encode_bytes(bufp, dirname.c_str(), dirname.size());
-  }
+  void internal_encode(uint8_t** bufp) const;
 
-  void internal_decode(const uint8_t** bufp, size_t* remainp) {
-    dirname.clear();
-    dirname.append(Serialization::decode_bytes_string(bufp, remainp));
-  }
+  void internal_decode(const uint8_t** bufp, size_t* remainp);
+
 };
 
 
 class ReaddirRsp : public Serializable {
   public:
   
-  ReaddirRsp() {}
+  ReaddirRsp();
 
-  ReaddirRsp(DirentList &listing) : m_listing(listing) {}
+  ReaddirRsp(DirentList &listing);
 
-  void get_listing(DirentList &listing) {
-    listing.clear();
-    listing.assign(m_listing.begin(), m_listing.end());
-  }
+  void get_listing(DirentList &listing);
 
   private:
 
-  size_t internal_encoded_length() const {
-    size_t length = 4;
-    for (const Dirent &entry : m_listing)
-      length += entry.encoded_length();
-    return length;
-  }
+  size_t internal_encoded_length() const;
 
-  void internal_encode(uint8_t** bufp) const {
-    Serialization::encode_i32(bufp, m_listing.size());
-    for (const Dirent &entry : m_listing)
-      entry.encode(bufp);
-  }
+  void internal_encode(uint8_t** bufp) const;
 
-  void internal_decode(const uint8_t** bufp, size_t* remainp) {
-    int32_t count = Serialization::decode_i32(bufp, remainp);
-    m_listing.clear();
-    m_listing.resize(count);
-    for (int32_t i=0; i<count; ++i)
-      m_listing[i].decode(bufp, remainp);
-  }
+  void internal_decode(const uint8_t** bufp, size_t* remainp);
   
   DirentList m_listing;
 };
 
 }}}}
+
+
+#ifdef SWC_IMPL_SOURCE
+#include "swcdb/fs/Broker/Protocol/params/Readdir.cc"
+#endif 
+
 
 #endif // swc_fs_Broker_Protocol_params_Readdir_h

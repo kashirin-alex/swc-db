@@ -6,6 +6,7 @@
 #ifndef swc_fs_Broker_Protocol_params_Rmdir_h
 #define swc_fs_Broker_Protocol_params_Rmdir_h
 
+#include "swcdb/core/Serializable.h"
 
 
 namespace SWC { namespace FS { namespace Protocol { namespace Params {
@@ -14,29 +15,28 @@ namespace SWC { namespace FS { namespace Protocol { namespace Params {
 class RmdirReq : public Serializable {
   public:
 
-  RmdirReq() {}
+  RmdirReq();
 
-  RmdirReq(const std::string& dname) : dname(dname) {}
+  RmdirReq(const std::string& dname);
 
   std::string dname;
 
   private:
 
-  size_t internal_encoded_length() const {
-  return Serialization::encoded_length_bytes(dname.size());
-  }
+  size_t internal_encoded_length() const;
 
-  void internal_encode(uint8_t** bufp) const {
-    Serialization::encode_bytes(bufp, dname.c_str(), dname.size());
-  }
+  void internal_encode(uint8_t** bufp) const;
 
-  void internal_decode(const uint8_t** bufp, size_t* remainp) {
-    dname.clear();
-    dname.append(Serialization::decode_bytes_string(bufp, remainp));
-  }
+  void internal_decode(const uint8_t** bufp, size_t* remainp);
 
 };
 
 }}}}
+
+
+#ifdef SWC_IMPL_SOURCE
+#include "swcdb/fs/Broker/Protocol/params/Rmdir.cc"
+#endif 
+
 
 #endif // swc_fs_Broker_Protocol_params_Rmdir_h

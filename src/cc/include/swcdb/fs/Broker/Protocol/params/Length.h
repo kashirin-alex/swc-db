@@ -7,6 +7,8 @@
 #define swc_fs_Broker_Protocol_params_Length_h
 
 
+#include "swcdb/core/Serializable.h"
+
 
 namespace SWC { namespace FS { namespace Protocol { namespace Params {
 
@@ -14,25 +16,18 @@ namespace SWC { namespace FS { namespace Protocol { namespace Params {
 class LengthReq : public Serializable {
   public:
 
-  LengthReq() {}
+  LengthReq();
 
-  LengthReq(const std::string& fname) : fname(fname) {}
+  LengthReq(const std::string& fname);
 
   std::string fname;
 
   private:
-  size_t internal_encoded_length() const {
-    return Serialization::encoded_length_bytes(fname.size());
-  }
+  size_t internal_encoded_length() const;
 
-  void internal_encode(uint8_t** bufp) const {
-    Serialization::encode_bytes(bufp, fname.c_str(), fname.size());
-  }
+  void internal_encode(uint8_t** bufp) const;
 
-  void internal_decode(const uint8_t** bufp, size_t* remainp) {
-    fname.clear();
-    fname.append(Serialization::decode_bytes_string(bufp, remainp));
-  }
+  void internal_decode(const uint8_t** bufp, size_t* remainp);
 
 };
 
@@ -42,28 +37,28 @@ class LengthReq : public Serializable {
 class LengthRsp : public Serializable {
   public:
   
-  LengthRsp() {}
+  LengthRsp();
 
-  LengthRsp(size_t length) : length(length) {}
+  LengthRsp(size_t length);
 
   size_t length;
 
   private:
 
-  size_t internal_encoded_length() const {
-    return 8;
-  }
+  size_t internal_encoded_length() const;
 
-  void internal_encode(uint8_t** bufp) const {
-    Serialization::encode_i64(bufp, length);
-  }
+  void internal_encode(uint8_t** bufp) const;
 
-  void internal_decode(const uint8_t** bufp, size_t* remainp) {
-    length = Serialization::decode_i64(bufp, remainp);
-  }
+  void internal_decode(const uint8_t** bufp, size_t* remainp);
   
 };
 
 }}}}
+
+
+#ifdef SWC_IMPL_SOURCE
+#include "swcdb/fs/Broker/Protocol/params/Length.cc"
+#endif 
+
 
 #endif // swc_fs_Broker_Protocol_params_Length_h
