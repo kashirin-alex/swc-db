@@ -16,46 +16,26 @@ class Close : public Base {
   public:
 
   Close(FileSystem::Ptr fs, uint32_t timeout, SmartFd::Ptr& smartfd, 
-        const Callback::CloseCb_t& cb=0)
-        : fs(fs), smartfd(smartfd), cb(cb) {
-    SWC_LOGF(LOG_DEBUG, "close %s", smartfd->to_string().c_str());
- 
-    cbp = CommBuf::make(Params::CloseReq(smartfd->fd()));
-    cbp->header.set(Cmd::FUNCTION_CLOSE, timeout);
-  }
+        const Callback::CloseCb_t& cb=0);
 
-  std::promise<void> promise(){
-    std::promise<void>  r_promise;
-    cb = [await=&r_promise](int, const SmartFd::Ptr&){ await->set_value(); };
-    return r_promise;
-  }
+  std::promise<void> promise();
 
-  void handle(ConnHandlerPtr, const Event::Ptr& ev) override { 
-
-    const uint8_t *ptr;
-    size_t remain;
-
-    if(!Base::is_rsp(ev, Cmd::FUNCTION_CLOSE, &ptr, &remain))
-      return;
-
-    smartfd->fd(-1);
-    smartfd->pos(0);
-    fs->fd_open_decr();
-
-    SWC_LOGF(LOG_DEBUG, "close %s error='%d' fds-open=%lu", 
-             smartfd->to_string().c_str(), error, fs->fds_open());
-
-    cb(error, smartfd);
-  }
+  void handle(ConnHandlerPtr, const Event::Ptr& ev) override;
 
   private:
   FileSystem::Ptr      fs;
   SmartFd::Ptr         smartfd;
   Callback::CloseCb_t  cb;
+
 };
 
 
 
 }}}}
+
+
+#ifdef SWC_IMPL_SOURCE
+#include "swcdb/fs/Broker/Protocol/req/Close.cc"
+#endif 
 
 #endif  // swc_fs_Broker_Protocol_req_Close_h

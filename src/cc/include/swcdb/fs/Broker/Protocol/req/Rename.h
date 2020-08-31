@@ -16,41 +16,26 @@ class Rename : public Base {
   public:
 
   Rename(uint32_t timeout, const std::string& from, const std::string& to,
-        const Callback::RenameCb_t& cb=0) 
-        : from(from), to(to), cb(cb) {
-    SWC_LOGF(LOG_DEBUG, "rename '%s' to '%s'", from.c_str(), to.c_str());
+        const Callback::RenameCb_t& cb=0);
 
-    cbp = CommBuf::make(Params::RenameReq(from, to));
-    cbp->header.set(Cmd::FUNCTION_RENAME, timeout);
-  }
+  std::promise<void> promise();
 
-  std::promise<void> promise(){
-    std::promise<void>  r_promise;
-    cb = [await=&r_promise](int){ await->set_value(); };
-    return r_promise;
-  }
-
-  void handle(ConnHandlerPtr, const Event::Ptr& ev) override { 
-
-    const uint8_t *ptr;
-    size_t remain;
-
-    if(!Base::is_rsp(ev, Cmd::FUNCTION_RENAME, &ptr, &remain))
-      return;
-
-    SWC_LOGF(LOG_DEBUG, "rename '%s' to '%s' error='%d'", 
-              from.c_str(), to.c_str(), error);
-    cb(error);
-  }
+  void handle(ConnHandlerPtr, const Event::Ptr& ev) override;
 
   private:
   const std::string     from;
   const std::string     to;
   Callback::RenameCb_t  cb;
+
 };
 
 
 
 }}}}
+
+
+#ifdef SWC_IMPL_SOURCE
+#include "swcdb/fs/Broker/Protocol/req/Rename.cc"
+#endif 
 
 #endif  // swc_fs_Broker_Protocol_req_Rename_h

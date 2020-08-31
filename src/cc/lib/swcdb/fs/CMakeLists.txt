@@ -52,6 +52,26 @@ set(swcdb_fsBroker_sources
   Broker/Protocol/params/Seek.cc
   Broker/Protocol/params/Sync.cc
   Broker/Protocol/params/Write.cc
+
+  Broker/Protocol/req/Base.cc
+  Broker/Protocol/req/Append.cc
+  Broker/Protocol/req/Close.cc
+  Broker/Protocol/req/Create.cc
+  Broker/Protocol/req/Exists.cc
+  Broker/Protocol/req/Flush.cc
+  Broker/Protocol/req/Length.cc
+  Broker/Protocol/req/Mkdirs.cc
+  Broker/Protocol/req/Open.cc
+  Broker/Protocol/req/Pread.cc
+  Broker/Protocol/req/Read.cc
+  Broker/Protocol/req/ReadAll.cc
+  Broker/Protocol/req/Readdir.cc
+  Broker/Protocol/req/Remove.cc
+  Broker/Protocol/req/Rename.cc
+  Broker/Protocol/req/Rmdir.cc
+  Broker/Protocol/req/Seek.cc
+  Broker/Protocol/req/Sync.cc
+  Broker/Protocol/req/Write.cc
 )
 ADD_LIB_TARGET(
   NAME      swcdb_fs_broker

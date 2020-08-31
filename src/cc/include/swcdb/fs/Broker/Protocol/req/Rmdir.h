@@ -16,40 +16,25 @@ class Rmdir : public Base {
   public:
 
   Rmdir(uint32_t timeout, const std::string& name, 
-        const Callback::RmdirCb_t& cb=0) 
-        : name(name), cb(cb) {
-    SWC_LOGF(LOG_DEBUG, "rmdir path='%s'", name.c_str());
+        const Callback::RmdirCb_t& cb=0);
 
-    cbp = CommBuf::make(Params::RmdirReq(name));
-    cbp->header.set(Cmd::FUNCTION_RMDIR, timeout);
-  }
+  std::promise<void> promise();
 
-  std::promise<void> promise(){
-    std::promise<void>  r_promise;
-    cb = [await=&r_promise](int){ await->set_value(); };
-    return r_promise;
-  }
-
-  void handle(ConnHandlerPtr, const Event::Ptr& ev) override { 
-
-    const uint8_t *ptr;
-    size_t remain;
-
-    if(!Base::is_rsp(ev, Cmd::FUNCTION_RMDIR, &ptr, &remain))
-      return;
-
-    SWC_LOGF(LOG_DEBUG, "rmdir path='%s' error='%d'", name.c_str(), error);
-    
-    cb(error);
-  }
+  void handle(ConnHandlerPtr, const Event::Ptr& ev) override;
 
   private:
   const std::string    name;
   Callback::RmdirCb_t  cb;
+
 };
 
 
 
 }}}}
+
+
+#ifdef SWC_IMPL_SOURCE
+#include "swcdb/fs/Broker/Protocol/req/Rmdir.cc"
+#endif 
 
 #endif  // swc_fs_Broker_Protocol_req_Rmdir_h

@@ -18,55 +18,26 @@ class Create : public Base {
   
   Create(FileSystem::Ptr fs, uint32_t timeout, SmartFd::Ptr& smartfd, 
         int32_t bufsz, uint8_t replication, int64_t blksz, 
-        const Callback::CreateCb_t& cb=0) 
-        : fs(fs), smartfd(smartfd), cb(cb) {
-    SWC_LOGF(LOG_DEBUG, 
-      "create %s bufsz(%d) replication(%d) blksz(%ld)", 
-      smartfd->to_string().c_str(), bufsz, replication, blksz);
-    
-    cbp = CommBuf::make(
-      Params::CreateReq(smartfd->filepath(), smartfd->flags(), 
-                        bufsz, replication, blksz)
-    );
-    cbp->header.set(Cmd::FUNCTION_CREATE, timeout);
-  }
+        const Callback::CreateCb_t& cb=0);
 
-  std::promise<void> promise(){
-    std::promise<void>  r_promise;
-    cb = [await=&r_promise](int, const SmartFd::Ptr&){ await->set_value(); };
-    return r_promise;
-  }
+  std::promise<void> promise();
 
-  void handle(ConnHandlerPtr, const Event::Ptr& ev) override { 
-
-    const uint8_t *ptr;
-    size_t remain;
-
-    if(!Base::is_rsp(ev, Cmd::FUNCTION_CREATE, &ptr, &remain))
-      return;
-
-    if(!error) {
-      Params::OpenRsp params;
-      params.decode(&ptr, &remain);
-      smartfd->fd(params.fd);
-      smartfd->pos(0);
-      fs->fd_open_incr();
-    }
-
-    SWC_LOGF(LOG_DEBUG, "create %s error='%d' fds-open=%lu", 
-             smartfd->to_string().c_str(), error, fs->fds_open());
-    
-    cb(error, smartfd);
-  }
+  void handle(ConnHandlerPtr, const Event::Ptr& ev) override;
 
   private:
   FileSystem::Ptr       fs;
   SmartFd::Ptr          smartfd;
   Callback::CreateCb_t  cb;
+
 };
 
 
 
 }}}}
+
+
+#ifdef SWC_IMPL_SOURCE
+#include "swcdb/fs/Broker/Protocol/req/Create.cc"
+#endif 
 
 #endif  // swc_fs_Broker_Protocol_req_Create_h

@@ -17,53 +17,25 @@ class ReadAll : public Base {
   StaticBuffer* buffer;
   
   ReadAll(uint32_t timeout, const std::string& name, StaticBuffer* dst,
-          const Callback::ReadAllCb_t& cb=0)
-          : buffer(dst), name(name), cb(cb) {
-    SWC_LOGF(LOG_DEBUG, "read-all timeout=%d %s", timeout, name.c_str());
+          const Callback::ReadAllCb_t& cb=0);
 
-    cbp = CommBuf::make(Params::ReadAllReq(name));
-    cbp->header.set(Cmd::FUNCTION_READ_ALL, timeout);
-  }
+  std::promise<void> promise();
 
-  std::promise<void> promise() {
-    std::promise<void>  r_promise;
-    cb = [await=&r_promise]
-         (int, const std::string&, const StaticBuffer::Ptr&) {
-           await->set_value();
-          };
-    return r_promise;
-  }
-
-  void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
-
-    const uint8_t *ptr;
-    size_t remain;
-
-    if(!Base::is_rsp(ev, Cmd::FUNCTION_READ_ALL, &ptr, &remain))
-      return;
-      
-    StaticBuffer::Ptr buf = nullptr;
-    if(!error) {
-      if(buffer)
-        buffer->set(ev->data_ext);
-      else
-        buf.reset(new StaticBuffer(ev->data_ext));
-    }
-
-    SWC_LOGF(LOG_DEBUG, "read-all %s amount='%lu' error='%d'", 
-                          name.c_str(), 
-                          error ? 0 : (buffer ? buffer->size : buf->size),
-                          error);
-    cb(error, name, buf);
-  }
+  void handle(ConnHandlerPtr, const Event::Ptr& ev);
 
   private:
   const std::string      name;
   Callback::ReadAllCb_t  cb;
+
 };
 
 
 
 }}}}
+
+
+#ifdef SWC_IMPL_SOURCE
+#include "swcdb/fs/Broker/Protocol/req/ReadAll.cc"
+#endif 
 
 #endif  // swc_fs_Broker_Protocol_req_ReadAll_h

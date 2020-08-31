@@ -16,50 +16,25 @@ class Sync : public Base {
   public:
   
   Sync(uint32_t timeout, SmartFd::Ptr& smartfd, 
-       const Callback::SyncCb_t& cb=0) 
-      : smartfd(smartfd), cb(cb) {
-    SWC_LOGF(LOG_DEBUG, "sync %s", smartfd->to_string().c_str());
+       const Callback::SyncCb_t& cb=0);
 
-    cbp = CommBuf::make(Params::SyncReq(smartfd->fd()));
-    cbp->header.set(Cmd::FUNCTION_SYNC, timeout);
-  }
+  std::promise<void> promise();
 
-  std::promise<void> promise(){
-    std::promise<void>  r_promise;
-    cb = [await=&r_promise](int, const SmartFd::Ptr&){ await->set_value(); };
-    return r_promise;
-  }
-
-  void handle(ConnHandlerPtr, const Event::Ptr& ev) override { 
-
-    const uint8_t *ptr;
-    size_t remain;
-
-    if(!Base::is_rsp(ev, Cmd::FUNCTION_SYNC, &ptr, &remain))
-      return;
-
-    switch(error) {
-      case Error::OK:
-        break;
-      case EBADR:
-      case Error::FS_BAD_FILE_HANDLE:
-        smartfd->fd(-1);
-      default:
-        break;
-    }
-    
-    SWC_LOGF(LOG_DEBUG, "sync %s error='%d'", smartfd->to_string().c_str(), error);
-    
-    cb(error, smartfd);
-  }
+  void handle(ConnHandlerPtr, const Event::Ptr& ev) override;
 
   private:
   SmartFd::Ptr        smartfd;
   Callback::SyncCb_t  cb;
+
 };
 
 
 
 }}}}
+
+
+#ifdef SWC_IMPL_SOURCE
+#include "swcdb/fs/Broker/Protocol/req/Sync.cc"
+#endif 
 
 #endif  // swc_fs_Broker_Protocol_req_Sync_h

@@ -16,48 +16,25 @@ class Flush : public Base {
   public:
 
   Flush(uint32_t timeout, SmartFd::Ptr& smartfd, 
-        const Callback::FlushCb_t& cb=0) 
-        : smartfd(smartfd), cb(cb) {
-    SWC_LOGF(LOG_DEBUG, "flush %s", smartfd->to_string().c_str());
+        const Callback::FlushCb_t& cb=0);
 
-    cbp = CommBuf::make(Params::FlushReq(smartfd->fd()));
-    cbp->header.set(Cmd::FUNCTION_FLUSH, timeout);
-  }
+  std::promise<void> promise();
 
-  std::promise<void> promise(){
-    std::promise<void>  r_promise;
-    cb = [await=&r_promise](int, const SmartFd::Ptr&){ await->set_value(); };
-    return r_promise;
-  }
-
-  void handle(ConnHandlerPtr, const Event::Ptr& ev) override { 
-
-    const uint8_t *ptr;
-    size_t remain;
-
-    if(!Base::is_rsp(ev, Cmd::FUNCTION_FLUSH, &ptr, &remain))
-      return;
-
-    switch(error) {
-      case EBADR:
-      case Error::FS_BAD_FILE_HANDLE:
-        smartfd->fd(-1);
-      default:
-        break;
-    }
-    
-    SWC_LOGF(LOG_DEBUG, "flush %s error='%d'", smartfd->to_string().c_str(), error);
-    
-    cb(error, smartfd);
-  }
+  void handle(ConnHandlerPtr, const Event::Ptr& ev) override;
 
   private:
   SmartFd::Ptr         smartfd;
   Callback::FlushCb_t  cb;
+
 };
 
 
 
 }}}}
+
+
+#ifdef SWC_IMPL_SOURCE
+#include "swcdb/fs/Broker/Protocol/req/Flush.cc"
+#endif 
 
 #endif  // swc_fs_Broker_Protocol_req_Flush_h

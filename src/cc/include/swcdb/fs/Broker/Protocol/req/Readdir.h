@@ -18,47 +18,25 @@ class Readdir : public Base {
   DirentList listing;
 
   Readdir(uint32_t timeout, const std::string& name, 
-          const Callback::ReaddirCb_t& cb=0) 
-         : name(name), cb(cb) {
-    SWC_LOGF(LOG_DEBUG, "readdir path='%s'", name.c_str());
+          const Callback::ReaddirCb_t& cb=0);
 
-    cbp = CommBuf::make(Params::ReaddirReq(name));
-    cbp->header.set(Cmd::FUNCTION_READDIR, timeout);
-  }
+  std::promise<void> promise();
 
-  std::promise<void> promise(){
-    std::promise<void>  r_promise;
-    cb = [await=&r_promise](int, const DirentList&){ await->set_value(); };
-    return r_promise;
-  }
-
-  void handle(ConnHandlerPtr, const Event::Ptr& ev) override { 
-
-    const uint8_t *ptr;
-    size_t remain;
-
-    if(!Base::is_rsp(ev, Cmd::FUNCTION_READDIR, &ptr, &remain))
-      return;
-
-    if(!error) {
-      Params::ReaddirRsp params;
-      params.decode(&ptr, &remain);
-      params.get_listing(listing);
-    }
-
-    SWC_LOGF(LOG_DEBUG, "readdir path='%s' error='%d' sz='%lu'",
-               name.c_str(), error, listing.size());
-    
-    cb(error, listing);
-  }
+  void handle(ConnHandlerPtr, const Event::Ptr& ev) override;
 
   private:
   const std::string      name;
   Callback::ReaddirCb_t  cb;
+
 };
 
 
 
 }}}}
+
+
+#ifdef SWC_IMPL_SOURCE
+#include "swcdb/fs/Broker/Protocol/req/Readdir.cc"
+#endif 
 
 #endif  // swc_fs_Broker_Protocol_req_Readdir_h
