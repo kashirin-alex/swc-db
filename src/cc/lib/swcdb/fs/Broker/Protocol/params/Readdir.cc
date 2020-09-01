@@ -38,23 +38,23 @@ void ReaddirRsp::get_listing(DirentList &listing) {
 }
 
 size_t ReaddirRsp::internal_encoded_length() const {
-  size_t length = 4;
+  size_t length = Serialization::encoded_length_vi64(m_listing.size());
   for (const Dirent &entry : m_listing)
     length += entry.encoded_length();
   return length;
 }
 
 void ReaddirRsp::internal_encode(uint8_t** bufp) const {
-  Serialization::encode_i32(bufp, m_listing.size());
+  Serialization::encode_vi64(bufp, m_listing.size());
   for (const Dirent &entry : m_listing)
     entry.encode(bufp);
 }
 
 void ReaddirRsp::internal_decode(const uint8_t** bufp, size_t* remainp) {
-  int32_t count = Serialization::decode_i32(bufp, remainp);
+  size_t count = Serialization::decode_vi64(bufp, remainp);
   m_listing.clear();
   m_listing.resize(count);
-  for (int32_t i=0; i<count; ++i)
+  for (size_t i=0; i<count; ++i)
     m_listing[i].decode(bufp, remainp);
 }
 

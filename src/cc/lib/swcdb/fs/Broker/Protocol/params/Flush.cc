@@ -10,20 +10,20 @@
 namespace SWC { namespace FS { namespace Protocol { namespace Params {
 
 
-FlushReq::FlushReq() {}
+FlushReq::FlushReq(): fd(-1) { }
 
-FlushReq::FlushReq(int32_t fd) : fd(fd) {}
+FlushReq::FlushReq(int32_t fd): fd(fd) { }
 
 size_t FlushReq::internal_encoded_length() const {
-  return 4;
+  return Serialization::encoded_length_vi32(fd);
 }
 
 void FlushReq::internal_encode(uint8_t** bufp) const {
-  Serialization::encode_i32(bufp, fd);
+  Serialization::encode_vi32(bufp, fd);
 }
 
 void FlushReq::internal_decode(const uint8_t** bufp, size_t* remainp) {
-  fd = (int32_t)Serialization::decode_i32(bufp, remainp);
+  fd = Serialization::decode_vi32(bufp, remainp);
 }
 
 

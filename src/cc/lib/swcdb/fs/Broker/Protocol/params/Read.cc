@@ -10,23 +10,24 @@
 namespace SWC { namespace FS { namespace Protocol { namespace Params {
 
 
-ReadReq::ReadReq() {}
+ReadReq::ReadReq(): fd(-1) {}
 
 ReadReq::ReadReq(int32_t fd, uint32_t amount)
                 : fd(fd), amount(amount) {}
 
 size_t ReadReq::internal_encoded_length() const {
-    return 8;
+  return Serialization::encoded_length_vi32(fd)
+       + Serialization::encoded_length_vi32(amount);
 }
 
 void ReadReq::internal_encode(uint8_t** bufp) const {
-  Serialization::encode_i32(bufp, fd);
-  Serialization::encode_i32(bufp, amount);
+  Serialization::encode_vi32(bufp, fd);
+  Serialization::encode_vi32(bufp, amount);
 }
 
 void ReadReq::internal_decode(const uint8_t** bufp, size_t* remainp) {
-  fd = (int32_t)Serialization::decode_i32(bufp, remainp);
-  amount = Serialization::decode_i32(bufp, remainp);
+  fd = Serialization::decode_vi32(bufp, remainp);
+  amount = Serialization::decode_vi32(bufp, remainp);
 }
 
 
@@ -39,15 +40,15 @@ ReadRsp::ReadRsp(uint64_t offset)
 
 
 size_t ReadRsp::internal_encoded_length() const {
-    return 8;
+  return Serialization::encoded_length_vi64(offset);
 }
 
 void ReadRsp::internal_encode(uint8_t** bufp) const {
-  Serialization::encode_i64(bufp, offset);
+  Serialization::encode_vi64(bufp, offset);
 }
 
 void ReadRsp::internal_decode(const uint8_t** bufp, size_t* remainp) {
-  offset = Serialization::decode_i64(bufp, remainp);
+  offset = Serialization::decode_vi64(bufp, remainp);
 }
 
 

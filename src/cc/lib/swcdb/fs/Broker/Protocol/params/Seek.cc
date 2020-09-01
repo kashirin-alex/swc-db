@@ -9,24 +9,24 @@
 
 namespace SWC { namespace FS { namespace Protocol { namespace Params {
 
-SeekReq::SeekReq() {}
+SeekReq::SeekReq(): fd(-1) {}
 
 SeekReq::SeekReq(int32_t fd, size_t offset)
                 : fd(fd), offset(offset) {}
 
-
 size_t SeekReq::internal_encoded_length() const {
-  return 12;
+  return Serialization::encoded_length_vi32(fd)
+       + Serialization::encoded_length_vi64(offset);
 }
 
 void SeekReq::internal_encode(uint8_t** bufp) const {
-  Serialization::encode_i32(bufp, fd);
-  Serialization::encode_i64(bufp, offset);
+  Serialization::encode_vi32(bufp, fd);
+  Serialization::encode_vi64(bufp, offset);
 }
 
 void SeekReq::internal_decode(const uint8_t** bufp, size_t* remainp) {
-  fd = (int32_t)Serialization::decode_i32(bufp, remainp);
-  offset = Serialization::decode_i64(bufp, remainp);
+  fd = Serialization::decode_vi32(bufp, remainp);
+  offset = Serialization::decode_vi64(bufp, remainp);
 }
 
 
@@ -36,15 +36,15 @@ SeekRsp::SeekRsp() {}
 SeekRsp::SeekRsp(size_t offset) : offset(offset) {}
 
 size_t SeekRsp::internal_encoded_length() const {
-  return 8;
+  return Serialization::encoded_length_vi64(offset);
 }
 
 void SeekRsp::internal_encode(uint8_t** bufp) const {
-  Serialization::encode_i64(bufp, offset);
+  Serialization::encode_vi64(bufp, offset);
 }
 
 void SeekRsp::internal_decode(const uint8_t** bufp, size_t* remainp) {
-  offset = Serialization::decode_i64(bufp, remainp);
+  offset = Serialization::decode_vi64(bufp, remainp);
 }
 
 

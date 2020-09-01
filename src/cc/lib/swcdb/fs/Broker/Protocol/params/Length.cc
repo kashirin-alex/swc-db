@@ -32,15 +32,15 @@ LengthRsp::LengthRsp() {}
 LengthRsp::LengthRsp(size_t length) : length(length) {}
 
 size_t LengthRsp::internal_encoded_length() const {
-  return 8;
+  return Serialization::encoded_length_vi64(length);
 }
 
 void LengthRsp::internal_encode(uint8_t** bufp) const {
-  Serialization::encode_i64(bufp, length);
+  Serialization::encode_vi64(bufp, length);
 }
 
 void LengthRsp::internal_decode(const uint8_t** bufp, size_t* remainp) {
-  length = Serialization::decode_i64(bufp, remainp);
+  length = Serialization::decode_vi64(bufp, remainp);
 }
 
 
