@@ -161,11 +161,11 @@ compare(const Types::KeySeq seq, const Cell::Key& key, const Cell::Key& other,
 
     case Types::KeySeq::FC_LEXIC:
       return compare<Types::KeySeq::FC_LEXIC>(
-        key, other, max==-1? key.count : (uint24_t)max, empty_ok, empty_eq);
+        key, other, max==-1? other.count : (uint24_t)max, empty_ok, empty_eq);
 
     case Types::KeySeq::FC_VOLUME:
       return compare<Types::KeySeq::FC_VOLUME>(
-        key, other, max==-1? key.count : (uint24_t)max, empty_ok, empty_eq);
+        key, other, max==-1? other.count : (uint24_t)max, empty_ok, empty_eq);
 
     default:
       SWC_ASSERT(seq != Types::KeySeq::UNKNOWN);

@@ -26,6 +26,8 @@ class RangeLocateScan : public ReqScan {
                     range_begin(range_begin, false) {
     auto c = range->known_interval_count();
     spec.range_begin.remove(c ? c : (uint24_t)1, true);
+    // SWC_PRINT << "---------------------" << " c="<< c 
+    //  << " spec.range_begin: " << spec.range_begin.to_string() << SWC_PRINT_CLOSE;
   }
 
   virtual ~RangeLocateScan() { }
