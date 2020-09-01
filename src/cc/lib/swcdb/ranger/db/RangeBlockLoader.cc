@@ -137,6 +137,7 @@ void BlockLoader::loaded_frag(CommitLog::Fragment::Ptr frag) {
 
 void BlockLoader::load_log_cells() { 
   bool more;
+  bool loaded;
   int err;
   for(CommitLog::Fragment::Ptr frag; ; ) {
     {
@@ -148,7 +149,16 @@ void BlockLoader::load_log_cells() {
       frag = m_fragments.front();
       m_fragments.pop();
       more = m_logs == CommitLog::Fragments::MAX_PRELOAD;
-      --m_logs;
+      if((loaded = frag->loaded()))
+        --m_logs;
+    }
+    if(!loaded) {
+      // temp-check, that should not be happening
+      SWC_LOGF(LOG_WARN, "Fragment not-loaded, load-again %s", 
+                frag->to_string().c_str());
+      frag->load([this, frag](){ loaded_frag(frag); });
+      frag->processing_decrement();
+      continue;
     }
     frag->load_cells(err = Error::OK, block);
     if(more && check_log())
