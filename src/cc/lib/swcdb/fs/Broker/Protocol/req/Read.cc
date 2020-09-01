@@ -43,7 +43,13 @@ void Read::handle(ConnHandlerPtr, const Event::Ptr& ev) {
     case Error::OK:
     case Error::FS_EOF: {
       Params::ReadRsp params;
-      params.decode(&ptr, &remain);
+      try {
+        params.decode(&ptr, &remain);
+      } catch(...) {
+        const Exception& e = SWC_CURRENT_EXCEPTION("");
+        error = e.code();
+        break;
+      }
       amount = ev->data_ext.size;
       smartfd->pos(params.offset + amount);
       if(amount) {

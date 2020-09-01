@@ -34,9 +34,15 @@ void Readdir::handle(ConnHandlerPtr, const Event::Ptr& ev) {
     return;
 
   if(!error) {
-    Params::ReaddirRsp params;
-    params.decode(&ptr, &remain);
-    params.get_listing(listing);
+    try {
+      Params::ReaddirRsp params;
+      params.decode(&ptr, &remain);
+      params.get_listing(listing);
+
+    } catch(...) {
+      const Exception& e = SWC_CURRENT_EXCEPTION("");
+      error = e.code();
+    }
   }
 
   SWC_LOGF(LOG_DEBUG, "readdir path='%s' error='%d' sz='%lu'",

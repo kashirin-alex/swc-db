@@ -34,9 +34,15 @@ void Length::handle(ConnHandlerPtr, const Event::Ptr& ev) {
     return;
 
   if(!error) {
-    Params::LengthRsp params;
-    params.decode(&ptr, &remain);
-    length = params.length;
+    try {
+      Params::LengthRsp params;
+      params.decode(&ptr, &remain);
+      length = params.length;
+
+    } catch(...) {
+      const Exception& e = SWC_CURRENT_EXCEPTION("");
+      error = e.code();
+    }
   }
 
   SWC_LOGF(LOG_DEBUG, "length path='%s' error='%d' length='%lu'",

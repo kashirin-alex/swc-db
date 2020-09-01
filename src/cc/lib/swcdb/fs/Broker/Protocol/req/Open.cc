@@ -35,11 +35,17 @@ void Open::handle(ConnHandlerPtr, const Event::Ptr& ev) {
     return;
 
   if(!error) {
-    Params::OpenRsp params;
-    params.decode(&ptr, &remain);
-    smartfd->fd(params.fd);
-    smartfd->pos(0);
-    fs->fd_open_incr();
+    try {
+      Params::OpenRsp params;
+      params.decode(&ptr, &remain);
+      smartfd->fd(params.fd);
+      smartfd->pos(0);
+      fs->fd_open_incr();
+
+    } catch(...) {
+      const Exception& e = SWC_CURRENT_EXCEPTION("");
+      error = e.code();
+    }
   }
 
   SWC_LOGF(LOG_DEBUG, "open %s error='%d' fds-open=%lu", 

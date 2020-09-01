@@ -37,7 +37,13 @@ void Seek::handle(ConnHandlerPtr, const Event::Ptr& ev) {
   switch(error) {
     case Error::OK: {
       Params::SeekRsp params;
-      params.decode(&ptr, &remain);
+      try {
+        params.decode(&ptr, &remain);
+      } catch(...) {
+        const Exception& e = SWC_CURRENT_EXCEPTION("");
+        error = e.code();
+        break;
+      }
       smartfd->pos(params.offset);
       break;
     }

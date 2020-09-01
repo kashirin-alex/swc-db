@@ -34,9 +34,15 @@ void Exists::handle(ConnHandlerPtr, const Event::Ptr& ev) {
     return;
 
   if(!error) {
-    Params::ExistsRsp params;
-    params.decode(&ptr, &remain);
-    state = params.exists;
+    try {
+      Params::ExistsRsp params;
+      params.decode(&ptr, &remain);
+      state = params.exists;
+
+    } catch(...) {
+      const Exception& e = SWC_CURRENT_EXCEPTION("");
+      error = e.code();
+    }
   } else {
     state = false;
   }

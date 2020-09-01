@@ -42,7 +42,13 @@ void Append::handle(ConnHandlerPtr, const Event::Ptr& ev) {
   switch(error) {
     case Error::OK: {
       Params::AppendRsp params;
-      params.decode(&ptr, &remain);
+      try {
+        params.decode(&ptr, &remain);
+      } catch(...) {
+        const Exception& e = SWC_CURRENT_EXCEPTION("");
+        error = e.code();
+        break;
+      }
       amount = params.amount;
       smartfd->pos(params.offset + amount);
       break;
