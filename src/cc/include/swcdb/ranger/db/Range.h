@@ -120,6 +120,8 @@ class Range final : public std::enable_shared_from_this<Range> {
 
   bool deleted();
 
+  void state(int& err) const;
+
   void add(ReqAdd* req);
 
   void scan(const ReqScan::Ptr& req);

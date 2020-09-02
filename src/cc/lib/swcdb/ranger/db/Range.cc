@@ -136,6 +136,14 @@ bool Range::deleted() {
   return m_state == State::DELETED;
 }
 
+void Range::state(int& err) const {
+  if(m_state != State::LOADED) {
+    err = m_state == State::DELETED 
+      ? Error::COLUMN_MARKED_REMOVED
+      : Error::RGR_NOT_LOADED_RANGE;
+  }
+}
+
 void Range::add(Range::ReqAdd* req) {
   if(m_q_adding.push_and_is_1st(req))
     Env::IoCtx::post([ptr=shared_from_this()](){ ptr->run_add_queue(); } );
@@ -148,7 +156,8 @@ void Range::scan(const ReqScan::Ptr& req) {
     wait(COMPACT_APPLYING);
 
     blocks.processing_increment();
-    int err = is_loaded() ? Error::OK : Error::RGR_NOT_LOADED_RANGE;
+    int err = Error::OK;
+    state(err);
     ReqScan::Ptr qreq;
     do {
       if(!(qreq = std::move(m_q_scans.front()))->expired()) {
