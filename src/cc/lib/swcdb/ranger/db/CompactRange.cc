@@ -203,6 +203,17 @@ void CompactRange::initial_commitlog_done(CompactRange::Ptr ptr,
 
   range->blocks.commitlog.get(fragments_old); // fragments for removal
 
+  range->blocks.cellstores.get_key_end(m_required_key_last);
+  for(auto& frag : fragments_old) {
+    if(DB::KeySeq::compare(range->cfg->key_seq, 
+        m_required_key_last, frag->interval.key_end) == Condition::GT)
+    m_required_key_last.copy(frag->interval.key_end);
+  }
+  SWC_LOGF(LOG_INFO,
+    "COMPACT-PROGRESS %lu/%lu early-split possible from scan offset %s",
+      range->cfg->cid, range->rid, m_required_key_last.to_string().c_str()
+  );
+
   range->compacting(state_default); // range scan &/ add can continue
   req_ts = Time::now_ns();
   progress_check_timer();
@@ -266,6 +277,16 @@ void CompactRange::response(int& err) {
   if(in_block) {
     m_inblock = new InBlock(range->cfg->key_seq, blk_size, in_block);
     m_inblock->set_offset(spec);
+
+    if(can_split_at() > 0 && DB::KeySeq::compare(range->cfg->key_seq, 
+        m_required_key_last, spec.offset_key) == Condition::GT) {
+      spec.key_start.set(spec.offset_key, Condition::EQ);
+
+      SWC_LOGF(LOG_INFO,
+        "COMPACT-PROGRESS %lu/%lu finishing early-split scan offset %s",
+        range->cfg->cid, range->rid, spec.offset_key.to_string().c_str()
+      );
+    }
   }
 
   if(m_q_intval.push_and_is_1st(in_block))
@@ -527,24 +548,26 @@ ssize_t CompactRange::can_split_at() {
   if(cellstores.size() < (max < 2 ? 2 : max))
     return 0;
 
+  auto it = cellstores.begin() + 1;
+  if((*it)->size < (cs_size/100) * range->cfg->compact_percent())
+    return -2;
+
   size_t at = cellstores.size() / 2;
 
   split_option: 
-    auto it = cellstores.begin() + at;
+    it = cellstores.begin() + at;
     do {
       if(!(*it)->interval.key_begin.equal((*(it-1))->interval.key_end))
         break;
     } while(++it < cellstores.end());
 
-  if(it == cellstores.end() && at > 1) {
-    at = 1; 
-    goto split_option;
-  }
-
-  if(it == cellstores.end())
+  if(it == cellstores.end()) {
+    if(at > 1) {
+      at = 1;
+      goto split_option;
+    }
     return -1;
-  if((*it)->size < (cs_size/100) * range->cfg->compact_percent())
-    return -2;
+  }
   return it - cellstores.begin();
 }
 
@@ -579,10 +602,10 @@ void CompactRange::finalize() {
       m_inblock->header.interval.key_begin, 
       m_inblock->header.interval.key_end
     );
-    if(header.interval.key_begin.empty())
-      header.is_any |= Block::Header::ANY_BEGIN;
-    if(header.interval.key_end.empty())
-      header.is_any |= Block::Header::ANY_END;
+    if(m_inblock->header.interval.key_begin.empty())
+      m_inblock->header.is_any |= CellStore::Block::Header::ANY_BEGIN;
+    if(m_inblock->header.interval.key_end.empty())
+      m_inblock->header.is_any |= CellStore::Block::Header::ANY_END;
     cs_writer->block_encode(err, m_inblock->cells, m_inblock->header);
   }
   if(err)
