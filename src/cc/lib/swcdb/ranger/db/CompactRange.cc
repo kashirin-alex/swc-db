@@ -464,7 +464,11 @@ csid_t CompactRange::create_cs(int& err) {
       return 0;
   }
 
-  csid_t csid = cellstores.size()+1;
+  csid_t csid = 1;
+  {
+    Mutex::scope lock(m_mutex);
+    csid += cellstores.size();
+  }
   cs_writer = std::make_shared<CellStore::Write>(
     csid, 
     range->get_path_cs_on(Range::CELLSTORES_TMP_DIR, csid), 
@@ -504,14 +508,44 @@ void CompactRange::write_cells(int& err, InBlock* in_block) {
 }
 
 void CompactRange::add_cs(int& err) {
-  if(cellstores.empty())
-    cs_writer->prev_key_end.copy(range->prev_range_end);
-  else
-    cs_writer->prev_key_end.copy(cellstores.back()->interval.key_end);
-
+  {
+    Mutex::scope lock(m_mutex);
+    if(cellstores.empty())
+      cs_writer->prev_key_end.copy(range->prev_range_end);
+    else
+      cs_writer->prev_key_end.copy(cellstores.back()->interval.key_end);
+    cellstores.push_back(cs_writer);
+  }
   cs_writer->finalize(err);
-  cellstores.push_back(cs_writer);
   cs_writer = nullptr;
+}
+
+ssize_t CompactRange::can_split_at() {
+  auto max = range->cfg->cellstore_max();
+
+  Mutex::scope lock(m_mutex);
+  if(cellstores.size() < (max < 2 ? 2 : max))
+    return 0;
+
+  size_t at = cellstores.size() / 2;
+
+  split_option: 
+    auto it = cellstores.begin() + at;
+    do {
+      if(!(*it)->interval.key_begin.equal((*(it-1))->interval.key_end))
+        break;
+    } while(++it < cellstores.end());
+
+  if(it == cellstores.end() && at > 1) {
+    at = 1; 
+    goto split_option;
+  }
+
+  if(it == cellstores.end())
+    return -1;
+  if((*it)->size < (cs_size/100) * range->cfg->compact_percent())
+    return -2;
+  return it - cellstores.begin();
 }
 
 void CompactRange::finalize() {
@@ -566,36 +600,21 @@ void CompactRange::finalize() {
   range->compacting(Range::COMPACT_APPLYING);
   range->blocks.wait_processing();
 
-  bool ok;
-  auto max = range->cfg->cellstore_max();
-  if(cellstores.size() > 1 && cellstores.size() >= max) {
-    auto c = cellstores.size()/2;
-    if(c > 1)
-      --c;
-    split_option: 
-      auto it = cellstores.begin()+c;
-      do {
-        if(!(*it)->interval.key_begin.equal((*(it-1))->interval.key_end))
-          break;
-      } while(++it < cellstores.end());
+  ssize_t split_at = can_split_at();
+  if(split_at == -1) {
+    SWC_LOGF(LOG_WARN,
+      "COMPACT-SPLIT %lu/%lu fail(versions-over-cs) cs-count=%lu",
+      range->cfg->cid, range->rid, cellstores.size());
 
-    if(it == cellstores.end() && c > 1) {
-      c = 1; 
-      goto split_option;
-    }
-
-    if((ok = it != cellstores.end()) && 
-       (*it)->size >= (cs_size/100) * range->cfg->compact_percent()) {
-      mngr_create_range(it-cellstores.begin());
-      return;
-    }
-    if(!ok)
-      SWC_LOGF(LOG_WARN, 
-        "COMPACT-SPLIT %lu/%lu fail(versions-over-cs) cs-count=%lu",
-        range->cfg->cid, range->rid, cellstores.size());
+  } else if(split_at == -2) {
+    SWC_LOGF(LOG_DEBUG,
+      "COMPACT-SPLIT %lu/%lu skipping(last-cs-small) cs-count=%lu",
+      range->cfg->cid, range->rid, cellstores.size());
   }
-  
-  apply_new(empty_cs);
+
+  split_at > 0
+    ? mngr_create_range(split_at) 
+    : apply_new(empty_cs);
 
 }
 

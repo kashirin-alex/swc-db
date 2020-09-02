@@ -69,6 +69,8 @@ class CompactRange final : public ReqScan {
 
   void add_cs(int& err);
 
+  ssize_t can_split_at();
+
   void finalize();
 
   void mngr_create_range(uint32_t split_at);
