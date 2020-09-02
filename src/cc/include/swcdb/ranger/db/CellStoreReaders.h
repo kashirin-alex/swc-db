@@ -67,6 +67,8 @@ class Readers final : private std::vector<Read::Ptr> {
 
   void get_prev_key_end(uint32_t idx, DB::Cell::Key& key) const;
 
+  void get_key_end(DB::Cell::Key& key) const;
+
   bool need_compaction(size_t cs_sz, size_t blk_size) const;
 
   size_t encoded_length() const;

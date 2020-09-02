@@ -130,6 +130,10 @@ void Readers::get_prev_key_end(uint32_t idx, DB::Cell::Key& key) const {
   key.copy((*(begin()+idx))->prev_key_end);
 }
 
+void Readers::get_key_end(DB::Cell::Key& key) const {
+  return key.copy(back()->key_end);
+}
+
 bool Readers::need_compaction(size_t cs_sz, size_t blk_size) const {
   size_t  sz;
   size_t  sz_enc;
