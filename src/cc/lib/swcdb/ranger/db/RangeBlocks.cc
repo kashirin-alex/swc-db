@@ -127,10 +127,12 @@ void Blocks::scan(ReqScan::Ptr req, Block::Ptr blk_ptr) {
   }    
 
   int err = Error::OK;
-  bool support = m_mutex.lock();
-  if(!m_block)
-    init_blocks(err);
-  m_mutex.unlock(support);
+  range->state(err);
+  if(!err) {
+    Mutex::scope lock(m_mutex);
+    if(!m_block)
+      init_blocks(err);
+  }
 
   if(err) {
     processing_decrement();
@@ -151,7 +153,7 @@ void Blocks::scan(ReqScan::Ptr req, Block::Ptr blk_ptr) {
       if(blk_ptr && RangerEnv::res().need_ram(need * (req->readahead + 1)))
         blk_ptr->release();
 
-      support = m_mutex.lock();
+      bool support = m_mutex.lock();
       blk_ptr = blk_ptr 
         ? blk_ptr->next 
         : (req->spec.offset_key.empty()
@@ -192,6 +194,7 @@ void Blocks::scan(ReqScan::Ptr req, Block::Ptr blk_ptr) {
         return;
 
       case Block::ScanState::QUEUED: {
+        bool support;
         for(size_t n=0; 
             n < req->readahead && 
             !RangerEnv::res().need_ram(need * (++n))
