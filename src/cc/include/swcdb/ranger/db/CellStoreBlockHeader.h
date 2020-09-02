@@ -13,10 +13,14 @@ namespace SWC { namespace Ranger { namespace CellStore { namespace Block {
 
 
 struct Header final {
-  static const uint8_t SIZE = 21;
+  static const uint8_t SIZE = 21; // not-idx
+
+  static const uint8_t ANY_BEGIN  = 0x01;
+  static const uint8_t ANY_END    = 0x2;
 
   uint64_t             offset_data;
   DB::Cells::Interval  interval;
+  uint8_t              is_any;
 
   Types::Encoding      encoder;
   uint32_t             size_plain;

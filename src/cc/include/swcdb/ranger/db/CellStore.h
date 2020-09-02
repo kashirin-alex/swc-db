@@ -55,6 +55,7 @@ class Read final {
 
   static void load_blocks_index(int& err, FS::SmartFd::Ptr& smartfd, 
                                 DB::Cell::Key& prev_key_end,
+                                DB::Cell::Key& key_end,
                                 DB::Cells::Interval& interval, 
                                 std::vector<Block::Read::Ptr>& blocks, 
                                 bool chk_base=false);
@@ -63,11 +64,13 @@ class Read final {
   
   const csid_t                        csid;
   const DB::Cell::Key                 prev_key_end;
+  const DB::Cell::Key                 key_end;
   const DB::Cells::Interval           interval;
   const std::vector<Block::Read::Ptr> blocks;
 
   explicit Read(const csid_t csid,
                 const DB::Cell::Key& prev_key_end,
+                const DB::Cell::Key& key_end,
                 const DB::Cells::Interval& interval, 
                 const std::vector<Block::Read::Ptr>& blocks,
                 const FS::SmartFd::Ptr& smartfd);

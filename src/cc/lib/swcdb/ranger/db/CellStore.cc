@@ -16,11 +16,13 @@ Read::Ptr Read::make(int& err, const csid_t csid,
                      const DB::Cells::Interval& interval, bool chk_base) {
   auto smartfd = FS::SmartFd::make_ptr(range->get_path_cs(csid), 0);
   DB::Cell::Key prev_key_end;
+  DB::Cell::Key key_end;
   DB::Cells::Interval interval_by_blks(range->cfg->key_seq);
   std::vector<Block::Read::Ptr> blocks;
   try {
     load_blocks_index(
-      err, smartfd, prev_key_end, interval_by_blks, blocks, chk_base);
+      err, smartfd, prev_key_end, key_end, interval_by_blks, 
+      blocks, chk_base);
   } catch(...) {
     const Exception& e = SWC_CURRENT_EXCEPTION("");
     SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
@@ -35,6 +37,7 @@ Read::Ptr Read::make(int& err, const csid_t csid,
   return new Read(
     csid, 
     prev_key_end,
+    key_end,
     interval_by_blks.was_set ? interval_by_blks : interval, 
     blocks, 
     smartfd
@@ -107,6 +110,7 @@ bool Read::load_trailer(int& err, FS::SmartFd::Ptr& smartfd,
 
 void Read::load_blocks_index(int& err, FS::SmartFd::Ptr& smartfd, 
                               DB::Cell::Key& prev_key_end,
+                              DB::Cell::Key& key_end,
                               DB::Cells::Interval& interval, 
                               std::vector<Block::Read::Ptr>& blocks, 
                               bool chk_base) {
@@ -208,10 +212,17 @@ void Read::load_blocks_index(int& err, FS::SmartFd::Ptr& smartfd,
         prev_key_end.decode(&ptr, &remain, true);
       blks_count = Serialization::decode_vi32(&ptr, &remain);
 
-      for(uint32_t blk_i = 0; blk_i < blks_count; ++blk_i) {
+      for(uint32_t blk_i = 0; blk_i < blks_count; ) {
         header.decode_idx(&ptr, &remain);
-        interval.expand(header.interval);
         interval.align(header.interval);
+        if(++blk_i == blks_count && i + 1 == blks_idx_count)
+          key_end.copy(header.interval.key_end);
+      
+        if(header.is_any & Block::Header::ANY_BEGIN)
+          header.interval.key_begin.free();
+        if(header.is_any & Block::Header::ANY_END)
+          header.interval.key_end.free();
+        interval.expand(header.interval);
         blocks.push_back(new Block::Read(cell_revs, header));
       }
 
@@ -231,11 +242,13 @@ void Read::load_blocks_index(int& err, FS::SmartFd::Ptr& smartfd,
 
 Read::Read(const csid_t csid,
            const DB::Cell::Key& prev_key_end,
+           const DB::Cell::Key& key_end,
            const DB::Cells::Interval& interval, 
            const std::vector<Block::Read::Ptr>& blocks,
            const FS::SmartFd::Ptr& smartfd) 
           : csid(csid), 
             prev_key_end(prev_key_end), 
+            key_end(key_end),
             interval(interval), 
             blocks(blocks), 
             m_smartfd(smartfd), m_q_running(false) {       
@@ -633,6 +646,11 @@ Read::Ptr create_initial(int& err, const RangePtr& range) {
 
   Block::Header header(range->cfg->key_seq);
   range->get_interval(header.interval);
+
+  if(header.interval.key_begin.empty())
+    header.is_any |= Block::Header::ANY_BEGIN;
+  if(header.interval.key_end.empty())
+    header.is_any |= Block::Header::ANY_END;
 
   DynamicBuffer cells_buff;
   writer.block_encode(err, cells_buff, header);

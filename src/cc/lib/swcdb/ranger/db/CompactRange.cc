@@ -67,7 +67,7 @@ struct CompactRange::InBlock {
   void finalize_interval(bool any_begin, bool any_end) {    
     const uint8_t* ptr = cells.base;
     size_t remain = cells.fill();
-    bool set_begin = !any_begin;
+    bool set_begin = true;
 
     DB::Cells::Cell cell;
     while(remain) {
@@ -80,8 +80,12 @@ struct CompactRange::InBlock {
         set_begin = false;
       }
     }
-    if(!any_end)
-      header.interval.expand_end(cell);
+    header.interval.expand_end(cell);
+
+    if(any_begin)
+      header.is_any |= CellStore::Block::Header::ANY_BEGIN;
+    if(any_end)
+      header.is_any |= CellStore::Block::Header::ANY_END;
   }
 
   void finalize_encode(Types::Encoding encoding) {
@@ -483,7 +487,7 @@ csid_t CompactRange::create_cs(int& err) {
 void CompactRange::write_cells(int& err, InBlock* in_block) {
   if(cs_writer == nullptr) {
     if(create_cs(err) == 1 && range->is_any_begin())
-      in_block->header.interval.key_begin.free();
+      in_block->header.is_any |= CellStore::Block::Header::ANY_BEGIN;
     if(err)
       return;
   }
@@ -541,6 +545,10 @@ void CompactRange::finalize() {
       m_inblock->header.interval.key_begin, 
       m_inblock->header.interval.key_end
     );
+    if(header.interval.key_begin.empty())
+      header.is_any |= Block::Header::ANY_BEGIN;
+    if(header.interval.key_end.empty())
+      header.is_any |= Block::Header::ANY_END;
     cs_writer->block_encode(err, m_inblock->cells, m_inblock->header);
   }
   if(err)

@@ -14,6 +14,7 @@ namespace SWC { namespace Ranger { namespace CellStore { namespace Block {
 Header::Header(Types::KeySeq key_seq) 
               : offset_data(0), 
                 interval(key_seq), 
+                is_any(0),
                 encoder(Types::Encoding::UNKNOWN),
                 size_plain(0),
                 size_enc(0),
@@ -24,6 +25,7 @@ Header::Header(Types::KeySeq key_seq)
 Header::Header(const Header& other) 
               : offset_data(other.offset_data),
                 interval(other.interval),
+                is_any(other.is_any),
                 encoder(other.encoder),
                 size_plain(other.size_plain),
                 size_enc(other.size_enc),
@@ -58,7 +60,7 @@ void Header::decode(const uint8_t** bufp, size_t* remainp) {
 size_t Header::encoded_length_idx() const {
   return Serialization::encoded_length_vi64(offset_data) 
         + interval.encoded_length()
-        + 1
+        + 2
         + Serialization::encoded_length_vi32(size_enc)
         + Serialization::encoded_length_vi32(size_plain)
         + Serialization::encoded_length_vi32(cells_count)
@@ -68,6 +70,7 @@ size_t Header::encoded_length_idx() const {
 void Header::encode_idx(uint8_t** bufp) const {
   Serialization::encode_vi64(bufp, offset_data);
   interval.encode(bufp);
+  Serialization::encode_i8(bufp, is_any);
   Serialization::encode_i8(bufp, (uint8_t)encoder);
   Serialization::encode_vi32(bufp, size_enc);
   Serialization::encode_vi32(bufp, size_plain);
@@ -78,6 +81,7 @@ void Header::encode_idx(uint8_t** bufp) const {
 void Header::decode_idx(const uint8_t** bufp, size_t* remainp) {
   offset_data = Serialization::decode_vi64(bufp, remainp);
   interval.decode(bufp, remainp, false);
+  is_any = Serialization::decode_i8(bufp, remainp);
   encoder = (Types::Encoding)Serialization::decode_i8(bufp, remainp);
   size_enc = Serialization::decode_vi32(bufp, remainp);
   size_plain = Serialization::decode_vi32(bufp, remainp);
@@ -99,6 +103,8 @@ std::string Header::to_string() const {
   s.append(std::to_string(cells_count));
   s.append(" checksum=");
   s.append(std::to_string(checksum_data));
+  s.append(" is_any=");
+  s.append(std::to_string((int)is_any));
   s.append(" ");
   s.append(interval.to_string());
   return s;
