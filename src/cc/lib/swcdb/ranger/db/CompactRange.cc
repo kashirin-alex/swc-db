@@ -228,7 +228,11 @@ bool CompactRange::with_block() {
 bool CompactRange::selector(const Types::KeySeq key_seq, 
                             const DB::Cells::Cell& cell, bool&) {
   return spec.is_matching(
-    key_seq, cell.key, cell.timestamp, cell.control & DB::Cells::TS_DESC);
+    key_seq, cell.key, cell.timestamp, cell.control & DB::Cells::TS_DESC)
+    &&
+    (spec.key_start.empty() ||
+      DB::KeySeq::is_matching(key_seq, spec.key_start, cell.key))
+    ;
 }
 
 bool CompactRange::reached_limits() {
