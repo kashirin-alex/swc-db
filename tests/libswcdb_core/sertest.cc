@@ -299,7 +299,7 @@ void test_bad_vi24() {
     decode_vi24(&p, &len);
   }
   catch (Exception &e) {
-    SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
+    SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
     SWC_ASSERT(e.code() == Error::SERIALIZATION_INPUT_OVERRUN);
   }
 }
@@ -312,7 +312,7 @@ void test_bad_vi32() {
     decode_vi32(&p, &len);
   }
   catch (Exception &e) {
-    SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
+    SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
     SWC_ASSERT(e.code() == Error::SERIALIZATION_INPUT_OVERRUN);
   }
 }
@@ -326,7 +326,7 @@ void test_bad_vi64() {
     decode_vi64(&p, &len);
   }
   catch (Exception &e) {
-    SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
+    SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
     SWC_ASSERT(e.code() == Error::SERIALIZATION_INPUT_OVERRUN);
   }
 }
@@ -340,7 +340,7 @@ void test_bad_bytes_string() {
     decode_bytes_string(&p, &len);
   }
   catch (Exception &e) {
-    SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
+    SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
     SWC_ASSERT(e.code() == Error::SERIALIZATION_INPUT_OVERRUN);
   }
 }
@@ -368,8 +368,8 @@ int main() {
   try {
     test_ser();
   }
-  catch (Exception &e) {
-    SWC_LOG_OUT(LOG_FATAL) << e << SWC_LOG_OUT_END;
+  catch (...) {
+    SWC_LOG_OUT(LOG_FATAL, SWC_LOG_OSTREAM << SWC_CURRENT_EXCEPTION(""); );
     return 1;
   }
   return 0;

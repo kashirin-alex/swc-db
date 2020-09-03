@@ -53,8 +53,9 @@ namespace SWC {
 
     } catch(...) {
       const Exception& e = SWC_CURRENT_EXCEPTION("");
-      SWC_LOG_OUT(LOG_WARN) << "CONFIG_BAD_CFG_FILE " << fname << ": " 
-        << e << SWC_LOG_OUT_END;
+      SWC_LOG_OUT(LOG_WARN, SWC_LOG_OSTREAM 
+        << "CONFIG_BAD_CFG_FILE " << fname << ": " << e;
+      );
     }
   }
 

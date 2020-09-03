@@ -31,7 +31,7 @@ void range_locate(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
 
   } catch(...) {
     const Exception& e = SWC_CURRENT_EXCEPTION("");
-    SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
+    SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
     err = e.code();
   }
   
@@ -40,9 +40,8 @@ void range_locate(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     if(err) {
       Protocol::Rgr::Params::RangeLocateRsp rsp_params(err);
       
-      SWC_LOG_OUT(LOG_DEBUG) 
-        << rsp_params.to_string() << " " << params.to_string() 
-        << SWC_LOG_OUT_END;
+      SWC_LOG_OUT(LOG_DEBUG, SWC_LOG_OSTREAM 
+        << rsp_params.to_string() << " " << params.to_string(); );
 
       auto cbp = CommBuf::make(rsp_params);
       cbp->header.initialize_from_request_header(ev->header);

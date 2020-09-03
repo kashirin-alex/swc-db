@@ -180,7 +180,7 @@ std::string ConnHandler::to_string() {
     s.append(")");
   } catch(...) {
     const Exception& e = SWC_CURRENT_EXCEPTION("");
-    SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
+    //SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
     s.append(e.message());
   }
   s.append(" local=");
@@ -191,7 +191,7 @@ std::string ConnHandler::to_string() {
     s.append(")");
   } catch(...) {
     const Exception& e = SWC_CURRENT_EXCEPTION("");
-    SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
+    //SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
     s.append(e.message());
   }
   return s;

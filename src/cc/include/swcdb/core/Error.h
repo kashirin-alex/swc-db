@@ -244,8 +244,8 @@ try {
 
 // LOG HELPERS
 #define SWC_LOG_CURRENT_EXCEPTION(_s_) \
-  SWC_LOG_OUT(::SWC::LOG_ERROR) << SWC_CURRENT_EXCEPTION(_s_) \
-                                << SWC_LOG_OUT_END
+  SWC_LOG_OUT(::SWC::LOG_ERROR, \
+    SWC_LOG_OSTREAM << SWC_CURRENT_EXCEPTION(_s_); );
 
 
 // TRY HELPERS

@@ -38,7 +38,7 @@ class MngrColumnGet : public client::ConnQueue::ReqBase {
 
       } catch(...) {
         const Exception& e = SWC_CURRENT_EXCEPTION("");
-        SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
+        SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
         err = e.code();
       }
     }

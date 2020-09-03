@@ -630,10 +630,11 @@ void Rangers::_changes(const RangerList& hosts, bool sync_all) {
     );
   }
 
-  SWC_LOG_OUT(LOG_INFO) << "Rangers::changes:\n";
-  for(auto& h : hosts)
-    std::cout << " " << h->to_string() << "\n";
-  std::cout << SWC_LOG_OUT_END;
+  SWC_LOG_OUT(LOG_INFO, SWC_LOG_OSTREAM 
+    << " Rangers::changes:\n";
+    for(auto& h : hosts)
+      SWC_LOG_OSTREAM << " " << h->to_string() << "\n";
+  );
 }
 
 

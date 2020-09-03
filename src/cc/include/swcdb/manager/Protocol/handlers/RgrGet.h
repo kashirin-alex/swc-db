@@ -64,15 +64,14 @@ void rgr_get(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
 
   } catch(...) {
     const Exception& e = SWC_CURRENT_EXCEPTION("");
-    SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
+    SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
     rsp_params.err = e.code();
   }
   
   send_response:
 
-    SWC_LOG_OUT(LOG_DEBUG) 
-      << params.to_string() << " " << rsp_params.to_string() 
-      << SWC_LOG_OUT_END;
+    SWC_LOG_OUT(LOG_DEBUG, SWC_LOG_OSTREAM 
+      << rsp_params.to_string() << " " << params.to_string() ; );
 
     try {
       auto cbp = CommBuf::make(rsp_params);

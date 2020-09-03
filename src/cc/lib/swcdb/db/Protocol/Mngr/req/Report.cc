@@ -101,7 +101,7 @@ void ClusterStatus::handle(ConnHandlerPtr, const Event::Ptr& ev) {
 
     } catch(...) {
       const Exception& e = SWC_CURRENT_EXCEPTION("");
-      SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
+      SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
       err = e.code();
     }
   }
@@ -174,7 +174,7 @@ void ColumnStatus::handle(ConnHandlerPtr, const Event::Ptr& ev) {
 
     } catch(...) {
       const Exception& e = SWC_CURRENT_EXCEPTION("");
-      SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
+      SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
       err = e.code();
     }
   }
@@ -244,7 +244,7 @@ void RangersStatus::handle(ConnHandlerPtr, const Event::Ptr& ev) {
 
     } catch(...) {
       const Exception& e = SWC_CURRENT_EXCEPTION("");
-      SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
+      SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
       err = e.code();
     }
   }
@@ -314,7 +314,7 @@ void ManagersStatus::handle(ConnHandlerPtr, const Event::Ptr& ev) {
 
     } catch(...) {
       const Exception& e = SWC_CURRENT_EXCEPTION("");
-      SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
+      SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
       err = e.code();
     }
   }

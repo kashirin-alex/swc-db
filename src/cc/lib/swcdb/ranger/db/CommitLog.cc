@@ -450,9 +450,9 @@ uint64_t Fragments::next_id() {
   uint64_t new_id = Time::now_ns();
   if(m_last_id == new_id) {
     ++new_id;
-    SWC_LOG_OUT(LOG_WARN) // debug
-      << " Fragments::next_id was the same id=" 
-      << new_id << SWC_LOG_OUT_END;
+    // debug
+    SWC_LOG_OUT(LOG_WARN, SWC_LOG_OSTREAM 
+      << " Fragments::next_id was the same id=" << new_id; );
   }
   return m_last_id = new_id;
 }

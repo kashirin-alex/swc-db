@@ -96,24 +96,9 @@ void LogWriter::daemon(const std::string& logs_path) {
   std::cerr << " AFTER(std::fclose(stderr);) \n";
 }
 
-void LogWriter::set_level(uint8_t level) {
-  m_priority = level;
-}
 
-uint8_t LogWriter::get_level() const {
-  return m_priority;
-}
-
-SWC_SHOULD_INLINE
-bool LogWriter::is_enabled(uint8_t level) const {
-  return level <= m_priority;
-}
-
-bool LogWriter::show_line_numbers() const {
-  return m_show_line_numbers;
-}
-
-uint32_t LogWriter::seconds() {
+SWC_SHOULD_NOT_INLINE
+uint32_t LogWriter::_seconds() {
   auto t = ::time(0);
   if(m_daemon && m_last_time < t-86400)
     renew_files();
@@ -161,31 +146,39 @@ void LogWriter::renew_files() {
   }*/
 }
 
+SWC_SHOULD_NOT_INLINE
 void LogWriter::log(uint8_t priority, const char* fmt, ...) {
   va_list ap;
   va_start(ap, fmt);
   {
     Mutex::scope lock(mutex);
-    std::cout << seconds() << ' ' << get_name(priority) << ": ";
+    std::cout << _seconds() << ' ' << get_name(priority) << ": ";
     vprintf(fmt, ap);
     std::cout << std::endl;
   }
   va_end(ap);
 }
 
+SWC_SHOULD_NOT_INLINE
 void LogWriter::log(uint8_t priority, const char* filen, int fline, 
                     const char* fmt, ...) {
   va_list ap;
   va_start(ap, fmt);
   {
     Mutex::scope lock(mutex);
-    std::cout << seconds() << ' ' << get_name(priority)
-              << ": (" << filen << ':' << fline << ") ";
+    _print_prefix(priority, filen, fline);
     vprintf(fmt, ap);
     std::cout << std::endl;
   }
   va_end(ap);
 }
 
+SWC_SHOULD_NOT_INLINE
+void LogWriter::_print_prefix(uint8_t priority, 
+                              const char* filen, int fline) {
+  std::cout << _seconds() << ' ' << get_name(priority) << ": ";
+  if(show_line_numbers())
+    std::cout << "(" << filen << ':' << fline << ") ";
+}
 
 }}

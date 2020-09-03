@@ -61,8 +61,9 @@ void Settings::init(int argc, char *argv[]) {
     loglevel->set(LOG_DEBUG);
 
   } else if(loglevel->get() == -1) {
-    SWC_LOG_OUT(LOG_ERROR) 
-      << "unknown logging level: "<< loglevel->to_string() << SWC_LOG_OUT_END;
+    SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM 
+      << "unknown logging level: "<< loglevel->to_string();
+    );
     std::quick_exit(EXIT_SUCCESS);
   }
 }
@@ -172,8 +173,9 @@ void Settings::load_files_by(const std::string& fileprop,
         m_dyn_files.push_back({.filename=fname, .modified=0});
     } catch(...) {
       const Exception& e = SWC_CURRENT_EXCEPTION("");
-      SWC_LOG_OUT(LOG_WARN) << fileprop << " has bad cfg file " << *it << ": " 
-        << e << SWC_LOG_OUT_END;
+      SWC_LOG_OUT(LOG_WARN, SWC_LOG_OSTREAM 
+        << fileprop << " has bad cfg file " << *it << ": " << e;
+      );
     }
   }
 }
@@ -195,10 +197,11 @@ void Settings::init_process() {
     Logger::logger.daemon(get_str("swc.logging.path"));
     
   if(daemon || get_gbool("verbose")) {
-    SWC_LOG_OUT(LOG_NOTICE) 
+    SWC_LOG_OUT(LOG_NOTICE, SWC_LOG_OSTREAM 
       << "Initialized " << executable << " "
       << swcdb_version() << "\n" << swcdb_copyrights() << '\n' 
-      << "Process Settings: \n" << to_string_all() << SWC_LOG_OUT_END;
+      << "Process Settings: \n" << to_string_all();
+    );
   }
 }
 

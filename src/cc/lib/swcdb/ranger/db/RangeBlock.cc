@@ -422,7 +422,7 @@ Block::ScanState Block::_scan(const ReqScan::Ptr& req, bool synced) {
 
   } catch (...) {
     const Exception& e = SWC_CURRENT_EXCEPTION("");
-    SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
+    SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
     err = e.code();
   }
   req->profile.add_block_scan(ts);

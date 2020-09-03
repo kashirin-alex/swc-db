@@ -288,9 +288,11 @@ class Test {
       [this, ts=Time::now_ns(), key=DB::Cell::Key(key), i, f]
       (const client::Query::Select::Result::Ptr& result) {
         time_select += Time::now_ns() - ts;
-        SWC_LOG_OUT(LOG_DEBUG) << "query_select:  \n";
-        result->profile.print(std::cout); 
-        std::cout << SWC_LOG_OUT_END;
+
+        SWC_LOG_OUT(LOG_DEBUG,
+          SWC_LOG_OSTREAM << "query_select:  \n";
+          result->profile.print(SWC_LOG_OSTREAM); 
+        );
         
         SWC_ASSERT(!result->err);
         SWC_ASSERT(result->get_size(schema->cid) == counter?1:cell_versions);

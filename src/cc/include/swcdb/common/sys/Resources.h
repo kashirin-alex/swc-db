@@ -261,7 +261,7 @@ class Resources final {
           checker();
         } catch(...) {
           const Exception& e = SWC_CURRENT_EXCEPTION("Resources:checker");
-          SWC_LOG_OUT(LOG_ERROR) << to_string() << e << SWC_LOG_OUT_END;
+          SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << to_string() << e; );
           schedule();
         }
     }); 

@@ -54,15 +54,25 @@ class LogWriter final {
 
   void daemon(const std::string& logs_path);
 
-  void set_level(uint8_t level);
+  void set_level(uint8_t level) {
+    m_priority = level;
+  }
 
-  uint8_t get_level() const;
+  uint8_t get_level() const {
+    return m_priority;
+  }
 
-  bool is_enabled(uint8_t level) const;
+  bool is_enabled(uint8_t level) const {
+    return level <= m_priority;
+  }
 
-  bool show_line_numbers() const;
+  bool show_line_numbers() const {
+    return m_show_line_numbers;
+  }
 
-  uint32_t seconds();
+  uint32_t _seconds();
+
+  void _print_prefix(uint8_t priority, const char* filen, int fline);
 
   void log(uint8_t priority, const char* fmt, ...)
       __attribute__((format(printf, 3, 4)));
@@ -74,16 +84,15 @@ class LogWriter final {
   template<typename T>
   void msg(uint8_t priority, const T& message) {
     Mutex::scope lock(mutex);
-    std::cout << seconds() << ' ' << get_name(priority) 
-              << ": " << message << std::endl;
+    std::cout << _seconds() << ' ' << get_name(priority) << ": " 
+              << message << std::endl;
   }
 
   template<typename T>
   void msg(uint8_t priority, const char* filen, int fline, const T& message) {
     Mutex::scope lock(mutex);
-    std::cout << seconds() << ' ' << get_name(priority) 
-              << ": (" << filen << ':' << fline << ") "
-              << message << std::endl;
+    _print_prefix(priority, filen, fline);
+    std::cout << message << std::endl;
   }
 
   private:
@@ -109,7 +118,26 @@ extern LogWriter logger;
 
 
 
+#define SWC_LOG_OSTREAM std::cout
+
+#define SWC_PRINT { \
+  ::SWC::Mutex::scope lock(::SWC::Logger::logger.mutex); \
+  SWC_LOG_OSTREAM
+#define SWC_PRINT_CLOSE std::endl; }
+
+
 #ifndef SWC_DISABLE_LOG_ALL
+
+
+// stream interface, SWC_LOG_OUT(LOG_ERROR, code{SWC_LOG_OSTREAM << "msg";});
+#define SWC_LOG_OUT(pr, _code_) { \
+  uint8_t _log_pr = pr; \
+  if(::SWC::Logger::logger.is_enabled(_log_pr)) { \
+    ::SWC::Mutex::scope lock(::SWC::Logger::logger.mutex); \
+    ::SWC::Logger::logger._print_prefix(_log_pr, __FILE__, __LINE__); \
+    {_code_}; \
+    SWC_LOG_OSTREAM << std::endl; \
+  } }
 
 #define SWC_LOG(priority, message) \
   if(::SWC::Logger::logger.is_enabled(priority)) { \
@@ -120,15 +148,7 @@ extern LogWriter logger;
   }
 
 #define SWC_LOGF(priority, fmt, ...) \
-  if(::SWC::Logger::logger.is_enabled(priority)) { \
-    Mutex::scope lock(::SWC::Logger::logger.mutex); \
-    std::cout << ::SWC::Logger::logger.seconds() \
-              << ' ' << ::SWC::Logger::logger.get_name(priority) << ": "; \
-    if(::SWC::Logger::logger.show_line_numbers()) \
-      std::cout << "(" << __FILE__ << ':' << __LINE__ << ") "; \
-    printf(fmt, __VA_ARGS__); \
-    std::cout << std::endl; \
-  }
+  SWC_LOG_OUT(priority, printf(fmt, __VA_ARGS__); )
 
 
 #ifndef SWC_DISABLE_LOG_FATAL ////
@@ -145,39 +165,12 @@ extern LogWriter logger;
 #define SWC_LOG_FATALF(msg, ...)
 #endif
 
-
-
-// stream interface, SWC_LOG_OUT(LOG_ERROR) << "msg" << SWC_LOG_OUT_END;
-
-#define SWC_LOG_OUT(priority) \
-  if(::SWC::Logger::logger.is_enabled(priority)) { \
-    uint8_t _priority_ = priority; \
-    ::SWC::Mutex::scope lock(::SWC::Logger::logger.mutex); \
-    if(::SWC::Logger::logger.show_line_numbers()) \
-      std::cout << ::SWC::Logger::logger.seconds() \
-                << ' ' << ::SWC::Logger::logger.get_name(priority)  \
-                << ": (" << __FILE__ << ':' << __LINE__ << ") "; \
-    else \
-      std::cout << ::SWC::Logger::logger.seconds() \
-                << ' ' << ::SWC::Logger::logger.get_name(priority) << ": "; \
-  std::cout 
-
-#define SWC_LOG_OUT_END std::endl; if(_priority_ == ::SWC::LOG_FATAL) SWC_ABORT; }
-
-#define SWC_PRINT \
-  { \
-    ::SWC::Mutex::scope lock(::SWC::Logger::logger.mutex); \
-    std::cout 
-#define SWC_PRINT_CLOSE std::endl; }
-//
-
-
 #else // SWC_DISABLE_LOGGING
 
 #define SWC_LOG(priority, msg)
 #define SWC_LOGF(priority, fmt, ...)
 
-#define SWC_LOG_OUT(priority)
+#define SWC_LOG_OUT(pr, code)
 
 #define SWC_LOG_FATAL(msg)
 #define SWC_LOG_FATAL(msg, ...)

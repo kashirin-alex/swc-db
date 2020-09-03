@@ -13,9 +13,7 @@ void exception(int err, const std::string& msg = "") {
   Exception e;
   e.__set_code(err);
   e.__set_message(msg + " - " + Error::get_text(err));
-  SWC_LOG_OUT(LOG_DEBUG) << "";
-  e.printTo(std::cout);
-  std::cout << SWC_LOG_OUT_END;
+  SWC_LOG_OUT(LOG_DEBUG, e.printTo(SWC_LOG_OSTREAM); );
   throw e;
 }
 

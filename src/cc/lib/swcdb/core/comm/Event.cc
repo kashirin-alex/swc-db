@@ -48,7 +48,7 @@ int32_t Event::response_code() {
     */
   } catch(...) {
     const Exception& e = SWC_CURRENT_EXCEPTION("");
-    SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
+    SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
     return e.code(); 
   }
 }

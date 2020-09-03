@@ -16,8 +16,8 @@ AppContext::AppContext() { }
 AppContext::~AppContext(){}
 
 void AppContext::handle(ConnHandlerPtr, const Event::Ptr& ev) {
-  SWC_LOG_OUT(LOG_WARN) << "AppContext(handle is Virtual!)\n"
-                        << ev->to_str() << SWC_LOG_OUT_END;
+  SWC_LOG_OUT(LOG_WARN, SWC_LOG_OSTREAM
+    << "AppContext(handle is Virtual!)\n" << ev->to_str(); );
 }
 
 void AppContext::init(const EndPoints& endpoints) {

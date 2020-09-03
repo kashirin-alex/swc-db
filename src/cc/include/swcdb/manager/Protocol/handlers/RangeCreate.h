@@ -42,7 +42,7 @@ void range_create(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
 
   } catch(...) {
     const Exception& e = SWC_CURRENT_EXCEPTION("");
-    SWC_LOG_OUT(LOG_ERROR) << e << SWC_LOG_OUT_END;
+    SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
     rsp_params.err = e.code();
   }
   
