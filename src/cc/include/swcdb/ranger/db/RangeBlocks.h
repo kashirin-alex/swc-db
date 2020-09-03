@@ -85,7 +85,7 @@ class Blocks final {
 
   void wait_processing();
 
-  std::string to_string();
+  std::string to_string(bool minimal=true);
 
   private:
 

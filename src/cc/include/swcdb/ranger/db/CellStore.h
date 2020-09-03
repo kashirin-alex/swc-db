@@ -103,7 +103,7 @@ class Read final {
 
   size_t blocks_count() const;
 
-  std::string to_string() const;
+  std::string to_string(bool minimal=true) const;
 
   private:
 

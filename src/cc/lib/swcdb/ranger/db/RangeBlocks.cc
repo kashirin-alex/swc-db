@@ -323,24 +323,37 @@ void Blocks::wait_processing() {
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
 }
 
-std::string Blocks::to_string() {
+std::string Blocks::to_string(bool minimal) {
   Mutex::scope lock(m_mutex);
 
   std::string s("Blocks(count=");
   s.append(std::to_string(_size()));
-
-  s.append(" blocks=[");
-    
-  for(Block::Ptr blk = m_block; blk; blk=blk->next) {
-    s.append(blk->to_string());
-    s.append(", ");
+  s.append(" ");
+  if(minimal) {
+    if(m_block) {
+      Block::Ptr blk = m_block;
+      s.append(" first=");
+      s.append(blk->to_string());
+      for(; blk->next; blk=blk->next);
+      if(blk != m_block) {
+        s.append(" last=");
+        s.append(blk->to_string());
+      }
+    }
+  } else {
+    s.append("blocks=[");
+    for(Block::Ptr blk = m_block; blk; blk=blk->next) {
+      s.append(blk->to_string());
+      s.append(", ");
+    }
+    s.append("]");
   }
-  s.append("] ");
-
-  s.append(commitlog.to_string());
 
   s.append(" ");
-  s.append(cellstores.to_string());
+  s.append(commitlog.to_string(minimal));
+
+  s.append(" ");
+  s.append(cellstores.to_string(minimal));
 
   s.append(" processing=");
   s.append(std::to_string(_processing()));

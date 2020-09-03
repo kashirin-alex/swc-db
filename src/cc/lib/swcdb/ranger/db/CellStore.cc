@@ -382,13 +382,15 @@ size_t Read::blocks_count() const {
   return blocks.size();
 }
 
-std::string Read::to_string() const {
+std::string Read::to_string(bool minimal) const {
   std::string s("Read(v=");
   s.append(std::to_string(VERSION));
   s.append(" csid=");
   s.append(std::to_string(csid));
   s.append(" prev=");
   s.append(prev_key_end.to_string());
+  s.append(" end=");
+  s.append(key_end.to_string());
   s.append(" ");
   
   s.append(interval.to_string());
@@ -398,12 +400,14 @@ std::string Read::to_string() const {
 
   s.append(" blocks=");
   s.append(std::to_string(blocks_count()));
-  s.append(" blocks=[");
-  for(auto blk : blocks) {
-    s.append(blk->to_string());
-    s.append(", ");
+  if(!minimal) {
+    s.append(" blocks=[");
+    for(auto blk : blocks) {
+      s.append(blk->to_string());
+      s.append(", ");
+    }
+    s.append("]");
   }
-  s.append("]");
 
   s.append(" queue=");
   {

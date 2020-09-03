@@ -457,7 +457,7 @@ uint64_t Fragments::next_id() {
   return m_last_id = new_id;
 }
 
-std::string Fragments::to_string() {
+std::string Fragments::to_string(bool minimal) {
   size_t count = cells_count();
   std::shared_lock lock(m_mutex);
 
@@ -473,12 +473,14 @@ std::string Fragments::to_string() {
   s.append(" fragments=");
   s.append(std::to_string(Vec::size()));
 
-  s.append(" [");
-  for(auto frag : *this){
-    s.append(frag->to_string());
-    s.append(", ");
+  if(!minimal) {
+    s.append(" [");
+    for(auto frag : *this){
+      s.append(frag->to_string());
+      s.append(", ");
+    }
+    s.append("]");
   }
-  s.append("]");
 
   s.append(" processing=");
   s.append(std::to_string(_processing()));

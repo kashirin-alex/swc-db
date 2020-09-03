@@ -491,7 +491,7 @@ void Range::create(int &err, const CellStore::Writers& w_cellstores) {
   fs->remove(err, DB::RangeBase::get_path_ranger(m_path));
 }
 
-std::string Range::to_string() {
+std::string Range::to_string(bool minimal) {
   std::string s("(");
   s.append(cfg->to_string());
   s.append(" rid=");
@@ -504,7 +504,7 @@ std::string Range::to_string() {
     s.append(std::to_string(m_state));
   }
   s.append(" ");
-  s.append(blocks.to_string());
+  s.append(blocks.to_string(minimal));
   s.append(" prev=");
   s.append(prev_range_end.to_string());
   s.append(" ");
@@ -606,7 +606,7 @@ void Range::loaded_ack(int err, const ResponseCallback::Ptr& cb) {
     SWC_LOGF(LOG_INFO, "LOADED RANGE %s", to_string().c_str());
   } else {
     SWC_LOGF(LOG_WARN, "LOAD RANGE FAILED err=%d(%s) %s", 
-              err, Error::get_text(err), to_string().c_str());
+              err, Error::get_text(err), to_string(false).c_str());
   }
   loaded(err, cb); // RSP-LOAD-ACK
 }
