@@ -285,6 +285,7 @@ void CompactRange::response(int& err) {
     if(can_split_at() > 0 && DB::KeySeq::compare(range->cfg->key_seq, 
         m_required_key_last, spec.offset_key) == Condition::GT) {
       spec.key_start.set(spec.offset_key, Condition::EQ);
+      spec.range_end.copy(spec.offset_key);
 
       SWC_LOGF(LOG_INFO,
         "COMPACT-PROGRESS %lu/%lu finishing early-split scan offset %s",
