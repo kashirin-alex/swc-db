@@ -10,8 +10,9 @@ namespace SWC {
 
 
 void DispatchHandler::handle(ConnHandlerPtr, const Event::Ptr& ev) {
-  SWC_LOG_OUT(LOG_WARN, SWC_LOG_OSTREAM
-    << "DispatchHandler(handle is Virtual!)\n" << ev->to_str(); );
+  SWC_LOG_OUT(LOG_WARN,
+    ev->print(SWC_LOG_OSTREAM << "DispatchHandler(handle is Virtual!)\n");
+  );
 }
     
 bool DispatchHandler::run() { 

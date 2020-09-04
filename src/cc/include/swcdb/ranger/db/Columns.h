@@ -61,7 +61,7 @@ class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
   
   size_t release(size_t bytes=0);
 
-  std::string to_string();
+  void print(std::ostream& out, bool minimal=true);
 
   private:
   Mutex                           m_mutex;

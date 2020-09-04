@@ -48,7 +48,7 @@ class MngrRole final {
 
   void stop();
 
-  std::string to_string();
+  void print(std::ostream& out);
 
 
   private:

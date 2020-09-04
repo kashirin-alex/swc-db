@@ -39,10 +39,10 @@ class RgrMngId: public client::ConnQueue::ReqBase {
   void request() {
     cancel();
 
+    auto rgr_data = RangerEnv::rgr_data();
     if(RangerEnv::is_shuttingdown()) {
-      auto rgr_data = RangerEnv::rgr_data();
-      SWC_LOGF(LOG_DEBUG, "RS_SHUTTINGDOWN(req) %s",  
-               rgr_data->to_string().c_str());
+      SWC_LOG_OUT(LOG_DEBUG,
+        rgr_data->print(SWC_LOG_OSTREAM << "RS_SHUTTINGDOWN(req) "); );
       create(
         Params::RgrMngId(
           rgr_data->rgrid.load(), 
@@ -56,7 +56,7 @@ class RgrMngId: public client::ConnQueue::ReqBase {
         Params::RgrMngId(
           0, 
           Params::RgrMngId::Flag::RS_REQ, 
-          RangerEnv::rgr_data()->endpoints
+          rgr_data->endpoints
         )
       );
     }
@@ -124,8 +124,9 @@ class RgrMngId: public client::ConnQueue::ReqBase {
     }
     
     if(rsp_params.flag == Params::RgrMngId::Flag::RS_SHUTTINGDOWN) {
-      SWC_LOGF(LOG_DEBUG, "RS_SHUTTINGDOWN %s", 
-                RangerEnv::rgr_data()->to_string().c_str());
+      SWC_LOG_OUT(LOG_DEBUG,
+        RangerEnv::rgr_data()->print(SWC_LOG_OSTREAM << "RS_SHUTTINGDOWN ");
+      );
       stop();
       if(cb_shutdown)
         cb_shutdown();
@@ -146,13 +147,14 @@ class RgrMngId: public client::ConnQueue::ReqBase {
     auto rgr_data = RangerEnv::rgr_data();
 
     if(rsp_params.flag == Params::RgrMngId::Flag::MNGR_ASSIGNED
-       && rsp_params.fs != Env::FsInterface::interface()->get_type()){
+       && rsp_params.fs != Env::FsInterface::interface()->get_type()) {
 
-      SWC_LOGF(LOG_ERROR, "Ranger's %s not matching with Mngr's FS-type=%d,"
-                      "RS_SHUTTINGDOWN %s",
-        Env::FsInterface::interface()->to_string().c_str(), 
-        (int)rsp_params.fs, 
-        rgr_data->to_string().c_str()
+      SWC_LOG_OUT(LOG_ERROR,
+        SWC_LOG_OSTREAM 
+          << "Ranger's " << Env::FsInterface::interface()->to_string()
+          << " not matching with Mngr's FS-type=" 
+          << FS::type_to_string(rsp_params.fs);
+        rgr_data->print(SWC_LOG_OSTREAM << ", RS_SHUTTINGDOWN ");
       );
         
       std::raise(SIGTERM);
@@ -162,15 +164,17 @@ class RgrMngId: public client::ConnQueue::ReqBase {
     Params::RgrMngId::Flag flag;
     if(!rgr_data->rgrid || rgr_data->rgrid == rsp_params.rgrid || 
        (rgr_data->rgrid != rsp_params.rgrid && 
-        rsp_params.flag == Params::RgrMngId::Flag::MNGR_REASSIGN)){
+        rsp_params.flag == Params::RgrMngId::Flag::MNGR_REASSIGN)) {
 
       rgr_data->rgrid = rsp_params.rgrid;
       flag = Params::RgrMngId::Flag::RS_ACK;
-      SWC_LOGF(LOG_DEBUG, "RS_ACK %s", rgr_data->to_string().c_str());
+      SWC_LOG_OUT(LOG_DEBUG,
+        rgr_data->print(SWC_LOG_OSTREAM << "RS_ACK "); );
     } else {
 
       flag = Params::RgrMngId::Flag::RS_DISAGREE;
-      SWC_LOGF(LOG_DEBUG, "RS_DISAGREE %s", rgr_data->to_string().c_str());
+      SWC_LOG_OUT(LOG_DEBUG, 
+        rgr_data->print(SWC_LOG_OSTREAM << "RS_DISAGREE "); );
     }
 
     create(Params::RgrMngId(rgr_data->rgrid, flag, rgr_data->endpoints));

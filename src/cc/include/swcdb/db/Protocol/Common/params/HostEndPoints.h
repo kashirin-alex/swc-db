@@ -24,7 +24,7 @@ class HostEndPoints: public Serializable {
 
   void set(const EndPoints& points);
 
-  std::string to_string() const;
+  void print(std::ostream& out) const;
 
   EndPoints    endpoints;
 

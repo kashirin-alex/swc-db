@@ -46,7 +46,8 @@ class Flags {
   void decode(const uint8_t** bufp, size_t* remainp);
   
   std::string to_string() const;
-  
+
+  void print(std::ostream& out) const;
   
   void display(std::ostream& out) const;
 

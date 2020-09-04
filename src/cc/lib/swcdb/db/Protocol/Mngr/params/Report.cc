@@ -141,8 +141,8 @@ void RspRangersStatus::Ranger::display(std::ostream& out,
                 << " rgr_id=" << rgr_id
                 << " failures=" << failures
                 << " interm_ranges=" << interm_ranges
-                << " load_scale=" << load_scale
-                << " " << Common::Params::HostEndPoints::to_string();
+                << " load_scale=" << load_scale;
+  Common::Params::HostEndPoints::print(out << ' ');
 }
 
 
@@ -221,8 +221,8 @@ void RspManagersStatus::Manager::display(std::ostream& out,
                << "<=CID<=" 
                << (cid_end ? std::to_string(cid_end) : "any");
   out  << " priority=" << priority
-        << " state=" << Types::to_string(state) 
-        << " " << Common::Params::HostEndPoints::to_string();
+        << " state=" << Types::to_string(state);
+  Common::Params::HostEndPoints::print(out << ' ');
 }
 
 

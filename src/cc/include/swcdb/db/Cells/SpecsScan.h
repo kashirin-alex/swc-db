@@ -39,7 +39,9 @@ class Scan final : public Serializable {
 
   void internal_decode(const uint8_t** bufp, size_t* remainp);
 
-  std::string to_string();
+  std::string to_string() const;
+
+  void print(std::ostream& out) const;
   
   void display(std::ostream& out, bool pretty=true, 
                std::string offset = "") const;

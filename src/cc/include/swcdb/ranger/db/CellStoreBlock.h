@@ -80,8 +80,7 @@ class Read final {
 
   size_t size_bytes_enc(bool only_loaded=false);
 
-  std::string to_string();
-
+  void print(std::ostream& out);
   
   private:
   
@@ -112,7 +111,7 @@ class Write final {
   static void encode(int& err, DynamicBuffer& cells, DynamicBuffer& output, 
                      Header& header);
 
-  std::string to_string();
+  void print(std::ostream& out) const;
 
   const Header  header;
   bool          released;

@@ -54,13 +54,9 @@ bool ConnQueueReqBase::valid() { return true; }
 
 void ConnQueueReqBase::handle_no_conn() { }
 
-std::string ConnQueueReqBase::to_string() {
-  std::string s("ReqBase(insistent=");
-  s.append(std::to_string(insistent));
-  s.append(" ");
-  s.append(cbp->header.to_string());
-  s.append(")");
-  return s;
+void ConnQueueReqBase::print(std::ostream& out) {
+  cbp->header.print(out << "ReqBase(insistent=" << insistent << ' ');
+  out << ')';
 }
 
 
@@ -192,14 +188,15 @@ void ConnQueue::delay_proceed(const ConnQueue::ReqBase::Ptr& req,
   put(req);
 }
 
-std::string ConnQueue::to_string() {
-  std::string s("ConnQueue(size=");
+void ConnQueue::print(std::ostream& out) {
+  out << "ConnQueue(size=";
   Mutex::scope lock(m_mutex);
-  s.append(std::to_string(size()));
-  s.append(" conn=");
-  s.append(m_conn?m_conn->endpoint_remote_str():std::string("no"));
-  s.append(")");
-  return s;
+  out << size() << " conn=";
+  if(m_conn)
+    m_conn->print(out);
+  else
+    out << "no";
+  out << ')';
 }
 
 void ConnQueue::exec_queue() {

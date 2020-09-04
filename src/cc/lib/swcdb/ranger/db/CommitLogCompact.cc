@@ -74,10 +74,11 @@ void Compact::Group::load() {
     }
     frag->release();
     if(err)
-      SWC_LOGF(LOG_ERROR, 
-        "COMPACT-LOG-ERROR %lu/%lu err=%d(%s) %s", 
-        compact->log->range->cfg->cid, compact->log->range->rid,
-        err, Error::get_text(err), frag->to_string().c_str()
+      SWC_LOG_OUT(LOG_ERROR, 
+        SWC_LOG_OSTREAM << "COMPACT-LOG-ERROR " 
+          << compact->log->range->cfg->cid << '/' << compact->log->range->rid;
+        Error::print(SWC_LOG_OSTREAM << ' ', err);
+        frag->print(SWC_LOG_OSTREAM << ' ');
       );
 
     m_mutex.lock();

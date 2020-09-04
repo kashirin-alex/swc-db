@@ -21,25 +21,18 @@ class AppContext final : public SWC::AppContext {
     
     switch (ev->type) {
 
-      case Event::Type::ESTABLISHED: {
-        return;
-      }
-      
       case Event::Type::DISCONNECT: {
         disconnected(conn);
         return;
       }
 
-      case Event::Type::ERROR: {
-        SWC_LOGF(LOG_WARN, "unhandled: %s", ev->to_str().c_str());
-        break;
-      }
-
+      case Event::Type::ERROR: 
       case Event::Type::MESSAGE: {
-        SWC_LOGF(LOG_WARN, "unhandled: %s", ev->to_str().c_str());
+        SWC_LOG_OUT(LOG_WARN,  ev->print(SWC_LOG_OSTREAM << "unhandled: "); );
         break;
       }
 
+      case Event::Type::ESTABLISHED:
       default: {
         break;
       }

@@ -154,8 +154,9 @@ void BlockLoader::load_log_cells() {
     }
     if(!loaded) {
       // temp-check, that should not be happening
-      SWC_LOGF(LOG_WARN, "Fragment not-loaded, load-again %s", 
-                frag->to_string().c_str());
+      SWC_LOG_OUT(LOG_WARN, 
+        frag->print(SWC_LOG_OSTREAM << "Fragment not-loaded, load-again ");
+      );
       frag->load([this, frag](){ loaded_frag(frag); });
       frag->processing_decrement();
       continue;

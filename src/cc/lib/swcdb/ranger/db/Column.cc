@@ -162,7 +162,7 @@ void Column::remove_all(int &err) {
     erase(it);
   }
 
-  SWC_LOGF(LOG_DEBUG, "REMOVED %s", to_string().c_str());
+  SWC_LOG_OUT(LOG_INFO, print(SWC_LOG_OSTREAM << "REMOVED "); );
 }
 
 bool Column::removing() {
@@ -211,19 +211,17 @@ size_t Column::release(size_t bytes) {
   return released;
 }
 
-std::string Column::to_string() {
+void Column::print(std::ostream& out, bool minimal) {
   Mutex::scope lock(m_mutex);
+  cfg.print(out << '(');
+  out << " ranges=[";
 
-  std::string s("[");
-  s.append(cfg.to_string());
-
-  s.append(" ranges=(");
   for(auto it = begin(); it != end(); ++it){
-    s.append(it->second->to_string());
-    s.append(",");
+    it->second->print(out, minimal);
+    out << ", ";
   }
-  s.append(")]");
-  return s;
+  out << "])"; 
 }
+
 
 }}

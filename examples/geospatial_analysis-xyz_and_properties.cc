@@ -194,10 +194,9 @@ void generate_sample_data() {
         if((++added_cells % 100000) == 0) {
           SWC_PRINT << "progress cells=" << added_cells 
                     << " cell/ns=" 
-                    << ((SWC::Time::now_ns() - ts_progress) / 100000)
-                    << " " 
-                    << req->result->profile.to_string() 
-                    << SWC_PRINT_CLOSE;
+                    << ((SWC::Time::now_ns() - ts_progress) / 100000);
+          req->result->profile.print(SWC_LOG_OSTREAM << ' ');
+          SWC_LOG_OSTREAM << SWC_PRINT_CLOSE;
           SWC_PRINT << cell.to_string() << SWC_PRINT_CLOSE;
           ts_progress = SWC::Time::now_ns();
         }

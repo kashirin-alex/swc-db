@@ -53,32 +53,28 @@ int32_t Event::response_code() {
   }
 }
 
-std::string Event::to_str() const {
-  std::string dstr("Event: type=");
+void Event::print(std::ostream& out) const {
+  out << "Event: type=";
   switch(type){
   case ESTABLISHED:
-    dstr += "ESTABLISHED";
+    out << "ESTABLISHED";
     break;
   case DISCONNECT:
-    dstr += "DISCONNECT";
+    out << "DISCONNECT";
     break;
   case MESSAGE:
-    dstr += "MESSAGE " + header.to_string();
+    header.print(out << "MESSAGE ");
     break;
   case ERROR:
-    dstr += "ERROR";
+    out << "ERROR";
     break;
   default:
-    dstr += "UKNOWN("+ std::to_string((int)type)+")";
+    out << "UKNOWN(" << (int)type << ')';
     break;
   }
-  if (error != Error::OK){
-    dstr.append(" err=");
-    dstr.append(std::to_string(error));
-    dstr.append("(");
-    dstr.append(Error::get_text(error));
-    dstr.append(")");
-  }
+  if(error) 
+    Error::print(out << ' ', error);
+    
   /*
   if(data.size) {
     dstr.append(" data=(");
@@ -94,11 +90,6 @@ std::string Event::to_str() const {
     dstr.append(")");
   }
   */
-  return dstr;
-}
-
-void Event::display() {
-  SWC_LOG(LOG_INFO, to_str()); 
 }
 
 } // namespace SWC

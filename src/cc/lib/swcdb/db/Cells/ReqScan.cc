@@ -56,13 +56,9 @@ bool ReqScan::selector(const Types::KeySeq key_seq,
   return spec.is_matching(key_seq, cell);
 }
 
-
-std::string ReqScan::to_string() const {
-  std::string s(spec.to_string());
-  s.append(" state(offset=");
-  s.append(std::to_string(offset));
-  s.append(")");
-  return s;
+void ReqScan::print(std::ostream& out) const {
+  spec.print(out);
+  out << " state(offset=" << offset << ')';
 }
 
 

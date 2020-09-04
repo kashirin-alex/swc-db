@@ -42,9 +42,7 @@ class Event final {
   
   int32_t response_code();
 
-  std::string to_str() const;
-
-  void display();
+  void print(std::ostream& out) const;
 
   Type                type;
   int                 error;

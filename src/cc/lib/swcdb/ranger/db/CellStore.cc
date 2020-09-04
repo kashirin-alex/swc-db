@@ -29,10 +29,12 @@ Read::Ptr Read::make(int& err, const csid_t csid,
     err = e.code();
   }
   if(err)
-    SWC_LOGF(LOG_ERROR, 
-      "CellStore load_blocks_index err=%d(%s) csid=%u range(%lu/%lu) %s", 
-      err, Error::get_text(err), csid, range->cfg->cid, range->rid, 
-      interval.to_string().c_str());
+    SWC_LOG_OUT(LOG_ERROR, 
+      Error::print(SWC_LOG_OSTREAM << "CellStore load_blocks_index ", err);
+      SWC_LOG_OSTREAM << " csid=" << csid
+        << " range(" << range->cfg->cid << '/' << range->rid << ") ";
+      interval.print(SWC_LOG_OSTREAM);
+    );
 
   return new Read(
     csid, 
@@ -56,8 +58,10 @@ bool Read::load_trailer(int& err, FS::SmartFd::Ptr& smartfd,
   err = Error::OK;
   while(err != Error::FS_EOF) {
     if(err) {
-      SWC_LOGF(LOG_WARN, "Retrying to err=%d(%s) %s", 
-               err, Error::get_text(err), smartfd->to_string().c_str());
+      SWC_LOG_OUT(LOG_WARN, 
+        Error::print(SWC_LOG_OSTREAM << "Retrying to ", err);
+        smartfd->print(SWC_LOG_OSTREAM << ' ');
+      );
       fs_if->close(err, smartfd);
       err = Error::OK;
     }
@@ -139,8 +143,10 @@ void Read::load_blocks_index(int& err, FS::SmartFd::Ptr& smartfd,
 
   while(err != Error::FS_EOF) {
     if(err) {
-      SWC_LOGF(LOG_WARN, "Retrying to err=%d(%s) %s", 
-               err, Error::get_text(err), smartfd->to_string().c_str());
+      SWC_LOG_OUT(LOG_WARN, 
+        Error::print(SWC_LOG_OSTREAM << "Retrying to ", err);
+        smartfd->print(SWC_LOG_OSTREAM << ' ');
+      );
       fs_if->close(err, smartfd);
       err = Error::OK;
     }
@@ -382,50 +388,31 @@ size_t Read::blocks_count() const {
   return blocks.size();
 }
 
-std::string Read::to_string(bool minimal) const {
-  std::string s("Read(v=");
-  s.append(std::to_string(VERSION));
-  s.append(" csid=");
-  s.append(std::to_string(csid));
-  s.append(" prev=");
-  s.append(prev_key_end.to_string());
-  s.append(" end=");
-  s.append(key_end.to_string());
-  s.append(" ");
-  
-  s.append(interval.to_string());
-
-  s.append(" file=");
-  s.append(m_smartfd->filepath());
-
-  s.append(" blocks=");
-  s.append(std::to_string(blocks_count()));
+void Read::print(std::ostream& out, bool minimal) const {
+  out << "Read(v=" << int(VERSION)
+      << " csid=" << csid
+      << " prev=" << prev_key_end
+      << " end=" << key_end
+      << ' ' << interval
+      << " file=" << m_smartfd->filepath()
+      << " blocks=" << blocks_count();
   if(!minimal) {
-    s.append(" blocks=[");
+    out << " blocks=[";
     for(auto blk : blocks) {
-      s.append(blk->to_string());
-      s.append(", ");
+      blk->print(out);
+      out << ", ";
     }
-    s.append("]");
+    out << ']';
   }
-
-  s.append(" queue=");
+  out << " queue=";
   {
     Mutex::scope lock(m_mutex);
-    s.append(std::to_string(m_queue.size()));
+    out << m_queue.size();
   }
-
-  s.append(" processing=");
-  s.append(std::to_string(processing()));
-
-  s.append(" used/actual=");
-  s.append(std::to_string(size_bytes(true)));
-  s.append("/");
-  s.append(std::to_string(size_bytes()));
-
-  s.append(")");
-  return s;
-} 
+  out << " processing=" << processing()
+      << " used/actual=" << size_bytes(true) << '/' << size_bytes()
+      << ')';
+}
 
 
 
@@ -611,33 +598,22 @@ void Write::remove(int &err) {
   Env::FsInterface::interface()->remove(err, smartfd->filepath()); 
 }
 
-std::string Write::to_string() {
-  std::string s("Write(v=");
-  s.append(std::to_string(CellStore::VERSION));
-  s.append(" size=");
-  s.append(std::to_string(size));
-  s.append(" encoder=");
-  s.append(Types::to_string(encoder));
-  s.append(" cell_revs=");
-  s.append(std::to_string(cell_revs));
-  s.append(" prev=");
-  s.append(prev_key_end.to_string());
-  s.append(" ");
-  s.append(interval.to_string());
-  s.append(" ");
-  s.append(smartfd->to_string());
-
-  s.append(" blocks=");
-  s.append(std::to_string(m_blocks.size()));
-
-  s.append(" blocks=[");
+void Write::print(std::ostream& out) const {
+  out << "Write(v=" << int(CellStore::VERSION)
+      << " size=" << size
+      << " encoder=" << Types::to_string(encoder)
+      << " cell_revs=" << cell_revs
+      << " prev=" << prev_key_end
+      << ' ' << interval;
+  smartfd->print(out << ' ');
+  out << " blocks=" << m_blocks.size()
+      << " blocks=[";
   for(auto blk : m_blocks) {
-      s.append(blk->to_string());
-     s.append(", ");
+    blk->print(out);
+    out << ", ";
   }
-  s.append("])");
-  return s;
-} 
+  out << "])";
+}
 
 
 Read::Ptr create_initial(int& err, const RangePtr& range) {

@@ -135,7 +135,7 @@ class Fragment final {
 
   void remove(int &err);
 
-  std::string to_string();
+  void print(std::ostream& out);
 
   private:
 

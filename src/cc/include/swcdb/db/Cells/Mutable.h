@@ -188,7 +188,7 @@ class Mutable final {
                       DynamicBuffer& cells, uint32_t threshold);
 
 
-  std::string to_string(bool with_cells=false) const;
+  void print(std::ostream& out, bool with_cells=false) const;
   
 
   void get(int32_t idx, DB::Cell::Key& key) const;

@@ -86,9 +86,9 @@ class Splitter final {
       
       if(err) {
         frag->processing_decrement();
-        SWC_LOGF(LOG_ERROR, 
-          "COMPACT fragment-split err=%d(%s) %s", 
-          err, Error::get_text(err), frag->to_string().c_str()
+        SWC_LOG_OUT(LOG_WARN, 
+          Error::print(SWC_LOG_OSTREAM << "COMPACT fragment-split ", err);
+          frag->print(SWC_LOG_OSTREAM << ' ');
         );
       }
       

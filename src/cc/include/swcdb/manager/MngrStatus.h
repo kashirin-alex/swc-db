@@ -62,26 +62,13 @@ class MngrStatus : public Protocol::Common::Params::HostEndPoints {
     Protocol::Common::Params::HostEndPoints::internal_decode(bufp, remainp);
   }
 
-  std::string to_string(){
-    std::string s("MngrStatus:");
-    
-    s.append(" priority=");
-    s.append(std::to_string(priority));
-
-    s.append(" state=");
-    s.append(std::to_string((int)state.load()));
-
-    s.append(" role=");
-    s.append(Types::MngrRole::to_string(role));
-
-    s.append(" cid=");
-    s.append(std::to_string(cid_begin));
-    s.append("-");
-    s.append(std::to_string(cid_end));
-
-    s.append(" ");
-    s.append(Protocol::Common::Params::HostEndPoints::to_string());
-    return s;
+  void print(std::ostream& out) const {
+    out << "MngrStatus(priority=" << priority
+        << " state=" << (int)state
+        << " role=" << Types::MngrRole::to_string(role)
+        << " cid=" << cid_begin << '-' << cid_end;
+    Protocol::Common::Params::HostEndPoints::print(out << ' ');
+    out << ')';
   }
 
   std::atomic<uint32_t>           priority;

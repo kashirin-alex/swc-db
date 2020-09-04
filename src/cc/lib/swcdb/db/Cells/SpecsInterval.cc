@@ -394,35 +394,27 @@ void Interval::apply_possible_range_end(DB::Cell::Key& end) const {
 }
 
 std::string Interval::to_string() const {
-  std::string s("Interval(Begin");
-  s.append(range_begin.to_string());
-  s.append(" End");
-  s.append(range_end.to_string());
+  std::stringstream ss;
+  print(ss);
+  return ss.str();
+}
 
-  s.append(" Start");
-  s.append(key_start.to_string());
-  s.append(" Finish");
-  s.append(key_finish.to_string());
-  s.append(" ");
+void Interval::print(std::ostream& out) const {
+  range_begin.print(out << "Interval(Begin");
+  range_end.print(out << " End");
 
-  s.append(" Start");
-  s.append(ts_start.to_string());
-  s.append(" Finish");
-  s.append(ts_finish.to_string());
+  key_start.print(out << " Start");
+  key_finish.print(out << " Finish");
 
-  s.append(" Offset");
-  s.append(offset_key.to_string());
-  s.append(" OffsetRev=");
-  s.append(std::to_string(offset_rev));
+  ts_start.print(out << " Start");
+  ts_finish.print(out << " Finish");
+
+  offset_key.print(out << " Offset");
+  out << " OffsetRev=" << offset_rev;
   
-  s.append(" ");
-  s.append(value.to_string());
-  
-  s.append(" ");
-  s.append(flags.to_string());
-
-  s.append(")");
-  return s;
+  value.print(out << " ");
+  flags.print(out << " ");
+  out << ')';
 }
 
 void Interval::display(std::ostream& out, bool pretty, 

@@ -115,15 +115,11 @@ class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
       erase(it);
   }
 
-  std::string to_string() {
-    std::string s("ColumnsAssignment:");
-    
+  void print(std::ostream& out) {
+    out << "ColumnsAssignment:";
     Mutex::scope lock(m_mutex);
-    for(auto it = begin(); it != end(); ++it){
-      s.append("\n ");
-      s.append(it->second->to_string());
-    }
-    return s;
+    for(auto it = begin(); it != end(); ++it)
+      it->second->print(out << "\n ");
   }
 
   private:

@@ -48,7 +48,7 @@ class ReqScan : public ResponseCallback {
   
   virtual bool add_cell_and_more(const Cell& cell) = 0;
 
-  virtual std::string to_string() const;
+  virtual void print(std::ostream& out) const;
 
   DB::Specs::Interval   spec;
   bool                  only_keys;
@@ -100,28 +100,24 @@ class ReqScan : public ResponseCallback {
     }
 
     std::string to_string() const {
-      std::string s("profile(took=");
-      s.append(std::to_string(ts_finish - ts_start));
-      s.append("ns cells(count=");
-      s.append(std::to_string(cells_count));
-      s.append(" bytes=");
-      s.append(std::to_string(cells_bytes));
-      s.append(" skip=");
-      s.append(std::to_string(cells_skipped));
-      s.append(") blocks(located=");
-      s.append(std::to_string(blocks_located));
-      s.append(" loaded=");
-      s.append(std::to_string(blocks_loaded));
-      s.append(" scanned=");
-      s.append(std::to_string(blocks_scanned));
-      s.append(") block(locate=");
-      s.append(std::to_string(block_time_locate));
-      s.append("ns load=");
-      s.append(std::to_string(block_time_load));
-      s.append("ns scan=");
-      s.append(std::to_string(block_time_scan));
-      s.append("ns))");
-      return s;
+      std::stringstream ss;
+      print(ss);
+      return ss.str();
+    }
+
+    void print(std::ostream& out) const {
+      out << "profile(took=" 
+          << (ts_finish - ts_start)
+          << "ns cells(count=" << cells_count
+          << " bytes=" << cells_bytes
+          << " skip=" << cells_skipped
+          << ") blocks(located=" << blocks_located
+          << " loaded=" << blocks_loaded
+          << " scanned=" << blocks_scanned
+          << ") block(locate=" << block_time_locate
+          << "ns load=" << block_time_load
+          << "ns scan=" << block_time_scan
+          << "ns))";
     }
   };
   Profile profile;

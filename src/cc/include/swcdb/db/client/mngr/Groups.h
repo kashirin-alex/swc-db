@@ -40,7 +40,7 @@ class Group final : private Hosts {
 
   bool is_in_group(const EndPoint& endpoint);
 
-  std::string to_string();
+  void print(std::ostream& out);
 
   void apply_endpoints(EndPoints& to_endpoints);
 
@@ -89,7 +89,7 @@ class Groups final : private std::vector<Group::Ptr>,
   EndPoints get_endpoints(uint8_t role=0, cid_t cid_begin=0, 
                                           cid_t cid_end=0);
 
-  std::string to_string();
+  void print(std::ostream& out);
 
   void add(GroupHost& g_host);
 

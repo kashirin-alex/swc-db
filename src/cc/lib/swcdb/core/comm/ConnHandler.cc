@@ -164,37 +164,15 @@ void ConnHandler::accept_requests(DispatchHandler::Ptr hdlr,
 }
 */
 
-std::string ConnHandler::to_string() {
-  std::string s("Connection");
-
-  if(!is_open()) {
-    s.append(" CLOSED");
-    return s;
+void ConnHandler::print(std::ostream& out) {
+  out << "Connection(";
+  if(is_open()) {
+    out << "remote=" << endpoint_remote
+        << " local=" << endpoint_local;
+  } else {
+    out << "CLOSED";
   }
-
-  s.append(" remote=");
-  try{
-    s.append(endpoint_remote_str());
-    s.append(" (hash=");
-    s.append(std::to_string(endpoint_remote_hash()));
-    s.append(")");
-  } catch(...) {
-    const Exception& e = SWC_CURRENT_EXCEPTION("");
-    //SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
-    s.append(e.message());
-  }
-  s.append(" local=");
-  try{
-    s.append(endpoint_local_str());
-    s.append(" (hash=");
-    s.append(std::to_string(endpoint_local_hash()));
-    s.append(")");
-  } catch(...) {
-    const Exception& e = SWC_CURRENT_EXCEPTION("");
-    //SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
-    s.append(e.message());
-  }
-  return s;
+  out << ')';
 }
 
 void ConnHandler::write_or_queue(ConnHandler::Pending* pending) {
@@ -431,8 +409,10 @@ void ConnHandler::recved_buffer(const Event::Ptr& ev, asio::error_code ec,
       ev->error = Error::REQUEST_TRUNCATED_PAYLOAD;
       ev->data.free();
       ev->data_ext.free();
-      SWC_LOGF(LOG_WARN, "read, REQUEST PAYLOAD_TRUNCATED: n(%d) error=(%s) %s", 
-               n, ec.message().c_str(), ev->to_str().c_str());
+      SWC_LOG_OUT(LOG_WARN,
+        SWC_LOG_OSTREAM << "read, REQUEST PAYLOAD_TRUNCATED: n(" << n << ") ";
+        ev->print(SWC_LOG_OSTREAM);
+      );
     }
   }
   

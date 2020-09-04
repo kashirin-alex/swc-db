@@ -47,15 +47,13 @@ ConnQueues::ConnQueues(const Serialized::Ptr service,
 
 ConnQueues::~ConnQueues() { }
 
-std::string ConnQueues::to_string() {
-  std::string s("ConnQueues: ");
+void ConnQueues::print(std::ostream& out) {
+  out << "ConnQueues: ";
   Mutex::scope lock(m_mutex);
-
   for(auto& host : *this) {
-    s.append(host->to_string());
-    s.append("\n");
+    host->print(out);
+    out << '\n';
   }
-  return s;
 }
 
 Host::Ptr ConnQueues::get(const EndPoints& endpoints){

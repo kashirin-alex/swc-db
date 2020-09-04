@@ -103,17 +103,18 @@ class RangeQuerySelect : public ReqScan {
     }
 
     profile.finished();
-    SWC_LOGF(LOG_INFO, "Range(%lu/%lu) err=%d(%s) Select-%s", 
-      range->cfg->cid, range->rid, err, Error::get_text(err),
-      profile.to_string().c_str());
+    SWC_LOG_OUT(LOG_INFO,
+      SWC_LOG_OSTREAM 
+        << "Range(" << range->cfg->cid  << '/' << range->rid << ") ";
+      Error::print(SWC_LOG_OSTREAM, err);
+      profile.print(SWC_LOG_OSTREAM << " Select-");
+    );
   }
 
-  std::string to_string() const override {
-    std::string s("ReqScan(");
-    s.append(ReqScan::to_string());
-    s.append(" ");
-    s.append(profile.to_string());
-    return s;
+  void print(std::ostream& out) const override {
+    ReqScan::print(out << "ReqScan(");
+    profile.print(out << ' ');
+    out << ')';
   }
 
   RangePtr      range;

@@ -56,7 +56,7 @@ class ConnQueues final :
 
   ~ConnQueues();
 
-  std::string to_string();
+  void print(std::ostream& out);
 
   Host::Ptr get(const EndPoints& endpoints);
 

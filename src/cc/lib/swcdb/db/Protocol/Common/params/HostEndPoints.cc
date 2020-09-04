@@ -43,17 +43,11 @@ void HostEndPoints::internal_decode(const uint8_t** bufp, size_t* remainp) {
     endpoints[i] = Serialization::decode(bufp, remainp);
 }
 
-std::string HostEndPoints::to_string() const {
-  std::string s("endpoints=(");
-  for(auto& endpoint : endpoints){
-    s.append("[");
-    s.append(endpoint.address().to_string());
-    s.append("]:");
-    s.append(std::to_string(endpoint.port()));
-    s.append(",");
-  }
-  s.append(")");
-  return s;
+void HostEndPoints::print(std::ostream& out) const {
+  out << "endpoints=[";
+  for(auto& endpoint : endpoints)
+    out << endpoint << ',';
+  out << ']';
 }
 
 }}}}

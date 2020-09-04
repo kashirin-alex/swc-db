@@ -97,6 +97,12 @@ class Interval final {
 
   std::string to_string() const;
 
+  void print(std::ostream& out) const;
+
+  friend std::ostream& operator<<(std::ostream& out, const Interval& intval) {
+    intval.print(out);
+    return out;
+  }
 
   DB::Cell::Key     key_begin;
   DB::Cell::Key     key_end;  

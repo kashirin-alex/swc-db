@@ -120,6 +120,8 @@ extern LogWriter logger;
 
 #define SWC_LOG_OSTREAM std::cout
 
+#define SWC_LOG_PRINTF(fmt, ...) printf(fmt, __VA_ARGS__)
+
 #define SWC_PRINT { \
   ::SWC::Mutex::scope lock(::SWC::Logger::logger.mutex); \
   SWC_LOG_OSTREAM
@@ -148,7 +150,7 @@ extern LogWriter logger;
   }
 
 #define SWC_LOGF(priority, fmt, ...) \
-  SWC_LOG_OUT(priority, printf(fmt, __VA_ARGS__); )
+  SWC_LOG_OUT(priority, SWC_LOG_PRINTF(fmt, __VA_ARGS__); )
 
 
 #ifndef SWC_DISABLE_LOG_FATAL ////

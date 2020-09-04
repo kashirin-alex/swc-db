@@ -81,7 +81,7 @@ class Readers final : private std::vector<Read::Ptr> {
 
   void replace(int &err, CellStore::Writers& w_cellstores);
 
-  std::string to_string(bool minimal=true) const;
+  void print(std::ostream& out, bool minimal=true) const;
 
   private:
   

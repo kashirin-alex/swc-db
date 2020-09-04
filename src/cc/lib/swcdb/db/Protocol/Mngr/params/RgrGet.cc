@@ -75,30 +75,18 @@ RgrGetRsp::RgrGetRsp(cid_t cid, rid_t rid)
 
 RgrGetRsp::~RgrGetRsp() { }
 
-std::string RgrGetRsp::to_string() const {
-  std::string s("Ranger(");
-  s.append("err=");
-  s.append(std::to_string(err));
-  if(err) {
-    s.append("(");
-    s.append(Error::get_text(err));
-    s.append(")");
-  } else {
-    s.append(" cid=");
-    s.append(std::to_string(cid));
-    s.append(" rid=");
-    s.append(std::to_string(rid));
-    s.append(" ");
-    s.append(Common::Params::HostEndPoints::to_string());
+void RgrGetRsp::print(std::ostream& out) const {
+  out << "Ranger(";
+  Error::print(out, err);
+  if(!err) {
+    out << " cid=" << cid << " rid=" << rid;
+    Common::Params::HostEndPoints::print(out << ' ');
     if(cid == 1) {
-      s.append(" RangeBegin");
-      s.append(range_begin.to_string());
-      s.append(" RangeEnd");
-      s.append(range_end.to_string());
+      range_begin.print(out << " RangeBegin"); 
+      range_end.print(out << " RangeEnd");
     }
   }
-  s.append(")");
-  return s;
+  out << ')';
 }
 
 size_t RgrGetRsp::internal_encoded_length() const {

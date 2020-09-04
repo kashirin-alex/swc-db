@@ -158,18 +158,13 @@ class Range final {
         DB::KeySeq::compare(cfg->key_seq, key, m_key_end) != Condition::GT);
   }
 
-  std::string to_string() {
+  void print(std::ostream& out) {
     std::shared_lock lock(m_mutex);
-    std::string s("[");
-    s.append(cfg->to_string());
-    s.append(" rid=");
-    s.append(std::to_string(rid));
-    s.append(" state=");
-    s.append(std::to_string(m_state));
-    s.append(" rgr=");
-    s.append(std::to_string(m_rgrid));
-    s.append("]");
-    return s;
+    cfg->print(out << '(');
+    out << " rid="    << rid
+        << " state="  << m_state
+        << " rgr="    << m_rgrid
+        << ')';
   }
 
   private:

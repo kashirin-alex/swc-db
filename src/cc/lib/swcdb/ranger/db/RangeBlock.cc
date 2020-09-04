@@ -180,10 +180,14 @@ size_t Block::load_cells(const uint8_t* buf, size_t remain,
       cell.read(&buf, &remain);
       
     } catch(...) {
-      SWC_LOGF(LOG_ERROR, 
-        "Cell trunclated at count=%lu/%lu remain=%lu %s < key <= %s",
-        count, avail, remain, 
-        m_prev_key_end.to_string().c_str(), m_key_end.to_string().c_str());
+      const Exception& e = SWC_CURRENT_EXCEPTION("");
+      SWC_LOG_OUT(LOG_ERROR,
+        SWC_LOG_OSTREAM << "Cell trunclated at count="
+          << count << '/' << avail << " remain=" << remain;
+        m_prev_key_end.print(SWC_LOG_OSTREAM << ' ');
+        m_key_end.print(SWC_LOG_OSTREAM << " < key <= ");
+        e.print(SWC_LOG_OSTREAM << ' ');
+      );
       break;
     }
     
@@ -257,7 +261,8 @@ void Block::loaded(int err, const BlockLoader* loader) {
   }
 
   if(err) {
-    SWC_LOGF(LOG_ERROR, "Block::loaded err=%d(%s)", err, Error::get_text(err));
+    SWC_LOG_OUT(LOG_ERROR, 
+      Error::print(SWC_LOG_OSTREAM << "Block::loaded ", err); );
     quick_exit(1); // temporary halt
     //run_queue(err);
     return;
@@ -379,37 +384,30 @@ bool Block::_need_split() const {
     !m_cells.has_one_key();
 }
 
-std::string Block::to_string() {
-  std::string s("Block(state=");
+void Block::print(std::ostream& out) {
+  out << "Block(state=";
   {
     Mutex::scope lock(m_mutex_state);
-    s.append(std::to_string((uint8_t)m_state));
+    out << (int)m_state;
   }
-  s.append(" ");
-  s.append(Types::to_string(m_cells.key_seq));
-  s.append(" ");
-  s.append(m_prev_key_end.to_string());
-  s.append(" < key <= ");
+  out << ' ' << Types::to_string(m_cells.key_seq)
+      << ' ' << m_prev_key_end << " < key <= ";
   {
     LockAtomic::Unique::scope lock(m_mutex_intval);
-    s.append(m_key_end.to_string());
+    out << m_key_end;
   }
 
+  out << ' ';
   if(m_mutex.try_lock()) {
-    s.append(" ");
-    s.append(m_cells.to_string());
+    m_cells.print(out);
     m_mutex.unlock();
   } else {
-    s.append("CellsLocked");
+    out << "CellsLocked";
   }
 
-  s.append(" queue=");
-  s.append(std::to_string(m_queue.size()));
-
-  s.append(" processing=");
-  s.append(std::to_string(m_processing));
-  s.append(")");
-  return s;
+  out << " queue=" << m_queue.size()
+      << " processing=" << m_processing
+      << ')';
 }
 
 Block::ScanState Block::_scan(const ReqScan::Ptr& req, bool synced) {

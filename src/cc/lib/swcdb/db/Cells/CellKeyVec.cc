@@ -166,30 +166,32 @@ void KeyVec::decode(const uint8_t** bufp, size_t* remainp) {
 }
 
 std::string KeyVec::to_string() const {
-  std::string s("Key(");
-  s.append("sz=");
-  s.append(std::to_string(size()));
-  s.append(" [");
-  char hex[5];
-  for(auto it = cbegin(); it < cend(); ) {
-    s += '"';
-    for(auto chrp = it->cbegin(); chrp < it->cend(); ++chrp) {
-      if(*chrp == '"')
-        s += '\\';
-      if(31 < *chrp && *chrp < 127) {
-        s += *chrp;
-      } else {
-        sprintf(hex, "0x%X", *chrp);
-        s.append(hex, 4);
-      }
-    }
-    s += '"';
-    if(++it < cend())
-      s.append(",");
-  }
-  s.append("])");
-  return s;
+  std::stringstream ss; 
+  print(ss);
+  return ss.str();
 }
 
+void KeyVec::print(std::ostream& out) const {
+  out << "Key(sz=" << size() << " [";
+  char hex[5];
+  hex[4] = 0;
+  for(auto it = cbegin(); it < cend(); ) {
+    out << '"';
+    for(auto chrp = it->cbegin(); chrp < it->cend(); ++chrp) {
+      if(*chrp == '"')
+        out << '\\';
+      if(31 < *chrp && *chrp < 127) {
+        out << *chrp;
+      } else {
+        sprintf(hex, "0x%X", *chrp);
+        out << hex;
+      }
+    }
+    out << '"';
+    if(++it < cend())
+      out << ',';
+  }
+  out << "])";
+}
 
 }}}

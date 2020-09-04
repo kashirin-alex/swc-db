@@ -129,49 +129,35 @@ class ColumnCfg final {
             : RangerEnv::get()->cfg_compact_percent->get();
   }
 
-
-  std::string to_string() const {
-    std::string s("col(");
+  void print(std::ostream& out) const {
+    out << "col(";
     if(deleting) 
-      s.append("DELETING ");
-
-    s.append("cid=");
-    s.append(std::to_string(cid));
-    s.append(" seq=");
-    s.append(Types::to_string(key_seq));
-    s.append(" type=");
-    s.append(Types::to_string(col_type));
-    s.append(")");
-
-    s.append(" cell(versions=");
-    s.append(std::to_string(c_versions));
-    s.append(" ttl=");
-    s.append(std::to_string(c_ttl));
-    s.append(")");
-
-    s.append(" blk(enc=");
-    s.append(Types::to_string(blk_enc));
-    s.append(" size=");
-    s.append(std::to_string(blk_size));
-    s.append(" cells=");
-    s.append(std::to_string(blk_cells));
-    s.append(")");
-
-    s.append(" cs(");
-    s.append("replication=");
-    s.append(std::to_string((int)cs_replication));
-    s.append(" size=");
-    s.append(std::to_string(cs_size));
-    s.append(" max=");
-    s.append(std::to_string((int)cs_max));
-    s.append(" rollout=");
-    s.append(std::to_string((int)log_rout_ratio));
-    s.append(" compact=");
-    s.append(std::to_string((int)compact_perc));
-    s.append("%)");
-
-    return s;
+      out << "DELETING ";
+    out
+      << "cid="   << cid
+      << " seq="  << Types::to_string(key_seq)
+      << " type=" << Types::to_string(col_type)
+      << ')'
+      << " cell(versions=" << c_versions
+      << " ttl=" << c_ttl
+      << ')'
+      << " blk(enc="  << Types::to_string(blk_enc)
+      << " size="     << blk_size
+      << " cells="    << blk_cells
+      << ')'
+      << " cs(replication=" << (int)cs_replication
+      << " size="           << cs_size
+      << " max="            << (int)cs_max
+      << " rollout="        << (int)log_rout_ratio
+      << " compact="        << (int)compact_perc << '%'
+      << ')';
   }
+
+  friend std::ostream& operator<<(std::ostream& out, const ColumnCfg& cfg) {
+    cfg.print(out);
+    return out;
+  }
+
 };
 
 

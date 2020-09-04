@@ -18,22 +18,20 @@ Acceptor::Acceptor(asio::ip::tcp::acceptor& acceptor,
   set_option(asio::ip::tcp::acceptor::reuse_address(true));
   set_option(asio::ip::tcp::no_delay(true));
 
-  SWC_LOGF(
-    LOG_INFO, "Listening On: [%s]:%d fd=%lu %s", 
-    local_endpoint().address().to_string().c_str(), 
-    local_endpoint().port(), 
-    (size_t)native_handle(),
-    is_plain ? "PLAIN" : "SECURE"
+  SWC_LOG_OUT(LOG_INFO,
+    SWC_LOG_OSTREAM << "Listening On: " << local_endpoint()
+      << " fd=" << (size_t)native_handle()
+      << ' ' << (is_plain ? "PLAIN" : "SECURE");
   );
   if(is_plain)
     do_accept();
 }
 
 void Acceptor::stop() {
-  SWC_LOGF(LOG_INFO, "Stopping to Listen On: [%s]:%d fd=%lu", 
-           local_endpoint().address().to_string().c_str(), 
-           local_endpoint().port(), 
-           (size_t)native_handle());
+  SWC_LOG_OUT(LOG_INFO,
+    SWC_LOG_OSTREAM << "Stopping to Listen On: " << local_endpoint()
+      << " fd=" << (size_t)native_handle();
+  );
 
   if(is_open())
     close();
@@ -145,10 +143,9 @@ SerializedServer::SerializedServer(
       auto& endpoint = endpoints[i];
       bool ssl_conn = m_ssl_cfg && m_ssl_cfg->need_ssl(endpoint);
 
-      SWC_LOGF(
-        LOG_DEBUG, "Binding On: [%s]:%d %s", 
-        endpoint.address().to_string().c_str(), endpoint.port(),
-        ssl_conn ? "SECURE" : "PLAIN"
+      SWC_LOG_OUT(LOG_INFO,
+        SWC_LOG_OSTREAM << "Binding On: " << endpoint
+          << ' ' << (ssl_conn ? "SECURE" : "PLAIN");
       );
 
       if(reactor == 0) { 

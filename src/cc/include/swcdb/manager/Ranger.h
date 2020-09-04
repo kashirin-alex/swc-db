@@ -34,25 +34,16 @@ class Ranger : public Protocol::Common::Params::HostEndPoints {
 
   virtual ~Ranger() { }
 
-  std::string to_string() {
-    std::string s("[rgrid=");
-    s.append(std::to_string(rgrid));
-    s.append(" state=");
-    s.append(std::to_string(state));
-    s.append(" failures=");
-    s.append(std::to_string(failures));
-    s.append(" load_scale=");
-    s.append(std::to_string(load_scale));
-    s.append(" interm_ranges=");
-    s.append(std::to_string(interm_ranges));
-    s.append(" ");
-    s.append(Protocol::Common::Params::HostEndPoints::to_string());
-    if(m_queue != nullptr) {
-      s.append(" ");
-      s.append(m_queue->to_string());
-    }
-    s.append("]");
-    return s;
+  void print(std::ostream& out) const {
+    out << "[rgrid="          << rgrid
+        << " state="          << Types::to_string(state)
+        << " failures="       << failures
+        << " load_scale="     << load_scale
+        << " interm_ranges="  << interm_ranges;
+    Protocol::Common::Params::HostEndPoints::print(out << ' ');
+    if(m_queue)
+      m_queue->print(out << ' ');
+    out << ']';
   }
 
   size_t internal_encoded_length() const {

@@ -168,7 +168,7 @@ class Select final : public std::enable_shared_from_this<Select> {
 
     void add_call(const std::function<void()>& call);
 
-    std::string to_string();
+    void print(std::ostream& out);
 
     private:
 
@@ -193,7 +193,7 @@ class Select final : public std::enable_shared_from_this<Select> {
 
     virtual ~Scanner();
 
-    std::string to_string();
+    void print(std::ostream& out);
     
     void locate_on_manager(bool next_range=false);
 

@@ -103,7 +103,7 @@ class Read final {
 
   size_t blocks_count() const;
 
-  std::string to_string(bool minimal=true) const;
+  void print(std::ostream& out, bool minimal=true) const;
 
   private:
 
@@ -161,7 +161,7 @@ class Write final {
 
   void remove(int &err);
 
-  std::string to_string();
+  void print(std::ostream& out) const;
 
   private:
   

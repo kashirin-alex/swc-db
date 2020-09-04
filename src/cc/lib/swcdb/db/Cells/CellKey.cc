@@ -307,12 +307,9 @@ bool Key::equal(const std::vector<std::string>& key) const {
 }
 
 std::string Key::to_string() const {
-  std::string s("Key(");
   std::stringstream ss;
-  display_details(ss, true);
-  s.append(ss.str());
-  s.append(")");
-  return s;
+  print(ss);
+  return ss.str();
 }
 
 void Key::display_details(std::ostream& out, bool pretty) const {
@@ -348,6 +345,11 @@ void Key::display(std::ostream& out, bool pretty, const char* sep) const {
   }
   out << ']'; 
   
+}
+
+void Key::print(std::ostream& out) const {
+  display_details(out << "Key(", true);
+  out << ')';
 }
 
 SWC_SHOULD_INLINE

@@ -101,7 +101,7 @@ class Fragments final : private std::vector<Fragment::Ptr> {
 
   uint64_t next_id();
 
-  std::string to_string(bool minimal=true);
+  void print(std::ostream& out, bool minimal);
 
   private:
 

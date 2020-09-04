@@ -208,7 +208,7 @@ void Range::load(const ResponseCallback::Ptr& cb) {
   if(is_loaded || err)
     return loaded(err, cb);
 
-  SWC_LOGF(LOG_DEBUG, "LOADING RANGE %s", to_string().c_str());
+  SWC_LOG_OUT(LOG_DEBUG, print(SWC_LOG_OSTREAM << "LOADING RANGE "); );
 
   if(!Env::FsInterface::interface()->exists(err, get_path(CELLSTORES_DIR))) {
     if(!err)
@@ -348,7 +348,7 @@ void Range::unload(const Callback::RangeUnloaded_t& cb, bool completely) {
     Env::FsInterface::interface()->remove(
       err, DB::RangeBase::get_path_ranger(m_path));
     
-  SWC_LOGF(LOG_INFO, "UNLOADED RANGE cid=%lu rid=%lu err=%d(%s)", 
+  SWC_LOGF(LOG_INFO, "UNLOADED RANGE cid=%lu rid=%lu error=%d(%s)", 
                       cfg->cid, rid, err, Error::get_text(err));
   cb(err);
 }
@@ -369,7 +369,7 @@ void Range::remove(int &err, bool meta) {
 
   Env::FsInterface::interface()->rmdir(err, get_path(""));  
 
-  SWC_LOGF(LOG_INFO, "REMOVED RANGE %s", to_string().c_str());
+  SWC_LOG_OUT(LOG_INFO, print(SWC_LOG_OSTREAM << "REMOVED RANGE "); );
 }
 
 void Range::wait_queue() {
@@ -491,28 +491,21 @@ void Range::create(int &err, const CellStore::Writers& w_cellstores) {
   fs->remove(err, DB::RangeBase::get_path_ranger(m_path));
 }
 
-std::string Range::to_string(bool minimal) {
-  std::string s("(");
-  s.append(cfg->to_string());
-  s.append(" rid=");
-  s.append(std::to_string(rid));
-  s.append(" type=");
-  s.append(Types::to_string(type));
-  s.append(" state=");
+void Range::print(std::ostream& out, bool minimal) {
+  cfg->print(out << '(');
+  out << " rid=" << rid 
+      << " type=" << Types::to_string(type)
+      << " state=";
   {
     std::shared_lock lock(m_mutex);
-    s.append(std::to_string(m_state));
+    out << m_state;
   }
-  s.append(" ");
-  s.append(blocks.to_string(minimal));
-  s.append(" prev=");
-  s.append(prev_range_end.to_string());
-  s.append(" ");
+  blocks.print(out << ' ', minimal);
+  prev_range_end.print(out << " prev=");
   m_mutex_intval.lock();
-  s.append(m_interval.to_string());
+  m_interval.print(out << ' ');
   m_mutex_intval.unlock();
-  s.append(")");
-  return s;
+  out << ')'; 
 }
 
 void Range::loaded(int &err, const ResponseCallback::Ptr& cb) {
@@ -531,10 +524,12 @@ void Range::last_rgr_chk(int &err, const ResponseCallback::Ptr& cb) {
   Files::RgrData::Ptr rs_last = get_last_rgr(err);
 
   if(rs_last->endpoints.size() && 
-     !has_endpoint(rgr_data->endpoints, rs_last->endpoints)){
-    SWC_LOGF(LOG_DEBUG, "RANGER-LAST=%s RANGER-NEW=%s", 
-              rs_last->to_string().c_str(), rgr_data->to_string().c_str());
-                
+     !has_endpoint(rgr_data->endpoints, rs_last->endpoints)) {
+    SWC_LOG_OUT(LOG_DEBUG,
+      rs_last->print(SWC_LOG_OSTREAM << "RANGER LAST=");
+      rgr_data->print(SWC_LOG_OSTREAM << " NEW=");
+    );
+
     Env::Clients::get()->rgr->get(rs_last->endpoints)->put(
       std::make_shared<Protocol::Rgr::Req::RangeUnload>(
         shared_from_this(), cb));
@@ -601,13 +596,15 @@ void Range::load(int &err, const ResponseCallback::Ptr& cb) {
 void Range::loaded_ack(int err, const ResponseCallback::Ptr& cb) {
   if(!err)
     set_state(State::LOADED);
-      
-  if(is_loaded()) {
-    SWC_LOGF(LOG_INFO, "LOADED RANGE %s", to_string().c_str());
-  } else {
-    SWC_LOGF(LOG_WARN, "LOAD RANGE FAILED err=%d(%s) %s", 
-              err, Error::get_text(err), to_string(false).c_str());
-  }
+  
+  SWC_LOG_OUT((is_loaded() ? LOG_INFO : LOG_WARN),
+    SWC_LOG_OSTREAM << "LOAD RANGE ";
+    if(_log_pr == LOG_INFO)
+      SWC_LOG_OSTREAM << "SUCCEED";
+    else
+      Error::print(SWC_LOG_OSTREAM << "FAILED ", err);
+    print(SWC_LOG_OSTREAM << ' ', _log_pr == LOG_INFO);
+  );
   loaded(err, cb); // RSP-LOAD-ACK
 }
 

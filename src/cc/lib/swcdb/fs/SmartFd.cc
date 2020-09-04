@@ -64,9 +64,20 @@ bool SmartFd::valid() const {
 }
 
 std::string SmartFd::to_string() const {
+  LockAtomic::Unique::scope lock(m_mutex);
   return format("SmartFd(filepath=%s, flags=%u, fd=%d, pos=%lu)", 
-                m_filepath.c_str(), flags(), fd(), pos());
+                m_filepath.c_str(), m_flags, m_fd, m_pos);
 }
+
+void SmartFd::print(std::ostream& out) const {
+  LockAtomic::Unique::scope lock(m_mutex);
+  out << "SmartFd(filepath=" << m_filepath
+      << ", flags=" << m_flags
+      << ", fd=" << m_fd
+      << ", pos=" << m_pos
+      << ')';
+}
+
 
 }}
 

@@ -78,16 +78,20 @@ void Scan::internal_decode(const uint8_t** bufp, size_t* remainp) {
   flags.decode(bufp, remainp);
 }
 
-std::string Scan::to_string() {  
-  std::string s("Scan(columns=[");
-  for(auto& col : columns){
-    s.append(col->to_string());
-    s.append(", ");
+std::string Scan::to_string() const {
+  std::stringstream ss;
+  print(ss);
+  return ss.str();
+}
+
+void Scan::print(std::ostream& out) const {
+  out << "Scan(columns=[";
+  for(auto& col : columns) {
+    col->print(out);
+    out << ", ";
   }
-  s.append("], flags=");
-  s.append(flags.to_string());
-  s.append(")");
-  return s;
+  flags.print(out << "], flags=");
+  out << ')';
 }
 
 void Scan::display(std::ostream& out, bool pretty, std::string offset) const {

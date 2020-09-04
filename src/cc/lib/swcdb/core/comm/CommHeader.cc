@@ -113,20 +113,17 @@ void CommHeader::initialize_from_request_header(const CommHeader &req_header) {
   data_ext_chksum = 0;
 }
 
-std::string CommHeader::to_string() const {
-  std::string s = "version=" + std::to_string((int)version);
-  s += " header_len=" + std::to_string((int)header_len);
-  s += " flags=" + std::to_string((int)flags);
-  s += " id=" + std::to_string((int)id);
-  s += " timeout_ms=" + std::to_string((int)timeout_ms);
-  s += " command=" + std::to_string((int)command);
-  s += " buffers=" + std::to_string(buffers);
-  s += " data(sz=" + std::to_string(data_size);
-  s += " chk=" + std::to_string(data_chksum) + ")";
-  s += " ext(sz=" + std::to_string(data_ext_size);
-  s += " chk=" + std::to_string(data_ext_chksum) + ")";
-  s += " checksum=" + std::to_string((int)checksum);
-  return s;
+void CommHeader::print(std::ostream& out) const {
+  out << "version="     << (int)version
+      << " header_len=" << (int)header_len
+      << " flags="      << (int)flags
+      << " id="         << (int)id
+      << " timeout_ms=" << (int)timeout_ms
+      << " command="    << (int)command
+      << " buffers="    << (int)buffers
+      << " data(sz=" << data_size     << " chk=" << data_chksum << ')'
+      << " ext(sz="  << data_ext_size << " chk=" << data_ext_chksum << ')'
+      << " checksum="   << (int)checksum ;
 }
   
 

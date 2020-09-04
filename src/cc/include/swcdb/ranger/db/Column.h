@@ -59,7 +59,7 @@ class Column final : private std::unordered_map<rid_t, RangePtr> {
 
   size_t release(size_t bytes=0);
 
-  std::string to_string();
+  void print(std::ostream& out, bool minimal=true);
 
   private:
 

@@ -218,16 +218,14 @@ size_t Columns::release(size_t bytes) {
   return released;
 }
 
-std::string Columns::to_string() {
-  std::string s("columns=(");
+void Columns::print(std::ostream& out, bool minimal) {
+  out << "columns=[";
   Mutex::scope lock(m_mutex);
-
   for(auto it = begin(); it != end(); ++it){
-    s.append(it->second->to_string());
-    s.append(",");
+    it->second->print(out, minimal);
+    out << ", ";
   }
-  s.append(")");
-  return s;
+  out << "]"; 
 }
 
 

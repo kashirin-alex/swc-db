@@ -251,22 +251,22 @@ void Interval::decode(const uint8_t **ptr, size_t *remain, bool owner){
 }
 
 std::string Interval::to_string() const {
-  std::string s("Interval(begin=");
-  s.append(key_begin.to_string());
-  s.append( " end=");
-  s.append(key_end.to_string());
-  s.append( " earliest=");
-  s.append(ts_earliest.to_string());
-  s.append( " latest=");
-  s.append(ts_latest.to_string());
-  s.append( " min=");
-  s.append(aligned_min.to_string());
-  s.append( " max=");
-  s.append(aligned_max.to_string());
-  s.append( " was_set=");
-  s.append(was_set?"true":"false");
-  
-  return s;
+  std::stringstream ss;
+  print(ss);
+  return ss.str();
+}
+
+void Interval::print(std::ostream& out) const {
+  out 
+    << "Interval("
+    << "begin="     << key_begin
+    << " end="      << key_end
+    << " earliest=" << ts_earliest
+    << " latest="   << ts_latest
+    << " min="      << aligned_min
+    << " max="      << aligned_max
+    << " was_set=" << (was_set? "true" : "false")
+    << ')';
 }
 
 

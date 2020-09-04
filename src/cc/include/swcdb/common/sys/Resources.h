@@ -132,12 +132,10 @@ class Resources final {
     m_timer.cancel();
   }
 
-  std::string to_string() const {
-    std::string s("Resources(");
-    s.append("Mem-MB-");
-    s.append(ram.to_string(1048576));
-    s.append(")");
-    return s;
+  void print(std::ostream& out) const {
+    out << "Resources(";
+    ram.print(out << "Mem-MB-", 1048576);
+    out << ')';
   }
 
   private:
@@ -166,8 +164,11 @@ class Resources final {
     if(try_release) {
       if(m_release_call) {
         size_t released_bytes = m_release_call(bytes);
-        SWC_LOGF(LOG_DEBUG, "%s mem-released=%lu/%lu", 
-                  to_string().c_str(), released_bytes, bytes);
+        SWC_LOG_OUT(LOG_DEBUG, 
+          print(SWC_LOG_OSTREAM);
+          SWC_LOG_OSTREAM 
+            << " mem-released=" << released_bytes << '/' << bytes;
+        );
       }
 
       malloc_release();
@@ -221,7 +222,7 @@ class Resources final {
         ram.chk_ms = MAX_RAM_CHK_INTVAL_MS;
       
       if(next_major_chk % 100 == 0 && is_low_mem_state())
-        SWC_LOGF(LOG_WARN, "Low-Memory state %s", to_string().c_str());
+        SWC_LOG_OUT(LOG_WARN, print(SWC_LOG_OSTREAM << "Low-Memory state "););
       
       size_t concurrency = !m_concurrency || next_major_chk % 100 == 0
         ? std::thread::hardware_concurrency() : 0;
@@ -261,7 +262,10 @@ class Resources final {
           checker();
         } catch(...) {
           const Exception& e = SWC_CURRENT_EXCEPTION("Resources:checker");
-          SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << to_string() << e; );
+          SWC_LOG_OUT(LOG_ERROR, 
+            print(SWC_LOG_OSTREAM);
+            SWC_LOG_OSTREAM << e; 
+          );
           schedule();
         }
     }); 
@@ -279,22 +283,14 @@ class Resources final {
 
     Component(uint32_t ms): chk_ms(ms) { }
 
-    std::string to_string(uint32_t base = 1) const {
-      std::string s("Res(");
-      s.append("total=");
-      s.append(std::to_string(total/base));
-      s.append(" free=");
-      s.append(std::to_string(free/base));
-      s.append(" used=");
-      s.append(std::to_string(used_reg/base));
-      s.append("/");
-      s.append(std::to_string(used/base));
-      s.append(" allowed=");
-      s.append(std::to_string(allowed/base));  
-      s.append(" reserved=");
-      s.append(std::to_string(reserved/base));      
-      s.append(")");
-      return s;
+    void print(std::ostream& out, uint32_t base = 1) const {
+      out << "Res("
+          << "total=" << (total/base)
+          << " free=" << (free/base)
+          << " used=" << (used_reg/base) << '/' << (used/base)
+          << " allowed=" << (allowed/base)
+          << " reserved=" << (reserved/base)
+          << ')';
     }
   };
 

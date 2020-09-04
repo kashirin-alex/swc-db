@@ -213,7 +213,7 @@ void MngrRole::fill_states(const MngrsStatus& states, uint64_t token,
   schedule_checkin(
     new_recs ? cfg_delay_updated->get() : cfg_check_interval->get());
     
-  SWC_LOGF(LOG_DEBUG, "%s", to_string().c_str());
+  SWC_LOG_OUT(LOG_DEBUG, print(SWC_LOG_OSTREAM); );
   apply_role_changes();
 }
 
@@ -256,12 +256,11 @@ void MngrRole::disconnection(const EndPoint& endpoint_server,
     host_set->state == Types::MngrState::ACTIVE ? 
     cfg_delay_fallback->get() : cfg_check_interval->get());
 
-  SWC_LOGF(LOG_DEBUG, "disconnection, srv=%d, server=[%s]:%d, client=[%s]:%d", 
-            (int)srv,
-            endpoint_server.address().to_string().c_str(), 
-            endpoint_server.port(), 
-            endpoint_client.address().to_string().c_str(), 
-            endpoint_client.port());
+  SWC_LOG_OUT(LOG_DEBUG, 
+    SWC_LOG_OSTREAM << "disconnection, srv=" << srv 
+                    << " server=" << endpoint_server
+                    << " client=" << endpoint_client;
+  );
   if(host_set->state != Types::MngrState::ACTIVE)
     update_state(endpoint_server, Types::MngrState::OFF);
     // m_major_updates = true;
@@ -288,25 +287,17 @@ void MngrRole::stop() {
   }
 }
 
-std::string MngrRole::to_string() {
-  std::string s("Mngrs Role:");
-    
-  for(auto& h : m_states) {
-    s.append("\n ");
-    s.append(h->to_string());
-  }
-  s.append("\nMngrInchain ");
-  s.append(m_mngr_inchain->to_string());
+void MngrRole::print(std::ostream& out) {
+  out << "Mngrs Role:";
+  for(auto& h : m_states)
+    h->print(out << "\n ");
 
-  s.append("\nLocal-Endpoints: ");
-  for(auto& endpoint : m_local_endpoints) {
-    s.append(" [");
-    s.append(endpoint.address().to_string());
-    s.append("]:");
-    s.append(std::to_string(endpoint.port()));
-    s.append(",");
-  }
-  return s;
+  m_mngr_inchain->print(out << "\nMngrInchain ");
+
+  out << "\nLocal-Endpoints: [";
+  for(auto& endpoint : m_local_endpoints)
+    out << endpoint << ',';
+  out << ']';
 }
  
 void MngrRole::_apply_cfg() {

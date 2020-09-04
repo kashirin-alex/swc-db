@@ -113,7 +113,7 @@ void check(SWC::Types::KeySeq key_seq, SWC::Types::Column typ,
 
 
   if(cells_mutable->size() != expected_sz) {
-    std::cerr << "\n" << cells_mutable->to_string(true);
+    cells_mutable->print(std::cerr << "\n", true);
     std::cerr << "INSERT SIZE NOT AS EXPECTED, "
               << "expected(" << expected_sz << ") != result(" << cells_mutable->size()  << ")\n";
     exit(1);
@@ -169,7 +169,7 @@ void check(SWC::Types::KeySeq key_seq, SWC::Types::Column typ,
   }
   if(SWC::Types::is_counter(typ) 
       ? count == num_cells : count != (size_t)3*max_versions ) {
-    //std::cerr << "\n" << cells_mutable->to_string(true);
+    //cells_mutable->print(std::cerr << "\n", true);
     std::cout << " skips=" << skips 
               << " count="<< count << " counted=" << counted << " \n";
     std::cerr << "\nBad scan, expected=" << 3*max_versions 
@@ -192,7 +192,7 @@ void check(SWC::Types::KeySeq key_seq, SWC::Types::Column typ,
   /// 
 
   if(cells_mutable->size() != num_cells) {
-    std::cerr << "\n" << cells_mutable->to_string(true);
+    cells_mutable->print(std::cerr << "\n", true);
     std::cerr << "\nDELETE SIZE NOT AS EXPECTED, "
               << "expected(" << num_cells << ") != result(" << cells_mutable->size()  << ")\n";
     exit(1);
@@ -216,9 +216,9 @@ void check(SWC::Types::KeySeq key_seq, SWC::Types::Column typ,
             << " min="    << latency_mutable->min()
             << " max="    << latency_mutable->max()
             << " median=" << ts_total / num_cells
-            << " took="   << ts_total / 1000000 << "ms"
-            << " profile("   << req.profile.to_string() << ")"
-            << "\n"; 
+            << " took="   << ts_total / 1000000 << "ms ";       
+  req.profile.print(std::cout); 
+  std::cout << '\n'; 
 
   //std::cout << " clearing, ";
   

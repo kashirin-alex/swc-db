@@ -16,8 +16,9 @@ AppContext::AppContext() { }
 AppContext::~AppContext(){}
 
 void AppContext::handle(ConnHandlerPtr, const Event::Ptr& ev) {
-  SWC_LOG_OUT(LOG_WARN, SWC_LOG_OSTREAM
-    << "AppContext(handle is Virtual!)\n" << ev->to_str(); );
+  SWC_LOG_OUT(LOG_WARN,
+    ev->print(SWC_LOG_OSTREAM << "AppContext(handle is Virtual!)\n");
+  );
 }
 
 void AppContext::init(const EndPoints& endpoints) {
@@ -25,7 +26,7 @@ void AppContext::init(const EndPoints& endpoints) {
 }
   
 void AppContext::stop() {
-  std::cerr << "AppContext(stop is Virtual)!\n";
+  SWC_LOG(LOG_WARN, "AppContext(stop is Virtual)!");
 }
 
 

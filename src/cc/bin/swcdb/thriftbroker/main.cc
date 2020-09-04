@@ -105,12 +105,11 @@ int run() {
       );
       servers.push_back(server);
       std::thread([server]{ server->serve(); }).detach();
-
-      SWC_LOGF(
-        LOG_INFO, "Listening On: [%s]:%d fd=%ld %s", 
-        endpoint.address().to_string().c_str(), endpoint.port(), 
-        (ssize_t)server->getServerTransport()->getSocketFD(),
-        is_plain ? "PLAIN" : "SECURE"
+ 
+      SWC_LOG_OUT(LOG_INFO,
+        SWC_LOG_OSTREAM << "Listening On: " << endpoint
+          << " fd=" << (ssize_t)server->getServerTransport()->getSocketFD()
+          << ' ' << (is_plain ? "PLAIN" : "SECURE");
       );
     }
   }

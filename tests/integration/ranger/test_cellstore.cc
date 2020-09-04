@@ -120,9 +120,10 @@ size_t write_cs(SWC::csid_t csid, SWC::Ranger::RangePtr range, int any) {
           header.interval.key_end.free();
 
         cs_writer.block_encode(err, buff, header);
-        std::cout << " cs-size=" << cs_writer.size << "\n";
-        SWC_PRINT << "Write::block_encode header(" << header.to_string() 
-                  << ")" << SWC_PRINT_CLOSE;
+        SWC_PRINT << " cs-size=" << cs_writer.size << "\n"
+                  << "Write::block_encode header(";
+        header.print(SWC_LOG_OSTREAM);
+        SWC_LOG_OSTREAM << ')' << SWC_PRINT_CLOSE;
 
         buff.clear();
         hdlr_err(err);
@@ -134,7 +135,8 @@ size_t write_cs(SWC::csid_t csid, SWC::Ranger::RangePtr range, int any) {
   }
 
   cs_writer.finalize(err);
-  std::cout << "cs-wrote:    " << cs_writer.to_string() << "\n";
+  cs_writer.print(std::cout << "cs-wrote:    ");
+  std::cout << "\n";
   hdlr_err(err);
 
   std::cout << "\n  OK-wrote csid=" << csid << "\n\n";
@@ -165,7 +167,8 @@ void read_cs(SWC::csid_t csid, SWC::Ranger::RangePtr range,
     exit(1);
   }
 
-  std::cout << blocks.to_string() << "\n";
+   blocks.print(std::cout, true);
+   std::cout << '\n';
 
   auto req = SWC::Ranger::ReqScanTest::make();
   req->spec.flags.max_versions = 2;
@@ -179,13 +182,15 @@ void read_cs(SWC::csid_t csid, SWC::Ranger::RangePtr range,
     std::cout << " took=" <<  SWC::Time::now_ns()-took << " " << req->cells.to_string() << "\n" ;
     if(err) {
       std::cout << " err=" <<  err << "(" << SWC::Error::get_text(err) << ") " ;
-      std::cout << req->to_string() << "\n";
+      req->print(std::cout);
+      std::cout << "\n";
     }
   
     if(req->cells.size() != req->spec.flags.limit) {
       std::cerr << "ERROR: req->cells.size()=" << req->cells.size() 
-                << " expected=" << req->spec.flags.limit << "\n\n"
-                << blocks.to_string() << "\n";
+                << " expected=" << req->spec.flags.limit << "\n\n";
+      blocks.print(std::cerr, true);
+      std::cerr << '\n';
       exit(1);
     }
     
@@ -258,8 +263,9 @@ int main(int argc, char** argv) {
   blocks.cellstores.load_from_path(err);
 
   hdlr_err(err);
-
-  std::cout << blocks.to_string() << "\n";
+  
+  blocks.print(std::cout, true);
+  std::cout << '\n';
   
   if(blocks.cellstores.blocks_count() != expected_blocks) {
     std::cerr << "ERROR: .cellstores.blocks_count() != expected_blocks \n" 
@@ -299,23 +305,27 @@ int main(int argc, char** argv) {
 
         if(err) {
           std::cout << " err=" <<  err 
-                    << "(" << SWC::Error::get_text(err) << ") "
-                    << req->to_string() << "\n";
+                    << "(" << SWC::Error::get_text(err) << ") ";
+          req->print(std::cout);
+          std::cout << "\n";
         }
 
         if(req->cells.size() != req->spec.flags.limit) {
-          std::cout << "\n" << blocks.to_string() << "\n";
+          blocks.print(std::cout << '\n', true);
+          std::cout << '\n';
           std::cout << " err=" <<  err 
                     << "(" << SWC::Error::get_text(err) << ")\n";
           std::cerr << "ERROR: req->cells.size()=" << req->cells.size() 
-                    << " expected=" << req->spec.flags.limit << " \n"
-                    << req->to_string() << "\n";
+                    << " expected=" << req->spec.flags.limit << " \n";
+          req->print(std::cout);
+          std::cout << "\n";
           exit(1);
         }
 
         auto cell = req->cells.back();
         if(!cell->key.equal(match_key)) {
-          std::cout << "\n" << blocks.to_string() << "\n";
+          blocks.print(std::cout << '\n', true);
+          std::cout << '\n';
 
           std::cerr << "ERROR: !cell.key.equal(match_key) " << cell->to_string() 
                     << " expected=" << match_key.to_string()  << "\n"

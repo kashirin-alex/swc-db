@@ -89,25 +89,14 @@ void Header::decode_idx(const uint8_t** bufp, size_t* remainp) {
   checksum_data = Serialization::decode_vi32(bufp, remainp);
 }
 
-std::string Header::to_string() const {
-  std::string s;
-  s.append("offset=");
-  s.append(std::to_string(offset_data));
-  s.append(" encoder=");
-  s.append(Types::to_string(encoder));
-  s.append(" enc/size=");
-  s.append(std::to_string(size_enc));
-  s.append("/");
-  s.append(std::to_string(size_plain));
-  s.append(" cells_count=");
-  s.append(std::to_string(cells_count));
-  s.append(" checksum=");
-  s.append(std::to_string(checksum_data));
-  s.append(" is_any=");
-  s.append(std::to_string((int)is_any));
-  s.append(" ");
-  s.append(interval.to_string());
-  return s;
+void Header::print(std::ostream& out) const {
+  out << "offset=" << offset_data
+      << " encoder=" << Types::to_string(encoder)
+      << " enc/size=" << size_enc << '/' << size_plain
+      << " cells_count=" << cells_count
+      << " checksum=" << checksum_data
+      << " is_any=" << (int)is_any
+      << ' ' << interval;
 }
 
 

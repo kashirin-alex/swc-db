@@ -104,7 +104,7 @@ class Serialized final :
 
   IOCtxPtr io();        
   
-  std::string to_str(ConnHandlerPtr& conn);
+  void print(std::ostream& out, ConnHandlerPtr& conn);
   
   void stop();
 

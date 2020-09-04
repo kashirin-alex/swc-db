@@ -137,8 +137,8 @@ class Block final {
 
   bool _need_split() const;
 
-  std::string to_string();
-  
+  void print(std::ostream& out);
+
   private:
 
   ScanState _scan(const ReqScan::Ptr& req, bool synced=false);

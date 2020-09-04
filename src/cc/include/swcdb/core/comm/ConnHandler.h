@@ -100,7 +100,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   void accept_requests(DispatchHandler::Ptr hdlr, uint32_t timeout_ms=0);
   */
 
-  std::string to_string();
+  void print(std::ostream& out);
 
   protected:
 

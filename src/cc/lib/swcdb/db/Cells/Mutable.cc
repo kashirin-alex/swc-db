@@ -325,44 +325,28 @@ bool Mutable::write_and_free(const DB::Cell::Key& key_start,
   return false;
 }
 
-
-std::string Mutable::to_string(bool with_cells) const {
-  std::string s("Cells(size=");
-  s.append(std::to_string(size()));
-  s.append("/");
-  s.append(std::to_string(_size));
-  s.append(" bytes=");
-  s.append(std::to_string(_bytes));
-  s.append(" type=");
-  s.append(Types::to_string(type));
-  s.append(" max_revs=");
-  s.append(std::to_string(max_revs));
-  s.append(" ttl=");
-  s.append(std::to_string(ttl));
-  s.append(" buckets=");
-  s.append(std::to_string(buckets.size()));
-  
+void Mutable::print(std::ostream& out, bool with_cells) const {
+  out << "Cells(size=" << size() << '/' << _size 
+      << " bytes=" << _bytes 
+      << " type=" << Types::to_string(type)
+      << " max_revs=" << max_revs
+      << " ttl=" << ttl 
+      << " buckets=" << buckets.size();
   if(with_cells) {
     size_t count = 0;
-    s.append(" [\n");
+    out << " [\n";
     for(auto bucket : buckets) {
-      s.append(" sz=");
-      s.append(std::to_string(bucket->size()));
-      s.append(" (\n");
+      out << " sz=" << bucket->size() << " (\n";
       for(auto cell : *bucket) {
-        s.append(cell->to_string(type));
-        s.append("\n");
+        out << cell->to_string(type) << '\n';
         ++count;
       }
-     s.append(" )\n");
+     out << ")\n";
     }
-    s.append("]");
-    s.append(" counted=");
-    s.append(std::to_string(count));
+    out << "] counted=" << count;
   }
   
-  s.append(")");
-  return s;
+  out << ')';
 }
 
 

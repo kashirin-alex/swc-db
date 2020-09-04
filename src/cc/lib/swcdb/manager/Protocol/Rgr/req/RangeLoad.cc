@@ -67,8 +67,11 @@ void RangeLoad::loaded(int err, bool failure,
 
   Env::Mngr::rangers()->range_loaded(rgr, range, err, failure, false);
   col->sort(range, intval);
-  SWC_LOGF(LOG_INFO, "RANGE-STATUS %d(%s), %s", 
-            err, Error::get_text(err), range->to_string().c_str());
+  
+  SWC_LOG_OUT(LOG_INFO, 
+    Error::print(SWC_LOG_OSTREAM << "RANGE-STATUS ", err);
+    range->print(SWC_LOG_OSTREAM << ", ");
+  );
 }
 
 

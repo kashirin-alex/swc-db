@@ -209,9 +209,11 @@ void CompactRange::initial_commitlog_done(CompactRange::Ptr ptr,
         m_required_key_last, frag->interval.key_end) == Condition::GT)
     m_required_key_last.copy(frag->interval.key_end);
   }
-  SWC_LOGF(LOG_INFO,
-    "COMPACT-PROGRESS %lu/%lu early-split possible from scan offset %s",
-      range->cfg->cid, range->rid, m_required_key_last.to_string().c_str()
+  SWC_LOG_OUT(LOG_INFO, 
+    SWC_LOG_PRINTF(
+      "COMPACT-PROGRESS %lu/%lu early-split possible from scan offset ",
+      range->cfg->cid, range->rid);
+    m_required_key_last.print(SWC_LOG_OSTREAM);
   );
 
   range->compacting(state_default); // range scan &/ add can continue
@@ -259,14 +261,17 @@ void CompactRange::response(int& err) {
   req_ts = Time::now_ns();
 
   profile.finished();
-  SWC_LOGF(LOG_INFO, 
-    "COMPACT-PROGRESS %lu/%lu blocks=%lu avg(i=%ld e=%ld w=%ld)us %s err=%d",
-    range->cfg->cid, range->rid,
-    total_blocks.load(), 
-    (time_intval / total_blocks)/1000, 
-    (time_encode / total_blocks)/1000, 
-    (time_write / total_blocks)/1000, 
-    profile.to_string().c_str(), err
+  SWC_LOG_OUT(LOG_INFO, 
+    SWC_LOG_PRINTF(
+      "COMPACT-PROGRESS %lu/%lu blocks=%lu avg(i=%ld e=%ld w=%ld)us ",
+      range->cfg->cid, range->rid,
+      total_blocks.load(),
+      (time_intval / total_blocks)/1000,
+      (time_encode / total_blocks)/1000,
+      (time_write / total_blocks)/1000
+    );
+    Error::print(SWC_LOG_OSTREAM, err);
+    profile.print(SWC_LOG_OSTREAM << ' ');
   );
 
   bool finishing;
@@ -287,9 +292,12 @@ void CompactRange::response(int& err) {
       spec.key_start.set(spec.offset_key, Condition::EQ);
       spec.range_end.copy(spec.offset_key);
 
-      SWC_LOGF(LOG_INFO,
-        "COMPACT-PROGRESS %lu/%lu finishing early-split scan offset %s",
-        range->cfg->cid, range->rid, spec.offset_key.to_string().c_str()
+      SWC_LOG_OUT(LOG_INFO, 
+        SWC_LOG_PRINTF(
+          "COMPACT-PROGRESS %lu/%lu finishing early-split scan offset ",
+          range->cfg->cid, range->rid
+        );
+        spec.offset_key.print(SWC_LOG_OSTREAM);
       );
     }
   }
@@ -786,9 +794,11 @@ void CompactRange::split(rid_t new_rid, uint32_t split_at) {
     }
   );
 
-  SWC_LOGF(LOG_INFO, "COMPACT-SPLITTED %lu/%lu took=%ldns new-end=%s", 
-            range->cfg->cid, range->rid, Time::now_ns() - ts,
-            cellstores.back()->interval.key_end.to_string().c_str());
+  SWC_LOG_OUT(LOG_INFO, 
+    SWC_LOG_PRINTF("COMPACT-SPLITTED %lu/%lu took=%ldns new-end=",
+                    range->cfg->cid, range->rid, Time::now_ns() - ts);
+    cellstores.back()->interval.key_end.print(SWC_LOG_OSTREAM);
+  );
   finished(true);
 }
 
@@ -819,13 +829,15 @@ void CompactRange::completion() {
 void CompactRange::finished(bool clear) {
   completion();
 
-  SWC_LOGF(LOG_INFO, 
-    "COMPACT-FINISHED %lu/%lu cells=%lu blocks=%lu "
-    "(total=%ld intval=%ld encode=%ld write=%ld)ms %s",
-    range->cfg->cid, range->rid, total_cells.load(), total_blocks.load(),
-    (Time::now_ns() - profile.ts_start)/1000000, 
-    time_intval/1000000, time_encode/1000000, time_write/1000000,
-    profile.to_string().c_str()
+  SWC_LOG_OUT(LOG_INFO, 
+    SWC_LOG_PRINTF(
+      "COMPACT-FINISHED %lu/%lu cells=%lu blocks=%lu "
+      "(total=%ld intval=%ld encode=%ld write=%ld)ms ",
+      range->cfg->cid, range->rid, total_cells.load(), total_blocks.load(),
+      (Time::now_ns() - profile.ts_start)/1000000,
+      time_intval/1000000, time_encode/1000000, time_write/1000000
+    );
+    profile.print(SWC_LOG_OSTREAM);
   );
 
   range->compact_require(false);

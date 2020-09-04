@@ -256,28 +256,16 @@ void Readers::replace(int &err, CellStore::Writers& w_cellstores) {
 
 }
 
-std::string Readers::to_string(bool minimal) const {
-
-  std::string s("CellStores(count=");
-  s.append(std::to_string(size()));
-
-  s.append(" cellstores=[");
+void Readers::print(std::ostream& out, bool minimal) const {
+  out << "CellStores(count=" << size()
+      << " cellstores=[";
   for(auto cs : *this) {
-    s.append(cs->to_string(minimal));
-    s.append(", ");
+    cs->print(out, minimal);
+    out << ", ";
   }
-  s.append("] ");
-
-  s.append(" processing=");
-  s.append(std::to_string(processing()));
-
-  s.append(" used/actual=");
-  s.append(std::to_string(size_bytes(true)));
-  s.append("/");
-  s.append(std::to_string(size_bytes()));
-
-  s.append(")");
-  return s;
+  out << "] processing=" << processing()
+      << " used/actual=" << size_bytes(true) << '/' << size_bytes()
+      << ')';
 }
 
 

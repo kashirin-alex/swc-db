@@ -223,9 +223,8 @@ void MngdColumns::remove(int &err, cid_t cid, rgrid_t rgrid) {
 }
 
 
-std::string MngdColumns::to_string() {
-  std::string s(Env::Mngr::columns()->to_string());
-  return s;
+void MngdColumns::print(std::ostream& out) {
+  Env::Mngr::columns()->print(out);
 }
 
 bool MngdColumns::initialize() {

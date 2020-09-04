@@ -63,7 +63,7 @@ class ColCells final {
 
   size_t size_bytes();
 
-  std::string to_string();
+  void print(std::ostream& out);
 
   private:
   Mutex     m_mutex;
@@ -118,7 +118,7 @@ class MutableMap final : private std::unordered_map<cid_t, ColCells::Ptr> {
 
   size_t size_bytes(const cid_t cid);
 
-  std::string to_string();
+  void print(std::ostream& out);
 
   private:
   Mutex       m_mutex;

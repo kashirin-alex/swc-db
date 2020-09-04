@@ -323,46 +323,32 @@ void Blocks::wait_processing() {
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
 }
 
-std::string Blocks::to_string(bool minimal) {
+void Blocks::print(std::ostream& out, bool minimal) {
   Mutex::scope lock(m_mutex);
-
-  std::string s("Blocks(count=");
-  s.append(std::to_string(_size()));
-  s.append(" ");
+  out << "Blocks(count=" << _size();
   if(minimal) {
     if(m_block) {
       Block::Ptr blk = m_block;
-      s.append(" first=");
-      s.append(blk->to_string());
+      blk->print(out << " first=");
       for(; blk->next; blk=blk->next);
       if(blk != m_block) {
-        s.append(" last=");
-        s.append(blk->to_string());
+        blk->print(out << " last=");
       }
     }
   } else {
-    s.append("blocks=[");
+    out << " blocks=[";
     for(Block::Ptr blk = m_block; blk; blk=blk->next) {
-      s.append(blk->to_string());
-      s.append(", ");
+      blk->print(out); 
+      out << ", ";
     }
-    s.append("]");
+    out << ']';
   }
-
-  s.append(" ");
-  s.append(commitlog.to_string(minimal));
-
-  s.append(" ");
-  s.append(cellstores.to_string(minimal));
-
-  s.append(" processing=");
-  s.append(std::to_string(_processing()));
-
-  s.append(" bytes=");
-  s.append(std::to_string(_size_bytes()));
-
-  s.append(")");
-  return s;
+  commitlog.print(out << ' ', minimal);
+  cellstores.print(out << ' ', minimal);
+  out 
+    << " processing=" << _processing()
+    << " bytes=" << _size_bytes() 
+    << ')';
 } 
 
 size_t Blocks::_size() {

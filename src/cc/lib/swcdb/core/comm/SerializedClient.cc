@@ -44,11 +44,10 @@ void ServerConnections::connection(ConnHandlerPtr& conn,
                                    const std::chrono::milliseconds&,
                                    bool preserve) {
 
-  SWC_LOGF(LOG_DEBUG, "Connecting Sync: %s, addr=[%s]:%d %s", 
-           m_srv_name.c_str(),  
-           m_endpoint.address().to_string().c_str(), m_endpoint.port(),
-           m_ssl_cfg ? "SECURE" : "PLAIN");
-    
+  SWC_LOG_OUT(LOG_DEBUG, 
+    SWC_LOG_OSTREAM << "Connecting Sync: " << m_srv_name
+      << m_endpoint << (m_ssl_cfg ? "SECURE" : "PLAIN"); );
+
   asio::ip::tcp::socket sock(*m_ioctx.get());
   asio::error_code ec;
   sock.open(m_endpoint.protocol(), ec);
@@ -75,10 +74,9 @@ void ServerConnections::connection(ConnHandlerPtr& conn,
 void ServerConnections::connection(const std::chrono::milliseconds&,
                                    const NewCb_t& cb, bool preserve) {
 
-  SWC_LOGF(LOG_DEBUG, "Connecting Async: %s, addr=[%s]:%d %s", 
-           m_srv_name.c_str(), 
-           m_endpoint.address().to_string().c_str(), m_endpoint.port(),
-           m_ssl_cfg ? "SECURE" : "PLAIN");
+  SWC_LOG_OUT(LOG_DEBUG, 
+    SWC_LOG_OSTREAM << "Connecting Async: " << m_srv_name
+      << m_endpoint << (m_ssl_cfg ? "SECURE" : "PLAIN"); );
     
   auto sock = std::make_shared<asio::ip::tcp::socket>(*m_ioctx.get());
   sock->async_connect(
@@ -261,11 +259,8 @@ IOCtxPtr Serialized::io() {
   return m_ioctx; 
 }             
   
-std::string Serialized::to_str(ConnHandlerPtr& conn) {
-  std::string s(m_srv_name);
-  s.append(" ");
-  s.append(conn->to_string());
-  return s;
+void Serialized::print(std::ostream& out, ConnHandlerPtr& conn) {
+  conn->print(out << m_srv_name << ' ');
 }
   
 void Serialized::stop() {

@@ -191,12 +191,14 @@ void Key::decode(const uint8_t** bufp, size_t* remainp) {
 }
 
 std::string Key::to_string() const {
-  std::string s("Key(");
   std::stringstream ss;
-  display(ss);
-  s.append(ss.str());
-  s.append(")");
-  return s;
+  print(ss);
+  return ss.str();
+}
+
+void Key::print(std::ostream& out) const {
+  display(out << "Key(");
+  out << ')';
 }
 
 void Key::display(std::ostream& out, bool pretty) const {

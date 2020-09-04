@@ -89,6 +89,13 @@ class Key final {
 
   void display_details(std::ostream& out, bool pretty=true) const;
 
+  void print(std::ostream& out) const;
+
+  friend std::ostream& operator<<(std::ostream& out, const Key& key) { 
+    key.print(out);
+    return out;
+  }
+
   bool      own;
   uint24_t  count;
   uint32_t  size;

@@ -67,17 +67,21 @@ bool Timestamp::is_matching(int64_t other) const {
   return Condition::is_matching(comp, value, other);
 }
 
-std::string Timestamp::to_string() const {
-  std::string s("Timestamp(");
-  s.append(Condition::to_string(comp));
-  if(comp != Condition::NONE)
-    s.append(std::to_string(value));
-  s.append(")");
-  return s;
-}
-
 void Timestamp::display(std::ostream& out) const {
   out << Condition::to_string(comp) << " \"" << value << "\"";
+}
+
+std::string Timestamp::to_string() const {
+  std::stringstream ss;
+  print(ss);
+  return ss.str();
+}
+
+void Timestamp::print(std::ostream& out) const {
+  out << "Timestamp(" << Condition::to_string(comp);
+  if(comp != Condition::NONE)
+    out << value;
+  out << ')';
 }
 
 

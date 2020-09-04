@@ -72,7 +72,7 @@ class MngdColumns final {
 
   void remove(int &err, cid_t cid, rgrid_t rgrid);
 
-  std::string to_string();
+  void print(std::ostream& out);
 
 
   bool initialize();

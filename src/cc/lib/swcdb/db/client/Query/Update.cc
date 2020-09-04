@@ -201,22 +201,15 @@ Update::Locator::Locator(const Types::Range type, const cid_t cid,
 
 Update::Locator::~Locator() { }
 
-std::string Update::Locator::to_string() {
-  std::string s("Locator(type=");
-  s.append(Types::to_string(type));
-  s.append(" cid=");
-  s.append(std::to_string(cid));
-  s.append(" rid=");
-  s.append(std::to_string(rid));
-  s.append(" completion=");
-  s.append(std::to_string(updater->result->completion()));
-  s.append(" Start");
-  s.append(key_start->to_string());
-  s.append(" Finish");
-  s.append(key_finish.to_string());
-  s.append(" ");
-  s.append(col->to_string());
-  return s;
+void Update::Locator::print(std::ostream& out) {
+  out << "Locator(type=" << Types::to_string(type)
+      << " cid=" << cid
+      << " rid=" << rid
+      << " completion=" << updater->result->completion();
+  key_start->print(out << " Start");
+  key_finish.print(out << " Finish");
+  col->print(out << ' ');
+  out << ')';
 }
 
 void Update::Locator::locate_on_manager() {
@@ -249,15 +242,16 @@ void Update::Locator::locate_on_manager() {
 bool Update::Locator::located_on_manager(
       const ReqBase::Ptr& base, 
       const Protocol::Mngr::Params::RgrGetRsp& rsp) {
-  SWC_LOGF(LOG_DEBUG, "LocatedRange-onMngr %s", rsp.to_string().c_str());
+  SWC_LOG_OUT(LOG_DEBUG, 
+    rsp.print(SWC_LOG_OSTREAM << "LocatedRange-onMngr "););
   
   if(rsp.err == Error::COLUMN_NOT_EXISTS) {
     updater->response(rsp.err);
     return false;
   }
   if(rsp.err || !rsp.rid) {
-    SWC_LOGF(LOG_DEBUG, "Located-onMngr RETRYING %s", 
-                          rsp.to_string().c_str());
+    SWC_LOG_OUT(LOG_DEBUG, 
+      rsp.print(SWC_LOG_OSTREAM << "LocatedRange-onMngr RETRYING "););
     base->request_again();
     return false;
   }
@@ -378,12 +372,12 @@ void Update::Locator::resolve_on_manager() {
   if(!Types::MetaColumn::is_master(cid)) {
     Protocol::Mngr::Params::RgrGetRsp rsp(cid, rid);
     if(Env::Clients::get()->rangers.get(cid, rid, rsp.endpoints)) {
-      SWC_LOGF(LOG_DEBUG, "Cache hit %s", rsp.to_string().c_str());
+      SWC_LOG_OUT(LOG_DEBUG, rsp.print(SWC_LOG_OSTREAM << "Cache hit "););
       if(proceed_on_ranger(req, rsp)) // ?req without profile
         return updater->response();
       Env::Clients::get()->rangers.remove(cid, rid);
     } else {
-      SWC_LOGF(LOG_DEBUG, "Cache miss %s", rsp.to_string().c_str());
+      SWC_LOG_OUT(LOG_DEBUG, rsp.print(SWC_LOG_OSTREAM << "Cache miss "););
     }
   }
   req->run();
@@ -392,16 +386,18 @@ void Update::Locator::resolve_on_manager() {
 bool Update::Locator::located_ranger(
       const ReqBase::Ptr& base, 
       const Protocol::Mngr::Params::RgrGetRsp& rsp) {
-  SWC_LOGF(LOG_DEBUG, "LocatedRanger-onMngr %s", rsp.to_string().c_str());
+  SWC_LOG_OUT(LOG_DEBUG, 
+    rsp.print(SWC_LOG_OSTREAM << "LocatedRanger-onMngr "););
 
   if(rsp.err) {
     if(rsp.err == Error::COLUMN_NOT_EXISTS) {
       updater->response(rsp.err);
       return false;
     }
-    SWC_LOGF(LOG_DEBUG, "LocatedRanger-onMngr RETRYING %s", 
-                          rsp.to_string().c_str());
-    SWC_LOGF(LOG_DEBUG, " %s", to_string().c_str());
+    SWC_LOG_OUT(LOG_DEBUG, 
+      rsp.print(SWC_LOG_OSTREAM << "LocatedRanger-onMngr RETRYING ");
+      print(SWC_LOG_OSTREAM << '\n');
+    );
     if(rsp.err == Error::RANGE_NOT_FOUND) {
       (parent == nullptr ? base : parent)->request_again();
     } else {
@@ -411,8 +407,9 @@ bool Update::Locator::located_ranger(
   }
 
   if(!rsp.rid || rsp.endpoints.empty()) {
-    SWC_LOGF(LOG_DEBUG, "LocatedRanger-onMngr RETRYING(no rid) %s", 
-                        rsp.to_string().c_str());
+    SWC_LOG_OUT(LOG_DEBUG, 
+      rsp.print(
+        SWC_LOG_OSTREAM << "LocatedRanger-onMngr RETRYING(no rid) "););
     (parent == nullptr ? base : parent)->request_again();
     return false;
   }
@@ -430,8 +427,9 @@ bool Update::Locator::proceed_on_ranger(
     (type == Types::Range::MASTER && Types::MetaColumn::is_master(col->cid)) ||
     (type == Types::Range::META   && Types::MetaColumn::is_meta(col->cid) )) {
     if(cid != rsp.cid || col->cid != cid) {
-      SWC_LOGF(LOG_DEBUG, "LocatedRanger-onMngr RETRYING(cid no match) %s", 
-                            rsp.to_string().c_str());
+      SWC_LOG_OUT(LOG_DEBUG, 
+        rsp.print(
+          SWC_LOG_OSTREAM << "LocatedRanger-onMngr RETRYING(cid no match) "););
       (parent == nullptr ? base : parent)->request_again();
       //updater->response(Error::NOT_ALLOWED);
       return false;
@@ -477,7 +475,7 @@ void Update::Locator::commit_data(
                    rsp.to_string().c_str(), workload->count());
 
           if(rsp.err == Error::REQUEST_TIMEOUT) {
-            SWC_LOGF(LOG_DEBUG, "%s", req->to_string().c_str());
+            SWC_LOG_OUT(LOG_DEBUG,  req->print(SWC_LOG_OSTREAM ); );
             req->request_again();
             return;
           }

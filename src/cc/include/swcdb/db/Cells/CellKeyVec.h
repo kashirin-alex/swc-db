@@ -84,6 +84,13 @@ class KeyVec final : public std::vector<std::basic_string<uint8_t>> {
 
   std::string to_string() const;
 
+  void print(std::ostream& out) const;
+
+  friend std::ostream& operator<<(std::ostream& out, const KeyVec& key) {
+    key.print(out);
+    return out;
+  }
+
 };
 
 }}}

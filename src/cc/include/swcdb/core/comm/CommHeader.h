@@ -46,7 +46,7 @@ class CommHeader final {
 
   void initialize_from_request_header(const CommHeader &req_header);
 
-  std::string to_string() const;
+  void print(std::ostream& out) const;
 
   uint8_t  version;         //!< Protocol version
   uint8_t  header_len;      //!< Length of header

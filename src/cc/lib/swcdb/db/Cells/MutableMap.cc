@@ -98,16 +98,13 @@ size_t ColCells::size_bytes() {
   return m_cells.size_bytes();
 }
 
-std::string ColCells::to_string() {
-  std::string s("(cid=");
-  s.append(std::to_string(cid));
-  s.append(" ");
+void ColCells::print(std::ostream& out) {
+  out << "(cid=" << cid;
   {
     Mutex::scope lock(m_mutex);
-    s.append(m_cells.to_string());
+    m_cells.print(out << ' ');
   }
-  s.append(")");
-  return s;
+  out << ')';
 }
 
 
@@ -234,18 +231,13 @@ size_t MutableMap::size_bytes(const cid_t cid) {
   return it == end() ? 0 : it->second->size_bytes();
 }
 
-std::string MutableMap::to_string() {
+void MutableMap::print(std::ostream& out) {
+  out << "MutableMap(size=";
   Mutex::scope lock(m_mutex);
-  std::string s("MutableMap(size=");
-  s.append(std::to_string(Columns::size()));
-
-  s.append(" map=[");
-  for(auto it = begin(); it != end(); ++it) {
-    s.append("\n");
-    s.append(it->second->to_string());
-  }
-  s.append("\n])");
-  return s;
+  out << Columns::size() << " map=[";
+  for(auto it = begin(); it != end(); ++it)
+    it->second->print(out << '\n');
+  out << "\n])";
 }
 
 

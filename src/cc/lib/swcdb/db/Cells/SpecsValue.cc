@@ -132,19 +132,18 @@ bool Value::is_matching(int64_t other) const {
 }
 
 std::string Value::to_string() const {
-  std::string s("Value(");
-  s.append("size=");
-  s.append(std::to_string(size));
-  s.append(" ");
-  s.append(Condition::to_string(comp, true));
-  s.append("(");
-  s.append(std::string((const char*)data, size));
-  s.append("))");
-  return s;
+  std::stringstream ss;
+  print(ss);
+  return ss.str();
+}
+
+void Value::print(std::ostream& out) const {
+  display(out << "Value(");
+  out << ')';
 }
 
 void Value::display(std::ostream& out, bool pretty) const {
-  out << "size=" << size << " " << Condition::to_string(comp, true)
+  out << "size=" << size << ' ' << Condition::to_string(comp, true)
       << '"';
   if(size) {
     char hex[5];

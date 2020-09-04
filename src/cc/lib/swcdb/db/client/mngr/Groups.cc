@@ -54,31 +54,17 @@ bool Group::is_in_group(const EndPoint& endpoint) {
   return found_host != nullptr;
 }
 
-std::string Group::to_string() {
-  std::string s;
+void Group::print(std::ostream& out) {
   std::lock_guard lock(m_mutex);
 
-  s.append("group:\n");
-  s.append(" role=");
-  s.append(Types::MngrRole::to_string(role));
-  s.append(" column=");
-  s.append(std::to_string(cid_begin));
-  s.append("-");
-  s.append(std::to_string(cid_end));
-  s.append("\n");
-    
+  out << "group:\n"
+      << " role=" << Types::MngrRole::to_string(role)
+      << " column=" << cid_begin << '-' << cid_end << '\n';
   for(auto& endpoints : *this) {
-    s.append(" host=\n");
-    for(auto& endpoint : endpoints) {
-      s.append("  [");
-      s.append(endpoint.address().to_string());
-      s.append("]");
-      s.append(":");
-      s.append(std::to_string(endpoint.port()));
-      s.append("\n");
-    }
+    out << " host=\n";
+    for(auto& endpoint : endpoints)
+      out << "  " << endpoint << '\n';
   }
-  return s;
 }
 
 void Group::apply_endpoints(EndPoints& to_endpoints) {
@@ -235,7 +221,7 @@ void Groups::on_cfg_update() {
   }
   m_mutex.unlock();
 
-  SWC_LOG(LOG_DEBUG, to_string().c_str());
+  SWC_LOG_OUT(LOG_DEBUG, print(SWC_LOG_OSTREAM); );
 }
 
 void Groups::_add_host(uint8_t role, cid_t cid_begin, cid_t cid_end, 
@@ -328,13 +314,12 @@ EndPoints Groups::get_endpoints(uint8_t role, cid_t cid_begin,
   return endpoints;
 }
 
-std::string Groups::to_string() {
-  std::string s("manager-groups:\n");
+void Groups::print(std::ostream& out) {
+  out << "manager-groups:\n";
   std::lock_guard lock(m_mutex);
 
   for(auto& group : *this)
-    s.append(group->to_string());
-  return s;
+    group->print(out);
 }
 
 void Groups::add(Groups::GroupHost& g_host) {

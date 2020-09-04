@@ -107,16 +107,20 @@ void Column::internal_decode(const uint8_t** bufp, size_t* remainp) {
     intervals[i] = Interval::make_ptr(bufp, remainp);
 }
 
-std::string Column::to_string() {
-  std::string s("Column(cid=");
-  s.append(std::to_string(cid));
-  s.append(" intervals=[");
+std::string Column::to_string() const {
+  std::stringstream ss;
+  print(ss);
+  return ss.str();
+}
+
+void Column::print(std::ostream& out) const {
+  out << "Column(cid=" << cid
+      << " intervals=[";
   for(auto& intval : intervals){
-    s.append(intval->to_string());
-    s.append(", ");
+    intval->print(out);
+    out << ", ";
   }
-  s.append("])");
-  return s;
+  out << "])";
 }
 
 void Column::display(std::ostream& out, bool pretty, 

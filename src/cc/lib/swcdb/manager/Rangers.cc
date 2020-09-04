@@ -90,7 +90,7 @@ void Rangers::schedule_check(uint32_t t_ms) {
   });
 
   if(t_ms > 10000)
-    SWC_LOGF(LOG_DEBUG, "%s", to_string().c_str());
+    SWC_LOG_OUT(LOG_DEBUG, print(SWC_LOG_OSTREAM); );
 
   SWC_LOGF(LOG_DEBUG, "Rangers scheduled in ms=%d", t_ms);
 }
@@ -346,8 +346,10 @@ void Rangers::range_loaded(Ranger::Ptr rgr, Range::Ptr range,
       if(!run_assign)
         schedule_check(2000);
       if(verbose)
-        SWC_LOGF(LOG_INFO, "RANGE-STATUS %d(%s), %s", 
-                  err, Error::get_text(err), range->to_string().c_str());
+        SWC_LOG_OUT(LOG_DEBUG,
+          Error::print(SWC_LOG_OSTREAM << "RANGE-STATUS ", err);
+          range->print(SWC_LOG_OSTREAM << ", ");
+        );
 
     } else {
       rgr->failures = 0;
@@ -441,14 +443,11 @@ void Rangers::health_check_finished(const ColumnHealthCheck::Ptr& chk) {
   health_check_columns();
 }
 
-std::string Rangers::to_string() {
-  std::string s("Rangers:");
+void Rangers::print(std::ostream& out) {
+  out << "Rangers:";
   std::lock_guard lock(m_mutex);
-  for(auto& h : m_rangers) {
-    s.append("\n ");
-    s.append(h->to_string());
-  }
-  return s;
+  for(auto& h : m_rangers)
+    h->print(out << "\n ");
 }
 
 
@@ -630,10 +629,10 @@ void Rangers::_changes(const RangerList& hosts, bool sync_all) {
     );
   }
 
-  SWC_LOG_OUT(LOG_INFO, SWC_LOG_OSTREAM 
-    << " Rangers::changes:\n";
+  SWC_LOG_OUT(LOG_DEBUG,
+    SWC_LOG_OSTREAM << " Rangers::changes:";
     for(auto& h : hosts)
-      SWC_LOG_OSTREAM << " " << h->to_string() << "\n";
+      h->print(SWC_LOG_OSTREAM << "\n ");
   );
 }
 

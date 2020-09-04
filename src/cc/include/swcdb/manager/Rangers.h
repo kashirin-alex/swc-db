@@ -81,7 +81,7 @@ class Rangers final {
   void health_check_finished(const ColumnHealthCheck::Ptr& chk);
 
 
-  std::string to_string();
+  void print(std::ostream& out);
 
   private:
 

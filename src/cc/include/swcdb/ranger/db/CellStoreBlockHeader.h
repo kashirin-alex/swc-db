@@ -44,7 +44,7 @@ struct Header final {
 
   void decode_idx(const uint8_t** bufp, size_t* remainp);
 
-  std::string to_string() const;
+  void print(std::ostream& out) const;
 
 };
 

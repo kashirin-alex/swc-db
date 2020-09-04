@@ -39,8 +39,6 @@ void count_all_cells(size_t num_cells,
                 << " != "  << req->spec.flags.limit <<"\n";
       exit(1);
     }
-    //std::cout << req->to_string() << "\n";
-    //std::cout << blocks.to_string() << "\n";
     --chk;
   };
 
@@ -90,8 +88,8 @@ int main(int argc, char** argv) {
   Env::FsInterface::interface()->mkdirs(
     err, range->get_path(range->CELLSTORES_DIR));
 
-  std::cout << " init:  \n" << commitlog.to_string() << "\n";
-  
+  commitlog.print(std::cout << " init:\n", true);
+  std::cout << "\n";
 
   int num_threads = 8;
   std::atomic<int> threads_processing = num_threads;
@@ -146,9 +144,9 @@ int main(int argc, char** argv) {
 
   commitlog.commit_new_fragment(true);
 
-  std::cout << " added cell=" << num_cells 
-            << ": \n" << commitlog.to_string() << "\n";
-  std::cout << " cells_count=" << commitlog.cells_count() << "\n";
+  commitlog.print(std::cout << " added cell=" << num_cells << ": \n", true);
+
+  std::cout << "\n cells_count=" << commitlog.cells_count() << "\n";
   if((versions == 1 || versions == col_cfg.cell_versions()) 
       && num_cells*col_cfg.cell_versions() != commitlog.cells_count()) {
     exit(1);
@@ -164,11 +162,12 @@ int main(int argc, char** argv) {
 
   SWC::Ranger::Blocks blocks(col_cfg.key_seq);
   blocks.init(range);
-  std::cout << "new loading: \n" << blocks.to_string() << "\n";
+  blocks.print(std::cout << "new loading: \n", true);
+  std::cout << '\n';
   blocks.cellstores.add(Ranger::CellStore::create_initial(err, range));
   blocks.load(err);
-  std::cout << "loaded: \n" << blocks.to_string() << "\n";
-
+  blocks.print(std::cout << "loaded: \n", true);
+  std::cout << '\n';
 
   int num_chks = 10;
   std::atomic<int> chk = num_chks;
@@ -188,14 +187,13 @@ int main(int argc, char** argv) {
                   << " !="  << req->spec.flags.limit <<"\n";
         exit(1);
       }
-      //std::cout << req->to_string() << "\n";
-      //std::cout << blocks.to_string() << "\n";
       --chk;
     };
     blocks.scan(req);
   }
 
-  std::cout << " scanned blocks: \n" << blocks.to_string() << "\n";
+  blocks.print(std::cout << "scanned blocks: \n", true);
+  std::cout << '\n';
 
   while(chk > 0)
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
@@ -208,7 +206,8 @@ int main(int argc, char** argv) {
   
   std::cout << "blocks.add_logged: \n";
 
-  std::cout << " adding to blocks: \n" << blocks.to_string() << "\n";
+  blocks.print(std::cout << "adding to block: \n", true);
+  std::cout << '\n';
 
   int added_num = 1000000;
   DB::Cells::Cell cell;
@@ -240,15 +239,15 @@ int main(int argc, char** argv) {
         
         blocks.add_logged(cell);
     }
-    std::cout << " add_logged ver=" << v 
-              << " : \n" << blocks.to_string() << "\n";
+    blocks.print(std::cout << " add_logged ver=" << v << " : \n", true);
+    std::cout << '\n';
   }
 
 
   count_all_cells(num_cells+added_num, blocks);
 
-  std::cout << " scanned blocks (add_logged): \n" 
-            << blocks.to_string() << "\n";
+  blocks.print(std::cout << " scanned blocks (add_logged): \n", true);
+  std::cout << '\n';
   std::cerr << " scanned blocks (add_logged), OK\n";
 
   Env::FsInterface::interface()->rmdir(

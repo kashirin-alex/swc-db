@@ -23,12 +23,8 @@ class ColumnCfg final {
 
   ~ColumnCfg() { }
 
-  std::string to_string() const {
-    std::string s("cid=");
-    s.append(std::to_string(cid));
-    s.append(" seq=");
-    s.append(Types::to_string(key_seq));
-    return s;
+  void print(std::ostream& out) const {
+    out << "cid=" << cid << " seq=" << Types::to_string(key_seq);
   }
 };
 

@@ -121,6 +121,8 @@ enum Code {
 
 const char* get_text(const int err);
 
+void print(std::ostream& out, int err);
+
 }
 
 
@@ -180,9 +182,14 @@ class Exception : public std::exception {
 
   std::string message() const;
 
-  void render(std::ostream& out) const;
+  void print(std::ostream& out) const;
 
-  void render_base(std::ostream& out) const;
+  void print_base(std::ostream& out) const;
+
+  friend std::ostream& operator<<(std::ostream& out, const SWC::Exception& e) {
+    e.print(out);
+    return out;
+  }
 
   private:
 
@@ -195,13 +202,6 @@ class Exception : public std::exception {
   mutable const  Exception*  _prev;
 
 };
-
-
-SWC_CAN_INLINE
-std::ostream& operator<<(std::ostream& out, const SWC::Exception& e) {
-  e.render(out);
-  return out;
-}
 
 
 } //  namespace SWC

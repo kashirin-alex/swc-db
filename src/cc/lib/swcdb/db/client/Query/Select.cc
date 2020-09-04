@@ -335,18 +335,13 @@ void Select::ScannerColumn::add_call(const std::function<void()>& call) {
   next_calls.push_back(call);
 }
 
-std::string Select::ScannerColumn::to_string() {
-  std::string s("ScannerColumn(");
-  s.append("cid=");
-  s.append(std::to_string(cid));
-  s.append(" ");
-  s.append(interval.to_string());
-  s.append(" completion=");
-  s.append(std::to_string(selector->result->completion()));
-  s.append(" next_calls=");
-  s.append(std::to_string(next_calls.size()));
-  s.append(")");
-  return s;
+void Select::ScannerColumn::print(std::ostream& out) {
+  out << "ScannerColumn("
+      << "cid=" << cid;
+  interval.print(out << ' ');
+  out << " completion=" << selector->result->completion()
+      << " next_calls=" << next_calls.size()
+      << ')';
 }
 
 
@@ -361,19 +356,13 @@ Select::Scanner::Scanner(
 
 Select::Scanner::~Scanner() {}
 
-std::string Select::Scanner::to_string() {
-  std::string s("Scanner(type=");
-  s.append(Types::to_string(type));
-  s.append(" cid=");
-  s.append(std::to_string(cid));
-  s.append(" rid=");
-  s.append(std::to_string(rid));
-  s.append(" RangeOffset");
-  s.append(range_offset.to_string());
-  s.append(" ");
-  s.append(col->to_string());
-  s.append(")");
-  return s;
+void Select::Scanner::print(std::ostream& out) {
+  out << "Scanner(type=" << Types::to_string(type)
+      << " cid=" << cid
+      << " rid=" << rid;
+  range_offset.print(out << " RangeOffset");
+  col->print(out << ' ');
+  out << ' ';
 }
     
 void Select::Scanner::locate_on_manager(bool next_range) {
@@ -430,12 +419,12 @@ void Select::Scanner::resolve_on_manager() {
   if(!Types::MetaColumn::is_master(cid)) {
     Protocol::Mngr::Params::RgrGetRsp rsp(cid, rid);
     if(Env::Clients::get()->rangers.get(cid, rid, rsp.endpoints)) {
-      SWC_LOGF(LOG_DEBUG, "Cache hit %s", rsp.to_string().c_str());
+      SWC_LOG_OUT(LOG_DEBUG, rsp.print(SWC_LOG_OSTREAM << "Cache hit "); );
       if(proceed_on_ranger(req, rsp)) // ?req without profile
         return col->selector->result->completion_decr(); 
       Env::Clients::get()->rangers.remove(cid, rid);
     } else {
-      SWC_LOGF(LOG_DEBUG, "Cache miss %s", rsp.to_string().c_str());
+      SWC_LOG_OUT(LOG_DEBUG, rsp.print(SWC_LOG_OSTREAM << "Cache miss "); );
     }
   }
   req->run();
@@ -445,7 +434,8 @@ bool Select::Scanner::located_on_manager(
         const ReqBase::Ptr& base, 
         const Protocol::Mngr::Params::RgrGetRsp& rsp, 
         bool next_range) {
-  SWC_LOGF(LOG_DEBUG, "LocatedRange-onMngr %s", rsp.to_string().c_str());
+  SWC_LOG_OUT(LOG_DEBUG, 
+    rsp.print(SWC_LOG_OSTREAM << "LocatedRange-onMngr "););
 
   if(rsp.err) {
     if(rsp.err == Error::COLUMN_NOT_EXISTS) {
@@ -461,8 +451,8 @@ bool Select::Scanner::located_on_manager(
       return false;
     }
 
-    SWC_LOGF(LOG_DEBUG, "Located-onMngr RETRYING %s", 
-                          rsp.to_string().c_str());
+    SWC_LOG_OUT(LOG_DEBUG, 
+      rsp.print(SWC_LOG_OSTREAM << "Located-onMngr RETRYING "););
     if(rsp.err == Error::RANGE_NOT_FOUND) {
       (parent == nullptr ? base : parent)->request_again();
     } else {
@@ -471,8 +461,8 @@ bool Select::Scanner::located_on_manager(
     return false;
   }
   if(!rsp.rid) {
-    SWC_LOGF(LOG_DEBUG, "Located-onMngr RETRYING(no rid) %s", 
-                        rsp.to_string().c_str());
+    SWC_LOG_OUT(LOG_DEBUG, 
+      rsp.print(SWC_LOG_OSTREAM << "Located-onMngr RETRYING(no rid) "););
     (parent == nullptr ? base : parent)->request_again();
     return false;
   }
@@ -499,8 +489,9 @@ bool Select::Scanner::proceed_on_ranger(
     (type == Types::Range::META   && Types::MetaColumn::is_meta(col->cid))) {
 
     if(cid != rsp.cid || col->cid != cid) {
-      SWC_LOGF(LOG_DEBUG, "Located-onMngr RETRYING(cid no match) %s", 
-                          rsp.to_string().c_str());
+      SWC_LOG_OUT(LOG_DEBUG, 
+        rsp.print(
+          SWC_LOG_OSTREAM << "Located-onMngr RETRYING(cid no match) "););
       (parent == nullptr ? base : parent)->request_again();
       return false;
       //col->selector->response(Error::NOT_ALLOWED);

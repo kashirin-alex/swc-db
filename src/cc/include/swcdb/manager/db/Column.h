@@ -337,15 +337,15 @@ class Column final : private std::vector<Range::Ptr> {
     if(empty()) {
       Env::FsInterface::interface()->rmdir(
         err, DB::RangeBase::get_path(cfg.cid));
-      SWC_LOGF(LOG_DEBUG, "FINALIZED REMOVE %s", _to_string().c_str());
+      SWC_LOG_OUT(LOG_DEBUG, _print(SWC_LOG_OSTREAM << "FINALIZED REMOVE "); );
       return true;
     }
     return false;
   }
 
-  std::string to_string() {
+  void print(std::ostream& out) {
     std::shared_lock lock(m_mutex);
-    return _to_string();
+    _print(out);
   }
 
   private:
@@ -370,19 +370,15 @@ class Column final : private std::vector<Range::Ptr> {
       err, DB::RangeBase::get_path(cfg.cid), entries);
   }
 
-  std::string _to_string() {
-    std::string s("[");
-    s.append(cfg.to_string());
-    s.append(", next-rid=");
-    s.append(std::to_string(_get_next_rid()));
-    s.append(", ranges=(");
-    
+  void _print(std::ostream& out) {
+    cfg.print(out << '(');
+    out << " next-rid=" << _get_next_rid()
+        << " ranges=[";
     for(auto& range : *this) {
-      s.append(range->to_string());
-      s.append(",");
+      range->print(out);
+      out << ',';
     }
-    s.append(")]");
-    return s;
+    out << "])";
   }
 
   void _set_loading() {

@@ -19,25 +19,18 @@ void AppContext::handle(ConnHandlerPtr conn, const Event::Ptr& ev) {
 
   switch (ev->type) {
 
-    case Event::Type::ESTABLISHED: {
-      break;
-    }
-      
     case Event::Type::DISCONNECT: {
       disconnected(conn);
       return;
     }
 
+    case Event::Type::MESSAGE:
     case Event::Type::ERROR: {
-      SWC_LOGF(LOG_WARN, "unhandled: %s", ev->to_str().c_str());
+      SWC_LOG_OUT(LOG_WARN,  ev->print(SWC_LOG_OSTREAM << "unhandled: "); );
       break;
     }
 
-    case Event::Type::MESSAGE: {
-      SWC_LOGF(LOG_WARN, "unhandled: %s", ev->to_str().c_str());
-      break;
-    }
-
+    case Event::Type::ESTABLISHED:
     default: {
       break;
     }

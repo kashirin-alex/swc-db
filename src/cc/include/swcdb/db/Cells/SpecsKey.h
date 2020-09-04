@@ -97,6 +97,8 @@ class Key final : public std::vector<Fraction> {
 
   std::string to_string() const;
 
+  void print(std::ostream& out) const;
+
   void display(std::ostream& out, bool pretty=true) const;
 
 };

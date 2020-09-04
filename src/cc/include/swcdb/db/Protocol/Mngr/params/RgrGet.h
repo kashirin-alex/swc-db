@@ -58,7 +58,7 @@ class RgrGetRsp : public Common::Params::HostEndPoints {
   DB::Cell::Key   range_end;
   DB::Cell::Key   range_begin;
 
-  std::string to_string() const;
+  void print(std::ostream& out) const;
 
   private:
 

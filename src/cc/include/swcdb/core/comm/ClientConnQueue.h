@@ -40,7 +40,7 @@ class ConnQueueReqBase : public DispatchHandler {
 
   virtual void handle_no_conn();
 
-   std::string to_string();
+  void print(std::ostream& out);
     
   const bool            insistent;
   CommBuf::Ptr          cbp;
@@ -80,7 +80,7 @@ class ConnQueue :
 
   void delay_proceed(const ReqBase::Ptr& req, asio::high_resolution_timer* tm);
 
-  std::string to_string();
+  void print(std::ostream& out);
 
   protected:
   

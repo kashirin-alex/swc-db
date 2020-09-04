@@ -123,27 +123,15 @@ class RgrData final {
     SWC_ASSERT(dst_buf.fill() <= dst_buf.size);
   }
 
-  std::string to_string(){
-    std::string s("RgrData(");
-    s.append("endpoints=(");
-    for(auto& endpoint : endpoints){
-      s.append("[");
-      s.append(endpoint.address().to_string());
-      s.append("]:");
-      s.append(std::to_string(endpoint.port()));
-      s.append(",");
-    }
-    s.append(")");
-    
-    s.append(", version=");
-    s.append(std::to_string(version));
-    s.append(", rgrid=");
-    s.append(std::to_string(rgrid.load()));
-    s.append(", timestamp=");
-    s.append(std::to_string(timestamp));
-    s.append(")");
-    return s;
-  } 
+  void print(std::ostream& out) {
+    out << "RgrData(endpoints=[";
+    for(auto& endpoint : endpoints)
+      out << endpoint << ',';
+    out << "] version=" << int(version)
+        << " rgrid=" << rgrid
+        << " timestamp=" << timestamp
+        << ')';
+  }
   
   ~RgrData(){ }
 

@@ -20,13 +20,10 @@ class RgrUpdate : public Serializable {
     RgrUpdate(const Manager::RangerList& hosts, bool sync_all) 
               : hosts(hosts), sync_all(sync_all) {}
 
-    std::string to_string() const {
-      std::string s("Rangers-params:");
-      for(auto& h : hosts) {
-        s.append("\n ");
-        s.append(h->to_string());
-      }
-      return s;
+    void print(std::ostream& out) const {
+      out << "Rangers-params:";
+      for(auto& h : hosts)
+        h->print(out << "\n ");
     }
 
     Manager::RangerList hosts;

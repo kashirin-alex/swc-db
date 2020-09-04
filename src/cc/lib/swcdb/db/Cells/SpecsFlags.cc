@@ -79,26 +79,14 @@ void Flags::decode(const uint8_t** bufp, size_t* remainp){
 }
 
 std::string Flags::to_string() const {
-  std::string s("Flags(");
-  
-  s.append("limit=");
-  s.append(std::to_string(limit));
-  s.append(" offset=");
-  s.append(std::to_string(offset));
+  std::stringstream ss;
+  print(ss);
+  return ss.str();
+}
 
-  s.append(" max_versions=");
-  s.append(std::to_string(max_versions));
-  s.append(" max_buffer=");
-  s.append(std::to_string(max_buffer));
-
-  s.append(" only_deletes=");
-  s.append(std::to_string(is_only_deletes()));
-  s.append(" only_keys=");
-  s.append(std::to_string(is_only_keys()));
-  s.append(" was_set=");
-  s.append(was_set? "TRUE" : "FALSE");
-  
-  return s;
+void Flags::print(std::ostream& out) const {
+  display(out << "Flags(");
+  out << ')';
 }
 
 void Flags::display(std::ostream& out) const {

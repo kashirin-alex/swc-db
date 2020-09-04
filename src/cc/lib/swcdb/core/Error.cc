@@ -112,7 +112,7 @@ static const char ERROR_NOT_REGISTERED[] = "ERROR NOT REGISTERED";
 
 } // local namespace
 
-
+SWC_SHOULD_NOT_INLINE
 const char* Error::get_text(const int err) {
   const char* text = nullptr;
   switch(err) {
@@ -135,9 +135,13 @@ const char* Error::get_text(const int err) {
   return text ? text : ERROR_NOT_REGISTERED;
 }
 
+SWC_SHOULD_NOT_INLINE
+void Error::print(std::ostream& out, int err) {
+  out << "error=" << err << '(' << get_text(err) << ')';
+}
 
 
-
+SWC_SHOULD_NOT_INLINE
 const Exception Exception::make(const std::exception_ptr& eptr, 
                                 const std::string& msg, 
                                 const Exception* prev) {
@@ -276,18 +280,19 @@ Exception::~Exception() {
 
 std::string Exception::message() const {
   std::stringstream ss;
-  render(ss);
+  print(ss);
   return ss.str().c_str();
 }
 
-void Exception::render(std::ostream& out) const {
+SWC_SHOULD_NOT_INLINE
+void Exception::print(std::ostream& out) const {
   size_t n = 1;
-  render_base(out << '#' << n << " ");
+  print_base(out << '#' << n << " ");
   for(const Exception* p = _prev; p; p = p->_prev)
-    p->render_base(out << '#' << ++n << " ");
+    p->print_base(out << '#' << ++n << " ");
 }
 
-void Exception::render_base(std::ostream& out) const {
+void Exception::print_base(std::ostream& out) const {
   out << "SWC::Exception: ";
   if(!_msg.empty()) 
     out << _msg << " ";

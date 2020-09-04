@@ -25,7 +25,7 @@ class AppContext final : public SWC::AppContext {
     const uint8_t *ptr;
     size_t remain;
     if(Protocol::Req::Base().is_rsp(ev, ev->header.command, &ptr, &remain))
-      SWC_LOGF(LOG_WARN, "Unhandled %s", ev->to_str().c_str());
+      SWC_LOG_OUT(LOG_WARN,  ev->print(SWC_LOG_OSTREAM << "Unhandled "); );
   }
 };
 

@@ -28,19 +28,10 @@ struct RangerResources {
   size_t      ranges;
   uint16_t    load_scale;
 
-  std::string to_string() const {
-    std::string s("Res(load_scale=");
-    s.append(std::to_string(load_scale));
-    s.append(" mem=");
-    s.append(std::to_string(mem));
-    s.append("MB cpu=");
-    s.append(std::to_string(cpu));
-    s.append("Mhz ranges=");
-    s.append(std::to_string(ranges));
-    s.append(" rgrid=");
-    s.append(std::to_string(rgrid));
-    s.append(")");
-    return s;
+  void print(std::ostream& out) const {
+    out << "Res(load_scale=" << load_scale
+        << " mem=" << mem << "MB cpu=" << cpu << "Mhz ranges=" << ranges
+        << " rgrid=" << rgrid << ')';
   }
 };
 
@@ -59,21 +50,17 @@ class RangersResources final : private std::vector<RangerResources> {
       
   ~RangersResources() { }
 
-  std::string to_string() {
-    std::string s("RangersResources(rangers=");
+  void print(std::ostream& out) {
+    out << "RangersResources(rangers=";
     LockAtomic::Unique::scope lock(m_mutex);
-    s.append(std::to_string(size()));
-    s.append(" [");
-    for(auto& r : *this) {
-      s.append("\n ");
-      s.append(r.to_string());
-    }
-    s.append("])");
-    return s;
+    out << size() << " [";
+    for(auto& r : *this)
+      r.print(out << "\n ");
+    out << "\n])";
   }
   
   void check(const RangerList& rangers) {
-    SWC_LOGF(LOG_DEBUG, "check %s ", to_string().c_str());
+    SWC_LOG_OUT(LOG_DEBUG, print(SWC_LOG_OSTREAM << "check "); );
 
     if(!m_mutex.try_lock())
       return;
@@ -134,7 +121,7 @@ class RangersResources final : private std::vector<RangerResources> {
   }
 
   void changes(const RangerList& rangers, RangerList& changed) {
-    SWC_LOGF(LOG_DEBUG, "changes %s ", to_string().c_str());
+    SWC_LOG_OUT(LOG_DEBUG, print(SWC_LOG_OSTREAM << "changes "); );
 
     LockAtomic::Unique::scope lock(m_mutex);
     for(auto& rgr : rangers) {

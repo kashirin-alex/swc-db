@@ -44,6 +44,8 @@ struct SmartFd {
 
   std::string to_string() const;
 
+  void print(std::ostream& out) const; 
+
   protected:
 
   const std::string   m_filepath;

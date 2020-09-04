@@ -47,6 +47,13 @@ class Timestamp {
 
   void display(std::ostream& out) const;
 
+  void print(std::ostream& out) const;
+
+  friend std::ostream& operator<<(std::ostream& out, const Timestamp& key) {
+    key.print(out);
+    return out;
+  }
+
   int64_t          value; 
   Condition::Comp  comp;
   bool             was_set;

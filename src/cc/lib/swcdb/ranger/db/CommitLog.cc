@@ -457,41 +457,30 @@ uint64_t Fragments::next_id() {
   return m_last_id = new_id;
 }
 
-std::string Fragments::to_string(bool minimal) {
+void Fragments::print(std::ostream& out, bool minimal) {
   size_t count = cells_count();
   std::shared_lock lock(m_mutex);
 
-  std::string s("CommitLog(count=");
-  s.append(std::to_string(count));
-  
-  s.append(" cells=");
+  out << "CommitLog(count=" << count
+      << " cells=";
   {
     std::shared_lock lock(m_mutex_cells);
-  s.append(std::to_string(m_cells.size()));
+    out << m_cells.size();
   }
 
-  s.append(" fragments=");
-  s.append(std::to_string(Vec::size()));
-
+  out << " fragments=" << Vec::size();
   if(!minimal) {
-    s.append(" [");
+    out << " [";
     for(auto frag : *this){
-      s.append(frag->to_string());
-      s.append(", ");
+      frag->print(out);
+      out << ", ";
     }
-    s.append("]");
+    out << ']';
   }
 
-  s.append(" processing=");
-  s.append(std::to_string(_processing()));
-
-  s.append(" used/actual=");
-  s.append(std::to_string(_size_bytes(true)));
-  s.append("/");
-  s.append(std::to_string(_size_bytes()));
-
-  s.append(")");
-  return s;
+  out << " processing=" << _processing()
+      << " used/actual=" << _size_bytes(true) << '/' << _size_bytes()
+      << ')';
 }
 
 

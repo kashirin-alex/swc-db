@@ -69,8 +69,10 @@ void Fragment::load_header(int& err, FS::SmartFd::Ptr& smartfd,
   while(err != Error::FS_PATH_NOT_FOUND &&
         err != Error::SERVER_SHUTTING_DOWN) {
     if(err) {
-      SWC_LOGF(LOG_WARN, "Retrying to err=%d(%s) %s", 
-        err, Error::get_text(err), smartfd->to_string().c_str());
+      SWC_LOG_OUT(LOG_WARN, 
+        Error::print(SWC_LOG_OSTREAM << "Retrying to ", err);
+        smartfd->print(SWC_LOG_OSTREAM);
+      );
       fs_if->close(err, smartfd);
       err = Error::OK;
     }
@@ -255,8 +257,10 @@ void Fragment::write(int err, uint8_t blk_replicas, int64_t blksz,
 
   if(err && err != Error::SERVER_SHUTTING_DOWN) {
     if(err != Error::UNPOSSIBLE)
-      SWC_LOGF(LOG_WARN, "write, retrying to err=%d(%s) %s", 
-               err, Error::get_text(err), to_string().c_str());
+      SWC_LOG_OUT(LOG_WARN, 
+        Error::print(SWC_LOG_OSTREAM << "Retrying write to ", err);
+        print(SWC_LOG_OSTREAM << ' ');
+      );
 
     Env::FsInterface::fs()->write(
       [this, blk_replicas, blksz, buff_write, sem]
@@ -317,8 +321,9 @@ void Fragment::load_cells(int&, Ranger::Block::Ptr cells_block) {
       was_splitted
     );
   } else {
-    SWC_LOGF(LOG_WARN, "Fragment::load_cells empty buf %s", 
-             to_string().c_str());
+    SWC_LOG_OUT(LOG_WARN, 
+      print(SWC_LOG_OSTREAM << "Fragment::load_cells empty buf ");
+    );
   }
   processing_decrement();
 
@@ -341,8 +346,13 @@ void Fragment::load_cells(int&, DB::Cells::MutableVec& cells) {
         cell.read(&buf, &remain);
 
       } catch(...) {
-        SWC_LOGF(LOG_ERROR, "Cell trunclated at count=%lu/%u remain=%lu, %s",
-                count, cells_count, remain, to_string().c_str());
+        SWC_LOG_OUT(LOG_ERROR, 
+          SWC_LOG_OSTREAM 
+            << "Cell trunclated at count=" << count << '/' << cells_count
+            << " remain=" << remain << ' ';
+          print(SWC_LOG_OSTREAM);
+          SWC_LOG_OSTREAM << ' ' << SWC_CURRENT_EXCEPTION("");
+        );
         break;
       }
       if(synced)
@@ -351,8 +361,9 @@ void Fragment::load_cells(int&, DB::Cells::MutableVec& cells) {
         cells.add_raw(cell, &offset_it_hint, &offset_hint);
     }
   } else {
-    SWC_LOGF(LOG_WARN, "Fragment::load_cells empty buf %s", 
-             to_string().c_str());
+    SWC_LOG_OUT(LOG_WARN, 
+      print(SWC_LOG_OSTREAM << "Fragment::load_cells empty buf ");
+    );
   }
   processing_decrement();
 }
@@ -371,9 +382,13 @@ void Fragment::split(int&, const DB::Cell::Key& key,
         cell.read(&buf, &remain);
 
       } catch(...) {
-        SWC_LOGF(LOG_ERROR, 
-          "Cell trunclated at count=%lu/%u remain=%lu, %s",
-          count, cells_count, remain, to_string().c_str());
+        SWC_LOG_OUT(LOG_ERROR, 
+          SWC_LOG_OSTREAM 
+            << "Cell trunclated at count=" << count << '/' << cells_count
+            << " remain=" << remain << ' ';
+          print(SWC_LOG_OSTREAM);
+          SWC_LOG_OSTREAM << ' ' << SWC_CURRENT_EXCEPTION("");
+        );
         break;
       }
 
@@ -383,8 +398,9 @@ void Fragment::split(int&, const DB::Cell::Key& key,
         log_left->add(cell);
     }
   } else {
-    SWC_LOGF(LOG_WARN, "Fragment::load_cells empty buf %s", 
-      to_string().c_str());
+      SWC_LOG_OUT(LOG_WARN, 
+        print(SWC_LOG_OSTREAM << "Fragment::load_cells empty buf ");
+      );
   }
   processing_decrement();
   release();
@@ -465,48 +481,22 @@ void Fragment::remove(int &err) {
   Env::FsInterface::interface()->remove(err, m_smartfd->filepath()); 
 }
 
-std::string Fragment::to_string() {
-  std::string s("Fragment(version=");
-  s.append(std::to_string((int)version));
-
-  s.append(" count=");
-  s.append(std::to_string(cells_count));
-  s.append(" offset=");
-  s.append(std::to_string(offset_data));
-
-  s.append(" encoder=");
-  s.append(Types::to_string(encoder));
-
-  s.append(" enc/size=");
-  s.append(std::to_string(size_enc));
-  s.append("/");
-  s.append(std::to_string(size_plain));
+void Fragment::print(std::ostream& out) {
+  out << "Fragment(version=" << (int)version
+      << " count=" << cells_count
+      << " offset=" << offset_data
+      << " encoder=" << Types::to_string(encoder)
+      << " enc/size=" << size_enc << '/' << size_plain;
   {
     Mutex::scope lock(m_mutex);
-    s.append(" state=");
-    s.append(to_string(m_state));
-    
-    s.append(" ");
-    s.append(m_smartfd->to_string());
-
-    s.append(" queue=");
-    s.append(std::to_string(m_queue.size()));
-
-    s.append(" processing=");
-    s.append(std::to_string(m_processing));
-  
-    if(m_err) {
-      s.append(" m_err=");
-      s.append(std::to_string(m_err));
-      s.append("(");
-      s.append(Error::get_text(m_err));
-      s.append(")");
-    }
+    out << " state=" << to_string(m_state);
+    m_smartfd->print(SWC_LOG_OSTREAM << ' ');
+    out << " queue=" << m_queue.size()
+        << " processing=" << m_processing;
+    if(m_err)
+      Error::print(out, m_err);
   }
-  s.append(" ");
-  s.append(interval.to_string());
-  s.append(")");
-  return s;
+  out << ' ' << interval << ')';
 }
 
 void Fragment::load() {
@@ -519,12 +509,13 @@ void Fragment::load() {
   while(err != Error::FS_PATH_NOT_FOUND &&
         err != Error::SERVER_SHUTTING_DOWN) {
     if(err) {
-      SWC_LOGF(LOG_WARN, "Retrying to err=%d(%s) %s", 
-               err, Error::get_text(err), to_string().c_str());
+      SWC_LOG_OUT(LOG_WARN, 
+        Error::print(SWC_LOG_OSTREAM << "Retrying to ", err);
+        print(SWC_LOG_OSTREAM << ' ');
+      );
       fs_if->close(err, m_smartfd);
       err = Error::OK;
     }
-
     if(!m_smartfd->valid() && !fs_if->open(err, m_smartfd) && err)
       break;
     if(err)
@@ -565,7 +556,10 @@ void Fragment::load() {
     }
   }
   if(err)
-    SWC_LOGF(LOG_ERROR, "CommitLog::Fragment load %s", to_string().c_str());
+    SWC_LOG_OUT(LOG_ERROR, 
+      Error::print(SWC_LOG_OSTREAM << "CommitLog::Fragment load ", err);
+      print(SWC_LOG_OSTREAM << ' ');
+    );
 
   run_queued();
 }

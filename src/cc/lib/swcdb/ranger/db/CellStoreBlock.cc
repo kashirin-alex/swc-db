@@ -42,9 +42,11 @@ void Read::load_header(int& err, FS::SmartFd::Ptr& smartfd,
   while(err != Error::FS_EOF) {
 
     if(err) {
-      SWC_LOGF(LOG_WARN, "Retrying to err=%d(%s) %s blk-offset=%lu", 
-        err, Error::get_text(err), smartfd->to_string().c_str(),
-        header.offset_data);
+      SWC_LOG_OUT(LOG_WARN, 
+        Error::print(SWC_LOG_OSTREAM << "Retrying to ", err);
+        smartfd->print(SWC_LOG_OSTREAM << ' ');
+        SWC_LOG_OSTREAM << " blk-offset=" << header.offset_data;
+      );
       fs_if->close(err, smartfd);
       err = Error::OK;
     }
@@ -117,7 +119,9 @@ void Read::load(FS::SmartFd::Ptr smartfd, BlockLoader* loader) {
   int err = Error::OK;
   _load(err, smartfd);
   if(err)
-    SWC_LOGF(LOG_ERROR, "CellStore::Block load %s", to_string().c_str());
+    SWC_LOG_OUT(LOG_ERROR, 
+      print(SWC_LOG_OSTREAM << "CellStore::Block load ");
+    );
 
   loader->loaded_blk();
   Env::IoCtx::post([this](){ _run_queued(); });
@@ -197,27 +201,18 @@ size_t Read::size_bytes_enc(bool only_loaded) {
   return only_loaded && !loaded() ? 0 : header.size_enc;
 }
 
-std::string Read::to_string() {
-  std::string s("Block(");
-  s.append(header.to_string());
+void Read::print(std::ostream& out) {
+  out << "Block(";
+  header.print(out);
   {
     Mutex::scope lock(m_mutex);
-    s.append(" state=");
-    s.append(to_string(m_state));
-    s.append(" queue=");
-    s.append(std::to_string(m_queue.size()));
-    s.append(" processing=");
-    s.append(std::to_string(m_processing));
-    if(m_err) {
-      s.append(" m_err=");
-      s.append(std::to_string(m_err));
-      s.append("(");
-      s.append(Error::get_text(m_err));
-      s.append(")");
-    }
+    out << " state="      << to_string(m_state)
+        << " queue="      << m_queue.size()
+        << " processing=" << m_processing;
+    if(m_err)
+      Error::print(out, m_err);
   }
-  s.append(")");
-  return s;
+  out << ')';
 }
 
 void Read::_load(int& err, FS::SmartFd::Ptr smartfd) {
@@ -227,9 +222,11 @@ void Read::_load(int& err, FS::SmartFd::Ptr smartfd) {
   while(err != Error::FS_PATH_NOT_FOUND &&
         err != Error::SERVER_SHUTTING_DOWN) {
     if(err) {
-      SWC_LOGF(LOG_WARN, "Retrying to err=%d(%s) %s %s", 
-               err, Error::get_text(err), 
-               smartfd->to_string().c_str(), to_string().c_str());
+      SWC_LOG_OUT(LOG_WARN, 
+        Error::print(SWC_LOG_OSTREAM << "Retrying to ", err);
+        smartfd->print(SWC_LOG_OSTREAM << ' ');
+        print(SWC_LOG_OSTREAM << ' ');
+      );
       fs_if->close(err, smartfd);
       err = Error::OK;
     }
@@ -330,11 +327,9 @@ void Write::encode(int& err, DynamicBuffer& cells, DynamicBuffer& output,
   header.encode(&ptr);
 }
 
-std::string Write::to_string() {
-  std::string s("Block(");
-  s.append(header.to_string());
-  s.append(")");
-  return s;
+void Write::print(std::ostream& out) const {
+  header.print(out << "Block(");
+  out << ')';
 }
 
 
