@@ -25,11 +25,11 @@ class RangeQuerySelectReq : public Serializable {
 
   virtual ~RangeQuerySelectReq();
 
+  void print(std::ostream& out) const;
+
   cid_t                cid;
   rid_t                rid;
   DB::Specs::Interval  interval;
-  
-  std::string to_string() const;
 
   private:
 
@@ -53,12 +53,12 @@ class RangeQuerySelectRsp  : public Serializable {
 
   virtual ~RangeQuerySelectRsp();
 
+  void print(std::ostream& out) const;
+
   int32_t         err;
   bool            reached_limit;
   uint64_t        offset;
   StaticBuffer    data;
-  
-  std::string to_string() const;
 
   private:
 

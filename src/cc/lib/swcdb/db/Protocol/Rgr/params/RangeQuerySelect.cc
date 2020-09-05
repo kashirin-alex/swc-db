@@ -21,16 +21,10 @@ RangeQuerySelectReq::RangeQuerySelectReq(cid_t cid, rid_t rid,
 
 RangeQuerySelectReq::~RangeQuerySelectReq() { }
 
-std::string RangeQuerySelectReq::to_string() const {
-  std::string s("RangeQuerySelectReq(");
-  s.append(" cid=");
-  s.append(std::to_string(cid));
-  s.append(" rid=");
-  s.append(std::to_string(rid));
-  s.append(" ");
-  s.append(interval.to_string());
-  s.append(")");
-  return s;
+void RangeQuerySelectReq::print(std::ostream& out) const {
+  out << "RangeQuerySelectReq(cid=" << cid << " rid=" << rid;
+  interval.print(out << ' ');
+  out << ')';
 }
 
 size_t RangeQuerySelectReq::internal_encoded_length() const {
@@ -65,21 +59,12 @@ RangeQuerySelectRsp::RangeQuerySelectRsp(int err, StaticBuffer& data)
 
 RangeQuerySelectRsp::~RangeQuerySelectRsp() { }
 
-std::string RangeQuerySelectRsp::to_string() const {
-  std::string s("RangeQuerySelectRsp(");
-  s.append("err=");
-  s.append(std::to_string(err));
-  s.append("(");
-  s.append(Error::get_text(err));
-  s.append(")");
-  s.append(" reached_limit=");
-  s.append(std::to_string(reached_limit));
-  s.append(" offset=");
-  s.append(std::to_string(offset));
-  s.append(" data.size=");
-  s.append(std::to_string(data.size));
-  s.append(")");
-  return s;
+void RangeQuerySelectRsp::print(std::ostream& out) const {
+  Error::print(out << "RangeQuerySelectRsp(", err);
+  out << " reached_limit=" << reached_limit
+      << " offset=" << offset
+      << " data.size=" << data.size
+      << ')';
 }
 
 size_t RangeQuerySelectRsp::internal_encoded_length() const {

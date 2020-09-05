@@ -20,14 +20,8 @@ RangeQueryUpdateReq::RangeQueryUpdateReq(cid_t cid, rid_t rid)
 
 RangeQueryUpdateReq::~RangeQueryUpdateReq() { }
 
-std::string RangeQueryUpdateReq::to_string() const {
-  std::string s("RangeQueryUpdateReq(");
-  s.append(" cid=");
-  s.append(std::to_string(cid));
-  s.append(" rid=");
-  s.append(std::to_string(rid));
-  s.append(")");
-  return s;
+void RangeQueryUpdateReq::print(std::ostream& out) const {
+  out << "RangeQueryUpdateReq(cid=" << cid << " rid=" << rid << ')';
 }
 
 size_t RangeQueryUpdateReq::internal_encoded_length() const {
@@ -60,24 +54,15 @@ RangeQueryUpdateRsp::RangeQueryUpdateRsp(int err,
 
 RangeQueryUpdateRsp::~RangeQueryUpdateRsp() { }
 
-std::string RangeQueryUpdateRsp::to_string() const {
-  std::string s("RangeQueryUpdateRsp(");
-  s.append("err=");
-  s.append(std::to_string(err));
-  s.append("(");
-  s.append(Error::get_text(err));
-  s.append(")");
+void RangeQueryUpdateRsp::print(std::ostream& out) const {
+  Error::print(out << "RangeQueryUpdateRsp(", err);
   if(err == Error::RANGE_BAD_INTERVAL) {
-    if(!range_prev_end.empty()) {
-      s.append(" range_prev_end=");
-      s.append(range_prev_end.to_string());
-    }if(!range_end.empty()) {
-      s.append(" range_end=");
-      s.append(range_end.to_string());
-    }
+    if(!range_prev_end.empty())
+      range_prev_end.print(out << " range_prev_end=");
+    if(!range_end.empty())
+      range_end.print(out << " range_end=");
   }
-  s.append(")");
-  return s;
+  out << ')';
 }
 
 size_t RangeQueryUpdateRsp::internal_encoded_length() const {

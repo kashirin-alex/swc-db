@@ -17,25 +17,14 @@ RangeLocateReq::RangeLocateReq(cid_t cid, rid_t rid)
 
 RangeLocateReq::~RangeLocateReq() { }
 
-std::string RangeLocateReq::to_string() const {
-  std::string s("RangeLocateReq(");
-  s.append("cid=");
-  s.append(std::to_string(cid));
-  s.append(" rid=");
-  s.append(std::to_string(rid));
-
-  s.append(" flags=");
-  s.append(std::to_string((int)flags));
-  s.append(" RangeBegin");
-  s.append(range_begin.to_string());
-  s.append(" RangeEnd");
-  s.append(range_end.to_string());
-  if(flags & NEXT_RANGE) {
-    s.append(" RangeOffset");
-    s.append(range_offset.to_string());
-  }
-  s.append(")");
-  return s;
+void RangeLocateReq::print(std::ostream& out) const {
+  out << "RangeLocateReq(cid=" << cid << " rid=" << rid 
+      << " flags=" << (int)flags;
+  range_begin.print(out << " RangeBegin");
+  range_end.print(out << " RangeEnd");
+  if(flags & NEXT_RANGE)
+    range_offset.print(out << " RangeOffset");
+  out << ')';
 }
 
 size_t RangeLocateReq::internal_encoded_length() const {
@@ -74,27 +63,15 @@ RangeLocateRsp::RangeLocateRsp(int err)
 
 RangeLocateRsp::~RangeLocateRsp() { }
 
-std::string RangeLocateRsp::to_string() const {
-  std::string s("Range(");
-  s.append("err=");
-  s.append(std::to_string(err));
-  if(err) {
-    s.append("(");
-    s.append(Error::get_text(err));
-    s.append(")");
-  } else {
-    s.append(" cid=");
-    s.append(std::to_string(cid));
-    s.append(" rid=");
-    s.append(std::to_string(rid));
-
-    s.append(" RangeBegin");
-    s.append(range_begin.to_string());
-    s.append(" RangeEnd");
-    s.append(range_end.to_string());
+void RangeLocateRsp::print(std::ostream& out) const {
+  out << "RangeLocated(";
+  Error::print(out, err);
+  if(!err) {
+    out << " cid=" << cid << " rid=" << rid;
+    range_begin.print(out << " RangeBegin");
+    range_end.print(out << " RangeEnd");
   }
-  s.append(")");
-  return s;
+  out << ')';
 }
 
 size_t RangeLocateRsp::internal_encoded_length() const {

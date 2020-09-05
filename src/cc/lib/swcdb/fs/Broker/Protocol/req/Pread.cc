@@ -16,8 +16,11 @@ Pread::Pread(uint32_t timeout, SmartFd::Ptr& smartfd,
       const Callback::PreadCb_t& cb)
     : buffer(dst), allocated(allocated), amount(0), 
       smartfd(smartfd), cb(cb) {
-  SWC_LOGF(LOG_DEBUG, "pread offset=%lu len=%lu timeout=%d %s", 
-            offset, len, timeout, smartfd->to_string().c_str());
+  SWC_LOG_OUT(LOG_DEBUG, 
+    SWC_LOG_PRINTF("read offset=%lu len=%lu timeout=%d ", 
+                    offset, len, timeout);
+    smartfd->print(SWC_LOG_OSTREAM);
+  );
   cbp = CommBuf::make(Params::PreadReq(smartfd->fd(), offset, len));
   cbp->header.set(Cmd::FUNCTION_PREAD, timeout);
 }
@@ -72,8 +75,11 @@ void Pread::handle(ConnHandlerPtr, const Event::Ptr& ev) {
       break;
   }
 
-  SWC_LOGF(LOG_DEBUG, "pread %s amount='%lu' error='%d'", 
-            smartfd->to_string().c_str(), amount, error);
+  SWC_LOG_OUT(LOG_DEBUG, 
+    SWC_LOG_PRINTF("pread amount=%lu ", amount);
+    Error::print(SWC_LOG_OSTREAM, error);
+    smartfd->print(SWC_LOG_OSTREAM << ' ');
+  );
 
   cb(error, smartfd, buf);
 }

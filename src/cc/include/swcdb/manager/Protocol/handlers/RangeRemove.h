@@ -21,7 +21,7 @@ void range_remove(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
 
     Params::RangeRemoveReq params;
     params.decode(&ptr, &remain);
-    std::cout << "RangeRemove: " << params.to_string() << "\n";
+    SWC_PRINT << "RangeRemove: " << params.to_string() << SWC_PRINT_CLOSE;
 
     auto col = Env::Mngr::mngd_columns()->get_column(
       rsp_params.err, params.cid);
@@ -43,7 +43,8 @@ void range_remove(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
   
   send_response:
     try {
-      std::cout << "RangeRemove(RSP): " << rsp_params.to_string() << "\n";
+      SWC_PRINT << "RangeRemove(RSP): " << rsp_params.to_string() 
+                << SWC_PRINT_CLOSE;
       auto cbp = CommBuf::make(rsp_params);
       cbp->header.initialize_from_request_header(ev->header);
       conn->send_response(cbp);

@@ -75,7 +75,7 @@ FileSystemHadoop::FileSystemHadoop()
 }
 
 FileSystemHadoop::~FileSystemHadoop() { 
-  std::cout << " ~FileSystemHadoop() \n"; 
+  SWC_PRINT << " ~FileSystemHadoop() " << SWC_PRINT_CLOSE; 
 }
 
 void FileSystemHadoop::setup_connection() {
@@ -103,20 +103,20 @@ bool FileSystemHadoop::initialize() {
   
   hdfs::ConfigParser parser;
   if(!parser.LoadDefaultResources()){
-    std::cerr << "hdfs::ConfigParser could not load default resources. " << std::endl;
+    SWC_PRINT << "hdfs::ConfigParser could not load default resources. " << SWC_PRINT_CLOSE;
     exit(EXIT_FAILURE);
   }
   auto stats = parser.ValidateResources();
   for(auto& s : stats) {
-    std::cout << s.first << "=" << s.second.ToString() << std::endl;
+    SWC_PRINT << s.first << "=" << s.second.ToString() << SWC_PRINT_CLOSE;
     if(!s.second.ok())
       (EXIT_FAILURE);
   }
-  std::cout << " fs.defaultFS=" << parser.get_string_or("fs.defaultFS", "NONE") << "\n";
+  SWC_PRINT << " fs.defaultFS=" << parser.get_string_or("fs.defaultFS", "NONE") << SWC_PRINT_CLOSE;
 
   hdfs::Options options;
   if(!parser.get_options(options)){
-    std::cerr << "hdfs::ConfigParser could not load Options object. " << std::endl;
+    SWC_PRINT << "hdfs::ConfigParser could not load Options object. " << SWC_PRINT_CLOSE;
     exit(EXIT_FAILURE);
   }
 
@@ -128,7 +128,7 @@ bool FileSystemHadoop::initialize() {
     settings->get_str("swc.fs.hadoop.user", ""), 
     options
   );
-  std::cout << "hdfs::FileSystem Initialized" << std::endl;
+  SWC_PRINT << "hdfs::FileSystem Initialized" << SWC_PRINT_CLOSE;
 
   hdfs::Status status;
   std::string port;

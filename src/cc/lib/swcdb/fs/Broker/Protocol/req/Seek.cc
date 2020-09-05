@@ -13,8 +13,10 @@ namespace SWC { namespace FS { namespace Protocol { namespace Req {
 Seek::Seek(uint32_t timeout, SmartFd::Ptr& smartfd, size_t offset,
            const Callback::SeekCb_t& cb) 
           : smartfd(smartfd), cb(cb) {
-  SWC_LOGF(LOG_DEBUG, "seek offset=%lu %s", 
-           offset, smartfd->to_string().c_str());
+  SWC_LOG_OUT(LOG_DEBUG, 
+    SWC_LOG_PRINTF("seek offset=%lu timeout=%d ", offset, timeout);
+    smartfd->print(SWC_LOG_OSTREAM);
+  );
 
   cbp = CommBuf::make(Params::SeekReq(smartfd->fd(), offset));
   cbp->header.set(Cmd::FUNCTION_SEEK, timeout);
@@ -54,8 +56,10 @@ void Seek::handle(ConnHandlerPtr, const Event::Ptr& ev) {
       break;
   }
 
-  SWC_LOGF(LOG_DEBUG, "seek %s error='%d'", 
-            smartfd->to_string().c_str(), error);
+  SWC_LOG_OUT(LOG_DEBUG, 
+    Error::print(SWC_LOG_OSTREAM << "seek ", error);
+    smartfd->print(SWC_LOG_OSTREAM << ' ');
+  );
   
   cb(error, smartfd);
 }

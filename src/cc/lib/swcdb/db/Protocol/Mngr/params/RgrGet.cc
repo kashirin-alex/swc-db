@@ -18,22 +18,14 @@ RgrGetReq::RgrGetReq(cid_t cid, rid_t rid, bool next_range)
 
 RgrGetReq::~RgrGetReq() { }
 
-std::string RgrGetReq::to_string() {
-  std::string s("Ranger(");
-  s.append("cid=");
-  s.append(std::to_string(cid));
-  s.append(" rid=");
-  s.append(std::to_string(rid));
+void RgrGetReq::print(std::ostream& out) const {
+  out << "Ranger(cid=" << cid << " rid=" << rid;
   if(!rid) {
-    s.append(" next_range=");
-    s.append(std::to_string(next_range));
-    s.append(" RangeBegin");
-    s.append(range_begin.to_string());
-    s.append(" RangeEnd");
-    s.append(range_end.to_string());
+    out << " next_range=" << next_range;
+    range_begin.print(out << " RangeBegin");
+    range_end.print(out << " RangeEnd");
   }
-  s.append(")");
-  return s;
+  out << ')';
 }
 
 size_t RgrGetReq::internal_encoded_length() const {

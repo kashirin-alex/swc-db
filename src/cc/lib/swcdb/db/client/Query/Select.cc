@@ -389,7 +389,8 @@ void Select::Scanner::locate_on_manager(bool next_range) {
     params.range_end.insert(0, meta_cid);
   }
 
-  SWC_LOGF(LOG_DEBUG, "LocateRange-onMngr %s", params.to_string().c_str());
+  SWC_LOG_OUT(LOG_DEBUG, 
+    params.print(SWC_LOG_OSTREAM << "LocateRange-onMngr "););
 
   Protocol::Mngr::Req::RgrGet::request(
     params,
@@ -530,7 +531,8 @@ void Select::Scanner::locate_on_ranger(const EndPoints& endpoints,
       params.range_offset.insert(0, meta_cid);
   }
 
-  SWC_LOGF(LOG_DEBUG, "LocateRange-onRgr %s", params.to_string().c_str());
+  SWC_LOG_OUT(LOG_DEBUG, 
+    params.print(SWC_LOG_OSTREAM << "LocateRange-onRgr "););
 
   Protocol::Rgr::Req::RangeLocate::request(
     params, endpoints,
@@ -552,8 +554,9 @@ bool Select::Scanner::located_on_ranger(
           const ReqBase::Ptr& base, 
           const Protocol::Rgr::Params::RangeLocateRsp& rsp, 
           bool next_range) {
+  SWC_LOG_OUT(LOG_DEBUG, 
+    rsp.print(SWC_LOG_OSTREAM << "LocatedRange-onRgr "););
 
-  SWC_LOGF(LOG_DEBUG, "Located-onRgr %s", rsp.to_string().c_str());
   if(rsp.err) {
     if(rsp.err == Error::RANGE_NOT_FOUND && 
        (next_range || type == Types::Range::META)) {
@@ -562,8 +565,8 @@ bool Select::Scanner::located_on_ranger(
       return false;
     }
 
-    SWC_LOGF(LOG_DEBUG, "Located-oRgr RETRYING %s", 
-                        rsp.to_string().c_str());                      
+    SWC_LOG_OUT(LOG_DEBUG, 
+      rsp.print(SWC_LOG_OSTREAM << "LocatedRange-onRgr RETRYING "););                
     if(rsp.err == Error::RGR_NOT_LOADED_RANGE || 
        rsp.err == Error::RANGE_NOT_FOUND  || 
        rsp.err == Error::SERVER_SHUTTING_DOWN ||
@@ -576,15 +579,16 @@ bool Select::Scanner::located_on_ranger(
     return false;
   }
   if(!rsp.rid) {
-    SWC_LOGF(LOG_DEBUG, "Located-onRgr RETRYING(no rid) %s", 
-                        rsp.to_string().c_str());
+    SWC_LOG_OUT(LOG_DEBUG, 
+      rsp.print(SWC_LOG_OSTREAM << "LocatedRange-onRgr RETRYING(no rid) "););
     Env::Clients::get()->rangers.remove(cid, rid);
     parent->request_again();
     return false;
   }
   if(type == Types::Range::DATA && rsp.cid != col->cid) {
-    SWC_LOGF(LOG_DEBUG, "Located-onRgr RETRYING(cid no match) %s",
-              rsp.to_string().c_str());        
+    SWC_LOG_OUT(LOG_DEBUG, 
+      rsp.print(
+        SWC_LOG_OSTREAM << "LocatedRange-onRgr RETRYING(cid no match "););    
     Env::Clients::get()->rangers.remove(cid, rid);
     parent->request_again();
     return false;
@@ -624,7 +628,9 @@ void Select::Scanner::select(const EndPoints& endpoints, rid_t rid,
       profile.add(rsp.err);
       
       if(rsp.err) {
-        SWC_LOGF(LOG_DEBUG, "Select RETRYING %s", rsp.to_string().c_str());
+        SWC_LOG_OUT(LOG_DEBUG, 
+          rsp.print(SWC_LOG_OSTREAM << "Select RETRYING "); );
+
         if(rsp.err == Error::RGR_NOT_LOADED_RANGE || 
            rsp.err == Error::SERVER_SHUTTING_DOWN ||
            rsp.err == Error::COMM_NOT_CONNECTED) {

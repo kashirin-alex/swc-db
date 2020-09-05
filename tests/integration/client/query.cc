@@ -172,8 +172,8 @@ class Test {
     SWC_ASSERT(!req->result->get_size(schema->cid));
 
     SWC_PRINT << "expect_empty_column:  \n";
-    req->result->profile.print(std::cout); 
-    std::cout << SWC_PRINT_CLOSE;
+    req->result->profile.print(SWC_LOG_OSTREAM); 
+    SWC_LOG_OSTREAM << SWC_PRINT_CLOSE;
   }
  
   void expect_one_at_offset() {
@@ -199,8 +199,8 @@ class Test {
     }
 
     SWC_PRINT << "expect_one_at_offset:  \n";
-    req->result->profile.print(std::cout); 
-    std::cout << SWC_PRINT_CLOSE;
+    req->result->profile.print(SWC_LOG_OSTREAM); 
+    SWC_LOG_OSTREAM << SWC_PRINT_CLOSE;
   }
 
 
@@ -229,8 +229,8 @@ class Test {
     auto req = std::make_shared<client::Query::Update>(
       [this](const client::Query::Update::Result::Ptr& result) {
         SWC_PRINT << "query_insert: \n";
-        result->profile.print(std::cout); 
-        std::cout << SWC_PRINT_CLOSE;
+        result->profile.print(SWC_LOG_OSTREAM); 
+        SWC_LOG_OSTREAM << SWC_PRINT_CLOSE;
 
         SWC_ASSERT(!result->error());
         expect_one_at_offset();
@@ -331,8 +331,8 @@ class Test {
     auto req = std::make_shared<client::Query::Update>(
       [this](const client::Query::Update::Result::Ptr& result) {
         SWC_PRINT << "query_delete: \n";
-        result->profile.print(std::cout); 
-        std::cout << SWC_PRINT_CLOSE;
+        result->profile.print(SWC_LOG_OSTREAM); 
+        SWC_LOG_OSTREAM << SWC_PRINT_CLOSE;
 
         SWC_ASSERT(!result->error());
         expect_empty_column();

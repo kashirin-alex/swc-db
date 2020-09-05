@@ -273,8 +273,8 @@ bool DbClient::list_columns(std::string& cmd) {
 
   Mutex::scope lock(Logger::logger.mutex);
   for(auto& schema : schemas) {
-    schema->display(std::cout);
-    std::cout << std::endl;
+    schema->display(SWC_LOG_OSTREAM);
+    SWC_LOG_OSTREAM << std::endl;
   }
   return true;
 }
@@ -298,10 +298,10 @@ bool DbClient::select(std::string& cmd) {
     return error(message);
 
   if(display_flags & DB::DisplayFlag::SPECS) {
-    Mutex::scope lock(Logger::logger.mutex);
-    std::cout << "\n\n";
+    SWC_PRINT << "\n\n";
     req->specs.display(
-      std::cout, !(display_flags & DB::DisplayFlag::BINARY));
+      SWC_LOG_OSTREAM, !(display_flags & DB::DisplayFlag::BINARY));
+    SWC_LOG_OSTREAM << SWC_PRINT_CLOSE;
   }
 
   req->scan(err);
@@ -342,15 +342,15 @@ void DbClient::display(const client::Query::Select::Result::Ptr& result,
         ++cells_count;
         cells_bytes += cell->encoded_length();
         if(display_flags & DB::DisplayFlag::COLUMN)  {
-          std::cout << schema->col_name << "\t";
+          SWC_LOG_OSTREAM << schema->col_name << '\t';
         }
         cell->display(
-          std::cout, 
+          SWC_LOG_OSTREAM, 
           err ? Types::Column::PLAIN: schema->col_type,
           display_flags,
           meta
         );
-        std::cout << "\n";  
+        SWC_LOG_OSTREAM << std::endl;  
       }
     }
   } while(count_state != cells_count);
@@ -462,10 +462,10 @@ bool DbClient::dump(std::string& cmd) {
     return error(Error::get_text(err));
 
   if(display_flags & DB::DisplayFlag::SPECS) {
-    Mutex::scope lock(Logger::logger.mutex);
-    std::cout << "\n\n";
+    SWC_PRINT << "\n\n";
     req->specs.display(
-      std::cout, !(display_flags & DB::DisplayFlag::BINARY));
+      SWC_LOG_OSTREAM, !(display_flags & DB::DisplayFlag::BINARY));
+    SWC_LOG_OSTREAM << SWC_PRINT_CLOSE;
   }
 
   req->scan(err);
@@ -489,11 +489,11 @@ bool DbClient::dump(std::string& cmd) {
     if(err) 
       return error(Error::get_text(err));
     
-    Mutex::scope lock(Logger::logger.mutex);
-    std::cout << " Files Count:            " << files.size() << "\n";
+    SWC_PRINT << " Files Count:            " << files.size() << "\n";
     for(auto& file : files)
-      std::cout << " File:                   " << file->filepath() 
-                << " (" << file->pos()  << " bytes)\n";
+      SWC_LOG_OSTREAM << " File:                   " << file->filepath() 
+                      << " (" << file->pos()  << " bytes)\n";
+    SWC_LOG_OSTREAM << SWC_PRINT_CLOSE;
   }
 
   Env::FsInterface::reset();
@@ -505,9 +505,9 @@ void DbClient::display_stats(const client::Query::Profiling& profile,
                              size_t cells_count, size_t resend_cells) const {
   FlowRate::Data rate(bytes, took);
   SWC_PRINT << std::endl << std::endl;
-  rate.print_cells_statistics(std::cout, cells_count, resend_cells);
-  profile.print(std::cout);
-  std::cout << SWC_PRINT_CLOSE;
+  rate.print_cells_statistics(SWC_LOG_OSTREAM, cells_count, resend_cells);
+  profile.display(SWC_LOG_OSTREAM);
+  SWC_LOG_OSTREAM << SWC_PRINT_CLOSE;
 }
 
 

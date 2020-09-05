@@ -77,27 +77,27 @@ bool Fs::ls(const std::string& cmd) {
     t_secs = (time_t)entry->last_modification_time;
     std::strftime(modified, 20, "%Y/%m/%d %H:%M:%S", std::gmtime(&t_secs));
       
-    std::cout << std::left << "  " 
-              << std::left << std::setw(lname + 2) 
-              << format("'%s'", entry->name.c_str())
-              << std::left << "  modified=" << modified 
-              << '\n';
+    SWC_LOG_OSTREAM << std::left << "  " 
+      << std::left << std::setw(lname + 2)
+      << format("'%s'", entry->name.c_str())
+      << std::left << "  modified=" << modified
+      << '\n';
   }
 
-  std::cout << "Files=" << files.size() << ":\n";
+  SWC_LOG_OSTREAM << "Files=" << files.size() << ":\n";
   for(auto& entry : files) {
     t_secs = (time_t)entry->last_modification_time;
     std::strftime(modified, 20, "%Y/%m/%d %H:%M:%S", std::gmtime(&t_secs));
     
-    std::cout << std::left << "  " 
-              << std::left << std::setw(lname + 2) 
-              << format("'%s'", entry->name.c_str())
-              << std::left << "  modified=" << modified 
-              << "  size=" << entry->length
-              << '\n';
+    SWC_LOG_OSTREAM << std::left << "  " 
+      << std::left << std::setw(lname + 2)
+      << format("'%s'", entry->name.c_str())
+      << std::left << "  modified=" << modified
+      << "  size=" << entry->length
+      << '\n';
   }
 
-  std::cout << SWC_PRINT_CLOSE;
+  SWC_LOG_OSTREAM << SWC_PRINT_CLOSE;
   return true;
 }
 

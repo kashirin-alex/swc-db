@@ -164,21 +164,27 @@ void LogWriter::log(uint8_t priority, const char* filen, int fline,
                     const char* fmt, ...) {
   va_list ap;
   va_start(ap, fmt);
-  {
-    Mutex::scope lock(mutex);
-    _print_prefix(priority, filen, fline);
-    vprintf(fmt, ap);
-    std::cout << std::endl;
-  }
+
+  bool support(print_prefix(priority, filen, fline));
+  vprintf(fmt, ap);
+  print_suffix(support);
+
   va_end(ap);
 }
 
 SWC_SHOULD_NOT_INLINE
-void LogWriter::_print_prefix(uint8_t priority, 
-                              const char* filen, int fline) {
+bool LogWriter::print_prefix(uint8_t priority, const char* filen, int fline) {
+  bool support = mutex.lock();
   std::cout << _seconds() << ' ' << get_name(priority) << ": ";
   if(show_line_numbers())
     std::cout << "(" << filen << ':' << fline << ") ";
+  return support;
+}
+
+SWC_SHOULD_NOT_INLINE
+void LogWriter::print_suffix(bool support) {
+  std::cout << std::endl;
+  mutex.unlock(support);
 }
 
 }}

@@ -14,9 +14,11 @@ Create::Create(FileSystem::Ptr fs, uint32_t timeout, SmartFd::Ptr& smartfd,
                int32_t bufsz, uint8_t replication, int64_t blksz, 
                const Callback::CreateCb_t& cb) 
               : fs(fs), smartfd(smartfd), cb(cb) {
-  SWC_LOGF(LOG_DEBUG, 
-    "create %s bufsz(%d) replication(%d) blksz(%ld)", 
-    smartfd->to_string().c_str(), bufsz, replication, blksz);
+  SWC_LOG_OUT(LOG_DEBUG, 
+    SWC_LOG_PRINTF("create bufsz(%d) replication(%d) blksz(%ld) timeout=%d ", 
+                    bufsz, replication, blksz, timeout);
+    smartfd->print(SWC_LOG_OSTREAM);
+  );
   
   cbp = CommBuf::make(
     Params::CreateReq(smartfd->filepath(), smartfd->flags(), 
@@ -53,8 +55,11 @@ void Create::handle(ConnHandlerPtr, const Event::Ptr& ev) {
     }
   }
 
-  SWC_LOGF(LOG_DEBUG, "create %s error='%d' fds-open=%lu", 
-           smartfd->to_string().c_str(), error, fs->fds_open());
+  SWC_LOG_OUT(LOG_DEBUG, 
+    SWC_LOG_PRINTF("create fds-open=%lu ", fs->fds_open());
+    Error::print(SWC_LOG_OSTREAM, error);
+    smartfd->print(SWC_LOG_OSTREAM << ' ');
+  );
   
   cb(error, smartfd);
 }

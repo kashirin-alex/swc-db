@@ -13,7 +13,10 @@ namespace SWC { namespace FS { namespace Protocol { namespace Req {
 Close::Close(FileSystem::Ptr fs, uint32_t timeout, SmartFd::Ptr& smartfd, 
             const Callback::CloseCb_t& cb)
             : fs(fs), smartfd(smartfd), cb(cb) {
-  SWC_LOGF(LOG_DEBUG, "close %s", smartfd->to_string().c_str());
+  SWC_LOG_OUT(LOG_DEBUG, 
+    SWC_LOG_PRINTF("close timeout=%d ", timeout);
+    smartfd->print(SWC_LOG_OSTREAM); 
+  );
  
   cbp = CommBuf::make(Params::CloseReq(smartfd->fd()));
   cbp->header.set(Cmd::FUNCTION_CLOSE, timeout);
@@ -37,9 +40,12 @@ void Close::handle(ConnHandlerPtr, const Event::Ptr& ev) {
   smartfd->pos(0);
   fs->fd_open_decr();
 
-  SWC_LOGF(LOG_DEBUG, "close %s error='%d' fds-open=%lu", 
-           smartfd->to_string().c_str(), error, fs->fds_open());
-
+  SWC_LOG_OUT(LOG_DEBUG, 
+    SWC_LOG_PRINTF("close fds-open=%lu ", fs->fds_open());
+    Error::print(SWC_LOG_OSTREAM, error);
+    smartfd->print(SWC_LOG_OSTREAM << ' ');
+  );
+  
   cb(error, smartfd);
 }
 

@@ -117,8 +117,9 @@ bool Rgr::report_resources(std::string& cmd) {
     (const client::ConnQueue::ReqBase::Ptr&, const int& error,
      const Protocol::Rgr::Params::Report::RspRes& rsp) {
       if(!(err = error)) {
-        Mutex::scope lock(Logger::logger.mutex);
-        rsp.display(std::cout);
+        SWC_PRINT << "";
+        rsp.display(SWC_LOG_OSTREAM);
+        SWC_LOG_OSTREAM << SWC_PRINT_CLOSE;
       }
       await->set_value();
     }
@@ -196,8 +197,9 @@ bool Rgr::report(std::string& cmd) {
         (const client::ConnQueue::ReqBase::Ptr&, const int& error,
          const Protocol::Rgr::Params::Report::RspColumnsRanges& rsp) {
           if(!(err = error)) {
-            Mutex::scope lock(Logger::logger.mutex);
-            rsp.display(std::cout);
+            SWC_PRINT << "";
+            rsp.display(SWC_LOG_OSTREAM);
+            SWC_LOG_OSTREAM << SWC_PRINT_CLOSE;
           }
           await->set_value();
         }
@@ -211,8 +213,9 @@ bool Rgr::report(std::string& cmd) {
         (const client::ConnQueue::ReqBase::Ptr&, const int& error,
          const Protocol::Rgr::Params::Report::RspCids& rsp) {
           if(!(err = error)) {
-            Mutex::scope lock(Logger::logger.mutex);
-            rsp.display(std::cout);
+            SWC_PRINT << "";
+            rsp.display(SWC_LOG_OSTREAM);
+            SWC_LOG_OSTREAM << SWC_PRINT_CLOSE;
           }
           await->set_value();
         }
@@ -227,8 +230,9 @@ bool Rgr::report(std::string& cmd) {
         (const client::ConnQueue::ReqBase::Ptr&, const int& error,
          const Protocol::Rgr::Params::Report::RspColumnsRanges& rsp) {
           if(!(err = error)) {
-            Mutex::scope lock(Logger::logger.mutex);
-            rsp.display(std::cout);
+            SWC_PRINT << "";
+            rsp.display(SWC_LOG_OSTREAM);
+            SWC_LOG_OSTREAM << SWC_PRINT_CLOSE;
           }
           await->set_value();
         }
@@ -243,8 +247,9 @@ bool Rgr::report(std::string& cmd) {
         (const client::ConnQueue::ReqBase::Ptr&, const int& error,
          const Protocol::Rgr::Params::Report::RspColumnRids& rsp) {
           if(!(err = error)) {
-            Mutex::scope lock(Logger::logger.mutex);
-            rsp.display(std::cout);
+            SWC_PRINT << "";
+            rsp.display(SWC_LOG_OSTREAM);
+            SWC_LOG_OSTREAM << SWC_PRINT_CLOSE;
           }
           await->set_value();
         }

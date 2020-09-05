@@ -72,7 +72,7 @@ class Result final : private std::vector<Cell*> {
                       uint32_t max_cells);
 
 
-  std::string to_string(bool with_cells=false) const;
+  void print(std::ostream& out, bool with_cells=false) const;
 
 };
 

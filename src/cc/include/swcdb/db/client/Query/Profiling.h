@@ -45,18 +45,12 @@ struct Profiling {
         ++error;
     }
 
-    std::string to_string() const {
-      std::string s("(count=");
-      s.append(std::to_string(count));
-      s.append(" time=");
-      s.append(std::to_string(time));
-      s.append("ns errors=");
-      s.append(std::to_string(error));
-      s.append(")");
-      return s;
+    void print(std::ostream& out) const {
+      out << "(count=" << count 
+          << " time=" << time << "ns errors=" << error << ')';
     }
     
-    void print(std::ostream& out) const { 
+    void display(std::ostream& out) const { 
       out << time << "ns" << "/" << count << "(" << error << ")\n";
     }
   };
@@ -92,37 +86,34 @@ struct Profiling {
     return Component::Start(_rgr_data);
   }
 
-  std::string to_string() const {
-    std::string s("Profile(took=");
-    s.append(std::to_string(ts_finish - ts_start));
-      
-    s.append("ns mngr[locate");
-    s.append(_mngr_locate.to_string());
-    s.append(" res");
-    s.append(_mngr_res.to_string());
-    s.append("] rgr[locate-master");
-    s.append(_rgr_locate_master.to_string());
-    s.append(" locate-meta");
-    s.append(_rgr_locate_meta.to_string());
-    s.append(" data");
-    s.append(_rgr_data.to_string());
-    s.append("])");
-    return s;
-  }
-
-
-  void print(std::ostream& out) const {
-    _mngr_locate.print(
+  void display(std::ostream& out) const {
+    _mngr_locate.display(
       out << " Mngr Locate:            ");
-    _mngr_res.print(
+    _mngr_res.display(
       out << " Mngr Resolve:           ");
-    _rgr_locate_master.print(
+    _rgr_locate_master.display(
       out << " Rgr Locate Master:      ");
-    _rgr_locate_meta.print(
+    _rgr_locate_meta.display(
       out << " Rgr Locate Meta:        ");
-    _rgr_data.print(
+    _rgr_data.display(
       out << " Rgr Data:               ");
     out  << std::flush;
+  }
+
+  void print(std::ostream& out) const {
+    out << "Profile(took=" << (ts_finish - ts_start) << "ns";
+    _mngr_locate.print(out << " mngr[locate");
+    _mngr_res.print(out << " res");
+    _rgr_locate_master.print(out << "] rgr[locate-master");
+    _rgr_locate_meta.print(out << " locate-meta");
+    _rgr_data.print(out << " data");
+    out << "])";
+  }
+
+  std::string to_string() const {
+    std::stringstream ss;
+    print(ss);
+    return ss.str();
   }
 
 };

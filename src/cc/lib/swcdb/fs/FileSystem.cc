@@ -175,7 +175,7 @@ void FileSystem::rename(const Callback::RmdirCb_t& cb,
 void FileSystem::write(int& err, SmartFd::Ptr& smartfd,
                        uint8_t replication, int64_t blksz, 
                        StaticBuffer& buffer) {
-  SWC_LOGF(LOG_DEBUG, "write %s", smartfd->to_string().c_str());
+  SWC_LOG_OUT(LOG_DEBUG, smartfd->print(SWC_LOG_OSTREAM << "write "); );
 
   create(err, smartfd, 0, replication, blksz);
   if(!smartfd->valid() || err) {
@@ -196,8 +196,10 @@ void FileSystem::write(int& err, SmartFd::Ptr& smartfd,
       close(err ? errtmp : err, smartfd);
     
   if(err)
-    SWC_LOGF(LOG_ERROR, "write failed: %d(%s), %s", 
-              errno, strerror(errno), smartfd->to_string().c_str());
+    SWC_LOG_OUT(LOG_ERROR, 
+      Error::print(SWC_LOG_OSTREAM <<  "write failed: ", err);
+      smartfd->print(SWC_LOG_OSTREAM << " ");
+    );
 }
 
 void FileSystem::write(const Callback::WriteCb_t& cb, SmartFd::Ptr& smartfd,

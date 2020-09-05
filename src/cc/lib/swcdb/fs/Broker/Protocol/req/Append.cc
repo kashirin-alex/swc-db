@@ -14,8 +14,11 @@ Append::Append(uint32_t timeout, SmartFd::Ptr& smartfd,
                StaticBuffer& buffer, Flags flags, 
                const Callback::AppendCb_t& cb)
               : amount(0), smartfd(smartfd), cb(cb) {
-  SWC_LOGF(LOG_DEBUG, "append flags=%d timeout=%d amount=%lu %s", 
-            flags, timeout, buffer.size, smartfd->to_string().c_str());
+  SWC_LOG_OUT(LOG_DEBUG, 
+    SWC_LOG_PRINTF("append flags=%d amount=%lu timeout=%d ", 
+                    flags, buffer.size, timeout);
+    smartfd->print(SWC_LOG_OSTREAM);
+  );
 
   cbp = CommBuf::make(
     Params::AppendReq(smartfd->fd(), (uint8_t)flags),
@@ -60,8 +63,11 @@ void Append::handle(ConnHandlerPtr, const Event::Ptr& ev) {
       break;
   }
 
-  SWC_LOGF(LOG_DEBUG, "append %s amount='%lu' error='%d'", 
-            smartfd->to_string().c_str(), amount, error);
+  SWC_LOG_OUT(LOG_DEBUG, 
+    SWC_LOG_PRINTF("append amount=%lu ", amount);
+    Error::print(SWC_LOG_OSTREAM, error);
+    smartfd->print(SWC_LOG_OSTREAM << ' ');
+  );
   
   cb(error, smartfd, amount);
 }

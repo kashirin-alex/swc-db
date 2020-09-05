@@ -14,8 +14,10 @@ Read::Read(uint32_t timeout, SmartFd::Ptr& smartfd, void* dst, size_t len,
            bool allocated, const Callback::ReadCb_t& cb)
           : buffer(dst), allocated(allocated), amount(0), 
             smartfd(smartfd), cb(cb) {
-  SWC_LOGF(LOG_DEBUG, "read len=%lu timeout=%d %s", 
-            len, timeout, smartfd->to_string().c_str());
+  SWC_LOG_OUT(LOG_DEBUG, 
+    SWC_LOG_PRINTF("read len=%lu timeout=%d ", len, timeout);
+    smartfd->print(SWC_LOG_OSTREAM);
+  );
 
   cbp = CommBuf::make(Params::ReadReq(smartfd->fd(), len));
   cbp->header.set(Cmd::FUNCTION_READ, timeout);
@@ -71,8 +73,11 @@ void Read::handle(ConnHandlerPtr, const Event::Ptr& ev) {
       break;
   }
 
-  SWC_LOGF(LOG_DEBUG, "read %s amount='%lu' error='%d'", 
-            smartfd->to_string().c_str(), amount, error);
+  SWC_LOG_OUT(LOG_DEBUG, 
+    SWC_LOG_PRINTF("read amount=%lu ", amount);
+    Error::print(SWC_LOG_OSTREAM, error);
+    smartfd->print(SWC_LOG_OSTREAM << ' ');
+  );
 
   cb(error, smartfd, buf);
 }

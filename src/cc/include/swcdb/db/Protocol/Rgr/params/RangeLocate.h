@@ -26,12 +26,12 @@ class RangeLocateReq : public Serializable {
   
   virtual ~RangeLocateReq();
 
+  void print(std::ostream& out) const;
+
   cid_t          cid;
   rid_t          rid;
   DB::Cell::Key  range_begin, range_end, range_offset;
   uint8_t        flags;
-  
-  std::string to_string() const;
 
   private:
 
@@ -52,13 +52,13 @@ class RangeLocateRsp  : public Serializable {
 
   virtual ~RangeLocateRsp();
 
+  void print(std::ostream& out) const;
+
   int             err;         
   cid_t           cid; 
   rid_t           rid;
   DB::Cell::Key   range_end;
   DB::Cell::Key   range_begin;
-
-  std::string to_string() const;
 
   private:
 

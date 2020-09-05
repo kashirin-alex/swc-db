@@ -215,9 +215,9 @@ void generate_sample_data() {
   
   SWC::FlowRate::Data rate(added_bytes, SWC::Time::now_ns() - ts);
   SWC_PRINT << std::endl << std::endl;
-  rate.print_cells_statistics(std::cout, added_cells, resend_cells);
-  req->result->profile.print(std::cout);
-  std::cout << SWC_PRINT_CLOSE;
+  rate.print_cells_statistics(SWC_LOG_OSTREAM, added_cells, resend_cells);
+  req->result->profile.print(SWC_LOG_OSTREAM);
+  SWC_LOG_OSTREAM << SWC_PRINT_CLOSE;
 }
 
 

@@ -37,8 +37,8 @@ void MngrState::handle(ConnHandlerPtr conn, const Event::Ptr& ev) {
 
   if(ev->response_code() == Error::OK) {
     if(cb != nullptr){
-      //std::cout << "response_ok, cb=" << (size_t)cb.get() 
-      //          << " rsp, err=" << ev->to_str() << "\n";
+      //SWC_PRINT << "response_ok, cb=" << (size_t)cb.get() 
+      //          << " rsp, err=" << ev->to_str() << SWC_PRINT_CLOSE;
       cb->response_ok();
     }
   } else {

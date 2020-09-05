@@ -172,21 +172,18 @@ bool Mngr::managers_status(std::string& cmd) {
       [this, endpoints, await=&r_promise] 
       (const client::ConnQueue::ReqBase::Ptr& req, const int& error,
        const Protocol::Mngr::Params::Report::RspManagersStatus& rsp) {
-        {
-          Mutex::scope lock(Logger::logger.mutex);
-          std::cout << "# by Manager(";
-          if(error) {
-            for(auto& p : endpoints)
-              std::cout << p << ',';
-            std::cout << ") - \033[31mERROR\033[00m: " << error
-                      << "(" << Error::get_text(error) << ")";
-          } else {
-            std::cout << (req->queue ? req->queue->get_endpoint_remote()
-                                     : EndPoint()) << ") ";
-            rsp.display(std::cout);
-          }
-          std::cout << '\n';
+        SWC_PRINT << "# by Manager(";
+        if(error) {
+          for(auto& p : endpoints)
+            SWC_LOG_OSTREAM << p << ',';
+          SWC_LOG_OSTREAM << ") - \033[31mERROR\033[00m: " << error
+                          << "(" << Error::get_text(error) << ")";
+        } else {
+          SWC_LOG_OSTREAM << (req->queue? req->queue->get_endpoint_remote()
+                                        : EndPoint()) << ") ";
+          rsp.display(SWC_LOG_OSTREAM);
         }
+        SWC_LOG_OSTREAM << SWC_PRINT_CLOSE;
         await->set_value();
       }
     );
@@ -243,9 +240,9 @@ bool Mngr::column_status(std::string& cmd) {
     (const client::ConnQueue::ReqBase::Ptr&, const int& error,
      const Protocol::Mngr::Params::Report::RspColumnStatus& rsp) {
       if(!(err = error)) {
-        Mutex::scope lock(Logger::logger.mutex);
-        rsp.display(std::cout);
-        std::cout << '\n';
+        SWC_PRINT << "";
+        rsp.display(SWC_LOG_OSTREAM);
+        SWC_LOG_OSTREAM << SWC_PRINT_CLOSE;
       }
       await->set_value();
     }
@@ -304,9 +301,9 @@ bool Mngr::rangers_status(std::string& cmd) {
     (const client::ConnQueue::ReqBase::Ptr&, const int& error,
      const Protocol::Mngr::Params::Report::RspRangersStatus& rsp) {
       if(!(err = error)) {
-        Mutex::scope lock(Logger::logger.mutex);
-        rsp.display(std::cout);
-        std::cout << '\n';
+        SWC_PRINT << "";
+        rsp.display(SWC_LOG_OSTREAM);
+        SWC_LOG_OSTREAM << SWC_PRINT_CLOSE;
       }
       await->set_value();
     }

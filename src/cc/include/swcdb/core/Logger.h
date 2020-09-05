@@ -70,9 +70,11 @@ class LogWriter final {
     return m_show_line_numbers;
   }
 
-  uint32_t _seconds();
+  bool print_prefix(uint8_t priority, const char* filen, int fline);
 
-  void _print_prefix(uint8_t priority, const char* filen, int fline);
+  void print_suffix(bool support);
+
+  uint32_t _seconds();
 
   void log(uint8_t priority, const char* fmt, ...)
       __attribute__((format(printf, 3, 4)));
@@ -82,6 +84,7 @@ class LogWriter final {
       __attribute__((format(printf, 5, 6)));
 
   template<typename T>
+  SWC_SHOULD_NOT_INLINE
   void msg(uint8_t priority, const T& message) {
     Mutex::scope lock(mutex);
     std::cout << _seconds() << ' ' << get_name(priority) << ": " 
@@ -89,10 +92,11 @@ class LogWriter final {
   }
 
   template<typename T>
+  SWC_SHOULD_NOT_INLINE
   void msg(uint8_t priority, const char* filen, int fline, const T& message) {
-    Mutex::scope lock(mutex);
-    _print_prefix(priority, filen, fline);
-    std::cout << message << std::endl;
+    bool support(print_prefix(priority, filen, fline));
+    std::cout << message;
+    print_suffix(support);
   }
 
   private:
@@ -135,11 +139,14 @@ extern LogWriter logger;
 #define SWC_LOG_OUT(pr, _code_) { \
   uint8_t _log_pr = pr; \
   if(::SWC::Logger::logger.is_enabled(_log_pr)) { \
-    ::SWC::Mutex::scope lock(::SWC::Logger::logger.mutex); \
-    ::SWC::Logger::logger._print_prefix(_log_pr, __FILE__, __LINE__); \
+    bool _support( \
+      ::SWC::Logger::logger.print_prefix(_log_pr, __FILE__, __LINE__)); \
     {_code_}; \
-    SWC_LOG_OSTREAM << std::endl; \
+    ::SWC::Logger::logger.print_suffix(_support); \
   } }
+
+#define SWC_LOGF(priority, fmt, ...) \
+  SWC_LOG_OUT(priority, SWC_LOG_PRINTF(fmt, __VA_ARGS__); )
 
 #define SWC_LOG(priority, message) \
   if(::SWC::Logger::logger.is_enabled(priority)) { \
@@ -148,9 +155,6 @@ extern LogWriter logger;
     else \
       ::SWC::Logger::logger.msg(priority, message); \
   }
-
-#define SWC_LOGF(priority, fmt, ...) \
-  SWC_LOG_OUT(priority, SWC_LOG_PRINTF(fmt, __VA_ARGS__); )
 
 
 #ifndef SWC_DISABLE_LOG_FATAL ////

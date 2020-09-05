@@ -21,7 +21,7 @@ void range_create(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
 
     Params::RangeCreateReq params;
     params.decode(&ptr, &remain);
-    std::cout << "RangeCreate: " << params.to_string() << "\n";
+    SWC_PRINT << "RangeCreate: " << params.to_string() << SWC_PRINT_CLOSE;
 
     auto col = Env::Mngr::mngd_columns()->get_column(
       rsp_params.err, params.cid);
@@ -48,7 +48,8 @@ void range_create(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
   
   send_response:
     try {
-      std::cout << "RangeCreate(RSP): " << rsp_params.to_string() << "\n";
+      SWC_PRINT << "RangeCreate(RSP): " << rsp_params.to_string() 
+                << SWC_PRINT_CLOSE;
       auto cbp = CommBuf::make(rsp_params);
       cbp->header.initialize_from_request_header(ev->header);
       conn->send_response(cbp);

@@ -21,7 +21,7 @@ void range_unloaded(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
 
     Params::RangeUnloadedReq params;
     params.decode(&ptr, &remain);
-    std::cout << "RangeUnloaded: " << params.to_string() << "\n";
+    SWC_PRINT << "RangeUnloaded: " << params.to_string() << SWC_PRINT_CLOSE;
 
     auto col = Env::Mngr::mngd_columns()->get_column(
       rsp_params.err, params.cid);
@@ -50,7 +50,8 @@ void range_unloaded(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
   
   send_response:
     try {
-      std::cout << "RangeUnloaded(RSP): " << rsp_params.to_string() << "\n";
+      SWC_PRINT << "RangeUnloaded(RSP): " << rsp_params.to_string() 
+                << SWC_PRINT_CLOSE;
       auto cbp = CommBuf::make(rsp_params);
       cbp->header.initialize_from_request_header(ev->header);
       conn->send_response(cbp);

@@ -44,9 +44,11 @@ class Schema final {
  
   void encode(uint8_t** bufp) const;
 
+  void display(std::ostream& out) const;
+
   std::string to_string() const;
 
-  void display(std::ostream& out) const;
+  void print(std::ostream& out) const;
 
   cid_t           cid;
   std::string     col_name;

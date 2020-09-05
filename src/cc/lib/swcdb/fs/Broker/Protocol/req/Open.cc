@@ -13,7 +13,10 @@ namespace SWC { namespace FS { namespace Protocol { namespace Req {
 Open::Open(FileSystem::Ptr fs, uint32_t timeout, SmartFd::Ptr& smartfd, 
            int32_t bufsz, const Callback::OpenCb_t& cb) 
           : fs(fs), smartfd(smartfd), cb(cb) {
-  SWC_LOGF(LOG_DEBUG, "open %s", smartfd->to_string().c_str());
+  SWC_LOG_OUT(LOG_DEBUG,
+    SWC_LOG_PRINTF("open timeout=%d ", timeout);
+    smartfd->print(SWC_LOG_OSTREAM); 
+  );
 
   cbp = CommBuf::make(
     Params::OpenReq(smartfd->filepath(), smartfd->flags(), bufsz));
@@ -48,8 +51,11 @@ void Open::handle(ConnHandlerPtr, const Event::Ptr& ev) {
     }
   }
 
-  SWC_LOGF(LOG_DEBUG, "open %s error='%d' fds-open=%lu", 
-           smartfd->to_string().c_str(), error, fs->fds_open());
+  SWC_LOG_OUT(LOG_DEBUG, 
+    SWC_LOG_PRINTF("open fds-open=%lu ", fs->fds_open());
+    Error::print(SWC_LOG_OSTREAM, error);
+    smartfd->print(SWC_LOG_OSTREAM << ' ');
+  );
   
   cb(error, smartfd);
 }

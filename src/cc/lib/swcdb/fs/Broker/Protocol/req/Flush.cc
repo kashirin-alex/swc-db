@@ -13,7 +13,10 @@ namespace SWC { namespace FS { namespace Protocol { namespace Req {
 Flush::Flush(uint32_t timeout, SmartFd::Ptr& smartfd, 
              const Callback::FlushCb_t& cb) 
             : smartfd(smartfd), cb(cb) {
-  SWC_LOGF(LOG_DEBUG, "flush %s", smartfd->to_string().c_str());
+  SWC_LOG_OUT(LOG_DEBUG,
+    SWC_LOG_PRINTF("flush timeout=%d ", timeout);
+    smartfd->print(SWC_LOG_OSTREAM);
+  );
 
   cbp = CommBuf::make(Params::FlushReq(smartfd->fd()));
   cbp->header.set(Cmd::FUNCTION_FLUSH, timeout);
@@ -40,9 +43,12 @@ void Flush::handle(ConnHandlerPtr, const Event::Ptr& ev) {
     default:
       break;
   }
-  
-  SWC_LOGF(LOG_DEBUG, "flush %s error='%d'", smartfd->to_string().c_str(), error);
-  
+
+  SWC_LOG_OUT(LOG_DEBUG, 
+    Error::print(SWC_LOG_OSTREAM << "flush ", error);
+    smartfd->print(SWC_LOG_OSTREAM << ' ');
+  );
+
   cb(error, smartfd);
 }
 

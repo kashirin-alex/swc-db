@@ -22,16 +22,11 @@ class ColumnUpdate : public Serializable {
               : function(function), schema(schema), err(err) {
   }
 
-  std::string to_string() {
-    std::string s("Update-params:\n");
-    s.append(" func=");
-    s.append(std::to_string(function));
-    s.append(" ");
-    s.append(schema->to_string());
-    s.append(" err=");
-    s.append(std::to_string(err));
-    s.append("\n");
-    return s;
+  void print(std::ostream& out) {
+    out << "ColumnUpdate(func=" << int(function);
+    schema->print(out << ' ');
+    Error::print(out << ' ', err);
+    out << ')';
   }
   
   ColumnMng::Function   function;

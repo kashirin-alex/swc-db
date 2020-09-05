@@ -40,8 +40,10 @@ void range_locate(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     if(err) {
       Protocol::Rgr::Params::RangeLocateRsp rsp_params(err);
       
-      SWC_LOG_OUT(LOG_DEBUG, SWC_LOG_OSTREAM 
-        << rsp_params.to_string() << " " << params.to_string(); );
+      SWC_LOG_OUT(LOG_DEBUG,
+        params.print(SWC_LOG_OSTREAM);
+        rsp_params.print(SWC_LOG_OSTREAM << ' ');
+      );
 
       auto cbp = CommBuf::make(rsp_params);
       cbp->header.initialize_from_request_header(ev->header);

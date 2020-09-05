@@ -143,8 +143,10 @@ DB::Schema::Ptr load(int &err, cid_t cid,
       schema->col_name.append(std::to_string(cid));
     }
 
-    SWC_LOGF(LOG_WARN, "Missing Column(cid=%lu) Schema set to %s", 
-              cid, schema->to_string().c_str());
+    SWC_LOG_OUT(LOG_WARN, 
+      schema->print(
+        SWC_LOG_OSTREAM << "Missing Column(cid=" << cid << ") Schema set to ");
+    );
     save(err, schema, replication);
   }
   

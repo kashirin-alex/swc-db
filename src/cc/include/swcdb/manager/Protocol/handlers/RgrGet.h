@@ -71,7 +71,9 @@ void rgr_get(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
   send_response:
 
     SWC_LOG_OUT(LOG_DEBUG,  
-      rsp_params.print(SWC_LOG_OSTREAM << params.to_string() << ' '); );
+      params.print(SWC_LOG_OSTREAM); 
+      rsp_params.print(SWC_LOG_OSTREAM <<' '); 
+    );
 
     try {
       auto cbp = CommBuf::make(rsp_params);

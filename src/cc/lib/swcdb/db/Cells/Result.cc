@@ -145,27 +145,19 @@ void Result::write_and_free(DynamicBuffer& cells, uint32_t& cell_count,
   erase(begin(), it_end);
 }
 
-std::string Result::to_string(bool with_cells) const {
-  std::string s("CellsResult(size=");
-  s.append(std::to_string(size()));
-  s.append(" bytes=");
-  s.append(std::to_string(bytes));
-  s.append(" type=");
-  s.append(Types::to_string(type));
-  s.append(" max_revs=");
-  s.append(std::to_string(max_revs));
-  s.append(" ttl=");
-  s.append(std::to_string(ttl));
+void Result::print(std::ostream& out, bool with_cells) const {
+  out << "CellsResult(size=" << size()
+      << " bytes=" << bytes
+      << " type=" << Types::to_string(type)
+      << " max_revs=" << max_revs
+      << " ttl=" << ttl;
   if(with_cells) {
-    s.append(" cells=[\n");
-    for(auto cell : *this) {
-      s.append(cell->to_string(type));
-      s.append("\n");
-    }
-    s.append("]");
+    out << " cells=[";
+    for(auto cell : *this)
+      cell->print(out << '\n', type);
+    out << "\n]";
   }
-  s.append(")");
-  return s;
+  out << ')';
 }
 
 

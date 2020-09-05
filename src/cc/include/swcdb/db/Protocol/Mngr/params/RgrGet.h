@@ -23,13 +23,13 @@ class RgrGetReq : public Serializable {
 
   virtual ~RgrGetReq();
   
+  void print(std::ostream& out) const;
+
   cid_t          cid;
   rid_t          rid;
   DB::Cell::Key  range_begin, range_end;
   bool           next_range;
   //int            had_err;
-  
-  std::string to_string();
 
   private:
 

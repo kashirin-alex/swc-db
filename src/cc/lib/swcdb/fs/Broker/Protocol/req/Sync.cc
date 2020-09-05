@@ -13,7 +13,10 @@ namespace SWC { namespace FS { namespace Protocol { namespace Req {
 Sync::Sync(uint32_t timeout, SmartFd::Ptr& smartfd, 
            const Callback::SyncCb_t& cb) 
           : smartfd(smartfd), cb(cb) {
-  SWC_LOGF(LOG_DEBUG, "sync %s", smartfd->to_string().c_str());
+  SWC_LOG_OUT(LOG_DEBUG,
+    SWC_LOG_PRINTF("sync timeout=%d ", timeout);
+    smartfd->print(SWC_LOG_OSTREAM);
+  );
 
   cbp = CommBuf::make(Params::SyncReq(smartfd->fd()));
   cbp->header.set(Cmd::FUNCTION_SYNC, timeout);
@@ -43,8 +46,11 @@ void Sync::handle(ConnHandlerPtr, const Event::Ptr& ev) {
       break;
   }
   
-  SWC_LOGF(LOG_DEBUG, "sync %s error='%d'", smartfd->to_string().c_str(), error);
-  
+  SWC_LOG_OUT(LOG_DEBUG, 
+    Error::print(SWC_LOG_OSTREAM << "sync ", error);
+    smartfd->print(SWC_LOG_OSTREAM << ' ');
+  );
+
   cb(error, smartfd);
 }
 

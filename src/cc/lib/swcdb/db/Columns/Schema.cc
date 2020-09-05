@@ -161,4 +161,8 @@ void Schema::display(std::ostream& out) const {
     << ")" ;
 }
 
+void Schema::print(std::ostream& out) const {
+  display(out);
+}
+
 }}

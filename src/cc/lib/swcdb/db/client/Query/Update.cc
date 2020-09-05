@@ -224,7 +224,8 @@ void Update::Locator::locate_on_manager() {
     params.range_begin.insert(
       0, Types::MetaColumn::get_meta_cid(col->get_sequence()));
 
-  SWC_LOGF(LOG_DEBUG, "LocateRange-onMngr %s", params.to_string().c_str());
+  SWC_LOG_OUT(LOG_DEBUG, 
+    params.print(SWC_LOG_OSTREAM << "LocateRange-onMngr "););
 
   Protocol::Mngr::Req::RgrGet::request(
     params,
@@ -294,7 +295,8 @@ void Update::Locator::locate_on_ranger(const EndPoints& endpoints) {
         0, Types::MetaColumn::get_meta_cid(col->get_sequence()));
   }
   
-  SWC_LOGF(LOG_DEBUG, "LocateRange-onRgr %s", params.to_string().c_str());
+  SWC_LOG_OUT(LOG_DEBUG, 
+    params.print(SWC_LOG_OSTREAM << "LocateRange-onRgr "););
 
   Protocol::Rgr::Req::RangeLocate::request(
     params, endpoints,
@@ -315,21 +317,22 @@ bool Update::Locator::located_on_ranger(
       const EndPoints& endpoints, 
       const ReqBase::Ptr& base, 
       const Protocol::Rgr::Params::RangeLocateRsp& rsp) {
-  SWC_LOGF(LOG_DEBUG, "LocatedRange-onRgr %s", rsp.to_string().c_str());
+  SWC_LOG_OUT(LOG_DEBUG, 
+    rsp.print(SWC_LOG_OSTREAM << "LocatedRange-onRgr "););
 
   if(rsp.err == Error::RGR_NOT_LOADED_RANGE || 
      rsp.err == Error::RANGE_NOT_FOUND || //onMngr can be COLUMN_NOT_EXISTS
          rsp.err == Error::SERVER_SHUTTING_DOWN ||
      rsp.err == Error::COMM_NOT_CONNECTED) {
-    SWC_LOGF(LOG_DEBUG, "Located-onRgr RETRYING %s", 
-                          rsp.to_string().c_str());
+    SWC_LOG_OUT(LOG_DEBUG, 
+      rsp.print(SWC_LOG_OSTREAM << "LocatedRange-onRgr RETRYING "););
     Env::Clients::get()->rangers.remove(cid, rid);
     parent->request_again();
     return false;
   }
   if(!rsp.rid || rsp.err) {
-    SWC_LOGF(LOG_DEBUG, "Located-onRgr RETRYING %s", 
-                          rsp.to_string().c_str());
+    SWC_LOG_OUT(LOG_DEBUG, 
+      rsp.print(SWC_LOG_OSTREAM << "LocatedRange-onRgr RETRYING(no rid) "););
     if(rsp.err != Error::REQUEST_TIMEOUT)
       Env::Clients::get()->rangers.remove(cid, rid);
     base->request_again();
@@ -471,8 +474,10 @@ void Update::Locator::commit_data(
         profile.add(rsp.err);
 
         if(rsp.err) {
-          SWC_LOGF(LOG_DEBUG, "Commit RETRYING %s buffs=%ld", 
-                   rsp.to_string().c_str(), workload->count());
+          SWC_LOG_OUT(LOG_DEBUG, 
+            rsp.print(SWC_LOG_OSTREAM << "Commit RETRYING ");
+            SWC_LOG_OSTREAM << " buffs=" << workload->count();
+          );
 
           if(rsp.err == Error::REQUEST_TIMEOUT) {
             SWC_LOG_OUT(LOG_DEBUG,  req->print(SWC_LOG_OSTREAM ); );

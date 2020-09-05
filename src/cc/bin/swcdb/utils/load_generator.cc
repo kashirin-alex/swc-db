@@ -276,9 +276,9 @@ void update_data(DB::Schema::Ptr& schema, uint8_t flag) {
             SWC_PRINT << " update-progress(cells=" << added_count 
                       << " bytes=" << added_bytes 
                       << " cell/ns=" << ts_progress/progress
-                      << ") " 
-                      << req->result->profile.to_string() 
-                      << SWC_PRINT_CLOSE;
+                      << ") ";
+            req->result->profile.print(SWC_LOG_OSTREAM);
+            SWC_LOG_OSTREAM << SWC_PRINT_CLOSE;
             ts_progress = Time::now_ns();
           }
         }
@@ -295,9 +295,9 @@ void update_data(DB::Schema::Ptr& schema, uint8_t flag) {
   
   FlowRate::Data rate(added_bytes, Time::now_ns() - ts);
   SWC_PRINT << std::endl << std::endl;
-  rate.print_cells_statistics(std::cout, added_count, resend_cells);
-  req->result->profile.print(std::cout);
-  std::cout << SWC_PRINT_CLOSE;
+  rate.print_cells_statistics(SWC_LOG_OSTREAM, added_count, resend_cells);
+  req->result->profile.display(SWC_LOG_OSTREAM);
+  SWC_LOG_OSTREAM << SWC_PRINT_CLOSE;
 }
 
 
@@ -379,9 +379,9 @@ void select_data(DB::Schema::Ptr& schema) {
           ts_progress = Time::now_ns() - ts_progress;
           SWC_PRINT << " select-progress(cells=" << select_count 
                     << " cell/ns=" << ts_progress/progress
-                    << ") " 
-                    << req->result->profile.to_string() 
-                    << SWC_PRINT_CLOSE;
+                    << ") ";
+          req->result->profile.print(SWC_LOG_OSTREAM);
+          SWC_LOG_OSTREAM << SWC_PRINT_CLOSE;
           ts_progress = Time::now_ns();
         }
       }
@@ -406,9 +406,9 @@ void select_data(DB::Schema::Ptr& schema) {
 
   FlowRate::Data rate(select_bytes, Time::now_ns() - ts);
   SWC_PRINT << std::endl << std::endl;
-  rate.print_cells_statistics(std::cout, select_count, 0);
-  req->result->profile.print(std::cout);
-  std::cout << SWC_PRINT_CLOSE;
+  rate.print_cells_statistics(SWC_LOG_OSTREAM, select_count, 0);
+  req->result->profile.display(SWC_LOG_OSTREAM);
+  SWC_LOG_OSTREAM << SWC_PRINT_CLOSE;
 }
 
 

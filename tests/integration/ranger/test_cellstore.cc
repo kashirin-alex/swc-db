@@ -179,7 +179,9 @@ void read_cs(SWC::csid_t csid, SWC::Ranger::RangePtr range,
   req->cb = [req, &blocks, expected_key, 
              await=&r_promise, took=SWC::Time::now_ns()]
     (int err) {
-    std::cout << " took=" <<  SWC::Time::now_ns()-took << " " << req->cells.to_string() << "\n" ;
+    std::cout << " took=" <<  SWC::Time::now_ns()-took << " ";
+    req->cells.print(std::cout);
+    std::cout << "\n" ;
     if(err) {
       std::cout << " err=" <<  err << "(" << SWC::Error::get_text(err) << ") " ;
       req->print(std::cout);

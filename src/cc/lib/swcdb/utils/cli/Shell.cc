@@ -166,8 +166,7 @@ bool Interface::quit(std::string&) const {
 }
 
 bool Interface::help(std::string&) const {
-  Mutex::scope lock(Logger::logger.mutex);
-  std::cout << "Usage Help:  \033[4m'command' [options];\033[00m\n";
+  SWC_PRINT << "Usage Help:  \033[4m'command' [options];\033[00m\n";
   size_t offset_name = 0;
   size_t offset_desc = 0;
   for(auto opt : options) {
@@ -182,18 +181,19 @@ bool Interface::help(std::string&) const {
   offset_desc += 4;
   bool first;
   for(auto opt : options) {
-    std::cout << std::left << std::setw(2) << " "
-              << std::left << std::setw(offset_name) << opt->name;
+    SWC_LOG_OSTREAM << std::left << std::setw(2) << " "
+                    << std::left << std::setw(offset_name) << opt->name;
     first = true;
     for(const auto& desc : opt->desc) {
       if(!first)
-        std::cout << std::left << std::setw(2) << " "
-                  << std::left << std::setw(offset_name) << " ";
-      std::cout << std::setw(offset_desc) << desc << std::endl;
+        SWC_LOG_OSTREAM << std::left << std::setw(2) << " "
+                        << std::left << std::setw(offset_name) << " ";
+      SWC_LOG_OSTREAM << std::setw(offset_desc) << desc << std::endl;
       first = false;
     }
         
   }
+  SWC_LOG_OSTREAM << SWC_PRINT_CLOSE;
   return true;
 }
 

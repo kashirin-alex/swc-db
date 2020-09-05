@@ -336,12 +336,12 @@ void Mutable::print(std::ostream& out, bool with_cells) const {
     size_t count = 0;
     out << " [\n";
     for(auto bucket : buckets) {
-      out << " sz=" << bucket->size() << " (\n";
+      out << " sz=" << bucket->size() << " (";
       for(auto cell : *bucket) {
-        out << cell->to_string(type) << '\n';
+         cell->print(out << '\n', type);
         ++count;
       }
-     out << ")\n";
+     out << "\n)\n";
     }
     out << "] counted=" << count;
   }

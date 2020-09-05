@@ -287,50 +287,6 @@ bool Cell::has_expired(const int64_t ttl) const {
   return ttl && control & HAVE_TIMESTAMP && Time::now_ns() >= timestamp + ttl;
 }
 
-std::string Cell::to_string(Types::Column typ) const {
-  std::string s("Cell(");
-  s.append("flag=");
-  s.append(Cells::to_string((Flag)flag));
-
-  s.append(" key=");
-  s.append(key.to_string());
-
-  s.append(" control=");
-  s.append(std::to_string(control));
-  
-  s.append(" ts=");
-  s.append(std::to_string(get_timestamp()));
-
-  s.append(" rev=");
-  s.append(std::to_string(get_revision()));
-
-  s.append(" value=(len="); 
-  s.append(std::to_string(vlen));  
-  if(Types::is_counter(typ)) {
-    s.append(" count=");  
-      uint8_t op;
-      int64_t eq_rev = TIMESTAMP_NULL;
-      int64_t value = get_counter(op, eq_rev);
-      s.append(std::to_string(value));
-      if(op & OP_EQUAL && !(op & HAVE_REVISION))
-        eq_rev = get_timestamp();
-      if(eq_rev != TIMESTAMP_NULL) {
-        s.append(" eq-since=");  
-        s.append(Time::fmt_ns(eq_rev));
-      }
-  }
-  /* else {
-    char c;
-    for(int i=0; i<vlen;++i) {
-      c = *(value+i);
-      s.append(std::string(&c, 1));
-    }
-  }
-  */
-  s.append(")");
-  return s;
-}
-
 void Cell::display(std::ostream& out, 
                    Types::Column typ, uint8_t flags, bool meta) const {
 
@@ -394,6 +350,50 @@ void Cell::display(std::ostream& out,
       }
     }
   }
+}
+
+std::string Cell::to_string(Types::Column typ) const {
+  std::stringstream ss;
+  print(ss, typ);
+  return ss.str();
+}
+
+void Cell::print(std::ostream& out, Types::Column typ) const {
+  out << "Cell(flag=" << Cells::to_string((Flag)flag);
+  key.print(out << " key=");
+  out << " control=" << int(control)
+      << " ts=" << get_timestamp()
+      << " rev=" << get_revision()
+      << " value=(len=" << vlen;
+
+  if(Types::is_counter(typ)) {
+    out << " count=";  
+    uint8_t op;
+    int64_t eq_rev = TIMESTAMP_NULL;
+    out << get_counter(op, eq_rev);
+    if(op & OP_EQUAL && !(op & HAVE_REVISION))
+      eq_rev = get_timestamp();
+    if(eq_rev != TIMESTAMP_NULL)
+      out << " eq-since=" << Time::fmt_ns(eq_rev);
+
+  } else {
+    out << " data=\"";  
+    char hex[5];
+    hex[4] = 0;
+    const uint8_t* ptr = value;
+    for(uint32_t len = vlen; len; --len, ++ptr) {
+      if(*ptr == '"')
+        out << '\\';
+      if(31 < *ptr && *ptr < 127) {
+        out << *ptr;
+      } else {
+        sprintf(hex, "0x%X", *ptr);
+        out << hex;
+      }
+    }
+    out << "\")";
+  }
+  out << ')';
 }
 
 SWC_SHOULD_INLINE

@@ -126,10 +126,12 @@ class Cell final {
 
   bool has_expired(const int64_t ttl) const;
 
-  std::string to_string(Types::Column typ = Types::Column::PLAIN) const;
-
   void display(std::ostream& out, Types::Column typ = Types::Column::PLAIN, 
                uint8_t flags=0, bool meta=false) const;
+
+  std::string to_string(Types::Column typ = Types::Column::PLAIN) const;
+
+  void print(std::ostream& out, Types::Column typ) const;
 
   DB::Cell::Key   key;
   bool            own;

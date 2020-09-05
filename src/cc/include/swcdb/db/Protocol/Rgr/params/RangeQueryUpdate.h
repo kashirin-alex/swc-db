@@ -24,10 +24,10 @@ class RangeQueryUpdateReq : public Serializable {
 
   virtual ~RangeQueryUpdateReq();
 
+  void print(std::ostream& out) const;
+
   cid_t           cid;
   rid_t           rid;
-  
-  std::string to_string() const;
 
   private:
 
@@ -51,11 +51,11 @@ class RangeQueryUpdateRsp  : public Serializable {
 
   virtual ~RangeQueryUpdateRsp();
 
+  void print(std::ostream& out) const;
+
   int32_t       err;
   DB::Cell::Key range_prev_end;
   DB::Cell::Key range_end;
-
-  std::string to_string() const;
 
   private:
 

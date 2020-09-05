@@ -22,9 +22,11 @@ void Schemas::add(int& err, const Schema::Ptr& schema) {
 
 void Schemas::_add(int& err, const Schema::Ptr& schema) {
   if(!emplace(schema->cid, schema).second) {
-    SWC_LOGF(LOG_WARN, "Unable to add column %s, remove first", 
-             schema->to_string().c_str());
     err = Error::COLUMN_SCHEMA_NAME_EXISTS;
+    SWC_LOG_OUT(LOG_WARN, 
+      schema->print(SWC_LOG_OSTREAM << "Unable to add column ");
+      Error::print(SWC_LOG_OSTREAM << ", remove first ", err);
+    );
   }
 }
 

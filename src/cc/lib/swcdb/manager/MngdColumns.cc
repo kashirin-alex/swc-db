@@ -480,9 +480,11 @@ void MngdColumns::update_status_ack(
   auto co_func = (Protocol::Mngr::Params::ColumnMng::Function)(((uint8_t)func)-1);
 
   if(err)
-    SWC_LOGF(LOG_DEBUG, "COLUMN-ACK %s func=%d, err=%d(%s)", 
-              schema->to_string().c_str(), co_func, 
-              err, Error::get_text(err));
+    SWC_LOG_OUT(LOG_DEBUG,
+      SWC_LOG_OSTREAM << "COLUMN-ACK func=" << co_func;
+      Error::print(SWC_LOG_OSTREAM << ' ', err);
+      schema->print(SWC_LOG_OSTREAM << ' ');
+    );
                   
   for(ColumnReq::Ptr req;;) {
     {
@@ -500,8 +502,12 @@ void MngdColumns::update_status_ack(
       err ? req->response(err) : req->response_ok();
     } catch(...) {
       const Exception& e = SWC_CURRENT_EXCEPTION("");
-      SWC_LOGF(LOG_ERROR, "Column Pending func=%d cb err=%s %s", 
-               func, e.what(), req->schema->to_string().c_str());
+      SWC_LOG_OUT(LOG_ERROR, 
+        SWC_LOG_OSTREAM << "Column Pending cb func=" << func;
+        Error::print(SWC_LOG_OSTREAM << ' ', err);
+        req->schema->print(SWC_LOG_OSTREAM << ' ');
+        SWC_LOG_OSTREAM << ' ' << e;
+      );
     }
   }
 }
@@ -578,8 +584,12 @@ void MngdColumns::actions_run() {
         req->response(err);
       } catch(...) {
         const Exception& e = SWC_CURRENT_EXCEPTION("");
-        SWC_LOGF(LOG_ERROR, "Column Action cb err=%s func=%d %s", 
-                  e.what(), req->function, req->schema->to_string().c_str());
+        SWC_LOG_OUT(LOG_ERROR, 
+          SWC_LOG_OSTREAM << "Column Action cb func=" << req->function;
+          Error::print(SWC_LOG_OSTREAM << ' ', err);
+          req->schema->print(SWC_LOG_OSTREAM << ' ');
+          SWC_LOG_OSTREAM << ' ' << e;
+        );
       }
     }
   } while(m_actions.pop_and_more());
