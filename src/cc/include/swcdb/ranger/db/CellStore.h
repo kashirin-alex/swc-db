@@ -85,6 +85,8 @@ class Read final {
 
   size_t size_of() const;
 
+  const std::string& filepath() const;
+
   void load_cells(BlockLoader* loader);
 
   void get_blocks(int& err, std::vector<Block::Read::Ptr>& to) const;

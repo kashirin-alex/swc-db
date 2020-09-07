@@ -276,6 +276,10 @@ size_t Read::size_of() const {
       ;
 }
 
+const std::string& Read::filepath() const {
+  return m_smartfd->filepath();
+}
+
 void Read::load_cells(BlockLoader* loader) {
 
   std::vector<Block::Read::Ptr>  applicable;
