@@ -45,8 +45,8 @@ void ServerConnections::connection(ConnHandlerPtr& conn,
                                    bool preserve) {
 
   SWC_LOG_OUT(LOG_DEBUG, 
-    SWC_LOG_OSTREAM << "Connecting Sync: " << m_srv_name
-      << m_endpoint << (m_ssl_cfg ? "SECURE" : "PLAIN"); );
+    SWC_LOG_OSTREAM << "Connecting Sync: " << m_srv_name << ' '
+      << m_endpoint << ' ' << (m_ssl_cfg ? "SECURE" : "PLAIN"); );
 
   asio::ip::tcp::socket sock(*m_ioctx.get());
   asio::error_code ec;
@@ -75,8 +75,8 @@ void ServerConnections::connection(const std::chrono::milliseconds&,
                                    const NewCb_t& cb, bool preserve) {
 
   SWC_LOG_OUT(LOG_DEBUG, 
-    SWC_LOG_OSTREAM << "Connecting Async: " << m_srv_name
-      << m_endpoint << (m_ssl_cfg ? "SECURE" : "PLAIN"); );
+    SWC_LOG_OSTREAM << "Connecting Async: " << m_srv_name << ' '
+      << m_endpoint << ' ' << (m_ssl_cfg ? "SECURE" : "PLAIN"); );
     
   auto sock = std::make_shared<asio::ip::tcp::socket>(*m_ioctx.get());
   sock->async_connect(
