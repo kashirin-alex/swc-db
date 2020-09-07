@@ -165,6 +165,8 @@ class Range final : public std::enable_shared_from_this<Range> {
   
   void create(int &err, const CellStore::Writers& w_cellstores);
 
+  void create(int &err, CellStore::Readers::Vec& mv_css);
+
   void print(std::ostream& out, bool minimal=true);
 
   private:

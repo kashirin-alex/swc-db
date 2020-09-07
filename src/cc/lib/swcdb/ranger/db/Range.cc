@@ -460,10 +460,6 @@ void Range::expand_and_align(int &err, bool w_chg_chk) {
 }
   
 void Range::create(int &err, const CellStore::Writers& w_cellstores) {
-    
-  create_folders(err);
-  if(err)
-    return;
   RangerEnv::rgr_data()->set_rgr(
     err, DB::RangeBase::get_path_ranger(m_path), cfg->file_replication());
   if(err)
@@ -489,6 +485,24 @@ void Range::create(int &err, const CellStore::Writers& w_cellstores) {
 
   RangeData::save(err, blocks.cellstores);
   fs->remove(err, DB::RangeBase::get_path_ranger(m_path));
+  err = Error::OK;
+}
+
+void Range::create(int &err, CellStore::Readers::Vec& mv_css) {
+  RangerEnv::rgr_data()->set_rgr(
+    err, DB::RangeBase::get_path_ranger(m_path), cfg->file_replication());
+  if(err)
+    return;
+
+  blocks.cellstores.move_from(err, mv_css);
+  if(mv_css.empty())
+    err = Error::CANCELLED;
+  if(!err) {
+    RangeData::save(err, blocks.cellstores);
+    Env::FsInterface::interface()->remove(
+      err = Error::OK, DB::RangeBase::get_path_ranger(m_path));
+    err = Error::OK;
+  }
 }
 
 void Range::print(std::ostream& out, bool minimal) {
