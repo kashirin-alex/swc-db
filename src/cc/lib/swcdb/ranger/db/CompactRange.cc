@@ -10,6 +10,7 @@
 
 #include "swcdb/ranger/db/CommitLogCompact.h"
 #include "swcdb/ranger/db/CommitLogSplitter.h"
+#include "swcdb/ranger/db/RangeSplit.h"
 
 namespace SWC { namespace Ranger {
   
@@ -157,6 +158,42 @@ void CompactRange::initialize() {
   if(range->blocks.commitlog.cells_count(true))
     range->blocks.commitlog.commit_new_fragment(true);
 
+  // ? immediate split
+  if(range->blocks.cellstores.size() >= range->cfg->cellstore_max() * 2) {
+    size_t split_at = range->blocks.cellstores.size() / 2;
+    auto it = range->blocks.cellstores.begin();
+
+    split_option: 
+      it = range->blocks.cellstores.begin() + split_at;
+      do {
+        if(!(*it)->interval.key_begin.equal((*(it-1))->interval.key_end))
+          break;
+      } while(++it < range->blocks.cellstores.end());
+
+    if(it == range->blocks.cellstores.end()) {
+      if(split_at > 1) {
+        split_at = 1;
+        goto split_option;
+      }
+      split_at = -1;
+    } else {
+      split_at = it - range->blocks.cellstores.begin();
+    }
+
+    if(split_at > 0) {
+      RangeSplit splitter(range, split_at);
+      int err = splitter.run();
+      if(!err) {
+        return finished(true);
+      }
+      SWC_LOG_OUT(LOG_WARN, 
+        SWC_LOG_PRINTF("COMPACT-PROGRESS SPLIT RANGE cancelled %lu/%lu ",
+                        range->cfg->cid, range->rid);
+        Error::print(SWC_LOG_OSTREAM, err);
+      );
+    }
+  }
+  
   initial_commitlog(1);
 }
 
@@ -828,6 +865,7 @@ void CompactRange::completion() {
 
 void CompactRange::finished(bool clear) {
   completion();
+  profile.finished();
 
   SWC_LOG_OUT(LOG_INFO, 
     SWC_LOG_PRINTF(
