@@ -15,7 +15,7 @@ if(NOT SWC_WITHOUT_JAVA AND THRIFT_JAVA_GEN_PATH AND MAVEN_FOUND)
 	if(JAVARE_FOUND)
 		set(MODULES_PLACE_HOLDER "${MODULES_PLACE_HOLDER} \n <module>thrift-tests</module>")
     set_property(GLOBAL PROPERTY THRIFT_JAVA_TEST 
-			${CMAKE_CURRENT_BINARY_DIR}/mvn/swcdb/thrift-tests/target/thrift-tests-0.3.0-bundled.jar
+			${CMAKE_CURRENT_BINARY_DIR}/mvn/swcdb/thrift-tests/target/thrift-tests-${VERSION_STRING}-bundled.jar
 		)
 	endif()
 

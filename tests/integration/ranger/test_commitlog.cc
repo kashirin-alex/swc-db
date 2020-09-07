@@ -79,6 +79,9 @@ int main(int argc, char** argv) {
   uint32_t versions = 3;
 
   auto range = std::make_shared<Ranger::Range>(&col_cfg, 1);
+  range->set_state(SWC::Ranger::Range::State::LOADED);
+  range->compacting(SWC::Ranger::Range::COMPACT_CHECKING);
+
   Ranger::CommitLog::Fragments commitlog(col_cfg.key_seq);
   commitlog.init(range);
 

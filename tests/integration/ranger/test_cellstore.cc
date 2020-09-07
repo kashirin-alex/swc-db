@@ -243,6 +243,9 @@ int main(int argc, char** argv) {
   int err = SWC::Error::OK;
 
   auto range = std::make_shared<SWC::Ranger::Range>(&col_cfg, 1);
+  range->set_state(SWC::Ranger::Range::State::LOADED);
+  range->compacting(SWC::Ranger::Range::COMPACT_CHECKING);
+  
   SWC::Env::FsInterface::interface()->rmdir(err, range->get_path(""));
   SWC::Env::FsInterface::interface()->mkdirs(
     err, range->get_path(range->CELLSTORES_DIR));

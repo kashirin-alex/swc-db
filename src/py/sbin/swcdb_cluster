@@ -123,8 +123,10 @@ def swcdb_read_config():
 
 # common-utils
 
-def swcdb_common_options():
-    opts = ["--daemon"]
+def swcdb_common_options(daemon=True):
+    opts = []
+    if daemon:
+        opts.append("--daemon")
     for n in ["swc.cfg.path", "swc.logging.path"]:
         if len(swcdb_cfg[n]) > 1:
             opts.append("--" + n + "=" + swcdb_cfg[n][-1])
@@ -200,9 +202,10 @@ def wait_ready(c, on_start=False):
     confirm = False
     check = 1
     while True:
-        res = c.local(
-                "echo 'cluster;quit;' "
-                "| /opt/swcdb/bin/swcdb --mngr --quiet -l=warn;",
+        res = c.local(' '.join([
+            "echo 'cluster;quit;'",
+            "| /opt/swcdb/bin/swcdb --mngr --quiet -l=warn"] + 
+            swcdb_common_options(False) +[";"] ),
                 hide=True)
         if not confirm:
             print("cluster-status check=" + str(check) + ":" +
