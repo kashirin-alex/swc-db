@@ -20,6 +20,11 @@ class Readers final : private std::vector<Read::Ptr> {
   
   using Vec::empty;
   using Vec::size;
+  using Vec::begin;
+  using Vec::end;
+  using Vec::front;
+  using Vec::back;
+  using Vec::erase;
 
   RangePtr range;
 
@@ -79,7 +84,9 @@ class Readers final : private std::vector<Read::Ptr> {
   
   void load_from_path(int &err);
 
-  void replace(int &err, CellStore::Writers& w_cellstores);
+  void replace(int &err, Writers& w_cellstores);
+
+  void move_from(int &err, Readers::Vec& mv_css);
 
   void print(std::ostream& out, bool minimal=true) const;
 

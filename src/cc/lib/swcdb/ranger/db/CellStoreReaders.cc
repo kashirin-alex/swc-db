@@ -203,7 +203,7 @@ void Readers::load_from_path(int &err) {
   }
 }
 
-void Readers::replace(int &err, CellStore::Writers& w_cellstores) {
+void Readers::replace(int &err, Writers& w_cellstores) {
   auto fs = Env::FsInterface::interface();
 
   _close();
@@ -226,7 +226,7 @@ void Readers::replace(int &err, CellStore::Writers& w_cellstores) {
     Vec cellstores;
     for(auto cs : w_cellstores) {
       cellstores.push_back(
-        CellStore::Read::make(err, cs->csid, range, cs->interval, true)
+        Read::make(err, cs->csid, range, cs->interval, true)
       );
       if(err)
         break;
@@ -254,6 +254,51 @@ void Readers::replace(int &err, CellStore::Writers& w_cellstores) {
 
   err = Error::OK;
 
+}
+
+void Readers::move_from(int &err, Readers::Vec& mv_css) {
+  auto fs = Env::FsInterface::interface();
+
+  Vec moved;
+  int tmperr;
+  for(auto cs : mv_css) {
+    cs->close(tmperr = Error::OK);
+    fs->rename(
+      err,
+      cs->filepath(),
+      range->get_path_cs(cs->csid)
+    );
+    if(err)
+      break;
+    moved.push_back(cs);
+  }
+
+  Vec cellstores;
+  if(!err) {
+    for(auto cs : moved) {
+      cellstores.push_back(
+        Read::make(err, cs->csid, range, cs->interval, true)
+      );
+      if(err)
+        break;
+    }
+  }
+  
+  if(err) {
+    for(auto cs : cellstores)
+      delete cs;
+
+    for(auto& cs : moved) {
+      fs->rename(
+        tmperr = Error::OK,
+        range->get_path_cs(cs->csid),
+        cs->filepath()
+      );
+    }
+    mv_css.clear();
+  } else {
+    assign(cellstores.begin(), cellstores.end());
+  }
 }
 
 void Readers::print(std::ostream& out, bool minimal) const {
