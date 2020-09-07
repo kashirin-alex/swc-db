@@ -27,7 +27,7 @@
     added Thrift Service sources for .NET Standard
     added Initial org.swcdb.jdbc.thrift Java package
     added class CompletionCounter<CountT>
-    added function size_bytes_enc(bool) Ranger::{CellStore::{Read,Block::Read}}
+    added size_t size_bytes_enc(bool) Ranger::{CellStore::{Read,Block::Read}}
     fixed chk_align instructions in Mutable::scan_version_multi
     improved Mutable::_narrow with consideration on max_revs
     added config option swc.rgr.ram.reserved.percent 
@@ -36,7 +36,7 @@
     changed set_option tcp::no_delay at ConnHandler constructor
     removed ConfigSSL::configure_{client,server} applied with make_{clt,srv}
     switched ConfigSSL::verify to asio::ssl::host_name_verification
-    changed ConnHandlerSSL::handshake_{clt,srv} to handshake(handshake_type,..)
+    changed ConnHandlerSSL::handshake_{clt,srv} to handshake(handshake_type,.)
     added to configuration files default specialization of 'swc.logging.level'
     added Serialization::{encode,decode,length}_bytes 
     removed Serialization::{encode,decode,length}_{str,vstr}
@@ -91,7 +91,7 @@
       swc.mngr.column.health.checks
     added Manager Column Health Check
     changed Ranger REPORT Protocol to Function based requests
-    removed ConnQueueReqBase::was_called & aligned event error incl. event types
+    removed ConnQueueReqBase::was_called & aligned event error incl. to types
     added Ranger::Callback::ColumnsUnloaded
     added source files for Ranger Column & Columns
     added class Protocol::Common::Params::ColumnsInterval
@@ -102,7 +102,7 @@
     fixed Ranger CellStore::Read::release_fd behaviour
     fixed Manager's range-type handlers error rsp
     added Manager health-check of range for State::QUEUED
-    deprecated use of Rgr::Req::AssignIdNeeded request in class Manager::Rangers
+    deprecated use of Rgr::Req::AssignIdNeeded in class Manager::Rangers
     added ENOTEMPTY case for rename in FS::Interface, overwrite as file rename
     fixed MutableVec::split & added Mutable::can_split
     fixed Ranger Range Compact at small Cellstore or Block size
@@ -110,6 +110,21 @@
     changed exceptions handling to any type with std::current_exception()
     updated Error Codes
     adjustments of Code Optimizations and Formattings
+    deprecated & removed QueueRunnable in Fragment & CellStore::Read::Block
+    added Fragments::_narrow & m_last_id (Fragment unique id state)
+    updated for gcc-10.2
+    added sources for /cli/Shell_{Manager,Ranger,Fs}.h
+    added check of CompactRange::m_log_sz vs new-size
+    added cc sources of fs/Broker/Protocol/{params,req}/
+    changed serialization to vi32/64 in FS::Protocol::Params
+    added necessary try blocks in FS::Protocol::Req for Params::decode
+    added BlockLoader fragment loaded state cond
+    added uint8_t CellStore::Block::Header::is_any (ANY_BEGIN,ANY_END) 
+    added possible early-split in CompactRange
+    fixed SWC_LOG_OUT & reduced inlined-inst in MACROs (binaries less ~%1)
+    deprecated most of to_string functions & added print(std::ostream&)
+    added class Ranger::RangeSplit
+    added immediate-split in CompactRange 
 
 [_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.3.0...master)
 ******
