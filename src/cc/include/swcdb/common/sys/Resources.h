@@ -237,6 +237,28 @@ class Resources final {
             m_cpu_mhz = concurrency * (khz/1000);
             m_concurrency = concurrency;
           }
+        } else {
+          std::ifstream buffer("/proc/cpuinfo");
+          if(buffer.is_open()) {
+            size_t mhz = 0;
+            std::string tmp;
+            size_t tmp_speed = 0;
+            do {
+              buffer >> tmp;
+              if(memcmp(tmp.c_str(), "cpu", 3) == 0) {
+                buffer >> tmp; 
+                if(memcmp(tmp.c_str(), "MHz", 3) == 0) {
+                  buffer >> tmp >> tmp_speed;
+                  mhz += tmp_speed;
+                }
+              }
+            } while (!buffer.eof());
+            buffer.close();
+            if(mhz) {
+              m_cpu_mhz = mhz;
+              m_concurrency = concurrency;
+            }
+          }
         }
       }
     }
