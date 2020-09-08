@@ -6,7 +6,6 @@
 
 
 #include "swcdb/ranger/db/Compaction.h"
-#include "swcdb/ranger/db/CompactRange.h"
 
 
 namespace SWC { namespace Ranger {
@@ -109,7 +108,7 @@ void Compaction::run(bool continuing) {
 void Compaction::compact(const RangePtr& range) {
 
   if(!range->is_loaded() || stopped())
-    return compacted(range);
+    return compacted(nullptr, range);
 
   auto& commitlog  = range->blocks.commitlog;
 
@@ -157,7 +156,7 @@ void Compaction::compact(const RangePtr& range) {
   }
 
   if(stopped() || !do_compaction)
-    return compacted(range);
+    return compacted(nullptr, range);
     
   SWC_LOGF(LOG_INFO, "COMPACT-STARTED %lu/%lu %s", 
            range->cfg->cid, range->rid, need.c_str());
@@ -168,11 +167,16 @@ void Compaction::compact(const RangePtr& range) {
     cs_size,
     blk_size
   );
+  {
+    std::scoped_lock lock(m_mutex); 
+    m_compacting.push_back(req);
+  }
   req->initialize();
 }
 
 
-void Compaction::compacted(const RangePtr& range, bool all) {
+void Compaction::compacted(const CompactRange::Ptr req,
+                           const RangePtr& range, bool all) {
   if(all) {
     range->blocks.release(0);
     if(range->blocks.size())
@@ -185,6 +189,13 @@ void Compaction::compacted(const RangePtr& range, bool all) {
 
   range->compacting(Range::COMPACT_NONE);
   compacted();
+  
+  if(req) {
+    std::scoped_lock lock(m_mutex); 
+    auto it = std::find(m_compacting.begin(), m_compacting.end(), req);
+    if(it != m_compacting.end())
+      m_compacting.erase(it);
+  }
 }
 
 void Compaction::compacted() {

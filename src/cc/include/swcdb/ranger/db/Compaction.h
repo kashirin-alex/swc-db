@@ -8,13 +8,18 @@
 #define swcdb_ranger_db_Compaction_h
 
 
+namespace SWC { namespace Ranger {
+class Compaction;
+}}
+
+#include "swcdb/ranger/db/CompactRange.h"
+
+
 
 namespace SWC { namespace Ranger {
 
 class Compaction final {
   public:
-
-  typedef Compaction* Ptr;
 
   const Property::V_GUINT8::Ptr   cfg_read_ahead;
   const Property::V_GUINT8::Ptr   cfg_max_range;
@@ -44,7 +49,8 @@ class Compaction final {
 
   void compact(const RangePtr& range);
 
-  void compacted(const RangePtr& range, bool all=false);
+  void compacted(const CompactRange::Ptr req,
+                 const RangePtr& range, bool all=false);
 
   private:
   
@@ -62,6 +68,7 @@ class Compaction final {
   
   size_t                          m_idx_cid;
   size_t                          m_idx_rid;
+  std::vector<CompactRange::Ptr>  m_compacting;
 
 };
 

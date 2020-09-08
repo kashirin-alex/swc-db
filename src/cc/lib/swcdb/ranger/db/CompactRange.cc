@@ -111,7 +111,7 @@ struct CompactRange::InBlock {
 };
 
 
-CompactRange::CompactRange(Compaction::Ptr compactor, const RangePtr& range,
+CompactRange::CompactRange(Compaction* compactor, const RangePtr& range,
                            const uint32_t cs_size, const uint32_t blk_size) 
             : ReqScan(ReqScan::Type::COMPACTION, true, 
                       compactor->cfg_read_ahead->get()/2), 
@@ -198,10 +198,9 @@ void CompactRange::initialize() {
 }
 
 void CompactRange::initial_commitlog(int tnum) {
-  auto ptr = shared();
   m_log_sz = range->blocks.commitlog.size();
   if(m_log_sz < CommitLog::Fragments::MIN_COMPACT)
-    return initial_commitlog_done(ptr, nullptr);
+    return initial_commitlog_done(nullptr);
 
   std::vector<CommitLog::Fragments::Vec> groups;
   size_t need = range->blocks.commitlog.need_compact(
@@ -209,17 +208,16 @@ void CompactRange::initial_commitlog(int tnum) {
   if(need) {
     new CommitLog::Compact(
       &range->blocks.commitlog, tnum, groups,
-      [ptr] (const CommitLog::Compact* compact) {
-        ptr->initial_commitlog_done(ptr, compact); 
+      [ptr=shared()] (const CommitLog::Compact* compact) {
+        ptr->initial_commitlog_done(compact); 
       }
     );
   } else {
-    initial_commitlog_done(ptr, nullptr);
+    initial_commitlog_done(nullptr);
   } 
 }
 
-void CompactRange::initial_commitlog_done(CompactRange::Ptr ptr, 
-                                          const CommitLog::Compact* compact) {
+void CompactRange::initial_commitlog_done(const CommitLog::Compact* compact) {
   if(m_stopped) {
     if(compact) 
       delete compact;
@@ -257,7 +255,7 @@ void CompactRange::initial_commitlog_done(CompactRange::Ptr ptr,
   req_ts = Time::now_ns();
   progress_check_timer();
 
-  range->scan_internal(ptr);
+  range->scan_internal(shared());
 }
 
 bool CompactRange::with_block() {
@@ -853,7 +851,7 @@ void CompactRange::completion() {
   stop_check_timer();
 
   auto ptr = shared();
-  for(int chk = 0; ptr.use_count() > 2; ++chk) { // insure sane
+  for(int chk = 0; ptr.use_count() > 3; ++chk) { // insure sane
     if(chk == 3000) {
       SWC_LOGF(LOG_INFO, "COMPACT-STOPPING %lu/%lu use_count=%ld", 
                 range->cfg->cid, range->rid, ptr.use_count());
@@ -879,7 +877,7 @@ void CompactRange::finished(bool clear) {
   );
 
   range->compact_require(false);
-  compactor->compacted(range, clear);
+  compactor->compacted(shared(), range, clear);
 }
 
 void CompactRange::quit() {
@@ -898,7 +896,7 @@ void CompactRange::quit() {
   SWC_LOGF(LOG_INFO, "COMPACT-ERROR cancelled %lu/%lu", 
            range->cfg->cid, range->rid);
 
-  compactor->compacted(range);
+  compactor->compacted(shared(), range);
 }
 
 

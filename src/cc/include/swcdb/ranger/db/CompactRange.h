@@ -18,7 +18,7 @@ class CompactRange final : public ReqScan {
   
   CommitLog::Fragments::Vec              fragments_old;
 
-  CompactRange(Compaction::Ptr compactor, const RangePtr& range,
+  CompactRange(Compaction* compactor, const RangePtr& range,
                const uint32_t cs_size, const uint32_t blk_size);
 
   virtual ~CompactRange();
@@ -42,8 +42,7 @@ class CompactRange final : public ReqScan {
 
   void initial_commitlog(int tnum);
 
-  void initial_commitlog_done(CompactRange::Ptr ptr, 
-                              const CommitLog::Compact* compact);
+  void initial_commitlog_done(const CommitLog::Compact* compact);
 
   bool is_slow_req(int64_t& median) const;
 
@@ -88,7 +87,7 @@ class CompactRange final : public ReqScan {
   void quit();
 
 
-  Compaction::Ptr         compactor;
+  Compaction*             compactor;
   RangePtr                range;
   const uint32_t          cs_size;
   const uint32_t          blk_size;
