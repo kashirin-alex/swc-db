@@ -82,15 +82,20 @@ class RangersResources final : private std::vector<RangerResources> {
   bool add_and_more(rgrid_t rgrid, int err,
                     const Protocol::Rgr::Params::Report::RspRes& rsp) {
     LockAtomic::Unique::scope lock(m_mutex);
-    if(!err)
-      emplace_back(rgrid, rsp.mem, rsp.cpu, rsp.ranges);
+    if(!err) {
+      auto& res = emplace_back(rgrid, rsp.mem, rsp.cpu, rsp.ranges);
+      if(!res.mem || !res.cpu) {
+        SWC_LOG_OUT(LOG_WARN, 
+          res.print(SWC_LOG_OSTREAM << "received zero(resource) "); );
+      }
+    }
     return m_due ? --m_due : false;
   }
 
   void evaluate() {
     // load_scale = (UINT16_MAX free , 0 overloaded)
-    size_t max_mem = 0;
-    size_t max_cpu = 0;
+    size_t max_mem = 1;
+    size_t max_cpu = 1;
     size_t max_ranges = 1;
     uint16_t max_scale = 1;
     {
