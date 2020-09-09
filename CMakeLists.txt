@@ -151,6 +151,10 @@ endif ()
 
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
+if(NOT SWC_INSTALL_DEP_LIBS)
+  set(UTILS_NO_INSTALL_DEP_LIBS ON)
+endif()
+
 set(LOOKUP_LIB_PATHS
   ${LOOKUP_LIB_PATHS}
   /opt/local/lib 

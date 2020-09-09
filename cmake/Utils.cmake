@@ -216,6 +216,7 @@ message("")
   #   STATIC      STATIC_LIBS
   #   SHARED      SHARED_LIBS
   #   INCLUDE     HEADER FILES
+  #   INSTALL     COPY & INSTALL
   # )
 
 # Sets the following vars on parent-scope:
@@ -227,7 +228,7 @@ message("")
 # -------------------------------
 
 function(SET_DEPS)
-  cmake_parse_arguments(OPT "" "NAME;REQUIRED" "LIB_PATHS;INC_PATHS;STATIC;SHARED;INCLUDE" ${ARGN})
+  cmake_parse_arguments(OPT "" "NAME;REQUIRED" "LIB_PATHS;INC_PATHS;STATIC;SHARED;INCLUDE;INSTALL" ${ARGN})
   
   
   # explicit lookup
@@ -280,6 +281,15 @@ function(SET_DEPS)
       set("${OPT_NAME}_LIBRARIES_SHARED" ${LIBRARIES_SHARED})
       message("       Shared Libs: ${LIBRARIES_SHARED}")
     endif ()
+
+    if(NOT UTILS_NO_INSTALL_DEP_LIBS AND OPT_INSTALL)
+      if(LIBRARIES_SHARED)
+        INSTALL_LIBS(DEST lib LIBS ${LIBRARIES_SHARED})
+      endif()      
+      if(LIBRARIES_STATIC)
+        INSTALL_LIBS(DEST lib LIBS ${LIBRARIES_STATIC} ARCHIVE TRUE)
+      endif()
+    endif()
 
     if(INCLUDE_DIRS)
       message("       Include path: ${INCLUDE_DIRS}")
@@ -368,6 +378,49 @@ endfunction()
 # END FIND_LIBS
 # -------------------------------
 
+
+##### INSTALL_LIBS
+# -------------------------------
+  # INSTALL_LIBS(
+  #   DEST VAR_NAME
+  #   LIBS LIBRARIES
+  #   ARCHIVE
+  # )
+# -------------------------------
+
+function(INSTALL_LIBS)
+  cmake_parse_arguments(OPT "" "DEST" "LIBS;ARCHIVE" ${ARGN})
+  set(msg )
+  if (OPT_ARCHIVE)
+    set(msg "static")
+  else()
+    set(msg "shared")
+  endif()
+  message("       Copying & Installing ${msg}:")
+  
+  foreach(fpath ${OPT_LIBS})
+    set(soname )
+    if(NOT OPT_ARCHIVE)
+      exec_program(bash ARGS ${CMAKE_MODULE_PATH}/soname.sh ${fpath} 
+                  OUTPUT_VARIABLE SONAME_OUT RETURN_VALUE SONAME_RETURN)
+      if (SONAME_RETURN STREQUAL "0")
+        set(soname ${SONAME_OUT})
+      endif()
+    endif()
+
+    if (NOT soname)
+      get_filename_component(soname ${fpath} NAME)
+    endif()
+    get_filename_component(dir ${fpath} DIRECTORY)
+     
+    message("         ${dir}/${soname}")
+    configure_file(${dir}/${soname} "${OPT_DEST}/${soname}" COPYONLY)
+    install(FILES "${CMAKE_BINARY_DIR}/${OPT_DEST}/${soname}" DESTINATION ${OPT_DEST})
+  endforeach()
+
+endfunction()
+# END INSTALL_LIBS
+# -------------------------------
 
 
 

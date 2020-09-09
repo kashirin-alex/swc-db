@@ -51,6 +51,7 @@ if(HADOOP_HADOOP)
     STATIC    libprotobuf.a
     SHARED    protobuf
     INCLUDE   google/protobuf/stubs/common.h
+    INSTALL   TRUE
   )
 endif()
 ############
