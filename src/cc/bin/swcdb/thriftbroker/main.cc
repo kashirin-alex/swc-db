@@ -4,6 +4,8 @@
  */
 
 
+#include "swcdb/thrift/broker/Settings.h"
+#include "swcdb/thrift/broker/AppContext.h"
 
 #include <thrift/server/TThreadPoolServer.h>
 #include <thrift/concurrency/ThreadManager.h>
@@ -13,9 +15,6 @@
 #include <thrift/transport/TBufferTransports.h>
 #include <thrift/transport/TZlibTransport.h>
 #include <thrift/protocol/TBinaryProtocol.h>
-
-#include "swcdb/thrift/broker/Settings.h"
-#include "swcdb/thrift/broker/AppContext.h"
 
 
 namespace SWC {

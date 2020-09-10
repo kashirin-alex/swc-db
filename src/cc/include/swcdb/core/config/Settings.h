@@ -6,7 +6,6 @@
 #ifndef swc_core_config_Config_h
 #define swc_core_config_Config_h
 
-#include <memory>
 #include "swcdb/core/Error.h"
 
 #include "swcdb/core/config/Properties.h"

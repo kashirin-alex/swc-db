@@ -4,8 +4,8 @@
  */
 
 
-#include <dlfcn.h>
 #include "swcdb/utils/Settings.h"
+#include <dlfcn.h>
 
 namespace SWC { namespace Utils { 
 
