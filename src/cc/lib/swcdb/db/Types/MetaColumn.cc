@@ -5,8 +5,9 @@
  */
 
 
-#include "swcdb/db/Types/MetaColumn.h"
+
 #include "swcdb/core/Compat.h"
+#include "swcdb/db/Types/MetaColumn.h"
 
 
 namespace SWC { namespace Types {  namespace MetaColumn {

@@ -4,8 +4,10 @@
  */
 
 
-#include "swcdb/core/String.h"
+
+
 #include "swcdb/core/Compat.h"
+#include "swcdb/core/String.h"
 
 #include <cstdarg>
 #include <cstdio>

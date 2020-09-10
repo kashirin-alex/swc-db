@@ -9,7 +9,6 @@
 
 #include "swcdb/core/Compat.h"
 #include "swcdb/core/Serialization.h"
-#include "swcdb/core/Compat.h"
 #include "swcdb/core/Error.h"
 
 namespace SWC {

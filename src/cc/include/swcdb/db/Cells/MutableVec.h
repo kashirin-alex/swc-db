@@ -7,9 +7,9 @@
 #ifndef swcdb_db_cells_MutableVec_h
 #define swcdb_db_cells_MutableVec_h
 
-#include <vector>
 
 #include "swcdb/core/Compat.h"
+#include <vector>
 #include "swcdb/core/Buffer.h"
 #include "swcdb/db/Cells/Mutable.h"
 

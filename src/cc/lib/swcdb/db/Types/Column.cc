@@ -6,8 +6,8 @@
 
 
 
-#include "swcdb/db/Types/Column.h"
 #include "swcdb/core/Compat.h"
+#include "swcdb/db/Types/Column.h"
 
 
 namespace SWC { namespace Types { 

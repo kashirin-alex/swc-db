@@ -6,8 +6,8 @@
 
 
 
-#include "swcdb/db/Types/Encoding.h"
 #include "swcdb/core/Compat.h"
+#include "swcdb/db/Types/Encoding.h"
 
 
 namespace SWC { namespace Types { 

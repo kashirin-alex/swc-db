@@ -5,8 +5,9 @@
  */
 
 
-#include "swcdb/db/Types/KeySeq.h"
+
 #include "swcdb/core/Compat.h"
+#include "swcdb/db/Types/KeySeq.h"
 
 
 namespace SWC { namespace Types { 
