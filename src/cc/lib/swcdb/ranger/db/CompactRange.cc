@@ -308,6 +308,8 @@ void CompactRange::response(int& err) {
     Error::print(SWC_LOG_OSTREAM, err);
     profile.print(SWC_LOG_OSTREAM << ' ');
   );
+  if(err) 
+    return quit();
 
   bool finishing;
   if((finishing = !reached_limits())) {
