@@ -848,8 +848,13 @@ void CompactRange::apply_new(bool clear) {
   finished(clear);
 }
 
-void CompactRange::completion() {
-  m_stopped = true;
+bool CompactRange::completion() {
+  {
+    Mutex::scope lock(m_mutex);
+    if(m_stopped)
+      return false;
+    m_stopped = true;
+  }
   stop_check_timer();
 
   auto ptr = shared();
@@ -861,6 +866,7 @@ void CompactRange::completion() {
     }
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
   }
+  return true;
 }
 
 void CompactRange::finished(bool clear) {
@@ -883,7 +889,8 @@ void CompactRange::finished(bool clear) {
 }
 
 void CompactRange::quit() {
-  completion();
+  if(!completion())
+    return;
 
   int err = Error::OK;
   if(cs_writer != nullptr) {
