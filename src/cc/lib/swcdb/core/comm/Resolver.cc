@@ -9,6 +9,21 @@
 
 namespace SWC { 
 
+
+Network::Network(const asio::ip::network_v4& v4)
+  : is_v4(true), v4(v4) {
+}
+
+Network::Network(const asio::ip::network_v6& v6)
+  : is_v4(false), v6(v6) {
+}
+
+Network::Network(const Network& net)
+  : is_v4(net.is_v4), v4(net.v4), v6(net.v6) {      
+}
+
+  
+
 namespace Serialization {
   
 size_t encoded_length(const EndPoint& endpoint) {
@@ -56,7 +71,7 @@ bool has_endpoint(const EndPoint& e1, const EndPoints& endpoints_in) {
 }
 
 bool has_endpoint(const EndPoints& endpoints, 
-                        const EndPoints& endpoints_in) {
+                  const EndPoints& endpoints_in) {
   for(auto& endpoint : endpoints){
     if(has_endpoint(endpoint, endpoints_in)) return true;
   }
@@ -210,13 +225,12 @@ void sort(const std::vector<Network>& nets, const EndPoints& endpoints,
 
 void get_networks(const Strings& networks, 
                   std::vector<Network>& nets, asio::error_code& ec) {
+  nets.reserve(networks.size());
   for(auto& net : networks) {
-    Network n;
-    if((n.is_v4 = net.find_first_of(":") == std::string::npos))
-      n.v4 = asio::ip::make_network_v4(net, ec);
+    if(net.find_first_of(":") == std::string::npos)
+      nets.emplace_back(asio::ip::make_network_v4(net, ec));
     else
-      n.v6 = asio::ip::make_network_v6(net, ec);
-    nets.push_back(n);
+      nets.emplace_back(asio::ip::make_network_v6(net, ec));
   }
 }
 

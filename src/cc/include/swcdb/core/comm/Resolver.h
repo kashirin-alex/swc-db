@@ -18,9 +18,13 @@ typedef asio::ip::tcp::endpoint EndPoint;
 typedef std::vector<EndPoint> EndPoints;
 
 struct Network {
-  bool                  is_v4;
-  asio::ip::network_v4  v4;
-  asio::ip::network_v6  v6;
+  bool                        is_v4;
+  const asio::ip::network_v4  v4;
+  const asio::ip::network_v6  v6;
+
+  Network(const asio::ip::network_v4& v4);
+  Network(const asio::ip::network_v6& v6);
+  Network(const Network& net);
 };
 
 namespace Serialization {
