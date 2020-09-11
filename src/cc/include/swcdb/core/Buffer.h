@@ -182,7 +182,7 @@ class BufferDyn : public BufferT {
   }
 
   void ensure(size_t len) {
-    if(len > remaining()) {
+    if(!ptr || len > remaining()) {
       size_t offset_mark = BufferT::length_base_bytes(mark - BufferT::base);
       size_t offset_ptr = BufferT::length_base_bytes(ptr - BufferT::base);
       
