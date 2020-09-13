@@ -52,15 +52,31 @@ enum Comp {
   VLT  = 0xC    // [  v<  ]  :   -vlt           (vol lower-than)
 };
 
+
+const char COMP_NONE[]  = "none";
+const char COMP_PF[]    = "=^";
+const char COMP_GT[]    = ">";
+const char COMP_GE[]    = ">=";
+const char COMP_EQ[]    = "==";
+const char COMP_LE[]    = "<=";
+const char COMP_LT[]    = "<";
+const char COMP_NE[]    = "!=";
+const char COMP_RE[]    = "re";
+const char COMP_VGT[]   = "v>";
+const char COMP_VGE[]   = "v>=";
+const char COMP_VLE[]   = "v<=";
+const char COMP_VLT[]   = "v<";
+
+
 extern SWC_CAN_INLINE 
 Comp from(const char** buf, uint32_t* remainp, bool extended=false) {
   Comp comp = Comp::NONE;
 
   if(extended && *remainp > 2) {
-    if(strncasecmp(*buf, "v>=", 3) == 0 || 
+    if(strncasecmp(*buf, COMP_VGE, 3) == 0 || 
        strncasecmp(*buf, "vge", 3) == 0)
       comp = Comp::VGE;
-    else if(strncasecmp(*buf, "v<=", 3) == 0 || 
+    else if(strncasecmp(*buf, COMP_VLE, 3) == 0 || 
             strncasecmp(*buf, "vle", 3) == 0)
       comp = Comp::VLE;
     else if(strncasecmp(*buf, "vgt", 3) == 0)
@@ -76,26 +92,31 @@ Comp from(const char** buf, uint32_t* remainp, bool extended=false) {
   }
 
   if(*remainp > 1) {
-    if(strncasecmp(*buf, "=^", 2) == 0 || strncasecmp(*buf, "pf", 2) == 0)
+    if(strncasecmp(*buf, COMP_PF, 2) == 0 || 
+       strncasecmp(*buf, "pf", 2) == 0)
       comp = Comp::PF;
-    else if(strncasecmp(*buf, ">=", 2) == 0 || strncasecmp(*buf, "ge", 2) == 0)
+    else if(strncasecmp(*buf, COMP_GE, 2) == 0 || 
+            strncasecmp(*buf, "ge", 2) == 0)
       comp = Comp::GE;
-    else if(strncasecmp(*buf, "<=", 2) == 0 || strncasecmp(*buf, "le", 2) == 0)
+    else if(strncasecmp(*buf, COMP_LE, 2) == 0 || 
+            strncasecmp(*buf, "le", 2) == 0)
       comp = Comp::LE;
-    else if(strncasecmp(*buf, "!=", 2) == 0 || strncasecmp(*buf, "ne", 2) == 0)
+    else if(strncasecmp(*buf, COMP_NE, 2) == 0 || 
+            strncasecmp(*buf, "ne", 2) == 0)
       comp = Comp::NE;
-    else if(strncasecmp(*buf, "re", 2) == 0)
+    else if(strncasecmp(*buf, COMP_RE, 2) == 0)
       comp = Comp::RE;
-    else if(strncasecmp(*buf, "==", 2) == 0 || strncasecmp(*buf, "eq", 2) == 0)
+    else if(strncasecmp(*buf, COMP_EQ, 2) == 0 || 
+            strncasecmp(*buf, "eq", 2) == 0)
       comp = Comp::EQ;
     else if(strncasecmp(*buf, "gt", 2) == 0)
       comp = Comp::GT;
     else if(strncasecmp(*buf, "lt", 2) == 0)
       comp = Comp::LT;
     if(extended) {
-      if(strncasecmp(*buf, "v>", 2) == 0)
+      if(strncasecmp(*buf, COMP_VGT, 2) == 0)
         comp = Comp::VGT;
-      else if(strncasecmp(*buf, "v<", 2) == 0)
+      else if(strncasecmp(*buf, COMP_VLT, 2) == 0)
         comp = Comp::VLT;
     }
 
@@ -127,45 +148,45 @@ Comp from(const char** buf, uint32_t* remainp, bool extended=false) {
 };
 
 extern SWC_CAN_INLINE 
-std::string to_string(Comp comp, bool extended=false) {
+const char* to_string(Comp comp, bool extended=false) {
   
   if(extended) switch (comp) {
     case Comp::VGT:
-      return std::string("v>");
+      return COMP_VGT;
     case Comp::VGE:
-      return std::string("v>=");
+      return COMP_VGE;
     case Comp::VLE:
-      return std::string("v<=");
+      return COMP_VLE;
     case Comp::VLT:
-      return std::string("v<");
+      return COMP_VLT;
     default:
       break;
   }
 
   switch (comp) {
     case Comp::EQ:
-      return std::string("==");
+      return COMP_EQ;
     case Comp::PF:
-      return std::string("=^");
+      return COMP_PF;
     case Comp::GT:
-      return std::string(">");
+      return COMP_GT;
     case Comp::GE:
-      return std::string(">=");
+      return COMP_GE;
     case Comp::LE:
-      return std::string("<=");
+      return COMP_LE;
     case Comp::LT:
-      return std::string("<");
+      return COMP_LT;
     case Comp::NE:
-      return std::string("!=");
+      return COMP_NE;
     case Comp::RE:
-     return std::string("RE");
+      return COMP_RE;
     default:
-      return std::string("none");
+      return COMP_NONE;
   }
 };
 
 extern SWC_CAN_INLINE 
-std::string to_string(uint8_t comp) {
+const char* to_string(uint8_t comp) {
   return to_string((Comp)comp);
 };
 

@@ -36,13 +36,12 @@ void set(const Key& key, DB::Cell::Key& dbkey) {
 
 void set(const SpecKey& spec, DB::Specs::Key& dbspec) {
   for(auto& fraction : spec) {
-    if((uint8_t)fraction.comp > 0x8)
-      exception(
-        Error::INCOMPATIBLE_OPTIONS, 
-        "Key ext-fraction-comp(" + 
-        Condition::to_string((Condition::Comp)fraction.comp, true) + 
-        ")"
-      );
+    if((uint8_t)fraction.comp > 0x8) {
+      std::string msg("Key ext-fraction-comp(");
+      msg.append(Condition::to_string((Condition::Comp)fraction.comp, true));
+      msg += ')';
+      exception(Error::INCOMPATIBLE_OPTIONS, msg);
+    }
     dbspec.add(fraction.f, (Condition::Comp)fraction.comp);
   }
 }

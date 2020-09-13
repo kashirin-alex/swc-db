@@ -16,6 +16,7 @@
 #include "swcdb/db/Protocol/Mngr/req/ColumnCompact.h"
 
 #include "swcdb/db/client/Query/Select.h"
+#include "swcdb/db/client/Query/Update.h"
 
 #include "swcdb/db/client/sql/Reader.h"
 #include "swcdb/db/client/sql/ColumnSchema.h"

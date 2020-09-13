@@ -64,7 +64,7 @@ IO_SignalsPtr IoContext::signals() {
 }
 
 void IoContext::set_periodic_timer(const Property::V_GINT32::Ptr ms, 
-                                   PeriodicTimer::Call_t call) {
+                                   const PeriodicTimer::Call_t& call) {
   m_periodic_timers.set(ms, call, ptr());
 }
 

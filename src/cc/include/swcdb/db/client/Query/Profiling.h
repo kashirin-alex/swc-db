@@ -11,6 +11,9 @@
 
 namespace SWC { namespace client { namespace Query {
 
+using ReqBase = client::ConnQueue::ReqBase;
+
+
 struct Profiling {
   const int64_t ts_start = Time::now_ns();
   int64_t       ts_finish = ts_start;

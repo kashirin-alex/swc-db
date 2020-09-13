@@ -7,16 +7,17 @@
 #ifndef swc_db_client_Query_Update_h
 #define swc_db_client_Query_Update_h
 
-#include "swcdb/db/Cells/MutableMap.h" 
-#include "swcdb/db/Types/Range.h"
 
+#include "swcdb/db/Types/Range.h"
+#include "swcdb/db/Cells/MutableMap.h"
+
+#include "swcdb/db/client/Query/Profiling.h"
 #include "swcdb/db/Protocol/Mngr/req/RgrGet.h"
 #include "swcdb/db/Protocol/Rgr/req/RangeLocate.h"
-#include "swcdb/db/client/Query/Profiling.h"
+
 
 namespace SWC { namespace client { namespace Query {
 
-using ReqBase = client::ConnQueue::ReqBase;
 
 /*
 range-master: 

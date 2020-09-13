@@ -166,7 +166,7 @@ void Key::insert(uint32_t idx, const uint8_t* fraction, uint32_t len) {
   if(own)
     delete [] data;
   else
-      own = true;
+    own = true;
   data = data_tmp;
   ++count;
 }

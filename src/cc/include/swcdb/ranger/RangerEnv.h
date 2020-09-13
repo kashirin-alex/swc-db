@@ -12,7 +12,7 @@
 #include "swcdb/common/Files/RgrData.h"
 
 #include "swcdb/db/client/Query/Select.h"
-
+#include "swcdb/db/client/Query/Update.h"
 
 namespace SWC {
 

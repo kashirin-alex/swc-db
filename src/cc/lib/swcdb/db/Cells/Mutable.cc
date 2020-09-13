@@ -29,7 +29,8 @@ Mutable::Mutable(const Types::KeySeq key_seq,
                  const Types::Column type)
                 : key_seq(key_seq), 
                   type(type), max_revs(max_revs), ttl(ttl_ns),
-                  buckets({make_bucket(0)}), _bytes(0), _size(0) {
+                  _bytes(0), _size(0) {
+  buckets.emplace_back(make_bucket(0));
 }
 
 Mutable::Mutable(Mutable& other)
@@ -68,8 +69,8 @@ void Mutable::free() {
   _bytes = 0;
   _size = 0;
   buckets.clear();
-  buckets.push_back(make_bucket(0));
   buckets.shrink_to_fit();
+  buckets.emplace_back(make_bucket(0));
 }
 
 void Mutable::reset(const uint32_t revs, const uint64_t ttl_ns, 

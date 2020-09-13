@@ -7,15 +7,19 @@
 #ifndef swc_db_client_Query_Select_h
 #define swc_db_client_Query_Select_h
 
+
+#include "swcdb/db/Types/Range.h"
 #include "swcdb/db/Cells/Result.h"
 #include "swcdb/db/Cells/SpecsScan.h"
 
-#include "swcdb/db/client/Query/Update.h"
+#include "swcdb/db/client/Query/Profiling.h"
+#include "swcdb/db/Protocol/Mngr/req/RgrGet.h"
+#include "swcdb/db/Protocol/Rgr/req/RangeLocate.h"
 
-#include "swcdb/db/Protocol/Rgr/req/RangeQuerySelect.h"
 
 namespace SWC { namespace client { namespace Query {
- 
+
+
 namespace Result {
 
 struct Select final {

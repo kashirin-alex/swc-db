@@ -7,6 +7,7 @@
 #include "swcdb/db/Types/MetaColumn.h"
 #include "swcdb/db/client/Clients.h"
 #include "swcdb/db/client/Query/Select.h"
+#include "swcdb/db/Protocol/Rgr/req/RangeQuerySelect.h"
 
 
 namespace SWC { namespace client { namespace Query {

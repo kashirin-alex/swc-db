@@ -156,8 +156,10 @@ Reader::get_schema(const std::vector<DB::Schemas::Pattern>& patterns) {
   auto schemas = Env::Clients::get()->schemas->get(err, patterns);
   if(err) {
     std::string msg("problem getting columns on patterns=[");
-    for(auto& p : patterns)
-      msg.append(Condition::to_string(p.comp, true) + "'" + p.value + "', ");
+    for(auto& p : patterns) {
+      msg.append(Condition::to_string(p.comp, true));
+      msg.append("'" + p.value + "', ");
+    }
     error_msg(err, msg + "] schema");
   }
   return schemas;

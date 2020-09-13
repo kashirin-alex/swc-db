@@ -9,18 +9,17 @@
 namespace SWC {
   
 PeriodicTimer::PeriodicTimer(const Property::V_GINT32::Ptr cfg_ms, 
-                             Call_t call, asio::io_context* io)
-                             : m_ms(cfg_ms), m_call(call), m_timer(*io) {
+                             const Call_t& call, asio::io_context* io)
+                            : asio::high_resolution_timer(*io),
+                              m_ms(cfg_ms), m_call(call) {
   schedule();
 }
   
-PeriodicTimer::~PeriodicTimer() {
-  m_timer.cancel(); 
-}
+PeriodicTimer::~PeriodicTimer() { }
 
 void PeriodicTimer::schedule() {
-  m_timer.expires_from_now(std::chrono::milliseconds(m_ms->get()));
-  m_timer.async_wait(
+  expires_after(std::chrono::milliseconds(m_ms->get()));
+  async_wait(
     [this](const asio::error_code& ec) {
       if(ec != asio::error::operation_aborted) {
         m_call();
@@ -35,17 +34,15 @@ PeriodicTimers::~PeriodicTimers() { }
 
 void PeriodicTimers::stop() {
   Mutex::scope lock(m_mutex);
-  for(auto it = begin(); it<end();) {
-    delete *it;
-    erase(it);
-  }
+  for(auto& ptr : *this)
+    ptr->cancel();
 }
 
 void PeriodicTimers::set(const Property::V_GINT32::Ptr ms, 
-                         PeriodicTimer::Call_t call,
+                         const PeriodicTimer::Call_t& call,
                          asio::io_context* io) {
   Mutex::scope lock(m_mutex);
-  push_back(new PeriodicTimer(ms, call, io));
+  emplace_back(new PeriodicTimer(ms, call, io));
 }
 
 

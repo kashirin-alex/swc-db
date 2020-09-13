@@ -97,29 +97,51 @@ void CommBuf::write_header() {
 std::vector<asio::const_buffer> CommBuf::get_buffers() {
   write_header();
 
-  std::vector<asio::const_buffer> buffers;
-  buffers.reserve(
-    3 + 
-    buf_data.size/BUFFER_CHUNK_SZ + 
-    buf_ext.size/BUFFER_CHUNK_SZ
-  );
-  buffers.emplace_back(buf_header.base, buf_header.size);
+  size_t sz = 1;
 
-  if(buf_data.size) for(size_t i=0; ; i += BUFFER_CHUNK_SZ) {
-    if(buf_data.size > i + BUFFER_CHUNK_SZ) {
-      buffers.emplace_back(buf_data.base + i, BUFFER_CHUNK_SZ);
-    } else {
-      buffers.emplace_back(buf_data.base + i, buf_data.size - i);
-      break;
-    }
+  size_t buf_data_chunks;
+  bool buf_data_not_aligned;
+  if(buf_data.size) {
+    double chunks = double(buf_data.size)/BUFFER_CHUNK_SZ;
+    buf_data_chunks = chunks;
+    buf_data_not_aligned = double(buf_data_chunks) != chunks;
+    sz += buf_data_chunks;
+    sz += buf_data_not_aligned;
+  } else {
+    buf_data_chunks = 0;
+    buf_data_not_aligned = false;
   }
-  if(buf_ext.size) for(size_t i=0; ; i += BUFFER_CHUNK_SZ) {
-    if(buf_ext.size > i + BUFFER_CHUNK_SZ) {
-      buffers.emplace_back(buf_ext.base + i, BUFFER_CHUNK_SZ);
-    } else {
-      buffers.emplace_back(buf_ext.base + i, buf_ext.size - i);
-      break;
-    }
+
+  size_t buf_ext_chunks;
+  bool buf_ext_not_aligned;
+  if(buf_ext.size) {
+    double chunks = double(buf_ext.size)/BUFFER_CHUNK_SZ;
+    buf_ext_chunks = chunks;
+    buf_ext_not_aligned = double(buf_ext_chunks) != chunks;
+    sz += buf_ext_chunks;
+    sz += buf_ext_not_aligned;
+  } else {
+    buf_ext_chunks = 0;
+    buf_ext_not_aligned = false;
+  }
+
+  std::vector<asio::const_buffer> buffers(sz);
+  auto it = buffers.begin();
+  *it = asio::const_buffer(buf_header.base, buf_header.size);
+
+  if(buf_data.size) {
+    auto p = buf_data.base;
+    for(size_t i = 0; i<buf_data_chunks; ++i, p+=BUFFER_CHUNK_SZ)
+      *++it = asio::const_buffer(p, BUFFER_CHUNK_SZ);
+    if(buf_data_not_aligned)
+      *++it = asio::const_buffer(p, (buf_data.base + buf_data.size) - p);
+  }
+  if(buf_ext.size) {
+    auto p = buf_ext.base;
+    for(size_t i = 0; i<buf_ext_chunks; ++i, p+=BUFFER_CHUNK_SZ)
+      *++it = asio::const_buffer(p, BUFFER_CHUNK_SZ);
+    if(buf_ext_not_aligned)
+      *++it = asio::const_buffer(p, (buf_ext.base + buf_ext.size) - p);
   }
   return buffers;
 }

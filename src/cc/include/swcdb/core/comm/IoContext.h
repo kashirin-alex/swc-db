@@ -46,7 +46,7 @@ class IoContext final {
   IO_SignalsPtr signals();
 
   void set_periodic_timer(const Property::V_GINT32::Ptr ms, 
-                          PeriodicTimer::Call_t call);
+                          const PeriodicTimer::Call_t& call);
 
   void stop();
 

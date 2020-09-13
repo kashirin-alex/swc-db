@@ -31,7 +31,7 @@ class RgrGet: public client::ConnQueue::ReqBase {
                   const Cb_t& cb, const uint32_t timeout = 10000);
 
   RgrGet(const Params::RgrGetReq& params, const Cb_t& cb, 
-            const uint32_t timeout);
+         const uint32_t timeout);
 
   virtual ~RgrGet();
 

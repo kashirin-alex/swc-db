@@ -11,6 +11,7 @@
 #include "swcdb/db/Protocol/Mngr/req/ColumnMng.h"
 #include "swcdb/db/Protocol/Mngr/req/ColumnGet.h"
 #include "swcdb/db/client/Query/Select.h"
+#include "swcdb/db/client/Query/Update.h"
 
 #include "swcdb/core/FlowRate.h"
 

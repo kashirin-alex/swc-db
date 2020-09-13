@@ -1,7 +1,6 @@
 /*
  * Copyright Since 2019 SWC-DB© [author: Kashirin Alex kashirin.alex@gmail.com]
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
- * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
 
@@ -140,7 +139,7 @@ void Settings::parse_file(const std::string& name, const std::string& onchg) {
 
   std::string fname;
   if(name.front() != '/' && name.front() != '.') 
-    fname.append(get_str("swc.cfg.path"));
+    fname = get_str("swc.cfg.path");
   fname.append(name);
   
   if(!FileUtils::exists(fname))
