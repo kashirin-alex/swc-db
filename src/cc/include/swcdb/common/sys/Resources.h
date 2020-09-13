@@ -275,7 +275,7 @@ class Resources final {
   }
 
   void schedule() {
-    m_timer.expires_from_now(std::chrono::milliseconds(ram.chk_ms));
+    m_timer.expires_after(std::chrono::milliseconds(ram.chk_ms));
     m_timer.async_wait(
       [this](const asio::error_code& ec) {
         if(ec == asio::error::operation_aborted)

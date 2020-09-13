@@ -43,7 +43,7 @@ MngrActive::~MngrActive() { }
 
 void MngrActive::run_within(uint32_t t_ms) {
   timer.cancel();
-  timer.expires_from_now(std::chrono::milliseconds(t_ms));
+  timer.expires_after(std::chrono::milliseconds(t_ms));
   timer.async_wait(
     [ptr=shared_from_this()](const asio::error_code& ec) {
       if (ec != asio::error::operation_aborted){

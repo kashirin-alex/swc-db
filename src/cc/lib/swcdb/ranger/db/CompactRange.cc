@@ -420,7 +420,7 @@ void CompactRange::progress_check_timer() {
   if((median /= 1000000) < 1000)
     median = 1000;
   Mutex::scope lock(m_mutex);
-  m_chk_timer.expires_from_now(std::chrono::milliseconds(median));
+  m_chk_timer.expires_after(std::chrono::milliseconds(median));
   m_chk_timer.async_wait(
     [ptr=shared()](const asio::error_code& ec) {
       if(ec == asio::error::operation_aborted)

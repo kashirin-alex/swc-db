@@ -170,7 +170,7 @@ void ConnQueue::delay(const ConnQueue::ReqBase::Ptr& req) {
     Mutex::scope lock(m_mutex);
     m_delayed.insert(tm);
   }
-  tm->expires_from_now(std::chrono::milliseconds(cfg_again_delay_ms->get()));
+  tm->expires_after(std::chrono::milliseconds(cfg_again_delay_ms->get()));
   tm->async_wait(
     [req, tm](const asio::error_code&) {
       req->queue->delay_proceed(req, tm);
@@ -263,8 +263,7 @@ void ConnQueue::schedule_close() {
     return close_issued();
   }
 
-  m_timer->expires_from_now(
-    std::chrono::milliseconds(cfg_keepalive_ms->get()));
+  m_timer->expires_after(std::chrono::milliseconds(cfg_keepalive_ms->get()));
   m_timer->async_wait(
     [ptr=shared_from_this()](const asio::error_code& ec) {
       if(ec != asio::error::operation_aborted){

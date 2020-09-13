@@ -239,7 +239,7 @@ void ConnHandler::write(ConnHandler::Pending* pending) {
     header.id = m_next_req_id;
   
     if(pending->timer) {
-      pending->timer->expires_from_now(
+      pending->timer->expires_after(
         std::chrono::milliseconds(header.timeout_ms));
       pending->timer->async_wait(
         [cbuf, conn=ptr()] (const asio::error_code& ec) {

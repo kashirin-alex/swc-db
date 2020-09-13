@@ -202,7 +202,7 @@ class RgrMngId: public client::ConnQueue::ReqBase {
     if(!m_run)
       return;
 
-    m_timer.expires_from_now(
+    m_timer.expires_after(
       std::chrono::milliseconds(ms ? ms : cfg_check_interval->get()));
 
     m_timer.async_wait(

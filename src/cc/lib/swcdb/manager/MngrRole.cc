@@ -42,13 +42,12 @@ void MngrRole::schedule_checkin(uint32_t t_ms) {
     return;
 
   auto set_in = std::chrono::milliseconds(t_ms);
-  auto set_on = m_check_timer.expires_from_now();
-  if(set_on > std::chrono::milliseconds(0) && set_on < set_in)
+  auto set_on = m_check_timer.expiry();
+  auto now = asio::high_resolution_timer::clock_type::now();
+  if(set_on > now && set_on < now + set_in)
     return;
 
-  m_check_timer.cancel();
-  m_check_timer.expires_from_now(set_in);
-
+  m_check_timer.expires_after(set_in);
   m_check_timer.async_wait(
     [this](const asio::error_code& ec) {
       if(ec != asio::error::operation_aborted) {
