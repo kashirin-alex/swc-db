@@ -34,27 +34,30 @@ void encode(const EndPoint& endpoint, uint8_t** bufp) {
   Serialization::encode_bool(bufp, endpoint.address().is_v4());
   Serialization::encode_i16(bufp, endpoint.port());
   if(endpoint.address().is_v4()) {
-    Serialization::encode_i32(bufp, endpoint.address().to_v4().to_ulong());
-    return;
+    auto v4_bytes = endpoint.address().to_v4().to_bytes();
+    Serialization::encode_bytes_fixed(bufp, v4_bytes.data(), v4_bytes.size());
+
+  } else { 
+    auto v6_bytes = endpoint.address().to_v6().to_bytes();
+    Serialization::encode_bytes_fixed(bufp, v6_bytes.data(), v6_bytes.size());
   }
-    
-  auto v6_bytes = endpoint.address().to_v6().to_bytes();
-  Serialization::encode_bytes_fixed(bufp, v6_bytes.data(), 16);
 }
   
 EndPoint decode(const uint8_t** bufp, size_t* remainp) {
   bool is_v4 = Serialization::decode_bool(bufp, remainp);
   uint16_t port = Serialization::decode_i16(bufp, remainp);
-  if(is_v4) 
-    return EndPoint(
-      asio::ip::make_address_v4(
-        Serialization::decode_i32(bufp, remainp)), 
-        port);
+  if(is_v4) {
+    asio::ip::address_v4::bytes_type v4_bytes;
+    const uint8_t* bytes = Serialization::decode_bytes_fixed(
+      bufp, remainp, v4_bytes.size());
+    std::memcpy(v4_bytes.data(), bytes, v4_bytes.size());
+    return EndPoint(asio::ip::make_address_v4(v4_bytes), port);
+  }
   
-  const uint8_t* bytes = Serialization::decode_bytes_fixed(bufp, remainp, 16);
   asio::ip::address_v6::bytes_type v6_bytes;
-  std::memcpy(v6_bytes.data(), bytes, 16);
-
+    const uint8_t* bytes = Serialization::decode_bytes_fixed(
+      bufp, remainp, v6_bytes.size());
+  std::memcpy(v6_bytes.data(), bytes, v6_bytes.size());
   return EndPoint(asio::ip::address_v6(v6_bytes), port);
 }
 
