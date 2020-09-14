@@ -1,4 +1,4 @@
-# **SWC-DB©** &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;   ![GPLv3](docs/gplv3-88x31.png)
+# **SWC-DB©** &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;   ![GPLv3](docs/logo-small.png)
 #### SWC-DB© (_Super Wide Column Database_) - High Performance Scalable Database
 
 
