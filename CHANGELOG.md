@@ -125,6 +125,17 @@
     deprecated most of to_string functions & added print(std::ostream&)
     added class Ranger::RangeSplit
     added immediate-split in CompactRange 
+    added cpu MHz in sys/Rsources.h fallback by /proc/cpuinfo
+    added Compaction::m_compacting keep shared use-count +1 positive
+    added cmake MACRO INSTALL_LIBS & cmake opt. SWC_INSTALL_DEP_LIBS=OFF/ON
+    adjusted include "swcdb/core/Compat.h" first in inclusion tree
+    added assure CompactRange::completion() done once
+    added core/Malloc.h & definer option -DSWC_MALLOC_NOT_INSISTENT=OFF/ON
+    fixed some fixes over -fanalyzer warnings
+    changed encode & decode IPv4 Serialization in network byte order
+    changed updates to ASIO DEPRECATED
+    changed -fstd by CMAKE_C/CXX_STANDARD(11/20) & with ASIO_NO_DEPRECATED
+    updated for latest libhdfspp apache-hadoop trunk
 
 [_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.3.0...master)
 ******
