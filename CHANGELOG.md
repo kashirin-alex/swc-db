@@ -18,7 +18,7 @@
 
 
 
-### [SWC-DB v0.4.7](https://github.com/kashirin-alex/swc-db/releases/tag/v0.4.7) (2020-09-07)
+### [SWC-DB v0.4.7](https://github.com/kashirin-alex/swc-db/releases/tag/v0.4.7) (2020-09-14)
 
     added support for Ceph File System (libswcdb_fs_ceph)
     changed install only required headers 
