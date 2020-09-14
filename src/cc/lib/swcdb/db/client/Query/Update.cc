@@ -195,8 +195,7 @@ Update::Locator::Locator(const Types::Range type, const cid_t cid,
         : type(type), cid(cid), col(col), key_start(key_start), 
           updater(updater), parent(parent), 
           rid(rid), 
-          key_finish(
-            key_finish ? std::ref(*key_finish) : DB::Cell::Key()) {
+          key_finish(key_finish ? *key_finish : DB::Cell::Key()) {
 }
 
 Update::Locator::~Locator() { }
