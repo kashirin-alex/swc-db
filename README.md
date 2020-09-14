@@ -66,11 +66,34 @@
     If not, see <https://github.com/kashirin-alex/swc-db/blob/master/LICENSE>.
 
 
-###### Non-Commercial License
+##### [COPYING NOTICE](COPYING.md)
+
+    Copyright Since 2019 SWC-DB© [author: Kashirin Alex kashirin.alex@gmail.com]
+    License details at <https://github.com/kashirin-alex/swc-db/#license>
+
+
+##### [THIRD-PARTY LICENSE NOTICE](NOTICE.md)
+
+    SWC-DB implement third-party sources and binaries in dynamic or static form.
+
+    The Third-Party license permissions, limitations and conditions 
+    very between the types of implementation depends on a SWC-DB release. 
+    
+    Whereas to this SWC-DB license under GPLv3 license 
+    the applied implication is the 'static' form,
+    While 'dynamic' applied to 
+     libpam_swcdb_max_retries, libswcdb_fs_hadoop_jvm, libswcdb_fs_ceph.
+
+    The Third-Party License notices available at: 
+     <https://github.com/kashirin-alex/swc-db/blob/master/NOTICE.md>
+
+
+
+#### Non-Commercial License
 
     No other License available
 
-###### Commercial License
+#### Commercial License
 
     For a Commercial Purpose License in-case activities limited by GPLv3.
     You are welcome to inquiry with requirements via kashirin.alex@gmail.com
