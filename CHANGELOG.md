@@ -6,9 +6,19 @@
 
 
 
+### [SWC-DB master](https://github.com/kashirin-alex/swc-db/tree/master) (upcoming-release)
+
+    
+
+[_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.4.7...master)
+******
 
 
-### [SWC-DB master](https://github.com/kashirin-alex/swc-db/tree/master) (unreleased)
+
+
+
+
+### [SWC-DB v0.4.7](https://github.com/kashirin-alex/swc-db/releases/tag/v0.4.7) (2020-09-07)
 
     added support for Ceph File System (libswcdb_fs_ceph)
     changed install only required headers 
@@ -137,7 +147,7 @@
     changed -fstd by CMAKE_C/CXX_STANDARD(11/20) & with ASIO_NO_DEPRECATED
     updated for latest libhdfspp apache-hadoop trunk
 
-[_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.3.0...master)
+[_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.3.0...v0.4.7)
 ******
 
 
