@@ -123,28 +123,42 @@ endif()
 
 ########### HADOOP FILESYSTEM ###########
 
-if(HADOOP_LIBRARIES_SHARED AND PROTOBUF_LIBRARIES_SHARED)
+if(HADOOP_LIBRARIES_SHARED AND PROTOBUF_LIBRARIES_SHARED AND GSASL_LIBRARIES_SHARED)
+  set(haddop_name "hadoop")
+  if(HADOOP_VERSION)
+    set(haddop_name "${haddop_name}_${HADOOP_VERSION}")
+  endif()
 
-  set(FILE_SYSTEMS ${FILE_SYSTEMS} hadoop)
+  set(FILE_SYSTEMS ${FILE_SYSTEMS} ${haddop_name})
   set(swcdb_fsHadoop_sources
     ${SWC_VERSION_SRC}
     Hadoop/FileSystem.cc
   )
 
   ADD_LIB_TARGET(
-    NAME      swcdb_fs_hadoop
+    NAME      swcdb_fs_${haddop_name}
     SRCS      ${swcdb_fsHadoop_sources}
     TARGETS   swcdb_fs
-    SHARED    ${HADOOP_LIBRARIES_SHARED} ${PROTOBUF_LIBRARIES_SHARED}
-    STATIC    ${HADOOP_LIBRARIES_STATIC} ${PROTOBUF_LIBRARIES_STATIC}
+    SHARED    ${HADOOP_LIBRARIES_SHARED} 
+              ${PROTOBUF_LIBRARIES_SHARED} 
+              ${GSASL_LIBRARIES_SHARED}
+    STATIC    ${HADOOP_LIBRARIES_STATIC} 
+              ${PROTOBUF_LIBRARIES_STATIC}
+              ${GSASL_LIBRARIES_STATIC}
   )
 
 
   set(SWC_LIB_FS_SHARED )
   set(SWC_LIB_FS_STATIC )
   if(BUILTIN_FS_HADOOP)
-    set(SWC_LIB_FS_SHARED ${SWC_LIB_FS_SHARED} ${HADOOP_LIBRARIES_SHARED} ${PROTOBUF_LIBRARIES_SHARED})
-    set(SWC_LIB_FS_STATIC ${SWC_LIB_FS_STATIC} ${HADOOP_LIBRARIES_STATIC} ${PROTOBUF_LIBRARIES_STATIC})
+    set(SWC_LIB_FS_SHARED ${SWC_LIB_FS_SHARED} 
+                          ${HADOOP_LIBRARIES_SHARED} 
+                          ${PROTOBUF_LIBRARIES_SHARED}
+                          ${GSASL_LIBRARIES_SHARED})
+    set(SWC_LIB_FS_STATIC ${SWC_LIB_FS_STATIC} 
+                          ${HADOOP_LIBRARIES_STATIC} 
+                          ${PROTOBUF_LIBRARIES_STATIC}
+                          ${GSASL_LIBRARIES_STATIC})
   endif()
 
   if(SWC_LIB_FS_SHARED)

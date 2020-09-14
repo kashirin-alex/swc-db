@@ -42,7 +42,7 @@ SET_DEPS(
   SHARED    hdfspp 
   INCLUDE   hdfspp/hdfspp.h
 )
-if(HADOOP_HADOOP)
+if(HADOOP_FOUND)
   SET_DEPS(
     NAME      "PROTOBUF"
     REQUIRED  TRUE
@@ -51,8 +51,23 @@ if(HADOOP_HADOOP)
     STATIC    libprotobuf.a
     SHARED    protobuf
     INCLUDE   google/protobuf/stubs/common.h
-    INSTALL   TRUE
   )
+  SET_DEPS(
+    NAME      "GSASL"
+    REQUIRED  TRUE
+    LIB_PATHS ""
+    INC_PATHS ""
+    STATIC    libgsasl.a
+    SHARED    gsasl
+    INCLUDE   gsasl.h
+  )
+  if(HADOOP_VERSION)
+    # Library is different over versions and protobuf related
+    # at setup symlink libswcdb_fs_hadoop.so to specific libswcdb_fs_hadoop_VERSION.so
+    message("       Building Version: ${HADOOP_VERSION}")
+  else()
+    message("       Building Version: 'default' set -DHADOOP_VERSION= for version specific")
+  endif()
 endif()
 ############
 

@@ -6,7 +6,6 @@
 #ifndef swc_fs_Hadoop_FileSystem_h
 #define swc_fs_Hadoop_FileSystem_h
 
-#include <asio.hpp>
 #include "swcdb/fs/FileSystem.h"
 #include "hdfspp/hdfspp.h"
 
@@ -30,7 +29,13 @@ struct SmartFdHadoop final : public SmartFd {
 
   virtual ~SmartFdHadoop();
 
-  hdfs::FileHandle* file = nullptr;
+  hdfs::FileHandle* file() const;
+
+  void file(hdfs::FileHandle* file);
+
+  private:
+
+  hdfs::FileHandle* m_file;
 };
 
 
@@ -38,21 +43,35 @@ struct SmartFdHadoop final : public SmartFd {
 class FileSystemHadoop final : public FileSystem {
   public:
 
+  struct Service {
+    typedef std::shared_ptr<Service> Ptr;
+    
+    Service(hdfs::FileSystem* srv) : srv(srv) { }
+
+    ~Service() { 
+      //if(srv) hdfsDisconnect(srv);
+    }
+
+    hdfs::FileSystem*     srv;
+  };
+
   FileSystemHadoop();
 
-  void setup_connection();
-
-  bool initialize();
-
   virtual ~FileSystemHadoop();
-
-  void stop() override;
 
   Types::Fs get_type() override;
 
   std::string to_string() override;
 
+  void stop() override;
 
+  Service::Ptr setup_connection();
+
+  bool initialize(Service::Ptr& fs);
+
+  Service::Ptr get_fs(int& err);
+
+  void need_reconnect(int& err, Service::Ptr& fs);
 
 
   bool exists(int& err, const std::string& name) override;
@@ -71,7 +90,7 @@ class FileSystemHadoop final : public FileSystem {
   void rename(int& err, const std::string& from, 
                         const std::string& to)  override;
 
-  SmartFdHadoop::Ptr get_fd(const SmartFd::Ptr& smartfd);
+  SmartFdHadoop::Ptr get_fd(SmartFd::Ptr& smartfd);
 
   void create(int& err, SmartFd::Ptr& smartfd, 
               int32_t bufsz, uint8_t replication, int64_t blksz) override;
@@ -96,9 +115,17 @@ class FileSystemHadoop final : public FileSystem {
   void close(int& err, SmartFd::Ptr& smartfd) override;
 
   private:
-  hdfs::FileSystem*     m_filesystem;
-  std::atomic<bool>     m_run;
-  std::atomic<int32_t>  m_nxt_fd;
+
+  std::atomic<bool>       m_run;
+  std::atomic<int32_t>    m_nxt_fd;
+  
+  std::mutex              m_mutex;
+  std::condition_variable m_cv;
+  bool                    m_connecting;
+
+  Service::Ptr            m_fs;
+  
+  int hdfs_cfg_min_blk_sz = 1048576;
 };
 
 
