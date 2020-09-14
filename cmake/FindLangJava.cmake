@@ -61,9 +61,9 @@ endif()
 
 exec_program(env ARGS mvn --version OUTPUT_VARIABLE MAVEN_VERSION
              RETURN_VALUE Java_RETURN)
-if(MAVEN_VERSION MATCHES "^Apache Maven") 
+string(REGEX REPLACE "\n.*" "" MAVEN_VERSION "${MAVEN_VERSION}")
+if(MAVEN_VERSION MATCHES "Apache Maven") 
   set(MAVEN_FOUND TRUE)
-  string(REPLACE "\n" ";" MAVEN_VERSION ${MAVEN_VERSION})
   list(GET MAVEN_VERSION 0 MAVEN_VERSION)
 
   message(STATUS "Found Maven:")

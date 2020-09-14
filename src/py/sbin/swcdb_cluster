@@ -205,12 +205,17 @@ def wait_ready(c, on_start=False):
         res = c.local(' '.join([
             "echo 'cluster;quit;'",
             "| /opt/swcdb/bin/swcdb --mngr --quiet -l=warn"] + 
-            swcdb_common_options(False) +[";"] ),
+            swcdb_common_options(False) + [";"] ),
                 hide=True)
+        code = ""
+        for s in res.stdout.strip().split("\n"):
+            if s.startswith("code="):
+                code = s
+                break;
         if not confirm:
             print("cluster-status check=" + str(check) + ":" +
-                  " rslt=(" + res.stdout.strip().split("\n")[0] + ")")
-        if res.stdout.strip().startswith("code=0"):
+                  " rslt=(" + (code if code else ("NO-CODE - " + res.stdout)) + ")")
+        if code.startswith("code=0 "):
             if confirm:
                 break
             confirm = True

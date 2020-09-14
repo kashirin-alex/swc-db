@@ -36,15 +36,17 @@ SET(CORE_LIBS ${CORE_LIBS} dl pthread) # stdc++fs
 
 #message(STATUS ${CMAKE_LIBCXX_LIBRARIES})
 
-SET_DEPS(
-  NAME      "CXX" 
-  REQUIRED  FALSE 
-  LIB_PATHS "" INC_PATHS "" 
-  STATIC    libstdc++.a
-  SHARED    stdc++ gcc_s
-  INCLUDE 
-  INSTALL   TRUE
-)
+if(SWC_INSTALL_DEP_LIBS)
+  SET_DEPS(
+    NAME      "CXX"
+    REQUIRED  TRUE 
+    LIB_PATHS "" INC_PATHS ""
+    STATIC    libstdc++.a
+    SHARED    stdc++ gcc_s
+    INCLUDE
+    INSTALL   TRUE
+  )
+endif()
 
 find_package(Mallocs)
 # find_package(Boost REQUIRED)
