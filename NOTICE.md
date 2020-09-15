@@ -1,6 +1,6 @@
 # **SWC-DB©** - THIRD-PARTY LICENSE NOTICE
 
-_SWC-DB implement third-party sources and binaries in dynamic or static form. The Third-Party license permissions, limitations and conditions very between the types of implementation depends on a SWC-DB release. Whereas SWC-DB license under GPLv3 license the applied implication is the 'static' form, While 'dynamic' applied to libpam_swcdb_max_retries, libswcdb_fs_hadoop_jvm, libswcdb_fs_ceph._
+_SWC-DB implement third-party sources and binaries in dynamic or static form. The Third-Party license permissions, limitations and conditions vary between the types of implementation depends on a SWC-DB release. Whereas SWC-DB license under GPLv3 license the applied implication is the 'static' form, While 'dynamic' applied to libpam_swcdb_max_retries, libswcdb_fs_hadoop_jvm, libswcdb_fs_ceph._
 
 
 

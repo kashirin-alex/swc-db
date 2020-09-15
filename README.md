@@ -90,7 +90,7 @@ The notice below of license shall be used:
     SWC-DB implement third-party sources and binaries in dynamic or static form.
 
     The Third-Party license permissions, limitations and conditions 
-    very between the types of implementation depends on a SWC-DB release. 
+    vary between the types of implementation depends on a SWC-DB release. 
     
     Whereas to this SWC-DB license under GPLv3 license 
     the applied implication is the 'static' form,
