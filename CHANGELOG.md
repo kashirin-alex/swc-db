@@ -21,11 +21,11 @@
 
 ### [SWC-DB v0.4.8](https://github.com/kashirin-alex/swc-db/releases/tag/v0.4.8) (2020-09-15)
 
-  added files COPYING.md & NOTICE.md
-  updated Copyright notice format
-  added FILES to install DESTINATION share/doc/swcdb
-  added <license> to maven build pom.xml 
-  added install THIRD-PARTY_{Name}-bundled.jar.txt DESTINATION share/doc/swcdb
+    added files COPYING.md & NOTICE.md
+    updated Copyright notice format
+    added FILES to install DESTINATION share/doc/swcdb
+    added <license> to maven build pom.xml
+    added install THIRD-PARTY_{Name}-bundled.jar.txt DESTINATION share/doc/swcdb
 
 [_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.4.7...0.4.8)
 ******
