@@ -69,6 +69,7 @@ if(NOT WITHOUT_THRIFT_C)
     STATIC    libthrift_c_glib.a
     SHARED    thrift_c_glib
     INCLUDE   thrift/c_glib/thrift.h
+    INSTALL   TRUE
   )
 
   if(THRIFT_C_FOUND)
