@@ -190,3 +190,12 @@ include(Doc)
 add_subdirectory("src")
 add_subdirectory("tests")
 add_subdirectory("examples")
+
+install(
+  FILES     README.md  
+            LICENSE  
+            NOTICE.md
+            COPYING.md
+            CHANGELOG.md
+  DESTINATION share/doc/swcdb
+)
