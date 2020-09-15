@@ -1,5 +1,5 @@
 #
-# Copyright Since 2019 SWC-DB© [author: Kashirin Alex kashirin.alex@gmail.com]
+# SWC-DB© Copyright since 2019 Alex Kashirin <kashirin.alex@gmail.com>
 # License details at <https://github.com/kashirin-alex/swc-db/#license>
 
 
@@ -29,7 +29,7 @@ endif()
 set(SWCDB_VERSION ${VERSION_STRING})
 
 set(SWCDB_COPYRIGHT 
-  "# SWC-DB Copyright(C) since 2019 [author: Kashirin Alex kashirin.alex@gmail.com]\\n"
+  "# SWC-DB (c) Copyright since 2019 Alex Kashirin <kashirin.alex@gmail.com>\\n"
   "# SWC-DB is free software: you can redistribute it and/or modify\\n"
   "# it under the terms of the GNU General Public License as published by\\n"
   "# the Free Software Foundation, version GPLv3.\\n"

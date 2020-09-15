@@ -1,5 +1,5 @@
 #
-# Copyright Since 2019 SWC-DB© [author: Kashirin Alex kashirin.alex@gmail.com]
+# SWC-DB© Copyright since 2019 Alex Kashirin <kashirin.alex@gmail.com>
 # License details at <https://github.com/kashirin-alex/swc-db/#license>
 
 SET_DEPS(NAME "ASIO"  REQUIRED TRUE LIB_PATHS "" INC_PATHS ${ASIO_INCLUDE_PATH} STATIC  SHARED  INCLUDE asio.hpp)

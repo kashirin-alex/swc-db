@@ -1,5 +1,5 @@
 #
-# Copyright Since 2019 SWC-DB© [author: Kashirin Alex kashirin.alex@gmail.com]
+# SWC-DB© Copyright since 2019 Alex Kashirin <kashirin.alex@gmail.com>
 # License details at <https://github.com/kashirin-alex/swc-db/#license>
 
 set(MALLOC_FLAGS )
