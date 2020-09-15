@@ -38,8 +38,9 @@ if(NOT SWC_WITHOUT_JAVA AND THRIFT_JAVA_GEN_PATH AND MAVEN_FOUND)
 
 
 	add_custom_target(MVN_build ALL 
-					          mvn -f mvn/swcdb/pom.xml -Dmaven.test.skip=true 
-				            package)
+					          mvn -f mvn/swcdb/pom.xml -Dmaven.test.skip=true package
+										license:add-third-party
+										)
 
 
 	install(
@@ -48,9 +49,20 @@ if(NOT SWC_WITHOUT_JAVA AND THRIFT_JAVA_GEN_PATH AND MAVEN_FOUND)
 		RENAME 			swcdb-thrift-${SWCDB_VERSION}-v${THRIFT_VERSION}-bundled.jar
 	)
 	install(
+    FILES			 	${CMAKE_CURRENT_BINARY_DIR}/mvn/swcdb/thrift/target/classes/THIRD-PARTY.txt
+    DESTINATION share/doc/swcdb/	
+		RENAME 			THIRD-PARTY_swcdb-thrift-${SWCDB_VERSION}-v${THRIFT_VERSION}-bundled.jar.txt
+	)
+
+	install(
     FILES			 	${CMAKE_CURRENT_BINARY_DIR}/mvn/swcdb/jdbc/thrift/target/jdbc.thrift-${SWCDB_VERSION}-v${THRIFT_VERSION}-bundled.jar
     DESTINATION lib/java/	
 		RENAME 			swcdb-jdbc-thrift-${SWCDB_VERSION}-v${THRIFT_VERSION}-bundled.jar
+	)
+	install(
+    FILES			 	${CMAKE_CURRENT_BINARY_DIR}/mvn/swcdb/jdbc/thrift/target/classes/THIRD-PARTY.txt
+    DESTINATION share/doc/swcdb/	
+		RENAME 			THIRD-PARTY_swcdb-jdbc-thrift-${SWCDB_VERSION}-v${THRIFT_VERSION}-bundled.jar.txt
 	)
 
 endif()

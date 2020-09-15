@@ -19,4 +19,12 @@
     <module>thrift</module>
   </modules>
   
+  <licenses>
+    <license>
+      <name>GNU General Public License (GPL) version 3.0</name>
+      <url>https://github.com/kashirin-alex/swc-db/#license</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
 </project>

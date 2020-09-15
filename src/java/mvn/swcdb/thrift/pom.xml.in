@@ -18,6 +18,14 @@
     <thrift.version>v@THRIFT_VERSION@</thrift.version>
   </properties>
   
+  <licenses>
+    <license>
+      <name>GNU General Public License (GPL) version 3.0</name>
+      <url>https://github.com/kashirin-alex/swc-db/#license</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
   <dependencies>
 
 		<dependency>
@@ -25,14 +33,6 @@
 			<artifactId>libthrift</artifactId>
 			<version>@THRIFT_VERSION@</version>
 		</dependency>
-
-    <!--
-    <dependency>
-      <groupId>javax.annotation</groupId>
-      <artifactId>javax.annotation-api</artifactId>
-      <version>1.2</version>
-    </dependency>
-    -->
 
   </dependencies>
   
@@ -59,6 +59,24 @@
           </descriptors>
         </configuration>
       </plugin>
+      
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>license-maven-plugin</artifactId>
+        <version>2.0.0</version>
+        <executions>
+          <execution>
+            <id>default-cli</id>
+            <configuration>
+              <failOnMissing>True</failOnMissing>
+              <outputDirectory>
+                ${project.build.outputDirectory}
+              </outputDirectory>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
     </plugins>
   </build>
 </project>

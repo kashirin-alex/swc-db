@@ -21,18 +21,16 @@
   <modules>
 	 @MODULES_PLACE_HOLDER@
   </modules>
-  
 
+  <licenses>
+    <license>
+      <name>GNU General Public License (GPL) version 3.0</name>
+      <url>https://github.com/kashirin-alex/swc-db/#license</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
 
   <dependencies>
-    <!--
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>4.3.1</version>
-      <scope>test</scope>
-    </dependency>
-    -->
   </dependencies>
 
   <reporting>
