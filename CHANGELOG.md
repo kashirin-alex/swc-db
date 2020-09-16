@@ -27,7 +27,7 @@
     added <license> to maven build pom.xml
     added install THIRD-PARTY_{Name}-bundled.jar.txt DESTINATION share/doc/swcdb
 
-[_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.4.7...0.4.8)
+[_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.4.7...v0.4.8)
 ******
 
 
