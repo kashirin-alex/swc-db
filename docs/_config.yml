@@ -1,1 +1,23 @@
-theme: jekyll-theme-dinky
+remote_theme: rundocs/jekyll-rtd-theme
+
+rougify: gruvbox.light 
+fluid: true
+
+logo: logo-small.png
+
+author: Alex Kashirin &lt;kashirin.alex@gmail.com&gt; <br/> SWC-DB© License details at &lt;https://github.com/kashirin-alex/swc-db/#license&gt;
+copyright:
+  since: 2019
+  revision: false # is show the revision
+
+addons:
+  - github
+addons:
+  - github:
+    - homepage
+    - issues
+    - download
+  
+
+readme_index:
+  with_frontmatter: true

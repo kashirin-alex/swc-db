@@ -2,7 +2,7 @@
 #### SWC-DB© (_Super Wide Column Database_) - High Performance Scalable Database
 
 
-* ##### [CHANGELOG](https://github.com/kashirin-alex/swc-db/blob/master/CHANGELOG.md)
+* ##### [CHANGELOG](https://github.com/kashirin-alex/swc-db/blob/master/CHANGELOG.md) _- start 'watching' the master branch to receive updates_
 
 
 
@@ -16,7 +16,7 @@
 
 
 ### GUIDE
-* ###### [SWC-DB WIKI PAGES](https://github.com/kashirin-alex/swc-db/wiki)
+* ###### [SWC-DB PAGES - https://kashirin-alex.github.io/swc-db/](https://kashirin-alex.github.io/swc-db/)
 
 
 
@@ -49,7 +49,7 @@
 
 ### LICENSE
 
-    SWC-DB Copyright (C) since 2019 [Kashirin Alex kashirin.alex@gmail.com]
+    SWC-DB© Copyright since 2019 Alex Kashirin <kashirin.alex@gmail.com>
     SWC-DB is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, GPLv3 version.

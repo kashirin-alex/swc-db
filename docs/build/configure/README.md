@@ -1,0 +1,100 @@
+---
+title: Configure
+sort: 3
+---
+
+
+
+# Configuring SWC-DB build
+
+## SWC-DB Configuration Options
+
+| CONFIG OPTION | DESCRIPTION | VALUE OPTIONS | DEFAULT VALUE |
+| ---  | --- | --- | --- |
+|O_LEVEL| Level of optimizations: <br/>  0: = -Os1 <br/>  1: = -O2s <br/>  2: += -flto -floop-interchange <br/>  3: = -O3 <br/>  4: += -flto -floop-interchange <br/>  5: += BUILD_LINKING=STATIC <br/>  6: += BUILD_LINKING_CORE=STATIC | 0-7 | 3 |
+|SWC_IMPL_SOURCE| when possible implement SWC-DB source-code | ON/OFF | OFF |
+|USE_GNU_READLINE| whether to use GNU libreadline | ON/OFF | OFF |
+|LOOKUP_INCLUDE_PATHS| additional paths to headers | posix-dir-path_LIST; | "/opt/local/include;/usr/local/include;usr/local/lib;/usr/include" |
+|LOOKUP_LIB_PATHS| additional paths to libraries | posix-dir-path_LIST; | "/opt/local/lib;/usr/local/lib;/usr/lib;/lib" |
+|JAVA_INSTALL_PATH| JAVA_HOME to use, suggested ```$(find /usr/lib/jvm -name jni.h | sed s"/\/include\/jni.h//"g)``` | posix-dir-path | ENV{JAVA_HOME} |
+|ASIO_INCLUDE_PATH| suggested [as by instructions](/swc-db//build/prerequisites/specific/version_asio) | posix-dir-path | "" |
+|WITHOUT_THRIFT_C| Not to build the libswcdb_thrift_c | ON/OFF | OFF |
+|GLIB_INCLUDE_PATH| suggested ```$(pkg-config --cflags glib-2.0 | tr ' ' ';' | sed 's/-I//g' )``` | posix-dir-path | "" |
+|WITHOUT_PAM| Not to build the libpam_swcdb_max_retries | ON/OFF | OFF |
+|HADOOP_INSTALL_PATH| HADOOP_HOME to use, suggested [as by instructions](/swc-db/build/prerequisites/specific/version_hadoop) | posix-dir-path| ENV{HADOOP_HOME} |
+|SWC_DOCUMENTATION|  configure for generating documentations | ON/OFF | OFF |
+|SWC_MALLOC_NOT_INSISTENT|  Not to use SWC-DB insistent malloc | ON/OFF | OFF |
+|SWC_INSTALL_DEP_LIBS|  Install the 3rd-party dependencies libaries used for linking | ON/OFF | OFF |
+|SWC_WITHOUT_JAVA| skip java/maven builds | ON/OFF | OFF |
+|USE_GLIBC_MALLOC| use compiler malloc | ON/OFF | OFF |
+|USE_JEMALLOC| use libjemalloc | ON/OFF | OFF |
+|USE_HOARD| use libhoard | ON/OFF | OFF |
+|USE_TCMALLOC| use libtcmalloc | ON/OFF | OFF(default libtcmalloc_minimal or USE_GLIBC_MALLOC) |
+|SWC_LANGUAGES| require to build with support of listed languages  | ANY / applicable CSV: py2,py3,pypy2,pypy3,java,netstd,c_glib | any possible |
+|SWC_BUILTIN_FS| builtin filesystems (impl./prelinked without use of dynamic linking loader), suggested=local,broker | applicable CSV: local,broker,hadoop_jvm,hadoop,ceph | any possible |
+
+
+
+## CMake Configuration Options
+
+| CONFIG OPTION | DESCRIPTION | VALUE OPTIONS | DEFAULT VALUE |
+| ---  | --- | --- | --- |
+|CMAKE_SKIP_RPATH| runtime-linking | ON/OFF | OFF |
+|CMAKE_INSTALL_PREFIX| SWC-DB path of installation, suggested /opt/swcdb | posix-dir-path | /usr/local |
+|CMAKE_BUILD_TYPE| Build Type (the 'Release' applies NDEBUG to O_LEVEL) | Debug/Release | Debug |
+
+
+
+*** 
+
+
+
+## Configuring
+
+*  while at builds [path as by instructions](/swc-db/build/prerequisites/)
+```
+cd swcdb; 
+```
+
+_The Configuration Option Format ```-D{option}={value}) ```_
+
+```cmake
+cmake ../swc-db [SWC-DB Configuration Options] [Cmake Configuration Options];
+```
+
+
+
+*** 
+
+
+
+#### Configuration Examples
+##### a Release
+```bash
+    cmake ../swc-db \
+      -DO_LEVEL=6 -DSWC_IMPL_SOURCE=ON \
+      -DSWC_BUILTIN_FS=local,broker -DSWC_LANGUAGES=ALL \
+      -DASIO_INCLUDE_PATH=${ASIO_INCLUDE_PATH} \
+      -DWITHOUT_THRIFT_C=OFF \
+      -DGLIB_INCLUDE_PATH="$(pkg-config --cflags glib-2.0 | tr ' ' ';' | sed 's/-I//g' )" \
+      -DWITHOUT_PAM=ON \
+      -DCMAKE_SKIP_RPATH=OFF -DCMAKE_INSTALL_PREFIX=/opt/swcdb \
+      -DSWC_DOCUMENTATION=OFF \
+      -DSWC_INSTALL_DEP_LIBS=ON \
+      -DCMAKE_BUILD_TYPE=Release;
+```
+
+##### a Debug
+```bash
+    cmake ../swc-db \
+      -DO_LEVEL=1 -DSWC_IMPL_SOURCE=OFF \
+      -DSWC_BUILTIN_FS=local,broker -DSWC_LANGUAGES=ALL \
+      -DASIO_INCLUDE_PATH=${ASIO_INCLUDE_PATH} \
+      -DWITHOUT_THRIFT_C=OFF \
+      -DGLIB_INCLUDE_PATH="$(pkg-config --cflags glib-2.0 | tr ' ' ';' | sed 's/-I//g' )" \
+      -DWITHOUT_PAM=ON \
+      -DCMAKE_SKIP_RPATH=OFF -DCMAKE_INSTALL_PREFIX=/opt/swcdb \
+      -DSWC_DOCUMENTATION=OFF \
+      -DSWC_INSTALL_DEP_LIBS=ON \
+      -DCMAKE_BUILD_TYPE=Debug;
+```
