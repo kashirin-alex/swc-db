@@ -1,4 +1,4 @@
-remote_theme: rundocs/jekyll-rtd-theme
+remote_theme: rundocs/jekyll-rtd-theme@v1.1.7
 
 rougify: gruvbox.light 
 fluid: true

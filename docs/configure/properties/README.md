@@ -18,6 +18,8 @@ sort: 2
   * [The SWC-DB Thrift Broker Program ```swcdbThriftBroker```](thriftbroker.html)
   * [The SWC-DB Filesystem Library ```libswcdb_fs```](libswcdb_fs/)
   * [The SWC-DB Client Library ```libswcdb```](libswcdb.html)
+  * [The SWC-DB Cluster Managing Script-Program ```swcdb_cluster```](swcdb_cluster.html)
+
 
 
 ***
