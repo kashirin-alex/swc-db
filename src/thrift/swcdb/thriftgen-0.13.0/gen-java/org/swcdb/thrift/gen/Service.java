@@ -11,44 +11,149 @@ public class Service {
 
   public interface Iface {
 
+    /**
+     * The direct SQL method to Manage Column
+     * 
+     * @param sql
+     */
     public void sql_mng_column(java.lang.String sql) throws Exception, org.apache.thrift.TException;
 
+    /**
+     * The direct SQL method to List Columns
+     * 
+     * @param sql
+     */
     public java.util.List<Schema> sql_list_columns(java.lang.String sql) throws Exception, org.apache.thrift.TException;
 
+    /**
+     * The direct SQL method to Compact Columns
+     * 
+     * @param sql
+     */
     public java.util.List<CompactResult> sql_compact_columns(java.lang.String sql) throws Exception, org.apache.thrift.TException;
 
+    /**
+     * The direct SQL method to select cells with result in Cells List.
+     * 
+     * @param sql
+     */
     public java.util.List<Cell> sql_select(java.lang.String sql) throws Exception, org.apache.thrift.TException;
 
+    /**
+     * The direct SQL method to select cells with result in Columns Cells map.
+     * 
+     * @param sql
+     */
     public java.util.Map<java.lang.String,java.util.List<CCell>> sql_select_rslt_on_column(java.lang.String sql) throws Exception, org.apache.thrift.TException;
 
+    /**
+     * The direct SQL method to select cells with result in Key Cells list.
+     * 
+     * @param sql
+     */
     public java.util.List<kCells> sql_select_rslt_on_key(java.lang.String sql) throws Exception, org.apache.thrift.TException;
 
+    /**
+     * The direct SQL method to select cells with result in Fractons Cells.
+     * 
+     * @param sql
+     */
     public FCells sql_select_rslt_on_fraction(java.lang.String sql) throws Exception, org.apache.thrift.TException;
 
+    /**
+     * The SQL method to select cells with result set by the request's type of CellsResult.
+     * 
+     * @param sql
+     * @param rslt
+     */
     public CellsGroup sql_query(java.lang.String sql, CellsResult rslt) throws Exception, org.apache.thrift.TException;
 
+    /**
+     * The direct SQL method to update cells optionally to work with updater-id.
+     * 
+     * @param sql
+     * @param updater_id
+     */
     public void sql_update(java.lang.String sql, long updater_id) throws Exception, org.apache.thrift.TException;
 
+    /**
+     * The method to Create an Updater ID with buffering size in bytes.
+     * 
+     * @param buffer_size
+     */
     public long updater_create(int buffer_size) throws Exception, org.apache.thrift.TException;
 
+    /**
+     * The method to Close an Updater ID.
+     * 
+     * @param id
+     */
     public void updater_close(long id) throws Exception, org.apache.thrift.TException;
 
+    /**
+     * The direct method to update cells with cell in Update-Columns-Cells, optionally to work with updater-id.
+     * 
+     * @param cells
+     * @param updater_id
+     */
     public void update(java.util.Map<java.lang.Long,java.util.List<UCell>> cells, long updater_id) throws Exception, org.apache.thrift.TException;
 
+    /**
+     * The direct method to Manage Column
+     * 
+     * @param func
+     * @param schema
+     */
     public void mng_column(SchemaFunc func, Schema schema) throws Exception, org.apache.thrift.TException;
 
+    /**
+     * The direct method to List Columns
+     * 
+     * @param spec
+     */
     public java.util.List<Schema> list_columns(SpecSchemas spec) throws Exception, org.apache.thrift.TException;
 
+    /**
+     * The direct method to Compact Columns
+     * 
+     * @param spec
+     */
     public java.util.List<CompactResult> compact_columns(SpecSchemas spec) throws Exception, org.apache.thrift.TException;
 
+    /**
+     * The direct method to select cells with result in Cells List.
+     * 
+     * @param spec
+     */
     public java.util.List<Cell> scan(SpecScan spec) throws Exception, org.apache.thrift.TException;
 
+    /**
+     * The direct method to select cells with result in Columns Cells map.
+     * 
+     * @param spec
+     */
     public java.util.Map<java.lang.String,java.util.List<CCell>> scan_rslt_on_column(SpecScan spec) throws Exception, org.apache.thrift.TException;
 
+    /**
+     * The direct method to select cells with result in Key Cells list.
+     * 
+     * @param spec
+     */
     public java.util.List<kCells> scan_rslt_on_key(SpecScan spec) throws Exception, org.apache.thrift.TException;
 
+    /**
+     * The direct method to select cells with result in Fractons Cells.
+     * 
+     * @param spec
+     */
     public FCells scan_rslt_on_fraction(SpecScan spec) throws Exception, org.apache.thrift.TException;
 
+    /**
+     * The method to select cells with result set by the request's type of CellsResult.
+     * 
+     * @param spec
+     * @param rslt
+     */
     public CellsGroup scan_rslt_on(SpecScan spec, CellsResult rslt) throws Exception, org.apache.thrift.TException;
 
   }

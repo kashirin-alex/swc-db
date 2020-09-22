@@ -24,6 +24,9 @@ using Thrift.Processor;
 
 
 
+/// <summary>
+/// A Grouped Cells result for results of scan, determined by the request's CellsResult enum
+/// </summary>
 public partial class CellsGroup : TBase
 {
   private List<Cell> _cells;
@@ -31,6 +34,9 @@ public partial class CellsGroup : TBase
   private List<kCells> _kcells;
   private FCells _fcells;
 
+  /// <summary>
+  /// The Cells in a list, defined as Cell items in a list-container
+  /// </summary>
   public List<Cell> Cells
   {
     get
@@ -44,6 +50,9 @@ public partial class CellsGroup : TBase
     }
   }
 
+  /// <summary>
+  /// The Columns Cells in a map-container, defined as ColCells items by Column Name
+  /// </summary>
   public Dictionary<string, List<CCell>> Ccells
   {
     get
@@ -57,6 +66,9 @@ public partial class CellsGroup : TBase
     }
   }
 
+  /// <summary>
+  /// The Keys Cells in a list, defined as kCells items in a list-container
+  /// </summary>
   public List<kCells> Kcells
   {
     get
@@ -70,6 +82,9 @@ public partial class CellsGroup : TBase
     }
   }
 
+  /// <summary>
+  /// The Fraction Cells in struct FCells
+  /// </summary>
   public FCells Fcells
   {
     get

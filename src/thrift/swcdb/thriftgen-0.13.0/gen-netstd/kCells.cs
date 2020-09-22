@@ -24,11 +24,17 @@ using Thrift.Processor;
 
 
 
+/// <summary>
+/// The Key Cells for results on Key of scan
+/// </summary>
 public partial class kCells : TBase
 {
   private List<byte[]> _k;
   private List<KCell> _cells;
 
+  /// <summary>
+  /// The Cell Key
+  /// </summary>
   public List<byte[]> K
   {
     get
@@ -42,6 +48,9 @@ public partial class kCells : TBase
     }
   }
 
+  /// <summary>
+  /// The Key's Cells, defined as KCell items in a list-container
+  /// </summary>
   public List<KCell> Cells
   {
     get

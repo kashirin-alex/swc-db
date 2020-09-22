@@ -7,6 +7,9 @@
 package org.swcdb.thrift.gen;
 
 @SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused"})
+/**
+ * The Fraction Cells for results on Fraction of scan
+ */
 public class FCells implements org.apache.thrift.TBase<FCells, FCells._Fields>, java.io.Serializable, Cloneable, Comparable<FCells> {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("FCells");
 
@@ -16,12 +19,24 @@ public class FCells implements org.apache.thrift.TBase<FCells, FCells._Fields>, 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new FCellsStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new FCellsTupleSchemeFactory();
 
+  /**
+   * The Fraction Container for the Next Fractions Tree,  defined as FCells items in a map-container by current Fraction bytes
+   */
   public @org.apache.thrift.annotation.Nullable java.util.Map<java.nio.ByteBuffer,FCells> f; // required
+  /**
+   * The current Fraction's Cells, defined as FCell items in a list-container
+   */
   public @org.apache.thrift.annotation.Nullable java.util.List<FCell> cells; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+    /**
+     * The Fraction Container for the Next Fractions Tree,  defined as FCells items in a map-container by current Fraction bytes
+     */
     F((short)1, "f"),
+    /**
+     * The current Fraction's Cells, defined as FCell items in a list-container
+     */
     CELLS((short)2, "cells");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
@@ -157,11 +172,17 @@ public class FCells implements org.apache.thrift.TBase<FCells, FCells._Fields>, 
     this.f.put(key, val);
   }
 
+  /**
+   * The Fraction Container for the Next Fractions Tree,  defined as FCells items in a map-container by current Fraction bytes
+   */
   @org.apache.thrift.annotation.Nullable
   public java.util.Map<java.nio.ByteBuffer,FCells> getF() {
     return this.f;
   }
 
+  /**
+   * The Fraction Container for the Next Fractions Tree,  defined as FCells items in a map-container by current Fraction bytes
+   */
   public FCells setF(@org.apache.thrift.annotation.Nullable java.util.Map<java.nio.ByteBuffer,FCells> f) {
     this.f = f;
     return this;
@@ -198,11 +219,17 @@ public class FCells implements org.apache.thrift.TBase<FCells, FCells._Fields>, 
     this.cells.add(elem);
   }
 
+  /**
+   * The current Fraction's Cells, defined as FCell items in a list-container
+   */
   @org.apache.thrift.annotation.Nullable
   public java.util.List<FCell> getCells() {
     return this.cells;
   }
 
+  /**
+   * The current Fraction's Cells, defined as FCell items in a list-container
+   */
   public FCells setCells(@org.apache.thrift.annotation.Nullable java.util.List<FCell> cells) {
     this.cells = cells;
     return this;

@@ -7,6 +7,9 @@
 package org.swcdb.thrift.gen;
 
 @SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused"})
+/**
+ * The Schema Matching Pattern for the SpecSchema patterns
+ */
 public class SchemaPattern implements org.apache.thrift.TBase<SchemaPattern, SchemaPattern._Fields>, java.io.Serializable, Cloneable, Comparable<SchemaPattern> {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("SchemaPattern");
 
@@ -17,19 +20,27 @@ public class SchemaPattern implements org.apache.thrift.TBase<SchemaPattern, Sch
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new SchemaPatternTupleSchemeFactory();
 
   /**
+   * Logical comparator to Apply
    * 
    * @see Comp
    */
   public @org.apache.thrift.annotation.Nullable Comp comp; // required
+  /**
+   * The patern value to match against schema's column name
+   */
   public @org.apache.thrift.annotation.Nullable java.lang.String value; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     /**
+     * Logical comparator to Apply
      * 
      * @see Comp
      */
     COMP((short)1, "comp"),
+    /**
+     * The patern value to match against schema's column name
+     */
     VALUE((short)2, "value");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
@@ -137,6 +148,7 @@ public class SchemaPattern implements org.apache.thrift.TBase<SchemaPattern, Sch
   }
 
   /**
+   * Logical comparator to Apply
    * 
    * @see Comp
    */
@@ -146,6 +158,7 @@ public class SchemaPattern implements org.apache.thrift.TBase<SchemaPattern, Sch
   }
 
   /**
+   * Logical comparator to Apply
    * 
    * @see Comp
    */
@@ -169,11 +182,17 @@ public class SchemaPattern implements org.apache.thrift.TBase<SchemaPattern, Sch
     }
   }
 
+  /**
+   * The patern value to match against schema's column name
+   */
   @org.apache.thrift.annotation.Nullable
   public java.lang.String getValue() {
     return this.value;
   }
 
+  /**
+   * The patern value to match against schema's column name
+   */
   public SchemaPattern setValue(@org.apache.thrift.annotation.Nullable java.lang.String value) {
     this.value = value;
     return this;

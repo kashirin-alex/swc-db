@@ -7,6 +7,9 @@
 package org.swcdb.thrift.gen;
 
 @SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused"})
+/**
+ * The Cells Interval Specifications with interval-scope Flags
+ */
 public class SpecInterval implements org.apache.thrift.TBase<SpecInterval, SpecInterval._Fields>, java.io.Serializable, Cloneable, Comparable<SpecInterval> {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("SpecInterval");
 
@@ -25,30 +28,96 @@ public class SpecInterval implements org.apache.thrift.TBase<SpecInterval, SpecI
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new SpecIntervalStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new SpecIntervalTupleSchemeFactory();
 
+  /**
+   * Begin of Ranges evaluation with this Key inclusive
+   */
   public @org.apache.thrift.annotation.Nullable java.util.List<java.nio.ByteBuffer> range_begin; // optional
+  /**
+   * End of Ranges evaluation with this Key inclusive
+   */
   public @org.apache.thrift.annotation.Nullable java.util.List<java.nio.ByteBuffer> range_end; // optional
+  /**
+   * Offset of Ranges evaluation with this Key inclusive
+   */
   public @org.apache.thrift.annotation.Nullable java.util.List<java.nio.ByteBuffer> range_offset; // optional
+  /**
+   * Offset Cell Key of a Scan, select cells from this key inclusive
+   */
   public @org.apache.thrift.annotation.Nullable java.util.List<java.nio.ByteBuffer> offset_key; // optional
+  /**
+   * Offset Cell Timestamp of a Scan, select cells after this timestamp
+   */
   public long offset_rev; // optional
+  /**
+   * The Key Start Spec, the start of cells-interval key match
+   */
   public @org.apache.thrift.annotation.Nullable java.util.List<SpecFraction> key_start; // optional
+  /**
+   * The Key Finish Spec, the finish of cells-interval key match
+   */
   public @org.apache.thrift.annotation.Nullable java.util.List<SpecFraction> key_finish; // optional
+  /**
+   * The Cell Value Spec, cell-value match
+   */
   public @org.apache.thrift.annotation.Nullable SpecValue value; // optional
+  /**
+   * The Timestamp Start Spec, the start of cells-interval timestamp match
+   */
   public @org.apache.thrift.annotation.Nullable SpecTimestamp ts_start; // optional
+  /**
+   * The Timestamp Finish Spec, the finish of cells-interval timestamp match
+   */
   public @org.apache.thrift.annotation.Nullable SpecTimestamp ts_finish; // optional
+  /**
+   * The Interval Flags Specification
+   */
   public @org.apache.thrift.annotation.Nullable SpecFlags flags; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+    /**
+     * Begin of Ranges evaluation with this Key inclusive
+     */
     RANGE_BEGIN((short)1, "range_begin"),
+    /**
+     * End of Ranges evaluation with this Key inclusive
+     */
     RANGE_END((short)2, "range_end"),
+    /**
+     * Offset of Ranges evaluation with this Key inclusive
+     */
     RANGE_OFFSET((short)3, "range_offset"),
+    /**
+     * Offset Cell Key of a Scan, select cells from this key inclusive
+     */
     OFFSET_KEY((short)4, "offset_key"),
+    /**
+     * Offset Cell Timestamp of a Scan, select cells after this timestamp
+     */
     OFFSET_REV((short)5, "offset_rev"),
+    /**
+     * The Key Start Spec, the start of cells-interval key match
+     */
     KEY_START((short)6, "key_start"),
+    /**
+     * The Key Finish Spec, the finish of cells-interval key match
+     */
     KEY_FINISH((short)7, "key_finish"),
+    /**
+     * The Cell Value Spec, cell-value match
+     */
     VALUE((short)8, "value"),
+    /**
+     * The Timestamp Start Spec, the start of cells-interval timestamp match
+     */
     TS_START((short)9, "ts_start"),
+    /**
+     * The Timestamp Finish Spec, the finish of cells-interval timestamp match
+     */
     TS_FINISH((short)10, "ts_finish"),
+    /**
+     * The Interval Flags Specification
+     */
     FLAGS((short)11, "flags");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
@@ -249,11 +318,17 @@ public class SpecInterval implements org.apache.thrift.TBase<SpecInterval, SpecI
     this.range_begin.add(elem);
   }
 
+  /**
+   * Begin of Ranges evaluation with this Key inclusive
+   */
   @org.apache.thrift.annotation.Nullable
   public java.util.List<java.nio.ByteBuffer> getRange_begin() {
     return this.range_begin;
   }
 
+  /**
+   * Begin of Ranges evaluation with this Key inclusive
+   */
   public SpecInterval setRange_begin(@org.apache.thrift.annotation.Nullable java.util.List<java.nio.ByteBuffer> range_begin) {
     this.range_begin = range_begin;
     return this;
@@ -290,11 +365,17 @@ public class SpecInterval implements org.apache.thrift.TBase<SpecInterval, SpecI
     this.range_end.add(elem);
   }
 
+  /**
+   * End of Ranges evaluation with this Key inclusive
+   */
   @org.apache.thrift.annotation.Nullable
   public java.util.List<java.nio.ByteBuffer> getRange_end() {
     return this.range_end;
   }
 
+  /**
+   * End of Ranges evaluation with this Key inclusive
+   */
   public SpecInterval setRange_end(@org.apache.thrift.annotation.Nullable java.util.List<java.nio.ByteBuffer> range_end) {
     this.range_end = range_end;
     return this;
@@ -331,11 +412,17 @@ public class SpecInterval implements org.apache.thrift.TBase<SpecInterval, SpecI
     this.range_offset.add(elem);
   }
 
+  /**
+   * Offset of Ranges evaluation with this Key inclusive
+   */
   @org.apache.thrift.annotation.Nullable
   public java.util.List<java.nio.ByteBuffer> getRange_offset() {
     return this.range_offset;
   }
 
+  /**
+   * Offset of Ranges evaluation with this Key inclusive
+   */
   public SpecInterval setRange_offset(@org.apache.thrift.annotation.Nullable java.util.List<java.nio.ByteBuffer> range_offset) {
     this.range_offset = range_offset;
     return this;
@@ -372,11 +459,17 @@ public class SpecInterval implements org.apache.thrift.TBase<SpecInterval, SpecI
     this.offset_key.add(elem);
   }
 
+  /**
+   * Offset Cell Key of a Scan, select cells from this key inclusive
+   */
   @org.apache.thrift.annotation.Nullable
   public java.util.List<java.nio.ByteBuffer> getOffset_key() {
     return this.offset_key;
   }
 
+  /**
+   * Offset Cell Key of a Scan, select cells from this key inclusive
+   */
   public SpecInterval setOffset_key(@org.apache.thrift.annotation.Nullable java.util.List<java.nio.ByteBuffer> offset_key) {
     this.offset_key = offset_key;
     return this;
@@ -397,10 +490,16 @@ public class SpecInterval implements org.apache.thrift.TBase<SpecInterval, SpecI
     }
   }
 
+  /**
+   * Offset Cell Timestamp of a Scan, select cells after this timestamp
+   */
   public long getOffset_rev() {
     return this.offset_rev;
   }
 
+  /**
+   * Offset Cell Timestamp of a Scan, select cells after this timestamp
+   */
   public SpecInterval setOffset_rev(long offset_rev) {
     this.offset_rev = offset_rev;
     setOffset_revIsSet(true);
@@ -436,11 +535,17 @@ public class SpecInterval implements org.apache.thrift.TBase<SpecInterval, SpecI
     this.key_start.add(elem);
   }
 
+  /**
+   * The Key Start Spec, the start of cells-interval key match
+   */
   @org.apache.thrift.annotation.Nullable
   public java.util.List<SpecFraction> getKey_start() {
     return this.key_start;
   }
 
+  /**
+   * The Key Start Spec, the start of cells-interval key match
+   */
   public SpecInterval setKey_start(@org.apache.thrift.annotation.Nullable java.util.List<SpecFraction> key_start) {
     this.key_start = key_start;
     return this;
@@ -477,11 +582,17 @@ public class SpecInterval implements org.apache.thrift.TBase<SpecInterval, SpecI
     this.key_finish.add(elem);
   }
 
+  /**
+   * The Key Finish Spec, the finish of cells-interval key match
+   */
   @org.apache.thrift.annotation.Nullable
   public java.util.List<SpecFraction> getKey_finish() {
     return this.key_finish;
   }
 
+  /**
+   * The Key Finish Spec, the finish of cells-interval key match
+   */
   public SpecInterval setKey_finish(@org.apache.thrift.annotation.Nullable java.util.List<SpecFraction> key_finish) {
     this.key_finish = key_finish;
     return this;
@@ -502,11 +613,17 @@ public class SpecInterval implements org.apache.thrift.TBase<SpecInterval, SpecI
     }
   }
 
+  /**
+   * The Cell Value Spec, cell-value match
+   */
   @org.apache.thrift.annotation.Nullable
   public SpecValue getValue() {
     return this.value;
   }
 
+  /**
+   * The Cell Value Spec, cell-value match
+   */
   public SpecInterval setValue(@org.apache.thrift.annotation.Nullable SpecValue value) {
     this.value = value;
     return this;
@@ -527,11 +644,17 @@ public class SpecInterval implements org.apache.thrift.TBase<SpecInterval, SpecI
     }
   }
 
+  /**
+   * The Timestamp Start Spec, the start of cells-interval timestamp match
+   */
   @org.apache.thrift.annotation.Nullable
   public SpecTimestamp getTs_start() {
     return this.ts_start;
   }
 
+  /**
+   * The Timestamp Start Spec, the start of cells-interval timestamp match
+   */
   public SpecInterval setTs_start(@org.apache.thrift.annotation.Nullable SpecTimestamp ts_start) {
     this.ts_start = ts_start;
     return this;
@@ -552,11 +675,17 @@ public class SpecInterval implements org.apache.thrift.TBase<SpecInterval, SpecI
     }
   }
 
+  /**
+   * The Timestamp Finish Spec, the finish of cells-interval timestamp match
+   */
   @org.apache.thrift.annotation.Nullable
   public SpecTimestamp getTs_finish() {
     return this.ts_finish;
   }
 
+  /**
+   * The Timestamp Finish Spec, the finish of cells-interval timestamp match
+   */
   public SpecInterval setTs_finish(@org.apache.thrift.annotation.Nullable SpecTimestamp ts_finish) {
     this.ts_finish = ts_finish;
     return this;
@@ -577,11 +706,17 @@ public class SpecInterval implements org.apache.thrift.TBase<SpecInterval, SpecI
     }
   }
 
+  /**
+   * The Interval Flags Specification
+   */
   @org.apache.thrift.annotation.Nullable
   public SpecFlags getFlags() {
     return this.flags;
   }
 
+  /**
+   * The Interval Flags Specification
+   */
   public SpecInterval setFlags(@org.apache.thrift.annotation.Nullable SpecFlags flags) {
     this.flags = flags;
     return this;

@@ -7,6 +7,9 @@
 package org.swcdb.thrift.gen;
 
 @SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused"})
+/**
+ * A Grouped Cells result for results of scan, determined by the request's CellsResult enum
+ */
 public class CellsGroup implements org.apache.thrift.TBase<CellsGroup, CellsGroup._Fields>, java.io.Serializable, Cloneable, Comparable<CellsGroup> {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("CellsGroup");
 
@@ -18,16 +21,40 @@ public class CellsGroup implements org.apache.thrift.TBase<CellsGroup, CellsGrou
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new CellsGroupStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new CellsGroupTupleSchemeFactory();
 
+  /**
+   * The Cells in a list, defined as Cell items in a list-container
+   */
   public @org.apache.thrift.annotation.Nullable java.util.List<Cell> cells; // optional
+  /**
+   * The Columns Cells in a map-container, defined as ColCells items by Column Name
+   */
   public @org.apache.thrift.annotation.Nullable java.util.Map<java.lang.String,java.util.List<CCell>> ccells; // optional
+  /**
+   * The Keys Cells in a list, defined as kCells items in a list-container
+   */
   public @org.apache.thrift.annotation.Nullable java.util.List<kCells> kcells; // optional
+  /**
+   * The Fraction Cells in struct FCells
+   */
   public @org.apache.thrift.annotation.Nullable FCells fcells; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+    /**
+     * The Cells in a list, defined as Cell items in a list-container
+     */
     CELLS((short)1, "cells"),
+    /**
+     * The Columns Cells in a map-container, defined as ColCells items by Column Name
+     */
     CCELLS((short)2, "ccells"),
+    /**
+     * The Keys Cells in a list, defined as kCells items in a list-container
+     */
     KCELLS((short)3, "kcells"),
+    /**
+     * The Fraction Cells in struct FCells
+     */
     FCELLS((short)4, "fcells");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
@@ -178,11 +205,17 @@ public class CellsGroup implements org.apache.thrift.TBase<CellsGroup, CellsGrou
     this.cells.add(elem);
   }
 
+  /**
+   * The Cells in a list, defined as Cell items in a list-container
+   */
   @org.apache.thrift.annotation.Nullable
   public java.util.List<Cell> getCells() {
     return this.cells;
   }
 
+  /**
+   * The Cells in a list, defined as Cell items in a list-container
+   */
   public CellsGroup setCells(@org.apache.thrift.annotation.Nullable java.util.List<Cell> cells) {
     this.cells = cells;
     return this;
@@ -214,11 +247,17 @@ public class CellsGroup implements org.apache.thrift.TBase<CellsGroup, CellsGrou
     this.ccells.put(key, val);
   }
 
+  /**
+   * The Columns Cells in a map-container, defined as ColCells items by Column Name
+   */
   @org.apache.thrift.annotation.Nullable
   public java.util.Map<java.lang.String,java.util.List<CCell>> getCcells() {
     return this.ccells;
   }
 
+  /**
+   * The Columns Cells in a map-container, defined as ColCells items by Column Name
+   */
   public CellsGroup setCcells(@org.apache.thrift.annotation.Nullable java.util.Map<java.lang.String,java.util.List<CCell>> ccells) {
     this.ccells = ccells;
     return this;
@@ -255,11 +294,17 @@ public class CellsGroup implements org.apache.thrift.TBase<CellsGroup, CellsGrou
     this.kcells.add(elem);
   }
 
+  /**
+   * The Keys Cells in a list, defined as kCells items in a list-container
+   */
   @org.apache.thrift.annotation.Nullable
   public java.util.List<kCells> getKcells() {
     return this.kcells;
   }
 
+  /**
+   * The Keys Cells in a list, defined as kCells items in a list-container
+   */
   public CellsGroup setKcells(@org.apache.thrift.annotation.Nullable java.util.List<kCells> kcells) {
     this.kcells = kcells;
     return this;
@@ -280,11 +325,17 @@ public class CellsGroup implements org.apache.thrift.TBase<CellsGroup, CellsGrou
     }
   }
 
+  /**
+   * The Fraction Cells in struct FCells
+   */
   @org.apache.thrift.annotation.Nullable
   public FCells getFcells() {
     return this.fcells;
   }
 
+  /**
+   * The Fraction Cells in struct FCells
+   */
   public CellsGroup setFcells(@org.apache.thrift.annotation.Nullable FCells fcells) {
     this.fcells = fcells;
     return this;

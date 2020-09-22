@@ -7,10 +7,25 @@
 package org.swcdb.thrift.gen;
 
 
+/**
+ * The Cells Results types for using with CellsGroup requests
+ */
 public enum CellsResult implements org.apache.thrift.TEnum {
+  /**
+   * Correspond to result on Cells (Cells in list)
+   */
   IN_LIST(0),
+  /**
+   * Correspond to result on CCells (Columns Cells)
+   */
   ON_COLUMN(1),
+  /**
+   * Correspond to result on KCells (Keys Cells)
+   */
   ON_KEY(2),
+  /**
+   * Correspond to result on FCells (Fraction Cells)
+   */
   ON_FRACTION(3);
 
   private final int value;

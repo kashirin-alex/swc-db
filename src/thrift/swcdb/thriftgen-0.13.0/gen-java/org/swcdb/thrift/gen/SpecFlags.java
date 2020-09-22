@@ -7,6 +7,9 @@
 package org.swcdb.thrift.gen;
 
 @SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused"})
+/**
+ * The Scan Specifications Flags
+ */
 public class SpecFlags implements org.apache.thrift.TBase<SpecFlags, SpecFlags._Fields>, java.io.Serializable, Cloneable, Comparable<SpecFlags> {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("SpecFlags");
 
@@ -19,18 +22,48 @@ public class SpecFlags implements org.apache.thrift.TBase<SpecFlags, SpecFlags._
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new SpecFlagsStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new SpecFlagsTupleSchemeFactory();
 
+  /**
+   * Limit to this number of cells
+   */
   public long limit; // optional
+  /**
+   * Scan from this number of cells Offset on matching Cell-Interval
+   */
   public long offset; // optional
+  /**
+   * Select only this number of Versions of a given Cell-Key
+   */
   public int max_versions; // optional
+  /**
+   * return results with reach of this Buffer size in bytes
+   */
   public int max_buffer; // optional
+  /**
+   * The options bit by SpecFlagsOpt
+   */
   public byte options; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+    /**
+     * Limit to this number of cells
+     */
     LIMIT((short)1, "limit"),
+    /**
+     * Scan from this number of cells Offset on matching Cell-Interval
+     */
     OFFSET((short)2, "offset"),
+    /**
+     * Select only this number of Versions of a given Cell-Key
+     */
     MAX_VERSIONS((short)3, "max_versions"),
+    /**
+     * return results with reach of this Buffer size in bytes
+     */
     MAX_BUFFER((short)4, "max_buffer"),
+    /**
+     * The options bit by SpecFlagsOpt
+     */
     OPTIONS((short)5, "options");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
@@ -155,10 +188,16 @@ public class SpecFlags implements org.apache.thrift.TBase<SpecFlags, SpecFlags._
     this.options = 0;
   }
 
+  /**
+   * Limit to this number of cells
+   */
   public long getLimit() {
     return this.limit;
   }
 
+  /**
+   * Limit to this number of cells
+   */
   public SpecFlags setLimit(long limit) {
     this.limit = limit;
     setLimitIsSet(true);
@@ -178,10 +217,16 @@ public class SpecFlags implements org.apache.thrift.TBase<SpecFlags, SpecFlags._
     __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __LIMIT_ISSET_ID, value);
   }
 
+  /**
+   * Scan from this number of cells Offset on matching Cell-Interval
+   */
   public long getOffset() {
     return this.offset;
   }
 
+  /**
+   * Scan from this number of cells Offset on matching Cell-Interval
+   */
   public SpecFlags setOffset(long offset) {
     this.offset = offset;
     setOffsetIsSet(true);
@@ -201,10 +246,16 @@ public class SpecFlags implements org.apache.thrift.TBase<SpecFlags, SpecFlags._
     __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __OFFSET_ISSET_ID, value);
   }
 
+  /**
+   * Select only this number of Versions of a given Cell-Key
+   */
   public int getMax_versions() {
     return this.max_versions;
   }
 
+  /**
+   * Select only this number of Versions of a given Cell-Key
+   */
   public SpecFlags setMax_versions(int max_versions) {
     this.max_versions = max_versions;
     setMax_versionsIsSet(true);
@@ -224,10 +275,16 @@ public class SpecFlags implements org.apache.thrift.TBase<SpecFlags, SpecFlags._
     __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __MAX_VERSIONS_ISSET_ID, value);
   }
 
+  /**
+   * return results with reach of this Buffer size in bytes
+   */
   public int getMax_buffer() {
     return this.max_buffer;
   }
 
+  /**
+   * return results with reach of this Buffer size in bytes
+   */
   public SpecFlags setMax_buffer(int max_buffer) {
     this.max_buffer = max_buffer;
     setMax_bufferIsSet(true);
@@ -247,10 +304,16 @@ public class SpecFlags implements org.apache.thrift.TBase<SpecFlags, SpecFlags._
     __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __MAX_BUFFER_ISSET_ID, value);
   }
 
+  /**
+   * The options bit by SpecFlagsOpt
+   */
   public byte getOptions() {
     return this.options;
   }
 
+  /**
+   * The options bit by SpecFlagsOpt
+   */
   public SpecFlags setOptions(byte options) {
     this.options = options;
     setOptionsIsSet(true);

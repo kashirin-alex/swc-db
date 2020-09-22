@@ -5,11 +5,33 @@
  *  @generated
  */
 
+/// <summary>
+/// Data Encoding Types
+/// </summary>
 public enum EncodingType
 {
+  /// <summary>
+  /// Encoding by Ranger DEFAULT configurations
+  /// </summary>
   DEFAULT = 0,
+  /// <summary>
+  /// No Encoding
+  /// </summary>
   PLAIN = 1,
+  /// <summary>
+  /// Encode with zlib
+  /// </summary>
   ZLIB = 2,
+  /// <summary>
+  /// Encode with snappy
+  /// </summary>
   SNAPPY = 3,
+  /// <summary>
+  /// Encode with zstandard
+  /// </summary>
+  ZSTD = 4,
+  /// <summary>
+  /// Unrecognized Type
+  /// </summary>
   UNKNOWN = 255,
 }

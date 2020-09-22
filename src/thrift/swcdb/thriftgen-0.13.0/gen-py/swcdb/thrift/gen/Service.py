@@ -20,6 +20,8 @@ all_structs = []
 class Iface(object):
     def sql_mng_column(self, sql):
         """
+        The direct SQL method to Manage Column
+
         Parameters:
          - sql
 
@@ -28,6 +30,8 @@ class Iface(object):
 
     def sql_list_columns(self, sql):
         """
+        The direct SQL method to List Columns
+
         Parameters:
          - sql
 
@@ -36,6 +40,8 @@ class Iface(object):
 
     def sql_compact_columns(self, sql):
         """
+        The direct SQL method to Compact Columns
+
         Parameters:
          - sql
 
@@ -44,6 +50,8 @@ class Iface(object):
 
     def sql_select(self, sql):
         """
+        The direct SQL method to select cells with result in Cells List.
+
         Parameters:
          - sql
 
@@ -52,6 +60,8 @@ class Iface(object):
 
     def sql_select_rslt_on_column(self, sql):
         """
+        The direct SQL method to select cells with result in Columns Cells map.
+
         Parameters:
          - sql
 
@@ -60,6 +70,8 @@ class Iface(object):
 
     def sql_select_rslt_on_key(self, sql):
         """
+        The direct SQL method to select cells with result in Key Cells list.
+
         Parameters:
          - sql
 
@@ -68,6 +80,8 @@ class Iface(object):
 
     def sql_select_rslt_on_fraction(self, sql):
         """
+        The direct SQL method to select cells with result in Fractons Cells.
+
         Parameters:
          - sql
 
@@ -76,6 +90,8 @@ class Iface(object):
 
     def sql_query(self, sql, rslt):
         """
+        The SQL method to select cells with result set by the request's type of CellsResult.
+
         Parameters:
          - sql
          - rslt
@@ -85,6 +101,8 @@ class Iface(object):
 
     def sql_update(self, sql, updater_id):
         """
+        The direct SQL method to update cells optionally to work with updater-id.
+
         Parameters:
          - sql
          - updater_id
@@ -94,6 +112,8 @@ class Iface(object):
 
     def updater_create(self, buffer_size):
         """
+        The method to Create an Updater ID with buffering size in bytes.
+
         Parameters:
          - buffer_size
 
@@ -102,6 +122,8 @@ class Iface(object):
 
     def updater_close(self, id):
         """
+        The method to Close an Updater ID.
+
         Parameters:
          - id
 
@@ -110,6 +132,8 @@ class Iface(object):
 
     def update(self, cells, updater_id):
         """
+        The direct method to update cells with cell in Update-Columns-Cells, optionally to work with updater-id.
+
         Parameters:
          - cells
          - updater_id
@@ -119,6 +143,8 @@ class Iface(object):
 
     def mng_column(self, func, schema):
         """
+        The direct method to Manage Column
+
         Parameters:
          - func
          - schema
@@ -128,6 +154,8 @@ class Iface(object):
 
     def list_columns(self, spec):
         """
+        The direct method to List Columns
+
         Parameters:
          - spec
 
@@ -136,6 +164,8 @@ class Iface(object):
 
     def compact_columns(self, spec):
         """
+        The direct method to Compact Columns
+
         Parameters:
          - spec
 
@@ -144,6 +174,8 @@ class Iface(object):
 
     def scan(self, spec):
         """
+        The direct method to select cells with result in Cells List.
+
         Parameters:
          - spec
 
@@ -152,6 +184,8 @@ class Iface(object):
 
     def scan_rslt_on_column(self, spec):
         """
+        The direct method to select cells with result in Columns Cells map.
+
         Parameters:
          - spec
 
@@ -160,6 +194,8 @@ class Iface(object):
 
     def scan_rslt_on_key(self, spec):
         """
+        The direct method to select cells with result in Key Cells list.
+
         Parameters:
          - spec
 
@@ -168,6 +204,8 @@ class Iface(object):
 
     def scan_rslt_on_fraction(self, spec):
         """
+        The direct method to select cells with result in Fractons Cells.
+
         Parameters:
          - spec
 
@@ -176,6 +214,8 @@ class Iface(object):
 
     def scan_rslt_on(self, spec, rslt):
         """
+        The method to select cells with result set by the request's type of CellsResult.
+
         Parameters:
          - spec
          - rslt
@@ -193,6 +233,8 @@ class Client(Iface):
 
     def sql_mng_column(self, sql):
         """
+        The direct SQL method to Manage Column
+
         Parameters:
          - sql
 
@@ -225,6 +267,8 @@ class Client(Iface):
 
     def sql_list_columns(self, sql):
         """
+        The direct SQL method to List Columns
+
         Parameters:
          - sql
 
@@ -259,6 +303,8 @@ class Client(Iface):
 
     def sql_compact_columns(self, sql):
         """
+        The direct SQL method to Compact Columns
+
         Parameters:
          - sql
 
@@ -293,6 +339,8 @@ class Client(Iface):
 
     def sql_select(self, sql):
         """
+        The direct SQL method to select cells with result in Cells List.
+
         Parameters:
          - sql
 
@@ -327,6 +375,8 @@ class Client(Iface):
 
     def sql_select_rslt_on_column(self, sql):
         """
+        The direct SQL method to select cells with result in Columns Cells map.
+
         Parameters:
          - sql
 
@@ -361,6 +411,8 @@ class Client(Iface):
 
     def sql_select_rslt_on_key(self, sql):
         """
+        The direct SQL method to select cells with result in Key Cells list.
+
         Parameters:
          - sql
 
@@ -395,6 +447,8 @@ class Client(Iface):
 
     def sql_select_rslt_on_fraction(self, sql):
         """
+        The direct SQL method to select cells with result in Fractons Cells.
+
         Parameters:
          - sql
 
@@ -429,6 +483,8 @@ class Client(Iface):
 
     def sql_query(self, sql, rslt):
         """
+        The SQL method to select cells with result set by the request's type of CellsResult.
+
         Parameters:
          - sql
          - rslt
@@ -465,6 +521,8 @@ class Client(Iface):
 
     def sql_update(self, sql, updater_id):
         """
+        The direct SQL method to update cells optionally to work with updater-id.
+
         Parameters:
          - sql
          - updater_id
@@ -499,6 +557,8 @@ class Client(Iface):
 
     def updater_create(self, buffer_size):
         """
+        The method to Create an Updater ID with buffering size in bytes.
+
         Parameters:
          - buffer_size
 
@@ -533,6 +593,8 @@ class Client(Iface):
 
     def updater_close(self, id):
         """
+        The method to Close an Updater ID.
+
         Parameters:
          - id
 
@@ -565,6 +627,8 @@ class Client(Iface):
 
     def update(self, cells, updater_id):
         """
+        The direct method to update cells with cell in Update-Columns-Cells, optionally to work with updater-id.
+
         Parameters:
          - cells
          - updater_id
@@ -599,6 +663,8 @@ class Client(Iface):
 
     def mng_column(self, func, schema):
         """
+        The direct method to Manage Column
+
         Parameters:
          - func
          - schema
@@ -633,6 +699,8 @@ class Client(Iface):
 
     def list_columns(self, spec):
         """
+        The direct method to List Columns
+
         Parameters:
          - spec
 
@@ -667,6 +735,8 @@ class Client(Iface):
 
     def compact_columns(self, spec):
         """
+        The direct method to Compact Columns
+
         Parameters:
          - spec
 
@@ -701,6 +771,8 @@ class Client(Iface):
 
     def scan(self, spec):
         """
+        The direct method to select cells with result in Cells List.
+
         Parameters:
          - spec
 
@@ -735,6 +807,8 @@ class Client(Iface):
 
     def scan_rslt_on_column(self, spec):
         """
+        The direct method to select cells with result in Columns Cells map.
+
         Parameters:
          - spec
 
@@ -769,6 +843,8 @@ class Client(Iface):
 
     def scan_rslt_on_key(self, spec):
         """
+        The direct method to select cells with result in Key Cells list.
+
         Parameters:
          - spec
 
@@ -803,6 +879,8 @@ class Client(Iface):
 
     def scan_rslt_on_fraction(self, spec):
         """
+        The direct method to select cells with result in Fractons Cells.
+
         Parameters:
          - spec
 
@@ -837,6 +915,8 @@ class Client(Iface):
 
     def scan_rslt_on(self, spec, rslt):
         """
+        The method to select cells with result set by the request's type of CellsResult.
+
         Parameters:
          - spec
          - rslt

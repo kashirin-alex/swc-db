@@ -7,11 +7,29 @@
 package org.swcdb.thrift.gen;
 
 
+/**
+ * The Scan options Flags Specifications for the SpecFlags 'options' bit
+ */
 public enum SpecFlagsOpt implements org.apache.thrift.TEnum {
+  /**
+   * No Flag Applied
+   */
   NONE(0),
+  /**
+   * Cells Limit by Keys
+   */
   LIMIT_BY_KEYS(1),
+  /**
+   * Cells Offset by Keys
+   */
   OFFSET_BY_KEYS(4),
+  /**
+   * Select Cells Only Keys without Value data
+   */
   ONLY_KEYS(8),
+  /**
+   * Select Cells Only with DELETE(cell-flag)
+   */
   ONLY_DELETES(10);
 
   private final int value;

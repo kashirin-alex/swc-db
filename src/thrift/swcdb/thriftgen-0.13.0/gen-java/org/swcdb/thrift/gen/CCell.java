@@ -7,6 +7,9 @@
 package org.swcdb.thrift.gen;
 
 @SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused"})
+/**
+ * The Column Cell for results on Columns of scan
+ */
 public class CCell implements org.apache.thrift.TBase<CCell, CCell._Fields>, java.io.Serializable, Cloneable, Comparable<CCell> {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("CCell");
 
@@ -17,14 +20,32 @@ public class CCell implements org.apache.thrift.TBase<CCell, CCell._Fields>, jav
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new CCellStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new CCellTupleSchemeFactory();
 
+  /**
+   * The Cell Key
+   */
   public @org.apache.thrift.annotation.Nullable java.util.List<java.nio.ByteBuffer> k; // required
+  /**
+   * The Cell Timestamp
+   */
   public long ts; // required
+  /**
+   * The Cell Value
+   */
   public @org.apache.thrift.annotation.Nullable java.nio.ByteBuffer v; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+    /**
+     * The Cell Key
+     */
     K((short)1, "k"),
+    /**
+     * The Cell Timestamp
+     */
     TS((short)2, "ts"),
+    /**
+     * The Cell Value
+     */
     V((short)3, "v");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
@@ -160,11 +181,17 @@ public class CCell implements org.apache.thrift.TBase<CCell, CCell._Fields>, jav
     this.k.add(elem);
   }
 
+  /**
+   * The Cell Key
+   */
   @org.apache.thrift.annotation.Nullable
   public java.util.List<java.nio.ByteBuffer> getK() {
     return this.k;
   }
 
+  /**
+   * The Cell Key
+   */
   public CCell setK(@org.apache.thrift.annotation.Nullable java.util.List<java.nio.ByteBuffer> k) {
     this.k = k;
     return this;
@@ -185,10 +212,16 @@ public class CCell implements org.apache.thrift.TBase<CCell, CCell._Fields>, jav
     }
   }
 
+  /**
+   * The Cell Timestamp
+   */
   public long getTs() {
     return this.ts;
   }
 
+  /**
+   * The Cell Timestamp
+   */
   public CCell setTs(long ts) {
     this.ts = ts;
     setTsIsSet(true);
@@ -208,6 +241,9 @@ public class CCell implements org.apache.thrift.TBase<CCell, CCell._Fields>, jav
     __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __TS_ISSET_ID, value);
   }
 
+  /**
+   * The Cell Value
+   */
   public byte[] getV() {
     setV(org.apache.thrift.TBaseHelper.rightSize(v));
     return v == null ? null : v.array();
@@ -217,6 +253,9 @@ public class CCell implements org.apache.thrift.TBase<CCell, CCell._Fields>, jav
     return org.apache.thrift.TBaseHelper.copyBinary(v);
   }
 
+  /**
+   * The Cell Value
+   */
   public CCell setV(byte[] v) {
     this.v = v == null ? (java.nio.ByteBuffer)null   : java.nio.ByteBuffer.wrap(v.clone());
     return this;

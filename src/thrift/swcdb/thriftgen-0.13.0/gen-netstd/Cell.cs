@@ -24,6 +24,9 @@ using Thrift.Processor;
 
 
 
+/// <summary>
+/// The Cell for results list of scan
+/// </summary>
 public partial class Cell : TBase
 {
   private string _c;
@@ -31,6 +34,9 @@ public partial class Cell : TBase
   private long _ts;
   private byte[] _v;
 
+  /// <summary>
+  /// The Column Name
+  /// </summary>
   public string C
   {
     get
@@ -44,6 +50,9 @@ public partial class Cell : TBase
     }
   }
 
+  /// <summary>
+  /// The Cell Key
+  /// </summary>
   public List<byte[]> K
   {
     get
@@ -57,6 +66,9 @@ public partial class Cell : TBase
     }
   }
 
+  /// <summary>
+  /// The Cell Timestamp
+  /// </summary>
   public long Ts
   {
     get
@@ -70,6 +82,9 @@ public partial class Cell : TBase
     }
   }
 
+  /// <summary>
+  /// The Cell Value
+  /// </summary>
   public byte[] V
   {
     get

@@ -24,12 +24,16 @@ using Thrift.Processor;
 
 
 
+/// <summary>
+/// The Schema Matching Pattern for the SpecSchema patterns
+/// </summary>
 public partial class SchemaPattern : TBase
 {
   private Comp _comp;
   private string _value;
 
   /// <summary>
+  /// Logical comparator to Apply
   /// 
   /// <seealso cref="Comp"/>
   /// </summary>
@@ -46,6 +50,9 @@ public partial class SchemaPattern : TBase
     }
   }
 
+  /// <summary>
+  /// The patern value to match against schema's column name
+  /// </summary>
   public string Value
   {
     get

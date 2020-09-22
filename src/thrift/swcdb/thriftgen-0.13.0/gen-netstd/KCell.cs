@@ -24,12 +24,18 @@ using Thrift.Processor;
 
 
 
+/// <summary>
+/// The Key Cell for results on Key of scan
+/// </summary>
 public partial class KCell : TBase
 {
   private string _c;
   private long _ts;
   private byte[] _v;
 
+  /// <summary>
+  /// The Column Name
+  /// </summary>
   public string C
   {
     get
@@ -43,6 +49,9 @@ public partial class KCell : TBase
     }
   }
 
+  /// <summary>
+  /// The Cell Timestamp
+  /// </summary>
   public long Ts
   {
     get
@@ -56,6 +65,9 @@ public partial class KCell : TBase
     }
   }
 
+  /// <summary>
+  /// The Cell Value
+  /// </summary>
   public byte[] V
   {
     get

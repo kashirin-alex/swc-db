@@ -7,6 +7,9 @@
 package org.swcdb.thrift.gen;
 
 @SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused"})
+/**
+ * The Compact Result
+ */
 public class CompactResult implements org.apache.thrift.TBase<CompactResult, CompactResult._Fields>, java.io.Serializable, Cloneable, Comparable<CompactResult> {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("CompactResult");
 
@@ -16,12 +19,24 @@ public class CompactResult implements org.apache.thrift.TBase<CompactResult, Com
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new CompactResultStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new CompactResultTupleSchemeFactory();
 
+  /**
+   * Column ID
+   */
   public long cid; // required
+  /**
+   * Error
+   */
   public int err; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+    /**
+     * Column ID
+     */
     CID((short)1, "cid"),
+    /**
+     * Error
+     */
     ERR((short)2, "err");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
@@ -132,10 +147,16 @@ public class CompactResult implements org.apache.thrift.TBase<CompactResult, Com
     this.err = 0;
   }
 
+  /**
+   * Column ID
+   */
   public long getCid() {
     return this.cid;
   }
 
+  /**
+   * Column ID
+   */
   public CompactResult setCid(long cid) {
     this.cid = cid;
     setCidIsSet(true);
@@ -155,10 +176,16 @@ public class CompactResult implements org.apache.thrift.TBase<CompactResult, Com
     __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __CID_ISSET_ID, value);
   }
 
+  /**
+   * Error
+   */
   public int getErr() {
     return this.err;
   }
 
+  /**
+   * Error
+   */
   public CompactResult setErr(int err) {
     this.err = err;
     setErrIsSet(true);

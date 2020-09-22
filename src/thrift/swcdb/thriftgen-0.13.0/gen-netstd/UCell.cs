@@ -24,6 +24,9 @@ using Thrift.Processor;
 
 
 
+/// <summary>
+/// The Cell data for using with Update
+/// </summary>
 public partial class UCell : TBase
 {
   private Flag _f;
@@ -33,6 +36,7 @@ public partial class UCell : TBase
   private byte[] _v;
 
   /// <summary>
+  /// The Cell Flag
   /// 
   /// <seealso cref="Flag"/>
   /// </summary>
@@ -49,6 +53,9 @@ public partial class UCell : TBase
     }
   }
 
+  /// <summary>
+  /// The Cell Key
+  /// </summary>
   public List<byte[]> K
   {
     get
@@ -62,6 +69,9 @@ public partial class UCell : TBase
     }
   }
 
+  /// <summary>
+  /// The Cell Timestamp in nanoseconds
+  /// </summary>
   public long Ts
   {
     get
@@ -75,6 +85,9 @@ public partial class UCell : TBase
     }
   }
 
+  /// <summary>
+  /// The Cell Version is in timestamp descending
+  /// </summary>
   public bool Ts_desc
   {
     get
@@ -88,6 +101,9 @@ public partial class UCell : TBase
     }
   }
 
+  /// <summary>
+  /// The Cell Value
+  /// </summary>
   public byte[] V
   {
     get

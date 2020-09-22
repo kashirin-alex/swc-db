@@ -24,10 +24,14 @@ using Thrift.Processor;
 
 
 
+/// <summary>
+/// The Schema Definition
+/// </summary>
 public partial class Schema : TBase
 {
   private long _cid;
   private string _col_name;
+  private KeySeq _col_seq;
   private ColumnType _col_type;
   private int _cell_versions;
   private int _cell_ttl;
@@ -41,6 +45,9 @@ public partial class Schema : TBase
   private sbyte _compact_percent;
   private long _revision;
 
+  /// <summary>
+  /// Column ID
+  /// </summary>
   public long Cid
   {
     get
@@ -54,6 +61,9 @@ public partial class Schema : TBase
     }
   }
 
+  /// <summary>
+  /// Column Name
+  /// </summary>
   public string Col_name
   {
     get
@@ -68,6 +78,25 @@ public partial class Schema : TBase
   }
 
   /// <summary>
+  /// Column Key Sequence
+  /// 
+  /// <seealso cref="KeySeq"/>
+  /// </summary>
+  public KeySeq Col_seq
+  {
+    get
+    {
+      return _col_seq;
+    }
+    set
+    {
+      __isset.col_seq = true;
+      this._col_seq = value;
+    }
+  }
+
+  /// <summary>
+  /// Column Type
   /// 
   /// <seealso cref="ColumnType"/>
   /// </summary>
@@ -84,6 +113,9 @@ public partial class Schema : TBase
     }
   }
 
+  /// <summary>
+  /// Cell Versions
+  /// </summary>
   public int Cell_versions
   {
     get
@@ -97,6 +129,9 @@ public partial class Schema : TBase
     }
   }
 
+  /// <summary>
+  /// Cell Time to Live
+  /// </summary>
   public int Cell_ttl
   {
     get
@@ -111,6 +146,7 @@ public partial class Schema : TBase
   }
 
   /// <summary>
+  /// Block Encoding
   /// 
   /// <seealso cref="EncodingType"/>
   /// </summary>
@@ -127,6 +163,9 @@ public partial class Schema : TBase
     }
   }
 
+  /// <summary>
+  /// Block Size in Bytes
+  /// </summary>
   public int Blk_size
   {
     get
@@ -140,6 +179,9 @@ public partial class Schema : TBase
     }
   }
 
+  /// <summary>
+  /// Number of Cells in Block
+  /// </summary>
   public int Blk_cells
   {
     get
@@ -153,6 +195,9 @@ public partial class Schema : TBase
     }
   }
 
+  /// <summary>
+  /// CellStore file Replication
+  /// </summary>
   public sbyte Cs_replication
   {
     get
@@ -166,6 +211,9 @@ public partial class Schema : TBase
     }
   }
 
+  /// <summary>
+  /// CellStore Size in Bytes
+  /// </summary>
   public int Cs_size
   {
     get
@@ -179,6 +227,9 @@ public partial class Schema : TBase
     }
   }
 
+  /// <summary>
+  /// Max CellStores in a Range
+  /// </summary>
   public sbyte Cs_max
   {
     get
@@ -192,6 +243,9 @@ public partial class Schema : TBase
     }
   }
 
+  /// <summary>
+  /// Write Fragment File on ratio reached
+  /// </summary>
   public sbyte Log_rollout_ratio
   {
     get
@@ -205,6 +259,9 @@ public partial class Schema : TBase
     }
   }
 
+  /// <summary>
+  /// Compact at percent reach
+  /// </summary>
   public sbyte Compact_percent
   {
     get
@@ -218,6 +275,9 @@ public partial class Schema : TBase
     }
   }
 
+  /// <summary>
+  /// Schema's revision/id
+  /// </summary>
   public long Revision
   {
     get
@@ -237,6 +297,7 @@ public partial class Schema : TBase
   {
     public bool cid;
     public bool col_name;
+    public bool col_seq;
     public bool col_type;
     public bool cell_versions;
     public bool cell_ttl;
@@ -295,7 +356,7 @@ public partial class Schema : TBase
           case 3:
             if (field.Type == TType.I32)
             {
-              Col_type = (ColumnType)await iprot.ReadI32Async(cancellationToken);
+              Col_seq = (KeySeq)await iprot.ReadI32Async(cancellationToken);
             }
             else
             {
@@ -305,7 +366,7 @@ public partial class Schema : TBase
           case 4:
             if (field.Type == TType.I32)
             {
-              Cell_versions = await iprot.ReadI32Async(cancellationToken);
+              Col_type = (ColumnType)await iprot.ReadI32Async(cancellationToken);
             }
             else
             {
@@ -315,7 +376,7 @@ public partial class Schema : TBase
           case 5:
             if (field.Type == TType.I32)
             {
-              Cell_ttl = await iprot.ReadI32Async(cancellationToken);
+              Cell_versions = await iprot.ReadI32Async(cancellationToken);
             }
             else
             {
@@ -325,7 +386,7 @@ public partial class Schema : TBase
           case 6:
             if (field.Type == TType.I32)
             {
-              Blk_encoding = (EncodingType)await iprot.ReadI32Async(cancellationToken);
+              Cell_ttl = await iprot.ReadI32Async(cancellationToken);
             }
             else
             {
@@ -335,7 +396,7 @@ public partial class Schema : TBase
           case 7:
             if (field.Type == TType.I32)
             {
-              Blk_size = await iprot.ReadI32Async(cancellationToken);
+              Blk_encoding = (EncodingType)await iprot.ReadI32Async(cancellationToken);
             }
             else
             {
@@ -345,7 +406,7 @@ public partial class Schema : TBase
           case 8:
             if (field.Type == TType.I32)
             {
-              Blk_cells = await iprot.ReadI32Async(cancellationToken);
+              Blk_size = await iprot.ReadI32Async(cancellationToken);
             }
             else
             {
@@ -353,6 +414,16 @@ public partial class Schema : TBase
             }
             break;
           case 9:
+            if (field.Type == TType.I32)
+            {
+              Blk_cells = await iprot.ReadI32Async(cancellationToken);
+            }
+            else
+            {
+              await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
+            }
+            break;
+          case 10:
             if (field.Type == TType.Byte)
             {
               Cs_replication = await iprot.ReadByteAsync(cancellationToken);
@@ -362,7 +433,7 @@ public partial class Schema : TBase
               await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
             }
             break;
-          case 10:
+          case 11:
             if (field.Type == TType.I32)
             {
               Cs_size = await iprot.ReadI32Async(cancellationToken);
@@ -372,7 +443,7 @@ public partial class Schema : TBase
               await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
             }
             break;
-          case 11:
+          case 12:
             if (field.Type == TType.Byte)
             {
               Cs_max = await iprot.ReadByteAsync(cancellationToken);
@@ -382,7 +453,7 @@ public partial class Schema : TBase
               await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
             }
             break;
-          case 12:
+          case 13:
             if (field.Type == TType.Byte)
             {
               Log_rollout_ratio = await iprot.ReadByteAsync(cancellationToken);
@@ -392,7 +463,7 @@ public partial class Schema : TBase
               await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
             }
             break;
-          case 13:
+          case 14:
             if (field.Type == TType.Byte)
             {
               Compact_percent = await iprot.ReadByteAsync(cancellationToken);
@@ -402,7 +473,7 @@ public partial class Schema : TBase
               await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
             }
             break;
-          case 14:
+          case 15:
             if (field.Type == TType.I64)
             {
               Revision = await iprot.ReadI64Async(cancellationToken);
@@ -454,11 +525,20 @@ public partial class Schema : TBase
         await oprot.WriteStringAsync(Col_name, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
+      if (__isset.col_seq)
+      {
+        field.Name = "col_seq";
+        field.Type = TType.I32;
+        field.ID = 3;
+        await oprot.WriteFieldBeginAsync(field, cancellationToken);
+        await oprot.WriteI32Async((int)Col_seq, cancellationToken);
+        await oprot.WriteFieldEndAsync(cancellationToken);
+      }
       if (__isset.col_type)
       {
         field.Name = "col_type";
         field.Type = TType.I32;
-        field.ID = 3;
+        field.ID = 4;
         await oprot.WriteFieldBeginAsync(field, cancellationToken);
         await oprot.WriteI32Async((int)Col_type, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
@@ -467,7 +547,7 @@ public partial class Schema : TBase
       {
         field.Name = "cell_versions";
         field.Type = TType.I32;
-        field.ID = 4;
+        field.ID = 5;
         await oprot.WriteFieldBeginAsync(field, cancellationToken);
         await oprot.WriteI32Async(Cell_versions, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
@@ -476,7 +556,7 @@ public partial class Schema : TBase
       {
         field.Name = "cell_ttl";
         field.Type = TType.I32;
-        field.ID = 5;
+        field.ID = 6;
         await oprot.WriteFieldBeginAsync(field, cancellationToken);
         await oprot.WriteI32Async(Cell_ttl, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
@@ -485,7 +565,7 @@ public partial class Schema : TBase
       {
         field.Name = "blk_encoding";
         field.Type = TType.I32;
-        field.ID = 6;
+        field.ID = 7;
         await oprot.WriteFieldBeginAsync(field, cancellationToken);
         await oprot.WriteI32Async((int)Blk_encoding, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
@@ -494,7 +574,7 @@ public partial class Schema : TBase
       {
         field.Name = "blk_size";
         field.Type = TType.I32;
-        field.ID = 7;
+        field.ID = 8;
         await oprot.WriteFieldBeginAsync(field, cancellationToken);
         await oprot.WriteI32Async(Blk_size, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
@@ -503,7 +583,7 @@ public partial class Schema : TBase
       {
         field.Name = "blk_cells";
         field.Type = TType.I32;
-        field.ID = 8;
+        field.ID = 9;
         await oprot.WriteFieldBeginAsync(field, cancellationToken);
         await oprot.WriteI32Async(Blk_cells, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
@@ -512,7 +592,7 @@ public partial class Schema : TBase
       {
         field.Name = "cs_replication";
         field.Type = TType.Byte;
-        field.ID = 9;
+        field.ID = 10;
         await oprot.WriteFieldBeginAsync(field, cancellationToken);
         await oprot.WriteByteAsync(Cs_replication, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
@@ -521,7 +601,7 @@ public partial class Schema : TBase
       {
         field.Name = "cs_size";
         field.Type = TType.I32;
-        field.ID = 10;
+        field.ID = 11;
         await oprot.WriteFieldBeginAsync(field, cancellationToken);
         await oprot.WriteI32Async(Cs_size, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
@@ -530,7 +610,7 @@ public partial class Schema : TBase
       {
         field.Name = "cs_max";
         field.Type = TType.Byte;
-        field.ID = 11;
+        field.ID = 12;
         await oprot.WriteFieldBeginAsync(field, cancellationToken);
         await oprot.WriteByteAsync(Cs_max, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
@@ -539,7 +619,7 @@ public partial class Schema : TBase
       {
         field.Name = "log_rollout_ratio";
         field.Type = TType.Byte;
-        field.ID = 12;
+        field.ID = 13;
         await oprot.WriteFieldBeginAsync(field, cancellationToken);
         await oprot.WriteByteAsync(Log_rollout_ratio, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
@@ -548,7 +628,7 @@ public partial class Schema : TBase
       {
         field.Name = "compact_percent";
         field.Type = TType.Byte;
-        field.ID = 13;
+        field.ID = 14;
         await oprot.WriteFieldBeginAsync(field, cancellationToken);
         await oprot.WriteByteAsync(Compact_percent, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
@@ -557,7 +637,7 @@ public partial class Schema : TBase
       {
         field.Name = "revision";
         field.Type = TType.I64;
-        field.ID = 14;
+        field.ID = 15;
         await oprot.WriteFieldBeginAsync(field, cancellationToken);
         await oprot.WriteI64Async(Revision, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
@@ -578,6 +658,7 @@ public partial class Schema : TBase
     if (ReferenceEquals(this, other)) return true;
     return ((__isset.cid == other.__isset.cid) && ((!__isset.cid) || (System.Object.Equals(Cid, other.Cid))))
       && ((__isset.col_name == other.__isset.col_name) && ((!__isset.col_name) || (System.Object.Equals(Col_name, other.Col_name))))
+      && ((__isset.col_seq == other.__isset.col_seq) && ((!__isset.col_seq) || (System.Object.Equals(Col_seq, other.Col_seq))))
       && ((__isset.col_type == other.__isset.col_type) && ((!__isset.col_type) || (System.Object.Equals(Col_type, other.Col_type))))
       && ((__isset.cell_versions == other.__isset.cell_versions) && ((!__isset.cell_versions) || (System.Object.Equals(Cell_versions, other.Cell_versions))))
       && ((__isset.cell_ttl == other.__isset.cell_ttl) && ((!__isset.cell_ttl) || (System.Object.Equals(Cell_ttl, other.Cell_ttl))))
@@ -599,6 +680,8 @@ public partial class Schema : TBase
         hashcode = (hashcode * 397) + Cid.GetHashCode();
       if(__isset.col_name)
         hashcode = (hashcode * 397) + Col_name.GetHashCode();
+      if(__isset.col_seq)
+        hashcode = (hashcode * 397) + Col_seq.GetHashCode();
       if(__isset.col_type)
         hashcode = (hashcode * 397) + Col_type.GetHashCode();
       if(__isset.cell_versions)
@@ -644,6 +727,13 @@ public partial class Schema : TBase
       __first = false;
       sb.Append("Col_name: ");
       sb.Append(Col_name);
+    }
+    if (__isset.col_seq)
+    {
+      if(!__first) { sb.Append(", "); }
+      __first = false;
+      sb.Append("Col_seq: ");
+      sb.Append(Col_seq);
     }
     if (__isset.col_type)
     {

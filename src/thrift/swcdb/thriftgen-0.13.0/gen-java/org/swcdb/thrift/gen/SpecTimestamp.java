@@ -7,6 +7,9 @@
 package org.swcdb.thrift.gen;
 
 @SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused"})
+/**
+ * The Timestamp Specifications
+ */
 public class SpecTimestamp implements org.apache.thrift.TBase<SpecTimestamp, SpecTimestamp._Fields>, java.io.Serializable, Cloneable, Comparable<SpecTimestamp> {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("SpecTimestamp");
 
@@ -17,19 +20,27 @@ public class SpecTimestamp implements org.apache.thrift.TBase<SpecTimestamp, Spe
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new SpecTimestampTupleSchemeFactory();
 
   /**
+   * Logical comparator to Apply
    * 
    * @see Comp
    */
   public @org.apache.thrift.annotation.Nullable Comp comp; // required
+  /**
+   * The timestamp in nanoseconds to match against the Cell timestamp/version (not the revision)
+   */
   public long ts; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     /**
+     * Logical comparator to Apply
      * 
      * @see Comp
      */
     COMP((short)1, "comp"),
+    /**
+     * The timestamp in nanoseconds to match against the Cell timestamp/version (not the revision)
+     */
     TS((short)2, "ts");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
@@ -140,6 +151,7 @@ public class SpecTimestamp implements org.apache.thrift.TBase<SpecTimestamp, Spe
   }
 
   /**
+   * Logical comparator to Apply
    * 
    * @see Comp
    */
@@ -149,6 +161,7 @@ public class SpecTimestamp implements org.apache.thrift.TBase<SpecTimestamp, Spe
   }
 
   /**
+   * Logical comparator to Apply
    * 
    * @see Comp
    */
@@ -172,10 +185,16 @@ public class SpecTimestamp implements org.apache.thrift.TBase<SpecTimestamp, Spe
     }
   }
 
+  /**
+   * The timestamp in nanoseconds to match against the Cell timestamp/version (not the revision)
+   */
   public long getTs() {
     return this.ts;
   }
 
+  /**
+   * The timestamp in nanoseconds to match against the Cell timestamp/version (not the revision)
+   */
   public SpecTimestamp setTs(long ts) {
     this.ts = ts;
     setTsIsSet(true);

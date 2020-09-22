@@ -24,6 +24,9 @@ using Thrift.Processor;
 
 
 
+/// <summary>
+/// The Cells Interval Specifications with interval-scope Flags
+/// </summary>
 public partial class SpecInterval : TBase
 {
   private List<byte[]> _range_begin;
@@ -38,6 +41,9 @@ public partial class SpecInterval : TBase
   private SpecTimestamp _ts_finish;
   private SpecFlags _flags;
 
+  /// <summary>
+  /// Begin of Ranges evaluation with this Key inclusive
+  /// </summary>
   public List<byte[]> Range_begin
   {
     get
@@ -51,6 +57,9 @@ public partial class SpecInterval : TBase
     }
   }
 
+  /// <summary>
+  /// End of Ranges evaluation with this Key inclusive
+  /// </summary>
   public List<byte[]> Range_end
   {
     get
@@ -64,6 +73,9 @@ public partial class SpecInterval : TBase
     }
   }
 
+  /// <summary>
+  /// Offset of Ranges evaluation with this Key inclusive
+  /// </summary>
   public List<byte[]> Range_offset
   {
     get
@@ -77,6 +89,9 @@ public partial class SpecInterval : TBase
     }
   }
 
+  /// <summary>
+  /// Offset Cell Key of a Scan, select cells from this key inclusive
+  /// </summary>
   public List<byte[]> Offset_key
   {
     get
@@ -90,6 +105,9 @@ public partial class SpecInterval : TBase
     }
   }
 
+  /// <summary>
+  /// Offset Cell Timestamp of a Scan, select cells after this timestamp
+  /// </summary>
   public long Offset_rev
   {
     get
@@ -103,6 +121,9 @@ public partial class SpecInterval : TBase
     }
   }
 
+  /// <summary>
+  /// The Key Start Spec, the start of cells-interval key match
+  /// </summary>
   public List<SpecFraction> Key_start
   {
     get
@@ -116,6 +137,9 @@ public partial class SpecInterval : TBase
     }
   }
 
+  /// <summary>
+  /// The Key Finish Spec, the finish of cells-interval key match
+  /// </summary>
   public List<SpecFraction> Key_finish
   {
     get
@@ -129,6 +153,9 @@ public partial class SpecInterval : TBase
     }
   }
 
+  /// <summary>
+  /// The Cell Value Spec, cell-value match
+  /// </summary>
   public SpecValue Value
   {
     get
@@ -142,6 +169,9 @@ public partial class SpecInterval : TBase
     }
   }
 
+  /// <summary>
+  /// The Timestamp Start Spec, the start of cells-interval timestamp match
+  /// </summary>
   public SpecTimestamp Ts_start
   {
     get
@@ -155,6 +185,9 @@ public partial class SpecInterval : TBase
     }
   }
 
+  /// <summary>
+  /// The Timestamp Finish Spec, the finish of cells-interval timestamp match
+  /// </summary>
   public SpecTimestamp Ts_finish
   {
     get
@@ -168,6 +201,9 @@ public partial class SpecInterval : TBase
     }
   }
 
+  /// <summary>
+  /// The Interval Flags Specification
+  /// </summary>
   public SpecFlags Flags
   {
     get

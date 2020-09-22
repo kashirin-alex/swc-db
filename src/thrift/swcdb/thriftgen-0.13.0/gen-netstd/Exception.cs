@@ -24,11 +24,18 @@ using Thrift.Processor;
 
 
 
+/// <summary>
+/// The SWC::Thrift::Exception a base for any Exceptions
+/// both for the Thrift-Protocol and SWC-DB Errors.
+/// </summary>
 public partial class Exception : TException, TBase
 {
   private int _code;
   private string _message;
 
+  /// <summary>
+  /// The corresponding Thrift-Procotol or SWC-DB Error Code
+  /// </summary>
   public int Code
   {
     get
@@ -42,6 +49,9 @@ public partial class Exception : TException, TBase
     }
   }
 
+  /// <summary>
+  /// The message describing the error code
+  /// </summary>
   public string Message
   {
     get

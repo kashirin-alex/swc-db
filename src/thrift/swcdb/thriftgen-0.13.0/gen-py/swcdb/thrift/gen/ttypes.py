@@ -15,25 +15,39 @@ from thrift.transport import TTransport
 all_structs = []
 
 
-class ColumnMng(object):
-    CREATE = 3
-    DELETE = 5
-    MODIFY = 7
+class KeySeq(object):
+    """
+    Column Key Sequences
+
+    """
+    UNKNOWN = 0
+    LEXIC = 1
+    VOLUME = 2
+    FC_LEXIC = 3
+    FC_VOLUME = 4
 
     _VALUES_TO_NAMES = {
-        3: "CREATE",
-        5: "DELETE",
-        7: "MODIFY",
+        0: "UNKNOWN",
+        1: "LEXIC",
+        2: "VOLUME",
+        3: "FC_LEXIC",
+        4: "FC_VOLUME",
     }
 
     _NAMES_TO_VALUES = {
-        "CREATE": 3,
-        "DELETE": 5,
-        "MODIFY": 7,
+        "UNKNOWN": 0,
+        "LEXIC": 1,
+        "VOLUME": 2,
+        "FC_LEXIC": 3,
+        "FC_VOLUME": 4,
     }
 
 
 class ColumnType(object):
+    """
+    Column Value Types
+
+    """
     UNKNOWN = 0
     PLAIN = 1
     COUNTER_I64 = 2
@@ -64,10 +78,15 @@ class ColumnType(object):
 
 
 class EncodingType(object):
+    """
+    Data Encoding Types
+
+    """
     DEFAULT = 0
     PLAIN = 1
     ZLIB = 2
     SNAPPY = 3
+    ZSTD = 4
     UNKNOWN = 255
 
     _VALUES_TO_NAMES = {
@@ -75,6 +94,7 @@ class EncodingType(object):
         1: "PLAIN",
         2: "ZLIB",
         3: "SNAPPY",
+        4: "ZSTD",
         255: "UNKNOWN",
     }
 
@@ -83,11 +103,16 @@ class EncodingType(object):
         "PLAIN": 1,
         "ZLIB": 2,
         "SNAPPY": 3,
+        "ZSTD": 4,
         "UNKNOWN": 255,
     }
 
 
 class SchemaFunc(object):
+    """
+    Manage Columns schema function Flags
+
+    """
     CREATE = 3
     DELETE = 5
     MODIFY = 7
@@ -106,6 +131,10 @@ class SchemaFunc(object):
 
 
 class Comp(object):
+    """
+    The available logical Comparators, plus extended logic options applied with 'v' for VOLUME
+
+    """
     NONE = 0
     PF = 1
     GT = 2
@@ -154,6 +183,10 @@ class Comp(object):
 
 
 class SpecFlagsOpt(object):
+    """
+    The Scan options Flags Specifications for the SpecFlags 'options' bit
+
+    """
     NONE = 0
     LIMIT_BY_KEYS = 1
     OFFSET_BY_KEYS = 4
@@ -178,6 +211,10 @@ class SpecFlagsOpt(object):
 
 
 class Flag(object):
+    """
+    The Cell Flag
+
+    """
     NONE = 0
     INSERT = 1
     DELETE = 2
@@ -199,6 +236,10 @@ class Flag(object):
 
 
 class CellsResult(object):
+    """
+    The Cells Results types for using with CellsGroup requests
+
+    """
     IN_LIST = 0
     ON_COLUMN = 1
     ON_KEY = 2
@@ -221,9 +262,12 @@ class CellsResult(object):
 
 class Exception(TException):
     """
+    The SWC::Thrift::Exception a base for any Exceptions
+    both for the Thrift-Protocol and SWC-DB Errors.
+
     Attributes:
-     - code
-     - message
+     - code: The corresponding Thrift-Procotol or SWC-DB Error Code
+     - message: The message describing the error code
 
     """
 
@@ -304,27 +348,31 @@ class Exception(TException):
 
 class Schema(object):
     """
+    The Schema Definition
+
     Attributes:
-     - cid
-     - col_name
-     - col_type
-     - cell_versions
-     - cell_ttl
-     - blk_encoding
-     - blk_size
-     - blk_cells
-     - cs_replication
-     - cs_size
-     - cs_max
-     - log_rollout_ratio
-     - compact_percent
-     - revision
+     - cid: Column ID
+     - col_name: Column Name
+     - col_seq: Column Key Sequence
+     - col_type: Column Type
+     - cell_versions: Cell Versions
+     - cell_ttl: Cell Time to Live
+     - blk_encoding: Block Encoding
+     - blk_size: Block Size in Bytes
+     - blk_cells: Number of Cells in Block
+     - cs_replication: CellStore file Replication
+     - cs_size: CellStore Size in Bytes
+     - cs_max: Max CellStores in a Range
+     - log_rollout_ratio: Write Fragment File on ratio reached
+     - compact_percent: Compact at percent reach
+     - revision: Schema's revision/id
 
     """
 
     __slots__ = (
         'cid',
         'col_name',
+        'col_seq',
         'col_type',
         'cell_versions',
         'cell_ttl',
@@ -340,9 +388,10 @@ class Schema(object):
     )
 
 
-    def __init__(self, cid=None, col_name=None, col_type=None, cell_versions=None, cell_ttl=None, blk_encoding=None, blk_size=None, blk_cells=None, cs_replication=None, cs_size=None, cs_max=None, log_rollout_ratio=None, compact_percent=None, revision=None,):
+    def __init__(self, cid=None, col_name=None, col_seq=None, col_type=None, cell_versions=None, cell_ttl=None, blk_encoding=None, blk_size=None, blk_cells=None, cs_replication=None, cs_size=None, cs_max=None, log_rollout_ratio=None, compact_percent=None, revision=None,):
         self.cid = cid
         self.col_name = col_name
+        self.col_seq = col_seq
         self.col_type = col_type
         self.cell_versions = cell_versions
         self.cell_ttl = cell_ttl
@@ -377,60 +426,65 @@ class Schema(object):
                     iprot.skip(ftype)
             elif fid == 3:
                 if ftype == TType.I32:
-                    self.col_type = iprot.readI32()
+                    self.col_seq = iprot.readI32()
                 else:
                     iprot.skip(ftype)
             elif fid == 4:
                 if ftype == TType.I32:
-                    self.cell_versions = iprot.readI32()
+                    self.col_type = iprot.readI32()
                 else:
                     iprot.skip(ftype)
             elif fid == 5:
                 if ftype == TType.I32:
-                    self.cell_ttl = iprot.readI32()
+                    self.cell_versions = iprot.readI32()
                 else:
                     iprot.skip(ftype)
             elif fid == 6:
                 if ftype == TType.I32:
-                    self.blk_encoding = iprot.readI32()
+                    self.cell_ttl = iprot.readI32()
                 else:
                     iprot.skip(ftype)
             elif fid == 7:
                 if ftype == TType.I32:
-                    self.blk_size = iprot.readI32()
+                    self.blk_encoding = iprot.readI32()
                 else:
                     iprot.skip(ftype)
             elif fid == 8:
                 if ftype == TType.I32:
-                    self.blk_cells = iprot.readI32()
+                    self.blk_size = iprot.readI32()
                 else:
                     iprot.skip(ftype)
             elif fid == 9:
+                if ftype == TType.I32:
+                    self.blk_cells = iprot.readI32()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 10:
                 if ftype == TType.BYTE:
                     self.cs_replication = iprot.readByte()
                 else:
                     iprot.skip(ftype)
-            elif fid == 10:
+            elif fid == 11:
                 if ftype == TType.I32:
                     self.cs_size = iprot.readI32()
                 else:
                     iprot.skip(ftype)
-            elif fid == 11:
+            elif fid == 12:
                 if ftype == TType.BYTE:
                     self.cs_max = iprot.readByte()
                 else:
                     iprot.skip(ftype)
-            elif fid == 12:
+            elif fid == 13:
                 if ftype == TType.BYTE:
                     self.log_rollout_ratio = iprot.readByte()
                 else:
                     iprot.skip(ftype)
-            elif fid == 13:
+            elif fid == 14:
                 if ftype == TType.BYTE:
                     self.compact_percent = iprot.readByte()
                 else:
                     iprot.skip(ftype)
-            elif fid == 14:
+            elif fid == 15:
                 if ftype == TType.I64:
                     self.revision = iprot.readI64()
                 else:
@@ -453,52 +507,56 @@ class Schema(object):
             oprot.writeFieldBegin('col_name', TType.STRING, 2)
             oprot.writeString(self.col_name)
             oprot.writeFieldEnd()
+        if self.col_seq is not None:
+            oprot.writeFieldBegin('col_seq', TType.I32, 3)
+            oprot.writeI32(self.col_seq)
+            oprot.writeFieldEnd()
         if self.col_type is not None:
-            oprot.writeFieldBegin('col_type', TType.I32, 3)
+            oprot.writeFieldBegin('col_type', TType.I32, 4)
             oprot.writeI32(self.col_type)
             oprot.writeFieldEnd()
         if self.cell_versions is not None:
-            oprot.writeFieldBegin('cell_versions', TType.I32, 4)
+            oprot.writeFieldBegin('cell_versions', TType.I32, 5)
             oprot.writeI32(self.cell_versions)
             oprot.writeFieldEnd()
         if self.cell_ttl is not None:
-            oprot.writeFieldBegin('cell_ttl', TType.I32, 5)
+            oprot.writeFieldBegin('cell_ttl', TType.I32, 6)
             oprot.writeI32(self.cell_ttl)
             oprot.writeFieldEnd()
         if self.blk_encoding is not None:
-            oprot.writeFieldBegin('blk_encoding', TType.I32, 6)
+            oprot.writeFieldBegin('blk_encoding', TType.I32, 7)
             oprot.writeI32(self.blk_encoding)
             oprot.writeFieldEnd()
         if self.blk_size is not None:
-            oprot.writeFieldBegin('blk_size', TType.I32, 7)
+            oprot.writeFieldBegin('blk_size', TType.I32, 8)
             oprot.writeI32(self.blk_size)
             oprot.writeFieldEnd()
         if self.blk_cells is not None:
-            oprot.writeFieldBegin('blk_cells', TType.I32, 8)
+            oprot.writeFieldBegin('blk_cells', TType.I32, 9)
             oprot.writeI32(self.blk_cells)
             oprot.writeFieldEnd()
         if self.cs_replication is not None:
-            oprot.writeFieldBegin('cs_replication', TType.BYTE, 9)
+            oprot.writeFieldBegin('cs_replication', TType.BYTE, 10)
             oprot.writeByte(self.cs_replication)
             oprot.writeFieldEnd()
         if self.cs_size is not None:
-            oprot.writeFieldBegin('cs_size', TType.I32, 10)
+            oprot.writeFieldBegin('cs_size', TType.I32, 11)
             oprot.writeI32(self.cs_size)
             oprot.writeFieldEnd()
         if self.cs_max is not None:
-            oprot.writeFieldBegin('cs_max', TType.BYTE, 11)
+            oprot.writeFieldBegin('cs_max', TType.BYTE, 12)
             oprot.writeByte(self.cs_max)
             oprot.writeFieldEnd()
         if self.log_rollout_ratio is not None:
-            oprot.writeFieldBegin('log_rollout_ratio', TType.BYTE, 12)
+            oprot.writeFieldBegin('log_rollout_ratio', TType.BYTE, 13)
             oprot.writeByte(self.log_rollout_ratio)
             oprot.writeFieldEnd()
         if self.compact_percent is not None:
-            oprot.writeFieldBegin('compact_percent', TType.BYTE, 13)
+            oprot.writeFieldBegin('compact_percent', TType.BYTE, 14)
             oprot.writeByte(self.compact_percent)
             oprot.writeFieldEnd()
         if self.revision is not None:
-            oprot.writeFieldBegin('revision', TType.I64, 14)
+            oprot.writeFieldBegin('revision', TType.I64, 15)
             oprot.writeI64(self.revision)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
@@ -528,9 +586,11 @@ class Schema(object):
 
 class SchemaPattern(object):
     """
+    The Schema Matching Pattern for the SpecSchema patterns
+
     Attributes:
-     - comp
-     - value
+     - comp: Logical comparator to Apply
+     - value: The patern value to match against schema's column name
 
     """
 
@@ -608,10 +668,12 @@ class SchemaPattern(object):
 
 class SpecSchemas(object):
     """
+    The Specs for Schemas for using with list_columns or compact_columns
+
     Attributes:
-     - cids
-     - names
-     - patterns
+     - cids: The Column IDs
+     - names: The Column Names
+     - patterns: The Schema's Column Name patterns
 
     """
 
@@ -725,12 +787,14 @@ class SpecSchemas(object):
 
 class SpecFlags(object):
     """
+    The Scan Specifications Flags
+
     Attributes:
-     - limit
-     - offset
-     - max_versions
-     - max_buffer
-     - options
+     - limit: Limit to this number of cells
+     - offset: Scan from this number of cells Offset on matching Cell-Interval
+     - max_versions: Select only this number of Versions of a given Cell-Key
+     - max_buffer: return results with reach of this Buffer size in bytes
+     - options: The options bit by SpecFlagsOpt
 
     """
 
@@ -841,9 +905,11 @@ class SpecFlags(object):
 
 class SpecFraction(object):
     """
+    The Fraction Specifications
+
     Attributes:
-     - comp
-     - f
+     - comp: Logical comparator to Apply
+     - f: The binary(bytes) to match against a fraction of a Cell-Key
 
     """
 
@@ -921,9 +987,11 @@ class SpecFraction(object):
 
 class SpecValue(object):
     """
+    The Value Specifications, option to use with Extended Logical Comparators
+
     Attributes:
-     - comp
-     - v
+     - comp: Logical comparator to Apply
+     - v: The binary(bytes) to match against the Cell value
 
     """
 
@@ -1001,9 +1069,11 @@ class SpecValue(object):
 
 class SpecTimestamp(object):
     """
+    The Timestamp Specifications
+
     Attributes:
-     - comp
-     - ts
+     - comp: Logical comparator to Apply
+     - ts: The timestamp in nanoseconds to match against the Cell timestamp/version (not the revision)
 
     """
 
@@ -1081,18 +1151,20 @@ class SpecTimestamp(object):
 
 class SpecInterval(object):
     """
+    The Cells Interval Specifications with interval-scope Flags
+
     Attributes:
-     - range_begin
-     - range_end
-     - range_offset
-     - offset_key
-     - offset_rev
-     - key_start
-     - key_finish
-     - value
-     - ts_start
-     - ts_finish
-     - flags
+     - range_begin: Begin of Ranges evaluation with this Key inclusive
+     - range_end: End of Ranges evaluation with this Key inclusive
+     - range_offset: Offset of Ranges evaluation with this Key inclusive
+     - offset_key: Offset Cell Key of a Scan, select cells from this key inclusive
+     - offset_rev: Offset Cell Timestamp of a Scan, select cells after this timestamp
+     - key_start: The Key Start Spec, the start of cells-interval key match
+     - key_finish: The Key Finish Spec, the finish of cells-interval key match
+     - value: The Cell Value Spec, cell-value match
+     - ts_start: The Timestamp Start Spec, the start of cells-interval timestamp match
+     - ts_finish: The Timestamp Finish Spec, the finish of cells-interval timestamp match
+     - flags: The Interval Flags Specification
 
     """
 
@@ -1323,9 +1395,11 @@ class SpecInterval(object):
 
 class SpecColumn(object):
     """
+    The Column Specifications, the Cells-Intervals(SpecInterval/s) specification for a column
+
     Attributes:
-     - cid
-     - intervals
+     - cid: The Column ID
+     - intervals: The Cells Interval in a list-container
 
     """
 
@@ -1412,9 +1486,11 @@ class SpecColumn(object):
 
 class SpecScan(object):
     """
+    The Scan Specifications, the Columns-Intervals(SpecColumn/s) with global-scope Flags
+
     Attributes:
-     - columns
-     - flags
+     - columns: The Column Intervals(SpecColumn) in a list-container
+     - flags: The Global Flags Specification
 
     """
 
@@ -1502,12 +1578,14 @@ class SpecScan(object):
 
 class UCell(object):
     """
+    The Cell data for using with Update
+
     Attributes:
-     - f
-     - k
-     - ts
-     - ts_desc
-     - v
+     - f: The Cell Flag
+     - k: The Cell Key
+     - ts: The Cell Timestamp in nanoseconds
+     - ts_desc: The Cell Version is in timestamp descending
+     - v: The Cell Value
 
     """
 
@@ -1626,11 +1704,13 @@ class UCell(object):
 
 class Cell(object):
     """
+    The Cell for results list of scan
+
     Attributes:
-     - c
-     - k
-     - ts
-     - v
+     - c: The Column Name
+     - k: The Cell Key
+     - ts: The Cell Timestamp
+     - v: The Cell Value
 
     """
 
@@ -1738,10 +1818,12 @@ class Cell(object):
 
 class CCell(object):
     """
+    The Column Cell for results on Columns of scan
+
     Attributes:
-     - k
-     - ts
-     - v
+     - k: The Cell Key
+     - ts: The Cell Timestamp
+     - v: The Cell Value
 
     """
 
@@ -1838,10 +1920,12 @@ class CCell(object):
 
 class KCell(object):
     """
+    The Key Cell for results on Key of scan
+
     Attributes:
-     - c
-     - ts
-     - v
+     - c: The Column Name
+     - ts: The Cell Timestamp
+     - v: The Cell Value
 
     """
 
@@ -1930,9 +2014,11 @@ class KCell(object):
 
 class kCells(object):
     """
+    The Key Cells for results on Key of scan
+
     Attributes:
-     - k
-     - cells
+     - k: The Cell Key
+     - cells: The Key's Cells, defined as KCell items in a list-container
 
     """
 
@@ -2027,10 +2113,12 @@ class kCells(object):
 
 class FCell(object):
     """
+    The Fraction Cell for results on Fraction of scan
+
     Attributes:
-     - c
-     - ts
-     - v
+     - c: The Column Name
+     - ts: The Cell Timestamp
+     - v: The Cell Value
 
     """
 
@@ -2119,9 +2207,11 @@ class FCell(object):
 
 class FCells(object):
     """
+    The Fraction Cells for results on Fraction of scan
+
     Attributes:
-     - f
-     - cells
+     - f: The Fraction Container for the Next Fractions Tree,  defined as FCells items in a map-container by current Fraction bytes
+     - cells: The current Fraction's Cells, defined as FCell items in a list-container
 
     """
 
@@ -2219,11 +2309,13 @@ class FCells(object):
 
 class CellsGroup(object):
     """
+    A Grouped Cells result for results of scan, determined by the request's CellsResult enum
+
     Attributes:
-     - cells
-     - ccells
-     - kcells
-     - fcells
+     - cells: The Cells in a list, defined as Cell items in a list-container
+     - ccells: The Columns Cells in a map-container, defined as ColCells items by Column Name
+     - kcells: The Keys Cells in a list, defined as kCells items in a list-container
+     - fcells: The Fraction Cells in struct FCells
 
     """
 
@@ -2361,9 +2453,11 @@ class CellsGroup(object):
 
 class CompactResult(object):
     """
+    The Compact Result
+
     Attributes:
-     - cid
-     - err
+     - cid: Column ID
+     - err: Error
 
     """
 
@@ -2448,18 +2542,19 @@ Schema.thrift_spec = (
     None,  # 0
     (1, TType.I64, 'cid', None, None, ),  # 1
     (2, TType.STRING, 'col_name', None, None, ),  # 2
-    (3, TType.I32, 'col_type', None, None, ),  # 3
-    (4, TType.I32, 'cell_versions', None, None, ),  # 4
-    (5, TType.I32, 'cell_ttl', None, None, ),  # 5
-    (6, TType.I32, 'blk_encoding', None, None, ),  # 6
-    (7, TType.I32, 'blk_size', None, None, ),  # 7
-    (8, TType.I32, 'blk_cells', None, None, ),  # 8
-    (9, TType.BYTE, 'cs_replication', None, None, ),  # 9
-    (10, TType.I32, 'cs_size', None, None, ),  # 10
-    (11, TType.BYTE, 'cs_max', None, None, ),  # 11
-    (12, TType.BYTE, 'log_rollout_ratio', None, None, ),  # 12
-    (13, TType.BYTE, 'compact_percent', None, None, ),  # 13
-    (14, TType.I64, 'revision', None, None, ),  # 14
+    (3, TType.I32, 'col_seq', None, None, ),  # 3
+    (4, TType.I32, 'col_type', None, None, ),  # 4
+    (5, TType.I32, 'cell_versions', None, None, ),  # 5
+    (6, TType.I32, 'cell_ttl', None, None, ),  # 6
+    (7, TType.I32, 'blk_encoding', None, None, ),  # 7
+    (8, TType.I32, 'blk_size', None, None, ),  # 8
+    (9, TType.I32, 'blk_cells', None, None, ),  # 9
+    (10, TType.BYTE, 'cs_replication', None, None, ),  # 10
+    (11, TType.I32, 'cs_size', None, None, ),  # 11
+    (12, TType.BYTE, 'cs_max', None, None, ),  # 12
+    (13, TType.BYTE, 'log_rollout_ratio', None, None, ),  # 13
+    (14, TType.BYTE, 'compact_percent', None, None, ),  # 14
+    (15, TType.I64, 'revision', None, None, ),  # 15
 )
 all_structs.append(SchemaPattern)
 SchemaPattern.thrift_spec = (

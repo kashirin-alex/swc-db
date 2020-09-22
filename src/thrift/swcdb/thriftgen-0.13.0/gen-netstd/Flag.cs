@@ -5,10 +5,25 @@
  *  @generated
  */
 
+/// <summary>
+/// The Cell Flag
+/// </summary>
 public enum Flag
 {
+  /// <summary>
+  /// Unknown/Undefined
+  /// </summary>
   NONE = 0,
+  /// <summary>
+  /// The Cell is an insert
+  /// </summary>
   INSERT = 1,
+  /// <summary>
+  /// The Cell is a delete
+  /// </summary>
   DELETE = 2,
+  /// <summary>
+  /// The Cell is a delete-version
+  /// </summary>
   DELETE_VERSION = 3,
 }

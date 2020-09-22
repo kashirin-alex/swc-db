@@ -7,6 +7,9 @@
 package org.swcdb.thrift.gen;
 
 @SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused"})
+/**
+ * The Value Specifications, option to use with Extended Logical Comparators
+ */
 public class SpecValue implements org.apache.thrift.TBase<SpecValue, SpecValue._Fields>, java.io.Serializable, Cloneable, Comparable<SpecValue> {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("SpecValue");
 
@@ -17,19 +20,27 @@ public class SpecValue implements org.apache.thrift.TBase<SpecValue, SpecValue._
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new SpecValueTupleSchemeFactory();
 
   /**
+   * Logical comparator to Apply
    * 
    * @see Comp
    */
   public @org.apache.thrift.annotation.Nullable Comp comp; // required
+  /**
+   * The binary(bytes) to match against the Cell value
+   */
   public @org.apache.thrift.annotation.Nullable java.nio.ByteBuffer v; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     /**
+     * Logical comparator to Apply
      * 
      * @see Comp
      */
     COMP((short)1, "comp"),
+    /**
+     * The binary(bytes) to match against the Cell value
+     */
     V((short)2, "v");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
@@ -137,6 +148,7 @@ public class SpecValue implements org.apache.thrift.TBase<SpecValue, SpecValue._
   }
 
   /**
+   * Logical comparator to Apply
    * 
    * @see Comp
    */
@@ -146,6 +158,7 @@ public class SpecValue implements org.apache.thrift.TBase<SpecValue, SpecValue._
   }
 
   /**
+   * Logical comparator to Apply
    * 
    * @see Comp
    */
@@ -169,6 +182,9 @@ public class SpecValue implements org.apache.thrift.TBase<SpecValue, SpecValue._
     }
   }
 
+  /**
+   * The binary(bytes) to match against the Cell value
+   */
   public byte[] getV() {
     setV(org.apache.thrift.TBaseHelper.rightSize(v));
     return v == null ? null : v.array();
@@ -178,6 +194,9 @@ public class SpecValue implements org.apache.thrift.TBase<SpecValue, SpecValue._
     return org.apache.thrift.TBaseHelper.copyBinary(v);
   }
 
+  /**
+   * The binary(bytes) to match against the Cell value
+   */
   public SpecValue setV(byte[] v) {
     this.v = v == null ? (java.nio.ByteBuffer)null   : java.nio.ByteBuffer.wrap(v.clone());
     return this;

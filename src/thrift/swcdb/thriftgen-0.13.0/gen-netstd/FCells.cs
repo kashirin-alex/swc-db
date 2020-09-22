@@ -24,11 +24,17 @@ using Thrift.Processor;
 
 
 
+/// <summary>
+/// The Fraction Cells for results on Fraction of scan
+/// </summary>
 public partial class FCells : TBase
 {
   private Dictionary<byte[], FCells> _f;
   private List<FCell> _cells;
 
+  /// <summary>
+  /// The Fraction Container for the Next Fractions Tree,  defined as FCells items in a map-container by current Fraction bytes
+  /// </summary>
   public Dictionary<byte[], FCells> F
   {
     get
@@ -42,6 +48,9 @@ public partial class FCells : TBase
     }
   }
 
+  /// <summary>
+  /// The current Fraction's Cells, defined as FCell items in a list-container
+  /// </summary>
   public List<FCell> Cells
   {
     get

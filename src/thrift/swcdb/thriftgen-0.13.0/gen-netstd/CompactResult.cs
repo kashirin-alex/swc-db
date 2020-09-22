@@ -24,11 +24,17 @@ using Thrift.Processor;
 
 
 
+/// <summary>
+/// The Compact Result
+/// </summary>
 public partial class CompactResult : TBase
 {
   private long _cid;
   private int _err;
 
+  /// <summary>
+  /// Column ID
+  /// </summary>
   public long Cid
   {
     get
@@ -42,6 +48,9 @@ public partial class CompactResult : TBase
     }
   }
 
+  /// <summary>
+  /// Error
+  /// </summary>
   public int Err
   {
     get

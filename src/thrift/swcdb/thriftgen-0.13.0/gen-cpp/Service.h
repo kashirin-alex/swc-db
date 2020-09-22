@@ -22,25 +22,150 @@ namespace SWC { namespace Thrift {
 class ServiceIf {
  public:
   virtual ~ServiceIf() {}
+
+  /**
+   * The direct SQL method to Manage Column
+   * 
+   * @param sql
+   */
   virtual void sql_mng_column(const std::string& sql) = 0;
+
+  /**
+   * The direct SQL method to List Columns
+   * 
+   * @param sql
+   */
   virtual void sql_list_columns(Schemas& _return, const std::string& sql) = 0;
+
+  /**
+   * The direct SQL method to Compact Columns
+   * 
+   * @param sql
+   */
   virtual void sql_compact_columns(CompactResults& _return, const std::string& sql) = 0;
+
+  /**
+   * The direct SQL method to select cells with result in Cells List.
+   * 
+   * @param sql
+   */
   virtual void sql_select(Cells& _return, const std::string& sql) = 0;
+
+  /**
+   * The direct SQL method to select cells with result in Columns Cells map.
+   * 
+   * @param sql
+   */
   virtual void sql_select_rslt_on_column(CCells& _return, const std::string& sql) = 0;
+
+  /**
+   * The direct SQL method to select cells with result in Key Cells list.
+   * 
+   * @param sql
+   */
   virtual void sql_select_rslt_on_key(KCells& _return, const std::string& sql) = 0;
+
+  /**
+   * The direct SQL method to select cells with result in Fractons Cells.
+   * 
+   * @param sql
+   */
   virtual void sql_select_rslt_on_fraction(FCells& _return, const std::string& sql) = 0;
+
+  /**
+   * The SQL method to select cells with result set by the request's type of CellsResult.
+   * 
+   * @param sql
+   * @param rslt
+   */
   virtual void sql_query(CellsGroup& _return, const std::string& sql, const CellsResult::type rslt) = 0;
+
+  /**
+   * The direct SQL method to update cells optionally to work with updater-id.
+   * 
+   * @param sql
+   * @param updater_id
+   */
   virtual void sql_update(const std::string& sql, const int64_t updater_id) = 0;
+
+  /**
+   * The method to Create an Updater ID with buffering size in bytes.
+   * 
+   * @param buffer_size
+   */
   virtual int64_t updater_create(const int32_t buffer_size) = 0;
+
+  /**
+   * The method to Close an Updater ID.
+   * 
+   * @param id
+   */
   virtual void updater_close(const int64_t id) = 0;
+
+  /**
+   * The direct method to update cells with cell in Update-Columns-Cells, optionally to work with updater-id.
+   * 
+   * @param cells
+   * @param updater_id
+   */
   virtual void update(const UCCells& cells, const int64_t updater_id) = 0;
+
+  /**
+   * The direct method to Manage Column
+   * 
+   * @param func
+   * @param schema
+   */
   virtual void mng_column(const SchemaFunc::type func, const Schema& schema) = 0;
+
+  /**
+   * The direct method to List Columns
+   * 
+   * @param spec
+   */
   virtual void list_columns(Schemas& _return, const SpecSchemas& spec) = 0;
+
+  /**
+   * The direct method to Compact Columns
+   * 
+   * @param spec
+   */
   virtual void compact_columns(CompactResults& _return, const SpecSchemas& spec) = 0;
+
+  /**
+   * The direct method to select cells with result in Cells List.
+   * 
+   * @param spec
+   */
   virtual void scan(Cells& _return, const SpecScan& spec) = 0;
+
+  /**
+   * The direct method to select cells with result in Columns Cells map.
+   * 
+   * @param spec
+   */
   virtual void scan_rslt_on_column(CCells& _return, const SpecScan& spec) = 0;
+
+  /**
+   * The direct method to select cells with result in Key Cells list.
+   * 
+   * @param spec
+   */
   virtual void scan_rslt_on_key(KCells& _return, const SpecScan& spec) = 0;
+
+  /**
+   * The direct method to select cells with result in Fractons Cells.
+   * 
+   * @param spec
+   */
   virtual void scan_rslt_on_fraction(FCells& _return, const SpecScan& spec) = 0;
+
+  /**
+   * The method to select cells with result set by the request's type of CellsResult.
+   * 
+   * @param spec
+   * @param rslt
+   */
   virtual void scan_rslt_on(CellsGroup& _return, const SpecScan& spec, const CellsResult::type rslt) = 0;
 };
 

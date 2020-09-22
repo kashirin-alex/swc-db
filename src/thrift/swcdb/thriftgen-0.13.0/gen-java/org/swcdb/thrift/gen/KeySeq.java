@@ -8,29 +8,33 @@ package org.swcdb.thrift.gen;
 
 
 /**
- * The Cell Flag
+ * Column Key Sequences
  */
-public enum Flag implements org.apache.thrift.TEnum {
+public enum KeySeq implements org.apache.thrift.TEnum {
   /**
-   * Unknown/Undefined
+   * Unknown/Unrecognized Type
    */
-  NONE(0),
+  UNKNOWN(0),
   /**
-   * The Cell is an insert
+   * The Lexical Key Order Sequence
    */
-  INSERT(1),
+  LEXIC(1),
   /**
-   * The Cell is a delete
+   * The Volumetric Key Order Sequence
    */
-  DELETE(2),
+  VOLUME(2),
   /**
-   * The Cell is a delete-version
+   * The by Fractions Count on Lexical Key Order Sequence
    */
-  DELETE_VERSION(3);
+  FC_LEXIC(3),
+  /**
+   * The by Fractions Count on Volumetric Key Order Sequence
+   */
+  FC_VOLUME(4);
 
   private final int value;
 
-  private Flag(int value) {
+  private KeySeq(int value) {
     this.value = value;
   }
 
@@ -46,16 +50,18 @@ public enum Flag implements org.apache.thrift.TEnum {
    * @return null if the value is not found.
    */
   @org.apache.thrift.annotation.Nullable
-  public static Flag findByValue(int value) { 
+  public static KeySeq findByValue(int value) { 
     switch (value) {
       case 0:
-        return NONE;
+        return UNKNOWN;
       case 1:
-        return INSERT;
+        return LEXIC;
       case 2:
-        return DELETE;
+        return VOLUME;
       case 3:
-        return DELETE_VERSION;
+        return FC_LEXIC;
+      case 4:
+        return FC_VOLUME;
       default:
         return null;
     }

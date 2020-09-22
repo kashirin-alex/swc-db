@@ -5,11 +5,29 @@
  *  @generated
  */
 
+/// <summary>
+/// The Scan options Flags Specifications for the SpecFlags 'options' bit
+/// </summary>
 public enum SpecFlagsOpt
 {
+  /// <summary>
+  /// No Flag Applied
+  /// </summary>
   NONE = 0,
+  /// <summary>
+  /// Cells Limit by Keys
+  /// </summary>
   LIMIT_BY_KEYS = 1,
+  /// <summary>
+  /// Cells Offset by Keys
+  /// </summary>
   OFFSET_BY_KEYS = 4,
+  /// <summary>
+  /// Select Cells Only Keys without Value data
+  /// </summary>
   ONLY_KEYS = 8,
+  /// <summary>
+  /// Select Cells Only with DELETE(cell-flag)
+  /// </summary>
   ONLY_DELETES = 10,
 }

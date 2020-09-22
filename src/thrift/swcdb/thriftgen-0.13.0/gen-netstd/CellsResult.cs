@@ -5,10 +5,25 @@
  *  @generated
  */
 
+/// <summary>
+/// The Cells Results types for using with CellsGroup requests
+/// </summary>
 public enum CellsResult
 {
+  /// <summary>
+  /// Correspond to result on Cells (Cells in list)
+  /// </summary>
   IN_LIST = 0,
+  /// <summary>
+  /// Correspond to result on CCells (Columns Cells)
+  /// </summary>
   ON_COLUMN = 1,
+  /// <summary>
+  /// Correspond to result on KCells (Keys Cells)
+  /// </summary>
   ON_KEY = 2,
+  /// <summary>
+  /// Correspond to result on FCells (Fraction Cells)
+  /// </summary>
   ON_FRACTION = 3,
 }

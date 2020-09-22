@@ -24,11 +24,17 @@ using Thrift.Processor;
 
 
 
+/// <summary>
+/// The Column Specifications, the Cells-Intervals(SpecInterval/s) specification for a column
+/// </summary>
 public partial class SpecColumn : TBase
 {
   private long _cid;
   private List<SpecInterval> _intervals;
 
+  /// <summary>
+  /// The Column ID
+  /// </summary>
   public long Cid
   {
     get
@@ -42,6 +48,9 @@ public partial class SpecColumn : TBase
     }
   }
 
+  /// <summary>
+  /// The Cells Interval in a list-container
+  /// </summary>
   public List<SpecInterval> Intervals
   {
     get

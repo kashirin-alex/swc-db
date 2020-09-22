@@ -7,6 +7,10 @@
 package org.swcdb.thrift.gen;
 
 @SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused"})
+/**
+ * The SWC::Thrift::Exception a base for any Exceptions
+ * both for the Thrift-Protocol and SWC-DB Errors.
+ */
 public class Exception extends org.apache.thrift.TException implements org.apache.thrift.TBase<Exception, Exception._Fields>, java.io.Serializable, Cloneable, Comparable<Exception> {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("Exception");
 
@@ -16,12 +20,24 @@ public class Exception extends org.apache.thrift.TException implements org.apach
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new ExceptionStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new ExceptionTupleSchemeFactory();
 
+  /**
+   * The corresponding Thrift-Procotol or SWC-DB Error Code
+   */
   public int code; // required
+  /**
+   * The message describing the error code
+   */
   public @org.apache.thrift.annotation.Nullable java.lang.String message; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+    /**
+     * The corresponding Thrift-Procotol or SWC-DB Error Code
+     */
     CODE((short)1, "code"),
+    /**
+     * The message describing the error code
+     */
     MESSAGE((short)2, "message");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
@@ -131,10 +147,16 @@ public class Exception extends org.apache.thrift.TException implements org.apach
     this.message = null;
   }
 
+  /**
+   * The corresponding Thrift-Procotol or SWC-DB Error Code
+   */
   public int getCode() {
     return this.code;
   }
 
+  /**
+   * The corresponding Thrift-Procotol or SWC-DB Error Code
+   */
   public Exception setCode(int code) {
     this.code = code;
     setCodeIsSet(true);
@@ -154,11 +176,17 @@ public class Exception extends org.apache.thrift.TException implements org.apach
     __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __CODE_ISSET_ID, value);
   }
 
+  /**
+   * The message describing the error code
+   */
   @org.apache.thrift.annotation.Nullable
   public java.lang.String getMessage() {
     return this.message;
   }
 
+  /**
+   * The message describing the error code
+   */
   public Exception setMessage(@org.apache.thrift.annotation.Nullable java.lang.String message) {
     this.message = message;
     return this;

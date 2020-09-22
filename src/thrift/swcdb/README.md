@@ -1,397 +1,555 @@
+# Thrift module: Service
 
-<h1>Thrift module: Service</h1>
-<table class="table-bordered table-striped table-condensed"><thead><tr><th>Module</th><th>Services</th><th>Data types</th><th>Constants</th></tr></thead><tbody>
-<tr>
-<td>Service</td><td><a href="#Svc_Service">Service</a><br/>
-<ul>
-<li><a href="#Fn_Service_compact_columns">compact_columns</a></li>
-<li><a href="#Fn_Service_list_columns">list_columns</a></li>
-<li><a href="#Fn_Service_mng_column">mng_column</a></li>
-<li><a href="#Fn_Service_scan">scan</a></li>
-<li><a href="#Fn_Service_scan_rslt_on">scan_rslt_on</a></li>
-<li><a href="#Fn_Service_scan_rslt_on_column">scan_rslt_on_column</a></li>
-<li><a href="#Fn_Service_scan_rslt_on_fraction">scan_rslt_on_fraction</a></li>
-<li><a href="#Fn_Service_scan_rslt_on_key">scan_rslt_on_key</a></li>
-<li><a href="#Fn_Service_sql_compact_columns">sql_compact_columns</a></li>
-<li><a href="#Fn_Service_sql_list_columns">sql_list_columns</a></li>
-<li><a href="#Fn_Service_sql_mng_column">sql_mng_column</a></li>
-<li><a href="#Fn_Service_sql_query">sql_query</a></li>
-<li><a href="#Fn_Service_sql_select">sql_select</a></li>
-<li><a href="#Fn_Service_sql_select_rslt_on_column">sql_select_rslt_on_column</a></li>
-<li><a href="#Fn_Service_sql_select_rslt_on_fraction">sql_select_rslt_on_fraction</a></li>
-<li><a href="#Fn_Service_sql_select_rslt_on_key">sql_select_rslt_on_key</a></li>
-<li><a href="#Fn_Service_sql_update">sql_update</a></li>
-<li><a href="#Fn_Service_update">update</a></li>
-<li><a href="#Fn_Service_updater_close">updater_close</a></li>
-<li><a href="#Fn_Service_updater_create">updater_create</a></li>
-</ul>
-</td>
-<td><a href="#Struct_CCell">CCell</a><br/>
-<a href="#Typedef_CCells">CCells</a><br/>
-<a href="#Struct_Cell">Cell</a><br/>
-<a href="#Typedef_Cells">Cells</a><br/>
-<a href="#Struct_CellsGroup">CellsGroup</a><br/>
-<a href="#Enum_CellsResult">CellsResult</a><br/>
-<a href="#Typedef_ColCells">ColCells</a><br/>
-<a href="#Enum_ColumnMng">ColumnMng</a><br/>
-<a href="#Enum_ColumnType">ColumnType</a><br/>
-<a href="#Enum_Comp">Comp</a><br/>
-<a href="#Struct_CompactResult">CompactResult</a><br/>
-<a href="#Typedef_CompactResults">CompactResults</a><br/>
-<a href="#Enum_EncodingType">EncodingType</a><br/>
-<a href="#Struct_Exception">Exception</a><br/>
-<a href="#Struct_FCell">FCell</a><br/>
-<a href="#Struct_FCells">FCells</a><br/>
-<a href="#Enum_Flag">Flag</a><br/>
-<a href="#Struct_KCell">KCell</a><br/>
-<a href="#Typedef_KCells">KCells</a><br/>
-<a href="#Typedef_Key">Key</a><br/>
-<a href="#Struct_Schema">Schema</a><br/>
-<a href="#Enum_SchemaFunc">SchemaFunc</a><br/>
-<a href="#Struct_SchemaPattern">SchemaPattern</a><br/>
-<a href="#Typedef_Schemas">Schemas</a><br/>
-<a href="#Struct_SpecColumn">SpecColumn</a><br/>
-<a href="#Struct_SpecFlags">SpecFlags</a><br/>
-<a href="#Enum_SpecFlagsOpt">SpecFlagsOpt</a><br/>
-<a href="#Struct_SpecFraction">SpecFraction</a><br/>
-<a href="#Struct_SpecInterval">SpecInterval</a><br/>
-<a href="#Typedef_SpecKey">SpecKey</a><br/>
-<a href="#Struct_SpecScan">SpecScan</a><br/>
-<a href="#Struct_SpecSchemas">SpecSchemas</a><br/>
-<a href="#Struct_SpecTimestamp">SpecTimestamp</a><br/>
-<a href="#Struct_SpecValue">SpecValue</a><br/>
-<a href="#Typedef_UCCells">UCCells</a><br/>
-<a href="#Struct_UCell">UCell</a><br/>
-<a href="#Typedef_UCells">UCells</a><br/>
-<a href="#Struct_kCells">kCells</a><br/>
-</td>
-<td></td>
-</tr></tbody></table>
-<hr/><h2 id="Enumerations">Enumerations</h2>
-<div class="definition"><h3 id="Enum_ColumnMng">Enumeration: ColumnMng</h3>
-<br/><table class="table-bordered table-striped table-condensed">
-<tr><td><code>CREATE</code></td><td><code>3</code></td><td>
-</td></tr>
-<tr><td><code>DELETE</code></td><td><code>5</code></td><td>
-</td></tr>
-<tr><td><code>MODIFY</code></td><td><code>7</code></td><td>
-</td></tr>
-</table></div>
-<div class="definition"><h3 id="Enum_ColumnType">Enumeration: ColumnType</h3>
-<br/><table class="table-bordered table-striped table-condensed">
-<tr><td><code>UNKNOWN</code></td><td><code>0</code></td><td>
-</td></tr>
-<tr><td><code>PLAIN</code></td><td><code>1</code></td><td>
-</td></tr>
-<tr><td><code>COUNTER_I64</code></td><td><code>2</code></td><td>
-</td></tr>
-<tr><td><code>COUNTER_I32</code></td><td><code>3</code></td><td>
-</td></tr>
-<tr><td><code>COUNTER_I16</code></td><td><code>4</code></td><td>
-</td></tr>
-<tr><td><code>COUNTER_I8</code></td><td><code>5</code></td><td>
-</td></tr>
-<tr><td><code>CELL_DEFINED</code></td><td><code>15</code></td><td>
-</td></tr>
-</table></div>
-<div class="definition"><h3 id="Enum_EncodingType">Enumeration: EncodingType</h3>
-<br/><table class="table-bordered table-striped table-condensed">
-<tr><td><code>DEFAULT</code></td><td><code>0</code></td><td>
-</td></tr>
-<tr><td><code>PLAIN</code></td><td><code>1</code></td><td>
-</td></tr>
-<tr><td><code>ZLIB</code></td><td><code>2</code></td><td>
-</td></tr>
-<tr><td><code>SNAPPY</code></td><td><code>3</code></td><td>
-</td></tr>
-<tr><td><code>UNKNOWN</code></td><td><code>255</code></td><td>
-</td></tr>
-</table></div>
-<div class="definition"><h3 id="Enum_SchemaFunc">Enumeration: SchemaFunc</h3>
-<br/><table class="table-bordered table-striped table-condensed">
-<tr><td><code>CREATE</code></td><td><code>3</code></td><td>
-</td></tr>
-<tr><td><code>DELETE</code></td><td><code>5</code></td><td>
-</td></tr>
-<tr><td><code>MODIFY</code></td><td><code>7</code></td><td>
-</td></tr>
-</table></div>
-<div class="definition"><h3 id="Enum_Comp">Enumeration: Comp</h3>
-<br/><table class="table-bordered table-striped table-condensed">
-<tr><td><code>NONE</code></td><td><code>0</code></td><td>
-</td></tr>
-<tr><td><code>PF</code></td><td><code>1</code></td><td>
-</td></tr>
-<tr><td><code>GT</code></td><td><code>2</code></td><td>
-</td></tr>
-<tr><td><code>GE</code></td><td><code>3</code></td><td>
-</td></tr>
-<tr><td><code>EQ</code></td><td><code>4</code></td><td>
-</td></tr>
-<tr><td><code>LE</code></td><td><code>5</code></td><td>
-</td></tr>
-<tr><td><code>LT</code></td><td><code>6</code></td><td>
-</td></tr>
-<tr><td><code>NE</code></td><td><code>7</code></td><td>
-</td></tr>
-<tr><td><code>RE</code></td><td><code>8</code></td><td>
-</td></tr>
-<tr><td><code>VGT</code></td><td><code>9</code></td><td>
-</td></tr>
-<tr><td><code>VGE</code></td><td><code>10</code></td><td>
-</td></tr>
-<tr><td><code>VLE</code></td><td><code>11</code></td><td>
-</td></tr>
-<tr><td><code>VLT</code></td><td><code>12</code></td><td>
-</td></tr>
-</table></div>
-<div class="definition"><h3 id="Enum_SpecFlagsOpt">Enumeration: SpecFlagsOpt</h3>
-<br/><table class="table-bordered table-striped table-condensed">
-<tr><td><code>NONE</code></td><td><code>0</code></td><td>
-</td></tr>
-<tr><td><code>LIMIT_BY_KEYS</code></td><td><code>1</code></td><td>
-</td></tr>
-<tr><td><code>OFFSET_BY_KEYS</code></td><td><code>4</code></td><td>
-</td></tr>
-<tr><td><code>ONLY_KEYS</code></td><td><code>8</code></td><td>
-</td></tr>
-<tr><td><code>ONLY_DELETES</code></td><td><code>10</code></td><td>
-</td></tr>
-</table></div>
-<div class="definition"><h3 id="Enum_Flag">Enumeration: Flag</h3>
-<br/><table class="table-bordered table-striped table-condensed">
-<tr><td><code>NONE</code></td><td><code>0</code></td><td>
-</td></tr>
-<tr><td><code>INSERT</code></td><td><code>1</code></td><td>
-</td></tr>
-<tr><td><code>DELETE</code></td><td><code>2</code></td><td>
-</td></tr>
-<tr><td><code>DELETE_VERSION</code></td><td><code>3</code></td><td>
-</td></tr>
-</table></div>
-<div class="definition"><h3 id="Enum_CellsResult">Enumeration: CellsResult</h3>
-<br/><table class="table-bordered table-striped table-condensed">
-<tr><td><code>IN_LIST</code></td><td><code>0</code></td><td>
-</td></tr>
-<tr><td><code>ON_COLUMN</code></td><td><code>1</code></td><td>
-</td></tr>
-<tr><td><code>ON_KEY</code></td><td><code>2</code></td><td>
-</td></tr>
-<tr><td><code>ON_FRACTION</code></td><td><code>3</code></td><td>
-</td></tr>
-</table></div>
-<hr/><h2 id="Typedefs">Type declarations</h2>
-<div class="definition"><h3 id="Typedef_Schemas">Typedef: Schemas</h3>
-<p><strong>Base type:</strong>&nbsp;<code>list&lt;<code><a href="#Struct_Schema">Schema</a></code>&gt;</code></p>
-</div>
-<div class="definition"><h3 id="Typedef_Key">Typedef: Key</h3>
-<p><strong>Base type:</strong>&nbsp;<code>list&lt;<code>binary</code>&gt;</code></p>
-</div>
-<div class="definition"><h3 id="Typedef_SpecKey">Typedef: SpecKey</h3>
-<p><strong>Base type:</strong>&nbsp;<code>list&lt;<code><a href="#Struct_SpecFraction">SpecFraction</a></code>&gt;</code></p>
-</div>
-<div class="definition"><h3 id="Typedef_UCells">Typedef: UCells</h3>
-<p><strong>Base type:</strong>&nbsp;<code>list&lt;<code><a href="#Struct_UCell">UCell</a></code>&gt;</code></p>
-</div>
-<div class="definition"><h3 id="Typedef_UCCells">Typedef: UCCells</h3>
-<p><strong>Base type:</strong>&nbsp;<code>map&lt;<code>i64</code>, <code><a href="#Struct_UCells">UCells</a></code>&gt;</code></p>
-</div>
-<div class="definition"><h3 id="Typedef_Cells">Typedef: Cells</h3>
-<p><strong>Base type:</strong>&nbsp;<code>list&lt;<code><a href="#Struct_Cell">Cell</a></code>&gt;</code></p>
-</div>
-<div class="definition"><h3 id="Typedef_ColCells">Typedef: ColCells</h3>
-<p><strong>Base type:</strong>&nbsp;<code>list&lt;<code><a href="#Struct_CCell">CCell</a></code>&gt;</code></p>
-</div>
-<div class="definition"><h3 id="Typedef_CCells">Typedef: CCells</h3>
-<p><strong>Base type:</strong>&nbsp;<code>map&lt;<code>string</code>, <code><a href="#Struct_ColCells">ColCells</a></code>&gt;</code></p>
-</div>
-<div class="definition"><h3 id="Typedef_KCells">Typedef: KCells</h3>
-<p><strong>Base type:</strong>&nbsp;<code>list&lt;<code><a href="#Struct_kCells">kCells</a></code>&gt;</code></p>
-</div>
-<div class="definition"><h3 id="Typedef_CompactResults">Typedef: CompactResults</h3>
-<p><strong>Base type:</strong>&nbsp;<code>list&lt;<code><a href="#Struct_CompactResult">CompactResult</a></code>&gt;</code></p>
-</div>
-<hr/><h2 id="Structs">Data structures</h2>
-<div class="definition"><h3 id="Struct_Exception">Exception: Exception</h3>
-<table class="table-bordered table-striped table-condensed"><thead><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr></thead><tbody>
-<tr><td>1</td><td>code</td><td><code>i32</code></td><td></td><td>default</td><td></td></tr>
-<tr><td>2</td><td>message</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
-</tbody></table><br/></div><div class="definition"><h3 id="Struct_Schema">Struct: Schema</h3>
-<table class="table-bordered table-striped table-condensed"><thead><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr></thead><tbody>
-<tr><td>1</td><td>cid</td><td><code>i64</code></td><td></td><td>optional</td><td></td></tr>
-<tr><td>2</td><td>col_name</td><td><code>string</code></td><td></td><td>optional</td><td></td></tr>
-<tr><td>3</td><td>col_type</td><td><code><a href="#Enum_ColumnType">ColumnType</a></code></td><td></td><td>optional</td><td></td></tr>
-<tr><td>4</td><td>cell_versions</td><td><code>i32</code></td><td></td><td>optional</td><td></td></tr>
-<tr><td>5</td><td>cell_ttl</td><td><code>i32</code></td><td></td><td>optional</td><td></td></tr>
-<tr><td>6</td><td>blk_encoding</td><td><code><a href="#Enum_EncodingType">EncodingType</a></code></td><td></td><td>optional</td><td></td></tr>
-<tr><td>7</td><td>blk_size</td><td><code>i32</code></td><td></td><td>optional</td><td></td></tr>
-<tr><td>8</td><td>blk_cells</td><td><code>i32</code></td><td></td><td>optional</td><td></td></tr>
-<tr><td>9</td><td>cs_replication</td><td><code>i8</code></td><td></td><td>optional</td><td></td></tr>
-<tr><td>10</td><td>cs_size</td><td><code>i32</code></td><td></td><td>optional</td><td></td></tr>
-<tr><td>11</td><td>cs_max</td><td><code>i8</code></td><td></td><td>optional</td><td></td></tr>
-<tr><td>12</td><td>log_rollout_ratio</td><td><code>i8</code></td><td></td><td>optional</td><td></td></tr>
-<tr><td>13</td><td>compact_percent</td><td><code>i8</code></td><td></td><td>optional</td><td></td></tr>
-<tr><td>14</td><td>revision</td><td><code>i64</code></td><td></td><td>optional</td><td></td></tr>
-</tbody></table><br/></div><div class="definition"><h3 id="Struct_SchemaPattern">Struct: SchemaPattern</h3>
-<table class="table-bordered table-striped table-condensed"><thead><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr></thead><tbody>
-<tr><td>1</td><td>comp</td><td><code><a href="#Enum_Comp">Comp</a></code></td><td></td><td>default</td><td></td></tr>
-<tr><td>2</td><td>value</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
-</tbody></table><br/></div><div class="definition"><h3 id="Struct_SpecSchemas">Struct: SpecSchemas</h3>
-<table class="table-bordered table-striped table-condensed"><thead><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr></thead><tbody>
-<tr><td>1</td><td>cids</td><td><code>list&lt;<code>i64</code>&gt;</code></td><td></td><td>optional</td><td></td></tr>
-<tr><td>2</td><td>names</td><td><code>list&lt;<code>string</code>&gt;</code></td><td></td><td>optional</td><td></td></tr>
-<tr><td>3</td><td>patterns</td><td><code>list&lt;<code><a href="#Struct_SchemaPattern">SchemaPattern</a></code>&gt;</code></td><td></td><td>optional</td><td></td></tr>
-</tbody></table><br/></div><div class="definition"><h3 id="Struct_SpecFlags">Struct: SpecFlags</h3>
-<table class="table-bordered table-striped table-condensed"><thead><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr></thead><tbody>
-<tr><td>1</td><td>limit</td><td><code>i64</code></td><td></td><td>optional</td><td></td></tr>
-<tr><td>2</td><td>offset</td><td><code>i64</code></td><td></td><td>optional</td><td></td></tr>
-<tr><td>3</td><td>max_versions</td><td><code>i32</code></td><td></td><td>optional</td><td></td></tr>
-<tr><td>4</td><td>max_buffer</td><td><code>i32</code></td><td></td><td>optional</td><td></td></tr>
-<tr><td>5</td><td>options</td><td><code>i8</code></td><td></td><td>optional</td><td></td></tr>
-</tbody></table><br/></div><div class="definition"><h3 id="Struct_SpecFraction">Struct: SpecFraction</h3>
-<table class="table-bordered table-striped table-condensed"><thead><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr></thead><tbody>
-<tr><td>1</td><td>comp</td><td><code><a href="#Enum_Comp">Comp</a></code></td><td></td><td>default</td><td></td></tr>
-<tr><td>2</td><td>f</td><td><code>binary</code></td><td></td><td>default</td><td></td></tr>
-</tbody></table><br/></div><div class="definition"><h3 id="Struct_SpecValue">Struct: SpecValue</h3>
-<table class="table-bordered table-striped table-condensed"><thead><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr></thead><tbody>
-<tr><td>1</td><td>comp</td><td><code><a href="#Enum_Comp">Comp</a></code></td><td></td><td>default</td><td></td></tr>
-<tr><td>2</td><td>v</td><td><code>binary</code></td><td></td><td>default</td><td></td></tr>
-</tbody></table><br/></div><div class="definition"><h3 id="Struct_SpecTimestamp">Struct: SpecTimestamp</h3>
-<table class="table-bordered table-striped table-condensed"><thead><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr></thead><tbody>
-<tr><td>1</td><td>comp</td><td><code><a href="#Enum_Comp">Comp</a></code></td><td></td><td>default</td><td></td></tr>
-<tr><td>2</td><td>ts</td><td><code>i64</code></td><td></td><td>default</td><td></td></tr>
-</tbody></table><br/></div><div class="definition"><h3 id="Struct_SpecInterval">Struct: SpecInterval</h3>
-<table class="table-bordered table-striped table-condensed"><thead><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr></thead><tbody>
-<tr><td>1</td><td>range_begin</td><td><code><a href="#Struct_Key">Key</a></code></td><td></td><td>optional</td><td></td></tr>
-<tr><td>2</td><td>range_end</td><td><code><a href="#Struct_Key">Key</a></code></td><td></td><td>optional</td><td></td></tr>
-<tr><td>3</td><td>range_offset</td><td><code><a href="#Struct_Key">Key</a></code></td><td></td><td>optional</td><td></td></tr>
-<tr><td>4</td><td>offset_key</td><td><code><a href="#Struct_Key">Key</a></code></td><td></td><td>optional</td><td></td></tr>
-<tr><td>5</td><td>offset_rev</td><td><code>i64</code></td><td></td><td>optional</td><td></td></tr>
-<tr><td>6</td><td>key_start</td><td><code><a href="#Struct_SpecKey">SpecKey</a></code></td><td></td><td>optional</td><td></td></tr>
-<tr><td>7</td><td>key_finish</td><td><code><a href="#Struct_SpecKey">SpecKey</a></code></td><td></td><td>optional</td><td></td></tr>
-<tr><td>8</td><td>value</td><td><code><a href="#Struct_SpecValue">SpecValue</a></code></td><td></td><td>optional</td><td></td></tr>
-<tr><td>9</td><td>ts_start</td><td><code><a href="#Struct_SpecTimestamp">SpecTimestamp</a></code></td><td></td><td>optional</td><td></td></tr>
-<tr><td>10</td><td>ts_finish</td><td><code><a href="#Struct_SpecTimestamp">SpecTimestamp</a></code></td><td></td><td>optional</td><td></td></tr>
-<tr><td>11</td><td>flags</td><td><code><a href="#Struct_SpecFlags">SpecFlags</a></code></td><td></td><td>optional</td><td></td></tr>
-</tbody></table><br/></div><div class="definition"><h3 id="Struct_SpecColumn">Struct: SpecColumn</h3>
-<table class="table-bordered table-striped table-condensed"><thead><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr></thead><tbody>
-<tr><td>1</td><td>cid</td><td><code>i64</code></td><td></td><td>default</td><td></td></tr>
-<tr><td>2</td><td>intervals</td><td><code>list&lt;<code><a href="#Struct_SpecInterval">SpecInterval</a></code>&gt;</code></td><td></td><td>default</td><td></td></tr>
-</tbody></table><br/></div><div class="definition"><h3 id="Struct_SpecScan">Struct: SpecScan</h3>
-<table class="table-bordered table-striped table-condensed"><thead><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr></thead><tbody>
-<tr><td>1</td><td>columns</td><td><code>list&lt;<code><a href="#Struct_SpecColumn">SpecColumn</a></code>&gt;</code></td><td></td><td>default</td><td></td></tr>
-<tr><td>2</td><td>flags</td><td><code><a href="#Struct_SpecFlags">SpecFlags</a></code></td><td></td><td>optional</td><td></td></tr>
-</tbody></table><br/></div><div class="definition"><h3 id="Struct_UCell">Struct: UCell</h3>
-<table class="table-bordered table-striped table-condensed"><thead><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr></thead><tbody>
-<tr><td>1</td><td>f</td><td><code><a href="#Enum_Flag">Flag</a></code></td><td></td><td>default</td><td></td></tr>
-<tr><td>2</td><td>k</td><td><code><a href="#Struct_Key">Key</a></code></td><td></td><td>default</td><td></td></tr>
-<tr><td>3</td><td>ts</td><td><code>i64</code></td><td></td><td>optional</td><td></td></tr>
-<tr><td>4</td><td>ts_desc</td><td><code>bool</code></td><td></td><td>optional</td><td></td></tr>
-<tr><td>5</td><td>v</td><td><code>binary</code></td><td></td><td>optional</td><td></td></tr>
-</tbody></table><br/></div><div class="definition"><h3 id="Struct_Cell">Struct: Cell</h3>
-<table class="table-bordered table-striped table-condensed"><thead><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr></thead><tbody>
-<tr><td>1</td><td>c</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
-<tr><td>2</td><td>k</td><td><code><a href="#Struct_Key">Key</a></code></td><td></td><td>default</td><td></td></tr>
-<tr><td>3</td><td>ts</td><td><code>i64</code></td><td></td><td>default</td><td></td></tr>
-<tr><td>4</td><td>v</td><td><code>binary</code></td><td></td><td>optional</td><td></td></tr>
-</tbody></table><br/></div><div class="definition"><h3 id="Struct_CCell">Struct: CCell</h3>
-<table class="table-bordered table-striped table-condensed"><thead><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr></thead><tbody>
-<tr><td>1</td><td>k</td><td><code><a href="#Struct_Key">Key</a></code></td><td></td><td>default</td><td></td></tr>
-<tr><td>2</td><td>ts</td><td><code>i64</code></td><td></td><td>default</td><td></td></tr>
-<tr><td>3</td><td>v</td><td><code>binary</code></td><td></td><td>optional</td><td></td></tr>
-</tbody></table><br/></div><div class="definition"><h3 id="Struct_KCell">Struct: KCell</h3>
-<table class="table-bordered table-striped table-condensed"><thead><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr></thead><tbody>
-<tr><td>1</td><td>c</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
-<tr><td>2</td><td>ts</td><td><code>i64</code></td><td></td><td>default</td><td></td></tr>
-<tr><td>3</td><td>v</td><td><code>binary</code></td><td></td><td>optional</td><td></td></tr>
-</tbody></table><br/></div><div class="definition"><h3 id="Struct_kCells">Struct: kCells</h3>
-<table class="table-bordered table-striped table-condensed"><thead><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr></thead><tbody>
-<tr><td>1</td><td>k</td><td><code><a href="#Struct_Key">Key</a></code></td><td></td><td>default</td><td></td></tr>
-<tr><td>2</td><td>cells</td><td><code>list&lt;<code><a href="#Struct_KCell">KCell</a></code>&gt;</code></td><td></td><td>default</td><td></td></tr>
-</tbody></table><br/></div><div class="definition"><h3 id="Struct_FCell">Struct: FCell</h3>
-<table class="table-bordered table-striped table-condensed"><thead><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr></thead><tbody>
-<tr><td>1</td><td>c</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
-<tr><td>2</td><td>ts</td><td><code>i64</code></td><td></td><td>default</td><td></td></tr>
-<tr><td>3</td><td>v</td><td><code>binary</code></td><td></td><td>optional</td><td></td></tr>
-</tbody></table><br/></div><div class="definition"><h3 id="Struct_FCells">Struct: FCells</h3>
-<table class="table-bordered table-striped table-condensed"><thead><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr></thead><tbody>
-<tr><td>1</td><td>f</td><td><code>map&lt;<code>binary</code>, <code><a href="#Struct_FCells">FCells</a></code>&gt;</code></td><td></td><td>default</td><td></td></tr>
-<tr><td>2</td><td>cells</td><td><code>list&lt;<code><a href="#Struct_FCell">FCell</a></code>&gt;</code></td><td></td><td>optional</td><td></td></tr>
-</tbody></table><br/></div><div class="definition"><h3 id="Struct_CellsGroup">Struct: CellsGroup</h3>
-<table class="table-bordered table-striped table-condensed"><thead><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr></thead><tbody>
-<tr><td>1</td><td>cells</td><td><code><a href="#Struct_Cells">Cells</a></code></td><td></td><td>optional</td><td></td></tr>
-<tr><td>2</td><td>ccells</td><td><code><a href="#Struct_CCells">CCells</a></code></td><td></td><td>optional</td><td></td></tr>
-<tr><td>3</td><td>kcells</td><td><code><a href="#Struct_KCells">KCells</a></code></td><td></td><td>optional</td><td></td></tr>
-<tr><td>4</td><td>fcells</td><td><code><a href="#Struct_FCells">FCells</a></code></td><td></td><td>optional</td><td></td></tr>
-</tbody></table><br/></div><div class="definition"><h3 id="Struct_CompactResult">Struct: CompactResult</h3>
-<table class="table-bordered table-striped table-condensed"><thead><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr></thead><tbody>
-<tr><td>1</td><td>cid</td><td><code>i64</code></td><td></td><td>default</td><td></td></tr>
-<tr><td>2</td><td>err</td><td><code>i32</code></td><td></td><td>default</td><td></td></tr>
-</tbody></table><br/></div><hr/><h2 id="Services">Services</h2>
-<h3 id="Svc_Service">Service: Service</h3>
-<div class="definition"><h4 id="Fn_Service_sql_mng_column">Function: Service.sql_mng_column</h4>
-<pre><code>void</code> sql_mng_column(<code>string</code> sql)
-    throws <code><a href="#Struct_Exception">Exception</a></code>
-</pre></div><div class="definition"><h4 id="Fn_Service_sql_list_columns">Function: Service.sql_list_columns</h4>
-<pre><code><a href="#Struct_Schemas">Schemas</a></code> sql_list_columns(<code>string</code> sql)
-    throws <code><a href="#Struct_Exception">Exception</a></code>
-</pre></div><div class="definition"><h4 id="Fn_Service_sql_compact_columns">Function: Service.sql_compact_columns</h4>
-<pre><code><a href="#Struct_CompactResults">CompactResults</a></code> sql_compact_columns(<code>string</code> sql)
-    throws <code><a href="#Struct_Exception">Exception</a></code>
-</pre></div><div class="definition"><h4 id="Fn_Service_sql_select">Function: Service.sql_select</h4>
-<pre><code><a href="#Struct_Cells">Cells</a></code> sql_select(<code>string</code> sql)
-    throws <code><a href="#Struct_Exception">Exception</a></code>
-</pre></div><div class="definition"><h4 id="Fn_Service_sql_select_rslt_on_column">Function: Service.sql_select_rslt_on_column</h4>
-<pre><code><a href="#Struct_CCells">CCells</a></code> sql_select_rslt_on_column(<code>string</code> sql)
-    throws <code><a href="#Struct_Exception">Exception</a></code>
-</pre></div><div class="definition"><h4 id="Fn_Service_sql_select_rslt_on_key">Function: Service.sql_select_rslt_on_key</h4>
-<pre><code><a href="#Struct_KCells">KCells</a></code> sql_select_rslt_on_key(<code>string</code> sql)
-    throws <code><a href="#Struct_Exception">Exception</a></code>
-</pre></div><div class="definition"><h4 id="Fn_Service_sql_select_rslt_on_fraction">Function: Service.sql_select_rslt_on_fraction</h4>
-<pre><code><a href="#Struct_FCells">FCells</a></code> sql_select_rslt_on_fraction(<code>string</code> sql)
-    throws <code><a href="#Struct_Exception">Exception</a></code>
-</pre></div><div class="definition"><h4 id="Fn_Service_sql_query">Function: Service.sql_query</h4>
-<pre><code><a href="#Struct_CellsGroup">CellsGroup</a></code> sql_query(<code>string</code> sql,
-                     <code><a href="#Enum_CellsResult">CellsResult</a></code> rslt)
-    throws <code><a href="#Struct_Exception">Exception</a></code>
-</pre></div><div class="definition"><h4 id="Fn_Service_sql_update">Function: Service.sql_update</h4>
-<pre><code>void</code> sql_update(<code>string</code> sql,
-                <code>i64</code> updater_id = 0)
-    throws <code><a href="#Struct_Exception">Exception</a></code>
-</pre></div><div class="definition"><h4 id="Fn_Service_updater_create">Function: Service.updater_create</h4>
-<pre><code>i64</code> updater_create(<code>i32</code> buffer_size)
-    throws <code><a href="#Struct_Exception">Exception</a></code>
-</pre></div><div class="definition"><h4 id="Fn_Service_updater_close">Function: Service.updater_close</h4>
-<pre><code>void</code> updater_close(<code>i64</code> id)
-    throws <code><a href="#Struct_Exception">Exception</a></code>
-</pre></div><div class="definition"><h4 id="Fn_Service_update">Function: Service.update</h4>
-<pre><code>void</code> update(<code><a href="#Struct_UCCells">UCCells</a></code> cells,
-            <code>i64</code> updater_id = 0)
-    throws <code><a href="#Struct_Exception">Exception</a></code>
-</pre></div><div class="definition"><h4 id="Fn_Service_mng_column">Function: Service.mng_column</h4>
-<pre><code>void</code> mng_column(<code><a href="#Enum_SchemaFunc">SchemaFunc</a></code> func,
-                <code><a href="#Struct_Schema">Schema</a></code> schema)
-    throws <code><a href="#Struct_Exception">Exception</a></code>
-</pre></div><div class="definition"><h4 id="Fn_Service_list_columns">Function: Service.list_columns</h4>
-<pre><code><a href="#Struct_Schemas">Schemas</a></code> list_columns(<code><a href="#Struct_SpecSchemas">SpecSchemas</a></code> spec)
-    throws <code><a href="#Struct_Exception">Exception</a></code>
-</pre></div><div class="definition"><h4 id="Fn_Service_compact_columns">Function: Service.compact_columns</h4>
-<pre><code><a href="#Struct_CompactResults">CompactResults</a></code> compact_columns(<code><a href="#Struct_SpecSchemas">SpecSchemas</a></code> spec)
-    throws <code><a href="#Struct_Exception">Exception</a></code>
-</pre></div><div class="definition"><h4 id="Fn_Service_scan">Function: Service.scan</h4>
-<pre><code><a href="#Struct_Cells">Cells</a></code> scan(<code><a href="#Struct_SpecScan">SpecScan</a></code> spec)
-    throws <code><a href="#Struct_Exception">Exception</a></code>
-</pre></div><div class="definition"><h4 id="Fn_Service_scan_rslt_on_column">Function: Service.scan_rslt_on_column</h4>
-<pre><code><a href="#Struct_CCells">CCells</a></code> scan_rslt_on_column(<code><a href="#Struct_SpecScan">SpecScan</a></code> spec)
-    throws <code><a href="#Struct_Exception">Exception</a></code>
-</pre></div><div class="definition"><h4 id="Fn_Service_scan_rslt_on_key">Function: Service.scan_rslt_on_key</h4>
-<pre><code><a href="#Struct_KCells">KCells</a></code> scan_rslt_on_key(<code><a href="#Struct_SpecScan">SpecScan</a></code> spec)
-    throws <code><a href="#Struct_Exception">Exception</a></code>
-</pre></div><div class="definition"><h4 id="Fn_Service_scan_rslt_on_fraction">Function: Service.scan_rslt_on_fraction</h4>
-<pre><code><a href="#Struct_FCells">FCells</a></code> scan_rslt_on_fraction(<code><a href="#Struct_SpecScan">SpecScan</a></code> spec)
-    throws <code><a href="#Struct_Exception">Exception</a></code>
-</pre></div><div class="definition"><h4 id="Fn_Service_scan_rslt_on">Function: Service.scan_rslt_on</h4>
-<pre><code><a href="#Struct_CellsGroup">CellsGroup</a></code> scan_rslt_on(<code><a href="#Struct_SpecScan">SpecScan</a></code> spec,
-                        <code><a href="#Enum_CellsResult">CellsResult</a></code> rslt)
-    throws <code><a href="#Struct_Exception">Exception</a></code>
-</pre></div>
+
+| Module | Services & Functions | Data types | Constants |
+| --- | --- | --- | --- |
+|Service|[Service](#serviceservice)|[KeySeq](#enumeration-keyseq)||
+||	[ &bull; sql_mng_column](#function-servicesql_mng_column)|[ColumnType](#enumeration-columntype)||
+||	[ &bull; sql_list_columns](#function-servicesql_list_columns)|[EncodingType](#enumeration-encodingtype)||
+||	[ &bull; sql_compact_columns](#function-servicesql_compact_columns)|[SchemaFunc](#enumeration-schemafunc)||
+||	[ &bull; sql_select](#function-servicesql_select)|[Comp](#enumeration-comp)||
+||	[ &bull; sql_select_rslt_on_column](#function-servicesql_select_rslt_on_column)|[SpecFlagsOpt](#enumeration-specflagsopt)||
+||	[ &bull; sql_select_rslt_on_key](#function-servicesql_select_rslt_on_key)|[Flag](#enumeration-flag)||
+||	[ &bull; sql_select_rslt_on_fraction](#function-servicesql_select_rslt_on_fraction)|[CellsResult](#enumeration-cellsresult)||
+||	[ &bull; sql_query](#function-servicesql_query)|[Schemas](#typedef-schemas)||
+||	[ &bull; sql_update](#function-servicesql_update)|[Key](#typedef-key)||
+||	[ &bull; updater_create](#function-serviceupdater_create)|[SpecKey](#typedef-speckey)||
+||	[ &bull; updater_close](#function-serviceupdater_close)|[UCells](#typedef-ucells)||
+||	[ &bull; update](#function-serviceupdate)|[UCCells](#typedef-uccells)||
+||	[ &bull; mng_column](#function-servicemng_column)|[Cells](#typedef-cells)||
+||	[ &bull; list_columns](#function-servicelist_columns)|[ColCells](#typedef-colcells)||
+||	[ &bull; compact_columns](#function-servicecompact_columns)|[CCells](#typedef-ccells)||
+||	[ &bull; scan](#function-servicescan)|[KCells](#typedef-kcells)||
+||	[ &bull; scan_rslt_on_column](#function-servicescan_rslt_on_column)|[CompactResults](#typedef-compactresults)||
+||	[ &bull; scan_rslt_on_key](#function-servicescan_rslt_on_key)|[Exception](#exception-exception)||
+||	[ &bull; scan_rslt_on_fraction](#function-servicescan_rslt_on_fraction)|[Schema](#struct-schema)||
+||	[ &bull; scan_rslt_on](#function-servicescan_rslt_on)|[SchemaPattern](#struct-schemapattern)||
+|||[SpecSchemas](#struct-specschemas)||
+|||[SpecFlags](#struct-specflags)||
+|||[SpecFraction](#struct-specfraction)||
+|||[SpecValue](#struct-specvalue)||
+|||[SpecTimestamp](#struct-spectimestamp)||
+|||[SpecInterval](#struct-specinterval)||
+|||[SpecColumn](#struct-speccolumn)||
+|||[SpecScan](#struct-specscan)||
+|||[UCell](#struct-ucell)||
+|||[Cell](#struct-cell)||
+|||[CCell](#struct-ccell)||
+|||[KCell](#struct-kcell)||
+|||[kCells](#struct-kcells)||
+|||[FCell](#struct-fcell)||
+|||[FCells](#struct-fcells)||
+|||[CellsGroup](#struct-cellsgroup)||
+|||[CompactResult](#struct-compactresult)||
+
+
+***
+## Enumerations
+
+### Enumeration: KeySeq
+Column Key Sequences 
+
+|Name|Value|Description|
+|---|---|---|
+|```UNKNOWN```|```0```|Unknown/Unrecognized Type |
+|```LEXIC```|```1```|The Lexical Key Order Sequence |
+|```VOLUME```|```2```|The Volumetric Key Order Sequence |
+|```FC_LEXIC```|```3```|The by Fractions Count on Lexical Key Order Sequence |
+|```FC_VOLUME```|```4```|The by Fractions Count on Volumetric Key Order Sequence |
+
+### Enumeration: ColumnType
+Column Value Types 
+
+|Name|Value|Description|
+|---|---|---|
+|```UNKNOWN```|```0```|Unknown/Unrecognized Type |
+|```PLAIN```|```1```|A Plain Column Value |
+|```COUNTER_I64```|```2```|A Counter Column Value with integrity of signed-64bit |
+|```COUNTER_I32```|```3```|A Counter Column Value with integrity of signed-32bit |
+|```COUNTER_I16```|```4```|A Counter Column Value with integrity of signed-16bit |
+|```COUNTER_I8```|```5```|A Counter Column Value with integrity of signed-8bit |
+|```CELL_DEFINED```|```15```|Not used - experimental |
+
+### Enumeration: EncodingType
+Data Encoding Types 
+
+|Name|Value|Description|
+|---|---|---|
+|```DEFAULT```|```0```|Encoding by Ranger DEFAULT configurations |
+|```PLAIN```|```1```|No Encoding |
+|```ZLIB```|```2```|Encode with zlib |
+|```SNAPPY```|```3```|Encode with snappy |
+|```ZSTD```|```4```|Encode with zstandard |
+|```UNKNOWN```|```255```|Unrecognized Type |
+
+### Enumeration: SchemaFunc
+Manage Columns schema function Flags 
+
+|Name|Value|Description|
+|---|---|---|
+|```CREATE```|```3```|Create Column Function |
+|```DELETE```|```5```|Delete Column Function |
+|```MODIFY```|```7```|Modify Column Function |
+
+### Enumeration: Comp
+The available logical Comparators, plus extended logic options applied with 'v' for VOLUME 
+
+|Name|Value|Description|
+|---|---|---|
+|```NONE```|```0```|[      ]  :   none           (no comparison aplied) |
+|```PF```|```1```|[  =^  ]  :   -pf [prefix]   (starts-with) |
+|```GT```|```2```|[  &gt;   ]  :   -gt            (greater-than) |
+|```GE```|```3```|[  &gt;=  ]  :   -ge            (greater-equal) |
+|```EQ```|```4```|[  =   ]  :   -eq            (equal) |
+|```LE```|```5```|[  &lt;=  ]  :   -le            (lower-equal) &gt;|
+|```LT```|```6```|[  &lt;   ]  :   -lt            (lower-than) &gt;|
+|```NE```|```7```|[  !=  ]  :   -ne            (not-equal) |
+|```RE```|```8```|[  re  ]  :   -re [r,regexp] (regular-expression) |
+|```VGT```|```9```|[  v&gt;  ]  :   -vgt           (vol greater-than) |
+|```VGE```|```10```|[  v&gt;= ]  :   -vge           (vol greater-equal) |
+|```VLE```|```11```|[  v&lt;= ]  :   -vle           (vol lower-equal) &gt;|
+|```VLT```|```12```|[  v&lt;  ]  :   -vlt           (vol lower-than) &gt;|
+
+### Enumeration: SpecFlagsOpt
+The Scan options Flags Specifications for the SpecFlags 'options' bit 
+
+|Name|Value|Description|
+|---|---|---|
+|```NONE```|```0```|No Flag Applied |
+|```LIMIT_BY_KEYS```|```1```|Cells Limit by Keys |
+|```OFFSET_BY_KEYS```|```4```|Cells Offset by Keys |
+|```ONLY_KEYS```|```8```|Select Cells Only Keys without Value data |
+|```ONLY_DELETES```|```10```|Select Cells Only with DELETE(cell-flag) |
+
+### Enumeration: Flag
+The Cell Flag 
+
+|Name|Value|Description|
+|---|---|---|
+|```NONE```|```0```|Unknown/Undefined |
+|```INSERT```|```1```|The Cell is an insert |
+|```DELETE```|```2```|The Cell is a delete |
+|```DELETE_VERSION```|```3```|The Cell is a delete-version |
+
+### Enumeration: CellsResult
+The Cells Results types for using with CellsGroup requests 
+
+|Name|Value|Description|
+|---|---|---|
+|```IN_LIST```|```0```|Correspond to result on Cells (Cells in list) |
+|```ON_COLUMN```|```1```|Correspond to result on CCells (Columns Cells) |
+|```ON_KEY```|```2```|Correspond to result on KCells (Keys Cells) |
+|```ON_FRACTION```|```3```|Correspond to result on FCells (Fraction Cells) |
+
+***
+## Type declarations
+
+### Typedef: Schemas
+A list-container of Schemas 
+
+_Base type_: **list&lt;[```Schema```](#struct-schema)&gt;**
+
+
+### Typedef: Key
+A Cell Key defined as binary(bytes) items in a list-container 
+
+_Base type_: **list&lt;```binary```&gt;**
+
+
+### Typedef: SpecKey
+The Key Specifications defined as SpecFraction items in a list-container 
+
+_Base type_: **list&lt;[```SpecFraction```](#struct-specfraction)&gt;**
+
+
+### Typedef: UCells
+The Cells for Update defined as UCell items in a list-container 
+
+_Base type_: **list&lt;[```UCell```](#struct-ucell)&gt;**
+
+
+### Typedef: UCCells
+The Cells for Update for a Column Id defined as UCells items in a map-container by CID 
+
+_Base type_: **map&lt;```i64```, [```UCells```](#typedef-ucells)&gt;**
+
+
+### Typedef: Cells
+The Cells for results list of scan, defined as Cell items in a list-container 
+
+_Base type_: **list&lt;[```Cell```](#struct-cell)&gt;**
+
+
+### Typedef: ColCells
+The Column Cells for results on Columns of scan, defined as Cell items in a list-container 
+
+_Base type_: **list&lt;[```CCell```](#struct-ccell)&gt;**
+
+
+### Typedef: CCells
+The Columns Cells for results on Columns of scan, defined as ColCells items in a map-container by Column Name 
+
+_Base type_: **map&lt;```string```, [```ColCells```](#typedef-colcells)&gt;**
+
+
+### Typedef: KCells
+The Keys Cells for results on Key of scan, defined as kCells items in a list-container 
+
+_Base type_: **list&lt;[```kCells```](#struct-kcells)&gt;**
+
+
+### Typedef: CompactResults
+The Compact Results, defined as CompactResult items in a list-container 
+
+_Base type_: **list&lt;[```CompactResult```](#struct-compactresult)&gt;**
+
+
+***
+## Data structures
+
+### Exception: Exception
+The SWC::Thrift::Exception a base for any Exceptions both for the Thrift-Protocol and SWC-DB Errors. 
+
+| Key | Field | Type | Description | Requiredness | Default value |
+| --- | --- | --- | --- | --- | --- |
+|1|code|```i32```|The corresponding Thrift-Procotol or SWC-DB Error Code |default||
+|2|message|```string```|The message describing the error code |default||
+
+### Struct: Schema
+The Schema Definition 
+
+| Key | Field | Type | Description | Requiredness | Default value |
+| --- | --- | --- | --- | --- | --- |
+|1|cid|```i64```|Column ID |optional||
+|2|col_name|```string```|Column Name |optional||
+|3|col_seq|[```KeySeq```](#enumeration-keyseq)|Column Key Sequence |optional||
+|4|col_type|[```ColumnType```](#enumeration-columntype)|Column Type |optional||
+|5|cell_versions|```i32```|Cell Versions |optional||
+|6|cell_ttl|```i32```|Cell Time to Live |optional||
+|7|blk_encoding|[```EncodingType```](#enumeration-encodingtype)|Block Encoding |optional||
+|8|blk_size|```i32```|Block Size in Bytes |optional||
+|9|blk_cells|```i32```|Number of Cells in Block |optional||
+|10|cs_replication|```i8```|CellStore file Replication |optional||
+|11|cs_size|```i32```|CellStore Size in Bytes |optional||
+|12|cs_max|```i8```|Max CellStores in a Range |optional||
+|13|log_rollout_ratio|```i8```|Write Fragment File on ratio reached |optional||
+|14|compact_percent|```i8```|Compact at percent reach |optional||
+|15|revision|```i64```|Schema's revision/id |optional||
+
+### Struct: SchemaPattern
+The Schema Matching Pattern for the SpecSchema patterns 
+
+| Key | Field | Type | Description | Requiredness | Default value |
+| --- | --- | --- | --- | --- | --- |
+|1|comp|[```Comp```](#enumeration-comp)|Logical comparator to Apply |default||
+|2|value|```string```|The patern value to match against schema's column name |default||
+
+### Struct: SpecSchemas
+The Specs for Schemas for using with list_columns or compact_columns 
+
+| Key | Field | Type | Description | Requiredness | Default value |
+| --- | --- | --- | --- | --- | --- |
+|1|cids|list&lt;```i64```&gt;|The Column IDs |optional||
+|2|names|list&lt;```string```&gt;|The Column Names |optional||
+|3|patterns|list&lt;[```SchemaPattern```](#struct-schemapattern)&gt;|The Schema's Column Name patterns |optional||
+
+### Struct: SpecFlags
+The Scan Specifications Flags 
+
+| Key | Field | Type | Description | Requiredness | Default value |
+| --- | --- | --- | --- | --- | --- |
+|1|limit|```i64```|Limit to this number of cells |optional||
+|2|offset|```i64```|Scan from this number of cells Offset on matching Cell-Interval |optional||
+|3|max_versions|```i32```|Select only this number of Versions of a given Cell-Key |optional||
+|4|max_buffer|```i32```|return results with reach of this Buffer size in bytes |optional||
+|5|options|```i8```|The options bit by SpecFlagsOpt |optional||
+
+### Struct: SpecFraction
+The Fraction Specifications 
+
+| Key | Field | Type | Description | Requiredness | Default value |
+| --- | --- | --- | --- | --- | --- |
+|1|comp|[```Comp```](#enumeration-comp)|Logical comparator to Apply |default||
+|2|f|```binary```|The binary(bytes) to match against a fraction of a Cell-Key |default||
+
+### Struct: SpecValue
+The Value Specifications, option to use with Extended Logical Comparators 
+
+| Key | Field | Type | Description | Requiredness | Default value |
+| --- | --- | --- | --- | --- | --- |
+|1|comp|[```Comp```](#enumeration-comp)|Logical comparator to Apply |default||
+|2|v|```binary```|The binary(bytes) to match against the Cell value |default||
+
+### Struct: SpecTimestamp
+The Timestamp Specifications 
+
+| Key | Field | Type | Description | Requiredness | Default value |
+| --- | --- | --- | --- | --- | --- |
+|1|comp|[```Comp```](#enumeration-comp)|Logical comparator to Apply |default||
+|2|ts|```i64```|The timestamp in nanoseconds to match against the Cell timestamp/version (not the revision) |default||
+
+### Struct: SpecInterval
+The Cells Interval Specifications with interval-scope Flags 
+
+| Key | Field | Type | Description | Requiredness | Default value |
+| --- | --- | --- | --- | --- | --- |
+|1|range_begin|[```Key```](#typedef-key)|Begin of Ranges evaluation with this Key inclusive |optional||
+|2|range_end|[```Key```](#typedef-key)|End of Ranges evaluation with this Key inclusive |optional||
+|3|range_offset|[```Key```](#typedef-key)|Offset of Ranges evaluation with this Key inclusive |optional||
+|4|offset_key|[```Key```](#typedef-key)|Offset Cell Key of a Scan, select cells from this key inclusive |optional||
+|5|offset_rev|```i64```|Offset Cell Timestamp of a Scan, select cells after this timestamp |optional||
+|6|key_start|[```SpecKey```](#typedef-speckey)|The Key Start Spec, the start of cells-interval key match |optional||
+|7|key_finish|[```SpecKey```](#typedef-speckey)|The Key Finish Spec, the finish of cells-interval key match |optional||
+|8|value|[```SpecValue```](#struct-specvalue)|The Cell Value Spec, cell-value match |optional||
+|9|ts_start|[```SpecTimestamp```](#struct-spectimestamp)|The Timestamp Start Spec, the start of cells-interval timestamp match |optional||
+|10|ts_finish|[```SpecTimestamp```](#struct-spectimestamp)|The Timestamp Finish Spec, the finish of cells-interval timestamp match |optional||
+|11|flags|[```SpecFlags```](#struct-specflags)|The Interval Flags Specification |optional||
+
+### Struct: SpecColumn
+The Column Specifications, the Cells-Intervals(SpecInterval/s) specification for a column 
+
+| Key | Field | Type | Description | Requiredness | Default value |
+| --- | --- | --- | --- | --- | --- |
+|1|cid|```i64```|The Column ID |default||
+|2|intervals|list&lt;[```SpecInterval```](#struct-specinterval)&gt;|The Cells Interval in a list-container |default||
+
+### Struct: SpecScan
+The Scan Specifications, the Columns-Intervals(SpecColumn/s) with global-scope Flags 
+
+| Key | Field | Type | Description | Requiredness | Default value |
+| --- | --- | --- | --- | --- | --- |
+|1|columns|list&lt;[```SpecColumn```](#struct-speccolumn)&gt;|The Column Intervals(SpecColumn) in a list-container |default||
+|2|flags|[```SpecFlags```](#struct-specflags)|The Global Flags Specification |optional||
+
+### Struct: UCell
+The Cell data for using with Update 
+
+| Key | Field | Type | Description | Requiredness | Default value |
+| --- | --- | --- | --- | --- | --- |
+|1|f|[```Flag```](#enumeration-flag)|The Cell Flag |default||
+|2|k|[```Key```](#typedef-key)|The Cell Key |default||
+|3|ts|```i64```|The Cell Timestamp in nanoseconds |optional||
+|4|ts_desc|```bool```|The Cell Version is in timestamp descending |optional||
+|5|v|```binary```|The Cell Value |optional||
+
+### Struct: Cell
+The Cell for results list of scan 
+
+| Key | Field | Type | Description | Requiredness | Default value |
+| --- | --- | --- | --- | --- | --- |
+|1|c|```string```|The Column Name |default||
+|2|k|[```Key```](#typedef-key)|The Cell Key |default||
+|3|ts|```i64```|The Cell Timestamp |default||
+|4|v|```binary```|The Cell Value |optional||
+
+### Struct: CCell
+The Column Cell for results on Columns of scan 
+
+| Key | Field | Type | Description | Requiredness | Default value |
+| --- | --- | --- | --- | --- | --- |
+|1|k|[```Key```](#typedef-key)|The Cell Key |default||
+|2|ts|```i64```|The Cell Timestamp |default||
+|3|v|```binary```|The Cell Value |optional||
+
+### Struct: KCell
+The Key Cell for results on Key of scan 
+
+| Key | Field | Type | Description | Requiredness | Default value |
+| --- | --- | --- | --- | --- | --- |
+|1|c|```string```|The Column Name |default||
+|2|ts|```i64```|The Cell Timestamp |default||
+|3|v|```binary```|The Cell Value |optional||
+
+### Struct: kCells
+The Key Cells for results on Key of scan 
+
+| Key | Field | Type | Description | Requiredness | Default value |
+| --- | --- | --- | --- | --- | --- |
+|1|k|[```Key```](#typedef-key)|The Cell Key |default||
+|2|cells|list&lt;[```KCell```](#struct-kcell)&gt;|The Key's Cells, defined as KCell items in a list-container |default||
+
+### Struct: FCell
+The Fraction Cell for results on Fraction of scan 
+
+| Key | Field | Type | Description | Requiredness | Default value |
+| --- | --- | --- | --- | --- | --- |
+|1|c|```string```|The Column Name |default||
+|2|ts|```i64```|The Cell Timestamp |default||
+|3|v|```binary```|The Cell Value |optional||
+
+### Struct: FCells
+The Fraction Cells for results on Fraction of scan 
+
+| Key | Field | Type | Description | Requiredness | Default value |
+| --- | --- | --- | --- | --- | --- |
+|1|f|map&lt;```binary```, [```FCells```](#typedef-fcells)&gt;|The Fraction Container for the Next Fractions Tree,  defined as FCells items in a map-container by current Fraction bytes |default||
+|2|cells|list&lt;[```FCell```](#struct-fcell)&gt;|The current Fraction's Cells, defined as FCell items in a list-container |optional||
+
+### Struct: CellsGroup
+A Grouped Cells result for results of scan, determined by the request's CellsResult enum 
+
+| Key | Field | Type | Description | Requiredness | Default value |
+| --- | --- | --- | --- | --- | --- |
+|1|cells|[```Cells```](#typedef-cells)|The Cells in a list, defined as Cell items in a list-container |optional||
+|2|ccells|[```CCells```](#typedef-ccells)|The Columns Cells in a map-container, defined as ColCells items by Column Name |optional||
+|3|kcells|[```KCells```](#typedef-kcells)|The Keys Cells in a list, defined as kCells items in a list-container |optional||
+|4|fcells|[```FCells```](#struct-fcells)|The Fraction Cells in struct FCells |optional||
+
+### Struct: CompactResult
+The Compact Result 
+
+| Key | Field | Type | Description | Requiredness | Default value |
+| --- | --- | --- | --- | --- | --- |
+|1|cid|```i64```|Column ID |default||
+|2|err|```i32```|Error |default||
+
+***
+## Services
+
+### Service: Service
+#### Function: Service.sql_mng_column
+The direct SQL method to Manage Column 
+
+```void```
+ _sql_mng_column_(```string``` sql)
+> throws [```Exception```](#exception-exception)
+
+#### Function: Service.sql_list_columns
+The direct SQL method to List Columns 
+
+[```Schemas```](#typedef-schemas)
+ _sql_list_columns_(```string``` sql)
+> throws [```Exception```](#exception-exception)
+
+#### Function: Service.sql_compact_columns
+The direct SQL method to Compact Columns 
+
+[```CompactResults```](#typedef-compactresults)
+ _sql_compact_columns_(```string``` sql)
+> throws [```Exception```](#exception-exception)
+
+#### Function: Service.sql_select
+The direct SQL method to select cells with result in Cells List. 
+
+[```Cells```](#typedef-cells)
+ _sql_select_(```string``` sql)
+> throws [```Exception```](#exception-exception)
+
+#### Function: Service.sql_select_rslt_on_column
+The direct SQL method to select cells with result in Columns Cells map. 
+
+[```CCells```](#typedef-ccells)
+ _sql_select_rslt_on_column_(```string``` sql)
+> throws [```Exception```](#exception-exception)
+
+#### Function: Service.sql_select_rslt_on_key
+The direct SQL method to select cells with result in Key Cells list. 
+
+[```KCells```](#typedef-kcells)
+ _sql_select_rslt_on_key_(```string``` sql)
+> throws [```Exception```](#exception-exception)
+
+#### Function: Service.sql_select_rslt_on_fraction
+The direct SQL method to select cells with result in Fractons Cells. 
+
+[```FCells```](#struct-fcells)
+ _sql_select_rslt_on_fraction_(```string``` sql)
+> throws [```Exception```](#exception-exception)
+
+#### Function: Service.sql_query
+The SQL method to select cells with result set by the request's type of CellsResult. 
+
+[```CellsGroup```](#struct-cellsgroup)
+ _sql_query_(```string``` sql,
+[```CellsResult```](#enumeration-cellsresult) rslt)
+> throws [```Exception```](#exception-exception)
+
+#### Function: Service.sql_update
+The direct SQL method to update cells optionally to work with updater-id. 
+
+```void```
+ _sql_update_(```string``` sql,
+```i64``` updater_id = ```0```)
+> throws [```Exception```](#exception-exception)
+
+#### Function: Service.updater_create
+The method to Create an Updater ID with buffering size in bytes. 
+
+```i64```
+ _updater_create_(```i32``` buffer_size)
+> throws [```Exception```](#exception-exception)
+
+#### Function: Service.updater_close
+The method to Close an Updater ID. 
+
+```void```
+ _updater_close_(```i64``` id)
+> throws [```Exception```](#exception-exception)
+
+#### Function: Service.update
+The direct method to update cells with cell in Update-Columns-Cells, optionally to work with updater-id. 
+
+```void```
+ _update_([```UCCells```](#typedef-uccells) cells,
+```i64``` updater_id = ```0```)
+> throws [```Exception```](#exception-exception)
+
+#### Function: Service.mng_column
+The direct method to Manage Column 
+
+```void```
+ _mng_column_([```SchemaFunc```](#enumeration-schemafunc) func,
+[```Schema```](#struct-schema) schema)
+> throws [```Exception```](#exception-exception)
+
+#### Function: Service.list_columns
+The direct method to List Columns 
+
+[```Schemas```](#typedef-schemas)
+ _list_columns_([```SpecSchemas```](#struct-specschemas) spec)
+> throws [```Exception```](#exception-exception)
+
+#### Function: Service.compact_columns
+The direct method to Compact Columns 
+
+[```CompactResults```](#typedef-compactresults)
+ _compact_columns_([```SpecSchemas```](#struct-specschemas) spec)
+> throws [```Exception```](#exception-exception)
+
+#### Function: Service.scan
+The direct method to select cells with result in Cells List. 
+
+[```Cells```](#typedef-cells)
+ _scan_([```SpecScan```](#struct-specscan) spec)
+> throws [```Exception```](#exception-exception)
+
+#### Function: Service.scan_rslt_on_column
+The direct method to select cells with result in Columns Cells map. 
+
+[```CCells```](#typedef-ccells)
+ _scan_rslt_on_column_([```SpecScan```](#struct-specscan) spec)
+> throws [```Exception```](#exception-exception)
+
+#### Function: Service.scan_rslt_on_key
+The direct method to select cells with result in Key Cells list. 
+
+[```KCells```](#typedef-kcells)
+ _scan_rslt_on_key_([```SpecScan```](#struct-specscan) spec)
+> throws [```Exception```](#exception-exception)
+
+#### Function: Service.scan_rslt_on_fraction
+The direct method to select cells with result in Fractons Cells. 
+
+[```FCells```](#struct-fcells)
+ _scan_rslt_on_fraction_([```SpecScan```](#struct-specscan) spec)
+> throws [```Exception```](#exception-exception)
+
+#### Function: Service.scan_rslt_on
+The method to select cells with result set by the request's type of CellsResult. 
+
+[```CellsGroup```](#struct-cellsgroup)
+ _scan_rslt_on_([```SpecScan```](#struct-specscan) spec,
+[```CellsResult```](#enumeration-cellsresult) rslt)
+> throws [```Exception```](#exception-exception)
+
+

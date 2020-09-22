@@ -5,13 +5,37 @@
  *  @generated
  */
 
+/// <summary>
+/// Column Value Types
+/// </summary>
 public enum ColumnType
 {
+  /// <summary>
+  /// Unknown/Unrecognized Type
+  /// </summary>
   UNKNOWN = 0,
+  /// <summary>
+  /// A Plain Column Value
+  /// </summary>
   PLAIN = 1,
+  /// <summary>
+  /// A Counter Column Value with integrity of signed-64bit
+  /// </summary>
   COUNTER_I64 = 2,
+  /// <summary>
+  /// A Counter Column Value with integrity of signed-32bit
+  /// </summary>
   COUNTER_I32 = 3,
+  /// <summary>
+  /// A Counter Column Value with integrity of signed-16bit
+  /// </summary>
   COUNTER_I16 = 4,
+  /// <summary>
+  /// A Counter Column Value with integrity of signed-8bit
+  /// </summary>
   COUNTER_I8 = 5,
+  /// <summary>
+  /// Not used - experimental
+  /// </summary>
   CELL_DEFINED = 15,
 }

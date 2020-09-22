@@ -7,6 +7,9 @@
 package org.swcdb.thrift.gen;
 
 @SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused"})
+/**
+ * The Key Cells for results on Key of scan
+ */
 public class kCells implements org.apache.thrift.TBase<kCells, kCells._Fields>, java.io.Serializable, Cloneable, Comparable<kCells> {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("kCells");
 
@@ -16,12 +19,24 @@ public class kCells implements org.apache.thrift.TBase<kCells, kCells._Fields>, 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new kCellsStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new kCellsTupleSchemeFactory();
 
+  /**
+   * The Cell Key
+   */
   public @org.apache.thrift.annotation.Nullable java.util.List<java.nio.ByteBuffer> k; // required
+  /**
+   * The Key's Cells, defined as KCell items in a list-container
+   */
   public @org.apache.thrift.annotation.Nullable java.util.List<KCell> cells; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+    /**
+     * The Cell Key
+     */
     K((short)1, "k"),
+    /**
+     * The Key's Cells, defined as KCell items in a list-container
+     */
     CELLS((short)2, "cells");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
@@ -150,11 +165,17 @@ public class kCells implements org.apache.thrift.TBase<kCells, kCells._Fields>, 
     this.k.add(elem);
   }
 
+  /**
+   * The Cell Key
+   */
   @org.apache.thrift.annotation.Nullable
   public java.util.List<java.nio.ByteBuffer> getK() {
     return this.k;
   }
 
+  /**
+   * The Cell Key
+   */
   public kCells setK(@org.apache.thrift.annotation.Nullable java.util.List<java.nio.ByteBuffer> k) {
     this.k = k;
     return this;
@@ -191,11 +212,17 @@ public class kCells implements org.apache.thrift.TBase<kCells, kCells._Fields>, 
     this.cells.add(elem);
   }
 
+  /**
+   * The Key's Cells, defined as KCell items in a list-container
+   */
   @org.apache.thrift.annotation.Nullable
   public java.util.List<KCell> getCells() {
     return this.cells;
   }
 
+  /**
+   * The Key's Cells, defined as KCell items in a list-container
+   */
   public kCells setCells(@org.apache.thrift.annotation.Nullable java.util.List<KCell> cells) {
     this.cells = cells;
     return this;

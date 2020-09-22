@@ -7,13 +7,37 @@
 package org.swcdb.thrift.gen;
 
 
+/**
+ * Column Value Types
+ */
 public enum ColumnType implements org.apache.thrift.TEnum {
+  /**
+   * Unknown/Unrecognized Type
+   */
   UNKNOWN(0),
+  /**
+   * A Plain Column Value
+   */
   PLAIN(1),
+  /**
+   * A Counter Column Value with integrity of signed-64bit
+   */
   COUNTER_I64(2),
+  /**
+   * A Counter Column Value with integrity of signed-32bit
+   */
   COUNTER_I32(3),
+  /**
+   * A Counter Column Value with integrity of signed-16bit
+   */
   COUNTER_I16(4),
+  /**
+   * A Counter Column Value with integrity of signed-8bit
+   */
   COUNTER_I8(5),
+  /**
+   * Not used - experimental
+   */
   CELL_DEFINED(15);
 
   private final int value;

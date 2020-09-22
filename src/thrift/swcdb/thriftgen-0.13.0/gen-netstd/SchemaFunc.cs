@@ -5,9 +5,21 @@
  *  @generated
  */
 
+/// <summary>
+/// Manage Columns schema function Flags
+/// </summary>
 public enum SchemaFunc
 {
+  /// <summary>
+  /// Create Column Function
+  /// </summary>
   CREATE = 3,
+  /// <summary>
+  /// Delete Column Function
+  /// </summary>
   DELETE = 5,
+  /// <summary>
+  /// Modify Column Function
+  /// </summary>
   MODIFY = 7,
 }

@@ -7,6 +7,9 @@
 package org.swcdb.thrift.gen;
 
 @SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused"})
+/**
+ * The Column Specifications, the Cells-Intervals(SpecInterval/s) specification for a column
+ */
 public class SpecColumn implements org.apache.thrift.TBase<SpecColumn, SpecColumn._Fields>, java.io.Serializable, Cloneable, Comparable<SpecColumn> {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("SpecColumn");
 
@@ -16,12 +19,24 @@ public class SpecColumn implements org.apache.thrift.TBase<SpecColumn, SpecColum
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new SpecColumnStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new SpecColumnTupleSchemeFactory();
 
+  /**
+   * The Column ID
+   */
   public long cid; // required
+  /**
+   * The Cells Interval in a list-container
+   */
   public @org.apache.thrift.annotation.Nullable java.util.List<SpecInterval> intervals; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+    /**
+     * The Column ID
+     */
     CID((short)1, "cid"),
+    /**
+     * The Cells Interval in a list-container
+     */
     INTERVALS((short)2, "intervals");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
@@ -136,10 +151,16 @@ public class SpecColumn implements org.apache.thrift.TBase<SpecColumn, SpecColum
     this.intervals = null;
   }
 
+  /**
+   * The Column ID
+   */
   public long getCid() {
     return this.cid;
   }
 
+  /**
+   * The Column ID
+   */
   public SpecColumn setCid(long cid) {
     this.cid = cid;
     setCidIsSet(true);
@@ -175,11 +196,17 @@ public class SpecColumn implements org.apache.thrift.TBase<SpecColumn, SpecColum
     this.intervals.add(elem);
   }
 
+  /**
+   * The Cells Interval in a list-container
+   */
   @org.apache.thrift.annotation.Nullable
   public java.util.List<SpecInterval> getIntervals() {
     return this.intervals;
   }
 
+  /**
+   * The Cells Interval in a list-container
+   */
   public SpecColumn setIntervals(@org.apache.thrift.annotation.Nullable java.util.List<SpecInterval> intervals) {
     this.intervals = intervals;
     return this;

@@ -7,11 +7,33 @@
 package org.swcdb.thrift.gen;
 
 
+/**
+ * Data Encoding Types
+ */
 public enum EncodingType implements org.apache.thrift.TEnum {
+  /**
+   * Encoding by Ranger DEFAULT configurations
+   */
   DEFAULT(0),
+  /**
+   * No Encoding
+   */
   PLAIN(1),
+  /**
+   * Encode with zlib
+   */
   ZLIB(2),
+  /**
+   * Encode with snappy
+   */
   SNAPPY(3),
+  /**
+   * Encode with zstandard
+   */
+  ZSTD(4),
+  /**
+   * Unrecognized Type
+   */
   UNKNOWN(255);
 
   private final int value;
@@ -42,6 +64,8 @@ public enum EncodingType implements org.apache.thrift.TEnum {
         return ZLIB;
       case 3:
         return SNAPPY;
+      case 4:
+        return ZSTD;
       case 255:
         return UNKNOWN;
       default:

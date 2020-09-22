@@ -5,19 +5,61 @@
  *  @generated
  */
 
+/// <summary>
+/// The available logical Comparators, plus extended logic options applied with 'v' for VOLUME
+/// </summary>
 public enum Comp
 {
+  /// <summary>
+  /// [      ]  :   none           (no comparison aplied)
+  /// </summary>
   NONE = 0,
+  /// <summary>
+  /// [  =^  ]  :   -pf [prefix]   (starts-with)
+  /// </summary>
   PF = 1,
+  /// <summary>
+  /// [  >   ]  :   -gt            (greater-than)
+  /// </summary>
   GT = 2,
+  /// <summary>
+  /// [  >=  ]  :   -ge            (greater-equal)
+  /// </summary>
   GE = 3,
+  /// <summary>
+  /// [  =   ]  :   -eq            (equal)
+  /// </summary>
   EQ = 4,
+  /// <summary>
+  /// [  <=  ]  :   -le            (lower-equal)
+  /// </summary>
   LE = 5,
+  /// <summary>
+  /// [  <   ]  :   -lt            (lower-than)
+  /// </summary>
   LT = 6,
+  /// <summary>
+  /// [  !=  ]  :   -ne            (not-equal)
+  /// </summary>
   NE = 7,
+  /// <summary>
+  /// [  re  ]  :   -re [r,regexp] (regular-expression)
+  /// </summary>
   RE = 8,
+  /// <summary>
+  /// [  v>  ]  :   -vgt           (vol greater-than)
+  /// </summary>
   VGT = 9,
+  /// <summary>
+  /// [  v>= ]  :   -vge           (vol greater-equal)
+  /// </summary>
   VGE = 10,
+  /// <summary>
+  /// [  v<= ]  :   -vle           (vol lower-equal)
+  /// </summary>
   VLE = 11,
+  /// <summary>
+  /// [  v<  ]  :   -vlt           (vol lower-than)
+  /// </summary>
   VLT = 12,
 }

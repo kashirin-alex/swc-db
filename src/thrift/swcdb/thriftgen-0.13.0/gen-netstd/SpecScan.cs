@@ -24,11 +24,17 @@ using Thrift.Processor;
 
 
 
+/// <summary>
+/// The Scan Specifications, the Columns-Intervals(SpecColumn/s) with global-scope Flags
+/// </summary>
 public partial class SpecScan : TBase
 {
   private List<SpecColumn> _columns;
   private SpecFlags _flags;
 
+  /// <summary>
+  /// The Column Intervals(SpecColumn) in a list-container
+  /// </summary>
   public List<SpecColumn> Columns
   {
     get
@@ -42,6 +48,9 @@ public partial class SpecScan : TBase
     }
   }
 
+  /// <summary>
+  /// The Global Flags Specification
+  /// </summary>
   public SpecFlags Flags
   {
     get

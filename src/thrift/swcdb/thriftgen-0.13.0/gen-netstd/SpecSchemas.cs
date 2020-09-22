@@ -24,12 +24,18 @@ using Thrift.Processor;
 
 
 
+/// <summary>
+/// The Specs for Schemas for using with list_columns or compact_columns
+/// </summary>
 public partial class SpecSchemas : TBase
 {
   private List<long> _cids;
   private List<string> _names;
   private List<SchemaPattern> _patterns;
 
+  /// <summary>
+  /// The Column IDs
+  /// </summary>
   public List<long> Cids
   {
     get
@@ -43,6 +49,9 @@ public partial class SpecSchemas : TBase
     }
   }
 
+  /// <summary>
+  /// The Column Names
+  /// </summary>
   public List<string> Names
   {
     get
@@ -56,6 +65,9 @@ public partial class SpecSchemas : TBase
     }
   }
 
+  /// <summary>
+  /// The Schema's Column Name patterns
+  /// </summary>
   public List<SchemaPattern> Patterns
   {
     get

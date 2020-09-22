@@ -24,12 +24,16 @@ using Thrift.Processor;
 
 
 
+/// <summary>
+/// The Value Specifications, option to use with Extended Logical Comparators
+/// </summary>
 public partial class SpecValue : TBase
 {
   private Comp _comp;
   private byte[] _v;
 
   /// <summary>
+  /// Logical comparator to Apply
   /// 
   /// <seealso cref="Comp"/>
   /// </summary>
@@ -46,6 +50,9 @@ public partial class SpecValue : TBase
     }
   }
 
+  /// <summary>
+  /// The binary(bytes) to match against the Cell value
+  /// </summary>
   public byte[] V
   {
     get

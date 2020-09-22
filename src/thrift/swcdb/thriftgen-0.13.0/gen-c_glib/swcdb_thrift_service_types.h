@@ -15,16 +15,18 @@
 
 /* begin types */
 
-enum _swcdb_thriftColumnMng {
-  SWCDB_THRIFT_COLUMN_MNG_CREATE = 3,
-  SWCDB_THRIFT_COLUMN_MNG_DELETE = 5,
-  SWCDB_THRIFT_COLUMN_MNG_MODIFY = 7
+enum _swcdb_thriftKeySeq {
+  SWCDB_THRIFT_KEY_SEQ_UNKNOWN = 0,
+  SWCDB_THRIFT_KEY_SEQ_LEXIC = 1,
+  SWCDB_THRIFT_KEY_SEQ_VOLUME = 2,
+  SWCDB_THRIFT_KEY_SEQ_FC_LEXIC = 3,
+  SWCDB_THRIFT_KEY_SEQ_FC_VOLUME = 4
 };
-typedef enum _swcdb_thriftColumnMng swcdb_thriftColumnMng;
+typedef enum _swcdb_thriftKeySeq swcdb_thriftKeySeq;
 
 /* return the name of the constant */
 const char *
-toString_ColumnMng(int value); 
+toString_KeySeq(int value); 
 
 enum _swcdb_thriftColumnType {
   SWCDB_THRIFT_COLUMN_TYPE_UNKNOWN = 0,
@@ -46,6 +48,7 @@ enum _swcdb_thriftEncodingType {
   SWCDB_THRIFT_ENCODING_TYPE_PLAIN = 1,
   SWCDB_THRIFT_ENCODING_TYPE_ZLIB = 2,
   SWCDB_THRIFT_ENCODING_TYPE_SNAPPY = 3,
+  SWCDB_THRIFT_ENCODING_TYPE_ZSTD = 4,
   SWCDB_THRIFT_ENCODING_TYPE_UNKNOWN = 255
 };
 typedef enum _swcdb_thriftEncodingType swcdb_thriftEncodingType;
@@ -189,6 +192,8 @@ struct _swcdb_thriftSchema
   gboolean __isset_cid;
   gchar * col_name;
   gboolean __isset_col_name;
+  swcdb_thriftKeySeq col_seq;
+  gboolean __isset_col_seq;
   swcdb_thriftColumnType col_type;
   gboolean __isset_col_type;
   gint32 cell_versions;

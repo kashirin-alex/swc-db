@@ -7,6 +7,9 @@
 package org.swcdb.thrift.gen;
 
 @SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused"})
+/**
+ * The Cell data for using with Update
+ */
 public class UCell implements org.apache.thrift.TBase<UCell, UCell._Fields>, java.io.Serializable, Cloneable, Comparable<UCell> {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("UCell");
 
@@ -20,25 +23,51 @@ public class UCell implements org.apache.thrift.TBase<UCell, UCell._Fields>, jav
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new UCellTupleSchemeFactory();
 
   /**
+   * The Cell Flag
    * 
    * @see Flag
    */
   public @org.apache.thrift.annotation.Nullable Flag f; // required
+  /**
+   * The Cell Key
+   */
   public @org.apache.thrift.annotation.Nullable java.util.List<java.nio.ByteBuffer> k; // required
+  /**
+   * The Cell Timestamp in nanoseconds
+   */
   public long ts; // optional
+  /**
+   * The Cell Version is in timestamp descending
+   */
   public boolean ts_desc; // optional
+  /**
+   * The Cell Value
+   */
   public @org.apache.thrift.annotation.Nullable java.nio.ByteBuffer v; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     /**
+     * The Cell Flag
      * 
      * @see Flag
      */
     F((short)1, "f"),
+    /**
+     * The Cell Key
+     */
     K((short)2, "k"),
+    /**
+     * The Cell Timestamp in nanoseconds
+     */
     TS((short)3, "ts"),
+    /**
+     * The Cell Version is in timestamp descending
+     */
     TS_DESC((short)4, "ts_desc"),
+    /**
+     * The Cell Value
+     */
     V((short)5, "v");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
@@ -174,6 +203,7 @@ public class UCell implements org.apache.thrift.TBase<UCell, UCell._Fields>, jav
   }
 
   /**
+   * The Cell Flag
    * 
    * @see Flag
    */
@@ -183,6 +213,7 @@ public class UCell implements org.apache.thrift.TBase<UCell, UCell._Fields>, jav
   }
 
   /**
+   * The Cell Flag
    * 
    * @see Flag
    */
@@ -222,11 +253,17 @@ public class UCell implements org.apache.thrift.TBase<UCell, UCell._Fields>, jav
     this.k.add(elem);
   }
 
+  /**
+   * The Cell Key
+   */
   @org.apache.thrift.annotation.Nullable
   public java.util.List<java.nio.ByteBuffer> getK() {
     return this.k;
   }
 
+  /**
+   * The Cell Key
+   */
   public UCell setK(@org.apache.thrift.annotation.Nullable java.util.List<java.nio.ByteBuffer> k) {
     this.k = k;
     return this;
@@ -247,10 +284,16 @@ public class UCell implements org.apache.thrift.TBase<UCell, UCell._Fields>, jav
     }
   }
 
+  /**
+   * The Cell Timestamp in nanoseconds
+   */
   public long getTs() {
     return this.ts;
   }
 
+  /**
+   * The Cell Timestamp in nanoseconds
+   */
   public UCell setTs(long ts) {
     this.ts = ts;
     setTsIsSet(true);
@@ -270,10 +313,16 @@ public class UCell implements org.apache.thrift.TBase<UCell, UCell._Fields>, jav
     __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __TS_ISSET_ID, value);
   }
 
+  /**
+   * The Cell Version is in timestamp descending
+   */
   public boolean isTs_desc() {
     return this.ts_desc;
   }
 
+  /**
+   * The Cell Version is in timestamp descending
+   */
   public UCell setTs_desc(boolean ts_desc) {
     this.ts_desc = ts_desc;
     setTs_descIsSet(true);
@@ -293,6 +342,9 @@ public class UCell implements org.apache.thrift.TBase<UCell, UCell._Fields>, jav
     __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __TS_DESC_ISSET_ID, value);
   }
 
+  /**
+   * The Cell Value
+   */
   public byte[] getV() {
     setV(org.apache.thrift.TBaseHelper.rightSize(v));
     return v == null ? null : v.array();
@@ -302,6 +354,9 @@ public class UCell implements org.apache.thrift.TBase<UCell, UCell._Fields>, jav
     return org.apache.thrift.TBaseHelper.copyBinary(v);
   }
 
+  /**
+   * The Cell Value
+   */
   public UCell setV(byte[] v) {
     this.v = v == null ? (java.nio.ByteBuffer)null   : java.nio.ByteBuffer.wrap(v.clone());
     return this;

@@ -21,19 +21,21 @@
 
 namespace SWC { namespace Thrift {
 
-struct ColumnMng {
+struct KeySeq {
   enum type {
-    CREATE = 3,
-    DELETE = 5,
-    MODIFY = 7
+    UNKNOWN = 0,
+    LEXIC = 1,
+    VOLUME = 2,
+    FC_LEXIC = 3,
+    FC_VOLUME = 4
   };
 };
 
-extern const std::map<int, const char*> _ColumnMng_VALUES_TO_NAMES;
+extern const std::map<int, const char*> _KeySeq_VALUES_TO_NAMES;
 
-std::ostream& operator<<(std::ostream& out, const ColumnMng::type& val);
+std::ostream& operator<<(std::ostream& out, const KeySeq::type& val);
 
-std::string to_string(const ColumnMng::type& val);
+std::string to_string(const KeySeq::type& val);
 
 struct ColumnType {
   enum type {
@@ -59,6 +61,7 @@ struct EncodingType {
     PLAIN = 1,
     ZLIB = 2,
     SNAPPY = 3,
+    ZSTD = 4,
     UNKNOWN = 255
   };
 };
@@ -264,9 +267,10 @@ void swap(Exception &a, Exception &b);
 std::ostream& operator<<(std::ostream& out, const Exception& obj);
 
 typedef struct _Schema__isset {
-  _Schema__isset() : cid(false), col_name(false), col_type(false), cell_versions(false), cell_ttl(false), blk_encoding(false), blk_size(false), blk_cells(false), cs_replication(false), cs_size(false), cs_max(false), log_rollout_ratio(false), compact_percent(false), revision(false) {}
+  _Schema__isset() : cid(false), col_name(false), col_seq(false), col_type(false), cell_versions(false), cell_ttl(false), blk_encoding(false), blk_size(false), blk_cells(false), cs_replication(false), cs_size(false), cs_max(false), log_rollout_ratio(false), compact_percent(false), revision(false) {}
   bool cid :1;
   bool col_name :1;
+  bool col_seq :1;
   bool col_type :1;
   bool cell_versions :1;
   bool cell_ttl :1;
@@ -286,12 +290,13 @@ class Schema : public virtual ::apache::thrift::TBase {
 
   Schema(const Schema&);
   Schema& operator=(const Schema&);
-  Schema() : cid(0), col_name(), col_type((ColumnType::type)0), cell_versions(0), cell_ttl(0), blk_encoding((EncodingType::type)0), blk_size(0), blk_cells(0), cs_replication(0), cs_size(0), cs_max(0), log_rollout_ratio(0), compact_percent(0), revision(0) {
+  Schema() : cid(0), col_name(), col_seq((KeySeq::type)0), col_type((ColumnType::type)0), cell_versions(0), cell_ttl(0), blk_encoding((EncodingType::type)0), blk_size(0), blk_cells(0), cs_replication(0), cs_size(0), cs_max(0), log_rollout_ratio(0), compact_percent(0), revision(0) {
   }
 
   virtual ~Schema() noexcept;
   int64_t cid;
   std::string col_name;
+  KeySeq::type col_seq;
   ColumnType::type col_type;
   int32_t cell_versions;
   int32_t cell_ttl;
@@ -310,6 +315,8 @@ class Schema : public virtual ::apache::thrift::TBase {
   void __set_cid(const int64_t val);
 
   void __set_col_name(const std::string& val);
+
+  void __set_col_seq(const KeySeq::type val);
 
   void __set_col_type(const ColumnType::type val);
 
@@ -344,6 +351,10 @@ class Schema : public virtual ::apache::thrift::TBase {
     if (__isset.col_name != rhs.__isset.col_name)
       return false;
     else if (__isset.col_name && !(col_name == rhs.col_name))
+      return false;
+    if (__isset.col_seq != rhs.__isset.col_seq)
+      return false;
+    else if (__isset.col_seq && !(col_seq == rhs.col_seq))
       return false;
     if (__isset.col_type != rhs.__isset.col_type)
       return false;

@@ -24,6 +24,9 @@ using Thrift.Processor;
 
 
 
+/// <summary>
+/// The Scan Specifications Flags
+/// </summary>
 public partial class SpecFlags : TBase
 {
   private long _limit;
@@ -32,6 +35,9 @@ public partial class SpecFlags : TBase
   private int _max_buffer;
   private sbyte _options;
 
+  /// <summary>
+  /// Limit to this number of cells
+  /// </summary>
   public long Limit
   {
     get
@@ -45,6 +51,9 @@ public partial class SpecFlags : TBase
     }
   }
 
+  /// <summary>
+  /// Scan from this number of cells Offset on matching Cell-Interval
+  /// </summary>
   public long Offset
   {
     get
@@ -58,6 +67,9 @@ public partial class SpecFlags : TBase
     }
   }
 
+  /// <summary>
+  /// Select only this number of Versions of a given Cell-Key
+  /// </summary>
   public int Max_versions
   {
     get
@@ -71,6 +83,9 @@ public partial class SpecFlags : TBase
     }
   }
 
+  /// <summary>
+  /// return results with reach of this Buffer size in bytes
+  /// </summary>
   public int Max_buffer
   {
     get
@@ -84,6 +99,9 @@ public partial class SpecFlags : TBase
     }
   }
 
+  /// <summary>
+  /// The options bit by SpecFlagsOpt
+  /// </summary>
   public sbyte Options
   {
     get

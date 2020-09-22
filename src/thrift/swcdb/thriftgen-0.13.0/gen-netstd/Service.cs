@@ -27,44 +27,129 @@ public partial class Service
 {
   public interface IAsync
   {
+    /// <summary>
+    /// The direct SQL method to Manage Column
+    /// </summary>
+    /// <param name="sql"></param>
     Task sql_mng_columnAsync(string sql, CancellationToken cancellationToken = default(CancellationToken));
 
+    /// <summary>
+    /// The direct SQL method to List Columns
+    /// </summary>
+    /// <param name="sql"></param>
     Task<List<Schema>> sql_list_columnsAsync(string sql, CancellationToken cancellationToken = default(CancellationToken));
 
+    /// <summary>
+    /// The direct SQL method to Compact Columns
+    /// </summary>
+    /// <param name="sql"></param>
     Task<List<CompactResult>> sql_compact_columnsAsync(string sql, CancellationToken cancellationToken = default(CancellationToken));
 
+    /// <summary>
+    /// The direct SQL method to select cells with result in Cells List.
+    /// </summary>
+    /// <param name="sql"></param>
     Task<List<Cell>> sql_selectAsync(string sql, CancellationToken cancellationToken = default(CancellationToken));
 
+    /// <summary>
+    /// The direct SQL method to select cells with result in Columns Cells map.
+    /// </summary>
+    /// <param name="sql"></param>
     Task<Dictionary<string, List<CCell>>> sql_select_rslt_on_columnAsync(string sql, CancellationToken cancellationToken = default(CancellationToken));
 
+    /// <summary>
+    /// The direct SQL method to select cells with result in Key Cells list.
+    /// </summary>
+    /// <param name="sql"></param>
     Task<List<kCells>> sql_select_rslt_on_keyAsync(string sql, CancellationToken cancellationToken = default(CancellationToken));
 
+    /// <summary>
+    /// The direct SQL method to select cells with result in Fractons Cells.
+    /// </summary>
+    /// <param name="sql"></param>
     Task<FCells> sql_select_rslt_on_fractionAsync(string sql, CancellationToken cancellationToken = default(CancellationToken));
 
+    /// <summary>
+    /// The SQL method to select cells with result set by the request's type of CellsResult.
+    /// </summary>
+    /// <param name="sql"></param>
+    /// <param name="rslt"></param>
     Task<CellsGroup> sql_queryAsync(string sql, CellsResult rslt, CancellationToken cancellationToken = default(CancellationToken));
 
+    /// <summary>
+    /// The direct SQL method to update cells optionally to work with updater-id.
+    /// </summary>
+    /// <param name="sql"></param>
+    /// <param name="updater_id"></param>
     Task sql_updateAsync(string sql, long updater_id, CancellationToken cancellationToken = default(CancellationToken));
 
+    /// <summary>
+    /// The method to Create an Updater ID with buffering size in bytes.
+    /// </summary>
+    /// <param name="buffer_size"></param>
     Task<long> updater_createAsync(int buffer_size, CancellationToken cancellationToken = default(CancellationToken));
 
+    /// <summary>
+    /// The method to Close an Updater ID.
+    /// </summary>
+    /// <param name="id"></param>
     Task updater_closeAsync(long id, CancellationToken cancellationToken = default(CancellationToken));
 
+    /// <summary>
+    /// The direct method to update cells with cell in Update-Columns-Cells, optionally to work with updater-id.
+    /// </summary>
+    /// <param name="cells"></param>
+    /// <param name="updater_id"></param>
     Task updateAsync(Dictionary<long, List<UCell>> cells, long updater_id, CancellationToken cancellationToken = default(CancellationToken));
 
+    /// <summary>
+    /// The direct method to Manage Column
+    /// </summary>
+    /// <param name="func"></param>
+    /// <param name="schema"></param>
     Task mng_columnAsync(SchemaFunc func, Schema schema, CancellationToken cancellationToken = default(CancellationToken));
 
+    /// <summary>
+    /// The direct method to List Columns
+    /// </summary>
+    /// <param name="spec"></param>
     Task<List<Schema>> list_columnsAsync(SpecSchemas spec, CancellationToken cancellationToken = default(CancellationToken));
 
+    /// <summary>
+    /// The direct method to Compact Columns
+    /// </summary>
+    /// <param name="spec"></param>
     Task<List<CompactResult>> compact_columnsAsync(SpecSchemas spec, CancellationToken cancellationToken = default(CancellationToken));
 
+    /// <summary>
+    /// The direct method to select cells with result in Cells List.
+    /// </summary>
+    /// <param name="spec"></param>
     Task<List<Cell>> scanAsync(SpecScan spec, CancellationToken cancellationToken = default(CancellationToken));
 
+    /// <summary>
+    /// The direct method to select cells with result in Columns Cells map.
+    /// </summary>
+    /// <param name="spec"></param>
     Task<Dictionary<string, List<CCell>>> scan_rslt_on_columnAsync(SpecScan spec, CancellationToken cancellationToken = default(CancellationToken));
 
+    /// <summary>
+    /// The direct method to select cells with result in Key Cells list.
+    /// </summary>
+    /// <param name="spec"></param>
     Task<List<kCells>> scan_rslt_on_keyAsync(SpecScan spec, CancellationToken cancellationToken = default(CancellationToken));
 
+    /// <summary>
+    /// The direct method to select cells with result in Fractons Cells.
+    /// </summary>
+    /// <param name="spec"></param>
     Task<FCells> scan_rslt_on_fractionAsync(SpecScan spec, CancellationToken cancellationToken = default(CancellationToken));
 
+    /// <summary>
+    /// The method to select cells with result set by the request's type of CellsResult.
+    /// </summary>
+    /// <param name="spec"></param>
+    /// <param name="rslt"></param>
     Task<CellsGroup> scan_rslt_onAsync(SpecScan spec, CellsResult rslt, CancellationToken cancellationToken = default(CancellationToken));
 
   }

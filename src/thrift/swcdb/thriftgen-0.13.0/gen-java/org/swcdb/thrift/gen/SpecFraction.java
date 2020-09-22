@@ -7,6 +7,9 @@
 package org.swcdb.thrift.gen;
 
 @SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused"})
+/**
+ * The Fraction Specifications
+ */
 public class SpecFraction implements org.apache.thrift.TBase<SpecFraction, SpecFraction._Fields>, java.io.Serializable, Cloneable, Comparable<SpecFraction> {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("SpecFraction");
 
@@ -17,19 +20,27 @@ public class SpecFraction implements org.apache.thrift.TBase<SpecFraction, SpecF
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new SpecFractionTupleSchemeFactory();
 
   /**
+   * Logical comparator to Apply
    * 
    * @see Comp
    */
   public @org.apache.thrift.annotation.Nullable Comp comp; // required
+  /**
+   * The binary(bytes) to match against a fraction of a Cell-Key
+   */
   public @org.apache.thrift.annotation.Nullable java.nio.ByteBuffer f; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     /**
+     * Logical comparator to Apply
      * 
      * @see Comp
      */
     COMP((short)1, "comp"),
+    /**
+     * The binary(bytes) to match against a fraction of a Cell-Key
+     */
     F((short)2, "f");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
@@ -137,6 +148,7 @@ public class SpecFraction implements org.apache.thrift.TBase<SpecFraction, SpecF
   }
 
   /**
+   * Logical comparator to Apply
    * 
    * @see Comp
    */
@@ -146,6 +158,7 @@ public class SpecFraction implements org.apache.thrift.TBase<SpecFraction, SpecF
   }
 
   /**
+   * Logical comparator to Apply
    * 
    * @see Comp
    */
@@ -169,6 +182,9 @@ public class SpecFraction implements org.apache.thrift.TBase<SpecFraction, SpecF
     }
   }
 
+  /**
+   * The binary(bytes) to match against a fraction of a Cell-Key
+   */
   public byte[] getF() {
     setF(org.apache.thrift.TBaseHelper.rightSize(f));
     return f == null ? null : f.array();
@@ -178,6 +194,9 @@ public class SpecFraction implements org.apache.thrift.TBase<SpecFraction, SpecF
     return org.apache.thrift.TBaseHelper.copyBinary(f);
   }
 
+  /**
+   * The binary(bytes) to match against a fraction of a Cell-Key
+   */
   public SpecFraction setF(byte[] f) {
     this.f = f == null ? (java.nio.ByteBuffer)null   : java.nio.ByteBuffer.wrap(f.clone());
     return this;

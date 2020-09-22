@@ -7,9 +7,21 @@
 package org.swcdb.thrift.gen;
 
 
+/**
+ * Manage Columns schema function Flags
+ */
 public enum SchemaFunc implements org.apache.thrift.TEnum {
+  /**
+   * Create Column Function
+   */
   CREATE(3),
+  /**
+   * Delete Column Function
+   */
   DELETE(5),
+  /**
+   * Modify Column Function
+   */
   MODIFY(7);
 
   private final int value;

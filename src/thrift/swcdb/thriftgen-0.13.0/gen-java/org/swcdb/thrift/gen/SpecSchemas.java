@@ -7,6 +7,9 @@
 package org.swcdb.thrift.gen;
 
 @SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused"})
+/**
+ * The Specs for Schemas for using with list_columns or compact_columns
+ */
 public class SpecSchemas implements org.apache.thrift.TBase<SpecSchemas, SpecSchemas._Fields>, java.io.Serializable, Cloneable, Comparable<SpecSchemas> {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("SpecSchemas");
 
@@ -17,14 +20,32 @@ public class SpecSchemas implements org.apache.thrift.TBase<SpecSchemas, SpecSch
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new SpecSchemasStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new SpecSchemasTupleSchemeFactory();
 
+  /**
+   * The Column IDs
+   */
   public @org.apache.thrift.annotation.Nullable java.util.List<java.lang.Long> cids; // optional
+  /**
+   * The Column Names
+   */
   public @org.apache.thrift.annotation.Nullable java.util.List<java.lang.String> names; // optional
+  /**
+   * The Schema's Column Name patterns
+   */
   public @org.apache.thrift.annotation.Nullable java.util.List<SchemaPattern> patterns; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+    /**
+     * The Column IDs
+     */
     CIDS((short)1, "cids"),
+    /**
+     * The Column Names
+     */
     NAMES((short)2, "names"),
+    /**
+     * The Schema's Column Name patterns
+     */
     PATTERNS((short)3, "patterns");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
@@ -156,11 +177,17 @@ public class SpecSchemas implements org.apache.thrift.TBase<SpecSchemas, SpecSch
     this.cids.add(elem);
   }
 
+  /**
+   * The Column IDs
+   */
   @org.apache.thrift.annotation.Nullable
   public java.util.List<java.lang.Long> getCids() {
     return this.cids;
   }
 
+  /**
+   * The Column IDs
+   */
   public SpecSchemas setCids(@org.apache.thrift.annotation.Nullable java.util.List<java.lang.Long> cids) {
     this.cids = cids;
     return this;
@@ -197,11 +224,17 @@ public class SpecSchemas implements org.apache.thrift.TBase<SpecSchemas, SpecSch
     this.names.add(elem);
   }
 
+  /**
+   * The Column Names
+   */
   @org.apache.thrift.annotation.Nullable
   public java.util.List<java.lang.String> getNames() {
     return this.names;
   }
 
+  /**
+   * The Column Names
+   */
   public SpecSchemas setNames(@org.apache.thrift.annotation.Nullable java.util.List<java.lang.String> names) {
     this.names = names;
     return this;
@@ -238,11 +271,17 @@ public class SpecSchemas implements org.apache.thrift.TBase<SpecSchemas, SpecSch
     this.patterns.add(elem);
   }
 
+  /**
+   * The Schema's Column Name patterns
+   */
   @org.apache.thrift.annotation.Nullable
   public java.util.List<SchemaPattern> getPatterns() {
     return this.patterns;
   }
 
+  /**
+   * The Schema's Column Name patterns
+   */
   public SpecSchemas setPatterns(@org.apache.thrift.annotation.Nullable java.util.List<SchemaPattern> patterns) {
     this.patterns = patterns;
     return this;

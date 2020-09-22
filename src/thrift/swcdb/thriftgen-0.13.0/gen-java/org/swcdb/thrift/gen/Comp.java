@@ -7,19 +7,61 @@
 package org.swcdb.thrift.gen;
 
 
+/**
+ * The available logical Comparators, plus extended logic options applied with 'v' for VOLUME
+ */
 public enum Comp implements org.apache.thrift.TEnum {
+  /**
+   * [      ]  :   none           (no comparison aplied)
+   */
   NONE(0),
+  /**
+   * [  =^  ]  :   -pf [prefix]   (starts-with)
+   */
   PF(1),
+  /**
+   * [  >   ]  :   -gt            (greater-than)
+   */
   GT(2),
+  /**
+   * [  >=  ]  :   -ge            (greater-equal)
+   */
   GE(3),
+  /**
+   * [  =   ]  :   -eq            (equal)
+   */
   EQ(4),
+  /**
+   * [  <=  ]  :   -le            (lower-equal)
+   */
   LE(5),
+  /**
+   * [  <   ]  :   -lt            (lower-than)
+   */
   LT(6),
+  /**
+   * [  !=  ]  :   -ne            (not-equal)
+   */
   NE(7),
+  /**
+   * [  re  ]  :   -re [r,regexp] (regular-expression)
+   */
   RE(8),
+  /**
+   * [  v>  ]  :   -vgt           (vol greater-than)
+   */
   VGT(9),
+  /**
+   * [  v>= ]  :   -vge           (vol greater-equal)
+   */
   VGE(10),
+  /**
+   * [  v<= ]  :   -vle           (vol lower-equal)
+   */
   VLE(11),
+  /**
+   * [  v<  ]  :   -vlt           (vol lower-than)
+   */
   VLT(12);
 
   private final int value;

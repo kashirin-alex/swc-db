@@ -7,6 +7,9 @@
 package org.swcdb.thrift.gen;
 
 @SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused"})
+/**
+ * The Scan Specifications, the Columns-Intervals(SpecColumn/s) with global-scope Flags
+ */
 public class SpecScan implements org.apache.thrift.TBase<SpecScan, SpecScan._Fields>, java.io.Serializable, Cloneable, Comparable<SpecScan> {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("SpecScan");
 
@@ -16,12 +19,24 @@ public class SpecScan implements org.apache.thrift.TBase<SpecScan, SpecScan._Fie
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new SpecScanStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new SpecScanTupleSchemeFactory();
 
+  /**
+   * The Column Intervals(SpecColumn) in a list-container
+   */
   public @org.apache.thrift.annotation.Nullable java.util.List<SpecColumn> columns; // required
+  /**
+   * The Global Flags Specification
+   */
   public @org.apache.thrift.annotation.Nullable SpecFlags flags; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+    /**
+     * The Column Intervals(SpecColumn) in a list-container
+     */
     COLUMNS((short)1, "columns"),
+    /**
+     * The Global Flags Specification
+     */
     FLAGS((short)2, "flags");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
@@ -148,11 +163,17 @@ public class SpecScan implements org.apache.thrift.TBase<SpecScan, SpecScan._Fie
     this.columns.add(elem);
   }
 
+  /**
+   * The Column Intervals(SpecColumn) in a list-container
+   */
   @org.apache.thrift.annotation.Nullable
   public java.util.List<SpecColumn> getColumns() {
     return this.columns;
   }
 
+  /**
+   * The Column Intervals(SpecColumn) in a list-container
+   */
   public SpecScan setColumns(@org.apache.thrift.annotation.Nullable java.util.List<SpecColumn> columns) {
     this.columns = columns;
     return this;
@@ -173,11 +194,17 @@ public class SpecScan implements org.apache.thrift.TBase<SpecScan, SpecScan._Fie
     }
   }
 
+  /**
+   * The Global Flags Specification
+   */
   @org.apache.thrift.annotation.Nullable
   public SpecFlags getFlags() {
     return this.flags;
   }
 
+  /**
+   * The Global Flags Specification
+   */
   public SpecScan setFlags(@org.apache.thrift.annotation.Nullable SpecFlags flags) {
     this.flags = flags;
     return this;

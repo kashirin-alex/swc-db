@@ -24,12 +24,16 @@ using Thrift.Processor;
 
 
 
+/// <summary>
+/// The Timestamp Specifications
+/// </summary>
 public partial class SpecTimestamp : TBase
 {
   private Comp _comp;
   private long _ts;
 
   /// <summary>
+  /// Logical comparator to Apply
   /// 
   /// <seealso cref="Comp"/>
   /// </summary>
@@ -46,6 +50,9 @@ public partial class SpecTimestamp : TBase
     }
   }
 
+  /// <summary>
+  /// The timestamp in nanoseconds to match against the Cell timestamp/version (not the revision)
+  /// </summary>
   public long Ts
   {
     get

@@ -24,12 +24,16 @@ using Thrift.Processor;
 
 
 
+/// <summary>
+/// The Fraction Specifications
+/// </summary>
 public partial class SpecFraction : TBase
 {
   private Comp _comp;
   private byte[] _f;
 
   /// <summary>
+  /// Logical comparator to Apply
   /// 
   /// <seealso cref="Comp"/>
   /// </summary>
@@ -46,6 +50,9 @@ public partial class SpecFraction : TBase
     }
   }
 
+  /// <summary>
+  /// The binary(bytes) to match against a fraction of a Cell-Key
+  /// </summary>
   public byte[] F
   {
     get
