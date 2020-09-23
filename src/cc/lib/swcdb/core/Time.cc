@@ -52,24 +52,42 @@ int64_t parse_ns(int& err, const std::string& buf) {
 
   while(*ptr != 0 && *ptr++ != '.');
 
-  if(*ptr != 0) {
-    char *last;
-    uint32_t res = strtoul(ptr, &last, 0);
-    if(ptr == last || res > 999999999) {
-      err = EINVAL;
-      return ns;
-    }
-    ns += res;
+  uint32_t res = 0;
+  for(int places = 100000000; 
+      *ptr != 0 && std::isdigit(*ptr) && places >= 1; 
+      places/=10, ++ptr) {
+    res += (*ptr - 48) * places;
   }
+  if(res) {
+    if(ns < 0) {
+      (ns -= 1000000000 - res) += 1000000000;
+    } else {
+      (ns += res + 1000000000) -= 1000000000;
+    }
+  }
+  if(*ptr != 0)
+    err = EINVAL;
   return ns;
 }
 
 std::string fmt_ns(int64_t ns) {
   int64_t secs = ns/1000000000;
   time_t t_secs = (time_t)secs;
+
+  std::string nanos;
+  if(ns < 0) {
+    uint32_t n = -ns + secs * 1000000000;
+    if(n > 0) {
+      nanos = std::to_string(1000000000 - n);
+      --t_secs; // borrow a second towrads nanos
+    }
+  } else {
+    nanos = std::to_string(ns - secs * 1000000000);
+  }
+
   char res[20];
   std::strftime(res, 20, "%Y/%m/%d %H:%M:%S", std::gmtime(&t_secs));
-  std::string nanos = std::to_string(ns-secs*1000000000);
+
   if(nanos.size() < 9)
     nanos.insert(nanos.begin(), 9-nanos.size(), '0');
   return std::string(res) + "." + nanos;
