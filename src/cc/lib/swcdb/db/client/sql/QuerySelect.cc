@@ -711,14 +711,15 @@ void QuerySelect::read_timestamp(DB::Specs::Timestamp& start,
 
     Condition::Comp comp_right;
     expect_comparator(comp_right);
-    if(comp_right != Condition::EQ && 
+    if(comp_right != Condition::EQ &&
+       comp_right != Condition::NE &&
        comp_right != Condition::GE && 
        comp_right != Condition::GT &&  
        comp_right != Condition::LE && 
        comp_right != Condition::LT) {
       error_msg(
         Error::SQL_PARSE_ERROR, 
-        "unsupported 'comparator' allowed EQ|GE|GT|LE|LT"
+        "unsupported 'comparator' allowed NE|EQ|GE|GT|LE|LT"
       );
       return;
     }
@@ -733,13 +734,13 @@ void QuerySelect::read_timestamp(DB::Specs::Timestamp& start,
       return;
     }
 
-    if(comp_right == Condition::EQ || comp_right == Condition::GE || 
-       comp_right == Condition::GT)
+    if(comp_right == Condition::EQ || comp_right == Condition::NE || 
+       comp_right == Condition::GE || comp_right == Condition::GT)
       start.set(ts, comp_right);
     else 
       finish.set(ts, comp_right);
 
-    if(comp_right == Condition::EQ)
+    if(comp_right == Condition::EQ || comp_right == Condition::NE)
       return;
 
     uint32_t mark_remain = remain;
