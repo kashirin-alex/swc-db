@@ -22,7 +22,7 @@ The key fields:
 |type           |```string```       | PLAIN                               | The Column Value Type, options PLAIN/COUNTER_(I64/I32/I16/I8)     |
 |cell_versions  |```i32```          | 0 == 1                              | The Cell Versions                                                 |
 |cell_ttl       |```i32```          | 0 == without                        | The Time to Live in milliseconds                                  |
-|blk_encoding   |```string```       | DEFAULT = Rangers' default cfg      | The Block Encoding                                                |
+|blk_encoding   |```string```       | DEFAULT = Rangers' default cfg      | The Block Encoding, options PLAIN/ZSTD/ZLIB/SNAPPY                |
 |blk_size       |```i32```          | 0 == Rangers' default cfg           | The Block Size in Bytes                                           |
 |blk_cells      |```i32```          | 0 == Rangers' default cfg           | The Number of Cells in a Block                                    |
 |cs_replication |```i8```           | 0 == Rangers' default cfg           | The CellStore file Replication                                    |
@@ -309,7 +309,7 @@ The Update Query sytrax consists the 'update' command followed by Cell or comma-
 
 * ##### The Cell for Update syntax
 The Syntax by Flags and Options:
-* **DELETE** \
+  * **DELETE** \
 ``` cell( ``` 
 ``` DELETE ```
 ```,``` 
@@ -318,7 +318,7 @@ The Syntax by Flags and Options:
 ``` Key``` 
 ``` ) ```
 
-* **DELETE_VERSION** \
+  * **DELETE_VERSION** \
 ``` cell( ```
 ``` DELETE_VERSION```
 ```,``` 
@@ -329,7 +329,7 @@ The Syntax by Flags and Options:
 ``` TIMESTAMP ```
 ``` ) ```
 
-* **INSERT** with version-timestamp config \
+  * **INSERT** with version-timestamp config \
 ``` cell( ```
 ``` INSERT```
 ```,``` 
@@ -342,10 +342,10 @@ The Syntax by Flags and Options:
 ```,``` 
 ``` VALUE-DATA ```
 ``` ) ```
-  * _TIME_ODER_ options are ```ASC```/```DESC``` - empty-```entry,``` defaults to ```DESC``` .
-  * _TIMESTAMP_ in nanoseconds or a Date and Time in format ```"YYYY/MM/DDD HH:mm:ss.nanoseconds"```, empty-field is auto-assign.
+  > * _TIME_ODER_ options are ```ASC```/```DESC``` - empty-```entry,``` defaults to ```DESC``` .
+  > * _TIMESTAMP_ in nanoseconds or a Date and Time in format ```"YYYY/MM/DDD HH:mm:ss.nanoseconds"```, empty-field is auto-assign.
 
-* **INSERT** with auto-timestamp \
+  * **INSERT** with auto-timestamp \
 ``` cell( ```
 ``` INSERT```
 ```,``` 
