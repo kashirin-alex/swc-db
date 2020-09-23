@@ -1,6 +1,6 @@
 ---
 title: Thrift Client
-sort: 1
+sort: 2
 ---
 
 
