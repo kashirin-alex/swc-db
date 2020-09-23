@@ -216,6 +216,8 @@ class CellsGroup;
 
 class CompactResult;
 
+class Result;
+
 typedef struct _Exception__isset {
   _Exception__isset() : code(false), message(false) {}
   bool code :1;
@@ -1487,6 +1489,66 @@ class CompactResult : public virtual ::apache::thrift::TBase {
 void swap(CompactResult &a, CompactResult &b);
 
 std::ostream& operator<<(std::ostream& out, const CompactResult& obj);
+
+typedef struct _Result__isset {
+  _Result__isset() : schemas(false), cells(false), compact(false) {}
+  bool schemas :1;
+  bool cells :1;
+  bool compact :1;
+} _Result__isset;
+
+class Result : public virtual ::apache::thrift::TBase {
+ public:
+
+  Result(const Result&);
+  Result& operator=(const Result&);
+  Result() {
+  }
+
+  virtual ~Result() noexcept;
+  Schemas schemas;
+  Cells cells;
+  CompactResults compact;
+
+  _Result__isset __isset;
+
+  void __set_schemas(const Schemas& val);
+
+  void __set_cells(const Cells& val);
+
+  void __set_compact(const CompactResults& val);
+
+  bool operator == (const Result & rhs) const
+  {
+    if (__isset.schemas != rhs.__isset.schemas)
+      return false;
+    else if (__isset.schemas && !(schemas == rhs.schemas))
+      return false;
+    if (__isset.cells != rhs.__isset.cells)
+      return false;
+    else if (__isset.cells && !(cells == rhs.cells))
+      return false;
+    if (__isset.compact != rhs.__isset.compact)
+      return false;
+    else if (__isset.compact && !(compact == rhs.compact))
+      return false;
+    return true;
+  }
+  bool operator != (const Result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(Result &a, Result &b);
+
+std::ostream& operator<<(std::ostream& out, const Result& obj);
 
 }} // namespace
 

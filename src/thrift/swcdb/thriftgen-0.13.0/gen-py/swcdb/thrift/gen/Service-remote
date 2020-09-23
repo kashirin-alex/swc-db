@@ -33,6 +33,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('  FCells sql_select_rslt_on_fraction(string sql)')
     print('  CellsGroup sql_query(string sql, CellsResult rslt)')
     print('  void sql_update(string sql, i64 updater_id)')
+    print('  Result exec_sql(string sql)')
     print('  i64 updater_create(i32 buffer_size)')
     print('  void updater_close(i64 id)')
     print('  void update(UCCells cells, i64 updater_id)')
@@ -176,6 +177,12 @@ elif cmd == 'sql_update':
         print('sql_update requires 2 args')
         sys.exit(1)
     pp.pprint(client.sql_update(args[0], eval(args[1]),))
+
+elif cmd == 'exec_sql':
+    if len(args) != 1:
+        print('exec_sql requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.exec_sql(args[0],))
 
 elif cmd == 'updater_create':
     if len(args) != 1:

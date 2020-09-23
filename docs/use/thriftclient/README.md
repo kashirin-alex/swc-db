@@ -46,18 +46,18 @@ sort: 1
 ||	[ &bull; sql_select_rslt_on_fraction](#function-servicesql_select_rslt_on_fraction)|[CellsResult](#enumeration-cellsresult)||
 ||	[ &bull; sql_query](#function-servicesql_query)|[Schemas](#typedef-schemas)||
 ||	[ &bull; sql_update](#function-servicesql_update)|[Key](#typedef-key)||
-||	[ &bull; updater_create](#function-serviceupdater_create)|[SpecKey](#typedef-speckey)||
-||	[ &bull; updater_close](#function-serviceupdater_close)|[UCells](#typedef-ucells)||
-||	[ &bull; update](#function-serviceupdate)|[UCCells](#typedef-uccells)||
-||	[ &bull; mng_column](#function-servicemng_column)|[Cells](#typedef-cells)||
-||	[ &bull; list_columns](#function-servicelist_columns)|[ColCells](#typedef-colcells)||
-||	[ &bull; compact_columns](#function-servicecompact_columns)|[CCells](#typedef-ccells)||
-||	[ &bull; scan](#function-servicescan)|[KCells](#typedef-kcells)||
-||	[ &bull; scan_rslt_on_column](#function-servicescan_rslt_on_column)|[CompactResults](#typedef-compactresults)||
-||	[ &bull; scan_rslt_on_key](#function-servicescan_rslt_on_key)|[Exception](#exception-exception)||
-||	[ &bull; scan_rslt_on_fraction](#function-servicescan_rslt_on_fraction)|[Schema](#struct-schema)||
-||	[ &bull; scan_rslt_on](#function-servicescan_rslt_on)|[SchemaPattern](#struct-schemapattern)||
-|||[SpecSchemas](#struct-specschemas)||
+||	[ &bull; exec_sql](#function-serviceexec_sql)|[SpecKey](#typedef-speckey)||
+||	[ &bull; updater_create](#function-serviceupdater_create)|[UCells](#typedef-ucells)||
+||	[ &bull; updater_close](#function-serviceupdater_close)|[UCCells](#typedef-uccells)||
+||	[ &bull; update](#function-serviceupdate)|[Cells](#typedef-cells)||
+||	[ &bull; mng_column](#function-servicemng_column)|[ColCells](#typedef-colcells)||
+||	[ &bull; list_columns](#function-servicelist_columns)|[CCells](#typedef-ccells)||
+||	[ &bull; compact_columns](#function-servicecompact_columns)|[KCells](#typedef-kcells)||
+||	[ &bull; scan](#function-servicescan)|[CompactResults](#typedef-compactresults)||
+||	[ &bull; scan_rslt_on_column](#function-servicescan_rslt_on_column)|[Exception](#exception-exception)||
+||	[ &bull; scan_rslt_on_key](#function-servicescan_rslt_on_key)|[Schema](#struct-schema)||
+||	[ &bull; scan_rslt_on_fraction](#function-servicescan_rslt_on_fraction)|[SchemaPattern](#struct-schemapattern)||
+||	[ &bull; scan_rslt_on](#function-servicescan_rslt_on)|[SpecSchemas](#struct-specschemas)||
 |||[SpecFlags](#struct-specflags)||
 |||[SpecFraction](#struct-specfraction)||
 |||[SpecValue](#struct-specvalue)||
@@ -74,6 +74,7 @@ sort: 1
 |||[FCells](#struct-fcells)||
 |||[CellsGroup](#struct-cellsgroup)||
 |||[CompactResult](#struct-compactresult)||
+|||[Result](#struct-result)||
 
 
 ***
@@ -436,6 +437,15 @@ The Compact Result
 |1|cid|```i64```|Column ID |default||
 |2|err|```i32```|Error |default||
 
+### Struct: Result
+The Result of 'exec_sql' 
+
+| Key | Field | Type | Description | Requiredness | Default value |
+| --- | --- | --- | --- | --- | --- |
+|1|schemas|[```Schemas```](#typedef-schemas)|Set with result for 'list columns' query |optional||
+|2|cells|[```Cells```](#typedef-cells)|Set with result for 'select' query |optional||
+|3|compact|[```CompactResults```](#typedef-compactresults)|Set with result for 'compact columns' query |optional||
+
 ***
 ## Services
 
@@ -503,6 +513,13 @@ The direct SQL method to update cells optionally to work with updater-id.
 ```void```
  _sql_update_(```string``` sql,
 ```i64``` updater_id = ```0```)
+> throws [```Exception```](#exception-exception)
+
+#### Function: Service.exec_sql
+The SQL method to execute any query. 
+
+[```Result```](#struct-result)
+ _exec_sql_(```string``` sql)
 > throws [```Exception```](#exception-exception)
 
 #### Function: Service.updater_create

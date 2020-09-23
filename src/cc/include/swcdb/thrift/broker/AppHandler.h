@@ -20,6 +20,46 @@ class AppHandler final : virtual public BrokerIf {
 
   virtual ~AppHandler() { }
 
+  /* SQL any */
+  void exec_sql(Result& _return, const std::string& sql) {
+    int err = Error::OK;
+    std::string message;
+    auto cmd = client::SQL::recognize_cmd(err, sql, message);
+    if(err) 
+      Converter::exception(err, message);
+
+    switch(cmd) {
+
+      case client::SQL::CREATE_COLUMN :
+      case client::SQL::MODIFY_COLUMN :
+      case client::SQL::REMOVE_COLUMN :
+        return sql_mng_column(sql);
+      
+      case client::SQL::GET_COLUMNS : {
+        sql_list_columns(_return.schemas, sql);
+        _return.__isset.schemas = true;
+        return;
+      }
+        
+      case client::SQL::SELECT : {
+        sql_select(_return.cells, sql);
+        _return.__isset.cells = true;
+        return;
+      }
+
+      case client::SQL::COMPACT_COLUMNS : {
+        sql_compact_columns(_return.compact, sql);
+        _return.__isset.compact = true;
+        return;
+      }
+
+      case client::SQL::UPDATE :
+        return sql_update(sql, 0);
+
+      default: { }
+    }
+  }
+
 
   /* SQL SCHEMAS/COLUMNS */
   void sql_list_columns(Schemas& _return, const std::string& sql) {

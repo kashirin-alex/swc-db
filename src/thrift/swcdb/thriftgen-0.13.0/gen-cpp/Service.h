@@ -89,6 +89,13 @@ class ServiceIf {
   virtual void sql_update(const std::string& sql, const int64_t updater_id) = 0;
 
   /**
+   * The SQL method to execute any query.
+   * 
+   * @param sql
+   */
+  virtual void exec_sql(Result& _return, const std::string& sql) = 0;
+
+  /**
    * The method to Create an Updater ID with buffering size in bytes.
    * 
    * @param buffer_size
@@ -221,6 +228,9 @@ class ServiceNull : virtual public ServiceIf {
     return;
   }
   void sql_update(const std::string& /* sql */, const int64_t /* updater_id */) {
+    return;
+  }
+  void exec_sql(Result& /* _return */, const std::string& /* sql */) {
     return;
   }
   int64_t updater_create(const int32_t /* buffer_size */) {
@@ -1260,6 +1270,118 @@ class Service_sql_update_presult {
   Exception e;
 
   _Service_sql_update_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _Service_exec_sql_args__isset {
+  _Service_exec_sql_args__isset() : sql(false) {}
+  bool sql :1;
+} _Service_exec_sql_args__isset;
+
+class Service_exec_sql_args {
+ public:
+
+  Service_exec_sql_args(const Service_exec_sql_args&);
+  Service_exec_sql_args& operator=(const Service_exec_sql_args&);
+  Service_exec_sql_args() : sql() {
+  }
+
+  virtual ~Service_exec_sql_args() noexcept;
+  std::string sql;
+
+  _Service_exec_sql_args__isset __isset;
+
+  void __set_sql(const std::string& val);
+
+  bool operator == (const Service_exec_sql_args & rhs) const
+  {
+    if (!(sql == rhs.sql))
+      return false;
+    return true;
+  }
+  bool operator != (const Service_exec_sql_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Service_exec_sql_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class Service_exec_sql_pargs {
+ public:
+
+
+  virtual ~Service_exec_sql_pargs() noexcept;
+  const std::string* sql;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _Service_exec_sql_result__isset {
+  _Service_exec_sql_result__isset() : success(false), e(false) {}
+  bool success :1;
+  bool e :1;
+} _Service_exec_sql_result__isset;
+
+class Service_exec_sql_result {
+ public:
+
+  Service_exec_sql_result(const Service_exec_sql_result&);
+  Service_exec_sql_result& operator=(const Service_exec_sql_result&);
+  Service_exec_sql_result() {
+  }
+
+  virtual ~Service_exec_sql_result() noexcept;
+  Result success;
+  Exception e;
+
+  _Service_exec_sql_result__isset __isset;
+
+  void __set_success(const Result& val);
+
+  void __set_e(const Exception& val);
+
+  bool operator == (const Service_exec_sql_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(e == rhs.e))
+      return false;
+    return true;
+  }
+  bool operator != (const Service_exec_sql_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Service_exec_sql_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _Service_exec_sql_presult__isset {
+  _Service_exec_sql_presult__isset() : success(false), e(false) {}
+  bool success :1;
+  bool e :1;
+} _Service_exec_sql_presult__isset;
+
+class Service_exec_sql_presult {
+ public:
+
+
+  virtual ~Service_exec_sql_presult() noexcept;
+  Result* success;
+  Exception e;
+
+  _Service_exec_sql_presult__isset __isset;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
 
@@ -2546,6 +2668,9 @@ class ServiceClient : virtual public ServiceIf {
   void sql_update(const std::string& sql, const int64_t updater_id);
   void send_sql_update(const std::string& sql, const int64_t updater_id);
   void recv_sql_update();
+  void exec_sql(Result& _return, const std::string& sql);
+  void send_exec_sql(const std::string& sql);
+  void recv_exec_sql(Result& _return);
   int64_t updater_create(const int32_t buffer_size);
   void send_updater_create(const int32_t buffer_size);
   int64_t recv_updater_create();
@@ -2603,6 +2728,7 @@ class ServiceProcessor : public ::apache::thrift::TDispatchProcessor {
   void process_sql_select_rslt_on_fraction(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_sql_query(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_sql_update(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_exec_sql(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_updater_create(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_updater_close(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_update(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -2626,6 +2752,7 @@ class ServiceProcessor : public ::apache::thrift::TDispatchProcessor {
     processMap_["sql_select_rslt_on_fraction"] = &ServiceProcessor::process_sql_select_rslt_on_fraction;
     processMap_["sql_query"] = &ServiceProcessor::process_sql_query;
     processMap_["sql_update"] = &ServiceProcessor::process_sql_update;
+    processMap_["exec_sql"] = &ServiceProcessor::process_exec_sql;
     processMap_["updater_create"] = &ServiceProcessor::process_updater_create;
     processMap_["updater_close"] = &ServiceProcessor::process_updater_close;
     processMap_["update"] = &ServiceProcessor::process_update;
@@ -2751,6 +2878,16 @@ class ServiceMultiface : virtual public ServiceIf {
       ifaces_[i]->sql_update(sql, updater_id);
     }
     ifaces_[i]->sql_update(sql, updater_id);
+  }
+
+  void exec_sql(Result& _return, const std::string& sql) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->exec_sql(_return, sql);
+    }
+    ifaces_[i]->exec_sql(_return, sql);
+    return;
   }
 
   int64_t updater_create(const int32_t buffer_size) {
@@ -2918,6 +3055,9 @@ class ServiceConcurrentClient : virtual public ServiceIf {
   void sql_update(const std::string& sql, const int64_t updater_id);
   int32_t send_sql_update(const std::string& sql, const int64_t updater_id);
   void recv_sql_update(const int32_t seqid);
+  void exec_sql(Result& _return, const std::string& sql);
+  int32_t send_exec_sql(const std::string& sql);
+  void recv_exec_sql(Result& _return, const int32_t seqid);
   int64_t updater_create(const int32_t buffer_size);
   int32_t send_updater_create(const int32_t buffer_size);
   int64_t recv_updater_create(const int32_t seqid);

@@ -767,6 +767,35 @@ GType swcdb_thrift_compact_result_get_type (void);
 #define SWCDB_THRIFT_IS_COMPACT_RESULT_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_COMPACT_RESULT))
 #define SWCDB_THRIFT_COMPACT_RESULT_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_COMPACT_RESULT, swcdb_thriftCompactResultClass))
 
+/* struct Result */
+struct _swcdb_thriftResult
+{ 
+  ThriftStruct parent; 
+
+  /* public */
+  GPtrArray * schemas;
+  gboolean __isset_schemas;
+  GPtrArray * cells;
+  gboolean __isset_cells;
+  GPtrArray * compact;
+  gboolean __isset_compact;
+};
+typedef struct _swcdb_thriftResult swcdb_thriftResult;
+
+struct _swcdb_thriftResultClass
+{
+  ThriftStructClass parent;
+};
+typedef struct _swcdb_thriftResultClass swcdb_thriftResultClass;
+
+GType swcdb_thrift_result_get_type (void);
+#define SWCDB_THRIFT_TYPE_RESULT (swcdb_thrift_result_get_type())
+#define SWCDB_THRIFT_RESULT(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_RESULT, swcdb_thriftResult))
+#define SWCDB_THRIFT_RESULT_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_RESULT, swcdb_thriftResultClass))
+#define SWCDB_THRIFT_IS_RESULT(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_RESULT))
+#define SWCDB_THRIFT_IS_RESULT_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_RESULT))
+#define SWCDB_THRIFT_RESULT_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_RESULT, swcdb_thriftResultClass))
+
 /* constants */
 
 /* struct ServiceSqlMngColumnArgs */
@@ -1236,6 +1265,58 @@ GType swcdb_thrift_service_sql_update_result_get_type (void);
 #define SWCDB_THRIFT_IS_SERVICE_SQL_UPDATE_RESULT(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_SERVICE_SQL_UPDATE_RESULT))
 #define SWCDB_THRIFT_IS_SERVICE_SQL_UPDATE_RESULT_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SERVICE_SQL_UPDATE_RESULT))
 #define SWCDB_THRIFT_SERVICE_SQL_UPDATE_RESULT_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SERVICE_SQL_UPDATE_RESULT, swcdb_thriftServiceSqlUpdateResultClass))
+
+/* struct ServiceExecSqlArgs */
+struct _swcdb_thriftServiceExecSqlArgs
+{ 
+  ThriftStruct parent; 
+
+  /* public */
+  gchar * sql;
+  gboolean __isset_sql;
+};
+typedef struct _swcdb_thriftServiceExecSqlArgs swcdb_thriftServiceExecSqlArgs;
+
+struct _swcdb_thriftServiceExecSqlArgsClass
+{
+  ThriftStructClass parent;
+};
+typedef struct _swcdb_thriftServiceExecSqlArgsClass swcdb_thriftServiceExecSqlArgsClass;
+
+GType swcdb_thrift_service_exec_sql_args_get_type (void);
+#define SWCDB_THRIFT_TYPE_SERVICE_EXEC_SQL_ARGS (swcdb_thrift_service_exec_sql_args_get_type())
+#define SWCDB_THRIFT_SERVICE_EXEC_SQL_ARGS(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_SERVICE_EXEC_SQL_ARGS, swcdb_thriftServiceExecSqlArgs))
+#define SWCDB_THRIFT_SERVICE_EXEC_SQL_ARGS_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_SERVICE_EXEC_SQL_ARGS, swcdb_thriftServiceExecSqlArgsClass))
+#define SWCDB_THRIFT_IS_SERVICE_EXEC_SQL_ARGS(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_SERVICE_EXEC_SQL_ARGS))
+#define SWCDB_THRIFT_IS_SERVICE_EXEC_SQL_ARGS_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SERVICE_EXEC_SQL_ARGS))
+#define SWCDB_THRIFT_SERVICE_EXEC_SQL_ARGS_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SERVICE_EXEC_SQL_ARGS, swcdb_thriftServiceExecSqlArgsClass))
+
+/* struct ServiceExecSqlResult */
+struct _swcdb_thriftServiceExecSqlResult
+{ 
+  ThriftStruct parent; 
+
+  /* public */
+  swcdb_thriftResult * success;
+  gboolean __isset_success;
+  swcdb_thriftException * e;
+  gboolean __isset_e;
+};
+typedef struct _swcdb_thriftServiceExecSqlResult swcdb_thriftServiceExecSqlResult;
+
+struct _swcdb_thriftServiceExecSqlResultClass
+{
+  ThriftStructClass parent;
+};
+typedef struct _swcdb_thriftServiceExecSqlResultClass swcdb_thriftServiceExecSqlResultClass;
+
+GType swcdb_thrift_service_exec_sql_result_get_type (void);
+#define SWCDB_THRIFT_TYPE_SERVICE_EXEC_SQL_RESULT (swcdb_thrift_service_exec_sql_result_get_type())
+#define SWCDB_THRIFT_SERVICE_EXEC_SQL_RESULT(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_SERVICE_EXEC_SQL_RESULT, swcdb_thriftServiceExecSqlResult))
+#define SWCDB_THRIFT_SERVICE_EXEC_SQL_RESULT_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_SERVICE_EXEC_SQL_RESULT, swcdb_thriftServiceExecSqlResultClass))
+#define SWCDB_THRIFT_IS_SERVICE_EXEC_SQL_RESULT(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_SERVICE_EXEC_SQL_RESULT))
+#define SWCDB_THRIFT_IS_SERVICE_EXEC_SQL_RESULT_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SERVICE_EXEC_SQL_RESULT))
+#define SWCDB_THRIFT_SERVICE_EXEC_SQL_RESULT_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SERVICE_EXEC_SQL_RESULT, swcdb_thriftServiceExecSqlResultClass))
 
 /* struct ServiceUpdaterCreateArgs */
 struct _swcdb_thriftServiceUpdaterCreateArgs

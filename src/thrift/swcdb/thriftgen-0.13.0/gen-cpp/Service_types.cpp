@@ -3836,4 +3836,202 @@ void CompactResult::printTo(std::ostream& out) const {
   out << ")";
 }
 
+
+Result::~Result() noexcept {
+}
+
+
+void Result::__set_schemas(const Schemas& val) {
+  this->schemas = val;
+__isset.schemas = true;
+}
+
+void Result::__set_cells(const Cells& val) {
+  this->cells = val;
+__isset.cells = true;
+}
+
+void Result::__set_compact(const CompactResults& val) {
+  this->compact = val;
+__isset.compact = true;
+}
+std::ostream& operator<<(std::ostream& out, const Result& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+uint32_t Result::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            this->schemas.clear();
+            uint32_t _size184;
+            ::apache::thrift::protocol::TType _etype187;
+            xfer += iprot->readListBegin(_etype187, _size184);
+            this->schemas.resize(_size184);
+            uint32_t _i188;
+            for (_i188 = 0; _i188 < _size184; ++_i188)
+            {
+              xfer += this->schemas[_i188].read(iprot);
+            }
+            xfer += iprot->readListEnd();
+          }
+          this->__isset.schemas = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            this->cells.clear();
+            uint32_t _size189;
+            ::apache::thrift::protocol::TType _etype192;
+            xfer += iprot->readListBegin(_etype192, _size189);
+            this->cells.resize(_size189);
+            uint32_t _i193;
+            for (_i193 = 0; _i193 < _size189; ++_i193)
+            {
+              xfer += this->cells[_i193].read(iprot);
+            }
+            xfer += iprot->readListEnd();
+          }
+          this->__isset.cells = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            this->compact.clear();
+            uint32_t _size194;
+            ::apache::thrift::protocol::TType _etype197;
+            xfer += iprot->readListBegin(_etype197, _size194);
+            this->compact.resize(_size194);
+            uint32_t _i198;
+            for (_i198 = 0; _i198 < _size194; ++_i198)
+            {
+              xfer += this->compact[_i198].read(iprot);
+            }
+            xfer += iprot->readListEnd();
+          }
+          this->__isset.compact = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t Result::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("Result");
+
+  if (this->__isset.schemas) {
+    xfer += oprot->writeFieldBegin("schemas", ::apache::thrift::protocol::T_LIST, 1);
+    {
+      xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->schemas.size()));
+      std::vector<Schema> ::const_iterator _iter199;
+      for (_iter199 = this->schemas.begin(); _iter199 != this->schemas.end(); ++_iter199)
+      {
+        xfer += (*_iter199).write(oprot);
+      }
+      xfer += oprot->writeListEnd();
+    }
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.cells) {
+    xfer += oprot->writeFieldBegin("cells", ::apache::thrift::protocol::T_LIST, 2);
+    {
+      xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->cells.size()));
+      std::vector<Cell> ::const_iterator _iter200;
+      for (_iter200 = this->cells.begin(); _iter200 != this->cells.end(); ++_iter200)
+      {
+        xfer += (*_iter200).write(oprot);
+      }
+      xfer += oprot->writeListEnd();
+    }
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.compact) {
+    xfer += oprot->writeFieldBegin("compact", ::apache::thrift::protocol::T_LIST, 3);
+    {
+      xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->compact.size()));
+      std::vector<CompactResult> ::const_iterator _iter201;
+      for (_iter201 = this->compact.begin(); _iter201 != this->compact.end(); ++_iter201)
+      {
+        xfer += (*_iter201).write(oprot);
+      }
+      xfer += oprot->writeListEnd();
+    }
+    xfer += oprot->writeFieldEnd();
+  }
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(Result &a, Result &b) {
+  using ::std::swap;
+  swap(a.schemas, b.schemas);
+  swap(a.cells, b.cells);
+  swap(a.compact, b.compact);
+  swap(a.__isset, b.__isset);
+}
+
+Result::Result(const Result& other202) {
+  schemas = other202.schemas;
+  cells = other202.cells;
+  compact = other202.compact;
+  __isset = other202.__isset;
+}
+Result& Result::operator=(const Result& other203) {
+  schemas = other203.schemas;
+  cells = other203.cells;
+  compact = other203.compact;
+  __isset = other203.__isset;
+  return *this;
+}
+void Result::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "Result(";
+  out << "schemas="; (__isset.schemas ? (out << to_string(schemas)) : (out << "<null>"));
+  out << ", " << "cells="; (__isset.cells ? (out << to_string(cells)) : (out << "<null>"));
+  out << ", " << "compact="; (__isset.compact ? (out << to_string(compact)) : (out << "<null>"));
+  out << ")";
+}
+
 }} // namespace

@@ -7,7 +7,7 @@ sort: 10
 # Using CLI SWC-DB(client) 
 
 ```bash
-cd /opt/swcdb;          # if SWCDB_INSTALL_PATH not on PATH
+cd /opt/swcdb/bin;          # if SWCDB_INSTALL_PATH not on PATH
 ```
 
 ##### ENTER SWC-DB(client) CLI:

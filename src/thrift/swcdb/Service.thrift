@@ -1,10 +1,10 @@
-/**
+/*
  * SWC-DB© Copyright since 2019 Alex Kashirin <kashirin.alex@gmail.com>
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
 
-/**
+/*
  * namespace for target languages
  */
 
@@ -568,6 +568,20 @@ typedef list<CompactResult> CompactResults
 
 
 
+/** The Result of 'exec_sql' */
+struct Result {
+  /** Set with result for 'list columns' query */
+  1: optional Schemas        schemas
+  
+  /** Set with result for 'select' query */
+  2: optional Cells          cells
+  
+  /** Set with result for 'compact columns' query */
+  3: optional CompactResults compact
+}
+
+
+
 service Service {
 
   /** The direct SQL method to Manage Column   */
@@ -606,6 +620,11 @@ service Service {
 
   /** The direct SQL method to update cells optionally to work with updater-id. */
   void    sql_update(1:string sql, 2:i64 updater_id = 0)
+          throws (1:Exception e),
+
+
+  /** The SQL method to execute any query. */
+  Result  exec_sql(1:string sql)
           throws (1:Exception e),
 
 

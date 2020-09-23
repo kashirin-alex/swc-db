@@ -113,6 +113,16 @@ class ServiceHandler : virtual public ServiceIf {
   }
 
   /**
+   * The SQL method to execute any query.
+   * 
+   * @param sql
+   */
+  void exec_sql(Result& _return, const std::string& sql) {
+    // Your implementation goes here
+    printf("exec_sql\n");
+  }
+
+  /**
    * The method to Create an Updater ID with buffering size in bytes.
    * 
    * @param buffer_size

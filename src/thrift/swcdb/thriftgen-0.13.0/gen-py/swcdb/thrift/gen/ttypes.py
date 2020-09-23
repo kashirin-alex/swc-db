@@ -2531,6 +2531,127 @@ class CompactResult(object):
 
     def __ne__(self, other):
         return not (self == other)
+
+
+class Result(object):
+    """
+    The Result of 'exec_sql'
+
+    Attributes:
+     - schemas: Set with result for 'list columns' query
+     - cells: Set with result for 'select' query
+     - compact: Set with result for 'compact columns' query
+
+    """
+
+    __slots__ = (
+        'schemas',
+        'cells',
+        'compact',
+    )
+
+
+    def __init__(self, schemas=None, cells=None, compact=None,):
+        self.schemas = schemas
+        self.cells = cells
+        self.compact = compact
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.LIST:
+                    self.schemas = []
+                    (_etype161, _size158) = iprot.readListBegin()
+                    for _i162 in range(_size158):
+                        _elem163 = Schema()
+                        _elem163.read(iprot)
+                        self.schemas.append(_elem163)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.LIST:
+                    self.cells = []
+                    (_etype167, _size164) = iprot.readListBegin()
+                    for _i168 in range(_size164):
+                        _elem169 = Cell()
+                        _elem169.read(iprot)
+                        self.cells.append(_elem169)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.LIST:
+                    self.compact = []
+                    (_etype173, _size170) = iprot.readListBegin()
+                    for _i174 in range(_size170):
+                        _elem175 = CompactResult()
+                        _elem175.read(iprot)
+                        self.compact.append(_elem175)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('Result')
+        if self.schemas is not None:
+            oprot.writeFieldBegin('schemas', TType.LIST, 1)
+            oprot.writeListBegin(TType.STRUCT, len(self.schemas))
+            for iter176 in self.schemas:
+                iter176.write(oprot)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        if self.cells is not None:
+            oprot.writeFieldBegin('cells', TType.LIST, 2)
+            oprot.writeListBegin(TType.STRUCT, len(self.cells))
+            for iter177 in self.cells:
+                iter177.write(oprot)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        if self.compact is not None:
+            oprot.writeFieldBegin('compact', TType.LIST, 3)
+            oprot.writeListBegin(TType.STRUCT, len(self.compact))
+            for iter178 in self.compact:
+                iter178.write(oprot)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, getattr(self, key))
+             for key in self.__slots__]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return False
+        for attr in self.__slots__:
+            my_val = getattr(self, attr)
+            other_val = getattr(other, attr)
+            if my_val != other_val:
+                return False
+        return True
+
+    def __ne__(self, other):
+        return not (self == other)
 all_structs.append(Exception)
 Exception.thrift_spec = (
     None,  # 0
@@ -2686,6 +2807,13 @@ CompactResult.thrift_spec = (
     None,  # 0
     (1, TType.I64, 'cid', None, None, ),  # 1
     (2, TType.I32, 'err', None, None, ),  # 2
+)
+all_structs.append(Result)
+Result.thrift_spec = (
+    None,  # 0
+    (1, TType.LIST, 'schemas', (TType.STRUCT, [Schema, None], False), None, ),  # 1
+    (2, TType.LIST, 'cells', (TType.STRUCT, [Cell, None], False), None, ),  # 2
+    (3, TType.LIST, 'compact', (TType.STRUCT, [CompactResult, None], False), None, ),  # 3
 )
 fix_spec(all_structs)
 del all_structs
