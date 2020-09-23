@@ -27,6 +27,18 @@
 
 namespace SWC { namespace client { namespace SQL {
 
+enum Cmd {
+  UNKNOWN         = 0,
+  CREATE_COLUMN   = 1,
+  MODIFY_COLUMN   = 2,
+  REMOVE_COLUMN   = 3,
+  GET_COLUMNS     = 4,
+  COMPACT_COLUMNS = 5,
+  SELECT          = 6,
+  UPDATE          = 7
+};
+
+Cmd recognize_cmd(int& err, const std::string& sql, std::string& message);
 
 void parse_select(int& err, const std::string& sql, 
                   DB::Specs::Scan& specs, 
@@ -62,6 +74,7 @@ void parse_dump(int& err, const std::string& sql,
 void parse_load(int& err, const std::string& sql, 
                 std::string& filepath, cid_t& cid,  
                 uint8_t& display_flags, std::string& message);
+
 
 
 

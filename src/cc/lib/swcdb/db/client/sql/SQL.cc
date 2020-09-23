@@ -10,6 +10,63 @@
 namespace SWC { namespace client { namespace SQL {
 
 
+
+Cmd recognize_cmd(int& err, const std::string& sql, std::string& message) {
+  std::string cmd;
+  int words = 1;
+  bool word = true;
+  for(auto chr : sql) {
+    if(isspace(chr)) {
+      if(word) {
+        if(words == 2)
+          break;
+        if(!cmd.empty()) {
+          ++words;
+          cmd += ' ';
+        }
+        word = false;
+      }
+    } else {
+      word = true;
+      cmd += std::tolower(chr);
+    }
+  }
+
+  if(strncmp(cmd.data(), "add", 3) == 0 ||
+     strncmp(cmd.data(), "create", 6) == 0) {
+    return Cmd::CREATE_COLUMN;
+  }
+  if(strncmp(cmd.data(), "modify", 6) == 0 ||
+     strncmp(cmd.data(), "change", 6) == 0 ||
+     strncmp(cmd.data(), "update column", 13) == 0 ||
+     strncmp(cmd.data(), "update schema", 13) == 0) {
+    return Cmd::MODIFY_COLUMN;
+  }
+  if(strncmp(cmd.data(), "delete", 6) == 0 ||
+     strncmp(cmd.data(), "remove", 6) == 0) {
+    return Cmd::REMOVE_COLUMN;
+  }
+  if(strncmp(cmd.data(), "get", 3) == 0 ||
+     strncmp(cmd.data(), "list", 4) == 0) {
+    return Cmd::GET_COLUMNS;
+  }
+  if(strncmp(cmd.data(), "compact", 7) == 0) {
+    return Cmd::COMPACT_COLUMNS;
+  }
+  if(strncmp(cmd.data(), "select", 6) == 0) {
+    return Cmd::SELECT;
+  }
+  if(strncmp(cmd.data(), "update", 6) == 0) {
+    return Cmd::UPDATE;
+  }
+  
+  err = Error::SQL_PARSE_ERROR;
+  message.append("Unrecognized Command begin with '");
+  message.append(cmd);
+  message += "'";
+  return Cmd::UNKNOWN;
+}
+
 void parse_select(int& err, const std::string& sql, 
                   DB::Specs::Scan& specs, 
                   uint8_t& display_flags, std::string& message) {
