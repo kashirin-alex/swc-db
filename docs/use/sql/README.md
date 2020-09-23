@@ -13,6 +13,7 @@ sort: 1
 ### The Schema Syntax
 The Schema Definition is a word-separator set of key=value in round-brackets ```(key=value )``` . \
 The key fields:
+
 | Key           | Type              | Default Value                       | Description                                                       |
 | ---           | ---               | ---                                 | ---                                                               |
 |cid            |```i64```          | NO_CID == 0                         | the Column ID                                                     |
@@ -34,6 +35,7 @@ The key fields:
 
 
 ### Comparators syntax
+
 | TOKEN syntax | Logic Syntax         | Description           |
 | ---          | ---                  | ---                   |
 |```PF```      | ``` =^ ```           | starts-with [prefix]  |
