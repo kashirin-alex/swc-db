@@ -3,7 +3,13 @@ remote_theme: rundocs/jekyll-rtd-theme@v1.1.7
 rougify: gruvbox.light 
 fluid: true
 
+encoding: utf-8
+repository: "kashirin-alex/swc-db"
+# baseurl: "https://www.swcdb.org/"
+breadcrumbs: true
+
 logo: logo-small.png
+# favicon: logo-small.png
 
 author: Alex Kashirin &lt;kashirin.alex@gmail.com&gt; <br/> SWC-DB© License details at &lt;https://github.com/kashirin-alex/swc-db/#license&gt;
 copyright:
@@ -16,8 +22,19 @@ addons:
   - github:
     - homepage
     - issues
-    - download
   
+
 
 readme_index:
   with_frontmatter: true
+
+plugins:
+  - jekyll-default-layout
+  - jekyll-readme-index
+  - jekyll-github-metadata
+  - jekyll-titles-from-headings
+#  - jemoji
+#  - jekyll-avatar
+#  - jekyll-mentions
+  - jekyll-sitemap
+  - jekyll-remote-theme

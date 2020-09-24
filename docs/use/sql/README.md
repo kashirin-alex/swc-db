@@ -291,6 +291,7 @@ The following flags, ```token``` and ```key=value```, are available: \
 
 ### Update Query
 The Update Query command performs cells write to the designated range/s.
+
 * _An Example:_
 ```
 UPDATE
