@@ -1,15 +1,15 @@
 remote_theme: rundocs/jekyll-rtd-theme@v1.1.7
 
-rougify: gruvbox.light 
+rougify: gruvbox
 fluid: true
 
 encoding: utf-8
 repository: "kashirin-alex/swc-db"
-# baseurl: "https://www.swcdb.org/"
+# baseurl: "/swc-db"
 breadcrumbs: true
 
 logo: logo-small.png
-# favicon: logo-small.png
+favicon: favicon.svg
 
 author: Alex Kashirin &lt;kashirin.alex@gmail.com&gt; <br/> SWC-DB© License details at &lt;https://github.com/kashirin-alex/swc-db/#license&gt;
 copyright:

@@ -7,7 +7,7 @@ DOXYFILE_ENCODING      = UTF-8
 PROJECT_NAME           = SWC-DB
 PROJECT_NUMBER         = @SWCDB_VERSION@
 PROJECT_BRIEF          = "SWC-DB© (Super Wide Column Database) - High Performance Scalable Database (https://github.com/kashirin-alex/swc-db)"
-PROJECT_LOGO           =
+PROJECT_LOGO           = @CMAKE_SOURCE_DIR@/docs/logo-small.png
 OUTPUT_DIRECTORY       = doc
 CREATE_SUBDIRS         = NO
 ALLOW_UNICODE_NAMES    = NO
@@ -117,7 +117,9 @@ WARN_LOGFILE           =
 #---------------------------------------------------------------------------
 # Configuration options related to the input files
 #---------------------------------------------------------------------------
-INPUT                  = @CMAKE_SOURCE_DIR@/src/cc #@CMAKE_BINARY_DIR@/src/py/swcdb/pkg
+INPUT                  = @CMAKE_SOURCE_DIR@/src/cc \
+                         #@CMAKE_BINARY_DIR@/src/py/swcdb/pkg \
+                         #@CMAKE_BINARY_DIR@/src/java/mvn
 INPUT_ENCODING         = UTF-8
 FILE_PATTERNS          = *.c \
                          *.cc \
@@ -245,8 +247,8 @@ QHG_LOCATION           =
 GENERATE_ECLIPSEHELP   = NO
 ECLIPSE_DOC_ID         = org.doxygen.Project
 DISABLE_INDEX          = NO
-GENERATE_TREEVIEW      = NO
-ENUM_VALUES_PER_LINE   = 4
+GENERATE_TREEVIEW      = YES
+ENUM_VALUES_PER_LINE   = 1
 TREEVIEW_WIDTH         = 250
 EXT_LINKS_IN_WINDOW    = NO
 FORMULA_FONTSIZE       = 10
@@ -340,7 +342,7 @@ INCLUDE_PATH           =
 INCLUDE_FILE_PATTERNS  =
 PREDEFINED             =
 EXPAND_AS_DEFINED      =
-SKIP_FUNCTION_MACROS   = YES
+SKIP_FUNCTION_MACROS   = NO
 #---------------------------------------------------------------------------
 # Configuration options related to external references
 #---------------------------------------------------------------------------
