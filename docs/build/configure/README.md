@@ -17,11 +17,11 @@ sort: 3
 |LOOKUP_INCLUDE_PATHS| additional paths to headers | posix-dir-path_LIST; | "/opt/local/include;/usr/local/include;usr/local/lib;/usr/include" |
 |LOOKUP_LIB_PATHS| additional paths to libraries | posix-dir-path_LIST; | "/opt/local/lib;/usr/local/lib;/usr/lib;/lib" |
 |JAVA_INSTALL_PATH| JAVA_HOME to use, suggested ```$(find /usr/lib/jvm -name jni.h | sed s"/\/include\/jni.h//"g)``` | posix-dir-path | ENV{JAVA_HOME} |
-|ASIO_INCLUDE_PATH| suggested [as by instructions](/build/prerequisites/specific/#version-asio) | posix-dir-path | "" |
+|ASIO_INCLUDE_PATH| suggested [as by instructions]({{ site.baseurl }}/build/prerequisites/specific/#version-asio) | posix-dir-path | "" |
 |WITHOUT_THRIFT_C| Not to build the libswcdb_thrift_c | ON/OFF | OFF |
 |GLIB_INCLUDE_PATH| suggested ```$(pkg-config --cflags glib-2.0 | tr ' ' ';' | sed 's/-I//g' )``` | posix-dir-path | "" |
 |WITHOUT_PAM| Not to build the libpam_swcdb_max_retries | ON/OFF | OFF |
-|HADOOP_INSTALL_PATH| HADOOP_HOME to use, suggested [as by instructions](/build/prerequisites/specific/#version-hadoop) | posix-dir-path| ENV{HADOOP_HOME} |
+|HADOOP_INSTALL_PATH| HADOOP_HOME to use, suggested [as by instructions]({{ site.baseurl }}/build/prerequisites/specific/#version-hadoop) | posix-dir-path| ENV{HADOOP_HOME} |
 |SWC_DOCUMENTATION|  configure for generating documentations | ON/OFF | OFF |
 |SWC_MALLOC_NOT_INSISTENT|  Not to use SWC-DB insistent malloc | ON/OFF | OFF |
 |SWC_INSTALL_DEP_LIBS|  Install the 3rd-party dependencies libaries used for linking | ON/OFF | OFF |
@@ -51,7 +51,7 @@ sort: 3
 
 ## Configuring
 
-*  while at builds [path as by instructions](/build/prerequisites/)
+*  while at builds [path as by instructions]({{ site.baseurl }}/build/prerequisites/)
 ```
 cd swcdb; 
 ```

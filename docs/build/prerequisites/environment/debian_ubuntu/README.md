@@ -21,7 +21,7 @@ apt-get install -y \
 ```
 
 ##### REQUIRED VERSIONS:
-  * [ASIO](/build/prerequisites/specific/#version-asio) 
+  * [ASIO]({{ site.baseurl }}/build/prerequisites/specific/#version-asio) 
 
 
 ***
@@ -66,7 +66,7 @@ apt-get install -y
 
 ### Hadoop FsBroker native(JVM, C++)
 
-* [HADOOP VERSION](/build/prerequisites/specific/#version-hadoop) 
+* [HADOOP VERSION]({{ site.baseurl }}/build/prerequisites/specific/#version-hadoop) 
 
 _tests require full Java & Apache-Hadoop installation and runtime_
 
@@ -95,7 +95,7 @@ apt-get install -y libcephfs-dev;
 ```bash
 apt-get install -y graphviz doxygen;
 ```
-Generating Thrift Documentations - [COMPILER THRIFT](/build/prerequisites/specific/#compiler-thrift)
+Generating Thrift Documentations - [COMPILER THRIFT]({{ site.baseurl }}/build/prerequisites/specific/#compiler-thrift)
 
 
 

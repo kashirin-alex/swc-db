@@ -19,7 +19,7 @@
 | **a Key Value DB**                                    | **```✔```**  |          |
 | **a Wide Column Database DB**                         | **```✔```**  |          |
 | **a NOSQL (Not Only Structual Query Language) DB**    | **```✔```**  |          |
-| **a [SQL](/use/sql/) (Structual Query Language) DB**  | **```✔```**  | no joins |
+| **a [SQL]({{ site.baseurl }}/use/sql/) (Structual Query Language) DB**  | **```✔```**  | no joins |
 | **a DB with ACID(concept) for a single data-entry**   | **```✔```**  | write with acknowledgment on base of one data-entry(cell) |
 | **a DB with ACID(concept) for a many data-entries**   | **```✗```**  | write with acknowledgment many data-entries(cells) with one request, problem - one entry can exist while other yet to exist |
 | **a Time Series DB**                                  | **```✔```**  | without relational propotions |
@@ -43,7 +43,7 @@
 #### The Differences of SWC-DB with Wide Column Databases
 The major differences **“Super Wide Column Database”** has to commonly known Wide Column Databases are SWC-DB does not have Tables nor
 Namespaces and while cell key as known to be in Wide Column Database structured in timestamp, row, column-family and column-family-qualifier in
-SWC-DB a cell key is a list of Fractions with timestamp. The differences in [SQL](/use/sql/) syntax, it is in-place of ```select columns from “table_name”``` with SWC-DB
+SWC-DB a cell key is a list of Fractions with timestamp. The differences in [SQL]({{ site.baseurl }}/use/sql/) syntax, it is in-place of ```select columns from “table_name”``` with SWC-DB
 It is ```select [ where_clause [Columns-Intervals] ]```.\
 Considering to structure a Wide-Column-DB in SWC-DB it can be in these forms ```key=[F(row),
 F(column-family), F(column-family-qualifier)]``` or the actual column is named after Namespace, Table and Column Family with ```key=[F(row), F(column-family-qualifier)]```.
@@ -59,8 +59,8 @@ cells with key ```[>F(), F(2nd)]``` returning the cells with second fraction equ
 
 
 #### The Comparators in SWC-DB
-The [Comparators](/use/sql/#comparators-syntax) available in SWC-DB are NONE, PF ,GT, GE, EQ, LE, LT, NE, RE while some have limitations for range-locator as regexp is evaluated as
-NONE being anything-match. Additionally the conditions of comparators applied on the corresponding [“ key-sequence ”](/use/thriftclient/#enumeration-keyseq) by column's schema that include
+The [Comparators]({{ site.baseurl }}/use/sql/#comparators-syntax) available in SWC-DB are NONE, PF ,GT, GE, EQ, LE, LT, NE, RE while some have limitations for range-locator as regexp is evaluated as
+NONE being anything-match. Additionally the conditions of comparators applied on the corresponding [“ key-sequence ”]({{ site.baseurl }}/use/thriftclient/#enumeration-keyseq) by column's schema that include
 LEXIC, VOLUME, FC_LEXIC, FC_VOLUME that define the sequence of cells in a range. If a prefix (PF) is desired than the choice will be the LEXIC or with
 FC_LEXIC as VOLUME (volumetric) will not correspond to the char-byte sequence while if desired to have for example a decimal sequence of 0, 1, 2 .. 11
 the VOLUME is the right choice whereas the FC_VOLUME unlike tree-wise on fraction keeps the sequence of smaller key fractions-count at the beginning
@@ -122,28 +122,28 @@ In worst case of outdated data being used with a request the Ranger return an er
 
 * [Introduction to the SWC-DB](#introduction-to-the-swc-db)
 * USING
-  * [SQL](/use/sql/)
-  * [Thrift Client](/use/thriftclient/)
-  * [CLI Client](/use/cli/)
-  * [Load Generator](/use/load_generator/)
+  * [SQL]({{ site.baseurl }}/use/sql/)
+  * [Thrift Client]({{ site.baseurl }}/use/thriftclient/)
+  * [CLI Client]({{ site.baseurl }}/use/cli/)
+  * [Load Generator]({{ site.baseurl }}/use/load_generator/)
 * RUNNING
-  * [Psedomode](/run/psedomode/)
-  * [Distributed](/run/distributed/)
+  * [Psedomode]({{ site.baseurl }}/run/psedomode/)
+  * [Distributed]({{ site.baseurl }}/run/distributed/)
 * CONFIGURING
-  * [The Config Files](/configure/the_config_files/)
-  * [The Properties](/configure/properties/)
+  * [The Config Files]({{ site.baseurl }}/configure/the_config_files/)
+  * [The Properties]({{ site.baseurl }}/configure/properties/)
 * INSTALLING
-  * [Installation Steps](/install/steps/)
-  * [Dependencies](/install/dependencies/)
-  * [Getting SWC-DB](/install/getting_swcdb/)
-  * [Setting up swcdb_cluster](/install/swcdb_cluster/)
+  * [Installation Steps]({{ site.baseurl }}/install/steps/)
+  * [Dependencies]({{ site.baseurl }}/install/dependencies/)
+  * [Getting SWC-DB]({{ site.baseurl }}/install/getting_swcdb/)
+  * [Setting up swcdb_cluster]({{ site.baseurl }}/install/swcdb_cluster/)
 * BUILDING
-  * [Build Steps](/build/steps/)
-  * [Prerequisites](/build/prerequisites/)
-  * [Configure](/build/configure/)
-  * [Make](/build/make/)
-  * [Documentations](/build/documentations/)
-  * [Test](/build/test/)
+  * [Build Steps]({{ site.baseurl }}/build/steps/)
+  * [Prerequisites]({{ site.baseurl }}/build/prerequisites/)
+  * [Configure]({{ site.baseurl }}/build/configure/)
+  * [Make]({{ site.baseurl }}/build/make/)
+  * [Documentations]({{ site.baseurl }}/build/documentations/)
+  * [Test]({{ site.baseurl }}/build/test/)
 
 
 
@@ -165,6 +165,6 @@ In worst case of outdated data being used with a request the Ranger return an er
 
 
 
-![SWC-DB©](logo-big.png)
+![SWC-DB©]({{ site.baseurl }}/logo-big.png)
 
 

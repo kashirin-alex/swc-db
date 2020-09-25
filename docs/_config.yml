@@ -3,9 +3,10 @@ remote_theme: rundocs/jekyll-rtd-theme@v1.1.7
 rougify: gruvbox
 fluid: true
 
-encoding: utf-8
+baseurl: "/swc-db"  # for github "/swc-db", for local ""
 repository: "kashirin-alex/swc-db"
-# baseurl: "/swc-db"
+
+encoding: utf-8
 breadcrumbs: true
 
 logo: logo-small.png

@@ -6,7 +6,7 @@ sort: 4
 
 # Making
 
-*  while at builds [path as by instructions](/build/prerequisites/)
+*  while at builds [path as by instructions]({{ site.baseurl }}/build/prerequisites/)
 
 ```
 cd swcdb; 
