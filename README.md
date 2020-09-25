@@ -1,5 +1,6 @@
-# **SWC-DB©** &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;   ![GPLv3](docs/logo-small.png)
-#### SWC-DB© (_Super Wide Column Database_) - High Performance Scalable Database
+# **SWC-DB©** &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;   ![SWC-DB](docs/logo-small.png)
+## SWC-DB© (_Super Wide Column Database_) - High Performance Scalable Database
+
 
 
 * ##### [CHANGELOG](https://github.com/kashirin-alex/swc-db/blob/master/CHANGELOG.md) _- start 'watching' the master branch to receive updates_
@@ -8,15 +9,17 @@
 
 
 
-### ABSTRACT
-###### https://alex.kashirin.family/swc-DB.pdf
+### DOCUMENTATIONS
 
+All the documentations are based on the ./docs/ while www.swcdb.org include additional information.
 
+* ###### [SWC-DB Website - https://www.swcdb.org](https://www.swcdb.org)
 
+* ###### [SWC-DB GitHub Pages - https://kashirin-alex.github.io/swc-db/](https://kashirin-alex.github.io/swc-db/)
 
+* ###### [SWC-DB Read The Docs - https://swc-db.readthedocs.io/](https://swc-db.readthedocs.io/)
 
-### GUIDE
-* ###### [SWC-DB PAGES - https://kashirin-alex.github.io/swc-db/](https://kashirin-alex.github.io/swc-db/)
+* ###### [Browse the docs/](https://github.com/kashirin-alex/swc-db/blob/master/docs/)
 
 
 
