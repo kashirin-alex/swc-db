@@ -6,7 +6,7 @@ sort: 4
 
 # Making
 
-*  while at builds [path as by instructions](/swc-db/build/prerequisites/)
+*  while at builds [path as by instructions](/build/prerequisites/)
 
 ```
 cd swcdb; 

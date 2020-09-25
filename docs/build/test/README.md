@@ -10,12 +10,12 @@ sort: 5
 ## PREPARE
 
 **Test use swcdb_cluster**
-- swcdb_cluster needs setup [as by instructiuons](/swc-db/install/swcdb_cluster/)
+- swcdb_cluster needs setup [as by instructiuons](/install/swcdb_cluster/)
 
 
 
 ## RUN THE TEST
-*  while at builds [path as by instructions](/swc-db/build/prerequisites/)
+*  while at builds [path as by instructions](/build/prerequisites/)
 
 ```bash
 cd swcdb;

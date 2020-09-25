@@ -6,7 +6,7 @@ sort: 1
 
 # Running SWC-DB in a Psedumode
 
-_Edit the necessary configuration in etc/swcdb/*.cfg [as by instructions](/swc-db/configure/)_
+_Edit the necessary configuration in etc/swcdb/*.cfg [as by instructions](/configure/)_
 
 ```
 cd /opt/swcdb;          # SWCDB_INSTALL_PATH
@@ -19,7 +19,7 @@ mkdir -p var/log/swcdb; # re-config "swc.logging.path" for other path
 
 
 * ### start with sbin/swcdb_cluster
-_**sbin/swcdb_cluster** can start **only on localhost** as if it is a distributed-cluster, if swcdb_cluster is set [as by instructions](/swc-db/install/swcdb_cluster/)_.
+_**sbin/swcdb_cluster** can start **only on localhost** as if it is a distributed-cluster, if swcdb_cluster is set [as by instructions](/install/swcdb_cluster/)_.
 ```
 sbin/swcdb_cluster start;
 ```

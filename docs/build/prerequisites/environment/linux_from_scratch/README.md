@@ -4,7 +4,7 @@
 ## SWC-DB Mandatory 3rd-party Prerequisites: 
 
 ##### REQUIRED VERSIONS:
-  * [ASIO](/swc-db//build/prerequisites/specific/version_asio) 
+  * [ASIO](/build/prerequisites/specific/#version-asio) 
 
 
 ***
@@ -27,7 +27,7 @@
 
 ### Hadoop FsBroker native(JVM, C++)
 
-* [HADOOP VERSION](/swc-db/build/prerequisites/specific/version_hadoop) 
+* [HADOOP VERSION](/build/prerequisites/specific/#version-hadoop) 
 
 _tests require full Java & Apache-Hadoop installation and runtime_
 
@@ -43,7 +43,7 @@ _tests require full Java & Apache-Hadoop installation and runtime_
 
 
 ### Documentations
-Generating Thrift Documentations - [COMPILER THRIFT](/swc-db//build/prerequisites/specific/compiler_thrift)
+Generating Thrift Documentations - [COMPILER THRIFT](/build/prerequisites/specific/#compiler-thrift)
 
 
 

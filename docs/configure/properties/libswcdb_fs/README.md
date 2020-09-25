@@ -34,7 +34,7 @@ _default_ **```swc.fs.path.data=swcdb/```**
 * ### swc.fs
 ```STRING```
 The main FileSystem type: ```local``` ```hadoop``` ```hadoop_jvm``` ```ceph``` ```broker``` ```custom``` 'custom' let use of a custom made FS Library based on the SWC-DB FS Library (```libswcdb_fs```). SWC-DB Programs will work with the configured Filesystem as the main Filesystem.
-> By using local means it is not a distributed filesystem and the SWC-DB run can be only the local [Psedumode](/swc-db/run/psedomode/).
+> By using local means it is not a distributed filesystem and the SWC-DB run can be only the local [Psedumode](/run/psedomode/).
   
   _default_ **```swc.fs=```**
 

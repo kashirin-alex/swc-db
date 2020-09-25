@@ -6,7 +6,7 @@ sort: 2
 
 # Running SWC-DB in a Distributed Cluster
 
-_Edit the necessary configuration in etc/swcdb/*.cfg [as by instructions](/swc-db/configure/)_
+_Edit the necessary configuration in etc/swcdb/*.cfg [as by instructions](/configure/)_
 
 ```
 cd /opt/swcdb;          # SWCDB_INSTALL_PATH
@@ -15,7 +15,7 @@ cd sbin/;
 
 ## the Utility 'swcdb_cluster '
 
-  **swcdb_cluster needs to set [as by instructions](/swc-db/install/swcdb_cluster/)**
+  **swcdb_cluster needs to set [as by instructions](/install/swcdb_cluster/)**
   
   _List the available commdand of swcdb_cluster_
 
