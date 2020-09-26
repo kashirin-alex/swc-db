@@ -36,7 +36,7 @@ sort: 2
 
 | Module | Services & Functions | Data types | Constants |
 | --- | --- | --- | --- |
-|Service|[Service](#serviceservice)|[KeySeq](#enumeration-keyseq)||
+|Service|[Service](#service-service)|[KeySeq](#enumeration-keyseq)||
 ||	[ &bull; sql_mng_column](#function-servicesql_mng_column)|[ColumnType](#enumeration-columntype)||
 ||	[ &bull; sql_list_columns](#function-servicesql_list_columns)|[EncodingType](#enumeration-encodingtype)||
 ||	[ &bull; sql_compact_columns](#function-servicesql_compact_columns)|[SchemaFunc](#enumeration-schemafunc)||

@@ -1,6 +1,6 @@
 ---
 title: Getting SWC-DB
-sort: 3
+sort: 2
 ---
 
 # Getting SWC-DB
@@ -38,7 +38,8 @@ mkdir ${SWCDB_INSTALL_PATH};
 tar -xf swcdb-${SWCDB_VERSION_SPECIFIC}.tar.xz -C ${SWCDB_INSTALL_PATH};
 
 # for python thrift-client:
-python3 -m pip install wheel ${SWCDB_INSTALL_PATH}/lib/py/swcdb-${SWCDB_VERSION}.tar.gz;
+SWCDB_VERSION_PYTHON=${SWCDB_VERSION}; # Py pkg can have another sub-version ".#"
+python3 -m pip install wheel ${SWCDB_INSTALL_PATH}/lib/py/swcdb-${SWCDB_VERSION_PYTHON}.tar.gz;
 
 ```
 

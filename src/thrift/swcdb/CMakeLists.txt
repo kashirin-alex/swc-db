@@ -104,24 +104,50 @@ if(PYTHON_EXECUTABLES)
 
   if(NOT EXISTS ${THRIFT_PY_GEN_PATH}/gen OR NOT EXISTS ${VER_GEN_PATH}/gen-py)
     if(THRIFT_COMPILER_FOUND)
+
+      set(GEN_TYPES "native;tornado;twisted;zope.interface")
+      message(STATUS "Generating Thrift PYTHON: ${GEN_TYPES}")
+
       execute_process(COMMAND rm -rf ${VER_GEN_PATH}/gen-py )
       execute_process(COMMAND mkdir -p ${VER_GEN_PATH}/gen-py )
 
-      message(STATUS "Generating Thrift PYTHON:")
-      execute_process(COMMAND thrift -r --gen py:slots,no_utf8strings 
-                      -o ${VER_GEN_PATH}/
-                      ${CMAKE_CURRENT_SOURCE_DIR}/Service.thrift)
-      message("       ${VER_GEN_PATH}/gen-py")
+      foreach(typ ${GEN_TYPES})
+        execute_process(COMMAND mkdir -p ${VER_GEN_PATH}/tmp )
+        set(GEN_TYPE "")
+        if(NOT typ STREQUAL "native")
+          set(GEN_TYPE "${typ},")
+        endif()
+        execute_process(COMMAND thrift -r --gen py:${GEN_TYPE}slots,no_utf8strings 
+                        -o ${VER_GEN_PATH}/tmp/
+                        ${CMAKE_CURRENT_SOURCE_DIR}/Service.thrift)
+                
+        set(GEN_TYPE "gen-py")        
+        if(NOT typ STREQUAL "native" AND NOT typ STREQUAL "zope.interface")
+          set(GEN_TYPE ${GEN_TYPE}.${typ})
+        endif()
+        execute_process(COMMAND mv ${VER_GEN_PATH}/tmp/${GEN_TYPE} ${VER_GEN_PATH}/gen-py/${typ})
+        execute_process(COMMAND rm -rf ${VER_GEN_PATH}/tmp)
+
+        message("       ${VER_GEN_PATH}/gen-py/${typ}")
+      endforeach()
     endif()
 
     if(EXISTS ${VER_GEN_PATH}/gen-py)  # set module path
       execute_process(COMMAND mkdir -p ${THRIFT_PY_GEN_PATH} )
       execute_process(COMMAND rm -rf ${THRIFT_PY_GEN_PATH}/gen-py )
-      execute_process(COMMAND cp -r  ${VER_GEN_PATH}/gen-py/swcdb/thrift/gen ${THRIFT_PY_GEN_PATH}/)
+      
+      foreach(typ ${GEN_TYPES})
+        if(typ STREQUAL "zope.interface")
+          set(dest "zopeif")
+        else()
+          set(dest ${typ})
+        endif()
+        execute_process(COMMAND cp -r  ${VER_GEN_PATH}/gen-py/${typ}/swcdb/thrift/gen ${THRIFT_PY_GEN_PATH}/${dest}/)
+      endforeach()
     endif()
   endif()
 
-  if(EXISTS ${THRIFT_PY_GEN_PATH}/gen)
+  if(EXISTS ${THRIFT_PY_GEN_PATH}/native)
       set(THRIFT_PY_GEN_PATH ${THRIFT_PY_GEN_PATH} PARENT_SCOPE)
   endif()
 endif(PYTHON_EXECUTABLES)

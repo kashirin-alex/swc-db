@@ -7,8 +7,8 @@ from thrift.transport import TTransport, TSocket
 TSSLSocket = None
 from thrift.protocol.TBinaryProtocol import TBinaryProtocol
 
-from swcdb.thrift.gen import Service
-from swcdb.thrift.gen.ttypes import *
+from swcdb.thrift.native import Service
+from swcdb.thrift.native.ttypes import *
 
 
 def init_ssl(handler=None, formatter=None):

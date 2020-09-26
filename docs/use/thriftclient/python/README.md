@@ -5,15 +5,26 @@ sort: 3
 
 
 # Using Python Thrift Client
-The package `python swcdb` include the SWC-DB Thrift Service module.
+The package `swcdb` has the SWC-DB ```thirft``` module which consist of modules ```service``` the default SWC-DB client and several Thrift implementations ```native```,  ```tornado```, ```twisted``` and ```zopeif```.
+* The ```swcdb.thrift.native``` is a python native implementation. It is the implemenation used in the ```swcdb.thrift.service``` module and the Documentaions discuss the use of the default SWC-DB client.
+* The ```swcdb.thrift.tornado``` is the implementation for using with [Tornado](https://pypi.org/project/tornado/) a Python web framework.
+* The ```swcdb.thrift.twisted``` is the implementation for using with [Twisted](https://pypi.org/project/twisted/) an event-based framework for internet applications.
+* The ```swcdb.thrift.zopeif``` is the Zope Interface for using with [Zope](https://pypi.org/project/zope/) implementations.
+ 
 
 
 ## The Methods
 The class `swcdb.thrift.service.Client` inherits the [SWC-DB Thrift Service]({{ site.baseurl }}/use/thriftclient/#service-service) and all the methods/functions in the SWC-DB Thrift Service are available in the python client. The methods with prefix ```.sql_``` require the structual syntax of the [SWC-DB SQL]({{ site.baseurl }}/use/sql/).
 
 
+
 ## The Object Types
-All the Objects **[Enumerations]({{ site.baseurl }}/use/thriftclient/#enumerations), [Type-Declarations]({{ site.baseurl }}/use/thriftclient/#type-declarations), [Struct & Exception]({{ site.baseurl }}/use/thriftclient/#data-structures)** are as [The SWC-DB Thrift Modules]({{ site.baseurl }}/use/thriftclient/#the-swc-db-thrift-modules) and available in `swcdb.thrift.service`.
+All the Objects **[Enumerations]({{ site.baseurl }}/use/thriftclient/#enumerations), [Type-Declarations]({{ site.baseurl }}/use/thriftclient/#type-declarations), [Struct & Exception]({{ site.baseurl }}/use/thriftclient/#data-structures)** are as [The SWC-DB Thrift Modules]({{ site.baseurl }}/use/thriftclient/#the-swc-db-thrift-modules) and available in module `swcdb.thrift.service`.
+
+
+
+## Before Using
+Before you can start using the SWC-DB Python Package you need as [by instructions to Install the package]({{ site.baseurl }}/install/thrift_clients/#install-the-swc-db-python-package).
 
 
 
