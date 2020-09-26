@@ -541,8 +541,9 @@ SpecScan select_specs(Client& client) {
     assert(!schemas.empty());
 
     auto& col = ss.columns.emplace_back();
-    col.cid = schemas.back().cid;
+    col.__set_cid(schemas.back().cid);
     auto& intval = col.intervals.emplace_back();
+    col.__isset.intervals = true;
 
     intval.__isset.key_start = true;
     intval.key_start.resize(2);
@@ -551,6 +552,7 @@ SpecScan select_specs(Client& client) {
     intval.key_start[1].__set_comp(Comp::GE);
     intval.key_start[1].__set_f("");
   }
+  ss.__isset.columns = true;
   return ss;
 }
 
