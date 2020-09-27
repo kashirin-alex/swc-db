@@ -10,7 +10,18 @@
 
 ### [SWC-DB master](https://github.com/kashirin-alex/swc-db/tree/master) (upcoming-release)
 
-    
+    fixed parse_ns & fmt_ns with ns at neg and ms/us float point in SWC::Time
+    added include/core/ErrorCode.h with only enum SWC::Error::Code
+    added enum client::SQL:Cmd & Cmd recognize_cmd(int& err, const string& sql)
+    added SWC::Thrift::Result and function Results exec_sql(1:string sql)
+    added timestamp interval(one-side) to support Condition::NE in client::SQL
+    moved Python pkg module swcdb.thirft.gen to swcdb.thirft.native
+    added Python package with modules swcdb.thrift.{tornado,twisted,zopeif}
+    added PyPi package 'swcdb', `pip install swcdb` available
+    moved src/py/swcdb/pkg to src/py/package/swcdb
+    extended doxygen with Doxyfile for each Doxyfile-[language].doxy
+    added documentations to docs/ and configured Jekyll build
+    changed from gh-wiki to documenaions on www.swcdb.org website & GitHub Pages
 
 [_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.4.8...master)
 ******
