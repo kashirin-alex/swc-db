@@ -14,13 +14,13 @@ if(NOT SWC_WITHOUT_PY AND THRIFT_PY_GEN_PATH)
 #### PREPARE SWC-DB PKG DIR
 set(SWCDB_VERSION_PYTHON "${SWCDB_VERSION}.0")
 
-set(PY_PKG_PATH ${CMAKE_CURRENT_BINARY_DIR}/swcdb)
+set(PY_PKG_PATH ${CMAKE_CURRENT_BINARY_DIR}/package)
 
-execute_process(COMMAND cp -r ${CMAKE_CURRENT_SOURCE_DIR}/swcdb/pkg  ${PY_PKG_PATH}/)
+execute_process(COMMAND cp -r ${CMAKE_CURRENT_SOURCE_DIR}/package/swcdb  ${PY_PKG_PATH}/)
 execute_process(COMMAND rm -rf  ${PY_PKG_PATH}/MANIFEST )
-configure_file(swcdb/setup.py.in ${PY_PKG_PATH}/setup.py @ONLY)
-configure_file(swcdb/requirements.txt.in ${PY_PKG_PATH}/requirements.txt @ONLY)
-configure_file(swcdb/README.md ${PY_PKG_PATH}/README.txt @ONLY)
+configure_file(package/setup.py.in ${PY_PKG_PATH}/setup.py @ONLY)
+configure_file(package/requirements.txt.in ${PY_PKG_PATH}/requirements.txt @ONLY)
+configure_file(${CMAKE_SOURCE_DIR}/docs/use/thriftclient/python/README.md ${PY_PKG_PATH}/README.md @ONLY)
 
 
 list(GET PYTHON_EXECUTABLES 0 py)
