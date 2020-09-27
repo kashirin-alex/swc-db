@@ -13,6 +13,9 @@
 
 #include "swcdb/thrift/gen-cpp/Service.h"
 
+//! The SWC-DB C++ namespace 'SWC'
+namespace SWC { }
+
 namespace SWC { 
 namespace thrift = apache::thrift;
 namespace Thrift {

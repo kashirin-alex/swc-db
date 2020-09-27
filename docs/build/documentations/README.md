@@ -16,8 +16,8 @@ _The generate documentation target requires the SWC_DOCUMENTATION=ON as by [the 
 cd swcdb;
 ```
 
-**The 'doc' target will generate an Archive "swc-db-doc.tar.xz" in the root build directory with Doxygen & Thrift-Compiler source documentations.**
-> * [The Doxygen Generated SWC-DB Documentations](https://www.swcdb.org/doxygen/)
+**The 'doc' target will generate documentations in the `doc` folder of the build directory with the source documentations and archive by languages & formats to `swc-db-doc-[lang]-[format].tar.xz`.**
+> * [The Generated SWC-DB Documentations](https://www.swcdb.org/additional_docs/)
 
 ```bash
 make doc;

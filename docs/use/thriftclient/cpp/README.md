@@ -4,7 +4,7 @@ sort: 1
 ---
 
 
-# Using C++ Thrift Client
+# Using SWC-DB C++ Thrift Client
 
 The SWC-DB C++ Thrift Client is defined in ```swcdb/thrift/client/Client.h``` and implemented with ```libswcdb_thrift```.
 

@@ -66,7 +66,7 @@ apt-get install -y
 
 ### Hadoop FsBroker native(JVM, C++)
 
-* [HADOOP VERSION]({{ site.baseurl }}/build/prerequisites/specific/#version-hadoop) 
+* [HADOOP VERSION]({{ site.baseurl }}/build/prerequisites/specific/#hadoop-version) 
 
 _tests require full Java & Apache-Hadoop installation and runtime_
 

@@ -4,8 +4,8 @@ title: Broker Filesystem
 
 
 
-# Broker Filesystem - Configuration Properties
-The Broker Filesystem Library can be configured with these configuration properties.
+# The SWC-DB Broker Filesystem - Configuration Properties
+The SWC-DB Broker Filesystem Library can be configured with these configuration properties.
 
 * ### swc.fs.broker.cfg.dyn
 ```STRINGS```

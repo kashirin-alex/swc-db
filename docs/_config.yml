@@ -3,6 +3,7 @@ remote_theme: rundocs/jekyll-rtd-theme@v1.1.7
 rougify: gruvbox
 fluid: true
 
+# url: "https://www.swcdb.org"  # for remote
 baseurl: "/swc-db"  # for github "/swc-db", for local ""
 repository: "kashirin-alex/swc-db"
 

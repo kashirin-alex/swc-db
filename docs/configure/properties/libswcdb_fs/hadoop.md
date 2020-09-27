@@ -4,8 +4,8 @@ title: Hadoop Filesystem
 
 
 
-# Hadoop Filesystem - Configuration Properties
-The Hadoop Filesystem Library can be configured with these configuration properties.
+# The SWC-DB Hadoop Filesystem - Configuration Properties
+The SWC-DB Hadoop Filesystem Library can be configured with these configuration properties.
 
 * ### swc.fs.hadoop.cfg.dyn
 ```STRINGS```

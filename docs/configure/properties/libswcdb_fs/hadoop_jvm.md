@@ -4,8 +4,8 @@ title: Hadoop-JVM Filesystem
 
 
 
-# Hadoop-JVM Filesystem - Configuration Properties
-The Hadoop-JVM Filesystem Library can be configured with these configuration properties.
+# The SWC-DB Hadoop-JVM Filesystem - Configuration Properties
+The SWC-DB Hadoop-JVM Filesystem Library can be configured with these configuration properties.
 
 * ### swc.fs.hadoop_jvm.cfg.dyn
 ```STRINGS```

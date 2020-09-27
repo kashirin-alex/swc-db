@@ -1,4 +1,7 @@
-
+---
+title: Introduction
+sort: 1
+---
 
 # Welcome to the documentations of SWC-DB© !
 
@@ -22,6 +25,7 @@
 | **a [SQL]({{ site.baseurl }}/use/sql/) (Structual Query Language) DB**  | **```✔```**  | no joins |
 | **a DB with ACID(concept) for a single data-entry**   | **```✔```**  | write with acknowledgment on base of one data-entry(cell) |
 | **a DB with ACID(concept) for a many data-entries**   | **```✗```**  | write with acknowledgment many data-entries(cells) with one request, problem - one entry can exist while other yet to exist |
+| **a Relational DB**                                   | **```✗```**  | achievable by the client-side |
 | **a Time Series DB**                                  | **```✔```**  | without relational propotions |
 | **a Object Oriented DB**                              | **```–✔```** | binary key(Fractions) and value allowed, user defined Serialization IO |
 | **a XML DB / Tripel Stores**                          | **```–✔```** | require Native XML Client process XML-schema to Database structure |
@@ -37,6 +41,7 @@
 | **a DB with Data Replication Support**                | **```–✔```** | File System dependant |
 | **a Versioned Data DB**                               | **```✔```**  | automatic or user defined versions by Desc/Asc with Max Versions to Keep |
 | **a DB supporting an “Atomic“ Counter Value**         | **```✔```**  | |
+| **a DB supporting Query of Multiple Sequences**       | **```✔```**  | multiple Columns with multiple Intervals in a Column |
 | **a Super Wide Column DB**                            | **```✔```**  | supporting 16777216(2^24,uint24) number of Fractions, max 2^24 bytes a Fraction and total size of a key upto 2^32 bytes |
 
 
@@ -110,7 +115,8 @@ IPv4 and IPv6 with support of multi-homed / multiple interfaces.
 ✔ Managers or Rangers in case of a connection or file-descriptor failure try to reconnect to the DFS. \
 ✔ Communications security, SSL applicable between servers for non-secure networks. \
 ✔ Communication over-heads of resolved-data of column-name, RID-location and Ranger-address are kept on TTL/KA.
-In worst case of outdated data being used with a request the Ranger return an error of a NOT_LOADED_RANGE. \
+In worst case of outdated data being used with a request the Ranger return an error of a NOT_LOADED_RANGE.
+
 
 
 

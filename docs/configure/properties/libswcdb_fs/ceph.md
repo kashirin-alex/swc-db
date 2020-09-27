@@ -4,8 +4,8 @@ title: Ceph Filesystem
 
 
 
-# Ceph Filesystem - Configuration Properties
-The Ceph Filesystem Library can be configured with these configuration properties.
+# The SWC-DB Ceph Filesystem - Configuration Properties
+The SWC-DB Ceph Filesystem Library can be configured with these configuration properties.
 
 * ### swc.fs.ceph.cfg.dyn
 ```STRINGS```

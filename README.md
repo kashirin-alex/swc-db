@@ -11,9 +11,9 @@
 
 ### DOCUMENTATIONS
 
-All the documentations are based on the ./docs/ while www.swcdb.org include additional information.
+_All the documentations are based on the ./docs/_.
 
-* ###### [SWC-DB Website - https://www.swcdb.org](https://www.swcdb.org)
+* ###### [SWC-DB Website - https://www.swcdb.org](https://www.swcdb.org) - plus the origins of the [Additional Documentations](https://www.swcdb.org/additional-docs/)
 
 * ###### [SWC-DB GitHub Pages - https://kashirin-alex.github.io/swc-db/](https://kashirin-alex.github.io/swc-db/)
 

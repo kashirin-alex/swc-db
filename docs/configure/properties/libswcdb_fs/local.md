@@ -4,8 +4,8 @@ title: Local Filesystem
 
 
 
-# Local Filesystem - Configuration Properties
-The Local Filesystem Library can be configured with these configuration properties.
+# The SWC-DB Local Filesystem - Configuration Properties
+The SWC-DB Local Filesystem Library can be configured with these configuration properties.
 
 * ### swc.fs.local.cfg.dyn
 ```STRINGS```

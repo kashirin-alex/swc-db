@@ -6,8 +6,9 @@ if(SWC_DOCUMENTATION)
 
   find_package(Doxygen REQUIRED)
 
-  configure_file(${CMAKE_MODULE_PATH}/Doxyfile ${CMAKE_CURRENT_BINARY_DIR} @ONLY)
-  add_custom_target(doc ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
+  execute_process(COMMAND mkdir -p ${CMAKE_BINARY_DIR}/doc/cpp/ )
+  configure_file(${CMAKE_MODULE_PATH}/Doxyfile-cpp.doxy ${CMAKE_CURRENT_BINARY_DIR} @ONLY)
+  add_custom_target(doc ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile-cpp.doxy)
 
 
 
@@ -29,8 +30,10 @@ if(SWC_DOCUMENTATION)
 
 
   add_custom_command(TARGET doc POST_BUILD COMMAND 
-                     XZ_OPT=-e9 tar -cJf swc-db-doc.tar.xz doc/*
-                     )
+                     XZ_OPT=-e9 tar -cJf swc-db-doc-cpp-html.tar.xz doc/cpp/html/* )
+
+  # add_custom_command(TARGET doc POST_BUILD COMMAND 
+  #                   XZ_OPT=-e9 tar -cJf swc-db-thirft-html.tar.xz doc/gen-html/* )
 
 
 endif ()

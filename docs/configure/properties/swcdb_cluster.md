@@ -4,7 +4,7 @@ title: Cluster Managing Script
 
 
 
-# Cluster Managing Script ```swcdb_cluster``` - Configuration Properties
+# The SWC-DB Cluster Managing Script ```swcdb_cluster``` - Configuration Properties
 These configuration properties are for sbin/swcdb_cluster a python script based on [py-fabric library](https://www.fabfile.org/).
 
 

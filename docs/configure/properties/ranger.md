@@ -4,7 +4,7 @@ title: Ranger Configuration
 
 
 
-# Ranger - Configuration Properties
+# The SWC-DB Ranger - Configuration Properties
 
 
 

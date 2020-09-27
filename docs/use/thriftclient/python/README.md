@@ -4,7 +4,7 @@ sort: 3
 ---
 
 
-# Using Python Thrift Client
+# Using SWC-DB Python Thrift Client
 The package `swcdb` has the SWC-DB ```thirft``` module which consist of modules ```service``` the default SWC-DB client and several Thrift implementations ```native```,  ```tornado```, ```twisted``` and ```zopeif```.
 * The ```swcdb.thrift.native``` is a python native implementation. It is the implemenation used in the ```swcdb.thrift.service``` module and the Documentaions discuss the use of the default SWC-DB client.
 * The ```swcdb.thrift.tornado``` is the implementation for using with [Tornado](https://pypi.org/project/tornado/) a Python web framework.

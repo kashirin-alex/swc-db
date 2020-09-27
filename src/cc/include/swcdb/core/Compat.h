@@ -6,6 +6,8 @@
 #ifndef swc_core_COMPAT_H
 #define swc_core_COMPAT_H
 
+//! The SWC-DB C++ namespace 'SWC'
+namespace SWC { }
 
 #ifndef SWC_MALLOC_NOT_INSISTENT
 #include "swcdb/core/Malloc.h"

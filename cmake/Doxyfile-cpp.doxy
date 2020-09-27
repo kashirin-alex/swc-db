@@ -5,10 +5,10 @@
 #---------------------------------------------------------------------------
 DOXYFILE_ENCODING      = UTF-8
 PROJECT_NAME           = SWC-DB
-PROJECT_NUMBER         = @SWCDB_VERSION@
+PROJECT_NUMBER         = "@SWCDB_VERSION@ C++ documentations"
 PROJECT_BRIEF          = "SWC-DB© (Super Wide Column Database) - High Performance Scalable Database (https://github.com/kashirin-alex/swc-db)"
 PROJECT_LOGO           = @CMAKE_SOURCE_DIR@/docs/logo-small.png
-OUTPUT_DIRECTORY       = doc
+OUTPUT_DIRECTORY       = doc/cpp/
 CREATE_SUBDIRS         = NO
 ALLOW_UNICODE_NAMES    = NO
 OUTPUT_LANGUAGE        = English
@@ -29,8 +29,8 @@ ABBREVIATE_BRIEF       = "The $name class" \
 ALWAYS_DETAILED_SEC    = NO
 INLINE_INHERITED_MEMB  = NO
 FULL_PATH_NAMES        = YES
-STRIP_FROM_PATH        = @CMAKE_SOURCE_DIR@/src \
-                         @CMAKE_BINARY_DIR@/src
+STRIP_FROM_PATH        = @CMAKE_SOURCE_DIR@/src/cc \
+                         @CMAKE_BINARY_DIR@/src/cc
 STRIP_FROM_INC_PATH    = 
 SHORT_NAMES            = NO
 JAVADOC_AUTOBRIEF      = NO
@@ -117,58 +117,18 @@ WARN_LOGFILE           =
 #---------------------------------------------------------------------------
 # Configuration options related to the input files
 #---------------------------------------------------------------------------
-INPUT                  = @CMAKE_SOURCE_DIR@/src/cc \
-                         #@CMAKE_BINARY_DIR@/src/py/swcdb/pkg \
-                         #@CMAKE_BINARY_DIR@/src/java/mvn
+INPUT                  = @CMAKE_SOURCE_DIR@/src/cc
 INPUT_ENCODING         = UTF-8
 FILE_PATTERNS          = *.c \
                          *.cc \
                          *.cxx \
                          *.cpp \
                          *.c++ \
-                         *.java \
-                         *.ii \
-                         *.ixx \
-                         *.ipp \
-                         *.i++ \
-                         *.inl \
-                         *.idl \
-                         *.ddl \
-                         *.odl \
                          *.h \
                          *.hh \
                          *.hxx \
                          *.hpp \
-                         *.h++ \
-                         *.cs \
-                         *.d \
-                         *.php \
-                         *.php4 \
-                         *.php5 \
-                         *.phtml \
-                         *.inc \
-                         *.m \
-                         *.markdown \
-                         *.md \
-                         *.mm \
-                         *.dox \
-                         *.doc \
-                         *.txt \
-                         *.py \
-                         *.pyw \
-                         *.f90 \
-                         *.f95 \
-                         *.f03 \
-                         *.f08 \
-                         *.f \
-                         *.for \
-                         *.tcl \
-                         *.vhd \
-                         *.vhdl \
-                         *.ucf \
-                         *.qsf \
-                         *.ice \
-                         *.cfg
+                         *.h++
 RECURSIVE              = YES
 EXCLUDE                =
 EXCLUDE_SYMLINKS       = NO
@@ -177,7 +137,9 @@ EXCLUDE_PATTERNS       = *CMakeLists.txt* \
                          */tests/* \
                          */testutils/* \
                          */thriftgen-* \
-                         *skeleton*
+                         *-tests* \
+                         *skeleton* \
+                         Service-remote
 EXCLUDE_SYMBOLS        =
 EXAMPLE_PATH           =
 EXAMPLE_PATTERNS       = *

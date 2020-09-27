@@ -4,7 +4,7 @@ title: ThriftBroker Configuration
 
 
 
-# ThriftBroker - Configuration Properties
+# The SWC-DB ThriftBroker - Configuration Properties
 
 
 

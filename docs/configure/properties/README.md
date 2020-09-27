@@ -6,7 +6,7 @@ sort: 2
 
 
 
-# The Configuration Properties
+# The SWC-DB Configuration Properties
   **Any configuration property, if it is shown for ```./program``` with ```--help``` or ```--help-config```, can be a Command Line argument by using it with a prefix ```--``` while Command Line argument is not a cfg-file property** .
   
   **_Configuration Properties by Program & Library:_**

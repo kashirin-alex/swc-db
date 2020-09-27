@@ -4,7 +4,7 @@ title: Manager Configuration
 
 
 
-# Manager - Configuration Properties
+# The SWC-DB Manager - Configuration Properties
 
 
 

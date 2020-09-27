@@ -21,7 +21,7 @@ sort: 3
 |WITHOUT_THRIFT_C| Not to build the libswcdb_thrift_c | ON/OFF | OFF |
 |GLIB_INCLUDE_PATH| suggested ```$(pkg-config --cflags glib-2.0 | tr ' ' ';' | sed 's/-I//g' )``` | posix-dir-path | "" |
 |WITHOUT_PAM| Not to build the libpam_swcdb_max_retries | ON/OFF | OFF |
-|HADOOP_INSTALL_PATH| HADOOP_HOME to use, suggested [as by instructions]({{ site.baseurl }}/build/prerequisites/specific/#version-hadoop) | posix-dir-path| ENV{HADOOP_HOME} |
+|HADOOP_INSTALL_PATH| HADOOP_HOME to use, suggested [as by instructions]({{ site.baseurl }}/build/prerequisites/specific/#hadoop-version) | posix-dir-path| ENV{HADOOP_HOME} |
 |SWC_DOCUMENTATION|  configure for generating documentations | ON/OFF | OFF |
 |SWC_MALLOC_NOT_INSISTENT|  Not to use SWC-DB insistent malloc | ON/OFF | OFF |
 |SWC_INSTALL_DEP_LIBS|  Install the 3rd-party dependencies libaries used for linking | ON/OFF | OFF |
