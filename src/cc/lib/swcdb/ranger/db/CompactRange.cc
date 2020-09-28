@@ -308,8 +308,11 @@ void CompactRange::response(int& err) {
     Error::print(SWC_LOG_OSTREAM, err);
     profile.print(SWC_LOG_OSTREAM << ' ');
   );
-  if(err) 
-    return quit();
+
+  if(err) {
+    RangerEnv::maintenance_post([ptr=shared()](){ ptr->quit(); });
+    return;
+  }
 
   bool finishing;
   if((finishing = !reached_limits())) {
