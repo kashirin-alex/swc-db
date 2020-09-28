@@ -5,7 +5,7 @@ sort: 1
 
 
 # Using the SWC-DB(client) CLI - The SWC-DB DB-Client Shell
-The DB-Client is a client implementing the [SQL](/use/sql/) commands and syntax while it has additional Flags and commands.
+The DB-Client is a client implementing the [SQL]({{ site.baseurl }}/use/sql/) commands and syntax whereas it has additional Flags and commands.
  
 
 ##### ENTER SWC-DB(client) CLI:

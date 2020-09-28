@@ -8,10 +8,18 @@ sort: 1
 **SWC-DB© (Super Wide Column Database) - a High Performance Scalable Database**
 
 
+
 ***
 
 
+
 ## Introduction to the SWC-DB
+The SWC-DB _(Super Wide Column Database)_ a Super Fast database designed to handle [Yottabytes+](https://en.wikipedia.org/wiki/Yottabyte) on a [quadrillion](https://en.wikipedia.org/wiki/Orders_of_magnitude_(numbers)#1024) base of entries .
+
+_The proven test, on one machine(CPU Intel E3-1246V3 RAM 32GB SW-RAID 2x 2TB-7200rpm) run the DB and the Client, capabilities standing is a dozen terabytes of raw-data with 100+billion of record entries with performace input of ~250,000+ cells a second and random scan/select of one entry surrounds the microseconds to milliseconds, whereas performance varies on applied configurations and hardware. **Testing facillity is required for in deep and further testing.**_
+
+
+
 
 
 #### The **_```What is SWC-DB?```_** checklist ##
@@ -42,6 +50,7 @@ sort: 1
 | **a Versioned Data DB**                               | **```✔```**  | automatic or user defined versions by Desc/Asc with Max Versions to Keep |
 | **a DB supporting an “Atomic“ Counter Value**         | **```✔```**  | |
 | **a DB supporting Query of Multiple Sequences**       | **```✔```**  | multiple Columns with multiple Intervals in a Column |
+| **a Document/Files stores DB**                        | **```✔```**  | user defined Meta/Header & Key(file-path) structure whereas anomaly of use is at file-size above Range-Block-size cfg |
 | **a Super Wide Column DB**                            | **```✔```**  | supporting 16777216(2^24,uint24) number of Fractions, max 2^24 bytes a Fraction and total size of a key upto 2^32 bytes |
 
 

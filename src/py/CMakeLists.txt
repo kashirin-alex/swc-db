@@ -20,7 +20,7 @@ execute_process(COMMAND cp -r ${CMAKE_CURRENT_SOURCE_DIR}/package/swcdb  ${PY_PK
 execute_process(COMMAND rm -rf  ${PY_PKG_PATH}/MANIFEST )
 configure_file(package/setup.py.in ${PY_PKG_PATH}/setup.py @ONLY)
 configure_file(package/requirements.txt.in ${PY_PKG_PATH}/requirements.txt @ONLY)
-configure_file(${CMAKE_SOURCE_DIR}/docs/use/thriftclient/python/README.md ${PY_PKG_PATH}/README.md @ONLY)
+configure_file(package/README.md ${PY_PKG_PATH}/README.md @ONLY)
 
 
 list(GET PYTHON_EXECUTABLES 0 py)

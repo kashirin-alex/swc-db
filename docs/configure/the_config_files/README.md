@@ -5,7 +5,7 @@ sort: 1
 
 
 # The SWC-DB Configuration-Files with extension .cfg (etc/swcdb/*.cfg)
-SWC-DB by default for the configuration files, relatively to the installation-prefix, use the folder 'etc/swcdb/'. The default path for configuration files is a run-time configurable property 'swc.cfg.path' argv for using with swcdbProgram 'args'. ```swcdbProgram --help;``` will indicate whether it is optional.
+SWC-DB by default for the configuration files, relatively to the installation-prefix, use the folder `etc/swcdb/`. The default path for configuration files is a run-time configurable property `swc.cfg.path` argv for using with swcdbProgram 'args', the ```swcdbProgram --help;``` will indicate whether it is optional.
 
 
 ## The file Format
@@ -61,7 +61,7 @@ The value of a property defaults to type String, the available specialized value
 
 
 ## The file with extended extension (.dyn.cfg)
-Additionally to the '.cfg' configuration filename there are filenames with extended extension of dynamic type '.dyn.cfg'. These files are designated for use with value of function guarded-value/s which are allowed for reload of configurations at swcdbPrograms run-time.
+Additionally to the `.cfg` configuration filename there are filenames with extended extension of dynamic type `.dyn.cfg`. These files are designated for use with value of function guarded-value/s which are allowed for reload of configurations at swcdbPrograms run-time.
 
 
 ## The Roles and cfg filename
