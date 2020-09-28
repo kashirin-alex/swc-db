@@ -7,8 +7,17 @@
 
 
 
-
 ### [SWC-DB master](https://github.com/kashirin-alex/swc-db/tree/master) (upcoming-release)
+
+
+
+[_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.4.9...master)
+******
+
+
+
+
+### [SWC-DB v0.4.9](https://github.com/kashirin-alex/swc-db/releases/tag/v0.4.9) (2020-09-28)
 
     fixed parse_ns & fmt_ns with ns at neg and ms/us float point in SWC::Time
     added include/core/ErrorCode.h with only enum SWC::Error::Code
@@ -22,8 +31,9 @@
     extended doxygen with Doxyfile for each Doxyfile-[language].doxy
     added documentations to docs/ and configured Jekyll build
     changed from gh-wiki to documenaions on www.swcdb.org website & GitHub Pages
+    fixed quit call in Ranger CompactRange::response on error
 
-[_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.4.8...master)
+[_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.4.8...v0.4.9)
 ******
 
 

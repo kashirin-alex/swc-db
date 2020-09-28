@@ -18,18 +18,20 @@ sort: 4
 
 ## Install the SWC-DB Python Package
 
-> You are set, If you have done the Python install part of the [Getting the SWC-DB]({{ site.baseurl }}/install/getting_swcdb/#the-swc-db-tarxz-package) .
-
-The [SWC-DB Python package](https://pypi.org/project/swcdb/) is available at https://pypi.org/project/swcdb/
+* The [SWC-DB Python package ```swcdb```](https://pypi.org/project/swcdb/) is available at PyPi.org
 and it can be installed with:
-
 ```python
 pip install swcdb;
 ```
 or for other python versions/implementations
-
 ```python
 YOUR_PY_EXEC -m pip install swcdb;
+```
+
+* The SWC-DB Release Binaries inlcude the `swcdb` Python package:
+```
+SWCDB_VERSION_PYTHON=${SWCDB_VERSION}; # Python package can have another sub-version ".#"
+YOUR_PY_EXEC -m pip install wheel ${SWCDB_INSTALL_PATH}/lib/py/swcdb-${SWCDB_VERSION_PYTHON}.tar.gz;
 ```
 
 Documentations for using the SWC-DB Python package are available at [Using Python Thrift Client]({{ site.baseurl }}/use/thriftclient/python/)
