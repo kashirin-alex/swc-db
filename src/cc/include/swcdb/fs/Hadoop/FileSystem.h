@@ -15,31 +15,6 @@ Configurables apply_hadoop();
 
 
 
-struct SmartFdHadoop final : public SmartFd {
-  public:
-  
-  typedef std::shared_ptr<SmartFdHadoop> Ptr;
-  
-  static Ptr make_ptr(const std::string& filepath, uint32_t flags);
-
-  static Ptr make_ptr(SmartFd::Ptr& smart_fd);
-
-  SmartFdHadoop(const std::string& filepath, uint32_t flags,
-                int32_t fd=-1, uint64_t pos=0);
-
-  virtual ~SmartFdHadoop();
-
-  hdfs::FileHandle* file() const;
-
-  void file(hdfs::FileHandle* file);
-
-  private:
-
-  hdfs::FileHandle* m_file;
-};
-
-
- 
 class FileSystemHadoop final : public FileSystem {
   public:
 
@@ -90,8 +65,6 @@ class FileSystemHadoop final : public FileSystem {
   void rename(int& err, const std::string& from, 
                         const std::string& to)  override;
 
-  SmartFdHadoop::Ptr get_fd(SmartFd::Ptr& smartfd);
-
   void create(int& err, SmartFd::Ptr& smartfd, 
               int32_t bufsz, uint8_t replication, int64_t blksz) override;
 
@@ -115,6 +88,31 @@ class FileSystemHadoop final : public FileSystem {
   void close(int& err, SmartFd::Ptr& smartfd) override;
 
   private:
+
+  struct SmartFdHadoop final : public SmartFd {
+    public:
+  
+    typedef std::shared_ptr<SmartFdHadoop> Ptr;
+  
+    static Ptr make_ptr(const std::string& filepath, uint32_t flags);
+
+    static Ptr make_ptr(SmartFd::Ptr& smart_fd);
+
+    SmartFdHadoop(const std::string& filepath, uint32_t flags,
+                  int32_t fd=-1, uint64_t pos=0);
+
+    virtual ~SmartFdHadoop();
+
+    hdfs::FileHandle* file() const;
+
+    void file(hdfs::FileHandle* file);
+
+    private:
+
+    hdfs::FileHandle* m_file;
+  };
+  
+  SmartFdHadoop::Ptr get_fd(SmartFd::Ptr& smartfd);
 
   std::atomic<bool>       m_run;
   std::atomic<int32_t>    m_nxt_fd;

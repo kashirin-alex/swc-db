@@ -46,35 +46,48 @@ Configurables apply_hadoop() {
 }
 
 
-SmartFdHadoop::Ptr 
-SmartFdHadoop::make_ptr(const std::string& filepath, uint32_t flags) {
+
+FileSystemHadoop::SmartFdHadoop::Ptr 
+FileSystemHadoop::SmartFdHadoop::make_ptr(
+      const std::string& filepath, uint32_t flags) {
   return std::make_shared<SmartFdHadoop>(filepath, flags);
 }
 
-SmartFdHadoop::Ptr 
-SmartFdHadoop::make_ptr(SmartFd::Ptr& smart_fd) {
+FileSystemHadoop::SmartFdHadoop::Ptr 
+FileSystemHadoop::SmartFdHadoop::make_ptr(SmartFd::Ptr& smart_fd) {
   return std::make_shared<SmartFdHadoop>(
     smart_fd->filepath(), smart_fd->flags(), 
     smart_fd->fd(), smart_fd->pos()
   );
 }
 
-SmartFdHadoop::SmartFdHadoop(const std::string& filepath, 
-                                   uint32_t flags, int32_t fd, uint64_t pos)
-                                  : SmartFd(filepath, flags, fd, pos),
-                                    m_file(nullptr) { 
+FileSystemHadoop::SmartFdHadoop::SmartFdHadoop(
+    const std::string& filepath, uint32_t flags, int32_t fd, uint64_t pos)
+    : SmartFd(filepath, flags, fd, pos), m_file(nullptr) { 
 }
 
-SmartFdHadoop::~SmartFdHadoop() { }
+FileSystemHadoop::SmartFdHadoop::~SmartFdHadoop() { }
 
-hdfs::FileHandle* SmartFdHadoop::file() const { 
+hdfs::FileHandle* FileSystemHadoop::SmartFdHadoop::file() const {
   LockAtomic::Unique::scope lock(m_mutex);
   return m_file; 
 }
 
-void SmartFdHadoop::file(hdfs::FileHandle* file) { 
+void FileSystemHadoop::SmartFdHadoop::file(hdfs::FileHandle* file) { 
   LockAtomic::Unique::scope lock(m_mutex);
   m_file = file; 
+}
+
+
+
+FileSystemHadoop::SmartFdHadoop::Ptr 
+FileSystemHadoop::get_fd(SmartFd::Ptr& smartfd){
+  auto hd_fd = std::dynamic_pointer_cast<SmartFdHadoop>(smartfd);
+  if(!hd_fd){
+    hd_fd = SmartFdHadoop::make_ptr(smartfd);
+    smartfd = std::static_pointer_cast<SmartFd>(hd_fd);
+  }
+  return hd_fd;
 }
 
 
@@ -400,15 +413,6 @@ void FileSystemHadoop::rename(int& err, const std::string& from,
   SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG, 
     "rename('%s' to '%s') - %d(%s)", 
     abspath_from.c_str(), abspath_to.c_str(), err, strerror(err));
-}
-
-SmartFdHadoop::Ptr FileSystemHadoop::get_fd(SmartFd::Ptr& smartfd){
-  auto hd_fd = std::dynamic_pointer_cast<SmartFdHadoop>(smartfd);
-  if(!hd_fd){
-    hd_fd = SmartFdHadoop::make_ptr(smartfd);
-    smartfd = std::static_pointer_cast<SmartFd>(hd_fd);
-  }
-  return hd_fd;
 }
 
 void FileSystemHadoop::create(int& err, SmartFd::Ptr& smartfd, 

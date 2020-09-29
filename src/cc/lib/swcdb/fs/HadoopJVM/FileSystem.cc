@@ -42,35 +42,48 @@ Configurables apply_hadoop_jvm() {
 }
 
 
-SmartFdHadoopJVM::Ptr 
-SmartFdHadoopJVM::make_ptr(const std::string& filepath, uint32_t flags) {
+
+FileSystemHadoopJVM::SmartFdHadoopJVM::Ptr 
+FileSystemHadoopJVM::SmartFdHadoopJVM::make_ptr(
+        const std::string& filepath, uint32_t flags) {
   return std::make_shared<SmartFdHadoopJVM>(filepath, flags);
 }
 
-SmartFdHadoopJVM::Ptr 
-SmartFdHadoopJVM::make_ptr(SmartFd::Ptr& smart_fd) {
+FileSystemHadoopJVM::SmartFdHadoopJVM::Ptr 
+FileSystemHadoopJVM::SmartFdHadoopJVM::make_ptr(SmartFd::Ptr& smart_fd) {
   return std::make_shared<SmartFdHadoopJVM>(
     smart_fd->filepath(), smart_fd->flags(), 
     smart_fd->fd(), smart_fd->pos()
   );
 }
 
-SmartFdHadoopJVM::SmartFdHadoopJVM(const std::string& filepath, 
-                                   uint32_t flags, int32_t fd, uint64_t pos)
-                                  : SmartFd(filepath, flags, fd, pos),
-                                    m_file(nullptr) { 
+FileSystemHadoopJVM::SmartFdHadoopJVM::SmartFdHadoopJVM(
+    const std::string& filepath, uint32_t flags, int32_t fd, uint64_t pos)
+    : SmartFd(filepath, flags, fd, pos), m_file(nullptr) { 
 }
 
-SmartFdHadoopJVM::~SmartFdHadoopJVM() { }
+FileSystemHadoopJVM::SmartFdHadoopJVM::~SmartFdHadoopJVM() { }
 
-hdfsFile SmartFdHadoopJVM::file() const { 
+hdfsFile FileSystemHadoopJVM::SmartFdHadoopJVM::file() const { 
   LockAtomic::Unique::scope lock(m_mutex);
   return m_file; 
 }
 
-void SmartFdHadoopJVM::file(const hdfsFile& file) { 
+void FileSystemHadoopJVM::SmartFdHadoopJVM::file(const hdfsFile& file) { 
   LockAtomic::Unique::scope lock(m_mutex);
   m_file = file; 
+}
+
+
+
+FileSystemHadoopJVM::SmartFdHadoopJVM::Ptr 
+FileSystemHadoopJVM::get_fd(SmartFd::Ptr& smartfd){
+  auto hd_fd = std::dynamic_pointer_cast<SmartFdHadoopJVM>(smartfd);
+  if(!hd_fd){
+    hd_fd = SmartFdHadoopJVM::make_ptr(smartfd);
+    smartfd = std::static_pointer_cast<SmartFd>(hd_fd);
+  }
+  return hd_fd;
 }
 
 
@@ -396,15 +409,6 @@ void FileSystemHadoopJVM::rename(int& err, const std::string& from,
   SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG, 
     "rename('%s' to '%s') - %d(%s)", 
     abspath_from.c_str(), abspath_to.c_str(), err, strerror(err));
-}
-
-SmartFdHadoopJVM::Ptr FileSystemHadoopJVM::get_fd(SmartFd::Ptr& smartfd){
-  auto hd_fd = std::dynamic_pointer_cast<SmartFdHadoopJVM>(smartfd);
-  if(!hd_fd){
-    hd_fd = SmartFdHadoopJVM::make_ptr(smartfd);
-    smartfd = std::static_pointer_cast<SmartFd>(hd_fd);
-  }
-  return hd_fd;
 }
 
 void FileSystemHadoopJVM::create(int& err, SmartFd::Ptr& smartfd, 
