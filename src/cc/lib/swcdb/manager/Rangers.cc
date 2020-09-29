@@ -22,18 +22,24 @@ namespace SWC { namespace Manager {
 
 
 Rangers::Rangers()
-    : cfg_rgr_failures(Env::Config::settings()->get<Property::V_GINT32>(
-        "swc.mngr.ranges.assign.Rgr.remove.failures")),
-      cfg_delay_rgr_chg(Env::Config::settings()->get<Property::V_GINT32>(
-        "swc.mngr.ranges.assign.delay.onRangerChange")),
-      cfg_chk_assign(Env::Config::settings()->get<Property::V_GINT32>(
-        "swc.mngr.ranges.assign.interval.check")),
-      cfg_assign_due(Env::Config::settings()->get<Property::V_GINT32>(
-        "swc.mngr.ranges.assign.due")),
-      cfg_column_health_chk(Env::Config::settings()->get<Property::V_GINT32>(
-        "swc.mngr.column.health.interval.check")),
-      cfg_column_health_chkers(Env::Config::settings()->get<Property::V_GINT32>(
-        "swc.mngr.column.health.checks")),
+    : cfg_rgr_failures(
+        Env::Config::settings()->get<Config::Property::V_GINT32>(
+          "swc.mngr.ranges.assign.Rgr.remove.failures")),
+      cfg_delay_rgr_chg(
+        Env::Config::settings()->get<Config::Property::V_GINT32>(
+          "swc.mngr.ranges.assign.delay.onRangerChange")),
+      cfg_chk_assign(
+        Env::Config::settings()->get<Config::Property::V_GINT32>(
+          "swc.mngr.ranges.assign.interval.check")),
+      cfg_assign_due(
+        Env::Config::settings()->get<Config::Property::V_GINT32>(
+          "swc.mngr.ranges.assign.due")),
+      cfg_column_health_chk(
+        Env::Config::settings()->get<Config::Property::V_GINT32>(
+          "swc.mngr.column.health.interval.check")),
+      cfg_column_health_chkers(
+        Env::Config::settings()->get<Config::Property::V_GINT32>(
+          "swc.mngr.column.health.checks")),
       m_run(true),
       m_timer(asio::high_resolution_timer(*Env::IoCtx::io()->ptr())),
       m_runs_assign(false), m_assignments(0) { 

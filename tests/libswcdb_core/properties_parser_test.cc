@@ -58,28 +58,28 @@ int main(int argc, char *argv[]) {
   
   // cfg file parse test definitions
   settings->file_desc.add_options()
-   ("is_true_bool", boo(false), "a boolean arg")
-   ("is_yes_bool", boo(false), "a boolean arg")
-   ("is_one_bool", boo(false), "a boolean arg")
-   ("is_no_bool", boo(true), "a boolean arg")
-   ("is_rest_bool", boo(true), "a boolean arg")
+   ("is_true_bool", Config::boo(false), "a boolean arg")
+   ("is_yes_bool", Config::boo(false), "a boolean arg")
+   ("is_one_bool", Config::boo(false), "a boolean arg")
+   ("is_no_bool", Config::boo(true), "a boolean arg")
+   ("is_rest_bool", Config::boo(true), "a boolean arg")
 
-   ("boo", boo(false), "a boolean arg")
-   ("i16", i16(1), "16-bit integer")
-   ("i32", i32(), "32-bit integer")
-   ("i64", i64(1), "64-bit integer")
-   ("int64s", i64s(), "a list of 64-bit integers")
-   ("string", str("A Default std::string Value"), "a string arg")
-   ("string.qouted", str("A Default std::string Value"), "a string arg")
-   ("strs", strs(), "a list of strings")
-   ("float64", f64(3.12), "a double arg")
-   ("f64s", f64s(), "a list of doubles")
-   ("missing", str("a missing string in cfg file, default applies"), "a string arg")
-   ("aGroupOne.arg.1", i16(0), "a group arg")
-   ("aGroupOne.arg.2", i16(0), "a group arg")
-   ("aGroupOne.arg.3", i16(0), "a group arg")
-   ("aGroupOne.arg.4", i16(0), "a group arg")
-   ("aGroupOne.arg.5", i16(0), "a group arg")
+   ("boo", Config::boo(false), "a boolean arg")
+   ("i16", Config::i16(1), "16-bit integer")
+   ("i32", Config::i32(), "32-bit integer")
+   ("i64", Config::i64(1), "64-bit integer")
+   ("int64s", Config::i64s(), "a list of 64-bit integers")
+   ("string", Config::str("A Default std::string Value"), "a string arg")
+   ("string.qouted", Config::str("A Default std::string Value"), "a string arg")
+   ("strs", Config::strs(), "a list of strings")
+   ("float64", Config::f64(3.12), "a double arg")
+   ("f64s", Config::f64s(), "a list of doubles")
+   ("missing", Config::str("a missing string in cfg file, default applies"), "a string arg")
+   ("aGroupOne.arg.1", Config::i16(0), "a group arg")
+   ("aGroupOne.arg.2", Config::i16(0), "a group arg")
+   ("aGroupOne.arg.3", Config::i16(0), "a group arg")
+   ("aGroupOne.arg.4", Config::i16(0), "a group arg")
+   ("aGroupOne.arg.5", Config::i16(0), "a group arg")
     ;
     
   std::cout << std::string("\nConfig::file_desc");
@@ -98,8 +98,8 @@ int main(int argc, char *argv[]) {
   std::cout << prs_file; // Raw(std::strings) Parsed
   prs_file.print_options(std::cout);
   
-  Properties props;
-  props.set("dummy", boo(true));
+  Config::Properties props;
+  props.set("dummy", Config::boo(true));
   std::cout << props.to_string("dummy") << "\n";
 
   props.load_from(prs_file.get_options());

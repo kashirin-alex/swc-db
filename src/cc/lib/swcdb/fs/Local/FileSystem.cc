@@ -15,11 +15,13 @@
 namespace SWC{ namespace FS {
 
 
-Config apply_local() {
+Configurables apply_local() {
   Env::Config::settings()->file_desc.add_options()
-    ("swc.fs.local.path.root", str(""), "Local FileSystem's base root path")
-    ("swc.fs.local.cfg.dyn", strs(), "Dyn-config file")
-    ("swc.fs.local.fds.max", g_i32(1024), 
+    ("swc.fs.local.path.root", Config::str(""), 
+     "Local FileSystem's base root path")
+    ("swc.fs.local.cfg.dyn", Config::strs(), 
+     "Dyn-config file")
+    ("swc.fs.local.fds.max", Config::g_i32(1024), 
       "Max Open Fds for opt. without closing")
   ;
   Env::Config::settings()->parse_file(
@@ -27,11 +29,11 @@ Config apply_local() {
     "swc.fs.local.cfg.dyn"
   );
 
-  Config config;
+  Configurables config;
   config.path_root = Env::Config::settings()->get_str(
     "swc.fs.local.path.root");
-  config.cfg_fds_max = Env::Config::settings()->get<Property::V_GINT32>(
-    "swc.fs.local.fds.max");
+  config.cfg_fds_max = Env::Config::settings()
+    ->get<Config::Property::V_GINT32>("swc.fs.local.fds.max");
   return config;
 }
 

@@ -15,7 +15,7 @@
 #include "swcdb/core/config/PropertiesParser.h"
 
 
-namespace SWC {
+namespace SWC { namespace Config {
 
 class Properties {
 
@@ -136,7 +136,7 @@ class Properties {
 
 
 
-}
+}}
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/core/config/Properties.cc"

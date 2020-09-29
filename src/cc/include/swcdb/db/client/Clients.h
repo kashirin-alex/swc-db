@@ -43,7 +43,10 @@ class Clients final {
 } // namespace client 
 
 
+
 namespace Env {
+
+
 class Clients final {
   public:
 
@@ -53,14 +56,14 @@ class Clients final {
 
   static const Clients& ref();
 
-  const Property::V_GINT32::Ptr      cfg_send_buff_sz;
-  const Property::V_GUINT8::Ptr      cfg_send_ahead;
-  const Property::V_GINT32::Ptr      cfg_send_timeout;
-  const Property::V_GINT32::Ptr      cfg_send_timeout_ratio;
+  const SWC::Config::Property::V_GINT32::Ptr      cfg_send_buff_sz;
+  const SWC::Config::Property::V_GUINT8::Ptr      cfg_send_ahead;
+  const SWC::Config::Property::V_GINT32::Ptr      cfg_send_timeout;
+  const SWC::Config::Property::V_GINT32::Ptr      cfg_send_timeout_ratio;
 
-  const Property::V_GINT32::Ptr      cfg_recv_buff_sz;
-  const Property::V_GUINT8::Ptr      cfg_recv_ahead;
-  const Property::V_GINT32::Ptr      cfg_recv_timeout;
+  const SWC::Config::Property::V_GINT32::Ptr      cfg_recv_buff_sz;
+  const SWC::Config::Property::V_GUINT8::Ptr      cfg_recv_ahead;
+  const SWC::Config::Property::V_GINT32::Ptr      cfg_recv_timeout;
 
   Clients(const client::Clients::Ptr& clients);
 
@@ -69,10 +72,13 @@ class Clients final {
   private:
   client::Clients::Ptr                    m_clients = nullptr;
   inline static std::shared_ptr<Clients>  m_env = nullptr;
-};
-}
 
-}
+};
+
+
+} // namespcae Env
+
+} // namespace SWC
 
 
 #ifdef SWC_IMPL_SOURCE

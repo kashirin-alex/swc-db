@@ -15,10 +15,12 @@ namespace SWC { namespace Manager {
 MngdColumns::MngdColumns()
     : m_run(true), m_schemas_set(false), m_cid_active(false), 
       m_cid_begin(DB::Schema::NO_CID), m_cid_end(DB::Schema::NO_CID),
-      cfg_schema_replication(Env::Config::settings()->get<Property::V_GUINT8>(
-        "swc.mngr.schema.replication")),
-      cfg_delay_cols_init(Env::Config::settings()->get<Property::V_GINT32>(
-        "swc.mngr.ranges.assign.delay.afterColumnsInit")) { 
+      cfg_schema_replication(
+        Env::Config::settings()->get<Config::Property::V_GUINT8>(
+          "swc.mngr.schema.replication")),
+      cfg_delay_cols_init(
+        Env::Config::settings()->get<Config::Property::V_GINT32>(
+          "swc.mngr.ranges.assign.delay.afterColumnsInit")) {
 }
 
 MngdColumns::~MngdColumns() {}

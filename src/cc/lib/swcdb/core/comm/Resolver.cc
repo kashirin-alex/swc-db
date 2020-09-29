@@ -118,7 +118,7 @@ bool is_ipv6_address(const std::string& str) {
 }
 
 EndPoints get_endpoints(uint16_t defaul_port, 
-                        const Strings& addrs, 
+                        const Config::Strings& addrs, 
                         const std::string& host, 
                         const std::vector<Network>& nets,
                         bool srv) {
@@ -130,7 +130,7 @@ EndPoints get_endpoints(uint16_t defaul_port,
       auto at = addr.find_first_of("-");
       if(at != std::string::npos) {
         ip = addr.substr(0, at);  
-        Property::from_string(addr.substr(at+1), &port);
+        Config::Property::from_string(addr.substr(at+1), &port);
       } else {
         ip = addr;  
         port = defaul_port;
@@ -144,7 +144,7 @@ EndPoints get_endpoints(uint16_t defaul_port,
     auto at = host.find_first_of(":");
     if(at != std::string::npos) {
         hostname = host.substr(0, at);  
-        Property::from_string(host.substr(at+1), &port);
+        Config::Property::from_string(host.substr(at+1), &port);
       } else {
         port = defaul_port;
         hostname = host;  
@@ -226,7 +226,7 @@ void sort(const std::vector<Network>& nets, const EndPoints& endpoints,
   }
 }
 
-void get_networks(const Strings& networks, 
+void get_networks(const Config::Strings& networks, 
                   std::vector<Network>& nets, asio::error_code& ec) {
   nets.reserve(networks.size());
   for(auto& net : networks) {
@@ -237,7 +237,7 @@ void get_networks(const Strings& networks,
   }
 }
 
-void get_networks(const Strings& networks, 
+void get_networks(const Config::Strings& networks, 
                   std::vector<asio::ip::network_v4>& nets_v4, 
                   std::vector<asio::ip::network_v6>& nets_v6,
                   asio::error_code& ec) {

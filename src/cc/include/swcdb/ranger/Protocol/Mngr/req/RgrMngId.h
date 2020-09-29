@@ -21,7 +21,7 @@ class RgrMngId: public client::ConnQueue::ReqBase {
   RgrMngId(asio::io_context* io, const std::function<void()>& cb = 0) 
           : client::ConnQueue::ReqBase(false, nullptr),
             cfg_check_interval(
-              Env::Config::settings()->get<Property::V_GINT32>(
+              Env::Config::settings()->get<Config::Property::V_GINT32>(
                 "swc.rgr.id.validation.interval")), 
             cb_shutdown(cb),
             m_timer(asio::high_resolution_timer(*io)),
@@ -218,7 +218,7 @@ class RgrMngId: public client::ConnQueue::ReqBase {
     m_timer.cancel();
   }
 
-  const Property::V_GINT32::Ptr cfg_check_interval;
+  const Config::Property::V_GINT32::Ptr cfg_check_interval;
   const std::function<void()>   cb_shutdown;
   EndPoints                     endpoints;
   

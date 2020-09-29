@@ -13,21 +13,22 @@
 namespace SWC{ namespace FS {
 
  
-Config apply_hadoop() {
+Configurables apply_hadoop() {
   Env::Config::settings()->file_desc.add_options()
-    ("swc.fs.hadoop.path.root", str(""), 
+    ("swc.fs.hadoop.path.root", Config::str(""), 
       "Hadoop FileSystem's base root path")
-    ("swc.fs.hadoop.cfg.dyn", strs(), 
+    ("swc.fs.hadoop.cfg.dyn", Config::strs(), 
       "Dyn-config file")
 
-    ("swc.fs.hadoop.namenode", strs(), 
+    ("swc.fs.hadoop.namenode", Config::strs(), 
       "Namenode Host + optional(:Port), muliple")
-    ("swc.fs.hadoop.namenode.port", i16(), 
+    ("swc.fs.hadoop.namenode.port", Config::i16(), 
       "Namenode Port")
-    ("swc.fs.hadoop.user", str(), 
+    ("swc.fs.hadoop.user", Config::str(), 
       "Hadoop user")
-    ("swc.fs.hadoop.handlers", i32(48), "Handlers for hadoop tasks")
-    ("swc.fs.hadoop.fds.max", g_i32(256), 
+    ("swc.fs.hadoop.handlers", Config::i32(48), 
+      "Handlers for hadoop tasks")
+    ("swc.fs.hadoop.fds.max", Config::g_i32(256), 
       "Max Open Fds for opt. without closing")
   ;
 
@@ -36,11 +37,11 @@ Config apply_hadoop() {
     "swc.fs.hadoop.cfg.dyn"
   );
 
-  Config config;
+  Configurables config;
   config.path_root = Env::Config::settings()->get_str(
     "swc.fs.hadoop.path.root");
-  config.cfg_fds_max = Env::Config::settings()->get<Property::V_GINT32>(
-    "swc.fs.hadoop.fds.max");
+  config.cfg_fds_max = Env::Config::settings()
+    ->get<Config::Property::V_GINT32>("swc.fs.hadoop.fds.max");
   return config;
 }
 

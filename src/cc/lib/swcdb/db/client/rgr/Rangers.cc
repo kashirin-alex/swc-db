@@ -9,7 +9,7 @@
 
 namespace SWC { namespace client {
 
-Rangers::Rangers(const Property::V_GINT32::Ptr expiry_ms) 
+Rangers::Rangers(const Config::Property::V_GINT32::Ptr expiry_ms) 
                 : m_expiry_ms(expiry_ms) { 
 }
 

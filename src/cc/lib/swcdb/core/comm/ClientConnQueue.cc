@@ -61,8 +61,8 @@ void ConnQueueReqBase::print(std::ostream& out) {
 
 
 ConnQueue::ConnQueue(const IOCtxPtr& ioctx,
-                     const Property::V_GINT32::Ptr keepalive_ms, 
-                     const Property::V_GINT32::Ptr again_delay_ms) 
+                     const Config::Property::V_GINT32::Ptr keepalive_ms, 
+                     const Config::Property::V_GINT32::Ptr again_delay_ms) 
                     : cfg_keepalive_ms(keepalive_ms),
                       cfg_again_delay_ms(again_delay_ms),
                       m_ioctx(ioctx), m_conn(nullptr), 

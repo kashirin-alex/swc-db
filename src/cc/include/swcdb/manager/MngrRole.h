@@ -98,14 +98,14 @@ class MngrRole final {
   client::ConnQueuePtr            m_mngr_inchain;
 
 
-  const Property::V_GINT32::Ptr cfg_conn_probes;
-  const Property::V_GINT32::Ptr cfg_conn_timeout;
-  const Property::V_GINT32::Ptr cfg_conn_fb_failures;
+  const Config::Property::V_GINT32::Ptr cfg_conn_probes;
+  const Config::Property::V_GINT32::Ptr cfg_conn_timeout;
+  const Config::Property::V_GINT32::Ptr cfg_conn_fb_failures;
   
-  const Property::V_GINT32::Ptr cfg_req_timeout;
-  const Property::V_GINT32::Ptr cfg_delay_updated;
-  const Property::V_GINT32::Ptr cfg_check_interval;
-  const Property::V_GINT32::Ptr cfg_delay_fallback;
+  const Config::Property::V_GINT32::Ptr cfg_req_timeout;
+  const Config::Property::V_GINT32::Ptr cfg_delay_updated;
+  const Config::Property::V_GINT32::Ptr cfg_check_interval;
+  const Config::Property::V_GINT32::Ptr cfg_delay_fallback;
 };
 
 

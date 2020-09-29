@@ -21,9 +21,9 @@ namespace SWC { namespace Ranger {
 class Compaction final {
   public:
 
-  const Property::V_GUINT8::Ptr   cfg_read_ahead;
-  const Property::V_GUINT8::Ptr   cfg_max_range;
-  const Property::V_GINT32::Ptr   cfg_check_interval;
+  const Config::Property::V_GUINT8::Ptr   cfg_read_ahead;
+  const Config::Property::V_GUINT8::Ptr   cfg_max_range;
+  const Config::Property::V_GINT32::Ptr   cfg_check_interval;
 
   explicit Compaction();
 

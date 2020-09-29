@@ -25,9 +25,9 @@ class Resources final {
   public:
   
   Resources(asio::io_context* io, 
-            Property::V_GINT32::Ptr ram_percent_allowed,
-            Property::V_GINT32::Ptr ram_percent_reserved,
-            Property::V_GINT32::Ptr ram_release_rate,
+            Config::Property::V_GINT32::Ptr ram_percent_allowed,
+            Config::Property::V_GINT32::Ptr ram_percent_reserved,
+            Config::Property::V_GINT32::Ptr ram_release_rate,
             const std::function<size_t(size_t)>& release_call=0)
             : cfg_ram_percent_allowed(ram_percent_allowed),
               cfg_ram_percent_reserved(ram_percent_reserved),
@@ -317,9 +317,9 @@ class Resources final {
   };
 
 
-  Property::V_GINT32::Ptr             cfg_ram_percent_allowed;
-  Property::V_GINT32::Ptr             cfg_ram_percent_reserved;
-  Property::V_GINT32::Ptr             cfg_ram_release_rate;
+  Config::Property::V_GINT32::Ptr     cfg_ram_percent_allowed;
+  Config::Property::V_GINT32::Ptr     cfg_ram_percent_reserved;
+  Config::Property::V_GINT32::Ptr     cfg_ram_release_rate;
   asio::high_resolution_timer         m_timer; 
   
   const std::function<size_t(size_t)> m_release_call;

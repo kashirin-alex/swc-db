@@ -61,7 +61,7 @@ std::string type_to_string(Types::Fs typ) {
 }
 
 
-FileSystem::FileSystem(const Config& config)
+FileSystem::FileSystem(const Configurables& config)
     : path_root(config.path_root.empty() 
         ? "" : normalize_pathname(config.path_root)),
       path_data(

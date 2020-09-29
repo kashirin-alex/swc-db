@@ -25,7 +25,7 @@ class ConfigSSL final {
 
   ~ConfigSSL();
 
-  void set_networks(const Strings& networks);
+  void set_networks(const Config::Strings& networks);
 
   bool need_ssl(const EndPoint& endpoint) const;
 

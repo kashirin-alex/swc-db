@@ -17,7 +17,7 @@ class Base;
 typedef std::shared_ptr<Base> BasePtr;
 }}
 
-Config apply_broker();
+Configurables apply_broker();
 
 
 class FileSystemBroker final : public FileSystem {
@@ -154,8 +154,8 @@ class FileSystemBroker final : public FileSystem {
   const EndPoints         m_endpoints;
   std::atomic<bool>       m_run;
 
-  const Property::V_GINT32::Ptr cfg_timeout;
-  const Property::V_GINT32::Ptr cfg_timeout_ratio;
+  const Config::Property::V_GINT32::Ptr cfg_timeout;
+  const Config::Property::V_GINT32::Ptr cfg_timeout_ratio;
 };
 
 

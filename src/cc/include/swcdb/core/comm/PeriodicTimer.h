@@ -18,7 +18,7 @@ class PeriodicTimer final : private asio::high_resolution_timer {
 
   using asio::high_resolution_timer::cancel;
 
-  PeriodicTimer(const Property::V_GINT32::Ptr cfg_ms, 
+  PeriodicTimer(const Config::Property::V_GINT32::Ptr cfg_ms, 
                 const Call_t& call, asio::io_context* io);
   
   ~PeriodicTimer();
@@ -27,8 +27,8 @@ class PeriodicTimer final : private asio::high_resolution_timer {
 
   void schedule();
 
-  const Property::V_GINT32::Ptr   m_ms;
-  const Call_t                    m_call;
+  const Config::Property::V_GINT32::Ptr   m_ms;
+  const Call_t                            m_call;
 };
 
 
@@ -40,7 +40,7 @@ class PeriodicTimers final
   
   void stop();
 
-  void set(const Property::V_GINT32::Ptr ms,
+  void set(const Config::Property::V_GINT32::Ptr ms,
            const PeriodicTimer::Call_t& call, 
            asio::io_context* io);
 

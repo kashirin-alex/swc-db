@@ -12,36 +12,36 @@ extern "C" {
 namespace SWC{ namespace FS {
 
 
-Config apply_ceph() {
+Configurables apply_ceph() {
   Env::Config::settings()->file_desc.add_options()
-    ("swc.fs.ceph.path.root", str(""), 
+    ("swc.fs.ceph.path.root", Config::str(""), 
       "Ceph FileSystem's base root path")
-    ("swc.fs.ceph.cfg.dyn", strs(), 
+    ("swc.fs.ceph.cfg.dyn", Config::strs(), 
       "Dyn-config file")
 
-    ("swc.fs.ceph.client.id", str(), 
+    ("swc.fs.ceph.client.id", Config::str(), 
       "This ceph Client Id(name)")
 
-    ("swc.fs.ceph.perm.group", i32(), 
+    ("swc.fs.ceph.perm.group", Config::i32(), 
       "CephFs Permission Group")
-    ("swc.fs.ceph.perm.user", i32(), 
+    ("swc.fs.ceph.perm.user", Config::i32(), 
       "CephFs Permission User")
       
-    ("swc.fs.ceph.stripe.unit", i32(), 
+    ("swc.fs.ceph.stripe.unit", Config::i32(), 
       "CephFs default stripe_unit")
-    ("swc.fs.ceph.stripe.count", i32(), 
+    ("swc.fs.ceph.stripe.count", Config::i32(), 
       "CephFs default stripe_count")
-    ("swc.fs.ceph.object.size", i32(), 
+    ("swc.fs.ceph.object.size", Config::i32(), 
       "CephFs default object_size")
-    ("swc.fs.ceph.replication", i32(), 
+    ("swc.fs.ceph.replication", Config::i32(), 
       "CephFs default replication")
 
-    ("swc.fs.ceph.configuration.file", str(), 
+    ("swc.fs.ceph.configuration.file", Config::str(), 
       "The ceph configuration file 'ceph.conf'")
-    ("swc.fs.ceph.mon.addr", str(), 
+    ("swc.fs.ceph.mon.addr", Config::str(), 
       "The ceph config value for 'mon_addr'")
 
-    ("swc.fs.ceph.fds.max", g_i32(256), 
+    ("swc.fs.ceph.fds.max", Config::g_i32(256), 
       "Max Open Fds for opt. without closing")
   ;
 
@@ -50,11 +50,11 @@ Config apply_ceph() {
     "swc.fs.ceph.cfg.dyn"
   );
   
-  Config config;
+  Configurables config;
   config.path_root = Env::Config::settings()->get_str(
     "swc.fs.ceph.path.root");
-  config.cfg_fds_max = Env::Config::settings()->get<Property::V_GINT32>(
-    "swc.fs.ceph.fds.max");
+  config.cfg_fds_max = Env::Config::settings()
+    ->get<Config::Property::V_GINT32>("swc.fs.ceph.fds.max");
   return config;
 }
 

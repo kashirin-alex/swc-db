@@ -8,8 +8,8 @@
 namespace SWC { namespace client {
 
 Host::Host(const ConnQueuesPtr queues, const EndPoints& endpoints, 
-           const Property::V_GINT32::Ptr keepalive_ms, 
-           const Property::V_GINT32::Ptr again_delay_ms)
+           const Config::Property::V_GINT32::Ptr keepalive_ms, 
+           const Config::Property::V_GINT32::Ptr again_delay_ms)
           : ConnQueue(queues->service->io(), keepalive_ms, again_delay_ms),
             endpoints(endpoints), queues(queues) {
 }
@@ -34,10 +34,10 @@ bool Host::connect() {
 }
 
 ConnQueues::ConnQueues(const Serialized::Ptr service, 
-                       const Property::V_GINT32::Ptr timeout,
-                       const Property::V_GINT32::Ptr probes, 
-                       const Property::V_GINT32::Ptr keepalive_ms,
-                       const Property::V_GINT32::Ptr again_delay_ms)
+                       const Config::Property::V_GINT32::Ptr timeout,
+                       const Config::Property::V_GINT32::Ptr probes, 
+                       const Config::Property::V_GINT32::Ptr keepalive_ms,
+                       const Config::Property::V_GINT32::Ptr again_delay_ms)
                       : service(service),
                         cfg_conn_timeout(timeout),
                         cfg_conn_probes(probes), 

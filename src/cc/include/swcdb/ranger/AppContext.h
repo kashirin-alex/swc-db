@@ -82,7 +82,8 @@ class AppContext final : public SWC::AppContext {
     );
     RangerEnv::init();
 
-    auto period = settings->get<Property::V_GINT32>("swc.cfg.dyn.period");
+    auto period = settings->get<Config::Property::V_GINT32>(
+      "swc.cfg.dyn.period");
     if(period->get()) {
       Env::IoCtx::io()->set_periodic_timer(
         period,

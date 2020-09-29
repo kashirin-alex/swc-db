@@ -11,7 +11,7 @@
 #include "swcdb/core/Error.h"
 #include "swcdb/core/config/PropertiesParser.h"
 
-namespace SWC {
+namespace SWC { namespace Config {
 
 
 /* cfg methods for types
@@ -106,7 +106,7 @@ Property::V_DOUBLES::Ptr f64s() {
 
 
 
-namespace Config {
+
 
   
 ParserConfig::ParserConfig(const std::string& usage, 

@@ -9,7 +9,7 @@
 
 namespace SWC { namespace client {
 
-Schemas::Schemas(const Property::V_GINT32::Ptr expiry_ms) 
+Schemas::Schemas(const Config::Property::V_GINT32::Ptr expiry_ms) 
                 : m_expiry_ms(expiry_ms) {
 } 
 

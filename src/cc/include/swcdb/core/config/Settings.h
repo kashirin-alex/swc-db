@@ -12,7 +12,10 @@
 #include "swcdb/core/config/PropertiesParser.h"
 
 
-namespace SWC { namespace Config {
+namespace SWC { 
+
+//! The SWC-DB C++ namespace 'SWC::Config'
+namespace Config {
 
 class Settings final : public Properties {
 

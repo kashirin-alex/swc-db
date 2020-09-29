@@ -41,9 +41,9 @@ enum Flags : uint8_t {
   SYNC=2
 };
 
-struct Config {
-  Property::V_GINT32::Ptr cfg_fds_max = nullptr;
-  std::string             path_root;
+struct Configurables {
+  Config::Property::V_GINT32::Ptr cfg_fds_max = nullptr;
+  std::string                     path_root;
 };
 
 std::string normalize_pathname(std::string s);
@@ -61,11 +61,11 @@ class FileSystem : public std::enable_shared_from_this<FileSystem> {
   const std::string path_root;
   const std::string path_data;
 
-  const Property::V_GINT32::Ptr cfg_fds_max;
+  const Config::Property::V_GINT32::Ptr cfg_fds_max;
 
   std::atomic<size_t> fds_count;
   
-  FileSystem(const Config& config);
+  FileSystem(const Configurables& config);
 
   virtual ~FileSystem();
 

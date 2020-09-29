@@ -57,8 +57,8 @@ class ConnQueue :
   typedef ConnQueueReqBase ReqBase;
 
   ConnQueue(const IOCtxPtr& ioctx,
-            const Property::V_GINT32::Ptr keepalive_ms=nullptr, 
-            const Property::V_GINT32::Ptr again_delay_ms=nullptr);
+            const Config::Property::V_GINT32::Ptr keepalive_ms=nullptr, 
+            const Config::Property::V_GINT32::Ptr again_delay_ms=nullptr);
 
   virtual ~ConnQueue();
 
@@ -84,8 +84,8 @@ class ConnQueue :
 
   protected:
   
-  const Property::V_GINT32::Ptr  cfg_keepalive_ms;
-  const Property::V_GINT32::Ptr  cfg_again_delay_ms;
+  const Config::Property::V_GINT32::Ptr  cfg_keepalive_ms;
+  const Config::Property::V_GINT32::Ptr  cfg_again_delay_ms;
 
   private:
   

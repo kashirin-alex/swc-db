@@ -13,13 +13,13 @@ namespace SWC { namespace Ranger {
 
 Compaction::Compaction() 
           : cfg_read_ahead(
-              Env::Config::settings()->get<Property::V_GUINT8>(
+              Env::Config::settings()->get<Config::Property::V_GUINT8>(
                 "swc.rgr.compaction.read.ahead")),
             cfg_max_range(
-              Env::Config::settings()->get<Property::V_GUINT8>(
+              Env::Config::settings()->get<Config::Property::V_GUINT8>(
                 "swc.rgr.compaction.range.max")), 
             cfg_check_interval(
-              Env::Config::settings()->get<Property::V_GINT32>(
+              Env::Config::settings()->get<Config::Property::V_GINT32>(
                 "swc.rgr.compaction.check.interval")),
             m_check_timer(
               asio::high_resolution_timer(

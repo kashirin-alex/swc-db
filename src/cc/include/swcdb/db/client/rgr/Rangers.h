@@ -33,7 +33,7 @@ class Rangers final
     
   public:
 
-  Rangers(const Property::V_GINT32::Ptr expiry_ms);
+  Rangers(const Config::Property::V_GINT32::Ptr expiry_ms);
 
   virtual ~Rangers();
   
@@ -49,8 +49,8 @@ class Rangers final
 
   private:
 
-  Mutex                     m_mutex;
-  Property::V_GINT32::Ptr   m_expiry_ms;
+  Mutex                             m_mutex;
+  Config::Property::V_GINT32::Ptr   m_expiry_ms;
   
 };
 

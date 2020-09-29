@@ -22,33 +22,33 @@ Clients::Clients(IOCtxPtr ioctx, const AppContext::Ptr& app_ctx)
       mngr(std::make_shared<ConnQueues>(
         std::make_shared<Serialized>(
           "MANAGER", ioctx ? ioctx: ioctx = default_io(), m_app_ctx),
-        Env::Config::settings()->get<Property::V_GINT32>(
+        Env::Config::settings()->get<Config::Property::V_GINT32>(
           "swc.client.Mngr.connection.timeout"),
-        Env::Config::settings()->get<Property::V_GINT32>(
+        Env::Config::settings()->get<Config::Property::V_GINT32>(
           "swc.client.Mngr.connection.probes"),
-        Env::Config::settings()->get<Property::V_GINT32>(
+        Env::Config::settings()->get<Config::Property::V_GINT32>(
           "swc.client.Mngr.connection.keepalive"),
-        Env::Config::settings()->get<Property::V_GINT32>(
+        Env::Config::settings()->get<Config::Property::V_GINT32>(
           "swc.client.request.again.delay")
       )),
 
       rgr(std::make_shared<ConnQueues>(
         std::make_shared<Serialized>("RANGER", ioctx, m_app_ctx),
-        Env::Config::settings()->get<Property::V_GINT32>(
+        Env::Config::settings()->get<Config::Property::V_GINT32>(
           "swc.client.Rgr.connection.timeout"),
-        Env::Config::settings()->get<Property::V_GINT32>(
+        Env::Config::settings()->get<Config::Property::V_GINT32>(
           "swc.client.Rgr.connection.probes"),
-        Env::Config::settings()->get<Property::V_GINT32>(
+        Env::Config::settings()->get<Config::Property::V_GINT32>(
           "swc.client.Rgr.connection.keepalive"),
-        Env::Config::settings()->get<Property::V_GINT32>(
+        Env::Config::settings()->get<Config::Property::V_GINT32>(
           "swc.client.request.again.delay")
       )),
 
       schemas(std::make_shared<Schemas>(
-        Env::Config::settings()->get<Property::V_GINT32>(
+        Env::Config::settings()->get<Config::Property::V_GINT32>(
           "swc.client.schema.expiry"))),
 
-      rangers(Env::Config::settings()->get<Property::V_GINT32>(
+      rangers(Env::Config::settings()->get<Config::Property::V_GINT32>(
         "swc.client.Rgr.range.res.expiry")) {
 }
 
@@ -73,21 +73,28 @@ const Clients& Clients::ref() {
 }
 
 Clients::Clients(const client::Clients::Ptr& clients) 
-          : cfg_send_buff_sz(Env::Config::settings()->get<Property::V_GINT32>(
-              "swc.client.send.buffer")), 
-            cfg_send_ahead(Env::Config::settings()->get<Property::V_GUINT8>(
-              "swc.client.send.ahead")), 
-            cfg_send_timeout(Env::Config::settings()->get<Property::V_GINT32>(
-              "swc.client.send.timeout")),
-            cfg_send_timeout_ratio(Env::Config::settings()->get<Property::V_GINT32>(
-              "swc.client.send.timeout.bytes.ratio")),
+          : cfg_send_buff_sz(
+              Env::Config::settings()->get<SWC::Config::Property::V_GINT32>(
+                "swc.client.send.buffer")),
+            cfg_send_ahead(
+              Env::Config::settings()->get<SWC::Config::Property::V_GUINT8>(
+                "swc.client.send.ahead")),
+            cfg_send_timeout(
+              Env::Config::settings()->get<SWC::Config::Property::V_GINT32>(
+                "swc.client.send.timeout")),
+            cfg_send_timeout_ratio(
+              Env::Config::settings()->get<SWC::Config::Property::V_GINT32>(
+                "swc.client.send.timeout.bytes.ratio")),
 
-            cfg_recv_buff_sz(Env::Config::settings()->get<Property::V_GINT32>(
-              "swc.client.recv.buffer")), 
-            cfg_recv_ahead(Env::Config::settings()->get<Property::V_GUINT8>(
-              "swc.client.recv.ahead")),
-            cfg_recv_timeout(Env::Config::settings()->get<Property::V_GINT32>(
-              "swc.client.recv.timeout")),
+            cfg_recv_buff_sz(
+              Env::Config::settings()->get<SWC::Config::Property::V_GINT32>(
+                "swc.client.recv.buffer")),
+            cfg_recv_ahead(
+              Env::Config::settings()->get<SWC::Config::Property::V_GUINT8>(
+                "swc.client.recv.ahead")),
+            cfg_recv_timeout(
+              Env::Config::settings()->get<SWC::Config::Property::V_GINT32>(
+                "swc.client.recv.timeout")),
 
             m_clients(clients) {
 }

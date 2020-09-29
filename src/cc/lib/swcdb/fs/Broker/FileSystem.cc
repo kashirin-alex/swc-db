@@ -33,25 +33,30 @@
 namespace SWC{ namespace FS {
 
 
-Config apply_broker() {
+Configurables apply_broker() {
   Env::Config::settings()->file_desc.add_options()
-    ("swc.fs.broker.cfg.dyn", strs(), "Dyn-config file")
-    ("swc.fs.broker.host", str(), "FsBroker host (default by hostname)") 
-    ("swc.fs.broker.port", i16(17000), "FsBroker port")
-    ("swc.fs.broker.handlers", i32(48), "Handlers for broker tasks")
-    ("swc.fs.broker.timeout", g_i32(120000), "Default request timeout in ms")
-    ("swc.fs.broker.timeout.bytes.ratio", g_i32(1000), 
+    ("swc.fs.broker.cfg.dyn", Config::strs(),
+     "Dyn-config file")
+    ("swc.fs.broker.host", Config::str(),
+     "FsBroker host (default by hostname)") 
+    ("swc.fs.broker.port", Config::i16(17000),
+     "FsBroker port")
+    ("swc.fs.broker.handlers", Config::i32(48),
+     "Handlers for broker tasks")
+    ("swc.fs.broker.timeout", Config::g_i32(120000),
+     "Default request timeout in ms")
+    ("swc.fs.broker.timeout.bytes.ratio", Config::g_i32(1000), 
      "Timeout ratio to bytes, bytes/ratio=ms added to default timeout")
-    ("swc.fs.broker.fds.max", g_i32(256), 
+    ("swc.fs.broker.fds.max", Config::g_i32(256), 
       "Max Open Fds for opt. without closing")
   ;
   Env::Config::settings()->parse_file(
     Env::Config::settings()->get_str("swc.fs.broker.cfg", ""),
     "swc.fs.broker.cfg.dyn"
   );
-  Config config;
-  config.cfg_fds_max = Env::Config::settings()->get<Property::V_GINT32>(
-    "swc.fs.broker.fds.max");
+  Configurables config;
+  config.cfg_fds_max = Env::Config::settings()
+    ->get<Config::Property::V_GINT32>("swc.fs.broker.fds.max");
   return config;
 }
 
@@ -75,7 +80,7 @@ EndPoints FileSystemBroker::get_endpoints() {
               "swc.comm.network.priority error(%s)",
               ec.message().c_str());
 
-  Strings addr;
+  Config::Strings addr;
   return Resolver::get_endpoints(
     Env::Config::settings()->get_i16("swc.fs.broker.port"),
     addr, host, nets, true
@@ -94,10 +99,12 @@ FileSystemBroker::FileSystemBroker()
       Env::Config::settings()->get_str("swc.fs.broker.underlying"))),
     m_endpoints(get_endpoints()),
     m_run(true),
-    cfg_timeout(Env::Config::settings()->get<Property::V_GINT32>(
-      "swc.fs.broker.timeout")),
-    cfg_timeout_ratio(Env::Config::settings()->get<Property::V_GINT32>( 
-      "swc.fs.broker.timeout.bytes.ratio")) {
+    cfg_timeout(
+      Env::Config::settings()->get<Config::Property::V_GINT32>(
+        "swc.fs.broker.timeout")),
+    cfg_timeout_ratio(
+      Env::Config::settings()->get<Config::Property::V_GINT32>( 
+        "swc.fs.broker.timeout.bytes.ratio")) {
   m_io->run(m_io);
 }
 

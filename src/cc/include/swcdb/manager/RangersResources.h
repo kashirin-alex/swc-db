@@ -40,11 +40,12 @@ class RangersResources final : private std::vector<RangerResources> {
 
   public:
 
-  const Property::V_GINT32::Ptr cfg_rgr_res_check;
+  const Config::Property::V_GINT32::Ptr cfg_rgr_res_check;
 
   RangersResources():
-        cfg_rgr_res_check(Env::Config::settings()->get<Property::V_GINT32>(
-          "swc.mngr.rangers.resource.interval.check")),
+        cfg_rgr_res_check(
+          Env::Config::settings()->get<Config::Property::V_GINT32>(
+            "swc.mngr.rangers.resource.interval.check")),
         m_due(0), m_last_check(0) { 
   }
       

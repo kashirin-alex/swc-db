@@ -31,7 +31,7 @@ ConfigSSL::ConfigSSL(bool is_client) {
 ConfigSSL::~ConfigSSL() { }
 
 
-void ConfigSSL::set_networks(const Strings& networks) {
+void ConfigSSL::set_networks(const Config::Strings& networks) {
   asio::error_code ec;
   Resolver::get_networks(networks, nets_v4, nets_v6, ec);
   if(ec)

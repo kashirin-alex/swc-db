@@ -80,17 +80,17 @@ class RangerEnv final {
     return m_env->_updater.get();
   }
 
-  const Property::V_GUINT8::Ptr      cfg_cs_max;
-  const Property::V_GINT32::Ptr      cfg_cs_sz;
+  const Config::Property::V_GUINT8::Ptr      cfg_cs_max;
+  const Config::Property::V_GINT32::Ptr      cfg_cs_sz;
   
-  const Property::V_GUINT8::Ptr      cfg_log_rollout_ratio;
+  const Config::Property::V_GUINT8::Ptr      cfg_log_rollout_ratio;
   
-  const Property::V_GUINT8::Ptr      cfg_compact_percent;
-  const Property::V_GUINT8::Ptr      cfg_cs_replication;
+  const Config::Property::V_GUINT8::Ptr      cfg_compact_percent;
+  const Config::Property::V_GUINT8::Ptr      cfg_cs_replication;
 
-  const Property::V_GINT32::Ptr      cfg_blk_size;
-  const Property::V_GINT32::Ptr      cfg_blk_cells;
-  const Property::V_GENUM::Ptr       cfg_blk_enc;
+  const Config::Property::V_GINT32::Ptr      cfg_blk_size;
+  const Config::Property::V_GINT32::Ptr      cfg_blk_cells;
+  const Config::Property::V_GENUM::Ptr       cfg_blk_enc;
   
   IoContext::Ptr              mnt_io;
   Ranger::Compaction*         _compaction;
@@ -122,35 +122,44 @@ class RangerEnv final {
 namespace SWC {
 
 RangerEnv::RangerEnv() 
-    : cfg_cs_max(Env::Config::settings()->get<Property::V_GUINT8>(
-        "swc.rgr.Range.CellStore.count.max")), 
-      cfg_cs_sz(Env::Config::settings()->get<Property::V_GINT32>(
-        "swc.rgr.Range.CellStore.size.max")), 
-      cfg_log_rollout_ratio(Env::Config::settings()->get<Property::V_GUINT8>(
-        "swc.rgr.Range.CommitLog.rollout.ratio")),
-      cfg_compact_percent(Env::Config::settings()->get<Property::V_GUINT8>(
-        "swc.rgr.Range.compaction.percent")),
-      cfg_cs_replication(Env::Config::settings()->get<Property::V_GUINT8>(
-        "swc.rgr.Range.CellStore.replication")), 
-        cfg_blk_size(Env::Config::settings()->get<Property::V_GINT32>(
-        "swc.rgr.Range.block.size")), 
-      cfg_blk_cells(Env::Config::settings()->get<Property::V_GINT32>(
-        "swc.rgr.Range.block.cells")),
-      cfg_blk_enc(Env::Config::settings()->get<Property::V_GENUM>(
-        "swc.rgr.Range.block.encoding")), 
-      mnt_io(IoContext::make("Maintenance", 
-        Env::Config::settings()->get_i32(
-          "swc.rgr.maintenance.handlers"))),
+    : cfg_cs_max(
+        Env::Config::settings()->get<Config::Property::V_GUINT8>(
+          "swc.rgr.Range.CellStore.count.max")),
+      cfg_cs_sz(
+        Env::Config::settings()->get<Config::Property::V_GINT32>(
+          "swc.rgr.Range.CellStore.size.max")),
+      cfg_log_rollout_ratio(
+        Env::Config::settings()->get<Config::Property::V_GUINT8>(
+          "swc.rgr.Range.CommitLog.rollout.ratio")),
+      cfg_compact_percent(
+        Env::Config::settings()->get<Config::Property::V_GUINT8>(
+          "swc.rgr.Range.compaction.percent")),
+      cfg_cs_replication(
+        Env::Config::settings()->get<Config::Property::V_GUINT8>(
+          "swc.rgr.Range.CellStore.replication")),
+      cfg_blk_size(
+        Env::Config::settings()->get<Config::Property::V_GINT32>(
+          "swc.rgr.Range.block.size")),
+      cfg_blk_cells(
+        Env::Config::settings()->get<Config::Property::V_GINT32>(
+          "swc.rgr.Range.block.cells")),
+      cfg_blk_enc(
+        Env::Config::settings()->get<Config::Property::V_GENUM>(
+          "swc.rgr.Range.block.encoding")),
+      mnt_io(
+        IoContext::make("Maintenance", 
+        Env::Config::settings()->get_i32("swc.rgr.maintenance.handlers"))
+      ),
       _compaction(nullptr),
       _columns(new Ranger::Columns()),
       _updater(std::make_shared<client::Query::Update>()),  
       _resources(
         Env::IoCtx::io()->ptr(),
-        Env::Config::settings()->get<Property::V_GINT32>(
+        Env::Config::settings()->get<Config::Property::V_GINT32>(
           "swc.rgr.ram.allowed.percent"),
-        Env::Config::settings()->get<Property::V_GINT32>(
+        Env::Config::settings()->get<Config::Property::V_GINT32>(
           "swc.rgr.ram.reserved.percent"),
-        Env::Config::settings()->get<Property::V_GINT32>(
+        Env::Config::settings()->get<Config::Property::V_GINT32>(
           "swc.rgr.ram.release.rate"),
         [this](size_t bytes) { return _columns->release(bytes); }) {
 }

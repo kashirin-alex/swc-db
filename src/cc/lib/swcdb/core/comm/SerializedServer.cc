@@ -106,7 +106,10 @@ SerializedServer::SerializedServer(
 
   auto settings = Env::Config::settings();
 
-  Strings addrs = settings->has("addr") ? settings->get_strs("addr") : Strings();
+  Config::Strings addrs;
+  if(settings->has("addr"))
+    addrs = settings->get_strs("addr");
+
   std::string host;
   if(settings->has("host"))
     host = host.append(settings->get_str("host"));

@@ -5,7 +5,7 @@
 
 #include "swcdb/core/config/Properties.h"
 
-namespace SWC {
+namespace SWC { namespace Config {
 
   Properties::Properties() { }
   
@@ -149,5 +149,5 @@ namespace SWC {
 
 
 
-}
+}}
 

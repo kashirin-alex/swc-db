@@ -117,8 +117,8 @@ class MngdColumns final {
   std::vector<ColumnReq::Ptr>   m_cid_pending;
   std::vector<ColumnFunction>   m_cid_pending_load;
 
-  const Property::V_GUINT8::Ptr cfg_schema_replication;
-  const Property::V_GINT32::Ptr cfg_delay_cols_init;
+  const Config::Property::V_GUINT8::Ptr cfg_schema_replication;
+  const Config::Property::V_GINT32::Ptr cfg_delay_cols_init;
   
 };
 

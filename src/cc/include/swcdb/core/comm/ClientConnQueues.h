@@ -21,8 +21,8 @@ class Host final : public ConnQueue  {
   const EndPoints   endpoints;
 
   Host(const ConnQueuesPtr queues, const EndPoints& endpoints, 
-       const Property::V_GINT32::Ptr keepalive_ms, 
-       const Property::V_GINT32::Ptr again_delay_ms);
+       const Config::Property::V_GINT32::Ptr keepalive_ms, 
+       const Config::Property::V_GINT32::Ptr again_delay_ms);
 
   virtual ~Host();
   
@@ -41,18 +41,18 @@ class ConnQueues final :
 
   public:
 
-  const Serialized::Ptr            service;
-  const Property::V_GINT32::Ptr    cfg_conn_timeout;
-  const Property::V_GINT32::Ptr    cfg_conn_probes;
-  const Property::V_GINT32::Ptr    cfg_keepalive_ms;
-  const Property::V_GINT32::Ptr    cfg_again_delay_ms;
+  const Serialized::Ptr                    service;
+  const Config::Property::V_GINT32::Ptr    cfg_conn_timeout;
+  const Config::Property::V_GINT32::Ptr    cfg_conn_probes;
+  const Config::Property::V_GINT32::Ptr    cfg_keepalive_ms;
+  const Config::Property::V_GINT32::Ptr    cfg_again_delay_ms;
   
   
   ConnQueues(const Serialized::Ptr service, 
-             const Property::V_GINT32::Ptr timeout, 
-             const Property::V_GINT32::Ptr probes, 
-             const Property::V_GINT32::Ptr keepalive_ms,
-             const Property::V_GINT32::Ptr again_delay_ms);
+             const Config::Property::V_GINT32::Ptr timeout, 
+             const Config::Property::V_GINT32::Ptr probes, 
+             const Config::Property::V_GINT32::Ptr keepalive_ms,
+             const Config::Property::V_GINT32::Ptr again_delay_ms);
 
   ~ConnQueues();
 

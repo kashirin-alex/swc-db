@@ -13,7 +13,7 @@
 #include <fstream>
 #include <map>
 
-namespace SWC {
+namespace SWC { namespace Config {
 
 
 /* cfg methods for types
@@ -58,7 +58,6 @@ Property::V_DOUBLES::Ptr f64s();
 
 
 
-namespace Config {
 
   
 class ParserConfig final {

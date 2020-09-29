@@ -7,10 +7,8 @@
 #include "swcdb/core/Error.h"
 #include "swcdb/core/config/Property.h"
 
-namespace SWC {
 
-
-namespace Property {
+namespace SWC { namespace Config { namespace Property {
 
 
 Value::Value(uint8_t flags) : flags(flags) { }
@@ -900,5 +898,5 @@ void V_GSTRINGS::set_cb_on_chg(const V_GSTRINGS::OnChg_t& cb) {
 
 
 
-}} // namespace SWC::Property
+}}} // namespace SWC::Config::Property
 

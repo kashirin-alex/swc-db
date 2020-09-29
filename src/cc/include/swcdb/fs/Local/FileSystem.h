@@ -11,7 +11,7 @@
 namespace SWC{ namespace FS {
 
 
-Config apply_local();
+Configurables apply_local();
 
 
 class FileSystemLocal final : public FileSystem {

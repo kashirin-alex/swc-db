@@ -11,7 +11,7 @@
 
 namespace SWC{ namespace FS {
 
-Config apply_hadoop_jvm();
+Configurables apply_hadoop_jvm();
 
 
 

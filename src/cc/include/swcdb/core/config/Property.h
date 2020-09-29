@@ -11,7 +11,7 @@
 #include <functional>
 #include <vector>
 
-namespace SWC {
+namespace SWC { namespace Config {
 
 typedef std::vector<std::string>  Strings;
 typedef std::vector<int64_t>      Int64s;
@@ -23,7 +23,8 @@ const uint64_t M = K * 1000;
 const uint64_t MiB = KiB * 1024;
 const uint64_t G = M * 1000;
 const uint64_t GiB = MiB * 1024;
-
+const uint64_t T = G * 1000;
+const uint64_t TiB = GiB * 1024;
 
 namespace Property {
 
@@ -569,7 +570,7 @@ class V_GSTRINGS final : public Value {
 
 
 
-}} // namespace SWC::Property
+}}} // namespace SWC::Config::Property
 
 
 #ifdef SWC_IMPL_SOURCE

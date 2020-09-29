@@ -8,7 +8,7 @@
 
 namespace SWC {
   
-PeriodicTimer::PeriodicTimer(const Property::V_GINT32::Ptr cfg_ms, 
+PeriodicTimer::PeriodicTimer(const Config::Property::V_GINT32::Ptr cfg_ms, 
                              const Call_t& call, asio::io_context* io)
                             : asio::high_resolution_timer(*io),
                               m_ms(cfg_ms), m_call(call) {
@@ -38,7 +38,7 @@ void PeriodicTimers::stop() {
     ptr->cancel();
 }
 
-void PeriodicTimers::set(const Property::V_GINT32::Ptr ms, 
+void PeriodicTimers::set(const Config::Property::V_GINT32::Ptr ms, 
                          const PeriodicTimer::Call_t& call,
                          asio::io_context* io) {
   Mutex::scope lock(m_mutex);

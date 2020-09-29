@@ -121,7 +121,7 @@ Groups::Groups(const Groups::Vec& groups, const std::vector<Network>& nets)
 Groups::~Groups() { }
 
 Groups::Ptr Groups::init() {
-  Env::Config::settings()->get<Property::V_GSTRINGS>("swc.mngr.host")
+  Env::Config::settings()->get<Config::Property::V_GSTRINGS>("swc.mngr.host")
     ->set_cb_on_chg([cb=shared_from_this()]{cb->on_cfg_update();});
     
   on_cfg_update();
@@ -139,8 +139,9 @@ Groups::Ptr Groups::copy() {
 void Groups::on_cfg_update() {
   SWC_LOG(LOG_DEBUG, "update_cfg()");
 
-  Property::V_GSTRINGS::Ptr cfg_mngr_hosts
-    = Env::Config::settings()->get<Property::V_GSTRINGS>("swc.mngr.host");
+  Config::Property::V_GSTRINGS::Ptr cfg_mngr_hosts
+    = Env::Config::settings()->get<Config::Property::V_GSTRINGS>(
+      "swc.mngr.host");
   uint16_t default_port = Env::Config::settings()->get_i16("swc.mngr.port");
   
   uint8_t role;
@@ -194,9 +195,9 @@ void Groups::on_cfg_update() {
       auto b = cfg_chk.substr(0, col_range_at);
       auto e = cfg_chk.substr(col_range_at+1);
       if(!b.empty())
-        Property::from_string(b, &col_begin);
+        Config::Property::from_string(b, &col_begin);
       if(!e.empty())
-        Property::from_string(e, &col_end);
+        Config::Property::from_string(e, &col_end);
 
       at = cfg.find_first_of('|', at_offset = ++at);
     } else if(role != Types::MngrRole::COLUMNS) {
@@ -213,7 +214,7 @@ void Groups::on_cfg_update() {
       port = default_port;
     } else {
       host_or_ips = cfg_chk.substr(0, at_chk);
-      Property::from_string(cfg_chk.substr(++at_chk), &port);
+      Config::Property::from_string(cfg_chk.substr(++at_chk), &port);
     }
 
     _add_host(role, col_begin, col_end, port, host_or_ips);
