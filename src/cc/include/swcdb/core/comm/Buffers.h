@@ -9,7 +9,7 @@
 #include <asio.hpp>
 #include "swcdb/core/Serializable.h"
 #include "swcdb/core/Buffer.h"
-#include "swcdb/core/comm/CommHeader.h"
+#include "swcdb/core/comm/Header.h"
 
 #include <memory>
 #include <string>
@@ -58,8 +58,8 @@ class Buffers final {
 
   void append_i32(uint32_t ival);
 
-  CommHeader    header;
-  uint8_t*      data_ptr;
+  Header    header;
+  uint8_t*  data_ptr;
 
   private:
 

@@ -57,7 +57,7 @@ set(swcdb_core_comm_sources
   comm/ConfigSSL.cc
   comm/Resolver.cc
   comm/Event.cc
-  comm/CommHeader.cc
+  comm/Header.cc
   comm/Buffers.cc
   comm/ConnHandler.cc
   comm/AppContext.cc

@@ -100,7 +100,7 @@ bool ConnHandler::due() {
 SWC_SHOULD_INLINE
 void ConnHandler::run(const Event::Ptr& ev) {
   if(app_ctx) 
-    // && if(ev->header.flags & CommHeader::FLAGS_BIT_REQUEST)
+    // && if(ev->header.flags & Header::FLAGS_BIT_REQUEST)
     app_ctx->handle(ptr(), ev); 
 }
 
@@ -137,7 +137,7 @@ bool ConnHandler::send_response(Buffers::Ptr& cbuf,
                                 DispatchHandler::Ptr hdlr) {
   if(!connected)
     return false;
-  cbuf->header.flags &= CommHeader::FLAGS_MASK_REQUEST;
+  cbuf->header.flags &= Header::FLAGS_MASK_REQUEST;
   write_or_queue(new Pending(cbuf, hdlr));
   return true;
 }
@@ -146,7 +146,7 @@ bool ConnHandler::send_request(Buffers::Ptr& cbuf,
                                DispatchHandler::Ptr hdlr) {
   if(!connected)
     return false;
-  cbuf->header.flags |= CommHeader::FLAGS_BIT_REQUEST;
+  cbuf->header.flags |= Header::FLAGS_BIT_REQUEST;
   write_or_queue(new Pending(cbuf, hdlr));
   return true;
 }
@@ -191,13 +191,13 @@ void ConnHandler::write(ConnHandler::Pending* pending) {
   auto cbuf = std::move(pending->cbuf);
   auto& header = cbuf->header;
 
-  if(!pending->hdlr || header.flags & CommHeader::FLAGS_BIT_IGNORE_RESPONSE) {
+  if(!pending->hdlr || header.flags & Header::FLAGS_BIT_IGNORE_RESPONSE) {
     // send request/response without sent/rsp-ack
     delete pending;
     goto write_commbuf;
   }
 
-  if(!(header.flags & CommHeader::FLAGS_BIT_REQUEST)) {
+  if(!(header.flags & Header::FLAGS_BIT_REQUEST)) {
     //if(!header.timeout_ms) {
       // send_response with sent-ack
       auto hdlr = std::move(pending->hdlr);
@@ -282,11 +282,11 @@ void ConnHandler::read_pending() {
     m_reading = true;
   }
 
-  uint8_t* data = new uint8_t[CommHeader::PREFIX_LENGTH];
+  uint8_t* data = new uint8_t[Header::PREFIX_LENGTH];
 
   do_async_read(
     data, 
-    CommHeader::PREFIX_LENGTH,
+    Header::PREFIX_LENGTH,
     [data, ptr=ptr()] (const asio::error_code& ec, size_t filled) {
       ptr->recved_header_pre(ec, data, filled);
       delete [] data;
@@ -299,7 +299,7 @@ void ConnHandler::recved_header_pre(asio::error_code ec,
                                     const uint8_t* data, size_t filled) {
   auto ev = Event::make(Event::Type::MESSAGE, Error::OK);
 
-  if(filled != CommHeader::PREFIX_LENGTH) {
+  if(filled != Header::PREFIX_LENGTH) {
     ec = asio::error::eof;
 
   } else if(!ec) {
@@ -312,7 +312,7 @@ void ConnHandler::recved_header_pre(asio::error_code ec,
       ec = asio::error::eof;
       ev->type = Event::Type::ERROR;
       ev->error = Error::REQUEST_TRUNCATED_HEADER;
-      ev->header = CommHeader();
+      ev->header = Header();
       SWC_LOGF(LOG_WARN, "read, REQUEST HEADER_PREFIX_TRUNCATED: remain=%lu", 
                filled);
     }
@@ -325,10 +325,10 @@ void ConnHandler::recved_header_pre(asio::error_code ec,
 
   uint8_t* buf_header;
   memcpy(buf_header = new uint8_t[ev->header.header_len], 
-         data, CommHeader::PREFIX_LENGTH);
+         data, Header::PREFIX_LENGTH);
   do_async_read(
-    buf_header + CommHeader::PREFIX_LENGTH, 
-    ev->header.header_len - CommHeader::PREFIX_LENGTH,
+    buf_header + Header::PREFIX_LENGTH, 
+    ev->header.header_len - Header::PREFIX_LENGTH,
     [ev, buf_header, ptr=ptr()](const asio::error_code& ec, size_t filled) {
       ptr->recved_header(ev, ec, buf_header, filled);
       delete [] buf_header;
@@ -339,7 +339,7 @@ void ConnHandler::recved_header_pre(asio::error_code ec,
 SWC_SHOULD_INLINE
 void ConnHandler::recved_header(const Event::Ptr& ev, asio::error_code ec,
                                 const uint8_t* data, size_t filled) {
-  if(filled + CommHeader::PREFIX_LENGTH != ev->header.header_len) {
+  if(filled + Header::PREFIX_LENGTH != ev->header.header_len) {
     ec = asio::error::eof;
   
   } else if(!ec) {
@@ -355,7 +355,7 @@ void ConnHandler::recved_header(const Event::Ptr& ev, asio::error_code ec,
     ec = asio::error::eof;
     ev->type = Event::Type::ERROR;
     ev->error = Error::REQUEST_TRUNCATED_HEADER;
-    ev->header = CommHeader();
+    ev->header = Header();
     SWC_LOGF(LOG_WARN, "read, REQUEST HEADER_TRUNCATED: len=%d", 
              ev->header.header_len);
   }
@@ -435,7 +435,7 @@ void ConnHandler::received(const Event::Ptr& ev, const asio::error_code& ec) {
     return;
   }
 
-  if(ev->header.flags & CommHeader::FLAGS_BIT_REQUEST)
+  if(ev->header.flags & Header::FLAGS_BIT_REQUEST)
     ev->received();
 
   bool more;

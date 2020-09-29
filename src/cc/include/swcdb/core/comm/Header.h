@@ -3,14 +3,14 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_core_comm_CommHeader_h
-#define swc_core_comm_CommHeader_h
+#ifndef swc_core_comm_Header_h
+#define swc_core_comm_Header_h
 
 #include "swcdb/core/Compat.h"
 
 namespace SWC { namespace Comm {
 
-class CommHeader final {
+class Header final {
 
   public:
 
@@ -30,9 +30,9 @@ class CommHeader final {
     FLAGS_MASK_URGENT           = 0xB, //!< Request is urgent bit
   };
 
-  CommHeader(uint64_t cmd=0, uint32_t timeout=0);
+  Header(uint64_t cmd=0, uint32_t timeout=0);
 
-  ~CommHeader();
+  ~Header();
 
   void set(uint64_t cmd=0, uint32_t timeout=0);
 
@@ -44,7 +44,7 @@ class CommHeader final {
 
   void decode(const uint8_t** bufp, size_t* remainp);
 
-  void initialize_from_request_header(const CommHeader &req_header);
+  void initialize_from_request_header(const Header &req_header);
 
   void print(std::ostream& out) const;
 
@@ -71,7 +71,7 @@ class CommHeader final {
 
 
 #ifdef SWC_IMPL_SOURCE
-#include "swcdb/core/comm/CommHeader.cc"
+#include "swcdb/core/comm/Header.cc"
 #endif 
 
-#endif // swc_core_comm_CommHeader_h
+#endif // swc_core_comm_Header_h

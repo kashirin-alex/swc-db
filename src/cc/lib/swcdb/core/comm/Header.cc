@@ -3,7 +3,7 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#include "swcdb/core/comm/CommHeader.h"
+#include "swcdb/core/comm/Header.h"
 #include "swcdb/core/Serialization.h"
 #include "swcdb/core/Checksum.h"
 
@@ -11,25 +11,25 @@ namespace SWC { namespace Comm {
 
 
 SWC_SHOULD_INLINE
-CommHeader::CommHeader(uint64_t cmd, uint32_t timeout)
-                      : version(1), header_len(0), flags(0),
-                        id(0), timeout_ms(timeout), command(cmd), 
-                        buffers(0), 
-                        data_size(0), data_chksum(0), 
-                        data_ext_size(0), data_ext_chksum(0), 
-                        checksum(0) {
+Header::Header(uint64_t cmd, uint32_t timeout)
+              : version(1), header_len(0), flags(0),
+                id(0), timeout_ms(timeout), command(cmd),
+                buffers(0),
+                data_size(0), data_chksum(0),
+                data_ext_size(0), data_ext_chksum(0),
+                checksum(0) {
 }
   
-CommHeader::~CommHeader() { }
+Header::~Header() { }
 
 SWC_SHOULD_INLINE
-void CommHeader::set(uint64_t cmd, uint32_t timeout) {
+void Header::set(uint64_t cmd, uint32_t timeout) {
   command     = cmd;
   timeout_ms  = timeout;
 }
 
 SWC_SHOULD_INLINE
-size_t CommHeader::encoded_length() { 
+size_t Header::encoded_length() { 
   header_len = FIXED_LENGTH;
   buffers = 0;
   if(data_size) {
@@ -44,7 +44,7 @@ size_t CommHeader::encoded_length() {
 }
 
 SWC_SHOULD_INLINE
-void CommHeader::encode(uint8_t** bufp) const {
+void Header::encode(uint8_t** bufp) const {
   uint8_t *base = *bufp;
   Serialization::encode_i8(bufp,  version);
   Serialization::encode_i8(bufp,  header_len);
@@ -67,7 +67,7 @@ void CommHeader::encode(uint8_t** bufp) const {
 }
 
 SWC_SHOULD_INLINE
-void CommHeader::decode_prefix(const uint8_t** bufp, size_t* remainp) {
+void Header::decode_prefix(const uint8_t** bufp, size_t* remainp) {
   if (*remainp < PREFIX_LENGTH)
     SWC_THROWF(Error::COMM_BAD_HEADER,
               "Header size %d is less than the fixed length %d",
@@ -78,7 +78,7 @@ void CommHeader::decode_prefix(const uint8_t** bufp, size_t* remainp) {
 }
 
 SWC_SHOULD_INLINE
-void CommHeader::decode(const uint8_t** bufp, size_t* remainp) {
+void Header::decode(const uint8_t** bufp, size_t* remainp) {
   const uint8_t *base = *bufp;
   *bufp += PREFIX_LENGTH;
     
@@ -102,7 +102,7 @@ void CommHeader::decode(const uint8_t** bufp, size_t* remainp) {
               "header-checksum decoded-len=%lu", *bufp-base);
 }
 
-void CommHeader::initialize_from_request_header(const CommHeader &req_header) {
+void Header::initialize_from_request_header(const Header &req_header) {
   flags = req_header.flags;
   id = req_header.id;
   command = req_header.command;
@@ -113,7 +113,7 @@ void CommHeader::initialize_from_request_header(const CommHeader &req_header) {
   data_ext_chksum = 0;
 }
 
-void CommHeader::print(std::ostream& out) const {
+void Header::print(std::ostream& out) const {
   out << "version="     << (int)version
       << " header_len=" << (int)header_len
       << " flags="      << (int)flags

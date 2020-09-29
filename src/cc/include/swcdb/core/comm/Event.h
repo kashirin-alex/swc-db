@@ -7,7 +7,7 @@
 #ifndef swc_core_comm_Event_h
 #define swc_core_comm_Event_h
 
-#include "swcdb/core/comm/CommHeader.h"
+#include "swcdb/core/comm/Header.h"
 
 #include "swcdb/core/Time.h"
 #include "swcdb/core/Buffer.h"
@@ -49,7 +49,7 @@ class Event final {
   int64_t             expiry_ms;
   StaticBuffer        data;     //!< Primary data buffer
   StaticBuffer        data_ext; //!< Extended buffer
-  CommHeader          header;
+  Header              header;
 };
 
 }} // namespace SWC::Comm
