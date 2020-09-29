@@ -19,7 +19,7 @@ Columns::~Columns() { }
 Column::Ptr Columns::initialize(int &err, const cid_t cid, 
                                 const DB::Schema& schema) {
   Column::Ptr col = nullptr;
-  if(RangerEnv::is_shuttingdown()) {
+  if(Env::Rgr::is_shuttingdown()) {
     err = Error::SERVER_SHUTTING_DOWN;
     return col;
   }
@@ -75,7 +75,7 @@ void Columns::load_range(int &err, const cid_t cid, const rid_t rid,
     if(col->removing()) 
       err = Error::COLUMN_MARKED_REMOVED;
 
-    else if(RangerEnv::is_shuttingdown())
+    else if(Env::Rgr::is_shuttingdown())
       err = Error::SERVER_SHUTTING_DOWN;
     
     if(!err)

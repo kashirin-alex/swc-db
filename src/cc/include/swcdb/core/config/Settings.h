@@ -75,6 +75,7 @@ class Settings final : public Properties {
 }
 
 
+//! The SWC-DB Environments C++ namespace 'SWC::Env'
 namespace Env {
 
 class Config final {

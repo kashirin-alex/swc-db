@@ -22,11 +22,11 @@ void column_update(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev)
     params.decode(&ptr, &remain);
     
     int err = Error::OK;
-    auto col = RangerEnv::columns()->get_column(err, params.schema->cid);
+    auto col = Env::Rgr::columns()->get_column(err, params.schema->cid);
     if(col) {
       col->schema_update(*params.schema.get());
 
-      if(!RangerEnv::is_shuttingdown())
+      if(!Env::Rgr::is_shuttingdown())
         SWC_LOG_OUT(LOG_DEBUG, 
           col->cfg.print(SWC_LOG_OSTREAM << "updated "); 
         );

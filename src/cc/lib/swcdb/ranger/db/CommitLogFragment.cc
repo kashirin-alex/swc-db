@@ -153,7 +153,7 @@ Fragment::Ptr Fragment::make_write(int& err, const std::string& filepath,
   if(err)
     return nullptr;
 
-  RangerEnv::res().more_mem_usage(size_plain);
+  Env::Rgr::res().more_mem_usage(size_plain);
   auto frag = new Fragment(
     smartfd, 
     version, interval, 
@@ -226,11 +226,11 @@ Fragment::Fragment(const FS::SmartFd::Ptr& smartfd,
                     m_processing(m_state == State::WRITING), 
                     m_err(Error::OK),
                     m_cells_remain(cells_count) {
-  RangerEnv::res().more_mem_usage(size_of());
+  Env::Rgr::res().more_mem_usage(size_of());
 }
 
 Fragment::~Fragment() {
-  RangerEnv::res().less_mem_usage(
+  Env::Rgr::res().less_mem_usage(
     size_of() + 
     (m_buffer.size && m_state != State::NONE ? size_plain : 0)
   );
@@ -285,7 +285,7 @@ void Fragment::write(int err, uint8_t blk_replicas, int64_t blksz,
     if((m_state = !(m_err = err) && keep
                     ? State::LOADED : State::NONE) == State::NONE) {
       m_buffer.free();
-      RangerEnv::res().less_mem_usage(size_plain);
+      Env::Rgr::res().less_mem_usage(size_plain);
     }
   }
   if(keep)
@@ -327,7 +327,7 @@ void Fragment::load_cells(int&, Ranger::Block::Ptr cells_block) {
   }
   processing_decrement();
 
-  if(!m_cells_remain || RangerEnv::res().need_ram(size_plain))
+  if(!m_cells_remain || Env::Rgr::res().need_ram(size_plain))
     release();
 }
 
@@ -429,7 +429,7 @@ size_t Fragment::release() {
     m_mutex.unlock(support);
   }
   if(released)
-    RangerEnv::res().less_mem_usage(size_plain);
+    Env::Rgr::res().less_mem_usage(size_plain);
   return released;
 }
 
@@ -500,7 +500,7 @@ void Fragment::print(std::ostream& out) {
 }
 
 void Fragment::load() {
-  RangerEnv::res().more_mem_usage(size_plain);
+  Env::Rgr::res().more_mem_usage(size_plain);
 
   auto fs_if = Env::FsInterface::interface();
   auto fs = Env::FsInterface::fs();
@@ -552,7 +552,7 @@ void Fragment::load() {
     m_state = m_err ? State::NONE : State::LOADED;
     if(err) {
       m_buffer.free();
-      RangerEnv::res().less_mem_usage(size_plain);
+      Env::Rgr::res().less_mem_usage(size_plain);
     }
   }
   if(err)

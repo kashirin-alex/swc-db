@@ -83,50 +83,50 @@ class ColumnCfg final {
   Types::Encoding block_enc() const {
     return blk_enc != Types::Encoding::DEFAULT
             ?  blk_enc.load() 
-            : (Types::Encoding)RangerEnv::get()->cfg_blk_enc->get();
+            : (Types::Encoding)Env::Rgr::get()->cfg_blk_enc->get();
   }
 
   uint32_t block_size() const {
     return blk_size 
             ? blk_size.load() 
-            : RangerEnv::get()->cfg_blk_size->get();
+            : Env::Rgr::get()->cfg_blk_size->get();
   }
 
   uint32_t block_cells() const {
     return blk_cells 
             ? blk_cells.load() 
-            : RangerEnv::get()->cfg_blk_cells->get();
+            : Env::Rgr::get()->cfg_blk_cells->get();
   }
 
 
   uint8_t file_replication() const {
     return cs_replication 
             ? cs_replication.load() 
-            : RangerEnv::get()->cfg_cs_replication->get();
+            : Env::Rgr::get()->cfg_cs_replication->get();
   }
 
   uint32_t cellstore_size() const {
     return cs_size 
             ? cs_size.load() 
-            : RangerEnv::get()->cfg_cs_sz->get();
+            : Env::Rgr::get()->cfg_cs_sz->get();
   }
 
   uint8_t cellstore_max() const {
     return cs_max 
             ? cs_max.load() 
-            : RangerEnv::get()->cfg_cs_max->get();
+            : Env::Rgr::get()->cfg_cs_max->get();
   }
 
   uint8_t log_rollout_ratio() const {
     return log_rout_ratio
             ? log_rout_ratio.load() 
-            : RangerEnv::get()->cfg_log_rollout_ratio->get();
+            : Env::Rgr::get()->cfg_log_rollout_ratio->get();
   }
 
   uint8_t compact_percent() const {
     return compact_perc 
             ? compact_perc.load() 
-            : RangerEnv::get()->cfg_compact_percent->get();
+            : Env::Rgr::get()->cfg_compact_percent->get();
   }
 
   void print(std::ostream& out) const {

@@ -228,7 +228,7 @@ int main(int argc, char** argv) {
     )
   );
 
-  SWC::RangerEnv::init();
+  SWC::Env::Rgr::init();
   
   SWC::cid_t cid = 11;
   SWC::DB::Schema schema;

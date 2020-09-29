@@ -21,7 +21,7 @@ void column_delete(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev)
     Common::Params::ColumnId params;
     params.decode(&ptr, &remain);
 
-    RangerEnv::columns()
+    Env::Rgr::columns()
       ->remove(new Ranger::ColumnsReqDelete(params.cid, conn, ev));
 
   } catch(...) {

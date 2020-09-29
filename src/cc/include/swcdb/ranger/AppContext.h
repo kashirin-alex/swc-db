@@ -80,7 +80,7 @@ class AppContext final : public SWC::Comm::AppContext {
         std::make_shared<client::Rgr::AppContext>()
       )
     );
-    RangerEnv::init();
+    Env::Rgr::init();
 
     auto period = settings->get<Config::Property::V_GINT32>(
       "swc.cfg.dyn.period");
@@ -102,13 +102,13 @@ class AppContext final : public SWC::Comm::AppContext {
   AppContext() { }
 
   void init(const Comm::EndPoints& endpoints) override {
-    RangerEnv::rgr_data()->endpoints = endpoints;
+    Env::Rgr::rgr_data()->endpoints = endpoints;
     
     int sig = 0;
     Env::IoCtx::io()->set_signals();
     shutting_down(std::error_code(), sig);
 
-    RangerEnv::start();
+    Env::Rgr::start();
     id_mngr->request();
   }
 
@@ -144,7 +144,7 @@ class AppContext final : public SWC::Comm::AppContext {
         if(cmd == Protocol::Rgr::ASSIGN_ID_NEEDED) {
           Protocol::Rgr::Handler::assign_id(conn, ev, id_mngr);
         
-        } else if(!RangerEnv::rgr_data()->rgrid) {
+        } else if(!Env::Rgr::rgr_data()->rgrid) {
           try{conn->send_error(Error::RGR_NOT_READY, "", ev);}catch(...){}
 
         } else {
@@ -183,7 +183,7 @@ class AppContext final : public SWC::Comm::AppContext {
     }
     
 
-    RangerEnv::shuttingdown();
+    Env::Rgr::shuttingdown();
 
     m_srv->stop_accepting(); // no further requests accepted
 
@@ -192,9 +192,9 @@ class AppContext final : public SWC::Comm::AppContext {
 
   void stop() override {
     
-    while(RangerEnv::in_process())
+    while(Env::Rgr::in_process())
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    RangerEnv::columns()->unload_all(true); //re-check
+    Env::Rgr::columns()->unload_all(true); //re-check
     
     Env::Clients::get()->rgr->stop();
     Env::Clients::get()->mngr->stop();

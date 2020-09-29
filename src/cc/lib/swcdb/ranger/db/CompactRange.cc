@@ -310,7 +310,7 @@ void CompactRange::response(int& err) {
   );
 
   if(err) {
-    RangerEnv::maintenance_post([ptr=shared()](){ ptr->quit(); });
+    Env::Rgr::maintenance_post([ptr=shared()](){ ptr->quit(); });
     return;
   }
 
@@ -343,7 +343,7 @@ void CompactRange::response(int& err) {
   }
 
   if(m_q_intval.push_and_is_1st(in_block))
-    RangerEnv::maintenance_post([ptr=shared()](){ ptr->process_interval(); });
+    Env::Rgr::maintenance_post([ptr=shared()](){ ptr->process_interval(); });
 
   if(m_stopped || !in_block)
     return;
@@ -450,13 +450,13 @@ void CompactRange::request_more() {
       return;
     size_t sz = m_q_write.size() + m_q_intval.size() + m_q_encode.size();
     if(sz && (sz >= compactor->cfg_read_ahead->get() ||
-             (sz > RangerEnv::res().avail_ram()/blk_size &&
+             (sz > Env::Rgr::res().avail_ram()/blk_size &&
               range->blocks.release(sz * blk_size) < sz * blk_size)))
       return;
     m_getting = true;
   }
 
-  RangerEnv::maintenance_post(
+  Env::Rgr::maintenance_post(
     [ptr=shared()](){ ptr->range->scan_internal(ptr->get_req_scan()); });
 }
 
@@ -471,7 +471,7 @@ void CompactRange::process_interval() {
       in_block->finalize_interval(false, false);
     }
     if(m_q_encode.push_and_is_1st(in_block))
-      RangerEnv::maintenance_post([ptr=shared()](){ ptr->process_encode(); });
+      Env::Rgr::maintenance_post([ptr=shared()](){ ptr->process_encode(); });
   } while(m_q_intval.pop_and_more() && !m_stopped);
   time_intval += Time::now_ns() - start;
   request_more();
@@ -488,7 +488,7 @@ void CompactRange::process_encode() {
       in_block->finalize_encode(blk_encoding);
     }
     if(m_q_write.push_and_is_1st(in_block))
-      RangerEnv::maintenance_post([ptr=shared()](){ ptr->process_write(); });
+      Env::Rgr::maintenance_post([ptr=shared()](){ ptr->process_write(); });
   } while(m_q_encode.pop_and_more() && !m_stopped);
   time_encode += Time::now_ns() - start;
   request_more();
@@ -697,7 +697,7 @@ void CompactRange::finalize() {
 void CompactRange::mngr_create_range(uint32_t split_at) {
   Protocol::Mngr::Req::RangeCreate::request(
     range->cfg->cid,
-    RangerEnv::rgr_data()->rgrid,
+    Env::Rgr::rgr_data()->rgrid,
     [split_at, cid=range->cfg->cid, ptr=shared()]
     (const Comm::client::ConnQueue::ReqBase::Ptr& req, 
      const Protocol::Mngr::Params::RangeCreateRsp& rsp) {
@@ -750,7 +750,7 @@ void CompactRange::mngr_remove_range(const RangePtr& new_range) {
 
 void CompactRange::split(rid_t new_rid, uint32_t split_at) {
   int err = Error::OK;
-  Column::Ptr col = RangerEnv::columns()->get_column(err, range->cfg->cid);
+  Column::Ptr col = Env::Rgr::columns()->get_column(err, range->cfg->cid);
   if(col == nullptr || col->removing())
     return quit();
 

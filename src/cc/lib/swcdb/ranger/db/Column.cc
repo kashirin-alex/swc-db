@@ -13,13 +13,13 @@ namespace SWC { namespace Ranger {
 
 Column::Column(const cid_t cid, const DB::Schema& schema) 
       : cfg(cid, schema), m_releasing(false) {
-  RangerEnv::res().more_mem_usage(size_of());
+  Env::Rgr::res().more_mem_usage(size_of());
 }
 
 void Column::init(int&) { }
 
 Column::~Column() { 
-  RangerEnv::res().less_mem_usage(size_of());
+  Env::Rgr::res().less_mem_usage(size_of());
 }
 
 size_t Column::size_of() const {
@@ -50,7 +50,7 @@ void Column::schema_update(const DB::Schema& schema) {
       it->second->schema_update(compact);
   }
   if(compact)
-    RangerEnv::compaction_schedule(100);
+    Env::Rgr::compaction_schedule(100);
 }
 
 void Column::compact() {
@@ -59,7 +59,7 @@ void Column::compact() {
     for(auto it = begin(); it != end(); ++it)
       it->second->compact_require(true);
   }
-  RangerEnv::compaction_schedule(100);
+  Env::Rgr::compaction_schedule(100);
 }
 
 RangePtr Column::get_range(int &err, const rid_t rid, bool initialize) {
@@ -72,7 +72,7 @@ RangePtr Column::get_range(int &err, const rid_t rid, bool initialize) {
       return it->second;
 
     else if(initialize) {
-      if(RangerEnv::is_shuttingdown())
+      if(Env::Rgr::is_shuttingdown())
         err = Error::SERVER_SHUTTING_DOWN;
       else if(cfg.deleting)
         err = Error::COLUMN_MARKED_REMOVED;

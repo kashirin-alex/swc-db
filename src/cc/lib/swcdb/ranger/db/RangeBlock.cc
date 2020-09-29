@@ -29,11 +29,11 @@ Block::Block(const DB::Cells::Interval& interval,
                   blocks->range->cfg->column_type())),
               m_key_end(interval.key_end),  
               m_state(state), m_processing(0) {
-  RangerEnv::res().more_mem_usage(size_of());
+  Env::Rgr::res().more_mem_usage(size_of());
 }
 
 Block::~Block() {
-  RangerEnv::res().less_mem_usage(
+  Env::Rgr::res().less_mem_usage(
     size_of() +
     (m_cells.empty() ? 0 : m_cells.size_of_internal())
   );
@@ -141,7 +141,7 @@ bool Block::add_logged(const DB::Cells::Cell& cell) {
     std::scoped_lock lock(m_mutex);
     ssize_t sz = m_cells.size_of_internal();
     m_cells.add_raw(cell);
-    RangerEnv::res().adj_mem_usage(ssize_t(m_cells.size_of_internal()) - sz);
+    Env::Rgr::res().adj_mem_usage(ssize_t(m_cells.size_of_internal()) - sz);
     splitter();
   }
   return true;
@@ -210,7 +210,7 @@ size_t Block::load_cells(const uint8_t* buf, size_t remain,
       m_cells.add_raw(cell, &offset_hint);
       
     if(++added % 1000 == 0) {
-      RangerEnv::res().adj_mem_usage(ssize_t(m_cells.size_of_internal()) - sz);
+      Env::Rgr::res().adj_mem_usage(ssize_t(m_cells.size_of_internal()) - sz);
       if(splitter()) {
         was_splitted = true;
         offset_hint = 0;
@@ -218,7 +218,7 @@ size_t Block::load_cells(const uint8_t* buf, size_t remain,
       sz = m_cells.size_of_internal();
     }
   }
-  RangerEnv::res().adj_mem_usage(ssize_t(m_cells.size_of_internal()) - sz);
+  Env::Rgr::res().adj_mem_usage(ssize_t(m_cells.size_of_internal()) - sz);
   return added;
 }
 
@@ -295,7 +295,7 @@ Block::Ptr Block::_split(bool loaded) {
     m_key_end.copy(m_cells.back()->key);
   }
   if(sz)
-    RangerEnv::res().adj_mem_usage(ssize_t(m_cells.size_of_internal()) - sz);
+    Env::Rgr::res().adj_mem_usage(ssize_t(m_cells.size_of_internal()) - sz);
 
   _add(blk);
   return blk;
@@ -323,7 +323,7 @@ size_t Block::release() {
     m_mutex.unlock();
   }
   if(released)
-    RangerEnv::res().less_mem_usage(released);
+    Env::Rgr::res().less_mem_usage(released);
   return released;
 }
 

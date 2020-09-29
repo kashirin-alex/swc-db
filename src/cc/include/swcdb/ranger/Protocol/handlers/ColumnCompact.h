@@ -23,7 +23,7 @@ void column_compact(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev
     Params::ColumnCompactReq params;
     params.decode(&ptr, &remain);
 
-    auto col = RangerEnv::columns()->get_column(rsp_params.err, params.cid);
+    auto col = Env::Rgr::columns()->get_column(rsp_params.err, params.cid);
     if(col != nullptr)
       col->compact();
 

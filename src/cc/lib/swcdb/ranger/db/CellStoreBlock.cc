@@ -78,11 +78,11 @@ Read::Read(const uint32_t cell_revs, const Header& header)
           : cell_revs(cell_revs), header(header),
             m_state(State::NONE), m_processing(0),
             m_cells_remain(header.cells_count), m_err(Error::OK) {
-  RangerEnv::res().more_mem_usage(size_of());
+  Env::Rgr::res().more_mem_usage(size_of());
 }
 
 Read::~Read() { 
-  RangerEnv::res().less_mem_usage(
+  Env::Rgr::res().less_mem_usage(
     size_of() + 
     (m_buffer.size && m_state != State::NONE ? header.size_plain : 0)
   );
@@ -99,7 +99,7 @@ bool Read::load(BlockLoader* loader) {
     if(m_state == State::NONE) {
       if(header.size_enc) {
         m_state = State::LOADING;
-        RangerEnv::res().more_mem_usage(header.size_plain);
+        Env::Rgr::res().more_mem_usage(header.size_plain);
         return true;
       } else {
         // a zero cells type cs (initial of any to any block)  
@@ -141,7 +141,7 @@ void Read::load_cells(int&, Ranger::Block::Ptr cells_block) {
   processing_decrement();
 
   if(!was_splitted && 
-     (!m_cells_remain || RangerEnv::res().need_ram(header.size_plain)))
+     (!m_cells_remain || Env::Rgr::res().need_ram(header.size_plain)))
     release();
 }
 
@@ -163,7 +163,7 @@ size_t Read::release() {
     m_mutex.unlock(support);
   }
   if(released)
-    RangerEnv::res().less_mem_usage(header.size_plain);
+    Env::Rgr::res().less_mem_usage(header.size_plain);
   return released;
 }
 
@@ -265,12 +265,12 @@ void Read::_load(int& err, FS::SmartFd::Ptr smartfd) {
   if((m_err = err) == Error::FS_PATH_NOT_FOUND) {
     m_err = Error::OK;
     m_buffer.free();
-    RangerEnv::res().less_mem_usage(header.size_plain);
+    Env::Rgr::res().less_mem_usage(header.size_plain);
   }
   if(m_err) {
     m_state = State::NONE;
     m_buffer.free();
-    RangerEnv::res().less_mem_usage(header.size_plain);
+    Env::Rgr::res().less_mem_usage(header.size_plain);
   } else {
     m_state = State::LOADED;
   }
@@ -293,14 +293,14 @@ void Read::_run_queued() {
 
 Write::Write(const Header& header)
             : header(header), released(false) {
-  RangerEnv::res().more_mem_usage(
+  Env::Rgr::res().more_mem_usage(
     sizeof(Write::Ptr) + sizeof(Write)
     + header.interval.size_of_internal()
   );
 }
 
 Write::~Write() { 
-  RangerEnv::res().less_mem_usage(
+  Env::Rgr::res().less_mem_usage(
     sizeof(Write::Ptr) + sizeof(Write)
     + header.interval.size_of_internal()
     + (released ? 0 : header.size_enc)
@@ -321,7 +321,7 @@ void Write::encode(int& err, DynamicBuffer& cells, DynamicBuffer& output,
   } else {
     header.size_enc = len_enc;
   }
-  RangerEnv::res().more_mem_usage(header.size_enc);
+  Env::Rgr::res().more_mem_usage(header.size_enc);
 
   uint8_t* ptr = output.base;
   header.encode(&ptr);

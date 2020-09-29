@@ -28,11 +28,11 @@ class RangeQuerySelect : public ReqScan {
        spec.flags.max_buffer > range->cfg->block_size())
       spec.flags.max_buffer = range->cfg->block_size();
 
-    RangerEnv::res().more_mem_usage(size_of());
+    Env::Rgr::res().more_mem_usage(size_of());
   }
 
   virtual ~RangeQuerySelect() { 
-    RangerEnv::res().less_mem_usage(size_of());
+    Env::Rgr::res().less_mem_usage(size_of());
   }
 
   size_t size_of() const {
@@ -68,19 +68,19 @@ class RangeQuerySelect : public ReqScan {
     auto sz = cells.fill();
     cell.write(cells, only_keys);
     profile.add_cell((sz = cells.fill() - sz));
-    RangerEnv::res().more_mem_usage(sz);
+    Env::Rgr::res().more_mem_usage(sz);
     return !reached_limits();
   }
 
   void response(int &err) override {
     if(!err) {
-      if(RangerEnv::is_shuttingdown())
+      if(Env::Rgr::is_shuttingdown())
         err = Error::SERVER_SHUTTING_DOWN;
       else if(range->deleted())
         err = Error::COLUMN_MARKED_REMOVED;
     }
     if(err == Error::COLUMN_MARKED_REMOVED) {
-      RangerEnv::res().less_mem_usage(cells.fill());
+      Env::Rgr::res().less_mem_usage(cells.fill());
       cells.free();
     }
     
@@ -89,7 +89,7 @@ class RangeQuerySelect : public ReqScan {
 
     Comm::CommBuf::Ptr cbp;
     if(!cells.empty()) {
-      RangerEnv::res().less_mem_usage(cells.fill());
+      Env::Rgr::res().less_mem_usage(cells.fill());
       StaticBuffer sndbuf(cells);
       cbp = Comm::CommBuf::make(params, sndbuf);
     } else {

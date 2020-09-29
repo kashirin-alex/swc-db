@@ -150,7 +150,7 @@ void Blocks::scan(ReqScan::Ptr req, Block::Ptr blk_ptr) {
       req->block = nullptr;
 
     } else {
-      if(blk_ptr && RangerEnv::res().need_ram(need * (req->readahead + 1)))
+      if(blk_ptr && Env::Rgr::res().need_ram(need * (req->readahead + 1)))
         blk_ptr->release();
 
       bool support = m_mutex.lock();
@@ -170,7 +170,7 @@ void Blocks::scan(ReqScan::Ptr req, Block::Ptr blk_ptr) {
       if(blk_ptr) {
         (blk = blk_ptr)->processing_increment();
 
-        if(RangerEnv::res().need_ram(need * (req->readahead + 1))) {
+        if(Env::Rgr::res().need_ram(need * (req->readahead + 1))) {
           size_t sz;
           size_t _need = need * (req->readahead + 1);
           for(Block::Ptr prev = blk; ; _need -= sz ) {
@@ -197,7 +197,7 @@ void Blocks::scan(ReqScan::Ptr req, Block::Ptr blk_ptr) {
         bool support;
         for(size_t n=0; 
             n < req->readahead && 
-            !RangerEnv::res().need_ram(need * (++n))
+            !Env::Rgr::res().need_ram(need * (++n))
             && m_mutex.try_full_lock(support); ) {
           blk = blk->next;
           m_mutex.unlock(support);
@@ -234,7 +234,7 @@ bool Blocks::_split(Block::Ptr blk, bool loaded) {
       m_blocks_idx.insert(m_blocks_idx.begin()+(++offset), blk);
       if(!blk->loaded()) {
         if((preload = range->is_loaded() && range->compacting() &&
-                  !RangerEnv::res().need_ram(range->cfg->block_size() * 10)))
+                  !Env::Rgr::res().need_ram(range->cfg->block_size() * 10)))
           blk->processing_increment();
         break;
       }

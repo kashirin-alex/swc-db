@@ -36,7 +36,7 @@ void Fragments::init(const RangePtr& for_range) {
 
 Fragments::~Fragments() { 
   if(!m_cells.empty())
-    RangerEnv::res().less_mem_usage(m_cells.size_of_internal());
+    Env::Rgr::res().less_mem_usage(m_cells.size_of_internal());
 }
 
 void Fragments::schema_update() {
@@ -55,7 +55,7 @@ void Fragments::add(const DB::Cells::Cell& cell) {
     std::scoped_lock lock(m_mutex_cells);
     ssize_t sz = m_cells.size_of_internal();
     m_cells.add_raw(cell);
-    RangerEnv::res().adj_mem_usage(ssize_t(m_cells.size_of_internal()) - sz);
+    Env::Rgr::res().adj_mem_usage(ssize_t(m_cells.size_of_internal()) - sz);
     roll = _need_roll();
   }
 
@@ -103,7 +103,7 @@ void Fragments::commit_new_fragment(bool finalize) {
         m_cells.write_and_free(
           cells, cells_count, interval,
           range->cfg->block_size(), range->cfg->block_cells());
-        RangerEnv::res().adj_mem_usage(ssize_t(m_cells.size_of_internal())-sz);
+        Env::Rgr::res().adj_mem_usage(ssize_t(m_cells.size_of_internal())-sz);
         if(m_deleting || !cells.fill())
           break;
 
@@ -172,7 +172,7 @@ size_t Fragments::need_compact(std::vector<Fragments::Vec>& groups,
 
 bool Fragments::try_compact(int tnum) {
   if(stopping || 
-     RangerEnv::res().is_low_mem_state() ||
+     Env::Rgr::res().is_low_mem_state() ||
      !range->compact_possible(true))
     return false;
 
@@ -180,7 +180,7 @@ bool Fragments::try_compact(int tnum) {
   size_t need;
   {
     std::scoped_lock lock(m_mutex);
-    if(_need_compact_major() && RangerEnv::compaction_available()) {
+    if(_need_compact_major() && Env::Rgr::compaction_available()) {
       range->compacting(Range::COMPACT_NONE);
       return false;
     }
@@ -491,7 +491,7 @@ bool Fragments::_need_roll() const {
   return (m_cells.size() >= cells || m_cells.size_bytes() >= bytes) && 
          (m_cells.size_bytes() >= bytes * ratio ||
           m_cells.size() >= cells * ratio ||
-          RangerEnv::res().need_ram(bytes) );
+          Env::Rgr::res().need_ram(bytes) );
 }
 
 size_t Fragments::_need_compact(std::vector<Fragments::Vec>& groups,
@@ -563,7 +563,7 @@ bool Fragments::_need_compact_major() {
   }
   if(need) {
     range->compact_require(true);
-    RangerEnv::compaction_schedule(1000);
+    Env::Rgr::compaction_schedule(1000);
   }
   return need;
 }

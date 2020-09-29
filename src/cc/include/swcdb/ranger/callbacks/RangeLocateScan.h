@@ -127,7 +127,7 @@ class RangeLocateScan : public ReqScan {
 
     if(err)
       params.err = err;
-    else if(RangerEnv::is_shuttingdown())
+    else if(Env::Rgr::is_shuttingdown())
       params.err = Error::SERVER_SHUTTING_DOWN;
     else if(range->deleted())
       params.err = Error::COLUMN_MARKED_REMOVED;

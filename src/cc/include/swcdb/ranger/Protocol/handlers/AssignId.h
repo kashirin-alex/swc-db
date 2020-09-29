@@ -15,7 +15,7 @@ void assign_id(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev,
                Protocol::Mngr::Req::RgrMngId::Ptr id_mngr) {
   try {
 
-    if(RangerEnv::is_shuttingdown())
+    if(Env::Rgr::is_shuttingdown())
       conn->send_error(Error::SERVER_SHUTTING_DOWN, "", ev);
     else 
       conn->response_ok(ev);

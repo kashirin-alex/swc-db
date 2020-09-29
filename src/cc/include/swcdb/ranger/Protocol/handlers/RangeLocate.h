@@ -25,7 +25,7 @@ void range_locate(const Comm::ConnHandlerPtr& conn,
     size_t remain = ev->data.size;
     params.decode(&ptr, &remain);
 
-    range = RangerEnv::columns()->get_range(err, params.cid, params.rid);
+    range = Env::Rgr::columns()->get_range(err, params.cid, params.rid);
     
     if(!err && (range == nullptr || !range->is_loaded()))
       err = Error::RGR_NOT_LOADED_RANGE;

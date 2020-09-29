@@ -23,7 +23,7 @@ void columns_unload(const Comm::ConnHandlerPtr& conn,
     Common::Params::ColumnsInterval params;
     params.decode(&ptr, &remain);
   
-    RangerEnv::columns()->unload(
+    Env::Rgr::columns()->unload(
       params.cid_begin, params.cid_end, 
       std::make_shared<Ranger::Callback::ColumnsUnloaded>(conn, ev)
     );

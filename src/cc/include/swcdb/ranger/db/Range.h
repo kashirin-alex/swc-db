@@ -40,11 +40,11 @@ class Range final : public std::enable_shared_from_this<Range> {
 
     ReqAdd(StaticBuffer& input, const Callback::RangeQueryUpdate::Ptr& cb) 
           : input(input), cb(cb) {
-      RangerEnv::res().more_mem_usage(size_of());
+      Env::Rgr::res().more_mem_usage(size_of());
     }
 
     ~ReqAdd() {
-      RangerEnv::res().less_mem_usage(size_of());
+      Env::Rgr::res().less_mem_usage(size_of());
     }
 
     size_t size_of() const {

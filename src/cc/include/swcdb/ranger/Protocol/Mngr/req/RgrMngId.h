@@ -39,8 +39,8 @@ class RgrMngId: public Comm::client::ConnQueue::ReqBase {
   void request() {
     cancel();
 
-    auto rgr_data = RangerEnv::rgr_data();
-    if(RangerEnv::is_shuttingdown()) {
+    auto rgr_data = Env::Rgr::rgr_data();
+    if(Env::Rgr::is_shuttingdown()) {
       SWC_LOG_OUT(LOG_DEBUG,
         rgr_data->print(SWC_LOG_OSTREAM << "RS_SHUTTINGDOWN(req) "); );
       create(
@@ -125,7 +125,7 @@ class RgrMngId: public Comm::client::ConnQueue::ReqBase {
     
     if(rsp_params.flag == Params::RgrMngId::Flag::RS_SHUTTINGDOWN) {
       SWC_LOG_OUT(LOG_DEBUG,
-        RangerEnv::rgr_data()->print(SWC_LOG_OSTREAM << "RS_SHUTTINGDOWN ");
+        Env::Rgr::rgr_data()->print(SWC_LOG_OSTREAM << "RS_SHUTTINGDOWN ");
       );
       stop();
       if(cb_shutdown)
@@ -144,7 +144,7 @@ class RgrMngId: public Comm::client::ConnQueue::ReqBase {
       return;
     }
 
-    auto rgr_data = RangerEnv::rgr_data();
+    auto rgr_data = Env::Rgr::rgr_data();
 
     if(rsp_params.flag == Params::RgrMngId::Flag::MNGR_ASSIGNED
        && rsp_params.fs != Env::FsInterface::interface()->get_type()) {

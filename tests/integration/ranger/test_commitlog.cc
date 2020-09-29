@@ -63,7 +63,7 @@ int main(int argc, char** argv) {
     )
   );
 
-  RangerEnv::init();
+  Env::Rgr::init();
   
   cid_t cid = 11;
   DB::Schema schema;

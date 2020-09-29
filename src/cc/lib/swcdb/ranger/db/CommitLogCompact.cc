@@ -23,7 +23,7 @@ Compact::Group::Group(Compact* compact, uint8_t worker)
 
 Compact::Group::~Group() {
   if(!m_cells.empty())
-    RangerEnv::res().less_mem_usage(m_cells.size_of_internal());
+    Env::Rgr::res().less_mem_usage(m_cells.size_of_internal());
 }
 
 void Compact::Group::run() {
@@ -67,7 +67,7 @@ void Compact::Group::load() {
     if(!compact->log->stopping && !error) {
       sz = m_cells.size_of_internal();
       frag->load_cells(err, m_cells);
-      RangerEnv::res().adj_mem_usage(ssize_t(m_cells.size_of_internal()) - sz);
+      Env::Rgr::res().adj_mem_usage(ssize_t(m_cells.size_of_internal()) - sz);
       m_remove.push_back(frag);
     } else {
       frag->processing_decrement();
@@ -113,7 +113,7 @@ void Compact::Group::write() {
       compact->log->range->cfg->block_size(), 
       compact->log->range->cfg->block_cells()
     );
-    RangerEnv::res().adj_mem_usage(ssize_t(m_cells.size_of_internal()) - sz);
+    Env::Rgr::res().adj_mem_usage(ssize_t(m_cells.size_of_internal()) - sz);
     total_cells_count += cells_count;
 
     auto frag = Fragment::make_write(
@@ -188,7 +188,7 @@ Compact::Compact(Fragments* log, int repetition,
   for(auto frags : groups)
     nfrags += frags.size();
     
-  uint32_t blks = RangerEnv::res().avail_ram() / log->range->cfg->block_size();
+  uint32_t blks = Env::Rgr::res().avail_ram() / log->range->cfg->block_size();
   if(blks < nfrags)
     log->range->blocks.release((nfrags-blks) * log->range->cfg->block_size());
   if(!blks)
@@ -208,7 +208,7 @@ Compact::Compact(Fragments* log, int repetition,
       }
       --blks;
     }
-    if(!blks || m_groups.size() >= RangerEnv::res().concurrency()/2 )
+    if(!blks || m_groups.size() >= Env::Rgr::res().concurrency()/2 )
       break;
   }
   

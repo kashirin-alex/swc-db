@@ -23,7 +23,7 @@ Compaction::Compaction()
                 "swc.rgr.compaction.check.interval")),
             m_check_timer(
               asio::high_resolution_timer(
-                *RangerEnv::maintenance_io()->ptr())),
+                *Env::Rgr::maintenance_io()->ptr())),
             m_run(true), m_running(0), m_scheduled(false),
             m_idx_cid(0), m_idx_rid(0)  {
 }
@@ -67,8 +67,8 @@ void Compaction::run(bool continuing) {
 
   RangePtr range  = nullptr;
   for(Column::Ptr col = nullptr; 
-      !stopped() && !RangerEnv::res().is_low_mem_state() &&
-      (col || (col = RangerEnv::columns()->get_next(m_idx_cid)) ); ) {
+      !stopped() && !Env::Rgr::res().is_low_mem_state() &&
+      (col || (col = Env::Rgr::columns()->get_next(m_idx_cid)) ); ) {
 
     if(col->removing()) {
       ++m_idx_cid;
@@ -91,7 +91,7 @@ void Compaction::run(bool continuing) {
       std::scoped_lock lock(m_mutex); 
       ++m_running;
     }
-    RangerEnv::maintenance_post([this, range](){ compact(range); } );
+    Env::Rgr::maintenance_post([this, range](){ compact(range); } );
     
     if(!available())
       return;
@@ -183,7 +183,7 @@ void Compaction::compacted(const CompactRange::Ptr req,
       SWC_LOG_OUT(LOG_ERROR, range->print(SWC_LOG_OSTREAM, false); );
     SWC_ASSERT(!range->blocks.size());
 
-  } else if(size_t bytes = RangerEnv::res().need_ram()) {
+  } else if(size_t bytes = Env::Rgr::res().need_ram()) {
     range->blocks.release(bytes);
   }
 
@@ -202,7 +202,7 @@ void Compaction::compacted() {
   std::scoped_lock lock(m_mutex);
 
   if(m_running && m_running-- == cfg_max_range->get()) {
-    RangerEnv::maintenance_post([this](){ run(true); });
+    Env::Rgr::maintenance_post([this](){ run(true); });
     return;
   }
   if(m_run) {

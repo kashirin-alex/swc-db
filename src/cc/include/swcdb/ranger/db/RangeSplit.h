@@ -38,7 +38,7 @@ class RangeSplit final {
     if((err && err != Error::COLUMN_NOT_READY) || !new_rid) 
       return err;
       
-    Column::Ptr col = RangerEnv::columns()->get_column(err, range->cfg->cid);
+    Column::Ptr col = Env::Rgr::columns()->get_column(err, range->cfg->cid);
     if(col == nullptr || col->removing())
       return Error::CANCELLED;
 
@@ -137,7 +137,7 @@ class RangeSplit final {
     std::promise<void>  res;
     Protocol::Mngr::Req::RangeCreate::request(
       range->cfg->cid,
-      RangerEnv::rgr_data()->rgrid,
+      Env::Rgr::rgr_data()->rgrid,
       [&] (const Comm::client::ConnQueue::ReqBase::Ptr& req, 
            const Protocol::Mngr::Params::RangeCreateRsp& rsp) {
       

@@ -22,7 +22,7 @@ void range_unload(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) 
     params.decode(&ptr, &remain);
 
     int err = Error::OK;
-    RangerEnv::columns()->unload_range(err, params.cid, params.rid, 
+    Env::Rgr::columns()->unload_range(err, params.cid, params.rid, 
       [conn, ev](int err) {
         if(!err)
           conn->response_ok(ev);

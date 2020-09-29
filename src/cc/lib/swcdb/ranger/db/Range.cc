@@ -24,7 +24,7 @@ Range::Range(const ColumnCfg* cfg, const rid_t rid)
               m_state(State::NOTLOADED), 
               m_compacting(COMPACT_NONE), m_require_compact(false),
               m_inbytes(0) { 
-  RangerEnv::res().more_mem_usage(size_of());
+  Env::Rgr::res().more_mem_usage(size_of());
 }
 
 void Range::init() {
@@ -32,7 +32,7 @@ void Range::init() {
 }
 
 Range::~Range() {
-  RangerEnv::res().less_mem_usage(size_of());
+  Env::Rgr::res().less_mem_usage(size_of());
 }
 
 size_t Range::size_of() const {
@@ -203,7 +203,7 @@ void Range::load(const Comm::ResponseCallback::Ptr& cb) {
     if(m_state == State::NOTLOADED)
       m_state = State::LOADING;
   }
-  int err = RangerEnv::is_shuttingdown() ?
+  int err = Env::Rgr::is_shuttingdown() ?
             Error::SERVER_SHUTTING_DOWN : Error::OK;
   if(is_loaded || err)
     return loaded(err, cb);
@@ -227,7 +227,7 @@ void Range::take_ownership(int &err, const Comm::ResponseCallback::Ptr& cb) {
   if(err == Error::RGR_DELETED_RANGE)
     return loaded(err, cb);
 
-  RangerEnv::rgr_data()->set_rgr(
+  Env::Rgr::rgr_data()->set_rgr(
     err, DB::RangeBase::get_path_ranger(m_path), cfg->file_replication());
   if(err)
     return loaded(err, cb);
@@ -247,7 +247,7 @@ void Range::on_change(int &err, bool removal,
   std::scoped_lock lock(m_mutex);
     
   auto updater = std::make_shared<client::Query::Update>(cb);
-  // RangerEnv::updater();
+  // Env::Rgr::updater();
 
   updater->columns->create(
     meta_cid, cfg->key_seq, 1, 0, Types::Column::PLAIN);
@@ -460,7 +460,7 @@ void Range::expand_and_align(int &err, bool w_chg_chk) {
 }
   
 void Range::create(int &err, const CellStore::Writers& w_cellstores) {
-  RangerEnv::rgr_data()->set_rgr(
+  Env::Rgr::rgr_data()->set_rgr(
     err, DB::RangeBase::get_path_ranger(m_path), cfg->file_replication());
   if(err)
     return;
@@ -489,7 +489,7 @@ void Range::create(int &err, const CellStore::Writers& w_cellstores) {
 }
 
 void Range::create(int &err, CellStore::Readers::Vec& mv_css) {
-  RangerEnv::rgr_data()->set_rgr(
+  Env::Rgr::rgr_data()->set_rgr(
     err, DB::RangeBase::get_path_ranger(m_path), cfg->file_replication());
   if(err)
     return;
@@ -534,7 +534,7 @@ void Range::loaded(int &err, const Comm::ResponseCallback::Ptr& cb) {
 
 void Range::last_rgr_chk(int &err, const Comm::ResponseCallback::Ptr& cb) {
   // ranger.data
-  auto rgr_data = RangerEnv::rgr_data();
+  auto rgr_data = Env::Rgr::rgr_data();
   Files::RgrData::Ptr rs_last = get_last_rgr(err);
 
   if(rs_last->endpoints.size() && 

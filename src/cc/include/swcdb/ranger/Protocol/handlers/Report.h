@@ -29,12 +29,12 @@ void report(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
 
       case Params::Report::Function::RESOURCES: {
         Params::Report::RspRes rsp_params;
-        rsp_params.mem = RangerEnv::res().available_mem_mb();
-        rsp_params.cpu = RangerEnv::res().available_cpu_mhz();
+        rsp_params.mem = Env::Rgr::res().available_mem_mb();
+        rsp_params.cpu = Env::Rgr::res().available_cpu_mhz();
 
         rsp_params.ranges = 0;
         Ranger::Column::Ptr col;
-        auto& columns = *RangerEnv::columns();
+        auto& columns = *Env::Rgr::columns();
         for(cid_t cidx = 0; (col=columns.get_next(cidx)); ++cidx) {
           rsp_params.ranges += col->ranges_count(); // *= (Master|Meta) weight
         }
@@ -45,7 +45,7 @@ void report(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
 
       case Params::Report::Function::CIDS: {
         Params::Report::RspCids rsp_params;
-        RangerEnv::columns()->get_cids(rsp_params.cids);
+        Env::Rgr::columns()->get_cids(rsp_params.cids);
 
         cbp = Comm::CommBuf::make(rsp_params, 4);
         cbp->append_i32(err);
@@ -55,7 +55,7 @@ void report(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
       case Params::Report::Function::COLUMN_RIDS: {
         Params::Report::ReqColumn params;
         params.decode(&ptr, &remain);
-        auto col = RangerEnv::columns()->get_column(err, params.cid);
+        auto col = Env::Rgr::columns()->get_column(err, params.cid);
         if(!col)
           err = Error::COLUMN_NOT_EXISTS;
         if(err)
@@ -73,14 +73,14 @@ void report(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
         Params::Report::ReqColumn params;
         params.decode(&ptr, &remain);
         
-        auto rgr_data = RangerEnv::rgr_data();
+        auto rgr_data = Env::Rgr::rgr_data();
         rgrid_t rgrid;
         if(!(rgrid = rgr_data->rgrid)) {
           err = Error::RGR_NOT_READY;
           goto send_error;
         }
 
-        auto col = RangerEnv::columns()->get_column(err, params.cid);
+        auto col = Env::Rgr::columns()->get_column(err, params.cid);
         if(!col)
           err = Error::COLUMN_NOT_EXISTS;
         if(err)
@@ -111,7 +111,7 @@ void report(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
 
       case Params::Report::Function::COLUMNS_RANGES: {
 
-        auto rgr_data = RangerEnv::rgr_data();
+        auto rgr_data = Env::Rgr::rgr_data();
         rgrid_t rgrid;
         if(!(rgrid = rgr_data->rgrid)) {
           err = Error::RGR_NOT_READY;
@@ -123,7 +123,7 @@ void report(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
 
         Ranger::Column::Ptr col;
         Ranger::RangePtr range;
-        auto& columns = *RangerEnv::columns();
+        auto& columns = *Env::Rgr::columns();
         for(cid_t cidx = 0; (col=columns.get_next(cidx)); ++cidx) {
           auto c = new Params::Report::RspColumnsRanges::Column();
           rsp_params.columns.push_back(c);
