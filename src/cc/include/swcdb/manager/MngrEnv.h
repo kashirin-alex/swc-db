@@ -19,7 +19,7 @@ namespace SWC { namespace Env {
 class Mngr final {
   public:
 
-  static void init(const EndPoints& endpoints) {
+  static void init(const Comm::EndPoints& endpoints) {
     m_env = std::make_shared<Mngr>(endpoints);
   }
 
@@ -46,7 +46,7 @@ class Mngr final {
   static void stop();
 
 
-  Mngr(const EndPoints& endpoints) 
+  Mngr(const Comm::EndPoints& endpoints) 
       : m_role(endpoints) { 
   }
 

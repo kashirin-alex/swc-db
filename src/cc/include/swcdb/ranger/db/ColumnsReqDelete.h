@@ -12,7 +12,7 @@ namespace SWC { namespace Ranger {
 
 struct ColumnsReqDelete {
   ColumnsReqDelete(const cid_t cid, const 
-                   ConnHandlerPtr& conn, const Event::Ptr& ev) 
+                   Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) 
                   : cid(cid), conn(conn), ev(ev) {
   }
   ~ColumnsReqDelete() { }
@@ -24,9 +24,9 @@ struct ColumnsReqDelete {
       conn->response_ok(ev);
   }
 
-  const cid_t     cid;
-  ConnHandlerPtr  conn;
-  Event::Ptr      ev;
+  const cid_t           cid;
+  Comm::ConnHandlerPtr  conn;
+  Comm::Event::Ptr      ev;
 };
 
 }} // namespace SWC::Ranger

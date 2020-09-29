@@ -8,16 +8,16 @@
 
 namespace SWC { namespace client { namespace Mngr { 
 
-class AppContext final : public SWC::AppContext {
+class AppContext final : public SWC::Comm::AppContext {
   public:
 
   AppContext();
 
   virtual ~AppContext();
 
-  void disconnected(const ConnHandlerPtr& conn);
+  void disconnected(const Comm::ConnHandlerPtr& conn);
 
-  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
+  void handle(Comm::ConnHandlerPtr conn, const Comm::Event::Ptr& ev) override;
 
 };
 

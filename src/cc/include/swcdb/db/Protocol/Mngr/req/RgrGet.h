@@ -15,10 +15,10 @@
 namespace SWC { namespace Protocol { namespace Mngr { namespace Req {
 
   
-class RgrGet: public client::ConnQueue::ReqBase {
+class RgrGet: public Comm::client::ConnQueue::ReqBase {
   public:
   
-  typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&, 
+  typedef std::function<void(const Comm::client::ConnQueue::ReqBase::Ptr&, 
                              const Params::RgrGetRsp&)> Cb_t;
  
   static void request(cid_t cid, rid_t rid, bool next_range,
@@ -39,15 +39,15 @@ class RgrGet: public client::ConnQueue::ReqBase {
 
   bool run() override;
 
-  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
+  void handle(Comm::ConnHandlerPtr conn, const Comm::Event::Ptr& ev) override;
 
   private:
   
   void clear_endpoints();
 
-  const Cb_t  cb;
-  EndPoints   endpoints;
-  cid_t       cid;
+  const Cb_t        cb;
+  Comm::EndPoints   endpoints;
+  cid_t             cid;
 };
 
 

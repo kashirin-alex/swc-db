@@ -36,7 +36,7 @@ void MngrActiveReq::internal_decode(const uint8_t** bufp, size_t* remainp) {
 
 MngrActiveRsp::MngrActiveRsp() {}
 
-MngrActiveRsp::MngrActiveRsp(const EndPoints& endpoints) 
+MngrActiveRsp::MngrActiveRsp(const Comm::EndPoints& endpoints) 
                             : Common::Params::HostEndPoints(endpoints), 
                               available(endpoints.size()>0) { 
 }

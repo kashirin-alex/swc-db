@@ -21,7 +21,7 @@ class ReadAll : public Base {
 
   std::promise<void> promise();
 
-  void handle(ConnHandlerPtr, const Event::Ptr& ev);
+  void handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev);
 
   private:
   const std::string      name;

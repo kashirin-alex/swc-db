@@ -12,18 +12,18 @@
 namespace SWC { namespace Protocol { namespace Mngr { namespace Req {
 
 
-class RgrUpdate : public client::ConnQueue::ReqBase {
+class RgrUpdate : public Comm::client::ConnQueue::ReqBase {
   public:
 
   RgrUpdate(const Manager::RangerList &hosts, bool sync_all)
-            : client::ConnQueue::ReqBase(true) {
-    cbp = CommBuf::make(Params::RgrUpdate(hosts, sync_all));
+            : Comm::client::ConnQueue::ReqBase(true) {
+    cbp = Comm::CommBuf::make(Params::RgrUpdate(hosts, sync_all));
     cbp->header.set(RGR_UPDATE, 60000);
   }
   
   virtual ~RgrUpdate() { }
 
-  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override {
+  void handle(Comm::ConnHandlerPtr conn, const Comm::Event::Ptr& ev) override {
     if(!is_rsp(ev))
       return;
 

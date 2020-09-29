@@ -9,7 +9,7 @@
 #include "swcdb/core/comm/ConnHandler.h"
 
 
-namespace SWC {
+namespace SWC { namespace Comm {
 
 class ResponseCallback: public std::enable_shared_from_this<ResponseCallback> {
 
@@ -38,7 +38,7 @@ class ResponseCallback: public std::enable_shared_from_this<ResponseCallback> {
 };
 
 
-} // namespace SWC
+}} // namespace SWC::Comm
 
 
 

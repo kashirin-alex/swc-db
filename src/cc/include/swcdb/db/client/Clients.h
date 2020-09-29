@@ -18,7 +18,7 @@
 namespace SWC { namespace client {
 
 
-IOCtxPtr& default_io();
+Comm::IOCtxPtr& default_io();
 
 
 class Clients final {
@@ -29,15 +29,15 @@ class Clients final {
 
   typedef std::shared_ptr<Clients> Ptr;
 
-  Clients(IOCtxPtr ioctx, const AppContext::Ptr& app_ctx);
+  Clients(Comm::IOCtxPtr ioctx, const AppContext::Ptr& app_ctx);
 
   ~Clients();
   
-  const Mngr::Groups::Ptr mngrs_groups;
-  ConnQueuesPtr           mngr;
-  ConnQueuesPtr           rgr;
-  Schemas::Ptr            schemas;
-  Rangers                 rangers;
+  const Mngr::Groups::Ptr         mngrs_groups;
+  Comm::client::ConnQueuesPtr     mngr;
+  Comm::client::ConnQueuesPtr     rgr;
+  Schemas::Ptr                    schemas;
+  Rangers                         rangers;
 };
 
 } // namespace client 
@@ -76,7 +76,7 @@ class Clients final {
 };
 
 
-} // namespcae Env
+} // namespace Env
 
 } // namespace SWC
 

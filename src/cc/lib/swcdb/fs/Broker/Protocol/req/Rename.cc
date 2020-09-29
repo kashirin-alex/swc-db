@@ -15,7 +15,7 @@ Rename::Rename(uint32_t timeout, const std::string& from, const std::string& to,
               : from(from), to(to), cb(cb) {
   SWC_LOGF(LOG_DEBUG, "rename '%s' to '%s'", from.c_str(), to.c_str());
 
-  cbp = CommBuf::make(Params::RenameReq(from, to));
+  cbp = Comm::CommBuf::make(Params::RenameReq(from, to));
   cbp->header.set(Cmd::FUNCTION_RENAME, timeout);
 }
 
@@ -25,7 +25,7 @@ std::promise<void> Rename::promise() {
   return r_promise;
 }
 
-void Rename::handle(ConnHandlerPtr, const Event::Ptr& ev) { 
+void Rename::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) { 
 
   const uint8_t *ptr;
   size_t remain;

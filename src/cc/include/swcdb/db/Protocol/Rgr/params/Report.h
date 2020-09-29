@@ -167,14 +167,14 @@ class RspColumnsRanges  : public Serializable {
 
   explicit RspColumnsRanges();
 
-  RspColumnsRanges(rgrid_t rgrid, const EndPoints& endpoints);
+  RspColumnsRanges(rgrid_t rgrid, const Comm::EndPoints& endpoints);
 
   RspColumnsRanges& operator=(const RspColumnsRanges& other) = delete;
 
   virtual ~RspColumnsRanges();
 
   rgrid_t              rgrid; 
-  EndPoints            endpoints;
+  Comm::EndPoints      endpoints;
   std::vector<Column*> columns;
 
   void display(std::ostream& out, bool pretty=true, 

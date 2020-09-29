@@ -15,11 +15,11 @@
 namespace SWC { namespace Protocol { namespace Mngr { namespace Req {
 
   
-class ColumnMng: public client::ConnQueue::ReqBase {
+class ColumnMng: public Comm::client::ConnQueue::ReqBase {
   public:
 
   using Func = Params::ColumnMng::Function;
-  typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&,
+  typedef std::function<void(const Comm::client::ConnQueue::ReqBase::Ptr&,
                              int)> Cb_t;
 
   static void create(const DB::Schema::Ptr& schema, const Cb_t& cb, 
@@ -45,14 +45,14 @@ class ColumnMng: public client::ConnQueue::ReqBase {
 
   bool run() override;
 
-  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
+  void handle(Comm::ConnHandlerPtr conn, const Comm::Event::Ptr& ev) override;
 
   private:
   
   void clear_endpoints();
 
-  const Cb_t  cb;
-  EndPoints   endpoints;
+  const Cb_t        cb;
+  Comm::EndPoints   endpoints;
 };
 
 

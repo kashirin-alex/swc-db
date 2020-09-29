@@ -18,7 +18,7 @@ Close::Close(FileSystem::Ptr fs, uint32_t timeout, SmartFd::Ptr& smartfd,
     smartfd->print(SWC_LOG_OSTREAM); 
   );
  
-  cbp = CommBuf::make(Params::CloseReq(smartfd->fd()));
+  cbp = Comm::CommBuf::make(Params::CloseReq(smartfd->fd()));
   cbp->header.set(Cmd::FUNCTION_CLOSE, timeout);
 }
 
@@ -28,7 +28,7 @@ std::promise<void> Close::promise() {
   return r_promise;
 }
 
-void Close::handle(ConnHandlerPtr, const Event::Ptr& ev) {
+void Close::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) {
 
   const uint8_t *ptr;
   size_t remain;

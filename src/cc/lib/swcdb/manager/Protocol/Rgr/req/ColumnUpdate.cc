@@ -12,16 +12,16 @@ namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
 
 ColumnUpdate::ColumnUpdate(const Manager::Ranger::Ptr& rgr, 
                            const DB::Schema::Ptr& schema)
-                          : client::ConnQueue::ReqBase(false), 
+                          : Comm::client::ConnQueue::ReqBase(false), 
                             rgr(rgr), schema(schema) {
-  cbp = CommBuf::make(Params::ColumnUpdate(schema));
+  cbp = Comm::CommBuf::make(Params::ColumnUpdate(schema));
   cbp->header.set(SCHEMA_UPDATE, 60000);
 }
   
 ColumnUpdate::~ColumnUpdate() { }
 
-void ColumnUpdate::handle(ConnHandlerPtr, const Event::Ptr& ev) {
-  if(ev->type == Event::Type::DISCONNECT)
+void ColumnUpdate::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) {
+  if(ev->type == Comm::Event::Type::DISCONNECT)
     return handle_no_conn();
 
   updated(ev->response_code(), false);

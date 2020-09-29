@@ -12,20 +12,20 @@
 
 namespace SWC { namespace FS { namespace Protocol { namespace Req {
 
-class Base : public DispatchHandler {
+class Base : public Comm::DispatchHandler {
 
   public:
 
   using Ptr = BasePtr;
 
-  CommBuf::Ptr  cbp;
-  int           error;
+  Comm::CommBuf::Ptr  cbp;
+  int                 error;
 
   Base();
 
   virtual ~Base();
 
-  bool is_rsp(const Event::Ptr& ev, int cmd, 
+  bool is_rsp(const Comm::Event::Ptr& ev, int cmd, 
               const uint8_t **ptr, size_t *remain);
 
 };

@@ -699,7 +699,7 @@ void CompactRange::mngr_create_range(uint32_t split_at) {
     range->cfg->cid,
     RangerEnv::rgr_data()->rgrid,
     [split_at, cid=range->cfg->cid, ptr=shared()]
-    (const client::ConnQueue::ReqBase::Ptr& req, 
+    (const Comm::client::ConnQueue::ReqBase::Ptr& req, 
      const Protocol::Mngr::Params::RangeCreateRsp& rsp) {
       
       SWC_LOGF(LOG_DEBUG, 
@@ -727,7 +727,7 @@ void CompactRange::mngr_remove_range(const RangePtr& new_range) {
     new_range->cfg->cid,
     new_range->rid,
     [new_range, await=&res]
-    (const client::ConnQueue::ReqBase::Ptr& req, 
+    (const Comm::client::ConnQueue::ReqBase::Ptr& req, 
      const Protocol::Mngr::Params::RangeRemoveRsp& rsp) {
       
       SWC_LOGF(LOG_DEBUG, 
@@ -817,7 +817,7 @@ void CompactRange::split(rid_t new_rid, uint32_t split_at) {
       Protocol::Mngr::Req::RangeUnloaded::request(
         cid, new_rid,
         [cid, new_rid, ptr]
-        (const client::ConnQueue::ReqBase::Ptr& req, 
+        (const Comm::client::ConnQueue::ReqBase::Ptr& req, 
          const Protocol::Mngr::Params::RangeUnloadedRsp& rsp) {
       
           SWC_LOGF(LOG_DEBUG, 

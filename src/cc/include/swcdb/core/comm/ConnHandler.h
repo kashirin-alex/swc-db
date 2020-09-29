@@ -21,7 +21,7 @@
 #include "swcdb/core/comm/DispatchHandler.h"
 
 
-namespace SWC { 
+namespace SWC { namespace Comm {
 
 using SocketLayer = asio::ip::tcp::socket::lowest_layer_type;
 using SocketPlain = asio::ip::tcp::socket;
@@ -243,7 +243,7 @@ class ConnHandlerSSL final : public ConnHandler {
 };
 
 
-} // namespace SWC
+}} // namespace SWC::Comm
 
 
 

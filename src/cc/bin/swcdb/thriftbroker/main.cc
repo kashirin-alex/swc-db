@@ -55,7 +55,7 @@ int run() {
     host.append(hostname);
   }
     
-  EndPoints endpoints = Resolver::get_endpoints(
+  Comm::EndPoints endpoints = Comm::Resolver::get_endpoints(
     settings->get_i16("swc.ThriftBroker.port"),
     addrs,
     host,

@@ -11,14 +11,15 @@
 
 namespace SWC { namespace Ranger { namespace Callback {
 
-class ColumnsUnloaded : public ResponseCallback {
+class ColumnsUnloaded : public Comm::ResponseCallback {
   public:
 
   std::vector<Column::Ptr>  cols;
   std::atomic<size_t>       unloading;
 
-  ColumnsUnloaded(const ConnHandlerPtr& conn, const Event::Ptr& ev)
-                  : ResponseCallback(conn, ev), unloading(0) {
+  ColumnsUnloaded(const Comm::ConnHandlerPtr& conn, 
+                  const Comm::Event::Ptr& ev)
+                  : Comm::ResponseCallback(conn, ev), unloading(0) {
   }
 
   virtual ~ColumnsUnloaded() { }
@@ -34,7 +35,7 @@ class ColumnsUnloaded : public ResponseCallback {
       return;
 
     try {
-      auto cbp = CommBuf::make(m_rsp_params);
+      auto cbp = Comm::CommBuf::make(m_rsp_params);
       cbp->header.initialize_from_request_header(m_ev->header);
       m_conn->send_response(cbp);
 

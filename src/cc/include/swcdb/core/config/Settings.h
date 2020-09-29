@@ -14,7 +14,7 @@
 
 namespace SWC { 
 
-//! The SWC-DB C++ namespace 'SWC::Config'
+//! The SWC-DB Configurations C++ namespace 'SWC::Config'
 namespace Config {
 
 class Settings final : public Properties {

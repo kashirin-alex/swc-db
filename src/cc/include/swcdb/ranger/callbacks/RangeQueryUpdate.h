@@ -12,12 +12,12 @@
 namespace SWC { namespace Ranger { namespace Callback {
 
 
-class RangeQueryUpdate : public ResponseCallback {
+class RangeQueryUpdate : public Comm::ResponseCallback {
   public:
   typedef std::shared_ptr<RangeQueryUpdate> Ptr;
 
-  RangeQueryUpdate(const ConnHandlerPtr& conn, const Event::Ptr& ev)
-                  : ResponseCallback(conn, ev) {
+  RangeQueryUpdate(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev)
+                  : Comm::ResponseCallback(conn, ev) {
   }
 
   virtual ~RangeQueryUpdate() { }
@@ -40,7 +40,7 @@ class RangeQueryUpdate : public ResponseCallback {
   
   void response(const Protocol::Rgr::Params::RangeQueryUpdateRsp& params) {
     try {
-      auto cbp = CommBuf::make(params);
+      auto cbp = Comm::CommBuf::make(params);
       cbp->header.initialize_from_request_header(m_ev->header);
       m_conn->send_response(cbp);
 

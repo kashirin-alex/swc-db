@@ -15,7 +15,7 @@ Remove::Remove(uint32_t timeout, const std::string& name,
               : name(name), cb(cb) {
   SWC_LOGF(LOG_DEBUG, "remove path='%s'", name.c_str());
 
-  cbp = CommBuf::make(Params::RemoveReq(name));
+  cbp = Comm::CommBuf::make(Params::RemoveReq(name));
   cbp->header.set(Cmd::FUNCTION_REMOVE, timeout);
 }
 
@@ -25,7 +25,7 @@ std::promise<void> Remove::promise() {
   return r_promise;
 }
 
-void Remove::handle(ConnHandlerPtr, const Event::Ptr& ev) { 
+void Remove::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) { 
 
   const uint8_t *ptr;
   size_t remain;

@@ -12,15 +12,15 @@
 namespace SWC { namespace Protocol { namespace Mngr { namespace Req {
 
 
-class Echo : public DispatchHandler {
+class Echo : public Comm::DispatchHandler {
   public:
   typedef std::function<void(bool)> EchoCb_t;
 
-  Echo(const ConnHandlerPtr& conn, const EchoCb_t& cb, size_t buf_sz=0)
+  Echo(const Comm::ConnHandlerPtr& conn, const EchoCb_t& cb, size_t buf_sz=0)
        : conn(conn), cb(cb) { 
 
     if(!buf_sz) {
-      cbp = CommBuf::make();
+      cbp = Comm::CommBuf::make();
 
     } else {
       StaticBuffer sndbuf(buf_sz);
@@ -36,7 +36,7 @@ class Echo : public DispatchHandler {
         *ptr++ = i;
       }
       
-      cbp = CommBuf::make(sndbuf);
+      cbp = Comm::CommBuf::make(sndbuf);
     }
     
     cbp->header.set(DO_ECHO, 60000);
@@ -48,16 +48,16 @@ class Echo : public DispatchHandler {
     return conn->send_request(cbp, shared_from_this());
   }
 
-  void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
+  void handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) override {
     //SWC_LOGF(LOG_DEBUG, "handle: %s", ev->to_str().c_str());
 
     cb(ev->header.command == DO_ECHO && !ev->error);
   }
 
   private:
-  ConnHandlerPtr        conn;
-  EchoCb_t              cb;
-  CommBuf::Ptr          cbp;
+  Comm::ConnHandlerPtr        conn;
+  EchoCb_t                    cb;
+  Comm::CommBuf::Ptr          cbp;
 };
 
 }}}}

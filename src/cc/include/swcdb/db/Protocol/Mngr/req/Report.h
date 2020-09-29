@@ -15,12 +15,12 @@
 namespace SWC { namespace Protocol { namespace Mngr { namespace Req {
 
   
-class Report: public client::ConnQueue::ReqBase {
+class Report: public Comm::client::ConnQueue::ReqBase {
   public:
   
   Report(Params::Report::Function func, const uint32_t timeout);
 
-  Report(const EndPoints& endpoints, Params::Report::Function func, 
+  Report(const Comm::EndPoints& endpoints, Params::Report::Function func, 
          const uint32_t timeout);
 
   Report(const Serializable& params, Params::Report::Function func, 
@@ -34,7 +34,7 @@ class Report: public client::ConnQueue::ReqBase {
   
   void clear_endpoints();
 
-  EndPoints   endpoints;
+  Comm::EndPoints   endpoints;
 };
 
 
@@ -43,16 +43,16 @@ class Report: public client::ConnQueue::ReqBase {
 class ClusterStatus: public Report {
   public:
   
-  typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&, 
+  typedef std::function<void(const Comm::client::ConnQueue::ReqBase::Ptr&, 
                              const int&)> Cb_t;
  
-  static void request(const EndPoints& endpoints, 
+  static void request(const Comm::EndPoints& endpoints, 
                       const Cb_t& cb, const uint32_t timeout = 10000);
 
-  static Ptr make(const EndPoints& endpoints, 
+  static Ptr make(const Comm::EndPoints& endpoints, 
                   const Cb_t& cb, const uint32_t timeout = 10000);
 
-  ClusterStatus(const EndPoints& endpoints, 
+  ClusterStatus(const Comm::EndPoints& endpoints, 
                 const Cb_t& cb, const uint32_t timeout);
 
   virtual ~ClusterStatus();
@@ -61,7 +61,7 @@ class ClusterStatus: public Report {
 
   void handle_no_conn() override;
 
-  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
+  void handle(Comm::ConnHandlerPtr conn, const Comm::Event::Ptr& ev) override;
 
   private:
 
@@ -75,7 +75,7 @@ class ClusterStatus: public Report {
 class ColumnStatus: public Report {
   public:
   
-  typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&, 
+  typedef std::function<void(const Comm::client::ConnQueue::ReqBase::Ptr&, 
                              const int&, 
                              const Params::Report::RspColumnStatus&)> Cb_t;
  
@@ -95,7 +95,7 @@ class ColumnStatus: public Report {
 
   bool run() override;
 
-  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
+  void handle(Comm::ConnHandlerPtr conn, const Comm::Event::Ptr& ev) override;
 
   private:
 
@@ -110,7 +110,7 @@ class ColumnStatus: public Report {
 class RangersStatus: public Report {
   public:
   
-  typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&, 
+  typedef std::function<void(const Comm::client::ConnQueue::ReqBase::Ptr&, 
                              const int&, 
                              const Params::Report::RspRangersStatus&)> Cb_t;
  
@@ -127,7 +127,7 @@ class RangersStatus: public Report {
 
   bool run() override;
 
-  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
+  void handle(Comm::ConnHandlerPtr conn, const Comm::Event::Ptr& ev) override;
 
   private:
 
@@ -142,17 +142,17 @@ class RangersStatus: public Report {
 class ManagersStatus: public Report {
   public:
   
-  typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&, 
+  typedef std::function<void(const Comm::client::ConnQueue::ReqBase::Ptr&, 
                              const int&, 
                              const Params::Report::RspManagersStatus&)> Cb_t;
  
-  static void request(const EndPoints& endpoints, const Cb_t& cb, 
+  static void request(const Comm::EndPoints& endpoints, const Cb_t& cb, 
                       const uint32_t timeout = 10000);
 
-  static Ptr make(const EndPoints& endpoints, const Cb_t& cb, 
+  static Ptr make(const Comm::EndPoints& endpoints, const Cb_t& cb, 
                   const uint32_t timeout = 10000);
 
-  ManagersStatus(const EndPoints& endpoints, const Cb_t& cb, 
+  ManagersStatus(const Comm::EndPoints& endpoints, const Cb_t& cb, 
                  const uint32_t timeout);
 
   virtual ~ManagersStatus();
@@ -161,7 +161,7 @@ class ManagersStatus: public Report {
 
   void handle_no_conn() override;
 
-  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
+  void handle(Comm::ConnHandlerPtr conn, const Comm::Event::Ptr& ev) override;
 
   private:
 

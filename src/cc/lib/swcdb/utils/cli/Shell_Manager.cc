@@ -86,7 +86,7 @@ bool Mngr::cluster_status(std::string&) {
     Protocol::Mngr::Req::ClusterStatus::request(
       endpoints,
       [this, await=&r_promise] 
-      (const client::ConnQueue::ReqBase::Ptr&, const int& error) {
+      (const Comm::client::ConnQueue::ReqBase::Ptr&, const int& error) {
         err = error;
         await->set_value();
       }
@@ -140,14 +140,14 @@ bool Mngr::managers_status(std::string& cmd) {
     
     std::vector<std::string> ips;
     std::string host;
-    if(Resolver::is_ipv4_address(host_or_ips) || 
-       Resolver::is_ipv6_address(host_or_ips))
+    if(Comm::Resolver::is_ipv4_address(host_or_ips) || 
+       Comm::Resolver::is_ipv6_address(host_or_ips))
       ips.push_back(host_or_ips);
     else
       host = host_or_ips; 
 
     hosts.push_back(
-      Resolver::get_endpoints(
+      Comm::Resolver::get_endpoints(
         port, ips, host, {}, false
       )
     );
@@ -170,7 +170,7 @@ bool Mngr::managers_status(std::string& cmd) {
     Protocol::Mngr::Req::ManagersStatus::request(
       endpoints,
       [this, endpoints, await=&r_promise] 
-      (const client::ConnQueue::ReqBase::Ptr& req, const int& error,
+      (const Comm::client::ConnQueue::ReqBase::Ptr& req, const int& error,
        const Protocol::Mngr::Params::Report::RspManagersStatus& rsp) {
         SWC_PRINT << "# by Manager(";
         if(error) {
@@ -180,7 +180,7 @@ bool Mngr::managers_status(std::string& cmd) {
                           << "(" << Error::get_text(error) << ")";
         } else {
           SWC_LOG_OSTREAM << (req->queue? req->queue->get_endpoint_remote()
-                                        : EndPoint()) << ") ";
+                                        : Comm::EndPoint()) << ") ";
           rsp.display(SWC_LOG_OSTREAM);
         }
         SWC_LOG_OSTREAM << SWC_PRINT_CLOSE;
@@ -237,7 +237,7 @@ bool Mngr::column_status(std::string& cmd) {
   Protocol::Mngr::Req::ColumnStatus::request(
     Protocol::Mngr::Params::Report::ReqColumnStatus(cid),
     [this, await=&r_promise] 
-    (const client::ConnQueue::ReqBase::Ptr&, const int& error,
+    (const Comm::client::ConnQueue::ReqBase::Ptr&, const int& error,
      const Protocol::Mngr::Params::Report::RspColumnStatus& rsp) {
       if(!(err = error)) {
         SWC_PRINT << "";
@@ -298,7 +298,7 @@ bool Mngr::rangers_status(std::string& cmd) {
   Protocol::Mngr::Req::RangersStatus::request(
     cid,
     [this, await=&r_promise] 
-    (const client::ConnQueue::ReqBase::Ptr&, const int& error,
+    (const Comm::client::ConnQueue::ReqBase::Ptr&, const int& error,
      const Protocol::Mngr::Params::Report::RspRangersStatus& rsp) {
       if(!(err = error)) {
         SWC_PRINT << "";

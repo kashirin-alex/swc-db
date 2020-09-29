@@ -163,7 +163,7 @@ bool DbClient::mng_column(Protocol::Mngr::Req::ColumnMng::Func func,
   Protocol::Mngr::Req::ColumnMng::request(
     func, schema,
     [await=&res]
-    (const client::ConnQueue::ReqBase::Ptr&, int error) {
+    (const Comm::client::ConnQueue::ReqBase::Ptr&, int error) {
       /*if(err && Func::CREATE && err != Error::COLUMN_SCHEMA_NAME_EXISTS) {
         req->request_again();
         return;
@@ -197,7 +197,7 @@ bool DbClient::compact_column(std::string& cmd) {
     std::promise<int> res;
     Protocol::Mngr::Req::ColumnList::request(
       [&schemas, await=&res]
-      (const client::ConnQueue::ReqBase::Ptr&, int error, 
+      (const Comm::client::ConnQueue::ReqBase::Ptr&, int error, 
        const Protocol::Mngr::Params::ColumnListRsp& rsp) {
         if(!error)
           schemas = rsp.schemas;
@@ -218,7 +218,7 @@ bool DbClient::compact_column(std::string& cmd) {
     Protocol::Mngr::Req::ColumnCompact::request(
       schema->cid,
       [schema, &proccessing, await=&res]
-      (const client::ConnQueue::ReqBase::Ptr&, 
+      (const Comm::client::ConnQueue::ReqBase::Ptr&, 
        const Protocol::Mngr::Params::ColumnCompactRsp& rsp) {
         SWC_PRINT << "Compactig Column cid=" << schema->cid 
                   << " '" << schema->col_name << "' err=" << rsp.err 
@@ -249,7 +249,7 @@ bool DbClient::list_columns(std::string& cmd) {
     Protocol::Mngr::Req::ColumnList::request(
       params,
       [&schemas, await=&res]
-      (const client::ConnQueue::ReqBase::Ptr&, int error, 
+      (const Comm::client::ConnQueue::ReqBase::Ptr&, int error, 
        const Protocol::Mngr::Params::ColumnListRsp& rsp) {
         if(!error)
           schemas.insert(

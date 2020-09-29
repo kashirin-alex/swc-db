@@ -39,10 +39,10 @@
 namespace SWC { namespace FsBroker {
 
 
-class AppContext final : public SWC::AppContext {
+class AppContext final : public SWC::Comm::AppContext {
   
   // in-order of FS::Protocol::Cmd
-  static constexpr const AppHandler_t handlers[] = { 
+  static constexpr const Comm::AppHandler_t handlers[] = { 
     &Protocol::Common::Handler::not_implemented,
     &Handler::open,
     &Handler::create,
@@ -91,35 +91,35 @@ class AppContext final : public SWC::AppContext {
     }
   }
   
-  void init(const EndPoints&) override {
+  void init(const Comm::EndPoints&) override {
     int sig = 0;
     Env::IoCtx::io()->set_signals();
     shutting_down(std::error_code(), sig);
   }
 
-  void set_srv(server::SerializedServer::Ptr srv){
+  void set_srv(Comm::server::SerializedServer::Ptr srv){
     m_srv = srv;
   }
 
   virtual ~AppContext(){}
 
-  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override {
+  void handle(Comm::ConnHandlerPtr conn, const Comm::Event::Ptr& ev) override {
     //SWC_LOGF(LOG_DEBUG, "handle: %s", ev->to_str().c_str());
 
     switch (ev->type) {
 
-      case Event::Type::ESTABLISHED:
+      case Comm::Event::Type::ESTABLISHED:
         m_srv->connection_add(conn);
         return; 
         
-      case Event::Type::DISCONNECT:
+      case Comm::Event::Type::DISCONNECT:
         m_srv->connection_del(conn);
         return;
 
-      case Event::Type::ERROR:
+      case Comm::Event::Type::ERROR:
         break;
 
-      case Event::Type::MESSAGE: {
+      case Comm::Event::Type::MESSAGE: {
       uint8_t cmd = ev->header.command >= FS::Protocol::Cmd::FUNCTION_MAX 
                       ? (uint8_t)FS::Protocol::Cmd::NOT_IMPLEMENTED 
                       : ev->header.command;
@@ -177,9 +177,12 @@ class AppContext final : public SWC::AppContext {
   }
 
   private:
-  server::SerializedServer::Ptr m_srv = nullptr;
+  Comm::server::SerializedServer::Ptr m_srv = nullptr;
 };
 
+
 }}
+
+
 
 #endif // swc_fsbroker_AppContext_h

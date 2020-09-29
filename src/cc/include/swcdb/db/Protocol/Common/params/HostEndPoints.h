@@ -18,15 +18,15 @@ class HostEndPoints: public Serializable {
 
   HostEndPoints();
 
-  HostEndPoints(const EndPoints& points);
+  HostEndPoints(const Comm::EndPoints& points);
   
   virtual ~HostEndPoints();
 
-  void set(const EndPoints& points);
+  void set(const Comm::EndPoints& points);
 
   void print(std::ostream& out) const;
 
-  EndPoints    endpoints;
+  Comm::EndPoints    endpoints;
 
 
   protected:

@@ -14,7 +14,8 @@
 namespace SWC { namespace Protocol { namespace Rgr { namespace Handler {
 
 
-void range_locate(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
+void range_locate(const Comm::ConnHandlerPtr& conn, 
+                  const Comm::Event::Ptr& ev) {
   int err = Error::OK;
   Params::RangeLocateReq params;
   Ranger::RangePtr range;
@@ -45,7 +46,7 @@ void range_locate(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
         rsp_params.print(SWC_LOG_OSTREAM << ' ');
       );
 
-      auto cbp = CommBuf::make(rsp_params);
+      auto cbp = Comm::CommBuf::make(rsp_params);
       cbp->header.initialize_from_request_header(ev->header);
       conn->send_response(cbp);
 

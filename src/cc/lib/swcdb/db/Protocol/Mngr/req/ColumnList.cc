@@ -27,8 +27,8 @@ void ColumnList::request(const Params::ColumnListReq& params,
 
 ColumnList::ColumnList(const Params::ColumnListReq& params, 
                        const ColumnList::Cb_t& cb, const uint32_t timeout) 
-                      : client::ConnQueue::ReqBase(false), cb(cb) {
-  cbp = CommBuf::make(params);
+                      : Comm::client::ConnQueue::ReqBase(false), cb(cb) {
+  cbp = Comm::CommBuf::make(params);
   cbp->header.set(COLUMN_LIST, timeout);
 }
 
@@ -52,8 +52,8 @@ bool ColumnList::run() {
   return true;
 }
 
-void ColumnList::handle(ConnHandlerPtr, const Event::Ptr& ev) {
-  if(ev->type == Event::Type::DISCONNECT)
+void ColumnList::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) {
+  if(ev->type == Comm::Event::Type::DISCONNECT)
     return handle_no_conn();
 
   Params::ColumnListRsp rsp_params;

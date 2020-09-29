@@ -46,7 +46,8 @@ Rgr::Rgr()
   );
 }
 
-bool Rgr::read_endpoint(std::string& host_or_ips, EndPoints& endpoints) {
+bool Rgr::read_endpoint(std::string& host_or_ips, 
+                        Comm::EndPoints& endpoints) {
   host_or_ips.erase(
     std::remove_if(host_or_ips.begin(), host_or_ips.end(), 
                   [](unsigned char x){return std::isspace(x);} ), 
@@ -80,13 +81,14 @@ bool Rgr::read_endpoint(std::string& host_or_ips, EndPoints& endpoints) {
   
   std::vector<std::string> ips;
   std::string host;
-  if(Resolver::is_ipv4_address(host_or_ips) || Resolver::is_ipv6_address(host_or_ips))
+  if(Comm::Resolver::is_ipv4_address(host_or_ips) || 
+     Comm::Resolver::is_ipv6_address(host_or_ips))
     ips.push_back(host_or_ips);
   else
     host = host_or_ips;
 
   try {
-    endpoints = Resolver::get_endpoints(port, ips, host, {}, false);
+    endpoints = Comm::Resolver::get_endpoints(port, ips, host, {}, false);
     if(endpoints.empty()) {
       message.append("Empty endpoints\n");
       err = EINVAL;
@@ -105,7 +107,7 @@ bool Rgr::report_resources(std::string& cmd) {
   size_t at = cmd.find_first_of(" ");
   std::string host_or_ips = cmd.substr(at+1);
 
-  EndPoints endpoints;
+  Comm::EndPoints endpoints;
   bool r = read_endpoint(host_or_ips, endpoints);
   if(err)
     return r;
@@ -114,7 +116,7 @@ bool Rgr::report_resources(std::string& cmd) {
   Protocol::Rgr::Req::ReportRes::request(
     endpoints, 
     [this, await=&r_promise] 
-    (const client::ConnQueue::ReqBase::Ptr&, const int& error,
+    (const Comm::client::ConnQueue::ReqBase::Ptr&, const int& error,
      const Protocol::Rgr::Params::Report::RspRes& rsp) {
       if(!(err = error)) {
         SWC_PRINT << "";
@@ -176,7 +178,7 @@ bool Rgr::report(std::string& cmd) {
 
   while(reader.found_space());
   std::string host_or_ips(reader.ptr, reader.remain);
-  EndPoints endpoints;
+  Comm::EndPoints endpoints;
   bool r = read_endpoint(host_or_ips, endpoints);
   if(err)
     return r;
@@ -194,7 +196,7 @@ bool Rgr::report(std::string& cmd) {
       Protocol::Rgr::Req::ReportColumnsRanges::request(
         endpoints, 
         [this, await=&r_promise] 
-        (const client::ConnQueue::ReqBase::Ptr&, const int& error,
+        (const Comm::client::ConnQueue::ReqBase::Ptr&, const int& error,
          const Protocol::Rgr::Params::Report::RspColumnsRanges& rsp) {
           if(!(err = error)) {
             SWC_PRINT << "";
@@ -210,7 +212,7 @@ bool Rgr::report(std::string& cmd) {
       Protocol::Rgr::Req::ReportCids::request(
         endpoints, 
         [this, await=&r_promise] 
-        (const client::ConnQueue::ReqBase::Ptr&, const int& error,
+        (const Comm::client::ConnQueue::ReqBase::Ptr&, const int& error,
          const Protocol::Rgr::Params::Report::RspCids& rsp) {
           if(!(err = error)) {
             SWC_PRINT << "";
@@ -227,7 +229,7 @@ bool Rgr::report(std::string& cmd) {
         endpoints, 
         cid,
         [this, await=&r_promise]
-        (const client::ConnQueue::ReqBase::Ptr&, const int& error,
+        (const Comm::client::ConnQueue::ReqBase::Ptr&, const int& error,
          const Protocol::Rgr::Params::Report::RspColumnsRanges& rsp) {
           if(!(err = error)) {
             SWC_PRINT << "";
@@ -244,7 +246,7 @@ bool Rgr::report(std::string& cmd) {
         endpoints, 
         cid,
         [this, await=&r_promise]
-        (const client::ConnQueue::ReqBase::Ptr&, const int& error,
+        (const Comm::client::ConnQueue::ReqBase::Ptr&, const int& error,
          const Protocol::Rgr::Params::Report::RspColumnRids& rsp) {
           if(!(err = error)) {
             SWC_PRINT << "";

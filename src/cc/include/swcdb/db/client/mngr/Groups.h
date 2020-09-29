@@ -13,7 +13,7 @@
 
 namespace SWC { namespace client { namespace Mngr {
 
-typedef std::vector<EndPoints>  Hosts;
+typedef std::vector<Comm::EndPoints>  Hosts;
 
 class Group final : private Hosts {
   public:
@@ -25,7 +25,7 @@ class Group final : private Hosts {
 
 
   Group(uint8_t role, cid_t cid_begin, cid_t cid_end, 
-        const EndPoints& endpoints);
+        const Comm::EndPoints& endpoints);
 
   Group(uint8_t role, cid_t cid_begin, cid_t cid_end, 
         const Hosts& hosts);
@@ -34,19 +34,19 @@ class Group final : private Hosts {
   
   Ptr copy();
 
-  void add_host(EndPoints& new_endpoints);
+  void add_host(Comm::EndPoints& new_endpoints);
 
   Hosts get_hosts();
 
-  bool is_in_group(const EndPoint& endpoint);
+  bool is_in_group(const Comm::EndPoint& endpoint);
 
   void print(std::ostream& out);
 
-  void apply_endpoints(EndPoints& to_endpoints);
+  void apply_endpoints(Comm::EndPoints& to_endpoints);
 
   private:
 
-  void _get_host(const EndPoint& point, EndPoints*& found_host);
+  void _get_host(const Comm::EndPoint& point, Comm::EndPoints*& found_host);
 
   std::mutex    m_mutex;
 };
@@ -60,17 +60,17 @@ class Groups final : private std::vector<Group::Ptr>,
   public:
   
   struct GroupHost final {
-    uint8_t role;
-    cid_t   cid_begin;
-    cid_t   cid_end;
-    EndPoints endpoints;
+    uint8_t         role;
+    cid_t           cid_begin;
+    cid_t           cid_end;
+    Comm::EndPoints endpoints;
   };
   typedef std::shared_ptr<Groups> Ptr;
   typedef std::vector<Group::Ptr> Vec;
 
   Groups();
 
-  Groups(const Vec& groups, const std::vector<Network>& nets);
+  Groups(const Vec& groups, const std::vector<Comm::Network>& nets);
 
   ~Groups();
 
@@ -84,29 +84,29 @@ class Groups final : private std::vector<Group::Ptr>,
 
   void hosts(uint8_t role, cid_t cid, Hosts& hosts, GroupHost &group_host);
 
-  Vec get_groups(const EndPoints& endpoints);
+  Vec get_groups(const Comm::EndPoints& endpoints);
 
-  EndPoints get_endpoints(uint8_t role=0, cid_t cid_begin=0, 
-                                          cid_t cid_end=0);
+  Comm::EndPoints get_endpoints(uint8_t role=0, cid_t cid_begin=0,
+                                cid_t cid_end=0);
 
   void print(std::ostream& out);
 
   void add(GroupHost& g_host);
 
-  void remove(const EndPoints& endpoints);
+  void remove(const Comm::EndPoints& endpoints);
 
-  void select(const cid_t& cid, EndPoints& endpoints);
+  void select(const cid_t& cid, Comm::EndPoints& endpoints);
 
-  void select(const uint8_t& role, EndPoints& endpoints);
+  void select(const uint8_t& role, Comm::EndPoints& endpoints);
 
   private:
 
   void _add_host(uint8_t role, cid_t cid_begin, cid_t cid_end, 
                  uint16_t port, std::string host_or_ips);
 
-  std::mutex              m_mutex;
-  std::vector<GroupHost>  m_active_g_host;
-  std::vector<Network>    m_nets;
+  std::mutex                  m_mutex;
+  std::vector<GroupHost>      m_active_g_host;
+  std::vector<Comm::Network>  m_nets;
 };
 
 }}}

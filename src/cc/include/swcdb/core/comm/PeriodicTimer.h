@@ -10,7 +10,7 @@
 #include <asio.hpp>
 #include "swcdb/core/config/Settings.h"
 
-namespace SWC {
+namespace SWC { namespace Comm {
   
 class PeriodicTimer final : private asio::high_resolution_timer {
   public:
@@ -48,7 +48,8 @@ class PeriodicTimers final
   Mutex m_mutex;
 };
 
-} // namespace SWC
+
+}} // namespace SWC::Comm
 
 
 

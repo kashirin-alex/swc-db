@@ -10,7 +10,7 @@
 namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
 
 
-class RangeLoad : public client::ConnQueue::ReqBase {
+class RangeLoad : public Comm::client::ConnQueue::ReqBase {
   public:
 
   RangeLoad(const Manager::Ranger::Ptr& rgr, 
@@ -19,7 +19,7 @@ class RangeLoad : public client::ConnQueue::ReqBase {
   
   virtual ~RangeLoad();
 
-  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
+  void handle(Comm::ConnHandlerPtr conn, const Comm::Event::Ptr& ev) override;
 
   bool valid() override;
   

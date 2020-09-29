@@ -11,14 +11,14 @@
 namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
   
 
-class ColumnDelete : public client::ConnQueue::ReqBase  {
+class ColumnDelete : public Comm::client::ConnQueue::ReqBase  {
   public:
 
   ColumnDelete(const Manager::Ranger::Ptr& rgr, cid_t cid);
   
   virtual ~ColumnDelete();
   
-  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
+  void handle(Comm::ConnHandlerPtr conn, const Comm::Event::Ptr& ev) override;
 
   void handle_no_conn() override;
   

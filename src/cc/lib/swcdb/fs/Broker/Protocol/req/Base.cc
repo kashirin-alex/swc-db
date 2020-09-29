@@ -14,15 +14,15 @@ Base::Base() : error(Error::OK) {}
 
 Base::~Base() {}
 
-bool Base::is_rsp(const Event::Ptr& ev, int cmd, 
+bool Base::is_rsp(const Comm::Event::Ptr& ev, int cmd, 
                   const uint8_t **ptr, size_t *remain) { 
   // SWC_LOGF(LOG_DEBUG, "handle: %s", ev->to_str().c_str());
 
   switch(ev->type) {
-    case Event::Type::ESTABLISHED:
+    case Comm::Event::Type::ESTABLISHED:
       return false;
-    case Event::Type::DISCONNECT:
-    case Event::Type::ERROR:
+    case Comm::Event::Type::DISCONNECT:
+    case Comm::Event::Type::ERROR:
       error = ev->error;
       break;
     default:

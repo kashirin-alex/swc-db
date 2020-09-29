@@ -13,7 +13,7 @@
 namespace SWC { namespace FsBroker { namespace Handler {
 
 
-void read_all(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
+void read_all(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
 
   int err = Error::OK;
   StaticBuffer rbuf;
@@ -67,7 +67,7 @@ void read_all(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     return;
 
   try {
-    auto cbp = err ? CommBuf::make(4) : CommBuf::make(rbuf, 4); 
+    auto cbp = err ? Comm::CommBuf::make(4) : Comm::CommBuf::make(rbuf, 4); 
     cbp->header.initialize_from_request_header(ev->header);
     cbp->append_i32(err);
     conn->send_response(cbp);

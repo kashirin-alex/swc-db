@@ -9,7 +9,7 @@
 #include "swcdb/core/comm/SerializedServer.h"
 
 
-namespace SWC { namespace server {
+namespace SWC { namespace Comm { namespace server {
 
 Acceptor::Acceptor(asio::ip::tcp::acceptor& acceptor, 
                   AppContext::Ptr& app_ctx, bool is_plain)
@@ -268,4 +268,6 @@ SerializedServer::~SerializedServer() {
     delete m_ssl_cfg;
 }
 
-}}
+
+
+}}}

@@ -12,22 +12,22 @@
 namespace SWC { namespace Protocol { namespace Mngr {namespace Req {
 
 
-class MngrState : public client::ConnQueue::ReqBase {
+class MngrState : public Comm::client::ConnQueue::ReqBase {
   public:
 
-  MngrState(const ResponseCallback::Ptr& cb, 
+  MngrState(const Comm::ResponseCallback::Ptr& cb, 
             const Manager::MngrsStatus& states, 
-            uint64_t token, const EndPoint& mngr_host, 
+            uint64_t token, const Comm::EndPoint& mngr_host, 
             uint32_t timeout);
   
   virtual ~MngrState();
 
-  void disconnected(const ConnHandlerPtr& conn);
+  void disconnected(const Comm::ConnHandlerPtr& conn);
 
-  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
+  void handle(Comm::ConnHandlerPtr conn, const Comm::Event::Ptr& ev) override;
 
   private:
-  ResponseCallback::Ptr   cb;
+  Comm::ResponseCallback::Ptr   cb;
 };
 
 }}}}

@@ -10,29 +10,29 @@
 namespace SWC { namespace Protocol { namespace Mngr {namespace Req {
 
 
-MngrState::MngrState(const ResponseCallback::Ptr& cb, 
+MngrState::MngrState(const Comm::ResponseCallback::Ptr& cb, 
                      const Manager::MngrsStatus& states, 
-                     uint64_t token, const EndPoint& mngr_host, 
+                     uint64_t token, const Comm::EndPoint& mngr_host, 
                      uint32_t timeout) 
-                    : client::ConnQueue::ReqBase(true), cb(cb) {
-  cbp = CommBuf::make(Params::MngrState(states, token, mngr_host));
+                    : Comm::client::ConnQueue::ReqBase(true), cb(cb) {
+  cbp = Comm::CommBuf::make(Params::MngrState(states, token, mngr_host));
   cbp->header.set(MNGR_STATE, timeout);
 }
   
 MngrState::~MngrState() { }
 
-void MngrState::disconnected(const ConnHandlerPtr&) {
+void MngrState::disconnected(const Comm::ConnHandlerPtr&) {
   //Env::Mngr::role()->disconnection(
   //  conn->endpoint_remote, conn->endpoint_local);
 }
 
-void MngrState::handle(ConnHandlerPtr conn, const Event::Ptr& ev) {
+void MngrState::handle(Comm::ConnHandlerPtr conn, const Comm::Event::Ptr& ev) {
 
-  if(ev->type == Event::Type::DISCONNECT) {
+  if(ev->type == Comm::Event::Type::DISCONNECT) {
     //disconnected(conn);
     return;
   }
-  if(client::ConnQueue::ReqBase::is_timeout(ev))
+  if(Comm::client::ConnQueue::ReqBase::is_timeout(ev))
     return;
 
   if(ev->response_code() == Error::OK) {

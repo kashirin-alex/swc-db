@@ -30,7 +30,7 @@ DB::Schema::Ptr get_schema(int &err, const Params::ColumnGetReq& params) {
   }
 }
 
-void mngr_update_response(const ConnHandlerPtr& conn, const Event::Ptr& ev,
+void mngr_update_response(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev,
                           int err, Params::ColumnGetReq::Flag flag, 
                           const DB::Schema::Ptr& schema) {
   if(!err && !schema)
@@ -38,8 +38,8 @@ void mngr_update_response(const ConnHandlerPtr& conn, const Event::Ptr& ev,
 
   try {
     auto cbp = err ? 
-        CommBuf::make(4)
-      : CommBuf::make(Params::ColumnGetRsp(flag, schema), 4);
+        Comm::CommBuf::make(4)
+      : Comm::CommBuf::make(Params::ColumnGetRsp(flag, schema), 4);
     cbp->header.initialize_from_request_header(ev->header);
     cbp->append_i32(err);
     conn->send_response(cbp);
@@ -49,7 +49,7 @@ void mngr_update_response(const ConnHandlerPtr& conn, const Event::Ptr& ev,
   }
 }
 
-void column_get(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
+void column_get(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
 
   int err = Error::OK;
   Params::ColumnGetReq::Flag flag;

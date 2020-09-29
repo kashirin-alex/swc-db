@@ -7,7 +7,7 @@
 #include "swcdb/core/Serialization.h"
 #include "swcdb/core/Checksum.h"
 
-namespace SWC {
+namespace SWC { namespace Comm {
 
 
 SWC_SHOULD_INLINE
@@ -127,4 +127,4 @@ void CommHeader::print(std::ostream& out) const {
 }
   
 
-}
+}}

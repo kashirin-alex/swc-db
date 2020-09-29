@@ -16,7 +16,7 @@ class RangeLocateScan : public ReqScan {
 
   typedef std::shared_ptr<RangeLocateScan> Ptr;
 
-  RangeLocateScan(const ConnHandlerPtr& conn, const Event::Ptr& ev, 
+  RangeLocateScan(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev, 
                   const DB::Cell::Key& range_begin, 
                   const DB::Cell::Key& range_end, 
                   const RangePtr& range, uint8_t flags)
@@ -135,7 +135,7 @@ class RangeLocateScan : public ReqScan {
       params.err = Error::RANGE_NOT_FOUND;
     
     try {
-      auto cbp = CommBuf::make(params);
+      auto cbp = Comm::CommBuf::make(params);
       cbp->header.initialize_from_request_header(m_ev->header);
       m_conn->send_response(cbp);
 

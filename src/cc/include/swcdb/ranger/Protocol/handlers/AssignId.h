@@ -11,7 +11,7 @@
 namespace SWC { namespace Protocol { namespace Rgr { namespace Handler {
 
 
-void assign_id(const ConnHandlerPtr& conn, const Event::Ptr& ev, 
+void assign_id(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev, 
                Protocol::Mngr::Req::RgrMngId::Ptr id_mngr) {
   try {
 

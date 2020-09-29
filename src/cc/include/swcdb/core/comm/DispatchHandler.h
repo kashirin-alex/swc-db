@@ -12,7 +12,7 @@
 #include "swcdb/core/comm/Event.h"
 #include "swcdb/core/comm/AppContext.h"
 
-namespace SWC {
+namespace SWC { namespace Comm {
 
 
 class DispatchHandler : public std::enable_shared_from_this<DispatchHandler> {
@@ -29,7 +29,7 @@ class DispatchHandler : public std::enable_shared_from_this<DispatchHandler> {
 };
 
 
-} // namespace SWC
+}} // namespace SWC::Comm
 
 
 

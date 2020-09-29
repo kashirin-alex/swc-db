@@ -13,7 +13,7 @@
 namespace SWC { namespace Protocol { namespace Mngr { namespace Handler {
 
 
-void rgr_get(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
+void rgr_get(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
   Params::RgrGetReq params;
   Params::RgrGetRsp rsp_params;
   try {
@@ -76,7 +76,7 @@ void rgr_get(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     );
 
     try {
-      auto cbp = CommBuf::make(rsp_params);
+      auto cbp = Comm::CommBuf::make(rsp_params);
       cbp->header.initialize_from_request_header(ev->header);
       conn->send_response(cbp);
     } catch(...) {

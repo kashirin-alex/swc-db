@@ -9,7 +9,7 @@
 #include "swcdb/core/comm/AppContext.h"
 #include <iostream>
 
-namespace SWC {
+namespace SWC { namespace Comm {
 
 AppContext::AppContext() { }
 
@@ -30,4 +30,4 @@ void AppContext::stop() {
 }
 
 
-}
+}}

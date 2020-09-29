@@ -12,7 +12,7 @@
 namespace SWC { namespace Protocol { namespace Mngr { namespace Handler {
 
 
-void column_list(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
+void column_list(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
 
   int err = Error::OK;
   Params::ColumnListRsp rsp;
@@ -37,7 +37,7 @@ void column_list(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
   }
 
   try {
-    auto cbp = err ? CommBuf::make(4) : CommBuf::make(rsp, 4);
+    auto cbp = err ? Comm::CommBuf::make(4) : Comm::CommBuf::make(rsp, 4);
     cbp->header.initialize_from_request_header(ev->header);
     cbp->append_i32(err);
     conn->send_response(cbp);

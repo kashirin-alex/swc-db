@@ -16,7 +16,7 @@ int run() {
   
   auto app_ctx  = std::make_shared<Manager::AppContext>();
 
-  auto srv = std::make_shared<server::SerializedServer>(
+  auto srv = std::make_shared<Comm::server::SerializedServer>(
     "MANAGER", 
     Env::Config::settings()->get_i32("swc.mngr.reactors"), 
     Env::Config::settings()->get_i32("swc.mngr.workers"), 

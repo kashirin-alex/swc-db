@@ -13,7 +13,7 @@
 namespace SWC { namespace FsBroker { namespace Handler {
 
 
-void exists(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
+void exists(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
 
   int err = Error::OK;
   bool exists = false;
@@ -37,7 +37,7 @@ void exists(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     return;
 
   try {
-    auto cbp = CommBuf::make(FS::Protocol::Params::ExistsRsp(exists), 4);
+    auto cbp = Comm::CommBuf::make(FS::Protocol::Params::ExistsRsp(exists), 4);
     cbp->header.initialize_from_request_header(ev->header);
     cbp->append_i32(err);
     conn->send_response(cbp);

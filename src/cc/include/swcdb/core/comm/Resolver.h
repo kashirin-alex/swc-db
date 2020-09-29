@@ -12,7 +12,9 @@
 #include <vector>
 #include "swcdb/core/config/Property.h"
 
-namespace SWC { 
+namespace SWC {
+
+namespace Comm { 
 
 typedef asio::ip::tcp::endpoint EndPoint;
 typedef std::vector<EndPoint> EndPoints;
@@ -27,16 +29,23 @@ struct Network {
   Network(const Network& net);
 };
 
+} //namespace Comm
+
+
+
 namespace Serialization {
   
-size_t encoded_length(const EndPoint& endpoint);
+size_t encoded_length(const Comm::EndPoint& endpoint);
 
-void encode(const EndPoint& endpoint, uint8_t** bufp);
+void encode(const Comm::EndPoint& endpoint, uint8_t** bufp);
 
-EndPoint decode(const uint8_t** bufp, size_t* remainp);
+Comm::EndPoint decode(const uint8_t** bufp, size_t* remainp);
 
-}
+} //namespace Serialization
 
+
+
+namespace Comm {
 
 bool has_endpoint(const EndPoint& e1, const EndPoints& endpoints_in);
 
@@ -46,7 +55,6 @@ bool has_endpoint(const EndPoints& endpoints, const EndPoints& endpoints_in);
 size_t endpoints_hash(const EndPoints& endpoints);
 
 size_t endpoint_hash(const EndPoint& endpoint);
-
 
 
 namespace Resolver {
@@ -80,7 +88,12 @@ bool is_network(const EndPoint& endpoint, const asio::ip::network_v4& net);
 
 bool is_network(const EndPoint& endpoint, const asio::ip::network_v6& net);
 
-} } // namespace SWC::Resolver
+
+}} // namespace :Comm::Resolver
+
+
+} // namespace SWC
+
 
 
 #ifdef SWC_IMPL_SOURCE

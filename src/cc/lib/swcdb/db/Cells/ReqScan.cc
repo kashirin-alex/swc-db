@@ -10,29 +10,29 @@
 namespace SWC { namespace DB { namespace Cells {
 
 
-ReqScan::ReqScan() : ResponseCallback(nullptr, nullptr), 
+ReqScan::ReqScan() : Comm::ResponseCallback(nullptr, nullptr), 
                      only_keys(false), offset(0) {
 }
 
 ReqScan::ReqScan(const DB::Specs::Interval& spec)
-                : ResponseCallback(nullptr, nullptr), 
+                : Comm::ResponseCallback(nullptr, nullptr), 
                   spec(spec),
                   only_keys(spec.flags.is_only_keys()),
                   offset(spec.flags.offset) {
 }
 
-ReqScan::ReqScan(const ConnHandlerPtr& conn, const Event::Ptr& ev, 
+ReqScan::ReqScan(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev,
                  const DB::Specs::Interval& spec)
-                : ResponseCallback(conn, ev), 
+                : Comm::ResponseCallback(conn, ev), 
                   spec(spec),
                   only_keys(spec.flags.is_only_keys()), 
                   offset(spec.flags.offset) {
 }
 
-ReqScan::ReqScan(const ConnHandlerPtr& conn, const Event::Ptr& ev, 
+ReqScan::ReqScan(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev,
                  const DB::Cell::Key& range_begin, 
                  const DB::Cell::Key& range_end)
-                : ResponseCallback(conn, ev), 
+                : Comm::ResponseCallback(conn, ev), 
                   spec(range_begin, range_end),
                   only_keys(false), offset(0) {
 }

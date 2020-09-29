@@ -18,7 +18,7 @@ Seek::Seek(uint32_t timeout, SmartFd::Ptr& smartfd, size_t offset,
     smartfd->print(SWC_LOG_OSTREAM);
   );
 
-  cbp = CommBuf::make(Params::SeekReq(smartfd->fd(), offset));
+  cbp = Comm::CommBuf::make(Params::SeekReq(smartfd->fd(), offset));
   cbp->header.set(Cmd::FUNCTION_SEEK, timeout);
 }
 
@@ -28,7 +28,7 @@ std::promise<void> Seek::promise() {
   return r_promise;
 }
 
-void Seek::handle(ConnHandlerPtr, const Event::Ptr& ev) { 
+void Seek::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) { 
 
   const uint8_t *ptr;
   size_t remain;

@@ -17,7 +17,7 @@ class MngrRole final {
   
   public:
   
-  MngrRole(const EndPoints& endpoints);
+  MngrRole(const Comm::EndPoints& endpoints);
 
   ~MngrRole();
 
@@ -33,17 +33,17 @@ class MngrRole final {
 
   void get_states(MngrsStatus& states);
   
-  EndPoint get_inchain_endpoint() const;
+  Comm::EndPoint get_inchain_endpoint() const;
 
-  void req_mngr_inchain(const client::ConnQueue::ReqBase::Ptr& req);
+  void req_mngr_inchain(const Comm::client::ConnQueue::ReqBase::Ptr& req);
 
   void fill_states(const MngrsStatus& states, uint64_t token, 
-                   const ResponseCallback::Ptr& cb);
+                   const Comm::ResponseCallback::Ptr& cb);
 
-  void update_manager_addr(uint64_t hash, const EndPoint& mngr_host);
+  void update_manager_addr(uint64_t hash, const Comm::EndPoint& mngr_host);
   
-  void disconnection(const EndPoint& endpoint_server, 
-                     const EndPoint& endpoint_client, 
+  void disconnection(const Comm::EndPoint& endpoint_server, 
+                     const Comm::EndPoint& endpoint_client, 
                      bool srv=false);
 
   void stop();
@@ -63,13 +63,13 @@ class MngrRole final {
 
   void manager_checker(MngrStatus::Ptr host, 
                        size_t next, size_t total, bool flw, 
-                       const ConnHandlerPtr& conn);
+                       const Comm::ConnHandlerPtr& conn);
   
-  void update_state(const EndPoint& endpoint, Types::MngrState state);
+  void update_state(const Comm::EndPoint& endpoint, Types::MngrState state);
 
-  void update_state(const EndPoints& endpoints, Types::MngrState state);
+  void update_state(const Comm::EndPoints& endpoints, Types::MngrState state);
   
-  MngrStatus::Ptr get_host(const EndPoints& endpoints);
+  MngrStatus::Ptr get_host(const Comm::EndPoints& endpoints);
 
   MngrStatus::Ptr get_highest_state_host(const MngrStatus::Ptr& other);
   
@@ -77,10 +77,10 @@ class MngrRole final {
 
   void apply_role_changes();
   
-  void set_mngr_inchain(const ConnHandlerPtr& mngr);
+  void set_mngr_inchain(const Comm::ConnHandlerPtr& mngr);
 
 
-  const EndPoints                 m_local_endpoints;
+  const Comm::EndPoints           m_local_endpoints;
   const uint64_t                  m_local_token;
 
   std::shared_mutex               m_mutex;
@@ -89,13 +89,13 @@ class MngrRole final {
   client::Mngr::Groups::Vec       m_local_groups;
   std::atomic<uint8_t>            m_local_active_role;
   bool                            m_major_updates = false;
-  std::unordered_map<uint64_t,  EndPoint> m_mngrs_client_srv;
+  std::unordered_map<uint64_t,  Comm::EndPoint> m_mngrs_client_srv;
   
   std::mutex                      m_mutex_timer;
   asio::high_resolution_timer     m_check_timer; 
   bool                            m_run = true; 
   
-  client::ConnQueuePtr            m_mngr_inchain;
+  Comm::client::ConnQueuePtr      m_mngr_inchain;
 
 
   const Config::Property::V_GINT32::Ptr cfg_conn_probes;
@@ -111,4 +111,6 @@ class MngrRole final {
 
 
 }}
+
+
 #endif // swc_manager_MngrRole_h

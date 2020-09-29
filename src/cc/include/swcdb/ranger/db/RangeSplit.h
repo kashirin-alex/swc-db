@@ -105,7 +105,7 @@ class RangeSplit final {
         Protocol::Mngr::Req::RangeUnloaded::request(
           cid, new_rid,
           [cid, new_rid, await]
-          (const client::ConnQueue::ReqBase::Ptr& req, 
+          (const Comm::client::ConnQueue::ReqBase::Ptr& req, 
            const Protocol::Mngr::Params::RangeUnloadedRsp& rsp) {
       
             SWC_LOGF(LOG_DEBUG, 
@@ -138,7 +138,7 @@ class RangeSplit final {
     Protocol::Mngr::Req::RangeCreate::request(
       range->cfg->cid,
       RangerEnv::rgr_data()->rgrid,
-      [&] (const client::ConnQueue::ReqBase::Ptr& req, 
+      [&] (const Comm::client::ConnQueue::ReqBase::Ptr& req, 
            const Protocol::Mngr::Params::RangeCreateRsp& rsp) {
       
         SWC_LOGF(LOG_DEBUG, 
@@ -165,7 +165,7 @@ class RangeSplit final {
     Protocol::Mngr::Req::RangeRemove::request(
       new_range->cfg->cid,
       new_range->rid,
-      [&] (const client::ConnQueue::ReqBase::Ptr& req, 
+      [&] (const Comm::client::ConnQueue::ReqBase::Ptr& req, 
            const Protocol::Mngr::Params::RangeRemoveRsp& rsp) {
       
         SWC_LOGF(LOG_DEBUG, 

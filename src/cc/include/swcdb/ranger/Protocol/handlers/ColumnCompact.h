@@ -13,7 +13,7 @@
 namespace SWC { namespace Protocol { namespace Rgr { namespace Handler {
 
 
-void column_compact(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
+void column_compact(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
   Params::ColumnCompactRsp rsp_params;
 
   try {
@@ -34,7 +34,7 @@ void column_compact(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
   }
   
   try {
-    auto cbp = CommBuf::make(rsp_params);
+    auto cbp = Comm::CommBuf::make(rsp_params);
     cbp->header.initialize_from_request_header(ev->header);
     conn->send_response(cbp);
 

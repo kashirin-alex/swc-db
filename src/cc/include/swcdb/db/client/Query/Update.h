@@ -148,9 +148,9 @@ class Update final : public std::enable_shared_from_this<Update> {
     bool located_on_manager(const ReqBase::Ptr& base, 
                             const Protocol::Mngr::Params::RgrGetRsp& rsp);
 
-    void locate_on_ranger(const EndPoints& endpoints);
+    void locate_on_ranger(const Comm::EndPoints& endpoints);
 
-    bool located_on_ranger(const EndPoints& endpoints, 
+    bool located_on_ranger(const Comm::EndPoints& endpoints, 
                            const ReqBase::Ptr& base, 
                            const Protocol::Rgr::Params::RangeLocateRsp& rsp);
 
@@ -162,7 +162,8 @@ class Update final : public std::enable_shared_from_this<Update> {
     bool proceed_on_ranger(const ReqBase::Ptr& base, 
                            const Protocol::Mngr::Params::RgrGetRsp& rsp);
 
-    void commit_data(const EndPoints& endpoints, const ReqBase::Ptr& base);
+    void commit_data(const Comm::EndPoints& endpoints, 
+                     const ReqBase::Ptr& base);
 
   };
 

@@ -43,8 +43,8 @@ void ColumnMng::request(ColumnMng::Func func, const DB::Schema::Ptr& schema,
 
 ColumnMng::ColumnMng(const Params::ColumnMng& params, 
                      const ColumnMng::Cb_t& cb, const uint32_t timeout)
-                    : client::ConnQueue::ReqBase(false), cb(cb) {
-  cbp = CommBuf::make(params);    
+                    : Comm::client::ConnQueue::ReqBase(false), cb(cb) {
+  cbp = Comm::CommBuf::make(params);    
   cbp->header.set(COLUMN_MNG, timeout);
 }
 
@@ -68,8 +68,8 @@ bool ColumnMng::run() {
   return true;
 }
 
-void ColumnMng::handle(ConnHandlerPtr, const Event::Ptr& ev) {
-  if(ev->type == Event::Type::DISCONNECT)
+void ColumnMng::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) {
+  if(ev->type == Comm::Event::Type::DISCONNECT)
     return handle_no_conn();
 
   cb(req(), ev->response_code());

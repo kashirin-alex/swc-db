@@ -11,20 +11,20 @@
 
 namespace SWC { namespace Protocol { namespace Mngr { namespace Req {
 
-class MngrColumnGet : public client::ConnQueue::ReqBase {
+class MngrColumnGet : public Comm::client::ConnQueue::ReqBase {
   public:
   
   typedef std::function<void(int, const Params::ColumnGetRsp&)> Cb_t;
 
   MngrColumnGet(const Params::ColumnGetReq& params, const Cb_t& cb) 
-                : client::ConnQueue::ReqBase(true), cb(cb) {
-    cbp = CommBuf::make(params);
+                : Comm::client::ConnQueue::ReqBase(true), cb(cb) {
+    cbp = Comm::CommBuf::make(params);
     cbp->header.set(COLUMN_GET, 60000);
   }
   
   virtual ~MngrColumnGet() { }
   
-  void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
+  void handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) override {
     if(!is_rsp(ev))
       return;
 

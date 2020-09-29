@@ -15,7 +15,7 @@ Rmdir::Rmdir(uint32_t timeout, const std::string& name,
             : name(name), cb(cb) {
   SWC_LOGF(LOG_DEBUG, "rmdir path='%s'", name.c_str());
 
-  cbp = CommBuf::make(Params::RmdirReq(name));
+  cbp = Comm::CommBuf::make(Params::RmdirReq(name));
   cbp->header.set(Cmd::FUNCTION_RMDIR, timeout);
 }
 
@@ -25,7 +25,7 @@ std::promise<void> Rmdir::promise() {
   return r_promise;
 }
 
-void Rmdir::handle(ConnHandlerPtr, const Event::Ptr& ev) { 
+void Rmdir::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) { 
 
   const uint8_t *ptr;
   size_t remain;

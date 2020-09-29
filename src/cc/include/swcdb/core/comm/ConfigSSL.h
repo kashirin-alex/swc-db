@@ -13,7 +13,7 @@
 #include "swcdb/core/comm/IoContext.h"
 #include "swcdb/core/comm/ConnHandler.h"
 
-namespace SWC {
+namespace SWC { namespace Comm {
 
 
 class ConfigSSL final {
@@ -60,7 +60,7 @@ class ConfigSSL final {
 
 
 
-}
+}} //namespace SWC::Comm
 
 
 #ifdef SWC_IMPL_SOURCE

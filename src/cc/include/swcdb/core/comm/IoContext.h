@@ -13,6 +13,10 @@
 
 namespace SWC {
   
+//! The SWC-DB Communications C++ namespace 'SWC::Comm'
+namespace Comm {
+
+
 typedef std::shared_ptr<asio::signal_set>   IO_SignalsPtr;
 typedef std::shared_ptr<asio::io_context>   IOCtxPtr;
 
@@ -66,8 +70,12 @@ class IoContext final {
 
 };
 
+} //namespace Comm
+
+
 
 namespace Env {
+  
 class IoCtx final {
   public:
 
@@ -75,7 +83,7 @@ class IoCtx final {
 
   static bool ok();
   
-  static IoContext::Ptr io();
+  static Comm::IoContext::Ptr io();
 
   template <typename T_Handler>
   SWC_CAN_INLINE
@@ -90,10 +98,12 @@ class IoCtx final {
   ~IoCtx();
 
   private:
-  IoContext::Ptr                       m_io;
+  Comm::IoContext::Ptr                 m_io;
   inline static std::shared_ptr<IoCtx> m_env = nullptr;
 };
+
 } // namespace Env
+
 
 } // namespace SWC
 

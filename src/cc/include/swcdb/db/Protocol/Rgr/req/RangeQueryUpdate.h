@@ -16,22 +16,22 @@
 namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
 
   
-class RangeQueryUpdate: public client::ConnQueue::ReqBase {
+class RangeQueryUpdate: public Comm::client::ConnQueue::ReqBase {
   public:
   
-  typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&,
+  typedef std::function<void(const Comm::client::ConnQueue::ReqBase::Ptr&,
                              const Params::RangeQueryUpdateRsp&)> Cb_t;
 
   static void 
   request(const Params::RangeQueryUpdateReq& params, 
           const DynamicBuffer::Ptr& buffer,
-          const EndPoints& endpoints, const Cb_t& cb, 
+          const Comm::EndPoints& endpoints, const Cb_t& cb, 
           const uint32_t timeout = 10000);
 
 
   RangeQueryUpdate(const Params::RangeQueryUpdateReq& params,
                    const DynamicBuffer::Ptr& buffer, 
-                   const EndPoints& endpoints, const Cb_t& cb, 
+                   const Comm::EndPoints& endpoints, const Cb_t& cb, 
                    const uint32_t timeout);
 
   virtual ~RangeQueryUpdate();
@@ -40,12 +40,12 @@ class RangeQueryUpdate: public client::ConnQueue::ReqBase {
 
   bool run() override;
 
-  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
+  void handle(Comm::ConnHandlerPtr conn, const Comm::Event::Ptr& ev) override;
 
   private:
 
-  EndPoints     endpoints;
-  const Cb_t    cb;
+  Comm::EndPoints endpoints;
+  const Cb_t      cb;
 };
 
 

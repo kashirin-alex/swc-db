@@ -9,30 +9,30 @@
 
 namespace SWC { namespace client { namespace Rgr {
 
-class AppContext final : public SWC::AppContext {
+class AppContext final : public SWC::Comm::AppContext {
   public:
 
   AppContext() {}
   virtual ~AppContext(){}
 
-  void disconnected(const ConnHandlerPtr&) {};
+  void disconnected(const Comm::ConnHandlerPtr&) {};
 
-  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override {
+  void handle(Comm::ConnHandlerPtr conn, const Comm::Event::Ptr& ev) override {
     
     switch (ev->type) {
 
-      case Event::Type::DISCONNECT: {
+      case Comm::Event::Type::DISCONNECT: {
         disconnected(conn);
         return;
       }
 
-      case Event::Type::ERROR: 
-      case Event::Type::MESSAGE: {
+      case Comm::Event::Type::ERROR: 
+      case Comm::Event::Type::MESSAGE: {
         SWC_LOG_OUT(LOG_WARN,  ev->print(SWC_LOG_OSTREAM << "unhandled: "); );
         break;
       }
 
-      case Event::Type::ESTABLISHED:
+      case Comm::Event::Type::ESTABLISHED:
       default: {
         break;
       }

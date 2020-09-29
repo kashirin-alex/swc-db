@@ -23,7 +23,7 @@ Configurables apply_broker();
 class FileSystemBroker final : public FileSystem {
   public:
 
-  static EndPoints get_endpoints();
+  static Comm::EndPoints get_endpoints();
 
   FileSystemBroker();
 
@@ -148,11 +148,11 @@ class FileSystemBroker final : public FileSystem {
 
   private:
 
-  IoContext::Ptr          m_io;
-  client::Serialized::Ptr m_service = nullptr;
-  Types::Fs               m_type_underlying;
-  const EndPoints         m_endpoints;
-  std::atomic<bool>       m_run;
+  Comm::IoContext::Ptr          m_io;
+  Comm::client::Serialized::Ptr m_service = nullptr;
+  Types::Fs                     m_type_underlying;
+  const Comm::EndPoints         m_endpoints;
+  std::atomic<bool>             m_run;
 
   const Config::Property::V_GINT32::Ptr cfg_timeout;
   const Config::Property::V_GINT32::Ptr cfg_timeout_ratio;

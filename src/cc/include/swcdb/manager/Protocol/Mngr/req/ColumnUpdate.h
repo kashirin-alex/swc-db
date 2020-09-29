@@ -12,18 +12,18 @@
 
 namespace SWC { namespace Protocol { namespace Mngr { namespace Req {
 
-class ColumnUpdate : public client::ConnQueue::ReqBase {
+class ColumnUpdate : public Comm::client::ConnQueue::ReqBase {
   public:
 
   ColumnUpdate(Params::ColumnMng::Function function, DB::Schema::Ptr schema, 
-               int err) : client::ConnQueue::ReqBase(true) {
-    cbp = CommBuf::make(Params::ColumnUpdate(function, schema, err));
+               int err) : Comm::client::ConnQueue::ReqBase(true) {
+    cbp = Comm::CommBuf::make(Params::ColumnUpdate(function, schema, err));
     cbp->header.set(COLUMN_UPDATE, 60000);
   }
   
   virtual ~ColumnUpdate() { }
   
-  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override {
+  void handle(Comm::ConnHandlerPtr conn, const Comm::Event::Ptr& ev) override {
     if(!is_rsp(ev))
       return;
 

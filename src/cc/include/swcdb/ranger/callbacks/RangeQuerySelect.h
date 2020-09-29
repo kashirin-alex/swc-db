@@ -14,7 +14,8 @@ namespace SWC { namespace Ranger { namespace Callback {
 class RangeQuerySelect : public ReqScan {
   public:
 
-  RangeQuerySelect(const ConnHandlerPtr& conn, const Event::Ptr& ev, 
+  RangeQuerySelect(const Comm::ConnHandlerPtr& conn, 
+                   const Comm::Event::Ptr& ev, 
                    const DB::Specs::Interval& req_spec,
                    const RangePtr& range)
                   : ReqScan(conn, ev, req_spec), 
@@ -86,13 +87,13 @@ class RangeQuerySelect : public ReqScan {
     Protocol::Rgr::Params::RangeQuerySelectRsp params(
       err, err ? false : reached_limits(), offset);
 
-    CommBuf::Ptr cbp;
+    Comm::CommBuf::Ptr cbp;
     if(!cells.empty()) {
       RangerEnv::res().less_mem_usage(cells.fill());
       StaticBuffer sndbuf(cells);
-      cbp = CommBuf::make(params, sndbuf);
+      cbp = Comm::CommBuf::make(params, sndbuf);
     } else {
-      cbp = CommBuf::make(params);
+      cbp = Comm::CommBuf::make(params);
     }
     cbp->header.initialize_from_request_header(m_ev->header);
     

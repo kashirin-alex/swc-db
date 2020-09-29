@@ -163,7 +163,7 @@ class RspManagersStatus : public Serializable {
   void display(std::ostream& out, const std::string& offset = "") const;
 
   std::vector<Manager>  managers;
-  EndPoint              inchain;
+  Comm::EndPoint        inchain;
 
   private:
 

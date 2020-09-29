@@ -9,7 +9,7 @@
 #include "swcdb/core/comm/SerializedClient.h"
 #include "swcdb/core/comm/ClientConnQueue.h"
 
-namespace SWC { namespace client {
+namespace SWC { namespace Comm { namespace client {
 
 class ConnQueues;
 typedef std::shared_ptr<ConnQueues> ConnQueuesPtr;
@@ -72,7 +72,7 @@ class ConnQueues final :
 
 
 
-}}
+}}} //namespace SWC::Comm::client
 
 
 #ifdef SWC_IMPL_SOURCE

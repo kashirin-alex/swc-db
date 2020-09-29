@@ -11,7 +11,7 @@
 #include "swcdb/core/comm/IoContext.h"
 #include "swcdb/core/comm/ConnHandler.h"
 
-namespace SWC { namespace client {
+namespace SWC { namespace Comm { namespace client {
 
 
 class ConnQueue;
@@ -107,7 +107,7 @@ class ConnQueue :
 };
 
 
-}}
+}}} //namespace SWC::Comm::client
 
 
 

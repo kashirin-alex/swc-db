@@ -13,7 +13,7 @@
 namespace SWC { namespace FsBroker { namespace Handler {
 
 
-void append(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
+void append(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
 
   int err = Error::OK;
   size_t amount = 0;
@@ -46,7 +46,7 @@ void append(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     return;
 
   try {
-    auto cbp = CommBuf::make(
+    auto cbp = Comm::CommBuf::make(
       FS::Protocol::Params::AppendRsp(offset, amount), 4);
     cbp->header.initialize_from_request_header(ev->header);
     cbp->append_i32(err);

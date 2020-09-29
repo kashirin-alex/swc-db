@@ -280,7 +280,7 @@ bool Update::Locator::located_on_manager(
   return true;
 }
 
-void Update::Locator::locate_on_ranger(const EndPoints& endpoints) {
+void Update::Locator::locate_on_ranger(const Comm::EndPoints& endpoints) {
   updater->result->completion_incr();
 
   Protocol::Rgr::Params::RangeLocateReq params(cid, rid);
@@ -313,7 +313,7 @@ void Update::Locator::locate_on_ranger(const EndPoints& endpoints) {
 }
 
 bool Update::Locator::located_on_ranger(
-      const EndPoints& endpoints, 
+      const Comm::EndPoints& endpoints, 
       const ReqBase::Ptr& base, 
       const Protocol::Rgr::Params::RangeLocateRsp& rsp) {
   SWC_LOG_OUT(LOG_DEBUG, 
@@ -451,7 +451,7 @@ bool Update::Locator::proceed_on_ranger(
 }
 
 void Update::Locator::commit_data(
-      const EndPoints& endpoints,
+      const Comm::EndPoints& endpoints,
       const ReqBase::Ptr& base) {
   bool more = true;
   DynamicBuffer::Ptr cells_buff;

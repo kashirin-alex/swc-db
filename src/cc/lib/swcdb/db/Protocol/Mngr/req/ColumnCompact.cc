@@ -32,9 +32,9 @@ void ColumnCompact::request(const Params::ColumnCompactReq& params,
 ColumnCompact::ColumnCompact(const Params::ColumnCompactReq& params, 
                              const ColumnCompact::Cb_t& cb, 
                              const uint32_t timeout) 
-                            : client::ConnQueue::ReqBase(false), 
+                            : Comm::client::ConnQueue::ReqBase(false), 
                               cb(cb), cid(params.cid) {
-  cbp = CommBuf::make(params);
+  cbp = Comm::CommBuf::make(params);
   cbp->header.set(COLUMN_COMPACT, timeout);
 }
 
@@ -57,8 +57,8 @@ bool ColumnCompact::run() {
   return true;
 }
 
-void ColumnCompact::handle(ConnHandlerPtr, const Event::Ptr& ev) {
-  if(ev->type == Event::Type::DISCONNECT)
+void ColumnCompact::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) {
+  if(ev->type == Comm::Event::Type::DISCONNECT)
     return handle_no_conn();
 
   Params::ColumnCompactRsp rsp_params(ev->error);

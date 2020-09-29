@@ -20,7 +20,7 @@ Create::Create(FileSystem::Ptr fs, uint32_t timeout, SmartFd::Ptr& smartfd,
     smartfd->print(SWC_LOG_OSTREAM);
   );
   
-  cbp = CommBuf::make(
+  cbp = Comm::CommBuf::make(
     Params::CreateReq(smartfd->filepath(), smartfd->flags(), 
                       bufsz, replication, blksz)
   );
@@ -33,7 +33,7 @@ std::promise<void> Create::promise() {
   return r_promise;
 }
 
-void Create::handle(ConnHandlerPtr, const Event::Ptr& ev) { 
+void Create::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) { 
 
   const uint8_t *ptr;
   size_t remain;

@@ -34,8 +34,8 @@ RgrGet::Ptr RgrGet::make(const Params::RgrGetReq& params,
 
 RgrGet::RgrGet(const Params::RgrGetReq& params, const RgrGet::Cb_t& cb, 
                const uint32_t timeout) 
-              : client::ConnQueue::ReqBase(false), cb(cb), cid(params.cid) {
-  cbp = CommBuf::make(params);
+              : Comm::client::ConnQueue::ReqBase(false), cb(cb), cid(params.cid) {
+  cbp = Comm::CommBuf::make(params);
   cbp->header.set(RGR_GET, timeout);
 }
 
@@ -58,8 +58,8 @@ bool RgrGet::run() {
   return true;
 }
 
-void RgrGet::handle(ConnHandlerPtr, const Event::Ptr& ev) {
-  if(ev->type == Event::Type::DISCONNECT)
+void RgrGet::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) {
+  if(ev->type == Comm::Event::Type::DISCONNECT)
     return handle_no_conn();
 
   Params::RgrGetRsp rsp_params(ev->error);

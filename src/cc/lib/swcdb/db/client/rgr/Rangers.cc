@@ -60,7 +60,8 @@ void Rangers::remove(const cid_t cid, const rid_t rid) {
     erase(c);
 }
 
-bool Rangers::get(const cid_t cid, const rid_t rid, EndPoints& endpoints) {
+bool Rangers::get(const cid_t cid, const rid_t rid, 
+                  Comm::EndPoints& endpoints) {
   bool found = false;
 
   Mutex::scope lock(m_mutex);
@@ -77,7 +78,7 @@ bool Rangers::get(const cid_t cid, const rid_t rid, EndPoints& endpoints) {
 }
 
 void Rangers::set(const cid_t cid, const rid_t rid, 
-                  const EndPoints& endpoints) {
+                  const Comm::EndPoints& endpoints) {
   auto r_new = new RangeEndPoints(Time::now_ms(), endpoints);
 
   Mutex::scope lock(m_mutex);

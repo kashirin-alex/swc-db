@@ -15,10 +15,10 @@
 namespace SWC { namespace Protocol { namespace Mngr { namespace Req {
 
   
-class ColumnCompact: public client::ConnQueue::ReqBase {
+class ColumnCompact: public Comm::client::ConnQueue::ReqBase {
   public:
   
-  typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&, 
+  typedef std::function<void(const Comm::client::ConnQueue::ReqBase::Ptr&, 
                              const Params::ColumnCompactRsp&)> Cb_t;
  
   static void request(cid_t cid, const Cb_t& cb, 
@@ -36,7 +36,7 @@ class ColumnCompact: public client::ConnQueue::ReqBase {
 
   bool run() override;
 
-  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
+  void handle(Comm::ConnHandlerPtr conn, const Comm::Event::Ptr& ev) override;
 
   private:
   
@@ -44,7 +44,7 @@ class ColumnCompact: public client::ConnQueue::ReqBase {
 
   const Cb_t   cb;
   const cid_t  cid;
-  EndPoints    endpoints;
+  Comm::EndPoints    endpoints;
 };
 
 

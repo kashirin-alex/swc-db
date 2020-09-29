@@ -15,7 +15,7 @@ Readdir::Readdir(uint32_t timeout, const std::string& name,
                 : name(name), cb(cb) {
   SWC_LOGF(LOG_DEBUG, "readdir path='%s'", name.c_str());
 
-  cbp = CommBuf::make(Params::ReaddirReq(name));
+  cbp = Comm::CommBuf::make(Params::ReaddirReq(name));
   cbp->header.set(Cmd::FUNCTION_READDIR, timeout);
 }
 
@@ -25,7 +25,7 @@ std::promise<void> Readdir::promise() {
   return r_promise;
 }
 
-void Readdir::handle(ConnHandlerPtr, const Event::Ptr& ev) { 
+void Readdir::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) { 
 
   const uint8_t *ptr;
   size_t remain;

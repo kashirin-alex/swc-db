@@ -13,17 +13,17 @@ namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
 
 
 RangeUnload::RangeUnload(const Ranger::RangePtr& range, 
-                         const ResponseCallback::Ptr& cb,
+                         const Comm::ResponseCallback::Ptr& cb,
                          uint32_t timeout) 
-                        : client::ConnQueue::ReqBase(false), 
+                        : Comm::client::ConnQueue::ReqBase(false), 
                           cb(cb), range(range) {
-  cbp = CommBuf::make(Common::Params::ColRangeId(range->cfg->cid, range->rid));
+  cbp = Comm::CommBuf::make(Common::Params::ColRangeId(range->cfg->cid, range->rid));
   cbp->header.set(RANGE_UNLOAD, timeout);
 }
 
 RangeUnload::~RangeUnload() { }
 
-void RangeUnload::handle(ConnHandlerPtr, const Event::Ptr&) {
+void RangeUnload::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr&) {
   unloaded(valid() ? Error::OK : Error::RGR_DELETED_RANGE);
 }
 

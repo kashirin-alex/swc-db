@@ -18,7 +18,7 @@
 #include "swcdb/core/comm/ConfigSSL.h"
 
 
-namespace SWC { namespace client {
+namespace SWC { namespace Comm { namespace client {
 
 
 class ServerConnections final : 
@@ -124,7 +124,7 @@ class Serialized final :
 };
 
 
-}}
+}}} // namespace SWC::Comm::client
 
 
 #ifdef SWC_IMPL_SOURCE

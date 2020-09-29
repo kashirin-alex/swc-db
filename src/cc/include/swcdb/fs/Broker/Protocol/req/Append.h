@@ -22,7 +22,7 @@ class Append : public Base {
 
   std::promise<void> promise();
 
-  void handle(ConnHandlerPtr, const Event::Ptr& ev) override;
+  void handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) override;
 
   private:
   SmartFd::Ptr          smartfd;

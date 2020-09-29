@@ -6,7 +6,7 @@
 
 #include "swcdb/core/comm/PeriodicTimer.h"
 
-namespace SWC {
+namespace SWC { namespace Comm {
   
 PeriodicTimer::PeriodicTimer(const Config::Property::V_GINT32::Ptr cfg_ms, 
                              const Call_t& call, asio::io_context* io)
@@ -46,4 +46,4 @@ void PeriodicTimers::set(const Config::Property::V_GINT32::Ptr ms,
 }
 
 
-}
+}}

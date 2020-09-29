@@ -26,7 +26,7 @@ class Ranger : public Protocol::Common::Params::HostEndPoints {
             failures(0), interm_ranges(0), load_scale(0) {
   }
                        
-  Ranger(rgrid_t rgrid, const EndPoints& endpoints)
+  Ranger(rgrid_t rgrid, const Comm::EndPoints& endpoints)
         : Protocol::Common::Params::HostEndPoints(endpoints),
           rgrid(rgrid), state(State::NONE), 
           failures(0), interm_ranges(0), load_scale(0) {
@@ -71,7 +71,7 @@ class Ranger : public Protocol::Common::Params::HostEndPoints {
     m_queue = Env::Clients::get()->rgr->get(endpoints);
   }
 
-  void put(const client::ConnQueue::ReqBase::Ptr& req) {
+  void put(const Comm::client::ConnQueue::ReqBase::Ptr& req) {
     m_queue->put(req);
   }
 
@@ -88,7 +88,7 @@ class Ranger : public Protocol::Common::Params::HostEndPoints {
   // int32_t resource;
   
   private:
-  client::Host::Ptr m_queue = nullptr;
+  Comm::client::Host::Ptr m_queue = nullptr;
 
 };
 typedef std::vector<Ranger::Ptr>  RangerList;

@@ -135,10 +135,10 @@ class RgrData final {
   
   ~RgrData(){ }
 
-  int8_t     version;
-  std::atomic<rgrid_t>   rgrid;
-  int64_t   timestamp;
-  EndPoints endpoints;
+  int8_t                version;
+  std::atomic<rgrid_t>  rgrid;
+  int64_t               timestamp;
+  Comm::EndPoints       endpoints;
 
 };
 

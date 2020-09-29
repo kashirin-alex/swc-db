@@ -8,7 +8,7 @@
 #include "swcdb/core/comm/ConfigSSL.h"
 #include "swcdb/core/comm/Settings.h"
 
-namespace SWC { 
+namespace SWC { namespace Comm {
 
   
 ConfigSSL::ConfigSSL(bool is_client) {
@@ -177,4 +177,5 @@ void ConfigSSL::load_file(std::string filepath, std::string& to) const {
   }
 }
 
-}
+
+}}

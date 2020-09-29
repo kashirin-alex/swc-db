@@ -14,9 +14,9 @@ RangeUnload::RangeUnload(const Manager::Ranger::Ptr& rgr,
                          const Manager::Column::Ptr& col, 
                          const Manager::Range::Ptr& range,
                          uint32_t timeout) 
-                        : client::ConnQueue::ReqBase(false), 
+                        : Comm::client::ConnQueue::ReqBase(false), 
                           rgr(rgr), col(col), range(range) {
-  cbp = CommBuf::make(
+  cbp = Comm::CommBuf::make(
     Common::Params::ColRangeId(range->cfg->cid, range->rid));
   cbp->header.set(RANGE_UNLOAD, timeout);
 }
@@ -32,7 +32,7 @@ void RangeUnload::handle_no_conn() {
   unloaded(Error::COMM_NOT_CONNECTED);
 }
 
-void RangeUnload::handle(ConnHandlerPtr, const Event::Ptr& ev) {
+void RangeUnload::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) {
   if(!valid())
     return;
 

@@ -12,12 +12,12 @@
 namespace SWC { namespace Ranger { namespace Callback {
 
 
-class RangeLoaded : public ResponseCallback {
+class RangeLoaded : public Comm::ResponseCallback {
   public:
 
-  RangeLoaded(const ConnHandlerPtr& conn, const Event::Ptr& ev, 
+  RangeLoaded(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev, 
               const cid_t cid, const rid_t rid)
-            : ResponseCallback(conn, ev), cid(cid), rid(rid) {
+            : Comm::ResponseCallback(conn, ev), cid(cid), rid(rid) {
     RangerEnv::in_process(1);
   }
 
@@ -42,7 +42,7 @@ class RangeLoaded : public ResponseCallback {
       if((params.intval = range->type == Types::Range::MASTER))
         range->get_interval(params.interval);
         
-      auto cbp = CommBuf::make(params, 4);
+      auto cbp = Comm::CommBuf::make(params, 4);
       cbp->header.initialize_from_request_header(m_ev->header);
       cbp->append_i32(err);
       m_conn->send_response(cbp);

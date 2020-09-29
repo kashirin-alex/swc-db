@@ -9,13 +9,13 @@
 namespace SWC { namespace Manager {
 
 
-MngrRole::MngrRole(const EndPoints& endpoints)
+MngrRole::MngrRole(const Comm::EndPoints& endpoints)
     : m_local_endpoints(endpoints),
-      m_local_token(endpoints_hash(m_local_endpoints)),
+      m_local_token(Comm::endpoints_hash(m_local_endpoints)),
       m_checkin(false), m_local_active_role(Types::MngrRole::NONE),
       m_check_timer(asio::high_resolution_timer(*Env::IoCtx::io()->ptr())),
       m_mngr_inchain(
-        std::make_shared<client::ConnQueue>(Env::IoCtx::io()->shared())),
+        std::make_shared<Comm::client::ConnQueue>(Env::IoCtx::io()->shared())),
       cfg_conn_probes(
         Env::Config::settings()->get<Config::Property::V_GINT32>(
           "swc.mngr.role.connection.probes")),
@@ -66,7 +66,7 @@ void MngrRole::schedule_checkin(uint32_t t_ms) {
 
 bool MngrRole::is_active(cid_t cid) {
   auto host = active_mngr(cid);
-  return host && has_endpoint(host->endpoints, m_local_endpoints);
+  return host && Comm::has_endpoint(host->endpoints, m_local_endpoints);
 }
 
 bool MngrRole::is_active_role(uint8_t role) {
@@ -100,22 +100,22 @@ void MngrRole::get_states(MngrsStatus& states) {
   states.assign(m_states.begin(), m_states.end());
 }
 
-EndPoint MngrRole::get_inchain_endpoint() const {
+Comm::EndPoint MngrRole::get_inchain_endpoint() const {
   return m_mngr_inchain->get_endpoint_remote();
 }
 
-void MngrRole::req_mngr_inchain(const client::ConnQueue::ReqBase::Ptr& req) {
+void MngrRole::req_mngr_inchain(const Comm::client::ConnQueue::ReqBase::Ptr& req) {
   m_mngr_inchain->put(req);
 }
 
 void MngrRole::fill_states(const MngrsStatus& states, uint64_t token, 
-                           const ResponseCallback::Ptr& cb) {
+                           const Comm::ResponseCallback::Ptr& cb) {
   bool new_recs = false;
   bool turn_around = token == m_local_token;
 
   for(auto& host : states) {
 
-    bool local = has_endpoint(host->endpoints, m_local_endpoints);
+    bool local = Comm::has_endpoint(host->endpoints, m_local_endpoints);
 
     if(local && !token
        && (int)host->state < (int)Types::MngrState::STANDBY) {
@@ -183,8 +183,8 @@ void MngrRole::fill_states(const MngrsStatus& states, uint64_t token,
         Env::Clients::get()->mngrs_groups->get_endpoints(
         host->role, host->cid_begin, host->cid_end);
     for(auto& h : hosts_pr_group) {
-      if(has_endpoint(h, host->endpoints) 
-        || !has_endpoint(h, m_local_endpoints))
+      if(Comm::has_endpoint(h, host->endpoints) 
+        || !Comm::has_endpoint(h, m_local_endpoints))
         continue;
 
       MngrStatus::Ptr l_host = get_host(m_local_endpoints);
@@ -223,7 +223,7 @@ void MngrRole::fill_states(const MngrsStatus& states, uint64_t token,
   apply_role_changes();
 }
 
-void MngrRole::update_manager_addr(uint64_t hash, const EndPoint& mngr_host) {
+void MngrRole::update_manager_addr(uint64_t hash, const Comm::EndPoint& mngr_host) {
   bool major_updates;
   {
     std::scoped_lock lock(m_mutex);
@@ -240,14 +240,14 @@ void MngrRole::update_manager_addr(uint64_t hash, const EndPoint& mngr_host) {
     Env::Mngr::mngd_columns()->require_sync();
 }
   
-void MngrRole::disconnection(const EndPoint& endpoint_server, 
-                             const EndPoint& endpoint_client, 
+void MngrRole::disconnection(const Comm::EndPoint& endpoint_server, 
+                             const Comm::EndPoint& endpoint_client, 
                              bool srv) {
-  EndPoints endpoints;
+  Comm::EndPoints endpoints;
   {
     std::scoped_lock lock(m_mutex);
     
-    auto it = m_mngrs_client_srv.find(endpoint_hash(endpoint_server));
+    auto it = m_mngrs_client_srv.find(Comm::endpoint_hash(endpoint_server));
     if(it != m_mngrs_client_srv.end()) {
       endpoints.push_back(it->second);
       m_mngrs_client_srv.erase(it);
@@ -308,7 +308,7 @@ void MngrRole::print(std::ostream& out) {
  
 void MngrRole::_apply_cfg() {
   auto groups = Env::Clients::get()->mngrs_groups->get_groups();
-  std::vector<EndPoint> tmp;
+  std::vector<Comm::EndPoint> tmp;
   for(auto& g : groups) {
     // SWC_LOG(LOG_DEBUG,  g->to_string().c_str());
     uint32_t pr = 0;
@@ -317,7 +317,7 @@ void MngrRole::_apply_cfg() {
       ++pr;
       bool found = false;
       for(auto& host : m_states) {
-        if((found = has_endpoint(endpoints, host->endpoints))) {
+        if((found = Comm::has_endpoint(endpoints, host->endpoints))) {
           host->priority = pr;
           break;
         }
@@ -331,7 +331,7 @@ void MngrRole::_apply_cfg() {
     }
   }
   for(auto it=m_states.begin(); it<m_states.end(); ) {
-    if(has_endpoint((*it)->endpoints, tmp))
+    if(Comm::has_endpoint((*it)->endpoints, tmp))
       ++it;
     else
       m_states.erase(it);
@@ -404,7 +404,7 @@ void MngrRole::managers_checker(size_t next, size_t total, bool flw) {
     ++next;
   }
 
-  if(has_endpoint(host_chk->endpoints, m_local_endpoints) && total >= 1) {
+  if(Comm::has_endpoint(host_chk->endpoints, m_local_endpoints) && total >= 1) {
     if(flw) {
       m_checkin = false;
       return schedule_checkin(cfg_check_interval->get());
@@ -422,7 +422,7 @@ void MngrRole::managers_checker(size_t next, size_t total, bool flw) {
 
   Env::Clients::get()->mngr->service->get_connection(
     host_chk->endpoints, 
-    [this, host_chk, next, total, flw] (const ConnHandlerPtr& conn) {
+    [this, host_chk, next, total, flw] (const Comm::ConnHandlerPtr& conn) {
       manager_checker(host_chk, next, total, flw, conn);
     },
     std::chrono::milliseconds(cfg_conn_timeout->get()), 
@@ -432,7 +432,7 @@ void MngrRole::managers_checker(size_t next, size_t total, bool flw) {
 
 void MngrRole::manager_checker(MngrStatus::Ptr host, 
                                size_t next, size_t total, bool flw, 
-                               const ConnHandlerPtr& conn) {
+                               const Comm::ConnHandlerPtr& conn) {
   if(!conn || !conn->is_open()) {
     if(host->state == Types::MngrState::ACTIVE
        && ++host->failures <= cfg_conn_fb_failures->get()) {   
@@ -451,33 +451,33 @@ void MngrRole::manager_checker(MngrStatus::Ptr host,
   set_mngr_inchain(host->conn);
 }
   
-void MngrRole::update_state(const EndPoint& endpoint, 
+void MngrRole::update_state(const Comm::EndPoint& endpoint, 
                             Types::MngrState state) {
   std::scoped_lock lock(m_mutex);
 
   for(auto& host : m_states) {
-    if(has_endpoint(endpoint, host->endpoints)) {
+    if(Comm::has_endpoint(endpoint, host->endpoints)) {
       host->state = state;
     }
   }
 }
 
-void MngrRole::update_state(const EndPoints& endpoints, 
+void MngrRole::update_state(const Comm::EndPoints& endpoints, 
                             Types::MngrState state) {
   std::scoped_lock lock(m_mutex);
 
   for(auto& host : m_states) {
-    if(has_endpoint(endpoints, host->endpoints)) {
+    if(Comm::has_endpoint(endpoints, host->endpoints)) {
       host->state = state;
     }
   }
 }
   
-MngrStatus::Ptr MngrRole::get_host(const EndPoints& endpoints) {
+MngrStatus::Ptr MngrRole::get_host(const Comm::EndPoints& endpoints) {
   std::shared_lock lock(m_mutex);
 
   for(auto& host : m_states) {
-    if(has_endpoint(endpoints, host->endpoints))
+    if(Comm::has_endpoint(endpoints, host->endpoints))
       return host;
   }
   return nullptr;
@@ -518,7 +518,7 @@ void MngrRole::apply_role_changes() {
     role_old = m_local_active_role;
 
     for(auto& host : m_states) {
-      if(has_endpoint(host->endpoints, m_local_endpoints)) {
+      if(Comm::has_endpoint(host->endpoints, m_local_endpoints)) {
         host_local = host;
         break;
       }
@@ -572,7 +572,7 @@ void MngrRole::apply_role_changes() {
 
 }
   
-void MngrRole::set_mngr_inchain(const ConnHandlerPtr& mngr) {
+void MngrRole::set_mngr_inchain(const Comm::ConnHandlerPtr& mngr) {
   m_mngr_inchain->set(mngr);
 
   fill_states();

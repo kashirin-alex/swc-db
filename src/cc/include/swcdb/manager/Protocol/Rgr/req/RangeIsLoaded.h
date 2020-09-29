@@ -13,7 +13,7 @@
 namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
 
 
-class RangeIsLoaded : public client::ConnQueue::ReqBase {
+class RangeIsLoaded : public Comm::client::ConnQueue::ReqBase {
   public:
   
   const Manager::ColumnHealthCheck::RangerCheck::Ptr   checker;
@@ -21,9 +21,9 @@ class RangeIsLoaded : public client::ConnQueue::ReqBase {
 
   RangeIsLoaded(const Manager::ColumnHealthCheck::RangerCheck::Ptr& checker,
                 const Manager::Range::Ptr& range, uint32_t timeout=60000)
-                : client::ConnQueue::ReqBase(false), 
+                : Comm::client::ConnQueue::ReqBase(false), 
                   checker(checker), range(range) { 
-    cbp = CommBuf::make(Params::RangeIsLoaded(range->cfg->cid, range->rid));
+    cbp = Comm::CommBuf::make(Params::RangeIsLoaded(range->cfg->cid, range->rid));
     cbp->header.set(RANGE_IS_LOADED, timeout);
   }
   
@@ -38,7 +38,7 @@ class RangeIsLoaded : public client::ConnQueue::ReqBase {
     checker->handle(range, Error::COMM_CONNECT_ERROR);
   }
 
-  void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
+  void handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) override {
     checker->handle(range, ev->response_code());
   }
 

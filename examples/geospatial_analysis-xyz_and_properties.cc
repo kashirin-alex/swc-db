@@ -245,7 +245,7 @@ SWC::DB::Schema::Ptr create_column() {
   SWC::Protocol::Mngr::Req::ColumnMng::request(
     SWC::Protocol::Mngr::Req::ColumnMng::Func::CREATE,
     schema,
-    [await=&res] (const SWC::client::ConnQueue::ReqBase::Ptr&, int err) {
+    [await=&res] (const SWC::Comm::client::ConnQueue::ReqBase::Ptr&, int err) {
       await->set_value(err);
     },
     10000

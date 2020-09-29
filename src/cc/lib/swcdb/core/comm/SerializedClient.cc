@@ -12,7 +12,7 @@
 #include "swcdb/core/comm/SerializedClient.h"
 
 
-namespace SWC { namespace client {
+namespace SWC { namespace Comm { namespace client {
 
 
 SWC_SHOULD_INLINE
@@ -287,4 +287,4 @@ Serialized::~Serialized() {
 
 
 
-}}
+}}}

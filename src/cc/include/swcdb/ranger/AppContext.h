@@ -39,10 +39,10 @@ namespace SWC { namespace Ranger {
 
 
 
-class AppContext final : public SWC::AppContext { 
+class AppContext final : public SWC::Comm::AppContext { 
 
   // in-order of Protocol::Rgr::Command
-  static constexpr const AppHandler_t handlers[] = { 
+  static constexpr const Comm::AppHandler_t handlers[] = { 
     &Protocol::Common::Handler::not_implemented,
     &Protocol::Rgr::Handler::column_delete,
     &Protocol::Rgr::Handler::column_compact,
@@ -101,7 +101,7 @@ class AppContext final : public SWC::AppContext {
 
   AppContext() { }
 
-  void init(const EndPoints& endpoints) override {
+  void init(const Comm::EndPoints& endpoints) override {
     RangerEnv::rgr_data()->endpoints = endpoints;
     
     int sig = 0;
@@ -112,31 +112,31 @@ class AppContext final : public SWC::AppContext {
     id_mngr->request();
   }
 
-  void set_srv(server::SerializedServer::Ptr srv){
+  void set_srv(Comm::server::SerializedServer::Ptr srv){
     m_srv = srv;
   }
 
   virtual ~AppContext(){}
 
 
-  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override {
+  void handle(Comm::ConnHandlerPtr conn, const Comm::Event::Ptr& ev) override {
 
     // SWC_LOGF(LOG_DEBUG, "handle: %s", ev->to_str().c_str());
     
     switch (ev->type) {
 
-      case Event::Type::ESTABLISHED:
+      case Comm::Event::Type::ESTABLISHED:
         m_srv->connection_add(conn);
         break; 
         
-      case Event::Type::DISCONNECT:
+      case Comm::Event::Type::DISCONNECT:
         m_srv->connection_del(conn);
         break;
 
-      case Event::Type::ERROR:
+      case Comm::Event::Type::ERROR:
         break;
 
-      case Event::Type::MESSAGE: {
+      case Comm::Event::Type::MESSAGE: {
         uint8_t cmd = ev->header.command >= Protocol::Rgr::MAX_CMD
                         ? (uint8_t)Protocol::Rgr::NOT_IMPLEMENTED 
                         : ev->header.command;
@@ -210,11 +210,14 @@ class AppContext final : public SWC::AppContext {
 
   private:
   
-  Protocol::Mngr::Req::RgrMngId::Ptr id_mngr = nullptr;
-  server::SerializedServer::Ptr      m_srv = nullptr;
+  Protocol::Mngr::Req::RgrMngId::Ptr    id_mngr = nullptr;
+  Comm::server::SerializedServer::Ptr   m_srv = nullptr;
   
 };
 
+
 }}
+
+
 
 #endif // swc_ranger_AppContext_h

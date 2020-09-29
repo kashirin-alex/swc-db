@@ -18,7 +18,7 @@ class Rgr : public Interface {
 
   Rgr();
 
-  bool read_endpoint(std::string& host_or_ips, EndPoints& endpoints);
+  bool read_endpoint(std::string& host_or_ips, Comm::EndPoints& endpoints);
 
   bool report_resources(std::string& cmd);
 

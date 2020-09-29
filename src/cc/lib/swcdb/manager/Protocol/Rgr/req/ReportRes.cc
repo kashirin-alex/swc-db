@@ -11,8 +11,8 @@ namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
 
 
 ReportRes::ReportRes(const Manager::Ranger::Ptr& rgr)
-                     : client::ConnQueue::ReqBase(false), rgr(rgr) {
-  cbp = CommBuf::make(1);
+                     : Comm::client::ConnQueue::ReqBase(false), rgr(rgr) {
+  cbp = Comm::CommBuf::make(1);
   cbp->append_i8((uint8_t)Params::Report::Function::RESOURCES);
   cbp->header.set(REPORT, 60000);
 }
@@ -27,8 +27,8 @@ void ReportRes::handle_no_conn() {
   );
 }
 
-void ReportRes::handle(ConnHandlerPtr, const Event::Ptr& ev) {
-  if(ev->type == Event::Type::DISCONNECT)
+void ReportRes::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) {
+  if(ev->type == Comm::Event::Type::DISCONNECT)
     return handle_no_conn();
   
   Params::Report::RspRes rsp_params;

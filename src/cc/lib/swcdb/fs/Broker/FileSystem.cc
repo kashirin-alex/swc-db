@@ -62,7 +62,7 @@ Configurables apply_broker() {
 
 
 
-EndPoints FileSystemBroker::get_endpoints() {
+Comm::EndPoints FileSystemBroker::get_endpoints() {
   std::string host = Env::Config::settings()->get_str(
     "swc.fs.broker.host", "");
   if(host.empty()) {
@@ -71,9 +71,9 @@ EndPoints FileSystemBroker::get_endpoints() {
     host.append(hostname);
   }
 
-  std::vector<Network> nets;
+  std::vector<Comm::Network> nets;
   asio::error_code ec;
-  Resolver::get_networks(
+  Comm::Resolver::get_networks(
     Env::Config::settings()->get_strs("swc.comm.network.priority"), nets, ec);
   if(ec)
     SWC_THROWF(Error::CONFIG_BAD_VALUE,
@@ -81,7 +81,7 @@ EndPoints FileSystemBroker::get_endpoints() {
               ec.message().c_str());
 
   Config::Strings addr;
-  return Resolver::get_endpoints(
+  return Comm::Resolver::get_endpoints(
     Env::Config::settings()->get_i16("swc.fs.broker.port"),
     addr, host, nets, true
   );
@@ -91,9 +91,9 @@ EndPoints FileSystemBroker::get_endpoints() {
 
 FileSystemBroker::FileSystemBroker()
   : FileSystem(apply_broker()),
-    m_io(std::make_shared<IoContext>("FsBroker",
+    m_io(std::make_shared<Comm::IoContext>("FsBroker",
       Env::Config::settings()->get_i32("swc.fs.broker.handlers"))),
-    m_service(std::make_shared<client::Serialized>(
+    m_service(std::make_shared<Comm::client::Serialized>(
       "FS-BROKER", m_io->shared(), std::make_shared<AppContext>())),
     m_type_underlying(fs_type(
       Env::Config::settings()->get_str("swc.fs.broker.underlying"))),
@@ -130,10 +130,11 @@ std::string FileSystemBroker::to_string() {
 
 
 bool FileSystemBroker::send_request(Protocol::Req::Base::Ptr hdlr) {
-  ConnHandlerPtr conn = nullptr;
+  Comm::ConnHandlerPtr conn = nullptr;
   do {
     if(!m_run) {
-      auto ev = Event::make(Event::Type::ERROR, Error::SERVER_SHUTTING_DOWN);
+      auto ev = Comm::Event::make(
+        Comm::Event::Type::ERROR, Error::SERVER_SHUTTING_DOWN);
       hdlr->handle(conn, ev);
       return true;
     }

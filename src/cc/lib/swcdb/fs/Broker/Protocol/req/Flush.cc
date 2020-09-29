@@ -18,7 +18,7 @@ Flush::Flush(uint32_t timeout, SmartFd::Ptr& smartfd,
     smartfd->print(SWC_LOG_OSTREAM);
   );
 
-  cbp = CommBuf::make(Params::FlushReq(smartfd->fd()));
+  cbp = Comm::CommBuf::make(Params::FlushReq(smartfd->fd()));
   cbp->header.set(Cmd::FUNCTION_FLUSH, timeout);
 }
 
@@ -28,7 +28,7 @@ std::promise<void> Flush::promise() {
   return r_promise;
 }
 
-void Flush::handle(ConnHandlerPtr, const Event::Ptr& ev) { 
+void Flush::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) { 
 
   const uint8_t *ptr;
   size_t remain;

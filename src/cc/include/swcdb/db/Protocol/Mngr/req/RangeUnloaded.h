@@ -17,10 +17,10 @@
 namespace SWC { namespace Protocol { namespace Mngr { namespace Req {
 
   
-class RangeUnloaded: public client::ConnQueue::ReqBase {
+class RangeUnloaded: public Comm::client::ConnQueue::ReqBase {
   public:
   
-  typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&, 
+  typedef std::function<void(const Comm::client::ConnQueue::ReqBase::Ptr&, 
                              const Params::RangeUnloadedRsp&)> Cb_t;
  
   static void request(cid_t cid, rid_t rid, 
@@ -37,9 +37,9 @@ class RangeUnloaded: public client::ConnQueue::ReqBase {
 
   RangeUnloaded(const Params::RangeUnloadedReq& params, const Cb_t& cb, 
                 const uint32_t timeout)
-                : client::ConnQueue::ReqBase(false),
+                : Comm::client::ConnQueue::ReqBase(false),
                   cb(cb), cid(params.cid) {
-    cbp = CommBuf::make(params);
+    cbp = Comm::CommBuf::make(params);
     cbp->header.set(RANGE_UNLOADED, timeout);
   }
 
@@ -62,8 +62,8 @@ class RangeUnloaded: public client::ConnQueue::ReqBase {
     return true;
   }
 
-  void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
-    if(ev->type == Event::Type::DISCONNECT)
+  void handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) override {
+    if(ev->type == Comm::Event::Type::DISCONNECT)
       return handle_no_conn();
 
     Params::RangeUnloadedRsp rsp_params(ev->error);
@@ -92,7 +92,7 @@ class RangeUnloaded: public client::ConnQueue::ReqBase {
 
   const Cb_t      cb;
   const cid_t     cid;
-  EndPoints       endpoints;
+  Comm::EndPoints endpoints;
 };
 
 

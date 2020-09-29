@@ -13,7 +13,7 @@
 namespace SWC { namespace Protocol { namespace Mngr { namespace Handler {
 
 
-void mngr_active(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
+void mngr_active(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
   Manager::MngrStatus::Ptr h = nullptr;
   try {
     const uint8_t *ptr = ev->data.base;
@@ -31,8 +31,8 @@ void mngr_active(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
   }
 
   try {
-    auto cbp = CommBuf::make(
-      Params::MngrActiveRsp(h ? h->endpoints : EndPoints()) );
+    auto cbp = Comm::CommBuf::make(
+      Params::MngrActiveRsp(h ? h->endpoints : Comm::EndPoints()) );
     cbp->header.initialize_from_request_header(ev->header);
     conn->send_response(cbp);
 

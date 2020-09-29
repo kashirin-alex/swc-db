@@ -10,7 +10,7 @@
 #include "swcdb/core/comm/Event.h"
 #include "swcdb/core/comm/ConnHandler.h"
 
-namespace SWC {
+namespace SWC { namespace Comm {
 
 typedef void (*AppHandler_t)(const ConnHandlerPtr& conn,
                              const Event::Ptr& ev);
@@ -31,6 +31,9 @@ class AppHandler {
   Event::Ptr      m_ev;
 };
 
-} // namespace SWC
+
+}} // namespace SWC::Comm
+
+
 
 #endif // swc_core_comm_AppHandler_h

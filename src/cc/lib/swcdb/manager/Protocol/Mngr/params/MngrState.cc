@@ -13,7 +13,7 @@ namespace SWC { namespace Protocol { namespace Mngr { namespace Params {
 MngrState::MngrState() {}
 
 MngrState::MngrState(Manager::MngrsStatus states, 
-                     uint64_t token, const EndPoint& mngr_host) 
+                     uint64_t token, const Comm::EndPoint& mngr_host) 
                     : states(states), token(token), mngr_host(mngr_host) {
 }
 

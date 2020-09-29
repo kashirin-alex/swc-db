@@ -17,7 +17,7 @@
 #include "swcdb/core/comm/ConfigSSL.h"
 
 
-namespace SWC { namespace server {
+namespace SWC { namespace Comm { namespace server {
 
 
 class Acceptor : protected asio::ip::tcp::acceptor {
@@ -97,7 +97,8 @@ class SerializedServer final {
   ConfigSSL*                  m_ssl_cfg;
 };
 
-}}
+
+}}} //namespace SWC::Comm::server
 
 
 

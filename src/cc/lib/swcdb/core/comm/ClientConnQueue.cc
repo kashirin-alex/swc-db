@@ -5,7 +5,7 @@
 
 #include "swcdb/core/comm/ClientConnQueue.h"
 
-namespace SWC { namespace client {
+namespace SWC { namespace Comm { namespace client {
 
 
 
@@ -273,4 +273,4 @@ void ConnQueue::schedule_close() {
   );
 }
 
-}}
+}}}

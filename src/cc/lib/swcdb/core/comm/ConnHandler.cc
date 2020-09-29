@@ -9,7 +9,7 @@
 
 
 
-namespace SWC { 
+namespace SWC { namespace Comm {
 
 
 SWC_SHOULD_INLINE
@@ -659,4 +659,5 @@ void ConnHandlerSSL::read(uint8_t** bufp, size_t* remainp,
 }
  
 
-}
+
+}}

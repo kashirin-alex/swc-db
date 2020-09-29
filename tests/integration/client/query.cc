@@ -111,7 +111,7 @@ class Test {
 
     Protocol::Mngr::Req::ColumnMng::request(
       Protocol::Mngr::Req::ColumnMng::Func::CREATE,
-      schema, [this] (client::ConnQueue::ReqBase::Ptr req_ptr, int err) {
+      schema, [this] (Comm::client::ConnQueue::ReqBase::Ptr req_ptr, int err) {
         if(err && err != Error::COLUMN_SCHEMA_NAME_EXISTS) {
           SWC_PRINT << "ColumnMng::CREATE err=" 
                     << err << "(" << Error::get_text(err) << ")"
@@ -130,7 +130,7 @@ class Test {
 
     Protocol::Mngr::Req::ColumnMng::request(
       Protocol::Mngr::Req::ColumnMng::Func::DELETE,
-      schema, [this, cb] (client::ConnQueue::ReqBase::Ptr req_ptr, int err) {
+      schema, [this, cb] (Comm::client::ConnQueue::ReqBase::Ptr req_ptr, int err) {
         if(err && err != Error::COLUMN_SCHEMA_NAME_NOT_EXISTS) {
           SWC_PRINT << "ColumnMng::DELETE err=" 
                     << err << "(" << Error::get_text(err) << ")"

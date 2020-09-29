@@ -431,7 +431,7 @@ void make_work_load(DB::Schema::Ptr& schema) {
       Protocol::Mngr::Req::ColumnMng::Func::DELETE,
       schema,
       [await=&res]
-      (const client::ConnQueue::ReqBase::Ptr&, int err) {
+      (const Comm::client::ConnQueue::ReqBase::Ptr&, int err) {
         await->set_value(err);
       },
       10000
@@ -477,7 +477,7 @@ void load_generator() {
     Protocol::Mngr::Req::ColumnMng::Func::CREATE,
     schema,
     [await=&res]
-    (const client::ConnQueue::ReqBase::Ptr&, int err) {
+    (const Comm::client::ConnQueue::ReqBase::Ptr&, int err) {
       await->set_value(err);
     },
     10000

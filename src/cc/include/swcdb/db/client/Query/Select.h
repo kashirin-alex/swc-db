@@ -210,14 +210,14 @@ class Select final : public std::enable_shared_from_this<Select> {
     bool proceed_on_ranger(const ReqBase::Ptr& base, 
                            const Protocol::Mngr::Params::RgrGetRsp& rsp);
 
-    void locate_on_ranger(const EndPoints& endpoints, bool next_range=false);
+    void locate_on_ranger(const Comm::EndPoints& endpoints, bool next_range=false);
 
-    bool located_on_ranger(const EndPoints& endpoints, 
+    bool located_on_ranger(const Comm::EndPoints& endpoints, 
                            const ReqBase::Ptr& base, 
                            const Protocol::Rgr::Params::RangeLocateRsp& rsp, 
                            bool next_range=false);
 
-    void select(const EndPoints& endpoints, rid_t rid, 
+    void select(const Comm::EndPoints& endpoints, rid_t rid, 
                 const ReqBase::Ptr& base);
 
   };

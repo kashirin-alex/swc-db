@@ -40,10 +40,10 @@
 namespace SWC { namespace Manager {
 
 
-class AppContext final : public SWC::AppContext {
+class AppContext final : public SWC::Comm::AppContext {
    
   // in-order of Protocol::Mngr::Command
-  static constexpr const AppHandler_t handlers[] = { 
+  static constexpr const Comm::AppHandler_t handlers[] = { 
     &Protocol::Common::Handler::not_implemented,
     &Protocol::Mngr::Handler::mngr_state,
     &Protocol::Mngr::Handler::mngr_active,
@@ -96,7 +96,7 @@ class AppContext final : public SWC::AppContext {
     }
   }
   
-  void init(const EndPoints& endpoints) override {
+  void init(const Comm::EndPoints& endpoints) override {
     Env::Mngr::init(endpoints);
     
     int sig = 0;
@@ -104,33 +104,33 @@ class AppContext final : public SWC::AppContext {
     shutting_down(std::error_code(), sig);
   }
 
-  void set_srv(server::SerializedServer::Ptr srv){
+  void set_srv(Comm::server::SerializedServer::Ptr srv){
     m_srv = srv;
   }
 
   virtual ~AppContext(){}
 
 
-  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override {
+  void handle(Comm::ConnHandlerPtr conn, const Comm::Event::Ptr& ev) override {
     // SWC_LOGF(LOG_DEBUG, "handle: %s", ev->to_str().c_str());
 
     switch (ev->type) {
 
-      case Event::Type::ESTABLISHED:
+      case Comm::Event::Type::ESTABLISHED:
         m_srv->connection_add(conn);
         return; 
         
-      case Event::Type::DISCONNECT:
+      case Comm::Event::Type::DISCONNECT:
         m_srv->connection_del(conn);
         Env::Mngr::role()->disconnection(
           conn->endpoint_remote, conn->endpoint_local, true);
         return;
 
-      case Event::Type::ERROR:
+      case Comm::Event::Type::ERROR:
         //rangers->decommision(event->addr);
         break;
 
-      case Event::Type::MESSAGE: {
+      case Comm::Event::Type::MESSAGE: {
         uint8_t cmd = ev->header.command >= Protocol::Mngr::MAX_CMD
                         ? (uint8_t)Protocol::Mngr::NOT_IMPLEMENTED 
                         : ev->header.command;
@@ -188,7 +188,7 @@ class AppContext final : public SWC::AppContext {
   }
 
   private:
-  server::SerializedServer::Ptr m_srv = nullptr;
+  Comm::server::SerializedServer::Ptr m_srv = nullptr;
   //ColmNameToIDMap columns;       // column-name > CID
 
 

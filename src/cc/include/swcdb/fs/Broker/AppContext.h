@@ -10,16 +10,16 @@
 
 namespace SWC{ namespace FS {
 
-class AppContext final : public SWC::AppContext {
+class AppContext final : public SWC::Comm::AppContext {
   public:
 
   AppContext(){}
 
   virtual ~AppContext(){}
     
-  void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
+  void handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) override {
     
-    if(ev->type == Event::Type::DISCONNECT)
+    if(ev->type == Comm::Event::Type::DISCONNECT)
       return;
       
     const uint8_t *ptr;

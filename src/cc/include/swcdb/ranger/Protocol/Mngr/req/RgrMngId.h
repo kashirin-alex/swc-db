@@ -13,13 +13,13 @@
 namespace SWC { namespace Protocol { namespace Mngr { namespace Req {
 
 
-class RgrMngId: public client::ConnQueue::ReqBase {
+class RgrMngId: public Comm::client::ConnQueue::ReqBase {
 
   public:
   typedef std::shared_ptr<RgrMngId> Ptr;
 
   RgrMngId(asio::io_context* io, const std::function<void()>& cb = 0) 
-          : client::ConnQueue::ReqBase(false, nullptr),
+          : Comm::client::ConnQueue::ReqBase(false, nullptr),
             cfg_check_interval(
               Env::Config::settings()->get<Config::Property::V_GINT32>(
                 "swc.rgr.id.validation.interval")), 
@@ -32,7 +32,7 @@ class RgrMngId: public client::ConnQueue::ReqBase {
 
   void create(const Params::RgrMngId& params) {
     std::lock_guard lock(m_mutex);
-    cbp = CommBuf::make(params);
+    cbp = Comm::CommBuf::make(params);
     cbp->header.set(RGR_MNG_ID, 60000);
   }
 
@@ -82,7 +82,7 @@ class RgrMngId: public client::ConnQueue::ReqBase {
     return true;
   }
 
-  void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
+  void handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) override {
 
     if(ev->error) {
       set(1000);
@@ -220,7 +220,7 @@ class RgrMngId: public client::ConnQueue::ReqBase {
 
   const Config::Property::V_GINT32::Ptr cfg_check_interval;
   const std::function<void()>   cb_shutdown;
-  EndPoints                     endpoints;
+  Comm::EndPoints               endpoints;
   
   std::mutex                    m_mutex;
   asio::high_resolution_timer   m_timer;

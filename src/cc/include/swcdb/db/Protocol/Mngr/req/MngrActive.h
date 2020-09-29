@@ -16,7 +16,7 @@
 namespace SWC { namespace Protocol { namespace Mngr { namespace Req {
 
 
-class MngrActive : public client::ConnQueue::ReqBase {
+class MngrActive : public Comm::client::ConnQueue::ReqBase {
   public:
   typedef std::shared_ptr<MngrActive> Ptr;
 
@@ -40,7 +40,7 @@ class MngrActive : public client::ConnQueue::ReqBase {
 
   bool run() override;
 
-  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
+  void handle(Comm::ConnHandlerPtr conn, const Comm::Event::Ptr& ev) override;
 
   private:
   DispatchHandler::Ptr            hdlr;

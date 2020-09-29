@@ -14,15 +14,15 @@ namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
   
 
 ColumnCompact::ColumnCompact(cid_t cid) 
-              : client::ConnQueue::ReqBase(false) {
-  cbp = CommBuf::make(Params::ColumnCompactReq(cid));
+              : Comm::client::ConnQueue::ReqBase(false) {
+  cbp = Comm::CommBuf::make(Params::ColumnCompactReq(cid));
   cbp->header.set(COLUMN_COMPACT, 60000);
 }
 
 ColumnCompact::~ColumnCompact() { }
 
-void ColumnCompact::handle(ConnHandlerPtr, const Event::Ptr& ev) {
-  if(ev->type == Event::Type::DISCONNECT)
+void ColumnCompact::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) {
+  if(ev->type == Comm::Event::Type::DISCONNECT)
     return handle_no_conn();
 
   Params::ColumnCompactRsp rsp_params(ev->error);

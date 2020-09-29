@@ -13,7 +13,7 @@
 namespace SWC { namespace FsBroker { namespace Handler {
 
 
-void seek(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
+void seek(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
 
   int err = Error::OK;
   size_t offset = 0;
@@ -44,7 +44,7 @@ void seek(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     return;
 
   try {
-    auto cbp = CommBuf::make(FS::Protocol::Params::SeekRsp(offset), 4);
+    auto cbp = Comm::CommBuf::make(FS::Protocol::Params::SeekRsp(offset), 4);
     cbp->header.initialize_from_request_header(ev->header);
     cbp->append_i32(err);
     conn->send_response(cbp);

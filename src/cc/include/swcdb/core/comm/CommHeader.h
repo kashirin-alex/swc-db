@@ -8,7 +8,7 @@
 
 #include "swcdb/core/Compat.h"
 
-namespace SWC {
+namespace SWC { namespace Comm {
 
 class CommHeader final {
 
@@ -64,8 +64,10 @@ class CommHeader final {
   uint32_t checksum;        //!< Header checksum (excl. it self)
      
 };
-  
-}
+
+
+}} //namespace SWC::Comm
+
 
 
 #ifdef SWC_IMPL_SOURCE

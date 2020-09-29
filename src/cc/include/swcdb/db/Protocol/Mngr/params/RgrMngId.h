@@ -32,7 +32,7 @@ class RgrMngId  : public Common::Params::HostEndPoints {
     RgrMngId(rgrid_t rgrid, Flag flag) 
             : rgrid(rgrid), flag(flag) {
     }
-    RgrMngId(rgrid_t rgrid, Flag flag, const EndPoints& endpoints) 
+    RgrMngId(rgrid_t rgrid, Flag flag, const Comm::EndPoints& endpoints) 
             : Common::Params::HostEndPoints(endpoints), 
               rgrid(rgrid), flag(flag) {     
     }

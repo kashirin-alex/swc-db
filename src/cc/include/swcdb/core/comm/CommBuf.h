@@ -15,7 +15,7 @@
 #include <string>
 #include <vector>
 
-namespace SWC {
+namespace SWC { namespace Comm {
 
 
 class CommBuf final {
@@ -71,7 +71,7 @@ class CommBuf final {
 };
 
 
-} // namespace SWC
+}} // namespace SWC::Comm
 
 
 

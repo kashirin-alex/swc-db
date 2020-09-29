@@ -18,7 +18,7 @@ Sync::Sync(uint32_t timeout, SmartFd::Ptr& smartfd,
     smartfd->print(SWC_LOG_OSTREAM);
   );
 
-  cbp = CommBuf::make(Params::SyncReq(smartfd->fd()));
+  cbp = Comm::CommBuf::make(Params::SyncReq(smartfd->fd()));
   cbp->header.set(Cmd::FUNCTION_SYNC, timeout);
 }
 
@@ -28,7 +28,7 @@ std::promise<void> Sync::promise() {
   return r_promise;
 }
 
-void Sync::handle(ConnHandlerPtr, const Event::Ptr& ev) { 
+void Sync::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) { 
 
   const uint8_t *ptr;
   size_t remain;

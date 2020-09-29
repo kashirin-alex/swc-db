@@ -27,10 +27,10 @@ class MngdColumns final {
   public:
 
   struct ColumnReq final : public Protocol::Mngr::Params::ColumnMng,
-                           public ResponseCallback {
+                           public Comm::ResponseCallback {
     typedef std::shared_ptr<ColumnReq> Ptr;
-    ColumnReq(const ConnHandlerPtr& conn, const Event::Ptr& ev)
-              : ResponseCallback(conn, ev) { }
+    ColumnReq(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev)
+              : Comm::ResponseCallback(conn, ev) { }
   };
 
   MngdColumns();

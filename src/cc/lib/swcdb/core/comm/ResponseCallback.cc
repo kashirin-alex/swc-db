@@ -7,7 +7,7 @@
 #include "swcdb/core/comm/ResponseCallback.h"
 
 
-namespace SWC {
+namespace SWC { namespace Comm {
 
 
 void ResponseCallback::run() { }
@@ -27,4 +27,4 @@ void ResponseCallback::send_error(int code, std::string msg) {
 }
 
 
-}
+}}

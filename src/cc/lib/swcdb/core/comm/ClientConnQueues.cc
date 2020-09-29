@@ -5,7 +5,7 @@
 
 #include "swcdb/core/comm/ClientConnQueues.h"
 
-namespace SWC { namespace client {
+namespace SWC { namespace Comm { namespace client {
 
 Host::Host(const ConnQueuesPtr queues, const EndPoints& endpoints, 
            const Config::Property::V_GINT32::Ptr keepalive_ms, 
@@ -88,4 +88,5 @@ void ConnQueues::stop() {
   service->stop();
 }
 
-}}
+
+}}}

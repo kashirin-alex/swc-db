@@ -42,19 +42,19 @@ class Rangers final {
 
   Ranger::Ptr rgr_get(const rgrid_t rgrid);
 
-  void rgr_get(const rgrid_t rgrid, EndPoints& endpoints);
+  void rgr_get(const rgrid_t rgrid, Comm::EndPoints& endpoints);
 
-  void rgr_get(const Ranger::Ptr& rgr, EndPoints& endpoints);
+  void rgr_get(const Ranger::Ptr& rgr, Comm::EndPoints& endpoints);
 
   void rgr_list(const rgrid_t rgrid, RangerList& rangers);
 
-  rgrid_t rgr_set_id(const EndPoints& endpoints, rgrid_t opt_rgrid=0);
+  rgrid_t rgr_set_id(const Comm::EndPoints& endpoints, rgrid_t opt_rgrid=0);
 
-  bool rgr_ack_id(rgrid_t rgrid, const EndPoints& endpoints);
+  bool rgr_ack_id(rgrid_t rgrid, const Comm::EndPoints& endpoints);
 
-  rgrid_t rgr_had_id(rgrid_t rgrid, const EndPoints& endpoints);
+  rgrid_t rgr_had_id(rgrid_t rgrid, const Comm::EndPoints& endpoints);
 
-  void rgr_shutdown(rgrid_t rgrid, const EndPoints& endpoints);
+  void rgr_shutdown(rgrid_t rgrid, const Comm::EndPoints& endpoints);
 
   
   void sync();
@@ -89,11 +89,11 @@ class Rangers final {
 
   void assign_ranges_run();
 
-  void next_rgr(const EndPoints& last_rgr, Ranger::Ptr& rs_set);
+  void next_rgr(const Comm::EndPoints& last_rgr, Ranger::Ptr& rs_set);
 
   void health_check_columns();
 
-  Ranger::Ptr rgr_set(const EndPoints& endpoints, rgrid_t opt_rgrid=0);
+  Ranger::Ptr rgr_set(const Comm::EndPoints& endpoints, rgrid_t opt_rgrid=0);
 
   void changes(const RangerList& hosts, bool sync_all=false);
 

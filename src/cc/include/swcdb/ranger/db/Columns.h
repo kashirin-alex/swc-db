@@ -47,7 +47,7 @@ class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
  
   void load_range(int &err, const cid_t cid, const rid_t rid, 
                   const DB::Schema& schema, 
-                  const ResponseCallback::Ptr& cb);
+                  const Comm::ResponseCallback::Ptr& cb);
 
   void unload_range(int &err, const cid_t cid, const rid_t rid,
                     const Callback::RangeUnloaded_t& cb);

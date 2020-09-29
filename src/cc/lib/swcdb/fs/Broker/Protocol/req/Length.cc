@@ -15,7 +15,7 @@ Length::Length(uint32_t timeout, const std::string& name,
               : length(0), name(name), cb(cb) {
   SWC_LOGF(LOG_DEBUG, "length path='%s'", name.c_str());
 
-  cbp = CommBuf::make(Params::LengthReq(name));
+  cbp = Comm::CommBuf::make(Params::LengthReq(name));
   cbp->header.set(Cmd::FUNCTION_LENGTH, timeout);
 }
 
@@ -25,7 +25,7 @@ std::promise<void> Length::promise() {
   return r_promise;
 }
 
-void Length::handle(ConnHandlerPtr, const Event::Ptr& ev) { 
+void Length::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) { 
 
   const uint8_t *ptr;
   size_t remain;

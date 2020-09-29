@@ -529,7 +529,7 @@ class AppHandler final : virtual public BrokerIf {
     std::promise<int> res;
     Protocol::Mngr::Req::ColumnMng::request(
       func, schema,
-      [await=&res] (const client::ConnQueue::ReqBase::Ptr&, int error) {
+      [await=&res] (const Comm::client::ConnQueue::ReqBase::Ptr&, int error) {
         await->set_value(error);
       },
       300000
@@ -551,7 +551,7 @@ class AppHandler final : virtual public BrokerIf {
       std::promise<int> res;
       Protocol::Mngr::Req::ColumnList::request(
         [&dbschemas, await=&res]
-        (const client::ConnQueue::ReqBase::Ptr&, int error, 
+        (const Comm::client::ConnQueue::ReqBase::Ptr&, int error, 
          const Protocol::Mngr::Params::ColumnListRsp& rsp) {
           if(!error)
             dbschemas = rsp.schemas;
@@ -578,7 +578,7 @@ class AppHandler final : virtual public BrokerIf {
       std::promise<int> res;
       Protocol::Mngr::Req::ColumnList::request(
         [&dbschemas, await=&res]
-        (const client::ConnQueue::ReqBase::Ptr&, int error, 
+        (const Comm::client::ConnQueue::ReqBase::Ptr&, int error, 
          const Protocol::Mngr::Params::ColumnListRsp& rsp) {
           if(!error)
             dbschemas = rsp.schemas;
@@ -596,7 +596,7 @@ class AppHandler final : virtual public BrokerIf {
       Protocol::Mngr::Req::ColumnCompact::request(
         schema->cid,
         [&mutex, &_return, await=&res, cid=schema->cid, sz=dbschemas.size()]
-        (const client::ConnQueue::ReqBase::Ptr&, 
+        (const Comm::client::ConnQueue::ReqBase::Ptr&, 
          const Protocol::Mngr::Params::ColumnCompactRsp& rsp) {
           std::lock_guard lock(mutex);
           auto& r = _return.emplace_back();

@@ -193,7 +193,7 @@ void Range::create_folders(int& err) {
   Env::FsInterface::interface()->mkdirs(err, get_path(CELLSTORES_DIR));
 }
 
-void Range::load(const ResponseCallback::Ptr& cb) {
+void Range::load(const Comm::ResponseCallback::Ptr& cb) {
   blocks.processing_increment();
 
   bool is_loaded;
@@ -223,7 +223,7 @@ void Range::load(const ResponseCallback::Ptr& cb) {
 
 }
 
-void Range::take_ownership(int &err, const ResponseCallback::Ptr& cb) {
+void Range::take_ownership(int &err, const Comm::ResponseCallback::Ptr& cb) {
   if(err == Error::RGR_DELETED_RANGE)
     return loaded(err, cb);
 
@@ -522,7 +522,7 @@ void Range::print(std::ostream& out, bool minimal) {
   out << ')'; 
 }
 
-void Range::loaded(int &err, const ResponseCallback::Ptr& cb) {
+void Range::loaded(int &err, const Comm::ResponseCallback::Ptr& cb) {
   {
     std::shared_lock lock(m_mutex);
     if(m_state == State::DELETED)
@@ -532,13 +532,13 @@ void Range::loaded(int &err, const ResponseCallback::Ptr& cb) {
   cb->response(err);
 }
 
-void Range::last_rgr_chk(int &err, const ResponseCallback::Ptr& cb) {
+void Range::last_rgr_chk(int &err, const Comm::ResponseCallback::Ptr& cb) {
   // ranger.data
   auto rgr_data = RangerEnv::rgr_data();
   Files::RgrData::Ptr rs_last = get_last_rgr(err);
 
   if(rs_last->endpoints.size() && 
-     !has_endpoint(rgr_data->endpoints, rs_last->endpoints)) {
+     !Comm::has_endpoint(rgr_data->endpoints, rs_last->endpoints)) {
     SWC_LOG_OUT(LOG_DEBUG,
       rs_last->print(SWC_LOG_OSTREAM << "RANGER LAST=");
       rgr_data->print(SWC_LOG_OSTREAM << " NEW=");
@@ -553,7 +553,7 @@ void Range::last_rgr_chk(int &err, const ResponseCallback::Ptr& cb) {
   take_ownership(err, cb);
 }
 
-void Range::load(int &err, const ResponseCallback::Ptr& cb) {
+void Range::load(int &err, const Comm::ResponseCallback::Ptr& cb) {
   {
     std::scoped_lock lock(m_mutex);
     if(m_state != State::LOADING) { 
@@ -607,7 +607,7 @@ void Range::load(int &err, const ResponseCallback::Ptr& cb) {
   loaded_ack(err, cb);
 }
 
-void Range::loaded_ack(int err, const ResponseCallback::Ptr& cb) {
+void Range::loaded_ack(int err, const Comm::ResponseCallback::Ptr& cb) {
   if(!err)
     set_state(State::LOADED);
   

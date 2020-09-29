@@ -14,18 +14,20 @@ namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
 
 
 
-Report::Report(const EndPoints& endpoints, Params::Report::Function func, 
+Report::Report(const Comm::EndPoints& endpoints, Params::Report::Function func, 
                const uint32_t timeout)
-              : client::ConnQueue::ReqBase(false), endpoints(endpoints) {
-  cbp = CommBuf::make(1);
+              : Comm::client::ConnQueue::ReqBase(false), 
+                endpoints(endpoints) {
+  cbp = Comm::CommBuf::make(1);
   cbp->append_i8((uint8_t)func);
   cbp->header.set(REPORT, timeout);
 }
 
-Report::Report(const EndPoints& endpoints, Params::Report::Function func, 
+Report::Report(const Comm::EndPoints& endpoints, Params::Report::Function func, 
                const Serializable& params, const uint32_t timeout) 
-              : client::ConnQueue::ReqBase(false), endpoints(endpoints) {
-  cbp = CommBuf::make(params, 1);
+              : Comm::client::ConnQueue::ReqBase(false), 
+                endpoints(endpoints) {
+  cbp = Comm::CommBuf::make(params, 1);
   cbp->append_i8((uint8_t)func);
   cbp->header.set(REPORT, timeout);
 }
@@ -40,12 +42,14 @@ bool Report::run() {
 
 
 SWC_SHOULD_INLINE
-void ReportRes::request(const EndPoints& endpoints, const ReportRes::Cb_t& cb,
+void ReportRes::request(const Comm::EndPoints& endpoints, 
+                        const ReportRes::Cb_t& cb,
                         const uint32_t timeout) {
   std::make_shared<ReportRes>(endpoints, cb, timeout)->run();
 }
 
-ReportRes::ReportRes(const EndPoints& endpoints, const Cb_t& cb, 
+ReportRes::ReportRes(const Comm::EndPoints& endpoints, 
+                     const Cb_t& cb, 
                      const uint32_t timeout)
                      : Report(
                         endpoints,
@@ -60,8 +64,8 @@ void ReportRes::handle_no_conn() {
   cb(req(), Error::COMM_CONNECT_ERROR, Params::Report::RspRes());
 }
 
-void ReportRes::handle(ConnHandlerPtr, const Event::Ptr& ev) {
-  if(ev->type == Event::Type::DISCONNECT)
+void ReportRes::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) {
+  if(ev->type == Comm::Event::Type::DISCONNECT)
     return handle_no_conn();
 
   Params::Report::RspRes rsp_params;
@@ -88,13 +92,14 @@ void ReportRes::handle(ConnHandlerPtr, const Event::Ptr& ev) {
 
 
 SWC_SHOULD_INLINE
-void ReportCids::request(const EndPoints& endpoints, 
+void ReportCids::request(const Comm::EndPoints& endpoints, 
                          const ReportCids::Cb_t& cb,
                          const uint32_t timeout) {
   std::make_shared<ReportCids>(endpoints, cb, timeout)->run();
 }
 
-ReportCids::ReportCids(const EndPoints& endpoints, const Cb_t& cb, 
+ReportCids::ReportCids(const Comm::EndPoints& endpoints, 
+                       const Cb_t& cb, 
                        const uint32_t timeout)
                       : Report(
                           endpoints,
@@ -109,8 +114,8 @@ void ReportCids::handle_no_conn() {
   cb(req(), Error::COMM_CONNECT_ERROR, Params::Report::RspCids());
 }
 
-void ReportCids::handle(ConnHandlerPtr, const Event::Ptr& ev) {
-  if(ev->type == Event::Type::DISCONNECT)
+void ReportCids::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) {
+  if(ev->type == Comm::Event::Type::DISCONNECT)
     return handle_no_conn();
   
   Params::Report::RspCids rsp_params;
@@ -137,13 +142,13 @@ void ReportCids::handle(ConnHandlerPtr, const Event::Ptr& ev) {
 
 
 SWC_SHOULD_INLINE
-void ReportColumnRids::request(const EndPoints& endpoints, cid_t cid, 
+void ReportColumnRids::request(const Comm::EndPoints& endpoints, cid_t cid, 
                             const ReportColumnRids::Cb_t& cb, 
                             const uint32_t timeout) {
   std::make_shared<ReportColumnRids>(endpoints, cid, cb, timeout)->run();
 }
 
-ReportColumnRids::ReportColumnRids(const EndPoints& endpoints, cid_t cid, 
+ReportColumnRids::ReportColumnRids(const Comm::EndPoints& endpoints, cid_t cid,
                                    const Cb_t& cb, const uint32_t timeout)
                                   : Report(
                                       endpoints,
@@ -159,8 +164,8 @@ void ReportColumnRids::handle_no_conn() {
   cb(req(), Error::COMM_CONNECT_ERROR, Params::Report::RspColumnRids());
 }
 
-void ReportColumnRids::handle(ConnHandlerPtr, const Event::Ptr& ev) {
-  if(ev->type == Event::Type::DISCONNECT)
+void ReportColumnRids::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) {
+  if(ev->type == Comm::Event::Type::DISCONNECT)
     return handle_no_conn();
   
   Params::Report::RspColumnRids rsp_params;
@@ -187,14 +192,14 @@ void ReportColumnRids::handle(ConnHandlerPtr, const Event::Ptr& ev) {
 
 
 SWC_SHOULD_INLINE
-void ReportColumnsRanges::request(const EndPoints& endpoints,
+void ReportColumnsRanges::request(const Comm::EndPoints& endpoints,
                                   const ReportColumnsRanges::Cb_t& cb, 
                                   const uint32_t timeout) {
   std::make_shared<ReportColumnsRanges>(endpoints, cb, timeout)->run();
 }
 
 SWC_SHOULD_INLINE
-void ReportColumnsRanges::request(const EndPoints& endpoints, 
+void ReportColumnsRanges::request(const Comm::EndPoints& endpoints, 
                                   cid_t cid, 
                                   const ReportColumnsRanges::Cb_t& cb, 
                                   const uint32_t timeout) {
@@ -202,7 +207,7 @@ void ReportColumnsRanges::request(const EndPoints& endpoints,
 }
 
 ReportColumnsRanges::ReportColumnsRanges(
-            const EndPoints& endpoints,
+            const Comm::EndPoints& endpoints,
             const Cb_t& cb, 
             const uint32_t timeout)
             : Report(
@@ -213,7 +218,7 @@ ReportColumnsRanges::ReportColumnsRanges(
 }
 
 ReportColumnsRanges::ReportColumnsRanges(
-          const EndPoints& endpoints, 
+          const Comm::EndPoints& endpoints, 
           cid_t cid, 
           const Cb_t& cb, 
           const uint32_t timeout)
@@ -231,8 +236,8 @@ void ReportColumnsRanges::handle_no_conn() {
   cb(req(), Error::COMM_CONNECT_ERROR, Params::Report::RspColumnsRanges());
 }
 
-void ReportColumnsRanges::handle(ConnHandlerPtr, const Event::Ptr& ev) {
-  if(ev->type == Event::Type::DISCONNECT)
+void ReportColumnsRanges::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) {
+  if(ev->type == Comm::Event::Type::DISCONNECT)
     return handle_no_conn();
   
   Params::Report::RspColumnsRanges rsp_params;

@@ -11,7 +11,7 @@
 
 namespace SWC { namespace client { namespace Query {
 
-using ReqBase = client::ConnQueue::ReqBase;
+using ReqBase = Comm::client::ConnQueue::ReqBase;
 
 
 struct Profiling {

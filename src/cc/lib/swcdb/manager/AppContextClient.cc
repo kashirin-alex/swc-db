@@ -10,27 +10,27 @@ AppContext::AppContext() { }
 
 AppContext::~AppContext() { }
 
-void AppContext::disconnected(const ConnHandlerPtr& conn) {
+void AppContext::disconnected(const Comm::ConnHandlerPtr& conn) {
   Env::Mngr::role()->disconnection(
     conn->endpoint_remote, conn->endpoint_local);
 }
 
-void AppContext::handle(ConnHandlerPtr conn, const Event::Ptr& ev) {
+void AppContext::handle(Comm::ConnHandlerPtr conn, const Comm::Event::Ptr& ev) {
 
   switch (ev->type) {
 
-    case Event::Type::DISCONNECT: {
+    case Comm::Event::Type::DISCONNECT: {
       disconnected(conn);
       return;
     }
 
-    case Event::Type::MESSAGE:
-    case Event::Type::ERROR: {
+    case Comm::Event::Type::MESSAGE:
+    case Comm::Event::Type::ERROR: {
       SWC_LOG_OUT(LOG_WARN,  ev->print(SWC_LOG_OSTREAM << "unhandled: "); );
       break;
     }
 
-    case Event::Type::ESTABLISHED:
+    case Comm::Event::Type::ESTABLISHED:
     default: {
       break;
     }

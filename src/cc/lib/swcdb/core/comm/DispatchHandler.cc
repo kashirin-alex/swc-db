@@ -6,7 +6,7 @@
 #include "swcdb/core/Error.h"
 #include "swcdb/core/comm/DispatchHandler.h"
 
-namespace SWC {
+namespace SWC { namespace Comm {
 
 
 void DispatchHandler::handle(ConnHandlerPtr, const Event::Ptr& ev) {
@@ -20,4 +20,4 @@ bool DispatchHandler::run() {
 }
 
 
-}
+}}

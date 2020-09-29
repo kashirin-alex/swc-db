@@ -12,16 +12,16 @@ namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
   
 
 ColumnDelete::ColumnDelete(const Manager::Ranger::Ptr& rgr, cid_t cid)
-                          : client::ConnQueue::ReqBase(false), 
+                          : Comm::client::ConnQueue::ReqBase(false), 
                             rgr(rgr), cid(cid) {
-  cbp = CommBuf::make(Common::Params::ColumnId(cid));
+  cbp = Comm::CommBuf::make(Common::Params::ColumnId(cid));
   cbp->header.set(COLUMN_DELETE, 60000);
 }
   
 ColumnDelete::~ColumnDelete() { }
   
-void ColumnDelete::handle(ConnHandlerPtr, const Event::Ptr& ev) {
-  if(ev->type == Event::Type::DISCONNECT)
+void ColumnDelete::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) {
+  if(ev->type == Comm::Event::Type::DISCONNECT)
     return handle_no_conn();
 
   int err = ev->response_code();

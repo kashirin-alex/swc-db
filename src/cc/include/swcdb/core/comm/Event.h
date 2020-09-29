@@ -14,7 +14,7 @@
 
 #include <memory>
 
-namespace SWC {
+namespace SWC { namespace Comm {
 
 class Event final {
 
@@ -52,7 +52,7 @@ class Event final {
   CommHeader          header;
 };
 
-} // namespace SWC
+}} // namespace SWC::Comm
 
 
 #ifdef SWC_IMPL_SOURCE

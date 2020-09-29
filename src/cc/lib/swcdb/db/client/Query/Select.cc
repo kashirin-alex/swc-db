@@ -509,7 +509,7 @@ bool Select::Scanner::proceed_on_ranger(
   return true;
 }
 
-void Select::Scanner::locate_on_ranger(const EndPoints& endpoints, 
+void Select::Scanner::locate_on_ranger(const Comm::EndPoints& endpoints, 
                                        bool next_range) {
   col->selector->result->completion_incr();
 
@@ -550,7 +550,7 @@ void Select::Scanner::locate_on_ranger(const EndPoints& endpoints,
 }
 
 bool Select::Scanner::located_on_ranger(
-          const EndPoints& endpoints, 
+          const Comm::EndPoints& endpoints, 
           const ReqBase::Ptr& base, 
           const Protocol::Rgr::Params::RangeLocateRsp& rsp, 
           bool next_range) {
@@ -611,7 +611,7 @@ bool Select::Scanner::located_on_ranger(
   return true;
 }
 
-void Select::Scanner::select(const EndPoints& endpoints, rid_t rid, 
+void Select::Scanner::select(const Comm::EndPoints& endpoints, rid_t rid, 
                              const ReqBase::Ptr& base) {
   col->selector->result->completion_incr();
 

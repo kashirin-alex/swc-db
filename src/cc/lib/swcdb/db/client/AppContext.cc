@@ -13,9 +13,9 @@ AppContext::AppContext() { }
 
 AppContext::~AppContext() { }
 
-void AppContext::handle(ConnHandlerPtr, const Event::Ptr&) {
+void AppContext::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr&) {
     /*
-    if(ev->type != Event::Type::DISCONNECT) {
+    if(ev->type != Comm::Event::Type::DISCONNECT) {
      SWC_PRINT << "ClientAppContext, handle: " << ev->to_str() 
         << SWC_PRINT_CLOSE;
     }

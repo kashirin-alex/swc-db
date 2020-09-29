@@ -53,7 +53,7 @@ class RangerEnv final {
     return m_env.get();
   }
 
-  static IoContext* maintenance_io() {
+  static Comm::IoContext* maintenance_io() {
     return m_env->mnt_io.get();
   }
 
@@ -92,7 +92,7 @@ class RangerEnv final {
   const Config::Property::V_GINT32::Ptr      cfg_blk_cells;
   const Config::Property::V_GENUM::Ptr       cfg_blk_enc;
   
-  IoContext::Ptr              mnt_io;
+  Comm::IoContext::Ptr        mnt_io;
   Ranger::Compaction*         _compaction;
   Ranger::Columns*            _columns;
   client::Query::Update::Ptr  _updater;
@@ -147,7 +147,7 @@ RangerEnv::RangerEnv()
         Env::Config::settings()->get<Config::Property::V_GENUM>(
           "swc.rgr.Range.block.encoding")),
       mnt_io(
-        IoContext::make("Maintenance", 
+        Comm::IoContext::make("Maintenance", 
         Env::Config::settings()->get_i32("swc.rgr.maintenance.handlers"))
       ),
       _compaction(nullptr),

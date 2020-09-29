@@ -9,6 +9,7 @@
 
 namespace SWC {
 
+namespace Comm {
 
 IoContext::Ptr IoContext::make(const std::string name, int32_t size) {
   auto ptr = std::make_shared<IoContext>(name, size);
@@ -96,6 +97,10 @@ int32_t IoContext::get_size() const {
 }
 
 
+} // namespace Comm
+
+
+
 namespace Env {
 
 void IoCtx::init(int32_t size) {
@@ -107,7 +112,7 @@ bool IoCtx::ok() {
 }
   
 SWC_SHOULD_INLINE
-IoContext::Ptr IoCtx::io() {
+Comm::IoContext::Ptr IoCtx::io() {
   SWC_ASSERT(ok());
   return m_env->m_io;
 }
@@ -118,7 +123,7 @@ bool IoCtx::stopping(){
 }
 
 IoCtx::IoCtx(int32_t size) 
-            : m_io(std::make_shared<IoContext>("Env", size)) { 
+            : m_io(std::make_shared<Comm::IoContext>("Env", size)) { 
   m_io->run(m_io);
 }
 
@@ -126,4 +131,6 @@ IoCtx::~IoCtx() { }
 
 } // namespace Env
 
-}
+
+
+} // namespace SWC

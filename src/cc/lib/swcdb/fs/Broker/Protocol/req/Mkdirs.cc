@@ -15,7 +15,7 @@ Mkdirs::Mkdirs(uint32_t timeout, const std::string& name,
               : name(name), cb(cb) {
   SWC_LOGF(LOG_DEBUG, "mkdirs path='%s'", name.c_str());
 
-  cbp = CommBuf::make(Params::MkdirsReq(name));
+  cbp = Comm::CommBuf::make(Params::MkdirsReq(name));
   cbp->header.set(Cmd::FUNCTION_MKDIRS, timeout);
 }
 
@@ -25,7 +25,7 @@ std::promise<void> Mkdirs::promise() {
   return r_promise;
 }
 
-void Mkdirs::handle(ConnHandlerPtr, const Event::Ptr& ev) { 
+void Mkdirs::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) { 
 
   const uint8_t *ptr;
   size_t remain;

@@ -11,7 +11,7 @@
 
 namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
 
-class ColumnUpdate : public client::ConnQueue::ReqBase {
+class ColumnUpdate : public Comm::client::ConnQueue::ReqBase {
   public:
 
   ColumnUpdate(const Manager::Ranger::Ptr& rgr, 
@@ -19,7 +19,7 @@ class ColumnUpdate : public client::ConnQueue::ReqBase {
   
   virtual ~ColumnUpdate();
 
-  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
+  void handle(Comm::ConnHandlerPtr conn, const Comm::Event::Ptr& ev) override;
   
   void handle_no_conn() override;
 

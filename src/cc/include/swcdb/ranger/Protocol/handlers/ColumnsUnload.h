@@ -13,7 +13,8 @@
 namespace SWC { namespace Protocol { namespace Rgr { namespace Handler {
 
 
-void columns_unload(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
+void columns_unload(const Comm::ConnHandlerPtr& conn, 
+                    const Comm::Event::Ptr& ev) {
   int err = Error::OK;
   try {
     const uint8_t *ptr = ev->data.base;

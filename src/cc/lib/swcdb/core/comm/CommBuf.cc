@@ -8,7 +8,7 @@
 #include "swcdb/core/Serialization.h"
 #include "swcdb/core/Checksum.h"
 
-namespace SWC {
+namespace SWC { namespace Comm {
 
 namespace {
 static const uint16_t BUFFER_CHUNK_SZ = 4096;
@@ -157,4 +157,4 @@ void CommBuf::append_i32(uint32_t ival) {
 }
 
 
-} // namespace SWC
+}} // namespace SWC::Comm

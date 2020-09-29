@@ -14,7 +14,7 @@
 namespace SWC { namespace Protocol { namespace Rgr { namespace Handler {
 
 
-void range_query_select(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
+void range_query_select(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
   int err = Error::OK;
   Params::RangeQuerySelectReq params;
   Ranger::RangePtr range;
@@ -39,7 +39,7 @@ void range_query_select(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
       
     if(err) {
       Protocol::Rgr::Params::RangeQuerySelectRsp rsp_params(err);
-      auto cbp = CommBuf::make(rsp_params);
+      auto cbp = Comm::CommBuf::make(rsp_params);
       cbp->header.initialize_from_request_header(ev->header);
       conn->send_response(cbp);
       return;

@@ -14,7 +14,7 @@ namespace SWC{ namespace Config {
 //void Settings::init_client_options();
 
 
-}} // namespcae SWC::Config
+}} // namespace SWC::Config
 
 
 #ifdef SWC_IMPL_SOURCE

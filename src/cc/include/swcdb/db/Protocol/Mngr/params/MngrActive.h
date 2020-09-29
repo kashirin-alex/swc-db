@@ -42,7 +42,7 @@ class MngrActiveRsp : public Common::Params::HostEndPoints {
 
   MngrActiveRsp();
 
-  MngrActiveRsp(const EndPoints& endpoints);
+  MngrActiveRsp(const Comm::EndPoints& endpoints);
   
   virtual ~MngrActiveRsp();
 

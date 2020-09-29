@@ -20,7 +20,7 @@ Append::Append(uint32_t timeout, SmartFd::Ptr& smartfd,
     smartfd->print(SWC_LOG_OSTREAM);
   );
 
-  cbp = CommBuf::make(
+  cbp = Comm::CommBuf::make(
     Params::AppendReq(smartfd->fd(), (uint8_t)flags),
     buffer
   );
@@ -34,7 +34,7 @@ std::promise<void> Append::promise() {
   return r_promise;
 }
 
-void Append::handle(ConnHandlerPtr, const Event::Ptr& ev) {
+void Append::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) {
 
   const uint8_t *ptr;
   size_t remain;

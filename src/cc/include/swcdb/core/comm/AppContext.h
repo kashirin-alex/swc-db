@@ -11,7 +11,7 @@
 #include "swcdb/core/comm/Event.h"
 #include "swcdb/core/comm/Resolver.h"
 
-namespace SWC { //namespace Comm {
+namespace SWC { namespace Comm {
 
 // forward declarations
 class ConnHandler;
@@ -37,7 +37,7 @@ class AppContext : public std::enable_shared_from_this<AppContext> {
 };
 
 
-}//} // namespace SWC::Comm
+}} // namespace SWC::Comm
 
 
 

@@ -16,7 +16,7 @@ int run() {
   
   auto app_ctx = Ranger::AppContext::make();
 
-  auto srv = std::make_shared<server::SerializedServer>(
+  auto srv = std::make_shared<Comm::server::SerializedServer>(
     "RANGER", 
     Env::Config::settings()->get_i32("swc.rgr.reactors"), 
     Env::Config::settings()->get_i32("swc.rgr.workers"), 

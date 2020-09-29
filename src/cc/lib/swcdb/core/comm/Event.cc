@@ -10,7 +10,7 @@
 
 #include "swcdb/core/comm/Event.h"
 
-namespace SWC {
+namespace SWC { namespace Comm {
 
 SWC_SHOULD_INLINE
 Event::Ptr Event::make(Type type, int error) {
@@ -92,5 +92,6 @@ void Event::print(std::ostream& out) const {
   */
 }
 
-} // namespace SWC
+
+}} // namespace SWC::Comm
 

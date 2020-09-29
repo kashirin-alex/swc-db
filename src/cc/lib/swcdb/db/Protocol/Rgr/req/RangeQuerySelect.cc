@@ -17,19 +17,19 @@ namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
 SWC_SHOULD_INLINE
 void 
 RangeQuerySelect::request(const Params::RangeQuerySelectReq& params,
-                          const EndPoints& endpoints, 
+                          const Comm::EndPoints& endpoints, 
                           const RangeQuerySelect::Cb_t& cb,
                           const uint32_t timeout) {
   std::make_shared<RangeQuerySelect>(params, endpoints, cb, timeout)->run();
 }
 
 RangeQuerySelect::RangeQuerySelect(const Params::RangeQuerySelectReq& params,
-                                   const EndPoints& endpoints, 
+                                   const Comm::EndPoints& endpoints, 
                                    const RangeQuerySelect::Cb_t& cb, 
                                    const uint32_t timeout) 
-                                  : client::ConnQueue::ReqBase(false), 
+                                  : Comm::client::ConnQueue::ReqBase(false), 
                                     endpoints(endpoints), cb(cb) {
-  cbp = CommBuf::make(params);
+  cbp = Comm::CommBuf::make(params);
   cbp->header.set(RANGE_QUERY_SELECT, timeout);
 }
 
@@ -44,8 +44,8 @@ bool RangeQuerySelect::run() {
   return true;
 }
 
-void RangeQuerySelect::handle(ConnHandlerPtr, const Event::Ptr& ev) {
-  if(ev->type == Event::Type::DISCONNECT)
+void RangeQuerySelect::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) {
+  if(ev->type == Comm::Event::Type::DISCONNECT)
     return handle_no_conn();
 
   Params::RangeQuerySelectRsp rsp_params(ev->error, ev->data_ext);

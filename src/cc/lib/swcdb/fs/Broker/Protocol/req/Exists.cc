@@ -15,7 +15,7 @@ Exists::Exists(uint32_t timeout, const std::string& name,
               : name(name), cb(cb) {
   SWC_LOGF(LOG_DEBUG, "exists path='%s'", name.c_str());
 
-  cbp = CommBuf::make(Params::ExistsReq(name));
+  cbp = Comm::CommBuf::make(Params::ExistsReq(name));
   cbp->header.set(Cmd::FUNCTION_EXISTS, timeout);
 }
 
@@ -25,7 +25,7 @@ std::promise<void> Exists::promise() {
   return r_promise;
 }
 
-void Exists::handle(ConnHandlerPtr, const Event::Ptr& ev) { 
+void Exists::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) { 
 
   const uint8_t *ptr;
   size_t remain;

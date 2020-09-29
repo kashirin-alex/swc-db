@@ -18,11 +18,11 @@ class MngrState : public Serializable {
   MngrState();
 
   MngrState(Manager::MngrsStatus states, 
-            uint64_t token, const EndPoint& mngr_host);
+            uint64_t token, const Comm::EndPoint& mngr_host);
 
-  Manager::MngrsStatus states;
-  uint64_t token;
-  EndPoint mngr_host;
+  Manager::MngrsStatus  states;
+  uint64_t              token;
+  Comm::EndPoint        mngr_host;
 
   private:
 

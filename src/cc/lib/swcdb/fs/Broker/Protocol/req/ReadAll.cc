@@ -15,7 +15,7 @@ ReadAll::ReadAll(uint32_t timeout, const std::string& name, StaticBuffer* dst,
                 : buffer(dst), name(name), cb(cb) {
   SWC_LOGF(LOG_DEBUG, "read-all timeout=%d %s", timeout, name.c_str());
 
-  cbp = CommBuf::make(Params::ReadAllReq(name));
+  cbp = Comm::CommBuf::make(Params::ReadAllReq(name));
   cbp->header.set(Cmd::FUNCTION_READ_ALL, timeout);
 }
 
@@ -28,7 +28,7 @@ std::promise<void> ReadAll::promise() {
   return r_promise;
 }
 
-void ReadAll::handle(ConnHandlerPtr, const Event::Ptr& ev) {
+void ReadAll::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) {
 
   const uint8_t *ptr;
   size_t remain;

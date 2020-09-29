@@ -126,7 +126,7 @@ Ranger::Ptr Rangers::rgr_get(const rgrid_t rgrid) {
   return nullptr;
 }
 
-void Rangers::rgr_get(const rgrid_t rgrid, EndPoints& endpoints) {
+void Rangers::rgr_get(const rgrid_t rgrid, Comm::EndPoints& endpoints) {
   std::lock_guard lock(m_mutex);
   for(auto& rgr : m_rangers) {
     if(rgr->rgrid == rgrid) {
@@ -137,7 +137,7 @@ void Rangers::rgr_get(const rgrid_t rgrid, EndPoints& endpoints) {
   }
 }
 
-void Rangers::rgr_get(const Ranger::Ptr& rgr, EndPoints& endpoints) {
+void Rangers::rgr_get(const Ranger::Ptr& rgr, Comm::EndPoints& endpoints) {
   std::lock_guard lock(m_mutex);
   endpoints = rgr->endpoints;
 }
@@ -153,19 +153,20 @@ void Rangers::rgr_list(const rgrid_t rgrid, RangerList& rangers) {
   }
 }
 
-rgrid_t Rangers::rgr_set_id(const EndPoints& endpoints, rgrid_t opt_rgrid) {
+rgrid_t Rangers::rgr_set_id(const Comm::EndPoints& endpoints, 
+                            rgrid_t opt_rgrid) {
   std::lock_guard lock(m_mutex);
   return rgr_set(endpoints, opt_rgrid)->rgrid;
 }
 
-bool Rangers::rgr_ack_id(rgrid_t rgrid, const EndPoints& endpoints) {
+bool Rangers::rgr_ack_id(rgrid_t rgrid, const Comm::EndPoints& endpoints) {
   bool ack = false;
   Ranger::Ptr new_ack = nullptr;
   {
     std::lock_guard lock(m_mutex);
     
     for(auto& h : m_rangers) {
-      if(has_endpoint(h->endpoints, endpoints) && rgrid == h->rgrid) {
+      if(Comm::has_endpoint(h->endpoints, endpoints) && rgrid == h->rgrid) {
         if(h->state != Ranger::State::ACK)
           new_ack = h;
         h->state = Ranger::State::ACK;
@@ -182,14 +183,14 @@ bool Rangers::rgr_ack_id(rgrid_t rgrid, const EndPoints& endpoints) {
   return ack;
 }
 
-rgrid_t Rangers::rgr_had_id(rgrid_t rgrid, const EndPoints& endpoints) {
+rgrid_t Rangers::rgr_had_id(rgrid_t rgrid, const Comm::EndPoints& endpoints) {
   bool new_id_required = false;
   {
     std::lock_guard lock(m_mutex);
 
     for(auto& h : m_rangers) {
       if(rgrid == h->rgrid) {
-        if(has_endpoint(h->endpoints, endpoints))
+        if(Comm::has_endpoint(h->endpoints, endpoints))
           return 0; // zero=OK
         new_id_required = true;
         break;
@@ -199,13 +200,13 @@ rgrid_t Rangers::rgr_had_id(rgrid_t rgrid, const EndPoints& endpoints) {
   return rgr_set_id(endpoints, new_id_required ? 0 : rgrid);
 }
 
-void Rangers::rgr_shutdown(rgrid_t, const EndPoints& endpoints) {
+void Rangers::rgr_shutdown(rgrid_t, const Comm::EndPoints& endpoints) {
   Ranger::Ptr removed = nullptr;
   {
     std::lock_guard lock(m_mutex);
     for(auto it=m_rangers.begin(); it<m_rangers.end(); ++it) {
       auto h = *it;
-      if(has_endpoint(h->endpoints, endpoints)) {
+      if(Comm::has_endpoint(h->endpoints, endpoints)) {
         removed = h;
         m_rangers.erase(it);
         removed->state = Ranger::State::REMOVED;
@@ -245,7 +246,7 @@ void Rangers::update_status(RangerList new_rgr_status, bool sync_all) {
       found = false;
       for(auto it=m_rangers.begin(); it<m_rangers.end(); ++it) {
         h = *it;
-        if(!has_endpoint(h->endpoints, rs_new->endpoints))
+        if(!Comm::has_endpoint(h->endpoints, rs_new->endpoints))
           continue;
 
         chg = false;
@@ -261,14 +262,14 @@ void Rangers::update_status(RangerList new_rgr_status, bool sync_all) {
           chg = true;
         }
         for(auto& endpoint: rs_new->endpoints) {
-          if(!has_endpoint(endpoint, h->endpoints)) {
+          if(!Comm::has_endpoint(endpoint, h->endpoints)) {
             h->set(rs_new->endpoints);
             chg = true;
             break;
           }
         }
         for(auto& endpoint: h->endpoints) {
-          if(!has_endpoint(endpoint, rs_new->endpoints)) {
+          if(!Comm::has_endpoint(endpoint, rs_new->endpoints)) {
             h->set(rs_new->endpoints);
             chg = true;
             break;
@@ -514,7 +515,7 @@ void Rangers::assign_ranges_run() {
   schedule_check(cfg_chk_assign->get());
 }
 
-void Rangers::next_rgr(const EndPoints& last_rgr, Ranger::Ptr& rs_set) {
+void Rangers::next_rgr(const Comm::EndPoints& last_rgr, Ranger::Ptr& rs_set) {
   size_t n_rgrs = 0;
   size_t avg_ranges = 0;
   Ranger::Ptr rgr;
@@ -530,7 +531,7 @@ void Rangers::next_rgr(const EndPoints& last_rgr, Ranger::Ptr& rs_set) {
       _changes({rgr});
 
     } else if(rgr->state == Ranger::State::ACK) {
-      if(!last_rgr.empty() && has_endpoint(rgr->endpoints, last_rgr)) {
+      if(!last_rgr.empty() && Comm::has_endpoint(rgr->endpoints, last_rgr)) {
         rs_set = rgr;
         return;
       }
@@ -569,10 +570,10 @@ void Rangers::health_check_columns() {
 }
 
 
-Ranger::Ptr Rangers::rgr_set(const EndPoints& endpoints, rgrid_t opt_rgrid) {
+Ranger::Ptr Rangers::rgr_set(const Comm::EndPoints& endpoints, rgrid_t opt_rgrid) {
   for(auto it=m_rangers.begin();it<m_rangers.end(); ++it) {
     auto h = *it;
-    if(has_endpoint(h->endpoints, endpoints)) {
+    if(Comm::has_endpoint(h->endpoints, endpoints)) {
       if(h->state == Ranger::State::ACK) {
         h->set(endpoints);
         return h;

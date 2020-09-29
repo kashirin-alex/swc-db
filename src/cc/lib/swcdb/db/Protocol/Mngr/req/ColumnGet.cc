@@ -51,8 +51,8 @@ void ColumnGet::request(ColumnGet::Flag flag, cid_t cid,
 ColumnGet::ColumnGet(const Params::ColumnGetReq& params, 
                      const ColumnGet::Cb_t& cb, 
                      const uint32_t timeout) 
-                    : client::ConnQueue::ReqBase(false), cb(cb) {
-  cbp = CommBuf::make(params);
+                    : Comm::client::ConnQueue::ReqBase(false), cb(cb) {
+  cbp = Comm::CommBuf::make(params);
   cbp->header.set(COLUMN_GET, timeout);
 }
 
@@ -77,8 +77,8 @@ bool ColumnGet::run() {
   return true;
 }
 
-void ColumnGet::handle(ConnHandlerPtr, const Event::Ptr& ev) {
-  if(ev->type == Event::Type::DISCONNECT)
+void ColumnGet::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) {
+  if(ev->type == Comm::Event::Type::DISCONNECT)
     return handle_no_conn();
 
   Params::ColumnGetRsp rsp_params;

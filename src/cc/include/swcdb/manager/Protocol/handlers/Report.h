@@ -13,10 +13,10 @@
 namespace SWC { namespace Protocol { namespace Mngr { namespace Handler {
 
 
-void report(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
+void report(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
   
   int err = Error::OK;
-  CommBuf::Ptr cbp;
+  Comm::CommBuf::Ptr cbp;
 
   try {
     
@@ -48,7 +48,7 @@ void report(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
         }
         
         function_send_response:
-          cbp = CommBuf::make(4);
+          cbp = Comm::CommBuf::make(4);
           cbp->append_i32(err);
           goto send_response;
       }
@@ -75,7 +75,7 @@ void report(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
         }
         rsp_params.inchain = role.get_inchain_endpoint();
           
-        cbp = CommBuf::make(rsp_params, 4);
+        cbp = Comm::CommBuf::make(rsp_params, 4);
         cbp->append_i32(err);
         goto send_response;
       }
@@ -99,7 +99,7 @@ void report(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
           mngr_rangers.rgr_get(rgr, r.endpoints);
           ++i;
         }
-        cbp = CommBuf::make(rsp_params, 4);
+        cbp = Comm::CommBuf::make(rsp_params, 4);
         cbp->append_i32(err);
         goto send_response;
       }
@@ -127,7 +127,7 @@ void report(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
           ++i;
         }
         rsp_params.state = col->state();
-        cbp = CommBuf::make(rsp_params, 4);
+        cbp = Comm::CommBuf::make(rsp_params, 4);
         cbp->append_i32(err);
         goto send_response;
       }
@@ -145,7 +145,7 @@ void report(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
 
   
   send_error:
-    cbp = CommBuf::make(4);
+    cbp = Comm::CommBuf::make(4);
     cbp->append_i32(err);
 
 

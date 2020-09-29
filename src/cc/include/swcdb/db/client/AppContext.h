@@ -10,14 +10,14 @@
 
 namespace SWC { namespace client { 
 
-class AppContext : public SWC::AppContext {
+class AppContext : public SWC::Comm::AppContext {
   public:
 
   AppContext();
 
   virtual ~AppContext();
 
-  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
+  void handle(Comm::ConnHandlerPtr conn, const Comm::Event::Ptr& ev) override;
   
 };
 

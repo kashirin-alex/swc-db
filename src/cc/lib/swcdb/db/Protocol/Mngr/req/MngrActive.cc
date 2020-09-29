@@ -30,12 +30,12 @@ MngrActive::Ptr MngrActive::make(const uint8_t& role,
 
 MngrActive::MngrActive(const uint8_t& role, const cid_t& cid, 
                        const DispatchHandler::Ptr& hdlr, uint32_t timeout_ms)
-                      : client::ConnQueue::ReqBase(false), 
+                      : Comm::client::ConnQueue::ReqBase(false), 
                         role(role), cid(cid), hdlr(hdlr), nxt(0),
                         timer(asio::high_resolution_timer(
                           *Env::Clients::get()->mngr->service->io().get())),
                         timeout_ms(timeout_ms) {
-  cbp = CommBuf::make(Params::MngrActiveReq(role, cid));
+  cbp = Comm::CommBuf::make(Params::MngrActiveReq(role, cid));
   cbp->header.set(MNGR_ACTIVE, timeout_ms);
 }
 
@@ -81,7 +81,7 @@ bool MngrActive::run() {
   return true;
 }
 
-void MngrActive::handle(ConnHandlerPtr, const Event::Ptr& ev) {
+void MngrActive::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) {
   // SWC_LOGF(LOG_DEBUG, " handle: %s", ev->to_str().c_str());
 
   if(!ev->error) {

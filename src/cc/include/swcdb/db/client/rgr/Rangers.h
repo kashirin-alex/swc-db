@@ -16,9 +16,9 @@
 namespace SWC { namespace client {
 
 struct RangeEndPoints final {
-  const int64_t     ts;
-  const EndPoints   endpoints;
-  RangeEndPoints(const int64_t ts, const EndPoints& endpoints)
+  const int64_t           ts;
+  const Comm::EndPoints   endpoints;
+  RangeEndPoints(const int64_t ts, const Comm::EndPoints& endpoints)
                 : ts(ts), endpoints(endpoints) {
   }
 };
@@ -43,9 +43,10 @@ class Rangers final
 
   void remove(const cid_t cid, const rid_t rid);
 
-  bool get(const cid_t cid, const rid_t rid, EndPoints& endpoints);
+  bool get(const cid_t cid, const rid_t rid, Comm::EndPoints& endpoints);
 
-  void set(const cid_t cid, const rid_t rid, const EndPoints& endpoints);
+  void set(const cid_t cid, const rid_t rid, 
+           const Comm::EndPoints& endpoints);
 
   private:
 

@@ -67,7 +67,7 @@ RangePtr Columns::get_range(int &err, const cid_t cid, const rid_t rid) {
  
 void Columns::load_range(int &err, const cid_t cid, const rid_t rid, 
                          const DB::Schema& schema, 
-                         const ResponseCallback::Ptr& cb) {
+                         const Comm::ResponseCallback::Ptr& cb) {
   RangePtr range;
   auto col = initialize(err, cid, schema);
   if(!err) {

@@ -11,7 +11,7 @@
 
 namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
 
-class ReportRes : public client::ConnQueue::ReqBase {
+class ReportRes : public Comm::client::ConnQueue::ReqBase {
   public:
 
   ReportRes(const Manager::Ranger::Ptr& rgr);
@@ -20,7 +20,7 @@ class ReportRes : public client::ConnQueue::ReqBase {
 
   void handle_no_conn() override;
 
-  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
+  void handle(Comm::ConnHandlerPtr conn, const Comm::Event::Ptr& ev) override;
 
   private:
 

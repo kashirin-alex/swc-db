@@ -18,7 +18,7 @@ void
 RangeQueryUpdate::request(
         const Params::RangeQueryUpdateReq& params, 
         const DynamicBuffer::Ptr& buffer,
-        const EndPoints& endpoints, 
+        const Comm::EndPoints& endpoints, 
         const RangeQueryUpdate::Cb_t& cb, 
         const uint32_t timeout) {
   std::make_shared<RangeQueryUpdate>(params, buffer, endpoints, cb, timeout)
@@ -29,14 +29,14 @@ RangeQueryUpdate::request(
 RangeQueryUpdate::RangeQueryUpdate(
                 const Params::RangeQueryUpdateReq& params,
                 const DynamicBuffer::Ptr& buffer, 
-                const EndPoints& endpoints,
+                const Comm::EndPoints& endpoints,
                 const RangeQueryUpdate::Cb_t& cb, 
                 const uint32_t timeout) 
-                : client::ConnQueue::ReqBase(false), 
+                : Comm::client::ConnQueue::ReqBase(false), 
                   endpoints(endpoints), cb(cb) {
   // timeout by buffer->fill() bytes ratio
     StaticBuffer snd_buf(buffer->base, buffer->fill(), false);
-  cbp = CommBuf::make(params, snd_buf);
+  cbp = Comm::CommBuf::make(params, snd_buf);
   cbp->header.set(RANGE_QUERY_UPDATE, timeout);
 }
 
@@ -51,8 +51,8 @@ bool RangeQueryUpdate::run() {
   return true;
 }
 
-void RangeQueryUpdate::handle(ConnHandlerPtr, const Event::Ptr& ev) {
-  if(ev->type == Event::Type::DISCONNECT)
+void RangeQueryUpdate::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) {
+  if(ev->type == Comm::Event::Type::DISCONNECT)
     return handle_no_conn();
 
   Params::RangeQueryUpdateRsp rsp_params(ev->error);

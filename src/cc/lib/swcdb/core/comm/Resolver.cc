@@ -10,27 +10,13 @@
 namespace SWC { 
 
 
-Network::Network(const asio::ip::network_v4& v4)
-  : is_v4(true), v4(v4) {
-}
-
-Network::Network(const asio::ip::network_v6& v6)
-  : is_v4(false), v6(v6) {
-}
-
-Network::Network(const Network& net)
-  : is_v4(net.is_v4), v4(net.v4), v6(net.v6) {      
-}
-
-  
-
 namespace Serialization {
   
-size_t encoded_length(const EndPoint& endpoint) {
+size_t encoded_length(const Comm::EndPoint& endpoint) {
   return 3 + (endpoint.address().is_v4() ? 4 : 16);
 }
 
-void encode(const EndPoint& endpoint, uint8_t** bufp) {
+void encode(const Comm::EndPoint& endpoint, uint8_t** bufp) {
   Serialization::encode_bool(bufp, endpoint.address().is_v4());
   Serialization::encode_i16(bufp, endpoint.port());
   if(endpoint.address().is_v4()) {
@@ -43,7 +29,7 @@ void encode(const EndPoint& endpoint, uint8_t** bufp) {
   }
 }
   
-EndPoint decode(const uint8_t** bufp, size_t* remainp) {
+Comm::EndPoint decode(const uint8_t** bufp, size_t* remainp) {
   bool is_v4 = Serialization::decode_bool(bufp, remainp);
   uint16_t port = Serialization::decode_i16(bufp, remainp);
   if(is_v4) {
@@ -51,16 +37,34 @@ EndPoint decode(const uint8_t** bufp, size_t* remainp) {
     const uint8_t* bytes = Serialization::decode_bytes_fixed(
       bufp, remainp, v4_bytes.size());
     std::memcpy(v4_bytes.data(), bytes, v4_bytes.size());
-    return EndPoint(asio::ip::make_address_v4(v4_bytes), port);
+    return Comm::EndPoint(asio::ip::make_address_v4(v4_bytes), port);
   }
   
   asio::ip::address_v6::bytes_type v6_bytes;
     const uint8_t* bytes = Serialization::decode_bytes_fixed(
       bufp, remainp, v6_bytes.size());
   std::memcpy(v6_bytes.data(), bytes, v6_bytes.size());
-  return EndPoint(asio::ip::address_v6(v6_bytes), port);
+  return Comm::EndPoint(asio::ip::address_v6(v6_bytes), port);
 }
 
+
+} // namespace Serialization
+
+
+
+namespace Comm {
+
+
+Network::Network(const asio::ip::network_v4& v4)
+  : is_v4(true), v4(v4) {
+}
+
+Network::Network(const asio::ip::network_v6& v6)
+  : is_v4(false), v6(v6) {
+}
+
+Network::Network(const Network& net)
+  : is_v4(net.is_v4), v4(net.v4), v6(net.v6) {      
 }
 
 
@@ -280,4 +284,4 @@ bool is_network(const EndPoint& endpoint, const asio::ip::network_v6& net) {
       .is_subnet_of(net);
 }
 
-}}
+}}}
