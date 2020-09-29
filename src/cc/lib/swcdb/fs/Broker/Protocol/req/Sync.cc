@@ -7,11 +7,11 @@
 #include "swcdb/fs/Broker/Protocol/req/Sync.h"
 
 
-namespace SWC { namespace FS { namespace Protocol { namespace Req {
+namespace SWC { namespace FsBroker { namespace Protocol { namespace Req {
 
 
-Sync::Sync(uint32_t timeout, SmartFd::Ptr& smartfd, 
-           const Callback::SyncCb_t& cb) 
+Sync::Sync(uint32_t timeout, FS::SmartFd::Ptr& smartfd, 
+           const FS::Callback::SyncCb_t& cb) 
           : smartfd(smartfd), cb(cb) {
   SWC_LOG_OUT(LOG_DEBUG,
     SWC_LOG_PRINTF("sync timeout=%d ", timeout);
@@ -24,7 +24,7 @@ Sync::Sync(uint32_t timeout, SmartFd::Ptr& smartfd,
 
 std::promise<void> Sync::promise() {
   std::promise<void>  r_promise;
-  cb = [await=&r_promise](int, const SmartFd::Ptr&){ await->set_value(); };
+  cb = [await=&r_promise](int, const FS::SmartFd::Ptr&){ await->set_value(); };
   return r_promise;
 }
 

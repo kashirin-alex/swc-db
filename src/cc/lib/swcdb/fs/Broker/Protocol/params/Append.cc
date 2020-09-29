@@ -7,7 +7,7 @@
 #include "swcdb/fs/Broker/Protocol/params/Append.h"
 
 
-namespace SWC { namespace FS { namespace Protocol { namespace Params {
+namespace SWC { namespace FsBroker { namespace Protocol { namespace Params {
 
 
 AppendReq::AppendReq(): fd(-1), flags(0) { }

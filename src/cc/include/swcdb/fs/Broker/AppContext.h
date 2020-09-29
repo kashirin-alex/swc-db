@@ -8,7 +8,7 @@
 
 #include "swcdb/core/comm/AppContext.h"
 
-namespace SWC{ namespace FS {
+namespace SWC { namespace client { namespace FsBroker {
 
 class AppContext final : public SWC::Comm::AppContext {
   public:
@@ -24,11 +24,12 @@ class AppContext final : public SWC::Comm::AppContext {
       
     const uint8_t *ptr;
     size_t remain;
-    if(Protocol::Req::Base().is_rsp(ev, ev->header.command, &ptr, &remain))
+    if(SWC::FsBroker::Protocol::Req::Base().is_rsp(
+      ev, ev->header.command, &ptr, &remain))
       SWC_LOG_OUT(LOG_WARN,  ev->print(SWC_LOG_OSTREAM << "Unhandled "); );
   }
 };
 
-}}
+}}}
 
 #endif  // swc_fs_Broker_AppContext_h

@@ -9,23 +9,23 @@
 #include "swcdb/fs/Broker/Protocol/req/Base.h"
 #include "swcdb/fs/Broker/Protocol/params/Open.h"
 
-namespace SWC { namespace FS { namespace Protocol { namespace Req {
+namespace SWC { namespace FsBroker { namespace Protocol { namespace Req {
 
 class Open : public Base {
 
   public:
 
-  Open(FileSystem::Ptr fs, uint32_t timeout, SmartFd::Ptr& smartfd, 
-       int32_t bufsz, const Callback::OpenCb_t& cb=0);
+  Open(FS::FileSystem::Ptr fs, uint32_t timeout, FS::SmartFd::Ptr& smartfd, 
+       int32_t bufsz, const FS::Callback::OpenCb_t& cb=0);
 
   std::promise<void> promise();
 
   void handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) override;
 
   private:
-  FileSystem::Ptr     fs;
-  SmartFd::Ptr        smartfd;
-  Callback::OpenCb_t  cb;
+  FS::FileSystem::Ptr     fs;
+  FS::SmartFd::Ptr        smartfd;
+  FS::Callback::OpenCb_t  cb;
 
 };
 

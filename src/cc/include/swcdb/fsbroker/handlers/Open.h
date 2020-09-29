@@ -10,7 +10,7 @@
 #include "swcdb/fs/Broker/Protocol/params/Open.h"
 
 
-namespace SWC { namespace FsBroker { namespace Handler {
+namespace SWC { namespace FsBroker { namespace Protocol { namespace Handler {
 
 
 void open(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
@@ -22,7 +22,7 @@ void open(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
     const uint8_t *ptr = ev->data.base;
     size_t remain = ev->data.size;
 
-    FS::Protocol::Params::OpenReq params;
+    Params::OpenReq params;
     params.decode(&ptr, &remain);
 
     auto smartfd = FS::SmartFd::make_ptr(params.fname, params.flags);
@@ -42,7 +42,7 @@ void open(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
     return;
 
   try {
-    auto cbp = Comm::Buffers::make(FS::Protocol::Params::OpenRsp(fd), 4);
+    auto cbp = Comm::Buffers::make(Params::OpenRsp(fd), 4);
     cbp->header.initialize_from_request_header(ev->header);
     cbp->append_i32(err);
     conn->send_response(cbp);
@@ -54,6 +54,6 @@ void open(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
 }
   
 
-}}}
+}}}}
 
 #endif // swc_fsbroker_handlers_Open_h

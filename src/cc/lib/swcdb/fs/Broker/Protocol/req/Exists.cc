@@ -7,11 +7,11 @@
 #include "swcdb/fs/Broker/Protocol/req/Exists.h"
 
 
-namespace SWC { namespace FS { namespace Protocol { namespace Req {
+namespace SWC { namespace FsBroker { namespace Protocol { namespace Req {
 
 
 Exists::Exists(uint32_t timeout, const std::string& name, 
-               const Callback::ExistsCb_t& cb) 
+               const FS::Callback::ExistsCb_t& cb) 
               : name(name), cb(cb) {
   SWC_LOGF(LOG_DEBUG, "exists path='%s'", name.c_str());
 

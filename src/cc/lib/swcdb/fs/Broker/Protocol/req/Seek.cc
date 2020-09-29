@@ -7,11 +7,11 @@
 #include "swcdb/fs/Broker/Protocol/req/Seek.h"
 
 
-namespace SWC { namespace FS { namespace Protocol { namespace Req {
+namespace SWC { namespace FsBroker { namespace Protocol { namespace Req {
 
 
-Seek::Seek(uint32_t timeout, SmartFd::Ptr& smartfd, size_t offset,
-           const Callback::SeekCb_t& cb) 
+Seek::Seek(uint32_t timeout, FS::SmartFd::Ptr& smartfd, size_t offset,
+           const FS::Callback::SeekCb_t& cb) 
           : smartfd(smartfd), cb(cb) {
   SWC_LOG_OUT(LOG_DEBUG, 
     SWC_LOG_PRINTF("seek offset=%lu timeout=%d ", offset, timeout);
@@ -24,7 +24,7 @@ Seek::Seek(uint32_t timeout, SmartFd::Ptr& smartfd, size_t offset,
 
 std::promise<void> Seek::promise() {
   std::promise<void>  r_promise;
-  cb = [await=&r_promise] (int, const SmartFd::Ptr&){ await->set_value(); };
+  cb = [await=&r_promise] (int, const FS::SmartFd::Ptr&){ await->set_value(); };
   return r_promise;
 }
 

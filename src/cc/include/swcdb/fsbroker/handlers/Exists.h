@@ -10,7 +10,7 @@
 #include "swcdb/fs/Broker/Protocol/params/Exists.h"
 
 
-namespace SWC { namespace FsBroker { namespace Handler {
+namespace SWC { namespace FsBroker { namespace Protocol { namespace Handler {
 
 
 void exists(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
@@ -22,7 +22,7 @@ void exists(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
     const uint8_t *ptr = ev->data.base;
     size_t remain = ev->data.size;
 
-    FS::Protocol::Params::ExistsReq params;
+    Params::ExistsReq params;
     params.decode(&ptr, &remain);
 
     exists = Env::FsInterface::fs()->exists(err, params.fname);
@@ -37,7 +37,7 @@ void exists(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
     return;
 
   try {
-    auto cbp = Comm::Buffers::make(FS::Protocol::Params::ExistsRsp(exists), 4);
+    auto cbp = Comm::Buffers::make(Params::ExistsRsp(exists), 4);
     cbp->header.initialize_from_request_header(ev->header);
     cbp->append_i32(err);
     conn->send_response(cbp);
@@ -49,6 +49,6 @@ void exists(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
 }
   
 
-}}}
+}}}}
 
 #endif // swc_fsbroker_handlers_Exists_h

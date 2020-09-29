@@ -10,7 +10,7 @@
 #include "swcdb/fs/Broker/Protocol/params/Append.h"
 
 
-namespace SWC { namespace FsBroker { namespace Handler {
+namespace SWC { namespace FsBroker { namespace Protocol { namespace Handler {
 
 
 void append(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
@@ -23,7 +23,7 @@ void append(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
     const uint8_t *ptr = ev->data.base;
     size_t remain = ev->data.size;
 
-    FS::Protocol::Params::AppendReq params;
+    Params::AppendReq params;
     params.decode(&ptr, &remain);
       
     auto smartfd = Env::Fds::get()->select(params.fd);
@@ -46,8 +46,7 @@ void append(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
     return;
 
   try {
-    auto cbp = Comm::Buffers::make(
-      FS::Protocol::Params::AppendRsp(offset, amount), 4);
+    auto cbp = Comm::Buffers::make(Params::AppendRsp(offset, amount), 4);
     cbp->header.initialize_from_request_header(ev->header);
     cbp->append_i32(err);
     conn->send_response(cbp);
@@ -59,6 +58,6 @@ void append(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
 }
 
 
-}}}
+}}}}
 
 #endif // swc_fsbroker_handlers_Append_h

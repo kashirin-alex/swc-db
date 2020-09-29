@@ -10,7 +10,7 @@
 #include "swcdb/fs/Broker/Protocol/Commands.h"
 #include <future>
 
-namespace SWC { namespace FS { namespace Protocol { namespace Req {
+namespace SWC { namespace FsBroker { namespace Protocol { namespace Req {
 
 class Base : public Comm::DispatchHandler {
 

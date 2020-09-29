@@ -7,12 +7,12 @@
 #include "swcdb/fs/Broker/Protocol/req/Append.h"
 
 
-namespace SWC { namespace FS { namespace Protocol { namespace Req {
+namespace SWC { namespace FsBroker { namespace Protocol { namespace Req {
 
 
-Append::Append(uint32_t timeout, SmartFd::Ptr& smartfd, 
-               StaticBuffer& buffer, Flags flags, 
-               const Callback::AppendCb_t& cb)
+Append::Append(uint32_t timeout, FS::SmartFd::Ptr& smartfd, 
+               StaticBuffer& buffer, FS::Flags flags, 
+               const FS::Callback::AppendCb_t& cb)
               : amount(0), smartfd(smartfd), cb(cb) {
   SWC_LOG_OUT(LOG_DEBUG, 
     SWC_LOG_PRINTF("append flags=%d amount=%lu timeout=%d ", 
@@ -30,7 +30,7 @@ Append::Append(uint32_t timeout, SmartFd::Ptr& smartfd,
 std::promise<void> Append::promise() {
   std::promise<void>  r_promise;
   cb = [await=&r_promise]
-       (int, const SmartFd::Ptr&, size_t){ await->set_value(); };
+       (int, const FS::SmartFd::Ptr&, size_t){ await->set_value(); };
   return r_promise;
 }
 

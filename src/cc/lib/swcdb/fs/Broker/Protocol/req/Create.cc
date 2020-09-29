@@ -7,12 +7,12 @@
 #include "swcdb/fs/Broker/Protocol/req/Create.h"
 
 
-namespace SWC { namespace FS { namespace Protocol { namespace Req {
+namespace SWC { namespace FsBroker { namespace Protocol { namespace Req {
 
 
-Create::Create(FileSystem::Ptr fs, uint32_t timeout, SmartFd::Ptr& smartfd, 
+Create::Create(FS::FileSystem::Ptr fs, uint32_t timeout, FS::SmartFd::Ptr& smartfd, 
                int32_t bufsz, uint8_t replication, int64_t blksz, 
-               const Callback::CreateCb_t& cb) 
+               const FS::Callback::CreateCb_t& cb) 
               : fs(fs), smartfd(smartfd), cb(cb) {
   SWC_LOG_OUT(LOG_DEBUG, 
     SWC_LOG_PRINTF("create bufsz(%d) replication(%d) blksz(%ld) timeout=%d ", 
@@ -29,7 +29,7 @@ Create::Create(FileSystem::Ptr fs, uint32_t timeout, SmartFd::Ptr& smartfd,
 
 std::promise<void> Create::promise() {
   std::promise<void>  r_promise;
-  cb = [await=&r_promise](int, const SmartFd::Ptr&){ await->set_value(); };
+  cb = [await=&r_promise](int, const FS::SmartFd::Ptr&){ await->set_value(); };
   return r_promise;
 }
 

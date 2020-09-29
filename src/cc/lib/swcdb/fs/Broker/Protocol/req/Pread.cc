@@ -8,12 +8,12 @@
 #include "swcdb/fs/Broker/Protocol/params/Read.h"
 
 
-namespace SWC { namespace FS { namespace Protocol { namespace Req {
+namespace SWC { namespace FsBroker { namespace Protocol { namespace Req {
 
 
-Pread::Pread(uint32_t timeout, SmartFd::Ptr& smartfd, 
+Pread::Pread(uint32_t timeout, FS::SmartFd::Ptr& smartfd, 
       uint64_t offset, void* dst, size_t len, bool allocated,
-      const Callback::PreadCb_t& cb)
+      const FS::Callback::PreadCb_t& cb)
     : buffer(dst), allocated(allocated), amount(0), 
       smartfd(smartfd), cb(cb) {
   SWC_LOG_OUT(LOG_DEBUG, 
@@ -28,7 +28,7 @@ Pread::Pread(uint32_t timeout, SmartFd::Ptr& smartfd,
 std::promise<void> Pread::promise() {
   std::promise<void>  r_promise;
   cb = [await=&r_promise]
-       (int, const SmartFd::Ptr&, const StaticBuffer::Ptr&) {
+       (int, const FS::SmartFd::Ptr&, const StaticBuffer::Ptr&) {
          await->set_value();
         };
   return r_promise;

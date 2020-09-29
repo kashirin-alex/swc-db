@@ -9,23 +9,23 @@
 #include "swcdb/fs/Broker/Protocol/req/Base.h"
 #include "swcdb/fs/Broker/Protocol/params/Write.h"
 
-namespace SWC { namespace FS { namespace Protocol { namespace Req {
+namespace SWC { namespace FsBroker { namespace Protocol { namespace Req {
 
 class Write : public Base {
 
   public:
   
-  Write(uint32_t timeout, SmartFd::Ptr& smartfd, 
+  Write(uint32_t timeout, FS::SmartFd::Ptr& smartfd, 
         uint8_t replication, int64_t blksz, StaticBuffer& buffer,
-        const Callback::WriteCb_t& cb=0);
+        const FS::Callback::WriteCb_t& cb=0);
 
   std::promise<void> promise();
 
   void handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) override;
 
   private:
-  SmartFd::Ptr         smartfd;
-  Callback::WriteCb_t  cb;
+  FS::SmartFd::Ptr         smartfd;
+  FS::Callback::WriteCb_t  cb;
 
 };
 

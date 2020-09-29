@@ -7,11 +7,11 @@
 #include "swcdb/fs/Broker/Protocol/req/Mkdirs.h"
 
 
-namespace SWC { namespace FS { namespace Protocol { namespace Req {
+namespace SWC { namespace FsBroker { namespace Protocol { namespace Req {
 
 
 Mkdirs::Mkdirs(uint32_t timeout, const std::string& name, 
-               const Callback::MkdirsCb_t& cb) 
+               const FS::Callback::MkdirsCb_t& cb) 
               : name(name), cb(cb) {
   SWC_LOGF(LOG_DEBUG, "mkdirs path='%s'", name.c_str());
 

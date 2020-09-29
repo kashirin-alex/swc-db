@@ -7,11 +7,11 @@
 #include "swcdb/fs/Broker/Protocol/req/Flush.h"
 
 
-namespace SWC { namespace FS { namespace Protocol { namespace Req {
+namespace SWC { namespace FsBroker { namespace Protocol { namespace Req {
 
 
-Flush::Flush(uint32_t timeout, SmartFd::Ptr& smartfd, 
-             const Callback::FlushCb_t& cb) 
+Flush::Flush(uint32_t timeout, FS::SmartFd::Ptr& smartfd, 
+             const FS::Callback::FlushCb_t& cb) 
             : smartfd(smartfd), cb(cb) {
   SWC_LOG_OUT(LOG_DEBUG,
     SWC_LOG_PRINTF("flush timeout=%d ", timeout);
@@ -24,7 +24,7 @@ Flush::Flush(uint32_t timeout, SmartFd::Ptr& smartfd,
 
 std::promise<void> Flush::promise() {
   std::promise<void>  r_promise;
-  cb = [await=&r_promise](int, const SmartFd::Ptr&){ await->set_value(); };
+  cb = [await=&r_promise](int, const FS::SmartFd::Ptr&){ await->set_value(); };
   return r_promise;
 }
 

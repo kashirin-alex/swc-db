@@ -7,11 +7,11 @@
 #include "swcdb/fs/Broker/Protocol/req/Rmdir.h"
 
 
-namespace SWC { namespace FS { namespace Protocol { namespace Req {
+namespace SWC { namespace FsBroker { namespace Protocol { namespace Req {
 
 
 Rmdir::Rmdir(uint32_t timeout, const std::string& name, 
-             const Callback::RmdirCb_t& cb) 
+             const FS::Callback::RmdirCb_t& cb) 
             : name(name), cb(cb) {
   SWC_LOGF(LOG_DEBUG, "rmdir path='%s'", name.c_str());
 

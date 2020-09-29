@@ -7,11 +7,11 @@
 #include "swcdb/fs/Broker/Protocol/req/Rename.h"
 
 
-namespace SWC { namespace FS { namespace Protocol { namespace Req {
+namespace SWC { namespace FsBroker { namespace Protocol { namespace Req {
 
 
 Rename::Rename(uint32_t timeout, const std::string& from, const std::string& to,
-               const Callback::RenameCb_t& cb) 
+               const FS::Callback::RenameCb_t& cb) 
               : from(from), to(to), cb(cb) {
   SWC_LOGF(LOG_DEBUG, "rename '%s' to '%s'", from.c_str(), to.c_str());
 

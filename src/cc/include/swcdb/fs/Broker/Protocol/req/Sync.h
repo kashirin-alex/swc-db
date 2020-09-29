@@ -9,22 +9,22 @@
 #include "swcdb/fs/Broker/Protocol/req/Base.h"
 #include "swcdb/fs/Broker/Protocol/params/Sync.h"
 
-namespace SWC { namespace FS { namespace Protocol { namespace Req {
+namespace SWC { namespace FsBroker { namespace Protocol { namespace Req {
 
 class Sync : public Base {
 
   public:
   
-  Sync(uint32_t timeout, SmartFd::Ptr& smartfd, 
-       const Callback::SyncCb_t& cb=0);
+  Sync(uint32_t timeout, FS::SmartFd::Ptr& smartfd, 
+       const FS::Callback::SyncCb_t& cb=0);
 
   std::promise<void> promise();
 
   void handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) override;
 
   private:
-  SmartFd::Ptr        smartfd;
-  Callback::SyncCb_t  cb;
+  FS::SmartFd::Ptr        smartfd;
+  FS::Callback::SyncCb_t  cb;
 
 };
 

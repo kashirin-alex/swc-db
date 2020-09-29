@@ -9,7 +9,7 @@
 #include "swcdb/fs/Broker/Protocol/req/Base.h"
 #include "swcdb/fs/Broker/Protocol/params/Length.h"
 
-namespace SWC { namespace FS { namespace Protocol { namespace Req {
+namespace SWC { namespace FsBroker { namespace Protocol { namespace Req {
 
 class Length : public Base {
 
@@ -18,15 +18,15 @@ class Length : public Base {
   size_t length;
 
   Length(uint32_t timeout, const std::string& name, 
-         const Callback::LengthCb_t& cb=0);
+         const FS::Callback::LengthCb_t& cb=0);
 
   std::promise<void> promise();
 
   void handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) override;
 
   private:
-  const std::string     name;
-  Callback::LengthCb_t  cb;
+  const std::string         name;
+  FS::Callback::LengthCb_t  cb;
 
 };
 

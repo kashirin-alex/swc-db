@@ -7,11 +7,11 @@
 #include "swcdb/fs/Broker/Protocol/req/Open.h"
 
 
-namespace SWC { namespace FS { namespace Protocol { namespace Req {
+namespace SWC { namespace FsBroker { namespace Protocol { namespace Req {
 
 
-Open::Open(FileSystem::Ptr fs, uint32_t timeout, SmartFd::Ptr& smartfd, 
-           int32_t bufsz, const Callback::OpenCb_t& cb) 
+Open::Open(FS::FileSystem::Ptr fs, uint32_t timeout, FS::SmartFd::Ptr& smartfd, 
+           int32_t bufsz, const FS::Callback::OpenCb_t& cb) 
           : fs(fs), smartfd(smartfd), cb(cb) {
   SWC_LOG_OUT(LOG_DEBUG,
     SWC_LOG_PRINTF("open timeout=%d ", timeout);
@@ -25,7 +25,7 @@ Open::Open(FileSystem::Ptr fs, uint32_t timeout, SmartFd::Ptr& smartfd,
 
 std::promise<void> Open::promise() {
   std::promise<void>  r_promise;
-  cb = [await=&r_promise](int, const SmartFd::Ptr&){ await->set_value(); };
+  cb = [await=&r_promise](int, const FS::SmartFd::Ptr&){ await->set_value(); };
   return r_promise;
 }
 

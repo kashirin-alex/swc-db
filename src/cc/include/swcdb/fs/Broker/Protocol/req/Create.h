@@ -10,24 +10,24 @@
 #include "swcdb/fs/Broker/Protocol/params/Create.h"
 #include "swcdb/fs/Broker/Protocol/params/Open.h"
 
-namespace SWC { namespace FS { namespace Protocol { namespace Req {
+namespace SWC { namespace FsBroker { namespace Protocol { namespace Req {
 
 class Create : public Base {
 
   public:
   
-  Create(FileSystem::Ptr fs, uint32_t timeout, SmartFd::Ptr& smartfd, 
+  Create(FS::FileSystem::Ptr fs, uint32_t timeout, FS::SmartFd::Ptr& smartfd, 
         int32_t bufsz, uint8_t replication, int64_t blksz, 
-        const Callback::CreateCb_t& cb=0);
+        const FS::Callback::CreateCb_t& cb=0);
 
   std::promise<void> promise();
 
   void handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) override;
 
   private:
-  FileSystem::Ptr       fs;
-  SmartFd::Ptr          smartfd;
-  Callback::CreateCb_t  cb;
+  FS::FileSystem::Ptr       fs;
+  FS::SmartFd::Ptr          smartfd;
+  FS::Callback::CreateCb_t  cb;
 
 };
 

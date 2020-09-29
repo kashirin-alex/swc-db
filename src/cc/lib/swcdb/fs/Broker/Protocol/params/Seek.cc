@@ -7,7 +7,7 @@
 #include "swcdb/fs/Broker/Protocol/params/Seek.h"
 
 
-namespace SWC { namespace FS { namespace Protocol { namespace Params {
+namespace SWC { namespace FsBroker { namespace Protocol { namespace Params {
 
 SeekReq::SeekReq(): fd(-1) {}
 

@@ -7,7 +7,7 @@
 #include "swcdb/fs/Broker/Protocol/params/Mkdirs.h"
 
 
-namespace SWC { namespace FS { namespace Protocol { namespace Params {
+namespace SWC { namespace FsBroker { namespace Protocol { namespace Params {
 
 
 MkdirsReq::MkdirsReq() {}

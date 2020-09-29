@@ -7,7 +7,7 @@
 #include "swcdb/fs/Broker/Protocol/params/Flush.h"
 
 
-namespace SWC { namespace FS { namespace Protocol { namespace Params {
+namespace SWC { namespace FsBroker { namespace Protocol { namespace Params {
 
 
 FlushReq::FlushReq(): fd(-1) { }

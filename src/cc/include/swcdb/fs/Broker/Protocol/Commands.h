@@ -6,7 +6,7 @@
 #ifndef swc_fs_Broker_Protocol_Commands_h
 #define swc_fs_Broker_Protocol_Commands_h
 
-namespace SWC{ namespace FS { namespace Protocol {
+namespace SWC{ namespace FsBroker { namespace Protocol {
   
   enum Cmd : uint8_t {
     NOT_IMPLEMENTED   = 0x00,   ///< Not Implemented
@@ -32,7 +32,7 @@ namespace SWC{ namespace FS { namespace Protocol {
     FUNCTION_DEBUG    = 0x13,   ///< Debug
     FUNCTION_STATUS   = 0x13,   ///< Status
     FUNCTION_SHUTDOWN = 0x13,   ///< Shutdown
-    FUNCTION_MAX      = 0x13 ///< Maximum code marker
+    FUNCTION_MAX      = 0x13    ///< Maximum code marker
   };
 }
 

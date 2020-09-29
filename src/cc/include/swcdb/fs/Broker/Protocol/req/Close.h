@@ -9,23 +9,23 @@
 #include "swcdb/fs/Broker/Protocol/req/Base.h"
 #include "swcdb/fs/Broker/Protocol/params/Close.h"
 
-namespace SWC { namespace FS { namespace Protocol { namespace Req {
+namespace SWC { namespace FsBroker { namespace Protocol { namespace Req {
 
 class Close : public Base {
 
   public:
 
-  Close(FileSystem::Ptr fs, uint32_t timeout, SmartFd::Ptr& smartfd, 
-        const Callback::CloseCb_t& cb=0);
+  Close(FS::FileSystem::Ptr fs, uint32_t timeout, FS::SmartFd::Ptr& smartfd, 
+        const FS::Callback::CloseCb_t& cb=0);
 
   std::promise<void> promise();
 
   void handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) override;
 
   private:
-  FileSystem::Ptr      fs;
-  SmartFd::Ptr         smartfd;
-  Callback::CloseCb_t  cb;
+  FS::FileSystem::Ptr      fs;
+  FS::SmartFd::Ptr         smartfd;
+  FS::Callback::CloseCb_t  cb;
 
 };
 

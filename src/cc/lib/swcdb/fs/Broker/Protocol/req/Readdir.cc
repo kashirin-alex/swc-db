@@ -7,11 +7,11 @@
 #include "swcdb/fs/Broker/Protocol/req/Readdir.h"
 
 
-namespace SWC { namespace FS { namespace Protocol { namespace Req {
+namespace SWC { namespace FsBroker { namespace Protocol { namespace Req {
 
 
 Readdir::Readdir(uint32_t timeout, const std::string& name, 
-                 const Callback::ReaddirCb_t& cb) 
+                 const FS::Callback::ReaddirCb_t& cb) 
                 : name(name), cb(cb) {
   SWC_LOGF(LOG_DEBUG, "readdir path='%s'", name.c_str());
 
@@ -21,7 +21,7 @@ Readdir::Readdir(uint32_t timeout, const std::string& name,
 
 std::promise<void> Readdir::promise() {
   std::promise<void>  r_promise;
-  cb = [await=&r_promise](int, const DirentList&){ await->set_value(); };
+  cb = [await=&r_promise](int, const FS::DirentList&){ await->set_value(); };
   return r_promise;
 }
 

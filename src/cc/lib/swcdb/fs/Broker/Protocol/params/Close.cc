@@ -7,7 +7,7 @@
 #include "swcdb/fs/Broker/Protocol/params/Close.h"
 
 
-namespace SWC { namespace FS { namespace Protocol { namespace Params {
+namespace SWC { namespace FsBroker { namespace Protocol { namespace Params {
 
 
 CloseReq::CloseReq(): fd(-1) { }

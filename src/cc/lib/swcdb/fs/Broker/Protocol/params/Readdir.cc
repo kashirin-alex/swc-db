@@ -7,7 +7,7 @@
 #include "swcdb/fs/Broker/Protocol/params/Readdir.h"
 
 
-namespace SWC { namespace FS { namespace Protocol { namespace Params {
+namespace SWC { namespace FsBroker { namespace Protocol { namespace Params {
 
 
 ReaddirReq::ReaddirReq() {}
@@ -30,23 +30,23 @@ void ReaddirReq::internal_decode(const uint8_t** bufp, size_t* remainp) {
 
 ReaddirRsp::ReaddirRsp() {}
 
-ReaddirRsp::ReaddirRsp(DirentList &listing) : m_listing(listing) {}
+ReaddirRsp::ReaddirRsp(FS::DirentList& listing) : m_listing(listing) {}
 
-void ReaddirRsp::get_listing(DirentList &listing) {
+void ReaddirRsp::get_listing(FS::DirentList& listing) {
   listing.clear();
   listing.assign(m_listing.begin(), m_listing.end());
 }
 
 size_t ReaddirRsp::internal_encoded_length() const {
   size_t length = Serialization::encoded_length_vi64(m_listing.size());
-  for (const Dirent &entry : m_listing)
+  for (const FS::Dirent& entry : m_listing)
     length += entry.encoded_length();
   return length;
 }
 
 void ReaddirRsp::internal_encode(uint8_t** bufp) const {
   Serialization::encode_vi64(bufp, m_listing.size());
-  for (const Dirent &entry : m_listing)
+  for (const FS::Dirent& entry : m_listing)
     entry.encode(bufp);
 }
 

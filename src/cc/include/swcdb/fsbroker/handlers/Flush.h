@@ -10,7 +10,7 @@
 #include "swcdb/fs/Broker/Protocol/params/Flush.h"
 
 
-namespace SWC { namespace FsBroker { namespace Handler {
+namespace SWC { namespace FsBroker { namespace Protocol { namespace Handler {
 
 
 void flush(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
@@ -21,7 +21,7 @@ void flush(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
     const uint8_t *ptr = ev->data.base;
     size_t remain = ev->data.size;
 
-    FS::Protocol::Params::FlushReq params;
+    Params::FlushReq params;
     params.decode(&ptr, &remain);
 
     auto smartfd = Env::Fds::get()->select(params.fd);
@@ -53,6 +53,6 @@ void flush(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
 }
   
 
-}}}
+}}}}
 
 #endif // swc_fsbroker_handlers_Flush_h

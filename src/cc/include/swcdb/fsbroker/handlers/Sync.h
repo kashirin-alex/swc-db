@@ -10,7 +10,7 @@
 #include "swcdb/fs/Broker/Protocol/params/Sync.h"
 
 
-namespace SWC { namespace FsBroker { namespace Handler {
+namespace SWC { namespace FsBroker { namespace Protocol { namespace Handler {
 
 
 void sync(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
@@ -21,7 +21,7 @@ void sync(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
     const uint8_t *ptr = ev->data.base;
     size_t remain = ev->data.size;
 
-    FS::Protocol::Params::SyncReq params;
+    Params::SyncReq params;
     params.decode(&ptr, &remain);
 
     auto smartfd = Env::Fds::get()->select(params.fd);
@@ -53,6 +53,6 @@ void sync(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
 }
   
 
-}}}
+}}}}
 
 #endif // swc_fsbroker_handlers_Sync_h

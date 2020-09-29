@@ -7,7 +7,7 @@
 #include "swcdb/fs/Broker/Protocol/req/Base.h"
 
 
-namespace SWC { namespace FS { namespace Protocol { namespace Req {
+namespace SWC { namespace FsBroker { namespace Protocol { namespace Req {
 
 
 Base::Base() : error(Error::OK) {}

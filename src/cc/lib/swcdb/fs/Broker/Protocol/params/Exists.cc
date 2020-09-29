@@ -7,7 +7,7 @@
 #include "swcdb/fs/Broker/Protocol/params/Exists.h"
 
 
-namespace SWC { namespace FS { namespace Protocol { namespace Params {
+namespace SWC { namespace FsBroker { namespace Protocol { namespace Params {
 
 ExistsReq::ExistsReq() {}
 

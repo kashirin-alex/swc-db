@@ -41,31 +41,31 @@ namespace SWC { namespace FsBroker {
 
 class AppContext final : public SWC::Comm::AppContext {
   
-  // in-order of FS::Protocol::Cmd
+  // in-order of FsBroker::Protocol::Cmd
   static constexpr const Comm::AppHandler_t handlers[] = { 
-    &Protocol::Common::Handler::not_implemented,
-    &Handler::open,
-    &Handler::create,
-    &Handler::close,
-    &Handler::read,
-    &Handler::append,
-    &Handler::seek,
-    &Handler::remove,
-    &Handler::length,
-    &Handler::pread,
-    &Handler::mkdirs,
-    &Handler::flush,
-    &Handler::rmdir,
-    &Handler::readdir,
-    &Handler::exists,
-    &Handler::rename,
-    &Handler::sync,
-    &Handler::write,
-    &Handler::read_all
+    &SWC::Protocol::Common::Handler::not_implemented,
+    &Protocol::Handler::open,
+    &Protocol::Handler::create,
+    &Protocol::Handler::close,
+    &Protocol::Handler::read,
+    &Protocol::Handler::append,
+    &Protocol::Handler::seek,
+    &Protocol::Handler::remove,
+    &Protocol::Handler::length,
+    &Protocol::Handler::pread,
+    &Protocol::Handler::mkdirs,
+    &Protocol::Handler::flush,
+    &Protocol::Handler::rmdir,
+    &Protocol::Handler::readdir,
+    &Protocol::Handler::exists,
+    &Protocol::Handler::rename,
+    &Protocol::Handler::sync,
+    &Protocol::Handler::write,
+    &Protocol::Handler::read_all
 
-    //&Handler::debug,
-    //&Handler::status,
-    //&Handler::shutdown
+    //&Protocol::Handler::debug,
+    //&Protocol::Handler::status,
+    //&Protocol::Handler::shutdown
   }; 
 
   public:
@@ -120,8 +120,8 @@ class AppContext final : public SWC::Comm::AppContext {
         break;
 
       case Comm::Event::Type::MESSAGE: {
-      uint8_t cmd = ev->header.command >= FS::Protocol::Cmd::FUNCTION_MAX 
-                      ? (uint8_t)FS::Protocol::Cmd::NOT_IMPLEMENTED 
+      uint8_t cmd = ev->header.command >= Protocol::Cmd::FUNCTION_MAX 
+                      ? (uint8_t)Protocol::Cmd::NOT_IMPLEMENTED 
                       : ev->header.command;
         Env::IoCtx::post([cmd, conn, ev]() { handlers[cmd](conn, ev); });
         return;

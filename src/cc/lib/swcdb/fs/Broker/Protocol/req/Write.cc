@@ -7,12 +7,12 @@
 #include "swcdb/fs/Broker/Protocol/req/Write.h"
 
 
-namespace SWC { namespace FS { namespace Protocol { namespace Req {
+namespace SWC { namespace FsBroker { namespace Protocol { namespace Req {
 
 
-Write::Write(uint32_t timeout, SmartFd::Ptr& smartfd, 
+Write::Write(uint32_t timeout, FS::SmartFd::Ptr& smartfd, 
              uint8_t replication, int64_t blksz, StaticBuffer& buffer,
-             const Callback::WriteCb_t& cb) 
+             const FS::Callback::WriteCb_t& cb) 
             : smartfd(smartfd), cb(cb) {
   SWC_LOG_OUT(LOG_DEBUG, 
     SWC_LOG_PRINTF("write amount=%lu replication(%u) blksz(%ld) timeout=%d ",
@@ -30,7 +30,7 @@ Write::Write(uint32_t timeout, SmartFd::Ptr& smartfd,
 
 std::promise<void> Write::promise() {
   std::promise<void>  r_promise;
-  cb = [await=&r_promise](int, const SmartFd::Ptr&){ await->set_value(); };
+  cb = [await=&r_promise](int, const FS::SmartFd::Ptr&){ await->set_value(); };
   return r_promise;
 }
 

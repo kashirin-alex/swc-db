@@ -11,7 +11,7 @@
 #include "swcdb/fs/Dirent.h"
 
 
-namespace SWC { namespace FS { namespace Protocol { namespace Params {
+namespace SWC { namespace FsBroker { namespace Protocol { namespace Params {
 
 
 class ReaddirReq : public Serializable {
@@ -39,9 +39,9 @@ class ReaddirRsp : public Serializable {
   
   ReaddirRsp();
 
-  ReaddirRsp(DirentList &listing);
+  ReaddirRsp(FS::DirentList &listing);
 
-  void get_listing(DirentList &listing);
+  void get_listing(FS::DirentList &listing);
 
   private:
 
@@ -51,7 +51,7 @@ class ReaddirRsp : public Serializable {
 
   void internal_decode(const uint8_t** bufp, size_t* remainp);
   
-  DirentList m_listing;
+  FS::DirentList m_listing;
 };
 
 }}}}

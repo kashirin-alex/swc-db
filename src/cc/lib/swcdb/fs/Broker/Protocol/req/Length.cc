@@ -7,11 +7,11 @@
 #include "swcdb/fs/Broker/Protocol/req/Length.h"
 
 
-namespace SWC { namespace FS { namespace Protocol { namespace Req {
+namespace SWC { namespace FsBroker { namespace Protocol { namespace Req {
 
 
 Length::Length(uint32_t timeout, const std::string& name, 
-               const Callback::LengthCb_t& cb) 
+               const FS::Callback::LengthCb_t& cb) 
               : length(0), name(name), cb(cb) {
   SWC_LOGF(LOG_DEBUG, "length path='%s'", name.c_str());
 

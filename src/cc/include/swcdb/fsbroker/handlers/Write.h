@@ -9,7 +9,7 @@
 
 #include "swcdb/fs/Broker/Protocol/params/Write.h"
 
-namespace SWC { namespace FsBroker { namespace Handler {
+namespace SWC { namespace FsBroker { namespace Protocol { namespace Handler {
 
 
 
@@ -21,7 +21,7 @@ void write(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
     const uint8_t *ptr = ev->data.base;
     size_t remain = ev->data.size;
 
-    FS::Protocol::Params::WriteReq params;
+    Params::WriteReq params;
     params.decode(&ptr, &remain);
 
     auto smartfd = FS::SmartFd::make_ptr(params.fname, params.flags);
@@ -68,6 +68,6 @@ void write(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
 }
   
 
-}}}
+}}}}
 
 #endif // swc_fsbroker_handlers_Write_h

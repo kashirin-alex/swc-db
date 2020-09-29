@@ -10,7 +10,7 @@
 #include "swcdb/fs/Broker/Protocol/params/ReadAll.h"
 
 
-namespace SWC { namespace FsBroker { namespace Handler {
+namespace SWC { namespace FsBroker { namespace Protocol { namespace Handler {
 
 
 void read_all(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
@@ -22,7 +22,7 @@ void read_all(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
     const uint8_t *ptr = ev->data.base;
     size_t remain = ev->data.size;
 
-    FS::Protocol::Params::ReadAllReq params;
+    Params::ReadAllReq params;
     params.decode(&ptr, &remain);
 
     //Env::FsInterface::fs()->read(err, params.name, &rbuf); needs fds state
@@ -79,6 +79,6 @@ void read_all(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
 }
 
 
-}}}
+}}}}
 
 #endif // swc_fsbroker_handlers_ReadAll_h

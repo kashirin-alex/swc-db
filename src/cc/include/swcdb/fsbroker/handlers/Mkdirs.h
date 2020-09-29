@@ -10,7 +10,7 @@
 #include "swcdb/fs/Broker/Protocol/params/Mkdirs.h"
 
 
-namespace SWC { namespace FsBroker { namespace Handler {
+namespace SWC { namespace FsBroker { namespace Protocol { namespace Handler {
 
 
 void mkdirs(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
@@ -21,7 +21,7 @@ void mkdirs(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
     const uint8_t *ptr = ev->data.base;
     size_t remain = ev->data.size;
 
-    FS::Protocol::Params::MkdirsReq params;
+    Params::MkdirsReq params;
     params.decode(&ptr, &remain);
 
     Env::FsInterface::fs()->mkdirs(err, params.dirname);
@@ -48,6 +48,6 @@ void mkdirs(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
 }
   
 
-}}}
+}}}}
 
 #endif // swc_fsbroker_handlers_Mkdirs_h

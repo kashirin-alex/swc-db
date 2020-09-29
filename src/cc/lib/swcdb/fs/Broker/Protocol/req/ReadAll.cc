@@ -7,11 +7,11 @@
 #include "swcdb/fs/Broker/Protocol/req/ReadAll.h"
 
 
-namespace SWC { namespace FS { namespace Protocol { namespace Req {
+namespace SWC { namespace FsBroker { namespace Protocol { namespace Req {
 
   
 ReadAll::ReadAll(uint32_t timeout, const std::string& name, StaticBuffer* dst,
-                 const Callback::ReadAllCb_t& cb)
+                 const FS::Callback::ReadAllCb_t& cb)
                 : buffer(dst), name(name), cb(cb) {
   SWC_LOGF(LOG_DEBUG, "read-all timeout=%d %s", timeout, name.c_str());
 

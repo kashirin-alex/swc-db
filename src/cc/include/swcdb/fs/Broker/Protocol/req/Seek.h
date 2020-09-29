@@ -9,22 +9,22 @@
 #include "swcdb/fs/Broker/Protocol/req/Base.h"
 #include "swcdb/fs/Broker/Protocol/params/Seek.h"
 
-namespace SWC { namespace FS { namespace Protocol { namespace Req {
+namespace SWC { namespace FsBroker { namespace Protocol { namespace Req {
 
 class Seek : public Base {
 
   public:
   
-  Seek(uint32_t timeout, SmartFd::Ptr& smartfd, size_t offset,
-       const Callback::SeekCb_t& cb=0);
+  Seek(uint32_t timeout, FS::SmartFd::Ptr& smartfd, size_t offset,
+       const FS::Callback::SeekCb_t& cb=0);
 
   std::promise<void> promise();
 
   void handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) override;
 
   private:
-  SmartFd::Ptr        smartfd;
-  Callback::SeekCb_t  cb;
+  FS::SmartFd::Ptr        smartfd;
+  FS::Callback::SeekCb_t  cb;
 
 };
 

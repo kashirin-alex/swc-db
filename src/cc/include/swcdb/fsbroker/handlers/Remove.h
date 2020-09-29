@@ -10,7 +10,7 @@
 #include "swcdb/fs/Broker/Protocol/params/Remove.h"
 
 
-namespace SWC { namespace FsBroker { namespace Handler {
+namespace SWC { namespace FsBroker { namespace Protocol { namespace Handler {
 
 
 void remove(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
@@ -21,7 +21,7 @@ void remove(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
     const uint8_t *ptr = ev->data.base;
     size_t remain = ev->data.size;
 
-    FS::Protocol::Params::RemoveReq params;
+    Params::RemoveReq params;
     params.decode(&ptr, &remain);
 
     Env::FsInterface::fs()->remove(err, params.fname);
@@ -48,6 +48,6 @@ void remove(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
 }
   
 
-}}}
+}}}}
 
 #endif // swc_fsbroker_handlers_Remove_h
