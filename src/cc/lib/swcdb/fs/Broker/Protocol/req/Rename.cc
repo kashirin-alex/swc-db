@@ -15,7 +15,7 @@ Rename::Rename(uint32_t timeout, const std::string& from, const std::string& to,
               : from(from), to(to), cb(cb) {
   SWC_LOGF(LOG_DEBUG, "rename '%s' to '%s'", from.c_str(), to.c_str());
 
-  cbp = Comm::CommBuf::make(Params::RenameReq(from, to));
+  cbp = Comm::Buffers::make(Params::RenameReq(from, to));
   cbp->header.set(Cmd::FUNCTION_RENAME, timeout);
 }
 

@@ -14,7 +14,7 @@ ColumnUpdate::ColumnUpdate(const Manager::Ranger::Ptr& rgr,
                            const DB::Schema::Ptr& schema)
                           : Comm::client::ConnQueue::ReqBase(false), 
                             rgr(rgr), schema(schema) {
-  cbp = Comm::CommBuf::make(Params::ColumnUpdate(schema));
+  cbp = Comm::Buffers::make(Params::ColumnUpdate(schema));
   cbp->header.set(SCHEMA_UPDATE, 60000);
 }
   

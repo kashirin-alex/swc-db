@@ -28,7 +28,7 @@ void rgr_mng_id(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
         req_params.print(SWC_LOG_OSTREAM << ' ');
       );
         
-      auto cbp = Comm::CommBuf::make(
+      auto cbp = Comm::Buffers::make(
         Params::RgrMngId(0, Params::RgrMngId::Flag::MNGR_NOT_ACTIVE)
       );
       cbp->header.initialize_from_request_header(ev->header);
@@ -47,7 +47,7 @@ void rgr_mng_id(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
           req_params.print(SWC_LOG_OSTREAM << ' ');
         );
 
-        auto cbp = Comm::CommBuf::make(
+        auto cbp = Comm::Buffers::make(
           Params::RgrMngId(rgrid, Params::RgrMngId::Flag::MNGR_ASSIGNED)
         );
         cbp->header.initialize_from_request_header(ev->header);
@@ -69,7 +69,7 @@ void rgr_mng_id(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
             req_params.print(SWC_LOG_OSTREAM << ' ');
           );
             
-          auto cbp = Comm::CommBuf::make(
+          auto cbp = Comm::Buffers::make(
             Params::RgrMngId(0, Params::RgrMngId::Flag::MNGR_REREQ)
           );
           cbp->header.initialize_from_request_header(ev->header);
@@ -87,7 +87,7 @@ void rgr_mng_id(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
           );
 
         if(rgrid) {
-          auto cbp = Comm::CommBuf::make(
+          auto cbp = Comm::Buffers::make(
             Params::RgrMngId(rgrid, Params::RgrMngId::Flag::MNGR_REASSIGN)
           );
           cbp->header.initialize_from_request_header(ev->header);
@@ -106,7 +106,7 @@ void rgr_mng_id(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
           req_params.print(SWC_LOG_OSTREAM << ' ');
         );
       
-        auto cbp = Comm::CommBuf::make(
+        auto cbp = Comm::Buffers::make(
           Params::RgrMngId(
             req_params.rgrid, Params::RgrMngId::Flag::RS_SHUTTINGDOWN)
         );

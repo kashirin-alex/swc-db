@@ -15,7 +15,7 @@ Remove::Remove(uint32_t timeout, const std::string& name,
               : name(name), cb(cb) {
   SWC_LOGF(LOG_DEBUG, "remove path='%s'", name.c_str());
 
-  cbp = Comm::CommBuf::make(Params::RemoveReq(name));
+  cbp = Comm::Buffers::make(Params::RemoveReq(name));
   cbp->header.set(Cmd::FUNCTION_REMOVE, timeout);
 }
 

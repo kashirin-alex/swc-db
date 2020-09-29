@@ -9,7 +9,7 @@ namespace SWC { namespace Comm { namespace client {
 
 
 
-ConnQueueReqBase::ConnQueueReqBase(bool insistent, const CommBuf::Ptr& cbp)
+ConnQueueReqBase::ConnQueueReqBase(bool insistent, const Buffers::Ptr& cbp)
                                   : insistent(insistent), cbp(cbp), 
                                     queue(nullptr) {
 }

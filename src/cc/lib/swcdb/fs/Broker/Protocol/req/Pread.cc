@@ -21,7 +21,7 @@ Pread::Pread(uint32_t timeout, SmartFd::Ptr& smartfd,
                     offset, len, timeout);
     smartfd->print(SWC_LOG_OSTREAM);
   );
-  cbp = Comm::CommBuf::make(Params::PreadReq(smartfd->fd(), offset, len));
+  cbp = Comm::Buffers::make(Params::PreadReq(smartfd->fd(), offset, len));
   cbp->header.set(Cmd::FUNCTION_PREAD, timeout);
 }
 

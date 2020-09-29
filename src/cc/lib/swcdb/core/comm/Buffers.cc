@@ -4,7 +4,7 @@
  */
 
 
-#include "swcdb/core/comm/CommBuf.h"
+#include "swcdb/core/comm/Buffers.h"
 #include "swcdb/core/Serialization.h"
 #include "swcdb/core/Checksum.h"
 
@@ -15,63 +15,63 @@ static const uint16_t BUFFER_CHUNK_SZ = 4096;
 }
 
 SWC_SHOULD_INLINE
-CommBuf::Ptr CommBuf::make(uint32_t reserve) {
-  return std::make_shared<CommBuf>(reserve);
+Buffers::Ptr Buffers::make(uint32_t reserve) {
+  return std::make_shared<Buffers>(reserve);
 }
 
 SWC_SHOULD_INLINE
-CommBuf::Ptr CommBuf::make(const Serializable& params, uint32_t reserve) {
-  return std::make_shared<CommBuf>(params, reserve);
+Buffers::Ptr Buffers::make(const Serializable& params, uint32_t reserve) {
+  return std::make_shared<Buffers>(params, reserve);
 }
 
 SWC_SHOULD_INLINE
-CommBuf::Ptr CommBuf::make(const Serializable& params, StaticBuffer& buffer, 
+Buffers::Ptr Buffers::make(const Serializable& params, StaticBuffer& buffer, 
                            uint32_t reserve) {
-  return std::make_shared<CommBuf>(params, buffer, reserve);
+  return std::make_shared<Buffers>(params, buffer, reserve);
 }
 
 SWC_SHOULD_INLINE
-CommBuf::Ptr CommBuf::make(StaticBuffer& buffer, uint32_t reserve) {
-  return std::make_shared<CommBuf>(buffer, reserve);
+Buffers::Ptr Buffers::make(StaticBuffer& buffer, uint32_t reserve) {
+  return std::make_shared<Buffers>(buffer, reserve);
 }
 
 SWC_SHOULD_INLINE
-CommBuf::Ptr 
-CommBuf::create_error_message(int error, const char *msg, uint16_t len) {
-  auto cbp = CommBuf::make(4 + Serialization::encoded_length_bytes(len));
+Buffers::Ptr 
+Buffers::create_error_message(int error, const char *msg, uint16_t len) {
+  auto cbp = Buffers::make(4 + Serialization::encoded_length_bytes(len));
   Serialization::encode_i32(&cbp->data_ptr, error);
   Serialization::encode_bytes(&cbp->data_ptr, msg, len);
   return cbp;
 }
 
-CommBuf::CommBuf(uint32_t reserve) {
+Buffers::Buffers(uint32_t reserve) {
   if(reserve)
     set_data(reserve);
 }
 
-CommBuf::CommBuf(const Serializable& params, uint32_t reserve) {
+Buffers::Buffers(const Serializable& params, uint32_t reserve) {
   set_data(params, reserve);
 }
 
-CommBuf::CommBuf(const Serializable& params, StaticBuffer& buffer, 
+Buffers::Buffers(const Serializable& params, StaticBuffer& buffer, 
                 uint32_t reserve) : buf_ext(buffer) {
   set_data(params, reserve);
 }
 
-CommBuf::CommBuf(StaticBuffer& buffer, uint32_t reserve) 
+Buffers::Buffers(StaticBuffer& buffer, uint32_t reserve) 
                 : buf_ext(buffer) {
   if(reserve)
     set_data(reserve);
 }
 
-CommBuf::~CommBuf() { }
+Buffers::~Buffers() { }
 
-void CommBuf::set_data(uint32_t sz) {
+void Buffers::set_data(uint32_t sz) {
   buf_data.reallocate(sz);
   data_ptr = buf_data.base; 
 }
 
-void CommBuf::set_data(const Serializable& params, uint32_t reserve) {
+void Buffers::set_data(const Serializable& params, uint32_t reserve) {
   set_data(reserve + params.encoded_length());
 
   data_ptr = buf_data.base + reserve;
@@ -80,7 +80,7 @@ void CommBuf::set_data(const Serializable& params, uint32_t reserve) {
 }
 
 SWC_SHOULD_INLINE
-void CommBuf::write_header() {
+void Buffers::write_header() {
   if(buf_data.size) {
     header.data_size   = buf_data.size;
     header.data_chksum = checksum32(buf_data.base, buf_data.size);
@@ -94,7 +94,7 @@ void CommBuf::write_header() {
   header.encode(&buf);
 }
 
-std::vector<asio::const_buffer> CommBuf::get_buffers() {
+std::vector<asio::const_buffer> Buffers::get_buffers() {
   write_header();
 
   size_t sz = 1;
@@ -147,12 +147,12 @@ std::vector<asio::const_buffer> CommBuf::get_buffers() {
 }
 
 SWC_SHOULD_INLINE
-void CommBuf::append_i8(uint8_t ival) {
+void Buffers::append_i8(uint8_t ival) {
   Serialization::encode_i8(&data_ptr, ival);
 }
 
 SWC_SHOULD_INLINE
-void CommBuf::append_i32(uint32_t ival) {
+void Buffers::append_i32(uint32_t ival) {
   Serialization::encode_i32(&data_ptr, ival);
 }
 

@@ -23,7 +23,7 @@ class RangeIsLoaded : public Comm::client::ConnQueue::ReqBase {
                 const Manager::Range::Ptr& range, uint32_t timeout=60000)
                 : Comm::client::ConnQueue::ReqBase(false), 
                   checker(checker), range(range) { 
-    cbp = Comm::CommBuf::make(Params::RangeIsLoaded(range->cfg->cid, range->rid));
+    cbp = Comm::Buffers::make(Params::RangeIsLoaded(range->cfg->cid, range->rid));
     cbp->header.set(RANGE_IS_LOADED, timeout);
   }
   

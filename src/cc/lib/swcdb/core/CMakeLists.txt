@@ -58,7 +58,7 @@ set(swcdb_core_comm_sources
   comm/Resolver.cc
   comm/Event.cc
   comm/CommHeader.cc
-  comm/CommBuf.cc
+  comm/Buffers.cc
   comm/ConnHandler.cc
   comm/AppContext.cc
   comm/DispatchHandler.cc

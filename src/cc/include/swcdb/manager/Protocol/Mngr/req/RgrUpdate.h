@@ -17,7 +17,7 @@ class RgrUpdate : public Comm::client::ConnQueue::ReqBase {
 
   RgrUpdate(const Manager::RangerList &hosts, bool sync_all)
             : Comm::client::ConnQueue::ReqBase(true) {
-    cbp = Comm::CommBuf::make(Params::RgrUpdate(hosts, sync_all));
+    cbp = Comm::Buffers::make(Params::RgrUpdate(hosts, sync_all));
     cbp->header.set(RGR_UPDATE, 60000);
   }
   

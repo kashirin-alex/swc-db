@@ -26,7 +26,7 @@ RangeLocate::RangeLocate(const Params::RangeLocateReq& params,
                          const RangeLocate::Cb_t& cb, const uint32_t timeout)
                         : Comm::client::ConnQueue::ReqBase(false), 
                           endpoints(endpoints), cb(cb) {
-  cbp = Comm::CommBuf::make(params);
+  cbp = Comm::Buffers::make(params);
   cbp->header.set(RANGE_LOCATE, timeout);
 }
 

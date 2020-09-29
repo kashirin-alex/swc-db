@@ -15,7 +15,7 @@ namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
 
 ColumnCompact::ColumnCompact(cid_t cid) 
               : Comm::client::ConnQueue::ReqBase(false) {
-  cbp = Comm::CommBuf::make(Params::ColumnCompactReq(cid));
+  cbp = Comm::Buffers::make(Params::ColumnCompactReq(cid));
   cbp->header.set(COLUMN_COMPACT, 60000);
 }
 

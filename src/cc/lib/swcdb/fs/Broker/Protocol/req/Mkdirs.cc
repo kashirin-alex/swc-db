@@ -15,7 +15,7 @@ Mkdirs::Mkdirs(uint32_t timeout, const std::string& name,
               : name(name), cb(cb) {
   SWC_LOGF(LOG_DEBUG, "mkdirs path='%s'", name.c_str());
 
-  cbp = Comm::CommBuf::make(Params::MkdirsReq(name));
+  cbp = Comm::Buffers::make(Params::MkdirsReq(name));
   cbp->header.set(Cmd::FUNCTION_MKDIRS, timeout);
 }
 

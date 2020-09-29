@@ -18,7 +18,7 @@ class MngrColumnGet : public Comm::client::ConnQueue::ReqBase {
 
   MngrColumnGet(const Params::ColumnGetReq& params, const Cb_t& cb) 
                 : Comm::client::ConnQueue::ReqBase(true), cb(cb) {
-    cbp = Comm::CommBuf::make(params);
+    cbp = Comm::Buffers::make(params);
     cbp->header.set(COLUMN_GET, 60000);
   }
   

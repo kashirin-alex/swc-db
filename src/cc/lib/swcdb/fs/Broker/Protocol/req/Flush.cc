@@ -18,7 +18,7 @@ Flush::Flush(uint32_t timeout, SmartFd::Ptr& smartfd,
     smartfd->print(SWC_LOG_OSTREAM);
   );
 
-  cbp = Comm::CommBuf::make(Params::FlushReq(smartfd->fd()));
+  cbp = Comm::Buffers::make(Params::FlushReq(smartfd->fd()));
   cbp->header.set(Cmd::FUNCTION_FLUSH, timeout);
 }
 

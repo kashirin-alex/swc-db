@@ -36,7 +36,7 @@ void column_compact(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev
   
   send_response:
     try {
-      auto cbp = Comm::CommBuf::make(rsp_params);
+      auto cbp = Comm::Buffers::make(rsp_params);
       cbp->header.initialize_from_request_header(ev->header);
       conn->send_response(cbp);
     } catch(...) {

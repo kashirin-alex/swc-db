@@ -36,7 +36,7 @@ RangeQueryUpdate::RangeQueryUpdate(
                   endpoints(endpoints), cb(cb) {
   // timeout by buffer->fill() bytes ratio
     StaticBuffer snd_buf(buffer->base, buffer->fill(), false);
-  cbp = Comm::CommBuf::make(params, snd_buf);
+  cbp = Comm::Buffers::make(params, snd_buf);
   cbp->header.set(RANGE_QUERY_UPDATE, timeout);
 }
 

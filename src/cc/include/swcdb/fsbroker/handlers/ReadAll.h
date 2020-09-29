@@ -67,7 +67,7 @@ void read_all(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
     return;
 
   try {
-    auto cbp = err ? Comm::CommBuf::make(4) : Comm::CommBuf::make(rbuf, 4); 
+    auto cbp = err ? Comm::Buffers::make(4) : Comm::Buffers::make(rbuf, 4); 
     cbp->header.initialize_from_request_header(ev->header);
     cbp->append_i32(err);
     conn->send_response(cbp);

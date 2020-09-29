@@ -32,7 +32,7 @@ class RgrMngId: public Comm::client::ConnQueue::ReqBase {
 
   void create(const Params::RgrMngId& params) {
     std::lock_guard lock(m_mutex);
-    cbp = Comm::CommBuf::make(params);
+    cbp = Comm::Buffers::make(params);
     cbp->header.set(RGR_MNG_ID, 60000);
   }
 

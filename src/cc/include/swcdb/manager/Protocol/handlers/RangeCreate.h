@@ -50,7 +50,7 @@ void range_create(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) 
     try {
       SWC_PRINT << "RangeCreate(RSP): " << rsp_params.to_string() 
                 << SWC_PRINT_CLOSE;
-      auto cbp = Comm::CommBuf::make(rsp_params);
+      auto cbp = Comm::Buffers::make(rsp_params);
       cbp->header.initialize_from_request_header(ev->header);
       conn->send_response(cbp);
     } catch(...) {

@@ -13,7 +13,7 @@ namespace SWC { namespace Comm {
 
 
 SWC_SHOULD_INLINE
-ConnHandler::Pending::Pending(CommBuf::Ptr& cbuf, DispatchHandler::Ptr& hdlr)
+ConnHandler::Pending::Pending(Buffers::Ptr& cbuf, DispatchHandler::Ptr& hdlr)
                               : cbuf(cbuf), hdlr(hdlr), timer(nullptr) {
 }
 
@@ -114,7 +114,7 @@ bool ConnHandler::send_error(int error, const std::string& msg,
     return false;
 
   size_t max_msg_size = std::numeric_limits<int16_t>::max();
-  auto cbp = CommBuf::create_error_message(
+  auto cbp = Buffers::create_error_message(
     error, msg.c_str(),
     msg.length() < max_msg_size ?  msg.length() : max_msg_size);
   if(ev)
@@ -126,14 +126,14 @@ bool ConnHandler::response_ok(const Event::Ptr& ev) {
   if(!connected)
     return false;
       
-  auto cbp = CommBuf::make(4);
+  auto cbp = Buffers::make(4);
   if(ev)
     cbp->header.initialize_from_request_header(ev->header);
   cbp->append_i32(Error::OK);
   return send_response(cbp);
 }
 
-bool ConnHandler::send_response(CommBuf::Ptr& cbuf, 
+bool ConnHandler::send_response(Buffers::Ptr& cbuf, 
                                 DispatchHandler::Ptr hdlr) {
   if(!connected)
     return false;
@@ -142,7 +142,7 @@ bool ConnHandler::send_response(CommBuf::Ptr& cbuf,
   return true;
 }
 
-bool ConnHandler::send_request(CommBuf::Ptr& cbuf, 
+bool ConnHandler::send_request(Buffers::Ptr& cbuf, 
                                DispatchHandler::Ptr hdlr) {
   if(!connected)
     return false;

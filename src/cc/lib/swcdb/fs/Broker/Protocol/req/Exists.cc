@@ -15,7 +15,7 @@ Exists::Exists(uint32_t timeout, const std::string& name,
               : name(name), cb(cb) {
   SWC_LOGF(LOG_DEBUG, "exists path='%s'", name.c_str());
 
-  cbp = Comm::CommBuf::make(Params::ExistsReq(name));
+  cbp = Comm::Buffers::make(Params::ExistsReq(name));
   cbp->header.set(Cmd::FUNCTION_EXISTS, timeout);
 }
 

@@ -40,7 +40,7 @@ class RangeQueryUpdate : public Comm::ResponseCallback {
   
   void response(const Protocol::Rgr::Params::RangeQueryUpdateRsp& params) {
     try {
-      auto cbp = Comm::CommBuf::make(params);
+      auto cbp = Comm::Buffers::make(params);
       cbp->header.initialize_from_request_header(m_ev->header);
       m_conn->send_response(cbp);
 

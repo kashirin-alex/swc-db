@@ -3,8 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_core_comm_CommBuf_h
-#define swc_core_comm_CommBuf_h
+#ifndef swc_core_comm_Buffers_h
+#define swc_core_comm_Buffers_h
 
 #include <asio.hpp>
 #include "swcdb/core/Serializable.h"
@@ -18,10 +18,10 @@
 namespace SWC { namespace Comm {
 
 
-class CommBuf final {
+class Buffers final {
   public:
 
-  typedef std::shared_ptr<CommBuf> Ptr;
+  typedef std::shared_ptr<Buffers> Ptr;
 
   static Ptr make(uint32_t reserve=0);
 
@@ -35,16 +35,16 @@ class CommBuf final {
   static Ptr create_error_message(int error, const char *msg, uint16_t len);
 
 
-  CommBuf(uint32_t reserve=0);
+  Buffers(uint32_t reserve=0);
 
-  CommBuf(const Serializable& params, uint32_t reserve=0);
+  Buffers(const Serializable& params, uint32_t reserve=0);
 
-  CommBuf(const Serializable& params, StaticBuffer& buffer, 
+  Buffers(const Serializable& params, StaticBuffer& buffer, 
           uint32_t reserve=0);
 
-  CommBuf(StaticBuffer& buffer, uint32_t reserve=0);
+  Buffers(StaticBuffer& buffer, uint32_t reserve=0);
 
-  ~CommBuf();
+  ~Buffers();
 
   void set_data(uint32_t sz);
 
@@ -76,7 +76,7 @@ class CommBuf final {
 
 
 #ifdef SWC_IMPL_SOURCE
-#include "swcdb/core/comm/CommBuf.cc"
+#include "swcdb/core/comm/Buffers.cc"
 #endif 
 
-#endif // swc_core_comm_CommBuf_h
+#endif // swc_core_comm_Buffers_h

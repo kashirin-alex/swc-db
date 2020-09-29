@@ -15,7 +15,7 @@ ReadAll::ReadAll(uint32_t timeout, const std::string& name, StaticBuffer* dst,
                 : buffer(dst), name(name), cb(cb) {
   SWC_LOGF(LOG_DEBUG, "read-all timeout=%d %s", timeout, name.c_str());
 
-  cbp = Comm::CommBuf::make(Params::ReadAllReq(name));
+  cbp = Comm::Buffers::make(Params::ReadAllReq(name));
   cbp->header.set(Cmd::FUNCTION_READ_ALL, timeout);
 }
 

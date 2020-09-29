@@ -37,7 +37,7 @@ void column_list(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
   }
 
   try {
-    auto cbp = err ? Comm::CommBuf::make(4) : Comm::CommBuf::make(rsp, 4);
+    auto cbp = err ? Comm::Buffers::make(4) : Comm::Buffers::make(rsp, 4);
     cbp->header.initialize_from_request_header(ev->header);
     cbp->append_i32(err);
     conn->send_response(cbp);

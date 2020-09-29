@@ -39,7 +39,7 @@ class RangeRemove: public Comm::client::ConnQueue::ReqBase {
               const uint32_t timeout) 
               : Comm::client::ConnQueue::ReqBase(false), 
                 cb(cb), cid(params.cid) {
-    cbp = Comm::CommBuf::make(params);
+    cbp = Comm::Buffers::make(params);
     cbp->header.set(RANGE_REMOVE, timeout);
   }
 

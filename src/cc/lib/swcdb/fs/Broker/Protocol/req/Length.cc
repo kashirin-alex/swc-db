@@ -15,7 +15,7 @@ Length::Length(uint32_t timeout, const std::string& name,
               : length(0), name(name), cb(cb) {
   SWC_LOGF(LOG_DEBUG, "length path='%s'", name.c_str());
 
-  cbp = Comm::CommBuf::make(Params::LengthReq(name));
+  cbp = Comm::Buffers::make(Params::LengthReq(name));
   cbp->header.set(Cmd::FUNCTION_LENGTH, timeout);
 }
 

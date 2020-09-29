@@ -17,7 +17,7 @@ RangeUnload::RangeUnload(const Ranger::RangePtr& range,
                          uint32_t timeout) 
                         : Comm::client::ConnQueue::ReqBase(false), 
                           cb(cb), range(range) {
-  cbp = Comm::CommBuf::make(Common::Params::ColRangeId(range->cfg->cid, range->rid));
+  cbp = Comm::Buffers::make(Common::Params::ColRangeId(range->cfg->cid, range->rid));
   cbp->header.set(RANGE_UNLOAD, timeout);
 }
 

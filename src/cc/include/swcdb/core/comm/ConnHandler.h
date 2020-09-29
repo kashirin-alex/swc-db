@@ -14,7 +14,7 @@
 #include "swcdb/core/Error.h"
 #include "swcdb/core/QueueSafeStated.h"
 #include "swcdb/core/comm/Event.h"
-#include "swcdb/core/comm/CommBuf.h"
+#include "swcdb/core/comm/Buffers.h"
 #include "swcdb/core/comm/Resolver.h"
 
 #include "swcdb/core/comm/AppContext.h"
@@ -32,11 +32,11 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
 
   struct Pending {
-    CommBuf::Ptr                  cbuf;
+    Buffers::Ptr                  cbuf;
     DispatchHandler::Ptr          hdlr;
     asio::high_resolution_timer*  timer;
 
-    Pending(CommBuf::Ptr& cbuf, DispatchHandler::Ptr& hdlr);
+    Pending(Buffers::Ptr& cbuf, DispatchHandler::Ptr& hdlr);
     
     Pending(const Pending&) = delete;
 
@@ -90,9 +90,9 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
   bool response_ok(const Event::Ptr& ev);
 
-  bool send_response(CommBuf::Ptr& cbuf, DispatchHandler::Ptr hdlr=nullptr);
+  bool send_response(Buffers::Ptr& cbuf, DispatchHandler::Ptr hdlr=nullptr);
 
-  bool send_request(CommBuf::Ptr& cbuf, DispatchHandler::Ptr hdlr);
+  bool send_request(Buffers::Ptr& cbuf, DispatchHandler::Ptr hdlr);
 
   void accept_requests();
 

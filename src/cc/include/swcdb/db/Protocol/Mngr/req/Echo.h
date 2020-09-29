@@ -20,7 +20,7 @@ class Echo : public Comm::DispatchHandler {
        : conn(conn), cb(cb) { 
 
     if(!buf_sz) {
-      cbp = Comm::CommBuf::make();
+      cbp = Comm::Buffers::make();
 
     } else {
       StaticBuffer sndbuf(buf_sz);
@@ -36,7 +36,7 @@ class Echo : public Comm::DispatchHandler {
         *ptr++ = i;
       }
       
-      cbp = Comm::CommBuf::make(sndbuf);
+      cbp = Comm::Buffers::make(sndbuf);
     }
     
     cbp->header.set(DO_ECHO, 60000);
@@ -57,7 +57,7 @@ class Echo : public Comm::DispatchHandler {
   private:
   Comm::ConnHandlerPtr        conn;
   EchoCb_t                    cb;
-  Comm::CommBuf::Ptr          cbp;
+  Comm::Buffers::Ptr          cbp;
 };
 
 }}}}

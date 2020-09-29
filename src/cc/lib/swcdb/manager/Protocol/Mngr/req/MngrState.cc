@@ -15,7 +15,7 @@ MngrState::MngrState(const Comm::ResponseCallback::Ptr& cb,
                      uint64_t token, const Comm::EndPoint& mngr_host, 
                      uint32_t timeout) 
                     : Comm::client::ConnQueue::ReqBase(true), cb(cb) {
-  cbp = Comm::CommBuf::make(Params::MngrState(states, token, mngr_host));
+  cbp = Comm::Buffers::make(Params::MngrState(states, token, mngr_host));
   cbp->header.set(MNGR_STATE, timeout);
 }
   

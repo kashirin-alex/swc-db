@@ -76,7 +76,7 @@ void rgr_get(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
     );
 
     try {
-      auto cbp = Comm::CommBuf::make(rsp_params);
+      auto cbp = Comm::Buffers::make(rsp_params);
       cbp->header.initialize_from_request_header(ev->header);
       conn->send_response(cbp);
     } catch(...) {

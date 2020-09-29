@@ -38,8 +38,8 @@ void mngr_update_response(const Comm::ConnHandlerPtr& conn, const Comm::Event::P
 
   try {
     auto cbp = err ? 
-        Comm::CommBuf::make(4)
-      : Comm::CommBuf::make(Params::ColumnGetRsp(flag, schema), 4);
+        Comm::Buffers::make(4)
+      : Comm::Buffers::make(Params::ColumnGetRsp(flag, schema), 4);
     cbp->header.initialize_from_request_header(ev->header);
     cbp->append_i32(err);
     conn->send_response(cbp);

@@ -45,7 +45,7 @@ void create(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
     return;
 
   try {
-    auto cbp = Comm::CommBuf::make(FS::Protocol::Params::OpenRsp(fd), 4);
+    auto cbp = Comm::Buffers::make(FS::Protocol::Params::OpenRsp(fd), 4);
     cbp->header.initialize_from_request_header(ev->header);
     cbp->append_i32(err);
     conn->send_response(cbp);

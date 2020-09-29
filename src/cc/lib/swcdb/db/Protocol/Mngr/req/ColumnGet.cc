@@ -52,7 +52,7 @@ ColumnGet::ColumnGet(const Params::ColumnGetReq& params,
                      const ColumnGet::Cb_t& cb, 
                      const uint32_t timeout) 
                     : Comm::client::ConnQueue::ReqBase(false), cb(cb) {
-  cbp = Comm::CommBuf::make(params);
+  cbp = Comm::Buffers::make(params);
   cbp->header.set(COLUMN_GET, timeout);
 }
 

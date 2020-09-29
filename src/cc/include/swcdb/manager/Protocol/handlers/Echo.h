@@ -14,8 +14,8 @@ namespace SWC { namespace Protocol { namespace Mngr { namespace Handler {
 void do_echo(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
   try {
     auto cbp = ev->data_ext.size ? 
-                  Comm::CommBuf::make(ev->data_ext) 
-                : Comm::CommBuf::make();
+                  Comm::Buffers::make(ev->data_ext) 
+                : Comm::Buffers::make();
     cbp->header.initialize_from_request_header(ev->header);
     conn->send_response(cbp);
   } catch(...) {

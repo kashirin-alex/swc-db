@@ -16,7 +16,7 @@ RangeLoad::RangeLoad(const Manager::Ranger::Ptr& rgr,
                     : Comm::client::ConnQueue::ReqBase(false), 
                       rgr(rgr), range(range), 
                       schema_revision(schema->revision) {
-  cbp = Comm::CommBuf::make(Params::RangeLoad(range->cfg->cid, range->rid, schema));
+  cbp = Comm::Buffers::make(Params::RangeLoad(range->cfg->cid, range->rid, schema));
   cbp->header.set(RANGE_LOAD, 3600000);
 }
   

@@ -18,7 +18,7 @@ Open::Open(FileSystem::Ptr fs, uint32_t timeout, SmartFd::Ptr& smartfd,
     smartfd->print(SWC_LOG_OSTREAM); 
   );
 
-  cbp = Comm::CommBuf::make(
+  cbp = Comm::Buffers::make(
     Params::OpenReq(smartfd->filepath(), smartfd->flags(), bufsz));
   cbp->header.set(Cmd::FUNCTION_OPEN, timeout);
 }

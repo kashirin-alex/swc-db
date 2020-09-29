@@ -34,7 +34,7 @@ ColumnCompact::ColumnCompact(const Params::ColumnCompactReq& params,
                              const uint32_t timeout) 
                             : Comm::client::ConnQueue::ReqBase(false), 
                               cb(cb), cid(params.cid) {
-  cbp = Comm::CommBuf::make(params);
+  cbp = Comm::Buffers::make(params);
   cbp->header.set(COLUMN_COMPACT, timeout);
 }
 

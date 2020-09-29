@@ -19,7 +19,7 @@ Read::Read(uint32_t timeout, SmartFd::Ptr& smartfd, void* dst, size_t len,
     smartfd->print(SWC_LOG_OSTREAM);
   );
 
-  cbp = Comm::CommBuf::make(Params::ReadReq(smartfd->fd(), len));
+  cbp = Comm::Buffers::make(Params::ReadReq(smartfd->fd(), len));
   cbp->header.set(Cmd::FUNCTION_READ, timeout);
 }
 

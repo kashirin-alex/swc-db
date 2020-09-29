@@ -135,7 +135,7 @@ class RangeLocateScan : public ReqScan {
       params.err = Error::RANGE_NOT_FOUND;
     
     try {
-      auto cbp = Comm::CommBuf::make(params);
+      auto cbp = Comm::Buffers::make(params);
       cbp->header.initialize_from_request_header(m_ev->header);
       m_conn->send_response(cbp);
 

@@ -46,7 +46,7 @@ void append(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
     return;
 
   try {
-    auto cbp = Comm::CommBuf::make(
+    auto cbp = Comm::Buffers::make(
       FS::Protocol::Params::AppendRsp(offset, amount), 4);
     cbp->header.initialize_from_request_header(ev->header);
     cbp->append_i32(err);

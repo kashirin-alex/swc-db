@@ -35,7 +35,7 @@ class ColumnsUnloaded : public Comm::ResponseCallback {
       return;
 
     try {
-      auto cbp = Comm::CommBuf::make(m_rsp_params);
+      auto cbp = Comm::Buffers::make(m_rsp_params);
       cbp->header.initialize_from_request_header(m_ev->header);
       m_conn->send_response(cbp);
 

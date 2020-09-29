@@ -15,7 +15,7 @@ Rmdir::Rmdir(uint32_t timeout, const std::string& name,
             : name(name), cb(cb) {
   SWC_LOGF(LOG_DEBUG, "rmdir path='%s'", name.c_str());
 
-  cbp = Comm::CommBuf::make(Params::RmdirReq(name));
+  cbp = Comm::Buffers::make(Params::RmdirReq(name));
   cbp->header.set(Cmd::FUNCTION_RMDIR, timeout);
 }
 

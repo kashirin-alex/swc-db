@@ -31,7 +31,7 @@ void mngr_active(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
   }
 
   try {
-    auto cbp = Comm::CommBuf::make(
+    auto cbp = Comm::Buffers::make(
       Params::MngrActiveRsp(h ? h->endpoints : Comm::EndPoints()) );
     cbp->header.initialize_from_request_header(ev->header);
     conn->send_response(cbp);

@@ -46,7 +46,7 @@ void range_locate(const Comm::ConnHandlerPtr& conn,
         rsp_params.print(SWC_LOG_OSTREAM << ' ');
       );
 
-      auto cbp = Comm::CommBuf::make(rsp_params);
+      auto cbp = Comm::Buffers::make(rsp_params);
       cbp->header.initialize_from_request_header(ev->header);
       conn->send_response(cbp);
 

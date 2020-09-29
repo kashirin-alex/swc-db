@@ -18,7 +18,7 @@ class Base : public Comm::DispatchHandler {
 
   using Ptr = BasePtr;
 
-  Comm::CommBuf::Ptr  cbp;
+  Comm::Buffers::Ptr  cbp;
   int                 error;
 
   Base();

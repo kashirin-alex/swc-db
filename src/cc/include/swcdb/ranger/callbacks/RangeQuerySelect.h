@@ -87,13 +87,13 @@ class RangeQuerySelect : public ReqScan {
     Protocol::Rgr::Params::RangeQuerySelectRsp params(
       err, err ? false : reached_limits(), offset);
 
-    Comm::CommBuf::Ptr cbp;
+    Comm::Buffers::Ptr cbp;
     if(!cells.empty()) {
       Env::Rgr::res().less_mem_usage(cells.fill());
       StaticBuffer sndbuf(cells);
-      cbp = Comm::CommBuf::make(params, sndbuf);
+      cbp = Comm::Buffers::make(params, sndbuf);
     } else {
-      cbp = Comm::CommBuf::make(params);
+      cbp = Comm::Buffers::make(params);
     }
     cbp->header.initialize_from_request_header(m_ev->header);
     

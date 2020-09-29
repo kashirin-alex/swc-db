@@ -18,7 +18,7 @@ Seek::Seek(uint32_t timeout, SmartFd::Ptr& smartfd, size_t offset,
     smartfd->print(SWC_LOG_OSTREAM);
   );
 
-  cbp = Comm::CommBuf::make(Params::SeekReq(smartfd->fd(), offset));
+  cbp = Comm::Buffers::make(Params::SeekReq(smartfd->fd(), offset));
   cbp->header.set(Cmd::FUNCTION_SEEK, timeout);
 }
 

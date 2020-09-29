@@ -18,7 +18,7 @@ ColumnsUnload::ColumnsUnload(const Manager::Ranger::Ptr& rgr,
                             : Comm::client::ConnQueue::ReqBase(false), 
                               rgr(rgr), 
                               cid_begin(cid_begin), cid_end(cid_end) {
-  cbp = Comm::CommBuf::make(Common::Params::ColumnsInterval(cid_begin, cid_end));
+  cbp = Comm::Buffers::make(Common::Params::ColumnsInterval(cid_begin, cid_end));
   cbp->header.set(COLUMNS_UNLOAD, 60000);
 }
   

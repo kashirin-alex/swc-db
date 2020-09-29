@@ -18,7 +18,7 @@ Report::Report(const Comm::EndPoints& endpoints, Params::Report::Function func,
                const uint32_t timeout)
               : Comm::client::ConnQueue::ReqBase(false), 
                 endpoints(endpoints) {
-  cbp = Comm::CommBuf::make(1);
+  cbp = Comm::Buffers::make(1);
   cbp->append_i8((uint8_t)func);
   cbp->header.set(REPORT, timeout);
 }
@@ -27,7 +27,7 @@ Report::Report(const Comm::EndPoints& endpoints, Params::Report::Function func,
                const Serializable& params, const uint32_t timeout) 
               : Comm::client::ConnQueue::ReqBase(false), 
                 endpoints(endpoints) {
-  cbp = Comm::CommBuf::make(params, 1);
+  cbp = Comm::Buffers::make(params, 1);
   cbp->append_i8((uint8_t)func);
   cbp->header.set(REPORT, timeout);
 }

@@ -35,7 +35,7 @@ MngrActive::MngrActive(const uint8_t& role, const cid_t& cid,
                         timer(asio::high_resolution_timer(
                           *Env::Clients::get()->mngr->service->io().get())),
                         timeout_ms(timeout_ms) {
-  cbp = Comm::CommBuf::make(Params::MngrActiveReq(role, cid));
+  cbp = Comm::Buffers::make(Params::MngrActiveReq(role, cid));
   cbp->header.set(MNGR_ACTIVE, timeout_ms);
 }
 

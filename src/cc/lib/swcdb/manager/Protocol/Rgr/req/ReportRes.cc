@@ -12,7 +12,7 @@ namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
 
 ReportRes::ReportRes(const Manager::Ranger::Ptr& rgr)
                      : Comm::client::ConnQueue::ReqBase(false), rgr(rgr) {
-  cbp = Comm::CommBuf::make(1);
+  cbp = Comm::Buffers::make(1);
   cbp->append_i8((uint8_t)Params::Report::Function::RESOURCES);
   cbp->header.set(REPORT, 60000);
 }

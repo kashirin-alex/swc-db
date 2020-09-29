@@ -20,7 +20,7 @@ Create::Create(FileSystem::Ptr fs, uint32_t timeout, SmartFd::Ptr& smartfd,
     smartfd->print(SWC_LOG_OSTREAM);
   );
   
-  cbp = Comm::CommBuf::make(
+  cbp = Comm::Buffers::make(
     Params::CreateReq(smartfd->filepath(), smartfd->flags(), 
                       bufsz, replication, blksz)
   );

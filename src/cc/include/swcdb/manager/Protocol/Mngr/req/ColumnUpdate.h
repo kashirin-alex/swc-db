@@ -17,7 +17,7 @@ class ColumnUpdate : public Comm::client::ConnQueue::ReqBase {
 
   ColumnUpdate(Params::ColumnMng::Function function, DB::Schema::Ptr schema, 
                int err) : Comm::client::ConnQueue::ReqBase(true) {
-    cbp = Comm::CommBuf::make(Params::ColumnUpdate(function, schema, err));
+    cbp = Comm::Buffers::make(Params::ColumnUpdate(function, schema, err));
     cbp->header.set(COLUMN_UPDATE, 60000);
   }
   
