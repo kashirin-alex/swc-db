@@ -15,7 +15,7 @@
 
 #include "swcdb/core/FlowRate.h"
 
-namespace SWC{ 
+namespace SWC { 
   
 namespace Config {
 
@@ -87,10 +87,10 @@ void Settings::init_app_options() {
     ("gen-blk-cells", i32(0), "Schema blk-cells")    
     ("gen-blk-encoding", 
       g_enum(
-        (int)Types::Encoding::DEFAULT,
+        (int)Encoder::Type::DEFAULT,
         0,
-        Types::from_string_encoding,
-        Types::repr_encoding
+        Encoder::from_string_encoding,
+        Encoder::repr_encoding
       ), 
      "Schema blk-encoding NONE/ZSTD/SNAPPY/ZLIB")  
 
@@ -469,7 +469,7 @@ void generate() {
   schema->col_type = (Types::Column)settings->get_genum("gen-col-type");
   schema->cell_versions = settings->get_i32("gen-cell-versions");
   schema->cell_ttl = 0;
-  schema->blk_encoding = (Types::Encoding)settings->get_genum("gen-blk-encoding");
+  schema->blk_encoding = (Encoder::Type)settings->get_genum("gen-blk-encoding");
   schema->blk_size = settings->get_i32("gen-blk-size");
   schema->blk_cells = settings->get_i32("gen-blk-cells");
   schema->cs_replication = settings->get_i8("gen-cs-replication");

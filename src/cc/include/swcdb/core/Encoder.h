@@ -6,16 +6,34 @@
 #ifndef swc_core_Encoder_h
 #define swc_core_Encoder_h
 
-#include "swcdb/db/Types/Encoding.h"
+#include "swcdb/core/Buffer.h"
 
 namespace SWC { namespace Encoder {
 
+enum class Type {
+  DEFAULT = 0x00,
+  PLAIN   = 0x01,
+  ZLIB    = 0x02,
+  SNAPPY  = 0x03,
+  ZSTD    = 0x04,
+  UNKNOWN = 0xff
+};
 
-void decode(int& err, Types::Encoding encoder, 
+std::string to_string(Type typ);
+
+Type encoding_from(const std::string& typ);
+
+std::string repr_encoding(int typ);
+
+int from_string_encoding(const std::string& typ);
+
+
+
+void decode(int& err, Type encoder, 
             const uint8_t* src, size_t sz_enc, 
             uint8_t *dst, size_t sz);
 
-void encode(int& err, Types::Encoding encoder, 
+void encode(int& err, Type encoder, 
             const uint8_t* src, size_t src_sz, 
             size_t* sz_enc, DynamicBuffer& output, 
             uint32_t reserve);

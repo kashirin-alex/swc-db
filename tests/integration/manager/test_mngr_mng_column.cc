@@ -32,12 +32,12 @@ using namespace SWC;
 
 struct ExpctedRsp final {
   public:
-  ExpctedRsp(std::string name, Types::Encoding blk_encoding, bool exists)
+  ExpctedRsp(std::string name, Encoder::Type blk_encoding, bool exists)
             : name(name), blk_encoding(blk_encoding),
               exists(exists), chks(0) { }
 
   std::string name;
-  Types::Encoding blk_encoding;
+  Encoder::Type blk_encoding;
   bool exists;
   std::atomic<int> chks;
 };
@@ -109,7 +109,7 @@ void check_delete(int num_of_cols, bool modified) {
   );
 }
 
-void check_get(size_t num_of_cols, bool modified, Types::Encoding blk_encoding, bool exist = true, bool verbose=false){
+void check_get(size_t num_of_cols, bool modified, Encoder::Type blk_encoding, bool exist = true, bool verbose=false){
   std::cout << "########### get_schema_by_name ###########\n";
   std::shared_ptr<Stats::Stat> latency = std::make_shared<Stats::Stat>();
   
@@ -245,7 +245,7 @@ void check_get(size_t num_of_cols, bool modified, Types::Encoding blk_encoding, 
 
 
 void chk(Protocol::Mngr::Req::ColumnMng::Func func, size_t num_of_cols, 
-         Types::Encoding blk_encoding, bool modified, bool verbose=false) {
+         Encoder::Type blk_encoding, bool modified, bool verbose=false) {
 
   std::cout << "########### chk func=" << func << " ###########\n";
   std::shared_ptr<Stats::Stat> latency = std::make_shared<Stats::Stat>();
@@ -396,25 +396,25 @@ int main(int argc, char** argv) {
   check_delete(num_of_cols, false);
   check_delete(num_of_cols, true);
 
-  chk(Protocol::Mngr::Req::ColumnMng::Func::CREATE, num_of_cols, Types::Encoding::PLAIN, false);
-  check_get(num_of_cols, false, Types::Encoding::PLAIN);
+  chk(Protocol::Mngr::Req::ColumnMng::Func::CREATE, num_of_cols, Encoder::Type::PLAIN, false);
+  check_get(num_of_cols, false, Encoder::Type::PLAIN);
   std::cout << "\n";
   std::this_thread::sleep_for(std::chrono::milliseconds(5000));
 
 
   chk_rename(num_of_cols, true);
 
-  check_get(num_of_cols, true, Types::Encoding::PLAIN, true);
+  check_get(num_of_cols, true, Encoder::Type::PLAIN, true);
   std::cout << "\n";
 
-  chk(Protocol::Mngr::Req::ColumnMng::Func::MODIFY, num_of_cols, Types::Encoding::SNAPPY, true);
-  check_get(num_of_cols, true, Types::Encoding::SNAPPY);
+  chk(Protocol::Mngr::Req::ColumnMng::Func::MODIFY, num_of_cols, Encoder::Type::SNAPPY, true);
+  check_get(num_of_cols, true, Encoder::Type::SNAPPY);
   std::cout << "\n";
 
 
 
   check_delete(num_of_cols, true);
-  check_get(num_of_cols, true, Types::Encoding::SNAPPY, false);
+  check_get(num_of_cols, true, Encoder::Type::SNAPPY, false);
   std::cout << "\n";
 
   std::cout << " OK! \n \n";

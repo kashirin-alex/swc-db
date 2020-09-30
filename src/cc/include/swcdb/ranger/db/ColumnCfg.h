@@ -23,7 +23,7 @@ class ColumnCfg final {
   mutable std::atomic<uint32_t>         c_versions; 
   mutable std::atomic<uint64_t>         c_ttl;
 
-  mutable std::atomic<Types::Encoding>  blk_enc;
+  mutable std::atomic<Encoder::Type>    blk_enc;
   mutable std::atomic<uint32_t>         blk_size;
   mutable std::atomic<uint32_t>         blk_cells;
 
@@ -80,10 +80,10 @@ class ColumnCfg final {
   }
 
 
-  Types::Encoding block_enc() const {
-    return blk_enc != Types::Encoding::DEFAULT
+  Encoder::Type block_enc() const {
+    return blk_enc != Encoder::Type::DEFAULT
             ?  blk_enc.load() 
-            : (Types::Encoding)Env::Rgr::get()->cfg_blk_enc->get();
+            : (Encoder::Type)Env::Rgr::get()->cfg_blk_enc->get();
   }
 
   uint32_t block_size() const {
@@ -141,7 +141,7 @@ class ColumnCfg final {
       << " cell(versions=" << c_versions
       << " ttl=" << c_ttl
       << ')'
-      << " blk(enc="  << Types::to_string(blk_enc)
+      << " blk(enc="  << Encoder::to_string(blk_enc)
       << " size="     << blk_size
       << " cells="    << blk_cells
       << ')'

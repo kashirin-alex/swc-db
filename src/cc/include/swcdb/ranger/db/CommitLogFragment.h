@@ -47,7 +47,7 @@ class Fragment final {
   static void load_header(int& err, FS::SmartFd::Ptr& smartfd, 
                           uint8_t& version,
                           DB::Cells::Interval& interval, 
-                          Types::Encoding& encoder,
+                          Encoder::Type& encoder,
                           size_t& size_plain, size_t& size_enc,
                           uint32_t& cell_revs, uint32_t& cells_count,
                           uint32_t& data_checksum, uint32_t& offset_data);
@@ -55,7 +55,7 @@ class Fragment final {
 
   static Ptr make_write(int& err, const std::string& filepath, 
                         const DB::Cells::Interval& interval,
-                        Types::Encoding encoder,
+                        Encoder::Type encoder,
                         const uint32_t cell_revs, 
                         const uint32_t cells_count,
                         DynamicBuffer& cells, 
@@ -64,7 +64,7 @@ class Fragment final {
   static void write(int& err, 
                     const uint8_t version,
                     const DB::Cells::Interval& interval, 
-                    Types::Encoding& encoder,
+                    Encoder::Type& encoder,
                     const size_t size_plain, size_t& size_enc,
                     const uint32_t cell_revs, const uint32_t cells_count,
                     uint32_t& data_checksum, uint32_t& offset_data,
@@ -73,7 +73,7 @@ class Fragment final {
 
   const uint8_t               version;
   const DB::Cells::Interval   interval;
-  const Types::Encoding       encoder;
+  const Encoder::Type         encoder;
   const size_t                size_plain;
   const size_t                size_enc;
   const uint32_t              cell_revs;
@@ -83,7 +83,7 @@ class Fragment final {
 
   explicit Fragment(const FS::SmartFd::Ptr& smartfd, const uint8_t version,
                     const DB::Cells::Interval& interval, 
-                    const Types::Encoding encoder,
+                    const Encoder::Type encoder,
                     const size_t size_plain, const size_t size_enc,
                     const uint32_t cell_revs, const uint32_t cells_count,
                     const uint32_t data_checksum, const uint32_t offset_data,

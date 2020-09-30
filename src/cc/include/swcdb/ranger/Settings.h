@@ -8,10 +8,11 @@
 
 #include "swcdb/core/config/Settings.h"
 #include "swcdb/core/comm/Settings.h"
+#include "swcdb/core/Encoder.h"
+
 #include "swcdb/fs/Settings.h"
 #include "swcdb/db/client/Settings.h"
 
-#include "swcdb/db/Types/Encoding.h"
 
 namespace SWC{ namespace Config {
 
@@ -59,10 +60,10 @@ void Settings::init_app_options(){
      "Schema default block-cells")
     ("swc.rgr.Range.block.encoding", 
       g_enum(
-        (int)Types::Encoding::ZSTD,
+        (int)Encoder::Type::ZSTD,
         0,
-        Types::from_string_encoding,
-        Types::repr_encoding), 
+        Encoder::from_string_encoding,
+        Encoder::repr_encoding), 
      "Schema default block-encoding NONE/ZSTD/SNAPPY/ZLIB")  
      
     ("swc.rgr.Range.CommitLog.rollout.ratio", g_i8(3), 

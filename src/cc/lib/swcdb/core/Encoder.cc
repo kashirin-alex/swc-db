@@ -3,12 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#include <cstring> 
-#include <algorithm>
-
-#include "swcdb/core/Error.h"
-#include "swcdb/core/Buffer.h"
 #include "swcdb/core/Encoder.h"
+#include "swcdb/core/Error.h"
 
 #include <snappy.h>
 #include <zlib.h>
@@ -17,12 +13,68 @@
 namespace SWC { namespace Encoder {
 
 
-void decode(int& err, Types::Encoding encoder, 
+std::string to_string(Type typ) {
+  switch(typ){
+    case Type::DEFAULT:
+      return std::string("DEFAULT");
+    case Type::PLAIN:
+      return std::string("PLAIN");
+    case Type::ZLIB:
+      return std::string("ZLIB");
+    case Type::SNAPPY:
+      return std::string("SNAPPY");
+    case Type::ZSTD:
+      return std::string("ZSTD");
+    case Type::UNKNOWN:
+      return std::string("UNKNOWN");
+    default:
+      return std::string("UNKNOWN(" + std::to_string((uint8_t)typ) +")");
+  }
+}
+
+Type encoding_from(const std::string& typ) {
+
+  if(strncasecmp(typ.data(), "DEFAULT", typ.length()) == 0 || 
+     typ.compare("0") == 0)
+    return Type::DEFAULT;
+
+  if(strncasecmp(typ.data(), "PLAIN", typ.length()) == 0 || 
+     typ.compare("1") == 0)
+    return Type::PLAIN;
+
+  if(strncasecmp(typ.data(), "ZLIB", typ.length()) == 0 ||
+     typ.compare("2") == 0)
+    return Type::ZLIB;
+
+  if(strncasecmp(typ.data(), "SNAPPY", typ.length()) == 0 ||
+     typ.compare("3") == 0)
+    return Type::SNAPPY;
+  
+  if(strncasecmp(typ.data(), "ZSTD", typ.length()) == 0 ||
+     typ.compare("4") == 0)
+    return Type::ZSTD;
+
+  return Type::UNKNOWN;
+}
+
+SWC_SHOULD_INLINE
+std::string repr_encoding(int typ) {
+  return to_string((Type)typ);
+}
+
+SWC_SHOULD_INLINE
+int from_string_encoding(const std::string& typ) {
+  return (int)encoding_from(typ);
+}
+
+
+
+void decode(int& err, Type encoder, 
             const uint8_t* src, size_t sz_enc, 
             uint8_t *dst, size_t sz) {
 
   switch(encoder) {
-    case Types::Encoding::ZLIB: {
+    case Type::ZLIB: {
       z_stream strm;
       memset(&strm, 0, sizeof(z_stream));
       strm.zalloc = Z_NULL;
@@ -44,32 +96,33 @@ void decode(int& err, Types::Encoding encoder,
       return;
     }
 
-    case Types::Encoding::SNAPPY: {
+    case Type::SNAPPY: {
       if(!snappy::RawUncompress((const char *)src, sz_enc, (char *)dst))
         err = Error::ENCODER_DECODE;
       return;
     }
 
-    case Types::Encoding::ZSTD: {
+    case Type::ZSTD: {
       if(ZSTD_decompress((void *)dst, sz, (void *)src, sz_enc) != sz)
         err = Error::ENCODER_DECODE;
       return;
     }
 
     default: {
-      //SWC_ASSERT(encoder==Types::Encoding::PLAIN);
+      //SWC_ASSERT(encoder==Type::PLAIN);
       break;
     }
   }
 }
 
-void encode(int&, Types::Encoding encoder, 
+
+void encode(int&, Type encoder, 
             const uint8_t* src, size_t src_sz, 
             size_t* sz_enc, DynamicBuffer& output, 
             uint32_t reserve) {
   
   switch(encoder) {
-    case Types::Encoding::ZLIB: {
+    case Type::ZLIB: {
 
       z_stream strm;
       memset(&strm, 0, sizeof(z_stream));
@@ -97,7 +150,7 @@ void encode(int&, Types::Encoding encoder,
       break;
     }
 
-    case Types::Encoding::SNAPPY: {
+    case Type::SNAPPY: {
       output.ensure(reserve + snappy::MaxCompressedLength(src_sz));
       output.ptr += reserve;
       snappy::RawCompress((const char *)src, src_sz, 
@@ -109,7 +162,7 @@ void encode(int&, Types::Encoding encoder,
       break;
     }
 
-    case Types::Encoding::ZSTD: {
+    case Type::ZSTD: {
       size_t const avail_out = ZSTD_compressBound(src_sz);
       output.ensure(reserve + avail_out);
       output.ptr += reserve;
@@ -138,5 +191,6 @@ void encode(int&, Types::Encoding encoder,
   if(src_sz)
     output.add_unchecked(src, src_sz);
 }
+
 
 }}

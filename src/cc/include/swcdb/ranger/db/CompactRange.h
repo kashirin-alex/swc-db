@@ -92,7 +92,7 @@ class CompactRange final : public ReqScan {
   const uint32_t          cs_size;
   const uint32_t          blk_size;
   const uint32_t          blk_cells;
-  const Types::Encoding   blk_encoding;
+  const Encoder::Type     blk_encoding;
   DB::Cell::Key           m_required_key_last;
 
   bool                            tmp_dir = false;

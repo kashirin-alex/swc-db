@@ -136,7 +136,7 @@ class Write final {
 
   const csid_t              csid;
   FS::SmartFd::Ptr          smartfd;
-  Types::Encoding           encoder;
+  Encoder::Type             encoder;
   uint32_t                  block_size;
   uint32_t                  cell_revs;
   size_t                    size;

@@ -32,7 +32,6 @@ set(swcdb_sources
   Columns/Schemas.cc
 
   Types/Column.cc
-  Types/Encoding.cc
   Types/Range.cc
   Types/KeySeq.cc
   Types/MetaColumn.cc

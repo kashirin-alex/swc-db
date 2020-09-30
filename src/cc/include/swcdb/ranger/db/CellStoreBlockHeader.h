@@ -22,7 +22,7 @@ struct Header final {
   DB::Cells::Interval  interval;
   uint8_t              is_any;
 
-  Types::Encoding      encoder;
+  Encoder::Type        encoder;
   uint32_t             size_plain;
   uint32_t             size_enc;
   uint32_t             cells_count;

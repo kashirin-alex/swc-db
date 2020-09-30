@@ -237,7 +237,7 @@ int main(int argc, char** argv) {
   schema.cell_versions = 1;
   schema.blk_size = 64000000;
   schema.blk_cells = 100000;
-  schema.blk_encoding = SWC::Types::Encoding::SNAPPY;
+  schema.blk_encoding = SWC::Encoder::Type::SNAPPY;
   SWC::Ranger::ColumnCfg col_cfg(cid, schema);
   
   int err = SWC::Error::OK;

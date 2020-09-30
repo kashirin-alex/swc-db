@@ -8,10 +8,10 @@
 #define swcdb_db_Columns_Schema_h
 
 #include <memory>
+#include "swcdb/core/Encoder.h"
 #include "swcdb/db/Types/Identifiers.h"
 #include "swcdb/db/Types/KeySeq.h"
 #include "swcdb/db/Types/Column.h"
-#include "swcdb/db/Types/Encoding.h"
 #include "swcdb/db/Types/MetaColumn.h"
 
 
@@ -59,7 +59,7 @@ class Schema final {
   uint32_t        cell_versions;
   uint32_t        cell_ttl;
 
-  Types::Encoding blk_encoding;
+  Encoder::Type   blk_encoding;
   uint32_t        blk_size;
   uint32_t        blk_cells;
 

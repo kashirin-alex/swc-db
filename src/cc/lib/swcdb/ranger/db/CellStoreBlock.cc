@@ -5,7 +5,6 @@
 
 
 #include "swcdb/ranger/db/CellStoreBlock.h"
-#include "swcdb/core/Encoder.h"
 
 
 namespace SWC { namespace Ranger { namespace CellStore { namespace Block {
@@ -247,7 +246,7 @@ void Read::_load(int& err, FS::SmartFd::Ptr smartfd) {
       continue;
     }
 
-    if(header.encoder != Types::Encoding::PLAIN) {
+    if(header.encoder != Encoder::Type::PLAIN) {
       StaticBuffer decoded_buf((size_t)header.size_plain);
       Encoder::decode(
         err, header.encoder, 
@@ -316,7 +315,7 @@ void Write::encode(int& err, DynamicBuffer& cells, DynamicBuffer& output,
   if(err)
     return;
   if(!len_enc) {
-    header.encoder = Types::Encoding::PLAIN;
+    header.encoder = Encoder::Type::PLAIN;
     header.size_enc = header.size_plain;
   } else {
     header.size_enc = len_enc;

@@ -5,7 +5,6 @@
 
 
 #include "swcdb/ranger/db/CommitLog.h"
-#include "swcdb/core/Encoder.h"
 #include "swcdb/core/Time.h"
 #include "swcdb/core/Semaphore.h"
 

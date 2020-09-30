@@ -89,7 +89,7 @@ struct CompactRange::InBlock {
       header.is_any |= CellStore::Block::Header::ANY_END;
   }
 
-  void finalize_encode(Types::Encoding encoding) {
+  void finalize_encode(Encoder::Type encoding) {
     header.encoder = encoding;
     DynamicBuffer output;
     CellStore::Block::Write::encode(err, cells, output, header);

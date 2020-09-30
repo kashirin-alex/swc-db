@@ -4,7 +4,6 @@
  */
 
 
-#include "swcdb/core/Encoder.h"
 #include "swcdb/ranger/db/CommitLogFragment.h"
 
 namespace SWC { namespace Ranger { namespace CommitLog {
@@ -32,7 +31,7 @@ Fragment::Ptr Fragment::make_read(int& err, const std::string& filepath,
     
   uint8_t               version = 0;
   DB::Cells::Interval   interval(key_seq);
-  Types::Encoding       encoder = Types::Encoding::UNKNOWN;
+  Encoder::Type         encoder = Encoder::Type::UNKNOWN;
   size_t                size_plain = 0;
   size_t                size_enc = 0;
   uint32_t              cell_revs = 0;
@@ -59,7 +58,7 @@ Fragment::Ptr Fragment::make_read(int& err, const std::string& filepath,
 void Fragment::load_header(int& err, FS::SmartFd::Ptr& smartfd, 
                            uint8_t& version,
                            DB::Cells::Interval& interval, 
-                           Types::Encoding& encoder,
+                           Encoder::Type& encoder,
                            size_t& size_plain, size_t& size_enc,
                            uint32_t& cell_revs, uint32_t& cells_count,
                            uint32_t& data_checksum, uint32_t& offset_data) {
@@ -106,7 +105,7 @@ void Fragment::load_header(int& err, FS::SmartFd::Ptr& smartfd,
     remain = header_extlen;
 
     interval.decode(&ptr, &remain, true);
-    encoder = (Types::Encoding)Serialization::decode_i8(&ptr, &remain);
+    encoder = (Encoder::Type)Serialization::decode_i8(&ptr, &remain);
     size_enc = Serialization::decode_i32(&ptr, &remain);
     size_plain = Serialization::decode_i32(&ptr, &remain);
     cell_revs = Serialization::decode_i32(&ptr, &remain);
@@ -129,7 +128,7 @@ void Fragment::load_header(int& err, FS::SmartFd::Ptr& smartfd,
 
 Fragment::Ptr Fragment::make_write(int& err, const std::string& filepath, 
                                    const DB::Cells::Interval& interval,
-                                   Types::Encoding encoder,
+                                   Encoder::Type encoder,
                                    const uint32_t cell_revs, 
                                    const uint32_t cells_count,
                                    DynamicBuffer& cells, 
@@ -168,7 +167,7 @@ Fragment::Ptr Fragment::make_write(int& err, const std::string& filepath,
 void Fragment::write(int& err,
                      const uint8_t version,
                      const DB::Cells::Interval& interval, 
-                     Types::Encoding& encoder,
+                     Encoder::Type& encoder,
                      const size_t size_plain, size_t& size_enc,
                      const uint32_t cell_revs, const uint32_t cells_count,
                      uint32_t& data_checksum, uint32_t& offset_data,
@@ -186,7 +185,7 @@ void Fragment::write(int& err,
 
   if(!size_enc) {
     size_enc = size_plain;
-    encoder = Types::Encoding::PLAIN;
+    encoder = Encoder::Type::PLAIN;
   }
                   
   uint8_t * bufp = output.base;
@@ -213,7 +212,7 @@ void Fragment::write(int& err,
 Fragment::Fragment(const FS::SmartFd::Ptr& smartfd, 
                    const uint8_t version,
                    const DB::Cells::Interval& interval, 
-                   const Types::Encoding encoder,
+                   const Encoder::Type encoder,
                    const size_t size_plain, const size_t size_enc,
                    const uint32_t cell_revs, const uint32_t cells_count,
                    const uint32_t data_checksum, const uint32_t offset_data,
@@ -485,7 +484,7 @@ void Fragment::print(std::ostream& out) {
   out << "Fragment(version=" << (int)version
       << " count=" << cells_count
       << " offset=" << offset_data
-      << " encoder=" << Types::to_string(encoder)
+      << " encoder=" << Encoder::to_string(encoder)
       << " enc/size=" << size_enc << '/' << size_plain;
   {
     Mutex::scope lock(m_mutex);
@@ -530,7 +529,7 @@ void Fragment::load() {
       continue;
     }
 
-    if(encoder != Types::Encoding::PLAIN) {
+    if(encoder != Encoder::Type::PLAIN) {
       StaticBuffer decoded_buf(size_plain);
       Encoder::decode(
         err, encoder, m_buffer.base, size_enc, decoded_buf.base, size_plain);

@@ -5,7 +5,6 @@
 
 
 #include "swcdb/ranger/db/CellStore.h"
-#include "swcdb/core/Encoder.h"
 
 
 namespace SWC { namespace Ranger { namespace CellStore {
@@ -133,7 +132,7 @@ void Read::load_blocks_index(int& err, FS::SmartFd::Ptr& smartfd,
   const uint8_t* ptr;
   size_t remain;
 
-  Types::Encoding idx_encoder;
+  Encoder::Type idx_encoder;
   size_t idx_size_plain;
   size_t idx_size_enc;
   uint32_t idx_checksum_data;
@@ -179,7 +178,7 @@ void Read::load_blocks_index(int& err, FS::SmartFd::Ptr& smartfd,
       ptr = read_buf.base;
       remain = IDX_BLKS_HEADER_SIZE;
       
-      idx_encoder = (Types::Encoding)Serialization::decode_i8(&ptr, &remain);
+      idx_encoder = (Encoder::Type)Serialization::decode_i8(&ptr, &remain);
       idx_size_enc = Serialization::decode_i32(&ptr, &remain);
       idx_size_plain = Serialization::decode_i32(&ptr, &remain);
       idx_checksum_data = Serialization::decode_i32(&ptr, &remain);
@@ -203,7 +202,7 @@ void Read::load_blocks_index(int& err, FS::SmartFd::Ptr& smartfd,
       }
       offset += idx_size_enc;
         
-      if(idx_encoder != Types::Encoding::PLAIN) {
+      if(idx_encoder != Encoder::Type::PLAIN) {
         StaticBuffer decoded_buf(idx_size_plain);
         Encoder::decode(err, idx_encoder, read_buf.base, idx_size_enc,
                         decoded_buf.base, idx_size_plain);
@@ -524,7 +523,7 @@ void Write::write_blocks_index(int& err, uint32_t& blks_idx_count) {
       if(err)
         return;
       if(!len_enc) {
-        encoder = Types::Encoding::PLAIN;
+        encoder = Encoder::Type::PLAIN;
         len_enc = len_data;
       }
 
@@ -605,7 +604,7 @@ void Write::remove(int &err) {
 void Write::print(std::ostream& out) const {
   out << "Write(v=" << int(CellStore::VERSION)
       << " size=" << size
-      << " encoder=" << Types::to_string(encoder)
+      << " encoder=" << Encoder::to_string(encoder)
       << " cell_revs=" << cell_revs
       << " prev=" << prev_key_end
       << ' ' << interval;
