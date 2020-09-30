@@ -10,7 +10,7 @@
 #include <cephfs/libcephfs.h>
 
 
-namespace SWC{ namespace FS {
+namespace SWC { namespace FS {
 
 
 Configurables apply_ceph();
@@ -30,7 +30,7 @@ class FileSystemCeph final : public FileSystem {
 
   void stop() override;
 
-  Types::Fs get_type() override;
+  Type get_type() override;
 
   std::string to_string() override;
 

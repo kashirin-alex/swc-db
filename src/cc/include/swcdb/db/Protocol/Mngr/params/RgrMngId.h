@@ -41,7 +41,7 @@ class RgrMngId  : public Common::Params::HostEndPoints {
     
     rgrid_t         rgrid; 
     Flag            flag;
-    Types::Fs       fs;
+    FS::Type        fs;
 
   private:
 
@@ -80,7 +80,7 @@ class RgrMngId  : public Common::Params::HostEndPoints {
         Common::Params::HostEndPoints::internal_decode(bufp, remainp);
       
       if(flag == Flag::MNGR_ASSIGNED)
-        fs = (Types::Fs)Serialization::decode_i8(bufp, remainp);
+        fs = (FS::Type)Serialization::decode_i8(bufp, remainp);
     }
 
   };

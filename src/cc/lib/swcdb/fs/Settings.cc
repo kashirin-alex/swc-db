@@ -6,7 +6,7 @@
 
 #include "swcdb/core/config/Settings.h"
 
-namespace SWC{ namespace Config {
+namespace SWC { namespace Config {
 
 
 void Settings::init_fs_options() {

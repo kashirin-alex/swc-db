@@ -30,7 +30,7 @@
 #include "swcdb/fs/Broker/Protocol/req/Close.h"
 
 
-namespace SWC{ namespace FS {
+namespace SWC { namespace FS {
 
 
 Configurables apply_broker() {
@@ -122,14 +122,14 @@ void FileSystemBroker::stop() {
   FileSystem::stop();
 }
 
-Types::Fs FileSystemBroker::get_type() {
+Type FileSystemBroker::get_type() {
   return m_type_underlying;
 }
 
 std::string FileSystemBroker::to_string() {
   return format(
     "(type=BROKER underlying-type=%s)",
-    type_to_string(m_type_underlying).c_str()
+    FS::to_string(m_type_underlying).c_str()
   );
 }
 

@@ -9,7 +9,11 @@
 #include "swcdb/core/Compat.h"
 #include "swcdb/core/LockAtomicUnique.h"
 
-namespace SWC{ namespace FS {
+namespace SWC { 
+
+//! The SWC-DB File-System C++ namespace 'SWC::FS'
+namespace FS {
+
 
 /// Smart FileDescriptor 
 

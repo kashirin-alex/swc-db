@@ -10,7 +10,7 @@
 #include "swcdb/core/comm/Settings.h"
 #include "swcdb/fs/Settings.h"
 
-namespace SWC{ namespace Config {
+namespace SWC { namespace Config {
 
 
 void Settings::init_client_options() { }

@@ -8,7 +8,7 @@
 
 #include "swcdb/fs/FileSystem.h"
 
-namespace SWC{ namespace FS {
+namespace SWC { namespace FS {
 
 
 Configurables apply_local();
@@ -21,7 +21,7 @@ class FileSystemLocal final : public FileSystem {
 
   virtual ~FileSystemLocal();
 
-  Types::Fs get_type() override;
+  Type get_type() override;
 
   std::string to_string() override;
 

@@ -10,7 +10,7 @@
 #include "hdfspp/config_parser.h"
 
 
-namespace SWC{ namespace FS {
+namespace SWC { namespace FS {
 
  
 Configurables apply_hadoop() {
@@ -99,8 +99,8 @@ FileSystemHadoop::FileSystemHadoop()
 
 FileSystemHadoop::~FileSystemHadoop() { }
 
-Types::Fs FileSystemHadoop::get_type() {
-  return Types::Fs::HADOOP;
+Type FileSystemHadoop::get_type() {
+  return Type::HADOOP;
 };
 
 std::string FileSystemHadoop::to_string() {

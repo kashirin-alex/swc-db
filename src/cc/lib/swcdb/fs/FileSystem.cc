@@ -18,46 +18,48 @@ std::string normalize_pathname(std::string s) {
   return s;
 }
 
-Types::Fs fs_type(std::string fs_name) {
+Type fs_type(std::string fs_name) {
   std::transform(fs_name.begin(), fs_name.end(), fs_name.begin(),
                  [](unsigned char c){ return std::tolower(c); });
     
 #if !defined (FS_BROKER_APP)
   if(fs_name.compare("broker") == 0)
-    return Types::Fs::BROKER;
+    return Type::BROKER;
 #endif
 
   if(fs_name.compare("local") == 0)
-    return Types::Fs::LOCAL;
+    return Type::LOCAL;
   if(fs_name.compare("hadoop") == 0)
-    return Types::Fs::HADOOP;
+    return Type::HADOOP;
   if(fs_name.compare("hadoop_jvm") == 0)
-    return Types::Fs::HADOOP_JVM;
+    return Type::HADOOP_JVM;
   if(fs_name.compare("ceph") == 0)
-    return Types::Fs::CEPH;
+    return Type::CEPH;
   if(fs_name.compare("custom") == 0)
-    return Types::Fs::CUSTOM;
+    return Type::CUSTOM;
   else
     SWC_THROWF(Error::CONFIG_BAD_VALUE, 
               "Unknown FileSystem name=%s", fs_name.c_str());
-  return Types::Fs::NONE;
+  return Type::UNKNOWN;
 }
 
-std::string type_to_string(Types::Fs typ) {
-  if(typ == Types::Fs::BROKER)
-    return "Broker";
-  if(typ == Types::Fs::LOCAL)
-    return "Local";
-  if(typ == Types::Fs::HADOOP)
-    return "Hadoop";
-  if(typ == Types::Fs::HADOOP_JVM)
-    return "HadoopJVM";
-  if(typ == Types::Fs::CEPH)
-    return "Ceph";
-  if(typ == Types::Fs::CUSTOM)
-    return "Custom";
-  SWC_THROWF(Error::CONFIG_BAD_VALUE, 
-            "Unknown FileSystem type=%d", (int)typ);
+std::string to_string(Type typ) {
+  switch(typ) {
+    case Type::LOCAL:
+      return "Local";
+    case Type::BROKER:
+      return "Broker";
+    case Type::HADOOP:
+      return "Hadoop";
+    case Type::HADOOP_JVM:
+      return "HadoopJVM";
+    case Type::CEPH:
+      return "Ceph";
+    case Type::CUSTOM:
+      return "Custom";
+    default:
+      return "Unknown";
+  }
 }
 
 
@@ -79,13 +81,13 @@ void FileSystem::stop() {
              to_string().c_str(), fds_count.load());  
 }
 
-Types::Fs FileSystem::get_type() {
-  return Types::Fs::NONE;
+Type FileSystem::get_type() {
+  return Type::UNKNOWN;
 }
   
 std::string FileSystem::to_string() {
   return format(
-    "(type=NONE path_root=%s path_data=%s)", 
+    "(type=UNKNOWN path_root=%s path_data=%s)", 
     path_root.c_str(),
     path_data.c_str()
   );

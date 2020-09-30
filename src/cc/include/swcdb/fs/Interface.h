@@ -34,7 +34,7 @@
 
 
 
-namespace SWC{ namespace FS {
+namespace SWC { namespace FS {
   
 typedef std::vector<int64_t> IdEntries_t;
 const int   id_split_len = 3;
@@ -47,7 +47,7 @@ class Interface {
 
   typedef Interface* Ptr;
 
-  Interface(Types::Fs typ);
+  Interface(Type typ);
   
   FileSystem::Ptr use_filesystem();
 
@@ -55,7 +55,7 @@ class Interface {
 
   virtual ~Interface();
 
-  Types::Fs get_type();
+  Type get_type();
 
   FileSystem::Ptr get_fs();
 
@@ -104,7 +104,7 @@ class Interface {
   void close(int& err, SmartFd::Ptr smartfd);
  
   private:
-  Types::Fs       m_type;
+  Type            m_type;
   FileSystem::Ptr m_fs;
 
   struct LoadedDL final {
@@ -130,7 +130,7 @@ class FsInterface {
   
   typedef std::shared_ptr<FsInterface> Ptr;
 
-  static void init(Types::Fs typ);
+  static void init(FS::Type typ);
 
   static Ptr get();
 
@@ -140,7 +140,7 @@ class FsInterface {
 
   static void reset();
 
-  FsInterface(Types::Fs typ);
+  FsInterface(FS::Type typ);
 
   virtual ~FsInterface();
 

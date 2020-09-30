@@ -7,7 +7,7 @@
 #include "swcdb/core/String.h"
 
 
-namespace SWC{ namespace FS {
+namespace SWC { namespace FS {
 
 
 SWC_SHOULD_INLINE

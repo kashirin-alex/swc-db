@@ -9,11 +9,12 @@
 
 //! The SWC-DB C++ namespace 'SWC'
 namespace SWC {
-/**! The SWC-DB Thrift-Protocol C++ namespace 'SWC::Thrift'
-  * The Namespace include the Thrift auto-generated Thrift Protocol
-*/
-namespace Thrift { }
-}
+//! The SWC-DB Thrift-Protocol C++ namespace 'SWC::Thrift'
+namespace Thrift {
+  /**
+  * The namespace 'SWC::Thrift' includes the Thrift auto-generated Thrift Protocol.
+  */
+}}
 
 
 #include <thrift/transport/TSocket.h>

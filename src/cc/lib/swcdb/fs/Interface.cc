@@ -7,7 +7,7 @@
 #include "swcdb/fs/Interface.h"
 #include <dlfcn.h>
 
-namespace SWC{ namespace FS {
+namespace SWC { namespace FS {
 
 namespace  { // local ns
 void hold_delay() {
@@ -15,17 +15,17 @@ void hold_delay() {
 }
 }
 
-Interface::Interface(Types::Fs typ) : m_type(typ), m_fs(use_filesystem()) {
+Interface::Interface(Type typ) : m_type(typ), m_fs(use_filesystem()) {
 
   SWC_LOGF(LOG_INFO, "INIT-%s", to_string().c_str());
 }
   
-FileSystem::Ptr Interface::use_filesystem(){
+FileSystem::Ptr Interface::use_filesystem() {
   std::string fs_name;
     
   switch(m_type){
 
-    case Types::Fs::LOCAL:{
+    case Type::LOCAL:{
 #if defined (BUILTIN_FS_LOCAL) || defined (BUILTIN_FS_ALL)
       return std::make_shared<FileSystemLocal>();
 #endif
@@ -33,7 +33,7 @@ FileSystem::Ptr Interface::use_filesystem(){
       break;
     }
 
-    case Types::Fs::BROKER:{
+    case Type::BROKER:{
 #if defined (BUILTIN_FS_BROKER) || defined (BUILTIN_FS_ALL)
       return std::make_shared<FileSystemBroker>();
 #endif
@@ -41,7 +41,7 @@ FileSystem::Ptr Interface::use_filesystem(){
       break;
     }
 
-    case Types::Fs::HADOOP: {
+    case Type::HADOOP: {
 #if defined (BUILTIN_FS_HADOOP) || defined (BUILTIN_FS_ALL)
       return std::make_shared<FileSystemHadoop>();
 #endif
@@ -49,7 +49,7 @@ FileSystem::Ptr Interface::use_filesystem(){
       break;
     }
 
-    case Types::Fs::HADOOP_JVM: {
+    case Type::HADOOP_JVM: {
 #if defined (BUILTIN_FS_HADOOP_JVM) || defined (BUILTIN_FS_ALL)
       return std::make_shared<FileSystemHadoopJVM>();
 #endif
@@ -57,7 +57,7 @@ FileSystem::Ptr Interface::use_filesystem(){
       break;
     }
 
-    case Types::Fs::CEPH:{
+    case Type::CEPH:{
 #if defined (BUILTIN_FS_CEPH) || defined (BUILTIN_FS_ALL)
       return std::make_shared<FileSystemCeph>();
 #endif
@@ -65,7 +65,7 @@ FileSystem::Ptr Interface::use_filesystem(){
       break;
     }
 
-    case Types::Fs::CUSTOM: {
+    case Type::CUSTOM: {
       fs_name.append("custom");
       break;
     }
@@ -127,7 +127,7 @@ Interface::~Interface() {
   }
 }
 
-Types::Fs Interface::get_type(){
+Type Interface::get_type(){
   return m_fs->get_type();
 }
 
@@ -474,7 +474,7 @@ void set_structured_id(const std::string& number, std::string& s) {
 
 namespace Env {
 
-void FsInterface::init(Types::Fs typ) {
+void FsInterface::init(FS::Type typ) {
   m_env = std::make_shared<FsInterface>(typ);
 }
 
@@ -496,7 +496,7 @@ void FsInterface::reset() {
   m_env = nullptr;
 }
 
-FsInterface::FsInterface(Types::Fs typ) 
+FsInterface::FsInterface(FS::Type typ) 
                         : m_interface(new FS::Interface(typ)) {}
 
 FsInterface::~FsInterface(){

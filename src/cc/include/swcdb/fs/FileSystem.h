@@ -12,45 +12,47 @@
 #include "swcdb/fs/Callbacks.h"
 
 
-namespace SWC { 
+namespace SWC { namespace FS {
 
-namespace Types {
-enum Fs {
-  NONE,
-  CUSTOM,
-  LOCAL,
-  HADOOP,
-  HADOOP_JVM,
-  CEPH,
-  BROKER
-};   
-}
 
-namespace FS {
+enum Type {
+
+  UNKNOWN     = 0x00,
+  LOCAL       = 0x01,
+  BROKER      = 0x02,
+  CUSTOM      = 0x03,
+  HADOOP      = 0x04,
+  HADOOP_JVM  = 0x05,
+  CEPH        = 0x06,
+
+};
 
 
 enum OpenFlags {
-  OPEN_FLAG_DIRECTIO = 0x00000001,
-  OPEN_FLAG_OVERWRITE = 0x00000002,
+  OPEN_FLAG_DIRECTIO        = 0x00000001,
+  OPEN_FLAG_OVERWRITE       = 0x00000002,
   OPEN_FLAG_VERIFY_CHECKSUM = 0x00000004
 };
 
+
 enum Flags : uint8_t {
-  NONE=0,
-  FLUSH=1,
-  SYNC=2
+  NONE  = 0x00,
+  FLUSH = 0x01,
+  SYNC  = 0x02
 };
+
 
 struct Configurables {
   Config::Property::V_GINT32::Ptr cfg_fds_max = nullptr;
   std::string                     path_root;
 };
 
+
 std::string normalize_pathname(std::string s);
 
-Types::Fs fs_type(std::string fs_name);
+Type fs_type(std::string fs_name);
 
-std::string type_to_string(Types::Fs typ);
+std::string to_string(Type typ);
 
 
 class FileSystem : public std::enable_shared_from_this<FileSystem> {
@@ -71,7 +73,7 @@ class FileSystem : public std::enable_shared_from_this<FileSystem> {
 
   virtual void stop();
 
-  virtual Types::Fs get_type();
+  virtual Type get_type();
   
   virtual std::string to_string();
 

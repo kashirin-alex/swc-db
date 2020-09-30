@@ -9,7 +9,7 @@
 #include <functional>
 #include "swcdb/core/Buffer.h"
 
-namespace SWC{ namespace FS {
+namespace SWC { namespace FS {
 
 namespace Callback {
 

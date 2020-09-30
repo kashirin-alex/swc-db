@@ -9,7 +9,7 @@
 #include "swcdb/fs/FileSystem.h"
 #include "hdfspp/hdfspp.h"
 
-namespace SWC{ namespace FS {
+namespace SWC { namespace FS {
 
 Configurables apply_hadoop();
 
@@ -34,7 +34,7 @@ class FileSystemHadoop final : public FileSystem {
 
   virtual ~FileSystemHadoop();
 
-  Types::Fs get_type() override;
+  Type get_type() override;
 
   std::string to_string() override;
 

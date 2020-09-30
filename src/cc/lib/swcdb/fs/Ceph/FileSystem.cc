@@ -9,7 +9,7 @@ extern "C" {
 #include <dirent.h>
 }
 
-namespace SWC{ namespace FS {
+namespace SWC { namespace FS {
 
 
 Configurables apply_ceph() {
@@ -216,8 +216,8 @@ void FileSystemCeph::stop() {
   FileSystem::stop();
 }
 
-Types::Fs FileSystemCeph::get_type() {
-  return Types::Fs::CEPH;
+Type FileSystemCeph::get_type() {
+  return Type::CEPH;
 };
 
 std::string FileSystemCeph::to_string() {

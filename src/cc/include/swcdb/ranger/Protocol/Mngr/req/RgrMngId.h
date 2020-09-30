@@ -153,7 +153,7 @@ class RgrMngId: public Comm::client::ConnQueue::ReqBase {
         SWC_LOG_OSTREAM 
           << "Ranger's " << Env::FsInterface::interface()->to_string()
           << " not matching with Mngr's FS-type=" 
-          << FS::type_to_string(rsp_params.fs);
+          << FS::to_string(rsp_params.fs);
         rgr_data->print(SWC_LOG_OSTREAM << ", RS_SHUTTINGDOWN ");
       );
         

@@ -39,7 +39,7 @@ class FileSystemBroker final : public FileSystem {
 
   void stop() override;
 
-  Types::Fs get_type() override;
+  Type get_type() override;
 
   std::string to_string() override;
 
@@ -158,7 +158,7 @@ class FileSystemBroker final : public FileSystem {
 
   Comm::IoContext::Ptr          m_io;
   Comm::client::Serialized::Ptr m_service = nullptr;
-  Types::Fs                     m_type_underlying;
+  Type                          m_type_underlying;
   const Comm::EndPoints         m_endpoints;
   std::atomic<bool>             m_run;
 

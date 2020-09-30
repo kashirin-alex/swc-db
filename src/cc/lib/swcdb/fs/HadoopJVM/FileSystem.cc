@@ -8,7 +8,7 @@
 #include <iostream>
 
 
-namespace SWC{ namespace FS {
+namespace SWC { namespace FS {
 
  
 Configurables apply_hadoop_jvm() {
@@ -95,8 +95,8 @@ FileSystemHadoopJVM::FileSystemHadoopJVM()
 
 FileSystemHadoopJVM::~FileSystemHadoopJVM() { }
 
-Types::Fs FileSystemHadoopJVM::get_type() {
-  return Types::Fs::HADOOP_JVM;
+Type FileSystemHadoopJVM::get_type() {
+  return Type::HADOOP_JVM;
 };
 
 std::string FileSystemHadoopJVM::to_string() {

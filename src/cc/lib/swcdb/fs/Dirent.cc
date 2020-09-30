@@ -7,7 +7,7 @@
 
 #include "swcdb/core/Serialization.h"
 
-namespace SWC{ namespace FS {
+namespace SWC { namespace FS {
 
 Dirent::~Dirent() { }
 

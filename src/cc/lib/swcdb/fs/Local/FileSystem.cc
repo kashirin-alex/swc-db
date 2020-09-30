@@ -12,7 +12,7 @@
 
 #include <fcntl.h>
 
-namespace SWC{ namespace FS {
+namespace SWC { namespace FS {
 
 
 Configurables apply_local() {
@@ -46,8 +46,8 @@ FileSystemLocal::FileSystemLocal()
 
 FileSystemLocal::~FileSystemLocal() { }
 
-Types::Fs FileSystemLocal::get_type() {
-  return Types::Fs::LOCAL;
+Type FileSystemLocal::get_type() {
+  return Type::LOCAL;
 };
 
 std::string FileSystemLocal::to_string() {

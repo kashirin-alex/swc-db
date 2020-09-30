@@ -11,7 +11,7 @@
 
 #include "swcdb/core/Serializable.h"
 
-namespace SWC{ namespace FS {
+namespace SWC { namespace FS {
 
 /// Directory entry
 class Dirent final : public Serializable {

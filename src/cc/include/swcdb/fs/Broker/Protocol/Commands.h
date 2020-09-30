@@ -6,7 +6,7 @@
 #ifndef swc_fs_Broker_Protocol_Commands_h
 #define swc_fs_Broker_Protocol_Commands_h
 
-namespace SWC{ namespace FsBroker { namespace Protocol {
+namespace SWC { namespace FsBroker { namespace Protocol {
   
   enum Cmd : uint8_t {
     NOT_IMPLEMENTED   = 0x00,   ///< Not Implemented
