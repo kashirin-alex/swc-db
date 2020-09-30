@@ -9,157 +9,166 @@ package org.swcdb.thrift.gen;
 @SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused"})
 public class Service {
 
+  /**
+   * The SWC-DB Thrift Service
+   */
   public interface Iface {
 
     /**
-     * The direct SQL method to Manage Column
+     * The direct SQL method to Manage Column.
      * 
-     * @param sql
+     * @param sql The SQL string to Execute
      */
     public void sql_mng_column(java.lang.String sql) throws Exception, org.apache.thrift.TException;
 
     /**
      * The direct SQL method to List Columns
      * 
-     * @param sql
+     * @param sql The SQL string to Execute
      */
     public java.util.List<Schema> sql_list_columns(java.lang.String sql) throws Exception, org.apache.thrift.TException;
 
     /**
      * The direct SQL method to Compact Columns
      * 
-     * @param sql
+     * @param sql The SQL string to Execute
      */
     public java.util.List<CompactResult> sql_compact_columns(java.lang.String sql) throws Exception, org.apache.thrift.TException;
 
     /**
      * The direct SQL method to select cells with result in Cells List.
      * 
-     * @param sql
+     * @param sql The SQL string to Execute
      */
     public java.util.List<Cell> sql_select(java.lang.String sql) throws Exception, org.apache.thrift.TException;
 
     /**
      * The direct SQL method to select cells with result in Columns Cells map.
      * 
-     * @param sql
+     * @param sql The SQL string to Execute
      */
     public java.util.Map<java.lang.String,java.util.List<CCell>> sql_select_rslt_on_column(java.lang.String sql) throws Exception, org.apache.thrift.TException;
 
     /**
      * The direct SQL method to select cells with result in Key Cells list.
      * 
-     * @param sql
+     * @param sql The SQL string to Execute
      */
     public java.util.List<kCells> sql_select_rslt_on_key(java.lang.String sql) throws Exception, org.apache.thrift.TException;
 
     /**
      * The direct SQL method to select cells with result in Fractons Cells.
      * 
-     * @param sql
+     * @param sql The SQL string to Execute
      */
     public FCells sql_select_rslt_on_fraction(java.lang.String sql) throws Exception, org.apache.thrift.TException;
 
     /**
      * The SQL method to select cells with result set by the request's type of CellsResult.
      * 
-     * @param sql
-     * @param rslt
+     * @param sql The SQL string to Execute
+     * 
+     * @param rslt The Type of Cells Result for the response
      */
     public CellsGroup sql_query(java.lang.String sql, CellsResult rslt) throws Exception, org.apache.thrift.TException;
 
     /**
      * The direct SQL method to update cells optionally to work with updater-id.
      * 
-     * @param sql
-     * @param updater_id
+     * @param sql The SQL string to Execute
+     * 
+     * @param updater_id The Updater ID to work with
      */
     public void sql_update(java.lang.String sql, long updater_id) throws Exception, org.apache.thrift.TException;
 
     /**
      * The SQL method to execute any query.
      * 
-     * @param sql
+     * @param sql The SQL string to Execute
      */
     public Result exec_sql(java.lang.String sql) throws Exception, org.apache.thrift.TException;
 
     /**
      * The method to Create an Updater ID with buffering size in bytes.
      * 
-     * @param buffer_size
+     * @param buffer_size The buffer size of the Updater
      */
     public long updater_create(int buffer_size) throws Exception, org.apache.thrift.TException;
 
     /**
      * The method to Close an Updater ID.
      * 
-     * @param id
+     * @param id The Updater ID to close
      */
     public void updater_close(long id) throws Exception, org.apache.thrift.TException;
 
     /**
-     * The direct method to update cells with cell in Update-Columns-Cells, optionally to work with updater-id.
+     * The direct method to update cells with cell in Update-Columns-Cells,
+     * optionally to work with updater-id.
      * 
-     * @param cells
-     * @param updater_id
+     * @param cells The Cells to update
+     * 
+     * @param updater_id The Updater ID to use for write
      */
     public void update(java.util.Map<java.lang.Long,java.util.List<UCell>> cells, long updater_id) throws Exception, org.apache.thrift.TException;
 
     /**
      * The direct method to Manage Column
      * 
-     * @param func
-     * @param schema
+     * @param func The Action Function to use
+     * 
+     * @param schema The Schema for the Action
      */
     public void mng_column(SchemaFunc func, Schema schema) throws Exception, org.apache.thrift.TException;
 
     /**
      * The direct method to List Columns
      * 
-     * @param spec
+     * @param spec The Schemas Specifications to match Schema for response
      */
     public java.util.List<Schema> list_columns(SpecSchemas spec) throws Exception, org.apache.thrift.TException;
 
     /**
      * The direct method to Compact Columns
      * 
-     * @param spec
+     * @param spec The Schemas Specifications to match columns to Compact
      */
     public java.util.List<CompactResult> compact_columns(SpecSchemas spec) throws Exception, org.apache.thrift.TException;
 
     /**
      * The direct method to select cells with result in Cells List.
      * 
-     * @param spec
+     * @param spec The Scan Specifications for the scan
      */
     public java.util.List<Cell> scan(SpecScan spec) throws Exception, org.apache.thrift.TException;
 
     /**
      * The direct method to select cells with result in Columns Cells map.
      * 
-     * @param spec
+     * @param spec The Scan Specifications for the scan
      */
     public java.util.Map<java.lang.String,java.util.List<CCell>> scan_rslt_on_column(SpecScan spec) throws Exception, org.apache.thrift.TException;
 
     /**
      * The direct method to select cells with result in Key Cells list.
      * 
-     * @param spec
+     * @param spec The Scan Specifications for the scan
      */
     public java.util.List<kCells> scan_rslt_on_key(SpecScan spec) throws Exception, org.apache.thrift.TException;
 
     /**
      * The direct method to select cells with result in Fractons Cells.
      * 
-     * @param spec
+     * @param spec The Scan Specifications for the scan
      */
     public FCells scan_rslt_on_fraction(SpecScan spec) throws Exception, org.apache.thrift.TException;
 
     /**
      * The method to select cells with result set by the request's type of CellsResult.
      * 
-     * @param spec
-     * @param rslt
+     * @param spec The Scan Specifications for the scan
+     * 
+     * @param rslt The Type of Cells Result for the response
      */
     public CellsGroup scan_rslt_on(SpecScan spec, CellsResult rslt) throws Exception, org.apache.thrift.TException;
 
@@ -3527,10 +3536,16 @@ public class Service {
     private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new sql_mng_column_argsStandardSchemeFactory();
     private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new sql_mng_column_argsTupleSchemeFactory();
 
+    /**
+     * The SQL string to Execute
+     */
     public @org.apache.thrift.annotation.Nullable java.lang.String sql; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+      /**
+       * The SQL string to Execute
+       */
       SQL((short)1, "sql");
 
       private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
@@ -3627,11 +3642,17 @@ public class Service {
       this.sql = null;
     }
 
+    /**
+     * The SQL string to Execute
+     */
     @org.apache.thrift.annotation.Nullable
     public java.lang.String getSql() {
       return this.sql;
     }
 
+    /**
+     * The SQL string to Execute
+     */
     public sql_mng_column_args setSql(@org.apache.thrift.annotation.Nullable java.lang.String sql) {
       this.sql = sql;
       return this;
@@ -4263,10 +4284,16 @@ public class Service {
     private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new sql_list_columns_argsStandardSchemeFactory();
     private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new sql_list_columns_argsTupleSchemeFactory();
 
+    /**
+     * The SQL string to Execute
+     */
     public @org.apache.thrift.annotation.Nullable java.lang.String sql; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+      /**
+       * The SQL string to Execute
+       */
       SQL((short)1, "sql");
 
       private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
@@ -4363,11 +4390,17 @@ public class Service {
       this.sql = null;
     }
 
+    /**
+     * The SQL string to Execute
+     */
     @org.apache.thrift.annotation.Nullable
     public java.lang.String getSql() {
       return this.sql;
     }
 
+    /**
+     * The SQL string to Execute
+     */
     public sql_list_columns_args setSql(@org.apache.thrift.annotation.Nullable java.lang.String sql) {
       this.sql = sql;
       return this;
@@ -5158,10 +5191,16 @@ public class Service {
     private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new sql_compact_columns_argsStandardSchemeFactory();
     private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new sql_compact_columns_argsTupleSchemeFactory();
 
+    /**
+     * The SQL string to Execute
+     */
     public @org.apache.thrift.annotation.Nullable java.lang.String sql; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+      /**
+       * The SQL string to Execute
+       */
       SQL((short)1, "sql");
 
       private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
@@ -5258,11 +5297,17 @@ public class Service {
       this.sql = null;
     }
 
+    /**
+     * The SQL string to Execute
+     */
     @org.apache.thrift.annotation.Nullable
     public java.lang.String getSql() {
       return this.sql;
     }
 
+    /**
+     * The SQL string to Execute
+     */
     public sql_compact_columns_args setSql(@org.apache.thrift.annotation.Nullable java.lang.String sql) {
       this.sql = sql;
       return this;
@@ -6053,10 +6098,16 @@ public class Service {
     private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new sql_select_argsStandardSchemeFactory();
     private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new sql_select_argsTupleSchemeFactory();
 
+    /**
+     * The SQL string to Execute
+     */
     public @org.apache.thrift.annotation.Nullable java.lang.String sql; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+      /**
+       * The SQL string to Execute
+       */
       SQL((short)1, "sql");
 
       private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
@@ -6153,11 +6204,17 @@ public class Service {
       this.sql = null;
     }
 
+    /**
+     * The SQL string to Execute
+     */
     @org.apache.thrift.annotation.Nullable
     public java.lang.String getSql() {
       return this.sql;
     }
 
+    /**
+     * The SQL string to Execute
+     */
     public sql_select_args setSql(@org.apache.thrift.annotation.Nullable java.lang.String sql) {
       this.sql = sql;
       return this;
@@ -6948,10 +7005,16 @@ public class Service {
     private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new sql_select_rslt_on_column_argsStandardSchemeFactory();
     private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new sql_select_rslt_on_column_argsTupleSchemeFactory();
 
+    /**
+     * The SQL string to Execute
+     */
     public @org.apache.thrift.annotation.Nullable java.lang.String sql; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+      /**
+       * The SQL string to Execute
+       */
       SQL((short)1, "sql");
 
       private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
@@ -7048,11 +7111,17 @@ public class Service {
       this.sql = null;
     }
 
+    /**
+     * The SQL string to Execute
+     */
     @org.apache.thrift.annotation.Nullable
     public java.lang.String getSql() {
       return this.sql;
     }
 
+    /**
+     * The SQL string to Execute
+     */
     public sql_select_rslt_on_column_args setSql(@org.apache.thrift.annotation.Nullable java.lang.String sql) {
       this.sql = sql;
       return this;
@@ -7884,10 +7953,16 @@ public class Service {
     private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new sql_select_rslt_on_key_argsStandardSchemeFactory();
     private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new sql_select_rslt_on_key_argsTupleSchemeFactory();
 
+    /**
+     * The SQL string to Execute
+     */
     public @org.apache.thrift.annotation.Nullable java.lang.String sql; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+      /**
+       * The SQL string to Execute
+       */
       SQL((short)1, "sql");
 
       private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
@@ -7984,11 +8059,17 @@ public class Service {
       this.sql = null;
     }
 
+    /**
+     * The SQL string to Execute
+     */
     @org.apache.thrift.annotation.Nullable
     public java.lang.String getSql() {
       return this.sql;
     }
 
+    /**
+     * The SQL string to Execute
+     */
     public sql_select_rslt_on_key_args setSql(@org.apache.thrift.annotation.Nullable java.lang.String sql) {
       this.sql = sql;
       return this;
@@ -8779,10 +8860,16 @@ public class Service {
     private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new sql_select_rslt_on_fraction_argsStandardSchemeFactory();
     private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new sql_select_rslt_on_fraction_argsTupleSchemeFactory();
 
+    /**
+     * The SQL string to Execute
+     */
     public @org.apache.thrift.annotation.Nullable java.lang.String sql; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+      /**
+       * The SQL string to Execute
+       */
       SQL((short)1, "sql");
 
       private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
@@ -8879,11 +8966,17 @@ public class Service {
       this.sql = null;
     }
 
+    /**
+     * The SQL string to Execute
+     */
     @org.apache.thrift.annotation.Nullable
     public java.lang.String getSql() {
       return this.sql;
     }
 
+    /**
+     * The SQL string to Execute
+     */
     public sql_select_rslt_on_fraction_args setSql(@org.apache.thrift.annotation.Nullable java.lang.String sql) {
       this.sql = sql;
       return this;
@@ -9626,8 +9719,12 @@ public class Service {
     private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new sql_query_argsStandardSchemeFactory();
     private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new sql_query_argsTupleSchemeFactory();
 
+    /**
+     * The SQL string to Execute
+     */
     public @org.apache.thrift.annotation.Nullable java.lang.String sql; // required
     /**
+     * The Type of Cells Result for the response
      * 
      * @see CellsResult
      */
@@ -9635,8 +9732,12 @@ public class Service {
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+      /**
+       * The SQL string to Execute
+       */
       SQL((short)1, "sql"),
       /**
+       * The Type of Cells Result for the response
        * 
        * @see CellsResult
        */
@@ -9746,11 +9847,17 @@ public class Service {
       this.rslt = null;
     }
 
+    /**
+     * The SQL string to Execute
+     */
     @org.apache.thrift.annotation.Nullable
     public java.lang.String getSql() {
       return this.sql;
     }
 
+    /**
+     * The SQL string to Execute
+     */
     public sql_query_args setSql(@org.apache.thrift.annotation.Nullable java.lang.String sql) {
       this.sql = sql;
       return this;
@@ -9772,6 +9879,7 @@ public class Service {
     }
 
     /**
+     * The Type of Cells Result for the response
      * 
      * @see CellsResult
      */
@@ -9781,6 +9889,7 @@ public class Service {
     }
 
     /**
+     * The Type of Cells Result for the response
      * 
      * @see CellsResult
      */
@@ -10593,12 +10702,24 @@ public class Service {
     private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new sql_update_argsStandardSchemeFactory();
     private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new sql_update_argsTupleSchemeFactory();
 
+    /**
+     * The SQL string to Execute
+     */
     public @org.apache.thrift.annotation.Nullable java.lang.String sql; // required
+    /**
+     * The Updater ID to work with
+     */
     public long updater_id; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+      /**
+       * The SQL string to Execute
+       */
       SQL((short)1, "sql"),
+      /**
+       * The Updater ID to work with
+       */
       UPDATER_ID((short)2, "updater_id");
 
       private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
@@ -10710,11 +10831,17 @@ public class Service {
 
     }
 
+    /**
+     * The SQL string to Execute
+     */
     @org.apache.thrift.annotation.Nullable
     public java.lang.String getSql() {
       return this.sql;
     }
 
+    /**
+     * The SQL string to Execute
+     */
     public sql_update_args setSql(@org.apache.thrift.annotation.Nullable java.lang.String sql) {
       this.sql = sql;
       return this;
@@ -10735,10 +10862,16 @@ public class Service {
       }
     }
 
+    /**
+     * The Updater ID to work with
+     */
     public long getUpdater_id() {
       return this.updater_id;
     }
 
+    /**
+     * The Updater ID to work with
+     */
     public sql_update_args setUpdater_id(long updater_id) {
       this.updater_id = updater_id;
       setUpdater_idIsSet(true);
@@ -11430,10 +11563,16 @@ public class Service {
     private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new exec_sql_argsStandardSchemeFactory();
     private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new exec_sql_argsTupleSchemeFactory();
 
+    /**
+     * The SQL string to Execute
+     */
     public @org.apache.thrift.annotation.Nullable java.lang.String sql; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+      /**
+       * The SQL string to Execute
+       */
       SQL((short)1, "sql");
 
       private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
@@ -11530,11 +11669,17 @@ public class Service {
       this.sql = null;
     }
 
+    /**
+     * The SQL string to Execute
+     */
     @org.apache.thrift.annotation.Nullable
     public java.lang.String getSql() {
       return this.sql;
     }
 
+    /**
+     * The SQL string to Execute
+     */
     public exec_sql_args setSql(@org.apache.thrift.annotation.Nullable java.lang.String sql) {
       this.sql = sql;
       return this;
@@ -12276,10 +12421,16 @@ public class Service {
     private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new updater_create_argsStandardSchemeFactory();
     private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new updater_create_argsTupleSchemeFactory();
 
+    /**
+     * The buffer size of the Updater
+     */
     public int buffer_size; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+      /**
+       * The buffer size of the Updater
+       */
       BUFFER_SIZE((short)1, "buffer_size");
 
       private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
@@ -12379,10 +12530,16 @@ public class Service {
       this.buffer_size = 0;
     }
 
+    /**
+     * The buffer size of the Updater
+     */
     public int getBuffer_size() {
       return this.buffer_size;
     }
 
+    /**
+     * The buffer size of the Updater
+     */
     public updater_create_args setBuffer_size(int buffer_size) {
       this.buffer_size = buffer_size;
       setBuffer_sizeIsSet(true);
@@ -13109,10 +13266,16 @@ public class Service {
     private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new updater_close_argsStandardSchemeFactory();
     private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new updater_close_argsTupleSchemeFactory();
 
+    /**
+     * The Updater ID to close
+     */
     public long id; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+      /**
+       * The Updater ID to close
+       */
       ID((short)1, "id");
 
       private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
@@ -13212,10 +13375,16 @@ public class Service {
       this.id = 0;
     }
 
+    /**
+     * The Updater ID to close
+     */
     public long getId() {
       return this.id;
     }
 
+    /**
+     * The Updater ID to close
+     */
     public updater_close_args setId(long id) {
       this.id = id;
       setIdIsSet(true);
@@ -13841,12 +14010,24 @@ public class Service {
     private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new update_argsStandardSchemeFactory();
     private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new update_argsTupleSchemeFactory();
 
+    /**
+     * The Cells to update
+     */
     public @org.apache.thrift.annotation.Nullable java.util.Map<java.lang.Long,java.util.List<UCell>> cells; // required
+    /**
+     * The Updater ID to use for write
+     */
     public long updater_id; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+      /**
+       * The Cells to update
+       */
       CELLS((short)1, "cells"),
+      /**
+       * The Updater ID to use for write
+       */
       UPDATER_ID((short)2, "updater_id");
 
       private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
@@ -13981,11 +14162,17 @@ public class Service {
       this.cells.put(key, val);
     }
 
+    /**
+     * The Cells to update
+     */
     @org.apache.thrift.annotation.Nullable
     public java.util.Map<java.lang.Long,java.util.List<UCell>> getCells() {
       return this.cells;
     }
 
+    /**
+     * The Cells to update
+     */
     public update_args setCells(@org.apache.thrift.annotation.Nullable java.util.Map<java.lang.Long,java.util.List<UCell>> cells) {
       this.cells = cells;
       return this;
@@ -14006,10 +14193,16 @@ public class Service {
       }
     }
 
+    /**
+     * The Updater ID to use for write
+     */
     public long getUpdater_id() {
       return this.updater_id;
     }
 
+    /**
+     * The Updater ID to use for write
+     */
     public update_args setUpdater_id(long updater_id) {
       this.updater_id = updater_id;
       setUpdater_idIsSet(true);
@@ -14775,19 +14968,27 @@ public class Service {
     private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new mng_column_argsTupleSchemeFactory();
 
     /**
+     * The Action Function to use
      * 
      * @see SchemaFunc
      */
     public @org.apache.thrift.annotation.Nullable SchemaFunc func; // required
+    /**
+     * The Schema for the Action
+     */
     public @org.apache.thrift.annotation.Nullable Schema schema; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
       /**
+       * The Action Function to use
        * 
        * @see SchemaFunc
        */
       FUNC((short)1, "func"),
+      /**
+       * The Schema for the Action
+       */
       SCHEMA((short)2, "schema");
 
       private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
@@ -14895,6 +15096,7 @@ public class Service {
     }
 
     /**
+     * The Action Function to use
      * 
      * @see SchemaFunc
      */
@@ -14904,6 +15106,7 @@ public class Service {
     }
 
     /**
+     * The Action Function to use
      * 
      * @see SchemaFunc
      */
@@ -14927,11 +15130,17 @@ public class Service {
       }
     }
 
+    /**
+     * The Schema for the Action
+     */
     @org.apache.thrift.annotation.Nullable
     public Schema getSchema() {
       return this.schema;
     }
 
+    /**
+     * The Schema for the Action
+     */
     public mng_column_args setSchema(@org.apache.thrift.annotation.Nullable Schema schema) {
       this.schema = schema;
       return this;
@@ -15635,10 +15844,16 @@ public class Service {
     private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new list_columns_argsStandardSchemeFactory();
     private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new list_columns_argsTupleSchemeFactory();
 
+    /**
+     * The Schemas Specifications to match Schema for response
+     */
     public @org.apache.thrift.annotation.Nullable SpecSchemas spec; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+      /**
+       * The Schemas Specifications to match Schema for response
+       */
       SPEC((short)1, "spec");
 
       private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
@@ -15735,11 +15950,17 @@ public class Service {
       this.spec = null;
     }
 
+    /**
+     * The Schemas Specifications to match Schema for response
+     */
     @org.apache.thrift.annotation.Nullable
     public SpecSchemas getSpec() {
       return this.spec;
     }
 
+    /**
+     * The Schemas Specifications to match Schema for response
+     */
     public list_columns_args setSpec(@org.apache.thrift.annotation.Nullable SpecSchemas spec) {
       this.spec = spec;
       return this;
@@ -16535,10 +16756,16 @@ public class Service {
     private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new compact_columns_argsStandardSchemeFactory();
     private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new compact_columns_argsTupleSchemeFactory();
 
+    /**
+     * The Schemas Specifications to match columns to Compact
+     */
     public @org.apache.thrift.annotation.Nullable SpecSchemas spec; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+      /**
+       * The Schemas Specifications to match columns to Compact
+       */
       SPEC((short)1, "spec");
 
       private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
@@ -16635,11 +16862,17 @@ public class Service {
       this.spec = null;
     }
 
+    /**
+     * The Schemas Specifications to match columns to Compact
+     */
     @org.apache.thrift.annotation.Nullable
     public SpecSchemas getSpec() {
       return this.spec;
     }
 
+    /**
+     * The Schemas Specifications to match columns to Compact
+     */
     public compact_columns_args setSpec(@org.apache.thrift.annotation.Nullable SpecSchemas spec) {
       this.spec = spec;
       return this;
@@ -17435,10 +17668,16 @@ public class Service {
     private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new scan_argsStandardSchemeFactory();
     private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new scan_argsTupleSchemeFactory();
 
+    /**
+     * The Scan Specifications for the scan
+     */
     public @org.apache.thrift.annotation.Nullable SpecScan spec; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+      /**
+       * The Scan Specifications for the scan
+       */
       SPEC((short)1, "spec");
 
       private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
@@ -17535,11 +17774,17 @@ public class Service {
       this.spec = null;
     }
 
+    /**
+     * The Scan Specifications for the scan
+     */
     @org.apache.thrift.annotation.Nullable
     public SpecScan getSpec() {
       return this.spec;
     }
 
+    /**
+     * The Scan Specifications for the scan
+     */
     public scan_args setSpec(@org.apache.thrift.annotation.Nullable SpecScan spec) {
       this.spec = spec;
       return this;
@@ -18335,10 +18580,16 @@ public class Service {
     private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new scan_rslt_on_column_argsStandardSchemeFactory();
     private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new scan_rslt_on_column_argsTupleSchemeFactory();
 
+    /**
+     * The Scan Specifications for the scan
+     */
     public @org.apache.thrift.annotation.Nullable SpecScan spec; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+      /**
+       * The Scan Specifications for the scan
+       */
       SPEC((short)1, "spec");
 
       private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
@@ -18435,11 +18686,17 @@ public class Service {
       this.spec = null;
     }
 
+    /**
+     * The Scan Specifications for the scan
+     */
     @org.apache.thrift.annotation.Nullable
     public SpecScan getSpec() {
       return this.spec;
     }
 
+    /**
+     * The Scan Specifications for the scan
+     */
     public scan_rslt_on_column_args setSpec(@org.apache.thrift.annotation.Nullable SpecScan spec) {
       this.spec = spec;
       return this;
@@ -19276,10 +19533,16 @@ public class Service {
     private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new scan_rslt_on_key_argsStandardSchemeFactory();
     private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new scan_rslt_on_key_argsTupleSchemeFactory();
 
+    /**
+     * The Scan Specifications for the scan
+     */
     public @org.apache.thrift.annotation.Nullable SpecScan spec; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+      /**
+       * The Scan Specifications for the scan
+       */
       SPEC((short)1, "spec");
 
       private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
@@ -19376,11 +19639,17 @@ public class Service {
       this.spec = null;
     }
 
+    /**
+     * The Scan Specifications for the scan
+     */
     @org.apache.thrift.annotation.Nullable
     public SpecScan getSpec() {
       return this.spec;
     }
 
+    /**
+     * The Scan Specifications for the scan
+     */
     public scan_rslt_on_key_args setSpec(@org.apache.thrift.annotation.Nullable SpecScan spec) {
       this.spec = spec;
       return this;
@@ -20176,10 +20445,16 @@ public class Service {
     private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new scan_rslt_on_fraction_argsStandardSchemeFactory();
     private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new scan_rslt_on_fraction_argsTupleSchemeFactory();
 
+    /**
+     * The Scan Specifications for the scan
+     */
     public @org.apache.thrift.annotation.Nullable SpecScan spec; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+      /**
+       * The Scan Specifications for the scan
+       */
       SPEC((short)1, "spec");
 
       private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
@@ -20276,11 +20551,17 @@ public class Service {
       this.spec = null;
     }
 
+    /**
+     * The Scan Specifications for the scan
+     */
     @org.apache.thrift.annotation.Nullable
     public SpecScan getSpec() {
       return this.spec;
     }
 
+    /**
+     * The Scan Specifications for the scan
+     */
     public scan_rslt_on_fraction_args setSpec(@org.apache.thrift.annotation.Nullable SpecScan spec) {
       this.spec = spec;
       return this;
@@ -21028,8 +21309,12 @@ public class Service {
     private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new scan_rslt_on_argsStandardSchemeFactory();
     private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new scan_rslt_on_argsTupleSchemeFactory();
 
+    /**
+     * The Scan Specifications for the scan
+     */
     public @org.apache.thrift.annotation.Nullable SpecScan spec; // required
     /**
+     * The Type of Cells Result for the response
      * 
      * @see CellsResult
      */
@@ -21037,8 +21322,12 @@ public class Service {
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+      /**
+       * The Scan Specifications for the scan
+       */
       SPEC((short)1, "spec"),
       /**
+       * The Type of Cells Result for the response
        * 
        * @see CellsResult
        */
@@ -21148,11 +21437,17 @@ public class Service {
       this.rslt = null;
     }
 
+    /**
+     * The Scan Specifications for the scan
+     */
     @org.apache.thrift.annotation.Nullable
     public SpecScan getSpec() {
       return this.spec;
     }
 
+    /**
+     * The Scan Specifications for the scan
+     */
     public scan_rslt_on_args setSpec(@org.apache.thrift.annotation.Nullable SpecScan spec) {
       this.spec = spec;
       return this;
@@ -21174,6 +21469,7 @@ public class Service {
     }
 
     /**
+     * The Type of Cells Result for the response
      * 
      * @see CellsResult
      */
@@ -21183,6 +21479,7 @@ public class Service {
     }
 
     /**
+     * The Type of Cells Result for the response
      * 
      * @see CellsResult
      */
@@ -21522,11 +21819,17 @@ public class Service {
     private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new scan_rslt_on_resultTupleSchemeFactory();
 
     public @org.apache.thrift.annotation.Nullable CellsGroup success; // required
+    /**
+     * The Base Exception
+     */
     public @org.apache.thrift.annotation.Nullable Exception e; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
       SUCCESS((short)0, "success"),
+      /**
+       * The Base Exception
+       */
       E((short)1, "e");
 
       private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
@@ -21658,11 +21961,17 @@ public class Service {
       }
     }
 
+    /**
+     * The Base Exception
+     */
     @org.apache.thrift.annotation.Nullable
     public Exception getE() {
       return this.e;
     }
 
+    /**
+     * The Base Exception
+     */
     public scan_rslt_on_result setE(@org.apache.thrift.annotation.Nullable Exception e) {
       this.e = e;
       return this;

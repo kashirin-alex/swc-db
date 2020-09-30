@@ -450,12 +450,17 @@ The Result of 'exec_sql'
 ## Services
 
 ### Service: Service
+The SWC-DB Thrift Service 
 #### Function: Service.sql_mng_column
-The direct SQL method to Manage Column 
+The direct SQL method to Manage Column. 
 
 ```void```
  _sql_mng_column_(```string``` sql)
 > throws [```Exception```](#exception-exception)
+
+* parameters:
+1. sql - The SQL string to Execute 
+
 
 #### Function: Service.sql_list_columns
 The direct SQL method to List Columns 
@@ -464,12 +469,20 @@ The direct SQL method to List Columns
  _sql_list_columns_(```string``` sql)
 > throws [```Exception```](#exception-exception)
 
+* parameters:
+1. sql - The SQL string to Execute 
+
+
 #### Function: Service.sql_compact_columns
 The direct SQL method to Compact Columns 
 
 [```CompactResults```](#typedef-compactresults)
  _sql_compact_columns_(```string``` sql)
 > throws [```Exception```](#exception-exception)
+
+* parameters:
+1. sql - The SQL string to Execute 
+
 
 #### Function: Service.sql_select
 The direct SQL method to select cells with result in Cells List. 
@@ -478,12 +491,20 @@ The direct SQL method to select cells with result in Cells List.
  _sql_select_(```string``` sql)
 > throws [```Exception```](#exception-exception)
 
+* parameters:
+1. sql - The SQL string to Execute 
+
+
 #### Function: Service.sql_select_rslt_on_column
 The direct SQL method to select cells with result in Columns Cells map. 
 
 [```CCells```](#typedef-ccells)
  _sql_select_rslt_on_column_(```string``` sql)
 > throws [```Exception```](#exception-exception)
+
+* parameters:
+1. sql - The SQL string to Execute 
+
 
 #### Function: Service.sql_select_rslt_on_key
 The direct SQL method to select cells with result in Key Cells list. 
@@ -492,12 +513,20 @@ The direct SQL method to select cells with result in Key Cells list.
  _sql_select_rslt_on_key_(```string``` sql)
 > throws [```Exception```](#exception-exception)
 
+* parameters:
+1. sql - The SQL string to Execute 
+
+
 #### Function: Service.sql_select_rslt_on_fraction
 The direct SQL method to select cells with result in Fractons Cells. 
 
 [```FCells```](#struct-fcells)
  _sql_select_rslt_on_fraction_(```string``` sql)
 > throws [```Exception```](#exception-exception)
+
+* parameters:
+1. sql - The SQL string to Execute 
+
 
 #### Function: Service.sql_query
 The SQL method to select cells with result set by the request's type of CellsResult. 
@@ -507,6 +536,11 @@ The SQL method to select cells with result set by the request's type of CellsRes
 [```CellsResult```](#enumeration-cellsresult) rslt)
 > throws [```Exception```](#exception-exception)
 
+* parameters:
+1. sql - The SQL string to Execute 
+2. rslt - The Type of Cells Result for the response 
+
+
 #### Function: Service.sql_update
 The direct SQL method to update cells optionally to work with updater-id. 
 
@@ -515,12 +549,21 @@ The direct SQL method to update cells optionally to work with updater-id.
 ```i64``` updater_id = ```0```)
 > throws [```Exception```](#exception-exception)
 
+* parameters:
+1. sql - The SQL string to Execute 
+2. updater_id - The Updater ID to work with 
+
+
 #### Function: Service.exec_sql
 The SQL method to execute any query. 
 
 [```Result```](#struct-result)
  _exec_sql_(```string``` sql)
 > throws [```Exception```](#exception-exception)
+
+* parameters:
+1. sql - The SQL string to Execute 
+
 
 #### Function: Service.updater_create
 The method to Create an Updater ID with buffering size in bytes. 
@@ -529,12 +572,20 @@ The method to Create an Updater ID with buffering size in bytes.
  _updater_create_(```i32``` buffer_size)
 > throws [```Exception```](#exception-exception)
 
+* parameters:
+1. buffer_size - The buffer size of the Updater 
+
+
 #### Function: Service.updater_close
 The method to Close an Updater ID. 
 
 ```void```
  _updater_close_(```i64``` id)
 > throws [```Exception```](#exception-exception)
+
+* parameters:
+1. id - The Updater ID to close 
+
 
 #### Function: Service.update
 The direct method to update cells with cell in Update-Columns-Cells, optionally to work with updater-id. 
@@ -544,6 +595,11 @@ The direct method to update cells with cell in Update-Columns-Cells, optionally 
 ```i64``` updater_id = ```0```)
 > throws [```Exception```](#exception-exception)
 
+* parameters:
+1. cells - The Cells to update 
+2. updater_id - The Updater ID to use for write 
+
+
 #### Function: Service.mng_column
 The direct method to Manage Column 
 
@@ -552,12 +608,21 @@ The direct method to Manage Column
 [```Schema```](#struct-schema) schema)
 > throws [```Exception```](#exception-exception)
 
+* parameters:
+1. func - The Action Function to use 
+2. schema - The Schema for the Action 
+
+
 #### Function: Service.list_columns
 The direct method to List Columns 
 
 [```Schemas```](#typedef-schemas)
  _list_columns_([```SpecSchemas```](#struct-specschemas) spec)
 > throws [```Exception```](#exception-exception)
+
+* parameters:
+1. spec - The Schemas Specifications to match Schema for response 
+
 
 #### Function: Service.compact_columns
 The direct method to Compact Columns 
@@ -566,12 +631,20 @@ The direct method to Compact Columns
  _compact_columns_([```SpecSchemas```](#struct-specschemas) spec)
 > throws [```Exception```](#exception-exception)
 
+* parameters:
+1. spec - The Schemas Specifications to match columns to Compact 
+
+
 #### Function: Service.scan
 The direct method to select cells with result in Cells List. 
 
 [```Cells```](#typedef-cells)
  _scan_([```SpecScan```](#struct-specscan) spec)
 > throws [```Exception```](#exception-exception)
+
+* parameters:
+1. spec - The Scan Specifications for the scan 
+
 
 #### Function: Service.scan_rslt_on_column
 The direct method to select cells with result in Columns Cells map. 
@@ -580,6 +653,10 @@ The direct method to select cells with result in Columns Cells map.
  _scan_rslt_on_column_([```SpecScan```](#struct-specscan) spec)
 > throws [```Exception```](#exception-exception)
 
+* parameters:
+1. spec - The Scan Specifications for the scan 
+
+
 #### Function: Service.scan_rslt_on_key
 The direct method to select cells with result in Key Cells list. 
 
@@ -587,12 +664,20 @@ The direct method to select cells with result in Key Cells list.
  _scan_rslt_on_key_([```SpecScan```](#struct-specscan) spec)
 > throws [```Exception```](#exception-exception)
 
+* parameters:
+1. spec - The Scan Specifications for the scan 
+
+
 #### Function: Service.scan_rslt_on_fraction
 The direct method to select cells with result in Fractons Cells. 
 
 [```FCells```](#struct-fcells)
  _scan_rslt_on_fraction_([```SpecScan```](#struct-specscan) spec)
 > throws [```Exception```](#exception-exception)
+
+* parameters:
+1. spec - The Scan Specifications for the scan 
+
 
 #### Function: Service.scan_rslt_on
 The method to select cells with result set by the request's type of CellsResult. 
@@ -602,6 +687,11 @@ The method to select cells with result set by the request's type of CellsResult.
 [```CellsResult```](#enumeration-cellsresult) rslt)
 > throws [```Exception```](#exception-exception)
 
+* parameters:
+1. spec - The Scan Specifications for the scan 
+2. rslt - The Type of Cells Result for the response 
 
+* exceptions:
+  * Exception - The Base Exception 
 
 

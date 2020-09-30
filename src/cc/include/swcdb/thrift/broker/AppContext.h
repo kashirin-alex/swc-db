@@ -6,11 +6,21 @@
 #ifndef swc_app_thriftbroker_AppContext_h
 #define swc_app_thriftbroker_AppContext_h
 
-#include "swcdb/thrift/gen-cpp/Broker.h"
+
+namespace SWC {
+/**! The SWC-DB Thrift-Protocol C++ namespace 'SWC::Thrift'
+  * The Namespace include the Thrift auto-generated Thrift Protocol
+*/
+namespace Thrift { }
+}
+
 
 #include "swcdb/db/client/Clients.h"
 #include "swcdb/thrift/broker/AppContextClient.h"
+
+#include "swcdb/thrift/gen-cpp/Broker.h"
 #include "swcdb/thrift/broker/AppHandler.h"
+
 
 
 namespace SWC { namespace Thrift {

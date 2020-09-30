@@ -6,6 +6,16 @@
 #ifndef swc_thrift_client_Client_h
 #define swc_thrift_client_Client_h
 
+
+//! The SWC-DB C++ namespace 'SWC'
+namespace SWC {
+/**! The SWC-DB Thrift-Protocol C++ namespace 'SWC::Thrift'
+  * The Namespace include the Thrift auto-generated Thrift Protocol
+*/
+namespace Thrift { }
+}
+
+
 #include <thrift/transport/TSocket.h>
 #include <thrift/transport/TTransportUtils.h>
 #include <thrift/transport/TZlibTransport.h>
@@ -13,8 +23,7 @@
 
 #include "swcdb/thrift/gen-cpp/Service.h"
 
-//! The SWC-DB C++ namespace 'SWC'
-namespace SWC { }
+
 
 namespace SWC { 
 namespace thrift = apache::thrift;

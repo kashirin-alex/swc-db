@@ -25,142 +25,149 @@ using Thrift.Processor;
 
 public partial class Service
 {
+  /// <summary>
+  /// The SWC-DB Thrift Service
+  /// </summary>
   public interface IAsync
   {
     /// <summary>
-    /// The direct SQL method to Manage Column
+    /// The direct SQL method to Manage Column.
     /// </summary>
-    /// <param name="sql"></param>
+    /// <param name="sql">The SQL string to Execute</param>
     Task sql_mng_columnAsync(string sql, CancellationToken cancellationToken = default(CancellationToken));
 
     /// <summary>
     /// The direct SQL method to List Columns
     /// </summary>
-    /// <param name="sql"></param>
+    /// <param name="sql">The SQL string to Execute</param>
     Task<List<Schema>> sql_list_columnsAsync(string sql, CancellationToken cancellationToken = default(CancellationToken));
 
     /// <summary>
     /// The direct SQL method to Compact Columns
     /// </summary>
-    /// <param name="sql"></param>
+    /// <param name="sql">The SQL string to Execute</param>
     Task<List<CompactResult>> sql_compact_columnsAsync(string sql, CancellationToken cancellationToken = default(CancellationToken));
 
     /// <summary>
     /// The direct SQL method to select cells with result in Cells List.
     /// </summary>
-    /// <param name="sql"></param>
+    /// <param name="sql">The SQL string to Execute</param>
     Task<List<Cell>> sql_selectAsync(string sql, CancellationToken cancellationToken = default(CancellationToken));
 
     /// <summary>
     /// The direct SQL method to select cells with result in Columns Cells map.
     /// </summary>
-    /// <param name="sql"></param>
+    /// <param name="sql">The SQL string to Execute</param>
     Task<Dictionary<string, List<CCell>>> sql_select_rslt_on_columnAsync(string sql, CancellationToken cancellationToken = default(CancellationToken));
 
     /// <summary>
     /// The direct SQL method to select cells with result in Key Cells list.
     /// </summary>
-    /// <param name="sql"></param>
+    /// <param name="sql">The SQL string to Execute</param>
     Task<List<kCells>> sql_select_rslt_on_keyAsync(string sql, CancellationToken cancellationToken = default(CancellationToken));
 
     /// <summary>
     /// The direct SQL method to select cells with result in Fractons Cells.
     /// </summary>
-    /// <param name="sql"></param>
+    /// <param name="sql">The SQL string to Execute</param>
     Task<FCells> sql_select_rslt_on_fractionAsync(string sql, CancellationToken cancellationToken = default(CancellationToken));
 
     /// <summary>
     /// The SQL method to select cells with result set by the request's type of CellsResult.
     /// </summary>
-    /// <param name="sql"></param>
-    /// <param name="rslt"></param>
+    /// <param name="sql">The SQL string to Execute</param>
+    /// <param name="rslt">The Type of Cells Result for the response</param>
     Task<CellsGroup> sql_queryAsync(string sql, CellsResult rslt, CancellationToken cancellationToken = default(CancellationToken));
 
     /// <summary>
     /// The direct SQL method to update cells optionally to work with updater-id.
     /// </summary>
-    /// <param name="sql"></param>
-    /// <param name="updater_id"></param>
+    /// <param name="sql">The SQL string to Execute</param>
+    /// <param name="updater_id">The Updater ID to work with</param>
     Task sql_updateAsync(string sql, long updater_id, CancellationToken cancellationToken = default(CancellationToken));
 
     /// <summary>
     /// The SQL method to execute any query.
     /// </summary>
-    /// <param name="sql"></param>
+    /// <param name="sql">The SQL string to Execute</param>
     Task<Result> exec_sqlAsync(string sql, CancellationToken cancellationToken = default(CancellationToken));
 
     /// <summary>
     /// The method to Create an Updater ID with buffering size in bytes.
     /// </summary>
-    /// <param name="buffer_size"></param>
+    /// <param name="buffer_size">The buffer size of the Updater</param>
     Task<long> updater_createAsync(int buffer_size, CancellationToken cancellationToken = default(CancellationToken));
 
     /// <summary>
     /// The method to Close an Updater ID.
     /// </summary>
-    /// <param name="id"></param>
+    /// <param name="id">The Updater ID to close</param>
     Task updater_closeAsync(long id, CancellationToken cancellationToken = default(CancellationToken));
 
     /// <summary>
-    /// The direct method to update cells with cell in Update-Columns-Cells, optionally to work with updater-id.
+    /// The direct method to update cells with cell in Update-Columns-Cells,
+    /// optionally to work with updater-id.
     /// </summary>
-    /// <param name="cells"></param>
-    /// <param name="updater_id"></param>
+    /// <param name="cells">The Cells to update</param>
+    /// <param name="updater_id">The Updater ID to use for write</param>
     Task updateAsync(Dictionary<long, List<UCell>> cells, long updater_id, CancellationToken cancellationToken = default(CancellationToken));
 
     /// <summary>
     /// The direct method to Manage Column
     /// </summary>
-    /// <param name="func"></param>
-    /// <param name="schema"></param>
+    /// <param name="func">The Action Function to use</param>
+    /// <param name="schema">The Schema for the Action</param>
     Task mng_columnAsync(SchemaFunc func, Schema schema, CancellationToken cancellationToken = default(CancellationToken));
 
     /// <summary>
     /// The direct method to List Columns
     /// </summary>
-    /// <param name="spec"></param>
+    /// <param name="spec">The Schemas Specifications to match Schema for response</param>
     Task<List<Schema>> list_columnsAsync(SpecSchemas spec, CancellationToken cancellationToken = default(CancellationToken));
 
     /// <summary>
     /// The direct method to Compact Columns
     /// </summary>
-    /// <param name="spec"></param>
+    /// <param name="spec">The Schemas Specifications to match columns to Compact</param>
     Task<List<CompactResult>> compact_columnsAsync(SpecSchemas spec, CancellationToken cancellationToken = default(CancellationToken));
 
     /// <summary>
     /// The direct method to select cells with result in Cells List.
     /// </summary>
-    /// <param name="spec"></param>
+    /// <param name="spec">The Scan Specifications for the scan</param>
     Task<List<Cell>> scanAsync(SpecScan spec, CancellationToken cancellationToken = default(CancellationToken));
 
     /// <summary>
     /// The direct method to select cells with result in Columns Cells map.
     /// </summary>
-    /// <param name="spec"></param>
+    /// <param name="spec">The Scan Specifications for the scan</param>
     Task<Dictionary<string, List<CCell>>> scan_rslt_on_columnAsync(SpecScan spec, CancellationToken cancellationToken = default(CancellationToken));
 
     /// <summary>
     /// The direct method to select cells with result in Key Cells list.
     /// </summary>
-    /// <param name="spec"></param>
+    /// <param name="spec">The Scan Specifications for the scan</param>
     Task<List<kCells>> scan_rslt_on_keyAsync(SpecScan spec, CancellationToken cancellationToken = default(CancellationToken));
 
     /// <summary>
     /// The direct method to select cells with result in Fractons Cells.
     /// </summary>
-    /// <param name="spec"></param>
+    /// <param name="spec">The Scan Specifications for the scan</param>
     Task<FCells> scan_rslt_on_fractionAsync(SpecScan spec, CancellationToken cancellationToken = default(CancellationToken));
 
     /// <summary>
     /// The method to select cells with result set by the request's type of CellsResult.
     /// </summary>
-    /// <param name="spec"></param>
-    /// <param name="rslt"></param>
+    /// <param name="spec">The Scan Specifications for the scan</param>
+    /// <param name="rslt">The Type of Cells Result for the response</param>
     Task<CellsGroup> scan_rslt_onAsync(SpecScan spec, CellsResult rslt, CancellationToken cancellationToken = default(CancellationToken));
 
   }
 
 
+  /// <summary>
+  /// The SWC-DB Thrift Service
+  /// </summary>
   public class Client : TBaseClient, IDisposable, IAsync
   {
     public Client(TProtocol protocol) : this(protocol, protocol)
@@ -1663,6 +1670,9 @@ public partial class Service
   {
     private string _sql;
 
+    /// <summary>
+    /// The SQL string to Execute
+    /// </summary>
     public string Sql
     {
       get
@@ -1930,6 +1940,9 @@ public partial class Service
   {
     private string _sql;
 
+    /// <summary>
+    /// The SQL string to Execute
+    /// </summary>
     public string Sql
     {
       get
@@ -2262,6 +2275,9 @@ public partial class Service
   {
     private string _sql;
 
+    /// <summary>
+    /// The SQL string to Execute
+    /// </summary>
     public string Sql
     {
       get
@@ -2594,6 +2610,9 @@ public partial class Service
   {
     private string _sql;
 
+    /// <summary>
+    /// The SQL string to Execute
+    /// </summary>
     public string Sql
     {
       get
@@ -2926,6 +2945,9 @@ public partial class Service
   {
     private string _sql;
 
+    /// <summary>
+    /// The SQL string to Execute
+    /// </summary>
     public string Sql
     {
       get
@@ -3278,6 +3300,9 @@ public partial class Service
   {
     private string _sql;
 
+    /// <summary>
+    /// The SQL string to Execute
+    /// </summary>
     public string Sql
     {
       get
@@ -3610,6 +3635,9 @@ public partial class Service
   {
     private string _sql;
 
+    /// <summary>
+    /// The SQL string to Execute
+    /// </summary>
     public string Sql
     {
       get
@@ -3926,6 +3954,9 @@ public partial class Service
     private string _sql;
     private CellsResult _rslt;
 
+    /// <summary>
+    /// The SQL string to Execute
+    /// </summary>
     public string Sql
     {
       get
@@ -3940,6 +3971,7 @@ public partial class Service
     }
 
     /// <summary>
+    /// The Type of Cells Result for the response
     /// 
     /// <seealso cref="CellsResult"/>
     /// </summary>
@@ -4289,6 +4321,9 @@ public partial class Service
     private string _sql;
     private long _updater_id;
 
+    /// <summary>
+    /// The SQL string to Execute
+    /// </summary>
     public string Sql
     {
       get
@@ -4302,6 +4337,9 @@ public partial class Service
       }
     }
 
+    /// <summary>
+    /// The Updater ID to work with
+    /// </summary>
     public long Updater_id
     {
       get
@@ -4601,6 +4639,9 @@ public partial class Service
   {
     private string _sql;
 
+    /// <summary>
+    /// The SQL string to Execute
+    /// </summary>
     public string Sql
     {
       get
@@ -4916,6 +4957,9 @@ public partial class Service
   {
     private int _buffer_size;
 
+    /// <summary>
+    /// The buffer size of the Updater
+    /// </summary>
     public int Buffer_size
     {
       get
@@ -5227,6 +5271,9 @@ public partial class Service
   {
     private long _id;
 
+    /// <summary>
+    /// The Updater ID to close
+    /// </summary>
     public long Id
     {
       get
@@ -5495,6 +5542,9 @@ public partial class Service
     private Dictionary<long, List<UCell>> _cells;
     private long _updater_id;
 
+    /// <summary>
+    /// The Cells to update
+    /// </summary>
     public Dictionary<long, List<UCell>> Cells
     {
       get
@@ -5508,6 +5558,9 @@ public partial class Service
       }
     }
 
+    /// <summary>
+    /// The Updater ID to use for write
+    /// </summary>
     public long Updater_id
     {
       get
@@ -5847,6 +5900,7 @@ public partial class Service
     private Schema _schema;
 
     /// <summary>
+    /// The Action Function to use
     /// 
     /// <seealso cref="SchemaFunc"/>
     /// </summary>
@@ -5863,6 +5917,9 @@ public partial class Service
       }
     }
 
+    /// <summary>
+    /// The Schema for the Action
+    /// </summary>
     public Schema Schema
     {
       get
@@ -6161,6 +6218,9 @@ public partial class Service
   {
     private SpecSchemas _spec;
 
+    /// <summary>
+    /// The Schemas Specifications to match Schema for response
+    /// </summary>
     public SpecSchemas Spec
     {
       get
@@ -6494,6 +6554,9 @@ public partial class Service
   {
     private SpecSchemas _spec;
 
+    /// <summary>
+    /// The Schemas Specifications to match columns to Compact
+    /// </summary>
     public SpecSchemas Spec
     {
       get
@@ -6827,6 +6890,9 @@ public partial class Service
   {
     private SpecScan _spec;
 
+    /// <summary>
+    /// The Scan Specifications for the scan
+    /// </summary>
     public SpecScan Spec
     {
       get
@@ -7160,6 +7226,9 @@ public partial class Service
   {
     private SpecScan _spec;
 
+    /// <summary>
+    /// The Scan Specifications for the scan
+    /// </summary>
     public SpecScan Spec
     {
       get
@@ -7513,6 +7582,9 @@ public partial class Service
   {
     private SpecScan _spec;
 
+    /// <summary>
+    /// The Scan Specifications for the scan
+    /// </summary>
     public SpecScan Spec
     {
       get
@@ -7846,6 +7918,9 @@ public partial class Service
   {
     private SpecScan _spec;
 
+    /// <summary>
+    /// The Scan Specifications for the scan
+    /// </summary>
     public SpecScan Spec
     {
       get
@@ -8163,6 +8238,9 @@ public partial class Service
     private SpecScan _spec;
     private CellsResult _rslt;
 
+    /// <summary>
+    /// The Scan Specifications for the scan
+    /// </summary>
     public SpecScan Spec
     {
       get
@@ -8177,6 +8255,7 @@ public partial class Service
     }
 
     /// <summary>
+    /// The Type of Cells Result for the response
     /// 
     /// <seealso cref="CellsResult"/>
     /// </summary>
@@ -8356,6 +8435,9 @@ public partial class Service
       }
     }
 
+    /// <summary>
+    /// The Base Exception
+    /// </summary>
     public Exception E
     {
       get

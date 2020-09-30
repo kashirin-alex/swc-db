@@ -8,9 +8,16 @@
  * namespace for target languages
  */
 
+/* The SWC-DB Thrift-Protocol C++ namespace 'SWC::Thrift' */
 namespace cpp     SWC.Thrift
+
+/* The SWC-DB Thrift-Protocol Python Module 'swcdb.thrift' */
 namespace py      swcdb.thrift.gen
+
+/* The SWC-DB Thrift-Protocol C-GLIB prefix 'swcdb_thrift' */
 namespace c_glib  swcdb_thrift
+
+/* The SWC-DB Thrift-Protocol Java package 'org.swcdb.thrift.gen' */
 namespace java    org.swcdb.thrift.gen
 
 /*
@@ -582,96 +589,227 @@ struct Result {
 
 
 
+/** The SWC-DB Thrift Service */
 service Service {
 
-  /** The direct SQL method to Manage Column   */
-  void            sql_mng_column(1:string sql)       
-                  throws (1:Exception e),
 
-  /** The direct SQL method to List Columns   */
-  Schemas         sql_list_columns(1:string sql)     
-                  throws (1:Exception e),
+  /** 
+    * The direct SQL method to Manage Column. 
+    */
+  void sql_mng_column(
 
-  /** The direct SQL method to Compact Columns   */
-  CompactResults  sql_compact_columns(1:string sql)  
-                  throws (1:Exception e),
+    /** The SQL string to Execute */
+    1:string sql 
+
+  ) throws (1:Exception e),
+
+
+  /** 
+    * The direct SQL method to List Columns
+    */
+  Schemas sql_list_columns(
+  
+    /** The SQL string to Execute */
+    1:string sql
+  
+  )  throws (1:Exception e),
+
+
+  /** 
+    * The direct SQL method to Compact Columns
+    */
+  CompactResults sql_compact_columns(
+  
+    /** The SQL string to Execute */
+    1:string sql
+  
+  )  throws (1:Exception e),
 
 
   /** The direct SQL method to select cells with result in Cells List. */
-  Cells         sql_select(1:string sql)                   
-                throws (1:Exception e),
+  Cells sql_select(
+
+    /** The SQL string to Execute */
+    1:string sql
+
+  ) throws (1:Exception e),
   
+
   /** The direct SQL method to select cells with result in Columns Cells map. */
-  CCells        sql_select_rslt_on_column(1:string sql)    
-                throws (1:Exception e),
+  CCells sql_select_rslt_on_column(
   
+    /** The SQL string to Execute */
+    1:string sql
+
+  ) throws (1:Exception e),
+  
+
   /** The direct SQL method to select cells with result in Key Cells list. */
-  KCells        sql_select_rslt_on_key(1:string sql)
-                throws (1:Exception e),
+  KCells sql_select_rslt_on_key(
+  
+    /** The SQL string to Execute */
+    1:string sql
+
+  ) throws (1:Exception e),
+
 
   /** The direct SQL method to select cells with result in Fractons Cells. */
-  FCells        sql_select_rslt_on_fraction(1:string sql)
-                throws (1:Exception e),
+  FCells sql_select_rslt_on_fraction(
+
+    /** The SQL string to Execute */
+    1:string sql
+
+  ) throws (1:Exception e),
+
 
   /** The SQL method to select cells with result set by the request's type of CellsResult. */
-  CellsGroup    sql_query(1:string sql, 2:CellsResult rslt)
-                throws (1:Exception e),
+  CellsGroup  sql_query(
+    
+    /** The SQL string to Execute */
+    1:string sql, 
+    
+    /** The Type of Cells Result for the response */
+    2:CellsResult rslt
+  
+  ) throws (1:Exception e),
 
 
   /** The direct SQL method to update cells optionally to work with updater-id. */
-  void    sql_update(1:string sql, 2:i64 updater_id = 0)
-          throws (1:Exception e),
+  void sql_update(
+    
+    /** The SQL string to Execute */
+    1:string sql, 
+
+    /** The Updater ID to work with */
+    2:i64 updater_id = 0
+
+  ) throws (1:Exception e),
 
 
   /** The SQL method to execute any query. */
-  Result  exec_sql(1:string sql)
-          throws (1:Exception e),
+  Result exec_sql(
+    
+    /** The SQL string to Execute */
+    1:string sql
+  
+  ) throws (1:Exception e),
+
 
 
   /** The method to Create an Updater ID with buffering size in bytes. */
-  i64     updater_create(1:i32 buffer_size)
-          throws (1:Exception e),
+  i64 updater_create(
+    
+    /** The buffer size of the Updater */
+    1:i32 buffer_size
+  
+  ) throws (1:Exception e),
+
 
   /** The method to Close an Updater ID. */
-  void    updater_close(1:i64 id)
-          throws (1:Exception e),
+  void updater_close(
+    
+    /** The Updater ID to close */
+    1:i64 id
 
-  /** The direct method to update cells with cell in Update-Columns-Cells, optionally to work with updater-id. */
-  void    update(1:UCCells cells, 2:i64 updater_id = 0)
-          throws (1:Exception e),
+  ) throws (1:Exception e),
+
+
+
+  /** The direct method to update cells with cell in Update-Columns-Cells, 
+    * optionally to work with updater-id. 
+    */
+  void update(
+
+    /** The Cells to update  */
+    1:UCCells cells, 
+
+    /** The Updater ID to use for write */
+    2:i64 updater_id = 0
+
+  ) throws (1:Exception e),
 
 
   /** The direct method to Manage Column  */
-  void            mng_column(1:SchemaFunc func, 2:Schema schema) 
-                  throws (1:Exception e),
+  void  mng_column(
+
+    /** The Action Function to use */
+    1:SchemaFunc func, 
+
+    /** The Schema for the Action */
+    2:Schema schema
+
+  ) throws (1:Exception e),
   
+
   /** The direct method to List Columns  */
-  Schemas         list_columns(1:SpecSchemas spec)
-                  throws (1:Exception e),
+  Schemas list_columns(
+    
+    /** The Schemas Specifications to match Schema for response */
+    1:SpecSchemas spec
+
+  ) throws (1:Exception e),
   
+
   /** The direct method to Compact Columns  */
-  CompactResults  compact_columns(1:SpecSchemas spec)
-                  throws (1:Exception e),
+  CompactResults compact_columns(
+
+    /** The Schemas Specifications to match columns to Compact */
+    1:SpecSchemas spec
+  
+  )throws (1:Exception e),
 
 
   /** The direct method to select cells with result in Cells List. */
-  Cells       scan(1:SpecScan spec)
-              throws (1:Exception e),
+  Cells scan(
+
+    /** The Scan Specifications for the scan */
+    1:SpecScan spec
+
+  ) throws (1:Exception e),
+
 
   /** The direct method to select cells with result in Columns Cells map. */
-  CCells      scan_rslt_on_column(1:SpecScan spec)
-              throws (1:Exception e),
-    
+  CCells scan_rslt_on_column(
+
+    /** The Scan Specifications for the scan */
+    1:SpecScan spec
+
+  ) throws (1:Exception e),
+
+
   /** The direct method to select cells with result in Key Cells list. */
-  KCells      scan_rslt_on_key(1:SpecScan spec)         
-              throws (1:Exception e),
+  KCells  scan_rslt_on_key(
+
+    /** The Scan Specifications for the scan */
+    1:SpecScan spec
+
+  ) throws (1:Exception e),
+
 
   /** The direct method to select cells with result in Fractons Cells. */
-  FCells      scan_rslt_on_fraction(1:SpecScan spec)    
-              throws (1:Exception e),
+  FCells scan_rslt_on_fraction(
+
+    /** The Scan Specifications for the scan */
+    1:SpecScan spec
+    
+  ) throws (1:Exception e),
+
 
   /** The method to select cells with result set by the request's type of CellsResult. */
-  CellsGroup  scan_rslt_on(1:SpecScan spec, 2:CellsResult rslt)  
-              throws (1:Exception e),
+  CellsGroup scan_rslt_on(
+
+    /** The Scan Specifications for the scan */
+    1:SpecScan spec, 
+
+    /** The Type of Cells Result for the response */
+    2:CellsResult rslt
+
+  ) throws (
+
+    /** The Base Exception  */
+    1:Exception e,
+
+  ),
+
 
 }

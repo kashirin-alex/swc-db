@@ -18,12 +18,16 @@ all_structs = []
 
 
 class Iface(object):
+    """
+    The SWC-DB Thrift Service
+
+    """
     def sql_mng_column(self, sql):
         """
-        The direct SQL method to Manage Column
+        The direct SQL method to Manage Column.
 
         Parameters:
-         - sql
+         - sql: The SQL string to Execute
 
         """
         pass
@@ -33,7 +37,7 @@ class Iface(object):
         The direct SQL method to List Columns
 
         Parameters:
-         - sql
+         - sql: The SQL string to Execute
 
         """
         pass
@@ -43,7 +47,7 @@ class Iface(object):
         The direct SQL method to Compact Columns
 
         Parameters:
-         - sql
+         - sql: The SQL string to Execute
 
         """
         pass
@@ -53,7 +57,7 @@ class Iface(object):
         The direct SQL method to select cells with result in Cells List.
 
         Parameters:
-         - sql
+         - sql: The SQL string to Execute
 
         """
         pass
@@ -63,7 +67,7 @@ class Iface(object):
         The direct SQL method to select cells with result in Columns Cells map.
 
         Parameters:
-         - sql
+         - sql: The SQL string to Execute
 
         """
         pass
@@ -73,7 +77,7 @@ class Iface(object):
         The direct SQL method to select cells with result in Key Cells list.
 
         Parameters:
-         - sql
+         - sql: The SQL string to Execute
 
         """
         pass
@@ -83,7 +87,7 @@ class Iface(object):
         The direct SQL method to select cells with result in Fractons Cells.
 
         Parameters:
-         - sql
+         - sql: The SQL string to Execute
 
         """
         pass
@@ -93,8 +97,8 @@ class Iface(object):
         The SQL method to select cells with result set by the request's type of CellsResult.
 
         Parameters:
-         - sql
-         - rslt
+         - sql: The SQL string to Execute
+         - rslt: The Type of Cells Result for the response
 
         """
         pass
@@ -104,8 +108,8 @@ class Iface(object):
         The direct SQL method to update cells optionally to work with updater-id.
 
         Parameters:
-         - sql
-         - updater_id
+         - sql: The SQL string to Execute
+         - updater_id: The Updater ID to work with
 
         """
         pass
@@ -115,7 +119,7 @@ class Iface(object):
         The SQL method to execute any query.
 
         Parameters:
-         - sql
+         - sql: The SQL string to Execute
 
         """
         pass
@@ -125,7 +129,7 @@ class Iface(object):
         The method to Create an Updater ID with buffering size in bytes.
 
         Parameters:
-         - buffer_size
+         - buffer_size: The buffer size of the Updater
 
         """
         pass
@@ -135,18 +139,19 @@ class Iface(object):
         The method to Close an Updater ID.
 
         Parameters:
-         - id
+         - id: The Updater ID to close
 
         """
         pass
 
     def update(self, cells, updater_id):
         """
-        The direct method to update cells with cell in Update-Columns-Cells, optionally to work with updater-id.
+        The direct method to update cells with cell in Update-Columns-Cells,
+        optionally to work with updater-id.
 
         Parameters:
-         - cells
-         - updater_id
+         - cells: The Cells to update
+         - updater_id: The Updater ID to use for write
 
         """
         pass
@@ -156,8 +161,8 @@ class Iface(object):
         The direct method to Manage Column
 
         Parameters:
-         - func
-         - schema
+         - func: The Action Function to use
+         - schema: The Schema for the Action
 
         """
         pass
@@ -167,7 +172,7 @@ class Iface(object):
         The direct method to List Columns
 
         Parameters:
-         - spec
+         - spec: The Schemas Specifications to match Schema for response
 
         """
         pass
@@ -177,7 +182,7 @@ class Iface(object):
         The direct method to Compact Columns
 
         Parameters:
-         - spec
+         - spec: The Schemas Specifications to match columns to Compact
 
         """
         pass
@@ -187,7 +192,7 @@ class Iface(object):
         The direct method to select cells with result in Cells List.
 
         Parameters:
-         - spec
+         - spec: The Scan Specifications for the scan
 
         """
         pass
@@ -197,7 +202,7 @@ class Iface(object):
         The direct method to select cells with result in Columns Cells map.
 
         Parameters:
-         - spec
+         - spec: The Scan Specifications for the scan
 
         """
         pass
@@ -207,7 +212,7 @@ class Iface(object):
         The direct method to select cells with result in Key Cells list.
 
         Parameters:
-         - spec
+         - spec: The Scan Specifications for the scan
 
         """
         pass
@@ -217,7 +222,7 @@ class Iface(object):
         The direct method to select cells with result in Fractons Cells.
 
         Parameters:
-         - spec
+         - spec: The Scan Specifications for the scan
 
         """
         pass
@@ -227,14 +232,18 @@ class Iface(object):
         The method to select cells with result set by the request's type of CellsResult.
 
         Parameters:
-         - spec
-         - rslt
+         - spec: The Scan Specifications for the scan
+         - rslt: The Type of Cells Result for the response
 
         """
         pass
 
 
 class Client(Iface):
+    """
+    The SWC-DB Thrift Service
+
+    """
     def __init__(self, iprot, oprot=None):
         self._iprot = self._oprot = iprot
         if oprot is not None:
@@ -243,10 +252,10 @@ class Client(Iface):
 
     def sql_mng_column(self, sql):
         """
-        The direct SQL method to Manage Column
+        The direct SQL method to Manage Column.
 
         Parameters:
-         - sql
+         - sql: The SQL string to Execute
 
         """
         self.send_sql_mng_column(sql)
@@ -280,7 +289,7 @@ class Client(Iface):
         The direct SQL method to List Columns
 
         Parameters:
-         - sql
+         - sql: The SQL string to Execute
 
         """
         self.send_sql_list_columns(sql)
@@ -316,7 +325,7 @@ class Client(Iface):
         The direct SQL method to Compact Columns
 
         Parameters:
-         - sql
+         - sql: The SQL string to Execute
 
         """
         self.send_sql_compact_columns(sql)
@@ -352,7 +361,7 @@ class Client(Iface):
         The direct SQL method to select cells with result in Cells List.
 
         Parameters:
-         - sql
+         - sql: The SQL string to Execute
 
         """
         self.send_sql_select(sql)
@@ -388,7 +397,7 @@ class Client(Iface):
         The direct SQL method to select cells with result in Columns Cells map.
 
         Parameters:
-         - sql
+         - sql: The SQL string to Execute
 
         """
         self.send_sql_select_rslt_on_column(sql)
@@ -424,7 +433,7 @@ class Client(Iface):
         The direct SQL method to select cells with result in Key Cells list.
 
         Parameters:
-         - sql
+         - sql: The SQL string to Execute
 
         """
         self.send_sql_select_rslt_on_key(sql)
@@ -460,7 +469,7 @@ class Client(Iface):
         The direct SQL method to select cells with result in Fractons Cells.
 
         Parameters:
-         - sql
+         - sql: The SQL string to Execute
 
         """
         self.send_sql_select_rslt_on_fraction(sql)
@@ -496,8 +505,8 @@ class Client(Iface):
         The SQL method to select cells with result set by the request's type of CellsResult.
 
         Parameters:
-         - sql
-         - rslt
+         - sql: The SQL string to Execute
+         - rslt: The Type of Cells Result for the response
 
         """
         self.send_sql_query(sql, rslt)
@@ -534,8 +543,8 @@ class Client(Iface):
         The direct SQL method to update cells optionally to work with updater-id.
 
         Parameters:
-         - sql
-         - updater_id
+         - sql: The SQL string to Execute
+         - updater_id: The Updater ID to work with
 
         """
         self.send_sql_update(sql, updater_id)
@@ -570,7 +579,7 @@ class Client(Iface):
         The SQL method to execute any query.
 
         Parameters:
-         - sql
+         - sql: The SQL string to Execute
 
         """
         self.send_exec_sql(sql)
@@ -606,7 +615,7 @@ class Client(Iface):
         The method to Create an Updater ID with buffering size in bytes.
 
         Parameters:
-         - buffer_size
+         - buffer_size: The buffer size of the Updater
 
         """
         self.send_updater_create(buffer_size)
@@ -642,7 +651,7 @@ class Client(Iface):
         The method to Close an Updater ID.
 
         Parameters:
-         - id
+         - id: The Updater ID to close
 
         """
         self.send_updater_close(id)
@@ -673,11 +682,12 @@ class Client(Iface):
 
     def update(self, cells, updater_id):
         """
-        The direct method to update cells with cell in Update-Columns-Cells, optionally to work with updater-id.
+        The direct method to update cells with cell in Update-Columns-Cells,
+        optionally to work with updater-id.
 
         Parameters:
-         - cells
-         - updater_id
+         - cells: The Cells to update
+         - updater_id: The Updater ID to use for write
 
         """
         self.send_update(cells, updater_id)
@@ -712,8 +722,8 @@ class Client(Iface):
         The direct method to Manage Column
 
         Parameters:
-         - func
-         - schema
+         - func: The Action Function to use
+         - schema: The Schema for the Action
 
         """
         self.send_mng_column(func, schema)
@@ -748,7 +758,7 @@ class Client(Iface):
         The direct method to List Columns
 
         Parameters:
-         - spec
+         - spec: The Schemas Specifications to match Schema for response
 
         """
         self.send_list_columns(spec)
@@ -784,7 +794,7 @@ class Client(Iface):
         The direct method to Compact Columns
 
         Parameters:
-         - spec
+         - spec: The Schemas Specifications to match columns to Compact
 
         """
         self.send_compact_columns(spec)
@@ -820,7 +830,7 @@ class Client(Iface):
         The direct method to select cells with result in Cells List.
 
         Parameters:
-         - spec
+         - spec: The Scan Specifications for the scan
 
         """
         self.send_scan(spec)
@@ -856,7 +866,7 @@ class Client(Iface):
         The direct method to select cells with result in Columns Cells map.
 
         Parameters:
-         - spec
+         - spec: The Scan Specifications for the scan
 
         """
         self.send_scan_rslt_on_column(spec)
@@ -892,7 +902,7 @@ class Client(Iface):
         The direct method to select cells with result in Key Cells list.
 
         Parameters:
-         - spec
+         - spec: The Scan Specifications for the scan
 
         """
         self.send_scan_rslt_on_key(spec)
@@ -928,7 +938,7 @@ class Client(Iface):
         The direct method to select cells with result in Fractons Cells.
 
         Parameters:
-         - spec
+         - spec: The Scan Specifications for the scan
 
         """
         self.send_scan_rslt_on_fraction(spec)
@@ -964,8 +974,8 @@ class Client(Iface):
         The method to select cells with result set by the request's type of CellsResult.
 
         Parameters:
-         - spec
-         - rslt
+         - spec: The Scan Specifications for the scan
+         - rslt: The Type of Cells Result for the response
 
         """
         self.send_scan_rslt_on(spec, rslt)
@@ -1597,7 +1607,7 @@ class Processor(Iface, TProcessor):
 class sql_mng_column_args(object):
     """
     Attributes:
-     - sql
+     - sql: The SQL string to Execute
 
     """
 
@@ -1744,7 +1754,7 @@ sql_mng_column_result.thrift_spec = (
 class sql_list_columns_args(object):
     """
     Attributes:
-     - sql
+     - sql: The SQL string to Execute
 
     """
 
@@ -1912,7 +1922,7 @@ sql_list_columns_result.thrift_spec = (
 class sql_compact_columns_args(object):
     """
     Attributes:
-     - sql
+     - sql: The SQL string to Execute
 
     """
 
@@ -2080,7 +2090,7 @@ sql_compact_columns_result.thrift_spec = (
 class sql_select_args(object):
     """
     Attributes:
-     - sql
+     - sql: The SQL string to Execute
 
     """
 
@@ -2248,7 +2258,7 @@ sql_select_result.thrift_spec = (
 class sql_select_rslt_on_column_args(object):
     """
     Attributes:
-     - sql
+     - sql: The SQL string to Execute
 
     """
 
@@ -2426,7 +2436,7 @@ sql_select_rslt_on_column_result.thrift_spec = (
 class sql_select_rslt_on_key_args(object):
     """
     Attributes:
-     - sql
+     - sql: The SQL string to Execute
 
     """
 
@@ -2594,7 +2604,7 @@ sql_select_rslt_on_key_result.thrift_spec = (
 class sql_select_rslt_on_fraction_args(object):
     """
     Attributes:
-     - sql
+     - sql: The SQL string to Execute
 
     """
 
@@ -2754,8 +2764,8 @@ sql_select_rslt_on_fraction_result.thrift_spec = (
 class sql_query_args(object):
     """
     Attributes:
-     - sql
-     - rslt
+     - sql: The SQL string to Execute
+     - rslt: The Type of Cells Result for the response
 
     """
 
@@ -2927,8 +2937,8 @@ sql_query_result.thrift_spec = (
 class sql_update_args(object):
     """
     Attributes:
-     - sql
-     - updater_id
+     - sql: The SQL string to Execute
+     - updater_id: The Updater ID to work with
 
     """
 
@@ -3087,7 +3097,7 @@ sql_update_result.thrift_spec = (
 class exec_sql_args(object):
     """
     Attributes:
-     - sql
+     - sql: The SQL string to Execute
 
     """
 
@@ -3247,7 +3257,7 @@ exec_sql_result.thrift_spec = (
 class updater_create_args(object):
     """
     Attributes:
-     - buffer_size
+     - buffer_size: The buffer size of the Updater
 
     """
 
@@ -3406,7 +3416,7 @@ updater_create_result.thrift_spec = (
 class updater_close_args(object):
     """
     Attributes:
-     - id
+     - id: The Updater ID to close
 
     """
 
@@ -3553,8 +3563,8 @@ updater_close_result.thrift_spec = (
 class update_args(object):
     """
     Attributes:
-     - cells
-     - updater_id
+     - cells: The Cells to update
+     - updater_id: The Updater ID to use for write
 
     """
 
@@ -3732,8 +3742,8 @@ update_result.thrift_spec = (
 class mng_column_args(object):
     """
     Attributes:
-     - func
-     - schema
+     - func: The Action Function to use
+     - schema: The Schema for the Action
 
     """
 
@@ -3893,7 +3903,7 @@ mng_column_result.thrift_spec = (
 class list_columns_args(object):
     """
     Attributes:
-     - spec
+     - spec: The Schemas Specifications to match Schema for response
 
     """
 
@@ -4062,7 +4072,7 @@ list_columns_result.thrift_spec = (
 class compact_columns_args(object):
     """
     Attributes:
-     - spec
+     - spec: The Schemas Specifications to match columns to Compact
 
     """
 
@@ -4231,7 +4241,7 @@ compact_columns_result.thrift_spec = (
 class scan_args(object):
     """
     Attributes:
-     - spec
+     - spec: The Scan Specifications for the scan
 
     """
 
@@ -4400,7 +4410,7 @@ scan_result.thrift_spec = (
 class scan_rslt_on_column_args(object):
     """
     Attributes:
-     - spec
+     - spec: The Scan Specifications for the scan
 
     """
 
@@ -4579,7 +4589,7 @@ scan_rslt_on_column_result.thrift_spec = (
 class scan_rslt_on_key_args(object):
     """
     Attributes:
-     - spec
+     - spec: The Scan Specifications for the scan
 
     """
 
@@ -4748,7 +4758,7 @@ scan_rslt_on_key_result.thrift_spec = (
 class scan_rslt_on_fraction_args(object):
     """
     Attributes:
-     - spec
+     - spec: The Scan Specifications for the scan
 
     """
 
@@ -4909,8 +4919,8 @@ scan_rslt_on_fraction_result.thrift_spec = (
 class scan_rslt_on_args(object):
     """
     Attributes:
-     - spec
-     - rslt
+     - spec: The Scan Specifications for the scan
+     - rslt: The Type of Cells Result for the response
 
     """
 
@@ -4997,7 +5007,7 @@ class scan_rslt_on_result(object):
     """
     Attributes:
      - success
-     - e
+     - e: The Base Exception
 
     """
 

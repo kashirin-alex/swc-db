@@ -15,7 +15,14 @@ int   swc_utils_run();
 void  swc_utils_apply_cfg(SWC::Env::Config::Ptr env);
 }
 
-namespace SWC { namespace Utils { namespace shell {
+namespace SWC { 
+
+//! The SWC-DB Utilities C++ namespace 'SWC::Utils'
+namespace Utils {
+
+
+namespace shell {
+
 
 int run();
 

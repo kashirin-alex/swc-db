@@ -18,6 +18,7 @@
 namespace SWC{ 
   
 namespace Config {
+
 void Settings::init_app_options() {
   ((Property::V_GENUM*) cmdline_desc.get_default("swc.logging.level") 
     )->set(LOG_ERROR); // default level
@@ -103,6 +104,12 @@ void Settings::init_app_options() {
 void Settings::init_post_cmd_args() { }
 
 } // namespace Config
+
+
+
+
+namespace Utils { namespace LoadGenerator {
+
 
 
 void quit_error(int err) {
@@ -274,12 +281,12 @@ void update_data(DB::Schema::Ptr& schema, uint8_t flag) {
 
           if(progress && (added_count % progress) == 0) {
             ts_progress = Time::now_ns() - ts_progress;
-            SWC_PRINT << " update-progress(cells=" << added_count 
-                      << " bytes=" << added_bytes 
-                      << " cell/ns=" << ts_progress/progress
-                      << ") ";
-            req->result->profile.print(SWC_LOG_OSTREAM);
-            SWC_LOG_OSTREAM << SWC_PRINT_CLOSE;
+            SWC_LOG_OUT(LOG_INFO,
+              SWC_LOG_OSTREAM << " update-progress(cells=" << added_count 
+                << " bytes=" << added_bytes
+                << " cell/ns=" << ts_progress/progress << ") ";
+              req->result->profile.print(SWC_LOG_OSTREAM);
+            );
             ts_progress = Time::now_ns();
           }
         }
@@ -378,11 +385,11 @@ void select_data(DB::Schema::Ptr& schema) {
 
         if(progress && (select_count % progress) == 0) {
           ts_progress = Time::now_ns() - ts_progress;
-          SWC_PRINT << " select-progress(cells=" << select_count 
-                    << " cell/ns=" << ts_progress/progress
-                    << ") ";
-          req->result->profile.print(SWC_LOG_OSTREAM);
-          SWC_LOG_OSTREAM << SWC_PRINT_CLOSE;
+          SWC_LOG_OUT(LOG_INFO,
+            SWC_LOG_OSTREAM << " select-progress(cells=" << select_count 
+              << " cell/ns=" << ts_progress/progress << ") ";
+              req->result->profile.print(SWC_LOG_OSTREAM);
+          );
           ts_progress = Time::now_ns();
         }
       }
@@ -442,7 +449,7 @@ void make_work_load(DB::Schema::Ptr& schema) {
 }
 
 
-void load_generator() {
+void generate() {
   auto settings = Env::Config::settings();
 
   std::string col_name(settings->get_str("gen-col-name"));
@@ -489,7 +496,8 @@ void load_generator() {
   make_work_load(schema);
 }
 
-} // namespace SWC
+
+}}} // namespace SWC::Utils::LoadGenerator
 
 
 
@@ -503,7 +511,7 @@ int main(int argc, char** argv) {
     )
   );
 
-  SWC::load_generator();
+  SWC::Utils::LoadGenerator::generate();
 
   SWC::Env::IoCtx::io()->stop();
 
