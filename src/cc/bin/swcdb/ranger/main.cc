@@ -11,10 +11,15 @@
 
 namespace SWC {
 
+
+//! The SWC-DB Application Ranger C++ namespace 'SWC::Ranger'
+namespace Ranger {
+
+
 int run() {
   SWC_TRY_OR_LOG("", 
   
-  auto app_ctx = Ranger::AppContext::make();
+  auto app_ctx = AppContext::make();
 
   auto srv = std::make_shared<Comm::server::SerializedServer>(
     "RANGER", 
@@ -30,10 +35,13 @@ int run() {
   return 1;
 }
 
-}
+
+}} // namespace SWC::Ranger
+
+
 
 int main(int argc, char** argv) {
   SWC::Env::Config::init(argc, argv);
   SWC::Env::Config::settings()->init_process();
-  return SWC::run();
+  return SWC::Ranger::run();
 }

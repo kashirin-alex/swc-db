@@ -18,13 +18,11 @@ namespace Thrift {
 
 #include "swcdb/db/client/Clients.h"
 #include "swcdb/thrift/broker/AppContextClient.h"
-
-#include "swcdb/thrift/gen-cpp/Broker.h"
 #include "swcdb/thrift/broker/AppHandler.h"
 
 
 
-namespace SWC { namespace Thrift {
+namespace SWC { namespace ThriftBroker {
 
 
 class AppContext final : virtual public BrokerIfFactory {

@@ -19,6 +19,11 @@
 
 namespace SWC {
 
+
+//! The SWC-DB Application ThriftBroker C++ namespace 'SWC::ThriftBroker'
+namespace ThriftBroker {
+
+
 int run() {
   SWC_TRY_OR_LOG("", 
 
@@ -67,7 +72,7 @@ int run() {
            reactors, workers, transport.c_str());
 
 
-  auto app_ctx = std::make_shared<Thrift::AppContext>();
+  auto app_ctx = std::make_shared<AppContext>();
   std::vector<std::shared_ptr<thrift::server::TThreadPoolServer>> servers;
 
   for(uint32_t reactor=0; reactor < reactors; ++reactor) {
@@ -127,11 +132,13 @@ int run() {
   return 1;
 }
 
-} //namespace SWC
+
+}} //namespace SWC::ThriftBroker
+
 
 
 int main(int argc, char** argv) {
   SWC::Env::Config::init(argc, argv);
   SWC::Env::Config::settings()->init_process();
-  return SWC::run();
+  return SWC::ThriftBroker::run();
 }

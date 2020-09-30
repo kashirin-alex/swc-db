@@ -11,10 +11,15 @@
 
 namespace SWC {
 
+
+//! The SWC-DB Application FsBroker C++ namespace 'SWC::FsBroker'
+namespace FsBroker {
+
+
 int run() {
   SWC_TRY_OR_LOG("", 
   
-  auto app_ctx = std::make_shared<FsBroker::AppContext>();
+  auto app_ctx = std::make_shared<AppContext>();
 
   auto srv = std::make_shared<Comm::server::SerializedServer>(
     "FS-BROKER", 
@@ -30,10 +35,13 @@ int run() {
   return 1;
 }
 
-}
+
+}} // namespace SWC::FsBroker
+
+
 
 int main(int argc, char** argv) {
   SWC::Env::Config::init(argc, argv);
   SWC::Env::Config::settings()->init_process();
-  return SWC::run();
+  return SWC::FsBroker::run();
 }

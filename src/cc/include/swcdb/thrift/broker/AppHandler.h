@@ -6,13 +6,20 @@
 #ifndef swc_app_thriftbroker_AppHandler_h
 #define swc_app_thriftbroker_AppHandler_h
 
+
+#include "swcdb/thrift/gen-cpp/Broker.h"
 #include "swcdb/db/client/sql/SQL.h"
 #include "swcdb/thrift/utils/Converter.h"
 
-namespace SWC { 
-namespace thrift = apache::thrift;
-namespace Thrift {
 
+namespace SWC {
+namespace thrift = apache::thrift;
+
+
+namespace ThriftBroker {
+
+
+using namespace Thrift;
 
 
 class AppHandler final : virtual public BrokerIf {
