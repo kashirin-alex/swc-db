@@ -4,8 +4,8 @@
  */
 
 
-#ifndef swcdb_client_SQL_h
-#define swcdb_client_SQL_h
+#ifndef swcdb_db_client_SQL_h
+#define swcdb_db_client_SQL_h
 
 
 #include "swcdb/db/client/Clients.h"
@@ -87,4 +87,4 @@ void parse_load(int& err, const std::string& sql,
 #endif 
 
 
-#endif //swcdb_client_SQL_h
+#endif //swcdb_db_client_SQL_h

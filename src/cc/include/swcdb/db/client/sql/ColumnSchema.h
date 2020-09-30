@@ -4,8 +4,8 @@
  */
 
 
-#ifndef swcdb_client_sql_ColumnSchema_h
-#define swcdb_client_sql_ColumnSchema_h
+#ifndef swcdb_db_client_sql_ColumnSchema_h
+#define swcdb_db_client_sql_ColumnSchema_h
 
 
 #include "swcdb/db/client/sql/Reader.h"
@@ -49,4 +49,4 @@ add|create|modify|delete (schema definitions);
 #endif 
 
 
-#endif //swcdb_client_sql_ColumnSchema_h
+#endif //swcdb_db_client_sql_ColumnSchema_h

@@ -4,8 +4,8 @@
  */
 
 
-#ifndef swcdb_client_sql_QueryUpdate_h
-#define swcdb_client_sql_QueryUpdate_h
+#ifndef swcdb_db_client_sql_QueryUpdate_h
+#define swcdb_db_client_sql_QueryUpdate_h
 
 
 #include "swcdb/db/client/sql/Reader.h"
@@ -55,4 +55,4 @@ class QueryUpdate final : public Reader {
 #include "swcdb/db/client/sql/QueryUpdate.cc"
 #endif 
 
-#endif //swcdb_client_sql_QueryUpdate_h
+#endif //swcdb_db_client_sql_QueryUpdate_h

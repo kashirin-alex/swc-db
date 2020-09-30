@@ -4,8 +4,8 @@
  */
 
 
-#ifndef swcdb_client_sql_Reader_h
-#define swcdb_client_sql_Reader_h
+#ifndef swcdb_db_client_sql_Reader_h
+#define swcdb_db_client_sql_Reader_h
 
 #include "swcdb/db/Cells/CellKey.h"
 #include "swcdb/db/Columns/Schemas.h"
@@ -93,4 +93,4 @@ class Reader {
 #include "swcdb/db/client/sql/Reader.cc"
 #endif 
 
-#endif //swcdb_client_sql_Reader_h
+#endif //swcdb_db_client_sql_Reader_h

@@ -4,8 +4,8 @@
  */
 
 
-#ifndef swcdb_client_sql_ColumnList_h
-#define swcdb_client_sql_ColumnList_h
+#ifndef swcdb_db_client_sql_ColumnList_h
+#define swcdb_db_client_sql_ColumnList_h
 
 #include "swcdb/db/client/sql/Reader.h"
 #include "swcdb/db/Columns/Schemas.h"
@@ -49,4 +49,4 @@ get|list column|columns|schema|schemas "name|ID" "name|ID]";
 #endif 
 
 
-#endif //swcdb_client_sql_ColumnList_h
+#endif //swcdb_db_client_sql_ColumnList_h

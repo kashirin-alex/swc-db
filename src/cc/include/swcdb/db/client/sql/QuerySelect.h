@@ -4,8 +4,8 @@
  */
 
 
-#ifndef swcdb_client_sql_QuerySelect_h
-#define swcdb_client_sql_QuerySelect_h
+#ifndef swcdb_db_client_sql_QuerySelect_h
+#define swcdb_db_client_sql_QuerySelect_h
 
 
 #include "swcdb/db/client/sql/Reader.h"
@@ -226,4 +226,4 @@ select where
 #endif 
 
 
-#endif //swcdb_client_sql_QuerySelect_h
+#endif //swcdb_db_client_sql_QuerySelect_h
