@@ -3,15 +3,15 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swcdb_core_CompletionCounter_h
-#define swcdb_core_CompletionCounter_h
+#ifndef swcdb_common_Stats_CompletionCounter_h
+#define swcdb_common_Stats_CompletionCounter_h
 
 
 #include "swcdb/core/Compat.h"
 #include "swcdb/core/LockAtomicUnique.h"
 
 
-namespace SWC { 
+namespace SWC { namespace Common { namespace Stats {
   
 template<class CountT=uint56_t>
 class CompletionCounter final {
@@ -49,8 +49,8 @@ class CompletionCounter final {
   CountT              m_count;
 };
 
-}
+}}} // namespace SWC::Common::Stats
 
 
 
-#endif // swcdb_core_CompletionCounter_h
+#endif // swcdb_common_Stats_CompletionCounter_h

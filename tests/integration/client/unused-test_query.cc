@@ -13,7 +13,7 @@
 #include "swcdb/db/client/Query/Select.h"
 
 
-#include "swcdb/db/client/Stats/Stat.h"
+#include "swcdb/common/Stats/Stat.h"
 
 
 namespace SWC{ namespace Config {

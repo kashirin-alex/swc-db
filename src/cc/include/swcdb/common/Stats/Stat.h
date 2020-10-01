@@ -4,12 +4,12 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swcdb_db_Stats_Stat_h
-#define swcdb_db_Stats_Stat_h
+#ifndef swcdb_Common_Stats_Stat_h
+#define swcdb_Common_Stats_Stat_h
 
 
 
-namespace SWC{ namespace Stats {
+namespace SWC { namespace Common { namespace Stats {
 
 class Stat {
   public:
@@ -55,6 +55,6 @@ class Stat {
   uint64_t m_max;
 };
 
-}}
+}}}
 
-#endif // swcdb_db_Stats_Stat_h
+#endif // swcdb_Common_Stats_Stat_h

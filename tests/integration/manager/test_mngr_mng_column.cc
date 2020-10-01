@@ -15,7 +15,7 @@
 #include "swcdb/db/Protocol/Mngr/req/ColumnGet.h"
 #include "swcdb/db/Protocol/Mngr/req/RgrGet.h"
 
-#include "swcdb/db/client/Stats/Stat.h"
+#include "swcdb/common/Stats/Stat.h"
 
 
 namespace SWC{ namespace Config {
@@ -111,7 +111,7 @@ void check_delete(int num_of_cols, bool modified) {
 
 void check_get(size_t num_of_cols, bool modified, Encoder::Type blk_encoding, bool exist = true, bool verbose=false){
   std::cout << "########### get_schema_by_name ###########\n";
-  std::shared_ptr<Stats::Stat> latency = std::make_shared<Stats::Stat>();
+  auto latency = std::make_shared<Common::Stats::Stat>();
   
   std::vector<std::shared_ptr<ExpctedRsp>> expected;
 
@@ -180,7 +180,7 @@ void check_get(size_t num_of_cols, bool modified, Encoder::Type blk_encoding, bo
 
 
   std::cout << "########### get_id_by_name ###########\n";
-  latency = std::make_shared<Stats::Stat>();
+  latency = std::make_shared<Common::Stats::Stat>();
 
   for(auto& req : expected){
     Protocol::Mngr::Req::ColumnGet::cid(
@@ -248,7 +248,7 @@ void chk(Protocol::Mngr::Req::ColumnMng::Func func, size_t num_of_cols,
          Encoder::Type blk_encoding, bool modified, bool verbose=false) {
 
   std::cout << "########### chk func=" << func << " ###########\n";
-  std::shared_ptr<Stats::Stat> latency = std::make_shared<Stats::Stat>();
+  auto latency = std::make_shared<Common::Stats::Stat>();
 
   for(size_t n=1;n<=num_of_cols;++n) {
     
@@ -318,7 +318,7 @@ void chk(Protocol::Mngr::Req::ColumnMng::Func func, size_t num_of_cols,
 
 void chk_rename(size_t num_of_cols, bool verbose=false){
   std::cout << "########### chk_rename ###########\n";
-  std::shared_ptr<Stats::Stat> latency = std::make_shared<Stats::Stat>();
+  auto latency = std::make_shared<Common::Stats::Stat>();
   
   std::vector<std::shared_ptr<ExpctedRsp>> expected;
 

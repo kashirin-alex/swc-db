@@ -13,7 +13,7 @@
 #include "swcdb/db/client/Query/Select.h"
 #include "swcdb/db/client/Query/Update.h"
 
-#include "swcdb/core/FlowRate.h"
+#include "swcdb/common/Stats/FlowRate.h"
 
 namespace SWC {
   
@@ -301,7 +301,7 @@ void update_data(DB::Schema::Ptr& schema, uint8_t flag) {
   resend_cells += req->result->get_resend_count();
   SWC_ASSERT(added_count && added_bytes);
   
-  FlowRate::Data rate(added_bytes, Time::now_ns() - ts);
+  Common::Stats::FlowRate::Data rate(added_bytes, Time::now_ns() - ts);
   SWC_PRINT << std::endl << std::endl;
   rate.print_cells_statistics(SWC_LOG_OSTREAM, added_count, resend_cells);
   req->result->profile.display(SWC_LOG_OSTREAM);
@@ -412,7 +412,7 @@ void select_data(DB::Schema::Ptr& schema) {
     );
   }
 
-  FlowRate::Data rate(select_bytes, Time::now_ns() - ts);
+  Common::Stats::FlowRate::Data rate(select_bytes, Time::now_ns() - ts);
   SWC_PRINT << std::endl << std::endl;
   rate.print_cells_statistics(SWC_LOG_OSTREAM, select_count, 0);
   req->result->profile.display(SWC_LOG_OSTREAM);

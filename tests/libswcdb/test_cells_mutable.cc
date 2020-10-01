@@ -11,7 +11,7 @@
 
 #include "swcdb/core/Time.h"
 #include "swcdb/db/Cells/Mutable.h"
-#include "swcdb/db/client/Stats/Stat.h"
+#include "swcdb/common/Stats/Stat.h"
 
 #include "swcdb/core/config/Settings.h"
 namespace SWC { namespace Config {
@@ -24,7 +24,7 @@ namespace Cells = SWC::DB::Cells;
 
 void op(Cells::Mutable::Ptr cells_mutable, 
         int& truclations, int64_t& ts_total, 
-        std::shared_ptr<SWC::Stats::Stat> latency_mutable,
+        std::shared_ptr<SWC::Common::Stats::Stat> latency_mutable,
         int num_revs, bool reverse, int num_cells, 
         bool gen_historic, Cells::Flag flag, 
         SWC::DB::Types::Column typ, bool time_order_desc) {
@@ -99,7 +99,7 @@ void check(SWC::DB::Types::KeySeq key_seq, SWC::DB::Types::Column typ,
                            << "\n";
   int truclations = 0;
 
-  auto latency_mutable(std::make_shared<SWC::Stats::Stat>());
+  auto latency_mutable(std::make_shared<SWC::Common::Stats::Stat>());
   int64_t ts_total = 0;
 
   Cells::Mutable::Ptr cells_mutable(
@@ -193,7 +193,7 @@ void check(SWC::DB::Types::KeySeq key_seq, SWC::DB::Types::Column typ,
             << "\n"; 
 
 
-  latency_mutable = std::make_shared<SWC::Stats::Stat>();
+  latency_mutable = std::make_shared<SWC::Common::Stats::Stat>();
   ts_total = 0;
   truclations = 0;
   op(cells_mutable, truclations, ts_total, latency_mutable,

@@ -3,15 +3,15 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swcdb_core_FlowRate_h
-#define swcdb_core_FlowRate_h
+#ifndef swcdb_common_Stats_FlowRate_h
+#define swcdb_common_Stats_FlowRate_h
 
 #include <atomic>
 #include <mutex>
 #include "swcdb/core/LockAtomicUnique.h"
 
 
-namespace SWC { namespace FlowRate {
+namespace SWC { namespace Common { namespace Stats { namespace FlowRate {
 
 static const size_t KB = 1024;
 static const size_t MB = KB * 1024;
@@ -88,6 +88,7 @@ struct Data {
 };
 
 
-} }
+}}}} // namespace SWC::Common::Stats
 
-#endif // swcdb_core_FlowRate_h
+
+#endif // swcdb_common_Stats_FlowRate_h

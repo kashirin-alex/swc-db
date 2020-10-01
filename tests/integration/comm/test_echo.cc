@@ -10,7 +10,7 @@
 #include "swcdb/db/client/AppContext.h"
 #include "swcdb/db/Protocol/Mngr/req/Echo.h"
 
-#include "swcdb/db/client/Stats/Stat.h"
+#include "swcdb/common/Stats/Stat.h"
 
 
 namespace SWC{ namespace Config {
@@ -56,7 +56,7 @@ class Checker {
             ++failures;
           --expected;
 
-          latency->add(
+          latency.add(
             std::chrono::duration_cast<std::chrono::nanoseconds>(
               std::chrono::system_clock::now() - start_ts).count());   
       
@@ -99,10 +99,10 @@ class Checker {
   }
 
   void print_stats(){
-    std::cout << " avg=" << latency->avg()
-              << " min=" << latency->min()
-              << " max=" << latency->max()
-              << " count=" << latency->count()
+    std::cout << " avg=" << latency.avg()
+              << " min=" << latency.min()
+              << " max=" << latency.max()
+              << " count=" << latency.count()
               << " failures=" << failures
               << "\n";
   }
@@ -128,7 +128,7 @@ class Checker {
               << " requests=" << num_req
               << " batch=" << batch_sz
               << " took=" << took
-              << " median=" << took/latency->count()
+              << " median=" << took/latency.count()
               << "\n";
     print_stats();
     SWC_ASSERT(!failures);
@@ -139,8 +139,8 @@ class Checker {
   int threads_conn;
   std::mutex lock;
   std::condition_variable cv;
+  Common::Stats::Stat latency;
   
-  std::shared_ptr<Stats::Stat> latency = std::make_shared<Stats::Stat>();
 };
 
 

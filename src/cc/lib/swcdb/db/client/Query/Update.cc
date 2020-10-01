@@ -4,7 +4,7 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */ 
 
-#include "swcdb/core/CompletionCounter.h"
+#include "swcdb/common/Stats/CompletionCounter.h"
 #include "swcdb/db/Types/MetaColumn.h"
 #include "swcdb/db/client/Clients.h"
 #include "swcdb/db/client/Query/Update.h"
@@ -460,7 +460,7 @@ void Update::Locator::commit_data(
       const ReqBase::Ptr& base) {
   bool more = true;
   DynamicBuffer::Ptr cells_buff;
-  auto workload = std::make_shared<CompletionCounter<>>();
+  auto workload = std::make_shared<Common::Stats::CompletionCounter<>>();
   while(more && 
        (cells_buff = col->get_buff(
          *key_start.get(), key_finish, updater->buff_sz, more)) != nullptr) {

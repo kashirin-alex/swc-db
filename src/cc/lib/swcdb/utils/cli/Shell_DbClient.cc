@@ -6,7 +6,7 @@
 
 #include "swcdb/utils/cli/Shell_DbClient.h"
 
-#include "swcdb/core/FlowRate.h"
+#include "swcdb/common/Stats/FlowRate.h"
 
 #include "swcdb/db/Types/MetaColumn.h"
 
@@ -503,7 +503,7 @@ bool DbClient::dump(std::string& cmd) {
 void DbClient::display_stats(const client::Query::Profiling& profile, 
                              size_t took, size_t bytes,
                              size_t cells_count, size_t resend_cells) const {
-  FlowRate::Data rate(bytes, took);
+  Common::Stats::FlowRate::Data rate(bytes, took);
   SWC_PRINT << std::endl << std::endl;
   rate.print_cells_statistics(SWC_LOG_OSTREAM, cells_count, resend_cells);
   profile.display(SWC_LOG_OSTREAM);

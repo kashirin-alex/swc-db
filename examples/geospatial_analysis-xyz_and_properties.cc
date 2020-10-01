@@ -12,7 +12,7 @@
 #include "swcdb/db/client/Clients.h"
 #include "swcdb/db/client/Query/Update.h"
 #include "swcdb/db/Protocol/Mngr/req/ColumnMng.h"
-#include "swcdb/core/FlowRate.h"
+#include "swcdb/common/Stats/FlowRate.h"
 
 
 namespace SWC { namespace Config {
@@ -213,7 +213,8 @@ void generate_sample_data() {
   resend_cells += req->result->get_resend_count();
   SWC_ASSERT(added_cells && added_bytes);
   
-  SWC::FlowRate::Data rate(added_bytes, SWC::Time::now_ns() - ts);
+  SWC::Common::Stats::FlowRate::Data rate(
+    added_bytes, SWC::Time::now_ns() - ts);
   SWC_PRINT << std::endl << std::endl;
   rate.print_cells_statistics(SWC_LOG_OSTREAM, added_cells, resend_cells);
   req->result->profile.print(SWC_LOG_OSTREAM);
