@@ -4,13 +4,21 @@
  */
 
 
-#ifndef swc_manager_db_Schema_h
-#define swc_manager_db_Schema_h
+#ifndef swcdb_common_Files_Schema_h
+#define swcdb_common_Files_Schema_h
+
 
 #include "swcdb/core/Checksum.h"
 #include "swcdb/db/Types/MetaColumn.h"
 
-namespace SWC { namespace Files { namespace Schema {
+
+namespace SWC { 
+
+//! The SWC-DB Common C++ namespace 'SWC::Common'
+namespace Common {
+  
+namespace Files { namespace Schema {
+
 
 const uint8_t SYS_CID_END = 9;
 
@@ -170,6 +178,9 @@ void save_with_validation(int &err, const DB::Schema::Ptr& schema_save,
   }
 }
 
-}}}
 
-#endif // swc_manager_db_Schema_h
+}}}}
+
+
+
+#endif // swcdb_common_Files_Schema_h

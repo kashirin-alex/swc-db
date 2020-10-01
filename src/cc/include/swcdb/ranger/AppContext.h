@@ -3,8 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_ranger_AppContext_h
-#define swc_ranger_AppContext_h
+#ifndef swcdb_ranger_AppContext_h
+#define swcdb_ranger_AppContext_h
 
 
 #include "swcdb/core/comm/AppContext.h"
@@ -43,7 +43,7 @@ class AppContext final : public SWC::Comm::AppContext {
 
   // in-order of Protocol::Rgr::Command
   static constexpr const Comm::AppHandler_t handlers[] = { 
-    &Protocol::Common::Handler::not_implemented,
+    &Common::Protocol::Handler::not_implemented,
     &Protocol::Rgr::Handler::column_delete,
     &Protocol::Rgr::Handler::column_compact,
     &Protocol::Rgr::Handler::column_update,
@@ -220,4 +220,4 @@ class AppContext final : public SWC::Comm::AppContext {
 
 
 
-#endif // swc_ranger_AppContext_h
+#endif // swcdb_ranger_AppContext_h

@@ -4,15 +4,15 @@
  */
 
 
-#ifndef swc_manager_db_Columns_h
-#define swc_manager_db_Columns_h
+#ifndef swcdb_manager_db_Columns_h
+#define swcdb_manager_db_Columns_h
 
 #include "swcdb/db/Types/MetaColumn.h"
 #include "swcdb/fs/Interface.h"
 
 #include "swcdb/manager/db/ColumnCfg.h"
 #include "swcdb/manager/db/Column.h"
-#include "swcdb/manager/db/Schema.h"
+#include "swcdb/common/Files/Schema.h"
 
 #include <memory>
 #include <unordered_map>
@@ -75,7 +75,7 @@ class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
     Range::Ptr range = nullptr;
     iterator it;
     Mutex::scope lock(m_mutex);
-    for(cid_t cid = 1; cid <= Files::Schema::SYS_CID_END; ++cid) {
+    for(cid_t cid = 1; cid <= Common::Files::Schema::SYS_CID_END; ++cid) {
       if((it = find(cid)) != end() && 
          (range = it->second->get_next_unassigned()))
         return range;
@@ -127,6 +127,9 @@ class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
 
 };
 
+
 }} // namespace SWC::Manager
 
-#endif // swc_manager_db_Columns_h
+
+
+#endif // swcdb_manager_db_Columns_h

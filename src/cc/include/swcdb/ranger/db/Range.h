@@ -94,7 +94,7 @@ class Range final : public std::enable_shared_from_this<Range> {
   const std::string get_path_cs_on(const std::string folder, 
                                    const csid_t csid) const;
 
-  Files::RgrData::Ptr get_last_rgr(int &err);
+  Common::Files::RgrData::Ptr get_last_rgr(int &err);
 
   void get_interval(DB::Cells::Interval& interval);
 
@@ -202,11 +202,7 @@ class Range final : public std::enable_shared_from_this<Range> {
 };
 
 
-
 }}
-
-
-
 
 
 

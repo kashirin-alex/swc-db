@@ -3,8 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_manager_MngrStatus_h
-#define swc_manager_MngrStatus_h
+#ifndef swcdb_manager_MngrStatus_h
+#define swcdb_manager_MngrStatus_h
 
 #include "swcdb/db/Types/MngrState.h"
 #include "swcdb/db/Protocol/Common/params/HostEndPoints.h"
@@ -88,4 +88,4 @@ typedef std::vector<MngrStatus::Ptr> MngrsStatus;
 
 }}
 
-#endif // swc_manager_MngrStatus_h
+#endif // swcdb_manager_MngrStatus_h

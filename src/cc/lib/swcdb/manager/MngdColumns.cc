@@ -248,7 +248,7 @@ bool MngdColumns::initialize() {
       err = Error::OK;
     }
     if(entries.empty()) { // initialize sys-columns
-      for(cid_t cid=1; cid <= Files::Schema::SYS_CID_END; ++cid) {
+      for(cid_t cid=1; cid <= Common::Files::Schema::SYS_CID_END; ++cid) {
         Column::create(err, cid);
         entries.push_back(cid);
       }
@@ -273,7 +273,8 @@ bool MngdColumns::initialize() {
           DB::Schema::Ptr schema;
           int err;
           for(cid_t cid : entries) {
-            schema = Files::Schema::load(err = Error::OK, cid, replicas);
+            schema = Common::Files::Schema::load(
+              err = Error::OK, cid, replicas);
             if(!err)
               Env::Mngr::schemas()->add(err, schema);
             else
@@ -336,7 +337,7 @@ bool MngdColumns::load_pending(cid_t cid, ColumnFunction &pending) {
 }
 
 cid_t MngdColumns::get_next_cid() {
-  cid_t cid = Files::Schema::SYS_CID_END;
+  cid_t cid = Common::Files::Schema::SYS_CID_END;
   while(++cid && Env::Mngr::schemas()->get(cid));
   // if schema does exist on fs (? sanity-check) 
   return cid; // err !cid
@@ -366,7 +367,7 @@ void MngdColumns::create(int &err, DB::Schema::Ptr& schema) {
   if(!schema_save->revision)
     schema_save->revision = Time::now_ns();
     
-  Files::Schema::save_with_validation(
+  Common::Files::Schema::save_with_validation(
     err, schema_save, cfg_schema_replication->get());
   if(!err) 
     Env::Mngr::schemas()->add(err, schema_save);
@@ -382,7 +383,7 @@ void MngdColumns::update(int &err, DB::Schema::Ptr& schema,
   if(old->col_seq != schema->col_seq || 
      DB::Types::is_counter(old->col_type) 
       != DB::Types::is_counter(schema->col_type) ||
-     (schema->cid <= Files::Schema::SYS_CID_END && 
+     (schema->cid <= Common::Files::Schema::SYS_CID_END && 
       schema->col_name.compare(old->col_name) != 0)) {
     err = Error::COLUMN_CHANGE_INCOMPATIBLE;
     return;
@@ -391,7 +392,7 @@ void MngdColumns::update(int &err, DB::Schema::Ptr& schema,
   if(DB::Types::is_counter(schema->col_type))
     schema->cell_versions = 1;
 
-  if(schema->cid < Files::Schema::SYS_CID_END) { 
+  if(schema->cid < Common::Files::Schema::SYS_CID_END) { 
     //different values bad for range-colms
     schema->cell_versions = 1;
     schema->cell_ttl = 0;
@@ -410,7 +411,7 @@ void MngdColumns::update(int &err, DB::Schema::Ptr& schema,
   if(err)
     return;
 
-  Files::Schema::save_with_validation(
+  Common::Files::Schema::save_with_validation(
     err, schema_save, cfg_schema_replication->get());
   if(!err) {
     Env::Mngr::schemas()->replace(schema_save);
@@ -565,7 +566,7 @@ void MngdColumns::actions_run() {
           else if(schema->cid != req->schema->cid ||
                   req->schema->col_name.compare(schema->col_name) != 0)
             err = Error::COLUMN_SCHEMA_NAME_NOT_CORRES;
-          else if(schema->cid <= Files::Schema::SYS_CID_END)
+          else if(schema->cid <= Common::Files::Schema::SYS_CID_END)
             err = Error::COLUMN_SCHEMA_IS_SYSTEM;
           else
             req->schema = schema;

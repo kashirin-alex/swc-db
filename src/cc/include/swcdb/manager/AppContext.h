@@ -3,8 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_manager_AppContext_h
-#define swc_manager_AppContext_h
+#ifndef swcdb_manager_AppContext_h
+#define swcdb_manager_AppContext_h
 
 #include "swcdb/db/Protocol/Commands.h"
 
@@ -44,7 +44,7 @@ class AppContext final : public SWC::Comm::AppContext {
    
   // in-order of Protocol::Mngr::Command
   static constexpr const Comm::AppHandler_t handlers[] = { 
-    &Protocol::Common::Handler::not_implemented,
+    &Common::Protocol::Handler::not_implemented,
     &Protocol::Mngr::Handler::mngr_state,
     &Protocol::Mngr::Handler::mngr_active,
     &Protocol::Mngr::Handler::column_mng,
@@ -194,6 +194,9 @@ class AppContext final : public SWC::Comm::AppContext {
 
 };
 
+
 }}
 
-#endif // swc_manager_AppContext_h
+
+
+#endif // swcdb_manager_AppContext_h

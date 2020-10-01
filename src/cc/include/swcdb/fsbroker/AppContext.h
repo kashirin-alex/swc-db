@@ -3,8 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_fsbroker_AppContext_h
-#define swc_fsbroker_AppContext_h
+#ifndef swcdb_fsbroker_AppContext_h
+#define swcdb_fsbroker_AppContext_h
 
 #include "swcdb/core/Serialization.h"
 
@@ -43,7 +43,7 @@ class AppContext final : public SWC::Comm::AppContext {
   
   // in-order of FsBroker::Protocol::Cmd
   static constexpr const Comm::AppHandler_t handlers[] = { 
-    &SWC::Protocol::Common::Handler::not_implemented,
+    &Common::Protocol::Handler::not_implemented,
     &Protocol::Handler::open,
     &Protocol::Handler::create,
     &Protocol::Handler::close,
@@ -185,4 +185,4 @@ class AppContext final : public SWC::Comm::AppContext {
 
 
 
-#endif // swc_fsbroker_AppContext_h
+#endif // swcdb_fsbroker_AppContext_h

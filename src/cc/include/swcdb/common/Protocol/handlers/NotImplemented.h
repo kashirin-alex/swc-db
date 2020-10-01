@@ -4,11 +4,13 @@
  */
 
 
-#ifndef swc_db_Protocol_handlers_NotImplemented_h
-#define swc_db_Protocol_handlers_NotImplemented_h
+#ifndef swcdb_common_Protocol_handlers_NotImplemented_h
+#define swcdb_common_Protocol_handlers_NotImplemented_h
 
 
-namespace SWC { namespace Protocol {  namespace Common { namespace Handler {
+
+namespace SWC { namespace Common { namespace Protocol { namespace Handler {
+
 
 void not_implemented(const Comm::ConnHandlerPtr& conn, 
                      const Comm::Event::Ptr& ev) {
@@ -38,6 +40,8 @@ class NotImplemented : public Comm::AppHandler {
 };
   
 
+
 }}}}
 
-#endif // swc_db_Protocol_handlers_NotImplemented_h
+
+#endif // swcdb_common_Protocol_handlers_NotImplemented_h

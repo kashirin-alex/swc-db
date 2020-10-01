@@ -65,8 +65,9 @@ const std::string Range::get_path_cs_on(const std::string folder,
 }
 
 SWC_SHOULD_INLINE
-Files::RgrData::Ptr Range::get_last_rgr(int &err) {
-  return Files::RgrData::get_rgr(err, DB::RangeBase::get_path_ranger(m_path));
+Common::Files::RgrData::Ptr Range::get_last_rgr(int &err) {
+  return Common::Files::RgrData::get_rgr(
+    err, DB::RangeBase::get_path_ranger(m_path));
 }
 
 void Range::get_interval(DB::Cells::Interval& interval) {
@@ -535,7 +536,7 @@ void Range::loaded(int &err, const Comm::ResponseCallback::Ptr& cb) {
 void Range::last_rgr_chk(int &err, const Comm::ResponseCallback::Ptr& cb) {
   // ranger.data
   auto rgr_data = Env::Rgr::rgr_data();
-  Files::RgrData::Ptr rs_last = get_last_rgr(err);
+  Common::Files::RgrData::Ptr rs_last = get_last_rgr(err);
 
   if(rs_last->endpoints.size() && 
      !Comm::has_endpoint(rgr_data->endpoints, rs_last->endpoints)) {

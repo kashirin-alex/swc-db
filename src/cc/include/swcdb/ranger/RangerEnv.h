@@ -38,7 +38,7 @@ class Rgr final {
 
   static void shuttingdown();
 
-  static Files::RgrData* rgr_data() {
+  static Common::Files::RgrData* rgr_data() {
     return &m_env->m_rgr_data;
   }
 
@@ -69,7 +69,7 @@ class Rgr final {
   }
 
   SWC_CAN_INLINE 
-  static Resources& res() {
+  static Common::Resources& res() {
     return m_env->_resources;
   }
 
@@ -101,7 +101,7 @@ class Rgr final {
   Ranger::Compaction*         _compaction;
   Ranger::Columns*            _columns;
   client::Query::Update::Ptr  _updater;
-  Resources                   _resources;
+  Common::Resources           _resources;
 
   explicit Rgr();
 
@@ -109,7 +109,7 @@ class Rgr final {
 
   private:
   inline static std::shared_ptr<Rgr>  m_env           = nullptr;
-  Files::RgrData                      m_rgr_data;
+  Common::Files::RgrData              m_rgr_data;
   std::atomic<bool>                   m_shuttingdown  = false;
   std::atomic<int64_t>                m_in_process    = 0;
  

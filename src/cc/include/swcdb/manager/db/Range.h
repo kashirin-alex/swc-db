@@ -4,8 +4,8 @@
  */
 
 
-#ifndef swc_manager_db_Range_h
-#define swc_manager_db_Range_h
+#ifndef swcdb_manager_db_Range_h
+#define swcdb_manager_db_Range_h
 
 #include <shared_mutex>
 
@@ -97,10 +97,10 @@ class Range final {
     m_rgrid = rgrid;
   }
 
-  Files::RgrData::Ptr get_last_rgr(int &err) {
+  Common::Files::RgrData::Ptr get_last_rgr(int &err) {
     std::scoped_lock lock(m_mutex);
     if(m_last_rgr == nullptr)
-      m_last_rgr = Files::RgrData::get_rgr(
+      m_last_rgr = Common::Files::RgrData::get_rgr(
         err, DB::RangeBase::get_path_ranger(m_path));
     return m_last_rgr;
   }
@@ -168,20 +168,22 @@ class Range final {
   }
 
   private:
-  const std::string     m_path;
+  const std::string             m_path;
 
-  std::shared_mutex     m_mutex;
-  State                 m_state;
-  int64_t               m_check_ts;
-  rgrid_t               m_rgrid;
-  Files::RgrData::Ptr   m_last_rgr;
+  std::shared_mutex             m_mutex;
+  State                         m_state;
+  int64_t                       m_check_ts;
+  rgrid_t                       m_rgrid;
+  Common::Files::RgrData::Ptr   m_last_rgr;
 
-  DB::Cell::Key         m_key_begin;
-  DB::Cell::Key         m_key_end;
+  DB::Cell::Key                 m_key_begin;
+  DB::Cell::Key                 m_key_end;
 
 };
 
 
-
 }}
-#endif // swc_manager_db_Range_h
+
+
+
+#endif // swcdb_manager_db_Range_h

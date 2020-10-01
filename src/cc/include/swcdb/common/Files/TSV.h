@@ -4,20 +4,19 @@
  */
 
 
-#ifndef swcdb_db_cells_TSV_h
-#define swcdb_db_cells_TSV_h
+#ifndef swcdb_common_Files_TSV_h
+#define swcdb_common_Files_TSV_h
 
 #include <vector>
 
 #include "swcdb/core/Buffer.h"
-
 #include "swcdb/db/Cells/Cell.h"
 
 
-namespace SWC { namespace DB { namespace Cells {
+namespace SWC { namespace DB { namespace Cells { namespace TSV {
 
-namespace TSV {
-  
+
+
 std::string get_filepath(const std::string& base_path, size_t& file_num) {
   std::string filepath(base_path);
   filepath.append(std::to_string(++file_num));
@@ -581,6 +580,9 @@ class FileReader {
 
 };
 
-} // namespace TSV
-}}} // namespace SWC::DB::Cells
-#endif
+
+
+}}}} // namespace SWC::DB::Cells::TSV
+
+
+#endif // swcdb_common_Files_TSV_h

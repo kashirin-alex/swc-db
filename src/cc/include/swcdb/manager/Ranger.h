@@ -4,8 +4,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_manager_Ranger_h
-#define swc_manager_Ranger_h
+#ifndef swcdb_manager_Ranger_h
+#define swcdb_manager_Ranger_h
 
 #include "swcdb/db/Types/MngrRangerState.h"
 #include "swcdb/db/Protocol/Common/params/HostEndPoints.h"
@@ -95,4 +95,4 @@ typedef std::vector<Ranger::Ptr>  RangerList;
 
 }}
 
-#endif // swc_manager_Ranger_h
+#endif // swcdb_manager_Ranger_h

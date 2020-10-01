@@ -492,7 +492,7 @@ void Rangers::assign_ranges_run() {
       break;
     }
 
-    Files::RgrData::Ptr last_rgr = range->get_last_rgr(err = Error::OK);
+    auto last_rgr = range->get_last_rgr(err = Error::OK);
     Ranger::Ptr rgr = nullptr;
     next_rgr(last_rgr->endpoints, rgr);
     if(!rgr) {

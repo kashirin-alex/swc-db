@@ -4,8 +4,8 @@
  */
 
 
-#ifndef swcdb_db_Files_RgrData_h
-#define swcdb_db_Files_RgrData_h
+#ifndef swcdb_common_Files_RgrData_h
+#define swcdb_common_Files_RgrData_h
 
 
 #include "swcdb/core/Serialization.h"
@@ -13,7 +13,8 @@
 #include "swcdb/core/Time.h"
 #include "swcdb/core/Checksum.h"
 
-namespace SWC { namespace Files {
+
+namespace SWC { namespace Common { namespace Files {
 
 
 class RgrData final {
@@ -142,6 +143,9 @@ class RgrData final {
 
 };
 
-}} // SWC::Files namespace
 
-#endif
+}}} // SWC::Common::Files namespace
+
+
+
+#endif // swcdb_common_Files_RgrData_h

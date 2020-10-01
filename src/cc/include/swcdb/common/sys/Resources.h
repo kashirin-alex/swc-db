@@ -4,8 +4,8 @@
  */
 
 
-#ifndef swc_common_sys_Resources_h
-#define swc_common_sys_Resources_h
+#ifndef swcdb_common_sys_Resources_h
+#define swcdb_common_sys_Resources_h
 
 #include <sys/sysinfo.h>
 #include <fstream>
@@ -17,7 +17,7 @@
 #include <gperftools/malloc_extension.h>
 #endif
 
-namespace SWC { 
+namespace SWC { namespace Common {
 
 class Resources final {
   static const uint32_t MAX_RAM_CHK_INTVAL_MS = 5000;
@@ -341,5 +341,7 @@ class Resources final {
 };
 
 
-}
-#endif // swc_common_sys_Resources_h
+}}
+
+
+#endif // swcdb_common_sys_Resources_h
