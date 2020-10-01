@@ -41,7 +41,7 @@ class RangeLocateScan : public ReqScan {
           != Condition::EQ)
       return false;
 
-    if(flags & Protocol::Rgr::Params::RangeLocateReq::NEXT_RANGE && 
+    if(flags & Comm::Protocol::Rgr::Params::RangeLocateReq::NEXT_RANGE && 
         DB::KeySeq::compare(key_seq, spec.range_offset, cell.key)
           != Condition::GT)
       return false;
@@ -157,7 +157,7 @@ class RangeLocateScan : public ReqScan {
   uint32_t              any_is;
   const DB::Cell::Key   range_begin;
 
-  Protocol::Rgr::Params::RangeLocateRsp params;
+  Comm::Protocol::Rgr::Params::RangeLocateRsp params;
 
 };
 

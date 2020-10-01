@@ -48,7 +48,7 @@ class Checker {
       return;
 
     for(int i=1; i<=batch_sz; ++i) {
-      std::make_shared<Protocol::Mngr::Req::Echo>(
+      std::make_shared<Comm::Protocol::Mngr::Req::Echo>(
         conn, 
         [this, req_n, conn, last=i==batch_sz, start_ts=std::chrono::system_clock::now()]
         (bool state){

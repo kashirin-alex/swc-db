@@ -10,22 +10,23 @@
 #include "swcdb/manager/Protocol/Rgr/req/ColumnsUnload.h"
 #include "swcdb/manager/Protocol/Rgr/req/RangeUnload.h"
 
-namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Rgr { namespace Req {
   
 
 ColumnsUnload::ColumnsUnload(const Manager::Ranger::Ptr& rgr, 
                              cid_t cid_begin, cid_t cid_end)
-                            : Comm::client::ConnQueue::ReqBase(false), 
+                            : client::ConnQueue::ReqBase(false), 
                               rgr(rgr), 
                               cid_begin(cid_begin), cid_end(cid_end) {
-  cbp = Comm::Buffers::make(Common::Params::ColumnsInterval(cid_begin, cid_end));
+  cbp = Buffers::make(Common::Params::ColumnsInterval(cid_begin, cid_end));
   cbp->header.set(COLUMNS_UNLOAD, 60000);
 }
   
 ColumnsUnload::~ColumnsUnload() { }
 
-void ColumnsUnload::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) {
-  if(ev->type == Comm::Event::Type::DISCONNECT)
+void ColumnsUnload::handle(ConnHandlerPtr, const Event::Ptr& ev) {
+  if(ev->type == Event::Type::DISCONNECT)
     return handle_no_conn();
 
   Params::ColumnsUnloadRsp rsp_params;
@@ -77,4 +78,4 @@ void ColumnsUnload::handle_no_conn() {
 }
   
 
-}}}}
+}}}}}

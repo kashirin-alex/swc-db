@@ -10,6 +10,7 @@
 
 namespace SWC { namespace Manager {
 
+using ColumnMngFunc = Comm::Protocol::Mngr::Params::ColumnMng::Function;
 
 
 MngdColumns::MngdColumns()
@@ -130,7 +131,7 @@ void MngdColumns::require_sync() {
   } else {
     auto schema = DB::Schema::make();
     update(
-      Protocol::Mngr::Params::ColumnMng::Function::INTERNAL_LOAD_ALL, 
+      ColumnMngFunc::INTERNAL_LOAD_ALL, 
       schema
     );
   }
@@ -142,7 +143,7 @@ void MngdColumns::action(const ColumnReq::Ptr& new_req) {
 }
 
 void MngdColumns::update_status(
-                    Protocol::Mngr::Params::ColumnMng::Function func, 
+                    ColumnMngFunc func, 
                     DB::Schema::Ptr& schema, int err, bool initial) {
   bool schemas_mngr = Env::Mngr::role()->is_active_role(
     DB::Types::MngrRole::SCHEMAS);
@@ -156,16 +157,15 @@ void MngdColumns::update_status(
 
   switch(func) {
 
-    case Protocol::Mngr::Params::ColumnMng::Function::DELETE: {
+    case ColumnMngFunc::DELETE: {
       remove(err, schema->cid);
       break;  
     } 
 
-    case Protocol::Mngr::Params::ColumnMng::Function::CREATE:
-    case Protocol::Mngr::Params::ColumnMng::Function::INTERNAL_LOAD: {
+    case ColumnMngFunc::CREATE:
+    case ColumnMngFunc::INTERNAL_LOAD: {
 
-      auto co_func = (
-        Protocol::Mngr::Params::ColumnMng::Function)(((uint8_t)func)+1);
+      auto co_func = (ColumnMngFunc)(((uint8_t)func)+1);
 
       if(Env::Mngr::columns()->is_an_initialization(err, schema) && !err) {
         {
@@ -185,16 +185,16 @@ void MngdColumns::update_status(
       break;
     }
 
-    case Protocol::Mngr::Params::ColumnMng::Function::MODIFY: {
+    case ColumnMngFunc::MODIFY: {
       if(schemas_mngr) {
         if(!Env::Mngr::rangers()->update(schema, true))
           update_status(
-            Protocol::Mngr::Params::ColumnMng::Function::INTERNAL_ACK_MODIFY, 
+            ColumnMngFunc::INTERNAL_ACK_MODIFY, 
             schema, err);
 
       } else if(!update(schema)) {
         update(
-          Protocol::Mngr::Params::ColumnMng::Function::INTERNAL_ACK_MODIFY, 
+          ColumnMngFunc::INTERNAL_ACK_MODIFY, 
           schema, err);
       }
     }
@@ -217,7 +217,7 @@ void MngdColumns::remove(int &err, cid_t cid, rgrid_t rgrid) {
     DB::Schema::Ptr schema = Env::Mngr::schemas()->get(cid);
     if(schema)
       update(
-        Protocol::Mngr::Params::ColumnMng::Function::INTERNAL_ACK_DELETE,
+        ColumnMngFunc::INTERNAL_ACK_DELETE,
         schema, err);
     if(!Env::Mngr::role()->is_active_role(DB::Types::MngrRole::SCHEMAS))
       Env::Mngr::schemas()->remove(cid);
@@ -303,7 +303,7 @@ void MngdColumns::columns_load() {
   for(auto& schema : entries) {
     SWC_ASSERT(schema->cid != DB::Schema::NO_CID);
     update_status(
-      Protocol::Mngr::Params::ColumnMng::Function::INTERNAL_LOAD, schema,
+      ColumnMngFunc::INTERNAL_LOAD, schema,
       Error::OK, true
     );
   }
@@ -312,10 +312,9 @@ void MngdColumns::columns_load() {
 void MngdColumns::columns_load_chk_ack() {
   std::lock_guard lock(m_mutex_columns);
   for(auto& ack : m_cid_pending_load) {
-    if(ack.func 
-        == Protocol::Mngr::Params::ColumnMng::Function::INTERNAL_ACK_LOAD) {
+    if(ack.func == ColumnMngFunc::INTERNAL_ACK_LOAD) {
       update(
-        Protocol::Mngr::Params::ColumnMng::Function::INTERNAL_LOAD,  
+        ColumnMngFunc::INTERNAL_LOAD,  
         Env::Mngr::schemas()->get(ack.cid)
       );
     }
@@ -445,28 +444,29 @@ bool MngdColumns::update(DB::Schema::Ptr& schema) {
 }
 
 
-void MngdColumns::update(Protocol::Mngr::Params::ColumnMng::Function func,
+void MngdColumns::update(ColumnMngFunc func,
                          const DB::Schema::Ptr& schema, int err) {
   Env::Mngr::role()->req_mngr_inchain(
-    std::make_shared<Protocol::Mngr::Req::ColumnUpdate>(func, schema, err));
+    std::make_shared<Comm::Protocol::Mngr::Req::ColumnUpdate>(
+      func, schema, err));
 }
 
 void MngdColumns::update_status_ack(
-                          Protocol::Mngr::Params::ColumnMng::Function func,
+                          ColumnMngFunc func,
                           const DB::Schema::Ptr& schema, int err) {
   if(!err) switch(func) {
-    case Protocol::Mngr::Params::ColumnMng::Function::INTERNAL_LOAD_ALL: {
+    case ColumnMngFunc::INTERNAL_LOAD_ALL: {
       return columns_load();
     }
-    case Protocol::Mngr::Params::ColumnMng::Function::INTERNAL_ACK_LOAD: {
+    case ColumnMngFunc::INTERNAL_ACK_LOAD: {
       ColumnFunction pending;
       while(load_pending(schema->cid, pending));
       return;
     }
-    case Protocol::Mngr::Params::ColumnMng::Function::INTERNAL_ACK_CREATE:
-    case Protocol::Mngr::Params::ColumnMng::Function::INTERNAL_ACK_MODIFY:
+    case ColumnMngFunc::INTERNAL_ACK_CREATE:
+    case ColumnMngFunc::INTERNAL_ACK_MODIFY:
       break;
-    case Protocol::Mngr::Params::ColumnMng::Function::INTERNAL_ACK_DELETE: {
+    case ColumnMngFunc::INTERNAL_ACK_DELETE: {
       std::scoped_lock lock(m_mutex);
 
       if(!Env::Mngr::schemas()->get(schema->cid)) {
@@ -484,7 +484,7 @@ void MngdColumns::update_status_ack(
       return;
   }
 
-  auto co_func = (Protocol::Mngr::Params::ColumnMng::Function)(((uint8_t)func)-1);
+  auto co_func = (ColumnMngFunc)(((uint8_t)func)-1);
 
   if(err)
     SWC_LOG_OUT(LOG_DEBUG,
@@ -543,14 +543,14 @@ void MngdColumns::actions_run() {
         schema = Env::Mngr::schemas()->get(req->schema->cid);
 
       switch(req->function) {
-        case Protocol::Mngr::Params::ColumnMng::Function::CREATE: {
+        case ColumnMngFunc::CREATE: {
           if(schema)
             err = Error::COLUMN_SCHEMA_NAME_EXISTS;
           else
             create(err, req->schema);  
           break;
         }
-        case Protocol::Mngr::Params::ColumnMng::Function::MODIFY: {
+        case ColumnMngFunc::MODIFY: {
           if(!schema) 
             err = Error::COLUMN_SCHEMA_NAME_NOT_EXISTS;
           else if(req->schema->cid != DB::Schema::NO_CID && 
@@ -560,7 +560,7 @@ void MngdColumns::actions_run() {
             update(err, req->schema, schema);
           break;
         }
-        case Protocol::Mngr::Params::ColumnMng::Function::DELETE: {
+        case ColumnMngFunc::DELETE: {
           if(!schema)
             err = Error::COLUMN_SCHEMA_NAME_NOT_EXISTS;
           else if(schema->cid != req->schema->cid ||

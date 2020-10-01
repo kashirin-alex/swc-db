@@ -12,10 +12,11 @@
 #include "swcdb/db/Columns/Schema.h"
 
 
-namespace SWC { namespace Protocol { namespace Mngr { namespace Params {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Mngr { namespace Params {
   
 
-class ColumnMng : public Comm::Serializable {
+class ColumnMng : public Serializable {
   public:
 
   enum Function { // corelation-sequence required
@@ -54,7 +55,7 @@ class ColumnMng : public Comm::Serializable {
   };
 
 
-}}}}
+}}}}}
 
 
 #ifdef SWC_IMPL_SOURCE

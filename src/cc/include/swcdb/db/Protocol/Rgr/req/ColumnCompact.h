@@ -10,23 +10,24 @@
 #include "swcdb/db/Protocol/Rgr/params/ColumnCompact.h"
 
 
-namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Rgr { namespace Req {
   
 
-class ColumnCompact : public Comm::client::ConnQueue::ReqBase {
+class ColumnCompact : public client::ConnQueue::ReqBase {
   public:
 
   ColumnCompact(cid_t cid);
   
   virtual ~ColumnCompact();
   
-  void handle(Comm::ConnHandlerPtr conn, const Comm::Event::Ptr& ev) override;
+  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
 
   void handle_no_conn() override;
 
 };
 
-}}}}
+}}}}}
 
 
 #ifdef SWC_IMPL_SOURCE

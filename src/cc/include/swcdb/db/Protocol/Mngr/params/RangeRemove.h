@@ -10,10 +10,11 @@
 #include "swcdb/core/comm/Serializable.h"
 
 
-namespace SWC { namespace Protocol { namespace Mngr { namespace Params {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Mngr { namespace Params {
 
 
-class RangeRemoveReq : public Comm::Serializable {
+class RangeRemoveReq : public Serializable {
   public:
 
   RangeRemoveReq(cid_t cid=0, rid_t rid=0) 
@@ -55,7 +56,7 @@ class RangeRemoveReq : public Comm::Serializable {
 
 
 
-class RangeRemoveRsp : public Comm::Serializable {
+class RangeRemoveRsp : public Serializable {
   public:
 
   RangeRemoveRsp(int err = Error::OK): err(err) { }
@@ -92,6 +93,6 @@ class RangeRemoveRsp : public Comm::Serializable {
 };
   
 
-}}}}
+}}}}}
 
 #endif // swcdb_db_protocol_mngr_params_RangeRemove_h

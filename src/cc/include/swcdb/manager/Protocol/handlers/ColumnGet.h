@@ -10,7 +10,8 @@
 #include "swcdb/db/Protocol/Mngr/params/ColumnGet.h"
 #include "swcdb/manager/Protocol/Mngr/req/MngrColumnGet.h"
 
-namespace SWC { namespace Protocol { namespace Mngr { namespace Handler {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Mngr { namespace Handler {
 
 
 DB::Schema::Ptr get_schema(int &err, const Params::ColumnGetReq& params) {
@@ -30,16 +31,16 @@ DB::Schema::Ptr get_schema(int &err, const Params::ColumnGetReq& params) {
   }
 }
 
-void mngr_update_response(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev,
+void mngr_update_response(const ConnHandlerPtr& conn, const Event::Ptr& ev,
                           int err, Params::ColumnGetReq::Flag flag, 
                           const DB::Schema::Ptr& schema) {
   if(!err && !schema)
     err = Error::COLUMN_SCHEMA_NAME_NOT_EXISTS;
 
   try {
-    auto cbp = err ? 
-        Comm::Buffers::make(4)
-      : Comm::Buffers::make(Params::ColumnGetRsp(flag, schema), 4);
+    auto cbp = err 
+      ? Buffers::make(4)
+      : Buffers::make(Params::ColumnGetRsp(flag, schema), 4);
     cbp->header.initialize_from_request_header(ev->header);
     cbp->append_i32(err);
     conn->send_response(cbp);
@@ -49,7 +50,7 @@ void mngr_update_response(const Comm::ConnHandlerPtr& conn, const Comm::Event::P
   }
 }
 
-void column_get(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
+void column_get(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
 
   int err = Error::OK;
   Params::ColumnGetReq::Flag flag;
@@ -99,6 +100,6 @@ void column_get(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
 
 
 
-}}}}
+}}}}}
 
 #endif // swcdb_manager_Protocol_handlers_ColumnGet_h

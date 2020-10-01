@@ -12,10 +12,11 @@
 #include "swcdb/core/comm/Serializable.h"
 
 
-namespace SWC { namespace Protocol { namespace Mngr { namespace Params {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Mngr { namespace Params {
 
 
-class ColumnCompactReq : public Comm::Serializable {
+class ColumnCompactReq : public Serializable {
   public:
 
   ColumnCompactReq(cid_t cid=0);
@@ -38,7 +39,7 @@ class ColumnCompactReq : public Comm::Serializable {
 
 
 
-class ColumnCompactRsp : public Comm::Serializable {
+class ColumnCompactRsp : public Serializable {
   public:
 
   ColumnCompactRsp(int err = Error::OK);
@@ -60,7 +61,7 @@ class ColumnCompactRsp : public Comm::Serializable {
 };
   
 
-}}}}
+}}}}}
 
 
 

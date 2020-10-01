@@ -10,7 +10,8 @@
 
 
 
-namespace SWC { namespace Protocol { namespace Mngr { namespace Params {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Mngr { namespace Params {
 
 RgrGetReq::RgrGetReq(cid_t cid, rid_t rid, bool next_range) 
                     : cid(cid), rid(rid), next_range(next_range) {
@@ -121,4 +122,4 @@ void RgrGetRsp::internal_decode(const uint8_t** bufp, size_t* remainp) {
 }
 
 
-}}}}
+}}}}}

@@ -14,13 +14,14 @@
 #include "swcdb/db/Protocol/Mngr/params/RangeRemove.h"
 
 
-namespace SWC { namespace Protocol { namespace Mngr { namespace Req {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Mngr { namespace Req {
 
   
-class RangeRemove: public Comm::client::ConnQueue::ReqBase {
+class RangeRemove: public client::ConnQueue::ReqBase {
   public:
   
-  typedef std::function<void(const Comm::client::ConnQueue::ReqBase::Ptr&, 
+  typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&, 
                              const Params::RangeRemoveRsp&)> Cb_t;
  
   static void request(cid_t cid, rid_t rid, 
@@ -37,9 +38,9 @@ class RangeRemove: public Comm::client::ConnQueue::ReqBase {
 
   RangeRemove(const Params::RangeRemoveReq& params, const Cb_t& cb, 
               const uint32_t timeout) 
-              : Comm::client::ConnQueue::ReqBase(false), 
+              : client::ConnQueue::ReqBase(false), 
                 cb(cb), cid(params.cid) {
-    cbp = Comm::Buffers::make(params);
+    cbp = Buffers::make(params);
     cbp->header.set(RANGE_REMOVE, timeout);
   }
 
@@ -62,8 +63,8 @@ class RangeRemove: public Comm::client::ConnQueue::ReqBase {
     return true;
   }
 
-  void handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) override {
-    if(ev->type == Comm::Event::Type::DISCONNECT)
+  void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
+    if(ev->type == Event::Type::DISCONNECT)
       return handle_no_conn();
 
     Params::RangeRemoveRsp rsp_params(ev->error);
@@ -92,10 +93,10 @@ class RangeRemove: public Comm::client::ConnQueue::ReqBase {
 
   const Cb_t      cb;
   const cid_t     cid;
-  Comm::EndPoints endpoints;
+  EndPoints       endpoints;
 };
 
 
-}}}}
+}}}}}
 
 #endif // swcdb_db_protocol_req_RangeRemove_h

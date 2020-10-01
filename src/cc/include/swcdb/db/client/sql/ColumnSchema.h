@@ -17,7 +17,7 @@ class ColumnSchema final : public Reader {
 
   public:
   
-  using Func = Protocol::Mngr::Params::ColumnMng::Function;
+  using Func = Comm::Protocol::Mngr::Params::ColumnMng::Function;
 
   ColumnSchema(const std::string& sql, DB::Schema::Ptr& schema,
               std::string& message);

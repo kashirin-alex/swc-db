@@ -9,10 +9,11 @@
 
 #include "swcdb/core/comm/Serializable.h"
 
-namespace SWC { namespace Protocol { namespace Common { namespace Params {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Common { namespace Params {
 
 
-class ColumnId : public Comm::Serializable {
+class ColumnId : public Serializable {
   public:
 
   ColumnId(cid_t cid = DB::Schema::NO_CID)
@@ -42,6 +43,6 @@ class ColumnId : public Comm::Serializable {
 };
   
 
-}}}}
+}}}}}
 
 #endif // swcdb_db_protocol_common_params_ColumnId_h

@@ -17,16 +17,16 @@ class MngdColumns final {
 
   struct ColumnFunction final {
     ColumnFunction() { }
-    ColumnFunction(Protocol::Mngr::Params::ColumnMng::Function func, 
+    ColumnFunction(Comm::Protocol::Mngr::Params::ColumnMng::Function func, 
                    cid_t cid) :  func(func), cid(cid) { 
     }
-    Protocol::Mngr::Params::ColumnMng::Function func;
+    Comm::Protocol::Mngr::Params::ColumnMng::Function func;
     cid_t cid;
   };
 
   public:
 
-  struct ColumnReq final : public Protocol::Mngr::Params::ColumnMng,
+  struct ColumnReq final : public Comm::Protocol::Mngr::Params::ColumnMng,
                            public Comm::ResponseCallback {
     typedef std::shared_ptr<ColumnReq> Ptr;
     ColumnReq(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev)
@@ -62,12 +62,12 @@ class MngdColumns final {
 
   void action(const ColumnReq::Ptr& new_req);
 
-  void update_status(Protocol::Mngr::Params::ColumnMng::Function func, 
+  void update_status(Comm::Protocol::Mngr::Params::ColumnMng::Function func, 
                      DB::Schema::Ptr& schema, int err, bool initial=false);
 
   void load_pending(cid_t cid);
 
-  void update(Protocol::Mngr::Params::ColumnMng::Function func,
+  void update(Comm::Protocol::Mngr::Params::ColumnMng::Function func,
               const DB::Schema::Ptr& schema, int err=Error::OK);
 
   void remove(int &err, cid_t cid, rgrid_t rgrid);
@@ -99,8 +99,9 @@ class MngdColumns final {
 
   bool update(DB::Schema::Ptr& schema);
 
-  void update_status_ack(Protocol::Mngr::Params::ColumnMng::Function func,
-                         const DB::Schema::Ptr& schema, int err);
+  void update_status_ack(
+      Comm::Protocol::Mngr::Params::ColumnMng::Function func,
+      const DB::Schema::Ptr& schema, int err);
 
   void actions_run();
 

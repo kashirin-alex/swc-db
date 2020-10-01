@@ -12,25 +12,27 @@
 #include "swcdb/db/Protocol/Rgr/params/RangeQuerySelect.h"
 
 
-namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Rgr { namespace Req {
 
   
-class RangeQuerySelect: public Comm::client::ConnQueue::ReqBase {
+class RangeQuerySelect: public client::ConnQueue::ReqBase {
   public:
   
-  typedef std::function<void(const Comm::client::ConnQueue::ReqBase::Ptr&, 
+  typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&, 
                              const Params::RangeQuerySelectRsp&)> Cb_t;
 
   static void 
   request(const Params::RangeQuerySelectReq& params,
-          const Comm::EndPoints& endpoints, 
+          const EndPoints& endpoints, 
           const Cb_t& cb,
           const uint32_t timeout = 10000);
   
-  Comm::EndPoints     endpoints;
+  EndPoints     endpoints;
 
   RangeQuerySelect(const Params::RangeQuerySelectReq& params,
-                   const Comm::EndPoints& endpoints, const Cb_t& cb, 
+                   const EndPoints& endpoints, 
+                   const Cb_t& cb, 
                    const uint32_t timeout);
 
   virtual ~RangeQuerySelect();
@@ -39,7 +41,7 @@ class RangeQuerySelect: public Comm::client::ConnQueue::ReqBase {
 
   bool run() override;
 
-  void handle(Comm::ConnHandlerPtr conn, const Comm::Event::Ptr& ev) override;
+  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
 
   private:
 
@@ -47,7 +49,7 @@ class RangeQuerySelect: public Comm::client::ConnQueue::ReqBase {
 };
 
 
-}}}}
+}}}}}
 
 
 #ifdef SWC_IMPL_SOURCE

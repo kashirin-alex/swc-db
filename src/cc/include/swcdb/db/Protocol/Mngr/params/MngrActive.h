@@ -12,10 +12,11 @@
 #include "swcdb/db/client/mngr/Groups.h"
 
 
-namespace SWC { namespace Protocol { namespace Mngr { namespace Params {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Mngr { namespace Params {
 
 
-class MngrActiveReq : public Comm::Serializable {
+class MngrActiveReq : public Serializable {
   public:
 
   MngrActiveReq(uint8_t role=DB::Types::MngrRole::COLUMNS, cid_t cid=0);
@@ -42,7 +43,7 @@ class MngrActiveRsp : public Common::Params::HostEndPoints {
 
   MngrActiveRsp();
 
-  MngrActiveRsp(const Comm::EndPoints& endpoints);
+  MngrActiveRsp(const EndPoints& endpoints);
   
   virtual ~MngrActiveRsp();
 
@@ -60,7 +61,7 @@ class MngrActiveRsp : public Common::Params::HostEndPoints {
   
 
 
-}}}}
+}}}}}
 
 
 

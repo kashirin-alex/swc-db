@@ -18,7 +18,9 @@
 
 
 
-namespace SWC { namespace Protocol { namespace Mngr { namespace Params { 
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Mngr { namespace Params {
+
 namespace Report {
 
 
@@ -32,7 +34,7 @@ enum Function {
 
 
 
-class ReqColumnStatus : public Comm::Serializable {
+class ReqColumnStatus : public Serializable {
   public:
 
   ReqColumnStatus(cid_t cid = DB::Schema::NO_CID);
@@ -52,7 +54,7 @@ class ReqColumnStatus : public Comm::Serializable {
 };
 
 
-class RspColumnStatus : public Comm::Serializable {
+class RspColumnStatus : public Serializable {
   public:
 
   RspColumnStatus();
@@ -92,7 +94,7 @@ class RspColumnStatus : public Comm::Serializable {
 
 
 
-class RspRangersStatus : public Comm::Serializable {
+class RspRangersStatus : public Serializable {
   public:
 
   RspRangersStatus();
@@ -133,7 +135,7 @@ class RspRangersStatus : public Comm::Serializable {
 
 
 
-class RspManagersStatus : public Comm::Serializable {
+class RspManagersStatus : public Serializable {
   public:
 
   RspManagersStatus();
@@ -163,7 +165,7 @@ class RspManagersStatus : public Comm::Serializable {
   void display(std::ostream& out, const std::string& offset = "") const;
 
   std::vector<Manager>  managers;
-  Comm::EndPoint        inchain;
+  EndPoint              inchain;
 
   private:
 
@@ -177,7 +179,7 @@ class RspManagersStatus : public Comm::Serializable {
 
 
 }
-}}}}
+}}}}}
 
 
 

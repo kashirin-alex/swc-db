@@ -12,10 +12,11 @@
 #include "swcdb/db/Cells/SpecsInterval.h"
 
 
-namespace SWC { namespace Protocol { namespace Rgr { namespace Params {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Rgr { namespace Params {
 
 
-class RangeQuerySelectReq : public Comm::Serializable {
+class RangeQuerySelectReq : public Serializable {
   public:
 
   RangeQuerySelectReq();
@@ -43,7 +44,7 @@ class RangeQuerySelectReq : public Comm::Serializable {
 
 
 
-class RangeQuerySelectRsp  : public Comm::Serializable {
+class RangeQuerySelectRsp  : public Serializable {
   public:
 
   RangeQuerySelectRsp(int err = Error::OK, bool reached_limit=false, 
@@ -71,7 +72,7 @@ class RangeQuerySelectRsp  : public Comm::Serializable {
 };
   
 
-}}}}
+}}}}}
 
 
 #ifdef SWC_IMPL_SOURCE

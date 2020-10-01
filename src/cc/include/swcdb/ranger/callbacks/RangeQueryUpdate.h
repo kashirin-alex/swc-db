@@ -23,13 +23,13 @@ class RangeQueryUpdate : public Comm::ResponseCallback {
   virtual ~RangeQueryUpdate() { }
 
   void response(int &err) override {
-    response(Protocol::Rgr::Params::RangeQueryUpdateRsp(err));
+    response(Comm::Protocol::Rgr::Params::RangeQueryUpdateRsp(err));
   }
 
   void response(const int& err, const DB::Cell::Key& range_prev_end, 
                                 const DB::Cell::Key& range_end) {
     response(
-      Protocol::Rgr::Params::RangeQueryUpdateRsp(
+      Comm::Protocol::Rgr::Params::RangeQueryUpdateRsp(
         err, range_prev_end, range_end));
   }
 
@@ -38,7 +38,7 @@ class RangeQueryUpdate : public Comm::ResponseCallback {
            (m_conn != nullptr && !m_conn->is_open()) ;
   }
   
-  void response(const Protocol::Rgr::Params::RangeQueryUpdateRsp& params) {
+  void response(const Comm::Protocol::Rgr::Params::RangeQueryUpdateRsp& params) {
     try {
       auto cbp = Comm::Buffers::make(params);
       cbp->header.initialize_from_request_header(m_ev->header);

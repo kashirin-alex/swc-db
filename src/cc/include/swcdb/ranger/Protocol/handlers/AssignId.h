@@ -8,11 +8,12 @@
 #define swcdb_ranger_Protocol_handlers_AssignId_h
 
 
-namespace SWC { namespace Protocol { namespace Rgr { namespace Handler {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Rgr { namespace Handler {
 
 
-void assign_id(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev, 
-               Protocol::Mngr::Req::RgrMngId::Ptr id_mngr) {
+void assign_id(const ConnHandlerPtr& conn, const Event::Ptr& ev, 
+               Mngr::Req::RgrMngId::Ptr id_mngr) {
   try {
 
     if(Env::Rgr::is_shuttingdown())
@@ -28,6 +29,6 @@ void assign_id(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev,
 }
 
 
-}}}}
+}}}}}
 
 #endif // swcdb_ranger_Protocol_handlers_AssignId_h

@@ -10,20 +10,21 @@
 #include "swcdb/db/Protocol/Mngr/params/ColumnMng.h"
 #include "swcdb/manager/Protocol/Mngr/params/ColumnUpdate.h"
 
-namespace SWC { namespace Protocol { namespace Mngr { namespace Req {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Mngr { namespace Req {
 
-class ColumnUpdate : public Comm::client::ConnQueue::ReqBase {
+class ColumnUpdate : public client::ConnQueue::ReqBase {
   public:
 
   ColumnUpdate(Params::ColumnMng::Function function, DB::Schema::Ptr schema, 
-               int err) : Comm::client::ConnQueue::ReqBase(true) {
-    cbp = Comm::Buffers::make(Params::ColumnUpdate(function, schema, err));
+               int err) : client::ConnQueue::ReqBase(true) {
+    cbp = Buffers::make(Params::ColumnUpdate(function, schema, err));
     cbp->header.set(COLUMN_UPDATE, 60000);
   }
   
   virtual ~ColumnUpdate() { }
   
-  void handle(Comm::ConnHandlerPtr conn, const Comm::Event::Ptr& ev) override {
+  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override {
     if(!is_rsp(ev))
       return;
 
@@ -33,6 +34,6 @@ class ColumnUpdate : public Comm::client::ConnQueue::ReqBase {
   
 };
 
-}}}}
+}}}}}
 
 #endif // swcdb_manager_Protocol_mngr_req_ColumnUpdate_h

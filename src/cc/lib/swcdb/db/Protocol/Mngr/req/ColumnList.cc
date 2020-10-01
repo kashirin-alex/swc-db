@@ -11,24 +11,28 @@
 #include "swcdb/db/Protocol/Commands.h"
 
 
-namespace SWC { namespace Protocol { namespace Mngr { namespace Req {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Mngr { namespace Req {
 
 
 SWC_SHOULD_INLINE
-void ColumnList::request(const ColumnList::Cb_t& cb, const uint32_t timeout) {
+void ColumnList::request(const ColumnList::Cb_t& cb, 
+                         const uint32_t timeout) {
   request(Params::ColumnListReq(), cb, timeout);
 }
 
 SWC_SHOULD_INLINE
 void ColumnList::request(const Params::ColumnListReq& params,
-                         const ColumnList::Cb_t& cb, const uint32_t timeout) {
+                         const ColumnList::Cb_t& cb, 
+                         const uint32_t timeout) {
   std::make_shared<ColumnList>(params, cb, timeout)->run();
 }
 
 ColumnList::ColumnList(const Params::ColumnListReq& params, 
-                       const ColumnList::Cb_t& cb, const uint32_t timeout) 
-                      : Comm::client::ConnQueue::ReqBase(false), cb(cb) {
-  cbp = Comm::Buffers::make(params);
+                       const ColumnList::Cb_t& cb, 
+                       const uint32_t timeout) 
+                      : client::ConnQueue::ReqBase(false), cb(cb) {
+  cbp = Buffers::make(params);
   cbp->header.set(COLUMN_LIST, timeout);
 }
 
@@ -53,8 +57,8 @@ bool ColumnList::run() {
   return true;
 }
 
-void ColumnList::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) {
-  if(ev->type == Comm::Event::Type::DISCONNECT)
+void ColumnList::handle(ConnHandlerPtr, const Event::Ptr& ev) {
+  if(ev->type == Event::Type::DISCONNECT)
     return handle_no_conn();
 
   Params::ColumnListRsp rsp_params;
@@ -81,4 +85,4 @@ void ColumnList::clear_endpoints() {
 }
 
 
-}}}}
+}}}}}

@@ -368,7 +368,7 @@ void Select::Scanner::print(std::ostream& out) {
 void Select::Scanner::locate_on_manager(bool next_range) {
   col->selector->result->completion_incr();
 
-  Protocol::Mngr::Params::RgrGetReq params(
+  Comm::Protocol::Mngr::Params::RgrGetReq params(
     DB::Types::MetaColumn::get_master_cid(col->col_seq), 0, next_range);
 
   if(!range_offset.empty()) {
@@ -392,11 +392,12 @@ void Select::Scanner::locate_on_manager(bool next_range) {
   SWC_LOG_OUT(LOG_DEBUG, 
     params.print(SWC_LOG_OSTREAM << "LocateRange-onMngr "););
 
-  Protocol::Mngr::Req::RgrGet::request(
+  Comm::Protocol::Mngr::Req::RgrGet::request(
     params,
     [next_range, profile=col->selector->result->profile.mngr_locate(),
      scanner=shared_from_this()]
-    (const ReqBase::Ptr& req, const Protocol::Mngr::Params::RgrGetRsp& rsp) {
+    (const ReqBase::Ptr& req, 
+     const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
       profile.add(rsp.err || !rsp.rid);
       if(scanner->located_on_manager(req, rsp, next_range))
         scanner->col->selector->result->completion_decr();
@@ -407,18 +408,19 @@ void Select::Scanner::locate_on_manager(bool next_range) {
 void Select::Scanner::resolve_on_manager() {
   col->selector->result->completion_incr();
 
-  auto req = Protocol::Mngr::Req::RgrGet::make(
-    Protocol::Mngr::Params::RgrGetReq(cid, rid),
+  auto req = Comm::Protocol::Mngr::Req::RgrGet::make(
+    Comm::Protocol::Mngr::Params::RgrGetReq(cid, rid),
     [profile=col->selector->result->profile.mngr_res(), 
      scanner=shared_from_this()]
-    (const ReqBase::Ptr& req, const Protocol::Mngr::Params::RgrGetRsp& rsp) {
+    (const ReqBase::Ptr& req, 
+     const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
       profile.add(rsp.err || !rsp.rid || rsp.endpoints.empty());
       if(scanner->located_on_manager(req, rsp))
         scanner->col->selector->result->completion_decr();
     }
   );
   if(!DB::Types::MetaColumn::is_master(cid)) {
-    Protocol::Mngr::Params::RgrGetRsp rsp(cid, rid);
+    Comm::Protocol::Mngr::Params::RgrGetRsp rsp(cid, rid);
     if(Env::Clients::get()->rangers.get(cid, rid, rsp.endpoints)) {
       SWC_LOG_OUT(LOG_DEBUG, rsp.print(SWC_LOG_OSTREAM << "Cache hit "); );
       if(proceed_on_ranger(req, rsp)) // ?req without profile
@@ -433,7 +435,7 @@ void Select::Scanner::resolve_on_manager() {
 
 bool Select::Scanner::located_on_manager(
         const ReqBase::Ptr& base, 
-        const Protocol::Mngr::Params::RgrGetRsp& rsp, 
+        const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp, 
         bool next_range) {
   SWC_LOG_OUT(LOG_DEBUG, 
     rsp.print(SWC_LOG_OSTREAM << "LocatedRange-onMngr "););
@@ -484,7 +486,7 @@ bool Select::Scanner::located_on_manager(
     
 bool Select::Scanner::proceed_on_ranger(
           const ReqBase::Ptr& base, 
-          const Protocol::Mngr::Params::RgrGetRsp& rsp) {
+          const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
   if(type == DB::Types::Range::DATA || 
      (type == DB::Types::Range::MASTER && 
       DB::Types::MetaColumn::is_master(col->cid)) ||
@@ -515,9 +517,9 @@ void Select::Scanner::locate_on_ranger(const Comm::EndPoints& endpoints,
                                        bool next_range) {
   col->selector->result->completion_incr();
 
-  Protocol::Rgr::Params::RangeLocateReq params(cid, rid);
+  Comm::Protocol::Rgr::Params::RangeLocateReq params(cid, rid);
   if(next_range) {
-    params.flags |= Protocol::Rgr::Params::RangeLocateReq::NEXT_RANGE;
+    params.flags |= Comm::Protocol::Rgr::Params::RangeLocateReq::NEXT_RANGE;
     params.range_offset.copy(range_offset);
     params.range_offset.insert(0, std::to_string(col->cid));
   }
@@ -537,15 +539,16 @@ void Select::Scanner::locate_on_ranger(const Comm::EndPoints& endpoints,
   SWC_LOG_OUT(LOG_DEBUG, 
     params.print(SWC_LOG_OSTREAM << "LocateRange-onRgr "););
 
-  Protocol::Rgr::Req::RangeLocate::request(
+  Comm::Protocol::Rgr::Req::RangeLocate::request(
     params, endpoints,
     [next_range, profile=col->selector->result->profile.rgr_locate(type),
      scanner=shared_from_this()]
-    (const ReqBase::Ptr& req, const Protocol::Rgr::Params::RangeLocateRsp& rsp) {
+    (const ReqBase::Ptr& req, 
+     const Comm::Protocol::Rgr::Params::RangeLocateRsp& rsp) {
       profile.add(!rsp.rid || rsp.err);
       if(scanner->located_on_ranger(
           std::dynamic_pointer_cast<
-            Protocol::Rgr::Req::RangeLocate>(req)->endpoints,
+            Comm::Protocol::Rgr::Req::RangeLocate>(req)->endpoints,
           req, rsp, next_range))
         scanner->col->selector->result->completion_decr();
     }
@@ -555,7 +558,7 @@ void Select::Scanner::locate_on_ranger(const Comm::EndPoints& endpoints,
 bool Select::Scanner::located_on_ranger(
           const Comm::EndPoints& endpoints, 
           const ReqBase::Ptr& base, 
-          const Protocol::Rgr::Params::RangeLocateRsp& rsp, 
+          const Comm::Protocol::Rgr::Params::RangeLocateRsp& rsp, 
           bool next_range) {
   SWC_LOG_OUT(LOG_DEBUG, 
     rsp.print(SWC_LOG_OSTREAM << "LocatedRange-onRgr "););
@@ -616,12 +619,13 @@ bool Select::Scanner::located_on_ranger(
   return true;
 }
 
-void Select::Scanner::select(const Comm::EndPoints& endpoints, rid_t rid, 
+void Select::Scanner::select(const Comm::EndPoints& endpoints, 
+                             rid_t rid, 
                              const ReqBase::Ptr& base) {
   col->selector->result->completion_incr();
 
-  Protocol::Rgr::Req::RangeQuerySelect::request(
-    Protocol::Rgr::Params::RangeQuerySelectReq(
+  Comm::Protocol::Rgr::Req::RangeQuerySelect::request(
+    Comm::Protocol::Rgr::Params::RangeQuerySelectReq(
       col->cid, rid, col->interval
     ), 
     endpoints, 
@@ -629,7 +633,7 @@ void Select::Scanner::select(const Comm::EndPoints& endpoints, rid_t rid,
      profile=col->selector->result->profile.rgr_data(), 
      scanner=shared_from_this()] 
     (const ReqBase::Ptr& req, 
-     const Protocol::Rgr::Params::RangeQuerySelectRsp& rsp) {
+     const Comm::Protocol::Rgr::Params::RangeQuerySelectRsp& rsp) {
       profile.add(rsp.err);
       
       if(rsp.err) {
@@ -657,8 +661,8 @@ void Select::Scanner::select(const Comm::EndPoints& endpoints, rid_t rid,
 
         if(rsp.reached_limit) {
           scanner->select(
-            std::dynamic_pointer_cast<Protocol::Rgr::Req::RangeQuerySelect>(req)
-              ->endpoints, 
+            std::dynamic_pointer_cast<
+              Comm::Protocol::Rgr::Req::RangeQuerySelect>(req)->endpoints,
             rid, base
           );
         } else {

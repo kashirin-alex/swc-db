@@ -9,22 +9,23 @@
 
 #include "swcdb/db/Protocol/Mngr/params/ColumnGet.h"
 
-namespace SWC { namespace Protocol { namespace Mngr { namespace Req {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Mngr { namespace Req {
 
-class MngrColumnGet : public Comm::client::ConnQueue::ReqBase {
+class MngrColumnGet : public client::ConnQueue::ReqBase {
   public:
   
   typedef std::function<void(int, const Params::ColumnGetRsp&)> Cb_t;
 
   MngrColumnGet(const Params::ColumnGetReq& params, const Cb_t& cb) 
-                : Comm::client::ConnQueue::ReqBase(true), cb(cb) {
-    cbp = Comm::Buffers::make(params);
+                : client::ConnQueue::ReqBase(true), cb(cb) {
+    cbp = Buffers::make(params);
     cbp->header.set(COLUMN_GET, 60000);
   }
   
   virtual ~MngrColumnGet() { }
   
-  void handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) override {
+  void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
     if(!is_rsp(ev))
       return;
 
@@ -51,6 +52,6 @@ class MngrColumnGet : public Comm::client::ConnQueue::ReqBase {
   
 };
 
-}}}}
+}}}}}
 
 #endif // swcdb_manager_Protocol_mngr_req_MngrColumnGet_h

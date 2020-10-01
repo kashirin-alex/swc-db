@@ -95,7 +95,7 @@ void parse_list_columns(int& err, const std::string& sql,
 
 void parse_list_columns(int& err, const std::string& sql, 
                         std::vector<DB::Schema::Ptr>& schemas, 
-                        Protocol::Mngr::Params::ColumnListReq& params,
+                        Comm::Protocol::Mngr::Params::ColumnListReq& params,
                         std::string& message, const char* expect_cmd) {
   ColumnList parser(sql, schemas, message);
   err = parser.parse_list_columns(expect_cmd);
@@ -105,14 +105,14 @@ void parse_list_columns(int& err, const std::string& sql,
 
 
 void parse_column_schema(int& err, const std::string& sql, 
-                        Protocol::Mngr::Req::ColumnMng::Func func,
+                        Comm::Protocol::Mngr::Req::ColumnMng::Func func,
                         DB::Schema::Ptr& schema, std::string& message) {
   ColumnSchema parser(sql, schema, message);
   err = parser.parse(func);
 }
 
 void parse_column_schema(int& err, const std::string& sql,
-                        Protocol::Mngr::Req::ColumnMng::Func* func,
+                        Comm::Protocol::Mngr::Req::ColumnMng::Func* func,
                         DB::Schema::Ptr& schema, std::string& message) {
   ColumnSchema parser(sql, schema, message);
   err = parser.parse(func);

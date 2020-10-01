@@ -7,12 +7,13 @@
 #include "swcdb/manager/Protocol/Rgr/req/ReportRes.h"
 
 
-namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Rgr { namespace Req {
 
 
 ReportRes::ReportRes(const Manager::Ranger::Ptr& rgr)
-                     : Comm::client::ConnQueue::ReqBase(false), rgr(rgr) {
-  cbp = Comm::Buffers::make(1);
+                    : client::ConnQueue::ReqBase(false), rgr(rgr) {
+  cbp = Buffers::make(1);
   cbp->append_i8((uint8_t)Params::Report::Function::RESOURCES);
   cbp->header.set(REPORT, 60000);
 }
@@ -23,12 +24,12 @@ void ReportRes::handle_no_conn() {
   Env::Mngr::rangers()->rgr_report(
     rgr->rgrid, 
     Error::COMM_NOT_CONNECTED,
-    Protocol::Rgr::Params::Report::RspRes()
+    Params::Report::RspRes()
   );
 }
 
-void ReportRes::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) {
-  if(ev->type == Comm::Event::Type::DISCONNECT)
+void ReportRes::handle(ConnHandlerPtr, const Event::Ptr& ev) {
+  if(ev->type == Event::Type::DISCONNECT)
     return handle_no_conn();
   
   Params::Report::RspRes rsp_params;
@@ -52,4 +53,4 @@ void ReportRes::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) {
 }
 
 
-}}}}
+}}}}}

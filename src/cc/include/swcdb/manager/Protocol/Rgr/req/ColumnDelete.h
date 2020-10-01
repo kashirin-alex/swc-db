@@ -8,17 +8,18 @@
 #define swcdb_manager_Protocol_rgr_req_ColumnDelete_h
 
 
-namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Rgr { namespace Req {
   
 
-class ColumnDelete : public Comm::client::ConnQueue::ReqBase  {
+class ColumnDelete : public client::ConnQueue::ReqBase  {
   public:
 
   ColumnDelete(const Manager::Ranger::Ptr& rgr, cid_t cid);
   
   virtual ~ColumnDelete();
   
-  void handle(Comm::ConnHandlerPtr conn, const Comm::Event::Ptr& ev) override;
+  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
 
   void handle_no_conn() override;
   
@@ -30,6 +31,6 @@ class ColumnDelete : public Comm::client::ConnQueue::ReqBase  {
   cid_t                 cid;
 };
 
-}}}}
+}}}}}
 
 #endif // swcdb_manager_Protocol_rgr_req_ColumnDelete_h

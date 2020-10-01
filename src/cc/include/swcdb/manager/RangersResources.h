@@ -73,7 +73,7 @@ class RangersResources final : private std::vector<RangerResources> {
     for(auto& rgr : rangers) {
       if(rgr->state != Ranger::State::ACK)
         continue;
-      rgr->put(std::make_shared<Protocol::Rgr::Req::ReportRes>(rgr));
+      rgr->put(std::make_shared<Comm::Protocol::Rgr::Req::ReportRes>(rgr));
       ++m_due;
     }
 
@@ -81,7 +81,7 @@ class RangersResources final : private std::vector<RangerResources> {
   }
 
   bool add_and_more(rgrid_t rgrid, int err,
-                    const Protocol::Rgr::Params::Report::RspRes& rsp) {
+                    const Comm::Protocol::Rgr::Params::Report::RspRes& rsp) {
     LockAtomic::Unique::scope lock(m_mutex);
     if(!err) {
       auto& res = emplace_back(rgrid, rsp.mem, rsp.cpu, rsp.ranges);

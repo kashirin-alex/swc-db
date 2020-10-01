@@ -467,8 +467,8 @@ int main(int argc, char** argv) {
   // 1st DELETE & CREATE COLUMN
   
   // DELETE
-  SWC::Protocol::Mngr::Req::ColumnMng::request(
-    SWC::Protocol::Mngr::Req::ColumnMng::Func::DELETE,
+  SWC::Comm::Protocol::Mngr::Req::ColumnMng::request(
+    SWC::Comm::Protocol::Mngr::Req::ColumnMng::Func::DELETE,
     schema,
     [schema]
     (SWC::client::ConnQueue::ReqBase::Ptr req_ptr, int err){
@@ -479,8 +479,8 @@ int main(int argc, char** argv) {
       }
        /**/
       // CREATE
-      SWC::Protocol::Mngr::Req::ColumnMng::request(
-        SWC::Protocol::Mngr::Req::ColumnMng::Func::CREATE,
+      SWC::Comm::Protocol::Mngr::Req::ColumnMng::request(
+        SWC::Comm::Protocol::Mngr::Req::ColumnMng::Func::CREATE,
         schema,
         [schema]
         (SWC::client::ConnQueue::ReqBase::Ptr req_ptr, int err) {

@@ -9,7 +9,8 @@
 #include "swcdb/core/Serialization.h"
 
 
-namespace SWC { namespace Protocol { namespace Rgr { namespace Params {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Rgr { namespace Params {
 
 
 ColumnCompactReq::ColumnCompactReq(cid_t cid) : cid(cid) {}
@@ -69,4 +70,4 @@ void ColumnCompactRsp::internal_decode(const uint8_t** bufp, size_t* remainp) {
 
 
 
-}}}}
+}}}}}

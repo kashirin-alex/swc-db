@@ -243,8 +243,8 @@ SWC::DB::Schema::Ptr create_column() {
 
   // CREATE COLUMN
   std::promise<int>  res;
-  SWC::Protocol::Mngr::Req::ColumnMng::request(
-    SWC::Protocol::Mngr::Req::ColumnMng::Func::CREATE,
+  SWC::Comm::Protocol::Mngr::Req::ColumnMng::request(
+    SWC::Comm::Protocol::Mngr::Req::ColumnMng::Func::CREATE,
     schema,
     [await=&res] (const SWC::Comm::client::ConnQueue::ReqBase::Ptr&, int err) {
       await->set_value(err);

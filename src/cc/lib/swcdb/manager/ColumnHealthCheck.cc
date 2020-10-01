@@ -86,7 +86,7 @@ void ColumnHealthCheck::RangerCheck::_add_range(const Range::Ptr& range) {
       return m_ranges.push(range);
     ++m_checkings;
     rgr->put(
-      std::make_shared<Protocol::Rgr::Req::RangeIsLoaded>(
+      std::make_shared<Comm::Protocol::Rgr::Req::RangeIsLoaded>(
         shared_from_this(), range));
     SWC_LOGF(LOG_DEBUG, "Column-Health START range(%lu/%lu)",
              range->cfg->cid, range->rid);

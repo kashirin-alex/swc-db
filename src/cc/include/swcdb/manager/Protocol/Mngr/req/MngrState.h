@@ -9,27 +9,30 @@
 
 #include "swcdb/manager/Protocol/Mngr/params/MngrState.h"
  
-namespace SWC { namespace Protocol { namespace Mngr {namespace Req {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Mngr {namespace Req {
 
 
-class MngrState : public Comm::client::ConnQueue::ReqBase {
+class MngrState : public client::ConnQueue::ReqBase {
   public:
 
-  MngrState(const Comm::ResponseCallback::Ptr& cb, 
+  MngrState(const ResponseCallback::Ptr& cb, 
             const Manager::MngrsStatus& states, 
-            uint64_t token, const Comm::EndPoint& mngr_host, 
+            uint64_t token, 
+            const EndPoint& mngr_host, 
             uint32_t timeout);
   
   virtual ~MngrState();
 
-  void disconnected(const Comm::ConnHandlerPtr& conn);
+  void disconnected(const ConnHandlerPtr& conn);
 
-  void handle(Comm::ConnHandlerPtr conn, const Comm::Event::Ptr& ev) override;
+  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
 
   private:
-  Comm::ResponseCallback::Ptr   cb;
+  ResponseCallback::Ptr   cb;
+
 };
 
-}}}}
+}}}}}
 
 #endif // swcdb_manager_Protocol_mngr_req_MngrState_h

@@ -9,9 +9,10 @@
 
 #include "swcdb/core/comm/Serializable.h"
 
-namespace SWC { namespace Protocol { namespace Rgr { namespace Params {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Rgr { namespace Params {
 
-class ColumnUpdate : public Comm::Serializable {
+class ColumnUpdate : public Serializable {
   public:
 
   ColumnUpdate() {}
@@ -41,6 +42,6 @@ class ColumnUpdate : public Comm::Serializable {
 };
   
 
-}}}}
+}}}}}
 
 #endif // swcdb_db_protocol_rgr_params_ColumnUpdate_h

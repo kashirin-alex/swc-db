@@ -10,10 +10,11 @@
 #include "swcdb/db/Protocol/Common/params/ColRangeId.h"
 
 
-namespace SWC { namespace Protocol { namespace Rgr { namespace Handler {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Rgr { namespace Handler {
 
 
-void range_unload(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
+void range_unload(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
   try {
     const uint8_t *ptr = ev->data.base;
     size_t remain = ev->data.size;
@@ -36,6 +37,6 @@ void range_unload(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) 
 }
   
 
-}}}}
+}}}}}
 
 #endif // swcdb_ranger_Protocol_handlers_RangeUnload_h

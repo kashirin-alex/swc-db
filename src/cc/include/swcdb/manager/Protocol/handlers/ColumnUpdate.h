@@ -10,10 +10,11 @@
 #include "swcdb/manager/Protocol/Mngr/params/ColumnUpdate.h"
 
 
-namespace SWC { namespace Protocol { namespace Mngr { namespace Handler {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Mngr { namespace Handler {
 
 
-void column_update(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
+void column_update(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
   try {
     const uint8_t *ptr = ev->data.base;
     size_t remain = ev->data.size;
@@ -33,6 +34,6 @@ void column_update(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev)
 
   
 
-}}}}
+}}}}}
 
 #endif // swcdb_manager_Protocol_handlers_ColumnUpdate_h

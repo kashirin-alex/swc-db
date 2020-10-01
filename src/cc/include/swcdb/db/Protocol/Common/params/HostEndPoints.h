@@ -10,28 +10,28 @@
 #include "swcdb/core/comm/Serializable.h"
 #include "swcdb/core/comm/Resolver.h"
 
-namespace SWC { 
+namespace SWC { namespace Comm {
 
-//! The SWC-DB Protocol C++ namespace 'SWC::Protocol'
+//! The SWC-DB Communications Protocol C++ namespace 'SWC::Comm::Protocol'
 namespace Protocol { 
 
 namespace Common { namespace Params {
  
 
-class HostEndPoints: public Comm::Serializable {
+class HostEndPoints: public Serializable {
   public:
 
   HostEndPoints();
 
-  HostEndPoints(const Comm::EndPoints& points);
+  HostEndPoints(const EndPoints& points);
   
   virtual ~HostEndPoints();
 
-  void set(const Comm::EndPoints& points);
+  void set(const EndPoints& points);
 
   void print(std::ostream& out) const;
 
-  Comm::EndPoints    endpoints;
+  EndPoints    endpoints;
 
 
   protected:
@@ -45,7 +45,7 @@ class HostEndPoints: public Comm::Serializable {
 
 };
 
-}}}}
+}}}}}
 
 
 

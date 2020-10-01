@@ -9,7 +9,8 @@
 
 #include "swcdb/db/Protocol/Common/params/ColRangeId.h"
 
-namespace SWC { namespace Protocol { namespace Rgr { namespace Params {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Rgr { namespace Params {
 
 
 class RangeLoad : public Common::Params::ColRangeId {
@@ -43,7 +44,7 @@ class RangeLoad : public Common::Params::ColRangeId {
 
 };
   
-class RangeLoaded : public Comm::Serializable {
+class RangeLoaded : public Serializable {
   public:
   
   RangeLoaded(const DB::Types::KeySeq key_seq)
@@ -76,6 +77,6 @@ class RangeLoaded : public Comm::Serializable {
 
 };
 
-}}}}
+}}}}}
 
 #endif // swcdb_db_protocol_rgr_params_RangeLoad_h

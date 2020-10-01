@@ -11,11 +11,11 @@
 #include "swcdb/ranger/callbacks/RangeLocateScanCommit.h"
 
 
-namespace SWC { namespace Protocol { namespace Rgr { namespace Handler {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Rgr { namespace Handler {
 
 
-void range_locate(const Comm::ConnHandlerPtr& conn, 
-                  const Comm::Event::Ptr& ev) {
+void range_locate(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
   int err = Error::OK;
   Params::RangeLocateReq params;
   Ranger::RangePtr range;
@@ -39,14 +39,14 @@ void range_locate(const Comm::ConnHandlerPtr& conn,
   try{
 
     if(err) {
-      Protocol::Rgr::Params::RangeLocateRsp rsp_params(err);
+      Params::RangeLocateRsp rsp_params(err);
       
       SWC_LOG_OUT(LOG_DEBUG,
         params.print(SWC_LOG_OSTREAM);
         rsp_params.print(SWC_LOG_OSTREAM << ' ');
       );
 
-      auto cbp = Comm::Buffers::make(rsp_params);
+      auto cbp = Buffers::make(rsp_params);
       cbp->header.initialize_from_request_header(ev->header);
       conn->send_response(cbp);
 
@@ -54,7 +54,7 @@ void range_locate(const Comm::ConnHandlerPtr& conn,
     }
 
     Ranger::ReqScan::Ptr req;
-    if(params.flags & Protocol::Rgr::Params::RangeLocateReq::COMMIT) {
+    if(params.flags & Params::RangeLocateReq::COMMIT) {
       req = std::make_shared<Ranger::Callback::RangeLocateScanCommit>(
         conn, ev,
         params.range_begin, //params.range_end,
@@ -68,7 +68,7 @@ void range_locate(const Comm::ConnHandlerPtr& conn,
         range,
         params.flags
       );
-      if(params.flags & Protocol::Rgr::Params::RangeLocateReq::NEXT_RANGE)
+      if(params.flags & Params::RangeLocateReq::NEXT_RANGE)
         req->spec.range_offset.copy(params.range_offset);
     }
     range->scan(req);
@@ -80,6 +80,6 @@ void range_locate(const Comm::ConnHandlerPtr& conn,
 }
   
 
-}}}}
+}}}}}
 
 #endif // swcdb_ranger_Protocol_handlers_RangeLocate_h

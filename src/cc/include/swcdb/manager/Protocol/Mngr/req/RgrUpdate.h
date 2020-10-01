@@ -9,21 +9,22 @@
 
 #include "swcdb/manager/Protocol/Mngr/params/RgrUpdate.h"
 
-namespace SWC { namespace Protocol { namespace Mngr { namespace Req {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Mngr { namespace Req {
 
 
-class RgrUpdate : public Comm::client::ConnQueue::ReqBase {
+class RgrUpdate : public client::ConnQueue::ReqBase {
   public:
 
   RgrUpdate(const Manager::RangerList &hosts, bool sync_all)
-            : Comm::client::ConnQueue::ReqBase(true) {
-    cbp = Comm::Buffers::make(Params::RgrUpdate(hosts, sync_all));
+            : client::ConnQueue::ReqBase(true) {
+    cbp = Buffers::make(Params::RgrUpdate(hosts, sync_all));
     cbp->header.set(RGR_UPDATE, 60000);
   }
   
   virtual ~RgrUpdate() { }
 
-  void handle(Comm::ConnHandlerPtr conn, const Comm::Event::Ptr& ev) override {
+  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override {
     if(!is_rsp(ev))
       return;
 
@@ -33,6 +34,6 @@ class RgrUpdate : public Comm::client::ConnQueue::ReqBase {
 
 };
 
-}}}}
+}}}}}
 
 #endif // swcdb_manager_Protocol_mngr_req_RgrUpdate_h

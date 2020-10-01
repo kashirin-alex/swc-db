@@ -8,20 +8,21 @@
 #include "swcdb/db/Protocol/Rgr/params/ColumnUpdate.h"
 
 
-namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Rgr { namespace Req {
 
 ColumnUpdate::ColumnUpdate(const Manager::Ranger::Ptr& rgr, 
                            const DB::Schema::Ptr& schema)
-                          : Comm::client::ConnQueue::ReqBase(false), 
+                          : client::ConnQueue::ReqBase(false), 
                             rgr(rgr), schema(schema) {
-  cbp = Comm::Buffers::make(Params::ColumnUpdate(schema));
+  cbp = Buffers::make(Params::ColumnUpdate(schema));
   cbp->header.set(SCHEMA_UPDATE, 60000);
 }
   
 ColumnUpdate::~ColumnUpdate() { }
 
-void ColumnUpdate::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) {
-  if(ev->type == Comm::Event::Type::DISCONNECT)
+void ColumnUpdate::handle(ConnHandlerPtr, const Event::Ptr& ev) {
+  if(ev->type == Event::Type::DISCONNECT)
     return handle_no_conn();
 
   updated(ev->response_code(), false);
@@ -37,7 +38,7 @@ void ColumnUpdate::updated(int err, bool failure) {
                              ->change_rgr_schema(rgr->rgrid, schema->revision);
     if(!Env::Mngr::rangers()->update(schema, false)) {
       Env::Mngr::mngd_columns()->update(
-        Protocol::Mngr::Params::ColumnMng::Function::INTERNAL_ACK_MODIFY,
+        Mngr::Params::ColumnMng::Function::INTERNAL_ACK_MODIFY,
         schema,
         err
       );
@@ -49,4 +50,4 @@ void ColumnUpdate::updated(int err, bool failure) {
 }
 
 
-}}}}
+}}}}}

@@ -10,10 +10,11 @@
 #include "swcdb/db/Protocol/Rgr/params/RangeIsLoaded.h"
 
 
-namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Rgr { namespace Req {
 
 
-class RangeIsLoaded : public Comm::client::ConnQueue::ReqBase {
+class RangeIsLoaded : public client::ConnQueue::ReqBase {
   public:
   
   const Manager::ColumnHealthCheck::RangerCheck::Ptr   checker;
@@ -21,9 +22,9 @@ class RangeIsLoaded : public Comm::client::ConnQueue::ReqBase {
 
   RangeIsLoaded(const Manager::ColumnHealthCheck::RangerCheck::Ptr& checker,
                 const Manager::Range::Ptr& range, uint32_t timeout=60000)
-                : Comm::client::ConnQueue::ReqBase(false), 
+                : client::ConnQueue::ReqBase(false), 
                   checker(checker), range(range) { 
-    cbp = Comm::Buffers::make(Params::RangeIsLoaded(range->cfg->cid, range->rid));
+    cbp = Buffers::make(Params::RangeIsLoaded(range->cfg->cid, range->rid));
     cbp->header.set(RANGE_IS_LOADED, timeout);
   }
   
@@ -38,12 +39,12 @@ class RangeIsLoaded : public Comm::client::ConnQueue::ReqBase {
     checker->handle(range, Error::COMM_CONNECT_ERROR);
   }
 
-  void handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) override {
+  void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
     checker->handle(range, ev->response_code());
   }
 
 };
 
-}}}}
+}}}}}
 
 #endif // swcdb_manager_Protocol_rgr_req_RangeIsLoaded_h

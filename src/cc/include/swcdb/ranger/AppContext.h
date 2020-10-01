@@ -41,23 +41,23 @@ namespace SWC { namespace Ranger {
 
 class AppContext final : public SWC::Comm::AppContext { 
 
-  // in-order of Protocol::Rgr::Command
+  // in-order of Comm::Protocol::Rgr::Command
   static constexpr const Comm::AppHandler_t handlers[] = { 
-    &Common::Protocol::Handler::not_implemented,
-    &Protocol::Rgr::Handler::column_delete,
-    &Protocol::Rgr::Handler::column_compact,
-    &Protocol::Rgr::Handler::column_update,
-    &Protocol::Rgr::Handler::range_is_loaded,
-    &Protocol::Rgr::Handler::range_load,
-    &Protocol::Rgr::Handler::range_unload,
-    &Protocol::Rgr::Handler::range_locate,
-    &Protocol::Rgr::Handler::range_query_update,
-    &Protocol::Rgr::Handler::range_query_select,
-    &Protocol::Rgr::Handler::report,
-    &Protocol::Rgr::Handler::columns_unload,
-    //&Handler::debug,
-    //&Handler::status,
-    //&Handler::shutdown
+    &Comm::Protocol::Common::Handler::not_implemented,
+    &Comm::Protocol::Rgr::Handler::column_delete,
+    &Comm::Protocol::Rgr::Handler::column_compact,
+    &Comm::Protocol::Rgr::Handler::column_update,
+    &Comm::Protocol::Rgr::Handler::range_is_loaded,
+    &Comm::Protocol::Rgr::Handler::range_load,
+    &Comm::Protocol::Rgr::Handler::range_unload,
+    &Comm::Protocol::Rgr::Handler::range_locate,
+    &Comm::Protocol::Rgr::Handler::range_query_update,
+    &Comm::Protocol::Rgr::Handler::range_query_select,
+    &Comm::Protocol::Rgr::Handler::report,
+    &Comm::Protocol::Rgr::Handler::columns_unload,
+    //&Comm::Protocol::Rgr::Handler::debug,
+    //&Comm::Protocol::Rgr::Handler::status,
+    //&Comm::Protocol::Rgr::Handler::shutdown
   }; 
   
   public:
@@ -92,7 +92,7 @@ class AppContext final : public SWC::Comm::AppContext {
     }
 
     auto app = std::make_shared<AppContext>();
-    app->id_mngr = std::make_shared<Protocol::Mngr::Req::RgrMngId>(
+    app->id_mngr = std::make_shared<Comm::Protocol::Mngr::Req::RgrMngId>(
       Env::IoCtx::io()->ptr(), 
       [app]() { (new std::thread([app]{ app->stop(); }))->detach(); }
     );
@@ -137,12 +137,12 @@ class AppContext final : public SWC::Comm::AppContext {
         break;
 
       case Comm::Event::Type::MESSAGE: {
-        uint8_t cmd = ev->header.command >= Protocol::Rgr::MAX_CMD
-                        ? (uint8_t)Protocol::Rgr::NOT_IMPLEMENTED 
+        uint8_t cmd = ev->header.command >= Comm::Protocol::Rgr::MAX_CMD
+                        ? (uint8_t)Comm::Protocol::Rgr::NOT_IMPLEMENTED 
                         : ev->header.command;
         
-        if(cmd == Protocol::Rgr::ASSIGN_ID_NEEDED) {
-          Protocol::Rgr::Handler::assign_id(conn, ev, id_mngr);
+        if(cmd == Comm::Protocol::Rgr::ASSIGN_ID_NEEDED) {
+          Comm::Protocol::Rgr::Handler::assign_id(conn, ev, id_mngr);
         
         } else if(!Env::Rgr::rgr_data()->rgrid) {
           try{conn->send_error(Error::RGR_NOT_READY, "", ev);}catch(...){}
@@ -210,8 +210,8 @@ class AppContext final : public SWC::Comm::AppContext {
 
   private:
   
-  Protocol::Mngr::Req::RgrMngId::Ptr    id_mngr = nullptr;
-  Comm::server::SerializedServer::Ptr   m_srv = nullptr;
+  Comm::Protocol::Mngr::Req::RgrMngId::Ptr  id_mngr = nullptr;
+  Comm::server::SerializedServer::Ptr       m_srv = nullptr;
   
 };
 

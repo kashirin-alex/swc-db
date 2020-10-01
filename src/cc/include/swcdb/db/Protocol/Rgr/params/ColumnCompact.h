@@ -11,10 +11,11 @@
 #include "swcdb/db/Types/Identifiers.h"
 
 
-namespace SWC { namespace Protocol { namespace Rgr { namespace Params {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Rgr { namespace Params {
 
 
-class ColumnCompactReq : public Comm::Serializable {
+class ColumnCompactReq : public Serializable {
   public:
 
   ColumnCompactReq(cid_t cid=0);
@@ -37,7 +38,7 @@ class ColumnCompactReq : public Comm::Serializable {
 
 
 
-class ColumnCompactRsp : public Comm::Serializable {
+class ColumnCompactRsp : public Serializable {
   public:
 
   ColumnCompactRsp(int err = Error::OK);
@@ -59,7 +60,7 @@ class ColumnCompactRsp : public Comm::Serializable {
 };
   
 
-}}}}
+}}}}}
 
 
 #ifdef SWC_IMPL_SOURCE

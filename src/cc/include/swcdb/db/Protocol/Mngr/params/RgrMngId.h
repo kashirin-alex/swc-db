@@ -10,7 +10,8 @@
 #include "swcdb/core/comm/Serializable.h"
 #include "swcdb/db/Protocol/Common/params/HostEndPoints.h"
 
-namespace SWC { namespace Protocol { namespace Mngr { namespace Params {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Mngr { namespace Params {
 
 
 class RgrMngId  : public Common::Params::HostEndPoints {
@@ -32,7 +33,7 @@ class RgrMngId  : public Common::Params::HostEndPoints {
     RgrMngId(rgrid_t rgrid, Flag flag) 
             : rgrid(rgrid), flag(flag) {
     }
-    RgrMngId(rgrid_t rgrid, Flag flag, const Comm::EndPoints& endpoints) 
+    RgrMngId(rgrid_t rgrid, Flag flag, const EndPoints& endpoints) 
             : Common::Params::HostEndPoints(endpoints), 
               rgrid(rgrid), flag(flag) {     
     }
@@ -86,6 +87,6 @@ class RgrMngId  : public Common::Params::HostEndPoints {
   };
   
 
-}}}}
+}}}}}
 
 #endif // swcdb_db_protocol_params_RgrMngId_h

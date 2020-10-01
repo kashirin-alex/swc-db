@@ -12,14 +12,15 @@
 #include "swcdb/core/comm/ClientConnQueue.h"
 
 
-namespace SWC { namespace Protocol { namespace Mngr { namespace Req {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Mngr { namespace Req {
 
   
-class ColumnGet: public Comm::client::ConnQueue::ReqBase {
+class ColumnGet: public client::ConnQueue::ReqBase {
   public:
   
   using Flag = Params::ColumnGetReq::Flag;
-  typedef std::function<void(const Comm::client::ConnQueue::ReqBase::Ptr&, 
+  typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&, 
                              int, const Params::ColumnGetRsp&)> Cb_t;
 
 
@@ -48,19 +49,19 @@ class ColumnGet: public Comm::client::ConnQueue::ReqBase {
 
   bool run() override;
 
-  void handle(Comm::ConnHandlerPtr conn, const Comm::Event::Ptr& ev) override;
+  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
 
   private:
   
   void clear_endpoints();
 
-  const Cb_t        cb;
-  Comm::EndPoints   endpoints;
+  const Cb_t  cb;
+  EndPoints   endpoints;
 };
 
 
 
-}}}}
+}}}}}
 
 
 #ifdef SWC_IMPL_SOURCE

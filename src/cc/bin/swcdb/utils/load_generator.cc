@@ -434,8 +434,8 @@ void make_work_load(DB::Schema::Ptr& schema) {
 
   if(settings->get_bool("gen-delete-column")) { 
     std::promise<int>  res;
-    Protocol::Mngr::Req::ColumnMng::request(
-      Protocol::Mngr::Req::ColumnMng::Func::DELETE,
+    Comm::Protocol::Mngr::Req::ColumnMng::request(
+      Comm::Protocol::Mngr::Req::ColumnMng::Func::DELETE,
       schema,
       [await=&res]
       (const Comm::client::ConnQueue::ReqBase::Ptr&, int err) {
@@ -480,8 +480,8 @@ void generate() {
 
   // CREATE COLUMN
   std::promise<int>  res;
-  Protocol::Mngr::Req::ColumnMng::request(
-    Protocol::Mngr::Req::ColumnMng::Func::CREATE,
+  Comm::Protocol::Mngr::Req::ColumnMng::request(
+    Comm::Protocol::Mngr::Req::ColumnMng::Func::CREATE,
     schema,
     [await=&res]
     (const Comm::client::ConnQueue::ReqBase::Ptr&, int err) {

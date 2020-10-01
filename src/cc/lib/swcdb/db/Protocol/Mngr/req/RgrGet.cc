@@ -11,31 +11,38 @@
 #include "swcdb/db/Protocol/Mngr/req/RgrGet.h"
 
 
-namespace SWC { namespace Protocol { namespace Mngr { namespace Req {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Mngr { namespace Req {
 
  
 SWC_SHOULD_INLINE
-void RgrGet::request(cid_t cid, rid_t rid, bool next_range,
-                     const RgrGet::Cb_t& cb, const uint32_t timeout) {
+void RgrGet::request(cid_t cid, 
+                     rid_t rid, 
+                     bool next_range,
+                     const RgrGet::Cb_t& cb, 
+                     const uint32_t timeout) {
   request(Params::RgrGetReq(cid, rid, next_range), cb, timeout);
 }
 
 SWC_SHOULD_INLINE
 void RgrGet::request(const Params::RgrGetReq& params,
-                     const RgrGet::Cb_t& cb, const uint32_t timeout) {
+                     const RgrGet::Cb_t& cb, 
+                     const uint32_t timeout) {
   std::make_shared<RgrGet>(params, cb, timeout)->run();
 }
 
 SWC_SHOULD_INLINE
 RgrGet::Ptr RgrGet::make(const Params::RgrGetReq& params,
-                         const RgrGet::Cb_t& cb, const uint32_t timeout) {
+                         const RgrGet::Cb_t& cb, 
+                         const uint32_t timeout) {
   return std::make_shared<RgrGet>(params, cb, timeout);
 }
 
-RgrGet::RgrGet(const Params::RgrGetReq& params, const RgrGet::Cb_t& cb, 
+RgrGet::RgrGet(const Params::RgrGetReq& params, 
+               const RgrGet::Cb_t& cb, 
                const uint32_t timeout) 
-              : Comm::client::ConnQueue::ReqBase(false), cb(cb), cid(params.cid) {
-  cbp = Comm::Buffers::make(params);
+              : client::ConnQueue::ReqBase(false), cb(cb), cid(params.cid) {
+  cbp = Buffers::make(params);
   cbp->header.set(RGR_GET, timeout);
 }
 
@@ -58,8 +65,8 @@ bool RgrGet::run() {
   return true;
 }
 
-void RgrGet::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) {
-  if(ev->type == Comm::Event::Type::DISCONNECT)
+void RgrGet::handle(ConnHandlerPtr, const Event::Ptr& ev) {
+  if(ev->type == Event::Type::DISCONNECT)
     return handle_no_conn();
 
   Params::RgrGetRsp rsp_params(ev->error);
@@ -85,4 +92,4 @@ void RgrGet::clear_endpoints() {
 }
 
 
-}}}}
+}}}}}

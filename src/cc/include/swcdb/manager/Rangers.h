@@ -38,7 +38,7 @@ class Rangers final {
   void schedule_check(uint32_t t_ms = 10000);
 
   void rgr_report(rgrid_t rgrid, int err,
-                  const Protocol::Rgr::Params::Report::RspRes& rsp);
+                  const Comm::Protocol::Rgr::Params::Report::RspRes& rsp);
 
   Ranger::Ptr rgr_get(const rgrid_t rgrid);
 

@@ -8,16 +8,17 @@
 #include "swcdb/core/Serialization.h"
 
 
-namespace SWC { namespace Protocol { namespace Common { namespace Params {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Common { namespace Params {
  
 HostEndPoints::HostEndPoints() {}
 
-HostEndPoints::HostEndPoints(const Comm::EndPoints& points) 
+HostEndPoints::HostEndPoints(const EndPoints& points) 
                             : endpoints(points) { }
 
 HostEndPoints::~HostEndPoints() { }
 
-void HostEndPoints::set(const Comm::EndPoints& points) {
+void HostEndPoints::set(const EndPoints& points) {
   endpoints.clear();
   endpoints.assign(points.begin(), points.end());
 }
@@ -50,4 +51,4 @@ void HostEndPoints::print(std::ostream& out) const {
   out << ']';
 }
 
-}}}}
+}}}}}

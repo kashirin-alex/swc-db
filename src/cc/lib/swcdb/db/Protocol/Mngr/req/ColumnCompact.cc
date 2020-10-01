@@ -11,7 +11,8 @@
 #include "swcdb/db/Protocol/Commands.h"
 
 
-namespace SWC { namespace Protocol { namespace Mngr { namespace Req {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Mngr { namespace Req {
 
 
 
@@ -32,9 +33,9 @@ void ColumnCompact::request(const Params::ColumnCompactReq& params,
 ColumnCompact::ColumnCompact(const Params::ColumnCompactReq& params, 
                              const ColumnCompact::Cb_t& cb, 
                              const uint32_t timeout) 
-                            : Comm::client::ConnQueue::ReqBase(false), 
+                            : client::ConnQueue::ReqBase(false), 
                               cb(cb), cid(params.cid) {
-  cbp = Comm::Buffers::make(params);
+  cbp = Buffers::make(params);
   cbp->header.set(COLUMN_COMPACT, timeout);
 }
 
@@ -57,8 +58,8 @@ bool ColumnCompact::run() {
   return true;
 }
 
-void ColumnCompact::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) {
-  if(ev->type == Comm::Event::Type::DISCONNECT)
+void ColumnCompact::handle(ConnHandlerPtr, const Event::Ptr& ev) {
+  if(ev->type == Event::Type::DISCONNECT)
     return handle_no_conn();
 
   Params::ColumnCompactRsp rsp_params(ev->error);
@@ -85,4 +86,4 @@ void ColumnCompact::clear_endpoints() {
 
 
 
-}}}}
+}}}}}

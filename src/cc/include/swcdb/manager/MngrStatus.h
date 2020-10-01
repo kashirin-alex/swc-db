@@ -12,7 +12,7 @@
 namespace SWC { namespace Manager {
 
 
-class MngrStatus : public Protocol::Common::Params::HostEndPoints {
+class MngrStatus : public Comm::Protocol::Common::Params::HostEndPoints {
   public:
 
   typedef std::shared_ptr<MngrStatus> Ptr;
@@ -20,8 +20,9 @@ class MngrStatus : public Protocol::Common::Params::HostEndPoints {
   MngrStatus() {}
 
   MngrStatus(uint8_t role, cid_t begin, cid_t end,
-             const Comm::EndPoints& points, Comm::ConnHandlerPtr c, uint32_t pr)
-             : Protocol::Common::Params::HostEndPoints(points), 
+             const Comm::EndPoints& points, 
+             Comm::ConnHandlerPtr c, uint32_t pr)
+             : Comm::Protocol::Common::Params::HostEndPoints(points), 
                priority(pr), state(DB::Types::MngrState::NOTSET), role(role), 
                cid_begin(begin), cid_end(end), 
                conn(c), failures(0) { 
@@ -37,9 +38,9 @@ class MngrStatus : public Protocol::Common::Params::HostEndPoints {
 
   size_t internal_encoded_length() const {
     size_t len = 6 
-               + Serialization::encoded_length_vi64(cid_begin)
-               + Serialization::encoded_length_vi64(cid_end)
-               + Protocol::Common::Params::HostEndPoints::internal_encoded_length();
+      + Serialization::encoded_length_vi64(cid_begin)
+      + Serialization::encoded_length_vi64(cid_end)
+      + Comm::Protocol::Common::Params::HostEndPoints::internal_encoded_length();
     return len;
   }
 
@@ -49,7 +50,7 @@ class MngrStatus : public Protocol::Common::Params::HostEndPoints {
     Serialization::encode_i8(bufp, role);
     Serialization::encode_vi64(bufp, cid_begin);
     Serialization::encode_vi64(bufp, cid_end);
-    Protocol::Common::Params::HostEndPoints::internal_encode(bufp);
+    Comm::Protocol::Common::Params::HostEndPoints::internal_encode(bufp);
   }
 
   void internal_decode(const uint8_t** bufp, size_t* remainp) {
@@ -59,7 +60,7 @@ class MngrStatus : public Protocol::Common::Params::HostEndPoints {
     cid_begin = Serialization::decode_vi64(bufp, remainp);
     cid_end = Serialization::decode_vi64(bufp, remainp);
 
-    Protocol::Common::Params::HostEndPoints::internal_decode(bufp, remainp);
+    Comm::Protocol::Common::Params::HostEndPoints::internal_decode(bufp, remainp);
   }
 
   void print(std::ostream& out) const {
@@ -67,7 +68,7 @@ class MngrStatus : public Protocol::Common::Params::HostEndPoints {
         << " state=" << (int)state
         << " role=" << DB::Types::MngrRole::to_string(role)
         << " cid=" << cid_begin << '-' << cid_end;
-    Protocol::Common::Params::HostEndPoints::print(out << ' ');
+    Comm::Protocol::Common::Params::HostEndPoints::print(out << ' ');
     out << ')';
   }
 

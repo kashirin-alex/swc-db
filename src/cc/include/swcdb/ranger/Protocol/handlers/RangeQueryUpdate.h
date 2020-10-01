@@ -11,10 +11,11 @@
 #include "swcdb/ranger/callbacks/RangeQueryUpdate.h"
 
 
-namespace SWC { namespace Protocol { namespace Rgr { namespace Handler {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Rgr { namespace Handler {
 
 
-void range_query_update(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
+void range_query_update(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
   int err = Error::OK;
   Params::RangeQueryUpdateReq params;
   Ranger::RangePtr range;
@@ -55,6 +56,6 @@ void range_query_update(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr
 }
   
 
-}}}}
+}}}}}
 
 #endif // swcdb_ranger_Protocol_handlers_RangeQueryUpdate_h

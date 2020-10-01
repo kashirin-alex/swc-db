@@ -10,7 +10,8 @@
 #include "swcdb/db/Protocol/Rgr/req/RangeQueryUpdate.h"
 
 
-namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Rgr { namespace Req {
 
 
 SWC_SHOULD_INLINE
@@ -18,7 +19,7 @@ void
 RangeQueryUpdate::request(
         const Params::RangeQueryUpdateReq& params, 
         const DynamicBuffer::Ptr& buffer,
-        const Comm::EndPoints& endpoints, 
+        const EndPoints& endpoints, 
         const RangeQueryUpdate::Cb_t& cb, 
         const uint32_t timeout) {
   std::make_shared<RangeQueryUpdate>(params, buffer, endpoints, cb, timeout)
@@ -29,14 +30,14 @@ RangeQueryUpdate::request(
 RangeQueryUpdate::RangeQueryUpdate(
                 const Params::RangeQueryUpdateReq& params,
                 const DynamicBuffer::Ptr& buffer, 
-                const Comm::EndPoints& endpoints,
+                const EndPoints& endpoints,
                 const RangeQueryUpdate::Cb_t& cb, 
                 const uint32_t timeout) 
-                : Comm::client::ConnQueue::ReqBase(false), 
+                : client::ConnQueue::ReqBase(false), 
                   endpoints(endpoints), cb(cb) {
   // timeout by buffer->fill() bytes ratio
     StaticBuffer snd_buf(buffer->base, buffer->fill(), false);
-  cbp = Comm::Buffers::make(params, snd_buf);
+  cbp = Buffers::make(params, snd_buf);
   cbp->header.set(RANGE_QUERY_UPDATE, timeout);
 }
 
@@ -51,8 +52,8 @@ bool RangeQueryUpdate::run() {
   return true;
 }
 
-void RangeQueryUpdate::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) {
-  if(ev->type == Comm::Event::Type::DISCONNECT)
+void RangeQueryUpdate::handle(ConnHandlerPtr, const Event::Ptr& ev) {
+  if(ev->type == Event::Type::DISCONNECT)
     return handle_no_conn();
 
   Params::RangeQueryUpdateRsp rsp_params(ev->error);
@@ -72,4 +73,4 @@ void RangeQueryUpdate::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) 
   cb(req(), rsp_params);
 }
 
-}}}}
+}}}}}

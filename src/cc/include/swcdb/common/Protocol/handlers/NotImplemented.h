@@ -9,13 +9,14 @@
 
 
 
-namespace SWC { namespace Common { namespace Protocol { namespace Handler {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Common { namespace Handler {
 
 
-void not_implemented(const Comm::ConnHandlerPtr& conn, 
-                     const Comm::Event::Ptr& ev) {
+void not_implemented(const ConnHandlerPtr& conn, 
+                     const Event::Ptr& ev) {
     try {
-      auto cbp = Comm::Buffers::make(4);
+      auto cbp = Buffers::make(4);
       cbp->header.initialize_from_request_header(ev->header);
       cbp->append_i32(Error::NOT_IMPLEMENTED);
       conn->send_response(cbp);
@@ -26,11 +27,11 @@ void not_implemented(const Comm::ConnHandlerPtr& conn,
 }
 
 
-class NotImplemented : public Comm::AppHandler {
+class NotImplemented : public AppHandler {
   public:
 
-  NotImplemented(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev)
-                : Comm::AppHandler(conn, ev){
+  NotImplemented(const ConnHandlerPtr& conn, const Event::Ptr& ev)
+                : AppHandler(conn, ev){
   }
 
   void run() override {
@@ -41,7 +42,7 @@ class NotImplemented : public Comm::AppHandler {
   
 
 
-}}}}
+}}}}}
 
 
 #endif // swcdb_common_Protocol_handlers_NotImplemented_h

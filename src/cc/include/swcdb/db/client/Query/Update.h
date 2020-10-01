@@ -131,11 +131,14 @@ class Update final : public std::enable_shared_from_this<Update> {
     const rid_t               rid;
     const DB::Cell::Key       key_finish;
     
-    Locator(const DB::Types::Range type, const cid_t cid, 
+    Locator(const DB::Types::Range type,
+            const cid_t cid,
             const DB::Cells::ColCells::Ptr& col, 
             const DB::Cell::Key::Ptr& key_start,
-            const Update::Ptr& updater, const ReqBase::Ptr& parent=nullptr, 
-            const rid_t rid=0, const DB::Cell::Key* key_finish=nullptr);
+            const Update::Ptr& updater,
+            const ReqBase::Ptr& parent=nullptr,
+            const rid_t rid=0,
+            const DB::Cell::Key* key_finish=nullptr);
 
     virtual ~Locator();
 
@@ -145,25 +148,31 @@ class Update final : public std::enable_shared_from_this<Update> {
 
     private:
 
-    bool located_on_manager(const ReqBase::Ptr& base, 
-                            const Protocol::Mngr::Params::RgrGetRsp& rsp);
+    bool located_on_manager(
+        const ReqBase::Ptr& base,
+        const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp);
 
-    void locate_on_ranger(const Comm::EndPoints& endpoints);
+    void locate_on_ranger(
+        const Comm::EndPoints& endpoints);
 
-    bool located_on_ranger(const Comm::EndPoints& endpoints, 
-                           const ReqBase::Ptr& base, 
-                           const Protocol::Rgr::Params::RangeLocateRsp& rsp);
+    bool located_on_ranger(
+        const Comm::EndPoints& endpoints,
+        const ReqBase::Ptr& base,
+        const Comm::Protocol::Rgr::Params::RangeLocateRsp& rsp);
 
     void resolve_on_manager();
 
-    bool located_ranger(const ReqBase::Ptr& base, 
-                        const Protocol::Mngr::Params::RgrGetRsp& rsp);
+    bool located_ranger(
+        const ReqBase::Ptr& base,
+        const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp);
 
-    bool proceed_on_ranger(const ReqBase::Ptr& base, 
-                           const Protocol::Mngr::Params::RgrGetRsp& rsp);
+    bool proceed_on_ranger(
+        const ReqBase::Ptr& base,
+        const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp);
 
-    void commit_data(const Comm::EndPoints& endpoints, 
-                     const ReqBase::Ptr& base);
+    void commit_data(
+        const Comm::EndPoints& endpoints,
+        const ReqBase::Ptr& base);
 
   };
 

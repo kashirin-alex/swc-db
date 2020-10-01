@@ -214,7 +214,7 @@ void Update::Locator::print(std::ostream& out) {
 void Update::Locator::locate_on_manager() {
   updater->result->completion_incr();
 
-  Protocol::Mngr::Params::RgrGetReq params(
+  Comm::Protocol::Mngr::Params::RgrGetReq params(
     DB::Types::MetaColumn::get_master_cid(col->get_sequence()));
   params.range_begin.copy(*key_start.get());
   if(DB::Types::MetaColumn::is_data(cid))
@@ -226,11 +226,12 @@ void Update::Locator::locate_on_manager() {
   SWC_LOG_OUT(LOG_DEBUG, 
     params.print(SWC_LOG_OSTREAM << "LocateRange-onMngr "););
 
-  Protocol::Mngr::Req::RgrGet::request(
+  Comm::Protocol::Mngr::Req::RgrGet::request(
     params,
     [profile=updater->result->profile.mngr_locate(), 
      locator=shared_from_this()]
-    (const ReqBase::Ptr& req, const Protocol::Mngr::Params::RgrGetRsp& rsp) {
+    (const ReqBase::Ptr& req, 
+     const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
       profile.add(rsp.err || !rsp.rid);
       if(locator->located_on_manager(req, rsp))
         locator->updater->response();
@@ -241,7 +242,7 @@ void Update::Locator::locate_on_manager() {
 
 bool Update::Locator::located_on_manager(
       const ReqBase::Ptr& base, 
-      const Protocol::Mngr::Params::RgrGetRsp& rsp) {
+      const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
   SWC_LOG_OUT(LOG_DEBUG, 
     rsp.print(SWC_LOG_OSTREAM << "LocatedRange-onMngr "););
   
@@ -283,8 +284,8 @@ bool Update::Locator::located_on_manager(
 void Update::Locator::locate_on_ranger(const Comm::EndPoints& endpoints) {
   updater->result->completion_incr();
 
-  Protocol::Rgr::Params::RangeLocateReq params(cid, rid);
-  params.flags |= Protocol::Rgr::Params::RangeLocateReq::COMMIT;
+  Comm::Protocol::Rgr::Params::RangeLocateReq params(cid, rid);
+  params.flags |= Comm::Protocol::Rgr::Params::RangeLocateReq::COMMIT;
 
   params.range_begin.copy(*key_start.get());
   if(!DB::Types::MetaColumn::is_master(col->cid)) {
@@ -298,15 +299,16 @@ void Update::Locator::locate_on_ranger(const Comm::EndPoints& endpoints) {
   SWC_LOG_OUT(LOG_DEBUG, 
     params.print(SWC_LOG_OSTREAM << "LocateRange-onRgr "););
 
-  Protocol::Rgr::Req::RangeLocate::request(
+  Comm::Protocol::Rgr::Req::RangeLocate::request(
     params, endpoints,
     [profile=updater->result->profile.rgr_locate(type),
      locator=shared_from_this()]
     (const ReqBase::Ptr& req, 
-     const Protocol::Rgr::Params::RangeLocateRsp& rsp) {
+     const Comm::Protocol::Rgr::Params::RangeLocateRsp& rsp) {
       profile.add(!rsp.rid || rsp.err);
       if(locator->located_on_ranger(
-          std::dynamic_pointer_cast<Protocol::Rgr::Req::RangeLocate>(req)->endpoints,
+          std::dynamic_pointer_cast<
+            Comm::Protocol::Rgr::Req::RangeLocate>(req)->endpoints,
           req, rsp))
         locator->updater->response();
     }
@@ -316,7 +318,7 @@ void Update::Locator::locate_on_ranger(const Comm::EndPoints& endpoints) {
 bool Update::Locator::located_on_ranger(
       const Comm::EndPoints& endpoints, 
       const ReqBase::Ptr& base, 
-      const Protocol::Rgr::Params::RangeLocateRsp& rsp) {
+      const Comm::Protocol::Rgr::Params::RangeLocateRsp& rsp) {
   SWC_LOG_OUT(LOG_DEBUG, 
     rsp.print(SWC_LOG_OSTREAM << "LocatedRange-onRgr "););
 
@@ -365,17 +367,18 @@ bool Update::Locator::located_on_ranger(
 void Update::Locator::resolve_on_manager() {
   updater->result->completion_incr();
 
-  auto req = Protocol::Mngr::Req::RgrGet::make(
-    Protocol::Mngr::Params::RgrGetReq(cid, rid),
+  auto req = Comm::Protocol::Mngr::Req::RgrGet::make(
+    Comm::Protocol::Mngr::Params::RgrGetReq(cid, rid),
     [profile=updater->result->profile.mngr_res(), locator=shared_from_this()]
-    (const ReqBase::Ptr& req, const Protocol::Mngr::Params::RgrGetRsp& rsp) {
+    (const ReqBase::Ptr& req, 
+     const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
       profile.add(rsp.err || !rsp.rid || rsp.endpoints.empty());
       if(locator->located_ranger(req, rsp))
         locator->updater->response();
     }
   );
   if(!DB::Types::MetaColumn::is_master(cid)) {
-    Protocol::Mngr::Params::RgrGetRsp rsp(cid, rid);
+    Comm::Protocol::Mngr::Params::RgrGetRsp rsp(cid, rid);
     if(Env::Clients::get()->rangers.get(cid, rid, rsp.endpoints)) {
       SWC_LOG_OUT(LOG_DEBUG, rsp.print(SWC_LOG_OSTREAM << "Cache hit "););
       if(proceed_on_ranger(req, rsp)) // ?req without profile
@@ -390,7 +393,7 @@ void Update::Locator::resolve_on_manager() {
 
 bool Update::Locator::located_ranger(
       const ReqBase::Ptr& base, 
-      const Protocol::Mngr::Params::RgrGetRsp& rsp) {
+      const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
   SWC_LOG_OUT(LOG_DEBUG, 
     rsp.print(SWC_LOG_OSTREAM << "LocatedRanger-onMngr "););
 
@@ -427,7 +430,7 @@ bool Update::Locator::located_ranger(
 
 bool Update::Locator::proceed_on_ranger(
       const ReqBase::Ptr& base, 
-      const Protocol::Mngr::Params::RgrGetRsp& rsp) {
+      const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
   if(type == DB::Types::Range::DATA || 
      (type == DB::Types::Range::MASTER && 
       DB::Types::MetaColumn::is_master(col->cid)) ||
@@ -467,14 +470,14 @@ void Update::Locator::commit_data(
     workload->increment();
     updater->result->completion_incr();
 
-    Protocol::Rgr::Req::RangeQueryUpdate::request(
-      Protocol::Rgr::Params::RangeQueryUpdateReq(col->cid, rid), 
+    Comm::Protocol::Rgr::Req::RangeQueryUpdate::request(
+      Comm::Protocol::Rgr::Params::RangeQueryUpdateReq(col->cid, rid), 
       cells_buff, 
       endpoints, 
       [workload, cells_buff, base, 
        profile=updater->result->profile.rgr_data(), locator=shared_from_this()]
       (ReqBase::Ptr req, 
-       const Protocol::Rgr::Params::RangeQueryUpdateRsp& rsp) {
+       const Comm::Protocol::Rgr::Params::RangeQueryUpdateRsp& rsp) {
         profile.add(rsp.err);
 
         if(rsp.err) {

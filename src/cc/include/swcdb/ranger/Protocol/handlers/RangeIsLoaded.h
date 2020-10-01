@@ -10,10 +10,11 @@
 #include "swcdb/db/Protocol/Rgr/params/RangeIsLoaded.h"
 
 
-namespace SWC { namespace Protocol { namespace Rgr { namespace Handler {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Rgr { namespace Handler {
 
 
-void range_is_loaded(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
+void range_is_loaded(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
   try {
     const uint8_t *ptr = ev->data.base;
     size_t remain = ev->data.size;
@@ -37,6 +38,6 @@ void range_is_loaded(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& e
 }
   
 
-}}}}
+}}}}}
 
 #endif // swcdb_ranger_Protocol_handlers_RangeIsLoaded_h

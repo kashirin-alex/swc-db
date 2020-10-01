@@ -7,23 +7,24 @@
 #include "swcdb/manager/Protocol/Rgr/req/RangeLoad.h"
 #include "swcdb/db/Protocol/Rgr/params/RangeLoad.h"
 
-namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Rgr { namespace Req {
 
 
 RangeLoad::RangeLoad(const Manager::Ranger::Ptr& rgr, 
                      const Manager::Range::Ptr& range,
                      const DB::Schema::Ptr& schema) 
-                    : Comm::client::ConnQueue::ReqBase(false), 
+                    : client::ConnQueue::ReqBase(false), 
                       rgr(rgr), range(range), 
                       schema_revision(schema->revision) {
-  cbp = Comm::Buffers::make(Params::RangeLoad(range->cfg->cid, range->rid, schema));
+  cbp = Buffers::make(Params::RangeLoad(range->cfg->cid, range->rid, schema));
   cbp->header.set(RANGE_LOAD, 3600000);
 }
   
 RangeLoad::~RangeLoad() { }
 
-void RangeLoad::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) {
-  if(!valid() || ev->type == Comm::Event::Type::DISCONNECT)
+void RangeLoad::handle(ConnHandlerPtr, const Event::Ptr& ev) {
+  if(!valid() || ev->type == Event::Type::DISCONNECT)
     return handle_no_conn();
 
   Params::RangeLoaded params(range->cfg->key_seq);
@@ -75,4 +76,4 @@ void RangeLoad::loaded(int err, bool failure,
 }
 
 
-}}}}
+}}}}}

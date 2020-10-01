@@ -10,10 +10,11 @@
 #include "swcdb/core/comm/Serializable.h"
 
 
-namespace SWC { namespace Protocol { namespace Mngr { namespace Params {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Mngr { namespace Params {
 
 
-class RangeUnloadedReq : public Comm::Serializable {
+class RangeUnloadedReq : public Serializable {
   public:
 
   RangeUnloadedReq(cid_t cid=0, rid_t rid=0) 
@@ -55,7 +56,7 @@ class RangeUnloadedReq : public Comm::Serializable {
 
 
 
-class RangeUnloadedRsp : public Comm::Serializable {
+class RangeUnloadedRsp : public Serializable {
   public:
 
   RangeUnloadedRsp(int err = Error::OK): err(err) {}
@@ -94,6 +95,6 @@ class RangeUnloadedRsp : public Comm::Serializable {
 };
   
 
-}}}}
+}}}}}
 
 #endif // swcdb_db_protocol_mngr_params_RangeUnloaded_h

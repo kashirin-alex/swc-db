@@ -190,10 +190,12 @@ class Select final : public std::enable_shared_from_this<Select> {
     const rid_t               rid;
     DB::Cell::Key             range_offset;
 
-    Scanner(const DB::Types::Range type, const cid_t cid, 
+    Scanner(const DB::Types::Range type, 
+            const cid_t cid, 
             const ScannerColumn::Ptr& col,
             const ReqBase::Ptr& parent=nullptr, 
-            const DB::Cell::Key* range_offset=nullptr, const rid_t rid=0);
+            const DB::Cell::Key* range_offset=nullptr, 
+            const rid_t rid=0);
 
     virtual ~Scanner();
 
@@ -203,21 +205,27 @@ class Select final : public std::enable_shared_from_this<Select> {
 
     void resolve_on_manager();
 
-    bool located_on_manager(const ReqBase::Ptr& base, 
-                            const Protocol::Mngr::Params::RgrGetRsp& rsp, 
-                            bool next_range=false);
+    bool located_on_manager(
+        const ReqBase::Ptr& base, 
+        const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp, 
+        bool next_range=false);
     
-    bool proceed_on_ranger(const ReqBase::Ptr& base, 
-                           const Protocol::Mngr::Params::RgrGetRsp& rsp);
+    bool proceed_on_ranger(
+        const ReqBase::Ptr& base, 
+        const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp);
 
-    void locate_on_ranger(const Comm::EndPoints& endpoints, bool next_range=false);
+    void locate_on_ranger(
+        const Comm::EndPoints& endpoints, 
+        bool next_range=false);
 
-    bool located_on_ranger(const Comm::EndPoints& endpoints, 
-                           const ReqBase::Ptr& base, 
-                           const Protocol::Rgr::Params::RangeLocateRsp& rsp, 
-                           bool next_range=false);
+    bool located_on_ranger(
+        const Comm::EndPoints& endpoints, 
+        const ReqBase::Ptr& base,
+        const Comm::Protocol::Rgr::Params::RangeLocateRsp& rsp,
+        bool next_range=false);
 
-    void select(const Comm::EndPoints& endpoints, rid_t rid, 
+    void select(const Comm::EndPoints& endpoints, 
+                rid_t rid, 
                 const ReqBase::Ptr& base);
 
   };

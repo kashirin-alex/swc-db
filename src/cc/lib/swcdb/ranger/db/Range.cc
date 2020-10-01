@@ -546,7 +546,7 @@ void Range::last_rgr_chk(int &err, const Comm::ResponseCallback::Ptr& cb) {
     );
 
     Env::Clients::get()->rgr->get(rs_last->endpoints)->put(
-      std::make_shared<Protocol::Rgr::Req::RangeUnload>(
+      std::make_shared<Comm::Protocol::Rgr::Req::RangeUnload>(
         shared_from_this(), cb));
     return;
   }
@@ -655,7 +655,9 @@ void Range::run_add_queue() {
     m_inbytes += remain = req->input.size;
     intval_chg = false;
 
-    auto params = new Protocol::Rgr::Params::RangeQueryUpdateRsp(Error::OK);
+    auto params = new Comm::Protocol::Rgr::Params::RangeQueryUpdateRsp(
+      Error::OK);
+
     if(req->cb->expired(remain/100000))
       params->err = Error::REQUEST_TIMEOUT;
       

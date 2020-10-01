@@ -102,11 +102,11 @@ class RangeSplit final {
     col->unload(
       new_rid, 
       [new_rid, cid=range->cfg->cid, await=&r_promise](int) { 
-        Protocol::Mngr::Req::RangeUnloaded::request(
+        Comm::Protocol::Mngr::Req::RangeUnloaded::request(
           cid, new_rid,
           [cid, new_rid, await]
           (const Comm::client::ConnQueue::ReqBase::Ptr& req, 
-           const Protocol::Mngr::Params::RangeUnloadedRsp& rsp) {
+           const Comm::Protocol::Mngr::Params::RangeUnloadedRsp& rsp) {
       
             SWC_LOGF(LOG_DEBUG, 
               "RangeSplit::Mngr::Req::RangeUnloaded err=%d(%s) %lu/%lu", 
@@ -135,11 +135,11 @@ class RangeSplit final {
 
   void mngr_create_range(int& err, rid_t& new_rid) {
     std::promise<void>  res;
-    Protocol::Mngr::Req::RangeCreate::request(
+    Comm::Protocol::Mngr::Req::RangeCreate::request(
       range->cfg->cid,
       Env::Rgr::rgr_data()->rgrid,
       [&] (const Comm::client::ConnQueue::ReqBase::Ptr& req, 
-           const Protocol::Mngr::Params::RangeCreateRsp& rsp) {
+           const Comm::Protocol::Mngr::Params::RangeCreateRsp& rsp) {
       
         SWC_LOGF(LOG_DEBUG, 
           "RangeSplit::Mngr::Req::RangeCreate err=%d(%s) %lu/%lu", 
@@ -162,11 +162,11 @@ class RangeSplit final {
   
   void mngr_remove_range(const RangePtr& new_range) {
     std::promise<void> res;
-    Protocol::Mngr::Req::RangeRemove::request(
+    Comm::Protocol::Mngr::Req::RangeRemove::request(
       new_range->cfg->cid,
       new_range->rid,
       [&] (const Comm::client::ConnQueue::ReqBase::Ptr& req, 
-           const Protocol::Mngr::Params::RangeRemoveRsp& rsp) {
+           const Comm::Protocol::Mngr::Params::RangeRemoveRsp& rsp) {
       
         SWC_LOGF(LOG_DEBUG, 
           "RangeSplit::Mngr::Req::RangeRemove err=%d(%s) %lu/%lu", 

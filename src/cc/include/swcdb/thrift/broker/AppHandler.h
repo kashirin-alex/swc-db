@@ -84,7 +84,7 @@ class AppHandler final : virtual public BrokerIf {
     int err = Error::OK;
     std::string message;
     DB::Schema::Ptr schema;
-    auto func = Protocol::Mngr::Req::ColumnMng::Func::CREATE;
+    auto func = Comm::Protocol::Mngr::Req::ColumnMng::Func::CREATE;
     client::SQL::parse_column_schema(
       err, sql, 
       &func, 
@@ -248,7 +248,10 @@ class AppHandler final : virtual public BrokerIf {
   void mng_column(const SchemaFunc::type func, const Schema& schema) {
     DB::Schema::Ptr dbschema = DB::Schema::make();
     Converter::set(schema, dbschema);
-    mng_column((Protocol::Mngr::Req::ColumnMng::Func)(uint8_t)func, dbschema);
+    mng_column(
+      (Comm::Protocol::Mngr::Req::ColumnMng::Func)(uint8_t)func, 
+      dbschema
+    );
   }
 
   void compact_columns(CompactResults& _return, const SpecSchemas& spec) {
@@ -531,10 +534,10 @@ class AppHandler final : virtual public BrokerIf {
     }
   }
   
-  void mng_column(Protocol::Mngr::Req::ColumnMng::Func func, 
+  void mng_column(Comm::Protocol::Mngr::Req::ColumnMng::Func func,
                   DB::Schema::Ptr& schema) {
     std::promise<int> res;
-    Protocol::Mngr::Req::ColumnMng::request(
+    Comm::Protocol::Mngr::Req::ColumnMng::request(
       func, schema,
       [await=&res] (const Comm::client::ConnQueue::ReqBase::Ptr&, int error) {
         await->set_value(error);
@@ -556,10 +559,10 @@ class AppHandler final : virtual public BrokerIf {
           Schemas& _return) {
     if(dbschemas.empty()) { // get all schema
       std::promise<int> res;
-      Protocol::Mngr::Req::ColumnList::request(
+      Comm::Protocol::Mngr::Req::ColumnList::request(
         [&dbschemas, await=&res]
         (const Comm::client::ConnQueue::ReqBase::Ptr&, int error, 
-         const Protocol::Mngr::Params::ColumnListRsp& rsp) {
+         const Comm::Protocol::Mngr::Params::ColumnListRsp& rsp) {
           if(!error)
             dbschemas = rsp.schemas;
           await->set_value(error);
@@ -583,10 +586,10 @@ class AppHandler final : virtual public BrokerIf {
           CompactResults& _return) {
     if(dbschemas.empty()) { // get all schema
       std::promise<int> res;
-      Protocol::Mngr::Req::ColumnList::request(
+      Comm::Protocol::Mngr::Req::ColumnList::request(
         [&dbschemas, await=&res]
         (const Comm::client::ConnQueue::ReqBase::Ptr&, int error, 
-         const Protocol::Mngr::Params::ColumnListRsp& rsp) {
+         const Comm::Protocol::Mngr::Params::ColumnListRsp& rsp) {
           if(!error)
             dbschemas = rsp.schemas;
           await->set_value(error);
@@ -600,11 +603,11 @@ class AppHandler final : virtual public BrokerIf {
     std::mutex mutex;
     std::promise<void> res;
     for(auto& schema : dbschemas) {
-      Protocol::Mngr::Req::ColumnCompact::request(
+      Comm::Protocol::Mngr::Req::ColumnCompact::request(
         schema->cid,
         [&mutex, &_return, await=&res, cid=schema->cid, sz=dbschemas.size()]
         (const Comm::client::ConnQueue::ReqBase::Ptr&, 
-         const Protocol::Mngr::Params::ColumnCompactRsp& rsp) {
+         const Comm::Protocol::Mngr::Params::ColumnCompactRsp& rsp) {
           std::lock_guard lock(mutex);
           auto& r = _return.emplace_back();
           r.cid=cid;

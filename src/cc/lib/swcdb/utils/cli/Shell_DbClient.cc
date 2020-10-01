@@ -28,7 +28,7 @@ DbClient::DbClient()
       {"add column|schema (schema definitions [name=value ]);"},
       [ptr=this](std::string& cmd){
         return ptr->mng_column(
-          Protocol::Mngr::Req::ColumnMng::Func::CREATE, cmd);
+          Comm::Protocol::Mngr::Req::ColumnMng::Func::CREATE, cmd);
       }, 
       new re2::RE2(
         "(?i)^(add|create)\\s+(column|schema)(.*|$)")
@@ -40,7 +40,7 @@ DbClient::DbClient()
       {"modify column|schema (schema definitions [name=value ]);"},
       [ptr=this](std::string& cmd){
         return ptr->mng_column(
-          Protocol::Mngr::Req::ColumnMng::Func::MODIFY, cmd);
+          Comm::Protocol::Mngr::Req::ColumnMng::Func::MODIFY, cmd);
       }, 
       new re2::RE2(
         "(?i)^(modify|change|update)\\s+(column|schema)(.*|$)")
@@ -52,7 +52,7 @@ DbClient::DbClient()
       {"delete column|schema (schema definitions [name=value ]);"},
       [ptr=this](std::string& cmd){
         return ptr->mng_column(
-          Protocol::Mngr::Req::ColumnMng::Func::DELETE, cmd);
+          Comm::Protocol::Mngr::Req::ColumnMng::Func::DELETE, cmd);
       }, 
       new re2::RE2(
         "(?i)^(delete|remove)\\s+(column|schema)(.*|$)")
@@ -151,7 +151,7 @@ DbClient::DbClient()
 }
 
 // CREATE/MODIFY/DELETE COLUMN
-bool DbClient::mng_column(Protocol::Mngr::Req::ColumnMng::Func func, 
+bool DbClient::mng_column(Comm::Protocol::Mngr::Req::ColumnMng::Func func, 
                           std::string& cmd) {
   std::string message;
   DB::Schema::Ptr schema;
@@ -160,7 +160,7 @@ bool DbClient::mng_column(Protocol::Mngr::Req::ColumnMng::Func func,
     return error(message);
 
   std::promise<int> res;
-  Protocol::Mngr::Req::ColumnMng::request(
+  Comm::Protocol::Mngr::Req::ColumnMng::request(
     func, schema,
     [await=&res]
     (const Comm::client::ConnQueue::ReqBase::Ptr&, int error) {
@@ -195,10 +195,10 @@ bool DbClient::compact_column(std::string& cmd) {
 
   if(schemas.empty()) {
     std::promise<int> res;
-    Protocol::Mngr::Req::ColumnList::request(
+    Comm::Protocol::Mngr::Req::ColumnList::request(
       [&schemas, await=&res]
       (const Comm::client::ConnQueue::ReqBase::Ptr&, int error, 
-       const Protocol::Mngr::Params::ColumnListRsp& rsp) {
+       const Comm::Protocol::Mngr::Params::ColumnListRsp& rsp) {
         if(!error)
           schemas = rsp.schemas;
         await->set_value(error);
@@ -215,11 +215,11 @@ bool DbClient::compact_column(std::string& cmd) {
   std::promise<void> res;
   std::atomic<size_t> proccessing = schemas.size();
   for(auto& schema : schemas) {
-    Protocol::Mngr::Req::ColumnCompact::request(
+    Comm::Protocol::Mngr::Req::ColumnCompact::request(
       schema->cid,
       [schema, &proccessing, await=&res]
       (const Comm::client::ConnQueue::ReqBase::Ptr&, 
-       const Protocol::Mngr::Params::ColumnCompactRsp& rsp) {
+       const Comm::Protocol::Mngr::Params::ColumnCompactRsp& rsp) {
         SWC_PRINT << "Compactig Column cid=" << schema->cid 
                   << " '" << schema->col_name << "' err=" << rsp.err 
                   << "(" << Error::get_text(rsp.err) << ")" 
@@ -237,7 +237,7 @@ bool DbClient::compact_column(std::string& cmd) {
 // LIST COLUMN/s
 bool DbClient::list_columns(std::string& cmd) {
   std::vector<DB::Schema::Ptr> schemas;  
-  Protocol::Mngr::Params::ColumnListReq params;
+  Comm::Protocol::Mngr::Params::ColumnListReq params;
   std::string message;
   client::SQL::parse_list_columns(err, cmd, schemas, params, message, "list");
   if(err) 
@@ -246,11 +246,11 @@ bool DbClient::list_columns(std::string& cmd) {
   if(!params.patterns.empty() || schemas.empty()) { 
     // get all schemas or on patterns 
     std::promise<int> res;
-    Protocol::Mngr::Req::ColumnList::request(
+    Comm::Protocol::Mngr::Req::ColumnList::request(
       params,
       [&schemas, await=&res]
       (const Comm::client::ConnQueue::ReqBase::Ptr&, int error, 
-       const Protocol::Mngr::Params::ColumnListRsp& rsp) {
+       const Comm::Protocol::Mngr::Params::ColumnListRsp& rsp) {
         if(!error)
           schemas.insert(
             schemas.end(), rsp.schemas.begin(), rsp.schemas.end());

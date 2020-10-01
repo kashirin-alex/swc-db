@@ -10,10 +10,11 @@
 #include "swcdb/db/Protocol/Mngr/params/MngrActive.h"
 
 
-namespace SWC { namespace Protocol { namespace Mngr { namespace Handler {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Mngr { namespace Handler {
 
 
-void mngr_active(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
+void mngr_active(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
   Manager::MngrStatus::Ptr h = nullptr;
   try {
     const uint8_t *ptr = ev->data.base;
@@ -31,8 +32,8 @@ void mngr_active(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
   }
 
   try {
-    auto cbp = Comm::Buffers::make(
-      Params::MngrActiveRsp(h ? h->endpoints : Comm::EndPoints()) );
+    auto cbp = Buffers::make(
+      Params::MngrActiveRsp(h ? h->endpoints : EndPoints()) );
     cbp->header.initialize_from_request_header(ev->header);
     conn->send_response(cbp);
 
@@ -43,6 +44,6 @@ void mngr_active(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
 
   
 
-}}}}
+}}}}}
 
 #endif // swcdb_manager_Protocol_handlers_MngrActive_h

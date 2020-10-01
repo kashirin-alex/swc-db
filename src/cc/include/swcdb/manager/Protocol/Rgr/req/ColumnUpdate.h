@@ -9,9 +9,10 @@
 
 
 
-namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Rgr { namespace Req {
 
-class ColumnUpdate : public Comm::client::ConnQueue::ReqBase {
+class ColumnUpdate : public client::ConnQueue::ReqBase {
   public:
 
   ColumnUpdate(const Manager::Ranger::Ptr& rgr, 
@@ -19,7 +20,7 @@ class ColumnUpdate : public Comm::client::ConnQueue::ReqBase {
   
   virtual ~ColumnUpdate();
 
-  void handle(Comm::ConnHandlerPtr conn, const Comm::Event::Ptr& ev) override;
+  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
   
   void handle_no_conn() override;
 
@@ -32,6 +33,6 @@ class ColumnUpdate : public Comm::client::ConnQueue::ReqBase {
    
 };
 
-}}}}
+}}}}}
 
 #endif // swcdb_manager_Protocol_rgr_req_ColumnUpdate_h

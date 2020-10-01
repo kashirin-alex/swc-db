@@ -9,9 +9,10 @@
 
 #include "swcdb/db/Protocol/Rgr/params/Report.h"
 
-namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Rgr { namespace Req {
 
-class ReportRes : public Comm::client::ConnQueue::ReqBase {
+class ReportRes : public client::ConnQueue::ReqBase {
   public:
 
   ReportRes(const Manager::Ranger::Ptr& rgr);
@@ -20,7 +21,7 @@ class ReportRes : public Comm::client::ConnQueue::ReqBase {
 
   void handle_no_conn() override;
 
-  void handle(Comm::ConnHandlerPtr conn, const Comm::Event::Ptr& ev) override;
+  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
 
   private:
 
@@ -28,6 +29,6 @@ class ReportRes : public Comm::client::ConnQueue::ReqBase {
    
 };
 
-}}}}
+}}}}}
 
 #endif // swcdb_manager_Protocol_rgr_req_ReportRes_h

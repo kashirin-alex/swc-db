@@ -8,20 +8,21 @@
 #include "swcdb/manager/Protocol/Rgr/req/ColumnDelete.h"
 #include "swcdb/db/Protocol/Common/params/ColumnId.h"
 
-namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Rgr { namespace Req {
   
 
 ColumnDelete::ColumnDelete(const Manager::Ranger::Ptr& rgr, cid_t cid)
-                          : Comm::client::ConnQueue::ReqBase(false), 
+                          : client::ConnQueue::ReqBase(false), 
                             rgr(rgr), cid(cid) {
-  cbp = Comm::Buffers::make(Common::Params::ColumnId(cid));
+  cbp = Buffers::make(Common::Params::ColumnId(cid));
   cbp->header.set(COLUMN_DELETE, 60000);
 }
   
 ColumnDelete::~ColumnDelete() { }
   
-void ColumnDelete::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) {
-  if(ev->type == Comm::Event::Type::DISCONNECT)
+void ColumnDelete::handle(ConnHandlerPtr, const Event::Ptr& ev) {
+  if(ev->type == Event::Type::DISCONNECT)
     return handle_no_conn();
 
   int err = ev->response_code();
@@ -40,4 +41,4 @@ void ColumnDelete::remove(int err) {
   Env::Mngr::mngd_columns()->remove(err, cid, rgr->rgrid);  
 }
 
-}}}}
+}}}}}

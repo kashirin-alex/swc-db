@@ -14,7 +14,7 @@
 namespace SWC { namespace Manager {
 
 
-class Ranger : public Protocol::Common::Params::HostEndPoints {
+class Ranger : public Comm::Protocol::Common::Params::HostEndPoints {
 
   public:
 
@@ -27,7 +27,7 @@ class Ranger : public Protocol::Common::Params::HostEndPoints {
   }
                        
   Ranger(rgrid_t rgrid, const Comm::EndPoints& endpoints)
-        : Protocol::Common::Params::HostEndPoints(endpoints),
+        : Comm::Protocol::Common::Params::HostEndPoints(endpoints),
           rgrid(rgrid), state(State::NONE), 
           failures(0), interm_ranges(0), load_scale(0) {
   }
@@ -40,7 +40,7 @@ class Ranger : public Protocol::Common::Params::HostEndPoints {
         << " failures="       << failures
         << " load_scale="     << load_scale
         << " interm_ranges="  << interm_ranges;
-    Protocol::Common::Params::HostEndPoints::print(out << ' ');
+    Comm::Protocol::Common::Params::HostEndPoints::print(out << ' ');
     if(m_queue)
       m_queue->print(out << ' ');
     out << ']';
@@ -49,7 +49,7 @@ class Ranger : public Protocol::Common::Params::HostEndPoints {
   size_t internal_encoded_length() const {
     size_t len = 3
       + Serialization::encoded_length_vi64(rgrid.load())
-      + Protocol::Common::Params::HostEndPoints::internal_encoded_length();
+      + Comm::Protocol::Common::Params::HostEndPoints::internal_encoded_length();
     return len;
   }
 
@@ -57,14 +57,14 @@ class Ranger : public Protocol::Common::Params::HostEndPoints {
     Serialization::encode_i8(bufp, (uint8_t)state.load());
     Serialization::encode_vi64(bufp, rgrid.load());
     Serialization::encode_i16(bufp, load_scale.load());
-    Protocol::Common::Params::HostEndPoints::internal_encode(bufp);
+    Comm::Protocol::Common::Params::HostEndPoints::internal_encode(bufp);
   }
 
   void internal_decode(const uint8_t** bufp, size_t* remainp) {
     state = (State)Serialization::decode_i8(bufp, remainp);
     rgrid = Serialization::decode_vi64(bufp, remainp);
     load_scale = Serialization::decode_i16(bufp, remainp);
-    Protocol::Common::Params::HostEndPoints::internal_decode(bufp, remainp);
+    Comm::Protocol::Common::Params::HostEndPoints::internal_decode(bufp, remainp);
   }
 
   void init_queue() {

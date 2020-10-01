@@ -18,7 +18,7 @@ class DbClient : public Interface {
 
   DbClient();
 
-  bool mng_column(Protocol::Mngr::Req::ColumnMng::Func func, 
+  bool mng_column(Comm::Protocol::Mngr::Req::ColumnMng::Func func, 
                   std::string& cmd);
   
   bool compact_column(std::string& cmd);

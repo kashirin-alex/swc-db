@@ -10,10 +10,11 @@
 #include "swcdb/db/Protocol/Mngr/params/RgrGet.h"
 
 
-namespace SWC { namespace Protocol { namespace Mngr { namespace Handler {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Mngr { namespace Handler {
 
 
-void rgr_get(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
+void rgr_get(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
   Params::RgrGetReq params;
   Params::RgrGetRsp rsp_params;
   try {
@@ -76,7 +77,7 @@ void rgr_get(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
     );
 
     try {
-      auto cbp = Comm::Buffers::make(rsp_params);
+      auto cbp = Buffers::make(rsp_params);
       cbp->header.initialize_from_request_header(ev->header);
       conn->send_response(cbp);
     } catch(...) {
@@ -90,6 +91,6 @@ void rgr_get(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
 // else 
 //      in(cid+rid)        out(cid + rid + rgr-endpoints)
 
-}}}}
+}}}}}
 
 #endif // swcdb_manager_Protocol_handlers_RgrGet_h

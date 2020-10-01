@@ -7,13 +7,15 @@
 
 #include "swcdb/manager/Protocol/Mngr/params/MngrState.h"
 
-namespace SWC { namespace Protocol { namespace Mngr { namespace Params {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Mngr { namespace Params {
 
 
 MngrState::MngrState() {}
 
 MngrState::MngrState(Manager::MngrsStatus states, 
-                     uint64_t token, const Comm::EndPoint& mngr_host) 
+                     uint64_t token, 
+                     const EndPoint& mngr_host) 
                     : states(states), token(token), mngr_host(mngr_host) {
 }
 
@@ -44,4 +46,4 @@ void MngrState::internal_decode(const uint8_t** bufp, size_t* remainp) {
 }
 
 
-}}}}
+}}}}}

@@ -7,32 +7,34 @@
 
 #include "swcdb/manager/Protocol/Mngr/req/MngrState.h"
  
-namespace SWC { namespace Protocol { namespace Mngr {namespace Req {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Mngr {namespace Req {
 
 
-MngrState::MngrState(const Comm::ResponseCallback::Ptr& cb, 
+MngrState::MngrState(const ResponseCallback::Ptr& cb, 
                      const Manager::MngrsStatus& states, 
-                     uint64_t token, const Comm::EndPoint& mngr_host, 
+                     uint64_t token, 
+                     const EndPoint& mngr_host, 
                      uint32_t timeout) 
-                    : Comm::client::ConnQueue::ReqBase(true), cb(cb) {
-  cbp = Comm::Buffers::make(Params::MngrState(states, token, mngr_host));
+                    : client::ConnQueue::ReqBase(true), cb(cb) {
+  cbp = Buffers::make(Params::MngrState(states, token, mngr_host));
   cbp->header.set(MNGR_STATE, timeout);
 }
   
 MngrState::~MngrState() { }
 
-void MngrState::disconnected(const Comm::ConnHandlerPtr&) {
+void MngrState::disconnected(const ConnHandlerPtr&) {
   //Env::Mngr::role()->disconnection(
   //  conn->endpoint_remote, conn->endpoint_local);
 }
 
-void MngrState::handle(Comm::ConnHandlerPtr conn, const Comm::Event::Ptr& ev) {
+void MngrState::handle(ConnHandlerPtr conn, const Event::Ptr& ev) {
 
-  if(ev->type == Comm::Event::Type::DISCONNECT) {
+  if(ev->type == Event::Type::DISCONNECT) {
     //disconnected(conn);
     return;
   }
-  if(Comm::client::ConnQueue::ReqBase::is_timeout(ev))
+  if(client::ConnQueue::ReqBase::is_timeout(ev))
     return;
 
   if(ev->response_code() == Error::OK) {
@@ -46,7 +48,7 @@ void MngrState::handle(Comm::ConnHandlerPtr conn, const Comm::Event::Ptr& ev) {
   }
 }
 
-}}}}
+}}}}}
 
 
 #include "swcdb/manager/Protocol/Mngr/params/MngrState.cc"

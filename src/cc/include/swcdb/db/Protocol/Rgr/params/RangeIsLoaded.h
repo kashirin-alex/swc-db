@@ -9,7 +9,8 @@
 
 #include "swcdb/db/Protocol/Common/params/ColRangeId.h"
 
-namespace SWC { namespace Protocol { namespace Rgr { namespace Params {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Rgr { namespace Params {
 
 class RangeIsLoaded : public Common::Params::ColRangeId {
   public:
@@ -22,6 +23,6 @@ class RangeIsLoaded : public Common::Params::ColRangeId {
 };
   
 
-}}}}
+}}}}}
 
 #endif // swcdb_db_protocol_rgr_params_RangeIsLoaded_h

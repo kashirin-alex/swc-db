@@ -203,7 +203,7 @@ void MngrRole::fill_states(const MngrsStatus& states, uint64_t token,
       if(!token)
         token = m_local_token;
 
-      req_mngr_inchain(std::make_shared<Protocol::Mngr::Req::MngrState>(
+      req_mngr_inchain(std::make_shared<Comm::Protocol::Mngr::Req::MngrState>(
         cb, m_states, token, m_local_endpoints[0], 
         (cfg_conn_probes->get() * cfg_conn_timeout->get()
         + cfg_req_timeout->get()) * m_states.size()

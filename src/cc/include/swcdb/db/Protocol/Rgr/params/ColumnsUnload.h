@@ -10,9 +10,10 @@
 #include "swcdb/core/comm/Serializable.h"
 
 
-namespace SWC { namespace Protocol { namespace Rgr { namespace Params {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Rgr { namespace Params {
 
-class ColumnsUnloadRsp : public Comm::Serializable {
+class ColumnsUnloadRsp : public Serializable {
   public:
 
   ColumnsUnloadRsp(int err = Error::OK) : err(err) { }
@@ -70,6 +71,6 @@ class ColumnsUnloadRsp : public Comm::Serializable {
 };
   
 
-}}}}
+}}}}}
 
 #endif // swcdb_db_protocol_rgr_params_ColumnsUnload_h

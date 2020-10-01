@@ -14,9 +14,10 @@
 #include "swcdb/db/Types/Identifiers.h"
 
 
-namespace SWC { namespace Protocol { namespace Rgr { namespace Params {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Rgr { namespace Params {
 
-class RangeLocateReq : public Comm::Serializable {
+class RangeLocateReq : public Serializable {
   public:
 
   static const uint8_t NEXT_RANGE  = 0x01;
@@ -45,7 +46,7 @@ class RangeLocateReq : public Comm::Serializable {
 
 
 
-class RangeLocateRsp  : public Comm::Serializable {
+class RangeLocateRsp  : public Serializable {
   public:
 
   RangeLocateRsp(int err = Error::OK);
@@ -71,7 +72,7 @@ class RangeLocateRsp  : public Comm::Serializable {
 };
   
 
-}}}}
+}}}}}
 
 
 #ifdef SWC_IMPL_SOURCE

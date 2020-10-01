@@ -9,10 +9,11 @@
 
 #include "swcdb/core/comm/Serializable.h"
 
-namespace SWC { namespace Protocol { namespace Common { namespace Params {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Common { namespace Params {
 
 
-class ColRangeId : public Comm::Serializable {
+class ColRangeId : public Serializable {
   public:
 
   ColRangeId(cid_t cid = 0, rid_t rid = 0) 
@@ -45,6 +46,6 @@ class ColRangeId : public Comm::Serializable {
 };
   
 
-}}}}
+}}}}}
 
 #endif // swcdb_db_protocol_common_params_ColRangeId_h

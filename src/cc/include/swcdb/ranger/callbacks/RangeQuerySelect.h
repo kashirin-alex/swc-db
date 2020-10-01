@@ -84,7 +84,7 @@ class RangeQuerySelect : public ReqScan {
       cells.free();
     }
     
-    Protocol::Rgr::Params::RangeQuerySelectRsp params(
+    Comm::Protocol::Rgr::Params::RangeQuerySelectRsp params(
       err, err ? false : reached_limits(), offset);
 
     Comm::Buffers::Ptr cbp;

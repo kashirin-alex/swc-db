@@ -9,10 +9,11 @@
 
 #include "swcdb/core/comm/Serializable.h"
 
-namespace SWC { namespace Protocol { namespace Common { namespace Params {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Common { namespace Params {
 
 
-class ColumnsInterval : public Comm::Serializable {
+class ColumnsInterval : public Serializable {
   public:
 
   ColumnsInterval(cid_t cid_begin = DB::Schema::NO_CID, 
@@ -46,6 +47,6 @@ class ColumnsInterval : public Comm::Serializable {
 };
   
 
-}}}}
+}}}}}
 
 #endif // swcdb_db_protocol_common_params_ColumnsInterval_h

@@ -105,11 +105,11 @@ void Schemas::_request(int& err, cid_t cid,
                        DB::Schema::Ptr& schema) {
   std::promise<int> res;
 
-  Protocol::Mngr::Req::ColumnGet::schema(
+  Comm::Protocol::Mngr::Req::ColumnGet::schema(
     cid, 
     [schema=&schema, await=&res] 
     (const Comm::client::ConnQueue::ReqBase::Ptr& req,
-      int error, const Protocol::Mngr::Params::ColumnGetRsp& rsp) {
+      int error, const Comm::Protocol::Mngr::Params::ColumnGetRsp& rsp) {
       if(error == Error::REQUEST_TIMEOUT) {
         SWC_PRINT << " error=" << error 
                   << "(" << Error::get_text(error) << ")" << SWC_PRINT_CLOSE;
@@ -130,11 +130,11 @@ void Schemas::_request(int& err, const std::string& name,
                        DB::Schema::Ptr& schema) {
   std::promise<int> res;
 
-  Protocol::Mngr::Req::ColumnGet::schema(
+  Comm::Protocol::Mngr::Req::ColumnGet::schema(
     name, 
     [schema=&schema, await=&res] 
     (const Comm::client::ConnQueue::ReqBase::Ptr& req,
-      int error, const Protocol::Mngr::Params::ColumnGetRsp& rsp) {
+      int error, const Comm::Protocol::Mngr::Params::ColumnGetRsp& rsp) {
       if(error == Error::REQUEST_TIMEOUT) {
         SWC_PRINT << " error=" << error 
                   << "(" << Error::get_text(error) << ")" << SWC_PRINT_CLOSE;
@@ -154,15 +154,15 @@ void Schemas::_request(int& err, const std::string& name,
 void Schemas::_request(int& err, 
                        const std::vector<DB::Schemas::Pattern>& patterns,
                        std::vector<DB::Schema::Ptr>& schemas) {
-  Protocol::Mngr::Params::ColumnListReq params;
+  Comm::Protocol::Mngr::Params::ColumnListReq params;
   params.patterns = patterns;
     
   std::promise<int> res;
-  Protocol::Mngr::Req::ColumnList::request(
+  Comm::Protocol::Mngr::Req::ColumnList::request(
     params,
     [&schemas, await=&res]
     (const Comm::client::ConnQueue::ReqBase::Ptr& req, int error, 
-     const Protocol::Mngr::Params::ColumnListRsp& rsp) {
+     const Comm::Protocol::Mngr::Params::ColumnListRsp& rsp) {
       if(error == Error::REQUEST_TIMEOUT) {
         SWC_PRINT << " error=" << error 
                   << "(" << Error::get_text(error) << ")" << SWC_PRINT_CLOSE;

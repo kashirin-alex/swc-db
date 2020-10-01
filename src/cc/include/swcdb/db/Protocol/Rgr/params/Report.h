@@ -13,7 +13,9 @@
 #include "swcdb/db/Cells/Interval.h"
 
 
-namespace SWC { namespace Protocol { namespace Rgr { namespace Params {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Rgr { namespace Params {
+
 namespace Report {
 
 
@@ -27,7 +29,7 @@ enum Function {
 
 
 
-class ReqColumn : public Comm::Serializable {
+class ReqColumn : public Serializable {
   public:
 
   ReqColumn(cid_t cid = 0);
@@ -48,7 +50,7 @@ class ReqColumn : public Comm::Serializable {
 
 
 
-class RspRes  : public Comm::Serializable {
+class RspRes  : public Serializable {
   public:
   
   RspRes();
@@ -73,7 +75,7 @@ class RspRes  : public Comm::Serializable {
 
 
 
-class RspCids  : public Comm::Serializable {
+class RspCids  : public Serializable {
   public:
 
   RspCids();
@@ -96,7 +98,7 @@ class RspCids  : public Comm::Serializable {
 
 
 
-class RspColumnRids  : public Comm::Serializable {
+class RspColumnRids  : public Serializable {
   public:
 
   RspColumnRids();
@@ -119,7 +121,7 @@ class RspColumnRids  : public Comm::Serializable {
 
 
 
-class RspColumnsRanges  : public Comm::Serializable {
+class RspColumnsRanges  : public Serializable {
   public:
   
   struct Range {
@@ -167,15 +169,15 @@ class RspColumnsRanges  : public Comm::Serializable {
 
   explicit RspColumnsRanges();
 
-  RspColumnsRanges(rgrid_t rgrid, const Comm::EndPoints& endpoints);
+  RspColumnsRanges(rgrid_t rgrid, const EndPoints& endpoints);
 
   RspColumnsRanges& operator=(const RspColumnsRanges& other) = delete;
 
   virtual ~RspColumnsRanges();
 
-  rgrid_t              rgrid; 
-  Comm::EndPoints      endpoints;
-  std::vector<Column*> columns;
+  rgrid_t               rgrid; 
+  EndPoints             endpoints;
+  std::vector<Column*>  columns;
 
   void display(std::ostream& out, bool pretty=true, 
                const std::string& offset = "") const;
@@ -192,7 +194,7 @@ class RspColumnsRanges  : public Comm::Serializable {
 
 
 }
-}}}}
+}}}}}
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/db/Protocol/Rgr/params/Report.cc"

@@ -57,11 +57,11 @@ void check_delete(int num_of_cols, bool modified) {
   std::mutex mutex;
 
   for(int n=1; n<=num_of_cols; ++n) {
-    Protocol::Mngr::Req::ColumnGet::schema(
+    Comm::Protocol::Mngr::Req::ColumnGet::schema(
       get_name(n, modified), 
       [&cv, &count] 
       (Comm::client::ConnQueue::ReqBase::Ptr req_ptr, 
-       int err, const Protocol::Mngr::Params::ColumnGetRsp& rsp) {
+       int err, const Comm::Protocol::Mngr::Params::ColumnGetRsp& rsp) {
         if(err)
           SWC_PRINT << "ColumnGet err=" << err 
                     << "(" << Error::get_text(err) << ")" 
@@ -74,10 +74,11 @@ void check_delete(int num_of_cols, bool modified) {
           return;
         }
         
-        Protocol::Mngr::Req::ColumnMng::request(
-          Protocol::Mngr::Req::ColumnMng::Func::DELETE,
+        Comm::Protocol::Mngr::Req::ColumnMng::request(
+          Comm::Protocol::Mngr::Req::ColumnMng::Func::DELETE,
           rsp.schema,
-          [&cv, &count](Comm::client::ConnQueue::ReqBase::Ptr req_ptr, int err){
+          [&cv, &count]
+          (Comm::client::ConnQueue::ReqBase::Ptr req_ptr, int err){
             if(err)
               SWC_PRINT << "ColumnMng DELETE err=" << err 
                         << "(" << Error::get_text(err) << ")" 
@@ -109,7 +110,8 @@ void check_delete(int num_of_cols, bool modified) {
   );
 }
 
-void check_get(size_t num_of_cols, bool modified, Encoder::Type blk_encoding, bool exist = true, bool verbose=false){
+void check_get(size_t num_of_cols, bool modified, Encoder::Type blk_encoding, 
+               bool exist = true, bool verbose=false){
   std::cout << "########### get_schema_by_name ###########\n";
   auto latency = std::make_shared<Common::Stats::Stat>();
   
@@ -124,11 +126,11 @@ void check_get(size_t num_of_cols, bool modified, Encoder::Type blk_encoding, bo
   }
 
   for(auto& req : expected){
-    Protocol::Mngr::Req::ColumnGet::schema(
+    Comm::Protocol::Mngr::Req::ColumnGet::schema(
       req->name, 
       [req, latency, verbose, start_ts=std::chrono::system_clock::now()]
       (Comm::client::ConnQueue::ReqBase::Ptr req_ptr, 
-        int err, const Protocol::Mngr::Params::ColumnGetRsp& rsp) {
+        int err, const Comm::Protocol::Mngr::Params::ColumnGetRsp& rsp) {
 
         if(err == Error::REQUEST_TIMEOUT) {
           std::cout << " err=" << err << "(" << Error::get_text(err) << ") \n";
@@ -143,7 +145,8 @@ void check_get(size_t num_of_cols, bool modified, Encoder::Type blk_encoding, bo
           std::cout << "ColumnGetRsp: exists="<< req->exists << " took=" << took  
                     << " count=" << latency->count()
                     << " err=" << err << "(" << Error::get_text(err) << ") " 
-                    << " " << (err==Error::OK?rsp.schema->to_string().c_str():"NULL") << "\n";
+                    << " " << (err==Error::OK?rsp.schema->to_string().c_str():"NULL")
+                     << "\n";
 
         if(err==Error::OK){
           if(!req->exists) {
@@ -183,11 +186,11 @@ void check_get(size_t num_of_cols, bool modified, Encoder::Type blk_encoding, bo
   latency = std::make_shared<Common::Stats::Stat>();
 
   for(auto& req : expected){
-    Protocol::Mngr::Req::ColumnGet::cid(
+    Comm::Protocol::Mngr::Req::ColumnGet::cid(
       req->name, 
       [req, latency, verbose, start_ts=std::chrono::system_clock::now()]
       (Comm::client::ConnQueue::ReqBase::Ptr req_ptr,
-       int err, const Protocol::Mngr::Params::ColumnGetRsp& rsp) {
+       int err, const Comm::Protocol::Mngr::Params::ColumnGetRsp& rsp) {
         
         if(err == Error::REQUEST_TIMEOUT) {
           std::cout << " err=" << err << "(" << Error::get_text(err) << ") \n";
@@ -200,7 +203,8 @@ void check_get(size_t num_of_cols, bool modified, Encoder::Type blk_encoding, bo
         latency->add(took);
 
         if(verbose)
-          std::cout << "ColumnGetRsp: exists="<< req->exists << " took=" << took  
+          std::cout << "ColumnGetRsp: exists="<< req->exists 
+                    << " took=" << took  
                     << " count=" << latency->count()
                     << " err=" << err << "(" << Error::get_text(err) << ") " 
                     << " " << (err==Error::OK?rsp.cid:-1) << "\n";
@@ -244,7 +248,7 @@ void check_get(size_t num_of_cols, bool modified, Encoder::Type blk_encoding, bo
 }
 
 
-void chk(Protocol::Mngr::Req::ColumnMng::Func func, size_t num_of_cols, 
+void chk(Comm::Protocol::Mngr::Req::ColumnMng::Func func, size_t num_of_cols, 
          Encoder::Type blk_encoding, bool modified, bool verbose=false) {
 
   std::cout << "########### chk func=" << func << " ###########\n";
@@ -261,7 +265,7 @@ void chk(Protocol::Mngr::Req::ColumnMng::Func func, size_t num_of_cols,
     schema->blk_size = 3; 
     schema->blk_cells = 9876543;
 
-    Protocol::Mngr::Req::ColumnMng::request(
+    Comm::Protocol::Mngr::Req::ColumnMng::request(
       func, schema,
       [func, latency, verbose, start_ts=std::chrono::system_clock::now()]
       (Comm::client::ConnQueue::ReqBase::Ptr req_ptr, int err){
@@ -271,19 +275,20 @@ void chk(Protocol::Mngr::Req::ColumnMng::Func func, size_t num_of_cols,
               std::chrono::system_clock::now() - start_ts).count();
 
         if(err != Error::OK && (
-            (func == Protocol::Mngr::Req::ColumnMng::Func::CREATE 
+            (func == Comm::Protocol::Mngr::Req::ColumnMng::Func::CREATE 
               && err != Error::COLUMN_SCHEMA_NAME_EXISTS)
             || 
-            (func == Protocol::Mngr::Req::ColumnMng::Func::DELETE 
+            (func == Comm::Protocol::Mngr::Req::ColumnMng::Func::DELETE 
               && err != Error::COLUMN_SCHEMA_NAME_NOT_EXISTS 
               && err != Error::COLUMN_SCHEMA_NAME_NOT_CORRES)
             || 
-            (func == Protocol::Mngr::Req::ColumnMng::Func::MODIFY 
+            (func == Comm::Protocol::Mngr::Req::ColumnMng::Func::MODIFY 
               && err != Error::COLUMN_SCHEMA_NAME_NOT_EXISTS
               && err != Error::COLUMN_SCHEMA_NOT_DIFFERENT )
           )) {
           SWC_PRINT << " func = " << func 
-                    << " err="<<err<< "(" << Error::get_text(err) << ")" << SWC_PRINT_CLOSE;
+                    << " err="<<err<< "(" << Error::get_text(err) << ")" 
+                    << SWC_PRINT_CLOSE;
           req_ptr->request_again();
         } else {
           latency->add(took);
@@ -324,14 +329,15 @@ void chk_rename(size_t num_of_cols, bool verbose=false){
 
   for(size_t n=1; n<=num_of_cols;++n){
     std::string name = get_name(n, false);
-    Protocol::Mngr::Req::ColumnGet::schema(
+    Comm::Protocol::Mngr::Req::ColumnGet::schema(
       name, 
       [n, latency, verbose, start_ts=std::chrono::system_clock::now()]
       (Comm::client::ConnQueue::ReqBase::Ptr req_ptr, 
-       int err, const Protocol::Mngr::Params::ColumnGetRsp& rsp) {
+       int err, const Comm::Protocol::Mngr::Params::ColumnGetRsp& rsp) {
 
         if(err == Error::REQUEST_TIMEOUT) {
-          SWC_PRINT << " err=" << err << "(" << Error::get_text(err) << ")" << SWC_PRINT_CLOSE;
+          SWC_PRINT << " err=" << err << "(" << Error::get_text(err) << ")" 
+                    << SWC_PRINT_CLOSE;
           req_ptr->request_again();
           return;
         }
@@ -345,10 +351,11 @@ void chk_rename(size_t num_of_cols, bool verbose=false){
             << "from " << rsp.schema->to_string() << "\n"
             << "to   " << new_schema->to_string() << SWC_PRINT_CLOSE;
 
-        Protocol::Mngr::Req::ColumnMng::request(
-          Protocol::Mngr::Req::ColumnMng::Func::MODIFY,
+        Comm::Protocol::Mngr::Req::ColumnMng::request(
+          Comm::Protocol::Mngr::Req::ColumnMng::Func::MODIFY,
           new_schema,
-          [latency, start_ts](Comm::client::ConnQueue::ReqBase::Ptr req_ptr, int err){
+          [latency, start_ts]
+          (Comm::client::ConnQueue::ReqBase::Ptr req_ptr, int err){
             if(err != Error::OK 
               && err != Error::COLUMN_SCHEMA_NAME_NOT_EXISTS
               && err != Error::COLUMN_SCHEMA_NOT_DIFFERENT){
@@ -356,8 +363,8 @@ void chk_rename(size_t num_of_cols, bool verbose=false){
               req_ptr->request_again();
               return;
             }
-            uint64_t took  = std::chrono::duration_cast<std::chrono::nanoseconds>(
-                              std::chrono::system_clock::now() - start_ts).count();
+            uint64_t took = std::chrono::duration_cast<std::chrono::nanoseconds>(
+              std::chrono::system_clock::now() - start_ts).count();
             latency->add(took);
           },
           300000
@@ -396,7 +403,8 @@ int main(int argc, char** argv) {
   check_delete(num_of_cols, false);
   check_delete(num_of_cols, true);
 
-  chk(Protocol::Mngr::Req::ColumnMng::Func::CREATE, num_of_cols, Encoder::Type::PLAIN, false);
+  chk(Comm::Protocol::Mngr::Req::ColumnMng::Func::CREATE, 
+      num_of_cols, Encoder::Type::PLAIN, false);
   check_get(num_of_cols, false, Encoder::Type::PLAIN);
   std::cout << "\n";
   std::this_thread::sleep_for(std::chrono::milliseconds(5000));
@@ -407,7 +415,8 @@ int main(int argc, char** argv) {
   check_get(num_of_cols, true, Encoder::Type::PLAIN, true);
   std::cout << "\n";
 
-  chk(Protocol::Mngr::Req::ColumnMng::Func::MODIFY, num_of_cols, Encoder::Type::SNAPPY, true);
+  chk(Comm::Protocol::Mngr::Req::ColumnMng::Func::MODIFY, 
+      num_of_cols, Encoder::Type::SNAPPY, true);
   check_get(num_of_cols, true, Encoder::Type::SNAPPY);
   std::cout << "\n";
 

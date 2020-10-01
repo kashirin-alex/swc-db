@@ -9,20 +9,22 @@
 
 #include "swcdb/core/comm/Serializable.h"
 
-namespace SWC { namespace Protocol { namespace Mngr { namespace Params {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Mngr { namespace Params {
 
 
-class MngrState : public Comm::Serializable {
+class MngrState : public Serializable {
   public:
 
   MngrState();
 
   MngrState(Manager::MngrsStatus states, 
-            uint64_t token, const Comm::EndPoint& mngr_host);
+            uint64_t token, 
+            const EndPoint& mngr_host);
 
   Manager::MngrsStatus  states;
   uint64_t              token;
-  Comm::EndPoint        mngr_host;
+  EndPoint              mngr_host;
 
   private:
 
@@ -35,6 +37,6 @@ class MngrState : public Comm::Serializable {
 };
   
 
-}}}}
+}}}}}
 
 #endif // swcdb_manager_Protocol_mngr_params_MngrState_h

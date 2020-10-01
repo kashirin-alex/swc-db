@@ -9,7 +9,8 @@
 #include "swcdb/core/Serialization.h"
 
 
-namespace SWC { namespace Protocol { namespace Mngr { namespace Params {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Mngr { namespace Params {
 
 
 MngrActiveReq::MngrActiveReq(uint8_t role, cid_t cid) 
@@ -36,7 +37,7 @@ void MngrActiveReq::internal_decode(const uint8_t** bufp, size_t* remainp) {
 
 MngrActiveRsp::MngrActiveRsp() {}
 
-MngrActiveRsp::MngrActiveRsp(const Comm::EndPoints& endpoints) 
+MngrActiveRsp::MngrActiveRsp(const EndPoints& endpoints) 
                             : Common::Params::HostEndPoints(endpoints), 
                               available(endpoints.size()>0) { 
 }
@@ -66,4 +67,4 @@ void MngrActiveRsp::internal_decode(const uint8_t** bufp, size_t* remainp) {
 
 
 
-}}}}
+}}}}}

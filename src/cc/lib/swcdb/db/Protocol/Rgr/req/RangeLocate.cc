@@ -11,22 +11,24 @@
 #include "swcdb/db/Protocol/Rgr/req/RangeLocate.h"
 
 
-namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Rgr { namespace Req {
 
 SWC_SHOULD_INLINE
 void RangeLocate::request(const Params::RangeLocateReq& params,
-                          const Comm::EndPoints& endpoints, 
+                          const EndPoints& endpoints, 
                           const RangeLocate::Cb_t& cb, 
                           const uint32_t timeout) {
   std::make_shared<RangeLocate>(params, endpoints, cb, timeout)->run();
 }
 
 RangeLocate::RangeLocate(const Params::RangeLocateReq& params, 
-                         const Comm::EndPoints& endpoints,
-                         const RangeLocate::Cb_t& cb, const uint32_t timeout)
-                        : Comm::client::ConnQueue::ReqBase(false), 
+                         const EndPoints& endpoints,
+                         const RangeLocate::Cb_t& cb, 
+                         const uint32_t timeout)
+                        : client::ConnQueue::ReqBase(false), 
                           endpoints(endpoints), cb(cb) {
-  cbp = Comm::Buffers::make(params);
+  cbp = Buffers::make(params);
   cbp->header.set(RANGE_LOCATE, timeout);
 }
 
@@ -41,8 +43,8 @@ bool RangeLocate::run() {
   return true;
 }
 
-void RangeLocate::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) {
-  if(ev->type == Comm::Event::Type::DISCONNECT)
+void RangeLocate::handle(ConnHandlerPtr, const Event::Ptr& ev) {
+  if(ev->type == Event::Type::DISCONNECT)
     return handle_no_conn();
 
   Params::RangeLocateRsp rsp_params(ev->error);
@@ -63,4 +65,4 @@ void RangeLocate::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) {
 }
 
 
-}}}}
+}}}}}

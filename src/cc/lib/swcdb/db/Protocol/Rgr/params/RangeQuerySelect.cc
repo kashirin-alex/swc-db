@@ -8,7 +8,8 @@
 #include "swcdb/db/Protocol/Rgr/params/RangeQuerySelect.h"
 
 
-namespace SWC { namespace Protocol { namespace Rgr { namespace Params {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Rgr { namespace Params {
 
 
 RangeQuerySelectReq::RangeQuerySelectReq() {}
@@ -87,4 +88,4 @@ void RangeQuerySelectRsp::internal_decode(const uint8_t** bufp,
 }
 
 
-}}}}
+}}}}}

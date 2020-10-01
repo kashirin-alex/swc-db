@@ -12,10 +12,11 @@
 #include "swcdb/db/Columns/Schemas.h"
 #include <vector>
 
-namespace SWC { namespace Protocol { namespace Mngr { namespace Params {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Mngr { namespace Params {
 
 
-class ColumnListReq  : public Comm::Serializable {
+class ColumnListReq  : public Serializable {
   public:
 
   ColumnListReq();
@@ -36,7 +37,7 @@ class ColumnListReq  : public Comm::Serializable {
 
 
 
-class ColumnListRsp  : public Comm::Serializable {
+class ColumnListRsp  : public Serializable {
   public:
 
   ColumnListRsp();
@@ -55,7 +56,7 @@ class ColumnListRsp  : public Comm::Serializable {
 
 };
 
-}}}}
+}}}}}
 
 
 #ifdef SWC_IMPL_SOURCE

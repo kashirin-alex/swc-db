@@ -43,7 +43,7 @@ class AppContext final : public SWC::Comm::AppContext {
   
   // in-order of FsBroker::Protocol::Cmd
   static constexpr const Comm::AppHandler_t handlers[] = { 
-    &Common::Protocol::Handler::not_implemented,
+    &Comm::Protocol::Common::Handler::not_implemented,
     &Protocol::Handler::open,
     &Protocol::Handler::create,
     &Protocol::Handler::close,

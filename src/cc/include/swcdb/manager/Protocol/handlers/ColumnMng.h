@@ -10,10 +10,11 @@
 #include "swcdb/db/Protocol/Mngr/params/ColumnMng.h"
 
 
-namespace SWC { namespace Protocol { namespace Mngr { namespace Handler {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Mngr { namespace Handler {
 
 
-void column_mng(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
+void column_mng(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
   int err = Error::OK;
   try {
     const uint8_t *ptr = ev->data.base;
@@ -41,6 +42,6 @@ void column_mng(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
 }
   
 
-}}}}
+}}}}}
 
 #endif // swcdb_manager_Protocol_handlers_ColumnMng_h

@@ -46,8 +46,8 @@ class ColumnsUnloaded : public Comm::ResponseCallback {
 
   private:
   
-  Mutex                                     m_mutex;
-  Protocol::Rgr::Params::ColumnsUnloadRsp   m_rsp_params;
+  Mutex                                           m_mutex;
+  Comm::Protocol::Rgr::Params::ColumnsUnloadRsp   m_rsp_params;
 
 };
 

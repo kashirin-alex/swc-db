@@ -11,7 +11,8 @@
 #include "swcdb/core/Error.h"
 
 
-namespace SWC { namespace Protocol { namespace Rgr { namespace Params {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Rgr { namespace Params {
 
 RangeQueryUpdateReq::RangeQueryUpdateReq() {}
 
@@ -91,4 +92,4 @@ void RangeQueryUpdateRsp::internal_decode(const uint8_t** bufp,
 
 
 
-}}}}
+}}}}}

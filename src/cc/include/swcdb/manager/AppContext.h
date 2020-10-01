@@ -42,27 +42,27 @@ namespace SWC { namespace Manager {
 
 class AppContext final : public SWC::Comm::AppContext {
    
-  // in-order of Protocol::Mngr::Command
+  // in-order of Comm::Protocol::Mngr::Command
   static constexpr const Comm::AppHandler_t handlers[] = { 
-    &Common::Protocol::Handler::not_implemented,
-    &Protocol::Mngr::Handler::mngr_state,
-    &Protocol::Mngr::Handler::mngr_active,
-    &Protocol::Mngr::Handler::column_mng,
-    &Protocol::Mngr::Handler::column_update,
-    &Protocol::Mngr::Handler::column_get,
-    &Protocol::Mngr::Handler::column_list,
-    &Protocol::Mngr::Handler::column_compact,
-    &Protocol::Mngr::Handler::rgr_mng_id,
-    &Protocol::Mngr::Handler::rgr_update,
-    &Protocol::Mngr::Handler::rgr_get,
-    &Protocol::Mngr::Handler::range_create,
-    &Protocol::Mngr::Handler::range_unloaded,
-    &Protocol::Mngr::Handler::range_remove,
-    &Protocol::Mngr::Handler::report,
-    &Protocol::Mngr::Handler::do_echo,
-    //&Handler::debug,
-    //&Handler::status,
-    //&Handler::shutdown
+    &Comm::Protocol::Common::Handler::not_implemented,
+    &Comm::Protocol::Mngr::Handler::mngr_state,
+    &Comm::Protocol::Mngr::Handler::mngr_active,
+    &Comm::Protocol::Mngr::Handler::column_mng,
+    &Comm::Protocol::Mngr::Handler::column_update,
+    &Comm::Protocol::Mngr::Handler::column_get,
+    &Comm::Protocol::Mngr::Handler::column_list,
+    &Comm::Protocol::Mngr::Handler::column_compact,
+    &Comm::Protocol::Mngr::Handler::rgr_mng_id,
+    &Comm::Protocol::Mngr::Handler::rgr_update,
+    &Comm::Protocol::Mngr::Handler::rgr_get,
+    &Comm::Protocol::Mngr::Handler::range_create,
+    &Comm::Protocol::Mngr::Handler::range_unloaded,
+    &Comm::Protocol::Mngr::Handler::range_remove,
+    &Comm::Protocol::Mngr::Handler::report,
+    &Comm::Protocol::Mngr::Handler::do_echo,
+    //&Comm::Protocol::Mngr::Handler::debug,
+    //&Comm::Protocol::Mngr::Handler::status,
+    //&Comm::Protocol::Mngr::Handler::shutdown
   };
 
   public:
@@ -131,8 +131,8 @@ class AppContext final : public SWC::Comm::AppContext {
         break;
 
       case Comm::Event::Type::MESSAGE: {
-        uint8_t cmd = ev->header.command >= Protocol::Mngr::MAX_CMD
-                        ? (uint8_t)Protocol::Mngr::NOT_IMPLEMENTED 
+        uint8_t cmd = ev->header.command >= Comm::Protocol::Mngr::MAX_CMD
+                        ? (uint8_t)Comm::Protocol::Mngr::NOT_IMPLEMENTED 
                         : ev->header.command;
         Env::IoCtx::post([cmd, conn, ev]() { handlers[cmd](conn, ev); });
         return;

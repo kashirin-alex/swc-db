@@ -13,9 +13,10 @@
 #include "swcdb/db/Types/Identifiers.h"
 
 
-namespace SWC { namespace Protocol { namespace Rgr { namespace Params {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Rgr { namespace Params {
 
-class RangeQueryUpdateReq : public Comm::Serializable {
+class RangeQueryUpdateReq : public Serializable {
   public:
 
   RangeQueryUpdateReq();
@@ -41,7 +42,7 @@ class RangeQueryUpdateReq : public Comm::Serializable {
 
 
 
-class RangeQueryUpdateRsp  : public Comm::Serializable {
+class RangeQueryUpdateRsp  : public Serializable {
   public:
 
   RangeQueryUpdateRsp(int err = Error::OK);
@@ -68,7 +69,7 @@ class RangeQueryUpdateRsp  : public Comm::Serializable {
 };
   
 
-}}}}
+}}}}}
 
 
 #ifdef SWC_IMPL_SOURCE

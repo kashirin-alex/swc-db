@@ -10,7 +10,8 @@
 #include "swcdb/db/Columns/Schema.h"
 
 
-namespace SWC { namespace Protocol { namespace Rgr { namespace Params {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Rgr { namespace Params {
 namespace Report {
 
 
@@ -232,7 +233,7 @@ void RspColumnsRanges::Column::display(std::ostream& out, bool pretty,
 RspColumnsRanges::RspColumnsRanges() : rgrid(0) { }
 
 RspColumnsRanges::RspColumnsRanges(rgrid_t rgrid, 
-                                   const Comm::EndPoints& endpoints) 
+                                   const EndPoints& endpoints) 
                                   : rgrid(rgrid), endpoints(endpoints) { 
 }
 
@@ -301,4 +302,4 @@ void RspColumnsRanges::internal_decode(const uint8_t** bufp,
 
 
 }
-}}}}
+}}}}}

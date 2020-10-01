@@ -10,11 +10,11 @@
 #include "swcdb/db/Protocol/Common/params/ColumnsInterval.h"
 
 
-namespace SWC { namespace Protocol { namespace Rgr { namespace Handler {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Rgr { namespace Handler {
 
 
-void columns_unload(const Comm::ConnHandlerPtr& conn, 
-                    const Comm::Event::Ptr& ev) {
+void columns_unload(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
   int err = Error::OK;
   try {
     const uint8_t *ptr = ev->data.base;
@@ -43,6 +43,6 @@ void columns_unload(const Comm::ConnHandlerPtr& conn,
 }
   
 
-}}}}
+}}}}}
 
 #endif // swcdb_ranger_Protocol_handlers_ColumnsUnload_h

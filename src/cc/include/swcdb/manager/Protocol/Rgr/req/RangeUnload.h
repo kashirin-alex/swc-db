@@ -9,10 +9,11 @@
 
 
 
-namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Rgr { namespace Req {
 
 
-class RangeUnload : public Comm::client::ConnQueue::ReqBase {
+class RangeUnload : public client::ConnQueue::ReqBase {
   public:
 
   RangeUnload(const Manager::Ranger::Ptr& rgr,
@@ -24,7 +25,7 @@ class RangeUnload : public Comm::client::ConnQueue::ReqBase {
 
   bool valid() override;
 
-  void handle(Comm::ConnHandlerPtr conn, const Comm::Event::Ptr& ev) override;
+  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
 
   void handle_no_conn() override;
 
@@ -38,6 +39,6 @@ class RangeUnload : public Comm::client::ConnQueue::ReqBase {
    
 };
 
-}}}}
+}}}}}
 
 #endif // swcdb_manager_Protocol_rgr_req_RangeUnload_h

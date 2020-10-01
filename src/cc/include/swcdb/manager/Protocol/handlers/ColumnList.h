@@ -9,10 +9,11 @@
 
 #include "swcdb/db/Protocol/Mngr/params/ColumnList.h"
 
-namespace SWC { namespace Protocol { namespace Mngr { namespace Handler {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Mngr { namespace Handler {
 
 
-void column_list(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
+void column_list(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
 
   int err = Error::OK;
   Params::ColumnListRsp rsp;
@@ -37,7 +38,7 @@ void column_list(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
   }
 
   try {
-    auto cbp = err ? Comm::Buffers::make(4) : Comm::Buffers::make(rsp, 4);
+    auto cbp = err ? Buffers::make(4) : Buffers::make(rsp, 4);
     cbp->header.initialize_from_request_header(ev->header);
     cbp->append_i32(err);
     conn->send_response(cbp);
@@ -49,6 +50,6 @@ void column_list(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
 
 
 
-}}}}
+}}}}}
 
 #endif // swcdb_manager_Protocol_handlers_ColumnList_h

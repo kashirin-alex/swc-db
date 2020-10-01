@@ -11,30 +11,31 @@
 #include "swcdb/db/Protocol/Mngr/req/Report.h"
 
 
-namespace SWC { namespace Protocol { namespace Mngr { namespace Req {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Mngr { namespace Req {
 
 
 Report::Report(Params::Report::Function func, const uint32_t timeout)
-              : Comm::client::ConnQueue::ReqBase(false) {
-  cbp = Comm::Buffers::make(1);
+              : client::ConnQueue::ReqBase(false) {
+  cbp = Buffers::make(1);
   cbp->append_i8((uint8_t)func);
   cbp->header.set(REPORT, timeout);
 }
 
-Report::Report(const Comm::EndPoints& endpoints, 
+Report::Report(const EndPoints& endpoints, 
                Params::Report::Function func, 
                const uint32_t timeout)
-              : Comm::client::ConnQueue::ReqBase(false), endpoints(endpoints) {
-  cbp = Comm::Buffers::make(1);
+              : client::ConnQueue::ReqBase(false), endpoints(endpoints) {
+  cbp = Buffers::make(1);
   cbp->append_i8((uint8_t)func);
   cbp->header.set(REPORT, timeout);
 }
 
-Report::Report(const Comm::Serializable& params, 
+Report::Report(const Serializable& params, 
                Params::Report::Function func, 
                const uint32_t timeout) 
-              : Comm::client::ConnQueue::ReqBase(false) {
-  cbp = Comm::Buffers::make(params, 1);
+              : client::ConnQueue::ReqBase(false) {
+  cbp = Buffers::make(params, 1);
   cbp->append_i8((uint8_t)func);
   cbp->header.set(REPORT, timeout);
 }
@@ -54,7 +55,7 @@ void Report::clear_endpoints() {
 
 
 SWC_SHOULD_INLINE
-void ClusterStatus::request(const Comm::EndPoints& endpoints, 
+void ClusterStatus::request(const EndPoints& endpoints, 
                             const ClusterStatus::Cb_t& cb, 
                             const uint32_t timeout) {
   std::make_shared<ClusterStatus>(endpoints, cb, timeout)->run();
@@ -62,14 +63,15 @@ void ClusterStatus::request(const Comm::EndPoints& endpoints,
 
 SWC_SHOULD_INLINE
 ClusterStatus::Ptr 
-ClusterStatus::make(const Comm::EndPoints& endpoints,
+ClusterStatus::make(const EndPoints& endpoints,
                     const ClusterStatus::Cb_t& cb, 
                     const uint32_t timeout) {
   return std::make_shared<ClusterStatus>(endpoints, cb, timeout);
 }
 
-ClusterStatus::ClusterStatus(const Comm::EndPoints& endpoints, 
-                             const Cb_t& cb, const uint32_t timeout)
+ClusterStatus::ClusterStatus(const EndPoints& endpoints, 
+                             const Cb_t& cb, 
+                             const uint32_t timeout)
                             : Report(
                                 endpoints,
                                 Params::Report::Function::CLUSTER_STATUS,
@@ -88,8 +90,8 @@ void ClusterStatus::handle_no_conn() {
   cb(req(), Error::COMM_CONNECT_ERROR);
 }
 
-void ClusterStatus::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) {
-  if(ev->type == Comm::Event::Type::DISCONNECT)
+void ClusterStatus::handle(ConnHandlerPtr, const Event::Ptr& ev) {
+  if(ev->type == Event::Type::DISCONNECT)
     return handle_no_conn();
 
   int err = ev->error;
@@ -158,8 +160,8 @@ bool ColumnStatus::run() {
   return true;
 }
 
-void ColumnStatus::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) {
-  if(ev->type == Comm::Event::Type::DISCONNECT)
+void ColumnStatus::handle(ConnHandlerPtr, const Event::Ptr& ev) {
+  if(ev->type == Event::Type::DISCONNECT)
     return handle_no_conn();
   
   Params::Report::RspColumnStatus rsp_params;
@@ -229,8 +231,8 @@ bool RangersStatus::run() {
   return true;
 }
 
-void RangersStatus::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) {
-  if(ev->type == Comm::Event::Type::DISCONNECT)
+void RangersStatus::handle(ConnHandlerPtr, const Event::Ptr& ev) {
+  if(ev->type == Event::Type::DISCONNECT)
     return handle_no_conn();
   
   Params::Report::RspRangersStatus rsp_params;
@@ -257,7 +259,7 @@ void RangersStatus::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) {
 
 
 SWC_SHOULD_INLINE
-void ManagersStatus::request(const Comm::EndPoints& endpoints, 
+void ManagersStatus::request(const EndPoints& endpoints, 
                              const ManagersStatus::Cb_t& cb, 
                              const uint32_t timeout) {
   std::make_shared<ManagersStatus>(endpoints, cb, timeout)->run();
@@ -265,14 +267,15 @@ void ManagersStatus::request(const Comm::EndPoints& endpoints,
 
 SWC_SHOULD_INLINE
 ManagersStatus::Ptr 
-ManagersStatus::make(const Comm::EndPoints& endpoints,
+ManagersStatus::make(const EndPoints& endpoints,
                      const ManagersStatus::Cb_t& cb, 
                      const uint32_t timeout) {
   return std::make_shared<ManagersStatus>(endpoints, cb, timeout);
 }
 
-ManagersStatus::ManagersStatus(const Comm::EndPoints& endpoints, 
-                               const Cb_t& cb, const uint32_t timeout)
+ManagersStatus::ManagersStatus(const EndPoints& endpoints, 
+                               const Cb_t& cb, 
+                               const uint32_t timeout)
                               : Report(
                                   endpoints,
                                   Params::Report::Function::MANAGERS_STATUS,
@@ -300,8 +303,8 @@ void ManagersStatus::handle_no_conn() {
   cb(req(), Error::COMM_CONNECT_ERROR, Params::Report::RspManagersStatus());
 }
 
-void ManagersStatus::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) {
-  if(ev->type == Comm::Event::Type::DISCONNECT)
+void ManagersStatus::handle(ConnHandlerPtr, const Event::Ptr& ev) {
+  if(ev->type == Event::Type::DISCONNECT)
     return handle_no_conn();
   
   Params::Report::RspManagersStatus rsp_params;
@@ -329,4 +332,4 @@ void ManagersStatus::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) {
 
 
 
-}}}}
+}}}}}

@@ -8,10 +8,11 @@
 #define swcdb_manager_Protocol_handlers_MngrState_h
 
 
-namespace SWC { namespace Protocol { namespace Mngr { namespace Handler {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Mngr { namespace Handler {
 
 
-void mngr_state(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
+void mngr_state(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
   try {
     const uint8_t *ptr = ev->data.base;
     size_t remain = ev->data.size;
@@ -21,7 +22,7 @@ void mngr_state(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
 
     Env::Mngr::role()->fill_states(
       req_params.states, req_params.token, 
-      nullptr // std::make_shared<Comm::ResponseCallback>(conn, ev)
+      nullptr // std::make_shared<ResponseCallback>(conn, ev)
     ); 
 
     Env::Mngr::role()->update_manager_addr(
@@ -35,6 +36,6 @@ void mngr_state(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
 }
   
 
-}}}}
+}}}}}
 
 #endif // swcdb_manager_Protocol_handlers_MngrState_h

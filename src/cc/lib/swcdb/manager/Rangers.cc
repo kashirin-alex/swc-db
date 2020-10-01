@@ -102,8 +102,10 @@ void Rangers::schedule_check(uint32_t t_ms) {
 }
 
 
-void Rangers::rgr_report(rgrid_t rgrid, int err,
-                         const Protocol::Rgr::Params::Report::RspRes& rsp) {
+void Rangers::rgr_report(
+      rgrid_t rgrid, 
+      int err,
+      const Comm::Protocol::Rgr::Params::Report::RspRes& rsp) {
   if(m_rangers_resources.add_and_more(rgrid, err, rsp))
     return;
 
@@ -280,8 +282,9 @@ void Rangers::update_status(RangerList new_rgr_status, bool sync_all) {
             if(h->state == Ranger::State::MARKED_OFFLINE) {
               cid_t cid_begin, cid_end = DB::Schema::NO_CID;
               if(Env::Mngr::mngd_columns()->active(cid_begin, cid_end))
-                h->put(std::make_shared<Protocol::Rgr::Req::ColumnsUnload>(
-                  h, cid_begin, cid_end)); 
+                h->put(
+                  std::make_shared<Comm::Protocol::Rgr::Req::ColumnsUnload>(
+                    h, cid_begin, cid_end));
             }
           } else {
             Env::Mngr::columns()->set_rgr_unassigned(h->rgrid);
@@ -328,7 +331,7 @@ void Rangers::update_status(RangerList new_rgr_status, bool sync_all) {
 
 void Rangers::assign_range(const Ranger::Ptr& rgr, const Range::Ptr& range) {
   rgr->put(
-    std::make_shared<Protocol::Rgr::Req::RangeLoad>(
+    std::make_shared<Comm::Protocol::Rgr::Req::RangeLoad>(
       rgr, 
       range,
       Env::Mngr::schemas()->get(range->cfg->cid)
@@ -386,7 +389,8 @@ bool Rangers::update(const DB::Schema::Ptr& schema, bool ack_required) {
         undergo = true;
         if(ack_required) {
           rgr->put(
-            std::make_shared<Protocol::Rgr::Req::ColumnUpdate>(rgr, schema));
+            std::make_shared<Comm::Protocol::Rgr::Req::ColumnUpdate>(
+              rgr, schema));
         }
       }
     }
@@ -401,7 +405,8 @@ void Rangers::column_delete(const cid_t cid,
     for(auto& rgr : m_rangers) {
       if(rgrid != rgr->rgrid)
         continue;
-      rgr->put(std::make_shared<Protocol::Rgr::Req::ColumnDelete>(rgr, cid));
+      rgr->put(
+        std::make_shared<Comm::Protocol::Rgr::Req::ColumnDelete>(rgr, cid));
     }
   }
 }
@@ -421,7 +426,8 @@ void Rangers::column_compact(int& err, const cid_t cid) {
     for(auto& rgr : m_rangers) {
       if(rgr->failures < cfg_rgr_failures->get() 
         && rgr->state == Ranger::State::ACK && rgr->rgrid == rgrid) {
-        rgr->put(std::make_shared<Protocol::Rgr::Req::ColumnCompact>(cid));
+        rgr->put(
+          std::make_shared<Comm::Protocol::Rgr::Req::ColumnCompact>(cid));
       }
     }
   }
@@ -570,7 +576,8 @@ void Rangers::health_check_columns() {
 }
 
 
-Ranger::Ptr Rangers::rgr_set(const Comm::EndPoints& endpoints, rgrid_t opt_rgrid) {
+Ranger::Ptr Rangers::rgr_set(const Comm::EndPoints& endpoints, 
+                             rgrid_t opt_rgrid) {
   for(auto it=m_rangers.begin();it<m_rangers.end(); ++it) {
     auto h = *it;
     if(Comm::has_endpoint(h->endpoints, endpoints)) {
@@ -629,7 +636,7 @@ void Rangers::_changes(const RangerList& hosts, bool sync_all) {
   for(auto it = hosts.cbegin(); it < hosts.cend(); ) {
     auto from = it;
     Env::Mngr::role()->req_mngr_inchain(
-      std::make_shared<Protocol::Mngr::Req::RgrUpdate>(
+      std::make_shared<Comm::Protocol::Mngr::Req::RgrUpdate>(
         RangerList(from, (it+=1000) < hosts.cend() ? it : hosts.cend()),
         sync_all
       )

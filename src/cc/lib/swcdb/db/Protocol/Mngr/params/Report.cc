@@ -10,7 +10,8 @@
 
 
 
-namespace SWC { namespace Protocol { namespace Mngr { namespace Params { 
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Mngr { namespace Params { 
 namespace Report {
 
 
@@ -273,4 +274,4 @@ void RspManagersStatus::display(std::ostream& out,
 
 
 }
-}}}}
+}}}}}

@@ -7,10 +7,11 @@
 #ifndef swcdb_manager_Protocol_rgr_req_RangeLoad_h
 #define swcdb_manager_Protocol_rgr_req_RangeLoad_h
 
-namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Rgr { namespace Req {
 
 
-class RangeLoad : public Comm::client::ConnQueue::ReqBase {
+class RangeLoad : public client::ConnQueue::ReqBase {
   public:
 
   RangeLoad(const Manager::Ranger::Ptr& rgr, 
@@ -19,7 +20,7 @@ class RangeLoad : public Comm::client::ConnQueue::ReqBase {
   
   virtual ~RangeLoad();
 
-  void handle(Comm::ConnHandlerPtr conn, const Comm::Event::Ptr& ev) override;
+  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
 
   bool valid() override;
   
@@ -36,6 +37,6 @@ class RangeLoad : public Comm::client::ConnQueue::ReqBase {
    
 };
 
-}}}}
+}}}}}
 
 #endif // swcdb_manager_Protocol_rgr_req_RangeLoad_h

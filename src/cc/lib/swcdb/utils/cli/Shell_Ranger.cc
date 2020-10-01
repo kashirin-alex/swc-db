@@ -113,11 +113,11 @@ bool Rgr::report_resources(std::string& cmd) {
     return r;
 
   std::promise<void>  r_promise;
-  Protocol::Rgr::Req::ReportRes::request(
+  Comm::Protocol::Rgr::Req::ReportRes::request(
     endpoints, 
     [this, await=&r_promise] 
     (const Comm::client::ConnQueue::ReqBase::Ptr&, const int& error,
-     const Protocol::Rgr::Params::Report::RspRes& rsp) {
+     const Comm::Protocol::Rgr::Params::Report::RspRes& rsp) {
       if(!(err = error)) {
         SWC_PRINT << "";
         rsp.display(SWC_LOG_OSTREAM);
@@ -184,20 +184,20 @@ bool Rgr::report(std::string& cmd) {
     return r;
 
   auto func = cid == DB::Schema::NO_CID 
-    ? (ranges ? Protocol::Rgr::Params::Report::Function::COLUMNS_RANGES
-              : Protocol::Rgr::Params::Report::Function::CIDS)
-    : (ranges ? Protocol::Rgr::Params::Report::Function::COLUMN_RANGES
-              : Protocol::Rgr::Params::Report::Function::COLUMN_RIDS);
+    ? (ranges ? Comm::Protocol::Rgr::Params::Report::Function::COLUMNS_RANGES
+              : Comm::Protocol::Rgr::Params::Report::Function::CIDS)
+    : (ranges ? Comm::Protocol::Rgr::Params::Report::Function::COLUMN_RANGES
+              : Comm::Protocol::Rgr::Params::Report::Function::COLUMN_RIDS);
 
   std::promise<void>  r_promise;
 
   switch(func) {
-    case Protocol::Rgr::Params::Report::Function::COLUMNS_RANGES: {
-      Protocol::Rgr::Req::ReportColumnsRanges::request(
+    case Comm::Protocol::Rgr::Params::Report::Function::COLUMNS_RANGES: {
+      Comm::Protocol::Rgr::Req::ReportColumnsRanges::request(
         endpoints, 
         [this, await=&r_promise] 
         (const Comm::client::ConnQueue::ReqBase::Ptr&, const int& error,
-         const Protocol::Rgr::Params::Report::RspColumnsRanges& rsp) {
+         const Comm::Protocol::Rgr::Params::Report::RspColumnsRanges& rsp) {
           if(!(err = error)) {
             SWC_PRINT << "";
             rsp.display(SWC_LOG_OSTREAM);
@@ -208,12 +208,12 @@ bool Rgr::report(std::string& cmd) {
       );
       break;
     }
-    case Protocol::Rgr::Params::Report::Function::CIDS: {
-      Protocol::Rgr::Req::ReportCids::request(
+    case Comm::Protocol::Rgr::Params::Report::Function::CIDS: {
+      Comm::Protocol::Rgr::Req::ReportCids::request(
         endpoints, 
         [this, await=&r_promise] 
         (const Comm::client::ConnQueue::ReqBase::Ptr&, const int& error,
-         const Protocol::Rgr::Params::Report::RspCids& rsp) {
+         const Comm::Protocol::Rgr::Params::Report::RspCids& rsp) {
           if(!(err = error)) {
             SWC_PRINT << "";
             rsp.display(SWC_LOG_OSTREAM);
@@ -224,13 +224,13 @@ bool Rgr::report(std::string& cmd) {
       );
       break;
     }
-    case Protocol::Rgr::Params::Report::Function::COLUMN_RANGES: {
-      Protocol::Rgr::Req::ReportColumnsRanges::request(
+    case Comm::Protocol::Rgr::Params::Report::Function::COLUMN_RANGES: {
+      Comm::Protocol::Rgr::Req::ReportColumnsRanges::request(
         endpoints, 
         cid,
         [this, await=&r_promise]
         (const Comm::client::ConnQueue::ReqBase::Ptr&, const int& error,
-         const Protocol::Rgr::Params::Report::RspColumnsRanges& rsp) {
+         const Comm::Protocol::Rgr::Params::Report::RspColumnsRanges& rsp) {
           if(!(err = error)) {
             SWC_PRINT << "";
             rsp.display(SWC_LOG_OSTREAM);
@@ -241,13 +241,13 @@ bool Rgr::report(std::string& cmd) {
       );
       break;
     }
-    case Protocol::Rgr::Params::Report::Function::COLUMN_RIDS: {
-      Protocol::Rgr::Req::ReportColumnRids::request(
+    case Comm::Protocol::Rgr::Params::Report::Function::COLUMN_RIDS: {
+      Comm::Protocol::Rgr::Req::ReportColumnRids::request(
         endpoints, 
         cid,
         [this, await=&r_promise]
         (const Comm::client::ConnQueue::ReqBase::Ptr&, const int& error,
-         const Protocol::Rgr::Params::Report::RspColumnRids& rsp) {
+         const Comm::Protocol::Rgr::Params::Report::RspColumnRids& rsp) {
           if(!(err = error)) {
             SWC_PRINT << "";
             rsp.display(SWC_LOG_OSTREAM);

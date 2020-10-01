@@ -9,7 +9,8 @@
 #include "swcdb/core/Serialization.h"
 
 
-namespace SWC { namespace Protocol { namespace Mngr { namespace Params {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Mngr { namespace Params {
 
 ColumnMng::ColumnMng() {}
 
@@ -35,4 +36,4 @@ void ColumnMng::internal_decode(const uint8_t** bufp, size_t* remainp) {
 }
 
 
-}}}}
+}}}}}

@@ -83,7 +83,7 @@ bool Mngr::cluster_status(std::string&) {
 
   for(auto& endpoints : hosts) {
     std::promise<void>  r_promise;
-    Protocol::Mngr::Req::ClusterStatus::request(
+    Comm::Protocol::Mngr::Req::ClusterStatus::request(
       endpoints,
       [this, await=&r_promise] 
       (const Comm::client::ConnQueue::ReqBase::Ptr&, const int& error) {
@@ -167,11 +167,11 @@ bool Mngr::managers_status(std::string& cmd) {
 
   for(auto& endpoints : hosts) {
     std::promise<void>  r_promise;
-    Protocol::Mngr::Req::ManagersStatus::request(
+    Comm::Protocol::Mngr::Req::ManagersStatus::request(
       endpoints,
       [this, endpoints, await=&r_promise] 
       (const Comm::client::ConnQueue::ReqBase::Ptr& req, const int& error,
-       const Protocol::Mngr::Params::Report::RspManagersStatus& rsp) {
+       const Comm::Protocol::Mngr::Params::Report::RspManagersStatus& rsp) {
         SWC_PRINT << "# by Manager(";
         if(error) {
           for(auto& p : endpoints)
@@ -234,11 +234,11 @@ bool Mngr::column_status(std::string& cmd) {
   }
 
   std::promise<void>  r_promise;
-  Protocol::Mngr::Req::ColumnStatus::request(
-    Protocol::Mngr::Params::Report::ReqColumnStatus(cid),
+  Comm::Protocol::Mngr::Req::ColumnStatus::request(
+    Comm::Protocol::Mngr::Params::Report::ReqColumnStatus(cid),
     [this, await=&r_promise] 
     (const Comm::client::ConnQueue::ReqBase::Ptr&, const int& error,
-     const Protocol::Mngr::Params::Report::RspColumnStatus& rsp) {
+     const Comm::Protocol::Mngr::Params::Report::RspColumnStatus& rsp) {
       if(!(err = error)) {
         SWC_PRINT << "";
         rsp.display(SWC_LOG_OSTREAM);
@@ -295,11 +295,11 @@ bool Mngr::rangers_status(std::string& cmd) {
   }
 
   std::promise<void>  r_promise;
-  Protocol::Mngr::Req::RangersStatus::request(
+  Comm::Protocol::Mngr::Req::RangersStatus::request(
     cid,
     [this, await=&r_promise] 
     (const Comm::client::ConnQueue::ReqBase::Ptr&, const int& error,
-     const Protocol::Mngr::Params::Report::RspRangersStatus& rsp) {
+     const Comm::Protocol::Mngr::Params::Report::RspRangersStatus& rsp) {
       if(!(err = error)) {
         SWC_PRINT << "";
         rsp.display(SWC_LOG_OSTREAM);

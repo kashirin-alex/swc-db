@@ -10,10 +10,11 @@
 #include "swcdb/manager/Protocol/Mngr/params/RgrUpdate.h"
 
 
-namespace SWC { namespace Protocol { namespace Mngr { namespace Handler {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Mngr { namespace Handler {
 
 
-void rgr_update(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
+void rgr_update(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
   try {
     const uint8_t *ptr = ev->data.base;
     size_t remain = ev->data.size;
@@ -30,6 +31,6 @@ void rgr_update(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
 }
   
 
-}}}}
+}}}}}
 
 #endif // swcdb_manager_Protocol_handlers_RgrUpdate_h

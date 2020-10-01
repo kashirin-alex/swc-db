@@ -10,10 +10,11 @@
 #include "swcdb/db/Protocol/Mngr/params/RangeCreate.h"
 
 
-namespace SWC { namespace Protocol { namespace Mngr { namespace Handler {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Mngr { namespace Handler {
 
 
-void range_create(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
+void range_create(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
   Params::RangeCreateRsp rsp_params;
   try {
     const uint8_t *ptr = ev->data.base;
@@ -50,7 +51,7 @@ void range_create(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) 
     try {
       SWC_PRINT << "RangeCreate(RSP): " << rsp_params.to_string() 
                 << SWC_PRINT_CLOSE;
-      auto cbp = Comm::Buffers::make(rsp_params);
+      auto cbp = Buffers::make(rsp_params);
       cbp->header.initialize_from_request_header(ev->header);
       conn->send_response(cbp);
     } catch(...) {
@@ -59,6 +60,6 @@ void range_create(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) 
 }
 
 
-}}}}
+}}}}}
 
 #endif // swcdb_manager_Protocol_handlers_RangeCreate_h

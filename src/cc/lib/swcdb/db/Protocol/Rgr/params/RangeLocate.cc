@@ -9,7 +9,8 @@
 #include "swcdb/core/Serialization.h"
 
 
-namespace SWC { namespace Protocol { namespace Rgr { namespace Params {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Rgr { namespace Params {
 
 
 RangeLocateReq::RangeLocateReq(cid_t cid, rid_t rid)
@@ -105,4 +106,4 @@ void RangeLocateRsp::internal_decode(const uint8_t** bufp, size_t* remainp) {
 
 
 
-}}}}
+}}}}}

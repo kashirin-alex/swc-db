@@ -10,10 +10,11 @@
 #include "swcdb/db/Protocol/Mngr/params/RgrMngId.h"
 
 
-namespace SWC { namespace Protocol { namespace Mngr { namespace Handler {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Mngr { namespace Handler {
 
 
-void rgr_mng_id(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
+void rgr_mng_id(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
   try {
     const uint8_t *ptr = ev->data.base;
     size_t remain = ev->data.size;
@@ -28,7 +29,7 @@ void rgr_mng_id(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
         req_params.print(SWC_LOG_OSTREAM << ' ');
       );
         
-      auto cbp = Comm::Buffers::make(
+      auto cbp = Buffers::make(
         Params::RgrMngId(0, Params::RgrMngId::Flag::MNGR_NOT_ACTIVE)
       );
       cbp->header.initialize_from_request_header(ev->header);
@@ -47,7 +48,7 @@ void rgr_mng_id(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
           req_params.print(SWC_LOG_OSTREAM << ' ');
         );
 
-        auto cbp = Comm::Buffers::make(
+        auto cbp = Buffers::make(
           Params::RgrMngId(rgrid, Params::RgrMngId::Flag::MNGR_ASSIGNED)
         );
         cbp->header.initialize_from_request_header(ev->header);
@@ -69,7 +70,7 @@ void rgr_mng_id(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
             req_params.print(SWC_LOG_OSTREAM << ' ');
           );
             
-          auto cbp = Comm::Buffers::make(
+          auto cbp = Buffers::make(
             Params::RgrMngId(0, Params::RgrMngId::Flag::MNGR_REREQ)
           );
           cbp->header.initialize_from_request_header(ev->header);
@@ -87,7 +88,7 @@ void rgr_mng_id(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
           );
 
         if(rgrid) {
-          auto cbp = Comm::Buffers::make(
+          auto cbp = Buffers::make(
             Params::RgrMngId(rgrid, Params::RgrMngId::Flag::MNGR_REASSIGN)
           );
           cbp->header.initialize_from_request_header(ev->header);
@@ -106,7 +107,7 @@ void rgr_mng_id(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
           req_params.print(SWC_LOG_OSTREAM << ' ');
         );
       
-        auto cbp = Comm::Buffers::make(
+        auto cbp = Buffers::make(
           Params::RgrMngId(
             req_params.rgrid, Params::RgrMngId::Flag::RS_SHUTTINGDOWN)
         );
@@ -125,6 +126,6 @@ void rgr_mng_id(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
 }
   
 
-}}}}
+}}}}}
 
 #endif // swcdb_manager_Protocol_handlers_RgrMngId

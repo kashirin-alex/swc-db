@@ -9,18 +9,19 @@
 
 #include "swcdb/db/Protocol/Commands.h"
 
-namespace SWC { namespace Protocol { namespace Mngr { namespace Req {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Mngr { namespace Req {
 
 
-class Echo : public Comm::DispatchHandler {
+class Echo : public DispatchHandler {
   public:
   typedef std::function<void(bool)> EchoCb_t;
 
-  Echo(const Comm::ConnHandlerPtr& conn, const EchoCb_t& cb, size_t buf_sz=0)
+  Echo(const ConnHandlerPtr& conn, const EchoCb_t& cb, size_t buf_sz=0)
        : conn(conn), cb(cb) { 
 
     if(!buf_sz) {
-      cbp = Comm::Buffers::make();
+      cbp = Buffers::make();
 
     } else {
       StaticBuffer sndbuf(buf_sz);
@@ -36,7 +37,7 @@ class Echo : public Comm::DispatchHandler {
         *ptr++ = i;
       }
       
-      cbp = Comm::Buffers::make(sndbuf);
+      cbp = Buffers::make(sndbuf);
     }
     
     cbp->header.set(DO_ECHO, 60000);
@@ -48,18 +49,18 @@ class Echo : public Comm::DispatchHandler {
     return conn->send_request(cbp, shared_from_this());
   }
 
-  void handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) override {
+  void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
     //SWC_LOGF(LOG_DEBUG, "handle: %s", ev->to_str().c_str());
 
     cb(ev->header.command == DO_ECHO && !ev->error);
   }
 
   private:
-  Comm::ConnHandlerPtr        conn;
-  EchoCb_t                    cb;
-  Comm::Buffers::Ptr          cbp;
+  ConnHandlerPtr        conn;
+  EchoCb_t              cb;
+  Buffers::Ptr          cbp;
 };
 
-}}}}
+}}}}}
 
 #endif // swcdb_db_protocol_mngr_req_Echo_h

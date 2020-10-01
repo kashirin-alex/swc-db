@@ -13,10 +13,11 @@
 #include "swcdb/db/client/mngr/Groups.h"
 
 
-namespace SWC { namespace Protocol { namespace Mngr { namespace Req {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Mngr { namespace Req {
 
 
-class MngrActive : public Comm::client::ConnQueue::ReqBase {
+class MngrActive : public client::ConnQueue::ReqBase {
   public:
   typedef std::shared_ptr<MngrActive> Ptr;
 
@@ -40,20 +41,20 @@ class MngrActive : public Comm::client::ConnQueue::ReqBase {
 
   bool run() override;
 
-  void handle(Comm::ConnHandlerPtr conn, const Comm::Event::Ptr& ev) override;
+  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
 
   private:
-  DispatchHandler::Ptr            hdlr;
-  size_t                          nxt;
-  client::Mngr::Hosts             hosts;
-  client::Mngr::Groups::GroupHost group_host;
-  asio::high_resolution_timer     timer;
+  DispatchHandler::Ptr                  hdlr;
+  size_t                                nxt;
+  SWC::client::Mngr::Hosts              hosts;
+  SWC::client::Mngr::Groups::GroupHost  group_host;
+  asio::high_resolution_timer           timer;
 
   protected:
   const uint32_t  timeout_ms;
 };
 
-}}}}
+}}}}}
 
 
 #ifdef SWC_IMPL_SOURCE

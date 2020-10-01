@@ -11,7 +11,8 @@
 #include "swcdb/db/Protocol/Commands.h"
 
 
-namespace SWC { namespace Protocol { namespace Mngr { namespace Req {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Mngr { namespace Req {
 
  
 SWC_SHOULD_INLINE
@@ -51,8 +52,8 @@ void ColumnGet::request(ColumnGet::Flag flag, cid_t cid,
 ColumnGet::ColumnGet(const Params::ColumnGetReq& params, 
                      const ColumnGet::Cb_t& cb, 
                      const uint32_t timeout) 
-                    : Comm::client::ConnQueue::ReqBase(false), cb(cb) {
-  cbp = Comm::Buffers::make(params);
+                    : client::ConnQueue::ReqBase(false), cb(cb) {
+  cbp = Buffers::make(params);
   cbp->header.set(COLUMN_GET, timeout);
 }
 
@@ -78,8 +79,8 @@ bool ColumnGet::run() {
   return true;
 }
 
-void ColumnGet::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) {
-  if(ev->type == Comm::Event::Type::DISCONNECT)
+void ColumnGet::handle(ConnHandlerPtr, const Event::Ptr& ev) {
+  if(ev->type == Event::Type::DISCONNECT)
     return handle_no_conn();
 
   Params::ColumnGetRsp rsp_params;
@@ -107,4 +108,4 @@ void ColumnGet::clear_endpoints() {
 
 
 
-}}}}
+}}}}}

@@ -12,10 +12,11 @@
 #include "swcdb/db/Columns/Schema.h"
 
 
-namespace SWC { namespace Protocol { namespace Mngr { namespace Params {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Mngr { namespace Params {
 
 
-class ColumnGetReq  : public Comm::Serializable {
+class ColumnGetReq  : public Serializable {
   public:
 
   enum Flag {
@@ -48,7 +49,7 @@ class ColumnGetReq  : public Comm::Serializable {
 
 
 
-class ColumnGetRsp  : public Comm::Serializable {
+class ColumnGetRsp  : public Serializable {
   public:
 
   ColumnGetRsp();
@@ -71,7 +72,7 @@ class ColumnGetRsp  : public Comm::Serializable {
 
 };
 
-}}}}
+}}}}}
 
 
 

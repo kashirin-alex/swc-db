@@ -8,7 +8,7 @@
 #define swcdb_db_Protocol_Commands_h
 
 
-namespace SWC { namespace Protocol {
+namespace SWC { namespace Comm { namespace Protocol {
 
 
 namespace Rgr {
@@ -58,6 +58,6 @@ namespace Mngr {
 }
 
 
-}}
+}}}
 
 #endif // swcdb_db_Protocol_Commands_h

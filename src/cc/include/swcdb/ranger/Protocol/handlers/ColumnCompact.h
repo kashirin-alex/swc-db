@@ -10,10 +10,11 @@
 #include "swcdb/db/Protocol/Rgr/params/ColumnCompact.h"
 
 
-namespace SWC { namespace Protocol { namespace Rgr { namespace Handler {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Rgr { namespace Handler {
 
 
-void column_compact(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
+void column_compact(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
   Params::ColumnCompactRsp rsp_params;
 
   try {
@@ -34,7 +35,7 @@ void column_compact(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev
   }
   
   try {
-    auto cbp = Comm::Buffers::make(rsp_params);
+    auto cbp = Buffers::make(rsp_params);
     cbp->header.initialize_from_request_header(ev->header);
     conn->send_response(cbp);
 
@@ -45,6 +46,6 @@ void column_compact(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev
 }
   
 
-}}}}
+}}}}}
 
 #endif // swcdb_ranger_Protocol_handlers_ColumnCompact_h

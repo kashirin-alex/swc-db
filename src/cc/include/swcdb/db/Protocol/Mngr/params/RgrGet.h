@@ -13,10 +13,11 @@
 #include "swcdb/db/Cells/CellKey.h"
 
 
-namespace SWC { namespace Protocol { namespace Mngr { namespace Params {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Mngr { namespace Params {
 
 
-class RgrGetReq : public Comm::Serializable {
+class RgrGetReq : public Serializable {
   public:
 
   RgrGetReq(cid_t cid=0, rid_t rid=0, bool next_range=false);
@@ -71,7 +72,7 @@ class RgrGetRsp : public Common::Params::HostEndPoints {
 };
   
 
-}}}}
+}}}}}
 
 
 

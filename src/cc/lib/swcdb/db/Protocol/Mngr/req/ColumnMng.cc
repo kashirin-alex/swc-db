@@ -12,7 +12,8 @@
 #include "swcdb/db/Protocol/Commands.h"
 
 
-namespace SWC { namespace Protocol { namespace Mngr { namespace Req {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace Mngr { namespace Req {
 
 
 SWC_SHOULD_INLINE
@@ -43,8 +44,8 @@ void ColumnMng::request(ColumnMng::Func func, const DB::Schema::Ptr& schema,
 
 ColumnMng::ColumnMng(const Params::ColumnMng& params, 
                      const ColumnMng::Cb_t& cb, const uint32_t timeout)
-                    : Comm::client::ConnQueue::ReqBase(false), cb(cb) {
-  cbp = Comm::Buffers::make(params);    
+                    : client::ConnQueue::ReqBase(false), cb(cb) {
+  cbp = Buffers::make(params);    
   cbp->header.set(COLUMN_MNG, timeout);
 }
 
@@ -69,8 +70,8 @@ bool ColumnMng::run() {
   return true;
 }
 
-void ColumnMng::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) {
-  if(ev->type == Comm::Event::Type::DISCONNECT)
+void ColumnMng::handle(ConnHandlerPtr, const Event::Ptr& ev) {
+  if(ev->type == Event::Type::DISCONNECT)
     return handle_no_conn();
 
   cb(req(), ev->response_code());
@@ -82,4 +83,4 @@ void ColumnMng::clear_endpoints() {
 }
 
 
-}}}}
+}}}}}
