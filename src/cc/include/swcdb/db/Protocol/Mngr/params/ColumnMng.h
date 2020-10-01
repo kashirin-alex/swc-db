@@ -8,14 +8,14 @@
 #define swcdb_db_protocol_mngr_params_ColumnMng_h
 
 
-#include "swcdb/core/Serializable.h"
+#include "swcdb/core/comm/Serializable.h"
 #include "swcdb/db/Columns/Schema.h"
 
 
 namespace SWC { namespace Protocol { namespace Mngr { namespace Params {
   
 
-class ColumnMng : public Serializable {
+class ColumnMng : public Comm::Serializable {
   public:
 
   enum Function { // corelation-sequence required

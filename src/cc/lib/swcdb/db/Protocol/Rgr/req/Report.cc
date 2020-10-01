@@ -24,7 +24,7 @@ Report::Report(const Comm::EndPoints& endpoints, Params::Report::Function func,
 }
 
 Report::Report(const Comm::EndPoints& endpoints, Params::Report::Function func, 
-               const Serializable& params, const uint32_t timeout) 
+               const Comm::Serializable& params, const uint32_t timeout) 
               : Comm::client::ConnQueue::ReqBase(false), 
                 endpoints(endpoints) {
   cbp = Comm::Buffers::make(params, 1);

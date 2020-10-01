@@ -7,13 +7,18 @@
 #define swcdb_db_protocol_common_params_HostEndPoints_h
 
 
-#include "swcdb/core/Serializable.h"
+#include "swcdb/core/comm/Serializable.h"
 #include "swcdb/core/comm/Resolver.h"
 
-namespace SWC { namespace Protocol { namespace Common { namespace Params {
+namespace SWC { 
+
+//! The SWC-DB Protocol C++ namespace 'SWC::Protocol'
+namespace Protocol { 
+
+namespace Common { namespace Params {
  
 
-class HostEndPoints: public Serializable {
+class HostEndPoints: public Comm::Serializable {
   public:
 
   HostEndPoints();

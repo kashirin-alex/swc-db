@@ -6,13 +6,13 @@
 #ifndef swcdb_fs_Broker_Protocol_params_Rmdir_h
 #define swcdb_fs_Broker_Protocol_params_Rmdir_h
 
-#include "swcdb/core/Serializable.h"
+#include "swcdb/core/comm/Serializable.h"
 
 
 namespace SWC { namespace FsBroker { namespace Protocol { namespace Params {
 
 
-class RmdirReq : public Serializable {
+class RmdirReq : public Comm::Serializable {
   public:
 
   RmdirReq();

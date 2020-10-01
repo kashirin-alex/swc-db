@@ -7,12 +7,12 @@
 #define swcdb_fs_Broker_Protocol_params_Sync_h
 
 
-#include "swcdb/core/Serializable.h"
+#include "swcdb/core/comm/Serializable.h"
 
 
 namespace SWC { namespace FsBroker { namespace Protocol { namespace Params {
 
-class SyncReq : public Serializable {
+class SyncReq : public Comm::Serializable {
   public:
   
   SyncReq();

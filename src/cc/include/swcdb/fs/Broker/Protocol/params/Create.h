@@ -7,13 +7,13 @@
 #define swcdb_fs_Broker_Protocol_params_Create_h
 
 
-#include "swcdb/core/Serializable.h"
+#include "swcdb/core/comm/Serializable.h"
 
 
 namespace SWC { namespace FsBroker { namespace Protocol { namespace Params {
 
 
-class CreateReq : public Serializable {
+class CreateReq : public Comm::Serializable {
   public:
 
   CreateReq();

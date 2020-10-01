@@ -8,14 +8,14 @@
 #define swcdb_db_protocol_rgr_params_RangeQuerySelect_h
 
 #include "swcdb/core/Buffer.h"
-#include "swcdb/core/Serializable.h"
+#include "swcdb/core/comm/Serializable.h"
 #include "swcdb/db/Cells/SpecsInterval.h"
 
 
 namespace SWC { namespace Protocol { namespace Rgr { namespace Params {
 
 
-class RangeQuerySelectReq : public Serializable {
+class RangeQuerySelectReq : public Comm::Serializable {
   public:
 
   RangeQuerySelectReq();
@@ -43,7 +43,7 @@ class RangeQuerySelectReq : public Serializable {
 
 
 
-class RangeQuerySelectRsp  : public Serializable {
+class RangeQuerySelectRsp  : public Comm::Serializable {
   public:
 
   RangeQuerySelectRsp(int err = Error::OK, bool reached_limit=false, 

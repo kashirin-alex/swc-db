@@ -7,13 +7,13 @@
 #define swcdb_fs_Broker_Protocol_params_ReadAll_h
 
 
-#include "swcdb/core/Serializable.h"
+#include "swcdb/core/comm/Serializable.h"
 
 
 namespace SWC { namespace FsBroker { namespace Protocol { namespace Params {
 
 
-class ReadAllReq : public Serializable {
+class ReadAllReq : public Comm::Serializable {
   public:
 
   ReadAllReq();

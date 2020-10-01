@@ -7,7 +7,7 @@
 #ifndef swcdb_db_protocol_mngr_params_Report_h
 #define swcdb_db_protocol_mngr_params_Report_h
 
-#include "swcdb/core/Serializable.h"
+#include "swcdb/core/comm/Serializable.h"
 #include "swcdb/db/Columns/Schema.h"
 #include "swcdb/db/Types/MngrColumnState.h"
 #include "swcdb/db/Types/MngrRangeState.h"
@@ -32,7 +32,7 @@ enum Function {
 
 
 
-class ReqColumnStatus : public Serializable {
+class ReqColumnStatus : public Comm::Serializable {
   public:
 
   ReqColumnStatus(cid_t cid = DB::Schema::NO_CID);
@@ -52,7 +52,7 @@ class ReqColumnStatus : public Serializable {
 };
 
 
-class RspColumnStatus : public Serializable {
+class RspColumnStatus : public Comm::Serializable {
   public:
 
   RspColumnStatus();
@@ -92,7 +92,7 @@ class RspColumnStatus : public Serializable {
 
 
 
-class RspRangersStatus : public Serializable {
+class RspRangersStatus : public Comm::Serializable {
   public:
 
   RspRangersStatus();
@@ -133,7 +133,7 @@ class RspRangersStatus : public Serializable {
 
 
 
-class RspManagersStatus : public Serializable {
+class RspManagersStatus : public Comm::Serializable {
   public:
 
   RspManagersStatus();

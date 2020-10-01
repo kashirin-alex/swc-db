@@ -4,14 +4,14 @@
  */
 
 
-#ifndef swcdb_core_Serializable_h
-#define swcdb_core_Serializable_h
+#ifndef swcdb_core_comm_Serializable_h
+#define swcdb_core_comm_Serializable_h
 
 #include "swcdb/core/Compat.h"
 #include "swcdb/core/Serialization.h"
 #include "swcdb/core/Error.h"
 
-namespace SWC {
+namespace SWC { namespace Comm {
 
 
 class Serializable {
@@ -74,8 +74,8 @@ void Serializable::decode(const uint8_t** bufp, size_t* remainp) {
 }
 
 
-}
+}} // namespace SWC::Comm
 
 
 
-#endif // swcdb_core_Serializable_h
+#endif // swcdb_core_comm_Serializable_h

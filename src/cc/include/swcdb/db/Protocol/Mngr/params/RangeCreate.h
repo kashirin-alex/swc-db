@@ -7,13 +7,13 @@
 #ifndef swcdb_db_protocol_mngr_params_RangeCreate_h
 #define swcdb_db_protocol_mngr_params_RangeCreate_h
 
-#include "swcdb/core/Serializable.h"
+#include "swcdb/core/comm/Serializable.h"
 
 
 namespace SWC { namespace Protocol { namespace Mngr { namespace Params {
 
 
-class RangeCreateReq : public Serializable {
+class RangeCreateReq : public Comm::Serializable {
   public:
 
   RangeCreateReq(cid_t cid=0, rgrid_t rgrid=0) 
@@ -55,7 +55,7 @@ class RangeCreateReq : public Serializable {
 
 
 
-class RangeCreateRsp : public Serializable {
+class RangeCreateRsp : public Comm::Serializable {
   public:
 
   RangeCreateRsp(int err = Error::OK): err(err), rid(0) { }

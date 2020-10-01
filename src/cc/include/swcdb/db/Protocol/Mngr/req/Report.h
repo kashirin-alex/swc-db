@@ -23,7 +23,7 @@ class Report: public Comm::client::ConnQueue::ReqBase {
   Report(const Comm::EndPoints& endpoints, Params::Report::Function func, 
          const uint32_t timeout);
 
-  Report(const Serializable& params, Params::Report::Function func, 
+  Report(const Comm::Serializable& params, Params::Report::Function func, 
          const uint32_t timeout);
 
   virtual ~Report();

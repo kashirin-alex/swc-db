@@ -8,13 +8,13 @@
 #define swcdb_fs_Broker_Protocol_params_Append_h
 
 
-#include "swcdb/core/Serializable.h"
+#include "swcdb/core/comm/Serializable.h"
 
 
 namespace SWC { namespace FsBroker { namespace Protocol { namespace Params {
 
 
-class AppendReq : public Serializable {
+class AppendReq : public Comm::Serializable {
   public:
 
   AppendReq();
@@ -37,7 +37,7 @@ class AppendReq : public Serializable {
 
 
 
-class AppendRsp : public Serializable {
+class AppendRsp : public Comm::Serializable {
   public:
 
   AppendRsp();

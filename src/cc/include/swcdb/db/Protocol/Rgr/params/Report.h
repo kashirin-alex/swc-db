@@ -9,7 +9,7 @@
 
 
 #include "swcdb/core/comm/ClientConnQueue.h"
-#include "swcdb/core/Serializable.h"
+#include "swcdb/core/comm/Serializable.h"
 #include "swcdb/db/Cells/Interval.h"
 
 
@@ -27,7 +27,7 @@ enum Function {
 
 
 
-class ReqColumn : public Serializable {
+class ReqColumn : public Comm::Serializable {
   public:
 
   ReqColumn(cid_t cid = 0);
@@ -48,7 +48,7 @@ class ReqColumn : public Serializable {
 
 
 
-class RspRes  : public Serializable {
+class RspRes  : public Comm::Serializable {
   public:
   
   RspRes();
@@ -73,7 +73,7 @@ class RspRes  : public Serializable {
 
 
 
-class RspCids  : public Serializable {
+class RspCids  : public Comm::Serializable {
   public:
 
   RspCids();
@@ -96,7 +96,7 @@ class RspCids  : public Serializable {
 
 
 
-class RspColumnRids  : public Serializable {
+class RspColumnRids  : public Comm::Serializable {
   public:
 
   RspColumnRids();
@@ -119,7 +119,7 @@ class RspColumnRids  : public Serializable {
 
 
 
-class RspColumnsRanges  : public Serializable {
+class RspColumnsRanges  : public Comm::Serializable {
   public:
   
   struct Range {

@@ -9,14 +9,14 @@
 
 
 #include "swcdb/core/Error.h"
-#include "swcdb/core/Serializable.h"
+#include "swcdb/core/comm/Serializable.h"
 #include "swcdb/db/Cells/CellKey.h"
 #include "swcdb/db/Types/Identifiers.h"
 
 
 namespace SWC { namespace Protocol { namespace Rgr { namespace Params {
 
-class RangeLocateReq : public Serializable {
+class RangeLocateReq : public Comm::Serializable {
   public:
 
   static const uint8_t NEXT_RANGE  = 0x01;
@@ -45,7 +45,7 @@ class RangeLocateReq : public Serializable {
 
 
 
-class RangeLocateRsp  : public Serializable {
+class RangeLocateRsp  : public Comm::Serializable {
   public:
 
   RangeLocateRsp(int err = Error::OK);

@@ -15,7 +15,7 @@
 namespace SWC { namespace Protocol { namespace Mngr { namespace Params {
 
 
-class MngrActiveReq : public Serializable {
+class MngrActiveReq : public Comm::Serializable {
   public:
 
   MngrActiveReq(uint8_t role=DB::Types::MngrRole::COLUMNS, cid_t cid=0);

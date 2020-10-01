@@ -7,12 +7,12 @@
 #ifndef swcdb_db_protocol_common_params_ColumnId_h
 #define swcdb_db_protocol_common_params_ColumnId_h
 
-#include "swcdb/core/Serializable.h"
+#include "swcdb/core/comm/Serializable.h"
 
 namespace SWC { namespace Protocol { namespace Common { namespace Params {
 
 
-class ColumnId : public Serializable {
+class ColumnId : public Comm::Serializable {
   public:
 
   ColumnId(cid_t cid = DB::Schema::NO_CID)

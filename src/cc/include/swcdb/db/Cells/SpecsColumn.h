@@ -7,14 +7,14 @@
 #ifndef swcdb_db_cells_SpecsColumn_h
 #define swcdb_db_cells_SpecsColumn_h
 
-#include "swcdb/core/Serializable.h"
+#include "swcdb/core/comm/Serializable.h"
 #include "swcdb/db/Cells/SpecsInterval.h"
 
 
 namespace SWC { namespace DB { namespace Specs {
 
 
-class Column final : public Serializable {
+class Column final : public Comm::Serializable {
   public:
   
   typedef std::vector<Interval::Ptr> Intervals;

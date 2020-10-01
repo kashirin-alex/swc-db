@@ -15,7 +15,10 @@
 #include "swcdb/db/Cells/CellKey.h"
 
 
-namespace SWC { namespace DB { 
+namespace SWC { 
+
+//! The SWC-DB Database C++ namespace 'SWC::DB'
+namespace DB { 
 
 enum DisplayFlag {
   TIMESTAMP     = 0x01,

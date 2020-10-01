@@ -9,12 +9,12 @@
 #include <memory>
 #include <vector>
 
-#include "swcdb/core/Serializable.h"
+#include "swcdb/core/comm/Serializable.h"
 
 namespace SWC { namespace FS {
 
 /// Directory entry
-class Dirent final : public Serializable {
+class Dirent final : public Comm::Serializable {
 
   public:
   /// File or directory name

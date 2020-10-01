@@ -15,7 +15,10 @@
 #include "swcdb/db/client/mngr/Groups.h"
 #include "swcdb/db/client/rgr/Rangers.h"
 
-namespace SWC { namespace client {
+namespace SWC { 
+
+//! The SWC-DB Client C++ namespace 'SWC::client'
+namespace client {
 
 
 Comm::IOCtxPtr& default_io();

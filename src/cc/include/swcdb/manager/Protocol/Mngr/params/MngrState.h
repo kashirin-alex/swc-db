@@ -7,12 +7,12 @@
 #ifndef swcdb_manager_Protocol_mngr_params_MngrState_h
 #define swcdb_manager_Protocol_mngr_params_MngrState_h
 
-#include "swcdb/core/Serializable.h"
+#include "swcdb/core/comm/Serializable.h"
 
 namespace SWC { namespace Protocol { namespace Mngr { namespace Params {
 
 
-class MngrState : public Serializable {
+class MngrState : public Comm::Serializable {
   public:
 
   MngrState();

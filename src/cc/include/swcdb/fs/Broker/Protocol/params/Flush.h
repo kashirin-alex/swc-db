@@ -7,13 +7,13 @@
 #define swcdb_fs_Broker_Protocol_params_Flush_h
 
 
-#include "swcdb/core/Serializable.h"
+#include "swcdb/core/comm/Serializable.h"
 
 
 namespace SWC { namespace FsBroker { namespace Protocol { namespace Params {
 
 
-class FlushReq : public Serializable {
+class FlushReq : public Comm::Serializable {
   public:
   
   FlushReq();

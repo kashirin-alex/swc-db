@@ -8,14 +8,14 @@
 #define swcdb_db_protocol_mngr_params_ColumnList_h
 
 
-#include "swcdb/core/Serializable.h"
+#include "swcdb/core/comm/Serializable.h"
 #include "swcdb/db/Columns/Schemas.h"
 #include <vector>
 
 namespace SWC { namespace Protocol { namespace Mngr { namespace Params {
 
 
-class ColumnListReq  : public Serializable {
+class ColumnListReq  : public Comm::Serializable {
   public:
 
   ColumnListReq();
@@ -36,7 +36,7 @@ class ColumnListReq  : public Serializable {
 
 
 
-class ColumnListRsp  : public Serializable {
+class ColumnListRsp  : public Comm::Serializable {
   public:
 
   ColumnListRsp();

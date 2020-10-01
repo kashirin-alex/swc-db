@@ -8,14 +8,14 @@
 #define swcdb_db_protocol_rgr_params_RangeQueryUpdate_h
 
 #include "swcdb/core/Error.h"
-#include "swcdb/core/Serializable.h"
+#include "swcdb/core/comm/Serializable.h"
 #include "swcdb/db/Cells/CellKey.h"
 #include "swcdb/db/Types/Identifiers.h"
 
 
 namespace SWC { namespace Protocol { namespace Rgr { namespace Params {
 
-class RangeQueryUpdateReq : public Serializable {
+class RangeQueryUpdateReq : public Comm::Serializable {
   public:
 
   RangeQueryUpdateReq();
@@ -41,7 +41,7 @@ class RangeQueryUpdateReq : public Serializable {
 
 
 
-class RangeQueryUpdateRsp  : public Serializable {
+class RangeQueryUpdateRsp  : public Comm::Serializable {
   public:
 
   RangeQueryUpdateRsp(int err = Error::OK);

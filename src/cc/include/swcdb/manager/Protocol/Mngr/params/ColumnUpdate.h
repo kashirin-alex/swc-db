@@ -7,12 +7,12 @@
 #ifndef swcdb_manager_Protocol_mngr_params_ColumnUpdate_h
 #define swcdb_manager_Protocol_mngr_params_ColumnUpdate_h
 
-#include "swcdb/core/Serializable.h"
+#include "swcdb/core/comm/Serializable.h"
 
 namespace SWC { namespace Protocol { namespace Mngr { namespace Params {
 
 
-class ColumnUpdate : public Serializable {
+class ColumnUpdate : public Comm::Serializable {
   public:
 
   ColumnUpdate() {}

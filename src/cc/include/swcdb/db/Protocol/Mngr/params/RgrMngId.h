@@ -7,7 +7,7 @@
 #ifndef swcdb_db_protocol_mngr_params_RgrMngId_h
 #define swcdb_db_protocol_mngr_params_RgrMngId_h
 
-#include "swcdb/core/Serializable.h"
+#include "swcdb/core/comm/Serializable.h"
 #include "swcdb/db/Protocol/Common/params/HostEndPoints.h"
 
 namespace SWC { namespace Protocol { namespace Mngr { namespace Params {

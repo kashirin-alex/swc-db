@@ -30,7 +30,7 @@ Report::Report(const Comm::EndPoints& endpoints,
   cbp->header.set(REPORT, timeout);
 }
 
-Report::Report(const Serializable& params, 
+Report::Report(const Comm::Serializable& params, 
                Params::Report::Function func, 
                const uint32_t timeout) 
               : Comm::client::ConnQueue::ReqBase(false) {

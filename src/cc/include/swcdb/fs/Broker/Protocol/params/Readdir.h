@@ -7,14 +7,14 @@
 #define swcdb_fs_Broker_Protocol_params_Readdir_h
 
 
-#include "swcdb/core/Serializable.h"
+#include "swcdb/core/comm/Serializable.h"
 #include "swcdb/fs/Dirent.h"
 
 
 namespace SWC { namespace FsBroker { namespace Protocol { namespace Params {
 
 
-class ReaddirReq : public Serializable {
+class ReaddirReq : public Comm::Serializable {
   public:
 
   ReaddirReq();
@@ -34,7 +34,7 @@ class ReaddirReq : public Serializable {
 };
 
 
-class ReaddirRsp : public Serializable {
+class ReaddirRsp : public Comm::Serializable {
   public:
   
   ReaddirRsp();

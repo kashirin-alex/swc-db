@@ -9,13 +9,13 @@
 
 
 #include "swcdb/db/Types/Identifiers.h"
-#include "swcdb/core/Serializable.h"
+#include "swcdb/core/comm/Serializable.h"
 
 
 namespace SWC { namespace Protocol { namespace Mngr { namespace Params {
 
 
-class ColumnCompactReq : public Serializable {
+class ColumnCompactReq : public Comm::Serializable {
   public:
 
   ColumnCompactReq(cid_t cid=0);
@@ -38,7 +38,7 @@ class ColumnCompactReq : public Serializable {
 
 
 
-class ColumnCompactRsp : public Serializable {
+class ColumnCompactRsp : public Comm::Serializable {
   public:
 
   ColumnCompactRsp(int err = Error::OK);

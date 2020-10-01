@@ -7,12 +7,12 @@
 #ifndef swcdb_db_protocol_rgr_params_ColumnsUnload_h
 #define swcdb_db_protocol_rgr_params_ColumnsUnload_h
 
-#include "swcdb/core/Serializable.h"
+#include "swcdb/core/comm/Serializable.h"
 
 
 namespace SWC { namespace Protocol { namespace Rgr { namespace Params {
 
-class ColumnsUnloadRsp : public Serializable {
+class ColumnsUnloadRsp : public Comm::Serializable {
   public:
 
   ColumnsUnloadRsp(int err = Error::OK) : err(err) { }

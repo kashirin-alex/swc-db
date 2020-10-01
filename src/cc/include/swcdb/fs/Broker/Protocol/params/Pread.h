@@ -7,13 +7,13 @@
 #define swcdb_fs_Broker_Protocol_params_Pread_h
 
 
-#include "swcdb/core/Serializable.h"
+#include "swcdb/core/comm/Serializable.h"
 
 
 namespace SWC { namespace FsBroker { namespace Protocol { namespace Params {
 
 
-class PreadReq : public Serializable {
+class PreadReq : public Comm::Serializable {
   public:
 
   PreadReq();

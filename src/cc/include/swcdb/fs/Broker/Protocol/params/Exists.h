@@ -7,13 +7,13 @@
 #define swcdb_fs_Broker_Protocol_params_Exists_h
 
 
-#include "swcdb/core/Serializable.h"
+#include "swcdb/core/comm/Serializable.h"
 
 
 namespace SWC { namespace FsBroker { namespace Protocol { namespace Params {
 
 
-class ExistsReq : public Serializable {
+class ExistsReq : public Comm::Serializable {
   public:
 
   ExistsReq();
@@ -35,7 +35,7 @@ class ExistsReq : public Serializable {
 
 
 
-class ExistsRsp : public Serializable {
+class ExistsRsp : public Comm::Serializable {
   public:
   
   ExistsRsp();

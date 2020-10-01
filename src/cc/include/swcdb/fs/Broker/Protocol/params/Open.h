@@ -7,13 +7,13 @@
 #define swcdb_fs_Broker_Protocol_params_Open_h
 
 
-#include "swcdb/core/Serializable.h"
+#include "swcdb/core/comm/Serializable.h"
 
 
 namespace SWC { namespace FsBroker { namespace Protocol { namespace Params {
 
 
-class OpenReq : public Serializable {
+class OpenReq : public Comm::Serializable {
   public:
 
   OpenReq();
@@ -37,7 +37,7 @@ class OpenReq : public Serializable {
 
 
 
-class OpenRsp : public Serializable {
+class OpenRsp : public Comm::Serializable {
   public:
   
   OpenRsp();

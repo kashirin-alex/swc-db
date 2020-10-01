@@ -43,7 +43,7 @@ class RangeLoad : public Common::Params::ColRangeId {
 
 };
   
-class RangeLoaded : public Serializable {
+class RangeLoaded : public Comm::Serializable {
   public:
   
   RangeLoaded(const DB::Types::KeySeq key_seq)

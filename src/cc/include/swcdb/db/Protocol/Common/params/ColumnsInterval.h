@@ -7,12 +7,12 @@
 #ifndef swcdb_db_protocol_common_params_ColumnsInterval_h
 #define swcdb_db_protocol_common_params_ColumnsInterval_h
 
-#include "swcdb/core/Serializable.h"
+#include "swcdb/core/comm/Serializable.h"
 
 namespace SWC { namespace Protocol { namespace Common { namespace Params {
 
 
-class ColumnsInterval : public Serializable {
+class ColumnsInterval : public Comm::Serializable {
   public:
 
   ColumnsInterval(cid_t cid_begin = DB::Schema::NO_CID, 

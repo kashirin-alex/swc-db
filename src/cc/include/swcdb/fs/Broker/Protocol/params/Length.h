@@ -7,13 +7,13 @@
 #define swcdb_fs_Broker_Protocol_params_Length_h
 
 
-#include "swcdb/core/Serializable.h"
+#include "swcdb/core/comm/Serializable.h"
 
 
 namespace SWC { namespace FsBroker { namespace Protocol { namespace Params {
 
 
-class LengthReq : public Serializable {
+class LengthReq : public Comm::Serializable {
   public:
 
   LengthReq();
@@ -34,7 +34,7 @@ class LengthReq : public Serializable {
 
 
 
-class LengthRsp : public Serializable {
+class LengthRsp : public Comm::Serializable {
   public:
   
   LengthRsp();

@@ -8,14 +8,14 @@
 #define swcdb_db_protocol_mngr_params_ColumnGet_h
 
 
-#include "swcdb/core/Serializable.h"
+#include "swcdb/core/comm/Serializable.h"
 #include "swcdb/db/Columns/Schema.h"
 
 
 namespace SWC { namespace Protocol { namespace Mngr { namespace Params {
 
 
-class ColumnGetReq  : public Serializable {
+class ColumnGetReq  : public Comm::Serializable {
   public:
 
   enum Flag {
@@ -48,7 +48,7 @@ class ColumnGetReq  : public Serializable {
 
 
 
-class ColumnGetRsp  : public Serializable {
+class ColumnGetRsp  : public Comm::Serializable {
   public:
 
   ColumnGetRsp();

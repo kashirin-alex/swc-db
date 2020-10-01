@@ -7,13 +7,13 @@
 #define swcdb_fs_Broker_Protocol_params_Seek_h
 
 
-#include "swcdb/core/Serializable.h"
+#include "swcdb/core/comm/Serializable.h"
 
 
 namespace SWC { namespace FsBroker { namespace Protocol { namespace Params {
 
 
-class SeekReq : public Serializable {
+class SeekReq : public Comm::Serializable {
   public:
 
   SeekReq();
@@ -36,7 +36,7 @@ class SeekReq : public Serializable {
 
 
 
-class SeekRsp : public Serializable {
+class SeekRsp : public Comm::Serializable {
   public:
 
   SeekRsp();

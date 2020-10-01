@@ -16,7 +16,7 @@
 namespace SWC { namespace Protocol { namespace Mngr { namespace Params {
 
 
-class RgrGetReq : public Serializable {
+class RgrGetReq : public Comm::Serializable {
   public:
 
   RgrGetReq(cid_t cid=0, rid_t rid=0, bool next_range=false);
