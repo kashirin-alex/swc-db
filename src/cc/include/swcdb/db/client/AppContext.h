@@ -3,8 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_db_client_AppContext_h
-#define swc_db_client_AppContext_h
+#ifndef swcdb_db_client_AppContext_h
+#define swcdb_db_client_AppContext_h
 
 #include "swcdb/core/comm/ConnHandler.h"
 
@@ -29,4 +29,4 @@ class AppContext : public SWC::Comm::AppContext {
 #include "swcdb/db/client/AppContext.cc"
 #endif 
 
-#endif // swc_db_client_AppContext_h
+#endif // swcdb_db_client_AppContext_h

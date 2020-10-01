@@ -3,8 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_db_client_Clients_h
-#define swc_db_client_Clients_h
+#ifndef swcdb_db_client_Clients_h
+#define swcdb_db_client_Clients_h
 
 #include <memory>
 
@@ -87,4 +87,4 @@ class Clients final {
 #endif 
 
 
-#endif // swc_db_client_Clients_h
+#endif // swcdb_db_client_Clients_h

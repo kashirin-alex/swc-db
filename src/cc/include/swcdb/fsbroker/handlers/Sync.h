@@ -4,8 +4,8 @@
  */
 
 
-#ifndef swc_fsbroker_handlers_Sync_h
-#define swc_fsbroker_handlers_Sync_h
+#ifndef swcdb_fsbroker_handlers_Sync_h
+#define swcdb_fsbroker_handlers_Sync_h
 
 #include "swcdb/fs/Broker/Protocol/params/Sync.h"
 
@@ -55,4 +55,4 @@ void sync(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
 
 }}}}
 
-#endif // swc_fsbroker_handlers_Sync_h
+#endif // swcdb_fsbroker_handlers_Sync_h

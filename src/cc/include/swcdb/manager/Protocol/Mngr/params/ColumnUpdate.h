@@ -4,8 +4,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_manager_Protocol_mngr_params_ColumnUpdate_h
-#define swc_manager_Protocol_mngr_params_ColumnUpdate_h
+#ifndef swcdb_manager_Protocol_mngr_params_ColumnUpdate_h
+#define swcdb_manager_Protocol_mngr_params_ColumnUpdate_h
 
 #include "swcdb/core/Serializable.h"
 
@@ -58,4 +58,4 @@ class ColumnUpdate : public Serializable {
 
 }}}}
 
-#endif // swc_manager_Protocol_mngr_params_ColumnUpdate_h
+#endif // swcdb_manager_Protocol_mngr_params_ColumnUpdate_h

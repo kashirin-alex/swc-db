@@ -4,8 +4,8 @@
  */
 
 
-#ifndef swc_fsbroker_handlers_Rename_h
-#define swc_fsbroker_handlers_Rename_h
+#ifndef swcdb_fsbroker_handlers_Rename_h
+#define swcdb_fsbroker_handlers_Rename_h
 
 #include "swcdb/fs/Broker/Protocol/params/Rename.h"
 
@@ -50,4 +50,4 @@ void rename(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
 
 }}}}
 
-#endif // swc_fsbroker_handlers_Rename_h
+#endif // swcdb_fsbroker_handlers_Rename_h

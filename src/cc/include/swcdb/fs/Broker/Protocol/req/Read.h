@@ -3,8 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_fs_Broker_Protocol_req_Read_h
-#define swc_fs_Broker_Protocol_req_Read_h
+#ifndef swcdb_fs_Broker_Protocol_req_Read_h
+#define swcdb_fs_Broker_Protocol_req_Read_h
 
 #include "swcdb/fs/Broker/Protocol/req/Base.h"
 #include "swcdb/fs/Broker/Protocol/params/Read.h"
@@ -41,4 +41,4 @@ class Read : public Base {
 #include "swcdb/fs/Broker/Protocol/req/Read.cc"
 #endif 
 
-#endif  // swc_fs_Broker_Protocol_req_Read_h
+#endif // swcdb_fs_Broker_Protocol_req_Read_h

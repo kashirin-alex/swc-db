@@ -3,8 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_manager_Settings_h
-#define swc_manager_Settings_h
+#ifndef swcdb_manager_Settings_h
+#define swcdb_manager_Settings_h
 
 #include "swcdb/core/config/Settings.h"
 #include "swcdb/core/comm/Settings.h"
@@ -79,4 +79,4 @@ void Settings::init_post_cmd_args(){ }
 
 }}
 
-#endif // swc_manager_Settings_h
+#endif // swcdb_manager_Settings_h

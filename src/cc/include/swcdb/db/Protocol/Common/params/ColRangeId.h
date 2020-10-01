@@ -4,8 +4,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_db_protocol_common_params_ColRangeId_h
-#define swc_db_protocol_common_params_ColRangeId_h
+#ifndef swcdb_db_protocol_common_params_ColRangeId_h
+#define swcdb_db_protocol_common_params_ColRangeId_h
 
 #include "swcdb/core/Serializable.h"
 
@@ -47,4 +47,4 @@ class ColRangeId : public Serializable {
 
 }}}}
 
-#endif // swc_db_protocol_common_params_ColRangeId_h
+#endif // swcdb_db_protocol_common_params_ColRangeId_h

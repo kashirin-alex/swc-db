@@ -4,8 +4,8 @@
  */
 
 
-#ifndef swc_ranger_db_Column_h
-#define swc_ranger_db_Column_h
+#ifndef swcdb_ranger_db_Column_h
+#define swcdb_ranger_db_Column_h
 
 
 #include "swcdb/ranger/db/Range.h"
@@ -69,4 +69,4 @@ class Column final : private std::unordered_map<rid_t, RangePtr> {
 
 }}
 
-#endif // swc_ranger_db_Column_h
+#endif // swcdb_ranger_db_Column_h

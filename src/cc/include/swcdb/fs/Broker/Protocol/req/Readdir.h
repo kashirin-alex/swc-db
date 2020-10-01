@@ -3,8 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_fs_Broker_Protocol_req_Readdir_h
-#define swc_fs_Broker_Protocol_req_Readdir_h
+#ifndef swcdb_fs_Broker_Protocol_req_Readdir_h
+#define swcdb_fs_Broker_Protocol_req_Readdir_h
 
 #include "swcdb/fs/Broker/Protocol/req/Base.h"
 #include "swcdb/fs/Broker/Protocol/params/Readdir.h"
@@ -39,4 +39,4 @@ class Readdir : public Base {
 #include "swcdb/fs/Broker/Protocol/req/Readdir.cc"
 #endif 
 
-#endif  // swc_fs_Broker_Protocol_req_Readdir_h
+#endif // swcdb_fs_Broker_Protocol_req_Readdir_h

@@ -4,8 +4,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */ 
 
-#ifndef swc_ranger_protocol_rgr_req_RangeUnload_h
-#define swc_ranger_protocol_rgr_req_RangeUnload_h
+#ifndef swcdb_ranger_protocol_rgr_req_RangeUnload_h
+#define swcdb_ranger_protocol_rgr_req_RangeUnload_h
 
 
 
@@ -38,4 +38,4 @@ class RangeUnload : public Comm::client::ConnQueue::ReqBase {
 
 }}}}
 
-#endif // swc_ranger_protocol_rgr_req_RangeUnload_h
+#endif // swcdb_ranger_protocol_rgr_req_RangeUnload_h

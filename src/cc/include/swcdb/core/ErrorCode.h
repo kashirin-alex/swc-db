@@ -3,8 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_core_ErrorCode_h
-#define swc_core_ErrorCode_h
+#ifndef swcdb_core_ErrorCode_h
+#define swcdb_core_ErrorCode_h
 
 
 
@@ -118,4 +118,4 @@ enum Code {
 }} // namespace SWC::Error
 
 
-#endif // swc_core_ErrorCode_h
+#endif // swcdb_core_ErrorCode_h

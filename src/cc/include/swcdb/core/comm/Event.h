@@ -4,8 +4,8 @@
  */
 
 
-#ifndef swc_core_comm_Event_h
-#define swc_core_comm_Event_h
+#ifndef swcdb_core_comm_Event_h
+#define swcdb_core_comm_Event_h
 
 #include "swcdb/core/comm/Header.h"
 
@@ -59,4 +59,4 @@ class Event final {
 #include "swcdb/core/comm/Event.cc"
 #endif 
 
-#endif // swc_core_comm_Event_h
+#endif // swcdb_core_comm_Event_h

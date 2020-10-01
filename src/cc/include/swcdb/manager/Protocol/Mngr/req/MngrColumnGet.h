@@ -4,8 +4,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */ 
 
-#ifndef swc_manager_Protocol_mngr_req_MngrColumnGet_h
-#define swc_manager_Protocol_mngr_req_MngrColumnGet_h
+#ifndef swcdb_manager_Protocol_mngr_req_MngrColumnGet_h
+#define swcdb_manager_Protocol_mngr_req_MngrColumnGet_h
 
 #include "swcdb/db/Protocol/Mngr/params/ColumnGet.h"
 
@@ -53,4 +53,4 @@ class MngrColumnGet : public Comm::client::ConnQueue::ReqBase {
 
 }}}}
 
-#endif // swc_manager_Protocol_mngr_req_MngrColumnGet_h
+#endif // swcdb_manager_Protocol_mngr_req_MngrColumnGet_h

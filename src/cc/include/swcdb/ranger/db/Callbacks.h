@@ -4,8 +4,8 @@
  */
 
 
-#ifndef swc_ranger_db_Callbacks_h
-#define swc_ranger_db_Callbacks_h
+#ifndef swcdb_ranger_db_Callbacks_h
+#define swcdb_ranger_db_Callbacks_h
 
 #include <functional>
 #include "swcdb/core/comm/ResponseCallback.h"
@@ -24,4 +24,4 @@ typedef std::shared_ptr<ColumnsUnloaded> ColumnsUnloadedPtr;
 
 }}}
 
-#endif // swc_ranger_db_Callbacks_h
+#endif // swcdb_ranger_db_Callbacks_h

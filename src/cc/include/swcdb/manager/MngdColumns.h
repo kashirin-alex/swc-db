@@ -4,8 +4,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_manager_MngdColumns_h
-#define swc_manager_MngdColumns_h
+#ifndef swcdb_manager_MngdColumns_h
+#define swcdb_manager_MngdColumns_h
 
 #include "swcdb/db/Protocol/Mngr/params/ColumnMng.h"
 
@@ -125,4 +125,4 @@ class MngdColumns final {
 
 }} // namespace SWC::Manager
 
-#endif // swc_manager_MngdColumns_h
+#endif // swcdb_manager_MngdColumns_h

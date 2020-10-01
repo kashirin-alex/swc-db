@@ -4,8 +4,8 @@
  */
 
 
-#ifndef swc_manager_Protocol_handlers_ColumnList_h
-#define swc_manager_Protocol_handlers_ColumnList_h
+#ifndef swcdb_manager_Protocol_handlers_ColumnList_h
+#define swcdb_manager_Protocol_handlers_ColumnList_h
 
 #include "swcdb/db/Protocol/Mngr/params/ColumnList.h"
 
@@ -51,4 +51,4 @@ void column_list(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
 
 }}}}
 
-#endif // swc_manager_Protocol_handlers_ColumnList_h
+#endif // swcdb_manager_Protocol_handlers_ColumnList_h

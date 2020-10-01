@@ -4,8 +4,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_db_types_MngrColumnState_h
-#define swc_db_types_MngrColumnState_h
+#ifndef swcdb_db_types_MngrColumnState_h
+#define swcdb_db_types_MngrColumnState_h
 
 #include <string>
 
@@ -33,4 +33,4 @@ std::string to_string(MngrColumn::State state);
 #include "swcdb/db/Types/MngrColumnState.cc"
 #endif 
 
-#endif // swc_db_types_MngrColumnState_h
+#endif // swcdb_db_types_MngrColumnState_h

@@ -4,8 +4,8 @@
  */
 
 
-#ifndef swc_fsbroker_handlers_Open_h
-#define swc_fsbroker_handlers_Open_h
+#ifndef swcdb_fsbroker_handlers_Open_h
+#define swcdb_fsbroker_handlers_Open_h
 
 #include "swcdb/fs/Broker/Protocol/params/Open.h"
 
@@ -56,4 +56,4 @@ void open(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
 
 }}}}
 
-#endif // swc_fsbroker_handlers_Open_h
+#endif // swcdb_fsbroker_handlers_Open_h

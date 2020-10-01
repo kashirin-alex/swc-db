@@ -4,8 +4,8 @@
  */
 
 
-#ifndef swc_fsbroker_handlers_Append_h
-#define swc_fsbroker_handlers_Append_h
+#ifndef swcdb_fsbroker_handlers_Append_h
+#define swcdb_fsbroker_handlers_Append_h
 
 #include "swcdb/fs/Broker/Protocol/params/Append.h"
 
@@ -60,4 +60,4 @@ void append(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
 
 }}}}
 
-#endif // swc_fsbroker_handlers_Append_h
+#endif // swcdb_fsbroker_handlers_Append_h

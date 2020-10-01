@@ -3,8 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_fs_Broker_Protocol_req_Write_h
-#define swc_fs_Broker_Protocol_req_Write_h
+#ifndef swcdb_fs_Broker_Protocol_req_Write_h
+#define swcdb_fs_Broker_Protocol_req_Write_h
 
 #include "swcdb/fs/Broker/Protocol/req/Base.h"
 #include "swcdb/fs/Broker/Protocol/params/Write.h"
@@ -39,4 +39,4 @@ class Write : public Base {
 #endif 
 
 
-#endif  // swc_fs_Broker_Protocol_req_Write_h
+#endif // swcdb_fs_Broker_Protocol_req_Write_h

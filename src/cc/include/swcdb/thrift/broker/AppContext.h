@@ -3,8 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_app_thriftbroker_AppContext_h
-#define swc_app_thriftbroker_AppContext_h
+#ifndef swcdb_app_thriftbroker_AppContext_h
+#define swcdb_app_thriftbroker_AppContext_h
 
 
 namespace SWC {
@@ -130,4 +130,4 @@ class AppContext final : virtual public BrokerIfFactory {
 //#endif 
 
 
-#endif // swc_app_thriftbroker_AppContext_h
+#endif // swcdb_app_thriftbroker_AppContext_h

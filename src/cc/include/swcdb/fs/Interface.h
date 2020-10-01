@@ -3,8 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_fs_Interface_h
-#define swc_fs_Interface_h
+#ifndef swcdb_fs_Interface_h
+#define swcdb_fs_Interface_h
 
 
 #include "swcdb/fs/FileSystem.h"
@@ -158,4 +158,4 @@ class FsInterface {
 #endif 
 
 
-#endif  // swc_fs_Interface_h
+#endif // swcdb_fs_Interface_h

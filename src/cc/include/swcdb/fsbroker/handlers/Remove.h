@@ -4,8 +4,8 @@
  */
 
 
-#ifndef swc_fsbroker_handlers_Remove_h
-#define swc_fsbroker_handlers_Remove_h
+#ifndef swcdb_fsbroker_handlers_Remove_h
+#define swcdb_fsbroker_handlers_Remove_h
 
 #include "swcdb/fs/Broker/Protocol/params/Remove.h"
 
@@ -50,4 +50,4 @@ void remove(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
 
 }}}}
 
-#endif // swc_fsbroker_handlers_Remove_h
+#endif // swcdb_fsbroker_handlers_Remove_h

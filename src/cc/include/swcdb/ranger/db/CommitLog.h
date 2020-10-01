@@ -4,8 +4,8 @@
  */
 
 
-#ifndef swc_ranger_db_CommitLog_h
-#define swc_ranger_db_CommitLog_h
+#ifndef swcdb_ranger_db_CommitLog_h
+#define swcdb_ranger_db_CommitLog_h
 
 
 #include "swcdb/ranger/db/CommitLogFragment.h"
@@ -141,4 +141,4 @@ class Fragments final : private std::vector<Fragment::Ptr> {
 
 #include "swcdb/ranger/db/CommitLogCompact.h"
 
-#endif // swc_ranger_db_CommitLog_h
+#endif // swcdb_ranger_db_CommitLog_h

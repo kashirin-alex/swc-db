@@ -221,10 +221,10 @@ bool Interface::cmd_option(std::string& cmd) const {
 }}} // namespace SWC::Utils::shell
 
 extern "C" {
-int swc_utils_run() {
+int swcdb_utils_run() {
   return SWC::Utils::shell::run();
 };
-void swc_utils_apply_cfg(SWC::Env::Config::Ptr env){
+void swcdb_utils_apply_cfg(SWC::Env::Config::Ptr env){
   SWC::Env::Config::set(env);
 };
 }

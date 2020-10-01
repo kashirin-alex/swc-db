@@ -4,8 +4,8 @@
  */
 
 
-#ifndef swc_core_comm_DispatchHandler_h
-#define swc_core_comm_DispatchHandler_h
+#ifndef swcdb_core_comm_DispatchHandler_h
+#define swcdb_core_comm_DispatchHandler_h
 
 
 #include <memory>
@@ -37,4 +37,4 @@ class DispatchHandler : public std::enable_shared_from_this<DispatchHandler> {
 #include "swcdb/core/comm/DispatchHandler.cc"
 #endif 
 
-#endif // swc_core_comm_DispatchHandler_h
+#endif // swcdb_core_comm_DispatchHandler_h

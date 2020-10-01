@@ -4,8 +4,8 @@
  */
 
 
-#ifndef swc_ranger_Protocol_handlers_RangeQueryUpdate_h
-#define swc_ranger_Protocol_handlers_RangeQueryUpdate_h
+#ifndef swcdb_ranger_Protocol_handlers_RangeQueryUpdate_h
+#define swcdb_ranger_Protocol_handlers_RangeQueryUpdate_h
 
 #include "swcdb/db/Protocol/Rgr/params/RangeQueryUpdate.h"
 #include "swcdb/ranger/callbacks/RangeQueryUpdate.h"
@@ -57,4 +57,4 @@ void range_query_update(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr
 
 }}}}
 
-#endif // swc_ranger_Protocol_handlers_RangeQueryUpdate_h
+#endif // swcdb_ranger_Protocol_handlers_RangeQueryUpdate_h

@@ -3,16 +3,16 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_utils_Shell_h
-#define swc_utils_Shell_h
+#ifndef swcdb_utils_Shell_h
+#define swcdb_utils_Shell_h
 
 #include "swcdb/core/config/Settings.h"
 
 #include <re2/re2.h>
 
 extern "C" {
-int   swc_utils_run();
-void  swc_utils_apply_cfg(SWC::Env::Config::Ptr env);
+int   swcdb_utils_run();
+void  swcdb_utils_apply_cfg(SWC::Env::Config::Ptr env);
 }
 
 namespace SWC { 
@@ -79,4 +79,4 @@ class Interface {
 
 }}} // namespace Utils::shell
 
-#endif // swc_utils_Shell_h
+#endif // swcdb_utils_Shell_h

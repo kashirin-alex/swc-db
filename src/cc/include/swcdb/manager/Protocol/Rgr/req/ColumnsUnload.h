@@ -4,8 +4,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */ 
 
-#ifndef swc_manager_Protocol_rgr_req_ColumnsUnload_h
-#define swc_manager_Protocol_rgr_req_ColumnsUnload_h
+#ifndef swcdb_manager_Protocol_rgr_req_ColumnsUnload_h
+#define swcdb_manager_Protocol_rgr_req_ColumnsUnload_h
 
 
 namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
@@ -33,4 +33,4 @@ class ColumnsUnload : public Comm::client::ConnQueue::ReqBase  {
 
 }}}}
 
-#endif // swc_manager_Protocol_rgr_req_ColumnsUnload_h
+#endif // swcdb_manager_Protocol_rgr_req_ColumnsUnload_h

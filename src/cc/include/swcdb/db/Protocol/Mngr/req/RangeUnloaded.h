@@ -4,8 +4,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_db_protocol_req_RangeUnloaded_h
-#define swc_db_protocol_req_RangeUnloaded_h
+#ifndef swcdb_db_protocol_req_RangeUnloaded_h
+#define swcdb_db_protocol_req_RangeUnloaded_h
 
 
 #include "swcdb/db/Protocol/Commands.h"
@@ -98,4 +98,4 @@ class RangeUnloaded: public Comm::client::ConnQueue::ReqBase {
 
 }}}}
 
-#endif // swc_db_protocol_req_RangeUnloaded_h
+#endif // swcdb_db_protocol_req_RangeUnloaded_h

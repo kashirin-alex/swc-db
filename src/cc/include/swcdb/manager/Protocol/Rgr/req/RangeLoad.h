@@ -4,8 +4,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */ 
 
-#ifndef swc_manager_Protocol_rgr_req_RangeLoad_h
-#define swc_manager_Protocol_rgr_req_RangeLoad_h
+#ifndef swcdb_manager_Protocol_rgr_req_RangeLoad_h
+#define swcdb_manager_Protocol_rgr_req_RangeLoad_h
 
 namespace SWC { namespace Protocol { namespace Rgr { namespace Req {
 
@@ -38,4 +38,4 @@ class RangeLoad : public Comm::client::ConnQueue::ReqBase {
 
 }}}}
 
-#endif // swc_manager_Protocol_rgr_req_RangeLoad_h
+#endif // swcdb_manager_Protocol_rgr_req_RangeLoad_h

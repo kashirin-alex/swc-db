@@ -3,8 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_core_Version_h
-#define swc_core_Version_h
+#ifndef swcdb_core_Version_h
+#define swcdb_core_Version_h
 
 
 
@@ -19,6 +19,6 @@ const char* swcdb_version();
 const char* swcdb_copyrights();
 
 
-#endif
+#endif // swcdb_core_Version_h
 
 

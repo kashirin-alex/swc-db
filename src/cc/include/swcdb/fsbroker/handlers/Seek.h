@@ -4,8 +4,8 @@
  */
 
 
-#ifndef swc_fsbroker_handlers_Seek_h
-#define swc_fsbroker_handlers_Seek_h
+#ifndef swcdb_fsbroker_handlers_Seek_h
+#define swcdb_fsbroker_handlers_Seek_h
 
 #include "swcdb/fs/Broker/Protocol/params/Seek.h"
 
@@ -58,4 +58,4 @@ void seek(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
 
 }}}}
 
-#endif // swc_fsbroker_handlers_Seek_h
+#endif // swcdb_fsbroker_handlers_Seek_h

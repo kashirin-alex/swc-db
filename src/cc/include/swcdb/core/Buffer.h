@@ -4,8 +4,8 @@
  */
 
 
-#ifndef swc_core_Buffer_h
-#define swc_core_Buffer_h
+#ifndef swcdb_core_Buffer_h
+#define swcdb_core_Buffer_h
 
 #include "swcdb/core/Compat.h"
 
@@ -296,4 +296,4 @@ void StaticBuffer::set(DynamicBuffer& other) SWC_NOEXCEPT {
 } // namespace SWC
 
 
-#endif /* swc_core_Buffer_h */
+#endif // swcdb_core_Buffer_h

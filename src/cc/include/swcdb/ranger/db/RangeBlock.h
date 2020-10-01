@@ -4,8 +4,8 @@
  */
 
 
-#ifndef swc_ranger_db_RangeBlock_h
-#define swc_ranger_db_RangeBlock_h
+#ifndef swcdb_ranger_db_RangeBlock_h
+#define swcdb_ranger_db_RangeBlock_h
 
 #include <shared_mutex>
 
@@ -172,4 +172,4 @@ class Block final {
 
 }}
 
-#endif // swc_ranger_db_RangeBlock_h
+#endif // swcdb_ranger_db_RangeBlock_h

@@ -4,8 +4,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_core_comm_AppContext_h
-#define swc_core_comm_AppContext_h
+#ifndef swcdb_core_comm_AppContext_h
+#define swcdb_core_comm_AppContext_h
 
 #include <memory>
 #include "swcdb/core/comm/Event.h"
@@ -45,4 +45,4 @@ class AppContext : public std::enable_shared_from_this<AppContext> {
 #include "swcdb/core/comm/AppContext.cc"
 #endif 
 
-#endif // swc_core_comm_AppContext_h
+#endif // swcdb_core_comm_AppContext_h

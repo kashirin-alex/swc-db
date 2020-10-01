@@ -4,8 +4,8 @@
  */
 
 
-#ifndef swc_ranger_db_CellStoreBlockHeader_h
-#define swc_ranger_db_CellStoreBlockHeader_h
+#ifndef swcdb_ranger_db_CellStoreBlockHeader_h
+#define swcdb_ranger_db_CellStoreBlockHeader_h
 
 
 
@@ -52,4 +52,4 @@ struct Header final {
 
 }}}} // namespace SWC::Ranger::CellStore::Block
 
-#endif // swc_ranger_db_CellStoreBlockHeader_h
+#endif // swcdb_ranger_db_CellStoreBlockHeader_h

@@ -3,8 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_fs_Broker_Protocol_params_Rename_h
-#define swc_fs_Broker_Protocol_params_Rename_h
+#ifndef swcdb_fs_Broker_Protocol_params_Rename_h
+#define swcdb_fs_Broker_Protocol_params_Rename_h
 
 
 #include "swcdb/core/Serializable.h"
@@ -42,4 +42,4 @@ class RenameReq : public Serializable {
 #endif 
 
 
-#endif // swc_fs_Broker_Protocol_params_Rename_h
+#endif // swcdb_fs_Broker_Protocol_params_Rename_h

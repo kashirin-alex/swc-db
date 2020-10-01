@@ -4,8 +4,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_db_protocol_rgr_params_RangeIsLoaded_h
-#define swc_db_protocol_rgr_params_RangeIsLoaded_h
+#ifndef swcdb_db_protocol_rgr_params_RangeIsLoaded_h
+#define swcdb_db_protocol_rgr_params_RangeIsLoaded_h
 
 #include "swcdb/db/Protocol/Common/params/ColRangeId.h"
 
@@ -24,4 +24,4 @@ class RangeIsLoaded : public Common::Params::ColRangeId {
 
 }}}}
 
-#endif // swc_db_protocol_rgr_params_RangeIsLoaded_h
+#endif // swcdb_db_protocol_rgr_params_RangeIsLoaded_h

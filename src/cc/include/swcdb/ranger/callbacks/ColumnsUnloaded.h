@@ -3,8 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_ranger_callbacks_ColumnsUnloaded_h
-#define swc_ranger_callbacks_ColumnsUnloaded_h
+#ifndef swcdb_ranger_callbacks_ColumnsUnloaded_h
+#define swcdb_ranger_callbacks_ColumnsUnloaded_h
 
 #include "swcdb/core/comm/ResponseCallback.h"
 #include "swcdb/db/Protocol/Rgr/params/ColumnsUnload.h"
@@ -54,4 +54,4 @@ class ColumnsUnloaded : public Comm::ResponseCallback {
 
 }
 }}
-#endif // swc_ranger_callbacks_ColumnsUnloaded_h
+#endif // swcdb_ranger_callbacks_ColumnsUnloaded_h

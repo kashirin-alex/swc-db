@@ -4,8 +4,8 @@
  */
 
 
-#ifndef swc_fs_Broker_Protocol_params_Append_h
-#define swc_fs_Broker_Protocol_params_Append_h
+#ifndef swcdb_fs_Broker_Protocol_params_Append_h
+#define swcdb_fs_Broker_Protocol_params_Append_h
 
 
 #include "swcdb/core/Serializable.h"
@@ -66,4 +66,4 @@ class AppendRsp : public Serializable {
 #endif 
 
 
-#endif // swc_fs_Broker_Protocol_params_Append_h
+#endif // swcdb_fs_Broker_Protocol_params_Append_h

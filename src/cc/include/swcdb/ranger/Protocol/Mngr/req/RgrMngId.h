@@ -4,8 +4,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_ranger_Protocol_mngr_req_RgrMngId_h
-#define swc_ranger_Protocol_mngr_req_RgrMngId_h
+#ifndef swcdb_ranger_Protocol_mngr_req_RgrMngId_h
+#define swcdb_ranger_Protocol_mngr_req_RgrMngId_h
 
 #include "swcdb/db/Protocol/Mngr/req/MngrActive.h"
 #include "swcdb/db/Protocol/Mngr/params/RgrMngId.h"
@@ -232,4 +232,4 @@ class RgrMngId: public Comm::client::ConnQueue::ReqBase {
 
 }}}}
 
-#endif // swc_ranger_Protocol_mngr_req_RgrMngId_h
+#endif // swcdb_ranger_Protocol_mngr_req_RgrMngId_h

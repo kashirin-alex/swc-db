@@ -3,8 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_fs_Callbacks_h
-#define swc_fs_Callbacks_h
+#ifndef swcdb_fs_Callbacks_h
+#define swcdb_fs_Callbacks_h
 
 #include <functional>
 #include "swcdb/core/Buffer.h"
@@ -40,4 +40,4 @@ namespace Callback {
 
 }}
 
-#endif  // swc_fs_Callbacks_h
+#endif // swcdb_fs_Callbacks_h

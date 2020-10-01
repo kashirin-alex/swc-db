@@ -3,8 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_core_comm_Header_h
-#define swc_core_comm_Header_h
+#ifndef swcdb_core_comm_Header_h
+#define swcdb_core_comm_Header_h
 
 #include "swcdb/core/Compat.h"
 
@@ -74,4 +74,4 @@ class Header final {
 #include "swcdb/core/comm/Header.cc"
 #endif 
 
-#endif // swc_core_comm_Header_h
+#endif // swcdb_core_comm_Header_h

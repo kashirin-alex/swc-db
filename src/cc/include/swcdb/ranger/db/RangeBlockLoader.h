@@ -4,8 +4,8 @@
  */
 
 
-#ifndef swc_ranger_db_BlockLoader_h
-#define swc_ranger_db_BlockLoader_h
+#ifndef swcdb_ranger_db_BlockLoader_h
+#define swcdb_ranger_db_BlockLoader_h
 
 #include "swcdb/ranger/db/RangeBlock.h"
 #include "swcdb/ranger/db/CellStoreBlock.h"
@@ -66,4 +66,4 @@ class BlockLoader final {
 
 }}
 
-#endif // swc_ranger_db_BlockLoader_h
+#endif // swcdb_ranger_db_BlockLoader_h

@@ -4,8 +4,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */ 
 
-#ifndef swc_db_client_Query_Select_h
-#define swc_db_client_Query_Select_h
+#ifndef swcdb_db_client_Query_Select_h
+#define swcdb_db_client_Query_Select_h
 
 
 #include "swcdb/db/Types/Range.h"
@@ -233,4 +233,4 @@ class Select final : public std::enable_shared_from_this<Select> {
 #endif 
 
 
-#endif // swc_db_client_Query_Select_h
+#endif // swcdb_db_client_Query_Select_h

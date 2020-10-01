@@ -4,8 +4,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_manager_Rangers_h
-#define swc_manager_Rangers_h
+#ifndef swcdb_manager_Rangers_h
+#define swcdb_manager_Rangers_h
 
 #include "swcdb/manager/Ranger.h"
 #include "swcdb/manager/RangersResources.h"
@@ -118,4 +118,4 @@ class Rangers final {
 
 }}
 
-#endif // swc_manager_Rangers_h
+#endif // swcdb_manager_Rangers_h

@@ -541,4 +541,4 @@ bool is_matching(uint8_t comp, const int64_t p1, const int64_t p2) {
 
 
 
-#endif
+#endif // swcdb_core_Comparators_h

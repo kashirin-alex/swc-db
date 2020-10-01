@@ -3,8 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_core_QueueSafe_h
-#define swc_core_QueueSafe_h
+#ifndef swcdb_core_QueueSafe_h
+#define swcdb_core_QueueSafe_h
 
 #include <queue>
 #include "swcdb/core/Mutex.h"
@@ -79,4 +79,4 @@ class QueueSafe : private std::queue<ItemT> {
 
 }
 
-#endif // swc_core_QueueSafe_h
+#endif // swcdb_core_QueueSafe_h

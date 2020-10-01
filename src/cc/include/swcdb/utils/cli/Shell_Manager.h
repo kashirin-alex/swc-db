@@ -3,8 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_utils_ShellManager_h
-#define swc_utils_ShellManager_h
+#ifndef swcdb_utils_ShellManager_h
+#define swcdb_utils_ShellManager_h
 
 #include "swcdb/utils/cli/Shell.h"
 
@@ -31,4 +31,4 @@ class Mngr : public Interface {
 
 }}} // namespace Utils::shell
 
-#endif // swc_utils_ShellManager_h
+#endif // swcdb_utils_ShellManager_h

@@ -4,8 +4,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_db_types_MngrState_h
-#define swc_db_types_MngrState_h
+#ifndef swcdb_db_types_MngrState_h
+#define swcdb_db_types_MngrState_h
 
 #include <string>
 
@@ -31,4 +31,4 @@ std::string to_string(MngrState state);
 #include "swcdb/db/Types/MngrState.cc"
 #endif 
 
-#endif // swc_db_types_MngrState_h
+#endif // swcdb_db_types_MngrState_h

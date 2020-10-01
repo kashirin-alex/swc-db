@@ -4,8 +4,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_db_protocol_rgr_params_RangeQuerySelect_h
-#define swc_db_protocol_rgr_params_RangeQuerySelect_h
+#ifndef swcdb_db_protocol_rgr_params_RangeQuerySelect_h
+#define swcdb_db_protocol_rgr_params_RangeQuerySelect_h
 
 #include "swcdb/core/Buffer.h"
 #include "swcdb/core/Serializable.h"
@@ -78,4 +78,4 @@ class RangeQuerySelectRsp  : public Serializable {
 #include "swcdb/db/Protocol/Rgr/params/RangeQuerySelect.cc"
 #endif 
 
-#endif // swc_db_protocol_rgr_params_RangeQuerySelect_h
+#endif // swcdb_db_protocol_rgr_params_RangeQuerySelect_h

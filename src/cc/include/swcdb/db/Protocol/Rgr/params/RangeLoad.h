@@ -4,8 +4,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_db_protocol_rgr_params_RangeLoad_h
-#define swc_db_protocol_rgr_params_RangeLoad_h
+#ifndef swcdb_db_protocol_rgr_params_RangeLoad_h
+#define swcdb_db_protocol_rgr_params_RangeLoad_h
 
 #include "swcdb/db/Protocol/Common/params/ColRangeId.h"
 
@@ -78,4 +78,4 @@ class RangeLoaded : public Serializable {
 
 }}}}
 
-#endif // swc_db_protocol_rgr_params_RangeLoad_h
+#endif // swcdb_db_protocol_rgr_params_RangeLoad_h

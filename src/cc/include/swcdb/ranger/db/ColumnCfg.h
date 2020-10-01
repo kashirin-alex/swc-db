@@ -2,8 +2,8 @@
  * SWC-DB© Copyright since 2019 Alex Kashirin <kashirin.alex@gmail.com>
 */
 
-#ifndef swc_ranger_db_ColumnCfg_h
-#define swc_ranger_db_ColumnCfg_h
+#ifndef swcdb_ranger_db_ColumnCfg_h
+#define swcdb_ranger_db_ColumnCfg_h
 
 #include "swcdb/db/Cells/KeyComparator.h"
 #include "swcdb/db/Columns/Schema.h"
@@ -163,4 +163,4 @@ class ColumnCfg final {
 
 }}
 
-#endif // swc_ranger_db_ColumnCfg_h
+#endif // swcdb_ranger_db_ColumnCfg_h

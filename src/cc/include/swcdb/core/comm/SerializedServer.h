@@ -4,8 +4,8 @@
  */
 
 
-#ifndef swc_core_comm_SerializedServer_h
-#define swc_core_comm_SerializedServer_h
+#ifndef swcdb_core_comm_SerializedServer_h
+#define swcdb_core_comm_SerializedServer_h
 
 #include <string>
 #include <vector>
@@ -106,4 +106,4 @@ class SerializedServer final {
 #include "swcdb/core/comm/SerializedServer.cc"
 #endif 
 
-#endif // swc_core_comm_SerializedServer_h
+#endif // swcdb_core_comm_SerializedServer_h

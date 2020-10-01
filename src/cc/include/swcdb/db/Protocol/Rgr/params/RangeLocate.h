@@ -4,8 +4,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_db_protocol_rgr_params_RangeLocate_h
-#define swc_db_protocol_rgr_params_RangeLocate_h
+#ifndef swcdb_db_protocol_rgr_params_RangeLocate_h
+#define swcdb_db_protocol_rgr_params_RangeLocate_h
 
 
 #include "swcdb/core/Error.h"
@@ -78,4 +78,4 @@ class RangeLocateRsp  : public Serializable {
 #include "swcdb/db/Protocol/Rgr/params/RangeLocate.cc"
 #endif 
 
-#endif // swc_db_protocol_rgr_params_RangeLocate_h
+#endif // swcdb_db_protocol_rgr_params_RangeLocate_h

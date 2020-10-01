@@ -3,8 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_fs_Broker_Protocol_req_Create_h
-#define swc_fs_Broker_Protocol_req_Create_h
+#ifndef swcdb_fs_Broker_Protocol_req_Create_h
+#define swcdb_fs_Broker_Protocol_req_Create_h
 
 #include "swcdb/fs/Broker/Protocol/req/Base.h"
 #include "swcdb/fs/Broker/Protocol/params/Create.h"
@@ -40,4 +40,4 @@ class Create : public Base {
 #include "swcdb/fs/Broker/Protocol/req/Create.cc"
 #endif 
 
-#endif  // swc_fs_Broker_Protocol_req_Create_h
+#endif // swcdb_fs_Broker_Protocol_req_Create_h

@@ -4,8 +4,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */ 
 
-#ifndef swc_db_client_Query_Update_h
-#define swc_db_client_Query_Update_h
+#ifndef swcdb_db_client_Query_Update_h
+#define swcdb_db_client_Query_Update_h
 
 
 #include "swcdb/db/Types/Range.h"
@@ -178,4 +178,4 @@ class Update final : public std::enable_shared_from_this<Update> {
 #endif 
 
 
-#endif // swc_db_client_Query_Update_h
+#endif // swcdb_db_client_Query_Update_h

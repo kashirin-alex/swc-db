@@ -4,8 +4,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_db_protocol_mngr_params_RangeCreate_h
-#define swc_db_protocol_mngr_params_RangeCreate_h
+#ifndef swcdb_db_protocol_mngr_params_RangeCreate_h
+#define swcdb_db_protocol_mngr_params_RangeCreate_h
 
 #include "swcdb/core/Serializable.h"
 
@@ -105,4 +105,4 @@ class RangeCreateRsp : public Serializable {
 
 }}}}
 
-#endif // swc_db_protocol_mngr_params_RangeCreate_h
+#endif // swcdb_db_protocol_mngr_params_RangeCreate_h

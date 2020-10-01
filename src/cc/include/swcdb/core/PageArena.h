@@ -3,8 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_core_PageArena_h
-#define swc_core_PageArena_h
+#ifndef swcdb_core_PageArena_h
+#define swcdb_core_PageArena_h
 
 #include <mutex>
 #include <atomic>
@@ -367,7 +367,7 @@ bool operator==(ItemPtr l, ItemPtr r) {
 
 
 } }
-#endif // swc_core_PageArena_h
+#endif // swcdb_core_PageArena_h
 
 
 

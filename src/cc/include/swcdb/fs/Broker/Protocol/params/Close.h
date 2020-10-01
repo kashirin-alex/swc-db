@@ -3,8 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_fs_Broker_Protocol_params_Close_h
-#define swc_fs_Broker_Protocol_params_Close_h
+#ifndef swcdb_fs_Broker_Protocol_params_Close_h
+#define swcdb_fs_Broker_Protocol_params_Close_h
 
 
 #include "swcdb/core/Serializable.h"
@@ -41,4 +41,4 @@ class CloseReq : public Serializable {
 #endif 
 
 
-#endif // swc_fs_Broker_Protocol_params_Close_h
+#endif // swcdb_fs_Broker_Protocol_params_Close_h

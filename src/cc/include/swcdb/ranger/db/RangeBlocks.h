@@ -4,8 +4,8 @@
  */
 
 
-#ifndef swc_ranger_db_RangeBlocks_h
-#define swc_ranger_db_RangeBlocks_h
+#ifndef swcdb_ranger_db_RangeBlocks_h
+#define swcdb_ranger_db_RangeBlocks_h
 
 namespace SWC { namespace Ranger { namespace CommitLog {
 class Fragments;
@@ -121,4 +121,4 @@ class Blocks final {
 
 
 
-#endif // swc_ranger_db_RangeBlocks_h
+#endif // swcdb_ranger_db_RangeBlocks_h

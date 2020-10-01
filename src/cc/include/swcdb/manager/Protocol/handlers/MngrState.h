@@ -4,8 +4,8 @@
  */
 
 
-#ifndef swc_manager_Protocol_handlers_MngrState_h
-#define swc_manager_Protocol_handlers_MngrState_h
+#ifndef swcdb_manager_Protocol_handlers_MngrState_h
+#define swcdb_manager_Protocol_handlers_MngrState_h
 
 
 namespace SWC { namespace Protocol { namespace Mngr { namespace Handler {
@@ -37,4 +37,4 @@ void mngr_state(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
 
 }}}}
 
-#endif // swc_manager_Protocol_handlers_MngrState_h
+#endif // swcdb_manager_Protocol_handlers_MngrState_h

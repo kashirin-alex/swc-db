@@ -28,22 +28,22 @@ int run(const std::string& cmd, bool custom=false) {
               "Shared Lib %s, open fail: %s\n", lib_path.c_str(), err);
 
   err = dlerror();
-  std::string handler_name =  "swc_utils_apply_cfg";
+  std::string handler_name =  "swcdb_utils_apply_cfg";
   void* f_cfg_ptr = dlsym(handle, handler_name.c_str());
   if (err != NULL || f_cfg_ptr == nullptr)
     SWC_THROWF(Error::CONFIG_BAD_VALUE, 
               "Shared Lib %s, link(%s) fail: %s handle=%lu\n", 
               lib_path.c_str(), handler_name.c_str(), err, (size_t)handle);
-  ((swc_utils_apply_cfg_t*)f_cfg_ptr)(Env::Config::get());
+  ((swcdb_utils_apply_cfg_t*)f_cfg_ptr)(Env::Config::get());
     
   err = dlerror();
-  handler_name =  "swc_utils_run";
+  handler_name =  "swcdb_utils_run";
   void* f_new_ptr = dlsym(handle, handler_name.c_str());
   if (err != NULL || f_new_ptr == nullptr)
     SWC_THROWF(Error::CONFIG_BAD_VALUE, 
               "Shared Lib %s, link(%s) fail: %s handle=%lu\n", 
               lib_path.c_str(), handler_name.c_str(), err, (size_t)handle);
-  return ((swc_utils_run_t*)f_new_ptr)();
+  return ((swcdb_utils_run_t*)f_new_ptr)();
 }
 
 

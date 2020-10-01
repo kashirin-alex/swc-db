@@ -4,8 +4,8 @@
  */
 
 
-#ifndef swc_fsbroker_handlers_Create_h
-#define swc_fsbroker_handlers_Create_h
+#ifndef swcdb_fsbroker_handlers_Create_h
+#define swcdb_fsbroker_handlers_Create_h
 
 #include "swcdb/fs/Broker/Protocol/params/Create.h"
 #include "swcdb/fs/Broker/Protocol/params/Open.h"
@@ -59,4 +59,4 @@ void create(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
 
 }}}}
 
-#endif // swc_fsbroker_handlers_Create_h
+#endif // swcdb_fsbroker_handlers_Create_h

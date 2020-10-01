@@ -3,8 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_fs_SmartFd_h
-#define swc_fs_SmartFd_h
+#ifndef swcdb_fs_SmartFd_h
+#define swcdb_fs_SmartFd_h
 
 #include "swcdb/core/Compat.h"
 #include "swcdb/core/LockAtomicUnique.h"
@@ -70,4 +70,4 @@ struct SmartFd {
 #include "swcdb/fs/SmartFd.cc"
 #endif 
 
-#endif  // swc_fs_SmartFd_h
+#endif // swcdb_fs_SmartFd_h

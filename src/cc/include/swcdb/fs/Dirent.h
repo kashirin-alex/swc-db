@@ -3,8 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_fs_Dirent_h
-#define swc_fs_Dirent_h
+#ifndef swcdb_fs_Dirent_h
+#define swcdb_fs_Dirent_h
 
 #include <memory>
 #include <vector>
@@ -50,4 +50,4 @@ typedef std::vector<Dirent> DirentList;
 #endif 
 
 
-#endif  // swc_fs_Dirent_h
+#endif // swcdb_fs_Dirent_h

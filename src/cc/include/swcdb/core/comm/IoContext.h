@@ -4,8 +4,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_core_comm_IoContext_h
-#define swc_core_comm_IoContext_h
+#ifndef swcdb_core_comm_IoContext_h
+#define swcdb_core_comm_IoContext_h
 
 #include <asio.hpp>
 #include "swcdb/core/Logger.h"
@@ -113,4 +113,4 @@ class IoCtx final {
 #include "swcdb/core/comm/IoContext.cc"
 #endif 
 
-#endif // swc_core_comm_IoContext_h
+#endif // swcdb_core_comm_IoContext_h

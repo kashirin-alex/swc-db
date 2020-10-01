@@ -4,8 +4,8 @@
  */
 
 
-#ifndef swc_ranger_db_CommitLogSplitter_h
-#define swc_ranger_db_CommitLogSplitter_h
+#ifndef swcdb_ranger_db_CommitLogSplitter_h
+#define swcdb_ranger_db_CommitLogSplitter_h
 
 
 namespace SWC { namespace Ranger { namespace CommitLog {
@@ -114,4 +114,4 @@ class Splitter final {
 
 }}} // namespace SWC::Ranger::CommitLog
 
-#endif // swc_ranger_db_CommitLogSplitter_h
+#endif // swcdb_ranger_db_CommitLogSplitter_h

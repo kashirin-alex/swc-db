@@ -110,4 +110,4 @@ class Key final : public std::vector<Fraction> {
 #include "swcdb/db/Cells/SpecsKey.cc"
 #endif 
 
-#endif
+#endif // swcdb_db_cells_SpecsKey_h

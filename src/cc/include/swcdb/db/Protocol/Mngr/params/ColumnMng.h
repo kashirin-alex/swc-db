@@ -4,8 +4,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_db_protocol_mngr_params_ColumnMng_h
-#define swc_db_protocol_mngr_params_ColumnMng_h
+#ifndef swcdb_db_protocol_mngr_params_ColumnMng_h
+#define swcdb_db_protocol_mngr_params_ColumnMng_h
 
 
 #include "swcdb/core/Serializable.h"
@@ -61,4 +61,4 @@ class ColumnMng : public Serializable {
 #include "swcdb/db/Protocol/Mngr/params/ColumnMng.cc"
 #endif 
 
-#endif // swc_db_protocol_mngr_params_ColumnMng_h
+#endif // swcdb_db_protocol_mngr_params_ColumnMng_h

@@ -4,8 +4,8 @@
  */
 
 
-#ifndef swc_fsbroker_handlers_Close_h
-#define swc_fsbroker_handlers_Close_h
+#ifndef swcdb_fsbroker_handlers_Close_h
+#define swcdb_fsbroker_handlers_Close_h
 
 #include "swcdb/fs/Broker/Protocol/params/Close.h"
 
@@ -53,4 +53,4 @@ void close(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
 
 }}}}
 
-#endif // swc_fsbroker_handlers_Close_h
+#endif // swcdb_fsbroker_handlers_Close_h

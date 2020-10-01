@@ -4,8 +4,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_db_protocol_mngr_params_RgrMngId_h
-#define swc_db_protocol_mngr_params_RgrMngId_h
+#ifndef swcdb_db_protocol_mngr_params_RgrMngId_h
+#define swcdb_db_protocol_mngr_params_RgrMngId_h
 
 #include "swcdb/core/Serializable.h"
 #include "swcdb/db/Protocol/Common/params/HostEndPoints.h"
@@ -88,4 +88,4 @@ class RgrMngId  : public Common::Params::HostEndPoints {
 
 }}}}
 
-#endif // swc_db_protocol_params_RgrMngId_h
+#endif // swcdb_db_protocol_params_RgrMngId_h

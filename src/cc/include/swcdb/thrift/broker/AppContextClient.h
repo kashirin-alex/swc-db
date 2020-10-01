@@ -3,8 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_ThriftBroker_AppContextClient_h
-#define swc_ThriftBroker_AppContextClient_h
+#ifndef swcdb_ThriftBroker_AppContextClient_h
+#define swcdb_ThriftBroker_AppContextClient_h
 
 
 namespace SWC { namespace client { namespace ThriftBroker {
@@ -46,4 +46,4 @@ class AppContext final : public SWC::Comm::AppContext {
 
 }}}
 
-#endif // swc_ThriftBroker_AppContextClient_h
+#endif // swcdb_ThriftBroker_AppContextClient_h

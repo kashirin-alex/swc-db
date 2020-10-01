@@ -3,8 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_core_comm_ResponseCallback_h
-#define swc_core_comm_ResponseCallback_h
+#ifndef swcdb_core_comm_ResponseCallback_h
+#define swcdb_core_comm_ResponseCallback_h
 
 #include "swcdb/core/comm/ConnHandler.h"
 
@@ -46,4 +46,4 @@ class ResponseCallback: public std::enable_shared_from_this<ResponseCallback> {
 #include "swcdb/core/comm/ResponseCallback.cc"
 #endif 
 
-#endif // swc_core_comm_ResponseCallback_h
+#endif // swcdb_core_comm_ResponseCallback_h

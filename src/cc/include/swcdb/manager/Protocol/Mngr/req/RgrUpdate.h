@@ -4,8 +4,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */ 
 
-#ifndef swc_manager_Protocol_mngr_req_RgrUpdate_h
-#define swc_manager_Protocol_mngr_req_RgrUpdate_h
+#ifndef swcdb_manager_Protocol_mngr_req_RgrUpdate_h
+#define swcdb_manager_Protocol_mngr_req_RgrUpdate_h
 
 #include "swcdb/manager/Protocol/Mngr/params/RgrUpdate.h"
 
@@ -35,4 +35,4 @@ class RgrUpdate : public Comm::client::ConnQueue::ReqBase {
 
 }}}}
 
-#endif // swc_manager_Protocol_mngr_req_RgrUpdate_h
+#endif // swcdb_manager_Protocol_mngr_req_RgrUpdate_h

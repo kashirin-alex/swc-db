@@ -3,8 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_manager_MngrEnv_h
-#define swc_manager_MngrEnv_h
+#ifndef swcdb_manager_MngrEnv_h
+#define swcdb_manager_MngrEnv_h
 
 #include "swcdb/db/Columns/Schemas.h"
 #include "swcdb/manager/db/Columns.h"
@@ -81,4 +81,4 @@ void Mngr::stop() {
 
 }} 
 
-#endif // swc_manager_MngrEnv_h
+#endif // swcdb_manager_MngrEnv_h

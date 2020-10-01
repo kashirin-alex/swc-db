@@ -3,8 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_core_CompletionCounter_h
-#define swc_core_CompletionCounter_h
+#ifndef swcdb_core_CompletionCounter_h
+#define swcdb_core_CompletionCounter_h
 
 
 #include "swcdb/core/Compat.h"
@@ -53,4 +53,4 @@ class CompletionCounter final {
 
 
 
-#endif // swc_core_CompletionCounter_h
+#endif // swcdb_core_CompletionCounter_h

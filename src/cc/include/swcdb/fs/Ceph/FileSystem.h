@@ -3,8 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_fs_Ceph_FileSystem_h
-#define swc_fs_Ceph_FileSystem_h
+#ifndef swcdb_fs_Ceph_FileSystem_h
+#define swcdb_fs_Ceph_FileSystem_h
 
 #include "swcdb/fs/FileSystem.h"
 #include <cephfs/libcephfs.h>
@@ -99,4 +99,4 @@ void fs_apply_cfg_ceph(SWC::Env::Config::Ptr env);
 #include "swcdb/fs/Ceph/FileSystem.cc"
 #endif 
 
-#endif  // swc_fs_Ceph_FileSystem_h
+#endif // swcdb_fs_Ceph_FileSystem_h

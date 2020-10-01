@@ -4,8 +4,8 @@
  */
 
 
-#ifndef swc_fsbroker_handlers_Rmdir_h
-#define swc_fsbroker_handlers_Rmdir_h
+#ifndef swcdb_fsbroker_handlers_Rmdir_h
+#define swcdb_fsbroker_handlers_Rmdir_h
 
 #include "swcdb/fs/Broker/Protocol/params/Rmdir.h"
 
@@ -50,4 +50,4 @@ void rmdir(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
 
 }}}}
 
-#endif // swc_fsbroker_handlers_Rmdir_h
+#endif // swcdb_fsbroker_handlers_Rmdir_h

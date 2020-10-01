@@ -4,8 +4,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_db_protocol_rgr_params_ColumnsUnload_h
-#define swc_db_protocol_rgr_params_ColumnsUnload_h
+#ifndef swcdb_db_protocol_rgr_params_ColumnsUnload_h
+#define swcdb_db_protocol_rgr_params_ColumnsUnload_h
 
 #include "swcdb/core/Serializable.h"
 
@@ -72,4 +72,4 @@ class ColumnsUnloadRsp : public Serializable {
 
 }}}}
 
-#endif // swc_db_protocol_rgr_params_ColumnsUnload_h
+#endif // swcdb_db_protocol_rgr_params_ColumnsUnload_h

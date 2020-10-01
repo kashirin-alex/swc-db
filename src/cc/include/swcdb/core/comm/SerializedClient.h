@@ -4,8 +4,8 @@
  */
 
 
-#ifndef swc_core_comm_SerializedClient_h
-#define swc_core_comm_SerializedClient_h
+#ifndef swcdb_core_comm_SerializedClient_h
+#define swcdb_core_comm_SerializedClient_h
 
 #include <chrono>
 #include <string>
@@ -131,4 +131,4 @@ class Serialized final :
 #include "swcdb/core/comm/SerializedClient.cc"
 #endif 
 
-#endif // swc_core_comm_SerializedClient_h
+#endif // swcdb_core_comm_SerializedClient_h

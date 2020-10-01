@@ -4,8 +4,8 @@
  */
 
 
-#ifndef swc_fsbroker_handlers_Write_h
-#define swc_fsbroker_handlers_Write_h
+#ifndef swcdb_fsbroker_handlers_Write_h
+#define swcdb_fsbroker_handlers_Write_h
 
 #include "swcdb/fs/Broker/Protocol/params/Write.h"
 
@@ -70,4 +70,4 @@ void write(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
 
 }}}}
 
-#endif // swc_fsbroker_handlers_Write_h
+#endif // swcdb_fsbroker_handlers_Write_h

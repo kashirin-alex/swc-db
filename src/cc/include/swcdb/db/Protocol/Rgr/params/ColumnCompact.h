@@ -4,8 +4,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_db_protocol_rgr_params_ColumnCompact_h
-#define swc_db_protocol_rgr_params_ColumnCompact_h
+#ifndef swcdb_db_protocol_rgr_params_ColumnCompact_h
+#define swcdb_db_protocol_rgr_params_ColumnCompact_h
 
 #include "swcdb/core/Serializable.h"
 #include "swcdb/db/Types/Identifiers.h"
@@ -66,4 +66,4 @@ class ColumnCompactRsp : public Serializable {
 #include "swcdb/db/Protocol/Rgr/params/ColumnCompact.cc"
 #endif 
 
-#endif // swc_db_protocol_rgr_params_ColumnCompact_h
+#endif // swcdb_db_protocol_rgr_params_ColumnCompact_h

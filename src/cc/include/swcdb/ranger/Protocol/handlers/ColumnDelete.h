@@ -33,4 +33,4 @@ void column_delete(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev)
 
 }}}}
 
-#endif // swc_ranger_Protocol_handlers_ColumnDelete_h
+#endif // swcdb_ranger_Protocol_handlers_ColumnDelete_h

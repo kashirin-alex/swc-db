@@ -4,8 +4,8 @@
  */
 
 
-#ifndef swc_core_Checksum_h
-#define swc_core_Checksum_h
+#ifndef swcdb_core_Checksum_h
+#define swcdb_core_Checksum_h
 
 #include "swcdb/core/Compat.h"
 #include "swcdb/core/Serialization.h"
@@ -100,4 +100,4 @@ bool checksum_i32_chk(uint32_t checksum, const uint8_t* base, uint32_t len,
 #include "swcdb/core/Checksum.cc"
 #endif 
 
-#endif /* swc_core_Checksum_h */
+#endif // swcdb_core_Checksum_h

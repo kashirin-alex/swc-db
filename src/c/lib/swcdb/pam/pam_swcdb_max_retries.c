@@ -18,7 +18,7 @@
 
 static const char SWCDB_PAM_NAME[] = "SWC-DB PAM: ";
 
-struct _swc_pam_cfg {
+struct _swcdb_pam_cfg {
   gchar *  host;
   gint     port;
   gint     timeout;
@@ -27,10 +27,10 @@ struct _swc_pam_cfg {
   gint     maxtries;
   //gboolean ssl        = FALSE;
 };
-typedef struct _swc_pam_cfg swc_pam_cfg;
+typedef struct _swcdb_pam_cfg swcdb_pam_cfg;
 
 
-bool swc_pam_read_config(int argc, const char **argv, swc_pam_cfg* cfg) {
+bool swcdb_pam_read_config(int argc, const char **argv, swcdb_pam_cfg* cfg) {
   cfg->host     = NULL;
   cfg->port     = 18000;
   cfg->timeout  = 30000;
@@ -38,7 +38,7 @@ bool swc_pam_read_config(int argc, const char **argv, swc_pam_cfg* cfg) {
   cfg->key      = NULL;
   cfg->maxtries = 10;
 
-  GOptionEntry swc_pam_options[] = {
+  GOptionEntry swcdb_pam_options[] = {
     { "host",        'h', 0, G_OPTION_ARG_STRING,  &cfg->host,
       "SWC-DB Thrift Broker host(=localhost)", NULL },
     { "port",       'p', 0, G_OPTION_ARG_INT,      &cfg->port,
@@ -56,7 +56,7 @@ bool swc_pam_read_config(int argc, const char **argv, swc_pam_cfg* cfg) {
 
   GError *error = NULL;
   GOptionContext* opts_ctx = g_option_context_new (NULL);
-  g_option_context_add_main_entries(opts_ctx, swc_pam_options, NULL);
+  g_option_context_add_main_entries(opts_ctx, swcdb_pam_options, NULL);
 
   gchar** gargv = (char**)argv;
   if(!g_option_context_parse(opts_ctx, &argc, &gargv, &error)) {
@@ -80,7 +80,7 @@ bool swc_pam_read_config(int argc, const char **argv, swc_pam_cfg* cfg) {
   return true;
 }
 
-bool swcdb_pam_connect(swcdb_thrift_client* client, swc_pam_cfg* cfg) {
+bool swcdb_pam_connect(swcdb_thrift_client* client, swcdb_pam_cfg* cfg) {
   GError*  err = NULL;
   if(!swcdb_thrift_client_connect(client, cfg->host, cfg->port, &err)) {
     if(err != NULL) {
@@ -97,7 +97,7 @@ bool swcdb_pam_connect(swcdb_thrift_client* client, swc_pam_cfg* cfg) {
   return true;
 }
 
-bool swcdb_pam_disconnect(swcdb_thrift_client* client, swc_pam_cfg* cfg) {
+bool swcdb_pam_disconnect(swcdb_thrift_client* client, swcdb_pam_cfg* cfg) {
   GError*  err = NULL;
   if(!swcdb_thrift_client_disconnect(client, &err)) {
     if(err != NULL) {
@@ -114,7 +114,7 @@ bool swcdb_pam_disconnect(swcdb_thrift_client* client, swc_pam_cfg* cfg) {
   return true;
 }
 
-bool swcdb_pam_confirm_state(swc_pam_cfg* cfg, const char* pam_rhost) {
+bool swcdb_pam_confirm_state(swcdb_pam_cfg* cfg, const char* pam_rhost) {
   bool     allowed = true;
   gint64   tries   = 0;
 
@@ -220,7 +220,7 @@ bool swcdb_pam_confirm_state(swc_pam_cfg* cfg, const char* pam_rhost) {
   return allowed;
 }
 
-void swcdb_pam_reduce_attempt(swc_pam_cfg* cfg, const char* pam_rhost) {
+void swcdb_pam_reduce_attempt(swcdb_pam_cfg* cfg, const char* pam_rhost) {
   swcdb_thrift_client client;
   if(!swcdb_pam_connect(&client, cfg))
     return;
@@ -290,8 +290,8 @@ pam_sm_authenticate(pam_handle_t * pamh, int flags, int argc, const char **argv)
     return PAM_PERM_DENIED;
   }
 
-  swc_pam_cfg cfg; 
-  if(!swc_pam_read_config(argc, argv, &cfg) ||
+  swcdb_pam_cfg cfg; 
+  if(!swcdb_pam_read_config(argc, argv, &cfg) ||
      swcdb_pam_confirm_state(&cfg, pam_rhost))
     return PAM_SUCCESS;
 
@@ -321,8 +321,8 @@ pam_sm_open_session(pam_handle_t *pamh, int flags, int argc, const char **argv) 
     return PAM_PERM_DENIED;
   }
 
-  swc_pam_cfg cfg; 
-  if(swc_pam_read_config(argc, argv, &cfg))
+  swcdb_pam_cfg cfg; 
+  if(swcdb_pam_read_config(argc, argv, &cfg))
     swcdb_pam_reduce_attempt(&cfg, pam_rhost);
 
   return PAM_SUCCESS;

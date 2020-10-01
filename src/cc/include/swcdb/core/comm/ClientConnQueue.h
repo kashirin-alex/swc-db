@@ -3,8 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_core_comm_ClientConnQueue_h
-#define swc_core_comm_ClientConnQueue_h
+#ifndef swcdb_core_comm_ClientConnQueue_h
+#define swcdb_core_comm_ClientConnQueue_h
 
 #include <queue>
 #include <unordered_set>
@@ -117,4 +117,4 @@ class ConnQueue :
 
 
 // 
-#endif // swc_core_comm_ClientConnQueue_h
+#endif // swcdb_core_comm_ClientConnQueue_h

@@ -4,8 +4,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_db_protocol_mngr_req_ColumnMng_h
-#define swc_db_protocol_mngr_req_ColumnMng_h
+#ifndef swcdb_db_protocol_mngr_req_ColumnMng_h
+#define swcdb_db_protocol_mngr_req_ColumnMng_h
 
 
 #include "swcdb/db/Protocol/Mngr/params/ColumnMng.h"
@@ -63,4 +63,4 @@ class ColumnMng: public Comm::client::ConnQueue::ReqBase {
 #include "swcdb/db/Protocol/Mngr/req/ColumnMng.cc"
 #endif 
 
-#endif // swc_db_protocol_mngr_req_ColumnMng_h
+#endif // swcdb_db_protocol_mngr_req_ColumnMng_h

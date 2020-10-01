@@ -4,8 +4,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_db_protocol_mngr_req_ColumnList_h
-#define swc_db_protocol_mngr_req_ColumnList_h
+#ifndef swcdb_db_protocol_mngr_req_ColumnList_h
+#define swcdb_db_protocol_mngr_req_ColumnList_h
 
 
 #include "swcdb/db/Protocol/Mngr/params/ColumnList.h"
@@ -55,4 +55,4 @@ class ColumnList: public Comm::client::ConnQueue::ReqBase {
 #include "swcdb/db/Protocol/Mngr/req/ColumnList.cc"
 #endif 
 
-#endif // swc_db_protocol_mngr_req_ColumnList_h
+#endif // swcdb_db_protocol_mngr_req_ColumnList_h

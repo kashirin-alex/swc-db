@@ -3,8 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_core_config_Config_h
-#define swc_core_config_Config_h
+#ifndef swcdb_core_config_Config_h
+#define swcdb_core_config_Config_h
 
 #include "swcdb/core/Error.h"
 
@@ -123,4 +123,4 @@ class Config final {
 #include "swcdb/core/config/Settings.cc"
 #endif 
 
-#endif // swc_core_config_Config_h
+#endif // swcdb_core_config_Config_h

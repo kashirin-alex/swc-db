@@ -4,8 +4,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_manager_Protocol_mngr_params_RgrUpdate_h
-#define swc_manager_Protocol_mngr_params_RgrUpdate_h
+#ifndef swcdb_manager_Protocol_mngr_params_RgrUpdate_h
+#define swcdb_manager_Protocol_mngr_params_RgrUpdate_h
 
 #include "swcdb/core/Serializable.h"
 
@@ -60,4 +60,4 @@ class RgrUpdate : public Serializable {
 
 }}}}
 
-#endif // swc_manager_Protocol_mngr_params_RgrUpdate_h
+#endif // swcdb_manager_Protocol_mngr_params_RgrUpdate_h

@@ -4,8 +4,8 @@
  */
 
 
-#ifndef swc_core_config_Properties_h
-#define swc_core_config_Properties_h
+#ifndef swcdb_core_config_Properties_h
+#define swcdb_core_config_Properties_h
 
 #include <shared_mutex>
 #include <map>
@@ -142,4 +142,4 @@ class Properties {
 #include "swcdb/core/config/Properties.cc"
 #endif 
 
-#endif // swc_core_config_Properties_h
+#endif // swcdb_core_config_Properties_h

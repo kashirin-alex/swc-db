@@ -4,8 +4,8 @@
  */
 
 
-#ifndef swc_core_comm_ConfigSSL_h
-#define swc_core_comm_ConfigSSL_h
+#ifndef swcdb_core_comm_ConfigSSL_h
+#define swcdb_core_comm_ConfigSSL_h
 
 #include <string>
 #include <vector>
@@ -67,4 +67,4 @@ class ConfigSSL final {
 #include "swcdb/core/comm/ConfigSSL.cc"
 #endif 
 
-#endif // swc_core_comm_ConfigSSL_h
+#endif // swcdb_core_comm_ConfigSSL_h

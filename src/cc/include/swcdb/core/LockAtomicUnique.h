@@ -3,8 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_core_LockAtomicUnique_h
-#define swc_core_LockAtomicUnique_h
+#ifndef swcdb_core_LockAtomicUnique_h
+#define swcdb_core_LockAtomicUnique_h
 
 #include <atomic>
 #include <thread>
@@ -88,4 +88,4 @@ class Unique {
   } \
   _return_;
 
-#endif // swc_core_LockAtomicUnique_h
+#endif // swcdb_core_LockAtomicUnique_h

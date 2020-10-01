@@ -4,8 +4,8 @@
  */
 
 
-#ifndef swc_fsbroker_handlers_Flush_h
-#define swc_fsbroker_handlers_Flush_h
+#ifndef swcdb_fsbroker_handlers_Flush_h
+#define swcdb_fsbroker_handlers_Flush_h
 
 #include "swcdb/fs/Broker/Protocol/params/Flush.h"
 
@@ -55,4 +55,4 @@ void flush(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
 
 }}}}
 
-#endif // swc_fsbroker_handlers_Flush_h
+#endif // swcdb_fsbroker_handlers_Flush_h

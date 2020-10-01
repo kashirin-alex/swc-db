@@ -3,8 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_fs_Broker_Protocol_params_Read_h
-#define swc_fs_Broker_Protocol_params_Read_h
+#ifndef swcdb_fs_Broker_Protocol_params_Read_h
+#define swcdb_fs_Broker_Protocol_params_Read_h
 
 
 #include "swcdb/core/Serializable.h"
@@ -64,4 +64,4 @@ class ReadRsp : public Serializable {
 #endif 
 
 
-#endif // swc_fs_Broker_Protocol_params_Read_h
+#endif // swcdb_fs_Broker_Protocol_params_Read_h

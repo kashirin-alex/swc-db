@@ -4,8 +4,8 @@
  */
 
 
-#ifndef swc_fsbroker_handlers_ReadAll_h
-#define swc_fsbroker_handlers_ReadAll_h
+#ifndef swcdb_fsbroker_handlers_ReadAll_h
+#define swcdb_fsbroker_handlers_ReadAll_h
 
 #include "swcdb/fs/Broker/Protocol/params/ReadAll.h"
 
@@ -81,4 +81,4 @@ void read_all(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
 
 }}}}
 
-#endif // swc_fsbroker_handlers_ReadAll_h
+#endif // swcdb_fsbroker_handlers_ReadAll_h

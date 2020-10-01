@@ -4,8 +4,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_db_protocol_rgr_req_RangeQuerySelect_h
-#define swc_db_protocol_rgr_req_RangeQuerySelect_h
+#ifndef swcdb_db_protocol_rgr_req_RangeQuerySelect_h
+#define swcdb_db_protocol_rgr_req_RangeQuerySelect_h
 
 
 #include "swcdb/core/comm/ClientConnQueue.h"
@@ -54,4 +54,4 @@ class RangeQuerySelect: public Comm::client::ConnQueue::ReqBase {
 #include "swcdb/db/Protocol/Rgr/req/RangeQuerySelect.cc"
 #endif 
 
-#endif // swc_db_protocol_rgr_req_RangeQuerySelect_h
+#endif // swcdb_db_protocol_rgr_req_RangeQuerySelect_h

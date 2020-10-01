@@ -4,8 +4,8 @@
  */
 
 
-#ifndef swc_core_LOGGER_H
-#define swc_core_LOGGER_H
+#ifndef swcdb_core_Logger_h
+#define swcdb_core_Logger_h
 
 #include "swcdb/core/Compat.h"
 #include "swcdb/core/Mutex.h"
@@ -194,4 +194,4 @@ extern LogWriter logger;
 #include "swcdb/core/Logger.cc"
 #endif 
 
-#endif
+#endif // swcdb_core_Logger_h

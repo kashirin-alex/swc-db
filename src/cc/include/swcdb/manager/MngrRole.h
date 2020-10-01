@@ -3,8 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_manager_MngrRole_h
-#define swc_manager_MngrRole_h
+#ifndef swcdb_manager_MngrRole_h
+#define swcdb_manager_MngrRole_h
 
 #include "swcdb/manager/MngrStatus.h"
 #include "swcdb/manager/Protocol/Mngr/req/MngrState.h"
@@ -115,4 +115,4 @@ class MngrRole final {
 }}
 
 
-#endif // swc_manager_MngrRole_h
+#endif // swcdb_manager_MngrRole_h

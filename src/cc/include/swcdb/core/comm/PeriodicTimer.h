@@ -4,8 +4,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_core_comm_PeriodicTimer_h
-#define swc_core_comm_PeriodicTimer_h
+#ifndef swcdb_core_comm_PeriodicTimer_h
+#define swcdb_core_comm_PeriodicTimer_h
 
 #include <asio.hpp>
 #include "swcdb/core/config/Settings.h"
@@ -57,4 +57,4 @@ class PeriodicTimers final
 #include "swcdb/core/comm/PeriodicTimer.cc"
 #endif 
 
-#endif // swc_core_comm_PeriodicTimer_h
+#endif // swcdb_core_comm_PeriodicTimer_h

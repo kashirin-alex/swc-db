@@ -3,8 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_fs_Broker_Protocol_Commands_h
-#define swc_fs_Broker_Protocol_Commands_h
+#ifndef swcdb_fs_Broker_Protocol_Commands_h
+#define swcdb_fs_Broker_Protocol_Commands_h
 
 namespace SWC { namespace FsBroker { namespace Protocol {
   
@@ -38,4 +38,4 @@ namespace SWC { namespace FsBroker { namespace Protocol {
 
 }}
 
-#endif  // swc_fs_Broker_Protocol_Commands_h
+#endif // swcdb_fs_Broker_Protocol_Commands_h

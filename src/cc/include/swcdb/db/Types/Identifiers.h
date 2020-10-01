@@ -4,8 +4,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_db_types_Identifiers_h
-#define swc_db_types_Identifiers_h
+#ifndef swcdb_db_types_Identifiers_h
+#define swcdb_db_types_Identifiers_h
 
 #include "swcdb/core/Compat.h"
 
@@ -22,4 +22,4 @@ typedef uint32_t csid_t;
 
 }
 
-#endif // swc_db_types_Identifiers_h
+#endif // swcdb_db_types_Identifiers_h

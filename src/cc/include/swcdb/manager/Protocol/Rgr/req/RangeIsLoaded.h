@@ -4,8 +4,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */ 
 
-#ifndef swc_manager_Protocol_rgr_req_RangeIsLoaded_h
-#define swc_manager_Protocol_rgr_req_RangeIsLoaded_h
+#ifndef swcdb_manager_Protocol_rgr_req_RangeIsLoaded_h
+#define swcdb_manager_Protocol_rgr_req_RangeIsLoaded_h
 
 #include "swcdb/db/Protocol/Rgr/params/RangeIsLoaded.h"
 
@@ -46,4 +46,4 @@ class RangeIsLoaded : public Comm::client::ConnQueue::ReqBase {
 
 }}}}
 
-#endif // swc_manager_Protocol_rgr_req_RangeIsLoaded_h
+#endif // swcdb_manager_Protocol_rgr_req_RangeIsLoaded_h

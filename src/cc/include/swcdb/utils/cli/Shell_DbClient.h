@@ -3,8 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_utils_ShellDbClient_h
-#define swc_utils_ShellDbClient_h
+#ifndef swcdb_utils_ShellDbClient_h
+#define swcdb_utils_ShellDbClient_h
 
 #include "swcdb/utils/cli/Shell.h"
 #include "swcdb/db/client/sql/SQL.h"
@@ -47,4 +47,4 @@ class DbClient : public Interface {
 
 }}} // namespace Utils::shell
 
-#endif // swc_utils_ShellDbClient_h
+#endif // swcdb_utils_ShellDbClient_h

@@ -3,8 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_fs_Broker_Protocol_params_Create_h
-#define swc_fs_Broker_Protocol_params_Create_h
+#ifndef swcdb_fs_Broker_Protocol_params_Create_h
+#define swcdb_fs_Broker_Protocol_params_Create_h
 
 
 #include "swcdb/core/Serializable.h"
@@ -46,4 +46,4 @@ class CreateReq : public Serializable {
 #endif 
 
 
-#endif // swc_fs_Broker_Protocol_params_Create_h
+#endif // swcdb_fs_Broker_Protocol_params_Create_h

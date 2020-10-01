@@ -5,8 +5,8 @@
  */ 
 
 
-#ifndef swc_manager_ColumnHealthCheck_h
-#define swc_manager_ColumnHealthCheck_h
+#ifndef swcdb_manager_ColumnHealthCheck_h
+#define swcdb_manager_ColumnHealthCheck_h
 
 
 namespace SWC { namespace Manager {
@@ -74,4 +74,4 @@ typedef std::vector<ColumnHealthCheck::Ptr> ColumnHealthChecks;
 
 }}
 
-#endif // swc_manager_ColumnHealthCheck_h
+#endif // swcdb_manager_ColumnHealthCheck_h

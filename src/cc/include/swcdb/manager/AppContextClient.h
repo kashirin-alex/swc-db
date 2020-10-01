@@ -3,8 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_manager_AppContextClient_h
-#define swc_manager_AppContextClient_h
+#ifndef swcdb_manager_AppContextClient_h
+#define swcdb_manager_AppContextClient_h
 
 namespace SWC { namespace client { namespace Mngr { 
 
@@ -23,4 +23,4 @@ class AppContext final : public SWC::Comm::AppContext {
 
 }}}
 
-#endif // swc_manager_AppContextClient_h
+#endif // swcdb_manager_AppContextClient_h

@@ -3,8 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_core_Semaphore_h
-#define swc_core_Semaphore_h
+#ifndef swcdb_core_Semaphore_h
+#define swcdb_core_Semaphore_h
 
 
 #include <mutex>
@@ -50,4 +50,4 @@ class Semaphore final {
 #include "swcdb/core/Semaphore.cc"
 #endif 
 
-#endif // swc_core_Semaphore_h
+#endif // swcdb_core_Semaphore_h

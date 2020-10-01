@@ -4,8 +4,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_db_protocol_rgr_req_RangeQueryUpdate_h
-#define swc_db_protocol_rgr_req_RangeQueryUpdate_h
+#ifndef swcdb_db_protocol_rgr_req_RangeQueryUpdate_h
+#define swcdb_db_protocol_rgr_req_RangeQueryUpdate_h
 
 
 
@@ -56,4 +56,4 @@ class RangeQueryUpdate: public Comm::client::ConnQueue::ReqBase {
 #include "swcdb/db/Protocol/Rgr/req/RangeQueryUpdate.cc"
 #endif 
 
-#endif // swc_db_protocol_rgr_req_RangeQueryUpdate_h
+#endif // swcdb_db_protocol_rgr_req_RangeQueryUpdate_h

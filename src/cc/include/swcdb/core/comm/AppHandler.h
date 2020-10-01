@@ -4,8 +4,8 @@
  */
 
 
-#ifndef swc_core_comm_AppHandler_h
-#define swc_core_comm_AppHandler_h
+#ifndef swcdb_core_comm_AppHandler_h
+#define swcdb_core_comm_AppHandler_h
 
 #include "swcdb/core/comm/Event.h"
 #include "swcdb/core/comm/ConnHandler.h"
@@ -36,4 +36,4 @@ class AppHandler {
 
 
 
-#endif // swc_core_comm_AppHandler_h
+#endif // swcdb_core_comm_AppHandler_h

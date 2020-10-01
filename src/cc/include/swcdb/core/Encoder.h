@@ -3,8 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_core_Encoder_h
-#define swc_core_Encoder_h
+#ifndef swcdb_core_Encoder_h
+#define swcdb_core_Encoder_h
 
 #include "swcdb/core/Buffer.h"
 
@@ -46,4 +46,4 @@ void encode(int& err, Type encoder,
 #endif 
 
 
-#endif // swc_core_Encoder_h
+#endif // swcdb_core_Encoder_h

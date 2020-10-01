@@ -4,8 +4,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */ 
 
-#ifndef swc_manager_Protocol_rgr_req_ReportRes_h
-#define swc_manager_Protocol_rgr_req_ReportRes_h
+#ifndef swcdb_manager_Protocol_rgr_req_ReportRes_h
+#define swcdb_manager_Protocol_rgr_req_ReportRes_h
 
 #include "swcdb/db/Protocol/Rgr/params/Report.h"
 
@@ -30,4 +30,4 @@ class ReportRes : public Comm::client::ConnQueue::ReqBase {
 
 }}}}
 
-#endif // swc_manager_Protocol_rgr_req_ReportRes_h
+#endif // swcdb_manager_Protocol_rgr_req_ReportRes_h

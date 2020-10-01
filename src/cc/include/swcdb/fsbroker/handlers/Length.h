@@ -4,8 +4,8 @@
  */
 
 
-#ifndef swc_fsbroker_handlers_Length_h
-#define swc_fsbroker_handlers_Length_h
+#ifndef swcdb_fsbroker_handlers_Length_h
+#define swcdb_fsbroker_handlers_Length_h
 
 #include "swcdb/fs/Broker/Protocol/params/Length.h"
 
@@ -51,4 +51,4 @@ void length(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
 
 }}}}
 
-#endif // swc_fsbroker_handlers_Length_h
+#endif // swcdb_fsbroker_handlers_Length_h

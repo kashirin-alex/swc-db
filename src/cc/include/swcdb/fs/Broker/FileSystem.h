@@ -3,8 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_fs_Broker_FileSystem_h
-#define swc_fs_Broker_FileSystem_h
+#ifndef swcdb_fs_Broker_FileSystem_h
+#define swcdb_fs_Broker_FileSystem_h
 
 #include "swcdb/fs/FileSystem.h"
 
@@ -180,4 +180,4 @@ void fs_apply_cfg_broker(SWC::Env::Config::Ptr env);
 #endif 
 
 
-#endif  // swc_fs_Broker_FileSystem_h
+#endif // swcdb_fs_Broker_FileSystem_h

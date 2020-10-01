@@ -3,8 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_fs_Broker_Protocol_req_Rename_h
-#define swc_fs_Broker_Protocol_req_Rename_h
+#ifndef swcdb_fs_Broker_Protocol_req_Rename_h
+#define swcdb_fs_Broker_Protocol_req_Rename_h
 
 #include "swcdb/fs/Broker/Protocol/req/Base.h"
 #include "swcdb/fs/Broker/Protocol/params/Rename.h"
@@ -38,4 +38,4 @@ class Rename : public Base {
 #include "swcdb/fs/Broker/Protocol/req/Rename.cc"
 #endif 
 
-#endif  // swc_fs_Broker_Protocol_req_Rename_h
+#endif // swcdb_fs_Broker_Protocol_req_Rename_h

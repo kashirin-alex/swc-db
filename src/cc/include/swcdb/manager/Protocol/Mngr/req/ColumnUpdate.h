@@ -4,8 +4,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */ 
 
-#ifndef swc_manager_Protocol_mngr_req_ColumnUpdate_h
-#define swc_manager_Protocol_mngr_req_ColumnUpdate_h
+#ifndef swcdb_manager_Protocol_mngr_req_ColumnUpdate_h
+#define swcdb_manager_Protocol_mngr_req_ColumnUpdate_h
 
 #include "swcdb/db/Protocol/Mngr/params/ColumnMng.h"
 #include "swcdb/manager/Protocol/Mngr/params/ColumnUpdate.h"
@@ -35,4 +35,4 @@ class ColumnUpdate : public Comm::client::ConnQueue::ReqBase {
 
 }}}}
 
-#endif // swc_manager_Protocol_mngr_req_ColumnUpdate_h
+#endif // swcdb_manager_Protocol_mngr_req_ColumnUpdate_h

@@ -4,8 +4,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_db_types_Column_h
-#define swc_db_types_Column_h
+#ifndef swcdb_db_types_Column_h
+#define swcdb_db_types_Column_h
 
 #include <string>
 
@@ -39,4 +39,4 @@ int from_string_col_type(const std::string& typ);
 #include "swcdb/db/Types/Column.cc"
 #endif 
 
-#endif // swc_db_types_Column_h
+#endif // swcdb_db_types_Column_h

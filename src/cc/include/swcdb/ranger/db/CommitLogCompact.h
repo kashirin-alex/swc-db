@@ -4,8 +4,8 @@
  */
 
 
-#ifndef swc_ranger_db_CommitLogCompact_h
-#define swc_ranger_db_CommitLogCompact_h
+#ifndef swcdb_ranger_db_CommitLogCompact_h
+#define swcdb_ranger_db_CommitLogCompact_h
 
 
 namespace SWC { namespace Ranger { namespace CommitLog {
@@ -95,4 +95,4 @@ class Compact final {
 
 }}} // namespace SWC::Ranger::CommitLog
 
-#endif // swc_ranger_db_CommitLogCompact_h
+#endif // swcdb_ranger_db_CommitLogCompact_h

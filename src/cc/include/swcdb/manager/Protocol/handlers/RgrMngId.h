@@ -4,8 +4,8 @@
  */
 
 
-#ifndef swc_manager_Protocol_handlers_RgrMngId_h
-#define swc_manager_Protocol_handlers_RgrMngId_h
+#ifndef swcdb_manager_Protocol_handlers_RgrMngId_h
+#define swcdb_manager_Protocol_handlers_RgrMngId_h
 
 #include "swcdb/db/Protocol/Mngr/params/RgrMngId.h"
 
@@ -127,4 +127,4 @@ void rgr_mng_id(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
 
 }}}}
 
-#endif // swc_manager_Protocol_handlers_RgrMngId
+#endif // swcdb_manager_Protocol_handlers_RgrMngId

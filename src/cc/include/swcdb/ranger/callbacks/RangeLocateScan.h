@@ -3,8 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_ranger_callbacks_RangeLocateScan_h
-#define swc_ranger_callbacks_RangeLocateScan_h
+#ifndef swcdb_ranger_callbacks_RangeLocateScan_h
+#define swcdb_ranger_callbacks_RangeLocateScan_h
 
 #include "swcdb/ranger/db/ReqScan.h"
 
@@ -163,4 +163,4 @@ class RangeLocateScan : public ReqScan {
 
 
 }}}
-#endif // swc_ranger_callbacks_RangeLocateScan_h
+#endif // swcdb_ranger_callbacks_RangeLocateScan_h

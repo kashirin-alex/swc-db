@@ -4,8 +4,8 @@
  */
 
 
-#ifndef swc_manager_Protocol_handlers_ColumnGet_h
-#define swc_manager_Protocol_handlers_ColumnGet_h
+#ifndef swcdb_manager_Protocol_handlers_ColumnGet_h
+#define swcdb_manager_Protocol_handlers_ColumnGet_h
 
 #include "swcdb/db/Protocol/Mngr/params/ColumnGet.h"
 #include "swcdb/manager/Protocol/Mngr/req/MngrColumnGet.h"
@@ -101,4 +101,4 @@ void column_get(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
 
 }}}}
 
-#endif // swc_manager_Protocol_handlers_ColumnGet_h
+#endif // swcdb_manager_Protocol_handlers_ColumnGet_h

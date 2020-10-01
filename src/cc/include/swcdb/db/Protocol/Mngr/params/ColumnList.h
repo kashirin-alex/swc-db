@@ -4,8 +4,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_db_protocol_mngr_params_ColumnList_h
-#define swc_db_protocol_mngr_params_ColumnList_h
+#ifndef swcdb_db_protocol_mngr_params_ColumnList_h
+#define swcdb_db_protocol_mngr_params_ColumnList_h
 
 
 #include "swcdb/core/Serializable.h"
@@ -62,4 +62,4 @@ class ColumnListRsp  : public Serializable {
 #include "swcdb/db/Protocol/Mngr/params/ColumnList.cc"
 #endif 
 
-#endif // swc_db_protocol_params_ColumnListRsp_h
+#endif // swcdb_db_protocol_params_ColumnListRsp_h

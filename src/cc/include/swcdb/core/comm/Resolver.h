@@ -4,8 +4,8 @@
  */
 
 
-#ifndef swc_core_comm_Resolver_h
-#define swc_core_comm_Resolver_h
+#ifndef swcdb_core_comm_Resolver_h
+#define swcdb_core_comm_Resolver_h
 
 #include <asio.hpp>
 #include <string>
@@ -100,4 +100,4 @@ bool is_network(const EndPoint& endpoint, const asio::ip::network_v6& net);
 #include "swcdb/core/comm/Resolver.cc"
 #endif 
 
-#endif // swc_core_comm_Resolver_h
+#endif // swcdb_core_comm_Resolver_h

@@ -3,8 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_utils_ShellRanger_h
-#define swc_utils_ShellRanger_h
+#ifndef swcdb_utils_ShellRanger_h
+#define swcdb_utils_ShellRanger_h
 
 #include "swcdb/utils/cli/Shell.h"
 #include "swcdb/core/comm/Resolver.h"
@@ -29,4 +29,4 @@ class Rgr : public Interface {
 
 }}} // namespace Utils::shell
 
-#endif // swc_utils_ShellRanger_h
+#endif // swcdb_utils_ShellRanger_h

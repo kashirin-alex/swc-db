@@ -3,8 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_fsbroker_FdsMap_h
-#define swc_fsbroker_FdsMap_h
+#ifndef swcdb_fsbroker_FdsMap_h
+#define swcdb_fsbroker_FdsMap_h
 
 #include <unordered_map>
 #include <shared_mutex>
@@ -100,4 +100,4 @@ class Fds final {
 
 }}
 
-#endif // swc_fsbroker_FdsMap_h
+#endif // swcdb_fsbroker_FdsMap_h

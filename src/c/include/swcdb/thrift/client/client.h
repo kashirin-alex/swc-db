@@ -4,8 +4,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_thrift_c_client_client_h
-#define swc_thrift_c_client_client_h
+#ifndef swcdb_thrift_c_client_client_h
+#define swcdb_thrift_c_client_client_h
 
 
 #include <thrift/c_glib/thrift.h>
@@ -93,4 +93,4 @@ swcdb_thrift_client_disconnect(swcdb_thrift_client* client,  GError** error) {
 #include "swcdb/thrift/gen-c_glib/swcdb_thrift_service_types.c"
 #endif 
 
-#endif // swc_thrift_c_client_client_h
+#endif // swcdb_thrift_c_client_client_h

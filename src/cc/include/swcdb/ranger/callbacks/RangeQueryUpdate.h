@@ -3,8 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_ranger_callbacks_RangeQueryUpdate_h
-#define swc_ranger_callbacks_RangeQueryUpdate_h
+#ifndef swcdb_ranger_callbacks_RangeQueryUpdate_h
+#define swcdb_ranger_callbacks_RangeQueryUpdate_h
 
 #include "swcdb/core/comm/ResponseCallback.h"
 #include "swcdb/db/Protocol/Rgr/params/RangeQueryUpdate.h"
@@ -54,4 +54,4 @@ class RangeQueryUpdate : public Comm::ResponseCallback {
 
 
 }}}
-#endif // swc_ranger_callbacks_RangeQueryUpdate_h
+#endif // swcdb_ranger_callbacks_RangeQueryUpdate_h

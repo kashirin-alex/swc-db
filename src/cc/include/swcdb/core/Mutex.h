@@ -3,8 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_core_Mutex_h
-#define swc_core_Mutex_h
+#ifndef swcdb_core_Mutex_h
+#define swcdb_core_Mutex_h
 
 #include <atomic>
 #include <mutex>
@@ -79,4 +79,4 @@ class Mutex final : private LockAtomic::Unique {
 
 }
 
-#endif // swc_core_Mutex_h
+#endif // swcdb_core_Mutex_h

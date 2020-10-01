@@ -4,8 +4,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_db_protocol_rgr_params_RangeQueryUpdate_h
-#define swc_db_protocol_rgr_params_RangeQueryUpdate_h
+#ifndef swcdb_db_protocol_rgr_params_RangeQueryUpdate_h
+#define swcdb_db_protocol_rgr_params_RangeQueryUpdate_h
 
 #include "swcdb/core/Error.h"
 #include "swcdb/core/Serializable.h"
@@ -75,4 +75,4 @@ class RangeQueryUpdateRsp  : public Serializable {
 #include "swcdb/db/Protocol/Rgr/params/RangeQueryUpdate.cc"
 #endif 
 
-#endif // swc_db_protocol_rgr_params_RangeQueryUpdate_h
+#endif // swcdb_db_protocol_rgr_params_RangeQueryUpdate_h

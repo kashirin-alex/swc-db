@@ -4,8 +4,8 @@
  */
 
 
-#ifndef swc_manager_db_Column_h
-#define swc_manager_db_Column_h
+#ifndef swcdb_manager_db_Column_h
+#define swcdb_manager_db_Column_h
 
 #include "swcdb/manager/db/Range.h"
 #include "swcdb/db/Types/MngrColumnState.h"
@@ -426,4 +426,4 @@ class Column final : private std::vector<Range::Ptr> {
 
 }}
 
-#endif // swc_manager_db_Column_h
+#endif // swcdb_manager_db_Column_h

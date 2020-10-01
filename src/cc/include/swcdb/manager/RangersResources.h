@@ -4,8 +4,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_manager_RangersResources_h
-#define swc_manager_RangersResources_h
+#ifndef swcdb_manager_RangersResources_h
+#define swcdb_manager_RangersResources_h
 
 #include "swcdb/manager/Protocol/Rgr/req/ReportRes.h"
 
@@ -155,4 +155,4 @@ class RangersResources final : private std::vector<RangerResources> {
 
 }}
 
-#endif // swc_manager_RangersResources_h
+#endif // swcdb_manager_RangersResources_h

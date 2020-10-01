@@ -3,8 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_app_thriftbroker_Settings_h
-#define swc_app_thriftbroker_Settings_h
+#ifndef swcdb_app_thriftbroker_Settings_h
+#define swcdb_app_thriftbroker_Settings_h
 
 #include "swcdb/core/config/Settings.h"
 #include "swcdb/core/comm/Settings.h"
@@ -42,4 +42,4 @@ void Settings::init_post_cmd_args(){
 
 }}
 
-#endif // swc_app_fsbroker_Settings_h
+#endif // swcdb_app_fsbroker_Settings_h

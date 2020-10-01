@@ -3,8 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_core_BitFieldInt_H
-#define swc_core_BitFieldInt_H
+#ifndef swcdb_core_BitFieldInt_h
+#define swcdb_core_BitFieldInt_h
 
 namespace SWC {
 
@@ -404,4 +404,4 @@ static const int56_t   INT56_MAX(UINT56_MAX / 2);   // 36028797018963967
 static const int56_t   INT56_MIN(INT56_MAX + 1);    // -36028797018963968
 
 
-#endif
+#endif // swcdb_core_BitFieldInt_h

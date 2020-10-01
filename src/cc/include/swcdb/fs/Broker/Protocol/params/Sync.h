@@ -3,8 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
  
-#ifndef swc_fs_Broker_Protocol_params_Sync_h
-#define swc_fs_Broker_Protocol_params_Sync_h
+#ifndef swcdb_fs_Broker_Protocol_params_Sync_h
+#define swcdb_fs_Broker_Protocol_params_Sync_h
 
 
 #include "swcdb/core/Serializable.h"
@@ -40,4 +40,4 @@ class SyncReq : public Serializable {
 #endif 
 
 
-#endif // swc_fs_Broker_Protocol_params_Sync_h
+#endif // swcdb_fs_Broker_Protocol_params_Sync_h

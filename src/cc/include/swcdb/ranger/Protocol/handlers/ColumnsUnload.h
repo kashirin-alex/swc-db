@@ -4,8 +4,8 @@
  */
 
 
-#ifndef swc_ranger_Protocol_handlers_ColumnsUnload_h
-#define swc_ranger_Protocol_handlers_ColumnsUnload_h
+#ifndef swcdb_ranger_Protocol_handlers_ColumnsUnload_h
+#define swcdb_ranger_Protocol_handlers_ColumnsUnload_h
 
 #include "swcdb/db/Protocol/Common/params/ColumnsInterval.h"
 
@@ -45,4 +45,4 @@ void columns_unload(const Comm::ConnHandlerPtr& conn,
 
 }}}}
 
-#endif // swc_ranger_Protocol_handlers_ColumnsUnload_h
+#endif // swcdb_ranger_Protocol_handlers_ColumnsUnload_h

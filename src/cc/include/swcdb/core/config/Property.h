@@ -4,8 +4,8 @@
  */
 
 
-#ifndef swc_core_config_Property_h
-#define swc_core_config_Property_h
+#ifndef swcdb_core_config_Property_h
+#define swcdb_core_config_Property_h
 
 #include "swcdb/core/LockAtomicUnique.h"
 #include <functional>
@@ -577,4 +577,4 @@ class V_GSTRINGS final : public Value {
 #include "swcdb/core/config/Property.cc"
 #endif 
 
-#endif // swc_core_config_Property_h
+#endif // swcdb_core_config_Property_h

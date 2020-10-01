@@ -4,8 +4,8 @@
  */
 
 
-#ifndef swc_core_config_PropertiesParser_h
-#define swc_core_config_PropertiesParser_h
+#ifndef swcdb_core_config_PropertiesParser_h
+#define swcdb_core_config_PropertiesParser_h
 
 #include "swcdb/core/config/Property.h"
 #include <iostream>
@@ -206,4 +206,4 @@ std::ostream& operator<<(std::ostream& os, const Parser& prs);
 #include "swcdb/core/config/PropertiesParser.cc"
 #endif 
 
-#endif // swc_core_config_PropertiesParser_h
+#endif // swcdb_core_config_PropertiesParser_h

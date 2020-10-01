@@ -4,8 +4,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_protocol_mngr_params_MngrActive_h
-#define swc_protocol_mngr_params_MngrActive_h
+#ifndef swcdb_protocol_mngr_params_MngrActive_h
+#define swcdb_protocol_mngr_params_MngrActive_h
 
 
 #include "swcdb/db/Protocol/Common/params/HostEndPoints.h"
@@ -68,4 +68,4 @@ class MngrActiveRsp : public Common::Params::HostEndPoints {
 #include "swcdb/db/Protocol/Mngr/params/MngrActive.cc"
 #endif 
 
-#endif // swc_protocol_mngr_params_MngrActive_h
+#endif // swcdb_protocol_mngr_params_MngrActive_h

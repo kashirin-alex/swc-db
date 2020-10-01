@@ -3,8 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_thrift_client_Client_h
-#define swc_thrift_client_Client_h
+#ifndef swcdb_thrift_client_Client_h
+#define swcdb_thrift_client_Client_h
 
 
 //! The SWC-DB C++ namespace 'SWC'
@@ -100,4 +100,4 @@ class Client : public CommClient, public ServiceClient {
 #endif 
 
 
-#endif // swc_thrift_client_Client_h
+#endif // swcdb_thrift_client_Client_h

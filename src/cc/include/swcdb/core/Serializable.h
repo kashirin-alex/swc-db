@@ -4,8 +4,8 @@
  */
 
 
-#ifndef swc_core_Serializable_h
-#define swc_core_Serializable_h
+#ifndef swcdb_core_Serializable_h
+#define swcdb_core_Serializable_h
 
 #include "swcdb/core/Compat.h"
 #include "swcdb/core/Serialization.h"
@@ -78,4 +78,4 @@ void Serializable::decode(const uint8_t** bufp, size_t* remainp) {
 
 
 
-#endif
+#endif // swcdb_core_Serializable_h

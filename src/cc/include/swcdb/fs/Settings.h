@@ -3,8 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_fs_Settings_h
-#define swc_fs_Settings_h
+#ifndef swcdb_fs_Settings_h
+#define swcdb_fs_Settings_h
 
 #include "swcdb/core/config/Settings.h"
 
@@ -17,4 +17,4 @@ namespace SWC { namespace Config {
 #include "swcdb/fs/Settings.cc"
 #endif 
 
-#endif // swc_fs_Settings_h
+#endif // swcdb_fs_Settings_h

@@ -31,4 +31,5 @@ struct ColumnsReqDelete {
 
 }} // namespace SWC::Ranger
 
-#endif
+
+#endif // swcdb_ranger_db_ColumnsReqDelete_h

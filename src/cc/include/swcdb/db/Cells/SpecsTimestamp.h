@@ -67,4 +67,4 @@ class Timestamp {
 #include "swcdb/db/Cells/SpecsTimestamp.cc"
 #endif 
 
-#endif
+#endif // swcdb_db_cells_SpecsTimestamp_h

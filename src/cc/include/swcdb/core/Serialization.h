@@ -5,8 +5,8 @@
 
 
 
-#ifndef swc_core_Serialization_h
-#define swc_core_Serialization_h
+#ifndef swcdb_core_Serialization_h
+#define swcdb_core_Serialization_h
 
 
 #include "swcdb/core/Compat.h"
@@ -394,4 +394,4 @@ bool equal(double a, double b) {
 
 }}
 
-#endif // swc_core_Serialization_h
+#endif // swcdb_core_Serialization_h

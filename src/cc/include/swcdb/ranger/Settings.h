@@ -3,8 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_ranger_Settings_h
-#define swc_ranger_Settings_h
+#ifndef swcdb_ranger_Settings_h
+#define swcdb_ranger_Settings_h
 
 #include "swcdb/core/config/Settings.h"
 #include "swcdb/core/comm/Settings.h"
@@ -79,4 +79,4 @@ void Settings::init_post_cmd_args(){ }
 
 }}
 
-#endif // swc_ranger_Settings_h
+#endif // swcdb_ranger_Settings_h

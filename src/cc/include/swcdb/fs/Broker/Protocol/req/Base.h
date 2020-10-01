@@ -3,8 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_fs_Broker_Protocol_req_Base_h
-#define swc_fs_Broker_Protocol_req_Base_h
+#ifndef swcdb_fs_Broker_Protocol_req_Base_h
+#define swcdb_fs_Broker_Protocol_req_Base_h
 
 #include "swcdb/fs/Broker/FileSystem.h"
 #include "swcdb/fs/Broker/Protocol/Commands.h"
@@ -39,4 +39,4 @@ class Base : public Comm::DispatchHandler {
 #include "swcdb/fs/Broker/Protocol/req/Base.cc"
 #endif
 
-#endif  // swc_fs_Broker_Protocol_req_Base_h
+#endif // swcdb_fs_Broker_Protocol_req_Base_h

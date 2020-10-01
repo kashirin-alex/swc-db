@@ -94,4 +94,5 @@ class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
 #include "swcdb/ranger/db/RangeData.cc"
 //#endif
 
-#endif
+
+#endif // swcdb_ranger_db_Columns_h

@@ -3,8 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_core_FlowRate_h
-#define swc_core_FlowRate_h
+#ifndef swcdb_core_FlowRate_h
+#define swcdb_core_FlowRate_h
 
 #include <atomic>
 #include <mutex>
@@ -90,4 +90,4 @@ struct Data {
 
 } }
 
-#endif // swc_core_FlowRate_h
+#endif // swcdb_core_FlowRate_h

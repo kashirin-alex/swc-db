@@ -3,8 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_db_client_mngr_Groups_h
-#define swc_db_client_mngr_Groups_h
+#ifndef swcdb_db_client_mngr_Groups_h
+#define swcdb_db_client_mngr_Groups_h
 
 #include "swcdb/db/Types/Identifiers.h"
 #include "swcdb/db/Types/MngrRole.h"
@@ -116,4 +116,4 @@ class Groups final : private std::vector<Group::Ptr>,
 #endif 
 
 
-#endif // swc_db_client_mngr_Groups_h
+#endif // swcdb_db_client_mngr_Groups_h

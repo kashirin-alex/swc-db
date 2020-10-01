@@ -4,8 +4,8 @@
  */
 
 
-#ifndef swc_manager_Protocol_handlers_RgrGet_h
-#define swc_manager_Protocol_handlers_RgrGet_h
+#ifndef swcdb_manager_Protocol_handlers_RgrGet_h
+#define swcdb_manager_Protocol_handlers_RgrGet_h
 
 #include "swcdb/db/Protocol/Mngr/params/RgrGet.h"
 
@@ -92,4 +92,4 @@ void rgr_get(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
 
 }}}}
 
-#endif // swc_manager_Protocol_handlers_RgrGet_h
+#endif // swcdb_manager_Protocol_handlers_RgrGet_h

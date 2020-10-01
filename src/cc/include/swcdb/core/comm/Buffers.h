@@ -3,8 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_core_comm_Buffers_h
-#define swc_core_comm_Buffers_h
+#ifndef swcdb_core_comm_Buffers_h
+#define swcdb_core_comm_Buffers_h
 
 #include <asio.hpp>
 #include "swcdb/core/Serializable.h"
@@ -79,4 +79,4 @@ class Buffers final {
 #include "swcdb/core/comm/Buffers.cc"
 #endif 
 
-#endif // swc_core_comm_Buffers_h
+#endif // swcdb_core_comm_Buffers_h

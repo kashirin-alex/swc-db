@@ -58,4 +58,4 @@ class Scan final : public Serializable {
 #include "swcdb/db/Cells/SpecsScan.cc"
 #endif 
 
-#endif
+#endif // swcdb_db_cells_SpecsScan_h

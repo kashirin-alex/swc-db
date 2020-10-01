@@ -4,8 +4,8 @@
  */
 
 
-#ifndef swc_manager_Protocol_handlers_ColumnUpdate_h
-#define swc_manager_Protocol_handlers_ColumnUpdate_h
+#ifndef swcdb_manager_Protocol_handlers_ColumnUpdate_h
+#define swcdb_manager_Protocol_handlers_ColumnUpdate_h
 
 #include "swcdb/manager/Protocol/Mngr/params/ColumnUpdate.h"
 
@@ -35,4 +35,4 @@ void column_update(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev)
 
 }}}}
 
-#endif // swc_manager_Protocol_handlers_ColumnUpdate_h
+#endif // swcdb_manager_Protocol_handlers_ColumnUpdate_h

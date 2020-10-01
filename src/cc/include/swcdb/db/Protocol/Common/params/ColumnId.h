@@ -4,8 +4,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_db_protocol_common_params_ColumnId_h
-#define swc_db_protocol_common_params_ColumnId_h
+#ifndef swcdb_db_protocol_common_params_ColumnId_h
+#define swcdb_db_protocol_common_params_ColumnId_h
 
 #include "swcdb/core/Serializable.h"
 
@@ -44,4 +44,4 @@ class ColumnId : public Serializable {
 
 }}}}
 
-#endif // swc_db_protocol_common_params_ColumnId_h
+#endif // swcdb_db_protocol_common_params_ColumnId_h

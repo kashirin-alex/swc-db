@@ -4,8 +4,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_db_types_MetaColumn_h
-#define swc_db_types_MetaColumn_h
+#ifndef swcdb_db_types_MetaColumn_h
+#define swcdb_db_types_MetaColumn_h
 
 #include "swcdb/db/Types/Identifiers.h"
 #include "swcdb/db/Types/KeySeq.h"
@@ -40,4 +40,4 @@ uint8_t get_sys_cid(KeySeq col_seq, Range col_type);
 #include "swcdb/db/Types/MetaColumn.cc"
 #endif 
 
-#endif // swc_db_types_MetaColumn_h
+#endif // swcdb_db_types_MetaColumn_h

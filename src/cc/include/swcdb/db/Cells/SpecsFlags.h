@@ -66,4 +66,4 @@ class Flags {
 #include "swcdb/db/Cells/SpecsFlags.cc"
 #endif 
 
-#endif
+#endif //swcdb_db_cells_SpecsFlags_h

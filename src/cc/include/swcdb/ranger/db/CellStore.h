@@ -4,8 +4,8 @@
  */
 
 
-#ifndef swc_ranger_db_CellStore_h
-#define swc_ranger_db_CellStore_h
+#ifndef swcdb_ranger_db_CellStore_h
+#define swcdb_ranger_db_CellStore_h
 
 #include "swcdb/ranger/db/CellStoreBlock.h"
 
@@ -190,4 +190,4 @@ static Read::Ptr create_initial(int& err, const RangePtr& range);
 
 }}}// namespace SWC::Ranger::CellStore
 
-#endif // swc_ranger_db_CellStore_h
+#endif // swcdb_ranger_db_CellStore_h

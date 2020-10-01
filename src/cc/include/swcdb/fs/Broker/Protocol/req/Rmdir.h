@@ -3,8 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_fs_Broker_Protocol_req_Rmdir_h
-#define swc_fs_Broker_Protocol_req_Rmdir_h
+#ifndef swcdb_fs_Broker_Protocol_req_Rmdir_h
+#define swcdb_fs_Broker_Protocol_req_Rmdir_h
 
 #include "swcdb/fs/Broker/Protocol/req/Base.h"
 #include "swcdb/fs/Broker/Protocol/params/Rmdir.h"
@@ -37,4 +37,4 @@ class Rmdir : public Base {
 #include "swcdb/fs/Broker/Protocol/req/Rmdir.cc"
 #endif 
 
-#endif  // swc_fs_Broker_Protocol_req_Rmdir_h
+#endif // swcdb_fs_Broker_Protocol_req_Rmdir_h

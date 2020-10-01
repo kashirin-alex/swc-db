@@ -3,8 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_core_Error_h
-#define swc_core_Error_h
+#ifndef swcdb_core_Error_h
+#define swcdb_core_Error_h
 
 
 #include "swcdb/core/ErrorCode.h"
@@ -178,4 +178,4 @@ try {
 #endif 
 
 
-#endif // swc_core_Error_h
+#endif // swcdb_core_Error_h

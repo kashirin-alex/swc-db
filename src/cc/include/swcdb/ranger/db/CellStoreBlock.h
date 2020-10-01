@@ -4,8 +4,8 @@
  */
 
 
-#ifndef swc_ranger_db_CellStoreBlock_h
-#define swc_ranger_db_CellStoreBlock_h
+#ifndef swcdb_ranger_db_CellStoreBlock_h
+#define swcdb_ranger_db_CellStoreBlock_h
 
 #include "swcdb/ranger/db/CellStoreBlockHeader.h"
 
@@ -126,4 +126,4 @@ class Write final {
 
 #include "swcdb/ranger/db/CellStoreBlockHeader.cc"
 
-#endif // swc_ranger_db_CellStoreBlock_h
+#endif // swcdb_ranger_db_CellStoreBlock_h

@@ -4,8 +4,8 @@
  */
 
 
-#ifndef swc_ranger_db_RangeData_h
-#define swc_ranger_db_RangeData_h
+#ifndef swcdb_ranger_db_RangeData_h
+#define swcdb_ranger_db_RangeData_h
 
 
 #include "swcdb/core/Buffer.h"
@@ -37,4 +37,5 @@ void load(int& err, CellStore::Readers& cellstores);
 
 
 }}}
-#endif //swc_ranger_db_RangeData_h
+
+#endif // swcdb_ranger_db_RangeData_h

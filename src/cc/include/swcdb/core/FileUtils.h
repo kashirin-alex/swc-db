@@ -21,8 +21,8 @@
  * 02110-1301, USA.
  */
 
-#ifndef swc_core_FileUtils_h
-#define swc_core_FileUtils_h
+#ifndef swcdb_core_FileUtils_h
+#define swcdb_core_FileUtils_h
 
 #include "swcdb/core/Error.h"
 
@@ -174,5 +174,5 @@ namespace SWC { namespace FileUtils {
 #include "swcdb/core/FileUtils.cc"
 #endif 
 
-#endif // swc_core_FileUtils_h
+#endif // swcdb_core_FileUtils_h
 

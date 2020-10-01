@@ -4,8 +4,8 @@
  */
 
 
-#ifndef swc_core_Time_h
-#define swc_core_Time_h
+#ifndef swcdb_core_Time_h
+#define swcdb_core_Time_h
 
 #include "swcdb/core/Compat.h"
 
@@ -46,4 +46,4 @@ std::ostream &hires_now_ns(std::ostream &out);
 #include "swcdb/core/Time.cc"
 #endif 
 
-#endif // swc_core_Time_h
+#endif // swcdb_core_Time_h

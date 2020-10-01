@@ -3,8 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_core_Malloc_H
-#define swc_core_Malloc_H
+#ifndef swcdb_core_Malloc_h
+#define swcdb_core_Malloc_h
 
 
 extern 
@@ -36,4 +36,4 @@ void* operator new(unsigned long sz) {
 namespace SWC { }
 
 
-#endif
+#endif // swcdb_core_Malloc_h

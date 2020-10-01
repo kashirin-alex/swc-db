@@ -3,8 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_core_COMPAT_H
-#define swc_core_COMPAT_H
+#ifndef swcdb_core_Compact_h
+#define swcdb_core_Compact_h
 
 //! The SWC-DB C++ namespace 'SWC'
 namespace SWC { }
@@ -67,4 +67,4 @@ namespace SWC { }
 
 #include "swcdb/core/BitFieldInt.h" // for u/int24/40/48/56_t
 
-#endif
+#endif // swcdb_core_Compact_h

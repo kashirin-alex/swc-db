@@ -4,8 +4,8 @@
  */
 
 
-#ifndef swc_core_Sring_h
-#define swc_core_Sring_h
+#ifndef swcdb_core_String_h
+#define swcdb_core_String_h
 
 
 #include <string>
@@ -47,4 +47,4 @@ namespace SWC {
 #include "swcdb/core/String.cc"
 #endif 
 
-#endif 
+#endif // swcdb_core_String_h

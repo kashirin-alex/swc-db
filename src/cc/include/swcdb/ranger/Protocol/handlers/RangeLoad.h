@@ -4,8 +4,8 @@
  */
 
 
-#ifndef swc_ranger_Protocol_handlers_RangeLoad_h
-#define swc_ranger_Protocol_handlers_RangeLoad_h
+#ifndef swcdb_ranger_Protocol_handlers_RangeLoad_h
+#define swcdb_ranger_Protocol_handlers_RangeLoad_h
 
 #include "swcdb/db/Protocol/Rgr/params/RangeLoad.h"
 #include "swcdb/ranger/callbacks/RangeLoaded.h"
@@ -39,4 +39,4 @@ void range_load(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
 
 }}}}
 
-#endif // swc_ranger_Protocol_handlers_RangeLoad_h
+#endif // swcdb_ranger_Protocol_handlers_RangeLoad_h

@@ -4,8 +4,8 @@
  */
 
 
-#ifndef swc_ranger_db_CommitLogFragment_h
-#define swc_ranger_db_CommitLogFragment_h
+#ifndef swcdb_ranger_db_CommitLogFragment_h
+#define swcdb_ranger_db_CommitLogFragment_h
 
 #include "swcdb/core/Semaphore.h"
 
@@ -162,4 +162,4 @@ class Fragment final {
 
 }}} // namespace SWC::Ranger::CommitLog
 
-#endif // swc_ranger_db_CommitLogFragment_h
+#endif // swcdb_ranger_db_CommitLogFragment_h

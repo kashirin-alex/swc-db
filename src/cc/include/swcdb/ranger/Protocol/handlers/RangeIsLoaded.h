@@ -4,8 +4,8 @@
  */
 
 
-#ifndef swc_ranger_Protocol_handlers_RangeIsLoaded_h
-#define swc_ranger_Protocol_handlers_RangeIsLoaded_h
+#ifndef swcdb_ranger_Protocol_handlers_RangeIsLoaded_h
+#define swcdb_ranger_Protocol_handlers_RangeIsLoaded_h
 
 #include "swcdb/db/Protocol/Rgr/params/RangeIsLoaded.h"
 
@@ -39,4 +39,4 @@ void range_is_loaded(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& e
 
 }}}}
 
-#endif // swc_ranger_Protocol_handlers_RangeIsLoaded_h
+#endif // swcdb_ranger_Protocol_handlers_RangeIsLoaded_h

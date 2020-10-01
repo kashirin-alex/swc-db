@@ -4,8 +4,8 @@
  */
 
 
-#ifndef swc_fsbroker_handlers_Exists_h
-#define swc_fsbroker_handlers_Exists_h
+#ifndef swcdb_fsbroker_handlers_Exists_h
+#define swcdb_fsbroker_handlers_Exists_h
 
 #include "swcdb/fs/Broker/Protocol/params/Exists.h"
 
@@ -51,4 +51,4 @@ void exists(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
 
 }}}}
 
-#endif // swc_fsbroker_handlers_Exists_h
+#endif // swcdb_fsbroker_handlers_Exists_h

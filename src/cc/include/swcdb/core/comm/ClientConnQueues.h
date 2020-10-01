@@ -3,8 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_core_comm_ClientConnQueues_h
-#define swc_core_comm_ClientConnQueues_h
+#ifndef swcdb_core_comm_ClientConnQueues_h
+#define swcdb_core_comm_ClientConnQueues_h
 
 #include "swcdb/core/comm/SerializedClient.h"
 #include "swcdb/core/comm/ClientConnQueue.h"
@@ -81,4 +81,4 @@ class ConnQueues final :
 
 
 // 
-#endif // swc_core_comm_ClientConnQueues_h
+#endif // swcdb_core_comm_ClientConnQueues_h

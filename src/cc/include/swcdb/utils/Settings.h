@@ -3,8 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_app_utils_Settings_h
-#define swc_app_utils_Settings_h
+#ifndef swcdb_app_utils_Settings_h
+#define swcdb_app_utils_Settings_h
 
 #include "swcdb/core/config/Settings.h"
 #include "swcdb/core/comm/Settings.h"
@@ -12,8 +12,8 @@
 #include "swcdb/db/client/Settings.h"
 
 extern "C"{
-typedef int swc_utils_run_t();
-typedef void swc_utils_apply_cfg_t(SWC::Env::Config::Ptr env);
+typedef int swcdb_utils_run_t();
+typedef void swcdb_utils_apply_cfg_t(SWC::Env::Config::Ptr env);
 }
 
 namespace SWC{ namespace Config {
@@ -53,4 +53,4 @@ void Settings::init_post_cmd_args() {
 
 }}
 
-#endif // swc_app_utils_Settings_h
+#endif // swcdb_app_utils_Settings_h

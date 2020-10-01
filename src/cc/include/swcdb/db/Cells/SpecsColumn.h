@@ -70,4 +70,4 @@ class Column final : public Serializable {
 #include "swcdb/db/Cells/SpecsColumn.cc"
 #endif 
 
-#endif
+#endif // swcdb_db_cells_SpecsColumn_h

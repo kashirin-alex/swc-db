@@ -4,8 +4,8 @@
  */
 
 
-#ifndef swc_manager_Protocol_handlers_Echo_h
-#define swc_manager_Protocol_handlers_Echo_h
+#ifndef swcdb_manager_Protocol_handlers_Echo_h
+#define swcdb_manager_Protocol_handlers_Echo_h
 
 
 
@@ -26,4 +26,4 @@ void do_echo(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
 
 }}}}
 
-#endif // swc_manager_Protocol_handlers_Echo_h
+#endif // swcdb_manager_Protocol_handlers_Echo_h

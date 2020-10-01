@@ -8,23 +8,23 @@ get_property(SWC_VERSION_SRC GLOBAL PROPERTY SWC_VERSION_SRC)
 
 
 
-add_subdirectory(core)          #ifndef swc_core_path_FileName_h
+add_subdirectory(core)          #ifndef swcdb_core_path_FileName_h
 
 
-add_subdirectory(fs)            #ifndef swc_fs_FileName_h
+add_subdirectory(fs)            #ifndef swcdb_fs_FileName_h
 
-add_subdirectory(db)            #ifndef swc_db_FileName_h
-
-
-add_subdirectory(ranger)        #ifndef swc_ranger_FileName_h
-
-#add_subdirectory(manager)      #ifndef swc_manager_FileName_h
-
-add_subdirectory(fsbroker)      #ifndef swc_fsbroker_FileName_h
-
-add_subdirectory(thrift)        #ifndef swc_thrift_FileName_h
+add_subdirectory(db)            #ifndef swcdb_db_FileName_h
 
 
+add_subdirectory(ranger)        #ifndef swcdb_ranger_FileName_h
 
-add_subdirectory(utils)      #ifndef swc_fsbroker_FileName_h
+#add_subdirectory(manager)      #ifndef swcdb_manager_FileName_h
+
+add_subdirectory(fsbroker)      #ifndef swcdb_fsbroker_FileName_h
+
+add_subdirectory(thrift)        #ifndef swcdb_thrift_FileName_h
+
+
+
+add_subdirectory(utils)          #ifndef swcdb_fsbroker_FileName_h
 

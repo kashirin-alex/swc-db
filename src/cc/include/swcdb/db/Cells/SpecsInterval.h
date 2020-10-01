@@ -129,4 +129,4 @@ class Interval {
 #include "swcdb/db/Cells/SpecsInterval.cc"
 #endif 
 
-#endif
+#endif // swcdb_db_cells_SpecsInterval_h

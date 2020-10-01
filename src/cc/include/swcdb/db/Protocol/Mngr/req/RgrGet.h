@@ -4,8 +4,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_db_protocol_req_RgrGet_h
-#define swc_db_protocol_req_RgrGet_h
+#ifndef swcdb_db_protocol_req_RgrGet_h
+#define swcdb_db_protocol_req_RgrGet_h
 
 
 #include "swcdb/core/comm/ClientConnQueue.h"
@@ -58,4 +58,4 @@ class RgrGet: public Comm::client::ConnQueue::ReqBase {
 #include "swcdb/db/Protocol/Mngr/req/RgrGet.cc"
 #endif 
 
-#endif // swc_db_protocol_req_RgrGet_h
+#endif // swcdb_db_protocol_req_RgrGet_h

@@ -4,8 +4,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_db_protocol_rgr_req_Report_h
-#define swc_db_protocol_rgr_req_Report_h
+#ifndef swcdb_db_protocol_rgr_req_Report_h
+#define swcdb_db_protocol_rgr_req_Report_h
 
 
 #include "swcdb/db/Protocol/Rgr/params/Report.h"
@@ -162,4 +162,4 @@ class ReportColumnsRanges: public Report {
 #include "swcdb/db/Protocol/Rgr/req/Report.cc"
 #endif 
 
-#endif // swc_db_protocol_rgr_req_Report_h
+#endif // swcdb_db_protocol_rgr_req_Report_h

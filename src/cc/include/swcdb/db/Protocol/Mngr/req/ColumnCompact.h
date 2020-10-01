@@ -4,8 +4,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_db_protocol_req_ColumnCompact_h
-#define swc_db_protocol_req_ColumnCompact_h
+#ifndef swcdb_db_protocol_req_ColumnCompact_h
+#define swcdb_db_protocol_req_ColumnCompact_h
 
 
 #include "swcdb/core/comm/ClientConnQueue.h"
@@ -55,4 +55,4 @@ class ColumnCompact: public Comm::client::ConnQueue::ReqBase {
 #include "swcdb/db/Protocol/Mngr/req/ColumnCompact.cc"
 #endif 
 
-#endif // swc_db_protocol_req_ColumnCompact_h
+#endif // swcdb_db_protocol_req_ColumnCompact_h

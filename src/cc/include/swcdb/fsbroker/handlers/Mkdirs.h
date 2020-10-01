@@ -4,8 +4,8 @@
  */
 
 
-#ifndef swc_fsbroker_handlers_Mkdirs_h
-#define swc_fsbroker_handlers_Mkdirs_h
+#ifndef swcdb_fsbroker_handlers_Mkdirs_h
+#define swcdb_fsbroker_handlers_Mkdirs_h
 
 #include "swcdb/fs/Broker/Protocol/params/Mkdirs.h"
 
@@ -50,4 +50,4 @@ void mkdirs(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
 
 }}}}
 
-#endif // swc_fsbroker_handlers_Mkdirs_h
+#endif // swcdb_fsbroker_handlers_Mkdirs_h

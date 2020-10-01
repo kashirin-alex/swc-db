@@ -4,8 +4,8 @@
  */
 
 
-#ifndef swc_manager_db_ColumnCfg_h
-#define swc_manager_db_ColumnCfg_h
+#ifndef swcdb_manager_db_ColumnCfg_h
+#define swcdb_manager_db_ColumnCfg_h
 
 #include "swcdb/db/Cells/KeyComparator.h"
 
@@ -30,4 +30,4 @@ class ColumnCfg final {
 
 }}
 
-#endif // swc_manager_db_ColumnCfg_h
+#endif // swcdb_manager_db_ColumnCfg_h

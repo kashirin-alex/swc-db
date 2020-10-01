@@ -4,8 +4,8 @@
  */
 
 
-#ifndef swc_fsbroker_handlers_Pread_h
-#define swc_fsbroker_handlers_Pread_h
+#ifndef swcdb_fsbroker_handlers_Pread_h
+#define swcdb_fsbroker_handlers_Pread_h
 
 #include "swcdb/fs/Broker/Protocol/params/Pread.h"
 
@@ -61,4 +61,4 @@ void pread(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
 
 }}}}
 
-#endif // swc_fsbroker_handlers_Pread_h
+#endif // swcdb_fsbroker_handlers_Pread_h

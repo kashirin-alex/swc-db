@@ -3,8 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_app_thriftbroker_AppHandler_h
-#define swc_app_thriftbroker_AppHandler_h
+#ifndef swcdb_app_thriftbroker_AppHandler_h
+#define swcdb_app_thriftbroker_AppHandler_h
 
 
 #include "swcdb/thrift/gen-cpp/Broker.h"
@@ -759,4 +759,4 @@ class AppHandler final : virtual public BrokerIf {
 
 }}
 
-#endif // swc_app_thriftbroker_AppHandler_h
+#endif // swcdb_app_thriftbroker_AppHandler_h

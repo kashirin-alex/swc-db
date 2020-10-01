@@ -4,8 +4,8 @@
  */
 
 
-#ifndef swc_core_comm_ConnHandler_h
-#define swc_core_comm_ConnHandler_h
+#ifndef swcdb_core_comm_ConnHandler_h
+#define swcdb_core_comm_ConnHandler_h
 
 #include <asio.hpp>
 #include "asio/ssl.hpp"
@@ -251,4 +251,4 @@ class ConnHandlerSSL final : public ConnHandler {
 #include "swcdb/core/comm/ConnHandler.cc"
 #endif 
 
-#endif // swc_core_comm_ConnHandler_h
+#endif // swcdb_core_comm_ConnHandler_h

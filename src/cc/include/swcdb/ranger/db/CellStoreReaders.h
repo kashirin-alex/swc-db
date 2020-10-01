@@ -4,8 +4,8 @@
  */
 
 
-#ifndef swc_ranger_db_CellStoreReaders_h
-#define swc_ranger_db_CellStoreReaders_h
+#ifndef swcdb_ranger_db_CellStoreReaders_h
+#define swcdb_ranger_db_CellStoreReaders_h
 
 #include "swcdb/ranger/db/CellStore.h"
 
@@ -101,4 +101,4 @@ class Readers final : private std::vector<Read::Ptr> {
 
 }}} // namespace SWC::Ranger::CellStore
 
-#endif // swc_ranger_db_CellStoreReaders_h
+#endif // swcdb_ranger_db_CellStoreReaders_h

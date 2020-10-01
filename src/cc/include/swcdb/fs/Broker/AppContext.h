@@ -3,8 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_fs_Broker_AppContext_h
-#define swc_fs_Broker_AppContext_h
+#ifndef swcdb_fs_Broker_AppContext_h
+#define swcdb_fs_Broker_AppContext_h
 
 #include "swcdb/core/comm/AppContext.h"
 
@@ -32,4 +32,4 @@ class AppContext final : public SWC::Comm::AppContext {
 
 }}}
 
-#endif  // swc_fs_Broker_AppContext_h
+#endif // swcdb_fs_Broker_AppContext_h

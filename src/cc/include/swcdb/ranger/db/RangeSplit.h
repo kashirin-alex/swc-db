@@ -4,8 +4,8 @@
  */
 
 
-#ifndef swc_ranger_db_RangeSplit_h
-#define swc_ranger_db_RangeSplit_h
+#ifndef swcdb_ranger_db_RangeSplit_h
+#define swcdb_ranger_db_RangeSplit_h
 
 
 namespace SWC { namespace Ranger {
@@ -193,4 +193,4 @@ class RangeSplit final {
 
 }} // namespace SWC::Ranger
 
-#endif // swc_ranger_db_RangeSplit_h
+#endif // swcdb_ranger_db_RangeSplit_h

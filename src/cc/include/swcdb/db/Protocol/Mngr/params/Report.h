@@ -4,8 +4,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_db_protocol_mngr_params_Report_h
-#define swc_db_protocol_mngr_params_Report_h
+#ifndef swcdb_db_protocol_mngr_params_Report_h
+#define swcdb_db_protocol_mngr_params_Report_h
 
 #include "swcdb/core/Serializable.h"
 #include "swcdb/db/Columns/Schema.h"
@@ -185,4 +185,4 @@ class RspManagersStatus : public Serializable {
 #include "swcdb/db/Protocol/Mngr/params/Report.cc"
 #endif 
 
-#endif // swc_db_protocol_mngr_params_Report_h
+#endif // swcdb_db_protocol_mngr_params_Report_h

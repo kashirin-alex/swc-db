@@ -4,8 +4,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swc_db_protocol_mngr_params_RgrGet_h
-#define swc_db_protocol_mngr_params_RgrGet_h
+#ifndef swcdb_db_protocol_mngr_params_RgrGet_h
+#define swcdb_db_protocol_mngr_params_RgrGet_h
 
 
 #include "swcdb/db/Types/Identifiers.h"
@@ -79,4 +79,4 @@ class RgrGetRsp : public Common::Params::HostEndPoints {
 #include "swcdb/db/Protocol/Mngr/params/RgrGet.cc"
 #endif 
 
-#endif // swc_db_protocol_mngr_params_RgrGet_h
+#endif // swcdb_db_protocol_mngr_params_RgrGet_h
