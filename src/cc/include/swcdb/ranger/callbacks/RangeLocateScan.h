@@ -22,7 +22,7 @@ class RangeLocateScan : public ReqScan {
                   const RangePtr& range, uint8_t flags)
                   : ReqScan(conn, ev, range_begin, range_end), 
                     range(range), flags(flags),
-                    any_is(range->type != Types::Range::DATA),
+                    any_is(range->type != DB::Types::Range::DATA),
                     range_begin(range_begin, false) {
     auto c = range->known_interval_count();
     spec.range_begin.remove(c ? c : (uint24_t)1, true);
@@ -32,7 +32,7 @@ class RangeLocateScan : public ReqScan {
 
   virtual ~RangeLocateScan() { }
 
-  bool selector(const Types::KeySeq key_seq, 
+  bool selector(const DB::Types::KeySeq key_seq, 
                 const DB::Cells::Cell& cell, bool& stop) override {
     //SWC_PRINT << "---------------------"
     //  << "  cell.key: " << cell.key.to_string() << SWC_PRINT_CLOSE;
@@ -113,7 +113,7 @@ class RangeLocateScan : public ReqScan {
     params.range_end.decode(&ptr, &remain, true);
     params.rid = Serialization::decode_vi64(&ptr, &remain);
 
-    if(range->type == Types::Range::MASTER) {
+    if(range->type == DB::Types::Range::MASTER) {
       params.range_begin.remove(0);
       params.range_end.remove(0);
     }

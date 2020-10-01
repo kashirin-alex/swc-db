@@ -26,7 +26,7 @@ void count_all_cells(size_t num_cells,
   req->cells.reset(
     req->spec.flags.max_versions, 
     0, 
-    SWC::Types::Column::PLAIN
+    SWC::DB::Types::Column::PLAIN
   );
   req->spec.flags.limit = num_cells * blocks.range->cfg->cell_versions();
     
@@ -177,7 +177,7 @@ int main(int argc, char** argv) {
   for(int i = 1;i<=num_chks; ++i){
     
     auto req = Ranger::ReqScanTest::make();
-    req->cells.reset(1, 0, SWC::Types::Column::PLAIN);
+    req->cells.reset(1, 0, SWC::DB::Types::Column::PLAIN);
     req->spec.flags.limit = num_cells;
     
     req->cb = [req, &chk, i](int err) { // , blocks=&blocks

@@ -9,7 +9,7 @@
 
 #include <string>
 
-namespace SWC { namespace Types { 
+namespace SWC { namespace DB { namespace Types { 
 
 
 enum MngrState {
@@ -25,7 +25,7 @@ enum MngrState {
 std::string to_string(MngrState state);
 
 
-}}
+}}}
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/db/Types/MngrState.cc"

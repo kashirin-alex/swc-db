@@ -254,7 +254,7 @@ void chk(Protocol::Mngr::Req::ColumnMng::Func func, size_t num_of_cols,
     
     auto schema = DB::Schema::make();
     schema->col_name = get_name(n, modified);
-    schema->col_type = Types::Column::COUNTER_I64;
+    schema->col_type = DB::Types::Column::COUNTER_I64;
     schema->cell_versions = 10; 
     schema->cell_ttl = 1234; 
     schema->blk_encoding = blk_encoding; 

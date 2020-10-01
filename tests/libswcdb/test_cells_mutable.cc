@@ -22,8 +22,12 @@ void Settings::init_post_cmd_args() {}
 
 namespace Cells = SWC::DB::Cells;
 
-void op(Cells::Mutable::Ptr cells_mutable, int& truclations, int64_t& ts_total, std::shared_ptr<SWC::Stats::Stat> latency_mutable,
-        int num_revs, bool reverse, int num_cells, bool gen_historic, Cells::Flag flag, SWC::Types::Column typ, bool time_order_desc) {
+void op(Cells::Mutable::Ptr cells_mutable, 
+        int& truclations, int64_t& ts_total, 
+        std::shared_ptr<SWC::Stats::Stat> latency_mutable,
+        int num_revs, bool reverse, int num_cells, 
+        bool gen_historic, Cells::Flag flag, 
+        SWC::DB::Types::Column typ, bool time_order_desc) {
 
   Cells::Cell cell;
 
@@ -46,7 +50,7 @@ void op(Cells::Mutable::Ptr cells_mutable, int& truclations, int64_t& ts_total, 
         cell.key.add(((char)chr)+cell_number);
 
       if(cell.flag == Cells::INSERT) {
-        if(SWC::Types::is_counter(typ)) {
+        if(SWC::DB::Types::is_counter(typ)) {
           if(r == num_revs-2) {
             cell.set_counter(Cells::OP_EQUAL, num_revs, typ);
             ++truclations;
@@ -71,7 +75,8 @@ void op(Cells::Mutable::Ptr cells_mutable, int& truclations, int64_t& ts_total, 
 
       if(i % 1000000 == 0) {
         //std::cout << "v:took=" << took_vector  << " " << r << "/" << i << " = " << cells.size() << "\n";
-        std::cout << "   m:took=" << took << " " << r << "/" << i << " = " << cells_mutable->size() << "\n";
+        std::cout << "   m:took=" << took << " " << r << "/" << i 
+                  << " = " << cells_mutable->size() << "\n";
       }
   }
   }
@@ -79,11 +84,12 @@ void op(Cells::Mutable::Ptr cells_mutable, int& truclations, int64_t& ts_total, 
 
 
 
-void check(SWC::Types::KeySeq key_seq, SWC::Types::Column typ, 
+void check(SWC::DB::Types::KeySeq key_seq, SWC::DB::Types::Column typ, 
            size_t num_cells = 1, int num_revs = 1, int max_versions = 1, 
-           bool reverse=false, bool time_order_desc=false, bool gen_historic=false) {
-  std::cout << "\nchecking with seq=" << SWC::Types::to_string(key_seq) 
-                           << " type=" << SWC::Types::to_string(typ) 
+           bool reverse=false, bool time_order_desc=false, 
+           bool gen_historic=false) {
+  std::cout << "\nchecking with seq=" << SWC::DB::Types::to_string(key_seq) 
+                           << " type=" << SWC::DB::Types::to_string(typ) 
                            << " cells=" << num_cells 
                            << " revs=" << num_revs 
                            << " reverse=" << reverse
@@ -93,7 +99,7 @@ void check(SWC::Types::KeySeq key_seq, SWC::Types::Column typ,
                            << "\n";
   int truclations = 0;
 
-  std::shared_ptr<SWC::Stats::Stat> latency_mutable(std::make_shared<SWC::Stats::Stat>());
+  auto latency_mutable(std::make_shared<SWC::Stats::Stat>());
   int64_t ts_total = 0;
 
   Cells::Mutable::Ptr cells_mutable(
@@ -102,11 +108,12 @@ void check(SWC::Types::KeySeq key_seq, SWC::Types::Column typ,
       max_versions, 0, typ));
 
   op(cells_mutable, truclations, ts_total, latency_mutable,
-     num_revs, reverse, num_cells, gen_historic, Cells::INSERT, typ, time_order_desc);
+     num_revs, reverse, num_cells, gen_historic, 
+     Cells::INSERT, typ, time_order_desc);
   /// 
 
   size_t expected_sz = num_cells;
-  if(SWC::Types::is_counter(typ))
+  if(SWC::DB::Types::is_counter(typ))
    expected_sz *= 1;
   else 
    expected_sz *= (max_versions > num_revs ? num_revs : max_versions);
@@ -115,7 +122,8 @@ void check(SWC::Types::KeySeq key_seq, SWC::Types::Column typ,
   if(cells_mutable->size() != expected_sz) {
     cells_mutable->print(std::cerr << "\n", true);
     std::cerr << "INSERT SIZE NOT AS EXPECTED, "
-              << "expected(" << expected_sz << ") != result(" << cells_mutable->size()  << ")\n";
+              << "expected(" << expected_sz 
+              << ") != result(" << cells_mutable->size()  << ")\n";
     exit(1);
   }
 
@@ -142,10 +150,11 @@ void check(SWC::Types::KeySeq key_seq, SWC::Types::Column typ,
   */
   //specs.key_start.add(".*-2$", SWC::Condition::RE);
   //specs.key_start.add("", SWC::Condition::NONE);
-  if(SWC::Types::is_counter(typ)) {
+  if(SWC::DB::Types::is_counter(typ)) {
     specs.value.set_counter(0,  SWC::Condition::EQ);
   } else {
-    specs.value.set("V_OF: "+std::to_string(num_cells-3),  SWC::Condition::VGT);
+    specs.value.set(
+      "V_OF: "+std::to_string(num_cells-3),  SWC::Condition::VGT);
   }
   specs.flags.max_versions=max_versions;
 
@@ -167,7 +176,7 @@ void check(SWC::Types::KeySeq key_seq, SWC::Types::Column typ,
     //std::cout << "v='" << std::string((const char*)cell.value, cell.vlen) <<"'\n";
     ++counted;
   }
-  if(SWC::Types::is_counter(typ) 
+  if(SWC::DB::Types::is_counter(typ) 
       ? count == num_cells : count != (size_t)3*max_versions ) {
     //cells_mutable->print(std::cerr << "\n", true);
     std::cout << " skips=" << skips 
@@ -188,13 +197,15 @@ void check(SWC::Types::KeySeq key_seq, SWC::Types::Column typ,
   ts_total = 0;
   truclations = 0;
   op(cells_mutable, truclations, ts_total, latency_mutable,
-     num_revs, reverse, num_cells, gen_historic, Cells::DELETE, typ, time_order_desc);
+     num_revs, reverse, num_cells, gen_historic, 
+     Cells::DELETE, typ, time_order_desc);
   /// 
 
   if(cells_mutable->size() != num_cells) {
     cells_mutable->print(std::cerr << "\n", true);
     std::cerr << "\nDELETE SIZE NOT AS EXPECTED, "
-              << "expected(" << num_cells << ") != result(" << cells_mutable->size()  << ")\n";
+              << "expected(" << num_cells 
+              << ") != result(" << cells_mutable->size()  << ")\n";
     exit(1);
   }
   
@@ -206,7 +217,8 @@ void check(SWC::Types::KeySeq key_seq, SWC::Types::Column typ,
 
   if(req.cells.size() != 0) {
     std::cerr << "AFTER DELETE SIZE NOT AS EXPECTED, "
-              << "expected(" << 0 << ") != result(" <<req.cells.size()  << ")\n";
+              << "expected(" << 0 
+              << ") != result(" <<req.cells.size()  << ")\n";
     exit(1);
   }
   std::cout << " mutable (del)"
@@ -258,16 +270,16 @@ int main() {
     8
   };
 
-  std::vector< SWC::Types::Column> column_types = {
-    SWC::Types::Column::PLAIN,
-    SWC::Types::Column::COUNTER_I64
+  std::vector< SWC::DB::Types::Column> column_types = {
+    SWC::DB::Types::Column::PLAIN,
+    SWC::DB::Types::Column::COUNTER_I64
   };
 
-  std::vector<SWC::Types::KeySeq> sequences = {
-    SWC::Types::KeySeq::LEXIC,
-    SWC::Types::KeySeq::VOLUME,
-    SWC::Types::KeySeq::FC_LEXIC,
-    SWC::Types::KeySeq::FC_VOLUME
+  std::vector<SWC::DB::Types::KeySeq> sequences = {
+    SWC::DB::Types::KeySeq::LEXIC,
+    SWC::DB::Types::KeySeq::VOLUME,
+    SWC::DB::Types::KeySeq::FC_LEXIC,
+    SWC::DB::Types::KeySeq::FC_VOLUME
   };
 
 
@@ -275,7 +287,7 @@ int main() {
     for(auto cell_number : cell_numbers) {
       for(auto version : versions) {
         for(auto max_version : max_versions) {
-          if(SWC::Types::is_counter(column_type) && max_version != 1)
+          if(SWC::DB::Types::is_counter(column_type) && max_version != 1)
             continue;
           else if(version < max_version)
             continue;
@@ -289,11 +301,11 @@ int main() {
 
   // ++ bool reverse=false, bool time_order_desc=false, bool gen_historic=false) 
   /*
-  check(SWC::Types::Column::PLAIN, 11, 3, true);
-  check(SWC::Types::Column::PLAIN, 11, 3, true, true);
-  check(SWC::Types::Column::PLAIN, 11, 3, true, 2, false);
-  check(SWC::Types::Column::PLAIN, 11, 3, true, 2, true, true);
-  check(SWC::Types::Column::PLAIN, 11, 10000, true, 2, true);
+  check(SWC::DB::Types::Column::PLAIN, 11, 3, true);
+  check(SWC::DB::Types::Column::PLAIN, 11, 3, true, true);
+  check(SWC::DB::Types::Column::PLAIN, 11, 3, true, 2, false);
+  check(SWC::DB::Types::Column::PLAIN, 11, 3, true, 2, true, true);
+  check(SWC::DB::Types::Column::PLAIN, 11, 10000, true, 2, true);
   */
 
   exit(0);

@@ -24,7 +24,7 @@ class Range final {
 
   typedef std::shared_ptr<Range> Ptr;
 
-  using State = Types::MngrRange::State;
+  using State = DB::Types::MngrRange::State;
 
   const ColumnCfg*  cfg;
   const rid_t       rid;

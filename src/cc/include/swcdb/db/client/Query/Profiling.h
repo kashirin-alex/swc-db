@@ -76,9 +76,9 @@ struct Profiling {
     return Component::Start(_mngr_res);
   }
 
-  Component::Start rgr_locate(Types::Range type) {    
+  Component::Start rgr_locate(DB::Types::Range type) {    
     switch(type) {
-      case Types::Range::MASTER: 
+      case DB::Types::Range::MASTER: 
         return Component::Start(_rgr_locate_master);
       default:
         return Component::Start(_rgr_locate_meta);

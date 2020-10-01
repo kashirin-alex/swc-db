@@ -33,7 +33,7 @@ class Fragments final : private std::vector<Fragment::Ptr> {
   RangePtr            range;
   std::atomic<bool>   stopping;
 
-  explicit Fragments(const Types::KeySeq key_seq);
+  explicit Fragments(const DB::Types::KeySeq key_seq);
 
   void init(const RangePtr& for_range);
 

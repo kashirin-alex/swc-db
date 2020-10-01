@@ -8,7 +8,7 @@
 #include "swcdb/db/Types/Range.h"
 
 
-namespace SWC { namespace Types { 
+namespace SWC { namespace DB { namespace Types {
 
 
 std::string to_string(Range typ) {
@@ -25,4 +25,4 @@ std::string to_string(Range typ) {
 }
 
 
-}}
+}}}

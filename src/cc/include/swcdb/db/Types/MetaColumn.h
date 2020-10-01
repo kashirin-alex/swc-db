@@ -11,7 +11,7 @@
 #include "swcdb/db/Types/KeySeq.h"
 #include "swcdb/db/Types/Range.h"
 
-namespace SWC { namespace Types {  namespace MetaColumn {
+namespace SWC { namespace DB { namespace Types { namespace MetaColumn {
 
 
 bool is_master(cid_t cid);
@@ -33,7 +33,7 @@ const char* get_meta_cid(KeySeq col_seq);
 uint8_t get_sys_cid(KeySeq col_seq, Range col_type); 
 
 
-}}}
+}}}}
 
 
 #ifdef SWC_IMPL_SOURCE

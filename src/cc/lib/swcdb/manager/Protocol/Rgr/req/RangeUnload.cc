@@ -24,7 +24,7 @@ RangeUnload::RangeUnload(const Manager::Ranger::Ptr& rgr,
 RangeUnload::~RangeUnload() { }
 
 bool RangeUnload::valid() {
-  return col->state() != Types::MngrColumn::State::DELETED &&
+  return col->state() != DB::Types::MngrColumn::State::DELETED &&
          !range->deleted();
 }
   

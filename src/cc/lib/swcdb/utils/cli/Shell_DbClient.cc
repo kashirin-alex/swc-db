@@ -332,7 +332,7 @@ void DbClient::display(const client::Query::Select::Result::Ptr& result,
   do {
     count_state = cells_count;
     for(cid_t cid : result->get_cids()) {
-      meta = !Types::MetaColumn::is_data(cid);;
+      meta = !DB::Types::MetaColumn::is_data(cid);;
       schema = Env::Clients::get()->schemas->get(err, cid);
       cells.free();
       result->get_cells(cid, cells);
@@ -346,7 +346,7 @@ void DbClient::display(const client::Query::Select::Result::Ptr& result,
         }
         cell->display(
           SWC_LOG_OSTREAM, 
-          err ? Types::Column::PLAIN: schema->col_type,
+          err ? DB::Types::Column::PLAIN: schema->col_type,
           display_flags,
           meta
         );

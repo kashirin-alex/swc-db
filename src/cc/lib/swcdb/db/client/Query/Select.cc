@@ -272,7 +272,7 @@ void Select::wait() {
 }
 
 void Select::scan(int& err) {
-  std::vector<Types::KeySeq> sequences;
+  std::vector<DB::Types::KeySeq> sequences;
   DB::Schema::Ptr schema;
   for(auto& col : specs.columns) {
     schema = Env::Clients::get()->schemas->get(err, col->cid);
@@ -298,7 +298,7 @@ void Select::scan(int& err) {
 
 
 Select::ScannerColumn::ScannerColumn(const cid_t cid, 
-                                     const Types::KeySeq col_seq,
+                                     const DB::Types::KeySeq col_seq,
                                      DB::Specs::Interval& interval,
                                      const Select::Ptr& selector)
                                     : cid(cid), col_seq(col_seq), 
@@ -309,7 +309,7 @@ Select::ScannerColumn::~ScannerColumn() { }
 
 void Select::ScannerColumn::run() {
   std::make_shared<Scanner>(
-    Types::Range::MASTER, cid, shared_from_this()
+    DB::Types::Range::MASTER, cid, shared_from_this()
   )->locate_on_manager(false);
 }
 
@@ -347,7 +347,7 @@ void Select::ScannerColumn::print(std::ostream& out) {
 
 
 Select::Scanner::Scanner(
-        const Types::Range type, const cid_t cid, 
+        const DB::Types::Range type, const cid_t cid, 
         const ScannerColumn::Ptr& col, const ReqBase::Ptr& parent, 
         const DB::Cell::Key* range_offset, const rid_t rid)
       : type(type), cid(cid), col(col), parent(parent), rid(rid),
@@ -357,7 +357,7 @@ Select::Scanner::Scanner(
 Select::Scanner::~Scanner() {}
 
 void Select::Scanner::print(std::ostream& out) {
-  out << "Scanner(type=" << Types::to_string(type)
+  out << "Scanner(type=" << DB::Types::to_string(type)
       << " cid=" << cid
       << " rid=" << rid;
   range_offset.print(out << " RangeOffset");
@@ -369,7 +369,7 @@ void Select::Scanner::locate_on_manager(bool next_range) {
   col->selector->result->completion_incr();
 
   Protocol::Mngr::Params::RgrGetReq params(
-    Types::MetaColumn::get_master_cid(col->col_seq), 0, next_range);
+    DB::Types::MetaColumn::get_master_cid(col->col_seq), 0, next_range);
 
   if(!range_offset.empty()) {
     params.range_begin.copy(range_offset);
@@ -379,12 +379,12 @@ void Select::Scanner::locate_on_manager(bool next_range) {
       params.range_begin, params.range_end);
   }
   
-  if(Types::MetaColumn::is_data(cid)) {
+  if(DB::Types::MetaColumn::is_data(cid)) {
     params.range_begin.insert(0, std::to_string(cid));
     params.range_end.insert(0, std::to_string(cid));
   }
-  if(!Types::MetaColumn::is_master(cid)) {
-    auto meta_cid = Types::MetaColumn::get_meta_cid(col->col_seq);
+  if(!DB::Types::MetaColumn::is_master(cid)) {
+    auto meta_cid = DB::Types::MetaColumn::get_meta_cid(col->col_seq);
     params.range_begin.insert(0, meta_cid);
     params.range_end.insert(0, meta_cid);
   }
@@ -417,7 +417,7 @@ void Select::Scanner::resolve_on_manager() {
         scanner->col->selector->result->completion_decr();
     }
   );
-  if(!Types::MetaColumn::is_master(cid)) {
+  if(!DB::Types::MetaColumn::is_master(cid)) {
     Protocol::Mngr::Params::RgrGetRsp rsp(cid, rid);
     if(Env::Clients::get()->rangers.get(cid, rid, rsp.endpoints)) {
       SWC_LOG_OUT(LOG_DEBUG, rsp.print(SWC_LOG_OSTREAM << "Cache hit "); );
@@ -468,14 +468,14 @@ bool Select::Scanner::located_on_manager(
     return false;
   }
 
-  if(type == Types::Range::MASTER) {
+  if(type == DB::Types::Range::MASTER) {
     col->add_call(
       [scanner=std::make_shared<Scanner>(
         type, cid, col,
         parent == nullptr ? base : parent, &rsp.range_begin
       )] () { scanner->locate_on_manager(true); }
     );
-  } else if(!Types::MetaColumn::is_master(rsp.cid)) {
+  } else if(!DB::Types::MetaColumn::is_master(rsp.cid)) {
     Env::Clients::get()->rangers.set(rsp.cid, rsp.rid, rsp.endpoints);
   }
 
@@ -485,9 +485,11 @@ bool Select::Scanner::located_on_manager(
 bool Select::Scanner::proceed_on_ranger(
           const ReqBase::Ptr& base, 
           const Protocol::Mngr::Params::RgrGetRsp& rsp) {
-  if(type == Types::Range::DATA || 
-    (type == Types::Range::MASTER && Types::MetaColumn::is_master(col->cid)) ||
-    (type == Types::Range::META   && Types::MetaColumn::is_meta(col->cid))) {
+  if(type == DB::Types::Range::DATA || 
+     (type == DB::Types::Range::MASTER && 
+      DB::Types::MetaColumn::is_master(col->cid)) ||
+     (type == DB::Types::Range::META   && 
+      DB::Types::MetaColumn::is_meta(col->cid))) {
 
     if(cid != rsp.cid || col->cid != cid) {
       SWC_LOG_OUT(LOG_DEBUG, 
@@ -523,8 +525,9 @@ void Select::Scanner::locate_on_ranger(const Comm::EndPoints& endpoints,
   col->interval.apply_possible_range(params.range_begin, params.range_end);
   params.range_begin.insert(0, std::to_string(col->cid));
   params.range_end.insert(0, std::to_string(col->cid));
-  if(type == Types::Range::MASTER && Types::MetaColumn::is_data(col->cid)) {
-    auto meta_cid = Types::MetaColumn::get_meta_cid(col->col_seq);
+  if(type == DB::Types::Range::MASTER && 
+     DB::Types::MetaColumn::is_data(col->cid)) {
+    auto meta_cid = DB::Types::MetaColumn::get_meta_cid(col->col_seq);
     params.range_begin.insert(0, meta_cid);
     params.range_end.insert(0, meta_cid);
     if(next_range)
@@ -559,7 +562,7 @@ bool Select::Scanner::located_on_ranger(
 
   if(rsp.err) {
     if(rsp.err == Error::RANGE_NOT_FOUND && 
-       (next_range || type == Types::Range::META)) {
+       (next_range || type == DB::Types::Range::META)) {
       col->selector->result->completion_decr();
       col->next_call(true);
       return false;
@@ -585,7 +588,7 @@ bool Select::Scanner::located_on_ranger(
     parent->request_again();
     return false;
   }
-  if(type == Types::Range::DATA && rsp.cid != col->cid) {
+  if(type == DB::Types::Range::DATA && rsp.cid != col->cid) {
     SWC_LOG_OUT(LOG_DEBUG, 
       rsp.print(
         SWC_LOG_OSTREAM << "LocatedRange-onRgr RETRYING(cid no match "););    
@@ -594,7 +597,7 @@ bool Select::Scanner::located_on_ranger(
     return false;
   }
 
-  if(type != Types::Range::DATA) {
+  if(type != DB::Types::Range::DATA) {
     col->add_call([endpoints, scanner=std::make_shared<Scanner>(
       type, cid, col,
       parent, &rsp.range_begin, rid
@@ -603,7 +606,9 @@ bool Select::Scanner::located_on_ranger(
   }
 
   std::make_shared<Scanner>(
-    type == Types::Range::MASTER ? Types::Range::META : Types::Range::DATA,
+    type == DB::Types::Range::MASTER 
+            ? DB::Types::Range::META 
+            : DB::Types::Range::DATA,
     rsp.cid, col, 
     parent, nullptr, rsp.rid
   )->resolve_on_manager();

@@ -16,8 +16,8 @@ namespace SWC { namespace Ranger {
 
 Range::Range(const ColumnCfg* cfg, const rid_t rid)
             : cfg(cfg), rid(rid), 
-              type(Types::MetaColumn::get_range_type(cfg->cid)),
-              meta_cid(Types::MetaColumn::get_sys_cid(cfg->key_seq, type)),
+              type(DB::Types::MetaColumn::get_range_type(cfg->cid)),
+              meta_cid(DB::Types::MetaColumn::get_sys_cid(cfg->key_seq, type)),
               blocks(cfg->key_seq), 
               m_path(DB::RangeBase::get_path(cfg->cid, rid)),
               m_interval(cfg->key_seq),
@@ -238,7 +238,7 @@ void Range::take_ownership(int &err, const Comm::ResponseCallback::Ptr& cb) {
 void Range::on_change(int &err, bool removal, 
                       const DB::Cell::Key* old_key_begin,
                       const client::Query::Update::Cb_t& cb) {
-  if(type == Types::Range::MASTER) {
+  if(type == DB::Types::Range::MASTER) {
     // update manager-root
     // Mngr::RangeUpdated
     return cb(nullptr);
@@ -250,7 +250,7 @@ void Range::on_change(int &err, bool removal,
   // Env::Rgr::updater();
 
   updater->columns->create(
-    meta_cid, cfg->key_seq, 1, 0, Types::Column::PLAIN);
+    meta_cid, cfg->key_seq, 1, 0, DB::Types::Column::PLAIN);
 
   DB::Cells::Cell cell;
   auto cid_f(std::to_string(cfg->cid));
@@ -272,7 +272,7 @@ void Range::on_change(int &err, bool removal,
     m_mutex_intval.lock();
     cell.key.copy(m_interval.key_begin);
     DB::Cell::Key key_end(m_interval.key_end);
-    if(type == Types::Range::DATA) { 
+    if(type == DB::Types::Range::DATA) { 
       // only DATA until MASTER/META aligned on cells value min/max
       aligned_min.copy(m_interval.aligned_min);
       aligned_max.copy(m_interval.aligned_max);
@@ -282,7 +282,7 @@ void Range::on_change(int &err, bool removal,
 
     cell.key.insert(0, cid_f);
     key_end.insert(0, cid_f);
-    if(type == Types::Range::DATA) { 
+    if(type == DB::Types::Range::DATA) { 
       aligned_min.insert(0, cid_f);
       aligned_max.insert(0, cid_f);
     }
@@ -443,7 +443,7 @@ void Range::expand_and_align(int &err, bool w_chg_chk) {
   }
 
   m_interval.free();
-  if(type == Types::Range::DATA)
+  if(type == DB::Types::Range::DATA)
     blocks.expand_and_align(m_interval);
   else
     blocks.expand(m_interval);
@@ -508,7 +508,7 @@ void Range::create(int &err, CellStore::Readers::Vec& mv_css) {
 void Range::print(std::ostream& out, bool minimal) {
   cfg->print(out << '(');
   out << " rid=" << rid 
-      << " type=" << Types::to_string(type)
+      << " type=" << DB::Types::to_string(type)
       << " state=";
   {
     std::shared_lock lock(m_mutex);
@@ -585,7 +585,7 @@ void Range::load(int &err, const Comm::ResponseCallback::Ptr& cb) {
       blocks.cellstores.get_prev_key_end(0, prev_range_end);
 
       m_interval.free();
-      if(type == Types::Range::DATA)
+      if(type == DB::Types::Range::DATA)
         blocks.expand_and_align(m_interval);
       else
         blocks.expand(m_interval);
@@ -703,7 +703,7 @@ void Range::run_add_queue() {
 
       blocks.add_logged(cell);
         
-      if(type == Types::Range::DATA) {
+      if(type == DB::Types::Range::DATA) {
         if(align(cell.key))
           intval_chg = true;
       } else {

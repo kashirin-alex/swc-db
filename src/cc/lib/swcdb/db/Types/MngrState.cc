@@ -8,7 +8,7 @@
 #include "swcdb/db/Types/MngrState.h"
 
 
-namespace SWC { namespace Types {
+namespace SWC { namespace DB { namespace Types {
 
 
 std::string to_string(MngrState state) {
@@ -38,4 +38,4 @@ std::string to_string(MngrState state) {
 }
 
 
-}}
+}}}

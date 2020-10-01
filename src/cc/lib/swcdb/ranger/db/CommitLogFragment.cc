@@ -26,7 +26,7 @@ std::string Fragment::to_string(Fragment::State state) {
 
 
 Fragment::Ptr Fragment::make_read(int& err, const std::string& filepath, 
-                                  const Types::KeySeq key_seq) {
+                                  const DB::Types::KeySeq key_seq) {
   auto smartfd = FS::SmartFd::make_ptr(filepath, 0);
     
   uint8_t               version = 0;

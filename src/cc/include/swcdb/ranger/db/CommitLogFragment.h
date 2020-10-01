@@ -42,7 +42,7 @@ class Fragment final {
 
 
   static Ptr make_read(int& err, const std::string& filepath, 
-                       const Types::KeySeq key_seq);
+                       const DB::Types::KeySeq key_seq);
 
   static void load_header(int& err, FS::SmartFd::Ptr& smartfd, 
                           uint8_t& version,

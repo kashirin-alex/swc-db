@@ -22,7 +22,7 @@ class MngrStatus : public Protocol::Common::Params::HostEndPoints {
   MngrStatus(uint8_t role, cid_t begin, cid_t end,
              const Comm::EndPoints& points, Comm::ConnHandlerPtr c, uint32_t pr)
              : Protocol::Common::Params::HostEndPoints(points), 
-               priority(pr), state(Types::MngrState::NOTSET), role(role), 
+               priority(pr), state(DB::Types::MngrState::NOTSET), role(role), 
                cid_begin(begin), cid_end(end), 
                conn(c), failures(0) { 
   }
@@ -54,7 +54,7 @@ class MngrStatus : public Protocol::Common::Params::HostEndPoints {
 
   void internal_decode(const uint8_t** bufp, size_t* remainp) {
     priority.store(Serialization::decode_i32(bufp, remainp));
-    state.store((Types::MngrState)Serialization::decode_i8(bufp, remainp));
+    state.store((DB::Types::MngrState)Serialization::decode_i8(bufp, remainp));
     role = Serialization::decode_i8(bufp, remainp);
     cid_begin = Serialization::decode_vi64(bufp, remainp);
     cid_end = Serialization::decode_vi64(bufp, remainp);
@@ -65,20 +65,20 @@ class MngrStatus : public Protocol::Common::Params::HostEndPoints {
   void print(std::ostream& out) const {
     out << "MngrStatus(priority=" << priority
         << " state=" << (int)state
-        << " role=" << Types::MngrRole::to_string(role)
+        << " role=" << DB::Types::MngrRole::to_string(role)
         << " cid=" << cid_begin << '-' << cid_end;
     Protocol::Common::Params::HostEndPoints::print(out << ' ');
     out << ')';
   }
 
-  std::atomic<uint32_t>           priority;
-  std::atomic<Types::MngrState>   state;
-  uint8_t                         role;
-  cid_t                           cid_begin;
-  cid_t                           cid_end;
+  std::atomic<uint32_t>               priority;
+  std::atomic<DB::Types::MngrState>   state;
+  uint8_t                             role;
+  cid_t                               cid_begin;
+  cid_t                               cid_end;
 
-  Comm::ConnHandlerPtr            conn; // mngr-inchain
-  int                             failures;
+  Comm::ConnHandlerPtr                conn; // mngr-inchain
+  int                                 failures;
 };
 
 typedef std::vector<MngrStatus::Ptr> MngrsStatus;

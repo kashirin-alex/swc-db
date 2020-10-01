@@ -124,9 +124,9 @@ void set(const Schema& schema, DB::Schema::Ptr& dbschema) {
     dbschema->col_name = schema.col_name;
 
   if(schema.__isset.col_seq)
-    dbschema->col_seq = (Types::KeySeq)(uint8_t)schema.col_seq;
+    dbschema->col_seq = (DB::Types::KeySeq)(uint8_t)schema.col_seq;
   if(schema.__isset.col_type)
-    dbschema->col_type = (Types::Column)(uint8_t)schema.col_type;
+    dbschema->col_type = (DB::Types::Column)(uint8_t)schema.col_type;
     
   if(schema.__isset.cell_versions)
     dbschema->cell_versions = schema.cell_versions;

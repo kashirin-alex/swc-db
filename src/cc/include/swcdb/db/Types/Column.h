@@ -9,7 +9,7 @@
 
 #include <string>
 
-namespace SWC { namespace Types { 
+namespace SWC { namespace DB { namespace Types { 
 
 enum class Column {
   UNKNOWN       = 0x0,
@@ -32,7 +32,7 @@ std::string repr_col_type(int typ);
 
 int from_string_col_type(const std::string& typ);
 
-}}
+}}}
 
 
 #ifdef SWC_IMPL_SOURCE

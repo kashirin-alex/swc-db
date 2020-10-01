@@ -20,7 +20,7 @@ class Column final : private std::vector<Range::Ptr> {
   
   public:
 
-  using State = Types::MngrColumn::State;
+  using State = DB::Types::MngrColumn::State;
 
   typedef std::shared_ptr<Column> Ptr;
   
@@ -116,8 +116,8 @@ class Column final : private std::vector<Range::Ptr> {
                        const DB::Cell::Key& range_end, 
                        bool next_range) {
     bool found = false;
-    uint32_t any_is = Types::MetaColumn::is_master(cfg.cid)
-      ? 2 : (Types::MetaColumn::is_meta(cfg.cid) ? 1 : 0);
+    uint32_t any_is = DB::Types::MetaColumn::is_master(cfg.cid)
+      ? 2 : (DB::Types::MetaColumn::is_meta(cfg.cid) ? 1 : 0);
 
     std::shared_lock lock(m_mutex);
     for(auto& range : *this) {

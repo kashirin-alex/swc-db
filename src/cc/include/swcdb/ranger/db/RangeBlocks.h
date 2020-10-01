@@ -31,7 +31,7 @@ class Blocks final {
   CommitLog::Fragments  commitlog;
   CellStore::Readers    cellstores;
 
-  explicit Blocks(const Types::KeySeq key_seq);
+  explicit Blocks(const DB::Types::KeySeq key_seq);
 
   Blocks(const Blocks&) = delete;
 

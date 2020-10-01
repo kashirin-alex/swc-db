@@ -10,7 +10,7 @@
 #include "swcdb/db/Types/KeySeq.h"
 
 
-namespace SWC { namespace Types { 
+namespace SWC { namespace DB { namespace Types {
 
 
 std::string to_string(KeySeq typ) {
@@ -63,4 +63,4 @@ int from_string_range_seq(const std::string& typ) {
   return (int)range_seq_from(typ);
 }
 
-}}
+}}}

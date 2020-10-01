@@ -119,9 +119,9 @@ void Columns::unload(cid_t cid_begin, cid_t cid_end,
 
 void Columns::unload_all(bool validation) {
   std::vector<std::function<bool(cid_t)>> order = {
-    Types::MetaColumn::is_data,
-    Types::MetaColumn::is_meta,
-    Types::MetaColumn::is_master 
+    DB::Types::MetaColumn::is_data,
+    DB::Types::MetaColumn::is_meta,
+    DB::Types::MetaColumn::is_master 
   };
 
   std::atomic<int> to_unload = 0;
@@ -206,7 +206,7 @@ size_t Columns::release(size_t bytes) {
       for(size_t i=0; i<offset && it != end(); ++it, ++i);
       if(it == end())
         break;
-      if(!Types::MetaColumn::is_data(it->first))
+      if(!DB::Types::MetaColumn::is_data(it->first))
         continue;
       col = it->second;
     }

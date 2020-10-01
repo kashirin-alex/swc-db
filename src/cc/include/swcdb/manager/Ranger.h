@@ -18,7 +18,7 @@ class Ranger : public Protocol::Common::Params::HostEndPoints {
 
   public:
 
-  using State = Types::MngrRanger::State;
+  using State = DB::Types::MngrRanger::State;
 
   typedef std::shared_ptr<Ranger> Ptr;
 
@@ -36,7 +36,7 @@ class Ranger : public Protocol::Common::Params::HostEndPoints {
 
   void print(std::ostream& out) const {
     out << "[rgrid="          << rgrid
-        << " state="          << Types::to_string(state)
+        << " state="          << DB::Types::to_string(state)
         << " failures="       << failures
         << " load_scale="     << load_scale
         << " interm_ranges="  << interm_ranges;

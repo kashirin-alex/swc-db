@@ -29,7 +29,7 @@ class CompactRange final : public ReqScan {
 
   bool with_block() override;
 
-  bool selector(const Types::KeySeq key_seq, 
+  bool selector(const DB::Types::KeySeq key_seq, 
                 const DB::Cells::Cell& cell, bool& stop) override;
   
   bool reached_limits() override;

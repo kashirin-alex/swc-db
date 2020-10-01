@@ -65,9 +65,11 @@ class MngrRole final {
                        size_t next, size_t total, bool flw, 
                        const Comm::ConnHandlerPtr& conn);
   
-  void update_state(const Comm::EndPoint& endpoint, Types::MngrState state);
+  void update_state(const Comm::EndPoint& endpoint, 
+                    DB::Types::MngrState state);
 
-  void update_state(const Comm::EndPoints& endpoints, Types::MngrState state);
+  void update_state(const Comm::EndPoints& endpoints, 
+                    DB::Types::MngrState state);
   
   MngrStatus::Ptr get_host(const Comm::EndPoints& endpoints);
 

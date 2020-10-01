@@ -50,14 +50,14 @@ void RspColumnStatus::RangeStatus::encode(uint8_t** bufp) const {
 
 void RspColumnStatus::RangeStatus::decode(const uint8_t** bufp, 
                                           size_t* remainp) {
-  state = (Types::MngrRange::State)Serialization::decode_i8(bufp, remainp);
+  state = (DB::Types::MngrRange::State)Serialization::decode_i8(bufp, remainp);
   rid = Serialization::decode_vi64(bufp, remainp);
   rgr_id = Serialization::decode_vi64(bufp, remainp);
 }
 
 void RspColumnStatus::RangeStatus::display(std::ostream& out, 
                                            const std::string& offset) const {
-  out << offset << "state=" << Types::to_string(state) 
+  out << offset << "state=" << DB::Types::to_string(state) 
                 << " rid=" << rid
                 << " rgr_id=" << rgr_id;
 }
@@ -65,7 +65,7 @@ void RspColumnStatus::RangeStatus::display(std::ostream& out,
 
 
 RspColumnStatus::RspColumnStatus()
-                  : state(Types::MngrColumn::State::NOTSET) { 
+                  : state(DB::Types::MngrColumn::State::NOTSET) { 
 }
 
 RspColumnStatus::~RspColumnStatus() { }
@@ -86,7 +86,7 @@ void RspColumnStatus::internal_encode(uint8_t** bufp) const {
 }
   
 void RspColumnStatus::internal_decode(const uint8_t** bufp, size_t* remainp) {
-  state = (Types::MngrColumn::State)Serialization::decode_i8(bufp, remainp);
+  state = (DB::Types::MngrColumn::State)Serialization::decode_i8(bufp, remainp);
   ranges.resize(Serialization::decode_vi64(bufp, remainp));
   for(auto& r : ranges)
     r.decode(bufp, remainp);
@@ -98,7 +98,7 @@ void RspColumnStatus::internal_decode(const uint8_t** bufp, size_t* remainp) {
 
 void RspColumnStatus::display(std::ostream& out, 
                               const std::string& offset) const {
-  out << offset << "column-status=" << Types::to_string(state) 
+  out << offset << "column-status=" << DB::Types::to_string(state) 
                 << " ranges=" << ranges.size();
   for(auto& r : ranges) 
     r.display(out << '\n', offset + "  ");
@@ -127,7 +127,7 @@ void RspRangersStatus::Ranger::encode(uint8_t** bufp) const {
 }
 
 void RspRangersStatus::Ranger::decode(const uint8_t** bufp, size_t* remainp) {
-  state = (Types::MngrRanger::State)Serialization::decode_i8(bufp, remainp);
+  state = (DB::Types::MngrRanger::State)Serialization::decode_i8(bufp, remainp);
   rgr_id = Serialization::decode_vi64(bufp, remainp);
   failures = Serialization::decode_vi32(bufp, remainp);
   interm_ranges = Serialization::decode_vi64(bufp, remainp);
@@ -137,7 +137,7 @@ void RspRangersStatus::Ranger::decode(const uint8_t** bufp, size_t* remainp) {
 
 void RspRangersStatus::Ranger::display(std::ostream& out, 
                                        const std::string& offset) const {
-  out << offset << "state=" << Types::to_string(state) 
+  out << offset << "state=" << DB::Types::to_string(state) 
                 << " rgr_id=" << rgr_id
                 << " failures=" << failures
                 << " interm_ranges=" << interm_ranges
@@ -205,7 +205,7 @@ void RspManagersStatus::Manager::encode(uint8_t** bufp) const {
 
 void RspManagersStatus::Manager::decode(const uint8_t** bufp, size_t* remainp) {
   priority = Serialization::decode_vi32(bufp, remainp);
-  state = (Types::MngrState)Serialization::decode_i8(bufp, remainp);
+  state = (DB::Types::MngrState)Serialization::decode_i8(bufp, remainp);
   role = Serialization::decode_i8(bufp, remainp);
   cid_begin = Serialization::decode_vi64(bufp, remainp);
   cid_end = Serialization::decode_vi64(bufp, remainp);
@@ -215,13 +215,13 @@ void RspManagersStatus::Manager::decode(const uint8_t** bufp, size_t* remainp) {
 
 void RspManagersStatus::Manager::display(std::ostream& out, 
                                        const std::string& offset) const {
-  out << offset << "role=" << Types::MngrRole::to_string(role);
-  if(role & Types::MngrRole::COLUMNS)
+  out << offset << "role=" << DB::Types::MngrRole::to_string(role);
+  if(role & DB::Types::MngrRole::COLUMNS)
     out << " " << (cid_begin ? std::to_string(cid_begin) : "any") 
                << "<=CID<=" 
                << (cid_end ? std::to_string(cid_end) : "any");
   out  << " priority=" << priority
-        << " state=" << Types::to_string(state);
+        << " state=" << DB::Types::to_string(state);
   Common::Params::HostEndPoints::print(out << ' ');
 }
 

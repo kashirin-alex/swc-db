@@ -15,7 +15,7 @@
 
 #include "swcdb/core/FlowRate.h"
 
-namespace SWC { 
+namespace SWC {
   
 namespace Config {
 
@@ -61,19 +61,19 @@ void Settings::init_app_options() {
     
     ("gen-col-seq", 
       g_enum(
-        (int)Types::KeySeq::LEXIC,
+        (int)DB::Types::KeySeq::LEXIC,
         0,
-        Types::from_string_range_seq,
-        Types::repr_range_seq
+        DB::Types::from_string_range_seq,
+        DB::Types::repr_range_seq
       ), 
      "Schema col-seq FC_+/LEXIC/VOLUME")  
 
     ("gen-col-type", 
       g_enum(
-        (int)Types::Column::PLAIN,
+        (int)DB::Types::Column::PLAIN,
         0,
-        Types::from_string_col_type,
-        Types::repr_col_type
+        DB::Types::from_string_col_type,
+        DB::Types::repr_col_type
       ), 
      "Schema col-type PLAIN/COUNTER_I64/COUNTER_I32/COUNTER_I16/COUNTER_I8")  
     
@@ -236,7 +236,7 @@ void update_data(DB::Schema::Ptr& schema, uint8_t flag) {
   cell.set_time_order_desc(true);
 
   
-  bool is_counter = Types::is_counter(schema->col_type);
+  bool is_counter = DB::Types::is_counter(schema->col_type);
   std::string value_data;
   if(flag == DB::Cells::INSERT && !is_counter) {
     uint8_t c=122;
@@ -344,7 +344,7 @@ void select_data(DB::Schema::Ptr& schema) {
       true
     );
 
-  if(Types::is_counter(schema->col_type))
+  if(DB::Types::is_counter(schema->col_type))
     versions = 1;
   
   int err; 
@@ -463,10 +463,10 @@ void generate() {
   }
   err = Error::OK;
 
-  schema = SWC::DB::Schema::make();
+  schema = DB::Schema::make();
   schema->col_name = col_name;
-  schema->col_seq = (Types::KeySeq)settings->get_genum("gen-col-seq");
-  schema->col_type = (Types::Column)settings->get_genum("gen-col-type");
+  schema->col_seq = (DB::Types::KeySeq)settings->get_genum("gen-col-seq");
+  schema->col_type = (DB::Types::Column)settings->get_genum("gen-col-type");
   schema->cell_versions = settings->get_i32("gen-cell-versions");
   schema->cell_ttl = 0;
   schema->blk_encoding = (Encoder::Type)settings->get_genum("gen-blk-encoding");

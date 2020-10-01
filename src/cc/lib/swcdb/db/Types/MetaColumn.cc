@@ -10,7 +10,7 @@
 #include "swcdb/db/Types/MetaColumn.h"
 
 
-namespace SWC { namespace Types {  namespace MetaColumn {
+namespace SWC { namespace DB { namespace Types {  namespace MetaColumn {
 
 
 SWC_SHOULD_INLINE
@@ -87,4 +87,4 @@ uint8_t get_sys_cid(KeySeq col_seq, Range col_type) {
   }
 }  
 
-}}}
+}}}}

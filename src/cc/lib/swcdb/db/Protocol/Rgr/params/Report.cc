@@ -131,7 +131,7 @@ void RspColumnRids::internal_decode(const uint8_t** bufp, size_t* remainp) {
 
 
 
-RspColumnsRanges::Range::Range(Types::KeySeq seq) 
+RspColumnsRanges::Range::Range(DB::Types::KeySeq seq) 
                               : interval(seq) {
 }
 
@@ -204,7 +204,7 @@ void RspColumnsRanges::Column::encode(uint8_t** bufp) const {
 
 void RspColumnsRanges::Column::decode(const uint8_t** bufp, size_t* remainp) {
   cid = Serialization::decode_vi64(bufp, remainp);
-  col_seq = (Types::KeySeq)Serialization::decode_i8(bufp, remainp);
+  col_seq = (DB::Types::KeySeq)Serialization::decode_i8(bufp, remainp);
   mem_bytes = Serialization::decode_vi64(bufp, remainp);
   for(int64_t n = Serialization::decode_vi64(bufp, remainp); n; --n) {
     auto r = new Range(col_seq);
@@ -218,7 +218,7 @@ void RspColumnsRanges::Column::display(std::ostream& out, bool pretty,
                                        const std::string& offset) const {
   out << offset << "**************************************" << std::endl;
   out << offset << "cid(" << cid << ") seq(" 
-      << Types::to_string(col_seq) << ") in-memory(" 
+      << DB::Types::to_string(col_seq) << ") in-memory(" 
       << mem_bytes << " bytes) ranges("
       << ranges.size() << ')';
   if(!ranges.empty())

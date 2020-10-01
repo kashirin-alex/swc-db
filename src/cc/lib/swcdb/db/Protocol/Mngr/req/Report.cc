@@ -212,13 +212,14 @@ bool RangersStatus::run() {
     bool no_cid = cid == DB::Schema::NO_CID;
     if(no_cid)
       Env::Clients::get()->mngrs_groups->select(
-        Types::MngrRole::RANGERS, endpoints);
+        DB::Types::MngrRole::RANGERS, endpoints);
     else
       Env::Clients::get()->mngrs_groups->select(cid, endpoints); 
 
     if(endpoints.empty()) {
       if(no_cid)
-        MngrActive::make(Types::MngrRole::RANGERS, shared_from_this())->run();
+        MngrActive::make(
+          DB::Types::MngrRole::RANGERS, shared_from_this())->run();
       else
         MngrActive::make(cid, shared_from_this())->run();
       return false;
@@ -284,9 +285,10 @@ ManagersStatus::~ManagersStatus() { }
 bool ManagersStatus::run() {
   if(endpoints.empty()) {
     Env::Clients::get()->mngrs_groups->select(
-      Types::MngrRole::SCHEMAS, endpoints);
+      DB::Types::MngrRole::SCHEMAS, endpoints);
     if(endpoints.empty()) {
-      MngrActive::make(Types::MngrRole::SCHEMAS, shared_from_this())->run();
+      MngrActive::make(
+        DB::Types::MngrRole::SCHEMAS, shared_from_this())->run();
       return false;
     }
   }

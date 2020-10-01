@@ -9,7 +9,7 @@
 
 #include <string>
 
-namespace SWC { namespace Types {  
+namespace SWC { namespace DB { namespace Types { 
 
 
 namespace MngrRange {
@@ -28,7 +28,7 @@ namespace MngrRange {
 std::string to_string(MngrRange::State state);
 
 
-}}
+}}}
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/db/Types/MngrRangeState.cc"

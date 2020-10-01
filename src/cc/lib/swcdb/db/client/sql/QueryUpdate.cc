@@ -224,10 +224,10 @@ void QueryUpdate::read_cell(cid_t& cid, DB::Cells::Cell& cell,
     if(err) 
       return;
 
-    if(schema->col_type == Types::Column::PLAIN)
+    if(schema->col_type == DB::Types::Column::PLAIN)
       cell.set_value(value, true);
 
-    else if(Types::is_counter(schema->col_type)) {
+    else if(DB::Types::is_counter(schema->col_type)) {
       const uint8_t* buf = (const uint8_t*)value.data();
       size_t remain = value.length();
       uint8_t op;
@@ -242,7 +242,7 @@ void QueryUpdate::read_cell(cid_t& cid, DB::Cells::Cell& cell,
         v, 
         op & DB::Cells::OP_EQUAL 
           ? schema->col_type 
-          : Types::Column::COUNTER_I64
+          : DB::Types::Column::COUNTER_I64
       );
     }
 }

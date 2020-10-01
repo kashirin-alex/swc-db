@@ -15,25 +15,25 @@ class ColumnCfg final {
   
   public:
   
-  const cid_t                           cid;
-  const Types::KeySeq                   key_seq;
+  const cid_t                             cid;
+  const DB::Types::KeySeq                 key_seq;
 
-  mutable std::atomic<Types::Column>    col_type;
+  mutable std::atomic<DB::Types::Column>  col_type;
 
-  mutable std::atomic<uint32_t>         c_versions; 
-  mutable std::atomic<uint64_t>         c_ttl;
+  mutable std::atomic<uint32_t>           c_versions; 
+  mutable std::atomic<uint64_t>           c_ttl;
 
-  mutable std::atomic<Encoder::Type>    blk_enc;
-  mutable std::atomic<uint32_t>         blk_size;
-  mutable std::atomic<uint32_t>         blk_cells;
+  mutable std::atomic<Encoder::Type>      blk_enc;
+  mutable std::atomic<uint32_t>           blk_size;
+  mutable std::atomic<uint32_t>           blk_cells;
 
-  mutable std::atomic<uint8_t>          cs_replication;
-  mutable std::atomic<uint32_t>         cs_size;
-  mutable std::atomic<uint8_t>          cs_max;
-  mutable std::atomic<uint8_t>          log_rout_ratio;
-  mutable std::atomic<uint8_t>          compact_perc;
+  mutable std::atomic<uint8_t>            cs_replication;
+  mutable std::atomic<uint32_t>           cs_size;
+  mutable std::atomic<uint8_t>            cs_max;
+  mutable std::atomic<uint8_t>            log_rout_ratio;
+  mutable std::atomic<uint8_t>            compact_perc;
 
-  mutable std::atomic<bool>             deleting;
+  mutable std::atomic<bool>               deleting;
 
 
   ColumnCfg(const cid_t cid, const DB::Schema& schema) 
@@ -67,7 +67,7 @@ class ColumnCfg final {
     compact_perc = schema.compact_percent;
   }
 
-  Types::Column column_type() const {
+  DB::Types::Column column_type() const {
     return col_type.load();
   }
 
@@ -135,8 +135,8 @@ class ColumnCfg final {
       out << "DELETING ";
     out
       << "cid="   << cid
-      << " seq="  << Types::to_string(key_seq)
-      << " type=" << Types::to_string(col_type)
+      << " seq="  << DB::Types::to_string(key_seq)
+      << " type=" << DB::Types::to_string(col_type)
       << ')'
       << " cell(versions=" << c_versions
       << " ttl=" << c_ttl

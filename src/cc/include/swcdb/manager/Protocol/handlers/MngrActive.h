@@ -22,7 +22,7 @@ void mngr_active(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
     Params::MngrActiveReq params;
     params.decode(&ptr, &remain);
 
-    h = params.role & Types::MngrRole::COLUMNS 
+    h = params.role & DB::Types::MngrRole::COLUMNS 
       ? Env::Mngr::role()->active_mngr(params.cid)
       : Env::Mngr::role()->active_mngr_role(params.role);
 

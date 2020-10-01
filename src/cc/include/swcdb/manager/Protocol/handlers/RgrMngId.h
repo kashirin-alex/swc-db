@@ -21,7 +21,7 @@ void rgr_mng_id(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
     Params::RgrMngId req_params;
     req_params.decode(&ptr, &remain);
 
-    if(!Env::Mngr::role()->is_active_role(Types::MngrRole::RANGERS)) {
+    if(!Env::Mngr::role()->is_active_role(DB::Types::MngrRole::RANGERS)) {
       SWC_LOG_OUT(LOG_DEBUG, 
         SWC_LOG_OSTREAM << "MNGR NOT ACTIVE, flag=" << req_params.flag
                         << " rgrid=" << req_params.rgrid;

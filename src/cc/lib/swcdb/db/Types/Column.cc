@@ -10,7 +10,7 @@
 #include "swcdb/db/Types/Column.h"
 
 
-namespace SWC { namespace Types { 
+namespace SWC { namespace DB { namespace Types {
 
 bool is_counter(const Column typ) {
   return typ >= Column::COUNTER_I64 &&
@@ -73,4 +73,4 @@ int from_string_col_type(const std::string& typ) {
 }
 
 
-}}
+}}}

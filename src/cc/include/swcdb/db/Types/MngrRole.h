@@ -9,7 +9,7 @@
 
 #include "swcdb/core/Compat.h"
 
-namespace SWC { namespace Types { namespace MngrRole {
+namespace SWC { namespace DB { namespace Types { namespace MngrRole {
 
 const uint8_t NONE       = 0x00;
 const uint8_t COLUMNS    = 0x01;
@@ -20,7 +20,7 @@ const uint8_t ALL = COLUMNS | SCHEMAS | RANGERS;
 
 std::string to_string(uint8_t role);
 
-}}}
+}}}}
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/db/Types/MngrRole.cc"

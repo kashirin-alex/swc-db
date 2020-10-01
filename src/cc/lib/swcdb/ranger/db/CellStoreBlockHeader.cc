@@ -11,7 +11,7 @@ namespace SWC { namespace Ranger { namespace CellStore { namespace Block {
 
 
 
-Header::Header(Types::KeySeq key_seq) 
+Header::Header(DB::Types::KeySeq key_seq) 
               : offset_data(0), 
                 interval(key_seq), 
                 is_any(0),

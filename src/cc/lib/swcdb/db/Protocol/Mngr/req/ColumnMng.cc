@@ -58,9 +58,10 @@ void ColumnMng::handle_no_conn() {
 bool ColumnMng::run() {
   if(endpoints.empty()) {
     Env::Clients::get()->mngrs_groups->select(
-      Types::MngrRole::SCHEMAS, endpoints);
+      DB::Types::MngrRole::SCHEMAS, endpoints);
     if(endpoints.empty()) {
-      MngrActive::make(Types::MngrRole::SCHEMAS, shared_from_this())->run();
+      MngrActive::make(
+        DB::Types::MngrRole::SCHEMAS, shared_from_this())->run();
       return false;
     }
   }

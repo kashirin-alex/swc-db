@@ -9,7 +9,7 @@
 
 #include <string>
 
-namespace SWC { namespace Types { 
+namespace SWC { namespace DB { namespace Types { 
 
 enum KeySeq {
   UNKNOWN     = 0,
@@ -27,7 +27,7 @@ std::string repr_range_seq(int typ);
 
 int from_string_range_seq(const std::string& typ);
 
-}}
+}}}
 
 
 #ifdef SWC_IMPL_SOURCE

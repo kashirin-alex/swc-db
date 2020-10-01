@@ -16,7 +16,8 @@ namespace SWC { namespace Ranger {
   
 struct CompactRange::InBlock {
 
-  InBlock(const Types::KeySeq key_seq, size_t size, InBlock* inblock = nullptr)
+  InBlock(const DB::Types::KeySeq key_seq, size_t size, 
+          InBlock* inblock = nullptr)
           : has_last(inblock != nullptr), 
             cells(size + 1000000), header(key_seq), err(Error::OK),
             last_cell(0) {
@@ -262,7 +263,7 @@ bool CompactRange::with_block() {
   return true;
 }
 
-bool CompactRange::selector(const Types::KeySeq key_seq, 
+bool CompactRange::selector(const DB::Types::KeySeq key_seq, 
                             const DB::Cells::Cell& cell, bool&) {
   return spec.is_matching(
     key_seq, cell.key, cell.timestamp, cell.control & DB::Cells::TS_DESC)

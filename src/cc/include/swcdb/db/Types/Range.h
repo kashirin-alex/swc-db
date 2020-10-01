@@ -9,7 +9,7 @@
 
 #include <string>
 
-namespace SWC { namespace Types { 
+namespace SWC { namespace DB { namespace Types { 
 
 enum Range {
   MASTER  = 1,
@@ -19,7 +19,7 @@ enum Range {
 
 std::string to_string(Range typ);
 
-}}
+}}}
 
 
 #ifdef SWC_IMPL_SOURCE

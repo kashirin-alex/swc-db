@@ -18,7 +18,7 @@ MngrActive::Ptr MngrActive::make(const cid_t& cid,
                                  const DispatchHandler::Ptr& hdlr,
                                  uint32_t timeout_ms) {
   return std::make_shared<MngrActive>(
-    Types::MngrRole::COLUMNS, cid, hdlr, timeout_ms);
+    DB::Types::MngrRole::COLUMNS, cid, hdlr, timeout_ms);
 }
 
 MngrActive::Ptr MngrActive::make(const uint8_t& role, 

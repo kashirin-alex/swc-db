@@ -58,7 +58,7 @@ void Group::print(std::ostream& out) {
   std::lock_guard lock(m_mutex);
 
   out << "group:\n"
-      << " role=" << Types::MngrRole::to_string(role)
+      << " role=" << DB::Types::MngrRole::to_string(role)
       << " column=" << cid_begin << '-' << cid_end << '\n';
   for(auto& endpoints : *this) {
     out << " host=\n";
@@ -167,19 +167,19 @@ void Groups::on_cfg_update() {
     SWC_LOGF(LOG_DEBUG, "cfg=%d swc.mngr.host=%s", n, cfg.c_str());
       
     if((at = cfg.find_first_of('|')) == std::string::npos) {
-      _add_host(Types::MngrRole::ALL, 0, 0, default_port, cfg);
+      _add_host(DB::Types::MngrRole::ALL, 0, 0, default_port, cfg);
       continue;
     }
 
-    role = Types::MngrRole::COLUMNS;
+    role = DB::Types::MngrRole::COLUMNS;
     cfg_chk = cfg.substr(at_offset = 0, at);
     if((at_chk = cfg_chk.find_first_of('{')) != std::string::npos) {
       cfg_chk = cfg_chk.substr(++at_chk, cfg_chk.find_first_of('}')-1);
       for(;;) {
         if(strncasecmp(cfg_chk.data(), "schemas", 7) == 0)
-          role |= Types::MngrRole::SCHEMAS;
+          role |= DB::Types::MngrRole::SCHEMAS;
         else if(strncasecmp(cfg_chk.data(), "rangers", 7) == 0)
-          role |= Types::MngrRole::RANGERS;
+          role |= DB::Types::MngrRole::RANGERS;
         if((at_chk = cfg_chk.find_first_of(',')) == std::string::npos)
           break;
         cfg_chk = cfg_chk.substr(++at_chk);
@@ -202,13 +202,13 @@ void Groups::on_cfg_update() {
         Config::Property::from_string(e, &col_end);
 
       at = cfg.find_first_of('|', at_offset = ++at);
-    } else if(role != Types::MngrRole::COLUMNS) {
-      role -= Types::MngrRole::COLUMNS;
-      role |= Types::MngrRole::NO_COLUMNS;
+    } else if(role != DB::Types::MngrRole::COLUMNS) {
+      role -= DB::Types::MngrRole::COLUMNS;
+      role |= DB::Types::MngrRole::NO_COLUMNS;
     }
 
-    if(role == Types::MngrRole::COLUMNS && !col_begin && !col_end)
-      role = Types::MngrRole::ALL;
+    if(role == DB::Types::MngrRole::COLUMNS && !col_begin && !col_end)
+      role = DB::Types::MngrRole::ALL;
 
     cfg_chk = cfg.substr(at_offset);
     if((at_chk = cfg_chk.find_first_of('|')) == std::string::npos) {
@@ -272,7 +272,7 @@ void Groups::hosts(uint8_t role, cid_t cid, Hosts& hosts,
 
   for(auto& group : *this) {
     if(group->role & role && (
-        !(role & Types::MngrRole::COLUMNS) ||
+        !(role & DB::Types::MngrRole::COLUMNS) ||
         (group->cid_begin <= cid && (!group->cid_end || group->cid_end >= cid))
       )) {
       hosts = group->get_hosts();
@@ -356,7 +356,7 @@ void Groups::select(const cid_t& cid, Comm::EndPoints& endpoints) {
   std::lock_guard lock(m_mutex);
     
   for(auto& host : m_active_g_host) {
-    if(host.role & Types::MngrRole::COLUMNS && 
+    if(host.role & DB::Types::MngrRole::COLUMNS && 
        host.cid_begin <= cid && 
        (!host.cid_end || host.cid_end >= cid)) {
       endpoints = host.endpoints;

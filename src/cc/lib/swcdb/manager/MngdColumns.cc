@@ -40,7 +40,7 @@ void MngdColumns::reset(bool schemas_mngr) {
 
 
 bool MngdColumns::is_schemas_mngr(int& err) {
-  if(Env::Mngr::role()->is_active_role(Types::MngrRole::SCHEMAS)) {
+  if(Env::Mngr::role()->is_active_role(DB::Types::MngrRole::SCHEMAS)) {
     if(!m_schemas_set)
       err = Error::MNGR_NOT_INITIALIZED; 
     return true;
@@ -99,7 +99,7 @@ void MngdColumns::change_active(const cid_t cid_begin, const cid_t cid_end,
     if(m_cid_active) {
       m_cid_active = false;
       Env::Mngr::columns()->reset();
-      if(!Env::Mngr::role()->is_active_role(Types::MngrRole::SCHEMAS))
+      if(!Env::Mngr::role()->is_active_role(DB::Types::MngrRole::SCHEMAS))
         Env::Mngr::schemas()->reset();
     }
     return;
@@ -117,7 +117,7 @@ void MngdColumns::change_active(const cid_t cid_begin, const cid_t cid_end,
   if(m_run)
     Env::Mngr::rangers()->schedule_check(cfg_delay_cols_init->get());
 
-  //if(Env::Mngr::role()->is_active_role(Types::MngrRole::SCHEMAS)) 
+  //if(Env::Mngr::role()->is_active_role(DB::Types::MngrRole::SCHEMAS)) 
   //  (scheduled on column changes ) + chk(cid) LOAD_ACK
 }
 
@@ -125,7 +125,7 @@ void MngdColumns::change_active(const cid_t cid_begin, const cid_t cid_end,
 void MngdColumns::require_sync() {
   Env::Mngr::rangers()->sync();
     
-  if(Env::Mngr::role()->is_active_role(Types::MngrRole::SCHEMAS)) {
+  if(Env::Mngr::role()->is_active_role(DB::Types::MngrRole::SCHEMAS)) {
     columns_load();
   } else {
     auto schema = DB::Schema::make();
@@ -145,7 +145,7 @@ void MngdColumns::update_status(
                     Protocol::Mngr::Params::ColumnMng::Function func, 
                     DB::Schema::Ptr& schema, int err, bool initial) {
   bool schemas_mngr = Env::Mngr::role()->is_active_role(
-    Types::MngrRole::SCHEMAS);
+    DB::Types::MngrRole::SCHEMAS);
 
   if(!initial && schemas_mngr)
     return update_status_ack(func, schema, err);
@@ -219,7 +219,7 @@ void MngdColumns::remove(int &err, cid_t cid, rgrid_t rgrid) {
       update(
         Protocol::Mngr::Params::ColumnMng::Function::INTERNAL_ACK_DELETE,
         schema, err);
-    if(!Env::Mngr::role()->is_active_role(Types::MngrRole::SCHEMAS))
+    if(!Env::Mngr::role()->is_active_role(DB::Types::MngrRole::SCHEMAS))
       Env::Mngr::schemas()->remove(cid);
   }
 }
@@ -301,15 +301,18 @@ void MngdColumns::columns_load() {
   Env::Mngr::schemas()->all(entries);
   for(auto& schema : entries) {
     SWC_ASSERT(schema->cid != DB::Schema::NO_CID);
-    update_status(Protocol::Mngr::Params::ColumnMng::Function::INTERNAL_LOAD, schema,
-                  Error::OK, true);
+    update_status(
+      Protocol::Mngr::Params::ColumnMng::Function::INTERNAL_LOAD, schema,
+      Error::OK, true
+    );
   }
 }
 
 void MngdColumns::columns_load_chk_ack() {
   std::lock_guard lock(m_mutex_columns);
   for(auto& ack : m_cid_pending_load) {
-    if(ack.func == Protocol::Mngr::Params::ColumnMng::Function::INTERNAL_ACK_LOAD) {
+    if(ack.func 
+        == Protocol::Mngr::Params::ColumnMng::Function::INTERNAL_ACK_LOAD) {
       update(
         Protocol::Mngr::Params::ColumnMng::Function::INTERNAL_LOAD,  
         Env::Mngr::schemas()->get(ack.cid)
@@ -345,8 +348,8 @@ void MngdColumns::create(int &err, DB::Schema::Ptr& schema) {
     err = Error::COLUMN_REACHED_ID_LIMIT;
     return;
   } 
-  if(schema->col_seq == Types::KeySeq::UNKNOWN || 
-     schema->col_type == Types::Column::UNKNOWN) {
+  if(schema->col_seq == DB::Types::KeySeq::UNKNOWN || 
+     schema->col_type == DB::Types::Column::UNKNOWN) {
     err = Error::INVALID_ARGUMENT;
     return;
   }
@@ -355,7 +358,7 @@ void MngdColumns::create(int &err, DB::Schema::Ptr& schema) {
   if(err)
     return;
 
-  if(Types::is_counter(schema->col_type))
+  if(DB::Types::is_counter(schema->col_type))
     schema->cell_versions = 1;
 
   auto schema_save = DB::Schema::make(schema);
@@ -377,14 +380,15 @@ void MngdColumns::create(int &err, DB::Schema::Ptr& schema) {
 void MngdColumns::update(int &err, DB::Schema::Ptr& schema, 
                          const DB::Schema::Ptr& old) {
   if(old->col_seq != schema->col_seq || 
-     Types::is_counter(old->col_type) != Types::is_counter(schema->col_type) ||
+     DB::Types::is_counter(old->col_type) 
+      != DB::Types::is_counter(schema->col_type) ||
      (schema->cid <= Files::Schema::SYS_CID_END && 
       schema->col_name.compare(old->col_name) != 0)) {
     err = Error::COLUMN_CHANGE_INCOMPATIBLE;
     return;
   }
 
-  if(Types::is_counter(schema->col_type))
+  if(DB::Types::is_counter(schema->col_type))
     schema->cell_versions = 1;
 
   if(schema->cid < Files::Schema::SYS_CID_END) { 

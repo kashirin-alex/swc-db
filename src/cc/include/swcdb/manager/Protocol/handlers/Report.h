@@ -37,7 +37,7 @@ void report(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
           goto function_send_response;
         }
 
-        if(Env::Mngr::role()->is_active_role(Types::MngrRole::RANGERS) &&
+        if(Env::Mngr::role()->is_active_role(DB::Types::MngrRole::RANGERS) &&
            Env::Mngr::rangers()->empty()) {
           err = Error::MNGR_NOT_INITIALIZED;
           goto function_send_response;

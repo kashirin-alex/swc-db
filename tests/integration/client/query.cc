@@ -31,19 +31,19 @@ void Settings::init_app_options(){
     
     ("col-seq", 
       g_enum(
-        (int)Types::KeySeq::LEXIC,
+        (int)DB::Types::KeySeq::LEXIC,
         0,
-        Types::from_string_range_seq,
-        Types::repr_range_seq
+        DB::Types::from_string_range_seq,
+        DB::Types::repr_range_seq
       ), 
      "Schema col-seq FC_+/LEXIC/VOLUME")  
 
     ("col-type", 
       g_enum(
-        (int)Types::Column::PLAIN,
+        (int)DB::Types::Column::PLAIN,
         0,
-        Types::from_string_col_type,
-        Types::repr_col_type
+        DB::Types::from_string_col_type,
+        DB::Types::repr_col_type
       ), 
      "Schema col-type PLAIN/COUNTER_I64/COUNTER_I32/COUNTER_I16/COUNTER_I8")  
     
@@ -61,8 +61,8 @@ class Test {
   std::mutex                mutex;
   std::condition_variable   cv;
 
-  Types::Column             col_type;
-  Types::KeySeq             col_seq;
+  DB::Types::Column         col_type;
+  DB::Types::KeySeq         col_seq;
   std::string               col_name;
   uint32_t                  cell_versions;
   
@@ -75,12 +75,12 @@ class Test {
 
   size_t                    time_select;
   void run() {
-    counter = Types::is_counter(col_type);
+    counter = DB::Types::is_counter(col_type);
     time_select = 0;
 
     SWC_PRINT << "Test::run "
-              << " col_type=" << Types::to_string(col_type)
-              << " col_seq=" << Types::to_string(col_seq)
+              << " col_type=" << DB::Types::to_string(col_type)
+              << " col_seq=" << DB::Types::to_string(col_seq)
               << " col_name=" << col_name
               << " cell_versions=" << cell_versions
               << " ncells=" << ncells
@@ -379,8 +379,8 @@ int main(int argc, char** argv) {
 
   auto settings = SWC::Env::Config::settings();
 
-  SWC::Types::Column col_type = (SWC::Types::Column)settings->get_genum("col-type");
-  SWC::Types::KeySeq col_seq = (SWC::Types::KeySeq)settings->get_genum("col-seq");
+  SWC::DB::Types::Column col_type = (SWC::DB::Types::Column)settings->get_genum("col-type");
+  SWC::DB::Types::KeySeq col_seq = (SWC::DB::Types::KeySeq)settings->get_genum("col-seq");
   size_t ncells = settings->get_i64("ncells");
   uint32_t nfractions = settings->get_i32("nfractions");
   uint32_t cell_versions = settings->get_i32("cell-versions");
@@ -391,9 +391,9 @@ int main(int argc, char** argv) {
   test.col_type = col_type;
   test.col_seq = col_seq;
   test.col_name = "test-"
-                + SWC::Types::to_string(col_type)
+                + SWC::DB::Types::to_string(col_type)
                 + "-"
-                + SWC::Types::to_string(col_seq)
+                + SWC::DB::Types::to_string(col_seq)
                 + "-v" 
                 + std::to_string(cell_versions)
                 + "-c"

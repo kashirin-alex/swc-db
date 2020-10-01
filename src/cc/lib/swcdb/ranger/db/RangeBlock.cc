@@ -390,7 +390,7 @@ void Block::print(std::ostream& out) {
     Mutex::scope lock(m_mutex_state);
     out << (int)m_state;
   }
-  out << ' ' << Types::to_string(m_cells.key_seq)
+  out << ' ' << DB::Types::to_string(m_cells.key_seq)
       << ' ' << m_prev_key_end << " < key <= ";
   {
     LockAtomic::Unique::scope lock(m_mutex_intval);

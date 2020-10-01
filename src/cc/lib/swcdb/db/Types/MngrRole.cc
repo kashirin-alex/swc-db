@@ -6,7 +6,7 @@
 
 #include "swcdb/db/Types/MngrRole.h"
 
-namespace SWC { namespace Types { namespace MngrRole {
+namespace SWC { namespace DB { namespace Types { namespace MngrRole {
 
 std::string to_string(uint8_t role) {
   std::string s;
@@ -36,4 +36,4 @@ std::string to_string(uint8_t role) {
   return s;
 }
 
-}}}
+}}}}

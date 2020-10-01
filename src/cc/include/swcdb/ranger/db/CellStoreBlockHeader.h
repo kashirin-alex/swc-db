@@ -28,7 +28,7 @@ struct Header final {
   uint32_t             cells_count;
   uint32_t             checksum_data;
   
-  Header(Types::KeySeq key_seq);
+  Header(DB::Types::KeySeq key_seq);
   
   Header(const Header& other);
 

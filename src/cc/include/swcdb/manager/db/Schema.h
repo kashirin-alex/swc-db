@@ -126,15 +126,15 @@ DB::Schema::Ptr load(int &err, cid_t cid,
       schema->col_name.append("SYS_");
       if(cid == 9) {
         schema->col_name.append("STATS");
-        schema->col_type = Types::Column::COUNTER_I64;
-        schema->col_seq = Types::KeySeq::LEXIC;
+        schema->col_type = DB::Types::Column::COUNTER_I64;
+        schema->col_seq = DB::Types::KeySeq::LEXIC;
         schema->cell_ttl = Env::Config::settings()->get_i32(
           "swc.stats.ttl", 1036800);
       } else {
-        schema->col_seq = Types::MetaColumn::get_seq_type(cid);
+        schema->col_seq = DB::Types::MetaColumn::get_seq_type(cid);
         schema->col_name.append(
-          (Types::MetaColumn::is_master(cid) ? "MASTER_": "META_") 
-          + Types::to_string(schema->col_seq) );
+          (DB::Types::MetaColumn::is_master(cid) ? "MASTER_": "META_") 
+          + DB::Types::to_string(schema->col_seq) );
       }
     
     } else {

@@ -61,7 +61,7 @@ class RspColumnStatus : public Serializable {
 
   struct RangeStatus {
 
-    Types::MngrRange::State state;
+    DB::Types::MngrRange::State state;
     rid_t                   rid;
     rgrid_t                 rgr_id;
     
@@ -77,7 +77,7 @@ class RspColumnStatus : public Serializable {
 
   void display(std::ostream& out, const std::string& offset = "") const;
 
-  Types::MngrColumn::State state;
+  DB::Types::MngrColumn::State state;
   std::vector<RangeStatus> ranges;
 
   private:
@@ -101,7 +101,7 @@ class RspRangersStatus : public Serializable {
 
   struct Ranger final : public Common::Params::HostEndPoints {
 
-    Types::MngrRanger::State state;
+    DB::Types::MngrRanger::State state;
     rgrid_t                  rgr_id;
     int32_t                  failures;
     uint64_t                 interm_ranges;
@@ -143,7 +143,7 @@ class RspManagersStatus : public Serializable {
   struct Manager final : public Common::Params::HostEndPoints {
 
     uint32_t            priority;
-    Types::MngrState    state;
+    DB::Types::MngrState    state;
     uint8_t             role;
     cid_t               cid_begin;
     cid_t               cid_end;

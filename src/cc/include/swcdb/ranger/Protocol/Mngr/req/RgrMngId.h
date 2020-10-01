@@ -72,9 +72,10 @@ class RgrMngId: public Comm::client::ConnQueue::ReqBase {
   bool run() override {
     if(endpoints.empty()) {
       Env::Clients::get()->mngrs_groups->select(
-        Types::MngrRole::RANGERS, endpoints);
+        DB::Types::MngrRole::RANGERS, endpoints);
       if(endpoints.empty()) {
-        MngrActive::make(Types::MngrRole::RANGERS, shared_from_this())->run();
+        MngrActive::make(
+          DB::Types::MngrRole::RANGERS, shared_from_this())->run();
         return false;
       }
     }

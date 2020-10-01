@@ -9,9 +9,9 @@
 
 #include "swcdb/core/Compat.h"
 
-namespace SWC {
-  
-namespace Types { }
+namespace SWC { 
+
+namespace DB { namespace Types { } }
 
 
 typedef uint64_t cid_t;  

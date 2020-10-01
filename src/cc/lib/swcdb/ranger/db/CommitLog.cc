@@ -14,7 +14,7 @@ namespace SWC { namespace Ranger { namespace CommitLog {
 static const uint8_t MAX_FRAGMENTS_NARROW = 20;
 
 
-Fragments::Fragments(const Types::KeySeq key_seq)  
+Fragments::Fragments(const DB::Types::KeySeq key_seq)  
                     : stopping(false), m_cells(key_seq), 
                       m_commiting(false), m_deleting(false), 
                       m_compacting(false), m_sem(5), m_last_id(0) { 

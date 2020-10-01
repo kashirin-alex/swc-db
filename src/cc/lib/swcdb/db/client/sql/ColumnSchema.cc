@@ -137,8 +137,8 @@ void ColumnSchema::read_schema_options(ColumnSchema::Func func) {
       if(err)
         return;
       read(buff, stop);
-      if((schema->col_type = Types::column_type_from(buff)) 
-          == Types::Column::UNKNOWN) {
+      if((schema->col_type = DB::Types::column_type_from(buff)) 
+          == DB::Types::Column::UNKNOWN) {
         error_msg(Error::SQL_PARSE_ERROR, " unknown column type");
         return;
       }
@@ -150,8 +150,8 @@ void ColumnSchema::read_schema_options(ColumnSchema::Func func) {
       if(err)
         return;
       read(buff, stop);
-      if((schema->col_seq = Types::range_seq_from(buff)) 
-          == Types::KeySeq::UNKNOWN) {
+      if((schema->col_seq = DB::Types::range_seq_from(buff)) 
+          == DB::Types::KeySeq::UNKNOWN) {
         error_msg(Error::SQL_PARSE_ERROR, " unknown range seq type");
         return;
       }

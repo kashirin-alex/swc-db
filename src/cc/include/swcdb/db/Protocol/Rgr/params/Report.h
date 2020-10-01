@@ -124,7 +124,7 @@ class RspColumnsRanges  : public Serializable {
   
   struct Range {
 
-    Range(Types::KeySeq seq);
+    Range(DB::Types::KeySeq seq);
 
     static bool before(Range* r1, Range* r2);
 
@@ -148,7 +148,7 @@ class RspColumnsRanges  : public Serializable {
     static bool before(Column* c1, Column* c2);
 
     cid_t                cid;
-    Types::KeySeq        col_seq;
+    DB::Types::KeySeq    col_seq;
     uint64_t             mem_bytes;
     std::vector<Range*>  ranges;
 

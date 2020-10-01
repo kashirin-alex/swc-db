@@ -12,7 +12,7 @@ namespace SWC { namespace Manager {
 MngrRole::MngrRole(const Comm::EndPoints& endpoints)
     : m_local_endpoints(endpoints),
       m_local_token(Comm::endpoints_hash(m_local_endpoints)),
-      m_checkin(false), m_local_active_role(Types::MngrRole::NONE),
+      m_checkin(false), m_local_active_role(DB::Types::MngrRole::NONE),
       m_check_timer(asio::high_resolution_timer(*Env::IoCtx::io()->ptr())),
       m_mngr_inchain(
         std::make_shared<Comm::client::ConnQueue>(Env::IoCtx::io()->shared())),
@@ -76,8 +76,8 @@ bool MngrRole::is_active_role(uint8_t role) {
 MngrStatus::Ptr MngrRole::active_mngr(cid_t cid) {
   std::shared_lock lock(m_mutex);
   for(auto& host : m_states) {
-    if(host->state == Types::MngrState::ACTIVE &&
-       host->role & Types::MngrRole::COLUMNS &&
+    if(host->state == DB::Types::MngrState::ACTIVE &&
+       host->role & DB::Types::MngrRole::COLUMNS &&
        host->cid_begin <= cid && 
        (!host->cid_end || host->cid_end >= cid))
       return host;
@@ -88,7 +88,7 @@ MngrStatus::Ptr MngrRole::active_mngr(cid_t cid) {
 MngrStatus::Ptr MngrRole::active_mngr_role(uint8_t role) {
   std::shared_lock lock(m_mutex);
   for(auto& host : m_states) {
-    if(host->state == Types::MngrState::ACTIVE && 
+    if(host->state == DB::Types::MngrState::ACTIVE && 
        host->role & role)
       return host;
   }
@@ -118,8 +118,8 @@ void MngrRole::fill_states(const MngrsStatus& states, uint64_t token,
     bool local = Comm::has_endpoint(host->endpoints, m_local_endpoints);
 
     if(local && !token
-       && (int)host->state < (int)Types::MngrState::STANDBY) {
-      update_state(host->endpoints, Types::MngrState::STANDBY);
+       && (int)host->state < (int)DB::Types::MngrState::STANDBY) {
+      update_state(host->endpoints, DB::Types::MngrState::STANDBY);
       continue;
     }
       
@@ -127,16 +127,16 @@ void MngrRole::fill_states(const MngrsStatus& states, uint64_t token,
     if(!host_set)
       continue;
 
-    if(host_set->state == Types::MngrState::OFF 
-       && host->state > Types::MngrState::OFF) {
+    if(host_set->state == DB::Types::MngrState::OFF 
+       && host->state > DB::Types::MngrState::OFF) {
       //m_major_updates = true;
       schedule_checkin(500);
     }
 
-    if((int)host->state < (int)Types::MngrState::STANDBY) {
+    if((int)host->state < (int)DB::Types::MngrState::STANDBY) {
       if(host->state != host_set->state) {
         update_state(host->endpoints, 
-          host->state != Types::MngrState::NOTSET?
+          host->state != DB::Types::MngrState::NOTSET?
           host->state : host_set->state);  
         new_recs = true;
       }
@@ -147,15 +147,15 @@ void MngrRole::fill_states(const MngrsStatus& states, uint64_t token,
     if(!high_set)
       continue;
 
-    if(high_set->state == Types::MngrState::ACTIVE) {
+    if(high_set->state == DB::Types::MngrState::ACTIVE) {
       if(host->state != host_set->state
          && host_set->priority != high_set->priority) {
-        update_state(host->endpoints, Types::MngrState::STANDBY);
+        update_state(host->endpoints, DB::Types::MngrState::STANDBY);
         new_recs = true;
       }
       continue;
     }
-    if(host->state == Types::MngrState::ACTIVE) {
+    if(host->state == DB::Types::MngrState::ACTIVE) {
       update_state(host->endpoints, host->state);
       new_recs = true;
       // m_major_updates = true;
@@ -164,13 +164,13 @@ void MngrRole::fill_states(const MngrsStatus& states, uint64_t token,
       
     
     if(host->priority > high_set->priority) {
-      if((int)host->state > (int)Types::MngrState::STANDBY) {
-        update_state(host->endpoints, (Types::MngrState)(host->state-1));
+      if((int)host->state > (int)DB::Types::MngrState::STANDBY) {
+        update_state(host->endpoints, (DB::Types::MngrState)(host->state-1));
         new_recs = true;
       }
     } else {
-      if((int)host->state < (int)Types::MngrState::ACTIVE) {
-        update_state(host->endpoints, (Types::MngrState)(host->state+1));
+      if((int)host->state < (int)DB::Types::MngrState::ACTIVE) {
+        update_state(host->endpoints, (DB::Types::MngrState)(host->state+1));
         new_recs = true;
       }
     }
@@ -189,8 +189,8 @@ void MngrRole::fill_states(const MngrsStatus& states, uint64_t token,
 
       MngrStatus::Ptr l_host = get_host(m_local_endpoints);
       MngrStatus::Ptr l_high = get_highest_state_host(l_host);
-      if(!l_high || l_high->state < Types::MngrState::WANT) {
-        update_state(m_local_endpoints, Types::MngrState::WANT);
+      if(!l_high || l_high->state < DB::Types::MngrState::WANT) {
+        update_state(m_local_endpoints, DB::Types::MngrState::WANT);
         new_recs = true;
       }
       break;
@@ -259,7 +259,7 @@ void MngrRole::disconnection(const Comm::EndPoint& endpoint_server,
     return;
 
   schedule_checkin(
-    host_set->state == Types::MngrState::ACTIVE ? 
+    host_set->state == DB::Types::MngrState::ACTIVE ? 
     cfg_delay_fallback->get() : cfg_check_interval->get());
 
   SWC_LOG_OUT(LOG_DEBUG, 
@@ -267,8 +267,8 @@ void MngrRole::disconnection(const Comm::EndPoint& endpoint_server,
                     << " server=" << endpoint_server
                     << " client=" << endpoint_client;
   );
-  if(host_set->state != Types::MngrState::ACTIVE)
-    update_state(endpoint_server, Types::MngrState::OFF);
+  if(host_set->state != DB::Types::MngrState::ACTIVE)
+    update_state(endpoint_server, DB::Types::MngrState::OFF);
     // m_major_updates = true;
   return;
 }
@@ -434,14 +434,14 @@ void MngrRole::manager_checker(MngrStatus::Ptr host,
                                size_t next, size_t total, bool flw, 
                                const Comm::ConnHandlerPtr& conn) {
   if(!conn || !conn->is_open()) {
-    if(host->state == Types::MngrState::ACTIVE
+    if(host->state == DB::Types::MngrState::ACTIVE
        && ++host->failures <= cfg_conn_fb_failures->get()) {   
       m_checkin = false;
       SWC_LOGF(LOG_DEBUG, "Allowed conn Failure=%d before fallback", 
                 host->failures);
       return schedule_checkin(cfg_delay_fallback->get());
     }
-    host->state = Types::MngrState::OFF;
+    host->state = DB::Types::MngrState::OFF;
     return managers_checker(next, total-1, flw);
   }
   host->conn = conn;
@@ -452,7 +452,7 @@ void MngrRole::manager_checker(MngrStatus::Ptr host,
 }
   
 void MngrRole::update_state(const Comm::EndPoint& endpoint, 
-                            Types::MngrState state) {
+                            DB::Types::MngrState state) {
   std::scoped_lock lock(m_mutex);
 
   for(auto& host : m_states) {
@@ -463,7 +463,7 @@ void MngrRole::update_state(const Comm::EndPoint& endpoint,
 }
 
 void MngrRole::update_state(const Comm::EndPoints& endpoints, 
-                            Types::MngrState state) {
+                            DB::Types::MngrState state) {
   std::scoped_lock lock(m_mutex);
 
   for(auto& host : m_states) {
@@ -501,7 +501,7 @@ bool MngrRole::is_group_off(const MngrStatus::Ptr& other) {
   bool offline = true;
   for(auto& host : m_states) {
     if(host->eq_grouping(*other.get()) && 
-       host->state != Types::MngrState::OFF)
+       host->state != DB::Types::MngrState::OFF)
       offline = false;
   }
   return offline;
@@ -523,14 +523,14 @@ void MngrRole::apply_role_changes() {
         break;
       }
     }
-    if(host_local && host_local->state == Types::MngrState::ACTIVE) {
+    if(host_local && host_local->state == DB::Types::MngrState::ACTIVE) {
       m_local_active_role = host_local->role;
-      if((has_cols = m_local_active_role & Types::MngrRole::COLUMNS)) {
+      if((has_cols = m_local_active_role & DB::Types::MngrRole::COLUMNS)) {
         cid_begin = host_local->cid_begin;
         cid_end = host_local->cid_end;
       }
     } else {
-      m_local_active_role = Types::MngrRole::NONE;
+      m_local_active_role = DB::Types::MngrRole::NONE;
     }
     role_new = m_local_active_role;
   }
@@ -540,33 +540,33 @@ void MngrRole::apply_role_changes() {
   if(role_old == role_new)
     return;
 
-  if(role_new & Types::MngrRole::RANGERS) {
-    if(!(role_old & Types::MngrRole::RANGERS))
+  if(role_new & DB::Types::MngrRole::RANGERS) {
+    if(!(role_old & DB::Types::MngrRole::RANGERS))
       Env::Mngr::rangers()->schedule_check(1);
 
-  } else if(role_old & Types::MngrRole::RANGERS) {
+  } else if(role_old & DB::Types::MngrRole::RANGERS) {
     SWC_LOG(LOG_INFO, "Manager(RANGERS) role has been decommissioned");
   }
 
-  if(role_new & Types::MngrRole::SCHEMAS) {
-    if(!(role_old & Types::MngrRole::SCHEMAS))
+  if(role_new & DB::Types::MngrRole::SCHEMAS) {
+    if(!(role_old & DB::Types::MngrRole::SCHEMAS))
       Env::Mngr::mngd_columns()->initialize();
     else // if other-hosts cid roles change
       Env::Mngr::mngd_columns()->columns_load_chk_ack();
 
-  } else if(role_old & Types::MngrRole::SCHEMAS &&
-            !(role_new & Types::MngrRole::SCHEMAS)) {
+  } else if(role_old & DB::Types::MngrRole::SCHEMAS &&
+            !(role_new & DB::Types::MngrRole::SCHEMAS)) {
     Env::Mngr::mngd_columns()->reset(true);
     SWC_LOG(LOG_INFO, "Manager(SCHEMAS) role has been decommissioned");
   }
 
-  if(role_old & Types::MngrRole::COLUMNS &&
-     (role_new & Types::MngrRole::NO_COLUMNS || !has_cols)) {
+  if(role_old & DB::Types::MngrRole::COLUMNS &&
+     (role_new & DB::Types::MngrRole::NO_COLUMNS || !has_cols)) {
     SWC_LOG(LOG_INFO, "Manager(COLUMNS) role has been decommissioned");
   }
 
-  if(!(role_new & Types::MngrRole::RANGERS) &&
-      (role_new & Types::MngrRole::NO_COLUMNS || !has_cols)) {
+  if(!(role_new & DB::Types::MngrRole::RANGERS) &&
+      (role_new & DB::Types::MngrRole::NO_COLUMNS || !has_cols)) {
     Env::Mngr::rangers()->stop(false);
   }
 

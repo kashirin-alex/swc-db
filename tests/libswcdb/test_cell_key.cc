@@ -124,7 +124,7 @@ void test_basic(){
 
   std::cout <<  key.to_string() <<"\n";
   std::cout << "spec_key.is_matching(key) \n";
-  if(!DB::KeySeq::is_matching(SWC::Types::KeySeq::VOLUME, spec_key, key))
+  if(!DB::KeySeq::is_matching(SWC::DB::Types::KeySeq::VOLUME, spec_key, key))
     exit(1);
     
   std::cout << "key2.equal(key) \n";

@@ -14,8 +14,8 @@ namespace SWC { namespace Manager {
 class ColumnCfg final {
   
   public:
-  const cid_t         cid;
-  const Types::KeySeq key_seq;
+  const cid_t             cid;
+  const DB::Types::KeySeq key_seq;
 
   ColumnCfg(const DB::Schema::Ptr& schema) 
             : cid(schema->cid), key_seq(schema->col_seq) { 
@@ -24,7 +24,7 @@ class ColumnCfg final {
   ~ColumnCfg() { }
 
   void print(std::ostream& out) const {
-    out << "cid=" << cid << " seq=" << Types::to_string(key_seq);
+    out << "cid=" << cid << " seq=" << DB::Types::to_string(key_seq);
   }
 };
 

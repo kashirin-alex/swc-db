@@ -225,8 +225,8 @@ SWC::DB::Schema::Ptr create_column() {
   auto schema = SWC::DB::Schema::make();
 
   schema->col_name = "geospatial_analysis-xyz_and_properties";
-  schema->col_seq = SWC::Types::KeySeq::VOLUME;
-  schema->col_type = SWC::Types::Column::PLAIN;
+  schema->col_seq = SWC::DB::Types::KeySeq::VOLUME;
+  schema->col_type = SWC::DB::Types::Column::PLAIN;
   schema->cell_versions = 1;
   schema->cell_ttl = 0;
   schema->cs_size = 209715200;

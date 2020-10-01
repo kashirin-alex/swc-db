@@ -72,12 +72,12 @@ class Range final : public std::enable_shared_from_this<Range> {
   static const uint8_t COMPACT_PREPARING   = 0x03;
   static const uint8_t COMPACT_APPLYING    = 0x04;
 
-  const ColumnCfg*    cfg;
-  const rid_t         rid;
-  const Types::Range  type;
-  const uint8_t       meta_cid;
-  Blocks              blocks;
-  DB::Cell::Key       prev_range_end;
+  const ColumnCfg*        cfg;
+  const rid_t             rid;
+  const DB::Types::Range  type;
+  const uint8_t           meta_cid;
+  Blocks                  blocks;
+  DB::Cell::Key           prev_range_end;
 
   Range(const ColumnCfg* cfg, const rid_t rid);
 

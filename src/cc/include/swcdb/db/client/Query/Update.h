@@ -122,7 +122,7 @@ class Update final : public std::enable_shared_from_this<Update> {
 
   class Locator final : public std::enable_shared_from_this<Locator> {
     public:
-    const Types::Range        type;
+    const DB::Types::Range    type;
     const cid_t               cid;
     DB::Cells::ColCells::Ptr  col;
     DB::Cell::Key::Ptr        key_start;
@@ -131,7 +131,7 @@ class Update final : public std::enable_shared_from_this<Update> {
     const rid_t               rid;
     const DB::Cell::Key       key_finish;
     
-    Locator(const Types::Range type, const cid_t cid, 
+    Locator(const DB::Types::Range type, const cid_t cid, 
             const DB::Cells::ColCells::Ptr& col, 
             const DB::Cell::Key::Ptr& key_start,
             const Update::Ptr& updater, const ReqBase::Ptr& parent=nullptr, 

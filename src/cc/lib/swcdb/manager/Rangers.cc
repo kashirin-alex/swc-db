@@ -82,7 +82,7 @@ void Rangers::schedule_check(uint32_t t_ms) {
   m_timer.async_wait(
     [this](const asio::error_code& ec) {
       if (ec != asio::error::operation_aborted) {
-        if(Env::Mngr::role()->is_active_role(Types::MngrRole::RANGERS)) {
+        if(Env::Mngr::role()->is_active_role(DB::Types::MngrRole::RANGERS)) {
           std::lock_guard lock(m_mutex);
           m_rangers_resources.check(m_rangers);
           schedule_check(m_rangers_resources.cfg_rgr_res_check->get());
@@ -228,7 +228,7 @@ void Rangers::sync() {
 
 void Rangers::update_status(RangerList new_rgr_status, bool sync_all) {
   bool rangers_mngr = Env::Mngr::role()->is_active_role(
-    Types::MngrRole::RANGERS);
+    DB::Types::MngrRole::RANGERS);
 
   if(rangers_mngr && !sync_all)
     return;

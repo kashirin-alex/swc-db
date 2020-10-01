@@ -29,7 +29,7 @@ void ColumnHealthCheck::RangerCheck::add_range(const Range::Ptr& range) {
 }
     
 bool ColumnHealthCheck::RangerCheck::add_ranges(uint8_t more) {
-  if(rgr->state == Types::MngrRanger::State::ACK) {
+  if(rgr->state == DB::Types::MngrRanger::State::ACK) {
     std::vector<Range::Ptr> ranges;
     col_checker->col->need_health_check(
       col_checker->check_ts, col_checker->check_intval, 
@@ -128,12 +128,12 @@ void ColumnHealthCheck::run() {
     }
     if(!checker) {
       auto rgr = Env::Mngr::rangers()->rgr_get(rgrid);
-      if(!rgr || rgr->state != Types::MngrRanger::State::ACK)
+      if(!rgr || rgr->state != DB::Types::MngrRanger::State::ACK)
         continue;
       m_checkers.push_back(
         std::make_shared<RangerCheck>(shared_from_this(), rgr));
       checker = m_checkers.back();
-    } else if(checker->rgr->state != Types::MngrRanger::State::ACK) {
+    } else if(checker->rgr->state != DB::Types::MngrRanger::State::ACK) {
       continue;
     }
 
