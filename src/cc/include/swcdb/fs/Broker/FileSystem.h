@@ -11,15 +11,13 @@
 #include "swcdb/core/comm/SerializedClient.h"
 
 
-namespace SWC {
-
-
-namespace FsBroker { namespace Protocol { namespace Req {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace FsBroker { namespace Req {
 
 class Base;
 typedef std::shared_ptr<Base> BasePtr;
 
-}}}
+}}}} // namespace Comm::Protocol::FsBroker::Req
 
 
 
@@ -43,9 +41,9 @@ class FileSystemBroker final : public FileSystem {
 
   std::string to_string() override;
 
-  bool send_request(FsBroker::Protocol::Req::BasePtr hdlr);
+  bool send_request(Comm::Protocol::FsBroker::Req::BasePtr hdlr);
 
-  void send_request_sync(FsBroker::Protocol::Req::BasePtr hdlr, 
+  void send_request_sync(Comm::Protocol::FsBroker::Req::BasePtr hdlr, 
                          std::promise<void> res);
 
   /// File/Dir name actions

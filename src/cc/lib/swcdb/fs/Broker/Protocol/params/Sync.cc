@@ -8,7 +8,8 @@
 
 
 
-namespace SWC { namespace FsBroker { namespace Protocol { namespace Params {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace FsBroker {  namespace Params {
 
 SyncReq::SyncReq(): fd(-1) { }
 
@@ -27,4 +28,4 @@ void SyncReq::internal_decode(const uint8_t** bufp, size_t* remainp) {
 }
 
 
-}}}}
+}}}}}

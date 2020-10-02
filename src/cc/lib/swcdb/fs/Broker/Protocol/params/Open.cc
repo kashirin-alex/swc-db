@@ -7,7 +7,8 @@
 #include "swcdb/fs/Broker/Protocol/params/Open.h"
 
 
-namespace SWC { namespace FsBroker { namespace Protocol { namespace Params {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace FsBroker {  namespace Params {
 
 
 OpenReq::OpenReq() { }
@@ -53,4 +54,4 @@ void OpenRsp::internal_decode(const uint8_t** bufp, size_t* remainp) {
 }
 
 
-}}}}
+}}}}}

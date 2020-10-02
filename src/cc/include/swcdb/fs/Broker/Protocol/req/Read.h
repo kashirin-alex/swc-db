@@ -9,7 +9,8 @@
 #include "swcdb/fs/Broker/Protocol/req/Base.h"
 #include "swcdb/fs/Broker/Protocol/params/Read.h"
 
-namespace SWC { namespace FsBroker { namespace Protocol { namespace Req {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace FsBroker {  namespace Req {
 
 class Read : public Base {
 
@@ -24,7 +25,7 @@ class Read : public Base {
 
   std::promise<void> promise();
 
-  void handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) override;
+  void handle(ConnHandlerPtr, const Event::Ptr& ev) override;
 
   private:
   FS::SmartFd::Ptr        smartfd;
@@ -34,7 +35,7 @@ class Read : public Base {
 
 
 
-}}}}
+}}}}}
 
 
 #ifdef SWC_IMPL_SOURCE

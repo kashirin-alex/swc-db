@@ -8,7 +8,8 @@
 #include "swcdb/fs/Broker/Protocol/params/Read.h"
 
 
-namespace SWC { namespace FsBroker { namespace Protocol { namespace Req {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace FsBroker {  namespace Req {
 
 
 Pread::Pread(uint32_t timeout, FS::SmartFd::Ptr& smartfd, 
@@ -21,8 +22,8 @@ Pread::Pread(uint32_t timeout, FS::SmartFd::Ptr& smartfd,
                     offset, len, timeout);
     smartfd->print(SWC_LOG_OSTREAM);
   );
-  cbp = Comm::Buffers::make(Params::PreadReq(smartfd->fd(), offset, len));
-  cbp->header.set(Cmd::FUNCTION_PREAD, timeout);
+  cbp = Buffers::make(Params::PreadReq(smartfd->fd(), offset, len));
+  cbp->header.set(FUNCTION_PREAD, timeout);
 }
 
 std::promise<void> Pread::promise() {
@@ -34,12 +35,12 @@ std::promise<void> Pread::promise() {
   return r_promise;
 }
 
-void Pread::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) { 
+void Pread::handle(ConnHandlerPtr, const Event::Ptr& ev) { 
 
   const uint8_t *ptr;
   size_t remain;
 
-  if(!Base::is_rsp(ev, Cmd::FUNCTION_PREAD, &ptr, &remain))
+  if(!Base::is_rsp(ev, FUNCTION_PREAD, &ptr, &remain))
     return;
 
   StaticBuffer::Ptr buf = nullptr;
@@ -86,4 +87,4 @@ void Pread::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) {
 
 
 
-}}}}
+}}}}}

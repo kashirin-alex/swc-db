@@ -7,7 +7,8 @@
 #include "swcdb/fs/Broker/Protocol/req/Exists.h"
 
 
-namespace SWC { namespace FsBroker { namespace Protocol { namespace Req {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace FsBroker {  namespace Req {
 
 
 Exists::Exists(uint32_t timeout, const std::string& name, 
@@ -15,8 +16,8 @@ Exists::Exists(uint32_t timeout, const std::string& name,
               : name(name), cb(cb) {
   SWC_LOGF(LOG_DEBUG, "exists path='%s'", name.c_str());
 
-  cbp = Comm::Buffers::make(Params::ExistsReq(name));
-  cbp->header.set(Cmd::FUNCTION_EXISTS, timeout);
+  cbp = Buffers::make(Params::ExistsReq(name));
+  cbp->header.set(FUNCTION_EXISTS, timeout);
 }
 
 std::promise<void> Exists::promise() {
@@ -25,12 +26,12 @@ std::promise<void> Exists::promise() {
   return r_promise;
 }
 
-void Exists::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) { 
+void Exists::handle(ConnHandlerPtr, const Event::Ptr& ev) { 
 
   const uint8_t *ptr;
   size_t remain;
 
-  if(!Base::is_rsp(ev, Cmd::FUNCTION_EXISTS, &ptr, &remain))
+  if(!Base::is_rsp(ev, FUNCTION_EXISTS, &ptr, &remain))
     return;
 
   if(!error) {
@@ -55,4 +56,4 @@ void Exists::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) {
 
 
 
-}}}}
+}}}}}

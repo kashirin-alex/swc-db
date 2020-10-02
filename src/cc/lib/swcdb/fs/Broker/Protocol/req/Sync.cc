@@ -7,7 +7,8 @@
 #include "swcdb/fs/Broker/Protocol/req/Sync.h"
 
 
-namespace SWC { namespace FsBroker { namespace Protocol { namespace Req {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace FsBroker {  namespace Req {
 
 
 Sync::Sync(uint32_t timeout, FS::SmartFd::Ptr& smartfd, 
@@ -18,8 +19,8 @@ Sync::Sync(uint32_t timeout, FS::SmartFd::Ptr& smartfd,
     smartfd->print(SWC_LOG_OSTREAM);
   );
 
-  cbp = Comm::Buffers::make(Params::SyncReq(smartfd->fd()));
-  cbp->header.set(Cmd::FUNCTION_SYNC, timeout);
+  cbp = Buffers::make(Params::SyncReq(smartfd->fd()));
+  cbp->header.set(FUNCTION_SYNC, timeout);
 }
 
 std::promise<void> Sync::promise() {
@@ -28,12 +29,12 @@ std::promise<void> Sync::promise() {
   return r_promise;
 }
 
-void Sync::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) { 
+void Sync::handle(ConnHandlerPtr, const Event::Ptr& ev) { 
 
   const uint8_t *ptr;
   size_t remain;
 
-  if(!Base::is_rsp(ev, Cmd::FUNCTION_SYNC, &ptr, &remain))
+  if(!Base::is_rsp(ev, FUNCTION_SYNC, &ptr, &remain))
     return;
 
   switch(error) {
@@ -56,4 +57,4 @@ void Sync::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) {
 
 
 
-}}}}
+}}}}}

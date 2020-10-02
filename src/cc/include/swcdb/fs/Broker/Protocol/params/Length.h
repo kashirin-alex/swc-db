@@ -10,10 +10,11 @@
 #include "swcdb/core/comm/Serializable.h"
 
 
-namespace SWC { namespace FsBroker { namespace Protocol { namespace Params {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace FsBroker {  namespace Params {
 
 
-class LengthReq : public Comm::Serializable {
+class LengthReq : public Serializable {
   public:
 
   LengthReq();
@@ -34,7 +35,7 @@ class LengthReq : public Comm::Serializable {
 
 
 
-class LengthRsp : public Comm::Serializable {
+class LengthRsp : public Serializable {
   public:
   
   LengthRsp();
@@ -53,7 +54,7 @@ class LengthRsp : public Comm::Serializable {
   
 };
 
-}}}}
+}}}}}
 
 
 #if defined(SWC_IMPL_SOURCE) or \

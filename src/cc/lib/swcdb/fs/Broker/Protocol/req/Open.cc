@@ -7,7 +7,8 @@
 #include "swcdb/fs/Broker/Protocol/req/Open.h"
 
 
-namespace SWC { namespace FsBroker { namespace Protocol { namespace Req {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace FsBroker {  namespace Req {
 
 
 Open::Open(FS::FileSystem::Ptr fs, uint32_t timeout, FS::SmartFd::Ptr& smartfd, 
@@ -18,9 +19,9 @@ Open::Open(FS::FileSystem::Ptr fs, uint32_t timeout, FS::SmartFd::Ptr& smartfd,
     smartfd->print(SWC_LOG_OSTREAM); 
   );
 
-  cbp = Comm::Buffers::make(
+  cbp = Buffers::make(
     Params::OpenReq(smartfd->filepath(), smartfd->flags(), bufsz));
-  cbp->header.set(Cmd::FUNCTION_OPEN, timeout);
+  cbp->header.set(FUNCTION_OPEN, timeout);
 }
 
 std::promise<void> Open::promise() {
@@ -29,12 +30,12 @@ std::promise<void> Open::promise() {
   return r_promise;
 }
 
-void Open::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) { 
+void Open::handle(ConnHandlerPtr, const Event::Ptr& ev) { 
 
   const uint8_t *ptr;
   size_t remain;
 
-  if(!Base::is_rsp(ev, Cmd::FUNCTION_OPEN, &ptr, &remain))
+  if(!Base::is_rsp(ev, FUNCTION_OPEN, &ptr, &remain))
     return;
 
   if(!error) {
@@ -62,4 +63,4 @@ void Open::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) {
 
 
 
-}}}}
+}}}}}

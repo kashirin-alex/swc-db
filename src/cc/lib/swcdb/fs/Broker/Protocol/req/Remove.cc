@@ -7,7 +7,8 @@
 #include "swcdb/fs/Broker/Protocol/req/Remove.h"
 
 
-namespace SWC { namespace FsBroker { namespace Protocol { namespace Req {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace FsBroker {  namespace Req {
 
 
 Remove::Remove(uint32_t timeout, const std::string& name, 
@@ -15,8 +16,8 @@ Remove::Remove(uint32_t timeout, const std::string& name,
               : name(name), cb(cb) {
   SWC_LOGF(LOG_DEBUG, "remove path='%s'", name.c_str());
 
-  cbp = Comm::Buffers::make(Params::RemoveReq(name));
-  cbp->header.set(Cmd::FUNCTION_REMOVE, timeout);
+  cbp = Buffers::make(Params::RemoveReq(name));
+  cbp->header.set(FUNCTION_REMOVE, timeout);
 }
 
 std::promise<void> Remove::promise() {
@@ -25,12 +26,12 @@ std::promise<void> Remove::promise() {
   return r_promise;
 }
 
-void Remove::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) { 
+void Remove::handle(ConnHandlerPtr, const Event::Ptr& ev) { 
 
   const uint8_t *ptr;
   size_t remain;
 
-  if(!Base::is_rsp(ev, Cmd::FUNCTION_REMOVE, &ptr, &remain))
+  if(!Base::is_rsp(ev, FUNCTION_REMOVE, &ptr, &remain))
     return;
 
   SWC_LOGF(LOG_DEBUG, "remove path='%s' error='%d'", name.c_str(), error);
@@ -40,4 +41,4 @@ void Remove::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) {
 
 
 
-}}}}
+}}}}}

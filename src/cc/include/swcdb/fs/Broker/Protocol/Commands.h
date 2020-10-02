@@ -6,9 +6,11 @@
 #ifndef swcdb_fs_Broker_Protocol_Commands_h
 #define swcdb_fs_Broker_Protocol_Commands_h
 
-namespace SWC { namespace FsBroker { namespace Protocol {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace FsBroker {
   
-  enum Cmd : uint8_t {
+  // FsBroker Protocol Commands
+  enum Command {
     NOT_IMPLEMENTED   = 0x00,   ///< Not Implemented
     FUNCTION_OPEN     = 0x01,   ///< Open
     FUNCTION_CREATE   = 0x02,   ///< Create
@@ -32,10 +34,10 @@ namespace SWC { namespace FsBroker { namespace Protocol {
     FUNCTION_DEBUG    = 0x13,   ///< Debug
     FUNCTION_STATUS   = 0x13,   ///< Status
     FUNCTION_SHUTDOWN = 0x13,   ///< Shutdown
-    FUNCTION_MAX      = 0x13    ///< Maximum code marker
+    MAX_CMD           = 0x13    ///< Maximum code marker
   };
 }
 
-}}
+}}}
 
 #endif // swcdb_fs_Broker_Protocol_Commands_h

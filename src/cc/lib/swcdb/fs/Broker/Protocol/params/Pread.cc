@@ -7,7 +7,8 @@
 #include "swcdb/fs/Broker/Protocol/params/Pread.h"
 
 
-namespace SWC { namespace FsBroker { namespace Protocol { namespace Params {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace FsBroker {  namespace Params {
 
 
 PreadReq::PreadReq(): fd(-1) { }
@@ -34,4 +35,4 @@ void PreadReq::internal_decode(const uint8_t** bufp, size_t* remainp) {
 }
 
 
-}}}}
+}}}}}

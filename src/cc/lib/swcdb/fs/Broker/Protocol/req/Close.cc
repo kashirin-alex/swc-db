@@ -7,7 +7,8 @@
 #include "swcdb/fs/Broker/Protocol/req/Close.h"
 
 
-namespace SWC { namespace FsBroker { namespace Protocol { namespace Req {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace FsBroker {  namespace Req {
 
 
 Close::Close(FS::FileSystem::Ptr fs, uint32_t timeout, FS::SmartFd::Ptr& smartfd, 
@@ -18,8 +19,8 @@ Close::Close(FS::FileSystem::Ptr fs, uint32_t timeout, FS::SmartFd::Ptr& smartfd
     smartfd->print(SWC_LOG_OSTREAM); 
   );
  
-  cbp = Comm::Buffers::make(Params::CloseReq(smartfd->fd()));
-  cbp->header.set(Cmd::FUNCTION_CLOSE, timeout);
+  cbp = Buffers::make(Params::CloseReq(smartfd->fd()));
+  cbp->header.set(FUNCTION_CLOSE, timeout);
 }
 
 std::promise<void> Close::promise() {
@@ -28,12 +29,12 @@ std::promise<void> Close::promise() {
   return r_promise;
 }
 
-void Close::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) {
+void Close::handle(ConnHandlerPtr, const Event::Ptr& ev) {
 
   const uint8_t *ptr;
   size_t remain;
 
-  if(!Base::is_rsp(ev, Cmd::FUNCTION_CLOSE, &ptr, &remain))
+  if(!Base::is_rsp(ev, FUNCTION_CLOSE, &ptr, &remain))
     return;
 
   smartfd->fd(-1);
@@ -51,4 +52,4 @@ void Close::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) {
 
 
 
-}}}}
+}}}}}

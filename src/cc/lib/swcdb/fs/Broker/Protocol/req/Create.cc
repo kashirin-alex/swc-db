@@ -7,7 +7,8 @@
 #include "swcdb/fs/Broker/Protocol/req/Create.h"
 
 
-namespace SWC { namespace FsBroker { namespace Protocol { namespace Req {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace FsBroker {  namespace Req {
 
 
 Create::Create(FS::FileSystem::Ptr fs, uint32_t timeout, FS::SmartFd::Ptr& smartfd, 
@@ -20,11 +21,11 @@ Create::Create(FS::FileSystem::Ptr fs, uint32_t timeout, FS::SmartFd::Ptr& smart
     smartfd->print(SWC_LOG_OSTREAM);
   );
   
-  cbp = Comm::Buffers::make(
+  cbp = Buffers::make(
     Params::CreateReq(smartfd->filepath(), smartfd->flags(), 
                       bufsz, replication, blksz)
   );
-  cbp->header.set(Cmd::FUNCTION_CREATE, timeout);
+  cbp->header.set(FUNCTION_CREATE, timeout);
 }
 
 std::promise<void> Create::promise() {
@@ -33,12 +34,12 @@ std::promise<void> Create::promise() {
   return r_promise;
 }
 
-void Create::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) { 
+void Create::handle(ConnHandlerPtr, const Event::Ptr& ev) { 
 
   const uint8_t *ptr;
   size_t remain;
 
-  if(!Base::is_rsp(ev, Cmd::FUNCTION_CREATE, &ptr, &remain))
+  if(!Base::is_rsp(ev, FUNCTION_CREATE, &ptr, &remain))
     return;
 
   if(!error) {
@@ -66,4 +67,4 @@ void Create::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) {
 
 
 
-}}}}
+}}}}}

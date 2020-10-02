@@ -10,7 +10,8 @@
 #include "swcdb/fs/Broker/Protocol/params/Create.h"
 #include "swcdb/fs/Broker/Protocol/params/Open.h"
 
-namespace SWC { namespace FsBroker { namespace Protocol { namespace Req {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace FsBroker {  namespace Req {
 
 class Create : public Base {
 
@@ -22,7 +23,7 @@ class Create : public Base {
 
   std::promise<void> promise();
 
-  void handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) override;
+  void handle(ConnHandlerPtr, const Event::Ptr& ev) override;
 
   private:
   FS::FileSystem::Ptr       fs;
@@ -33,7 +34,7 @@ class Create : public Base {
 
 
 
-}}}}
+}}}}}
 
 
 #ifdef SWC_IMPL_SOURCE

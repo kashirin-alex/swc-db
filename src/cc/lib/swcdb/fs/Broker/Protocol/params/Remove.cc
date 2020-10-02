@@ -7,7 +7,8 @@
 #include "swcdb/fs/Broker/Protocol/params/Remove.h"
 
 
-namespace SWC { namespace FsBroker { namespace Protocol { namespace Params {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace FsBroker {  namespace Params {
 
 
 RemoveReq::RemoveReq() {}
@@ -27,4 +28,4 @@ void RemoveReq::internal_decode(const uint8_t** bufp, size_t* remainp) {
   fname.append(Serialization::decode_bytes_string(bufp, remainp));
 }
 
-}}}}
+}}}}}

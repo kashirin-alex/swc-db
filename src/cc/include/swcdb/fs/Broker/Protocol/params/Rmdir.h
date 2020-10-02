@@ -9,10 +9,11 @@
 #include "swcdb/core/comm/Serializable.h"
 
 
-namespace SWC { namespace FsBroker { namespace Protocol { namespace Params {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace FsBroker {  namespace Params {
 
 
-class RmdirReq : public Comm::Serializable {
+class RmdirReq : public Serializable {
   public:
 
   RmdirReq();
@@ -31,7 +32,7 @@ class RmdirReq : public Comm::Serializable {
 
 };
 
-}}}}
+}}}}}
 
 
 #if defined(SWC_IMPL_SOURCE) or \

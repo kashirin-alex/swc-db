@@ -7,7 +7,8 @@
 #include "swcdb/fs/Broker/Protocol/params/Mkdirs.h"
 
 
-namespace SWC { namespace FsBroker { namespace Protocol { namespace Params {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace FsBroker {  namespace Params {
 
 
 MkdirsReq::MkdirsReq() {}
@@ -28,4 +29,4 @@ void MkdirsReq::internal_decode(const uint8_t** bufp, size_t* remainp) {
 }
 
 
-}}}}
+}}}}}

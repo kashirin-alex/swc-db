@@ -39,33 +39,33 @@
 namespace SWC { namespace FsBroker {
 
 
-class AppContext final : public SWC::Comm::AppContext {
+class AppContext final : public Comm::AppContext {
   
-  // in-order of FsBroker::Protocol::Cmd
-  static constexpr const Comm::AppHandler_t handlers[] = { 
+  // in-order of Protocol::FsBroker::Coomand
+  static constexpr const Comm::AppHandler_t handlers[] = {
     &Comm::Protocol::Common::Handler::not_implemented,
-    &Protocol::Handler::open,
-    &Protocol::Handler::create,
-    &Protocol::Handler::close,
-    &Protocol::Handler::read,
-    &Protocol::Handler::append,
-    &Protocol::Handler::seek,
-    &Protocol::Handler::remove,
-    &Protocol::Handler::length,
-    &Protocol::Handler::pread,
-    &Protocol::Handler::mkdirs,
-    &Protocol::Handler::flush,
-    &Protocol::Handler::rmdir,
-    &Protocol::Handler::readdir,
-    &Protocol::Handler::exists,
-    &Protocol::Handler::rename,
-    &Protocol::Handler::sync,
-    &Protocol::Handler::write,
-    &Protocol::Handler::read_all
+    &Comm::Protocol::FsBroker::Handler::open,
+    &Comm::Protocol::FsBroker::Handler::create,
+    &Comm::Protocol::FsBroker::Handler::close,
+    &Comm::Protocol::FsBroker::Handler::read,
+    &Comm::Protocol::FsBroker::Handler::append,
+    &Comm::Protocol::FsBroker::Handler::seek,
+    &Comm::Protocol::FsBroker::Handler::remove,
+    &Comm::Protocol::FsBroker::Handler::length,
+    &Comm::Protocol::FsBroker::Handler::pread,
+    &Comm::Protocol::FsBroker::Handler::mkdirs,
+    &Comm::Protocol::FsBroker::Handler::flush,
+    &Comm::Protocol::FsBroker::Handler::rmdir,
+    &Comm::Protocol::FsBroker::Handler::readdir,
+    &Comm::Protocol::FsBroker::Handler::exists,
+    &Comm::Protocol::FsBroker::Handler::rename,
+    &Comm::Protocol::FsBroker::Handler::sync,
+    &Comm::Protocol::FsBroker::Handler::write,
+    &Comm::Protocol::FsBroker::Handler::read_all
 
-    //&Protocol::Handler::debug,
-    //&Protocol::Handler::status,
-    //&Protocol::Handler::shutdown
+    //&Comm::Protocol::FsBroker::Handler::debug,
+    //&Comm::Protocol::FsBroker::Handler::status,
+    //&Comm::Protocol::FsBroker::Handler::shutdown
   }; 
 
   public:
@@ -120,9 +120,9 @@ class AppContext final : public SWC::Comm::AppContext {
         break;
 
       case Comm::Event::Type::MESSAGE: {
-      uint8_t cmd = ev->header.command >= Protocol::Cmd::FUNCTION_MAX 
-                      ? (uint8_t)Protocol::Cmd::NOT_IMPLEMENTED 
-                      : ev->header.command;
+        uint8_t cmd = ev->header.command >= Comm::Protocol::FsBroker::MAX_CMD
+                        ? (uint8_t)Comm::Protocol::FsBroker::NOT_IMPLEMENTED
+                        : ev->header.command;
         Env::IoCtx::post([cmd, conn, ev]() { handlers[cmd](conn, ev); });
         return;
       }

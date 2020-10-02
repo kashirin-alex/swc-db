@@ -7,7 +7,8 @@
 #include "swcdb/fs/Broker/Protocol/req/ReadAll.h"
 
 
-namespace SWC { namespace FsBroker { namespace Protocol { namespace Req {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace FsBroker {  namespace Req {
 
   
 ReadAll::ReadAll(uint32_t timeout, const std::string& name, StaticBuffer* dst,
@@ -15,8 +16,8 @@ ReadAll::ReadAll(uint32_t timeout, const std::string& name, StaticBuffer* dst,
                 : buffer(dst), name(name), cb(cb) {
   SWC_LOGF(LOG_DEBUG, "read-all timeout=%d %s", timeout, name.c_str());
 
-  cbp = Comm::Buffers::make(Params::ReadAllReq(name));
-  cbp->header.set(Cmd::FUNCTION_READ_ALL, timeout);
+  cbp = Buffers::make(Params::ReadAllReq(name));
+  cbp->header.set(FUNCTION_READ_ALL, timeout);
 }
 
 std::promise<void> ReadAll::promise() {
@@ -28,12 +29,12 @@ std::promise<void> ReadAll::promise() {
   return r_promise;
 }
 
-void ReadAll::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) {
+void ReadAll::handle(ConnHandlerPtr, const Event::Ptr& ev) {
 
   const uint8_t *ptr;
   size_t remain;
 
-  if(!Base::is_rsp(ev, Cmd::FUNCTION_READ_ALL, &ptr, &remain))
+  if(!Base::is_rsp(ev, FUNCTION_READ_ALL, &ptr, &remain))
     return;
     
   StaticBuffer::Ptr buf = nullptr;
@@ -53,4 +54,4 @@ void ReadAll::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) {
 
 
 
-}}}}
+}}}}}

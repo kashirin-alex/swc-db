@@ -7,7 +7,8 @@
 #include "swcdb/fs/Broker/Protocol/req/Readdir.h"
 
 
-namespace SWC { namespace FsBroker { namespace Protocol { namespace Req {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace FsBroker {  namespace Req {
 
 
 Readdir::Readdir(uint32_t timeout, const std::string& name, 
@@ -15,8 +16,8 @@ Readdir::Readdir(uint32_t timeout, const std::string& name,
                 : name(name), cb(cb) {
   SWC_LOGF(LOG_DEBUG, "readdir path='%s'", name.c_str());
 
-  cbp = Comm::Buffers::make(Params::ReaddirReq(name));
-  cbp->header.set(Cmd::FUNCTION_READDIR, timeout);
+  cbp = Buffers::make(Params::ReaddirReq(name));
+  cbp->header.set(FUNCTION_READDIR, timeout);
 }
 
 std::promise<void> Readdir::promise() {
@@ -25,12 +26,12 @@ std::promise<void> Readdir::promise() {
   return r_promise;
 }
 
-void Readdir::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) { 
+void Readdir::handle(ConnHandlerPtr, const Event::Ptr& ev) { 
 
   const uint8_t *ptr;
   size_t remain;
 
-  if(!Base::is_rsp(ev, Cmd::FUNCTION_READDIR, &ptr, &remain))
+  if(!Base::is_rsp(ev, FUNCTION_READDIR, &ptr, &remain))
     return;
 
   if(!error) {
@@ -53,4 +54,4 @@ void Readdir::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) {
 
 
 
-}}}}
+}}}}}

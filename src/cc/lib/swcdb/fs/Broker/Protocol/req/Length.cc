@@ -7,7 +7,8 @@
 #include "swcdb/fs/Broker/Protocol/req/Length.h"
 
 
-namespace SWC { namespace FsBroker { namespace Protocol { namespace Req {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace FsBroker {  namespace Req {
 
 
 Length::Length(uint32_t timeout, const std::string& name, 
@@ -15,8 +16,8 @@ Length::Length(uint32_t timeout, const std::string& name,
               : length(0), name(name), cb(cb) {
   SWC_LOGF(LOG_DEBUG, "length path='%s'", name.c_str());
 
-  cbp = Comm::Buffers::make(Params::LengthReq(name));
-  cbp->header.set(Cmd::FUNCTION_LENGTH, timeout);
+  cbp = Buffers::make(Params::LengthReq(name));
+  cbp->header.set(FUNCTION_LENGTH, timeout);
 }
 
 std::promise<void> Length::promise() {
@@ -25,12 +26,12 @@ std::promise<void> Length::promise() {
   return r_promise;
 }
 
-void Length::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) { 
+void Length::handle(ConnHandlerPtr, const Event::Ptr& ev) { 
 
   const uint8_t *ptr;
   size_t remain;
 
-  if(!Base::is_rsp(ev, Cmd::FUNCTION_LENGTH, &ptr, &remain))
+  if(!Base::is_rsp(ev, FUNCTION_LENGTH, &ptr, &remain))
     return;
 
   if(!error) {
@@ -53,4 +54,4 @@ void Length::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) {
 
 
 
-}}}}
+}}}}}

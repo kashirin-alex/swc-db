@@ -11,10 +11,11 @@
 #include "swcdb/fs/Dirent.h"
 
 
-namespace SWC { namespace FsBroker { namespace Protocol { namespace Params {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace FsBroker {  namespace Params {
 
 
-class ReaddirReq : public Comm::Serializable {
+class ReaddirReq : public Serializable {
   public:
 
   ReaddirReq();
@@ -34,7 +35,7 @@ class ReaddirReq : public Comm::Serializable {
 };
 
 
-class ReaddirRsp : public Comm::Serializable {
+class ReaddirRsp : public Serializable {
   public:
   
   ReaddirRsp();
@@ -54,7 +55,7 @@ class ReaddirRsp : public Comm::Serializable {
   FS::DirentList m_listing;
 };
 
-}}}}
+}}}}}
 
 
 #if defined(SWC_IMPL_SOURCE) or \

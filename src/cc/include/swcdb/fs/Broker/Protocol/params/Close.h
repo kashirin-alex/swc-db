@@ -10,10 +10,11 @@
 #include "swcdb/core/comm/Serializable.h"
 
 
-namespace SWC { namespace FsBroker { namespace Protocol { namespace Params {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace FsBroker {  namespace Params {
 
 
-class CloseReq : public Comm::Serializable {
+class CloseReq : public Serializable {
   public:
   
   CloseReq();
@@ -32,7 +33,7 @@ class CloseReq : public Comm::Serializable {
   
 };
 
-}}}}
+}}}}}
 
 
 #if defined(SWC_IMPL_SOURCE) or \

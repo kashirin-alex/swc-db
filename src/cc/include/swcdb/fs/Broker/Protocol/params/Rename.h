@@ -10,10 +10,11 @@
 #include "swcdb/core/comm/Serializable.h"
 
 
-namespace SWC { namespace FsBroker { namespace Protocol { namespace Params {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace FsBroker {  namespace Params {
 
 
-class RenameReq : public Comm::Serializable {
+class RenameReq : public Serializable {
   public:
 
   RenameReq();
@@ -33,7 +34,7 @@ class RenameReq : public Comm::Serializable {
 
 };
 
-}}}}
+}}}}}
 
 
 #if defined(SWC_IMPL_SOURCE) or \

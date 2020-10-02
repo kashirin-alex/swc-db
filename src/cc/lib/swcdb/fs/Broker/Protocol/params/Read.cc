@@ -7,7 +7,8 @@
 #include "swcdb/fs/Broker/Protocol/params/Read.h"
 
 
-namespace SWC { namespace FsBroker { namespace Protocol { namespace Params {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace FsBroker {  namespace Params {
 
 
 ReadReq::ReadReq(): fd(-1) {}
@@ -52,4 +53,4 @@ void ReadRsp::internal_decode(const uint8_t** bufp, size_t* remainp) {
 }
 
 
-}}}}
+}}}}}

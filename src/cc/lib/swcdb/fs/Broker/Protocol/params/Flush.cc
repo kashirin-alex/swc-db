@@ -7,7 +7,8 @@
 #include "swcdb/fs/Broker/Protocol/params/Flush.h"
 
 
-namespace SWC { namespace FsBroker { namespace Protocol { namespace Params {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace FsBroker {  namespace Params {
 
 
 FlushReq::FlushReq(): fd(-1) { }
@@ -27,4 +28,4 @@ void FlushReq::internal_decode(const uint8_t** bufp, size_t* remainp) {
 }
 
 
-}}}}
+}}}}}

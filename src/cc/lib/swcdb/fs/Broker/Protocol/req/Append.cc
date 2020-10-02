@@ -7,7 +7,8 @@
 #include "swcdb/fs/Broker/Protocol/req/Append.h"
 
 
-namespace SWC { namespace FsBroker { namespace Protocol { namespace Req {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace FsBroker {  namespace Req {
 
 
 Append::Append(uint32_t timeout, FS::SmartFd::Ptr& smartfd, 
@@ -20,11 +21,11 @@ Append::Append(uint32_t timeout, FS::SmartFd::Ptr& smartfd,
     smartfd->print(SWC_LOG_OSTREAM);
   );
 
-  cbp = Comm::Buffers::make(
+  cbp = Buffers::make(
     Params::AppendReq(smartfd->fd(), (uint8_t)flags),
     buffer
   );
-  cbp->header.set(Cmd::FUNCTION_APPEND, timeout);
+  cbp->header.set(FUNCTION_APPEND, timeout);
 }
 
 std::promise<void> Append::promise() {
@@ -34,12 +35,12 @@ std::promise<void> Append::promise() {
   return r_promise;
 }
 
-void Append::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) {
+void Append::handle(ConnHandlerPtr, const Event::Ptr& ev) {
 
   const uint8_t *ptr;
   size_t remain;
 
-  if(!Base::is_rsp(ev, Cmd::FUNCTION_APPEND, &ptr, &remain))
+  if(!Base::is_rsp(ev, FUNCTION_APPEND, &ptr, &remain))
     return;
 
   switch(error) {
@@ -74,4 +75,4 @@ void Append::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) {
 
 
 
-}}}}
+}}}}}

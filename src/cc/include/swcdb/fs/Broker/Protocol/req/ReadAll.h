@@ -9,7 +9,8 @@
 #include "swcdb/fs/Broker/Protocol/req/Base.h"
 #include "swcdb/fs/Broker/Protocol/params/ReadAll.h"
 
-namespace SWC { namespace FsBroker { namespace Protocol { namespace Req {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace FsBroker {  namespace Req {
 
 class ReadAll : public Base {
 
@@ -21,7 +22,7 @@ class ReadAll : public Base {
 
   std::promise<void> promise();
 
-  void handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev);
+  void handle(ConnHandlerPtr, const Event::Ptr& ev);
 
   private:
   const std::string          name;
@@ -31,7 +32,7 @@ class ReadAll : public Base {
 
 
 
-}}}}
+}}}}}
 
 
 #ifdef SWC_IMPL_SOURCE

@@ -7,7 +7,8 @@
 #include "swcdb/fs/Broker/Protocol/params/Readdir.h"
 
 
-namespace SWC { namespace FsBroker { namespace Protocol { namespace Params {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace FsBroker {  namespace Params {
 
 
 ReaddirReq::ReaddirReq() {}
@@ -59,4 +60,4 @@ void ReaddirRsp::internal_decode(const uint8_t** bufp, size_t* remainp) {
 }
 
 
-}}}}
+}}}}}

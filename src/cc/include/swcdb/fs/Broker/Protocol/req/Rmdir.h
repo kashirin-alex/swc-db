@@ -9,7 +9,8 @@
 #include "swcdb/fs/Broker/Protocol/req/Base.h"
 #include "swcdb/fs/Broker/Protocol/params/Rmdir.h"
 
-namespace SWC { namespace FsBroker { namespace Protocol { namespace Req {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace FsBroker {  namespace Req {
 
 class Rmdir : public Base {
 
@@ -20,7 +21,7 @@ class Rmdir : public Base {
 
   std::promise<void> promise();
 
-  void handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) override;
+  void handle(ConnHandlerPtr, const Event::Ptr& ev) override;
 
   private:
   const std::string        name;
@@ -30,7 +31,7 @@ class Rmdir : public Base {
 
 
 
-}}}}
+}}}}}
 
 
 #ifdef SWC_IMPL_SOURCE

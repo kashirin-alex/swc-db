@@ -7,7 +7,8 @@
 #include "swcdb/fs/Broker/Protocol/req/Flush.h"
 
 
-namespace SWC { namespace FsBroker { namespace Protocol { namespace Req {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace FsBroker {  namespace Req {
 
 
 Flush::Flush(uint32_t timeout, FS::SmartFd::Ptr& smartfd, 
@@ -18,8 +19,8 @@ Flush::Flush(uint32_t timeout, FS::SmartFd::Ptr& smartfd,
     smartfd->print(SWC_LOG_OSTREAM);
   );
 
-  cbp = Comm::Buffers::make(Params::FlushReq(smartfd->fd()));
-  cbp->header.set(Cmd::FUNCTION_FLUSH, timeout);
+  cbp = Buffers::make(Params::FlushReq(smartfd->fd()));
+  cbp->header.set(FUNCTION_FLUSH, timeout);
 }
 
 std::promise<void> Flush::promise() {
@@ -28,12 +29,12 @@ std::promise<void> Flush::promise() {
   return r_promise;
 }
 
-void Flush::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) { 
+void Flush::handle(ConnHandlerPtr, const Event::Ptr& ev) { 
 
   const uint8_t *ptr;
   size_t remain;
 
-  if(!Base::is_rsp(ev, Cmd::FUNCTION_FLUSH, &ptr, &remain))
+  if(!Base::is_rsp(ev, FUNCTION_FLUSH, &ptr, &remain))
     return;
 
   switch(error) {
@@ -54,4 +55,4 @@ void Flush::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) {
 
 
 
-}}}}
+}}}}}

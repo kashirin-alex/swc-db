@@ -11,10 +11,11 @@
 #include "swcdb/core/comm/Serializable.h"
 
 
-namespace SWC { namespace FsBroker { namespace Protocol { namespace Params {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace FsBroker {  namespace Params {
 
 
-class AppendReq : public Comm::Serializable {
+class AppendReq : public Serializable {
   public:
 
   AppendReq();
@@ -37,7 +38,7 @@ class AppendReq : public Comm::Serializable {
 
 
 
-class AppendRsp : public Comm::Serializable {
+class AppendRsp : public Serializable {
   public:
 
   AppendRsp();
@@ -57,7 +58,7 @@ class AppendRsp : public Comm::Serializable {
 
 };
 
-}}}}
+}}}}}
 
 
 #if defined(SWC_IMPL_SOURCE) or \

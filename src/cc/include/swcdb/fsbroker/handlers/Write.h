@@ -9,11 +9,12 @@
 
 #include "swcdb/fs/Broker/Protocol/params/Write.h"
 
-namespace SWC { namespace FsBroker { namespace Protocol { namespace Handler {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace FsBroker {  namespace Handler {
 
 
 
-void write(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
+void write(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
 
   int err = Error::OK;
   try {
@@ -56,7 +57,7 @@ void write(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
     return;
 
   try {
-    auto cbp = Comm::Buffers::make(4);
+    auto cbp = Buffers::make(4);
     cbp->header.initialize_from_request_header(ev->header);
     cbp->append_i32(err);
     conn->send_response(cbp);
@@ -68,6 +69,6 @@ void write(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
 }
   
 
-}}}}
+}}}}}
 
 #endif // swcdb_fsbroker_handlers_Write_h

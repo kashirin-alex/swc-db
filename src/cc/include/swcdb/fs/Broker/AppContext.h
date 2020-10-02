@@ -10,7 +10,7 @@
 
 namespace SWC { namespace client { namespace FsBroker {
 
-class AppContext final : public SWC::Comm::AppContext {
+class AppContext final : public Comm::AppContext {
   public:
 
   AppContext(){}
@@ -24,8 +24,8 @@ class AppContext final : public SWC::Comm::AppContext {
       
     const uint8_t *ptr;
     size_t remain;
-    if(SWC::FsBroker::Protocol::Req::Base().is_rsp(
-      ev, ev->header.command, &ptr, &remain))
+    if(Comm::Protocol::FsBroker::Req::Base().is_rsp(
+        ev, ev->header.command, &ptr, &remain))
       SWC_LOG_OUT(LOG_WARN,  ev->print(SWC_LOG_OSTREAM << "Unhandled "); );
   }
 };

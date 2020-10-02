@@ -7,7 +7,8 @@
 #include "swcdb/fs/Broker/Protocol/params/Seek.h"
 
 
-namespace SWC { namespace FsBroker { namespace Protocol { namespace Params {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace FsBroker {  namespace Params {
 
 SeekReq::SeekReq(): fd(-1) {}
 
@@ -48,4 +49,4 @@ void SeekRsp::internal_decode(const uint8_t** bufp, size_t* remainp) {
 }
 
 
-}}}}
+}}}}}

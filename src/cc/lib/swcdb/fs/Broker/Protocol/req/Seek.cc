@@ -7,7 +7,8 @@
 #include "swcdb/fs/Broker/Protocol/req/Seek.h"
 
 
-namespace SWC { namespace FsBroker { namespace Protocol { namespace Req {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace FsBroker {  namespace Req {
 
 
 Seek::Seek(uint32_t timeout, FS::SmartFd::Ptr& smartfd, size_t offset,
@@ -18,8 +19,8 @@ Seek::Seek(uint32_t timeout, FS::SmartFd::Ptr& smartfd, size_t offset,
     smartfd->print(SWC_LOG_OSTREAM);
   );
 
-  cbp = Comm::Buffers::make(Params::SeekReq(smartfd->fd(), offset));
-  cbp->header.set(Cmd::FUNCTION_SEEK, timeout);
+  cbp = Buffers::make(Params::SeekReq(smartfd->fd(), offset));
+  cbp->header.set(FUNCTION_SEEK, timeout);
 }
 
 std::promise<void> Seek::promise() {
@@ -28,12 +29,12 @@ std::promise<void> Seek::promise() {
   return r_promise;
 }
 
-void Seek::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) { 
+void Seek::handle(ConnHandlerPtr, const Event::Ptr& ev) { 
 
   const uint8_t *ptr;
   size_t remain;
 
-  if(!Base::is_rsp(ev, Cmd::FUNCTION_SEEK, &ptr, &remain))
+  if(!Base::is_rsp(ev, FUNCTION_SEEK, &ptr, &remain))
     return;
 
   switch(error) {
@@ -66,4 +67,4 @@ void Seek::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) {
 
 
 
-}}}}
+}}}}}

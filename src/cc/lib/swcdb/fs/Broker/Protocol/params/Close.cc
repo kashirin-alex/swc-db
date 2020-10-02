@@ -7,7 +7,8 @@
 #include "swcdb/fs/Broker/Protocol/params/Close.h"
 
 
-namespace SWC { namespace FsBroker { namespace Protocol { namespace Params {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace FsBroker {  namespace Params {
 
 
 CloseReq::CloseReq(): fd(-1) { }
@@ -27,4 +28,4 @@ void CloseReq::internal_decode(const uint8_t** bufp, size_t* remainp) {
 }
 
 
-}}}}
+}}}}}

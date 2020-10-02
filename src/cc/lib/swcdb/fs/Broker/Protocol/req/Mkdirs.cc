@@ -7,7 +7,8 @@
 #include "swcdb/fs/Broker/Protocol/req/Mkdirs.h"
 
 
-namespace SWC { namespace FsBroker { namespace Protocol { namespace Req {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace FsBroker {  namespace Req {
 
 
 Mkdirs::Mkdirs(uint32_t timeout, const std::string& name, 
@@ -15,8 +16,8 @@ Mkdirs::Mkdirs(uint32_t timeout, const std::string& name,
               : name(name), cb(cb) {
   SWC_LOGF(LOG_DEBUG, "mkdirs path='%s'", name.c_str());
 
-  cbp = Comm::Buffers::make(Params::MkdirsReq(name));
-  cbp->header.set(Cmd::FUNCTION_MKDIRS, timeout);
+  cbp = Buffers::make(Params::MkdirsReq(name));
+  cbp->header.set(FUNCTION_MKDIRS, timeout);
 }
 
 std::promise<void> Mkdirs::promise() {
@@ -25,12 +26,12 @@ std::promise<void> Mkdirs::promise() {
   return r_promise;
 }
 
-void Mkdirs::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) { 
+void Mkdirs::handle(ConnHandlerPtr, const Event::Ptr& ev) { 
 
   const uint8_t *ptr;
   size_t remain;
 
-  if(!Base::is_rsp(ev, Cmd::FUNCTION_MKDIRS, &ptr, &remain))
+  if(!Base::is_rsp(ev, FUNCTION_MKDIRS, &ptr, &remain))
     return;
 
   SWC_LOGF(LOG_DEBUG, "mkdirs path='%s' error='%d'", name.c_str(), error);
@@ -40,4 +41,4 @@ void Mkdirs::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) {
 
 
 
-}}}}
+}}}}}

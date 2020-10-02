@@ -10,10 +10,11 @@
 #include "swcdb/core/comm/Serializable.h"
 
 
-namespace SWC { namespace FsBroker { namespace Protocol { namespace Params {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace FsBroker {  namespace Params {
 
 
-class ExistsReq : public Comm::Serializable {
+class ExistsReq : public Serializable {
   public:
 
   ExistsReq();
@@ -35,7 +36,7 @@ class ExistsReq : public Comm::Serializable {
 
 
 
-class ExistsRsp : public Comm::Serializable {
+class ExistsRsp : public Serializable {
   public:
   
   ExistsRsp();
@@ -54,7 +55,7 @@ class ExistsRsp : public Comm::Serializable {
 
 };
 
-}}}}
+}}}}}
 
 
 #if defined(SWC_IMPL_SOURCE) or \

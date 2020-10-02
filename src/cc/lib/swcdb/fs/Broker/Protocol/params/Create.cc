@@ -7,7 +7,8 @@
 #include "swcdb/fs/Broker/Protocol/params/Create.h"
 
 
-namespace SWC { namespace FsBroker { namespace Protocol { namespace Params {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace FsBroker {  namespace Params {
 
 
 CreateReq::CreateReq() { }
@@ -43,4 +44,4 @@ void CreateReq::internal_decode(const uint8_t** bufp, size_t* remainp) {
 }
 
 
-}}}}
+}}}}}

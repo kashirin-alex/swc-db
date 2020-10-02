@@ -7,7 +7,8 @@
 #include "swcdb/fs/Broker/Protocol/req/Read.h"
 
 
-namespace SWC { namespace FsBroker { namespace Protocol { namespace Req {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace FsBroker {  namespace Req {
 
 
 Read::Read(uint32_t timeout, FS::SmartFd::Ptr& smartfd, void* dst, size_t len, 
@@ -19,8 +20,8 @@ Read::Read(uint32_t timeout, FS::SmartFd::Ptr& smartfd, void* dst, size_t len,
     smartfd->print(SWC_LOG_OSTREAM);
   );
 
-  cbp = Comm::Buffers::make(Params::ReadReq(smartfd->fd(), len));
-  cbp->header.set(Cmd::FUNCTION_READ, timeout);
+  cbp = Buffers::make(Params::ReadReq(smartfd->fd(), len));
+  cbp->header.set(FUNCTION_READ, timeout);
 }
 
 std::promise<void> Read::promise() {
@@ -32,12 +33,12 @@ std::promise<void> Read::promise() {
   return r_promise;
 }
 
-void Read::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) {
+void Read::handle(ConnHandlerPtr, const Event::Ptr& ev) {
 
   const uint8_t *ptr;
   size_t remain;
 
-  if(!Base::is_rsp(ev, Cmd::FUNCTION_READ, &ptr, &remain))
+  if(!Base::is_rsp(ev, FUNCTION_READ, &ptr, &remain))
     return;
 
   StaticBuffer::Ptr buf = nullptr;
@@ -84,4 +85,4 @@ void Read::handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) {
 
 
 
-}}}}
+}}}}}

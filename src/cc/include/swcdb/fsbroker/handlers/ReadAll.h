@@ -10,10 +10,11 @@
 #include "swcdb/fs/Broker/Protocol/params/ReadAll.h"
 
 
-namespace SWC { namespace FsBroker { namespace Protocol { namespace Handler {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace FsBroker {  namespace Handler {
 
 
-void read_all(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
+void read_all(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
 
   int err = Error::OK;
   StaticBuffer rbuf;
@@ -67,7 +68,7 @@ void read_all(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
     return;
 
   try {
-    auto cbp = err ? Comm::Buffers::make(4) : Comm::Buffers::make(rbuf, 4); 
+    auto cbp = err ? Buffers::make(4) : Buffers::make(rbuf, 4); 
     cbp->header.initialize_from_request_header(ev->header);
     cbp->append_i32(err);
     conn->send_response(cbp);
@@ -79,6 +80,6 @@ void read_all(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev) {
 }
 
 
-}}}}
+}}}}}
 
 #endif // swcdb_fsbroker_handlers_ReadAll_h

@@ -7,7 +7,8 @@
 #include "swcdb/fs/Broker/Protocol/params/Append.h"
 
 
-namespace SWC { namespace FsBroker { namespace Protocol { namespace Params {
+namespace SWC { namespace Comm { namespace Protocol {
+namespace FsBroker {  namespace Params {
 
 
 AppendReq::AppendReq(): fd(-1), flags(0) { }
@@ -53,4 +54,4 @@ void AppendRsp::internal_decode(const uint8_t** bufp, size_t* remainp) {
 }
 
 
-}}}}
+}}}}}
