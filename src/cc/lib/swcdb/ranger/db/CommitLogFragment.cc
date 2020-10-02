@@ -29,15 +29,15 @@ Fragment::Ptr Fragment::make_read(int& err, const std::string& filepath,
                                   const DB::Types::KeySeq key_seq) {
   auto smartfd = FS::SmartFd::make_ptr(filepath, 0);
     
-  uint8_t               version = 0;
-  DB::Cells::Interval   interval(key_seq);
-  Encoder::Type         encoder = Encoder::Type::UNKNOWN;
-  size_t                size_plain = 0;
-  size_t                size_enc = 0;
-  uint32_t              cell_revs = 0;
-  uint32_t              cells_count = 0;
-  uint32_t              data_checksum = 0;
-  uint32_t              offset_data = 0;
+  uint8_t                     version = 0;
+  DB::Cells::Interval         interval(key_seq);
+  DB::Types::Encoder          encoder = DB::Types::Encoder::UNKNOWN;
+  size_t                      size_plain = 0;
+  size_t                      size_enc = 0;
+  uint32_t                    cell_revs = 0;
+  uint32_t                    cells_count = 0;
+  uint32_t                    data_checksum = 0;
+  uint32_t                    offset_data = 0;
 
   load_header(
     err, smartfd, 
@@ -58,7 +58,7 @@ Fragment::Ptr Fragment::make_read(int& err, const std::string& filepath,
 void Fragment::load_header(int& err, FS::SmartFd::Ptr& smartfd, 
                            uint8_t& version,
                            DB::Cells::Interval& interval, 
-                           Encoder::Type& encoder,
+                           DB::Types::Encoder& encoder,
                            size_t& size_plain, size_t& size_enc,
                            uint32_t& cell_revs, uint32_t& cells_count,
                            uint32_t& data_checksum, uint32_t& offset_data) {
@@ -90,8 +90,8 @@ void Fragment::load_header(int& err, FS::SmartFd::Ptr& smartfd,
     size_t remain = HEADER_SIZE;
     version = Serialization::decode_i8(&ptr, &remain);
     uint32_t header_extlen = Serialization::decode_i32(&ptr, &remain);
-    if(!checksum_i32_chk(Serialization::decode_i32(&ptr, &remain), 
-                         buf.base, HEADER_SIZE-4)) {  
+    if(!Core::checksum_i32_chk(Serialization::decode_i32(&ptr, &remain), 
+                               buf.base, HEADER_SIZE-4)) {
       err = Error::CHECKSUM_MISMATCH;
       continue;
     }
@@ -105,15 +105,15 @@ void Fragment::load_header(int& err, FS::SmartFd::Ptr& smartfd,
     remain = header_extlen;
 
     interval.decode(&ptr, &remain, true);
-    encoder = (Encoder::Type)Serialization::decode_i8(&ptr, &remain);
+    encoder = (DB::Types::Encoder)Serialization::decode_i8(&ptr, &remain);
     size_enc = Serialization::decode_i32(&ptr, &remain);
     size_plain = Serialization::decode_i32(&ptr, &remain);
     cell_revs = Serialization::decode_i32(&ptr, &remain);
     cells_count = Serialization::decode_i32(&ptr, &remain);
     data_checksum = Serialization::decode_i32(&ptr, &remain);
 
-    if(!checksum_i32_chk(Serialization::decode_i32(&ptr, &remain), 
-                         buf.base, header_extlen-4)) {  
+    if(!Core::checksum_i32_chk(Serialization::decode_i32(&ptr, &remain), 
+                               buf.base, header_extlen-4)) {
       err = Error::CHECKSUM_MISMATCH;
       continue;
     }
@@ -128,7 +128,7 @@ void Fragment::load_header(int& err, FS::SmartFd::Ptr& smartfd,
 
 Fragment::Ptr Fragment::make_write(int& err, const std::string& filepath, 
                                    const DB::Cells::Interval& interval,
-                                   Encoder::Type encoder,
+                                   DB::Types::Encoder encoder,
                                    const uint32_t cell_revs, 
                                    const uint32_t cells_count,
                                    DynamicBuffer& cells, 
@@ -167,7 +167,7 @@ Fragment::Ptr Fragment::make_write(int& err, const std::string& filepath,
 void Fragment::write(int& err,
                      const uint8_t version,
                      const DB::Cells::Interval& interval, 
-                     Encoder::Type& encoder,
+                     DB::Types::Encoder& encoder,
                      const size_t size_plain, size_t& size_enc,
                      const uint32_t cell_revs, const uint32_t cells_count,
                      uint32_t& data_checksum, uint32_t& offset_data,
@@ -178,20 +178,20 @@ void Fragment::write(int& err,
 
   DynamicBuffer output;
   err = Error::OK;
-  Encoder::encode(err, encoder, cells.base, size_plain, 
-                  &size_enc, output, offset_data);
+  Core::Encoder::encode(err, encoder, cells.base, size_plain, 
+                        &size_enc, output, offset_data);
   if(err)
     return;
 
   if(!size_enc) {
     size_enc = size_plain;
-    encoder = Encoder::Type::PLAIN;
+    encoder = DB::Types::Encoder::PLAIN;
   }
                   
   uint8_t * bufp = output.base;
   Serialization::encode_i8(&bufp, version);
   Serialization::encode_i32(&bufp, header_extlen);
-  checksum_i32(output.base, bufp, &bufp);
+  Core::checksum_i32(output.base, bufp, &bufp);
 
   uint8_t * header_extptr = bufp;
   interval.encode(&bufp);
@@ -201,9 +201,9 @@ void Fragment::write(int& err,
   Serialization::encode_i32(&bufp, cell_revs);
   Serialization::encode_i32(&bufp, cells_count);
   
-  checksum_i32(output.base+offset_data, output.base+output.fill(), 
-               &bufp, data_checksum);
-  checksum_i32(header_extptr, bufp, &bufp);
+  Core::checksum_i32(output.base+offset_data, output.base+output.fill(), 
+                     &bufp, data_checksum);
+  Core::checksum_i32(header_extptr, bufp, &bufp);
 
   buffer->set(output);
 }
@@ -212,7 +212,7 @@ void Fragment::write(int& err,
 Fragment::Fragment(const FS::SmartFd::Ptr& smartfd, 
                    const uint8_t version,
                    const DB::Cells::Interval& interval, 
-                   const Encoder::Type encoder,
+                   const DB::Types::Encoder encoder,
                    const size_t size_plain, const size_t size_enc,
                    const uint32_t cell_revs, const uint32_t cells_count,
                    const uint32_t data_checksum, const uint32_t offset_data,
@@ -248,7 +248,8 @@ const std::string& Fragment::get_filepath() const {
 }
 
 void Fragment::write(int err, uint8_t blk_replicas, int64_t blksz, 
-                     const StaticBuffer::Ptr& buff_write, Semaphore* sem) {
+                     const StaticBuffer::Ptr& buff_write, 
+                     Core::Semaphore* sem) {
   if(!err && (Env::FsInterface::interface()->length(err, m_smartfd->filepath())
               != buff_write->size || err))
     if(err != Error::SERVER_SHUTTING_DOWN)
@@ -279,7 +280,7 @@ void Fragment::write(int err, uint8_t blk_replicas, int64_t blksz,
 
   bool keep;
   {
-    Mutex::scope lock(m_mutex);
+    Core::MutexSptd::scope lock(m_mutex);
     keep = --m_processing || !m_queue.empty();
     if((m_state = !(m_err = err) && keep
                     ? State::LOADED : State::NONE) == State::NONE) {
@@ -294,7 +295,7 @@ void Fragment::write(int err, uint8_t blk_replicas, int64_t blksz,
 void Fragment::load(const std::function<void()>& cb) {
   bool loaded;
   {
-    Mutex::scope lock(m_mutex);
+    Core::MutexSptd::scope lock(m_mutex);
     ++m_processing;
     if(!(loaded = m_state == State::LOADED)) {
       m_queue.push(cb);
@@ -406,12 +407,12 @@ void Fragment::split(int&, const DB::Cell::Key& key,
 }
 
 void Fragment::processing_increment() {
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   ++m_processing; 
 }
 
 void Fragment::processing_decrement() {
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   --m_processing; 
 }
 
@@ -433,17 +434,17 @@ size_t Fragment::release() {
 }
 
 bool Fragment::loaded() {
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   return m_state == State::LOADED;
 }
 
 int Fragment::error() {
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   return m_err;
 }
 
 bool Fragment::loaded(int& err) {
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   err = m_err;
   return !err && m_state == State::LOADED;
 }
@@ -484,10 +485,10 @@ void Fragment::print(std::ostream& out) {
   out << "Fragment(version=" << (int)version
       << " count=" << cells_count
       << " offset=" << offset_data
-      << " encoder=" << Encoder::to_string(encoder)
+      << " encoder=" << Core::Encoder::to_string(encoder)
       << " enc/size=" << size_enc << '/' << size_plain;
   {
-    Mutex::scope lock(m_mutex);
+    Core::MutexSptd::scope lock(m_mutex);
     out << " state=" << to_string(m_state);
     m_smartfd->print(SWC_LOG_OSTREAM << ' ');
     out << " queue=" << m_queue.size()
@@ -524,14 +525,14 @@ void Fragment::load() {
     if(fs->pread(err, m_smartfd, offset_data, &m_buffer, size_enc) != size_enc)
       continue;
     
-    if(!checksum_i32_chk(data_checksum, m_buffer.base, size_enc)) {
+    if(!Core::checksum_i32_chk(data_checksum, m_buffer.base, size_enc)) {
       err = Error::CHECKSUM_MISMATCH;
       continue;
     }
 
-    if(encoder != Encoder::Type::PLAIN) {
+    if(encoder != DB::Types::Encoder::PLAIN) {
       StaticBuffer decoded_buf(size_plain);
-      Encoder::decode(
+      Core::Encoder::decode(
         err, encoder, m_buffer.base, size_enc, decoded_buf.base, size_plain);
       if(err)
         continue;
@@ -546,7 +547,7 @@ void Fragment::load() {
   }
 
   {
-    Mutex::scope lock(m_mutex);
+    Core::MutexSptd::scope lock(m_mutex);
     m_err = err == Error::FS_PATH_NOT_FOUND ? Error::OK : err;
     m_state = m_err ? State::NONE : State::LOADED;
     if(err) {
@@ -567,7 +568,7 @@ void Fragment::load() {
 void Fragment::run_queued() {
   for(std::function<void()> call;;) {
     {
-      Mutex::scope lock(m_mutex);
+      Core::MutexSptd::scope lock(m_mutex);
       if(m_queue.empty())
         return;
       call = m_queue.front();

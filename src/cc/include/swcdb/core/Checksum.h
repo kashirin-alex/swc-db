@@ -12,7 +12,9 @@
 
 
 
-namespace SWC {
+namespace SWC { namespace Core {
+
+
 
 // Fletcher 8-bit by 16-bit implementation (32-bit checksum)
 SWC_SHOULD_NOT_INLINE
@@ -40,7 +42,11 @@ uint32_t fletcher32(const void *data8, size_t len) {
     c1 %= 65535;
   }
   return (c1 << 16 | c0);
+
 }
+
+
+
 
 extern SWC_CAN_INLINE 
 uint32_t checksum32(const uint8_t* data8, size_t len8) {
@@ -94,7 +100,8 @@ bool checksum_i32_chk(uint32_t checksum, const uint8_t* base, uint32_t len,
 
 
 
-} // namespace SWC
+}} // namespace SWC::Core
+
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/core/Checksum.cc"

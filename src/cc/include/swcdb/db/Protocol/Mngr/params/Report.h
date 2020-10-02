@@ -24,7 +24,7 @@ namespace Mngr { namespace Params {
 namespace Report {
 
 
-enum Function {
+enum Function : uint8_t {
   CLUSTER_STATUS  = 0x00,
   COLUMN_STATUS   = 0x01,
   RANGERS_STATUS  = 0x02,
@@ -79,8 +79,8 @@ class RspColumnStatus : public Serializable {
 
   void display(std::ostream& out, const std::string& offset = "") const;
 
-  DB::Types::MngrColumn::State state;
-  std::vector<RangeStatus> ranges;
+  DB::Types::MngrColumn::State  state;
+  std::vector<RangeStatus>      ranges;
 
   private:
 
@@ -103,11 +103,11 @@ class RspRangersStatus : public Serializable {
 
   struct Ranger final : public Common::Params::HostEndPoints {
 
-    DB::Types::MngrRanger::State state;
-    rgrid_t                  rgr_id;
-    int32_t                  failures;
-    uint64_t                 interm_ranges;
-    uint16_t                 load_scale;
+    DB::Types::MngrRanger::State  state;
+    rgrid_t                       rgr_id;
+    int32_t                       failures;
+    uint64_t                      interm_ranges;
+    uint16_t                      load_scale;
 
     size_t encoded_length() const;
 

@@ -63,22 +63,22 @@ void Block::set_prev_key_end(const DB::Cell::Key& key) {
 }
 
 Condition::Comp Block::cond_key_end(const DB::Cell::Key& key) const {
-  LockAtomic::Unique::scope lock(m_mutex_intval);
+  Core::MutexAtomic::scope lock(m_mutex_intval);
   return DB::KeySeq::compare(m_cells.key_seq, m_key_end, key);
 }
 
 void Block::set_key_end(const DB::Cell::Key& key) {
-  LockAtomic::Unique::scope lock(m_mutex_intval);
+  Core::MutexAtomic::scope lock(m_mutex_intval);
   m_key_end.copy(key);
 }
 
 void Block::free_key_end() {
-  LockAtomic::Unique::scope lock(m_mutex_intval);
+  Core::MutexAtomic::scope lock(m_mutex_intval);
   m_key_end.free();
 }
 
 void Block::get_key_end(DB::Cell::Key& key) const {
-  LockAtomic::Unique::scope lock(m_mutex_intval);
+  Core::MutexAtomic::scope lock(m_mutex_intval);
   key.copy(m_key_end);
 }
 
@@ -92,7 +92,7 @@ bool Block::is_consist(const DB::Cells::Interval& intval) const {
 }
 
 bool Block::is_in_end(const DB::Cell::Key& key) const {
-  LockAtomic::Unique::scope lock(m_mutex_intval);
+  Core::MutexAtomic::scope lock(m_mutex_intval);
   return _is_in_end(key);
 }
 
@@ -104,7 +104,7 @@ bool Block::_is_in_end(const DB::Cell::Key& key) const {
 
 bool Block::is_next(const DB::Specs::Interval& spec) const {
   if(includes_end(spec)) {
-    LockAtomic::Unique::scope lock(m_mutex_intval);
+    Core::MutexAtomic::scope lock(m_mutex_intval);
     return (spec.offset_key.empty() || _is_in_end(spec.offset_key)) && 
             _includes_begin(spec);
   }
@@ -113,7 +113,7 @@ bool Block::is_next(const DB::Specs::Interval& spec) const {
 
 bool Block::includes(const DB::Specs::Interval& spec) const {
   if(includes_end(spec)) {
-    LockAtomic::Unique::scope lock(m_mutex_intval);
+    Core::MutexAtomic::scope lock(m_mutex_intval);
     return _includes_begin(spec);
   }
   return false;
@@ -180,7 +180,7 @@ size_t Block::load_cells(const uint8_t* buf, size_t remain,
       cell.read(&buf, &remain);
       
     } catch(...) {
-      const Exception& e = SWC_CURRENT_EXCEPTION("");
+      const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
       SWC_LOG_OUT(LOG_ERROR,
         SWC_LOG_OSTREAM << "Cell trunclated at count="
           << count << '/' << avail << " remain=" << remain;
@@ -230,7 +230,7 @@ bool Block::splitter() {
 Block::ScanState Block::scan(const ReqScan::Ptr& req) {
   bool loaded;
   {
-    Mutex::scope lock(m_mutex_state);
+    Core::MutexSptd::scope lock(m_mutex_state);
 
     if(!(loaded = m_state == State::LOADED)) {
       m_queue.push({.req=req, .ts=Time::now_ns()});
@@ -256,7 +256,7 @@ Block::ScanState Block::scan(const ReqScan::Ptr& req) {
 
 void Block::loaded(int err, const BlockLoader* loader) {
   {
-    Mutex::scope lock(m_mutex_state);
+    Core::MutexSptd::scope lock(m_mutex_state);
     m_state = State::LOADED;
   }
 
@@ -290,7 +290,7 @@ Block::Ptr Block::_split(bool loaded) {
   ssize_t sz = loaded ? 0 : m_cells.size_of_internal();
   m_cells.split(blk->m_cells, loaded);
   {
-    LockAtomic::Unique::scope lock(m_mutex_intval);
+    Core::MutexAtomic::scope lock(m_mutex_intval);
     blk->m_key_end.copy(m_key_end);
     m_key_end.copy(m_cells.back()->key);
   }
@@ -314,7 +314,7 @@ void Block::_add(Block::Ptr blk) {
 size_t Block::release() {
   size_t released = 0;
   if(!m_processing && m_mutex.try_lock()) {
-    Mutex::scope lock(m_mutex_state);
+    Core::MutexSptd::scope lock(m_mutex_state);
     if(!m_processing && m_state == State::LOADED) {
       m_state = State::NONE;
       released += m_cells.size_of_internal();
@@ -338,17 +338,17 @@ void Block::processing_decrement() {
 }
 
 bool Block::removed() {
-  Mutex::scope lock(m_mutex_state);
+  Core::MutexSptd::scope lock(m_mutex_state);
   return m_state == State::REMOVED;
 }
 
 bool Block::loaded() {
-  Mutex::scope lock(m_mutex_state);
+  Core::MutexSptd::scope lock(m_mutex_state);
   return m_state == State::LOADED;
 }
 
 bool Block::need_load() {
-  Mutex::scope lock(m_mutex_state);
+  Core::MutexSptd::scope lock(m_mutex_state);
   return m_state == State::NONE;
 }
 
@@ -387,13 +387,13 @@ bool Block::_need_split() const {
 void Block::print(std::ostream& out) {
   out << "Block(state=";
   {
-    Mutex::scope lock(m_mutex_state);
+    Core::MutexSptd::scope lock(m_mutex_state);
     out << (int)m_state;
   }
   out << ' ' << DB::Types::to_string(m_cells.key_seq)
       << ' ' << m_prev_key_end << " < key <= ";
   {
-    LockAtomic::Unique::scope lock(m_mutex_intval);
+    Core::MutexAtomic::scope lock(m_mutex_intval);
     out << m_key_end;
   }
 
@@ -419,7 +419,7 @@ Block::ScanState Block::_scan(const ReqScan::Ptr& req, bool synced) {
     m_cells.scan(req.get());
 
   } catch (...) {
-    const Exception& e = SWC_CURRENT_EXCEPTION("");
+    const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
     SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
     err = e.code();
   }

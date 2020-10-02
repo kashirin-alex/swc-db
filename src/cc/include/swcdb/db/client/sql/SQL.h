@@ -27,7 +27,7 @@
 
 namespace SWC { namespace client { namespace SQL {
 
-enum Cmd {
+enum Cmd : uint8_t {
   UNKNOWN         = 0,
   CREATE_COLUMN   = 1,
   MODIFY_COLUMN   = 2,

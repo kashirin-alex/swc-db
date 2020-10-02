@@ -298,7 +298,7 @@ void test_bad_vi24() {
     size_t len = sizeof(buf);
     decode_vi24(&p, &len);
   }
-  catch (Exception &e) {
+  catch (const Error::Exception& e) {
     SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
     SWC_ASSERT(e.code() == Error::SERIALIZATION_INPUT_OVERRUN);
   }
@@ -311,7 +311,7 @@ void test_bad_vi32() {
     size_t len = sizeof(buf);
     decode_vi32(&p, &len);
   }
-  catch (Exception &e) {
+  catch (const Error::Exception& e) {
     SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
     SWC_ASSERT(e.code() == Error::SERIALIZATION_INPUT_OVERRUN);
   }
@@ -325,7 +325,7 @@ void test_bad_vi64() {
     size_t len = sizeof(buf);
     decode_vi64(&p, &len);
   }
-  catch (Exception &e) {
+  catch (const Error::Exception& e) {
     SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
     SWC_ASSERT(e.code() == Error::SERIALIZATION_INPUT_OVERRUN);
   }
@@ -339,7 +339,7 @@ void test_bad_bytes_string() {
     size_t len = sizeof(buf);
     decode_bytes_string(&p, &len);
   }
-  catch (Exception &e) {
+  catch (const Error::Exception& e) {
     SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
     SWC_ASSERT(e.code() == Error::SERIALIZATION_INPUT_OVERRUN);
   }

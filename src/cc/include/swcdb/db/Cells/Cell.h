@@ -20,7 +20,7 @@ namespace SWC {
 //! The SWC-DB Database C++ namespace 'SWC::DB'
 namespace DB { 
 
-enum DisplayFlag {
+enum DisplayFlag : uint8_t {
   TIMESTAMP     = 0x01,
   DATETIME      = 0x04,
   BINARY        = 0x08,
@@ -29,7 +29,7 @@ enum DisplayFlag {
   COLUMN        = 0x40
 };
 
-enum OutputFlag {
+enum OutputFlag : uint8_t {
   NO_TS     = 0x01,
   NO_VALUE  = 0x04
 };
@@ -37,7 +37,7 @@ enum OutputFlag {
 
 namespace Cells {
 
-enum Flag {
+enum Flag : uint8_t {
   NONE                      = 0x0, // empty instance
   INSERT                    = 0x1,
   DELETE                    = 0x2,

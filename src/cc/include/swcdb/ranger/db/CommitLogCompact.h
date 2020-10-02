@@ -46,15 +46,15 @@ class Compact final {
     
     std::atomic<int>                  error;
     Compact*                          compact;
-    LockAtomic::Unique                m_mutex;
+    Core::MutexAtomic                 m_mutex;
     size_t                            m_read_idx;
     uint32_t                          m_loading;
     uint32_t                          m_processed;
     DB::Cells::MutableVec             m_cells;
-    QueueSafe<Fragment::Ptr>          m_queue;
+    Core::QueueSafe<Fragment::Ptr>    m_queue;
     Fragments::Vec                    m_remove;
     Fragments::Vec                    m_fragments;
-    Semaphore                         m_sem;
+    Core::Semaphore                   m_sem;
   };
 
   public:
@@ -84,7 +84,7 @@ class Compact final {
 
   const std::string get_filepath(const int64_t frag) const;
 
-  LockAtomic::Unique    m_mutex;
+  Core::MutexAtomic     m_mutex;
   uint8_t               m_workers;
   std::vector<Group*>   m_groups;
   Cb_t                  m_cb;

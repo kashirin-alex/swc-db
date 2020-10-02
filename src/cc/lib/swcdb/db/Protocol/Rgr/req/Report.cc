@@ -84,7 +84,7 @@ void ReportRes::handle(ConnHandlerPtr, const Event::Ptr& ev) {
         rsp_params.decode(&ptr, &remain);
 
     } catch(...) {
-      const Exception& e = SWC_CURRENT_EXCEPTION("");
+      const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
       SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
       err = e.code();
     }
@@ -134,7 +134,7 @@ void ReportCids::handle(ConnHandlerPtr, const Event::Ptr& ev) {
         rsp_params.decode(&ptr, &remain);
 
     } catch(...) {
-      const Exception& e = SWC_CURRENT_EXCEPTION("");
+      const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
       SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
       err = e.code();
     }
@@ -187,7 +187,7 @@ void ReportColumnRids::handle(ConnHandlerPtr, const Event::Ptr& ev) {
         rsp_params.decode(&ptr, &remain);
 
     } catch(...) {
-      const Exception& e = SWC_CURRENT_EXCEPTION("");
+      const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
       SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
       err = e.code();
     }
@@ -259,7 +259,7 @@ void ReportColumnsRanges::handle(ConnHandlerPtr, const Event::Ptr& ev) {
         rsp_params.decode(&ptr, &remain);
 
     } catch(...) {
-      const Exception& e = SWC_CURRENT_EXCEPTION("");
+      const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
       SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
       err = e.code();
     }

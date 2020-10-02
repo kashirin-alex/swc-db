@@ -22,7 +22,7 @@ namespace SWC { namespace Comm { namespace client {
 
 
 class ServerConnections final : 
-      private QueueSafe<ConnHandlerPtr>, 
+      private Core::QueueSafe<ConnHandlerPtr>, 
       public std::enable_shared_from_this<ServerConnections> {
 
   public:
@@ -30,8 +30,8 @@ class ServerConnections final :
   typedef std::shared_ptr<ServerConnections>          Ptr;
   typedef std::function<void(const ConnHandlerPtr&)>  NewCb_t;
 
-  using QueueSafe<ConnHandlerPtr>::empty;
-  using QueueSafe<ConnHandlerPtr>::push;
+  using Core::QueueSafe<ConnHandlerPtr>::empty;
+  using Core::QueueSafe<ConnHandlerPtr>::push;
 
   ServerConnections(const std::string& srv_name, const EndPoint& endpoint,
                     const IOCtxPtr& ioctx, const AppContext::Ptr& ctx, 
@@ -118,7 +118,7 @@ class Serialized final :
   const bool            m_use_ssl;
   ConfigSSL*            m_ssl_cfg;
 
-  Mutex                 m_mutex;
+  Core::MutexSptd       m_mutex;
   std::atomic<bool>     m_run;
 
 };

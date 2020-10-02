@@ -113,9 +113,9 @@ class Read final {
 
   void _release_fd();
 
-  mutable Mutex      m_mutex;
-  FS::SmartFd::Ptr   m_smartfd;
-  bool               m_q_running;
+  mutable Core::MutexSptd       m_mutex;
+  FS::SmartFd::Ptr              m_smartfd;
+  bool                          m_q_running;
 
   struct CsQueue {
     CsQueue() { }
@@ -124,7 +124,7 @@ class Read final {
     BlockLoader* loader;
     Block::Read* block;
   };
-  std::queue<CsQueue> m_queue;
+  std::queue<CsQueue>           m_queue;
 
 };
 
@@ -136,7 +136,7 @@ class Write final {
 
   const csid_t              csid;
   FS::SmartFd::Ptr          smartfd;
-  Encoder::Type             encoder;
+  DB::Types::Encoder        encoder;
   uint32_t                  block_size;
   uint32_t                  cell_revs;
   size_t                    size;

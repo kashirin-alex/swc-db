@@ -4,12 +4,13 @@
  */
 
 
+#include "swcdb/core/Exception.h"
+#include "swcdb/core/config/PropertiesParser.h"
+
 #include <iostream>
 #include <iomanip>
 #include <fstream>
 
-#include "swcdb/core/Error.h"
-#include "swcdb/core/config/PropertiesParser.h"
 
 namespace SWC { namespace Config {
 

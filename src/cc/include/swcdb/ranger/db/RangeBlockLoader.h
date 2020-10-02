@@ -50,7 +50,7 @@ class BlockLoader final {
   void completion();
   
 
-  Mutex                                     m_mutex;
+  Core::MutexSptd                           m_mutex;
   int                                       m_err;
   bool                                      m_processing;
   bool                                      m_checking_log;

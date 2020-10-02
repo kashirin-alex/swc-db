@@ -14,7 +14,7 @@ namespace SWC { namespace DB { namespace Types {
 
 namespace MngrColumn {
 
-  enum State {
+  enum State : uint8_t {
     NOTSET  = 0,
     OK      = 1,
     LOADING = 2,

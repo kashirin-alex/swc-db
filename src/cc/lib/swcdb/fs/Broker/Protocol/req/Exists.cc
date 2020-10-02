@@ -41,7 +41,7 @@ void Exists::handle(ConnHandlerPtr, const Event::Ptr& ev) {
       state = params.exists;
 
     } catch(...) {
-      const Exception& e = SWC_CURRENT_EXCEPTION("");
+      const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
       error = e.code();
     }
   } else {

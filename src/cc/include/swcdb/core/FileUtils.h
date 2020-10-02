@@ -24,7 +24,7 @@
 #ifndef swcdb_core_FileUtils_h
 #define swcdb_core_FileUtils_h
 
-#include "swcdb/core/Error.h"
+#include "swcdb/core/Exception.h"
 
 #include <vector>
 

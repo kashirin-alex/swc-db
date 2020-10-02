@@ -14,7 +14,7 @@ namespace SWC { namespace DB { namespace Types {
 
 namespace MngrRanger {
 
-  enum State {
+  enum State : uint8_t {
     NONE            = 0,
     AWAIT           = 1,
     ACK             = 2,

@@ -8,7 +8,7 @@
 #define swcdb_core_Logger_h
 
 #include "swcdb/core/Compat.h"
-#include "swcdb/core/Mutex.h"
+#include "swcdb/core/MutexSptd.h"
 
 #include <cstdio>
 #include <iostream>
@@ -19,7 +19,7 @@
 
 namespace SWC { 
   
-enum LogPriority {
+enum LogPriority : uint8_t {
   LOG_EMERG  = 0,
   LOG_FATAL  = 0,
   LOG_ALERT  = 1,
@@ -32,7 +32,7 @@ enum LogPriority {
   LOG_NOTSET = 8
 };
 
-namespace Logger {
+namespace Core {
 
 
 class LogWriter final {
@@ -44,7 +44,9 @@ class LogWriter final {
 
   static uint8_t from_string(const std::string& loglevel);
 
-  Mutex    mutex;
+
+  MutexSptd    mutex;
+
 
   LogWriter(const std::string& name="", const std::string& logs_path="");
   
@@ -86,7 +88,7 @@ class LogWriter final {
   template<typename T>
   SWC_SHOULD_NOT_INLINE
   void msg(uint8_t priority, const T& message) {
-    Mutex::scope lock(mutex);
+    MutexSptd::scope lock(mutex);
     std::cout << _seconds() << ' ' << get_name(priority) << ": " 
               << message << std::endl;
   }
@@ -98,6 +100,7 @@ class LogWriter final {
     std::cout << message;
     print_suffix(support);
   }
+
 
   private:
 
@@ -116,9 +119,8 @@ class LogWriter final {
 
 extern LogWriter logger;
 
-} // namespace Logger
+}} // namespace SWC::Core
 
-} // namespace SWC
 
 
 
@@ -127,7 +129,7 @@ extern LogWriter logger;
 #define SWC_LOG_PRINTF(fmt, ...) printf(fmt, __VA_ARGS__)
 
 #define SWC_PRINT { \
-  ::SWC::Mutex::scope lock(::SWC::Logger::logger.mutex); \
+  ::SWC::Core::MutexSptd::scope lock(::SWC::Core::logger.mutex); \
   SWC_LOG_OSTREAM
 #define SWC_PRINT_CLOSE std::endl; }
 
@@ -138,22 +140,22 @@ extern LogWriter logger;
 // stream interface, SWC_LOG_OUT(LOG_ERROR, code{SWC_LOG_OSTREAM << "msg";});
 #define SWC_LOG_OUT(pr, _code_) { \
   uint8_t _log_pr = pr; \
-  if(::SWC::Logger::logger.is_enabled(_log_pr)) { \
+  if(::SWC::Core::logger.is_enabled(_log_pr)) { \
     bool _support( \
-      ::SWC::Logger::logger.print_prefix(_log_pr, __FILE__, __LINE__)); \
+      ::SWC::Core::logger.print_prefix(_log_pr, __FILE__, __LINE__)); \
     {_code_}; \
-    ::SWC::Logger::logger.print_suffix(_support); \
+    ::SWC::Core::logger.print_suffix(_support); \
   } }
 
 #define SWC_LOGF(priority, fmt, ...) \
   SWC_LOG_OUT(priority, SWC_LOG_PRINTF(fmt, __VA_ARGS__); )
 
 #define SWC_LOG(priority, message) \
-  if(::SWC::Logger::logger.is_enabled(priority)) { \
-    if(::SWC::Logger::logger.show_line_numbers()) \
-      ::SWC::Logger::logger.msg(priority, __FILE__, __LINE__, message); \
+  if(::SWC::Core::logger.is_enabled(priority)) { \
+    if(::SWC::Core::logger.show_line_numbers()) \
+      ::SWC::Core::logger.msg(priority, __FILE__, __LINE__, message); \
     else \
-      ::SWC::Logger::logger.msg(priority, message); \
+      ::SWC::Core::logger.msg(priority, message); \
   }
 
 

@@ -7,11 +7,12 @@
 #ifndef swcdb_core_comm_ConnHandler_h
 #define swcdb_core_comm_ConnHandler_h
 
+
+#include "swcdb/core/Exception.h"
 #include <asio.hpp>
 #include "asio/ssl.hpp"
 #include <memory>
 #include <mutex>
-#include "swcdb/core/Error.h"
 #include "swcdb/core/QueueSafeStated.h"
 #include "swcdb/core/comm/Event.h"
 #include "swcdb/core/comm/Buffers.h"
@@ -118,7 +119,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
   void disconnected();
 
-  Mutex  m_mutex;
+  Core::MutexSptd m_mutex;
 
   private:
 
@@ -154,7 +155,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   uint32_t                          m_next_req_id;
   bool                              m_accepting;
   bool                              m_reading;
-  QueueSafeStated<Pending*>         m_outgoing;
+  Core::QueueSafeStated<Pending*>   m_outgoing;
   std::unordered_map<uint32_t, 
                     Pending*, 
                     PendingHash>    m_pending;

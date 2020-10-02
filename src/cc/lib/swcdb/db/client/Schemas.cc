@@ -16,7 +16,7 @@ Schemas::Schemas(const Config::Property::V_GINT32::Ptr expiry_ms)
 Schemas::~Schemas() { }
   
 void Schemas::remove(cid_t cid) {    
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
 
   auto it = m_track.find(cid);
   if(it != m_track.end()) 
@@ -25,7 +25,7 @@ void Schemas::remove(cid_t cid) {
 }
 
 void Schemas::remove(const std::string& name) {
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
 
   auto schema = _get(name);
   if(!schema)
@@ -38,7 +38,7 @@ void Schemas::remove(const std::string& name) {
 
 DB::Schema::Ptr Schemas::get(int& err, cid_t cid) {
   DB::Schema::Ptr schema;
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
 
   auto it = m_track.find(cid);
   if(it != m_track.end() && 
@@ -57,7 +57,7 @@ DB::Schema::Ptr Schemas::get(int& err, cid_t cid) {
   
 DB::Schema::Ptr Schemas::get(int& err, const std::string& name) {
   DB::Schema::Ptr schema;
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
 
   if((schema = _get(name))) {
     auto it = m_track.find(schema->cid);
@@ -85,7 +85,7 @@ Schemas::get(int& err, const std::vector<DB::Schemas::Pattern>& patterns,
     err = Error::COLUMN_SCHEMA_MISSING;
 
   } else if(!err) {
-    Mutex::scope lock(m_mutex);
+    Core::MutexSptd::scope lock(m_mutex);
     for(auto& schema : schemas) {
       m_track[schema->cid] = Time::now_ms();
       _replace(schema);

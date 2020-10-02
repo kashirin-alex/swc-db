@@ -61,7 +61,7 @@ struct Select final {
     int error();
 
     private:
-    Mutex              m_mutex;
+    Core::MutexSptd    m_mutex;
     DB::Cells::Result  m_cells;
     int                m_err;
   };

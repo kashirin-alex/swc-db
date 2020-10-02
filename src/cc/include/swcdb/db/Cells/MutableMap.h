@@ -6,7 +6,7 @@
 #ifndef swcdb_db_Cells_MutableMap_h
 #define swcdb_db_Cells_MutableMap_h
 
-#include "swcdb/core/Mutex.h"
+#include "swcdb/core/MutexSptd.h"
 #include "swcdb/db/Columns/Schema.h"
 #include "swcdb/db/Cells/Mutable.h"
 
@@ -66,8 +66,8 @@ class ColCells final {
   void print(std::ostream& out);
 
   private:
-  Mutex     m_mutex;
-  Mutable   m_cells;
+  Core::MutexSptd     m_mutex;
+  Mutable             m_cells;
 
 };
 
@@ -121,7 +121,7 @@ class MutableMap final : private std::unordered_map<cid_t, ColCells::Ptr> {
   void print(std::ostream& out);
 
   private:
-  Mutex       m_mutex;
+  Core::MutexSptd       m_mutex;
 
 };
 

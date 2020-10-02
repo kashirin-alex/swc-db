@@ -26,7 +26,7 @@ class Read final {
   public:
   typedef Read* Ptr;
 
-  enum State {
+  enum State : uint8_t {
     NONE,
     LOADING,
     LOADED
@@ -88,7 +88,7 @@ class Read final {
 
   void _run_queued();
 
-  Mutex                    m_mutex;
+  Core::MutexSptd          m_mutex;
   State                    m_state;
   size_t                   m_processing;
   StaticBuffer             m_buffer;

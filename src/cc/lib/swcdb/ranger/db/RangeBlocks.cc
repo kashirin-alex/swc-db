@@ -30,7 +30,7 @@ Blocks::~Blocks() {  }
 void Blocks::schema_update() {
   commitlog.schema_update();
 
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   for(Block::Ptr blk=m_block; blk; blk=blk->next)
     blk->schema_update();
 }
@@ -54,7 +54,7 @@ void Blocks::unload() {
   wait_processing();
   processing_increment();
   commitlog.commit_new_fragment(true);  
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
     
   commitlog.unload();
   cellstores.unload();  
@@ -66,7 +66,7 @@ void Blocks::unload() {
 void Blocks::remove(int& err) {
   wait_processing();
   processing_increment();
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
 
   commitlog.remove(err);
   cellstores.remove(err);   
@@ -89,7 +89,7 @@ void Blocks::apply_new(int &err,
                        CellStore::Writers& w_cellstores, 
                        CommitLog::Fragments::Vec& fragments_old) {
   wait_processing();
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
 
   cellstores.replace(err, w_cellstores);
   if(err)
@@ -106,11 +106,11 @@ void Blocks::add_logged(const DB::Cells::Cell& cell) {
     
   Block::Ptr blk;
   {
-    Mutex::scope lock(m_mutex);
+    Core::MutexSptd::scope lock(m_mutex);
     blk = m_block ? *(m_blocks_idx.begin()+_narrow(cell.key)) : nullptr;
   }
   while(blk && !blk->add_logged(cell)) {
-    Mutex::scope lock(m_mutex);
+    Core::MutexSptd::scope lock(m_mutex);
     blk = blk->next;
   }
 
@@ -129,7 +129,7 @@ void Blocks::scan(ReqScan::Ptr req, Block::Ptr blk_ptr) {
   int err = Error::OK;
   range->state(err);
   if(!err) {
-    Mutex::scope lock(m_mutex);
+    Core::MutexSptd::scope lock(m_mutex);
     if(!m_block)
       init_blocks(err);
   }
@@ -250,24 +250,24 @@ bool Blocks::_split(Block::Ptr blk, bool loaded) {
 
 size_t Blocks::cells_count() {
   size_t sz = 0;
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   for(Block::Ptr blk=m_block; blk; blk=blk->next)
     sz += blk->size();
   return sz;
 }
 
 size_t Blocks::size() {
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   return _size();
 }
 
 size_t Blocks::size_bytes() {
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   return _size_bytes();
 }
 
 size_t Blocks::size_bytes_total(bool only_loaded) {
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   return _size_bytes() 
         + cellstores.size_bytes(only_loaded) 
         + commitlog.size_bytes(only_loaded);  
@@ -298,7 +298,7 @@ size_t Blocks::release(size_t bytes) {
     }
   }
   if(!bytes && !processing()) {
-    Mutex::scope lock(m_mutex);
+    Core::MutexSptd::scope lock(m_mutex);
     _clear();
     bytes = 0;
   }
@@ -324,7 +324,7 @@ void Blocks::wait_processing() {
 }
 
 void Blocks::print(std::ostream& out, bool minimal) {
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   out << "Blocks(count=" << _size();
   if(minimal) {
     if(m_block) {

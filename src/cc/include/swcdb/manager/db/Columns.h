@@ -38,12 +38,12 @@ class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
   ~Columns() { }
 
   void reset() {
-    Mutex::scope lock(m_mutex);
+    Core::MutexSptd::scope lock(m_mutex);
     clear();
   }
 
   void state(int& err) {
-    Mutex::scope lock(m_mutex);
+    Core::MutexSptd::scope lock(m_mutex);
     for(auto it = begin(); !err && it != end(); ++it)
       it->second->state(err);
   }
@@ -51,7 +51,7 @@ class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
   bool is_an_initialization(int &err, const DB::Schema::Ptr& schema) {
     Column::Ptr col = nullptr;
     {
-      Mutex::scope lock(m_mutex);
+      Core::MutexSptd::scope lock(m_mutex);
       auto it = find(schema->cid);
       if (it != end())
         return false;
@@ -63,7 +63,7 @@ class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
   }
 
   Column::Ptr get_column(int &err, const cid_t cid) {
-    Mutex::scope lock(m_mutex);
+    Core::MutexSptd::scope lock(m_mutex);
     auto it = find(cid);
     if(it != end())
       return it->second;
@@ -74,7 +74,7 @@ class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
   Range::Ptr get_next_unassigned() {
     Range::Ptr range = nullptr;
     iterator it;
-    Mutex::scope lock(m_mutex);
+    Core::MutexSptd::scope lock(m_mutex);
     for(cid_t cid = 1; cid <= Common::Files::Schema::SYS_CID_END; ++cid) {
       if((it = find(cid)) != end() && 
          (range = it->second->get_next_unassigned()))
@@ -88,19 +88,19 @@ class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
   }
 
   void set_rgr_unassigned(rgrid_t rgrid) {
-    Mutex::scope lock(m_mutex);
+    Core::MutexSptd::scope lock(m_mutex);
     for(auto it = begin(); it != end(); ++it)
       it->second->set_rgr_unassigned(rgrid);
   }
 
   void change_rgr(rgrid_t rgrid_old, rgrid_t rgrid) {
-    Mutex::scope lock(m_mutex);
+    Core::MutexSptd::scope lock(m_mutex);
     for(auto it = begin(); it != end(); ++it)
       it->second->change_rgr(rgrid_old, rgrid);
   }
 
   Column::Ptr get_need_health_check(int64_t ts, uint32_t ms) {
-    Mutex::scope lock(m_mutex);
+    Core::MutexSptd::scope lock(m_mutex);
     for(auto it = begin(); it != end(); ++it) {
       if(it->second->need_health_check(ts, ms))
         return it->second;
@@ -109,7 +109,7 @@ class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
   }
 
   void remove(int&, const cid_t cid) {
-    Mutex::scope lock(m_mutex);
+    Core::MutexSptd::scope lock(m_mutex);
     auto it = find(cid);
     if (it != end())
       erase(it);
@@ -117,13 +117,13 @@ class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
 
   void print(std::ostream& out) {
     out << "ColumnsAssignment:";
-    Mutex::scope lock(m_mutex);
+    Core::MutexSptd::scope lock(m_mutex);
     for(auto it = begin(); it != end(); ++it)
       it->second->print(out << "\n ");
   }
 
   private:
-  Mutex   m_mutex;
+  Core::MutexSptd   m_mutex;
 
 };
 

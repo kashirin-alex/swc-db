@@ -101,10 +101,10 @@ class Splitter final {
     m_cv.notify_one();
   }
 
-  std::mutex                        m_mutex;
-  std::condition_variable           m_cv;
-  Fragments::Vec&                   m_fragments;
-  QueueSafeStated<Fragment::Ptr>    m_queue;
+  std::mutex                              m_mutex;
+  std::condition_variable                 m_cv;
+  Fragments::Vec&                         m_fragments;
+  Core::QueueSafeStated<Fragment::Ptr>    m_queue;
 
   const DB::Cell::Key key;
   Fragments::Ptr log_left;

@@ -19,7 +19,7 @@ namespace Mngr { namespace Params {
 class ColumnGetReq  : public Serializable {
   public:
 
-  enum Flag {
+  enum Flag : uint8_t {
     SCHEMA_BY_ID    = 0x0,
     SCHEMA_BY_NAME  = 0x1,
     ID_BY_NAME      = 0x2

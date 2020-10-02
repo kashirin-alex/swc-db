@@ -18,13 +18,13 @@ class Header final {
   static const uint8_t PREFIX_LENGTH    = 2;
   static const uint8_t FIXED_LENGTH     = PREFIX_LENGTH+16;
 
-  enum Flags {
+  enum Flags : uint8_t {
     FLAGS_BIT_REQUEST          = 0x1, //!< Request message
     FLAGS_BIT_IGNORE_RESPONSE  = 0x2, //!< Response should be ignored
     FLAGS_BIT_URGENT           = 0x4, //!< Request is urgent
   };
   
-  enum FlagMask {
+  enum FlagMask : uint8_t {
     FLAGS_MASK_REQUEST          = 0xE, //!< Request message bit
     FLAGS_MASK_IGNORE_RESPONSE  = 0xD, //!< Response should be ignored bit
     FLAGS_MASK_URGENT           = 0xB, //!< Request is urgent bit

@@ -31,7 +31,7 @@ void range_query_select(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
       err = Error::RGR_NOT_LOADED_RANGE;
 
   } catch(...) {
-    const Exception& e = SWC_CURRENT_EXCEPTION("");
+    const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
     SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
     err = e.code();
   }

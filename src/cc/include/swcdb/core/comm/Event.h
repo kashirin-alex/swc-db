@@ -21,7 +21,7 @@ class Event final {
   public:
 
   /** Enumeration for event types.*/
-  enum Type { 
+  enum Type : uint8_t { 
     ESTABLISHED,  ///< Connection established event
     DISCONNECT,   ///< Connection disconnected event
     MESSAGE,      ///< Request/response message event

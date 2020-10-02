@@ -8,9 +8,12 @@
 
 #include "swcdb/core/Buffer.h"
 
-namespace SWC { namespace Encoder {
 
-enum class Type {
+namespace SWC { namespace Core { namespace Encoder {
+
+
+
+enum class Type : uint8_t {
   DEFAULT = 0x00,
   PLAIN   = 0x01,
   ZLIB    = 0x02,
@@ -29,6 +32,7 @@ int from_string_encoding(const std::string& typ);
 
 
 
+
 void decode(int& err, Type encoder, 
             const uint8_t* src, size_t sz_enc, 
             uint8_t *dst, size_t sz);
@@ -38,7 +42,9 @@ void encode(int& err, Type encoder,
             size_t* sz_enc, DynamicBuffer& output, 
             uint32_t reserve);
 
-}}
+
+
+}}} // namespace SWC::Core::Encoder
 
 
 #ifdef SWC_IMPL_SOURCE

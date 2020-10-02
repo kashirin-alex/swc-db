@@ -27,13 +27,13 @@ void BlockLoader::run() {
 
 //CellStores
 void BlockLoader::add(CellStore::Block::Read::Ptr blk) {
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   m_cs_blocks.push(blk);
 }
 
 void BlockLoader::loaded_blk() {
   { 
-    Mutex::scope lock(m_mutex);
+    Core::MutexSptd::scope lock(m_mutex);
     if(m_processing) 
       return;
     m_processing = true;
@@ -46,7 +46,7 @@ void BlockLoader::load_cellstores_cells() {
   bool loaded;
   for(CellStore::Block::Read::Ptr blk; ; ) {
     {
-      Mutex::scope lock(m_mutex);
+      Core::MutexSptd::scope lock(m_mutex);
       if(m_cs_blocks.empty()) {
         m_processing = false;
         break;
@@ -65,7 +65,7 @@ void BlockLoader::load_cellstores_cells() {
     if(loaded)
       blk->load_cells(err, block);
     {
-      Mutex::scope lock(m_mutex);
+      Core::MutexSptd::scope lock(m_mutex);
       m_cs_blocks.pop();
     }
   }
@@ -75,14 +75,14 @@ void BlockLoader::load_cellstores_cells() {
 
 //CommitLog
 bool BlockLoader::check_log() {
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   return m_checking_log ? false : (m_checking_log = true);
 }
 
 void BlockLoader::load_log(bool is_final, bool is_more) {
   uint8_t vol = CommitLog::Fragments::MAX_PRELOAD;
   {
-    Mutex::scope lock(m_mutex);
+    Core::MutexSptd::scope lock(m_mutex);
     if(m_logs) {
       vol -= m_logs;
       if(is_final)
@@ -94,7 +94,7 @@ void BlockLoader::load_log(bool is_final, bool is_more) {
     block->blocks->commitlog.load_cells(this, is_final, m_f_selected, vol);
     if(offset < m_f_selected.size()) {
       {
-        Mutex::scope lock(m_mutex);
+        Core::MutexSptd::scope lock(m_mutex);
         m_logs += m_f_selected.size() - offset;
       }
       for(auto it=m_f_selected.begin()+offset; it < m_f_selected.end(); ++it) {
@@ -106,7 +106,7 @@ void BlockLoader::load_log(bool is_final, bool is_more) {
   bool more;
   bool wait;
   {
-    Mutex::scope lock(m_mutex);
+    Core::MutexSptd::scope lock(m_mutex);
     m_checking_log = false;
     if((!is_more && m_processing) || !m_cs_blocks.empty())
       return;
@@ -125,7 +125,7 @@ void BlockLoader::load_log(bool is_final, bool is_more) {
 
 void BlockLoader::loaded_frag(CommitLog::Fragment::Ptr frag) {
   {
-    Mutex::scope lock(m_mutex);
+    Core::MutexSptd::scope lock(m_mutex);
     if(frag)
       m_fragments.push(frag);
     if(m_processing || !m_cs_blocks.empty())
@@ -141,7 +141,7 @@ void BlockLoader::load_log_cells() {
   int err;
   for(CommitLog::Fragment::Ptr frag; ; ) {
     {
-      Mutex::scope lock(m_mutex);
+      Core::MutexSptd::scope lock(m_mutex);
       if(m_fragments.empty()) {
         m_processing = false;
         break;

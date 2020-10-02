@@ -6,8 +6,7 @@
 #ifndef swcdb_core_config_Config_h
 #define swcdb_core_config_Config_h
 
-#include "swcdb/core/Error.h"
-
+#include "swcdb/core/Exception.h"
 #include "swcdb/core/config/Properties.h"
 #include "swcdb/core/config/PropertiesParser.h"
 

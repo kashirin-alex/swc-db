@@ -271,7 +271,7 @@ bool DbClient::list_columns(std::string& cmd) {
       return s1->cid < s2->cid;
     }); 
 
-  Mutex::scope lock(Logger::logger.mutex);
+  Core::MutexSptd::scope lock(Core::logger.mutex);
   for(auto& schema : schemas) {
     schema->display(SWC_LOG_OSTREAM);
     SWC_LOG_OSTREAM << std::endl;
@@ -337,7 +337,7 @@ void DbClient::display(const client::Query::Select::Result::Ptr& result,
       cells.free();
       result->get_cells(cid, cells);
 
-      Mutex::scope lock(Logger::logger.mutex);
+      Core::MutexSptd::scope lock(Core::logger.mutex);
       for(auto cell : cells) {
         ++cells_count;
         cells_bytes += cell->encoded_length();

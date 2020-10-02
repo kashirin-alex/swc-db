@@ -72,7 +72,7 @@ size_t ConnHandler::endpoint_local_hash() {
 void ConnHandler::new_connection() {
   auto sock = socket_layer();
   {
-    Mutex::scope lock(m_mutex);
+    Core::MutexSptd::scope lock(m_mutex);
     endpoint_remote = sock->remote_endpoint();
     endpoint_local = sock->local_endpoint();
   }
@@ -83,7 +83,7 @@ void ConnHandler::new_connection() {
 }
 
 size_t ConnHandler::pending_read() {
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   return m_pending.size();
 }
 
@@ -227,7 +227,7 @@ void ConnHandler::write(ConnHandler::Pending* pending) {
       socket_layer()->get_executor());
 
   assign_id: {
-    Mutex::scope lock(m_mutex);
+    Core::MutexSptd::scope lock(m_mutex);
     if(header.id) {
       m_next_req_id = header.id;
       header.id = 0;
@@ -276,7 +276,7 @@ void ConnHandler::write(ConnHandler::Pending* pending) {
 
 void ConnHandler::read_pending() {
   {
-    Mutex::scope lock(m_mutex);
+    Core::MutexSptd::scope lock(m_mutex);
     if(!connected || m_reading)
       return;
     m_reading = true;
@@ -403,7 +403,7 @@ void ConnHandler::recved_buffer(const Event::Ptr& ev, asio::error_code ec,
     }
   
     if(filled != buffer->size || 
-       !checksum_i32_chk(checksum, buffer->base, buffer->size)) {
+       !Core::checksum_i32_chk(checksum, buffer->base, buffer->size)) {
       ec = asio::error::eof;
       ev->type = Event::Type::ERROR;
       ev->error = Error::REQUEST_TRUNCATED_PAYLOAD;
@@ -440,7 +440,7 @@ void ConnHandler::received(const Event::Ptr& ev, const asio::error_code& ec) {
 
   bool more;
   {
-    Mutex::scope lock(m_mutex);
+    Core::MutexSptd::scope lock(m_mutex);
     m_reading = false;
     more = m_accepting || !m_pending.empty();
   }
@@ -460,7 +460,7 @@ void ConnHandler::disconnected() {
   }
   for(;;) {
     {
-      Mutex::scope lock(m_mutex);
+      Core::MutexSptd::scope lock(m_mutex);
       if(m_pending.empty())
         return;
       pending = m_pending.begin()->second;
@@ -479,7 +479,7 @@ void ConnHandler::run_pending(const Event::Ptr& ev) {
 
   Pending* pending;
   {
-    Mutex::scope lock(m_mutex);
+    Core::MutexSptd::scope lock(m_mutex);
     auto it = m_pending.find(ev->header.id);
     if(it == m_pending.end()) {
       pending = nullptr;
@@ -520,7 +520,7 @@ void ConnHandlerPlain::do_close() {
 
 void ConnHandlerPlain::close() {
   {
-    Mutex::scope lock(m_mutex);
+    Core::MutexSptd::scope lock(m_mutex);
     if(!connected)
       return;
     connected = false;
@@ -584,7 +584,7 @@ void ConnHandlerSSL::do_close() {
 
 void ConnHandlerSSL::close() {
   {
-    Mutex::scope lock(m_mutex);
+    Core::MutexSptd::scope lock(m_mutex);
     if(!connected)
       return;
     connected = false;

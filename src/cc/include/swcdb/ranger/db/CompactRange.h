@@ -87,22 +87,22 @@ class CompactRange final : public ReqScan {
   void quit();
 
 
-  Compaction*             compactor;
-  RangePtr                range;
-  const uint32_t          cs_size;
-  const uint32_t          blk_size;
-  const uint32_t          blk_cells;
-  const Encoder::Type     blk_encoding;
-  DB::Cell::Key           m_required_key_last;
+  Compaction*                     compactor;
+  RangePtr                        range;
+  const uint32_t                  cs_size;
+  const uint32_t                  blk_size;
+  const uint32_t                  blk_cells;
+  const DB::Types::Encoder        blk_encoding;
+  DB::Cell::Key                   m_required_key_last;
 
   bool                            tmp_dir = false;
   CellStore::Write::Ptr           cs_writer = nullptr;
   CellStore::Writers              cellstores;
   InBlock*                        m_inblock = nullptr;
 
-  QueueSafe<InBlock*>             m_q_intval;
-  QueueSafe<InBlock*>             m_q_encode;
-  QueueSafe<InBlock*>             m_q_write;
+  Core::QueueSafe<InBlock*>       m_q_intval;
+  Core::QueueSafe<InBlock*>       m_q_encode;
+  Core::QueueSafe<InBlock*>       m_q_write;
 
   std::atomic<uint64_t>           total_cells = 0;
   std::atomic<uint64_t>           total_blocks = 0;
@@ -118,7 +118,7 @@ class CompactRange final : public ReqScan {
   std::atomic<bool>               m_stopped = false;
   std::atomic<bool>               m_chk_final = false;
 
-  Mutex                           m_mutex;
+  Core::MutexSptd                 m_mutex;
   bool                            m_getting;
   size_t                          m_log_sz;
   asio::high_resolution_timer     m_chk_timer;

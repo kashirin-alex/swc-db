@@ -31,10 +31,14 @@ memcomp(const uint8_t* s1, const uint8_t* s2, size_t count) {
   return _memcomp(s1, s2, count);
 }
 
+
+
+//! The SWC-DB Comparators C++ namespace 'SWC::Condition'
 namespace Condition {
 
 
-enum Comp {
+
+enum Comp : uint8_t {
   NONE = 0x0,   // [      ]  :   none           (no comparison aplied)
   PF   = 0x1,   // [  =^  ]  :   -pf [prefix]   (starts-with)
   GT   = 0x2,   // [  >   ]  :   -gt            (greater-than)
@@ -53,6 +57,7 @@ enum Comp {
 };
 
 
+
 const char COMP_NONE[]  = "none";
 const char COMP_PF[]    = "=^";
 const char COMP_GT[]    = ">";
@@ -66,6 +71,7 @@ const char COMP_VGT[]   = "v>";
 const char COMP_VGE[]   = "v>=";
 const char COMP_VLE[]   = "v<=";
 const char COMP_VLT[]   = "v<";
+
 
 
 extern SWC_CAN_INLINE 

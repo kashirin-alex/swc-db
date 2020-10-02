@@ -22,7 +22,7 @@ class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
 
   public:
 
-  enum State {
+  enum State : uint8_t {
     NONE,
     OK
   };
@@ -64,10 +64,10 @@ class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
   void print(std::ostream& out, bool minimal=true);
 
   private:
-  Mutex                           m_mutex;
-  std::atomic<bool>               m_releasing;
-  // State                           m_state;
-  QueueSafe<ColumnsReqDelete*>    m_q_remove;
+  Core::MutexSptd                       m_mutex;
+  std::atomic<bool>                     m_releasing;
+  // State                              m_state;
+  Core::QueueSafe<ColumnsReqDelete*>    m_q_remove;
 
 };
 

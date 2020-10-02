@@ -4,7 +4,7 @@
  */
  
 
-#include "swcdb/core/Error.h"
+#include "swcdb/core/Exception.h"
 #include "swcdb/core/Time.h"
 
 #include <ratio>

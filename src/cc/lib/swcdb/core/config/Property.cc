@@ -4,7 +4,7 @@
  */
 
 
-#include "swcdb/core/Error.h"
+#include "swcdb/core/Exception.h"
 #include "swcdb/core/config/Property.h"
 
 
@@ -847,7 +847,7 @@ void V_GSTRINGS::set_from(Value::Ptr ptr) {
   flags.store(from->flags);
   bool chg;
   {
-    LockAtomic::Unique::scope lock(mutex);
+    Core::MutexAtomic::scope lock(mutex);
     chg = value != from->get();
     value = from->get();
     if(!on_chg_cb)
@@ -858,7 +858,7 @@ void V_GSTRINGS::set_from(Value::Ptr ptr) {
 }
 
 void V_GSTRINGS::set_from(const Strings& values) {
-  LockAtomic::Unique::scope lock(mutex);
+  Core::MutexAtomic::scope lock(mutex);
   value = values;
 }
 
@@ -867,22 +867,22 @@ Value::Type V_GSTRINGS::type() const {
 }
 
 std::string V_GSTRINGS::to_string() const {
-  LockAtomic::Unique::scope lock(mutex);
+  Core::MutexAtomic::scope lock(mutex);
   return format_list(value);
 }
 
 Strings V_GSTRINGS::get() const {
-  LockAtomic::Unique::scope lock(mutex);
+  Core::MutexAtomic::scope lock(mutex);
   return value;
 }
 
 size_t V_GSTRINGS::size() {
-  LockAtomic::Unique::scope lock(mutex);
+  Core::MutexAtomic::scope lock(mutex);
   return value.size();
 }
 
 std::string V_GSTRINGS::get_item(size_t n) {
-  LockAtomic::Unique::scope lock(mutex);
+  Core::MutexAtomic::scope lock(mutex);
   return value[n];
 }
 
@@ -892,7 +892,7 @@ void V_GSTRINGS::on_change() const {
 }
 
 void V_GSTRINGS::set_cb_on_chg(const V_GSTRINGS::OnChg_t& cb) {
-  LockAtomic::Unique::scope lock(mutex);
+  Core::MutexAtomic::scope lock(mutex);
   on_chg_cb = cb;
 }
 

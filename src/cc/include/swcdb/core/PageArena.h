@@ -16,7 +16,7 @@
 
 
 
-namespace SWC { namespace Mem { 
+namespace SWC { namespace Core { namespace Mem { 
 
 
 struct Item final {
@@ -285,15 +285,18 @@ class Arena final {
   Page  _pages[256];
 };
 
-} }
+} }}
+
 
 
 
 namespace SWC { namespace Env {
-  SWC::Mem::Arena PageArena;
+  SWC::Core::Mem::Arena PageArena;
 } }
 
-namespace SWC { namespace Mem { 
+
+
+namespace SWC { namespace Core { namespace Mem { 
 
 
 
@@ -366,10 +369,8 @@ bool operator==(ItemPtr l, ItemPtr r) {
 }
 
 
-} }
+
+}}}
+
+
 #endif // swcdb_core_PageArena_h
-
-
-
-
-

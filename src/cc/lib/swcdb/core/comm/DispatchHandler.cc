@@ -3,7 +3,7 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#include "swcdb/core/Error.h"
+#include "swcdb/core/Exception.h"
 #include "swcdb/core/comm/DispatchHandler.h"
 
 namespace SWC { namespace Comm {

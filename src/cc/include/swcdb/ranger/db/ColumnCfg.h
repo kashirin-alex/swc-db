@@ -15,25 +15,25 @@ class ColumnCfg final {
   
   public:
   
-  const cid_t                             cid;
-  const DB::Types::KeySeq                 key_seq;
+  const cid_t                                     cid;
+  const DB::Types::KeySeq                         key_seq;
 
-  mutable std::atomic<DB::Types::Column>  col_type;
+  mutable std::atomic<DB::Types::Column>          col_type;
 
-  mutable std::atomic<uint32_t>           c_versions; 
-  mutable std::atomic<uint64_t>           c_ttl;
+  mutable std::atomic<uint32_t>                   c_versions; 
+  mutable std::atomic<uint64_t>                   c_ttl;
 
-  mutable std::atomic<Encoder::Type>      blk_enc;
-  mutable std::atomic<uint32_t>           blk_size;
-  mutable std::atomic<uint32_t>           blk_cells;
+  mutable std::atomic<DB::Types::Encoder>         blk_enc;
+  mutable std::atomic<uint32_t>                   blk_size;
+  mutable std::atomic<uint32_t>                   blk_cells;
 
-  mutable std::atomic<uint8_t>            cs_replication;
-  mutable std::atomic<uint32_t>           cs_size;
-  mutable std::atomic<uint8_t>            cs_max;
-  mutable std::atomic<uint8_t>            log_rout_ratio;
-  mutable std::atomic<uint8_t>            compact_perc;
+  mutable std::atomic<uint8_t>                    cs_replication;
+  mutable std::atomic<uint32_t>                   cs_size;
+  mutable std::atomic<uint8_t>                    cs_max;
+  mutable std::atomic<uint8_t>                    log_rout_ratio;
+  mutable std::atomic<uint8_t>                    compact_perc;
 
-  mutable std::atomic<bool>               deleting;
+  mutable std::atomic<bool>                       deleting;
 
 
   ColumnCfg(const cid_t cid, const DB::Schema& schema) 
@@ -80,10 +80,10 @@ class ColumnCfg final {
   }
 
 
-  Encoder::Type block_enc() const {
-    return blk_enc != Encoder::Type::DEFAULT
+  DB::Types::Encoder block_enc() const {
+    return blk_enc != DB::Types::Encoder::DEFAULT
             ?  blk_enc.load() 
-            : (Encoder::Type)Env::Rgr::get()->cfg_blk_enc->get();
+            : (DB::Types::Encoder)Env::Rgr::get()->cfg_blk_enc->get();
   }
 
   uint32_t block_size() const {
@@ -141,7 +141,7 @@ class ColumnCfg final {
       << " cell(versions=" << c_versions
       << " ttl=" << c_ttl
       << ')'
-      << " blk(enc="  << Encoder::to_string(blk_enc)
+      << " blk(enc="  << Core::Encoder::to_string(blk_enc)
       << " size="     << blk_size
       << " cells="    << blk_cells
       << ')'

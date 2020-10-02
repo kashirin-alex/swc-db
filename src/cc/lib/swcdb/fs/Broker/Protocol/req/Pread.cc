@@ -51,7 +51,7 @@ void Pread::handle(ConnHandlerPtr, const Event::Ptr& ev) {
       try {
         params.decode(&ptr, &remain);
       } catch(...) {
-        const Exception& e = SWC_CURRENT_EXCEPTION("");
+        const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
         error = e.code();
         break;
       }

@@ -83,11 +83,11 @@ SWC_SHOULD_INLINE
 void Buffers::write_header() {
   if(buf_data.size) {
     header.data_size   = buf_data.size;
-    header.data_chksum = checksum32(buf_data.base, buf_data.size);
+    header.data_chksum = Core::checksum32(buf_data.base, buf_data.size);
   }
   if(buf_ext.size) {  
     header.data_ext_size   = buf_ext.size;
-    header.data_ext_chksum = checksum32(buf_ext.base, buf_ext.size);
+    header.data_ext_chksum = Core::checksum32(buf_ext.base, buf_ext.size);
   }
   buf_header.reallocate(header.encoded_length());
   uint8_t *buf = buf_header.base;

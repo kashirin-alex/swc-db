@@ -13,7 +13,11 @@
 #include <chrono>
 
 
-namespace SWC { namespace Time {
+namespace SWC { 
+
+
+//! The SWC-DB Date and Time C++ namespace 'SWC::Time'
+namespace Time {
 
 
 void checkings();

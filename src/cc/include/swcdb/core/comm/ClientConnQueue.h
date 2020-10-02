@@ -95,7 +95,7 @@ class ConnQueue :
 
   void schedule_close();
 
-  Mutex                                             m_mutex;
+  Core::MutexSptd                                   m_mutex;
   IOCtxPtr                                          m_ioctx;
   ConnHandlerPtr                                    m_conn;
   bool                                              m_connecting;

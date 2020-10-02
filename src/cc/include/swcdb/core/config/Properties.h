@@ -7,12 +7,12 @@
 #ifndef swcdb_core_config_Properties_h
 #define swcdb_core_config_Properties_h
 
-#include <shared_mutex>
-#include <map>
-
-#include "swcdb/core/Error.h"
+#include "swcdb/core/Exception.h"
 #include "swcdb/core/config/Property.h"
 #include "swcdb/core/config/PropertiesParser.h"
+
+#include <shared_mutex>
+#include <map>
 
 
 namespace SWC { namespace Config {

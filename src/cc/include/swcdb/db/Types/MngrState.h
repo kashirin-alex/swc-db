@@ -12,7 +12,7 @@
 namespace SWC { namespace DB { namespace Types { 
 
 
-enum MngrState {
+enum class MngrState : uint8_t {
   NOTSET    = 0,
   OFF       = 1,
   STANDBY   = 2,

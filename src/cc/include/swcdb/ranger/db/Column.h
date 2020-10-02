@@ -63,7 +63,7 @@ class Column final : private std::unordered_map<rid_t, RangePtr> {
 
   private:
 
-  Mutex             m_mutex;
+  Core::MutexSptd   m_mutex;
   std::atomic<bool> m_releasing;
 };
 

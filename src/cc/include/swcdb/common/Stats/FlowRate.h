@@ -8,7 +8,7 @@
 
 #include <atomic>
 #include <mutex>
-#include "swcdb/core/LockAtomicUnique.h"
+#include "swcdb/core/MutexAtomic.h"
 
 
 namespace SWC { namespace Common { namespace Stats { namespace FlowRate {

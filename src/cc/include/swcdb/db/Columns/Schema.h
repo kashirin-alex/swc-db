@@ -8,7 +8,7 @@
 #define swcdb_db_Columns_Schema_h
 
 #include <memory>
-#include "swcdb/core/Encoder.h"
+#include "swcdb/db/Types/Encoder.h"
 #include "swcdb/db/Types/Identifiers.h"
 #include "swcdb/db/Types/KeySeq.h"
 #include "swcdb/db/Types/Column.h"
@@ -50,26 +50,26 @@ class Schema final {
 
   void print(std::ostream& out) const;
 
-  cid_t           cid;
-  std::string     col_name;
+  cid_t                 cid;
+  std::string           col_name;
 
-  Types::KeySeq   col_seq;
-  Types::Column   col_type;
+  Types::KeySeq         col_seq;
+  Types::Column         col_type;
 
-  uint32_t        cell_versions;
-  uint32_t        cell_ttl;
+  uint32_t              cell_versions;
+  uint32_t              cell_ttl;
 
-  Encoder::Type   blk_encoding;
-  uint32_t        blk_size;
-  uint32_t        blk_cells;
+  Types::Encoder        blk_encoding;
+  uint32_t              blk_size;
+  uint32_t              blk_cells;
 
-  uint8_t         cs_replication;
-  uint32_t        cs_size;
-  uint8_t         cs_max;
-  uint8_t         log_rollout_ratio;
-  uint8_t         compact_percent;
+  uint8_t               cs_replication;
+  uint32_t              cs_size;
+  uint8_t               cs_max;
+  uint8_t               log_rollout_ratio;
+  uint8_t               compact_percent;
 
-  int64_t         revision;
+  int64_t               revision;
 };
 
 }} // SWC::DB namespace

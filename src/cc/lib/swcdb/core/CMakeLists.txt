@@ -21,6 +21,7 @@ set(swcdb_core_sources
   Time.cc
   String.cc
   Error.cc
+  Exception.cc
   Logger.cc
   Checksum.cc
   Encoder.cc

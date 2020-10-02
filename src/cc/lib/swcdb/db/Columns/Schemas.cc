@@ -4,7 +4,7 @@
  */
 
 
-#include "swcdb/core/Error.h"
+#include "swcdb/core/Exception.h"
 #include "swcdb/db/Columns/Schemas.h"
 
 
@@ -16,7 +16,7 @@ Schemas::Schemas() {}
 Schemas::~Schemas() {}
 
 void Schemas::add(int& err, const Schema::Ptr& schema) {
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   _add(err, schema);
 }
 
@@ -31,7 +31,7 @@ void Schemas::_add(int& err, const Schema::Ptr& schema) {
 }
 
 void Schemas::remove(cid_t cid) {
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   _remove(cid);
 }
 
@@ -42,7 +42,7 @@ void Schemas::_remove(cid_t cid) {
 }
 
 void Schemas::replace(const Schema::Ptr& schema) {
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   _replace(schema);
 }
 
@@ -55,7 +55,7 @@ void Schemas::_replace(const Schema::Ptr& schema) {
 }
 
 Schema::Ptr Schemas::get(cid_t cid) {
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   return _get(cid);
 }
 
@@ -65,7 +65,7 @@ Schema::Ptr Schemas::_get(cid_t cid) const {
 }
 
 Schema::Ptr Schemas::get(const std::string& name) {
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   return _get(name);
 }
 
@@ -79,7 +79,7 @@ Schema::Ptr Schemas::_get(const std::string& name) const {
 
 void Schemas::all(std::vector<Schema::Ptr>& entries) {
   size_t i = entries.size();
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   entries.resize(i + size());
   for(const auto& it : *this) 
     entries[i++] = it.second;
@@ -87,7 +87,7 @@ void Schemas::all(std::vector<Schema::Ptr>& entries) {
 
 void Schemas::matching(const std::vector<Schemas::Pattern>& patterns,
                        std::vector<Schema::Ptr>& entries, bool no_sys) {
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   for(const auto& it : *this) {
     if(no_sys && 
        (!Types::MetaColumn::is_data(it.second->cid) || it.second->cid == 9))
@@ -107,7 +107,7 @@ void Schemas::matching(const std::vector<Schemas::Pattern>& patterns,
 }
 
 void Schemas::reset() {
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   clear();
 }
 

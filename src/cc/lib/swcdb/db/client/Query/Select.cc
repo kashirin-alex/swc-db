@@ -22,7 +22,7 @@ Select::Rsp::~Rsp() { }
 
 bool Select::Rsp::add_cells(const StaticBuffer& buffer, bool reached_limit, 
                             DB::Specs::Interval& interval) {
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   size_t recved = m_cells.add(buffer.base, buffer.size);
 
   if(interval.flags.limit) {
@@ -42,38 +42,38 @@ bool Select::Rsp::add_cells(const StaticBuffer& buffer, bool reached_limit,
 }  
     
 void Select::Rsp::get_cells(DB::Cells::Result& cells) {
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   cells.take(m_cells);
 }
 
 size_t Select::Rsp::get_size() {
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   return m_cells.size();
 }
 
 size_t Select::Rsp::get_size_bytes() {
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   return m_cells.size_bytes();
 }
 
 bool Select::Rsp::empty() {
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   return m_cells.empty();
 }
 
 void Select::Rsp::free() {
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   m_cells.free();
 }
 
 
 void Select::Rsp::error(int err) {
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   m_err = err;
 }
 
 int Select::Rsp::error() {
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   return m_err;
 }
 

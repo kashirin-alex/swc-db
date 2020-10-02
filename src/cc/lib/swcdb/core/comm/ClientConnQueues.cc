@@ -49,7 +49,7 @@ ConnQueues::~ConnQueues() { }
 
 void ConnQueues::print(std::ostream& out) {
   out << "ConnQueues: ";
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   for(auto& host : *this) {
     host->print(out);
     out << '\n';
@@ -57,7 +57,7 @@ void ConnQueues::print(std::ostream& out) {
 }
 
 Host::Ptr ConnQueues::get(const EndPoints& endpoints){
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   for(auto& host : *this) {
     if(has_endpoint(host->endpoints, endpoints))
       return host;
@@ -67,7 +67,7 @@ Host::Ptr ConnQueues::get(const EndPoints& endpoints){
 }
 
 void ConnQueues::remove(const EndPoints& endpoints) {
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   for(auto it=begin(); it<end(); ++it) {
     if(has_endpoint((*it)->endpoints, endpoints)) {
       erase(it);
@@ -78,7 +78,7 @@ void ConnQueues::remove(const EndPoints& endpoints) {
 
 void ConnQueues::stop() {
   for(;;) {
-    Mutex::scope lock(m_mutex);
+    Core::MutexSptd::scope lock(m_mutex);
     auto it=begin();
     if(it == end())
       break;

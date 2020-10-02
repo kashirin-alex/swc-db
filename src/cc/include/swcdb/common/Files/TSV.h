@@ -366,7 +366,7 @@ class FileReader {
           ok = read(&ptr, &remain, has_ts, schema->col_type, cell);
           cell_pos += cell_mark-remain;
         } catch(...) {
-          const Exception& e = SWC_CURRENT_EXCEPTION("");
+          const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
           message.append(e.message());
           message.append(", corrupted '");
           message.append(smartfd->filepath());

@@ -142,7 +142,7 @@ DB::Schema::Ptr Reader::get_schema(const std::string& col) {
     try { 
       schema = Env::Clients::get()->schemas->get(err, std::stoll(col));
     } catch(...) {
-      const Exception& e = SWC_CURRENT_EXCEPTION("");
+      const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
       err = e.code();
     }
   }

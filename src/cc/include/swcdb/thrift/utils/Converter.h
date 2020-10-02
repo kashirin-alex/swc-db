@@ -134,7 +134,7 @@ void set(const Schema& schema, DB::Schema::Ptr& dbschema) {
     dbschema->cell_ttl = schema.cell_ttl;
   
   if(schema.__isset.blk_encoding)
-    dbschema->blk_encoding = (Encoder::Type)(uint8_t)schema.blk_encoding;
+    dbschema->blk_encoding = (DB::Types::Encoder)(uint8_t)schema.blk_encoding;
   if(schema.__isset.blk_size)
     dbschema->blk_size = schema.blk_size;
   if(schema.__isset.blk_cells)

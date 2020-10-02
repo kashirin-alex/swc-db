@@ -106,17 +106,17 @@ class MngdColumns final {
   void actions_run();
 
   
-  std::shared_mutex             m_mutex;
-  std::atomic<bool>             m_run; 
-  std::atomic<bool>             m_schemas_set;
-  std::atomic<bool>             m_cid_active;
-  cid_t                         m_cid_begin;
-  cid_t                         m_cid_end;
+  std::shared_mutex                   m_mutex;
+  std::atomic<bool>                   m_run; 
+  std::atomic<bool>                   m_schemas_set;
+  std::atomic<bool>                   m_cid_active;
+  cid_t                               m_cid_begin;
+  cid_t                               m_cid_end;
 
-  std::mutex                    m_mutex_columns;
-  QueueSafe<ColumnReq::Ptr>     m_actions;
-  std::vector<ColumnReq::Ptr>   m_cid_pending;
-  std::vector<ColumnFunction>   m_cid_pending_load;
+  std::mutex                          m_mutex_columns;
+  Core::QueueSafe<ColumnReq::Ptr>     m_actions;
+  std::vector<ColumnReq::Ptr>         m_cid_pending;
+  std::vector<ColumnFunction>         m_cid_pending_load;
 
   const Config::Property::V_GUINT8::Ptr cfg_schema_replication;
   const Config::Property::V_GINT32::Ptr cfg_delay_cols_init;

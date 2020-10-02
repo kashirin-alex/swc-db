@@ -8,39 +8,39 @@
 
 #include <atomic>
 #include <mutex>
-#include "swcdb/core/LockAtomicUnique.h"
+#include "swcdb/core/MutexAtomic.h"
 
 
-namespace SWC { 
+namespace SWC { namespace Core {
 
-class Mutex final : private LockAtomic::Unique {
+class MutexSptd final : private MutexAtomic {
   public:
 
-  explicit Mutex() { }
+  explicit MutexSptd() { }
 
-  Mutex(const Mutex&) = delete;
+  MutexSptd(const MutexSptd&) = delete;
 
-  Mutex(const Mutex&&) = delete;
+  MutexSptd(const MutexSptd&&) = delete;
 
-  Mutex& operator=(const Mutex&) = delete;
+  MutexSptd& operator=(const MutexSptd&) = delete;
 
-  ~Mutex() { }
+  ~MutexSptd() { }
 
   bool lock() {
-    if(LockAtomic::Unique::try_lock())
+    if(MutexAtomic::try_lock())
       return true;
     m_mutex.lock();
-    LockAtomic::Unique::lock();
+    MutexAtomic::lock();
     return false;
   }
 
   bool try_full_lock(bool& support) {
-    if(LockAtomic::Unique::try_lock()) {
+    if(MutexAtomic::try_lock()) {
       support = true;
       return true;
     }
     if(m_mutex.try_lock()) {
-      if(LockAtomic::Unique::try_lock()) {
+      if(MutexAtomic::try_lock()) {
         support = false;
         return true;
       }
@@ -50,7 +50,7 @@ class Mutex final : private LockAtomic::Unique {
   }
 
   void unlock(const bool& support) {
-    LockAtomic::Unique::unlock();
+    MutexAtomic::unlock();
     if(!support)
       m_mutex.unlock();
   }
@@ -58,7 +58,7 @@ class Mutex final : private LockAtomic::Unique {
   class scope final {
     public:
 
-    scope(Mutex& m) : _m(m), _support(m.lock()) { }
+    scope(MutexSptd& m) : _m(m), _support(m.lock()) { }
 
     ~scope() { _m.unlock(_support); }
     
@@ -69,14 +69,17 @@ class Mutex final : private LockAtomic::Unique {
     scope& operator=(const scope&) = delete;
 
     private:
-    Mutex&      _m;
-    const bool  _support;
+    MutexSptd&      _m;
+    const bool           _support;
   };
 
   private:
   std::mutex m_mutex;
 };
 
-}
+
+
+}} //namespace SWC::Core
+
 
 #endif // swcdb_core_Mutex_h

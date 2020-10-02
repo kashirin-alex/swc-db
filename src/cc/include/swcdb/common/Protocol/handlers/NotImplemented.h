@@ -10,6 +10,9 @@
 
 
 namespace SWC { namespace Comm { namespace Protocol {
+
+
+//! The SWC-DB Common Communications Protocol C++ namespace 'SWC::Comm::Protocol::Common'
 namespace Common { namespace Handler {
 
 

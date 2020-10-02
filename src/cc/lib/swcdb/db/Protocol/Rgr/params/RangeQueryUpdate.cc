@@ -6,9 +6,9 @@
  
 
 
+#include "swcdb/core/Exception.h"
 #include "swcdb/db/Protocol/Rgr/params/RangeQueryUpdate.h"
 #include "swcdb/core/Serialization.h"
-#include "swcdb/core/Error.h"
 
 
 namespace SWC { namespace Comm { namespace Protocol {

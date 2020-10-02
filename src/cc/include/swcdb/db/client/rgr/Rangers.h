@@ -50,7 +50,7 @@ class Rangers final
 
   private:
 
-  Mutex                             m_mutex;
+  Core::MutexSptd                   m_mutex;
   Config::Property::V_GINT32::Ptr   m_expiry_ms;
   
 };

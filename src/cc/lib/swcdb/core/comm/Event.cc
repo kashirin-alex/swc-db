@@ -5,10 +5,10 @@
 
 
 
-#include "swcdb/core/Error.h"
+#include "swcdb/core/Exception.h"
 #include "swcdb/core/Serialization.h"
-
 #include "swcdb/core/comm/Event.h"
+
 
 namespace SWC { namespace Comm {
 
@@ -47,7 +47,7 @@ int32_t Event::response_code() {
     std::string msg = Serialization::decode_bytes_string(&ptr, &remaining);
     */
   } catch(...) {
-    const Exception& e = SWC_CURRENT_EXCEPTION("");
+    const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
     SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
     return e.code(); 
   }

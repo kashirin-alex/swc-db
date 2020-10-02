@@ -28,7 +28,7 @@ void mkdirs(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     Env::FsInterface::fs()->mkdirs(err, params.dirname);
 
   } catch(...) {
-    const Exception& e = SWC_CURRENT_EXCEPTION("");
+    const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
     SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
     err = e.code();
   }

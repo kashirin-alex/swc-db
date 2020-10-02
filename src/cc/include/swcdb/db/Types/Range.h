@@ -11,7 +11,8 @@
 
 namespace SWC { namespace DB { namespace Types { 
 
-enum Range {
+
+enum class Range : uint8_t {
   MASTER  = 1,
   META    = 2,
   DATA    = 3

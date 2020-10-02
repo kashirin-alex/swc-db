@@ -10,20 +10,21 @@
 #include <thread>
 
 
-namespace SWC { namespace LockAtomic {
+namespace SWC { namespace Core {
 
-class Unique {
+
+class MutexAtomic {
   public:
 
-  explicit Unique(): want(false) { }
+  explicit MutexAtomic(): want(false) { }
 
-  Unique(const Unique&) = delete;
+  MutexAtomic(const MutexAtomic&) = delete;
 
-  Unique(const Unique&&) = delete;
+  MutexAtomic(const MutexAtomic&&) = delete;
     
-  Unique& operator=(const Unique&) = delete;
+  MutexAtomic& operator=(const MutexAtomic&) = delete;
 
-  ~Unique() { }
+  ~MutexAtomic() { }
 
   bool try_lock() const {
     bool at=false;
@@ -55,7 +56,7 @@ class Unique {
   class scope final {
     public:
 
-    scope(const Unique& m) : _m(m) {  _m.lock(); }
+    scope(const MutexAtomic& m) : _m(m) {  _m.lock(); }
 
     ~scope() { _m.unlock(); }
     
@@ -66,7 +67,7 @@ class Unique {
     scope& operator=(const scope&) = delete;
 
     private:
-    const Unique&      _m;
+    const MutexAtomic&      _m;
   };
 
   private:
@@ -74,9 +75,12 @@ class Unique {
   mutable std::atomic<bool> want;
 };
 
-}}
 
-// SWC_LOCK_WITH_SUPPORT or use Mutex with Mutex::scope 
+}} //namespace SWC::Core
+
+
+
+// SWC_LOCK_WITH_SUPPORT or use Core::MutexSptd with Core::MutexSptd::scope 
 #define SWC_LOCK_WITH_SUPPORT(_mutex_, _state_, _code_, _return_) \
   if(_state_.try_lock()) { \
     _code_; \

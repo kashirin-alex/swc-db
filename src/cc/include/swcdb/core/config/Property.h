@@ -7,7 +7,7 @@
 #ifndef swcdb_core_config_Property_h
 #define swcdb_core_config_Property_h
 
-#include "swcdb/core/LockAtomicUnique.h"
+#include "swcdb/core/MutexAtomic.h"
 #include <functional>
 #include <vector>
 
@@ -32,7 +32,7 @@ namespace Property {
 class Value {
   public:
 
-  enum Type {
+  enum Type : uint8_t {
     BOOL,
     UINT8,
     UINT16,
@@ -560,7 +560,7 @@ class V_GSTRINGS final : public Value {
 
   void set_cb_on_chg(const OnChg_t& cb);
 
-  mutable LockAtomic::Unique  mutex;
+  mutable Core::MutexAtomic   mutex;
   Strings                     value;
   OnChg_t                     on_chg_cb;
 

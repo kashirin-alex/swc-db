@@ -15,7 +15,7 @@ Header::Header(DB::Types::KeySeq key_seq)
               : offset_data(0), 
                 interval(key_seq), 
                 is_any(0),
-                encoder(Encoder::Type::UNKNOWN),
+                encoder(DB::Types::Encoder::UNKNOWN),
                 size_plain(0),
                 size_enc(0),
                 cells_count(0),
@@ -42,14 +42,14 @@ void Header::encode(uint8_t** bufp) {
   Serialization::encode_i32(bufp, size_plain);
   Serialization::encode_i32(bufp, cells_count);
   if(size_enc) 
-    checksum_i32(base + Header::SIZE, size_enc, bufp, checksum_data);
+    Core::checksum_i32(base + Header::SIZE, size_enc, bufp, checksum_data);
   else 
     Serialization::encode_i32(bufp, 0);
-  checksum_i32(base, *bufp, bufp);
+  Core::checksum_i32(base, *bufp, bufp);
 }
 
 void Header::decode(const uint8_t** bufp, size_t* remainp) {
-  encoder = (Encoder::Type)Serialization::decode_i8(bufp, remainp);
+  encoder = (DB::Types::Encoder)Serialization::decode_i8(bufp, remainp);
   size_enc = Serialization::decode_i32(bufp, remainp);
   size_plain = Serialization::decode_i32(bufp, remainp);
   cells_count = Serialization::decode_i32(bufp, remainp);
@@ -82,7 +82,7 @@ void Header::decode_idx(const uint8_t** bufp, size_t* remainp) {
   offset_data = Serialization::decode_vi64(bufp, remainp);
   interval.decode(bufp, remainp, false);
   is_any = Serialization::decode_i8(bufp, remainp);
-  encoder = (Encoder::Type)Serialization::decode_i8(bufp, remainp);
+  encoder = (DB::Types::Encoder)Serialization::decode_i8(bufp, remainp);
   size_enc = Serialization::decode_vi32(bufp, remainp);
   size_plain = Serialization::decode_vi32(bufp, remainp);
   cells_count = Serialization::decode_vi32(bufp, remainp);
@@ -91,7 +91,7 @@ void Header::decode_idx(const uint8_t** bufp, size_t* remainp) {
 
 void Header::print(std::ostream& out) const {
   out << "offset=" << offset_data
-      << " encoder=" << Encoder::to_string(encoder)
+      << " encoder=" << Core::Encoder::to_string(encoder)
       << " enc/size=" << size_enc << '/' << size_plain
       << " cells_count=" << cells_count
       << " checksum=" << checksum_data

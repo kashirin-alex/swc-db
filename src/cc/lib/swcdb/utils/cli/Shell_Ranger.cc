@@ -64,7 +64,7 @@ bool Rgr::read_endpoint(std::string& host_or_ips,
       if((port = std::stol(port_str)) > UINT16_MAX )
         err = ERANGE;
     } catch(...) {
-      const Exception& e = SWC_CURRENT_EXCEPTION("");
+      const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
       err = e.code();
     }
     if(err) {
@@ -94,7 +94,7 @@ bool Rgr::read_endpoint(std::string& host_or_ips,
       err = EINVAL;
     }
   } catch(...) {
-    const Exception& e = SWC_CURRENT_EXCEPTION("");
+    const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
     err = e.code();
     message.append(e.what());
     message.append("\n");

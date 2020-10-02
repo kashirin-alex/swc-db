@@ -29,48 +29,48 @@ const std::string& SmartFd::filepath() const {
 }
 
 void SmartFd::flags(uint32_t flags) { 
-  LockAtomic::Unique::scope lock(m_mutex);
+  Core::MutexAtomic::scope lock(m_mutex);
   m_flags = flags; 
 }
 
 uint32_t SmartFd::flags() const { 
-  LockAtomic::Unique::scope lock(m_mutex);
+  Core::MutexAtomic::scope lock(m_mutex);
   return m_flags; 
 }
 
 void SmartFd::fd(int32_t fd) { 
-  LockAtomic::Unique::scope lock(m_mutex);
+  Core::MutexAtomic::scope lock(m_mutex);
   m_fd = fd; 
 }
 
 int32_t SmartFd::fd() const {
-  LockAtomic::Unique::scope lock(m_mutex);
+  Core::MutexAtomic::scope lock(m_mutex);
   return m_fd; 
 }
 
 void SmartFd::pos(uint64_t pos) {
-  LockAtomic::Unique::scope lock(m_mutex);
+  Core::MutexAtomic::scope lock(m_mutex);
   m_pos = pos; 
 }
   
 uint64_t SmartFd::pos() const { 
-  LockAtomic::Unique::scope lock(m_mutex);
+  Core::MutexAtomic::scope lock(m_mutex);
   return m_pos; 
 }
 
 bool SmartFd::valid() const { 
-  LockAtomic::Unique::scope lock(m_mutex);
+  Core::MutexAtomic::scope lock(m_mutex);
   return m_fd != -1; 
 }
 
 std::string SmartFd::to_string() const {
-  LockAtomic::Unique::scope lock(m_mutex);
+  Core::MutexAtomic::scope lock(m_mutex);
   return format("SmartFd(filepath=%s, flags=%u, fd=%d, pos=%lu)", 
                 m_filepath.c_str(), m_flags, m_fd, m_pos);
 }
 
 void SmartFd::print(std::ostream& out) const {
-  LockAtomic::Unique::scope lock(m_mutex);
+  Core::MutexAtomic::scope lock(m_mutex);
   out << "SmartFd(filepath=" << m_filepath
       << ", flags=" << m_flags
       << ", fd=" << m_fd

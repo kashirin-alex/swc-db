@@ -4,8 +4,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
+#include "swcdb/core/Exception.h"
 #include "swcdb/core/comm/IoContext.h"
-#include "swcdb/core/Error.h"
 
 namespace SWC {
 

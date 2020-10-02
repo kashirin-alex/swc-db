@@ -63,7 +63,7 @@ void Header::encode(uint8_t** bufp) const {
     Serialization::encode_i32(bufp, data_ext_chksum); 
   }
 
-  checksum_i32(base, header_len-4, bufp);
+  Core::checksum_i32(base, header_len-4, bufp);
 }
 
 SWC_SHOULD_INLINE
@@ -97,7 +97,7 @@ void Header::decode(const uint8_t** bufp, size_t* remainp) {
   }
 
   checksum = Serialization::decode_i32(bufp, remainp);
-  if(!checksum_i32_chk(checksum, base, header_len-4))
+  if(!Core::checksum_i32_chk(checksum, base, header_len-4))
     SWC_THROWF(Error::COMM_HEADER_CHECKSUM_MISMATCH, 
               "header-checksum decoded-len=%lu", *bufp-base);
 }

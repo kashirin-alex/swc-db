@@ -7,7 +7,7 @@
 #include "swcdb/core/Checksum.h"
 #include "swcdb/core/Logger.h"
 
-namespace SWC {
+namespace SWC { namespace Core {
 
 
 
@@ -18,4 +18,4 @@ void checksum_i32_chk_err(uint32_t original, uint32_t computed) {
 
 
 
-} // namespace SWC
+}} // namespace SWC::Core

@@ -60,9 +60,10 @@ class RgrData final {
     size_t sz = Serialization::decode_i32(&ptr, &remain);
     size_t chksum_data = Serialization::decode_i32(&ptr, &remain);
       
-    if(!checksum_i32_chk(Serialization::decode_i32(&ptr, &remain), 
-                         read_buf.base, HEADER_SIZE, HEADER_OFFSET_CHKSUM) ||
-       !checksum_i32_chk(chksum_data, ptr, sz) ) {
+    if(!Core::checksum_i32_chk(
+          Serialization::decode_i32(&ptr, &remain), 
+          read_buf.base, HEADER_SIZE, HEADER_OFFSET_CHKSUM) ||
+       !Core::checksum_i32_chk(chksum_data, ptr, sz) ) {
       err = Error::CHECKSUM_MISMATCH;
       return;
     }
@@ -118,8 +119,8 @@ class RgrData final {
     for(auto& endpoint : endpoints)
       Serialization::encode(endpoint, &dst_buf.ptr);
 
-    checksum_i32(start_data_ptr, dst_buf.ptr, &checksum_data_ptr);
-    checksum_i32(dst_buf.base, start_data_ptr, &checksum_header_ptr);
+    Core::checksum_i32(start_data_ptr, dst_buf.ptr, &checksum_data_ptr);
+    Core::checksum_i32(dst_buf.base, start_data_ptr, &checksum_header_ptr);
 
     SWC_ASSERT(dst_buf.fill() <= dst_buf.size);
   }

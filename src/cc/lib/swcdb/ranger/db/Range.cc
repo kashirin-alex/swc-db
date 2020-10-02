@@ -90,29 +90,29 @@ void Range::get_key_end(DB::Cell::Key& key) {
 }
   
 bool Range::is_any_begin() {
-  LockAtomic::Unique::scope lock(m_mutex_intval);
+  Core::MutexAtomic::scope lock(m_mutex_intval);
   return m_interval.key_begin.empty();
 }
 
 bool Range::is_any_end() {
-  LockAtomic::Unique::scope lock(m_mutex_intval);
+  Core::MutexAtomic::scope lock(m_mutex_intval);
   return m_interval.key_end.empty();
 }
 
 uint24_t Range::known_interval_count() {
-  LockAtomic::Unique::scope lock(m_mutex_intval);
+  Core::MutexAtomic::scope lock(m_mutex_intval);
   return m_interval.key_end.empty()
           ? m_interval.key_begin.count 
           : m_interval.key_end.count;
 }
 
 bool Range::align(const DB::Cells::Interval& interval) {
-  LockAtomic::Unique::scope lock(m_mutex_intval);
+  Core::MutexAtomic::scope lock(m_mutex_intval);
   return m_interval.align(interval);
 }
   
 bool Range::align(const DB::Cell::Key& key) {
-  LockAtomic::Unique::scope lock(m_mutex_intval);
+  Core::MutexAtomic::scope lock(m_mutex_intval);
   return m_interval.align(key);
 }
 
@@ -672,7 +672,7 @@ void Range::run_add_queue() {
         continue;
 
       {
-        LockAtomic::Unique::scope lock(m_mutex_intval);
+        Core::MutexAtomic::scope lock(m_mutex_intval);
 
         if(!m_interval.key_end.empty() && 
             DB::KeySeq::compare(cfg->key_seq, m_interval.key_end, cell.key)

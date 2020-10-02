@@ -19,7 +19,7 @@ namespace Rgr { namespace Params {
 namespace Report {
 
 
-enum Function {
+enum Function : uint8_t {
   RESOURCES        = 0x00,
   CIDS             = 0x01,
   COLUMN_RIDS      = 0x02,

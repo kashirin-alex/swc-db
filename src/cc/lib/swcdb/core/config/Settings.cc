@@ -86,9 +86,9 @@ void Settings::init_options() {
     ("swc.logging.level,l", 
       g_enum(
         LOG_INFO,
-        [](int value){ Logger::logger.set_level(value); },
-        Logger::logger.from_string,
-        Logger::logger.repr
+        [](int value){ Core::logger.set_level(value); },
+        Core::logger.from_string,
+        Core::logger.repr
       ), 
      "Logging level: debug|info|notice|warn|error|crit|alert|fatal")
     ("swc.logging.path", str(install_path + "/var/log/swcdb/"), "Path of log files")
@@ -171,7 +171,7 @@ void Settings::load_files_by(const std::string& fileprop,
       if(it == m_dyn_files.end())
         m_dyn_files.push_back({.filename=fname, .modified=0});
     } catch(...) {
-      const Exception& e = SWC_CURRENT_EXCEPTION("");
+      const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
       SWC_LOG_OUT(LOG_WARN, SWC_LOG_OSTREAM 
         << fileprop << " has bad cfg file " << *it << ": " << e;
       );
@@ -191,9 +191,9 @@ void Settings::init_process() {
   executable.append(".");
   executable.append(std::to_string((size_t)pid));
 
-  Logger::logger.initialize(executable);
+  Core::logger.initialize(executable);
   if(daemon)
-    Logger::logger.daemon(get_str("swc.logging.path"));
+    Core::logger.daemon(get_str("swc.logging.path"));
     
   if(daemon || get_gbool("verbose")) {
     SWC_LOG_OUT(LOG_NOTICE, SWC_LOG_OSTREAM 

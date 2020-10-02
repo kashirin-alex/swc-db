@@ -7,9 +7,9 @@
 #define swcdb_core_QueueSafe_h
 
 #include <queue>
-#include "swcdb/core/Mutex.h"
+#include "swcdb/core/MutexSptd.h"
   
-namespace SWC { 
+namespace SWC { namespace Core {
 
 
 template <class ItemT>
@@ -36,35 +36,35 @@ class QueueSafe : private std::queue<ItemT> {
 
   bool push_and_is_1st(const ItemT& item) {
     bool chk;
-    Mutex::scope lock(m_mutex);
+    MutexSptd::scope lock(m_mutex);
     chk = QBase::empty();
     QBase::push(item);
     return chk;
   }
 
   ItemT& front() {
-    Mutex::scope lock(m_mutex);
+    MutexSptd::scope lock(m_mutex);
     return QBase::front();
   }
 
   bool empty() {
-    Mutex::scope lock(m_mutex);
+    MutexSptd::scope lock(m_mutex);
     return QBase::empty();
   }
 
   size_t size() {
-    Mutex::scope lock(m_mutex);
+    MutexSptd::scope lock(m_mutex);
     return QBase::size();
   }
 
   bool pop_and_more() {
-    Mutex::scope lock(m_mutex);
+    MutexSptd::scope lock(m_mutex);
     QBase::pop();
     return !QBase::empty();
   }
 
   bool pop(ItemT* item) {
-    Mutex::scope lock(m_mutex);
+    MutexSptd::scope lock(m_mutex);
     if(QBase::empty())
       return false;
     *item = QBase::front();
@@ -72,11 +72,16 @@ class QueueSafe : private std::queue<ItemT> {
     return true;
   }
 
+
   private:
-  Mutex                     m_mutex;
+
+  MutexSptd   m_mutex;
+
 };
 
 
-}
+
+}} // namespace SWC::Core
+
 
 #endif // swcdb_core_QueueSafe_h

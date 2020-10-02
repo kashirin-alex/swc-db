@@ -21,14 +21,14 @@ Rangers::~Rangers() {
 }
   
 void Rangers::clear() {
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   Map::clear();
 }
   
 void Rangers::clear_expired() {
   auto ms = Time::now_ms();
 
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   for(auto c = begin(); c != end(); ) {
     for(auto r = c->second.begin(); r != c->second.end(); ) {
       if(ms - r->second->ts > m_expiry_ms->get()) {
@@ -46,7 +46,7 @@ void Rangers::clear_expired() {
 }
 
 void Rangers::remove(const cid_t cid, const rid_t rid) {
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
 
   auto c = find(cid);
   if(c == end()) 
@@ -64,7 +64,7 @@ bool Rangers::get(const cid_t cid, const rid_t rid,
                   Comm::EndPoints& endpoints) {
   bool found = false;
 
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   auto c = find(cid);
   if(c != end()) {
     auto r = c->second.find(rid);
@@ -81,7 +81,7 @@ void Rangers::set(const cid_t cid, const rid_t rid,
                   const Comm::EndPoints& endpoints) {
   auto r_new = new RangeEndPoints(Time::now_ms(), endpoints);
 
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   auto c = find(cid);
   if(c == end()) {
     (*this)[cid].emplace(rid, r_new);

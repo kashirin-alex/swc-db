@@ -10,7 +10,7 @@
 #include "swcdb/core/Compat.h"
 
 
-namespace SWC {
+namespace SWC { namespace Core {
 
 
 template<typename T>
@@ -239,11 +239,12 @@ class BufferDyn : public BufferT {
 };
 
 
+} // namespace Core
 
 
 
-typedef Buffer <uint8_t>          StaticBuffer;
-typedef BufferDyn <StaticBuffer>  DynamicBuffer;
+typedef Core::Buffer <uint8_t>          StaticBuffer;
+typedef Core::BufferDyn <StaticBuffer>  DynamicBuffer;
 
 
 // StaticBuffer specializations to SizeOf

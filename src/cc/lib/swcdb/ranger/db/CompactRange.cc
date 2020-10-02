@@ -90,7 +90,7 @@ struct CompactRange::InBlock {
       header.is_any |= CellStore::Block::Header::ANY_END;
   }
 
-  void finalize_encode(Encoder::Type encoding) {
+  void finalize_encode(DB::Types::Encoder encoding) {
     header.encoder = encoding;
     DynamicBuffer output;
     CellStore::Block::Write::encode(err, cells, output, header);
@@ -104,11 +104,11 @@ struct CompactRange::InBlock {
   DynamicBuffer             cells;
   CellStore::Block::Header  header;
 
-  int                  err;
+  int                       err;
 
   private:
 
-  const uint8_t*       last_cell;
+  const uint8_t*            last_cell;
 };
 
 
@@ -404,7 +404,7 @@ void CompactRange::commitlog_done(const CommitLog::Compact* compact) {
       return commitlog(tnum);
   }
   {
-    Mutex::scope lock(m_mutex);
+    Core::MutexSptd::scope lock(m_mutex);
     m_getting = false;
   }
   request_more();
@@ -423,7 +423,7 @@ void CompactRange::progress_check_timer() {
 
   if((median /= 1000000) < 1000)
     median = 1000;
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   m_chk_timer.expires_after(std::chrono::milliseconds(median));
   m_chk_timer.async_wait(
     [ptr=shared()](const asio::error_code& ec) {
@@ -437,7 +437,7 @@ void CompactRange::progress_check_timer() {
 void CompactRange::stop_check_timer() {
   if(!m_chk_final) {
     m_chk_final = true;
-    Mutex::scope lock(m_mutex);
+    Core::MutexSptd::scope lock(m_mutex);
     m_chk_timer.cancel();
   }
 }
@@ -446,7 +446,7 @@ void CompactRange::request_more() {
   if(m_stopped)
     return;
   {
-    Mutex::scope lock(m_mutex);
+    Core::MutexSptd::scope lock(m_mutex);
     if(m_getting)
       return;
     size_t sz = m_q_write.size() + m_q_intval.size() + m_q_encode.size();
@@ -541,7 +541,7 @@ csid_t CompactRange::create_cs(int& err) {
 
   csid_t csid = 1;
   {
-    Mutex::scope lock(m_mutex);
+    Core::MutexSptd::scope lock(m_mutex);
     csid += cellstores.size();
   }
   cs_writer = std::make_shared<CellStore::Write>(
@@ -584,7 +584,7 @@ void CompactRange::write_cells(int& err, InBlock* in_block) {
 
 void CompactRange::add_cs(int& err) {
   {
-    Mutex::scope lock(m_mutex);
+    Core::MutexSptd::scope lock(m_mutex);
     if(cellstores.empty())
       cs_writer->prev_key_end.copy(range->prev_range_end);
     else
@@ -598,7 +598,7 @@ void CompactRange::add_cs(int& err) {
 ssize_t CompactRange::can_split_at() {
   auto max = range->cfg->cellstore_max();
 
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   if(cellstores.size() < (max < 2 ? 2 : max))
     return 0;
 
@@ -854,7 +854,7 @@ void CompactRange::apply_new(bool clear) {
 
 bool CompactRange::completion() {
   {
-    Mutex::scope lock(m_mutex);
+    Core::MutexSptd::scope lock(m_mutex);
     if(m_stopped)
       return false;
     m_stopped = true;

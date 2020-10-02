@@ -19,7 +19,7 @@ static const size_t WORK_LOAD = 100000;
 
 namespace SWC {
 
-void write(int nthread, QueueSafe<size_t>* queue) {
+void write(int nthread, Core::QueueSafe<size_t>* queue) {
   size_t sz;
   bool chk;
   //size_t item;
@@ -38,7 +38,7 @@ void run(int threads) {
   std::mutex m;
   std::condition_variable cv;
   std::atomic<int> completing = threads;
-  QueueSafe<size_t> queue;
+  Core::QueueSafe<size_t> queue;
   
   for(auto n=0; n<threads; ++n) {
       std::thread t(
@@ -78,21 +78,21 @@ int main(int argc, char** argv) {
   std::cout << " total took="<< total_ts 
             << " avg=" <<  total_ts/total
             << "\n";
-  std::cout << "SWC::Mutex sizeof=" << sizeof(SWC::Mutex) << "\n";
-  std::cout << "SWC::Mutex::scope sizeof=" << sizeof(SWC::Mutex::scope) << "\n";
+  std::cout << "SWC::Core::MutexSptd sizeof=" << sizeof(SWC::Core::MutexSptd) << "\n";
+  std::cout << "SWC::Core::MutexSptd::scope sizeof=" << sizeof(SWC::Core::MutexSptd::scope) << "\n";
   std::cout << "SWC::QueueSafe<size_t> sizeof=" << sizeof(SWC::QueueSafe<size_t>) << "\n";
 
 /* with std:queue
  total took=20808397413 avg=115
-SWC::Mutex sizeof=48
-SWC::Mutex::scope sizeof=16
+SWC::Core::MutexSptd sizeof=48
+SWC::Core::MutexSptd::scope sizeof=16
 SWC::QueueSafe<size_t> sizeof=128
 */
 
 /* with SWC::Queue 
 total took=26646741880 avg=148
-SWC::Mutex sizeof=48
-SWC::Mutex::scope sizeof=16
+SWC::Core::MutexSptd sizeof=48
+SWC::Core::MutexSptd::scope sizeof=16
 SWC::QueueSafe<size_t> sizeof=72
 */
 

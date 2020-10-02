@@ -7,9 +7,10 @@
 #ifndef swcdb_core_comm_Serializable_h
 #define swcdb_core_comm_Serializable_h
 
-#include "swcdb/core/Compat.h"
+
+#include "swcdb/core/Exception.h"
 #include "swcdb/core/Serialization.h"
-#include "swcdb/core/Error.h"
+
 
 namespace SWC { namespace Comm {
 

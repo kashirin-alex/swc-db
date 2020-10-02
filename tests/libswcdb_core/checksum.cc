@@ -4,9 +4,9 @@
  */
 
 #include <cassert>
+#include "swcdb/core/Exception.h"
 #include "swcdb/core/Checksum.h"
 #include "swcdb/core/Time.h"
-#include "swcdb/core/Error.h"
 
 const size_t checks = 10000;
 const size_t MB = 64 * 1024 * 1024;
@@ -15,10 +15,10 @@ uint64_t i;
 
 
 void do_load_fletcher32(const uint8_t* buffer, size_t len) {
-  uint32_t tmp_chksum = SWC::fletcher32(buffer, len);
+  uint32_t tmp_chksum = SWC::Core::fletcher32(buffer, len);
   ns = SWC::Time::now_ns();
   for(i=0; i<checks; ++i) { 
-    assert(tmp_chksum == SWC::fletcher32(buffer, len)); 
+    assert(tmp_chksum == SWC::Core::fletcher32(buffer, len)); 
   }
 
   ns = SWC::Time::now_ns() - ns; 
@@ -35,12 +35,12 @@ void do_load_checksum_i32(const uint8_t* buffer, size_t len) {
 
   for(i=0; i<checks; ++i) { 
     out = (uint8_t*)&outf;  
-    SWC::checksum_i32(buffer, len, &out, tmp_chksum);
-    SWC::checksum_i32_chk(tmp_chksum, buffer, len);
+    SWC::Core::checksum_i32(buffer, len, &out, tmp_chksum);
+    SWC::Core::checksum_i32_chk(tmp_chksum, buffer, len);
   } 
 
   ns = SWC::Time::now_ns() - ns;
-  std::cout << " buffer=" << len << " checksum_i32 "
+  std::cout << " buffer=" << len << " Core::checksum_i32 "
             << " took=" << ns << " avg=" << ns/checks  << "\n";
 }
 

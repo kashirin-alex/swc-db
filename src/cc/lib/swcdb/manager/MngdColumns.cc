@@ -508,7 +508,7 @@ void MngdColumns::update_status_ack(
     try {
       err ? req->response(err) : req->response_ok();
     } catch(...) {
-      const Exception& e = SWC_CURRENT_EXCEPTION("");
+      const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
       SWC_LOG_OUT(LOG_ERROR, 
         SWC_LOG_OSTREAM << "Column Pending cb func=" << func;
         Error::print(SWC_LOG_OSTREAM << ' ', err);
@@ -590,7 +590,7 @@ void MngdColumns::actions_run() {
       try{
         req->response(err);
       } catch(...) {
-        const Exception& e = SWC_CURRENT_EXCEPTION("");
+        const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
         SWC_LOG_OUT(LOG_ERROR, 
           SWC_LOG_OSTREAM << "Column Action cb func=" << req->function;
           Error::print(SWC_LOG_OSTREAM << ' ', err);

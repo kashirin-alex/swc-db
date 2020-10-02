@@ -14,7 +14,7 @@ namespace SWC { namespace DB { namespace Types {
 
 namespace MngrRange {
 
-  enum State {
+  enum State : uint8_t {
     NOTSET    = 0,
     DELETED   = 1,
     ASSIGNED  = 2,

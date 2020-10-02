@@ -232,7 +232,7 @@ SWC::DB::Schema::Ptr create_column() {
   schema->cell_ttl = 0;
   schema->cs_size = 209715200;
   /* by default ranger-cfg
-  schema->blk_encoding = SWC::Encoder::Type::ZSTD;
+  schema->blk_encoding = SWC::DB::Types::Encoder::ZSTD;
   schema->blk_size = 33554432;
   schema->blk_cells = 100000;
   schema->cs_replication = 1;

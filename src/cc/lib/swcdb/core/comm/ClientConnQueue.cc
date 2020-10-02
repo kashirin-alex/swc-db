@@ -88,7 +88,7 @@ void ConnQueue::stop() {
   if(m_timer)
     m_timer->cancel();
   for(;;) {
-    Mutex::scope lock(m_mutex);
+    Core::MutexSptd::scope lock(m_mutex);
     auto it = m_delayed.begin();
     if(it == m_delayed.end()) {
       if(m_conn) {
@@ -103,7 +103,7 @@ void ConnQueue::stop() {
     std::this_thread::yield();
   }
   for(;;) {
-    Mutex::scope lock(m_mutex);
+    Core::MutexSptd::scope lock(m_mutex);
     if(!m_qrunning) {
       m_qrunning = true;
       break;
@@ -112,7 +112,7 @@ void ConnQueue::stop() {
   }
   for(ReqBase::Ptr req;;) {
     {
-      Mutex::scope lock(m_mutex);
+      Core::MutexSptd::scope lock(m_mutex);
       if(empty()) {
         m_qrunning = false;
         break;
@@ -125,12 +125,12 @@ void ConnQueue::stop() {
 }
 
 EndPoint ConnQueue::get_endpoint_remote() {
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   return m_conn && m_conn->is_open() ? m_conn->endpoint_remote : EndPoint();
 }
 
 EndPoint ConnQueue::get_endpoint_local() {
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   return m_conn && m_conn->is_open() ? m_conn->endpoint_local : EndPoint();
 }
 
@@ -139,7 +139,7 @@ void ConnQueue::put(const ConnQueue::ReqBase::Ptr& req) {
     req->queue = shared_from_this();
   bool make_conn;
   {
-    Mutex::scope lock(m_mutex);
+    Core::MutexSptd::scope lock(m_mutex);
     push(req);
     if((make_conn = (!m_conn || !m_conn->is_open()))) {
       if(m_connecting)
@@ -154,7 +154,7 @@ void ConnQueue::put(const ConnQueue::ReqBase::Ptr& req) {
 
 void ConnQueue::set(const ConnHandlerPtr& conn) {
   {
-    Mutex::scope lock(m_mutex);
+    Core::MutexSptd::scope lock(m_mutex);
     m_conn = conn;
     m_connecting = false;
   }
@@ -167,7 +167,7 @@ void ConnQueue::delay(const ConnQueue::ReqBase::Ptr& req) {
 
   auto tm = new asio::high_resolution_timer(*m_ioctx.get());
   {
-    Mutex::scope lock(m_mutex);
+    Core::MutexSptd::scope lock(m_mutex);
     m_delayed.insert(tm);
   }
   tm->expires_after(std::chrono::milliseconds(cfg_again_delay_ms->get()));
@@ -181,7 +181,7 @@ void ConnQueue::delay(const ConnQueue::ReqBase::Ptr& req) {
 void ConnQueue::delay_proceed(const ConnQueue::ReqBase::Ptr& req, 
                               asio::high_resolution_timer* tm) {
   {
-    Mutex::scope lock(m_mutex);
+    Core::MutexSptd::scope lock(m_mutex);
     m_delayed.erase(tm);
   }
   delete tm;
@@ -190,7 +190,7 @@ void ConnQueue::delay_proceed(const ConnQueue::ReqBase::Ptr& req,
 
 void ConnQueue::print(std::ostream& out) {
   out << "ConnQueue(size=";
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   out << size() << " conn=";
   if(m_conn)
     m_conn->print(out);
@@ -201,7 +201,7 @@ void ConnQueue::print(std::ostream& out) {
 
 void ConnQueue::exec_queue() {
   {
-    Mutex::scope lock(m_mutex);
+    Core::MutexSptd::scope lock(m_mutex);
     if(empty() || m_qrunning)
       return;
     m_qrunning = true;
@@ -216,7 +216,7 @@ void ConnQueue::run_queue() {
   ConnHandlerPtr conn;
   for(ReqBase::Ptr req;;) {
     {
-      Mutex::scope lock(m_mutex);
+      Core::MutexSptd::scope lock(m_mutex);
       conn = (m_conn && m_conn->is_open()) ? m_conn : nullptr;
       req = front();
     }
@@ -224,13 +224,13 @@ void ConnQueue::run_queue() {
     if(req->valid() && (!conn || !conn->send_request(req->cbp, req))) {
       req->handle_no_conn();
       if(req->insistent) {
-        Mutex::scope lock(m_mutex);
+        Core::MutexSptd::scope lock(m_mutex);
         m_qrunning = false;
         break;
       }
     }
     {
-      Mutex::scope lock(m_mutex);
+      Core::MutexSptd::scope lock(m_mutex);
       pop();
       if(empty()) {
         m_qrunning = false;
@@ -250,7 +250,7 @@ void ConnQueue::schedule_close() {
   bool closing;
   ConnHandlerPtr conn;
   {
-    Mutex::scope lock(m_mutex);
+    Core::MutexSptd::scope lock(m_mutex);
     if((closing = empty() && m_delayed.empty() &&
                  (!m_conn || !m_conn->due()))) {
       conn = m_conn;

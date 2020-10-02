@@ -11,7 +11,7 @@
 #include <condition_variable>
 
 
-namespace SWC { 
+namespace SWC { namespace Core {
   
 class Semaphore final {
   public:
@@ -43,7 +43,9 @@ class Semaphore final {
   size_t                    m_count;
 };
 
-}
+
+}} //namespace SWC::Core
+
 
 
 #ifdef SWC_IMPL_SOURCE

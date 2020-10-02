@@ -47,7 +47,7 @@ class ColumnHealthCheck final
 
     void _add_range(const Range::Ptr& range);
 
-    Mutex                     m_mutex;
+    Core::MutexSptd           m_mutex;
     std::queue<Range::Ptr>    m_ranges;
     uint8_t                   m_checkings;
   };
@@ -63,7 +63,7 @@ class ColumnHealthCheck final
   void run();
 
   private:
-  Mutex                         m_mutex;
+  Core::MutexSptd               m_mutex;
   std::vector<RangerCheck::Ptr> m_checkers;
   
 };

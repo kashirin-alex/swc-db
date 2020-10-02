@@ -7,7 +7,7 @@
 #define swcdb_fs_SmartFd_h
 
 #include "swcdb/core/Compat.h"
-#include "swcdb/core/LockAtomicUnique.h"
+#include "swcdb/core/MutexAtomic.h"
 
 namespace SWC { 
 
@@ -53,7 +53,7 @@ struct SmartFd {
   protected:
 
   const std::string   m_filepath;
-  LockAtomic::Unique  m_mutex;
+  Core::MutexAtomic   m_mutex;
 
   private:
 

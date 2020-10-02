@@ -69,12 +69,12 @@ FileSystemHadoop::SmartFdHadoop::SmartFdHadoop(
 FileSystemHadoop::SmartFdHadoop::~SmartFdHadoop() { }
 
 hdfs::FileHandle* FileSystemHadoop::SmartFdHadoop::file() const {
-  LockAtomic::Unique::scope lock(m_mutex);
+  Core::MutexAtomic::scope lock(m_mutex);
   return m_file; 
 }
 
 void FileSystemHadoop::SmartFdHadoop::file(hdfs::FileHandle* file) { 
-  LockAtomic::Unique::scope lock(m_mutex);
+  Core::MutexAtomic::scope lock(m_mutex);
   m_file = file; 
 }
 

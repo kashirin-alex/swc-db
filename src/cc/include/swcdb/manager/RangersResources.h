@@ -53,7 +53,7 @@ class RangersResources final : private std::vector<RangerResources> {
 
   void print(std::ostream& out) {
     out << "RangersResources(rangers=";
-    LockAtomic::Unique::scope lock(m_mutex);
+    Core::MutexAtomic::scope lock(m_mutex);
     out << size() << " [";
     for(auto& r : *this)
       r.print(out << "\n ");
@@ -82,7 +82,7 @@ class RangersResources final : private std::vector<RangerResources> {
 
   bool add_and_more(rgrid_t rgrid, int err,
                     const Comm::Protocol::Rgr::Params::Report::RspRes& rsp) {
-    LockAtomic::Unique::scope lock(m_mutex);
+    Core::MutexAtomic::scope lock(m_mutex);
     if(!err) {
       auto& res = emplace_back(rgrid, rsp.mem, rsp.cpu, rsp.ranges);
       if(!res.mem || !res.cpu) {
@@ -100,7 +100,7 @@ class RangersResources final : private std::vector<RangerResources> {
     size_t max_ranges = 1;
     uint16_t max_scale = 1;
     {
-      LockAtomic::Unique::scope lock(m_mutex);
+      Core::MutexAtomic::scope lock(m_mutex);
       for(auto& res : *this) {
         if(res.mem > max_mem)
           max_mem = res.mem;
@@ -129,7 +129,7 @@ class RangersResources final : private std::vector<RangerResources> {
   void changes(const RangerList& rangers, RangerList& changed) {
     SWC_LOG_OUT(LOG_DEBUG, print(SWC_LOG_OSTREAM << "changes "); );
 
-    LockAtomic::Unique::scope lock(m_mutex);
+    Core::MutexAtomic::scope lock(m_mutex);
     for(auto& rgr : rangers) {
       for(auto& res : *this) {
         if(rgr->rgrid == res.rgrid) {
@@ -147,7 +147,7 @@ class RangersResources final : private std::vector<RangerResources> {
   
   private:
 
-  LockAtomic::Unique m_mutex;
+  Core::MutexAtomic  m_mutex;
   size_t             m_due;
   size_t             m_last_check;
 

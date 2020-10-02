@@ -7,10 +7,14 @@
 #define swcdb_fs_Broker_Protocol_Commands_h
 
 namespace SWC { namespace Comm { namespace Protocol {
+
+
+
+//! The SWC-DB FsBroker Communications Protocol C++ namespace 'SWC::Comm::Protocol::FsBroker'
 namespace FsBroker {
-  
+
   // FsBroker Protocol Commands
-  enum Command {
+  enum Command : uint8_t {
     NOT_IMPLEMENTED   = 0x00,   ///< Not Implemented
     FUNCTION_OPEN     = 0x01,   ///< Open
     FUNCTION_CREATE   = 0x02,   ///< Create

@@ -65,12 +65,12 @@ FileSystemHadoopJVM::SmartFdHadoopJVM::SmartFdHadoopJVM(
 FileSystemHadoopJVM::SmartFdHadoopJVM::~SmartFdHadoopJVM() { }
 
 hdfsFile FileSystemHadoopJVM::SmartFdHadoopJVM::file() const { 
-  LockAtomic::Unique::scope lock(m_mutex);
+  Core::MutexAtomic::scope lock(m_mutex);
   return m_file; 
 }
 
 void FileSystemHadoopJVM::SmartFdHadoopJVM::file(const hdfsFile& file) { 
-  LockAtomic::Unique::scope lock(m_mutex);
+  Core::MutexAtomic::scope lock(m_mutex);
   m_file = file; 
 }
 

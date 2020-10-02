@@ -15,7 +15,7 @@
 namespace SWC { namespace FS {
 
 
-enum Type {
+enum Type : uint8_t {
 
   UNKNOWN     = 0x00,
   LOCAL       = 0x01,

@@ -25,7 +25,7 @@ Schema::Schema()
       : cid(NO_CID), 
         col_seq(Types::KeySeq::LEXIC), col_type(Types::Column::PLAIN),
         cell_versions(1), cell_ttl(0),
-        blk_encoding(Encoder::Type::DEFAULT), blk_size(0), blk_cells(0), 
+        blk_encoding(Types::Encoder::DEFAULT), blk_size(0), blk_cells(0),
         cs_replication(0), cs_size(0), cs_max(0), 
         log_rollout_ratio(0),
         compact_percent(0), 
@@ -55,7 +55,7 @@ Schema::Schema(const uint8_t** bufp, size_t* remainp)
     cell_versions(Serialization::decode_vi32(bufp, remainp)),
     cell_ttl(Serialization::decode_vi32(bufp, remainp)),
 
-    blk_encoding((Encoder::Type)Serialization::decode_i8(bufp, remainp)),
+    blk_encoding((Types::Encoder)Serialization::decode_i8(bufp, remainp)),
     blk_size(Serialization::decode_vi32(bufp, remainp)),
     blk_cells(Serialization::decode_vi32(bufp, remainp)),
 
@@ -151,7 +151,7 @@ void Schema::display(std::ostream& out) const {
     << " cell_versions=" << std::to_string(cell_versions)
     << " cell_ttl=" << std::to_string(cell_ttl)
     
-    << " blk_encoding=" << Encoder::to_string(blk_encoding)
+    << " blk_encoding=" << Core::Encoder::to_string(blk_encoding)
     << " blk_size=" << std::to_string(blk_size)
     << " blk_cells=" << std::to_string(blk_cells)
     << " cs_replication=" << std::to_string((int)cs_replication)

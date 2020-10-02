@@ -19,7 +19,7 @@ namespace Mngr { namespace Params {
 class ColumnMng : public Serializable {
   public:
 
-  enum Function { // corelation-sequence required
+  enum Function : uint8_t { // corelation-sequence required
     INTERNAL_LOAD_ALL     = 0,
 
     INTERNAL_LOAD         = 1,

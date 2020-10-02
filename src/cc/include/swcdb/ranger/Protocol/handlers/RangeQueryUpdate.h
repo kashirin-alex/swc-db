@@ -34,7 +34,7 @@ void range_query_update(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
       err = Error::INVALID_ARGUMENT;
 
   } catch(...) {
-    const Exception& e = SWC_CURRENT_EXCEPTION("");
+    const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
     SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
     err = e.code();
   }

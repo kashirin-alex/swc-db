@@ -6,12 +6,22 @@
 #ifndef swcdb_core_Compact_h
 #define swcdb_core_Compact_h
 
+
+
 //! The SWC-DB C++ namespace 'SWC'
-namespace SWC { }
+namespace SWC { 
+
+//! The SWC-DB Core Components C++ namespace 'SWC::Core'
+namespace Core { }
+
+}
+
+
 
 #ifndef SWC_MALLOC_NOT_INSISTENT
 #include "swcdb/core/Malloc.h"
 #endif
+
 
 
 #include <stdint.h>
@@ -65,6 +75,8 @@ namespace SWC { }
 #endif
 
 
+
 #include "swcdb/core/BitFieldInt.h" // for u/int24/40/48/56_t
+
 
 #endif // swcdb_core_Compact_h

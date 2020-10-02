@@ -38,7 +38,7 @@ Types::KeySeq ColCells::get_sequence() const {
 
 DB::Cell::Key::Ptr ColCells::get_first_key() {
   auto key = std::make_shared<DB::Cell::Key>();
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   SWC_ASSERT(m_cells.size()); // bad call , assure size pre-check
   m_cells.get(0, *key.get()); 
   return key;
@@ -47,7 +47,7 @@ DB::Cell::Key::Ptr ColCells::get_first_key() {
 DB::Cell::Key::Ptr ColCells::get_key_next(const DB::Cell::Key& eval_key, 
                                           bool start_key) {
   auto key = std::make_shared<DB::Cell::Key>();
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   if(eval_key.empty() || 
     !m_cells.get(
       eval_key, start_key? Condition::GE : Condition::GT, *key.get()))
@@ -59,7 +59,7 @@ DynamicBuffer::Ptr ColCells::get_buff(const DB::Cell::Key& key_start,
                                       const DB::Cell::Key& key_end, 
                                       size_t buff_sz, bool& more) {
   auto cells_buff = std::make_shared<DynamicBuffer>();
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   more = m_cells.write_and_free(
     key_start, key_end, *cells_buff.get(), buff_sz);
   if(cells_buff->fill())
@@ -68,12 +68,12 @@ DynamicBuffer::Ptr ColCells::get_buff(const DB::Cell::Key& key_start,
 }
 
 void ColCells::add(const DB::Cells::Cell& cell) {
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   m_cells.add_raw(cell);
 }
 
 size_t ColCells::add(const DynamicBuffer& cells) {
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   auto sz = m_cells.size();
   m_cells.add_raw(cells);
   return m_cells.size() - sz;
@@ -82,26 +82,26 @@ size_t ColCells::add(const DynamicBuffer& cells) {
 size_t ColCells::add(const DynamicBuffer& cells, 
                      const DB::Cell::Key& upto_key, 
                      const DB::Cell::Key& from_key) {
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   auto sz = m_cells.size();
   m_cells.add_raw(cells, upto_key, from_key);
   return m_cells.size() - sz;
 }
 
 size_t ColCells::size() {
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   return m_cells.size();
 }
 
 size_t ColCells::size_bytes() {
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   return m_cells.size_bytes();
 }
 
 void ColCells::print(std::ostream& out) {
   out << "(cid=" << cid;
   {
-    Mutex::scope lock(m_mutex);
+    Core::MutexSptd::scope lock(m_mutex);
     m_cells.print(out << ' ');
   }
   out << ')';
@@ -124,25 +124,25 @@ bool MutableMap::create(const Schema::Ptr& schema) {
 
 bool MutableMap::create(const cid_t cid, Types::KeySeq seq, 
                         uint32_t versions, uint32_t ttl, Types::Column type) {
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   return find(cid) == end() 
     ? emplace(cid, ColCells::make(cid, seq, versions, ttl, type)).second
     : false;
 }
 
 bool MutableMap::create(const cid_t cid, Mutable& cells) {
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   return emplace(cid, ColCells::make(cid, cells)).second;
 }
 
 bool MutableMap::exists(const cid_t cid) {
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
 
   return find(cid) != end();
 }
 
 void MutableMap::add(const cid_t cid, const Cell& cell) {
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
 
   auto it = find(cid);
   if(it == end())
@@ -151,7 +151,7 @@ void MutableMap::add(const cid_t cid, const Cell& cell) {
 }
 
 ColCells::Ptr MutableMap::get_idx(size_t offset) {
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
 
   if(offset < Columns::size()) {
     auto it = begin();
@@ -162,14 +162,14 @@ ColCells::Ptr MutableMap::get_idx(size_t offset) {
 }
 
 ColCells::Ptr MutableMap::get_col(const cid_t cid) {
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
 
   auto it = find(cid);
   return it == end() ? nullptr : it->second;
 }
 
 void MutableMap::pop(ColCells::Ptr& col) {
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
 
   auto it = begin();
   if(it == end()) {
@@ -181,7 +181,7 @@ void MutableMap::pop(ColCells::Ptr& col) {
 }
 
 void MutableMap::pop(const cid_t cid, ColCells::Ptr& col) {
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
 
   auto it = find(cid);
   if(it == end()) {
@@ -193,14 +193,14 @@ void MutableMap::pop(const cid_t cid, ColCells::Ptr& col) {
 }
 
 void MutableMap::remove(const cid_t cid) {
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   auto it = find(cid);
   if(it != end())
     erase(it);
 }
 
 size_t MutableMap::size() {
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
 
   size_t total = 0;
   for(auto it = begin(); it != end(); ++it)
@@ -209,14 +209,14 @@ size_t MutableMap::size() {
 }
 
 size_t MutableMap::size(const cid_t cid) {
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
 
   auto it = find(cid);
   return it == end() ? 0 : it->second->size();
 }
 
 size_t MutableMap::size_bytes() {
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
 
   size_t total = 0;
   for(auto it = begin(); it != end(); ++it)
@@ -225,7 +225,7 @@ size_t MutableMap::size_bytes() {
 }
 
 size_t MutableMap::size_bytes(const cid_t cid) {
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
 
   auto it = find(cid);
   return it == end() ? 0 : it->second->size_bytes();
@@ -233,7 +233,7 @@ size_t MutableMap::size_bytes(const cid_t cid) {
 
 void MutableMap::print(std::ostream& out) {
   out << "MutableMap(size=";
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   out << Columns::size() << " map=[";
   for(auto it = begin(); it != end(); ++it)
     it->second->print(out << '\n');

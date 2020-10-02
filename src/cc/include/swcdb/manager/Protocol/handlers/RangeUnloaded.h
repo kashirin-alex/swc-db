@@ -44,7 +44,7 @@ void range_unloaded(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     Env::Mngr::rangers()->schedule_check(1);
 
   } catch(...) {
-    const Exception& e = SWC_CURRENT_EXCEPTION("");
+    const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
     SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
     rsp_params.err = e.code();
   }

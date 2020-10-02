@@ -63,7 +63,7 @@ void Read::load_header(int& err, FS::SmartFd::Ptr& smartfd,
 
     size_t remain = Header::SIZE;
     header.decode(&ptr, &remain);
-    if(!checksum_i32_chk(
+    if(!Core::checksum_i32_chk(
       Serialization::decode_i32(&ptr, &remain), buf, Header::SIZE - 4)) {
       err = Error::CHECKSUM_MISMATCH;
       continue;
@@ -93,7 +93,7 @@ size_t Read::size_of() const {
 
 bool Read::load(BlockLoader* loader) {
   {
-    Mutex::scope lock(m_mutex);
+    Core::MutexSptd::scope lock(m_mutex);
     ++m_processing;
     if(m_state == State::NONE) {
       if(header.size_enc) {
@@ -145,7 +145,7 @@ void Read::load_cells(int&, Ranger::Block::Ptr cells_block) {
 }
 
 void Read::processing_decrement() {
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   --m_processing; 
 }
 
@@ -177,17 +177,17 @@ bool Read::processing() {
 }
 
 int Read::error() {
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   return m_err;
 }
 
 bool Read::loaded() {
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   return m_state == State::LOADED;
 }
 
 bool Read::loaded(int& err) {
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   err = m_err;
   return !err && m_state == State::LOADED;
 }
@@ -204,7 +204,7 @@ void Read::print(std::ostream& out) {
   out << "Block(";
   header.print(out);
   {
-    Mutex::scope lock(m_mutex);
+    Core::MutexSptd::scope lock(m_mutex);
     out << " state="      << to_string(m_state)
         << " queue="      << m_queue.size()
         << " processing=" << m_processing;
@@ -240,15 +240,15 @@ void Read::_load(int& err, FS::SmartFd::Ptr smartfd) {
                  header.size_enc) != header.size_enc)
       continue;
     
-    if(!checksum_i32_chk(header.checksum_data, 
+    if(!Core::checksum_i32_chk(header.checksum_data, 
                          m_buffer.base, header.size_enc)) {
       err = Error::CHECKSUM_MISMATCH;
       continue;
     }
 
-    if(header.encoder != Encoder::Type::PLAIN) {
+    if(header.encoder != DB::Types::Encoder::PLAIN) {
       StaticBuffer decoded_buf((size_t)header.size_plain);
-      Encoder::decode(
+      Core::Encoder::decode(
         err, header.encoder, 
         m_buffer.base, header.size_enc, 
         decoded_buf.base, header.size_plain
@@ -260,7 +260,7 @@ void Read::_load(int& err, FS::SmartFd::Ptr smartfd) {
     break;
   }
 
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   if((m_err = err) == Error::FS_PATH_NOT_FOUND) {
     m_err = Error::OK;
     m_buffer.free();
@@ -278,7 +278,7 @@ void Read::_load(int& err, FS::SmartFd::Ptr smartfd) {
 void Read::_run_queued() {
   for(BlockLoader* loader;;) {
     {
-      Mutex::scope lock(m_mutex);
+      Core::MutexSptd::scope lock(m_mutex);
       if(m_queue.empty())
         return;
       loader = m_queue.front();
@@ -310,12 +310,12 @@ void Write::encode(int& err, DynamicBuffer& cells, DynamicBuffer& output,
                    Header& header) {
   header.size_plain = cells.fill();
   size_t len_enc = 0;
-  Encoder::encode(err, header.encoder, cells.base, header.size_plain, 
-                  &len_enc, output, Header::SIZE);
+  Core::Encoder::encode(err, header.encoder, cells.base, header.size_plain, 
+                        &len_enc, output, Header::SIZE);
   if(err)
     return;
   if(!len_enc) {
-    header.encoder = Encoder::Type::PLAIN;
+    header.encoder = DB::Types::Encoder::PLAIN;
     header.size_enc = header.size_plain;
   } else {
     header.size_enc = len_enc;

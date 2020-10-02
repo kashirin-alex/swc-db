@@ -16,7 +16,7 @@ namespace SWC { namespace Ranger {
 class ReqScan  : public DB::Cells::ReqScan {
   public:
   
-  enum Type {
+  enum Type : uint8_t {
     QUERY,
     BLK_PRELOAD,
     COMPACTION

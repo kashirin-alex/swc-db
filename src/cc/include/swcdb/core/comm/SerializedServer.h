@@ -92,9 +92,9 @@ class SerializedServer final {
   std::vector<Acceptor::Ptr>      m_acceptors;
   std::vector<asio::executor_work_guard<asio::io_context::executor_type>> m_wrk;
 
-  Mutex                       m_mutex;
-  std::vector<ConnHandlerPtr> m_conns;
-  ConfigSSL*                  m_ssl_cfg;
+  Core::MutexSptd                 m_mutex;
+  std::vector<ConnHandlerPtr>     m_conns;
+  ConfigSSL*                      m_ssl_cfg;
 };
 
 

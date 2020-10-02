@@ -9,8 +9,7 @@
 #define swcdb_core_Serialization_h
 
 
-#include "swcdb/core/Compat.h"
-#include "swcdb/core/Error.h"
+#include "swcdb/core/Exception.h"
 
 
 
@@ -22,7 +21,14 @@
 
 extern "C" { }
 
-namespace SWC { namespace Serialization {
+
+
+namespace SWC { 
+
+
+//! The SWC-DB Serializations C++ namespace 'SWC::Serialization'
+namespace Serialization {
+
 
 const uint64_t MAX_V1B = 0x7f;
 const uint64_t MAX_V2B = 0x3fff;

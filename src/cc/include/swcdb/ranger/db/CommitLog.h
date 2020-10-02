@@ -130,7 +130,7 @@ class Fragments final : private std::vector<Fragment::Ptr> {
   bool                        m_deleting;
   std::condition_variable_any m_cv;
   bool                        m_compacting;
-  Semaphore                   m_sem;
+  Core::Semaphore             m_sem;
   uint64_t                    m_last_id;
 };
 

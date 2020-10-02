@@ -27,12 +27,12 @@ size_t Column::size_of() const {
 }
 
 size_t Column::ranges_count() {
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   return size();
 }
 
 void Column::get_rids(std::vector<rid_t>& rids) {
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   for(auto it = begin(); it != end(); ++it)
     rids.push_back(it->first);
 }
@@ -45,7 +45,7 @@ void Column::schema_update(const DB::Schema& schema) {
                     cfg.col_type != schema.col_type;
   cfg.update(schema);
   if(and_cells) {
-    Mutex::scope lock(m_mutex);
+    Core::MutexSptd::scope lock(m_mutex);
     for(auto it = begin(); it != end(); ++it)
       it->second->schema_update(compact);
   }
@@ -55,7 +55,7 @@ void Column::schema_update(const DB::Schema& schema) {
 
 void Column::compact() {
   {
-    Mutex::scope lock(m_mutex);
+    Core::MutexSptd::scope lock(m_mutex);
     for(auto it = begin(); it != end(); ++it)
       it->second->compact_require(true);
   }
@@ -65,7 +65,7 @@ void Column::compact() {
 RangePtr Column::get_range(int &err, const rid_t rid, bool initialize) {
   RangePtr range = nullptr;
   {
-    Mutex::scope lock(m_mutex);
+    Core::MutexSptd::scope lock(m_mutex);
 
     auto it = find(rid);
     if (it != end())
@@ -90,7 +90,7 @@ RangePtr Column::get_range(int &err, const rid_t rid, bool initialize) {
 void Column::unload(const rid_t rid, const Callback::RangeUnloaded_t& cb) {
   RangePtr range = nullptr;
   {
-    Mutex::scope lock(m_mutex);
+    Core::MutexSptd::scope lock(m_mutex);
     auto it = find(rid);
     if(it != end()) {
       range = it->second;
@@ -106,7 +106,7 @@ void Column::unload(const rid_t rid, const Callback::RangeUnloaded_t& cb) {
 void Column::unload_all(std::atomic<int>& unloaded, 
                         const Callback::RangeUnloaded_t& cb) {
   for(iterator it;;) {
-    Mutex::scope lock(m_mutex);
+    Core::MutexSptd::scope lock(m_mutex);
     if((it = begin()) == end())
       break;
     ++unloaded;
@@ -120,7 +120,7 @@ void Column::unload_all(std::atomic<int>& unloaded,
 void Column::unload_all(const Callback::ColumnsUnloadedPtr& cb) {
   ++cb->unloading;
   for(iterator it;;) {
-    Mutex::scope lock(m_mutex);
+    Core::MutexSptd::scope lock(m_mutex);
     if((it = begin()) == end())
       break;
     ++cb->unloading;
@@ -135,7 +135,7 @@ void Column::unload_all(const Callback::ColumnsUnloadedPtr& cb) {
 void Column::remove(int &err, const rid_t rid, bool meta) {
   RangePtr range = nullptr;
   {
-    Mutex::scope lock(m_mutex);
+    Core::MutexSptd::scope lock(m_mutex);
     auto it = find(rid);
     if (it != end()){
       range = it->second;
@@ -148,14 +148,14 @@ void Column::remove(int &err, const rid_t rid, bool meta) {
 
 void Column::remove_all(int &err) {
   {
-    Mutex::scope lock(m_mutex);
+    Core::MutexSptd::scope lock(m_mutex);
     if(cfg.deleting)
       return;
     cfg.deleting = true;
   }
     
   for(iterator it;;) {
-    Mutex::scope lock(m_mutex);
+    Core::MutexSptd::scope lock(m_mutex);
     if((it = begin()) == end())
       break;
     it->second->remove(err);
@@ -166,12 +166,12 @@ void Column::remove_all(int &err) {
 }
 
 bool Column::removing() {
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   return cfg.deleting;
 }
 
 RangePtr Column::get_next(size_t &idx) {
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
 
   if(size() > idx) {
     auto it = begin();
@@ -192,7 +192,7 @@ size_t Column::release(size_t bytes) {
   iterator it;
   for(size_t offset = 0; ; ++offset) {
     {
-      Mutex::scope lock(m_mutex);
+      Core::MutexSptd::scope lock(m_mutex);
       if(cfg.deleting)
         break;
       it = begin();
@@ -212,7 +212,7 @@ size_t Column::release(size_t bytes) {
 }
 
 void Column::print(std::ostream& out, bool minimal) {
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   cfg.print(out << '(');
   out << " ranges=[";
 

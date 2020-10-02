@@ -66,7 +66,7 @@ class ConnQueues final :
 
   private:
 
-  Mutex                   m_mutex;
+  Core::MutexSptd m_mutex;
   
 };
 

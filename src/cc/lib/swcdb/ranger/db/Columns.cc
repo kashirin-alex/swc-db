@@ -24,7 +24,7 @@ Column::Ptr Columns::initialize(int &err, const cid_t cid,
     return col;
   }
   
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   auto it = find(cid);
   if(it != end())
     (col = it->second)->cfg.update(schema);
@@ -34,19 +34,19 @@ Column::Ptr Columns::initialize(int &err, const cid_t cid,
 }
 
 void Columns::get_cids(std::vector<cid_t>& cids) {
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   for(auto it = begin(); it != end(); ++it)
     cids.push_back(it->first);
 }
 
 Column::Ptr Columns::get_column(int&, const cid_t cid) {
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   auto it = find(cid);
   return it == end() ? nullptr : it->second;
 }
 
 Column::Ptr Columns::get_next(size_t& idx) {
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   if(size() > idx) {
     auto it = begin();
     for(int i=idx; i; --i, ++it);
@@ -101,7 +101,7 @@ void Columns::unload(cid_t cid_begin, cid_t cid_end,
                     const Callback::ColumnsUnloadedPtr& cb) {
   ++cb->unloading;
   {
-    Mutex::scope lock(m_mutex);
+    Core::MutexSptd::scope lock(m_mutex);
     for(auto it = begin(); it != end(); ) {
       if((!cid_begin || cid_begin <= it->first) &&
          (!cid_end || cid_end >= it->first)) {
@@ -130,7 +130,7 @@ void Columns::unload_all(bool validation) {
   iterator it;
   for(auto& chk : order) {
     {
-      Mutex::scope lock(m_mutex);
+      Core::MutexSptd::scope lock(m_mutex);
       for(it = begin(); it != end(); ++it) {
         if(chk(it->first))
           ++to_unload;
@@ -148,7 +148,7 @@ void Columns::unload_all(bool validation) {
   
     for(meta=0;;) {
       {
-        Mutex::scope lock(m_mutex);
+        Core::MutexSptd::scope lock(m_mutex);
         it = begin();
         for(uint8_t n=0; n<meta; ++n, ++it);
         if(it == end())
@@ -180,7 +180,7 @@ void Columns::remove(ColumnsReqDelete* req) {
       if((col = get_column(err = Error::OK, req->cid))) {
         col->remove_all(err);
         {
-          Mutex::scope lock(m_mutex);
+          Core::MutexSptd::scope lock(m_mutex);
           if((it = find(req->cid)) != end()) 
             erase(it);
         }
@@ -201,7 +201,7 @@ size_t Columns::release(size_t bytes) {
   iterator it;
   for(size_t offset = 0; ; ++offset) {
     {
-      Mutex::scope lock(m_mutex);
+      Core::MutexSptd::scope lock(m_mutex);
       it = begin();
       for(size_t i=0; i<offset && it != end(); ++it, ++i);
       if(it == end())
@@ -220,7 +220,7 @@ size_t Columns::release(size_t bytes) {
 
 void Columns::print(std::ostream& out, bool minimal) {
   out << "columns=[";
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   for(auto it = begin(); it != end(); ++it){
     it->second->print(out, minimal);
     out << ", ";

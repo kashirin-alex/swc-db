@@ -34,7 +34,7 @@ void open(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
       fd = Env::Fds::get()->add(smartfd);
 
   } catch(...) {
-    const Exception& e = SWC_CURRENT_EXCEPTION("");
+    const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
     SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
     err = e.code();
   }

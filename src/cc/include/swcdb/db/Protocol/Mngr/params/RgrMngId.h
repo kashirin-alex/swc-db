@@ -17,7 +17,7 @@ namespace Mngr { namespace Params {
 class RgrMngId  : public Common::Params::HostEndPoints {
   public:
 
-    enum Flag {
+    enum Flag : uint8_t {
       MNGR_ASSIGNED = 1,
       MNGR_NOT_ACTIVE = 2,
       MNGR_REASSIGN = 3,

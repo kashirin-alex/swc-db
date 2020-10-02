@@ -24,7 +24,7 @@ ColumnHealthCheck::RangerCheck::RangerCheck(
 ColumnHealthCheck::RangerCheck::~RangerCheck() { }
 
 void ColumnHealthCheck::RangerCheck::add_range(const Range::Ptr& range) {
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   _add_range(range);
 }
     
@@ -47,7 +47,7 @@ bool ColumnHealthCheck::RangerCheck::add_ranges(uint8_t more) {
 void ColumnHealthCheck::RangerCheck::handle(const Range::Ptr& range, int err) {
   uint8_t more;
   {
-    Mutex::scope lock(m_mutex);
+    Core::MutexSptd::scope lock(m_mutex);
     --m_checkings;
     while(!m_ranges.empty() && m_checkings < 10) {
       _add_range(m_ranges.front());
@@ -76,7 +76,7 @@ void ColumnHealthCheck::RangerCheck::handle(const Range::Ptr& range, int err) {
 }
 
 bool ColumnHealthCheck::RangerCheck::empty() {
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   return !m_checkings && m_ranges.empty();
 }
 
@@ -118,7 +118,7 @@ void ColumnHealthCheck::run() {
       continue;
     rgrid = range->get_rgr_id();
     {
-      Mutex::scope lock(m_mutex);
+      Core::MutexSptd::scope lock(m_mutex);
       auto it = std::find_if(
         m_checkers.begin(), m_checkers.end(), 
         [rgrid](const RangerCheck::Ptr& checker) { 
@@ -141,7 +141,7 @@ void ColumnHealthCheck::run() {
   }
     
   {
-    Mutex::scope lock(m_mutex);
+    Core::MutexSptd::scope lock(m_mutex);
     for(auto it = m_checkers.begin(); it < m_checkers.end(); ) {
       if(!(*it)->empty() || (*it)->add_ranges(10))
         ++it;

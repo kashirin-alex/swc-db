@@ -7,9 +7,9 @@
 #define swcdb_core_QueueSafeStated_h
 
 #include <queue>
-#include "swcdb/core/Mutex.h"
+#include "swcdb/core/MutexSptd.h"
 
-namespace SWC { 
+namespace SWC { namespace Core {
 
 
 template <class ItemT>
@@ -33,32 +33,32 @@ class QueueSafeStated final : private std::queue<ItemT> {
   }
 
   ItemT& front() {
-    Mutex::scope lock(m_mutex);
+    MutexSptd::scope lock(m_mutex);
     return QBase::front();
   }
 
   bool empty() {
-    Mutex::scope lock(m_mutex);
+    MutexSptd::scope lock(m_mutex);
     return QBase::empty();
   }
 
   size_t size() {
-    Mutex::scope lock(m_mutex);
+    MutexSptd::scope lock(m_mutex);
     return QBase::size();
   }
 
   bool is_active() {
-    Mutex::scope lock(m_mutex);
+    MutexSptd::scope lock(m_mutex);
     return m_state;
   }
 
   bool activating() {
-    Mutex::scope lock(m_mutex);
+    MutexSptd::scope lock(m_mutex);
     return (m_state || QBase::empty()) ? false : (m_state = true);
   }
 
   bool deactivating() {
-    Mutex::scope lock(m_mutex);
+    MutexSptd::scope lock(m_mutex);
     QBase::pop();
     if(QBase::empty())
       m_state = false;
@@ -66,12 +66,12 @@ class QueueSafeStated final : private std::queue<ItemT> {
   }
 
   void deactivate() {
-    Mutex::scope lock(m_mutex);
+    MutexSptd::scope lock(m_mutex);
     m_state = false;
   }
 
   bool activating(const ItemT& item) {
-    Mutex::scope lock(m_mutex);
+    MutexSptd::scope lock(m_mutex);
     if(m_state) {
       QBase::push(item);
       return false;
@@ -80,7 +80,7 @@ class QueueSafeStated final : private std::queue<ItemT> {
   }
 
   bool deactivating(ItemT* item) {
-    Mutex::scope lock(m_mutex);
+    MutexSptd::scope lock(m_mutex);
     if(QBase::empty()) {
       m_state = false;
     } else {
@@ -91,13 +91,15 @@ class QueueSafeStated final : private std::queue<ItemT> {
   }
 
   private:
-  Mutex                     m_mutex;
+  MutexSptd                 m_mutex;
   bool                      m_state = false;
 
   typedef std::queue<ItemT> QBase;
 };
 
 
-}
+
+}} // namespace SWC::Core
+
 
 #endif // swcdb_core_QueueSafeStated_h

@@ -117,8 +117,8 @@ void MngrRole::fill_states(const MngrsStatus& states, uint64_t token,
 
     bool local = Comm::has_endpoint(host->endpoints, m_local_endpoints);
 
-    if(local && !token
-       && (int)host->state < (int)DB::Types::MngrState::STANDBY) {
+    if(local && !token && 
+       (uint8_t)host->state.load() < (uint8_t)DB::Types::MngrState::STANDBY) {
       update_state(host->endpoints, DB::Types::MngrState::STANDBY);
       continue;
     }
@@ -133,7 +133,7 @@ void MngrRole::fill_states(const MngrsStatus& states, uint64_t token,
       schedule_checkin(500);
     }
 
-    if((int)host->state < (int)DB::Types::MngrState::STANDBY) {
+    if((uint8_t)host->state.load() < (uint8_t)DB::Types::MngrState::STANDBY) {
       if(host->state != host_set->state) {
         update_state(host->endpoints, 
           host->state != DB::Types::MngrState::NOTSET?
@@ -164,13 +164,21 @@ void MngrRole::fill_states(const MngrsStatus& states, uint64_t token,
       
     
     if(host->priority > high_set->priority) {
-      if((int)host->state > (int)DB::Types::MngrState::STANDBY) {
-        update_state(host->endpoints, (DB::Types::MngrState)(host->state-1));
+      if((uint8_t)host->state.load() 
+          > (uint8_t)DB::Types::MngrState::STANDBY) {
+        update_state(
+          host->endpoints, 
+          (DB::Types::MngrState)((uint8_t)host->state.load() - 1)
+        );
         new_recs = true;
       }
     } else {
-      if((int)host->state < (int)DB::Types::MngrState::ACTIVE) {
-        update_state(host->endpoints, (DB::Types::MngrState)(host->state+1));
+      if((uint8_t)host->state.load() 
+          < (uint8_t)DB::Types::MngrState::ACTIVE) {
+        update_state(
+          host->endpoints, 
+          (DB::Types::MngrState)((uint8_t)host->state.load() + 1)
+        );
         new_recs = true;
       }
     }
@@ -223,7 +231,8 @@ void MngrRole::fill_states(const MngrsStatus& states, uint64_t token,
   apply_role_changes();
 }
 
-void MngrRole::update_manager_addr(uint64_t hash, const Comm::EndPoint& mngr_host) {
+void MngrRole::update_manager_addr(uint64_t hash, 
+                                   const Comm::EndPoint& mngr_host) {
   bool major_updates;
   {
     std::scoped_lock lock(m_mutex);

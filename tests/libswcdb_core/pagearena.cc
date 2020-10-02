@@ -6,7 +6,7 @@
 #include <vector>
 #include <iostream>
 
-#include "swcdb/core/Error.h"
+#include "swcdb/core/Exception.h"
 #include "swcdb/core/PageArena.h"
 
 int main() {
@@ -16,18 +16,18 @@ int main() {
   
     
   std::cout << "sizeof:" << "\n";
-  std::cout << " Arena=" << sizeof(SWC::Mem::Arena) << "\n";
+  std::cout << " Arena=" << sizeof(SWC::Core::Mem::Arena) << "\n";
   std::cout << " arena=" << sizeof(arena) << "\n";
-  std::cout << " Item=" << sizeof(SWC::Mem::Item) << "\n";
-  std::cout << " ItemPtr=" << sizeof(SWC::Mem::ItemPtr) << "\n";
+  std::cout << " Item=" << sizeof(SWC::Core::Mem::Item) << "\n";
+  std::cout << " ItemPtr=" << sizeof(SWC::Core::Mem::ItemPtr) << "\n";
     
-  std::vector<SWC::Mem::ItemPtr> data;
+  std::vector<SWC::Core::Mem::ItemPtr> data;
     
   for(size_t n=0; n<num_uses;++n) {
     std::cout << " set-"<< n << " begin\n";
     for(size_t i = num_items; i>0;--i) {
       std::string s(std::to_string(i));
-      data.push_back(SWC::Mem::ItemPtr((const uint8_t*)s.data(), s.length()));
+      data.push_back(SWC::Core::Mem::ItemPtr((const uint8_t*)s.data(), s.length()));
     }
     std::cout << " set-"<< n << " end\n";
   }

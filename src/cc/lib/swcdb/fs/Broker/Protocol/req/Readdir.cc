@@ -41,7 +41,7 @@ void Readdir::handle(ConnHandlerPtr, const Event::Ptr& ev) {
       params.get_listing(listing);
 
     } catch(...) {
-      const Exception& e = SWC_CURRENT_EXCEPTION("");
+      const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
       error = e.code();
     }
   }

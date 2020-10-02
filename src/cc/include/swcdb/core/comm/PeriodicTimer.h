@@ -45,7 +45,7 @@ class PeriodicTimers final
            asio::io_context* io);
 
   private:
-  Mutex m_mutex;
+  Core::MutexSptd m_mutex;
 };
 
 

@@ -8,7 +8,7 @@
 
 
 #include "swcdb/core/Compat.h"
-#include "swcdb/core/LockAtomicUnique.h"
+#include "swcdb/core/MutexAtomic.h"
 
 
 namespace SWC { namespace Common { namespace Stats {
@@ -30,22 +30,22 @@ class CompletionCounter final {
   ~CompletionCounter() {}
 
   void increment() {
-    LockAtomic::Unique::scope lock(m_mutex);
+    Core::MutexAtomic::scope lock(m_mutex);
     ++m_count;
   }
 
   bool is_last() {
-    LockAtomic::Unique::scope lock(m_mutex);
+    Core::MutexAtomic::scope lock(m_mutex);
     return !--m_count;
   }
 
   uint64_t count() {
-    LockAtomic::Unique::scope lock(m_mutex);
+    Core::MutexAtomic::scope lock(m_mutex);
     return m_count;
   }
 
   private:
-  LockAtomic::Unique  m_mutex;
+  Core::MutexAtomic   m_mutex;
   CountT              m_count;
 };
 

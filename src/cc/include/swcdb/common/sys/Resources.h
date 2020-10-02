@@ -283,7 +283,7 @@ class Resources final {
         try {
           checker();
         } catch(...) {
-          const Exception& e = SWC_CURRENT_EXCEPTION("Resources:checker");
+          const Error::Exception& e = SWC_CURRENT_EXCEPTION("Resources:checker");
           SWC_LOG_OUT(LOG_ERROR, 
             print(SWC_LOG_OSTREAM);
             SWC_LOG_OSTREAM << e; 
@@ -325,7 +325,7 @@ class Resources final {
   const std::function<size_t(size_t)> m_release_call;
   int8_t                              next_major_chk;
 
-  LockAtomic::Unique                  m_mutex;
+  Core::MutexAtomic                   m_mutex;
   uint32_t                            page_size;
   Component                           ram;
   // Component                     storage;

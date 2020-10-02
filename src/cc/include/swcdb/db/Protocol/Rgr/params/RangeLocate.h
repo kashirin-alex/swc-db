@@ -8,7 +8,7 @@
 #define swcdb_db_protocol_rgr_params_RangeLocate_h
 
 
-#include "swcdb/core/Error.h"
+#include "swcdb/core/Exception.h"
 #include "swcdb/core/comm/Serializable.h"
 #include "swcdb/db/Cells/CellKey.h"
 #include "swcdb/db/Types/Identifiers.h"

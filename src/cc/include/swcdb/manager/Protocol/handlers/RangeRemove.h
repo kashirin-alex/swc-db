@@ -37,7 +37,7 @@ void range_remove(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     col->remove_range(params.rid);
 
   } catch(...) {
-    const Exception& e = SWC_CURRENT_EXCEPTION("");
+    const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
     SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
     rsp_params.err = e.code();
   }

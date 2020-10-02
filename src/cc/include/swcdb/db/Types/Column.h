@@ -11,7 +11,7 @@
 
 namespace SWC { namespace DB { namespace Types { 
 
-enum class Column {
+enum class Column : uint8_t {
   UNKNOWN       = 0x0,
   PLAIN         = 0x1,
   COUNTER_I64   = 0x2,

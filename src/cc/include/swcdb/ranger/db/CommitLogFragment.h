@@ -31,7 +31,7 @@ class Fragment final {
   static const uint8_t     VERSION = 1;
   static const uint8_t     HEADER_EXT_FIXED_SIZE = 25;
   
-  enum State {
+  enum State : uint8_t {
     NONE,
     LOADING,
     LOADED,
@@ -47,7 +47,7 @@ class Fragment final {
   static void load_header(int& err, FS::SmartFd::Ptr& smartfd, 
                           uint8_t& version,
                           DB::Cells::Interval& interval, 
-                          Encoder::Type& encoder,
+                          DB::Types::Encoder& encoder,
                           size_t& size_plain, size_t& size_enc,
                           uint32_t& cell_revs, uint32_t& cells_count,
                           uint32_t& data_checksum, uint32_t& offset_data);
@@ -55,7 +55,7 @@ class Fragment final {
 
   static Ptr make_write(int& err, const std::string& filepath, 
                         const DB::Cells::Interval& interval,
-                        Encoder::Type encoder,
+                        DB::Types::Encoder encoder,
                         const uint32_t cell_revs, 
                         const uint32_t cells_count,
                         DynamicBuffer& cells, 
@@ -64,26 +64,26 @@ class Fragment final {
   static void write(int& err, 
                     const uint8_t version,
                     const DB::Cells::Interval& interval, 
-                    Encoder::Type& encoder,
+                    DB::Types::Encoder& encoder,
                     const size_t size_plain, size_t& size_enc,
                     const uint32_t cell_revs, const uint32_t cells_count,
                     uint32_t& data_checksum, uint32_t& offset_data,
                     DynamicBuffer& cells, StaticBuffer::Ptr& buffer);
 
 
-  const uint8_t               version;
-  const DB::Cells::Interval   interval;
-  const Encoder::Type         encoder;
-  const size_t                size_plain;
-  const size_t                size_enc;
-  const uint32_t              cell_revs;
-  const uint32_t              cells_count;
-  const uint32_t              data_checksum;
-  const uint32_t              offset_data;
+  const uint8_t                     version;
+  const DB::Cells::Interval         interval;
+  const DB::Types::Encoder          encoder;
+  const size_t                      size_plain;
+  const size_t                      size_enc;
+  const uint32_t                    cell_revs;
+  const uint32_t                    cells_count;
+  const uint32_t                    data_checksum;
+  const uint32_t                    offset_data;
 
   explicit Fragment(const FS::SmartFd::Ptr& smartfd, const uint8_t version,
                     const DB::Cells::Interval& interval, 
-                    const Encoder::Type encoder,
+                    const DB::Types::Encoder encoder,
                     const size_t size_plain, const size_t size_enc,
                     const uint32_t cell_revs, const uint32_t cells_count,
                     const uint32_t data_checksum, const uint32_t offset_data,
@@ -102,7 +102,7 @@ class Fragment final {
   const std::string& get_filepath() const;
 
   void write(int err, uint8_t blk_replicas, int64_t blksz, 
-             const StaticBuffer::Ptr& buff_write, Semaphore* sem);
+             const StaticBuffer::Ptr& buff_write, Core::Semaphore* sem);
 
   void load(const std::function<void()>& cb);
   
@@ -146,7 +146,7 @@ class Fragment final {
   void _run_queued();
   
 
-  Mutex                             m_mutex;
+  Core::MutexSptd                   m_mutex;
   State                             m_state;
   FS::SmartFd::Ptr                  m_smartfd;
   

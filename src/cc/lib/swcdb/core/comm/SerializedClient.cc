@@ -133,7 +133,7 @@ Serialized::Serialized(const std::string& srv_name, const IOCtxPtr& ioctx,
 ServerConnections::Ptr Serialized::get_srv(const EndPoint& endpoint) {
   size_t hash = endpoint_hash(endpoint);
   iterator it;
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   if((it = find(hash)) == end())
     it = emplace(
       hash, 
@@ -241,7 +241,7 @@ void Serialized::get_connection(
 void Serialized::preserve(ConnHandlerPtr& conn) {
   size_t hash = conn->endpoint_remote_hash();
   iterator it;
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   if((it = find(hash)) != end())
     it->second->push(conn);
 }
@@ -250,7 +250,7 @@ void Serialized::close(ConnHandlerPtr& conn){
   size_t hash = conn->endpoint_remote_hash();
   conn->do_close();
   iterator it;
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   if((it = find(hash)) != end() && it->second->empty())
     erase(it);
 }
@@ -269,7 +269,7 @@ void Serialized::stop() {
   iterator it;
   for(ServerConnections::Ptr srv;;) {
     {
-      Mutex::scope lock(m_mutex);
+      Core::MutexSptd::scope lock(m_mutex);
       if((it = begin()) == end())
         break;
       srv = it->second;

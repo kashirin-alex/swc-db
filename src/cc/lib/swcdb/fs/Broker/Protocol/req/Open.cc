@@ -47,7 +47,7 @@ void Open::handle(ConnHandlerPtr, const Event::Ptr& ev) {
       fs->fd_open_incr();
 
     } catch(...) {
-      const Exception& e = SWC_CURRENT_EXCEPTION("");
+      const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
       error = e.code();
     }
   }

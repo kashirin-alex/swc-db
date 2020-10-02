@@ -11,7 +11,7 @@
 
 namespace SWC { namespace DB { namespace Types { 
 
-enum KeySeq {
+enum class KeySeq : uint8_t {
   UNKNOWN     = 0,
   LEXIC       = 1,
   VOLUME      = 2, 

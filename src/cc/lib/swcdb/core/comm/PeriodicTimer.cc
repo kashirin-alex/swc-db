@@ -33,7 +33,7 @@ void PeriodicTimer::schedule() {
 PeriodicTimers::~PeriodicTimers() { }
 
 void PeriodicTimers::stop() {
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   for(auto& ptr : *this)
     ptr->cancel();
 }
@@ -41,7 +41,7 @@ void PeriodicTimers::stop() {
 void PeriodicTimers::set(const Config::Property::V_GINT32::Ptr ms, 
                          const PeriodicTimer::Call_t& call,
                          asio::io_context* io) {
-  Mutex::scope lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   emplace_back(new PeriodicTimer(ms, call, io));
 }
 

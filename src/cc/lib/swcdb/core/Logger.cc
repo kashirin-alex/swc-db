@@ -8,7 +8,7 @@
 
 
 
-namespace SWC { namespace Logger {
+namespace SWC { namespace Core {
 
 /** INITIATE SINGLETONE LOGGER INSTANCE. **/
 LogWriter logger;
@@ -69,7 +69,7 @@ LogWriter::~LogWriter() {
 void LogWriter::initialize(const std::string& name) {
   //std::cout << " LogWriter::initialize name=" << name 
   //          << " ptr=" << (size_t)this << "\n";
-  Mutex::scope lock(mutex);
+  Core::MutexSptd::scope lock(mutex);
   m_name.clear();
   m_name.append(name);
 }
@@ -79,7 +79,7 @@ void LogWriter::daemon(const std::string& logs_path) {
   //          << " ptr=" << (size_t)this << "\n";
   errno = 0;
 
-  Mutex::scope lock(mutex);
+  Core::MutexSptd::scope lock(mutex);
   m_logs_path = logs_path;
   if(m_logs_path.back() != '/')
     m_logs_path.append("/");
@@ -89,7 +89,7 @@ void LogWriter::daemon(const std::string& logs_path) {
 
   if(errno) 
     throw std::runtime_error(
-      "SWC::Logger::initialize err="
+      "SWC::Core::LogWriter::initialize err="
       + std::to_string(errno)+"("+strerror(errno)+")"
     );
   std::fclose(stderr);
@@ -151,7 +151,7 @@ void LogWriter::log(uint8_t priority, const char* fmt, ...) {
   va_list ap;
   va_start(ap, fmt);
   {
-    Mutex::scope lock(mutex);
+    Core::MutexSptd::scope lock(mutex);
     std::cout << _seconds() << ' ' << get_name(priority) << ": ";
     vprintf(fmt, ap);
     std::cout << std::endl;

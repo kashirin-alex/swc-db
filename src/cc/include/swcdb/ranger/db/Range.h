@@ -57,7 +57,7 @@ class Range final : public std::enable_shared_from_this<Range> {
 
   };
 
-  enum State {
+  enum State : uint8_t {
     NOTLOADED,
     LOADING,
     LOADED,
@@ -185,7 +185,7 @@ class Range final : public std::enable_shared_from_this<Range> {
 
   private:
   const std::string             m_path;
-  LockAtomic::Unique            m_mutex_intval;
+  Core::MutexAtomic             m_mutex_intval;
   DB::Cells::Interval           m_interval;
 
   std::shared_mutex             m_mutex;
@@ -193,8 +193,8 @@ class Range final : public std::enable_shared_from_this<Range> {
   std::atomic<State>            m_state;
   uint8_t                       m_compacting;
   bool                          m_require_compact;
-  QueueSafe<ReqScan::Ptr>       m_q_scans;
-  QueueSafe<ReqAdd*>            m_q_adding;
+  Core::QueueSafe<ReqScan::Ptr> m_q_scans;
+  Core::QueueSafe<ReqAdd*>      m_q_adding;
 
   std::condition_variable_any   m_cv;
 

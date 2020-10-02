@@ -8,7 +8,8 @@
 
 
 extern 
-void* operator new(unsigned long sz) __attribute__((__nothrow__));
+void* operator new(unsigned long sz) 
+    __attribute__((__nothrow__)); // __noclone__
 
 
 #include <new>

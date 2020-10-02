@@ -28,7 +28,7 @@ class ColumnsUnloaded : public Comm::ResponseCallback {
     bool last = --unloading;
 
     if(range && !range->deleted()) {
-      Mutex::scope lock(m_mutex);
+      Core::MutexSptd::scope lock(m_mutex);
       m_rsp_params.columns[range->cfg->cid].push_back(range->rid);
     }
     if(!last)
@@ -46,7 +46,7 @@ class ColumnsUnloaded : public Comm::ResponseCallback {
 
   private:
   
-  Mutex                                           m_mutex;
+  Core::MutexSptd                                 m_mutex;
   Comm::Protocol::Rgr::Params::ColumnsUnloadRsp   m_rsp_params;
 
 };

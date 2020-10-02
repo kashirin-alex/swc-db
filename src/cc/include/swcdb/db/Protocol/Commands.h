@@ -11,9 +11,12 @@
 namespace SWC { namespace Comm { namespace Protocol {
 
 
+
+//! The SWC-DB Ranger Communications Protocol C++ namespace 'SWC::Comm::Protocol::Rgr'
 namespace Rgr {
+
   // Ranger Protocol Commands
-  enum Command {
+  enum Command : uint8_t {
     NOT_IMPLEMENTED      = 0x00,
     COLUMN_DELETE        = 0x01,
     COLUMN_COMPACT       = 0x02,
@@ -33,9 +36,12 @@ namespace Rgr {
 }
 
 
+
+//! The SWC-DB Manager Communications Protocol C++ namespace 'SWC::Comm::Protocol::Mngr'
 namespace Mngr {
+
   // Manager Protocol Commands
-  enum Command {
+  enum Command : uint8_t {
     NOT_IMPLEMENTED      = 0x00,
     MNGR_STATE           = 0x01,
     MNGR_ACTIVE          = 0x02,

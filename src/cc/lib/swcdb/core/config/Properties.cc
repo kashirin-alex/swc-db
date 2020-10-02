@@ -52,7 +52,7 @@ namespace SWC { namespace Config {
       load(fname, filedesc, cmddesc, true);
 
     } catch(...) {
-      const Exception& e = SWC_CURRENT_EXCEPTION("");
+      const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
       SWC_LOG_OUT(LOG_WARN, SWC_LOG_OSTREAM 
         << "CONFIG_BAD_CFG_FILE " << fname << ": " << e;
       );

@@ -3,18 +3,18 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
+#include "swcdb/core/Exception.h"
 #include "swcdb/core/Encoder.h"
-#include "swcdb/core/Error.h"
 
 #include <snappy.h>
 #include <zlib.h>
 #include <zstd.h>
 
-namespace SWC { namespace Encoder {
+namespace SWC { namespace Core { namespace Encoder {
 
 
 std::string to_string(Type typ) {
-  switch(typ){
+  switch(typ) {
     case Type::DEFAULT:
       return std::string("DEFAULT");
     case Type::PLAIN:
@@ -193,4 +193,4 @@ void encode(int&, Type encoder,
 }
 
 
-}}
+}}}

@@ -18,15 +18,15 @@ struct Header final {
   static const uint8_t ANY_BEGIN  = 0x01;
   static const uint8_t ANY_END    = 0x2;
 
-  uint64_t             offset_data;
-  DB::Cells::Interval  interval;
-  uint8_t              is_any;
+  uint64_t                  offset_data;
+  DB::Cells::Interval       interval;
+  uint8_t                   is_any;
 
-  Encoder::Type        encoder;
-  uint32_t             size_plain;
-  uint32_t             size_enc;
-  uint32_t             cells_count;
-  uint32_t             checksum_data;
+  DB::Types::Encoder        encoder;
+  uint32_t                  size_plain;
+  uint32_t                  size_enc;
+  uint32_t                  cells_count;
+  uint32_t                  checksum_data;
   
   Header(DB::Types::KeySeq key_seq);
   

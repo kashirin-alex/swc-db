@@ -27,14 +27,14 @@ class Block final {
   
   typedef Block* Ptr;
   
-  enum State {
+  enum State : uint8_t {
     NONE    = 0x00,
     LOADING = 0x01,
     LOADED  = 0x02,
     REMOVED = 0x03,
   };
 
-  enum ScanState {
+  enum ScanState : uint8_t {
     UKNOWN    = 0x00,
     QUEUED    = 0x01,
     RESPONDED = 0x02,
@@ -149,11 +149,11 @@ class Block final {
   mutable std::shared_mutex   m_mutex;
   DB::Cells::Mutable          m_cells;
 
-  mutable LockAtomic::Unique  m_mutex_intval;
+  mutable Core::MutexAtomic   m_mutex_intval;
   DB::Cell::Key               m_prev_key_end;
   DB::Cell::Key               m_key_end;
 
-  Mutex                       m_mutex_state;
+  Core::MutexSptd             m_mutex_state;
   State                       m_state;
   std::atomic<size_t>         m_processing;
 
@@ -161,7 +161,7 @@ class Block final {
     ReqScan::Ptr  req;
     const int64_t ts;
   };
-  QueueSafe<ReqQueue>         m_queue;
+  Core::QueueSafe<ReqQueue>   m_queue;
 
 };
 

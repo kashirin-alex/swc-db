@@ -7,7 +7,7 @@
 #ifndef swcdb_db_Columns_Schemas_h
 #define swcdb_db_Columns_Schemas_h
 
-#include "swcdb/core/Mutex.h"
+#include "swcdb/core/MutexSptd.h"
 #include "swcdb/core/Comparators.h"
 #include "swcdb/db/Columns/Schema.h"
 
@@ -62,7 +62,7 @@ class Schemas : private std::unordered_map<cid_t, Schema::Ptr> {
   
   Schema::Ptr _get(const std::string& name) const;
 
-  Mutex  m_mutex;
+  Core::MutexSptd  m_mutex;
 };
 
 

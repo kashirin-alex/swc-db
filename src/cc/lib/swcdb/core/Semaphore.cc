@@ -6,7 +6,9 @@
 
 #include "swcdb/core/Semaphore.h"
 
-namespace SWC { 
+
+namespace SWC { namespace Core {
+
   
 Semaphore::Semaphore(size_t sz) 
           : m_sz(sz), m_count(0) {
@@ -59,4 +61,4 @@ void Semaphore::wait_all() {
     m_cv.wait(lock_wait, [this] {return !m_count;});
 }
 
-}
+}}
