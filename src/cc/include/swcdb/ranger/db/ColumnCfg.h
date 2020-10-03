@@ -145,7 +145,7 @@ class ColumnCfg final {
       << " seq="  << DB::Types::to_string(key_seq)
       << " type=" << DB::Types::to_string(col_type)
       << " range_type=" << DB::Types::to_string(range_type)
-      << " meta_cid=" << meta_cid
+      << " meta_cid=" << (int)meta_cid
       << ')'
       << " cell(versions=" << c_versions
       << " ttl=" << c_ttl

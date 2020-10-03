@@ -288,12 +288,14 @@ void update_data(DB::Schema::Ptr& schema, uint8_t flag) {
 
           if(progress && (added_count % progress) == 0) {
             ts_progress = Time::now_ns() - ts_progress;
-            SWC_LOG_OUT(LOG_INFO,
-              SWC_LOG_OSTREAM << " update-progress(cells=" << added_count 
-                << " bytes=" << added_bytes
-                << " cell/ns=" << ts_progress/progress << ") ";
-              req->result->profile.print(SWC_LOG_OSTREAM);
-            );
+            SWC_PRINT 
+              << "update-progress(time_ns=" <<  Time::now_ns()
+              << " cells=" << added_count 
+              << " bytes=" << added_bytes
+              << " cell/ns=" << ts_progress/progress << ") ";
+            req->result->profile.print(SWC_LOG_OSTREAM);
+            SWC_LOG_OSTREAM << SWC_PRINT_CLOSE;
+
             ts_progress = Time::now_ns();
           }
         }
@@ -392,11 +394,13 @@ void select_data(DB::Schema::Ptr& schema) {
 
         if(progress && (select_count % progress) == 0) {
           ts_progress = Time::now_ns() - ts_progress;
-          SWC_LOG_OUT(LOG_INFO,
-            SWC_LOG_OSTREAM << " select-progress(cells=" << select_count 
-              << " cell/ns=" << ts_progress/progress << ") ";
-              req->result->profile.print(SWC_LOG_OSTREAM);
-          );
+          SWC_PRINT 
+            << "select-progress(time_ns=" << Time::now_ns()
+            << " cells=" << select_count
+            << " cell/ns=" << ts_progress/progress << ") ";
+          req->result->profile.print(SWC_LOG_OSTREAM);
+          SWC_LOG_OSTREAM << SWC_PRINT_CLOSE;
+
           ts_progress = Time::now_ns();
         }
       }

@@ -9,7 +9,37 @@
 
 ### [SWC-DB master](https://github.com/kashirin-alex/swc-db/tree/master) (upcoming-release)
 
-
+    moved all swcdb_core_config target related to SWC::Config namespace
+    moved all swcdb_core_comm target related to namespace SWC::Comm
+    moved class RangerEnv to namespace SWC::Env under class-name Rgr
+    renamed class Comm::CommBuf to Comm::Buffers
+    renamed class Comm::CommHeader to Comm::Header
+    moved FS::SmartFdHadoop/JVM to sub-class FileSystemHadoop/JVM
+    extended SWC::Thrift::Service documentations
+    moved namespace Types::Encoding to SWC::Core::Encoder
+    moved enum Types::Fs to SWC::FS::Type
+    moved namespace Types to SWC::DB::Types
+    added namespace Common for include/swcdb/common
+    adjusted ifndef & define from 'swc_*' to 'swcdb_*'
+    moved Stat, FlowRate, CompletionCounter from core/ to common/Stats
+    moved Serializable to namespace SWC::Comm
+    moved namespace SWC::Protocol to SWC::Comm::Protocol
+    moved namespace FsBroker::Protocol to Comm::Protocol::FsBroker
+    moved swcdb_core target related to namespace SWC::Core
+    added db/Types/Encoder.h (Encoder with the schematics of the DB::Types)
+    changed default include of Error.h to Exception.h
+    renamed namespace Logger to Core
+    renamed Mutex to MutexSptd
+    moved u/int24/40/48/56_t to SWC namespace
+    renamed LockAtomicUnique to MutexAtomic
+    removed ErrorCodes.h moved to Error.h
+    moved Exception to file Exception.h under namespace Error
+    changed enums base to uint8_t where applicable
+    moved Range::type & Range::meta_cid to ColumnCfg class storage
+    optimized Core::checksum32 & Condition::memcomp
+    extended documentations and C++ source-code documentations
+    renamed Env::Fds to Env::FsBroker and Env::FsBroker::get() to fds()
+    added to DB/Types/* const char array type representations
 
 [_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.4.9...master)
 ******

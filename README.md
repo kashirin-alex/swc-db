@@ -25,7 +25,7 @@ _All the documentations are based on the ./docs/_.
 
 
 
-### SUPPORT & DISUCSSIONS
+### SUPPORT & DISCUSSIONS
 * ###### Google Group is available at [groups.google.com/forum/#!forum/swc-db](https://groups.google.com/forum/#!forum/swc-db) for open discussions and help on SWC-DB
 
 
