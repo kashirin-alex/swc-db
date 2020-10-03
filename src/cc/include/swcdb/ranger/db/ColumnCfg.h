@@ -16,6 +16,8 @@ class ColumnCfg final {
   public:
   
   const cid_t                                     cid;
+  const DB::Types::Range                          range_type;
+  const uint8_t                                   meta_cid;
   const DB::Types::KeySeq                         key_seq;
 
   mutable std::atomic<DB::Types::Column>          col_type;
@@ -37,8 +39,13 @@ class ColumnCfg final {
 
 
   ColumnCfg(const cid_t cid, const DB::Schema& schema) 
-            : cid(cid), key_seq(schema.col_seq),
-              deleting(false) {
+      : cid(cid),
+        range_type(
+          DB::Types::MetaColumn::get_range_type(cid)),
+        meta_cid(
+          DB::Types::MetaColumn::get_sys_cid(schema.col_seq, range_type)),
+        key_seq(schema.col_seq),
+        deleting(false) {
     update(schema);
   }
 
@@ -137,6 +144,8 @@ class ColumnCfg final {
       << "cid="   << cid
       << " seq="  << DB::Types::to_string(key_seq)
       << " type=" << DB::Types::to_string(col_type)
+      << " range_type=" << DB::Types::to_string(range_type)
+      << " meta_cid=" << meta_cid
       << ')'
       << " cell(versions=" << c_versions
       << " ttl=" << c_ttl

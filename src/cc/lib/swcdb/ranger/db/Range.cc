@@ -16,8 +16,6 @@ namespace SWC { namespace Ranger {
 
 Range::Range(const ColumnCfg* cfg, const rid_t rid)
             : cfg(cfg), rid(rid), 
-              type(DB::Types::MetaColumn::get_range_type(cfg->cid)),
-              meta_cid(DB::Types::MetaColumn::get_sys_cid(cfg->key_seq, type)),
               blocks(cfg->key_seq), 
               m_path(DB::RangeBase::get_path(cfg->cid, rid)),
               m_interval(cfg->key_seq),
@@ -239,7 +237,7 @@ void Range::take_ownership(int &err, const Comm::ResponseCallback::Ptr& cb) {
 void Range::on_change(int &err, bool removal, 
                       const DB::Cell::Key* old_key_begin,
                       const client::Query::Update::Cb_t& cb) {
-  if(type == DB::Types::Range::MASTER) {
+  if(cfg->range_type == DB::Types::Range::MASTER) {
     // update manager-root
     // Mngr::RangeUpdated
     return cb(nullptr);
@@ -251,7 +249,7 @@ void Range::on_change(int &err, bool removal,
   // Env::Rgr::updater();
 
   updater->columns->create(
-    meta_cid, cfg->key_seq, 1, 0, DB::Types::Column::PLAIN);
+    cfg->meta_cid, cfg->key_seq, 1, 0, DB::Types::Column::PLAIN);
 
   DB::Cells::Cell cell;
   auto cid_f(std::to_string(cfg->cid));
@@ -262,7 +260,7 @@ void Range::on_change(int &err, bool removal,
     cell.key.copy(m_interval.key_begin);
     m_mutex_intval.unlock();
     cell.key.insert(0, cid_f);
-    updater->columns->add(meta_cid, cell);
+    updater->columns->add(cfg->meta_cid, cell);
   } else {
 
     cell.flag = DB::Cells::INSERT;
@@ -273,7 +271,7 @@ void Range::on_change(int &err, bool removal,
     m_mutex_intval.lock();
     cell.key.copy(m_interval.key_begin);
     DB::Cell::Key key_end(m_interval.key_end);
-    if(type == DB::Types::Range::DATA) { 
+    if(cfg->range_type == DB::Types::Range::DATA) { 
       // only DATA until MASTER/META aligned on cells value min/max
       aligned_min.copy(m_interval.aligned_min);
       aligned_max.copy(m_interval.aligned_max);
@@ -283,7 +281,7 @@ void Range::on_change(int &err, bool removal,
 
     cell.key.insert(0, cid_f);
     key_end.insert(0, cid_f);
-    if(type == DB::Types::Range::DATA) { 
+    if(cfg->range_type == DB::Types::Range::DATA) { 
       aligned_min.insert(0, cid_f);
       aligned_max.insert(0, cid_f);
     }
@@ -302,7 +300,7 @@ void Range::on_change(int &err, bool removal,
     aligned_max.encode(&ptr);
 
     cell.set_time_order_desc(true);
-    updater->columns->add(meta_cid, cell);
+    updater->columns->add(cfg->meta_cid, cell);
 
     if(chg) {
       SWC_ASSERT(!old_key_begin->empty()); 
@@ -312,10 +310,10 @@ void Range::on_change(int &err, bool removal,
       cell.flag = DB::Cells::DELETE;
       cell.key.copy(*old_key_begin);
       cell.key.insert(0, std::to_string(cfg->cid));
-      updater->columns->add(meta_cid, cell);
+      updater->columns->add(cfg->meta_cid, cell);
     }
   }
-  updater->commit(meta_cid);
+  updater->commit(cfg->meta_cid);
   if(!cb) {
     updater->wait();
     err = updater->result->error();
@@ -444,7 +442,7 @@ void Range::expand_and_align(int &err, bool w_chg_chk) {
   }
 
   m_interval.free();
-  if(type == DB::Types::Range::DATA)
+  if(cfg->range_type == DB::Types::Range::DATA)
     blocks.expand_and_align(m_interval);
   else
     blocks.expand(m_interval);
@@ -508,9 +506,7 @@ void Range::create(int &err, CellStore::Readers::Vec& mv_css) {
 
 void Range::print(std::ostream& out, bool minimal) {
   cfg->print(out << '(');
-  out << " rid=" << rid 
-      << " type=" << DB::Types::to_string(type)
-      << " state=";
+  out << " rid=" << rid << " state=";
   {
     std::shared_lock lock(m_mutex);
     out << m_state;
@@ -586,7 +582,7 @@ void Range::load(int &err, const Comm::ResponseCallback::Ptr& cb) {
       blocks.cellstores.get_prev_key_end(0, prev_range_end);
 
       m_interval.free();
-      if(type == DB::Types::Range::DATA)
+      if(cfg->range_type == DB::Types::Range::DATA)
         blocks.expand_and_align(m_interval);
       else
         blocks.expand(m_interval);
@@ -706,7 +702,7 @@ void Range::run_add_queue() {
 
       blocks.add_logged(cell);
         
-      if(type == DB::Types::Range::DATA) {
+      if(cfg->range_type == DB::Types::Range::DATA) {
         if(align(cell.key))
           intval_chg = true;
       } else {

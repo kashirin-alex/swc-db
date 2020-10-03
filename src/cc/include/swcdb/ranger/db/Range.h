@@ -74,8 +74,6 @@ class Range final : public std::enable_shared_from_this<Range> {
 
   const ColumnCfg*        cfg;
   const rid_t             rid;
-  const DB::Types::Range  type;
-  const uint8_t           meta_cid;
   Blocks                  blocks;
   DB::Cell::Key           prev_range_end;
 
