@@ -12,10 +12,21 @@
 
 namespace SWC { namespace Comm {
 
+
 //! The SWC-DB Communications Protocol C++ namespace 'SWC::Comm::Protocol'
 namespace Protocol { 
 
-namespace Common { namespace Params {
+
+
+/**
+ * @brief The SWC-DB Common Communications Protocol C++ namespace 'SWC::Comm::Protocol::Common'
+ *
+ * \ingroup Database
+ */
+namespace Common {
+
+
+namespace Params {
  
 
 class HostEndPoints: public Serializable {

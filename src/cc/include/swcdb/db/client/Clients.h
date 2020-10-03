@@ -17,7 +17,12 @@
 
 namespace SWC { 
 
-//! The SWC-DB Client C++ namespace 'SWC::client'
+
+/**
+ * @brief The SWC-DB Client C++ namespace 'SWC::client'
+ *
+ * \ingroup Database
+ */
 namespace client {
 
 

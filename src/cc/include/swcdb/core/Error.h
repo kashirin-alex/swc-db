@@ -10,6 +10,18 @@
 #include <ostream>
 
 
+
+namespace SWC { 
+
+
+/**
+ * @brief The SWC-DB Error C++ namespace 'SWC::Error'
+ *
+ * \ingroup Core
+ */
+namespace Error {
+
+
 #define SWC_ERRNO_SYS_BEGIN     0
 #define SWC_ERRNO_SYS_END       2048  
 
@@ -21,13 +33,6 @@
 
 #define SWC_ERRNO_APP_BEGIN     3000
 #define SWC_ERRNO_APP_END       3100  
-
-
-
-namespace SWC { 
-  
-//! The SWC-DB Error C++ namespace 'SWC::Error'
-namespace Error {
 
 
 enum Code : int32_t {

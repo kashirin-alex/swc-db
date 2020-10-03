@@ -12,7 +12,11 @@
 namespace SWC {
 
 
-//! The SWC-DB Application FsBroker C++ namespace 'SWC::FsBroker'
+/**
+ * @brief The SWC-DB Application FsBroker C++ namespace 'SWC::FsBroker'
+ *
+ * \ingroup Applications
+ */
 namespace FsBroker {
 
 

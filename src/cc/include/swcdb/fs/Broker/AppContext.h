@@ -11,7 +11,12 @@
 namespace SWC { namespace client { 
 
 
-//! The SWC-DB FS::Broker's Client to FsBroker C++ namespace 'SWC::client::FsBroker'
+
+/**
+ * @brief The SWC-DB FS::Broker's Client to FsBroker C++ namespace 'SWC::client::FsBroker'
+ *
+ * \ingroup FileSystem
+ */
 namespace FsBroker {
 
 

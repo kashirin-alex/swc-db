@@ -13,7 +13,12 @@
 
 namespace SWC { 
 
-//! The SWC-DB Configurations C++ namespace 'SWC::Config'
+
+/**
+ * @brief The SWC-DB Configurations C++ namespace 'SWC::Config'
+ *
+ * \ingroup Core
+ */
 namespace Config {
 
 class Settings final : public Properties {

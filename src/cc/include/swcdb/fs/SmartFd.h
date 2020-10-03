@@ -11,7 +11,21 @@
 
 namespace SWC { 
 
-//! The SWC-DB File-System C++ namespace 'SWC::FS'
+
+/**
+ * \defgroup FileSystem The File-System Group
+ * @brief A group with all related to SWC-DB File-System (libswcdb_fs).
+ *
+ * 
+ */
+
+
+
+/**
+ * @brief The SWC-DB File-System C++ namespace 'SWC::FS'
+ *
+ * \ingroup FileSystem
+ */
 namespace FS {
 
 

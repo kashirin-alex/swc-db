@@ -15,6 +15,12 @@
 namespace SWC {
 
 
+/*!
+ *  \addtogroup Core
+ *  @{
+ */
+
+
   std::string format(const char *fmt, ...)
               __attribute__((format(printf, 1, 2)));
 
@@ -39,6 +45,9 @@ namespace SWC {
 
     return out.str();
   }
+
+
+/*! @} End of Core Group*/
 
 
 }

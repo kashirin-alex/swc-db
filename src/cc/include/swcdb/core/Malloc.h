@@ -7,6 +7,12 @@
 #define swcdb_core_Malloc_h
 
 
+/*!
+ *  \addtogroup Core
+ *  @{
+ */
+
+
 extern 
 void* operator new(unsigned long sz) 
     __attribute__((__nothrow__)); // __noclone__
@@ -32,6 +38,10 @@ void* operator new(unsigned long sz) {
   }
   return ptr;
 }
+
+
+/*! @} End of Core Group*/
+
 
 
 namespace SWC { }

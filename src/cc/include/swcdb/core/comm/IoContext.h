@@ -12,8 +12,13 @@
 #include "swcdb/core/comm/PeriodicTimer.h"
 
 namespace SWC {
-  
-//! The SWC-DB Communications C++ namespace 'SWC::Comm'
+
+
+/**
+ * @brief The SWC-DB Communications C++ namespace 'SWC::Comm'
+ *
+ * \ingroup Core
+ */
 namespace Comm {
 
 

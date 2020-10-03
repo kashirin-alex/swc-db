@@ -18,7 +18,11 @@ void  swcdb_utils_apply_cfg(SWC::Env::Config::Ptr env);
 namespace SWC { namespace Utils {
 
 
-//! The SWC-DB Shell C++ namespace 'SWC::Utils::shell'
+/**
+ * @brief The SWC-DB Shell C++ namespace 'SWC::Utils::shell'
+ *
+ * \ingroup Applications
+ */
 namespace shell {
 
 

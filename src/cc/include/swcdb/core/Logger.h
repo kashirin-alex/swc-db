@@ -18,6 +18,12 @@
 
 
 namespace SWC { 
+
+
+/*!
+ *  \addtogroup Core
+ *  @{
+ */
   
 enum LogPriority : uint8_t {
   LOG_EMERG  = 0,
@@ -31,6 +37,11 @@ enum LogPriority : uint8_t {
   LOG_DEBUG  = 7,
   LOG_NOTSET = 8
 };
+
+
+/*! @} End of Core Group*/
+
+
 
 namespace Core {
 
@@ -124,6 +135,12 @@ extern LogWriter logger;
 
 
 
+/*!
+ *  \addtogroup Core
+ *  @{
+ */
+
+
 #define SWC_LOG_OSTREAM std::cout
 
 #define SWC_LOG_PRINTF(fmt, ...) printf(fmt, __VA_ARGS__)
@@ -187,7 +204,7 @@ extern LogWriter logger;
 
 
 
-
+/*! @} End of Core Group*/
 
 
 

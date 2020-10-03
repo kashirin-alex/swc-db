@@ -16,7 +16,11 @@
 namespace SWC { 
 
 
-//! The SWC-DB Date and Time C++ namespace 'SWC::Time'
+/**
+ * @brief The SWC-DB Date and Time C++ namespace 'SWC::Time'
+ *
+ * \ingroup Core
+ */
 namespace Time {
 
 

@@ -12,7 +12,11 @@
 namespace SWC {
 
 
-//! The SWC-DB Application Ranger C++ namespace 'SWC::Ranger'
+/**
+ * @brief The SWC-DB Application Ranger C++ namespace 'SWC::Ranger'
+ *
+ * \ingroup Applications
+ */
 namespace Ranger {
 
 

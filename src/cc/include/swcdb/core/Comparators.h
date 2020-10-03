@@ -15,7 +15,11 @@
 
 namespace SWC { 
 
-//! The SWC-DB Comparators C++ namespace 'SWC::Condition'
+/**
+ * @brief The SWC-DB Comparators C++ namespace 'SWC::Condition'
+ *
+ * \ingroup Core
+ */
 namespace Condition {
 
 

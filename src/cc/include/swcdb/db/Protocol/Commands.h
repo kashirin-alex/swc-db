@@ -12,7 +12,11 @@ namespace SWC { namespace Comm { namespace Protocol {
 
 
 
-//! The SWC-DB Ranger Communications Protocol C++ namespace 'SWC::Comm::Protocol::Rgr'
+/**
+ * @brief The SWC-DB Ranger Communications Protocol C++ namespace 'SWC::Comm::Protocol::Rgr'
+ *
+ * \ingroup Database
+ */
 namespace Rgr {
 
   // Ranger Protocol Commands
@@ -37,7 +41,11 @@ namespace Rgr {
 
 
 
-//! The SWC-DB Manager Communications Protocol C++ namespace 'SWC::Comm::Protocol::Mngr'
+/**
+ * @brief The SWC-DB Manager Communications Protocol C++ namespace 'SWC::Comm::Protocol::Mngr'
+ *
+ * \ingroup Database
+ */
 namespace Mngr {
 
   // Manager Protocol Commands

@@ -140,7 +140,8 @@ EXCLUDE_PATTERNS       = *CMakeLists.txt* \
                          *-tests* \
                          *skeleton* \
                          Service-remote \
-                         gen-cpp
+                         gen-cpp \
+                         mark-unused_*
 EXCLUDE_SYMBOLS        =
 EXAMPLE_PATH           =
 EXAMPLE_PATTERNS       = *

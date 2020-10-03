@@ -20,7 +20,11 @@
 namespace SWC {
 
 
-//! The SWC-DB Application ThriftBroker C++ namespace 'SWC::ThriftBroker'
+/**
+ * @brief The SWC-DB Application ThriftBroker C++ namespace 'SWC::ThriftBroker'
+ *
+ * \ingroup Applications
+ */
 namespace ThriftBroker {
 
 

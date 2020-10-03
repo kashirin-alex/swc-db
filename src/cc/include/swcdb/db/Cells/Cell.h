@@ -18,7 +18,21 @@
 namespace SWC { 
 
 
-//! The SWC-DB Database C++ namespace 'SWC::DB'
+
+/**
+ * \defgroup Database The Database Group
+ * @brief A group with all related to SWC-DB Database (libswcdb).
+ *
+ * 
+ */
+
+
+
+/**
+ * @brief The SWC-DB Database C++ namespace 'SWC::DB'
+ *
+ * \ingroup Database
+ */
 namespace DB {
 
 

@@ -257,10 +257,10 @@ class Mngr : public Interface {
   }
 };
 
-class FsBroker : public Interface {
+class Fs : public Interface {
   public:
-  FsBroker() 
-    : Interface("fsbroker", "/tmp/.swc-cli-fsbroker-history") {
+  Fs() 
+    : Interface("fs", "/tmp/.swc-cli-fs-history") {
   }
 };
 

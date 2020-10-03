@@ -13,21 +13,22 @@
 
 
 
+namespace SWC { 
+
+
+/**
+ * @brief The SWC-DB Serializations C++ namespace 'SWC::Serialization'
+ *
+ * \ingroup Core
+ */
+namespace Serialization {
+
+
 #define SWC_THROW_OVERRUN(_s_) \
   SWC_THROWF(Error::SERIALIZATION_INPUT_OVERRUN, "Error decoding %s", _s_)
 
 #define SWC_THROW_UNPOSSIBLE(_s_) \
   SWC_THROWF(Error::UNPOSSIBLE, "%s", _s_)
-
-extern "C" { }
-
-
-
-namespace SWC { 
-
-
-//! The SWC-DB Serializations C++ namespace 'SWC::Serialization'
-namespace Serialization {
 
 
 const uint64_t MAX_V1B = 0x7f;

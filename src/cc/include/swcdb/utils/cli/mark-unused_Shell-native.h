@@ -262,11 +262,11 @@ class Mngr : public Interface {
   }
 };
 
-class FsBroker : public Interface {
+class Fs : public Interface {
   public:
-  FsBroker() 
-    : Interface("\033[32mSWC-DB(\033[36mfsbroker\033[32m)\033[33m> \033[00m",
-                "/tmp/.swc-cli-fsbroker-history") {
+  Fs() 
+    : Interface("\033[32mSWC-DB(\033[36mfs\033[32m)\033[33m> \033[00m",
+                "/tmp/.swc-cli-fs-history") {
   }
 };
 

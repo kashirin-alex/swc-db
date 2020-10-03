@@ -12,7 +12,11 @@
 namespace SWC {
 
 
-//! The SWC-DB Application Manager C++ namespace 'SWC::Manager'
+/**
+ * @brief The SWC-DB Application Manager C++ namespace 'SWC::Manager'
+ *
+ * \ingroup Applications
+ */
 namespace Manager {
 
 

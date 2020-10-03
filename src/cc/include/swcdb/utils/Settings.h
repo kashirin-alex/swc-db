@@ -16,7 +16,17 @@ typedef int swcdb_utils_run_t();
 typedef void swcdb_utils_apply_cfg_t(SWC::Env::Config::Ptr env);
 }
 
+
 namespace SWC {
+
+
+
+/**
+ * \defgroup Applications The Applications Group
+ * @brief A group of all the SWC-DB Applications / Programs.
+ *
+ * The group consists all the SWC-DB Applications / Programs with a 'main()' function
+ */
 
 
 

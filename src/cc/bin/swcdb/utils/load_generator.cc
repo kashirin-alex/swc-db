@@ -111,7 +111,11 @@ void Settings::init_post_cmd_args() { }
 namespace Utils { 
 
 
-//! The SWC-DB Load-Generator C++ namespace 'SWC::Utils::LoadGenerator'
+/**
+ * @brief The SWC-DB Load-Generator C++ namespace 'SWC::Utils::LoadGenerator'
+ *
+ * \ingroup Applications
+ */
 namespace LoadGenerator {
 
 

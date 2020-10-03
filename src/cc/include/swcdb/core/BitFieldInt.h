@@ -371,6 +371,10 @@ typedef BitFieldInt<int64_t,  56> int56_t;
 
 
 
+/*!
+ *  \addtogroup Core
+ *  @{
+ */
 
 typedef Core::uint24_t uint24_t;
 typedef Core::int24_t  int24_t;
@@ -402,6 +406,9 @@ static const uint56_t UINT56_MAX = uint56_t(UINT64_MAX >> 8);   // 7205759403792
 static const uint56_t UINT56_MIN = uint56_t(UINT56_MAX + 1);    // 0 
 static const int56_t   INT56_MAX = int56_t(UINT56_MAX / 2);     // 36028797018963967
 static const int56_t   INT56_MIN = int56_t(INT56_MAX + 1);      // -36028797018963968
+
+
+/*! @} End of Core Group*/
 
 
 } // namespace SWC

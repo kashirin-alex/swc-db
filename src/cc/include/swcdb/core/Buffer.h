@@ -243,6 +243,12 @@ class BufferDyn : public BufferT {
 
 
 
+/*!
+ *  \addtogroup Core
+ *  @{
+ */
+
+
 typedef Core::Buffer <uint8_t>          StaticBuffer;
 typedef Core::BufferDyn <StaticBuffer>  DynamicBuffer;
 
@@ -291,7 +297,9 @@ void StaticBuffer::set(DynamicBuffer& other) SWC_NOEXCEPT {
 }
 
 
-  
+
+/*! @} End of Core Group*/
+
 
 
 } // namespace SWC

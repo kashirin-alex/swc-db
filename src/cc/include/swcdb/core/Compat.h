@@ -11,7 +11,19 @@
 //! The SWC-DB C++ namespace 'SWC'
 namespace SWC { 
 
-//! The SWC-DB Core Components C++ namespace 'SWC::Core'
+
+/**
+ * \defgroup Core The Core-Components Group
+ * @brief A group with all related to SWC-DB Core-Components (libswcdb_core, libswcdb_core_config, libswcdb_core_comm).
+ *
+ * 
+ */
+
+/**
+ * @brief The SWC-DB Core Components C++ namespace 'SWC::Core'
+ *
+ * \ingroup Core
+ */
 namespace Core { }
 
 }
@@ -33,6 +45,13 @@ namespace Core { }
 #include <cstddef> // for std::size_t and std::ptrdiff_t
 #include <memory>
 #include <string>
+
+
+
+/*!
+ *  \addtogroup Core
+ *  @{
+ */
 
 
 #define SWC_ATTRIBS(attrs) __attribute__(attrs)
@@ -73,6 +92,10 @@ namespace Core { }
 #else
 #define SWC_ABORT raise(SIGABRT)
 #endif
+
+
+
+/*! @} End of Core Group*/
 
 
 

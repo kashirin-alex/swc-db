@@ -10,7 +10,11 @@ namespace SWC { namespace Comm { namespace Protocol {
 
 
 
-//! The SWC-DB FsBroker Communications Protocol C++ namespace 'SWC::Comm::Protocol::FsBroker'
+/**
+ * @brief The SWC-DB FsBroker Communications Protocol C++ namespace 'SWC::Comm::Protocol::FsBroker'
+ *
+ * \ingroup FileSystem
+ */
 namespace FsBroker {
 
   // FsBroker Protocol Commands
