@@ -13,20 +13,30 @@
 namespace SWC { namespace Core { namespace Encoder {
 
 
+namespace {
+  const char Encoder_DEFAULT[]  = "DEFAULT";
+  const char Encoder_PLAIN[]    = "PLAIN";
+  const char Encoder_ZLIB[]     = "ZLIB";
+  const char Encoder_SNAPPY[]   = "SNAPPY";
+  const char Encoder_ZSTD[]     = "ZSTD";
+  const char Encoder_UNKNOWN[]  = "UNKNOWN";
+}
+
+
 std::string to_string(Type typ) {
   switch(typ) {
     case Type::DEFAULT:
-      return std::string("DEFAULT");
+      return Encoder_DEFAULT;
     case Type::PLAIN:
-      return std::string("PLAIN");
+      return Encoder_PLAIN;
     case Type::ZLIB:
-      return std::string("ZLIB");
+      return Encoder_ZLIB;
     case Type::SNAPPY:
-      return std::string("SNAPPY");
+      return Encoder_SNAPPY;
     case Type::ZSTD:
-      return std::string("ZSTD");
+      return Encoder_ZSTD;
     case Type::UNKNOWN:
-      return std::string("UNKNOWN");
+      return Encoder_UNKNOWN;
     default:
       return std::string("UNKNOWN(" + std::to_string((uint8_t)typ) +")");
   }
@@ -34,23 +44,23 @@ std::string to_string(Type typ) {
 
 Type encoding_from(const std::string& typ) {
 
-  if(strncasecmp(typ.data(), "DEFAULT", typ.length()) == 0 || 
+  if(strncasecmp(typ.data(), Encoder_DEFAULT, typ.length()) == 0 || 
      typ.compare("0") == 0)
     return Type::DEFAULT;
 
-  if(strncasecmp(typ.data(), "PLAIN", typ.length()) == 0 || 
+  if(strncasecmp(typ.data(), Encoder_PLAIN, typ.length()) == 0 || 
      typ.compare("1") == 0)
     return Type::PLAIN;
 
-  if(strncasecmp(typ.data(), "ZLIB", typ.length()) == 0 ||
+  if(strncasecmp(typ.data(), Encoder_ZLIB, typ.length()) == 0 ||
      typ.compare("2") == 0)
     return Type::ZLIB;
 
-  if(strncasecmp(typ.data(), "SNAPPY", typ.length()) == 0 ||
+  if(strncasecmp(typ.data(), Encoder_SNAPPY, typ.length()) == 0 ||
      typ.compare("3") == 0)
     return Type::SNAPPY;
   
-  if(strncasecmp(typ.data(), "ZSTD", typ.length()) == 0 ||
+  if(strncasecmp(typ.data(), Encoder_ZSTD, typ.length()) == 0 ||
      typ.compare("4") == 0)
     return Type::ZSTD;
 

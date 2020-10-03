@@ -11,16 +11,24 @@
 namespace SWC { namespace DB { namespace Types {
 
 
+namespace {
+  const char Range_MASTER[]  = "MASTER";
+  const char Range_META[]    = "META";
+  const char Range_DATA[]    = "DATA";
+  const char Range_UNKNOWN[] = "UNKNOWN";
+}
+
+
 std::string to_string(Range typ) {
-  switch(typ){
+  switch(typ) {
     case Range::MASTER:
-      return std::string("MASTER");
+      return Range_MASTER;
     case Range::META:
-      return std::string("META");
+      return Range_META;
     case Range::DATA:
-      return std::string("DATA");
+      return Range_DATA;
     default:
-      return std::string("uknown");
+      return Range_UNKNOWN;
   }
 }
 

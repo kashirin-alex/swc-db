@@ -11,23 +11,32 @@
 namespace SWC { namespace DB { namespace Types {
 
 
+namespace {
+  const char MngrColumn_State_NOTSET[]    = "NOTSET";
+  const char MngrColumn_State_OK[]        = "OK";
+  const char MngrColumn_State_LOADING[]   = "LOADING";
+  const char MngrColumn_State_DELETED[]   = "DELETED";
+  const char MngrColumn_State_UNKNOWN[]   = "UNKNOWN";
+}
+
+
 std::string to_string(MngrColumn::State state) {
   switch(state) {
 
     case MngrColumn::State::NOTSET:
-      return std::string("NOTSET");
+      return MngrColumn_State_NOTSET;
 
     case MngrColumn::State::OK:
-      return std::string("OK");
+      return MngrColumn_State_OK;
 
     case MngrColumn::State::LOADING:
-      return std::string("LOADING");
+      return MngrColumn_State_LOADING;
 
     case MngrColumn::State::DELETED:
-      return std::string("DELETED");
+      return MngrColumn_State_DELETED;
       
     default:
-      return std::string("uknown");
+      return MngrColumn_State_UNKNOWN;
   }
 }
 

@@ -8,29 +8,38 @@
 
 namespace SWC { namespace DB { namespace Types { namespace MngrRole {
 
+
+namespace {
+  const char MngrRole_SCHEMAS[]     = "SCHEMAS";
+  const char MngrRole_RANGERS[]     = "RANGERS";
+  const char MngrRole_COLUMNS[]     = "COLUMNS";
+  const char MngrRole_NO_COLUMNS[]  = "NO_COLUMNS";
+}
+
+
 std::string to_string(uint8_t role) {
   std::string s;
 
   if(role & SCHEMAS) {
-    s.append("SCHEMAS");
+    s.append(MngrRole_SCHEMAS);
   }
 
   if(role & RANGERS) {
     if(!s.empty())
       s += ',';
-    s.append("RANGERS");
+    s.append(MngrRole_RANGERS);
   }
 
   if(role & COLUMNS) {
     if(!s.empty())
       s += ',';
-    s.append("COLUMNS");
+    s.append(MngrRole_COLUMNS);
   }
 
   if(role & NO_COLUMNS) {
     if(!s.empty())
       s += ',';
-    s.append("NO_COLUMNS");
+    s.append(MngrRole_NO_COLUMNS);
   }
   
   return s;

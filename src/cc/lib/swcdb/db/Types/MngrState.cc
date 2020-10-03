@@ -11,29 +11,40 @@
 namespace SWC { namespace DB { namespace Types {
 
 
+namespace {
+  const char MngrState_NOTSET[]     = "NOTSET";
+  const char MngrState_OFF[]        = "OFF";
+  const char MngrState_STANDBY[]    = "STANDBY";
+  const char MngrState_WANT[]       = "WANT";
+  const char MngrState_NOMINATED[]  = "NOMINATED";
+  const char MngrState_ACTIVE[]     = "ACTIVE";
+  const char MngrState_UNKNOWN[]    = "UNKNOWN";
+}
+
+
 std::string to_string(MngrState state) {
   switch(state) {
 
     case MngrState::NOTSET:
-      return std::string("NOTSET");
+      return MngrState_NOTSET;
 
     case MngrState::OFF:
-      return std::string("OFF");
+      return MngrState_OFF;
 
     case MngrState::STANDBY:
-      return std::string("STANDBY");
+      return MngrState_STANDBY;
 
     case MngrState::WANT:
-      return std::string("WANT");
+      return MngrState_WANT;
 
     case MngrState::NOMINATED:
-      return std::string("NOMINATED");
+      return MngrState_NOMINATED;
 
     case MngrState::ACTIVE:
-      return std::string("ACTIVE");
+      return MngrState_ACTIVE;
 
     default:
-      return std::string("uknown");
+      return MngrState_UNKNOWN;
   }
 }
 

@@ -11,26 +11,36 @@
 namespace SWC { namespace DB { namespace Types {
 
 
+namespace {
+  const char MngrRange_State_NOTSET[]    = "NOTSET";
+  const char MngrRange_State_DELETED[]   = "DELETED";
+  const char MngrRange_State_ASSIGNED[]  = "ASSIGNED";
+  const char MngrRange_State_CREATED[]   = "CREATED";
+  const char MngrRange_State_QUEUED[]    = "QUEUED";
+  const char MngrRange_State_UNKNOWN[]   = "UNKNOWN";
+}
+
+
 std::string to_string(MngrRange::State state) {
   switch(state) {
 
     case MngrRange::State::NOTSET:
-      return std::string("NOTSET");
+      return MngrRange_State_NOTSET;
 
     case MngrRange::State::DELETED:
-      return std::string("DELETED");
+      return MngrRange_State_DELETED;
 
     case MngrRange::State::ASSIGNED:
-      return std::string("ASSIGNED");
+      return MngrRange_State_ASSIGNED;
 
     case MngrRange::State::CREATED:
-      return std::string("CREATED");
+      return MngrRange_State_CREATED;
 
     case MngrRange::State::QUEUED:
-      return std::string("QUEUED");
+      return MngrRange_State_QUEUED;
       
     default:
-      return std::string("uknown");
+      return MngrRange_State_UNKNOWN;
   }
 }
 
