@@ -22,7 +22,7 @@ void do_load_fletcher32(const uint8_t* buffer, size_t len) {
   }
 
   ns = SWC::Time::now_ns() - ns; 
-  std::cout << " buffer=" << len << " fletcher32 "
+  std::cout << " buffer=" << len << " Core::fletcher32 "
             << " took=" << ns << " avg=" << ns/checks
             << " checksum=" << tmp_chksum << "\n";
 }

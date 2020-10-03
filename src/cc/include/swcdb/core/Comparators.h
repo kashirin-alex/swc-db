@@ -13,25 +13,7 @@
 
 
 
-
 namespace SWC { 
-
-SWC_SHOULD_NOT_INLINE
-static int
-_memcomp(const uint8_t* s1, const uint8_t* s2, size_t count) {
-  for(; count; --count, ++s1, ++s2)
-    if(*s1 != *s2) 
-      return *s1 < *s2 ? -1 : 1;
-  return 0;
-}
-  
-extern SWC_CAN_INLINE   
-int
-memcomp(const uint8_t* s1, const uint8_t* s2, size_t count) {
-  return _memcomp(s1, s2, count);
-}
-
-
 
 //! The SWC-DB Comparators C++ namespace 'SWC::Condition'
 namespace Condition {
@@ -195,6 +177,33 @@ extern SWC_CAN_INLINE
 const char* to_string(uint8_t comp) {
   return to_string((Comp)comp);
 };
+
+
+namespace { // local namespace
+static int
+_memcomp(const uint8_t* s1, const uint8_t* s2, size_t count) noexcept
+  __attribute__((optimize("-O3")));
+
+SWC_SHOULD_NOT_INLINE
+static int
+_memcomp(const uint8_t* s1, const uint8_t* s2, size_t count) noexcept {
+  for(; count; --count, ++s1, ++s2)
+    if(*s1 != *s2) 
+      return *s1 < *s2 ? -1 : 1;
+  return 0;
+}
+}
+
+// performance equal to builtin memcmp
+extern int
+memcomp(const uint8_t* s1, const uint8_t* s2, size_t count) noexcept
+  __attribute__((optimize("-O3")));
+
+extern SWC_CAN_INLINE   
+int
+memcomp(const uint8_t* s1, const uint8_t* s2, size_t count) noexcept {
+  return _memcomp(s1, s2, count);
+}
 
 
 
@@ -542,7 +551,7 @@ bool is_matching(uint8_t comp, const int64_t p1, const int64_t p2) {
 
 
 
-} }
+} } // namespace SWC::Condition
 
 
 

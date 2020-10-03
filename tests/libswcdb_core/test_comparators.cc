@@ -131,12 +131,12 @@ void load_check() {
       "memcmp", 
       memcmp(ptr1, ptr2, 18) == 0
     );
-    /* ok, from -O2
+    /* ok, from -O2 */
     LOAD_TEST(
-      "SWC::memcomp", 
-      SWC::memcomp(ptr1, ptr2, 18) == 0
+      "SWC::Condition::memcomp", 
+      SWC::Condition::memcomp(ptr1, ptr2, 18) == 0
     );
-    */
+
     LOAD_TEST(
       "SWC::Condition::is_matching vol=false", 
       SWC::Condition::is_matching(
