@@ -13,7 +13,12 @@
 #include <memory>
 
 
-namespace SWC { namespace DB { namespace Cell {
+namespace SWC { namespace DB {
+
+
+//! The SWC-DB Cell C++ namespace 'SWC::DB::Cell'
+namespace Cell {
+
 
 class Key final {
   public:

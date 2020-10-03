@@ -9,7 +9,11 @@
 #include "swcdb/core/Buffer.h"
 
 
-namespace SWC { namespace Core { namespace Encoder {
+namespace SWC { namespace Core { 
+
+
+//! The SWC-DB Encoder C++ namespace 'SWC::Core::Encoder'
+namespace Encoder {
 
 
 

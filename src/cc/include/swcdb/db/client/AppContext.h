@@ -10,7 +10,7 @@
 
 namespace SWC { namespace client { 
 
-class AppContext : public SWC::Comm::AppContext {
+class AppContext : public Comm::AppContext {
   public:
 
   AppContext();

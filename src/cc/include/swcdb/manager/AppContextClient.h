@@ -6,9 +6,14 @@
 #ifndef swcdb_manager_AppContextClient_h
 #define swcdb_manager_AppContextClient_h
 
-namespace SWC { namespace client { namespace Mngr { 
+namespace SWC { namespace client { 
 
-class AppContext final : public SWC::Comm::AppContext {
+
+//! The SWC-DB Manager's Client to Database C++ namespace 'SWC::client::Mngr'
+namespace Mngr { 
+
+
+class AppContext final : public Comm::AppContext {
   public:
 
   AppContext();

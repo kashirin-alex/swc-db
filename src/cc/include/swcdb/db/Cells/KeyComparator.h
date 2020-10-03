@@ -16,7 +16,11 @@
 
 
 
-namespace SWC { namespace DB { namespace KeySeq {
+namespace SWC { namespace DB { 
+
+
+//! The SWC-DB Key Comparator C++ namespace 'SWC::DB::KeySeq'
+namespace KeySeq {
 
 
 

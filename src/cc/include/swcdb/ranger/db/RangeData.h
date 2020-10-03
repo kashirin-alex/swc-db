@@ -10,7 +10,12 @@
 
 #include "swcdb/core/Buffer.h"
 
-namespace SWC { namespace Ranger { namespace RangeData {
+namespace SWC { namespace Ranger { 
+
+
+//! The SWC-DB Range-Data C++ namespace 'SWC::Ranger::RangeData'
+namespace RangeData {
+
 
 const int HEADER_SIZE=13;
 const int HEADER_OFFSET_CHKSUM=9;

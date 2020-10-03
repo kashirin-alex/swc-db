@@ -20,7 +20,7 @@ if(SWC_DOCUMENTATION)
     add_custom_command(TARGET doc POST_BUILD COMMAND make doc_thrift_html)
 
     ## require - thrift t_markdown_generator
-    #   https://github.com/kashirin-alex/thrift/commit/b371bbf9750f196f21d244b8c3d58527c8e3961b
+    #   https://github.com/apache/thrift/commit/330482b02e14955b7a760c59214de3e1b6d03dce
     ## add_custom_target(doc_thrift_md thrift -gen markdown:suffix=md
     ##                   -o ${CMAKE_CURRENT_BINARY_DIR}/doc
     ##                   ${CMAKE_CURRENT_SOURCE_DIR}/src/thrift/swcdb/Service.thrift)

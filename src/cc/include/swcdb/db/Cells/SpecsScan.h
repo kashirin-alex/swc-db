@@ -11,7 +11,11 @@
 #include "swcdb/db/Cells/SpecsColumn.h"
 
 
-namespace SWC { namespace DB { namespace Specs {
+namespace SWC { namespace DB { 
+
+
+//! The SWC-DB Specifications C++ namespace 'SWC::DB::Specs'
+namespace Specs {
 
 
 class Scan final : public Comm::Serializable {

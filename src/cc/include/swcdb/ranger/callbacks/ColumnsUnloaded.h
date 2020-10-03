@@ -9,7 +9,12 @@
 #include "swcdb/core/comm/ResponseCallback.h"
 #include "swcdb/db/Protocol/Rgr/params/ColumnsUnload.h"
 
-namespace SWC { namespace Ranger { namespace Callback {
+namespace SWC { namespace Ranger { 
+
+
+//! The SWC-DB Callback C++ namespace 'SWC::Ranger::Callback'
+namespace Callback {
+
 
 class ColumnsUnloaded : public Comm::ResponseCallback {
   public:

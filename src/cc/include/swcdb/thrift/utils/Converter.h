@@ -7,7 +7,12 @@
 #define swcdb_thrift_utils_Converter_h
 
 
-namespace SWC {  namespace Thrift { namespace Converter {
+namespace SWC {  namespace Thrift {
+
+
+//! The SWC-DB to & from SWC::DB Converter C++ namespace 'SWC::Thrift::Converter'
+namespace Converter {
+
 
 void exception(int err, const std::string& msg = "") {
   Exception e;

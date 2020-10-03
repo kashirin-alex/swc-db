@@ -9,7 +9,15 @@
 
 
 
-namespace SWC { namespace Ranger { namespace CellStore { namespace Block {
+namespace SWC { namespace Ranger {
+
+
+//! The SWC-DB CellStore C++ namespace 'SWC::Ranger::CellStore'
+namespace CellStore {
+
+
+//! The SWC-DB Block C++ namespace 'SWC::Ranger::CellStore::Block'
+namespace Block {
 
 
 struct Header final {

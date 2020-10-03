@@ -7,9 +7,14 @@
 #define swcdb_ThriftBroker_AppContextClient_h
 
 
-namespace SWC { namespace client { namespace ThriftBroker {
+namespace SWC { namespace client { 
 
-class AppContext final : public SWC::Comm::AppContext {
+
+//! The SWC-DB ThriftBroker's Client to Database C++ namespace 'SWC::client::ThriftBroker'
+namespace ThriftBroker {
+
+
+class AppContext final : public Comm::AppContext {
   public:
 
   AppContext() {}

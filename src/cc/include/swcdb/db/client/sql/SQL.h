@@ -25,7 +25,12 @@
 #include "swcdb/db/client/sql/QueryUpdate.h"
 
 
-namespace SWC { namespace client { namespace SQL {
+namespace SWC { namespace client { 
+
+
+//! The SWC-DB SQL C++ namespace 'SWC::client::SQL'
+namespace SQL {
+
 
 enum Cmd : uint8_t {
   UNKNOWN         = 0,

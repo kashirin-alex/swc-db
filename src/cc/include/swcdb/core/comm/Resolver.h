@@ -57,7 +57,10 @@ size_t endpoints_hash(const EndPoints& endpoints);
 size_t endpoint_hash(const EndPoint& endpoint);
 
 
+
+//! The SWC-DB Resolver C++ namespace 'SWC::Comm::Resolver'
 namespace Resolver {
+
 
 bool is_ipv4_address(const std::string& str);
 

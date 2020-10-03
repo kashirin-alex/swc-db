@@ -139,7 +139,8 @@ EXCLUDE_PATTERNS       = *CMakeLists.txt* \
                          */thriftgen-* \
                          *-tests* \
                          *skeleton* \
-                         Service-remote
+                         Service-remote \
+                         gen-cpp
 EXCLUDE_SYMBOLS        =
 EXAMPLE_PATH           =
 EXAMPLE_PATTERNS       = *

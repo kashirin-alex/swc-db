@@ -16,7 +16,16 @@ typedef int swcdb_utils_run_t();
 typedef void swcdb_utils_apply_cfg_t(SWC::Env::Config::Ptr env);
 }
 
-namespace SWC{ namespace Config {
+namespace SWC {
+
+
+
+//! The SWC-DB Utilities Applications C++ namespace 'SWC::Utils'
+namespace Utils { }
+
+
+
+namespace Config {
 
 
 void Settings::init_app_options() {

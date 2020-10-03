@@ -9,7 +9,11 @@
 
 #include "swcdb/core/Semaphore.h"
 
-namespace SWC { namespace Ranger { namespace CommitLog {
+namespace SWC { namespace Ranger {
+
+
+//! The SWC-DB CommitLog C++ namespace 'SWC::Ranger::CommitLog'
+namespace CommitLog {
 
   
 class Fragment final {

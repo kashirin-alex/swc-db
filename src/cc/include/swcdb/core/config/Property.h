@@ -26,6 +26,8 @@ const uint64_t GiB = MiB * 1024;
 const uint64_t T = G * 1000;
 const uint64_t TiB = GiB * 1024;
 
+
+//! The SWC-DB Property C++ namespace 'SWC::Config::Property'
 namespace Property {
 
 

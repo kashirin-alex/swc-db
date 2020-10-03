@@ -7,9 +7,14 @@
 #define swcdb_ranger_AppContextClient_h
 
 
-namespace SWC { namespace client { namespace Rgr {
+namespace SWC { namespace client { 
 
-class AppContext final : public SWC::Comm::AppContext {
+
+//! The SWC-DB Ranger's Client to Database C++ namespace 'SWC::client::Rgr'
+namespace Rgr {
+
+
+class AppContext final : public Comm::AppContext {
   public:
 
   AppContext() {}

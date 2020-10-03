@@ -9,7 +9,12 @@
 
 #include <string>
 
-namespace SWC { namespace DB { namespace Types { 
+namespace SWC { namespace DB { 
+
+
+//! The SWC-DB Types C++ namespace 'SWC::DB::Types'
+namespace Types { 
+
 
 enum class Column : uint8_t {
   UNKNOWN       = 0x0,

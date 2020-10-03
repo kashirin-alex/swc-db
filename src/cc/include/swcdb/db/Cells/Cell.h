@@ -17,8 +17,10 @@
 
 namespace SWC { 
 
+
 //! The SWC-DB Database C++ namespace 'SWC::DB'
-namespace DB { 
+namespace DB {
+
 
 enum DisplayFlag : uint8_t {
   TIMESTAMP     = 0x01,
@@ -35,6 +37,7 @@ enum OutputFlag : uint8_t {
 };
 
 
+//! The SWC-DB Cells C++ namespace 'SWC::DB::Cells'
 namespace Cells {
 
 enum Flag : uint8_t {

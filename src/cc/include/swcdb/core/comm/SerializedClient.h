@@ -18,7 +18,12 @@
 #include "swcdb/core/comm/ConfigSSL.h"
 
 
-namespace SWC { namespace Comm { namespace client {
+namespace SWC { namespace Comm { 
+
+
+//! The SWC-DB client C++ namespace 'SWC::Comm::client'
+namespace client {
+
 
 
 class ServerConnections final : 

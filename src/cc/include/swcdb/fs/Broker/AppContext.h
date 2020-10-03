@@ -8,7 +8,12 @@
 
 #include "swcdb/core/comm/AppContext.h"
 
-namespace SWC { namespace client { namespace FsBroker {
+namespace SWC { namespace client { 
+
+
+//! The SWC-DB FS::Broker's Client to FsBroker C++ namespace 'SWC::client::FsBroker'
+namespace FsBroker {
+
 
 class AppContext final : public Comm::AppContext {
   public:

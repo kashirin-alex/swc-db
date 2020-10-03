@@ -17,7 +17,7 @@ cd swcdb;
 ```
 
 **The 'doc' target will generate documentations in the `doc` folder of the build directory with the source documentations and archive by languages & formats to `swc-db-doc-[lang]-[format].tar.xz`.**
-> * [The Generated SWC-DB Documentations](https://www.swcdb.org/additional_docs/)
+> * [The Generated SWC-DB Documentations](https://www.swcdb.org/additional-docs/)
 
 ```bash
 make doc;

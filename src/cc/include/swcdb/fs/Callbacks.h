@@ -11,7 +11,10 @@
 
 namespace SWC { namespace FS {
 
+
+//! The SWC-DB Callback C++ namespace 'SWC::FS::Callback'
 namespace Callback {
+
 
   typedef std::function<void(int, bool)>         ExistsCb_t;
   typedef std::function<void(int)>               RemoveCb_t;

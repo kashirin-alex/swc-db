@@ -13,8 +13,11 @@
 #include "swcdb/db/Cells/Cell.h"
 
 
-namespace SWC { namespace DB { namespace Cells { namespace TSV {
+namespace SWC { namespace DB { namespace Cells { 
 
+
+//! The SWC-DB Tab-Separated-Values C++ namespace 'SWC::DB::Cells::TSV'
+namespace TSV {
 
 
 std::string get_filepath(const std::string& base_path, size_t& file_num) {

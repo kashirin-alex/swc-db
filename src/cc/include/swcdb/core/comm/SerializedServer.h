@@ -17,7 +17,12 @@
 #include "swcdb/core/comm/ConfigSSL.h"
 
 
-namespace SWC { namespace Comm { namespace server {
+namespace SWC { namespace Comm {
+
+
+//! The SWC-DB server C++ namespace 'SWC::Comm::server'
+namespace server {
+
 
 
 class Acceptor : protected asio::ip::tcp::acceptor {

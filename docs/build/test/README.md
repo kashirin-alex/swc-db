@@ -3,19 +3,19 @@ title: Test
 sort: 5
 ---
 
-# Testing
+# Testing SWC-DB build
 
 
 
-## PREPARE
+## Test Preparations
 
-**Test use swcdb_cluster**
-- swcdb_cluster needs setup [as by instructiuons]({{ site.baseurl }}/install/swcdb_cluster/)
+**The test uses the swcdb_cluster**
+- swcdb_cluster is required to be set [as by instructiuons]({{ site.baseurl }}/install/swcdb_cluster/)
 
 
 
-## RUN THE TEST
-*  while at builds [path as by instructions]({{ site.baseurl }}/build/prerequisites/)
+## Running the SWC-DB build Test
+*  while at builds path [as by instructions]({{ site.baseurl }}/build/prerequisites/)
 
 ```bash
 cd swcdb;

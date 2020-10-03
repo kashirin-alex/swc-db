@@ -185,31 +185,14 @@ The Select Query command perform scans and select cells by the applied query.
 select where
   col(ColNameA1) = (
     cells = (
-      range >= ['1-']
-        AND
-      [>='1-'] <= key = [<='1-1-', ="1" ]
-        AND
-      value = "Value-Data-1"
-        AND
-      timestamp > “2010/05/29"
-      limit=10
+      range >= ['1-'] AND [>='1-'] <= key = [<='1-1-', ="1" ] AND  value = "Value-Data-1" 
+      AND timestamp > “2010/05/29" AND offset_key = ["1-0"] AND offset_rev = 000111222
+      limit=10 max_versions=2
     )
   )
-    AND
-  col(ColNameB1, ColNameB2) = (
-    cells = (
-      [>='2-'] <= key = [<='2-2-',"1"]
-        AND
-      value = "Value-Data-2"
-        AND
-      timestamp > "2010/05/29"
-    )
-      AND
-    cells = (
-      key = [<='21-',"1"]
-        AND
-      timestamp > "2010/05/29"
-    )
+  AND col(ColNameB1, ColNameB2) = (
+    cells = ( [>='2-'] <= key = [<='2-2-',"1"] AND value = "Value-Data-2"  AND timestamp > "2010/05/29" )
+    AND cells = ( key = [<='21-',"1"] AND timestamp > "2010/05/29" )
   )
   max_versions=1
 ```
@@ -243,6 +226,10 @@ All the Conditions and Flags are optional, without a LIMIT and any Conditions th
 [ [```Condition-Value```](#the-condition-value-syntax) ]
 [``` AND ```]
 [ [```Condition-Timestamp```](#the-condition-timestamp-syntax) ]
+[``` AND ```]
+[ [```Condition-Offset-Key```](#the-condition-offset-key-syntax) ]
+[``` AND ```]
+[ [```Condition-Offset-Revision```](#the-condition-offset-revision-syntax) ]
 [ [```Flags```(cells-interval-scope)](#the-flags-syntax)] 
 ```)```***
 
@@ -274,6 +261,16 @@ The Condition of Value. The Comparator is auto-set to EQ, If no Comparator was a
 * ##### The Condition-Timestamp syntax
 The Condition of Timestamp is an interval of from Timestamp to Timestamp, optionally to apply only one side with VALUE on right. It can be defined only by the Comparators NE, EQ, GT, LT, GE and LE. The VALUE can be a Timestamp in nanoseconds or a Date and Time in format ```"YYYY/MM/DDD HH:mm:ss.nanoseconds"```.  \
 ***```VALUE``` [``` COMP ```] ``` timestamp ``` [``` COMP ```] ```VALUE```***
+
+
+* ##### The Condition-Offset-Key syntax
+The Condition of the Offset Key is a Key with one Comparator option Equal. The Cell of the Key will be evaluated for select-match if Offset Revision was not specified. \
+***```offset_key``` ``` = ``` ```Key```***
+
+
+* ##### The Condition-Offset-Revision syntax
+The Condition of the Offset Revision is the Cell Timestamp with one Comparator option Equal. The Timestamp is in Nanoseconds or Date & Time, the ```offset_rev``` is the timestamp of the last cell that will be skipped before evaluating for select-match. \
+***```offset_rev``` ``` = ``` ```Timestamp```***
 
 
 * ##### The Flags syntax
