@@ -13,7 +13,7 @@
 
 #include "swcdb/fs/Interface.h"
 #include "swcdb/fs/Broker/Protocol/Commands.h"
-#include "swcdb/fsbroker/FdsMap.h"
+#include "swcdb/fsbroker/FsBrokerEnv.h"
 
 #include "swcdb/common/Protocol/handlers/NotImplemented.h"
 #include "swcdb/fsbroker/handlers/Exists.h"
@@ -79,7 +79,7 @@ class AppContext final : public Comm::AppContext {
     SWC_ASSERT(fs_type != FS::Type::BROKER);
     Env::FsInterface::init(fs_type);
 
-    Env::Fds::init();
+    Env::FsBroker::init();
     
     auto period = settings->get<Config::Property::V_GINT32>(
       "swc.cfg.dyn.period");
@@ -157,7 +157,7 @@ class AppContext final : public Comm::AppContext {
     m_srv->stop_accepting(); // no further requests accepted
 
     int err;
-    for(FS::SmartFd::Ptr fd; (fd = Env::Fds::get()->pop_next()); ) {
+    for(FS::SmartFd::Ptr fd; (fd = Env::FsBroker::fds()->pop_next()); ) {
       if(fd->valid()) {
         err = Error::OK;
         if(fd->flags() & O_WRONLY)

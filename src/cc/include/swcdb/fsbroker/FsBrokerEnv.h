@@ -3,8 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swcdb_fsbroker_FdsMap_h
-#define swcdb_fsbroker_FdsMap_h
+#ifndef swcdb_fsbroker_FsBrokerEnv_h
+#define swcdb_fsbroker_FsBrokerEnv_h
 
 #include <unordered_map>
 #include <shared_mutex>
@@ -73,31 +73,31 @@ class Fds final : private std::unordered_map<int32_t, FS::SmartFd::Ptr> {
 
 
 namespace Env {
-class Fds final {
+class FsBroker final {
   public:
 
   static void init() {
-    m_env = std::make_shared<Fds>();
+    m_env = std::make_shared<FsBroker>();
   }
 
-  static FsBroker::Fds::Ptr get(){
+  static SWC::FsBroker::Fds::Ptr fds() {
     SWC_ASSERT(m_env != nullptr);
     return m_env->m_fds;
   }
 
-  Fds() : m_fds(new FsBroker::Fds()) {}
+  FsBroker() : m_fds(new SWC::FsBroker::Fds()) {}
 
-  ~Fds(){
+  ~FsBroker(){
     if(m_fds != nullptr)  
       delete m_fds;
   }
 
   private:
-  FsBroker::Fds::Ptr                 m_fds = nullptr;
-  inline static std::shared_ptr<Fds> m_env = nullptr;
+  SWC::FsBroker::Fds::Ptr                 m_fds = nullptr;
+  inline static std::shared_ptr<FsBroker> m_env = nullptr;
 };
 
 
 }}
 
-#endif // swcdb_fsbroker_FdsMap_h
+#endif // swcdb_fsbroker_FsBrokerEnv_h

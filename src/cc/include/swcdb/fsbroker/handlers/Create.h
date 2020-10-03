@@ -34,7 +34,7 @@ void create(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     );
 
     if(smartfd->valid())
-      fd = Env::Fds::get()->add(smartfd);
+      fd = Env::FsBroker::fds()->add(smartfd);
 
   } catch(...) {
     const Error::Exception& e = SWC_CURRENT_EXCEPTION("");

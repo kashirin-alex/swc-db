@@ -24,7 +24,7 @@ void close(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     Params::CloseReq params;
     params.decode(&ptr, &remain);
 
-    auto smartfd = Env::Fds::get()->remove(params.fd);
+    auto smartfd = Env::FsBroker::fds()->remove(params.fd);
       
     if(!smartfd)
       err = EBADR;

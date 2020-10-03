@@ -27,7 +27,7 @@ void read(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     Params::ReadReq params;
     params.decode(&ptr, &remain);
 
-    auto smartfd = Env::Fds::get()->select(params.fd);
+    auto smartfd = Env::FsBroker::fds()->select(params.fd);
       
     if(!smartfd) {
       err = EBADR;

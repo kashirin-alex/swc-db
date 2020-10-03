@@ -47,7 +47,7 @@ void read_all(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
       err = EBADR;
     if(err)
       goto finish;
-    fd = Env::Fds::get()->add(smartfd);
+    fd = Env::FsBroker::fds()->add(smartfd);
 
     rbuf.free();
     if(fs->read(err, smartfd, &rbuf, len) != len)
@@ -55,7 +55,7 @@ void read_all(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
 
     finish:
       int errtmp;
-      if(fd != -1 && (smartfd = Env::Fds::get()->remove(fd)))
+      if(fd != -1 && (smartfd = Env::FsBroker::fds()->remove(fd)))
         fs->close(!err ? err : errtmp, smartfd);
 
   } catch(...) {

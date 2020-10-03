@@ -25,7 +25,7 @@ void sync(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     Params::SyncReq params;
     params.decode(&ptr, &remain);
 
-    auto smartfd = Env::Fds::get()->select(params.fd);
+    auto smartfd = Env::FsBroker::fds()->select(params.fd);
       
     if(!smartfd)
       err = EBADR;

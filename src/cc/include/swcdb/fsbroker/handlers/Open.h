@@ -31,7 +31,7 @@ void open(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     Env::FsInterface::fs()->open(err, smartfd, params.bufsz);
       
     if(smartfd->valid())
-      fd = Env::Fds::get()->add(smartfd);
+      fd = Env::FsBroker::fds()->add(smartfd);
 
   } catch(...) {
     const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
