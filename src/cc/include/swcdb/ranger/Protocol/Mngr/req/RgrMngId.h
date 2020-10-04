@@ -32,7 +32,7 @@ class RgrMngId: public client::ConnQueue::ReqBase {
   virtual ~RgrMngId() { }
 
   void create(const Params::RgrMngId& params) {
-    std::lock_guard lock(m_mutex);
+    Core::MutexAtomic::scope lock(m_mutex);
     cbp = Buffers::make(params);
     cbp->header.set(RGR_MNG_ID, 60000);
   }
@@ -191,7 +191,7 @@ class RgrMngId: public client::ConnQueue::ReqBase {
   }
 
   void stop() {
-    std::lock_guard lock(m_mutex);
+    Core::MutexAtomic::scope lock(m_mutex);
     if(m_run) 
       m_timer.cancel();
     m_run = false;
@@ -200,7 +200,7 @@ class RgrMngId: public client::ConnQueue::ReqBase {
   void set(uint32_t ms) {
     cancel();
 
-    std::lock_guard lock(m_mutex);
+    Core::MutexAtomic::scope lock(m_mutex);
     if(!m_run)
       return;
 
@@ -216,7 +216,7 @@ class RgrMngId: public client::ConnQueue::ReqBase {
   }
 
   void cancel() {
-    std::lock_guard lock(m_mutex);
+    Core::MutexAtomic::scope lock(m_mutex);
     m_timer.cancel();
   }
 
@@ -224,7 +224,7 @@ class RgrMngId: public client::ConnQueue::ReqBase {
   const std::function<void()>   cb_shutdown;
   EndPoints                     endpoints;
   
-  std::mutex                    m_mutex;
+  Core::MutexAtomic             m_mutex;
   asio::high_resolution_timer   m_timer;
   bool                          m_run;
   std::atomic<size_t>           m_failures;

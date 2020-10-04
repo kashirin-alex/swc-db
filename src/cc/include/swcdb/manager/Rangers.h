@@ -102,7 +102,7 @@ class Rangers final {
   
   std::atomic<bool>             m_run; 
 
-  std::mutex                    m_mutex_timer;
+  Core::MutexAtomic             m_mutex_timer;
   asio::high_resolution_timer   m_timer; 
 
   std::mutex                    m_mutex;

@@ -14,12 +14,12 @@ namespace SWC { namespace Common { namespace Stats {
 class Stat {
   public:
 
-  Stat(): m_count(0), m_avg(0), m_min(-1), m_max(0) {}
+  Stat(): m_count(0), m_avg(0), m_min(-1), m_max(0) { }
 
-  virtual ~Stat(){}
+  virtual ~Stat() { }
 
-  void add(uint64_t v){
-    std::lock_guard lock(m_mutex);
+  void add(uint64_t v) {
+    Core::MutexAtomic::scope lock(m_mutex);
     m_avg *= m_count;
     m_avg += v;
     m_avg /= ++m_count;
@@ -29,30 +29,30 @@ class Stat {
       m_min = v;
   }
 
-  uint64_t avg(){
-    std::lock_guard lock(m_mutex);
+  uint64_t avg() {
+    Core::MutexAtomic::scope lock(m_mutex);
     return m_avg;
   }
-  uint64_t max(){
-    std::lock_guard lock(m_mutex);
+  uint64_t max() {
+    Core::MutexAtomic::scope lock(m_mutex);
     return m_max;
   }
-  uint64_t min(){
-    std::lock_guard lock(m_mutex);
+  uint64_t min() {
+    Core::MutexAtomic::scope lock(m_mutex);
     return m_min;
   }
 
-  uint64_t count(){
-    std::lock_guard lock(m_mutex);
+  uint64_t count() {
+    Core::MutexAtomic::scope lock(m_mutex);
     return m_count;
   }
 
   private:
-  std::mutex m_mutex;
-  uint64_t m_count;
-  uint64_t m_avg;
-  uint64_t m_min;
-  uint64_t m_max;
+  Core::MutexAtomic   m_mutex;
+  uint64_t            m_count;
+  uint64_t            m_avg;
+  uint64_t            m_min;
+  uint64_t            m_max;
 };
 
 }}}

@@ -51,7 +51,7 @@ void Rangers::stop(bool shuttingdown) {
   if(shuttingdown)
     m_run = false;
   {
-    std::lock_guard lock(m_mutex_timer);
+    Core::MutexAtomic::scope lock(m_mutex_timer);
     m_timer.cancel();
   }
   {
@@ -70,7 +70,7 @@ void Rangers::schedule_check(uint32_t t_ms) {
   if(!m_run)
     return;
 
-  std::lock_guard lock(m_mutex_timer);
+  Core::MutexAtomic::scope lock(m_mutex_timer);
 
   auto set_in = std::chrono::milliseconds(t_ms);
   auto set_on = m_timer.expiry();

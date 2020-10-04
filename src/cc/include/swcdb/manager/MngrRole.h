@@ -93,7 +93,7 @@ class MngrRole final {
   bool                            m_major_updates = false;
   std::unordered_map<uint64_t,  Comm::EndPoint> m_mngrs_client_srv;
   
-  std::mutex                      m_mutex_timer;
+  Core::MutexAtomic               m_mutex_timer;
   asio::high_resolution_timer     m_check_timer; 
   bool                            m_run = true; 
   

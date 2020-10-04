@@ -44,7 +44,7 @@ MngrRole::~MngrRole() { }
 
 
 void MngrRole::schedule_checkin(uint32_t t_ms) {
-  std::lock_guard lock(m_mutex_timer);
+  Core::MutexAtomic::scope lock(m_mutex_timer);
   if(!m_run)
     return;
 
@@ -286,7 +286,7 @@ void MngrRole::stop() {
   Env::Mngr::rangers()->stop();
   Env::Mngr::mngd_columns()->stop();
   {
-    std::lock_guard lock(m_mutex_timer);
+    Core::MutexAtomic::scope lock(m_mutex_timer);
     m_check_timer.cancel();
     m_run = false;
   }
