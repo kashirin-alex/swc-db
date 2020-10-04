@@ -54,7 +54,7 @@ bool MngdColumns::has_active() {
 }
 
 bool MngdColumns::has_cid_pending_load() {
-  std::lock_guard lock(m_mutex_columns);
+  std::scoped_lock lock(m_mutex_columns);
   return !m_cid_pending_load.empty();
 }
 
@@ -169,7 +169,7 @@ void MngdColumns::update_status(
 
       if(Env::Mngr::columns()->is_an_initialization(err, schema) && !err) {
         {
-          std::lock_guard lock(m_mutex_columns);
+          std::scoped_lock lock(m_mutex_columns);
           m_cid_pending_load.emplace_back(co_func, schema->cid);
         }
         if(!schemas_mngr)
@@ -310,7 +310,7 @@ void MngdColumns::columns_load() {
 }
 
 void MngdColumns::columns_load_chk_ack() {
-  std::lock_guard lock(m_mutex_columns);
+  std::scoped_lock lock(m_mutex_columns);
   for(auto& ack : m_cid_pending_load) {
     if(ack.func == ColumnMngFunc::INTERNAL_ACK_LOAD) {
       update(
@@ -322,7 +322,7 @@ void MngdColumns::columns_load_chk_ack() {
 }
 
 bool MngdColumns::load_pending(cid_t cid, ColumnFunction &pending) {
-  std::lock_guard lock(m_mutex_columns);
+  std::scoped_lock lock(m_mutex_columns);
 
   auto it = std::find_if(m_cid_pending_load.begin(), 
                          m_cid_pending_load.end(),  
@@ -495,7 +495,7 @@ void MngdColumns::update_status_ack(
                   
   for(ColumnReq::Ptr req;;) {
     {
-      std::lock_guard lock(m_mutex_columns);
+      std::scoped_lock lock(m_mutex_columns);
       auto it = std::find_if(m_cid_pending.begin(), m_cid_pending.end(),  
           [co_func, cid=schema->cid](const ColumnReq::Ptr& req)
           {return req->schema->cid == cid && req->function == co_func;});
@@ -580,7 +580,7 @@ void MngdColumns::actions_run() {
 
     if(!err) {
       {
-        std::lock_guard lock(m_mutex_columns);
+        std::scoped_lock lock(m_mutex_columns);
         m_cid_pending.push_back(req);
       }
       SWC_ASSERT(req->schema->cid != DB::Schema::NO_CID);

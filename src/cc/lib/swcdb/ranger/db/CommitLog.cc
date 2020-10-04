@@ -136,7 +136,7 @@ void Fragments::commit_new_fragment(bool finalize) {
   if(finalize)
     m_sem.wait_all();
   {
-    std::unique_lock lock_wait(m_mutex);
+    std::scoped_lock lock(m_mutex);
     m_commiting = false;
     m_cv.notify_all();
   }

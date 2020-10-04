@@ -339,7 +339,7 @@ class Test {
 
         delete_column([this]() { 
           {
-            std::unique_lock lock(mutex);
+            std::scoped_lock lock(mutex);
             runs = false;
           }
           cv.notify_all(); 

@@ -92,12 +92,12 @@ class Splitter final {
         );
       }
       
-      std::unique_lock lock_wait(m_mutex);
+      std::scoped_lock lock(m_mutex);
       m_cv.notify_one();
 
     } while(!m_queue.deactivating());
     
-    std::unique_lock lock_wait(m_mutex);
+    std::scoped_lock lock(m_mutex);
     m_cv.notify_one();
   }
 

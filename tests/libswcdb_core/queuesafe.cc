@@ -50,8 +50,8 @@ void run(int threads) {
       t.detach();
   }
 
-  std::unique_lock lock(m);
-  cv.wait(lock, [&completing]() { return !completing; });
+  std::unique_lock lock_wait(m);
+  cv.wait(lock_wait, [&completing]() { return !completing; });
 }
 
 }

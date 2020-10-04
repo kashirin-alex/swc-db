@@ -382,7 +382,7 @@ class AppHandler final : virtual public BrokerIf {
 
   /* UPDATER */
   int64_t updater_create(const int32_t buffer_size) {
-    std::lock_guard lock(m_mutex);
+    std::scoped_lock lock(m_mutex);
 
     int64_t id = 1;
     for(auto it = m_updaters.begin();
@@ -398,7 +398,7 @@ class AppHandler final : virtual public BrokerIf {
   void updater_close(const int64_t id) {
     client::Query::Update:: Ptr req;
     {
-      std::lock_guard lock(m_mutex);
+      std::scoped_lock lock(m_mutex);
     
       auto it = m_updaters.find(id);
       if(it == m_updaters.end())
@@ -467,7 +467,7 @@ class AppHandler final : virtual public BrokerIf {
     client::Query::Update:: Ptr req;
     for(;;) {
       {
-        std::lock_guard lock(m_mutex);
+        std::scoped_lock lock(m_mutex);
         auto it = m_updaters.begin();
         if(it == m_updaters.end()) 
           break;
@@ -479,7 +479,7 @@ class AppHandler final : virtual public BrokerIf {
   }
 
   void updater(const int64_t id, client::Query::Update::Ptr& req) {
-    std::lock_guard lock(m_mutex);
+    std::scoped_lock lock(m_mutex);
 
     auto it = m_updaters.find(id);
     if(it == m_updaters.end())
@@ -608,7 +608,7 @@ class AppHandler final : virtual public BrokerIf {
         [&mutex, &_return, await=&res, cid=schema->cid, sz=dbschemas.size()]
         (const Comm::client::ConnQueue::ReqBase::Ptr&, 
          const Comm::Protocol::Mngr::Params::ColumnCompactRsp& rsp) {
-          std::lock_guard lock(mutex);
+          std::scoped_lock lock(mutex);
           auto& r = _return.emplace_back();
           r.cid=cid;
           r.err=rsp.err;

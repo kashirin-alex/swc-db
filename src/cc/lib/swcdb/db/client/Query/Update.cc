@@ -87,13 +87,13 @@ Update::~Update() { }
 void Update::response(int err) {
 
   if(!result->completion_final()) {
-    std::unique_lock lock_wait(m_mutex);
+    std::scoped_lock lock(m_mutex);
     return cv.notify_all();
   }
 
   if(!err && (columns->size() || columns_onfractions->size())) {
     commit();
-    std::unique_lock lock_wait(m_mutex);
+    std::scoped_lock lock(m_mutex);
     return cv.notify_all();
   }
 
@@ -106,7 +106,7 @@ void Update::response(int err) {
   if(cb)
     cb(result);
 
-  std::unique_lock lock_wait(m_mutex);
+  std::scoped_lock lock(m_mutex);
   cv.notify_all();
 }
 

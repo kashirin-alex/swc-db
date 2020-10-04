@@ -110,7 +110,7 @@ std::string FileSystemHadoopJVM::to_string() {
 void FileSystemHadoopJVM::stop() {
   m_run.store(false);
   {
-    std::unique_lock lock(m_mutex);
+    std::scoped_lock lock(m_mutex);
     m_fs = nullptr;
     m_cv.notify_all();
   }
@@ -230,16 +230,16 @@ FileSystemHadoopJVM::Service::Ptr FileSystemHadoopJVM::get_fs(int& err) {
   if(m_run && !m_fs) {
     bool connect = false;
     {
-      std::unique_lock lock(m_mutex);
+      std::unique_lock lock_wait(m_mutex);
       if(m_connecting) {
-        m_cv.wait(lock, [this](){ return !m_connecting || !m_run; });
+        m_cv.wait(lock_wait, [this](){ return !m_connecting || !m_run; });
       } else {
         connect = m_connecting = true;
       }
     }
     if(connect) {
       auto fs = setup_connection();
-      std::unique_lock lock(m_mutex);
+      std::scoped_lock lock(m_mutex);
       m_fs = fs;
       m_connecting = false;
       m_cv.notify_all();
@@ -256,7 +256,7 @@ FileSystemHadoopJVM::Service::Ptr FileSystemHadoopJVM::get_fs(int& err) {
 void FileSystemHadoopJVM::need_reconnect(
         int& err, FileSystemHadoopJVM::Service::Ptr& fs) {
   if(err == 255) {
-    std::unique_lock lock(m_mutex);
+    std::scoped_lock lock(m_mutex);
     if(m_fs == fs)
       m_fs = nullptr;
   }

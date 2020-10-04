@@ -129,7 +129,7 @@ bool Select::add_cells(const cid_t cid, const StaticBuffer& buffer,
 void Select::get_cells(const cid_t cid, DB::Cells::Result& cells) {
   m_columns[cid]->get_cells(cells);
   if(notify) {
-    std::unique_lock lock(mutex);
+    std::scoped_lock lock(mutex);
     cv.notify_all();
   }
 }
@@ -163,7 +163,7 @@ std::vector<cid_t> Select::get_cids() const {
 void Select::free(const cid_t cid) {
   m_columns[cid]->free();
   if(notify) {
-    std::unique_lock lock(mutex);
+    std::scoped_lock lock(mutex);
     cv.notify_all();
   }
 }
@@ -207,7 +207,7 @@ void Select::response(int err) {
   if(result->notify) {
     bool call;
     {
-      std::unique_lock lock(result->mutex);
+      std::scoped_lock lock(result->mutex);
       if((call = !m_rsp_partial_runs))
         m_rsp_partial_runs = true;
     }
@@ -217,7 +217,7 @@ void Select::response(int err) {
     cb(result);
   }
 
-  std::unique_lock lock(result->mutex);
+  std::scoped_lock lock(result->mutex);
   result->cv.notify_all();
 }
 
@@ -226,11 +226,11 @@ void Select::response_partials() {
     return;
     
   {
-    std::unique_lock lock(result->mutex);
+    std::unique_lock lock_wait(result->mutex);
     if(m_rsp_partial_runs) {
       if(wait_on_partials()) {
         result->cv.wait(
-          lock,
+          lock_wait,
           [selector=shared_from_this()] () {
             return !selector->m_rsp_partial_runs || 
                    !selector->wait_on_partials();
@@ -253,15 +253,15 @@ void Select::response_partial() {
     
   cb(result);
 
-  std::unique_lock lock(result->mutex);
+  std::scoped_lock lock(result->mutex);
   m_rsp_partial_runs = false;
   result->cv.notify_all();
 }
 
 void Select::wait() {
-  std::unique_lock lock(result->mutex);
+  std::unique_lock lock_wait(result->mutex);
   result->cv.wait(
-    lock, 
+    lock_wait, 
     [selector=shared_from_this()] () {
       return !selector->m_rsp_partial_runs &&
              !selector->result->_completion();

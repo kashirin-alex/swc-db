@@ -37,7 +37,7 @@ void Semaphore::acquire() {
 }
 
 void Semaphore::release() {
-  std::unique_lock lock_wait(m_mutex);
+  std::scoped_lock lock(m_mutex);
   --m_count;
   m_cv.notify_all();
 }
