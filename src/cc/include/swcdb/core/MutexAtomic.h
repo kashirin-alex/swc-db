@@ -16,7 +16,7 @@ namespace SWC { namespace Core {
 class MutexAtomic {
   public:
 
-  explicit MutexAtomic(): want(false) { }
+  explicit MutexAtomic() noexcept : want(ATOMIC_FLAG_INIT) { }
 
   MutexAtomic(const MutexAtomic&) = delete;
 
@@ -26,39 +26,56 @@ class MutexAtomic {
 
   ~MutexAtomic() { }
 
-  bool try_lock() const {
+  bool try_lock() const noexcept {
+    return !want.test_and_set(std::memory_order_acquire);
+    /*
     bool at=false;
     return want.compare_exchange_weak(at, true, std::memory_order_seq_cst);
+    */
   }
   
-  void lock() const {
+  void lock() const noexcept {
     uint16_t i = 0;
+    while(want.test_and_set(std::memory_order_acquire)) {
+      if(++i == 0)
+        std::this_thread::yield();
+    }
+    /*
     for(auto at=false;
         !want.compare_exchange_weak(at, true, std::memory_order_seq_cst);
         at=false)
       if(++i == 0)
         std::this_thread::yield();
+    */
   }
 
-  void lock(const uint32_t& us_sleep) const {
+  void lock(const uint32_t& us_sleep) const noexcept {
+    uint16_t i = 0;
+    while(want.test_and_set(std::memory_order_acquire)) {
+      if(++i == 0)
+        std::this_thread::sleep_for(std::chrono::microseconds(us_sleep));
+    }
+    /*
     uint16_t i = 0;
     for(auto at=false;
         !want.compare_exchange_weak(at, true, std::memory_order_seq_cst);
         at=false)
       if(++i == 0)
         std::this_thread::sleep_for(std::chrono::microseconds(us_sleep));
+    */
   }
 
-  void unlock() const {
-    want.store(false, std::memory_order_release);
+  void unlock() const noexcept {
+    want.clear(std::memory_order_release);
+    //want.store(false, std::memory_order_release);
   }
   
   class scope final {
     public:
 
-    scope(const MutexAtomic& m) : _m(m) {  _m.lock(); }
+    scope(const MutexAtomic& m) noexcept : _m(m) {  _m.lock(); }
 
-    ~scope() { _m.unlock(); }
+    ~scope() noexcept { _m.unlock(); }
     
     scope(const scope&) = delete;
 
@@ -72,7 +89,8 @@ class MutexAtomic {
 
   private:
 
-  mutable std::atomic<bool> want;
+  mutable std::atomic_flag want;
+  //mutable std::atomic<bool> want;
 };
 
 
