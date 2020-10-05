@@ -9,6 +9,10 @@
 
 ### [SWC-DB master](https://github.com/kashirin-alex/swc-db/tree/master) (upcoming-release)
 
+    extended sbin/swcdb_cluster deploy command with Tar archive option
+    changed unique_lock where possible and lock_guard to scoped_lock
+    changed mutex to Core::MutexAtomic in common::Stats and for timers
+    changed MutexAtomic to work with std::atomic_flag
     moved all swcdb_core_config target related to SWC::Config namespace
     moved all swcdb_core_comm target related to namespace SWC::Comm
     moved class RangerEnv to namespace SWC::Env under class-name Rgr

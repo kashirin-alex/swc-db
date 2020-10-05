@@ -45,16 +45,28 @@ Subcommands:
 
 ```
 
-### To deploy on the configured cluster and start
+
+### To deploy SWC-DB on the configured cluster
+In order to proceed with the `deploy` command, you should have configured by the [configurations instructions of the `swcdb_cluster`]({{ site.baseurl }}/configure/properties/swcdb_cluster.html).
+> The deploy command will:
+  * if from tar archive:
+    * download the Archive, if the [`the swc.install.archive`]({{ site.baseurl }}/configure/properties/swcdb_cluster.html#swcinstallarchive) is set to URI.
+    * copy the tar and extract the tar archive on all the hosts of the SWC-DB cluster
+    * push-config from source-host etc/swcdb/ to all the hosts of the SWC-DB cluster
+  * if from source-host installation:
+    * copy all the files of SWC-DB install-path to all the hosts of the SWC-DB cluster
+
 ```
 ./swcdb_cluster deploy; 
 ```
+
+### To start the configured SWC-DB cluster
 > The **'start'** command will wait for **'wait-ready'** command of the cluster ready state with results output of the progress.
 ```
 ./swcdb_cluster start;
 ```
 
-### To stop the configured cluster
+### To stop the SWC-DB cluster
 > The 'stop' command will wait for a graceful shutdown
 ```
 ./swcdb_cluster stop;

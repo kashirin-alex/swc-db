@@ -234,21 +234,48 @@ def wait_ready(c, on_start=False):
 
 @fabric.task(hosts=[swcdb_source_host])
 def deploy(ctx):
+
+    get_archive = swcdb_cfg["swc.install.archive"][-1] if "swc.install.archive" in swcdb_cfg \
+                  and (swcdb_cfg["swc.install.archive"][-1].startswith("http://") or
+                       swcdb_cfg["swc.install.archive"][-1].startswith("https://")) else None
+    if get_archive:
+        ctx.local("mkdir -p /tmp/swcdb")
+        ctx.local("".join(["wget", " -O", " /tmp/swcdb/", get_archive.split("/")[-1],
+                           " ", swcdb_cfg["swc.install.archive"][-1]]))
+        swcdb_cfg["swc.install.archive"][-1] = "/tmp/swcdb/" + get_archive.split("/")[-1]
+
     ctx.local("mkdir -p " + swcdb_cfg["swc.logging.path"][-1])
     for host in swcdb_remote_hosts:
         with fabric.Connection(host) as c:
             deploy_host(c)
+
+    if get_archive:
+        ctx.local("rm -rf /tmp/swcdb")
+        swcdb_cfg["swc.install.archive"][-1] = get_archive
     #
 
 
 def deploy_host(c):
     swcdb_print_start("deploy", c)
+    cp_dirs = ["etc"]
     c.run("mkdir -p " + swcdb_cfg["swc.logging.path"][-1])
-    for dir in ["sbin", "bin", "etc", "lib", "include"]:
+
+    if "swc.install.archive" in swcdb_cfg:
+        c.run("mkdir -p " + swcdb_install_path)
+        c.run("mkdir -p /tmp/swcdb")
+        c.put(swcdb_cfg["swc.install.archive"][-1], "/tmp/swcdb/")
+        c.run("tar -xf /tmp/swcdb/" + swcdb_cfg["swc.install.archive"][-1].split("/")[-1] + " -C " + swcdb_install_path)
+        c.run("rm -rf " + swcdb_install_path + "/etc")
+        c.run("rm -rf /tmp/swcdb")
+    else:
+        cp_dirs += ["sbin", "bin", "etc", "lib", "include"]
+    
+    for dir in cp_dirs:
         for dpath, _, filenames in os.walk(swcdb_install_path + "/" + dir):
             c.run("mkdir -p " + dpath)
             for fname in filenames:
                 c.put(dpath + "/" + fname, dpath + "/" + fname, preserve_mode=True)
+
     swcdb_print_finish("deploy", c)
     #
 

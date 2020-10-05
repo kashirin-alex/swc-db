@@ -8,10 +8,12 @@ title: Cluster Managing Script
 These configuration properties are for sbin/swcdb_cluster a python script based on [py-fabric library](https://www.fabfile.org/).
 
 
-* ### swc.cluster.role.delay.start
-```INT64```
-The Delay in seconds to wait between roles executions. \
-_default_ **```swc.cluster.role.delay.start=2```**
+* ### swc.install.archive
+```STRING```
+The Full-Path or Uri to the SWC-DB `tar` archive package. An archive package from [available SWC-DB releases]({{ site.baseurl }}/install/getting_swcdb/#available-for-download) is suitable for the type of archive required.
+> The source-host SWC-DB installation files are copied if the property is not set.
+
+  _default_ **```swc.install.archive=https://github.com/kashirin-alex/swc-db/releases/download/v0.4.10/swcdb-0.4.10.debug.amd64.tar.xz```**
 
 
 * ### swc.cluster.rgr.host
