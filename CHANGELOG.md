@@ -6,8 +6,17 @@
 
 
 
-
 ### [SWC-DB master](https://github.com/kashirin-alex/swc-db/tree/master) (upcoming-release)
+
+     
+
+[_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.4.10...master)
+******
+
+
+
+
+### [SWC-DB v0.4.10](https://github.com/kashirin-alex/swc-db/releases/tag/v0.4.10) (2020-10-05)
 
     added file-pid option in Settings::init_process
     extended sbin/swcdb_cluster deploy command with Tar archive option
@@ -46,7 +55,7 @@
     renamed Env::Fds to Env::FsBroker and Env::FsBroker::get() to fds()
     added to DB/Types/* const char array type representations
 
-[_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.4.9...master)
+[_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.4.9...v0.4.10)
 ******
 
 
