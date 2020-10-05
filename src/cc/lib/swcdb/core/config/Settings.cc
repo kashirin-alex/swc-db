@@ -179,14 +179,86 @@ void Settings::load_files_by(const std::string& fileprop,
   }
 }
 
-void Settings::init_process() {
+void Settings::init_process(bool with_pid_file, const std::string& port_cfg) {
   bool daemon = has("daemon");
 
   if(daemon) {
     if(fork())
       exit(0);
   }
+
+  std::string pid_file;
+  if(with_pid_file) {
+    pid_file = install_path + "/run/" + executable;
+    if(!port_cfg.empty() && !defaulted(port_cfg)) {
+      pid_file.append(".");
+      pid_file.append(std::to_string((size_t)get_i16(port_cfg)));
+    }
+    pid_file.append(".pid");
+  
+    if(FileUtils::exists(pid_file)) {
+      errno = 0;
+      std::string old_pid;
+      std::ifstream buffer(pid_file);
+      if(buffer.is_open()) {
+        buffer >> old_pid;
+        buffer.close();
+      }
+      if(old_pid.empty()) {
+        std::cerr << "Problem reading pid-file='" << pid_file << '\'';
+        if(errno)
+          Error::print(std::cerr << ' ', errno); 
+        std::cerr << std::endl;
+        quick_exit(EXIT_FAILURE);
+      }
+
+      char path[1024];
+      std::string pid_exe("/proc/" + old_pid + "/exe");
+      errno = 0;
+      ssize_t r = readlink(pid_exe.c_str(), path, 1024);
+      if(errno != ENOENT) {
+        if(r == -1 || errno) {
+          std::cerr << "Problem reading running-pid='" << pid_exe << '\'';
+          if(errno)
+            Error::print(std::cerr << ' ', errno); 
+          std::cerr << std::endl;
+          quick_exit(EXIT_FAILURE);
+        }
+        std::string prog_path(install_path + "/bin/" + executable);
+        if((size_t(r) == prog_path.size() ||
+            (size_t(r) > prog_path.size() && path[prog_path.size()] == ' ')
+           ) && strncmp(prog_path.c_str(), path, prog_path.size()) == 0) {
+          std::cerr << "Problem executing '" << executable 
+                    << "', process already running-pid=" << old_pid 
+                    << ", stop it first" << std::endl;
+          quick_exit(EXIT_FAILURE);
+        }
+      }
+
+      FileUtils::unlink(pid_file);
+    }
+  }
+
   auto pid = getpid();
+  
+  if(with_pid_file) {
+    errno = 0;
+    std::ofstream pid_file_buff(pid_file, std::ios::out);
+    if(pid_file_buff.is_open()) {
+      pid_file_buff << std::to_string(size_t(pid));
+      pid_file_buff.close();
+    }
+    if(errno) {
+      std::cerr << "Problem writing pid-file='" << pid_file << '\'';
+      if(errno)
+        Error::print(std::cerr << ' ', errno); 
+      std::cerr << std::endl;
+      quick_exit(EXIT_FAILURE);
+    }
+
+    std::cout << "Executing '"<< executable 
+              << "' with pid-file='" << pid_file << '\'' << std::endl;
+  }
 
   executable.append(".");
   executable.append(std::to_string((size_t)pid));

@@ -234,6 +234,7 @@ def wait_ready(c, on_start=False):
 
 @fabric.task(hosts=[swcdb_source_host])
 def deploy(ctx):
+    swcdb_print_start("deployment", ctx)
 
     get_archive = swcdb_cfg["swc.install.archive"][-1] if "swc.install.archive" in swcdb_cfg \
                   and (swcdb_cfg["swc.install.archive"][-1].startswith("http://") or
@@ -244,7 +245,9 @@ def deploy(ctx):
                            " ", swcdb_cfg["swc.install.archive"][-1]]))
         swcdb_cfg["swc.install.archive"][-1] = "/tmp/swcdb/" + get_archive.split("/")[-1]
 
+    ctx.local("mkdir -p " + swcdb_install_path + "/run")
     ctx.local("mkdir -p " + swcdb_cfg["swc.logging.path"][-1])
+
     for host in swcdb_remote_hosts:
         with fabric.Connection(host) as c:
             deploy_host(c)
@@ -252,13 +255,17 @@ def deploy(ctx):
     if get_archive:
         ctx.local("rm -rf /tmp/swcdb")
         swcdb_cfg["swc.install.archive"][-1] = get_archive
+    
+    swcdb_print_finish("deployment", ctx)
     #
 
 
 def deploy_host(c):
     swcdb_print_start("deploy", c)
-    cp_dirs = ["etc"]
+
     c.run("mkdir -p " + swcdb_cfg["swc.logging.path"][-1])
+    c.run("mkdir -p " + swcdb_install_path + "/run")
+    cp_dirs = ["etc"]
 
     if "swc.install.archive" in swcdb_cfg:
         c.run("mkdir -p " + swcdb_install_path)

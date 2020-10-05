@@ -56,7 +56,8 @@ class Settings final : public Properties {
 
   void parse_file(const std::string& fname, const std::string& onchg);
 
-  void init_process();
+  void init_process(bool with_pid_file, 
+                    const std::string& port_cfg = 0);
 
   std::string usage_str(const char *usage = 0);
 

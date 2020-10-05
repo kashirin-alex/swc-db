@@ -9,6 +9,7 @@
 
 ### [SWC-DB master](https://github.com/kashirin-alex/swc-db/tree/master) (upcoming-release)
 
+    added file-pid option in Settings::init_process
     extended sbin/swcdb_cluster deploy command with Tar archive option
     changed unique_lock where possible and lock_guard to scoped_lock
     changed mutex to Core::MutexAtomic in common::Stats and for timers
