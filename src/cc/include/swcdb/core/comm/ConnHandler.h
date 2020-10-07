@@ -146,6 +146,10 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
   void run_pending(const Event::Ptr& ev);
 
+  void run(const ConnHandlerPtr& conn,
+           const DispatchHandler::Ptr& hdlr, 
+           const Event::Ptr& ev) const;
+
   struct PendingHash {
     size_t operator()(const uint32_t id) const {
       return id / 4096;

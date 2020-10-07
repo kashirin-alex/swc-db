@@ -72,7 +72,8 @@ set(swcdb_sources
   client/Settings.cc
   client/Clients.cc
   client/Schemas.cc
-  client/AppContext.cc
+  client/ContextManager.cc
+  client/ContextRanger.cc
   client/rgr/Rangers.cc
   client/mngr/Groups.cc
   client/Query/Update.cc

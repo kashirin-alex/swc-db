@@ -35,6 +35,13 @@ _default_ **```swc.mngr.handlers=256```**
  > **_The configuration properties applicable for dynamic reloading_**
 
 
+* ### swc.mngr.comm.encoder
+```G_ENUM```
+The communication response-buffer encoding PLAIN/ZSTD/SNAPPY/ZLIB.
+> If address of local & remote is the same, the Encoder is set to PLAIN.
+
+  _default_ **```swc.mngr.comm.encoder=ZSTD```**
+
 * ### swc.mngr.role.request.timeout
 ```G_INT32```
 The Timeout in milliseconds of MngrState request. \

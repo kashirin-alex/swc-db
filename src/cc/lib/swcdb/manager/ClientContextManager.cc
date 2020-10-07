@@ -6,16 +6,17 @@
 
 namespace SWC { namespace client { namespace Mngr { 
 
-AppContext::AppContext() { }
+ContextManager::ContextManager() { }
 
-AppContext::~AppContext() { }
+ContextManager::~ContextManager() { }
 
-void AppContext::disconnected(const Comm::ConnHandlerPtr& conn) {
+void ContextManager::disconnected(const Comm::ConnHandlerPtr& conn) {
   Env::Mngr::role()->disconnection(
     conn->endpoint_remote, conn->endpoint_local);
 }
 
-void AppContext::handle(Comm::ConnHandlerPtr conn, const Comm::Event::Ptr& ev) {
+void ContextManager::handle(Comm::ConnHandlerPtr conn, 
+                            const Comm::Event::Ptr& ev) {
 
   switch (ev->type) {
 

@@ -6,6 +6,7 @@
 #ifndef swcdb_app_fsbroker_Settings_h
 #define swcdb_app_fsbroker_Settings_h
 
+#include "swcdb/core/Encoder.h"
 #include "swcdb/core/config/Settings.h"
 #include "swcdb/core/comm/Settings.h"
 #include "swcdb/fs/Settings.h"
@@ -35,6 +36,14 @@ void Settings::init_app_options() {
     ("swc.FsBroker.reactors", i32(8), "Number of Communication Reactors")
     ("swc.FsBroker.workers", i32(32), "Number of Workers a Reactor")
     ("swc.FsBroker.handlers", i32(8), "Number of App Handlers")
+    
+    ("swc.FsBroker.comm.encoder", 
+      g_enum(
+        (int)Core::Encoder::Type::ZSTD,
+        0,
+        Core::Encoder::from_string_encoding,
+        Core::Encoder::repr_encoding), 
+     "The communication response-buffer encoding PLAIN/ZSTD/SNAPPY/ZLIB")
   ;
   alias("host", "swc.fs.broker.host");
 }

@@ -7,7 +7,6 @@
 #include "swcdb/core/comm/Settings.h"
 
 #include "swcdb/db/client/Clients.h"
-#include "swcdb/db/client/AppContext.h"
 #include "swcdb/db/Protocol/Mngr/req/Echo.h"
 
 #include "swcdb/common/Stats/Stat.h"
@@ -150,7 +149,8 @@ int main(int argc, char** argv) {
   Env::Clients::init(
     std::make_shared<client::Clients>(
       nullptr,
-      std::make_shared<client::AppContext>()
+      nullptr, // std::make_shared<client::ManagerContext>()
+      nullptr  // std::make_shared<client::RangerContext>()
     )
   );
 

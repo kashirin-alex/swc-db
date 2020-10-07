@@ -3,8 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swcdb_manager_AppContextClient_h
-#define swcdb_manager_AppContextClient_h
+#ifndef swcdb_manager_ClientContextManager_h
+#define swcdb_manager_ClientContextManager_h
 
 namespace SWC { namespace client { 
 
@@ -13,12 +13,12 @@ namespace SWC { namespace client {
 namespace Mngr { 
 
 
-class AppContext final : public Comm::AppContext {
+class ContextManager final : public client::ContextManager {
   public:
 
-  AppContext();
+  ContextManager();
 
-  virtual ~AppContext();
+  virtual ~ContextManager();
 
   void disconnected(const Comm::ConnHandlerPtr& conn);
 
@@ -28,4 +28,4 @@ class AppContext final : public Comm::AppContext {
 
 }}}
 
-#endif // swcdb_manager_AppContextClient_h
+#endif // swcdb_manager_ClientContextManager_h

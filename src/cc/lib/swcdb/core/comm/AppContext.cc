@@ -11,7 +11,9 @@
 
 namespace SWC { namespace Comm {
 
-AppContext::AppContext() { }
+AppContext::AppContext(Config::Property::V_GENUM::Ptr cfg_encoder) 
+                      : cfg_encoder(cfg_encoder) {
+}
 
 AppContext::~AppContext(){}
 

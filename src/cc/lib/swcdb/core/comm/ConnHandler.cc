@@ -99,9 +99,8 @@ bool ConnHandler::due() {
 
 SWC_SHOULD_INLINE
 void ConnHandler::run(const Event::Ptr& ev) {
-  if(app_ctx) 
-    // && if(ev->header.flags & Header::FLAGS_BIT_REQUEST)
-    app_ctx->handle(ptr(), ev); 
+  //if(ev->header.flags & Header::FLAGS_BIT_REQUEST)
+  app_ctx->handle(ptr(), ev);
 }
 
 void ConnHandler::do_close() {
@@ -176,6 +175,12 @@ void ConnHandler::print(std::ostream& out) {
 }
 
 void ConnHandler::write_or_queue(ConnHandler::Pending* pending) {
+  pending->cbuf->prepare(
+    !app_ctx->cfg_encoder || endpoint_remote.address() == endpoint_local.address()
+      ? Core::Encoder::Type::PLAIN
+      : Core::Encoder::Type(app_ctx->cfg_encoder->get())
+  );
+
   if(m_outgoing.activating(pending))
     write(pending);
 }
@@ -372,10 +377,10 @@ void ConnHandler::recv_buffers(const Event::Ptr& ev, uint8_t n) {
   size_t remain;
   if(n == 0) {
     buffer = &ev->data;
-    remain = ev->header.data_size;
-  } else { 
+    remain = ev->header.data.size;
+  } else {
     buffer = &ev->data_ext;
-    remain = ev->header.data_ext_size;
+    remain = ev->header.data_ext.size;
   }
   buffer->reallocate(remain);
 
@@ -396,10 +401,10 @@ void ConnHandler::recved_buffer(const Event::Ptr& ev, asio::error_code ec,
     uint32_t checksum;
     if(n == 0) {
       buffer = &ev->data;
-      checksum = ev->header.data_chksum;
+      checksum = ev->header.data.chksum;
     } else { 
       buffer = &ev->data_ext;
-      checksum = ev->header.data_ext_chksum;
+      checksum = ev->header.data_ext.chksum;
     }
   
     if(filled != buffer->size || 
@@ -474,28 +479,57 @@ void ConnHandler::disconnected() {
 }
 
 void ConnHandler::run_pending(const Event::Ptr& ev) {
-  if(!ev->header.id)
-    return run(ev);
+  Pending* pending = nullptr;
 
-  Pending* pending;
-  {
+  if(ev->header.id) {
     Core::MutexSptd::scope lock(m_mutex);
     auto it = m_pending.find(ev->header.id);
-    if(it == m_pending.end()) {
-      pending = nullptr;
-    } else {
+    if(it != m_pending.end()) {
       pending = it->second;
       m_pending.erase(it);
     }
   }
+
   if(pending) {
     if(pending->timer)
       pending->timer->cancel();
-    pending->hdlr->handle(ptr(), ev);
+    if(ev->error || !ev->header.buffers) {
+      pending->hdlr->handle(ptr(), ev);
+    } else {
+      asio::post(
+        socket_layer()->get_executor(),
+        [ev, hdlr=pending->hdlr, ptr=ptr()]() { ptr->run(ptr, hdlr, ev); }
+      );
+    }
     delete pending;
   } else {
     run(ev);
   }
+}
+
+void ConnHandler::run(const ConnHandlerPtr& conn,
+                      const DispatchHandler::Ptr& hdlr, 
+                      const Event::Ptr& ev) const {
+  int err = Error::OK;
+  int n = 1;
+  ev->header.data.decode(err, ev->data);
+  if(!err && ev->header.buffers > 1) {
+    ++n;
+    ev->header.data_ext.decode(err, ev->data_ext);
+  }
+    
+  if(err) {
+    ev->type = Event::Type::ERROR;
+    ev->error = Error::REQUEST_TRUNCATED_PAYLOAD;
+    ev->data.free();
+    ev->data_ext.free();
+    SWC_LOG_OUT(LOG_WARN,
+      SWC_LOG_OSTREAM << "decode, REQUEST ENCODER_DECODE: n(" << n << ") ";
+      ev->print(SWC_LOG_OSTREAM);
+    );
+  }
+
+  hdlr->handle(conn, ev);
 }
 
 
@@ -557,7 +591,8 @@ void ConnHandlerPlain::read(uint8_t** bufp, size_t* remainp,
                             asio::error_code& ec) {
   size_t read = 0;
   do {
-    read = m_sock.read_some(asio::mutable_buffer((*bufp)+=read, *remainp), ec);
+    read = m_sock.read_some(
+      asio::mutable_buffer((*bufp)+=read, *remainp), ec);
   } while(!ec && (*remainp -= read));
 }
 
@@ -654,7 +689,8 @@ void ConnHandlerSSL::read(uint8_t** bufp, size_t* remainp,
                             asio::error_code& ec) {
   size_t read = 0;
   do {
-    read = m_sock.read_some(asio::mutable_buffer((*bufp)+=read, *remainp), ec);
+    read = m_sock.read_some(
+      asio::mutable_buffer((*bufp)+=read, *remainp), ec);
   } while(!ec && (*remainp -= read));
 }
  

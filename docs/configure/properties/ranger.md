@@ -40,6 +40,12 @@ _default_ **```swc.rgr.maintenance.handlers=2```**
 
  > **_The configuration properties applicable for dynamic reloading_**
 
+* ### swc.rgr.comm.encoder
+```G_ENUM```
+The communication response-buffer encoding PLAIN/ZSTD/SNAPPY/ZLIB.
+> If address of local & remote is the same, the Encoder is set to PLAIN.
+
+  _default_ **```swc.mngr.comm.encoder=ZSTD```**
 
 * ### swc.rgr.ram.allowed.percent
 ```G_INT32```

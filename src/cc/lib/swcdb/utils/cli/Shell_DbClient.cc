@@ -144,7 +144,8 @@ DbClient::DbClient()
   Env::Clients::init(
     std::make_shared<client::Clients>(
       nullptr, //Env::IoCtx::io()->shared(),
-      std::make_shared<client::AppContext>()
+      nullptr, // std::make_shared<client::ManagerContext>()
+      nullptr  // std::make_shared<client::RangerContext>()
     )
   );
 

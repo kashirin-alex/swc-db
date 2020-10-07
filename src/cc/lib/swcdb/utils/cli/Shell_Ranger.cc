@@ -6,7 +6,6 @@
 
 #include "swcdb/utils/cli/Shell_Ranger.h"
 #include "swcdb/db/client/Clients.h"
-#include "swcdb/db/client/AppContext.h"
 #include "swcdb/db/Protocol/Rgr/req/Report.h"
 #include "swcdb/db/client/sql/Reader.h"
 
@@ -41,7 +40,8 @@ Rgr::Rgr()
   Env::Clients::init(
     std::make_shared<client::Clients>(
       nullptr,
-      std::make_shared<client::AppContext>()
+      nullptr, // std::make_shared<client::ManagerContext>()
+      nullptr  // std::make_shared<client::RangerContext>()
     )
   );
 }

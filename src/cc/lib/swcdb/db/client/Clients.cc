@@ -14,14 +14,17 @@ Comm::IOCtxPtr& default_io() {
   return Env::IoCtx::io()->shared();
 }
 
-Clients::Clients(Comm::IOCtxPtr ioctx, const AppContext::Ptr& app_ctx)
-    : m_app_ctx(app_ctx),
-
-      mngrs_groups(std::make_shared<Mngr::Groups>()->init()),
+Clients::Clients(Comm::IOCtxPtr ioctx,
+                 const ContextManager::Ptr& mngr_ctx,
+                 const ContextRanger::Ptr& rgr_ctx)
+    : mngrs_groups(std::make_shared<Mngr::Groups>()->init()),
 
       mngr(std::make_shared<Comm::client::ConnQueues>(
         std::make_shared<Comm::client::Serialized>(
-          "MANAGER", ioctx ? ioctx: ioctx = default_io(), m_app_ctx),
+          "MANAGER", 
+          ioctx ? ioctx: ioctx = default_io(), 
+          mngr_ctx ? mngr_ctx : std::make_shared<ContextManager>()
+        ),
         Env::Config::settings()->get<Config::Property::V_GINT32>(
           "swc.client.Mngr.connection.timeout"),
         Env::Config::settings()->get<Config::Property::V_GINT32>(
@@ -33,7 +36,11 @@ Clients::Clients(Comm::IOCtxPtr ioctx, const AppContext::Ptr& app_ctx)
       )),
 
       rgr(std::make_shared<Comm::client::ConnQueues>(
-        std::make_shared<Comm::client::Serialized>("RANGER", ioctx, m_app_ctx),
+        std::make_shared<Comm::client::Serialized>(
+          "RANGER", 
+          ioctx,
+          rgr_ctx ? rgr_ctx : std::make_shared<ContextRanger>()
+        ),
         Env::Config::settings()->get<Config::Property::V_GINT32>(
           "swc.client.Rgr.connection.timeout"),
         Env::Config::settings()->get<Config::Property::V_GINT32>(

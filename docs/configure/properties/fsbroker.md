@@ -39,8 +39,17 @@ The FsBroker port. \
 _default_ **```swc.fs.broker.port=17000```**
 
 
- > ***
+
+***
+
  > **_The configuration properties applicable for dynamic reloading_**
+
+* ### swc.FsBroker.comm.encoder
+```G_ENUM```
+The communication response-buffer encoding PLAIN/ZSTD/SNAPPY/ZLIB.
+> If address of local & remote is the same, the Encoder is set to PLAIN.
+
+  _default_ **```swc.FsBroker.comm.encoder=ZSTD```**
 
 
 

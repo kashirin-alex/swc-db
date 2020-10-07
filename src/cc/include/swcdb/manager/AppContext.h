@@ -16,7 +16,7 @@
 #include "swcdb/fs/Interface.h"
 #include "swcdb/db/client/Clients.h"
 
-#include "swcdb/manager/AppContextClient.h"
+#include "swcdb/manager/ClientContextManager.h"
 #include "swcdb/manager/MngrEnv.h"
 
 #include "swcdb/common/Protocol/handlers/NotImplemented.h"
@@ -40,7 +40,7 @@
 namespace SWC { namespace Manager {
 
 
-class AppContext final : public SWC::Comm::AppContext {
+class AppContext final : public Comm::AppContext {
    
   // in-order of Comm::Protocol::Mngr::Command
   static constexpr const Comm::AppHandler_t handlers[] = { 
@@ -67,7 +67,10 @@ class AppContext final : public SWC::Comm::AppContext {
 
   public:
 
-  AppContext() {
+  AppContext() 
+      : Comm::AppContext(
+          Env::Config::settings()->get<Config::Property::V_GENUM>(
+            "swc.mngr.comm.encoder")) {
     auto settings = Env::Config::settings();
 
     settings->parse_file(
@@ -82,7 +85,8 @@ class AppContext final : public SWC::Comm::AppContext {
     Env::Clients::init(
       std::make_shared<client::Clients>(
         Env::IoCtx::io()->shared(),
-        std::make_shared<client::Mngr::AppContext>()
+        std::make_shared<client::Mngr::ContextManager>(),
+        std::make_shared<client::ContextRanger>()
       )
     );
 
@@ -108,7 +112,7 @@ class AppContext final : public SWC::Comm::AppContext {
     m_srv = srv;
   }
 
-  virtual ~AppContext(){}
+  virtual ~AppContext() { }
 
 
   void handle(Comm::ConnHandlerPtr conn, const Comm::Event::Ptr& ev) override {

@@ -29,6 +29,15 @@ void Settings::init_app_options(){
     ("swc.rgr.reactors", i32(8), "Number of Communication Reactors")
     ("swc.rgr.workers", i32(32), "Number of Workers a Reactor")
     ("swc.rgr.handlers", i32(8), "Number of App Handlers")
+
+    ("swc.rgr.comm.encoder", 
+      g_enum(
+        (int)Core::Encoder::Type::ZSTD,
+        0,
+        Core::Encoder::from_string_encoding,
+        Core::Encoder::repr_encoding), 
+     "The communication response-buffer encoding PLAIN/ZSTD/SNAPPY/ZLIB")
+
     ("swc.rgr.maintenance.handlers", i32(2), "Number of Maintenance Handlers")
     ("swc.rgr.ram.allowed.percent", g_i32(33), 
      "Memory RSS % allowed without freeing/releasing")

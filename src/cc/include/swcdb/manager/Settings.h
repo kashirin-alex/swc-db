@@ -8,6 +8,7 @@
 
 #include "swcdb/core/config/Settings.h"
 #include "swcdb/core/comm/Settings.h"
+#include "swcdb/core/Encoder.h"
 #include "swcdb/fs/Settings.h"
 #include "swcdb/db/client/Settings.h"
 
@@ -28,6 +29,13 @@ void Settings::init_app_options(){
     ("swc.mngr.port", i16(15000), "Manager port")
     ("swc.mngr.handlers", i32(8), "Number of App Handlers")
 
+    ("swc.mngr.comm.encoder", 
+      g_enum(
+        (int)Core::Encoder::Type::ZSTD,
+        0,
+        Core::Encoder::from_string_encoding,
+        Core::Encoder::repr_encoding), 
+     "The communication response-buffer encoding PLAIN/ZSTD/SNAPPY/ZLIB")
 
     ("swc.mngr.role.connection.probes", g_i32(3), 
      "Number of tries Mngr tries to connect to other manager")

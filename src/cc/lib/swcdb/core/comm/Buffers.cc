@@ -54,7 +54,7 @@ Buffers::Buffers(const Serializable& params, uint32_t reserve) {
 }
 
 Buffers::Buffers(const Serializable& params, StaticBuffer& buffer, 
-                uint32_t reserve) : buf_ext(buffer) {
+                 uint32_t reserve) : buf_ext(buffer) {
   set_data(params, reserve);
 }
 
@@ -67,6 +67,9 @@ Buffers::Buffers(StaticBuffer& buffer, uint32_t reserve)
 Buffers::~Buffers() { }
 
 void Buffers::set_data(uint32_t sz) {
+  if(buf_data.size)
+    header.data.reset();
+
   buf_data.reallocate(sz);
   data_ptr = buf_data.base; 
 }
@@ -79,16 +82,16 @@ void Buffers::set_data(const Serializable& params, uint32_t reserve) {
   data_ptr = buf_data.base;
 }
 
+void Buffers::prepare(Core::Encoder::Type encoder) {
+  if(buf_data.size) {
+    header.data.encode(encoder, buf_data);
+    if(buf_ext.size)
+      header.data_ext.encode(encoder, buf_ext);
+  }
+}
+
 SWC_SHOULD_INLINE
 void Buffers::write_header() {
-  if(buf_data.size) {
-    header.data_size   = buf_data.size;
-    header.data_chksum = Core::checksum32(buf_data.base, buf_data.size);
-  }
-  if(buf_ext.size) {  
-    header.data_ext_size   = buf_ext.size;
-    header.data_ext_chksum = Core::checksum32(buf_ext.base, buf_ext.size);
-  }
   buf_header.reallocate(header.encoded_length());
   uint8_t *buf = buf_header.base;
   header.encode(&buf);

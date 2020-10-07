@@ -87,6 +87,13 @@ _default_ **```swc.client.Rgr.connection.probes=1```**
 The Ranger client connection keepalive in milliseconds since last action. \
 _default_ **```swc.client.Rgr.connection.keepalive=30000```**
 
+* ### swc.client.Rgr.comm.encoder
+```G_ENUM```
+The communication with Ranger request-buffer encoding PLAIN/ZSTD/SNAPPY/ZLIB.
+> If address of local & remote is the same, the Encoder is set to PLAIN.
+
+  _default_ **```swc.client.Rgr.comm.encoder=ZSTD```**
+
 * ### swc.client.Rgr.range.res.expiry
 ```G_INT32```
 The Range(column id + range id) to Ranger Endpoint resolution expiry in milliseconds. \
@@ -107,6 +114,13 @@ _default_ **```swc.client.Mngr.connection.probes=1```**
 ```G_INT32```
 The Manager client connection keepalive in milliseconds since last action. \
 _default_ **```swc.client.Mngr.connection.keepalive=30000```**
+
+* ### swc.client.Mngr.comm.encoder
+```G_ENUM```
+The communication with Manager request-buffer encoding PLAIN/ZSTD/SNAPPY/ZLIB.
+> If address of local & remote is the same, the Encoder is set to PLAIN.
+
+  _default_ **```swc.client.Rgr.comm.encoder=ZSTD```**
 
 
 * ### swc.client.schema.expiry

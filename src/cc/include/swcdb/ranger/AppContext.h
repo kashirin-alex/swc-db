@@ -13,7 +13,6 @@
 #include "swcdb/core/comm/DispatchHandler.h"
 
 #include "swcdb/db/client/Clients.h"
-#include "swcdb/ranger/AppContextClient.h"
 #include "swcdb/ranger/RangerEnv.h"
 
 #include "swcdb/db/Protocol/Commands.h"
@@ -39,7 +38,7 @@ namespace SWC { namespace Ranger {
 
 
 
-class AppContext final : public SWC::Comm::AppContext { 
+class AppContext final : public Comm::AppContext { 
 
   // in-order of Comm::Protocol::Rgr::Command
   static constexpr const Comm::AppHandler_t handlers[] = { 
@@ -77,7 +76,8 @@ class AppContext final : public SWC::Comm::AppContext {
     Env::Clients::init(
       std::make_shared<client::Clients>(
         Env::IoCtx::io()->shared(),
-        std::make_shared<client::Rgr::AppContext>()
+        std::make_shared<client::ContextManager>(),
+        std::make_shared<client::ContextRanger>()
       )
     );
     Env::Rgr::init();
@@ -99,7 +99,11 @@ class AppContext final : public SWC::Comm::AppContext {
     return app;
   }
 
-  AppContext() { }
+  AppContext() 
+      : Comm::AppContext(
+          Env::Config::settings()->get<Config::Property::V_GENUM>(
+            "swc.rgr.comm.encoder")) {
+  }
 
   void init(const Comm::EndPoints& endpoints) override {
     Env::Rgr::rgr_data()->endpoints = endpoints;

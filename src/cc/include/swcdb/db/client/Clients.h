@@ -10,7 +10,8 @@
 
 #include "swcdb/core/comm/ClientConnQueues.h"
 #include "swcdb/db/client/Settings.h"
-#include "swcdb/db/client/AppContext.h"
+#include "swcdb/db/client/ContextManager.h"
+#include "swcdb/db/client/ContextRanger.h"
 #include "swcdb/db/client/Schemas.h"
 #include "swcdb/db/client/mngr/Groups.h"
 #include "swcdb/db/client/rgr/Rangers.h"
@@ -30,14 +31,13 @@ Comm::IOCtxPtr& default_io();
 
 
 class Clients final {
-
-  const AppContext::Ptr   m_app_ctx;
-
   public:
 
   typedef std::shared_ptr<Clients> Ptr;
 
-  Clients(Comm::IOCtxPtr ioctx, const AppContext::Ptr& app_ctx);
+  Clients(Comm::IOCtxPtr ioctx, 
+          const ContextManager::Ptr& mngr_ctx,
+          const ContextRanger::Ptr& rgr_ctx);
 
   ~Clients();
   
@@ -46,6 +46,7 @@ class Clients final {
   Comm::client::ConnQueuesPtr     rgr;
   Schemas::Ptr                    schemas;
   Rangers                         rangers;
+
 };
 
 } // namespace client 

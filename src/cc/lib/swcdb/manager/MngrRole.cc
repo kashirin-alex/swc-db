@@ -596,5 +596,5 @@ void MngrRole::set_mngr_inchain(const Comm::ConnHandlerPtr& mngr) {
 }
 
 
-#include "swcdb/manager/AppContextClient.cc"
+#include "swcdb/manager/ClientContextManager.cc"
 #include "swcdb/manager/Protocol/Mngr/req/MngrState.cc"

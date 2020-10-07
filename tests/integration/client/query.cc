@@ -7,7 +7,6 @@
 #include "swcdb/core/comm/Settings.h"
 
 #include "swcdb/db/client/Clients.h"
-#include "swcdb/db/client/AppContext.h"
 #include "swcdb/db/Protocol/Mngr/req/ColumnMng.h"
 #include "swcdb/db/Protocol/Mngr/req/ColumnGet.h"
 #include "swcdb/db/client/Query/Select.h"
@@ -373,7 +372,8 @@ int main(int argc, char** argv) {
   SWC::Env::Clients::init(
     std::make_shared<SWC::client::Clients>(
       nullptr,
-      std::make_shared<SWC::client::AppContext>()
+      nullptr, // std::make_shared<SWC::client::ManagerContext>()
+      nullptr  // std::make_shared<SWC::client::RangerContext>()
     )
   );
 

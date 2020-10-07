@@ -8,12 +8,19 @@
 
 
 #include "swcdb/db/client/Clients.h"
-#include "swcdb/thrift/broker/AppContextClient.h"
 #include "swcdb/thrift/broker/AppHandler.h"
 
 
+namespace SWC { 
 
-namespace SWC { namespace ThriftBroker {
+
+namespace client {
+//! The SWC-DB ThriftBroker's Client to Database C++ namespace 'SWC::client::ThriftBroker'
+namespace ThriftBroker { }
+}
+
+
+namespace ThriftBroker {
 
 
 class AppContext final : virtual public BrokerIfFactory {
@@ -30,7 +37,8 @@ class AppContext final : virtual public BrokerIfFactory {
     Env::Clients::init(
       std::make_shared<client::Clients>(
         Env::IoCtx::io()->shared(),
-        std::make_shared<client::ThriftBroker::AppContext>()
+        std::make_shared<client::ContextManager>(),
+        std::make_shared<client::ContextRanger>()
       )
     );
     

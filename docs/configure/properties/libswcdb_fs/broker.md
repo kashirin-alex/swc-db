@@ -27,8 +27,10 @@ _default_ **```swc.fs.broker.port=17000```**
 The Handlers for broker tasks. \
 _default_ **```swc.fs.broker.handlers=48```**
 
-    
- > ***
+
+
+***
+
  > **_The configuration properties applicable for dynamic reloading_**
 
 * ### swc.fs.broker.fds.max
@@ -46,3 +48,9 @@ _default_ **```swc.fs.broker.timeout=120000```**
 The Timeout ratio to bytes, ``` bytes / ratio = milliseconds ``` added to ```swc.fs.broker.timeout```(default timeout). \
 _default_ **```swc.fs.broker.timeout.bytes.ratio=1000```**
 
+* ### swc.fs.broker.comm.encoder
+```G_ENUM```
+The communication with FsBroker request-buffer encoding PLAIN/ZSTD/SNAPPY/ZLIB.
+> If address of local & remote is the same, the Encoder is set to PLAIN.
+
+  _default_ **```swc.fs.broker.comm.encoder=ZSTD```**

@@ -70,7 +70,11 @@ class AppContext final : public Comm::AppContext {
 
   public:
 
-  AppContext() {
+  AppContext() 
+      : Comm::AppContext(
+          Env::Config::settings()->get<Config::Property::V_GENUM>(
+            "swc.FsBroker.comm.encoder")) {
+
     auto settings = Env::Config::settings();
 
     Env::IoCtx::init(settings->get_i32("swc.FsBroker.handlers"));

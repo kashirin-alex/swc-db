@@ -50,6 +50,8 @@ class Buffers final {
 
   void set_data(const Serializable& params, uint32_t reserve);
 
+  void prepare(Core::Encoder::Type encoder);
+
   void write_header();
 
   std::vector<asio::const_buffer> get_buffers();

@@ -37,16 +37,28 @@ Configurables apply_broker() {
   Env::Config::settings()->file_desc.add_options()
     ("swc.fs.broker.cfg.dyn", Config::strs(),
      "Dyn-config file")
+
     ("swc.fs.broker.host", Config::str(),
      "FsBroker host (default by hostname)") 
     ("swc.fs.broker.port", Config::i16(17000),
      "FsBroker port")
+
     ("swc.fs.broker.handlers", Config::i32(48),
      "Handlers for broker tasks")
+
     ("swc.fs.broker.timeout", Config::g_i32(120000),
      "Default request timeout in ms")
     ("swc.fs.broker.timeout.bytes.ratio", Config::g_i32(1000), 
      "Timeout ratio to bytes, bytes/ratio=ms added to default timeout")
+
+    ("swc.fs.broker.comm.encoder", 
+      Config::g_enum(
+        (int)Core::Encoder::Type::ZSTD,
+        0,
+        Core::Encoder::from_string_encoding,
+        Core::Encoder::repr_encoding), 
+     "Comm. with FsBroker request-buffer encoding PLAIN/ZSTD/SNAPPY/ZLIB.")
+
     ("swc.fs.broker.fds.max", Config::g_i32(256), 
       "Max Open Fds for opt. without closing")
   ;

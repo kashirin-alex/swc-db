@@ -3,22 +3,24 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swcdb_db_client_AppContext_h
-#define swcdb_db_client_AppContext_h
+#ifndef swcdb_db_client_ContextManager_h
+#define swcdb_db_client_ContextManager_h
 
 #include "swcdb/core/comm/ConnHandler.h"
 
 namespace SWC { namespace client { 
 
-class AppContext : public Comm::AppContext {
+class ContextManager : public Comm::AppContext {
   public:
 
-  AppContext();
+  typedef std::shared_ptr<ContextManager> Ptr;
 
-  virtual ~AppContext();
+  ContextManager();
+
+  virtual ~ContextManager();
 
   void handle(Comm::ConnHandlerPtr conn, const Comm::Event::Ptr& ev) override;
-  
+
 };
 
 }}
@@ -26,7 +28,7 @@ class AppContext : public Comm::AppContext {
 
 
 #ifdef SWC_IMPL_SOURCE
-#include "swcdb/db/client/AppContext.cc"
+#include "swcdb/db/client/ContextManager.cc"
 #endif 
 
-#endif // swcdb_db_client_AppContext_h
+#endif // swcdb_db_client_ContextManager_h

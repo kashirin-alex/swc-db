@@ -10,14 +10,92 @@
 namespace SWC { namespace Comm {
 
 
+Header::Buffer::Buffer()
+  : size(0), 
+    encoder(Core::Encoder::Type::PLAIN), 
+    size_plain(0), 
+    chksum(0) {
+}
+
+SWC_SHOULD_INLINE
+void Header::Buffer::reset() {
+  size = 0;
+  encoder = Core::Encoder::Type::PLAIN;
+  size_plain = 0;
+  chksum = 0;
+}
+
+size_t Header::Buffer::encoded_length() const {
+  size_t sz = Serialization::encoded_length_vi32(size) + 5;
+  if(encoder != Core::Encoder::Type::PLAIN)
+    sz += Serialization::encoded_length_vi32(size_plain);
+  return sz;
+}
+
+void Header::Buffer::encode(uint8_t** bufp) const {
+  Serialization::encode_vi32(bufp, size);
+  Serialization::encode_i8(bufp, (uint8_t)encoder);
+  if(encoder != Core::Encoder::Type::PLAIN)
+    Serialization::encode_vi32(bufp, size_plain); 
+  Serialization::encode_i32(bufp, chksum);
+}
+
+void Header::Buffer::decode(const uint8_t** bufp, size_t* remainp) {
+  size = Serialization::decode_vi32(bufp, remainp);
+  encoder = (Core::Encoder::Type)Serialization::decode_i8(bufp, remainp);
+  if(encoder != Core::Encoder::Type::PLAIN)
+    size_plain = Serialization::decode_vi32(bufp, remainp);
+  chksum = Serialization::decode_i32(bufp, remainp);
+}
+
+void Header::Buffer::encode(Core::Encoder::Type _enc, StaticBuffer& data) {
+  if(_enc != Core::Encoder::Type::PLAIN && 
+     encoder == Core::Encoder::Type::PLAIN &&
+     data.size > 32) { // at least size if encoder not encypt-type
+    
+    int err = Error::OK;
+    size_t len_enc = 0;
+    DynamicBuffer output;
+    Core::Encoder::encode(err, _enc, data.base, data.size, 
+                          &len_enc, output, 0);
+    if(len_enc) {
+      encoder = _enc;
+      size_plain = data.size;
+      data.set(output);
+    }
+  }
+
+  size   = data.size;
+  chksum = Core::checksum32(data.base, data.size);
+}
+
+void Header::Buffer::decode(int& err, StaticBuffer& data) const {
+  if(size_plain) {
+    StaticBuffer decoded_buf((size_t)size_plain);
+    Core::Encoder::decode(
+      err, encoder, 
+      data.base, data.size, 
+      decoded_buf.base, size_plain
+    );
+    if(!err)
+      data.set(decoded_buf);
+  }
+}
+
+void Header::Buffer::print(std::ostream& out) const {
+  out << " Buffer(sz=" << size
+      << " enc=" << Core::Encoder::to_string(encoder)
+      << " szplain=" << size_plain
+      << " chk=" << chksum << ')';
+}
+
+
+
 SWC_SHOULD_INLINE
 Header::Header(uint64_t cmd, uint32_t timeout)
               : version(1), header_len(0), flags(0),
                 id(0), timeout_ms(timeout), command(cmd),
-                buffers(0),
-                data_size(0), data_chksum(0),
-                data_ext_size(0), data_ext_chksum(0),
-                checksum(0) {
+                buffers(0), checksum(0) {
 }
   
 Header::~Header() { }
@@ -32,13 +110,13 @@ SWC_SHOULD_INLINE
 size_t Header::encoded_length() { 
   header_len = FIXED_LENGTH;
   buffers = 0;
-  if(data_size) {
+  if(data.size) {
     ++buffers;
-    header_len += Serialization::encoded_length_vi32(data_size) + 4;
-  }
-  if(data_ext_size) {
-    ++buffers;
-    header_len += Serialization::encoded_length_vi32(data_ext_size) + 4;
+    header_len += data.encoded_length();
+    if(data_ext.size) {
+      ++buffers;
+      header_len += data_ext.encoded_length();
+    }
   }
   return header_len;
 }
@@ -53,14 +131,11 @@ void Header::encode(uint8_t** bufp) const {
   Serialization::encode_i32(bufp, timeout_ms);
   Serialization::encode_i16(bufp, command);
   Serialization::encode_i8(bufp,  buffers);
-    
-  if(data_size) {
-    Serialization::encode_vi32(bufp, data_size);
-    Serialization::encode_i32(bufp, data_chksum);
-  }
-  if(data_ext_size) {
-    Serialization::encode_vi32(bufp, data_ext_size);
-    Serialization::encode_i32(bufp, data_ext_chksum); 
+  
+  if(data.size) {
+    data.encode(bufp);
+    if(data_ext.size)
+      data_ext.encode(bufp);
   }
 
   Core::checksum_i32(base, header_len-4, bufp);
@@ -88,12 +163,9 @@ void Header::decode(const uint8_t** bufp, size_t* remainp) {
   command = Serialization::decode_i16(bufp, remainp);
     
   if((buffers = Serialization::decode_i8(bufp, remainp))) {
-    data_size = Serialization::decode_vi32(bufp, remainp);
-    data_chksum = Serialization::decode_i32(bufp, remainp);    
-    if(buffers > 1) {
-      data_ext_size = Serialization::decode_vi32(bufp, remainp);
-      data_ext_chksum = Serialization::decode_i32(bufp, remainp);
-    }
+    data.decode(bufp, remainp);
+    if(buffers > 1)
+      data_ext.decode(bufp, remainp);
   }
 
   checksum = Serialization::decode_i32(bufp, remainp);
@@ -107,10 +179,8 @@ void Header::initialize_from_request_header(const Header &req_header) {
   id = req_header.id;
   command = req_header.command;
   buffers = 0;
-  data_size = 0;
-  data_chksum = 0;
-  data_ext_size = 0;
-  data_ext_chksum = 0;
+  data.reset();
+  data_ext.reset();
 }
 
 void Header::print(std::ostream& out) const {
@@ -120,11 +190,13 @@ void Header::print(std::ostream& out) const {
       << " id="         << (int)id
       << " timeout_ms=" << (int)timeout_ms
       << " command="    << (int)command
-      << " buffers="    << (int)buffers
-      << " data(sz=" << data_size     << " chk=" << data_chksum << ')'
-      << " ext(sz="  << data_ext_size << " chk=" << data_ext_chksum << ')'
-      << " checksum="   << (int)checksum ;
+      << " buffers="    << (int)buffers;
+  if(buffers) {
+    data.print(out);
+    data_ext.print(out);
+  }
+  out << " checksum="   << (int)checksum;
 }
-  
+
 
 }}

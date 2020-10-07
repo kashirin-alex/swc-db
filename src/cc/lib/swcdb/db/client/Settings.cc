@@ -3,6 +3,7 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
+#include "swcdb/core/Encoder.h"
 #include "swcdb/db/client/Settings.h"
 
 namespace SWC{ namespace Config {
@@ -24,6 +25,15 @@ void Settings::init_client_options() {
      "Ranger client connect probes")
     ("swc.client.Rgr.connection.keepalive", g_i32(30000), 
      "Ranger client connection keepalive for ms since last action")
+     
+    ("swc.client.Rgr.comm.encoder", 
+      g_enum(
+        (int)Core::Encoder::Type::ZSTD,
+        0,
+        Core::Encoder::from_string_encoding,
+        Core::Encoder::repr_encoding), 
+     "Comm. with Ranger request-buffer encoding PLAIN/ZSTD/SNAPPY/ZLIB.")
+
     ("swc.client.Rgr.range.res.expiry", g_i32(1800000), 
      "Range Ranger resolution expiry in ms")
 
@@ -33,6 +43,15 @@ void Settings::init_client_options() {
      "Manager client connect probes")
     ("swc.client.Mngr.connection.keepalive", g_i32(30000), 
      "Manager client connection keepalive for ms since last action")
+     
+    ("swc.client.Mngr.comm.encoder", 
+      g_enum(
+        (int)Core::Encoder::Type::ZSTD,
+        0,
+        Core::Encoder::from_string_encoding,
+        Core::Encoder::repr_encoding), 
+     "Comm. with Manager request-buffer encoding PLAIN/ZSTD/SNAPPY/ZLIB.")
+
     ("swc.client.schema.expiry", g_i32(1800000), 
      "Schemas expiry in ms")
 

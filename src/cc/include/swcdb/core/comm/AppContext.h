@@ -23,7 +23,7 @@ class AppContext : public std::enable_shared_from_this<AppContext> {
   
   typedef std::shared_ptr<AppContext> Ptr;
 
-  AppContext();
+  AppContext(Config::Property::V_GENUM::Ptr cfg_encoder);
 
   virtual ~AppContext();
 
@@ -34,6 +34,9 @@ class AppContext : public std::enable_shared_from_this<AppContext> {
   virtual void stop();
 
   EndPoints m_endpoints;
+
+  const Config::Property::V_GENUM::Ptr cfg_encoder;
+
 };
 
 

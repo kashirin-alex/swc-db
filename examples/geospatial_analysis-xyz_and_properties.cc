@@ -274,8 +274,9 @@ int main(int argc, char** argv) {
 
   SWC::Env::Clients::init(
     std::make_shared<SWC::client::Clients>(
-      nullptr,
-      std::make_shared<SWC::client::AppContext>()
+      nullptr, //Env::IoCtx::io()->shared(),
+      nullptr, // std::make_shared<client::ManagerContext>()
+      nullptr  // std::make_shared<client::RangerContext>()
     )
   );
 
