@@ -8,7 +8,23 @@
 
 ### [SWC-DB master](https://github.com/kashirin-alex/swc-db/tree/master) (upcoming-release)
 
-     
+    added Communications Protocol compatabilty with Encoded transactions
+    added configuration properties:
+      - swc.client.Mngr.comm.encoder
+      - swc.client.Rgr.comm.encoder
+      - swc.fs.broker.comm.encoder
+      - swc.mngr.comm.encoder
+      - swc.rgr.comm.encoder
+      - swc.FsBroker.comm.encoder
+    added Config::Property::V_GENUM::Ptr cfg_encoder to Comm::AppContext class
+    changed client::Mngr::AppContext inherits client::ContextManager
+    added classes client::ContextManager and client::ContextRanger
+    added separate AppContext for Ranger and Manager in client::Clients
+    changed Clients ctor from AppContext::Ptr to Context{Manager,Ranger}::Ptr
+    added cfg_encoder init by role to all AppContext based on Comm::AppContext
+    added struct Buffer as sub-class of Comm::Header 
+    changed buffers details storage in class Comm::Header to Buffer type
+    added Build-Config definer SWC_DEFAULT_ENCODER=PLAIN|ZLIB|SNAPPY|ZSTD
 
 [_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.4.10...master)
 ******
