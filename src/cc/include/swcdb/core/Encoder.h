@@ -16,6 +16,14 @@ namespace SWC { namespace Core {
 namespace Encoder {
 
 
+#ifndef SWC_DEFAULT_ENCODER
+#define SWC_DEFAULT_ENCODER ZSTD
+#endif
+
+#define SWC_DEFAULT_COMM_ENCODER    SWC::Core::Encoder::Type::SWC_DEFAULT_ENCODER
+#define SWC_DEFAULT_STORAGE_ENCODER SWC::Core::Encoder::Type::SWC_DEFAULT_ENCODER
+
+
 
 enum class Type : uint8_t {
   DEFAULT = 0x00,

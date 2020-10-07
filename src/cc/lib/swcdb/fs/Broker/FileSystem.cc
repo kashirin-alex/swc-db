@@ -53,11 +53,11 @@ Configurables apply_broker() {
 
     ("swc.fs.broker.comm.encoder", 
       Config::g_enum(
-        (int)Core::Encoder::Type::ZSTD,
+        (int)SWC_DEFAULT_COMM_ENCODER,
         0,
         Core::Encoder::from_string_encoding,
-        Core::Encoder::repr_encoding), 
-     "Comm. with FsBroker request-buffer encoding PLAIN/ZSTD/SNAPPY/ZLIB.")
+        Core::Encoder::repr_encoding),
+     "The encoding to use in communication, options PLAIN/ZSTD/SNAPPY/ZLIB")
 
     ("swc.fs.broker.fds.max", Config::g_i32(256), 
       "Max Open Fds for opt. without closing")

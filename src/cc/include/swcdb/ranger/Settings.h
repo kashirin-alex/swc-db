@@ -32,11 +32,11 @@ void Settings::init_app_options(){
 
     ("swc.rgr.comm.encoder", 
       g_enum(
-        (int)Core::Encoder::Type::ZSTD,
+        (int)SWC_DEFAULT_COMM_ENCODER,
         0,
         Core::Encoder::from_string_encoding,
-        Core::Encoder::repr_encoding), 
-     "The communication response-buffer encoding PLAIN/ZSTD/SNAPPY/ZLIB")
+        Core::Encoder::repr_encoding),
+     "The encoding to use in communication, options PLAIN/ZSTD/SNAPPY/ZLIB")
 
     ("swc.rgr.maintenance.handlers", i32(2), "Number of Maintenance Handlers")
     ("swc.rgr.ram.allowed.percent", g_i32(33), 
@@ -69,7 +69,7 @@ void Settings::init_app_options(){
      "Schema default block-cells")
     ("swc.rgr.Range.block.encoding", 
       g_enum(
-        (int)DB::Types::Encoder::ZSTD,
+        (int)SWC_DEFAULT_STORAGE_ENCODER,
         0,
         Core::Encoder::from_string_encoding,
         Core::Encoder::repr_encoding), 

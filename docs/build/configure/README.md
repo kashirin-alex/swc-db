@@ -32,6 +32,7 @@ sort: 3
 |USE_TCMALLOC| use libtcmalloc | ON/OFF | OFF(default libtcmalloc_minimal or USE_GLIBC_MALLOC) |
 |SWC_LANGUAGES| require to build with support of listed languages  | ANY / applicable CSV: py2,py3,pypy2,pypy3,java,netstd,c_glib | any possible |
 |SWC_BUILTIN_FS| builtin filesystems (impl./prelinked without use of dynamic linking loader), suggested=local,broker | applicable CSV: local,broker,hadoop_jvm,hadoop,ceph | any possible |
+|SWC_DEFAULT_ENCODER| the encoder to use for default config value | PLAIN/ZLIB/SNAPPY/ZSTD | ZSTD |
 
 
 

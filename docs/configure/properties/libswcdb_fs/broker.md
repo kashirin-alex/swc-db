@@ -50,7 +50,7 @@ _default_ **```swc.fs.broker.timeout.bytes.ratio=1000```**
 
 * ### swc.fs.broker.comm.encoder
 ```G_ENUM```
-The communication with FsBroker request-buffer encoding PLAIN/ZSTD/SNAPPY/ZLIB.
+The encoding to use in communication with FsBroker, options PLAIN/ZSTD/SNAPPY/ZLIB.
 > If address of local & remote is the same, the Encoder is set to PLAIN.
 
   _default_ **```swc.fs.broker.comm.encoder=ZSTD```**

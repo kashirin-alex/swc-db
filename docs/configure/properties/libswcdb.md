@@ -89,7 +89,7 @@ _default_ **```swc.client.Rgr.connection.keepalive=30000```**
 
 * ### swc.client.Rgr.comm.encoder
 ```G_ENUM```
-The communication with Ranger request-buffer encoding PLAIN/ZSTD/SNAPPY/ZLIB.
+The encoding to use in communication with Ranger, options PLAIN/ZSTD/SNAPPY/ZLIB.
 > If address of local & remote is the same, the Encoder is set to PLAIN.
 
   _default_ **```swc.client.Rgr.comm.encoder=ZSTD```**
@@ -117,7 +117,7 @@ _default_ **```swc.client.Mngr.connection.keepalive=30000```**
 
 * ### swc.client.Mngr.comm.encoder
 ```G_ENUM```
-The communication with Manager request-buffer encoding PLAIN/ZSTD/SNAPPY/ZLIB.
+The encoding to use in communication with Manager, options PLAIN/ZSTD/SNAPPY/ZLIB.
 > If address of local & remote is the same, the Encoder is set to PLAIN.
 
   _default_ **```swc.client.Rgr.comm.encoder=ZSTD```**

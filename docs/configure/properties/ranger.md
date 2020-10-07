@@ -42,7 +42,7 @@ _default_ **```swc.rgr.maintenance.handlers=2```**
 
 * ### swc.rgr.comm.encoder
 ```G_ENUM```
-The communication response-buffer encoding PLAIN/ZSTD/SNAPPY/ZLIB.
+The encoding to use in communication, options PLAIN/ZSTD/SNAPPY/ZLIB.
 > If address of local & remote is the same, the Encoder is set to PLAIN.
 
   _default_ **```swc.mngr.comm.encoder=ZSTD```**

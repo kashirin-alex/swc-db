@@ -28,11 +28,11 @@ void Settings::init_client_options() {
      
     ("swc.client.Rgr.comm.encoder", 
       g_enum(
-        (int)Core::Encoder::Type::ZSTD,
+        (int)SWC_DEFAULT_COMM_ENCODER,
         0,
         Core::Encoder::from_string_encoding,
         Core::Encoder::repr_encoding), 
-     "Comm. with Ranger request-buffer encoding PLAIN/ZSTD/SNAPPY/ZLIB.")
+     "The encoding to use in communication, options PLAIN/ZSTD/SNAPPY/ZLIB")
 
     ("swc.client.Rgr.range.res.expiry", g_i32(1800000), 
      "Range Ranger resolution expiry in ms")
@@ -46,11 +46,11 @@ void Settings::init_client_options() {
      
     ("swc.client.Mngr.comm.encoder", 
       g_enum(
-        (int)Core::Encoder::Type::ZSTD,
+        (int)SWC_DEFAULT_COMM_ENCODER,
         0,
         Core::Encoder::from_string_encoding,
         Core::Encoder::repr_encoding), 
-     "Comm. with Manager request-buffer encoding PLAIN/ZSTD/SNAPPY/ZLIB.")
+     "The encoding to use in communication, options PLAIN/ZSTD/SNAPPY/ZLIB")
 
     ("swc.client.schema.expiry", g_i32(1800000), 
      "Schemas expiry in ms")

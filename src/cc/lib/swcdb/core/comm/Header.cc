@@ -51,7 +51,7 @@ void Header::Buffer::decode(const uint8_t** bufp, size_t* remainp) {
 void Header::Buffer::encode(Core::Encoder::Type _enc, StaticBuffer& data) {
   if(_enc != Core::Encoder::Type::PLAIN && 
      encoder == Core::Encoder::Type::PLAIN &&
-     data.size > 32) { // at least size if encoder not encypt-type
+     data.size > 32) { // at least size if encoder not encrypt-type
     
     int err = Error::OK;
     size_t len_enc = 0;
