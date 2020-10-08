@@ -52,7 +52,7 @@ void decode(int& err, Type encoder,
 void encode(int& err, Type encoder, 
             const uint8_t* src, size_t src_sz, 
             size_t* sz_enc, DynamicBuffer& output, 
-            uint32_t reserve);
+            uint32_t reserve, bool no_plain_out = false);
 
 
 

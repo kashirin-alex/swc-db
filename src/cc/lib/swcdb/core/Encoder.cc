@@ -129,7 +129,7 @@ void decode(int& err, Type encoder,
 void encode(int&, Type encoder, 
             const uint8_t* src, size_t src_sz, 
             size_t* sz_enc, DynamicBuffer& output, 
-            uint32_t reserve) {
+            uint32_t reserve, bool no_plain_out) {
   
   switch(encoder) {
     case Type::ZLIB: {
@@ -194,8 +194,10 @@ void encode(int&, Type encoder,
   }
 
   *sz_enc = 0; 
-  output.free();
+  if(no_plain_out)
+    return;
 
+  output.free();
   output.ensure(reserve + src_sz);
   output.ptr += reserve;
   if(src_sz)

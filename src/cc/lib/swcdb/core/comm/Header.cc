@@ -57,7 +57,7 @@ void Header::Buffer::encode(Core::Encoder::Type _enc, StaticBuffer& data) {
     size_t len_enc = 0;
     DynamicBuffer output;
     Core::Encoder::encode(err, _enc, data.base, data.size, 
-                          &len_enc, output, 0);
+                          &len_enc, output, 0, true);
     if(len_enc) {
       encoder = _enc;
       size_plain = data.size;
