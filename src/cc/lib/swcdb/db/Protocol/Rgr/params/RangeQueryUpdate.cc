@@ -44,12 +44,15 @@ void RangeQueryUpdateReq::internal_decode(const uint8_t** bufp,
 
 
 
-RangeQueryUpdateRsp::RangeQueryUpdateRsp(int err) : err(err) {  }
+RangeQueryUpdateRsp::RangeQueryUpdateRsp(int err)
+                                        : err(err),
+                                          cells_added(0) {
+}
 
 RangeQueryUpdateRsp::RangeQueryUpdateRsp(int err, 
                       const DB::Cell::Key& range_prev_end, 
                       const DB::Cell::Key& range_end) 
-                    : err(err), 
+                    : err(err), cells_added(0),
                       range_prev_end(range_prev_end), range_end(range_end) {
 }
 
@@ -57,6 +60,7 @@ RangeQueryUpdateRsp::~RangeQueryUpdateRsp() { }
 
 void RangeQueryUpdateRsp::print(std::ostream& out) const {
   Error::print(out << "RangeQueryUpdateRsp(", err);
+  out << " cells_added=" << cells_added;
   if(err == Error::RANGE_BAD_INTERVAL) {
     if(!range_prev_end.empty())
       range_prev_end.print(out << " range_prev_end=");
@@ -68,6 +72,7 @@ void RangeQueryUpdateRsp::print(std::ostream& out) const {
 
 size_t RangeQueryUpdateRsp::internal_encoded_length() const {
   return  Serialization::encoded_length_vi32(err)
+        + Serialization::encoded_length_vi32(cells_added)
         + (err == Error::RANGE_BAD_INTERVAL 
           ? range_prev_end.encoded_length() + range_end.encoded_length() 
           : 0);
@@ -75,6 +80,7 @@ size_t RangeQueryUpdateRsp::internal_encoded_length() const {
   
 void RangeQueryUpdateRsp::internal_encode(uint8_t** bufp) const {
   Serialization::encode_vi32(bufp, err);
+  Serialization::encode_vi32(bufp, cells_added);
   if(err == Error::RANGE_BAD_INTERVAL) {
     range_prev_end.encode(bufp);
     range_end.encode(bufp);
@@ -84,6 +90,7 @@ void RangeQueryUpdateRsp::internal_encode(uint8_t** bufp) const {
 void RangeQueryUpdateRsp::internal_decode(const uint8_t** bufp, 
                                           size_t* remainp) {
   err = Serialization::decode_vi32(bufp, remainp);
+  cells_added = Serialization::decode_vi32(bufp, remainp);
   if(err == Error::RANGE_BAD_INTERVAL) {
     range_prev_end.decode(bufp, remainp, true);
     range_end.decode(bufp, remainp, true);

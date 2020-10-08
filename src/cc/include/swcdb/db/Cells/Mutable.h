@@ -166,7 +166,8 @@ class Mutable final {
   void add_raw(const DynamicBuffer& cells);
   
   void add_raw(const DynamicBuffer& cells, const DB::Cell::Key& upto_key,
-                                           const DB::Cell::Key& from_key);
+                                           const DB::Cell::Key& from_key,
+                                           uint32_t skip, bool malformed);
   
   void add_raw(const Cell& e_cell);
   

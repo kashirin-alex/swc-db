@@ -98,6 +98,7 @@ std::map<const int, const char *> text_map {
   { Error::RANGE_CELLSTORES,                "Cellstores had Errors"},
   { Error::RANGE_COMMITLOG,                 "Commitlog had Errors"},
   { Error::RANGE_BAD_INTERVAL,              "Partial Write, bad range interval begin /& end"},
+  { Error::RANGE_BAD_CELLS_INPUT,           "Malformed Cells-Input"},
 
   { Error::SQL_PARSE_ERROR,                 "SQL parse error" },
   { Error::SQL_BAD_LOAD_FILE_FORMAT,        "SQL bad load file format" },

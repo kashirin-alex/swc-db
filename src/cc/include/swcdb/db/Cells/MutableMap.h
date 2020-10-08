@@ -57,7 +57,8 @@ class ColCells final {
   size_t add(const DynamicBuffer& cells);
 
   size_t add(const DynamicBuffer& cells, const DB::Cell::Key& upto_key,
-                                         const DB::Cell::Key& from_key);
+                                         const DB::Cell::Key& from_key,
+                                         uint32_t skip, bool malformed);
 
   size_t size();
 

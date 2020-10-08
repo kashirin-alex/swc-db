@@ -55,6 +55,7 @@ class RangeQueryUpdateRsp  : public Serializable {
   void print(std::ostream& out) const;
 
   int32_t       err;
+  uint32_t      cells_added;
   DB::Cell::Key range_prev_end;
   DB::Cell::Key range_end;
 

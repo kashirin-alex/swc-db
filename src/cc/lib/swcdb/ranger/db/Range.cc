@@ -662,10 +662,15 @@ void Range::run_add_queue() {
         ? Error::COLUMN_MARKED_REMOVED : Error::RGR_NOT_LOADED_RANGE;
 
     if(!params->err) while(remain) {
-      cell.read(&ptr, &remain);
-
-      if(cell.has_expired(ttl))
-        continue;
+      try {
+        cell.read(&ptr, &remain);
+      } catch(...) {
+        const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
+        SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
+        
+        params->err = Error::RANGE_BAD_CELLS_INPUT;
+        goto finished;
+      }
 
       {
         Core::MutexAtomic::scope lock(m_mutex_intval);
@@ -690,6 +695,10 @@ void Range::run_add_queue() {
         }
         continue;
       }
+
+      ++params->cells_added;
+      if(cell.has_expired(ttl))
+        continue;
 
       if(!(cell.control & DB::Cells::HAVE_TIMESTAMP)) {
         cell.set_timestamp(Time::now_ns());
@@ -725,6 +734,8 @@ void Range::run_add_queue() {
         */
       }
     }
+
+    finished:
     blocks.processing_decrement();
 
     if(intval_chg)

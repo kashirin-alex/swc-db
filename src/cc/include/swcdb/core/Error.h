@@ -115,11 +115,12 @@ enum Code : int32_t {
   RANGE_CELLSTORES                             = SWC_ERRNO_APP_BEGIN + 56,
   RANGE_COMMITLOG                              = SWC_ERRNO_APP_BEGIN + 57,
   RANGE_BAD_INTERVAL                           = SWC_ERRNO_APP_BEGIN + 58,
+  RANGE_BAD_CELLS_INPUT                        = SWC_ERRNO_APP_BEGIN + 59,
 
-  SQL_PARSE_ERROR                              = SWC_ERRNO_APP_BEGIN + 59,
-  SQL_BAD_LOAD_FILE_FORMAT                     = SWC_ERRNO_APP_BEGIN + 60,
+  SQL_PARSE_ERROR                              = SWC_ERRNO_APP_BEGIN + 60,
+  SQL_BAD_LOAD_FILE_FORMAT                     = SWC_ERRNO_APP_BEGIN + 61,
 
-  CLIENT_DATA_REMAINED                         = SWC_ERRNO_APP_BEGIN + 61,
+  CLIENT_DATA_REMAINED                         = SWC_ERRNO_APP_BEGIN + 62,
 
 };
 

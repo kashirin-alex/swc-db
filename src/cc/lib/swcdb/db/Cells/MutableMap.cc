@@ -81,10 +81,11 @@ size_t ColCells::add(const DynamicBuffer& cells) {
 
 size_t ColCells::add(const DynamicBuffer& cells, 
                      const DB::Cell::Key& upto_key, 
-                     const DB::Cell::Key& from_key) {
+                     const DB::Cell::Key& from_key,
+                     uint32_t skip, bool malformed) {
   Core::MutexSptd::scope lock(m_mutex);
   auto sz = m_cells.size();
-  m_cells.add_raw(cells, upto_key, from_key);
+  m_cells.add_raw(cells, upto_key, from_key, skip, malformed);
   return m_cells.size() - sz;
 }
 

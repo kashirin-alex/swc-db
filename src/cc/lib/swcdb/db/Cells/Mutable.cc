@@ -186,16 +186,23 @@ void Mutable::add_raw(const DynamicBuffer& cells) {
 
 void Mutable::add_raw(const DynamicBuffer& cells, 
                       const DB::Cell::Key& upto_key,
-                      const DB::Cell::Key& from_key) {
+                      const DB::Cell::Key& from_key,
+                      uint32_t skip, bool malformed) {
   Cell cell;
   const uint8_t* ptr = cells.base;
   size_t remain = cells.fill();
   while(remain) {
     cell.read(&ptr, &remain);
-    if((!upto_key.empty() && 
-       DB::KeySeq::compare(key_seq, upto_key, cell.key) != Condition::GT) ||
-       DB::KeySeq::compare(key_seq, from_key, cell.key) == Condition::GT)
+    if(malformed && !skip) {
       add_raw(cell);
+    } else if(
+        (!upto_key.empty() && 
+         DB::KeySeq::compare(key_seq, upto_key, cell.key) != Condition::GT) ||
+        DB::KeySeq::compare(key_seq, from_key, cell.key) == Condition::GT) {
+      add_raw(cell);
+    } else {
+      --skip;
+    }
   }
 }
 

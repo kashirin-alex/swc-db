@@ -486,34 +486,42 @@ void Update::Locator::commit_data(
             SWC_LOG_OSTREAM << " buffs=" << workload->count();
           );
 
-          if(rsp.err == Error::REQUEST_TIMEOUT) {
-            SWC_LOG_OUT(LOG_DEBUG,  req->print(SWC_LOG_OSTREAM ); );
-            req->request_again();
-            return;
-          }
+          switch(rsp.err) {
 
-          if(rsp.err == Error::RANGE_BAD_INTERVAL) {
-            size_t resend = locator->col->add(
-              *cells_buff.get(), rsp.range_prev_end, rsp.range_end);
-            locator->updater->result->add_resend_count(resend);
-
-            if(workload->is_last()) {
-              auto nxt_start = locator->col->get_key_next(rsp.range_end);
-              if(nxt_start != nullptr) {
-                std::make_shared<Locator>(
-                  DB::Types::Range::MASTER,
-                  locator->col->cid, locator->col, nxt_start,
-                  locator->updater
-                    )->locate_on_manager();
-               }
-            }
-          } else {
-            locator->updater->result->add_resend_count(
-              locator->col->add(*cells_buff.get())
-            );
-            if(workload->is_last()) {
-              base->request_again();
+            case Error::REQUEST_TIMEOUT: {
+              SWC_LOG_OUT(LOG_DEBUG,  req->print(SWC_LOG_OSTREAM ); );
+              req->request_again();
               return;
+            }
+
+            case Error::RANGE_BAD_INTERVAL:
+            case Error::RANGE_BAD_CELLS_INPUT: {
+              size_t resend = locator->col->add(
+                *cells_buff.get(), rsp.range_prev_end, rsp.range_end,
+                rsp.cells_added, rsp.err == Error::RANGE_BAD_CELLS_INPUT);
+              locator->updater->result->add_resend_count(resend);
+
+              if(workload->is_last()) {
+                auto nxt_start = locator->col->get_key_next(rsp.range_end);
+                if(nxt_start != nullptr) {
+                  std::make_shared<Locator>(
+                    DB::Types::Range::MASTER,
+                    locator->col->cid, locator->col, nxt_start,
+                    locator->updater
+                      )->locate_on_manager();
+                 }
+              }
+              break;
+            }
+
+            default: {
+              locator->updater->result->add_resend_count(
+                locator->col->add(*cells_buff.get())
+              );
+              if(workload->is_last()) {
+                base->request_again();
+                return;
+              }
             }
           }
         }
