@@ -62,17 +62,15 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
   virtual ~ConnHandler();
 
-  std::string endpoint_local_str();
+  size_t endpoint_remote_hash() const;
   
-  std::string endpoint_remote_str();
+  size_t endpoint_local_hash() const;
   
-  size_t endpoint_remote_hash();
-  
-  size_t endpoint_local_hash();
-  
+  Core::Encoder::Type get_encoder() const;
+
   void new_connection();
 
-  virtual bool is_open() = 0;
+  virtual bool is_open() const = 0;
 
   virtual void close() = 0;
 
@@ -101,7 +99,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   void accept_requests(DispatchHandler::Ptr hdlr, uint32_t timeout_ms=0);
   */
 
-  void print(std::ostream& out);
+  void print(std::ostream& out) const;
 
   protected:
 
@@ -146,10 +144,6 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
   void run_pending(const Event::Ptr& ev);
 
-  void run(const ConnHandlerPtr& conn,
-           const DispatchHandler::Ptr& hdlr, 
-           const Event::Ptr& ev) const;
-
   struct PendingHash {
     size_t operator()(const uint32_t id) const {
       return id / 4096;
@@ -179,7 +173,7 @@ class ConnHandlerPlain final : public ConnHandler {
 
   void close() override;
 
-  bool is_open() override;
+  bool is_open() const override;
 
   protected:
 
@@ -215,7 +209,7 @@ class ConnHandlerSSL final : public ConnHandler {
 
   void close() override;
 
-  bool is_open() override;
+  bool is_open() const override;
 
   void handshake(SocketSSL::handshake_type typ, 
                  const std::function<void(const asio::error_code&)>& cb);

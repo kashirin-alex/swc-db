@@ -30,6 +30,27 @@ void Event::received() {
     expiry_ms = Time::now_ms() + header.timeout_ms; 
 }
 
+void Event::decode_buffers() {
+  int err = Error::OK;
+  int n = 1;
+  header.data.decode(err, data);
+  if(!err && header.buffers > 1) {
+    ++n;
+    header.data_ext.decode(err, data_ext);
+  }
+
+  if(err) {
+    type = Event::Type::ERROR;
+    error = Error::REQUEST_TRUNCATED_PAYLOAD;
+    data.free();
+    data_ext.free();
+    SWC_LOG_OUT(LOG_WARN,
+      SWC_LOG_OSTREAM << "decode, REQUEST ENCODER_DECODE: n(" << n << ") ";
+      print(SWC_LOG_OSTREAM);
+    );
+  }
+}
+
 bool Event::expired(int64_t within) const {
   return expiry_ms && Time::now_ms() > expiry_ms-within;
 }
@@ -64,6 +85,7 @@ void Event::print(std::ostream& out) const {
     break;
   case MESSAGE:
     header.print(out << "MESSAGE ");
+    out << " buffers-sz(" << data.size << ',' << data_ext.size << ')';
     break;
   case ERROR:
     out << "ERROR";
@@ -74,22 +96,6 @@ void Event::print(std::ostream& out) const {
   }
   if(error) 
     Error::print(out << ' ', error);
-    
-  /*
-  if(data.size) {
-    dstr.append(" data=(");
-    dstr.append(
-      std::string((const char*)data.base, data.size<256?data.size:256));
-    dstr.append(")");
-  }
-  if(data_ext.size) {
-    dstr.append(" data_ext=(");
-    dstr.append(
-      std::string(
-        (const char*)data_ext.base, data_ext.size<256?data_ext.size:256));
-    dstr.append(")");
-  }
-  */
 }
 
 

@@ -38,6 +38,8 @@ class Event final {
 
   void received();
 
+  void decode_buffers();
+
   bool expired(int64_t within=0) const;
   
   int32_t response_code();

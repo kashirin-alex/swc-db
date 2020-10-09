@@ -45,28 +45,22 @@ ConnHandler::~ConnHandler() {
     delete it->second;
 }
 
-std::string ConnHandler::endpoint_local_str() {
-  std::string s(endpoint_local.address().to_string());
-  s.append(":");
-  s.append(std::to_string(endpoint_local.port()));
-  return s;
-}
-  
-std::string ConnHandler::endpoint_remote_str() {
-  std::string s(endpoint_remote.address().to_string());
-  s.append(":");
-  s.append(std::to_string(endpoint_remote.port()));
-  return s;
-}
-  
 SWC_SHOULD_INLINE
-size_t ConnHandler::endpoint_remote_hash() {
+size_t ConnHandler::endpoint_remote_hash() const {
   return endpoint_hash(endpoint_remote);
 }
   
 SWC_SHOULD_INLINE
-size_t ConnHandler::endpoint_local_hash() {
+size_t ConnHandler::endpoint_local_hash() const {
   return endpoint_hash(endpoint_local);
+}
+
+SWC_SHOULD_INLINE
+Core::Encoder::Type ConnHandler::get_encoder() const {
+  return !app_ctx->cfg_encoder || 
+         endpoint_local.address() == endpoint_remote.address()
+          ? Core::Encoder::Type::PLAIN
+          : Core::Encoder::Type(app_ctx->cfg_encoder->get());
 }
   
 void ConnHandler::new_connection() {
@@ -76,9 +70,7 @@ void ConnHandler::new_connection() {
     endpoint_remote = sock->remote_endpoint();
     endpoint_local = sock->local_endpoint();
   }
-  SWC_LOGF(LOG_DEBUG, "new_connection local=%s, remote=%s, executor=%lu",
-            endpoint_local_str().c_str(), endpoint_remote_str().c_str(),
-            (size_t)&sock->get_executor().context());
+  SWC_LOG_OUT(LOG_DEBUG, print(SWC_LOG_OSTREAM << "New-"); );
   run(Event::make(Event::Type::ESTABLISHED, Error::OK)); 
 }
 
@@ -163,23 +155,19 @@ void ConnHandler::accept_requests(DispatchHandler::Ptr hdlr,
 }
 */
 
-void ConnHandler::print(std::ostream& out) {
-  out << "Connection(";
+void ConnHandler::print(std::ostream& out) const {
+  out << "Connection(encoder=" << Core::Encoder::to_string(get_encoder());
   if(is_open()) {
-    out << "remote=" << endpoint_remote
+    out << " remote=" << endpoint_remote
         << " local=" << endpoint_local;
   } else {
-    out << "CLOSED";
+    out << " CLOSED";
   }
   out << ')';
 }
 
 void ConnHandler::write_or_queue(ConnHandler::Pending* pending) {
-  pending->cbuf->prepare(
-    !app_ctx->cfg_encoder || endpoint_remote.address() == endpoint_local.address()
-      ? Core::Encoder::Type::PLAIN
-      : Core::Encoder::Type(app_ctx->cfg_encoder->get())
-  );
+  pending->cbuf->prepare(get_encoder());
 
   if(m_outgoing.activating(pending))
     write(pending);
@@ -263,14 +251,6 @@ void ConnHandler::write(ConnHandler::Pending* pending) {
       cbuf->get_buffers(),
       [cbuf, conn=ptr()] (const asio::error_code& ec, uint32_t) {
         if(ec) {
-          /*
-          SWC_LOGF(LOG_WARN,
-            "ConnHandler::received error_code=%d(%s) remote=%s local=%s", 
-            ec.value(), ec.message().c_str(), 
-            conn->endpoint_remote_str().c_str(), 
-            conn->endpoint_local_str().c_str()
-          );
-          */
           conn->do_close();
         } else {
           conn->write_next();
@@ -429,13 +409,6 @@ void ConnHandler::recved_buffer(const Event::Ptr& ev, asio::error_code ec,
 
 void ConnHandler::received(const Event::Ptr& ev, const asio::error_code& ec) {
   if(ec) {
-    /*
-    SWC_LOGF(LOG_WARN, 
-      "ConnHandler::read error_code=%d(%s) remote=%s local=%s", 
-      ec.value(), ec.message().c_str(), 
-      endpoint_remote_str().c_str(), endpoint_local_str().c_str()
-    );
-    */
     do_close();
     return;
   }
@@ -479,58 +452,49 @@ void ConnHandler::disconnected() {
 }
 
 void ConnHandler::run_pending(const Event::Ptr& ev) {
-  Pending* pending = nullptr;
 
   if(ev->header.id) {
-    Core::MutexSptd::scope lock(m_mutex);
-    auto it = m_pending.find(ev->header.id);
-    if(it != m_pending.end()) {
-      pending = it->second;
-      m_pending.erase(it);
+    Pending* pending = nullptr;
+    {
+      Core::MutexSptd::scope lock(m_mutex);
+      auto it = m_pending.find(ev->header.id);
+      if(it != m_pending.end()) {
+        pending = it->second;
+        m_pending.erase(it);
+      }
+    }
+    if(pending) {
+      if(pending->timer)
+        pending->timer->cancel();
+      if(ev->error || !ev->header.buffers) {
+        pending->hdlr->handle(ptr(), ev);
+      } else {
+        asio::post(
+          socket_layer()->get_executor(),
+          [ev, hdlr=pending->hdlr, conn=ptr()]() { 
+            ev->decode_buffers();
+            hdlr->handle(conn, ev);
+          }
+        );
+      }
+      delete pending;
+      return;
     }
   }
 
-  if(pending) {
-    if(pending->timer)
-      pending->timer->cancel();
-    if(ev->error || !ev->header.buffers) {
-      pending->hdlr->handle(ptr(), ev);
-    } else {
-      asio::post(
-        socket_layer()->get_executor(),
-        [ev, hdlr=pending->hdlr, ptr=ptr()]() { ptr->run(ptr, hdlr, ev); }
-      );
-    }
-    delete pending;
-  } else {
+  if(ev->error || !ev->header.buffers) {
     run(ev);
-  }
-}
-
-void ConnHandler::run(const ConnHandlerPtr& conn,
-                      const DispatchHandler::Ptr& hdlr, 
-                      const Event::Ptr& ev) const {
-  int err = Error::OK;
-  int n = 1;
-  ev->header.data.decode(err, ev->data);
-  if(!err && ev->header.buffers > 1) {
-    ++n;
-    ev->header.data_ext.decode(err, ev->data_ext);
-  }
-    
-  if(err) {
-    ev->type = Event::Type::ERROR;
-    ev->error = Error::REQUEST_TRUNCATED_PAYLOAD;
-    ev->data.free();
-    ev->data_ext.free();
-    SWC_LOG_OUT(LOG_WARN,
-      SWC_LOG_OSTREAM << "decode, REQUEST ENCODER_DECODE: n(" << n << ") ";
-      ev->print(SWC_LOG_OSTREAM);
+  } else {
+    asio::post(
+      socket_layer()->get_executor(),
+      [ev, conn=ptr()]() { 
+        ev->decode_buffers();
+        conn->run(ev);
+      }
     );
   }
-
-  hdlr->handle(conn, ev);
 }
+
 
 
 
@@ -567,7 +531,7 @@ void ConnHandlerPlain::close() {
   ConnHandler::do_close();
 }
 
-bool ConnHandlerPlain::is_open() {
+bool ConnHandlerPlain::is_open() const {
   return connected && m_sock.is_open();
 }
 
@@ -647,7 +611,7 @@ void ConnHandlerSSL::close() {
   } */
 }
 
-bool ConnHandlerSSL::is_open() {
+bool ConnHandlerSSL::is_open() const {
   return connected && m_sock.lowest_layer().is_open();
 }
 

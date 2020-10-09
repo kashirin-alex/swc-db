@@ -100,9 +100,7 @@ size_t endpoints_hash(const EndPoints& endpoints) {
 size_t endpoint_hash(const EndPoint& endpoint) {
   std::hash<std::string> hasher;
   return hasher(
-    (std::string)endpoint.address().to_string()
-    +":"
-    +std::to_string(endpoint.port()));
+    endpoint.address().to_string() + "_" + std::to_string(endpoint.port()));
 }
 
 
