@@ -37,7 +37,7 @@ wget https://archive.apache.org/dist/hadoop/common/hadoop-${HADOOP_VERSION}/hado
 tar -xf hadoop-${HADOOP_VERSION}.tar.gz;
 HADOOP_INSTALL_PATH="$(pwd)/hadoop-${HADOOP_VERSION}";
 ```
-
+_The full use of SWC-DB FileSystem-Hadoop(Native C++) - state depends on progress of [libhdfscpp](https://github.com/apache/hadoop/tree/trunk/hadoop-hdfs-project/hadoop-hdfs-native-client/src/main/native/libhdfspp)._
 
 
 ## COMPILER THRIFT

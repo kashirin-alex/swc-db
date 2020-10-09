@@ -7,6 +7,9 @@ title: Hadoop Filesystem
 # The SWC-DB Hadoop Filesystem - Configuration Properties
 The SWC-DB Hadoop Filesystem Library can be configured with these configuration properties.
 
+> _The full use of SWC-DB FileSystemHadoop(Native C++) - state depends on progress of [libhdfscpp](https://github.com/apache/hadoop/tree/trunk/hadoop-hdfs-project/hadoop-hdfs-native-client/src/main/native/libhdfspp)._
+
+
 * ### swc.fs.hadoop.cfg.dyn
 ```STRINGS```
 The Dynamic cfg-file to use. Config Handler will check & reload this cfg-file by swc.cfg.dyn.period \
