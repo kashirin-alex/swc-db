@@ -8,7 +8,7 @@
 
 ### [SWC-DB master](https://github.com/kashirin-alex/swc-db/tree/master) (upcoming-release)
 
-    added Communications Protocol compatabilty with Encoded transactions
+    added Encoder support to Communications Protocol, old Proto not compatible
     added configuration properties:
       - swc.client.Mngr.comm.encoder
       - swc.client.Rgr.comm.encoder
@@ -22,9 +22,21 @@
     added separate AppContext for Ranger and Manager in client::Clients
     changed Clients ctor from AppContext::Ptr to Context{Manager,Ranger}::Ptr
     added cfg_encoder init by role to all AppContext based on Comm::AppContext
-    added struct Buffer as sub-class of Comm::Header 
+    added struct Buffer as sub-class of Comm::Header
     changed buffers details storage in class Comm::Header to Buffer type
+    added Core::Encoder::Type ConnHandler::get_encoder()
+    added call to cbuf->prepare in ConnHandler::write_or_queue
+    added void Event::decode_buffers()
     added Build-Config definer SWC_DEFAULT_ENCODER=PLAIN|ZLIB|SNAPPY|ZSTD
+    added Error::RANGE_BAD_CELLS_INPUT
+    added uint32_t cells_added to Protocol::Rgr::Params::RangeQueryUpdateRsp
+    added try block for cell.read in Ranger::Range::run_add_queue 
+    added args uint32_t skip and bool malformed to 
+        Mutable::add_raw(const DynamicBuffer&, const Key&, const Key&, ..)
+        ColCells::add(const DynamicBuffer&, const Key&, const Key&, ..)
+    added case for Error::RANGE_BAD_CELLS_INPUT in client::Query::Update
+    fixed Resend Cells Count in load_generator and in SWC-DB(client) shell
+    added Encoder::encode(.., bool no_plain_out=false) option
 
 [_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.4.10...master)
 ******
