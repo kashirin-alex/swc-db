@@ -19,18 +19,18 @@ namespace Callback {
 class ColumnsUnloaded : public Comm::ResponseCallback {
   public:
 
-  std::vector<Column::Ptr>  cols;
-  std::atomic<size_t>       unloading;
+  std::vector<Column::Ptr>                  cols;
+  Common::Stats::CompletionCounter<size_t>  unloading;
 
   ColumnsUnloaded(const Comm::ConnHandlerPtr& conn, 
                   const Comm::Event::Ptr& ev)
-                  : Comm::ResponseCallback(conn, ev), unloading(0) {
+                  : Comm::ResponseCallback(conn, ev) {
   }
 
   virtual ~ColumnsUnloaded() { }
 
   void response(int, const RangePtr& range) { // err
-    bool last = --unloading;
+    bool last = unloading.is_last();
 
     if(range && !range->deleted()) {
       Core::MutexSptd::scope lock(m_mutex);

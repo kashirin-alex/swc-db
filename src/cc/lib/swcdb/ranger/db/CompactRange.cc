@@ -121,8 +121,7 @@ CompactRange::CompactRange(Compaction* compactor, const RangePtr& range,
               blk_cells(range->cfg->block_cells()), 
               blk_encoding(range->cfg->block_enc()),
               m_inblock(new InBlock(range->cfg->key_seq, blk_size)),
-              state_default(range->blocks.cellstores.blocks_count() > 1 
-                ? Range::COMPACT_COMPACTING : Range::COMPACT_PREPARING),
+              state_default(Range::COMPACT_COMPACTING),
               req_last_time(0),
               m_getting(true), m_log_sz(0),
               m_chk_timer(

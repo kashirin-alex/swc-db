@@ -16,7 +16,7 @@ void assign_id(const ConnHandlerPtr& conn, const Event::Ptr& ev,
                Mngr::Req::RgrMngId::Ptr id_mngr) {
   try {
 
-    if(Env::Rgr::is_shuttingdown())
+    if(Env::Rgr::is_not_accepting())
       conn->send_error(Error::SERVER_SHUTTING_DOWN, "", ev);
     else 
       conn->response_ok(ev);

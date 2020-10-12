@@ -38,19 +38,25 @@ class Rgr final {
 
   static void shuttingdown();
 
+  static void wait_if_in_process();
+
   static Common::Files::RgrData* rgr_data() {
     return &m_env->m_rgr_data;
   }
 
-  static bool is_shuttingdown(){
+  static bool is_not_accepting() {
+    return m_env->m_not_accepting;
+  }
+
+  static bool is_shuttingdown() {
     return m_env->m_shuttingdown;
   }
 
-  static int64_t in_process(){
+  static int64_t in_process() {
     return m_env->m_in_process;
   }
 
-  static void in_process(int64_t count){
+  static void in_process(int64_t count) {
     m_env->m_in_process += count;
   }
 
@@ -109,9 +115,11 @@ class Rgr final {
 
   private:
   inline static std::shared_ptr<Rgr>  m_env           = nullptr;
+
   Common::Files::RgrData              m_rgr_data;
-  std::atomic<bool>                   m_shuttingdown  = false;
-  std::atomic<int64_t>                m_in_process    = 0;
+  std::atomic<bool>                   m_shuttingdown     = false;
+  std::atomic<bool>                   m_not_accepting    = false;
+  std::atomic<int64_t>                m_in_process       = 0;
  
 };
 
@@ -185,6 +193,8 @@ void Rgr::start() {
 }
 
 void Rgr::shuttingdown() {
+  m_env->m_not_accepting = true;
+
   m_env->_compaction->stop();
   m_env->mnt_io->stop();
   
@@ -193,11 +203,22 @@ void Rgr::shuttingdown() {
   
   m_env->_columns->unload_all(false);
 
-  m_env->_resources.stop();
-
   m_env->m_shuttingdown = true;
+
+  wait_if_in_process();
+
+  m_env->_resources.stop();
 }
 
+void Rgr::wait_if_in_process() {
+  size_t n = 0;
+  while(in_process()) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    m_env->_columns->unload_all(true); //re-check
+    if(++n % 10)
+      SWC_LOGF(LOG_WARN, "In-process=%lu check=%lu", in_process(), n);
+  }
+}
 
 bool Rgr::compaction_available() {
   return m_env->_compaction->available();

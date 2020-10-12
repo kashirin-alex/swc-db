@@ -19,7 +19,9 @@ Columns::~Columns() { }
 Column::Ptr Columns::initialize(int &err, const cid_t cid, 
                                 const DB::Schema& schema) {
   Column::Ptr col = nullptr;
-  if(Env::Rgr::is_shuttingdown()) {
+  if(Env::Rgr::is_shuttingdown() || 
+     (Env::Rgr::is_not_accepting() && 
+      DB::Types::MetaColumn::is_data(cid))) {
     err = Error::SERVER_SHUTTING_DOWN;
     return col;
   }
@@ -75,7 +77,9 @@ void Columns::load_range(int &err, const cid_t cid, const rid_t rid,
     if(col->removing()) 
       err = Error::COLUMN_MARKED_REMOVED;
 
-    else if(Env::Rgr::is_shuttingdown())
+    else if(Env::Rgr::is_shuttingdown() ||
+            (Env::Rgr::is_not_accepting() &&
+             DB::Types::MetaColumn::is_data(cid)))
       err = Error::SERVER_SHUTTING_DOWN;
     
     if(!err)
@@ -99,7 +103,7 @@ void Columns::unload_range(int &err, const cid_t cid, const rid_t rid,
 
 void Columns::unload(cid_t cid_begin, cid_t cid_end,
                     const Callback::ColumnsUnloadedPtr& cb) {
-  ++cb->unloading;
+  cb->unloading.increment();
   {
     Core::MutexSptd::scope lock(m_mutex);
     for(auto it = begin(); it != end(); ) {
@@ -123,37 +127,27 @@ void Columns::unload_all(bool validation) {
     DB::Types::MetaColumn::is_meta,
     DB::Types::MetaColumn::is_master 
   };
-
-  std::atomic<int> to_unload = 0;
+  Common::Stats::CompletionCounter<size_t> to_unload;
   Column::Ptr col;
   uint8_t meta;
   iterator it;
   for(auto& chk : order) {
-    {
-      Core::MutexSptd::scope lock(m_mutex);
-      for(it = begin(); it != end(); ++it) {
-        if(chk(it->first))
-          ++to_unload;
-      }
-    }
-    if(!to_unload)
-      continue;
+    to_unload.increment();
 
     std::promise<void>  r_promise;
     Callback::RangeUnloaded_t cb 
       = [&to_unload, &r_promise](int) {
-        if(--to_unload == 0)
+        if(to_unload.is_last())
           r_promise.set_value();
     };
   
-    for(meta=0;;) {
+    for(;;) {
       {
         Core::MutexSptd::scope lock(m_mutex);
-        it = begin();
-        for(uint8_t n=0; n<meta; ++n, ++it);
-        if(it == end())
+        if(begin() == end())
           break;
-        for(;!chk(it->first) && size() > ++meta; ++it);
+        it = begin();
+        for(meta=0; !chk(it->first) && size() > ++meta; ++it);
         if(size() == meta)
           break;
         col = it->second;
@@ -162,8 +156,11 @@ void Columns::unload_all(bool validation) {
       if(validation)
         SWC_LOGF(LOG_WARN, 
           "Unload-Validation cid=%lu remained", col->cfg.cid);
+      to_unload.increment();
       col->unload_all(to_unload, cb);
     }
+
+    cb(0);
     r_promise.get_future().wait();
   }
 }

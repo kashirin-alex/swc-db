@@ -166,7 +166,7 @@ class AppContext final : public Comm::AppContext {
 
   void shutting_down(const std::error_code &ec, const int &sig) {
 
-    if(sig==0) { // set signals listener
+    if(sig == 0) { // set signals listener
       Env::IoCtx::io()->signals()->async_wait(
         [this](const std::error_code &ec, const int &sig) {
           SWC_LOGF(LOG_INFO, "Received signal, sig=%d ec=%s", 
@@ -185,7 +185,7 @@ class AppContext final : public Comm::AppContext {
       SWC_LOG(LOG_INFO, "Exit");
       std::quick_exit(0);
     }
-    
+
 
     Env::Rgr::shuttingdown();
 
@@ -195,11 +195,8 @@ class AppContext final : public Comm::AppContext {
   }
 
   void stop() override {
-    
-    while(Env::Rgr::in_process())
-      std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    Env::Rgr::columns()->unload_all(true); //re-check
-    
+    Env::Rgr::wait_if_in_process();
+
     Env::Clients::get()->rgr->stop();
     Env::Clients::get()->mngr->stop();
     

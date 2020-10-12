@@ -13,6 +13,7 @@ namespace SWC { namespace Ranger {
 
 Column::Column(const cid_t cid, const DB::Schema& schema) 
       : cfg(cid, schema), m_releasing(false) {
+  Env::Rgr::in_process(1);
   Env::Rgr::res().more_mem_usage(size_of());
 }
 
@@ -20,6 +21,7 @@ void Column::init(int&) { }
 
 Column::~Column() { 
   Env::Rgr::res().less_mem_usage(size_of());
+  Env::Rgr::in_process(-1);
 }
 
 size_t Column::size_of() const {
@@ -72,7 +74,9 @@ RangePtr Column::get_range(int &err, const rid_t rid, bool initialize) {
       return it->second;
 
     else if(initialize) {
-      if(Env::Rgr::is_shuttingdown())
+      if(Env::Rgr::is_shuttingdown() || 
+         (Env::Rgr::is_not_accepting() && 
+          DB::Types::MetaColumn::is_data(cfg.cid)))
         err = Error::SERVER_SHUTTING_DOWN;
       else if(cfg.deleting)
         err = Error::COLUMN_MARKED_REMOVED;
@@ -103,13 +107,13 @@ void Column::unload(const rid_t rid, const Callback::RangeUnloaded_t& cb) {
     cb(Error::OK);
 }
 
-void Column::unload_all(std::atomic<int>& unloaded, 
+void Column::unload_all(Common::Stats::CompletionCounter<size_t>& to_unload,
                         const Callback::RangeUnloaded_t& cb) {
   for(iterator it;;) {
     Core::MutexSptd::scope lock(m_mutex);
     if((it = begin()) == end())
       break;
-    ++unloaded;
+    to_unload.increment();
     Env::IoCtx::post([cb, range=it->second](){range->unload(cb, false);});
     erase(it);
   }
@@ -118,12 +122,12 @@ void Column::unload_all(std::atomic<int>& unloaded,
 }
 
 void Column::unload_all(const Callback::ColumnsUnloadedPtr& cb) {
-  ++cb->unloading;
+  cb->unloading.increment();
   for(iterator it;;) {
     Core::MutexSptd::scope lock(m_mutex);
     if((it = begin()) == end())
       break;
-    ++cb->unloading;
+    cb->unloading.increment();
     Env::IoCtx::post([cb, range=it->second](){
       range->unload([cb, range](int err) { cb->response(err, range); }, true);
     });

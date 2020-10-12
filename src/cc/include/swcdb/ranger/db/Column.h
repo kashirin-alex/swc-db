@@ -44,7 +44,7 @@ class Column final : private std::unordered_map<rid_t, RangePtr> {
 
   void unload(const rid_t rid, const Callback::RangeUnloaded_t& cb);
 
-  void unload_all(std::atomic<int>& unloaded, 
+  void unload_all(Common::Stats::CompletionCounter<size_t>& to_unload,
                   const Callback::RangeUnloaded_t& cb);
 
   void unload_all(const Callback::ColumnsUnloadedPtr& cb);

@@ -21,7 +21,8 @@ Range::Range(const ColumnCfg* cfg, const rid_t rid)
               m_interval(cfg->key_seq),
               m_state(State::NOTLOADED), 
               m_compacting(COMPACT_NONE), m_require_compact(false),
-              m_inbytes(0) { 
+              m_inbytes(0) {
+  Env::Rgr::in_process(1);
   Env::Rgr::res().more_mem_usage(size_of());
 }
 
@@ -31,6 +32,7 @@ void Range::init() {
 
 Range::~Range() {
   Env::Rgr::res().less_mem_usage(size_of());
+  Env::Rgr::in_process(-1);
 }
 
 size_t Range::size_of() const {
@@ -202,8 +204,10 @@ void Range::load(const Comm::ResponseCallback::Ptr& cb) {
     if(m_state == State::NOTLOADED)
       m_state = State::LOADING;
   }
-  int err = Env::Rgr::is_shuttingdown() ?
-            Error::SERVER_SHUTTING_DOWN : Error::OK;
+  int err = Env::Rgr::is_shuttingdown() ||
+            (Env::Rgr::is_not_accepting() &&
+             DB::Types::MetaColumn::is_data(cfg->cid))
+          ? Error::SERVER_SHUTTING_DOWN : Error::OK;
   if(is_loaded || err)
     return loaded(err, cb);
 
@@ -223,6 +227,12 @@ void Range::load(const Comm::ResponseCallback::Ptr& cb) {
 }
 
 void Range::take_ownership(int &err, const Comm::ResponseCallback::Ptr& cb) {
+  if(Env::Rgr::is_shuttingdown() || 
+     (Env::Rgr::is_not_accepting() && 
+      DB::Types::MetaColumn::is_data(cfg->cid))) {
+    return loaded(err = Error::SERVER_SHUTTING_DOWN, cb);
+  }
+
   if(err == Error::RGR_DELETED_RANGE)
     return loaded(err, cb);
 
@@ -559,6 +569,11 @@ void Range::load(int &err, const Comm::ResponseCallback::Ptr& cb) {
       return;
     }
   }
+
+  if(Env::Rgr::is_shuttingdown() ||
+     (Env::Rgr::is_not_accepting() &&
+      DB::Types::MetaColumn::is_data(cfg->cid)))
+    return loaded_ack(Error::SERVER_SHUTTING_DOWN, cb);
 
   bool is_initial_column_range = false;
   RangeData::load(err, blocks.cellstores);

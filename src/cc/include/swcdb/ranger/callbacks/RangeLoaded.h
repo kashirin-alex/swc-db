@@ -21,10 +21,14 @@ class RangeLoaded : public Comm::ResponseCallback {
     Env::Rgr::in_process(1);
   }
 
-  virtual ~RangeLoaded() { }
+  virtual ~RangeLoaded() { 
+    Env::Rgr::in_process(-1);
+  }
 
   void response(int &err) override {
-    if(!err && Env::Rgr::is_shuttingdown()) 
+    if(!err && (Env::Rgr::is_shuttingdown() ||
+                (Env::Rgr::is_not_accepting() &&
+                 DB::Types::MetaColumn::is_data(cid))))
       err = Error::SERVER_SHUTTING_DOWN;
 
     RangePtr range;
@@ -46,7 +50,6 @@ class RangeLoaded : public Comm::ResponseCallback {
       cbp->header.initialize_from_request_header(m_ev->header);
       cbp->append_i32(err);
       m_conn->send_response(cbp);
-      Env::Rgr::in_process(-1);
       return;
 
     } catch(...) {
@@ -58,7 +61,6 @@ class RangeLoaded : public Comm::ResponseCallback {
       Env::Rgr::columns()->unload_range(err, cid, rid, 
         [berr=err, ptr=shared_from_this()] (int) {
           ptr->send_error(berr, "");
-          Env::Rgr::in_process(-1);
         }
       );
     
