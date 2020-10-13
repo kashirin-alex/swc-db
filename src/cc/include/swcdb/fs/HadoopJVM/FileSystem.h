@@ -122,6 +122,8 @@ class FileSystemHadoopJVM final : public FileSystem {
   Service::Ptr            m_fs;
   
   int hdfs_cfg_min_blk_sz = 1048576;
+  const Config::Property::V_GINT32::Ptr cfg_use_delay;
+
 };
 
 

@@ -44,3 +44,11 @@ _default_ **```swc.fs.hadoop_jvm.user=```**
 ```G_INT32```
 The Max Open File Descriptors for the option of not closing, Condition dependable by the Program using the filesystem. \
 _default_ **```swc.fs.hadoop_jvm.fds.max=1024```**
+
+
+* ### swc.fs.hadoop_jvm.reconnect.delay.ms
+```G_INT32```
+The time in milliseconds to delay use of a connection after re-connect. \
+_default_ **```swc.fs.hadoop_jvm.reconnect.delay.ms=3000```**
+
+

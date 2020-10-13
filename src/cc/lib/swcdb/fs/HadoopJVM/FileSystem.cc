@@ -26,6 +26,8 @@ Configurables apply_hadoop_jvm() {
       "HadoopJVM user")
     ("swc.fs.hadoop_jvm.fds.max", Config::g_i32(256), 
       "Max Open Fds for opt. without closing")
+    ("swc.fs.hadoop_jvm.reconnect.delay.ms", Config::g_i32(3000), 
+      "In ms delay use of connection after re-connect")
   ;
 
   Env::Config::settings()->parse_file(
@@ -87,10 +89,13 @@ FileSystemHadoopJVM::get_fd(SmartFd::Ptr& smartfd){
 }
 
 
-FileSystemHadoopJVM::FileSystemHadoopJVM() 
+FileSystemHadoopJVM::FileSystemHadoopJVM()
     : FileSystem(apply_hadoop_jvm()),
       m_run(true), m_nxt_fd(0), m_connecting(false), 
-      m_fs(setup_connection()) {
+      m_fs(setup_connection()),
+      cfg_use_delay(
+        Env::Config::settings()->get<Config::Property::V_GINT32>(
+          "swc.fs.hadoop_jvm.reconnect.delay.ms")) {
 }
 
 FileSystemHadoopJVM::~FileSystemHadoopJVM() { }
@@ -239,6 +244,8 @@ FileSystemHadoopJVM::Service::Ptr FileSystemHadoopJVM::get_fs(int& err) {
     }
     if(connect) {
       auto fs = setup_connection();
+      std::this_thread::sleep_for(
+        std::chrono::milliseconds(cfg_use_delay->get()));
       std::scoped_lock lock(m_mutex);
       m_fs = fs;
       m_connecting = false;
@@ -338,7 +345,7 @@ void FileSystemHadoopJVM::mkdirs(int& err, const std::string& name) {
 }
 
 void FileSystemHadoopJVM::readdir(int& err, const std::string& name, 
-                               DirentList& results) {
+                                  DirentList& results) {
   std::string abspath;
   get_abspath(name, abspath);
   hdfsFileInfo *fileInfo;
@@ -370,7 +377,7 @@ void FileSystemHadoopJVM::readdir(int& err, const std::string& name,
     }
   }
 
-  SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG, 
+  SWC_LOGF(err && err != ENOENT ? LOG_ERROR: LOG_DEBUG, 
     "readdir('%s') - %d(%s)", 
     abspath.c_str(), err, strerror(err));
 }
@@ -388,7 +395,7 @@ void FileSystemHadoopJVM::rmdir(int& err, const std::string& name) {
       need_reconnect(err = (tmperr = errno) == EIO ? ENOENT: tmperr, fs);
     }
   }
-  SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG, 
+  SWC_LOGF(err && err != ENOENT ? LOG_ERROR: LOG_DEBUG, 
     "rmdir('%s') - %d(%s)", 
     abspath.c_str(), tmperr, strerror(tmperr));
 }
@@ -648,7 +655,7 @@ void FileSystemHadoopJVM::close(int& err, SmartFd::Ptr& smartfd) {
     if(!err) {
       errno = 0;
       if(hdfsCloseFile(fs->srv, hadoop_fd->file()) == -1)
-        need_reconnect(err = errno, fs);
+        err = errno;
       hadoop_fd->file(0);
     }
   } else {
