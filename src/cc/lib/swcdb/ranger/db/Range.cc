@@ -335,21 +335,21 @@ void Range::on_change(int &err, bool removal,
 
 void Range::unload(const Callback::RangeUnloaded_t& cb, bool completely) {
   int err = Error::OK;
+  bool done;
   {
     std::scoped_lock lock(m_mutex);
-    if(m_state == State::DELETED) {
-      cb(err);
-      return;
-    }
-    m_state = State::UNLOADING;
+    if(!(done = m_state == State::DELETED))
+      m_state = State::UNLOADING;
+  }
+  if(done) {
+    cb(err);
+    return;
   }
 
   blocks.commitlog.stopping = true;
 
   wait();
   wait_queue();
-
-  set_state(State::NOTLOADED);
 
   blocks.unload();
 
@@ -359,6 +359,7 @@ void Range::unload(const Callback::RangeUnloaded_t& cb, bool completely) {
     
   SWC_LOGF(LOG_INFO, "UNLOADED RANGE cid=%lu rid=%lu error=%d(%s)", 
                       cfg->cid, rid, err, Error::get_text(err));
+  set_state(State::NOTLOADED);
   cb(err);
 }
   
@@ -563,12 +564,11 @@ void Range::last_rgr_chk(int &err, const Comm::ResponseCallback::Ptr& cb) {
 void Range::load(int &err, const Comm::ResponseCallback::Ptr& cb) {
   {
     std::scoped_lock lock(m_mutex);
-    if(m_state != State::LOADING) { 
-      // state has changed since load request
+    if(m_state != State::LOADING) // state has changed since load request
       err = Error::RGR_NOT_LOADED_RANGE;
-      return;
-    }
   }
+  if(err) 
+    return loaded(err, cb);
 
   if(Env::Rgr::is_shuttingdown() ||
      (Env::Rgr::is_not_accepting() &&

@@ -215,7 +215,7 @@ void Rgr::wait_if_in_process() {
   while(in_process()) {
     std::this_thread::sleep_for(std::chrono::milliseconds(200));
     m_env->_columns->unload_all(true); //re-check
-    if(++n % 10)
+    if(++n % 10 == 0)
       SWC_LOGF(LOG_WARN, "In-process=%lu check=%lu", in_process(), n);
   }
 }
