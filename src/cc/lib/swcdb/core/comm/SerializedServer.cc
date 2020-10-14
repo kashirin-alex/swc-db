@@ -119,7 +119,7 @@ SerializedServer::SerializedServer(
     host.append(hostname);
   }
     
-  std::vector<Network> nets;
+  Networks nets;
   asio::error_code ec;
   Resolver::get_networks(
     settings->get_strs("swc.comm.network.priority"), nets, ec);

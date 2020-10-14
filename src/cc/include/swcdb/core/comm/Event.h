@@ -7,10 +7,10 @@
 #ifndef swcdb_core_comm_Event_h
 #define swcdb_core_comm_Event_h
 
-#include "swcdb/core/comm/Header.h"
 
 #include "swcdb/core/Time.h"
 #include "swcdb/core/Buffer.h"
+#include "swcdb/core/comm/Header.h"
 
 #include <memory>
 

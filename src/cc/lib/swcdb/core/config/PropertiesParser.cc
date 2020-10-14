@@ -12,106 +12,131 @@
 #include <fstream>
 
 
-namespace SWC { namespace Config {
+namespace SWC {
 
 
 /* cfg methods for types
 *  @param v The default Value and a Type
 */
-Property::V_BOOL::Ptr boo(const bool& v) {
-  return new Property::V_BOOL(v);
+Config::Property::V_BOOL::Ptr 
+Config::boo(const bool& v) {
+  return new Config::Property::V_BOOL(v);
 }
-Property::V_UINT8::Ptr i8(const uint8_t& v) {
-  return new Property::V_UINT8(v);
+Config::Property::V_UINT8::Ptr 
+Config::i8(const uint8_t& v) {
+  return new Config::Property::V_UINT8(v);
 }
-Property::V_UINT16::Ptr i16(const uint16_t& v) {
-  return new Property::V_UINT16(v);
+Config::Property::V_UINT16::Ptr 
+Config::i16(const uint16_t& v) {
+  return new Config::Property::V_UINT16(v);
 }
-Property::V_INT32::Ptr i32(const int32_t& v) {
-  return new Property::V_INT32(v);
+Config::Property::V_INT32::Ptr 
+Config::i32(const int32_t& v) {
+  return new Config::Property::V_INT32(v);
 }
-Property::V_INT64::Ptr i64(const int64_t& v) {
-  return new Property::V_INT64(v);
+Config::Property::V_INT64::Ptr 
+Config::i64(const int64_t& v) {
+  return new Config::Property::V_INT64(v);
 }
-Property::V_DOUBLE::Ptr f64(const double& v) {
-  return new Property::V_DOUBLE(v);
+Config::Property::V_DOUBLE::Ptr 
+Config::f64(const double& v) {
+  return new Config::Property::V_DOUBLE(v);
 }
-Property::V_STRING::Ptr str(const std::string& v) {
-  return new Property::V_STRING(v);
+Config::Property::V_STRING::Ptr 
+Config::str(const std::string& v) {
+  return new Config::Property::V_STRING(v);
 }
-Property::V_STRINGS::Ptr strs(const Strings& v) {
-  return new Property::V_STRINGS(v);
+Config::Property::V_STRINGS::Ptr 
+Config::strs(const Strings& v) {
+  return new Config::Property::V_STRINGS(v);
 }
-Property::V_INT64S::Ptr i64s(const Int64s& v) {
-  return new Property::V_INT64S(v);
+Config::Property::V_INT64S::Ptr 
+Config::i64s(const Int64s& v) {
+  return new Config::Property::V_INT64S(v);
 }
-Property::V_DOUBLES::Ptr f64s(const Doubles& v) {
-  return new Property::V_DOUBLES(v);
+Config::Property::V_DOUBLES::Ptr 
+Config::f64s(const Doubles& v) {
+  return new Config::Property::V_DOUBLES(v);
 }
 
 /* cfg methods for guarded types
 *  @param v The default Value and a Type
 */
-Property::V_GBOOL::Ptr g_boo(const bool& v) {
-  return new Property::V_GBOOL(v, 0);
+Config::Property::V_GBOOL::Ptr 
+Config::g_boo(const bool& v) {
+  return new Config::Property::V_GBOOL(v, 0);
 }
-Property::V_GUINT8::Ptr g_i8(const uint8_t& v) {
-  return new Property::V_GUINT8(v, 0);
+Config::Property::V_GUINT8::Ptr 
+Config::g_i8(const uint8_t& v) {
+  return new Config::Property::V_GUINT8(v, 0);
 }
-Property::V_GINT32::Ptr g_i32(const int32_t& v) {
-  return new Property::V_GINT32(v, 0);
+Config::Property::V_GINT32::Ptr 
+Config::g_i32(const int32_t& v) {
+  return new Config::Property::V_GINT32(v, 0);
 }
-Property::V_GSTRINGS::Ptr g_strs(const Strings& v) {
-  return new Property::V_GSTRINGS(v, 0);
+Config::Property::V_GSTRINGS::Ptr 
+Config::g_strs(const Strings& v) {
+  return new Config::Property::V_GSTRINGS(v, 0);
 }
-Property::V_GENUM::Ptr g_enum(const int32_t& v, 
-                              const Property::V_GENUM::OnChg_t& cb, 
-                              const Property::V_GENUM::FromString_t& from_string,
-                              const Property::V_GENUM::Repr_t& repr) {
-  return new Property::V_GENUM(v, cb, from_string, repr);
+Config::Property::V_GENUM::Ptr 
+Config::g_enum(const int32_t& v,
+               const Config::Property::V_GENUM::OnChg_t& cb,
+               const Config::Property::V_GENUM::FromString_t& from_string,
+               const Config::Property::V_GENUM::Repr_t& repr) {
+  return new Config::Property::V_GENUM(v, cb, from_string, repr);
 }
 
 /* cfg methods for types, a skippable option
 *  if no option parsed it is skipped
 */
-Property::V_BOOL::Ptr boo() {
-  return new Property::V_BOOL(true, Property::Value::SKIPPABLE);
+Config::Property::V_BOOL::Ptr Config::boo() {
+  return new Config::Property::V_BOOL(
+    true, Config::Property::Value::SKIPPABLE);
 }
-Property::V_UINT8::Ptr i8() {
-  return new Property::V_UINT8(0, Property::Value::SKIPPABLE);
+Config::Property::V_UINT8::Ptr Config::i8() {
+  return new Config::Property::V_UINT8(
+    0, Config::Property::Value::SKIPPABLE);
 }
-Property::V_UINT16::Ptr i16() {
-  return new Property::V_UINT16(0, Property::Value::SKIPPABLE);
+Config::Property::V_UINT16::Ptr Config::i16() {
+  return new Config::Property::V_UINT16(
+    0, Config::Property::Value::SKIPPABLE);
 }
-Property::V_INT32::Ptr i32() {
-  return new Property::V_INT32(0, Property::Value::SKIPPABLE);
+Config::Property::V_INT32::Ptr Config::i32() {
+  return new Config::Property::V_INT32(
+    0, Config::Property::Value::SKIPPABLE);
 }
-Property::V_INT64::Ptr i64() {
-  return new Property::V_INT64(0, Property::Value::SKIPPABLE);
+Config::Property::V_INT64::Ptr Config::i64() {
+  return new Config::Property::V_INT64(
+    0, Config::Property::Value::SKIPPABLE);
 }
-Property::V_DOUBLE::Ptr f64() {
-  return new Property::V_DOUBLE(0, Property::Value::SKIPPABLE);
+Config::Property::V_DOUBLE::Ptr Config::f64() {
+  return new Config::Property::V_DOUBLE(
+    0, Config::Property::Value::SKIPPABLE);
 }
-Property::V_STRING::Ptr str() {
-  return new Property::V_STRING(std::string(), Property::Value::SKIPPABLE);
+Config::Property::V_STRING::Ptr Config::str() {
+  return new Config::Property::V_STRING(
+    std::string(), Config::Property::Value::SKIPPABLE);
 }
-Property::V_STRINGS::Ptr strs() {
-  return new Property::V_STRINGS(Strings(), Property::Value::SKIPPABLE);
+Config::Property::V_STRINGS::Ptr Config::strs() {
+  return new Config::Property::V_STRINGS(
+    Strings(), Config::Property::Value::SKIPPABLE);
 }
-Property::V_INT64S::Ptr i64s() {
-  return new Property::V_INT64S(Int64s(), Property::Value::SKIPPABLE);
+Config::Property::V_INT64S::Ptr Config::i64s() {
+  return new Config::Property::V_INT64S(
+    Int64s(), Config::Property::Value::SKIPPABLE);
 }
-Property::V_DOUBLES::Ptr f64s() {
-  return new Property::V_DOUBLES(Doubles(), Property::Value::SKIPPABLE);
+Config::Property::V_DOUBLES::Ptr Config::f64s() {
+  return new Config::Property::V_DOUBLES(
+    Doubles(), Config::Property::Value::SKIPPABLE);
 }
 
 
 
-
+namespace Config {
 
   
 ParserConfig::ParserConfig(const std::string& usage, 
-                            int line_len, bool own)
+                           int line_len, bool own)
                           : usage(usage), line_length(line_len), own(own) {
 }
 

@@ -3,92 +3,13 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#include "swcdb/core/comm/Header.h"
+
 #include "swcdb/core/Serialization.h"
 #include "swcdb/core/Checksum.h"
+#include "swcdb/core/comm/Header.h"
+
 
 namespace SWC { namespace Comm {
-
-
-Header::Buffer::Buffer()
-  : size(0), 
-    encoder(Core::Encoder::Type::PLAIN), 
-    size_plain(0), 
-    chksum(0) {
-}
-
-SWC_SHOULD_INLINE
-void Header::Buffer::reset() {
-  size = 0;
-  encoder = Core::Encoder::Type::PLAIN;
-  size_plain = 0;
-  chksum = 0;
-}
-
-size_t Header::Buffer::encoded_length() const {
-  size_t sz = Serialization::encoded_length_vi32(size) + 5;
-  if(encoder != Core::Encoder::Type::PLAIN)
-    sz += Serialization::encoded_length_vi32(size_plain);
-  return sz;
-}
-
-void Header::Buffer::encode(uint8_t** bufp) const {
-  Serialization::encode_vi32(bufp, size);
-  Serialization::encode_i8(bufp, (uint8_t)encoder);
-  if(encoder != Core::Encoder::Type::PLAIN)
-    Serialization::encode_vi32(bufp, size_plain); 
-  Serialization::encode_i32(bufp, chksum);
-}
-
-void Header::Buffer::decode(const uint8_t** bufp, size_t* remainp) {
-  size = Serialization::decode_vi32(bufp, remainp);
-  encoder = (Core::Encoder::Type)Serialization::decode_i8(bufp, remainp);
-  if(encoder != Core::Encoder::Type::PLAIN)
-    size_plain = Serialization::decode_vi32(bufp, remainp);
-  chksum = Serialization::decode_i32(bufp, remainp);
-}
-
-void Header::Buffer::encode(Core::Encoder::Type _enc, StaticBuffer& data) {
-  if(_enc != Core::Encoder::Type::PLAIN && 
-     encoder == Core::Encoder::Type::PLAIN &&
-     data.size > 32) { // at least size if encoder not encrypt-type
-    
-    int err = Error::OK;
-    size_t len_enc = 0;
-    DynamicBuffer output;
-    Core::Encoder::encode(err, _enc, data.base, data.size, 
-                          &len_enc, output, 0, true);
-    if(len_enc) {
-      encoder = _enc;
-      size_plain = data.size;
-      data.set(output);
-    }
-  }
-
-  size   = data.size;
-  chksum = Core::checksum32(data.base, data.size);
-}
-
-void Header::Buffer::decode(int& err, StaticBuffer& data) const {
-  if(size_plain) {
-    StaticBuffer decoded_buf((size_t)size_plain);
-    Core::Encoder::decode(
-      err, encoder, 
-      data.base, data.size, 
-      decoded_buf.base, size_plain
-    );
-    if(!err)
-      data.set(decoded_buf);
-  }
-}
-
-void Header::Buffer::print(std::ostream& out) const {
-  out << " Buffer(sz=" << size
-      << " enc=" << Core::Encoder::to_string(encoder)
-      << " szplain=" << size_plain
-      << " chk=" << chksum << ')';
-}
-
 
 
 SWC_SHOULD_INLINE

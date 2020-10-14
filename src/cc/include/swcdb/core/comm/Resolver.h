@@ -29,6 +29,8 @@ struct Network {
   Network(const Network& net);
 };
 
+typedef std::vector<Network> Networks;
+
 } //namespace Comm
 
 
@@ -69,14 +71,14 @@ bool is_ipv6_address(const std::string& str);
 EndPoints get_endpoints(uint16_t defaul_port, 
                         const Config::Strings& addrs, 
                         const std::string& host, 
-                        const std::vector<Network>& nets,
+                        const Networks& nets,
                         bool srv=false);
 
-void sort(const std::vector<Network>& nets, const EndPoints& endpoints, 
+void sort(const Networks& nets, const EndPoints& endpoints, 
           EndPoints& sorted);
 
 void get_networks(const Config::Strings& networks, 
-                  std::vector<Network>& nets, asio::error_code& ec);
+                  Networks& nets, asio::error_code& ec);
 
 void get_networks(const Config::Strings& networks, 
                   std::vector<asio::ip::network_v4>& nets_v4, 
@@ -92,7 +94,7 @@ bool is_network(const EndPoint& endpoint, const asio::ip::network_v4& net);
 bool is_network(const EndPoint& endpoint, const asio::ip::network_v6& net);
 
 
-}} // namespace :Comm::Resolver
+}} // namespace Comm::Resolver
 
 
 } // namespace SWC

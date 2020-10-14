@@ -10,7 +10,7 @@
 #include <zlib.h>
 #include <zstd.h>
 
-namespace SWC { namespace Core { namespace Encoder {
+namespace SWC { namespace Core {
 
 
 namespace {
@@ -23,68 +23,69 @@ namespace {
 }
 
 
-std::string to_string(Type typ) {
+std::string Encoder::to_string(Encoder::Type typ) {
   switch(typ) {
-    case Type::DEFAULT:
+    case Encoder::Type::DEFAULT:
       return Encoder_DEFAULT;
-    case Type::PLAIN:
+    case Encoder::Type::PLAIN:
       return Encoder_PLAIN;
-    case Type::ZLIB:
+    case Encoder::Type::ZLIB:
       return Encoder_ZLIB;
-    case Type::SNAPPY:
+    case Encoder::Type::SNAPPY:
       return Encoder_SNAPPY;
-    case Type::ZSTD:
+    case Encoder::Type::ZSTD:
       return Encoder_ZSTD;
-    case Type::UNKNOWN:
+    case Encoder::Type::UNKNOWN:
       return Encoder_UNKNOWN;
     default:
       return std::string("UNKNOWN(" + std::to_string((uint8_t)typ) +")");
   }
 }
 
-Type encoding_from(const std::string& typ) {
+Encoder::Type Encoder::encoding_from(const std::string& typ) {
 
   if(strncasecmp(typ.data(), Encoder_DEFAULT, typ.length()) == 0 || 
      typ.compare("0") == 0)
-    return Type::DEFAULT;
+    return Encoder::Type::DEFAULT;
 
   if(strncasecmp(typ.data(), Encoder_PLAIN, typ.length()) == 0 || 
      typ.compare("1") == 0)
-    return Type::PLAIN;
+    return Encoder::Type::PLAIN;
 
   if(strncasecmp(typ.data(), Encoder_ZLIB, typ.length()) == 0 ||
      typ.compare("2") == 0)
-    return Type::ZLIB;
+    return Encoder::Type::ZLIB;
 
   if(strncasecmp(typ.data(), Encoder_SNAPPY, typ.length()) == 0 ||
      typ.compare("3") == 0)
-    return Type::SNAPPY;
+    return Encoder::Type::SNAPPY;
   
   if(strncasecmp(typ.data(), Encoder_ZSTD, typ.length()) == 0 ||
      typ.compare("4") == 0)
-    return Type::ZSTD;
+    return Encoder::Type::ZSTD;
 
-  return Type::UNKNOWN;
+  return Encoder::Type::UNKNOWN;
 }
 
 SWC_SHOULD_INLINE
-std::string repr_encoding(int typ) {
-  return to_string((Type)typ);
+std::string Encoder::repr_encoding(int typ) {
+  return Encoder::to_string((Encoder::Type)typ);
 }
 
 SWC_SHOULD_INLINE
-int from_string_encoding(const std::string& typ) {
-  return (int)encoding_from(typ);
+int Encoder::from_string_encoding(const std::string& typ) {
+  return (int)Encoder::encoding_from(typ);
 }
 
 
 
-void decode(int& err, Type encoder, 
+void Encoder::decode(
+            int& err, Encoder::Type encoder, 
             const uint8_t* src, size_t sz_enc, 
             uint8_t *dst, size_t sz) {
 
   switch(encoder) {
-    case Type::ZLIB: {
+    case Encoder::Type::ZLIB: {
       z_stream strm;
       memset(&strm, 0, sizeof(z_stream));
       strm.zalloc = Z_NULL;
@@ -106,33 +107,34 @@ void decode(int& err, Type encoder,
       return;
     }
 
-    case Type::SNAPPY: {
+    case Encoder::Type::SNAPPY: {
       if(!snappy::RawUncompress((const char *)src, sz_enc, (char *)dst))
         err = Error::ENCODER_DECODE;
       return;
     }
 
-    case Type::ZSTD: {
+    case Encoder::Type::ZSTD: {
       if(ZSTD_decompress((void *)dst, sz, (void *)src, sz_enc) != sz)
         err = Error::ENCODER_DECODE;
       return;
     }
 
     default: {
-      //SWC_ASSERT(encoder==Type::PLAIN);
+      //SWC_ASSERT(encoder==Encoder::Type::PLAIN);
       break;
     }
   }
 }
 
 
-void encode(int&, Type encoder, 
+void Encoder::encode(
+            int&, Encoder::Type encoder, 
             const uint8_t* src, size_t src_sz, 
             size_t* sz_enc, DynamicBuffer& output, 
             uint32_t reserve, bool no_plain_out) {
   
   switch(encoder) {
-    case Type::ZLIB: {
+    case Encoder::Type::ZLIB: {
 
       z_stream strm;
       memset(&strm, 0, sizeof(z_stream));
@@ -160,7 +162,7 @@ void encode(int&, Type encoder,
       break;
     }
 
-    case Type::SNAPPY: {
+    case Encoder::Type::SNAPPY: {
       output.ensure(reserve + snappy::MaxCompressedLength(src_sz));
       output.ptr += reserve;
       snappy::RawCompress((const char *)src, src_sz, 
@@ -172,7 +174,7 @@ void encode(int&, Type encoder,
       break;
     }
 
-    case Type::ZSTD: {
+    case Encoder::Type::ZSTD: {
       size_t const avail_out = ZSTD_compressBound(src_sz);
       output.ensure(reserve + avail_out);
       output.ptr += reserve;
@@ -205,4 +207,4 @@ void encode(int&, Type encoder,
 }
 
 
-}}}
+}}

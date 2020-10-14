@@ -5,9 +5,8 @@ import sys
 from distutils.core import setup, Extension
 from distutils import sysconfig
 
-# README_RST = os.path.join(os.path.dirname(__file__), 'README.md')
-# with open(README_RST) as readme:
-#    long_description = readme.read()
+with open('README.md') as readme:
+    long_description = readme.read()
 
 
 install_path = '@CMAKE_INSTALL_PREFIX@'
@@ -33,7 +32,7 @@ setup(
     name='swcdb',
     version='@SWCDB_VERSION_PYTHON@',
     description='The SWC-DB Python Package',
-    long_description='The Python modules for working with SWC-DB.', # + long_description,
+    long_description=long_description,
     long_description_content_type='text/markdown',
 
     # install_requires=['thrift==@THRIFT_VERSION@'],

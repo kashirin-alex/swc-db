@@ -239,18 +239,8 @@ class BufferDyn : public BufferT {
 };
 
 
-} // namespace Core
-
-
-
-/*!
- *  \addtogroup Core
- *  @{
- */
-
-
-typedef Core::Buffer <uint8_t>          StaticBuffer;
-typedef Core::BufferDyn <StaticBuffer>  DynamicBuffer;
+typedef Buffer <uint8_t>          StaticBuffer;
+typedef BufferDyn <StaticBuffer>  DynamicBuffer;
 
 
 // StaticBuffer specializations to SizeOf
@@ -296,7 +286,18 @@ void StaticBuffer::set(DynamicBuffer& other) SWC_NOEXCEPT {
   }
 }
 
+} // namespace Core
 
+
+
+
+/*!
+ *  \addtogroup Core
+ *  @{
+ */
+
+using StaticBuffer = Core::StaticBuffer;
+using DynamicBuffer = Core::DynamicBuffer;
 
 /*! @} End of Core Group*/
 

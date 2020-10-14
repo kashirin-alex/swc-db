@@ -34,7 +34,7 @@ _default_ **```swc.cfg.dyn.period=600000```**
 The Manager Host/s. The value format ```{ROLES}```|```{COLUMNS}```|```{ENDPOINTS}```|```PORT```  delimitted with ```|``` and aligned groupings of Role & Columns is require. The order is part of used configuration defnition to assign host-priority, 1st has initial preference for Active-State.
 > **_The Full Format Description_**: \
 ```{ROLES}``` - In curly-brackets comma-seperated-value, roles options: ```rangers```(manages Rangers), ```schemas``` {manages Schemas}. example ```{rangers,schemas}``` \
-```[COLUMNS]``` - In square-brackets, an interval(by Hyphen ```-```) of column-ids, NoValue/Zero on either side is from/to Any. example ```[10-]``` = from 10 to Any. \
+```[COLUMNS]``` - In square-brackets, an interval(by Hyphen ```-```) of column-ids, From and NoValue/Zero is to Any. example ```[10-]``` = from 10 to Any. \
 ```{ENDPOINTS}``` - A ```FQDN``` hostname or a comma-seperated-value of address ```(IPv4 & IPv6)```. example ```192.168.0.1,::2``` \
 ```PORT``` - optional, If set use this Port with the listed endpoints. \
 Multiple ```swc.mngr.host``` require aligment of Role/s and the Column-Intervals.
@@ -57,9 +57,9 @@ Multiple ```swc.mngr.host``` require aligment of Role/s and the Column-Intervals
   ```swc.mngr.host={schemas}|host-name-2``` \
   ```swc.mngr.host={rangers}|host-name-3``` \
   ```swc.mngr.host={rangers}|host-name-4``` \
-  ```swc.mngr.host=host-name-5``` \
-  ```swc.mngr.host=host-name-6``` \
-  ```swc.mngr.host=host-name-7``` \
+  ```swc.mngr.host=[1-]|host-name-5``` \ 
+  ```swc.mngr.host=[1-]|host-name-6``` \
+  ```swc.mngr.host=[1-]|host-name-7``` \
 > _Option 3_: to the example - 1-group, 4-hosts managers of all Roles and all columns, one-host is a configuration for a single-manager \
   ```swc.mngr.host=host-name-1``` \
   ```swc.mngr.host=host-name-2``` \

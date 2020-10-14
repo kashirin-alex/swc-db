@@ -9,6 +9,7 @@
 
 
 #include "swcdb/ranger/db/Range.h"
+#include "swcdb/common/Stats/CompletionCounter.h"
 
 #include <unordered_map>
 

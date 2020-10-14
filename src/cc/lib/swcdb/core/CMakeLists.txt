@@ -58,6 +58,7 @@ set(swcdb_core_comm_sources
   comm/ConfigSSL.cc
   comm/Resolver.cc
   comm/Event.cc
+  comm/HeaderBufferInfo.cc
   comm/Header.cc
   comm/Buffers.cc
   comm/ConnHandler.cc

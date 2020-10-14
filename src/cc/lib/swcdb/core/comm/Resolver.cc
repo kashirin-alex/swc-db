@@ -105,25 +105,24 @@ size_t endpoint_hash(const EndPoint& endpoint) {
 
 
 
-namespace Resolver {
 
 SWC_SHOULD_INLINE
-bool is_ipv4_address(const std::string& str) {
+bool Resolver::is_ipv4_address(const std::string& str) {
   struct sockaddr_in sa;
   return inet_pton(AF_INET, str.c_str(), &(sa.sin_addr)) != 0;
 }
 
 SWC_SHOULD_INLINE
-bool is_ipv6_address(const std::string& str) {
+bool Resolver::is_ipv6_address(const std::string& str) {
   struct sockaddr_in6 sa;
   return inet_pton(AF_INET6, str.c_str(), &(sa.sin6_addr)) != 0;
 }
 
-EndPoints get_endpoints(uint16_t defaul_port, 
-                        const Config::Strings& addrs, 
-                        const std::string& host, 
-                        const std::vector<Network>& nets,
-                        bool srv) {
+EndPoints Resolver::get_endpoints(uint16_t defaul_port, 
+                                  const Config::Strings& addrs,
+                                  const std::string& host,
+                                  const Networks& nets,
+                                  bool srv) {
   EndPoints endpoints;
   std::string ip;
   uint16_t port;
@@ -207,8 +206,8 @@ EndPoints get_endpoints(uint16_t defaul_port,
   return sorted;
 }
 
-void sort(const std::vector<Network>& nets, const EndPoints& endpoints, 
-          EndPoints& sorted) {
+void Resolver::sort(const Networks& nets, const EndPoints& endpoints, 
+                    EndPoints& sorted) {
   // sort endpoints by Network Priority Access
   asio::error_code ec;
 
@@ -228,8 +227,8 @@ void sort(const std::vector<Network>& nets, const EndPoints& endpoints,
   }
 }
 
-void get_networks(const Config::Strings& networks, 
-                  std::vector<Network>& nets, asio::error_code& ec) {
+void Resolver::get_networks(const Config::Strings& networks, 
+                            Networks& nets, asio::error_code& ec) {
   nets.reserve(networks.size());
   for(auto& net : networks) {
     if(net.find_first_of(":") == std::string::npos)
@@ -239,10 +238,10 @@ void get_networks(const Config::Strings& networks,
   }
 }
 
-void get_networks(const Config::Strings& networks, 
-                  std::vector<asio::ip::network_v4>& nets_v4, 
-                  std::vector<asio::ip::network_v6>& nets_v6,
-                  asio::error_code& ec) {
+void Resolver::get_networks(const Config::Strings& networks, 
+                            std::vector<asio::ip::network_v4>& nets_v4,
+                            std::vector<asio::ip::network_v6>& nets_v6,
+                            asio::error_code& ec) {
   for(auto& net : networks) {
     if(net.find_first_of(":") == std::string::npos)
       nets_v4.push_back(asio::ip::make_network_v4(net, ec));      
@@ -251,9 +250,9 @@ void get_networks(const Config::Strings& networks,
   }
 }
 
-bool is_network(const EndPoint& endpoint,
-                const std::vector<asio::ip::network_v4>& nets_v4, 
-                const std::vector<asio::ip::network_v6>& nets_v6) {
+bool Resolver::is_network(const EndPoint& endpoint,
+                          const std::vector<asio::ip::network_v4>& nets_v4,
+                          const std::vector<asio::ip::network_v6>& nets_v6) {
   if(endpoint.address().is_v4()) {
     for(auto& net : nets_v4)
       if(is_network(endpoint, net))
@@ -270,16 +269,18 @@ bool is_network(const EndPoint& endpoint,
   return false;
 }
 
-bool is_network(const EndPoint& endpoint, const asio::ip::network_v4& net) {
+bool Resolver::is_network(const EndPoint& endpoint, 
+                          const asio::ip::network_v4& net) {
   return endpoint.address().to_v4() == net.address() || 
     asio::ip::make_network_v4(endpoint.address().to_v4(), 32)
       .is_subnet_of(net);
 }
 
-bool is_network(const EndPoint& endpoint, const asio::ip::network_v6& net) {    
+bool Resolver::is_network(const EndPoint& endpoint, 
+                          const asio::ip::network_v6& net) {    
   return endpoint.address().to_v6() == net.address() || 
     asio::ip::make_network_v6(endpoint.address().to_v6(), 128)
       .is_subnet_of(net);
 }
 
-}}}
+}} // namespace SWC::Comm
