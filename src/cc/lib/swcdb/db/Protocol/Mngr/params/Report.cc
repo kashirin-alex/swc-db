@@ -114,7 +114,7 @@ size_t RspRangersStatus::Ranger::encoded_length() const {
         + Serialization::encoded_length_vi64(rgr_id)
         + Serialization::encoded_length_vi32(failures)
         + Serialization::encoded_length_vi64(interm_ranges)
-        + 2
+        + 3
         + Common::Params::HostEndPoints::internal_encoded_length();
 }
 
@@ -124,6 +124,7 @@ void RspRangersStatus::Ranger::encode(uint8_t** bufp) const {
   Serialization::encode_vi32(bufp, failures);
   Serialization::encode_vi64(bufp, interm_ranges);
   Serialization::encode_i16(bufp, load_scale);
+  Serialization::encode_i8(bufp, rebalance);
   Common::Params::HostEndPoints::internal_encode(bufp);
 }
 
@@ -133,6 +134,7 @@ void RspRangersStatus::Ranger::decode(const uint8_t** bufp, size_t* remainp) {
   failures = Serialization::decode_vi32(bufp, remainp);
   interm_ranges = Serialization::decode_vi64(bufp, remainp);
   load_scale = Serialization::decode_i16(bufp, remainp);
+  rebalance = Serialization::decode_i8(bufp, remainp);
   Common::Params::HostEndPoints::internal_decode(bufp, remainp);
 }
 
@@ -142,7 +144,8 @@ void RspRangersStatus::Ranger::display(std::ostream& out,
                 << " rgr_id=" << rgr_id
                 << " failures=" << failures
                 << " interm_ranges=" << interm_ranges
-                << " load_scale=" << load_scale;
+                << " load_scale=" << load_scale
+                << " rebalance=" << int(rebalance);
   Common::Params::HostEndPoints::print(out << ' ');
 }
 

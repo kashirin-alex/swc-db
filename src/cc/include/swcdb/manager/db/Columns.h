@@ -99,6 +99,30 @@ class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
       it->second->change_rgr(rgrid_old, rgrid);
   }
 
+  void assigned(rgrid_t rgrid, size_t num, std::vector<Range::Ptr>& ranges) {
+    size_t max_r = 0;
+    Column::Ptr chk;
+    std::vector<cid_t> chked;
+    do {
+      {
+        Core::MutexSptd::scope lock(m_mutex);
+        for(auto it = begin(); it != end(); ++it) {
+          size_t n = it->second->ranges();
+          if(max_r < n && std::find(chked.begin(), chked.end(), it->first)
+                                     == chked.end()) {
+            max_r = n;
+            chk = it->second;
+            chked.push_back(it->first);
+          }
+        }
+      }
+      if(!max_r) 
+        return;
+      max_r = 0;
+      chk->assigned(rgrid, num, ranges);
+    } while(num);
+  }
+
   Column::Ptr get_need_health_check(int64_t ts, uint32_t ms) {
     Core::MutexSptd::scope lock(m_mutex);
     for(auto it = begin(); it != end(); ++it) {

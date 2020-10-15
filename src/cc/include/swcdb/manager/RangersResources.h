@@ -40,12 +40,16 @@ class RangersResources final : private std::vector<RangerResources> {
 
   public:
 
-  const Config::Property::V_GINT32::Ptr cfg_rgr_res_check;
+  const Config::Property::V_GINT32::Ptr cfg_check;
+  const Config::Property::V_GUINT8::Ptr cfg_rebalance_max;
 
   RangersResources():
-        cfg_rgr_res_check(
+        cfg_check(
           Env::Config::settings()->get<Config::Property::V_GINT32>(
             "swc.mngr.rangers.resource.interval.check")),
+        cfg_rebalance_max(
+          Env::Config::settings()->get<Config::Property::V_GUINT8>(
+            "swc.mngr.rangers.range.rebalance.max")),
         m_due(0), m_last_check(0) { 
   }
       
@@ -66,7 +70,7 @@ class RangersResources final : private std::vector<RangerResources> {
     if(!m_mutex.try_lock())
       return;
     if(m_due || 
-       int64_t(m_last_check + cfg_rgr_res_check->get()) > Time::now_ns())
+       int64_t(m_last_check + cfg_check->get()) > Time::now_ns())
       return m_mutex.unlock();
 
     m_last_check = Time::now_ns();
@@ -123,17 +127,55 @@ class RangersResources final : private std::vector<RangerResources> {
       }
       for(auto& res : *this)
         res.load_scale = size_t(res.load_scale * UINT16_MAX) / max_scale;
+      
+      std::sort(begin(), end(),
+                [](const RangerResources& rr1, const RangerResources& rr2) {
+                  return rr1.load_scale < rr2.load_scale; }); 
     }
   }
 
   void changes(const RangerList& rangers, RangerList& changed) {
     SWC_LOG_OUT(LOG_DEBUG, print(SWC_LOG_OSTREAM << "changes "); );
 
+    size_t total_ranges = 0;
+    uint16_t max_load_scale = 0;
+    uint8_t balanceable = cfg_rebalance_max->get();
+    uint8_t balance;
     Core::MutexAtomic::scope lock(m_mutex);
-    for(auto& rgr : rangers) {
+
+    if(balanceable) {
       for(auto& res : *this) {
+        total_ranges += res.ranges;
+        if(max_load_scale < res.load_scale)
+          max_load_scale = res.load_scale;
+      }
+      if(total_ranges > rangers.size() * 4) {
+        max_load_scale >>= 1;
+      } else {
+        balanceable = 0;
+      }
+    }
+    
+    for(auto& res : *this) {
+      for(auto& rgr : rangers) {
         if(rgr->rgrid == res.rgrid) {
-          if(rgr->load_scale != res.load_scale) {
+          if(balanceable && max_load_scale && res.ranges &&
+             res.load_scale < max_load_scale) {
+            uint16_t chk = max_load_scale / res.load_scale;
+            if((balance = chk > balanceable ? balanceable : chk)) {
+              balanceable -= balance;
+              rgr->rebalance(balance);
+            }
+          } else {
+            balance = 0;
+          }
+
+          if(!balance) {
+            balance = rgr->rebalance() != 0;
+            rgr->rebalance(0);
+          } 
+
+          if(balance || rgr->load_scale != res.load_scale) {
             rgr->load_scale = res.load_scale;
             changed.push_back(rgr);
           }

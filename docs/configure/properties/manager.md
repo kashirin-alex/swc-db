@@ -126,6 +126,11 @@ _default_ **```swc.mngr.schema.replication=3```**
 The Rangers Resources check interval in milliseconds \
 _default_ **```swc.mngr.rangers.resource.interval.check=10000```**
 
+* ### swc.mngr.rangers.range.rebalance.max
+```G_INT8```
+The Max Ranges to allow for rebalance at once on a Rangers Resources update, Zero is rebalance=Off. \
+_default_ **```swc.mngr.rangers.range.rebalance.max=1```**
+
 
 
 ***

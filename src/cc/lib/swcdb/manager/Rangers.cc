@@ -8,6 +8,8 @@
 #include "swcdb/manager/Protocol/Mngr/req/RgrUpdate.h"
 
 #include "swcdb/manager/Protocol/Rgr/req/RangeLoad.h"
+#include "swcdb/manager/Protocol/Rgr/req/RangeUnload.h"
+
 #include "swcdb/manager/Protocol/Rgr/req/ColumnUpdate.h"
 #include "swcdb/manager/Protocol/Rgr/req/ColumnDelete.h"
 #include "swcdb/manager/Protocol/Rgr/req/ColumnsUnload.h"
@@ -85,7 +87,7 @@ void Rangers::schedule_check(uint32_t t_ms) {
         if(Env::Mngr::role()->is_active_role(DB::Types::MngrRole::RANGERS)) {
           std::scoped_lock lock(m_mutex);
           m_rangers_resources.check(m_rangers);
-          schedule_check(m_rangers_resources.cfg_rgr_res_check->get());
+          schedule_check(m_rangers_resources.cfg_check->get());
         }
         if(Env::Mngr::mngd_columns()->has_active()) {
           assign_ranges();
@@ -236,6 +238,7 @@ void Rangers::update_status(RangerList new_rgr_status, bool sync_all) {
     return;
 
   RangerList changed;
+  RangerList balance_rangers;
   {
     Ranger::Ptr h;
     bool found;
@@ -260,7 +263,7 @@ void Rangers::update_status(RangerList new_rgr_status, bool sync_all) {
           if(rangers_mngr && rs_new->rgrid != h->rgrid)
             Env::Mngr::columns()->change_rgr(h->rgrid, rs_new->rgrid);
 
-          h->rgrid = rs_new->rgrid.load();
+          h->rgrid.store(rs_new->rgrid);
           chg = true;
         }
         for(auto& endpoint: rs_new->endpoints) {
@@ -291,14 +294,21 @@ void Rangers::update_status(RangerList new_rgr_status, bool sync_all) {
             if(rs_new->state == Ranger::State::REMOVED)
               m_rangers.erase(it);
           }
-          h->state = rs_new->state.load();
+          h->state.store(rs_new->state);
           chg = true;
         }
 
         if(rs_new->load_scale != h->load_scale) { 
-          h->load_scale = rs_new->load_scale.load();
+          h->load_scale.store(rs_new->load_scale);
           load_scale_updated = true;
           chg = true;
+        }
+
+        if(rs_new->rebalance()) {
+          h->rebalance(rs_new->rebalance());
+          balance_rangers.push_back(h);
+        } else {
+          h->rebalance(0);
         }
 
         if(chg && !sync_all)
@@ -320,6 +330,24 @@ void Rangers::update_status(RangerList new_rgr_status, bool sync_all) {
     if(load_scale_updated) {
       for(auto& h : m_rangers)
         h->interm_ranges = 0;
+    }
+  }
+
+  for(auto h : balance_rangers) {
+    std::vector<Range::Ptr> ranges;
+    Env::Mngr::columns()->assigned(h->rgrid, 1, ranges);
+    int err = Error::OK;
+    for(auto& range : ranges) {
+      auto col = Env::Mngr::columns()->get_column(err, range->cfg->cid);
+      if(err || !h->can_rebalance())
+        break;
+      h->put(
+        std::make_shared<Comm::Protocol::Rgr::Req::RangeUnload>(
+          h, col, range, true));
+    }
+    if(h->rebalance() && !sync_all) {
+      if(std::find(changed.begin(), changed.end(), h) == changed.end())
+        changed.push_back(h);
     }
   }
 

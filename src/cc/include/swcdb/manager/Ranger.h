@@ -23,13 +23,13 @@ class Ranger : public Comm::Protocol::Common::Params::HostEndPoints {
   typedef std::shared_ptr<Ranger> Ptr;
 
   Ranger(): rgrid(0), state(State::NONE), 
-            failures(0), interm_ranges(0), load_scale(0) {
+            failures(0), interm_ranges(0), load_scale(0), m_rebalance(0) {
   }
                        
   Ranger(rgrid_t rgrid, const Comm::EndPoints& endpoints)
         : Comm::Protocol::Common::Params::HostEndPoints(endpoints),
           rgrid(rgrid), state(State::NONE), 
-          failures(0), interm_ranges(0), load_scale(0) {
+          failures(0), interm_ranges(0), load_scale(0), m_rebalance(0) {
   }
 
   virtual ~Ranger() { }
@@ -39,6 +39,7 @@ class Ranger : public Comm::Protocol::Common::Params::HostEndPoints {
         << " state="          << DB::Types::to_string(state)
         << " failures="       << failures
         << " load_scale="     << load_scale
+        << " rebalance="      << int(rebalance())
         << " interm_ranges="  << interm_ranges;
     Comm::Protocol::Common::Params::HostEndPoints::print(out << ' ');
     if(m_queue)
@@ -47,7 +48,7 @@ class Ranger : public Comm::Protocol::Common::Params::HostEndPoints {
   }
 
   size_t internal_encoded_length() const {
-    size_t len = 3
+    size_t len = 4
       + Serialization::encoded_length_vi64(rgrid.load())
       + Comm::Protocol::Common::Params::HostEndPoints::internal_encoded_length();
     return len;
@@ -57,6 +58,7 @@ class Ranger : public Comm::Protocol::Common::Params::HostEndPoints {
     Serialization::encode_i8(bufp, (uint8_t)state.load());
     Serialization::encode_vi64(bufp, rgrid.load());
     Serialization::encode_i16(bufp, load_scale.load());
+    Serialization::encode_i8(bufp, (uint8_t)rebalance());
     Comm::Protocol::Common::Params::HostEndPoints::internal_encode(bufp);
   }
 
@@ -64,6 +66,7 @@ class Ranger : public Comm::Protocol::Common::Params::HostEndPoints {
     state = (State)Serialization::decode_i8(bufp, remainp);
     rgrid = Serialization::decode_vi64(bufp, remainp);
     load_scale = Serialization::decode_i16(bufp, remainp);
+    rebalance(Serialization::decode_i8(bufp, remainp));
     Comm::Protocol::Common::Params::HostEndPoints::internal_decode(bufp, remainp);
   }
 
@@ -79,18 +82,37 @@ class Ranger : public Comm::Protocol::Common::Params::HostEndPoints {
     m_queue->stop();
   }
 
-  std::atomic<rgrid_t>  rgrid;
-  std::atomic<State>    state;
+  void rebalance(uint8_t num) {
+    Core::MutexAtomic::scope lock(m_mutex);
+    m_rebalance = num;
+  }
 
-  std::atomic<int32_t>  failures;
-  std::atomic<size_t>   interm_ranges;
-  std::atomic<uint16_t> load_scale;
-  // int32_t resource;
+  uint8_t rebalance() const {
+    Core::MutexAtomic::scope lock(m_mutex);
+    return m_rebalance;
+  }
   
+  bool can_rebalance() {
+    Core::MutexAtomic::scope lock(m_mutex);
+    return m_rebalance && !--m_rebalance;
+  }
+
+
+  std::atomic<rgrid_t>      rgrid;
+  std::atomic<State>        state;
+
+  std::atomic<int32_t>      failures;
+  std::atomic<size_t>       interm_ranges;
+  std::atomic<uint16_t>     load_scale;
+
   private:
-  Comm::client::Host::Ptr m_queue = nullptr;
+
+  Comm::client::Host::Ptr   m_queue = nullptr;
+  mutable Core::MutexAtomic m_mutex;
+  uint8_t                   m_rebalance;
 
 };
+
 typedef std::vector<Ranger::Ptr>  RangerList;
 
 }}

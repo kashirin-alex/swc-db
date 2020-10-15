@@ -97,6 +97,7 @@ void report(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
           r.failures = rgr->failures;
           r.interm_ranges = rgr->interm_ranges;
           r.load_scale = rgr->load_scale;
+          r.rebalance = rgr->rebalance();
           mngr_rangers.rgr_get(rgr, r.endpoints);
           ++i;
         }

@@ -92,6 +92,22 @@ class Column final : private std::vector<Range::Ptr> {
       err = Error::COLUMN_NOT_READY;
   }
   
+  size_t ranges() {
+    std::shared_lock lock(m_mutex);
+    return size();
+  }
+
+  void assigned(rgrid_t rgrid, size_t& num, std::vector<Range::Ptr>& ranges) {
+    std::shared_lock lock(m_mutex);
+    for(auto& range : *this) {
+      if(range->assigned(rgrid)) {
+        ranges.push_back(range);
+        if(!-num)
+          break;
+      }
+    }
+  }
+
   void get_ranges(std::vector<Range::Ptr>& ranges) {
     std::shared_lock lock(m_mutex);
     ranges.assign(begin(), end());

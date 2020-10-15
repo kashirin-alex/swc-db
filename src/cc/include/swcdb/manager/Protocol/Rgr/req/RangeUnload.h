@@ -19,6 +19,7 @@ class RangeUnload : public client::ConnQueue::ReqBase {
   RangeUnload(const Manager::Ranger::Ptr& rgr,
               const Manager::Column::Ptr& col, 
               const Manager::Range::Ptr& range,
+              bool ignore_error=false,
               uint32_t timeout=60000);
 
   virtual ~RangeUnload();
@@ -36,6 +37,7 @@ class RangeUnload : public client::ConnQueue::ReqBase {
   const Manager::Ranger::Ptr rgr;
   const Manager::Column::Ptr col;
   const Manager::Range::Ptr  range;
+  bool                       ignore_error;
    
 };
 

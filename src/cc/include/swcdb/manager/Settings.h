@@ -79,6 +79,9 @@ void Settings::init_app_options(){
 
     ("swc.mngr.rangers.resource.interval.check", g_i32(120000), 
      "Rangers Resources check interval in ms")
+    ("swc.mngr.rangers.range.rebalance.max", g_i8(1), 
+     "The Max allowed Ranges for rebalance on a Rangers Resources update")
+     
   ;
   
 }

@@ -64,6 +64,11 @@ class Range final {
     return m_state == State::NOTSET;
   }
 
+  bool assigned(rgrid_t rgrid) {
+    std::shared_lock lock(m_mutex);
+    return m_state == State::ASSIGNED && m_rgrid == rgrid;
+  }
+
   bool need_health_check(int64_t ts, uint32_t ms, rgrid_t rgrid) {
     std::shared_lock lock(m_mutex);
     if((m_state == State::ASSIGNED || m_state == State::QUEUED) &&

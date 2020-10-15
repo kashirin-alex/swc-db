@@ -14,9 +14,11 @@ namespace Rgr { namespace Req {
 RangeUnload::RangeUnload(const Manager::Ranger::Ptr& rgr,
                          const Manager::Column::Ptr& col, 
                          const Manager::Range::Ptr& range,
+                         bool ignore_error,
                          uint32_t timeout) 
                         : client::ConnQueue::ReqBase(false), 
-                          rgr(rgr), col(col), range(range) {
+                          rgr(rgr), col(col), range(range),
+                          ignore_error(ignore_error) {
   cbp = Buffers::make(
     Common::Params::ColRangeId(range->cfg->cid, range->rid));
   cbp->header.set(RANGE_UNLOAD, timeout);
@@ -43,7 +45,8 @@ void RangeUnload::handle(ConnHandlerPtr, const Event::Ptr& ev) {
   
 void RangeUnload::unloaded(int err) {
   if(err) {
-    ++rgr->failures;
+    if(!ignore_error)
+      ++rgr->failures;
   } else if(range->get_rgr_id() == rgr->rgrid) {
     col->set_unloaded(range);
     Env::Mngr::rangers()->schedule_check(2);

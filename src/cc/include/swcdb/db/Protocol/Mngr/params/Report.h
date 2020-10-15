@@ -108,6 +108,7 @@ class RspRangersStatus : public Serializable {
     int32_t                       failures;
     uint64_t                      interm_ranges;
     uint16_t                      load_scale;
+    uint8_t                       rebalance;
 
     size_t encoded_length() const;
 
