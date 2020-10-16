@@ -42,8 +42,11 @@ void MngdColumns::reset(bool schemas_mngr) {
 
 bool MngdColumns::is_schemas_mngr(int& err) {
   if(Env::Mngr::role()->is_active_role(DB::Types::MngrRole::SCHEMAS)) {
-    if(!m_schemas_set)
-      err = Error::MNGR_NOT_INITIALIZED; 
+    if(!m_schemas_set) {
+      std::scoped_lock lock(m_mutex);
+      if(!m_schemas_set)
+        err = Error::MNGR_NOT_INITIALIZED;
+    }
     return true;
   }
   return false;
@@ -247,8 +250,9 @@ bool MngdColumns::initialize() {
         return false;
       err = Error::OK;
     }
-    if(entries.empty()) { // initialize sys-columns
-      for(cid_t cid=1; cid <= Common::Files::Schema::SYS_CID_END; ++cid) {
+    // initialize / recover sys-columns
+    for(cid_t cid=1; cid <= Common::Files::Schema::SYS_CID_END; ++cid) {
+      if(std::find(entries.begin(), entries.end(), cid) == entries.end()) {
         Column::create(err, cid);
         entries.push_back(cid);
       }
