@@ -577,11 +577,11 @@ void Range::load(int &err, const Comm::ResponseCallback::Ptr& cb) {
 
   bool is_initial_column_range = false;
   RangeData::load(err, blocks.cellstores);
-  if(err) 
+  if(err) {
     (void)err;
     //err = Error::OK; // ranger-to determine range-removal (+ Notify Mngr)
 
-  else if(blocks.cellstores.empty()) {
+  } else if(blocks.cellstores.empty()) {
     // init 1st cs(for log_cells)
     auto cs = CellStore::create_initial(err, shared_from_this());
     if(!err) {
@@ -590,38 +590,126 @@ void Range::load(int &err, const Comm::ResponseCallback::Ptr& cb) {
     }
   }
  
-  if(!err) {
+  if(!err)
     blocks.load(err);
 
-    if(!err) {
-      blocks.cellstores.get_prev_key_end(0, prev_range_end);
+  if(err)
+    return loaded_ack(err, cb);
 
-      m_interval.free();
-      if(cfg->range_type == DB::Types::Range::DATA)
-        blocks.expand_and_align(m_interval);
-      else
-        blocks.expand(m_interval);
+  blocks.cellstores.get_prev_key_end(0, prev_range_end);
 
-      if(is_initial_column_range) { // or re-reg on load (cfg/req/..)
-        RangeData::save(err, blocks.cellstores);
-        return on_change(err, false, nullptr,
-          [cb, range=shared_from_this()] 
-          (const client::Query::Update::Result::Ptr& res) {
-            range->loaded_ack(res ? res->error() : Error::OK, cb);
-          }
-        );
+  m_interval.free();
+  if(cfg->range_type == DB::Types::Range::DATA)
+    blocks.expand_and_align(m_interval);
+  else
+    blocks.expand(m_interval);
+
+  if(is_initial_column_range) {
+    RangeData::save(err, blocks.cellstores);
+    return on_change(err, false, nullptr,
+      [cb, range=shared_from_this()]
+      (const client::Query::Update::Result::Ptr& res) {
+        range->loaded_ack(res ? res->error() : Error::OK, cb);
       }
-      //else if(cfg->cid > 2) { // meta-recovery, meta need pre-delete >=[cfg->cid]
-      //  on_change(err, false);
-      //}
-    }
+    );
   }
+
+  if(cfg->range_type == DB::Types::Range::MASTER)
+    return loaded_ack(err, cb);
+
+  auto req = std::make_shared<client::Query::Select>();
+  auto intval = DB::Specs::Interval::make_ptr();
+  intval->key_eq = true;
+  intval->flags.limit = 1;
+
+  /* or select ranges of cid, with rid match in value 
+        and on dup. cell of rid, delete earliest */
+  intval->key_start.set(m_interval.key_begin, Condition::EQ);
+  intval->key_start.insert(0, std::to_string(cfg->cid), Condition::EQ);
+
+  req->specs.columns.push_back(
+    DB::Specs::Column::make_ptr(cfg->meta_cid, {intval}));
+
+  req->scan(err);
+  if(err)
+    return loaded_ack(err = Error::RGR_NOT_LOADED_RANGE, cb);
+  req->wait();
+
+  DB::Cells::Result cells; 
+  if(!req->result->empty())
+    req->result->get_cells(cfg->meta_cid, cells);
+          
+  if(cells.empty()) {
+    SWC_LOG_OUT(LOG_ERROR, 
+      SWC_LOG_OSTREAM 
+        << "Range MetaData missing cid=" << cfg->cid << " rid=" << rid;
+      m_interval.print(SWC_LOG_OSTREAM << "\n\t auto-registering=");
+      req->specs.print(SWC_LOG_OSTREAM << "\n\t"); 
+    );
+    return on_change(err, false, nullptr,
+      [cb, range=shared_from_this()]
+      (const client::Query::Update::Result::Ptr& res) {
+        range->loaded_ack(res ? res->error() : Error::OK, cb);
+      }
+    );
+  }
+  
+  DB::Cells::Interval interval(cfg->key_seq);
+  interval.was_set = true;
+  /* Range MetaData does not include timestamp
+      for the comparison use current interval ts */
+  interval.ts_earliest.copy(m_interval.ts_earliest);
+  interval.ts_latest.copy(m_interval.ts_latest);
+
+  rid_t _rid = 0;
+  bool synced = false;
+  try {
+    auto& cell = *cells[0];
+    interval.key_begin.copy(cell.key);
+    interval.key_begin.remove(0);
+    size_t remain = cell.vlen;
+    const uint8_t* ptr = cell.value;
+    interval.key_end.decode(&ptr, &remain, false);
+    interval.key_end.remove(0);
+    _rid = Serialization::decode_vi64(&ptr, &remain);
+
+    interval.aligned_min.decode(&ptr, &remain);
+    interval.aligned_min.remove(0);
+    interval.aligned_max.decode(&ptr, &remain);
+    interval.aligned_max.remove(0);
+
+    synced = !remain && rid == _rid && m_interval.equal(interval);
+
+  } catch(...) {
+    SWC_LOG_CURRENT_EXCEPTION("");
+  }
+
+  if(!synced) {
+    SWC_LOG_OUT(LOG_ERROR, 
+      SWC_LOG_OSTREAM 
+        << "Range MetaData NOT-SYNCED cid=" << cfg->cid;
+      SWC_LOG_OSTREAM << "\n\t     loaded-rid=" << rid;
+      m_interval.print(SWC_LOG_OSTREAM << ' ');
+      SWC_LOG_OSTREAM << "\n\t registered-rid=" << _rid;
+      interval.print(SWC_LOG_OSTREAM << ' ');
+    );
+    return on_change(err, false, nullptr,
+      [cb, range=shared_from_this()]
+      (const client::Query::Update::Result::Ptr& res) {
+        range->loaded_ack(res ? res->error() : Error::OK, cb);
+      }
+    );
+  }
+
   loaded_ack(err, cb);
 }
 
 void Range::loaded_ack(int err, const Comm::ResponseCallback::Ptr& cb) {
-  if(!err)
-    set_state(State::LOADED);
+  if(!err) {
+    std::scoped_lock lock(m_mutex);
+    if(m_state == State::LOADING)
+      m_state = State::LOADED;
+  }
   
   SWC_LOG_OUT((is_loaded() ? LOG_INFO : LOG_WARN),
     SWC_LOG_OSTREAM << "LOAD RANGE ";

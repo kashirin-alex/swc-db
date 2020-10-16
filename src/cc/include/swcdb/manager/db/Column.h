@@ -427,6 +427,10 @@ class Column final : private std::vector<Range::Ptr> {
         return;
     }
     if(m_state == State::LOADING) {
+      /* if Ranger do not select/check ranges on rid value match 
+         once on start, Master & Meta column check rid consistency
+         on dup. cell of rid, delete earliest
+      */
       m_state = State::OK;
       m_check_ts = Time::now_ms();
     }
