@@ -135,12 +135,6 @@ void Columns::unload_all(bool validation) {
     to_unload.increment();
 
     std::promise<void>  r_promise;
-    Callback::RangeUnloaded_t cb 
-      = [&to_unload, &r_promise](int) {
-        if(to_unload.is_last())
-          r_promise.set_value();
-    };
-  
     for(;;) {
       {
         Core::MutexSptd::scope lock(m_mutex);
@@ -157,10 +151,17 @@ void Columns::unload_all(bool validation) {
         SWC_LOGF(LOG_WARN, 
           "Unload-Validation cid=%lu remained", col->cfg.cid);
       to_unload.increment();
-      col->unload_all(to_unload, cb);
+      col->unload_all(
+        to_unload, 
+        [col, &to_unload, &r_promise](int) {
+          if(to_unload.is_last())
+            r_promise.set_value();
+        }
+      );
     }
 
-    cb(0);
+    if(to_unload.is_last())
+      r_promise.set_value();
     r_promise.get_future().wait();
   }
 }
