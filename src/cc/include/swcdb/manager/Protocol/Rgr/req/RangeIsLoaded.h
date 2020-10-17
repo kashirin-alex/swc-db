@@ -31,7 +31,7 @@ class RangeIsLoaded : public client::ConnQueue::ReqBase {
   virtual ~RangeIsLoaded() { }
   
   bool valid() override {
-    return checker->rgr->state == DB::Types::MngrRanger::State::ACK && 
+    return checker->rgr->state == DB::Types::MngrRangerState::ACK &&
            range->assigned();
   }
 

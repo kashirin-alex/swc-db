@@ -78,7 +78,7 @@ class RangersResources final : private std::vector<RangerResources> {
 
     m_last_check = Time::now_ns();
     for(auto& rgr : rangers) {
-      if(rgr->state != Ranger::State::ACK)
+      if(rgr->state != RangerState::ACK)
         continue;
       rgr->put(std::make_shared<Comm::Protocol::Rgr::Req::ReportRes>(rgr));
       ++m_due;
@@ -174,7 +174,7 @@ class RangersResources final : private std::vector<RangerResources> {
           continue;
 
         uint8_t balance = res.rebalance;
-        if(balance) {
+        if(balance && rgr->state == RangerState::ACK) {
           rgr->rebalance(balance);
         } else {
           balance = rgr->rebalance() != 0;

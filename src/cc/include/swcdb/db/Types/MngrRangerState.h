@@ -12,20 +12,21 @@
 namespace SWC { namespace DB { namespace Types { 
 
 
-namespace MngrRanger {
+namespace MngrRangerState {
 
-  enum State : uint8_t {
-    NONE            = 0,
-    AWAIT           = 1,
-    ACK             = 2,
-    REMOVED         = 3,
-    MARKED_OFFLINE  = 4
-  };
+const uint8_t NONE            = 0x01;
+const uint8_t AWAIT           = 0x02;
+const uint8_t ACK             = 0x04;
+const uint8_t REMOVED         = 0x08;
+const uint8_t MARKED_OFFLINE  = 0x0f;
+const uint8_t SHUTTINGDOWN    = 0x10;
+
+
+std::string to_string(uint8_t state);
 
 }
 
 
-std::string to_string(MngrRanger::State state);
 
 
 }}}

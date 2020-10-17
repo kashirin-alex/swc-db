@@ -119,7 +119,7 @@ size_t RspRangersStatus::Ranger::encoded_length() const {
 }
 
 void RspRangersStatus::Ranger::encode(uint8_t** bufp) const {
-  Serialization::encode_i8(bufp, (uint8_t)state);
+  Serialization::encode_i8(bufp, state);
   Serialization::encode_vi64(bufp, rgr_id);
   Serialization::encode_vi32(bufp, failures);
   Serialization::encode_vi64(bufp, interm_ranges);
@@ -129,7 +129,7 @@ void RspRangersStatus::Ranger::encode(uint8_t** bufp) const {
 }
 
 void RspRangersStatus::Ranger::decode(const uint8_t** bufp, size_t* remainp) {
-  state = (DB::Types::MngrRanger::State)Serialization::decode_i8(bufp, remainp);
+  state = Serialization::decode_i8(bufp, remainp);
   rgr_id = Serialization::decode_vi64(bufp, remainp);
   failures = Serialization::decode_vi32(bufp, remainp);
   interm_ranges = Serialization::decode_vi64(bufp, remainp);
@@ -140,7 +140,7 @@ void RspRangersStatus::Ranger::decode(const uint8_t** bufp, size_t* remainp) {
 
 void RspRangersStatus::Ranger::display(std::ostream& out, 
                                        const std::string& offset) const {
-  out << offset << "state=" << DB::Types::to_string(state) 
+  out << offset << "state=" << DB::Types::MngrRangerState::to_string(state) 
                 << " rgr_id=" << rgr_id
                 << " failures=" << failures
                 << " interm_ranges=" << interm_ranges

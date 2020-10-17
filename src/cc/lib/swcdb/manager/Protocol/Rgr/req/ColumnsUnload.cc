@@ -65,7 +65,7 @@ void ColumnsUnload::handle(ConnHandlerPtr, const Event::Ptr& ev) {
         continue;
 
       assigned = Env::Mngr::rangers()->rgr_get(rgrid);
-      if(!assigned || assigned->state != Manager::Ranger::State::ACK)
+      if(!assigned || assigned->state != Manager::RangerState::ACK)
         continue;
 
       assigned->put(std::make_shared<RangeUnload>(assigned, col, range));

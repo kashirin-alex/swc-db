@@ -13,22 +13,21 @@
 
 namespace SWC { namespace Manager {
 
+namespace RangerState = DB::Types::MngrRangerState;
 
 class Ranger : public Comm::Protocol::Common::Params::HostEndPoints {
 
   public:
 
-  using State = DB::Types::MngrRanger::State;
-
   typedef std::shared_ptr<Ranger> Ptr;
 
-  Ranger(): rgrid(0), state(State::NONE), 
+  Ranger(): rgrid(0), state(RangerState::NONE), 
             failures(0), interm_ranges(0), load_scale(0), m_rebalance(0) {
   }
                        
   Ranger(rgrid_t rgrid, const Comm::EndPoints& endpoints)
         : Comm::Protocol::Common::Params::HostEndPoints(endpoints),
-          rgrid(rgrid), state(State::NONE), 
+          rgrid(rgrid), state(RangerState::NONE), 
           failures(0), interm_ranges(0), load_scale(0), m_rebalance(0) {
   }
 
@@ -36,7 +35,7 @@ class Ranger : public Comm::Protocol::Common::Params::HostEndPoints {
 
   void print(std::ostream& out) const {
     out << "[rgrid="          << rgrid
-        << " state="          << DB::Types::to_string(state)
+        << " state="          << RangerState::to_string(state)
         << " failures="       << failures
         << " load_scale="     << load_scale
         << " rebalance="      << int(rebalance())
@@ -55,7 +54,7 @@ class Ranger : public Comm::Protocol::Common::Params::HostEndPoints {
   }
 
   void internal_encode(uint8_t** bufp) const {
-    Serialization::encode_i8(bufp, (uint8_t)state.load());
+    Serialization::encode_i8(bufp, state.load());
     Serialization::encode_vi64(bufp, rgrid.load());
     Serialization::encode_i16(bufp, load_scale.load());
     Serialization::encode_i8(bufp, (uint8_t)rebalance());
@@ -63,7 +62,7 @@ class Ranger : public Comm::Protocol::Common::Params::HostEndPoints {
   }
 
   void internal_decode(const uint8_t** bufp, size_t* remainp) {
-    state = (State)Serialization::decode_i8(bufp, remainp);
+    state = Serialization::decode_i8(bufp, remainp);
     rgrid = Serialization::decode_vi64(bufp, remainp);
     load_scale = Serialization::decode_i16(bufp, remainp);
     rebalance(Serialization::decode_i8(bufp, remainp));
@@ -99,7 +98,7 @@ class Ranger : public Comm::Protocol::Common::Params::HostEndPoints {
 
 
   std::atomic<rgrid_t>      rgrid;
-  std::atomic<State>        state;
+  std::atomic<uint8_t>      state;
 
   std::atomic<int32_t>      failures;
   std::atomic<size_t>       interm_ranges;

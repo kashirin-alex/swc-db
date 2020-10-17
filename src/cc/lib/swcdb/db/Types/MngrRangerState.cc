@@ -8,40 +8,47 @@
 #include "swcdb/db/Types/MngrRangerState.h"
 
 
-namespace SWC { namespace DB { namespace Types {
+namespace SWC { namespace DB { namespace Types { namespace MngrRangerState {
 
 namespace {
-  const char MngrRanger_State_NONE[]            = "NONE";
-  const char MngrRanger_State_OK[]              = "OK";
-  const char MngrRanger_State_AWAIT[]           = "AWAIT";
-  const char MngrRanger_State_ACK[]             = "ACK";
-  const char MngrRanger_State_REMOVED[]         = "REMOVED";
-  const char MngrRanger_State_MARKED_OFFLINE[]  = "MARKED_OFFLINE";
-  const char MngrRanger_State_UNKNOWN[]         = "UNKNOWN";
+  const char STR_NONE[]              = "NONE";
+  const char STR_OK[]                = "OK";
+  const char STR_AWAIT[]             = "AWAIT";
+  const char STR_ACK[]               = "ACK";
+  const char STR_REMOVED[]           = "REMOVED";
+  const char STR_MARKED_OFFLINE[]    = "MARKED_OFFLINE";
+  const char STR_SHUTTINGDOWN[]      = "SHUTTINGDOWN";
+  const char STR_ACK_SHUTTINGDOWN[]  = "ACK&SHUTTINGDOWN";
+  const char STR_UNKNOWN[]           = "UNKNOWN";
 }
 
-std::string to_string(MngrRanger::State state) {
+std::string to_string(uint8_t state) {
   switch(state) {
 
-    case MngrRanger::State::NONE:
-      return MngrRanger_State_NONE;
+    case NONE:
+      return STR_NONE;
 
-    case MngrRanger::State::AWAIT:
-      return MngrRanger_State_AWAIT;
+    case AWAIT:
+      return STR_AWAIT;
 
-    case MngrRanger::State::ACK:
-      return MngrRanger_State_ACK;
+    case ACK:
+      return STR_ACK;
 
-    case MngrRanger::State::REMOVED:
-      return MngrRanger_State_REMOVED;
+    case REMOVED:
+      return STR_REMOVED;
 
-    case MngrRanger::State::MARKED_OFFLINE:
-      return MngrRanger_State_MARKED_OFFLINE;
+    case MARKED_OFFLINE:
+      return STR_MARKED_OFFLINE;
+
+    case SHUTTINGDOWN:
+      return STR_SHUTTINGDOWN;
 
     default:
-      return MngrRanger_State_UNKNOWN;
+      if(state & ACK && state & SHUTTINGDOWN)
+        return STR_ACK_SHUTTINGDOWN;
+      return STR_UNKNOWN;
   }
 }
 
 
-}}}
+}}}}
