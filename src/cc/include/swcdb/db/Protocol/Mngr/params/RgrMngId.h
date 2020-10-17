@@ -18,21 +18,19 @@ class RgrMngId  : public Common::Params::HostEndPoints {
   public:
 
     enum Flag : uint8_t {
-      MNGR_ASSIGNED = 1,
+      MNGR_ASSIGNED   = 1,
       MNGR_NOT_ACTIVE = 2,
-      MNGR_REASSIGN = 3,
-      MNGR_REREQ = 4,
-      RS_REQ = 5, // >= params with host endpoints
-      RS_ACK = 6,
-      RS_DISAGREE = 7,
-      RS_SHUTTINGDOWN = 8
+      MNGR_REASSIGN   = 3,
+      MNGR_REREQ      = 4,
+      MNGR_ACK        = 5,
+      RS_REQ          = 6, // >= params with host endpoints
+      RS_ACK          = 7,
+      RS_DISAGREE     = 8,
+      RS_SHUTTINGDOWN = 9
     };
 
     RgrMngId() {}
 
-    RgrMngId(rgrid_t rgrid, Flag flag) 
-            : rgrid(rgrid), flag(flag) {
-    }
     RgrMngId(rgrid_t rgrid, Flag flag, const EndPoints& endpoints) 
             : Common::Params::HostEndPoints(endpoints), 
               rgrid(rgrid), flag(flag) {     
@@ -48,7 +46,7 @@ class RgrMngId  : public Common::Params::HostEndPoints {
 
     size_t internal_encoded_length() const {
       size_t len = 1;
-      if(flag != Flag::MNGR_NOT_ACTIVE)
+      if(flag != Flag::MNGR_NOT_ACTIVE && flag != Flag::MNGR_ACK)
         len += Serialization::encoded_length_vi64(rgrid);
 
       if(flag >= Flag::RS_REQ) 
@@ -61,20 +59,19 @@ class RgrMngId  : public Common::Params::HostEndPoints {
     
     void internal_encode(uint8_t** bufp) const {
       Serialization::encode_i8(bufp, (uint8_t)flag);
-      if(flag != Flag::MNGR_NOT_ACTIVE)
+      if(flag != Flag::MNGR_NOT_ACTIVE && flag != Flag::MNGR_ACK)
         Serialization::encode_vi64(bufp, rgrid);
       
       if(flag >= Flag::RS_REQ)
         Common::Params::HostEndPoints::internal_encode(bufp);
 
       if(flag == Flag::MNGR_ASSIGNED)
-        Serialization::encode_i8(
-          bufp, (int8_t)Env::FsInterface::interface()->get_type());
+        Serialization::encode_i8(bufp, (uint8_t)fs);
     }
     
   void internal_decode(const uint8_t** bufp, size_t* remainp) {
       flag = (Flag)Serialization::decode_i8(bufp, remainp);
-      if(flag != Flag::MNGR_NOT_ACTIVE)
+      if(flag != Flag::MNGR_NOT_ACTIVE && flag != Flag::MNGR_ACK)
         rgrid = Serialization::decode_vi64(bufp, remainp);
       
       if(flag >= Flag::RS_REQ)

@@ -15,6 +15,9 @@ namespace Mngr { namespace Handler {
 
 
 void rgr_mng_id(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
+  int err = Error::OK;
+  Params::RgrMngId rsp_params;
+
   try {
     const uint8_t *ptr = ev->data.base;
     size_t remain = ev->data.size;
@@ -28,74 +31,58 @@ void rgr_mng_id(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
                         << " rgrid=" << req_params.rgrid;
         req_params.print(SWC_LOG_OSTREAM << ' ');
       );
-        
-      auto cbp = Buffers::make(
-        Params::RgrMngId(0, Params::RgrMngId::Flag::MNGR_NOT_ACTIVE)
-      );
-      cbp->header.initialize_from_request_header(ev->header);
-      conn->send_response(cbp);
-      return;
+      rsp_params.flag = Params::RgrMngId::Flag::MNGR_NOT_ACTIVE;
+      goto send_response;
     }
 
     auto rangers = Env::Mngr::rangers();
     switch(req_params.flag) {
 
       case Params::RgrMngId::Flag::RS_REQ: {
-        rgrid_t rgrid = rangers->rgr_set_id(req_params.endpoints);
+        rsp_params.rgrid = rangers->rgr_set_id(req_params.endpoints);
+        rsp_params.flag = Params::RgrMngId::Flag::MNGR_ASSIGNED;
+        rsp_params.fs = Env::FsInterface::interface()->get_type();
 
         SWC_LOG_OUT(LOG_DEBUG, 
-          SWC_LOG_OSTREAM << "RS_REQ, rgrid=" << req_params.rgrid;
+          SWC_LOG_OSTREAM << "RS_REQ, rgrid=" << rsp_params.rgrid;
           req_params.print(SWC_LOG_OSTREAM << ' ');
         );
-
-        auto cbp = Buffers::make(
-          Params::RgrMngId(rgrid, Params::RgrMngId::Flag::MNGR_ASSIGNED)
-        );
-        cbp->header.initialize_from_request_header(ev->header);
-        conn->send_response(cbp);
         break;
       }
 
       case Params::RgrMngId::Flag::RS_ACK: {
         if(rangers->rgr_ack_id(req_params.rgrid, req_params.endpoints)) {
           SWC_LOG_OUT(LOG_DEBUG, 
-            SWC_LOG_OSTREAM << "RS_ACK, rgrid=" << req_params.rgrid;
+            SWC_LOG_OSTREAM 
+              << "RS_ACK, rgrid=" << req_params.rgrid;
             req_params.print(SWC_LOG_OSTREAM << ' ');
           );
-          conn->response_ok(ev);
+          rsp_params.flag = Params::RgrMngId::Flag::MNGR_ACK;
 
         } else {
           SWC_LOG_OUT(LOG_DEBUG, 
-            SWC_LOG_OSTREAM << "RS_ACK(MNGR_REREQ), rgrid=" << req_params.rgrid;
+            SWC_LOG_OSTREAM 
+              << "RS_ACK(MNGR_REREQ), rgrid=" << req_params.rgrid;
             req_params.print(SWC_LOG_OSTREAM << ' ');
           );
-            
-          auto cbp = Buffers::make(
-            Params::RgrMngId(0, Params::RgrMngId::Flag::MNGR_REREQ)
-          );
-          cbp->header.initialize_from_request_header(ev->header);
-          conn->send_response(cbp);
+          rsp_params.flag = Params::RgrMngId::Flag::MNGR_REREQ;
         }
         break;
       }
 
       case Params::RgrMngId::Flag::RS_DISAGREE: {
-        rgrid_t rgrid = rangers->rgr_had_id(req_params.rgrid, req_params.endpoints);
-          SWC_LOG_OUT(LOG_DEBUG, 
-            SWC_LOG_OSTREAM << "RS_DISAGREE, rgr_had_id=" << req_params.rgrid 
-              << " > rgrid=" << rgrid;
-            req_params.print(SWC_LOG_OSTREAM << ' ');
-          );
+        rsp_params.rgrid = rangers->rgr_had_id(
+          req_params.rgrid, req_params.endpoints);
+        
+        rsp_params.flag = rsp_params.rgrid
+          ? Params::RgrMngId::Flag::MNGR_REASSIGN
+          : Params::RgrMngId::Flag::MNGR_ACK;
 
-        if(rgrid) {
-          auto cbp = Buffers::make(
-            Params::RgrMngId(rgrid, Params::RgrMngId::Flag::MNGR_REASSIGN)
-          );
-          cbp->header.initialize_from_request_header(ev->header);
-          conn->send_response(cbp);
-        } else {
-          conn->response_ok(ev);
-        }
+        SWC_LOG_OUT(LOG_DEBUG,
+          SWC_LOG_OSTREAM << "RS_DISAGREE, rgr_had_id=" << req_params.rgrid 
+            << " > rgrid=" << rsp_params.rgrid;
+          req_params.print(SWC_LOG_OSTREAM << ' ');
+        );
         break;
       }
 
@@ -106,20 +93,33 @@ void rgr_mng_id(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
           SWC_LOG_OSTREAM << "RS_SHUTTINGDOWN, rgrid=" << req_params.rgrid;
           req_params.print(SWC_LOG_OSTREAM << ' ');
         );
-      
-        auto cbp = Buffers::make(
-          Params::RgrMngId(
-            req_params.rgrid, Params::RgrMngId::Flag::RS_SHUTTINGDOWN)
-        );
-        cbp->header.initialize_from_request_header(ev->header);
-        conn->send_response(cbp);
+
+        rsp_params.flag = Params::RgrMngId::Flag::RS_SHUTTINGDOWN;
+        rsp_params.rgrid = req_params.rgrid;
         break;
       }
-        
-      default:
+
+      default: {
+        err = Error::NOT_IMPLEMENTED;
+        SWC_LOG_OUT(LOG_WARN, 
+          SWC_LOG_OSTREAM << "NOT_IMPLEMENTED flag=" << req_params.flag;
+        );
         break;
+      }
     }
 
+  } catch(...) {
+    const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
+    SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
+    err = e.code();
+  }
+
+  send_response:
+  try {
+    auto cbp = err ? Buffers::make(4) : Buffers::make(rsp_params, 4);
+    cbp->header.initialize_from_request_header(ev->header);
+    cbp->append_i32(err);
+    conn->send_response(cbp);
   } catch(...) {
     SWC_LOG_CURRENT_EXCEPTION("");
   }

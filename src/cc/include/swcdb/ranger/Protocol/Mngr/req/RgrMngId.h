@@ -52,6 +52,9 @@ class RgrMngId: public client::ConnQueue::ReqBase {
         )
       );
 
+    } else if(Env::Rgr::is_not_accepting()) {
+      return set(0);
+
     } else {
       create(
         Params::RgrMngId(
@@ -86,101 +89,90 @@ class RgrMngId: public client::ConnQueue::ReqBase {
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
 
-    if(ev->error) {
-      set(1000);
-      /* 
-      ++m_failures >? #3
-        m_failures = 0;
-        > all ranges:
-          > LastRgr this
-            > UnloadRange cb
-              > req Mngr RangeUnloaded
-          > LastRgr not this
-            > UnloadRange cb
-              > req LastRgr UnloadRangeAvoidDup 
-                > LastRgr req Mngr RangeUnloaded
-      */
-      return;
+    if(ev->error || ev->response_code() != Error::OK) {
+      return set(1000);
     }
 
-    if(ev->response_code() == Error::OK) {
-      set(0);
-      return;
-    }
-    
     Params::RgrMngId rsp_params;
     try {
-      const uint8_t *ptr = ev->data.base;
-      size_t remain = ev->data.size;
+      const uint8_t *ptr = ev->data.base + 4;
+      size_t remain = ev->data.size - 4;
       rsp_params.decode(&ptr, &remain);
 
     } catch(...) {
       SWC_LOG_CURRENT_EXCEPTION("");
-      set(500);
-      return;
-    }
-        
-    if(rsp_params.flag == Params::RgrMngId::Flag::MNGR_REREQ) {
-      request();
-      return;
+      return set(500);
     }
     
-    if(rsp_params.flag == Params::RgrMngId::Flag::RS_SHUTTINGDOWN) {
-      SWC_LOG_OUT(LOG_DEBUG,
-        Env::Rgr::rgr_data()->print(SWC_LOG_OSTREAM << "RS_SHUTTINGDOWN ");
-      );
-      stop();
-      if(cb_shutdown)
-        cb_shutdown();
-      else
-        SWC_LOG(LOG_WARN, "Shutdown flag without Callback!");
-      return;
-    }
+    switch(rsp_params.flag) {
 
-    if(rsp_params.flag != Params::RgrMngId::Flag::MNGR_ASSIGNED
-        &&
-       rsp_params.flag != Params::RgrMngId::Flag::MNGR_REASSIGN) {
-      clear_endpoints();
-      // remain Flag can be only MNGR_NOT_ACTIVE || no other action 
-      set(1000);
-      return;
-    }
+      case Params::RgrMngId::Flag::MNGR_ACK: {
+        return set(0);
+      }
 
-    auto rgr_data = Env::Rgr::rgr_data();
+      case Params::RgrMngId::Flag::MNGR_REREQ: {
+        return request();
+      }
 
-    if(rsp_params.flag == Params::RgrMngId::Flag::MNGR_ASSIGNED
-       && rsp_params.fs != Env::FsInterface::interface()->get_type()) {
+      case Params::RgrMngId::Flag::RS_SHUTTINGDOWN: {
+        SWC_LOG_OUT(LOG_DEBUG,
+          Env::Rgr::rgr_data()->print(SWC_LOG_OSTREAM << "RS_SHUTTINGDOWN ");
+        );
+        stop();
+        if(cb_shutdown)
+          cb_shutdown();
+        else
+          SWC_LOG(LOG_WARN, "Shutdown flag without Callback!");
+        return;
+      }
 
-      SWC_LOG_OUT(LOG_ERROR,
-        SWC_LOG_OSTREAM 
-          << "Ranger's " << Env::FsInterface::interface()->to_string()
-          << " not matching with Mngr's FS-type=" 
-          << FS::to_string(rsp_params.fs);
-        rgr_data->print(SWC_LOG_OSTREAM << ", RS_SHUTTINGDOWN ");
-      );
+      case Params::RgrMngId::Flag::MNGR_REASSIGN:
+      case Params::RgrMngId::Flag::MNGR_ASSIGNED: {
+
+        auto rgr_data = Env::Rgr::rgr_data();
+
+        if(rsp_params.flag == Params::RgrMngId::Flag::MNGR_ASSIGNED && 
+           rsp_params.fs != Env::FsInterface::interface()->get_type()) {
+
+          SWC_LOG_OUT(LOG_ERROR,
+            SWC_LOG_OSTREAM 
+              << "Ranger's " << Env::FsInterface::interface()->to_string()
+              << " not matching with Mngr's FS-type=" 
+              << FS::to_string(rsp_params.fs);
+            rgr_data->print(SWC_LOG_OSTREAM << ", RS_SHUTTINGDOWN ");
+          );
         
-      std::raise(SIGTERM);
-      return;
+          std::raise(SIGTERM);
+          return;
+        }
+
+        Params::RgrMngId::Flag flag;
+        if(!rgr_data->rgrid || rgr_data->rgrid == rsp_params.rgrid ||
+           (rgr_data->rgrid != rsp_params.rgrid && 
+           rsp_params.flag == Params::RgrMngId::Flag::MNGR_REASSIGN)) {
+
+          rgr_data->rgrid = rsp_params.rgrid;
+          flag = Params::RgrMngId::Flag::RS_ACK;
+          SWC_LOG_OUT(LOG_DEBUG,
+            rgr_data->print(SWC_LOG_OSTREAM << "RS_ACK "); );
+        } else {
+
+          flag = Params::RgrMngId::Flag::RS_DISAGREE;
+          SWC_LOG_OUT(LOG_DEBUG,
+            rgr_data->print(SWC_LOG_OSTREAM << "RS_DISAGREE "); );
+        }
+
+        create(Params::RgrMngId(rgr_data->rgrid, flag, rgr_data->endpoints));
+        run();
+        return;
+      }
+
+      default: {
+        clear_endpoints();
+        // remain Flag can be only MNGR_NOT_ACTIVE || no other action 
+        return set(1000);
+      }
     }
-    
-    Params::RgrMngId::Flag flag;
-    if(!rgr_data->rgrid || rgr_data->rgrid == rsp_params.rgrid || 
-       (rgr_data->rgrid != rsp_params.rgrid && 
-        rsp_params.flag == Params::RgrMngId::Flag::MNGR_REASSIGN)) {
-
-      rgr_data->rgrid = rsp_params.rgrid;
-      flag = Params::RgrMngId::Flag::RS_ACK;
-      SWC_LOG_OUT(LOG_DEBUG,
-        rgr_data->print(SWC_LOG_OSTREAM << "RS_ACK "); );
-    } else {
-
-      flag = Params::RgrMngId::Flag::RS_DISAGREE;
-      SWC_LOG_OUT(LOG_DEBUG, 
-        rgr_data->print(SWC_LOG_OSTREAM << "RS_DISAGREE "); );
-    }
-
-    create(Params::RgrMngId(rgr_data->rgrid, flag, rgr_data->endpoints));
-    run();
   }
   
   private:
