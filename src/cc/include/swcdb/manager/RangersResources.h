@@ -68,8 +68,6 @@ class RangersResources final : private std::vector<RangerResources> {
   }
   
   void check(const RangerList& rangers) {
-    SWC_LOG_OUT(LOG_DEBUG, print(SWC_LOG_OSTREAM << "check "); );
-
     if(!m_mutex.try_lock())
       return;
     if(m_due || 

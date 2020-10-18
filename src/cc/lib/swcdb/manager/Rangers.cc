@@ -98,9 +98,7 @@ void Rangers::schedule_check(uint32_t t_ms) {
   });
 
   if(t_ms > 10000)
-    SWC_LOG_OUT(LOG_DEBUG, print(SWC_LOG_OSTREAM); );
-
-  SWC_LOGF(LOG_DEBUG, "Rangers scheduled in ms=%d", t_ms);
+    SWC_LOGF(LOG_DEBUG, "Rangers scheduled in ms=%d", t_ms);
 }
 
 

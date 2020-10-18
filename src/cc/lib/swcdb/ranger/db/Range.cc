@@ -619,11 +619,6 @@ void Range::load(int &err, const Comm::ResponseCallback::Ptr& cb) {
   if(cfg->range_type == DB::Types::Range::MASTER)
     return loaded_ack(err, cb);
 
-  SWC_LOG_OUT(LOG_INFO, 
-    SWC_LOG_OSTREAM 
-      << "Range checking MetaData cid=" << cfg->cid << " rid=" << rid; 
-  );
-
   auto req = std::make_shared<client::Query::Select>();
   auto intval = DB::Specs::Interval::make_ptr();
   intval->key_eq = true;
@@ -712,12 +707,6 @@ void Range::load(int &err, const Comm::ResponseCallback::Ptr& cb) {
 }
 
 void Range::loaded_ack(int err, const Comm::ResponseCallback::Ptr& cb) {
-  
-  SWC_LOG_OUT(LOG_INFO, 
-    SWC_LOG_OSTREAM 
-      << "Range loaded_ack cid=" << cfg->cid << " rid=" << rid; 
-  );
-
   if(!err) {
     std::scoped_lock lock(m_mutex);
     if(m_state == State::LOADING)

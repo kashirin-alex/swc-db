@@ -65,7 +65,7 @@ class MngrStatus : public Comm::Protocol::Common::Params::HostEndPoints {
 
   void print(std::ostream& out) const {
     out << "MngrStatus(priority=" << priority
-        << " state=" << (int)state.load()
+        << " state=" << DB::Types::to_string(state)
         << " role=" << DB::Types::MngrRole::to_string(role)
         << " cid=" << cid_begin << '-' << cid_end;
     Comm::Protocol::Common::Params::HostEndPoints::print(out << ' ');
