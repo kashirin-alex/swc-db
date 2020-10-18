@@ -8,7 +8,15 @@
 
 ### [SWC-DB master](https://github.com/kashirin-alex/swc-db/tree/master) (upcoming-release)
 
-
+    added Manager feature to rebalance Rangers' ranges load
+    added config property swc.mngr.rangers.range.rebalance.max
+    added Ranger check and fix range MetaData on Range-load (select and update)
+    added Manager recover Master&Meta columns (full-recovery at Ranger Range-Load)
+    added Protocol::Mngr::Params::RgrMngId::Flag::MNGR_ACK
+    fixed Protocol::Mngr::Command::RGR_MNG_ID request, params and handler
+    changed enum MngrRanger::State to uint8_t in NS DB::Types::MngrRangerState
+    added state DB::Types::MngrRangerState::SHUTTINGDOWN
+    added Manager handling cases of a Ranger at MngrRangerState::SHUTTINGDOWN
 
 [_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.4.11...master)
 ******
