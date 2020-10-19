@@ -18,8 +18,8 @@ const uint8_t NONE            = 0x01;
 const uint8_t AWAIT           = 0x02;
 const uint8_t ACK             = 0x04;
 const uint8_t REMOVED         = 0x08;
-const uint8_t MARKED_OFFLINE  = 0x0f;
-const uint8_t SHUTTINGDOWN    = 0x10;
+const uint8_t MARKED_OFFLINE  = 0x10;
+const uint8_t SHUTTINGDOWN    = 0x20;
 
 
 std::string to_string(uint8_t state);

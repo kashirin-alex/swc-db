@@ -291,6 +291,7 @@ void Rangers::update_status(RangerList new_rgr_status, bool sync_all) {
                 h->put(
                   std::make_shared<Comm::Protocol::Rgr::Req::ColumnsUnload>(
                     h, cid_begin, cid_end));
+              h->failures = 0;
             }
           } else {
             Env::Mngr::columns()->set_rgr_unassigned(h->rgrid);
@@ -387,7 +388,7 @@ void Rangers::range_loaded(Ranger::Ptr rgr, Range::Ptr range,
       } else if(err == Error::SERVER_SHUTTING_DOWN && 
                 rgr->state == RangerState::ACK) {
         rgr->state |= RangerState::SHUTTINGDOWN;
-        changes({rgr});
+        changes({rgr}, true);
         schedule_check(1000);
       }
 
@@ -575,7 +576,7 @@ void Rangers::next_rgr(const Range::Ptr& range, Ranger::Ptr& rs_set) {
     } else if(rgr->failures >= cfg_rgr_failures->get()) {
       Env::Mngr::columns()->set_rgr_unassigned(rgr->rgrid);
       rgr->state = RangerState::MARKED_OFFLINE;
-      _changes({rgr});
+      _changes({rgr}, true);
 
     } else if(rgr->state & RangerState::ACK) {
       if(!last_rgr->endpoints.empty() && 
