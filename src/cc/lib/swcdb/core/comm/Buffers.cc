@@ -100,35 +100,21 @@ void Buffers::write_header() {
 std::vector<asio::const_buffer> Buffers::get_buffers() {
   write_header();
 
-  size_t sz = 1;
+  size_t nchunks = 1;
 
-  size_t buf_data_chunks;
-  bool buf_data_not_aligned;
-  if(buf_data.size) {
-    double chunks = double(buf_data.size)/BUFFER_CHUNK_SZ;
-    buf_data_chunks = chunks;
-    buf_data_not_aligned = double(buf_data_chunks) != chunks;
-    sz += buf_data_chunks;
-    sz += buf_data_not_aligned;
-  } else {
-    buf_data_chunks = 0;
-    buf_data_not_aligned = false;
-  }
+  size_t buf_data_chunks = 0;
+  bool buf_data_not_aligned = false;
+  if(buf_data.size)
+    nchunks += (buf_data_chunks += buf_data.size / BUFFER_CHUNK_SZ)
+            + (buf_data_not_aligned = buf_data.size % BUFFER_CHUNK_SZ != 0);
 
-  size_t buf_ext_chunks;
-  bool buf_ext_not_aligned;
-  if(buf_ext.size) {
-    double chunks = double(buf_ext.size)/BUFFER_CHUNK_SZ;
-    buf_ext_chunks = chunks;
-    buf_ext_not_aligned = double(buf_ext_chunks) != chunks;
-    sz += buf_ext_chunks;
-    sz += buf_ext_not_aligned;
-  } else {
-    buf_ext_chunks = 0;
-    buf_ext_not_aligned = false;
-  }
+  size_t buf_ext_chunks = 0;
+  bool buf_ext_not_aligned = false;
+  if(buf_ext.size)
+    nchunks += (buf_ext_chunks += buf_ext.size / BUFFER_CHUNK_SZ) 
+            + (buf_ext_not_aligned = buf_ext.size % BUFFER_CHUNK_SZ != 0);
 
-  std::vector<asio::const_buffer> buffers(sz);
+  std::vector<asio::const_buffer> buffers(nchunks);
   auto it = buffers.begin();
   *it = asio::const_buffer(buf_header.base, buf_header.size);
 
