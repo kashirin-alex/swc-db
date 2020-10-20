@@ -68,6 +68,8 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   
   Core::Encoder::Type get_encoder() const;
 
+  virtual bool is_secure() const noexcept { return false; };
+
   void new_connection();
 
   virtual bool is_open() const noexcept = 0;
@@ -207,6 +209,8 @@ class ConnHandlerSSL final : public ConnHandler {
   
   virtual ~ConnHandlerSSL();
 
+  bool is_secure() const noexcept override { return true; }
+
   void do_close() override;
 
   void close() override;
@@ -241,7 +245,8 @@ class ConnHandlerSSL final : public ConnHandler {
     noexcept override;
 
   private:
-  SocketSSL  m_sock;
+  SocketSSL                               m_sock;
+  asio::strand<SocketSSL::executor_type>  m_strand;
 
 };
 

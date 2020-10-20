@@ -159,7 +159,8 @@ void ConnHandler::print(std::ostream& out) const {
   out << "Connection(encoder=" << Core::Encoder::to_string(get_encoder());
   if(is_open()) {
     out << " remote=" << endpoint_remote
-        << " local=" << endpoint_local;
+        << " local=" << endpoint_local
+        << ' ' << (is_secure() ? "SECURE" : "PLAIN");
   } else {
     out << " CLOSED";
   }
@@ -554,7 +555,7 @@ void ConnHandlerPlain::do_async_read(
 }
 
 void ConnHandlerPlain::read(uint8_t** bufp, size_t* remainp, 
-                            asio::error_code& ec) {
+                            asio::error_code& ec) { // unused
   size_t read = 0;
   do {
     read = m_sock.read_some(
@@ -569,7 +570,8 @@ ConnHandlerSSL::ConnHandlerSSL(AppContext::Ptr& app_ctx,
                                asio::ssl::context& ssl_ctx,
                                SocketPlain& socket)
                               : ConnHandler(app_ctx), 
-                                m_sock(std::move(socket), ssl_ctx) {
+                                m_sock(std::move(socket), ssl_ctx),
+                                m_strand(m_sock.get_executor()) {
   m_sock.lowest_layer().set_option(asio::ip::tcp::no_delay(true));
 }
 
@@ -657,18 +659,24 @@ void ConnHandlerSSL::do_async_write(
         const std::vector<asio::const_buffer>& buffers,
         const std::function<void(const asio::error_code&, uint32_t)>& hdlr)
         noexcept {
-  asio::async_write(m_sock, buffers, hdlr);
+  asio::async_write(
+    m_sock, buffers, 
+    asio::bind_executor(m_strand, hdlr)
+  );
 }
 
 void ConnHandlerSSL::do_async_read(
         uint8_t* data, uint32_t sz,
         const std::function<void(const asio::error_code&, size_t)>& hdlr)
         noexcept {
-  asio::async_read(m_sock, asio::mutable_buffer(data, sz), hdlr);
+  asio::async_read(
+    m_sock, asio::mutable_buffer(data, sz), 
+    asio::bind_executor(m_strand, hdlr)
+  );
 }
 
 void ConnHandlerSSL::read(uint8_t** bufp, size_t* remainp, 
-                            asio::error_code& ec) {
+                            asio::error_code& ec) { // unused
   size_t read = 0;
   do {
     read = m_sock.read_some(
