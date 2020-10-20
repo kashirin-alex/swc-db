@@ -36,7 +36,7 @@ class Acceptor : protected asio::ip::tcp::acceptor {
 
   ~Acceptor();
 
-  asio::ip::tcp::acceptor* sock();
+  asio::ip::tcp::acceptor* sock() noexcept;
 
   protected:
 
@@ -44,7 +44,7 @@ class Acceptor : protected asio::ip::tcp::acceptor {
 
   private:
 
-  void do_accept();
+  void do_accept() noexcept;
 
 };
 
@@ -59,7 +59,7 @@ class AcceptorSSL final : public Acceptor {
 
   private:
   
-  void do_accept();
+  void do_accept() noexcept;
 
   ConfigSSL* m_ssl_cfg;
 };

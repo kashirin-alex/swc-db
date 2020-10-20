@@ -39,11 +39,11 @@ void Acceptor::stop() {
 
 Acceptor::~Acceptor() { }
 
-asio::ip::tcp::acceptor* Acceptor::sock() {
+asio::ip::tcp::acceptor* Acceptor::sock() noexcept {
   return this;
 }
 
-void Acceptor::do_accept() {
+void Acceptor::do_accept() noexcept {
   async_accept(
     [this](const std::error_code& ec, asio::ip::tcp::socket new_sock) {
       if(ec) {
@@ -53,9 +53,14 @@ void Acceptor::do_accept() {
         return;
       }
       
-      auto conn = std::make_shared<ConnHandlerPlain>(m_app_ctx, new_sock);
-      conn->new_connection();
-      conn->accept_requests();
+      try {
+        auto conn = std::make_shared<ConnHandlerPlain>(m_app_ctx, new_sock);
+        conn->new_connection();
+        conn->accept_requests();
+      } catch(...) {
+        SWC_LOG_CURRENT_EXCEPTION("");
+        try { new_sock.close(); } catch(...) { }
+      }
 
       do_accept();
     }
@@ -72,7 +77,7 @@ AcceptorSSL::AcceptorSSL(asio::ip::tcp::acceptor& acceptor,
   do_accept();
 }
 
-void AcceptorSSL::do_accept() {
+void AcceptorSSL::do_accept() noexcept {
   async_accept(
     [this](const std::error_code& ec, asio::ip::tcp::socket new_sock) {
       if(ec) {
@@ -82,7 +87,13 @@ void AcceptorSSL::do_accept() {
         return;
       }
 
-      m_ssl_cfg->make_server(m_app_ctx, new_sock);
+      try {
+        m_ssl_cfg->make_server(m_app_ctx, new_sock);
+      } catch(...) {
+        SWC_LOG_CURRENT_EXCEPTION("");
+        try { new_sock.close(); } catch(...) { }
+      }
+
       do_accept();
     }
   );

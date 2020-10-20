@@ -58,8 +58,15 @@ void ServerConnections::connection(ConnHandlerPtr& conn,
   if(ec || !sock.is_open())
     return;
 
-  conn = m_ssl_cfg  ? m_ssl_cfg->make_client(m_ctx, sock, ec) 
-                    : std::make_shared<ConnHandlerPlain>(m_ctx, sock);
+  try {
+    conn = m_ssl_cfg  ? m_ssl_cfg->make_client(m_ctx, sock, ec)
+                      : std::make_shared<ConnHandlerPlain>(m_ctx, sock);
+  } catch(...) {
+    SWC_LOG_CURRENT_EXCEPTION("");
+    conn = nullptr;
+    try { sock.close(); } catch(...) { }
+    return;
+  }
   if(!ec && conn->is_open()) {
     conn->new_connection();
     if(preserve)
@@ -83,34 +90,40 @@ void ServerConnections::connection(const std::chrono::milliseconds&,
     m_endpoint, 
     [sock, cb, preserve, ptr=shared_from_this()]
     (const std::error_code& ec) {
-      if(ec || !sock->is_open()){
+      if(ec || !sock->is_open()) {
         cb(nullptr);
         return;
       }
-
-      if(ptr->m_ssl_cfg) {
-        ptr->m_ssl_cfg->make_client(
-          ptr->m_ctx, *sock.get(),
-          [cb, preserve, ptr]
-          (const ConnHandlerPtr& conn, const std::error_code& ec) {
-            if(ec || !conn->is_open()) {
-              cb(nullptr);
-            } else {
-              conn->new_connection();
-              if(preserve)
-                ptr->push(conn);
-              cb(conn);
+      try {
+        if(ptr->m_ssl_cfg) {
+          ptr->m_ssl_cfg->make_client(
+            ptr->m_ctx, *sock.get(),
+            [cb, preserve, ptr]
+            (const ConnHandlerPtr& conn, const std::error_code& ec) {
+              if(ec || !conn->is_open()) {
+                cb(nullptr);
+              } else {
+                conn->new_connection();
+                if(preserve)
+                  ptr->push(conn);
+                cb(conn);
+              }
             }
-          }
-        );
-        return;
+          );
+
+        } else {
+          auto conn =
+            std::make_shared<ConnHandlerPlain>(ptr->m_ctx, *sock.get());
+          conn->new_connection();
+          if(preserve)
+            ptr->push(conn);
+          cb(conn);
+        }
+      } catch(...) {
+        SWC_LOG_CURRENT_EXCEPTION("");
+        try { sock->close(); } catch(...) { }
+        cb(nullptr);
       }
-      auto conn = 
-        std::make_shared<ConnHandlerPlain>(ptr->m_ctx, *sock.get());
-      conn->new_connection();
-      if(preserve)
-        ptr->push(conn);
-      cb(conn);
     }
   );       
 }
@@ -149,6 +162,18 @@ ServerConnections::Ptr Serialized::get_srv(const EndPoint& endpoint) {
 ConnHandlerPtr Serialized::get_connection(
       const EndPoints& endpoints, 
       const std::chrono::milliseconds& timeout, 
+      uint32_t probes, bool preserve) noexcept {
+  try {
+    return _get_connection(endpoints, timeout, probes, preserve);
+  } catch (...) {
+    SWC_LOG_CURRENT_EXCEPTION("");
+    return nullptr;
+  }
+}
+
+ConnHandlerPtr Serialized::_get_connection(
+      const EndPoints& endpoints, 
+      const std::chrono::milliseconds& timeout, 
       uint32_t probes, bool preserve) {
     
   ConnHandlerPtr conn = nullptr;
@@ -185,19 +210,22 @@ void Serialized::get_connection(
       const EndPoints& endpoints, 
       const ServerConnections::NewCb_t& cb,
       const std::chrono::milliseconds& timeout,
-      uint32_t probes, bool preserve) {
-    
-  if(endpoints.empty()){
-    SWC_LOGF(LOG_WARN, "get_connection: %s, Empty-Endpoints", 
-                        m_srv_name.c_str());
-    cb(nullptr);
-    return;
+      uint32_t probes, bool preserve) noexcept {
+  try {
+    if(endpoints.empty()) {
+      SWC_LOGF(LOG_WARN, "get_connection: %s, Empty-Endpoints",
+                          m_srv_name.c_str());
+    } else {
+      _get_connection(endpoints, cb, timeout, probes, probes, 0, preserve);
+      return;
+    }
+  } catch (...) {
+    SWC_LOG_CURRENT_EXCEPTION("");
   }
-
-  get_connection(endpoints, cb, timeout, probes, probes, 0, preserve);
+  cb(nullptr);
 }
   
-void Serialized::get_connection(
+void Serialized::_get_connection(
       const EndPoints& endpoints, 
       const ServerConnections::NewCb_t& cb,
       const std::chrono::milliseconds& timeout, 
@@ -219,20 +247,24 @@ void Serialized::get_connection(
   SWC_LOGF(LOG_DEBUG, "get_connection: %s, tries=%d", m_srv_name.c_str(), tries);
   srv->connection(timeout, 
     [endpoints, cb, timeout, probes, tries, next, preserve, ptr=shared_from_this()]
-    (const ConnHandlerPtr& conn){
-      if(!ptr->m_run.load() || (conn && conn->is_open())){
+    (const ConnHandlerPtr& conn) {
+      if(!ptr->m_run.load() || (conn && conn->is_open())) {
         cb(conn);
         return;
       }
 
       std::this_thread::sleep_for(std::chrono::milliseconds(3000)); // ? cfg-setting
-
-      ptr->get_connection(
-        endpoints, cb, timeout, 
-        probes, next == endpoints.size() ? tries-1 : tries, 
-        next, 
-        preserve
-      );
+      try {
+        ptr->_get_connection(
+          endpoints, cb, timeout,
+          probes, next == endpoints.size() ? tries-1 : tries,
+          next,
+          preserve
+        );
+      } catch (...) {
+        SWC_LOG_CURRENT_EXCEPTION("");
+        cb(nullptr);
+      }
     },
     preserve
   );

@@ -84,7 +84,7 @@ class Serialized final :
         const std::chrono::milliseconds& timeout=std::chrono::milliseconds(0),
         uint32_t probes=0,
         bool preserve=false
-  );
+  ) noexcept;
 
   void get_connection(
         const EndPoints& endpoints, 
@@ -92,16 +92,7 @@ class Serialized final :
         const std::chrono::milliseconds& timeout=std::chrono::milliseconds(0),
         uint32_t probes=0,
         bool preserve=false
-  );
-  
-  void get_connection(
-        const EndPoints& endpoints, 
-        const ServerConnections::NewCb_t& cb,
-        const std::chrono::milliseconds& timeout,
-        uint32_t probes, uint32_t tries, 
-        size_t next,
-        bool preserve=false
-  );
+  ) noexcept;
 
   void preserve(ConnHandlerPtr& conn);
 
@@ -116,6 +107,23 @@ class Serialized final :
   virtual ~Serialized();
 
   private:
+  
+  ConnHandlerPtr _get_connection(
+        const EndPoints& endpoints, 
+        const std::chrono::milliseconds& timeout=std::chrono::milliseconds(0),
+        uint32_t probes=0,
+        bool preserve=false
+  );
+  
+  void _get_connection(
+        const EndPoints& endpoints, 
+        const ServerConnections::NewCb_t& cb,
+        const std::chrono::milliseconds& timeout,
+        uint32_t probes, uint32_t tries, 
+        size_t next,
+        bool preserve=false
+  );
+
   const std::string     m_srv_name;
   IOCtxPtr              m_ioctx;
   AppContext::Ptr       m_ctx;

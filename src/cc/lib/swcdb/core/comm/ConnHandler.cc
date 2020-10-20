@@ -507,7 +507,7 @@ ConnHandlerPlain::ConnHandlerPlain(AppContext::Ptr& app_ctx,
 }
 
 ConnHandlerPlain::~ConnHandlerPlain() {
-  if(connected && m_sock.is_open())
+  if(is_open())
     try{ m_sock.close(); } catch(...) { }
 }
 
@@ -531,23 +531,25 @@ void ConnHandlerPlain::close() {
   ConnHandler::do_close();
 }
 
-bool ConnHandlerPlain::is_open() const {
+bool ConnHandlerPlain::is_open() const noexcept {
   return connected && m_sock.is_open();
 }
 
-SocketLayer* ConnHandlerPlain::socket_layer() {
+SocketLayer* ConnHandlerPlain::socket_layer() noexcept {
   return &m_sock.lowest_layer();
 }
 
 void ConnHandlerPlain::do_async_write(
         const std::vector<asio::const_buffer>& buffers,
-        const std::function<void(const asio::error_code&, uint32_t)>& hdlr) {
+        const std::function<void(const asio::error_code&, uint32_t)>& hdlr)
+        noexcept {
   asio::async_write(m_sock, buffers, hdlr);
 }
 
 void ConnHandlerPlain::do_async_read(
         uint8_t* data, uint32_t sz,
-        const std::function<void(const asio::error_code&, size_t)>& hdlr) {
+        const std::function<void(const asio::error_code&, size_t)>& hdlr)
+        noexcept {
   asio::async_read(m_sock, asio::mutable_buffer(data, sz), hdlr);
 }
 
@@ -572,7 +574,7 @@ ConnHandlerSSL::ConnHandlerSSL(AppContext::Ptr& app_ctx,
 }
 
 ConnHandlerSSL::~ConnHandlerSSL() { 
-  if(connected && m_sock.lowest_layer().is_open())
+  if(is_open())
     try{ m_sock.lowest_layer().close(); } catch(...) { }
 }
 
@@ -611,41 +613,57 @@ void ConnHandlerSSL::close() {
   } */
 }
 
-bool ConnHandlerSSL::is_open() const {
+bool ConnHandlerSSL::is_open() const noexcept {
   return connected && m_sock.lowest_layer().is_open();
 }
 
 void ConnHandlerSSL::handshake(
                   SocketSSL::handshake_type typ,
-                  const std::function<void(const asio::error_code&)>& cb) {
+                  const std::function<void(const asio::error_code&)>& cb) 
+                  noexcept {
+  /* any options ?
+  asio::error_code ec;
+  m_sock.lowest_layer().non_blocking(true, ec);
+  if(ec)
+    cb(ec);
+  else  
+  */
   m_sock.async_handshake(typ, cb);
 }
 
 void ConnHandlerSSL::handshake(
                   SocketSSL::handshake_type typ,
-                  asio::error_code& ec) {
+                  asio::error_code& ec) 
+                  noexcept {
+  /*
+  m_sock.lowest_layer().non_blocking(true, ec);
+  if(!ec)
+  */
   m_sock.handshake(typ, ec);
 }
 
 void ConnHandlerSSL::set_verify(
-        const std::function<bool(bool, asio::ssl::verify_context&)>& cb) {
+        const std::function<bool(bool, asio::ssl::verify_context&)>& cb) 
+        noexcept {
   m_sock.set_verify_callback(cb);
 }
 
 
-SocketLayer* ConnHandlerSSL::socket_layer() {
+SocketLayer* ConnHandlerSSL::socket_layer() noexcept {
   return &m_sock.lowest_layer();
 }
   
 void ConnHandlerSSL::do_async_write(
         const std::vector<asio::const_buffer>& buffers,
-        const std::function<void(const asio::error_code&, uint32_t)>& hdlr) {
+        const std::function<void(const asio::error_code&, uint32_t)>& hdlr)
+        noexcept {
   asio::async_write(m_sock, buffers, hdlr);
 }
 
 void ConnHandlerSSL::do_async_read(
         uint8_t* data, uint32_t sz,
-        const std::function<void(const asio::error_code&, size_t)>& hdlr) {
+        const std::function<void(const asio::error_code&, size_t)>& hdlr)
+        noexcept {
   asio::async_read(m_sock, asio::mutable_buffer(data, sz), hdlr);
 }
 
