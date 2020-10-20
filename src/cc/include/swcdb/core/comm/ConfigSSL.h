@@ -49,13 +49,11 @@ class ConfigSSL final {
   
   void load_file(std::string filepath, std::string& to) const;
   
-  std::string   ciphers;
-  std::string   subject_name;
-  std::string   crt;
-  std::string   key;
-  std::string   ca;
   std::vector<asio::ip::network_v4> nets_v4;
   std::vector<asio::ip::network_v6> nets_v6;
+  std::string                       subject_name;
+  mutable asio::ssl::context        ctx;
+
 };
 
 
