@@ -110,7 +110,7 @@ void Columns::unload(cid_t cid_begin, cid_t cid_end,
       if((!cid_begin || cid_begin <= it->first) &&
          (!cid_end || cid_end >= it->first)) {
         cb->cols.push_back(it->second);
-        erase(it);
+        it = erase(it);
       } else {
         ++it;
       }
