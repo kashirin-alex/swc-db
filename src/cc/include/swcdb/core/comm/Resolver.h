@@ -85,6 +85,10 @@ void get_networks(const Config::Strings& networks,
                   std::vector<asio::ip::network_v6>& nets_v6,
                   asio::error_code& ec);
 
+void get_local_networks(int& err, 
+                        std::vector<asio::ip::network_v4>& nets_v4,
+                        std::vector<asio::ip::network_v6>& nets_v6) noexcept;
+
 bool is_network(const EndPoint& endpoint,
                 const std::vector<asio::ip::network_v4>& nets_v4, 
                 const std::vector<asio::ip::network_v6>& nets_v6);

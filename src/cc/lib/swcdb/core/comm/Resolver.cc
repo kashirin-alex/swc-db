@@ -144,12 +144,12 @@ EndPoints Resolver::get_endpoints(uint16_t defaul_port,
     auto hostname_cfg = host;
     auto at = host.find_first_of(":");
     if(at != std::string::npos) {
-        hostname = host.substr(0, at);  
-        Config::Property::from_string(host.substr(at+1), &port);
-      } else {
-        port = defaul_port;
-        hostname = host;  
-      }
+      hostname = host.substr(0, at);
+      Config::Property::from_string(host.substr(at+1), &port);
+    } else {
+      port = defaul_port;
+      hostname = host;
+    }
     addrinfo hints, *result, *rp;
     memset(&hints, 0, sizeof(struct addrinfo));
 
@@ -247,6 +247,76 @@ void Resolver::get_networks(const Config::Strings& networks,
       nets_v4.push_back(asio::ip::make_network_v4(net, ec));      
     else
       nets_v6.push_back(asio::ip::make_network_v6(net, ec));
+  }
+}
+
+void Resolver::get_local_networks(int& err, 
+                                  std::vector<asio::ip::network_v4>& nets_v4,
+                                  std::vector<asio::ip::network_v6>& nets_v6)
+                                  noexcept {
+  errno = 0; 
+  char hostname[256];
+  err = gethostname(hostname, sizeof(hostname));
+  if(err == -1) {
+    err = errno;
+    return;
+  }
+  
+  addrinfo hints, *result, *rp;
+  memset(&hints, 0, sizeof(struct addrinfo));
+  hints.ai_family = AF_UNSPEC; 
+  hints.ai_socktype = SOCK_STREAM; 
+  hints.ai_protocol = 0;    
+  hints.ai_flags = 0;
+
+  errno = 0; 
+  err =  getaddrinfo(hostname, NULL, &hints, &result);
+  if(err != 0) {
+    err = err == EAI_SYSTEM ? errno : (SWC_ERRNO_EAI_BEGIN + (-err));
+    return;
+  }
+  
+  asio::error_code ec;
+  for (rp = result; rp != NULL; rp = rp->ai_next) {
+    char c_addr[INET6_ADDRSTRLEN];
+    const char * s = nullptr;
+    errno = 0; 
+    switch(rp->ai_family) {
+      case AF_INET: {
+        s = inet_ntop(AF_INET,
+          &(((struct sockaddr_in *)rp->ai_addr)->sin_addr),  
+          c_addr, INET_ADDRSTRLEN);
+        if(s)
+          nets_v4.push_back(
+            asio::ip::make_network_v4(
+              asio::ip::make_address_v4(c_addr, ec), 32));
+        break;
+      }
+      case AF_INET6: {
+        s = inet_ntop(AF_INET6, 
+          &(((struct sockaddr_in6  *)rp->ai_addr)->sin6_addr), 
+          c_addr, INET6_ADDRSTRLEN);
+        if(s)
+          nets_v6.push_back(
+            asio::ip::make_network_v6(
+              asio::ip::make_address_v6(c_addr, ec), 128));
+        break;
+      }
+     default:
+       break;
+    }
+    if(!s) {
+      err = SWC_ERRNO_EAI_BEGIN + (-EAFNOSUPPORT);
+      return;
+    }
+    if(ec) {
+      err = ec.value();
+      return;
+    }
+    if(errno) {
+      err = errno;
+      return;
+    }
   }
 }
 
