@@ -64,7 +64,7 @@ void ServerConnections::connection(ConnHandlerPtr& conn,
   } catch(...) {
     SWC_LOG_CURRENT_EXCEPTION("");
     conn = nullptr;
-    try { sock.close(); } catch(...) { }
+    sock.close(ec);
     return;
   }
   if(!ec && conn->is_open()) {
@@ -121,7 +121,8 @@ void ServerConnections::connection(const std::chrono::milliseconds&,
         }
       } catch(...) {
         SWC_LOG_CURRENT_EXCEPTION("");
-        try { sock->close(); } catch(...) { }
+        std::error_code ec;
+        sock->close(ec);
         cb(nullptr);
       }
     }

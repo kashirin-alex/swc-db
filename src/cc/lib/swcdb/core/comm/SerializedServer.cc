@@ -12,19 +12,21 @@
 namespace SWC { namespace Comm { namespace server {
 
 Acceptor::Acceptor(asio::ip::tcp::acceptor& acceptor, 
-                  AppContext::Ptr& app_ctx, bool is_plain)
+                   AppContext::Ptr& app_ctx, 
+                   ConfigSSL* ssl_cfg)
                   : asio::ip::tcp::acceptor(std::move(acceptor)), 
-                    m_app_ctx(app_ctx) {
+                    m_app_ctx(app_ctx),
+                    m_ssl_cfg(ssl_cfg) {
   set_option(asio::ip::tcp::acceptor::reuse_address(true));
   set_option(asio::ip::tcp::no_delay(true));
+
+  m_ssl_cfg ? do_accept_mixed() : do_accept_plain();
 
   SWC_LOG_OUT(LOG_INFO,
     SWC_LOG_OSTREAM << "Listening On: " << local_endpoint()
       << " fd=" << (size_t)native_handle()
-      << ' ' << (is_plain ? "PLAIN" : "SECURE");
+      << ' ' << (m_ssl_cfg ? "SECURE" : "PLAIN");
   );
-  if(is_plain)
-    do_accept();
 }
 
 void Acceptor::stop() {
@@ -43,7 +45,7 @@ asio::ip::tcp::acceptor* Acceptor::sock() noexcept {
   return this;
 }
 
-void Acceptor::do_accept() noexcept {
+void Acceptor::do_accept_mixed() noexcept {
   async_accept(
     [this](const std::error_code& ec, asio::ip::tcp::socket new_sock) {
       if(ec) {
@@ -54,30 +56,27 @@ void Acceptor::do_accept() noexcept {
       }
       
       try {
-        auto conn = std::make_shared<ConnHandlerPlain>(m_app_ctx, new_sock);
-        conn->new_connection();
-        conn->accept_requests();
+        if(!m_ssl_cfg || 
+           new_sock.remote_endpoint().address() 
+            == new_sock.local_endpoint().address()) {
+          auto conn = std::make_shared<ConnHandlerPlain>(m_app_ctx, new_sock);
+          conn->new_connection();
+          conn->accept_requests();
+        } else {
+          m_ssl_cfg->make_server(m_app_ctx, new_sock);
+        }
       } catch(...) {
         SWC_LOG_CURRENT_EXCEPTION("");
-        try { new_sock.close(); } catch(...) { }
+        std::error_code ec;
+        new_sock.close(ec);
       }
 
-      do_accept();
+      do_accept_mixed();
     }
   );
 }
 
-
-
-
-AcceptorSSL::AcceptorSSL(asio::ip::tcp::acceptor& acceptor, 
-                        AppContext::Ptr& app_ctx, ConfigSSL* ssl_cfg)
-                        : Acceptor(acceptor, app_ctx, false),
-                          m_ssl_cfg(ssl_cfg) {
-  do_accept();
-}
-
-void AcceptorSSL::do_accept() noexcept {
+void Acceptor::do_accept_plain() noexcept {
   async_accept(
     [this](const std::error_code& ec, asio::ip::tcp::socket new_sock) {
       if(ec) {
@@ -88,18 +87,19 @@ void AcceptorSSL::do_accept() noexcept {
       }
 
       try {
-        m_ssl_cfg->make_server(m_app_ctx, new_sock);
+        auto conn = std::make_shared<ConnHandlerPlain>(m_app_ctx, new_sock);
+        conn->new_connection();
+        conn->accept_requests();
       } catch(...) {
         SWC_LOG_CURRENT_EXCEPTION("");
-        try { new_sock.close(); } catch(...) { }
+        std::error_code ec;
+        new_sock.close(ec);
       }
 
-      do_accept();
+      do_accept_plain();
     }
   );
 }
-
-AcceptorSSL::~AcceptorSSL(){ }
 
 
 
@@ -162,25 +162,17 @@ SerializedServer::SerializedServer(
           << ' ' << (ssl_conn ? "SECURE" : "PLAIN");
       );
 
-      if(reactor == 0) { 
+      if(reactor == 0) {
         auto acceptor = asio::ip::tcp::acceptor(*io_ctx.get(), endpoint);
-        if(ssl_conn)
-          m_acceptors.push_back(
-            std::make_shared<AcceptorSSL>(acceptor, app_ctx, m_ssl_cfg));
-        else
-          m_acceptors.push_back(
-            std::make_shared<Acceptor>(acceptor, app_ctx));
+        m_acceptors.push_back(std::make_shared<Acceptor>(
+          acceptor, app_ctx, ssl_conn ? m_ssl_cfg : nullptr));
         endpoints_final.push_back(m_acceptors[i]->sock()->local_endpoint());
 
       } else {
         auto acceptor = asio::ip::tcp::acceptor(*io_ctx.get(), 
           endpoint.protocol(), dup(m_acceptors[i]->sock()->native_handle()));
-        if(ssl_conn)
-          m_acceptors.push_back(
-            std::make_shared<AcceptorSSL>(acceptor, app_ctx, m_ssl_cfg));
-        else
-          m_acceptors.push_back(
-            std::make_shared<Acceptor>(acceptor, app_ctx));
+        m_acceptors.push_back(std::make_shared<Acceptor>(
+          acceptor, app_ctx, ssl_conn ? m_ssl_cfg : nullptr));
       }
     }
 

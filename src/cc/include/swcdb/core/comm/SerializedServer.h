@@ -25,12 +25,13 @@ namespace server {
 
 
 
-class Acceptor : protected asio::ip::tcp::acceptor {
+class Acceptor final : protected asio::ip::tcp::acceptor {
   public:
   typedef std::shared_ptr<Acceptor> Ptr;
 
   Acceptor(asio::ip::tcp::acceptor& acceptor, 
-           AppContext::Ptr& app_ctx, bool is_plain=true);
+           AppContext::Ptr& app_ctx,
+           ConfigSSL* ssl_cfg);
 
   void stop();
 
@@ -40,29 +41,18 @@ class Acceptor : protected asio::ip::tcp::acceptor {
 
   protected:
 
-  AppContext::Ptr         m_app_ctx;
 
   private:
 
-  void do_accept() noexcept;
+  void do_accept_mixed() noexcept;
+
+  void do_accept_plain() noexcept;
+
+  AppContext::Ptr   m_app_ctx;
+  ConfigSSL*        m_ssl_cfg;
 
 };
 
-
-class AcceptorSSL final : public Acceptor {
-  public:
-
-  AcceptorSSL(asio::ip::tcp::acceptor& acceptor, 
-              AppContext::Ptr& app_ctx, ConfigSSL* ssl_cfg);
-
-  ~AcceptorSSL();
-
-  private:
-  
-  void do_accept() noexcept;
-
-  ConfigSSL* m_ssl_cfg;
-};
 
 
 class SerializedServer final {

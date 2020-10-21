@@ -16,7 +16,7 @@ ConfigSSL::ConfigSSL(bool is_client)
                             ? asio::ssl::context::tlsv13_client 
                             : asio::ssl::context::tlsv13_server) {
   auto settings = Env::Config::settings();
-  set_networks(settings->get_strs("swc.comm.ssl.secure.network"));
+  set_networks(settings->get_strs("swc.comm.ssl.secure.network"), is_client);
 
   std::string ciphers = settings->get_str("swc.comm.ssl.ciphers", "");
   if(!ciphers.empty())
@@ -86,13 +86,23 @@ ConfigSSL::ConfigSSL(bool is_client)
 ConfigSSL::~ConfigSSL() { }
 
 
-void ConfigSSL::set_networks(const Config::Strings& networks) {
+void ConfigSSL::set_networks(const Config::Strings& networks,
+                             bool with_local) {
   asio::error_code ec;
   Resolver::get_networks(networks, nets_v4, nets_v6, ec);
   if(ec)
     SWC_THROWF(Error::CONFIG_BAD_VALUE,
               "Bad Network in swc.comm.ssl.secure.network error(%s)",
               ec.message().c_str());
+  if(!with_local)
+    return;
+
+  int err = Error::OK;
+  Resolver::get_local_networks(err, nets_v4, nets_v6);
+  if(err)
+    SWC_THROWF(Error::CONFIG_BAD_VALUE,
+              "Bad Network in swc.comm.ssl.secure.network error(%s)",
+              Error::get_text(err));
 }
 
 
