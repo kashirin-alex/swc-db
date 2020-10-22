@@ -29,22 +29,8 @@ WriteSync::WriteSync(uint32_t timeout, FS::SmartFd::Ptr& smartfd,
 }
 
 
-void WriteSync::handle(ConnHandlerPtr, const Event::Ptr& ev) { 
-
-  const uint8_t *ptr;
-  size_t remain;
-
-  if(!Base::is_rsp(ev, FUNCTION_WRITE, &ptr, &remain))
-    return;
-
-  smartfd->fd(-1);
-  smartfd->pos(0);
-
-  SWC_LOG_OUT(LOG_DEBUG, 
-    Error::print(SWC_LOG_OSTREAM << "write ", error);
-    smartfd->print(SWC_LOG_OSTREAM << ' ');
-  );
-  
+void WriteSync::handle(ConnHandlerPtr, const Event::Ptr& ev) {
+  Base::handle_write(ev, smartfd);
   BaseSync::acknowledge();
 }
 

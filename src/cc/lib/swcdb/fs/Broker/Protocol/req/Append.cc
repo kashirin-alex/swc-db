@@ -29,39 +29,9 @@ Append::Append(uint32_t timeout, FS::SmartFd::Ptr& smartfd,
 }
 
 void Append::handle(ConnHandlerPtr, const Event::Ptr& ev) {
-
-  const uint8_t *ptr;
-  size_t remain;
-
-  if(!Base::is_rsp(ev, FUNCTION_APPEND, &ptr, &remain))
-    return;
-
-  Params::AppendRsp params;
-  switch(error) {
-    case Error::OK: {
-      try {
-        params.decode(&ptr, &remain);
-        smartfd->pos(params.offset + params.amount);
-      } catch(...) {
-        const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
-        error = e.code();
-      }
-      break;
-    }
-    case EBADR:
-    case Error::FS_BAD_FILE_HANDLE:
-      smartfd->fd(-1);
-    default:
-      break;
-  }
-
-  SWC_LOG_OUT(LOG_DEBUG, 
-    SWC_LOG_PRINTF("append amount=%u ", params.amount);
-    Error::print(SWC_LOG_OSTREAM, error);
-    smartfd->print(SWC_LOG_OSTREAM << ' ');
-  );
-  
-  cb(error, smartfd, params.amount);
+  size_t amount = 0;
+  Base::handle_append(ev, smartfd, amount);
+  cb(error, smartfd, amount);
 }
 
 

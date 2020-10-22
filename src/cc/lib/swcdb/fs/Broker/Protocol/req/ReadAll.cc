@@ -22,17 +22,8 @@ ReadAll::ReadAll(uint32_t timeout, const std::string& name,
 
 
 void ReadAll::handle(ConnHandlerPtr, const Event::Ptr& ev) {
-
-  const uint8_t *ptr;
-  size_t remain;
-
-  if(!Base::is_rsp(ev, FUNCTION_READ_ALL, &ptr, &remain))
-    return;
-    
+  Base::handle_read_all(ev, name);
   StaticBuffer::Ptr buf(error ? nullptr : new StaticBuffer(ev->data_ext));
-
-  SWC_LOGF(LOG_DEBUG, "read-all %s amount='%lu' error='%d'", 
-                        name.c_str(), error ? 0 : buf->size, error);
   cb(error, name, buf);
 }
 

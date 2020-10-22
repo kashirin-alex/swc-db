@@ -22,27 +22,8 @@ Flush::Flush(uint32_t timeout, FS::SmartFd::Ptr& smartfd,
   );
 }
 
-void Flush::handle(ConnHandlerPtr, const Event::Ptr& ev) { 
-
-  const uint8_t *ptr;
-  size_t remain;
-
-  if(!Base::is_rsp(ev, FUNCTION_FLUSH, &ptr, &remain))
-    return;
-
-  switch(error) {
-    case EBADR:
-    case Error::FS_BAD_FILE_HANDLE:
-      smartfd->fd(-1);
-    default:
-      break;
-  }
-
-  SWC_LOG_OUT(LOG_DEBUG, 
-    Error::print(SWC_LOG_OSTREAM << "flush ", error);
-    smartfd->print(SWC_LOG_OSTREAM << ' ');
-  );
-
+void Flush::handle(ConnHandlerPtr, const Event::Ptr& ev) {
+  Base::handle_flush(ev, smartfd);
   cb(error, smartfd);
 }
 

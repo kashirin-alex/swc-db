@@ -31,6 +31,56 @@ class Base : public DispatchHandler {
   bool is_rsp(const Event::Ptr& ev, int cmd, 
               const uint8_t **ptr, size_t *remain);
 
+
+  protected:
+
+  /* common (Sync & Async) handlers */
+
+  void handle_write(const Event::Ptr& ev, FS::SmartFd::Ptr& smartfd);
+
+  void handle_sync(const Event::Ptr& ev, FS::SmartFd::Ptr& smartfd);
+
+  void handle_seek(const Event::Ptr& ev, FS::SmartFd::Ptr& smartfd);
+
+  void handle_rmdir(const Event::Ptr& ev, const std::string& name);
+
+  void handle_rename(const Event::Ptr& ev, 
+                     const std::string& from, const std::string& to);
+
+  void handle_readdir(const Event::Ptr& ev, const std::string& name,
+                      FS::DirentList& listing);
+
+  void handle_remove(const Event::Ptr& ev, const std::string& name);
+
+  void handle_read(const Event::Ptr& ev, FS::SmartFd::Ptr& smartfd, 
+                   size_t& amount);
+
+  void handle_read_all(const Event::Ptr& ev, const std::string& name);
+  
+  void handle_pread(const Event::Ptr& ev, FS::SmartFd::Ptr& smartfd, 
+                    size_t& amount);
+
+  void handle_open(const FS::FileSystem::Ptr& fs, const Event::Ptr& ev, 
+                   FS::SmartFd::Ptr& smartfd);
+
+  void handle_mkdirs(const Event::Ptr& ev, const std::string& name);
+  
+  void handle_length(const Event::Ptr& ev, const std::string& name, 
+                     size_t& length);
+
+  void handle_flush(const Event::Ptr& ev, FS::SmartFd::Ptr& smartfd);
+
+  void handle_exists(const Event::Ptr& ev, const std::string& name, 
+                     bool& state);
+
+  void handle_create(const FS::FileSystem::Ptr& fs, const Event::Ptr& ev,
+                     FS::SmartFd::Ptr& smartfd);
+
+  void handle_close(const FS::FileSystem::Ptr& fs, const Event::Ptr& ev, 
+                    FS::SmartFd::Ptr& smartfd);
+  
+  void handle_append(const Event::Ptr& ev, FS::SmartFd::Ptr& smartfd, 
+                     size_t& amount);
 };
 
 

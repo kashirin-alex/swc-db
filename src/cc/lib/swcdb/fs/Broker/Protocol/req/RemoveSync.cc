@@ -18,16 +18,8 @@ RemoveSync::RemoveSync(uint32_t timeout, const std::string& name)
   SWC_LOGF(LOG_DEBUG, "remove path='%s'", name.c_str());
 }
 
-void RemoveSync::handle(ConnHandlerPtr, const Event::Ptr& ev) { 
-
-  const uint8_t *ptr;
-  size_t remain;
-
-  if(!Base::is_rsp(ev, FUNCTION_REMOVE, &ptr, &remain))
-    return;
-
-  SWC_LOGF(LOG_DEBUG, "remove path='%s' error='%d'", name.c_str(), error);
-  
+void RemoveSync::handle(ConnHandlerPtr, const Event::Ptr& ev) {
+  Base::handle_remove(ev, name);
   BaseSync::acknowledge();
 }
 

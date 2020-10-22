@@ -26,34 +26,8 @@ CreateSync::CreateSync(FS::FileSystem::Ptr fs,
   );
 }
 
-void CreateSync::handle(ConnHandlerPtr, const Event::Ptr& ev) { 
-
-  const uint8_t *ptr;
-  size_t remain;
-
-  if(!Base::is_rsp(ev, FUNCTION_CREATE, &ptr, &remain))
-    return;
-
-  if(!error) {
-    try {
-      Params::OpenRsp params;
-      params.decode(&ptr, &remain);
-      smartfd->fd(params.fd);
-      smartfd->pos(0);
-      fs->fd_open_incr();
-
-    } catch(...) {
-      const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
-      error = e.code();
-    }
-  }
-
-  SWC_LOG_OUT(LOG_DEBUG, 
-    SWC_LOG_PRINTF("create fds-open=%lu ", fs->fds_open());
-    Error::print(SWC_LOG_OSTREAM, error);
-    smartfd->print(SWC_LOG_OSTREAM << ' ');
-  );
-  
+void CreateSync::handle(ConnHandlerPtr, const Event::Ptr& ev) {
+  Base::handle_create(fs, ev, smartfd);
   BaseSync::acknowledge();
 }
 

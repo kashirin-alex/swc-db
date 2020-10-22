@@ -19,28 +19,8 @@ ReaddirSync::ReaddirSync(uint32_t timeout, const std::string& name,
   SWC_LOGF(LOG_DEBUG, "readdir path='%s'", name.c_str());
 }
 
-void ReaddirSync::handle(ConnHandlerPtr, const Event::Ptr& ev) { 
-
-  const uint8_t *ptr;
-  size_t remain;
-
-  if(!Base::is_rsp(ev, FUNCTION_READDIR, &ptr, &remain))
-    return;
-
-  if(!error) {
-    try {
-      Params::ReaddirRsp params(listing);
-      params.decode(&ptr, &remain);
-
-    } catch(...) {
-      const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
-      error = e.code();
-    }
-  }
-
-  SWC_LOGF(LOG_DEBUG, "readdir path='%s' error='%d' sz='%lu'",
-             name.c_str(), error, listing.size());
-  
+void ReaddirSync::handle(ConnHandlerPtr, const Event::Ptr& ev) {
+  Base::handle_readdir(ev, name, listing);
   BaseSync::acknowledge();
 }
 

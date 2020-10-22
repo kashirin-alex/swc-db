@@ -19,16 +19,8 @@ RmdirSync::RmdirSync(uint32_t timeout, const std::string& name)
 }
 
 
-void RmdirSync::handle(ConnHandlerPtr, const Event::Ptr& ev) { 
-
-  const uint8_t *ptr;
-  size_t remain;
-
-  if(!Base::is_rsp(ev, FUNCTION_RMDIR, &ptr, &remain))
-    return;
-
-  SWC_LOGF(LOG_DEBUG, "rmdir path='%s' error='%d'", name.c_str(), error);
-  
+void RmdirSync::handle(ConnHandlerPtr, const Event::Ptr& ev) {
+  Base::handle_rmdir(ev, name);
   BaseSync::acknowledge();
 }
 

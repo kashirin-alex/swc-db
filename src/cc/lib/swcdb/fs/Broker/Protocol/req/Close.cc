@@ -24,23 +24,7 @@ Close::Close(FS::FileSystem::Ptr fs, uint32_t timeout,
 }
 
 void Close::handle(ConnHandlerPtr, const Event::Ptr& ev) {
-
-  const uint8_t *ptr;
-  size_t remain;
-
-  if(!Base::is_rsp(ev, FUNCTION_CLOSE, &ptr, &remain))
-    return;
-
-  smartfd->fd(-1);
-  smartfd->pos(0);
-  fs->fd_open_decr();
-
-  SWC_LOG_OUT(LOG_DEBUG, 
-    SWC_LOG_PRINTF("close fds-open=%lu ", fs->fds_open());
-    Error::print(SWC_LOG_OSTREAM, error);
-    smartfd->print(SWC_LOG_OSTREAM << ' ');
-  );
-  
+  Base::handle_close(fs, ev, smartfd);
   cb(error, smartfd);
 }
 

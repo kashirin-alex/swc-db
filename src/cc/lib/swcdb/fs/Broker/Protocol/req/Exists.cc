@@ -20,30 +20,9 @@ Exists::Exists(uint32_t timeout, const std::string& name,
 }
 
 
-void Exists::handle(ConnHandlerPtr, const Event::Ptr& ev) { 
-
-  const uint8_t *ptr;
-  size_t remain;
-
-  if(!Base::is_rsp(ev, FUNCTION_EXISTS, &ptr, &remain))
-    return;
-
+void Exists::handle(ConnHandlerPtr, const Event::Ptr& ev) {
   bool state = false;
-  if(!error) {
-    try {
-      Params::ExistsRsp params;
-      params.decode(&ptr, &remain);
-      state = params.exists;
-
-    } catch(...) {
-      const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
-      error = e.code();
-    }
-  }
-
-  SWC_LOGF(LOG_DEBUG, "exists path='%s' error='%d' state='%d'",
-           name.c_str(), error, (int)state);
-  
+  Base::handle_exists(ev, name, state);
   cb(error, state);
 }
 

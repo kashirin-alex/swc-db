@@ -19,16 +19,8 @@ Mkdirs::Mkdirs(uint32_t timeout, const std::string& name,
   SWC_LOGF(LOG_DEBUG, "mkdirs path='%s'", name.c_str());
 }
 
-void Mkdirs::handle(ConnHandlerPtr, const Event::Ptr& ev) { 
-
-  const uint8_t *ptr;
-  size_t remain;
-
-  if(!Base::is_rsp(ev, FUNCTION_MKDIRS, &ptr, &remain))
-    return;
-
-  SWC_LOGF(LOG_DEBUG, "mkdirs path='%s' error='%d'", name.c_str(), error);
-  
+void Mkdirs::handle(ConnHandlerPtr, const Event::Ptr& ev) {
+  Base::handle_mkdirs(ev, name);
   cb(error);
 }
 

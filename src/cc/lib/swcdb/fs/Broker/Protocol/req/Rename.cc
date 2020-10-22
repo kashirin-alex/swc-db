@@ -20,16 +20,8 @@ Rename::Rename(uint32_t timeout,
   SWC_LOGF(LOG_DEBUG, "rename '%s' to '%s'", from.c_str(), to.c_str());
 }
 
-void Rename::handle(ConnHandlerPtr, const Event::Ptr& ev) { 
-
-  const uint8_t *ptr;
-  size_t remain;
-
-  if(!Base::is_rsp(ev, FUNCTION_RENAME, &ptr, &remain))
-    return;
-
-  SWC_LOGF(LOG_DEBUG, "rename '%s' to '%s' error='%d'", 
-            from.c_str(), to.c_str(), error);
+void Rename::handle(ConnHandlerPtr, const Event::Ptr& ev) {
+  Base::handle_rename(ev, from, to);
   cb(error);
 }
 

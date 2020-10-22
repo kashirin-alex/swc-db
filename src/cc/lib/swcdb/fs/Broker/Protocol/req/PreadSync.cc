@@ -26,48 +26,15 @@ PreadSync::PreadSync(uint32_t timeout, FS::SmartFd::Ptr& smartfd,
   );
 }
 
-void PreadSync::handle(ConnHandlerPtr, const Event::Ptr& ev) { 
-
-  const uint8_t *ptr;
-  size_t remain;
-
-  if(!Base::is_rsp(ev, FUNCTION_PREAD, &ptr, &remain))
-    return;
-
-  switch(error) {
-    case Error::OK:
-    case Error::FS_EOF: {
-      Params::ReadRsp params;
-      try {
-        params.decode(&ptr, &remain);
-      } catch(...) {
-        const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
-        error = e.code();
-        break;
-      }
-      amount = ev->data_ext.size;
-      smartfd->pos(params.offset + amount);
-      if(allocated) {
-        if(amount)
-          memcpy(buffer, ev->data_ext.base, amount);
-      } else {
-        ((StaticBuffer*)buffer)->set(ev->data_ext);
-      }
-      break;
+void PreadSync::handle(ConnHandlerPtr, const Event::Ptr& ev) {
+  Base::handle_pread(ev, smartfd, amount);
+  if(amount) {
+    if(allocated) {
+        memcpy(buffer, ev->data_ext.base, amount);
+    } else {
+      ((StaticBuffer*)buffer)->set(ev->data_ext);
     }
-    case EBADR:
-    case Error::FS_BAD_FILE_HANDLE:
-      smartfd->fd(-1);
-    default:
-      break;
   }
-
-  SWC_LOG_OUT(LOG_DEBUG, 
-    SWC_LOG_PRINTF("pread amount=%lu ", amount);
-    Error::print(SWC_LOG_OSTREAM, error);
-    smartfd->print(SWC_LOG_OSTREAM << ' ');
-  );
-
   BaseSync::acknowledge();
 }
 

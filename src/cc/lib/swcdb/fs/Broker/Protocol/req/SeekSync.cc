@@ -22,37 +22,7 @@ SeekSync::SeekSync(uint32_t timeout, FS::SmartFd::Ptr& smartfd, size_t offset)
 }
 
 void SeekSync::handle(ConnHandlerPtr, const Event::Ptr& ev) { 
-
-  const uint8_t *ptr;
-  size_t remain;
-
-  if(!Base::is_rsp(ev, FUNCTION_SEEK, &ptr, &remain))
-    return;
-
-  switch(error) {
-    case Error::OK: {
-      try {
-        Params::SeekRsp params;
-        params.decode(&ptr, &remain);
-        smartfd->pos(params.offset);
-      } catch(...) {
-        const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
-        error = e.code();
-      }
-      break;
-    }
-    case EBADR:
-    case Error::FS_BAD_FILE_HANDLE:
-      smartfd->fd(-1);
-    default:
-      break;
-  }
-
-  SWC_LOG_OUT(LOG_DEBUG, 
-    Error::print(SWC_LOG_OSTREAM << "seek ", error);
-    smartfd->print(SWC_LOG_OSTREAM << ' ');
-  );
-  
+  Base::handle_seek(ev, smartfd);
   BaseSync::acknowledge();
 }
 

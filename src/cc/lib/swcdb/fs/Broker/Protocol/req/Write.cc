@@ -29,22 +29,8 @@ Write::Write(uint32_t timeout, FS::SmartFd::Ptr& smartfd,
   cbp->header.set(FUNCTION_WRITE, timeout);
 }
 
-void Write::handle(ConnHandlerPtr, const Event::Ptr& ev) { 
-
-  const uint8_t *ptr;
-  size_t remain;
-
-  if(!Base::is_rsp(ev, FUNCTION_WRITE, &ptr, &remain))
-    return;
-
-  smartfd->fd(-1);
-  smartfd->pos(0);
-
-  SWC_LOG_OUT(LOG_DEBUG, 
-    Error::print(SWC_LOG_OSTREAM << "write ", error);
-    smartfd->print(SWC_LOG_OSTREAM << ' ');
-  );
-  
+void Write::handle(ConnHandlerPtr, const Event::Ptr& ev) {
+  Base::handle_write(ev, smartfd);
   cb(error, smartfd);
 }
 

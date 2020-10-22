@@ -20,29 +20,8 @@ Readdir::Readdir(uint32_t timeout, const std::string& name,
 }
 
 void Readdir::handle(ConnHandlerPtr, const Event::Ptr& ev) { 
-
-  const uint8_t *ptr;
-  size_t remain;
-
-  if(!Base::is_rsp(ev, FUNCTION_READDIR, &ptr, &remain))
-    return;
-
-  
   FS::DirentList listing;
-  if(!error) {
-    try {
-      Params::ReaddirRsp params(listing);
-      params.decode(&ptr, &remain);
-
-    } catch(...) {
-      const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
-      error = e.code();
-    }
-  }
-
-  SWC_LOGF(LOG_DEBUG, "readdir path='%s' error='%d' sz='%lu'",
-             name.c_str(), error, listing.size());
-  
+  Base::handle_readdir(ev, name, listing);
   cb(error, listing);
 }
 

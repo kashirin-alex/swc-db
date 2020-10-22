@@ -24,34 +24,8 @@ Open::Open(FS::FileSystem::Ptr fs,
   );
 }
 
-void Open::handle(ConnHandlerPtr, const Event::Ptr& ev) { 
-
-  const uint8_t *ptr;
-  size_t remain;
-
-  if(!Base::is_rsp(ev, FUNCTION_OPEN, &ptr, &remain))
-    return;
-
-  if(!error) {
-    try {
-      Params::OpenRsp params;
-      params.decode(&ptr, &remain);
-      smartfd->fd(params.fd);
-      smartfd->pos(0);
-      fs->fd_open_incr();
-
-    } catch(...) {
-      const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
-      error = e.code();
-    }
-  }
-
-  SWC_LOG_OUT(LOG_DEBUG, 
-    SWC_LOG_PRINTF("open fds-open=%lu ", fs->fds_open());
-    Error::print(SWC_LOG_OSTREAM, error);
-    smartfd->print(SWC_LOG_OSTREAM << ' ');
-  );
-  
+void Open::handle(ConnHandlerPtr, const Event::Ptr& ev) {
+  Base::handle_open(fs, ev, smartfd);
   cb(error, smartfd);
 }
 
