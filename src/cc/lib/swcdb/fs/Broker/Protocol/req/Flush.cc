@@ -13,20 +13,13 @@ namespace FsBroker {  namespace Req {
 
 Flush::Flush(uint32_t timeout, FS::SmartFd::Ptr& smartfd, 
              const FS::Callback::FlushCb_t& cb) 
-            : smartfd(smartfd), cb(cb) {
+            : Base(Buffers::make(Params::FlushReq(smartfd->fd()))),
+              smartfd(smartfd), cb(cb) {
+  cbp->header.set(FUNCTION_FLUSH, timeout);
   SWC_LOG_OUT(LOG_DEBUG,
     SWC_LOG_PRINTF("flush timeout=%d ", timeout);
     smartfd->print(SWC_LOG_OSTREAM);
   );
-
-  cbp = Buffers::make(Params::FlushReq(smartfd->fd()));
-  cbp->header.set(FUNCTION_FLUSH, timeout);
-}
-
-std::promise<void> Flush::promise() {
-  std::promise<void>  r_promise;
-  cb = [await=&r_promise](int, const FS::SmartFd::Ptr&){ await->set_value(); };
-  return r_promise;
 }
 
 void Flush::handle(ConnHandlerPtr, const Event::Ptr& ev) { 

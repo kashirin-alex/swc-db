@@ -9,26 +9,23 @@
 #include "swcdb/fs/Broker/Protocol/req/Base.h"
 #include "swcdb/fs/Broker/Protocol/params/Append.h"
 
+
 namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Req {
 
-class Append : public Base {
 
+class Append : public Base {
   public:
-  
-  size_t amount;
   
   Append(uint32_t timeout, FS::SmartFd::Ptr& smartfd, 
          StaticBuffer& buffer, FS::Flags flags, 
-         const FS::Callback::AppendCb_t& cb=0);
-
-  std::promise<void> promise();
+         const FS::Callback::AppendCb_t& cb);
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override;
 
   private:
-  FS::SmartFd::Ptr          smartfd;
-  FS::Callback::AppendCb_t  cb;
+  FS::SmartFd::Ptr                smartfd;
+  const FS::Callback::AppendCb_t  cb;
 
 };
 

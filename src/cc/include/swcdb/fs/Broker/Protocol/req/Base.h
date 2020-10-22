@@ -8,13 +8,13 @@
 
 #include "swcdb/fs/Broker/FileSystem.h"
 #include "swcdb/fs/Broker/Protocol/Commands.h"
-#include <future>
+
 
 namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Req {
 
-class Base : public DispatchHandler {
 
+class Base : public DispatchHandler {
   public:
 
   using Ptr = BasePtr;
@@ -22,9 +22,11 @@ class Base : public DispatchHandler {
   Buffers::Ptr  cbp;
   int           error;
 
-  Base();
+  Base(const Buffers::Ptr& cbp = nullptr)
+      : cbp(cbp), error(Error::OK) {
+  }
 
-  virtual ~Base();
+  virtual ~Base() { }
 
   bool is_rsp(const Event::Ptr& ev, int cmd, 
               const uint8_t **ptr, size_t *remain);
@@ -34,6 +36,9 @@ class Base : public DispatchHandler {
 
 
 }}}}}
+
+
+#include "swcdb/fs/Broker/Protocol/req/BaseSync.h"
 
 
 #ifdef SWC_IMPL_SOURCE

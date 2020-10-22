@@ -9,23 +9,23 @@
 #include "swcdb/fs/Broker/Protocol/req/Base.h"
 #include "swcdb/fs/Broker/Protocol/params/Mkdirs.h"
 
+
 namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Req {
+
 
 class Mkdirs : public Base {
 
   public:
 
   Mkdirs(uint32_t timeout, const std::string& name, 
-         const FS::Callback::MkdirsCb_t& cb=0);
-
-  std::promise<void> promise();
+         const FS::Callback::MkdirsCb_t& cb);
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override;
 
   private:
-  const std::string         name;
-  FS::Callback::MkdirsCb_t  cb;
+  const std::string               name;
+  const FS::Callback::MkdirsCb_t  cb;
 
 };
 

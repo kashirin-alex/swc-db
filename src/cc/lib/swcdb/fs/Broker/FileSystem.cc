@@ -11,23 +11,41 @@
 #include "swcdb/fs/Broker/AppContext.h"
  
 #include "swcdb/fs/Broker/Protocol/req/Exists.h"
+#include "swcdb/fs/Broker/Protocol/req/ExistsSync.h"
 #include "swcdb/fs/Broker/Protocol/req/Remove.h"
+#include "swcdb/fs/Broker/Protocol/req/RemoveSync.h"
 #include "swcdb/fs/Broker/Protocol/req/Length.h"
+#include "swcdb/fs/Broker/Protocol/req/LengthSync.h"
 #include "swcdb/fs/Broker/Protocol/req/Mkdirs.h"
+#include "swcdb/fs/Broker/Protocol/req/MkdirsSync.h"
 #include "swcdb/fs/Broker/Protocol/req/Readdir.h"
+#include "swcdb/fs/Broker/Protocol/req/ReaddirSync.h"
 #include "swcdb/fs/Broker/Protocol/req/Rmdir.h"
+#include "swcdb/fs/Broker/Protocol/req/RmdirSync.h"
 #include "swcdb/fs/Broker/Protocol/req/Rename.h"
+#include "swcdb/fs/Broker/Protocol/req/RenameSync.h"
 #include "swcdb/fs/Broker/Protocol/req/Write.h"
+#include "swcdb/fs/Broker/Protocol/req/WriteSync.h"
 #include "swcdb/fs/Broker/Protocol/req/ReadAll.h"
+#include "swcdb/fs/Broker/Protocol/req/ReadAllSync.h"
 #include "swcdb/fs/Broker/Protocol/req/Create.h"
+#include "swcdb/fs/Broker/Protocol/req/CreateSync.h"
 #include "swcdb/fs/Broker/Protocol/req/Append.h"
+#include "swcdb/fs/Broker/Protocol/req/AppendSync.h"
 #include "swcdb/fs/Broker/Protocol/req/Open.h"
+#include "swcdb/fs/Broker/Protocol/req/OpenSync.h"
 #include "swcdb/fs/Broker/Protocol/req/Read.h"
+#include "swcdb/fs/Broker/Protocol/req/ReadSync.h"
 #include "swcdb/fs/Broker/Protocol/req/Pread.h"
+#include "swcdb/fs/Broker/Protocol/req/PreadSync.h"
 #include "swcdb/fs/Broker/Protocol/req/Seek.h"
-#include "swcdb/fs/Broker/Protocol/req/Sync.h"
+#include "swcdb/fs/Broker/Protocol/req/SeekSync.h"
 #include "swcdb/fs/Broker/Protocol/req/Flush.h"
+#include "swcdb/fs/Broker/Protocol/req/FlushSync.h"
+#include "swcdb/fs/Broker/Protocol/req/Sync.h"
+#include "swcdb/fs/Broker/Protocol/req/SyncSync.h"
 #include "swcdb/fs/Broker/Protocol/req/Close.h"
+#include "swcdb/fs/Broker/Protocol/req/CloseSync.h"
 
 
 namespace SWC { namespace FS {
@@ -164,20 +182,14 @@ bool FileSystemBroker::send_request(
   return conn->send_request(hdlr->cbp, hdlr);
 }
 
-void FileSystemBroker::send_request_sync(
-      Comm::Protocol::FsBroker::Req::Base::Ptr hdlr, 
-      std::promise<void> res) {
-  while(!send_request(hdlr));
-  res.get_future().wait();
-}
-
 /// File/Dir name actions
 
 bool FileSystemBroker::exists(int& err, const std::string& name) {
-  auto hdlr = std::make_shared<Comm::Protocol::FsBroker::Req::Exists>(
+  auto hdlr = std::make_shared<Comm::Protocol::FsBroker::Req::ExistsSync>(
     cfg_timeout->get(), name);
     
-  send_request_sync(hdlr, hdlr->promise());
+  while(!send_request(hdlr));
+  hdlr->wait();
   err = hdlr->error;    
   return hdlr->state;
 }
@@ -191,10 +203,11 @@ void FileSystemBroker::exists(const Callback::ExistsCb_t& cb,
 }
 
 void FileSystemBroker::remove(int& err, const std::string& name) {
-  auto hdlr = std::make_shared<Comm::Protocol::FsBroker::Req::Remove>(
+  auto hdlr = std::make_shared<Comm::Protocol::FsBroker::Req::RemoveSync>(
     cfg_timeout->get(), name);
 
-  send_request_sync(hdlr, hdlr->promise());
+  while(!send_request(hdlr));
+  hdlr->wait();
   err = hdlr->error;
 }
 
@@ -207,10 +220,11 @@ void FileSystemBroker::remove(const Callback::RemoveCb_t& cb,
 }
   
 size_t FileSystemBroker::length(int& err, const std::string& name) {
-  auto hdlr = std::make_shared<Comm::Protocol::FsBroker::Req::Length>(
+  auto hdlr = std::make_shared<Comm::Protocol::FsBroker::Req::LengthSync>(
     cfg_timeout->get(), name);
 
-  send_request_sync(hdlr, hdlr->promise());
+  while(!send_request(hdlr));
+  hdlr->wait();
   err = hdlr->error;
   return hdlr->length;
 }
@@ -224,10 +238,11 @@ void FileSystemBroker::length(const Callback::LengthCb_t& cb,
 }
 
 void FileSystemBroker::mkdirs(int& err, const std::string& name) {
-  auto hdlr = std::make_shared<Comm::Protocol::FsBroker::Req::Mkdirs>(
+  auto hdlr = std::make_shared<Comm::Protocol::FsBroker::Req::MkdirsSync>(
     cfg_timeout->get(), name);
 
-  send_request_sync(hdlr, hdlr->promise());
+  while(!send_request(hdlr));
+  hdlr->wait();
   err = hdlr->error;
 }
 
@@ -241,12 +256,12 @@ void FileSystemBroker::mkdirs(const Callback::MkdirsCb_t& cb,
 
 void FileSystemBroker::readdir(int& err, const std::string& name, 
                                 DirentList& results) {
-  auto hdlr = std::make_shared<Comm::Protocol::FsBroker::Req::Readdir>(
-    cfg_timeout->get(), name);
+  auto hdlr = std::make_shared<Comm::Protocol::FsBroker::Req::ReaddirSync>(
+    cfg_timeout->get(), name, results);
 
-  send_request_sync(hdlr, hdlr->promise());
+  while(!send_request(hdlr));
+  hdlr->wait();
   err = hdlr->error;
-  results = hdlr->listing;
 }
 
 void FileSystemBroker::readdir(const Callback::ReaddirCb_t& cb, 
@@ -258,10 +273,11 @@ void FileSystemBroker::readdir(const Callback::ReaddirCb_t& cb,
 }
 
 void FileSystemBroker::rmdir(int& err, const std::string& name) {
-  auto hdlr = std::make_shared<Comm::Protocol::FsBroker::Req::Rmdir>(
+  auto hdlr = std::make_shared<Comm::Protocol::FsBroker::Req::RmdirSync>(
     cfg_timeout->get(), name);
 
-  send_request_sync(hdlr, hdlr->promise());
+  while(!send_request(hdlr));
+  hdlr->wait();
   err = hdlr->error;
 }
 
@@ -275,10 +291,11 @@ void FileSystemBroker::rmdir(const Callback::RmdirCb_t& cb,
 
 void FileSystemBroker::rename(int& err, const std::string& from, 
                               const std::string& to)  {
-  auto hdlr = std::make_shared<Comm::Protocol::FsBroker::Req::Rename>(
+  auto hdlr = std::make_shared<Comm::Protocol::FsBroker::Req::RenameSync>(
     cfg_timeout->get(), from, to);
 
-  send_request_sync(hdlr, hdlr->promise());
+  while(!send_request(hdlr));
+  hdlr->wait();
   err = hdlr->error;
 }
 
@@ -296,10 +313,11 @@ void FileSystemBroker::rename(const Callback::RenameCb_t& cb,
 void FileSystemBroker::write(int& err, SmartFd::Ptr& smartfd,
                              uint8_t replication, int64_t blksz, 
                              StaticBuffer& buffer) {
-  auto hdlr = std::make_shared<Comm::Protocol::FsBroker::Req::Write>(
+  auto hdlr = std::make_shared<Comm::Protocol::FsBroker::Req::WriteSync>(
     cfg_timeout->get(), smartfd, replication, blksz, buffer);
 
-  send_request_sync(hdlr, hdlr->promise());
+  while(!send_request(hdlr));
+  hdlr->wait();
   err = hdlr->error;
 }
 
@@ -315,28 +333,30 @@ void FileSystemBroker::write(const Callback::WriteCb_t& cb,
 
 void FileSystemBroker::read(int& err, const std::string& name, 
                             StaticBuffer* dst) {
-  auto hdlr = std::make_shared<Comm::Protocol::FsBroker::Req::ReadAll>(
+  auto hdlr = std::make_shared<Comm::Protocol::FsBroker::Req::ReadAllSync>(
     cfg_timeout->get(), name, dst);
 
-  send_request_sync(hdlr, hdlr->promise());
+  while(!send_request(hdlr));
+  hdlr->wait();
   err = hdlr->error;
 }
 
 void FileSystemBroker::read(const Callback::ReadAllCb_t& cb, 
                             const std::string& name) {
   auto hdlr = std::make_shared<Comm::Protocol::FsBroker::Req::ReadAll>(
-    cfg_timeout->get(), name, nullptr, cb);
+    cfg_timeout->get(), name, cb);
   while(!send_request(hdlr));
 }
 
 void FileSystemBroker::create(int& err, SmartFd::Ptr& smartfd,
                               int32_t bufsz, uint8_t replication, 
                               int64_t blksz) {
-  auto hdlr = std::make_shared<Comm::Protocol::FsBroker::Req::Create>(
+  auto hdlr = std::make_shared<Comm::Protocol::FsBroker::Req::CreateSync>(
     shared_from_this(), 
     cfg_timeout->get(), smartfd, bufsz, replication, blksz);
 
-  send_request_sync(hdlr, hdlr->promise());
+  while(!send_request(hdlr));
+  hdlr->wait();
   err = hdlr->error;
 }
 
@@ -353,11 +373,12 @@ void FileSystemBroker::create(const Callback::CreateCb_t& cb,
   
 size_t FileSystemBroker::append(int& err, SmartFd::Ptr& smartfd, 
                                 StaticBuffer& buffer, Flags flags) {
-  auto hdlr = std::make_shared<Comm::Protocol::FsBroker::Req::Append>(
+  auto hdlr = std::make_shared<Comm::Protocol::FsBroker::Req::AppendSync>(
     cfg_timeout->get()+buffer.size/cfg_timeout_ratio->get(), 
     smartfd, buffer, flags);
 
-  send_request_sync(hdlr, hdlr->promise());
+  while(!send_request(hdlr));
+  hdlr->wait();
   err = hdlr->error;
   return hdlr->amount;
 }
@@ -373,10 +394,11 @@ void FileSystemBroker::append(const Callback::AppendCb_t& cb,
 }
 
 void FileSystemBroker::open(int& err, SmartFd::Ptr& smartfd, int32_t bufsz) {
-  auto hdlr = std::make_shared<Comm::Protocol::FsBroker::Req::Open>(
+  auto hdlr = std::make_shared<Comm::Protocol::FsBroker::Req::OpenSync>(
     shared_from_this(), cfg_timeout->get(), smartfd, bufsz);
 
-  send_request_sync(hdlr, hdlr->promise());
+  while(!send_request(hdlr));
+  hdlr->wait();
   err = hdlr->error;
 }
 
@@ -388,75 +410,79 @@ void FileSystemBroker::open(const Callback::OpenCb_t& cb,
   while(!send_request(hdlr));
 }
   
-size_t FileSystemBroker::read(int& err, SmartFd::Ptr& smartfd, 
+size_t FileSystemBroker::read(int& err, SmartFd::Ptr& smartfd,
                               void* dst, size_t amount) {
-  auto hdlr = std::make_shared<Comm::Protocol::FsBroker::Req::Read>(
-    cfg_timeout->get()+amount/cfg_timeout_ratio->get(), 
+  auto hdlr = std::make_shared<Comm::Protocol::FsBroker::Req::ReadSync>(
+    cfg_timeout->get()+amount/cfg_timeout_ratio->get(),
     smartfd, dst, amount, true);
 
-  send_request_sync(hdlr, hdlr->promise());
+  while(!send_request(hdlr));
+  hdlr->wait();
   err = hdlr->error;
   return hdlr->amount;
 }
    
-size_t FileSystemBroker::read(int& err, SmartFd::Ptr& smartfd, 
+size_t FileSystemBroker::read(int& err, SmartFd::Ptr& smartfd,
                               StaticBuffer* dst, size_t amount) {
-  auto hdlr = std::make_shared<Comm::Protocol::FsBroker::Req::Read>(
-    cfg_timeout->get()+amount/cfg_timeout_ratio->get(), 
+  auto hdlr = std::make_shared<Comm::Protocol::FsBroker::Req::ReadSync>(
+    cfg_timeout->get()+amount/cfg_timeout_ratio->get(),
     smartfd, (void*)dst, amount, false);
 
-  send_request_sync(hdlr, hdlr->promise());
+  while(!send_request(hdlr));
+  hdlr->wait();
   err = hdlr->error;
   return hdlr->amount;
 }
    
-void FileSystemBroker::read(const Callback::ReadCb_t& cb, 
+void FileSystemBroker::read(const Callback::ReadCb_t& cb,
                             SmartFd::Ptr& smartfd, size_t amount) {
   auto hdlr = std::make_shared<Comm::Protocol::FsBroker::Req::Read>(
-    cfg_timeout->get()+amount/cfg_timeout_ratio->get(), 
-    smartfd, nullptr, amount, false, cb);
+    cfg_timeout->get()+amount/cfg_timeout_ratio->get(),
+    smartfd, amount, cb);
       
   while(!send_request(hdlr));
 }
   
-size_t FileSystemBroker::pread(int& err, SmartFd::Ptr& smartfd, 
+size_t FileSystemBroker::pread(int& err, SmartFd::Ptr& smartfd,
                                uint64_t offset, void* dst, size_t amount) {
-  auto hdlr = std::make_shared<Comm::Protocol::FsBroker::Req::Pread>(
-    cfg_timeout->get()+amount/cfg_timeout_ratio->get(), 
+  auto hdlr = std::make_shared<Comm::Protocol::FsBroker::Req::PreadSync>(
+    cfg_timeout->get()+amount/cfg_timeout_ratio->get(),
     smartfd, offset, dst, amount, true);
 
-  send_request_sync(hdlr, hdlr->promise());
+  while(!send_request(hdlr));
+  hdlr->wait();
   err = hdlr->error;
   return hdlr->amount;
 }
 
-size_t FileSystemBroker::pread(int& err, SmartFd::Ptr& smartfd, 
-                               uint64_t offset, StaticBuffer* dst, 
-                               size_t amount) {
-    auto hdlr = std::make_shared<Comm::Protocol::FsBroker::Req::Pread>(
-      cfg_timeout->get()+amount/cfg_timeout_ratio->get(), 
-      smartfd, offset, (void*)dst, amount, false);
+size_t FileSystemBroker::pread(int& err, SmartFd::Ptr& smartfd,
+                               uint64_t offset, StaticBuffer* dst, size_t amount) {
+  auto hdlr = std::make_shared<Comm::Protocol::FsBroker::Req::PreadSync>(
+    cfg_timeout->get()+amount/cfg_timeout_ratio->get(),
+    smartfd, offset, (void*)dst, amount, false);
 
-    send_request_sync(hdlr, hdlr->promise());
-    err = hdlr->error;
-    return hdlr->amount;
-  }
+  while(!send_request(hdlr));
+  hdlr->wait();
+  err = hdlr->error;
+  return hdlr->amount;
+}
    
-void FileSystemBroker::pread(const Callback::ReadCb_t& cb, 
-                             SmartFd::Ptr& smartfd, 
+void FileSystemBroker::pread(const Callback::ReadCb_t& cb,
+                             SmartFd::Ptr& smartfd,
                              uint64_t offset, size_t amount) {
   auto hdlr = std::make_shared<Comm::Protocol::FsBroker::Req::Pread>(
-    cfg_timeout->get()+amount/cfg_timeout_ratio->get(), 
-    smartfd, offset, nullptr, amount, false, cb);
+    cfg_timeout->get()+amount/cfg_timeout_ratio->get(),
+    smartfd, offset, amount, cb);
       
   while(!send_request(hdlr));
 }
 
 void FileSystemBroker::seek(int& err, SmartFd::Ptr& smartfd, size_t offset) {
-  auto hdlr = std::make_shared<Comm::Protocol::FsBroker::Req::Seek>(
+  auto hdlr = std::make_shared<Comm::Protocol::FsBroker::Req::SeekSync>(
     cfg_timeout->get(), smartfd, offset);
 
-  send_request_sync(hdlr, hdlr->promise());
+  while(!send_request(hdlr));
+  hdlr->wait();
   err = hdlr->error;
 }
    
@@ -470,10 +496,11 @@ void FileSystemBroker::seek(const Callback::SeekCb_t& cb,
 }
 
 void FileSystemBroker::flush(int& err, SmartFd::Ptr& smartfd) {
-  auto hdlr = std::make_shared<Comm::Protocol::FsBroker::Req::Flush>(
+  auto hdlr = std::make_shared<Comm::Protocol::FsBroker::Req::FlushSync>(
     cfg_timeout->get(), smartfd);
 
-  send_request_sync(hdlr, hdlr->promise());
+  while(!send_request(hdlr));
+  hdlr->wait();
   err = hdlr->error;
 }
   
@@ -486,10 +513,11 @@ void FileSystemBroker::flush(const Callback::FlushCb_t& cb,
 }
 
 void FileSystemBroker::sync(int& err, SmartFd::Ptr& smartfd) {
-  auto hdlr = std::make_shared<Comm::Protocol::FsBroker::Req::Sync>(
+  auto hdlr = std::make_shared<Comm::Protocol::FsBroker::Req::SyncSync>(
     cfg_timeout->get(), smartfd);
 
-  send_request_sync(hdlr, hdlr->promise());
+  while(!send_request(hdlr));
+  hdlr->wait();
   err = hdlr->error;
 }
   
@@ -502,10 +530,11 @@ void FileSystemBroker::sync(const Callback::SyncCb_t& cb,
 }
 
 void FileSystemBroker::close(int& err, SmartFd::Ptr& smartfd) {
-  auto hdlr = std::make_shared<Comm::Protocol::FsBroker::Req::Close>(
+  auto hdlr = std::make_shared<Comm::Protocol::FsBroker::Req::CloseSync>(
     shared_from_this(), cfg_timeout->get(), smartfd);
 
-  send_request_sync(hdlr, hdlr->promise());
+  while(!send_request(hdlr));
+  hdlr->wait();
   err = hdlr->error;
 }
 

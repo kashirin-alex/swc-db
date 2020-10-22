@@ -13,17 +13,10 @@ namespace FsBroker {  namespace Req {
 
 Remove::Remove(uint32_t timeout, const std::string& name, 
                const FS::Callback::RemoveCb_t& cb) 
-              : name(name), cb(cb) {
-  SWC_LOGF(LOG_DEBUG, "remove path='%s'", name.c_str());
-
-  cbp = Buffers::make(Params::RemoveReq(name));
+              : Base(Buffers::make(Params::RemoveReq(name))),
+                name(name), cb(cb) {
   cbp->header.set(FUNCTION_REMOVE, timeout);
-}
-
-std::promise<void> Remove::promise() {
-  std::promise<void>  r_promise;
-  cb = [await=&r_promise](int){ await->set_value(); };
-  return r_promise;
+  SWC_LOGF(LOG_DEBUG, "remove path='%s'", name.c_str());
 }
 
 void Remove::handle(ConnHandlerPtr, const Event::Ptr& ev) { 

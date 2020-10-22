@@ -9,28 +9,23 @@
 #include "swcdb/fs/Broker/Protocol/req/Base.h"
 #include "swcdb/fs/Broker/Protocol/params/Pread.h"
 
+
 namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Req {
 
-class Pread : public Base {
 
+class Pread : public Base {
   public:
   
-  void*   buffer;
-  bool    allocated;
-  size_t  amount;
-  
   Pread(uint32_t timeout, FS::SmartFd::Ptr& smartfd, 
-        uint64_t offset, void* dst, size_t len, bool allocated,
-        const FS::Callback::PreadCb_t& cb=0);
-
-  std::promise<void> promise();
+        uint64_t offset, size_t len,
+        const FS::Callback::PreadCb_t& cb);
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override;
 
   private:
-  FS::SmartFd::Ptr        smartfd;
-  FS::Callback::PreadCb_t cb;
+  FS::SmartFd::Ptr              smartfd;
+  const FS::Callback::PreadCb_t cb;
 
 };
 

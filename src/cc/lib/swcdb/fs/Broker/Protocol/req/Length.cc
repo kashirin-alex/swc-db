@@ -13,17 +13,10 @@ namespace FsBroker {  namespace Req {
 
 Length::Length(uint32_t timeout, const std::string& name, 
                const FS::Callback::LengthCb_t& cb) 
-              : length(0), name(name), cb(cb) {
-  SWC_LOGF(LOG_DEBUG, "length path='%s'", name.c_str());
-
-  cbp = Buffers::make(Params::LengthReq(name));
+              : Base(Buffers::make(Params::LengthReq(name))),
+                name(name), cb(cb) {
   cbp->header.set(FUNCTION_LENGTH, timeout);
-}
-
-std::promise<void> Length::promise() {
-  std::promise<void>  r_promise;
-  cb = [await=&r_promise](int, size_t){ await->set_value(); };
-  return r_promise;
+  SWC_LOGF(LOG_DEBUG, "length path='%s'", name.c_str());
 }
 
 void Length::handle(ConnHandlerPtr, const Event::Ptr& ev) { 
@@ -34,6 +27,7 @@ void Length::handle(ConnHandlerPtr, const Event::Ptr& ev) {
   if(!Base::is_rsp(ev, FUNCTION_LENGTH, &ptr, &remain))
     return;
 
+  size_t length = 0;
   if(!error) {
     try {
       Params::LengthRsp params;

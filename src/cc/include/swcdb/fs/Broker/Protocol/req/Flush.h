@@ -9,23 +9,22 @@
 #include "swcdb/fs/Broker/Protocol/req/Base.h"
 #include "swcdb/fs/Broker/Protocol/params/Flush.h"
 
+
 namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Req {
 
-class Flush : public Base {
 
+class Flush : public Base {
   public:
 
   Flush(uint32_t timeout, FS::SmartFd::Ptr& smartfd, 
-        const FS::Callback::FlushCb_t& cb=0);
-
-  std::promise<void> promise();
+        const FS::Callback::FlushCb_t& cb);
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override;
 
   private:
-  FS::SmartFd::Ptr         smartfd;
-  FS::Callback::FlushCb_t  cb;
+  FS::SmartFd::Ptr                smartfd;
+  const FS::Callback::FlushCb_t   cb;
 
 };
 

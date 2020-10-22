@@ -43,9 +43,6 @@ class FileSystemBroker final : public FileSystem {
 
   bool send_request(Comm::Protocol::FsBroker::Req::BasePtr hdlr);
 
-  void send_request_sync(Comm::Protocol::FsBroker::Req::BasePtr hdlr, 
-                         std::promise<void> res);
-
   /// File/Dir name actions
 
   bool exists(int& err, const std::string& name) override;

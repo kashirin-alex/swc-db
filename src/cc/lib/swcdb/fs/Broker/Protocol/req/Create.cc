@@ -11,27 +11,20 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Req {
 
 
-Create::Create(FS::FileSystem::Ptr fs, uint32_t timeout, FS::SmartFd::Ptr& smartfd, 
+Create::Create(FS::FileSystem::Ptr fs,
+               uint32_t timeout, FS::SmartFd::Ptr& smartfd,
                int32_t bufsz, uint8_t replication, int64_t blksz, 
                const FS::Callback::CreateCb_t& cb) 
-              : fs(fs), smartfd(smartfd), cb(cb) {
+              : Base(Buffers::make(Params::CreateReq(
+                  smartfd->filepath(), smartfd->flags(),
+                  bufsz, replication, blksz))),
+                fs(fs), smartfd(smartfd), cb(cb) {
+  cbp->header.set(FUNCTION_CREATE, timeout);
   SWC_LOG_OUT(LOG_DEBUG, 
     SWC_LOG_PRINTF("create bufsz(%d) replication(%d) blksz(%ld) timeout=%d ", 
                     bufsz, replication, blksz, timeout);
     smartfd->print(SWC_LOG_OSTREAM);
   );
-  
-  cbp = Buffers::make(
-    Params::CreateReq(smartfd->filepath(), smartfd->flags(), 
-                      bufsz, replication, blksz)
-  );
-  cbp->header.set(FUNCTION_CREATE, timeout);
-}
-
-std::promise<void> Create::promise() {
-  std::promise<void>  r_promise;
-  cb = [await=&r_promise](int, const FS::SmartFd::Ptr&){ await->set_value(); };
-  return r_promise;
 }
 
 void Create::handle(ConnHandlerPtr, const Event::Ptr& ev) { 

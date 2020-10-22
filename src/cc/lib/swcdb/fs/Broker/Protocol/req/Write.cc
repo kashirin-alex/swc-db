@@ -29,12 +29,6 @@ Write::Write(uint32_t timeout, FS::SmartFd::Ptr& smartfd,
   cbp->header.set(FUNCTION_WRITE, timeout);
 }
 
-std::promise<void> Write::promise() {
-  std::promise<void>  r_promise;
-  cb = [await=&r_promise](int, const FS::SmartFd::Ptr&){ await->set_value(); };
-  return r_promise;
-}
-
 void Write::handle(ConnHandlerPtr, const Event::Ptr& ev) { 
 
   const uint8_t *ptr;

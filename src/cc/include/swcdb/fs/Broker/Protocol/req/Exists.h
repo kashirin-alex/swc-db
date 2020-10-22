@@ -9,25 +9,22 @@
 #include "swcdb/fs/Broker/Protocol/req/Base.h"
 #include "swcdb/fs/Broker/Protocol/params/Exists.h"
 
+
 namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Req {
 
-class Exists : public Base {
 
+class Exists : public Base {
   public:
 
-  bool  state;
-
   Exists(uint32_t timeout, const std::string& name, 
-         const FS::Callback::ExistsCb_t& cb=0);
-
-  std::promise<void> promise();
+         const FS::Callback::ExistsCb_t& cb);
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override;
 
   private:
-  const std::string         name;
-  FS::Callback::ExistsCb_t  cb;
+  const std::string               name;
+  const FS::Callback::ExistsCb_t  cb;
 
 };
 

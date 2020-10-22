@@ -11,19 +11,13 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Req {
 
 
-Rename::Rename(uint32_t timeout, const std::string& from, const std::string& to,
+Rename::Rename(uint32_t timeout, 
+               const std::string& from, const std::string& to,
                const FS::Callback::RenameCb_t& cb) 
-              : from(from), to(to), cb(cb) {
-  SWC_LOGF(LOG_DEBUG, "rename '%s' to '%s'", from.c_str(), to.c_str());
-
-  cbp = Buffers::make(Params::RenameReq(from, to));
+              : Base(Buffers::make(Params::RenameReq(from, to))),
+                from(from), to(to), cb(cb) {
   cbp->header.set(FUNCTION_RENAME, timeout);
-}
-
-std::promise<void> Rename::promise() {
-  std::promise<void>  r_promise;
-  cb = [await=&r_promise](int){ await->set_value(); };
-  return r_promise;
+  SWC_LOGF(LOG_DEBUG, "rename '%s' to '%s'", from.c_str(), to.c_str());
 }
 
 void Rename::handle(ConnHandlerPtr, const Event::Ptr& ev) { 

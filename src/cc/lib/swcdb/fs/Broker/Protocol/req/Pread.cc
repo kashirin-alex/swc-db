@@ -13,26 +13,16 @@ namespace FsBroker {  namespace Req {
 
 
 Pread::Pread(uint32_t timeout, FS::SmartFd::Ptr& smartfd, 
-      uint64_t offset, void* dst, size_t len, bool allocated,
-      const FS::Callback::PreadCb_t& cb)
-    : buffer(dst), allocated(allocated), amount(0), 
-      smartfd(smartfd), cb(cb) {
+             uint64_t offset, size_t len, 
+             const FS::Callback::PreadCb_t& cb)
+            : Base(Buffers::make(Params::PreadReq(smartfd->fd(), offset, len))), 
+              smartfd(smartfd), cb(cb) {
+  cbp->header.set(FUNCTION_PREAD, timeout);
   SWC_LOG_OUT(LOG_DEBUG, 
     SWC_LOG_PRINTF("read offset=%lu len=%lu timeout=%d ", 
                     offset, len, timeout);
     smartfd->print(SWC_LOG_OSTREAM);
   );
-  cbp = Buffers::make(Params::PreadReq(smartfd->fd(), offset, len));
-  cbp->header.set(FUNCTION_PREAD, timeout);
-}
-
-std::promise<void> Pread::promise() {
-  std::promise<void>  r_promise;
-  cb = [await=&r_promise]
-       (int, const FS::SmartFd::Ptr&, const StaticBuffer::Ptr&) {
-         await->set_value();
-        };
-  return r_promise;
 }
 
 void Pread::handle(ConnHandlerPtr, const Event::Ptr& ev) { 
@@ -44,6 +34,7 @@ void Pread::handle(ConnHandlerPtr, const Event::Ptr& ev) {
     return;
 
   StaticBuffer::Ptr buf = nullptr;
+  size_t amount = 0;
   switch(error) {
     case Error::OK:
     case Error::FS_EOF: {
@@ -57,16 +48,7 @@ void Pread::handle(ConnHandlerPtr, const Event::Ptr& ev) {
       }
       amount = ev->data_ext.size;
       smartfd->pos(params.offset + amount);
-      if(amount) {
-        if(buffer == nullptr) {
-          buf = std::make_shared<StaticBuffer>(ev->data_ext);
-        } else {
-          if(allocated)
-            memcpy(buffer, ev->data_ext.base, amount);
-          else
-            ((StaticBuffer*)buffer)->set(ev->data_ext);
-        }
-      }
+      buf.reset(new StaticBuffer(ev->data_ext));
       break;
     }
     case EBADR:

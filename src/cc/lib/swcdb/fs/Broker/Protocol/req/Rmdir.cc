@@ -13,17 +13,10 @@ namespace FsBroker {  namespace Req {
 
 Rmdir::Rmdir(uint32_t timeout, const std::string& name, 
              const FS::Callback::RmdirCb_t& cb) 
-            : name(name), cb(cb) {
-  SWC_LOGF(LOG_DEBUG, "rmdir path='%s'", name.c_str());
-
-  cbp = Buffers::make(Params::RmdirReq(name));
+            : Base(Buffers::make(Params::RmdirReq(name))),
+              name(name), cb(cb) {
   cbp->header.set(FUNCTION_RMDIR, timeout);
-}
-
-std::promise<void> Rmdir::promise() {
-  std::promise<void>  r_promise;
-  cb = [await=&r_promise](int){ await->set_value(); };
-  return r_promise;
+  SWC_LOGF(LOG_DEBUG, "rmdir path='%s'", name.c_str());
 }
 
 void Rmdir::handle(ConnHandlerPtr, const Event::Ptr& ev) { 

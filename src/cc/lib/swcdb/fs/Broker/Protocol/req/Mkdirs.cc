@@ -13,17 +13,10 @@ namespace FsBroker {  namespace Req {
 
 Mkdirs::Mkdirs(uint32_t timeout, const std::string& name, 
                const FS::Callback::MkdirsCb_t& cb) 
-              : name(name), cb(cb) {
-  SWC_LOGF(LOG_DEBUG, "mkdirs path='%s'", name.c_str());
-
-  cbp = Buffers::make(Params::MkdirsReq(name));
+              : Base(Buffers::make(Params::MkdirsReq(name))),
+                name(name), cb(cb) {
   cbp->header.set(FUNCTION_MKDIRS, timeout);
-}
-
-std::promise<void> Mkdirs::promise() {
-  std::promise<void>  r_promise;
-  cb = [await=&r_promise](int){ await->set_value(); };
-  return r_promise;
+  SWC_LOGF(LOG_DEBUG, "mkdirs path='%s'", name.c_str());
 }
 
 void Mkdirs::handle(ConnHandlerPtr, const Event::Ptr& ev) { 

@@ -33,7 +33,7 @@ void AppendReq::internal_decode(const uint8_t** bufp, size_t* remainp) {
 
 
 
-AppendRsp::AppendRsp() {}
+AppendRsp::AppendRsp(): amount(0) {}
 
 AppendRsp::AppendRsp(uint64_t offset, uint32_t amount)
                     : offset(offset), amount(amount) {}

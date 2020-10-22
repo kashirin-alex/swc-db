@@ -54,24 +54,42 @@ set(swcdb_fsBroker_sources
   Broker/Protocol/params/Write.cc
 
   Broker/Protocol/req/Base.cc
-  Broker/Protocol/req/Append.cc
-  Broker/Protocol/req/Close.cc
-  Broker/Protocol/req/Create.cc
   Broker/Protocol/req/Exists.cc
-  Broker/Protocol/req/Flush.cc
-  Broker/Protocol/req/Length.cc
-  Broker/Protocol/req/Mkdirs.cc
-  Broker/Protocol/req/Open.cc
-  Broker/Protocol/req/Pread.cc
-  Broker/Protocol/req/Read.cc
-  Broker/Protocol/req/ReadAll.cc
-  Broker/Protocol/req/Readdir.cc
+  Broker/Protocol/req/ExistsSync.cc
   Broker/Protocol/req/Remove.cc
-  Broker/Protocol/req/Rename.cc
+  Broker/Protocol/req/RemoveSync.cc
+  Broker/Protocol/req/Length.cc
+  Broker/Protocol/req/LengthSync.cc
+  Broker/Protocol/req/Mkdirs.cc
+  Broker/Protocol/req/MkdirsSync.cc
+  Broker/Protocol/req/Readdir.cc
+  Broker/Protocol/req/ReaddirSync.cc
   Broker/Protocol/req/Rmdir.cc
-  Broker/Protocol/req/Seek.cc
-  Broker/Protocol/req/Sync.cc
+  Broker/Protocol/req/RmdirSync.cc
+  Broker/Protocol/req/Rename.cc
+  Broker/Protocol/req/RenameSync.cc
   Broker/Protocol/req/Write.cc
+  Broker/Protocol/req/WriteSync.cc
+  Broker/Protocol/req/ReadAll.cc
+  Broker/Protocol/req/ReadAllSync.cc
+  Broker/Protocol/req/Create.cc
+  Broker/Protocol/req/CreateSync.cc
+  Broker/Protocol/req/Append.cc
+  Broker/Protocol/req/AppendSync.cc
+  Broker/Protocol/req/Open.cc
+  Broker/Protocol/req/OpenSync.cc
+  Broker/Protocol/req/Read.cc
+  Broker/Protocol/req/ReadSync.cc
+  Broker/Protocol/req/Pread.cc
+  Broker/Protocol/req/PreadSync.cc
+  Broker/Protocol/req/Seek.cc
+  Broker/Protocol/req/SeekSync.cc
+  Broker/Protocol/req/Flush.cc
+  Broker/Protocol/req/FlushSync.cc
+  Broker/Protocol/req/Sync.cc
+  Broker/Protocol/req/SyncSync.cc
+  Broker/Protocol/req/Close.cc
+  Broker/Protocol/req/CloseSync.cc
 )
 ADD_LIB_TARGET(
   NAME      swcdb_fs_broker

@@ -13,18 +13,12 @@ namespace FsBroker {  namespace Req {
 
 Exists::Exists(uint32_t timeout, const std::string& name, 
                const FS::Callback::ExistsCb_t& cb) 
-              : name(name), cb(cb) {
-  SWC_LOGF(LOG_DEBUG, "exists path='%s'", name.c_str());
-
-  cbp = Buffers::make(Params::ExistsReq(name));
+              : Base(Buffers::make(Params::ExistsReq(name))),
+                name(name), cb(cb) {
   cbp->header.set(FUNCTION_EXISTS, timeout);
+  SWC_LOGF(LOG_DEBUG, "exists path='%s'", name.c_str());
 }
 
-std::promise<void> Exists::promise() {
-  std::promise<void>  r_promise;
-  cb = [await=&r_promise](int, bool){ await->set_value(); };
-  return r_promise;
-}
 
 void Exists::handle(ConnHandlerPtr, const Event::Ptr& ev) { 
 
@@ -34,6 +28,7 @@ void Exists::handle(ConnHandlerPtr, const Event::Ptr& ev) {
   if(!Base::is_rsp(ev, FUNCTION_EXISTS, &ptr, &remain))
     return;
 
+  bool state = false;
   if(!error) {
     try {
       Params::ExistsRsp params;
@@ -44,12 +39,10 @@ void Exists::handle(ConnHandlerPtr, const Event::Ptr& ev) {
       const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
       error = e.code();
     }
-  } else {
-    state = false;
   }
 
   SWC_LOGF(LOG_DEBUG, "exists path='%s' error='%d' state='%d'",
-             name.c_str(), error, (int)state);
+           name.c_str(), error, (int)state);
   
   cb(error, state);
 }

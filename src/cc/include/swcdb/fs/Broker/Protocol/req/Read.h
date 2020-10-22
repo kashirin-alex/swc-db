@@ -9,27 +9,22 @@
 #include "swcdb/fs/Broker/Protocol/req/Base.h"
 #include "swcdb/fs/Broker/Protocol/params/Read.h"
 
+
 namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Req {
 
-class Read : public Base {
 
+class Read : public Base {
   public:
   
-  void*   buffer;
-  bool    allocated;
-  size_t  amount;
-  
-  Read(uint32_t timeout, FS::SmartFd::Ptr& smartfd, void* dst, size_t len, 
-       bool allocated, const FS::Callback::ReadCb_t& cb=0);
-
-  std::promise<void> promise();
+  Read(uint32_t timeout, FS::SmartFd::Ptr& smartfd, size_t len,
+       const FS::Callback::ReadCb_t& cb);
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override;
 
   private:
-  FS::SmartFd::Ptr        smartfd;
-  FS::Callback::ReadCb_t  cb;
+  FS::SmartFd::Ptr              smartfd;
+  const FS::Callback::ReadCb_t  cb;
 
 };
 

@@ -13,17 +13,10 @@ namespace FsBroker {  namespace Req {
 
 Readdir::Readdir(uint32_t timeout, const std::string& name, 
                  const FS::Callback::ReaddirCb_t& cb) 
-                : name(name), cb(cb) {
-  SWC_LOGF(LOG_DEBUG, "readdir path='%s'", name.c_str());
-
-  cbp = Buffers::make(Params::ReaddirReq(name));
+                : Base(Buffers::make(Params::ReaddirReq(name))),
+                  name(name), cb(cb) {
   cbp->header.set(FUNCTION_READDIR, timeout);
-}
-
-std::promise<void> Readdir::promise() {
-  std::promise<void>  r_promise;
-  cb = [await=&r_promise](int, const FS::DirentList&){ await->set_value(); };
-  return r_promise;
+  SWC_LOGF(LOG_DEBUG, "readdir path='%s'", name.c_str());
 }
 
 void Readdir::handle(ConnHandlerPtr, const Event::Ptr& ev) { 
@@ -34,11 +27,12 @@ void Readdir::handle(ConnHandlerPtr, const Event::Ptr& ev) {
   if(!Base::is_rsp(ev, FUNCTION_READDIR, &ptr, &remain))
     return;
 
+  
+  FS::DirentList listing;
   if(!error) {
     try {
-      Params::ReaddirRsp params;
+      Params::ReaddirRsp params(listing);
       params.decode(&ptr, &remain);
-      params.get_listing(listing);
 
     } catch(...) {
       const Error::Exception& e = SWC_CURRENT_EXCEPTION("");

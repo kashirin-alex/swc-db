@@ -9,24 +9,22 @@
 #include "swcdb/fs/Broker/Protocol/req/Base.h"
 #include "swcdb/fs/Broker/Protocol/params/ReadAll.h"
 
+
 namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Req {
 
+
 class ReadAll : public Base {
-
   public:
-  StaticBuffer* buffer;
-  
-  ReadAll(uint32_t timeout, const std::string& name, StaticBuffer* dst,
-          const FS::Callback::ReadAllCb_t& cb=0);
 
-  std::promise<void> promise();
+  ReadAll(uint32_t timeout, const std::string& name,
+          const FS::Callback::ReadAllCb_t& cb);
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev);
 
   private:
-  const std::string          name;
-  FS::Callback::ReadAllCb_t  cb;
+  const std::string                 name;
+  const FS::Callback::ReadAllCb_t   cb;
 
 };
 

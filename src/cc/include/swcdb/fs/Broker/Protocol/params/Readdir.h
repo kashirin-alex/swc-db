@@ -37,12 +37,12 @@ class ReaddirReq : public Serializable {
 
 class ReaddirRsp : public Serializable {
   public:
-  
-  ReaddirRsp();
 
-  ReaddirRsp(FS::DirentList &listing);
+  FS::DirentList& listing;
 
-  void get_listing(FS::DirentList &listing);
+  ReaddirRsp(FS::DirentList& listing)
+            : listing(listing) {
+  }
 
   private:
 
@@ -52,7 +52,6 @@ class ReaddirRsp : public Serializable {
 
   void internal_decode(const uint8_t** bufp, size_t* remainp);
   
-  FS::DirentList m_listing;
 };
 
 }}}}}

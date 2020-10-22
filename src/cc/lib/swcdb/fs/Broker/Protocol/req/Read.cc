@@ -11,27 +11,17 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Req {
 
 
-Read::Read(uint32_t timeout, FS::SmartFd::Ptr& smartfd, void* dst, size_t len, 
-           bool allocated, const FS::Callback::ReadCb_t& cb)
-          : buffer(dst), allocated(allocated), amount(0), 
+Read::Read(uint32_t timeout, FS::SmartFd::Ptr& smartfd, size_t len,
+           const FS::Callback::ReadCb_t& cb)
+          : Base(Buffers::make(Params::ReadReq(smartfd->fd(), len))), 
             smartfd(smartfd), cb(cb) {
+  cbp->header.set(FUNCTION_READ, timeout);
   SWC_LOG_OUT(LOG_DEBUG, 
     SWC_LOG_PRINTF("read len=%lu timeout=%d ", len, timeout);
     smartfd->print(SWC_LOG_OSTREAM);
   );
-
-  cbp = Buffers::make(Params::ReadReq(smartfd->fd(), len));
-  cbp->header.set(FUNCTION_READ, timeout);
 }
 
-std::promise<void> Read::promise() {
-  std::promise<void>  r_promise;
-  cb = [await=&r_promise]
-       (int, const FS::SmartFd::Ptr&, const StaticBuffer::Ptr&) {
-         await->set_value();
-        };
-  return r_promise;
-}
 
 void Read::handle(ConnHandlerPtr, const Event::Ptr& ev) {
 
@@ -42,6 +32,7 @@ void Read::handle(ConnHandlerPtr, const Event::Ptr& ev) {
     return;
 
   StaticBuffer::Ptr buf = nullptr;
+  size_t amount = 0;
   switch(error) {
     case Error::OK:
     case Error::FS_EOF: {
@@ -55,16 +46,7 @@ void Read::handle(ConnHandlerPtr, const Event::Ptr& ev) {
       }
       amount = ev->data_ext.size;
       smartfd->pos(params.offset + amount);
-      if(amount) {
-        if(buffer == nullptr) {
-          buf = std::make_shared<StaticBuffer>(ev->data_ext);
-        } else {
-          if(allocated)
-            memcpy(buffer, ev->data_ext.base, amount);
-          else
-            ((StaticBuffer*)buffer)->set(ev->data_ext);
-        }
-      }
+      buf.reset(new StaticBuffer(ev->data_ext));
       break;
     }
     case EBADR:

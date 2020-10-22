@@ -11,23 +11,17 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Req {
 
 
-Open::Open(FS::FileSystem::Ptr fs, uint32_t timeout, FS::SmartFd::Ptr& smartfd, 
+Open::Open(FS::FileSystem::Ptr fs,
+           uint32_t timeout, FS::SmartFd::Ptr& smartfd,
            int32_t bufsz, const FS::Callback::OpenCb_t& cb) 
-          : fs(fs), smartfd(smartfd), cb(cb) {
+          : Base(Buffers::make(Params::OpenReq(
+              smartfd->filepath(), smartfd->flags(), bufsz))),
+            fs(fs), smartfd(smartfd), cb(cb) {
+  cbp->header.set(FUNCTION_OPEN, timeout);
   SWC_LOG_OUT(LOG_DEBUG,
     SWC_LOG_PRINTF("open timeout=%d ", timeout);
     smartfd->print(SWC_LOG_OSTREAM); 
   );
-
-  cbp = Buffers::make(
-    Params::OpenReq(smartfd->filepath(), smartfd->flags(), bufsz));
-  cbp->header.set(FUNCTION_OPEN, timeout);
-}
-
-std::promise<void> Open::promise() {
-  std::promise<void>  r_promise;
-  cb = [await=&r_promise](int, const FS::SmartFd::Ptr&){ await->set_value(); };
-  return r_promise;
 }
 
 void Open::handle(ConnHandlerPtr, const Event::Ptr& ev) { 

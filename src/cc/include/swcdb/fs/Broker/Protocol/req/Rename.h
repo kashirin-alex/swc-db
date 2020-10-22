@@ -9,24 +9,23 @@
 #include "swcdb/fs/Broker/Protocol/req/Base.h"
 #include "swcdb/fs/Broker/Protocol/params/Rename.h"
 
+
 namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Req {
 
-class Rename : public Base {
 
+class Rename : public Base {
   public:
 
   Rename(uint32_t timeout, const std::string& from, const std::string& to,
-        const FS::Callback::RenameCb_t& cb=0);
-
-  std::promise<void> promise();
+        const FS::Callback::RenameCb_t& cb);
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override;
 
   private:
-  const std::string         from;
-  const std::string         to;
-  FS::Callback::RenameCb_t  cb;
+  const std::string               from;
+  const std::string               to;
+  const FS::Callback::RenameCb_t  cb;
 
 };
 

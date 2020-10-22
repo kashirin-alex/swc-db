@@ -12,22 +12,16 @@ namespace FsBroker {  namespace Req {
 
 
 Seek::Seek(uint32_t timeout, FS::SmartFd::Ptr& smartfd, size_t offset,
-           const FS::Callback::SeekCb_t& cb) 
-          : smartfd(smartfd), cb(cb) {
+           const FS::Callback::SeekCb_t& cb)
+          : Base(Buffers::make(Params::SeekReq(smartfd->fd(), offset))),
+            smartfd(smartfd), cb(cb) {
+  cbp->header.set(FUNCTION_SEEK, timeout);
   SWC_LOG_OUT(LOG_DEBUG, 
     SWC_LOG_PRINTF("seek offset=%lu timeout=%d ", offset, timeout);
     smartfd->print(SWC_LOG_OSTREAM);
   );
-
-  cbp = Buffers::make(Params::SeekReq(smartfd->fd(), offset));
-  cbp->header.set(FUNCTION_SEEK, timeout);
 }
 
-std::promise<void> Seek::promise() {
-  std::promise<void>  r_promise;
-  cb = [await=&r_promise] (int, const FS::SmartFd::Ptr&){ await->set_value(); };
-  return r_promise;
-}
 
 void Seek::handle(ConnHandlerPtr, const Event::Ptr& ev) { 
 
@@ -39,15 +33,14 @@ void Seek::handle(ConnHandlerPtr, const Event::Ptr& ev) {
 
   switch(error) {
     case Error::OK: {
-      Params::SeekRsp params;
       try {
+        Params::SeekRsp params;
         params.decode(&ptr, &remain);
+        smartfd->pos(params.offset);
       } catch(...) {
         const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
         error = e.code();
-        break;
       }
-      smartfd->pos(params.offset);
       break;
     }
     case EBADR:

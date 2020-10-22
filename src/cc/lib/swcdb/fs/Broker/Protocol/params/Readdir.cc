@@ -29,34 +29,26 @@ void ReaddirReq::internal_decode(const uint8_t** bufp, size_t* remainp) {
 }
 
 
-ReaddirRsp::ReaddirRsp() {}
-
-ReaddirRsp::ReaddirRsp(FS::DirentList& listing) : m_listing(listing) {}
-
-void ReaddirRsp::get_listing(FS::DirentList& listing) {
-  listing.clear();
-  listing.assign(m_listing.begin(), m_listing.end());
-}
 
 size_t ReaddirRsp::internal_encoded_length() const {
-  size_t length = Serialization::encoded_length_vi64(m_listing.size());
-  for (const FS::Dirent& entry : m_listing)
+  size_t length = Serialization::encoded_length_vi64(listing.size());
+  for (const FS::Dirent& entry : listing)
     length += entry.encoded_length();
   return length;
 }
 
 void ReaddirRsp::internal_encode(uint8_t** bufp) const {
-  Serialization::encode_vi64(bufp, m_listing.size());
-  for (const FS::Dirent& entry : m_listing)
+  Serialization::encode_vi64(bufp, listing.size());
+  for (const FS::Dirent& entry : listing)
     entry.encode(bufp);
 }
 
 void ReaddirRsp::internal_decode(const uint8_t** bufp, size_t* remainp) {
   size_t count = Serialization::decode_vi64(bufp, remainp);
-  m_listing.clear();
-  m_listing.resize(count);
+  listing.clear();
+  listing.resize(count);
   for (size_t i=0; i<count; ++i)
-    m_listing[i].decode(bufp, remainp);
+    listing[i].decode(bufp, remainp);
 }
 
 

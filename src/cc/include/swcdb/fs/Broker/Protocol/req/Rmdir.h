@@ -9,23 +9,22 @@
 #include "swcdb/fs/Broker/Protocol/req/Base.h"
 #include "swcdb/fs/Broker/Protocol/params/Rmdir.h"
 
+
 namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Req {
 
-class Rmdir : public Base {
 
+class Rmdir : public Base {
   public:
 
   Rmdir(uint32_t timeout, const std::string& name, 
-        const FS::Callback::RmdirCb_t& cb=0);
-
-  std::promise<void> promise();
+        const FS::Callback::RmdirCb_t& cb);
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override;
 
   private:
-  const std::string        name;
-  FS::Callback::RmdirCb_t  cb;
+  const std::string               name;
+  const FS::Callback::RmdirCb_t   cb;
 
 };
 

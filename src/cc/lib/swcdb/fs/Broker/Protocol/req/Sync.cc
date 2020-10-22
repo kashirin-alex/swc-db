@@ -11,22 +11,15 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Req {
 
 
-Sync::Sync(uint32_t timeout, FS::SmartFd::Ptr& smartfd, 
-           const FS::Callback::SyncCb_t& cb) 
-          : smartfd(smartfd), cb(cb) {
+Sync::Sync(uint32_t timeout, FS::SmartFd::Ptr& smartfd,
+           const FS::Callback::SyncCb_t& cb)
+          : Base(Buffers::make(Params::SyncReq(smartfd->fd()))),
+            smartfd(smartfd), cb(cb) {
+  cbp->header.set(FUNCTION_SYNC, timeout);
   SWC_LOG_OUT(LOG_DEBUG,
     SWC_LOG_PRINTF("sync timeout=%d ", timeout);
     smartfd->print(SWC_LOG_OSTREAM);
   );
-
-  cbp = Buffers::make(Params::SyncReq(smartfd->fd()));
-  cbp->header.set(FUNCTION_SYNC, timeout);
-}
-
-std::promise<void> Sync::promise() {
-  std::promise<void>  r_promise;
-  cb = [await=&r_promise](int, const FS::SmartFd::Ptr&){ await->set_value(); };
-  return r_promise;
 }
 
 void Sync::handle(ConnHandlerPtr, const Event::Ptr& ev) { 
