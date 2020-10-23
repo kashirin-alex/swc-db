@@ -17,9 +17,21 @@ namespace FsBroker {  namespace Req {
 class SeekSync : public BaseSync, public Base {
   public:
   
-  SeekSync(uint32_t timeout, FS::SmartFd::Ptr& smartfd, size_t offset);
+  SeekSync(uint32_t timeout, FS::SmartFd::Ptr& smartfd, size_t offset)
+          : Base(
+              Buffers::make(
+                Params::SeekReq(smartfd->fd(), offset),
+                0,
+                FUNCTION_SEEK, timeout
+              )
+            ),
+            smartfd(smartfd) {
+  }
 
-  void handle(ConnHandlerPtr, const Event::Ptr& ev) override;
+  void handle(ConnHandlerPtr, const Event::Ptr& ev) override { 
+    Base::handle_seek(ev, smartfd);
+    BaseSync::acknowledge();
+  }
 
   private:
   FS::SmartFd::Ptr&   smartfd;
@@ -27,12 +39,7 @@ class SeekSync : public BaseSync, public Base {
 };
 
 
-
 }}}}}
 
-
-#ifdef SWC_IMPL_SOURCE
-#include "swcdb/fs/Broker/Protocol/req/SeekSync.cc"
-#endif 
 
 #endif // swcdb_fs_Broker_Protocol_req_SeekSync_h

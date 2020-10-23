@@ -17,11 +17,23 @@ namespace FsBroker {  namespace Req {
 class Open : public Base {
   public:
 
-  Open(FS::FileSystem::Ptr fs, 
+  Open(const FS::FileSystem::Ptr& fs, 
        uint32_t timeout, FS::SmartFd::Ptr& smartfd, int32_t bufsz,
-       const FS::Callback::OpenCb_t& cb);
+       const FS::Callback::OpenCb_t& cb)
+      : Base(
+          Buffers::make(
+            Params::OpenReq(smartfd->filepath(), smartfd->flags(), bufsz),
+            0,
+            FUNCTION_OPEN, timeout
+          )
+        ),
+        fs(fs), smartfd(smartfd), cb(cb) {
+  }
 
-  void handle(ConnHandlerPtr, const Event::Ptr& ev) override;
+  void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
+    Base::handle_open(fs, ev, smartfd);
+    cb(error, smartfd);
+  }
 
   private:
   FS::FileSystem::Ptr           fs;
@@ -31,12 +43,7 @@ class Open : public Base {
 };
 
 
-
 }}}}}
 
-
-#ifdef SWC_IMPL_SOURCE
-#include "swcdb/fs/Broker/Protocol/req/Open.cc"
-#endif 
 
 #endif // swcdb_fs_Broker_Protocol_req_Open_h

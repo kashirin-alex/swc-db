@@ -17,11 +17,23 @@ namespace FsBroker {  namespace Req {
 class OpenSync : public BaseSync, public Base {
   public:
 
-  OpenSync(FS::FileSystem::Ptr fs,
+  OpenSync(const FS::FileSystem::Ptr& fs,
            uint32_t timeout, FS::SmartFd::Ptr& smartfd,
-           int32_t bufsz);
+           int32_t bufsz)
+          : Base(
+              Buffers::make(
+                Params::OpenReq(smartfd->filepath(), smartfd->flags(), bufsz),
+                0,
+                FUNCTION_OPEN, timeout
+              )
+            ),
+            fs(fs), smartfd(smartfd) {
+  }
 
-  void handle(ConnHandlerPtr, const Event::Ptr& ev) override;
+  void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
+    Base::handle_open(fs, ev, smartfd);
+    BaseSync::acknowledge();
+  }
 
   private:
   FS::FileSystem::Ptr     fs;
@@ -30,12 +42,7 @@ class OpenSync : public BaseSync, public Base {
 };
 
 
-
 }}}}}
 
-
-#ifdef SWC_IMPL_SOURCE
-#include "swcdb/fs/Broker/Protocol/req/OpenSync.cc"
-#endif 
 
 #endif // swcdb_fs_Broker_Protocol_req_OpenSync_h

@@ -18,9 +18,21 @@ class Rename : public Base {
   public:
 
   Rename(uint32_t timeout, const std::string& from, const std::string& to,
-        const FS::Callback::RenameCb_t& cb);
+         const FS::Callback::RenameCb_t& cb)
+        : Base(
+            Buffers::make(
+              Params::RenameReq(from, to),
+              0,
+              FUNCTION_RENAME, timeout
+            )
+          ),
+          from(from), to(to), cb(cb) {
+  }
 
-  void handle(ConnHandlerPtr, const Event::Ptr& ev) override;
+  void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
+    Base::handle_rename(ev, from, to);
+    cb(error);
+  }
 
   private:
   const std::string               from;
@@ -30,12 +42,7 @@ class Rename : public Base {
 };
 
 
-
 }}}}}
 
-
-#ifdef SWC_IMPL_SOURCE
-#include "swcdb/fs/Broker/Protocol/req/Rename.cc"
-#endif 
 
 #endif // swcdb_fs_Broker_Protocol_req_Rename_h

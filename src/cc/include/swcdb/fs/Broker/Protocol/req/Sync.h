@@ -18,9 +18,21 @@ class Sync : public Base {
   public:
   
   Sync(uint32_t timeout, FS::SmartFd::Ptr& smartfd,
-       const FS::Callback::SyncCb_t& cb);
+       const FS::Callback::SyncCb_t& cb)
+       : Base(
+          Buffers::make(
+            Params::SyncReq(smartfd->fd()),
+            0,
+            FUNCTION_SYNC, timeout
+          )
+        ),
+        smartfd(smartfd), cb(cb) {
+  }
 
-  void handle(ConnHandlerPtr, const Event::Ptr& ev) override;
+  void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
+    Base::handle_sync(ev, smartfd);
+    cb(error, smartfd);
+  }
 
   private:
   FS::SmartFd::Ptr              smartfd;
@@ -29,12 +41,7 @@ class Sync : public Base {
 };
 
 
-
 }}}}}
 
-
-#ifdef SWC_IMPL_SOURCE
-#include "swcdb/fs/Broker/Protocol/req/Sync.cc"
-#endif 
 
 #endif // swcdb_fs_Broker_Protocol_req_Sync_h

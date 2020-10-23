@@ -17,9 +17,21 @@ namespace FsBroker {  namespace Req {
 class SyncSync : public BaseSync, public Base {
   public:
   
-  SyncSync(uint32_t timeout, FS::SmartFd::Ptr& smartfd);
+  SyncSync(uint32_t timeout, FS::SmartFd::Ptr& smartfd)
+          : Base(
+              Buffers::make(
+                Params::SyncReq(smartfd->fd()),
+                0,
+                FUNCTION_SYNC, timeout
+              )
+            ),
+            smartfd(smartfd) {
+  }
 
-  void handle(ConnHandlerPtr, const Event::Ptr& ev) override;
+  void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
+    Base::handle_sync(ev, smartfd);
+    BaseSync::acknowledge();
+  }
 
   private:
   FS::SmartFd::Ptr& smartfd;
@@ -27,12 +39,7 @@ class SyncSync : public BaseSync, public Base {
 };
 
 
-
 }}}}}
 
-
-#ifdef SWC_IMPL_SOURCE
-#include "swcdb/fs/Broker/Protocol/req/SyncSync.cc"
-#endif 
 
 #endif // swcdb_fs_Broker_Protocol_req_SyncSync_h

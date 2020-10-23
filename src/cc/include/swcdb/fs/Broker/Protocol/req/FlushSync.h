@@ -17,9 +17,21 @@ namespace FsBroker {  namespace Req {
 class FlushSync : public BaseSync, public Base {
   public:
 
-  FlushSync(uint32_t timeout, FS::SmartFd::Ptr& smartfd);
+  FlushSync(uint32_t timeout, FS::SmartFd::Ptr& smartfd)
+            : Base(
+                Buffers::make(
+                  Params::FlushReq(smartfd->fd()),
+                  0,
+                  FUNCTION_FLUSH, timeout
+                )
+              ),
+              smartfd(smartfd) {
+  }
 
-  void handle(ConnHandlerPtr, const Event::Ptr& ev) override;
+  void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
+    Base::handle_flush(ev, smartfd);
+    BaseSync::acknowledge();
+  }
 
   private:
   FS::SmartFd::Ptr&  smartfd;
@@ -27,12 +39,7 @@ class FlushSync : public BaseSync, public Base {
 };
 
 
-
 }}}}}
 
-
-#ifdef SWC_IMPL_SOURCE
-#include "swcdb/fs/Broker/Protocol/req/FlushSync.cc"
-#endif 
 
 #endif // swcdb_fs_Broker_Protocol_req_FlushSync_h

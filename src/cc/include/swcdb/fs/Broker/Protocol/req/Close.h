@@ -17,11 +17,23 @@ namespace FsBroker {  namespace Req {
 class Close : public Base {
   public:
 
-  Close(FS::FileSystem::Ptr fs, uint32_t timeout, 
+  Close(const FS::FileSystem::Ptr& fs, uint32_t timeout, 
         FS::SmartFd::Ptr& smartfd,
-        const FS::Callback::CloseCb_t& cb);
+        const FS::Callback::CloseCb_t& cb)
+        : Base(
+            Buffers::make(
+              Params::CloseReq(smartfd->fd()),
+              0,
+              FUNCTION_CLOSE, timeout
+            )
+          ),
+          fs(fs), smartfd(smartfd), cb(cb) {
+  }
 
-  void handle(ConnHandlerPtr, const Event::Ptr& ev) override;
+  void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
+    Base::handle_close(fs, ev, smartfd);
+    cb(error, smartfd);
+  }
 
   private:
   FS::FileSystem::Ptr             fs;
@@ -31,12 +43,7 @@ class Close : public Base {
 };
 
 
-
 }}}}}
 
-
-#ifdef SWC_IMPL_SOURCE
-#include "swcdb/fs/Broker/Protocol/req/Close.cc"
-#endif 
 
 #endif // swcdb_fs_Broker_Protocol_req_Close_h

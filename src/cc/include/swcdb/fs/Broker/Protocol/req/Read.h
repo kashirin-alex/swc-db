@@ -18,9 +18,23 @@ class Read : public Base {
   public:
   
   Read(uint32_t timeout, FS::SmartFd::Ptr& smartfd, size_t len,
-       const FS::Callback::ReadCb_t& cb);
+       const FS::Callback::ReadCb_t& cb)
+      : Base(
+          Buffers::make(
+            Params::ReadReq(smartfd->fd(), len),
+            0,
+            FUNCTION_READ, timeout
+          )
+        ), 
+        smartfd(smartfd), cb(cb) {
+  }
 
-  void handle(ConnHandlerPtr, const Event::Ptr& ev) override;
+  void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
+    size_t amount = 0;
+    Base::handle_read(ev, smartfd, amount);
+    StaticBuffer::Ptr buf(amount ? new StaticBuffer(ev->data_ext) : nullptr);
+    cb(error, smartfd, buf);
+  }
 
   private:
   FS::SmartFd::Ptr              smartfd;
@@ -29,12 +43,7 @@ class Read : public Base {
 };
 
 
-
 }}}}}
 
-
-#ifdef SWC_IMPL_SOURCE
-#include "swcdb/fs/Broker/Protocol/req/Read.cc"
-#endif 
 
 #endif // swcdb_fs_Broker_Protocol_req_Read_h

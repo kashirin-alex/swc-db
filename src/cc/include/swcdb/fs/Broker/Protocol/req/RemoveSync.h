@@ -17,9 +17,21 @@ namespace FsBroker {  namespace Req {
 class RemoveSync : public BaseSync, public Base {
   public:
 
-  RemoveSync(uint32_t timeout, const std::string& name);
+  RemoveSync(uint32_t timeout, const std::string& name)
+            : Base(
+                Buffers::make(
+                  Params::RemoveReq(name),
+                  0,
+                  FUNCTION_REMOVE, timeout
+                )
+              ),
+              name(name) {
+  }
 
-  void handle(ConnHandlerPtr, const Event::Ptr& ev) override;
+  void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
+    Base::handle_remove(ev, name);
+    BaseSync::acknowledge();
+  }
 
   private:
   const std::string name;
@@ -27,12 +39,7 @@ class RemoveSync : public BaseSync, public Base {
 };
 
 
-
 }}}}}
 
-
-#ifdef SWC_IMPL_SOURCE
-#include "swcdb/fs/Broker/Protocol/req/RemoveSync.cc"
-#endif 
 
 #endif // swcdb_fs_Broker_Protocol_req_RemoveSync_h

@@ -19,9 +19,21 @@ class ExistsSync : public BaseSync, public Base {
 
   bool state;
 
-  ExistsSync(uint32_t timeout, const std::string& name);
+  ExistsSync(uint32_t timeout, const std::string& name)
+            : Base(
+                Buffers::make(
+                  Params::ExistsReq(name),
+                  0,
+                  FUNCTION_EXISTS, timeout
+                )
+              ),
+              state(false), name(name) {
+  }
 
-  void handle(ConnHandlerPtr, const Event::Ptr& ev) override;
+  void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
+    Base::handle_exists(ev, name, state);
+    BaseSync::acknowledge();
+  }
 
   private:
   const std::string  name;
@@ -29,12 +41,7 @@ class ExistsSync : public BaseSync, public Base {
 };
 
 
-
 }}}}}
 
-
-#ifdef SWC_IMPL_SOURCE
-#include "swcdb/fs/Broker/Protocol/req/ExistsSync.cc"
-#endif 
 
 #endif // swcdb_fs_Broker_Protocol_req_ExistsSync_h

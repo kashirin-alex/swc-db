@@ -18,9 +18,22 @@ class Length : public Base {
   public:
 
   Length(uint32_t timeout, const std::string& name, 
-         const FS::Callback::LengthCb_t& cb);
+         const FS::Callback::LengthCb_t& cb)
+        : Base(
+            Buffers::make(
+              Params::LengthReq(name),
+              0,
+              FUNCTION_LENGTH, timeout
+            )
+          ),
+          name(name), cb(cb) {
+  }
 
-  void handle(ConnHandlerPtr, const Event::Ptr& ev) override;
+  void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
+    size_t length = 0;
+    Base::handle_length(ev, name, length);
+    cb(error, length);
+  }
 
   private:
   const std::string               name;
@@ -29,12 +42,7 @@ class Length : public Base {
 };
 
 
-
 }}}}}
 
-
-#ifdef SWC_IMPL_SOURCE
-#include "swcdb/fs/Broker/Protocol/req/Length.cc"
-#endif 
 
 #endif // swcdb_fs_Broker_Protocol_req_Length_h

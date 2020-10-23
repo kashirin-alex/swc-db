@@ -20,9 +20,22 @@ class AppendSync :  public BaseSync, public Base {
   size_t amount;
   
   AppendSync(uint32_t timeout, FS::SmartFd::Ptr& smartfd, 
-             StaticBuffer& buffer, FS::Flags flags);
+          StaticBuffer& buffer, FS::Flags flags)
+        : Base(
+            Buffers::make(
+              Params::AppendReq(smartfd->fd(), (uint8_t)flags),
+              buffer,
+              0, 
+              FUNCTION_APPEND, timeout
+            )
+          ), 
+          amount(0), smartfd(smartfd) {
+  }
 
-  void handle(ConnHandlerPtr, const Event::Ptr& ev) override;
+  void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
+    Base::handle_append(ev, smartfd, amount);
+    BaseSync::acknowledge();
+  }
 
   private:
   FS::SmartFd::Ptr& smartfd;
@@ -32,9 +45,5 @@ class AppendSync :  public BaseSync, public Base {
 
 }}}}}
 
-
-#ifdef SWC_IMPL_SOURCE
-#include "swcdb/fs/Broker/Protocol/req/AppendSync.cc"
-#endif 
 
 #endif // swcdb_fs_Broker_Protocol_req_AppendSync_h

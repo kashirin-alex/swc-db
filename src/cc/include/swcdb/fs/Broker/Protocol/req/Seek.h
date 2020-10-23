@@ -18,9 +18,21 @@ class Seek : public Base {
   public:
   
   Seek(uint32_t timeout, FS::SmartFd::Ptr& smartfd, size_t offset,
-       const FS::Callback::SeekCb_t& cb);
+       const FS::Callback::SeekCb_t& cb)
+      : Base(
+          Buffers::make(
+            Params::SeekReq(smartfd->fd(), offset),
+            0,
+            FUNCTION_SEEK, timeout
+          )
+        ),
+        smartfd(smartfd), cb(cb) {
+  }
 
-  void handle(ConnHandlerPtr, const Event::Ptr& ev) override;
+  void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
+    Base::handle_seek(ev, smartfd);
+    cb(error, smartfd);
+  }
 
   private:
   FS::SmartFd::Ptr              smartfd;
@@ -29,12 +41,7 @@ class Seek : public Base {
 };
 
 
-
 }}}}}
 
-
-#ifdef SWC_IMPL_SOURCE
-#include "swcdb/fs/Broker/Protocol/req/Seek.cc"
-#endif 
 
 #endif // swcdb_fs_Broker_Protocol_req_Seek_h

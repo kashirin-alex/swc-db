@@ -18,12 +18,27 @@ namespace FsBroker {  namespace Req {
 class Create : public Base {
   public:
   
-  Create(FS::FileSystem::Ptr fs, 
+  Create(const FS::FileSystem::Ptr& fs, 
          uint32_t timeout, FS::SmartFd::Ptr& smartfd, 
          int32_t bufsz, uint8_t replication, int64_t blksz,
-         const FS::Callback::CreateCb_t& cb);
+         const FS::Callback::CreateCb_t& cb)
+         : Base(
+            Buffers::make(
+              Params::CreateReq(
+                smartfd->filepath(), smartfd->flags(),
+                bufsz, replication, blksz
+              ),
+              0,
+              FUNCTION_CREATE, timeout
+            )
+          ),
+          fs(fs), smartfd(smartfd), cb(cb) {
+  }
 
-  void handle(ConnHandlerPtr, const Event::Ptr& ev) override;
+  void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
+    Base::handle_create(fs, ev, smartfd);
+    cb(error, smartfd);
+  }
 
   private:
   FS::FileSystem::Ptr             fs;
@@ -33,12 +48,7 @@ class Create : public Base {
 };
 
 
-
 }}}}}
 
-
-#ifdef SWC_IMPL_SOURCE
-#include "swcdb/fs/Broker/Protocol/req/Create.cc"
-#endif 
 
 #endif // swcdb_fs_Broker_Protocol_req_Create_h

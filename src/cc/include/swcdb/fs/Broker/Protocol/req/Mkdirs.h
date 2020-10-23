@@ -15,13 +15,24 @@ namespace FsBroker {  namespace Req {
 
 
 class Mkdirs : public Base {
-
   public:
 
   Mkdirs(uint32_t timeout, const std::string& name, 
-         const FS::Callback::MkdirsCb_t& cb);
+         const FS::Callback::MkdirsCb_t& cb)
+        : Base(
+            Buffers::make(
+              Params::MkdirsReq(name),
+              0,
+              FUNCTION_MKDIRS, timeout
+            )
+          ),
+          name(name), cb(cb) {
+  }
 
-  void handle(ConnHandlerPtr, const Event::Ptr& ev) override;
+  void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
+    Base::handle_mkdirs(ev, name);
+    cb(error);
+  }
 
   private:
   const std::string               name;
@@ -30,12 +41,7 @@ class Mkdirs : public Base {
 };
 
 
-
 }}}}}
 
-
-#ifdef SWC_IMPL_SOURCE
-#include "swcdb/fs/Broker/Protocol/req/Mkdirs.cc"
-#endif 
 
 #endif // swcdb_fs_Broker_Protocol_req_Mkdirs_h

@@ -17,9 +17,21 @@ namespace FsBroker {  namespace Req {
 class RmdirSync : public BaseSync, public Base {
   public:
 
-  RmdirSync(uint32_t timeout, const std::string& name);
+  RmdirSync(uint32_t timeout, const std::string& name)
+            : Base(
+                Buffers::make(
+                  Params::RmdirReq(name),
+                  0,
+                  FUNCTION_RMDIR, timeout
+                )
+              ),
+              name(name) {
+  }
 
-  void handle(ConnHandlerPtr, const Event::Ptr& ev) override;
+  void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
+    Base::handle_rmdir(ev, name);
+    BaseSync::acknowledge();
+  }
 
   private:
   const std::string name;
@@ -27,12 +39,7 @@ class RmdirSync : public BaseSync, public Base {
 };
 
 
-
 }}}}}
 
-
-#ifdef SWC_IMPL_SOURCE
-#include "swcdb/fs/Broker/Protocol/req/RmdirSync.cc"
-#endif 
 
 #endif // swcdb_fs_Broker_Protocol_req_RmdirSync_h

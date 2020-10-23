@@ -18,9 +18,21 @@ class Remove : public Base {
   public:
 
   Remove(uint32_t timeout, const std::string& name, 
-         const FS::Callback::RemoveCb_t& cb);
+         const FS::Callback::RemoveCb_t& cb)
+        : Base(
+            Buffers::make(
+              Params::RemoveReq(name),
+              0,
+              FUNCTION_REMOVE, timeout
+            )
+          ),
+          name(name), cb(cb) {
+  }
 
-  void handle(ConnHandlerPtr, const Event::Ptr& ev) override;
+  void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
+    Base::handle_remove(ev, name);
+    cb(error);
+  }
 
   private:
   const std::string               name;
@@ -29,12 +41,7 @@ class Remove : public Base {
 };
 
 
-
 }}}}}
 
-
-#ifdef SWC_IMPL_SOURCE
-#include "swcdb/fs/Broker/Protocol/req/Remove.cc"
-#endif 
 
 #endif // swcdb_fs_Broker_Protocol_req_Remove_h

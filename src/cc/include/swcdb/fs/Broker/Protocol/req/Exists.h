@@ -18,9 +18,23 @@ class Exists : public Base {
   public:
 
   Exists(uint32_t timeout, const std::string& name, 
-         const FS::Callback::ExistsCb_t& cb);
+         const FS::Callback::ExistsCb_t& cb)
+        : Base(
+            Buffers::make(
+              Params::ExistsReq(name),
+              0, 
+              FUNCTION_EXISTS, timeout
+            )
+          ),
+          name(name), cb(cb) {
+  }
 
-  void handle(ConnHandlerPtr, const Event::Ptr& ev) override;
+  void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
+    bool state = false;
+    Base::handle_exists(ev, name, state);
+    cb(error, state);
+  }
+
 
   private:
   const std::string               name;
@@ -29,12 +43,7 @@ class Exists : public Base {
 };
 
 
-
 }}}}}
 
-
-#ifdef SWC_IMPL_SOURCE
-#include "swcdb/fs/Broker/Protocol/req/Exists.cc"
-#endif 
 
 #endif // swcdb_fs_Broker_Protocol_req_Exists_h

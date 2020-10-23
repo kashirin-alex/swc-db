@@ -19,9 +19,21 @@ class LengthSync : public BaseSync, public Base {
 
   size_t length;
 
-  LengthSync(uint32_t timeout, const std::string& name);
+  LengthSync(uint32_t timeout, const std::string& name)
+            : Base(
+                Buffers::make(
+                  Params::LengthReq(name),
+                  0,
+                  FUNCTION_LENGTH, timeout
+                )
+              ),
+              length(0), name(name) {
+  }
 
-  void handle(ConnHandlerPtr, const Event::Ptr& ev) override;
+  void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
+    Base::handle_length(ev, name, length);
+    BaseSync::acknowledge();
+  }
 
   private:
   const std::string name;
@@ -29,12 +41,7 @@ class LengthSync : public BaseSync, public Base {
 };
 
 
-
 }}}}}
 
-
-#ifdef SWC_IMPL_SOURCE
-#include "swcdb/fs/Broker/Protocol/req/LengthSync.cc"
-#endif 
 
 #endif // swcdb_fs_Broker_Protocol_req_LengthSync_h

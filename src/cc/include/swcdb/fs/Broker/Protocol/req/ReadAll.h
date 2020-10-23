@@ -18,9 +18,22 @@ class ReadAll : public Base {
   public:
 
   ReadAll(uint32_t timeout, const std::string& name,
-          const FS::Callback::ReadAllCb_t& cb);
+          const FS::Callback::ReadAllCb_t& cb)
+          : Base(
+              Buffers::make(
+                Params::ReadAllReq(name),
+                0,
+                FUNCTION_READ_ALL, timeout
+              )
+            ),
+            name(name), cb(cb) {
+  }
 
-  void handle(ConnHandlerPtr, const Event::Ptr& ev);
+  void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
+    Base::handle_read_all(ev, name);
+    StaticBuffer::Ptr buf(error ? nullptr : new StaticBuffer(ev->data_ext));
+    cb(error, name, buf);
+  }
 
   private:
   const std::string                 name;
@@ -29,12 +42,7 @@ class ReadAll : public Base {
 };
 
 
-
 }}}}}
 
-
-#ifdef SWC_IMPL_SOURCE
-#include "swcdb/fs/Broker/Protocol/req/ReadAll.cc"
-#endif 
 
 #endif // swcdb_fs_Broker_Protocol_req_ReadAll_h

@@ -18,11 +18,27 @@ namespace FsBroker {  namespace Req {
 class CreateSync : public BaseSync, public Base {
   public:
   
-  CreateSync(FS::FileSystem::Ptr fs, 
+  CreateSync(const FS::FileSystem::Ptr& fs, 
              uint32_t timeout, FS::SmartFd::Ptr& smartfd, 
-             int32_t bufsz, uint8_t replication, int64_t blksz);
+             int32_t bufsz, uint8_t replication, int64_t blksz)
+            : Base(
+                Buffers::make(
+                  Params::CreateReq(
+                    smartfd->filepath(), smartfd->flags(),
+                    bufsz, replication, blksz
+                  ),
+                  0,
+                  FUNCTION_CREATE, timeout
+                )
+              ),
+              fs(fs), smartfd(smartfd) {
+}
 
-  void handle(ConnHandlerPtr, const Event::Ptr& ev) override;
+
+  void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
+    Base::handle_create(fs, ev, smartfd);
+    BaseSync::acknowledge();
+  }
 
   private:
   FS::FileSystem::Ptr  fs;
@@ -31,12 +47,7 @@ class CreateSync : public BaseSync, public Base {
 };
 
 
-
 }}}}}
 
-
-#ifdef SWC_IMPL_SOURCE
-#include "swcdb/fs/Broker/Protocol/req/CreateSync.cc"
-#endif 
 
 #endif // swcdb_fs_Broker_Protocol_req_CreateSync_h

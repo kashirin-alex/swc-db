@@ -22,9 +22,28 @@ class ReadSync : public BaseSync, public Base {
   size_t  amount;
 
   ReadSync(uint32_t timeout, FS::SmartFd::Ptr& smartfd, 
-           void* dst, size_t len, bool allocated);
+           void* dst, size_t len, bool allocated)
+          : Base(
+              Buffers::make(
+                Params::ReadReq(smartfd->fd(), len),
+                0,
+                FUNCTION_READ, timeout
+              )
+            ),
+            buffer(dst), allocated(allocated), amount(0), smartfd(smartfd) {
+  }
 
-  void handle(ConnHandlerPtr, const Event::Ptr& ev) override;
+  void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
+    Base::handle_read(ev, smartfd, amount);
+    if(amount) {
+      if(allocated) {
+          memcpy(buffer, ev->data_ext.base, amount);
+      } else {
+        ((StaticBuffer*)buffer)->set(ev->data_ext);
+      }
+    }
+    BaseSync::acknowledge();
+  }
 
   private:
   FS::SmartFd::Ptr& smartfd;
@@ -32,12 +51,7 @@ class ReadSync : public BaseSync, public Base {
 };
 
 
-
 }}}}}
 
-
-#ifdef SWC_IMPL_SOURCE
-#include "swcdb/fs/Broker/Protocol/req/ReadSync.cc"
-#endif 
 
 #endif // swcdb_fs_Broker_Protocol_req_ReadSync_h

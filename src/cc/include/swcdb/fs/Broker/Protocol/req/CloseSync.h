@@ -17,10 +17,22 @@ namespace FsBroker {  namespace Req {
 class CloseSync : public BaseSync, public Base {
   public:
 
-  CloseSync(FS::FileSystem::Ptr fs, uint32_t timeout, 
-            FS::SmartFd::Ptr& smartfd);
+  CloseSync(const FS::FileSystem::Ptr& fs, uint32_t timeout, 
+            FS::SmartFd::Ptr& smartfd)
+            : Base(
+                Buffers::make(
+                  Params::CloseReq(smartfd->fd()),
+                  0, 
+                  FUNCTION_CLOSE, timeout
+                )
+              ), 
+              fs(fs), smartfd(smartfd) {
+}
 
-  void handle(ConnHandlerPtr, const Event::Ptr& ev) override;
+  void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
+    Base::handle_close(fs, ev, smartfd);
+    BaseSync::acknowledge();
+  }
 
   private:
   FS::FileSystem::Ptr    fs;
@@ -29,12 +41,7 @@ class CloseSync : public BaseSync, public Base {
 };
 
 
-
 }}}}}
 
-
-#ifdef SWC_IMPL_SOURCE
-#include "swcdb/fs/Broker/Protocol/req/CloseSync.cc"
-#endif 
 
 #endif // swcdb_fs_Broker_Protocol_req_CloseSync_h

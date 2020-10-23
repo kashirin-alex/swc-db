@@ -18,9 +18,23 @@ class ReadAllSync : public BaseSync, public Base {
 
   StaticBuffer* buffer;
   
-  ReadAllSync(uint32_t timeout, const std::string& name, StaticBuffer* dst);
+  ReadAllSync(uint32_t timeout, const std::string& name, StaticBuffer* dst)
+              : Base(
+                  Buffers::make(
+                    Params::ReadAllReq(name),
+                    0,
+                    FUNCTION_READ_ALL, timeout
+                  )
+                ),
+                buffer(dst), name(name) {
+  }
 
-  void handle(ConnHandlerPtr, const Event::Ptr& ev);
+  void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
+    Base::handle_read_all(ev, name);
+    if(!error)
+      buffer->set(ev->data_ext);
+    BaseSync::acknowledge();
+  }
 
   private:
   const std::string                 name;
@@ -28,12 +42,7 @@ class ReadAllSync : public BaseSync, public Base {
 };
 
 
-
 }}}}}
 
-
-#ifdef SWC_IMPL_SOURCE
-#include "swcdb/fs/Broker/Protocol/req/ReadAllSync.cc"
-#endif 
 
 #endif // swcdb_fs_Broker_Protocol_req_ReadAllSync_h

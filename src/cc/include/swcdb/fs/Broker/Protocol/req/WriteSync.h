@@ -19,9 +19,25 @@ class WriteSync : public BaseSync, public Base {
   public:
   
   WriteSync(uint32_t timeout, FS::SmartFd::Ptr& smartfd, 
-            uint8_t replication, int64_t blksz, StaticBuffer& buffer);
+            uint8_t replication, int64_t blksz, StaticBuffer& buffer)
+            : Base(
+                Buffers::make(
+                  Params::WriteReq(
+                    smartfd->filepath(), smartfd->flags(),
+                    replication, blksz
+                  ),
+                  buffer,
+                  0,
+                  FUNCTION_WRITE, timeout
+                )
+              ),
+              smartfd(smartfd) {
+  }
 
-  void handle(ConnHandlerPtr, const Event::Ptr& ev) override;
+  void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
+    Base::handle_write(ev, smartfd);
+    BaseSync::acknowledge();
+  }
 
   private:
   FS::SmartFd::Ptr& smartfd;
@@ -29,13 +45,7 @@ class WriteSync : public BaseSync, public Base {
 };
 
 
-
 }}}}}
-
-
-#ifdef SWC_IMPL_SOURCE
-#include "swcdb/fs/Broker/Protocol/req/WriteSync.cc"
-#endif 
 
 
 #endif // swcdb_fs_Broker_Protocol_req_WriteSync_h

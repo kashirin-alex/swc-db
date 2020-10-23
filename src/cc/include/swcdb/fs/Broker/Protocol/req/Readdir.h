@@ -18,9 +18,22 @@ class Readdir : public Base {
   public:
 
   Readdir(uint32_t timeout, const std::string& name, 
-          const FS::Callback::ReaddirCb_t& cb);
+          const FS::Callback::ReaddirCb_t& cb)
+          : Base(
+              Buffers::make(
+                Params::ReaddirReq(name),
+                0,
+                FUNCTION_READDIR, timeout
+              )
+            ),
+            name(name), cb(cb) {
+  }
 
-  void handle(ConnHandlerPtr, const Event::Ptr& ev) override;
+  void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
+    FS::DirentList listing;
+    Base::handle_readdir(ev, name, listing);
+    cb(error, listing);
+  }
 
   private:
   const std::string                 name;
@@ -29,12 +42,7 @@ class Readdir : public Base {
 };
 
 
-
 }}}}}
 
-
-#ifdef SWC_IMPL_SOURCE
-#include "swcdb/fs/Broker/Protocol/req/Readdir.cc"
-#endif 
 
 #endif // swcdb_fs_Broker_Protocol_req_Readdir_h

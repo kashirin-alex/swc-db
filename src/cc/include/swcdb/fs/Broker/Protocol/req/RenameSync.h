@@ -18,9 +18,21 @@ class RenameSync : public BaseSync, public Base {
   public:
 
   RenameSync(uint32_t timeout, 
-             const std::string& from, const std::string& to);
+             const std::string& from, const std::string& to)
+            : Base(
+                Buffers::make(
+                  Params::RenameReq(from, to),
+                  0,
+                  FUNCTION_RENAME, timeout
+                )
+              ),
+              from(from), to(to) {
+  }
 
-  void handle(ConnHandlerPtr, const Event::Ptr& ev) override;
+  void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
+    Base::handle_rename(ev, from, to);
+    BaseSync::acknowledge();
+  }
 
   private:
   const std::string from;
@@ -29,12 +41,7 @@ class RenameSync : public BaseSync, public Base {
 };
 
 
-
 }}}}}
 
-
-#ifdef SWC_IMPL_SOURCE
-#include "swcdb/fs/Broker/Protocol/req/RenameSync.cc"
-#endif 
 
 #endif // swcdb_fs_Broker_Protocol_req_RenameSync_h

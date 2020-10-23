@@ -18,9 +18,21 @@ class Rmdir : public Base {
   public:
 
   Rmdir(uint32_t timeout, const std::string& name, 
-        const FS::Callback::RmdirCb_t& cb);
+        const FS::Callback::RmdirCb_t& cb)
+        : Base(
+            Buffers::make(
+              Params::RmdirReq(name),
+              0,
+              FUNCTION_RMDIR, timeout
+            )
+          ),
+          name(name), cb(cb) {
+}
 
-  void handle(ConnHandlerPtr, const Event::Ptr& ev) override;
+  void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
+    Base::handle_rmdir(ev, name);
+    cb(error);
+  }
 
   private:
   const std::string               name;
@@ -29,12 +41,7 @@ class Rmdir : public Base {
 };
 
 
-
 }}}}}
 
-
-#ifdef SWC_IMPL_SOURCE
-#include "swcdb/fs/Broker/Protocol/req/Rmdir.cc"
-#endif 
 
 #endif // swcdb_fs_Broker_Protocol_req_Rmdir_h

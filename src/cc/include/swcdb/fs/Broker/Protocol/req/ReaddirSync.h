@@ -20,9 +20,22 @@ class ReaddirSync : public BaseSync, public Base {
   FS::DirentList& listing;
 
   ReaddirSync(uint32_t timeout, const std::string& name, 
-              FS::DirentList& listing);
+              FS::DirentList& listing)
+              : Base(
+                  Buffers::make(
+                    Params::ReaddirReq(name),
+                    0,
+                    FUNCTION_READDIR, timeout
+                  )
+                ),
+                listing(listing), name(name) {
+  }
 
-  void handle(ConnHandlerPtr, const Event::Ptr& ev) override;
+  void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
+    Base::handle_readdir(ev, name, listing);
+    BaseSync::acknowledge();
+  }
+
 
   private:
   const std::string name;
@@ -30,12 +43,7 @@ class ReaddirSync : public BaseSync, public Base {
 };
 
 
-
 }}}}}
 
-
-#ifdef SWC_IMPL_SOURCE
-#include "swcdb/fs/Broker/Protocol/req/ReaddirSync.cc"
-#endif 
 
 #endif // swcdb_fs_Broker_Protocol_req_ReaddirSync_h
