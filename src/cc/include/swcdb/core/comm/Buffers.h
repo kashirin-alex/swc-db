@@ -32,6 +32,13 @@ class Buffers final {
 
   static Ptr make(StaticBuffer& buffer, uint32_t reserve=0);
 
+  static Ptr make(const Serializable& params, uint32_t reserve, 
+                  uint64_t cmd, uint32_t timeout);
+
+  static Ptr make(const Serializable& params, StaticBuffer& buffer, 
+                  uint32_t reserve, 
+                  uint64_t cmd, uint32_t timeout);
+
   static Ptr create_error_message(int error, const char *msg, uint16_t len);
 
 
@@ -43,6 +50,13 @@ class Buffers final {
           uint32_t reserve=0);
 
   Buffers(StaticBuffer& buffer, uint32_t reserve=0);
+
+  Buffers(const Serializable& params, uint32_t reserve, 
+          uint64_t cmd, uint32_t timeout);
+  
+  Buffers(const Serializable& params, StaticBuffer& buffer, 
+          uint32_t reserve, 
+          uint64_t cmd, uint32_t timeout);
 
   ~Buffers();
 

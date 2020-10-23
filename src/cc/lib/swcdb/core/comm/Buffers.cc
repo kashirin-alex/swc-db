@@ -36,6 +36,20 @@ Buffers::Ptr Buffers::make(StaticBuffer& buffer, uint32_t reserve) {
 }
 
 SWC_SHOULD_INLINE
+Buffers::Ptr Buffers::make(const Serializable& params, uint32_t reserve,
+                           uint64_t cmd, uint32_t timeout) {
+  return std::make_shared<Buffers>(params, reserve, cmd, timeout);
+}
+
+SWC_SHOULD_INLINE
+Buffers::Ptr Buffers::make(const Serializable& params, StaticBuffer& buffer, 
+                           uint32_t reserve,
+                           uint64_t cmd, uint32_t timeout) {
+  return std::make_shared<Buffers>(params, buffer, reserve, cmd, timeout);
+}
+
+
+SWC_SHOULD_INLINE
 Buffers::Ptr 
 Buffers::create_error_message(int error, const char *msg, uint16_t len) {
   auto cbp = Buffers::make(4 + Serialization::encoded_length_bytes(len));
@@ -43,6 +57,7 @@ Buffers::create_error_message(int error, const char *msg, uint16_t len) {
   Serialization::encode_bytes(&cbp->data_ptr, msg, len);
   return cbp;
 }
+
 
 Buffers::Buffers(uint32_t reserve) {
   if(reserve)
@@ -58,11 +73,26 @@ Buffers::Buffers(const Serializable& params, StaticBuffer& buffer,
   set_data(params, reserve);
 }
 
-Buffers::Buffers(StaticBuffer& buffer, uint32_t reserve) 
+Buffers::Buffers(StaticBuffer& buffer, uint32_t reserve)
                 : buf_ext(buffer) {
   if(reserve)
     set_data(reserve);
 }
+
+
+Buffers::Buffers(const Serializable& params, uint32_t reserve,
+                 uint64_t cmd, uint32_t timeout)
+                : header(cmd, timeout) {
+  set_data(params, reserve);
+}
+
+Buffers::Buffers(const Serializable& params, StaticBuffer& buffer,
+                 uint32_t reserve,
+                 uint64_t cmd, uint32_t timeout)
+                : header(cmd, timeout), buf_ext(buffer) {
+  set_data(params, reserve);
+}
+
 
 Buffers::~Buffers() { }
 
