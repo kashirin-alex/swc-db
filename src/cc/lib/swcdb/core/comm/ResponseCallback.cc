@@ -13,17 +13,23 @@ namespace SWC { namespace Comm {
 void ResponseCallback::run() { }
 
 void ResponseCallback::response(int& err) {
-  m_conn->send_error(err , "", m_ev);
+  err ? send_error(err, "") : response_ok();
 }
 
 void ResponseCallback::response_ok()  {
-  //SWC_LOGF(LOG_DEBUG, "response_ok, %s", m_ev->to_str().c_str());
-   m_conn->response_ok(m_ev);
+  try {
+    m_conn->response_ok(m_ev);
+  } catch(...) {
+    SWC_LOG_CURRENT_EXCEPTION("");
+  }
 }
 
-void ResponseCallback::send_error(int code, std::string msg) {
-  //SWC_LOGF(LOG_DEBUG, "send_error, %s", m_ev->to_str().c_str());
-  m_conn->send_error(code , msg, m_ev);
+void ResponseCallback::send_error(int err, const std::string& msg) {
+  try {
+    m_conn->send_error(err , msg, m_ev);
+  } catch(...) {
+    SWC_LOG_CURRENT_EXCEPTION("");
+  }
 }
 
 

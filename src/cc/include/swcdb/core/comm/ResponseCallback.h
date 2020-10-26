@@ -29,7 +29,7 @@ class ResponseCallback: public std::enable_shared_from_this<ResponseCallback> {
 
   virtual void response_ok();
 
-  virtual void send_error(int code, std::string msg);
+  virtual void send_error(int err, const std::string &msg);
   
   protected:
   ConnHandlerPtr m_conn;
