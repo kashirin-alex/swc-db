@@ -7,13 +7,16 @@
 #ifndef swcdb_manager_db_ColumnCfg_h
 #define swcdb_manager_db_ColumnCfg_h
 
+#include "swcdb/core/NotMovableSharedPtr.h"
 #include "swcdb/db/Cells/KeyComparator.h"
 
 namespace SWC { namespace Manager { 
 
-class ColumnCfg final {
-  
+class ColumnCfg final : public Core::NotMovableSharedPtr<ColumnCfg> {
   public:
+
+  typedef Core::NotMovableSharedPtr<ColumnCfg>    Ptr;
+
   const cid_t             cid;
   const DB::Types::KeySeq key_seq;
 

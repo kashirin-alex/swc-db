@@ -52,11 +52,11 @@ class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
     Column::Ptr col = nullptr;
     {
       Core::MutexSptd::scope lock(m_mutex);
-      auto it = find(schema->cid);
-      if (it != end())
+      auto res = emplace(schema->cid, nullptr);
+      if(!res.second)
         return false;
-
-      emplace(schema->cid, col = std::make_shared<Column>(schema));
+      res.first->second.reset(new Column(schema));
+      col = res.first->second;
     }
     col->init(err);
     return true;

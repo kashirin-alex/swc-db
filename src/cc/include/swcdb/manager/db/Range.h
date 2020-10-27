@@ -26,11 +26,12 @@ class Range final {
 
   using State = DB::Types::MngrRange::State;
 
-  const ColumnCfg*  cfg;
-  const rid_t       rid;
+  const ColumnCfg::Ptr  cfg;
+  const rid_t           rid;
 
-  Range(const ColumnCfg* cfg, const rid_t rid)
-        : cfg(cfg), rid(rid), m_path(DB::RangeBase::get_path(cfg->cid, rid)),
+  Range(const ColumnCfg::Ptr& cfg, const rid_t rid)
+        : cfg(cfg), rid(rid), 
+          m_path(DB::RangeBase::get_path(cfg->cid, rid)),
           m_state(State::NOTSET), m_check_ts(0),
           m_rgrid(0), m_last_rgr(nullptr) { 
   }

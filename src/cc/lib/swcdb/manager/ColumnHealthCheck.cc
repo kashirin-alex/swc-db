@@ -18,7 +18,7 @@ ColumnHealthCheck::RangerCheck::RangerCheck(
                 const Ranger::Ptr& rgr)
                 : col_checker(col_checker), rgr(rgr), m_checkings(0) { 
   SWC_LOGF(LOG_DEBUG, "Column-Health START cid=%lu rgr=%lu", 
-            col_checker->col->cfg.cid, rgr->rgrid.load());
+            col_checker->col->cfg->cid, rgr->rgrid.load());
 }
   
 ColumnHealthCheck::RangerCheck::~RangerCheck() { }
@@ -109,7 +109,7 @@ void ColumnHealthCheck::run() {
   col->need_health_check(check_ts, check_intval, ranges);
 
   SWC_LOGF(LOG_DEBUG, "Column-Health START cid(%lu) ranges=%lu", 
-           col->cfg.cid, ranges.size());
+           col->cfg->cid, ranges.size());
 
   RangerCheck::Ptr checker;
   rgrid_t rgrid;
@@ -160,7 +160,7 @@ void ColumnHealthCheck::run() {
   }
   */
 
-  SWC_LOGF(LOG_DEBUG, "Column-Health FINISH cid(%lu)", col->cfg.cid);
+  SWC_LOGF(LOG_DEBUG, "Column-Health FINISH cid(%lu)", col->cfg->cid);
   Env::Mngr::rangers()->health_check_finished(shared_from_this());
 }
 

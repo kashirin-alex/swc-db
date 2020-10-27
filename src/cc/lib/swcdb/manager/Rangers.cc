@@ -348,6 +348,7 @@ void Rangers::update_status(RangerList new_rgr_status, bool sync_all) {
       h->put(
         std::make_shared<Comm::Protocol::Rgr::Req::RangeUnload>(
           h, col, range, true));
+      ++h->interm_ranges;
     }
     if(h->rebalance() && !sync_all) {
       if(std::find(changed.begin(), changed.end(), h) == changed.end())
@@ -594,13 +595,16 @@ void Rangers::next_rgr(const Range::Ptr& range, Ranger::Ptr& rs_set) {
 
   avg_ranges /= n_rgrs;
   uint16_t best = 0;
+  size_t interm_ranges = UINT64_MAX;
   for(auto it=m_rangers.begin(); it<m_rangers.end(); ++it) {
     if((rgr = *it)->state & RangerState::ACK &&
        avg_ranges >= rgr->interm_ranges &&
+       interm_ranges >= rgr->interm_ranges &&
        rgr->load_scale >= best &&
        (!(rgr->state & RangerState::SHUTTINGDOWN) ||
         (n_rgrs == 1 && !DB::Types::MetaColumn::is_data(range->cfg->cid)) )) {
       best = rgr->load_scale;
+      interm_ranges = rgr->interm_ranges;
       rs_set = rgr;
     }
   }

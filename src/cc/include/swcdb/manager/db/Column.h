@@ -39,10 +39,11 @@ class Column final : private std::vector<Range::Ptr> {
     return true;
   }
 
-  const ColumnCfg  cfg;
+  const ColumnCfg::Ptr cfg;
 
   Column(const DB::Schema::Ptr& schema) 
-        : cfg(schema), m_state(State::LOADING), m_check_ts(0) {
+        : cfg(new ColumnCfg(schema)),
+          m_state(State::LOADING), m_check_ts(0) {
   }
 
   ~Column() { }
@@ -122,7 +123,7 @@ class Column final : private std::vector<Range::Ptr> {
       return *it;
 
     if(initialize)
-      return emplace_back(new Range(&cfg, rid));
+      return emplace_back(new Range(cfg, rid));
       
     return nullptr;
   }
@@ -132,8 +133,8 @@ class Column final : private std::vector<Range::Ptr> {
                        const DB::Cell::Key& range_end, 
                        bool next_range) {
     bool found = false;
-    uint32_t any_is = DB::Types::MetaColumn::is_master(cfg.cid)
-      ? 2 : (DB::Types::MetaColumn::is_meta(cfg.cid) ? 1 : 0);
+    uint32_t any_is = DB::Types::MetaColumn::is_master(cfg->cid)
+      ? 2 : (DB::Types::MetaColumn::is_meta(cfg->cid) ? 1 : 0);
 
     std::shared_lock lock(m_mutex);
     for(auto& range : *this) {
@@ -182,7 +183,7 @@ class Column final : private std::vector<Range::Ptr> {
   Range::Ptr create_new_range(rgrid_t rgrid) {
     std::scoped_lock lock(m_mutex);
 
-    auto& range = emplace_back(new Range(&cfg, _get_next_rid()));
+    auto& range = emplace_back(new Range(cfg, _get_next_rid()));
     // if !rid - err reached id limit
     range->set_state(Range::State::CREATED, rgrid);
     return range;
@@ -227,8 +228,9 @@ class Column final : private std::vector<Range::Ptr> {
 
     for(auto it = m_schemas_rev.begin(); it != m_schemas_rev.end(); ++it) {
       if(it->first == rgrid_old) {
-        m_schemas_rev.emplace(rgrid, it->second);
+        int64_t last = it->second;
         m_schemas_rev.erase(it);
+        m_schemas_rev.emplace(rgrid, last);
         break;
       }
     }
@@ -237,11 +239,9 @@ class Column final : private std::vector<Range::Ptr> {
   void change_rgr_schema(const rgrid_t rgrid, int64_t rev=0) {
     std::scoped_lock lock(m_mutex);
 
-    auto it = m_schemas_rev.find(rgrid);
-    if(it == m_schemas_rev.end())
-       m_schemas_rev.emplace(rgrid, rev);
-    else
-      it->second = rev;
+    auto res = m_schemas_rev.emplace(rgrid, rev);
+    if(!res.second)
+      res.first->second = rev;
   }
 
   void remove_rgr_schema(const rgrid_t rgrid) {
@@ -352,7 +352,7 @@ class Column final : private std::vector<Range::Ptr> {
     }
     if(empty()) {
       Env::FsInterface::interface()->rmdir(
-        err, DB::RangeBase::get_path(cfg.cid));
+        err, DB::RangeBase::get_path(cfg->cid));
       SWC_LOG_OUT(LOG_DEBUG, _print(SWC_LOG_OSTREAM << "FINALIZED REMOVE "); );
       return true;
     }
@@ -368,26 +368,26 @@ class Column final : private std::vector<Range::Ptr> {
   
   bool exists(int &err) {
     return Env::FsInterface::interface()->exists(
-      err, DB::RangeBase::get_column_path(cfg.cid));
+      err, DB::RangeBase::get_column_path(cfg->cid));
   }
 
   bool exists_range_path(int &err) {
     return Env::FsInterface::interface()->exists(
-      err, DB::RangeBase::get_path(cfg.cid));
+      err, DB::RangeBase::get_path(cfg->cid));
   }
 
   void create_range_path(int &err) {
     Env::FsInterface::interface()->mkdirs(
-      err, DB::RangeBase::get_path(cfg.cid));
+      err, DB::RangeBase::get_path(cfg->cid));
   }
 
   void ranges_by_fs(int &err, FS::IdEntries_t &entries) {
     Env::FsInterface::interface()->get_structured_ids(
-      err, DB::RangeBase::get_path(cfg.cid), entries);
+      err, DB::RangeBase::get_path(cfg->cid), entries);
   }
 
   void _print(std::ostream& out) {
-    cfg.print(out << '(');
+    cfg->print(out << '(');
     out << " next-rid=" << _get_next_rid()
         << " ranges=[";
     for(auto& range : *this) {
