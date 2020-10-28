@@ -14,10 +14,10 @@ namespace Rgr { namespace Req {
 
 
 RangeUnload::RangeUnload(const Ranger::RangePtr& range, 
-                         const ResponseCallback::Ptr& cb,
+                         const Ranger::Callback::RangeLoad::Ptr& req,
                          uint32_t timeout) 
                         : client::ConnQueue::ReqBase(false), 
-                          cb(cb), range(range) {
+                          req(req), range(range) {
   cbp = Buffers::make(Common::Params::ColRangeId(range->cfg->cid, range->rid));
   cbp->header.set(RANGE_UNLOAD, timeout);
 }
@@ -37,7 +37,7 @@ void RangeUnload::handle_no_conn() {
 }
 
 void RangeUnload::unloaded(int err) {
-  range->take_ownership(err, cb);
+  range->internal_take_ownership(err, req);
 }
 
 }}}}}

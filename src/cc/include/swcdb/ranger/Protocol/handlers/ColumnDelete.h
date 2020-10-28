@@ -15,6 +15,7 @@ namespace Rgr { namespace Handler {
 
 
 void column_delete(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
+  int err = Error::OK;
   try {
     const uint8_t *ptr = ev->data.base;
     size_t remain = ev->data.size;
@@ -22,9 +23,22 @@ void column_delete(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     Common::Params::ColumnId params;
     params.decode(&ptr, &remain);
 
-    Env::Rgr::columns()
-      ->remove(new Ranger::ColumnsReqDelete(params.cid, conn, ev));
+    auto col = Env::Rgr::columns()->get_column(params.cid);
+    if(col)
+      col->add_managing(std::make_shared<Ranger::Callback::ColumnDelete>(
+        conn, ev, params.cid));
+    else
+      conn->response_ok(ev);
+    return;
 
+  } catch(...) {
+    const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
+    SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
+    err = e.code();
+  }
+
+  try {
+    conn->send_error(err, "", ev);
   } catch(...) {
     SWC_LOG_CURRENT_EXCEPTION("");
   }

@@ -8,7 +8,7 @@
 #define swcdb_ranger_Protocol_handlers_RangeLoad_h
 
 #include "swcdb/db/Protocol/Rgr/params/RangeLoad.h"
-#include "swcdb/ranger/callbacks/RangeLoaded.h"
+#include "swcdb/ranger/callbacks/RangeLoad.h"
 
 
 namespace SWC { namespace Comm { namespace Protocol {
@@ -16,6 +16,7 @@ namespace Rgr { namespace Handler {
 
 
 void range_load(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
+  int err = Error::OK;
   try {
     const uint8_t *ptr = ev->data.base;
     size_t remain = ev->data.size;
@@ -23,14 +24,20 @@ void range_load(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     Params::RangeLoad params;
     params.decode(&ptr, &remain);
 
-    int err = Error::OK;
     Env::Rgr::columns()->load_range(
-      err,
-      params.cid, params.rid, *params.schema.get(),
-      std::make_shared<Ranger::Callback::RangeLoaded>(
-        conn, ev, params.cid, params.rid)
-    );
-     
+      *params.schema.get(),
+      std::make_shared<Ranger::Callback::RangeLoad>(
+        conn, ev, params.cid, params.rid));
+    return;
+
+  } catch(...) {
+    const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
+    SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
+    err = e.code();
+  }
+  
+  try {
+    conn->send_error(err, "", ev);
   } catch(...) {
     SWC_LOG_CURRENT_EXCEPTION("");
   }

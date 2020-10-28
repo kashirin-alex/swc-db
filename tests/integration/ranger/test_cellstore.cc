@@ -240,11 +240,12 @@ int main(int argc, char** argv) {
   schema.blk_size = 64000000;
   schema.blk_cells = 100000;
   schema.blk_encoding = SWC::DB::Types::Encoder::SNAPPY;
-  SWC::Ranger::ColumnCfg col_cfg(cid, schema);
+  SWC::Ranger::ColumnCfg::Ptr col_cfg(
+    new SWC::Ranger::ColumnCfg(cid, schema));
   
   int err = SWC::Error::OK;
 
-  auto range = std::make_shared<SWC::Ranger::Range>(&col_cfg, 1);
+  auto range = std::make_shared<SWC::Ranger::Range>(col_cfg, 1);
   range->set_state(SWC::Ranger::Range::State::LOADED);
   range->compacting(SWC::Ranger::Range::COMPACT_CHECKING);
   

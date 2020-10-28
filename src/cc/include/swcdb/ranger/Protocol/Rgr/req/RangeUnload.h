@@ -17,7 +17,7 @@ class RangeUnload : public client::ConnQueue::ReqBase {
   public:
 
   RangeUnload(const Ranger::RangePtr& range, 
-              const ResponseCallback::Ptr& cb,
+              const Ranger::Callback::RangeLoad::Ptr& req,
               uint32_t timeout=60000);
 
   virtual ~RangeUnload();
@@ -32,8 +32,8 @@ class RangeUnload : public client::ConnQueue::ReqBase {
 
   private:
 
-  ResponseCallback::Ptr   cb;
-  Ranger::RangePtr        range;
+  Ranger::Callback::RangeLoad::Ptr  req;
+  Ranger::RangePtr                  range;
    
 };
 

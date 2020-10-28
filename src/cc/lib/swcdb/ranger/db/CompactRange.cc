@@ -563,7 +563,7 @@ csid_t CompactRange::create_cs(int& err) {
 }
 
 void CompactRange::write_cells(int& err, InBlock* in_block) {
-  if(cs_writer == nullptr) {
+  if(!cs_writer) {
     if(create_cs(err) == 1 && range->is_any_begin())
       in_block->header.is_any |= CellStore::Block::Header::ANY_BEGIN;
     if(err)
@@ -637,7 +637,7 @@ void CompactRange::finalize() {
   if(m_inblock->header.cells_count) {
     // first or/and last block of any-type set with empty-key
     bool any_begin = false;
-    if(cs_writer == nullptr) {
+    if(!cs_writer) {
       any_begin = create_cs(err) == 1 && range->is_any_begin();
       if(err)
         return quit();
@@ -645,7 +645,7 @@ void CompactRange::finalize() {
     m_inblock->finalize_interval(any_begin, range->is_any_end());
     cs_writer->block_encode(err, m_inblock->cells, m_inblock->header);
  
-  } else if(!cellstores.size() && cs_writer == nullptr) {
+  } else if(!cellstores.size() && !cs_writer) {
     // as an initial empty range cs with range intervals
     empty_cs = true;
     create_cs(err); //csid_t csid = 
@@ -664,7 +664,7 @@ void CompactRange::finalize() {
   if(err)
     return quit();
 
-  if(cs_writer != nullptr) {
+  if(cs_writer) {
     if(!cs_writer->size)
       return quit();
     add_cs(err);
@@ -749,23 +749,23 @@ void CompactRange::mngr_remove_range(const RangePtr& new_range) {
 }
 
 void CompactRange::split(rid_t new_rid, uint32_t split_at) {
-  int err = Error::OK;
-  Column::Ptr col = Env::Rgr::columns()->get_column(err, range->cfg->cid);
-  if(col == nullptr || col->removing())
+  ColumnPtr col = Env::Rgr::columns()->get_column(range->cfg->cid);
+  if(!col || col->removing())
     return quit();
 
   int64_t ts = Time::now_ns();
   SWC_LOGF(LOG_INFO, "COMPACT-SPLIT %lu/%lu new-rid=%lu", 
            range->cfg->cid, range->rid, new_rid);
 
-  auto new_range = col->get_range(err, new_rid, true);
+  int err = Error::OK;
+  auto new_range = col->internal_create(err, new_rid);
   if(!err)
-    new_range->create_folders(err);
+    new_range->internal_create_folders(err);
   if(err) {
     SWC_LOGF(LOG_INFO, "COMPACT-SPLIT cancelled err=%d %lu/%lu new-rid=%lu", 
             err, range->cfg->cid, range->rid, new_rid);
     err = Error::OK;
-    col->remove(err, new_rid, false);
+    col->internal_remove(err, new_rid, false);
     mngr_remove_range(new_range);
     return apply_new();
   }
@@ -775,13 +775,13 @@ void CompactRange::split(rid_t new_rid, uint32_t split_at) {
   new_cellstores.assign(it, cellstores.end());
   cellstores.erase(it, cellstores.end());
 
-  new_range->create(err, new_cellstores);
+  new_range->internal_create(err, new_cellstores);
   if(!err) 
     range->apply_new(err, cellstores, fragments_old, false);
 
   if(err) {
     err = Error::OK;
-    col->remove(err, new_rid);
+    col->internal_remove(err, new_rid);
     mngr_remove_range(new_range);
     return quit();
   }
@@ -811,26 +811,21 @@ void CompactRange::split(rid_t new_rid, uint32_t split_at) {
   //err = Error::OK;
 
   new_range = nullptr;
-  col->unload(
-    new_rid, 
-    [new_rid, cid=range->cfg->cid, ptr=shared()](int) { 
-      Comm::Protocol::Mngr::Req::RangeUnloaded::request(
-        cid, new_rid,
-        [cid, new_rid, ptr]
-        (const Comm::client::ConnQueue::ReqBase::Ptr& req, 
-         const Comm::Protocol::Mngr::Params::RangeUnloadedRsp& rsp) {
-      
-          SWC_LOGF(LOG_DEBUG, 
-            "Compact::Mngr::Req::RangeUnloaded err=%d(%s) %lu/%lu", 
-            rsp.err, Error::get_text(rsp.err), cid, new_rid);
-          if(!ptr->m_stopped && rsp.err && 
-             rsp.err != Error::COLUMN_NOT_EXISTS &&
-             rsp.err != Error::COLUMN_MARKED_REMOVED &&
-             rsp.err != Error::COLUMN_NOT_READY) {
-            req->request_again();
-          }
-        }
-      );
+  col->internal_unload(new_rid);
+  Comm::Protocol::Mngr::Req::RangeUnloaded::request(
+    range->cfg->cid, new_rid,
+    [new_rid, cid=range->cfg->cid, ptr=shared()]
+    (const Comm::client::ConnQueue::ReqBase::Ptr& req,
+     const Comm::Protocol::Mngr::Params::RangeUnloadedRsp& rsp) {
+      SWC_LOGF(LOG_DEBUG,
+        "Compact::Mngr::Req::RangeUnloaded err=%d(%s) %lu/%lu",
+        rsp.err, Error::get_text(rsp.err), cid, new_rid);
+      if(!ptr->m_stopped && rsp.err &&
+         rsp.err != Error::COLUMN_NOT_EXISTS &&
+         rsp.err != Error::COLUMN_MARKED_REMOVED &&
+         rsp.err != Error::COLUMN_NOT_READY) {
+        req->request_again();
+      }
     }
   );
 
@@ -896,7 +891,7 @@ void CompactRange::quit() {
     return;
 
   int err = Error::OK;
-  if(cs_writer != nullptr) {
+  if(cs_writer) {
     cs_writer->remove(err);
     cs_writer = nullptr;
   }

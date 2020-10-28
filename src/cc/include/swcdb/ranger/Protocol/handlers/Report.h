@@ -34,7 +34,7 @@ void report(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
         rsp_params.cpu = Env::Rgr::res().available_cpu_mhz();
 
         rsp_params.ranges = 0;
-        Ranger::Column::Ptr col;
+        Ranger::ColumnPtr col;
         auto& columns = *Env::Rgr::columns();
         for(cid_t cidx = 0; (col=columns.get_next(cidx)); ++cidx) {
           rsp_params.ranges += col->ranges_count(); // *= (Master|Meta) weight
@@ -56,11 +56,11 @@ void report(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
       case Params::Report::Function::COLUMN_RIDS: {
         Params::Report::ReqColumn params;
         params.decode(&ptr, &remain);
-        auto col = Env::Rgr::columns()->get_column(err, params.cid);
-        if(!col)
+        auto col = Env::Rgr::columns()->get_column(params.cid);
+        if(!col) {
           err = Error::COLUMN_NOT_EXISTS;
-        if(err)
           goto send_error;
+        }
 
         Params::Report::RspColumnRids rsp_params;
         col->get_rids(rsp_params.rids);
@@ -81,19 +81,19 @@ void report(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
           goto send_error;
         }
 
-        auto col = Env::Rgr::columns()->get_column(err, params.cid);
-        if(!col)
+        auto col = Env::Rgr::columns()->get_column(params.cid);
+        if(!col) {
           err = Error::COLUMN_NOT_EXISTS;
-        if(err)
           goto send_error;
+        }
 
         Params::Report::RspColumnsRanges rsp_params(
           rgrid, rgr_data->endpoints);
 
         auto c = new Params::Report::RspColumnsRanges::Column();
         rsp_params.columns.push_back(c);
-        c->cid = col->cfg.cid;
-        c->col_seq = col->cfg.key_seq;
+        c->cid = col->cfg->cid;
+        c->col_seq = col->cfg->key_seq;
         c->mem_bytes = 0;
 
         Ranger::RangePtr range;
@@ -122,14 +122,14 @@ void report(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
         Params::Report::RspColumnsRanges rsp_params(
           rgrid, rgr_data->endpoints);
 
-        Ranger::Column::Ptr col;
+        Ranger::ColumnPtr col;
         Ranger::RangePtr range;
         auto& columns = *Env::Rgr::columns();
         for(cid_t cidx = 0; (col=columns.get_next(cidx)); ++cidx) {
           auto c = new Params::Report::RspColumnsRanges::Column();
           rsp_params.columns.push_back(c);
-          c->cid = col->cfg.cid;
-          c->col_seq = col->cfg.key_seq;
+          c->cid = col->cfg->cid;
+          c->col_seq = col->cfg->key_seq;
           c->mem_bytes = 0;
           for(rid_t ridx = 0; (range=col->get_next(ridx)); ++ridx) {
             auto r = new Params::Report::RspColumnsRanges::Range(c->col_seq);

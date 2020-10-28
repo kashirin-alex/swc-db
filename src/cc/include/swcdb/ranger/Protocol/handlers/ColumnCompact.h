@@ -24,8 +24,8 @@ void column_compact(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     Params::ColumnCompactReq params;
     params.decode(&ptr, &remain);
 
-    auto col = Env::Rgr::columns()->get_column(rsp_params.err, params.cid);
-    if(col != nullptr)
+    auto col = Env::Rgr::columns()->get_column(params.cid);
+    if(col)
       col->compact();
 
   } catch(...) {

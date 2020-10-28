@@ -16,18 +16,14 @@
 namespace SWC { namespace Ranger {
 
 
-
-class Column final : private std::unordered_map<rid_t, RangePtr> {
-  
+class Column final : 
+    private std::unordered_map<rid_t, RangePtr>,
+    public std::enable_shared_from_this<Column> {
   public:
 
-  typedef std::shared_ptr<Column>  Ptr;
-
-  const ColumnCfg  cfg;
+  const ColumnCfg::Ptr cfg;
 
   Column(const cid_t cid, const DB::Schema& schema);
-
-  void init(int&);
 
   ~Column();
 
@@ -35,37 +31,53 @@ class Column final : private std::unordered_map<rid_t, RangePtr> {
 
   size_t ranges_count();
 
+  bool removing();
+
+  bool is_not_used(); 
+
+  RangePtr get_range(const rid_t rid);
+
+  RangePtr get_next(size_t &idx);
+
   void get_rids(std::vector<rid_t>& rids);
 
   void schema_update(const DB::Schema& schema);
 
   void compact();
 
-  RangePtr get_range(int &err, const rid_t rid, bool initialize=false);
+  void add_managing(const Callback::ManageBase::Ptr& req);
 
-  void unload(const rid_t rid, const Callback::RangeUnloaded_t& cb);
-
-  void unload_all(Common::Stats::CompletionCounter<size_t>& to_unload,
-                  const Callback::RangeUnloaded_t& cb);
-
-  void unload_all(const Callback::ColumnsUnloadedPtr& cb);
-  
-  void remove(int &err, const rid_t rid, bool meta=true);
-
-  void remove_all(int &err);
-
-  bool removing();
-
-  RangePtr get_next(size_t &idx);
+  void run_mng_queue();
 
   size_t release(size_t bytes=0);
 
   void print(std::ostream& out, bool minimal=true);
 
+
+  RangePtr internal_create(int& err, rid_t rid);
+
+  void internal_unload(const rid_t rid);
+
+  void internal_remove(int &err, const rid_t rid, bool meta=true);
+
+  void internal_delete(rid_t rid);
+
   private:
 
-  Core::MutexSptd   m_mutex;
-  std::atomic<bool> m_releasing;
+  void run_mng_req(const Callback::ManageBase::Ptr& req);
+
+  void load(const Callback::RangeLoad::Ptr& req);
+
+  void unload(const Callback::RangeUnload::Ptr& req);
+
+  void unload_all(const Callback::ColumnsUnload::Ptr& req);
+
+  void remove(const Callback::ColumnDelete::Ptr& req);
+
+  Core::MutexSptd                                   m_mutex;
+  Core::QueueSafeStated<Callback::ManageBase::Ptr>  m_q_mng;
+  std::atomic<bool>                                 m_releasing;
+
 };
 
 }}

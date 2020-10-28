@@ -15,6 +15,7 @@ namespace Rgr { namespace Handler {
 
 
 void range_is_loaded(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
+  int err = Error::OK;
   try {
     const uint8_t *ptr = ev->data.base;
     size_t remain = ev->data.size;
@@ -22,16 +23,22 @@ void range_is_loaded(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     Params::RangeIsLoaded params;
     params.decode(&ptr, &remain);
 
-    int err = Error::OK;
     auto range = Env::Rgr::columns()->get_range(err, params.cid, params.rid);
-      
-    if(range != nullptr && range->is_loaded()) {
+    if(range && range->is_loaded()) {
       conn->response_ok(ev);
-    } else {
-      if(err == Error::OK)
-        err = Error::RGR_NOT_LOADED_RANGE;
-      conn->send_error(err, "", ev);
+      return;
     }
+    if(!err)
+      err = Error::RGR_NOT_LOADED_RANGE;
+      
+  } catch(...) {
+    const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
+    SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
+    err = e.code();
+  }
+  
+  try {
+    conn->send_error(err, "", ev);
   } catch(...) {
     SWC_LOG_CURRENT_EXCEPTION("");
   }

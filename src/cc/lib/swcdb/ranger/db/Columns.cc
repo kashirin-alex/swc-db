@@ -10,44 +10,22 @@
 namespace SWC { namespace Ranger {
 
 
-Columns::Columns() : m_releasing(false) { //: m_state(State::OK)
-}
-
-Columns::~Columns() { }
-
-
-Column::Ptr Columns::initialize(int &err, const cid_t cid, 
-                                const DB::Schema& schema) {
-  Column::Ptr col = nullptr;
-  if(Env::Rgr::is_shuttingdown() || 
-     (Env::Rgr::is_not_accepting() && 
-      DB::Types::MetaColumn::is_data(cid))) {
-    err = Error::SERVER_SHUTTING_DOWN;
-    return col;
-  }
-  
-  Core::MutexSptd::scope lock(m_mutex);
-  auto it = find(cid);
-  if(it != end())
-    (col = it->second)->cfg.update(schema);
-  else
-    emplace(cid, col = std::make_shared<Column>(cid, schema));
-  return col;
-}
-
-void Columns::get_cids(std::vector<cid_t>& cids) {
-  Core::MutexSptd::scope lock(m_mutex);
-  for(auto it = begin(); it != end(); ++it)
-    cids.push_back(it->first);
-}
-
-Column::Ptr Columns::get_column(int&, const cid_t cid) {
+ColumnPtr Columns::get_column(const cid_t cid) {
   Core::MutexSptd::scope lock(m_mutex);
   auto it = find(cid);
   return it == end() ? nullptr : it->second;
 }
 
-Column::Ptr Columns::get_next(size_t& idx) {
+RangePtr Columns::get_range(int &err, const cid_t cid, const rid_t rid) {
+  ColumnPtr col = get_column(cid);
+  if(!col) 
+    return nullptr;
+  if(col->removing()) 
+    err = Error::COLUMN_MARKED_REMOVED;
+  return err ? nullptr : col->get_range(rid);
+}
+
+ColumnPtr Columns::get_next(size_t& idx) {
   Core::MutexSptd::scope lock(m_mutex);
   if(size() > idx) {
     auto it = begin();
@@ -58,145 +36,104 @@ Column::Ptr Columns::get_next(size_t& idx) {
   return nullptr;
 }
 
-RangePtr Columns::get_range(int &err, const cid_t cid, const rid_t rid) {
-  Column::Ptr col = get_column(err, cid);
-  if(!col) 
-    return nullptr;
-  if(col->removing()) 
-    err = Error::COLUMN_MARKED_REMOVED;
-  return err ? nullptr : col->get_range(err, rid, false);
+void Columns::get_cids(std::vector<cid_t>& cids) {
+  Core::MutexSptd::scope lock(m_mutex);
+  for(auto it = begin(); it != end(); ++it)
+    cids.push_back(it->first);
 }
- 
-void Columns::load_range(int &err, const cid_t cid, const rid_t rid, 
-                         const DB::Schema& schema, 
-                         const Comm::ResponseCallback::Ptr& cb) {
-  RangePtr range;
-  auto col = initialize(err, cid, schema);
-  if(!err) {
 
-    if(col->removing()) 
+void Columns::load_range(const DB::Schema& schema, 
+                         const Callback::RangeLoad::Ptr& req) {
+  int err = Error::OK;
+  ColumnPtr col;
+  if(Env::Rgr::is_shuttingdown() || 
+     (Env::Rgr::is_not_accepting() && 
+      DB::Types::MetaColumn::is_data(req->cid))) {
+    err = Error::SERVER_SHUTTING_DOWN;
+
+  } else {
+    {
+      Core::MutexSptd::scope lock(m_mutex);
+      auto res = emplace(req->cid, nullptr);
+      if(res.second) {
+        res.first->second.reset(new Column(req->cid, schema));
+      } else if(!res.first->second->ranges_count()) {
+        if(res.first->second->cfg->use_count() > 1)
+          SWC_LOGF(LOG_WARN, 
+                  "Column cid=%lu remained with use-count=%lu, resetting",
+                  req->cid, res.first->second->cfg->use_count());
+        res.first->second.reset(new Column(req->cid, schema));
+      } else {
+        res.first->second->cfg->update(schema);
+      }
+      col = res.first->second;
+    }
+    if(col->removing()) {
       err = Error::COLUMN_MARKED_REMOVED;
 
-    else if(Env::Rgr::is_shuttingdown() ||
-            (Env::Rgr::is_not_accepting() &&
-             DB::Types::MetaColumn::is_data(cid)))
+    } else if(Env::Rgr::is_shuttingdown() ||
+              (Env::Rgr::is_not_accepting() &&
+               DB::Types::MetaColumn::is_data(req->cid))) {
       err = Error::SERVER_SHUTTING_DOWN;
-    
-    if(!err)
-      range = col->get_range(err, rid, true);
+    }
   }
-  if(err)
-    cb->response(err);
-  else 
-    range->load(cb);
-}
-
-void Columns::unload_range(int &err, const cid_t cid, const rid_t rid,
-                           const Callback::RangeUnloaded_t& cb) {
-  Column::Ptr col = get_column(err, cid);
-  if(col) {
-    col->unload(rid, cb);
-  } else {
-    cb(err);
-  }
+  err ? req->response(err) : col->add_managing(req);
 }
 
 void Columns::unload(cid_t cid_begin, cid_t cid_end,
-                    const Callback::ColumnsUnloadedPtr& cb) {
-  cb->unloading.increment();
+                     Callback::ColumnsUnload::Ptr req) {
+  std::vector<ColumnPtr> cols;
   {
     Core::MutexSptd::scope lock(m_mutex);
-    for(auto it = begin(); it != end(); ) {
+    for(auto it = begin(); it != end(); ++it) {
       if((!cid_begin || cid_begin <= it->first) &&
          (!cid_end || cid_end >= it->first)) {
-        cb->cols.push_back(it->second);
-        it = erase(it);
-      } else {
-        ++it;
+        req->add(it->second);
+        cols.push_back(it->second);
       }
     }
   }
-  for(auto& col : cb->cols)
-    col->unload_all(cb);
-  cb->response(Error::OK, nullptr);
+  if(cols.empty()) {
+    req->response();
+  } else {
+    for(auto& col : cols)
+      col->add_managing(req);
+  }
 }
 
 void Columns::unload_all(bool validation) {
-  std::vector<std::function<bool(cid_t)>> order = {
-    DB::Types::MetaColumn::is_data,
-    DB::Types::MetaColumn::is_meta,
-    DB::Types::MetaColumn::is_master 
-  };
-  Common::Stats::CompletionCounter<size_t> to_unload;
-  Column::Ptr col;
-  uint8_t meta;
-  iterator it;
-  for(auto& chk : order) {
-    to_unload.increment();
+  auto req = std::make_shared<Callback::ColumnsUnloadAll>(validation);
+  unload(9, 0, req);
+  req->wait();
 
-    std::promise<void>  r_promise;
-    for(;;) {
-      {
-        Core::MutexSptd::scope lock(m_mutex);
-        if(begin() == end())
-          break;
-        it = begin();
-        for(meta=0; !chk(it->first) && size() > ++meta; ++it);
-        if(size() == meta)
-          break;
-        col = it->second;
-        erase(it);
-      }
-      if(validation)
-        SWC_LOGF(LOG_WARN, 
-          "Unload-Validation cid=%lu remained", col->cfg.cid);
-      to_unload.increment();
-      col->unload_all(
-        to_unload, 
-        [col, &to_unload, &r_promise](int) {
-          if(to_unload.is_last())
-            r_promise.set_value();
-        }
-      );
-    }
+  req = std::make_shared<Callback::ColumnsUnloadAll>(validation);
+  unload(5, 0, req);
+  req->wait();
 
-    if(to_unload.is_last())
-      r_promise.set_value();
-    r_promise.get_future().wait();
+  req = std::make_shared<Callback::ColumnsUnloadAll>(validation);
+  unload(0, 0, req);
+  req->wait();
+}
+
+void Columns::erase_if_empty(cid_t cid) {
+  Core::MutexSptd::scope lock(m_mutex);
+  auto it = find(cid);
+  if(it != end() && it->second->is_not_used()) {
+    erase(it);
   }
 }
 
-void Columns::remove(ColumnsReqDelete* req) {
-  if(!m_q_remove.push_and_is_1st(req))
-    return;
-
-  int err;
-  Column::Ptr col;
-  iterator it;
-  do {
-    if(!(req = m_q_remove.front())->ev->expired()) {
-      if((col = get_column(err = Error::OK, req->cid))) {
-        col->remove_all(err);
-        {
-          Core::MutexSptd::scope lock(m_mutex);
-          if((it = find(req->cid)) != end()) 
-            erase(it);
-        }
-      }
-      req->cb(err);
-    }
-    delete req;
-  } while(m_q_remove.pop_and_more());
-}
-
 size_t Columns::release(size_t bytes) {
-  size_t released = 0;
-  if(m_releasing)
-    return released;
-  m_releasing = true;
+  {
+    Core::MutexSptd::scope lock(m_mutex);
+    if(m_releasing)
+      return 0;
+    m_releasing = true;
+  }
 
-  Column::Ptr col;
+  ColumnPtr col;
   iterator it;
+  size_t released = 0;
   for(size_t offset = 0; ; ++offset) {
     {
       Core::MutexSptd::scope lock(m_mutex);

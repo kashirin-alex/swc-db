@@ -8,66 +8,64 @@
 #define swcdb_ranger_db_Columns_h
 
 #include "swcdb/db/Columns/Schema.h"
+
+namespace SWC { namespace Ranger {
+class Column;
+typedef std::shared_ptr<Column> ColumnPtr;
+class Range;
+typedef std::shared_ptr<Range> RangePtr;
+}}
+
+#include "swcdb/ranger/callbacks/ManageBase.h"
+#include "swcdb/ranger/callbacks/RangeLoad.h"
+#include "swcdb/ranger/callbacks/RangeUnload.h"
+#include "swcdb/ranger/callbacks/ColumnsUnload.h"
+#include "swcdb/ranger/callbacks/ColumnsUnloadAll.h"
+#include "swcdb/ranger/callbacks/ColumnDelete.h"
+
 #include "swcdb/ranger/db/ColumnCfg.h"
-#include "swcdb/ranger/db/Callbacks.h"
 #include "swcdb/ranger/db/Column.h"
-#include "swcdb/ranger/db/ColumnsReqDelete.h"
 
 #include <unordered_map>
 
 namespace SWC { namespace Ranger {
 
 
-class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
-
+class Columns final : private std::unordered_map<cid_t, ColumnPtr> {
   public:
-
-  enum State : uint8_t {
-    NONE,
-    OK
-  };
 
   typedef Columns* Ptr;
 
-  explicit Columns();
+  Columns() : m_releasing(false) { }
 
-  ~Columns();
-
+  ~Columns() { }
   
-  Column::Ptr initialize(int &err, const cid_t cid, 
-                         const DB::Schema& schema);
-
-  void get_cids(std::vector<cid_t>& cids);
-
-  Column::Ptr get_column(int&, const cid_t cid);
-  
-  Column::Ptr get_next(size_t& idx);
+  ColumnPtr get_column(const cid_t cid);
 
   RangePtr get_range(int &err, const cid_t cid, const rid_t rid);
- 
-  void load_range(int &err, const cid_t cid, const rid_t rid, 
-                  const DB::Schema& schema, 
-                  const Comm::ResponseCallback::Ptr& cb);
 
-  void unload_range(int &err, const cid_t cid, const rid_t rid,
-                    const Callback::RangeUnloaded_t& cb);
+  ColumnPtr get_next(size_t& idx);
+
+  void get_cids(std::vector<cid_t>& cids);
+ 
+  void load_range(const DB::Schema& schema, 
+                  const Callback::RangeLoad::Ptr& req);
 
   void unload(cid_t cid_begin, cid_t cid_end,
-              const Callback::ColumnsUnloadedPtr& cb);
+              Callback::ColumnsUnload::Ptr req);
 
   void unload_all(bool validation);
 
-  void remove(ColumnsReqDelete* req);
-  
+  void erase_if_empty(cid_t cid);
+
   size_t release(size_t bytes=0);
 
   void print(std::ostream& out, bool minimal=true);
 
   private:
-  Core::MutexSptd                       m_mutex;
-  std::atomic<bool>                     m_releasing;
-  // State                              m_state;
-  Core::QueueSafe<ColumnsReqDelete*>    m_q_remove;
+
+  Core::MutexSptd    m_mutex;
+  std::atomic<bool>  m_releasing;
 
 };
 
@@ -92,6 +90,13 @@ class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
 #include "swcdb/ranger/db/CommitLogCompact.cc"
 
 #include "swcdb/ranger/db/RangeData.cc"
+
+#include "swcdb/ranger/callbacks/RangeLoad.cc"
+#include "swcdb/ranger/callbacks/RangeUnload.cc"
+#include "swcdb/ranger/callbacks/ColumnDelete.cc"
+#include "swcdb/ranger/callbacks/ColumnsUnload.cc"
+#include "swcdb/ranger/callbacks/ColumnsUnloadAll.cc"
+
 //#endif
 
 

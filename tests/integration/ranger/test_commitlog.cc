@@ -73,17 +73,17 @@ int main(int argc, char** argv) {
   schema.cell_versions = 2;
   schema.blk_size = 64000000;
   schema.blk_cells = 100000;
-  Ranger::ColumnCfg col_cfg(cid, schema);
+  Ranger::ColumnCfg::Ptr col_cfg(new Ranger::ColumnCfg(cid, schema));
 
   int err = Error::OK;
   int num_cells = 1000000;
   uint32_t versions = 3;
 
-  auto range = std::make_shared<Ranger::Range>(&col_cfg, 1);
+  auto range = std::make_shared<Ranger::Range>(col_cfg, 1);
   range->set_state(SWC::Ranger::Range::State::LOADED);
   range->compacting(SWC::Ranger::Range::COMPACT_CHECKING);
 
-  Ranger::CommitLog::Fragments commitlog(col_cfg.key_seq);
+  Ranger::CommitLog::Fragments commitlog(col_cfg->key_seq);
   commitlog.init(range);
 
   Env::FsInterface::interface()->rmdir(err, range->get_path(""));
@@ -151,8 +151,8 @@ int main(int argc, char** argv) {
   commitlog.print(std::cout << " added cell=" << num_cells << ": \n", true);
 
   std::cout << "\n cells_count=" << commitlog.cells_count() << "\n";
-  if((versions == 1 || versions == col_cfg.cell_versions()) 
-      && num_cells*col_cfg.cell_versions() != commitlog.cells_count()) {
+  if((versions == 1 || versions == col_cfg->cell_versions()) 
+      && num_cells*col_cfg->cell_versions() != commitlog.cells_count()) {
     exit(1);
   }
   commitlog.unload();
@@ -164,7 +164,7 @@ int main(int argc, char** argv) {
   ///
 
 
-  SWC::Ranger::Blocks blocks(col_cfg.key_seq);
+  SWC::Ranger::Blocks blocks(col_cfg->key_seq);
   blocks.init(range);
   blocks.print(std::cout << "new loading: \n", true);
   std::cout << '\n';

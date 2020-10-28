@@ -5,16 +5,18 @@
 #ifndef swcdb_ranger_db_ColumnCfg_h
 #define swcdb_ranger_db_ColumnCfg_h
 
+#include "swcdb/core/NotMovableSharedPtr.h"
 #include "swcdb/db/Cells/KeyComparator.h"
 #include "swcdb/db/Columns/Schema.h"
 
 namespace SWC { namespace Ranger {
 
 
-class ColumnCfg final {
-  
+class ColumnCfg final : public Core::NotMovableSharedPtr<ColumnCfg> {
   public:
-  
+
+  typedef Core::NotMovableSharedPtr<ColumnCfg>    Ptr;
+
   const cid_t                                     cid;
   const DB::Types::Range                          range_type;
   const uint8_t                                   meta_cid;

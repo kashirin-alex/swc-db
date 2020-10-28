@@ -7,11 +7,6 @@
 #ifndef swcdb_ranger_db_Range_h
 #define swcdb_ranger_db_Range_h
 
-namespace SWC { namespace Ranger {
-class Range;
-typedef std::shared_ptr<Range> RangePtr;
-}}
-
 #include "swcdb/core/QueueSafe.h"
 #include "swcdb/db/Types/Range.h"
 #include "swcdb/db/Columns/RangeBase.h"
@@ -24,8 +19,8 @@ typedef std::shared_ptr<Range> RangePtr;
 
 namespace SWC { namespace Ranger {
 
-class Range final : public std::enable_shared_from_this<Range> {
 
+class Range final : public std::enable_shared_from_this<Range> {
   public:
 
   static constexpr const char RANGE_FILE[]          = "range.data";
@@ -72,12 +67,12 @@ class Range final : public std::enable_shared_from_this<Range> {
   static const uint8_t COMPACT_PREPARING   = 0x03;
   static const uint8_t COMPACT_APPLYING    = 0x04;
 
-  const ColumnCfg*        cfg;
+  const ColumnCfg::Ptr    cfg;
   const rid_t             rid;
   Blocks                  blocks;
   DB::Cell::Key           prev_range_end;
 
-  Range(const ColumnCfg* cfg, const rid_t rid);
+  Range(const ColumnCfg::Ptr& cfg, const rid_t rid);
 
   void init();
 
@@ -126,19 +121,13 @@ class Range final : public std::enable_shared_from_this<Range> {
 
   void scan_internal(const ReqScan::Ptr& req);
 
-  void create_folders(int& err);
+  void load(const Callback::RangeLoad::Ptr& req);
 
-  void load(const Comm::ResponseCallback::Ptr& cb);
+  void internal_take_ownership(int &err, const Callback::RangeLoad::Ptr& req);
 
-  void take_ownership(int &err, const Comm::ResponseCallback::Ptr& cb);
+  void internal_unload(bool completely);
 
-  void on_change(int &err, bool removal, 
-                 const DB::Cell::Key* old_key_begin=nullptr,
-                 const client::Query::Update::Cb_t& cb=0);
-
-  void unload(const Callback::RangeUnloaded_t& cb, bool completely);
-  
-  void remove(int &err, bool meta=true);
+  void internal_remove(int &err, bool meta=true);
 
   void wait_queue();
 
@@ -154,6 +143,10 @@ class Range final : public std::enable_shared_from_this<Range> {
 
   bool compact_required();
 
+  void on_change(int &err, bool removal, 
+                 const DB::Cell::Key* old_key_begin=nullptr,
+                 const client::Query::Update::Cb_t& cb=0);
+
   void apply_new(int &err,
                 CellStore::Writers& w_cellstores, 
                 CommitLog::Fragments::Vec& fragments_old, 
@@ -161,27 +154,26 @@ class Range final : public std::enable_shared_from_this<Range> {
   
   void expand_and_align(int &err, bool w_chg_chk);
   
-  void create(int &err, const CellStore::Writers& w_cellstores);
+  void internal_create_folders(int& err);
 
-  void create(int &err, CellStore::Readers::Vec& mv_css);
+  void internal_create(int &err, const CellStore::Writers& w_cellstores);
+
+  void internal_create(int &err, CellStore::Readers::Vec& mv_css);
 
   void print(std::ostream& out, bool minimal=true);
 
   private:
 
-  void loaded(int &err, const Comm::ResponseCallback::Ptr& cb);
+  void last_rgr_chk(int &err, const Callback::RangeLoad::Ptr& req);
 
-  void last_rgr_chk(int &err, const Comm::ResponseCallback::Ptr& cb);
-
-  void load(int &err, const Comm::ResponseCallback::Ptr& cb);
-
-  void loaded_ack(int err, const Comm::ResponseCallback::Ptr& cb);
+  void load(int &err, const Callback::RangeLoad::Ptr& req);
+  
+  void loaded(int err, const Callback::RangeLoad::Ptr& req);
 
   bool wait(uint8_t from_state=COMPACT_CHECKING);
 
   void run_add_queue();
 
-  private:
   const std::string             m_path;
   Core::MutexAtomic             m_mutex_intval;
   DB::Cells::Interval           m_interval;
@@ -191,6 +183,7 @@ class Range final : public std::enable_shared_from_this<Range> {
   std::atomic<State>            m_state;
   uint8_t                       m_compacting;
   bool                          m_require_compact;
+
   Core::QueueSafe<ReqScan::Ptr> m_q_scans;
   Core::QueueSafe<ReqAdd*>      m_q_adding;
 

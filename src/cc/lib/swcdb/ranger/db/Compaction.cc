@@ -66,7 +66,7 @@ void Compaction::run(bool continuing) {
   }
 
   RangePtr range  = nullptr;
-  for(Column::Ptr col = nullptr; 
+  for(ColumnPtr col = nullptr; 
       !stopped() && !Env::Rgr::res().is_low_mem_state() &&
       (col || (col = Env::Rgr::columns()->get_next(m_idx_cid)) ); ) {
 

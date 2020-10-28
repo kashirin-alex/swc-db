@@ -15,6 +15,7 @@ namespace Rgr { namespace Handler {
 
 
 void range_unload(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
+  int err = Error::OK;
   try {
     const uint8_t *ptr = ev->data.base;
     size_t remain = ev->data.size;
@@ -22,15 +23,21 @@ void range_unload(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     Common::Params::ColRangeId params;
     params.decode(&ptr, &remain);
 
-    int err = Error::OK;
-    Env::Rgr::columns()->unload_range(err, params.cid, params.rid, 
-      [conn, ev](int err) {
-        if(!err)
-          conn->response_ok(ev);
-        else
-          conn->send_error(err, "", ev);
-      }
-    );
+    auto col = Env::Rgr::columns()->get_column(params.cid);
+    if(col) {
+      col->add_managing(
+        std::make_shared<Ranger::Callback::RangeUnload>(
+          conn, ev, params.cid, params.rid, true ));
+      return;
+    }
+  } catch(...) {
+    const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
+    SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
+    err = e.code();
+  }
+  
+  try {
+    err ? conn->send_error(err, "", ev) : conn->response_ok(ev);  
   } catch(...) {
     SWC_LOG_CURRENT_EXCEPTION("");
   }

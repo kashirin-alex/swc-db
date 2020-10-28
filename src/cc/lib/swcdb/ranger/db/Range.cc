@@ -14,7 +14,7 @@
 
 namespace SWC { namespace Ranger {
 
-Range::Range(const ColumnCfg* cfg, const rid_t rid)
+Range::Range(const ColumnCfg::Ptr& cfg, const rid_t rid)
             : cfg(cfg), rid(rid), 
               blocks(cfg->key_seq), 
               m_path(DB::RangeBase::get_path(cfg->cid, rid)),
@@ -188,60 +188,139 @@ void Range::scan_internal(const ReqScan::Ptr& req) {
   blocks.scan(std::move(req));
 }
 
-void Range::create_folders(int& err) {
-  Env::FsInterface::interface()->mkdirs(err, get_path(LOG_DIR));
-  Env::FsInterface::interface()->mkdirs(err, get_path(LOG_TMP_DIR));
-  Env::FsInterface::interface()->mkdirs(err, get_path(CELLSTORES_DIR));
-}
-
-void Range::load(const Comm::ResponseCallback::Ptr& cb) {
+void Range::load(const Callback::RangeLoad::Ptr& req) {
   blocks.processing_increment();
 
-  bool is_loaded;
+  bool need;
   {
     std::scoped_lock lock(m_mutex);
-    is_loaded = m_state != State::NOTLOADED;
-    if(m_state == State::NOTLOADED)
+    need = m_state == State::NOTLOADED;
+    if(need)
       m_state = State::LOADING;
   }
+
   int err = Env::Rgr::is_shuttingdown() ||
             (Env::Rgr::is_not_accepting() &&
              DB::Types::MetaColumn::is_data(cfg->cid))
           ? Error::SERVER_SHUTTING_DOWN : Error::OK;
-  if(is_loaded || err)
-    return loaded(err, cb);
+  if(!need || err)
+    return loaded(err, req);
 
   SWC_LOG_OUT(LOG_DEBUG, print(SWC_LOG_OSTREAM << "LOADING RANGE "); );
 
   if(!Env::FsInterface::interface()->exists(err, get_path(CELLSTORES_DIR))) {
     if(!err)
-      create_folders(err);
+      internal_create_folders(err);
     if(err)
-      return loaded(err, cb);
+      return loaded(err, req);
       
-    take_ownership(err, cb);
+    internal_take_ownership(err, req);
   } else {
-    last_rgr_chk(err, cb);
+    last_rgr_chk(err, req);
   }
-
 }
 
-void Range::take_ownership(int &err, const Comm::ResponseCallback::Ptr& cb) {
+void Range::internal_take_ownership(int &err, const Callback::RangeLoad::Ptr& req) {
   if(Env::Rgr::is_shuttingdown() || 
      (Env::Rgr::is_not_accepting() && 
       DB::Types::MetaColumn::is_data(cfg->cid))) {
-    return loaded(err = Error::SERVER_SHUTTING_DOWN, cb);
+    return loaded(Error::SERVER_SHUTTING_DOWN, req);
   }
-
-  if(err == Error::RGR_DELETED_RANGE)
-    return loaded(err, cb);
 
   Env::Rgr::rgr_data()->set_rgr(
     err, DB::RangeBase::get_path_ranger(m_path), cfg->file_replication());
-  if(err)
-    return loaded(err, cb);
 
-  load(err, cb);
+  err ? loaded(err, req) : load(err, req);
+}
+
+void Range::internal_unload(bool completely) {
+  {
+    std::scoped_lock lock(m_mutex);
+    if(m_state != State::LOADED && !blocks.range)
+      return;
+    m_state = State::UNLOADING;
+  }
+  SWC_LOGF(LOG_DEBUG, "UNLOADING RANGE cid=%lu rid=%lu", cfg->cid, rid);
+
+  blocks.commitlog.stopping = true;
+
+  wait();
+  wait_queue();
+
+  blocks.unload();
+
+  int err = Error::OK;
+  if(completely) // whether to keep RANGER_FILE
+    Env::FsInterface::interface()->remove(
+      err, DB::RangeBase::get_path_ranger(m_path));
+
+  {
+    std::scoped_lock lock(m_mutex);
+    m_state = State::NOTLOADED;
+  }
+  SWC_LOGF(LOG_INFO, "UNLOADED RANGE cid=%lu rid=%lu error=%d(%s)", 
+                      cfg->cid, rid, err, Error::get_text(err));
+}
+
+void Range::internal_remove(int& err, bool meta) {
+  {
+    std::scoped_lock lock(m_mutex);
+    if(m_state == State::DELETED)
+      return;
+    m_state = State::DELETED;
+  }
+  if(meta)
+    on_change(err, true);
+
+  blocks.commitlog.stopping = true;
+  
+  wait();
+  wait_queue();
+  blocks.remove(err);
+
+  Env::FsInterface::interface()->rmdir(err, get_path(""));  
+
+  SWC_LOG_OUT(LOG_INFO, print(SWC_LOG_OSTREAM << "REMOVED RANGE "); );
+}
+
+void Range::wait_queue() {
+  while(!m_q_adding.empty() || !m_q_scans.empty())
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+}
+
+bool Range::compacting() {
+  std::shared_lock lock(m_mutex);
+  return m_compacting != COMPACT_NONE;
+}
+
+bool Range::compacting_is(uint8_t state) {
+  std::shared_lock lock(m_mutex);
+  return m_compacting == state;
+}
+
+void Range::compacting(uint8_t state) {
+  std::scoped_lock lock(m_mutex);
+  m_compacting = state;
+  m_cv.notify_all();
+}
+  
+bool Range::compact_possible(bool minor) {
+  std::scoped_lock lock(m_mutex);
+  if(m_state != State::LOADED || m_compacting != COMPACT_NONE ||
+     (!minor && !m_require_compact && blocks.processing()))
+    return false;
+  m_compacting = COMPACT_CHECKING;
+  return true;
+}
+
+void Range::compact_require(bool require) {
+  std::scoped_lock lock(m_mutex);
+  m_require_compact = require;
+}
+
+bool Range::compact_required() {
+  std::shared_lock lock(m_mutex);
+  return m_require_compact;
 }
 
 void Range::on_change(int &err, bool removal, 
@@ -335,95 +414,6 @@ void Range::on_change(int &err, bool removal,
   // INSERT meta-range(col-{5,8}), key[cid+m_interval(key)], value[rid]
 }
 
-void Range::unload(const Callback::RangeUnloaded_t& cb, bool completely) {
-  int err = Error::OK;
-  bool done;
-  {
-    std::scoped_lock lock(m_mutex);
-    if(!(done = m_state == State::DELETED))
-      m_state = State::UNLOADING;
-  }
-  if(done) {
-    cb(err);
-    return;
-  }
-
-  blocks.commitlog.stopping = true;
-
-  wait();
-  wait_queue();
-
-  blocks.unload();
-
-  if(completely) // whether to keep RANGER_FILE
-    Env::FsInterface::interface()->remove(
-      err, DB::RangeBase::get_path_ranger(m_path));
-    
-  SWC_LOGF(LOG_INFO, "UNLOADED RANGE cid=%lu rid=%lu error=%d(%s)", 
-                      cfg->cid, rid, err, Error::get_text(err));
-  set_state(State::NOTLOADED);
-  cb(err);
-}
-  
-void Range::remove(int &err, bool meta) {
-  {
-    std::scoped_lock lock(m_mutex);
-    m_state = State::DELETED;
-  }
-  if(meta)
-    on_change(err, true);
-
-  blocks.commitlog.stopping = true;
-  
-  wait();
-  wait_queue();
-  blocks.remove(err);
-
-  Env::FsInterface::interface()->rmdir(err, get_path(""));  
-
-  SWC_LOG_OUT(LOG_INFO, print(SWC_LOG_OSTREAM << "REMOVED RANGE "); );
-}
-
-void Range::wait_queue() {
-  while(!m_q_adding.empty() || !m_q_scans.empty())
-    std::this_thread::sleep_for(std::chrono::milliseconds(1));
-}
-
-bool Range::compacting() {
-  std::shared_lock lock(m_mutex);
-  return m_compacting != COMPACT_NONE;
-}
-
-bool Range::compacting_is(uint8_t state) {
-  std::shared_lock lock(m_mutex);
-  return m_compacting == state;
-}
-
-void Range::compacting(uint8_t state) {
-  std::scoped_lock lock(m_mutex);
-  m_compacting = state;
-  m_cv.notify_all();
-}
-  
-bool Range::compact_possible(bool minor) {
-  std::scoped_lock lock(m_mutex);
-  if(m_state != State::LOADED || m_compacting != COMPACT_NONE ||
-     (!minor && !m_require_compact && blocks.processing()))
-    return false;
-  m_compacting = COMPACT_CHECKING;
-  return true;
-}
-
-void Range::compact_require(bool require) {
-  std::scoped_lock lock(m_mutex);
-  m_require_compact = require;
-}
-
-bool Range::compact_required() {
-  std::shared_lock lock(m_mutex);
-  return m_require_compact;
-}
-
 void Range::apply_new(int &err,
                       CellStore::Writers& w_cellstores, 
                       CommitLog::Fragments::Vec& fragments_old,
@@ -470,8 +460,14 @@ void Range::expand_and_align(int &err, bool w_chg_chk) {
   if(intval_chg)
     on_change(err, false, w_chg_chk ? &old_key_begin : nullptr);
 }
-  
-void Range::create(int &err, const CellStore::Writers& w_cellstores) {
+
+void Range::internal_create_folders(int& err) {
+  Env::FsInterface::interface()->mkdirs(err, get_path(LOG_DIR));
+  Env::FsInterface::interface()->mkdirs(err, get_path(LOG_TMP_DIR));
+  Env::FsInterface::interface()->mkdirs(err, get_path(CELLSTORES_DIR));
+}
+
+void Range::internal_create(int &err, const CellStore::Writers& w_cellstores) {
   Env::Rgr::rgr_data()->set_rgr(
     err, DB::RangeBase::get_path_ranger(m_path), cfg->file_replication());
   if(err)
@@ -500,7 +496,7 @@ void Range::create(int &err, const CellStore::Writers& w_cellstores) {
   err = Error::OK;
 }
 
-void Range::create(int &err, CellStore::Readers::Vec& mv_css) {
+void Range::internal_create(int &err, CellStore::Readers::Vec& mv_css) {
   Env::Rgr::rgr_data()->set_rgr(
     err, DB::RangeBase::get_path_ranger(m_path), cfg->file_replication());
   if(err)
@@ -532,17 +528,7 @@ void Range::print(std::ostream& out, bool minimal) {
   out << ')'; 
 }
 
-void Range::loaded(int &err, const Comm::ResponseCallback::Ptr& cb) {
-  {
-    std::shared_lock lock(m_mutex);
-    if(m_state == State::DELETED)
-      err = Error::RGR_DELETED_RANGE;
-  }
-  blocks.processing_decrement();
-  cb->response(err);
-}
-
-void Range::last_rgr_chk(int &err, const Comm::ResponseCallback::Ptr& cb) {
+void Range::last_rgr_chk(int &err, const Callback::RangeLoad::Ptr& req) {
   // ranger.data
   auto rgr_data = Env::Rgr::rgr_data();
   Common::Files::RgrData::Ptr rs_last = get_last_rgr(err);
@@ -556,26 +542,19 @@ void Range::last_rgr_chk(int &err, const Comm::ResponseCallback::Ptr& cb) {
 
     Env::Clients::get()->rgr->get(rs_last->endpoints)->put(
       std::make_shared<Comm::Protocol::Rgr::Req::RangeUnload>(
-        shared_from_this(), cb));
-    return;
-  }
+        shared_from_this(), req)
+    );
 
-  take_ownership(err, cb);
+  } else {
+    internal_take_ownership(err, req);
+  }
 }
 
-void Range::load(int &err, const Comm::ResponseCallback::Ptr& cb) {
-  {
-    std::scoped_lock lock(m_mutex);
-    if(m_state != State::LOADING) // state has changed since load request
-      err = Error::RGR_NOT_LOADED_RANGE;
-  }
-  if(err) 
-    return loaded(err, cb);
-
+void Range::load(int &err, const Callback::RangeLoad::Ptr& req) {
   if(Env::Rgr::is_shuttingdown() ||
      (Env::Rgr::is_not_accepting() &&
       DB::Types::MetaColumn::is_data(cfg->cid)))
-    return loaded_ack(Error::SERVER_SHUTTING_DOWN, cb);
+    return loaded(Error::SERVER_SHUTTING_DOWN, req);
 
   bool is_initial_column_range = false;
   RangeData::load(err, blocks.cellstores);
@@ -596,7 +575,7 @@ void Range::load(int &err, const Comm::ResponseCallback::Ptr& cb) {
     blocks.load(err);
 
   if(err)
-    return loaded_ack(err, cb);
+    return loaded(err, req);
 
   blocks.cellstores.get_prev_key_end(0, prev_range_end);
 
@@ -609,17 +588,17 @@ void Range::load(int &err, const Comm::ResponseCallback::Ptr& cb) {
   if(is_initial_column_range) {
     RangeData::save(err, blocks.cellstores);
     return on_change(err, false, nullptr,
-      [cb, range=shared_from_this()]
+      [req, range=shared_from_this()]
       (const client::Query::Update::Result::Ptr& res) {
-        range->loaded_ack(res ? res->error() : Error::OK, cb);
+        range->loaded(res ? res->error() : Error::OK, req);
       }
     );
   }
 
   if(cfg->range_type == DB::Types::Range::MASTER)
-    return loaded_ack(err, cb);
+    return loaded(err, req);
 
-  auto req = std::make_shared<client::Query::Select>();
+  auto selector = std::make_shared<client::Query::Select>();
   auto intval = DB::Specs::Interval::make_ptr();
   intval->key_eq = true;
   intval->flags.limit = 1;
@@ -629,29 +608,29 @@ void Range::load(int &err, const Comm::ResponseCallback::Ptr& cb) {
   intval->key_start.set(m_interval.key_begin, Condition::EQ);
   intval->key_start.insert(0, std::to_string(cfg->cid), Condition::EQ);
 
-  req->specs.columns.push_back(
+  selector->specs.columns.push_back(
     DB::Specs::Column::make_ptr(cfg->meta_cid, {intval}));
 
-  req->scan(err);
+  selector->scan(err);
   if(err)
-    return loaded_ack(err = Error::RGR_NOT_LOADED_RANGE, cb);
-  req->wait();
+    return loaded(Error::RGR_NOT_LOADED_RANGE, req);
+  selector->wait();
 
   DB::Cells::Result cells; 
-  if(!req->result->empty())
-    req->result->get_cells(cfg->meta_cid, cells);
+  if(!selector->result->empty())
+    selector->result->get_cells(cfg->meta_cid, cells);
           
   if(cells.empty()) {
     SWC_LOG_OUT(LOG_ERROR, 
       SWC_LOG_OSTREAM 
         << "Range MetaData missing cid=" << cfg->cid << " rid=" << rid;
       m_interval.print(SWC_LOG_OSTREAM << "\n\t auto-registering=");
-      req->specs.print(SWC_LOG_OSTREAM << "\n\t"); 
+      selector->specs.print(SWC_LOG_OSTREAM << "\n\t"); 
     );
     return on_change(err, false, nullptr,
-      [cb, range=shared_from_this()]
+      [req, range=shared_from_this()]
       (const client::Query::Update::Result::Ptr& res) {
-        range->loaded_ack(res ? res->error() : Error::OK, cb);
+        range->loaded(res ? res->error() : Error::OK, req);
       }
     );
   }
@@ -696,32 +675,38 @@ void Range::load(int &err, const Comm::ResponseCallback::Ptr& cb) {
       interval.print(SWC_LOG_OSTREAM << ' ');
     );
     return on_change(err, false, nullptr,
-      [cb, range=shared_from_this()]
+      [req, range=shared_from_this()]
       (const client::Query::Update::Result::Ptr& res) {
-        range->loaded_ack(res ? res->error() : Error::OK, cb);
+        range->loaded(res ? res->error() : Error::OK, req);
       }
     );
   }
 
-  loaded_ack(err, cb);
+  loaded(err, req);
 }
 
-void Range::loaded_ack(int err, const Comm::ResponseCallback::Ptr& cb) {
-  if(!err) {
+void Range::loaded(int err, const Callback::RangeLoad::Ptr& req) {
+  bool tried;
+  {
     std::scoped_lock lock(m_mutex);
-    if(m_state == State::LOADING)
-      m_state = State::LOADED;
+    tried = m_state == State::LOADING;
+    if(tried)
+      m_state = err ? State::NOTLOADED : State::LOADED;
   }
-  
-  SWC_LOG_OUT((is_loaded() ? LOG_INFO : LOG_WARN),
-    SWC_LOG_OSTREAM << "LOAD RANGE ";
-    if(_log_pr == LOG_INFO)
-      SWC_LOG_OSTREAM << "SUCCEED";
-    else
-      Error::print(SWC_LOG_OSTREAM << "FAILED ", err);
-    print(SWC_LOG_OSTREAM << ' ', _log_pr == LOG_INFO);
-  );
-  loaded(err, cb); // RSP-LOAD-ACK
+
+  if(tried) {
+    SWC_LOG_OUT((is_loaded() ? LOG_INFO : LOG_WARN),
+      SWC_LOG_OSTREAM << "LOAD RANGE ";
+      if(_log_pr == LOG_INFO)
+        SWC_LOG_OSTREAM << "SUCCEED";
+      else
+        Error::print(SWC_LOG_OSTREAM << "FAILED ", err);
+      print(SWC_LOG_OSTREAM << ' ', _log_pr == LOG_INFO);
+    );
+  }
+
+  blocks.processing_decrement();
+  req->loaded(err);
 }
 
 bool Range::wait(uint8_t from_state) {
