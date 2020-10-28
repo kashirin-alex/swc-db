@@ -196,9 +196,6 @@ void Column::internal_delete(rid_t rid) {
 
 
 void Column::run_mng_req(const Callback::ManageBase::Ptr& req) {
-  if(req->expired())
-    return run_mng_queue();
-
   switch(req->action) {
     case Callback::ManageBase::RANGE_LOAD: {
       return load(
@@ -236,6 +233,9 @@ void Column::run_mng_req(const Callback::ManageBase::Ptr& req) {
 }
 
 void Column::load(const Callback::RangeLoad::Ptr& req) {
+  if(req->expired())
+    return req->send_error(Error::REQUEST_TIMEOUT, "");
+
   int err = Error::OK;
   auto range = internal_create(err, req->rid);
   req->col = shared_from_this();
@@ -243,6 +243,9 @@ void Column::load(const Callback::RangeLoad::Ptr& req) {
 }
 
 void Column::unload(const Callback::RangeUnload::Ptr& req) {
+  if(req->expired())
+    return req->send_error(Error::REQUEST_TIMEOUT, "");
+  
   internal_unload(req->rid);
   req->response_ok();
 }
@@ -265,6 +268,9 @@ void Column::unload_all(const Callback::ColumnsUnload::Ptr& req) {
 }
 
 void Column::remove(const Callback::ColumnDelete::Ptr& req) {
+  if(req->expired())
+    return req->send_error(Error::REQUEST_TIMEOUT, "");
+
   int err = Error::OK;
   if(!cfg->deleting) {
     cfg->deleting = true;

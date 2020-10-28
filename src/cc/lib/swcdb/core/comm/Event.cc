@@ -52,7 +52,7 @@ void Event::decode_buffers() {
 }
 
 bool Event::expired(int64_t within) const {
-  return expiry_ms && Time::now_ms() > expiry_ms-within;
+  return expiry_ms && Time::now_ms() > expiry_ms - within;
 }
 
 int32_t Event::response_code() {
