@@ -82,17 +82,10 @@ void Rangers::set(const cid_t cid, const rid_t rid,
   auto r_new = new RangeEndPoints(Time::now_ms(), endpoints);
 
   Core::MutexSptd::scope lock(m_mutex);
-  auto c = find(cid);
-  if(c == end()) {
-    (*this)[cid].emplace(rid, r_new);
-  } else {
-    auto r = c->second.find(rid);
-    if(r == c->second.end()) {
-      c->second.emplace(rid, r_new);
-    } else {
-      delete r->second;
-      r->second = r_new;
-    }
+  auto res = (*this)[cid].emplace(rid, r_new);
+  if(!res.second) {
+    delete res.first->second;
+    res.first->second = r_new;
   }
 }
 

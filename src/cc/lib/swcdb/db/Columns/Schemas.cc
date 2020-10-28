@@ -47,11 +47,9 @@ void Schemas::replace(const Schema::Ptr& schema) {
 }
 
 void Schemas::_replace(const Schema::Ptr& schema) {
-  auto it = find(schema->cid);
-  if(it == end())
-     emplace(schema->cid, schema);
-  else
-    it->second = schema;
+  auto res = emplace(schema->cid, schema);
+  if(!res.second)
+    res.first->second = schema;
 }
 
 Schema::Ptr Schemas::get(cid_t cid) {

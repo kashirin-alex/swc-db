@@ -60,11 +60,10 @@ class ColumnsUnloadRsp : public Serializable {
     cid_t cid;
     for(size_t cids=Serialization::decode_vi64(bufp, remainp); cids; --cids) {
       cid = Serialization::decode_vi64(bufp, remainp);
-      std::vector<rid_t> rids;
+      auto& rids = columns[cid];
       rids.resize(Serialization::decode_vi64(bufp, remainp));
       for(auto it = rids.begin(); it < rids.end(); ++it)
         *it = Serialization::decode_vi64(bufp, remainp);
-      columns.emplace(cid, rids);
     }
   }
 

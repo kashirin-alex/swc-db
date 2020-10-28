@@ -238,10 +238,7 @@ class Column final : private std::vector<Range::Ptr> {
 
   void change_rgr_schema(const rgrid_t rgrid, int64_t rev=0) {
     std::scoped_lock lock(m_mutex);
-
-    auto res = m_schemas_rev.emplace(rgrid, rev);
-    if(!res.second)
-      res.first->second = rev;
+    m_schemas_rev[rgrid] = rev;
   }
 
   void remove_rgr_schema(const rgrid_t rgrid) {
