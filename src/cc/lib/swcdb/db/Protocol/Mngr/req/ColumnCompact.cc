@@ -33,10 +33,14 @@ void ColumnCompact::request(const Params::ColumnCompactReq& params,
 ColumnCompact::ColumnCompact(const Params::ColumnCompactReq& params, 
                              const ColumnCompact::Cb_t& cb, 
                              const uint32_t timeout) 
-                            : client::ConnQueue::ReqBase(false), 
+                            : client::ConnQueue::ReqBase(
+                                false,
+                                Buffers::make(
+                                  params, 0,
+                                  COLUMN_COMPACT, timeout
+                                )
+                              ), 
                               cb(cb), cid(params.cid) {
-  cbp = Buffers::make(params);
-  cbp->header.set(COLUMN_COMPACT, timeout);
 }
 
 ColumnCompact::~ColumnCompact() { }

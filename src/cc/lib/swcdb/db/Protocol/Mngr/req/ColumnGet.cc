@@ -52,9 +52,11 @@ void ColumnGet::request(ColumnGet::Flag flag, cid_t cid,
 ColumnGet::ColumnGet(const Params::ColumnGetReq& params, 
                      const ColumnGet::Cb_t& cb, 
                      const uint32_t timeout) 
-                    : client::ConnQueue::ReqBase(false), cb(cb) {
-  cbp = Buffers::make(params);
-  cbp->header.set(COLUMN_GET, timeout);
+                    : client::ConnQueue::ReqBase(
+                        false,
+                        Buffers::make(params, 0, COLUMN_GET, timeout)
+                      ),
+                      cb(cb) {
 }
 
 ColumnGet::~ColumnGet() { }

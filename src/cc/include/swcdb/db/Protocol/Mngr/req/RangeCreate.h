@@ -38,10 +38,11 @@ class RangeCreate: public client::ConnQueue::ReqBase {
 
   RangeCreate(const Params::RangeCreateReq& params, const Cb_t& cb, 
               const uint32_t timeout) 
-              : client::ConnQueue::ReqBase(false), 
+              : client::ConnQueue::ReqBase(
+                  false,
+                  Buffers::make(params, 0, RANGE_CREATE, timeout)
+                ),
                 cb(cb), cid(params.cid) {
-    cbp = Buffers::make(params);
-    cbp->header.set(RANGE_CREATE, timeout);
   }
 
   virtual ~RangeCreate() { }

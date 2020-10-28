@@ -13,10 +13,12 @@ namespace Rgr { namespace Req {
   
 
 ColumnDelete::ColumnDelete(const Manager::Ranger::Ptr& rgr, cid_t cid)
-                          : client::ConnQueue::ReqBase(false), 
-                            rgr(rgr), cid(cid) {
-  cbp = Buffers::make(Common::Params::ColumnId(cid));
-  cbp->header.set(COLUMN_DELETE, 60000);
+          : client::ConnQueue::ReqBase(
+              false,
+              Buffers::make(
+                Common::Params::ColumnId(cid), 0, COLUMN_DELETE, 60000)
+            ), 
+            rgr(rgr), cid(cid) {
 }
   
 ColumnDelete::~ColumnDelete() { }

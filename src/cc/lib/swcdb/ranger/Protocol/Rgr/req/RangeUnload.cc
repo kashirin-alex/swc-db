@@ -16,10 +16,14 @@ namespace Rgr { namespace Req {
 RangeUnload::RangeUnload(const Ranger::RangePtr& range, 
                          const Ranger::Callback::RangeLoad::Ptr& req,
                          uint32_t timeout) 
-                        : client::ConnQueue::ReqBase(false), 
-                          req(req), range(range) {
-  cbp = Buffers::make(Common::Params::ColRangeId(range->cfg->cid, range->rid));
-  cbp->header.set(RANGE_UNLOAD, timeout);
+        : client::ConnQueue::ReqBase(
+            false,
+            Buffers::make(
+              Common::Params::ColRangeId(range->cfg->cid, range->rid),
+              0,
+              RANGE_UNLOAD, timeout)
+          ), 
+          req(req), range(range) {
 }
 
 RangeUnload::~RangeUnload() { }

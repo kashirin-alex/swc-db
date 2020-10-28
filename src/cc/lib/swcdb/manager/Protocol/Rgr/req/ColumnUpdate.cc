@@ -13,10 +13,12 @@ namespace Rgr { namespace Req {
 
 ColumnUpdate::ColumnUpdate(const Manager::Ranger::Ptr& rgr, 
                            const DB::Schema::Ptr& schema)
-                          : client::ConnQueue::ReqBase(false), 
-                            rgr(rgr), schema(schema) {
-  cbp = Buffers::make(Params::ColumnUpdate(schema));
-  cbp->header.set(SCHEMA_UPDATE, 60000);
+              : client::ConnQueue::ReqBase(
+                  false,
+                  Buffers::make(
+                    Params::ColumnUpdate(schema), 0, SCHEMA_UPDATE, 60000)
+                ), 
+                rgr(rgr), schema(schema) {
 }
   
 ColumnUpdate::~ColumnUpdate() { }

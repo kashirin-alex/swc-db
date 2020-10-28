@@ -34,10 +34,11 @@ Report::Report(const EndPoints& endpoints,
 Report::Report(const Serializable& params, 
                Params::Report::Function func, 
                const uint32_t timeout) 
-              : client::ConnQueue::ReqBase(false) {
-  cbp = Buffers::make(params, 1);
+              : client::ConnQueue::ReqBase(
+                  false,
+                  Buffers::make(params, 1, REPORT, timeout)
+                ) {
   cbp->append_i8((uint8_t)func);
-  cbp->header.set(REPORT, timeout);
 }
 
 Report::~Report() { }

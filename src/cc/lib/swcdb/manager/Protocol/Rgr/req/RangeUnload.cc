@@ -16,12 +16,15 @@ RangeUnload::RangeUnload(const Manager::Ranger::Ptr& rgr,
                          const Manager::Range::Ptr& range,
                          bool ignore_error,
                          uint32_t timeout) 
-                        : client::ConnQueue::ReqBase(false), 
-                          rgr(rgr), col(col), range(range),
-                          ignore_error(ignore_error) {
-  cbp = Buffers::make(
-    Common::Params::ColRangeId(range->cfg->cid, range->rid));
-  cbp->header.set(RANGE_UNLOAD, timeout);
+        : client::ConnQueue::ReqBase(
+            false,
+            Buffers::make(
+              Common::Params::ColRangeId(range->cfg->cid, range->rid),
+              0,
+              RANGE_UNLOAD, timeout
+            )
+          ), 
+          rgr(rgr), col(col), range(range), ignore_error(ignore_error) {
 }
   
 RangeUnload::~RangeUnload() { }

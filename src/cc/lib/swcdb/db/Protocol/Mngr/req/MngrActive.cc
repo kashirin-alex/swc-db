@@ -31,13 +31,18 @@ MngrActive::Ptr MngrActive::make(const uint8_t& role,
 
 MngrActive::MngrActive(const uint8_t& role, const cid_t& cid, 
                        const DispatchHandler::Ptr& hdlr, uint32_t timeout_ms)
-                      : client::ConnQueue::ReqBase(false), 
+                      : client::ConnQueue::ReqBase(
+                          false,
+                          Buffers::make(
+                            Params::MngrActiveReq(role, cid),
+                            0,
+                            MNGR_ACTIVE, timeout_ms
+                          )
+                        ),
                         role(role), cid(cid), hdlr(hdlr), nxt(0),
                         timer(asio::high_resolution_timer(
                           *Env::Clients::get()->mngr->service->io().get())),
                         timeout_ms(timeout_ms) {
-  cbp = Buffers::make(Params::MngrActiveReq(role, cid));
-  cbp->header.set(MNGR_ACTIVE, timeout_ms);
 }
 
 MngrActive::~MngrActive() { }

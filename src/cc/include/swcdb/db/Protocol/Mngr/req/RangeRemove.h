@@ -38,10 +38,11 @@ class RangeRemove: public client::ConnQueue::ReqBase {
 
   RangeRemove(const Params::RangeRemoveReq& params, const Cb_t& cb, 
               const uint32_t timeout) 
-              : client::ConnQueue::ReqBase(false), 
+              : client::ConnQueue::ReqBase(
+                  false,
+                  Buffers::make(params, 0, RANGE_REMOVE, timeout)
+                ), 
                 cb(cb), cid(params.cid) {
-    cbp = Buffers::make(params);
-    cbp->header.set(RANGE_REMOVE, timeout);
   }
 
   virtual ~RangeRemove(){}

@@ -38,10 +38,11 @@ class RangeUnloaded: public client::ConnQueue::ReqBase {
 
   RangeUnloaded(const Params::RangeUnloadedReq& params, const Cb_t& cb, 
                 const uint32_t timeout)
-                : client::ConnQueue::ReqBase(false),
+                : client::ConnQueue::ReqBase(
+                    false,
+                    Buffers::make(params, 0, RANGE_UNLOADED, timeout)
+                  ),
                   cb(cb), cid(params.cid) {
-    cbp = Buffers::make(params);
-    cbp->header.set(RANGE_UNLOADED, timeout);
   }
 
   virtual ~RangeUnloaded(){}

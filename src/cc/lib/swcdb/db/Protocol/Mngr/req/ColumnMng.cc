@@ -44,9 +44,11 @@ void ColumnMng::request(ColumnMng::Func func, const DB::Schema::Ptr& schema,
 
 ColumnMng::ColumnMng(const Params::ColumnMng& params, 
                      const ColumnMng::Cb_t& cb, const uint32_t timeout)
-                    : client::ConnQueue::ReqBase(false), cb(cb) {
-  cbp = Buffers::make(params);    
-  cbp->header.set(COLUMN_MNG, timeout);
+                    : client::ConnQueue::ReqBase(
+                        false,
+                        Buffers::make(params, 0, COLUMN_MNG, timeout)
+                      ),
+                      cb(cb) {
 }
 
 ColumnMng::~ColumnMng() { }

@@ -31,9 +31,11 @@ void ColumnList::request(const Params::ColumnListReq& params,
 ColumnList::ColumnList(const Params::ColumnListReq& params, 
                        const ColumnList::Cb_t& cb, 
                        const uint32_t timeout) 
-                      : client::ConnQueue::ReqBase(false), cb(cb) {
-  cbp = Buffers::make(params);
-  cbp->header.set(COLUMN_LIST, timeout);
+                      : client::ConnQueue::ReqBase(
+                          false,
+                          Buffers::make(params, 0, COLUMN_LIST, timeout)
+                        ),
+                        cb(cb) {
 }
 
 ColumnList::~ColumnList() { }

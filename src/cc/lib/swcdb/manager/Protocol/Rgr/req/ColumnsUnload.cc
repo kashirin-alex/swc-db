@@ -16,11 +16,15 @@ namespace Rgr { namespace Req {
 
 ColumnsUnload::ColumnsUnload(const Manager::Ranger::Ptr& rgr, 
                              cid_t cid_begin, cid_t cid_end)
-                            : client::ConnQueue::ReqBase(false), 
-                              rgr(rgr), 
-                              cid_begin(cid_begin), cid_end(cid_end) {
-  cbp = Buffers::make(Common::Params::ColumnsInterval(cid_begin, cid_end));
-  cbp->header.set(COLUMNS_UNLOAD, 60000);
+            : client::ConnQueue::ReqBase(
+                false,
+                Buffers::make(
+                  Common::Params::ColumnsInterval(cid_begin, cid_end),
+                  0,
+                  COLUMNS_UNLOAD, 60000
+                )
+              ),
+              rgr(rgr), cid_begin(cid_begin), cid_end(cid_end) {
 }
   
 ColumnsUnload::~ColumnsUnload() { }

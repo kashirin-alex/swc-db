@@ -28,10 +28,11 @@ RangeQuerySelect::RangeQuerySelect(const Params::RangeQuerySelectReq& params,
                                    const EndPoints& endpoints, 
                                    const RangeQuerySelect::Cb_t& cb, 
                                    const uint32_t timeout) 
-                                  : client::ConnQueue::ReqBase(false), 
-                                    endpoints(endpoints), cb(cb) {
-  cbp = Buffers::make(params);
-  cbp->header.set(RANGE_QUERY_SELECT, timeout);
+                  : client::ConnQueue::ReqBase(
+                      false,
+                      Buffers::make(params, 0, RANGE_QUERY_SELECT, timeout)
+                    ),
+                    endpoints(endpoints), cb(cb) {
 }
 
 RangeQuerySelect::~RangeQuerySelect() { }

@@ -14,11 +14,15 @@ namespace Rgr { namespace Req {
 RangeLoad::RangeLoad(const Manager::Ranger::Ptr& rgr, 
                      const Manager::Range::Ptr& range,
                      const DB::Schema::Ptr& schema) 
-                    : client::ConnQueue::ReqBase(false), 
-                      rgr(rgr), range(range), 
-                      schema_revision(schema->revision) {
-  cbp = Buffers::make(Params::RangeLoad(range->cfg->cid, range->rid, schema));
-  cbp->header.set(RANGE_LOAD, 3600000);
+        : client::ConnQueue::ReqBase(
+            false,
+            Buffers::make(
+              Params::RangeLoad(range->cfg->cid, range->rid, schema),
+              0,
+              RANGE_LOAD, 3600000
+            )
+          ),
+          rgr(rgr), range(range), schema_revision(schema->revision) {
 }
   
 RangeLoad::~RangeLoad() { }

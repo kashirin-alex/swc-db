@@ -18,9 +18,10 @@ class MngrColumnGet : public client::ConnQueue::ReqBase {
   typedef std::function<void(int, const Params::ColumnGetRsp&)> Cb_t;
 
   MngrColumnGet(const Params::ColumnGetReq& params, const Cb_t& cb) 
-                : client::ConnQueue::ReqBase(true), cb(cb) {
-    cbp = Buffers::make(params);
-    cbp->header.set(COLUMN_GET, 60000);
+                : client::ConnQueue::ReqBase(
+                    true,
+                    Buffers::make(params, 0, COLUMN_GET, 60000)
+                  ), cb(cb) {
   }
   
   virtual ~MngrColumnGet() { }

@@ -15,9 +15,11 @@ namespace Rgr { namespace Req {
   
 
 ColumnCompact::ColumnCompact(cid_t cid) 
-              : client::ConnQueue::ReqBase(false) {
-  cbp = Buffers::make(Params::ColumnCompactReq(cid));
-  cbp->header.set(COLUMN_COMPACT, 60000);
+              : client::ConnQueue::ReqBase(
+                  false,
+                  Buffers::make(
+                    Params::ColumnCompactReq(cid), 0, COLUMN_COMPACT, 60000)
+                ) {
 }
 
 ColumnCompact::~ColumnCompact() { }

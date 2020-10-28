@@ -33,8 +33,7 @@ class RgrMngId: public client::ConnQueue::ReqBase {
 
   void create(const Params::RgrMngId& params) {
     Core::MutexAtomic::scope lock(m_mutex);
-    cbp = Buffers::make(params);
-    cbp->header.set(RGR_MNG_ID, 60000);
+    cbp = Buffers::make(params, 0, RGR_MNG_ID, 60000);
   }
 
   void request() {

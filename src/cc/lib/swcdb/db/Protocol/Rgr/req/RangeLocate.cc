@@ -26,10 +26,11 @@ RangeLocate::RangeLocate(const Params::RangeLocateReq& params,
                          const EndPoints& endpoints,
                          const RangeLocate::Cb_t& cb, 
                          const uint32_t timeout)
-                        : client::ConnQueue::ReqBase(false), 
+                        : client::ConnQueue::ReqBase(
+                            false,
+                            Buffers::make(params, 0, RANGE_LOCATE, timeout)
+                          ),
                           endpoints(endpoints), cb(cb) {
-  cbp = Buffers::make(params);
-  cbp->header.set(RANGE_LOCATE, timeout);
 }
 
 RangeLocate::~RangeLocate() { }

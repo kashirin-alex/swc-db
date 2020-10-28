@@ -17,9 +17,11 @@ class RgrUpdate : public client::ConnQueue::ReqBase {
   public:
 
   RgrUpdate(const Manager::RangerList &hosts, bool sync_all)
-            : client::ConnQueue::ReqBase(true) {
-    cbp = Buffers::make(Params::RgrUpdate(hosts, sync_all));
-    cbp->header.set(RGR_UPDATE, 60000);
+            : client::ConnQueue::ReqBase(
+                true,
+                Buffers::make(
+                  Params::RgrUpdate(hosts, sync_all), 0, RGR_UPDATE, 60000)
+              ) {
   }
   
   virtual ~RgrUpdate() { }

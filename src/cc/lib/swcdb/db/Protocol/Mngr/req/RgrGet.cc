@@ -41,9 +41,11 @@ RgrGet::Ptr RgrGet::make(const Params::RgrGetReq& params,
 RgrGet::RgrGet(const Params::RgrGetReq& params, 
                const RgrGet::Cb_t& cb, 
                const uint32_t timeout) 
-              : client::ConnQueue::ReqBase(false), cb(cb), cid(params.cid) {
-  cbp = Buffers::make(params);
-  cbp->header.set(RGR_GET, timeout);
+              : client::ConnQueue::ReqBase(
+                  false,
+                  Buffers::make(params, 0 ,RGR_GET, timeout)
+                ), 
+                cb(cb), cid(params.cid) {
 }
 
 RgrGet::~RgrGet(){}

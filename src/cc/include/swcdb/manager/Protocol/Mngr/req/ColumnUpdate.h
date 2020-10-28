@@ -17,9 +17,14 @@ class ColumnUpdate : public client::ConnQueue::ReqBase {
   public:
 
   ColumnUpdate(Params::ColumnMng::Function function, DB::Schema::Ptr schema, 
-               int err) : client::ConnQueue::ReqBase(true) {
-    cbp = Buffers::make(Params::ColumnUpdate(function, schema, err));
-    cbp->header.set(COLUMN_UPDATE, 60000);
+               int err) 
+              : client::ConnQueue::ReqBase(
+                  true,
+                  Buffers::make(
+                    Params::ColumnUpdate(function, schema, err),
+                    0,
+                    COLUMN_UPDATE, 60000
+                  )) {
   }
   
   virtual ~ColumnUpdate() { }
