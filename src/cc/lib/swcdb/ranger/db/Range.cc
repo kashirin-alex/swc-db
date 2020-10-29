@@ -262,6 +262,31 @@ void Range::internal_unload(bool completely) {
                       cfg->cid, rid, err, Error::get_text(err));
 }
 
+void Range::remove(const Callback::ColumnDelete::Ptr& req) {
+  {
+    std::scoped_lock lock(m_mutex);
+    if(m_state == State::DELETED)
+      return req->removed(shared_from_this());
+    m_state = State::DELETED;
+  }
+  blocks.commitlog.stopping = true;
+  int err = Error::OK;
+  on_change(
+    err, true, nullptr, 
+    [req, range=shared_from_this()] 
+    (const client::Query::Update::Result::Ptr&) {
+      int err = Error::OK;
+      
+      range->wait();
+      range->wait_queue();
+      range->blocks.remove(err);
+
+      Env::FsInterface::interface()->rmdir(err, range->get_path(""));
+      req->removed(range);
+    }
+  );
+}
+
 void Range::internal_remove(int& err, bool meta) {
   {
     std::scoped_lock lock(m_mutex);

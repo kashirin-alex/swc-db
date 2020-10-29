@@ -16,11 +16,22 @@ class ColumnDelete : public ManageBase {
   typedef std::shared_ptr<ColumnDelete> Ptr;
 
   const cid_t  cid;
+  ColumnPtr    col;
 
   ColumnDelete(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev,
                const cid_t cid);
 
   virtual ~ColumnDelete();
+
+  void add(const RangePtr& range);
+
+  void removed(const RangePtr& range);
+  
+  void response();
+
+  private:
+  Core::MutexSptd       m_mutex;
+  std::vector<RangePtr> m_ranges;
 
 };
 

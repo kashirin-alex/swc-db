@@ -33,15 +33,16 @@ void RangeLoad::loaded(int& err) {
     if(err || !range || !range->is_loaded())
       err = Error::RGR_NOT_LOADED_RANGE;
   }
-    
+
   try {
     if(err) {
       col->internal_unload(rid);
       Env::Rgr::columns()->erase_if_empty(cid);
 
-      m_conn->send_error(err, "", m_ev);
-    } else {
+      if(!expired())
+        m_conn->send_error(err, "", m_ev);
 
+    } else if(!expired()) {
       Comm::Protocol::Rgr::Params::RangeLoaded params(range->cfg->key_seq);
       if((params.intval = range->cfg->range_type == DB::Types::Range::MASTER))
         range->get_interval(params.interval);

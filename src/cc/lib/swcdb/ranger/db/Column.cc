@@ -198,8 +198,9 @@ void Column::internal_delete(rid_t rid) {
 void Column::run_mng_req(const Callback::ManageBase::Ptr& req) {
   switch(req->action) {
     case Callback::ManageBase::RANGE_LOAD: {
-      return load(
+      load(
         std::dynamic_pointer_cast<Callback::RangeLoad>(req));
+      break;
     }
 
     case Callback::ManageBase::RANGE_UNLOAD: {
@@ -227,14 +228,11 @@ void Column::run_mng_req(const Callback::ManageBase::Ptr& req) {
     }
     */
   }
-
-  Env::Rgr::columns()->erase_if_empty(cfg->cid);
-  run_mng_queue();
 }
 
 void Column::load(const Callback::RangeLoad::Ptr& req) {
   if(req->expired())
-    return req->send_error(Error::REQUEST_TIMEOUT, "");
+    return run_mng_queue();
 
   int err = Error::OK;
   auto range = internal_create(err, req->rid);
@@ -244,10 +242,14 @@ void Column::load(const Callback::RangeLoad::Ptr& req) {
 
 void Column::unload(const Callback::RangeUnload::Ptr& req) {
   if(req->expired())
-    return req->send_error(Error::REQUEST_TIMEOUT, "");
+    return run_mng_queue();
   
   internal_unload(req->rid);
-  req->response_ok();
+
+  if(!req->expired())
+    req->response_ok();
+  Env::Rgr::columns()->erase_if_empty(cfg->cid);
+  run_mng_queue();
 }
 
 void Column::unload_all(const Callback::ColumnsUnload::Ptr& req) {
@@ -265,26 +267,33 @@ void Column::unload_all(const Callback::ColumnsUnload::Ptr& req) {
     }
   }
   req->unloaded(shared_from_this());
+  Env::Rgr::columns()->erase_if_empty(cfg->cid);
+  run_mng_queue();
 }
 
 void Column::remove(const Callback::ColumnDelete::Ptr& req) {
   if(req->expired())
-    return req->send_error(Error::REQUEST_TIMEOUT, "");
+    return run_mng_queue();
 
-  int err = Error::OK;
-  if(!cfg->deleting) {
-    cfg->deleting = true;
-    
-    for(;;) {
-      Core::MutexSptd::scope lock(m_mutex);
-      if(empty())
-        break;
-      begin()->second->internal_remove(err, true);
-      erase(begin());
+  if(cfg->deleting)
+    return req->response_ok();
+
+  cfg->deleting = true;
+  std::vector<RangePtr> ranges;
+  {
+    Core::MutexSptd::scope lock(m_mutex);
+    for(auto it=begin(); it != end(); ++it) {
+      req->add(it->second);
+      ranges.push_back(it->second);
     }
-    SWC_LOG_OUT(LOG_INFO, print(SWC_LOG_OSTREAM << "REMOVED "); );
   }
-  req->response_ok();
+  req->col = shared_from_this();
+  if(ranges.empty()) {
+    req->response();
+  } else {
+    for(auto& range : ranges)
+      range->remove(req);
+  }
 }
 
 
