@@ -92,14 +92,14 @@ void Column::compact() {
 
 void Column::add_managing(const Callback::ManageBase::Ptr& req) {
   if(m_q_mng.activating(req))
-    Env::IoCtx::post(
+    Env::Rgr::post(
       [req, ptr=shared_from_this()](){ ptr->run_mng_req(req); } );
 }
 
 void Column::run_mng_queue() {
   Callback::ManageBase::Ptr req;
   if(!m_q_mng.deactivating(&req))
-    Env::IoCtx::post(
+    Env::Rgr::post(
       [req, ptr=shared_from_this()](){ ptr->run_mng_req(req); } );
 }
 

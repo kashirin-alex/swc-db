@@ -69,7 +69,7 @@ class Splitter final {
 
   void loaded() {
     if(m_queue.activating())
-      Env::IoCtx::post([this](){ split(); });
+      Env::Rgr::post([this](){ split(); });
   }
 
   void split() {

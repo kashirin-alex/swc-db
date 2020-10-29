@@ -27,7 +27,7 @@ class Rangers final {
   const Config::Property::V_GINT32::Ptr cfg_column_health_chk;
   const Config::Property::V_GINT32::Ptr cfg_column_health_chkers;
 
-  Rangers();
+  Rangers(const Comm::IoContext::Ptr& app_io);
 
   ~Rangers();
 

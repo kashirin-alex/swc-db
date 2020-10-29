@@ -28,6 +28,11 @@ _default_ **```swc.mngr.workers=32```**
 The number of Application handlers. \
 _default_ **```swc.mngr.handlers=256```**
 
+* ### swc.mngr.clients.handlers
+```INT32```
+The number of DB-Clients handlers. \
+_default_ **```swc.mngr.clients.handlers=8```**
+
 
 
 ***

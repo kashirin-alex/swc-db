@@ -61,7 +61,7 @@ void Fragments::add(const DB::Cells::Cell& cell) {
   if(roll && m_mutex.try_lock()) {
     if(!m_deleting && !m_commiting) {
       m_commiting = true;
-      Env::IoCtx::post([this](){ commit_new_fragment(); });
+      Env::Rgr::post([this](){ commit_new_fragment(); });
     }
     m_mutex.unlock();
   }

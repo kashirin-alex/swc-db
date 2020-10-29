@@ -38,7 +38,7 @@ void BlockLoader::loaded_blk() {
       return;
     m_processing = true;
   }
-  Env::IoCtx::post([this](){ load_cellstores_cells(); });
+  Env::Rgr::post([this](){ load_cellstores_cells(); });
 }
 
 void BlockLoader::load_cellstores_cells() {
@@ -132,7 +132,7 @@ void BlockLoader::loaded_frag(CommitLog::Fragment::Ptr frag) {
       return;
     m_processing = true;
   }
-  Env::IoCtx::post([this](){ load_log_cells(); });
+  Env::Rgr::post([this](){ load_log_cells(); });
 }
 
 void BlockLoader::load_log_cells() { 
@@ -163,7 +163,7 @@ void BlockLoader::load_log_cells() {
     }
     frag->load_cells(err = Error::OK, block);
     if(more && check_log())
-      Env::IoCtx::post([this](){ load_log(false, true); });
+      Env::Rgr::post([this](){ load_log(false, true); });
   }
 
   if(check_log())

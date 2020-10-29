@@ -35,6 +35,12 @@ The number of Maintenance handlers. \
 _default_ **```swc.rgr.maintenance.handlers=2```**
 
 
+* ### swc.rgr.clients.handlers
+```INT32```
+The number of DB-Clients handlers. \
+_default_ **```swc.rgr.clients.handlers=8```**
+
+
 
 ***
 

@@ -27,7 +27,7 @@ Compact::Group::~Group() {
 }
 
 void Compact::Group::run() {
-  Env::IoCtx::post([this]() { load_more(); });
+  Env::Rgr::post([this]() { load_more(); });
 }
 
 void Compact::Group::load_more() {
@@ -52,7 +52,7 @@ void Compact::Group::load_more() {
 
 void Compact::Group::loaded(Fragment::Ptr frag) {
   if(m_queue.push_and_is_1st(frag))
-    Env::IoCtx::post([this]() { load(); });
+    Env::Rgr::post([this]() { load(); });
 }
 
 void Compact::Group::load() {

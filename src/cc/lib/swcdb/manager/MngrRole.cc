@@ -9,13 +9,14 @@
 namespace SWC { namespace Manager {
 
 
-MngrRole::MngrRole(const Comm::EndPoints& endpoints)
+MngrRole::MngrRole(const Comm::IoContext::Ptr& app_io,
+                   const Comm::EndPoints& endpoints)
     : m_local_endpoints(endpoints),
       m_local_token(Comm::endpoints_hash(m_local_endpoints)),
       m_checkin(false), m_local_active_role(DB::Types::MngrRole::NONE),
-      m_check_timer(asio::high_resolution_timer(*Env::IoCtx::io()->ptr())),
+      m_check_timer(asio::high_resolution_timer(*app_io->ptr())),
       m_mngr_inchain(
-        std::make_shared<Comm::client::ConnQueue>(Env::IoCtx::io()->shared())),
+        std::make_shared<Comm::client::ConnQueue>(app_io->shared())),
       cfg_conn_probes(
         Env::Config::settings()->get<Config::Property::V_GINT32>(
           "swc.mngr.role.connection.probes")),
@@ -297,7 +298,7 @@ void MngrRole::stop() {
     std::shared_lock lock(m_mutex);
     for(auto& host : m_states) {
       if(host->conn && host->conn->is_open())
-        Env::IoCtx::post([conn=host->conn]() {conn->do_close();});
+        Env::Mngr::post([conn=host->conn]() {conn->do_close();});
     }
   }
 }

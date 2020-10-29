@@ -23,7 +23,7 @@
 namespace SWC { namespace Manager {
 
 
-Rangers::Rangers()
+Rangers::Rangers(const Comm::IoContext::Ptr& app_io)
     : cfg_rgr_failures(
         Env::Config::settings()->get<Config::Property::V_GINT32>(
           "swc.mngr.ranges.assign.Rgr.remove.failures")),
@@ -43,7 +43,7 @@ Rangers::Rangers()
         Env::Config::settings()->get<Config::Property::V_GINT32>(
           "swc.mngr.column.health.checks")),
       m_run(true),
-      m_timer(asio::high_resolution_timer(*Env::IoCtx::io()->ptr())),
+      m_timer(asio::high_resolution_timer(*app_io->ptr())),
       m_runs_assign(false), m_assignments(0) { 
 }
 
@@ -59,7 +59,7 @@ void Rangers::stop(bool shuttingdown) {
   {
     std::scoped_lock lock(m_mutex);
     for(auto& h : m_rangers)
-      Env::IoCtx::post([h]() { h->stop(); });
+      Env::Mngr::post([h]() { h->stop(); });
   }
 }
 
@@ -518,7 +518,7 @@ bool Rangers::runs_assign(bool stop) {
 void Rangers::assign_ranges() {
   if(!m_run || runs_assign(false))
     return;
-  Env::IoCtx::post([this]() { assign_ranges_run(); });
+  Env::Mngr::post([this]() { assign_ranges_run(); });
 }
 
 void Rangers::assign_ranges_run() {
@@ -620,7 +620,7 @@ void Rangers::health_check_columns() {
       (col = Env::Mngr::columns()->get_need_health_check(ts, intval)); ) {
     m_columns_check.emplace_back(
       new ColumnHealthCheck(col, ts, intval));
-    Env::IoCtx::post([chk=m_columns_check.back()]() { chk->run(); });
+    Env::Mngr::post([chk=m_columns_check.back()]() { chk->run(); });
   }
   m_mutex_assign.unlock();
 }

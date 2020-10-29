@@ -123,7 +123,7 @@ void Read::load(FS::SmartFd::Ptr smartfd, BlockLoader* loader) {
     );
 
   loader->loaded_blk();
-  Env::IoCtx::post([this](){ _run_queued(); });
+  Env::Rgr::post([this](){ _run_queued(); });
 }
 
 void Read::load_cells(int&, Ranger::Block::Ptr cells_block) {

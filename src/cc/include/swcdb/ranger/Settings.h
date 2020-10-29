@@ -29,6 +29,7 @@ void Settings::init_app_options(){
     ("swc.rgr.reactors", i32(8), "Number of Communication Reactors")
     ("swc.rgr.workers", i32(32), "Number of Workers a Reactor")
     ("swc.rgr.handlers", i32(8), "Number of App Handlers")
+    ("swc.rgr.clients.handlers", i32(8), "Number of DB-Client Handlers")
 
     ("swc.rgr.comm.encoder", 
       g_enum(

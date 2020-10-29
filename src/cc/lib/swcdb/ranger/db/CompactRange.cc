@@ -125,7 +125,7 @@ CompactRange::CompactRange(Compaction* compactor, const RangePtr& range,
               req_last_time(0),
               m_getting(true), m_log_sz(0),
               m_chk_timer(
-                asio::high_resolution_timer(*Env::IoCtx::io()->ptr())) {
+                asio::high_resolution_timer(*Env::Rgr::io()->ptr())) {
   spec.flags.max_versions = range->cfg->cell_versions();
 }
 

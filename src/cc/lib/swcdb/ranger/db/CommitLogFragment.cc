@@ -289,7 +289,7 @@ void Fragment::write(int err, uint8_t blk_replicas, int64_t blksz,
     }
   }
   if(keep)
-    Env::IoCtx::post([this](){ run_queued(); });
+    Env::Rgr::post([this](){ run_queued(); });
 }
 
 void Fragment::load(const std::function<void()>& cb) {
@@ -309,7 +309,7 @@ void Fragment::load(const std::function<void()>& cb) {
   if(loaded)
     cb();
   else
-    Env::IoCtx::post([this](){ load(); } );
+    Env::Rgr::post([this](){ load(); } );
 }
 
 void Fragment::load_cells(int&, Ranger::Block::Ptr cells_block) {

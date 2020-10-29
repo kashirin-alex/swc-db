@@ -23,6 +23,16 @@ class Mngr final {
     m_env = std::make_shared<Mngr>(endpoints);
   }
 
+  static Comm::IoContext::Ptr io() {
+    return m_env->app_io;
+  }
+
+  template <typename T_Handler>
+  SWC_CAN_INLINE
+  static void post(T_Handler&& handler)  {
+    m_env->app_io->post(handler);
+  }
+
   static DB::Schemas* schemas() {
     return &m_env->m_schemas;
   }
@@ -47,10 +57,19 @@ class Mngr final {
 
 
   Mngr(const Comm::EndPoints& endpoints) 
-      : m_role(endpoints) { 
+      : app_io(
+          Comm::IoContext::make(
+            "Manager",
+            SWC::Env::Config::settings()->get_i32("swc.mngr.handlers")
+          )
+        ),
+        m_role(app_io, endpoints),
+        m_rangers(app_io) {
   }
 
   ~Mngr() { }
+
+  Comm::IoContext::Ptr        app_io;
 
   private:
 

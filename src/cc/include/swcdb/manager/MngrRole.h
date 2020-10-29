@@ -17,7 +17,8 @@ class MngrRole final {
   
   public:
   
-  MngrRole(const Comm::EndPoints& endpoints);
+  MngrRole(const Comm::IoContext::Ptr& app_io,
+           const Comm::EndPoints& endpoints);
 
   ~MngrRole();
 

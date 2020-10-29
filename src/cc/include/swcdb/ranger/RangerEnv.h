@@ -68,6 +68,16 @@ class Rgr final {
     return m_env->mnt_io.get();
   }
 
+  static Comm::IoContext::Ptr io() {
+    return m_env->app_io;
+  }
+
+  template <typename T_Handler>
+  SWC_CAN_INLINE
+  static void post(T_Handler&& handler)  {
+    m_env->app_io->post(handler);
+  }
+
   template <typename T_Handler>
   SWC_CAN_INLINE
   static void maintenance_post(T_Handler&& handler)  {
@@ -103,6 +113,7 @@ class Rgr final {
   const SWC::Config::Property::V_GINT32::Ptr      cfg_blk_cells;
   const SWC::Config::Property::V_GENUM::Ptr       cfg_blk_enc;
   
+  Comm::IoContext::Ptr        app_io;
   Comm::IoContext::Ptr        mnt_io;
   Ranger::Compaction*         _compaction;
   Ranger::Columns*            _columns;
@@ -161,15 +172,21 @@ Rgr::Rgr()
       cfg_blk_enc(
         SWC::Env::Config::settings()->get<SWC::Config::Property::V_GENUM>(
           "swc.rgr.Range.block.encoding")),
+      app_io(
+        Comm::IoContext::make(
+          "Ranger", 
+          SWC::Env::Config::settings()->get_i32("swc.rgr.handlers"))
+      ),
       mnt_io(
-        Comm::IoContext::make("Maintenance", 
-        SWC::Env::Config::settings()->get_i32("swc.rgr.maintenance.handlers"))
+        Comm::IoContext::make(
+          "Maintenance", 
+          SWC::Env::Config::settings()->get_i32("swc.rgr.maintenance.handlers"))
       ),
       _compaction(nullptr),
       _columns(new Ranger::Columns()),
       _updater(std::make_shared<client::Query::Update>()),  
       _resources(
-        SWC::Env::IoCtx::io()->ptr(),
+        app_io->ptr(),
         SWC::Env::Config::settings()->get<SWC::Config::Property::V_GINT32>(
           "swc.rgr.ram.allowed.percent"),
         SWC::Env::Config::settings()->get<SWC::Config::Property::V_GINT32>(

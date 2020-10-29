@@ -299,7 +299,7 @@ void Read::load_cells(BlockLoader* loader) {
       m_queue.emplace(loader, blk);
       if(!m_q_running) {
         m_q_running = true;
-        Env::IoCtx::post([this]() { _run_queued(); } );
+        Env::Rgr::post([this]() { _run_queued(); } );
       }
     }
   }

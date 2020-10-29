@@ -142,7 +142,7 @@ void MngdColumns::require_sync() {
 
 void MngdColumns::action(const ColumnReq::Ptr& new_req) {
   if(m_actions.push_and_is_1st(new_req))
-    Env::IoCtx::post([this]() { actions_run(); });
+    Env::Mngr::post([this]() { actions_run(); });
 }
 
 void MngdColumns::update_status(
@@ -258,7 +258,7 @@ bool MngdColumns::initialize() {
       }
     }
     
-    int32_t hdlrs = Env::IoCtx::io()->get_size()/4+1;
+    int32_t hdlrs = Env::Mngr::io()->get_size()/4+1;
     int32_t vol = entries.size()/hdlrs+1;
     std::atomic<int64_t> pending = 0;
     while(!entries.empty()) {
@@ -271,7 +271,7 @@ bool MngdColumns::initialize() {
         break;
 
       ++pending;
-      Env::IoCtx::post(
+      Env::Mngr::post(
         [&pending, entries=hdlr_entries, 
          replicas=cfg_schema_replication->get()]() { 
           DB::Schema::Ptr schema;

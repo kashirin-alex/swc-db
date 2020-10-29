@@ -69,10 +69,7 @@ class AppContext final : public Comm::AppContext {
       "swc.rgr.cfg.dyn"
     );
 
-    Env::IoCtx::init(settings->get_i32("swc.rgr.handlers"));
-    
-    Env::FsInterface::init(FS::fs_type(settings->get_str("swc.fs")));
-      
+    Env::IoCtx::init(settings->get_i32("swc.rgr.clients.handlers"));
     Env::Clients::init(
       std::make_shared<client::Clients>(
         Env::IoCtx::io()->shared(),
@@ -80,12 +77,15 @@ class AppContext final : public Comm::AppContext {
         std::make_shared<client::ContextRanger>()
       )
     );
+
+    Env::FsInterface::init(FS::fs_type(settings->get_str("swc.fs")));
+  
     Env::Rgr::init();
 
     auto period = settings->get<Config::Property::V_GINT32>(
       "swc.cfg.dyn.period");
     if(period->get()) {
-      Env::IoCtx::io()->set_periodic_timer(
+      Env::Rgr::io()->set_periodic_timer(
         period,
         [](){Env::Config::settings()->check_dynamic_files();}
       );
@@ -93,7 +93,7 @@ class AppContext final : public Comm::AppContext {
 
     auto app = std::make_shared<AppContext>();
     app->id_mngr = std::make_shared<Comm::Protocol::Mngr::Req::RgrMngId>(
-      Env::IoCtx::io()->ptr(), 
+      Env::Rgr::io()->ptr(), 
       [app]() { (new std::thread([app]{ app->stop(); }))->detach(); }
     );
     return app;
@@ -109,7 +109,7 @@ class AppContext final : public Comm::AppContext {
     Env::Rgr::rgr_data()->endpoints = endpoints;
     
     int sig = 0;
-    Env::IoCtx::io()->set_signals();
+    Env::Rgr::io()->set_signals();
     shutting_down(std::error_code(), sig);
 
     Env::Rgr::start();
@@ -152,7 +152,7 @@ class AppContext final : public Comm::AppContext {
           try{conn->send_error(Error::RGR_NOT_READY, "", ev);}catch(...){}
 
         } else {
-          Env::IoCtx::post([cmd, conn, ev]() { handlers[cmd](conn, ev); });
+          Env::Rgr::post([cmd, conn, ev]() { handlers[cmd](conn, ev); });
         }
         break;
       }
@@ -167,7 +167,7 @@ class AppContext final : public Comm::AppContext {
   void shutting_down(const std::error_code &ec, const int &sig) {
 
     if(sig == 0) { // set signals listener
-      Env::IoCtx::io()->signals()->async_wait(
+      Env::Rgr::io()->signals()->async_wait(
         [this](const std::error_code &ec, const int &sig) {
           SWC_LOGF(LOG_INFO, "Received signal, sig=%d ec=%s", 
                    sig, ec.message().c_str());
@@ -199,10 +199,12 @@ class AppContext final : public Comm::AppContext {
 
     Env::Clients::get()->rgr->stop();
     Env::Clients::get()->mngr->stop();
-    
     Env::IoCtx::io()->stop();
+
     Env::FsInterface::interface()->stop();
     
+    Env::Rgr::io()->stop();
+
     m_srv->shutdown();
 
     SWC_LOG(LOG_INFO, "Exit");

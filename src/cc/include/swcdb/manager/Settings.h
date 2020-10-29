@@ -29,6 +29,8 @@ void Settings::init_app_options(){
     ("swc.mngr.port", i16(15000), "Manager port")
     ("swc.mngr.handlers", i32(8), "Number of App Handlers")
 
+    ("swc.mngr.clients.handlers", i32(8), "Number of DB-Client Handlers")
+
     ("swc.mngr.comm.encoder", 
       g_enum(
         (int)SWC_DEFAULT_COMM_ENCODER,

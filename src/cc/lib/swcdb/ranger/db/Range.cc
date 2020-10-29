@@ -147,7 +147,7 @@ void Range::state(int& err) const {
 
 void Range::add(Range::ReqAdd* req) {
   if(m_q_adding.push_and_is_1st(req))
-    Env::IoCtx::post([ptr=shared_from_this()](){ ptr->run_add_queue(); } );
+    Env::Rgr::post([ptr=shared_from_this()](){ ptr->run_add_queue(); } );
 }
 
 void Range::scan(const ReqScan::Ptr& req) {
@@ -166,7 +166,7 @@ void Range::scan(const ReqScan::Ptr& req) {
           qreq->response(err);
         } else {
           blocks.processing_increment();
-          Env::IoCtx::post(
+          Env::Rgr::post(
             [qreq, ptr=shared_from_this()]() {
               ptr->blocks.scan(std::move(qreq));
               ptr->blocks.processing_decrement();
