@@ -37,11 +37,7 @@ void range_is_loaded(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     err = e.code();
   }
   
-  try {
-    conn->send_error(err, "", ev);
-  } catch(...) {
-    SWC_LOG_CURRENT_EXCEPTION("");
-  }
+  conn->send_error(err, "", ev);
 }
   
 

@@ -31,15 +31,10 @@ void mngr_active(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     SWC_LOG_CURRENT_EXCEPTION("");
   }
 
-  try {
-    auto cbp = Buffers::make(
-      Params::MngrActiveRsp(h ? h->endpoints : EndPoints()) );
-    cbp->header.initialize_from_request_header(ev->header);
-    conn->send_response(cbp);
-
-  } catch(...) {
-    SWC_LOG_CURRENT_EXCEPTION("");
-  }
+  conn->send_response(
+    Buffers::make(Params::MngrActiveRsp(h ? h->endpoints : EndPoints())),
+    ev
+  );
 }
 
   

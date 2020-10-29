@@ -39,27 +39,21 @@ void range_query_select(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     err = e.code();
   }
 
-  try{
-      
-    if(err) {
-      Params::RangeQuerySelectRsp rsp_params(err);
-      auto cbp = Buffers::make(rsp_params);
-      cbp->header.initialize_from_request_header(ev->header);
-      conn->send_response(cbp);
-      return;
-    }
-    
+  if(err) {
+    conn->send_response(
+      Buffers::make(Params::RangeQuerySelectRsp(err)),
+      ev
+    );
+
+  } else {
     params.interval.apply_possible_range(
       params.interval.range_begin, params.interval.range_end);
 
     range->scan(
       std::make_shared<Ranger::Callback::RangeQuerySelect>(
-        conn, ev, params.interval, range) );
-
-  } catch(...) {
-    SWC_LOG_CURRENT_EXCEPTION("");
+        conn, ev, params.interval, range) 
+    );
   }
-  
 }
   
 

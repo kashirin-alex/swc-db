@@ -149,7 +149,7 @@ class AppContext final : public Comm::AppContext {
           Comm::Protocol::Rgr::Handler::assign_id(conn, ev, id_mngr);
         
         } else if(!Env::Rgr::rgr_data()->rgrid) {
-          try{conn->send_error(Error::RGR_NOT_READY, "", ev);}catch(...){}
+          conn->send_error(Error::RGR_NOT_READY, "", ev);
 
         } else {
           Env::Rgr::post([cmd, conn, ev]() { handlers[cmd](conn, ev); });

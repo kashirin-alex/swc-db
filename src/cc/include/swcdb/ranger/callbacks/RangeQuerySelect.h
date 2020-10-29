@@ -95,13 +95,7 @@ class RangeQuerySelect : public ReqScan {
     } else {
       cbp = Comm::Buffers::make(params);
     }
-    cbp->header.initialize_from_request_header(m_ev->header);
-    
-    try {
-      m_conn->send_response(cbp);
-    } catch(...) {
-      SWC_LOG_CURRENT_EXCEPTION("");
-    }
+    m_conn->send_response(cbp, m_ev);
 
     profile.finished();
     SWC_LOG_OUT(LOG_INFO,

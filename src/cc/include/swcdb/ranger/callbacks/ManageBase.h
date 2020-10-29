@@ -40,11 +40,6 @@ class ManageBase : public Comm::ResponseCallback {
 
   virtual ~ManageBase() { }
   
-  bool expired() const {
-    return (m_ev && m_ev->expired(1000)) || 
-           (m_conn && !m_conn->is_open()) ;
-  }
-  
 };
 
 

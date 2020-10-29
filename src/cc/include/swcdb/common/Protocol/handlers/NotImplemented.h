@@ -15,15 +15,9 @@ namespace Common { namespace Handler {
 
 void not_implemented(const ConnHandlerPtr& conn, 
                      const Event::Ptr& ev) {
-    try {
-      auto cbp = Buffers::make(4);
-      cbp->header.initialize_from_request_header(ev->header);
-      cbp->append_i32(Error::NOT_IMPLEMENTED);
-      conn->send_response(cbp);
-
-    } catch (...) {
-      SWC_LOG_CURRENT_EXCEPTION("");
-    }
+  auto cbp = Buffers::make(4);
+  cbp->append_i32(Error::NOT_IMPLEMENTED);
+  conn->send_response(cbp, ev);
 }
 
 

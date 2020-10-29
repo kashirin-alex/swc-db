@@ -13,15 +13,12 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace Mngr { namespace Handler {
 
 void do_echo(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
-  try {
-    auto cbp = ev->data_ext.size 
-                ? Buffers::make(ev->data_ext) 
-                : Buffers::make();
-    cbp->header.initialize_from_request_header(ev->header);
-    conn->send_response(cbp);
-  } catch(...) {
-    SWC_LOG_CURRENT_EXCEPTION("");
-  }
+  conn->send_response(
+    ev->data_ext.size 
+      ? Buffers::make(ev->data_ext)
+      : Buffers::make(), 
+    ev
+  );
 }
   
 

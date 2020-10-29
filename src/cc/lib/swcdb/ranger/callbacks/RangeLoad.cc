@@ -34,26 +34,20 @@ void RangeLoad::loaded(int& err) {
       err = Error::RGR_NOT_LOADED_RANGE;
   }
 
-  try {
-    if(err) {
-      col->internal_unload(rid);
-      Env::Rgr::columns()->erase_if_empty(cid);
+  if(err) {
+    col->internal_unload(rid);
+    Env::Rgr::columns()->erase_if_empty(cid);
 
-      if(!expired())
-        m_conn->send_error(err, "", m_ev);
+    m_conn->send_error(err, "", m_ev);
 
-    } else if(!expired()) {
-      Comm::Protocol::Rgr::Params::RangeLoaded params(range->cfg->key_seq);
-      if((params.intval = range->cfg->range_type == DB::Types::Range::MASTER))
-        range->get_interval(params.interval);
+  } else {
+    Comm::Protocol::Rgr::Params::RangeLoaded params(range->cfg->key_seq);
+    if((params.intval = range->cfg->range_type == DB::Types::Range::MASTER))
+      range->get_interval(params.interval);
         
-      auto cbp = Comm::Buffers::make(params, 4);
-      cbp->header.initialize_from_request_header(m_ev->header);
-      cbp->append_i32(err);
-      m_conn->send_response(cbp);
-    }
-  } catch(...) {
-    SWC_LOG_CURRENT_EXCEPTION("");
+    auto cbp = Comm::Buffers::make(params, 4);
+    cbp->append_i32(err);
+    m_conn->send_response(cbp, m_ev);
   }
   
   col->run_mng_queue();

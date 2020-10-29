@@ -13,7 +13,8 @@ namespace SWC { namespace Comm {
 
 
 SWC_SHOULD_INLINE
-ConnHandler::Pending::Pending(Buffers::Ptr& cbuf, DispatchHandler::Ptr& hdlr)
+ConnHandler::Pending::Pending(const Buffers::Ptr& cbuf, 
+                              DispatchHandler::Ptr& hdlr)
                               : cbuf(cbuf), hdlr(hdlr), timer(nullptr) {
 }
 
@@ -100,33 +101,24 @@ void ConnHandler::do_close() {
 }
 
 bool ConnHandler::send_error(int error, const std::string& msg, 
-                             const Event::Ptr& ev) {
-  if(!connected)
-    return false;
-
-  size_t max_msg_size = std::numeric_limits<int16_t>::max();
-  auto cbp = Buffers::create_error_message(
-    error, msg.c_str(),
-    msg.length() < max_msg_size ?  msg.length() : max_msg_size);
-  if(ev)
-    cbp->header.initialize_from_request_header(ev->header);
-  return send_response(cbp);
+                             const Event::Ptr& ev) noexcept {
+  return send_response(
+    Buffers::create_error_message(
+      error, msg.c_str(), msg.length() < INT16_MAX? msg.length() : INT16_MAX),
+    ev);
 }
 
-bool ConnHandler::response_ok(const Event::Ptr& ev) {
-  if(!connected)
-    return false;
-      
+bool ConnHandler::response_ok(const Event::Ptr& ev) noexcept {
   auto cbp = Buffers::make(4);
-  if(ev)
-    cbp->header.initialize_from_request_header(ev->header);
   cbp->append_i32(Error::OK);
-  return send_response(cbp);
+  return send_response(cbp, ev);
 }
 
-bool ConnHandler::send_response(Buffers::Ptr& cbuf, 
-                                DispatchHandler::Ptr hdlr) {
-  if(!connected)
+bool ConnHandler::send_response(const Buffers::Ptr& cbuf, 
+                                const Event::Ptr& ev,
+                                DispatchHandler::Ptr hdlr) noexcept {
+  cbuf->header.initialize_from_request_header(ev->header);
+  if(!connected || ev->expired())
     return false;
   cbuf->header.flags &= Header::FLAGS_MASK_REQUEST;
   write_or_queue(new Pending(cbuf, hdlr));
@@ -508,8 +500,10 @@ ConnHandlerPlain::ConnHandlerPlain(AppContext::Ptr& app_ctx,
 }
 
 ConnHandlerPlain::~ConnHandlerPlain() {
-  if(is_open())
-    try{ m_sock.close(); } catch(...) { }
+  if(is_open()) { 
+    asio::error_code ec;
+    m_sock.close(ec);
+  }
 }
 
 void ConnHandlerPlain::do_close() {
@@ -525,8 +519,9 @@ void ConnHandlerPlain::close() {
     connected = false;
   }
   if(m_sock.is_open()) {
-    try{ m_sock.cancel(); } catch(...) { }
-    try{ m_sock.close();  } catch(...) { }
+    asio::error_code ec;
+    m_sock.cancel(ec);
+    m_sock.close(ec);
   }
   disconnected();
   ConnHandler::do_close();
@@ -576,8 +571,10 @@ ConnHandlerSSL::ConnHandlerSSL(AppContext::Ptr& app_ctx,
 }
 
 ConnHandlerSSL::~ConnHandlerSSL() { 
-  if(is_open())
-    try{ m_sock.lowest_layer().close(); } catch(...) { }
+  if(is_open()) {
+    asio::error_code ec;
+    m_sock.lowest_layer().close(ec);
+  }
 }
 
 void ConnHandlerSSL::do_close() {
@@ -593,18 +590,20 @@ void ConnHandlerSSL::close() {
     connected = false;
   }
   if(m_sock.lowest_layer().is_open()) {
-    try{ m_sock.lowest_layer().cancel(); } catch(...) { }
-    try{ m_sock.lowest_layer().close();  } catch(...) { }
+    asio::error_code ec;
+    m_sock.lowest_layer().cancel(ec);
+    //m_sock.shutdown(ec);
+    m_sock.lowest_layer().close(ec);
   }
   disconnected();
   ConnHandler::do_close();
 
   /* ssl-segment (if protocol is shutdown)
   if(m_sock.lowest_layer().is_open()) {
-    m_sock.async_shutdown([this, ptr=ptr()](const asio::error_code&) {
+    m_sock.async_shutdown([this, ptr=ptr()](asio::error_code ec) {
       if(m_sock.lowest_layer().is_open()) {
-        try{ m_sock.lowest_layer().cancel(); } catch(...) { }
-        try{ m_sock.lowest_layer().close();  } catch(...) { }
+        m_sock.lowest_layer().cancel(ec);
+        m_sock.lowest_layer().close(ec);
       }
       disconnected();
       ConnHandler::do_close();

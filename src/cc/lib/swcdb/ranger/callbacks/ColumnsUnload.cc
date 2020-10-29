@@ -44,15 +44,7 @@ void ColumnsUnload::unloaded(const ColumnPtr& col) {
 }
 
 void ColumnsUnload::response() {
-  if(!expired()) {
-    try {
-      auto cbp = Comm::Buffers::make(m_rsp_params);
-      cbp->header.initialize_from_request_header(m_ev->header);
-      m_conn->send_response(cbp);
-    } catch(...) {
-      SWC_LOG_CURRENT_EXCEPTION("");
-    }
-  }
+  m_conn->send_response(Comm::Buffers::make(m_rsp_params), m_ev);
 }
 
 

@@ -15,7 +15,6 @@ namespace Rgr { namespace Handler {
 
 
 void column_update(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
-  int err = Error::OK;
   try {
     const uint8_t *ptr = ev->data.base;
     size_t remain = ev->data.size;
@@ -35,18 +34,11 @@ void column_update(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
       }
     }
     conn->response_ok(ev);
-    return;
 
   } catch(...) {
     const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
     SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
-    err = e.code();
-  }
-  
-  try {
-    conn->send_error(err, "", ev);
-  } catch(...) {
-    SWC_LOG_CURRENT_EXCEPTION("");
+    conn->send_error(e.code(), "", ev);
   }
   
 }

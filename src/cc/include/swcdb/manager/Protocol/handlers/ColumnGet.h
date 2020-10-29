@@ -37,17 +37,11 @@ void mngr_update_response(const ConnHandlerPtr& conn, const Event::Ptr& ev,
   if(!err && !schema)
     err = Error::COLUMN_SCHEMA_NAME_NOT_EXISTS;
 
-  try {
-    auto cbp = err 
-      ? Buffers::make(4)
-      : Buffers::make(Params::ColumnGetRsp(flag, schema), 4);
-    cbp->header.initialize_from_request_header(ev->header);
-    cbp->append_i32(err);
-    conn->send_response(cbp);
-
-  } catch(...) {
-    SWC_LOG_CURRENT_EXCEPTION("");
-  }
+  auto cbp = err
+    ? Buffers::make(4)
+    : Buffers::make(Params::ColumnGetRsp(flag, schema), 4);
+  cbp->append_i32(err);
+  conn->send_response(cbp, ev);
 }
 
 void column_get(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
@@ -88,12 +82,9 @@ void column_get(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
   } catch(...) {
     const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
     SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
+    
     flag = Params::ColumnGetReq::Flag::ID_BY_NAME;
-    try {
-      mngr_update_response(conn, ev, e.code(), flag, nullptr);
-    } catch(...) {
-      SWC_LOG_CURRENT_EXCEPTION("");
-    }
+    mngr_update_response(conn, ev, e.code(), flag, nullptr);
   }
 
 }

@@ -231,7 +231,7 @@ void Column::run_mng_req(const Callback::ManageBase::Ptr& req) {
 }
 
 void Column::load(const Callback::RangeLoad::Ptr& req) {
-  if(req->expired())
+  if(req->expired(1000))
     return run_mng_queue();
 
   int err = Error::OK;
@@ -241,13 +241,12 @@ void Column::load(const Callback::RangeLoad::Ptr& req) {
 }
 
 void Column::unload(const Callback::RangeUnload::Ptr& req) {
-  if(req->expired())
+  if(req->expired(1000))
     return run_mng_queue();
   
   internal_unload(req->rid);
 
-  if(!req->expired())
-    req->response_ok();
+  req->response_ok();
   Env::Rgr::columns()->erase_if_empty(cfg->cid);
   run_mng_queue();
 }
@@ -272,7 +271,7 @@ void Column::unload_all(const Callback::ColumnsUnload::Ptr& req) {
 }
 
 void Column::remove(const Callback::ColumnDelete::Ptr& req) {
-  if(req->expired())
+  if(req->expired(1000))
     return run_mng_queue();
 
   if(cfg->deleting)

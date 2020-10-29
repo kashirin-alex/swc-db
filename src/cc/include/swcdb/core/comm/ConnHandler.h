@@ -37,7 +37,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     DispatchHandler::Ptr          hdlr;
     asio::high_resolution_timer*  timer;
 
-    Pending(Buffers::Ptr& cbuf, DispatchHandler::Ptr& hdlr);
+    Pending(const Buffers::Ptr& cbuf, DispatchHandler::Ptr& hdlr);
     
     Pending(const Pending&) = delete;
 
@@ -87,11 +87,13 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   virtual void do_close();
 
   bool send_error(int error, const std::string& msg, 
-                  const Event::Ptr& ev=nullptr);
+                  const Event::Ptr& ev) noexcept;
 
-  bool response_ok(const Event::Ptr& ev);
+  bool response_ok(const Event::Ptr& ev) noexcept;
 
-  bool send_response(Buffers::Ptr& cbuf, DispatchHandler::Ptr hdlr=nullptr);
+  bool send_response(const Buffers::Ptr& cbuf, 
+                     const Event::Ptr& ev,
+                     DispatchHandler::Ptr hdlr=nullptr) noexcept;
 
   bool send_request(Buffers::Ptr& cbuf, DispatchHandler::Ptr hdlr);
 

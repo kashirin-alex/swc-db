@@ -42,18 +42,9 @@ void create(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     err = e.code();
   }
 
-  if(ev->expired())
-    return;
-
-  try {
-    auto cbp = Buffers::make(Params::OpenRsp(fd), 4);
-    cbp->header.initialize_from_request_header(ev->header);
-    cbp->append_i32(err);
-    conn->send_response(cbp);
-
-  } catch(...) {
-    SWC_LOG_CURRENT_EXCEPTION("");
-  }
+  auto cbp = Buffers::make(Params::OpenRsp(fd), 4);
+  cbp->append_i32(err);
+  conn->send_response(cbp, ev);
 
 }
   

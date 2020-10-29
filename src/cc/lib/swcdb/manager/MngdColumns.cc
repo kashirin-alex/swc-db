@@ -508,18 +508,7 @@ void MngdColumns::update_status_ack(
       req = *it;
       m_cid_pending.erase(it);
     }
-
-    try {
-      err ? req->response(err) : req->response_ok();
-    } catch(...) {
-      const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
-      SWC_LOG_OUT(LOG_ERROR, 
-        SWC_LOG_OSTREAM << "Column Pending cb func=" << func;
-        Error::print(SWC_LOG_OSTREAM << ' ', err);
-        req->schema->print(SWC_LOG_OSTREAM << ' ');
-        SWC_LOG_OSTREAM << ' ' << e;
-      );
-    }
+    req->response(err);
   }
 }
 
@@ -591,17 +580,7 @@ void MngdColumns::actions_run() {
       update_status(req->function, req->schema, err, true);
 
     } else {
-      try{
-        req->response(err);
-      } catch(...) {
-        const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
-        SWC_LOG_OUT(LOG_ERROR, 
-          SWC_LOG_OSTREAM << "Column Action cb func=" << req->function;
-          Error::print(SWC_LOG_OSTREAM << ' ', err);
-          req->schema->print(SWC_LOG_OSTREAM << ' ');
-          SWC_LOG_OSTREAM << ' ' << e;
-        );
-      }
+      req->response(err);
     }
   } while(m_actions.pop_and_more());
 }

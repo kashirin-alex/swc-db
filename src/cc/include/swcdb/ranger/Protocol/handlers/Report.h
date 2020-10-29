@@ -165,12 +165,7 @@ void report(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
 
 
   send_response:
-    try {
-      cbp->header.initialize_from_request_header(ev->header);
-      conn->send_response(cbp);
-    } catch(...) {
-      SWC_LOG_CURRENT_EXCEPTION("");
-    }
+    conn->send_response(cbp, ev);
 }
   
 

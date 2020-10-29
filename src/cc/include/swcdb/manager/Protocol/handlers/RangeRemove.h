@@ -43,15 +43,10 @@ void range_remove(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
   }
   
   send_response:
-    try {
-      SWC_PRINT << "RangeRemove(RSP): " << rsp_params.to_string() 
-                << SWC_PRINT_CLOSE;
-      auto cbp = Buffers::make(rsp_params);
-      cbp->header.initialize_from_request_header(ev->header);
-      conn->send_response(cbp);
-    } catch(...) {
-      SWC_LOG_CURRENT_EXCEPTION("");
-    }
+    SWC_PRINT << "RangeRemove(RSP): " << rsp_params.to_string()
+              << SWC_PRINT_CLOSE;
+    conn->send_response(Buffers::make(rsp_params), ev);
+
 }
 
 

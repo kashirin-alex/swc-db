@@ -14,18 +14,13 @@ namespace Rgr { namespace Handler {
 
 void assign_id(const ConnHandlerPtr& conn, const Event::Ptr& ev, 
                Mngr::Req::RgrMngId::Ptr id_mngr) {
-  try {
 
-    if(Env::Rgr::is_not_accepting())
-      conn->send_error(Error::SERVER_SHUTTING_DOWN, "", ev);
-    else 
-      conn->response_ok(ev);
+  Env::Rgr::is_not_accepting() 
+    ? conn->send_error(Error::SERVER_SHUTTING_DOWN, "", ev)
+    : conn->response_ok(ev);
 
-    id_mngr->request();
+  id_mngr->request();
 
-  } catch(...) {
-    SWC_LOG_CURRENT_EXCEPTION("");
-  }
 }
 
 

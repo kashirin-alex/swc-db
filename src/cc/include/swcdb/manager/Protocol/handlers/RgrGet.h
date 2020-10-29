@@ -76,13 +76,8 @@ void rgr_get(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
       rsp_params.print(SWC_LOG_OSTREAM <<' '); 
     );
 
-    try {
-      auto cbp = Buffers::make(rsp_params);
-      cbp->header.initialize_from_request_header(ev->header);
-      conn->send_response(cbp);
-    } catch(...) {
-      SWC_LOG_CURRENT_EXCEPTION("");
-    }
+    conn->send_response(Buffers::make(rsp_params), ev);
+
 }
 
   

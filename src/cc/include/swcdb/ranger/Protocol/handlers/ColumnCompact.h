@@ -34,15 +34,8 @@ void column_compact(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     rsp_params.err = e.code();
   }
   
-  try {
-    auto cbp = Buffers::make(rsp_params);
-    cbp->header.initialize_from_request_header(ev->header);
-    conn->send_response(cbp);
+  conn->send_response(Buffers::make(rsp_params), ev);
 
-  } catch(...) {
-    SWC_LOG_CURRENT_EXCEPTION("");
-  }
-  
 }
   
 

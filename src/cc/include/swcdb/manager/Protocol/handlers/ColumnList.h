@@ -37,15 +37,10 @@ void column_list(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     err = e.code();
   }
 
-  try {
-    auto cbp = err ? Buffers::make(4) : Buffers::make(rsp, 4);
-    cbp->header.initialize_from_request_header(ev->header);
-    cbp->append_i32(err);
-    conn->send_response(cbp);
+  auto cbp = err ? Buffers::make(4) : Buffers::make(rsp, 4);
+  cbp->append_i32(err);
+  conn->send_response(cbp, ev);
 
-  } catch(...) {
-    SWC_LOG_CURRENT_EXCEPTION("");
-  }
 }
 
 

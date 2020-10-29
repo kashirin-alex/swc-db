@@ -33,20 +33,8 @@ class RangeQueryUpdate : public Comm::ResponseCallback {
         err, range_prev_end, range_end));
   }
 
-  bool expired(const int64_t within=0) const {
-    return (m_ev != nullptr && m_ev->expired(within)) || 
-           (m_conn != nullptr && !m_conn->is_open()) ;
-  }
-  
   void response(const Comm::Protocol::Rgr::Params::RangeQueryUpdateRsp& params) {
-    try {
-      auto cbp = Comm::Buffers::make(params);
-      cbp->header.initialize_from_request_header(m_ev->header);
-      m_conn->send_response(cbp);
-
-    } catch(...) {
-      SWC_LOG_CURRENT_EXCEPTION("");
-    }
+    m_conn->send_response(Comm::Buffers::make(params), m_ev);
   }
 
 

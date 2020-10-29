@@ -16,7 +16,6 @@ namespace Rgr { namespace Handler {
 
 
 void range_load(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
-  int err = Error::OK;
   try {
     const uint8_t *ptr = ev->data.base;
     size_t remain = ev->data.size;
@@ -28,20 +27,12 @@ void range_load(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
       *params.schema.get(),
       std::make_shared<Ranger::Callback::RangeLoad>(
         conn, ev, params.cid, params.rid));
-    return;
 
   } catch(...) {
     const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
     SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
-    err = e.code();
+    conn->send_error(e.code(), "", ev);
   }
-  
-  try {
-    conn->send_error(err, "", ev);
-  } catch(...) {
-    SWC_LOG_CURRENT_EXCEPTION("");
-  }
-  
 }
   
 

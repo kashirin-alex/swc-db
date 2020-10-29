@@ -35,23 +35,20 @@ void range_locate(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
     err = e.code();
   }
-  
-  try{
 
-    if(err) {
-      Params::RangeLocateRsp rsp_params(err);
-      
-      SWC_LOG_OUT(LOG_DEBUG,
-        params.print(SWC_LOG_OSTREAM);
-        rsp_params.print(SWC_LOG_OSTREAM << ' ');
-      );
 
-      auto cbp = Buffers::make(rsp_params);
-      cbp->header.initialize_from_request_header(ev->header);
-      conn->send_response(cbp);
+  if(err) {
+    SWC_LOG_OUT(LOG_DEBUG,
+      params.print(SWC_LOG_OSTREAM);
+      Error::print(SWC_LOG_OSTREAM << ' ', err);
+    );
 
-      return;
-    }
+    conn->send_response(
+      Buffers::make(Params::RangeLocateRsp(err)),
+      ev
+    );
+
+  } else {
 
     Ranger::ReqScan::Ptr req;
     if(params.flags & Params::RangeLocateReq::COMMIT) {
@@ -71,12 +68,10 @@ void range_locate(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
       if(params.flags & Params::RangeLocateReq::NEXT_RANGE)
         req->spec.range_offset.copy(params.range_offset);
     }
+
     range->scan(req);
-  
-  } catch(...) {
-    SWC_LOG_CURRENT_EXCEPTION("");
   }
-  
+
 }
   
 

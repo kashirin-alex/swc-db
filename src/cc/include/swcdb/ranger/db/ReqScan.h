@@ -54,11 +54,6 @@ class ReqScan  : public DB::Cells::ReqScan {
     return std::dynamic_pointer_cast<ReqScan>(shared_from_this());
   }
 
-  bool expired() const {
-    return (m_ev != nullptr && m_ev->expired()) || 
-           (m_conn != nullptr && !m_conn->is_open()) ;
-  }
-
   virtual bool with_block() {
     return false;
   }

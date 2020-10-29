@@ -40,8 +40,7 @@ void ColumnDelete::removed(const RangePtr& range) {
 
 void ColumnDelete::response() {
   Env::Rgr::columns()->erase_if_empty(col->cfg->cid);
-  if(!expired())
-    response_ok();
+  response_ok();
   col->run_mng_queue();
 }
 
