@@ -170,6 +170,10 @@ class Range final : public std::enable_shared_from_this<Range> {
 
   void load(int &err, const Callback::RangeLoad::Ptr& req);
   
+  void check_meta(const Callback::RangeLoad::Ptr& req,
+                  const DB::Specs::Column::Ptr& col_spec, 
+                  const client::Query::Select::Result::Ptr& result);
+
   void loaded(int err, const Callback::RangeLoad::Ptr& req);
 
   bool wait(uint8_t from_state=COMPACT_CHECKING);

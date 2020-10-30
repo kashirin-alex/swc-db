@@ -206,7 +206,7 @@ void Range::load(const Callback::RangeLoad::Ptr& req) {
   if(!need || err)
     return loaded(err, req);
 
-  SWC_LOG_OUT(LOG_DEBUG, print(SWC_LOG_OSTREAM << "LOADING RANGE "); );
+  SWC_LOGF(LOG_DEBUG, "LOADING RANGE(%lu/%lu)-STARTED", cfg->cid, rid);
 
   if(!Env::FsInterface::interface()->exists(err, get_path(CELLSTORES_DIR))) {
     if(!err)
@@ -221,6 +221,8 @@ void Range::load(const Callback::RangeLoad::Ptr& req) {
 }
 
 void Range::internal_take_ownership(int &err, const Callback::RangeLoad::Ptr& req) {
+  SWC_LOGF(LOG_DEBUG, "LOADING RANGE(%lu/%lu)-TAKE OWNERSHIP", cfg->cid, rid);
+
   if(Env::Rgr::is_shuttingdown() || 
      (Env::Rgr::is_not_accepting() && 
       DB::Types::MetaColumn::is_data(cfg->cid))) {
@@ -240,7 +242,7 @@ void Range::internal_unload(bool completely) {
       return;
     m_state = State::UNLOADING;
   }
-  SWC_LOGF(LOG_DEBUG, "UNLOADING RANGE cid=%lu rid=%lu", cfg->cid, rid);
+  SWC_LOGF(LOG_DEBUG, "UNLOADING RANGE(%lu/%lu)", cfg->cid, rid);
 
   blocks.commitlog.stopping = true;
 
@@ -258,7 +260,7 @@ void Range::internal_unload(bool completely) {
     std::scoped_lock lock(m_mutex);
     m_state = State::NOTLOADED;
   }
-  SWC_LOGF(LOG_INFO, "UNLOADED RANGE cid=%lu rid=%lu error=%d(%s)", 
+  SWC_LOGF(LOG_INFO, "UNLOADED RANGE(%lu/%lu) error=%d(%s)", 
                       cfg->cid, rid, err, Error::get_text(err));
 }
 
@@ -269,6 +271,8 @@ void Range::remove(const Callback::ColumnDelete::Ptr& req) {
       return req->removed(shared_from_this());
     m_state = State::DELETED;
   }
+  SWC_LOGF(LOG_DEBUG, "REMOVING RANGE(%lu/%lu)", cfg->cid, rid);
+
   blocks.commitlog.stopping = true;
   int err = Error::OK;
   on_change(
@@ -294,6 +298,8 @@ void Range::internal_remove(int& err, bool meta) {
       return;
     m_state = State::DELETED;
   }
+  SWC_LOGF(LOG_DEBUG, "REMOVING RANGE(%lu/%lu)", cfg->cid, rid);
+
   if(meta)
     on_change(err, true);
 
@@ -554,6 +560,8 @@ void Range::print(std::ostream& out, bool minimal) {
 }
 
 void Range::last_rgr_chk(int &err, const Callback::RangeLoad::Ptr& req) {
+  SWC_LOGF(LOG_DEBUG, "LOADING RANGE(%lu/%lu)-CHECK LAST RGR", cfg->cid, rid);
+
   // ranger.data
   auto rgr_data = Env::Rgr::rgr_data();
   Common::Files::RgrData::Ptr rs_last = get_last_rgr(err);
@@ -576,6 +584,8 @@ void Range::last_rgr_chk(int &err, const Callback::RangeLoad::Ptr& req) {
 }
 
 void Range::load(int &err, const Callback::RangeLoad::Ptr& req) {
+  SWC_LOGF(LOG_DEBUG, "LOADING RANGE(%lu/%lu)-DATA", cfg->cid, rid);
+
   if(Env::Rgr::is_shuttingdown() ||
      (Env::Rgr::is_not_accepting() &&
       DB::Types::MetaColumn::is_data(cfg->cid)))
@@ -623,8 +633,9 @@ void Range::load(int &err, const Callback::RangeLoad::Ptr& req) {
   if(cfg->range_type == DB::Types::Range::MASTER)
     return loaded(err, req);
 
-  auto selector = std::make_shared<client::Query::Select>();
-  auto intval = DB::Specs::Interval::make_ptr();
+  auto col_spec = DB::Specs::Column::make_ptr(
+    cfg->meta_cid, {DB::Specs::Interval::make_ptr()});
+  auto& intval = col_spec->intervals.front();
   intval->key_eq = true;
   intval->flags.limit = 1;
 
@@ -633,24 +644,43 @@ void Range::load(int &err, const Callback::RangeLoad::Ptr& req) {
   intval->key_start.set(m_interval.key_begin, Condition::EQ);
   intval->key_start.insert(0, std::to_string(cfg->cid), Condition::EQ);
 
-  selector->specs.columns.push_back(
-    DB::Specs::Column::make_ptr(cfg->meta_cid, {intval}));
+  auto selector = std::make_shared<client::Query::Select>(
+    [req, col_spec, range=shared_from_this()] 
+    (const client::Query::Select::Result::Ptr& result) {
+      range->check_meta(req, col_spec, result);
+    },
+    false
+  );
+  selector->specs.columns.push_back(col_spec);
 
   selector->scan(err);
+  SWC_LOGF(LOG_DEBUG, "LOADING RANGE(%lu/%lu)-SELECTOR err=%d(%s)", 
+                      cfg->cid, rid, err, Error::get_text(err));
   if(err)
     return loaded(Error::RGR_NOT_LOADED_RANGE, req);
-  selector->wait();
+}
 
+void Range::check_meta(const Callback::RangeLoad::Ptr& req,
+                       const DB::Specs::Column::Ptr& col_spec,
+                       const client::Query::Select::Result::Ptr& result) {
   DB::Cells::Result cells; 
-  if(!selector->result->empty())
-    selector->result->get_cells(cfg->meta_cid, cells);
-          
+  int err = result->err;
+  if(!err) {
+    auto col = result->get_columnn(cfg->meta_cid);
+    if(!(err = col->error()) && !col->empty())
+      col->get_cells(cells);
+  }
+  SWC_LOGF(LOG_DEBUG, "LOADING RANGE(%lu/%lu)-CHECK META err=%d(%s)",
+                      cfg->cid, rid, err, Error::get_text(err));
+  if(err)
+    return loaded(Error::RGR_NOT_LOADED_RANGE, req);
+
   if(cells.empty()) {
     SWC_LOG_OUT(LOG_ERROR, 
       SWC_LOG_OSTREAM 
         << "Range MetaData missing cid=" << cfg->cid << " rid=" << rid;
       m_interval.print(SWC_LOG_OSTREAM << "\n\t auto-registering=");
-      selector->specs.print(SWC_LOG_OSTREAM << "\n\t"); 
+      col_spec->print(SWC_LOG_OSTREAM << "\n\t"); 
     );
     return on_change(err, false, nullptr,
       [req, range=shared_from_this()]
@@ -719,16 +749,16 @@ void Range::loaded(int err, const Callback::RangeLoad::Ptr& req) {
       m_state = err ? State::NOTLOADED : State::LOADED;
   }
 
-  if(tried) {
-    SWC_LOG_OUT((is_loaded() ? LOG_INFO : LOG_WARN),
-      SWC_LOG_OSTREAM << "LOAD RANGE ";
-      if(_log_pr == LOG_INFO)
-        SWC_LOG_OSTREAM << "SUCCEED";
-      else
-        Error::print(SWC_LOG_OSTREAM << "FAILED ", err);
-      print(SWC_LOG_OSTREAM << ' ', _log_pr == LOG_INFO);
-    );
-  }
+  SWC_LOG_OUT((is_loaded() ? LOG_INFO : LOG_WARN),
+    if(!tried)
+      SWC_LOG_OSTREAM << "CHECK ";
+    SWC_LOG_OSTREAM << "LOAD RANGE ";
+    if(_log_pr == LOG_INFO)
+      SWC_LOG_OSTREAM << "SUCCEED";
+    else
+      Error::print(SWC_LOG_OSTREAM << "FAILED ", err);
+    print(SWC_LOG_OSTREAM << ' ', _log_pr == LOG_INFO);
+  );
 
   blocks.processing_decrement();
   req->loaded(err);

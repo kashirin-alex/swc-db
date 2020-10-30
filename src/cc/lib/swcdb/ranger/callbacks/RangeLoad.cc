@@ -35,6 +35,10 @@ void RangeLoad::loaded(int& err) {
   }
 
   if(err) {
+    SWC_LOG_OUT(LOG_WARN,
+      Error::print(SWC_LOG_OSTREAM 
+        << "BAD LOAD RANGE, Unloading(" << cid << '/' << rid << ") ", err);
+    );
     col->internal_unload(rid);
     Env::Rgr::columns()->erase_if_empty(cid);
 
