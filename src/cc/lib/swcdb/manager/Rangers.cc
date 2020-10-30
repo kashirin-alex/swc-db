@@ -533,7 +533,9 @@ void Rangers::assign_ranges_run() {
       }
     }
 
-    if(!(range = Env::Mngr::columns()->get_next_unassigned())) {
+    if(!(range = Env::Mngr::columns()->get_next_unassigned(more = false))) {
+      if(more) // waiting-on-meta-ranges
+        schedule_check(2000);
       runs_assign(true);
       break;
     }

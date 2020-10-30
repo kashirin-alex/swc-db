@@ -71,20 +71,26 @@ class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
     return nullptr;
   }
 
-  Range::Ptr get_next_unassigned() {
+  Range::Ptr get_next_unassigned(bool& waiting_meta) {
     Range::Ptr range = nullptr;
     iterator it;
     Core::MutexSptd::scope lock(m_mutex);
     for(cid_t cid = 1; cid <= Common::Files::Schema::SYS_CID_END; ++cid) {
-      if((it = find(cid)) != end() && 
-         (range = it->second->get_next_unassigned()))
-        return range;
+      if((it = find(cid)) != end()) {
+        if((range = it->second->get_next_unassigned()))
+          return range;
+        if(it->second->state() != Column::State::OK)
+          waiting_meta = true;
+      }
     }
+    if(waiting_meta)
+      return nullptr;
+
     for(it = begin(); it != end(); ++it) {
       if((range = it->second->get_next_unassigned()))
         return range;
     }
-    return range;
+    return nullptr;
   }
 
   void set_rgr_unassigned(rgrid_t rgrid) {
@@ -100,25 +106,22 @@ class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
   }
 
   void assigned(rgrid_t rgrid, size_t num, std::vector<Range::Ptr>& ranges) {
-    size_t max_r = 0;
     Column::Ptr chk;
     std::vector<cid_t> chked;
     do {
+      chk = nullptr;
       {
         Core::MutexSptd::scope lock(m_mutex);
         for(auto it = begin(); it != end(); ++it) {
-          size_t n = it->second->ranges();
-          if(max_r < n && std::find(chked.begin(), chked.end(), it->first)
-                                     == chked.end()) {
-            max_r = n;
+          if(std::find(chked.begin(),chked.end(),it->first) == chked.end()) {
             chk = it->second;
             chked.push_back(it->first);
+            break;
           }
         }
       }
-      if(!max_r) 
+      if(!chk) 
         return;
-      max_r = 0;
       chk->assigned(rgrid, num, ranges);
     } while(num);
   }
@@ -135,7 +138,7 @@ class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
   void remove(int&, const cid_t cid) {
     Core::MutexSptd::scope lock(m_mutex);
     auto it = find(cid);
-    if (it != end())
+    if(it != end())
       erase(it);
   }
 

@@ -23,6 +23,7 @@ RangeLoad::RangeLoad(const Manager::Ranger::Ptr& rgr,
             )
           ),
           rgr(rgr), range(range), schema_revision(schema->revision) {
+  SWC_LOG_OUT(LOG_INFO, range->print(SWC_LOG_OSTREAM  << "RANGE-LOAD "); );
 }
   
 RangeLoad::~RangeLoad() { }
@@ -60,6 +61,11 @@ void RangeLoad::handle_no_conn() {
   
 void RangeLoad::loaded(int err, bool failure, 
                        const DB::Cells::Interval& intval) {
+  SWC_LOG_OUT(LOG_DEBUG, 
+    Error::print(SWC_LOG_OSTREAM << "RANGE-STATUS CHECK ", err);
+    range->print(SWC_LOG_OSTREAM << ", ");
+  );
+
   auto col = Env::Mngr::columns()->get_column(err, range->cfg->cid);
   if(!col)
     return Env::Mngr::rangers()->range_loaded(
