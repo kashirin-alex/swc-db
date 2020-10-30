@@ -172,6 +172,8 @@ class Select final : public std::enable_shared_from_this<Select> {
 
     void add_call(const std::function<void()>& call);
 
+    void clear_next_calls();
+  
     void print(std::ostream& out);
 
     private:

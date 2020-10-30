@@ -336,6 +336,10 @@ void Select::ScannerColumn::add_call(const std::function<void()>& call) {
   next_calls.push_back(call);
 }
 
+void Select::ScannerColumn::clear_next_calls() {    
+  next_calls.clear();
+}
+
 void Select::ScannerColumn::print(std::ostream& out) {
   out << "ScannerColumn("
       << "cid=" << cid;
@@ -444,8 +448,10 @@ bool Select::Scanner::located_on_manager(
     if(rsp.err == Error::COLUMN_NOT_EXISTS) {
       col->selector->result->err = rsp.err; // Error::CONSIST_ERRORS;
       col->selector->result->error(col->cid, rsp.err);
-      if(col->selector->result->completion_final())
+      if(col->selector->result->completion_final()) {
         col->selector->response();
+        col->clear_next_calls();
+      }
       return false;
     }
     if(next_range && rsp.err == Error::RANGE_NOT_FOUND) {
@@ -670,9 +676,11 @@ void Select::Scanner::select(const Comm::EndPoints& endpoints,
         }
       }
 
-          
-      if(col->selector->result->completion_final())
+
+      if(col->selector->result->completion_final()) {
         col->selector->response();
+        col->clear_next_calls();
+      }
     },
 
     col->selector->timeout
