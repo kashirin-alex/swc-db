@@ -49,7 +49,7 @@ void report(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
         }
         
         function_send_response:
-          cbp = Buffers::make(4);
+          cbp = Buffers::make(ev, 4);
           cbp->append_i32(err);
           goto send_response;
       }
@@ -76,7 +76,7 @@ void report(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
         }
         rsp_params.inchain = role.get_inchain_endpoint();
           
-        cbp = Buffers::make(rsp_params, 4);
+        cbp = Buffers::make(ev, rsp_params, 4);
         cbp->append_i32(err);
         goto send_response;
       }
@@ -101,7 +101,7 @@ void report(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
           mngr_rangers.rgr_get(rgr, r.endpoints);
           ++i;
         }
-        cbp = Buffers::make(rsp_params, 4);
+        cbp = Buffers::make(ev, rsp_params, 4);
         cbp->append_i32(err);
         goto send_response;
       }
@@ -129,7 +129,7 @@ void report(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
           ++i;
         }
         rsp_params.state = col->state();
-        cbp = Buffers::make(rsp_params, 4);
+        cbp = Buffers::make(ev, rsp_params, 4);
         cbp->append_i32(err);
         goto send_response;
       }
@@ -147,12 +147,12 @@ void report(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
 
   
   send_error:
-    cbp = Buffers::make(4);
+    cbp = Buffers::make(ev, 4);
     cbp->append_i32(err);
 
 
   send_response:
-    conn->send_response(cbp, ev);
+    conn->send_response(cbp);
 }
 
 

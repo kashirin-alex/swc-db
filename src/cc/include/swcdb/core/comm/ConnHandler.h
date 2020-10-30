@@ -91,8 +91,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
   bool response_ok(const Event::Ptr& ev) noexcept;
 
-  bool send_response(const Buffers::Ptr& cbuf, 
-                     const Event::Ptr& ev,
+  bool send_response(const Buffers::Ptr& cbuf,
                      DispatchHandler::Ptr hdlr=nullptr) noexcept;
 
   bool send_request(Buffers::Ptr& cbuf, DispatchHandler::Ptr hdlr);

@@ -38,10 +38,10 @@ void mngr_update_response(const ConnHandlerPtr& conn, const Event::Ptr& ev,
     err = Error::COLUMN_SCHEMA_NAME_NOT_EXISTS;
 
   auto cbp = err
-    ? Buffers::make(4)
-    : Buffers::make(Params::ColumnGetRsp(flag, schema), 4);
+    ? Buffers::make(ev, 4)
+    : Buffers::make(ev, Params::ColumnGetRsp(flag, schema), 4);
   cbp->append_i32(err);
-  conn->send_response(cbp, ev);
+  conn->send_response(cbp);
 }
 
 void column_get(const ConnHandlerPtr& conn, const Event::Ptr& ev) {

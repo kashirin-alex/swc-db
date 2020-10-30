@@ -115,9 +115,9 @@ void rgr_mng_id(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
   }
 
   send_response:
-    auto cbp = err ? Buffers::make(4) : Buffers::make(rsp_params, 4);
+    auto cbp = err ? Buffers::make(ev, 4) : Buffers::make(ev, rsp_params, 4);
     cbp->append_i32(err);
-    conn->send_response(cbp, ev);
+    conn->send_response(cbp);
 
 }
   

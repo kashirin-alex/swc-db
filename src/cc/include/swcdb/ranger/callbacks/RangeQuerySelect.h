@@ -91,11 +91,11 @@ class RangeQuerySelect : public ReqScan {
     if(!cells.empty()) {
       Env::Rgr::res().less_mem_usage(cells.fill());
       StaticBuffer sndbuf(cells);
-      cbp = Comm::Buffers::make(params, sndbuf);
+      cbp = Comm::Buffers::make(m_ev, params, sndbuf);
     } else {
-      cbp = Comm::Buffers::make(params);
+      cbp = Comm::Buffers::make(m_ev, params);
     }
-    m_conn->send_response(cbp, m_ev);
+    m_conn->send_response(cbp);
 
     profile.finished();
     SWC_LOG_OUT(LOG_INFO,

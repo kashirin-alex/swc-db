@@ -32,8 +32,7 @@ void mngr_active(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
   }
 
   conn->send_response(
-    Buffers::make(Params::MngrActiveRsp(h ? h->endpoints : EndPoints())),
-    ev
+    Buffers::make(ev, Params::MngrActiveRsp(h ? h->endpoints : EndPoints()))
   );
 }
 

@@ -15,9 +15,8 @@ namespace Mngr { namespace Handler {
 void do_echo(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
   conn->send_response(
     ev->data_ext.size 
-      ? Buffers::make(ev->data_ext)
-      : Buffers::make(), 
-    ev
+      ? Buffers::make(ev, ev->data_ext)
+      : Buffers::make(ev)
   );
 }
   

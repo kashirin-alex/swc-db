@@ -40,10 +40,7 @@ void range_query_select(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
   }
 
   if(err) {
-    conn->send_response(
-      Buffers::make(Params::RangeQuerySelectRsp(err)),
-      ev
-    );
+    conn->send_response(Buffers::make(ev, Params::RangeQuerySelectRsp(err)));
 
   } else {
     params.interval.apply_possible_range(

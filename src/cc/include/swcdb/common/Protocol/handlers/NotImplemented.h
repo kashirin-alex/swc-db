@@ -15,9 +15,9 @@ namespace Common { namespace Handler {
 
 void not_implemented(const ConnHandlerPtr& conn, 
                      const Event::Ptr& ev) {
-  auto cbp = Buffers::make(4);
+  auto cbp = Buffers::make(ev, 4);
   cbp->append_i32(Error::NOT_IMPLEMENTED);
-  conn->send_response(cbp, ev);
+  conn->send_response(cbp);
 }
 
 

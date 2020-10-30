@@ -43,10 +43,7 @@ void range_locate(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
       Error::print(SWC_LOG_OSTREAM << ' ', err);
     );
 
-    conn->send_response(
-      Buffers::make(Params::RangeLocateRsp(err)),
-      ev
-    );
+    conn->send_response(Buffers::make(ev, Params::RangeLocateRsp(err)));
 
   } else {
 

@@ -64,9 +64,9 @@ void read_all(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     err = e.code();
   }
   
-  auto cbp = err ? Buffers::make(4) : Buffers::make(rbuf, 4);
+  auto cbp = err ? Buffers::make(ev, 4) : Buffers::make(ev, rbuf, 4);
   cbp->append_i32(err);
-  conn->send_response(cbp, ev);
+  conn->send_response(cbp);
 
 }
 

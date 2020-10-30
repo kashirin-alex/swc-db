@@ -44,7 +44,7 @@ void ColumnsUnload::unloaded(const ColumnPtr& col) {
 }
 
 void ColumnsUnload::response() {
-  m_conn->send_response(Comm::Buffers::make(m_rsp_params), m_ev);
+  m_conn->send_response(Comm::Buffers::make(m_ev, m_rsp_params));
 }
 
 

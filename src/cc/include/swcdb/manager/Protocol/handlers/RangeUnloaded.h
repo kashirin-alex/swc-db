@@ -52,7 +52,7 @@ void range_unloaded(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
   send_response:
     SWC_PRINT << "RangeUnloaded(RSP): " << rsp_params.to_string()
               << SWC_PRINT_CLOSE;
-    conn->send_response(Buffers::make(rsp_params), ev);
+    conn->send_response(Buffers::make(ev, rsp_params));
 
 }
 

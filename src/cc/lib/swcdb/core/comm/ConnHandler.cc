@@ -104,21 +104,20 @@ bool ConnHandler::send_error(int error, const std::string& msg,
                              const Event::Ptr& ev) noexcept {
   return send_response(
     Buffers::create_error_message(
-      error, msg.c_str(), msg.length() < INT16_MAX? msg.length() : INT16_MAX),
-    ev);
+      ev,
+      error, msg.c_str(), msg.length() < INT16_MAX? msg.length() : INT16_MAX)
+    );
 }
 
 bool ConnHandler::response_ok(const Event::Ptr& ev) noexcept {
-  auto cbp = Buffers::make(4);
+  auto cbp = Buffers::make(ev, 4);
   cbp->append_i32(Error::OK);
-  return send_response(cbp, ev);
+  return send_response(cbp);
 }
 
-bool ConnHandler::send_response(const Buffers::Ptr& cbuf, 
-                                const Event::Ptr& ev,
+bool ConnHandler::send_response(const Buffers::Ptr& cbuf,
                                 DispatchHandler::Ptr hdlr) noexcept {
-  cbuf->header.initialize_from_request_header(ev->header);
-  if(!connected || ev->expired())
+  if(!connected || cbuf->expired())
     return false;
   cbuf->header.flags &= Header::FLAGS_MASK_REQUEST;
   write_or_queue(new Pending(cbuf, hdlr));
@@ -180,6 +179,8 @@ void ConnHandler::write(ConnHandler::Pending* pending) {
   if(!pending->hdlr || header.flags & Header::FLAGS_BIT_IGNORE_RESPONSE) {
     // send request/response without sent/rsp-ack
     delete pending;
+    if(cbuf->expired())
+      return write_next();
     goto write_commbuf;
   }
 
@@ -188,6 +189,9 @@ void ConnHandler::write(ConnHandler::Pending* pending) {
       // send_response with sent-ack
       auto hdlr = std::move(pending->hdlr);
       delete pending;
+      if(cbuf->expired())
+        return write_next();
+    
       do_async_write(
         cbuf->get_buffers(),
         [cbuf, hdlr, conn=ptr()] (const asio::error_code& ec, uint32_t) { 
@@ -196,7 +200,7 @@ void ConnHandler::write(ConnHandler::Pending* pending) {
 
           auto ev = Event::make(
             Event::Type::ERROR, ec ? Error::COMM_SEND_ERROR : Error::OK);
-          ev->header.initialize_from_request_header(cbuf->header);
+          ev->header.initialize_from_response(cbuf->header);
           hdlr->handle(conn, ev);
           if(ec)
             return conn->do_close();
@@ -232,7 +236,7 @@ void ConnHandler::write(ConnHandler::Pending* pending) {
           if(ec == asio::error::operation_aborted) 
             return;
           auto ev = Event::make(Event::Type::ERROR, Error::REQUEST_TIMEOUT);
-          ev->header.initialize_from_request_header(cbuf->header);
+          ev->header.initialize_from_request(cbuf->header);
           conn->run_pending(ev); 
         }
       );
@@ -290,7 +294,7 @@ void ConnHandler::recved_header_pre(asio::error_code ec,
       ec = asio::error::eof;
       ev->type = Event::Type::ERROR;
       ev->error = Error::REQUEST_TRUNCATED_HEADER;
-      ev->header = Header();
+      ev->header.reset();
       SWC_LOGF(LOG_WARN, "read, REQUEST HEADER_PREFIX_TRUNCATED: remain=%lu", 
                filled);
     }
@@ -333,7 +337,7 @@ void ConnHandler::recved_header(const Event::Ptr& ev, asio::error_code ec,
     ec = asio::error::eof;
     ev->type = Event::Type::ERROR;
     ev->error = Error::REQUEST_TRUNCATED_HEADER;
-    ev->header = Header();
+    ev->header.reset();
     SWC_LOGF(LOG_WARN, "read, REQUEST HEADER_TRUNCATED: len=%d", 
              ev->header.header_len);
   }

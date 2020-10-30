@@ -39,7 +39,7 @@ void report(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
         for(cid_t cidx = 0; (col=columns.get_next(cidx)); ++cidx) {
           rsp_params.ranges += col->ranges_count(); // *= (Master|Meta) weight
         }
-        cbp = Buffers::make(rsp_params, 4);
+        cbp = Buffers::make(ev, rsp_params, 4);
         cbp->append_i32(err);
         goto send_response;
       }
@@ -48,7 +48,7 @@ void report(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
         Params::Report::RspCids rsp_params;
         Env::Rgr::columns()->get_cids(rsp_params.cids);
 
-        cbp = Buffers::make(rsp_params, 4);
+        cbp = Buffers::make(ev, rsp_params, 4);
         cbp->append_i32(err);
         goto send_response;
       }
@@ -65,7 +65,7 @@ void report(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
         Params::Report::RspColumnRids rsp_params;
         col->get_rids(rsp_params.rids);
   
-        cbp = Buffers::make(rsp_params, 4);
+        cbp = Buffers::make(ev, rsp_params, 4);
         cbp->append_i32(err);
         goto send_response;
       }
@@ -105,7 +105,7 @@ void report(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
           range->get_interval(r->interval);
         }
       
-        cbp = Buffers::make(rsp_params, 4);
+        cbp = Buffers::make(ev, rsp_params, 4);
         cbp->append_i32(err);
         goto send_response;
       }
@@ -140,7 +140,7 @@ void report(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
           }
         }
 
-        cbp = Buffers::make(rsp_params, 4);
+        cbp = Buffers::make(ev, rsp_params, 4);
         cbp->append_i32(err);
         goto send_response;
       }
@@ -160,12 +160,12 @@ void report(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
 
   
   send_error:
-    cbp = Buffers::make(4);
+    cbp = Buffers::make(ev, 4);
     cbp->append_i32(err);
 
 
   send_response:
-    conn->send_response(cbp, ev);
+    conn->send_response(cbp);
 }
   
 

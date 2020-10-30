@@ -76,7 +76,7 @@ void rgr_get(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
       rsp_params.print(SWC_LOG_OSTREAM <<' '); 
     );
 
-    conn->send_response(Buffers::make(rsp_params), ev);
+    conn->send_response(Buffers::make(ev, rsp_params));
 
 }
 

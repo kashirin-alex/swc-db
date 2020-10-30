@@ -44,9 +44,9 @@ void read(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     err = e.code();
   }
   
-  auto cbp = Buffers::make(Params::ReadRsp(offset), rbuf, 4);
+  auto cbp = Buffers::make(ev, Params::ReadRsp(offset), rbuf, 4);
   cbp->append_i32(err);
-  conn->send_response(cbp, ev);
+  conn->send_response(cbp);
 
 }
 

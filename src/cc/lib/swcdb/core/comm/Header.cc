@@ -18,8 +18,31 @@ Header::Header(uint64_t cmd, uint32_t timeout)
                 id(0), timeout_ms(timeout), command(cmd),
                 buffers(0), checksum(0) {
 }
+SWC_SHOULD_INLINE
+Header::Header(const Header& init_from_req_header)
+              : version(1), header_len(0), 
+                flags(init_from_req_header.flags),
+                id(init_from_req_header.id), 
+                timeout_ms(0), 
+                command(init_from_req_header.command),
+                buffers(0), checksum(0) {
+}
   
 Header::~Header() { }
+
+SWC_SHOULD_INLINE
+void Header::reset() {
+  version = 0;
+  header_len = 0;
+  flags = 0;
+  id = 0;
+  timeout_ms = 0;
+  command = 0;
+  buffers = 0;
+  data.reset();
+  data_ext.reset();
+  checksum = 0;
+}
 
 SWC_SHOULD_INLINE
 void Header::set(uint64_t cmd, uint32_t timeout) {
@@ -95,10 +118,19 @@ void Header::decode(const uint8_t** bufp, size_t* remainp) {
               "header-checksum decoded-len=%lu", *bufp-base);
 }
 
-void Header::initialize_from_request_header(const Header &req_header) {
-  flags = req_header.flags;
-  id = req_header.id;
-  command = req_header.command;
+void Header::initialize_from_response(const Header& header) {
+  flags = header.flags;
+  id = header.id;
+  command = header.command;
+  buffers = 0;
+  data.reset();
+  data_ext.reset();
+}
+
+void Header::initialize_from_request(const Header& header) {
+  flags = header.flags;
+  id = header.id;
+  command = header.command;
   buffers = 0;
   data.reset();
   data_ext.reset();

@@ -14,6 +14,8 @@ namespace {
 static const uint16_t BUFFER_CHUNK_SZ = 4096;
 }
 
+
+/* Make Common */
 SWC_SHOULD_INLINE
 Buffers::Ptr Buffers::make(uint32_t reserve) {
   return std::make_shared<Buffers>(reserve);
@@ -35,6 +37,8 @@ Buffers::Ptr Buffers::make(StaticBuffer& buffer, uint32_t reserve) {
   return std::make_shared<Buffers>(buffer, reserve);
 }
 
+
+/* Make Request */
 SWC_SHOULD_INLINE
 Buffers::Ptr Buffers::make(const Serializable& params, uint32_t reserve,
                            uint64_t cmd, uint32_t timeout) {
@@ -49,48 +53,111 @@ Buffers::Ptr Buffers::make(const Serializable& params, StaticBuffer& buffer,
 }
 
 
+/* Make Response */
+SWC_SHOULD_INLINE
+Buffers::Ptr Buffers::make(const Event::Ptr& ev, uint32_t reserve) {
+  return std::make_shared<Buffers>(ev, reserve);
+}
+
+SWC_SHOULD_INLINE
+Buffers::Ptr Buffers::make(const Event::Ptr& ev, 
+                           const Serializable& params, uint32_t reserve) {
+  return std::make_shared<Buffers>(ev, params, reserve);
+}
+
+SWC_SHOULD_INLINE
+Buffers::Ptr Buffers::make(const Event::Ptr& ev, 
+                           const Serializable& params, StaticBuffer& buffer, 
+                           uint32_t reserve) {
+  return std::make_shared<Buffers>(ev, params, buffer, reserve);
+}
+
+SWC_SHOULD_INLINE
+Buffers::Ptr Buffers::make(const Event::Ptr& ev, 
+                           StaticBuffer& buffer, uint32_t reserve) {
+  return std::make_shared<Buffers>(ev, buffer, reserve);
+}
+
+
 SWC_SHOULD_INLINE
 Buffers::Ptr 
-Buffers::create_error_message(int error, const char *msg, uint16_t len) {
-  auto cbp = Buffers::make(4 + Serialization::encoded_length_bytes(len));
+Buffers::create_error_message(const Event::Ptr& ev,
+                              int error, const char *msg, uint16_t len) {
+  auto cbp = Buffers::make(ev, 4 + Serialization::encoded_length_bytes(len));
   Serialization::encode_i32(&cbp->data_ptr, error);
   Serialization::encode_bytes(&cbp->data_ptr, msg, len);
   return cbp;
 }
 
 
-Buffers::Buffers(uint32_t reserve) {
+/* Init Common */
+Buffers::Buffers(uint32_t reserve) 
+                : expiry_ms(0) {
   if(reserve)
     set_data(reserve);
 }
 
-Buffers::Buffers(const Serializable& params, uint32_t reserve) {
+Buffers::Buffers(const Serializable& params, uint32_t reserve)
+                : expiry_ms(0) {
   set_data(params, reserve);
 }
 
 Buffers::Buffers(const Serializable& params, StaticBuffer& buffer, 
-                 uint32_t reserve) : buf_ext(buffer) {
+                 uint32_t reserve) 
+                : expiry_ms(0), buf_ext(buffer) {
   set_data(params, reserve);
 }
 
 Buffers::Buffers(StaticBuffer& buffer, uint32_t reserve)
-                : buf_ext(buffer) {
+                : expiry_ms(0), buf_ext(buffer) {
   if(reserve)
     set_data(reserve);
 }
 
 
+/* Init Request */
 Buffers::Buffers(const Serializable& params, uint32_t reserve,
                  uint64_t cmd, uint32_t timeout)
-                : header(cmd, timeout) {
+                : header(cmd, timeout), expiry_ms(0) {
   set_data(params, reserve);
 }
 
 Buffers::Buffers(const Serializable& params, StaticBuffer& buffer,
                  uint32_t reserve,
                  uint64_t cmd, uint32_t timeout)
-                : header(cmd, timeout), buf_ext(buffer) {
+                : header(cmd, timeout), expiry_ms(0),
+                  buf_ext(buffer) {
   set_data(params, reserve);
+}
+
+
+/* Init Response */
+Buffers::Buffers(const Event::Ptr& ev, uint32_t reserve)
+                : header(ev->header), expiry_ms(ev->expiry_ms) {
+  if(reserve)
+    set_data(reserve);
+}
+
+Buffers::Buffers(const Event::Ptr& ev, 
+                 const Serializable& params, uint32_t reserve)
+                : header(ev->header), expiry_ms(ev->expiry_ms) {
+  set_data(params, reserve);
+}
+
+Buffers::Buffers(const Event::Ptr& ev, 
+                 const Serializable& params, StaticBuffer& buffer, 
+                 uint32_t reserve) 
+                : header(ev->header), expiry_ms(ev->expiry_ms), 
+                  buf_ext(buffer) {
+  set_data(params, reserve);
+}
+
+Buffers::Buffers(const Event::Ptr& ev, 
+                 StaticBuffer& buffer, uint32_t reserve)
+                : header(ev->header), expiry_ms(ev->expiry_ms),
+                  buf_ext(buffer) {
+  if(reserve)
+    set_data(reserve);
 }
 
 
@@ -118,6 +185,11 @@ void Buffers::prepare(Core::Encoder::Type encoder) {
     if(buf_ext.size)
       header.data_ext.encode(encoder, buf_ext);
   }
+}
+
+SWC_SHOULD_INLINE
+bool Buffers::expired() const {
+  return expiry_ms && Time::now_ms() > expiry_ms;
 }
 
 SWC_SHOULD_INLINE

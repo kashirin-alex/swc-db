@@ -27,7 +27,7 @@ Event::~Event() { }
 SWC_SHOULD_INLINE
 void Event::received() {
   if(header.timeout_ms)
-    expiry_ms = Time::now_ms() + header.timeout_ms; 
+    expiry_ms = Time::now_ms() + header.timeout_ms - 1; 
 }
 
 void Event::decode_buffers() {

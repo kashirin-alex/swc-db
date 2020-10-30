@@ -34,9 +34,9 @@ void length(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     err = e.code();
   }
   
-  auto cbp = Buffers::make(Params::LengthRsp(length), 4);
+  auto cbp = Buffers::make(ev, Params::LengthRsp(length), 4);
   cbp->append_i32(err);
-  conn->send_response(cbp, ev);
+  conn->send_response(cbp);
 
 }
   

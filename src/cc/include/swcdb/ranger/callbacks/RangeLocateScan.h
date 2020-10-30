@@ -134,7 +134,7 @@ class RangeLocateScan : public ReqScan {
     else if(!params.cid || !params.rid)
       params.err = Error::RANGE_NOT_FOUND;
 
-    m_conn->send_response(Comm::Buffers::make(params), m_ev);
+    m_conn->send_response(Comm::Buffers::make(m_ev, params));
   
     profile.finished();
     SWC_LOG_OUT(LOG_DEBUG, 

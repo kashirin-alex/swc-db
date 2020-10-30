@@ -34,7 +34,7 @@ class RangeQueryUpdate : public Comm::ResponseCallback {
   }
 
   void response(const Comm::Protocol::Rgr::Params::RangeQueryUpdateRsp& params) {
-    m_conn->send_response(Comm::Buffers::make(params), m_ev);
+    m_conn->send_response(Comm::Buffers::make(m_ev, params));
   }
 
 

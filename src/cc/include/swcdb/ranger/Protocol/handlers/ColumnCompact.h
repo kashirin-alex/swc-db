@@ -34,7 +34,7 @@ void column_compact(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     rsp_params.err = e.code();
   }
   
-  conn->send_response(Buffers::make(rsp_params), ev);
+  conn->send_response(Buffers::make(ev, rsp_params));
 
 }
   

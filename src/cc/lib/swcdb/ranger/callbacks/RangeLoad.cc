@@ -45,9 +45,9 @@ void RangeLoad::loaded(int& err) {
     if((params.intval = range->cfg->range_type == DB::Types::Range::MASTER))
       range->get_interval(params.interval);
         
-    auto cbp = Comm::Buffers::make(params, 4);
+    auto cbp = Comm::Buffers::make(m_ev, params, 4);
     cbp->append_i32(err);
-    m_conn->send_response(cbp, m_ev);
+    m_conn->send_response(cbp);
   }
   
   col->run_mng_queue();

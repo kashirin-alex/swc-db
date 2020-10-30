@@ -34,7 +34,11 @@ struct Header final {
 
   Header(uint64_t cmd=0, uint32_t timeout=0);
 
+  explicit Header(const Header& init_from_req_header);
+
   ~Header();
+
+  void reset();
 
   void set(uint64_t cmd=0, uint32_t timeout=0);
 
@@ -46,7 +50,9 @@ struct Header final {
 
   void decode(const uint8_t** bufp, size_t* remainp);
 
-  void initialize_from_request_header(const Header &req_header);
+  void initialize_from_response(const Header& header);
+
+  void initialize_from_request(const Header& header);
 
   void print(std::ostream& out) const;
 

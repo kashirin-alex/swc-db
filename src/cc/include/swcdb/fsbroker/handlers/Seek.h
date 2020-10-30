@@ -41,9 +41,9 @@ void seek(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     err = e.code();
   }
   
-  auto cbp = Buffers::make(Params::SeekRsp(offset), 4);
+  auto cbp = Buffers::make(ev, Params::SeekRsp(offset), 4);
   cbp->append_i32(err);
-  conn->send_response(cbp, ev);
+  conn->send_response(cbp);
     
 }
   

@@ -42,9 +42,9 @@ void create(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     err = e.code();
   }
 
-  auto cbp = Buffers::make(Params::OpenRsp(fd), 4);
+  auto cbp = Buffers::make(ev, Params::OpenRsp(fd), 4);
   cbp->append_i32(err);
-  conn->send_response(cbp, ev);
+  conn->send_response(cbp);
 
 }
   
