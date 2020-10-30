@@ -28,6 +28,8 @@ class ColumnsUnload : public ManageBase {
 
   void add(const ColumnPtr& col);
 
+  void run() override;
+
   virtual void unloaded(RangePtr range);
   
   virtual void unloaded(const ColumnPtr& col);

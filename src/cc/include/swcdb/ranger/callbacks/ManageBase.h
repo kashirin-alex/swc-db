@@ -36,9 +36,12 @@ class ManageBase : public Comm::ResponseCallback {
              Action action)
             : Comm::ResponseCallback(conn, ev), 
               action(action) {
+    Env::Rgr::in_process(1);
   }
 
-  virtual ~ManageBase() { }
+  virtual ~ManageBase() {
+    Env::Rgr::in_process(-1);
+  }
   
 };
 

@@ -14,12 +14,9 @@ RangeLoad::RangeLoad(const Comm::ConnHandlerPtr& conn,
                      const cid_t cid, const rid_t rid)
                     : ManageBase(conn, ev, ManageBase::RANGE_LOAD), 
                       cid(cid), rid(rid) {
-  Env::Rgr::in_process(1);
 }
 
-RangeLoad::~RangeLoad() { 
-  Env::Rgr::in_process(-1);
-}
+RangeLoad::~RangeLoad() { }
 
 void RangeLoad::loaded(int& err) {
   if(!err && (Env::Rgr::is_shuttingdown() ||

@@ -82,23 +82,16 @@ void Columns::load_range(const DB::Schema& schema,
 
 void Columns::unload(cid_t cid_begin, cid_t cid_end,
                      Callback::ColumnsUnload::Ptr req) {
-  std::vector<ColumnPtr> cols;
   {
     Core::MutexSptd::scope lock(m_mutex);
     for(auto it = begin(); it != end(); ++it) {
       if((!cid_begin || cid_begin <= it->first) &&
          (!cid_end || cid_end >= it->first)) {
         req->add(it->second);
-        cols.push_back(it->second);
       }
     }
   }
-  if(cols.empty()) {
-    req->response();
-  } else {
-    for(auto& col : cols)
-      col->add_managing(req);
-  }
+  req->run();
 }
 
 void Columns::unload_all(bool validation) {

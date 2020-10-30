@@ -25,8 +25,8 @@ void ColumnsUnloadAll::unloaded(RangePtr range) {
 void ColumnsUnloadAll::unloaded(const ColumnPtr& col) {
   if(validation)
     SWC_LOGF(LOG_WARN, 
-              "Unload-Validation Column(cid=%lu ranges=%lu) remained",
-              col->cfg->cid, col->ranges_count());
+      "Unload-Validation Column(cid=%lu ranges=%lu use-count=%lu) remained",
+      col->cfg->cid, col->ranges_count(), col->cfg.use_count());
   ColumnsUnload::unloaded(col);
 }
 

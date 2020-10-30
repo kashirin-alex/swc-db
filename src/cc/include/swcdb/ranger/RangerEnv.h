@@ -220,9 +220,9 @@ void Rgr::shuttingdown() {
   
   m_env->_columns->unload_all(false);
 
-  m_env->m_shuttingdown = true;
-
   wait_if_in_process();
+
+  m_env->m_shuttingdown = true;
 
   m_env->_resources.stop();
 }

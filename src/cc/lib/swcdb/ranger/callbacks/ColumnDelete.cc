@@ -12,12 +12,9 @@ ColumnDelete::ColumnDelete(const Comm::ConnHandlerPtr& conn,
                            const cid_t cid)
                           : ManageBase(conn, ev, ManageBase::COLUMN_DELETE), 
                             cid(cid) {
-  Env::Rgr::in_process(1);
 }
 
-ColumnDelete::~ColumnDelete() { 
-  Env::Rgr::in_process(-1);
-}
+ColumnDelete::~ColumnDelete() { }
 
 void ColumnDelete::add(const RangePtr& range) { 
   Core::MutexSptd::scope lock(m_mutex);

@@ -10,18 +10,26 @@ namespace SWC { namespace Ranger { namespace Callback {
 ColumnsUnload::ColumnsUnload(const Comm::ConnHandlerPtr& conn, 
                              const Comm::Event::Ptr& ev,
                              bool completely)
-                            : ManageBase(conn, ev, ManageBase::COLUMNS_UNLOAD), 
-                              completely(completely) {
-  Env::Rgr::in_process(1);
+                        : ManageBase(conn, ev, ManageBase::COLUMNS_UNLOAD),
+                          completely(completely) {
 }
 
-ColumnsUnload::~ColumnsUnload() {
-  Env::Rgr::in_process(-1);
-}
+ColumnsUnload::~ColumnsUnload() { }
 
 void ColumnsUnload::add(const ColumnPtr& col) {    
   Core::MutexSptd::scope lock(m_mutex);
   m_cols.push_back(col);
+}
+
+void ColumnsUnload::run() {
+  if(m_cols.empty()) {
+    response();
+  } else {
+    auto req = std::dynamic_pointer_cast<ManageBase>(shared_from_this());
+    Core::MutexSptd::scope lock(m_mutex);
+    for(auto& col : m_cols)
+      col->add_managing(req);
+  }
 }
 
 void ColumnsUnload::unloaded(RangePtr range) {

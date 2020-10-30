@@ -13,12 +13,9 @@ RangeUnload::RangeUnload(const Comm::ConnHandlerPtr& conn,
                          const bool completely)
                         : ManageBase(conn, ev, ManageBase::RANGE_UNLOAD), 
                           cid(cid), rid(rid), completely(completely) {
-  Env::Rgr::in_process(1);
 }
 
-RangeUnload::~RangeUnload() { 
-  Env::Rgr::in_process(-1);
-}
+RangeUnload::~RangeUnload() { }
 
 
 }}}
