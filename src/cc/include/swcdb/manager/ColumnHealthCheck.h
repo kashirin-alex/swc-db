@@ -60,7 +60,7 @@ class ColumnHealthCheck final
   
   virtual ~ColumnHealthCheck();
 
-  void run();
+  void run(bool completing=false);
 
   private:
   Core::MutexSptd               m_mutex;

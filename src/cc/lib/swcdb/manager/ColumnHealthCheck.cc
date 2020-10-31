@@ -17,8 +17,6 @@ ColumnHealthCheck::RangerCheck::RangerCheck(
                 const ColumnHealthCheck::Ptr& col_checker, 
                 const Ranger::Ptr& rgr)
                 : col_checker(col_checker), rgr(rgr), m_checkings(0) { 
-  SWC_LOGF(LOG_DEBUG, "Column-Health START cid=%lu rgr=%lu", 
-            col_checker->col->cfg->cid, rgr->rgrid.load());
 }
   
 ColumnHealthCheck::RangerCheck::~RangerCheck() { }
@@ -63,16 +61,15 @@ void ColumnHealthCheck::RangerCheck::handle(const Range::Ptr& range, int err) {
     col_checker->col->set_unloaded(range); 
   }
 
-  if(err) {
-    SWC_LOGF(LOG_WARN, "Column-Health FINISH range(%lu/%lu) err=%d(%s)",
-              range->cfg->cid, range->rid, err, Error::get_text(err));
+  SWC_LOGF((err ? LOG_WARN : LOG_DEBUG),
+    "Column-Health FINISH range(%lu/%lu) rgr=%lu err=%d(%s)",
+    range->cfg->cid, range->rid, rgr->rgrid.load(),
+    err, Error::get_text(err));
+  if(err)
     Env::Mngr::rangers()->schedule_check(2000);
-  } else {
-    SWC_LOGF(LOG_DEBUG, "Column-Health FINISH range(%lu/%lu) err=%d(%s)",
-              range->cfg->cid, range->rid, err, Error::get_text(err));
-  }
+
   if(more && !add_ranges(more))
-    col_checker->run();
+    col_checker->run(true);
 }
 
 bool ColumnHealthCheck::RangerCheck::empty() {
@@ -88,8 +85,8 @@ void ColumnHealthCheck::RangerCheck::_add_range(const Range::Ptr& range) {
     rgr->put(
       std::make_shared<Comm::Protocol::Rgr::Req::RangeIsLoaded>(
         shared_from_this(), range));
-    SWC_LOGF(LOG_DEBUG, "Column-Health START range(%lu/%lu)",
-             range->cfg->cid, range->rid);
+    SWC_LOGF(LOG_DEBUG, "Column-Health START range(%lu/%lu) rgr=%lu",
+             range->cfg->cid, range->rid, rgr->rgrid.load());
   }
 }
   
@@ -104,12 +101,13 @@ ColumnHealthCheck::ColumnHealthCheck(const Column::Ptr& col,
   
 ColumnHealthCheck::~ColumnHealthCheck() { }
 
-void ColumnHealthCheck::run() {
+void ColumnHealthCheck::run(bool completing) {
   std::vector<Range::Ptr> ranges;
   col->need_health_check(check_ts, check_intval, ranges);
 
-  SWC_LOGF(LOG_DEBUG, "Column-Health START cid(%lu) ranges=%lu", 
-           col->cfg->cid, ranges.size());
+  if(!completing)
+    SWC_LOGF(LOG_DEBUG, "Column-Health START cid(%lu) ranges=%lu",
+             col->cfg->cid, ranges.size());
 
   RangerCheck::Ptr checker;
   rgrid_t rgrid;
@@ -130,9 +128,11 @@ void ColumnHealthCheck::run() {
       auto rgr = Env::Mngr::rangers()->rgr_get(rgrid);
       if(!rgr || rgr->state != DB::Types::MngrRangerState::ACK)
         continue;
-      m_checkers.push_back(
-        std::make_shared<RangerCheck>(shared_from_this(), rgr));
-      checker = m_checkers.back();
+
+      Core::MutexSptd::scope lock(m_mutex);
+      checker = m_checkers.emplace_back(
+        new RangerCheck(shared_from_this(), rgr));
+
     } else if(checker->rgr->state != DB::Types::MngrRangerState::ACK) {
       continue;
     }
@@ -143,7 +143,7 @@ void ColumnHealthCheck::run() {
   {
     Core::MutexSptd::scope lock(m_mutex);
     for(auto it = m_checkers.begin(); it < m_checkers.end(); ) {
-      if(!(*it)->empty() || (*it)->add_ranges(10))
+      if(!(*it)->empty()) // || (*it)->add_ranges(10)
         ++it;
       else
         m_checkers.erase(it);
