@@ -20,7 +20,7 @@ namespace Common {
 namespace Files { namespace Schema {
 
 
-const uint8_t SYS_CID_END = 9;
+const uint8_t SYS_CID_END = DB::Types::MetaColumn::CID_META_END + 1;
 
 const uint8_t HEADER_SIZE = 13;
 const uint8_t HEADER_OFFSET_CHKSUM = 9;

@@ -15,36 +15,45 @@ namespace SWC { namespace DB { namespace Types {  namespace MetaColumn {
 
 SWC_SHOULD_INLINE
 bool is_master(cid_t cid) {
-  return cid <= 4;
+  return cid <= CID_MASTER_END;
 }
 
 SWC_SHOULD_INLINE
 bool is_meta(cid_t cid) {
-  return cid >= 5 && cid <= 8;
+  return cid >= CID_META_BEGIN && cid <= CID_META_END;
 }
 
 SWC_SHOULD_INLINE
 bool is_data(cid_t cid) {
-  return cid > 8;
+  return cid > CID_META_END;
 }
 
 
 Range get_range_type(cid_t cid) {
-  return cid <= 4 ? Range::MASTER : (cid <= 8 ? Range::META : Range::DATA);
+  switch(cid) {
+    case CID_MASTER_BEGIN ... CID_MASTER_END:
+      return Range::MASTER;
+    case CID_META_BEGIN ... CID_META_END:
+      return Range::META;
+    default:
+      return Range::DATA;
+  }
 }
 
 KeySeq get_seq_type(cid_t cid) {
-  return (
-    (cid == 4 || cid == 8) 
-    ? KeySeq::FC_VOLUME
-    : ((cid == 3 || cid == 7) 
-      ? KeySeq::FC_LEXIC 
-      : ((cid == 2 || cid == 6) 
-        ? KeySeq::VOLUME 
-        :  KeySeq::LEXIC
-        )
-      )
-    ); 
+  switch(cid) {
+    case 2:
+    case 6:
+      return KeySeq::VOLUME;
+    case 3:
+    case 7:
+      return KeySeq::FC_LEXIC;
+    case 4:
+    case 8:
+      return KeySeq::FC_VOLUME;
+    default:
+      return KeySeq::LEXIC;
+  }
 }
 
 

@@ -13,6 +13,11 @@
 
 namespace SWC { namespace DB { namespace Types { namespace MetaColumn {
 
+const cid_t CID_MASTER_BEGIN  = 1;
+const cid_t CID_MASTER_END    = 4;
+const cid_t CID_META_BEGIN    = 5;
+const cid_t CID_META_END      = 8;
+
 
 bool is_master(cid_t cid);
 
