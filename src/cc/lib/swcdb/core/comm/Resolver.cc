@@ -69,18 +69,16 @@ Network::Network(const Network& net)
 
 
 bool has_endpoint(const EndPoint& e1, const EndPoints& endpoints_in) {
-  if(endpoints_in.size()==0) 
-    return false;
-  return std::find_if(endpoints_in.begin(), endpoints_in.end(),  
-          [e1](const EndPoint& e2){
-            return e1.address() == e2.address() && e1.port() == e2.port();}) 
-        != endpoints_in.end();
+  return !endpoints_in.empty() &&
+         std::find(endpoints_in.begin(), endpoints_in.end(), e1)
+            != endpoints_in.end();
 }
 
 bool has_endpoint(const EndPoints& endpoints, 
                   const EndPoints& endpoints_in) {
-  for(auto& endpoint : endpoints){
-    if(has_endpoint(endpoint, endpoints_in)) return true;
+  for(auto& endpoint : endpoints) {
+    if(has_endpoint(endpoint, endpoints_in)) 
+      return true;
   }
   return false;
 }
@@ -88,7 +86,7 @@ bool has_endpoint(const EndPoints& endpoints,
 
 size_t endpoints_hash(const EndPoints& endpoints) {
   std::string s;
-  for(auto& endpoint : endpoints){
+  for(auto& endpoint : endpoints) {
     s.append(endpoint.address().to_string());
     s.append(":");
     s.append(std::to_string(endpoint.port()));

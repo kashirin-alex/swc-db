@@ -271,9 +271,7 @@ class Column final : private std::vector<Range::Ptr> {
     for(auto& range : *this) {
       if(!(rgrid = range->get_rgr_id()))
         continue;
-      if(std::find_if(rgrids.begin(), rgrids.end(), 
-         [rgrid](const rgrid_t& rgrid2)
-         {return rgrid == rgrid2;}) == rgrids.end())
+      if(std::find(rgrids.begin(), rgrids.end(), rgrid) == rgrids.end())
         rgrids.push_back(rgrid);
     }
   }

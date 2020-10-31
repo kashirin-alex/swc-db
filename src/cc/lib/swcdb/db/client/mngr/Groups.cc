@@ -67,34 +67,22 @@ void Group::print(std::ostream& out) {
   }
 }
 
-void Group::apply_endpoints(Comm::EndPoints& to_endpoints) {
+void Group::apply_endpoints(Comm::EndPoints& to) {
   std::scoped_lock lock(m_mutex);
     
   for(auto& endpoints : *this) {
-    for(auto& endpoint : endpoints) {      
-      auto it = std::find_if(
-        to_endpoints.begin(), to_endpoints.end(), 
-        [endpoint](const Comm::EndPoint& e2) {
-          return endpoint.address() == e2.address() 
-                 && endpoint.port() == e2.port();});
-
-      if(it == to_endpoints.end())
-        to_endpoints.push_back(endpoint);
+    for(auto& point : endpoints) {
+      if(std::find(to.begin(), to.end(), point) == to.end())
+        to.push_back(point);
     }
   }
 }
 
 void Group::_get_host(const Comm::EndPoint& point, 
                       Comm::EndPoints*& found_host) {
-  for(auto& endpoints : *this) {
-    auto it = std::find_if(
-      endpoints.begin(), endpoints.end(), 
-      [point](const Comm::EndPoint& e2) {
-        return point.address() == e2.address() 
-               && point.port() == e2.port();});
-
-    if(it != endpoints.end()) {
-      found_host = &endpoints;
+  for(auto& points : *this) {
+    if(std::find(points.begin(), points.end(), point) != points.end()) {
+      found_host = &points;
       return;
     }
   }
@@ -285,20 +273,17 @@ void Groups::hosts(uint8_t role, cid_t cid, Hosts& hosts,
 }
 
 Groups::Vec Groups::get_groups(const Comm::EndPoints& endpoints) {
-  Vec host_groups;
+  Vec hgroups;
   std::scoped_lock lock(m_mutex);
     
   for(auto& group : *this) {
     for(auto& endpoint : endpoints) {
-      if(group->is_in_group(endpoint) 
-        && std::find_if(host_groups.begin(), host_groups.end(), 
-            [group](const Group::Ptr& g) {return g == group;})
-           == host_groups.end()
-        )
-        host_groups.push_back(group);
+      if(group->is_in_group(endpoint) && 
+         std::find(hgroups.begin(), hgroups.end(), group) == hgroups.end())
+        hgroups.push_back(group);
     }
   }
-  return host_groups;
+  return hgroups;
 }
 
 Comm::EndPoints Groups::get_endpoints(uint8_t role, cid_t cid_begin, 
