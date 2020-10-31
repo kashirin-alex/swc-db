@@ -16,6 +16,7 @@ using ColumnMngFunc = Comm::Protocol::Mngr::Params::ColumnMng::Function;
 MngdColumns::MngdColumns()
     : m_run(true), m_schemas_set(false), m_cid_active(false), 
       m_cid_begin(DB::Schema::NO_CID), m_cid_end(DB::Schema::NO_CID),
+      m_expected_ready(false),
       cfg_schema_replication(
         Env::Config::settings()->get<Config::Property::V_GUINT8>(
           "swc.mngr.schema.replication")),
@@ -88,10 +89,14 @@ Column::Ptr MngdColumns::get_column(int& err, cid_t cid) {
     
   col = Env::Mngr::columns()->get_column(err, cid);
   if(!err) {
-    if(col)
+    if(col) {
       col->state(err);
-    else
-      err = Error::COLUMN_NOT_EXISTS;
+    } else {
+      std::scoped_lock lock(m_mutex_columns);
+      err = m_expected_ready
+        ? Error::COLUMN_NOT_EXISTS
+        : Error::MNGR_NOT_INITIALIZED;
+    }
   }
   return col;
 }
@@ -128,9 +133,11 @@ void MngdColumns::change_active(const cid_t cid_begin, const cid_t cid_end,
 
 void MngdColumns::require_sync() {
   Env::Mngr::rangers()->sync();
-    
-  if(Env::Mngr::role()->is_active_role(DB::Types::MngrRole::SCHEMAS)) {
-    columns_load();
+
+  int err = Error::OK;
+  if(is_schemas_mngr(err)) {
+    if(!err)
+      columns_load();
   } else {
     auto schema = DB::Schema::make();
     update(
@@ -143,6 +150,22 @@ void MngdColumns::require_sync() {
 void MngdColumns::action(const ColumnReq::Ptr& new_req) {
   if(m_actions.push_and_is_1st(new_req))
     Env::Mngr::post([this]() { actions_run(); });
+}
+
+void MngdColumns::set_expect(const std::vector<cid_t>& columns, 
+                             bool initial) {
+  if(!initial && 
+     Env::Mngr::role()->is_active_role(DB::Types::MngrRole::SCHEMAS))
+    return;
+
+  if(!is_active(columns.front()) && !is_active(columns.back()))
+    return Env::Mngr::role()->req_mngr_inchain(
+      std::make_shared<Comm::Protocol::Mngr::Req::ColumnUpdate>(columns));
+
+  SWC_LOGF(LOG_DEBUG, "Expected Columns to Load size=%lu", columns.size());
+  std::scoped_lock lock(m_mutex_columns);
+  m_expected_load = columns; // fill if in-batches
+  m_expected_ready = false;
 }
 
 void MngdColumns::update_status(
@@ -184,6 +207,16 @@ void MngdColumns::update_status(
 
       } else {
         update(co_func, schema, err);
+      }
+
+      std::scoped_lock lock(m_mutex_columns);
+      if(!m_expected_ready) {
+        auto it = std::find(
+          m_expected_load.begin(), m_expected_load.end(), schema->cid);
+        if(it !=  m_expected_load.end()) {
+          m_expected_load.erase(it);
+          m_expected_ready = m_expected_load.empty();
+        }
       }
       break;
     }
@@ -295,15 +328,50 @@ bool MngdColumns::initialize() {
     
     m_schemas_set = true;
   }
-  
-  columns_load();
   return true;
 }
 
 
 void MngdColumns::columns_load() {
+  {
+    std::scoped_lock lock(m_mutex);
+    if(!m_schemas_set)
+      return;
+  }
+
+  auto groups = Env::Clients::get()->mngrs_groups->get_groups();
+  if(groups.empty()) {
+    SWC_LOG(LOG_WARN, "Empty Managers Groups")
+    return;
+  }
+
   std::vector<DB::Schema::Ptr> entries;
   Env::Mngr::schemas()->all(entries);
+  if(entries.empty()) {
+    SWC_LOG(LOG_WARN, "Empty Schema Entries")
+    return;
+  }
+
+  for(auto& g : groups) {
+    if(!(g->role & DB::Types::MngrRole::COLUMNS))
+      continue;
+
+    std::vector<cid_t> columns;
+    for(auto& schema : entries) {
+      if((!g->cid_begin || g->cid_begin <= schema->cid) && 
+         (!g->cid_end || g->cid_end >= schema->cid)) {
+        columns.push_back(schema->cid);
+        // ? in-batches
+      }
+    }
+    std::sort(columns.begin(), columns.end());
+  
+    SWC_LOGF(LOG_DEBUG,
+      "Set Expected Columns to Load for cid(begin=%lu end=%lu) size=%lu",
+      g->cid_begin, g->cid_end, columns.size());
+    set_expect(columns, true);
+  }
+  
   for(auto& schema : entries) {
     SWC_ASSERT(schema->cid != DB::Schema::NO_CID);
     update_status(

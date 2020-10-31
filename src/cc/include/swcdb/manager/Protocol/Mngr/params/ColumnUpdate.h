@@ -23,35 +23,76 @@ class ColumnUpdate : public Serializable {
               : function(function), schema(schema), err(err) {
   }
 
+  ColumnUpdate(ColumnMng::Function function, 
+               const std::vector<cid_t>& columns)
+              : function(function), columns(columns), err(Error::OK) {
+  }
+
   void print(std::ostream& out) {
     out << "ColumnUpdate(func=" << int(function);
-    schema->print(out << ' ');
-    Error::print(out << ' ', err);
+
+    if(function == ColumnMng::Function::INTERNAL_EXPECT) {
+      out << " columns=[";
+      for(cid_t cid : columns)
+        out << cid << ',';
+      out << ']';
+  
+    } else {
+      schema->print(out << ' ');
+      Error::print(out << ' ', err);
+    }
     out << ')';
   }
   
-  ColumnMng::Function   function;
-  DB::Schema::Ptr       schema;
-  int                   err;
+  ColumnMng::Function function;
+  std::vector<cid_t>  columns;
+  DB::Schema::Ptr     schema;
+  int                 err;
 
   private:
 
   size_t internal_encoded_length() const {
-    return 1
-          + schema->encoded_length() 
+    size_t sz = 1;
+
+    if(function == ColumnMng::Function::INTERNAL_EXPECT) {
+      sz += Serialization::encoded_length_vi64(columns.size());
+      for(const cid_t cid : columns)
+        sz += Serialization::encoded_length_vi64(cid);
+
+    } else {
+      sz += schema->encoded_length() 
           + Serialization::encoded_length_vi32(err);
+    }
+    return sz;
   }
     
   void internal_encode(uint8_t** bufp) const {
     Serialization::encode_i8(bufp, (uint8_t)function);
-    schema->encode(bufp);
-    Serialization::encode_vi32(bufp, err);
+
+    if(function == ColumnMng::Function::INTERNAL_EXPECT) {
+      Serialization::encode_vi64(bufp, columns.size());
+      for(const cid_t cid : columns)
+        Serialization::encode_vi64(bufp, cid);
+
+    } else {
+      schema->encode(bufp);
+      Serialization::encode_vi32(bufp, err);
+    }
   }
     
   void internal_decode(const uint8_t** bufp, size_t* remainp) {
     function = (ColumnMng::Function)Serialization::decode_i8(bufp, remainp);
-    schema = std::make_shared<DB::Schema>(bufp, remainp);
-    err = Serialization::decode_vi32(bufp, remainp);
+    
+    if(function == ColumnMng::Function::INTERNAL_EXPECT) {
+      columns.clear();
+      columns.resize(Serialization::decode_vi64(bufp, remainp));
+      for(auto it = columns.begin(); it < columns.end(); ++it)
+        *it = Serialization::decode_vi64(bufp, remainp);
+  
+    } else {
+      schema = std::make_shared<DB::Schema>(bufp, remainp);
+      err = Serialization::decode_vi32(bufp, remainp);
+    }
   }
 
 };

@@ -23,12 +23,17 @@ void column_update(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     params.decode(&ptr, &remain);
       
     conn->response_ok(ev);
-      
-    Env::Mngr::mngd_columns()->update_status(
-      params.function, params.schema, params.err);
-
+    
+    if(params.function == Params::ColumnMng::Function::INTERNAL_EXPECT) {
+      Env::Mngr::mngd_columns()->set_expect(params.columns, false);
+    } else {
+      Env::Mngr::mngd_columns()->update_status(
+        params.function, params.schema, params.err);
+    }
   } catch(...) {
-    SWC_LOG_CURRENT_EXCEPTION("");
+    const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
+    SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
+    conn->send_error(e.code(), "", ev);
   }
 }
 

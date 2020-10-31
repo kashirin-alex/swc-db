@@ -33,6 +33,8 @@ class ColumnMng : public Serializable {
 
     MODIFY                = 7,
     INTERNAL_ACK_MODIFY   = 8,
+
+    INTERNAL_EXPECT       = 9,
   };
 
   ColumnMng();

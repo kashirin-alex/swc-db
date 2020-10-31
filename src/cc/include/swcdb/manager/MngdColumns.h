@@ -62,6 +62,8 @@ class MngdColumns final {
 
   void action(const ColumnReq::Ptr& new_req);
 
+  void set_expect(const std::vector<cid_t>& columns, bool initial);
+
   void update_status(Comm::Protocol::Mngr::Params::ColumnMng::Function func, 
                      DB::Schema::Ptr& schema, int err, bool initial=false);
 
@@ -114,6 +116,9 @@ class MngdColumns final {
   cid_t                               m_cid_end;
 
   std::mutex                          m_mutex_columns;
+  std::atomic<bool>                   m_expected_ready;
+  std::vector<cid_t>                  m_expected_load;
+
   Core::QueueSafe<ColumnReq::Ptr>     m_actions;
   std::vector<ColumnReq::Ptr>         m_cid_pending;
   std::vector<ColumnFunction>         m_cid_pending_load;
