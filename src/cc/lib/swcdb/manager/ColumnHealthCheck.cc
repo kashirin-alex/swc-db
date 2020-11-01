@@ -15,7 +15,7 @@ namespace SWC { namespace Manager {
 ColumnHealthCheck::RangerCheck::RangerCheck(
                 const ColumnHealthCheck::Ptr& col_checker, 
                 const Ranger::Ptr& rgr)
-                : col_checker(col_checker), rgr(rgr) { 
+                : col_checker(col_checker), rgr(rgr), m_checkings(0) { 
 }
 
 ColumnHealthCheck::RangerCheck::~RangerCheck() { }
