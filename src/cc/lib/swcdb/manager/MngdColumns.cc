@@ -300,22 +300,17 @@ bool MngdColumns::initialize() {
         entries.push_back(cid);
       }
     }
-    
-    int32_t hdlrs = Env::Mngr::io()->get_size()/4+1;
-    int32_t vol = entries.size()/hdlrs+1;
-    std::atomic<int64_t> pending = 0;
-    while(!entries.empty()) {
-      FS::IdEntries_t hdlr_entries;
-      for(auto n=0; n < vol && !entries.empty(); ++n) {
-        hdlr_entries.push_back(entries.front());
-        entries.erase(entries.begin());
-      }
-      if(hdlr_entries.empty())
-        break;
 
+    std::atomic<int64_t> pending = 1;
+    int32_t vol = entries.size()/(Env::Mngr::io()->get_size()/4 + 1) + 1;
+    auto it = entries.begin();
+    FS::IdEntries_t::iterator it_to;
+    do {
       ++pending;
+      it_to = it + vol < entries.end() ? (it + vol) : entries.end();
       Env::Mngr::post(
-        [&pending, entries=hdlr_entries, 
+        [&pending, 
+         entries=FS::IdEntries_t(it, it_to),
          replicas=cfg_schema_replication->get()]() { 
           DB::Schema::Ptr schema;
           int err;
@@ -331,7 +326,9 @@ bool MngdColumns::initialize() {
           --pending;
         }
       );
-    }
+      it += vol;
+    } while(it_to < entries.end());
+    --pending;
 
     while(pending) // keep_locking
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
