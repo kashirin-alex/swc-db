@@ -9,6 +9,9 @@
 #define swcdb_manager_ColumnHealthCheck_h
 
 
+#include "swcdb/common/Stats/CompletionCounter.h"
+
+
 namespace SWC { namespace Manager {
 
 
@@ -20,6 +23,7 @@ class ColumnHealthCheck final
   const Column::Ptr                           col;
   const int64_t                               check_ts;
   const int32_t                               check_intval;
+  Common::Stats::CompletionCounter<uint64_t>  completion;
 
 
   class RangerCheck final 
@@ -36,12 +40,10 @@ class ColumnHealthCheck final
     virtual ~RangerCheck();
 
     void add_range(const Range::Ptr& range);
-    
+
     bool add_ranges(uint8_t more);
 
     void handle(const Range::Ptr& range, int err);
-
-    bool empty();
 
     private:
 
@@ -60,10 +62,13 @@ class ColumnHealthCheck final
   
   virtual ~ColumnHealthCheck();
 
-  void run(bool completing=false);
+  void run(bool initial=true);
+
+  void finishing(bool finished_range);
 
   private:
   Core::MutexSptd               m_mutex;
+  bool                          m_runnning;
   std::vector<RangerCheck::Ptr> m_checkers;
   
 };

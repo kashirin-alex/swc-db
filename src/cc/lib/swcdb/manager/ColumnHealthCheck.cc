@@ -1,4 +1,3 @@
-
 /*
  * SWC-DB© Copyright since 2019 Alex Kashirin <kashirin.alex@gmail.com>
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
@@ -16,9 +15,9 @@ namespace SWC { namespace Manager {
 ColumnHealthCheck::RangerCheck::RangerCheck(
                 const ColumnHealthCheck::Ptr& col_checker, 
                 const Ranger::Ptr& rgr)
-                : col_checker(col_checker), rgr(rgr), m_checkings(0) { 
+                : col_checker(col_checker), rgr(rgr) { 
 }
-  
+
 ColumnHealthCheck::RangerCheck::~RangerCheck() { }
 
 void ColumnHealthCheck::RangerCheck::add_range(const Range::Ptr& range) {
@@ -48,7 +47,9 @@ void ColumnHealthCheck::RangerCheck::handle(const Range::Ptr& range, int err) {
     Core::MutexSptd::scope lock(m_mutex);
     --m_checkings;
     while(!m_ranges.empty() && m_checkings < 10) {
-      _add_range(m_ranges.front());
+      auto r = m_ranges.front();
+      if(r->assigned() && r->get_rgr_id() == rgr->rgrid)
+        _add_range(r);
       m_ranges.pop();
     }
     size_t sz = m_checkings + m_ranges.size();
@@ -68,19 +69,16 @@ void ColumnHealthCheck::RangerCheck::handle(const Range::Ptr& range, int err) {
   if(err)
     Env::Mngr::rangers()->schedule_check(2000);
 
-  if(more && !add_ranges(more))
-    col_checker->run(true);
-}
-
-bool ColumnHealthCheck::RangerCheck::empty() {
-  Core::MutexSptd::scope lock(m_mutex);
-  return !m_checkings && m_ranges.empty();
+  if(more)
+    add_ranges(more);
+  col_checker->finishing(true);
 }
 
 void ColumnHealthCheck::RangerCheck::_add_range(const Range::Ptr& range) {
-  if(range->assigned() && range->get_rgr_id() == rgr->rgrid) {
-    if(m_checkings == 10)
-      return m_ranges.push(range);
+  if(m_checkings == 10) {
+    m_ranges.push(range);
+  } else {
+    col_checker->completion.increment();
     ++m_checkings;
     rgr->put(
       std::make_shared<Comm::Protocol::Rgr::Req::RangeIsLoaded>(
@@ -96,18 +94,22 @@ void ColumnHealthCheck::RangerCheck::_add_range(const Range::Ptr& range) {
 ColumnHealthCheck::ColumnHealthCheck(const Column::Ptr& col, 
                                      int64_t check_ts, uint32_t check_intval)
                                     : col(col), check_ts(check_ts), 
-                                      check_intval(check_intval) {
+                                      check_intval(check_intval),
+                                      completion(1), m_runnning(false) {
+  SWC_LOGF(LOG_DEBUG, "Column-Health START cid(%lu)", col->cfg->cid);
 }
   
 ColumnHealthCheck::~ColumnHealthCheck() { }
 
-void ColumnHealthCheck::run(bool completing) {
+void ColumnHealthCheck::run(bool initial) {
+  {
+    Core::MutexSptd::scope lock(m_mutex);
+    if(m_runnning)
+      return;
+    m_runnning = true;
+  }
   std::vector<Range::Ptr> ranges;
-  col->need_health_check(check_ts, check_intval, ranges);
-
-  if(!completing)
-    SWC_LOGF(LOG_DEBUG, "Column-Health START cid(%lu) ranges=%lu",
-             col->cfg->cid, ranges.size());
+  col->need_health_check(check_ts, check_intval, ranges, 0, 100);
 
   RangerCheck::Ptr checker;
   rgrid_t rgrid;
@@ -139,19 +141,22 @@ void ColumnHealthCheck::run(bool completing) {
 
     checker->add_range(range);
   }
-    
   {
     Core::MutexSptd::scope lock(m_mutex);
-    for(auto it = m_checkers.begin(); it < m_checkers.end(); ) {
-      if(!(*it)->empty()) // || (*it)->add_ranges(10)
-        ++it;
-      else
-        m_checkers.erase(it);
-    }
-    if(!m_checkers.empty())
-      return;
+    m_runnning = false;
   }
-  
+  if(initial)
+    finishing(false);
+}
+
+void ColumnHealthCheck::finishing(bool finished_range) {
+  if(finished_range)
+    run(false);
+
+  SWC_LOGF(LOG_DEBUG, "Column-Health finishing cid(%lu) in-process=%lu", 
+                        col->cfg->cid, completion.count());
+  if(!completion.is_last())
+    return;
   /*
   if(col->state() == Error::OK) {
     // match ranger's rids to mngr assignments (dup. unload from all Rangers)
@@ -159,7 +164,6 @@ void ColumnHealthCheck::run(bool completing) {
     Env::Mngr::rangers()->rgr_get(0, rangers);
   }
   */
-
   SWC_LOGF(LOG_DEBUG, "Column-Health FINISH cid(%lu)", col->cfg->cid);
   Env::Mngr::rangers()->health_check_finished(shared_from_this());
 }
