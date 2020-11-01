@@ -107,6 +107,10 @@ void MngdColumns::change_active(const cid_t cid_begin, const cid_t cid_end,
     std::scoped_lock lock(m_mutex);
     if(m_cid_active) {
       m_cid_active = false;
+      {
+        std::scoped_lock lock(m_mutex_columns);
+        m_expected_ready = false;
+      }
       Env::Mngr::columns()->reset();
       if(!Env::Mngr::role()->is_active_role(DB::Types::MngrRole::SCHEMAS))
         Env::Mngr::schemas()->reset();
@@ -185,6 +189,11 @@ void MngdColumns::update_status(
 
     case ColumnMngFunc::DELETE: {
       remove(err, schema->cid);
+      if(err) {
+        schemas_mngr
+          ? update_status(ColumnMngFunc::INTERNAL_ACK_DELETE, schema, err)
+          : update(ColumnMngFunc::INTERNAL_ACK_DELETE, schema, err);
+      }
       break;  
     } 
 
@@ -258,6 +267,7 @@ void MngdColumns::remove(int &err, cid_t cid, rgrid_t rgrid) {
     if(!Env::Mngr::role()->is_active_role(DB::Types::MngrRole::SCHEMAS))
       Env::Mngr::schemas()->remove(cid);
   }
+  err = Error::OK;
 }
 
 
@@ -491,7 +501,12 @@ void MngdColumns::update(int &err, DB::Schema::Ptr& schema,
 }
 
 void MngdColumns::remove(int &err, cid_t cid) {
-  Column::Ptr col = Env::Mngr::columns()->get_column(err, cid);
+  auto col = get_column(err, cid);
+  if(err && 
+     err != Error::COLUMN_NOT_EXISTS &&
+     err != Error::COLUMN_NOT_READY)
+    return;
+
   if(!col)
     return remove(err, cid, 0);
   if(!col->do_remove())
