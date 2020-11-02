@@ -86,7 +86,7 @@ class MngdColumns final {
   void check_assignment();
 
 
-  void columns_load();
+  bool columns_load();
 
   bool load_pending(cid_t cid, ColumnFunction& pending);
 

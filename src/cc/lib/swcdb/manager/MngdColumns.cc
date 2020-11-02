@@ -138,11 +138,7 @@ void MngdColumns::change_active(const cid_t cid_begin, const cid_t cid_end,
 void MngdColumns::require_sync() {
   Env::Mngr::rangers()->sync();
 
-  int err = Error::OK;
-  if(is_schemas_mngr(err)) {
-    if(!err)
-      columns_load();
-  } else {
+  if(!columns_load()) {
     auto schema = DB::Schema::make();
     update(
       ColumnMngFunc::INTERNAL_LOAD_ALL, 
@@ -339,24 +335,30 @@ bool MngdColumns::initialize() {
 }
 
 
-void MngdColumns::columns_load() {
-  {
-    std::scoped_lock lock(m_mutex);
-    if(!m_schemas_set)
-      return;
+bool MngdColumns::columns_load() {
+  int err;
+  for(;;) {
+    if(is_schemas_mngr(err = Error::OK)) {
+      if(err) // hold-on
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+      else
+        break;
+    } else {
+      return false;
+    }
   }
 
   auto groups = Env::Clients::get()->mngrs_groups->get_groups();
   if(groups.empty()) {
     SWC_LOG(LOG_WARN, "Empty Managers Groups")
-    return;
+    return false;
   }
 
   std::vector<DB::Schema::Ptr> entries;
   Env::Mngr::schemas()->all(entries);
   if(entries.empty()) {
     SWC_LOG(LOG_WARN, "Empty Schema Entries")
-    return;
+    return false;
   }
 
   for(auto& g : groups) {
@@ -386,6 +388,7 @@ void MngdColumns::columns_load() {
       Error::OK, true
     );
   }
+  return true;
 }
 
 void MngdColumns::columns_load_chk_ack() {
@@ -540,7 +543,8 @@ void MngdColumns::update_status_ack(
                           const DB::Schema::Ptr& schema, int err) {
   if(!err) switch(func) {
     case ColumnMngFunc::INTERNAL_LOAD_ALL: {
-      return columns_load();
+      columns_load();
+      return;
     }
     case ColumnMngFunc::INTERNAL_ACK_LOAD: {
       ColumnFunction pending;
