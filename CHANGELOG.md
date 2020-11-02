@@ -17,6 +17,31 @@
     changed enum MngrRanger::State to uint8_t in NS DB::Types::MngrRangerState
     added state DB::Types::MngrRangerState::SHUTTINGDOWN
     added Manager handling cases of a Ranger at MngrRangerState::SHUTTINGDOWN
+    fixed Manager ColumnHealthCheck completion state
+    fixed Manager RangerState MARKED_OFFLINE bit value
+    added Manager load 1st SysColm Columns::get_next_unassigned(&waiting_meta)
+    changed Comm::Buffers calc. nchunks with div & mod instead double
+    added asio::strand<> to ConnHandlerSSL
+    changed Comm::ConfigSSL asio::ssl::context usage/init to in-class storage
+    added Resolver::get_local_networks
+    added no need ConnHandlerSSL when client & server on the same add
+    deprecated cc-files for FsBroker Requests classes
+    added FsBroker A+Sync specialized Requests and common handlers to Req::Base
+    added Comm::Buffers ctors with uint64_t cmd, uint32_t timeout (for Req.)
+    added Comm::Buffers ctors with Event::Ptr (for Rsp.)
+    added bool Comm::Buffers::expired(), fixing to-not-send expired Events
+    changed make Comm::Buffers with specialization by Req/Rsp ctor
+    added separate Env::Mngr & Env::Rgr default IoContext inplace of Env::IoCtx
+    added header base helper class Core::NotMovableSharedPtr
+    changed {Column,Range}::cfg to ColumnCfg::Ptr (NotMovableSharedPtr)
+    added Types::MetaColumn definitions cid_t CID_{MASTER,META}_{BEGIN,END}
+    added client::Query::Select::ScannerColumn::clear_next_calls()
+    added new configuration properties:
+        swc.rgr.clients.handlers
+        swc.mngr.clients.handlers
+    added Ranger Callback::ManageBase and sequential Column Mamangement
+    added Manager ColumnMng::Function::INTERNAL_EXPECT (Colms Load Completion)
+    fixed Manager MngdColumns::initialize() pending-schemas loader
 
 [_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.4.11...master)
 ******
