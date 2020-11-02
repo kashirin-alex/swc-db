@@ -979,15 +979,14 @@ void Mutable::Iterator::operator--() {
     item = (*bucket)->end() - 1;
 }
 
-void Mutable::Iterator::push_back(Cell*& value) {
+void Mutable::Iterator::push_back(Cell* value) {
   if((*bucket)->size() >= bucket_max)
-    buckets->push_back(make_bucket());
+    bucket = buckets->insert(buckets->end(), make_bucket());
 
-  (*bucket)->push_back(value);
-  item = (*bucket)->end() - 1;
+  item = (*bucket)->insert((*bucket)->end(), value);
 }
 
-void Mutable::Iterator::insert(Cell*& value) {
+void Mutable::Iterator::insert(Cell* value) {
   item = (*bucket)->insert(item, value);
 
   if((*bucket)->size() >= bucket_max) {

@@ -93,9 +93,9 @@ class Mutable final {
 
     void operator--();
 
-    void push_back(Cell*& value);
+    void push_back(Cell* value);
 
-    void insert(Cell*& value);
+    void insert(Cell* value);
 
     void remove();
 
