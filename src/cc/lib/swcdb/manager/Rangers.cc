@@ -406,7 +406,6 @@ void Rangers::range_loaded(Ranger::Ptr rgr, Range::Ptr range,
       rgr->failures = 0;
       range->set_state(Range::State::ASSIGNED, rgr->rgrid); 
       range->clear_last_rgr();
-      Env::Mngr::mngd_columns()->load_pending(range->cfg->cid);
     }
   }
 
@@ -418,8 +417,9 @@ void Rangers::range_loaded(Ranger::Ptr rgr, Range::Ptr range,
 bool Rangers::update(const DB::Schema::Ptr& schema, bool ack_required) {
   std::vector<rgrid_t> rgrids;
   int err = Error::OK;
-  Env::Mngr::columns()->get_column(err, schema->cid)
-                          ->need_schema_sync(schema->revision, rgrids);
+  auto col = Env::Mngr::columns()->get_column(err, schema->cid);
+  if(!err && col)
+    col->need_schema_sync(schema->revision, rgrids);
   bool undergo = false;
   for(rgrid_t rgrid : rgrids) {
     std::scoped_lock lock(m_mutex);

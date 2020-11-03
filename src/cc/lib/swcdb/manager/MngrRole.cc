@@ -561,8 +561,6 @@ void MngrRole::apply_role_changes() {
   if(role_new & DB::Types::MngrRole::SCHEMAS) {
     if(!(role_old & DB::Types::MngrRole::SCHEMAS))
       Env::Mngr::mngd_columns()->initialize();
-    else // if other-hosts cid roles change
-      Env::Mngr::mngd_columns()->columns_load_chk_ack();
 
   } else if(role_old & DB::Types::MngrRole::SCHEMAS &&
             !(role_new & DB::Types::MngrRole::SCHEMAS)) {

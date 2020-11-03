@@ -33,20 +33,13 @@ void report(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
         if(Env::Mngr::mngd_columns()->is_schemas_mngr(err) && err)
           goto function_send_response;
 
-        if(Env::Mngr::mngd_columns()->has_cid_pending_load()) {
-          err = Error::MNGR_NOT_INITIALIZED;
-          goto function_send_response;
-        }
-
         if(Env::Mngr::role()->is_active_role(DB::Types::MngrRole::RANGERS) &&
            Env::Mngr::rangers()->empty()) {
           err = Error::MNGR_NOT_INITIALIZED;
           goto function_send_response;
         }
 
-        if(Env::Mngr::mngd_columns()->has_active()) {
-          Env::Mngr::columns()->state(err);
-        }
+        Env::Mngr::mngd_columns()->columns_ready(err);
         
         function_send_response:
           cbp = Buffers::make(ev, 4);

@@ -35,20 +35,21 @@ void ColumnUpdate::handle_no_conn() {
 }
 
 void ColumnUpdate::updated(int err, bool failure) {
-  if(!err) {
-    Env::Mngr::columns()->get_column(err, schema->cid)
-                             ->change_rgr_schema(rgr->rgrid, schema->revision);
-    if(!Env::Mngr::rangers()->update(schema, false)) {
-      Env::Mngr::mngd_columns()->update(
-        Mngr::Params::ColumnMng::Function::INTERNAL_ACK_MODIFY,
-        schema,
-        err
-      );
-    }
+  int errc = Error::OK;
+  auto col = Env::Mngr::columns()->get_column(errc, schema->cid);
+  if(col && !err && !errc)
+    col->change_rgr_schema(rgr->rgrid, schema->revision);
+
+  if(!Env::Mngr::rangers()->update(schema, false)) {
+    Env::Mngr::mngd_columns()->update(
+      Mngr::Params::ColumnMng::Function::INTERNAL_ACK_MODIFY,
+      schema,
+      Error::OK
+    );
   } else if(failure) {
     ++rgr->failures;
     request_again();
-  } 
+  }
 }
 
 

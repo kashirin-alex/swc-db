@@ -291,7 +291,7 @@ void update_data(DB::Schema::Ptr& schema, uint8_t flag) {
               << "update-progress(time_ns=" <<  Time::now_ns()
               << " cells=" << added_count 
               << " bytes=" << added_bytes
-              << " cell/ns=" << ts_progress/progress << ") ";
+              << " avg=" << ts_progress/progress << "ns/cell) ";
             req->result->profile.print(SWC_LOG_OSTREAM);
             SWC_LOG_OSTREAM << SWC_PRINT_CLOSE;
 
@@ -396,7 +396,7 @@ void select_data(DB::Schema::Ptr& schema) {
           SWC_PRINT 
             << "select-progress(time_ns=" << Time::now_ns()
             << " cells=" << select_count
-            << " cell/ns=" << ts_progress/progress << ") ";
+            << " avg=" << ts_progress/progress << "ns/cell) ";
           req->result->profile.print(SWC_LOG_OSTREAM);
           SWC_LOG_OSTREAM << SWC_PRINT_CLOSE;
 

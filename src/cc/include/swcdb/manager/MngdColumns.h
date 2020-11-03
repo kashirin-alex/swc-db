@@ -12,18 +12,7 @@
 namespace SWC { namespace Manager {
 
 
-
 class MngdColumns final {
-
-  struct ColumnFunction final {
-    ColumnFunction() { }
-    ColumnFunction(Comm::Protocol::Mngr::Params::ColumnMng::Function func, 
-                   cid_t cid) :  func(func), cid(cid) { 
-    }
-    Comm::Protocol::Mngr::Params::ColumnMng::Function func;
-    cid_t cid;
-  };
-
   public:
 
   struct ColumnReq final : public Comm::Protocol::Mngr::Params::ColumnMng,
@@ -46,11 +35,11 @@ class MngdColumns final {
 
   bool has_active();
 
-  bool has_cid_pending_load();
-  
   bool is_active(cid_t cid);
 
   bool active(cid_t& cid_begin, cid_t& cid_end);
+
+  void columns_ready(int& err);
 
   Column::Ptr get_column(int& err, cid_t cid);
 
@@ -67,8 +56,6 @@ class MngdColumns final {
   void update_status(Comm::Protocol::Mngr::Params::ColumnMng::Function func, 
                      DB::Schema::Ptr& schema, int err, bool initial=false);
 
-  void load_pending(cid_t cid);
-
   void update(Comm::Protocol::Mngr::Params::ColumnMng::Function func,
               const DB::Schema::Ptr& schema, int err=Error::OK);
 
@@ -79,16 +66,12 @@ class MngdColumns final {
 
   bool initialize();
 
-  void columns_load_chk_ack();
-
   private:
 
   void check_assignment();
 
 
   bool columns_load();
-
-  bool load_pending(cid_t cid, ColumnFunction& pending);
 
 
   cid_t get_next_cid();
@@ -98,8 +81,6 @@ class MngdColumns final {
   void update(int &err, DB::Schema::Ptr& schema, const DB::Schema::Ptr& old);
 
   void remove(int &err, cid_t cid);
-
-  bool update(DB::Schema::Ptr& schema);
 
   void update_status_ack(
       Comm::Protocol::Mngr::Params::ColumnMng::Function func,
@@ -120,8 +101,7 @@ class MngdColumns final {
   std::vector<cid_t>                  m_expected_load;
 
   Core::QueueSafe<ColumnReq::Ptr>     m_actions;
-  std::vector<ColumnReq::Ptr>         m_cid_pending;
-  std::vector<ColumnFunction>         m_cid_pending_load;
+  std::vector<ColumnReq::Ptr>         m_pending_ack;
 
   const Config::Property::V_GUINT8::Ptr cfg_schema_replication;
   const Config::Property::V_GINT32::Ptr cfg_delay_cols_init;
