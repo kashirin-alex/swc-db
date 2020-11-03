@@ -80,34 +80,10 @@ int Select::Rsp::error() {
 
 Select::Select(bool notify) 
               : notify(notify), err(Error::OK),  
-                m_completion(0) {
+                completion(0) {
 }
 
 Select::~Select() { }
-
-uint32_t Select::completion() {
-  std::scoped_lock lock(mutex);
-  return m_completion;
-}
-
-uint32_t Select::_completion() const {
-  return m_completion;
-}
-
-void Select::completion_incr() {
-  std::scoped_lock lock(mutex);
-  ++m_completion;
-}
-
-void Select::completion_decr() {
-  std::scoped_lock lock(mutex);
-  --m_completion;
-}
-
-bool Select::completion_final() {
-  std::scoped_lock lock(mutex);
-  return !--m_completion;
-}
 
 void Select::error(const cid_t cid, int err) {
   m_columns[cid]->error(err);
@@ -264,7 +240,7 @@ void Select::wait() {
     lock_wait, 
     [selector=shared_from_this()] () {
       return !selector->m_rsp_partial_runs &&
-             !selector->result->_completion();
+             !selector->result->completion.count();
     }
   );
   if(result->notify && !result->empty())
@@ -318,12 +294,17 @@ bool Select::ScannerColumn::add_cells(const StaticBuffer& buffer,
   return selector->result->add_cells(cid, buffer, reached_limit, interval);
 }
 
-void Select::ScannerColumn::next_call(bool final) {
-  if(next_calls.empty()) {
-    if(final && !selector->result->completion())
-      selector->response(Error::OK);
-    return;
+void Select::ScannerColumn::response_if_last() {
+  if(selector->result->completion.is_last()) {
+    next_calls.clear();
+    selector->response(Error::OK);
   }
+}
+
+void Select::ScannerColumn::next_call() {
+  if(next_calls.empty())
+    return;
+
   interval.offset_key.free();
   interval.offset_rev = 0;
 
@@ -336,15 +317,11 @@ void Select::ScannerColumn::add_call(const std::function<void()>& call) {
   next_calls.push_back(call);
 }
 
-void Select::ScannerColumn::clear_next_calls() {    
-  next_calls.clear();
-}
-
 void Select::ScannerColumn::print(std::ostream& out) {
   out << "ScannerColumn("
       << "cid=" << cid;
   interval.print(out << ' ');
-  out << " completion=" << selector->result->completion()
+  out << " completion=" << selector->result->completion.count()
       << " next_calls=" << next_calls.size()
       << ')';
 }
@@ -370,7 +347,7 @@ void Select::Scanner::print(std::ostream& out) {
 }
     
 void Select::Scanner::locate_on_manager(bool next_range) {
-  col->selector->result->completion_incr();
+  col->selector->result->completion.increment();
 
   Comm::Protocol::Mngr::Params::RgrGetReq params(
     DB::Types::MetaColumn::get_master_cid(col->col_seq), 0, next_range);
@@ -404,13 +381,13 @@ void Select::Scanner::locate_on_manager(bool next_range) {
      const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
       profile.add(rsp.err || !rsp.rid);
       if(scanner->located_on_manager(req, rsp, next_range))
-        scanner->col->selector->result->completion_decr();
+        scanner->col->response_if_last();
     }
   );
 }
 
 void Select::Scanner::resolve_on_manager() {
-  col->selector->result->completion_incr();
+  col->selector->result->completion.increment();
 
   auto req = Comm::Protocol::Mngr::Req::RgrGet::make(
     Comm::Protocol::Mngr::Params::RgrGetReq(cid, rid),
@@ -420,7 +397,7 @@ void Select::Scanner::resolve_on_manager() {
      const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
       profile.add(rsp.err || !rsp.rid || rsp.endpoints.empty());
       if(scanner->located_on_manager(req, rsp))
-        scanner->col->selector->result->completion_decr();
+        scanner->col->response_if_last();
     }
   );
   if(!DB::Types::MetaColumn::is_master(cid)) {
@@ -428,7 +405,7 @@ void Select::Scanner::resolve_on_manager() {
     if(Env::Clients::get()->rangers.get(cid, rid, rsp.endpoints)) {
       SWC_LOG_OUT(LOG_DEBUG, rsp.print(SWC_LOG_OSTREAM << "Cache hit "); );
       if(proceed_on_ranger(req, rsp)) // ?req without profile
-        return col->selector->result->completion_decr(); 
+        return col->response_if_last();
       Env::Clients::get()->rangers.remove(cid, rid);
     } else {
       SWC_LOG_OUT(LOG_DEBUG, rsp.print(SWC_LOG_OSTREAM << "Cache miss "); );
@@ -445,34 +422,26 @@ bool Select::Scanner::located_on_manager(
     rsp.print(SWC_LOG_OSTREAM << "LocatedRange-onMngr "););
 
   if(rsp.err) {
-    if(rsp.err == Error::COLUMN_NOT_EXISTS) {
+    if(rsp.err == Error::COLUMN_NOT_EXISTS) { // (not-sys)
       col->selector->result->err = rsp.err; // Error::CONSIST_ERRORS;
       col->selector->result->error(col->cid, rsp.err);
-      if(col->selector->result->completion_final()) {
-        col->selector->response();
-        col->clear_next_calls();
-      }
-      return false;
+      return true;
     }
     if(next_range && rsp.err == Error::RANGE_NOT_FOUND) {
-      col->selector->result->completion_decr();
-      col->next_call(true);
-      return false;
+      col->next_call();
+      return true;
     }
 
-    SWC_LOG_OUT(LOG_DEBUG, 
+    SWC_LOG_OUT(LOG_DEBUG,
       rsp.print(SWC_LOG_OSTREAM << "Located-onMngr RETRYING "););
-    if(rsp.err == Error::RANGE_NOT_FOUND) {
-      (parent == nullptr ? base : parent)->request_again();
-    } else {
-      base->request_again();
-    }
+    (parent && rsp.err == Error::RANGE_NOT_FOUND
+      ? parent : base)->request_again();
     return false;
   }
   if(!rsp.rid) {
     SWC_LOG_OUT(LOG_DEBUG, 
       rsp.print(SWC_LOG_OSTREAM << "Located-onMngr RETRYING(no rid) "););
-    (parent == nullptr ? base : parent)->request_again();
+    (parent ? parent : base)->request_again();
     return false;
   }
 
@@ -480,7 +449,7 @@ bool Select::Scanner::located_on_manager(
     col->add_call(
       [scanner=std::make_shared<Scanner>(
         type, cid, col,
-        parent == nullptr ? base : parent, &rsp.range_begin
+        parent ? parent : base, &rsp.range_begin
       )] () { scanner->locate_on_manager(true); }
     );
   } else if(!DB::Types::MetaColumn::is_master(rsp.cid)) {
@@ -503,10 +472,8 @@ bool Select::Scanner::proceed_on_ranger(
       SWC_LOG_OUT(LOG_DEBUG, 
         rsp.print(
           SWC_LOG_OSTREAM << "Located-onMngr RETRYING(cid no match) "););
-      (parent == nullptr ? base : parent)->request_again();
+      (parent ? parent : base)->request_again();
       return false;
-      //col->selector->response(Error::NOT_ALLOWED);
-      //return true;
     }
     select(rsp.endpoints, rsp.rid, base);
 
@@ -521,7 +488,7 @@ bool Select::Scanner::proceed_on_ranger(
 
 void Select::Scanner::locate_on_ranger(const Comm::EndPoints& endpoints, 
                                        bool next_range) {
-  col->selector->result->completion_incr();
+  col->selector->result->completion.increment();
 
   Comm::Protocol::Rgr::Params::RangeLocateReq params(cid, rid);
   if(next_range) {
@@ -552,16 +519,16 @@ void Select::Scanner::locate_on_ranger(const Comm::EndPoints& endpoints,
     (const ReqBase::Ptr& req, 
      const Comm::Protocol::Rgr::Params::RangeLocateRsp& rsp) {
       profile.add(!rsp.rid || rsp.err);
-      if(scanner->located_on_ranger(
-          std::dynamic_pointer_cast<
-            Comm::Protocol::Rgr::Req::RangeLocate>(req)->endpoints,
-          req, rsp, next_range))
-        scanner->col->selector->result->completion_decr();
+      scanner->located_on_ranger(
+        std::dynamic_pointer_cast<
+          Comm::Protocol::Rgr::Req::RangeLocate>(req)->endpoints,
+        req, rsp, next_range
+      );
     }
   );
 }
 
-bool Select::Scanner::located_on_ranger(
+void Select::Scanner::located_on_ranger(
           const Comm::EndPoints& endpoints, 
           const ReqBase::Ptr& base, 
           const Comm::Protocol::Rgr::Params::RangeLocateRsp& rsp, 
@@ -572,38 +539,34 @@ bool Select::Scanner::located_on_ranger(
   if(rsp.err) {
     if(rsp.err == Error::RANGE_NOT_FOUND && 
        (next_range || type == DB::Types::Range::META)) {
-      col->selector->result->completion_decr();
-      col->next_call(true);
-      return false;
+      col->next_call();
+      return col->response_if_last();
     }
 
-    SWC_LOG_OUT(LOG_DEBUG, 
+    SWC_LOG_OUT(LOG_DEBUG,
       rsp.print(SWC_LOG_OSTREAM << "LocatedRange-onRgr RETRYING "););                
-    if(rsp.err == Error::RGR_NOT_LOADED_RANGE || 
-       rsp.err == Error::RANGE_NOT_FOUND  || 
+    if(rsp.err == Error::RGR_NOT_LOADED_RANGE ||
+       rsp.err == Error::RANGE_NOT_FOUND  ||
        rsp.err == Error::SERVER_SHUTTING_DOWN ||
        rsp.err == Error::COMM_NOT_CONNECTED) {
-        Env::Clients::get()->rangers.remove(cid, rid);
-      parent->request_again();
+      Env::Clients::get()->rangers.remove(cid, rid);
+      return parent->request_again();
     } else {
-      base->request_again();
+      return base->request_again();
     }
-    return false;
   }
   if(!rsp.rid) {
     SWC_LOG_OUT(LOG_DEBUG, 
       rsp.print(SWC_LOG_OSTREAM << "LocatedRange-onRgr RETRYING(no rid) "););
     Env::Clients::get()->rangers.remove(cid, rid);
-    parent->request_again();
-    return false;
+    return parent->request_again();
   }
   if(type == DB::Types::Range::DATA && rsp.cid != col->cid) {
     SWC_LOG_OUT(LOG_DEBUG, 
       rsp.print(
         SWC_LOG_OSTREAM << "LocatedRange-onRgr RETRYING(cid no match "););    
     Env::Clients::get()->rangers.remove(cid, rid);
-    parent->request_again();
-    return false;
+    return parent->request_again();
   }
 
   if(type != DB::Types::Range::DATA) {
@@ -615,20 +578,20 @@ bool Select::Scanner::located_on_ranger(
   }
 
   std::make_shared<Scanner>(
-    type == DB::Types::Range::MASTER 
-            ? DB::Types::Range::META 
+    type == DB::Types::Range::MASTER
+            ? DB::Types::Range::META
             : DB::Types::Range::DATA,
-    rsp.cid, col, 
+    rsp.cid, col,
     parent, nullptr, rsp.rid
   )->resolve_on_manager();
 
-  return true;
+  col->response_if_last();
 }
 
 void Select::Scanner::select(const Comm::EndPoints& endpoints, 
                              rid_t rid, 
                              const ReqBase::Ptr& base) {
-  col->selector->result->completion_incr();
+  col->selector->result->completion.increment();
 
   Comm::Protocol::Rgr::Req::RangeQuerySelect::request(
     Comm::Protocol::Rgr::Params::RangeQuerySelectReq(
@@ -650,11 +613,10 @@ void Select::Scanner::select(const Comm::EndPoints& endpoints,
            rsp.err == Error::SERVER_SHUTTING_DOWN ||
            rsp.err == Error::COMM_NOT_CONNECTED) {
           Env::Clients::get()->rangers.remove(scanner->col->cid, rid);
-          base->request_again();
+          return base->request_again();
         } else {
-          req->request_again();
+          return req->request_again();
         }
-        return;
       }
       auto& col = scanner->col;
 
@@ -676,11 +638,7 @@ void Select::Scanner::select(const Comm::EndPoints& endpoints,
         }
       }
 
-
-      if(col->selector->result->completion_final()) {
-        col->selector->response();
-        col->clear_next_calls();
-      }
+      col->response_if_last();
     },
 
     col->selector->timeout

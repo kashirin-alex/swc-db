@@ -8,6 +8,7 @@
 #define swcdb_db_client_Query_Select_h
 
 
+#include "swcdb/common/Stats/CompletionCounter.h"
 #include "swcdb/db/Types/Range.h"
 #include "swcdb/db/Cells/Result.h"
 #include "swcdb/db/Cells/SpecsScan.h"
@@ -25,11 +26,12 @@ namespace Result {
 struct Select final {
   typedef std::shared_ptr<Select> Ptr;
 
-  const bool                notify;
-  std::mutex                mutex;
-  std::condition_variable   cv;
-  std::atomic<int>          err;
-  Profiling                 profile;
+  const bool                                  notify;
+  std::mutex                                  mutex;
+  std::condition_variable                     cv;
+  std::atomic<int>                            err;
+  Profiling                                   profile;
+  Common::Stats::CompletionCounter<uint64_t>  completion;
 
   Select(bool notify);
 
@@ -65,18 +67,8 @@ struct Select final {
     DB::Cells::Result  m_cells;
     int                m_err;
   };
-  
 
-  uint32_t completion();
 
-  uint32_t _completion() const;
-
-  void completion_incr();
-
-  void completion_decr();
-
-  bool completion_final();
-  
   void error(const cid_t cid, int err);
 
   void add_column(const cid_t cid);
@@ -103,7 +95,6 @@ struct Select final {
   private:
 
   std::unordered_map<cid_t, Rsp::Ptr>  m_columns;
-  uint32_t                             m_completion;
 
 };
 
@@ -168,12 +159,12 @@ class Select final : public std::enable_shared_from_this<Select> {
 
     bool add_cells(const StaticBuffer& buffer, bool reached_limit);
 
-    void next_call(bool final=false);
+    void response_if_last();
+
+    void next_call();
 
     void add_call(const std::function<void()>& call);
 
-    void clear_next_calls();
-  
     void print(std::ostream& out);
 
     private:
@@ -220,7 +211,7 @@ class Select final : public std::enable_shared_from_this<Select> {
         const Comm::EndPoints& endpoints, 
         bool next_range=false);
 
-    bool located_on_ranger(
+    void located_on_ranger(
         const Comm::EndPoints& endpoints, 
         const ReqBase::Ptr& base,
         const Comm::Protocol::Rgr::Params::RangeLocateRsp& rsp,
