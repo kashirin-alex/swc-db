@@ -39,6 +39,8 @@ class MngdColumns final {
 
   bool active(cid_t& cid_begin, cid_t& cid_end);
 
+  bool expected_ready();
+
   void columns_ready(int& err);
 
   Column::Ptr get_column(int& err, cid_t cid);

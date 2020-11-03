@@ -73,18 +73,20 @@ bool MngdColumns::active(cid_t& cid_begin, cid_t& cid_end) {
   return true;
 }
 
+bool MngdColumns::expected_ready() {
+  std::scoped_lock lock(m_mutex_columns);
+  return m_expected_ready;
+}
+
 void MngdColumns::columns_ready(int& err) {
   {
     std::shared_lock lock(m_mutex);
     if(!m_cid_active)
       return;
   }
-  {
-    std::scoped_lock lock(m_mutex_columns);
-    if(!m_expected_ready) {
-      err = Error::MNGR_NOT_INITIALIZED;
-      return;
-    }
+  if(!expected_ready()) {
+    err = Error::MNGR_NOT_INITIALIZED;
+    return;
   }
   Env::Mngr::columns()->state(err);
 }
@@ -103,8 +105,7 @@ Column::Ptr MngdColumns::get_column(int& err, cid_t cid) {
     if(col) {
       col->state(err);
     } else {
-      std::scoped_lock lock(m_mutex_columns);
-      err = m_expected_ready
+      err = expected_ready()
         ? Error::COLUMN_NOT_EXISTS
         : Error::MNGR_NOT_INITIALIZED;
     }

@@ -516,6 +516,9 @@ bool Rangers::runs_assign(bool stop) {
 }
 
 void Rangers::assign_ranges() {
+  if(!Env::Mngr::mngd_columns()->expected_ready())
+    return schedule_check(1000);
+
   if(!m_run || runs_assign(false))
     return;
   Env::Mngr::post([this]() { assign_ranges_run(); });
