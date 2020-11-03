@@ -158,9 +158,9 @@ void MngdColumns::require_sync() {
   }
 }
 
-void MngdColumns::action(const ColumnReq::Ptr& new_req) {
-  if(m_actions.push_and_is_1st(new_req))
-    Env::Mngr::post([this]() { actions_run(); });
+void MngdColumns::action(const ColumnReq::Ptr& req) {
+  if(m_actions.activating(req))
+    Env::Mngr::post([this, req]() { run(req); });
 }
 
 void MngdColumns::set_expect(const std::vector<cid_t>& columns, 
@@ -540,95 +540,107 @@ void MngdColumns::update_status_ack(
       Error::print(SWC_LOG_OSTREAM << ' ', err);
       schema->print(SWC_LOG_OSTREAM << ' ');
     );
-                  
-  for(ColumnReq::Ptr req;;) {
-    {
-      std::scoped_lock lock(m_mutex_columns);
-      auto it = std::find_if(m_pending_ack.begin(), m_pending_ack.end(),  
-          [co_func, cid=schema->cid](const ColumnReq::Ptr& req)
-          {return req->schema->cid == cid && req->function == co_func;});
-      if(it == m_pending_ack.end())
-        break;  
-      req = *it;
-      m_pending_ack.erase(it);
-    }
-    req->response(err);
+  
+  ColumnReq::Ptr pending;
+  {
+    std::scoped_lock lock(m_mutex);
+    pending = m_action_pending;
+    m_action_pending = nullptr;
   }
+
+  if(!pending) {
+    SWC_LOG_OUT(LOG_WARN,
+      SWC_LOG_OSTREAM << "Missing Pending Req-Ack for func=" << co_func;
+      schema->print(SWC_LOG_OSTREAM << "");
+    );
+
+  } else if(pending->schema->cid == schema->cid &&
+            pending->function == co_func) {
+    pending->response(err);
+
+  } else {
+    SWC_LOGF(LOG_WARN,
+      "Not-Corresponding Pending Req-Ack func(%d==%d) cid(%lu==%lu)",
+      co_func, pending->function, schema->cid, pending->schema->cid);
+  }
+
+  ColumnReq::Ptr req;
+  if(!m_actions.deactivating(&req))
+    run(req);
 }
 
-void MngdColumns::actions_run() {  
-  ColumnReq::Ptr req;
+void MngdColumns::run(ColumnReq::Ptr req) {
   int err = Error::OK;
-  do {
-    req = m_actions.front();
+  do_procees:
 
-    if(!m_run) {
-      err = Error::SERVER_SHUTTING_DOWN;
+  if(!m_run) {
+    err = Error::SERVER_SHUTTING_DOWN;
 
-    } else if(req->expired(1000)) {
-      err = Error::REQUEST_TIMEOUT;
+  } else if(req->expired(1000)) {
+    err = Error::REQUEST_TIMEOUT;
 
-    } else if(req->schema->col_name.empty()) {
-      err = Error::COLUMN_SCHEMA_NAME_EMPTY;
+  } else if(req->schema->col_name.empty()) {
+    err = Error::COLUMN_SCHEMA_NAME_EMPTY;
 
-    } else if(!is_schemas_mngr(err) || err) {
-      if(!err)
-        err = Error::MNGR_NOT_ACTIVE;
+  } else if(!is_schemas_mngr(err) || err) {
+    if(!err)
+      err = Error::MNGR_NOT_ACTIVE;
 
-    } else {
-      std::scoped_lock lock(m_mutex);
-      DB::Schema::Ptr schema = Env::Mngr::schemas()->get(
-        req->schema->col_name);
-      if(!schema && req->schema->cid != DB::Schema::NO_CID)
-        schema = Env::Mngr::schemas()->get(req->schema->cid);
+  } else {
+    std::scoped_lock lock(m_mutex);
+    DB::Schema::Ptr schema = Env::Mngr::schemas()->get(
+      req->schema->col_name);
+    if(!schema && req->schema->cid != DB::Schema::NO_CID)
+      schema = Env::Mngr::schemas()->get(req->schema->cid);
 
-      switch(req->function) {
-        case ColumnMngFunc::CREATE: {
-          if(schema)
-            err = Error::COLUMN_SCHEMA_NAME_EXISTS;
-          else
-            create(err, req->schema);  
-          break;
-        }
-        case ColumnMngFunc::MODIFY: {
-          if(!schema) 
-            err = Error::COLUMN_SCHEMA_NAME_NOT_EXISTS;
-          else if(req->schema->cid != DB::Schema::NO_CID && 
-                  schema->cid != req->schema->cid)
-            err = Error::COLUMN_SCHEMA_NAME_EXISTS;
-          else
-            update(err, req->schema, schema);
-          break;
-        }
-        case ColumnMngFunc::DELETE: {
-          if(!schema)
-            err = Error::COLUMN_SCHEMA_NAME_NOT_EXISTS;
-          else if(schema->cid != req->schema->cid ||
-                  req->schema->col_name.compare(schema->col_name) != 0)
-            err = Error::COLUMN_SCHEMA_NAME_NOT_CORRES;
-          else if(schema->cid <= Common::Files::Schema::SYS_CID_END)
-            err = Error::COLUMN_SCHEMA_IS_SYSTEM;
-          else
-            req->schema = schema;
-          break;
-        }
-        default:
-          err = Error::NOT_IMPLEMENTED;
-          break;
+    switch(req->function) {
+      case ColumnMngFunc::CREATE: {
+        if(schema)
+          err = Error::COLUMN_SCHEMA_NAME_EXISTS;
+        else
+          create(err, req->schema);
+        break;
       }
-    }
-
-    if(!err) {
-      {
-        std::scoped_lock lock(m_mutex_columns);
-        m_pending_ack.push_back(req);
+      case ColumnMngFunc::MODIFY: {
+        if(!schema)
+          err = Error::COLUMN_SCHEMA_NAME_NOT_EXISTS;
+        else if(req->schema->cid != DB::Schema::NO_CID &&
+                schema->cid != req->schema->cid)
+          err = Error::COLUMN_SCHEMA_NAME_EXISTS;
+        else
+          update(err, req->schema, schema);
+        break;
       }
-      update_status(req->function, req->schema, err, true);
-
-    } else {
-      req->response(err);
+      case ColumnMngFunc::DELETE: {
+        if(!schema)
+          err = Error::COLUMN_SCHEMA_NAME_NOT_EXISTS;
+        else if(schema->cid != req->schema->cid ||
+                req->schema->col_name.compare(schema->col_name) != 0)
+          err = Error::COLUMN_SCHEMA_NAME_NOT_CORRES;
+        else if(schema->cid <= Common::Files::Schema::SYS_CID_END)
+          err = Error::COLUMN_SCHEMA_IS_SYSTEM;
+        else
+          req->schema = schema;
+        break;
+      }
+      default:
+        err = Error::NOT_IMPLEMENTED;
+        break;
     }
-  } while(m_actions.pop_and_more());
+  }
+
+  if(err) {
+    req->response(err);
+    if(!m_actions.deactivating(&req))
+      goto do_procees;
+
+  } else {
+    {
+      std::scoped_lock lock(m_mutex_columns);
+      m_action_pending = req;
+    }
+    update_status(req->function, req->schema, err, true);
+  }
 }
 
 

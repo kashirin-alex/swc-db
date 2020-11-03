@@ -49,7 +49,7 @@ class MngdColumns final {
 
   void require_sync();
 
-  void action(const ColumnReq::Ptr& new_req);
+  void action(const ColumnReq::Ptr& req);
 
   void set_expect(const std::vector<cid_t>& columns, bool initial);
 
@@ -86,7 +86,7 @@ class MngdColumns final {
       Comm::Protocol::Mngr::Params::ColumnMng::Function func,
       const DB::Schema::Ptr& schema, int err);
 
-  void actions_run();
+  void run(ColumnReq::Ptr req);
 
   
   std::shared_mutex                   m_mutex;
@@ -100,8 +100,8 @@ class MngdColumns final {
   std::atomic<bool>                   m_expected_ready;
   std::vector<cid_t>                  m_expected_load;
 
-  Core::QueueSafe<ColumnReq::Ptr>     m_actions;
-  std::vector<ColumnReq::Ptr>         m_pending_ack;
+  Core::QueueSafeStated<ColumnReq::Ptr> m_actions;
+  ColumnReq::Ptr                        m_action_pending;
 
   const Config::Property::V_GUINT8::Ptr cfg_schema_replication;
   const Config::Property::V_GINT32::Ptr cfg_delay_cols_init;
