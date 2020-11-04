@@ -17,23 +17,24 @@ class ColumnUpdate : public client::ConnQueue::ReqBase {
   public:
 
   ColumnUpdate(Params::ColumnMng::Function function, DB::Schema::Ptr schema, 
-               int err) 
+               int err, uint64_t id) 
               : client::ConnQueue::ReqBase(
                   true,
                   Buffers::make(
-                    Params::ColumnUpdate(function, schema, err),
+                    Params::ColumnUpdate(function, schema, err, id),
                     0,
                     COLUMN_UPDATE, 60000
                   )) {
   } 
 
-  ColumnUpdate(const std::vector<cid_t>& columns) 
+  ColumnUpdate(cid_t cid_begin, cid_t cid_end,
+               const std::vector<cid_t>& columns) 
               : client::ConnQueue::ReqBase(
                   true,
                   Buffers::make(
                     Params::ColumnUpdate(
                       Params::ColumnMng::Function::INTERNAL_EXPECT, 
-                      columns
+                      cid_begin, cid_end, columns
                     ),
                     0,
                     COLUMN_UPDATE, 60000

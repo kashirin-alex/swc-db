@@ -16,7 +16,8 @@ class ColumnUpdate : public client::ConnQueue::ReqBase {
   public:
 
   ColumnUpdate(const Manager::Ranger::Ptr& rgr, 
-               const DB::Schema::Ptr& schema);
+               const DB::Schema::Ptr& schema,
+               uint64_t req_id);
   
   virtual ~ColumnUpdate();
 
@@ -30,6 +31,7 @@ class ColumnUpdate : public client::ConnQueue::ReqBase {
 
   Manager::Ranger::Ptr   rgr;
   DB::Schema::Ptr        schema; 
+  uint64_t               req_id;
    
 };
 

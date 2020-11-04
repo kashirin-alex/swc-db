@@ -59,7 +59,9 @@ class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
       col = res.first->second;
     }
     col->init(err);
-    return true;
+    if(err)
+      remove(err, schema->cid);
+    return !err;
   }
 
   Column::Ptr get_column(int &err, const cid_t cid) {

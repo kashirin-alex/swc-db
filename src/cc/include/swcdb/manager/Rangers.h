@@ -69,9 +69,11 @@ class Rangers final {
 
   void assign_ranges();
 
-  bool update(const DB::Schema::Ptr& schema, bool ack_required);
+  bool update(const DB::Schema::Ptr& schema, uint64_t req_id,
+              bool ack_required);
   
-  void column_delete(const cid_t cid, const std::vector<rgrid_t>& rgrids);
+  void column_delete(const cid_t cid, uint64_t req_id,
+                     const std::vector<rgrid_t>& rgrids);
   
   void column_compact(int& err, const cid_t cid);
 

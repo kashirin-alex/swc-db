@@ -12,13 +12,14 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace Rgr { namespace Req {
   
 
-ColumnDelete::ColumnDelete(const Manager::Ranger::Ptr& rgr, cid_t cid)
+ColumnDelete::ColumnDelete(const Manager::Ranger::Ptr& rgr, cid_t cid,
+                           uint64_t req_id)
           : client::ConnQueue::ReqBase(
               false,
               Buffers::make(
                 Common::Params::ColumnId(cid), 0, COLUMN_DELETE, 60000)
             ), 
-            rgr(rgr), cid(cid) {
+            rgr(rgr), cid(cid), req_id(req_id) {
 }
   
 ColumnDelete::~ColumnDelete() { }
@@ -40,7 +41,7 @@ void ColumnDelete::handle_no_conn() {
 }
   
 void ColumnDelete::remove(int err) {
-  Env::Mngr::mngd_columns()->remove(err, cid, rgr->rgrid);  
+  Env::Mngr::mngd_columns()->remove(err, cid, rgr->rgrid, req_id);  
 }
 
 }}}}}

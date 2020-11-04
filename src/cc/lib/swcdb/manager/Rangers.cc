@@ -414,7 +414,8 @@ void Rangers::range_loaded(Ranger::Ptr rgr, Range::Ptr range,
 }
 
 
-bool Rangers::update(const DB::Schema::Ptr& schema, bool ack_required) {
+bool Rangers::update(const DB::Schema::Ptr& schema, uint64_t req_id,
+                     bool ack_required) {
   std::vector<rgrid_t> rgrids;
   int err = Error::OK;
   auto col = Env::Mngr::columns()->get_column(err, schema->cid);
@@ -431,7 +432,7 @@ bool Rangers::update(const DB::Schema::Ptr& schema, bool ack_required) {
         if(ack_required) {
           rgr->put(
             std::make_shared<Comm::Protocol::Rgr::Req::ColumnUpdate>(
-              rgr, schema));
+              rgr, schema, req_id));
         }
       }
     }
@@ -439,7 +440,7 @@ bool Rangers::update(const DB::Schema::Ptr& schema, bool ack_required) {
   return undergo;
 }
 
-void Rangers::column_delete(const cid_t cid, 
+void Rangers::column_delete(const cid_t cid, uint64_t req_id,
                             const std::vector<rgrid_t>& rgrids) {
   for(rgrid_t rgrid : rgrids) {
     std::scoped_lock lock(m_mutex);
@@ -447,7 +448,8 @@ void Rangers::column_delete(const cid_t cid,
       if(rgrid != rgr->rgrid)
         continue;
       rgr->put(
-        std::make_shared<Comm::Protocol::Rgr::Req::ColumnDelete>(rgr, cid));
+        std::make_shared<Comm::Protocol::Rgr::Req::ColumnDelete>(
+          rgr, cid, req_id));
     }
   }
 }
@@ -517,7 +519,7 @@ bool Rangers::runs_assign(bool stop) {
 
 void Rangers::assign_ranges() {
   if(!Env::Mngr::mngd_columns()->expected_ready())
-    return schedule_check(1000);
+    return schedule_check(5000);
 
   if(!m_run || runs_assign(false))
     return;

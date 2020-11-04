@@ -18,8 +18,9 @@ class MngdColumns final {
   struct ColumnReq final : public Comm::Protocol::Mngr::Params::ColumnMng,
                            public Comm::ResponseCallback {
     typedef std::shared_ptr<ColumnReq> Ptr;
+    uint64_t id;
     ColumnReq(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev)
-              : Comm::ResponseCallback(conn, ev) { }
+              : Comm::ResponseCallback(conn, ev), id(0) { }
   };
 
   MngdColumns();
@@ -53,15 +54,17 @@ class MngdColumns final {
 
   void action(const ColumnReq::Ptr& req);
 
-  void set_expect(const std::vector<cid_t>& columns, bool initial);
+  void set_expect(cid_t cid_begin, cid_t cid_end,
+                  const std::vector<cid_t>& columns, bool initial);
 
   void update_status(Comm::Protocol::Mngr::Params::ColumnMng::Function func, 
-                     DB::Schema::Ptr& schema, int err, bool initial=false);
+                     const DB::Schema::Ptr& schema, int err, uint64_t req_id,
+                     bool initial=false);
 
   void update(Comm::Protocol::Mngr::Params::ColumnMng::Function func,
-              const DB::Schema::Ptr& schema, int err=Error::OK);
+              const DB::Schema::Ptr& schema, int err, uint64_t req_id);
 
-  void remove(int &err, cid_t cid, rgrid_t rgrid);
+  void remove(int &err, cid_t cid, rgrid_t rgrid, uint64_t req_id);
 
   void print(std::ostream& out);
 
@@ -82,13 +85,13 @@ class MngdColumns final {
   
   void update(int &err, DB::Schema::Ptr& schema, const DB::Schema::Ptr& old);
 
-  void remove(int &err, cid_t cid);
+  void remove(int &err, cid_t cid, uint64_t req_id);
 
   void update_status_ack(
       Comm::Protocol::Mngr::Params::ColumnMng::Function func,
-      const DB::Schema::Ptr& schema, int err);
+      const DB::Schema::Ptr& schema, int err, uint64_t req_id);
 
-  void run(ColumnReq::Ptr req);
+  void run_actions();
 
   
   std::shared_mutex                   m_mutex;
@@ -102,8 +105,8 @@ class MngdColumns final {
   std::atomic<bool>                   m_expected_ready;
   std::vector<cid_t>                  m_expected_load;
 
-  Core::QueueSafeStated<ColumnReq::Ptr> m_actions;
-  ColumnReq::Ptr                        m_action_pending;
+  Core::QueueSafe<ColumnReq::Ptr>              m_actions;
+  std::unordered_map<uint64_t, ColumnReq::Ptr> m_actions_pending;
 
   const Config::Property::V_GUINT8::Ptr cfg_schema_replication;
   const Config::Property::V_GINT32::Ptr cfg_delay_cols_init;

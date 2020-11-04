@@ -12,13 +12,14 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace Rgr { namespace Req {
 
 ColumnUpdate::ColumnUpdate(const Manager::Ranger::Ptr& rgr, 
-                           const DB::Schema::Ptr& schema)
+                           const DB::Schema::Ptr& schema,
+                           uint64_t req_id)
               : client::ConnQueue::ReqBase(
                   false,
                   Buffers::make(
                     Params::ColumnUpdate(schema), 0, SCHEMA_UPDATE, 60000)
                 ), 
-                rgr(rgr), schema(schema) {
+                rgr(rgr), schema(schema), req_id(req_id) {
 }
   
 ColumnUpdate::~ColumnUpdate() { }
@@ -40,11 +41,12 @@ void ColumnUpdate::updated(int err, bool failure) {
   if(col && !err && !errc)
     col->change_rgr_schema(rgr->rgrid, schema->revision);
 
-  if(!Env::Mngr::rangers()->update(schema, false)) {
+  if(!Env::Mngr::rangers()->update(schema, req_id, false)) {
     Env::Mngr::mngd_columns()->update(
       Mngr::Params::ColumnMng::Function::INTERNAL_ACK_MODIFY,
       schema,
-      Error::OK
+      Error::OK,
+      req_id
     );
   } else if(failure) {
     ++rgr->failures;
