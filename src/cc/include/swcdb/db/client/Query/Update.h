@@ -8,6 +8,7 @@
 #define swcdb_db_client_Query_Update_h
 
 
+#include "swcdb/common/Stats/CompletionCounter.h"
 #include "swcdb/db/Types/Range.h"
 #include "swcdb/db/Cells/MutableMap.h"
 
@@ -44,14 +45,9 @@ struct Update final {
   
   typedef std::shared_ptr<Update> Ptr;
 
-  DB::Cells::MutableMap errored;
-  Profiling             profile;
-  
-  uint32_t completion();
-
-  void completion_incr();
-
-  bool completion_final();
+  DB::Cells::MutableMap                       errored;
+  Profiling                                   profile;
+  Common::Stats::CompletionCounter<uint64_t>  completion;
 
   int error();
 
@@ -63,7 +59,6 @@ struct Update final {
 
   private:
   Core::MutexSptd   m_mutex;
-  uint32_t          m_completion = 0;
   int               m_err = Error::OK;
   size_t            m_resend_cells = 0;
 };

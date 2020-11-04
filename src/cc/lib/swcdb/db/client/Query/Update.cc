@@ -4,7 +4,6 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */ 
 
-#include "swcdb/common/Stats/CompletionCounter.h"
 #include "swcdb/db/Types/MetaColumn.h"
 #include "swcdb/db/client/Clients.h"
 #include "swcdb/db/client/Query/Update.h"
@@ -14,21 +13,6 @@
 namespace SWC { namespace client { namespace Query {
 
 namespace Result {
-
-uint32_t Update::completion() {
-  Core::MutexSptd::scope lock(m_mutex);
-  return m_completion;
-}
-
-void Update::completion_incr() {
-  Core::MutexSptd::scope lock(m_mutex);
-  ++m_completion;
-}
-
-bool Update::completion_final() {
-  Core::MutexSptd::scope lock(m_mutex);
-  return !--m_completion;
-}
 
 int Update::error() {
   Core::MutexSptd::scope lock(m_mutex);
@@ -86,7 +70,7 @@ Update::~Update() { }
  
 void Update::response(int err) {
 
-  if(!result->completion_final()) {
+  if(!result->completion.is_last()) {
     std::scoped_lock lock(m_mutex);
     return cv.notify_all();
   }
@@ -115,7 +99,7 @@ void Update::wait() {
   cv.wait(
     lock_wait,
     [updater=shared_from_this()]() {
-      return !updater->result->completion();
+      return !updater->result->completion.count();
     }
   );
 }
@@ -124,7 +108,7 @@ bool Update::wait_ahead_buffers() {
   std::unique_lock lock_wait(m_mutex);
   
   size_t bytes = columns->size_bytes() + columns_onfractions->size_bytes();
-  if(!result->completion())
+  if(!result->completion.count())
     return bytes >= buff_sz;
 
   if(bytes < buff_sz * buff_ahead)
@@ -138,7 +122,7 @@ bool Update::wait_ahead_buffers() {
               < updater->buff_sz * updater->buff_ahead;
     }
   );
-  return !result->completion() && 
+  return !result->completion.count() && 
           columns->size_bytes() + columns_onfractions->size_bytes() >= buff_sz;
 }
 
@@ -149,7 +133,7 @@ void Update::commit_or_wait(const DB::Cells::ColCells::Ptr& col) {
 }
 
 void Update::commit_if_need() {
-  if(!result->completion() && 
+  if(!result->completion.count() && 
      (columns->size_bytes() || columns_onfractions->size_bytes()))
     commit();
 }
@@ -157,9 +141,9 @@ void Update::commit_if_need() {
 
 void Update::commit() {
   DB::Cells::ColCells::Ptr col;
-  for(size_t idx=0; (col=columns->get_idx(idx)) != nullptr; ++idx)
+  for(size_t idx=0; (col=columns->get_idx(idx)); ++idx)
     commit(col);
-  for(size_t idx=0; (col=columns_onfractions->get_idx(idx)) != nullptr; ++idx)
+  for(size_t idx=0; (col=columns_onfractions->get_idx(idx)); ++idx)
     commit_onfractions(col);
 }
 
@@ -169,7 +153,7 @@ void Update::commit(const cid_t cid) {
 }
 
 void Update::commit(const DB::Cells::ColCells::Ptr& col) {
-  if(col != nullptr && !col->size())
+  if(col && !col->size())
     return;
   std::make_shared<Locator>(
     DB::Types::Range::MASTER, 
@@ -179,7 +163,7 @@ void Update::commit(const DB::Cells::ColCells::Ptr& col) {
 }
 
 void Update::commit_onfractions(const DB::Cells::ColCells::Ptr& col) {
-  if(col != nullptr && !col->size())
+  if(col && !col->size())
     return;
   // query cells on fractions -EQ && rest(NONE-true)
   // update cell with + ts,flag,value and add cell to 'columns'
@@ -204,7 +188,7 @@ void Update::Locator::print(std::ostream& out) {
   out << "Locator(type=" << DB::Types::to_string(type)
       << " cid=" << cid
       << " rid=" << rid
-      << " completion=" << updater->result->completion();
+      << " completion=" << updater->result->completion.count();
   key_start->print(out << " Start");
   key_finish.print(out << " Finish");
   col->print(out << ' ');
@@ -212,7 +196,7 @@ void Update::Locator::print(std::ostream& out) {
 }
 
 void Update::Locator::locate_on_manager() {
-  updater->result->completion_incr();
+  updater->result->completion.increment();
 
   Comm::Protocol::Mngr::Params::RgrGetReq params(
     DB::Types::MetaColumn::get_master_cid(col->get_sequence()));
@@ -262,27 +246,26 @@ bool Update::Locator::located_on_manager(
     rsp.cid, col, key_start, 
     updater, base, 
     rsp.rid
-      );
-  if(DB::Types::MetaColumn::is_master(col->cid))
-    locator->commit_data(rsp.endpoints, base);
-  else 
-    locator->locate_on_ranger(rsp.endpoints);
+  );
+  DB::Types::MetaColumn::is_master(col->cid)
+    ? locator->commit_data(rsp.endpoints, base)
+    : locator->locate_on_ranger(rsp.endpoints);
 
   if(!rsp.range_end.empty()) {
     auto next_key_start = col->get_key_next(rsp.range_end);
-    if(next_key_start != nullptr) {
+    if(next_key_start) {
       std::make_shared<Locator>(
         DB::Types::Range::MASTER, 
         col->cid, col, next_key_start, 
         updater
-          )->locate_on_manager();
+      )->locate_on_manager();
     }
   }
   return true;
 }
 
 void Update::Locator::locate_on_ranger(const Comm::EndPoints& endpoints) {
-  updater->result->completion_incr();
+  updater->result->completion.increment();
 
   Comm::Protocol::Rgr::Params::RangeLocateReq params(cid, rid);
   params.flags |= Comm::Protocol::Rgr::Params::RangeLocateReq::COMMIT;
@@ -348,11 +331,11 @@ bool Update::Locator::located_on_ranger(
     rsp.cid, col, key_start, 
     updater, base, 
     rsp.rid, &rsp.range_end
-      )->resolve_on_manager();
+  )->resolve_on_manager();
 
   if(!rsp.range_end.empty()) {
     auto next_key_start = col->get_key_next(rsp.range_end);
-    if(next_key_start != nullptr) {
+    if(next_key_start) {
       std::make_shared<Locator>(
         type, 
         cid, col, next_key_start, 
@@ -365,7 +348,7 @@ bool Update::Locator::located_on_ranger(
 }
 
 void Update::Locator::resolve_on_manager() {
-  updater->result->completion_incr();
+  updater->result->completion.increment();
 
   auto req = Comm::Protocol::Mngr::Req::RgrGet::make(
     Comm::Protocol::Mngr::Params::RgrGetReq(cid, rid),
@@ -406,11 +389,8 @@ bool Update::Locator::located_ranger(
       rsp.print(SWC_LOG_OSTREAM << "LocatedRanger-onMngr RETRYING ");
       print(SWC_LOG_OSTREAM << '\n');
     );
-    if(rsp.err == Error::RANGE_NOT_FOUND) {
-      (parent == nullptr ? base : parent)->request_again();
-    } else {
-      base->request_again();
-    }
+    (parent && rsp.err == Error::RANGE_NOT_FOUND
+      ? parent : base)->request_again();
     return false;
   }
 
@@ -418,7 +398,7 @@ bool Update::Locator::located_ranger(
     SWC_LOG_OUT(LOG_DEBUG, 
       rsp.print(
         SWC_LOG_OSTREAM << "LocatedRanger-onMngr RETRYING(no rid) "););
-    (parent == nullptr ? base : parent)->request_again();
+    (parent ? parent : base)->request_again();
     return false;
   }
 
@@ -440,7 +420,7 @@ bool Update::Locator::proceed_on_ranger(
       SWC_LOG_OUT(LOG_DEBUG, 
         rsp.print(
           SWC_LOG_OSTREAM << "LocatedRanger-onMngr RETRYING(cid no match) "););
-      (parent == nullptr ? base : parent)->request_again();
+      (parent ? parent : base)->request_again();
       //updater->response(Error::NOT_ALLOWED);
       return false;
     }
@@ -466,9 +446,9 @@ void Update::Locator::commit_data(
   auto workload = std::make_shared<Common::Stats::CompletionCounter<>>();
   while(more && 
        (cells_buff = col->get_buff(
-         *key_start.get(), key_finish, updater->buff_sz, more)) != nullptr) {
+         *key_start.get(), key_finish, updater->buff_sz, more))) {
     workload->increment();
-    updater->result->completion_incr();
+    updater->result->completion.increment();
 
     Comm::Protocol::Rgr::Req::RangeQueryUpdate::request(
       Comm::Protocol::Rgr::Params::RangeQueryUpdateReq(col->cid, rid), 
@@ -490,8 +470,7 @@ void Update::Locator::commit_data(
 
             case Error::REQUEST_TIMEOUT: {
               SWC_LOG_OUT(LOG_DEBUG,  req->print(SWC_LOG_OSTREAM ); );
-              req->request_again();
-              return;
+              return req->request_again();
             }
 
             case Error::RANGE_BAD_INTERVAL:
@@ -503,12 +482,12 @@ void Update::Locator::commit_data(
 
               if(workload->is_last()) {
                 auto nxt_start = locator->col->get_key_next(rsp.range_end);
-                if(nxt_start != nullptr) {
+                if(nxt_start) {
                   std::make_shared<Locator>(
                     DB::Types::Range::MASTER,
                     locator->col->cid, locator->col, nxt_start,
                     locator->updater
-                      )->locate_on_manager();
+                  )->locate_on_manager();
                  }
               }
               break;
@@ -518,10 +497,8 @@ void Update::Locator::commit_data(
               locator->updater->result->add_resend_count(
                 locator->col->add(*cells_buff.get())
               );
-              if(workload->is_last()) {
-                base->request_again();
-                return;
-              }
+              if(workload->is_last())
+                return base->request_again();
             }
           }
         }
