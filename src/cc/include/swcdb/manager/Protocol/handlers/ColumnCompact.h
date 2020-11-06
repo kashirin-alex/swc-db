@@ -26,7 +26,7 @@ void column_compact(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     auto col = Env::Mngr::mngd_columns()->get_column(
       rsp_params.err, params.cid);
     if(!rsp_params.err)
-      return Env::Mngr::rangers()->column_compact(col);
+      Env::Mngr::rangers()->column_compact(col);
 
   } catch(...) {
     const Error::Exception& e = SWC_CURRENT_EXCEPTION("");

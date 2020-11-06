@@ -450,9 +450,8 @@ void ConnHandler::disconnected() {
 }
 
 void ConnHandler::run_pending(const Event::Ptr& ev) {
-
+  Pending* pending = nullptr;
   if(ev->header.id) {
-    Pending* pending = nullptr;
     {
       Core::MutexSptd::scope lock(m_mutex);
       auto it = m_pending.find(ev->header.id);
@@ -461,35 +460,18 @@ void ConnHandler::run_pending(const Event::Ptr& ev) {
         m_pending.erase(it);
       }
     }
-    if(pending) {
-      if(pending->timer)
-        pending->timer->cancel();
-      if(ev->error || !ev->header.buffers) {
-        pending->hdlr->handle(ptr(), ev);
-      } else {
-        asio::post(
-          socket_layer()->get_executor(),
-          [ev, hdlr=pending->hdlr, conn=ptr()]() { 
-            ev->decode_buffers();
-            hdlr->handle(conn, ev);
-          }
-        );
-      }
-      delete pending;
-      return;
-    }
+    if(pending && pending->timer)
+      pending->timer->cancel();
   }
 
-  if(ev->error || !ev->header.buffers) {
-    run(ev);
+  if(!ev->error && ev->header.buffers)
+    ev->decode_buffers();
+
+  if(pending) {
+    pending->hdlr->handle(ptr(), ev);
+    delete pending;
   } else {
-    asio::post(
-      socket_layer()->get_executor(),
-      [ev, conn=ptr()]() { 
-        ev->decode_buffers();
-        conn->run(ev);
-      }
-    );
+    run(ev);
   }
 }
 

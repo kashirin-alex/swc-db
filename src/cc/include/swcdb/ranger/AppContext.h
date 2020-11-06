@@ -39,26 +39,6 @@ namespace SWC { namespace Ranger {
 
 
 class AppContext final : public Comm::AppContext { 
-
-  // in-order of Comm::Protocol::Rgr::Command
-  static constexpr const Comm::AppHandler_t handlers[] = { 
-    &Comm::Protocol::Common::Handler::not_implemented,
-    &Comm::Protocol::Rgr::Handler::column_delete,
-    &Comm::Protocol::Rgr::Handler::column_compact,
-    &Comm::Protocol::Rgr::Handler::column_update,
-    &Comm::Protocol::Rgr::Handler::range_is_loaded,
-    &Comm::Protocol::Rgr::Handler::range_load,
-    &Comm::Protocol::Rgr::Handler::range_unload,
-    &Comm::Protocol::Rgr::Handler::range_locate,
-    &Comm::Protocol::Rgr::Handler::range_query_update,
-    &Comm::Protocol::Rgr::Handler::range_query_select,
-    &Comm::Protocol::Rgr::Handler::report,
-    &Comm::Protocol::Rgr::Handler::columns_unload,
-    //&Comm::Protocol::Rgr::Handler::debug,
-    //&Comm::Protocol::Rgr::Handler::status,
-    //&Comm::Protocol::Rgr::Handler::shutdown
-  }; 
-  
   public:
 
   static std::shared_ptr<AppContext> make() {
@@ -141,18 +121,76 @@ class AppContext final : public Comm::AppContext {
         break;
 
       case Comm::Event::Type::MESSAGE: {
-        uint8_t cmd = ev->header.command >= Comm::Protocol::Rgr::MAX_CMD
-                        ? (uint8_t)Comm::Protocol::Rgr::NOT_IMPLEMENTED 
-                        : ev->header.command;
-        
-        if(cmd == Comm::Protocol::Rgr::ASSIGN_ID_NEEDED) {
-          Comm::Protocol::Rgr::Handler::assign_id(conn, ev, id_mngr);
-        
-        } else if(!Env::Rgr::rgr_data()->rgrid) {
-          conn->send_error(Error::RGR_NOT_READY, "", ev);
+        switch(Env::Rgr::rgr_data()->rgrid
+                ? Comm::Protocol::Rgr::Command(ev->header.command)
+                : Comm::Protocol::Rgr::Command::MAX_CMD) {
 
-        } else {
-          Env::Rgr::post([cmd, conn, ev]() { handlers[cmd](conn, ev); });
+          case Comm::Protocol::Rgr::Command::MAX_CMD:
+            conn->send_error(Error::RGR_NOT_READY, "", ev);
+            break;
+
+          case Comm::Protocol::Rgr::Command::ASSIGN_ID_NEEDED: // not-used
+            Comm::Protocol::Rgr::Handler::assign_id(conn, ev, id_mngr);
+            break;
+
+          case Comm::Protocol::Rgr::Command::COLUMN_DELETE:
+            Comm::Protocol::Rgr::Handler::column_delete(conn, ev);
+            break;
+
+          case Comm::Protocol::Rgr::Command::COLUMN_COMPACT:
+            Comm::Protocol::Rgr::Handler::column_compact(conn, ev);
+            break;
+
+          case Comm::Protocol::Rgr::Command::SCHEMA_UPDATE:
+            Comm::Protocol::Rgr::Handler::column_update(conn, ev);
+            break;
+
+          case Comm::Protocol::Rgr::Command::COLUMNS_UNLOAD:
+            Comm::Protocol::Rgr::Handler::columns_unload(conn, ev);
+            break;
+
+          case Comm::Protocol::Rgr::Command::RANGE_IS_LOADED:
+            Comm::Protocol::Rgr::Handler::range_is_loaded(conn, ev);
+            break;
+
+          case Comm::Protocol::Rgr::Command::RANGE_LOAD:
+            Env::Rgr::post([conn, ev]() {
+              Comm::Protocol::Rgr::Handler::range_load(conn, ev);
+            });
+            break;
+
+          case Comm::Protocol::Rgr::Command::RANGE_UNLOAD:
+            Comm::Protocol::Rgr::Handler::range_unload(conn, ev);
+            break;
+
+          case Comm::Protocol::Rgr::Command::RANGE_LOCATE:
+            Env::Rgr::post([conn, ev]() {
+              Comm::Protocol::Rgr::Handler::range_locate(conn, ev);
+            });
+            break;
+
+          case Comm::Protocol::Rgr::Command::RANGE_QUERY_UPDATE:
+            Comm::Protocol::Rgr::Handler::range_query_update(conn, ev);
+            break;
+
+          case Comm::Protocol::Rgr::Command::RANGE_QUERY_SELECT:
+            Env::Rgr::post([conn, ev]() {
+              Comm::Protocol::Rgr::Handler::range_query_select(conn, ev);
+            });
+            break;
+
+          case Comm::Protocol::Rgr::Command::REPORT:
+            Env::Rgr::post([conn, ev]() {
+              Comm::Protocol::Rgr::Handler::report(conn, ev);
+            });
+            break;
+
+          default:
+            Comm::Protocol::Common::Handler::not_implemented(conn, ev);
+            break;
+          //&Comm::Protocol::Rgr::Handler::debug,
+          //&Comm::Protocol::Rgr::Handler::status,
+          //&Comm::Protocol::Rgr::Handler::shutdown
         }
         break;
       }

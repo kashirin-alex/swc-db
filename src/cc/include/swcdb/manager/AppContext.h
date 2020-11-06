@@ -41,30 +41,6 @@ namespace SWC { namespace Manager {
 
 
 class AppContext final : public Comm::AppContext {
-   
-  // in-order of Comm::Protocol::Mngr::Command
-  static constexpr const Comm::AppHandler_t handlers[] = { 
-    &Comm::Protocol::Common::Handler::not_implemented,
-    &Comm::Protocol::Mngr::Handler::mngr_state,
-    &Comm::Protocol::Mngr::Handler::mngr_active,
-    &Comm::Protocol::Mngr::Handler::column_mng,
-    &Comm::Protocol::Mngr::Handler::column_update,
-    &Comm::Protocol::Mngr::Handler::column_get,
-    &Comm::Protocol::Mngr::Handler::column_list,
-    &Comm::Protocol::Mngr::Handler::column_compact,
-    &Comm::Protocol::Mngr::Handler::rgr_mng_id,
-    &Comm::Protocol::Mngr::Handler::rgr_update,
-    &Comm::Protocol::Mngr::Handler::rgr_get,
-    &Comm::Protocol::Mngr::Handler::range_create,
-    &Comm::Protocol::Mngr::Handler::range_unloaded,
-    &Comm::Protocol::Mngr::Handler::range_remove,
-    &Comm::Protocol::Mngr::Handler::report,
-    &Comm::Protocol::Mngr::Handler::do_echo,
-    //&Comm::Protocol::Mngr::Handler::debug,
-    //&Comm::Protocol::Mngr::Handler::status,
-    //&Comm::Protocol::Mngr::Handler::shutdown
-  };
-
   public:
 
   AppContext() 
@@ -134,11 +110,90 @@ class AppContext final : public Comm::AppContext {
         break;
 
       case Comm::Event::Type::MESSAGE: {
-        uint8_t cmd = ev->header.command >= Comm::Protocol::Mngr::MAX_CMD
-                        ? (uint8_t)Comm::Protocol::Mngr::NOT_IMPLEMENTED 
-                        : ev->header.command;
-        Env::Mngr::post([cmd, conn, ev]() { handlers[cmd](conn, ev); });
-        return;
+        switch(ev->header.command) {
+
+          case Comm::Protocol::Mngr::Command::MNGR_STATE:
+            Env::Mngr::post([conn, ev]() {
+              Comm::Protocol::Mngr::Handler::mngr_state(conn, ev);
+            });
+            break;
+
+          case Comm::Protocol::Mngr::Command::MNGR_ACTIVE:
+            Comm::Protocol::Mngr::Handler::mngr_active(conn, ev);
+            break;
+
+          case Comm::Protocol::Mngr::Command::COLUMN_MNG:
+            Comm::Protocol::Mngr::Handler::column_mng(conn, ev);
+            break;
+
+          case Comm::Protocol::Mngr::Command::COLUMN_UPDATE:
+            Env::Mngr::post([conn, ev]() {
+              Comm::Protocol::Mngr::Handler::column_update(conn, ev);
+            });
+            break;
+
+          case Comm::Protocol::Mngr::Command::COLUMN_GET:
+            Comm::Protocol::Mngr::Handler::column_get(conn, ev);
+            break;
+
+          case Comm::Protocol::Mngr::Command::COLUMN_LIST:
+            Comm::Protocol::Mngr::Handler::column_list(conn, ev);
+            break;
+
+          case Comm::Protocol::Mngr::Command::COLUMN_COMPACT:
+            Comm::Protocol::Mngr::Handler::column_compact(conn, ev);
+            break;
+
+          case Comm::Protocol::Mngr::Command::RGR_MNG_ID:
+            Env::Mngr::post([conn, ev]() {
+              Comm::Protocol::Mngr::Handler::rgr_mng_id(conn, ev);
+            });
+            break;
+
+          case Comm::Protocol::Mngr::Command::RGR_UPDATE:
+            Env::Mngr::post([conn, ev]() {
+              Comm::Protocol::Mngr::Handler::rgr_update(conn, ev);
+            });
+            break;
+
+          case Comm::Protocol::Mngr::Command::RGR_GET:
+            Comm::Protocol::Mngr::Handler::rgr_get(conn, ev);
+            break;
+
+          case Comm::Protocol::Mngr::Command::RANGE_CREATE:
+            Env::Mngr::post([conn, ev]() {
+              Comm::Protocol::Mngr::Handler::range_create(conn, ev);
+            });
+            break;
+
+          case Comm::Protocol::Mngr::Command::RANGE_UNLOADED:
+            Comm::Protocol::Mngr::Handler::range_unloaded(conn, ev);
+            break;
+
+          case Comm::Protocol::Mngr::Command::RANGE_REMOVE:
+            Env::Mngr::post([conn, ev]() {
+              Comm::Protocol::Mngr::Handler::range_remove(conn, ev);
+            });
+            break;
+
+          case Comm::Protocol::Mngr::Command::REPORT:
+            Env::Mngr::post([conn, ev]() {
+              Comm::Protocol::Mngr::Handler::report(conn, ev);
+            });
+            break;
+
+          case Comm::Protocol::Mngr::Command::DO_ECHO:
+            Comm::Protocol::Mngr::Handler::do_echo(conn, ev);
+            break;
+
+          default:
+            Comm::Protocol::Common::Handler::not_implemented(conn, ev);
+            break;
+          //&Comm::Protocol::Mngr::Handler::debug,
+          //&Comm::Protocol::Mngr::Handler::status,
+          //&Comm::Protocol::Mngr::Handler::shutdown
+        }
+        break;
       }
 
       default:
