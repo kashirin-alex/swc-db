@@ -362,16 +362,6 @@ void Rangers::update_status(RangerList new_rgr_status, bool sync_all) {
   );
 }
 
-void Rangers::assign_range(const Ranger::Ptr& rgr, const Range::Ptr& range) {
-  rgr->put(
-    std::make_shared<Comm::Protocol::Rgr::Req::RangeLoad>(
-      rgr, 
-      range,
-      Env::Mngr::schemas()->get(range->cfg->cid)
-    )
-  );
-}
-
 void Rangers::range_loaded(Ranger::Ptr rgr, Range::Ptr range, 
                            int err, bool failure, bool verbose) {
   bool run_assign;
@@ -414,13 +404,10 @@ void Rangers::range_loaded(Ranger::Ptr rgr, Range::Ptr range,
 }
 
 
-bool Rangers::update(const DB::Schema::Ptr& schema, uint64_t req_id,
-                     bool ack_required) {
+bool Rangers::update(const Column::Ptr& col, const DB::Schema::Ptr& schema,
+                     uint64_t req_id, bool ack_required) {
   std::vector<rgrid_t> rgrids;
-  int err = Error::OK;
-  auto col = Env::Mngr::columns()->get_column(err, schema->cid);
-  if(!err && col)
-    col->need_schema_sync(schema->revision, rgrids);
+  col->need_schema_sync(schema->revision, rgrids);
   bool undergo = false;
   for(rgrid_t rgrid : rgrids) {
     std::scoped_lock lock(m_mutex);
@@ -432,7 +419,7 @@ bool Rangers::update(const DB::Schema::Ptr& schema, uint64_t req_id,
         if(ack_required) {
           rgr->put(
             std::make_shared<Comm::Protocol::Rgr::Req::ColumnUpdate>(
-              rgr, schema, req_id));
+              rgr, col, schema, req_id));
         }
       }
     }
@@ -440,7 +427,7 @@ bool Rangers::update(const DB::Schema::Ptr& schema, uint64_t req_id,
   return undergo;
 }
 
-void Rangers::column_delete(const cid_t cid, uint64_t req_id,
+void Rangers::column_delete(const DB::Schema::Ptr& schema, uint64_t req_id,
                             const std::vector<rgrid_t>& rgrids) {
   for(rgrid_t rgrid : rgrids) {
     std::scoped_lock lock(m_mutex);
@@ -449,18 +436,12 @@ void Rangers::column_delete(const cid_t cid, uint64_t req_id,
         continue;
       rgr->put(
         std::make_shared<Comm::Protocol::Rgr::Req::ColumnDelete>(
-          rgr, cid, req_id));
+          rgr, schema, req_id));
     }
   }
 }
 
-void Rangers::column_compact(int& err, const cid_t cid) {
-  auto col = Env::Mngr::columns()->get_column(err, cid);
-  if(!err)  
-    col->state(err);
-  if(err)
-    return;
-
+void Rangers::column_compact(const Column::Ptr& col) {
   std::vector<rgrid_t> rgrids;
   col->assigned(rgrids);
   for(rgrid_t rgrid : rgrids) {
@@ -470,7 +451,8 @@ void Rangers::column_compact(int& err, const cid_t cid) {
       if(rgr->failures < cfg_rgr_failures->get() && 
          rgr->state == RangerState::ACK && rgr->rgrid == rgrid) {
         rgr->put(
-          std::make_shared<Comm::Protocol::Rgr::Req::ColumnCompact>(cid));
+          std::make_shared<Comm::Protocol::Rgr::Req::ColumnCompact>(
+            col->cfg->cid));
       }
     }
   }
@@ -527,19 +509,22 @@ void Rangers::assign_ranges() {
 }
 
 void Rangers::assign_ranges_run() {
+  Column::Ptr col;
   Range::Ptr range;
 
-  for(bool more;;) {
+  for(bool state;;) {
     {
       std::scoped_lock lock(m_mutex);
-      if(m_rangers.empty() || !m_run) {
-        runs_assign(true);
-        return schedule_check();
-      }
+      state = m_rangers.empty() || !m_run;
+    }
+    if(state) {
+      runs_assign(true);
+      return schedule_check();
     }
 
-    if(!(range = Env::Mngr::columns()->get_next_unassigned(more = false))) {
-      if(more) // waiting-on-meta-ranges
+    range = Env::Mngr::columns()->get_next_unassigned(col, state = false);
+    if(!range) {
+      if(state) // waiting-on-meta-ranges
         schedule_check(2000);
       runs_assign(true);
       break;
@@ -556,11 +541,18 @@ void Rangers::assign_ranges_run() {
     ++rgr->interm_ranges;
     {
       std::scoped_lock lock(m_mutex);
-      if(!(more = ++m_assignments < cfg_assign_due->get()))
-        runs_assign(true);
+      state = ++m_assignments < cfg_assign_due->get();
     }
-    assign_range(rgr, range);
-    if(!more)
+    if(!state)
+      runs_assign(true);
+
+    rgr->put(
+      std::make_shared<Comm::Protocol::Rgr::Req::RangeLoad>(
+        rgr, col, range,
+        Env::Mngr::schemas()->get(col->cfg->cid)
+      )
+    );
+    if(!state)
       return;
   }
 

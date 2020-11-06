@@ -61,21 +61,18 @@ class Rangers final {
 
   void update_status(RangerList new_rgr_status, bool sync_all);
 
-
-  void assign_range(const Ranger::Ptr& rgr, const Range::Ptr& range);
-
   void range_loaded(Ranger::Ptr rgr, Range::Ptr range, 
                     int err, bool failure=false, bool verbose=true);
 
   void assign_ranges();
 
-  bool update(const DB::Schema::Ptr& schema, uint64_t req_id,
-              bool ack_required);
+  bool update(const Column::Ptr& col, const DB::Schema::Ptr& schema,
+              uint64_t req_id, bool ack_required);
   
-  void column_delete(const cid_t cid, uint64_t req_id,
+  void column_delete(const DB::Schema::Ptr& schema, uint64_t req_id,
                      const std::vector<rgrid_t>& rgrids);
   
-  void column_compact(int& err, const cid_t cid);
+  void column_compact(const Column::Ptr& col);
 
 
   void need_health_check(const Column::Ptr& col);

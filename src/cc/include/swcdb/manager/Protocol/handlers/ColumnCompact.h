@@ -23,11 +23,10 @@ void column_compact(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     Params::ColumnCompactReq params;
     params.decode(&ptr, &remain);
 
-    Env::Mngr::mngd_columns()->get_column(rsp_params.err, params.cid);
-    if(rsp_params.err)
-      goto send_response;
-
-    Env::Mngr::rangers()->column_compact(rsp_params.err, params.cid);
+    auto col = Env::Mngr::mngd_columns()->get_column(
+      rsp_params.err, params.cid);
+    if(!rsp_params.err)
+      return Env::Mngr::rangers()->column_compact(col);
 
   } catch(...) {
     const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
@@ -35,8 +34,7 @@ void column_compact(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     rsp_params.err = e.code();
   }
   
-  send_response:
-    conn->send_response(Buffers::make(ev, rsp_params));
+  conn->send_response(Buffers::make(ev, rsp_params));
 }
 
 

@@ -193,7 +193,8 @@ Rgr::Rgr()
           "swc.rgr.ram.reserved.percent"),
         SWC::Env::Config::settings()->get<SWC::Config::Property::V_GINT32>(
           "swc.rgr.ram.release.rate"),
-        [this](size_t bytes) { return _columns->release(bytes); }) {
+        [this](size_t bytes) { return _columns->release(bytes); }
+      ) {
 }
 
 Rgr::~Rgr() {

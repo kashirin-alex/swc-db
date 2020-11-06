@@ -12,6 +12,7 @@ namespace Rgr { namespace Req {
 
 
 RangeLoad::RangeLoad(const Manager::Ranger::Ptr& rgr, 
+                     const Manager::Column::Ptr& col, 
                      const Manager::Range::Ptr& range,
                      const DB::Schema::Ptr& schema) 
         : client::ConnQueue::ReqBase(
@@ -22,7 +23,8 @@ RangeLoad::RangeLoad(const Manager::Ranger::Ptr& rgr,
               RANGE_LOAD, 3600000
             )
           ),
-          rgr(rgr), range(range), schema_revision(schema->revision) {
+          rgr(rgr), col(col), range(range), 
+          schema_revision(schema->revision) {
   SWC_LOG_OUT(LOG_INFO, range->print(SWC_LOG_OSTREAM  << "RANGE-LOAD "); );
 }
   
@@ -61,20 +63,8 @@ void RangeLoad::handle_no_conn() {
   
 void RangeLoad::loaded(int err, bool failure, 
                        const DB::Cells::Interval& intval) {
-  SWC_LOG_OUT(LOG_DEBUG, 
-    Error::print(SWC_LOG_OSTREAM << "RANGE-STATUS CHECK ", err);
-    range->print(SWC_LOG_OSTREAM << ", ");
-  );
-
-  auto col = Env::Mngr::columns()->get_column(err, range->cfg->cid);
-  if(!col)
-    return Env::Mngr::rangers()->range_loaded(
-      rgr, range, Error::COLUMN_MARKED_REMOVED, failure);
   if(!err)
     col->change_rgr_schema(rgr->rgrid, schema_revision);
-                           
-  else if(err == Error::COLUMN_SCHEMA_MISSING)
-    col->remove_rgr_schema(rgr->rgrid);
 
   Env::Mngr::rangers()->range_loaded(rgr, range, err, failure, false);
   col->sort(range, intval);

@@ -64,7 +64,7 @@ class MngdColumns final {
   void update(Comm::Protocol::Mngr::Params::ColumnMng::Function func,
               const DB::Schema::Ptr& schema, int err, uint64_t req_id);
 
-  void remove(int &err, cid_t cid, rgrid_t rgrid, uint64_t req_id);
+  void remove(const DB::Schema::Ptr& schema, rgrid_t rgrid, uint64_t req_id);
 
   void print(std::ostream& out);
 
@@ -73,11 +73,7 @@ class MngdColumns final {
 
   private:
 
-  void check_assignment();
-
-
   bool columns_load();
-
 
   cid_t get_next_cid();
 
@@ -85,26 +81,28 @@ class MngdColumns final {
   
   void update(int &err, DB::Schema::Ptr& schema, const DB::Schema::Ptr& old);
 
-  void remove(int &err, cid_t cid, uint64_t req_id);
-
   void update_status_ack(
       Comm::Protocol::Mngr::Params::ColumnMng::Function func,
       const DB::Schema::Ptr& schema, int err, uint64_t req_id);
 
   void run_actions();
 
-  
-  std::shared_mutex                   m_mutex;
-  std::atomic<bool>                   m_run; 
-  std::atomic<bool>                   m_schemas_set;
-  std::atomic<bool>                   m_cid_active;
-  cid_t                               m_cid_begin;
-  cid_t                               m_cid_end;
 
-  std::mutex                          m_mutex_columns;
-  std::atomic<bool>                   m_expected_ready;
-  std::vector<cid_t>                  m_expected_load;
+  std::atomic<bool>      m_run; 
 
+  Core::MutexSptd        m_mutex_schemas;
+  bool                   m_schemas_set;
+
+  Core::MutexSptd        m_mutex_active;
+  bool                   m_cid_active;
+  cid_t                  m_cid_begin;
+  cid_t                  m_cid_end;
+
+  Core::MutexSptd        m_mutex_expect;
+  bool                   m_expected_ready;
+  std::vector<cid_t>     m_expected_load;
+
+  Core::MutexSptd                              m_mutex_actions;
   Core::QueueSafe<ColumnReq::Ptr>              m_actions;
   std::unordered_map<uint64_t, ColumnReq::Ptr> m_actions_pending;
 

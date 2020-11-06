@@ -11,7 +11,8 @@
 namespace SWC { namespace Comm { namespace Protocol {
 namespace Rgr { namespace Req {
 
-ColumnUpdate::ColumnUpdate(const Manager::Ranger::Ptr& rgr, 
+ColumnUpdate::ColumnUpdate(const Manager::Ranger::Ptr& rgr,
+                           const Manager::Column::Ptr& col, 
                            const DB::Schema::Ptr& schema,
                            uint64_t req_id)
               : client::ConnQueue::ReqBase(
@@ -19,38 +20,36 @@ ColumnUpdate::ColumnUpdate(const Manager::Ranger::Ptr& rgr,
                   Buffers::make(
                     Params::ColumnUpdate(schema), 0, SCHEMA_UPDATE, 60000)
                 ), 
-                rgr(rgr), schema(schema), req_id(req_id) {
+                rgr(rgr), col(col), schema(schema), req_id(req_id) {
 }
   
 ColumnUpdate::~ColumnUpdate() { }
 
 void ColumnUpdate::handle(ConnHandlerPtr, const Event::Ptr& ev) {
-  if(ev->type == Event::Type::DISCONNECT)
+  if(ev->type == Event::Type::DISCONNECT || ev->response_code())
     return handle_no_conn();
 
-  updated(ev->response_code(), false);
+  col->change_rgr_schema(rgr->rgrid, schema->revision);
+  updated();
 }
 
 void ColumnUpdate::handle_no_conn() {
-  updated(Error::COMM_NOT_CONNECTED, true);
+  if(rgr->state == DB::Types::MngrRangerState::ACK) { 
+    ++rgr->failures;
+    request_again();
+  } else {
+    updated();
+  }
 }
 
-void ColumnUpdate::updated(int err, bool failure) {
-  int errc = Error::OK;
-  auto col = Env::Mngr::columns()->get_column(errc, schema->cid);
-  if(col && !err && !errc)
-    col->change_rgr_schema(rgr->rgrid, schema->revision);
-
-  if(!Env::Mngr::rangers()->update(schema, req_id, false)) {
+void ColumnUpdate::updated() {
+  if(!Env::Mngr::rangers()->update(col, schema, req_id, false)) {
     Env::Mngr::mngd_columns()->update(
       Mngr::Params::ColumnMng::Function::INTERNAL_ACK_MODIFY,
       schema,
       Error::OK,
       req_id
     );
-  } else if(failure) {
-    ++rgr->failures;
-    request_again();
   }
 }
 

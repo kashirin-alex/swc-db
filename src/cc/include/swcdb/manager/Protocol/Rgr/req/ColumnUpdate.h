@@ -15,7 +15,8 @@ namespace Rgr { namespace Req {
 class ColumnUpdate : public client::ConnQueue::ReqBase {
   public:
 
-  ColumnUpdate(const Manager::Ranger::Ptr& rgr, 
+  ColumnUpdate(const Manager::Ranger::Ptr& rgr,
+               const Manager::Column::Ptr& col,
                const DB::Schema::Ptr& schema,
                uint64_t req_id);
   
@@ -25,14 +26,14 @@ class ColumnUpdate : public client::ConnQueue::ReqBase {
   
   void handle_no_conn() override;
 
-  void updated(int err, bool failure);
+  void updated();
 
   private:
-
   Manager::Ranger::Ptr   rgr;
+  Manager::Column::Ptr   col;
   DB::Schema::Ptr        schema; 
   uint64_t               req_id;
-   
+
 };
 
 }}}}}

@@ -392,7 +392,8 @@ void ConnHandler::recved_buffer(const Event::Ptr& ev, asio::error_code ec,
       ev->data.free();
       ev->data_ext.free();
       SWC_LOG_OUT(LOG_WARN,
-        SWC_LOG_OSTREAM << "read, REQUEST PAYLOAD_TRUNCATED: n(" << n << ") ";
+        SWC_LOG_OSTREAM 
+          << "read, REQUEST PAYLOAD_TRUNCATED: n(" << int(n) << ") ";
         ev->print(SWC_LOG_OSTREAM);
       );
     }

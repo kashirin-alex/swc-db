@@ -15,6 +15,7 @@ class RangeLoad : public client::ConnQueue::ReqBase {
   public:
 
   RangeLoad(const Manager::Ranger::Ptr& rgr, 
+            const Manager::Column::Ptr& col,
             const Manager::Range::Ptr& range,
             const DB::Schema::Ptr& schema);
   
@@ -32,9 +33,10 @@ class RangeLoad : public client::ConnQueue::ReqBase {
   private:
 
   Manager::Ranger::Ptr rgr;
+  Manager::Column::Ptr col;
   Manager::Range::Ptr  range;
   int64_t              schema_revision;
-   
+
 };
 
 }}}}}

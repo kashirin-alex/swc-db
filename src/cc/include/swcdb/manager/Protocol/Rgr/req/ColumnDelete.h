@@ -15,7 +15,9 @@ namespace Rgr { namespace Req {
 class ColumnDelete : public client::ConnQueue::ReqBase  {
   public:
 
-  ColumnDelete(const Manager::Ranger::Ptr& rgr, cid_t cid, uint64_t req_id);
+  ColumnDelete(const Manager::Ranger::Ptr& rgr, 
+               const DB::Schema::Ptr& schema,
+               uint64_t req_id);
   
   virtual ~ColumnDelete();
   
@@ -23,12 +25,12 @@ class ColumnDelete : public client::ConnQueue::ReqBase  {
 
   void handle_no_conn() override;
   
-  void remove(int err);
+  void remove();
 
   private:
 
   Manager::Ranger::Ptr  rgr;
-  cid_t                 cid;
+  DB::Schema::Ptr       schema;
   uint64_t              req_id;
 };
 

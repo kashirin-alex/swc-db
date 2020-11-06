@@ -12,36 +12,39 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace Rgr { namespace Req {
   
 
-ColumnDelete::ColumnDelete(const Manager::Ranger::Ptr& rgr, cid_t cid,
+ColumnDelete::ColumnDelete(const Manager::Ranger::Ptr& rgr, 
+                           const DB::Schema::Ptr& schema,
                            uint64_t req_id)
           : client::ConnQueue::ReqBase(
               false,
               Buffers::make(
-                Common::Params::ColumnId(cid), 0, COLUMN_DELETE, 60000)
+                Common::Params::ColumnId(schema->cid), 
+                0, 
+                COLUMN_DELETE, 60000)
             ), 
-            rgr(rgr), cid(cid), req_id(req_id) {
+            rgr(rgr), schema(schema), req_id(req_id) {
 }
   
 ColumnDelete::~ColumnDelete() { }
   
 void ColumnDelete::handle(ConnHandlerPtr, const Event::Ptr& ev) {
-  if(ev->type == Event::Type::DISCONNECT)
+  if(ev->type == Event::Type::DISCONNECT || ev->response_code())
     return handle_no_conn();
 
-  int err = ev->response_code();
-  if(!err) {
-    remove(err);
-  } else {
-    request_again();
-  }
+  remove();
 }
 
 void ColumnDelete::handle_no_conn() {
-  remove(Error::OK);
+  if(rgr->state == DB::Types::MngrRangerState::ACK) {
+    ++rgr->failures;
+    request_again();
+  } else {
+    remove();
+  }
 }
   
-void ColumnDelete::remove(int err) {
-  Env::Mngr::mngd_columns()->remove(err, cid, rgr->rgrid, req_id);  
+void ColumnDelete::remove() {
+  Env::Mngr::mngd_columns()->remove(schema, rgr->rgrid, req_id);  
 }
 
 }}}}}

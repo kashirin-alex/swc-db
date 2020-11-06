@@ -60,7 +60,7 @@ class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
     }
     col->init(err);
     if(err)
-      remove(err, schema->cid);
+      remove(schema->cid);
     return !err;
   }
 
@@ -73,15 +73,17 @@ class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
     return nullptr;
   }
 
-  Range::Ptr get_next_unassigned(bool& waiting_meta) {
+  Range::Ptr get_next_unassigned(Column::Ptr& col, bool& waiting_meta) {
     Range::Ptr range = nullptr;
     iterator it;
     Core::MutexSptd::scope lock(m_mutex);
     for(cid_t cid = DB::Types::MetaColumn::CID_MASTER_BEGIN; 
         cid <= DB::Types::MetaColumn::CID_META_END; ++cid) {
       if((it = find(cid)) != end()) {
-        if((range = it->second->get_next_unassigned()))
+        if((range = it->second->get_next_unassigned())) {
+          col = it->second;
           return range;
+        }
         if(it->second->state() != Column::State::OK)
           waiting_meta = true;
       }
@@ -92,8 +94,10 @@ class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
       return nullptr;
 
     for(it = begin(); it != end(); ++it) {
-      if((range = it->second->get_next_unassigned()))
+      if((range = it->second->get_next_unassigned())) {
+        col = it->second;
         return range;
+      }
     }
     return nullptr;
   }
@@ -140,7 +144,7 @@ class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
     return nullptr;
   }
 
-  void remove(int&, const cid_t cid) {
+  void remove(const cid_t cid) {
     Core::MutexSptd::scope lock(m_mutex);
     auto it = find(cid);
     if(it != end())

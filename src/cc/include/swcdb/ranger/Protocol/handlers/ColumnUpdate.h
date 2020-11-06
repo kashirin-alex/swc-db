@@ -22,15 +22,12 @@ void column_update(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     Params::ColumnUpdate params;
     params.decode(&ptr, &remain);
     
-    if(!Env::Rgr::is_shuttingdown()) {
+    if(!Env::Rgr::is_not_accepting()) {
       auto col = Env::Rgr::columns()->get_column(params.schema->cid);
       if(col) {
         col->schema_update(*params.schema.get());
-
-        if(!Env::Rgr::is_not_accepting())
-          SWC_LOG_OUT(LOG_DEBUG, 
-            col->cfg->print(SWC_LOG_OSTREAM << "updated "); 
-          );
+        SWC_LOG_OUT(LOG_DEBUG,
+          col->cfg->print(SWC_LOG_OSTREAM << "updated "); );
       }
     }
     conn->response_ok(ev);
