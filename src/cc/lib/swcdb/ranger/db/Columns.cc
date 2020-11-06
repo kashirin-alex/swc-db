@@ -116,6 +116,13 @@ void Columns::erase_if_empty(cid_t cid) {
   }
 }
 
+void Columns::internal_delete(cid_t cid) {
+  Core::MutexSptd::scope lock(m_mutex);
+  auto it = find(cid);
+  if(it != end())
+    erase(it);
+}
+
 size_t Columns::release(size_t bytes) {
   {
     Core::MutexSptd::scope lock(m_mutex);

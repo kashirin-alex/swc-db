@@ -39,7 +39,7 @@ class CompletionCounter final {
     return !--m_count;
   }
 
-  uint64_t count() {
+  CountT count() {
     Core::MutexAtomic::scope lock(m_mutex);
     return m_count;
   }

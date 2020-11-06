@@ -58,6 +58,8 @@ class Columns final : private std::unordered_map<cid_t, ColumnPtr> {
 
   void erase_if_empty(cid_t cid);
 
+  void internal_delete(cid_t cid);
+
   size_t release(size_t bytes=0);
 
   void print(std::ostream& out, bool minimal=true);

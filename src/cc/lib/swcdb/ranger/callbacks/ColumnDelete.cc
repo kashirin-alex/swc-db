@@ -36,7 +36,7 @@ void ColumnDelete::removed(const RangePtr& range) {
 }
 
 void ColumnDelete::response() {
-  Env::Rgr::columns()->erase_if_empty(col->cfg->cid);
+  Env::Rgr::columns()->internal_delete(col->cfg->cid);
   response_ok();
   col->run_mng_queue();
 }
