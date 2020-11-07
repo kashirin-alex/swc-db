@@ -89,15 +89,21 @@ void Key::add(const uint8_t* fraction, uint32_t len) {
   own = true;
 }
 
+SWC_SHOULD_INLINE
 void Key::add(const std::vector<std::string>& fractions) {  
-  if(fractions.empty())
+  add(fractions.cbegin(), fractions.cend());
+}
+
+void Key::add(const std::vector<std::string>::const_iterator cbegin, 
+              const std::vector<std::string>::const_iterator cend) {
+  if(cbegin == cend)
     return;
 
   const uint8_t* old = data;
   uint32_t old_size = size;
 
-  for(auto& f : fractions) 
-    size += Serialization::encoded_length_vi24(f.size()) + f.size();
+  for(auto it=cbegin; it < cend; ++it)
+    size += Serialization::encoded_length_vi24(it->size()) + it->size();
   
   uint8_t* ptr = data = new uint8_t[size];
   if(old) {
@@ -106,12 +112,12 @@ void Key::add(const std::vector<std::string>& fractions) {
     if(own)
       delete [] old;
   }
-  for(auto& f : fractions) {
-    Serialization::encode_vi24(&ptr, f.size());
-    memcpy(ptr, f.data(), f.size());
-    ptr += f.size();
+  for(auto it=cbegin; it < cend; ++it) {
+    Serialization::encode_vi24(&ptr, it->size());
+    memcpy(ptr, it->data(), it->size());
+    ptr += it->size();
   }
-  count += fractions.size();
+  count += cend - cbegin;
   own = true;
 }
 

@@ -52,7 +52,10 @@ class Key final {
   void add(const char* fraction, uint32_t len);
 
   void add(const uint8_t* fraction, uint32_t len);
-  
+
+  void add(const std::vector<std::string>::const_iterator cbegin, 
+           const std::vector<std::string>::const_iterator cend);
+
   void add(const std::vector<std::string>& fractions);
   
   void insert(uint32_t idx, const std::string& fraction);
