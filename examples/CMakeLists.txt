@@ -24,3 +24,11 @@ ADD_TEST_EXEC(
   SRCS    geospatial_analysis-xyz_and_properties.cc
   TARGETS swcdb
 )
+
+
+# example - Criteo-1TB_Click_Logs_dataset
+ADD_TEST_EXEC(
+  NAME    Criteo-1TB_Click_Logs_dataset
+  SRCS    Criteo-1TB_Click_Logs_dataset.cc
+  TARGETS swcdb
+)

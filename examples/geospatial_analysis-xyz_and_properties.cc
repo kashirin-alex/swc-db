@@ -192,9 +192,10 @@ void generate_sample_data() {
 
         added_bytes += cell.encoded_length();
         if((++added_cells % 100000) == 0) {
-          SWC_PRINT << "progress cells=" << added_cells 
-                    << " cell/ns=" 
-                    << ((SWC::Time::now_ns() - ts_progress) / 100000);
+          SWC_PRINT 
+            << "progress cells=" << added_cells 
+            << " avg=" << ((SWC::Time::now_ns() - ts_progress) / 100000)
+            << "ns/cell";
           req->result->profile.print(SWC_LOG_OSTREAM << ' ');
           SWC_LOG_OSTREAM << SWC_PRINT_CLOSE;
           SWC_PRINT << cell.to_string() << SWC_PRINT_CLOSE;
@@ -217,7 +218,7 @@ void generate_sample_data() {
     added_bytes, SWC::Time::now_ns() - ts);
   SWC_PRINT << std::endl << std::endl;
   rate.print_cells_statistics(SWC_LOG_OSTREAM, added_cells, resend_cells);
-  req->result->profile.print(SWC_LOG_OSTREAM);
+  req->result->profile.display(SWC_LOG_OSTREAM);
   SWC_LOG_OSTREAM << SWC_PRINT_CLOSE;
 }
 
