@@ -42,6 +42,13 @@
     added Ranger Callback::ManageBase and sequential Column Mamangement
     added Manager ColumnMng::Function::INTERNAL_EXPECT (Colms Load Completion)
     fixed Manager MngdColumns::initialize() pending-schemas loader
+    fixed completion at client::Query::{Select & Update} by CompletionCounter
+    added client::Query::Select::response_if_last()
+    improved Managers Columns management(update-status&-ack in-ring by req_id)
+    changed avoid unreasonable queueing on io-context in Ranger & Manager
+    added DB::Key::add(std::vector<std::string>::const_iterator {cbegin,cend})
+    fixed cyclic-rsp of Unknown Error in FileSystemHadoopJVM at hdfsCloseFile
+    added read & load example - 'Criteo 1TB Click Logs dataset'
 
 [_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.4.11...master)
 ******
