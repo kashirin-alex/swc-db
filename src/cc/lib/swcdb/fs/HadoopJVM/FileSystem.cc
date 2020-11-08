@@ -655,7 +655,7 @@ void FileSystemHadoopJVM::close(int& err, SmartFd::Ptr& smartfd) {
     if(!err) {
       errno = 0;
       if(hdfsCloseFile(fs->srv, hadoop_fd->file()) == -1)
-        err = errno;
+        err = errno == 255 ? Error::FS_BAD_FILE_HANDLE : errno;
       hadoop_fd->file(0);
     }
   } else {
