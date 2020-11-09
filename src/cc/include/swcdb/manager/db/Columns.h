@@ -94,7 +94,8 @@ class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
       return nullptr;
 
     for(it = begin(); it != end(); ++it) {
-      if((range = it->second->get_next_unassigned())) {
+      if(it->second->state() != Column::State::DELETED &&
+         (range = it->second->get_next_unassigned())) {
         col = it->second;
         return range;
       }
