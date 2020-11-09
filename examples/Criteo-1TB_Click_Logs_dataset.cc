@@ -77,7 +77,7 @@ void generate_criteo_logs() {
   auto col = req->columns->get_col(schema->cid);
 
 
-  // day_1 == 199,563,535 cells
+  // day_1 == cells(199,563,535) unique(199,555,996)
   // data-samples from https://ailab.criteo.com/download-criteo-1tb-click-logs-dataset/
   std::string data_path(SWC::Env::Config::settings()->get_str("criteo-samples-path"));
   
@@ -113,6 +113,7 @@ void generate_criteo_logs() {
 
     cell.key.free();
     cell.key.add(fractions);
+    cell.set_revision(SWC::Time::now_ns()); // accumulate duplicates & days
     col->add(cell);
 
     req->commit_or_wait(col);
