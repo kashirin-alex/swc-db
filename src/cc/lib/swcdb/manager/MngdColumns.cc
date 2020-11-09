@@ -7,6 +7,9 @@
 #include "swcdb/manager/MngdColumns.h"
 #include "swcdb/manager/Protocol/Mngr/req/ColumnUpdate.h"
 
+#include "swcdb/db/client/Query/Select.h"
+#include "swcdb/db/client/Query/Update.h"
+
 
 namespace SWC { namespace Manager {
 
@@ -314,11 +317,92 @@ void MngdColumns::remove(const DB::Schema::Ptr& schema,
                          rgrid_t rgrid, uint64_t req_id) {
   int err = Error::OK;
   auto col = Env::Mngr::columns()->get_column(err, schema->cid);
-  if(!col || col->finalize_remove(err, rgrid)) {
-    Env::Mngr::columns()->remove(schema->cid);
-    if(!Env::Mngr::role()->is_active_role(DB::Types::MngrRole::SCHEMAS))
-      Env::Mngr::schemas()->remove(schema->cid);
-    update(ColumnMngFunc::INTERNAL_ACK_DELETE, schema, Error::OK, req_id);
+  if(col && !col->finalize_remove(err, rgrid))
+    return;
+
+  Env::Mngr::columns()->remove(schema->cid);
+  if(!Env::Mngr::role()->is_active_role(DB::Types::MngrRole::SCHEMAS))
+    Env::Mngr::schemas()->remove(schema->cid);
+
+  if(DB::Types::MetaColumn::is_master(schema->cid))
+    return update(
+      ColumnMngFunc::INTERNAL_ACK_DELETE, schema, Error::OK, req_id);
+    
+  cid_t meta_cid = DB::Types::MetaColumn::get_sys_cid(
+    schema->col_seq, DB::Types::MetaColumn::get_range_type(schema->cid));
+  auto col_spec = DB::Specs::Column::make_ptr(
+    meta_cid, {DB::Specs::Interval::make_ptr()});
+  auto& intval = col_spec->intervals.front();
+  intval->key_start.add(std::to_string(schema->cid), Condition::EQ);
+  intval->key_start.add("", Condition::GE);
+  intval->flags.set_only_keys();
+
+  auto selector = std::make_shared<client::Query::Select>(
+    [this, req_id, schema, meta_cid]
+    (const client::Query::Select::Result::Ptr& result) {
+      DB::Cells::Result cells;
+      int err = result->err;
+      if(!err) {
+        auto col = result->get_columnn(meta_cid);
+        if(!(err = col->error()) && !col->empty())
+          col->get_cells(cells);
+      }
+      if(err) {
+        SWC_LOGF(LOG_WARN,
+        "Column(cid=%lu meta_cid=%lu) "
+        "Range MetaData might remained, result-err=%d(%s)",
+        schema->cid, meta_cid, err, Error::get_text(err));
+      }
+      if(err || cells.empty())
+        return update(
+          ColumnMngFunc::INTERNAL_ACK_DELETE, schema, Error::OK, req_id);
+
+      SWC_LOG_OUT(LOG_INFO,
+        SWC_LOG_OSTREAM << "Column(cid=" << schema->cid 
+          << " meta_cid=" << meta_cid << ')'
+          << " deleting Range MetaData, remained(" << cells.size() << ')'
+          << " cells=[";
+        for(auto cell : cells)
+          cell->key.print(SWC_LOG_OSTREAM << "\n\t");
+        SWC_LOG_OSTREAM << "\n]";
+      );
+
+      auto updater = std::make_shared<client::Query::Update>(
+        [this, req_id, schema, meta_cid]
+        (const client::Query::Update::Result::Ptr& res) {
+          int err = res->error();
+          if(err) {
+            SWC_LOGF(LOG_WARN,
+              "Column(cid=%lu meta_cid=%lu) "
+              "Range MetaData might remained, update-err=%d(%s)",
+              schema->cid, meta_cid, err, Error::get_text(err));
+          }
+          return update(
+            ColumnMngFunc::INTERNAL_ACK_DELETE, schema, Error::OK, req_id);
+      });
+      updater->columns->create(
+        meta_cid, schema->col_seq, 1, 0, DB::Types::Column::PLAIN);
+      auto col = updater->columns->get_col(meta_cid);
+      for(auto cell : cells) {
+        cell->flag = DB::Cells::DELETE;
+        col->add(*cell);
+        updater->commit_or_wait(col);
+      }
+      updater->commit_if_need();
+    },
+    false
+  );
+
+  selector->specs.columns.push_back(col_spec);
+  selector->scan(err);
+
+  if(err) {
+    SWC_LOGF(LOG_WARN,
+      "Column(cid=%lu meta_cid=%lu) "
+      "Range MetaData might remained, scan-err=%d(%s)",
+      schema->cid, meta_cid, err, Error::get_text(err));
+    return update(
+      ColumnMngFunc::INTERNAL_ACK_DELETE, schema, Error::OK, req_id);
   }
 }
 
