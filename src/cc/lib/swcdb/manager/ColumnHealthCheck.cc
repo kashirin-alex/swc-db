@@ -15,10 +15,14 @@ namespace SWC { namespace Manager {
 ColumnHealthCheck::RangerCheck::RangerCheck(
                 const ColumnHealthCheck::Ptr& col_checker, 
                 const Ranger::Ptr& rgr)
-                : col_checker(col_checker), rgr(rgr), m_checkings(0) { 
+                : col_checker(col_checker), rgr(rgr), m_checkings(0),
+                  m_success(0), m_failures(0) { 
 }
 
-ColumnHealthCheck::RangerCheck::~RangerCheck() { }
+ColumnHealthCheck::RangerCheck::~RangerCheck() { 
+  if(!m_sucess && m_failures) // && m_sucess < m_failures)
+    ++rgr->failures;
+}
 
 void ColumnHealthCheck::RangerCheck::add_range(const Range::Ptr& range) {
   Core::MutexSptd::scope lock(m_mutex);
@@ -56,18 +60,22 @@ void ColumnHealthCheck::RangerCheck::handle(const Range::Ptr& range, int err) {
     more = sz < 10 ? 10 - sz  : 0;
   }
 
-  if(err == Error::RGR_NOT_LOADED_RANGE ||
-     (err == Error::COMM_CONNECT_ERROR && 
-      ++rgr->failures > Env::Mngr::rangers()->cfg_rgr_failures->get())) {
-    col_checker->col->set_unloaded(range); 
+  if(err == Error::COMM_CONNECT_ERROR) {
+    ++m_failures;
+  } else {
+    ++m_success;
+    if(!err) {
+      rgr->failures = 0;
+    } else if(err == Error::RGR_NOT_LOADED_RANGE) {
+      col_checker->col->set_unloaded(range);
+      Env::Mngr::rangers()->schedule_check(2000);
+    }
   }
 
   SWC_LOGF((err ? LOG_WARN : LOG_DEBUG),
     "Column-Health FINISH range(%lu/%lu) rgr=%lu err=%d(%s)",
     range->cfg->cid, range->rid, rgr->rgrid.load(),
     err, Error::get_text(err));
-  if(err)
-    Env::Mngr::rangers()->schedule_check(2000);
 
   if(more)
     add_ranges(more);

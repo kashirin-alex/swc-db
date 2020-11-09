@@ -52,6 +52,9 @@ class ColumnHealthCheck final
     Core::MutexSptd           m_mutex;
     std::queue<Range::Ptr>    m_ranges;
     uint8_t                   m_checkings;
+
+    std::atomic<size_t>       m_success;
+    std::atomic<size_t>       m_failures;
   };
   
 
