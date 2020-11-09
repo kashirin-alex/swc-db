@@ -370,7 +370,8 @@ void chk_rename(size_t num_of_cols, bool verbose=false){
           },
           300000
         );
-      }
+      }// ,
+       // 600000
     ); 
   }
 

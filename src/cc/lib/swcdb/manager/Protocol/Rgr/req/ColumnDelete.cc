@@ -20,7 +20,7 @@ ColumnDelete::ColumnDelete(const Manager::Ranger::Ptr& rgr,
               Buffers::make(
                 Common::Params::ColumnId(schema->cid), 
                 0, 
-                COLUMN_DELETE, 60000)
+                COLUMN_DELETE, 3600000)
             ), 
             rgr(rgr), schema(schema), req_id(req_id) {
 }

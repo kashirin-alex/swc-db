@@ -171,7 +171,7 @@ bool DbClient::mng_column(Comm::Protocol::Mngr::Req::ColumnMng::Func func,
       }*/
       await->set_value(error);
     },
-    300000
+    1800000
   );
   
   if((err = res.get_future().get())) {

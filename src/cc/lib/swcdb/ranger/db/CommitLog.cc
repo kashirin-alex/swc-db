@@ -347,7 +347,7 @@ void Fragments::remove(int &err, Fragment::Ptr frag, bool remove_file) {
   }
 }
 
-void Fragments::remove(int &err) {
+void Fragments::remove() {
   stopping = true;
   {
     std::unique_lock lock_wait(m_mutex);
@@ -358,7 +358,7 @@ void Fragments::remove(int &err) {
   }
   std::scoped_lock lock(m_mutex);
   for(auto frag : *this) {
-    frag->remove(err);
+    //frag->remove(err);
     delete frag;
   }
   clear();

@@ -81,7 +81,7 @@ class Fragments final : private std::vector<Fragment::Ptr> {
 
   void remove(int &err, Fragment::Ptr frag, bool remove_file);
 
-  void remove(int &err);
+  void remove();
 
   void unload();
 

@@ -63,13 +63,15 @@ void Blocks::unload() {
   processing_decrement();
 }
   
-void Blocks::remove(int& err) {
+void Blocks::remove(int&) {
   wait_processing();
   processing_increment();
   Core::MutexSptd::scope lock(m_mutex);
 
-  commitlog.remove(err);
-  cellstores.remove(err);   
+  // Unload is enough, Range remove the range-path at once
+  commitlog.remove();
+  cellstores.unload();
+
   _clear();
   range = nullptr;
   processing_decrement();
