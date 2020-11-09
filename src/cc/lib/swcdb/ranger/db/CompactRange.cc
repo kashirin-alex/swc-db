@@ -758,13 +758,14 @@ void CompactRange::split(rid_t new_rid, uint32_t split_at) {
            range->cfg->cid, range->rid, new_rid);
 
   int err = Error::OK;
-  auto new_range = col->internal_create(err, new_rid);
+  auto new_range = col->internal_create(err, new_rid, true);
   if(!err)
     new_range->internal_create_folders(err);
   if(err) {
     SWC_LOGF(LOG_INFO, "COMPACT-SPLIT cancelled err=%d %lu/%lu new-rid=%lu", 
             err, range->cfg->cid, range->rid, new_rid);
     err = Error::OK;
+    new_range->compacting(Range::COMPACT_NONE);
     col->internal_remove(err, new_rid, false);
     mngr_remove_range(new_range);
     return apply_new();
@@ -781,6 +782,7 @@ void CompactRange::split(rid_t new_rid, uint32_t split_at) {
 
   if(err) {
     err = Error::OK;
+    new_range->compacting(Range::COMPACT_NONE);
     col->internal_remove(err, new_rid);
     mngr_remove_range(new_range);
     return quit();
@@ -810,6 +812,7 @@ void CompactRange::split(rid_t new_rid, uint32_t split_at) {
   new_range->expand_and_align(err, false);
   //err = Error::OK;
 
+  new_range->compacting(Range::COMPACT_NONE);
   new_range = nullptr;
   col->internal_unload(new_rid);
   Comm::Protocol::Mngr::Req::RangeUnloaded::request(

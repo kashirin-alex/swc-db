@@ -45,7 +45,7 @@ class RangeSplit final {
     SWC_LOGF(LOG_INFO, "COMPACT-SPLIT RANGE %lu/%lu new-rid=%lu", 
              range->cfg->cid, range->rid, new_rid);
 
-    auto new_range = col->internal_create(err, new_rid);
+    auto new_range = col->internal_create(err, new_rid, true);
     if(!err)
       new_range->internal_create_folders(err);
 
@@ -53,6 +53,7 @@ class RangeSplit final {
       SWC_LOGF(LOG_INFO, "COMPACT-SPLIT RANGE cancelled err=%d %lu/%lu new-rid=%lu", 
                 err, range->cfg->cid, range->rid, new_rid);
       int tmperr = Error::OK;
+      new_range->compacting(Range::COMPACT_NONE);
       col->internal_remove(tmperr, new_rid, false);
       mngr_remove_range(new_range);
       return err;
@@ -71,6 +72,7 @@ class RangeSplit final {
       }
     } else {
       int tmperr = Error::OK;
+      new_range->compacting(Range::COMPACT_NONE);
       col->internal_remove(tmperr, new_rid);
       mngr_remove_range(new_range);
       return err;
@@ -98,6 +100,7 @@ class RangeSplit final {
 
 
     std::promise<void>  r_promise;
+    new_range->compacting(Range::COMPACT_NONE);
     new_range = nullptr;
     col->internal_unload(new_rid);
     Comm::Protocol::Mngr::Req::RangeUnloaded::request(

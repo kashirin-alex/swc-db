@@ -149,7 +149,7 @@ void Column::print(std::ostream& out, bool minimal) {
 }
 
 
-RangePtr Column::internal_create(int& err, rid_t rid) {
+RangePtr Column::internal_create(int& err, rid_t rid, bool compacting) {
   Core::MutexSptd::scope lock(m_mutex);
   if(Env::Rgr::is_shuttingdown() ||
      (Env::Rgr::is_not_accepting() && 
@@ -165,6 +165,8 @@ RangePtr Column::internal_create(int& err, rid_t rid) {
   if(res.second) {
     res.first->second.reset(new Range(cfg, rid));
     res.first->second->init();
+    if(compacting)
+      res.first->second->compacting(Range::COMPACT_APPLYING);
   }
   return res.first->second;
 }
@@ -235,7 +237,7 @@ void Column::load(const Callback::RangeLoad::Ptr& req) {
     return run_mng_queue();
 
   int err = Error::OK;
-  auto range = internal_create(err, req->rid);
+  auto range = internal_create(err, req->rid, false);
   req->col = shared_from_this();
   err ? req->loaded(err) : range->load(req);
 }

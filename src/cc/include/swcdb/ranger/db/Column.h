@@ -54,7 +54,7 @@ class Column final :
   void print(std::ostream& out, bool minimal=true);
 
 
-  RangePtr internal_create(int& err, rid_t rid);
+  RangePtr internal_create(int& err, rid_t rid, bool compacting);
 
   void internal_unload(const rid_t rid);
 
