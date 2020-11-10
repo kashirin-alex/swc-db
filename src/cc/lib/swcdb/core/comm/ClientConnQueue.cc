@@ -166,26 +166,22 @@ void ConnQueue::delay(const ConnQueue::ReqBase::Ptr& req) {
     return put(req);
 
   auto tm = new asio::high_resolution_timer(*m_ioctx.get());
-  {
-    Core::MutexSptd::scope lock(m_mutex);
-    m_delayed.insert(tm);
-  }
   tm->expires_after(std::chrono::milliseconds(cfg_again_delay_ms->get()));
-  tm->async_wait(
-    [req, tm](const asio::error_code&) {
-      req->queue->delay_proceed(req, tm);
-    }
-  );
-}
 
-void ConnQueue::delay_proceed(const ConnQueue::ReqBase::Ptr& req, 
-                              asio::high_resolution_timer* tm) {
-  {
-    Core::MutexSptd::scope lock(m_mutex);
-    m_delayed.erase(tm);
-  }
-  delete tm;
-  put(req);
+  Core::MutexSptd::scope lock(m_mutex);
+  m_delayed.insert(tm);
+  tm->async_wait([this, req, tm](const asio::error_code& ec) {
+    if(ec == asio::error::operation_aborted) {
+      req->handle_no_conn();
+    } else {
+      {
+        Core::MutexSptd::scope lock(m_mutex);
+        m_delayed.erase(tm);
+      }
+      put(req);
+    }
+    delete tm;
+  });
 }
 
 void ConnQueue::print(std::ostream& out) {

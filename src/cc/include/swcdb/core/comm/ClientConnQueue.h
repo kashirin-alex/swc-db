@@ -78,8 +78,6 @@ class ConnQueue :
 
   void delay(const ReqBase::Ptr& req);
 
-  void delay_proceed(const ReqBase::Ptr& req, asio::high_resolution_timer* tm);
-
   void print(std::ostream& out);
 
   protected:
