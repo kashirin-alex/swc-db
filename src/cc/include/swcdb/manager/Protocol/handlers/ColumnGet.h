@@ -56,11 +56,15 @@ void column_get(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     req_params.decode(&ptr, &remain);
     flag = req_params.flag;
       
-    DB::Schema::Ptr schema = get_schema(err, req_params);
-    if(schema || err)
+    DB::Schema::Ptr schema;
+    if(Env::Mngr::mngd_columns()->is_schemas_mngr(err)) {
+      if(!err)
+        schema = get_schema(err, req_params);
       return mngr_update_response(conn, ev, err, flag, schema);
+    }
 
-    if(Env::Mngr::mngd_columns()->is_schemas_mngr(err))
+    schema = get_schema(err, req_params);
+    if(schema || err)
       return mngr_update_response(conn, ev, err, flag, schema);
 
     if(flag == Params::ColumnGetReq::Flag::ID_BY_NAME)
@@ -69,12 +73,13 @@ void column_get(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     Env::Mngr::role()->req_mngr_inchain(
       std::make_shared<Req::MngrColumnGet>(
         req_params,
-        [conn, ev] (int err, const Params::ColumnGetRsp& params) {
-          if(!err && params.schema) {
+        [flag, conn, ev] (int err, const Params::ColumnGetRsp& params) {
+          if(!err && params.schema &&
+             Env::Mngr::mngd_columns()->is_active(params.schema->cid)) {
             int tmperr;
             Env::Mngr::schemas()->add(tmperr, params.schema);
           }
-          mngr_update_response(conn, ev, err, params.flag, params.schema);
+          mngr_update_response(conn, ev, err, flag, params.schema);
         }
       )
     );

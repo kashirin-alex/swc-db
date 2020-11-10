@@ -20,7 +20,7 @@ ColumnHealthCheck::RangerCheck::RangerCheck(
 }
 
 ColumnHealthCheck::RangerCheck::~RangerCheck() { 
-  if(!m_sucess && m_failures) // && m_sucess < m_failures)
+  if(!m_success && m_failures) // && m_success < m_failures)
     ++rgr->failures;
 }
 
