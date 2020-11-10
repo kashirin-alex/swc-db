@@ -812,6 +812,8 @@ void CompactRange::split(rid_t new_rid, uint32_t split_at) {
   new_range->expand_and_align(err, false);
   //err = Error::OK;
 
+  SWC_LOGF(LOG_INFO, "COMPACT-SPLIT %lu/%lu unloading new-rid=%lu", 
+           range->cfg->cid, range->rid, new_rid);
   new_range->compacting(Range::COMPACT_NONE);
   new_range = nullptr;
   col->internal_unload(new_rid);
