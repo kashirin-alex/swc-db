@@ -29,7 +29,7 @@ const int8_t VERSION=1;
 
 
 // SET 
-void write(SWC::DynamicBuffer &dst_buf, CellStore::Readers& cellstores);
+void write(DynamicBuffer& dst_buf, CellStore::Readers& cellstores);
 
 void save(int& err, CellStore::Readers& cellstores);
 

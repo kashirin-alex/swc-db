@@ -13,11 +13,12 @@
 #include "swcdb/ranger/db/CellStoreReaders.h"
 
 
-namespace SWC { namespace Ranger { namespace RangeData {
+namespace SWC { namespace Ranger {
 
 
 // SET 
-void write(SWC::DynamicBuffer &dst_buf, CellStore::Readers& cellstores) {
+void RangeData::write(DynamicBuffer& dst_buf, 
+                      CellStore::Readers& cellstores) {
 
   size_t sz = cellstores.encoded_length();
   dst_buf.ensure(HEADER_SIZE + sz);
@@ -39,7 +40,7 @@ void write(SWC::DynamicBuffer &dst_buf, CellStore::Readers& cellstores) {
   SWC_ASSERT(dst_buf.fill() <= dst_buf.size);
 }
 
-void save(int& err, CellStore::Readers& cellstores) {
+void RangeData::save(int& err, CellStore::Readers& cellstores) {
 
   DynamicBuffer input;
   write(input, cellstores);
@@ -59,8 +60,8 @@ void save(int& err, CellStore::Readers& cellstores) {
 
 
 //  GET
-void read(int& err, const uint8_t **ptr, size_t* remain, 
-          CellStore::Readers& cellstores) {
+void RangeData::read(int& err, const uint8_t **ptr, size_t* remain,
+                     CellStore::Readers& cellstores) {
   
   const uint8_t *ptr_end = *ptr+*remain;
   cellstores.decode(err, ptr, remain);
@@ -71,7 +72,7 @@ void read(int& err, const uint8_t **ptr, size_t* remain,
   }
 }
 
-void load(int& err, CellStore::Readers& cellstores) {
+void RangeData::load(int& err, CellStore::Readers& cellstores) {
   StaticBuffer read_buf;
   Env::FsInterface::interface()->read(
     err, 
@@ -105,4 +106,5 @@ void load(int& err, CellStore::Readers& cellstores) {
   }
 }
 
-}}}
+
+}}
