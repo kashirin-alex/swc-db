@@ -783,7 +783,7 @@ void CompactRange::split(rid_t new_rid, uint32_t split_at) {
   if(err) {
     err = Error::OK;
     new_range->compacting(Range::COMPACT_NONE);
-    col->internal_remove(err, new_rid);
+    col->internal_remove(err, new_rid, false);
     mngr_remove_range(new_range);
     return quit();
   }
@@ -808,47 +808,57 @@ void CompactRange::split(rid_t new_rid, uint32_t split_at) {
     range->blocks.commitlog.commit_new_fragment(true);
     new_range->blocks.commitlog.commit_new_fragment(true);
   }
-  range->expand_and_align(err, true);
-  new_range->expand_and_align(err, false);
-  //err = Error::OK;
 
-  SWC_LOGF(LOG_INFO, "COMPACT-SPLIT %lu/%lu unloading new-rid=%lu", 
-           range->cfg->cid, range->rid, new_rid);
-  new_range->compacting(Range::COMPACT_NONE);
-  new_range = nullptr;
-  col->internal_unload(new_rid);
-  Comm::Protocol::Mngr::Req::RangeUnloaded::request(
-    range->cfg->cid, new_rid,
-    [new_rid, cid=range->cfg->cid, ptr=shared()]
-    (const Comm::client::ConnQueue::ReqBase::Ptr& req,
-     const Comm::Protocol::Mngr::Params::RangeUnloadedRsp& rsp) {
-      SWC_LOGF(LOG_DEBUG,
-        "Compact::Mngr::Req::RangeUnloaded err=%d(%s) %lu/%lu",
-        rsp.err, Error::get_text(rsp.err), cid, new_rid);
-      if(!ptr->m_stopped && rsp.err &&
-         rsp.err != Error::COLUMN_NOT_EXISTS &&
-         rsp.err != Error::COLUMN_MARKED_REMOVED &&
-         rsp.err != Error::COLUMN_NOT_READY) {
-        req->request_again();
-      }
-    }
-  );
+  new_range->expand_and_align(err, false,
+    [ts, col, new_range, ptr=shared()]
+    (const client::Query::Update::Result::Ptr&) {
+      SWC_LOGF(LOG_INFO, 
+        "COMPACT-SPLIT %lu/%lu unloading new-rid=%lu",
+        col->cfg->cid, ptr->range->rid, new_range->rid);
+      new_range->compacting(Range::COMPACT_NONE);
+      col->internal_unload(new_range->rid);
+      Comm::Protocol::Mngr::Req::RangeUnloaded::request(
+        new_range->cfg->cid, new_range->rid,
+        [ptr, cid=col->cfg->cid, new_rid=new_range->rid]
+        (const Comm::client::ConnQueue::ReqBase::Ptr& req,
+         const Comm::Protocol::Mngr::Params::RangeUnloadedRsp& rsp) {
+          SWC_LOGF(LOG_DEBUG,
+            "Compact::Mngr::Req::RangeUnloaded err=%d(%s) %lu/%lu",
+            rsp.err, Error::get_text(rsp.err), cid, new_rid);
+          if(rsp.err && !ptr->m_stopped && !Env::Rgr::is_not_accepting() &&
+             rsp.err != Error::COLUMN_NOT_EXISTS &&
+             rsp.err != Error::COLUMN_MARKED_REMOVED &&
+             rsp.err != Error::COLUMN_NOT_READY) {
+            req->request_again();
+          }
+      });
+  });
 
-  SWC_LOG_OUT(LOG_INFO, 
-    SWC_LOG_PRINTF("COMPACT-SPLITTED %lu/%lu took=%ldns new-end=",
-                    range->cfg->cid, range->rid, Time::now_ns() - ts);
-    cellstores.back()->interval.key_end.print(SWC_LOG_OSTREAM);
-  );
-  finished(true);
+  range->expand_and_align(err, true,
+    [this, ts, ptr=shared()]
+    (const client::Query::Update::Result::Ptr& rsp) mutable {
+      SWC_LOG_OUT(LOG_INFO,
+        SWC_LOG_PRINTF("COMPACT-SPLITTED %lu/%lu took=%ldns new-end=",
+          range->cfg->cid, range->rid, Time::now_ns() - ts);
+          cellstores.back()->interval.key_end.print(SWC_LOG_OSTREAM);
+      );
+      if(!rsp)
+        ptr = nullptr;
+      finished(true);
+  });
 }
 
 void CompactRange::apply_new(bool clear) {
   int err = Error::OK;
-  range->apply_new(err, cellstores, fragments_old, true);
+  range->apply_new(err, cellstores, fragments_old, true,
+    [this, clear, ptr=shared()]
+    (const client::Query::Update::Result::Ptr& rsp) mutable {
+      if(!rsp)
+        ptr = nullptr;
+      finished(clear);
+  });
   if(err)
     return quit();
-
-  finished(clear);
 }
 
 bool CompactRange::completion() {

@@ -152,9 +152,10 @@ class Range final : public std::enable_shared_from_this<Range> {
   void apply_new(int &err,
                 CellStore::Writers& w_cellstores, 
                 CommitLog::Fragments::Vec& fragments_old, 
-                bool w_update);
+                bool w_update, const client::Query::Update::Cb_t& cb=0);
   
-  void expand_and_align(int &err, bool w_chg_chk);
+  void expand_and_align(int &err, bool w_chg_chk,
+                        const client::Query::Update::Cb_t& cb);
   
   void internal_create_folders(int& err);
 

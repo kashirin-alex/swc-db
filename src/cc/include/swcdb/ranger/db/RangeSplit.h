@@ -73,7 +73,7 @@ class RangeSplit final {
     } else {
       int tmperr = Error::OK;
       new_range->compacting(Range::COMPACT_NONE);
-      col->internal_remove(tmperr, new_rid);
+      col->internal_remove(tmperr, new_rid, false);
       mngr_remove_range(new_range);
       return err;
     }
@@ -95,32 +95,39 @@ class RangeSplit final {
       range->blocks.commitlog.commit_new_fragment(true);
       new_range->blocks.commitlog.commit_new_fragment(true);
     }
-    range->expand_and_align(err, true);
-    new_range->expand_and_align(err, false);
-
 
     std::promise<void>  r_promise;
-    new_range->compacting(Range::COMPACT_NONE);
-    new_range = nullptr;
-    col->internal_unload(new_rid);
-    Comm::Protocol::Mngr::Req::RangeUnloaded::request(
-      range->cfg->cid, new_rid,
-      [new_rid, cid=range->cfg->cid, await=&r_promise]
-      (const Comm::client::ConnQueue::ReqBase::Ptr& req,
-       const Comm::Protocol::Mngr::Params::RangeUnloadedRsp& rsp) {
-        SWC_LOGF(LOG_DEBUG,
-          "RangeSplit::Mngr::Req::RangeUnloaded err=%d(%s) %lu/%lu",
-          rsp.err, Error::get_text(rsp.err), cid, new_rid);
-        if(rsp.err &&
-           rsp.err != Error::COLUMN_NOT_EXISTS &&
-           rsp.err != Error::COLUMN_MARKED_REMOVED &&
-           rsp.err != Error::COLUMN_NOT_READY) {
-           req->request_again();
-        } else {
+    new_range->expand_and_align(err, false,
+      [this, col, new_range, await=&r_promise]
+      (const client::Query::Update::Result::Ptr&) {
+        SWC_LOGF(LOG_INFO,
+          "COMPACT-SPLIT RANGE %lu/%lu unloading new-rid=%lu",
+          col->cfg->cid, range->rid, new_range->rid);
+        new_range->compacting(Range::COMPACT_NONE);
+        col->internal_unload(new_range->rid);
+        Comm::Protocol::Mngr::Req::RangeUnloaded::request(
+          col->cfg->cid, new_range->rid,
+          [cid=col->cfg->cid, new_rid=new_range->rid]
+          (const Comm::client::ConnQueue::ReqBase::Ptr& req,
+           const Comm::Protocol::Mngr::Params::RangeUnloadedRsp& rsp) {
+            SWC_LOGF(LOG_DEBUG,
+              "RangeSplit::Mngr::Req::RangeUnloaded err=%d(%s) %lu/%lu",
+              rsp.err, Error::get_text(rsp.err), cid, new_rid);
+            if(rsp.err && !Env::Rgr::is_not_accepting() &&
+               rsp.err != Error::COLUMN_NOT_EXISTS &&
+               rsp.err != Error::COLUMN_MARKED_REMOVED &&
+               rsp.err != Error::COLUMN_NOT_READY) {
+              req->request_again();
+            }
+        });
+
+        int err = Error::OK;
+        range->expand_and_align(err, true,
+        [await] (const client::Query::Update::Result::Ptr&) {
           await->set_value();
-        }
-      }
-    );
+        });
+    });
+    new_range = nullptr;
     r_promise.get_future().wait();
 
     SWC_LOG_OUT(LOG_INFO, 

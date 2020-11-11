@@ -372,6 +372,7 @@ void Range::on_change(int &err, bool removal,
 
   updater->columns->create(
     cfg->meta_cid, cfg->key_seq, 1, 0, DB::Types::Column::PLAIN);
+  auto col = updater->columns->get_col(cfg->meta_cid);
 
   DB::Cells::Cell cell;
   auto cid_f(std::to_string(cfg->cid));
@@ -382,7 +383,7 @@ void Range::on_change(int &err, bool removal,
     cell.key.copy(m_interval.key_begin);
     m_mutex_intval.unlock();
     cell.key.insert(0, cid_f);
-    updater->columns->add(cfg->meta_cid, cell);
+    col->add(cell);
   } else {
 
     cell.flag = DB::Cells::INSERT;
@@ -422,7 +423,7 @@ void Range::on_change(int &err, bool removal,
     aligned_max.encode(&ptr);
 
     cell.set_time_order_desc(true);
-    updater->columns->add(cfg->meta_cid, cell);
+    col->add(cell);
 
     if(chg) {
       SWC_ASSERT(!old_key_begin->empty()); 
@@ -432,10 +433,10 @@ void Range::on_change(int &err, bool removal,
       cell.flag = DB::Cells::DELETE;
       cell.key.copy(*old_key_begin);
       cell.key.insert(0, std::to_string(cfg->cid));
-      updater->columns->add(cfg->meta_cid, cell);
+      col->add(cell);
     }
   }
-  updater->commit(cfg->meta_cid);
+  updater->commit(col);
   if(!cb) {
     updater->wait();
     err = updater->result->error();
@@ -448,7 +449,7 @@ void Range::on_change(int &err, bool removal,
 void Range::apply_new(int &err,
                       CellStore::Writers& w_cellstores, 
                       CommitLog::Fragments::Vec& fragments_old,
-                      bool w_update) {
+                      bool w_update, const client::Query::Update::Cb_t& cb) {
   {
     std::scoped_lock lock(m_mutex);
     blocks.apply_new(err, w_cellstores, fragments_old);
@@ -456,12 +457,13 @@ void Range::apply_new(int &err,
       return;
   }
   if(w_update) {
-    expand_and_align(err, true);
+    expand_and_align(err, true, cb);
     err = Error::OK;
   }
 }
 
-void Range::expand_and_align(int &err, bool w_chg_chk) {
+void Range::expand_and_align(int &err, bool w_chg_chk,
+                             const client::Query::Update::Cb_t& cb) {
   DB::Cell::Key     old_key_begin;
   DB::Cell::Key     key_end;
   DB::Cell::KeyVec  aligned_min;
@@ -489,7 +491,9 @@ void Range::expand_and_align(int &err, bool w_chg_chk) {
   m_mutex_intval.unlock();
 
   if(intval_chg)
-    on_change(err, false, w_chg_chk ? &old_key_begin : nullptr);
+    on_change(err, false, w_chg_chk ? &old_key_begin : nullptr, cb);
+  else if(cb)
+    cb(nullptr);
 }
 
 void Range::internal_create_folders(int& err) {
