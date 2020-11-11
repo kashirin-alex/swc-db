@@ -129,7 +129,7 @@ class Range final : public std::enable_shared_from_this<Range> {
 
   void remove(const Callback::ColumnDelete::Ptr& req);
 
-  void internal_remove(int &err, bool meta=true);
+  void internal_remove(int &err);
 
   void wait_queue();
 
@@ -145,16 +145,12 @@ class Range final : public std::enable_shared_from_this<Range> {
 
   bool compact_required();
 
-  void on_change(int &err, bool removal, 
-                 const DB::Cell::Key* old_key_begin=nullptr,
-                 const client::Query::Update::Cb_t& cb=0);
-
   void apply_new(int &err,
                 CellStore::Writers& w_cellstores, 
                 CommitLog::Fragments::Vec& fragments_old, 
-                bool w_update, const client::Query::Update::Cb_t& cb=0);
+                const client::Query::Update::Cb_t& cb=0);
   
-  void expand_and_align(int &err, bool w_chg_chk,
+  void expand_and_align(bool w_chg_chk,
                         const client::Query::Update::Cb_t& cb);
   
   void internal_create_folders(int& err);
@@ -176,6 +172,10 @@ class Range final : public std::enable_shared_from_this<Range> {
                   const client::Query::Select::Result::Ptr& result);
 
   void loaded(int err, const Callback::RangeLoad::Ptr& req);
+
+  void on_change(bool removal,
+                 const client::Query::Update::Cb_t& cb, 
+                 const DB::Cell::Key* old_key_begin=nullptr);
 
   bool wait(uint8_t from_state=COMPACT_CHECKING);
 

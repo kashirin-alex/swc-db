@@ -379,7 +379,9 @@ void MngdColumns::remove(const DB::Schema::Ptr& schema,
           }
           return update(
             ColumnMngFunc::INTERNAL_ACK_DELETE, schema, Error::OK, req_id);
-      });
+        },
+        Env::Mngr::io()
+      );
       updater->columns->create(
         meta_cid, schema->col_seq, 1, 0, DB::Types::Column::PLAIN);
       auto col = updater->columns->get_col(meta_cid);

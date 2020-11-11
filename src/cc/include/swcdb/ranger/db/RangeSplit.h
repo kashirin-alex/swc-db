@@ -54,7 +54,7 @@ class RangeSplit final {
                 err, range->cfg->cid, range->rid, new_rid);
       int tmperr = Error::OK;
       new_range->compacting(Range::COMPACT_NONE);
-      col->internal_remove(tmperr, new_rid, false);
+      col->internal_remove(tmperr, new_rid);
       mngr_remove_range(new_range);
       return err;
     }
@@ -73,7 +73,7 @@ class RangeSplit final {
     } else {
       int tmperr = Error::OK;
       new_range->compacting(Range::COMPACT_NONE);
-      col->internal_remove(tmperr, new_rid, false);
+      col->internal_remove(tmperr, new_rid);
       mngr_remove_range(new_range);
       return err;
     }
@@ -97,7 +97,7 @@ class RangeSplit final {
     }
 
     std::promise<void>  r_promise;
-    new_range->expand_and_align(err, false,
+    new_range->expand_and_align(false,
       [this, col, new_range, await=&r_promise]
       (const client::Query::Update::Result::Ptr&) {
         SWC_LOGF(LOG_INFO,
@@ -121,8 +121,7 @@ class RangeSplit final {
             }
         });
 
-        int err = Error::OK;
-        range->expand_and_align(err, true,
+        range->expand_and_align(true,
         [await] (const client::Query::Update::Result::Ptr&) {
           await->set_value();
         });

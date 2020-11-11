@@ -58,7 +58,7 @@ class Column final :
 
   void internal_unload(const rid_t rid);
 
-  void internal_remove(int &err, const rid_t rid, bool meta=true);
+  void internal_remove(int &err, const rid_t rid);
 
   void internal_delete(rid_t rid);
 

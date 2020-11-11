@@ -180,10 +180,10 @@ void Column::internal_unload(const rid_t rid) {
   }
 }
 
-void Column::internal_remove(int &err, const rid_t rid, bool meta) {
+void Column::internal_remove(int &err, const rid_t rid) {
   auto range = get_range(rid);
   if(range) {
-    range->internal_remove(err, meta);
+    range->internal_remove(err);
     range = nullptr;
     internal_delete(rid);
   }

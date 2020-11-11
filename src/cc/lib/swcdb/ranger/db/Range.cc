@@ -274,10 +274,8 @@ void Range::remove(const Callback::ColumnDelete::Ptr& req) {
   SWC_LOGF(LOG_DEBUG, "REMOVING RANGE(%lu/%lu)", cfg->cid, rid);
 
   blocks.commitlog.stopping = true;
-  int err = Error::OK;
-  on_change(
-    err, true, nullptr, 
-    [req, range=shared_from_this()] 
+
+  on_change(true, [req, range=shared_from_this()]
     (const client::Query::Update::Result::Ptr&) {
       int err = Error::OK;
       
@@ -291,7 +289,7 @@ void Range::remove(const Callback::ColumnDelete::Ptr& req) {
   );
 }
 
-void Range::internal_remove(int& err, bool meta) {
+void Range::internal_remove(int& err) {
   {
     std::scoped_lock lock(m_mutex);
     if(m_state == State::DELETED)
@@ -299,9 +297,6 @@ void Range::internal_remove(int& err, bool meta) {
     m_state = State::DELETED;
   }
   SWC_LOGF(LOG_DEBUG, "REMOVING RANGE(%lu/%lu)", cfg->cid, rid);
-
-  if(meta)
-    on_change(err, true);
 
   blocks.commitlog.stopping = true;
   
@@ -354,21 +349,20 @@ bool Range::compact_required() {
   return m_require_compact;
 }
 
-void Range::on_change(int &err, bool removal, 
-                      const DB::Cell::Key* old_key_begin,
-                      const client::Query::Update::Cb_t& cb) {
+void Range::on_change(bool removal,
+                      const client::Query::Update::Cb_t& cb, 
+                      const DB::Cell::Key* old_key_begin) {
   if(cfg->range_type == DB::Types::Range::MASTER) {
     // update manager-root
     // Mngr::RangeUpdated
-    if(cb)
-      cb(nullptr);
+    cb(nullptr);
     return;
   }
 
   std::scoped_lock lock(m_mutex);
     
-  auto updater = std::make_shared<client::Query::Update>(cb);
-  // Env::Rgr::updater();
+  auto updater = std::make_shared<client::Query::Update>(cb, Env::Rgr::io());
+  // Env::Rgr::updater(); require an updater with cb on cell-base
 
   updater->columns->create(
     cfg->meta_cid, cfg->key_seq, 1, 0, DB::Types::Column::PLAIN);
@@ -384,8 +378,8 @@ void Range::on_change(int &err, bool removal,
     m_mutex_intval.unlock();
     cell.key.insert(0, cid_f);
     col->add(cell);
-  } else {
 
+  } else {
     cell.flag = DB::Cells::INSERT;
     DB::Cell::KeyVec aligned_min;
     DB::Cell::KeyVec aligned_max;
@@ -437,10 +431,6 @@ void Range::on_change(int &err, bool removal,
     }
   }
   updater->commit(col);
-  if(!cb) {
-    updater->wait();
-    err = updater->result->error();
-  }
       
   // INSERT master-range(col-{1,4}), key[cid+m_interval(data(cid)+key)], value[rid]
   // INSERT meta-range(col-{5,8}), key[cid+m_interval(key)], value[rid]
@@ -449,20 +439,18 @@ void Range::on_change(int &err, bool removal,
 void Range::apply_new(int &err,
                       CellStore::Writers& w_cellstores, 
                       CommitLog::Fragments::Vec& fragments_old,
-                      bool w_update, const client::Query::Update::Cb_t& cb) {
+                      const client::Query::Update::Cb_t& cb) {
   {
     std::scoped_lock lock(m_mutex);
     blocks.apply_new(err, w_cellstores, fragments_old);
     if(err)
       return;
   }
-  if(w_update) {
-    expand_and_align(err, true, cb);
-    err = Error::OK;
-  }
+  if(cb)
+    expand_and_align(true, cb);
 }
 
-void Range::expand_and_align(int &err, bool w_chg_chk,
+void Range::expand_and_align(bool w_chg_chk,
                              const client::Query::Update::Cb_t& cb) {
   DB::Cell::Key     old_key_begin;
   DB::Cell::Key     key_end;
@@ -490,10 +478,9 @@ void Range::expand_and_align(int &err, bool w_chg_chk,
                     !m_interval.aligned_max.equal(aligned_max);
   m_mutex_intval.unlock();
 
-  if(intval_chg)
-    on_change(err, false, w_chg_chk ? &old_key_begin : nullptr, cb);
-  else if(cb)
-    cb(nullptr);
+  intval_chg 
+    ? on_change(false, cb, w_chg_chk ? &old_key_begin : nullptr)
+    : cb(nullptr);
 }
 
 void Range::internal_create_folders(int& err) {
@@ -626,8 +613,7 @@ void Range::load(int &err, const Callback::RangeLoad::Ptr& req) {
 
   if(is_initial_column_range) {
     RangeData::save(err, blocks.cellstores);
-    return on_change(err, false, nullptr,
-      [req, range=shared_from_this()]
+    return on_change(false, [req, range=shared_from_this()]
       (const client::Query::Update::Result::Ptr& res) {
         range->loaded(res ? res->error() : Error::OK, req);
       }
@@ -650,8 +636,10 @@ void Range::load(int &err, const Callback::RangeLoad::Ptr& req) {
 
   auto selector = std::make_shared<client::Query::Select>(
     [req, col_spec, range=shared_from_this()] 
-    (const client::Query::Select::Result::Ptr& result) {
-      range->check_meta(req, col_spec, result);
+    (const client::Query::Select::Result::Ptr& res) {
+      Env::Rgr::post([req, col_spec, range, res]() {
+        range->check_meta(req, col_spec, res);
+      });
     },
     false
   );
@@ -686,8 +674,7 @@ void Range::check_meta(const Callback::RangeLoad::Ptr& req,
       m_interval.print(SWC_LOG_OSTREAM << "\n\t auto-registering=");
       col_spec->print(SWC_LOG_OSTREAM << "\n\t"); 
     );
-    return on_change(err, false, nullptr,
-      [req, range=shared_from_this()]
+    return on_change(false, [req, range=shared_from_this()]
       (const client::Query::Update::Result::Ptr& res) {
         range->loaded(res ? res->error() : Error::OK, req);
       }
@@ -733,8 +720,7 @@ void Range::check_meta(const Callback::RangeLoad::Ptr& req,
       SWC_LOG_OSTREAM << "\n\t registered-rid=" << _rid;
       interval.print(SWC_LOG_OSTREAM << ' ');
     );
-    return on_change(err, false, nullptr,
-      [req, range=shared_from_this()]
+    return on_change(false, [req, range=shared_from_this()]
       (const client::Query::Update::Result::Ptr& res) {
         range->loaded(res ? res->error() : Error::OK, req);
       }
@@ -884,9 +870,8 @@ void Range::run_add_queue() {
     blocks.processing_decrement();
 
     if(intval_chg)
-      return on_change(
-        params->err, false, nullptr,
-        [req, params, range=shared_from_this()] 
+      return on_change(false, 
+        [req, params, range=shared_from_this()]
         (const client::Query::Update::Result::Ptr& res) {
           if(!params->err)
             params->err = res->error();
