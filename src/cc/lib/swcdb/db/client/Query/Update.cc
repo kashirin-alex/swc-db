@@ -42,12 +42,12 @@ size_t Update::get_resend_count(bool reset) {
 
 
 
-Update::Update(const Cb_t& cb)
+Update::Update(const Cb_t& cb, const Comm::IoContext::Ptr& io)
         : buff_sz(Env::Clients::ref().cfg_send_buff_sz->get()), 
           buff_ahead(Env::Clients::ref().cfg_send_ahead->get()), 
           timeout(Env::Clients::ref().cfg_send_timeout->get()), 
           timeout_ratio(Env::Clients::ref().cfg_send_timeout_ratio->get()),
-          cb(cb),
+          cb(cb), dispatcher_io(io),
           columns(std::make_shared<DB::Cells::MutableMap>()),
           columns_onfractions(std::make_shared<DB::Cells::MutableMap>()),
           result(std::make_shared<Result>()) { 
@@ -55,12 +55,12 @@ Update::Update(const Cb_t& cb)
 
 Update::Update(const DB::Cells::MutableMap::Ptr& columns, 
          const DB::Cells::MutableMap::Ptr& columns_onfractions, 
-         const Cb_t& cb)
+         const Cb_t& cb, const Comm::IoContext::Ptr& io)
         : buff_sz(Env::Clients::ref().cfg_send_buff_sz->get()), 
           buff_ahead(Env::Clients::ref().cfg_send_ahead->get()), 
           timeout(Env::Clients::ref().cfg_send_timeout->get()), 
           timeout_ratio(Env::Clients::ref().cfg_send_timeout_ratio->get()),
-          cb(cb), 
+          cb(cb), dispatcher_io(io),
           columns(columns), 
           columns_onfractions(columns_onfractions), 
           result(std::make_shared<Result>()) { 
@@ -87,8 +87,11 @@ void Update::response(int err) {
     result->error(Error::CLIENT_DATA_REMAINED);
 
   result->profile.finished();
-  if(cb)
-    cb(result);
+  if(cb) {
+    dispatcher_io
+      ? dispatcher_io->post([cb=cb, result=result](){ cb(result); })
+      : cb(result);
+  }
 
   std::scoped_lock lock(m_mutex);
   cv.notify_all();
