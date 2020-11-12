@@ -19,16 +19,25 @@ void Settings::init_app_options() {
   init_client_options();
 
   file_desc.add_options()
-    ("swc.ThriftBroker.cfg", str(), "Specific cfg-file for ThriftBroker")
+    ("swc.ThriftBroker.cfg", str(), 
+      "Specific cfg-file for ThriftBroker")
     ("swc.ThriftBroker.cfg.dyn", strs(), 
       "Specific dyn. cfg-file for ThriftBroker")
 
-    ("swc.ThriftBroker.port", i16(18000), "ThriftBroker port")
-    ("swc.ThriftBroker.transport", str("framed"), "ThriftBroker timeout")
+    ("swc.ThriftBroker.port", i16(18000), 
+      "ThriftBroker port")
+    ("swc.ThriftBroker.transport", str("framed"), 
+      "ThriftBroker timeout")
 
-    ("swc.ThriftBroker.workers", i32(32), "Number of Comm-Workers")
-    ("swc.ThriftBroker.timeout", i32(900000), "ThriftBroker timeout")
-    ("swc.ThriftBroker.handlers", i32(8), "Number of App Handlers")
+    ("swc.ThriftBroker.workers", i32(32),
+      "Number of Comm-Workers")
+    ("swc.ThriftBroker.connections.max", i64(INT64_MAX),
+      "The Max client Connections allowed , total= addrs X this")
+      
+    ("swc.ThriftBroker.timeout", i32(900000), 
+      "ThriftBroker timeout")
+    ("swc.ThriftBroker.clients.handlers", i32(8), 
+      "The number of SWC-DB clients handlers")
   ;
 }
 

@@ -7,9 +7,12 @@
 #define swcdb_app_thriftbroker_AppHandler_h
 
 
-#include "swcdb/thrift/gen-cpp/Broker.h"
+#include "swcdb/core/Semaphore.h"
 #include "swcdb/db/client/sql/SQL.h"
+#include "swcdb/thrift/gen-cpp/Broker.h"
 #include "swcdb/thrift/utils/Converter.h"
+
+#include <thrift/transport/TSocket.h>
 
 
 namespace SWC {
@@ -24,6 +27,12 @@ using namespace Thrift;
 
 class AppHandler final : virtual public BrokerIf {
   public:
+
+  const std::shared_ptr<thrift::transport::TSocket> socket;
+
+  AppHandler(const std::shared_ptr<thrift::transport::TSocket>& socket)
+            : socket(socket) {
+  }
 
   virtual ~AppHandler() { }
 
@@ -600,25 +609,23 @@ class AppHandler final : virtual public BrokerIf {
         Converter::exception(err);
     }
     
-    std::mutex mutex;
-    std::promise<void> res;
-    for(auto& schema : dbschemas) {
+    size_t sz = dbschemas.size();
+    Core::Semaphore sem(sz, sz);
+    _return.resize(sz);
+    for(size_t idx = 0; idx < sz; ++idx) {
+      auto& r = _return[idx];
       Comm::Protocol::Mngr::Req::ColumnCompact::request(
-        schema->cid,
-        [&mutex, &_return, await=&res, cid=schema->cid, sz=dbschemas.size()]
+        (r.cid = dbschemas[idx]->cid),
+        [&sem, err=&r.err]
         (const Comm::client::ConnQueue::ReqBase::Ptr&, 
          const Comm::Protocol::Mngr::Params::ColumnCompactRsp& rsp) {
-          std::scoped_lock lock(mutex);
-          auto& r = _return.emplace_back();
-          r.cid=cid;
-          r.err=rsp.err;
-          if(_return.size() == sz)
-            await->set_value();
+          *err = rsp.err;
+          sem.release();
         },
         300000
       );
     }
-    res.get_future().wait();
+    sem.wait_all();
   }
 
   static void process_results(

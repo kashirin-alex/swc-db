@@ -204,17 +204,25 @@ void sql_list_columns_all(Client& client) {
 void sql_compact_columns(Client& client) {
   std::cout << std::endl << "test: sql_compact_columns all: " << std::endl;
   CompactResults res;
-  client.sql_compact_columns(
-    res, 
-    "compact columns "
-  );
-  assert(res.size() >= 2);
-  std::cout << std::endl << "CompactResults.size=" << res.size() << std::endl;
-  for(auto& r : res) {
-    assert(!r.err);
-    r.printTo(std::cout << " ");
-    std::cout << std::endl;
-  }
+
+  bool err = false;
+  size_t count = 0;
+  do {
+    res.clear();
+    client.sql_compact_columns(res,  "compact columns ");
+    assert(res.size() >= 2);
+    std::cout << std::endl 
+              << "CompactResults.size=" << res.size() 
+              << " waited=" << count << "ms" << std::endl;
+    for(auto& r : res) {
+      r.printTo(std::cout << " ");
+      std::cout << std::endl;
+      if((err = r.err))
+        break;
+    }
+    std::this_thread::sleep_for(std::chrono::microseconds(1000));
+    ++count;
+  } while(err);
 
   std::cout << std::endl << "test: sql_compact_columns test-columns: " << std::endl;
   res.clear();

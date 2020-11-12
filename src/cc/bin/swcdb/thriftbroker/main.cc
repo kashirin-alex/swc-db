@@ -35,6 +35,7 @@ int run() {
 
   uint32_t reactors = 1; // settings->get_i32("swc.ThriftBroker.reactors");
   int workers = settings->get_i32("swc.ThriftBroker.workers");
+  uint64_t conns_max = settings->get_i64("swc.ThriftBroker.connections.max");
   uint32_t timeout_ms = settings->get_i16("swc.ThriftBroker.timeout");
   std::string transport = settings->get_str("swc.ThriftBroker.transport");
 
@@ -77,6 +78,7 @@ int run() {
 
 
   auto app_ctx = std::make_shared<AppContext>();
+  std::vector<std::unique_ptr<std::thread>> threads;
   std::vector<std::shared_ptr<thrift::server::TThreadPoolServer>> servers;
 
   for(uint32_t reactor=0; reactor < reactors; ++reactor) {
@@ -114,22 +116,45 @@ int run() {
         protocol,
         threadManager
       );
+      server->setConcurrentClientLimit(conns_max);
+
       servers.push_back(server);
-      std::thread([server]{ server->serve(); }).detach();
- 
-      SWC_LOG_OUT(LOG_INFO,
-        SWC_LOG_OSTREAM << "Listening On: " << endpoint
-          << " fd=" << (ssize_t)server->getServerTransport()->getSocketFD()
-          << ' ' << (is_plain ? "PLAIN" : "SECURE");
+      threads.emplace_back(
+        new std::thread([app_ctx, is_plain, endpoint, server] {
+          SWC_LOG_OUT(LOG_INFO, SWC_LOG_OSTREAM 
+            << "Listening On: " << endpoint
+            << " fd=" << (ssize_t)server->getServerTransport()->getSocketFD()
+            << ' ' << (is_plain ? "PLAIN" : "SECURE");
+          );
+
+          server->serve();
+
+          SWC_LOG_OUT(LOG_INFO, SWC_LOG_OSTREAM 
+            << "Stopping to Listen On: " << endpoint
+            << " fd=" << (ssize_t)server->getServerTransport()->getSocketFD()
+            << ' ' << (is_plain ? "PLAIN" : "SECURE");
+          );
+          app_ctx->shutting_down(std::error_code(), SIGINT);
+        })
       );
     }
   }
 
   app_ctx->wait_while_run();
 
-  quick_exit(0);
-  for(auto& server : servers)
+  for(auto& server : servers) {
+    server->stop();
     server->getThreadManager()->stop();
+  }
+  servers.clear();
+
+  for(auto& th : threads) 
+    th->join();
+  threads.clear();
+
+  SWC_LOG(LOG_INFO, "Exit");
+  //quick_exit(0);
+
 
   return 0);
 

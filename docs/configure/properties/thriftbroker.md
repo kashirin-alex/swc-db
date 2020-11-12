@@ -23,21 +23,26 @@ _default_ **```swc.ThriftBroker.port=18000```**
 The number of workers a comm-reactor initalizes. \
 _default_ **```swc.ThriftBroker.workers=32```**
 
-* ### swc.ThriftBroker.handlers
+* ### swc.ThriftBroker.connections.max
 ```INT32```
-The number of Application handlers. \
-_default_ **```swc.ThriftBroker.handlers=8```**
+The Max client Connections allowed, any new connections above the Open-Connections will be dropped and the Max-Total is the number of Endpoints(Thrift-Broker is listening-on) by `swc.ThriftBroker.connections.max`. If open-file-descriptors is above allowed-limit Thrift-Broker will shutdown, unplanned shutdown can be avoided by the max limit. \
+_default_ **```swc.ThriftBroker.workers=INT64_MAX```**
 
 * ### swc.ThriftBroker.transport
 ```STRING```
 The thrift transport that should be used (framed/). \
 _default_ **```swc.ThriftBroker.transport=framed```**
 
-
 * ### swc.ThriftBroker.timeout
 ```INT32```
 The ThriftBroker timeout in milliseconds. \
 _default_ **```swc.ThriftBroker.timeout=900000```**
+
+* ### swc.ThriftBroker.clients.handlers
+```INT32```
+The number of SWC-DB clients handlers. \
+_default_ **```swc.ThriftBroker.clients.handlers=8```**
+
 
 
 ***

@@ -28,7 +28,7 @@ class AppContext final : virtual public BrokerIfFactory {
   
   AppContext() : m_run(true) { 
     auto settings = Env::Config::settings();
-    Env::IoCtx::init(settings->get_i32("swc.ThriftBroker.handlers"));
+    Env::IoCtx::init(settings->get_i32("swc.ThriftBroker.clients.handlers"));
     
     int sig = 0;
     Env::IoCtx::io()->set_signals();
@@ -55,62 +55,90 @@ class AppContext final : virtual public BrokerIfFactory {
   }
 
   virtual ~AppContext() { }
-  
+
   void wait_while_run() {
     std::unique_lock lock_wait(m_mutex);
     m_cv.wait(lock_wait, [this]{return !m_run;});
   }
 
-  BrokerIf* getHandler(const thrift::TConnectionInfo&) override { //connInfo
-    return new AppHandler;
+  BrokerIf* getHandler(const thrift::TConnectionInfo& connInfo) override {
+    AppHandler* handler = new AppHandler(
+      std::dynamic_pointer_cast<thrift::transport::TSocket>(
+        connInfo.transport));
+    if(handler->socket) try {
+      SWC_LOG_OUT(LOG_INFO,
+        SWC_LOG_OSTREAM << "Connection Opened(hdlr=" << size_t(handler)
+                        << " [" << handler->socket->getPeerAddress() << "]:"
+                        << handler->socket->getPeerPort()
+                        << ") open=" << m_connections.increment_and_count();
+      );
+    } catch(...) {
+      SWC_LOG_CURRENT_EXCEPTION("");
+    }
+    return handler;
   }
 
   void releaseHandler(ServiceIf* hdlr) override {
     AppHandler* handler = dynamic_cast<AppHandler*>(hdlr);
     handler->disconnected();
-    
-    delete hdlr;
+
+    if(handler->socket) try {
+      SWC_LOG_OUT(LOG_INFO,
+        SWC_LOG_OSTREAM << "Connection Closed(hdlr=" << size_t(handler)
+                        << " [" << handler->socket->getPeerAddress() << "]:"
+                        << handler->socket->getPeerPort()
+                        << ") open=" << m_connections.decrement_and_count();
+      );
+    } catch(...) {
+      SWC_LOG_CURRENT_EXCEPTION("");
+    }
+    delete handler;
   }
 
-  private:
-
-  
-  void shutting_down(const std::error_code &ec, const int &sig) {
-
-    if(sig==0){ // set signals listener
+  void shutting_down(const std::error_code& ec, const int& sig) {
+    if(sig == 0) { // set signals listener
       Env::IoCtx::io()->signals()->async_wait(
-        [ptr=this](const std::error_code &ec, const int &sig){
+        [this](const std::error_code& ec, const int &sig) {
+          if(ec == asio::error::operation_aborted)
+            return;
           SWC_LOGF(LOG_INFO, "Received signal, sig=%d ec=%s", sig, ec.message().c_str());
-          ptr->shutting_down(ec, sig); 
+          shutting_down(ec, sig); 
         }
       ); 
       SWC_LOGF(LOG_INFO, "Listening for Shutdown signal, set at sig=%d ec=%s", 
               sig, ec.message().c_str());
       return;
+    } else {
+
+      std::scoped_lock lock(m_mutex);
+      if(!m_run)
+        return;
+      m_run = false;
     }
+
     SWC_LOGF(LOG_INFO, "Shutdown signal, sig=%d ec=%s", sig, ec.message().c_str());
 
     stop();
   }
 
+  private:
+
   void stop() {
 
     Env::Clients::get()->rgr->stop();
     Env::Clients::get()->mngr->stop();
+    Env::IoCtx::io()->stop();
     
     //Env::FsInterface::interface()->stop();
-    Env::IoCtx::io()->stop();
 
-    SWC_LOG(LOG_INFO, "Exit");
-    
     std::scoped_lock lock(m_mutex);
-    m_run = false;
     m_cv.notify_all();
   }
 
   std::mutex                                    m_mutex;
   bool                                          m_run;
   std::condition_variable                       m_cv;
+  Common::Stats::CompletionCounter<size_t>      m_connections;
 };
 
 
