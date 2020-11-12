@@ -9,6 +9,10 @@ sort: 2
 
 |   Version   |   Version-Specific    |  Package Types    |     Build Types   | Compiler    | Architectures / Platforms           | Link           |
 |     ---     |          ---          |       ---         |        ---        |     ---     | ---                                 |  ---           |
+| 0.4.12      | .install-pack         | tar.xz            |                   |             |                                     | [download](https://github.com/kashirin-alex/swc-db/releases/download/v0.4.12/swcdb-0.4.12.install-pack.tar.xz) |
+| 0.4.12      | .debug.amd64          | tar.xz            | debug             | GCC-9.3     | GLIBC-2.27 amd64                    | [download](https://github.com/kashirin-alex/swc-db/releases/download/v0.4.12/swcdb-0.4.12.debug.amd64.tar.xz) |
+| 0.4.12      | .amd64                | tar.xz            | optimized         | GCC-9.3     | GLIBC-2.27 amd64                    | [download](https://github.com/kashirin-alex/swc-db/releases/download/v0.4.12/swcdb-0.4.12.amd64.tar.xz) |
+|     ---     |          ---          |       ---         |        ---        |     ---     | ---                                 |  ---           |
 | 0.4.11      | .install-pack         | tar.xz            |                   |             |                                     | [download](https://github.com/kashirin-alex/swc-db/releases/download/v0.4.11/swcdb-0.4.11.install-pack.tar.xz) |
 | 0.4.11      | .debug.amd64          | tar.xz            | debug             | GCC-9.3     | GLIBC-2.27 amd64                    | [download](https://github.com/kashirin-alex/swc-db/releases/download/v0.4.11/swcdb-0.4.11.debug.amd64.tar.xz) |
 | 0.4.11      | .amd64                | tar.xz            | optimized         | GCC-9.3     | GLIBC-2.27 amd64                    | [download](https://github.com/kashirin-alex/swc-db/releases/download/v0.4.11/swcdb-0.4.11.amd64.tar.xz) |

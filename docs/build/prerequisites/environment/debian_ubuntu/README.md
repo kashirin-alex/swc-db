@@ -1,5 +1,13 @@
+---
+title: Debian/Ubuntu
+sort: 1 
+---
 
 # Debian/Ubuntu
+
+
+In order to build SWC-DB on Debian/Ubuntu there are several mandatory and optional prerequisites which are available from the os-distribution or some might require additional steps.
+
 
 ## SWC-DB Mandatory 3rd-party Prerequisites: 
 ```bash

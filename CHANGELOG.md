@@ -8,6 +8,16 @@
 
 ### [SWC-DB master](https://github.com/kashirin-alex/swc-db/tree/master) (upcoming-release)
 
+
+
+[_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.4.12...master)
+******
+
+
+
+
+### [SWC-DB v0.4.12](https://github.com/kashirin-alex/swc-db/releases/tag/v0.4.12) (2020-11-13)
+
     added Manager feature to rebalance Rangers' ranges load
     added config property swc.mngr.rangers.range.rebalance.max
     added Ranger check and fix range MetaData on Range-load (select and update)
@@ -49,8 +59,26 @@
     added DB::Key::add(std::vector<std::string>::const_iterator {cbegin,cend})
     fixed cyclic-rsp of Unknown Error in FileSystemHadoopJVM at hdfsCloseFile
     added read & load example - 'Criteo 1TB Click Logs dataset'
+    changed Ranger Blocks::remove, without rm files (Range will rm the folder)
+    added Manager at Column remove, Query MetaData & delete cells remained
+    added Ranger at RangeSplit apply compacting state for the new-range
+    added optionally to pass the Comm::IoContext::Ptr to use in client::Update
+    changed Ranger::Range::on_change requires a Callback
+    changed all Manager and Ranger client::Query::{Select/Update} with async cb
+    fixed Manager get_schema hadler check first is_schema_mngr state
+    fixed Comm::client::ConnQueue without put(req) back at operation_aborted
+    changed CommitLog::Splitter to work by Semaphore work-load state
+    added size_t pre_acquire option to Semaphore ctor
+    added CounT CompletionCounter::{in,de}crement_and_count()
+    fixed ThriftBroker process_results for CompactResults
+    added configuration option swc.ThriftBroker.connections.max
+    added default swc.ThriftBroker.cfg.dyn=swc_thriftbroker.dyn.cfg file
+    added thrift::transport::TSocket to Thrift::AppHandler Broker ctor&storage
+    added Thrift-Broker LOG_INFO Open & Close Connection + total connections
+    added Thrift-Broker shuttingdown at server stopped-serving
+    fixed Thrift-Broker shutdown, stop TThreadPoolServer before ThreadManager
 
-[_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.4.11...master)
+[_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.4.11...v0.4.12)
 ******
 
 

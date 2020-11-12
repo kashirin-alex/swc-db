@@ -1,3 +1,7 @@
+---
+title: Linux From Scratch
+sort: 10
+---
 
 # Linux From Scratch
 
