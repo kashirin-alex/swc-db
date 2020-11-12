@@ -44,6 +44,16 @@ class CompletionCounter final {
     return m_count;
   }
 
+  CountT increment_and_count() {
+    Core::MutexAtomic::scope lock(m_mutex);
+    return ++m_count;
+  }
+
+  CountT decrement_and_count() {
+    Core::MutexAtomic::scope lock(m_mutex);
+    return --m_count;
+  }
+
   private:
   Core::MutexAtomic   m_mutex;
   CountT              m_count;
