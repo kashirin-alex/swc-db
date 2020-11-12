@@ -16,7 +16,7 @@ namespace SWC { namespace Core {
 class Semaphore final {
   public:
 
-  explicit Semaphore(size_t sz=1);
+  explicit Semaphore(size_t sz=1, size_t pre_acquire = 0);
 
   Semaphore(const Semaphore&) = delete;
 

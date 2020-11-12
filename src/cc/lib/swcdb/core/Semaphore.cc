@@ -10,8 +10,8 @@
 namespace SWC { namespace Core {
 
   
-Semaphore::Semaphore(size_t sz) 
-          : m_sz(sz), m_count(0) {
+Semaphore::Semaphore(size_t sz, size_t pre_acquire) 
+                    : m_sz(sz), m_count(pre_acquire) {
 }
 
 Semaphore::~Semaphore() {
