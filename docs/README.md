@@ -52,6 +52,7 @@ _The proven test, on one machine(CPU Intel E3-1246V3 RAM 32GB SW-RAID 2x 2TB-720
 | **a DB supporting Query of Multiple Sequences**       | **```✔```**  | multiple Columns with multiple Intervals in a Column |
 | **a Document/Files stores DB**                        | **```✔```**  | user defined Meta/Header & Key-Fractions(file-path) structure whereas anomaly of use is at file-size above Range-Block-size cfg |
 | **a Super Wide Column DB**                            | **```✔```**  | supporting 16777216(2^24,uint24) number of Fractions, max 2^24 bytes a Fraction and total size of a key upto 2^32 bytes |
+| **a DB with Communications over Secure Layer(SSL)**   | **```✔```**  | The total security of transactions require the underlying configured FileSystem and Clients to have & support a Secure Layer |
 
 
 #### The Differences of SWC-DB with Wide Column Databases
