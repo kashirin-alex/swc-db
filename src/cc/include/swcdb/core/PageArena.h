@@ -233,7 +233,7 @@ class Page final : public PageBase {
         offset += sz >>= 1; 
         continue;
       }
-      if((sz >>= 1) == 0)
+      if(!(sz >>= 1))
         ++sz;  
       if(offset < sz) {
         offset = 0;

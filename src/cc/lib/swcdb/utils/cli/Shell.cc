@@ -79,7 +79,7 @@ int Interface::run() {
     do {
       c = *ptr;
       ++ptr;
-      if((next_line = c == 0))
+      if((next_line = !c))
         c = '\n';
 
       if(c == '\n' && cmd_end) {

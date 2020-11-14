@@ -107,13 +107,13 @@ size_t endpoint_hash(const EndPoint& endpoint) {
 SWC_SHOULD_INLINE
 bool Resolver::is_ipv4_address(const std::string& str) {
   struct sockaddr_in sa;
-  return inet_pton(AF_INET, str.c_str(), &(sa.sin_addr)) != 0;
+  return inet_pton(AF_INET, str.c_str(), &(sa.sin_addr));
 }
 
 SWC_SHOULD_INLINE
 bool Resolver::is_ipv6_address(const std::string& str) {
   struct sockaddr_in6 sa;
-  return inet_pton(AF_INET6, str.c_str(), &(sa.sin6_addr)) != 0;
+  return inet_pton(AF_INET6, str.c_str(), &(sa.sin6_addr));
 }
 
 EndPoints Resolver::get_endpoints(uint16_t defaul_port, 
@@ -158,7 +158,7 @@ EndPoints Resolver::get_endpoints(uint16_t defaul_port,
 
     errno = 0;
     int x =  getaddrinfo(hostname.c_str(), NULL, &hints, &result);
-    if(x != 0) {
+    if(x) {
       x = x == EAI_SYSTEM ? errno : (SWC_ERRNO_EAI_BEGIN + (-x));
       SWC_THROWF(x, "Bad addr-info for host: %s", hostname.c_str());
     }
@@ -268,8 +268,7 @@ void Resolver::get_local_networks(int& err,
   hints.ai_flags = 0;
 
   errno = 0; 
-  err =  getaddrinfo(hostname, NULL, &hints, &result);
-  if(err != 0) {
+  if((err = getaddrinfo(hostname, NULL, &hints, &result))) {
     err = err == EAI_SYSTEM ? errno : (SWC_ERRNO_EAI_BEGIN + (-err));
     return;
   }

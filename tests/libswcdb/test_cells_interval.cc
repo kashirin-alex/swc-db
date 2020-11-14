@@ -39,7 +39,7 @@ int main() {
       interval.align(cell.key);
 
 
-      if(n == 0) {
+      if(!n) {
         expected_expanded.set_key_end(cell.key);
         expected_expanded.set_ts_earliest(DB::Specs::Timestamp(n, Condition::GE));
         DB::Cell::KeyVec k;

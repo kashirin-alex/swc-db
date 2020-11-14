@@ -285,7 +285,7 @@ void update_data(DB::Schema::Ptr& schema, uint8_t flag) {
             req->commit_or_wait(col);
           }
 
-          if(progress && (added_count % progress) == 0) {
+          if(progress && !(added_count % progress)) {
             ts_progress = Time::now_ns() - ts_progress;
             SWC_PRINT 
               << "update-progress(time_ns=" <<  Time::now_ns()
@@ -391,7 +391,7 @@ void select_data(DB::Schema::Ptr& schema) {
         ++select_count;
         req->result->free(schema->cid);
 
-        if(progress && (select_count % progress) == 0) {
+        if(progress && !(select_count % progress)) {
           ts_progress = Time::now_ns() - ts_progress;
           SWC_PRINT 
             << "select-progress(time_ns=" << Time::now_ns()
@@ -466,7 +466,7 @@ void generate() {
   
   int err = Error::OK;
   auto schema = Env::Clients::get()->schemas->get(err, col_name);
-  if(schema != nullptr) {
+  if(schema) {
     quit_error(err);
     make_work_load(schema);
     return;

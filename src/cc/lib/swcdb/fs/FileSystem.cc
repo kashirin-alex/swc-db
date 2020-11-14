@@ -23,19 +23,19 @@ Type fs_type(std::string fs_name) {
                  [](unsigned char c){ return std::tolower(c); });
     
 #if !defined (FS_BROKER_APP)
-  if(fs_name.compare("broker") == 0)
+  if(!fs_name.compare("broker"))
     return Type::BROKER;
 #endif
 
-  if(fs_name.compare("local") == 0)
+  if(!fs_name.compare("local"))
     return Type::LOCAL;
-  if(fs_name.compare("hadoop") == 0)
+  if(!fs_name.compare("hadoop"))
     return Type::HADOOP;
-  if(fs_name.compare("hadoop_jvm") == 0)
+  if(!fs_name.compare("hadoop_jvm"))
     return Type::HADOOP_JVM;
-  if(fs_name.compare("ceph") == 0)
+  if(!fs_name.compare("ceph"))
     return Type::CEPH;
-  if(fs_name.compare("custom") == 0)
+  if(!fs_name.compare("custom"))
     return Type::CUSTOM;
   else
     SWC_THROWF(Error::CONFIG_BAD_VALUE, 
@@ -244,7 +244,7 @@ void FileSystem::read(int& err, const std::string& name,
   
   finish:
     int errtmp;
-    if(smartfd != nullptr && smartfd->valid())
+    if(smartfd && smartfd->valid())
       close(!err ? err : errtmp, smartfd);
     
   if(err)

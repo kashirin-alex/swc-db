@@ -175,7 +175,7 @@ class FileWriter {
 
   void write(Types::Column typ) {
 
-    if(smartfd == nullptr || smartfd->pos() + buffer.fill() > 4294967296) {
+    if(!smartfd || smartfd->pos() + buffer.fill() > 4294967296) {
       close();
 
       smartfd = fds.emplace_back(new FS::SmartFd(
@@ -220,7 +220,7 @@ class FileWriter {
   private:
 
   void close() {
-    if(smartfd != nullptr && smartfd->valid()) {
+    if(smartfd && smartfd->valid()) {
       interface->get_fs()->flush(err, smartfd);
       interface->close(err, smartfd);
     }
@@ -429,7 +429,7 @@ class FileReader {
     if(header.empty() || !remain || *ptr != '\n')
       return false;
 
-    has_ts = strncasecmp(header.front().data(), "timestamp", 9) == 0;
+    has_ts = !strncasecmp(header.front().data(), "timestamp", 9);
     if(header.size() < size_t(6 + has_ts))
       return false;
 

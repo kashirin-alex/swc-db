@@ -89,7 +89,7 @@ FileSystem::Ptr Interface::use_filesystem() {
 
   const char* err = dlerror();
   void* handle = dlopen(fs_lib.c_str(), RTLD_NOW | RTLD_LAZY | RTLD_LOCAL);
-  if (handle == NULL || err != NULL)
+  if (err || !handle)
     SWC_THROWF(Error::CONFIG_BAD_VALUE, 
               "Shared Lib %s, open fail: %s\n", 
               fs_lib.c_str(), err);
@@ -97,7 +97,7 @@ FileSystem::Ptr Interface::use_filesystem() {
   err = dlerror();
   std::string handler_name =  "fs_apply_cfg_"+fs_name;
   void* f_cfg_ptr = dlsym(handle, handler_name.c_str());
-  if (err != NULL || f_cfg_ptr == nullptr)
+  if (err || !f_cfg_ptr)
     SWC_THROWF(Error::CONFIG_BAD_VALUE, 
               "Shared Lib %s, link(%s) fail: %s handle=%lu\n", 
               fs_lib.c_str(), handler_name.c_str(), err, (size_t)handle);
@@ -106,7 +106,7 @@ FileSystem::Ptr Interface::use_filesystem() {
   err = dlerror();
   handler_name =  "fs_make_new_"+fs_name;
   void* f_new_ptr = dlsym(handle, handler_name.c_str());
-  if (err != NULL || f_new_ptr == nullptr)
+  if (err || !f_new_ptr)
     SWC_THROWF(Error::CONFIG_BAD_VALUE, 
               "Shared Lib %s, link(%s) fail: %s handle=%lu\n", 
               fs_lib.c_str(), handler_name.c_str(), err, (size_t)handle);
@@ -121,7 +121,7 @@ Interface::Ptr Interface::ptr(){
 
 Interface::~Interface() {
   m_fs = nullptr;
-  if(loaded_dl.lib != nullptr) {
+  if(loaded_dl.lib) {
     ((fs_apply_cfg_t*)loaded_dl.cfg)(nullptr);
     dlclose(loaded_dl.lib);
   }
@@ -137,7 +137,7 @@ FileSystem::Ptr Interface::get_fs(){
 
 std::string Interface::to_string() {
   return format("FS::Interface(type=%d, details=%s)", 
-                (int)m_type, m_fs==nullptr?"NULL":m_fs->to_string().c_str());
+                (int)m_type, m_fs ? m_fs->to_string().c_str() : "NULL");
 }
 
 bool Interface::need_fds() const {
@@ -277,7 +277,7 @@ void Interface::rmdir_incl_opt_subs(int& err, const std::string& name,
     if(*c != '/')
       continue;
     base_path = std::string(p, c-p);
-    if(up_to.compare(base_path) == 0)
+    if(!up_to.compare(base_path))
       break;
 
     DirentList entrs;
@@ -483,12 +483,12 @@ FsInterface::Ptr FsInterface::get(){
 }
 
 FS::Interface::Ptr FsInterface::interface(){
-  SWC_ASSERT(m_env != nullptr);
+  SWC_ASSERT(m_env);
   return m_env->m_interface;
 }
 
 FS::FileSystem::Ptr FsInterface::fs(){
-  SWC_ASSERT(m_env != nullptr);
+  SWC_ASSERT(m_env);
   return m_env->m_interface->get_fs();
 }
 
@@ -500,7 +500,7 @@ FsInterface::FsInterface(FS::Type typ)
                         : m_interface(new FS::Interface(typ)) {}
 
 FsInterface::~FsInterface(){
-  if(m_interface != nullptr)
+  if(m_interface)
     delete m_interface;
 }
 }

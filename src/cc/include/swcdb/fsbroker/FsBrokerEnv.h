@@ -81,19 +81,19 @@ class FsBroker final {
   }
 
   static SWC::FsBroker::Fds::Ptr fds() {
-    SWC_ASSERT(m_env != nullptr);
+    SWC_ASSERT(m_env);
     return m_env->m_fds;
   }
 
   FsBroker() : m_fds(new SWC::FsBroker::Fds()) {}
 
   ~FsBroker(){
-    if(m_fds != nullptr)  
+    if(m_fds)  
       delete m_fds;
   }
 
   private:
-  SWC::FsBroker::Fds::Ptr                 m_fds = nullptr;
+  SWC::FsBroker::Fds::Ptr                 m_fds;
   inline static std::shared_ptr<FsBroker> m_env = nullptr;
 };
 

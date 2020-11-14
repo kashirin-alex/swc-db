@@ -37,14 +37,14 @@ class MutexAtomic {
   void lock() const noexcept {
     uint16_t i = 0;
     while(want.test_and_set(std::memory_order_acquire)) {
-      if(++i == 0)
+      if(!++i)
         std::this_thread::yield();
     }
     /*
     for(auto at=false;
         !want.compare_exchange_weak(at, true, std::memory_order_seq_cst);
         at=false)
-      if(++i == 0)
+      if(!++i)
         std::this_thread::yield();
     */
   }
@@ -52,7 +52,7 @@ class MutexAtomic {
   void lock(const uint32_t& us_sleep) const noexcept {
     uint16_t i = 0;
     while(want.test_and_set(std::memory_order_acquire)) {
-      if(++i == 0)
+      if(!++i)
         std::this_thread::sleep_for(std::chrono::microseconds(us_sleep));
     }
     /*
@@ -60,7 +60,7 @@ class MutexAtomic {
     for(auto at=false;
         !want.compare_exchange_weak(at, true, std::memory_order_seq_cst);
         at=false)
-      if(++i == 0)
+      if(!++i)
         std::this_thread::sleep_for(std::chrono::microseconds(us_sleep));
     */
   }

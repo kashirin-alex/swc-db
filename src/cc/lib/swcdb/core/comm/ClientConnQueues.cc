@@ -28,7 +28,7 @@ bool Host::connect() {
     [ptr=shared_from_this()] (const ConnHandlerPtr& conn){ptr->set(conn);},
     std::chrono::milliseconds(queues->cfg_conn_timeout->get()), 
     queues->cfg_conn_probes->get(),
-    cfg_keepalive_ms != nullptr
+    bool(cfg_keepalive_ms)
   );
   return true;  
 }

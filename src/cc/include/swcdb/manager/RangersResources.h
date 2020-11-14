@@ -174,8 +174,7 @@ class RangersResources final : private std::vector<RangerResources> {
         uint8_t balance = res.rebalance;
         if(balance && rgr->state == RangerState::ACK) {
           rgr->rebalance(balance);
-        } else {
-          balance = rgr->rebalance() != 0;
+        } else if((balance = rgr->rebalance())) {
           rgr->rebalance(0);
         }
 

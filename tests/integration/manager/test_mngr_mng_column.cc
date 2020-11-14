@@ -94,9 +94,9 @@ void check_delete(int num_of_cols, bool modified) {
       300000
     );
     /*
-    if(n % 100) {
+    if(!(n % 100)) {
       std::unique_lock lock_wait(mutex);
-      cv.wait(lock_wait, [&count]() { return count.load() % 100 == 0; });
+      cv.wait(lock_wait, [&count]() { return !(count.load() % 100); });
     }
     */
   }
@@ -157,7 +157,7 @@ void check_get(size_t num_of_cols, bool modified,
             std::cerr << " blk_encoding don't match \n";
             exit(1); 
           }
-          if(req->name.compare(rsp.schema->col_name) != 0) {
+          if(req->name.compare(rsp.schema->col_name)) {
             std::cerr << " name don't match \n";
             exit(1); 
           }

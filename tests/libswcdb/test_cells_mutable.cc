@@ -73,7 +73,7 @@ void op(Cells::Mutable::Ptr cells_mutable,
       ts_total += took;
       latency_mutable->add(took); 
 
-      if(i % 1000000 == 0) {
+      if(!(i % 1000000)) {
         //std::cout << "v:took=" << took_vector  << " " << r << "/" << i << " = " << cells.size() << "\n";
         std::cout << "   m:took=" << took << " " << r << "/" << i 
                   << " = " << cells_mutable->size() << "\n";
@@ -215,7 +215,7 @@ void check(SWC::DB::Types::KeySeq key_seq, SWC::DB::Types::Column typ,
   cells_mutable->scan(&req);
   req.profile.finished();
 
-  if(req.cells.size() != 0) {
+  if(req.cells.size()) {
     std::cerr << "AFTER DELETE SIZE NOT AS EXPECTED, "
               << "expected(" << 0 
               << ") != result(" <<req.cells.size()  << ")\n";

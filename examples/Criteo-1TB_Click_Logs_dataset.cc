@@ -136,7 +136,7 @@ void generate_criteo_logs() {
     resend_cells += req->result->get_resend_count();
 
     added_bytes += cell.encoded_length();
-    if((++added_cells % 100000) == 0) {
+    if(!(++added_cells % 100000)) {
       SWC_PRINT 
         << "progress day="<< day
         << " cells=" << added_cells

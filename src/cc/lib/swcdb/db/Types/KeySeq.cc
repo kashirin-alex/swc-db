@@ -38,24 +38,20 @@ std::string to_string(KeySeq typ) {
 }
 
 KeySeq range_seq_from(const std::string& typ) {
-  if(typ.compare("1") == 0 || 
-      (typ.length() == 5 && 
-       strncasecmp(typ.data(), KeySeq_LEXIC, 5) == 0))
+  if(!typ.compare("1") || 
+      (typ.length() == 5 && !strncasecmp(typ.data(), KeySeq_LEXIC, 5)))
       return KeySeq::LEXIC;
       
-  if(typ.compare("2") == 0 || 
-    (typ.length() == 6 && 
-     strncasecmp(typ.data(), KeySeq_VOLUME, 6) == 0))
+  if(!typ.compare("2") || 
+    (typ.length() == 6 && !strncasecmp(typ.data(), KeySeq_VOLUME, 6)))
   return KeySeq::VOLUME;
     
-  if(typ.compare("3") == 0 || 
-      (typ.length() == 8 && 
-       strncasecmp(typ.data(), KeySeq_FC_LEXIC, 8) == 0))
+  if(!typ.compare("3") || 
+      (typ.length() == 8 && !strncasecmp(typ.data(), KeySeq_FC_LEXIC, 8)))
     return KeySeq::FC_LEXIC;
 
-  if(typ.compare("4") == 0 || 
-      (typ.length() == 9 && 
-       strncasecmp(typ.data(), KeySeq_FC_VOLUME, 9) == 0))
+  if(!typ.compare("4") || 
+      (typ.length() == 9 && !strncasecmp(typ.data(), KeySeq_FC_VOLUME, 9)))
     return KeySeq::FC_VOLUME;
 
   return KeySeq::UNKNOWN;

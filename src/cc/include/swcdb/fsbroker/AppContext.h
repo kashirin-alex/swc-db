@@ -139,8 +139,7 @@ class AppContext final : public Comm::AppContext {
   }
   
   void shutting_down(const std::error_code &ec, const int &sig) {
-
-    if(sig==0){ // set signals listener
+    if(!sig) { // set signals listener
       Env::IoCtx::io()->signals()->async_wait(
         [ptr=this](const std::error_code &ec, const int &sig){
           SWC_LOGF(LOG_INFO, "Received signal, sig=%d ec=%s", sig, ec.message().c_str());

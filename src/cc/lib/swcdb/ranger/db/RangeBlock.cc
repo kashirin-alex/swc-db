@@ -209,7 +209,7 @@ size_t Block::load_cells(const uint8_t* buf, size_t remain,
     else
       m_cells.add_raw(cell, &offset_hint);
       
-    if(++added % 1000 == 0) {
+    if(!(++added % 1000)) {
       Env::Rgr::res().adj_mem_usage(ssize_t(m_cells.size_of_internal()) - sz);
       if(splitter()) {
         was_splitted = true;

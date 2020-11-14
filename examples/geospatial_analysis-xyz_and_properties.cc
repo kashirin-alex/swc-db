@@ -191,7 +191,7 @@ void generate_sample_data() {
         req->commit_or_wait(col);
 
         added_bytes += cell.encoded_length();
-        if((++added_cells % 100000) == 0) {
+        if(!(++added_cells % 100000)) {
           SWC_PRINT 
             << "progress cells=" << added_cells 
             << " avg=" << ((SWC::Time::now_ns() - ts_progress) / 100000)

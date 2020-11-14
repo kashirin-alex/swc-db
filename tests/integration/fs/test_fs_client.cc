@@ -73,7 +73,7 @@ void run(size_t thread_id){
     std::cout << "Dir List, sz=" << listing.size() <<  ":\n";
     for(auto& dirent : listing){
       std::cout << " " << dirent.to_string();
-      if(dirent.name.compare(std::to_string(thread_id)) == 0){
+      if(!dirent.name.compare(std::to_string(thread_id))) {
         found = true;
         break;
       }
@@ -244,7 +244,7 @@ void run(size_t thread_id){
     uint8_t buf[data_start.length()];
     if (Env::FsInterface::fs()->read(err, smartfd, buf,  data_start.length()) != data_start.length() 
         || err != Error::OK 
-        || strncmp((char*)buf, data_start.c_str(), data_start.length()) != 0) { 
+        || strncmp((char*)buf, data_start.c_str(), data_start.length())) { 
      std::cerr << "ERROR(read) err=" << err 
                << " buf=" << std::string((char*)buf, data_start.length()) 
                 << " " << smartfd->to_string() <<"\n";
@@ -266,7 +266,7 @@ void run(size_t thread_id){
     uint8_t bufsuf[data_end.length()];
     if (Env::FsInterface::fs()->read(err, smartfd, bufsuf,  data_end.length()) != data_end.length() 
         || err != Error::OK 
-        || strncmp((char*)bufsuf, data_end.c_str(), data_end.length()) != 0) { 
+        || strncmp((char*)bufsuf, data_end.c_str(), data_end.length())) { 
      std::cerr << "ERROR(read(suff)) err=" << err << " buf=" << bufsuf << " " << smartfd->to_string() <<"\n";
      exit(1);
     }
@@ -286,7 +286,7 @@ void run(size_t thread_id){
     uint8_t bufeof[data_end.length()];
     if (Env::FsInterface::fs()->read(err, smartfd, bufeof, data_end.length()) != data_end.length()-1 
         || err != Error::FS_EOF 
-        || memcmp ((char*)bufeof, data_end.data()+1, data_end.length()-1 ) != 0) { 
+        || memcmp ((char*)bufeof, data_end.data()+1, data_end.length()-1 )) { 
      std::cerr << "ERROR(read(with EOF)) err=" << err << " buf=" << bufeof << " " << smartfd->to_string() <<"\n";
      exit(1);
     }
@@ -302,7 +302,7 @@ void run(size_t thread_id){
           != data_start.length() 
           || err != Error::OK 
           || smartfd->pos() != pread_offset+data_start.length() 
-          || strncmp((char*)buf_start, data_start.c_str(), data_start.length()) != 0) { 
+          || strncmp((char*)buf_start, data_start.c_str(), data_start.length())) { 
         std::cerr << "ERROR(pread) err=" << err << " buf=" << buf_start << " " << smartfd->to_string() <<"\n";
         exit(1);
       }
@@ -318,7 +318,7 @@ void run(size_t thread_id){
                                       len-data_end.length()+1, 
                                       bufpeof, data_end.length()) != data_end.length()-1 
         || err != Error::FS_EOF 
-        || memcmp ((char*)bufpeof, data_end.data()+1, data_end.length()-1 ) != 0) { 
+        || memcmp ((char*)bufpeof, data_end.data()+1, data_end.length()-1 )) { 
      std::cerr << "ERROR(pread(with EOF)) err=" << err << " buf=" << bufpeof << " " << smartfd->to_string() <<"\n";
      exit(1);
     }
@@ -411,5 +411,6 @@ int main(int argc, char** argv) {
   //for(size_t chk=1;chk<=100;++chk)
   //  std::this_thread::sleep_for(std::chrono::milliseconds(1000));
   
+  std::cout << " ## OK! ##\n" << std::endl;
   exit(0);
 }

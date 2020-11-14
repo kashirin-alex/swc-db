@@ -72,7 +72,7 @@ void Clients::init(const client::Clients::Ptr& clients) {
 }
 
 client::Clients::Ptr Clients::get() {
-  SWC_ASSERT(m_env != nullptr);
+  SWC_ASSERT(m_env);
   return m_env->m_clients;
 }
 

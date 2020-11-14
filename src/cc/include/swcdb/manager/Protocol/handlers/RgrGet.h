@@ -34,11 +34,11 @@ void rgr_get(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     if(!params.rid) {
       range = col->get_range(
         rsp_params.err, 
-        params.range_begin, 
+        params.range_begin,
         params.range_end,
         params.next_range
       );
-      if(range != nullptr) {
+      if(range) {
         range->get_interval(rsp_params.range_begin, rsp_params.range_end);
         rsp_params.range_begin.remove(0);
         rsp_params.range_begin.remove(0);
@@ -48,7 +48,7 @@ void rgr_get(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     } else 
       range = col->get_range(rsp_params.err, params.rid);
       
-    if(range == nullptr) {
+    if(!range) {
       rsp_params.err = Error::RANGE_NOT_FOUND;
       goto send_response;
     }

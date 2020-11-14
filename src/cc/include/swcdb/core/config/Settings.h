@@ -98,25 +98,25 @@ class Config final {
   }
 
   static Ptr get(){
-    if(m_env == nullptr)
+    if(!m_env)
       m_env = std::make_shared<Config>();
     return m_env;
   }
 
   static SWC::Config::Settings* settings() {
-    SWC_ASSERT(m_env != nullptr);
+    SWC_ASSERT(m_env);
     return m_env->m_settings;
   }
 
   Config() : m_settings(new SWC::Config::Settings()){}
 
   ~Config() {
-    if(m_settings != nullptr)
+    if(m_settings)
       delete m_settings;
   }
 
   private:
-  SWC::Config::Settings*  m_settings = nullptr;
+  SWC::Config::Settings*  m_settings;
   inline static Ptr       m_env = nullptr;
 
 };

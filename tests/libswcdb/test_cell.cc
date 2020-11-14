@@ -244,7 +244,7 @@ int main() {
     delete c;
    cells_copied.clear();
    //cells_copied.clear();
-   if (*last_skey_ptr != 0 && memcmp(last_skey, last_skey_ptr, k_len) == 0){
+   if (*last_skey_ptr && !memcmp(last_skey, last_skey_ptr, k_len)) {
          std::cout << "DESTRUCTION DID NOT HAPPEN:\n";
          std::cout << (size_t)last_skey_ptr << ":" << std::string((const char *)last_skey_ptr, k_len) 
             << "==" << std::string((const char *)last_skey, k_len)<< "\n\n";

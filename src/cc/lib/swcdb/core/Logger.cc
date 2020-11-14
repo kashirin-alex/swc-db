@@ -36,21 +36,21 @@ const char* LogWriter::get_name(uint8_t priority) {
 }
 
 uint8_t LogWriter::from_string(const std::string& loglevel) {
-  if(strncasecmp(loglevel.c_str(), "info", loglevel.length()) == 0)
+  if(!strncasecmp(loglevel.c_str(), "info", loglevel.length()))
     return LOG_INFO;
-  if(strncasecmp(loglevel.c_str(), "debug", loglevel.length()) == 0)
+  if(!strncasecmp(loglevel.c_str(), "debug", loglevel.length()))
     return LOG_DEBUG;
-  if(strncasecmp(loglevel.c_str(), "notice", loglevel.length()) == 0)
+  if(!strncasecmp(loglevel.c_str(), "notice", loglevel.length()))
     return LOG_NOTICE;
-  if(strncasecmp(loglevel.c_str(), "warn", loglevel.length()) == 0)
+  if(!strncasecmp(loglevel.c_str(), "warn", loglevel.length()))
     return LOG_WARN;
-  if(strncasecmp(loglevel.c_str(), "error", loglevel.length()) == 0)
+  if(!strncasecmp(loglevel.c_str(), "error", loglevel.length()))
     return LOG_ERROR;
-  if(strncasecmp(loglevel.c_str(), "crit", loglevel.length()) == 0)
+  if(!strncasecmp(loglevel.c_str(), "crit", loglevel.length()))
     return LOG_CRIT;
-  if(strncasecmp(loglevel.c_str(), "alert", loglevel.length()) == 0)
+  if(!strncasecmp(loglevel.c_str(), "alert", loglevel.length()))
     return LOG_ALERT;
-  if(strncasecmp(loglevel.c_str(), "fatal", loglevel.length()) == 0)
+  if(!strncasecmp(loglevel.c_str(), "fatal", loglevel.length()))
     return LOG_FATAL;
   return -1;
 }

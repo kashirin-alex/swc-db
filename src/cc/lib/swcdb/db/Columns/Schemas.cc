@@ -69,7 +69,7 @@ Schema::Ptr Schemas::get(const std::string& name) {
 
 Schema::Ptr Schemas::_get(const std::string& name) const {
   for(const auto& it : *this ) {
-    if(name.compare(it.second->col_name) == 0)
+    if(!name.compare(it.second->col_name))
       return it.second;
   }
   return nullptr;

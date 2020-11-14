@@ -56,7 +56,7 @@ void test_encode_decode(const Specs::Scan& ss){
   uint8_t* ptr2 = base2;
   ss_decoded.internal_encode(&ptr2);
         
-  if(memcmp(mark1, mark2, len) != 0){
+  if(memcmp(mark1, mark2, len)) {
     std::cout << "\nERROR, encoding mismatch (memcmp) \n";
     std::cout << Specs::Scan(&mark2, &len).to_string() << "\n\n";
     std::cout << "data:\"" << std::string((const char*)mark1, len) << "\"\n";

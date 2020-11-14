@@ -239,10 +239,10 @@ std::string ParserConfig::position_name(int n) {
 
 bool ParserConfig::has(const std::string& name) const {
   for(const auto& info : options) {
-    if(name.compare(info.first) == 0)
+    if(!name.compare(info.first))
       return true;
     for(const std::string& alias : info.second.aliases)
-      if(name.compare(alias) == 0)
+      if(!name.compare(alias))
         return true;
     }
   return false;
@@ -250,10 +250,10 @@ bool ParserConfig::has(const std::string& name) const {
 
 bool ParserConfig::has(const std::string& name, std::string& alias_to) const {
   for(const auto& info : options) {
-    if(name.compare(info.first) == 0)
+    if(!name.compare(info.first))
       return true;
     for(const std::string& alias : info.second.aliases)
-      if(name.compare(alias) == 0) {
+      if(!name.compare(alias)) {
         alias_to = info.first;
         return true;
       }
@@ -263,10 +263,10 @@ bool ParserConfig::has(const std::string& name, std::string& alias_to) const {
 
 Property::Value::Ptr ParserConfig::get_default(const std::string& name){
   for(const auto& info : options) {
-    if(name.compare(info.first) == 0)
+    if(!name.compare(info.first))
       return info.second.value;
     for(const std::string& alias : info.second.aliases)
-      if(name.compare(alias) == 0)
+      if(!name.compare(alias))
         return info.second.value;
   }
   SWC_THROWF(Error::CONFIG_GET_ERROR, "ParserConfig, getting value of '%s'",
@@ -368,7 +368,7 @@ void Parser::parse_filedata(std::ifstream& in) {
         g_tmp = line.substr(1, at-1);  
         if(!group.empty()){
           group.pop_back(); // remove a dot      
-          if(g_tmp.compare(group+"=end") == 0) { 
+          if(!g_tmp.compare(group+"=end")) { 
             // an end of group  "[groupname=end]"
             group.clear();
             line.clear();
@@ -443,7 +443,7 @@ void Parser::parse_cmdline(const Strings& raw_strings) {
       if(!name.empty())
         set_pos_parse(name, raw_opt);
       else if(!m_unregistered) 
-        // if no pos -1  if(n!=0) ignore app-file, unregistered arg-positions
+        // if no pos -1  if(n) ignore app-file, unregistered arg-positions
         SWC_THROWF(Error::CONFIG_GET_ERROR, 
                     "unknown cfg  with %s", raw_opt.c_str());
     }

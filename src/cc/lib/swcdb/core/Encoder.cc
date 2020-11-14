@@ -44,24 +44,24 @@ std::string Encoder::to_string(Encoder::Type typ) {
 
 Encoder::Type Encoder::encoding_from(const std::string& typ) {
 
-  if(strncasecmp(typ.data(), Encoder_DEFAULT, typ.length()) == 0 || 
-     typ.compare("0") == 0)
+  if(!strncasecmp(typ.data(), Encoder_DEFAULT, typ.length()) || 
+     !typ.compare("0"))
     return Encoder::Type::DEFAULT;
 
-  if(strncasecmp(typ.data(), Encoder_PLAIN, typ.length()) == 0 || 
-     typ.compare("1") == 0)
+  if(!strncasecmp(typ.data(), Encoder_PLAIN, typ.length()) || 
+     !typ.compare("1"))
     return Encoder::Type::PLAIN;
 
-  if(strncasecmp(typ.data(), Encoder_ZLIB, typ.length()) == 0 ||
-     typ.compare("2") == 0)
+  if(!strncasecmp(typ.data(), Encoder_ZLIB, typ.length()) ||
+     !typ.compare("2"))
     return Encoder::Type::ZLIB;
 
-  if(strncasecmp(typ.data(), Encoder_SNAPPY, typ.length()) == 0 ||
-     typ.compare("3") == 0)
+  if(!strncasecmp(typ.data(), Encoder_SNAPPY, typ.length()) ||
+     !typ.compare("3"))
     return Encoder::Type::SNAPPY;
   
-  if(strncasecmp(typ.data(), Encoder_ZSTD, typ.length()) == 0 ||
-     typ.compare("4") == 0)
+  if(!strncasecmp(typ.data(), Encoder_ZSTD, typ.length()) ||
+     !typ.compare("4"))
     return Encoder::Type::ZSTD;
 
   return Encoder::Type::UNKNOWN;

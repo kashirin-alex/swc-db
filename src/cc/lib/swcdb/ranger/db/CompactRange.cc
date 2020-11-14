@@ -18,10 +18,9 @@ struct CompactRange::InBlock {
 
   InBlock(const DB::Types::KeySeq key_seq, size_t size, 
           InBlock* inblock = nullptr)
-          : has_last(inblock != nullptr), 
-            cells(size + 1000000), header(key_seq), err(Error::OK),
+          : cells(size + 1000000), header(key_seq), err(Error::OK),
             last_cell(0) {
-    if(has_last)
+    if(inblock)
       inblock->move_last(this);
   }
 
@@ -100,7 +99,6 @@ struct CompactRange::InBlock {
     cells.take_ownership(output);
   }
 
-  const uint8_t             has_last;
   DynamicBuffer             cells;
   CellStore::Block::Header  header;
 

@@ -30,7 +30,7 @@ int run(const std::string& cmd, bool custom=false) {
   err = dlerror();
   std::string handler_name =  "swcdb_utils_apply_cfg";
   void* f_cfg_ptr = dlsym(handle, handler_name.c_str());
-  if (err != NULL || f_cfg_ptr == nullptr)
+  if(err || !f_cfg_ptr)
     SWC_THROWF(Error::CONFIG_BAD_VALUE, 
               "Shared Lib %s, link(%s) fail: %s handle=%lu\n", 
               lib_path.c_str(), handler_name.c_str(), err, (size_t)handle);
@@ -39,7 +39,7 @@ int run(const std::string& cmd, bool custom=false) {
   err = dlerror();
   handler_name =  "swcdb_utils_run";
   void* f_new_ptr = dlsym(handle, handler_name.c_str());
-  if (err != NULL || f_new_ptr == nullptr)
+  if(err || !f_new_ptr)
     SWC_THROWF(Error::CONFIG_BAD_VALUE, 
               "Shared Lib %s, link(%s) fail: %s handle=%lu\n", 
               lib_path.c_str(), handler_name.c_str(), err, (size_t)handle);
@@ -62,9 +62,9 @@ int main(int argc, char** argv) {
 
   const auto& command = SWC::Env::Config::settings()->get_str("command");
   
-  if(command.compare("shell") == 0)
+  if(!command.compare("shell"))
     return SWC::Utils::run(command);
-  if(command.compare("custom") == 0)
+  if(!command.compare("custom"))
     return SWC::Utils::run("command", true);
   
   return SWC::Utils::not_implemented(command);

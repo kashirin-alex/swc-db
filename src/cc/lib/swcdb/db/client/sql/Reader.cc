@@ -58,7 +58,7 @@ bool Reader::found_quote_double(bool& quote) {
 }
 
 bool Reader::found_token(const char* token, uint8_t token_len) {
-  if(remain >= token_len && strncasecmp(ptr, token, token_len) == 0) {
+  if(remain >= token_len && !strncasecmp(ptr, token, token_len)) {
     ptr += token_len;
     remain -= token_len;
     return true;
@@ -123,7 +123,7 @@ void Reader::expect_token(const char* token, uint8_t token_len, bool& found) {
     if(found_space())
       return;
 
-    if(strncasecmp(ptr, token, token_len) == 0) {
+    if(!strncasecmp(ptr, token, token_len)) {
       ptr += token_len;
       remain -= token_len;
       found = true;

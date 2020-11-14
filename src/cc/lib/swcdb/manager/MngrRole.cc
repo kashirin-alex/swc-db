@@ -221,8 +221,8 @@ void MngrRole::fill_states(const MngrsStatus& states, uint64_t token,
       return;
     }
   }
-    
-  if(cb != nullptr)
+
+  if(cb)
     cb->response_ok();
 
   schedule_checkin(

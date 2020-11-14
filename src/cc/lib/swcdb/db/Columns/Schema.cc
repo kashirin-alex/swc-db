@@ -86,7 +86,7 @@ bool Schema::equal(const Ptr& other, bool with_rev) {
           && cs_max == other->cs_max
           && log_rollout_ratio == other->log_rollout_ratio
           && compact_percent == other->compact_percent
-          && col_name.compare(other->col_name) == 0
+          && !col_name.compare(other->col_name)
           && (!with_rev || revision == other->revision)
           ;
 }

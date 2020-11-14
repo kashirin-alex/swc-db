@@ -129,12 +129,12 @@ void load_check() {
   for(int probe=10;probe;--probe) {
     LOAD_TEST(
       "memcmp", 
-      memcmp(ptr1, ptr2, 18) == 0
+      !memcmp(ptr1, ptr2, 18)
     );
     /* ok, from -O2 */
     LOAD_TEST(
       "SWC::Condition::memcomp", 
-      SWC::Condition::memcomp(ptr1, ptr2, 18) == 0
+      !SWC::Condition::memcomp(ptr1, ptr2, 18)
     );
 
     LOAD_TEST(

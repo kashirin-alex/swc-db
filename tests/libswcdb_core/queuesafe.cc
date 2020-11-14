@@ -28,7 +28,7 @@ void write(int nthread, Core::QueueSafe<size_t>* queue) {
     sz = queue->size();
     chk = queue->empty();
     //item = queue->front();
-    //if(i % 1000 == 0)
+    //if(!(i % 1000))
     //  std::cout << "thread=" << nthread << " at=" << i << "\n";
   }
 }

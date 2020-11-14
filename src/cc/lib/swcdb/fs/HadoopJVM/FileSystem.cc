@@ -227,8 +227,8 @@ bool FileSystemHadoopJVM::initialize(FileSystemHadoopJVM::Service::Ptr& fs) {
       "FS-HadoopJVM, connecting to default namenode=%s", value);
   }
 
-  fs = connection ? std::make_shared<Service>(connection) : nullptr;
-  return fs != nullptr;
+  return bool(
+    fs = connection ? std::make_shared<Service>(connection) : nullptr);
 }
 
 FileSystemHadoopJVM::Service::Ptr FileSystemHadoopJVM::get_fs(int& err) {
@@ -279,7 +279,7 @@ bool FileSystemHadoopJVM::exists(int& err, const std::string& name) {
   auto fs = get_fs(err);
   if(!err) {
     errno = 0;
-    state = hdfsExists(fs->srv, abspath.c_str()) == 0;
+    state = !hdfsExists(fs->srv, abspath.c_str());
     need_reconnect(err = errno == ENOENT ? Error::OK : errno, fs);
   }
   SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG, 
@@ -316,7 +316,7 @@ size_t FileSystemHadoopJVM::length(int& err, const std::string& name) {
   auto fs = get_fs(err);
   if(!err) {
     errno = 0;
-    if((fileInfo = hdfsGetPathInfo(fs->srv, abspath.c_str())) == 0) {
+    if(!(fileInfo = hdfsGetPathInfo(fs->srv, abspath.c_str()))) {
       need_reconnect(err = errno, fs);
     } else {
       len = fileInfo->mSize;
@@ -354,8 +354,8 @@ void FileSystemHadoopJVM::readdir(int& err, const std::string& name,
   auto fs = get_fs(err);
   if(!err) {
     errno = 0;
-    if ((fileInfo = hdfsListDirectory(
-                      fs->srv, abspath.c_str(), &numEntries)) == 0) {
+    if (!(fileInfo = hdfsListDirectory(
+                      fs->srv, abspath.c_str(), &numEntries))) {
       need_reconnect(err = errno, fs);
 
     } else {
@@ -425,7 +425,7 @@ void FileSystemHadoopJVM::create(int& err, SmartFd::Ptr& smartfd,
   get_abspath(smartfd->filepath(), abspath);
 
   int oflags = O_WRONLY;
-  if((smartfd->flags() & OpenFlags::OPEN_FLAG_OVERWRITE) == 0)
+  if(!(smartfd->flags() & OpenFlags::OPEN_FLAG_OVERWRITE))
     oflags |= O_APPEND;
 
   if (bufsz <= -1)

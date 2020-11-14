@@ -177,7 +177,7 @@ void load_check_condition_base1() {
   for(int probe=10;probe;--probe) {
     LOAD_TEST(
       "memcmp", 
-      memcmp(ptr1, ptr2, s2.size()-1) == 0
+      !memcmp(ptr1, ptr2, s2.size() - 1)
     );// base of memcmp for conditions
   }
 }

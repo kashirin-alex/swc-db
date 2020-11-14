@@ -261,7 +261,7 @@ void test_1(const std::string& col_name) {
   
   std::string expected_value = apply_value(
     num_fractions+97, batches-1, num_cells-1);
-  if(memcmp(cell_res->value, expected_value.data(), cell_res->vlen) != 0) {
+  if(memcmp(cell_res->value, expected_value.data(), cell_res->vlen)) {
     std::cerr << "BAD, selected cell's value doesn't match: \n" 
               << " expected_value=" << expected_value << "\n"
               << "   result_value=" 
@@ -316,7 +316,7 @@ void test_1(const std::string& col_name) {
       prev.copy(*c);
       std::string expected_value = apply_value(
         97+count, batches-1, num_cells-spec->flags.limit-1+count);
-      if(memcmp(c->value, expected_value.data(), c->vlen) != 0) {
+      if(memcmp(c->value, expected_value.data(), c->vlen)) {
         std::cerr << "BAD, selected cell's value doesn't match: \n" 
                   << " expected_value=" << expected_value << "\n"
                   << "   result_value=" 
@@ -360,7 +360,7 @@ void test_1(const std::string& col_name) {
               << "   result_value=" << sz << "\n";
     exit(1);
   }
-  if(cells[0]->key.get_string(1).compare(fraction) != 0) {
+  if(cells[0]->key.get_string(1).compare(fraction)) {
     std::cerr << "BAD, select cell by key fraction: \n" 
               << "  expected_value=" << spec->key_start.get(1) << "\n"
               << " (1)result_value=" << cells[0]->to_string() << "\n";
@@ -391,7 +391,7 @@ void test_1(const std::string& col_name) {
   took =  SWC::Time::now_ns();
   update_req->commit();
   update_req->wait();
-  if(update_req->columns->size_bytes() != 0) {
+  if(update_req->columns->size_bytes()) {
     std::cerr << " ERROR, remain_bytes=" 
               << update_req->columns->size_bytes() << "\n";
     exit(1);
@@ -422,7 +422,7 @@ void test_1(const std::string& col_name) {
   select_req->wait();
 
   sz = select_req->result->get_size(schema->cid);
-  if(sz != 0) {
+  if(sz) {
     std::cerr << "BAD, select cells count: \n" 
               << " expected_value=0\n"
               << "   result_value=" << sz << "\n";

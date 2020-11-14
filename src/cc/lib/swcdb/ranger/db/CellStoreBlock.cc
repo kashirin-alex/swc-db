@@ -83,7 +83,7 @@ Read::Read(const uint32_t cell_revs, const Header& header)
 Read::~Read() { 
   Env::Rgr::res().less_mem_usage(
     size_of() + 
-    (m_buffer.size && m_state != State::NONE ? header.size_plain : 0)
+    (m_buffer.size && m_state == State::NONE ? 0 : header.size_plain)
   );
 }
 

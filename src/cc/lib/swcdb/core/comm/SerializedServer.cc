@@ -162,7 +162,7 @@ SerializedServer::SerializedServer(
           << ' ' << (ssl_conn ? "SECURE" : "PLAIN");
       );
 
-      if(reactor == 0) {
+      if(!reactor) {
         auto acceptor = asio::ip::tcp::acceptor(*io_ctx.get(), endpoint);
         m_acceptors.push_back(std::make_shared<Acceptor>(
           acceptor, app_ctx, ssl_conn ? m_ssl_cfg : nullptr));
@@ -176,7 +176,7 @@ SerializedServer::SerializedServer(
       }
     }
 
-    if(reactor == 0) {
+    if(!reactor) {
       if(nets.empty()) {
         app_ctx->init(endpoints_final);
       } else {

@@ -55,7 +55,7 @@ int main() {
     }
     do_load_fletcher32(buffer, len);
     do_load_checksum_i32(buffer, len);
-    delete buffer;
+    delete[] buffer;
   }
 
   return 0;

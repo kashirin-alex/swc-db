@@ -32,11 +32,11 @@ void checkings() { // no need runtime checks, call at app start
 int64_t parse_ns(int& err, const std::string& buf) {
   const char* ptr = buf.c_str();
   if(buf.find("/") == std::string::npos) {  
-    while(*ptr != 0 && *ptr == '0') ++ptr;
+    while(*ptr && *ptr == '0') ++ptr;
     char *last;
     errno = 0;
     int64_t ns = strtoll(ptr, &last, 0);
-    if(errno || (*ptr != 0 && ptr == last))
+    if(errno || (*ptr && ptr == last))
       err = errno ? errno : EINVAL;
     return ns;
   }
@@ -44,17 +44,17 @@ int64_t parse_ns(int& err, const std::string& buf) {
   int64_t ns = 0;
 
   struct tm info;
-  if(strptime(ptr, "%Y/%m/%d %H:%M:%S", &info) == NULL) {
+  if(!strptime(ptr, "%Y/%m/%d %H:%M:%S", &info)) {
     err = EINVAL;
     return ns;
   } 
   ns += mktime(&info) * 1000000000;
 
-  while(*ptr != 0 && *ptr++ != '.');
+  while(*ptr && *ptr++ != '.');
 
   uint32_t res = 0;
   for(int places = 100000000; 
-      *ptr != 0 && std::isdigit(*ptr) && places >= 1; 
+      *ptr && std::isdigit(*ptr) && places >= 1; 
       places/=10, ++ptr) {
     res += (*ptr - 48) * places;
   }
@@ -65,7 +65,7 @@ int64_t parse_ns(int& err, const std::string& buf) {
       (ns += res + 1000000000) -= 1000000000;
     }
   }
-  if(*ptr != 0)
+  if(*ptr)
     err = EINVAL;
   return ns;
 }

@@ -68,10 +68,10 @@ class CommClient {
       transport->close();
   }
 
-  ~CommClient() { 
-    if(transport == nullptr)
-      return;
-    try { close(); } catch(...) {}
+  virtual ~CommClient() { 
+    if(transport) {
+       try { close(); } catch(...) {}
+    }
   }
 
   protected:

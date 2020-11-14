@@ -174,9 +174,9 @@ bool FileSystemBroker::send_request(
       hdlr->handle(conn, ev);
       return true;
     }
-    conn = m_service->get_connection(
-      m_endpoints, std::chrono::milliseconds(20000), 3);
-  } while(conn == nullptr);
+  } while(!(conn = m_service->get_connection(
+    m_endpoints, std::chrono::milliseconds(20000), 3)));
+
   m_service->preserve(conn);
 
   return conn->send_request(hdlr->cbp, hdlr);

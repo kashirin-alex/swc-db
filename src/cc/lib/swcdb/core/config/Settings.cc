@@ -227,7 +227,7 @@ void Settings::init_process(bool with_pid_file, const std::string& port_cfg) {
         std::string prog_path(install_path + "/bin/" + executable);
         if((size_t(r) == prog_path.size() ||
             (size_t(r) > prog_path.size() && path[prog_path.size()] == ' ')
-           ) && strncmp(prog_path.c_str(), path, prog_path.size()) == 0) {
+           ) && !strncmp(prog_path.c_str(), path, prog_path.size())) {
           std::cerr << "Problem executing '" << executable 
                     << "', process already running-pid=" << old_pid 
                     << ", stop it first" << std::endl;
@@ -310,7 +310,7 @@ bool Settings::DynFile::operator==(const DynFile& other) const {
   return other == filename;
 }
 bool Settings::DynFile::operator==(const std::string& other) const {
-  return filename.compare(other) == 0;
+  return !filename.compare(other);
 }
 
 

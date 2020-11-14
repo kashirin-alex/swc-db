@@ -401,7 +401,7 @@ void Blocks::init_blocks(int& err) {
 
   Block::Ptr blk = nullptr;
   for(auto cs_blk : blocks) {
-    if(blk == nullptr) {
+    if(!blk) {
       m_block = blk = Block::make(cs_blk->header.interval, ptr());
       m_block->set_prev_key_end(range->prev_range_end);
       m_blocks_idx.push_back(blk);

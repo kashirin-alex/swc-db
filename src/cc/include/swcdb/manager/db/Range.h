@@ -105,7 +105,7 @@ class Range final {
 
   Common::Files::RgrData::Ptr get_last_rgr(int &err) {
     std::scoped_lock lock(m_mutex);
-    if(m_last_rgr == nullptr)
+    if(!m_last_rgr)
       m_last_rgr = Common::Files::RgrData::get_rgr(
         err, DB::RangeBase::get_path_ranger(m_path));
     return m_last_rgr;

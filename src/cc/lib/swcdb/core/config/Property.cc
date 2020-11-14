@@ -157,9 +157,9 @@ void V_BOOL::set_from(Value::Ptr ptr) {
   
 void V_BOOL::set_from(const Strings& values) {
   auto& str = values.back();
-  value = str.compare("1") == 0 ||
-          strncasecmp(str.data(), "true", 4) == 0 ||
-          strncasecmp(str.data(), "yes", 3) == 0;
+  value = !str.compare("1") ||
+          !strncasecmp(str.data(), "true", 4) ||
+          !strncasecmp(str.data(), "yes", 3);
 }
 
 Value::Type V_BOOL::type() const {
@@ -597,9 +597,9 @@ void V_GBOOL::set_from(Value::Ptr ptr) {
   
 void V_GBOOL::set_from(const Strings& values) {
   auto& str = values.back();
-  value = str.compare("1") == 0 ||
-          strncasecmp(str.data(), "true", 4) == 0 ||
-          strncasecmp(str.data(), "yes", 3) == 0;
+  value = !str.compare("1") ||
+          !strncasecmp(str.data(), "true", 4) ||
+          !strncasecmp(str.data(), "yes", 3);
 }
 
 Value::Type V_GBOOL::type() const {

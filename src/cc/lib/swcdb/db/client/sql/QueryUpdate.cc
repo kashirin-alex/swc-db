@@ -282,28 +282,28 @@ void QueryUpdate::read_flag(uint8_t& flag, bool& on_fraction) {
     if(err) 
       return;
 
-    if(buf.compare("1") == 0 || 
-       strncasecmp(buf.data(), "INSERT", buf.length()) == 0) {
+    if(!buf.compare("1") || 
+       !strncasecmp(buf.data(), "INSERT", buf.length())) {
       flag = DB::Cells::INSERT;
       on_fraction = false;
-    } else if(buf.compare("2") == 0 || 
-       strncasecmp(buf.data(), "DELETE", buf.length()) == 0) {
+    } else if(!buf.compare("2") ||
+              !strncasecmp(buf.data(), "DELETE", buf.length())) {
       flag = DB::Cells::DELETE;
       on_fraction = false;
-    } else if(buf.compare("3") == 0 || 
-       strncasecmp(buf.data(), "DELETE_VERSION", buf.length()) == 0) {
+    } else if(!buf.compare("3") ||
+              !strncasecmp(buf.data(), "DELETE_VERSION", buf.length())) {
       flag = DB::Cells::DELETE_VERSION;
       on_fraction = false;
-    } else if(buf.compare("4") == 0 || 
-       strncasecmp(buf.data(), "INSERT_FRACTION", buf.length()) == 0) {
+    } else if(!buf.compare("4") ||
+              !strncasecmp(buf.data(), "INSERT_FRACTION", buf.length())) {
       flag = DB::Cells::INSERT;
       on_fraction = true;
-    } else if(buf.compare("5") == 0 || 
-       strncasecmp(buf.data(), "DELETE_FRACTION", buf.length()) == 0) {
+    } else if(!buf.compare("5") ||
+              !strncasecmp(buf.data(), "DELETE_FRACTION", buf.length())) {
       flag = DB::Cells::DELETE;
       on_fraction = true;
-    } else if(buf.compare("6") == 0 || 
-       strncasecmp(buf.data(), "DELETE_FRACTION_VERSION", buf.length()) == 0) {
+    } else if(!buf.compare("6") ||
+          !strncasecmp(buf.data(), "DELETE_FRACTION_VERSION", buf.length())) {
       flag = DB::Cells::DELETE_VERSION;
       on_fraction = true;
     } else {

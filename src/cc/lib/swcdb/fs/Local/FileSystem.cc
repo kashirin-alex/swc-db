@@ -342,7 +342,7 @@ size_t FileSystemLocal::append(int& err, SmartFd::Ptr& smartfd,
   errno = 0;
 
   /* 
-  if (smartfd->pos() != 0 
+  if(smartfd->pos()
     && lseek(smartfd->fd(), 0, SEEK_CUR) == (uint64_t)-1) {
     err = errno;
     SWC_LOGF(LOG_ERROR, "append, lseek failed: %d(%s), %s", 
@@ -361,8 +361,8 @@ size_t FileSystemLocal::append(int& err, SmartFd::Ptr& smartfd,
   }
   smartfd->pos(smartfd->pos()+nwritten);
     
-  if (flags == Flags::FLUSH || flags == Flags::SYNC) {
-    if (fsync(smartfd->fd()) != 0) {     
+  if(flags == Flags::FLUSH || flags == Flags::SYNC) {
+    if(fsync(smartfd->fd())) {
       err = errno;
       SWC_LOGF(LOG_ERROR, "write, fsync failed: %d(%s), %s", 
                 errno, strerror(errno), smartfd->to_string().c_str());

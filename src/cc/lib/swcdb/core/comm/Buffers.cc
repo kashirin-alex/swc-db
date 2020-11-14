@@ -208,13 +208,13 @@ std::vector<asio::const_buffer> Buffers::get_buffers() {
   bool buf_data_not_aligned = false;
   if(buf_data.size)
     nchunks += (buf_data_chunks += buf_data.size / BUFFER_CHUNK_SZ)
-            + (buf_data_not_aligned = buf_data.size % BUFFER_CHUNK_SZ != 0);
+            + (buf_data_not_aligned = buf_data.size % BUFFER_CHUNK_SZ);
 
   size_t buf_ext_chunks = 0;
   bool buf_ext_not_aligned = false;
   if(buf_ext.size)
     nchunks += (buf_ext_chunks += buf_ext.size / BUFFER_CHUNK_SZ) 
-            + (buf_ext_not_aligned = buf_ext.size % BUFFER_CHUNK_SZ != 0);
+            + (buf_ext_not_aligned = buf_ext.size % BUFFER_CHUNK_SZ);
 
   std::vector<asio::const_buffer> buffers(nchunks);
   auto it = buffers.begin();

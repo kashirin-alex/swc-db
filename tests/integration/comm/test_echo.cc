@@ -59,7 +59,7 @@ class Checker {
             std::chrono::duration_cast<std::chrono::nanoseconds>(
               std::chrono::system_clock::now() - start_ts).count());   
       
-          if(expected % 100000 == 0)
+          if(!(expected % 100000))
             print_stats();
 
           if(expected <= 0) {
@@ -83,7 +83,7 @@ class Checker {
       Env::Clients::get()->mngrs_groups->get_endpoints(
         DB::Types::MngrRole::SCHEMAS, 0, 0), 
       [this](Comm::ConnHandlerPtr conn){
-        if(conn == nullptr || !conn->is_open()){
+        if(!conn || !conn->is_open()){
           get_conn();
           return;
         }

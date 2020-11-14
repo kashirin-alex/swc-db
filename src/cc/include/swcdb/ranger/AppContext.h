@@ -203,8 +203,7 @@ class AppContext final : public Comm::AppContext {
   }
 
   void shutting_down(const std::error_code &ec, const int &sig) {
-
-    if(sig == 0) { // set signals listener
+    if(!sig) { // set signals listener
       Env::Rgr::io()->signals()->async_wait(
         [this](const std::error_code &ec, const int &sig) {
           SWC_LOGF(LOG_INFO, "Received signal, sig=%d ec=%s", 
@@ -219,7 +218,7 @@ class AppContext final : public Comm::AppContext {
     SWC_LOGF(LOG_INFO, "Shutdown signal, sig=%d ec=%s", 
              sig, ec.message().c_str());
     
-    if(m_srv == nullptr) {
+    if(!m_srv) {
       SWC_LOG(LOG_INFO, "Exit");
       std::quick_exit(0);
     }

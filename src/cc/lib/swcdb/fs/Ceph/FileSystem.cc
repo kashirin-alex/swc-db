@@ -82,7 +82,7 @@ void FileSystemCeph::setup_connection() {
   // status check
   int err;
   const char* cwd = ceph_getcwd(m_filesystem);
-  if(path_root.compare(cwd) != 0) {
+  if(path_root.compare(cwd)) {
       SWC_LOGF(LOG_WARN, 
         "FS-Ceph, ceph_cwd='%s' != path_root='%s' changing",
         cwd, path_root.c_str());
@@ -193,7 +193,7 @@ bool FileSystemCeph::initialize() {
     return false;
   }
 
-  return m_filesystem != nullptr;
+  return bool(m_filesystem);
 }
 
 FileSystemCeph::~FileSystemCeph() { }
@@ -428,7 +428,7 @@ void FileSystemCeph::create(int& err, SmartFd::Ptr& smartfd,
             smartfd->to_string().c_str(), bufsz, replication, objsz);
 
   int oflags = O_WRONLY | O_CREAT;
-  if((smartfd->flags() & OpenFlags::OPEN_FLAG_OVERWRITE) == 0)
+  if(!(smartfd->flags() & OpenFlags::OPEN_FLAG_OVERWRITE))
     oflags |= O_APPEND;
   else
     oflags |= O_TRUNC;

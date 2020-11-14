@@ -15,7 +15,7 @@ namespace SWC { namespace DB { namespace Specs {
 
 bool Fraction::operator==(const Fraction &other) const {
   return other.comp == comp && length() == other.length() && 
-         memcmp(data(), other.data(), length()) == 0;
+         !memcmp(data(), other.data(), length());
 }
 
 uint32_t Fraction::encoded_length() const {

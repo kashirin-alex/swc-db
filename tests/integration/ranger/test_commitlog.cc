@@ -134,7 +134,7 @@ int main(int argc, char** argv) {
 
         commitlog->add(cell);
         
-        if((i % 100000) == 0)
+        if(!(i % 100000))
           std::cout << "thread-adding=" << t 
                     << " progress=" << i << "\n";
       }

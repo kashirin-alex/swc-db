@@ -40,10 +40,10 @@ int run() {
   std::string transport = settings->get_str("swc.ThriftBroker.transport");
 
   std::shared_ptr<thrift::transport::TTransportFactory> transportFactory;
-  if (transport.compare("framed") == 0) {
+  if(!transport.compare("framed")) {
     transportFactory.reset(new thrift::transport::TFramedTransportFactory());
 
-  } else if (transport.compare("zlib") == 0) {
+  } else if(!transport.compare("zlib")) {
     transportFactory.reset(new thrift::transport::TZlibTransportFactory());
 
   } else {
@@ -92,7 +92,7 @@ int run() {
     for(auto& endpoint : endpoints) {
       bool is_plain = true; // if use_ssl && need ssl.. transportFactory.reset(..)
       std::shared_ptr<thrift::transport::TServerSocket> socket;
-      if(reactor == 0) { 
+      if(!reactor) { 
         socket = std::make_shared<thrift::transport::TServerSocket>(
           endpoint.address().to_string(), endpoint.port());
       } else {

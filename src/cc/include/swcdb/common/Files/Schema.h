@@ -124,7 +124,7 @@ DB::Schema::Ptr load(int &err, cid_t cid,
     schema = nullptr;
   }
 
-  if(schema == nullptr && err != Error::SERVER_SHUTTING_DOWN && recover){
+  if(!schema && err != Error::SERVER_SHUTTING_DOWN && recover) {
     SWC_LOGF(LOG_WARN, "Missing Column(cid=%lu) Schema", cid);
 
     schema = DB::Schema::make();

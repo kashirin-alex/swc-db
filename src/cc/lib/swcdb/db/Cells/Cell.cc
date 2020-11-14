@@ -32,13 +32,13 @@ std::string to_string(Flag flag) {
 Flag flag_from(const uint8_t* rptr, uint32_t len) {
   const char* ptr = (const char*)rptr;
   if(len >= 14) {
-    if(strncasecmp(ptr, "delete_version", 14) == 0)
+    if(!strncasecmp(ptr, "delete_version", 14))
       return Flag::DELETE_VERSION;
   }
   if(len >= 6) {
-    if(strncasecmp(ptr, "insert", 6) == 0)
+    if(!strncasecmp(ptr, "insert", 6))
       return Flag::INSERT;
-    if(strncasecmp(ptr, "delete", 6) == 0)
+    if(!strncasecmp(ptr, "delete", 6))
       return Flag::DELETE;
   }
   return Flag::NONE;
@@ -258,7 +258,7 @@ bool Cell::equal(const Cell& other) const {
           (!(control & HAVE_REVISION) || revision == other.revision) && 
           vlen == other.vlen &&
           key.equal(other.key) &&
-          memcmp(value, other.value, vlen) == 0;
+          !memcmp(value, other.value, vlen);
 }
 
 SWC_SHOULD_INLINE

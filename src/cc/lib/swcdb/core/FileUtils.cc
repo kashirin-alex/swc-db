@@ -39,7 +39,7 @@ namespace SWC { namespace FileUtils {
 bool read(const std::string& fname, std::string& contents) {
   off_t len {};
   char *buf = file_to_buffer(fname, &len);
-  if (buf != 0) {
+  if(buf) {
     contents.append(buf, len);
     delete [] buf;
     return true;
@@ -153,7 +153,7 @@ bool mkdirs(const std::string& dirname) {
     *(tmpdir+n) = 0;
 
     errno = 0;
-    if (stat(tmpdir, &statbuf) != 0) {
+    if(stat(tmpdir, &statbuf)) {
       if (errno != ENOENT) {
         saved_errno = errno;
         SWC_LOGF(LOG_ERROR, "Problem stat'ing directory '%s' - %d(%s)", tmpdir,
@@ -161,7 +161,7 @@ bool mkdirs(const std::string& dirname) {
         break;
       }
       errno = 0;
-      if (mkdir(tmpdir, 0755) != 0 && errno != EEXIST) {
+      if(mkdir(tmpdir, 0755) && errno != EEXIST) {
         saved_errno = errno;
         SWC_LOGF(LOG_ERROR, "Problem creating directory '%s' - %d(%s)", tmpdir,
                    saved_errno, strerror(saved_errno));
@@ -178,7 +178,7 @@ bool mkdirs(const std::string& dirname) {
 
 bool exists(const std::string& fname) {
   struct stat statbuf;
-  if(stat(fname.c_str(), &statbuf) != 0)
+  if(stat(fname.c_str(), &statbuf))
     return false;
   return true;
 }
@@ -207,7 +207,7 @@ bool rename(const std::string& oldpath, const std::string& newpath) {
 
 uint64_t size(const std::string& fname) {
   struct stat statbuf;
-  if (stat(fname.c_str(), &statbuf) != 0)
+  if(stat(fname.c_str(), &statbuf))
     return 0;
   return statbuf.st_size;
 }
@@ -215,14 +215,14 @@ uint64_t size(const std::string& fname) {
 
 off_t length(const std::string& fname) {
   struct stat statbuf;
-  if (stat(fname.c_str(), &statbuf) != 0)
+  if(stat(fname.c_str(), &statbuf))
     return (off_t)-1;
   return statbuf.st_size;
 }
 
 time_t modification(const std::string& fname) {
   struct stat statbuf;
-  if (stat(fname.c_str(), &statbuf) != 0)
+  if(stat(fname.c_str(), &statbuf))
     return 0;
   return statbuf.st_mtime;
 }
@@ -232,8 +232,8 @@ void readdir(const std::string& dirname,
              std::vector<struct dirent>& listing) {
 
   errno = 0;
-  DIR *dirp = opendir(dirname.c_str());
-  if(dirp == nullptr || errno != 0){
+  DIR* dirp = opendir(dirname.c_str());
+  if(!dirp || errno) {
     SWC_LOGF(LOG_ERROR, "Problem reading directory '%s' - %s", dirname.c_str(),
               strerror(errno));
     return;
@@ -242,14 +242,13 @@ void readdir(const std::string& dirname,
                     ? new re2::RE2(fname_regex)
                     : nullptr;
 
-  struct dirent *dep;
+  struct dirent* dep;
 
 #if defined(USE_READDIR_R) && USE_READDIR_R
 
-  int ret;
   struct dirent de;
   for(;;) {
-    if((ret = ::readdir_r(dirp, &de, &dep)) != 0 || dep == nullptr)
+    if(::readdir_r(dirp, &de, &dep) || !dep)
       break;
     if(!regex || re2::RE2::FullMatch(de.d_name, *regex))
       listing.push_back(de);
@@ -258,7 +257,7 @@ void readdir(const std::string& dirname,
 #else
 
   for(;;) {
-    if((dep = ::readdir(dirp)) == nullptr)
+    if(!(dep = ::readdir(dirp)))
       break;
     if (!regex || re2::RE2::FullMatch(dep->d_name, *regex))
       listing.push_back(*dep);
@@ -274,13 +273,14 @@ void readdir(const std::string& dirname,
     delete regex;
 }
 
-char *file_to_buffer(const std::string& fname, off_t *lenp) {
+char* file_to_buffer(const std::string& fname, off_t *lenp) {
   struct stat statbuf;
   int fd;
 
   *lenp = 0;
+  errno = 0;
 
-  if ((fd = open(fname.c_str(), O_RDONLY)) < 0) {
+  if((fd = open(fname.c_str(), O_RDONLY)) < 0) {
     int saved_errno = errno;
     SWC_LOGF(LOG_ERROR, "open(\"%s\") failure - %s", fname.c_str(),
             strerror(saved_errno));
@@ -288,7 +288,7 @@ char *file_to_buffer(const std::string& fname, off_t *lenp) {
     return 0;
   }
 
-  if (fstat(fd, &statbuf) < 0) {
+  if(fstat(fd, &statbuf) < 0) {
     int saved_errno = errno;
     SWC_LOGF(LOG_ERROR, "fstat(\"%s\") failure - %s", fname.c_str(),
            strerror(saved_errno));
@@ -304,7 +304,7 @@ char *file_to_buffer(const std::string& fname, off_t *lenp) {
 
   ::close(fd);
 
-  if (nread == (ssize_t)-1) {
+  if(nread == (ssize_t)-1) {
     int saved_errno = errno;
     SWC_LOGF(LOG_ERROR, "read(\"%s\") failure - %s", fname.c_str(),
             strerror(saved_errno));
@@ -314,7 +314,7 @@ char *file_to_buffer(const std::string& fname, off_t *lenp) {
     return 0;
   }
 
-  if (nread < *lenp) {
+  if(nread < *lenp) {
     SWC_LOGF(LOG_WARN, "short read (%d of %d bytes)", (int)nread, (int)*lenp);
     *lenp = nread;
   }
@@ -325,7 +325,7 @@ char *file_to_buffer(const std::string& fname, off_t *lenp) {
 
 std::string file_to_string(const std::string& fname) {
   off_t len;
-  char *contents = file_to_buffer(fname, &len);
+  char* contents = file_to_buffer(fname, &len);
   if(!contents)
     return "";
   std::string str(contents);

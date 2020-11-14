@@ -108,7 +108,7 @@ void IoCtx::init(int32_t size) {
 }
 
 bool IoCtx::ok() {
-  return m_env != nullptr;
+  return bool(m_env);
 }
   
 SWC_SHOULD_INLINE

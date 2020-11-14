@@ -48,7 +48,7 @@ bool Timestamp::equal(const Timestamp &other) const {
 }
 
 size_t Timestamp::encoded_length() const {
-  return 1+(comp != Condition::NONE? 8: 0);
+  return 1 + (comp == Condition::NONE? 0: 8);
 }
 
 void Timestamp::encode(uint8_t** bufp) const {

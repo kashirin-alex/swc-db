@@ -96,7 +96,7 @@ class AppContext final : virtual public BrokerIfFactory {
   }
 
   void shutting_down(const std::error_code& ec, const int& sig) {
-    if(sig == 0) { // set signals listener
+    if(!sig) { // set signals listener
       Env::IoCtx::io()->signals()->async_wait(
         [this](const std::error_code& ec, const int &sig) {
           if(ec == asio::error::operation_aborted)

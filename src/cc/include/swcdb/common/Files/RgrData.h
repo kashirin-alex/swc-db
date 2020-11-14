@@ -83,7 +83,7 @@ class RgrData final {
                int64_t ts = 0) {
 
     DynamicBuffer input;
-    write(input, ts==0 ? Time::now_ns() : ts);
+    write(input, ts ? ts : Time::now_ns());
     StaticBuffer send_buf(input);
 
     Env::FsInterface::interface()->write(

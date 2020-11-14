@@ -21,7 +21,6 @@ Fragments::Fragments(const DB::Types::KeySeq key_seq)
 }
 
 void Fragments::init(const RangePtr& for_range) {
-  SWC_ASSERT(for_range != nullptr);
   
   range = for_range;
   

@@ -433,7 +433,7 @@ class AppHandler final : virtual public BrokerIf {
     for(auto& col_cells : cells) {
               // req->columns_onfractions
       auto col = req->columns->get_col(cid = col_cells.first);
-      if(col == nullptr) {
+      if(!col) {
         auto schema = Env::Clients::get()->schemas->get(err, cid);
         if(err) 
           Converter::exception(err);

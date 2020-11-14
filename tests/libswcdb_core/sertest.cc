@@ -40,7 +40,7 @@ void test_i8() {
   SWC_TRY("decoding i8",
     SWC_ASSERT(decode_i8(&p, &len) == input);
     SWC_ASSERT(p - buf == 1);
-    SWC_ASSERT(len == 0));
+    SWC_ASSERT(!len));
 }
 
 void test_i16() {
@@ -52,7 +52,7 @@ void test_i16() {
   SWC_TRY("decoding i16",
     SWC_ASSERT(decode_i16(&p2, &len) == input);
     SWC_ASSERT(p2 - buf == 2);
-    SWC_ASSERT(len == 0));
+    SWC_ASSERT(!len));
 
   auto ns = Time::now_ns();
   for(uint16_t n=0; n<UINT16_MAX;++n){
@@ -62,7 +62,7 @@ void test_i16() {
     encode_i16(&p, n);
     SWC_TRY("decoding i32",
       SWC_ASSERT(decode_i16(&p2, &len) == n);
-      SWC_ASSERT(len == 0));
+      SWC_ASSERT(!len));
   }
   ns = Time::now_ns() - ns;
   std::cout << "i16 took=" << ns 
@@ -78,7 +78,7 @@ void test_i24() {
   SWC_TRY("decoding i24",
     SWC_ASSERT(decode_i24(&p2, &len) == input);
     SWC_ASSERT(p2 - buf == 3);
-    SWC_ASSERT(len == 0));
+    SWC_ASSERT(!len));
 
   auto ns = Time::now_ns();
   for(uint24_t n=0; n<UINT24_MAX;++n){
@@ -88,7 +88,7 @@ void test_i24() {
     encode_i24(&p, n);
     SWC_TRY("decoding i24",
       SWC_ASSERT(decode_i24(&p2, &len) == n);
-      SWC_ASSERT(len == 0));
+      SWC_ASSERT(!len));
   }
   ns = Time::now_ns() - ns;
   std::cout << "i24 took=" << ns 
@@ -104,7 +104,7 @@ void test_i32() {
   SWC_TRY("decoding i32",
     SWC_ASSERT(decode_i32(&p2, &len) == input);
     SWC_ASSERT(p2 - buf == 4);
-    SWC_ASSERT(len == 0));
+    SWC_ASSERT(!len));
 
   auto ns = Time::now_ns();
   for(uint32_t n=0; n<UINT32_MAX;++n){
@@ -114,7 +114,7 @@ void test_i32() {
     encode_i32(&p, n);
     SWC_TRY("decoding i32",
       SWC_ASSERT(decode_i32(&p2, &len) == n);
-      SWC_ASSERT(len == 0));
+      SWC_ASSERT(!len));
   }
   ns = Time::now_ns() - ns;
   std::cout << "i32 took=" << ns 
@@ -130,7 +130,7 @@ void test_i64() {
   SWC_TRY("decoding i64",
     SWC_ASSERT(decode_i64(&p2, &len) == input);
     SWC_ASSERT(p2 - buf == 8);
-    SWC_ASSERT(len == 0));
+    SWC_ASSERT(!len));
 
   auto ns = Time::now_ns();
   for(uint64_t n=0; n<UINT64_MAX;++n){
@@ -140,7 +140,7 @@ void test_i64() {
     encode_i64(&p, n);
     SWC_TRY("decoding i64",
       SWC_ASSERT(decode_i64(&p2, &len) == n);
-      SWC_ASSERT(len == 0));
+      SWC_ASSERT(!len));
   }
   ns = Time::now_ns() - ns;
   std::cout << "i64 took=" << ns
@@ -169,7 +169,7 @@ void test_vi24() {
   SWC_TRY("decoding vint24",
     SWC_ASSERT(decode_vi24(&p2, &len) == input);
     SWC_ASSERT(p2 - buf == 4);
-    SWC_ASSERT(len == 0));
+    SWC_ASSERT(!len));
   }
 
   uint64_t c = 0;
@@ -204,7 +204,7 @@ void test_vi32() {
   SWC_TRY("decoding vint32",
     SWC_ASSERT(decode_vi32(&p2, &len) == input);
     SWC_ASSERT(p2 - buf == 5);
-    SWC_ASSERT(len == 0));
+    SWC_ASSERT(!len));
   }
 
   uint64_t c = 0;
@@ -251,7 +251,7 @@ void test_vi64() {
   SWC_TRY("decoding vint64",
     SWC_ASSERT(decode_vi64(&p2, &len) == input);
     SWC_ASSERT(p2 - buf == 10);
-    SWC_ASSERT(len == 0));
+    SWC_ASSERT(!len));
   }
   
   uint64_t c = 0;

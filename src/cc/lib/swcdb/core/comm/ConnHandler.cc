@@ -352,7 +352,7 @@ void ConnHandler::recv_buffers(const Event::Ptr& ev, uint8_t n) {
 
   StaticBuffer* buffer;
   size_t remain;
-  if(n == 0) {
+  if(!n) {
     buffer = &ev->data;
     remain = ev->header.data.size;
   } else {
@@ -376,7 +376,7 @@ void ConnHandler::recved_buffer(const Event::Ptr& ev, asio::error_code ec,
   if(!ec) {
     StaticBuffer* buffer;
     uint32_t checksum;
-    if(n == 0) {
+    if(!n) {
       buffer = &ev->data;
       checksum = ev->header.data.chksum;
     } else { 

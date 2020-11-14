@@ -50,24 +50,24 @@ std::string to_string(Column typ) {
 
 Column column_type_from(const std::string& typ) {
 
-  if(typ.compare("1") == 0 || 
-     strncasecmp(typ.data(), Column_PLAIN, 5) == 0)
+  if(!typ.compare("1") || 
+     !strncasecmp(typ.data(), Column_PLAIN, 5))
     return Column::PLAIN;
 
-  if(typ.compare("2") == 0 ||
-     strncasecmp(typ.data(), Column_COUNTER_I64, typ.length()) == 0)
+  if(!typ.compare("2") ||
+     !strncasecmp(typ.data(), Column_COUNTER_I64, typ.length()))
     return Column::COUNTER_I64;
   
-  if(typ.compare("3") == 0 || 
-     strncasecmp(typ.data(), Column_COUNTER_I32, 11) == 0)
+  if(!typ.compare("3") || 
+     !strncasecmp(typ.data(), Column_COUNTER_I32, 11))
     return Column::COUNTER_I32;
 
-  if(typ.compare("4") == 0 || 
-     strncasecmp(typ.data(), Column_COUNTER_I16, 11) == 0)
+  if(!typ.compare("4") || 
+     !strncasecmp(typ.data(), Column_COUNTER_I16, 11))
     return Column::COUNTER_I16;
 
-  if(typ.compare("5") == 0 || 
-     strncasecmp(typ.data(), Column_COUNTER_I8, 10) == 0)
+  if(!typ.compare("5") || 
+     !strncasecmp(typ.data(), Column_COUNTER_I8, 10))
     return Column::COUNTER_I8;
 
   return Column::UNKNOWN;

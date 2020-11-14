@@ -215,7 +215,7 @@ void Read::load_blocks_index(int& err, FS::SmartFd::Ptr& smartfd,
 
       ptr = read_buf.base;
       remain = idx_size_plain;
-      if(i == 0)
+      if(!i)
         prev_key_end.decode(&ptr, &remain, true);
       blks_count = Serialization::decode_vi32(&ptr, &remain);
 

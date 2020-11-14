@@ -231,7 +231,7 @@ Fragment::Fragment(const FS::SmartFd::Ptr& smartfd,
 Fragment::~Fragment() {
   Env::Rgr::res().less_mem_usage(
     size_of() + 
-    (m_buffer.size && m_state != State::NONE ? size_plain : 0)
+    (m_buffer.size && m_state == State::NONE ? 0 : size_plain)
   );
 }
 

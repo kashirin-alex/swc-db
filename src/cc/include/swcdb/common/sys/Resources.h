@@ -178,7 +178,7 @@ class Resources final {
   }
 
   void refresh_stats() {
-    if(++next_major_chk % (is_low_mem_state() ? 10 : 100) == 0) {
+    if(!(++next_major_chk % (is_low_mem_state() ? 10 : 100))) {
       page_size = sysconf(_SC_PAGE_SIZE);
     
       std::ifstream buffer("/proc/meminfo");
@@ -190,11 +190,11 @@ class Resources final {
         do {
           buffer >> tmp;
           if(tmp.length() == 9 && 
-             memcmp(tmp.c_str(), "MemTotal:", 9) == 0) {
+             !memcmp(tmp.c_str(), "MemTotal:", 9)) {
             metric = &ram.total;
           } else 
           if(tmp.length() == 13 && 
-              memcmp(tmp.c_str(), "MemAvailable:", 13) == 0) {
+             !memcmp(tmp.c_str(), "MemAvailable:", 13)) {
             metric = &ram.free;
           }
           if(metric) {
@@ -221,10 +221,10 @@ class Resources final {
       if(ram.chk_ms > MAX_RAM_CHK_INTVAL_MS)
         ram.chk_ms = MAX_RAM_CHK_INTVAL_MS;
       
-      if(next_major_chk % 100 == 0 && is_low_mem_state())
+      if(!(next_major_chk % 100) && is_low_mem_state())
         SWC_LOG_OUT(LOG_WARN, print(SWC_LOG_OSTREAM << "Low-Memory state "););
       
-      size_t concurrency = !m_concurrency || next_major_chk % 100 == 0
+      size_t concurrency = !m_concurrency || !(next_major_chk % 100)
         ? std::thread::hardware_concurrency() : 0;
       if(concurrency) {
         std::ifstream buffer(
@@ -245,9 +245,9 @@ class Resources final {
             size_t tmp_speed = 0;
             do {
               buffer >> tmp;
-              if(memcmp(tmp.c_str(), "cpu", 3) == 0) {
+              if(!memcmp(tmp.c_str(), "cpu", 3)) {
                 buffer >> tmp; 
-                if(memcmp(tmp.c_str(), "MHz", 3) == 0) {
+                if(!memcmp(tmp.c_str(), "MHz", 3)) {
                   buffer >> tmp >> tmp_speed;
                   mhz += tmp_speed;
                 }
