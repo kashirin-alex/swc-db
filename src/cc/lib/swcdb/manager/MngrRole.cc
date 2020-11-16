@@ -96,6 +96,24 @@ MngrStatus::Ptr MngrRole::active_mngr_role(uint8_t role) {
   return nullptr;
 }
 
+bool MngrRole::are_all_active(const client::Mngr::Groups::Vec& groups) {
+  for(auto& g : groups) {
+    bool found = false;
+    std::shared_lock lock(m_mutex);
+    for(auto& host : m_states) {
+      if(host->state == DB::Types::MngrState::ACTIVE &&
+         g->role == host->role && 
+         g->cid_begin == host->cid_begin && g->cid_end == host->cid_end) {
+        found = true;
+        break;
+      }
+    }
+    if(!found)
+      return false;
+  }
+  return true;
+}
+
 void MngrRole::get_states(MngrsStatus& states) {
   std::shared_lock lock(m_mutex);
   states.assign(m_states.begin(), m_states.end());

@@ -32,6 +32,8 @@ class MngrRole final {
 
   MngrStatus::Ptr active_mngr_role(uint8_t role);
 
+  bool are_all_active(const client::Mngr::Groups::Vec& groups);
+
   void get_states(MngrsStatus& states);
   
   Comm::EndPoint get_inchain_endpoint() const;

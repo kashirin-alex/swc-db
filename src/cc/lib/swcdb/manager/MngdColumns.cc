@@ -17,7 +17,8 @@ using ColumnMngFunc = Comm::Protocol::Mngr::Params::ColumnMng::Function;
 
 
 MngdColumns::MngdColumns()
-    : m_run(true), m_schemas_set(false), m_cid_active(false), 
+    : m_run(true), m_schemas_set(false), 
+      m_columns_loading(false), m_cid_active(false), 
       m_cid_begin(DB::Schema::NO_CID), m_cid_end(DB::Schema::NO_CID),
       m_expected_ready(false),
       cfg_schema_replication(
@@ -472,28 +473,37 @@ bool MngdColumns::initialize() {
 
 
 bool MngdColumns::columns_load() {
-  int err;
-  for(;;) {
+  {
+    Core::MutexSptd::scope lock(m_mutex_schemas);
+    if(m_columns_loading)
+      return true;
+    m_columns_loading = true;
+  }
+  for(int err;;) {
     if(is_schemas_mngr(err = Error::OK)) {
       if(err) // hold-on
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
       else
         break;
     } else {
+      Core::MutexSptd::scope lock(m_mutex_schemas);
+      m_columns_loading = false;
       return false;
     }
   }
 
   auto groups = Env::Clients::get()->mngrs_groups->get_groups();
-  if(groups.empty()) {
+  if(groups.empty())
     SWC_LOG(LOG_WARN, "Empty Managers Groups")
-    return false;
-  }
 
   std::vector<DB::Schema::Ptr> entries;
   Env::Mngr::schemas()->all(entries);
-  if(entries.empty()) {
+  if(entries.empty())
     SWC_LOG(LOG_WARN, "Empty Schema Entries")
+
+  if(groups.empty() || entries.empty()) {
+    Core::MutexSptd::scope lock(m_mutex_schemas);
+    m_columns_loading = false;
     return false;
   }
 
@@ -501,6 +511,9 @@ bool MngdColumns::columns_load() {
     (const client::Mngr::Group::Ptr& g1, const client::Mngr::Group::Ptr& g2) {
       return (!g1->cid_begin || g1->cid_begin < g2->cid_begin) &&
              (g2->cid_end && g1->cid_end < g2->cid_end); });
+
+  while(!Env::Mngr::role()->are_all_active(groups))
+    std::this_thread::sleep_for(std::chrono::milliseconds(100)); // hold-on
 
   std::sort(entries.begin(), entries.end(),
     [](const DB::Schema::Ptr& s1, const DB::Schema::Ptr& s2) {
@@ -538,6 +551,11 @@ bool MngdColumns::columns_load() {
       columns.clear();
       goto make_batch;
     }
+  }
+
+  {
+    Core::MutexSptd::scope lock(m_mutex_schemas);
+    m_columns_loading = false;
   }
   return true;
 }
