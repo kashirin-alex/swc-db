@@ -60,7 +60,7 @@ class RangersResources final : private std::vector<RangerResources> {
 
   void print(std::ostream& out) {
     out << "RangersResources(rangers=";
-    Core::MutexAtomic::scope lock(m_mutex);
+    Core::MutexSptd::scope lock(m_mutex);
     out << size() << " [";
     for(auto& r : *this)
       r.print(out << "\n ");
@@ -68,34 +68,35 @@ class RangersResources final : private std::vector<RangerResources> {
   }
   
   void check(const RangerList& rangers) {
-    if(!m_mutex.try_lock())
+    bool support;
+    if(!m_mutex.try_full_lock(support))
       return;
     if(m_due || 
        int64_t(m_last_check + cfg_check->get()) > Time::now_ns())
-      return m_mutex.unlock();
+      return m_mutex.unlock(support);
 
     m_last_check = Time::now_ns();
     for(auto& rgr : rangers) {
-      if(rgr->state != RangerState::ACK)
-        continue;
-      rgr->put(std::make_shared<Comm::Protocol::Rgr::Req::ReportRes>(rgr));
-      ++m_due;
+      if(rgr->state == RangerState::ACK ||
+         rgr->state == RangerState::MARKED_OFFLINE) {
+        rgr->put(std::make_shared<Comm::Protocol::Rgr::Req::ReportRes>(rgr));
+        ++m_due;
+      }
     }
-
-    m_mutex.unlock();
+    m_mutex.unlock(support);
   }
 
   bool add_and_more(rgrid_t rgrid, int err,
                     const Comm::Protocol::Rgr::Params::Report::RspRes& rsp) {
-    Core::MutexAtomic::scope lock(m_mutex);
-    if(!err) {
+    Core::MutexSptd::scope lock(m_mutex);
+    if(!err && m_due) {
       auto& res = emplace_back(rgrid, rsp.mem, rsp.cpu, rsp.ranges);
       if(!res.mem || !res.cpu) {
         SWC_LOG_OUT(LOG_WARN, 
           res.print(SWC_LOG_OSTREAM << "received zero(resource) "); );
       }
     }
-    return m_due ? --m_due : false;
+    return m_due ? --m_due : true;
   }
 
   void evaluate() {
@@ -110,7 +111,7 @@ class RangersResources final : private std::vector<RangerResources> {
     uint8_t balanceable = cfg_rebalance_max->get();
 
     {
-      Core::MutexAtomic::scope lock(m_mutex);
+      Core::MutexSptd::scope lock(m_mutex);
       for(auto& res : *this) {
         if(res.mem > max_mem)
           max_mem = res.mem;
@@ -165,7 +166,7 @@ class RangersResources final : private std::vector<RangerResources> {
   void changes(const RangerList& rangers, RangerList& changed) {
     SWC_LOG_OUT(LOG_DEBUG, print(SWC_LOG_OSTREAM << "changes "); );
 
-    Core::MutexAtomic::scope lock(m_mutex);
+    Core::MutexSptd::scope lock(m_mutex);
     for(auto& res : *this) {
       for(auto& rgr : rangers) {
         if(rgr->rgrid != res.rgrid)
@@ -191,7 +192,7 @@ class RangersResources final : private std::vector<RangerResources> {
   
   private:
 
-  Core::MutexAtomic  m_mutex;
+  Core::MutexSptd    m_mutex;
   size_t             m_due;
   size_t             m_last_check;
 

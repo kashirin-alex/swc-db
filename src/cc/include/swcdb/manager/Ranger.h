@@ -93,7 +93,11 @@ class Ranger : public Comm::Protocol::Common::Params::HostEndPoints {
   
   bool can_rebalance() {
     Core::MutexAtomic::scope lock(m_mutex);
-    return m_rebalance && !--m_rebalance;
+    if(m_rebalance) {
+      --m_rebalance;
+      return true;
+    }
+    return false;
   }
 
 

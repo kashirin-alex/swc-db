@@ -37,6 +37,8 @@ class Rangers final {
   
   void schedule_check(uint32_t t_ms = 10000);
 
+  void schedule_run();
+  
   void rgr_report(rgrid_t rgrid, int err,
                   const Comm::Protocol::Rgr::Params::Report::RspRes& rsp);
 
@@ -101,14 +103,12 @@ class Rangers final {
   
   std::atomic<bool>             m_run; 
 
-  Core::MutexAtomic             m_mutex_timer;
+  Core::MutexSptd               m_mutex;
   asio::high_resolution_timer   m_timer; 
-
-  std::mutex                    m_mutex;
   RangerList                    m_rangers;
   RangersResources              m_rangers_resources;
 
-  std::mutex                    m_mutex_assign;
+  Core::MutexSptd               m_mutex_assign;
   bool                          m_runs_assign;
   int32_t                       m_assignments; 
   ColumnHealthChecks            m_columns_check;

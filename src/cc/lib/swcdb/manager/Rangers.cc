@@ -53,18 +53,15 @@ void Rangers::stop(bool shuttingdown) {
   if(shuttingdown)
     m_run = false;
   {
-    Core::MutexAtomic::scope lock(m_mutex_timer);
+    Core::MutexSptd::scope lock(m_mutex);
     m_timer.cancel();
-  }
-  {
-    std::scoped_lock lock(m_mutex);
     for(auto& h : m_rangers)
       Env::Mngr::post([h]() { h->stop(); });
   }
 }
 
 bool Rangers::empty() {
-  std::scoped_lock lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   return m_rangers.empty();
 }
 
@@ -72,7 +69,7 @@ void Rangers::schedule_check(uint32_t t_ms) {
   if(!m_run)
     return;
 
-  Core::MutexAtomic::scope lock(m_mutex_timer);
+  Core::MutexSptd::scope lock(m_mutex);
 
   auto set_in = std::chrono::milliseconds(t_ms);
   auto set_on = m_timer.expiry();
@@ -81,26 +78,29 @@ void Rangers::schedule_check(uint32_t t_ms) {
     return;
 
   m_timer.expires_after(set_in);
-  m_timer.async_wait(
-    [this](const asio::error_code& ec) {
-      if (ec != asio::error::operation_aborted) {
-        if(Env::Mngr::role()->is_active_role(DB::Types::MngrRole::RANGERS)) {
-          std::scoped_lock lock(m_mutex);
-          m_rangers_resources.check(m_rangers);
-          schedule_check(m_rangers_resources.cfg_check->get());
-        }
-        if(Env::Mngr::mngd_columns()->has_active()) {
-          assign_ranges();
-          health_check_columns();
-          schedule_check(cfg_column_health_chk->get());
-        }
-      }
+  m_timer.async_wait([this](const asio::error_code& ec) {
+    if(ec != asio::error::operation_aborted)
+      schedule_run();
   });
 
   if(t_ms > 10000)
     SWC_LOGF(LOG_DEBUG, "Rangers scheduled in ms=%d", t_ms);
 }
 
+void Rangers::schedule_run() {
+  if(Env::Mngr::role()->is_active_role(DB::Types::MngrRole::RANGERS)) {
+    {
+      Core::MutexSptd::scope lock(m_mutex);
+      m_rangers_resources.check(m_rangers);
+    }
+    schedule_check(m_rangers_resources.cfg_check->get());
+  }
+  if(Env::Mngr::mngd_columns()->has_active()) {
+    assign_ranges();
+    health_check_columns();
+    schedule_check(cfg_column_health_chk->get());
+  }
+}
 
 void Rangers::rgr_report(
       rgrid_t rgrid, 
@@ -112,7 +112,7 @@ void Rangers::rgr_report(
   m_rangers_resources.evaluate();
   RangerList changed;
   {
-    std::scoped_lock lock(m_mutex);
+    Core::MutexSptd::scope lock(m_mutex);
     m_rangers_resources.changes(m_rangers, changed);
   }
   if(!changed.empty())
@@ -120,7 +120,7 @@ void Rangers::rgr_report(
 }
 
 Ranger::Ptr Rangers::rgr_get(const rgrid_t rgrid) {
-  std::scoped_lock lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   for(auto& rgr : m_rangers) {
     if(rgr->rgrid == rgrid)
       return rgr;
@@ -129,7 +129,7 @@ Ranger::Ptr Rangers::rgr_get(const rgrid_t rgrid) {
 }
 
 void Rangers::rgr_get(const rgrid_t rgrid, Comm::EndPoints& endpoints) {
-  std::scoped_lock lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   for(auto& rgr : m_rangers) {
     if(rgr->rgrid == rgrid) {
       if(rgr->state & RangerState::ACK)
@@ -140,12 +140,12 @@ void Rangers::rgr_get(const rgrid_t rgrid, Comm::EndPoints& endpoints) {
 }
 
 void Rangers::rgr_get(const Ranger::Ptr& rgr, Comm::EndPoints& endpoints) {
-  std::scoped_lock lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   endpoints = rgr->endpoints;
 }
 
 void Rangers::rgr_list(const rgrid_t rgrid, RangerList& rangers) {
-  std::scoped_lock lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   for(auto& rgr : m_rangers) {
     if(!rgrid || rgr->rgrid == rgrid) {
       rangers.push_back(rgr);
@@ -157,7 +157,7 @@ void Rangers::rgr_list(const rgrid_t rgrid, RangerList& rangers) {
 
 rgrid_t Rangers::rgr_set_id(const Comm::EndPoints& endpoints, 
                             rgrid_t opt_rgrid) {
-  std::scoped_lock lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   return rgr_set(endpoints, opt_rgrid)->rgrid;
 }
 
@@ -165,7 +165,7 @@ bool Rangers::rgr_ack_id(rgrid_t rgrid, const Comm::EndPoints& endpoints) {
   bool ack = false;
   Ranger::Ptr new_ack = nullptr;
   {
-    std::scoped_lock lock(m_mutex);
+    Core::MutexSptd::scope lock(m_mutex);
     
     for(auto& h : m_rangers) {
       if(Comm::has_endpoint(h->endpoints, endpoints) && rgrid == h->rgrid) {
@@ -190,8 +190,7 @@ bool Rangers::rgr_ack_id(rgrid_t rgrid, const Comm::EndPoints& endpoints) {
 rgrid_t Rangers::rgr_had_id(rgrid_t rgrid, const Comm::EndPoints& endpoints) {
   bool new_id_required = false;
   {
-    std::scoped_lock lock(m_mutex);
-
+    Core::MutexSptd::scope lock(m_mutex);
     for(auto& h : m_rangers) {
       if(rgrid == h->rgrid) {
         if(Comm::has_endpoint(h->endpoints, endpoints))
@@ -207,7 +206,7 @@ rgrid_t Rangers::rgr_had_id(rgrid_t rgrid, const Comm::EndPoints& endpoints) {
 void Rangers::rgr_shutdown(rgrid_t, const Comm::EndPoints& endpoints) {
   Ranger::Ptr removed = nullptr;
   {
-    std::scoped_lock lock(m_mutex);
+    Core::MutexSptd::scope lock(m_mutex);
     for(auto it=m_rangers.begin(); it<m_rangers.end(); ++it) {
       auto h = *it;
       if(Comm::has_endpoint(h->endpoints, endpoints)) {
@@ -243,9 +242,8 @@ void Rangers::update_status(RangerList new_rgr_status, bool sync_all) {
     Ranger::Ptr h;
     bool found;
     bool chg;
-    bool load_scale_updated = false;
 
-    std::scoped_lock lock(m_mutex);
+    Core::MutexSptd::scope lock(m_mutex);
 
     for(auto& rs_new : new_rgr_status) {
       found = false;
@@ -254,6 +252,7 @@ void Rangers::update_status(RangerList new_rgr_status, bool sync_all) {
         if(!Comm::has_endpoint(h->endpoints, rs_new->endpoints))
           continue;
 
+        found = true;
         chg = false;
         if(rs_new->rgrid != h->rgrid) { 
           if(rangers_mngr)
@@ -304,7 +303,6 @@ void Rangers::update_status(RangerList new_rgr_status, bool sync_all) {
 
         if(rs_new->load_scale != h->load_scale) { 
           h->load_scale.store(rs_new->load_scale);
-          load_scale_updated = true;
           chg = true;
         }
 
@@ -315,9 +313,8 @@ void Rangers::update_status(RangerList new_rgr_status, bool sync_all) {
           h->rebalance(0);
         }
 
-        if(chg && !sync_all)
-          changed.push_back(rs_new);
-        found = true;
+        if(chg || sync_all)
+          changed.push_back(h);
         break;
       }
 
@@ -325,16 +322,13 @@ void Rangers::update_status(RangerList new_rgr_status, bool sync_all) {
         if(rs_new->state == RangerState::ACK) {
           rs_new->init_queue();
           m_rangers.push_back(rs_new);
-          if(!sync_all)
-            changed.push_back(rs_new);
+          changed.push_back(rs_new);
         }
       }
     }
 
-    if(load_scale_updated) {
-      for(auto& h : m_rangers)
-        h->interm_ranges = 0;
-    }
+    for(auto& h : m_rangers)
+      h->interm_ranges = 0;
   }
 
   for(auto h : balance_rangers) {
@@ -356,17 +350,15 @@ void Rangers::update_status(RangerList new_rgr_status, bool sync_all) {
     }
   }
 
-  changes(
-    sync_all ? m_rangers : changed, 
-    sync_all && !rangers_mngr
-  );
+  if(!changed.empty())
+    changes(changed, sync_all && !rangers_mngr);
 }
 
 void Rangers::range_loaded(Ranger::Ptr rgr, Range::Ptr range, 
                            int err, bool failure, bool verbose) {
   bool run_assign;
   {
-    std::scoped_lock lock(m_mutex);
+    Core::MutexSptd::scope lock(m_mutex_assign);
     run_assign = m_assignments-- == cfg_assign_due->get();
   }
 
@@ -410,8 +402,7 @@ bool Rangers::update(const Column::Ptr& col, const DB::Schema::Ptr& schema,
   col->need_schema_sync(schema->revision, rgrids);
   bool undergo = false;
   for(rgrid_t rgrid : rgrids) {
-    std::scoped_lock lock(m_mutex);
-
+    Core::MutexSptd::scope lock(m_mutex);
     for(auto& rgr : m_rangers) {
       if(rgr->failures < cfg_rgr_failures->get() && 
          rgr->state == RangerState::ACK && rgr->rgrid == rgrid) {
@@ -430,7 +421,7 @@ bool Rangers::update(const Column::Ptr& col, const DB::Schema::Ptr& schema,
 void Rangers::column_delete(const DB::Schema::Ptr& schema, uint64_t req_id,
                             const std::vector<rgrid_t>& rgrids) {
   for(rgrid_t rgrid : rgrids) {
-    std::scoped_lock lock(m_mutex);
+    Core::MutexSptd::scope lock(m_mutex);
     for(auto& rgr : m_rangers) {
       if(rgrid != rgr->rgrid)
         continue;
@@ -445,8 +436,7 @@ void Rangers::column_compact(const Column::Ptr& col) {
   std::vector<rgrid_t> rgrids;
   col->assigned(rgrids);
   for(rgrid_t rgrid : rgrids) {
-    std::scoped_lock lock(m_mutex);
-
+    Core::MutexSptd::scope lock(m_mutex);
     for(auto& rgr : m_rangers) {
       if(rgr->failures < cfg_rgr_failures->get() && 
          rgr->state == RangerState::ACK && rgr->rgrid == rgrid) {
@@ -460,7 +450,7 @@ void Rangers::column_compact(const Column::Ptr& col) {
 
 void Rangers::need_health_check(const Column::Ptr& col) {
   {
-    std::scoped_lock lock(m_mutex_assign);
+    Core::MutexSptd::scope lock(m_mutex_assign);
     auto it = std::find_if(
       m_columns_check.begin(), m_columns_check.end(), 
       [col](const ColumnHealthCheck::Ptr chk) { return chk->col == col; });
@@ -473,7 +463,7 @@ void Rangers::need_health_check(const Column::Ptr& col) {
 
 void Rangers::health_check_finished(const ColumnHealthCheck::Ptr& chk) {
   {
-    std::scoped_lock lock(m_mutex_assign);
+    Core::MutexSptd::scope lock(m_mutex_assign);
     auto it = std::find(m_columns_check.begin(), m_columns_check.end(), chk);
     if(it != m_columns_check.end())
       m_columns_check.erase(it);
@@ -483,14 +473,14 @@ void Rangers::health_check_finished(const ColumnHealthCheck::Ptr& chk) {
 
 void Rangers::print(std::ostream& out) {
   out << "Rangers:";
-  std::scoped_lock lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   for(auto& h : m_rangers)
     h->print(out << "\n ");
 }
 
 
 bool Rangers::runs_assign(bool stop) {
-  std::scoped_lock lock(m_mutex_assign);
+  Core::MutexSptd::scope lock(m_mutex_assign);
   if(stop) 
     return (m_runs_assign = false);
   else if(m_runs_assign)
@@ -514,7 +504,7 @@ void Rangers::assign_ranges_run() {
 
   for(bool state;;) {
     {
-      std::scoped_lock lock(m_mutex);
+      Core::MutexSptd::scope lock(m_mutex);
       state = m_rangers.empty() || !m_run;
     }
     if(state) {
@@ -536,22 +526,21 @@ void Rangers::assign_ranges_run() {
       runs_assign(true);
       return schedule_check();
     }
+    auto schema = Env::Mngr::schemas()->get(col->cfg->cid);
+    if(!schema)
+      continue;
 
     range->set_state(Range::State::QUEUED, rgr->rgrid);
     ++rgr->interm_ranges;
     {
-      std::scoped_lock lock(m_mutex);
+      Core::MutexSptd::scope lock(m_mutex_assign);
       state = ++m_assignments < cfg_assign_due->get();
     }
     if(!state)
       runs_assign(true);
 
-    rgr->put(
-      std::make_shared<Comm::Protocol::Rgr::Req::RangeLoad>(
-        rgr, col, range,
-        Env::Mngr::schemas()->get(col->cfg->cid)
-      )
-    );
+    rgr->put(std::make_shared<Comm::Protocol::Rgr::Req::RangeLoad>(
+      rgr, col, range, schema));
     if(!state)
       return;
   }
@@ -567,10 +556,10 @@ void Rangers::next_rgr(const Range::Ptr& range, Ranger::Ptr& rs_set) {
   int err = Error::OK;
   auto last_rgr = range->get_last_rgr(err);
 
-  std::scoped_lock lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
 
-  for(auto it=m_rangers.begin(); it<m_rangers.end(); ++it) {
-    if((rgr = *it)->state == RangerState::MARKED_OFFLINE) {
+  for(auto& rgr : m_rangers) {
+    if(rgr->state == RangerState::MARKED_OFFLINE) {
       continue;
 
     } else if(rgr->failures >= cfg_rgr_failures->get()) {
@@ -595,8 +584,8 @@ void Rangers::next_rgr(const Range::Ptr& range, Ranger::Ptr& rs_set) {
   avg_ranges /= n_rgrs;
   uint16_t best = 0;
   size_t interm_ranges = UINT64_MAX;
-  for(auto it=m_rangers.begin(); it<m_rangers.end(); ++it) {
-    if((rgr = *it)->state & RangerState::ACK &&
+  for(auto& rgr : m_rangers) {
+    if(rgr->state & RangerState::ACK &&
        avg_ranges >= rgr->interm_ranges &&
        interm_ranges >= rgr->interm_ranges &&
        rgr->load_scale >= best &&
@@ -610,7 +599,8 @@ void Rangers::next_rgr(const Range::Ptr& range, Ranger::Ptr& rs_set) {
 }
 
 void Rangers::health_check_columns() {
-  if(!m_mutex_assign.try_lock())
+  bool support;
+  if(!m_mutex_assign.try_full_lock(support))
     return;
   int64_t ts = Time::now_ms();
   uint32_t intval = cfg_column_health_chk->get();
@@ -621,7 +611,7 @@ void Rangers::health_check_columns() {
       new ColumnHealthCheck(col, ts, intval));
     Env::Mngr::post([chk=m_columns_check.back()]() { chk->run(); });
   }
-  m_mutex_assign.unlock();
+  m_mutex_assign.unlock(support);
 }
 
 
@@ -669,7 +659,7 @@ Ranger::Ptr Rangers::rgr_set(const Comm::EndPoints& endpoints,
 
 void Rangers::changes(const RangerList& hosts, bool sync_all) {
   {
-    std::scoped_lock lock(m_mutex);
+    Core::MutexSptd::scope lock(m_mutex);
     _changes(hosts, sync_all);
   }
     
