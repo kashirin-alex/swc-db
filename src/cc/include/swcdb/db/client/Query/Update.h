@@ -8,7 +8,7 @@
 #define swcdb_db_client_Query_Update_h
 
 
-#include "swcdb/common/Stats/CompletionCounter.h"
+#include "swcdb/core/CompletionCounter.h"
 #include "swcdb/db/Types/Range.h"
 #include "swcdb/db/Cells/MutableMap.h"
 
@@ -45,9 +45,9 @@ struct Update final {
   
   typedef std::shared_ptr<Update> Ptr;
 
-  DB::Cells::MutableMap                       errored;
-  Profiling                                   profile;
-  Common::Stats::CompletionCounter<uint64_t>  completion;
+  DB::Cells::MutableMap              errored;
+  Profiling                          profile;
+  Core::CompletionCounter<uint64_t>  completion;
 
   int error();
 

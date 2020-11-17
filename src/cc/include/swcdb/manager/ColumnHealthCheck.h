@@ -9,7 +9,7 @@
 #define swcdb_manager_ColumnHealthCheck_h
 
 
-#include "swcdb/common/Stats/CompletionCounter.h"
+#include "swcdb/core/CompletionCounter.h"
 
 
 namespace SWC { namespace Manager {
@@ -23,7 +23,7 @@ class ColumnHealthCheck final
   const Column::Ptr                           col;
   const int64_t                               check_ts;
   const int32_t                               check_intval;
-  Common::Stats::CompletionCounter<uint64_t>  completion;
+  Core::CompletionCounter<uint64_t>           completion;
 
 
   class RangerCheck final 

@@ -8,7 +8,7 @@
 #define swcdb_db_client_Query_Select_h
 
 
-#include "swcdb/common/Stats/CompletionCounter.h"
+#include "swcdb/core/CompletionCounter.h"
 #include "swcdb/db/Types/Range.h"
 #include "swcdb/db/Cells/Result.h"
 #include "swcdb/db/Cells/SpecsScan.h"
@@ -31,7 +31,7 @@ struct Select final {
   std::condition_variable                     cv;
   std::atomic<int>                            err;
   Profiling                                   profile;
-  Common::Stats::CompletionCounter<uint64_t>  completion;
+  Core::CompletionCounter<uint64_t>           completion;
 
   Select(bool notify);
 

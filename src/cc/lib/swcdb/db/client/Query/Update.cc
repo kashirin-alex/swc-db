@@ -446,7 +446,7 @@ void Update::Locator::commit_data(
       const ReqBase::Ptr& base) {
   bool more = true;
   DynamicBuffer::Ptr cells_buff;
-  auto workload = std::make_shared<Common::Stats::CompletionCounter<>>();
+  auto workload = std::make_shared<Core::CompletionCounter<>>();
   while(more && 
        (cells_buff = col->get_buff(
          *key_start.get(), key_finish, updater->buff_sz, more))) {

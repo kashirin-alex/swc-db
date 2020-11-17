@@ -138,7 +138,7 @@ class AppContext final : virtual public BrokerIfFactory {
   std::mutex                                    m_mutex;
   bool                                          m_run;
   std::condition_variable                       m_cv;
-  Common::Stats::CompletionCounter<size_t>      m_connections;
+  Core::CompletionCounter<size_t>               m_connections;
 };
 
 
