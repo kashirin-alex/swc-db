@@ -7,7 +7,6 @@
 #include "swcdb/db/Types/MetaColumn.h"
 #include "swcdb/db/client/Clients.h"
 #include "swcdb/db/client/Query/Select.h"
-#include "swcdb/db/Protocol/Rgr/req/RangeQuerySelect.h"
 
 
 namespace SWC { namespace client { namespace Query {
@@ -256,6 +255,7 @@ void Select::scan(int& err) {
       return;
     result->add_column(col->cid);
     sequences.push_back(schema->col_seq);
+    result->completion.increment();
   }
 
   auto it_seq = sequences.begin();
@@ -263,388 +263,474 @@ void Select::scan(int& err) {
     for(auto& intval : col->intervals) {
       if(!intval->flags.max_buffer)
         intval->flags.max_buffer = buff_sz;
-      std::make_shared<ScannerColumn>(
-        col->cid, *it_seq, *intval.get(), 
-        shared_from_this()
-      )->run();
+      std::make_shared<Scanner>(
+        shared_from_this(), *it_seq, *intval.get(), col->cid
+      )->mngr_locate_master();
     }
     ++it_seq;
   }
 }
 
+#define SWC_SCANNER_REQ_DEBUG(msg) \
+  SWC_LOG_OUT(LOG_DEBUG, params.print(SWC_LOG_OSTREAM << msg << ' '); );
 
-Select::ScannerColumn::ScannerColumn(const cid_t cid, 
-                                     const DB::Types::KeySeq col_seq,
-                                     DB::Specs::Interval& interval,
-                                     const Select::Ptr& selector)
-                                    : cid(cid), col_seq(col_seq), 
-                                      interval(interval), selector(selector) {
+#define SWC_SCANNER_RSP_DEBUG(msg) \
+  SWC_LOG_OUT(LOG_DEBUG, \
+    print(SWC_LOG_OSTREAM << msg << ' '); \
+    rsp.print(SWC_LOG_OSTREAM << ' '); \
+  );
+
+
+Select::Scanner::Scanner(const Select::Ptr& selector,
+                         const DB::Types::KeySeq col_seq, 
+                         DB::Specs::Interval& interval, 
+                         const cid_t cid) 
+            : completion(0),
+              selector(selector),
+              col_seq(col_seq),
+              interval(interval),
+              master_cid(DB::Types::MetaColumn::get_master_cid(col_seq)),
+              meta_cid(DB::Types::MetaColumn::get_meta_cid(col_seq)),
+              data_cid(cid),
+              master_rid(0),
+              meta_rid(0),
+              data_rid(0),
+              master_mngr_next(false),
+              master_rgr_next(false),
+              meta_next(false) {
 }
 
-Select::ScannerColumn::~ScannerColumn() { }
+Select::Scanner::~Scanner() { }
 
-void Select::ScannerColumn::run() {
-  std::make_shared<Scanner>(
-    DB::Types::Range::MASTER, cid, shared_from_this()
-  )->locate_on_manager(false);
+void Select::Scanner::print(std::ostream& out) {
+  out << "Scanner(" << DB::Types::to_string(col_seq)
+      << " master(" << master_cid << '/' << master_rid
+        << " mngr-next=" << master_mngr_next
+        << " rgr-next=" << master_rgr_next << ')'
+      << " meta(" << meta_cid << '/' << meta_rid  
+        << " next=" << meta_next << ')'
+      << " data(" << data_cid << '/' << data_rid  << ") ";
+  interval.print(out);
+  out << " completion=" << completion.count() << ')';
 }
 
-bool Select::ScannerColumn::add_cells(const StaticBuffer& buffer, 
-                                      bool reached_limit) {
-  return selector->result->add_cells(cid, buffer, reached_limit, interval);
+bool Select::Scanner::add_cells(const StaticBuffer& buffer, 
+                                bool reached_limit) {
+  return selector->result->add_cells(data_cid, buffer, reached_limit, interval);
 }
 
-void Select::ScannerColumn::response_if_last() {
-  if(selector->result->completion.is_last()) {
-    next_calls.clear();
-    selector->response(Error::OK);
+void Select::Scanner::response_if_last() {
+  if(completion.is_last()) {
+    master_rgr_req_base = nullptr;
+    meta_req_base = nullptr;
+    data_req_base = nullptr;
+    if(selector->result->completion.is_last())
+      selector->response(Error::OK);
   }
 }
 
-void Select::ScannerColumn::next_call() {
-  if(next_calls.empty())
-    return;
-
+void Select::Scanner::next_call() {
   interval.offset_key.free();
   interval.offset_rev = 0;
 
-  auto call = next_calls.back();
-  next_calls.pop_back();
-  call();
-}
+  if(meta_next) {
+    rgr_locate_meta();
 
-void Select::ScannerColumn::add_call(const std::function<void()>& call) {    
-  next_calls.push_back(call);
-}
+  } else if(master_rgr_next) {
+    rgr_locate_master();
 
-void Select::ScannerColumn::print(std::ostream& out) {
-  out << "ScannerColumn("
-      << "cid=" << cid;
-  interval.print(out << ' ');
-  out << " completion=" << selector->result->completion.count()
-      << " next_calls=" << next_calls.size()
-      << ')';
+  } else if(master_mngr_next) {
+    mngr_locate_master();
+  }
 }
 
 
-Select::Scanner::Scanner(
-        const DB::Types::Range type, const cid_t cid, 
-        const ScannerColumn::Ptr& col, const ReqBase::Ptr& parent, 
-        const DB::Cell::Key* range_offset, const rid_t rid)
-      : type(type), cid(cid), col(col), parent(parent), rid(rid),
-        range_offset(range_offset ? *range_offset : DB::Cell::Key()) {
-}
-
-Select::Scanner::~Scanner() {}
-
-void Select::Scanner::print(std::ostream& out) {
-  out << "Scanner(type=" << DB::Types::to_string(type)
-      << " cid=" << cid
-      << " rid=" << rid;
-  range_offset.print(out << " RangeOffset");
-  col->print(out << ' ');
-  out << ' ';
-}
-    
-void Select::Scanner::locate_on_manager(bool next_range) {
-  col->selector->result->completion.increment();
+//
+void Select::Scanner::mngr_locate_master() {
+  completion.increment();
 
   Comm::Protocol::Mngr::Params::RgrGetReq params(
-    DB::Types::MetaColumn::get_master_cid(col->col_seq), 0, next_range);
+    master_cid, 0, master_mngr_next);
 
-  if(!range_offset.empty()) {
-    params.range_begin.copy(range_offset);
-    col->interval.apply_possible_range_end(params.range_end); 
+  if(!master_mngr_offset.empty()) {
+    params.range_begin.copy(master_mngr_offset);
+    interval.apply_possible_range_end(params.range_end); 
   } else {
-    col->interval.apply_possible_range(
+    interval.apply_possible_range(
       params.range_begin, params.range_end);
   }
   
-  if(DB::Types::MetaColumn::is_data(cid)) {
-    params.range_begin.insert(0, std::to_string(cid));
-    params.range_end.insert(0, std::to_string(cid));
+  if(DB::Types::MetaColumn::is_data(data_cid)) {
+    auto data_cid_str = std::to_string(data_cid);
+    params.range_begin.insert(0, data_cid_str);
+    params.range_end.insert(0, data_cid_str);
   }
-  if(!DB::Types::MetaColumn::is_master(cid)) {
-    auto meta_cid = DB::Types::MetaColumn::get_meta_cid(col->col_seq);
-    params.range_begin.insert(0, meta_cid);
-    params.range_end.insert(0, meta_cid);
+  if(!DB::Types::MetaColumn::is_master(data_cid)) {
+    auto meta_cid_str = DB::Types::MetaColumn::get_meta_cid_str(col_seq);
+    params.range_begin.insert(0, meta_cid_str);
+    params.range_end.insert(0, meta_cid_str);
   }
 
-  SWC_LOG_OUT(LOG_DEBUG, 
-    params.print(SWC_LOG_OSTREAM << "LocateRange-onMngr "););
-
+  SWC_SCANNER_REQ_DEBUG("mngr_locate_master");
   Comm::Protocol::Mngr::Req::RgrGet::request(
     params,
-    [next_range, profile=col->selector->result->profile.mngr_locate(),
+    [profile=selector->result->profile.mngr_locate(),
      scanner=shared_from_this()]
     (const ReqBase::Ptr& req, 
      const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
       profile.add(rsp.err || !rsp.rid);
-      if(scanner->located_on_manager(req, rsp, next_range))
-        scanner->col->response_if_last();
+      if(scanner->mngr_located_master(req, rsp))
+        scanner->response_if_last();
     }
   );
 }
 
-void Select::Scanner::resolve_on_manager() {
-  col->selector->result->completion.increment();
-
-  auto req = Comm::Protocol::Mngr::Req::RgrGet::make(
-    Comm::Protocol::Mngr::Params::RgrGetReq(cid, rid),
-    [profile=col->selector->result->profile.mngr_res(), 
-     scanner=shared_from_this()]
-    (const ReqBase::Ptr& req, 
-     const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
-      profile.add(rsp.err || !rsp.rid || rsp.endpoints.empty());
-      if(scanner->located_on_manager(req, rsp))
-        scanner->col->response_if_last();
-    }
-  );
-  if(!DB::Types::MetaColumn::is_master(cid)) {
-    Comm::Protocol::Mngr::Params::RgrGetRsp rsp(cid, rid);
-    if(Env::Clients::get()->rangers.get(cid, rid, rsp.endpoints)) {
-      SWC_LOG_OUT(LOG_DEBUG, rsp.print(SWC_LOG_OSTREAM << "Cache hit "); );
-      if(proceed_on_ranger(req, rsp)) // ?req without profile
-        return col->response_if_last();
-      Env::Clients::get()->rangers.remove(cid, rid);
-    } else {
-      SWC_LOG_OUT(LOG_DEBUG, rsp.print(SWC_LOG_OSTREAM << "Cache miss "); );
-    }
-  }
-  req->run();
-}
-
-bool Select::Scanner::located_on_manager(
-        const ReqBase::Ptr& base, 
-        const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp, 
-        bool next_range) {
-  SWC_LOG_OUT(LOG_DEBUG, 
-    rsp.print(SWC_LOG_OSTREAM << "LocatedRange-onMngr "););
+bool Select::Scanner::mngr_located_master(
+        const ReqBase::Ptr& req, 
+        const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
 
   if(rsp.err) {
-    if(rsp.err == Error::COLUMN_NOT_EXISTS) { // (not-sys)
-      col->selector->result->err = rsp.err; // Error::CONSIST_ERRORS;
-      col->selector->result->error(col->cid, rsp.err);
+    if(master_mngr_next && rsp.err == Error::RANGE_NOT_FOUND) {
+      master_mngr_next = false;
+      SWC_SCANNER_RSP_DEBUG("mngr_located_master finished");
       return true;
     }
-    if(next_range && rsp.err == Error::RANGE_NOT_FOUND) {
-      col->next_call();
-      return true;
-    }
-
-    SWC_LOG_OUT(LOG_DEBUG,
-      rsp.print(SWC_LOG_OSTREAM << "Located-onMngr RETRYING "););
-    (parent && rsp.err == Error::RANGE_NOT_FOUND
-      ? parent : base)->request_again();
+    SWC_SCANNER_RSP_DEBUG("mngr_located_master RETRYING");
+    req->request_again();
     return false;
   }
   if(!rsp.rid) {
-    SWC_LOG_OUT(LOG_DEBUG, 
-      rsp.print(SWC_LOG_OSTREAM << "Located-onMngr RETRYING(no rid) "););
-    (parent ? parent : base)->request_again();
+    SWC_SCANNER_RSP_DEBUG("mngr_located_master RETRYING(no rid)");
+    req->request_again();
+    return false;
+  }
+  if(master_cid != rsp.cid) {
+    SWC_SCANNER_RSP_DEBUG("mngr_located_master RETRYING(cid no match)");
+    req->request_again();
     return false;
   }
 
-  if(type == DB::Types::Range::MASTER) {
-    col->add_call(
-      [scanner=std::make_shared<Scanner>(
-        type, cid, col,
-        parent ? parent : base, &rsp.range_begin
-      )] () { scanner->locate_on_manager(true); }
-    );
-  } else if(!DB::Types::MetaColumn::is_master(rsp.cid)) {
-    Env::Clients::get()->rangers.set(rsp.cid, rsp.rid, rsp.endpoints);
-  }
-
-  return proceed_on_ranger(base, rsp);
-}
-    
-bool Select::Scanner::proceed_on_ranger(
-          const ReqBase::Ptr& base, 
-          const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
-  if(type == DB::Types::Range::DATA || 
-     (type == DB::Types::Range::MASTER && 
-      DB::Types::MetaColumn::is_master(col->cid)) ||
-     (type == DB::Types::Range::META   && 
-      DB::Types::MetaColumn::is_meta(col->cid))) {
-
-    if(cid != rsp.cid || col->cid != cid) {
-      SWC_LOG_OUT(LOG_DEBUG, 
-        rsp.print(
-          SWC_LOG_OSTREAM << "Located-onMngr RETRYING(cid no match) "););
-      (parent ? parent : base)->request_again();
-      return false;
-    }
-    select(rsp.endpoints, rsp.rid, base);
-
+  SWC_SCANNER_RSP_DEBUG("mngr_located_master");
+  Env::Clients::get()->rangers.set(rsp.cid, rsp.rid, rsp.endpoints);
+  master_mngr_next = true;
+  master_mngr_offset.copy(rsp.range_begin);
+  if(DB::Types::MetaColumn::is_master(data_cid)) {
+    data_rid = rsp.rid;
+    data_req_base = req;
+    data_endpoints = rsp.endpoints;
+    rgr_select();
   } else {
-    std::make_shared<Scanner>(
-      type, rsp.cid, col,
-      base, nullptr, rsp.rid
-    )->locate_on_ranger(rsp.endpoints, false);
+    master_rid = rsp.rid;
+    master_rgr_req_base = req;
+    master_rgr_endpoints = rsp.endpoints;
+    rgr_locate_master();
   }
   return true;
 }
 
-void Select::Scanner::locate_on_ranger(const Comm::EndPoints& endpoints, 
-                                       bool next_range) {
-  col->selector->result->completion.increment();
 
-  Comm::Protocol::Rgr::Params::RangeLocateReq params(cid, rid);
-  if(next_range) {
+//
+void Select::Scanner::rgr_locate_master() {
+  completion.increment();
+
+  Comm::Protocol::Rgr::Params::RangeLocateReq params(master_cid, master_rid);
+  auto data_cid_str = std::to_string(data_cid);
+  if(master_rgr_next) {
     params.flags |= Comm::Protocol::Rgr::Params::RangeLocateReq::NEXT_RANGE;
-    params.range_offset.copy(range_offset);
-    params.range_offset.insert(0, std::to_string(col->cid));
+    params.range_offset.copy(master_rgr_offset);
+    params.range_offset.insert(0, data_cid_str);
+  }
+  interval.apply_possible_range(params.range_begin, params.range_end);
+  params.range_begin.insert(0, data_cid_str);
+  params.range_end.insert(0, data_cid_str);
+
+  if(DB::Types::MetaColumn::is_data(data_cid)) {
+    auto meta_cid_str = DB::Types::MetaColumn::get_meta_cid_str(col_seq);
+    params.range_begin.insert(0, meta_cid_str);
+    params.range_end.insert(0, meta_cid_str);
+    if(master_rgr_next)
+      params.range_offset.insert(0, meta_cid_str);
   }
 
-  col->interval.apply_possible_range(params.range_begin, params.range_end);
-  params.range_begin.insert(0, std::to_string(col->cid));
-  params.range_end.insert(0, std::to_string(col->cid));
-  if(type == DB::Types::Range::MASTER && 
-     DB::Types::MetaColumn::is_data(col->cid)) {
-    auto meta_cid = DB::Types::MetaColumn::get_meta_cid(col->col_seq);
-    params.range_begin.insert(0, meta_cid);
-    params.range_end.insert(0, meta_cid);
-    if(next_range)
-      params.range_offset.insert(0, meta_cid);
-  }
-
-  SWC_LOG_OUT(LOG_DEBUG, 
-    params.print(SWC_LOG_OSTREAM << "LocateRange-onRgr "););
-
+  SWC_SCANNER_REQ_DEBUG("rgr_locate_master");
   Comm::Protocol::Rgr::Req::RangeLocate::request(
-    params, endpoints,
-    [next_range, profile=col->selector->result->profile.rgr_locate(type),
+    params, master_rgr_endpoints,
+    [profile=selector->result->profile.rgr_locate(DB::Types::Range::MASTER),
      scanner=shared_from_this()]
     (const ReqBase::Ptr& req, 
      const Comm::Protocol::Rgr::Params::RangeLocateRsp& rsp) {
       profile.add(!rsp.rid || rsp.err);
-      scanner->located_on_ranger(
-        std::dynamic_pointer_cast<
-          Comm::Protocol::Rgr::Req::RangeLocate>(req)->endpoints,
-        req, rsp, next_range
-      );
+      scanner->rgr_located_master(req, rsp);
     }
   );
 }
 
-void Select::Scanner::located_on_ranger(
-          const Comm::EndPoints& endpoints, 
-          const ReqBase::Ptr& base, 
-          const Comm::Protocol::Rgr::Params::RangeLocateRsp& rsp, 
-          bool next_range) {
-  SWC_LOG_OUT(LOG_DEBUG, 
-    rsp.print(SWC_LOG_OSTREAM << "LocatedRange-onRgr "););
-
+void Select::Scanner::rgr_located_master(
+          const ReqBase::Ptr& req, 
+          const Comm::Protocol::Rgr::Params::RangeLocateRsp& rsp) {
   if(rsp.err) {
-    if(rsp.err == Error::RANGE_NOT_FOUND && 
-       (next_range || type == DB::Types::Range::META)) {
-      col->next_call();
-      return col->response_if_last();
+    if(master_rgr_next && rsp.err == Error::RANGE_NOT_FOUND) {
+      master_rgr_next = false;
+      SWC_SCANNER_RSP_DEBUG("rgr_located_master master_rgr_next");
+      next_call();
+      return response_if_last();
     }
-
-    SWC_LOG_OUT(LOG_DEBUG,
-      rsp.print(SWC_LOG_OSTREAM << "LocatedRange-onRgr RETRYING "););                
+    SWC_SCANNER_RSP_DEBUG("rgr_located_master RETRYING");    
     if(rsp.err == Error::RGR_NOT_LOADED_RANGE ||
        rsp.err == Error::RANGE_NOT_FOUND  ||
        rsp.err == Error::SERVER_SHUTTING_DOWN ||
        rsp.err == Error::COMM_NOT_CONNECTED) {
-      Env::Clients::get()->rangers.remove(cid, rid);
-      return parent->request_again();
+      Env::Clients::get()->rangers.remove(master_cid, master_rid);
+      return master_rgr_req_base->request_again();
     } else {
-      return base->request_again();
+      return req->request_again();
     }
   }
   if(!rsp.rid) {
-    SWC_LOG_OUT(LOG_DEBUG, 
-      rsp.print(SWC_LOG_OSTREAM << "LocatedRange-onRgr RETRYING(no rid) "););
-    Env::Clients::get()->rangers.remove(cid, rid);
-    return parent->request_again();
+    SWC_SCANNER_RSP_DEBUG("rgr_located_master RETRYING(no rid)");
+    Env::Clients::get()->rangers.remove(master_cid, master_rid);
+    return master_rgr_req_base->request_again();
   }
-  if(type == DB::Types::Range::DATA && rsp.cid != col->cid) {
-    SWC_LOG_OUT(LOG_DEBUG, 
-      rsp.print(
-        SWC_LOG_OSTREAM << "LocatedRange-onRgr RETRYING(cid no match "););    
-    Env::Clients::get()->rangers.remove(cid, rid);
-    return parent->request_again();
+  if(meta_cid != rsp.cid) {
+    SWC_SCANNER_RSP_DEBUG("rgr_located_master RETRYING(cid no match)");
+    Env::Clients::get()->rangers.remove(master_cid, master_rid);
+    return master_rgr_req_base->request_again();
   }
 
-  if(type != DB::Types::Range::DATA) {
-    col->add_call([endpoints, scanner=std::make_shared<Scanner>(
-      type, cid, col,
-      parent, &rsp.range_begin, rid
-      )] () { scanner->locate_on_ranger(endpoints, true); }
-    );
+  SWC_SCANNER_RSP_DEBUG("rgr_located_master");
+  master_rgr_next = true;
+  master_rgr_offset.copy(rsp.range_begin);
+  if(DB::Types::MetaColumn::is_meta(data_cid)) {
+    data_rid = rsp.rid;
+    data_req_base = req;
+    mngr_resolve_rgr_select();
+  } else {
+    meta_rid = rsp.rid;
+    meta_req_base = req;
+    mngr_resolve_rgr_meta();
   }
-
-  std::make_shared<Scanner>(
-    type == DB::Types::Range::MASTER
-            ? DB::Types::Range::META
-            : DB::Types::Range::DATA,
-    rsp.cid, col,
-    parent, nullptr, rsp.rid
-  )->resolve_on_manager();
-
-  col->response_if_last();
+  response_if_last();
 }
 
-void Select::Scanner::select(const Comm::EndPoints& endpoints, 
-                             rid_t rid, 
-                             const ReqBase::Ptr& base) {
-  col->selector->result->completion.increment();
 
-  Comm::Protocol::Rgr::Req::RangeQuerySelect::request(
-    Comm::Protocol::Rgr::Params::RangeQuerySelectReq(
-      col->cid, rid, col->interval
-    ), 
-    endpoints, 
-    [rid, base, 
-     profile=col->selector->result->profile.rgr_data(), 
-     scanner=shared_from_this()] 
+//
+void Select::Scanner::mngr_resolve_rgr_meta() {
+  completion.increment();
+  
+  auto profile = selector->result->profile.mngr_res();
+  auto params = Comm::Protocol::Mngr::Params::RgrGetReq(meta_cid, meta_rid);
+  auto req = Comm::Protocol::Mngr::Req::RgrGet::make(
+    params,
+    [profile, scanner=shared_from_this()]
     (const ReqBase::Ptr& req, 
-     const Comm::Protocol::Rgr::Params::RangeQuerySelectRsp& rsp) {
-      profile.add(rsp.err);
-      
-      if(rsp.err) {
-        SWC_LOG_OUT(LOG_DEBUG, 
-          rsp.print(SWC_LOG_OSTREAM << "Select RETRYING "); );
+     const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
+      profile.add(rsp.err || !rsp.rid || rsp.endpoints.empty());
+      if(scanner->mngr_resolved_rgr_meta(req, rsp))
+        scanner->response_if_last();
+    }
+  );
+  
+  Comm::Protocol::Mngr::Params::RgrGetRsp rsp(meta_cid, meta_rid);
+  if(Env::Clients::get()->rangers.get(meta_cid, meta_rid, rsp.endpoints)) {
+    SWC_SCANNER_RSP_DEBUG("mngr_resolve_rgr_meta Cache hit");
+    if(mngr_resolved_rgr_meta(req, rsp)) {
+      profile.add(Error::OK);
+      return response_if_last();
+    }
+    Env::Clients::get()->rangers.remove(meta_cid, meta_rid);
+  }
+  SWC_SCANNER_REQ_DEBUG("mngr_resolve_rgr_meta");
+  req->run();
+}
 
-        if(rsp.err == Error::RGR_NOT_LOADED_RANGE || 
-           rsp.err == Error::SERVER_SHUTTING_DOWN ||
-           rsp.err == Error::COMM_NOT_CONNECTED) {
-          Env::Clients::get()->rangers.remove(scanner->col->cid, rid);
-          return base->request_again();
-        } else {
-          return req->request_again();
-        }
-      }
-      auto& col = scanner->col;
+bool Select::Scanner::mngr_resolved_rgr_meta(
+        const ReqBase::Ptr& req, 
+        const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
+  if(rsp.err) {
+    SWC_SCANNER_RSP_DEBUG("mngr_resolved_rgr_meta RETRYING");
+    (rsp.err == Error::RANGE_NOT_FOUND? meta_req_base : req)->request_again();
+    return false;
+  }
+  SWC_SCANNER_RSP_DEBUG("mngr_resolved_rgr_meta");
+  meta_endpoints = rsp.endpoints;
+  Env::Clients::get()->rangers.set(meta_cid, meta_rid, rsp.endpoints);
+  rgr_locate_meta();
+  return true;
+}
 
-      if(col->interval.flags.offset)
-        col->interval.flags.offset = rsp.offset;
 
-      if(!rsp.data.size || col->add_cells(rsp.data, rsp.reached_limit)) {
-        if(rsp.data.size)
-          col->selector->response_partials();
+//
+void Select::Scanner::rgr_locate_meta() {
+  completion.increment();
 
-        if(rsp.reached_limit) {
-          scanner->select(
-            std::dynamic_pointer_cast<
-              Comm::Protocol::Rgr::Req::RangeQuerySelect>(req)->endpoints,
-            rid, base
-          );
-        } else {
-          col->next_call();
-        }
-      }
+  Comm::Protocol::Rgr::Params::RangeLocateReq params(meta_cid, meta_rid);
+  auto data_cid_str = std::to_string(data_cid);
+  if(meta_next) {
+    params.flags |= Comm::Protocol::Rgr::Params::RangeLocateReq::NEXT_RANGE;
+    params.range_offset.copy(meta_offset);
+    params.range_offset.insert(0, data_cid_str);
+  }
+  interval.apply_possible_range(params.range_begin, params.range_end);
+  params.range_begin.insert(0, data_cid_str);
+  params.range_end.insert(0, data_cid_str);
 
-      col->response_if_last();
-    },
-
-    col->selector->timeout
+  SWC_SCANNER_REQ_DEBUG("rgr_locate_meta");
+  Comm::Protocol::Rgr::Req::RangeLocate::request(
+    params, meta_endpoints,
+    [profile=selector->result->profile.rgr_locate(DB::Types::Range::META),
+     scanner=shared_from_this()]
+    (const ReqBase::Ptr& req, 
+     const Comm::Protocol::Rgr::Params::RangeLocateRsp& rsp) {
+      profile.add(!rsp.rid || rsp.err);
+      scanner->rgr_located_meta(req, rsp);
+    }
   );
 }
 
+void Select::Scanner::rgr_located_meta(
+          const ReqBase::Ptr& req, 
+          const Comm::Protocol::Rgr::Params::RangeLocateRsp& rsp) {
+  if(rsp.err) {
+    if(meta_next && rsp.err == Error::RANGE_NOT_FOUND) {
+      meta_next = false;
+      SWC_SCANNER_RSP_DEBUG("rgr_located_meta meta_next");
+      next_call();
+      return response_if_last();
+    }
+    SWC_SCANNER_RSP_DEBUG("rgr_located_meta RETRYING");
+    if(rsp.err == Error::RGR_NOT_LOADED_RANGE ||
+       rsp.err == Error::RANGE_NOT_FOUND  ||
+       rsp.err == Error::SERVER_SHUTTING_DOWN ||
+       rsp.err == Error::COMM_NOT_CONNECTED) {
+      Env::Clients::get()->rangers.remove(meta_cid, meta_rid);
+      return meta_req_base->request_again();
+    } else {
+      return req->request_again();
+    }
+  }
+  if(!rsp.rid) {
+    SWC_SCANNER_RSP_DEBUG("rgr_located_meta RETRYING(no rid)");
+    Env::Clients::get()->rangers.remove(meta_cid, meta_rid);
+    return meta_req_base->request_again();
+  }
+  if(data_cid != rsp.cid) {
+    SWC_SCANNER_RSP_DEBUG("rgr_located_meta RETRYING(cid no match)");
+    Env::Clients::get()->rangers.remove(meta_cid, meta_rid);
+    return meta_req_base->request_again();
+  }
+
+  SWC_SCANNER_RSP_DEBUG("rgr_located_meta)");
+  meta_next = true;
+  meta_offset.copy(rsp.range_begin);
+  data_rid = rsp.rid;
+  data_req_base = req;
+  mngr_resolve_rgr_select();
+  response_if_last();
+}
+
+
+//
+void Select::Scanner::mngr_resolve_rgr_select() {
+  completion.increment();
   
+  auto profile = selector->result->profile.mngr_res();
+  Comm::Protocol::Mngr::Params::RgrGetReq params(data_cid, data_rid);
+  auto req = Comm::Protocol::Mngr::Req::RgrGet::make(
+    params,
+    [profile, scanner=shared_from_this()]
+    (const ReqBase::Ptr& req, 
+     const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
+      profile.add(rsp.err || !rsp.rid || rsp.endpoints.empty());
+      if(scanner->mngr_resolved_rgr_select(req, rsp))
+        scanner->response_if_last();
+    }
+  );
+  
+  Comm::Protocol::Mngr::Params::RgrGetRsp rsp(data_cid, data_rid);
+  if(Env::Clients::get()->rangers.get(data_cid, data_rid, rsp.endpoints)) {
+    SWC_SCANNER_RSP_DEBUG("mngr_resolve_rgr_select Cache hit");
+    if(mngr_resolved_rgr_select(req, rsp)) {
+      profile.add(Error::OK);
+      return response_if_last();
+    }
+    Env::Clients::get()->rangers.remove(data_cid, data_rid);
+  }
+  SWC_SCANNER_REQ_DEBUG("mngr_resolve_rgr_select");
+  req->run();
+}
+
+bool Select::Scanner::mngr_resolved_rgr_select(
+        const ReqBase::Ptr& req, 
+        const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
+  if(rsp.err) {
+    if(rsp.err == Error::COLUMN_NOT_EXISTS) {
+      SWC_SCANNER_RSP_DEBUG("mngr_resolved_rgr_select QUIT");
+      selector->result->err = rsp.err; // Error::CONSIST_ERRORS;
+      selector->result->error(data_cid, rsp.err);
+      return true;
+    }
+    SWC_SCANNER_RSP_DEBUG("mngr_resolved_rgr_select RETRYING");
+    (rsp.err == Error::RANGE_NOT_FOUND? data_req_base : req)->request_again();
+    return false;
+  }
+
+  SWC_SCANNER_RSP_DEBUG("mngr_resolved_rgr_select");
+  data_endpoints = rsp.endpoints;
+  Env::Clients::get()->rangers.set(data_cid, data_rid, rsp.endpoints);
+  rgr_select();
+  return true;
+}
+
+
+//
+void Select::Scanner::rgr_select() {
+  completion.increment();
+
+  Comm::Protocol::Rgr::Params::RangeQuerySelectReq params(
+    data_cid, data_rid, interval);
+
+  SWC_SCANNER_REQ_DEBUG("rgr_select");
+  Comm::Protocol::Rgr::Req::RangeQuerySelect::request(
+    params, data_endpoints,
+    [profile=selector->result->profile.rgr_data(), scanner=shared_from_this()]
+    (const ReqBase::Ptr& req,
+     const Comm::Protocol::Rgr::Params::RangeQuerySelectRsp& rsp) {
+      profile.add(rsp.err);
+      scanner->rgr_selected(req, rsp);
+    },
+    selector->timeout
+  );
+}
+
+void Select::Scanner::rgr_selected(
+                const ReqBase::Ptr& req, 
+                const Comm::Protocol::Rgr::Params::RangeQuerySelectRsp& rsp) {
+  if(rsp.err) {
+    SWC_SCANNER_RSP_DEBUG("rgr_selected RETRYING");
+    if(rsp.err == Error::RGR_NOT_LOADED_RANGE || 
+       rsp.err == Error::SERVER_SHUTTING_DOWN ||
+       rsp.err == Error::COMM_NOT_CONNECTED) {
+      Env::Clients::get()->rangers.remove(data_cid, data_rid);
+      return data_req_base->request_again();
+    } else {
+      return req->request_again();
+    }
+  }
+
+  SWC_SCANNER_RSP_DEBUG("rgr_selected");
+  if(interval.flags.offset)
+    interval.flags.offset = rsp.offset;
+
+  if(!rsp.data.size || add_cells(rsp.data, rsp.reached_limit)) {
+    if(rsp.data.size)
+      selector->response_partials();
+    rsp.reached_limit ? rgr_select() : next_call();
+  }
+  response_if_last();
+}
+
+
+#undef SWC_SCANNER_REQ_DEBUG
+#undef SWC_SCANNER_RSP_DEBUG
   
 }}}

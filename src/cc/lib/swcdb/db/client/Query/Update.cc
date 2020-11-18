@@ -208,7 +208,7 @@ void Update::Locator::locate_on_manager() {
     params.range_begin.insert(0, std::to_string(cid));
   if(!DB::Types::MetaColumn::is_master(cid))
     params.range_begin.insert(
-      0, DB::Types::MetaColumn::get_meta_cid(col->get_sequence()));
+      0, DB::Types::MetaColumn::get_meta_cid_str(col->get_sequence()));
 
   SWC_LOG_OUT(LOG_DEBUG, 
     params.print(SWC_LOG_OSTREAM << "LocateRange-onMngr "););
@@ -279,7 +279,7 @@ void Update::Locator::locate_on_ranger(const Comm::EndPoints& endpoints) {
     if(type == DB::Types::Range::MASTER && 
        DB::Types::MetaColumn::is_data(col->cid))
       params.range_begin.insert(
-        0, DB::Types::MetaColumn::get_meta_cid(col->get_sequence()));
+        0, DB::Types::MetaColumn::get_meta_cid_str(col->get_sequence()));
   }
   
   SWC_LOG_OUT(LOG_DEBUG, 

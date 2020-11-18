@@ -68,9 +68,22 @@ cid_t get_master_cid(KeySeq col_seq) {
     default:
       return 1;
   }
-} 
+}
 
-const char* get_meta_cid(KeySeq col_seq) {
+cid_t get_meta_cid(KeySeq col_seq) {
+  switch(col_seq) {
+    case KeySeq::FC_VOLUME:
+      return 8;
+    case KeySeq::FC_LEXIC:
+      return 7;
+    case KeySeq::VOLUME:
+      return 6;
+    default:
+      return 5;
+  }
+}
+
+const char* get_meta_cid_str(KeySeq col_seq) {
   switch(col_seq) {
     case KeySeq::FC_VOLUME:
       return "8";

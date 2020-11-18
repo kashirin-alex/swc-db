@@ -33,7 +33,9 @@ KeySeq get_seq_type(cid_t cid);
 
 cid_t get_master_cid(KeySeq col_seq);
 
-const char* get_meta_cid(KeySeq col_seq);
+cid_t get_meta_cid(KeySeq col_seq);
+
+const char* get_meta_cid_str(KeySeq col_seq);
 
 uint8_t get_sys_cid(KeySeq col_seq, Range col_type); 
 

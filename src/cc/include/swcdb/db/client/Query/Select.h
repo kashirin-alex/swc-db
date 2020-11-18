@@ -16,6 +16,7 @@
 #include "swcdb/db/client/Query/Profiling.h"
 #include "swcdb/db/Protocol/Mngr/req/RgrGet.h"
 #include "swcdb/db/Protocol/Rgr/req/RangeLocate.h"
+#include "swcdb/db/Protocol/Rgr/req/RangeQuerySelect.h"
 
 
 namespace SWC { namespace client { namespace Query {
@@ -140,22 +141,50 @@ class Select final : public std::enable_shared_from_this<Select> {
   void response_partial();
 
 
-  class ScannerColumn final 
-            : public std::enable_shared_from_this<ScannerColumn> {
+  class Scanner final : public std::enable_shared_from_this<Scanner> {
     public:
 
-    typedef std::shared_ptr<ScannerColumn>  Ptr;
-    const cid_t                             cid;
+    typedef std::shared_ptr<Scanner>        Ptr;
+
+    Core::CompletionCounter<uint64_t>       completion;
+
+    Select::Ptr                             selector;
     const DB::Types::KeySeq                 col_seq;
     DB::Specs::Interval                     interval;
-    Select::Ptr                             selector;
 
-    ScannerColumn(const cid_t cid, const DB::Types::KeySeq col_seq, 
-                  DB::Specs::Interval& interval, const Select::Ptr& selector);
+    const cid_t                             master_cid;
+    const cid_t                             meta_cid;
+    const cid_t                             data_cid;
 
-    virtual ~ScannerColumn();
+    cid_t                                   master_rid;
+    cid_t                                   meta_rid;
+    cid_t                                   data_rid;
 
-    void run();
+    bool                                    master_mngr_next;
+    bool                                    master_rgr_next;
+    bool                                    meta_next;
+
+    ReqBase::Ptr                            master_rgr_req_base;
+    ReqBase::Ptr                            meta_req_base;
+    ReqBase::Ptr                            data_req_base;
+
+    DB::Cell::Key                           master_mngr_offset;
+    DB::Cell::Key                           master_rgr_offset;
+    DB::Cell::Key                           meta_offset;
+    // DB::Cell::Key                        data_offset;
+
+    Comm::EndPoints                         master_rgr_endpoints;
+    Comm::EndPoints                         meta_endpoints;
+    Comm::EndPoints                         data_endpoints;
+
+    Scanner(const Select::Ptr& selector,
+            const DB::Types::KeySeq col_seq, 
+            DB::Specs::Interval& interval, 
+            const cid_t cid);
+
+    virtual ~Scanner();
+
+    void print(std::ostream& out);
 
     bool add_cells(const StaticBuffer& buffer, bool reached_limit);
 
@@ -163,63 +192,47 @@ class Select final : public std::enable_shared_from_this<Select> {
 
     void next_call();
 
-    void add_call(const std::function<void()>& call);
 
-    void print(std::ostream& out);
+    void mngr_locate_master();
 
-    private:
-
-    std::vector<std::function<void()>> next_calls;
-
-  };
-
-  class Scanner final : public std::enable_shared_from_this<Scanner> {
-    public:
-    const DB::Types::Range   type;
-    const cid_t              cid;
-    ScannerColumn::Ptr       col;
-
-    ReqBase::Ptr              parent;
-    const rid_t               rid;
-    DB::Cell::Key             range_offset;
-
-    Scanner(const DB::Types::Range type, 
-            const cid_t cid, 
-            const ScannerColumn::Ptr& col,
-            const ReqBase::Ptr& parent=nullptr, 
-            const DB::Cell::Key* range_offset=nullptr, 
-            const rid_t rid=0);
-
-    virtual ~Scanner();
-
-    void print(std::ostream& out);
-    
-    void locate_on_manager(bool next_range=false);
-
-    void resolve_on_manager();
-
-    bool located_on_manager(
-        const ReqBase::Ptr& base, 
-        const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp, 
-        bool next_range=false);
-    
-    bool proceed_on_ranger(
-        const ReqBase::Ptr& base, 
+    bool mngr_located_master(
+        const ReqBase::Ptr& base,
         const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp);
 
-    void locate_on_ranger(
-        const Comm::EndPoints& endpoints, 
-        bool next_range=false);
 
-    void located_on_ranger(
-        const Comm::EndPoints& endpoints, 
+    void rgr_locate_master();
+
+    void rgr_located_master(
         const ReqBase::Ptr& base,
-        const Comm::Protocol::Rgr::Params::RangeLocateRsp& rsp,
-        bool next_range=false);
+        const Comm::Protocol::Rgr::Params::RangeLocateRsp& rsp);
 
-    void select(const Comm::EndPoints& endpoints, 
-                rid_t rid, 
-                const ReqBase::Ptr& base);
+
+    void mngr_resolve_rgr_meta();
+
+    bool mngr_resolved_rgr_meta(
+        const ReqBase::Ptr& base,
+        const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp);
+
+
+    void rgr_locate_meta();
+
+    void rgr_located_meta(
+        const ReqBase::Ptr& base,
+        const Comm::Protocol::Rgr::Params::RangeLocateRsp& rsp);
+
+
+    void mngr_resolve_rgr_select();
+
+    bool mngr_resolved_rgr_select(
+        const ReqBase::Ptr& base,
+        const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp);
+
+
+    void rgr_select();
+
+    void rgr_selected(
+        const ReqBase::Ptr& req,
+        const Comm::Protocol::Rgr::Params::RangeQuerySelectRsp& rsp);
 
   };
   
