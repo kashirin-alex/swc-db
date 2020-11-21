@@ -132,6 +132,8 @@ typedef GPtrArray swcdb_thriftKey;
 
 typedef GPtrArray swcdb_thriftSpecKey;
 
+typedef GPtrArray swcdb_thriftSpecKeyIntervals;
+
 typedef GPtrArray swcdb_thriftUCells;
 
 typedef GHashTable swcdb_thriftUCCells;
@@ -405,6 +407,33 @@ GType swcdb_thrift_spec_timestamp_get_type (void);
 #define SWCDB_THRIFT_IS_SPEC_TIMESTAMP_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SPEC_TIMESTAMP))
 #define SWCDB_THRIFT_SPEC_TIMESTAMP_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SPEC_TIMESTAMP, swcdb_thriftSpecTimestampClass))
 
+/* struct SpecKeyInterval */
+struct _swcdb_thriftSpecKeyInterval
+{ 
+  ThriftStruct parent; 
+
+  /* public */
+  GPtrArray * start;
+  gboolean __isset_start;
+  GPtrArray * finish;
+  gboolean __isset_finish;
+};
+typedef struct _swcdb_thriftSpecKeyInterval swcdb_thriftSpecKeyInterval;
+
+struct _swcdb_thriftSpecKeyIntervalClass
+{
+  ThriftStructClass parent;
+};
+typedef struct _swcdb_thriftSpecKeyIntervalClass swcdb_thriftSpecKeyIntervalClass;
+
+GType swcdb_thrift_spec_key_interval_get_type (void);
+#define SWCDB_THRIFT_TYPE_SPEC_KEY_INTERVAL (swcdb_thrift_spec_key_interval_get_type())
+#define SWCDB_THRIFT_SPEC_KEY_INTERVAL(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_SPEC_KEY_INTERVAL, swcdb_thriftSpecKeyInterval))
+#define SWCDB_THRIFT_SPEC_KEY_INTERVAL_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_SPEC_KEY_INTERVAL, swcdb_thriftSpecKeyIntervalClass))
+#define SWCDB_THRIFT_IS_SPEC_KEY_INTERVAL(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_SPEC_KEY_INTERVAL))
+#define SWCDB_THRIFT_IS_SPEC_KEY_INTERVAL_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SPEC_KEY_INTERVAL))
+#define SWCDB_THRIFT_SPEC_KEY_INTERVAL_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SPEC_KEY_INTERVAL, swcdb_thriftSpecKeyIntervalClass))
+
 /* struct SpecInterval */
 struct _swcdb_thriftSpecInterval
 { 
@@ -421,10 +450,8 @@ struct _swcdb_thriftSpecInterval
   gboolean __isset_offset_key;
   gint64 offset_rev;
   gboolean __isset_offset_rev;
-  GPtrArray * key_start;
-  gboolean __isset_key_start;
-  GPtrArray * key_finish;
-  gboolean __isset_key_finish;
+  GPtrArray * key_intervals;
+  gboolean __isset_key_intervals;
   swcdb_thriftSpecValue * value;
   gboolean __isset_value;
   swcdb_thriftSpecTimestamp * ts_start;

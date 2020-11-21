@@ -310,7 +310,8 @@ class Test {
     );
   
     auto intval = DB::Specs::Interval::make_ptr();
-    intval->key_start.set(key, Condition::EQ);
+    auto& key_intval = intval->key_intervals.add();
+    key_intval->start.set(key, Condition::EQ);
     intval->flags.offset = 0;
     intval->flags.limit = counter ? 1 : cell_versions;
     req->specs.columns = {

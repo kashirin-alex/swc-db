@@ -107,14 +107,14 @@ public partial class SpecColumn : TBase
             if (field.Type == TType.List)
             {
               {
-                TList _list36 = await iprot.ReadListBeginAsync(cancellationToken);
-                Intervals = new List<SpecInterval>(_list36.Count);
-                for(int _i37 = 0; _i37 < _list36.Count; ++_i37)
+                TList _list40 = await iprot.ReadListBeginAsync(cancellationToken);
+                Intervals = new List<SpecInterval>(_list40.Count);
+                for(int _i41 = 0; _i41 < _list40.Count; ++_i41)
                 {
-                  SpecInterval _elem38;
-                  _elem38 = new SpecInterval();
-                  await _elem38.ReadAsync(iprot, cancellationToken);
-                  Intervals.Add(_elem38);
+                  SpecInterval _elem42;
+                  _elem42 = new SpecInterval();
+                  await _elem42.ReadAsync(iprot, cancellationToken);
+                  Intervals.Add(_elem42);
                 }
                 await iprot.ReadListEndAsync(cancellationToken);
               }
@@ -165,9 +165,9 @@ public partial class SpecColumn : TBase
         await oprot.WriteFieldBeginAsync(field, cancellationToken);
         {
           await oprot.WriteListBeginAsync(new TList(TType.Struct, Intervals.Count), cancellationToken);
-          foreach (SpecInterval _iter39 in Intervals)
+          foreach (SpecInterval _iter43 in Intervals)
           {
-            await _iter39.WriteAsync(oprot, cancellationToken);
+            await _iter43.WriteAsync(oprot, cancellationToken);
           }
           await oprot.WriteListEndAsync(cancellationToken);
         }

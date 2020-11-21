@@ -59,10 +59,10 @@ Interval::Interval(const Key& key_start, const Key& key_finish,
                    const Value& value, 
                    const Timestamp& ts_start, const Timestamp& ts_finish, 
                    const Flags& flags)
-                  : key_start(key_start), key_finish(key_finish), 
-                    value(value),
+                  : value(value),
                     ts_start(ts_start), ts_finish(ts_finish), 
                     flags(flags), key_eq(false), offset_rev(0) {
+  key_intervals.add(key_start, key_finish);
 }
 
 Interval::Interval(const Cell::Key& range_begin, const Cell::Key& range_end, 
@@ -71,10 +71,10 @@ Interval::Interval(const Cell::Key& range_begin, const Cell::Key& range_end,
                    const Timestamp& ts_start, const Timestamp& ts_finish, 
                    const Flags& flags)
                   : range_begin(range_begin), range_end(range_end), 
-                    key_start(key_start), key_finish(key_finish), 
                     value(value),
                     ts_start(ts_start), ts_finish(ts_finish), 
                     flags(flags), key_eq(false), offset_rev(0) {
+  key_intervals.add(key_start, key_finish);
 }
 
 Interval::Interval(const uint8_t** bufp, size_t* remainp) 
@@ -91,8 +91,7 @@ void Interval::copy(const Interval& other) {
   range_begin.copy(other.range_begin);
   range_end.copy(other.range_end);
 
-  key_start.copy(other.key_start);
-  key_finish.copy(other.key_finish);
+  key_intervals.copy(other.key_intervals);
 
   value.copy(other.value);
 
@@ -114,15 +113,14 @@ Interval::~Interval(){
 void Interval::free() {
   range_begin.free();
   range_end.free();
-  key_start.free();
-  key_finish.free();
+  key_intervals.free();
   value.free();
   offset_key.free();
 }
 
 size_t Interval::size_of_internal() const {
   return range_begin.size + range_end.size
-        + key_start.size_of_internal() + key_finish.size_of_internal()
+        + key_intervals.size_of_internal()
         + value.size
         + offset_key.size;
 }
@@ -144,8 +142,7 @@ bool Interval::equal(const Interval& other) const {
           flags.equal(other.flags) &&
           range_begin.equal(other.range_begin) &&
           range_end.equal(other.range_end) &&
-          key_start.equal(other.key_start) &&
-          key_finish.equal(other.key_finish) &&
+          key_intervals.equal(other.key_intervals) &&
           value.equal(other.value) &&
           offset_key.equal(other.offset_key) &&
           offset_rev == other.offset_rev ;
@@ -187,12 +184,7 @@ bool Interval::is_matching(const Types::KeySeq key_seq,
     &&
     is_matching_end(key_seq, cell.key)
     &&
-    (key_start.empty()  || 
-      DB::KeySeq::is_matching(key_seq, key_start, cell.key))
-    &&
-    (key_finish.empty() || 
-      DB::KeySeq::is_matching(key_seq, key_finish, cell.key))
-    ;
+    key_intervals.is_matching(key_seq, cell.key);
   if(!match || value.empty())
     return match;
 
@@ -216,7 +208,7 @@ bool Interval::is_matching_end(const Types::KeySeq key_seq,
 
 size_t Interval::encoded_length() const {
   return range_begin.encoded_length() + range_end.encoded_length()
-        + key_start.encoded_length() + key_finish.encoded_length()
+        + key_intervals.encoded_length()
         + value.encoded_length()
         + ts_start.encoded_length() + ts_finish.encoded_length()
         + flags.encoded_length()
@@ -228,8 +220,7 @@ void Interval::encode(uint8_t** bufp) const {
   range_begin.encode(bufp);
   range_end.encode(bufp);
 
-  key_start.encode(bufp);
-  key_finish.encode(bufp);
+  key_intervals.encode(bufp);
 
   value.encode(bufp);
 
@@ -246,8 +237,7 @@ void Interval::decode(const uint8_t** bufp, size_t* remainp) {
   range_begin.decode(bufp, remainp, false);
   range_end.decode(bufp, remainp, false);
 
-  key_start.decode(bufp, remainp);
-  key_finish.decode(bufp, remainp);
+  key_intervals.decode(bufp, remainp);
 
   value.decode(bufp, remainp);
 
@@ -274,13 +264,14 @@ void Interval::apply_possible_range_begin(DB::Cell::Key& begin) const {
     if(&begin != &range_begin)
       begin.copy(range_begin);
     
-  } else if(!key_start.empty()) {
+  } else if(!key_intervals.empty() && !key_intervals[0]->start.empty()) {
     std::string_view fraction;
     Condition::Comp comp;
     size_t ok;
     bool found = false;
+    const Key& key_start(key_intervals[0]->start);
     for(size_t idx=0; idx < key_start.size(); ++idx) {
-      fraction = key_start.get(idx, comp);
+      fraction = key_start.get(idx, comp); // Fraction const-ref
       if(fraction.size() && 
         (comp == Condition::EQ || comp == Condition::PF || 
          comp == Condition::GT || comp == Condition::GE)) {
@@ -295,11 +286,12 @@ void Interval::apply_possible_range_begin(DB::Cell::Key& begin) const {
     else if(++ok != key_start.size() && ok != begin.count)
       begin.remove(ok, true);
 
-  } else if(!key_finish.empty()) {
+  } else if(!key_intervals.empty() && !key_intervals[0]->finish.empty()) {
     std::string_view fraction;
     Condition::Comp comp;
     size_t ok;
     bool found = false;
+    const Key& key_finish(key_intervals[0]->finish);
     for(size_t idx=0; idx < key_finish.size(); ++idx) {
       fraction = key_finish.get(idx, comp);
       if(fraction.size() && 
@@ -323,11 +315,13 @@ void Interval::apply_possible_range_end(DB::Cell::Key& end) const {
     if(&end != &range_end)
       end.copy(range_end);
 
-  } else if(key_eq && !key_start.empty()) {
+  } else if(key_eq && !key_intervals.empty() && 
+                      !key_intervals[0]->start.empty()) {
     std::string_view fraction;
     Condition::Comp comp;
     size_t ok;
     bool found = false;
+    const Key& key_start(key_intervals[0]->start);
     for(size_t idx=0; idx < key_start.size(); ++idx) {
       fraction = key_start.get(idx, comp);
       if(fraction.length() && 
@@ -403,8 +397,7 @@ void Interval::print(std::ostream& out) const {
   range_begin.print(out << "Interval(Begin");
   range_end.print(out << " End");
 
-  key_start.print(out << " Start");
-  key_finish.print(out << " Finish");
+  key_intervals.print(out << ' ');
 
   ts_start.print(out << " Start");
   ts_finish.print(out << " Finish");
@@ -418,7 +411,7 @@ void Interval::print(std::ostream& out) const {
 }
 
 void Interval::display(std::ostream& out, bool pretty, 
-                       std::string offset) const {
+                       const std::string& offset) const {
   out << offset << "Interval(\n"; 
 
   out << offset << " Range(\n"
@@ -430,14 +423,7 @@ void Interval::display(std::ostream& out, bool pretty,
   out << ")\n"
       << offset << " )\n";
 
-  out << offset << " Key(\n"
-      << offset << "   start(";
-  key_start.display(out, pretty);
-  out << ")\n"
-      << offset << "  finish(";
-  key_finish.display(out, pretty);
-  out << ")\n"
-      << offset << " )\n";
+  key_intervals.display(out, pretty, offset + ' ');
 
   out << offset << " Timestamp(\n"
       << offset << "   start(";

@@ -155,14 +155,18 @@ int main() {
   speccol.__isset.intervals = true;
   auto& intval = speccol.intervals.back();
 
-  intval.__isset.key_start = true;
-  intval.key_start.resize(3);
-  intval.key_start[0].__set_comp(SWC::Thrift::Comp::GT);
-  intval.key_start[0].__set_f("");
-  intval.key_start[1].__set_comp(SWC::Thrift::Comp::EQ);
-  intval.key_start[1].__set_f("b");
-  intval.key_start[2].__set_comp(SWC::Thrift::Comp::GE);
-  intval.key_start[2].__set_f(""); // all on the depth
+  intval.key_intervals.emplace_back();
+  intval.__isset.key_intervals = true;
+
+  auto& key_intval = intval.key_intervals.back();
+  key_intval.__isset.start = true;
+  key_intval.start.resize(3);
+  key_intval.start[0].__set_comp(SWC::Thrift::Comp::GT);
+  key_intval.start[0].__set_f("");
+  key_intval.start[1].__set_comp(SWC::Thrift::Comp::EQ);
+  key_intval.start[1].__set_f("b");
+  key_intval.start[2].__set_comp(SWC::Thrift::Comp::GE);
+  key_intval.start[2].__set_f(""); // all on the depth
   
   specs.printTo(std::cout << " Select SpecScan='");
   std::cout << "'\n";

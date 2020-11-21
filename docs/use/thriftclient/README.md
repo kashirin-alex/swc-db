@@ -47,21 +47,23 @@ sort: 3
 ||	[ &bull; sql_query](#function-servicesql_query)|[Schemas](#typedef-schemas)||
 ||	[ &bull; sql_update](#function-servicesql_update)|[Key](#typedef-key)||
 ||	[ &bull; exec_sql](#function-serviceexec_sql)|[SpecKey](#typedef-speckey)||
-||	[ &bull; updater_create](#function-serviceupdater_create)|[UCells](#typedef-ucells)||
-||	[ &bull; updater_close](#function-serviceupdater_close)|[UCCells](#typedef-uccells)||
-||	[ &bull; update](#function-serviceupdate)|[Cells](#typedef-cells)||
-||	[ &bull; mng_column](#function-servicemng_column)|[ColCells](#typedef-colcells)||
-||	[ &bull; list_columns](#function-servicelist_columns)|[CCells](#typedef-ccells)||
-||	[ &bull; compact_columns](#function-servicecompact_columns)|[KCells](#typedef-kcells)||
-||	[ &bull; scan](#function-servicescan)|[CompactResults](#typedef-compactresults)||
-||	[ &bull; scan_rslt_on_column](#function-servicescan_rslt_on_column)|[Exception](#exception-exception)||
-||	[ &bull; scan_rslt_on_key](#function-servicescan_rslt_on_key)|[Schema](#struct-schema)||
-||	[ &bull; scan_rslt_on_fraction](#function-servicescan_rslt_on_fraction)|[SchemaPattern](#struct-schemapattern)||
-||	[ &bull; scan_rslt_on](#function-servicescan_rslt_on)|[SpecSchemas](#struct-specschemas)||
+||	[ &bull; updater_create](#function-serviceupdater_create)|[SpecKeyIntervals](#typedef-speckeyintervals)||
+||	[ &bull; updater_close](#function-serviceupdater_close)|[UCells](#typedef-ucells)||
+||	[ &bull; update](#function-serviceupdate)|[UCCells](#typedef-uccells)||
+||	[ &bull; mng_column](#function-servicemng_column)|[Cells](#typedef-cells)||
+||	[ &bull; list_columns](#function-servicelist_columns)|[ColCells](#typedef-colcells)||
+||	[ &bull; compact_columns](#function-servicecompact_columns)|[CCells](#typedef-ccells)||
+||	[ &bull; scan](#function-servicescan)|[KCells](#typedef-kcells)||
+||	[ &bull; scan_rslt_on_column](#function-servicescan_rslt_on_column)|[CompactResults](#typedef-compactresults)||
+||	[ &bull; scan_rslt_on_key](#function-servicescan_rslt_on_key)|[Exception](#exception-exception)||
+||	[ &bull; scan_rslt_on_fraction](#function-servicescan_rslt_on_fraction)|[Schema](#struct-schema)||
+||	[ &bull; scan_rslt_on](#function-servicescan_rslt_on)|[SchemaPattern](#struct-schemapattern)||
+|||[SpecSchemas](#struct-specschemas)||
 |||[SpecFlags](#struct-specflags)||
 |||[SpecFraction](#struct-specfraction)||
 |||[SpecValue](#struct-specvalue)||
 |||[SpecTimestamp](#struct-spectimestamp)||
+|||[SpecKeyInterval](#struct-speckeyinterval)||
 |||[SpecInterval](#struct-specinterval)||
 |||[SpecColumn](#struct-speccolumn)||
 |||[SpecScan](#struct-specscan)||
@@ -196,6 +198,12 @@ The Key Specifications defined as SpecFraction items in a list-container
 _Base type_: **list&lt;[```SpecFraction```](#struct-specfraction)&gt;**
 
 
+### Typedef: SpecKeyIntervals
+The Key Intervals Specifications defined as SpecKeyInterval items in a list-container 
+
+_Base type_: **list&lt;[```SpecKeyInterval```](#struct-speckeyinterval)&gt;**
+
+
 ### Typedef: UCells
 The Cells for Update defined as UCell items in a list-container 
 
@@ -322,6 +330,14 @@ The Timestamp Specifications
 |1|comp|[```Comp```](#enumeration-comp)|Logical comparator to Apply |default||
 |2|ts|```i64```|The timestamp in nanoseconds to match against the Cell timestamp/version (not the revision) |default||
 
+### Struct: SpecKeyInterval
+The Key Interval Specifications 
+
+| Key | Field | Type | Description | Requiredness | Default value |
+| --- | --- | --- | --- | --- | --- |
+|1|start|[```SpecKey```](#typedef-speckey)|The Key Start Spec, the start of cells-interval key match |optional||
+|2|finish|[```SpecKey```](#typedef-speckey)|The Key Finish Spec, the finish of cells-interval key match |optional||
+
 ### Struct: SpecInterval
 The Cells Interval Specifications with interval-scope Flags 
 
@@ -332,12 +348,11 @@ The Cells Interval Specifications with interval-scope Flags
 |3|range_offset|[```Key```](#typedef-key)|Offset of Ranges evaluation with this Key inclusive |optional||
 |4|offset_key|[```Key```](#typedef-key)|Offset Cell Key of a Scan, select cells from this key inclusive |optional||
 |5|offset_rev|```i64```|Offset Cell Timestamp of a Scan, select cells after this timestamp |optional||
-|6|key_start|[```SpecKey```](#typedef-speckey)|The Key Start Spec, the start of cells-interval key match |optional||
-|7|key_finish|[```SpecKey```](#typedef-speckey)|The Key Finish Spec, the finish of cells-interval key match |optional||
-|8|value|[```SpecValue```](#struct-specvalue)|The Cell Value Spec, cell-value match |optional||
-|9|ts_start|[```SpecTimestamp```](#struct-spectimestamp)|The Timestamp Start Spec, the start of cells-interval timestamp match |optional||
-|10|ts_finish|[```SpecTimestamp```](#struct-spectimestamp)|The Timestamp Finish Spec, the finish of cells-interval timestamp match |optional||
-|11|flags|[```SpecFlags```](#struct-specflags)|The Interval Flags Specification |optional||
+|6|key_intervals|[```SpecKeyIntervals```](#typedef-speckeyintervals)|The Key Intervals |optional||
+|7|value|[```SpecValue```](#struct-specvalue)|The Cell Value Spec, cell-value match |optional||
+|8|ts_start|[```SpecTimestamp```](#struct-spectimestamp)|The Timestamp Start Spec, the start of cells-interval timestamp match |optional||
+|9|ts_finish|[```SpecTimestamp```](#struct-spectimestamp)|The Timestamp Finish Spec, the finish of cells-interval timestamp match |optional||
+|10|flags|[```SpecFlags```](#struct-specflags)|The Interval Flags Specification |optional||
 
 ### Struct: SpecColumn
 The Column Specifications, the Cells-Intervals(SpecInterval/s) specification for a column 
@@ -693,5 +708,6 @@ The method to select cells with result set by the request's type of CellsResult.
 
 * exceptions:
   * Exception - The Base Exception 
+
 
 

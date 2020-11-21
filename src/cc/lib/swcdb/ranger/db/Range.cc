@@ -631,8 +631,9 @@ void Range::load(int &err, const Callback::RangeLoad::Ptr& req) {
 
   /* or select ranges of cid, with rid match in value 
         and on dup. cell of rid, delete earliest */
-  intval->key_start.set(m_interval.key_begin, Condition::EQ);
-  intval->key_start.insert(0, std::to_string(cfg->cid), Condition::EQ);
+  auto& key_intval = intval->key_intervals.add();
+  key_intval->start.set(m_interval.key_begin, Condition::EQ);
+  key_intval->start.insert(0, std::to_string(cfg->cid), Condition::EQ);
 
   auto selector = std::make_shared<client::Query::Select>(
     [req, col_spec, range=shared_from_this()] 

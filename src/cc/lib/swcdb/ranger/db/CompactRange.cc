@@ -265,9 +265,7 @@ bool CompactRange::selector(const DB::Types::KeySeq key_seq,
   return spec.is_matching(
     key_seq, cell.key, cell.timestamp, cell.control & DB::Cells::TS_DESC)
     &&
-    (spec.key_start.empty() ||
-      DB::KeySeq::is_matching(key_seq, spec.key_start, cell.key))
-    ;
+    spec.key_intervals.is_matching_start(key_seq, cell.key);
 }
 
 bool CompactRange::reached_limits() {
@@ -327,7 +325,9 @@ void CompactRange::response(int& err) {
 
     if(can_split_at() > 0 && DB::KeySeq::compare(range->cfg->key_seq, 
         m_required_key_last, spec.offset_key) == Condition::GT) {
-      spec.key_start.set(spec.offset_key, Condition::EQ);
+      if(spec.key_intervals.empty())
+        spec.key_intervals.add();
+      spec.key_intervals[0]->start.set(spec.offset_key, Condition::EQ);
       spec.range_end.copy(spec.offset_key);
 
       SWC_LOG_OUT(LOG_INFO, 

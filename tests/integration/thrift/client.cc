@@ -553,12 +553,16 @@ SpecScan select_specs(Client& client) {
     auto& intval = col.intervals.emplace_back();
     col.__isset.intervals = true;
 
-    intval.__isset.key_start = true;
-    intval.key_start.resize(2);
-    intval.key_start[0].__set_comp(Comp::EQ);
-    intval.key_start[0].__set_f("a1");
-    intval.key_start[1].__set_comp(Comp::GE);
-    intval.key_start[1].__set_f("");
+    intval.key_intervals.emplace_back();
+    intval.__isset.key_intervals = true;
+    auto& key_intval = intval.key_intervals.back();
+
+    key_intval.__isset.start = true;
+    key_intval.start.resize(2);
+    key_intval.start[0].__set_comp(Comp::EQ);
+    key_intval.start[0].__set_f("a1");
+    key_intval.start[1].__set_comp(Comp::GE);
+    key_intval.start[1].__set_f("");
   }
   ss.__isset.columns = true;
   return ss;

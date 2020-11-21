@@ -163,13 +163,13 @@ public partial class UCell : TBase
             if (field.Type == TType.List)
             {
               {
-                TList _list44 = await iprot.ReadListBeginAsync(cancellationToken);
-                K = new List<byte[]>(_list44.Count);
-                for(int _i45 = 0; _i45 < _list44.Count; ++_i45)
+                TList _list48 = await iprot.ReadListBeginAsync(cancellationToken);
+                K = new List<byte[]>(_list48.Count);
+                for(int _i49 = 0; _i49 < _list48.Count; ++_i49)
                 {
-                  byte[] _elem46;
-                  _elem46 = await iprot.ReadBinaryAsync(cancellationToken);
-                  K.Add(_elem46);
+                  byte[] _elem50;
+                  _elem50 = await iprot.ReadBinaryAsync(cancellationToken);
+                  K.Add(_elem50);
                 }
                 await iprot.ReadListEndAsync(cancellationToken);
               }
@@ -250,9 +250,9 @@ public partial class UCell : TBase
         await oprot.WriteFieldBeginAsync(field, cancellationToken);
         {
           await oprot.WriteListBeginAsync(new TList(TType.String, K.Count), cancellationToken);
-          foreach (byte[] _iter47 in K)
+          foreach (byte[] _iter51 in K)
           {
-            await oprot.WriteBinaryAsync(_iter47, cancellationToken);
+            await oprot.WriteBinaryAsync(_iter51, cancellationToken);
           }
           await oprot.WriteListEndAsync(cancellationToken);
         }

@@ -75,11 +75,15 @@ void set(const SpecInterval& intval, DB::Specs::Interval& dbintval) {
   if(intval.__isset.offset_rev)
     dbintval.offset_rev = intval.offset_rev;
 
-  if(intval.__isset.key_start)
-    set(intval.key_start, dbintval.key_start);
-
-  if(intval.__isset.key_finish)
-    set(intval.key_finish, dbintval.key_finish);
+  if(intval.__isset.key_intervals) {
+    for(auto& key_intval : intval.key_intervals) {
+      auto& dbkey_intval = dbintval.key_intervals.add();
+      if(key_intval.__isset.start)
+        set(key_intval.start, dbkey_intval->start);
+      if(key_intval.__isset.finish)
+        set(key_intval.finish, dbkey_intval->finish);
+    }
+  }
 
   if(intval.__isset.value)
     set(intval.value, dbintval.value);

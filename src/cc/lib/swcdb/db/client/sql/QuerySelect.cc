@@ -470,7 +470,8 @@ void QuerySelect::read_cells_interval(DB::Specs::Interval& spec) {
 
       if(!found_token(TOKEN_ONLY_KEYS, LEN_ONLY_KEYS) && 
           found_token(TOKEN_KEY, LEN_KEY)) {
-        read_key(spec.key_start, spec.key_finish, flw_and, spec.key_eq);
+        auto& key_intval = spec.key_intervals.add();
+        read_key(key_intval->start, key_intval->finish, flw_and, spec.key_eq);
         possible_and = true;
         continue;
       }

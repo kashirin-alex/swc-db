@@ -334,8 +334,9 @@ void MngdColumns::remove(const DB::Schema::Ptr& schema,
   auto col_spec = DB::Specs::Column::make_ptr(
     meta_cid, {DB::Specs::Interval::make_ptr()});
   auto& intval = col_spec->intervals.front();
-  intval->key_start.add(std::to_string(schema->cid), Condition::EQ);
-  intval->key_start.add("", Condition::GE);
+  auto& key_intval = intval->key_intervals.add();
+  key_intval->start.add(std::to_string(schema->cid), Condition::EQ);
+  key_intval->start.add("", Condition::GE);
   intval->flags.set_only_keys();
 
   auto selector = std::make_shared<client::Query::Select>(

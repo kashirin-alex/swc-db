@@ -441,14 +441,14 @@ public class SpecColumn implements org.apache.thrift.TBase<SpecColumn, SpecColum
           case 2: // INTERVALS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list72 = iprot.readListBegin();
-                struct.intervals = new java.util.ArrayList<SpecInterval>(_list72.size);
-                @org.apache.thrift.annotation.Nullable SpecInterval _elem73;
-                for (int _i74 = 0; _i74 < _list72.size; ++_i74)
+                org.apache.thrift.protocol.TList _list80 = iprot.readListBegin();
+                struct.intervals = new java.util.ArrayList<SpecInterval>(_list80.size);
+                @org.apache.thrift.annotation.Nullable SpecInterval _elem81;
+                for (int _i82 = 0; _i82 < _list80.size; ++_i82)
                 {
-                  _elem73 = new SpecInterval();
-                  _elem73.read(iprot);
-                  struct.intervals.add(_elem73);
+                  _elem81 = new SpecInterval();
+                  _elem81.read(iprot);
+                  struct.intervals.add(_elem81);
                 }
                 iprot.readListEnd();
               }
@@ -479,9 +479,9 @@ public class SpecColumn implements org.apache.thrift.TBase<SpecColumn, SpecColum
         oprot.writeFieldBegin(INTERVALS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.intervals.size()));
-          for (SpecInterval _iter75 : struct.intervals)
+          for (SpecInterval _iter83 : struct.intervals)
           {
-            _iter75.write(oprot);
+            _iter83.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -518,9 +518,9 @@ public class SpecColumn implements org.apache.thrift.TBase<SpecColumn, SpecColum
       if (struct.isSetIntervals()) {
         {
           oprot.writeI32(struct.intervals.size());
-          for (SpecInterval _iter76 : struct.intervals)
+          for (SpecInterval _iter84 : struct.intervals)
           {
-            _iter76.write(oprot);
+            _iter84.write(oprot);
           }
         }
       }
@@ -536,14 +536,14 @@ public class SpecColumn implements org.apache.thrift.TBase<SpecColumn, SpecColum
       }
       if (incoming.get(1)) {
         {
-          org.apache.thrift.protocol.TList _list77 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-          struct.intervals = new java.util.ArrayList<SpecInterval>(_list77.size);
-          @org.apache.thrift.annotation.Nullable SpecInterval _elem78;
-          for (int _i79 = 0; _i79 < _list77.size; ++_i79)
+          org.apache.thrift.protocol.TList _list85 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+          struct.intervals = new java.util.ArrayList<SpecInterval>(_list85.size);
+          @org.apache.thrift.annotation.Nullable SpecInterval _elem86;
+          for (int _i87 = 0; _i87 < _list85.size; ++_i87)
           {
-            _elem78 = new SpecInterval();
-            _elem78.read(iprot);
-            struct.intervals.add(_elem78);
+            _elem86 = new SpecInterval();
+            _elem86.read(iprot);
+            struct.intervals.add(_elem86);
           }
         }
         struct.setIntervalsIsSet(true);

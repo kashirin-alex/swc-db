@@ -7,7 +7,6 @@
 
 * ##### TODOS & WANTS
     * A Delete Query on matching cells ```delete [some-like select 'where_clause' syntax without incompatible flags]``` and returning the number of deleted cells - to let the Delete-Action to be done in one client-request an additional-option of instead (1)select + (2)apply DELETE flag + (3)send cells for update.
-    * DB::Specs::Interval supporting several keys-intervals - to let pre-matching with further indeep comparators conditions match.
     * A Merge of empty Range to it's left(prior) sibling.
     * Persistent Storage Encryption - files: Fragments, CellStores - considerations crypted-data-chuncks with AES and corresponding tags & tokens encypted with a designated/configured RSA-key at header-level - to let Secure Transactions even if a File-System cannot have encryption support.
     * A fully-functioning JDBC within the possibly applicable-features - to let the development of [DBeaver SWC-DB plugin](https://github.com/dbeaver/dbeaver/issues/9034) and adding administration support with a GUI feature.

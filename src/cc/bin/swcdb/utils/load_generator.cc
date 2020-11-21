@@ -370,7 +370,8 @@ void select_data(DB::Schema::Ptr& schema) {
 
         auto intval = DB::Specs::Interval::make_ptr();
         intval->key_eq = true;
-        apply_key(i, f, fraction_size, intval->key_start, Condition::EQ);
+        auto& key_intval = intval->key_intervals.add();
+        apply_key(i, f, fraction_size, key_intval->start, Condition::EQ);
         intval->flags.limit = versions;
         req->specs.columns = {
           DB::Specs::Column::make_ptr(schema->cid, {intval})

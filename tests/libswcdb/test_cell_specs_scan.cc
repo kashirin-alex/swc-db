@@ -191,8 +191,12 @@ void test(int chk) {
       std::cout << " new - " << ss_copy.to_string() << "\n";
       exit(1);
     }
-    if(&ss.columns[0]->intervals[0]->key_start 
-        == &ss_copy.columns[0]->intervals[0]->key_start) {
+    if(ss_copy.columns[0]->intervals[0]->key_intervals.empty()) {
+      std::cout << "\nss_copy key_intervals.empty(): ERROR\n";
+      exit(1);
+    }
+    if(&ss.columns[0]->intervals[0]->key_intervals[0]->start 
+        == &ss_copy.columns[0]->intervals[0]->key_intervals[0]->start) {
       std::cout << "\ncopy key.data ptr equal: ERROR\n";
       exit(1);
     }
@@ -209,8 +213,12 @@ void test(int chk) {
       std::cout << "!ss.equal(passed_ss2): ERROR\n";
       exit(1);
     }
-    if(&ss.columns[0]->intervals[0]->key_start
-        != &passed_ss2.columns[0]->intervals[0]->key_start) {
+    if(ss.columns[0]->intervals[0]->key_intervals.empty()) {
+      std::cout << "\nss key_intervals.empty(): ERROR\n";
+      exit(1);
+    }
+    if(&ss.columns[0]->intervals[0]->key_intervals[0]->start
+        != &passed_ss2.columns[0]->intervals[0]->key_intervals[0]->start) {
       std::cout << "\nassign key.data ptr not equal: ERROR\n";
       exit(1);
     }

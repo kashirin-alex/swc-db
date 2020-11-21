@@ -11,6 +11,7 @@
 #include "swcdb/db/Types/Identifiers.h"
 #include "swcdb/db/Cells/KeyComparator.h"
 #include "swcdb/db/Cells/SpecsKey.h"
+#include "swcdb/db/Cells/SpecsKeyIntervals.h"
 #include "swcdb/db/Cells/SpecsTimestamp.h"
 #include "swcdb/db/Cells/SpecsValue.h"
 #include "swcdb/db/Cells/SpecsFlags.h"
@@ -108,15 +109,15 @@ class Interval {
   void print(std::ostream& out) const;
 
   void display(std::ostream& out, bool pretty=false, 
-               std::string offset = "") const;
+               const std::string& offset = "") const;
 
-  Cell::Key  range_begin, range_end, range_offset;
-  Key        key_start, key_finish;
-  Value      value;
-  Timestamp  ts_start, ts_finish;
-  Flags      flags;
+  Cell::Key     range_begin, range_end, range_offset;
+  KeyIntervals  key_intervals;
+  Value         value;
+  Timestamp     ts_start, ts_finish;
+  Flags         flags;
 
-  bool       key_eq;
+  bool          key_eq;
 
   Cell::Key     offset_key;
   int64_t       offset_rev;

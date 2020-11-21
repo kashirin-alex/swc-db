@@ -25,42 +25,42 @@ using Thrift.Processor;
 
 
 /// <summary>
-/// The Scan Specifications, the Columns-Intervals(SpecColumn/s) with global-scope Flags
+/// The Key Interval Specifications
 /// </summary>
-public partial class SpecScan : TBase
+public partial class SpecKeyInterval : TBase
 {
-  private List<SpecColumn> _columns;
-  private SpecFlags _flags;
+  private List<SpecFraction> _start;
+  private List<SpecFraction> _finish;
 
   /// <summary>
-  /// The Column Intervals(SpecColumn) in a list-container
+  /// The Key Start Spec, the start of cells-interval key match
   /// </summary>
-  public List<SpecColumn> Columns
+  public List<SpecFraction> Start
   {
     get
     {
-      return _columns;
+      return _start;
     }
     set
     {
-      __isset.columns = true;
-      this._columns = value;
+      __isset.start = true;
+      this._start = value;
     }
   }
 
   /// <summary>
-  /// The Global Flags Specification
+  /// The Key Finish Spec, the finish of cells-interval key match
   /// </summary>
-  public SpecFlags Flags
+  public List<SpecFraction> Finish
   {
     get
     {
-      return _flags;
+      return _finish;
     }
     set
     {
-      __isset.flags = true;
-      this._flags = value;
+      __isset.finish = true;
+      this._finish = value;
     }
   }
 
@@ -68,11 +68,11 @@ public partial class SpecScan : TBase
   public Isset __isset;
   public struct Isset
   {
-    public bool columns;
-    public bool flags;
+    public bool start;
+    public bool finish;
   }
 
-  public SpecScan()
+  public SpecKeyInterval()
   {
   }
 
@@ -97,14 +97,14 @@ public partial class SpecScan : TBase
             if (field.Type == TType.List)
             {
               {
-                TList _list44 = await iprot.ReadListBeginAsync(cancellationToken);
-                Columns = new List<SpecColumn>(_list44.Count);
-                for(int _i45 = 0; _i45 < _list44.Count; ++_i45)
+                TList _list12 = await iprot.ReadListBeginAsync(cancellationToken);
+                Start = new List<SpecFraction>(_list12.Count);
+                for(int _i13 = 0; _i13 < _list12.Count; ++_i13)
                 {
-                  SpecColumn _elem46;
-                  _elem46 = new SpecColumn();
-                  await _elem46.ReadAsync(iprot, cancellationToken);
-                  Columns.Add(_elem46);
+                  SpecFraction _elem14;
+                  _elem14 = new SpecFraction();
+                  await _elem14.ReadAsync(iprot, cancellationToken);
+                  Start.Add(_elem14);
                 }
                 await iprot.ReadListEndAsync(cancellationToken);
               }
@@ -115,10 +115,20 @@ public partial class SpecScan : TBase
             }
             break;
           case 2:
-            if (field.Type == TType.Struct)
+            if (field.Type == TType.List)
             {
-              Flags = new SpecFlags();
-              await Flags.ReadAsync(iprot, cancellationToken);
+              {
+                TList _list15 = await iprot.ReadListBeginAsync(cancellationToken);
+                Finish = new List<SpecFraction>(_list15.Count);
+                for(int _i16 = 0; _i16 < _list15.Count; ++_i16)
+                {
+                  SpecFraction _elem17;
+                  _elem17 = new SpecFraction();
+                  await _elem17.ReadAsync(iprot, cancellationToken);
+                  Finish.Add(_elem17);
+                }
+                await iprot.ReadListEndAsync(cancellationToken);
+              }
             }
             else
             {
@@ -146,32 +156,39 @@ public partial class SpecScan : TBase
     oprot.IncrementRecursionDepth();
     try
     {
-      var struc = new TStruct("SpecScan");
+      var struc = new TStruct("SpecKeyInterval");
       await oprot.WriteStructBeginAsync(struc, cancellationToken);
       var field = new TField();
-      if (Columns != null && __isset.columns)
+      if (Start != null && __isset.start)
       {
-        field.Name = "columns";
+        field.Name = "start";
         field.Type = TType.List;
         field.ID = 1;
         await oprot.WriteFieldBeginAsync(field, cancellationToken);
         {
-          await oprot.WriteListBeginAsync(new TList(TType.Struct, Columns.Count), cancellationToken);
-          foreach (SpecColumn _iter47 in Columns)
+          await oprot.WriteListBeginAsync(new TList(TType.Struct, Start.Count), cancellationToken);
+          foreach (SpecFraction _iter18 in Start)
           {
-            await _iter47.WriteAsync(oprot, cancellationToken);
+            await _iter18.WriteAsync(oprot, cancellationToken);
           }
           await oprot.WriteListEndAsync(cancellationToken);
         }
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
-      if (Flags != null && __isset.flags)
+      if (Finish != null && __isset.finish)
       {
-        field.Name = "flags";
-        field.Type = TType.Struct;
+        field.Name = "finish";
+        field.Type = TType.List;
         field.ID = 2;
         await oprot.WriteFieldBeginAsync(field, cancellationToken);
-        await Flags.WriteAsync(oprot, cancellationToken);
+        {
+          await oprot.WriteListBeginAsync(new TList(TType.Struct, Finish.Count), cancellationToken);
+          foreach (SpecFraction _iter19 in Finish)
+          {
+            await _iter19.WriteAsync(oprot, cancellationToken);
+          }
+          await oprot.WriteListEndAsync(cancellationToken);
+        }
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
       await oprot.WriteFieldStopAsync(cancellationToken);
@@ -185,41 +202,41 @@ public partial class SpecScan : TBase
 
   public override bool Equals(object that)
   {
-    var other = that as SpecScan;
+    var other = that as SpecKeyInterval;
     if (other == null) return false;
     if (ReferenceEquals(this, other)) return true;
-    return ((__isset.columns == other.__isset.columns) && ((!__isset.columns) || (TCollections.Equals(Columns, other.Columns))))
-      && ((__isset.flags == other.__isset.flags) && ((!__isset.flags) || (System.Object.Equals(Flags, other.Flags))));
+    return ((__isset.start == other.__isset.start) && ((!__isset.start) || (System.Object.Equals(Start, other.Start))))
+      && ((__isset.finish == other.__isset.finish) && ((!__isset.finish) || (System.Object.Equals(Finish, other.Finish))));
   }
 
   public override int GetHashCode() {
     int hashcode = 157;
     unchecked {
-      if(__isset.columns)
-        hashcode = (hashcode * 397) + TCollections.GetHashCode(Columns);
-      if(__isset.flags)
-        hashcode = (hashcode * 397) + Flags.GetHashCode();
+      if(__isset.start)
+        hashcode = (hashcode * 397) + Start.GetHashCode();
+      if(__isset.finish)
+        hashcode = (hashcode * 397) + Finish.GetHashCode();
     }
     return hashcode;
   }
 
   public override string ToString()
   {
-    var sb = new StringBuilder("SpecScan(");
+    var sb = new StringBuilder("SpecKeyInterval(");
     bool __first = true;
-    if (Columns != null && __isset.columns)
+    if (Start != null && __isset.start)
     {
       if(!__first) { sb.Append(", "); }
       __first = false;
-      sb.Append("Columns: ");
-      sb.Append(Columns);
+      sb.Append("Start: ");
+      sb.Append(Start);
     }
-    if (Flags != null && __isset.flags)
+    if (Finish != null && __isset.finish)
     {
       if(!__first) { sb.Append(", "); }
       __first = false;
-      sb.Append("Flags: ");
-      sb.Append(Flags== null ? "<null>" : Flags.ToString());
+      sb.Append("Finish: ");
+      sb.Append(Finish);
     }
     sb.Append(")");
     return sb.ToString();

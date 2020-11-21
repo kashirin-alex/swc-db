@@ -335,40 +335,51 @@ struct SpecTimestamp {
 
 
 
+/** The Key Interval Specifications */
+struct SpecKeyInterval {
+  /** The Key Start Spec, the start of cells-interval key match */
+  1: optional SpecKey  start
+
+  /** The Key Finish Spec, the finish of cells-interval key match */
+  2: optional SpecKey  finish
+}
+
+/** The Key Intervals Specifications defined as SpecKeyInterval items in a list-container */
+typedef list<SpecKeyInterval> SpecKeyIntervals
+
+
+
 /** The Cells Interval Specifications with interval-scope Flags */
 struct SpecInterval {
   /** Begin of Ranges evaluation with this Key inclusive */
-  1: optional Key             range_begin
+  1: optional Key               range_begin
 
   /** End of Ranges evaluation with this Key inclusive */
-  2: optional Key             range_end
+  2: optional Key               range_end
 
   /** Offset of Ranges evaluation with this Key inclusive */
-  3: optional Key             range_offset
+  3: optional Key               range_offset
 
   /** Offset Cell Key of a Scan, select cells from this key inclusive */
-  4: optional Key             offset_key
+  4: optional Key               offset_key
 
   /** Offset Cell Timestamp of a Scan, select cells after this timestamp  */
-  5: optional i64             offset_rev
-  
-  /** The Key Start Spec, the start of cells-interval key match */
-  6: optional SpecKey         key_start
+  5: optional i64               offset_rev
 
-  /** The Key Finish Spec, the finish of cells-interval key match */
-  7: optional SpecKey         key_finish
-  
+  /** The Key Intervals */
+  6: optional SpecKeyIntervals  key_intervals
+
   /** The Cell Value Spec, cell-value match */
-  8: optional SpecValue       value;
+  7: optional SpecValue         value;
   
   /** The Timestamp Start Spec, the start of cells-interval timestamp match */
-  9: optional SpecTimestamp   ts_start
+  8: optional SpecTimestamp     ts_start
   
   /** The Timestamp Finish Spec, the finish of cells-interval timestamp match */
-  10: optional SpecTimestamp  ts_finish
+  9: optional SpecTimestamp    ts_finish
   
   /** The Interval Flags Specification */
-  11: optional SpecFlags      flags
+  10: optional SpecFlags        flags
 }
 
 

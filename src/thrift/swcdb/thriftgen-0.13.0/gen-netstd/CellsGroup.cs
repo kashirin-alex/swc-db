@@ -133,14 +133,14 @@ public partial class CellsGroup : TBase
             if (field.Type == TType.List)
             {
               {
-                TList _list73 = await iprot.ReadListBeginAsync(cancellationToken);
-                Cells = new List<Cell>(_list73.Count);
-                for(int _i74 = 0; _i74 < _list73.Count; ++_i74)
+                TList _list77 = await iprot.ReadListBeginAsync(cancellationToken);
+                Cells = new List<Cell>(_list77.Count);
+                for(int _i78 = 0; _i78 < _list77.Count; ++_i78)
                 {
-                  Cell _elem75;
-                  _elem75 = new Cell();
-                  await _elem75.ReadAsync(iprot, cancellationToken);
-                  Cells.Add(_elem75);
+                  Cell _elem79;
+                  _elem79 = new Cell();
+                  await _elem79.ReadAsync(iprot, cancellationToken);
+                  Cells.Add(_elem79);
                 }
                 await iprot.ReadListEndAsync(cancellationToken);
               }
@@ -154,26 +154,26 @@ public partial class CellsGroup : TBase
             if (field.Type == TType.Map)
             {
               {
-                TMap _map76 = await iprot.ReadMapBeginAsync(cancellationToken);
-                Ccells = new Dictionary<string, List<CCell>>(_map76.Count);
-                for(int _i77 = 0; _i77 < _map76.Count; ++_i77)
+                TMap _map80 = await iprot.ReadMapBeginAsync(cancellationToken);
+                Ccells = new Dictionary<string, List<CCell>>(_map80.Count);
+                for(int _i81 = 0; _i81 < _map80.Count; ++_i81)
                 {
-                  string _key78;
-                  List<CCell> _val79;
-                  _key78 = await iprot.ReadStringAsync(cancellationToken);
+                  string _key82;
+                  List<CCell> _val83;
+                  _key82 = await iprot.ReadStringAsync(cancellationToken);
                   {
-                    TList _list80 = await iprot.ReadListBeginAsync(cancellationToken);
-                    _val79 = new List<CCell>(_list80.Count);
-                    for(int _i81 = 0; _i81 < _list80.Count; ++_i81)
+                    TList _list84 = await iprot.ReadListBeginAsync(cancellationToken);
+                    _val83 = new List<CCell>(_list84.Count);
+                    for(int _i85 = 0; _i85 < _list84.Count; ++_i85)
                     {
-                      CCell _elem82;
-                      _elem82 = new CCell();
-                      await _elem82.ReadAsync(iprot, cancellationToken);
-                      _val79.Add(_elem82);
+                      CCell _elem86;
+                      _elem86 = new CCell();
+                      await _elem86.ReadAsync(iprot, cancellationToken);
+                      _val83.Add(_elem86);
                     }
                     await iprot.ReadListEndAsync(cancellationToken);
                   }
-                  Ccells[_key78] = _val79;
+                  Ccells[_key82] = _val83;
                 }
                 await iprot.ReadMapEndAsync(cancellationToken);
               }
@@ -187,14 +187,14 @@ public partial class CellsGroup : TBase
             if (field.Type == TType.List)
             {
               {
-                TList _list83 = await iprot.ReadListBeginAsync(cancellationToken);
-                Kcells = new List<kCells>(_list83.Count);
-                for(int _i84 = 0; _i84 < _list83.Count; ++_i84)
+                TList _list87 = await iprot.ReadListBeginAsync(cancellationToken);
+                Kcells = new List<kCells>(_list87.Count);
+                for(int _i88 = 0; _i88 < _list87.Count; ++_i88)
                 {
-                  kCells _elem85;
-                  _elem85 = new kCells();
-                  await _elem85.ReadAsync(iprot, cancellationToken);
-                  Kcells.Add(_elem85);
+                  kCells _elem89;
+                  _elem89 = new kCells();
+                  await _elem89.ReadAsync(iprot, cancellationToken);
+                  Kcells.Add(_elem89);
                 }
                 await iprot.ReadListEndAsync(cancellationToken);
               }
@@ -247,9 +247,9 @@ public partial class CellsGroup : TBase
         await oprot.WriteFieldBeginAsync(field, cancellationToken);
         {
           await oprot.WriteListBeginAsync(new TList(TType.Struct, Cells.Count), cancellationToken);
-          foreach (Cell _iter86 in Cells)
+          foreach (Cell _iter90 in Cells)
           {
-            await _iter86.WriteAsync(oprot, cancellationToken);
+            await _iter90.WriteAsync(oprot, cancellationToken);
           }
           await oprot.WriteListEndAsync(cancellationToken);
         }
@@ -263,14 +263,14 @@ public partial class CellsGroup : TBase
         await oprot.WriteFieldBeginAsync(field, cancellationToken);
         {
           await oprot.WriteMapBeginAsync(new TMap(TType.String, TType.List, Ccells.Count), cancellationToken);
-          foreach (string _iter87 in Ccells.Keys)
+          foreach (string _iter91 in Ccells.Keys)
           {
-            await oprot.WriteStringAsync(_iter87, cancellationToken);
+            await oprot.WriteStringAsync(_iter91, cancellationToken);
             {
-              await oprot.WriteListBeginAsync(new TList(TType.Struct, Ccells[_iter87].Count), cancellationToken);
-              foreach (CCell _iter88 in Ccells[_iter87])
+              await oprot.WriteListBeginAsync(new TList(TType.Struct, Ccells[_iter91].Count), cancellationToken);
+              foreach (CCell _iter92 in Ccells[_iter91])
               {
-                await _iter88.WriteAsync(oprot, cancellationToken);
+                await _iter92.WriteAsync(oprot, cancellationToken);
               }
               await oprot.WriteListEndAsync(cancellationToken);
             }
@@ -287,9 +287,9 @@ public partial class CellsGroup : TBase
         await oprot.WriteFieldBeginAsync(field, cancellationToken);
         {
           await oprot.WriteListBeginAsync(new TList(TType.Struct, Kcells.Count), cancellationToken);
-          foreach (kCells _iter89 in Kcells)
+          foreach (kCells _iter93 in Kcells)
           {
-            await _iter89.WriteAsync(oprot, cancellationToken);
+            await _iter93.WriteAsync(oprot, cancellationToken);
           }
           await oprot.WriteListEndAsync(cancellationToken);
         }

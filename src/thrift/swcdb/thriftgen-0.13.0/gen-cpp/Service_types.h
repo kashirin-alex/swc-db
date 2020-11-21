@@ -162,6 +162,8 @@ typedef std::vector<std::string>  Key;
 
 typedef std::vector<class SpecFraction>  SpecKey;
 
+typedef std::vector<class SpecKeyInterval>  SpecKeyIntervals;
+
 typedef std::vector<class UCell>  UCells;
 
 typedef std::map<int64_t, UCells>  UCCells;
@@ -191,6 +193,8 @@ class SpecFraction;
 class SpecValue;
 
 class SpecTimestamp;
+
+class SpecKeyInterval;
 
 class SpecInterval;
 
@@ -752,15 +756,66 @@ void swap(SpecTimestamp &a, SpecTimestamp &b);
 
 std::ostream& operator<<(std::ostream& out, const SpecTimestamp& obj);
 
+typedef struct _SpecKeyInterval__isset {
+  _SpecKeyInterval__isset() : start(false), finish(false) {}
+  bool start :1;
+  bool finish :1;
+} _SpecKeyInterval__isset;
+
+class SpecKeyInterval : public virtual ::apache::thrift::TBase {
+ public:
+
+  SpecKeyInterval(const SpecKeyInterval&);
+  SpecKeyInterval& operator=(const SpecKeyInterval&);
+  SpecKeyInterval() {
+  }
+
+  virtual ~SpecKeyInterval() noexcept;
+  SpecKey start;
+  SpecKey finish;
+
+  _SpecKeyInterval__isset __isset;
+
+  void __set_start(const SpecKey& val);
+
+  void __set_finish(const SpecKey& val);
+
+  bool operator == (const SpecKeyInterval & rhs) const
+  {
+    if (__isset.start != rhs.__isset.start)
+      return false;
+    else if (__isset.start && !(start == rhs.start))
+      return false;
+    if (__isset.finish != rhs.__isset.finish)
+      return false;
+    else if (__isset.finish && !(finish == rhs.finish))
+      return false;
+    return true;
+  }
+  bool operator != (const SpecKeyInterval &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const SpecKeyInterval & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(SpecKeyInterval &a, SpecKeyInterval &b);
+
+std::ostream& operator<<(std::ostream& out, const SpecKeyInterval& obj);
+
 typedef struct _SpecInterval__isset {
-  _SpecInterval__isset() : range_begin(false), range_end(false), range_offset(false), offset_key(false), offset_rev(false), key_start(false), key_finish(false), value(false), ts_start(false), ts_finish(false), flags(false) {}
+  _SpecInterval__isset() : range_begin(false), range_end(false), range_offset(false), offset_key(false), offset_rev(false), key_intervals(false), value(false), ts_start(false), ts_finish(false), flags(false) {}
   bool range_begin :1;
   bool range_end :1;
   bool range_offset :1;
   bool offset_key :1;
   bool offset_rev :1;
-  bool key_start :1;
-  bool key_finish :1;
+  bool key_intervals :1;
   bool value :1;
   bool ts_start :1;
   bool ts_finish :1;
@@ -781,8 +836,7 @@ class SpecInterval : public virtual ::apache::thrift::TBase {
   Key range_offset;
   Key offset_key;
   int64_t offset_rev;
-  SpecKey key_start;
-  SpecKey key_finish;
+  SpecKeyIntervals key_intervals;
   SpecValue value;
   SpecTimestamp ts_start;
   SpecTimestamp ts_finish;
@@ -800,9 +854,7 @@ class SpecInterval : public virtual ::apache::thrift::TBase {
 
   void __set_offset_rev(const int64_t val);
 
-  void __set_key_start(const SpecKey& val);
-
-  void __set_key_finish(const SpecKey& val);
+  void __set_key_intervals(const SpecKeyIntervals& val);
 
   void __set_value(const SpecValue& val);
 
@@ -834,13 +886,9 @@ class SpecInterval : public virtual ::apache::thrift::TBase {
       return false;
     else if (__isset.offset_rev && !(offset_rev == rhs.offset_rev))
       return false;
-    if (__isset.key_start != rhs.__isset.key_start)
+    if (__isset.key_intervals != rhs.__isset.key_intervals)
       return false;
-    else if (__isset.key_start && !(key_start == rhs.key_start))
-      return false;
-    if (__isset.key_finish != rhs.__isset.key_finish)
-      return false;
-    else if (__isset.key_finish && !(key_finish == rhs.key_finish))
+    else if (__isset.key_intervals && !(key_intervals == rhs.key_intervals))
       return false;
     if (__isset.value != rhs.__isset.value)
       return false;

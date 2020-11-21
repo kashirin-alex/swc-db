@@ -221,7 +221,7 @@ All the Conditions and Flags are optional, without a LIMIT and any Conditions th
 ***```cells=(```
 [ [```Condition-Range```](#the-condition-range-syntax) ]
 [``` AND ```]
-[ [```Condition-Key-Interval```](#the-condition-key-interval-syntax) ]
+[ [```Key-Intervals```](#the-key-intervals-syntax) ]
 [``` AND ```]
 [ [```Condition-Value```](#the-condition-value-syntax) ]
 [``` AND ```]
@@ -237,6 +237,21 @@ All the Conditions and Flags are optional, without a LIMIT and any Conditions th
 * ##### The Condition-Range syntax
 The Condition of Range is an interval of from Key to Key, optionally to apply only one side with Key on the right side. It can be defined only by the Comparators GE and LE. \
 ***```Key``` [``` <= ```] ``` range ``` [``` <= ```] ```Key```***
+
+
+* ##### The Key-Intervals syntax
+The Key-Intervals are several or single ```Condition-Key-Interval```, joined by the TOKEN ``` AND ```. 
+Whereas the given order is the matching order which let further matching of a cell-key, 
+such as 1st(```Condition-Key-Interval```) is based on a sequential Comparators 
+while the 2nd and followed(```Condition-Key-Interval```) include/involve non-sequential Comparators such as Regexp. \
+The 1st ```Condition-Key-Interval``` is the main(after ```Condition-Range```) Interval used by/for locators of Range & Range-Blocks. \
+***[ [```Condition-Key-Interval```](#the-condition-key-interval-syntax) ]
+```...```
+[``` AND ```]
+[ [```Condition-Key-Interval```](#the-condition-key-interval-syntax) ]
+[``` AND ```]
+[ [```Condition-Key-Interval```](#the-condition-key-interval-syntax) ]***
+
 
 
 * ##### The Condition-Key-Interval syntax
