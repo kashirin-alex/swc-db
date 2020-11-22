@@ -329,7 +329,17 @@ void Range::compacting(uint8_t state) {
   m_compacting = state;
   m_cv.notify_all();
 }
-  
+
+bool Range::compacting_ifnot_applying(uint8_t state) {
+  std::scoped_lock lock(m_mutex);
+  if(m_compacting != COMPACT_APPLYING) {
+    m_compacting = state;
+    m_cv.notify_all();
+    return true;
+  }
+  return false;
+}
+
 bool Range::compact_possible(bool minor) {
   std::scoped_lock lock(m_mutex);
   if(m_state != State::LOADED || m_compacting != COMPACT_NONE ||
