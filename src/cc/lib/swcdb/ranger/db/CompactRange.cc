@@ -394,11 +394,22 @@ void CompactRange::commitlog_done(const CommitLog::Compact* compact) {
       tnum += compact->repetition + 1;
     delete compact;
 
-    int64_t median;
-    range->compacting(tnum && is_slow_req(median)
-      ? Range::COMPACT_PREPARING : state_default.load() );
-    if(tnum && !m_stopped && !m_chk_final && range->is_loaded())
-      return commitlog(tnum);
+    if(!m_stopped && !m_chk_final) {
+      size_t bytes = range->blocks.commitlog.size_bytes_encoded();
+      if(bytes >= cs_size * range->cfg->cellstore_max()) {
+        stop_check_timer();
+        range->compacting(state_default = Range::COMPACT_PREPARING);
+        SWC_LOGF(LOG_INFO,
+          "COMPACT-MITIGATE(add req.) %lu/%lu reached max-log-size(%lu)",
+          range->cfg->cid, range->rid, bytes);
+      } else {
+        int64_t median;
+        range->compacting(tnum && is_slow_req(median)
+          ? Range::COMPACT_PREPARING : state_default.load());
+      }
+      if(tnum && range->is_loaded())
+        return commitlog(tnum);
+    }
   }
   {
     Core::MutexSptd::scope lock(m_mutex);
@@ -413,8 +424,8 @@ void CompactRange::progress_check_timer() {
 
   int64_t median;
   bool slow = is_slow_req(median);
-  if(!range->compacting_is(Range::COMPACT_APPLYING)) {
-    range->compacting(slow? Range::COMPACT_PREPARING : state_default.load());
+  if(range->compacting_ifnot_applying(
+      slow ? Range::COMPACT_PREPARING : state_default.load())) {
     request_more();
   }
 
@@ -549,12 +560,17 @@ csid_t CompactRange::create_cs(int& err) {
   );
   cs_writer->create(err, -1, range->cfg->file_replication(), blk_size);
 
-  uint32_t portion = range->cfg->compact_percent()/10;
-  if(!portion) portion = 1;
-  if(csid == range->cfg->cellstore_max() * portion) {
-    stop_check_timer();
-    // mitigate add req. total workload
-    range->compacting(state_default = Range::COMPACT_PREPARING);
+  if(!m_chk_final) {
+    uint32_t p = range->cfg->compact_percent()/10;
+    if(csid == range->cfg->cellstore_max() * (p ? p : 1)) {
+      stop_check_timer();
+      if(range->compacting_ifnot_applying(
+          state_default = Range::COMPACT_PREPARING)) {
+        SWC_LOGF(LOG_INFO,
+          "COMPACT-MITIGATE(add req.) %lu/%lu reached cs-max(%u)",
+          range->cfg->cid, range->rid, csid);
+      }
+    }
   }
   return csid;
 
