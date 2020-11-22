@@ -9,16 +9,15 @@ namespace SWC { namespace Ranger { namespace CommitLog {
 
 Compact::Group::Group(Compact* compact, uint8_t worker) 
                       : ts(Time::now_ns()), worker(worker), error(Error::OK), 
-                        compact(compact), m_read_idx(0), 
-                        m_loading(0), m_processed(0),
+                        compact(compact),
+                        m_sem(4),
                         m_cells(
                           compact->log->range->cfg->key_seq,
                           compact->log->range->cfg->block_cells() * 2,
                           compact->log->range->cfg->cell_versions(), 
                           compact->log->range->cfg->cell_ttl(), 
                           compact->log->range->cfg->column_type()
-                        ), 
-                        m_sem(5) {
+                        ) {
 }
 
 Compact::Group::~Group() {
@@ -27,72 +26,51 @@ Compact::Group::~Group() {
 }
 
 void Compact::Group::run() {
-  Env::Rgr::post([this]() { load_more(); });
-}
-
-void Compact::Group::load_more() {
-  Fragment::Ptr frag;
-  bool more;
-  do {
-    m_mutex.lock();
-    if(error || compact->log->stopping) {
-      more = false;
-      m_read_idx = read_frags.size();
-    } else if((more = m_read_idx < read_frags.size() &&
-                      m_loading < Fragments::MAX_PRELOAD)) {
-      ++m_loading;
-      frag = read_frags[m_read_idx];
-      ++m_read_idx;
-    }
-    m_mutex.unlock();
-    if(more)
-      frag->load([this, frag] () { loaded(frag); });
-  }while(more);
-}
-
-void Compact::Group::loaded(Fragment::Ptr frag) {
-  if(m_queue.push_and_is_1st(frag))
-    Env::Rgr::post([this]() { load(); });
+  Env::Rgr::post([this]() { load(); });
 }
 
 void Compact::Group::load() {
+  for(auto frag : read_frags) {
+    if(error || compact->log->stopping)
+      break;
+    m_sem.acquire();
+    frag->load([this, frag] () { loaded(frag); });
+  }
+  m_sem.wait_all();
+  write();
+}
+
+void Compact::Group::loaded(Fragment::Ptr frag) {
+  if(compact->log->stopping || error) {
+    frag->processing_decrement();
+    m_sem.release();
+    return;
+  }
+
   int err;
-  Fragment::Ptr frag;
-  bool finished;
-  ssize_t sz;
-  do {
-    frag = m_queue.front();
+  if(!frag->loaded(err)) {
+    frag->processing_decrement();
+    SWC_LOG_OUT(LOG_WARN,
+      Error::print(
+        SWC_LOG_OSTREAM << "COMPACT-LOG fragment retrying to ", err);
+      frag->print(SWC_LOG_OSTREAM << ' ');
+    );
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    frag->load([this, frag]() { loaded(frag); } );
+    return;
+  }
 
-    err = Error::OK;
-    if(!compact->log->stopping && !error) {
-      sz = m_cells.size_of_internal();
-      frag->load_cells(err, m_cells);
-      Env::Rgr::res().adj_mem_usage(ssize_t(m_cells.size_of_internal()) - sz);
-      m_remove.push_back(frag);
-    } else {
-      frag->processing_decrement();
-    }
-    frag->release();
-    if(err)
-      SWC_LOG_OUT(LOG_ERROR, 
-        SWC_LOG_OSTREAM << "COMPACT-LOG-ERROR " 
-          << compact->log->range->cfg->cid << '/' << compact->log->range->rid;
-        Error::print(SWC_LOG_OSTREAM << ' ', err);
-        frag->print(SWC_LOG_OSTREAM << ' ');
-      );
-
-    m_mutex.lock();
-    finished = (!--m_loading && m_queue.size() == 1 && 
-                (error || compact->log->stopping) ) || 
-               ++m_processed == read_frags.size();
-    m_mutex.unlock();
-
-    if(finished)
-      return write();
-    if(!error && !compact->log->stopping)
-      load_more();
-
-  } while(m_queue.pop_and_more());
+  ssize_t adj_sz;
+  {
+    Core::MutexSptd::scope lock(m_mutex);
+    size_t sz = m_cells.size_of_internal();
+    frag->load_cells(err, m_cells);
+    adj_sz = ssize_t(m_cells.size_of_internal()) - sz;
+    m_remove.push_back(frag);
+  }
+  Env::Rgr::res().adj_mem_usage(adj_sz);
+  frag->release();
+  m_sem.release();
 }
 
 void Compact::Group::write() {
@@ -173,11 +151,14 @@ void Compact::Group::finalize() {
     delete frag;
   }
 
-  if(!compact->log->stopping && !error)
+  if(compact->log->stopping || error) {
+    if(!tmp_frags.empty())
+      compact->log->remove(err, tmp_frags);
+  } else {
     compact->log->remove(err, m_remove);
-  else if(!tmp_frags.empty())
-    compact->log->remove(err, tmp_frags);
+  }
 }
+
 
 
 Compact::Compact(Fragments* log, int repetition, 
@@ -243,10 +224,16 @@ void Compact::finished(Group* group, size_t cells_count) {
 
   log->range->compacting(Range::COMPACT_APPLYING);
   log->range->blocks.wait_processing(); // sync processing state
+  
+  Core::Semaphore sem(m_groups.size(), m_groups.size());
   for(auto g : m_groups) {
-    g->finalize();
-    delete g;
+    Env::Rgr::post([g, &sem]() { 
+      g->finalize();
+      delete g;
+      sem.release();
+    });
   }
+  sem.wait_all();
 
   auto took = Time::now_ns() - ts;
   SWC_LOGF(LOG_INFO, 
@@ -268,6 +255,8 @@ const std::string Compact::get_filepath(const int64_t frag) const {
   s.append(".frag");
   return s;
 }
+
+
 
 }}} // namespace SWC::Ranger::CommitLog
 

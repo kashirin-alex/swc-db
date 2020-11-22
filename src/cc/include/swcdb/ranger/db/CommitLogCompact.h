@@ -36,25 +36,19 @@ class Compact final {
 
     private:
 
-    void load_more();
+    void load();
 
     void loaded(Fragment::Ptr frag);
-
-    void load();
 
     void write();
     
     std::atomic<int>                  error;
     Compact*                          compact;
-    Core::MutexAtomic                 m_mutex;
-    size_t                            m_read_idx;
-    uint32_t                          m_loading;
-    uint32_t                          m_processed;
+    Core::Semaphore                   m_sem;
+    Core::MutexSptd                   m_mutex;
     DB::Cells::MutableVec             m_cells;
-    Core::QueueSafe<Fragment::Ptr>    m_queue;
     Fragments::Vec                    m_remove;
     Fragments::Vec                    m_fragments;
-    Core::Semaphore                   m_sem;
   };
 
   public:
