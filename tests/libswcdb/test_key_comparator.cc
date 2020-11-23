@@ -58,7 +58,8 @@ void load_check_compare_max(const DB::Types::KeySeq key_seq,
   auto ts = Time::now_ns();
   for(int n=0; n < chks; ++n)
     SWC_ASSERT(
-      DB::KeySeq::compare(key_seq, key1, key2, key2.size) == Condition::EQ);
+      DB::KeySeq::compare_upto(key_seq, key1, key2, key2.size)
+       == Condition::EQ);
   
   uint64_t took = Time::now_ns() - ts;
   std::cout << "load_check_compare(max), fractions=" << fractions 

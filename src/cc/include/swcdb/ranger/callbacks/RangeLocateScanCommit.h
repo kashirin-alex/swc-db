@@ -16,9 +16,11 @@ class RangeLocateScanCommit : public RangeLocateScan {
 
   typedef std::shared_ptr<RangeLocateScanCommit> Ptr;
 
-  RangeLocateScanCommit(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev, 
+  RangeLocateScanCommit(const Comm::ConnHandlerPtr& conn, 
+                        const Comm::Event::Ptr& ev, 
                         const DB::Cell::Key& range_begin,
-                        const RangePtr& range, uint8_t flags)
+                        const RangePtr& range, 
+                        uint8_t flags)
                         : RangeLocateScan(
                             conn, ev, 
                             range_begin, DB::Cell::Key(), range, flags) {
@@ -29,8 +31,8 @@ class RangeLocateScanCommit : public RangeLocateScan {
   bool selector(const DB::Types::KeySeq key_seq, 
                 const DB::Cells::Cell& cell, bool& stop) override {
     if(any_is && 
-      DB::KeySeq::compare(key_seq, 
-        range_begin, cell.key, any_is) != Condition::EQ)
+       DB::KeySeq::compare_upto(key_seq, range_begin, cell.key, any_is)
+        != Condition::EQ)
       return false;
 
     size_t remain = cell.vlen;

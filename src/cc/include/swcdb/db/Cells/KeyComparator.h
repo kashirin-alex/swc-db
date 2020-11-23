@@ -25,11 +25,12 @@ namespace KeySeq {
 
 
 Condition::Comp
-compare(const Types::KeySeq seq, const Cell::Key& key, const Cell::Key& other);
+compare(const Types::KeySeq seq, 
+        const Cell::Key& key, const Cell::Key& other);
 
 Condition::Comp
-compare(const Types::KeySeq seq, const Cell::Key& key, const Cell::Key& other,
-        uint24_t max);
+compare_upto(const Types::KeySeq seq, 
+             const Cell::Key& key, const Cell::Key& other, uint24_t max);
 
 Condition::Comp
 compare_opt_empty(const Types::KeySeq seq,

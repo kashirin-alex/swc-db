@@ -20,12 +20,13 @@ class RangeLocateScan : public ReqScan {
                   const Comm::Event::Ptr& ev,
                   const DB::Cell::Key& range_begin,
                   const DB::Cell::Key& range_end,
-                  const RangePtr& range, uint8_t flags)
+                  const RangePtr& range, 
+                  uint8_t flags)
                   : ReqScan(conn, ev, range_begin, range_end),
                     range(range), flags(flags),
                     any_is(range->cfg->range_type != DB::Types::Range::DATA),
                     range_begin(range_begin, false),
-                    empty_end(!range_end.empty() &&
+                    empty_end(range_end.count == any_is &&
                               DB::Types::is_fc(range->cfg->key_seq)) {
     auto c = range->known_interval_count();
     spec.range_begin.remove(c ? c : (uint24_t)1, true);
@@ -42,8 +43,8 @@ class RangeLocateScan : public ReqScan {
     //SWC_PRINT << "---------------------"
     //  << "  cell.key: " << cell.key.to_string() << SWC_PRINT_CLOSE;
     if(any_is && 
-        DB::KeySeq::compare(key_seq, spec.range_begin, cell.key, any_is)
-          != Condition::EQ)
+       DB::KeySeq::compare_upto(key_seq, spec.range_begin, cell.key, any_is)
+        != Condition::EQ)
       return false;
 
     if(flags & Comm::Protocol::Rgr::Params::RangeLocateReq::NEXT_RANGE && 
