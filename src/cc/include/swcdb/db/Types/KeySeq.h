@@ -19,6 +19,8 @@ enum class KeySeq : uint8_t {
   FC_VOLUME   = 4
 };
 
+bool is_fc(KeySeq typ);
+
 std::string to_string(KeySeq typ);
 
 KeySeq range_seq_from(const std::string& typ);

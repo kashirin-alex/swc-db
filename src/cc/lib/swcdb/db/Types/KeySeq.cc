@@ -21,6 +21,16 @@ namespace {
   const char KeySeq_UNKNOWN[]    = "UNKNOWN";
 }
 
+bool is_fc(KeySeq typ) {
+  switch(typ) {
+    case KeySeq::FC_LEXIC:
+    case KeySeq::FC_VOLUME:
+      return true;
+    default:
+      return false;
+  }
+}
+
 
 std::string to_string(KeySeq typ) {
   switch(typ) {
