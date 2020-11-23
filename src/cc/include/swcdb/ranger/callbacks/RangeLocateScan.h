@@ -26,8 +26,7 @@ class RangeLocateScan : public ReqScan {
                     range(range), flags(flags),
                     any_is(range->cfg->range_type != DB::Types::Range::DATA),
                     range_begin(range_begin, false),
-                    empty_end(range_end.count == any_is &&
-                              DB::Types::is_fc(range->cfg->key_seq)) {
+                    empty_end(range_end.count == any_is) {
     auto c = range->known_interval_count();
     spec.range_begin.remove(c ? c : (uint24_t)1, true);
     if(empty_end)
