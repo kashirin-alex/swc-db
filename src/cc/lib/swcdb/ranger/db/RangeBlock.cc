@@ -337,11 +337,6 @@ void Block::processing_decrement() {
   --m_processing;
 }
 
-bool Block::removed() {
-  Core::MutexSptd::scope lock(m_mutex_state);
-  return m_state == State::REMOVED;
-}
-
 bool Block::loaded() {
   Core::MutexSptd::scope lock(m_mutex_state);
   return m_state == State::LOADED;

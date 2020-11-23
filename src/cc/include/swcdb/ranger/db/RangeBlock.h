@@ -30,8 +30,7 @@ class Block final {
   enum State : uint8_t {
     NONE    = 0x00,
     LOADING = 0x01,
-    LOADED  = 0x02,
-    REMOVED = 0x03,
+    LOADED  = 0x02
   };
 
   enum ScanState : uint8_t {
@@ -118,8 +117,6 @@ class Block final {
   void processing_increment();
 
   void processing_decrement();
-
-  bool removed();
 
   bool loaded();
 

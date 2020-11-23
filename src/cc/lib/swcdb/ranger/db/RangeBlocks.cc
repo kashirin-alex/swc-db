@@ -163,7 +163,7 @@ void Blocks::scan(ReqScan::Ptr req, Block::Ptr blk_ptr) {
             : *(m_blocks_idx.begin() + _narrow(req->spec.offset_key)));
       m_mutex.unlock(support);
 
-      while(blk_ptr && (blk_ptr->removed() || !blk_ptr->is_next(req->spec))) {
+      while(blk_ptr && !blk_ptr->is_next(req->spec)) {
         support = m_mutex.lock();
         blk_ptr = blk_ptr->next;
         m_mutex.unlock(support);
