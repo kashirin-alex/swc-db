@@ -154,17 +154,11 @@ class Resources final {
   void checker() {
     refresh_stats();
 
-    bool try_release;
-    size_t bytes;
-    if((try_release = is_low_mem_state()))
-      bytes = 0;
-    else
-      try_release = (bytes = need_ram());
-
-    if(try_release) {
+    size_t bytes = 0;
+    if(is_low_mem_state() || (bytes = need_ram())) {
       if(m_release_call) {
         size_t released_bytes = m_release_call(bytes);
-        SWC_LOG_OUT(LOG_DEBUG, 
+        SWC_LOG_OUT(LOG_DEBUG,
           print(SWC_LOG_OSTREAM);
           SWC_LOG_OSTREAM 
             << " mem-released=" << released_bytes << '/' << bytes;
