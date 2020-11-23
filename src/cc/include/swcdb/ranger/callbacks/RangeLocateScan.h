@@ -16,16 +16,21 @@ class RangeLocateScan : public ReqScan {
 
   typedef std::shared_ptr<RangeLocateScan> Ptr;
 
-  RangeLocateScan(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev, 
-                  const DB::Cell::Key& range_begin, 
-                  const DB::Cell::Key& range_end, 
+  RangeLocateScan(const Comm::ConnHandlerPtr& conn,
+                  const Comm::Event::Ptr& ev,
+                  const DB::Cell::Key& range_begin,
+                  const DB::Cell::Key& range_end,
                   const RangePtr& range, uint8_t flags)
-                  : ReqScan(conn, ev, range_begin, range_end), 
+                  : ReqScan(conn, ev, range_begin, range_end),
                     range(range), flags(flags),
                     any_is(range->cfg->range_type != DB::Types::Range::DATA),
-                    range_begin(range_begin, false) {
+                    range_begin(range_begin, false),
+                    empty_end(!range_end.empty() &&
+                              DB::Types::is_fc(range->cfg->key_seq)) {
     auto c = range->known_interval_count();
     spec.range_begin.remove(c ? c : (uint24_t)1, true);
+    if(empty_end)
+      spec.range_end.add("");
     // SWC_PRINT << "---------------------" << " c="<< c 
     //  << " spec.range_begin: " << spec.range_begin.to_string() << SWC_PRINT_CLOSE;
   }
@@ -46,7 +51,8 @@ class RangeLocateScan : public ReqScan {
           != Condition::GT)
       return false;
 
-    if(cell.key.count > any_is && spec.range_end.count > any_is && 
+    if(cell.key.count > any_is && 
+       spec.range_end.count - empty_end > any_is && 
        !spec.is_matching_end(key_seq, cell.key)) {
       stop = true;
       //SWC_PRINT << "-- KEY-BEGIN NO MATCH STOP --" << SWC_PRINT_CLOSE;
@@ -85,10 +91,10 @@ class RangeLocateScan : public ReqScan {
         DB::KeySeq::compare(key_seq, 
          range_begin, aligned_max, 
          Condition::LT, range_begin.count, true)) {
-      if(spec.range_end.count == any_is || aligned_min.empty() || 
-          DB::KeySeq::compare(key_seq, 
-           spec.range_end, aligned_min, 
-           Condition::GT, spec.range_end.count, true)) {
+      if(spec.range_end.count - empty_end == any_is || aligned_min.empty() ||
+          DB::KeySeq::compare(key_seq,
+           spec.range_end, aligned_min,
+           Condition::GT, spec.range_end.count - empty_end, true)) {
         //SWC_PRINT << "-- ALIGNED MATCH  --" << SWC_PRINT_CLOSE;
         return true;
       }
@@ -149,6 +155,7 @@ class RangeLocateScan : public ReqScan {
   uint8_t               flags;
   uint32_t              any_is;
   const DB::Cell::Key   range_begin;
+  bool                  empty_end;
 
   Comm::Protocol::Rgr::Params::RangeLocateRsp params;
 

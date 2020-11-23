@@ -78,7 +78,6 @@ compare(const Types::KeySeq seq, const Cell::Key& key,
       return compare<Types::KeySeq::FC_VOLUME>(key, other);
 
     default:
-      SWC_ASSERT(seq != Types::KeySeq::UNKNOWN);
       return Condition::NONE;
   }
 }
@@ -148,27 +147,50 @@ compare<Types::KeySeq::FC_VOLUME>(
 
 Condition::Comp 
 compare(const Types::KeySeq seq, const Cell::Key& key, const Cell::Key& other,
-        int32_t max, bool empty_ok, bool empty_eq) {
+        uint24_t max) {
   switch(seq) {
-
     case Types::KeySeq::LEXIC:
       return compare<Types::KeySeq::LEXIC>(
-        key, other, max==-1? key.count : (uint24_t)max, empty_ok, empty_eq);
+        key, other, max, false, false);
 
     case Types::KeySeq::VOLUME:
       return compare<Types::KeySeq::VOLUME>(
-        key, other, max==-1? key.count : (uint24_t)max, empty_ok, empty_eq);
+        key, other, max, false, false);
 
     case Types::KeySeq::FC_LEXIC:
       return compare<Types::KeySeq::FC_LEXIC>(
-        key, other, max==-1? other.count : (uint24_t)max, empty_ok, empty_eq);
+        key, other, max, false, false);
 
     case Types::KeySeq::FC_VOLUME:
       return compare<Types::KeySeq::FC_VOLUME>(
-        key, other, max==-1? other.count : (uint24_t)max, empty_ok, empty_eq);
+        key, other, max, false, false);
 
     default:
-      SWC_ASSERT(seq != Types::KeySeq::UNKNOWN);
+      return Condition::NONE;
+  }
+}
+
+Condition::Comp 
+compare_opt_empty(const Types::KeySeq seq, 
+                  const Cell::Key& key, const Cell::Key& other) {
+  switch(seq) {
+    case Types::KeySeq::LEXIC:
+      return compare<Types::KeySeq::LEXIC>(
+        key, other, key.count, true, true);
+
+    case Types::KeySeq::VOLUME:
+      return compare<Types::KeySeq::VOLUME>(
+        key, other, key.count, true, true);
+
+    case Types::KeySeq::FC_LEXIC:
+      return compare<Types::KeySeq::LEXIC>(
+        key, other, other.count, true, true);
+
+    case Types::KeySeq::FC_VOLUME:
+      return compare<Types::KeySeq::VOLUME>(
+        key, other, other.count, true, true);
+
+    default:
       return Condition::NONE;
   }
 }
@@ -258,8 +280,7 @@ compare(const Types::KeySeq seq,
         key, other, break_if, max, empty_ok);
 
     default:
-      SWC_ASSERT(seq != Types::KeySeq::UNKNOWN);
-      return Condition::NONE;
+      return false;
   }
 }
 ///
@@ -323,8 +344,7 @@ align(const Types::KeySeq seq, const Cell::Key& key,
       return align<Types::KeySeq::VOLUME>(key, start, finish);
 
     default:
-      SWC_ASSERT(seq != Types::KeySeq::UNKNOWN);
-      return Condition::NONE;
+      return false;
   }
 }
 ///
@@ -377,8 +397,7 @@ align(const Types::KeySeq seq, Cell::KeyVec& key,
       return align<Types::KeySeq::VOLUME>(key, other, comp);
 
     default:
-      SWC_ASSERT(seq != Types::KeySeq::UNKNOWN);
-      return Condition::NONE;
+      return false;
   }
 }
 ///
@@ -444,7 +463,6 @@ is_matching(const Types::KeySeq seq, const Specs::Key& key,
       return is_matching<Types::KeySeq::VOLUME>(key, other);
 
     default:
-      SWC_ASSERT(seq != Types::KeySeq::UNKNOWN);
       return false;
   }
 }
