@@ -574,6 +574,10 @@ void Select::Scanner::rgr_locate_meta() {
   params.range_begin.insert(0, data_cid_str);
   params.range_end.insert(0, data_cid_str);
 
+  if(!interval.range_end.empty() && interval.has_opt__range_end_rest())
+    params.flags 
+      |= Comm::Protocol::Rgr::Params::RangeLocateReq::RANGE_END_REST;
+
   SWC_SCANNER_REQ_DEBUG("rgr_locate_meta");
   Comm::Protocol::Rgr::Req::RangeLocate::request(
     params, meta_endpoints,

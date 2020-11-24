@@ -89,7 +89,8 @@ compare(const Types::KeySeq seq, const Cell::Key& key,
 template<Types::KeySeq T_seq>
 SWC_CAN_INLINE
 Condition::Comp 
-compare_upto(const Cell::Key& key, const Cell::Key& other, uint24_t max) {
+compare_opt(const Cell::Key& key, const Cell::Key& other,
+            uint24_t max, bool empty_ok, bool empty_eq) {
   if(uint24_t min = key.count < other.count ? key.count : other.count) {
     if(max && min > max)
       min = max;  
@@ -98,8 +99,12 @@ compare_upto(const Cell::Key& key, const Cell::Key& other, uint24_t max) {
     uint24_t sz1;
     uint24_t sz2;
     for(Condition::Comp comp; min; --min, p1 += sz1, p2 += sz2) {
-      sz1 = Serialization::decode_vi24(&p1);
       sz2 = Serialization::decode_vi24(&p2);
+      if(!(sz1 = Serialization::decode_vi24(&p1)) && empty_ok) {
+        if(empty_eq)
+          return Condition::EQ;
+        continue;
+      }
       if((comp = condition<T_seq>(p1, sz1, p2, sz2)) != Condition::EQ)
         return comp;
     }
@@ -113,29 +118,33 @@ compare_upto(const Cell::Key& key, const Cell::Key& other, uint24_t max) {
 template<>
 SWC_CAN_INLINE
 Condition::Comp 
-compare_upto<Types::KeySeq::FC_LEXIC>(
-        const Cell::Key& key, const Cell::Key& other, uint24_t max) {
+compare_opt<Types::KeySeq::FC_LEXIC>(
+        const Cell::Key& key, const Cell::Key& other, 
+        uint24_t max, bool empty_ok, bool empty_eq) {
   if(!max || max > key.count || max > other.count) {
     if(key.count < other.count)
       return Condition::GT;
     if(key.count > other.count)
       return Condition::LT;
   }
-  return compare_upto<Types::KeySeq::LEXIC>(key, other, max);
+  return compare_opt<Types::KeySeq::LEXIC>(
+    key, other, max, empty_ok, empty_eq);
 }
 
 template<>
 SWC_CAN_INLINE
 Condition::Comp 
-compare_upto<Types::KeySeq::FC_VOLUME>(
-        const Cell::Key& key, const Cell::Key& other, uint24_t max) {
+compare_opt<Types::KeySeq::FC_VOLUME>(
+        const Cell::Key& key, const Cell::Key& other, 
+        uint24_t max, bool empty_ok, bool empty_eq) {
   if(!max || max > key.count || max > other.count) {
     if(key.count < other.count)
       return Condition::GT;
     if(key.count > other.count)
       return Condition::LT;
   }
-  return compare_upto<Types::KeySeq::VOLUME>(key, other, max);
+  return compare_opt<Types::KeySeq::VOLUME>(
+    key, other, max, empty_ok, empty_eq);
 }
 
 Condition::Comp 
@@ -143,64 +152,76 @@ compare_upto(const Types::KeySeq seq,
              const Cell::Key& key, const Cell::Key& other, uint24_t max) {
   switch(seq) {
     case Types::KeySeq::LEXIC:
-      return compare_upto<Types::KeySeq::LEXIC>(key, other, max);
+      return compare_opt<Types::KeySeq::LEXIC>(
+        key, other, max, false, false);
 
     case Types::KeySeq::VOLUME:
-      return compare_upto<Types::KeySeq::VOLUME>(key, other, max);
+      return compare_opt<Types::KeySeq::VOLUME>(
+        key, other, max, false, false);
 
     case Types::KeySeq::FC_LEXIC:
-      return compare_upto<Types::KeySeq::FC_LEXIC>(key, other, max);
+      return compare_opt<Types::KeySeq::FC_LEXIC>(
+        key, other, max, false, false);
 
     case Types::KeySeq::FC_VOLUME:
-      return compare_upto<Types::KeySeq::FC_VOLUME>(key, other, max);
+      return compare_opt<Types::KeySeq::FC_VOLUME>(
+        key, other, max, false, false);
 
     default:
       return Condition::NONE;
   }
 }
-///
 
-
-
-///
-template<Types::KeySeq T_seq>
-SWC_CAN_INLINE
 Condition::Comp 
-compare_opt_empty(const Cell::Key& key, const Cell::Key& other) {
-  if(uint24_t min = key.count < other.count ? key.count : other.count) {
-    const uint8_t* p1 = key.data;
-    const uint8_t* p2 = other.data;
-    uint24_t sz1;
-    uint24_t sz2;
-    for(Condition::Comp comp; min; --min, p1 += sz1, p2 += sz2) {
-      sz1 = Serialization::decode_vi24(&p1);
-      if(!sz1)
-        return Condition::EQ;
-      sz2 = Serialization::decode_vi24(&p2);
-      if((comp = condition<T_seq>(p1, sz1, p2, sz2)) != Condition::EQ)
-        return comp;
-    }
+compare_incl(const Types::KeySeq seq, 
+             const Cell::Key& key, const Cell::Key& other) {
+  switch(seq) {
+    case Types::KeySeq::LEXIC:
+      return compare_opt<Types::KeySeq::LEXIC>(
+        key, other, key.count, true, true);
+
+    case Types::KeySeq::VOLUME:
+      return compare_opt<Types::KeySeq::VOLUME>(
+        key, other, key.count, true, true);
+
+    case Types::KeySeq::FC_LEXIC:
+      return compare_opt<Types::KeySeq::FC_LEXIC>(
+        key, other, other.count, true, true);
+
+    case Types::KeySeq::FC_VOLUME:
+      return compare_opt<Types::KeySeq::FC_VOLUME>(
+        key, other, other.count, true, true);
+
+    default:
+      return Condition::NONE;
   }
-  return key.count == other.count
-        ? Condition::EQ
-        : (key.count > other.count ? Condition::LT : Condition::GT);
 }
 
 Condition::Comp 
-compare_opt_empty(const Types::KeySeq seq, 
-                  const Cell::Key& key, const Cell::Key& other) {
+compare_incl(const Types::KeySeq seq, 
+             const Cell::Key& key, const Cell::Key& other, bool rest) {
   switch(seq) {
     case Types::KeySeq::LEXIC:
-      return compare_opt_empty<Types::KeySeq::LEXIC>(key, other);
+      return compare_opt<Types::KeySeq::LEXIC>(
+        key, other, rest ? key.count : other.count, true, true);
 
     case Types::KeySeq::VOLUME:
-      return compare_opt_empty<Types::KeySeq::VOLUME>(key, other);
+      return compare_opt<Types::KeySeq::VOLUME>(
+        key, other, rest ? key.count : other.count, true, true);
 
     case Types::KeySeq::FC_LEXIC:
-      return compare_opt_empty<Types::KeySeq::LEXIC>(key, other);
+      return rest
+        ? compare_opt<Types::KeySeq::LEXIC>(
+            key, other, key.count, true, true)
+        : compare_opt<Types::KeySeq::FC_LEXIC>(
+            key, other, other.count, true, true);
 
     case Types::KeySeq::FC_VOLUME:
-      return compare_opt_empty<Types::KeySeq::VOLUME>(key, other);
+      return rest
+        ? compare_opt<Types::KeySeq::VOLUME>(
+            key, other, key.count, true, true)
+        : compare_opt<Types::KeySeq::FC_VOLUME>(
+            key, other, other.count, true, true);
 
     default:
       return Condition::NONE;

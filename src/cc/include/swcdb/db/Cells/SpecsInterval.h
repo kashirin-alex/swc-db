@@ -23,6 +23,9 @@ namespace SWC { namespace DB { namespace Specs {
 class Interval {
   public:
 
+  static const uint8_t OPT_KEY_EQUAL      = 0x01;
+  static const uint8_t OPT_RANGE_END_REST = 0x02;
+
   typedef std::shared_ptr<Interval> Ptr;
 
   static Ptr make_ptr();
@@ -98,6 +101,14 @@ class Interval {
 
   void decode(const uint8_t** bufp, size_t* remainp);
   
+  void set_opt__key_equal();
+
+  void set_opt__range_end_rest();
+
+  bool has_opt__key_equal() const;
+
+  bool has_opt__range_end_rest() const;
+
   void apply_possible_range(DB::Cell::Key& begin, DB::Cell::Key& end) const;
 
   void apply_possible_range_begin(DB::Cell::Key& begin) const;
@@ -117,14 +128,18 @@ class Interval {
   Timestamp     ts_start, ts_finish;
   Flags         flags;
 
-  bool          key_eq;
-
   Cell::Key     offset_key;
   int64_t       offset_rev;
+
+  uint8_t       options;
+
   Types::Column col_type;
+
 };
 
+
 }}}
+
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/db/Cells/SpecsInterval.cc"

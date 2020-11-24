@@ -369,7 +369,7 @@ void select_data(DB::Schema::Ptr& schema) {
       while(f_num.next(&f)) {
 
         auto intval = DB::Specs::Interval::make_ptr();
-        intval->key_eq = true;
+        intval->set_opt__key_equal();
         auto& key_intval = intval->key_intervals.add();
         apply_key(i, f, fraction_size, key_intval->start, Condition::EQ);
         intval->flags.limit = versions;

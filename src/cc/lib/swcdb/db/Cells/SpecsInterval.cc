@@ -48,11 +48,11 @@ Interval::Ptr Interval::make_ptr(Interval::Ptr other) {
 }
 
 
-Interval::Interval() : key_eq(false), offset_rev(0) {}
+Interval::Interval() : offset_rev(0), options(0) { }
 
 Interval::Interval(const Cell::Key& range_begin, const Cell::Key& range_end)
                   : range_begin(range_begin), range_end(range_end), 
-                    key_eq(false), offset_rev(0) {
+                    offset_rev(0), options(0) {
 }
 
 Interval::Interval(const Key& key_start, const Key& key_finish, 
@@ -61,7 +61,7 @@ Interval::Interval(const Key& key_start, const Key& key_finish,
                    const Flags& flags)
                   : value(value),
                     ts_start(ts_start), ts_finish(ts_finish), 
-                    flags(flags), key_eq(false), offset_rev(0) {
+                    flags(flags), offset_rev(0), options(0) {
   key_intervals.add(key_start, key_finish);
 }
 
@@ -73,12 +73,11 @@ Interval::Interval(const Cell::Key& range_begin, const Cell::Key& range_end,
                   : range_begin(range_begin), range_end(range_end), 
                     value(value),
                     ts_start(ts_start), ts_finish(ts_finish), 
-                    flags(flags), key_eq(false), offset_rev(0) {
+                    flags(flags), offset_rev(0), options(0) {
   key_intervals.add(key_start, key_finish);
 }
 
-Interval::Interval(const uint8_t** bufp, size_t* remainp) 
-                  : key_eq(false) {
+Interval::Interval(const uint8_t** bufp, size_t* remainp) {
   decode(bufp, remainp); 
 }
 
@@ -100,10 +99,10 @@ void Interval::copy(const Interval& other) {
 
   flags.copy(other.flags);
 
-  key_eq = other.key_eq;
-
   offset_key.copy(other.offset_key);
   offset_rev = other.offset_rev;
+
+  options = other.options;
 }
 
 Interval::~Interval(){
@@ -140,6 +139,7 @@ bool Interval::equal(const Interval& other) const {
   return  ts_start.equal(other.ts_start) &&
           ts_finish.equal(other.ts_finish) &&
           flags.equal(other.flags) &&
+          options == other.options &&
           range_begin.equal(other.range_begin) &&
           range_end.equal(other.range_end) &&
           key_intervals.equal(other.key_intervals) &&
@@ -194,17 +194,19 @@ bool Interval::is_matching(const Types::KeySeq key_seq,
   return value.is_matching(cell.value, cell.vlen);
 }
 
+
 bool Interval::is_matching_begin(const Types::KeySeq key_seq, 
                                  const DB::Cell::Key& key) const {
-  return range_begin.empty() || DB::KeySeq::compare_opt_empty(
+  return range_begin.empty() || DB::KeySeq::compare_incl(
     key_seq, range_begin, key) != Condition::LT;
 }
 
 bool Interval::is_matching_end(const Types::KeySeq key_seq, 
                                const DB::Cell::Key& key) const {
-  return range_end.empty() || DB::KeySeq::compare_opt_empty(
-    key_seq, range_end, key) != Condition::GT;
+  return range_end.empty() || DB::KeySeq::compare_incl(
+    key_seq, range_end, key, has_opt__range_end_rest()) != Condition::GT;
 }
+
 
 size_t Interval::encoded_length() const {
   return range_begin.encoded_length() + range_end.encoded_length()
@@ -213,7 +215,8 @@ size_t Interval::encoded_length() const {
         + ts_start.encoded_length() + ts_finish.encoded_length()
         + flags.encoded_length()
         + offset_key.encoded_length()
-        + Serialization::encoded_length_vi64(offset_rev);
+        + Serialization::encoded_length_vi64(offset_rev)
+        + 1;
 }
 
 void Interval::encode(uint8_t** bufp) const {
@@ -231,6 +234,7 @@ void Interval::encode(uint8_t** bufp) const {
 
   offset_key.encode(bufp);
   Serialization::encode_vi64(bufp, offset_rev);
+  Serialization::encode_i8(bufp, options);
 }
 
 void Interval::decode(const uint8_t** bufp, size_t* remainp) {
@@ -248,7 +252,26 @@ void Interval::decode(const uint8_t** bufp, size_t* remainp) {
 
   offset_key.decode(bufp, remainp, false);
   offset_rev = Serialization::decode_vi64(bufp, remainp);
+  options = Serialization::decode_i8(bufp, remainp);
 }
+
+
+void Interval::set_opt__key_equal() {
+  options |= OPT_KEY_EQUAL;
+}
+
+void Interval::set_opt__range_end_rest() {
+  options |= OPT_RANGE_END_REST;
+}
+
+bool Interval::has_opt__key_equal() const {
+  return options & OPT_KEY_EQUAL;
+}
+
+bool Interval::has_opt__range_end_rest() const {
+  return options & OPT_RANGE_END_REST;
+}
+
 
 void Interval::apply_possible_range(DB::Cell::Key& begin, 
                                     DB::Cell::Key& end) const {   
@@ -300,8 +323,9 @@ void Interval::apply_possible_range_begin(DB::Cell::Key& begin) const {
         begin.add(fraction);
         ok = idx;
         found = true;
-      } else
+      } else {
         begin.add("", 0);
+      }
     }
     if(!found)
       begin.free();
@@ -315,8 +339,9 @@ void Interval::apply_possible_range_end(DB::Cell::Key& end) const {
     if(&end != &range_end)
       end.copy(range_end);
 
-  } else if(key_eq && !key_intervals.empty() && 
-                      !key_intervals[0]->start.empty()) {
+  } else if(has_opt__key_equal() && 
+            !key_intervals.empty() && 
+            !key_intervals[0]->start.empty()) {
     std::string_view fraction;
     Condition::Comp comp;
     size_t ok;
@@ -331,13 +356,15 @@ void Interval::apply_possible_range_end(DB::Cell::Key& end) const {
         end.add(fraction);
         ok = idx;
         found = true;
-      } else
+      } else {
         end.add("", 0);
+        //options |= OPT_RANGE_END_REST;
+      }
     }
     if(!found)
       end.free();
     else if(++ok == key_start.size())
-      end.add("", 0);
+      end.add("", 0); //options |= OPT_RANGE_END_REST;
     else if(++ok < key_start.size() && ok != end.count)
       end.remove(ok, true);
   }
@@ -407,6 +434,11 @@ void Interval::print(std::ostream& out) const {
   
   value.print(out << " ");
   flags.print(out << " ");
+  
+  out << " Options(" 
+    << "range-end-rest=" << has_opt__range_end_rest()
+    << " key-eq=" << has_opt__key_equal()
+    << ')';
   out << ')';
 }
 
@@ -448,6 +480,11 @@ void Interval::display(std::ostream& out, bool pretty,
   out << offset << " Flags(";
   flags.display(out);
   out << ")\n"; 
+
+  out << offset << " Options(" 
+    << "range-end-rest=" << has_opt__range_end_rest()
+    << " key-eq=" << has_opt__key_equal()
+    << ")\n";
 
   out << offset << ")\n"; 
 }

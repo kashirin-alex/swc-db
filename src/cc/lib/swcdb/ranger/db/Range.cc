@@ -636,7 +636,7 @@ void Range::load(int &err, const Callback::RangeLoad::Ptr& req) {
   auto col_spec = DB::Specs::Column::make_ptr(
     cfg->meta_cid, {DB::Specs::Interval::make_ptr()});
   auto& intval = col_spec->intervals.front();
-  intval->key_eq = true;
+  intval->set_opt__key_equal();
   intval->flags.limit = 1;
 
   /* or select ranges of cid, with rid match in value 

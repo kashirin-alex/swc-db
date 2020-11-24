@@ -36,6 +36,8 @@ namespace {
   static const uint8_t  LEN_OFFSET_KEY = 10;
   static const char     TOKEN_OFFSET_REV[] = "offset_rev";
   static const uint8_t  LEN_OFFSET_REV = 10;
+  static const char     TOKEN_RANGE_END_REST[] = "range_end_rest";
+  static const uint8_t  LEN_RANGE_END_REST = 14;
 
   static const char     TOKEN_LIMIT[] = "limit";
   static const uint8_t  LEN_LIMIT = 5;
@@ -464,6 +466,9 @@ void QuerySelect::read_cells_interval(DB::Specs::Interval& spec) {
 
       if(found_token(TOKEN_RANGE, LEN_RANGE)) {        
         read_range(spec.range_begin, spec.range_end, flw_and);
+        while(found_space());
+        if(found_token(TOKEN_RANGE_END_REST, LEN_RANGE_END_REST))
+          spec.set_opt__range_end_rest();
         possible_and = true;
         continue;
       }
@@ -471,7 +476,8 @@ void QuerySelect::read_cells_interval(DB::Specs::Interval& spec) {
       if(!found_token(TOKEN_ONLY_KEYS, LEN_ONLY_KEYS) && 
           found_token(TOKEN_KEY, LEN_KEY)) {
         auto& key_intval = spec.key_intervals.add();
-        read_key(key_intval->start, key_intval->finish, flw_and, spec.key_eq);
+        read_key(
+          key_intval->start, key_intval->finish, flw_and, spec.options);
         possible_and = true;
         continue;
       }
@@ -596,7 +602,7 @@ void QuerySelect::read_range(DB::Cell::Key& begin, DB::Cell::Key& end,
 }
 
 void QuerySelect::read_key(DB::Specs::Key& start, DB::Specs::Key& finish, 
-                           bool flw, bool& eq) {
+                           bool flw, uint8_t& options) {
     uint32_t base_remain = remain;
     const char* base_ptr = ptr;
 
@@ -609,13 +615,16 @@ void QuerySelect::read_key(DB::Specs::Key& start, DB::Specs::Key& finish,
       return;
     }
 
-    if((eq = comp_right == Condition::EQ) || comp_right == Condition::GE)
+    if(comp_right == Condition::EQ || comp_right == Condition::GE)
       read_key(start);
     else 
       read_key(finish);
 
-    if(err || comp_right == Condition::EQ) 
+    if(err || comp_right == Condition::EQ) {
+      if(!err)
+        options |= DB::Specs::Interval::OPT_KEY_EQUAL;
       return;
+    }
 
     uint32_t mark_remain = remain;
     const char* mark_ptr = ptr;

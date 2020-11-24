@@ -45,7 +45,7 @@ class QuerySelect final : public Reader {
   void read_range(DB::Cell::Key& begin, DB::Cell::Key& end, bool flw);
 
   void read_key(DB::Specs::Key& start, DB::Specs::Key& finish, bool flw, 
-                bool& eq);
+                uint8_t& options);
 
   void read_key(DB::Specs::Key& key);
 

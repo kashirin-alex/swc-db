@@ -20,8 +20,9 @@ namespace Rgr { namespace Params {
 class RangeLocateReq : public Serializable {
   public:
 
-  static const uint8_t NEXT_RANGE  = 0x01;
-  static const uint8_t COMMIT      = 0x02;
+  static const uint8_t NEXT_RANGE     = 0x01;
+  static const uint8_t COMMIT         = 0x02;
+  static const uint8_t RANGE_END_REST = 0x04;
 
   RangeLocateReq(cid_t cid=0, rid_t rid=0);
   
