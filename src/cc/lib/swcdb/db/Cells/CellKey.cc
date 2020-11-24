@@ -354,7 +354,9 @@ void Key::display(std::ostream& out, bool pretty, const char* sep) const {
 }
 
 void Key::print(std::ostream& out) const {
-  display_details(out << "Key(", true);
+  out << "Key(";
+  if(size)
+    display_details(out, true);
   out << ')';
 }
 

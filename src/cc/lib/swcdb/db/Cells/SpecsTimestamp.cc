@@ -78,9 +78,9 @@ std::string Timestamp::to_string() const {
 }
 
 void Timestamp::print(std::ostream& out) const {
-  out << "Timestamp(" << Condition::to_string(comp);
+  out << "Timestamp(";
   if(comp != Condition::NONE)
-    out << value;
+    out << Condition::to_string(comp) << value;
   out << ')';
 }
 

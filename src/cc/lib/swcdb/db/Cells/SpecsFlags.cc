@@ -90,13 +90,19 @@ void Flags::print(std::ostream& out) const {
 }
 
 void Flags::display(std::ostream& out) const {
-  out << "limit=" << limit  << " offset=" << offset  
-      << " max_versions=" << max_versions 
-      << " max_buffer=" << max_buffer 
-      << " only_deletes=" << is_only_deletes() 
-      << " only_keys=" << is_only_keys()
-      << " was_set=" << (was_set? "TRUE" : "FALSE")
-      ; 
+  out << "was_set=" << (was_set? "TRUE" : "FALSE"); 
+  if(limit)
+    out << " limit=" << limit;
+  if(offset)
+    out << " offset=" << offset;
+  if(max_versions)
+     out << " max_versions=" << max_versions;
+  if(max_buffer)
+    out << " max_buffer=" << max_buffer;
+  if(is_only_deletes())
+    out << " only_deletes=true";
+  if(is_only_keys())
+    out << " only_keys=true";
 }
 
 

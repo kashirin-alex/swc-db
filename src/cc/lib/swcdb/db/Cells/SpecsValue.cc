@@ -138,7 +138,9 @@ std::string Value::to_string() const {
 }
 
 void Value::print(std::ostream& out) const {
-  display(out << "Value(");
+  out << "Value(";
+  if(size)
+    display(out);
   out << ')';
 }
 

@@ -430,7 +430,8 @@ void Interval::print(std::ostream& out) const {
   ts_finish.print(out << " Finish");
 
   offset_key.print(out << " Offset");
-  out << " OffsetRev=" << offset_rev;
+  if(!offset_key.empty())
+    out << " OffsetRev=" << offset_rev;
   
   value.print(out << " ");
   flags.print(out << " ");

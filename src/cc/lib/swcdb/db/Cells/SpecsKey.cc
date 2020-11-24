@@ -197,7 +197,9 @@ std::string Key::to_string() const {
 }
 
 void Key::print(std::ostream& out) const {
-  display(out << "Key(");
+  out << "Key(";
+  if(size())
+    display(out);
   out << ')';
 }
 

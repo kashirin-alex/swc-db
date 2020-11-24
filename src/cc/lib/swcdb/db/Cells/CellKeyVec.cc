@@ -172,7 +172,12 @@ std::string KeyVec::to_string() const {
 }
 
 void KeyVec::print(std::ostream& out) const {
-  out << "Key(sz=" << size() << " [";
+  out << "Key(";
+  if(!size()) {
+    out << ')';
+    return;
+  }
+  out << "sz=" << size() << " [";
   char hex[5];
   hex[4] = 0;
   for(auto it = cbegin(); it < cend(); ) {

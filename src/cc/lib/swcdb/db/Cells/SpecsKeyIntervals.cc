@@ -131,11 +131,14 @@ void KeyIntervals::decode(const uint8_t** bufp, size_t* remainp) {
 }
 
 void KeyIntervals::print(std::ostream& out) const {
-  out << "KeyIntervals(size=" << size(); 
-  for(auto& key : *this) {
-    key->start.print(out << " [Start");
-    key->finish.print(out << " Finish");
-    out << ']';
+  out << "KeyIntervals(";
+  if(!empty()) {
+    out << "size=" << size(); 
+    for(auto& key : *this) {
+      key->start.print(out << " [Start");
+      key->finish.print(out << " Finish");
+      out << ']';
+    }
   }
   out << ')';
 }
