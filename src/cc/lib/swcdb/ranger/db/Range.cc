@@ -656,6 +656,11 @@ void Range::load(int &err, const Callback::RangeLoad::Ptr& req) {
   );
   selector->specs.columns.push_back(col_spec);
 
+  if(Env::Rgr::is_shuttingdown() ||
+     (Env::Rgr::is_not_accepting() &&
+      DB::Types::MetaColumn::is_data(cfg->cid)))
+    return loaded(Error::SERVER_SHUTTING_DOWN, req);
+
   selector->scan(err);
   SWC_LOGF(LOG_DEBUG, "LOADING RANGE(%lu/%lu)-SELECTOR err=%d(%s)", 
                       cfg->cid, rid, err, Error::get_text(err));
@@ -677,6 +682,11 @@ void Range::check_meta(const Callback::RangeLoad::Ptr& req,
                       cfg->cid, rid, err, Error::get_text(err));
   if(err)
     return loaded(Error::RGR_NOT_LOADED_RANGE, req);
+
+  if(Env::Rgr::is_shuttingdown() ||
+      (Env::Rgr::is_not_accepting() &&
+       DB::Types::MetaColumn::is_data(cfg->cid)))
+    return loaded(Error::SERVER_SHUTTING_DOWN, req);
 
   if(cells.empty()) {
     SWC_LOG_OUT(LOG_ERROR, 
@@ -721,6 +731,11 @@ void Range::check_meta(const Callback::RangeLoad::Ptr& req,
   } catch(...) {
     SWC_LOG_CURRENT_EXCEPTION("");
   }
+
+  if(Env::Rgr::is_shuttingdown() ||
+      (Env::Rgr::is_not_accepting() &&
+       DB::Types::MetaColumn::is_data(cfg->cid)))
+    return loaded(Error::SERVER_SHUTTING_DOWN, req);
 
   if(!synced) {
     SWC_LOG_OUT(LOG_ERROR, 
