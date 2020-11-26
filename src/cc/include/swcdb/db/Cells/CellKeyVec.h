@@ -15,10 +15,14 @@
 
 namespace SWC { namespace DB { namespace Cell {
 
-class KeyVec final : public std::vector<std::basic_string<uint8_t>> {
+
+typedef std::vector<std::basic_string<uint8_t>> VecFraction;
+
+
+class KeyVec final : public VecFraction {
   public:
 
-  typedef std::basic_string<uint8_t> Fraction;
+  typedef VecFraction::value_type Fraction;
 
   explicit KeyVec();
 

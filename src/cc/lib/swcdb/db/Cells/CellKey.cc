@@ -114,7 +114,7 @@ void Key::add(const std::vector<std::string>::const_iterator cbegin,
   }
   for(auto it=cbegin; it < cend; ++it) {
     Serialization::encode_vi24(&ptr, it->size());
-    memcpy(ptr, it->data(), it->size());
+    memcpy(ptr, (const uint8_t*)it->data(), it->size());
     ptr += it->size();
   }
   count += cend - cbegin;
@@ -294,8 +294,7 @@ void Key::convert_to(std::vector<KeyVec::Fraction>& key) const {
 
 void Key::read(const std::vector<std::string>& key)  {
   free();
-  for(auto& f : key)
-    add(f);
+  add(key.cbegin(), key.cend());
 }
 
 bool Key::equal(const std::vector<std::string>& key) const {

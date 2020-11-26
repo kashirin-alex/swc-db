@@ -488,15 +488,15 @@ void Mutable::scan_version_multi(ReqScan* req) const {
 void Mutable::scan_test_use(const Specs::Interval& specs, 
                             DynamicBuffer& result,
                             size_t& count, size_t& skips) const {
+  bool stop = false;
   uint32_t cell_offset = specs.flags.offset;
   bool only_deletes = specs.flags.is_only_deletes();
-
-  for(auto it = ConstIterator(&buckets); it; ++it) {
+  for(auto it = ConstIterator(&buckets); !stop && it; ++it) {
     const Cell& cell = **it.item;
 
     if(!cell.has_expired(ttl) && 
        (only_deletes ? cell.flag != INSERT : cell.flag == INSERT) &&
-       specs.is_matching(key_seq, cell)) {
+       specs.is_matching(key_seq, cell, stop)) {
 
       if(cell_offset) {
         --cell_offset;

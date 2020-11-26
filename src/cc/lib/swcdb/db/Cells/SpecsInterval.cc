@@ -169,7 +169,7 @@ bool Interval::is_matching(int64_t timestamp, bool desc) const {
 }
 
 bool Interval::is_matching(const Types::KeySeq key_seq, 
-                           const Cells::Cell& cell) const {
+                           const Cells::Cell& cell, bool& stop) const {
   bool match = is_matching(
     key_seq, cell.key, cell.timestamp, cell.control & Cells::TS_DESC);
   if(!match)
@@ -182,7 +182,7 @@ bool Interval::is_matching(const Types::KeySeq key_seq,
     &&
     is_matching_begin(key_seq, cell.key)
     &&
-    is_matching_end(key_seq, cell.key)
+    !(stop = !is_matching_end(key_seq, cell.key))
     &&
     key_intervals.is_matching(key_seq, cell.key);
   if(!match || value.empty())
@@ -273,145 +273,112 @@ bool Interval::has_opt__range_end_rest() const {
 }
 
 
-void Interval::apply_possible_range(DB::Cell::Key& begin, 
-                                    DB::Cell::Key& end) const {   
+void Interval::apply_possible_range_pure() {
+  if(key_intervals.empty())
+    return;
+
+  if(range_begin.empty()) {
+    apply_possible_range(range_begin, false, false, true);
+  }
+  if(range_end.empty()) {
+    apply_possible_range(range_end, true, true, true);
+    if(!range_end.empty())
+      set_opt__range_end_rest();
+  }
+}
+
+void Interval::apply_possible_range(DB::Cell::Key& begin, DB::Cell::Key& end, 
+                                    bool* end_restp) const {   
   apply_possible_range_begin(begin);
-  apply_possible_range_end(end);
+  apply_possible_range_end(end, end_restp);
 }
 
 void Interval::apply_possible_range_begin(DB::Cell::Key& begin) const {
   if(!offset_key.empty()) {
     begin.copy(offset_key);
-    
+  
   } else if(!range_begin.empty()) {
     if(&begin != &range_begin)
       begin.copy(range_begin);
-    
-  } else if(!key_intervals.empty() && !key_intervals[0]->start.empty()) {
-    std::string_view fraction;
-    Condition::Comp comp;
-    size_t ok;
-    bool found = false;
-    const Key& key_start(key_intervals[0]->start);
-    for(size_t idx=0; idx < key_start.size(); ++idx) {
-      fraction = key_start.get(idx, comp); // Fraction const-ref
-      if(fraction.size() && 
-        (comp == Condition::EQ || comp == Condition::PF || 
-         comp == Condition::GT || comp == Condition::GE)) {
-        begin.add(fraction);
-        ok = idx;
-        found = true;
-      } else
-        begin.add("", 0);
-    }
-    if(!found)
-      begin.free();
-    else if(++ok != key_start.size() && ok != begin.count)
-      begin.remove(ok, true);
 
-  } else if(!key_intervals.empty() && !key_intervals[0]->finish.empty()) {
-    std::string_view fraction;
-    Condition::Comp comp;
-    size_t ok;
-    bool found = false;
-    const Key& key_finish(key_intervals[0]->finish);
-    for(size_t idx=0; idx < key_finish.size(); ++idx) {
-      fraction = key_finish.get(idx, comp);
-      if(fraction.size() && 
-        (comp == Condition::EQ || 
-         comp == Condition::GT || comp == Condition::GE)) {
-        begin.add(fraction);
-        ok = idx;
-        found = true;
-      } else {
-        begin.add("", 0);
-      }
-    }
-    if(!found)
-      begin.free();
-    else if(++ok != key_finish.size() && ok != begin.count)
-      begin.remove(ok, true);
+  } else if(!key_intervals.empty()) {
+    begin.free();
+    apply_possible_range(begin, false, false, false);
   }
 }
 
-void Interval::apply_possible_range_end(DB::Cell::Key& end) const {
+void Interval::apply_possible_range_end(DB::Cell::Key& end,
+                                        bool* restp) const {
   if(!range_end.empty()) {
     if(&end != &range_end)
       end.copy(range_end);
 
-  } else if(has_opt__key_equal() && 
-            !key_intervals.empty() && 
-            !key_intervals[0]->start.empty()) {
-    std::string_view fraction;
-    Condition::Comp comp;
-    size_t ok;
-    bool found = false;
-    const Key& key_start(key_intervals[0]->start);
-    for(size_t idx=0; idx < key_start.size(); ++idx) {
-      fraction = key_start.get(idx, comp);
-      if(fraction.length() && 
-        (comp == Condition::LT || 
-         comp == Condition::LE || 
-         comp == Condition::EQ)) {
-        end.add(fraction);
-        ok = idx;
-        found = true;
-      } else {
-        end.add("", 0);
-        //options |= OPT_RANGE_END_REST;
+  } else if(!key_intervals.empty()) { // && has_opt__key_equal()
+    end.free();
+    apply_possible_range(end, true, restp, false);
+    if(restp && !end.empty())
+      *restp = true;
+  }
+}
+
+void Interval::apply_possible_range(DB::Cell::Key& key, bool ending,
+                                    bool rest, bool no_stepping) const {
+  size_t sz = 0;
+  for(const auto& intval : key_intervals) {
+    if(sz < intval->start.size())
+      sz = intval->start.size();
+    if(sz < intval->finish.size())
+      sz = intval->finish.size();
+  }
+  std::vector<std::string> key_range(sz + (ending && !rest));
+  bool initial = true;
+  bool found = false;
+  do_:
+    for(auto& intval : key_intervals) {
+      auto* keyp = ending 
+        ? (initial ? &intval->finish : &intval->start )
+        : (initial ? &intval->start  : &intval->finish);
+      for(size_t idx=0; idx < keyp->size(); ++idx) {
+        auto& key_f = key_range[idx];
+        if(!key_f.empty())
+          continue;
+        const Fraction& f = (*keyp)[idx];
+        if(!f.empty() && 
+           (ending  ? (f.comp == Condition::LT || f.comp == Condition::LE ||
+                       f.comp == Condition::EQ)
+                    : (f.comp == Condition::EQ || f.comp == Condition::PF || 
+                       f.comp == Condition::GT || f.comp == Condition::GE))) {
+          key_f.append(f.data(), f.size());
+          found = true;
+        }
       }
     }
-    if(!found)
-      end.free();
-    else if(++ok == key_start.size())
-      end.add("", 0); //options |= OPT_RANGE_END_REST;
-    else if(++ok < key_start.size() && ok != end.count)
-      end.remove(ok, true);
-  }
-
-
-  /* NOT POSSIBLE
-    } else if(!key_finish.empty()) {
-    const char* fraction;
-    uint32_t len;
-    Condition::Comp comp;
-    int32_t ok = -1;
-    for(int idx=0; idx < key_finish.size(); ++idx) {
-      key_finish.get(idx, &fraction, &len, &comp);
-      if(len && 
-        (comp == Condition::LT || comp == Condition::LE)) {
-        end.add(fraction, len);
-        ok = idx;
-      } else 
-        end.add("", 0);
+    if(initial) {
+      initial = false;
+      goto do_;
     }
-    if(!++ok)
-      end.free();
-    else if(++ok < key_finish.size() && ok != end.count)
-      end.remove(ok, true);
-      
-  } else if(!key_start.empty()) {
-    const char* fraction;
-    uint32_t len;
-    Condition::Comp comp;
-    int32_t ok = -1;
-    for(int idx=0; idx < key_start.size(); ++idx) {
-      key_start.get(idx, &fraction, &len, &comp);
-      if(len && 
-        (comp == Condition::LT || comp == Condition::LE)) {
-        end.add(fraction, len);
-        ok = idx;
-      } else
-          end.add("", 0);
+  if(!found)
+    return;
+
+  if(no_stepping) {
+    for(auto it = key_range.cbegin(); it < key_range.cend(); ++it) {
+      if(it->empty()) {
+        key.add(key_range.cbegin(), it);
+        return;
+      }
     }
-    if(!++ok)
-      end.free();
-    else if(ok == key_start.size())
-      end.add("", 0);
-    else if(++ok < key_start.size() && ok != end.count)
-      end.remove(ok, true);
+    key.add(key_range.cbegin(), key_range.cend());
+
+  } else {
+    for(auto it = key_range.cend() - 1; it >= key_range.cbegin(); --it) {
+      if(!it->empty()) {
+        if(ending && !rest)
+          ++it;
+        key.add(key_range.cbegin(), ++it);
+        break;
+      }
+    }
   }
-  */
 }
 
 std::string Interval::to_string() const {

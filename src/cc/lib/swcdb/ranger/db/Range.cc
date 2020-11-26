@@ -773,7 +773,9 @@ void Range::loaded(int err, const Callback::RangeLoad::Ptr& req) {
       SWC_LOG_OSTREAM << "SUCCEED";
     else
       Error::print(SWC_LOG_OSTREAM << "FAILED ", err);
-    print(SWC_LOG_OSTREAM << ' ', _log_pr == LOG_INFO);
+    print(SWC_LOG_OSTREAM << ' ', _log_pr == LOG_INFO &&
+                                  err != Error::SERVER_SHUTTING_DOWN &&
+                                  err != Error::RGR_NOT_LOADED_RANGE);
   );
 
   blocks.processing_decrement();

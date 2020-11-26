@@ -41,11 +41,7 @@ void range_query_select(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
 
   if(err) {
     conn->send_response(Buffers::make(ev, Params::RangeQuerySelectRsp(err)));
-
   } else {
-    params.interval.apply_possible_range(
-      params.interval.range_begin, params.interval.range_end);
-
     range->scan(
       std::make_shared<Ranger::Callback::RangeQuerySelect>(
         conn, ev, params.interval, range) 

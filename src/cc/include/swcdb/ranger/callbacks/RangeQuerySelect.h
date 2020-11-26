@@ -25,8 +25,15 @@ class RangeQuerySelect : public ReqScan {
     if(!spec.flags.max_versions)
       spec.flags.max_versions = range->cfg->cell_versions();
     if(!spec.flags.max_buffer || 
-       spec.flags.max_buffer > range->cfg->block_size())
+        spec.flags.max_buffer > range->cfg->block_size())
       spec.flags.max_buffer = range->cfg->block_size();
+
+    spec.apply_possible_range_pure();
+    /** options not-useful for block-locator or a mid-stop
+    if spec.range_begin < range : spec.range_begin.free()
+    if spec.range_end > range : spec.range_end.free()
+    SWC_LOG_OUT(LOG_INFO, spec.print(SWC_LOG_OSTREAM); );
+    */
 
     Env::Rgr::res().more_mem_usage(size_of());
   }

@@ -87,7 +87,7 @@ class Interval {
   bool is_matching(int64_t timestamp, bool desc) const;
 
   bool is_matching(const Types::KeySeq key_seq, 
-                   const Cells::Cell& cell) const;
+                   const Cells::Cell& cell, bool& stop) const;
 
   bool is_matching_begin(const Types::KeySeq key_seq, 
                          const DB::Cell::Key& key) const;
@@ -109,11 +109,18 @@ class Interval {
 
   bool has_opt__range_end_rest() const;
 
-  void apply_possible_range(DB::Cell::Key& begin, DB::Cell::Key& end) const;
+  void apply_possible_range_pure();
+
+  void apply_possible_range(DB::Cell::Key& begin, DB::Cell::Key& end,
+                             bool* end_restp = nullptr) const;
 
   void apply_possible_range_begin(DB::Cell::Key& begin) const;
 
-  void apply_possible_range_end(DB::Cell::Key& end) const;
+  void apply_possible_range_end(DB::Cell::Key& end,
+                                bool* restp = nullptr) const;
+
+  void apply_possible_range(DB::Cell::Key& key, bool ending,
+                            bool rest, bool no_stepping) const;
 
   std::string to_string() const;
 

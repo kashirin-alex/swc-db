@@ -352,13 +352,18 @@ void Select::Scanner::mngr_locate_master() {
   Comm::Protocol::Mngr::Params::RgrGetReq params(
     master_cid, 0, master_mngr_next);
 
-  if(!master_mngr_offset.empty()) {
+  if(master_mngr_next) {
     params.range_begin.copy(master_mngr_offset);
-    interval.apply_possible_range_end(params.range_end); 
-  } else {
+  }
+  /*** MASTER columns need to have aligned MetaData interval
+  if(master_mngr_offset.empty()) {
     interval.apply_possible_range(
       params.range_begin, params.range_end);
+  } else {
+    params.range_begin.copy(master_mngr_offset);
+    interval.apply_possible_range_end(params.range_end); 
   }
+  ***/
   
   if(DB::Types::MetaColumn::is_data(data_cid)) {
     auto data_cid_str = std::to_string(data_cid);
@@ -440,10 +445,21 @@ void Select::Scanner::rgr_locate_master() {
     params.range_offset.copy(master_rgr_offset);
     params.range_offset.insert(0, data_cid_str);
   }
-  interval.apply_possible_range(params.range_begin, params.range_end);
+
+  /*** MASTER columns need to have aligned MetaData interval
+  bool range_end_rest = false;
+  interval.apply_possible_range(
+    params.range_begin, params.range_end, &range_end_rest);
+  if(range_end_rest)
+    params.flags 
+      |= Comm::Protocol::Rgr::Params::RangeLocateReq::RANGE_END_REST;
+  if(interval.has_opt__key_equal())
+    params.flags 
+      |= Comm::Protocol::Rgr::Params::RangeLocateReq::KEY_EQUAL;
+  ***/
+
   params.range_begin.insert(0, data_cid_str);
   params.range_end.insert(0, data_cid_str);
-
   if(DB::Types::MetaColumn::is_data(data_cid)) {
     auto meta_cid_str = DB::Types::MetaColumn::get_meta_cid_str(col_seq);
     params.range_begin.insert(0, meta_cid_str);
@@ -570,13 +586,20 @@ void Select::Scanner::rgr_locate_meta() {
     params.range_offset.copy(meta_offset);
     params.range_offset.insert(0, data_cid_str);
   }
-  interval.apply_possible_range(params.range_begin, params.range_end);
-  params.range_begin.insert(0, data_cid_str);
-  params.range_end.insert(0, data_cid_str);
 
-  if(!interval.range_end.empty() && interval.has_opt__range_end_rest())
+  bool range_end_rest = false;
+  interval.apply_possible_range(
+    params.range_begin, params.range_end, &range_end_rest);
+  if(range_end_rest ||
+     (!interval.range_end.empty() && interval.has_opt__range_end_rest()))
     params.flags 
       |= Comm::Protocol::Rgr::Params::RangeLocateReq::RANGE_END_REST;
+  if(interval.has_opt__key_equal())
+    params.flags 
+      |= Comm::Protocol::Rgr::Params::RangeLocateReq::KEY_EQUAL;
+
+  params.range_begin.insert(0, data_cid_str);
+  params.range_end.insert(0, data_cid_str);
 
   SWC_SCANNER_REQ_DEBUG("rgr_locate_meta");
   Comm::Protocol::Rgr::Req::RangeLocate::request(
@@ -594,21 +617,24 @@ void Select::Scanner::rgr_locate_meta() {
 void Select::Scanner::rgr_located_meta(
           const ReqBase::Ptr& req, 
           const Comm::Protocol::Rgr::Params::RangeLocateRsp& rsp) {
-  if(rsp.err) {
-    if(meta_next && rsp.err == Error::RANGE_NOT_FOUND) {
+  switch(rsp.err) {
+    case Error::OK:
+      break;
+    case Error::RANGE_NOT_FOUND: {
       meta_next = false;
       SWC_SCANNER_RSP_DEBUG("rgr_located_meta meta_next");
       next_call();
       return response_if_last();
     }
-    SWC_SCANNER_RSP_DEBUG("rgr_located_meta RETRYING");
-    if(rsp.err == Error::RGR_NOT_LOADED_RANGE ||
-       rsp.err == Error::RANGE_NOT_FOUND  ||
-       rsp.err == Error::SERVER_SHUTTING_DOWN ||
-       rsp.err == Error::COMM_NOT_CONNECTED) {
+    case Error::RGR_NOT_LOADED_RANGE:
+    case Error::COMM_NOT_CONNECTED:
+    case Error::SERVER_SHUTTING_DOWN: {
+      SWC_SCANNER_RSP_DEBUG("rgr_located_meta RETRYING");
       Env::Clients::get()->rangers.remove(meta_cid, meta_rid);
       return meta_req_base->request_again();
-    } else {
+    }
+    default: {
+      SWC_SCANNER_RSP_DEBUG("rgr_located_meta RETRYING-locate");
       return req->request_again();
     }
   }
