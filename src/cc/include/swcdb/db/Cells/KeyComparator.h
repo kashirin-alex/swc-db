@@ -23,26 +23,29 @@ namespace SWC { namespace DB {
 namespace KeySeq {
 
 
+template<Types::KeySeq T_seq>
+Condition::Comp
+compare(const Types::KeySeq seq,
+        const Cell::Key& key, const Cell::Key& other);
+
+template<Types::KeySeq T_seq>
+Condition::Comp
+compare_opt(const Cell::Key& opt_empty, const Cell::Key& other,
+            uint24_t max, bool empty_eq);
+
 
 Condition::Comp
-compare(const Types::KeySeq seq, 
+compare(const Types::KeySeq seq,
         const Cell::Key& key, const Cell::Key& other);
 
 Condition::Comp
-compare_opt(const Cell::Key& key, const Cell::Key& other,
-            uint24_t max, bool empty_ok, bool empty_eq);
+compare_opt(const Cell::Key& opt_empty, const Cell::Key& other,
+            uint24_t max, bool empty_eq);
 
 Condition::Comp
 compare_upto(const Types::KeySeq seq, 
              const Cell::Key& key, const Cell::Key& other, uint24_t max);
 
-Condition::Comp
-compare_incl(const Types::KeySeq seq,
-             const Cell::Key& key, const Cell::Key& other);
-
-Condition::Comp
-compare_incl(const Types::KeySeq seq,
-             const Cell::Key& key, const Cell::Key& other, bool rest);
 
 bool
 compare(const Types::KeySeq seq, 

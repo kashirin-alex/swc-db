@@ -126,7 +126,7 @@ bool Block::_includes_begin(const DB::Specs::Interval& spec) const {
 
 bool Block::includes_end(const DB::Specs::Interval& spec) const {
   return m_prev_key_end.empty() ||
-         spec.is_matching_end(m_cells.key_seq, m_prev_key_end);
+         spec.is_in_previous(m_cells.key_seq, m_prev_key_end);
 }
     
 void Block::preload() {

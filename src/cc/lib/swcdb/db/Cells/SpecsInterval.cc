@@ -197,14 +197,145 @@ bool Interval::is_matching(const Types::KeySeq key_seq,
 
 bool Interval::is_matching_begin(const Types::KeySeq key_seq, 
                                  const DB::Cell::Key& key) const {
-  return range_begin.empty() || DB::KeySeq::compare_incl(
-    key_seq, range_begin, key) != Condition::LT;
+  if(!range_begin.empty()) switch(key_seq) {
+
+    case Types::KeySeq::LEXIC:
+      return 
+        DB::KeySeq::compare_opt<Types::KeySeq::LEXIC>(
+          range_begin, key, range_begin.count, true
+        ) != Condition::LT;
+
+    case Types::KeySeq::VOLUME:
+      return 
+        DB::KeySeq::compare_opt<Types::KeySeq::VOLUME>(
+          range_begin, key, range_begin.count, true
+        ) != Condition::LT;
+
+    case Types::KeySeq::FC_LEXIC:
+      return 
+        DB::KeySeq::compare_opt<Types::KeySeq::FC_LEXIC>(
+          range_begin, key, key.count, true
+        ) != Condition::LT;
+
+    case Types::KeySeq::FC_VOLUME:
+      return 
+        DB::KeySeq::compare_opt<Types::KeySeq::FC_VOLUME>(
+          range_begin, key, key.count, true
+        ) != Condition::LT;
+
+    default:
+      break;
+  }
+  return true;
 }
 
 bool Interval::is_matching_end(const Types::KeySeq key_seq, 
                                const DB::Cell::Key& key) const {
-  return range_end.empty() || DB::KeySeq::compare_incl(
-    key_seq, range_end, key, has_opt__range_end_rest()) != Condition::GT;
+  if(!range_end.empty()) switch(key_seq) {
+
+    case Types::KeySeq::LEXIC:
+      return 
+        DB::KeySeq::compare_opt<Types::KeySeq::LEXIC>(
+          range_end, key,
+          has_opt__range_end_rest() && !has_opt__key_equal()
+            ? range_end.count : key.count, 
+          true
+        ) != Condition::GT;
+
+    case Types::KeySeq::VOLUME:
+      return 
+        DB::KeySeq::compare_opt<Types::KeySeq::VOLUME>(
+          range_end, key, 
+          has_opt__range_end_rest() && !has_opt__key_equal()
+            ? range_end.count : key.count, 
+          true
+        ) != Condition::GT;
+
+    case Types::KeySeq::FC_LEXIC:
+      return
+        (has_opt__key_equal()
+          ? key.count < range_end.count
+          : has_opt__range_end_rest()) ||
+        DB::KeySeq::compare_opt<Types::KeySeq::FC_LEXIC>(
+          range_end, key,
+          has_opt__range_end_rest() && !has_opt__key_equal()
+            ? range_end.count : key.count, 
+          true
+        ) != Condition::GT;
+
+    case Types::KeySeq::FC_VOLUME:
+      return 
+        (has_opt__key_equal()
+          ? key.count < range_end.count
+          : has_opt__range_end_rest()) ||
+        DB::KeySeq::compare_opt<Types::KeySeq::FC_VOLUME>(
+          range_end, key,
+          has_opt__range_end_rest() && !has_opt__key_equal()
+            ? range_end.count : key.count,
+          true
+        ) != Condition::GT;
+    default:
+      break;
+  }
+  return true;
+}
+
+bool Interval::is_in_previous(const Types::KeySeq key_seq, 
+                              const DB::Cell::Key& prev) const {
+  if(!range_end.empty()) switch(key_seq) {
+
+    case Types::KeySeq::LEXIC:
+      return 
+        DB::KeySeq::compare_opt<Types::KeySeq::LEXIC>(
+          range_end, prev,
+          has_opt__range_end_rest()
+            ? range_end.count : prev.count,
+          true
+        ) != Condition::GT;
+
+    case Types::KeySeq::VOLUME:
+      return 
+        DB::KeySeq::compare_opt<Types::KeySeq::VOLUME>(
+          range_end, prev,
+          has_opt__range_end_rest()
+            ? range_end.count : prev.count,
+          true
+        ) != Condition::GT;
+
+    case Types::KeySeq::FC_LEXIC:
+      return 
+        has_opt__range_end_rest()
+        ? (prev.count >= range_end.count
+            ? true
+            : DB::KeySeq::compare_opt<Types::KeySeq::LEXIC>(
+                range_end, prev, range_end.count, true
+              ) != Condition::GT)
+        : DB::KeySeq::compare_opt<Types::KeySeq::FC_LEXIC>(
+            range_end, prev,
+            has_opt__key_equal()
+              ? range_end.count : prev.count,
+            true
+          ) != Condition::GT;
+
+    case Types::KeySeq::FC_VOLUME:
+      return 
+        has_opt__range_end_rest()
+        ? (prev.count >= range_end.count
+            ? true
+            : DB::KeySeq::compare_opt<Types::KeySeq::VOLUME>(
+                range_end, prev, range_end.count, true
+              ) != Condition::GT)
+        : DB::KeySeq::compare_opt<Types::KeySeq::FC_VOLUME>(
+            range_end, prev,
+            has_opt__key_equal()
+              ? range_end.count : prev.count,
+            true
+          ) != Condition::GT;
+
+    default:
+      break;
+  }
+  return true;
 }
 
 
@@ -282,7 +413,7 @@ void Interval::apply_possible_range_pure() {
   }
   if(range_end.empty()) {
     apply_possible_range(range_end, true, true, true);
-    if(!range_end.empty())
+    if(!range_end.empty() && !has_opt__key_equal())
       set_opt__range_end_rest();
   }
 }

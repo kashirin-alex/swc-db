@@ -58,9 +58,6 @@ class RangeLocateScan : public ReqScan {
       return false;
 
     if(cell.key.count > any_is && spec.range_end.count > any_is &&
-       (!DB::Types::is_fc(key_seq) ||
-        ((spec.has_opt__key_equal() || !spec.has_opt__range_end_rest()) &&
-          cell.key.count >= spec.range_end.count)) &&
        !spec.is_matching_end(key_seq, cell.key)) {
       stop = true;
       //SWC_PRINT << "-- KEY-BEGIN NO MATCH STOP --" << SWC_PRINT_CLOSE;

@@ -95,6 +95,9 @@ class Interval {
   bool is_matching_end(const Types::KeySeq key_seq, 
                        const DB::Cell::Key& key) const;
 
+  bool is_in_previous(const Types::KeySeq key_seq, 
+                      const DB::Cell::Key& prev) const;
+
   size_t encoded_length() const;
 
   void encode(uint8_t** bufp) const;
