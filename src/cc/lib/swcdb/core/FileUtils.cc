@@ -178,9 +178,7 @@ bool mkdirs(const std::string& dirname) {
 
 bool exists(const std::string& fname) {
   struct stat statbuf;
-  if(stat(fname.c_str(), &statbuf))
-    return false;
-  return true;
+  return !stat(fname.c_str(), &statbuf);
 }
 
 bool unlink(const std::string& fname) {
@@ -207,24 +205,18 @@ bool rename(const std::string& oldpath, const std::string& newpath) {
 
 uint64_t size(const std::string& fname) {
   struct stat statbuf;
-  if(stat(fname.c_str(), &statbuf))
-    return 0;
-  return statbuf.st_size;
+  return stat(fname.c_str(), &statbuf) ? 0 : statbuf.st_size;
 }
 
 
 off_t length(const std::string& fname) {
   struct stat statbuf;
-  if(stat(fname.c_str(), &statbuf))
-    return (off_t)-1;
-  return statbuf.st_size;
+  return stat(fname.c_str(), &statbuf) ? -1 : statbuf.st_size;
 }
 
 time_t modification(const std::string& fname) {
   struct stat statbuf;
-  if(stat(fname.c_str(), &statbuf))
-    return 0;
-  return statbuf.st_mtime;
+  return stat(fname.c_str(), &statbuf) ? 0 : statbuf.st_mtime;
 }
 
 void readdir(const std::string& dirname, 

@@ -620,9 +620,10 @@ void QuerySelect::read_key(DB::Specs::Key& start, DB::Specs::Key& finish,
     else 
       read_key(finish);
 
-    if(err || comp_right == Condition::EQ) {
-      if(!err)
-        options |= DB::Specs::Interval::OPT_KEY_EQUAL;
+    if(err)
+      return;
+    if(comp_right == Condition::EQ) {
+      options |= DB::Specs::Interval::OPT_KEY_EQUAL;
       return;
     }
 

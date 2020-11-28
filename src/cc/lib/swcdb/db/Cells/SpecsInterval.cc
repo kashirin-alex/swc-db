@@ -444,7 +444,7 @@ void Interval::apply_possible_range_end(DB::Cell::Key& end,
     if(&end != &range_end)
       end.copy(range_end);
 
-  } else if(!key_intervals.empty()) { // && has_opt__key_equal()
+  } else if(!key_intervals.empty()) {
     end.free();
     apply_possible_range(end, true, restp, false);
     if(restp && !end.empty())
@@ -474,14 +474,27 @@ void Interval::apply_possible_range(DB::Cell::Key& key, bool ending,
         if(!key_f.empty())
           continue;
         const Fraction& f = (*keyp)[idx];
-        if(!f.empty() && 
-           (ending  ? (f.comp == Condition::LT || f.comp == Condition::LE ||
-                       f.comp == Condition::EQ)
-                    : (f.comp == Condition::EQ || f.comp == Condition::PF || 
-                       f.comp == Condition::GT || f.comp == Condition::GE))) {
-          key_f.append(f.data(), f.size());
-          found = true;
+        if(f.empty())
+          continue;
+        switch(f.comp) {
+          case Condition::EQ:
+            break;
+          case Condition::LE:
+          case Condition::LT:
+            if(!ending)
+              continue;
+            break;
+          case Condition::PF:
+          case Condition::GT:
+          case Condition::GE:
+            if(ending)
+              continue;
+            break;
+          default:
+            continue;
         }
+        key_f.append(f.data(), f.size());
+        found = true;
       }
     }
     if(initial) {

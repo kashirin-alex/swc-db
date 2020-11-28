@@ -90,7 +90,8 @@ bool Value::empty() const {
 
 bool Value::equal(const Value &other) const {
   return size == other.size && 
-         ((!data && !other.data) || !memcmp(data, other.data, size));
+         ((!data && !other.data) || 
+          (data && other.data && !memcmp(data, other.data, size)));
 }
 
 size_t Value::encoded_length() const {

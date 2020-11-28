@@ -468,10 +468,6 @@ void Write::block_write(int& err, DynamicBuffer& blk_buff,
   Env::Rgr::res().less_mem_usage(blk->header.size_enc);
 }
 
-size_t Write::blocks() const {
-  return m_blocks.size();
-}
-
 void Write::block(int& err, DynamicBuffer& blk_buff) {
   StaticBuffer buff_write(blk_buff);
   size += buff_write.size;

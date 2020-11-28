@@ -81,14 +81,11 @@ bool KeyIntervals::equal(const KeyIntervals& other) const {
 bool KeyIntervals::is_matching(const Types::KeySeq key_seq, 
                                const DB::Cell::Key& cellkey) const {
   for(auto& key : *this) {
-    if((key->start.empty() || 
-        DB::KeySeq::is_matching(key_seq, key->start, cellkey))
-       &&
-       (key->finish.empty() || 
-        DB::KeySeq::is_matching(key_seq, key->finish, cellkey))) {
-      continue;
-    }
-    return false;
+    if((!key->start.empty() &&
+        !DB::KeySeq::is_matching(key_seq, key->start, cellkey)) ||
+       (!key->finish.empty() && 
+        !DB::KeySeq::is_matching(key_seq, key->finish, cellkey)))
+      return false;
   }
   return true;
 }
@@ -96,11 +93,9 @@ bool KeyIntervals::is_matching(const Types::KeySeq key_seq,
 bool KeyIntervals::is_matching_start(const Types::KeySeq key_seq, 
                                      const DB::Cell::Key& cellkey) const {
   for(auto& key : *this) {
-    if((key->start.empty() || 
-        DB::KeySeq::is_matching(key_seq, key->start, cellkey))) {
-      continue;
-    }
-    return false;
+    if(!key->start.empty() &&
+       !DB::KeySeq::is_matching(key_seq, key->start, cellkey))
+      return false;
   }
   return true;
 }

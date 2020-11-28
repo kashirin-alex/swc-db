@@ -159,8 +159,6 @@ class Write final {
   void block_write(int& err, DynamicBuffer& blk_buff, 
                    Block::Header& header);
 
-  size_t blocks() const;
-
   void finalize(int& err);
 
   void remove(int &err);
