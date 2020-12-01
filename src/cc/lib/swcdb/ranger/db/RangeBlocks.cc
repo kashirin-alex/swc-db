@@ -196,6 +196,7 @@ void Blocks::scan(ReqScan::Ptr req, Block::Ptr blk_ptr) {
         return;
 
       case Block::ScanState::QUEUED: {
+        processing_increment();
         bool support;
         for(size_t n=0; 
             n < req->readahead && 
@@ -210,6 +211,7 @@ void Blocks::scan(ReqScan::Ptr req, Block::Ptr blk_ptr) {
             blk->preload();
           }
         }
+        processing_decrement();
         return;
       }
 

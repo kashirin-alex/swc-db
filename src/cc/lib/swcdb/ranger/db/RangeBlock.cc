@@ -347,8 +347,11 @@ bool Block::need_load() {
   return m_state == State::NONE;
 }
 
-bool Block::processing() const {
-  return m_processing;
+bool Block::processing() {
+  if(m_processing || !m_queue.empty())
+    return true;
+  Core::MutexSptd::scope lock(m_mutex_state);
+  return m_state == State::LOADING;
 }
 
 size_t Block::size() {

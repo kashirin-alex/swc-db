@@ -151,17 +151,16 @@ void Range::add(Range::ReqAdd* req) {
 }
 
 void Range::scan(const ReqScan::Ptr& req) {
-  if(compacting_is(COMPACT_APPLYING)) {
+  if(compacting_is(COMPACT_APPLYING, true)) {
     if(!m_q_scans.push_and_is_1st(req))
       return;
-    wait(COMPACT_APPLYING);
+    wait(COMPACT_APPLYING, true);
 
-    blocks.processing_increment();
-    int err = Error::OK;
-    state(err);
+    int err;
     ReqScan::Ptr qreq;
     do {
       if(!(qreq = std::move(m_q_scans.front()))->expired()) {
+        state(err = Error::OK);
         if(err) {
           qreq->response(err);
         } else {
@@ -175,13 +174,11 @@ void Range::scan(const ReqScan::Ptr& req) {
         }
       }
     } while(m_q_scans.pop_and_more());
-    blocks.processing_decrement();
 
   } else {
-    blocks.processing_increment();
     blocks.scan(std::move(req));
-    blocks.processing_decrement();
   }
+  blocks.processing_decrement();
 }
 
 void Range::scan_internal(const ReqScan::Ptr& req) {
@@ -319,9 +316,13 @@ bool Range::compacting() {
   return m_compacting != COMPACT_NONE;
 }
 
-bool Range::compacting_is(uint8_t state) {
+bool Range::compacting_is(uint8_t state, bool incr) {
   std::shared_lock lock(m_mutex);
-  return m_compacting == state;
+  if(m_compacting == state)
+    return true;
+  if(incr)
+    blocks.processing_increment();
+  return false;
 }
 
 void Range::compacting(uint8_t state) {
@@ -782,7 +783,7 @@ void Range::loaded(int err, const Callback::RangeLoad::Ptr& req) {
   req->loaded(err);
 }
 
-bool Range::wait(uint8_t from_state) {
+bool Range::wait(uint8_t from_state, bool incr) {
   bool waited;
   std::unique_lock lock_wait(m_mutex);
   if((waited = (m_compacting >= from_state))) {
@@ -793,6 +794,8 @@ bool Range::wait(uint8_t from_state) {
       }
     );
   }
+  if(incr)
+    blocks.processing_increment();
   return waited;
 }
 
@@ -806,8 +809,7 @@ void Range::run_add_queue() {
   uint64_t ttl = cfg->cell_ttl();
 
   do {
-    wait(COMPACT_PREPARING);
-    blocks.processing_increment();
+    wait(COMPACT_PREPARING, true);
   
     req = m_q_adding.front();
     ptr = req->input.base;

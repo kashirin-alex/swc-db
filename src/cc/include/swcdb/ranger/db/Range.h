@@ -135,7 +135,7 @@ class Range final : public std::enable_shared_from_this<Range> {
 
   bool compacting();
 
-  bool compacting_is(uint8_t state);
+  bool compacting_is(uint8_t state, bool incr=false);
 
   void compacting(uint8_t state);
   
@@ -179,7 +179,7 @@ class Range final : public std::enable_shared_from_this<Range> {
                  const client::Query::Update::Cb_t& cb, 
                  const DB::Cell::Key* old_key_begin=nullptr);
 
-  bool wait(uint8_t from_state=COMPACT_CHECKING);
+  bool wait(uint8_t from_state=COMPACT_CHECKING, bool incr=false);
 
   void run_add_queue();
 

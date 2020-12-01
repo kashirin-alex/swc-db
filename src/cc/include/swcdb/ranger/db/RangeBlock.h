@@ -122,7 +122,7 @@ class Block final {
 
   bool need_load();
 
-  bool processing() const;
+  bool processing();
 
   size_t size();
 
