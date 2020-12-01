@@ -192,7 +192,15 @@ Compact::Compact(Fragments* log, int repetition,
     if(!blks || m_groups.size() >= Env::Rgr::res().concurrency()/2 )
       break;
   }
-  
+
+  if(m_groups.empty()) {
+    if(m_cb)
+      m_cb(this);
+    else
+      log->finish_compact(this);
+    return;
+  }
+
   m_workers = m_groups.size();
   
   SWC_LOGF(LOG_INFO, 
@@ -221,6 +229,9 @@ void Compact::finished(Group* group, size_t cells_count) {
   );
   if(running)
     return;
+
+  SWC_LOGF(LOG_INFO, "COMPACT-LOG-FINISHING %lu/%lu w=%ld",
+                      log->range->cfg->cid, log->range->rid, m_groups.size());
 
   log->range->compacting(Range::COMPACT_APPLYING);
   log->range->blocks.wait_processing(); // sync processing state

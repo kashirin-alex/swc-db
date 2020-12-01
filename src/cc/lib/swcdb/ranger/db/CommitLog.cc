@@ -75,7 +75,7 @@ void Fragments::commit_new_fragment(bool finalize) {
   }
   
   Fragment::Ptr frag;
-  for(int err = Error::OK; ;err = Error::OK) {
+  for(int err; ;) {
     if(finalize) {
       std::shared_lock lock2(m_mutex_cells);
       if(m_cells.empty())
@@ -106,15 +106,22 @@ void Fragments::commit_new_fragment(bool finalize) {
           break;
 
         frag = Fragment::make_write(
-          err, get_log_fragment(nxt_id), 
+          err = Error::OK,
+          get_log_fragment(nxt_id), 
           interval, 
           range->cfg->block_enc(), range->cfg->cell_versions(),
           cells_count, cells, 
           buff_write
         );
-        if(!frag) 
+        if(!frag) {
+          // if can happen checkup (fallbacks to Plain at Encoder err)
           // put cells back tp m_cells
+          SWC_LOG_OUT(LOG_WARN,
+            Error::print(SWC_LOG_OSTREAM << "Bad Fragment Write "
+              << range->cfg->cid << '/' << range->rid << ' ', err);
+          );
           break;
+        }
         _add(frag);
       }
     }
@@ -202,9 +209,9 @@ void Fragments::finish_compact(const Compact* compact) {
   {
     std::scoped_lock lock(m_mutex);
     m_compacting = false;
-    range->compacting(Range::COMPACT_NONE);
     m_cv.notify_all();
   }
+  range->compacting(Range::COMPACT_NONE);
 
   if(compact) {
     if(!stopping)

@@ -120,8 +120,8 @@ void MutableVec::add_raw(const Cell& cell,
 }
 
 void MutableVec::write_and_free(DynamicBuffer& cells, uint32_t& cell_count,
-                    Interval& intval, uint32_t threshold, 
-                    uint32_t max_cells) {         
+                                Interval& intval, uint32_t threshold,
+                                uint32_t max_cells) {
   for(auto it = begin(); it < end() && 
                          (!threshold || threshold > cells.fill()) && 
                          (!max_cells || max_cells > cell_count);) {

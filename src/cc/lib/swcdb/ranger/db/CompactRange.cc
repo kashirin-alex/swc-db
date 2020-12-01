@@ -419,8 +419,11 @@ void CompactRange::commitlog_done(const CommitLog::Compact* compact) {
 }
 
 void CompactRange::progress_check_timer() {
-  if(m_stopped || m_chk_final)
-    return;
+  {
+    Core::MutexSptd::scope lock(m_mutex);
+    if(m_stopped || m_chk_final)
+      return;
+  }
 
   int64_t median;
   bool slow = is_slow_req(median);
@@ -428,10 +431,12 @@ void CompactRange::progress_check_timer() {
       slow ? Range::COMPACT_PREPARING : state_default.load())) {
     request_more();
   }
-
   if((median /= 1000000) < 1000)
     median = 1000;
+
   Core::MutexSptd::scope lock(m_mutex);
+  if(m_stopped || m_chk_final)
+    return;
   m_chk_timer.expires_after(std::chrono::milliseconds(median));
   m_chk_timer.async_wait(
     [ptr=shared()](const asio::error_code& ec) {
@@ -443,19 +448,17 @@ void CompactRange::progress_check_timer() {
 }
 
 void CompactRange::stop_check_timer() {
+  Core::MutexSptd::scope lock(m_mutex);
   if(!m_chk_final) {
     m_chk_final = true;
-    Core::MutexSptd::scope lock(m_mutex);
     m_chk_timer.cancel();
   }
 }
 
 void CompactRange::request_more() {
-  if(m_stopped)
-    return;
   {
     Core::MutexSptd::scope lock(m_mutex);
-    if(m_getting)
+    if(m_getting || m_stopped)
       return;
     size_t sz = m_q_write.size() + m_q_intval.size() + m_q_encode.size();
     if(sz && (sz >= compactor->cfg_read_ahead->get() ||
@@ -536,15 +539,16 @@ void CompactRange::process_write() {
 }
 
 csid_t CompactRange::create_cs(int& err) { 
-  if(!tmp_dir) { 
-    Env::FsInterface::interface()->rmdir(
-      err, range->get_path(Range::CELLSTORES_TMP_DIR));
+  if(!tmp_dir) {
     err = Error::OK;
-    Env::FsInterface::interface()->mkdirs(
-      err, range->get_path(Range::CELLSTORES_TMP_DIR));
-    tmp_dir = true;
+    auto cs_tmp_dir = range->get_path(Range::CELLSTORES_TMP_DIR);
+    if(Env::FsInterface::interface()->exists(err, cs_tmp_dir) && !err)
+      Env::FsInterface::interface()->rmdir(err, cs_tmp_dir);
+    if(!err)
+      Env::FsInterface::interface()->mkdirs(err, cs_tmp_dir);
     if(err)
       return 0;
+    tmp_dir = true;
   }
 
   csid_t csid = 1;
