@@ -8,7 +8,35 @@
 
 ### [SWC-DB master](https://github.com/kashirin-alex/swc-db/tree/master) (upcoming-release)
 
-
+    changed Zero/NotZero conditions to boolean evaluation
+    added Manager MngrRole::are_all_active(Mngr::Groups::Vec&)
+    moved namespace & file Stats::CompletionCounter to Core::CompletionCounter
+    changed Manager class Rangers mutexes to SWC::Core::MutexSptd
+    renamed Types::MetaColumn::get_meta_cid to get_meta_cid_str
+    added cid_t Types::MetaColumn::get_meta_cid(KeySeq col_seq)
+    changed Query::Select into Single Scanner better failure-tolerance handling
+        fixes Query::Select scan at offset over shutdowns
+    added support for DB::Specs::Interval to work with several keys-intervals
+        added file & calss DB::Specs::KeyIntervals 
+        changed DB::Specs::Interval key_{start,finish} to KeyIntervals
+        extended client::SQL::QuerySelect parser
+        added struct SpecKeyInterval to Thrift Service
+        changed Thrift SpecInterval key_{start,finish} to SpecKeyInterval
+    changed Ranger CommitLog::Compact handle work-load by SWC::Core::Semaphore
+    added input Mitigation in Ranger CompactRange at log above CS(sz X max)
+    removed Ranger::Block::State::REMOVED
+    added bool DB::Types::is_fc(KeySeq typ)
+    added uint8_t options to DB::Specs::Interval storage used as bitwise
+        added SQL select, range-interval with token-option 'range_end_rest'
+        added flag Protocol::Rgr::Params::RangeLocateReq::RANGE_END_REST
+        added DB::Specs::Interval::{has,set}_opt__{key_equal,range_end_rest}
+    extended Range Locator & Range Scan determination of reached-end & stop
+        added bool& stop at DB::Specs::Interval::is_matching
+        added functions DB::Interval::apply_possible_range*(..)
+        added spec.apply_possible_range_pure at RangeQuerySelect in Ranger
+        added DB::Interval::is_{in,matching}* specialization
+    changed empty-types to minimal required log-info in DB::Specs classes
+    fixed Ranger Range processing state & processing at block preload
 
 [_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.4.12...master)
 ******
