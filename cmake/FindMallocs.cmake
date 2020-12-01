@@ -33,6 +33,21 @@ elseif (USE_HOARD)
   endif ()
 
 
+elseif (USE_MIMALLOC)
+  SET_DEPS(NAME "MIMALLOC" REQUIRED FALSE 
+    LIB_PATHS "/usr/local/lib/mimalloc-1.6/" 
+    INC_PATHS "/usr/local/lib/mimalloc-1.6/include" 
+    STATIC libmimalloc.a SHARED mimalloc INCLUDE mimalloc.h INSTALL TRUE)
+  if (MIMALLOC_FOUND)
+    set(MALLOC_LIBRARIES_SHARED ${MIMALLOC_LIBRARIES_SHARED})
+    set(MALLOC_LIBRARIES_STATIC ${MIMALLOC_LIBRARIES_STATIC})
+    set(MALLOC_INCLUDE_PATHS    ${MIMALLOC_INCLUDE_PATHS})
+    set(MALLOC_FLAGS -DMIMALLOC)
+  else ()
+    message(FATAL_ERROR "Unable to use MIMALLOC: library not found")
+  endif ()
+
+
 else()  # TCMALLOC_MINIMAL default if found
   
   set(Tcmalloc_header_NAMES gperftools/tcmalloc.h )

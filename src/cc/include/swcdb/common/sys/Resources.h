@@ -15,6 +15,10 @@
 
 #if defined TCMALLOC_MINIMAL || defined TCMALLOC
 #include <gperftools/malloc_extension.h>
+
+#elif defined MIMALLOC
+#include <mimalloc.h>
+
 #endif
 
 namespace SWC { namespace Common {
@@ -142,12 +146,17 @@ class Resources final {
 
   void malloc_release() {
   #if defined TCMALLOC_MINIMAL || defined TCMALLOC
-      if(ram.used > ram.allowed || is_low_mem_state()) {
-        auto inst = MallocExtension::instance();
-        inst->SetMemoryReleaseRate(cfg_ram_release_rate->get());
-        inst->ReleaseFreeMemory();
-        inst->SetMemoryReleaseRate(release_rate_default);
-      }
+    if(ram.used > ram.allowed || is_low_mem_state()) {
+      auto inst = MallocExtension::instance();
+      inst->SetMemoryReleaseRate(cfg_ram_release_rate->get());
+      inst->ReleaseFreeMemory();
+      inst->SetMemoryReleaseRate(release_rate_default);
+    }
+
+  #elif defined MIMALLOC
+    if(ram.used > ram.allowed || is_low_mem_state()) {
+      mi_collect(true);
+    }
   #endif
   }
 

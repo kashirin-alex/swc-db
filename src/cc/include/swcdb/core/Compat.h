@@ -32,9 +32,19 @@ namespace Core { }
 #include <stddef.h>
 
 
+
+#if defined MIMALLOC
+#include <mimalloc.h> // -override
+#endif
+
+
 #ifndef SWC_MALLOC_NOT_INSISTENT
 #include "swcdb/core/Malloc.h"
+
+#elif defined MIMALLOC
+#include <mimalloc-new-delete.h>
 #endif
+
 
 
 
