@@ -37,6 +37,7 @@
         added DB::Interval::is_{in,matching}* specialization
     changed empty-types to minimal required log-info in DB::Specs classes
     fixed Ranger Range processing state & processing at block preload
+    added operators new[], delete, delete[] to swcdb/core/Malloc.h
 
 [_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.4.12...master)
 ******

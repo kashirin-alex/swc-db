@@ -13,9 +13,16 @@
  */
 
 
-extern 
-void* operator new(unsigned long sz) 
-    __attribute__((__nothrow__)); // __noclone__
+
+extern void* operator new(size_t sz) __attribute__((__nothrow__));
+extern void* operator new[](size_t sz) __attribute__((__nothrow__));
+// __noclone__
+
+extern void operator delete(void* ptr) noexcept;
+extern void operator delete[](void* ptr) noexcept;
+
+extern void operator delete(void* ptr, size_t sz) noexcept;
+extern void operator delete[](void* ptr, size_t sz) noexcept;
 
 
 #include <new>
@@ -23,8 +30,7 @@ void* operator new(unsigned long sz)
 #include <chrono>
 
 
-inline
-void* operator new(unsigned long sz) {
+inline void* operator new(size_t sz) {
   //printf("New-Malloc size=%lu\n", sz);
   void *ptr;
   again: try {
@@ -37,6 +43,31 @@ void* operator new(unsigned long sz) {
     goto again;
   }
   return ptr;
+}
+
+inline void* operator new[](size_t sz) {
+  //printf("Malloc using new[] size=%lu\n", sz);
+  return ::operator new(sz);
+}
+
+
+inline void operator delete(void* ptr) noexcept {
+  std::free(ptr);
+}
+
+inline void operator delete[](void* ptr) noexcept {
+  //printf("Malloc using delete[]\n");
+  ::operator delete(ptr);
+}
+
+inline void operator delete(void* ptr, size_t ) noexcept {
+  //printf("Malloc using delete size=%lu\n", sz);
+  ::operator delete(ptr);
+}
+
+inline void operator delete[](void* ptr, size_t ) noexcept {
+  //printf("Malloc using delete[] size=%lu\n", sz);
+  ::operator delete(ptr);
 }
 
 

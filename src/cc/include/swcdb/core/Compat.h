@@ -29,6 +29,8 @@ namespace Core { }
 }
 
 
+#include <stddef.h>
+
 
 #ifndef SWC_MALLOC_NOT_INSISTENT
 #include "swcdb/core/Malloc.h"
@@ -37,7 +39,6 @@ namespace Core { }
 
 
 #include <stdint.h>
-#include <stddef.h>
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
