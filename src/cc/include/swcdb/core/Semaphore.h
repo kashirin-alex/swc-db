@@ -38,6 +38,8 @@ class Semaphore final {
 
   void wait_until_under(size_t sz);
 
+  size_t wait_available();
+
   void wait_all();
 
   private:

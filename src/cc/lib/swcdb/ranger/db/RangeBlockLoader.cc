@@ -48,8 +48,8 @@ void BlockLoader::load_log() {
   bool is_final = false;
   std::vector<CommitLog::Fragment::Ptr> selected;
   for(size_t offset=0; ;) {
-    block->blocks->commitlog.load_cells(
-      this, is_final, selected, m_sem_log.available());
+    uint8_t sz = m_sem_log.wait_available();
+    block->blocks->commitlog.load_cells(this, is_final, selected, sz);
     if(is_final)
       break;
     if(offset < selected.size()) {

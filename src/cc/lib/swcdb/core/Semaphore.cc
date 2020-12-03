@@ -65,6 +65,13 @@ void Semaphore::wait_until_under(size_t sz) {
     m_cv.wait(lock_wait, [this, sz] {return m_count < sz;});
 }
 
+size_t Semaphore::wait_available() {
+  std::unique_lock lock_wait(m_mutex);
+  if(m_count >= m_sz)
+    m_cv.wait(lock_wait, [this] {return m_count < m_sz;});
+  return m_sz - m_count;
+}
+
 void Semaphore::wait_all() {
   std::unique_lock lock_wait(m_mutex);
   if(m_count)
