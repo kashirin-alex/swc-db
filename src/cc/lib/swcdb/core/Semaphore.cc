@@ -29,6 +29,16 @@ Semaphore::~Semaphore() {
   m_mutex.unlock();
 } 
 
+size_t Semaphore::available() {
+  std::scoped_lock lock(m_mutex);
+  return m_sz - m_count;
+}
+
+bool Semaphore::has_pending() {
+  std::scoped_lock lock(m_mutex);
+  return m_count;
+}
+
 void Semaphore::acquire() {
   std::unique_lock lock_wait(m_mutex);
   if(m_count >= m_sz)

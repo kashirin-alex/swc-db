@@ -250,24 +250,23 @@ Block::ScanState Block::scan(const ReqScan::Ptr& req) {
   }
 
   auto loader = new BlockLoader(ptr());
-  loader->run();
+  loader->run(req->type == ReqScan::Type::BLK_PRELOAD);
   return ScanState::QUEUED;
 }
 
-void Block::loaded(int err, const BlockLoader* loader) {
+void Block::loaded(const BlockLoader* loader) {
   {
     Core::MutexSptd::scope lock(m_mutex_state);
     m_state = State::LOADED;
   }
 
-  if(err) {
-    SWC_LOG_OUT(LOG_ERROR, 
-      Error::print(SWC_LOG_OSTREAM << "Block::loaded ", err); );
+  if(loader->error) {
+    SWC_LOG_OUT(LOG_ERROR,
+      Error::print(SWC_LOG_OSTREAM << "Block::loaded ", loader->error); );
     quick_exit(1); // temporary halt
-    //run_queue(err);
     return;
   }
-  run_queue(err);
+  run_queue(loader->error, loader->count_cs_blocks, loader->count_fragments);
 
   delete loader;
 }
@@ -442,7 +441,8 @@ Block::ScanState Block::_scan(const ReqScan::Ptr& req, bool synced) {
   return ScanState::SYNCED;
 }
 
-void Block::run_queue(int& err) {
+void Block::run_queue(int err, size_t count_cs_blocks,
+                               size_t count_fragments) {
   do { 
     ReqQueue q(std::move(m_queue.front()));
     switch(q.req->type) {
@@ -453,7 +453,8 @@ void Block::run_queue(int& err) {
 
       default: {
         if(!err) {
-          q.req->profile.add_block_load(q.ts);
+          q.req->profile.add_block_load(
+            q.ts, count_cs_blocks, count_fragments);
           Env::Rgr::post([this, req=q.req]() { _scan(req); } );
           break;
         }

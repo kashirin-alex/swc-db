@@ -80,7 +80,6 @@ class Splitter final {
   void loaded(Fragment::Ptr frag) {
     int err;
     if(!frag->loaded(err)) {
-      frag->processing_decrement();
       SWC_LOG_OUT(LOG_WARN,
         Error::print(
           SWC_LOG_OSTREAM << "COMPACT-SPLIT fragment retrying to ", err);
@@ -88,6 +87,7 @@ class Splitter final {
       );
       std::this_thread::sleep_for(std::chrono::milliseconds(1000));
       frag->load([this, frag]() { loaded(frag); } );
+      frag->processing_decrement();
 
     } else {
       frag->split(err, key, log_left, log_right);

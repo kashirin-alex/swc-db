@@ -49,7 +49,6 @@ void Compact::Group::loaded(Fragment::Ptr frag) {
 
   int err;
   if(!frag->loaded(err)) {
-    frag->processing_decrement();
     SWC_LOG_OUT(LOG_WARN,
       Error::print(
         SWC_LOG_OSTREAM << "COMPACT-LOG fragment retrying to ", err);
@@ -57,6 +56,7 @@ void Compact::Group::loaded(Fragment::Ptr frag) {
     );
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     frag->load([this, frag]() { loaded(frag); } );
+    frag->processing_decrement();
     return;
   }
 

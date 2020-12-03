@@ -66,6 +66,8 @@ class ReqScan : public Comm::ResponseCallback {
     uint64_t block_time_locate= 0;
 
     uint64_t blocks_loaded    = 0;
+    uint64_t blocks_cs_blocks = 0;
+    uint64_t blocks_fragments = 0;
     uint64_t block_time_load  = 0;
 
     uint64_t blocks_scanned   = 0;
@@ -89,9 +91,12 @@ class ReqScan : public Comm::ResponseCallback {
       block_time_locate += Time::now_ns() - ts;
     }
 
-    void add_block_load(int64_t ts) {
+    void add_block_load(int64_t ts, size_t count_cs_blocks,
+                                    size_t count_fragments) {
       ++blocks_loaded;
       block_time_load += Time::now_ns() - ts;
+      blocks_cs_blocks += count_cs_blocks;
+      blocks_fragments += count_fragments;
     }
 
     void add_block_scan(int64_t ts) {
@@ -113,7 +118,9 @@ class ReqScan : public Comm::ResponseCallback {
           << " skip=" << cells_skipped
           << ") blocks(located=" << blocks_located
           << " loaded=" << blocks_loaded
-          << " scanned=" << blocks_scanned
+            << "(cs=" << blocks_cs_blocks
+            << " frags=" << blocks_fragments
+          << ") scanned=" << blocks_scanned
           << ") block(locate=" << block_time_locate
           << "ns load=" << block_time_load
           << "ns scan=" << block_time_scan

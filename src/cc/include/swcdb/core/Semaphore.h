@@ -26,6 +26,10 @@ class Semaphore final {
   
   ~Semaphore();
 
+  size_t available();
+  
+  bool has_pending();
+
   void acquire();
 
   void release();

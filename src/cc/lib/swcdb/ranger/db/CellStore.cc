@@ -282,26 +282,20 @@ const std::string& Read::filepath() const {
 }
 
 void Read::load_cells(BlockLoader* loader) {
-
-  std::vector<Block::Read::Ptr>  applicable;
-  for(auto blk : blocks) {  
+  for(auto blk : blocks) {
     if(loader->block->is_consist(blk->header.interval)) {
       loader->add(blk);
-      applicable.push_back(blk);
+      if(blk->load(loader)) {
+        Core::MutexSptd::scope lock(m_mutex);
+        m_queue.emplace(loader, blk);
+        if(!m_q_running) {
+          m_q_running = true;
+          Env::Rgr::post([this]() { _run_queued(); } );
+        }
+      }
     } else if(!blk->header.interval.key_end.empty() && 
               !loader->block->is_in_end(blk->header.interval.key_end))
       break;
-  }
-  
-  for(auto blk : applicable) {
-    if(blk->load(loader)) {
-      Core::MutexSptd::scope lock(m_mutex);
-      m_queue.emplace(loader, blk);
-      if(!m_q_running) {
-        m_q_running = true;
-        Env::Rgr::post([this]() { _run_queued(); } );
-      }
-    }
   }
 }
 
