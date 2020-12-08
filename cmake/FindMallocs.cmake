@@ -3,7 +3,16 @@
 # License details at <https://github.com/kashirin-alex/swc-db/#license>
 
 set(MALLOC_FLAGS )
-if (USE_GLIBC_MALLOC OR (
+
+if(USE_SWC_MALLOC)
+  set(MALLOC_LIBRARIES_SHARED )
+  set(MALLOC_LIBRARIES_STATIC )
+  set(flags "-DSWC_MALLOC")# -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free")
+
+  SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${flags}")
+  SET (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${flags}")
+
+elseif (USE_GLIBC_MALLOC OR (
               CMAKE_SYSTEM_PROCESSOR STREQUAL "i386" OR
               CMAKE_SYSTEM_PROCESSOR STREQUAL "i586" OR
               CMAKE_SYSTEM_PROCESSOR STREQUAL "i686"))
@@ -88,6 +97,8 @@ endif ()
 
 if(MALLOC_LIBRARIES_SHARED)
   message(STATUS "Using MALLOC: ${MALLOC_LIBRARIES_SHARED} ${MALLOC_LIBRARIES_STATIC} ")
+elseif(USE_SWC_MALLOC)
+  message(STATUS "Using MALLOC: SWC-DB Implementation ")
 else ()
   message(STATUS "Using MALLOC: GLIBC_MALLOC ")
 endif ()

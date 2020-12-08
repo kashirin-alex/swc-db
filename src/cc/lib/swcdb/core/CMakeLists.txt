@@ -28,6 +28,10 @@ set(swcdb_core_sources
   FileUtils.cc
   Semaphore.cc
 )
+if(USE_SWC_MALLOC)
+  set(swcdb_core_sources ${swcdb_core_sources} MallocImpl.cc)
+endif()
+
 ADD_LIB_TARGET(
   NAME      swcdb_core
   SRCS      ${swcdb_core_sources}

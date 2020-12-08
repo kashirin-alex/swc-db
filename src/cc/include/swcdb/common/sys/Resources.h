@@ -13,13 +13,6 @@
 #include "swcdb/core/config/Property.h"
 #include "swcdb/core/comm/IoContext.h"
 
-#if defined TCMALLOC_MINIMAL || defined TCMALLOC
-#include <gperftools/malloc_extension.h>
-
-#elif defined MIMALLOC
-#include <mimalloc.h>
-
-#endif
 
 namespace SWC { namespace Common {
 
@@ -144,20 +137,30 @@ class Resources final {
 
   private:
 
-  void malloc_release() {
-  #if defined TCMALLOC_MINIMAL || defined TCMALLOC
-    if(ram.used > ram.allowed || is_low_mem_state()) {
-      auto inst = MallocExtension::instance();
-      inst->SetMemoryReleaseRate(cfg_ram_release_rate->get());
-      inst->ReleaseFreeMemory();
-      inst->SetMemoryReleaseRate(release_rate_default);
-    }
+  void malloc_release(size_t bytes) {
+    #if defined SWC_MALLOC
+      if(ram.used > ram.allowed || is_low_mem_state()) {
+        SWCDB_MEM_RELEASE(bytes);
+      }
 
-  #elif defined MIMALLOC
-    if(ram.used > ram.allowed || is_low_mem_state()) {
-      mi_collect(true);
-    }
-  #endif
+    #elif defined TCMALLOC_MINIMAL || defined TCMALLOC
+      (void)bytes;
+      if(ram.used > ram.allowed || is_low_mem_state()) {
+        auto inst = MallocExtension::instance();
+        inst->SetMemoryReleaseRate(cfg_ram_release_rate->get());
+        inst->ReleaseFreeMemory();
+        inst->SetMemoryReleaseRate(release_rate_default);
+      }
+
+    #elif defined MIMALLOC
+      (void)bytes;
+      if(ram.used > ram.allowed || is_low_mem_state()) {
+        mi_collect(true);
+      }
+
+    #else
+      (void)bytes; //SWCDB_MEM_RELEASE(bytes);
+    #endif
   }
 
   void checker() {
@@ -174,7 +177,7 @@ class Resources final {
         );
       }
 
-      malloc_release();
+      malloc_release(bytes);
     }
 
     schedule();

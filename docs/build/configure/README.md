@@ -26,6 +26,7 @@ sort: 3
 |SWC_MALLOC_NOT_INSISTENT|  Not to use SWC-DB insistent malloc | ON/OFF | OFF |
 |SWC_INSTALL_DEP_LIBS|  Install the 3rd-party dependencies libaries used for linking | ON/OFF | OFF |
 |SWC_WITHOUT_JAVA| skip java/maven builds | ON/OFF | OFF |
+|USE_SWC_MALLOC| use SWC-DB Malloc Implementaion | ON/OFF | OFF |
 |USE_GLIBC_MALLOC| use compiler malloc | ON/OFF | OFF |
 |USE_JEMALLOC| use libjemalloc | ON/OFF | OFF |
 |USE_HOARD| use libhoard | ON/OFF | OFF |

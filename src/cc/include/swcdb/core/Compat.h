@@ -25,37 +25,7 @@ namespace SWC {
  * \ingroup Core
  */
 namespace Core { }
-
 }
-
-
-#include <stddef.h>
-
-
-
-#if defined MIMALLOC
-#include <mimalloc.h> // -override
-#endif
-
-
-#ifndef SWC_MALLOC_NOT_INSISTENT
-#include "swcdb/core/Malloc.h"
-
-#elif defined MIMALLOC
-#include <mimalloc-new-delete.h>
-#endif
-
-
-
-
-#include <stdint.h>
-#include <string.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <signal.h>
-#include <cstddef> // for std::size_t and std::ptrdiff_t
-#include <memory>
-#include <string>
 
 
 
@@ -91,6 +61,18 @@ namespace Core { }
 
 
 
+#include <stddef.h>
+#include <stdint.h>
+
+#include "swcdb/core/Malloc.h"
+
+#include <string.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <signal.h>
+#include <memory>
+#include <string>
+
 
 #if defined (__GLIBC__) && (__GLIBC__ >= 2) && (__GLIBC_MINOR__ >= 23)
 #define USE_READDIR_R 0
@@ -105,12 +87,16 @@ namespace Core { }
 #endif
 
 
-
 /*! @} End of Core Group*/
+
 
 
 
 #include "swcdb/core/BitFieldInt.h" // for u/int24/40/48/56_t
 
+
+#if defined SWC_IMPL_SOURCE && defined SWC_MALLOC
+#include "swcdb/core/MallocImpl.cc"
+#endif 
 
 #endif // swcdb_core_Compact_h

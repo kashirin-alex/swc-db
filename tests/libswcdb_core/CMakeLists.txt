@@ -44,3 +44,9 @@ ADD_TEST_TARGET(
   TARGETS   swcdb_core 
 )
 
+
+ADD_TEST_TARGET(
+  NAME      malloc
+  SRCS      malloc.cc
+  TARGETS   swcdb_core 
+)
