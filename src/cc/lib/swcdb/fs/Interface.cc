@@ -222,15 +222,15 @@ bool Interface::exists(int& err, const std::string& name) {
 
 void Interface::exists(const Callback::ExistsCb_t& cb, 
                        const std::string& name) {
-  Callback::ExistsCb_t cb_wrapper; 
-  cb_wrapper = [cb, name, &cb_wrapper, ptr=ptr()]
+  m_fs->exists([cb, name, ptr=ptr()]
     (int err, bool state) { 
       if(!err || err == Error::SERVER_SHUTTING_DOWN) 
         cb(err, state);
       else 
-        ptr->get_fs()->exists(cb_wrapper, name);
-    };
-  m_fs->exists(cb_wrapper, name);
+        ptr->exists(cb, name);
+    },
+    name
+  );
 }
 
 void Interface::mkdirs(int& err, const std::string& name) {
@@ -430,7 +430,7 @@ bool Interface::create(int& err, SmartFd::Ptr& smartfd,
   }
 }
 
-void Interface::close(int& err, SmartFd::Ptr smartfd) {
+void Interface::close(int& err, SmartFd::Ptr& smartfd) {
   while(smartfd->valid()) {
     m_fs->close(err = Error::OK, smartfd);
     switch(err) {
@@ -450,6 +450,30 @@ void Interface::close(int& err, SmartFd::Ptr smartfd) {
   }
 }
 
+void Interface::close(const Callback::CloseCb_t& cb, 
+                      SmartFd::Ptr& smartfd) {
+  m_fs->close([cb, ptr=ptr()]
+    (int err, SmartFd::Ptr smartfd) {
+      switch(err) {
+        case Error::OK:
+        case EACCES:
+        case ENOENT:
+        case EBADR:
+        case EBADF:
+        case Error::FS_BAD_FILE_HANDLE:
+        case Error::SERVER_SHUTTING_DOWN:
+          return cb(err, smartfd);
+        default: {
+          hold_delay();
+          SWC_LOGF(LOG_WARN, "close, retrying to err=%d(%s) file(%s)",
+                   err, Error::get_text(err), smartfd->filepath().c_str());
+          ptr->close(cb, smartfd);
+        }
+      }
+    },
+    smartfd
+  );
+}
 
 
 void set_structured_id(const std::string& number, std::string& s) {

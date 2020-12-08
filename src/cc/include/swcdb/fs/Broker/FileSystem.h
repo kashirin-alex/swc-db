@@ -147,7 +147,7 @@ class FileSystemBroker final : public FileSystem {
 
   void close(int& err, SmartFd::Ptr& smartfd) override;
 
-  void close(const Callback::CreateCb_t& cb, SmartFd::Ptr& smartfd) override;
+  void close(const Callback::CloseCb_t& cb, SmartFd::Ptr& smartfd) override;
 
   private:
 

@@ -652,7 +652,7 @@ void FileSystemBroker::close(int& err, SmartFd::Ptr& smartfd) {
   err = hdlr->error;
 }
 
-void FileSystemBroker::close(const Callback::CreateCb_t& cb, 
+void FileSystemBroker::close(const Callback::CloseCb_t& cb, 
                              SmartFd::Ptr& smartfd) {
   SWC_LOG_OUT(LOG_DEBUG, 
     SWC_LOG_PRINTF("close timeout=%d ", cfg_timeout->get());

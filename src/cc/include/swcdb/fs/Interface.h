@@ -101,8 +101,10 @@ class Interface {
   bool create(int& err, SmartFd::Ptr& smartfd,
               int32_t bufsz, uint8_t replication, int64_t blksz);
               
-  void close(int& err, SmartFd::Ptr smartfd);
- 
+  void close(int& err, SmartFd::Ptr& smartfd);
+
+  void close(const Callback::CloseCb_t& cb, SmartFd::Ptr& smartfd);
+
   private:
   Type            m_type;
   FileSystem::Ptr m_fs;
