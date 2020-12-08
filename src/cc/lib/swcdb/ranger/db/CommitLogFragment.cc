@@ -306,10 +306,12 @@ void Fragment::load(const std::function<void()>& cb) {
     }
   }
 
-  if(loaded)
+  if(loaded) {
     cb();
-  else
-    Env::Rgr::post([this](){ load(); } );
+  } else {
+    Env::Rgr::res().more_mem_usage(size_plain);
+    Env::Rgr::post([this](){ load_open(Error::OK); } );
+  }
 }
 
 void Fragment::load_cells(int&, Ranger::Block::Ptr cells_block) {
@@ -499,53 +501,71 @@ void Fragment::print(std::ostream& out) {
   out << ' ' << interval << ')';
 }
 
-void Fragment::load() {
-  Env::Rgr::res().more_mem_usage(size_plain);
-
-  auto fs_if = Env::FsInterface::interface();
-  auto fs = Env::FsInterface::fs();
-
-  int err = Error::OK;
-  while(err != Error::FS_PATH_NOT_FOUND &&
-        err != Error::SERVER_SHUTTING_DOWN) {
-    if(err) {
+void Fragment::load_open(int err) {
+  switch(err) {
+    case Error::FS_PATH_NOT_FOUND:
+    case Error::SERVER_SHUTTING_DOWN:
+      return load_finish(err);
+    case Error::OK:
+      break;
+    default: {
       SWC_LOG_OUT(LOG_WARN, 
         Error::print(SWC_LOG_OSTREAM << "Retrying to ", err);
         print(SWC_LOG_OSTREAM << ' ');
       );
-      fs_if->close(err, m_smartfd);
-      err = Error::OK;
+      if(m_smartfd->valid()) {
+        Env::FsInterface::interface()->close(
+          [this](int, FS::SmartFd::Ptr) { load_open(Error::OK); },
+          m_smartfd
+        );
+        return;
+      }
+      //std::this_thread::sleep_for(std::chrono::microseconds(10000));
     }
-    if(!m_smartfd->valid() && !fs_if->open(err, m_smartfd) && err)
-      break;
-    if(err)
-      continue;
-    
-    m_buffer.free();
-    if(fs->pread(err, m_smartfd, offset_data, &m_buffer, size_enc) != size_enc)
-      continue;
-    
-    if(!Core::checksum_i32_chk(data_checksum, m_buffer.base, size_enc)) {
+  }
+
+  m_smartfd->valid()
+    ? Env::FsInterface::fs()->pread(
+        [this](int err, FS::SmartFd::Ptr, const StaticBuffer::Ptr& buffer) {
+          load_read(err, buffer);
+        }, 
+        m_smartfd, offset_data, size_enc
+      )
+    : Env::FsInterface::fs()->open(
+        [this](int err, FS::SmartFd::Ptr) { load_open(err); },
+        m_smartfd
+      );
+}
+
+void Fragment::load_read(int err, const StaticBuffer::Ptr& buffer) {
+  if(!err) {
+    if(!Core::checksum_i32_chk(data_checksum, buffer->base, size_enc)) {
       err = Error::CHECKSUM_MISMATCH;
-      continue;
+
+    } else if(buffer->size != size_enc) {
+      err = Error::FS_EOF;
+
+    } else {
+      if(encoder != DB::Types::Encoder::PLAIN) {
+          StaticBuffer decoded_buf(size_plain);
+        Core::Encoder::decode(
+          err, encoder, buffer->base, size_enc, decoded_buf.base, size_plain);
+        if(!err)
+          m_buffer.set(decoded_buf);
+      } else {
+        m_buffer.set(*buffer.get());
+      }
     }
-
-    if(encoder != DB::Types::Encoder::PLAIN) {
-      StaticBuffer decoded_buf(size_plain);
-      Core::Encoder::decode(
-        err, encoder, m_buffer.base, size_enc, decoded_buf.base, size_plain);
-      if(err)
-        continue;
-      m_buffer.set(decoded_buf);
-    }
-    break;
   }
+  err
+    ? load_open(err)
+    : Env::FsInterface::interface()->close(
+        [this](int, FS::SmartFd::Ptr) { load_finish(Error::OK); },
+        m_smartfd
+      );
+}
 
-  if(m_smartfd->valid()) {
-    int tmperr = Error::OK;
-    fs_if->close(tmperr, m_smartfd);
-  }
-
+void Fragment::load_finish(int err) {
   {
     Core::MutexSptd::scope lock(m_mutex);
     m_err = err == Error::FS_PATH_NOT_FOUND ? Error::OK : err;

@@ -143,12 +143,14 @@ class Fragment final {
 
   private:
 
-  void load();
+  void load_open(int err);
+
+  void load_read(int err, const StaticBuffer::Ptr& buffer);
+
+  void load_finish(int err);
 
   void run_queued();
 
-  void _run_queued();
-  
 
   Core::MutexSptd                   m_mutex;
   State                             m_state;
