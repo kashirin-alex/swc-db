@@ -292,7 +292,7 @@ void Fragment::write(int err, uint8_t blk_replicas, int64_t blksz,
     Env::Rgr::post([this](){ run_queued(); });
 }
 
-void Fragment::load(const std::function<void()>& cb) {
+void Fragment::load(const std::function<void(Fragment::Ptr)>& cb) {
   bool loaded;
   {
     Core::MutexSptd::scope lock(m_mutex);
@@ -307,7 +307,7 @@ void Fragment::load(const std::function<void()>& cb) {
   }
 
   if(loaded) {
-    cb();
+    cb(this);
   } else {
     Env::Rgr::res().more_mem_usage(size_plain);
     Env::Rgr::post([this](){ load_open(Error::OK); } );
@@ -527,7 +527,7 @@ void Fragment::load_open(int err) {
   m_smartfd->valid()
     ? Env::FsInterface::fs()->pread(
         [this](int err, FS::SmartFd::Ptr, const StaticBuffer::Ptr& buffer) {
-          load_read(err, buffer);
+          Env::Rgr::post([this, err, buffer](){ load_read(err, buffer); } );
         }, 
         m_smartfd, offset_data, size_enc
       )
@@ -560,7 +560,9 @@ void Fragment::load_read(int err, const StaticBuffer::Ptr& buffer) {
   err
     ? load_open(err)
     : Env::FsInterface::interface()->close(
-        [this](int, FS::SmartFd::Ptr) { load_finish(Error::OK); },
+        [this](int, FS::SmartFd::Ptr) {
+          Env::Rgr::post([this](){ load_finish(Error::OK); } );
+        },
         m_smartfd
       );
 }
@@ -586,15 +588,15 @@ void Fragment::load_finish(int err) {
 
 
 void Fragment::run_queued() {
-  for(std::function<void()> call;;) {
+  for(std::function<void(Fragment::Ptr)> cb;;) {
     {
       Core::MutexSptd::scope lock(m_mutex);
       if(m_queue.empty())
         return;
-      call = m_queue.front();
+      cb = m_queue.front();
       m_queue.pop();
     }
-    call();
+    cb(this);
   }
 }
 

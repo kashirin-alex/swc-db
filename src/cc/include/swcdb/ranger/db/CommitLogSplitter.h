@@ -17,7 +17,7 @@ class Splitter final {
 
   Splitter(const DB::Cell::Key& key, Fragments::Vec& fragments,
            Fragments::Ptr log_left, Fragments::Ptr log_right) 
-          : m_sem(Fragments::MAX_PRELOAD), m_fragments(fragments), 
+          : m_sem(4), m_fragments(fragments), 
             key(key), log_left(log_left), log_right(log_right) {
   }
 
@@ -59,7 +59,7 @@ class Splitter final {
 
       } else {
         m_sem.acquire();
-        frag->load([this, frag]() { loaded(frag); } );
+        frag->load([this] (Fragment::Ptr frag) { loaded(frag); });
         ++splitted;
         ++it;
       }
@@ -86,21 +86,31 @@ class Splitter final {
         frag->print(SWC_LOG_OSTREAM << ' ');
       );
       std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-      frag->load([this, frag]() { loaded(frag); } );
+      frag->load([this] (Fragment::Ptr frag) { loaded(frag); });
       frag->processing_decrement();
 
-    } else {
-      frag->split(err, key, log_left, log_right);
-      m_sem.release();
+    } else if(m_splitting.push_and_is_1st(frag)) {
+      Env::Rgr::post([this]() { split(); });
     }
   }
 
-  Core::Semaphore     m_sem;
-  Fragments::Vec&     m_fragments;
+  void split() {
+    int err;
+    bool more;
+    do {
+      m_splitting.front()->split(err, key, log_left, log_right);
+      more = m_splitting.pop_and_more();
+      m_sem.release();
+    } while(more);
+  }
 
-  const DB::Cell::Key key;
-  Fragments::Ptr      log_left;
-  Fragments::Ptr      log_right;
+  Core::Semaphore                m_sem;
+  Fragments::Vec&                m_fragments;
+  Core::QueueSafe<Fragment::Ptr> m_splitting;
+
+  const DB::Cell::Key            key;
+  Fragments::Ptr                 log_left;
+  Fragments::Ptr                 log_right;
 };
 
 

@@ -59,7 +59,7 @@ void BlockLoader::load_log() {
           Core::MutexSptd::scope lock(m_mutex);
           m_fragments.push(*it);
         }
-        (*it)->load([this](){ load_fragments(); });
+        (*it)->load([this](CommitLog::Fragment::Ptr){ load_fragments(); });
         (*it)->processing_decrement();
       }
       offset = selected.size();
@@ -148,7 +148,7 @@ void BlockLoader::_load_fragments() {
         frag->print(SWC_LOG_OSTREAM << ' ');
       );
       std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-      frag->load([this]() { load_fragments(); } );
+      frag->load([this](CommitLog::Fragment::Ptr) { load_fragments(); } );
       frag->processing_decrement();
     }
     return;

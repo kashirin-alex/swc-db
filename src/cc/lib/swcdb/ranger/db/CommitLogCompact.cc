@@ -34,7 +34,9 @@ void Compact::Group::load() {
     if(error || compact->log->stopping)
       break;
     m_sem.acquire();
-    frag->load([this, frag] () { loaded(frag); });
+    frag->load([this] (Fragment::Ptr frag) {
+      Env::Rgr::post([this, frag]() { loaded(frag); });
+    });
   }
   m_sem.wait_all();
   write();
@@ -55,7 +57,9 @@ void Compact::Group::loaded(Fragment::Ptr frag) {
       frag->print(SWC_LOG_OSTREAM << ' ');
     );
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-    frag->load([this, frag]() { loaded(frag); } );
+    frag->load([this] (Fragment::Ptr frag) {
+      Env::Rgr::post([this, frag]() { loaded(frag); });
+    });
     frag->processing_decrement();
     return;
   }

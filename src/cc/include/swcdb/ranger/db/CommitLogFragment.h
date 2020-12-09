@@ -108,7 +108,7 @@ class Fragment final {
   void write(int err, uint8_t blk_replicas, int64_t blksz, 
              const StaticBuffer::Ptr& buff_write, Core::Semaphore* sem);
 
-  void load(const std::function<void()>& cb);
+  void load(const std::function<void(Fragment::Ptr)>& cb);
   
   void load_cells(int& err, Ranger::Block::Ptr cells_block);
   
@@ -161,7 +161,7 @@ class Fragment final {
   int                               m_err;
   std::atomic<uint32_t>             m_cells_remain;
 
-  std::queue<std::function<void()>> m_queue;
+  std::queue<std::function<void(Fragment::Ptr)>> m_queue;
 
 };
 
