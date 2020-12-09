@@ -86,6 +86,8 @@ class Interface {
                            
   void remove(int& err, const std::string& name);
   
+  void remove(const Callback::RemoveCb_t& cb, const std::string& name);
+  
   void rename(int& err, const std::string& from , const std::string& to);
 
   size_t length(int& err, const std::string& name);

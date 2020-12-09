@@ -308,7 +308,28 @@ void Interface::remove(int& err, const std::string& name) {
     }
   }
 }
-  
+
+void Interface::remove(const Callback::RemoveCb_t& cb,
+                       const std::string& name) {
+  m_fs->remove([cb, name, ptr=ptr()]
+    (int err) {
+      switch(err) {
+        case Error::OK:
+        case ENOENT:
+        case Error::SERVER_SHUTTING_DOWN:
+          return cb(err);
+        default: {
+          hold_delay();
+          SWC_LOGF(LOG_WARN, "remove, retrying to err=%d(%s) file(%s)",
+                   err, Error::get_text(err), name.c_str());
+          ptr->remove(cb, name);
+        }
+      }
+    },
+    name
+  );
+}
+
 void Interface::rename(int& err, const std::string& from, 
                        const std::string& to) {
   for(;;) {
