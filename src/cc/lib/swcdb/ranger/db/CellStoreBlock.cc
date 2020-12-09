@@ -22,16 +22,18 @@ std::string Read::to_string(const Read::State state) {
   }
 }
 
-Read::Ptr Read::make(int& err, FS::SmartFd::Ptr& smartfd, 
-                     const DB::Cells::Interval& interval, 
-                     const uint64_t offset, 
-                     const uint32_t cell_revs) {
+/*
+Read::Ptr Read::make(int& err,
+                     CellStore::Read* cellstore,
+                     const DB::Cells::Interval& interval,
+                     const uint64_t offset) {
   Header header(interval.key_seq);
   header.interval.copy(interval);
   header.offset_data = offset;
-  load_header(err, smartfd, header);  
-  return err ? nullptr : new Read(cell_revs, header);
+  load_header(err, cellstore->smartfd, header);  
+  return err ? nullptr : new Read(cellstore, header);
 }
+*/
 
 void Read::load_header(int& err, FS::SmartFd::Ptr& smartfd, 
                        Header& header) {
@@ -73,11 +75,15 @@ void Read::load_header(int& err, FS::SmartFd::Ptr& smartfd,
   }
 }
 
-Read::Read(const uint32_t cell_revs, const Header& header)
-          : cell_revs(cell_revs), header(header),
+Read::Read(const Header& header)
+          : header(header), cellstore(nullptr),
             m_state(State::NONE), m_processing(0),
             m_cells_remain(header.cells_count), m_err(Error::OK) {
   Env::Rgr::res().more_mem_usage(size_of());
+}
+
+void Read::init(CellStore::Read* _cellstore) {
+  cellstore = _cellstore;
 }
 
 Read::~Read() { 
@@ -99,6 +105,7 @@ bool Read::load(BlockLoader* loader) {
       if(header.size_enc) {
         m_state = State::LOADING;
         Env::Rgr::res().more_mem_usage(header.size_plain);
+        m_queue.push(loader);
         return true;
       } else {
         // a zero cells type cs (initial of any to any block)  
@@ -114,16 +121,8 @@ bool Read::load(BlockLoader* loader) {
   return false;
 }
 
-void Read::load(FS::SmartFd::Ptr smartfd, BlockLoader* loader) {
-  int err = Error::OK;
-  _load(err, smartfd);
-  if(err)
-    SWC_LOG_OUT(LOG_ERROR, 
-      print(SWC_LOG_OSTREAM << "CellStore::Block load ");
-    );
-
-  loader->loaded_blk();
-  Env::Rgr::post([this](){ _run_queued(); });
+void Read::load() {
+  Env::Rgr::post([this](){ load_open(Error::OK); });
 }
 
 void Read::load_cells(int&, Ranger::Block::Ptr cells_block) {
@@ -131,7 +130,7 @@ void Read::load_cells(int&, Ranger::Block::Ptr cells_block) {
   if(m_buffer.size) {
     m_cells_remain -= cells_block->load_cells(
       m_buffer.base, m_buffer.size, 
-      cell_revs, header.cells_count, 
+      cellstore->cell_revs, header.cells_count, 
       was_splitted,
       true
     );
@@ -214,68 +213,97 @@ void Read::print(std::ostream& out) {
   out << ')';
 }
 
-void Read::_load(int& err, FS::SmartFd::Ptr smartfd) {
-  auto fs_if = Env::FsInterface::interface();
-  auto fs = Env::FsInterface::fs();
-  err = Error::OK;
-  while(err != Error::FS_PATH_NOT_FOUND &&
-        err != Error::SERVER_SHUTTING_DOWN) {
-    if(err) {
-      SWC_LOG_OUT(LOG_WARN, 
+void Read::load_open(int err) {
+  switch(err) {
+    case Error::FS_PATH_NOT_FOUND:
+    case Error::SERVER_SHUTTING_DOWN:
+      return load_finish(err);
+    case Error::OK:
+      break;
+    default: {
+      SWC_LOG_OUT(LOG_WARN,
         Error::print(SWC_LOG_OSTREAM << "Retrying to ", err);
-        smartfd->print(SWC_LOG_OSTREAM << ' ');
+        cellstore->smartfd->print(SWC_LOG_OSTREAM << ' ');
         print(SWC_LOG_OSTREAM << ' ');
       );
-      fs_if->close(err, smartfd);
-      err = Error::OK;
+      if(cellstore->smartfd->valid()) {
+        Env::FsInterface::interface()->close(
+          [this](int, FS::SmartFd::Ptr) { load_open(Error::OK); },
+          cellstore->smartfd
+        );
+        return;
+      }
+      //std::this_thread::sleep_for(std::chrono::microseconds(10000));
     }
+  }
 
-    if(!smartfd->valid() && !fs_if->open(err, smartfd) && err)
-      break;
-    if(err)
-      continue;
-
-    m_buffer.free();
-    if(fs->pread(err, smartfd, header.offset_data, &m_buffer, 
-                 header.size_enc) != header.size_enc)
-      continue;
-    
-    if(!Core::checksum_i32_chk(header.checksum_data, 
-                         m_buffer.base, header.size_enc)) {
-      err = Error::CHECKSUM_MISMATCH;
-      continue;
-    }
-
-    if(header.encoder != DB::Types::Encoder::PLAIN) {
-      StaticBuffer decoded_buf((size_t)header.size_plain);
-      Core::Encoder::decode(
-        err, header.encoder, 
-        m_buffer.base, header.size_enc, 
-        decoded_buf.base, header.size_plain
+  cellstore->smartfd->valid()
+    ? Env::FsInterface::fs()->pread(
+        [this](int err, FS::SmartFd::Ptr, const StaticBuffer::Ptr& buffer) {
+          Env::Rgr::post([this, err, buffer](){ load_read(err, buffer); });
+        },
+        cellstore->smartfd, header.offset_data, header.size_enc
+      )
+    : Env::FsInterface::fs()->open(
+        [this](int err, FS::SmartFd::Ptr) { load_open(err); },
+        cellstore->smartfd
       );
-      if(err)
-        continue;
-      m_buffer.set(decoded_buf);
-    }
-    break;
-  }
-
-  Core::MutexSptd::scope lock(m_mutex);
-  if((m_err = err) == Error::FS_PATH_NOT_FOUND) {
-    m_err = Error::OK;
-    m_buffer.free();
-    Env::Rgr::res().less_mem_usage(header.size_plain);
-  }
-  if(m_err) {
-    m_state = State::NONE;
-    m_buffer.free();
-    Env::Rgr::res().less_mem_usage(header.size_plain);
-  } else {
-    m_state = State::LOADED;
-  }
 }
 
-void Read::_run_queued() {
+void Read::load_read(int err, const StaticBuffer::Ptr& buffer) {
+  if(!err) {
+    if(!Core::checksum_i32_chk(header.checksum_data, 
+                               buffer->base, header.size_enc)) {
+      err = Error::CHECKSUM_MISMATCH;
+
+    } else if(buffer->size != header.size_enc) {
+      err = Error::FS_EOF;
+
+    } else {
+      if(header.encoder != DB::Types::Encoder::PLAIN) {
+        StaticBuffer decoded_buf((size_t)header.size_plain);
+        Core::Encoder::decode(
+          err, header.encoder,
+          buffer->base, header.size_enc,
+          decoded_buf.base, header.size_plain
+        );
+        if(!err)
+          m_buffer.set(decoded_buf);
+      } else {
+        m_buffer.set(*buffer.get());
+      }
+    }
+  }
+
+  err ? load_open(err) : load_finish(Error::OK);
+}
+
+void Read::load_finish(int err) {
+  if(err)
+    SWC_LOG_OUT(LOG_ERROR,
+      Error::print(SWC_LOG_OSTREAM << "CellStore::Block load ", err);
+      cellstore->smartfd->print(SWC_LOG_OSTREAM << ' ');
+      print(SWC_LOG_OSTREAM << ' ');
+    );
+
+  Env::Rgr::post([this](){ cellstore->_run_queued(); });
+
+  {
+    Core::MutexSptd::scope lock(m_mutex);
+    if((m_err = err) == Error::FS_PATH_NOT_FOUND) {
+      m_err = Error::OK;
+      m_buffer.free();
+      Env::Rgr::res().less_mem_usage(header.size_plain);
+    }
+    if(m_err) {
+      m_state = State::NONE;
+      m_buffer.free();
+      Env::Rgr::res().less_mem_usage(header.size_plain);
+    } else {
+      m_state = State::LOADED;
+    }
+  }
+
   for(BlockLoader* loader;;) {
     {
       Core::MutexSptd::scope lock(m_mutex);
@@ -287,6 +315,8 @@ void Read::_run_queued() {
     loader->loaded_blk();
   }
 }
+
+
 
 
 

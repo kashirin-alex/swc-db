@@ -13,9 +13,6 @@ typedef Fragments*  FragmentsPtr;
 }}}
 
 #include "swcdb/ranger/db/RangeBlockLoader.h"
-
-#include "swcdb/ranger/db/CellStoreReaders.h"
-#include "swcdb/ranger/db/CommitLog.h"
 #include "swcdb/ranger/db/RangeData.h"
 
 namespace SWC { namespace Ranger { 

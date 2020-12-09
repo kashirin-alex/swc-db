@@ -7,9 +7,11 @@
 #ifndef swcdb_ranger_db_BlockLoader_h
 #define swcdb_ranger_db_BlockLoader_h
 
+
 #include "swcdb/ranger/db/RangeBlock.h"
-#include "swcdb/ranger/db/CellStoreBlock.h"
-#include "swcdb/ranger/db/CommitLogFragment.h"
+#include "swcdb/ranger/db/CellStoreReaders.h"
+#include "swcdb/ranger/db/CommitLog.h"
+
 
 namespace SWC { namespace Ranger { 
 

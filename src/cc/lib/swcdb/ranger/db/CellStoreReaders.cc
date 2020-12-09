@@ -51,7 +51,7 @@ size_t Readers::size_bytes(bool only_loaded) const {
 
 SWC_SHOULD_INLINE
 uint32_t Readers::get_cell_revs() const {
-  return front()->blocks.front()->cell_revs;
+  return front()->cell_revs;
 }
 
 int64_t Readers::get_ts_earliest() const {

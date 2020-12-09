@@ -18,10 +18,11 @@ Read::Ptr Read::make(int& err, const csid_t csid,
   DB::Cell::Key key_end;
   DB::Cells::Interval interval_by_blks(range->cfg->key_seq);
   std::vector<Block::Read::Ptr> blocks;
+  uint32_t cell_revs = 0;
   try {
     load_blocks_index(
       err, smartfd, prev_key_end, key_end, interval_by_blks, 
-      blocks, chk_base);
+      blocks, cell_revs, chk_base);
   } catch(...) {
     const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
     SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
@@ -40,7 +41,8 @@ Read::Ptr Read::make(int& err, const csid_t csid,
     prev_key_end,
     key_end,
     interval_by_blks.was_set ? interval_by_blks : interval, 
-    blocks, 
+    blocks,
+    cell_revs,
     smartfd
   );
 }
@@ -116,8 +118,8 @@ void Read::load_blocks_index(int& err, FS::SmartFd::Ptr& smartfd,
                               DB::Cell::Key& key_end,
                               DB::Cells::Interval& interval, 
                               std::vector<Block::Read::Ptr>& blocks, 
+                              uint32_t& cell_revs,
                               bool chk_base) {
-  uint32_t cell_revs = 0;
   uint32_t blks_idx_count = 0;
   uint64_t offset_fixed = 0;
   uint64_t offset;
@@ -230,7 +232,7 @@ void Read::load_blocks_index(int& err, FS::SmartFd::Ptr& smartfd,
         if(header.is_any & Block::Header::ANY_END)
           header.interval.key_end.free();
         interval.expand(header.interval);
-        blocks.push_back(new Block::Read(cell_revs, header));
+        blocks.push_back(new Block::Read(header));
       }
 
     }
@@ -250,16 +252,20 @@ void Read::load_blocks_index(int& err, FS::SmartFd::Ptr& smartfd,
 Read::Read(const csid_t csid,
            const DB::Cell::Key& prev_key_end,
            const DB::Cell::Key& key_end,
-           const DB::Cells::Interval& interval, 
+           const DB::Cells::Interval& interval,
            const std::vector<Block::Read::Ptr>& blocks,
-           const FS::SmartFd::Ptr& smartfd) 
-          : csid(csid), 
-            prev_key_end(prev_key_end), 
+           const uint32_t cell_revs,
+           const FS::SmartFd::Ptr& smartfd)
+          : csid(csid),
+            prev_key_end(prev_key_end),
             key_end(key_end),
-            interval(interval), 
-            blocks(blocks), 
-            m_smartfd(smartfd), m_q_running(false) {       
+            interval(interval),
+            blocks(blocks),
+            cell_revs(cell_revs),
+            smartfd(smartfd), m_q_running(false) {
   Env::Rgr::res().more_mem_usage(size_of());
+  for(auto blk : blocks)
+    blk->init(this);
 }
 
 Read::~Read() {
@@ -273,12 +279,12 @@ size_t Read::size_of() const {
         + prev_key_end.size 
         + interval.size_of_internal() 
         + blocks.size() * sizeof(Block::Read::Ptr)
-        + sizeof(*m_smartfd.get())
+        + sizeof(*smartfd.get())
       ;
 }
 
 const std::string& Read::filepath() const {
-  return m_smartfd->filepath();
+  return smartfd->filepath();
 }
 
 void Read::load_cells(BlockLoader* loader) {
@@ -287,10 +293,11 @@ void Read::load_cells(BlockLoader* loader) {
       loader->add(blk);
       if(blk->load(loader)) {
         Core::MutexSptd::scope lock(m_mutex);
-        m_queue.emplace(loader, blk);
-        if(!m_q_running) {
+        if(m_q_running) {
+          m_queue.push(blk);
+        } else {
           m_q_running = true;
-          Env::Rgr::post([this]() { _run_queued(); } );
+          blk->load();
         }
       }
     } else if(!blk->header.interval.key_end.empty() && 
@@ -300,18 +307,17 @@ void Read::load_cells(BlockLoader* loader) {
 }
 
 void Read::_run_queued() {
-  for(CsQueue q;;) {
-    {
-      Core::MutexSptd::scope lock(m_mutex);
-      if(m_queue.empty()) {
-        m_q_running = false;
-        return _release_fd();
-      }
-      q = m_queue.front();
-      m_queue.pop();
+  Block::Read::Ptr blk;
+  {
+    Core::MutexSptd::scope lock(m_mutex);
+    if(m_queue.empty()) {
+      m_q_running = false;
+      return _release_fd();
     }
-    q.block->load(m_smartfd, q.loader);
+    blk = m_queue.front();
+    m_queue.pop();
   }
+  blk->load();
 }
 
 void Read::get_blocks(int&, std::vector<Block::Read::Ptr>& to) const {
@@ -335,7 +341,7 @@ size_t Read::release(size_t bytes) {
 }
 
 void Read::_release_fd() { 
-  if(m_smartfd->valid() && Env::FsInterface::interface()->need_fds()) {
+  if(smartfd->valid() && Env::FsInterface::interface()->need_fds()) {
     int err = Error::OK;
     close(err); 
   }
@@ -343,12 +349,12 @@ void Read::_release_fd() {
 
 SWC_SHOULD_INLINE
 void Read::close(int &err) {
-  Env::FsInterface::interface()->close(err, m_smartfd); 
+  Env::FsInterface::interface()->close(err, smartfd); 
 }
 
 SWC_SHOULD_INLINE
 void Read::remove(int &err) {
-  Env::FsInterface::interface()->remove(err, m_smartfd->filepath());
+  Env::FsInterface::interface()->remove(err, smartfd->filepath());
 } 
 
 bool Read::processing() const {
@@ -393,7 +399,7 @@ void Read::print(std::ostream& out, bool minimal) const {
       << " prev=" << prev_key_end
       << " end=" << key_end
       << ' ' << interval
-      << " file=" << m_smartfd->filepath()
+      << " file=" << smartfd->filepath()
       << " blocks=" << blocks_count();
   if(!minimal) {
     out << " blocks=[";

@@ -42,22 +42,23 @@ class Read final {
   public:
   typedef Read*  Ptr;
 
-  inline static Ptr make(int& err, const csid_t csid, 
-                         const RangePtr& range, 
-                         const DB::Cells::Interval& interval, 
+  inline static Ptr make(int& err, const csid_t csid,
+                         const RangePtr& range,
+                         const DB::Cells::Interval& interval,
                          bool chk_base=false);
 
-  static bool load_trailer(int& err, FS::SmartFd::Ptr& smartfd, 
-                           uint32_t& cell_revs, 
-                           uint32_t& blks_idx_count, 
-                           uint64_t& blks_idx_offset, 
+  static bool load_trailer(int& err, FS::SmartFd::Ptr& smartfd,
+                           uint32_t& cell_revs,
+                           uint32_t& blks_idx_count,
+                           uint64_t& blks_idx_offset,
                            bool close_after=false, bool chk_base=false);
 
-  static void load_blocks_index(int& err, FS::SmartFd::Ptr& smartfd, 
+  static void load_blocks_index(int& err, FS::SmartFd::Ptr& smartfd,
                                 DB::Cell::Key& prev_key_end,
                                 DB::Cell::Key& key_end,
-                                DB::Cells::Interval& interval, 
-                                std::vector<Block::Read::Ptr>& blocks, 
+                                DB::Cells::Interval& interval,
+                                std::vector<Block::Read::Ptr>& blocks,
+                                uint32_t& cell_revs,
                                 bool chk_base=false);
 
   // 
@@ -67,12 +68,15 @@ class Read final {
   const DB::Cell::Key                 key_end;
   const DB::Cells::Interval           interval;
   const std::vector<Block::Read::Ptr> blocks;
+  const uint32_t                      cell_revs;
+  FS::SmartFd::Ptr                    smartfd;
 
   explicit Read(const csid_t csid,
                 const DB::Cell::Key& prev_key_end,
                 const DB::Cell::Key& key_end,
                 const DB::Cells::Interval& interval, 
                 const std::vector<Block::Read::Ptr>& blocks,
+                const uint32_t cell_revs,
                 const FS::SmartFd::Ptr& smartfd);
 
   Read(const Read&) = delete;
@@ -88,6 +92,8 @@ class Read final {
   const std::string& filepath() const;
 
   void load_cells(BlockLoader* loader);
+
+  void _run_queued();
 
   void get_blocks(int& err, std::vector<Block::Read::Ptr>& to) const;
 
@@ -109,22 +115,11 @@ class Read final {
 
   private:
 
-  void _run_queued();
-
   void _release_fd();
 
   mutable Core::MutexSptd       m_mutex;
-  FS::SmartFd::Ptr              m_smartfd;
   bool                          m_q_running;
-
-  struct CsQueue {
-    CsQueue() { }
-    CsQueue(BlockLoader* loader, Block::Read* block)
-            : loader(loader), block(block) { }
-    BlockLoader* loader;
-    Block::Read* block;
-  };
-  std::queue<CsQueue>           m_queue;
+  std::queue<Block::Read::Ptr>  m_queue;
 
 };
 

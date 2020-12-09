@@ -12,6 +12,9 @@
 
 namespace SWC { namespace Ranger { namespace CellStore {
 
+// Forward Declaration
+class Read;
+
 
 namespace Block {
 
@@ -34,20 +37,22 @@ class Read final {
 
   static std::string to_string(const State state);
   
-  static Ptr make(int& err, FS::SmartFd::Ptr& smartfd, 
-                  const DB::Cells::Interval& interval, const uint64_t offset,
-                  const uint32_t cell_revs);
+  /*
+  static Ptr make(int& err, CellStore::Read* cellstore,
+                  const DB::Cells::Interval& interval,
+                  const uint64_t offset);
+  */
 
   static void load_header(int& err, FS::SmartFd::Ptr& smartfd, 
                           Header& header);
 
+  const Header         header;
+  CellStore::Read*     cellstore;
 
-  const uint32_t             cell_revs;
+  explicit Read(const Header& header);
 
-  const Header               header;
+  void init(CellStore::Read* cellstore);
 
-  explicit Read(const uint32_t cell_revs, const Header& header);
-  
   Read(const Read&) = delete;
 
   Read(const Read&&) = delete;
@@ -60,7 +65,7 @@ class Read final {
   
   bool load(BlockLoader* loader);
 
-  void load(FS::SmartFd::Ptr smartfd, BlockLoader* loader);
+  void load();
 
   void load_cells(int& err, Ranger::Block::Ptr cells_block);
 
@@ -84,9 +89,12 @@ class Read final {
   
   private:
   
-  void _load(int& err, FS::SmartFd::Ptr smartfd);
+  void load_open(int err);
 
-  void _run_queued();
+  void load_read(int err, const StaticBuffer::Ptr& buffer);
+
+  void load_finish(int err);
+
 
   Core::MutexSptd          m_mutex;
   State                    m_state;
