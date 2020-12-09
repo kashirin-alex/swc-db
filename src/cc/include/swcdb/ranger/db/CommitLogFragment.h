@@ -139,6 +139,8 @@ class Fragment final {
 
   void remove(int &err);
 
+  void remove(int &err, Core::Semaphore* sem);
+
   void print(std::ostream& out);
 
   private:

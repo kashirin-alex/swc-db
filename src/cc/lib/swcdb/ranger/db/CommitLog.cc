@@ -136,7 +136,7 @@ void Fragments::commit_new_fragment(bool finalize) {
       &m_sem
     );
 
-    m_sem.wait_until_under(5);
+    m_sem.wait_available();
   }
 
   if(finalize)
@@ -327,17 +327,20 @@ size_t Fragments::release(size_t bytes) {
 }
 
 void Fragments::remove(int &err, Fragments::Vec& fragments_old) {
+  Core::Semaphore sem(10);
   std::scoped_lock lock(m_mutex);
   for(auto frag : fragments_old) {
     auto it = std::find(begin(), end(), frag);
     if(it != end()) {
       erase(it);
-      frag->remove(err);
+      sem.acquire();
+      frag->remove(err, &sem);
       delete frag;
     } else {
       SWC_ASSERT(it != end());
     }
   }
+  sem.wait_all();
 }
 
 void Fragments::remove(int &err, Fragment::Ptr frag, bool remove_file) {

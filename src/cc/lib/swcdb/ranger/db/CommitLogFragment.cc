@@ -483,6 +483,20 @@ void Fragment::remove(int &err) {
   Env::FsInterface::interface()->remove(err, m_smartfd->filepath()); 
 }
 
+void Fragment::remove(int&, Core::Semaphore* sem) {
+  if(m_smartfd->valid()) {
+    Env::FsInterface::interface()->close(
+      [this, sem](int err, FS::SmartFd::Ptr) { remove(err=Error::OK, sem); },
+      m_smartfd
+    );
+  } else {
+    Env::FsInterface::interface()->remove(
+      [this, sem](int) { sem->release(); },
+      m_smartfd->filepath()
+    );
+  }
+}
+
 void Fragment::print(std::ostream& out) {
   out << "Fragment(version=" << (int)version
       << " count=" << cells_count
