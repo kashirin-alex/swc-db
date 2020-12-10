@@ -109,7 +109,7 @@ class FileSystemHadoop final : public FileSystem {
 
     private:
 
-    hdfs::FileHandle* m_file;
+    std::atomic<hdfs::FileHandle*> m_file;
   };
   
   SmartFdHadoop::Ptr get_fd(SmartFd::Ptr& smartfd);

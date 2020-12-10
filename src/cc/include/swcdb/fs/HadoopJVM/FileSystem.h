@@ -107,7 +107,7 @@ class FileSystemHadoopJVM final : public FileSystem {
 
     private:
 
-    hdfsFile m_file;
+    std::atomic<hdfsFile> m_file;
   };
 
   SmartFdHadoopJVM::Ptr get_fd(SmartFd::Ptr& smartfd);

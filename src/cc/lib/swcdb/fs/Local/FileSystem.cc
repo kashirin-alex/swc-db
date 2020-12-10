@@ -301,7 +301,7 @@ size_t FileSystemLocal::read(int& err, SmartFd::Ptr& smartfd,
   } else {
     if((ret = nread) != amount)
       err = Error::FS_EOF;
-    smartfd->pos(smartfd->pos()+nread);
+    smartfd->forward(nread);
     SWC_LOGF(LOG_DEBUG, "read(ed) %s amount=%lu eof=%d", 
               smartfd->to_string().c_str(), nread, err == Error::FS_EOF);
   }
@@ -359,7 +359,7 @@ size_t FileSystemLocal::append(int& err, SmartFd::Ptr& smartfd,
               errno, strerror(errno), smartfd->to_string().c_str());
     return nwritten;
   }
-  smartfd->pos(smartfd->pos()+nwritten);
+  smartfd->forward(nwritten);
     
   if(flags == Flags::FLUSH || flags == Flags::SYNC) {
     if(fsync(smartfd->fd())) {

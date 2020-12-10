@@ -526,7 +526,7 @@ size_t FileSystemCeph::read(int& err, SmartFd::Ptr& smartfd,
   } else {
     if((ret = nread) != amount)
       err = Error::FS_EOF;
-    smartfd->pos(smartfd->pos() + nread);
+    smartfd->forward(nread);
     SWC_LOGF(LOG_DEBUG, "read(ed) %s amount=%lu eof=%d", 
               smartfd->to_string().c_str(), ret, err == Error::FS_EOF);
   }
@@ -585,7 +585,7 @@ size_t FileSystemCeph::append(int& err, SmartFd::Ptr& smartfd,
               err, strerror(err), smartfd->to_string().c_str());
     return 0;
   }
-  smartfd->pos(smartfd->pos() + nwritten);
+  smartfd->forward(nwritten);
 
   if (flags == Flags::FLUSH)
     flush(err, smartfd);

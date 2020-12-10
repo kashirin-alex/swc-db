@@ -66,14 +66,12 @@ FileSystemHadoopJVM::SmartFdHadoopJVM::SmartFdHadoopJVM(
 
 FileSystemHadoopJVM::SmartFdHadoopJVM::~SmartFdHadoopJVM() { }
 
-hdfsFile FileSystemHadoopJVM::SmartFdHadoopJVM::file() const { 
-  Core::MutexAtomic::scope lock(m_mutex);
-  return m_file; 
+hdfsFile FileSystemHadoopJVM::SmartFdHadoopJVM::file() const {
+  return m_file;
 }
 
-void FileSystemHadoopJVM::SmartFdHadoopJVM::file(const hdfsFile& file) { 
-  Core::MutexAtomic::scope lock(m_mutex);
-  m_file = file; 
+void FileSystemHadoopJVM::SmartFdHadoopJVM::file(const hdfsFile& file) {
+  m_file = file;
 }
 
 
@@ -522,7 +520,7 @@ size_t FileSystemHadoopJVM::read(int& err, SmartFd::Ptr& smartfd,
     } else {
       if((ret = nread) != amount)
         err = Error::FS_EOF;
-      hadoop_fd->pos(hadoop_fd->pos() + nread);
+      hadoop_fd->forward(nread);
     }
   }
   SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG, 
@@ -582,7 +580,7 @@ size_t FileSystemHadoopJVM::append(int& err, SmartFd::Ptr& smartfd,
       nwritten = 0;
       need_reconnect(err = errno, fs);
     } else {
-      hadoop_fd->pos(smartfd->pos() + nwritten);
+      hadoop_fd->forward(nwritten);
 
       if(flags == Flags::FLUSH || flags == Flags::SYNC) {
         if(hdfsFlush(fs->srv, hadoop_fd->file()) == -1) {

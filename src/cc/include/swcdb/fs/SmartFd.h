@@ -54,11 +54,13 @@ struct SmartFd {
 
   int32_t fd() const;
 
+  bool valid() const;
+
   void pos(uint64_t pos);
   
   uint64_t pos() const;
 
-  bool valid() const;
+  void forward(uint64_t pos);
 
   std::string to_string() const;
 
@@ -67,13 +69,12 @@ struct SmartFd {
   protected:
 
   const std::string   m_filepath;
-  Core::MutexAtomic   m_mutex;
 
   private:
 
-  uint32_t            m_flags;
-  int32_t             m_fd;
-  uint64_t            m_pos;
+  std::atomic<uint32_t> m_flags;
+  std::atomic<int32_t>  m_fd;
+  std::atomic<uint64_t> m_pos;
 };
 
 }}
