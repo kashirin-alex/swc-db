@@ -131,6 +131,13 @@ class FileSystem : public std::enable_shared_from_this<FileSystem> {
   virtual void read(const Callback::ReadAllCb_t& cb, 
                     const std::string& name);
 
+  virtual void combi_pread(int& err, SmartFd::Ptr& smartfd,
+                           uint64_t offset, uint32_t amount,
+                           StaticBuffer* dst);
+  virtual void combi_pread(const Callback::CombiPreadCb_t& cb,
+                           SmartFd::Ptr& smartfd,
+                           uint64_t offset, uint32_t amount);
+
   virtual void create(int& err, SmartFd::Ptr& smartfd,
                       int32_t bufsz, uint8_t replication, int64_t blksz) = 0;
   virtual void create(const Callback::CreateCb_t& cb, SmartFd::Ptr& smartfd,

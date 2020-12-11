@@ -29,6 +29,9 @@ namespace Callback {
   typedef std::function<void(int, SmartFd::Ptr)>                    WriteCb_t;
   typedef std::function<void(int, const std::string&, 
                              StaticBuffer::Ptr)>                    ReadAllCb_t;
+  typedef std::function<void(int, SmartFd::Ptr, 
+                             StaticBuffer::Ptr)>                    CombiPreadCb_t;
+
   typedef std::function<void(int, SmartFd::Ptr)>                    CreateCb_t;
   typedef std::function<void(int, SmartFd::Ptr)>                    OpenCb_t;
   typedef std::function<void(int, SmartFd::Ptr, StaticBuffer::Ptr)> ReadCb_t;

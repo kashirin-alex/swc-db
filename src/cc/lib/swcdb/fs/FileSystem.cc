@@ -244,8 +244,8 @@ void FileSystem::read(int& err, const std::string& name,
   
   finish:
     int errtmp;
-    if(smartfd && smartfd->valid())
-      close(!err ? err : errtmp, smartfd);
+    if(smartfd->valid())
+      close(err ? errtmp : err, smartfd);
     
   if(err)
     SWC_LOGF(LOG_ERROR, "read-all failed: %d(%s), %s", 
@@ -258,6 +258,43 @@ void FileSystem::read(const Callback::ReadAllCb_t& cb,
   auto dst = std::make_shared<StaticBuffer>();
   read(err, name, dst.get());
   cb(err, name, dst);
+}
+
+void FileSystem::combi_pread(int& err, SmartFd::Ptr& smartfd,
+                             uint64_t offset, uint32_t amount,
+                             StaticBuffer* buffer) {
+  SWC_LOGF(LOG_DEBUG, "combi-pread %s offset=%lu amount=%u", 
+           smartfd->filepath().c_str(), offset, amount);
+
+  open(err, smartfd);
+  if(!smartfd->valid()) {
+    if(!err)
+      err = EBADR;
+  }
+  if(err)
+    goto finish;
+
+  buffer->free();
+  if(pread(err, smartfd, offset, buffer, amount) != amount)
+    err = Error::FS_EOF;
+  
+  finish:
+    int errtmp;
+    if(smartfd->valid())
+      close(err ? errtmp : err, smartfd);
+
+  if(err)
+    SWC_LOGF(LOG_ERROR, "combi-pread failed: %d(%s), %s", 
+              err, Error::get_text(err), smartfd->filepath().c_str());
+}
+
+void FileSystem::combi_pread(const Callback::CombiPreadCb_t& cb,
+                             SmartFd::Ptr& smartfd,
+                             uint64_t offset, uint32_t amount) {
+  int err = Error::OK;
+  auto dst = std::make_shared<StaticBuffer>();
+  combi_pread(err, smartfd, offset, amount, dst.get());
+  cb(err, smartfd, dst);
 }
 
 void FileSystem::create(const Callback::CreateCb_t& cb, SmartFd::Ptr& smartfd,

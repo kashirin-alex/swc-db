@@ -52,6 +52,7 @@ set(swcdb_fsBroker_sources
   Broker/Protocol/params/Seek.cc
   Broker/Protocol/params/Sync.cc
   Broker/Protocol/params/Write.cc
+  Broker/Protocol/params/CombiPread.cc
 
   Broker/Protocol/req/Base.cc
 )

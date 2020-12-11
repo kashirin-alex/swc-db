@@ -267,6 +267,21 @@ void Base::handle_pread(const Event::Ptr& ev, FS::SmartFd::Ptr& smartfd,
   );
 }
 
+void Base::handle_combi_pread(const Event::Ptr& ev, 
+                              const FS::SmartFd::Ptr& smartfd) {
+  const uint8_t *ptr;
+  size_t remain;
+
+  if(!is_rsp(ev, FUNCTION_COMBI_PREAD, &ptr, &remain))
+    return;
+  
+  SWC_LOG_OUT(LOG_DEBUG, 
+    SWC_LOG_PRINTF("combi-pread amount=%lu ", ev->data_ext.size);
+    Error::print(SWC_LOG_OSTREAM, error);
+    smartfd->print(SWC_LOG_OSTREAM << ' ');
+  );
+}
+
 void Base::handle_open(const FS::FileSystem::Ptr& fs, const Event::Ptr& ev, 
                        FS::SmartFd::Ptr& smartfd) {
   const uint8_t *ptr;
@@ -412,9 +427,22 @@ void Base::handle_close(const FS::FileSystem::Ptr& fs, const Event::Ptr& ev,
   if(!is_rsp(ev, FUNCTION_CLOSE, &ptr, &remain))
     return;
 
-  smartfd->fd(-1);
-  smartfd->pos(0);
-  fs->fd_open_decr();
+  switch(error) {
+    case Error::OK:
+    case EACCES:
+    case ENOENT:
+    case EBADR:
+    case EBADF:
+    case Error::FS_BAD_FILE_HANDLE:
+      if(smartfd->valid()) {
+        smartfd->fd(-1);
+        fs->fd_open_decr();
+      }
+      smartfd->pos(0);
+      break;
+    default:
+      break;
+  }
 
   SWC_LOG_OUT(LOG_DEBUG, 
     SWC_LOG_PRINTF("close fds-open=%lu ", fs->fds_open());

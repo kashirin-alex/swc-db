@@ -25,6 +25,7 @@
 #include "swcdb/fsbroker/handlers/Rename.h"
 #include "swcdb/fsbroker/handlers/Write.h"
 #include "swcdb/fsbroker/handlers/ReadAll.h"
+#include "swcdb/fsbroker/handlers/CombiPread.h"
 #include "swcdb/fsbroker/handlers/Create.h"
 #include "swcdb/fsbroker/handlers/Append.h"
 #include "swcdb/fsbroker/handlers/Open.h"
@@ -61,7 +62,8 @@ class AppContext final : public Comm::AppContext {
     &Comm::Protocol::FsBroker::Handler::rename,
     &Comm::Protocol::FsBroker::Handler::sync,
     &Comm::Protocol::FsBroker::Handler::write,
-    &Comm::Protocol::FsBroker::Handler::read_all
+    &Comm::Protocol::FsBroker::Handler::read_all,
+    &Comm::Protocol::FsBroker::Handler::combi_pread
 
     //&Comm::Protocol::FsBroker::Handler::debug,
     //&Comm::Protocol::FsBroker::Handler::status,
@@ -108,7 +110,7 @@ class AppContext final : public Comm::AppContext {
   virtual ~AppContext(){}
 
   void handle(Comm::ConnHandlerPtr conn, const Comm::Event::Ptr& ev) override {
-    //SWC_LOGF(LOG_DEBUG, "handle: %s", ev->to_str().c_str());
+    SWC_LOG_OUT(LOG_DEBUG, ev->print(SWC_LOG_OSTREAM << "handle: "); );
 
     switch (ev->type) {
 

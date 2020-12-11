@@ -57,6 +57,9 @@ class Base : public DispatchHandler {
 
   void handle_read_all(const Event::Ptr& ev, const std::string& name);
   
+  void handle_combi_pread(const Event::Ptr& ev, 
+                          const FS::SmartFd::Ptr& smartfd);
+
   void handle_pread(const Event::Ptr& ev, FS::SmartFd::Ptr& smartfd, 
                     size_t& amount);
 

@@ -97,6 +97,14 @@ class FileSystemBroker final : public FileSystem {
   void read(const Callback::ReadAllCb_t& cb, 
             const std::string& name) override;
 
+  void combi_pread(int& err, SmartFd::Ptr& smartfd,
+                   uint64_t offset, uint32_t amount,
+                   StaticBuffer* dst) override;
+
+  void combi_pread(const Callback::CombiPreadCb_t& cb,
+                   SmartFd::Ptr& smartfd,
+                   uint64_t offset, uint32_t amount) override;
+
   void create(int& err, SmartFd::Ptr& smartfd,
               int32_t bufsz, uint8_t replication, int64_t blksz) override;
 

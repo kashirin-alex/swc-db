@@ -28,6 +28,8 @@
 #include "swcdb/fs/Broker/Protocol/req/WriteSync.h"
 #include "swcdb/fs/Broker/Protocol/req/ReadAll.h"
 #include "swcdb/fs/Broker/Protocol/req/ReadAllSync.h"
+#include "swcdb/fs/Broker/Protocol/req/CombiPread.h"
+#include "swcdb/fs/Broker/Protocol/req/CombiPreadSync.h"
 #include "swcdb/fs/Broker/Protocol/req/Create.h"
 #include "swcdb/fs/Broker/Protocol/req/CreateSync.h"
 #include "swcdb/fs/Broker/Protocol/req/Append.h"
@@ -374,6 +376,32 @@ void FileSystemBroker::read(const Callback::ReadAllCb_t& cb,
 
   auto hdlr = std::make_shared<Comm::Protocol::FsBroker::Req::ReadAll>(
     cfg_timeout->get(), name, cb);
+  while(!send_request(hdlr));
+}
+
+void FileSystemBroker::combi_pread(int& err, SmartFd::Ptr& smartfd, 
+                                   uint64_t offset, uint32_t amount, 
+                                   StaticBuffer* dst) {
+  uint32_t timeout = cfg_timeout->get() + amount/cfg_timeout_ratio->get();
+  SWC_LOGF(LOG_DEBUG, "combi-pread timeout=%d %s offset=%lu amount=%u ", 
+           timeout, smartfd->filepath().c_str(), offset, amount);
+
+  auto hdlr = std::make_shared<Comm::Protocol::FsBroker::Req::CombiPreadSync>(
+    timeout, smartfd, offset, amount, dst);
+  while(!send_request(hdlr));
+  hdlr->wait();
+  err = hdlr->error;
+}
+
+void FileSystemBroker::combi_pread(const Callback::CombiPreadCb_t& cb, 
+                                   SmartFd::Ptr& smartfd, 
+                                   uint64_t offset, uint32_t amount) {
+  uint32_t timeout = cfg_timeout->get() + amount/cfg_timeout_ratio->get();
+  SWC_LOGF(LOG_DEBUG, "combi-pread timeout=%d %s offset=%lu amount=%u ", 
+           timeout, smartfd->filepath().c_str(), offset, amount);
+
+  auto hdlr = std::make_shared<Comm::Protocol::FsBroker::Req::CombiPread>(
+    timeout, smartfd, offset, amount, cb);
   while(!send_request(hdlr));
 }
 
