@@ -30,7 +30,7 @@ class Compact final {
 
     ~Group();
 
-    void run();
+    void run(bool initial);
 
     void finalize();
 
@@ -44,7 +44,9 @@ class Compact final {
     
     std::atomic<int>                  error;
     Compact*                          compact;
-    Core::Semaphore                   m_sem;
+    std::atomic<ssize_t>              m_idx;
+    std::atomic<ssize_t>              m_running;
+    std::atomic<ssize_t>              m_finishing;
     Core::MutexSptd                   m_mutex;
     DB::Cells::MutableVec             m_cells;
     Fragments::Vec                    m_remove;
@@ -76,10 +78,11 @@ class Compact final {
 
   void finished(Group* group, size_t cells_count);
 
+  void finalized();
+
   const std::string get_filepath(const int64_t frag) const;
 
-  Core::MutexAtomic     m_mutex;
-  uint8_t               m_workers;
+  std::atomic<size_t>   m_workers;
   std::vector<Group*>   m_groups;
   Cb_t                  m_cb;
 

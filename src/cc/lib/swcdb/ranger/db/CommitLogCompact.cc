@@ -10,7 +10,7 @@ namespace SWC { namespace Ranger { namespace CommitLog {
 Compact::Group::Group(Compact* compact, uint8_t worker) 
                       : ts(Time::now_ns()), worker(worker), error(Error::OK), 
                         compact(compact),
-                        m_sem(4),
+                        m_idx(0), m_running(0), m_finishing(0),
                         m_cells(
                           compact->log->range->cfg->key_seq,
                           compact->log->range->cfg->block_cells() * 2,
@@ -25,28 +25,37 @@ Compact::Group::~Group() {
     Env::Rgr::res().less_mem_usage(m_cells.size_of_internal());
 }
 
-void Compact::Group::run() {
-  Env::Rgr::post([this]() { load(); });
-}
+void Compact::Group::run(bool initial) {
+  size_t running;
+  if(initial) {
+    running = 3;
+    m_finishing = read_frags.size() + 1;
+  } else {
+    running = m_running.fetch_sub(1, std::memory_order_relaxed);
+  }
 
-void Compact::Group::load() {
-  for(auto frag : read_frags) {
-    if(error || compact->log->stopping)
+  if(running == 3) do {
+    size_t idx = m_idx.fetch_add(1, std::memory_order_relaxed);
+    if(idx >= read_frags.size())
       break;
-    m_sem.acquire();
-    frag->load([this] (Fragment::Ptr frag) {
+    if(error || compact->log->stopping) {
+      m_finishing -= read_frags.size() - idx;
+      break;
+    }
+    running = m_running.fetch_add(1, std::memory_order_relaxed);
+    read_frags[idx]->load([this] (Fragment::Ptr frag) {
       Env::Rgr::post([this, frag]() { loaded(frag); });
     });
-  }
-  m_sem.wait_all();
-  write();
+  } while(running < 2);
+
+  if(m_finishing.fetch_sub(1, std::memory_order_relaxed) == 1)
+    write();
 }
 
 void Compact::Group::loaded(Fragment::Ptr frag) {
   if(compact->log->stopping || error) {
     frag->processing_decrement();
-    m_sem.release();
-    return;
+    return run(false);
   }
 
   int err;
@@ -74,10 +83,11 @@ void Compact::Group::loaded(Fragment::Ptr frag) {
   }
   Env::Rgr::res().adj_mem_usage(adj_sz);
   frag->release();
-  m_sem.release();
+  run(false);
 }
 
 void Compact::Group::write() {
+  Core::Semaphore sem(5);
   size_t total_cells_count = 0;
   int err;
   ssize_t sz;
@@ -114,18 +124,18 @@ void Compact::Group::write() {
     m_fragments.push_back(frag);
 
     buff_write->own = false;
-    m_sem.acquire();
+    sem.acquire();
     frag->write(
       Error::UNPOSSIBLE, 
       compact->log->range->cfg->file_replication(), 
       frag->offset_data + frag->size_enc, 
       buff_write,
-      &m_sem
+      &sem
     );
   } while(!error && !m_cells.empty());
 
   finished_write:
-    m_sem.wait_all();
+    sem.wait_all();
     compact->finished(this, total_cells_count);
 }
 
@@ -161,6 +171,8 @@ void Compact::Group::finalize() {
   } else {
     compact->log->remove(err, m_remove);
   }
+
+  compact->finalized();
 }
 
 
@@ -205,27 +217,30 @@ Compact::Compact(Fragments* log, int repetition,
     return;
   }
 
-  m_workers = m_groups.size();
-  
   SWC_LOGF(LOG_INFO, 
     "COMPACT-LOG-START %lu/%lu w=%lu frags=%lu(%lu)/%lu repetition=%d",
     log->range->cfg->cid, log->range->rid, 
     m_groups.size(), nfrags, ngroups, log->size(), repetition
   );
 
+  m_workers = m_groups.size();
+
+  std::sort(m_groups.begin(), m_groups.end(), 
+    [](const Group* p1, const Group* p2) {
+      return p1->read_frags.size() >= p2->read_frags.size(); });
+
   for(auto g : m_groups)
-    g->run();
+    g->run(true);
 }
 
 Compact::~Compact() { }
 
 void Compact::finished(Group* group, size_t cells_count) {
-  m_mutex.lock();
-  uint8_t running = --m_workers;
-  m_mutex.unlock();
+  size_t running = m_workers.fetch_sub(1, std::memory_order_relaxed);
+  --running;
 
   SWC_LOGF(LOG_INFO,
-    "COMPACT-LOG-PROGRESS %lu/%lu running=%d "
+    "COMPACT-LOG-PROGRESS %lu/%lu running=%lu "
     "worker=%u %ldus cells=%lu(%ldns)",
     log->range->cfg->cid, log->range->rid, running, 
     group->worker, (Time::now_ns() - group->ts)/1000,
@@ -240,15 +255,17 @@ void Compact::finished(Group* group, size_t cells_count) {
   log->range->compacting(Range::COMPACT_APPLYING);
   log->range->blocks.wait_processing(); // sync processing state
   
-  Core::Semaphore sem(m_groups.size(), m_groups.size());
-  for(auto g : m_groups) {
-    Env::Rgr::post([g, &sem]() { 
-      g->finalize();
-      delete g;
-      sem.release();
-    });
-  }
-  sem.wait_all();
+  m_workers = m_groups.size();
+  for(auto g : m_groups)
+    Env::Rgr::post([g]() { g->finalize(); });
+}
+
+void Compact::finalized() {
+  if(m_workers.fetch_sub(1, std::memory_order_relaxed) > 1)
+    return;
+
+  for(auto g : m_groups)
+    delete g;
 
   auto took = Time::now_ns() - ts;
   SWC_LOGF(LOG_INFO, 
