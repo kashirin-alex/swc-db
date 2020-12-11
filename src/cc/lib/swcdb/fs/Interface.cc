@@ -485,6 +485,8 @@ void Interface::close(const Callback::CloseCb_t& cb,
         case Error::SERVER_SHUTTING_DOWN:
           return cb(err, smartfd);
         default: {
+          if(!smartfd->valid())
+            return cb(EBADR, smartfd);
           hold_delay();
           SWC_LOGF(LOG_WARN, "close, retrying to err=%d(%s) file(%s)",
                    err, Error::get_text(err), smartfd->filepath().c_str());
