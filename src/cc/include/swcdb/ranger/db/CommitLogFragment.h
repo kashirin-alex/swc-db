@@ -145,8 +145,6 @@ class Fragment final {
 
   private:
 
-  void load_open(int err);
-
   void load_read(int err, const StaticBuffer::Ptr& buffer);
 
   void load_finish(int err);

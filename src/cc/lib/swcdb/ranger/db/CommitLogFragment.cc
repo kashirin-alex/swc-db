@@ -310,7 +310,14 @@ void Fragment::load(const std::function<void(Fragment::Ptr)>& cb) {
     cb(this);
   } else {
     Env::Rgr::res().more_mem_usage(size_plain);
-    Env::Rgr::post([this](){ load_open(Error::OK); } );
+    Env::Rgr::post([this](){
+      Env::FsInterface::fs()->combi_pread(
+        [this](int err, FS::SmartFd::Ptr, const StaticBuffer::Ptr& buffer) {
+          Env::Rgr::post([this, err, buffer](){ load_read(err, buffer); } );
+        }, 
+        m_smartfd, offset_data, size_enc
+      );
+    });
   }
 }
 
@@ -515,7 +522,7 @@ void Fragment::print(std::ostream& out) {
   out << ' ' << interval << ')';
 }
 
-void Fragment::load_open(int err) {
+void Fragment::load_read(int err, const StaticBuffer::Ptr& buffer) {
   switch(err) {
     case Error::FS_PATH_NOT_FOUND:
     case Error::SERVER_SHUTTING_DOWN:
@@ -527,31 +534,16 @@ void Fragment::load_open(int err) {
         Error::print(SWC_LOG_OSTREAM << "Retrying to ", err);
         print(SWC_LOG_OSTREAM << ' ');
       );
-      if(m_smartfd->valid()) {
-        Env::FsInterface::interface()->close(
-          [this](int, FS::SmartFd::Ptr) { load_open(Error::OK); },
-          m_smartfd
-        );
-        return;
-      }
-      //std::this_thread::sleep_for(std::chrono::microseconds(10000));
-    }
-  }
-
-  m_smartfd->valid()
-    ? Env::FsInterface::fs()->pread(
+      Env::FsInterface::fs()->combi_pread(
         [this](int err, FS::SmartFd::Ptr, const StaticBuffer::Ptr& buffer) {
           Env::Rgr::post([this, err, buffer](){ load_read(err, buffer); } );
         }, 
         m_smartfd, offset_data, size_enc
-      )
-    : Env::FsInterface::fs()->open(
-        [this](int err, FS::SmartFd::Ptr) { load_open(err); },
-        m_smartfd
       );
-}
-
-void Fragment::load_read(int err, const StaticBuffer::Ptr& buffer) {
+      //std::this_thread::sleep_for(std::chrono::microseconds(10000));
+      return;
+    }
+  }
   if(!err) {
     if(!Core::checksum_i32_chk(data_checksum, buffer->base, size_enc)) {
       err = Error::CHECKSUM_MISMATCH;
@@ -571,14 +563,8 @@ void Fragment::load_read(int err, const StaticBuffer::Ptr& buffer) {
       }
     }
   }
-  err
-    ? load_open(err)
-    : Env::FsInterface::interface()->close(
-        [this](int, FS::SmartFd::Ptr) {
-          Env::Rgr::post([this](){ load_finish(Error::OK); } );
-        },
-        m_smartfd
-      );
+
+  err ? load_read(err, nullptr) : load_finish(err);
 }
 
 void Fragment::load_finish(int err) {
