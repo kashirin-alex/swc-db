@@ -21,6 +21,7 @@ Range::Range(const ColumnCfg::Ptr& cfg, const rid_t rid)
               m_interval(cfg->key_seq),
               m_state(State::NOTLOADED), 
               m_compacting(COMPACT_NONE), m_require_compact(false),
+              m_q_run_add(false), m_q_run_scan(false), 
               m_inbytes(0) {
   Env::Rgr::in_process(1);
   Env::Rgr::res().more_mem_usage(size_of());
@@ -146,20 +147,30 @@ void Range::state(int& err) const {
 }
 
 void Range::add(Range::ReqAdd* req) {
-  if(m_q_adding.push_and_is_1st(req))
+  if(m_q_add.push_and_is_1st(req))
     Env::Rgr::post([ptr=shared_from_this()](){ ptr->run_add_queue(); } );
 }
 
 void Range::scan(const ReqScan::Ptr& req) {
-  if(compacting_is(COMPACT_APPLYING, true)) {
-    if(!m_q_scans.push_and_is_1st(req))
+  {
+    std::scoped_lock lock(m_mutex);
+    if(m_compacting == COMPACT_APPLYING) {
+      m_q_run_scan = true;
+      if(req)
+        m_q_scan.push_and_is_1st(req);
       return;
-    wait(COMPACT_APPLYING, true);
+    }
+    blocks.processing_increment();
+ }
 
+ if(req) {
+  blocks.scan(std::move(req));
+
+ } else {
     int err;
     ReqScan::Ptr qreq;
     do {
-      if(!(qreq = std::move(m_q_scans.front()))->expired()) {
+      if(!(qreq = std::move(m_q_scan.front()))->expired()) {
         state(err = Error::OK);
         if(err) {
           qreq->response(err);
@@ -173,10 +184,7 @@ void Range::scan(const ReqScan::Ptr& req) {
           );
         }
       }
-    } while(m_q_scans.pop_and_more());
-
-  } else {
-    blocks.scan(std::move(req));
+    } while(m_q_scan.pop_and_more());
   }
   blocks.processing_decrement();
 }
@@ -307,7 +315,7 @@ void Range::internal_remove(int& err) {
 }
 
 void Range::wait_queue() {
-  while(!m_q_adding.empty() || !m_q_scans.empty())
+  while(!m_q_add.empty() || !m_q_scan.empty())
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
 }
 
@@ -316,29 +324,47 @@ bool Range::compacting() {
   return m_compacting != COMPACT_NONE;
 }
 
-bool Range::compacting_is(uint8_t state, bool incr) {
-  std::shared_lock lock(m_mutex);
-  if(m_compacting == state)
-    return true;
-  if(incr)
-    blocks.processing_increment();
-  return false;
-}
-
 void Range::compacting(uint8_t state) {
-  std::scoped_lock lock(m_mutex);
-  m_compacting = state;
-  m_cv.notify_all();
+  bool do_q_run_add;
+  bool do_q_run_scan;
+  {
+    std::scoped_lock lock(m_mutex);
+    m_compacting = state;
+    m_cv.notify_all();
+    if(m_compacting == COMPACT_APPLYING) 
+      return;
+
+    if((do_q_run_add = m_q_run_add && state < COMPACT_PREPARING))
+      m_q_run_add = false;
+    if((do_q_run_scan = m_q_run_scan))
+      m_q_run_scan = false;
+  }
+  if(do_q_run_add)
+    Env::Rgr::post([ptr=shared_from_this()](){ ptr->run_add_queue(); });
+  if(do_q_run_scan)
+    Env::Rgr::post([ptr=shared_from_this()](){ ptr->scan(nullptr); });
 }
 
 bool Range::compacting_ifnot_applying(uint8_t state) {
-  std::scoped_lock lock(m_mutex);
-  if(m_compacting != COMPACT_APPLYING) {
+  bool do_q_run_add;
+  bool do_q_run_scan;
+  {
+    std::scoped_lock lock(m_mutex);
+    if(m_compacting == COMPACT_APPLYING) 
+      return false;
     m_compacting = state;
     m_cv.notify_all();
-    return true;
+
+    if((do_q_run_add = m_q_run_add && state < COMPACT_PREPARING))
+      m_q_run_add = false;
+    if((do_q_run_scan = m_q_run_scan))
+      m_q_run_scan = false;
   }
-  return false;
+  if(do_q_run_add)
+    Env::Rgr::post([ptr=shared_from_this()](){ ptr->run_add_queue(); });
+  if(do_q_run_scan)
+    Env::Rgr::post([ptr=shared_from_this()](){ ptr->scan(nullptr); });
+  return true;
 }
 
 bool Range::compact_possible(bool minor) {
@@ -789,8 +815,8 @@ bool Range::wait(uint8_t from_state, bool incr) {
   if((waited = (m_compacting >= from_state))) {
     m_cv.wait(
       lock_wait, 
-      [from_state, &compacting=m_compacting]() {
-        return compacting < from_state;
+      [this, from_state]() {
+        return m_compacting < from_state;
       }
     );
   }
@@ -809,9 +835,16 @@ void Range::run_add_queue() {
   uint64_t ttl = cfg->cell_ttl();
 
   do {
-    wait(COMPACT_PREPARING, true);
+    {
+      std::scoped_lock lock(m_mutex);
+      if(m_compacting >= COMPACT_PREPARING) {
+        m_q_run_add = true;
+        return;
+      }
+      blocks.processing_increment();
+    }
   
-    req = m_q_adding.front();
+    req = m_q_add.front();
     ptr = req->input.base;
     m_inbytes += remain = req->input.size;
     intval_chg = false;
@@ -908,7 +941,7 @@ void Range::run_add_queue() {
           req->cb->response(*params);
           delete params;
           delete req;
-          if(range->m_q_adding.pop_and_more())
+          if(range->m_q_add.pop_and_more())
             range->run_add_queue();
         }
       );
@@ -917,7 +950,7 @@ void Range::run_add_queue() {
     delete params;
     delete req;
 
-  } while(m_q_adding.pop_and_more());
+  } while(m_q_add.pop_and_more());
     
 }
 

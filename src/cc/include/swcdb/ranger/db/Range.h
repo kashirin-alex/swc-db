@@ -135,8 +135,6 @@ class Range final : public std::enable_shared_from_this<Range> {
 
   bool compacting();
 
-  bool compacting_is(uint8_t state, bool incr=false);
-
   void compacting(uint8_t state);
   
   bool compacting_ifnot_applying(uint8_t state);
@@ -193,8 +191,11 @@ class Range final : public std::enable_shared_from_this<Range> {
   uint8_t                       m_compacting;
   bool                          m_require_compact;
 
-  Core::QueueSafe<ReqScan::Ptr> m_q_scans;
-  Core::QueueSafe<ReqAdd*>      m_q_adding;
+  bool                          m_q_run_add;
+  bool                          m_q_run_scan;
+
+  Core::QueueSafe<ReqAdd*>      m_q_add;
+  Core::QueueSafe<ReqScan::Ptr> m_q_scan;
 
   std::condition_variable_any   m_cv;
 
