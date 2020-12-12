@@ -18,7 +18,7 @@ namespace SWC { namespace Comm { namespace client {
 SWC_SHOULD_INLINE
 ServerConnections::ServerConnections(const std::string& srv_name, 
                                      const EndPoint& endpoint,
-                                     const IOCtxPtr& ioctx, 
+                                     const IoContextPtr& ioctx,
                                      const AppContext::Ptr& ctx,
                                      ConfigSSL* ssl_cfg)
                                     : m_srv_name(srv_name), 
@@ -48,7 +48,7 @@ void ServerConnections::connection(ConnHandlerPtr& conn,
     SWC_LOG_OSTREAM << "Connecting Sync: " << m_srv_name << ' '
       << m_endpoint << ' ' << (m_ssl_cfg ? "SECURE" : "PLAIN"); );
 
-  asio::ip::tcp::socket sock(*m_ioctx.get());
+  asio::ip::tcp::socket sock(m_ioctx->executor());
   asio::error_code ec;
   sock.open(m_endpoint.protocol(), ec);
   if(ec || !sock.is_open())
@@ -85,7 +85,7 @@ void ServerConnections::connection(const std::chrono::milliseconds&,
     SWC_LOG_OSTREAM << "Connecting Async: " << m_srv_name << ' '
       << m_endpoint << ' ' << (m_ssl_cfg ? "SECURE" : "PLAIN"); );
     
-  auto sock = std::make_shared<asio::ip::tcp::socket>(*m_ioctx.get());
+  auto sock = std::make_shared<asio::ip::tcp::socket>(m_ioctx->executor());
   sock->async_connect(
     m_endpoint, 
     [sock, cb, preserve, ptr=shared_from_this()]
@@ -135,7 +135,7 @@ void ServerConnections::close_all() {
 }
 
 
-Serialized::Serialized(const std::string& srv_name, const IOCtxPtr& ioctx, 
+Serialized::Serialized(const std::string& srv_name, const IoContextPtr& ioctx,
                        const AppContext::Ptr& ctx)
             : m_srv_name(srv_name), m_ioctx(ioctx), m_ctx(ctx),
               m_use_ssl(Env::Config::settings()->get_bool("swc.comm.ssl")),
@@ -288,9 +288,9 @@ void Serialized::close(ConnHandlerPtr& conn){
     erase(it);
 }
 
-IOCtxPtr Serialized::io() {
+IoContextPtr Serialized::io() {
   return m_ioctx; 
-}             
+}
   
 void Serialized::print(std::ostream& out, ConnHandlerPtr& conn) {
   conn->print(out << m_srv_name << ' ');

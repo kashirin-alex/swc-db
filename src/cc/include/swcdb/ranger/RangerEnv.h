@@ -64,11 +64,11 @@ class Rgr final {
     return m_env.get();
   }
 
-  static Comm::IoContext* maintenance_io() {
-    return m_env->mnt_io.get();
+  static Comm::IoContextPtr maintenance_io() {
+    return m_env->mnt_io;
   }
 
-  static Comm::IoContext::Ptr io() {
+  static Comm::IoContextPtr io() {
     return m_env->app_io;
   }
 
@@ -113,8 +113,8 @@ class Rgr final {
   const SWC::Config::Property::V_GINT32::Ptr      cfg_blk_cells;
   const SWC::Config::Property::V_GENUM::Ptr       cfg_blk_enc;
   
-  Comm::IoContext::Ptr        app_io;
-  Comm::IoContext::Ptr        mnt_io;
+  Comm::IoContextPtr          app_io;
+  Comm::IoContextPtr          mnt_io;
   Ranger::Compaction*         _compaction;
   Ranger::Columns*            _columns;
   client::Query::Update::Ptr  _updater;
@@ -186,7 +186,7 @@ Rgr::Rgr()
       _columns(new Ranger::Columns()),
       _updater(std::make_shared<client::Query::Update>()),  
       _resources(
-        app_io->ptr(),
+        app_io,
         SWC::Env::Config::settings()->get<SWC::Config::Property::V_GINT32>(
           "swc.rgr.ram.allowed.percent"),
         SWC::Env::Config::settings()->get<SWC::Config::Property::V_GINT32>(

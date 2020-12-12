@@ -159,7 +159,7 @@ class FileSystemBroker final : public FileSystem {
 
   private:
 
-  Comm::IoContext::Ptr          m_io;
+  Comm::IoContextPtr            m_io;
   Comm::client::Serialized::Ptr m_service = nullptr;
   Type                          m_type_underlying;
   const Comm::EndPoints         m_endpoints;

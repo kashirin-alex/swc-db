@@ -52,7 +52,7 @@ class AppContext final : public Comm::AppContext {
     Env::IoCtx::init(settings->get_i32("swc.rgr.clients.handlers"));
     Env::Clients::init(
       std::make_shared<client::Clients>(
-        Env::IoCtx::io()->shared(),
+        Env::IoCtx::io(),
         std::make_shared<client::ContextManager>(),
         std::make_shared<client::ContextRanger>()
       )
@@ -73,8 +73,12 @@ class AppContext final : public Comm::AppContext {
 
     auto app = std::make_shared<AppContext>();
     app->id_mngr = std::make_shared<Comm::Protocol::Mngr::Req::RgrMngId>(
-      Env::Rgr::io()->ptr(), 
-      [app]() { (new std::thread([app]{ app->stop(); }))->detach(); }
+      Env::Rgr::io(), 
+      [app]() {
+        std::shared_ptr<std::thread> d(new std::thread);
+        *d.get() = std::thread([d, app]{ app->stop(); });
+        d->detach();
+      }
     );
     return app;
   }
@@ -100,7 +104,7 @@ class AppContext final : public Comm::AppContext {
     m_srv = srv;
   }
 
-  virtual ~AppContext(){}
+  virtual ~AppContext() { }
 
 
   void handle(Comm::ConnHandlerPtr conn, const Comm::Event::Ptr& ev) override {
@@ -204,7 +208,7 @@ class AppContext final : public Comm::AppContext {
 
   void shutting_down(const std::error_code &ec, const int &sig) {
     if(!sig) { // set signals listener
-      Env::Rgr::io()->signals()->async_wait(
+      Env::Rgr::io()->signals->async_wait(
         [this](const std::error_code &ec, const int &sig) {
           SWC_LOGF(LOG_INFO, "Received signal, sig=%d ec=%s", 
                    sig, ec.message().c_str());
@@ -226,7 +230,7 @@ class AppContext final : public Comm::AppContext {
 
     Env::Rgr::shuttingdown();
 
-    m_srv->stop_accepting(); // no further requests accepted
+    m_guard = m_srv->stop_accepting(); // no further requests accepted
 
     id_mngr->request();
   }
@@ -244,14 +248,14 @@ class AppContext final : public Comm::AppContext {
 
     m_srv->shutdown();
 
-    SWC_LOG(LOG_INFO, "Exit");
-    std::quick_exit(0);
+    m_guard = nullptr;
   }
 
   private:
   
   Comm::Protocol::Mngr::Req::RgrMngId::Ptr  id_mngr = nullptr;
   Comm::server::SerializedServer::Ptr       m_srv = nullptr;
+  std::shared_ptr<Comm::IoContext::ExecutorWorkGuard> m_guard;
   
 };
 

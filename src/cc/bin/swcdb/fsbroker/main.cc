@@ -35,6 +35,9 @@ int run() {
   app_ctx->set_srv(srv);
   srv->run();
 
+  SWC_LOG(LOG_INFO, "Exit");
+  std::quick_exit(0);
+
   return 0);
   return 1;
 }

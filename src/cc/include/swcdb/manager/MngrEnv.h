@@ -23,7 +23,7 @@ class Mngr final {
     m_env = std::make_shared<Mngr>(endpoints);
   }
 
-  static Comm::IoContext::Ptr io() {
+  static Comm::IoContextPtr io() {
     return m_env->app_io;
   }
 
@@ -69,7 +69,7 @@ class Mngr final {
 
   ~Mngr() { }
 
-  Comm::IoContext::Ptr        app_io;
+  Comm::IoContextPtr                  app_io;
 
   private:
 

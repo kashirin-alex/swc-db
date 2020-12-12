@@ -143,7 +143,7 @@ DbClient::DbClient()
   //Env::IoCtx::init(settings->get_i32("swc.client.handlers"));
   Env::Clients::init(
     std::make_shared<client::Clients>(
-      nullptr, //Env::IoCtx::io()->shared(),
+      nullptr, // Env::IoCtx::io(),
       nullptr, // std::make_shared<client::ManagerContext>()
       nullptr  // std::make_shared<client::RangerContext>()
     )

@@ -8,13 +8,13 @@
 
 namespace SWC { namespace client {
 
-Comm::IOCtxPtr& default_io() {
+Comm::IoContextPtr default_io() {
   if(!Env::IoCtx::ok())
     Env::IoCtx::init(8);
-  return Env::IoCtx::io()->shared();
+  return Env::IoCtx::io();
 }
 
-Clients::Clients(Comm::IOCtxPtr ioctx,
+Clients::Clients(Comm::IoContextPtr ioctx,
                  const ContextManager::Ptr& mngr_ctx,
                  const ContextRanger::Ptr& rgr_ctx)
     : mngrs_groups(std::make_shared<Mngr::Groups>()->init()),

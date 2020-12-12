@@ -7,9 +7,22 @@
 #ifndef swcdb_core_comm_IoContext_h
 #define swcdb_core_comm_IoContext_h
 
+
+
 #include <asio.hpp>
 #include "swcdb/core/Logger.h"
+
+
+
+namespace SWC { namespace Comm {
+// Forward Declaration
+class IoContext;
+typedef std::shared_ptr<IoContext>  IoContextPtr;
+}}
+
 #include "swcdb/core/comm/PeriodicTimer.h"
+
+
 
 namespace SWC {
 
@@ -22,53 +35,43 @@ namespace SWC {
 namespace Comm {
 
 
-typedef std::shared_ptr<asio::signal_set>   IO_SignalsPtr;
-typedef std::shared_ptr<asio::io_context>   IOCtxPtr;
-
-class IoContext final {
+class IoContext final : public std::enable_shared_from_this<IoContext> {
   public:
 
-  typedef std::shared_ptr<IoContext>  Ptr;
+  typedef asio::thread_pool::executor_type    Executor;
+  typedef asio::executor_work_guard<Executor> ExecutorWorkGuard;
 
-  static Ptr make(const std::string name, int32_t size);
+  static IoContextPtr make(const std::string& name, int32_t size);
 
-  std::atomic<bool>                   running;
 
-  IoContext(const std::string name, int32_t size);
+  std::atomic<bool>                    running;
+  const std::string                    name;
+  asio::thread_pool                    pool;
+  std::unique_ptr<asio::signal_set>    signals;
 
-  void run(Ptr ptr);
 
-  void do_run();
-  
-  IOCtxPtr& shared();
+  IoContext(const std::string& name, int32_t size);
 
-  asio::io_context* ptr();
+  ~IoContext();
+
+  int32_t get_size() const;
+
+  Executor executor();
 
   template <typename T_Handler>
   SWC_CAN_INLINE
-  void post(T_Handler&& handler) const {
-    asio::post(*m_ioctx.get(), handler);
+  void post(T_Handler&& handler) {
+    asio::post(pool, handler);
   }
 
   void set_signals();
-
-  IO_SignalsPtr signals();
 
   void set_periodic_timer(const Config::Property::V_GINT32::Ptr ms, 
                           const PeriodicTimer::Call_t& call);
 
   void stop();
 
-  int32_t get_size() const;
-  
-  ~IoContext();
-
   private:
-  const std::string   m_name;
-  IOCtxPtr            m_ioctx;
-  IO_SignalsPtr       m_signals;
-  asio::thread_pool   m_pool;
-  asio::executor_work_guard<asio::io_context::executor_type> m_wrk;
   int32_t             m_size;
   PeriodicTimers      m_periodic_timers;
 
@@ -88,7 +91,7 @@ class IoCtx final {
 
   static bool ok();
   
-  static Comm::IoContext::Ptr io();
+  static Comm::IoContextPtr io();
 
   template <typename T_Handler>
   SWC_CAN_INLINE
@@ -103,8 +106,8 @@ class IoCtx final {
   ~IoCtx();
 
   private:
-  Comm::IoContext::Ptr                 m_io;
-  inline static std::shared_ptr<IoCtx> m_env = nullptr;
+  Comm::IoContextPtr                    m_io;
+  inline static std::shared_ptr<IoCtx>  m_env = nullptr;
 };
 
 } // namespace Env
@@ -116,6 +119,7 @@ class IoCtx final {
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/core/comm/IoContext.cc"
+#include "swcdb/core/comm/PeriodicTimer.cc"
 #endif 
 
 #endif // swcdb_core_comm_IoContext_h

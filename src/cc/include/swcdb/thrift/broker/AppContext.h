@@ -36,7 +36,7 @@ class AppContext final : virtual public BrokerIfFactory {
 
     Env::Clients::init(
       std::make_shared<client::Clients>(
-        Env::IoCtx::io()->shared(),
+        Env::IoCtx::io(),
         std::make_shared<client::ContextManager>(),
         std::make_shared<client::ContextRanger>()
       )
@@ -97,7 +97,7 @@ class AppContext final : virtual public BrokerIfFactory {
 
   void shutting_down(const std::error_code& ec, const int& sig) {
     if(!sig) { // set signals listener
-      Env::IoCtx::io()->signals()->async_wait(
+      Env::IoCtx::io()->signals->async_wait(
         [this](const std::error_code& ec, const int &sig) {
           if(ec == asio::error::operation_aborted)
             return;

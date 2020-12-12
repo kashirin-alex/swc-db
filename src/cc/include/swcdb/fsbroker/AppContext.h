@@ -107,7 +107,7 @@ class AppContext final : public Comm::AppContext {
     m_srv = srv;
   }
 
-  virtual ~AppContext(){}
+  virtual ~AppContext() { }
 
   void handle(Comm::ConnHandlerPtr conn, const Comm::Event::Ptr& ev) override {
     SWC_LOG_OUT(LOG_DEBUG, ev->print(SWC_LOG_OSTREAM << "handle: "); );
@@ -142,7 +142,7 @@ class AppContext final : public Comm::AppContext {
   
   void shutting_down(const std::error_code &ec, const int &sig) {
     if(!sig) { // set signals listener
-      Env::IoCtx::io()->signals()->async_wait(
+      Env::IoCtx::io()->signals->async_wait(
         [ptr=this](const std::error_code &ec, const int &sig){
           SWC_LOGF(LOG_INFO, "Received signal, sig=%d ec=%s", sig, ec.message().c_str());
           ptr->shutting_down(ec, sig); 
@@ -154,12 +154,14 @@ class AppContext final : public Comm::AppContext {
     }
 
     SWC_LOGF(LOG_INFO, "Shutdown signal, sig=%d ec=%s", sig, ec.message().c_str());
-    (new std::thread([ptr=shared_from_this()]{ ptr->stop(); }))->detach();
+    std::shared_ptr<std::thread> d(new std::thread);
+    *d.get() = std::thread([d, ptr=shared_from_this()]{ ptr->stop(); });
+    d->detach();
   }
 
   void stop() override {
      
-    m_srv->stop_accepting(); // no further requests accepted
+    auto guard = m_srv->stop_accepting(); // no further requests accepted
 
     int err;
     for(FS::SmartFd::Ptr fd; (fd = Env::FsBroker::fds()->pop_next()); ) {
@@ -177,8 +179,7 @@ class AppContext final : public Comm::AppContext {
     
     m_srv->shutdown();
 
-    SWC_LOG(LOG_INFO, "Exit");
-    std::quick_exit(0);
+    guard = nullptr;
   }
 
   private:

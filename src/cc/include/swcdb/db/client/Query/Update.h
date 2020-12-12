@@ -80,7 +80,7 @@ class Update final : public std::enable_shared_from_this<Update> {
   uint32_t                    timeout_ratio;
   
   const Cb_t                  cb;
-  Comm::IoContext::Ptr        dispatcher_io;
+  Comm::IoContextPtr          dispatcher_io;
 
   DB::Cells::MutableMap::Ptr  columns;
   DB::Cells::MutableMap::Ptr  columns_onfractions;
@@ -90,11 +90,11 @@ class Update final : public std::enable_shared_from_this<Update> {
   std::mutex                  m_mutex;
   std::condition_variable     cv;
 
-  Update(const Cb_t& cb=0, const Comm::IoContext::Ptr& io=nullptr);
+  Update(const Cb_t& cb=0, const Comm::IoContextPtr& io=nullptr);
 
   Update(const DB::Cells::MutableMap::Ptr& columns, 
          const DB::Cells::MutableMap::Ptr& columns_onfractions, 
-         const Cb_t& cb=0, const Comm::IoContext::Ptr& io=nullptr);
+         const Cb_t& cb=0, const Comm::IoContextPtr& io=nullptr);
 
   virtual ~Update();
  

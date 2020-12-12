@@ -9,14 +9,13 @@
 namespace SWC { namespace Manager {
 
 
-MngrRole::MngrRole(const Comm::IoContext::Ptr& app_io,
+MngrRole::MngrRole(const Comm::IoContextPtr& app_io,
                    const Comm::EndPoints& endpoints)
     : m_local_endpoints(endpoints),
       m_local_token(Comm::endpoints_hash(m_local_endpoints)),
       m_checkin(false), m_local_active_role(DB::Types::MngrRole::NONE),
-      m_check_timer(asio::high_resolution_timer(*app_io->ptr())),
-      m_mngr_inchain(
-        std::make_shared<Comm::client::ConnQueue>(app_io->shared())),
+      m_check_timer(asio::high_resolution_timer(app_io->executor())),
+      m_mngr_inchain(std::make_shared<Comm::client::ConnQueue>(app_io)),
       cfg_conn_probes(
         Env::Config::settings()->get<Config::Property::V_GINT32>(
           "swc.mngr.role.connection.probes")),

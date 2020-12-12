@@ -27,7 +27,7 @@ namespace SWC {
 namespace client {
 
 
-Comm::IOCtxPtr& default_io();
+Comm::IoContextPtr default_io();
 
 
 class Clients final {
@@ -35,7 +35,7 @@ class Clients final {
 
   typedef std::shared_ptr<Clients> Ptr;
 
-  Clients(Comm::IOCtxPtr ioctx, 
+  Clients(Comm::IoContextPtr ioctx,
           const ContextManager::Ptr& mngr_ctx,
           const ContextRanger::Ptr& rgr_ctx);
 

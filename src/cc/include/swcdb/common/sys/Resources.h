@@ -28,7 +28,7 @@ class Resources final {
   
   public:
   
-  Resources(asio::io_context* io, 
+  Resources(const Comm::IoContextPtr& ioctx,
             Config::Property::V_GINT32::Ptr ram_percent_allowed,
             Config::Property::V_GINT32::Ptr ram_percent_reserved,
             Config::Property::V_GINT32::Ptr ram_release_rate,
@@ -36,8 +36,10 @@ class Resources final {
             : cfg_ram_percent_allowed(ram_percent_allowed),
               cfg_ram_percent_reserved(ram_percent_reserved),
               cfg_ram_release_rate(ram_release_rate),
-              m_timer(*io), m_release_call(release_call), 
-              next_major_chk(99), ram(MAX_RAM_CHK_INTVAL_MS) {
+              m_timer(ioctx->executor()),
+              m_release_call(release_call),
+              next_major_chk(99),
+              ram(MAX_RAM_CHK_INTVAL_MS) {
 
 #if defined TCMALLOC_MINIMAL || defined TCMALLOC
     release_rate_default = MallocExtension::instance()->GetMemoryReleaseRate();

@@ -104,7 +104,7 @@ void Acceptor::do_accept_plain() noexcept {
 
 
 SerializedServer::SerializedServer(
-    std::string name, 
+    const std::string& name,
     uint32_t reactors, uint32_t workers,
     const std::string& port_cfg_name,
     AppContext::Ptr app_ctx
@@ -149,9 +149,10 @@ SerializedServer::SerializedServer(
   EndPoints endpoints_final;
 
   for(uint32_t reactor=0; reactor<reactors; ++reactor) {
-
-    auto io_ctx = std::make_shared<asio::io_context>(workers);
-    m_wrk.push_back(asio::make_work_guard(*io_ctx.get()));
+    m_io_contexts.push_back(
+      IoContext::make(name + "-reactor-" + std::to_string(reactor+1),
+      workers
+    ));
 
     for (std::size_t i = 0; i < endpoints.size(); ++i) {
       auto& endpoint = endpoints[i];
@@ -163,14 +164,19 @@ SerializedServer::SerializedServer(
       );
 
       if(!reactor) {
-        auto acceptor = asio::ip::tcp::acceptor(*io_ctx.get(), endpoint);
+        auto acceptor = asio::ip::tcp::acceptor(
+          m_io_contexts.back()->executor(), 
+          endpoint
+        );
         m_acceptors.push_back(std::make_shared<Acceptor>(
           acceptor, app_ctx, ssl_conn ? m_ssl_cfg : nullptr));
         endpoints_final.push_back(m_acceptors[i]->sock()->local_endpoint());
 
       } else {
-        auto acceptor = asio::ip::tcp::acceptor(*io_ctx.get(), 
-          endpoint.protocol(), dup(m_acceptors[i]->sock()->native_handle()));
+        auto acceptor = asio::ip::tcp::acceptor(
+          m_io_contexts.back()->executor(),
+          endpoint.protocol(), dup(m_acceptors[i]->sock()->native_handle())
+        );
         m_acceptors.push_back(std::make_shared<Acceptor>(
           acceptor, app_ctx, ssl_conn ? m_ssl_cfg : nullptr));
       }
@@ -185,45 +191,28 @@ SerializedServer::SerializedServer(
         app_ctx->init(sorted);
       }
     }
-
-    asio::thread_pool* pool = new asio::thread_pool(workers);
-    for(uint32_t n=0; n<workers; ++n)
-      asio::post(*pool, [this, d=io_ctx] {
-        // SWC_LOGF(LOG_INFO, "START DELAY: %s 3secs",  m_appname.c_str());
-        std::this_thread::sleep_for(std::chrono::milliseconds(5000));
-        for(;;) {
-          d->run();
-          if(m_run.load())
-            d->restart();
-          else
-            break;
-        }
-      });
-    m_thread_pools.push_back(pool);
-
   }
 }
 
 void SerializedServer::run() {
-  for(;;) {
-    auto it = m_thread_pools.begin();
-    if(it == m_thread_pools.end())
-      break;
-    (*it)->join();
-    delete *it;
-    m_thread_pools.erase(it);
-  }
-      
+  for(auto& io : m_io_contexts)
+    io->pool.join();
+
   SWC_LOGF(LOG_INFO, "STOPPED SERVER: %s", m_appname.c_str());
 }
 
-void SerializedServer::stop_accepting() {
+std::shared_ptr<IoContext::ExecutorWorkGuard> 
+SerializedServer::stop_accepting() {
+  auto guard = std::make_shared<IoContext::ExecutorWorkGuard>(
+    m_io_contexts.back()->executor());
+
   for(auto it = m_acceptors.begin(); it < m_acceptors.end(); ) {
     (*it)->stop();
     m_acceptors.erase(it);
   }
 
   SWC_LOGF(LOG_INFO, "STOPPED ACCEPTING: %s", m_appname.c_str());
+  return guard;
 }
 
 void SerializedServer::shutdown() {
@@ -242,10 +231,8 @@ void SerializedServer::shutdown() {
     }
     conn->close();
   }
-  
-  for (std::size_t i = 0; i < m_wrk.size(); ++i)
-    m_wrk[i].reset();
-    //m_wrk[i].get_executor().context().stop();
+  //for(auto& io : m_io_contexts)
+  //  io->stop();
 }
 
 void SerializedServer::connection_add(const ConnHandlerPtr& conn) {

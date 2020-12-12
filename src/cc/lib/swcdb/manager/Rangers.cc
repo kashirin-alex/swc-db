@@ -23,7 +23,7 @@
 namespace SWC { namespace Manager {
 
 
-Rangers::Rangers(const Comm::IoContext::Ptr& app_io)
+Rangers::Rangers(const Comm::IoContextPtr& app_io)
     : cfg_rgr_failures(
         Env::Config::settings()->get<Config::Property::V_GINT32>(
           "swc.mngr.ranges.assign.Rgr.remove.failures")),
@@ -43,7 +43,7 @@ Rangers::Rangers(const Comm::IoContext::Ptr& app_io)
         Env::Config::settings()->get<Config::Property::V_GINT32>(
           "swc.mngr.column.health.checks")),
       m_run(true),
-      m_timer(asio::high_resolution_timer(*app_io->ptr())),
+      m_timer(asio::high_resolution_timer(app_io->executor())),
       m_runs_assign(false), m_assignments(0) { 
 }
 

@@ -18,8 +18,8 @@ class PeriodicTimer final : private asio::high_resolution_timer {
 
   using asio::high_resolution_timer::cancel;
 
-  PeriodicTimer(const Config::Property::V_GINT32::Ptr cfg_ms, 
-                const Call_t& call, asio::io_context* io);
+  PeriodicTimer(const Config::Property::V_GINT32::Ptr cfg_ms,
+                const Call_t& call, const IoContextPtr& ioctx);
   
   ~PeriodicTimer();
 
@@ -41,8 +41,8 @@ class PeriodicTimers final
   void stop();
 
   void set(const Config::Property::V_GINT32::Ptr ms,
-           const PeriodicTimer::Call_t& call, 
-           asio::io_context* io);
+           const PeriodicTimer::Call_t& call,
+           const IoContextPtr& ioctx);
 
   private:
   Core::MutexSptd m_mutex;
@@ -52,9 +52,5 @@ class PeriodicTimers final
 }} // namespace SWC::Comm
 
 
-
-#ifdef SWC_IMPL_SOURCE
-#include "swcdb/core/comm/PeriodicTimer.cc"
-#endif 
 
 #endif // swcdb_core_comm_PeriodicTimer_h

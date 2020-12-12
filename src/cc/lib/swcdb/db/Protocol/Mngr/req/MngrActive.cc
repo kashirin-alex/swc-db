@@ -41,7 +41,7 @@ MngrActive::MngrActive(const uint8_t& role, const cid_t& cid,
                         ),
                         role(role), cid(cid), hdlr(hdlr), nxt(0),
                         timer(asio::high_resolution_timer(
-                          *Env::Clients::get()->mngr->service->io().get())),
+                          Env::Clients::get()->mngr->service->io()->executor())),
                         timeout_ms(timeout_ms) {
 }
 

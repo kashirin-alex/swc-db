@@ -11,89 +11,60 @@ namespace SWC {
 
 namespace Comm {
 
-IoContext::Ptr IoContext::make(const std::string name, int32_t size) {
-  auto ptr = std::make_shared<IoContext>(name, size);
-  ptr->run(ptr);
-  return ptr;
+IoContextPtr IoContext::make(const std::string& name, int32_t size) {
+  return std::make_shared<IoContext>(name, size);
 }
 
-IoContext::IoContext(const std::string name, int32_t size)  
-                    : running(true), m_name(name), 
-                      m_ioctx(std::make_shared<asio::io_context>(size)),
-                      m_pool(asio::thread_pool(size)),
-                      m_wrk(asio::make_work_guard(*m_ioctx.get())),
-                      m_size(size) { 
-    SWC_ASSERT(size>0);
+IoContext::IoContext(const std::string& name, int32_t size)
+                    : running(true), name(name), pool(size), m_size(size) {
+  SWC_LOGF(LOG_DEBUG, "Starting IO-ctx(%s) size=%u", name.c_str(), m_size);
+  SWC_ASSERT(m_size > 0);
 }
   
 IoContext::~IoContext() { }
 
-void IoContext::run(IoContext::Ptr ptr){
-  SWC_LOGF(LOG_DEBUG, "Starting IO-ctx(%s)", m_name.c_str());
-  for(int n=0;n<m_size;++n)
-    asio::post(m_pool, [ptr](){ptr->do_run();});
-}
-
-void IoContext::do_run() {
-  for(;;) {
-    m_ioctx->run();
-    if(running)
-      m_ioctx->restart();
-    else 
-      break;
-  }
-}
-  
-SWC_SHOULD_INLINE
-IOCtxPtr& IoContext::shared() {
-  return m_ioctx;
+int32_t IoContext::get_size() const {
+  return m_size; // asio::query(executor(), asio::execution::occupancy);
 }
 
 SWC_SHOULD_INLINE
-asio::io_context* IoContext::ptr() {
-  return m_ioctx.get();
+IoContext::Executor IoContext::executor() {
+  return pool.get_executor();
 }
 
 void IoContext::set_signals() {
-  m_signals = std::make_shared<asio::signal_set>(
-    *m_ioctx.get(), SIGINT, SIGTERM);
+  signals.reset(new asio::signal_set(executor() , SIGINT, SIGTERM));
 }
 
-SWC_SHOULD_INLINE
-IO_SignalsPtr IoContext::signals() {
-  return m_signals;
-}
-
-void IoContext::set_periodic_timer(const Config::Property::V_GINT32::Ptr ms, 
+void IoContext::set_periodic_timer(const Config::Property::V_GINT32::Ptr ms,
                                    const PeriodicTimer::Call_t& call) {
-  m_periodic_timers.set(ms, call, ptr());
+  m_periodic_timers.set(ms, call, shared_from_this());
 }
 
 void IoContext::stop() {
-  SWC_LOGF(LOG_DEBUG, "Stopping IO-ctx(%s)", m_name.c_str());
+  SWC_LOGF(LOG_DEBUG, "Stopping IO-ctx(%s)", name.c_str());
   
   m_periodic_timers.stop();
 
   running.store(false);
 
-  m_wrk.reset();
-    
   // hold on for IO to finish
+  bool untracked;
   for(int i=0; i<10; ++i) {
-    if(m_ioctx->stopped())
+    untracked = asio::query(executor(), asio::execution::outstanding_work)
+      == asio::execution::outstanding_work.untracked;
+    if(untracked)
       break;
-    SWC_LOGF(LOG_DEBUG, "Waiting for IO-ctx(%s)", m_name.c_str());
+    SWC_LOGF(LOG_DEBUG, "Waiting for IO-ctx(%s)", name.c_str());
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
   }
+
   SWC_LOGF(LOG_DEBUG, "Wait for IO-ctx(%s) finished %sgracefully", 
-           m_name.c_str(), m_ioctx->stopped()?"":"not ");
-
-  if(!m_ioctx->stopped())
-    m_ioctx->stop();
-}
-
-int32_t IoContext::get_size() const {
-  return m_size;
+           name.c_str(), untracked ? "" : "not-");
+  
+  //if(!untracked)
+  //  pool.join();
+  pool.stop();
 }
 
 
@@ -112,19 +83,18 @@ bool IoCtx::ok() {
 }
   
 SWC_SHOULD_INLINE
-Comm::IoContext::Ptr IoCtx::io() {
+Comm::IoContextPtr IoCtx::io() {
   SWC_ASSERT(ok());
   return m_env->m_io;
 }
   
 SWC_SHOULD_INLINE
-bool IoCtx::stopping(){
+bool IoCtx::stopping() {
   return !m_env->m_io->running;
 }
 
 IoCtx::IoCtx(int32_t size) 
-            : m_io(std::make_shared<Comm::IoContext>("Env", size)) { 
-  m_io->run(m_io);
+            : m_io(std::make_shared<Comm::IoContext>("Env", size)) {
 }
 
 IoCtx::~IoCtx() { }

@@ -42,7 +42,7 @@ size_t Update::get_resend_count(bool reset) {
 
 
 
-Update::Update(const Cb_t& cb, const Comm::IoContext::Ptr& io)
+Update::Update(const Cb_t& cb, const Comm::IoContextPtr& io)
         : buff_sz(Env::Clients::ref().cfg_send_buff_sz->get()), 
           buff_ahead(Env::Clients::ref().cfg_send_ahead->get()), 
           timeout(Env::Clients::ref().cfg_send_timeout->get()), 
@@ -55,7 +55,7 @@ Update::Update(const Cb_t& cb, const Comm::IoContext::Ptr& io)
 
 Update::Update(const DB::Cells::MutableMap::Ptr& columns, 
          const DB::Cells::MutableMap::Ptr& columns_onfractions, 
-         const Cb_t& cb, const Comm::IoContext::Ptr& io)
+         const Cb_t& cb, const Comm::IoContextPtr& io)
         : buff_sz(Env::Clients::ref().cfg_send_buff_sz->get()), 
           buff_ahead(Env::Clients::ref().cfg_send_ahead->get()), 
           timeout(Env::Clients::ref().cfg_send_timeout->get()), 

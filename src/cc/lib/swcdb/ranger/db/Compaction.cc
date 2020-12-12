@@ -23,7 +23,7 @@ Compaction::Compaction()
                 "swc.rgr.compaction.check.interval")),
             m_check_timer(
               asio::high_resolution_timer(
-                *Env::Rgr::maintenance_io()->ptr())),
+                Env::Rgr::maintenance_io()->executor())),
             m_run(true), m_running(0), m_scheduled(false),
             m_idx_cid(0), m_idx_rid(0)  {
 }

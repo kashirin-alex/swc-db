@@ -57,7 +57,7 @@ class AppContext final : public Comm::AppContext {
     Env::IoCtx::init(settings->get_i32("swc.mngr.clients.handlers"));
     Env::Clients::init(
       std::make_shared<client::Clients>(
-        Env::IoCtx::io()->shared(),
+        Env::IoCtx::io(),
         std::make_shared<client::Mngr::ContextManager>(),
         std::make_shared<client::ContextRanger>()
       )
@@ -205,7 +205,7 @@ class AppContext final : public Comm::AppContext {
   
   void shutting_down(const std::error_code &ec, const int &sig) {
     if(!sig) { // set signals listener
-      Env::Mngr::io()->signals()->async_wait(
+      Env::Mngr::io()->signals->async_wait(
         [this](const std::error_code &ec, const int &sig) {
           SWC_LOGF(LOG_INFO, "Received signal, sig=%d ec=%s", sig, ec.message().c_str());
           shutting_down(ec, sig); 
@@ -223,12 +223,14 @@ class AppContext final : public Comm::AppContext {
       std::quick_exit(0);
     }
     
-    (new std::thread([ptr=shared_from_this()]{ ptr->stop(); }))->detach();
+    std::shared_ptr<std::thread> d(new std::thread);
+    *d.get() = std::thread([d, ptr=shared_from_this()]{ ptr->stop(); });
+    d->detach();
   }
 
   void stop() override {
     
-    m_srv->stop_accepting(); // no further requests accepted
+    auto guard = m_srv->stop_accepting(); // no further requests accepted
     
     Env::Mngr::stop();
 
@@ -241,9 +243,8 @@ class AppContext final : public Comm::AppContext {
     Env::Mngr::io()->stop();
 
     m_srv->shutdown();
-    
-    SWC_LOG(LOG_INFO, "Exit");
-    std::quick_exit(0);
+
+    guard = nullptr;
   }
 
   private:

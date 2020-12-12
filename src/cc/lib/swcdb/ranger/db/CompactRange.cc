@@ -123,7 +123,7 @@ CompactRange::CompactRange(Compaction* compactor, const RangePtr& range,
               req_last_time(0),
               m_getting(true), m_log_sz(0),
               m_chk_timer(
-                asio::high_resolution_timer(*Env::Rgr::io()->ptr())) {
+                asio::high_resolution_timer(Env::Rgr::io()->executor())) {
   spec.flags.max_versions = range->cfg->cell_versions();
 }
 
@@ -329,6 +329,7 @@ void CompactRange::response(int& err) {
         spec.key_intervals.add();
       spec.key_intervals[0]->start.set(spec.offset_key, Condition::EQ);
       spec.range_end.copy(spec.offset_key);
+      spec.set_opt__key_equal();
 
       SWC_LOG_OUT(LOG_INFO, 
         SWC_LOG_PRINTF(
@@ -396,7 +397,9 @@ void CompactRange::commitlog_done(const CommitLog::Compact* compact) {
 
     if(!m_stopped && !m_chk_final) {
       size_t bytes = range->blocks.commitlog.size_bytes_encoded();
-      if(bytes >= cs_size * range->cfg->cellstore_max()) {
+      float fits = (float)bytes/cs_size;
+      if((size_t)fits + 1 >= range->cfg->cellstore_max() &&
+         fits - (size_t)fits >= (float)range->cfg->compact_percent()/100) {
         stop_check_timer();
         range->compacting(state_default = Range::COMPACT_PREPARING);
         SWC_LOGF(LOG_INFO,

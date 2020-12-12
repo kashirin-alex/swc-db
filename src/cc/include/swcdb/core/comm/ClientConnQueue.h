@@ -56,8 +56,8 @@ class ConnQueue :
 
   typedef ConnQueueReqBase ReqBase;
 
-  ConnQueue(const IOCtxPtr& ioctx,
-            const Config::Property::V_GINT32::Ptr keepalive_ms=nullptr, 
+  ConnQueue(const IoContextPtr& ioctx,
+            const Config::Property::V_GINT32::Ptr keepalive_ms=nullptr,
             const Config::Property::V_GINT32::Ptr again_delay_ms=nullptr);
 
   virtual ~ConnQueue();
@@ -94,7 +94,7 @@ class ConnQueue :
   void schedule_close();
 
   Core::MutexSptd                                   m_mutex;
-  IOCtxPtr                                          m_ioctx;
+  IoContextPtr                                      m_ioctx;
   ConnHandlerPtr                                    m_conn;
   bool                                              m_connecting;
   bool                                              m_qrunning;

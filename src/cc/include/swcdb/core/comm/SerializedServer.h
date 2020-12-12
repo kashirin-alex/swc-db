@@ -61,7 +61,7 @@ class SerializedServer final {
   typedef std::shared_ptr<SerializedServer> Ptr;
 
   SerializedServer(
-    std::string name, 
+    const std::string& name,
     uint32_t reactors, uint32_t workers,
     const std::string& port_cfg_name,
     AppContext::Ptr app_ctx
@@ -69,7 +69,7 @@ class SerializedServer final {
 
   void run();
 
-  void stop_accepting();
+  std::shared_ptr<IoContext::ExecutorWorkGuard> stop_accepting();
 
   void shutdown();
 
@@ -81,11 +81,10 @@ class SerializedServer final {
 
   private:
   
-  std::vector<asio::thread_pool*> m_thread_pools;
   std::string                     m_appname;
   std::atomic<bool>               m_run;
+  std::vector<IoContextPtr>       m_io_contexts;
   std::vector<Acceptor::Ptr>      m_acceptors;
-  std::vector<asio::executor_work_guard<asio::io_context::executor_type>> m_wrk;
 
   Core::MutexSptd                 m_mutex;
   std::vector<ConnHandlerPtr>     m_conns;

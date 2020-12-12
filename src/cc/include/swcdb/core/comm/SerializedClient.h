@@ -39,7 +39,7 @@ class ServerConnections final :
   using Core::QueueSafe<ConnHandlerPtr>::push;
 
   ServerConnections(const std::string& srv_name, const EndPoint& endpoint,
-                    const IOCtxPtr& ioctx, const AppContext::Ptr& ctx, 
+                    const IoContextPtr& ioctx, const AppContext::Ptr& ctx,
                     ConfigSSL* ssl_cfg);
   
  ~ServerConnections();
@@ -59,7 +59,7 @@ class ServerConnections final :
 
   const std::string             m_srv_name;
   const EndPoint                m_endpoint;
-  IOCtxPtr                      m_ioctx;
+  IoContextPtr                  m_ioctx;
   AppContext::Ptr               m_ctx;
   ConfigSSL*                    m_ssl_cfg;
 };
@@ -74,7 +74,7 @@ class Serialized final :
   typedef std::shared_ptr<Serialized>                        Ptr;
 
   Serialized(const std::string& srv_name, 
-             const IOCtxPtr& ioctx, 
+             const IoContextPtr& ioctx,
              const AppContext::Ptr& ctx);
 
   ServerConnections::Ptr get_srv(const EndPoint& endpoint);
@@ -98,7 +98,7 @@ class Serialized final :
 
   void close(ConnHandlerPtr& conn);
 
-  IOCtxPtr io();        
+  IoContextPtr io();
   
   void print(std::ostream& out, ConnHandlerPtr& conn);
   
@@ -125,7 +125,7 @@ class Serialized final :
   );
 
   const std::string     m_srv_name;
-  IOCtxPtr              m_ioctx;
+  IoContextPtr          m_ioctx;
   AppContext::Ptr       m_ctx;
 
   const bool            m_use_ssl;

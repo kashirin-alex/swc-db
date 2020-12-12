@@ -128,7 +128,7 @@ FileSystemBroker::FileSystemBroker()
     m_service(
       std::make_shared<Comm::client::Serialized>(
         "FS-BROKER", 
-        m_io->shared(), 
+        m_io, 
         std::make_shared<client::FsBroker::AppContext>()
       )
     ),
@@ -142,7 +142,6 @@ FileSystemBroker::FileSystemBroker()
     cfg_timeout_ratio(
       Env::Config::settings()->get<Config::Property::V_GINT32>( 
         "swc.fs.broker.timeout.bytes.ratio")) {
-  m_io->run(m_io);
 }
 
 FileSystemBroker::~FileSystemBroker() { }

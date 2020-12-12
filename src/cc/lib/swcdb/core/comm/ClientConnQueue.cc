@@ -60,15 +60,15 @@ void ConnQueueReqBase::print(std::ostream& out) {
 }
 
 
-ConnQueue::ConnQueue(const IOCtxPtr& ioctx,
-                     const Config::Property::V_GINT32::Ptr keepalive_ms, 
-                     const Config::Property::V_GINT32::Ptr again_delay_ms) 
+ConnQueue::ConnQueue(const IoContextPtr& ioctx,
+                     const Config::Property::V_GINT32::Ptr keepalive_ms,
+                     const Config::Property::V_GINT32::Ptr again_delay_ms)
                     : cfg_keepalive_ms(keepalive_ms),
                       cfg_again_delay_ms(again_delay_ms),
-                      m_ioctx(ioctx), m_conn(nullptr), 
+                      m_ioctx(ioctx), m_conn(nullptr),
                       m_connecting(false), m_qrunning(false),
                       m_timer(cfg_keepalive_ms
-                        ? new asio::high_resolution_timer(*m_ioctx.get()) 
+                        ? new asio::high_resolution_timer(m_ioctx->executor())
                         : nullptr
                       ) {
 }
@@ -165,7 +165,7 @@ void ConnQueue::delay(const ConnQueue::ReqBase::Ptr& req) {
   if(!cfg_again_delay_ms)
     return put(req);
 
-  auto tm = new asio::high_resolution_timer(*m_ioctx.get());
+  auto tm = new asio::high_resolution_timer(m_ioctx->executor());
   tm->expires_after(std::chrono::milliseconds(cfg_again_delay_ms->get()));
 
   Core::MutexSptd::scope lock(m_mutex);
@@ -202,7 +202,7 @@ void ConnQueue::exec_queue() {
       return;
     m_qrunning = true;
   }
-  asio::post(*m_ioctx.get(), [ptr=shared_from_this()](){ptr->run_queue();});
+  m_ioctx->post([ptr=shared_from_this()](){ptr->run_queue();});
 }
 
 void ConnQueue::run_queue() {

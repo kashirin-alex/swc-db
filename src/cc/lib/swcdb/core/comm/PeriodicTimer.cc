@@ -4,13 +4,13 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#include "swcdb/core/comm/PeriodicTimer.h"
+#include "swcdb/core/comm/IoContext.h"
 
 namespace SWC { namespace Comm {
   
-PeriodicTimer::PeriodicTimer(const Config::Property::V_GINT32::Ptr cfg_ms, 
-                             const Call_t& call, asio::io_context* io)
-                            : asio::high_resolution_timer(*io),
+PeriodicTimer::PeriodicTimer(const Config::Property::V_GINT32::Ptr cfg_ms,
+                             const Call_t& call, const IoContextPtr& ioctx)
+                            : asio::high_resolution_timer(ioctx->executor()),
                               m_ms(cfg_ms), m_call(call) {
   schedule();
 }
@@ -40,9 +40,9 @@ void PeriodicTimers::stop() {
 
 void PeriodicTimers::set(const Config::Property::V_GINT32::Ptr ms, 
                          const PeriodicTimer::Call_t& call,
-                         asio::io_context* io) {
+                         const IoContextPtr& ioctx) {
   Core::MutexSptd::scope lock(m_mutex);
-  emplace_back(new PeriodicTimer(ms, call, io));
+  emplace_back(new PeriodicTimer(ms, call, ioctx));
 }
 
 
