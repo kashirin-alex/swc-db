@@ -276,21 +276,12 @@ void Fragments::expand_and_align(DB::Cells::Interval& intval) {
 
 void Fragments::load_cells(BlockLoader* loader, bool& is_final,
                            Fragments::Vec& frags, uint8_t vol) {  
-  if(is_final) {
-    std::unique_lock lock_wait(m_mutex);
-    if(m_commiting)
-      m_cv.wait(lock_wait, [this]{ return !m_commiting; });
-
-    uint8_t base = vol;
-    _load_cells(loader, frags, vol);
-    if((is_final = base == vol)) {
-      std::shared_lock lock(m_mutex_cells);
-      loader->block->load_cells(m_cells);
-    }
-
-  } else {
-    std::shared_lock lock(m_mutex);
-    _load_cells(loader, frags, vol);
+  uint8_t base = vol;
+  std::shared_lock lock(m_mutex);
+  _load_cells(loader, frags, vol);
+  if(is_final && (is_final = base == vol)) {
+    std::shared_lock lock(m_mutex_cells);
+    loader->block->load_final(m_cells);
   }
 }
 

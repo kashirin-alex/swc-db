@@ -40,7 +40,7 @@ void Compaction::stop() {
   m_run = false;
   m_check_timer.cancel();
   if(m_running) 
-    m_cv.wait(lock_wait, [&running=m_running](){return !running;});  
+    m_cv.wait(lock_wait, [this](){return !m_running;});  
 }
 
 void Compaction::schedule() {

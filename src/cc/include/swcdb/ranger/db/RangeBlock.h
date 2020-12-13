@@ -93,8 +93,8 @@ class Block final {
   void preload();
 
   bool add_logged(const DB::Cells::Cell& cell);
-    
-  void load_cells(const DB::Cells::MutableVec& cells);
+
+  void load_final(const DB::Cells::MutableVec& cells);
 
   size_t load_cells(const uint8_t* buf, size_t remain, 
                     uint32_t revs, size_t avail, 

@@ -146,15 +146,29 @@ bool Block::add_logged(const DB::Cells::Cell& cell) {
   }
   return true;
 }
-  
-void Block::load_cells(const DB::Cells::MutableVec& vec_cells) {
-  if(!vec_cells.empty()) {
-    std::scoped_lock lock(m_mutex);
-    for(auto cells : vec_cells) {
-      if(!cells->scan_after(m_prev_key_end, m_key_end, m_cells))
-        break;
-      splitter();
+
+void Block::load_final(const DB::Cells::MutableVec& vec_cells) {
+  if(vec_cells.empty()) {
+    Core::MutexSptd::scope lock(m_mutex_state);
+    m_state = State::LOADED;
+
+  } else {
+    ssize_t sz;
+    {
+      std::scoped_lock lock(m_mutex);
+      sz = m_cells.size_of_internal();
+      for(auto cells : vec_cells) {
+        if(!cells->scan_after(m_prev_key_end, m_key_end, m_cells))
+          break;
+        splitter();
+      }
+      {
+        Core::MutexSptd::scope lock(m_mutex_state);
+        m_state = State::LOADED;
+      }
+      sz = ssize_t(m_cells.size_of_internal()) - sz;
     }
+    Env::Rgr::res().adj_mem_usage(sz);
   }
 }
 
@@ -255,11 +269,6 @@ Block::ScanState Block::scan(const ReqScan::Ptr& req) {
 }
 
 void Block::loaded(const BlockLoader* loader) {
-  {
-    Core::MutexSptd::scope lock(m_mutex_state);
-    m_state = State::LOADED;
-  }
-
   if(loader->error) {
     SWC_LOG_OUT(LOG_ERROR,
       Error::print(SWC_LOG_OSTREAM << "Block::loaded ", loader->error); );
