@@ -8,11 +8,12 @@
 
 
 #include "swcdb/core/Compat.h"
+#include "swcdb/core/MutexAtomic.h"
 
 
 namespace SWC { namespace Core {
   
-template<class CountT=uint32_t>
+template<class CountT=uint56_t>
 class CompletionCounter final {
   public:
 
@@ -29,27 +30,33 @@ class CompletionCounter final {
   ~CompletionCounter() {}
 
   void increment() {
+    Core::MutexAtomic::scope lock(m_mutex);
     ++m_count;
   }
 
   bool is_last() {
-    return m_count.fetch_sub(1, std::memory_order_relaxed) == 1;
+    Core::MutexAtomic::scope lock(m_mutex);
+    return !--m_count;
   }
 
   CountT count() {
+    Core::MutexAtomic::scope lock(m_mutex);
     return m_count;
   }
 
   CountT increment_and_count() {
-    return m_count.fetch_add(1, std::memory_order_relaxed) + 1;
+    Core::MutexAtomic::scope lock(m_mutex);
+    return ++m_count;
   }
 
   CountT decrement_and_count() {
-    return m_count.fetch_sub(1, std::memory_order_relaxed) - 1;
+    Core::MutexAtomic::scope lock(m_mutex);
+    return --m_count;
   }
 
   private:
-  std::atomic<CountT>              m_count;
+  Core::MutexAtomic   m_mutex;
+  CountT              m_count;
 };
 
 }} // namespace SWC::Core
