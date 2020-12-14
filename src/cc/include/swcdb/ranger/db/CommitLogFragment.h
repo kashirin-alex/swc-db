@@ -16,7 +16,7 @@ namespace SWC { namespace Ranger {
 namespace CommitLog {
 
   
-class Fragment final {
+class Fragment final : public std::enable_shared_from_this<Fragment> {
 
   /* file-format: 
         header:      i8(version), i32(header_ext-len), i32(checksum)
@@ -28,8 +28,8 @@ class Fragment final {
 
   public:
 
-  typedef Fragment* Ptr;
-  typedef const std::function<void(const DB::Cells::Cell&)> AddCell_t;
+  typedef std::shared_ptr<Fragment>       Ptr;
+  typedef std::function<void(const Ptr&)> LoadCb_t;
 
   static const uint8_t     HEADER_SIZE = 9;
   static const uint8_t     VERSION = 1;
@@ -101,6 +101,8 @@ class Fragment final {
 
   ~Fragment();
 
+  Ptr ptr();
+
   size_t size_of() const;
 
   const std::string& get_filepath() const;
@@ -108,7 +110,7 @@ class Fragment final {
   void write(int err, uint8_t blk_replicas, int64_t blksz, 
              const StaticBuffer::Ptr& buff_write, Core::Semaphore* sem);
 
-  void load(const std::function<void(Fragment::Ptr)>& cb);
+  void load(const LoadCb_t& cb);
   
   void load_cells(int& err, Ranger::Block::Ptr cells_block);
   
@@ -137,6 +139,10 @@ class Fragment final {
 
   bool processing();
 
+  bool marked_removed();
+
+  bool mark_removed();
+
   void remove(int &err);
 
   void remove(int &err, Core::Semaphore* sem);
@@ -160,8 +166,9 @@ class Fragment final {
   size_t                            m_processing;
   int                               m_err;
   std::atomic<uint32_t>             m_cells_remain;
+  bool                              m_marked_removed;
 
-  std::queue<std::function<void(Fragment::Ptr)>> m_queue;
+  std::queue<LoadCb_t>              m_queue;
 
 };
 

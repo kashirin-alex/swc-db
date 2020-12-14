@@ -91,10 +91,10 @@ void Fragments::commit_new_fragment(bool finalize) {
     uint32_t cells_count = 0;
     DB::Cells::Interval interval(range->cfg->key_seq);
     auto buff_write = std::make_shared<StaticBuffer>();
-    size_t nxt_id = next_id();
     ssize_t sz;
     {
       std::scoped_lock lock(m_mutex);
+      size_t nxt_id = _next_id();
       {
         std::scoped_lock lock2(m_mutex_cells);
         sz = m_cells.size_of_internal();
@@ -151,12 +151,12 @@ void Fragments::commit_new_fragment(bool finalize) {
     try_compact();
 }
 
-void Fragments::add(Fragment::Ptr frag) {
+void Fragments::add(Fragment::Ptr& frag) {
   std::scoped_lock lock(m_mutex);
   _add(frag);
 }
 
-void Fragments::_add(Fragment::Ptr frag) {
+void Fragments::_add(Fragment::Ptr& frag) {
   for(auto it = begin() + _narrow(frag->interval.key_begin); it<end(); ++it) {
     if(DB::KeySeq::compare(m_cells.key_seq, 
         (*it)->interval.key_begin, frag->interval.key_begin)
@@ -166,6 +166,11 @@ void Fragments::_add(Fragment::Ptr frag) {
     }
   }
   push_back(frag);
+}
+
+SWC_SHOULD_INLINE
+bool Fragments::is_compacting() const {
+  return m_compacting;
 }
 
 size_t Fragments::need_compact(std::vector<Fragments::Vec>& groups,
@@ -262,13 +267,13 @@ void Fragments::load(int &err) {
 
 void Fragments::expand(DB::Cells::Interval& intval) {
   std::shared_lock lock(m_mutex);
-  for(auto frag : *this)
+  for(auto& frag : *this)
     intval.expand(frag->interval);
 }
 
 void Fragments::expand_and_align(DB::Cells::Interval& intval) {
   std::shared_lock lock(m_mutex);
-  for(auto frag : *this) {
+  for(auto& frag : *this) {
     intval.expand(frag->interval);
     intval.align(frag->interval);
   }
@@ -287,7 +292,7 @@ void Fragments::load_cells(BlockLoader* loader, bool& is_final,
 
 void Fragments::_load_cells(BlockLoader* loader, Fragments::Vec& frags, 
                             uint8_t& vol) { 
-  for(auto frag : *this) {
+  for(auto& frag : *this) {
     if(std::find(frags.begin(), frags.end(), frag) == frags.end() &&
        loader->block->is_consist(frag->interval)) {
       frag->processing_increment();
@@ -309,7 +314,7 @@ size_t Fragments::release(size_t bytes) {
   size_t released = 0;
   std::shared_lock lock(m_mutex);
 
-  for(auto frag : *this) {
+  for(auto& frag : *this) {
     released += frag->release();
     if(bytes && released >= bytes)
       break;
@@ -317,34 +322,29 @@ size_t Fragments::release(size_t bytes) {
   return released;
 }
 
-void Fragments::remove(int &err, Fragments::Vec& fragments_old) {
+void Fragments::remove(int &err, Fragments::Vec& fragments_old, bool safe) {
   Core::Semaphore sem(10);
-  std::scoped_lock lock(m_mutex);
-  for(auto frag : fragments_old) {
+  if(!safe)
+    m_mutex.lock();
+  for(auto& frag : fragments_old) {
+    sem.acquire();
+    frag->remove(err, &sem);
     auto it = std::find(begin(), end(), frag);
-    if(it != end()) {
+    if(it != end())
       erase(it);
-      sem.acquire();
-      frag->remove(err, &sem);
-      delete frag;
-    } else {
-      SWC_ASSERT(it != end());
-    }
   }
+  if(!safe)
+    m_mutex.unlock();
   sem.wait_all();
 }
 
-void Fragments::remove(int &err, Fragment::Ptr frag, bool remove_file) {
+void Fragments::remove(int &err, Fragment::Ptr& frag, bool remove_file) {
   std::scoped_lock lock(m_mutex);
+  if(remove_file)
+    frag->remove(err);
   auto it = std::find(begin(), end(), frag);
-  if(it != end()) {
+  if(it != end())
     erase(it);
-    if(remove_file)
-      frag->remove(err);
-    delete frag;
-  } else {
-    SWC_ASSERT(it != end());
-  }
 }
 
 void Fragments::remove() {
@@ -357,10 +357,8 @@ void Fragments::remove() {
     }
   }
   std::scoped_lock lock(m_mutex);
-  for(auto frag : *this) {
-    //frag->remove(err);
-    delete frag;
-  }
+  for(auto& frag : *this)
+    frag->mark_removed();
   clear();
   range = nullptr;
 }
@@ -373,13 +371,11 @@ void Fragments::unload() {
       m_cv.wait(lock_wait, [this]{ return !m_commiting && !m_compacting; });
   }
   std::scoped_lock lock(m_mutex);
-  for(auto frag : *this)
-    delete frag;
   clear();
   range = nullptr;
 }
 
-Fragment::Ptr Fragments::take_ownership(int &err, Fragment::Ptr take_frag) {
+Fragment::Ptr Fragments::take_ownership(int &err, Fragment::Ptr& take_frag) {
   const std::string filepath(get_log_fragment(next_id()));
   Env::FsInterface::interface()->rename(
     err, take_frag->get_filepath(), filepath);
@@ -390,13 +386,48 @@ Fragment::Ptr Fragments::take_ownership(int &err, Fragment::Ptr take_frag) {
       add(frag);
       return frag;
     }
-    err = Error::OK;
-    // ? log compact
-    // Env::FsInterface::interface()->remove(tmperr, filepath); 
     Env::FsInterface::interface()->rename(
-      err, filepath, take_frag->get_filepath());
+      err = Error::OK, filepath, take_frag->get_filepath());
   }
   return nullptr;
+}
+
+void Fragments::take_ownership(int& err, Fragments::Vec& frags,
+                                         Fragments::Vec& removing) {
+  auto fs_if = Env::FsInterface::interface();
+  Fragments::Vec tmp_frags;
+  for(auto it = frags.begin(); !stopping && it < frags.end(); ) {
+    const std::string filepath(get_log_fragment(next_id()));
+    fs_if->rename(err, (*it)->get_filepath(), filepath);
+    if(err)
+      break;
+    frags.erase(it);
+
+    auto frag = Fragment::make_read(err, filepath, range->cfg->key_seq);
+    if(frag) {
+      tmp_frags.push_back(frag);
+    } else {
+      fs_if->remove(err, filepath);
+      break;
+    }
+  }
+
+  if(stopping || !frags.empty()) {
+    if(!tmp_frags.empty()) {
+      Core::Semaphore sem(10);
+      for(auto& frag : tmp_frags) {
+        sem.acquire();
+        frag->remove(err = Error::OK, &sem);
+      }
+      sem.wait_all();
+    }
+  } else {
+    std::scoped_lock lock(m_mutex);
+    for(auto& frag : tmp_frags)
+      _add(frag);
+    remove(err = Error::OK, removing, true);
+  }
+  removing.clear();
 }
 
 bool Fragments::deleting() {
@@ -412,7 +443,7 @@ size_t Fragments::cells_count(bool only_current) {
   }
   if(!only_current) {
     std::shared_lock lock(m_mutex);
-    for(auto frag : *this)
+    for(auto& frag : *this)
       count += frag->cells_count;
   }
   return count;
@@ -430,7 +461,7 @@ size_t Fragments::size_bytes(bool only_loaded) {
 size_t Fragments::size_bytes_encoded() {
   std::shared_lock lock(m_mutex);
   size_t size = 0;
-  for(auto frag : *this)
+  for(auto& frag : *this)
     size += frag->size_bytes_encoded();
   return size;
 }
@@ -446,6 +477,10 @@ bool Fragments::processing() {
 
 uint64_t Fragments::next_id() {
   std::scoped_lock lock(m_mutex);
+  return _next_id();
+}
+
+uint64_t Fragments::_next_id() {
   uint64_t new_id = Time::now_ns();
   if(m_last_id == new_id) {
     ++new_id;
@@ -470,7 +505,7 @@ void Fragments::print(std::ostream& out, bool minimal) {
   out << " fragments=" << Vec::size();
   if(!minimal) {
     out << " [";
-    for(auto frag : *this){
+    for(auto& frag : *this){
       frag->print(out);
       out << ", ";
     }
@@ -501,7 +536,7 @@ size_t Fragments::_need_compact(std::vector<Fragments::Vec>& groups,
     return need;
   
   Fragments::Vec fragments;
-  for(auto frag : *this) {
+  for(auto& frag : *this) {
     if(without.empty() || 
        std::find(without.begin(), without.end(), frag) == without.end())
       fragments.push_back(frag);
@@ -555,7 +590,7 @@ bool Fragments::_need_compact_major() {
     range->blocks.cellstores.blocks_count() < ok/range->cfg->block_size();
   if(!need) {
     size_t sz_bytes = 0;
-    for(auto frag : *this) {
+    for(auto& frag : *this) {
       if((need = (sz_bytes += frag->size_bytes_encoded()) > ok))
         break;
     }
@@ -570,7 +605,7 @@ bool Fragments::_need_compact_major() {
 bool Fragments::_processing() const {
   if(m_commiting)
     return true;
-  for(auto frag : *this)
+  for(auto& frag : *this)
     if(frag->processing())
       return true;
   return false;
@@ -582,7 +617,7 @@ size_t Fragments::_size_bytes(bool only_loaded) {
     std::shared_lock lock(m_mutex_cells);
     size += m_cells.size_bytes();
   }
-  for(auto frag : *this)
+  for(auto& frag : *this)
     size += frag->size_bytes(only_loaded);
   return size;
 }

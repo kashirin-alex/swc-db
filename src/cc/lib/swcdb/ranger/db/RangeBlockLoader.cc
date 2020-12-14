@@ -15,149 +15,177 @@ BlockLoader::BlockLoader(Block::Ptr block)
                         : block(block),
                           count_cs_blocks(0), count_fragments(0),
                           error(Error::OK),
-                          m_sem_cs(2, 1),
-                          m_sem_log(CommitLog::Fragments::MAX_PRELOAD),
-                          m_cs_blocks_running(false),
-                          m_fragments_running(false) {
+                          m_processing(false),
+                          m_checking_log(true), m_logs(0) {
 }
 
 BlockLoader::~BlockLoader() { }
 
 SWC_SHOULD_INLINE
-void BlockLoader::run(bool preloading) {
-  if(preloading) {
-    block->blocks->cellstores.load_cells(this);
-    m_sem_cs.release();
-  } else {
-    Env::Rgr::post([this]() {
-      block->blocks->cellstores.load_cells(this);
-      m_sem_cs.release();
-      load_fragments();
-    });
-  }
-  Env::Rgr::post([this](){ load_log(); });
+void BlockLoader::run(bool ) {
+  block->blocks->cellstores.load_cells(this);
+  load_log(false);
 }
 
+//CellStores
 void BlockLoader::add(CellStore::Block::Read::Ptr blk) {
-  m_sem_cs.acquire();
   Core::MutexSptd::scope lock(m_mutex);
   m_cs_blocks.push(blk);
-}
-
-void BlockLoader::load_log() {
-  bool is_final = false;
-  std::vector<CommitLog::Fragment::Ptr> selected;
-  for(size_t offset=0; ;) {
-    uint8_t sz = m_sem_log.wait_available();
-    block->blocks->commitlog.load_cells(this, is_final, selected, sz);
-    if(is_final)
-      break;
-    if(offset < selected.size()) {
-      for(auto it=selected.begin()+offset; it < selected.end(); ++it) {
-        m_sem_log.acquire();
-        {
-          Core::MutexSptd::scope lock(m_mutex);
-          m_fragments.push(*it);
-        }
-        (*it)->load([this](CommitLog::Fragment::Ptr){ load_fragments(); });
-        (*it)->processing_decrement();
-      }
-      offset = selected.size();
-    } else {
-      is_final = true;
-      m_sem_cs.wait_all();
-      m_sem_log.wait_all();
-    }
-  }
-  block->loaded(this);
 }
 
 void BlockLoader::loaded_blk() {
   {
     Core::MutexSptd::scope lock(m_mutex);
-    if(m_cs_blocks_running)
+    if(m_processing)
       return;
-    m_cs_blocks_running = true;
+    m_processing = true;
   }
-  Env::Rgr::post([this](){ load_cs_blocks(); });
+  Env::Rgr::post([this](){ load_cellstores_cells(); });
 }
 
-void BlockLoader::load_cs_blocks() {
+void BlockLoader::load_cellstores_cells() {
   int err;
+  bool loaded;
   for(CellStore::Block::Read::Ptr blk; ; ) {
     {
       Core::MutexSptd::scope lock(m_mutex);
       if(m_cs_blocks.empty()) {
-        m_cs_blocks_running = false;
+        m_processing = false;
         break;
       }
-      blk = m_cs_blocks.front();
-      if(blk->loaded(err) || err) {
-        m_cs_blocks.pop();
-      } else {
-        m_cs_blocks_running = false;
+      loaded = (blk = m_cs_blocks.front())->loaded(err = Error::OK);
+      if(!err && !loaded) {
+        m_processing = false;
         return;
       }
+      if(err) {
+        blk->processing_decrement();
+        if(!error)
+          error = Error::RANGE_CELLSTORES;
+      }
     }
-    if(err) {
-      blk->processing_decrement();
-      if(!error)
-        error = Error::RANGE_CELLSTORES;
-    } else {
+    if(loaded) {
       blk->load_cells(err, block);
+      ++count_cs_blocks;
     }
-    m_sem_cs.release();
-    ++count_cs_blocks;
+    {
+      Core::MutexSptd::scope lock(m_mutex);
+      m_cs_blocks.pop();
+    }
   }
-  load_fragments();
+  if(check_log())
+    load_log(false);
 }
 
-void BlockLoader::load_fragments() {
-  if(m_sem_cs.has_pending())
-    return;
+//CommitLog
+bool BlockLoader::check_log() {
+  Core::MutexSptd::scope lock(m_mutex);
+  return m_checking_log ? false : (m_checking_log = true);
+}
+
+void BlockLoader::load_log(bool is_final, bool is_more) {
+  check_more:
+  uint8_t vol = CommitLog::Fragments::MAX_PRELOAD;
   {
     Core::MutexSptd::scope lock(m_mutex);
-    if(m_fragments_running)
-      return;
-    m_fragments_running = true;
+    if(m_logs) {
+      vol -= m_logs;
+      if(is_final)
+        is_final = false;
+    }
   }
-  Env::Rgr::post([this](){ _load_fragments(); });
+  if(vol) {
+    size_t offset = m_f_selected.size(); 
+    block->blocks->commitlog.load_cells(this, is_final, m_f_selected, vol); 
+    if(offset < m_f_selected.size()) {
+      {
+        Core::MutexSptd::scope lock(m_mutex);
+        m_logs += m_f_selected.size() - offset;
+      }
+      for(auto it=m_f_selected.begin()+offset; it<m_f_selected.end(); ++it) {
+        (*it)->load([this](const CommitLog::Fragment::Ptr& frag) { 
+          loaded_frag(frag); });
+        (*it)->processing_decrement();
+      }
+    }
+  }
+  bool more;
+  bool wait;
+  {
+    Core::MutexSptd::scope lock(m_mutex);
+    m_checking_log = false;
+    if((!is_more && m_processing) || !m_cs_blocks.empty())
+      return;
+    more = is_more || (m_logs && !m_fragments.empty());
+    wait = m_processing || m_logs || !m_fragments.empty();
+  }
+  if(more) 
+    return loaded_frag(nullptr);
+  if(wait)
+    return;
+  if(is_final)
+    return completion();
+  if(check_log()) {
+    is_final = true;
+    goto check_more;
+  }
 }
 
-void BlockLoader::_load_fragments() {
+void BlockLoader::loaded_frag(const CommitLog::Fragment::Ptr& frag) {
+  {
+    Core::MutexSptd::scope lock(m_mutex);
+    if(frag)
+      m_fragments.push(frag);
+    if(m_processing || !m_cs_blocks.empty())
+      return;
+    m_processing = true;
+  }
+  Env::Rgr::post([this](){ load_log_cells(); });
+}
+
+void BlockLoader::load_log_cells() {
+  bool more;
+  bool loaded;
   int err;
   for(CommitLog::Fragment::Ptr frag; ; ) {
     {
       Core::MutexSptd::scope lock(m_mutex);
       if(m_fragments.empty()) {
-        m_fragments_running = false;
-        return;
+        m_processing = false;
+        break;
       }
       frag = m_fragments.front();
-      if(frag->loaded(err)) {
-        m_fragments.pop();
-        goto load_cells;
-      }
-      m_fragments_running = false;
+      m_fragments.pop();
+      more = m_logs == CommitLog::Fragments::MAX_PRELOAD;
+      if((loaded = frag->loaded()))
+        --m_logs;
     }
-
-    if(err) {
+    if(!loaded) {
+      // temp-check, that should not be happening
       SWC_LOG_OUT(LOG_WARN,
-        Error::print(
-          SWC_LOG_OSTREAM << "BlockLoader fragment retrying to ", err);
-        frag->print(SWC_LOG_OSTREAM << ' ');
+        frag->print(SWC_LOG_OSTREAM << "Fragment not-loaded, load-again ");
       );
-      std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-      frag->load([this](CommitLog::Fragment::Ptr) { load_fragments(); } );
+      frag->load([this](const CommitLog::Fragment::Ptr& frag){
+        loaded_frag(frag); });
       frag->processing_decrement();
+      continue;
     }
-    return;
-
-    load_cells:
-      frag->load_cells(err, block);
-      m_sem_log.release();
-      ++count_fragments;
+    frag->load_cells(err = Error::OK, block);
+    ++count_fragments;
+    if(more && check_log())
+      Env::Rgr::post([this](){ load_log(false, true); });
   }
+
+  if(check_log())
+    load_log(true);
+}
+
+void BlockLoader::completion() {
+  SWC_ASSERT(m_fragments.empty());
+  SWC_ASSERT(!m_logs);
+  SWC_ASSERT(m_cs_blocks.empty());
+
+  block->loaded(this);
 }
 
 

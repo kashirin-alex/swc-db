@@ -38,25 +38,31 @@ class BlockLoader final {
 
   void add(CellStore::Block::Read::Ptr blk);
 
-  void load_log();
-
   void loaded_blk();
 
   private:
 
-  void load_cs_blocks();
+  void load_cellstores_cells();
 
-  void load_fragments();
+  bool check_log();
 
-  void _load_fragments();
+  void load_log(bool is_final, bool is_more=false);
 
-  Core::Semaphore                         m_sem_cs;
-  Core::Semaphore                         m_sem_log;
-  Core::MutexSptd                         m_mutex;
-  std::queue<CellStore::Block::Read::Ptr> m_cs_blocks;
-  std::queue<CommitLog::Fragment::Ptr>    m_fragments;
-  bool                                    m_cs_blocks_running;
-  bool                                    m_fragments_running;
+  void loaded_frag(const CommitLog::Fragment::Ptr& frag);
+  
+  void load_log_cells();
+
+  void completion();
+
+
+  Core::MutexSptd                           m_mutex;
+  bool                                      m_processing;
+  bool                                      m_checking_log;
+  uint8_t                                   m_logs;
+
+  std::queue<CellStore::Block::Read::Ptr>   m_cs_blocks;
+  std::vector<CommitLog::Fragment::Ptr>     m_f_selected;
+  std::queue<CommitLog::Fragment::Ptr>      m_fragments;
 
 };
 

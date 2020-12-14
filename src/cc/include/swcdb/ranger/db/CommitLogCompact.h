@@ -38,7 +38,7 @@ class Compact final {
 
     void load();
 
-    void loaded(Fragment::Ptr frag);
+    void loaded(const Fragment::Ptr& frag);
 
     void write();
     

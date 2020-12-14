@@ -59,7 +59,7 @@ class Splitter final {
 
       } else {
         m_sem.acquire();
-        frag->load([this] (Fragment::Ptr frag) { loaded(frag); });
+        frag->load([this] (const Fragment::Ptr& frag) { loaded(frag); });
         ++splitted;
         ++it;
       }
@@ -77,7 +77,7 @@ class Splitter final {
 
   private:
 
-  void loaded(Fragment::Ptr frag) {
+  void loaded(const Fragment::Ptr& frag) {
     int err;
     if(!frag->loaded(err)) {
       SWC_LOG_OUT(LOG_WARN,
@@ -86,7 +86,7 @@ class Splitter final {
         frag->print(SWC_LOG_OSTREAM << ' ');
       );
       std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-      frag->load([this] (Fragment::Ptr frag) { loaded(frag); });
+      frag->load([this] (const Fragment::Ptr& frag) { loaded(frag); });
       frag->processing_decrement();
 
     } else if(m_splitting.push_and_is_1st(frag)) {

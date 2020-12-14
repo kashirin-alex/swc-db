@@ -204,7 +204,7 @@ void Blocks::scan(ReqScan::Ptr req, Block::Ptr blk_ptr) {
             && m_mutex.try_full_lock(support); ) {
           blk = blk->next;
           m_mutex.unlock(support);
-          if(!blk)
+          if(!blk || commitlog.is_compacting())
             break;
           if(blk->need_load() && blk->includes(req->spec)) {
             blk->processing_increment();
@@ -237,7 +237,8 @@ bool Blocks::_split(Block::Ptr blk, bool loaded) {
       blk = blk->_split(loaded);
       m_blocks_idx.insert(m_blocks_idx.begin()+(++offset), blk);
       if(!blk->loaded()) {
-        if((preload = range->is_loaded() && range->compacting() &&
+        if((preload = !commitlog.is_compacting() &&
+                  range->is_loaded() && range->compacting() &&
                   !Env::Rgr::res().need_ram(range->cfg->block_size() * 10)))
           blk->processing_increment();
         break;

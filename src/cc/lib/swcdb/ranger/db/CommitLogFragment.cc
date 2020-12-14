@@ -46,13 +46,13 @@ Fragment::Ptr Fragment::make_read(int& err, const std::string& filepath,
     cell_revs, cells_count, data_checksum, offset_data
   );
 
-  return err ? nullptr : new Fragment(
+  return Fragment::Ptr(err ? nullptr : new Fragment(
     smartfd, 
     version, interval, 
     encoder, size_plain, size_enc, 
     cell_revs, cells_count, data_checksum, offset_data, 
     State::NONE
-  );
+  ));
 }
 
 void Fragment::load_header(int& err, FS::SmartFd::Ptr& smartfd, 
@@ -161,7 +161,7 @@ Fragment::Ptr Fragment::make_write(int& err, const std::string& filepath,
     State::WRITING
   );
   frag->m_buffer.set(cells);
-  return frag;
+  return Fragment::Ptr(frag);
 }
 
 void Fragment::write(int& err,
@@ -224,7 +224,8 @@ Fragment::Fragment(const FS::SmartFd::Ptr& smartfd,
                     m_state(state), m_smartfd(smartfd), 
                     m_processing(m_state == State::WRITING), 
                     m_err(Error::OK),
-                    m_cells_remain(cells_count) {
+                    m_cells_remain(cells_count),
+                    m_marked_removed(false) {
   Env::Rgr::res().more_mem_usage(size_of());
 }
 
@@ -233,6 +234,10 @@ Fragment::~Fragment() {
     size_of() + 
     (m_buffer.size && m_state == State::NONE ? 0 : size_plain)
   );
+}
+
+Fragment::Ptr Fragment::ptr() {
+  return shared_from_this();
 }
 
 size_t Fragment::size_of() const {
@@ -263,9 +268,9 @@ void Fragment::write(int err, uint8_t blk_replicas, int64_t blksz,
       );
 
     Env::FsInterface::fs()->write(
-      [this, blk_replicas, blksz, buff_write, sem]
+      [frag=ptr(), blk_replicas, blksz, buff_write, sem]
       (int err, const FS::SmartFd::Ptr&) {
-        write(err, blk_replicas, blksz, buff_write, sem);
+        frag->write(err, blk_replicas, blksz, buff_write, sem);
       }, 
       m_smartfd, blk_replicas, blksz, *buff_write.get()
     );
@@ -289,50 +294,58 @@ void Fragment::write(int err, uint8_t blk_replicas, int64_t blksz,
     }
   }
   if(keep)
-    Env::Rgr::post([this](){ run_queued(); });
+    Env::Rgr::post([frag=ptr()](){ frag->run_queued(); });
 }
 
-void Fragment::load(const std::function<void(Fragment::Ptr)>& cb) {
+void Fragment::load(const Fragment::LoadCb_t& cb) {
   bool loaded;
   {
     Core::MutexSptd::scope lock(m_mutex);
     ++m_processing;
     if(!(loaded = m_state == State::LOADED)) {
-      m_queue.push(cb);
+      if(m_marked_removed) {
+        m_state = State::LOADED;
+      } else {
+        m_queue.push(cb);
 
-      if(m_state == State::LOADING || m_state == State::WRITING)
-        return;
-      m_state = State::LOADING;
+        if(m_state == State::LOADING || m_state == State::WRITING)
+          return;
+        m_state = State::LOADING;
+      }
     }
   }
 
   if(loaded) {
-    cb(this);
+    cb(ptr());
   } else {
     Env::Rgr::res().more_mem_usage(size_plain);
-    Env::Rgr::post([this](){
+    Env::Rgr::post([frag=ptr()](){
       Env::FsInterface::fs()->combi_pread(
-        [this](int err, FS::SmartFd::Ptr, const StaticBuffer::Ptr& buffer) {
-          Env::Rgr::post([this, err, buffer](){ load_read(err, buffer); } );
+        [frag](int err, FS::SmartFd::Ptr, const StaticBuffer::Ptr& buffer) {
+          Env::Rgr::post([frag, err, buffer](){ 
+            frag->load_read(err, buffer); 
+          });
         }, 
-        m_smartfd, offset_data, size_enc
+        frag->m_smartfd, frag->offset_data, frag->size_enc
       );
     });
   }
 }
 
 void Fragment::load_cells(int&, Ranger::Block::Ptr cells_block) {
-  bool was_splitted = false;
-  if(m_buffer.size) {
-    m_cells_remain -= cells_block->load_cells(
-      m_buffer.base, m_buffer.size, 
-      cell_revs, cells_count, 
-      was_splitted
-    );
-  } else {
+  if(!marked_removed()) {
+    bool was_splitted = false;
+    if(m_buffer.size) {
+      m_cells_remain -= cells_block->load_cells(
+        m_buffer.base, m_buffer.size,
+        cell_revs, cells_count,
+        was_splitted
+      );
+    } else {
     SWC_LOG_OUT(LOG_WARN, 
       print(SWC_LOG_OSTREAM << "Fragment::load_cells empty buf ");
     );
+    }
   }
   processing_decrement();
 
@@ -341,75 +354,80 @@ void Fragment::load_cells(int&, Ranger::Block::Ptr cells_block) {
 }
 
 void Fragment::load_cells(int&, DB::Cells::MutableVec& cells) {
-  if(m_buffer.size) {
-    size_t count = 0;
-    DB::Cells::Cell cell;
-    bool synced = cells.empty();
-    size_t offset_hint = 0;
-    size_t offset_it_hint = 0;
-    const uint8_t* buf = m_buffer.base;
-    size_t remain = m_buffer.size;
-    while(remain) {
-      ++count;
-      try {
-        cell.read(&buf, &remain);
+  if(!marked_removed()) {
+    if(m_buffer.size) {
+      size_t count = 0;
+      DB::Cells::Cell cell;
+      bool synced = cells.empty();
+      size_t offset_hint = 0;
+      size_t offset_it_hint = 0;
+      const uint8_t* buf = m_buffer.base;
+      size_t remain = m_buffer.size;
+      while(remain) {
+        ++count;
+        try {
+          cell.read(&buf, &remain);
 
-      } catch(...) {
-        SWC_LOG_OUT(LOG_ERROR, 
-          SWC_LOG_OSTREAM 
-            << "Cell trunclated at count=" << count << '/' << cells_count
-            << " remain=" << remain << ' ';
-          print(SWC_LOG_OSTREAM);
-          SWC_LOG_OSTREAM << ' ' << SWC_CURRENT_EXCEPTION("");
-        );
-        break;
+        } catch(...) {
+          SWC_LOG_OUT(LOG_ERROR,
+            SWC_LOG_OSTREAM
+              << "Cell trunclated at count=" << count << '/' << cells_count
+              << " remain=" << remain << ' ';
+            print(SWC_LOG_OSTREAM);
+            SWC_LOG_OSTREAM << ' ' << SWC_CURRENT_EXCEPTION("");
+          );
+          break;
+        }
+        if(synced)
+          cells.add_sorted(cell);
+        else
+          cells.add_raw(cell, &offset_it_hint, &offset_hint);
       }
-      if(synced)
-        cells.add_sorted(cell);
-      else
-        cells.add_raw(cell, &offset_it_hint, &offset_hint);
+    } else {
+      SWC_LOG_OUT(LOG_WARN,
+        print(SWC_LOG_OSTREAM << "Fragment::load_cells empty buf ");
+      );
     }
-  } else {
-    SWC_LOG_OUT(LOG_WARN, 
-      print(SWC_LOG_OSTREAM << "Fragment::load_cells empty buf ");
-    );
   }
   processing_decrement();
 }
 
 void Fragment::split(int&, const DB::Cell::Key& key, 
                      Fragments::Ptr log_left, Fragments::Ptr log_right) {
-  if(m_buffer.size) {
-    size_t count = 0;
-    DB::Cells::Cell cell;
-    const uint8_t* buf = m_buffer.base;
-    size_t remain = m_buffer.size;
+  if(!marked_removed()) {
+    if(m_buffer.size) {
+      size_t count = 0;
+      DB::Cells::Cell cell;
+      const uint8_t* buf = m_buffer.base;
+      size_t remain = m_buffer.size;
 
-    while(remain) {
-      ++count;
-      try {
-        cell.read(&buf, &remain);
+      while(remain) {
+        ++count;
+        try {
+          cell.read(&buf, &remain);
 
-      } catch(...) {
-        SWC_LOG_OUT(LOG_ERROR, 
-          SWC_LOG_OSTREAM 
-            << "Cell trunclated at count=" << count << '/' << cells_count
-            << " remain=" << remain << ' ';
-          print(SWC_LOG_OSTREAM);
-          SWC_LOG_OSTREAM << ' ' << SWC_CURRENT_EXCEPTION("");
-        );
-        break;
+        } catch(...) {
+          SWC_LOG_OUT(LOG_ERROR,
+            SWC_LOG_OSTREAM
+              << "Cell trunclated at count=" << count << '/' << cells_count
+              << " remain=" << remain << ' ';
+            print(SWC_LOG_OSTREAM);
+            SWC_LOG_OSTREAM << ' ' << SWC_CURRENT_EXCEPTION("");
+          );
+          break;
+        }
+
+        if(DB::KeySeq::compare(interval.key_seq, key, cell.key)
+            == Condition::GT)
+          log_right->add(cell);
+        else
+          log_left->add(cell);
       }
-
-      if(DB::KeySeq::compare(interval.key_seq, key, cell.key) == Condition::GT)
-        log_right->add(cell);
-      else
-        log_left->add(cell);
-    }
-  } else {
+    } else {
       SWC_LOG_OUT(LOG_WARN, 
         print(SWC_LOG_OSTREAM << "Fragment::load_cells empty buf ");
       );
+    }
   }
   processing_decrement();
   release();
@@ -482,23 +500,40 @@ bool Fragment::processing() {
   return busy;
 }
 
+bool Fragment::marked_removed() {
+  Core::MutexSptd::scope lock(m_mutex);
+  return m_marked_removed;
+}
+
+bool Fragment::mark_removed() {
+  Core::MutexSptd::scope lock(m_mutex);
+  if(m_marked_removed)
+    return false;
+  m_marked_removed = true;
+  return true;
+}
+
 void Fragment::remove(int &err) {
-  if(m_smartfd->valid()) {
-    int tmperr = Error::OK;
-    Env::FsInterface::interface()->close(tmperr, m_smartfd);
+  if(mark_removed()) {
+    if(m_smartfd->valid()) {
+      int tmperr = Error::OK;
+      Env::FsInterface::interface()->close(tmperr, m_smartfd);
+    }
+    Env::FsInterface::interface()->remove(err, m_smartfd->filepath());
   }
-  Env::FsInterface::interface()->remove(err, m_smartfd->filepath()); 
 }
 
 void Fragment::remove(int&, Core::Semaphore* sem) {
   if(m_smartfd->valid()) {
     Env::FsInterface::interface()->close(
-      [this, sem](int err, FS::SmartFd::Ptr) { remove(err=Error::OK, sem); },
+      [frag=ptr(), sem](int err, FS::SmartFd::Ptr) { 
+        frag->remove(err=Error::OK, sem); 
+      },
       m_smartfd
     );
-  } else {
+  } else if(mark_removed()) {
     Env::FsInterface::interface()->remove(
-      [this, sem](int) { sem->release(); },
+      [frag=ptr(), sem](int) { sem->release(); },
       m_smartfd->filepath()
     );
   }
@@ -518,11 +553,18 @@ void Fragment::print(std::ostream& out) {
         << " processing=" << m_processing;
     if(m_err)
       Error::print(out, m_err);
+    if(m_marked_removed)
+      out << " MARKED-REMOVED";
   }
   out << ' ' << interval << ')';
 }
 
 void Fragment::load_read(int err, const StaticBuffer::Ptr& buffer) {
+  do_load_read:
+
+  if(marked_removed())
+    return load_finish(err);
+
   switch(err) {
     case Error::FS_PATH_NOT_FOUND:
     case Error::SERVER_SHUTTING_DOWN:
@@ -535,8 +577,11 @@ void Fragment::load_read(int err, const StaticBuffer::Ptr& buffer) {
         print(SWC_LOG_OSTREAM << ' ');
       );
       Env::FsInterface::fs()->combi_pread(
-        [this](int err, FS::SmartFd::Ptr, const StaticBuffer::Ptr& buffer) {
-          Env::Rgr::post([this, err, buffer](){ load_read(err, buffer); } );
+        [frag=ptr()]
+        (int err, FS::SmartFd::Ptr, const StaticBuffer::Ptr& buffer) {
+          Env::Rgr::post([frag, err, buffer](){ 
+            frag->load_read(err, buffer); 
+          });
         }, 
         m_smartfd, offset_data, size_enc
       );
@@ -563,16 +608,21 @@ void Fragment::load_read(int err, const StaticBuffer::Ptr& buffer) {
       }
     }
   }
-
-  err ? load_read(err, nullptr) : load_finish(err);
+  if(err) {
+    buffer->free();
+    goto do_load_read;
+  } else {
+    load_finish(err);
+  }
 }
 
 void Fragment::load_finish(int err) {
   {
     Core::MutexSptd::scope lock(m_mutex);
-    m_err = err == Error::FS_PATH_NOT_FOUND ? Error::OK : err;
+    m_err = m_marked_removed || err == Error::FS_PATH_NOT_FOUND
+      ? Error::OK : err;
     m_state = m_err ? State::NONE : State::LOADED;
-    if(err) {
+    if(err || m_marked_removed) {
       m_buffer.free();
       Env::Rgr::res().less_mem_usage(size_plain);
     }
@@ -588,15 +638,15 @@ void Fragment::load_finish(int err) {
 
 
 void Fragment::run_queued() {
-  for(std::function<void(Fragment::Ptr)> cb;;) {
+  for(LoadCb_t cb;;) {
     {
       Core::MutexSptd::scope lock(m_mutex);
       if(m_queue.empty())
         return;
-      cb = m_queue.front();
+      cb = std::move(m_queue.front());
       m_queue.pop();
     }
-    cb(this);
+    cb(ptr());
   }
 }
 

@@ -43,7 +43,7 @@ void Compact::Group::run(bool initial) {
       break;
     }
     running = m_running.fetch_add(1, std::memory_order_relaxed);
-    read_frags[idx]->load([this] (Fragment::Ptr frag) {
+    read_frags[idx]->load([this] (const Fragment::Ptr& frag) {
       Env::Rgr::post([this, frag]() { loaded(frag); });
     });
   } while(running < 2);
@@ -52,7 +52,7 @@ void Compact::Group::run(bool initial) {
     write();
 }
 
-void Compact::Group::loaded(Fragment::Ptr frag) {
+void Compact::Group::loaded(const Fragment::Ptr& frag) {
   if(compact->log->stopping || error) {
     frag->processing_decrement();
     return run(false);
@@ -66,7 +66,7 @@ void Compact::Group::loaded(Fragment::Ptr frag) {
       frag->print(SWC_LOG_OSTREAM << ' ');
     );
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-    frag->load([this] (Fragment::Ptr frag) {
+    frag->load([this] (const Fragment::Ptr& frag) {
       Env::Rgr::post([this, frag]() { loaded(frag); });
     });
     frag->processing_decrement();
@@ -140,36 +140,19 @@ void Compact::Group::write() {
 }
 
 void Compact::Group::finalize() {
-  if(!error && !compact->log->stopping) {
-    if(read_frags.size() != m_remove.size())
-      error = Error::CANCELLED;
-  }
-
-  Fragments::Vec tmp_frags;
   int err = Error::OK;
-  for(auto frag : m_fragments) {
-    if(compact->log->stopping || error) {
-      frag->remove(err = Error::OK);
-    } else {
-      auto tmp = compact->log->take_ownership(err = Error::OK, frag);
-      if(tmp) {
-        tmp_frags.push_back(tmp);
-      } else {
-        if(err)
-          error = err;
-        frag->remove(err = Error::OK);
-      }
-    }
-    if(err)
-      error = err;
-    delete frag;
+  if(!error && !compact->log->stopping && 
+     read_frags.size() == m_remove.size()) {
+    compact->log->take_ownership(err, m_fragments, m_remove);
   }
 
-  if(compact->log->stopping || error) {
-    if(!tmp_frags.empty())
-      compact->log->remove(err, tmp_frags);
-  } else {
-    compact->log->remove(err, m_remove);
+  if(!m_fragments.empty()) {
+    Core::Semaphore sem(10);
+    for(auto frag : m_fragments) {
+      sem.acquire();
+      frag->remove(err = Error::OK, &sem);
+    }
+    sem.wait_all();
   }
 
   compact->finalized();

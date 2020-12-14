@@ -51,7 +51,9 @@ class Fragments final : private std::vector<Fragment::Ptr> {
 
   void commit_new_fragment(bool finalize=false);
 
-  void add(Fragment::Ptr frag);
+  void add(Fragment::Ptr& frag);
+
+  bool is_compacting() const;
 
   size_t need_compact(std::vector<Vec>& groups, const Vec& without,
                       size_t vol);
@@ -71,21 +73,23 @@ class Fragments final : private std::vector<Fragment::Ptr> {
   void expand_and_align(DB::Cells::Interval& intval);
 
   void load_cells(BlockLoader* loader, bool& is_final, 
-                  Fragments::Vec& frags, uint8_t vol);
+                  Vec& frags, uint8_t vol);
 
   void get(Vec& fragments);
 
   size_t release(size_t bytes);
 
-  void remove(int &err, Vec& fragments_old);
+  void remove(int &err, Vec& fragments_old, bool safe=false);
 
-  void remove(int &err, Fragment::Ptr frag, bool remove_file);
+  void remove(int &err, Fragment::Ptr& frag, bool remove_file);
 
   void remove();
 
   void unload();
 
-  Fragment::Ptr take_ownership(int &err, Fragment::Ptr frag);
+  Fragment::Ptr take_ownership(int &err, Fragment::Ptr& frag);
+
+  void take_ownership(int& err, Vec& frags, Vec& removing);
 
   bool deleting();
 
@@ -105,7 +109,9 @@ class Fragments final : private std::vector<Fragment::Ptr> {
 
   private:
 
-  void _add(Fragment::Ptr frag);
+  void _add(Fragment::Ptr& frag);
+
+  uint64_t _next_id();
 
   bool _need_roll() const;
 
@@ -114,7 +120,7 @@ class Fragments final : private std::vector<Fragment::Ptr> {
 
   bool _need_compact_major();
 
-  void _load_cells(BlockLoader* loader, Fragments::Vec& frags, uint8_t& vol);
+  void _load_cells(BlockLoader* loader, Vec& frags, uint8_t& vol);
 
   bool _processing() const;
 
@@ -129,7 +135,7 @@ class Fragments final : private std::vector<Fragment::Ptr> {
   bool                        m_commiting;
   bool                        m_deleting;
   std::condition_variable_any m_cv;
-  bool                        m_compacting;
+  std::atomic<bool>           m_compacting;
   Core::Semaphore             m_sem;
   uint64_t                    m_last_id;
 };
