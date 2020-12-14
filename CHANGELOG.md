@@ -22,8 +22,7 @@
         extended client::SQL::QuerySelect parser
         added struct SpecKeyInterval to Thrift Service
         changed Thrift SpecInterval key_{start,finish} to SpecKeyInterval
-    changed Ranger CommitLog::Compact handle work-load by SWC::Core::Semaphore
-    added input Mitigation in Ranger CompactRange at log above CS(sz X max)
+    added input Mitigation in Ranger CompactRange at log above CS(sz X ~max)
     removed Ranger::Block::State::REMOVED
     added bool DB::Types::is_fc(KeySeq typ)
     added uint8_t options to DB::Specs::Interval storage used as bitwise
@@ -38,6 +37,21 @@
     changed empty-types to minimal required log-info in DB::Specs classes
     fixed Ranger Range processing state & processing at block preload
     added operators new[], delete, delete[] to swcdb/core/Malloc.h
+    added build support with MIMALLOC
+    changed Ranger Fragment::load to Async FS calls with fs()->combi_pread
+    changed Ranger CellStore Block Read::load to Async FS calls
+    added Ranger Fragment::remove(int&, Core::Semaphore* sem)
+    added FS::Interface::remove(RemoveCb_t&, string&)
+    added FS::Interface::close(CloseCb_t&, SmartFd::Ptr&)
+    added function FS::FileSystem::combi_pread (open+pread+close)
+    added FsBroker protocol command FUNCTION_COMBI_PREAD
+    changed Ranger Range add/scan request at compact without waiting thread
+    changed Ranger CommitLog::Compact to atomic completion & workload
+    changed Comm::IoContext Executor type by asio::thread_pool
+    changed Ranger Range Block marked LOADED at Block::load_final by CommitLog
+    changed Ranger CommitLog::Fragment::Ptr to std::shared_ptr<Fragment>
+    added Ranger skip Block preload at commitlog compacting
+    added Ranger CommitLog::Fragment marked-remove state
 
 [_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.4.12...master)
 ******
