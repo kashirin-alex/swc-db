@@ -104,7 +104,7 @@ class Block final {
 
   ScanState scan(const ReqScan::Ptr& req);
   
-  void loaded(const BlockLoader* loader);
+  void loader_loaded();
   
   Ptr split(bool loaded);
     
@@ -140,8 +140,6 @@ class Block final {
 
   ScanState _scan(const ReqScan::Ptr& req, bool synced=false);
 
-  void run_queue(int err, size_t count_cs_blocks, size_t count_fragments);
-
 
   mutable std::shared_mutex   m_mutex;
   DB::Cells::Mutable          m_cells;
@@ -153,12 +151,7 @@ class Block final {
   Core::MutexSptd             m_mutex_state;
   State                       m_state;
   std::atomic<size_t>         m_processing;
-
-  struct ReqQueue {
-    ReqScan::Ptr  req;
-    const int64_t ts;
-  };
-  Core::QueueSafe<ReqQueue>   m_queue;
+  BlockLoader*                m_loader;
 
 };
 

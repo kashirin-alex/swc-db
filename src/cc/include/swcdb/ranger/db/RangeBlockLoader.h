@@ -24,6 +24,13 @@ class BlockLoader final {
   std::atomic<size_t> count_fragments;
   std::atomic<int>    error;
 
+  struct ReqQueue {
+    ReqScan::Ptr  req;
+    const int64_t ts;
+  };
+  std::queue<ReqQueue> q_req; // synced by Block mutex
+
+
   explicit BlockLoader(Block::Ptr block);
 
   BlockLoader(const BlockLoader&) = delete;
@@ -34,7 +41,9 @@ class BlockLoader final {
 
   ~BlockLoader();
 
-  void run(bool preloading);
+  void add(const ReqScan::Ptr& req);
+
+  void run();
 
   void add(CellStore::Block::Read::Ptr blk);
 

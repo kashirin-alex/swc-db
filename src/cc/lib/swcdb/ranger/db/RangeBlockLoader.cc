@@ -22,7 +22,12 @@ BlockLoader::BlockLoader(Block::Ptr block)
 BlockLoader::~BlockLoader() { }
 
 SWC_SHOULD_INLINE
-void BlockLoader::run(bool ) {
+void BlockLoader::add(const ReqScan::Ptr& req) {
+  q_req.push({.req=req, .ts=Time::now_ns()});
+}
+
+SWC_SHOULD_INLINE
+void BlockLoader::run() {
   block->blocks->cellstores.load_cells(this);
   load_log(false);
 }
@@ -185,7 +190,7 @@ void BlockLoader::completion() {
   SWC_ASSERT(!m_logs);
   SWC_ASSERT(m_cs_blocks.empty());
 
-  block->loaded(this);
+  block->loader_loaded();
 }
 
 

@@ -28,7 +28,7 @@ Block::Block(const DB::Cells::Interval& interval,
                   blocks->range->cfg->cell_ttl(), 
                   blocks->range->cfg->column_type())),
               m_key_end(interval.key_end),  
-              m_state(state), m_processing(0) {
+              m_state(state), m_processing(0), m_loader(nullptr) {
   Env::Rgr::res().more_mem_usage(size_of());
 }
 
@@ -242,19 +242,29 @@ bool Block::splitter() {
 }
 
 Block::ScanState Block::scan(const ReqScan::Ptr& req) {
-  bool loaded;
   {
     Core::MutexSptd::scope lock(m_mutex_state);
-
-    if(!(loaded = m_state == State::LOADED)) {
-      m_queue.push({.req=req, .ts=Time::now_ns()});
-      if(m_state != State::NONE)
+    switch(m_state) {
+      case State::NONE: {
+        m_loader = new BlockLoader(ptr());
+        m_loader->add(req);
+        m_state = State::LOADING;
+        break;
+      }
+      case State::LOADING: {
+        m_loader->add(req);
         return ScanState::QUEUED;
-      m_state = State::LOADING;
+      }
+      case State::LOADED: {
+        goto proceed;
+      }
     }
   }
 
-  if(loaded) switch(req->type) {
+  m_loader->run();
+  return ScanState::QUEUED;
+
+  proceed: switch(req->type) {
     case ReqScan::Type::BLK_PRELOAD: {
       processing_decrement();
       return ScanState::RESPONDED;
@@ -262,22 +272,34 @@ Block::ScanState Block::scan(const ReqScan::Ptr& req) {
     default:
       return _scan(req, true);
   }
-
-  auto loader = new BlockLoader(ptr());
-  loader->run(req->type == ReqScan::Type::BLK_PRELOAD);
-  return ScanState::QUEUED;
 }
 
-void Block::loaded(const BlockLoader* loader) {
-  if(loader->error) {
-    SWC_LOG_OUT(LOG_ERROR,
-      Error::print(SWC_LOG_OSTREAM << "Block::loaded ", loader->error); );
-    quick_exit(1); // temporary halt
-    return;
-  }
-  run_queue(loader->error, loader->count_cs_blocks, loader->count_fragments);
+void Block::loader_loaded() {
+  do {
+    auto& q = m_loader->q_req.front();
+    switch(q.req->type) {
+      case ReqScan::Type::BLK_PRELOAD: {
+        processing_decrement();
+        break;
+      }
+      default: {
+        if(!m_loader->error) {
+          q.req->profile.add_block_load(
+            q.ts, m_loader->count_cs_blocks, m_loader->count_fragments);
+          Env::Rgr::post([this, req=q.req]() { _scan(req); } );
+          break;
+        }
+        blocks->processing_decrement();
+        processing_decrement();
+        int err = m_loader->error;
+        q.req->response(err);
+      }
+    }
+    m_loader->q_req.pop();
+  } while(!m_loader->q_req.empty());
 
-  delete loader;
+  delete m_loader;
+  m_loader = nullptr;
 }
 
 Block::Ptr Block::split(bool loaded) {
@@ -356,7 +378,7 @@ bool Block::need_load() {
 }
 
 bool Block::processing() {
-  if(m_processing || !m_queue.empty())
+  if(m_processing)
     return true;
   Core::MutexSptd::scope lock(m_mutex_state);
   return m_state == State::LOADING;
@@ -410,10 +432,7 @@ void Block::print(std::ostream& out) {
   } else {
     out << "CellsLocked";
   }
-
-  out << " queue=" << m_queue.size()
-      << " processing=" << m_processing
-      << ')';
+  out << " processing=" << m_processing << ')';
 }
 
 Block::ScanState Block::_scan(const ReqScan::Ptr& req, bool synced) {
@@ -448,31 +467,6 @@ Block::ScanState Block::_scan(const ReqScan::Ptr& req, bool synced) {
     blocks->scan(req, ptr());
   
   return ScanState::SYNCED;
-}
-
-void Block::run_queue(int err, size_t count_cs_blocks,
-                               size_t count_fragments) {
-  do { 
-    ReqQueue q(std::move(m_queue.front()));
-    switch(q.req->type) {
-      case ReqScan::Type::BLK_PRELOAD: {
-        processing_decrement();
-        break;
-      }
-
-      default: {
-        if(!err) {
-          q.req->profile.add_block_load(
-            q.ts, count_cs_blocks, count_fragments);
-          Env::Rgr::post([this, req=q.req]() { _scan(req); } );
-          break;
-        }
-        blocks->processing_decrement();
-        processing_decrement();
-        q.req->response(err);
-      }
-    }
-  } while(m_queue.pop_and_more());
 }
 
 
