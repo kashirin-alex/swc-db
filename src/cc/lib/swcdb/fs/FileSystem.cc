@@ -233,20 +233,17 @@ void FileSystem::read(int& err, const std::string& name,
   open(err, smartfd);
   if(!err && !smartfd->valid())
     err = EBADR;
-  if(err)
-    goto finish;
-
-  buffer->free();
-  if(read(err, smartfd, buffer, len) != len)
-    err = Error::FS_EOF;
-  if(err)
-    goto finish;
-  
-  finish:
+  if(!err) {
+    buffer->free();
+    if(read(err, smartfd, buffer, len) != len)
+      err = Error::FS_EOF;
+  }
+  if(smartfd->valid()) {
     int errtmp;
-    if(smartfd->valid())
-      close(err ? errtmp : err, smartfd);
+    close(err ? errtmp : err, smartfd);
+  }
     
+  finish:
   if(err)
     SWC_LOGF(LOG_ERROR, "read-all failed: %d(%s), %s", 
               err, Error::get_text(err), name.c_str());
