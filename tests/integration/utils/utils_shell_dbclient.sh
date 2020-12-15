@@ -12,6 +12,12 @@ if [ -z $NUM_CELLS ];then
   NUM_CELLS=1000000;
 fi
 
+
+# START with /tmp/swcdb
+mkdir -p /tmp/swcdb;
+${SWCDB_INSTALL_PATH}/sbin/swcdb_cluster start --swc.cfg.path=${SWCDB_SOURCE_PATH}/
+
+
 SWCDB_DATA_PATH="/tmp/swcdb/utils_test";
 
 

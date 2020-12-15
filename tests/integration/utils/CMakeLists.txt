@@ -4,12 +4,6 @@
 
 
 
-add_test(
-  NAME    test-swcdb_cluster-start
-  COMMAND ${CMAKE_INSTALL_PREFIX}/sbin/swcdb_cluster start --swc.cfg.path=${CMAKE_CURRENT_SOURCE_DIR}/
-)
-
-
 
 add_test(
   NAME    utils_shell_dbclient 
