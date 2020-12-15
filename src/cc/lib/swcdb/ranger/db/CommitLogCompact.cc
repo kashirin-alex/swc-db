@@ -28,13 +28,13 @@ Compact::Group::~Group() {
 void Compact::Group::run(bool initial) {
   size_t running;
   if(initial) {
-    running = 3;
+    running = Fragments::MAX_PRELOAD;
     m_finishing = read_frags.size() + 1;
   } else {
     running = m_running.fetch_sub(1, std::memory_order_relaxed);
   }
 
-  if(running == 3) do {
+  if(running == Fragments::MAX_PRELOAD) do {
     size_t idx = m_idx.fetch_add(1, std::memory_order_relaxed);
     if(idx >= read_frags.size())
       break;
@@ -42,11 +42,11 @@ void Compact::Group::run(bool initial) {
       m_finishing -= read_frags.size() - idx;
       break;
     }
-    running = m_running.fetch_add(1, std::memory_order_relaxed);
+    running = m_running.fetch_add(1, std::memory_order_relaxed) + 1;
     read_frags[idx]->load([this] (const Fragment::Ptr& frag) {
       Env::Rgr::post([this, frag]() { loaded(frag); });
     });
-  } while(running < 2);
+  } while(running < Fragments::MAX_PRELOAD);
 
   if(m_finishing.fetch_sub(1, std::memory_order_relaxed) == 1)
     write();
