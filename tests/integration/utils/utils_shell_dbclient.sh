@@ -32,12 +32,12 @@ do_test() {
 
 ## CREATE TEST DATA
 ${SWCDB_INSTALL_PATH}/bin/swcdb_load_generator -l=warn \
-  --gen-col-name="test-shell-dbclient" \
+  --gen-col-name="test-shell-dbclient-" \
   --gen-cells=${NUM_CELLS} --swc.cfg.path=${SWCDB_SOURCE_PATH}/;
 
 
 ## DUMP 1st sample
-do_test echo "dump col='test-shell-dbclient' into 'dumps/dbclient/' DISPLAY_STATS; quit;" | \
+do_test echo "dump col='test-shell-dbclient-1' into 'dumps/dbclient/' DISPLAY_STATS; quit;" | \
 				${SWCDB_INSTALL_PATH}/bin/swcdb shell --debug --swc.cfg.path=${SWCDB_SOURCE_PATH}/;
 
 

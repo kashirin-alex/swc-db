@@ -81,8 +81,8 @@ class BenchMark:
         self.column_name += col_type + "-"
         self.column_name += blk_encoding + "-"
         self.column_name += n_fractions + "-"
-        self.column_name += cell_a_time
-        print ("--- Benchmarking column=" + self.column_name + " cells=" + self.n_cells)
+        self.column_name += cell_a_time + "-"
+        print ("--- Benchmarking column=" + self.column_name + "1 cells=" + self.n_cells)
         #
 
     def write_stats_csv(self, output):
@@ -147,7 +147,7 @@ class BenchMark:
 
     def select_data(self, args):
         cmd = [
-            'echo "select where col(', self.column_name, ')=(cells=()) DISPLAY_STATS;quit;"',
+            'echo "select where col(', self.column_name, '1)=(cells=()) DISPLAY_STATS;quit;"',
             ' | ', swcdb_cfg['install_path'][0], '/bin/swcdb',
             ' | grep \"Total Time Took:\" -A20 | tr "\\n" ",";'
         ]
@@ -158,7 +158,7 @@ class BenchMark:
 
     def compact_column(self, args):
         cmd = [
-            'echo "compact column ', self.column_name, ';quit;"',
+            'echo "compact column ', self.column_name, '1;quit;"',
             ' | ', swcdb_cfg['install_path'][0], '/bin/swcdb',
             ' | grep \"Total Time Took:\" -A20 | tr "\\n" ",";'
         ]

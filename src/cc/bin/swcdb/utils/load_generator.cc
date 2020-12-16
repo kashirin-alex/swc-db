@@ -56,7 +56,10 @@ void Settings::init_app_options() {
     ("gen-value-size", i32(256), 
       "cell value in bytes or counts for a col-counter")
 
-    ("gen-col-name", str("load_generator"), "Gen. load column name") 
+    ("gen-col-name", str("load_generator-"), 
+     "Gen. load column name, joins with colm-number") 
+    ("gen-col-number", i32(1),
+      "Number of columns to generate")
     
     ("gen-col-seq", 
       g_enum(
@@ -207,7 +210,7 @@ void apply_key(ssize_t i, ssize_t f, uint32_t fraction_size,
 }
 
 
-void update_data(DB::Schema::Ptr& schema, uint8_t flag) {
+void update_data(const std::vector<DB::Schema::Ptr>& schemas, uint8_t flag) {
   auto settings = Env::Config::settings();
 
   uint32_t versions = flag == DB::Cells::INSERT 
@@ -229,11 +232,13 @@ void update_data(DB::Schema::Ptr& schema, uint8_t flag) {
   uint32_t progress = settings->get_i32("gen-progress");
   bool cellatime = settings->get_bool("gen-cell-a-time");
 
+  std::vector<DB::Cells::ColCells::Ptr> colms;
   auto req = std::make_shared<client::Query::Update>();
-  req->columns->create(schema);
+  for(auto& schema : schemas) {
+    req->columns->create(schema);
+    colms.push_back(req->columns->get_col(schema->cid));
+  }
 
-  auto col = req->columns->get_col(schema->cid);
-  
   size_t added_count = 0;
   size_t resend_cells = 0;
   size_t added_bytes = 0;
@@ -242,7 +247,7 @@ void update_data(DB::Schema::Ptr& schema, uint8_t flag) {
   cell.set_time_order_desc(true);
 
   
-  bool is_counter = DB::Types::is_counter(schema->col_type);
+  bool is_counter = DB::Types::is_counter(schemas.front()->col_type);
   std::string value_data;
   if(flag == DB::Cells::INSERT && !is_counter) {
     uint8_t c=122;
@@ -269,20 +274,22 @@ void update_data(DB::Schema::Ptr& schema, uint8_t flag) {
 
           if(flag == DB::Cells::INSERT) { 
             if(is_counter)
-              cell.set_counter(0, 1, schema->col_type);
+              cell.set_counter(0, 1, schemas.front()->col_type);
             else
               cell.set_value(value_data);
           }
           
-          col->add(cell);
+          for(auto& col : colms) {
+            col->add(cell);
 
-          ++added_count;
-          added_bytes += cell.encoded_length();
-          if(cellatime) {
-            req->commit(col);
-            req->wait();
-          } else {
-            req->commit_or_wait(col);
+            ++added_count;
+            added_bytes += cell.encoded_length();
+            if(cellatime) {
+              req->commit();
+              req->wait();
+            } else {
+              req->commit_or_wait();
+            }
           }
 
           if(progress && !(added_count % progress)) {
@@ -292,6 +299,7 @@ void update_data(DB::Schema::Ptr& schema, uint8_t flag) {
               << " cells=" << added_count 
               << " bytes=" << added_bytes
               << " avg=" << ts_progress/progress << "ns/cell) ";
+            req->result->profile.finished();
             req->result->profile.print(SWC_LOG_OSTREAM);
             SWC_LOG_OSTREAM << SWC_PRINT_CLOSE;
 
@@ -317,7 +325,7 @@ void update_data(DB::Schema::Ptr& schema, uint8_t flag) {
 }
 
 
-void select_data(DB::Schema::Ptr& schema) {
+void select_data(const std::vector<DB::Schema::Ptr>& schemas) {
   auto settings = Env::Config::settings();
 
   bool expect_empty = settings->get_bool("gen-select-empty");
@@ -327,7 +335,7 @@ void select_data(DB::Schema::Ptr& schema) {
   uint32_t fraction_size = settings->get_i32("gen-fraction-size");
   
   bool tree = settings->get_bool("gen-key-tree");
-  uint64_t cells = settings->get_i64("gen-cells");
+  uint64_t ncells = settings->get_i64("gen-cells");
   bool reverse = settings->get_bool("gen-reverse");
   auto seq = reverse ? CountIt::REVERSE : CountIt::REGULAR;
   
@@ -342,17 +350,19 @@ void select_data(DB::Schema::Ptr& schema) {
     req = std::make_shared<client::Query::Select>();
   else
     req = std::make_shared<client::Query::Select>(
-      [&select_bytes, &select_count, cid=schema->cid] 
+      [&select_bytes, &select_count, &schemas] 
       (const client::Query::Select::Result::Ptr& result) {
-        DB::Cells::Result cells;
-        result->get_cells(cid, cells);
-        select_count += cells.size();
-        select_bytes += cells.size_bytes();
+        for(auto& schema : schemas) {
+          DB::Cells::Result cells;
+          result->get_cells(schema->cid, cells);
+          select_count += cells.size();
+          select_bytes += cells.size_bytes();
+        }
       },
       true
     );
 
-  if(DB::Types::is_counter(schema->col_type))
+  if(DB::Types::is_counter(schemas.front()->col_type))
     versions = 1;
   
   int err; 
@@ -360,7 +370,7 @@ void select_data(DB::Schema::Ptr& schema) {
   uint64_t ts_progress = ts;
 
   if(cellatime) {
-    CountIt cell_num(seq, 0, cells);
+    CountIt cell_num(seq, 0, ncells);
     CountIt f_num(seq, (tree ? 1 : fractions), fractions+1);
     ssize_t i;
     ssize_t f;
@@ -373,24 +383,27 @@ void select_data(DB::Schema::Ptr& schema) {
         auto& key_intval = intval->key_intervals.add();
         apply_key(i, f, fraction_size, key_intval->start, Condition::EQ);
         intval->flags.limit = versions;
-        req->specs.columns = {
-          DB::Specs::Column::make_ptr(schema->cid, {intval})
-        };
+        for(auto& schema : schemas) {
+          req->specs.columns.push_back(
+            DB::Specs::Column::make_ptr(schema->cid, {intval}));
+        }
 
         req->scan(err = Error::OK);
         SWC_ASSERT(!err);
 
         req->wait();
-
-        SWC_ASSERT(
-          expect_empty 
-          ? req->result->empty()
-          : req->result->get_size(schema->cid) == versions
-        );
+        if(expect_empty) {
+          SWC_ASSERT(req->result->empty());
+        } else {
+          for(auto& schema : schemas)
+            SWC_ASSERT(req->result->get_size(schema->cid) == versions);
+        }
 
         select_bytes += req->result->get_size_bytes();
         ++select_count;
-        req->result->free(schema->cid);
+        
+        for(auto& schema : schemas)
+          req->result->free(schema->cid);
 
         if(progress && !(select_count % progress)) {
           ts_progress = Time::now_ns() - ts_progress;
@@ -409,9 +422,13 @@ void select_data(DB::Schema::Ptr& schema) {
       select_count = 0;
 
   } else {
-    req->specs.columns = { DB::Specs::Column::make_ptr(
-      schema->cid, { DB::Specs::Interval::make_ptr() }
-    )};
+    for(auto& schema : schemas) {
+      req->specs.columns.push_back(
+        DB::Specs::Column::make_ptr(
+          schema->cid, { DB::Specs::Interval::make_ptr() }
+        )
+      );
+    }
     req->scan(err = Error::OK);
     SWC_ASSERT(!err);
 
@@ -419,7 +436,8 @@ void select_data(DB::Schema::Ptr& schema) {
     SWC_ASSERT(
       expect_empty
       ? req->result->empty()
-      : select_count == versions * (tree ? fractions : 1) * cells
+      : select_count == versions * (tree ? fractions : 1) 
+                          * ncells * schemas.size()
     );
   }
 
@@ -431,30 +449,32 @@ void select_data(DB::Schema::Ptr& schema) {
 }
 
 
-void make_work_load(DB::Schema::Ptr& schema) {
+void make_work_load(const std::vector<DB::Schema::Ptr>& schemas) {
   auto settings = Env::Config::settings();
 
   if(settings->get_bool("gen-insert"))
-    update_data(schema, DB::Cells::INSERT);
+    update_data(schemas, DB::Cells::INSERT);
     
   if(settings->get_bool("gen-select"))
-    select_data(schema);
+    select_data(schemas);
 
   if(settings->get_bool("gen-delete"))
-    update_data(schema, DB::Cells::DELETE);
+    update_data(schemas, DB::Cells::DELETE);
 
-  if(settings->get_bool("gen-delete-column")) { 
-    std::promise<int>  res;
-    Comm::Protocol::Mngr::Req::ColumnMng::request(
-      Comm::Protocol::Mngr::Req::ColumnMng::Func::DELETE,
-      schema,
-      [await=&res]
-      (const Comm::client::ConnQueue::ReqBase::Ptr&, int err) {
-        await->set_value(err);
-      },
-      10000
-    );
-    quit_error(res.get_future().get());
+  if(settings->get_bool("gen-delete-column")) {
+    for(auto& schema : schemas) {
+      std::promise<int>  res;
+      Comm::Protocol::Mngr::Req::ColumnMng::request(
+        Comm::Protocol::Mngr::Req::ColumnMng::Func::DELETE,
+        schema,
+        [await=&res]
+        (const Comm::client::ConnQueue::ReqBase::Ptr&, int err) {
+          await->set_value(err);
+        },
+        10000
+      );
+      quit_error(res.get_future().get());
+    }
   }
     
 }
@@ -465,17 +485,24 @@ void generate() {
 
   std::string col_name(settings->get_str("gen-col-name"));
   
+  uint32_t ncolumns(settings->get_i32("gen-col-number"));
+  
+  std::vector<DB::Schemas::Pattern> patterns;
+  patterns.push_back(DB::Schemas::Pattern(Condition::PF, col_name));
+
+  std::vector<DB::Schema::Ptr> schemas;
   int err = Error::OK;
-  auto schema = Env::Clients::get()->schemas->get(err, col_name);
-  if(schema) {
+  Env::Clients::get()->schemas->get(err, patterns, schemas);
+  if(schemas.size() == ncolumns) {
     quit_error(err);
-    make_work_load(schema);
+    make_work_load(schemas);
     return;
   }
   err = Error::OK;
 
-  schema = DB::Schema::make();
-  schema->col_name = col_name;
+  for(uint32_t ncol=1; ncol<=ncolumns; ++ncol) {
+  auto schema = DB::Schema::make();
+  schema->col_name = col_name + std::to_string(ncol);
   schema->col_seq = (DB::Types::KeySeq)settings->get_genum("gen-col-seq");
   schema->col_type = (DB::Types::Column)settings->get_genum("gen-col-type");
   schema->cell_versions = settings->get_i32("gen-cell-versions");
@@ -501,10 +528,14 @@ void generate() {
     10000
   );
   quit_error(res.get_future().get());
+  }
 
-  schema = Env::Clients::get()->schemas->get(err, col_name);
-  quit_error(err);
-  make_work_load(schema);
+  schemas.clear();
+  Env::Clients::get()->schemas->get(err, patterns, schemas);
+  if(schemas.size() != ncolumns)
+    quit_error(Error::INVALID_ARGUMENT);
+
+  make_work_load(schemas);
 }
 
 

@@ -42,7 +42,8 @@ Options:
   --gen-cell-a-time                       Write one cell at a time                                                     false
   --gen-cell-versions                     cell key versions                                                            1
   --gen-cells                             number of cells, total=cells*versions*(key-tree? key-fractions : 1)          1000
-  --gen-col-name                          Gen. load column name                                                        load_generator
+  --gen-col-name                          Gen. load column name, joins with colm-number                                load_generator-
+  --gen-col-number                        Number of columns to generate                                                1
   --gen-col-seq                           Schema col-seq FC_+/LEXIC/VOLUME                                             LEXIC  # (1)
   --gen-col-type                          Schema col-type PLAIN/COUNTER_I64/COUNTER_I32/COUNTER_I16/COUNTER_I8         PLAIN  # (1)
   --gen-compaction-percent                Compaction threshold in % applied over size of either by cellstore or block  0
@@ -103,29 +104,29 @@ Options:
 ```
 
 ```text
- progress(cells=100000 bytes=32150000 cell/ns=1784) Profile(took=0ns mngr[locate(count=5 time=922339ns errors=0) res(count=2 time=211156ns errors=0)] rgr[locate-master(count=5 time=854258ns errors=0) locate-meta(count=5 time=983112ns errors=0) data(count=4 time=111161626ns errors=0)])
- progress(cells=200000 bytes=64300000 cell/ns=1732) Profile(took=0ns mngr[locate(count=9 time=1431793ns errors=0) res(count=2 time=211156ns errors=0)] rgr[locate-master(count=9 time=1272753ns errors=0) locate-meta(count=9 time=1375490ns errors=0) data(count=8 time=267873288ns errors=0)])
- progress(cells=300000 bytes=96450000 cell/ns=1736) Profile(took=0ns mngr[locate(count=12 time=1827944ns errors=0) res(count=2 time=211156ns errors=0)] rgr[locate-master(count=12 time=1603651ns errors=0) locate-meta(count=12 time=1673478ns errors=0) data(count=11 time=411488019ns errors=0)])
- progress(cells=400000 bytes=128600000 cell/ns=1949) Profile(took=0ns mngr[locate(count=14 time=2144028ns errors=0) res(count=2 time=211156ns errors=0)] rgr[locate-master(count=14 time=1883633ns errors=0) locate-meta(count=14 time=1929977ns errors=0) data(count=15 time=656728895ns errors=0)])
- progress(cells=500000 bytes=160750000 cell/ns=2023) Profile(took=0ns mngr[locate(count=18 time=2699469ns errors=0) res(count=2 time=211156ns errors=0)] rgr[locate-master(count=18 time=2370183ns errors=0) locate-meta(count=18 time=2375885ns errors=0) data(count=19 time=902771091ns errors=0)])
- progress(cells=600000 bytes=192900000 cell/ns=1958) Profile(took=0ns mngr[locate(count=20 time=2974040ns errors=0) res(count=2 time=211156ns errors=0)] rgr[locate-master(count=20 time=2634322ns errors=0) locate-meta(count=20 time=2586125ns errors=0) data(count=23 time=1158093212ns errors=0)])
- progress(cells=700000 bytes=225050000 cell/ns=1983) Profile(took=0ns mngr[locate(count=22 time=3271112ns errors=0) res(count=2 time=211156ns errors=0)] rgr[locate-master(count=22 time=2866603ns errors=0) locate-meta(count=22 time=2784441ns errors=0) data(count=26 time=1410341485ns errors=0)])
- progress(cells=800000 bytes=257200000 cell/ns=2019) Profile(took=0ns mngr[locate(count=24 time=3538260ns errors=0) res(count=2 time=211156ns errors=0)] rgr[locate-master(count=24 time=3111473ns errors=0) locate-meta(count=24 time=3018799ns errors=0) data(count=30 time=1710843676ns errors=0)])
- progress(cells=900000 bytes=289350000 cell/ns=1906) Profile(took=0ns mngr[locate(count=26 time=3781197ns errors=0) res(count=2 time=211156ns errors=0)] rgr[locate-master(count=26 time=3336873ns errors=0) locate-meta(count=26 time=3233807ns errors=0) data(count=34 time=2000196536ns errors=0)])
- progress(cells=1000000 bytes=321500000 cell/ns=3169) Profile(took=1956855249ns mngr[locate(count=28 time=4193694ns errors=0) res(count=2 time=211156ns errors=0)] rgr[locate-master(count=28 time=3788386ns errors=0) locate-meta(count=28 time=3560372ns errors=0) data(count=40 time=2546827778ns errors=0)])
+update-progress(time_ns=1608138357274470354 cells=100000 bytes=32150000 avg=6162ns/cell) Profile(took=616291400ns mngr[locate(count=1 time=1464208ns errors=0) res(count=3 time=503774681ns errors=0)] rgr[locate-master(count=1 time=965690ns errors=0) locate-meta(count=2 time=1139153ns errors=1) data(count=1 time=40440078ns errors=0)])
+update-progress(time_ns=1608138357446573123 cells=200000 bytes=64300000 avg=1720ns/cell) Profile(took=788394605ns mngr[locate(count=5 time=4594245ns errors=0) res(count=3 time=503774681ns errors=0)] rgr[locate-master(count=5 time=3398183ns errors=0) locate-meta(count=6 time=3589221ns errors=1) data(count=5 time=301061683ns errors=0)])
+update-progress(time_ns=1608138357616718404 cells=300000 bytes=96450000 avg=1701ns/cell) Profile(took=958539496ns mngr[locate(count=7 time=5655401ns errors=0) res(count=3 time=503774681ns errors=0)] rgr[locate-master(count=7 time=4696201ns errors=0) locate-meta(count=8 time=4858866ns errors=1) data(count=9 time=559957358ns errors=0)])
+update-progress(time_ns=1608138357794740315 cells=400000 bytes=128600000 avg=1780ns/cell) Profile(took=1136561436ns mngr[locate(count=9 time=6733974ns errors=0) res(count=3 time=503774681ns errors=0)] rgr[locate-master(count=9 time=5925180ns errors=0) locate-meta(count=10 time=5964910ns errors=1) data(count=13 time=795534572ns errors=0)])
+update-progress(time_ns=1608138357985374183 cells=500000 bytes=160750000 avg=1906ns/cell) Profile(took=1327195584ns mngr[locate(count=12 time=8481223ns errors=0) res(count=3 time=503774681ns errors=0)] rgr[locate-master(count=12 time=7818910ns errors=0) locate-meta(count=13 time=7921328ns errors=1) data(count=17 time=1063245349ns errors=0)])
+update-progress(time_ns=1608138358184367680 cells=600000 bytes=192900000 avg=1989ns/cell) Profile(took=1526188854ns mngr[locate(count=14 time=9720490ns errors=0) res(count=3 time=503774681ns errors=0)] rgr[locate-master(count=14 time=9014367ns errors=0) locate-meta(count=15 time=9233217ns errors=1) data(count=21 time=1374800120ns errors=0)])
+update-progress(time_ns=1608138358375073221 cells=700000 bytes=225050000 avg=1906ns/cell) Profile(took=1716894548ns mngr[locate(count=16 time=10973310ns errors=0) res(count=3 time=503774681ns errors=0)] rgr[locate-master(count=16 time=10371553ns errors=0) locate-meta(count=17 time=10509343ns errors=1) data(count=25 time=1606093561ns errors=0)])
+update-progress(time_ns=1608138358566580607 cells=800000 bytes=257200000 avg=1914ns/cell) Profile(took=1908402112ns mngr[locate(count=18 time=12347901ns errors=0) res(count=3 time=503774681ns errors=0)] rgr[locate-master(count=18 time=11801598ns errors=0) locate-meta(count=19 time=11608841ns errors=1) data(count=29 time=1957149061ns errors=0)])
+update-progress(time_ns=1608138358763138597 cells=900000 bytes=289350000 avg=1965ns/cell) Profile(took=2104959996ns mngr[locate(count=20 time=13454399ns errors=0) res(count=3 time=503774681ns errors=0)] rgr[locate-master(count=20 time=13130113ns errors=0) locate-meta(count=21 time=12735093ns errors=1) data(count=32 time=2149997715ns errors=0)])
+update-progress(time_ns=1608138358986266877 cells=1000000 bytes=321500000 avg=2231ns/cell) Profile(took=2328088036ns mngr[locate(count=23 time=15409865ns errors=0) res(count=3 time=503774681ns errors=0)] rgr[locate-master(count=23 time=14866537ns errors=0) locate-meta(count=24 time=14393134ns errors=1) data(count=37 time=2489937175ns errors=0)])
 
 
 Statistics:
- Total Time Took:        2096.55 milliseconds
+ Total Time Took:        2468.42 milliseconds
  Total Cells Count:      1000000
  Total Cells Size:       313965 KB
- Average Transfer Rate:  149.753 KB/millisecond
- Average Cells Rate:     476.975 cell/millisecond
- Mngr Locate:            4347083ns/29(0)
- Mngr Resolve:           211156ns/2(0)
- Rgr Locate Master:      3916771ns/29(0)
- Rgr Locate Meta:        3661841ns/29(0)
- Rgr Data:               2643616107ns/42(0)
+ Average Transfer Rate:  127.193 KB/millisecond
+ Average Cells Rate:     405.117 cell/millisecond
+ Mngr Locate:            16055654ns/24(0)
+ Mngr Resolve:           503774681ns/3(0)
+ Rgr Locate Master:      15464078ns/24(0)
+ Rgr Locate Meta:        14943707ns/25(1)
+ Rgr Data:               2784062420ns/41(0)
 ```
 
 ###### check on results
@@ -134,87 +135,93 @@ Statistics:
 ```
 
 ```text
-SWC-DB(client)> select where col(load_generator)=(cells=([0000099999, >=""]<=key<=[0000099999, >=""] ONLY_KEYS)) DISPLAY_STATS;
-[0000099999]
-[0000099999, 0000000001]
-[0000099999, 0000000001, 0000000002]
-[0000099999, 0000000001, 0000000002, 0000000003]
-[0000099999, 0000000001, 0000000002, 0000000003, 0000000004]
-[0000099999, 0000000001, 0000000002, 0000000003, 0000000004, 0000000005]
-[0000099999, 0000000001, 0000000002, 0000000003, 0000000004, 0000000005, 0000000006]
-[0000099999, 0000000001, 0000000002, 0000000003, 0000000004, 0000000005, 0000000006, 0000000007]
-[0000099999, 0000000001, 0000000002, 0000000003, 0000000004, 0000000005, 0000000006, 0000000007, 0000000008]
-[0000099999, 0000000001, 0000000002, 0000000003, 0000000004, 0000000005, 0000000006, 0000000007, 0000000008, 0000000009]
+SWC-DB(client)> select where col(load_generator-1)=(cells=([0000099999, >=""]<=key<=[0000099999, >=""] ONLY_KEYS)) DISPLAY_STATS;
+["0000099999"]
+["0000099999","0000000001"]
+["0000099999","0000000001","0000000002"]
+["0000099999","0000000001","0000000002","0000000003"]
+["0000099999","0000000001","0000000002","0000000003","0000000004"]
+["0000099999","0000000001","0000000002","0000000003","0000000004","0000000005"]
+["0000099999","0000000001","0000000002","0000000003","0000000004","0000000005","0000000006"]
+["0000099999","0000000001","0000000002","0000000003","0000000004","0000000005","0000000006","0000000007"]
+["0000099999","0000000001","0000000002","0000000003","0000000004","0000000005","0000000006","0000000007","0000000008"]
+["0000099999","0000000001","0000000002","0000000003","0000000004","0000000005","0000000006","0000000007","0000000008","0000000009"]
 
 
 Statistics:
- Total Time Took:        4870.74 microseconds
+ Total Time Took:        2233.94 milliseconds
  Total Cells Count:      10
  Total Cells Size:       725 B
- Average Transfer Rate:  0.148848 B/microsecond
- Average Cells Rate:     0.00205308 cell/microsecond
- Mngr Locate:            353793ns/2(1)
- Mngr Resolve:           0ns/0(0)
- Rgr Locate Master:      352739ns/2(1)
- Rgr Locate Meta:        330608ns/2(1)
- Rgr Data:               3737728ns/1(0)
+ Average Transfer Rate:  0.324538 B/millisecond
+ Average Cells Rate:     0.00447639 cell/millisecond
+ Mngr Locate:            2416714ns/2(1)
+ Mngr Resolve:           2638030ns/2(0)
+ Rgr Locate Master:      1783559ns/2(1)
+ Rgr Locate Meta:        1741122ns/2(1)
+ Rgr Data:               2222805492ns/1(0)
+
+SWC-DB(client)>
 ```
 
 ```text
-SWC-DB(client)> select where col(load_generator)=(cells=(offset=999999 ONLY_KEYS)) DISPLAY_STATS;
-[0000099999, 0000000001, 0000000002, 0000000003, 0000000004, 0000000005, 0000000006, 0000000007, 0000000008, 0000000009]
+SWC-DB(client)> select where col(load_generator-1)=(cells=(offset=999999 ONLY_KEYS)) DISPLAY_STATS;
+["0000099999","0000000001","0000000002","0000000003","0000000004","0000000005","0000000006","0000000007","0000000008","0000000009"]
 
 
 Statistics:
- Total Time Took:        18.475 milliseconds
+ Total Time Took:        14.873 milliseconds
  Total Cells Count:      1
  Total Cells Size:       122 B
- Average Transfer Rate:  6.60352 B/millisecond
- Average Cells Rate:     0.0541272 cell/millisecond
- Mngr Locate:            513113ns/2(1)
- Mngr Resolve:           0ns/0(0)
- Rgr Locate Master:      422130ns/2(1)
- Rgr Locate Meta:        433575ns/2(1)
- Rgr Data:               17029467ns/1(0)
+ Average Transfer Rate:  8.20278 B/millisecond
+ Average Cells Rate:     0.0672359 cell/millisecond
+ Mngr Locate:            1352603ns/2(1)
+ Mngr Resolve:           46960ns/2(0)
+ Rgr Locate Master:      1380699ns/2(1)
+ Rgr Locate Meta:        1424971ns/2(1)
+ Rgr Data:               10572953ns/1(0)
+
+SWC-DB(client)>
 ```
 
 ```text
-SWC-DB(client)> dump col='load_generator' into 'dump/test1/' DISPLAY_STATS;
+dump col='load_generator-1' into 'dump/test1/' DISPLAY_STATS;
 
 
 Statistics:
- Total Time Took:        4121.59 milliseconds
+ Total Time Took:        4005.62 milliseconds
  Total Cells Count:      1000000
  Total Cells Size:       321777 KB
- Average Transfer Rate:  78.0712 KB/millisecond
- Average Cells Rate:     242.625 cell/millisecond
- Mngr Locate:            443459ns/2(1)
- Mngr Resolve:           0ns/0(0)
- Rgr Locate Master:      438194ns/2(1)
- Rgr Locate Meta:        386816ns/2(1)
- Rgr Data:               1086274646ns/42(0)
+ Average Transfer Rate:  80.3314 KB/millisecond
+ Average Cells Rate:     249.649 cell/millisecond
+ Mngr Locate:            1517560ns/2(1)
+ Mngr Resolve:           64729ns/2(0)
+ Rgr Locate Master:      1313417ns/2(1)
+ Rgr Locate Meta:        1314664ns/2(1)
+ Rgr Data:               653997079ns/42(0)
 
  Files Count:            1
  File:                   dump/test1/1.tsv (367000041 bytes)
+
+SWC-DB(client)>
 ```
 
 ```text
-SWC-DB(client)> load from 'dump/test1/' into col='load_generator' DISPLAY_STATS;
+SWC-DB(client)> load from 'dump/test1/' into col='load_generator-1' DISPLAY_STATS;
 
 
 Statistics:
- Total Time Took:        2626.23 milliseconds
+ Total Time Took:        2510.37 milliseconds
  Total Cells Count:      1000000
  Total Cells Size:       321777 KB
- Average Transfer Rate:  122.525 KB/millisecond
- Average Cells Rate:     380.774 cell/millisecond
- Mngr Locate:            8227547ns/31(0)
+ Average Transfer Rate:  128.179 KB/millisecond
+ Average Cells Rate:     398.347 cell/millisecond
+ Mngr Locate:            33728436ns/47(0)
  Mngr Resolve:           0ns/0(0)
- Rgr Locate Master:      7937411ns/31(0)
- Rgr Locate Meta:        5094435ns/31(0)
- Rgr Data:               3041157529ns/42(0)
+ Rgr Locate Master:      26618866ns/47(0)
+ Rgr Locate Meta:        30112961ns/47(0)
+ Rgr Data:               3264162871ns/50(0)
 
-SWC-DB(client)>;
+SWC-DB(client)>
 ```
 
 
