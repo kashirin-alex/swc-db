@@ -152,21 +152,23 @@ void Select::remove(const cid_t cid) {
 
 
 
-Select::Select(const Cb_t& cb, bool rsp_partials)
+Select::Select(const Cb_t& cb, bool rsp_partials,
+               const Comm::IoContextPtr& io)
         : buff_sz(Env::Clients::ref().cfg_recv_buff_sz->get()), 
           buff_ahead(Env::Clients::ref().cfg_recv_ahead->get()), 
           timeout(Env::Clients::ref().cfg_recv_timeout->get()), 
-          cb(cb), 
+          cb(cb), dispatcher_io(io),
           result(std::make_shared<Result>(cb && rsp_partials)),
           m_rsp_partial_runs(false) { 
 }
 
-Select::Select(const DB::Specs::Scan& specs, const Cb_t& cb, 
-               bool rsp_partials)
+Select::Select(const DB::Specs::Scan& specs, 
+               const Cb_t& cb, bool rsp_partials,
+               const Comm::IoContextPtr& io)
         : buff_sz(Env::Clients::ref().cfg_recv_buff_sz->get()), 
           buff_ahead(Env::Clients::ref().cfg_recv_ahead->get()), 
           timeout(Env::Clients::ref().cfg_recv_timeout->get()), 
-          cb(cb), specs(specs),
+          cb(cb), dispatcher_io(io), specs(specs),
           result(std::make_shared<Result>(cb && rsp_partials)),
           m_rsp_partial_runs(false) {
 }
@@ -189,7 +191,7 @@ void Select::response(int err) {
     if(call)
       response_partial();
   } else if(cb) {
-    cb(result);
+    send_result();
   }
 
   std::scoped_lock lock(result->mutex);
@@ -226,7 +228,7 @@ bool Select::wait_on_partials() const {
 
 void Select::response_partial() {
     
-  cb(result);
+  send_result();
 
   std::scoped_lock lock(result->mutex);
   m_rsp_partial_runs = false;
@@ -243,7 +245,14 @@ void Select::wait() {
     }
   );
   if(result->notify && !result->empty())
-    cb(result);
+    send_result();
+}
+
+void Select::send_result() {
+  dispatcher_io
+    ? dispatcher_io->post(
+        [selector=shared_from_this()](){ selector->cb(selector->result); })
+    : cb(result);
 }
 
 void Select::scan(int& err) {

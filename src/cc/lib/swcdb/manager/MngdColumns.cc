@@ -394,7 +394,8 @@ void MngdColumns::remove(const DB::Schema::Ptr& schema,
       }
       updater->commit_if_need();
     },
-    false
+    false,
+    Env::Mngr::io()
   );
 
   selector->specs.columns.push_back(col_spec);

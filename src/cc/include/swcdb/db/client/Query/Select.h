@@ -109,18 +109,21 @@ class Select final : public std::enable_shared_from_this<Select> {
   typedef std::shared_ptr<Select>           Ptr;
   typedef std::function<void(Result::Ptr)>  Cb_t;
   
-  uint32_t          buff_sz;
-  uint8_t           buff_ahead;
-  uint32_t          timeout;
+  uint32_t            buff_sz;
+  uint8_t             buff_ahead;
+  uint32_t            timeout;
 
-  const Cb_t        cb;
-  DB::Specs::Scan   specs;
-  Result::Ptr       result;
+  const Cb_t          cb;
+  Comm::IoContextPtr  dispatcher_io;
+  DB::Specs::Scan     specs;
+  Result::Ptr         result;
 
-  Select(const Cb_t& cb=0, bool rsp_partials=false);
+  Select(const Cb_t& cb=0, bool rsp_partials=false,
+         const Comm::IoContextPtr& io=nullptr);
 
   Select(const DB::Specs::Scan& specs, 
-         const Cb_t& cb=0, bool rsp_partials=false);
+         const Cb_t& cb=0, bool rsp_partials=false,
+         const Comm::IoContextPtr& io=nullptr);
 
   virtual ~Select();
  
@@ -139,6 +142,8 @@ class Select final : public std::enable_shared_from_this<Select> {
   bool m_rsp_partial_runs;
 
   void response_partial();
+
+  void send_result();
 
 
   class Scanner final : public std::enable_shared_from_this<Scanner> {

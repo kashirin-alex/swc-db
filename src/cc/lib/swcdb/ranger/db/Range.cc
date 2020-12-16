@@ -675,11 +675,10 @@ void Range::load(int &err, const Callback::RangeLoad::Ptr& req) {
   auto selector = std::make_shared<client::Query::Select>(
     [req, col_spec, range=shared_from_this()] 
     (const client::Query::Select::Result::Ptr& res) {
-      Env::Rgr::post([req, col_spec, range, res]() {
-        range->check_meta(req, col_spec, res);
-      });
+      range->check_meta(req, col_spec, res);
     },
-    false
+    false,
+    Env::Rgr::io()
   );
   selector->specs.columns.push_back(col_spec);
 
