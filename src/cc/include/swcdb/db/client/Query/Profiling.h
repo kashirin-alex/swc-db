@@ -26,8 +26,8 @@ using ReqBase = Comm::client::ConnQueue::ReqBase;
 
 
 struct Profiling {
-  const int64_t ts_start = Time::now_ns();
-  int64_t       ts_finish = ts_start;
+  const int64_t         ts_start = Time::now_ns();
+  std::atomic<int64_t>  ts_finish = ts_start;
 
   struct Component {
 

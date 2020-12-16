@@ -58,9 +58,8 @@ struct Update final {
   size_t get_resend_count(bool reset = true);
 
   private:
-  Core::MutexSptd   m_mutex;
-  int               m_err = Error::OK;
-  size_t            m_resend_cells = 0;
+  std::atomic<int>    m_err = Error::OK;
+  std::atomic<size_t> m_resend_cells = 0;
 };
 
 }
@@ -145,25 +144,25 @@ class Update final : public std::enable_shared_from_this<Update> {
 
     private:
 
-    bool located_on_manager(
+    void located_on_manager(
         const ReqBase::Ptr& base,
         const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp);
 
     void locate_on_ranger(
         const Comm::EndPoints& endpoints);
 
-    bool located_on_ranger(
+    void located_on_ranger(
         const Comm::EndPoints& endpoints,
         const ReqBase::Ptr& base,
         const Comm::Protocol::Rgr::Params::RangeLocateRsp& rsp);
 
     void resolve_on_manager();
 
-    bool located_ranger(
+    void located_ranger(
         const ReqBase::Ptr& base,
         const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp);
 
-    bool proceed_on_ranger(
+    void proceed_on_ranger(
         const ReqBase::Ptr& base,
         const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp);
 
