@@ -42,6 +42,8 @@ public partial class Schema : TBase
   private int _cs_size;
   private sbyte _cs_max;
   private sbyte _log_rollout_ratio;
+  private sbyte _log_compact_cointervaling;
+  private sbyte _log_fragment_preload;
   private sbyte _compact_percent;
   private long _revision;
 
@@ -260,6 +262,38 @@ public partial class Schema : TBase
   }
 
   /// <summary>
+  /// Min. Cointervaling Fragments for Compaction
+  /// </summary>
+  public sbyte Log_compact_cointervaling
+  {
+    get
+    {
+      return _log_compact_cointervaling;
+    }
+    set
+    {
+      __isset.log_compact_cointervaling = true;
+      this._log_compact_cointervaling = value;
+    }
+  }
+
+  /// <summary>
+  /// Number of Fragment to Preload
+  /// </summary>
+  public sbyte Log_fragment_preload
+  {
+    get
+    {
+      return _log_fragment_preload;
+    }
+    set
+    {
+      __isset.log_fragment_preload = true;
+      this._log_fragment_preload = value;
+    }
+  }
+
+  /// <summary>
   /// Compact at percent reach
   /// </summary>
   public sbyte Compact_percent
@@ -308,6 +342,8 @@ public partial class Schema : TBase
     public bool cs_size;
     public bool cs_max;
     public bool log_rollout_ratio;
+    public bool log_compact_cointervaling;
+    public bool log_fragment_preload;
     public bool compact_percent;
     public bool revision;
   }
@@ -466,7 +502,7 @@ public partial class Schema : TBase
           case 14:
             if (field.Type == TType.Byte)
             {
-              Compact_percent = await iprot.ReadByteAsync(cancellationToken);
+              Log_compact_cointervaling = await iprot.ReadByteAsync(cancellationToken);
             }
             else
             {
@@ -474,6 +510,26 @@ public partial class Schema : TBase
             }
             break;
           case 15:
+            if (field.Type == TType.Byte)
+            {
+              Log_fragment_preload = await iprot.ReadByteAsync(cancellationToken);
+            }
+            else
+            {
+              await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
+            }
+            break;
+          case 16:
+            if (field.Type == TType.Byte)
+            {
+              Compact_percent = await iprot.ReadByteAsync(cancellationToken);
+            }
+            else
+            {
+              await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
+            }
+            break;
+          case 17:
             if (field.Type == TType.I64)
             {
               Revision = await iprot.ReadI64Async(cancellationToken);
@@ -624,11 +680,29 @@ public partial class Schema : TBase
         await oprot.WriteByteAsync(Log_rollout_ratio, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
+      if (__isset.log_compact_cointervaling)
+      {
+        field.Name = "log_compact_cointervaling";
+        field.Type = TType.Byte;
+        field.ID = 14;
+        await oprot.WriteFieldBeginAsync(field, cancellationToken);
+        await oprot.WriteByteAsync(Log_compact_cointervaling, cancellationToken);
+        await oprot.WriteFieldEndAsync(cancellationToken);
+      }
+      if (__isset.log_fragment_preload)
+      {
+        field.Name = "log_fragment_preload";
+        field.Type = TType.Byte;
+        field.ID = 15;
+        await oprot.WriteFieldBeginAsync(field, cancellationToken);
+        await oprot.WriteByteAsync(Log_fragment_preload, cancellationToken);
+        await oprot.WriteFieldEndAsync(cancellationToken);
+      }
       if (__isset.compact_percent)
       {
         field.Name = "compact_percent";
         field.Type = TType.Byte;
-        field.ID = 14;
+        field.ID = 16;
         await oprot.WriteFieldBeginAsync(field, cancellationToken);
         await oprot.WriteByteAsync(Compact_percent, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
@@ -637,7 +711,7 @@ public partial class Schema : TBase
       {
         field.Name = "revision";
         field.Type = TType.I64;
-        field.ID = 15;
+        field.ID = 17;
         await oprot.WriteFieldBeginAsync(field, cancellationToken);
         await oprot.WriteI64Async(Revision, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
@@ -669,6 +743,8 @@ public partial class Schema : TBase
       && ((__isset.cs_size == other.__isset.cs_size) && ((!__isset.cs_size) || (System.Object.Equals(Cs_size, other.Cs_size))))
       && ((__isset.cs_max == other.__isset.cs_max) && ((!__isset.cs_max) || (System.Object.Equals(Cs_max, other.Cs_max))))
       && ((__isset.log_rollout_ratio == other.__isset.log_rollout_ratio) && ((!__isset.log_rollout_ratio) || (System.Object.Equals(Log_rollout_ratio, other.Log_rollout_ratio))))
+      && ((__isset.log_compact_cointervaling == other.__isset.log_compact_cointervaling) && ((!__isset.log_compact_cointervaling) || (System.Object.Equals(Log_compact_cointervaling, other.Log_compact_cointervaling))))
+      && ((__isset.log_fragment_preload == other.__isset.log_fragment_preload) && ((!__isset.log_fragment_preload) || (System.Object.Equals(Log_fragment_preload, other.Log_fragment_preload))))
       && ((__isset.compact_percent == other.__isset.compact_percent) && ((!__isset.compact_percent) || (System.Object.Equals(Compact_percent, other.Compact_percent))))
       && ((__isset.revision == other.__isset.revision) && ((!__isset.revision) || (System.Object.Equals(Revision, other.Revision))));
   }
@@ -702,6 +778,10 @@ public partial class Schema : TBase
         hashcode = (hashcode * 397) + Cs_max.GetHashCode();
       if(__isset.log_rollout_ratio)
         hashcode = (hashcode * 397) + Log_rollout_ratio.GetHashCode();
+      if(__isset.log_compact_cointervaling)
+        hashcode = (hashcode * 397) + Log_compact_cointervaling.GetHashCode();
+      if(__isset.log_fragment_preload)
+        hashcode = (hashcode * 397) + Log_fragment_preload.GetHashCode();
       if(__isset.compact_percent)
         hashcode = (hashcode * 397) + Compact_percent.GetHashCode();
       if(__isset.revision)
@@ -804,6 +884,20 @@ public partial class Schema : TBase
       __first = false;
       sb.Append("Log_rollout_ratio: ");
       sb.Append(Log_rollout_ratio);
+    }
+    if (__isset.log_compact_cointervaling)
+    {
+      if(!__first) { sb.Append(", "); }
+      __first = false;
+      sb.Append("Log_compact_cointervaling: ");
+      sb.Append(Log_compact_cointervaling);
+    }
+    if (__isset.log_fragment_preload)
+    {
+      if(!__first) { sb.Append(", "); }
+      __first = false;
+      sb.Append("Log_fragment_preload: ");
+      sb.Append(Log_fragment_preload);
     }
     if (__isset.compact_percent)
     {

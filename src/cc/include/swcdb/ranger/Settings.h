@@ -78,6 +78,10 @@ void Settings::init_app_options(){
      
     ("swc.rgr.Range.CommitLog.rollout.ratio", g_i8(3), 
      "Schema default CommitLog new fragment Rollout Block Ratio")
+    ("swc.rgr.Range.CommitLog.Compact.cointervaling", g_i8(3), 
+     "The minimal cointervaling Fragments for Compaction")
+    ("swc.rgr.Range.CommitLog.Fragment.preload", g_i8(2), 
+     "The number of CommitLog Fragment to preload")
 
     ("swc.rgr.Range.compaction.percent", g_i8(33), 
      "Schema default compact-percent threshold")

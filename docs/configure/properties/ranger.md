@@ -128,6 +128,16 @@ _default_ **```swc.rgr.Range.block.encoding=ZSTD```**
 The Schema default CommitLog new fragment Rollout Block Ratio. \
 _default_ **```swc.rgr.Range.CommitLog.rollout.ratio=3```**
 
+* ### swc.rgr.Range.CommitLog.Compact.cointervaling
+```G_INT8```
+The minimal sequentially intervaling number of Fragments for CommitLog Compaction to issue a compaction on the selected Fragments. \
+_default_ **```swc.rgr.Range.CommitLog.Compact.cointervaling=3```**
+
+* ### swc.rgr.Range.CommitLog.Fragment.preload
+```G_INT8```
+Preload this number of Fragments of CommitLog at Log Compact and scans(BlockLoader). \
+_default_ **```swc.rgr.Range.CommitLog.Fragment.preload=2```**
+
 * ### swc.rgr.Range.compaction.percent
 ```G_INT8```
 The Schema default compact-percent threshold. \

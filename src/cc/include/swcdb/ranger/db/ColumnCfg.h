@@ -34,7 +34,11 @@ class ColumnCfg final : public Core::NotMovableSharedPtr<ColumnCfg> {
   mutable std::atomic<uint8_t>                    cs_replication;
   mutable std::atomic<uint32_t>                   cs_size;
   mutable std::atomic<uint8_t>                    cs_max;
+
   mutable std::atomic<uint8_t>                    log_rout_ratio;
+  mutable std::atomic<uint8_t>                    log_compact;
+  mutable std::atomic<uint8_t>                    log_preload;
+  
   mutable std::atomic<uint8_t>                    compact_perc;
 
   mutable std::atomic<bool>                       deleting;
@@ -72,7 +76,11 @@ class ColumnCfg final : public Core::NotMovableSharedPtr<ColumnCfg> {
     cs_replication = schema.cs_replication;
     cs_size = schema.cs_size;
     cs_max = schema.cs_max;
+
     log_rout_ratio = schema.log_rollout_ratio;
+    log_compact = schema.log_compact_cointervaling;
+    log_preload = schema.log_fragment_preload;
+    
     compact_perc = schema.compact_percent;
   }
 
@@ -132,6 +140,17 @@ class ColumnCfg final : public Core::NotMovableSharedPtr<ColumnCfg> {
             : Env::Rgr::get()->cfg_log_rollout_ratio->get();
   }
 
+  uint8_t log_compact_cointervaling() const {
+    return log_compact
+            ? log_compact.load() 
+            : Env::Rgr::get()->cfg_log_compact_cointervaling->get();
+  }
+  uint8_t log_fragment_preload() const {
+    return log_preload
+            ? log_preload.load() 
+            : Env::Rgr::get()->cfg_log_fragment_preload->get();
+  }
+
   uint8_t compact_percent() const {
     return compact_perc 
             ? compact_perc.load() 
@@ -147,7 +166,8 @@ class ColumnCfg final : public Core::NotMovableSharedPtr<ColumnCfg> {
       << " seq="  << DB::Types::to_string(key_seq)
       << " type=" << DB::Types::to_string(col_type)
       << " range_type=" << DB::Types::to_string(range_type)
-      << " meta_cid=" << (int)meta_cid
+      << " meta_cid="   << (int)meta_cid
+      << " compact="    << (int)compact_perc << '%'
       << ')'
       << " cell(versions=" << c_versions
       << " ttl=" << c_ttl
@@ -159,8 +179,10 @@ class ColumnCfg final : public Core::NotMovableSharedPtr<ColumnCfg> {
       << " cs(replication=" << (int)cs_replication
       << " size="           << cs_size
       << " max="            << (int)cs_max
-      << " rollout="        << (int)log_rout_ratio
-      << " compact="        << (int)compact_perc << '%'
+      << ')'
+      << " log(rollout="            << (int)log_rout_ratio
+      << " compact_cointervaling="  << (int)log_compact
+      << " preload="                << (int)log_preload
       << ')';
   }
 

@@ -28,13 +28,13 @@ Compact::Group::~Group() {
 void Compact::Group::run(bool initial) {
   size_t running;
   if(initial) {
-    running = Fragments::MAX_PRELOAD;
+    running = compact->preload;
     m_finishing = read_frags.size() + 1;
   } else {
     running = m_running.fetch_sub(1, std::memory_order_relaxed);
   }
 
-  if(running == Fragments::MAX_PRELOAD) do {
+  if(running == compact->preload) do {
     size_t idx = m_idx.fetch_add(1, std::memory_order_relaxed);
     if(idx >= read_frags.size())
       break;
@@ -46,7 +46,7 @@ void Compact::Group::run(bool initial) {
     read_frags[idx]->load([this] (const Fragment::Ptr& frag) {
       Env::Rgr::post([this, frag]() { loaded(frag); });
     });
-  } while(running < Fragments::MAX_PRELOAD);
+  } while(running < compact->preload);
 
   if(m_finishing.fetch_sub(1, std::memory_order_relaxed) == 1)
     write();
@@ -160,9 +160,12 @@ void Compact::Group::finalize() {
 
 
 
-Compact::Compact(Fragments* log, int repetition, 
-                 const std::vector<Fragments::Vec>& groups, Cb_t& cb)
+Compact::Compact(Fragments* log, int repetition,
+                 const std::vector<Fragments::Vec>& groups,
+                 uint8_t cointervaling,
+                 Cb_t& cb)
                 : log(log), ts(Time::now_ns()),
+                  preload(log->range->cfg->log_fragment_preload()),
                   repetition(repetition), ngroups(groups.size()), nfrags(0), 
                   m_cb(cb) {
   for(auto frags : groups)
@@ -182,7 +185,7 @@ Compact::Compact(Fragments* log, int repetition,
     for(auto it = frags.begin(); it < frags.end(); ++it) {
       m_groups.back()->read_frags.push_back(*it);
       if(!blks) {
-        if(m_groups.back()->read_frags.size() < Fragments::MIN_COMPACT)
+        if(m_groups.back()->read_frags.size() < cointervaling)
           continue;
         break;
       }

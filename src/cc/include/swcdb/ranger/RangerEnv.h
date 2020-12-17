@@ -105,6 +105,8 @@ class Rgr final {
   const SWC::Config::Property::V_GINT32::Ptr      cfg_cs_sz;
   
   const SWC::Config::Property::V_GUINT8::Ptr      cfg_log_rollout_ratio;
+  const SWC::Config::Property::V_GUINT8::Ptr      cfg_log_compact_cointervaling;
+  const SWC::Config::Property::V_GUINT8::Ptr      cfg_log_fragment_preload;
   
   const SWC::Config::Property::V_GUINT8::Ptr      cfg_compact_percent;
   const SWC::Config::Property::V_GUINT8::Ptr      cfg_cs_replication;
@@ -157,6 +159,12 @@ Rgr::Rgr()
       cfg_log_rollout_ratio(
         SWC::Env::Config::settings()->get<SWC::Config::Property::V_GUINT8>(
           "swc.rgr.Range.CommitLog.rollout.ratio")),
+      cfg_log_compact_cointervaling(
+        SWC::Env::Config::settings()->get<SWC::Config::Property::V_GUINT8>(
+          "swc.rgr.Range.CommitLog.Compact.cointervaling")),
+      cfg_log_fragment_preload(
+        SWC::Env::Config::settings()->get<SWC::Config::Property::V_GUINT8>(
+          "swc.rgr.Range.CommitLog.Fragment.preload")),
       cfg_compact_percent(
         SWC::Env::Config::settings()->get<SWC::Config::Property::V_GUINT8>(
           "swc.rgr.Range.compaction.percent")),

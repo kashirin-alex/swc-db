@@ -66,7 +66,11 @@ class Schema final {
   uint8_t               cs_replication;
   uint32_t              cs_size;
   uint8_t               cs_max;
+
   uint8_t               log_rollout_ratio;
+  uint8_t               log_compact_cointervaling;
+  uint8_t               log_fragment_preload;
+  
   uint8_t               compact_percent;
 
   int64_t               revision;

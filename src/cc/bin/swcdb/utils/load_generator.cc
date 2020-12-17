@@ -98,6 +98,11 @@ void Settings::init_app_options() {
 
     ("gen-log-rollout", i8(0), 
      "CommitLog rollout block ratio")
+    ("gen-log-compact-cointervaling", i8(0),
+     "CommitLog minimal cointervaling Fragments for compaction")
+    ("gen-log-preload", i8(0),
+     "Number of CommitLog Fragments to preload")
+
     ("gen-compaction-percent", i8(0), 
      "Compaction threshold in % applied over size of either by cellstore or block")
   ;
@@ -514,6 +519,10 @@ void generate() {
   schema->cs_size = settings->get_i32("gen-cs-size");
   schema->cs_max = settings->get_i8("gen-cs-count");
   schema->log_rollout_ratio = settings->get_i8("gen-log-rollout");
+  schema->log_compact_cointervaling = settings->get_i8(
+    "gen-log-compact-cointervaling");
+  schema->log_fragment_preload = settings->get_i8("gen-log-preload");
+
   schema->compact_percent = settings->get_i8("gen-compaction-percent");
 
   // CREATE COLUMN

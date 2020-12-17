@@ -253,6 +253,22 @@ void ColumnSchema::read_schema_options(ColumnSchema::Func func) {
       continue;
     }
 
+    if((any = found_token("log_compact", 11))) {
+      expect_eq();
+      if(err)
+        return;
+      read_uint8_t(schema->log_compact_cointervaling, was_set);
+      continue;
+    }
+
+    if((any = found_token("log_preload", 11))) {
+      expect_eq();
+      if(err)
+        return;
+      read_uint8_t(schema->log_fragment_preload, was_set);
+      continue;
+    }
+
     break;
   }
 

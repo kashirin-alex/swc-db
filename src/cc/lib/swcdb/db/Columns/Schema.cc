@@ -28,6 +28,8 @@ Schema::Schema()
         blk_encoding(Types::Encoder::DEFAULT), blk_size(0), blk_cells(0),
         cs_replication(0), cs_size(0), cs_max(0), 
         log_rollout_ratio(0),
+        log_compact_cointervaling(0), 
+        log_fragment_preload(0),
         compact_percent(0), 
         revision(0) {
 }
@@ -41,6 +43,8 @@ Schema::Schema(const Schema& other)
         cs_replication(other.cs_replication), cs_size(other.cs_size), 
         cs_max(other.cs_max), 
         log_rollout_ratio(other.log_rollout_ratio),
+        log_compact_cointervaling(other.log_compact_cointervaling),
+        log_fragment_preload(other.log_fragment_preload),
         compact_percent(other.compact_percent), 
         revision(other.revision) {
 }
@@ -64,6 +68,8 @@ Schema::Schema(const uint8_t** bufp, size_t* remainp)
     cs_max(Serialization::decode_i8(bufp, remainp)),
 
     log_rollout_ratio(Serialization::decode_i8(bufp, remainp)),
+    log_compact_cointervaling(Serialization::decode_i8(bufp, remainp)),
+    log_fragment_preload(Serialization::decode_i8(bufp, remainp)),
 
     compact_percent(Serialization::decode_i8(bufp, remainp)),
 
@@ -85,6 +91,8 @@ bool Schema::equal(const Ptr& other, bool with_rev) {
           && cs_size == other->cs_size
           && cs_max == other->cs_max
           && log_rollout_ratio == other->log_rollout_ratio
+          && log_compact_cointervaling == other->log_compact_cointervaling
+          && log_fragment_preload == other->log_fragment_preload
           && compact_percent == other->compact_percent
           && !col_name.compare(other->col_name)
           && (!with_rev || revision == other->revision)
@@ -102,7 +110,7 @@ size_t Schema::encoded_length() const {
        + Serialization::encoded_length_vi32(blk_cells)
        + 1
        + Serialization::encoded_length_vi32(cs_size)
-       + 3
+       + 5
        + Serialization::encoded_length_vi64(revision);
 } 
  
@@ -125,6 +133,8 @@ void Schema::encode(uint8_t** bufp) const {
   Serialization::encode_i8(bufp, cs_max);
 
   Serialization::encode_i8(bufp, log_rollout_ratio);
+  Serialization::encode_i8(bufp, log_compact_cointervaling);
+  Serialization::encode_i8(bufp, log_fragment_preload);
 
   Serialization::encode_i8(bufp, compact_percent);
 
@@ -158,6 +168,8 @@ void Schema::display(std::ostream& out) const {
     << " cs_size=" << std::to_string(cs_size)
     << " cs_max=" << std::to_string((int)cs_max)
     << " log_rollout=" << std::to_string((int)log_rollout_ratio)
+    << " log_compact=" << std::to_string((int)log_compact_cointervaling)
+    << " log_preload=" << std::to_string((int)log_fragment_preload)
     << ")" ;
 }
 

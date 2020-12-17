@@ -197,15 +197,14 @@ void CompactRange::initialize() {
 
 void CompactRange::initial_commitlog(int tnum) {
   m_log_sz = range->blocks.commitlog.size();
-  if(m_log_sz < CommitLog::Fragments::MIN_COMPACT)
+  uint8_t cointervaling = range->cfg->log_compact_cointervaling();
+  if(m_log_sz < cointervaling)
     return initial_commitlog_done(nullptr);
 
   std::vector<CommitLog::Fragments::Vec> groups;
-  size_t need = range->blocks.commitlog.need_compact(
-    groups, {}, CommitLog::Fragments::MIN_COMPACT);
-  if(need) {
+  if(range->blocks.commitlog.need_compact(groups, {}, cointervaling)) {
     new CommitLog::Compact(
-      &range->blocks.commitlog, tnum, groups,
+      &range->blocks.commitlog, tnum, groups, cointervaling,
       [ptr=shared()] (const CommitLog::Compact* compact) {
         ptr->initial_commitlog_done(compact); 
       }
@@ -223,9 +222,10 @@ void CompactRange::initial_commitlog_done(const CommitLog::Compact* compact) {
   }
   if(compact) {
     int tnum = 0;
+    uint8_t cointervaling = range->cfg->log_compact_cointervaling();
     if(compact->nfrags > 100 ||
-       compact->ngroups > CommitLog::Fragments::MIN_COMPACT ||
-       compact->nfrags / compact->ngroups > CommitLog::Fragments::MIN_COMPACT)
+       compact->ngroups > cointervaling ||
+       compact->nfrags / compact->ngroups > cointervaling)
       tnum += compact->repetition + 1;
     delete compact;
     if(tnum) {
@@ -361,16 +361,16 @@ bool CompactRange::is_slow_req(int64_t& median) const {
 
 void CompactRange::commitlog(int tnum) {
   size_t log_sz = range->blocks.commitlog.size();
+  uint8_t cointervaling = range->cfg->log_compact_cointervaling();
   if((log_sz > m_log_sz ? log_sz - m_log_sz : m_log_sz - log_sz)
-      < CommitLog::Fragments::MIN_COMPACT)
+      < cointervaling)
     return commitlog_done(nullptr);
 
   std::vector<CommitLog::Fragments::Vec> groups;
-  size_t need = range->blocks.commitlog.need_compact(
-    groups, fragments_old, CommitLog::Fragments::MIN_COMPACT);
-  if(need) {
+  if(range->blocks.commitlog.need_compact(
+      groups, fragments_old, cointervaling)) {
     new CommitLog::Compact(
-      &range->blocks.commitlog, tnum, groups,
+      &range->blocks.commitlog, tnum, groups, cointervaling,
       [ptr=shared()] (const CommitLog::Compact* compact) {
         ptr->commitlog_done(compact); 
       }

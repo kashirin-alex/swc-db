@@ -188,22 +188,23 @@ bool Fragments::try_compact(int tnum) {
 
   std::vector<Fragments::Vec> groups;
   size_t need;
+  uint8_t cointervaling = range->cfg->log_compact_cointervaling();
   {
     std::scoped_lock lock(m_mutex);
     if(_need_compact_major() && Env::Rgr::compaction_available()) {
       range->compacting(Range::COMPACT_NONE);
       return false;
     }
-    need = _need_compact(groups, {}, MIN_COMPACT);
+    need = _need_compact(groups, {}, cointervaling);
     m_compacting = true;
   }
 
   if(need) {
     range->compacting(need / groups.size() > range->cfg->log_rollout_ratio() 
       ? Range::COMPACT_PREPARING  // mitigate add
-      : Range::COMPACT_COMPACTING// continue scan & add 
+      : Range::COMPACT_COMPACTING // continue scan & add 
     ); 
-    new Compact(this, tnum, groups);
+    new Compact(this, tnum, groups, cointervaling);
     return true;
   }
   finish_compact(nullptr);

@@ -158,13 +158,19 @@ struct Schema {
   /** Write Fragment File on ratio reached */
   13: optional i8           log_rollout_ratio
 
+  /** Min. Cointervaling Fragments for Compaction */
+  14: optional i8           log_compact_cointervaling
+
+  /** Number of Fragment to Preload */
+  15: optional i8           log_fragment_preload
+
 
   /** Compact at percent reach */
-  14: optional i8           compact_percent
+  16: optional i8           compact_percent
   
 
   /** Schema's revision/id */
-  15: optional i64          revision
+  17: optional i64          revision
 }
 
 /** A list-container of Schemas */

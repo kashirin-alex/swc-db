@@ -120,6 +120,8 @@ void set(const DB::Schema::Ptr& dbschema, Schema& schema) {
   schema.__set_cs_max(dbschema->cs_max);
       
   schema.__set_log_rollout_ratio(dbschema->log_rollout_ratio);
+  schema.__set_log_compact_cointervaling(dbschema->log_compact_cointervaling);
+  schema.__set_log_fragment_preload(dbschema->log_fragment_preload);
       
   schema.__set_compact_percent(dbschema->compact_percent);
 
@@ -158,6 +160,10 @@ void set(const Schema& schema, DB::Schema::Ptr& dbschema) {
       
   if(schema.__isset.log_rollout_ratio)
     dbschema->log_rollout_ratio = schema.log_rollout_ratio;
+  if(schema.__isset.log_compact_cointervaling)
+    dbschema->log_compact_cointervaling = schema.log_compact_cointervaling;
+  if(schema.__isset.log_fragment_preload)
+    dbschema->log_fragment_preload = schema.log_fragment_preload;
       
   if(schema.__isset.compact_percent)
     dbschema->compact_percent = schema.compact_percent;

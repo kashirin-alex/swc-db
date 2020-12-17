@@ -13,6 +13,8 @@ namespace SWC { namespace Ranger {
 SWC_SHOULD_INLINE
 BlockLoader::BlockLoader(Block::Ptr block)
                         : block(block),
+                          preload(
+                            block->blocks->range->cfg->log_fragment_preload()),
                           count_cs_blocks(0), count_fragments(0),
                           error(Error::OK),
                           m_processing(false),
@@ -90,7 +92,7 @@ bool BlockLoader::check_log() {
 
 void BlockLoader::load_log(bool is_final, bool is_more) {
   check_more:
-  uint8_t vol = CommitLog::Fragments::MAX_PRELOAD;
+  uint8_t vol = preload;
   {
     Core::MutexSptd::scope lock(m_mutex);
     if(m_logs) {
@@ -161,7 +163,7 @@ void BlockLoader::load_log_cells() {
       }
       frag = m_fragments.front();
       m_fragments.pop();
-      more = m_logs == CommitLog::Fragments::MAX_PRELOAD;
+      more = m_logs == preload;
       if((loaded = frag->loaded()))
         --m_logs;
     }

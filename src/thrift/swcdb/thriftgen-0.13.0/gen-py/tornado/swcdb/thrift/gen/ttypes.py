@@ -364,6 +364,8 @@ class Schema(object):
      - cs_size: CellStore Size in Bytes
      - cs_max: Max CellStores in a Range
      - log_rollout_ratio: Write Fragment File on ratio reached
+     - log_compact_cointervaling: Min. Cointervaling Fragments for Compaction
+     - log_fragment_preload: Number of Fragment to Preload
      - compact_percent: Compact at percent reach
      - revision: Schema's revision/id
 
@@ -383,12 +385,14 @@ class Schema(object):
         'cs_size',
         'cs_max',
         'log_rollout_ratio',
+        'log_compact_cointervaling',
+        'log_fragment_preload',
         'compact_percent',
         'revision',
     )
 
 
-    def __init__(self, cid=None, col_name=None, col_seq=None, col_type=None, cell_versions=None, cell_ttl=None, blk_encoding=None, blk_size=None, blk_cells=None, cs_replication=None, cs_size=None, cs_max=None, log_rollout_ratio=None, compact_percent=None, revision=None,):
+    def __init__(self, cid=None, col_name=None, col_seq=None, col_type=None, cell_versions=None, cell_ttl=None, blk_encoding=None, blk_size=None, blk_cells=None, cs_replication=None, cs_size=None, cs_max=None, log_rollout_ratio=None, log_compact_cointervaling=None, log_fragment_preload=None, compact_percent=None, revision=None,):
         self.cid = cid
         self.col_name = col_name
         self.col_seq = col_seq
@@ -402,6 +406,8 @@ class Schema(object):
         self.cs_size = cs_size
         self.cs_max = cs_max
         self.log_rollout_ratio = log_rollout_ratio
+        self.log_compact_cointervaling = log_compact_cointervaling
+        self.log_fragment_preload = log_fragment_preload
         self.compact_percent = compact_percent
         self.revision = revision
 
@@ -481,10 +487,20 @@ class Schema(object):
                     iprot.skip(ftype)
             elif fid == 14:
                 if ftype == TType.BYTE:
-                    self.compact_percent = iprot.readByte()
+                    self.log_compact_cointervaling = iprot.readByte()
                 else:
                     iprot.skip(ftype)
             elif fid == 15:
+                if ftype == TType.BYTE:
+                    self.log_fragment_preload = iprot.readByte()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 16:
+                if ftype == TType.BYTE:
+                    self.compact_percent = iprot.readByte()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 17:
                 if ftype == TType.I64:
                     self.revision = iprot.readI64()
                 else:
@@ -551,12 +567,20 @@ class Schema(object):
             oprot.writeFieldBegin('log_rollout_ratio', TType.BYTE, 13)
             oprot.writeByte(self.log_rollout_ratio)
             oprot.writeFieldEnd()
+        if self.log_compact_cointervaling is not None:
+            oprot.writeFieldBegin('log_compact_cointervaling', TType.BYTE, 14)
+            oprot.writeByte(self.log_compact_cointervaling)
+            oprot.writeFieldEnd()
+        if self.log_fragment_preload is not None:
+            oprot.writeFieldBegin('log_fragment_preload', TType.BYTE, 15)
+            oprot.writeByte(self.log_fragment_preload)
+            oprot.writeFieldEnd()
         if self.compact_percent is not None:
-            oprot.writeFieldBegin('compact_percent', TType.BYTE, 14)
+            oprot.writeFieldBegin('compact_percent', TType.BYTE, 16)
             oprot.writeByte(self.compact_percent)
             oprot.writeFieldEnd()
         if self.revision is not None:
-            oprot.writeFieldBegin('revision', TType.I64, 15)
+            oprot.writeFieldBegin('revision', TType.I64, 17)
             oprot.writeI64(self.revision)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
@@ -2753,8 +2777,10 @@ Schema.thrift_spec = (
     (11, TType.I32, 'cs_size', None, None, ),  # 11
     (12, TType.BYTE, 'cs_max', None, None, ),  # 12
     (13, TType.BYTE, 'log_rollout_ratio', None, None, ),  # 13
-    (14, TType.BYTE, 'compact_percent', None, None, ),  # 14
-    (15, TType.I64, 'revision', None, None, ),  # 15
+    (14, TType.BYTE, 'log_compact_cointervaling', None, None, ),  # 14
+    (15, TType.BYTE, 'log_fragment_preload', None, None, ),  # 15
+    (16, TType.BYTE, 'compact_percent', None, None, ),  # 16
+    (17, TType.I64, 'revision', None, None, ),  # 17
 )
 all_structs.append(SchemaPattern)
 SchemaPattern.thrift_spec = (

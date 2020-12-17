@@ -448,6 +448,8 @@ enum _swcdb_thriftSchemaProperties
   PROP_SWCDB_THRIFT_SCHEMA_CS_SIZE,
   PROP_SWCDB_THRIFT_SCHEMA_CS_MAX,
   PROP_SWCDB_THRIFT_SCHEMA_LOG_ROLLOUT_RATIO,
+  PROP_SWCDB_THRIFT_SCHEMA_LOG_COMPACT_COINTERVALING,
+  PROP_SWCDB_THRIFT_SCHEMA_LOG_FRAGMENT_PRELOAD,
   PROP_SWCDB_THRIFT_SCHEMA_COMPACT_PERCENT,
   PROP_SWCDB_THRIFT_SCHEMA_REVISION
 };
@@ -685,6 +687,32 @@ swcdb_thrift_schema_read (ThriftStruct *object, ThriftProtocol *protocol, GError
       case 14:
         if (ftype == T_BYTE)
         {
+          if ((ret = thrift_protocol_read_byte (protocol, &this_object->log_compact_cointervaling, error)) < 0)
+            return -1;
+          xfer += ret;
+          this_object->__isset_log_compact_cointervaling = TRUE;
+        } else {
+          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+            return -1;
+          xfer += ret;
+        }
+        break;
+      case 15:
+        if (ftype == T_BYTE)
+        {
+          if ((ret = thrift_protocol_read_byte (protocol, &this_object->log_fragment_preload, error)) < 0)
+            return -1;
+          xfer += ret;
+          this_object->__isset_log_fragment_preload = TRUE;
+        } else {
+          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+            return -1;
+          xfer += ret;
+        }
+        break;
+      case 16:
+        if (ftype == T_BYTE)
+        {
           if ((ret = thrift_protocol_read_byte (protocol, &this_object->compact_percent, error)) < 0)
             return -1;
           xfer += ret;
@@ -695,7 +723,7 @@ swcdb_thrift_schema_read (ThriftStruct *object, ThriftProtocol *protocol, GError
           xfer += ret;
         }
         break;
-      case 15:
+      case 17:
         if (ftype == T_I64)
         {
           if ((ret = thrift_protocol_read_i64 (protocol, &this_object->revision, error)) < 0)
@@ -893,8 +921,32 @@ swcdb_thrift_schema_write (ThriftStruct *object, ThriftProtocol *protocol, GErro
       return -1;
     xfer += ret;
   }
+  if (this_object->__isset_log_compact_cointervaling == TRUE) {
+    if ((ret = thrift_protocol_write_field_begin (protocol, "log_compact_cointervaling", T_BYTE, 14, error)) < 0)
+      return -1;
+    xfer += ret;
+    if ((ret = thrift_protocol_write_byte (protocol, this_object->log_compact_cointervaling, error)) < 0)
+      return -1;
+    xfer += ret;
+
+    if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+      return -1;
+    xfer += ret;
+  }
+  if (this_object->__isset_log_fragment_preload == TRUE) {
+    if ((ret = thrift_protocol_write_field_begin (protocol, "log_fragment_preload", T_BYTE, 15, error)) < 0)
+      return -1;
+    xfer += ret;
+    if ((ret = thrift_protocol_write_byte (protocol, this_object->log_fragment_preload, error)) < 0)
+      return -1;
+    xfer += ret;
+
+    if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+      return -1;
+    xfer += ret;
+  }
   if (this_object->__isset_compact_percent == TRUE) {
-    if ((ret = thrift_protocol_write_field_begin (protocol, "compact_percent", T_BYTE, 14, error)) < 0)
+    if ((ret = thrift_protocol_write_field_begin (protocol, "compact_percent", T_BYTE, 16, error)) < 0)
       return -1;
     xfer += ret;
     if ((ret = thrift_protocol_write_byte (protocol, this_object->compact_percent, error)) < 0)
@@ -906,7 +958,7 @@ swcdb_thrift_schema_write (ThriftStruct *object, ThriftProtocol *protocol, GErro
     xfer += ret;
   }
   if (this_object->__isset_revision == TRUE) {
-    if ((ret = thrift_protocol_write_field_begin (protocol, "revision", T_I64, 15, error)) < 0)
+    if ((ret = thrift_protocol_write_field_begin (protocol, "revision", T_I64, 17, error)) < 0)
       return -1;
     xfer += ret;
     if ((ret = thrift_protocol_write_i64 (protocol, this_object->revision, error)) < 0)
@@ -1004,6 +1056,16 @@ swcdb_thrift_schema_set_property (GObject *object,
       self->__isset_log_rollout_ratio = TRUE;
       break;
 
+    case PROP_SWCDB_THRIFT_SCHEMA_LOG_COMPACT_COINTERVALING:
+      self->log_compact_cointervaling = g_value_get_int (value);
+      self->__isset_log_compact_cointervaling = TRUE;
+      break;
+
+    case PROP_SWCDB_THRIFT_SCHEMA_LOG_FRAGMENT_PRELOAD:
+      self->log_fragment_preload = g_value_get_int (value);
+      self->__isset_log_fragment_preload = TRUE;
+      break;
+
     case PROP_SWCDB_THRIFT_SCHEMA_COMPACT_PERCENT:
       self->compact_percent = g_value_get_int (value);
       self->__isset_compact_percent = TRUE;
@@ -1082,6 +1144,14 @@ swcdb_thrift_schema_get_property (GObject *object,
       g_value_set_int (value, self->log_rollout_ratio);
       break;
 
+    case PROP_SWCDB_THRIFT_SCHEMA_LOG_COMPACT_COINTERVALING:
+      g_value_set_int (value, self->log_compact_cointervaling);
+      break;
+
+    case PROP_SWCDB_THRIFT_SCHEMA_LOG_FRAGMENT_PRELOAD:
+      g_value_set_int (value, self->log_fragment_preload);
+      break;
+
     case PROP_SWCDB_THRIFT_SCHEMA_COMPACT_PERCENT:
       g_value_set_int (value, self->compact_percent);
       break;
@@ -1124,6 +1194,10 @@ swcdb_thrift_schema_instance_init (swcdb_thriftSchema * object)
   object->__isset_cs_max = FALSE;
   object->log_rollout_ratio = 0;
   object->__isset_log_rollout_ratio = FALSE;
+  object->log_compact_cointervaling = 0;
+  object->__isset_log_compact_cointervaling = FALSE;
+  object->log_fragment_preload = 0;
+  object->__isset_log_fragment_preload = FALSE;
   object->compact_percent = 0;
   object->__isset_compact_percent = FALSE;
   object->revision = 0;
@@ -1291,6 +1365,28 @@ swcdb_thrift_schema_class_init (swcdb_thriftSchemaClass * cls)
     (gobject_class,
      PROP_SWCDB_THRIFT_SCHEMA_LOG_ROLLOUT_RATIO,
      g_param_spec_int ("log_rollout_ratio",
+                       NULL,
+                       NULL,
+                       G_MININT8,
+                       G_MAXINT8,
+                       0,
+                       G_PARAM_READWRITE));
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_SWCDB_THRIFT_SCHEMA_LOG_COMPACT_COINTERVALING,
+     g_param_spec_int ("log_compact_cointervaling",
+                       NULL,
+                       NULL,
+                       G_MININT8,
+                       G_MAXINT8,
+                       0,
+                       G_PARAM_READWRITE));
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_SWCDB_THRIFT_SCHEMA_LOG_FRAGMENT_PRELOAD,
+     g_param_spec_int ("log_fragment_preload",
                        NULL,
                        NULL,
                        G_MININT8,

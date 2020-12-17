@@ -26,8 +26,10 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
   private static final org.apache.thrift.protocol.TField CS_SIZE_FIELD_DESC = new org.apache.thrift.protocol.TField("cs_size", org.apache.thrift.protocol.TType.I32, (short)11);
   private static final org.apache.thrift.protocol.TField CS_MAX_FIELD_DESC = new org.apache.thrift.protocol.TField("cs_max", org.apache.thrift.protocol.TType.BYTE, (short)12);
   private static final org.apache.thrift.protocol.TField LOG_ROLLOUT_RATIO_FIELD_DESC = new org.apache.thrift.protocol.TField("log_rollout_ratio", org.apache.thrift.protocol.TType.BYTE, (short)13);
-  private static final org.apache.thrift.protocol.TField COMPACT_PERCENT_FIELD_DESC = new org.apache.thrift.protocol.TField("compact_percent", org.apache.thrift.protocol.TType.BYTE, (short)14);
-  private static final org.apache.thrift.protocol.TField REVISION_FIELD_DESC = new org.apache.thrift.protocol.TField("revision", org.apache.thrift.protocol.TType.I64, (short)15);
+  private static final org.apache.thrift.protocol.TField LOG_COMPACT_COINTERVALING_FIELD_DESC = new org.apache.thrift.protocol.TField("log_compact_cointervaling", org.apache.thrift.protocol.TType.BYTE, (short)14);
+  private static final org.apache.thrift.protocol.TField LOG_FRAGMENT_PRELOAD_FIELD_DESC = new org.apache.thrift.protocol.TField("log_fragment_preload", org.apache.thrift.protocol.TType.BYTE, (short)15);
+  private static final org.apache.thrift.protocol.TField COMPACT_PERCENT_FIELD_DESC = new org.apache.thrift.protocol.TField("compact_percent", org.apache.thrift.protocol.TType.BYTE, (short)16);
+  private static final org.apache.thrift.protocol.TField REVISION_FIELD_DESC = new org.apache.thrift.protocol.TField("revision", org.apache.thrift.protocol.TType.I64, (short)17);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new SchemaStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new SchemaTupleSchemeFactory();
@@ -90,6 +92,14 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
    * Write Fragment File on ratio reached
    */
   public byte log_rollout_ratio; // optional
+  /**
+   * Min. Cointervaling Fragments for Compaction
+   */
+  public byte log_compact_cointervaling; // optional
+  /**
+   * Number of Fragment to Preload
+   */
+  public byte log_fragment_preload; // optional
   /**
    * Compact at percent reach
    */
@@ -160,13 +170,21 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
      */
     LOG_ROLLOUT_RATIO((short)13, "log_rollout_ratio"),
     /**
+     * Min. Cointervaling Fragments for Compaction
+     */
+    LOG_COMPACT_COINTERVALING((short)14, "log_compact_cointervaling"),
+    /**
+     * Number of Fragment to Preload
+     */
+    LOG_FRAGMENT_PRELOAD((short)15, "log_fragment_preload"),
+    /**
      * Compact at percent reach
      */
-    COMPACT_PERCENT((short)14, "compact_percent"),
+    COMPACT_PERCENT((short)16, "compact_percent"),
     /**
      * Schema's revision/id
      */
-    REVISION((short)15, "revision");
+    REVISION((short)17, "revision");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -208,9 +226,13 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
           return CS_MAX;
         case 13: // LOG_ROLLOUT_RATIO
           return LOG_ROLLOUT_RATIO;
-        case 14: // COMPACT_PERCENT
+        case 14: // LOG_COMPACT_COINTERVALING
+          return LOG_COMPACT_COINTERVALING;
+        case 15: // LOG_FRAGMENT_PRELOAD
+          return LOG_FRAGMENT_PRELOAD;
+        case 16: // COMPACT_PERCENT
           return COMPACT_PERCENT;
-        case 15: // REVISION
+        case 17: // REVISION
           return REVISION;
         default:
           return null;
@@ -262,10 +284,12 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
   private static final int __CS_SIZE_ISSET_ID = 6;
   private static final int __CS_MAX_ISSET_ID = 7;
   private static final int __LOG_ROLLOUT_RATIO_ISSET_ID = 8;
-  private static final int __COMPACT_PERCENT_ISSET_ID = 9;
-  private static final int __REVISION_ISSET_ID = 10;
+  private static final int __LOG_COMPACT_COINTERVALING_ISSET_ID = 9;
+  private static final int __LOG_FRAGMENT_PRELOAD_ISSET_ID = 10;
+  private static final int __COMPACT_PERCENT_ISSET_ID = 11;
+  private static final int __REVISION_ISSET_ID = 12;
   private short __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.CID,_Fields.COL_NAME,_Fields.COL_SEQ,_Fields.COL_TYPE,_Fields.CELL_VERSIONS,_Fields.CELL_TTL,_Fields.BLK_ENCODING,_Fields.BLK_SIZE,_Fields.BLK_CELLS,_Fields.CS_REPLICATION,_Fields.CS_SIZE,_Fields.CS_MAX,_Fields.LOG_ROLLOUT_RATIO,_Fields.COMPACT_PERCENT,_Fields.REVISION};
+  private static final _Fields optionals[] = {_Fields.CID,_Fields.COL_NAME,_Fields.COL_SEQ,_Fields.COL_TYPE,_Fields.CELL_VERSIONS,_Fields.CELL_TTL,_Fields.BLK_ENCODING,_Fields.BLK_SIZE,_Fields.BLK_CELLS,_Fields.CS_REPLICATION,_Fields.CS_SIZE,_Fields.CS_MAX,_Fields.LOG_ROLLOUT_RATIO,_Fields.LOG_COMPACT_COINTERVALING,_Fields.LOG_FRAGMENT_PRELOAD,_Fields.COMPACT_PERCENT,_Fields.REVISION};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -294,6 +318,10 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
     tmpMap.put(_Fields.CS_MAX, new org.apache.thrift.meta_data.FieldMetaData("cs_max", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BYTE)));
     tmpMap.put(_Fields.LOG_ROLLOUT_RATIO, new org.apache.thrift.meta_data.FieldMetaData("log_rollout_ratio", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BYTE)));
+    tmpMap.put(_Fields.LOG_COMPACT_COINTERVALING, new org.apache.thrift.meta_data.FieldMetaData("log_compact_cointervaling", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BYTE)));
+    tmpMap.put(_Fields.LOG_FRAGMENT_PRELOAD, new org.apache.thrift.meta_data.FieldMetaData("log_fragment_preload", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BYTE)));
     tmpMap.put(_Fields.COMPACT_PERCENT, new org.apache.thrift.meta_data.FieldMetaData("compact_percent", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BYTE)));
@@ -332,6 +360,8 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
     this.cs_size = other.cs_size;
     this.cs_max = other.cs_max;
     this.log_rollout_ratio = other.log_rollout_ratio;
+    this.log_compact_cointervaling = other.log_compact_cointervaling;
+    this.log_fragment_preload = other.log_fragment_preload;
     this.compact_percent = other.compact_percent;
     this.revision = other.revision;
   }
@@ -364,6 +394,10 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
     this.cs_max = 0;
     setLog_rollout_ratioIsSet(false);
     this.log_rollout_ratio = 0;
+    setLog_compact_cointervalingIsSet(false);
+    this.log_compact_cointervaling = 0;
+    setLog_fragment_preloadIsSet(false);
+    this.log_fragment_preload = 0;
     setCompact_percentIsSet(false);
     this.compact_percent = 0;
     setRevisionIsSet(false);
@@ -768,6 +802,64 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
   }
 
   /**
+   * Min. Cointervaling Fragments for Compaction
+   */
+  public byte getLog_compact_cointervaling() {
+    return this.log_compact_cointervaling;
+  }
+
+  /**
+   * Min. Cointervaling Fragments for Compaction
+   */
+  public Schema setLog_compact_cointervaling(byte log_compact_cointervaling) {
+    this.log_compact_cointervaling = log_compact_cointervaling;
+    setLog_compact_cointervalingIsSet(true);
+    return this;
+  }
+
+  public void unsetLog_compact_cointervaling() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __LOG_COMPACT_COINTERVALING_ISSET_ID);
+  }
+
+  /** Returns true if field log_compact_cointervaling is set (has been assigned a value) and false otherwise */
+  public boolean isSetLog_compact_cointervaling() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __LOG_COMPACT_COINTERVALING_ISSET_ID);
+  }
+
+  public void setLog_compact_cointervalingIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __LOG_COMPACT_COINTERVALING_ISSET_ID, value);
+  }
+
+  /**
+   * Number of Fragment to Preload
+   */
+  public byte getLog_fragment_preload() {
+    return this.log_fragment_preload;
+  }
+
+  /**
+   * Number of Fragment to Preload
+   */
+  public Schema setLog_fragment_preload(byte log_fragment_preload) {
+    this.log_fragment_preload = log_fragment_preload;
+    setLog_fragment_preloadIsSet(true);
+    return this;
+  }
+
+  public void unsetLog_fragment_preload() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __LOG_FRAGMENT_PRELOAD_ISSET_ID);
+  }
+
+  /** Returns true if field log_fragment_preload is set (has been assigned a value) and false otherwise */
+  public boolean isSetLog_fragment_preload() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __LOG_FRAGMENT_PRELOAD_ISSET_ID);
+  }
+
+  public void setLog_fragment_preloadIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __LOG_FRAGMENT_PRELOAD_ISSET_ID, value);
+  }
+
+  /**
    * Compact at percent reach
    */
   public byte getCompact_percent() {
@@ -931,6 +1023,22 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
       }
       break;
 
+    case LOG_COMPACT_COINTERVALING:
+      if (value == null) {
+        unsetLog_compact_cointervaling();
+      } else {
+        setLog_compact_cointervaling((java.lang.Byte)value);
+      }
+      break;
+
+    case LOG_FRAGMENT_PRELOAD:
+      if (value == null) {
+        unsetLog_fragment_preload();
+      } else {
+        setLog_fragment_preload((java.lang.Byte)value);
+      }
+      break;
+
     case COMPACT_PERCENT:
       if (value == null) {
         unsetCompact_percent();
@@ -992,6 +1100,12 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
     case LOG_ROLLOUT_RATIO:
       return getLog_rollout_ratio();
 
+    case LOG_COMPACT_COINTERVALING:
+      return getLog_compact_cointervaling();
+
+    case LOG_FRAGMENT_PRELOAD:
+      return getLog_fragment_preload();
+
     case COMPACT_PERCENT:
       return getCompact_percent();
 
@@ -1035,6 +1149,10 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
       return isSetCs_max();
     case LOG_ROLLOUT_RATIO:
       return isSetLog_rollout_ratio();
+    case LOG_COMPACT_COINTERVALING:
+      return isSetLog_compact_cointervaling();
+    case LOG_FRAGMENT_PRELOAD:
+      return isSetLog_fragment_preload();
     case COMPACT_PERCENT:
       return isSetCompact_percent();
     case REVISION:
@@ -1175,6 +1293,24 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
         return false;
     }
 
+    boolean this_present_log_compact_cointervaling = true && this.isSetLog_compact_cointervaling();
+    boolean that_present_log_compact_cointervaling = true && that.isSetLog_compact_cointervaling();
+    if (this_present_log_compact_cointervaling || that_present_log_compact_cointervaling) {
+      if (!(this_present_log_compact_cointervaling && that_present_log_compact_cointervaling))
+        return false;
+      if (this.log_compact_cointervaling != that.log_compact_cointervaling)
+        return false;
+    }
+
+    boolean this_present_log_fragment_preload = true && this.isSetLog_fragment_preload();
+    boolean that_present_log_fragment_preload = true && that.isSetLog_fragment_preload();
+    if (this_present_log_fragment_preload || that_present_log_fragment_preload) {
+      if (!(this_present_log_fragment_preload && that_present_log_fragment_preload))
+        return false;
+      if (this.log_fragment_preload != that.log_fragment_preload)
+        return false;
+    }
+
     boolean this_present_compact_percent = true && this.isSetCompact_percent();
     boolean that_present_compact_percent = true && that.isSetCompact_percent();
     if (this_present_compact_percent || that_present_compact_percent) {
@@ -1251,6 +1387,14 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
     hashCode = hashCode * 8191 + ((isSetLog_rollout_ratio()) ? 131071 : 524287);
     if (isSetLog_rollout_ratio())
       hashCode = hashCode * 8191 + (int) (log_rollout_ratio);
+
+    hashCode = hashCode * 8191 + ((isSetLog_compact_cointervaling()) ? 131071 : 524287);
+    if (isSetLog_compact_cointervaling())
+      hashCode = hashCode * 8191 + (int) (log_compact_cointervaling);
+
+    hashCode = hashCode * 8191 + ((isSetLog_fragment_preload()) ? 131071 : 524287);
+    if (isSetLog_fragment_preload())
+      hashCode = hashCode * 8191 + (int) (log_fragment_preload);
 
     hashCode = hashCode * 8191 + ((isSetCompact_percent()) ? 131071 : 524287);
     if (isSetCompact_percent())
@@ -1401,6 +1545,26 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
         return lastComparison;
       }
     }
+    lastComparison = java.lang.Boolean.valueOf(isSetLog_compact_cointervaling()).compareTo(other.isSetLog_compact_cointervaling());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetLog_compact_cointervaling()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.log_compact_cointervaling, other.log_compact_cointervaling);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.valueOf(isSetLog_fragment_preload()).compareTo(other.isSetLog_fragment_preload());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetLog_fragment_preload()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.log_fragment_preload, other.log_fragment_preload);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     lastComparison = java.lang.Boolean.valueOf(isSetCompact_percent()).compareTo(other.isSetCompact_percent());
     if (lastComparison != 0) {
       return lastComparison;
@@ -1533,6 +1697,18 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
       if (!first) sb.append(", ");
       sb.append("log_rollout_ratio:");
       sb.append(this.log_rollout_ratio);
+      first = false;
+    }
+    if (isSetLog_compact_cointervaling()) {
+      if (!first) sb.append(", ");
+      sb.append("log_compact_cointervaling:");
+      sb.append(this.log_compact_cointervaling);
+      first = false;
+    }
+    if (isSetLog_fragment_preload()) {
+      if (!first) sb.append(", ");
+      sb.append("log_fragment_preload:");
+      sb.append(this.log_fragment_preload);
       first = false;
     }
     if (isSetCompact_percent()) {
@@ -1696,7 +1872,23 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 14: // COMPACT_PERCENT
+          case 14: // LOG_COMPACT_COINTERVALING
+            if (schemeField.type == org.apache.thrift.protocol.TType.BYTE) {
+              struct.log_compact_cointervaling = iprot.readByte();
+              struct.setLog_compact_cointervalingIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 15: // LOG_FRAGMENT_PRELOAD
+            if (schemeField.type == org.apache.thrift.protocol.TType.BYTE) {
+              struct.log_fragment_preload = iprot.readByte();
+              struct.setLog_fragment_preloadIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 16: // COMPACT_PERCENT
             if (schemeField.type == org.apache.thrift.protocol.TType.BYTE) {
               struct.compact_percent = iprot.readByte();
               struct.setCompact_percentIsSet(true);
@@ -1704,7 +1896,7 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 15: // REVISION
+          case 17: // REVISION
             if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
               struct.revision = iprot.readI64();
               struct.setRevisionIsSet(true);
@@ -1800,6 +1992,16 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
         oprot.writeByte(struct.log_rollout_ratio);
         oprot.writeFieldEnd();
       }
+      if (struct.isSetLog_compact_cointervaling()) {
+        oprot.writeFieldBegin(LOG_COMPACT_COINTERVALING_FIELD_DESC);
+        oprot.writeByte(struct.log_compact_cointervaling);
+        oprot.writeFieldEnd();
+      }
+      if (struct.isSetLog_fragment_preload()) {
+        oprot.writeFieldBegin(LOG_FRAGMENT_PRELOAD_FIELD_DESC);
+        oprot.writeByte(struct.log_fragment_preload);
+        oprot.writeFieldEnd();
+      }
       if (struct.isSetCompact_percent()) {
         oprot.writeFieldBegin(COMPACT_PERCENT_FIELD_DESC);
         oprot.writeByte(struct.compact_percent);
@@ -1867,13 +2069,19 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
       if (struct.isSetLog_rollout_ratio()) {
         optionals.set(12);
       }
-      if (struct.isSetCompact_percent()) {
+      if (struct.isSetLog_compact_cointervaling()) {
         optionals.set(13);
       }
-      if (struct.isSetRevision()) {
+      if (struct.isSetLog_fragment_preload()) {
         optionals.set(14);
       }
-      oprot.writeBitSet(optionals, 15);
+      if (struct.isSetCompact_percent()) {
+        optionals.set(15);
+      }
+      if (struct.isSetRevision()) {
+        optionals.set(16);
+      }
+      oprot.writeBitSet(optionals, 17);
       if (struct.isSetCid()) {
         oprot.writeI64(struct.cid);
       }
@@ -1913,6 +2121,12 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
       if (struct.isSetLog_rollout_ratio()) {
         oprot.writeByte(struct.log_rollout_ratio);
       }
+      if (struct.isSetLog_compact_cointervaling()) {
+        oprot.writeByte(struct.log_compact_cointervaling);
+      }
+      if (struct.isSetLog_fragment_preload()) {
+        oprot.writeByte(struct.log_fragment_preload);
+      }
       if (struct.isSetCompact_percent()) {
         oprot.writeByte(struct.compact_percent);
       }
@@ -1924,7 +2138,7 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, Schema struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
-      java.util.BitSet incoming = iprot.readBitSet(15);
+      java.util.BitSet incoming = iprot.readBitSet(17);
       if (incoming.get(0)) {
         struct.cid = iprot.readI64();
         struct.setCidIsSet(true);
@@ -1978,10 +2192,18 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
         struct.setLog_rollout_ratioIsSet(true);
       }
       if (incoming.get(13)) {
+        struct.log_compact_cointervaling = iprot.readByte();
+        struct.setLog_compact_cointervalingIsSet(true);
+      }
+      if (incoming.get(14)) {
+        struct.log_fragment_preload = iprot.readByte();
+        struct.setLog_fragment_preloadIsSet(true);
+      }
+      if (incoming.get(15)) {
         struct.compact_percent = iprot.readByte();
         struct.setCompact_percentIsSet(true);
       }
-      if (incoming.get(14)) {
+      if (incoming.get(16)) {
         struct.revision = iprot.readI64();
         struct.setRevisionIsSet(true);
       }

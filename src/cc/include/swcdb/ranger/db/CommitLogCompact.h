@@ -59,12 +59,14 @@ class Compact final {
 
   Fragments*            log;
   const uint64_t        ts;
+  const uint8_t         preload;
   const size_t          repetition;
   size_t                ngroups;
   size_t                nfrags;
 
-  Compact(Fragments* log, int repetition, 
-          const std::vector<Fragments::Vec>& groups, Cb_t& cb = 0);
+  Compact(Fragments* log, int repetition,
+          const std::vector<Fragments::Vec>& groups,
+          uint8_t cointervaling, Cb_t& cb = 0);
 
   Compact(const Compact&) = delete;
 

@@ -20,6 +20,7 @@ class BlockLoader final {
   public:
 
   Block::Ptr          block;
+  const uint8_t       preload;
   std::atomic<size_t> count_cs_blocks;
   std::atomic<size_t> count_fragments;
   std::atomic<int>    error;

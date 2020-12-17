@@ -500,6 +500,16 @@ void Schema::__set_log_rollout_ratio(const int8_t val) {
 __isset.log_rollout_ratio = true;
 }
 
+void Schema::__set_log_compact_cointervaling(const int8_t val) {
+  this->log_compact_cointervaling = val;
+__isset.log_compact_cointervaling = true;
+}
+
+void Schema::__set_log_fragment_preload(const int8_t val) {
+  this->log_fragment_preload = val;
+__isset.log_fragment_preload = true;
+}
+
 void Schema::__set_compact_percent(const int8_t val) {
   this->compact_percent = val;
 __isset.compact_percent = true;
@@ -649,13 +659,29 @@ uint32_t Schema::read(::apache::thrift::protocol::TProtocol* iprot) {
         break;
       case 14:
         if (ftype == ::apache::thrift::protocol::T_BYTE) {
+          xfer += iprot->readByte(this->log_compact_cointervaling);
+          this->__isset.log_compact_cointervaling = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 15:
+        if (ftype == ::apache::thrift::protocol::T_BYTE) {
+          xfer += iprot->readByte(this->log_fragment_preload);
+          this->__isset.log_fragment_preload = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 16:
+        if (ftype == ::apache::thrift::protocol::T_BYTE) {
           xfer += iprot->readByte(this->compact_percent);
           this->__isset.compact_percent = true;
         } else {
           xfer += iprot->skip(ftype);
         }
         break;
-      case 15:
+      case 17:
         if (ftype == ::apache::thrift::protocol::T_I64) {
           xfer += iprot->readI64(this->revision);
           this->__isset.revision = true;
@@ -745,13 +771,23 @@ uint32_t Schema::write(::apache::thrift::protocol::TProtocol* oprot) const {
     xfer += oprot->writeByte(this->log_rollout_ratio);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.log_compact_cointervaling) {
+    xfer += oprot->writeFieldBegin("log_compact_cointervaling", ::apache::thrift::protocol::T_BYTE, 14);
+    xfer += oprot->writeByte(this->log_compact_cointervaling);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.log_fragment_preload) {
+    xfer += oprot->writeFieldBegin("log_fragment_preload", ::apache::thrift::protocol::T_BYTE, 15);
+    xfer += oprot->writeByte(this->log_fragment_preload);
+    xfer += oprot->writeFieldEnd();
+  }
   if (this->__isset.compact_percent) {
-    xfer += oprot->writeFieldBegin("compact_percent", ::apache::thrift::protocol::T_BYTE, 14);
+    xfer += oprot->writeFieldBegin("compact_percent", ::apache::thrift::protocol::T_BYTE, 16);
     xfer += oprot->writeByte(this->compact_percent);
     xfer += oprot->writeFieldEnd();
   }
   if (this->__isset.revision) {
-    xfer += oprot->writeFieldBegin("revision", ::apache::thrift::protocol::T_I64, 15);
+    xfer += oprot->writeFieldBegin("revision", ::apache::thrift::protocol::T_I64, 17);
     xfer += oprot->writeI64(this->revision);
     xfer += oprot->writeFieldEnd();
   }
@@ -775,6 +811,8 @@ void swap(Schema &a, Schema &b) {
   swap(a.cs_size, b.cs_size);
   swap(a.cs_max, b.cs_max);
   swap(a.log_rollout_ratio, b.log_rollout_ratio);
+  swap(a.log_compact_cointervaling, b.log_compact_cointervaling);
+  swap(a.log_fragment_preload, b.log_fragment_preload);
   swap(a.compact_percent, b.compact_percent);
   swap(a.revision, b.revision);
   swap(a.__isset, b.__isset);
@@ -794,6 +832,8 @@ Schema::Schema(const Schema& other5) {
   cs_size = other5.cs_size;
   cs_max = other5.cs_max;
   log_rollout_ratio = other5.log_rollout_ratio;
+  log_compact_cointervaling = other5.log_compact_cointervaling;
+  log_fragment_preload = other5.log_fragment_preload;
   compact_percent = other5.compact_percent;
   revision = other5.revision;
   __isset = other5.__isset;
@@ -812,6 +852,8 @@ Schema& Schema::operator=(const Schema& other6) {
   cs_size = other6.cs_size;
   cs_max = other6.cs_max;
   log_rollout_ratio = other6.log_rollout_ratio;
+  log_compact_cointervaling = other6.log_compact_cointervaling;
+  log_fragment_preload = other6.log_fragment_preload;
   compact_percent = other6.compact_percent;
   revision = other6.revision;
   __isset = other6.__isset;
@@ -833,6 +875,8 @@ void Schema::printTo(std::ostream& out) const {
   out << ", " << "cs_size="; (__isset.cs_size ? (out << to_string(cs_size)) : (out << "<null>"));
   out << ", " << "cs_max="; (__isset.cs_max ? (out << to_string(cs_max)) : (out << "<null>"));
   out << ", " << "log_rollout_ratio="; (__isset.log_rollout_ratio ? (out << to_string(log_rollout_ratio)) : (out << "<null>"));
+  out << ", " << "log_compact_cointervaling="; (__isset.log_compact_cointervaling ? (out << to_string(log_compact_cointervaling)) : (out << "<null>"));
+  out << ", " << "log_fragment_preload="; (__isset.log_fragment_preload ? (out << to_string(log_fragment_preload)) : (out << "<null>"));
   out << ", " << "compact_percent="; (__isset.compact_percent ? (out << to_string(compact_percent)) : (out << "<null>"));
   out << ", " << "revision="; (__isset.revision ? (out << to_string(revision)) : (out << "<null>"));
   out << ")";

@@ -29,6 +29,8 @@ The key fields:
 |cs_size        |```i32```          | 0 == Rangers' default cfg           | The CellStore file size in Byte                                   |
 |cs_max         |```i8```           | 0 == Rangers' default cfg           | The Max CellStores in a Range                                     |
 |log_rollout    |```i8```           | 0 == Rangers' default cfg           | The ratio of CommitLog-size on reached Write Fragment File        |
+|log_compact    |```i8```           | 0 == Rangers' default cfg           | The size of cointervaling Fragments for log compaction to apply   |
+|log_preload    |```i8```           | 0 == Rangers' default cfg           | The number of Fragments to be preloaded at scans and compaction   |
 |compact        |```i8```           | 0 == Rangers' default cfg           | The Compaction percentage Threshold for doing a range compaction  |
 |revision       |```i64```          | 0 == auto assigned on update/create | The Schema's revision                                             |
 

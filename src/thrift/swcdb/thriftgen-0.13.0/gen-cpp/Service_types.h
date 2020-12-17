@@ -273,7 +273,7 @@ void swap(Exception &a, Exception &b);
 std::ostream& operator<<(std::ostream& out, const Exception& obj);
 
 typedef struct _Schema__isset {
-  _Schema__isset() : cid(false), col_name(false), col_seq(false), col_type(false), cell_versions(false), cell_ttl(false), blk_encoding(false), blk_size(false), blk_cells(false), cs_replication(false), cs_size(false), cs_max(false), log_rollout_ratio(false), compact_percent(false), revision(false) {}
+  _Schema__isset() : cid(false), col_name(false), col_seq(false), col_type(false), cell_versions(false), cell_ttl(false), blk_encoding(false), blk_size(false), blk_cells(false), cs_replication(false), cs_size(false), cs_max(false), log_rollout_ratio(false), log_compact_cointervaling(false), log_fragment_preload(false), compact_percent(false), revision(false) {}
   bool cid :1;
   bool col_name :1;
   bool col_seq :1;
@@ -287,6 +287,8 @@ typedef struct _Schema__isset {
   bool cs_size :1;
   bool cs_max :1;
   bool log_rollout_ratio :1;
+  bool log_compact_cointervaling :1;
+  bool log_fragment_preload :1;
   bool compact_percent :1;
   bool revision :1;
 } _Schema__isset;
@@ -296,7 +298,7 @@ class Schema : public virtual ::apache::thrift::TBase {
 
   Schema(const Schema&);
   Schema& operator=(const Schema&);
-  Schema() : cid(0), col_name(), col_seq((KeySeq::type)0), col_type((ColumnType::type)0), cell_versions(0), cell_ttl(0), blk_encoding((EncodingType::type)0), blk_size(0), blk_cells(0), cs_replication(0), cs_size(0), cs_max(0), log_rollout_ratio(0), compact_percent(0), revision(0) {
+  Schema() : cid(0), col_name(), col_seq((KeySeq::type)0), col_type((ColumnType::type)0), cell_versions(0), cell_ttl(0), blk_encoding((EncodingType::type)0), blk_size(0), blk_cells(0), cs_replication(0), cs_size(0), cs_max(0), log_rollout_ratio(0), log_compact_cointervaling(0), log_fragment_preload(0), compact_percent(0), revision(0) {
   }
 
   virtual ~Schema() noexcept;
@@ -313,6 +315,8 @@ class Schema : public virtual ::apache::thrift::TBase {
   int32_t cs_size;
   int8_t cs_max;
   int8_t log_rollout_ratio;
+  int8_t log_compact_cointervaling;
+  int8_t log_fragment_preload;
   int8_t compact_percent;
   int64_t revision;
 
@@ -343,6 +347,10 @@ class Schema : public virtual ::apache::thrift::TBase {
   void __set_cs_max(const int8_t val);
 
   void __set_log_rollout_ratio(const int8_t val);
+
+  void __set_log_compact_cointervaling(const int8_t val);
+
+  void __set_log_fragment_preload(const int8_t val);
 
   void __set_compact_percent(const int8_t val);
 
@@ -401,6 +409,14 @@ class Schema : public virtual ::apache::thrift::TBase {
     if (__isset.log_rollout_ratio != rhs.__isset.log_rollout_ratio)
       return false;
     else if (__isset.log_rollout_ratio && !(log_rollout_ratio == rhs.log_rollout_ratio))
+      return false;
+    if (__isset.log_compact_cointervaling != rhs.__isset.log_compact_cointervaling)
+      return false;
+    else if (__isset.log_compact_cointervaling && !(log_compact_cointervaling == rhs.log_compact_cointervaling))
+      return false;
+    if (__isset.log_fragment_preload != rhs.__isset.log_fragment_preload)
+      return false;
+    else if (__isset.log_fragment_preload && !(log_fragment_preload == rhs.log_fragment_preload))
       return false;
     if (__isset.compact_percent != rhs.__isset.compact_percent)
       return false;
