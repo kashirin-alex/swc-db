@@ -139,6 +139,36 @@ compare_opt<Types::KeySeq::FC_VOLUME>(
     opt_empty, other, max, empty_eq);
 }
 
+
+Condition::Comp
+compare_opt_lexic(const Cell::Key& opt_empty, const Cell::Key& other,
+                  uint24_t max, bool empty_eq) {
+  return compare_opt<Types::KeySeq::LEXIC>(
+    opt_empty, other, max, empty_eq);
+}
+
+Condition::Comp
+compare_opt_volume(const Cell::Key& opt_empty, const Cell::Key& other,
+                   uint24_t max, bool empty_eq) {
+  return compare_opt<Types::KeySeq::VOLUME>(
+    opt_empty, other, max, empty_eq);
+}
+
+Condition::Comp
+compare_opt_fc_lexic(const Cell::Key& opt_empty, const Cell::Key& other,
+                     uint24_t max, bool empty_eq) {
+  return compare_opt<Types::KeySeq::FC_LEXIC>(
+    opt_empty, other, max, empty_eq);
+}
+
+Condition::Comp
+compare_opt_fc_volume(const Cell::Key& opt_empty, const Cell::Key& other,
+                      uint24_t max, bool empty_eq) {
+  return compare_opt<Types::KeySeq::FC_VOLUME>(
+    opt_empty, other, max, empty_eq);
+}
+
+
 Condition::Comp 
 compare_upto(const Types::KeySeq seq, 
              const Cell::Key& key, const Cell::Key& other, 

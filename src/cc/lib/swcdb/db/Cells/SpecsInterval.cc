@@ -201,25 +201,25 @@ bool Interval::is_matching_begin(const Types::KeySeq key_seq,
 
     case Types::KeySeq::LEXIC:
       return 
-        DB::KeySeq::compare_opt<Types::KeySeq::LEXIC>(
+        DB::KeySeq::compare_opt_lexic(
           range_begin, key, range_begin.count, true
         ) != Condition::LT;
 
     case Types::KeySeq::VOLUME:
       return 
-        DB::KeySeq::compare_opt<Types::KeySeq::VOLUME>(
+        DB::KeySeq::compare_opt_volume(
           range_begin, key, range_begin.count, true
         ) != Condition::LT;
 
     case Types::KeySeq::FC_LEXIC:
       return 
-        DB::KeySeq::compare_opt<Types::KeySeq::FC_LEXIC>(
+        DB::KeySeq::compare_opt_fc_lexic(
           range_begin, key, key.count, true
         ) != Condition::LT;
 
     case Types::KeySeq::FC_VOLUME:
       return 
-        DB::KeySeq::compare_opt<Types::KeySeq::FC_VOLUME>(
+        DB::KeySeq::compare_opt_fc_volume(
           range_begin, key, key.count, true
         ) != Condition::LT;
 
@@ -235,7 +235,7 @@ bool Interval::is_matching_end(const Types::KeySeq key_seq,
 
     case Types::KeySeq::LEXIC:
       return 
-        DB::KeySeq::compare_opt<Types::KeySeq::LEXIC>(
+        DB::KeySeq::compare_opt_lexic(
           range_end, key,
           has_opt__range_end_rest() && !has_opt__key_equal()
             ? range_end.count : key.count, 
@@ -244,7 +244,7 @@ bool Interval::is_matching_end(const Types::KeySeq key_seq,
 
     case Types::KeySeq::VOLUME:
       return 
-        DB::KeySeq::compare_opt<Types::KeySeq::VOLUME>(
+        DB::KeySeq::compare_opt_volume(
           range_end, key, 
           has_opt__range_end_rest() && !has_opt__key_equal()
             ? range_end.count : key.count, 
@@ -256,7 +256,7 @@ bool Interval::is_matching_end(const Types::KeySeq key_seq,
         (has_opt__key_equal()
           ? key.count < range_end.count
           : has_opt__range_end_rest()) ||
-        DB::KeySeq::compare_opt<Types::KeySeq::FC_LEXIC>(
+        DB::KeySeq::compare_opt_fc_lexic(
           range_end, key,
           has_opt__range_end_rest() && !has_opt__key_equal()
             ? range_end.count : key.count, 
@@ -268,7 +268,7 @@ bool Interval::is_matching_end(const Types::KeySeq key_seq,
         (has_opt__key_equal()
           ? key.count < range_end.count
           : has_opt__range_end_rest()) ||
-        DB::KeySeq::compare_opt<Types::KeySeq::FC_VOLUME>(
+        DB::KeySeq::compare_opt_fc_volume(
           range_end, key,
           has_opt__range_end_rest() && !has_opt__key_equal()
             ? range_end.count : key.count,
@@ -286,7 +286,7 @@ bool Interval::is_in_previous(const Types::KeySeq key_seq,
 
     case Types::KeySeq::LEXIC:
       return 
-        DB::KeySeq::compare_opt<Types::KeySeq::LEXIC>(
+        DB::KeySeq::compare_opt_lexic(
           range_end, prev,
           has_opt__range_end_rest()
             ? range_end.count : prev.count,
@@ -295,7 +295,7 @@ bool Interval::is_in_previous(const Types::KeySeq key_seq,
 
     case Types::KeySeq::VOLUME:
       return 
-        DB::KeySeq::compare_opt<Types::KeySeq::VOLUME>(
+        DB::KeySeq::compare_opt_volume(
           range_end, prev,
           has_opt__range_end_rest()
             ? range_end.count : prev.count,
@@ -307,10 +307,10 @@ bool Interval::is_in_previous(const Types::KeySeq key_seq,
         has_opt__range_end_rest()
         ? (prev.count >= range_end.count
             ? true
-            : DB::KeySeq::compare_opt<Types::KeySeq::LEXIC>(
+            : DB::KeySeq::compare_opt_lexic(
                 range_end, prev, range_end.count, true
               ) != Condition::GT)
-        : DB::KeySeq::compare_opt<Types::KeySeq::FC_LEXIC>(
+        : DB::KeySeq::compare_opt_fc_lexic(
             range_end, prev,
             has_opt__key_equal()
               ? range_end.count : prev.count,
@@ -322,10 +322,10 @@ bool Interval::is_in_previous(const Types::KeySeq key_seq,
         has_opt__range_end_rest()
         ? (prev.count >= range_end.count
             ? true
-            : DB::KeySeq::compare_opt<Types::KeySeq::VOLUME>(
+            : DB::KeySeq::compare_opt_volume(
                 range_end, prev, range_end.count, true
               ) != Condition::GT)
-        : DB::KeySeq::compare_opt<Types::KeySeq::FC_VOLUME>(
+        : DB::KeySeq::compare_opt_fc_volume(
             range_end, prev,
             has_opt__key_equal()
               ? range_end.count : prev.count,

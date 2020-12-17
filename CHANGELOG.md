@@ -8,6 +8,16 @@
 
 ### [SWC-DB master](https://github.com/kashirin-alex/swc-db/tree/master) (upcoming-release)
 
+    
+
+[_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.4.13...master)
+******
+
+
+
+
+### [SWC-DB v0.4.13](https://github.com/kashirin-alex/swc-db/releases/tag/v0.4.13) (2020-12-18)
+
     changed Zero/NotZero conditions to boolean evaluation
     added Manager MngrRole::are_all_active(Mngr::Groups::Vec&)
     moved namespace & file Stats::CompletionCounter to Core::CompletionCounter
@@ -52,8 +62,20 @@
     changed Ranger CommitLog::Fragment::Ptr to std::shared_ptr<Fragment>
     added Ranger skip Block preload at commitlog compacting
     added Ranger CommitLog::Fragment marked-remove state
+    changed Ranger Block class stores BlockLoader* m_loader with q_req
+    added client::Query::Select::dispatcher_io a Comm::IoContextPtr
+    changed Core::Completion to a atomic lockfree
+    changed client::Query::Update errors handling with switch
+    added multi-columns work-load support to swcdb_load_generator
+    added Ranger CommitLog configurable properties:
+        g_i8 swc.rgr.Range.CommitLog.Compact.cointervaling
+        g_i8 swc.rgr.Range.CommitLog.Fragment.preload
+    added log_compact_cointervaling & log_fragment_preload to: 
+        DB::Schema, Thrift::Service::Schema
+    changed CommitLog::Compact & BlockLoader to work with Ranger cfg values
+    added SQL Schema Syntax support for log_compact & log_preload
 
-[_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.4.12...master)
+[_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.4.12...v0.4.13)
 ******
 
 

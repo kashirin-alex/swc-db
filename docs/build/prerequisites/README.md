@@ -27,7 +27,7 @@ mkdir swcdb;
 
   * [gcc 9+](https://gcc.gnu.org/) 
     | 
-    [clang 9+](http://llvm.org/)
+    [clang 9+](https://llvm.org/)
 
   * [ASIO 1.18+](https://github.com/chriskohlhoff/asio)
 
@@ -57,9 +57,11 @@ mkdir swcdb;
   * Malloc 
     * [libtcmalloc](https://github.com/gperftools/gperftools) 
       |
-      [libjemalloc](http://github.com/jemalloc/jemalloc)
+      [libjemalloc](https://github.com/jemalloc/jemalloc)
       |
-      [libhoard](http://github.com/emeryberger/Hoard/)
+      [libhoard](https://github.com/emeryberger/Hoard/)
+      |
+      [libmimalloc](https://github.com/microsoft/mimalloc/)
 
   * [Java(openjdk 12.0.1)](https://jdk.java.net/java-se-ri/12) - [Hadoop-JVM FsBroker, Java-Thrift client]
 
@@ -67,12 +69,12 @@ mkdir swcdb;
 
   * Thrift Broker:
     * [Apache Thrift 0.13.0+](https://github.com/apache/thrift)
-    * [libevent 2.1.11+](http://github.com/libevent/libevent)
+    * [libevent 2.1.11+](https://github.com/libevent/libevent)
   
   * C_GLIB-Thrift client & PAM module:
     * [libglib-2.0](https://developer.gnome.org/glib/2.64/)
     * [libgobject-2.0](https://developer.gnome.org/gobject/2.64/)
-    * [libffi](http://github.com/libffi/libffi/)
+    * [libffi](https://github.com/libffi/libffi/)
     * [libpcre 1](https://pcre.org/)
   
   * Hadoop-JVM FsBroker:
