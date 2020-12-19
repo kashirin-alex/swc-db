@@ -18,7 +18,7 @@ using ColumnMngFunc = Comm::Protocol::Mngr::Params::ColumnMng::Function;
 
 MngdColumns::MngdColumns()
     : m_run(true), m_schemas_set(false), 
-      m_columns_loading(false), m_cid_active(false), 
+      m_cid_active(false), 
       m_cid_begin(DB::Schema::NO_CID), m_cid_end(DB::Schema::NO_CID),
       m_expected_ready(false),
       cfg_schema_replication(
@@ -475,12 +475,8 @@ bool MngdColumns::initialize() {
 
 
 bool MngdColumns::columns_load() {
-  {
-    Core::MutexSptd::scope lock(m_mutex_schemas);
-    if(m_columns_loading)
-      return true;
-    m_columns_loading = true;
-  }
+  if(m_columns_load.running())
+    return true;
   for(int err;;) {
     if(is_schemas_mngr(err = Error::OK)) {
       if(err) // hold-on
@@ -488,8 +484,7 @@ bool MngdColumns::columns_load() {
       else
         break;
     } else {
-      Core::MutexSptd::scope lock(m_mutex_schemas);
-      m_columns_loading = false;
+      m_columns_load.stop();
       return false;
     }
   }
@@ -504,8 +499,7 @@ bool MngdColumns::columns_load() {
     SWC_LOG(LOG_WARN, "Empty Schema Entries")
 
   if(groups.empty() || entries.empty()) {
-    Core::MutexSptd::scope lock(m_mutex_schemas);
-    m_columns_loading = false;
+    m_columns_load.stop();
     return false;
   }
 
@@ -555,10 +549,7 @@ bool MngdColumns::columns_load() {
     }
   }
 
-  {
-    Core::MutexSptd::scope lock(m_mutex_schemas);
-    m_columns_loading = false;
-  }
+  m_columns_load.stop();
   return true;
 }
 

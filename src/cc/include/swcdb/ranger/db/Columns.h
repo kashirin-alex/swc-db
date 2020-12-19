@@ -36,7 +36,7 @@ class Columns final : private std::unordered_map<cid_t, ColumnPtr> {
 
   typedef Columns* Ptr;
 
-  Columns() : m_releasing(false) { }
+  Columns() { }
 
   ~Columns() { }
   
@@ -67,7 +67,7 @@ class Columns final : private std::unordered_map<cid_t, ColumnPtr> {
   private:
 
   Core::MutexSptd    m_mutex;
-  std::atomic<bool>  m_releasing;
+  Core::StateRunning m_release;
 
 };
 

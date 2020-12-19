@@ -97,7 +97,7 @@ class ConnQueue :
   IoContextPtr                                      m_ioctx;
   ConnHandlerPtr                                    m_conn;
   bool                                              m_connecting;
-  bool                                              m_qrunning;
+  Core::StateRunning                                m_q_state;
   asio::high_resolution_timer*                      m_timer; 
   std::unordered_set<asio::high_resolution_timer*>  m_delayed;
 

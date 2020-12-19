@@ -17,8 +17,8 @@ BlockLoader::BlockLoader(Block::Ptr block)
                             block->blocks->range->cfg->log_fragment_preload()),
                           count_cs_blocks(0), count_fragments(0),
                           error(Error::OK),
-                          m_processing(false),
-                          m_checking_log(true), m_logs(0) {
+                          m_check_log(true), m_processing(false),
+                          m_logs(0) {
 }
 
 BlockLoader::~BlockLoader() { }
@@ -80,15 +80,11 @@ void BlockLoader::load_cellstores_cells() {
       m_cs_blocks.pop();
     }
   }
-  if(check_log())
+  if(!m_check_log.running())
     load_log(false);
 }
 
 //CommitLog
-bool BlockLoader::check_log() {
-  Core::MutexSptd::scope lock(m_mutex);
-  return m_checking_log ? false : (m_checking_log = true);
-}
 
 void BlockLoader::load_log(bool is_final, bool is_more) {
   check_more:
@@ -120,7 +116,7 @@ void BlockLoader::load_log(bool is_final, bool is_more) {
   bool wait;
   {
     Core::MutexSptd::scope lock(m_mutex);
-    m_checking_log = false;
+    m_check_log.stop();
     if((!is_more && m_processing) || !m_cs_blocks.empty())
       return;
     more = is_more || (m_logs && !m_fragments.empty());
@@ -132,7 +128,7 @@ void BlockLoader::load_log(bool is_final, bool is_more) {
     return;
   if(is_final)
     return completion();
-  if(check_log()) {
+  if(!m_check_log.running()) {
     is_final = true;
     goto check_more;
   }
@@ -179,11 +175,11 @@ void BlockLoader::load_log_cells() {
     }
     frag->load_cells(err = Error::OK, block);
     ++count_fragments;
-    if(more && check_log())
+    if(more && !m_check_log.running())
       Env::Rgr::post([this](){ load_log(false, true); });
   }
 
-  if(check_log())
+  if(!m_check_log.running())
     load_log(true);
 }
 

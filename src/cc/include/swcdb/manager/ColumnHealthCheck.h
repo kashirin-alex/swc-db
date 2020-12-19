@@ -70,8 +70,9 @@ class ColumnHealthCheck final
   void finishing(bool finished_range);
 
   private:
+  
+  Core::StateRunning            m_check;
   Core::MutexSptd               m_mutex;
-  bool                          m_runnning;
   std::vector<RangerCheck::Ptr> m_checkers;
   
 };

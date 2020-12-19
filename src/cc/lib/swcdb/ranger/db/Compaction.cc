@@ -21,26 +21,27 @@ Compaction::Compaction()
             cfg_check_interval(
               Env::Config::settings()->get<Config::Property::V_GINT32>(
                 "swc.rgr.compaction.check.interval")),
+            m_run(true), m_running(0),
             m_check_timer(
               asio::high_resolution_timer(
                 Env::Rgr::maintenance_io()->executor())),
-            m_run(true), m_running(0), m_scheduled(false),
             m_idx_cid(0), m_idx_rid(0)  {
 }
 
 Compaction::~Compaction() { }
 
 bool Compaction::available() {
-  std::scoped_lock lock(m_mutex);
-  return m_running < cfg_max_range->get();
+  return m_running.load(std::memory_order_relaxed) < cfg_max_range->get();
 }
 
 void Compaction::stop() {
+  m_run.store(false, std::memory_order_relaxed);
   std::unique_lock lock_wait(m_mutex);
-  m_run = false;
   m_check_timer.cancel();
-  if(m_running) 
-    m_cv.wait(lock_wait, [this](){return !m_running;});  
+  if(m_running || m_schedule.running())
+    m_cv.wait(lock_wait, [this](){
+      return !m_running && !m_schedule.running();});
+  m_schedule.stop();
 }
 
 void Compaction::schedule() {
@@ -53,18 +54,14 @@ void Compaction::schedule(uint32_t t_ms) {
 }
 
 bool Compaction::stopped() {
-  std::scoped_lock lock(m_mutex);
-  return !m_run;
+  return !m_run.load(std::memory_order_relaxed);
 }
 
-void Compaction::run(bool continuing) {
-  {
-    std::scoped_lock lock(m_mutex); 
-    if(!m_run || (!continuing && m_scheduled))
-      return;
-    m_scheduled = true;
-  }
+void Compaction::run() {
+  if(stopped() || m_schedule.running())
+    return;
 
+  uint32_t running = m_running.fetch_add(1, std::memory_order_relaxed);
   RangePtr range  = nullptr;
   for(ColumnPtr col = nullptr; 
       !stopped() && !Env::Rgr::res().is_low_mem_state() &&
@@ -87,21 +84,13 @@ void Compaction::run(bool continuing) {
         !range->compact_possible())
       continue;
 
-    {
-      std::scoped_lock lock(m_mutex); 
-      ++m_running;
-    }
+    running = m_running.fetch_add(1, std::memory_order_relaxed);
     Env::Rgr::maintenance_post([this, range](){ compact(range); } );
-    
-    if(!available())
-      return;
+    if(running == cfg_max_range->get())
+      break;
   }
   
-  {
-    std::scoped_lock lock(m_mutex); 
-    if(m_running)
-      return;
-  }
+  m_schedule.stop();
   compacted();
 }
 
@@ -199,24 +188,22 @@ void Compaction::compacted(const CompactRange::Ptr req,
 }
 
 void Compaction::compacted() {
-  std::scoped_lock lock(m_mutex);
+  uint32_t ran = m_running.fetch_sub(1, std::memory_order_relaxed);
+  if(ran == cfg_max_range->get()) {
+    Env::Rgr::maintenance_post([this](){ run(); });
 
-  if(m_running && m_running-- == cfg_max_range->get()) {
-    Env::Rgr::maintenance_post([this](){ run(true); });
-    return;
-  }
-  if(m_run) {
-    if(!m_running) {
-      m_scheduled = false;
-      _schedule(cfg_check_interval->get());
+  } else if(ran == 1) {
+    if(stopped()) {
+      std::scoped_lock lock(m_mutex);
+      m_cv.notify_all();
+    } else {
+      schedule();
     }
-    return;
   }
-  m_cv.notify_all();
 }
 
 void Compaction::_schedule(uint32_t t_ms) {
-  if(!m_run || m_running || m_scheduled)
+  if(stopped() || m_running || m_schedule)
     return;
 
   auto set_in = std::chrono::milliseconds(t_ms);
@@ -234,6 +221,7 @@ void Compaction::_schedule(uint32_t t_ms) {
   }); 
 
   SWC_LOGF(LOG_DEBUG, "Ranger compaction scheduled in ms=%u", t_ms);
+  return;
 }
 
 

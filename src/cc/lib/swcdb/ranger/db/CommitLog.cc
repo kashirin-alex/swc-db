@@ -15,9 +15,9 @@ static const uint8_t MAX_FRAGMENTS_NARROW = 20;
 
 
 Fragments::Fragments(const DB::Types::KeySeq key_seq)  
-                    : stopping(false), m_cells(key_seq), 
-                      m_commiting(false), m_deleting(false), 
-                      m_compacting(false), m_sem(5), m_last_id(0) { 
+                    : stopping(false), m_cells(key_seq), m_roll_chk(0),
+                      m_compacting(false), m_deleting(false), 
+                      m_sem(5), m_last_id(0) { 
 }
 
 void Fragments::init(const RangePtr& for_range) {
@@ -48,30 +48,24 @@ void Fragments::schema_update() {
 }
 
 void Fragments::add(const DB::Cells::Cell& cell) {
-  bool roll;
   {
     std::scoped_lock lock(m_mutex_cells);
     ssize_t sz = m_cells.size_of_internal();
     m_cells.add_raw(cell);
     Env::Rgr::res().adj_mem_usage(ssize_t(m_cells.size_of_internal()) - sz);
-    roll = _need_roll();
+    if(++m_roll_chk ? !Env::Rgr::res().is_low_mem_state() : !_need_roll())
+      return;
   }
-
-  if(roll && m_mutex.try_lock()) {
-    if(!m_deleting && !m_commiting) {
-      m_commiting = true;
-      Env::Rgr::post([this](){ commit_new_fragment(); });
-    }
-    m_mutex.unlock();
-  }
+  if(!m_commit.running())
+    Env::Rgr::post([this](){ commit_new_fragment(); });
 }
 
 void Fragments::commit_new_fragment(bool finalize) {
   if(finalize) {
     std::unique_lock lock_wait(m_mutex);
-    if(m_commiting || m_compacting)
+    if(m_compacting || m_commit.running())
       m_cv.wait(lock_wait, [this] {
-        return !m_compacting && !m_commiting && (m_commiting = true); });
+        return !m_compacting && !m_commit.running(); });
   }
   
   Fragment::Ptr frag;
@@ -141,9 +135,10 @@ void Fragments::commit_new_fragment(bool finalize) {
 
   if(finalize)
     m_sem.wait_all();
+  
+  m_commit.stop();
   {
     std::scoped_lock lock(m_mutex);
-    m_commiting = false;
     m_cv.notify_all();
   }
 
@@ -212,9 +207,9 @@ bool Fragments::try_compact(int tnum) {
 }
 
 void Fragments::finish_compact(const Compact* compact) {
+  m_compacting = false;
   {
     std::scoped_lock lock(m_mutex);
-    m_compacting = false;
     m_cv.notify_all();
   }
   range->compacting(Range::COMPACT_NONE);
@@ -353,27 +348,30 @@ void Fragments::remove() {
   {
     std::unique_lock lock_wait(m_mutex);
     m_deleting = true;
-    if(m_commiting || m_compacting) {
-      m_cv.wait(lock_wait, [this]{ return !m_commiting && !m_compacting; });
-    }
+    if(m_compacting || m_commit.running())
+      m_cv.wait(lock_wait, [this] {
+        return !m_compacting && !m_commit.running(); });
   }
   std::scoped_lock lock(m_mutex);
   for(auto& frag : *this)
     frag->mark_removed();
   clear();
   range = nullptr;
+  m_commit.stop();
 }
 
 void Fragments::unload() {
   stopping = true;
   {
     std::unique_lock lock_wait(m_mutex);
-    if(m_commiting || m_compacting)
-      m_cv.wait(lock_wait, [this]{ return !m_commiting && !m_compacting; });
+    if(m_compacting || m_commit.running())
+      m_cv.wait(lock_wait, [this] {
+        return !m_compacting && !m_commit.running(); });
   }
   std::scoped_lock lock(m_mutex);
   clear();
   range = nullptr;
+  m_commit.stop();
 }
 
 Fragment::Ptr Fragments::take_ownership(int &err, Fragment::Ptr& take_frag) {
@@ -604,7 +602,7 @@ bool Fragments::_need_compact_major() {
 }
 
 bool Fragments::_processing() const {
-  if(m_commiting)
+  if(m_commit)
     return true;
   for(auto& frag : *this)
     if(frag->processing())

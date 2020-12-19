@@ -121,7 +121,7 @@ CompactRange::CompactRange(Compaction* compactor, const RangePtr& range,
               m_inblock(new InBlock(range->cfg->key_seq, blk_size)),
               state_default(Range::COMPACT_COMPACTING),
               req_last_time(0),
-              m_getting(true), m_log_sz(0),
+              m_get(true), m_log_sz(0),
               m_chk_timer(
                 asio::high_resolution_timer(Env::Rgr::io()->executor())) {
   spec.flags.max_versions = range->cfg->cell_versions();
@@ -414,10 +414,8 @@ void CompactRange::commitlog_done(const CommitLog::Compact* compact) {
         return commitlog(tnum);
     }
   }
-  {
-    Core::MutexSptd::scope lock(m_mutex);
-    m_getting = false;
-  }
+  
+  m_get.stop();
   request_more();
 }
 
@@ -459,20 +457,18 @@ void CompactRange::stop_check_timer() {
 }
 
 void CompactRange::request_more() {
-  {
-    Core::MutexSptd::scope lock(m_mutex);
-    if(m_getting || m_stopped)
-      return;
-    size_t sz = m_q_write.size() + m_q_intval.size() + m_q_encode.size();
-    if(sz && (sz >= compactor->cfg_read_ahead->get() ||
-             (sz > Env::Rgr::res().avail_ram()/blk_size &&
-              range->blocks.release(sz * blk_size) < sz * blk_size)))
-      return;
-    m_getting = true;
-  }
+  if(m_get || m_stopped)
+    return;
 
-  Env::Rgr::maintenance_post(
-    [ptr=shared()](){ ptr->range->scan_internal(ptr->get_req_scan()); });
+  size_t sz = m_q_write.size() + m_q_intval.size() + m_q_encode.size();
+  if(sz && (sz >= compactor->cfg_read_ahead->get() ||
+      (sz > Env::Rgr::res().avail_ram()/blk_size &&
+       range->blocks.release(sz * blk_size) < sz * blk_size))) {
+    return;
+  }
+  if(!m_get.running())
+    Env::Rgr::maintenance_post(
+      [ptr=shared()](){ ptr->range->scan_internal(ptr->get_req_scan()); });
 }
 
 void CompactRange::process_interval() {

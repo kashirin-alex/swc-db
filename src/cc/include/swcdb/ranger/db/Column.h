@@ -75,7 +75,7 @@ class Column final :
 
   Core::MutexSptd                                   m_mutex;
   Core::QueueSafeStated<Callback::ManageBase::Ptr>  m_q_mng;
-  std::atomic<bool>                                 m_releasing;
+  Core::StateRunning                                m_release;
 
 };
 

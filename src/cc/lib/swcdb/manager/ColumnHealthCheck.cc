@@ -103,19 +103,16 @@ ColumnHealthCheck::ColumnHealthCheck(const Column::Ptr& col,
                                      int64_t check_ts, uint32_t check_intval)
                                     : col(col), check_ts(check_ts), 
                                       check_intval(check_intval),
-                                      completion(1), m_runnning(false) {
+                                      completion(1) {
   SWC_LOGF(LOG_DEBUG, "Column-Health START cid(%lu)", col->cfg->cid);
 }
   
 ColumnHealthCheck::~ColumnHealthCheck() { }
 
 void ColumnHealthCheck::run(bool initial) {
-  {
-    Core::MutexSptd::scope lock(m_mutex);
-    if(m_runnning)
-      return;
-    m_runnning = true;
-  }
+  if(m_check.running())
+    return;
+
   std::vector<Range::Ptr> ranges;
   col->need_health_check(check_ts, check_intval, ranges, 0, 100);
 
@@ -149,10 +146,9 @@ void ColumnHealthCheck::run(bool initial) {
 
     checker->add_range(range);
   }
-  {
-    Core::MutexSptd::scope lock(m_mutex);
-    m_runnning = false;
-  }
+
+  m_check.stop();
+
   if(initial)
     finishing(false);
 }

@@ -54,8 +54,6 @@ class BlockLoader final {
 
   void load_cellstores_cells();
 
-  bool check_log();
-
   void load_log(bool is_final, bool is_more=false);
 
   void loaded_frag(const CommitLog::Fragment::Ptr& frag);
@@ -65,9 +63,10 @@ class BlockLoader final {
   void completion();
 
 
+  Core::StateRunning                        m_check_log;
+
   Core::MutexSptd                           m_mutex;
   bool                                      m_processing;
-  bool                                      m_checking_log;
   uint8_t                                   m_logs;
 
   std::queue<CellStore::Block::Read::Ptr>   m_cs_blocks;

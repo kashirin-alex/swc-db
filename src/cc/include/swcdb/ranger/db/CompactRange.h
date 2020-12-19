@@ -118,8 +118,9 @@ class CompactRange final : public ReqScan {
   std::atomic<bool>               m_stopped = false;
   std::atomic<bool>               m_chk_final = false;
 
+  Core::StateRunning              m_get;
+  
   Core::MutexSptd                 m_mutex;
-  bool                            m_getting;
   size_t                          m_log_sz;
   asio::high_resolution_timer     m_chk_timer;
 

@@ -11,8 +11,7 @@ namespace SWC { namespace Ranger {
 
 
 Column::Column(const cid_t cid, const DB::Schema& schema) 
-              : cfg(new ColumnCfg(cid, schema)),
-                m_releasing(false) {
+              : cfg(new ColumnCfg(cid, schema)) {
   Env::Rgr::in_process(1);
   Env::Rgr::res().more_mem_usage(size_of());
 }
@@ -105,12 +104,8 @@ void Column::run_mng_queue() {
 
 
 size_t Column::release(size_t bytes) {
-  {
-    Core::MutexSptd::scope lock(m_mutex);
-    if(m_releasing)
-      return 0;
-    m_releasing = true;
-  }
+  if(m_release.running())
+    return 0;
 
   RangePtr range;
   iterator it;
@@ -132,7 +127,7 @@ size_t Column::release(size_t bytes) {
     if(bytes && released >= bytes)
       break;
   }
-  m_releasing = false;
+  m_release.stop();
   return released;
 }
 

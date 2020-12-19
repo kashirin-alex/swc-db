@@ -124,12 +124,8 @@ void Columns::internal_delete(cid_t cid) {
 }
 
 size_t Columns::release(size_t bytes) {
-  {
-    Core::MutexSptd::scope lock(m_mutex);
-    if(m_releasing)
-      return 0;
-    m_releasing = true;
-  }
+  if(m_release.running())
+    return 0;
 
   ColumnPtr col;
   iterator it;
@@ -149,7 +145,7 @@ size_t Columns::release(size_t bytes) {
     if(bytes && released >= bytes)
       break;
   }
-  m_releasing = false;
+  m_release.stop();
   return released;
 }
 

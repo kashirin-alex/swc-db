@@ -86,8 +86,6 @@ class Rangers final {
 
   private:
 
-  bool runs_assign(bool stop);
-
   void assign_ranges_run();
 
   void next_rgr(const Range::Ptr& range, Ranger::Ptr& rs_set);
@@ -108,9 +106,10 @@ class Rangers final {
   RangerList                    m_rangers;
   RangersResources              m_rangers_resources;
 
-  Core::MutexSptd               m_mutex_assign;
-  bool                          m_runs_assign;
-  int32_t                       m_assignments; 
+  Core::StateRunning            m_assign;
+  std::atomic<int32_t>          m_assignments;
+
+  Core::MutexSptd               m_mutex_columns_check;
   ColumnHealthChecks            m_columns_check;
   
 };

@@ -29,7 +29,7 @@ SWC_SHOULD_INLINE
 ConnHandler::ConnHandler(AppContext::Ptr& app_ctx) 
                         : connected(true), 
                           app_ctx(app_ctx), m_next_req_id(0),
-                          m_accepting(false), m_reading(false) {
+                          m_accepting(false) {
 }
 
 SWC_SHOULD_INLINE
@@ -134,7 +134,7 @@ bool ConnHandler::send_request(Buffers::Ptr& cbuf,
 }
 
 void ConnHandler::accept_requests() {
-  m_accepting = true;
+  m_accepting.store(true, std::memory_order_relaxed);
   read_pending();
 }
 
@@ -257,12 +257,8 @@ void ConnHandler::write(ConnHandler::Pending* pending) {
 }
 
 void ConnHandler::read_pending() {
-  {
-    Core::MutexSptd::scope lock(m_mutex);
-    if(!connected || m_reading)
-      return;
-    m_reading = true;
-  }
+  if(!connected || m_read.running())
+    return;
 
   uint8_t* data = new uint8_t[Header::PREFIX_LENGTH];
 
@@ -414,12 +410,12 @@ void ConnHandler::received(const Event::Ptr& ev, const asio::error_code& ec) {
   if(ev->header.flags & Header::FLAGS_BIT_REQUEST)
     ev->received();
 
-  bool more;
-  {
+  bool more = m_accepting.load(std::memory_order_relaxed);
+  if(!more) {
     Core::MutexSptd::scope lock(m_mutex);
-    m_reading = false;
-    more = m_accepting || !m_pending.empty();
+    more = !m_pending.empty();
   }
+  m_read.stop();
   if(more)
     read_pending();
 

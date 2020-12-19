@@ -66,7 +66,7 @@ ConnQueue::ConnQueue(const IoContextPtr& ioctx,
                     : cfg_keepalive_ms(keepalive_ms),
                       cfg_again_delay_ms(again_delay_ms),
                       m_ioctx(ioctx), m_conn(nullptr),
-                      m_connecting(false), m_qrunning(false),
+                      m_connecting(false),
                       m_timer(cfg_keepalive_ms
                         ? new asio::high_resolution_timer(m_ioctx->executor())
                         : nullptr
@@ -102,19 +102,15 @@ void ConnQueue::stop() {
     m_delayed.erase(it);
     std::this_thread::yield();
   }
-  for(;;) {
-    Core::MutexSptd::scope lock(m_mutex);
-    if(!m_qrunning) {
-      m_qrunning = true;
-      break;
-    }
+
+  while(m_q_state.running())
     std::this_thread::yield();
-  }
+
   for(ReqBase::Ptr req;;) {
     {
       Core::MutexSptd::scope lock(m_mutex);
       if(empty()) {
-        m_qrunning = false;
+        m_q_state.stop();
         break;
       }
       req = front();
@@ -196,11 +192,14 @@ void ConnQueue::print(std::ostream& out) {
 }
 
 void ConnQueue::exec_queue() {
+  if(m_q_state.running())
+    return;
   {
     Core::MutexSptd::scope lock(m_mutex);
-    if(empty() || m_qrunning)
+    if(empty()) {
+      m_q_state.stop();
       return;
-    m_qrunning = true;
+    }
   }
   m_ioctx->post([ptr=shared_from_this()](){ptr->run_queue();});
 }
@@ -220,8 +219,7 @@ void ConnQueue::run_queue() {
     if(req->valid() && (!conn || !conn->send_request(req->cbp, req))) {
       req->handle_no_conn();
       if(req->insistent) {
-        Core::MutexSptd::scope lock(m_mutex);
-        m_qrunning = false;
+        m_q_state.stop();
         break;
       }
     }
@@ -229,7 +227,7 @@ void ConnQueue::run_queue() {
       Core::MutexSptd::scope lock(m_mutex);
       pop();
       if(empty()) {
-        m_qrunning = false;
+        m_q_state.stop();
         break;
       }
     }

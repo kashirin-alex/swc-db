@@ -13,6 +13,7 @@
 #include "asio/ssl.hpp"
 #include <memory>
 #include <mutex>
+#include "swcdb/core/StateRunning.h"
 #include "swcdb/core/QueueSafeStated.h"
 #include "swcdb/core/comm/Event.h"
 #include "swcdb/core/comm/Buffers.h"
@@ -156,8 +157,8 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   };
 
   uint32_t                          m_next_req_id;
-  bool                              m_accepting;
-  bool                              m_reading;
+  std::atomic<bool>                 m_accepting;
+  Core::StateRunning                m_read;
   Core::QueueSafeStated<Pending*>   m_outgoing;
   std::unordered_map<uint32_t, 
                     Pending*, 

@@ -45,7 +45,7 @@ class Compaction final {
 
   bool stopped();
   
-  void run(bool continuing=false);
+  void run();
 
   void compact(const RangePtr& range);
 
@@ -59,11 +59,12 @@ class Compaction final {
   void _schedule(uint32_t t_ms = 300000);
 
 
+  std::atomic<bool>               m_run;
+  Core::StateRunning              m_schedule;
+  std::atomic<uint32_t>           m_running;
+
   std::mutex                      m_mutex;
   asio::high_resolution_timer     m_check_timer;
-  bool                            m_run;
-  uint32_t                        m_running;
-  bool                            m_scheduled;
   std::condition_variable         m_cv;
   
   size_t                          m_idx_cid;

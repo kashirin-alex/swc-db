@@ -127,12 +127,14 @@ class Fragments final : private std::vector<Fragment::Ptr> {
   
   std::shared_mutex           m_mutex_cells;
   DB::Cells::MutableVec       m_cells;
+  uint8_t                     m_roll_chk;
+
+  Core::StateRunning          m_commit;
+  std::atomic<bool>           m_compacting;
 
   std::shared_mutex           m_mutex;
-  bool                        m_commiting;
   bool                        m_deleting;
   std::condition_variable_any m_cv;
-  std::atomic<bool>           m_compacting;
   Core::Semaphore             m_sem;
   uint64_t                    m_last_id;
 };

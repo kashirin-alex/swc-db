@@ -90,9 +90,10 @@ class MngdColumns final {
 
   std::atomic<bool>      m_run; 
 
+  Core::StateRunning     m_columns_load;
+
   Core::MutexSptd        m_mutex_schemas;
   bool                   m_schemas_set;
-  bool                   m_columns_loading;
 
   Core::MutexSptd        m_mutex_active;
   bool                   m_cid_active;

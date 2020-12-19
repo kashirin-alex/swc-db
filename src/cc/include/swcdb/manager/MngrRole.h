@@ -90,7 +90,7 @@ class MngrRole final {
 
   std::shared_mutex               m_mutex;
   MngrsStatus                     m_states;
-  std::atomic<uint8_t>            m_checkin;
+  Core::StateRunning              m_checkin;
   client::Mngr::Groups::Vec       m_local_groups;
   std::atomic<uint8_t>            m_local_active_role;
   bool                            m_major_updates = false;

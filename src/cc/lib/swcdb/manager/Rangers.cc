@@ -44,7 +44,7 @@ Rangers::Rangers(const Comm::IoContextPtr& app_io)
           "swc.mngr.column.health.checks")),
       m_run(true),
       m_timer(asio::high_resolution_timer(app_io->executor())),
-      m_runs_assign(false), m_assignments(0) { 
+      m_assignments(0) { 
 }
 
 Rangers::~Rangers() { }
@@ -356,12 +356,8 @@ void Rangers::update_status(RangerList new_rgr_status, bool sync_all) {
 
 void Rangers::range_loaded(Ranger::Ptr rgr, Range::Ptr range, 
                            int err, bool failure, bool verbose) {
-  bool run_assign;
-  {
-    Core::MutexSptd::scope lock(m_mutex_assign);
-    run_assign = m_assignments-- == cfg_assign_due->get();
-  }
-
+  bool run_assign = m_assignments.fetch_sub(1, std::memory_order_relaxed)
+                      == cfg_assign_due->get();
   if(!range->deleted()) {
     if(err) {
 
@@ -450,7 +446,7 @@ void Rangers::column_compact(const Column::Ptr& col) {
 
 void Rangers::need_health_check(const Column::Ptr& col) {
   {
-    Core::MutexSptd::scope lock(m_mutex_assign);
+    Core::MutexSptd::scope lock(m_mutex_columns_check);
     auto it = std::find_if(
       m_columns_check.begin(), m_columns_check.end(), 
       [col](const ColumnHealthCheck::Ptr chk) { return chk->col == col; });
@@ -463,7 +459,7 @@ void Rangers::need_health_check(const Column::Ptr& col) {
 
 void Rangers::health_check_finished(const ColumnHealthCheck::Ptr& chk) {
   {
-    Core::MutexSptd::scope lock(m_mutex_assign);
+    Core::MutexSptd::scope lock(m_mutex_columns_check);
     auto it = std::find(m_columns_check.begin(), m_columns_check.end(), chk);
     if(it != m_columns_check.end())
       m_columns_check.erase(it);
@@ -478,24 +474,12 @@ void Rangers::print(std::ostream& out) {
     h->print(out << "\n ");
 }
 
-
-bool Rangers::runs_assign(bool stop) {
-  Core::MutexSptd::scope lock(m_mutex_assign);
-  if(stop) 
-    return (m_runs_assign = false);
-  else if(m_runs_assign)
-    return true;
-  m_runs_assign = true;
-  return false;
-}
-
 void Rangers::assign_ranges() {
   if(!Env::Mngr::mngd_columns()->expected_ready())
     return schedule_check(5000);
 
-  if(!m_run || runs_assign(false))
-    return;
-  Env::Mngr::post([this]() { assign_ranges_run(); });
+  if(m_run && !m_assign.running())
+    Env::Mngr::post([this]() { assign_ranges_run(); });
 }
 
 void Rangers::assign_ranges_run() {
@@ -508,7 +492,7 @@ void Rangers::assign_ranges_run() {
       state = m_rangers.empty() || !m_run;
     }
     if(state) {
-      runs_assign(true);
+      m_assign.stop();
       return schedule_check();
     }
 
@@ -516,14 +500,14 @@ void Rangers::assign_ranges_run() {
     if(!range) {
       if(state) // waiting-on-meta-ranges
         schedule_check(2000);
-      runs_assign(true);
+      m_assign.stop();
       break;
     }
 
     Ranger::Ptr rgr = nullptr;
     next_rgr(range, rgr);
     if(!rgr) {
-      runs_assign(true);
+      m_assign.stop();
       return schedule_check();
     }
     auto schema = Env::Mngr::schemas()->get(col->cfg->cid);
@@ -532,12 +516,10 @@ void Rangers::assign_ranges_run() {
 
     range->set_state(Range::State::QUEUED, rgr->rgrid);
     ++rgr->interm_ranges;
-    {
-      Core::MutexSptd::scope lock(m_mutex_assign);
-      state = ++m_assignments < cfg_assign_due->get();
-    }
+    state = m_assignments.fetch_add(1, std::memory_order_relaxed) + 1
+              < cfg_assign_due->get();
     if(!state)
-      runs_assign(true);
+      m_assign.stop();
 
     rgr->put(std::make_shared<Comm::Protocol::Rgr::Req::RangeLoad>(
       rgr, col, range, schema));
@@ -600,7 +582,7 @@ void Rangers::next_rgr(const Range::Ptr& range, Ranger::Ptr& rs_set) {
 
 void Rangers::health_check_columns() {
   bool support;
-  if(!m_mutex_assign.try_full_lock(support))
+  if(!m_mutex_columns_check.try_full_lock(support))
     return;
   int64_t ts = Time::now_ms();
   uint32_t intval = cfg_column_health_chk->get();
@@ -611,7 +593,7 @@ void Rangers::health_check_columns() {
       new ColumnHealthCheck(col, ts, intval));
     Env::Mngr::post([chk=m_columns_check.back()]() { chk->run(); });
   }
-  m_mutex_assign.unlock(support);
+  m_mutex_columns_check.unlock(support);
 }
 
 

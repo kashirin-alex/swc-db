@@ -13,7 +13,7 @@ MngrRole::MngrRole(const Comm::IoContextPtr& app_io,
                    const Comm::EndPoints& endpoints)
     : m_local_endpoints(endpoints),
       m_local_token(Comm::endpoints_hash(m_local_endpoints)),
-      m_checkin(false), m_local_active_role(DB::Types::MngrRole::NONE),
+      m_local_active_role(DB::Types::MngrRole::NONE),
       m_check_timer(asio::high_resolution_timer(app_io->executor())),
       m_mngr_inchain(std::make_shared<Comm::client::ConnQueue>(app_io)),
       cfg_conn_probes(
@@ -369,9 +369,8 @@ void MngrRole::_apply_cfg() {
 }
 
 void MngrRole::managers_checkin() {
-  if(m_checkin)
+  if(m_checkin.running())
     return;
-  m_checkin = true;
 
   //SWC_LOG(LOG_DEBUG, "managers_checkin");
   size_t sz;
@@ -400,7 +399,7 @@ void MngrRole::managers_checkin() {
   }
 
   SWC_LOGF(LOG_DEBUG, "Manager(%s) without role", s.c_str());
-  m_checkin = false;
+  m_checkin.stop();
   return schedule_checkin(cfg_check_interval->get());
 }
 
@@ -416,7 +415,7 @@ void MngrRole::fill_states() {
 void MngrRole::managers_checker(size_t next, size_t total, bool flw) {
     // set manager followed(in-chain) local manager, incl. last's is first
   if(!total) {
-    m_checkin = false;
+    m_checkin.stop();
     return schedule_checkin(cfg_check_interval->get());
   }
 
@@ -433,7 +432,7 @@ void MngrRole::managers_checker(size_t next, size_t total, bool flw) {
 
   if(Comm::has_endpoint(host_chk->endpoints, m_local_endpoints) && total >= 1) {
     if(flw) {
-      m_checkin = false;
+      m_checkin.stop();
       return schedule_checkin(cfg_check_interval->get());
     }
     flw = true;
@@ -463,7 +462,7 @@ void MngrRole::manager_checker(MngrStatus::Ptr host,
   if(!conn || !conn->is_open()) {
     if(host->state == DB::Types::MngrState::ACTIVE
        && ++host->failures <= cfg_conn_fb_failures->get()) {   
-      m_checkin = false;
+      m_checkin.stop();
       SWC_LOGF(LOG_DEBUG, "Allowed conn Failure=%d before fallback", 
                 host->failures);
       return schedule_checkin(cfg_delay_fallback->get());
@@ -601,7 +600,7 @@ void MngrRole::set_mngr_inchain(const Comm::ConnHandlerPtr& mngr) {
   m_mngr_inchain->set(mngr);
 
   fill_states();
-  m_checkin = false;
+  m_checkin.stop();
   schedule_checkin(cfg_check_interval->get());
 }
 
