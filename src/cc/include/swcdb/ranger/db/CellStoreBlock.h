@@ -96,12 +96,14 @@ class Read final {
   void load_finish(int err);
 
 
-  Core::MutexSptd          m_mutex;
-  State                    m_state;
-  size_t                   m_processing;
-  StaticBuffer             m_buffer;
+  Core::Atomic<State>      m_state;
+  Core::Atomic<int>        m_err;
   Core::Atomic<uint32_t>   m_cells_remain;
-  int                      m_err;
+  Core::Atomic<size_t>     m_processing;
+  
+  StaticBuffer             m_buffer;
+
+  Core::MutexSptd          m_mutex;
   std::queue<BlockLoader*> m_queue;
 
 };

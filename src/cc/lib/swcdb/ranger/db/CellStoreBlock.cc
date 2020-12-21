@@ -77,8 +77,9 @@ void Read::load_header(int& err, FS::SmartFd::Ptr& smartfd,
 
 Read::Read(const Header& header)
           : header(header), cellstore(nullptr),
-            m_state(State::NONE), m_processing(0),
-            m_cells_remain(header.cells_count), m_err(Error::OK) {
+            m_state(header.size_plain ? State::NONE : State::LOADED),
+            m_err(Error::OK), m_cells_remain(header.cells_count), 
+            m_processing(0) {
   Env::Rgr::res().more_mem_usage(size_of());
 }
 
@@ -98,24 +99,15 @@ size_t Read::size_of() const {
 }
 
 bool Read::load(BlockLoader* loader) {
-  {
+  m_processing.fetch_add(1);
+
+  State at = State::NONE;
+  if(m_state.compare_exchange_weak(at, State::LOADING))
+    Env::Rgr::res().more_mem_usage(header.size_plain);
+  if(at != State::LOADED) {
     Core::MutexSptd::scope lock(m_mutex);
-    ++m_processing;
-    if(m_state == State::NONE) {
-      if(header.size_enc) {
-        m_state = State::LOADING;
-        Env::Rgr::res().more_mem_usage(header.size_plain);
-        m_queue.push(loader);
-        return true;
-      } else {
-        // a zero cells type cs (initial of any to any block)  
-        m_state = State::LOADED;
-      }
-    }
-    if(m_state != State::LOADED) {
-      m_queue.push(loader);
-      return false;
-    }
+    m_queue.push(loader);
+    return at == State::NONE;
   }
   loader->loaded_blk();
   return false;
@@ -138,25 +130,26 @@ void Read::load_cells(int&, Ranger::Block::Ptr cells_block) {
       )
     : 0;
 
-  processing_decrement();
-
-  if(!was_splitted && 
+  if(m_processing.fetch_sub(1) == 1 &&
+     !was_splitted && 
      (remain_hint <= 0 || Env::Rgr::res().need_ram(header.size_plain)))
     release();
 }
 
+SWC_SHOULD_INLINE
 void Read::processing_decrement() {
-  Core::MutexSptd::scope lock(m_mutex);
-  --m_processing; 
+  m_processing.fetch_sub(1);
 }
 
 size_t Read::release() {    
   size_t released = 0;
   bool support;
-  if(m_mutex.try_full_lock(support)) {
-    if(!m_processing && m_state == State::LOADED) {
+  if(header.size_plain &&
+     !m_processing &&
+     m_mutex.try_full_lock(support)) {
+    State at = State::LOADED;
+    if(!m_processing && m_state.compare_exchange_weak(at, State::NONE)) {
       released += m_buffer.size;
-      m_state = State::NONE;
       m_buffer.free();
       m_cells_remain.store(header.cells_count);
     }
@@ -169,28 +162,27 @@ size_t Read::release() {
 
 bool Read::processing() {
   bool support;
-  bool busy;
-  if(!(busy = !m_mutex.try_full_lock(support))) {
+  bool busy = m_processing;
+  if(!busy && !(busy = !m_mutex.try_full_lock(support))) {
     busy = m_processing;
     m_mutex.unlock(support);
   }
   return busy;
 }
 
+SWC_SHOULD_INLINE
 int Read::error() {
-  Core::MutexSptd::scope lock(m_mutex);
   return m_err;
 }
 
+SWC_SHOULD_INLINE
 bool Read::loaded() {
-  Core::MutexSptd::scope lock(m_mutex);
   return m_state == State::LOADED;
 }
 
+SWC_SHOULD_INLINE
 bool Read::loaded(int& err) {
-  Core::MutexSptd::scope lock(m_mutex);
-  err = m_err;
-  return !err && m_state == State::LOADED;
+  return !(err = error()) && loaded();
 }
 
 size_t Read::size_bytes(bool only_loaded) {
@@ -204,14 +196,14 @@ size_t Read::size_bytes_enc(bool only_loaded) {
 void Read::print(std::ostream& out) {
   out << "Block(";
   header.print(out);
+  out << " state="  << to_string(m_state)
+      << " processing=" << m_processing.load();
   {
     Core::MutexSptd::scope lock(m_mutex);
-    out << " state="      << to_string(m_state)
-        << " queue="      << m_queue.size()
-        << " processing=" << m_processing;
-    if(m_err)
-      Error::print(out, m_err);
+    out << " queue="    << m_queue.size();
   }
+  if(m_err)
+    Error::print(out, m_err);
   out << ')';
 }
 
@@ -281,30 +273,23 @@ void Read::load_read(int err, const StaticBuffer::Ptr& buffer) {
 }
 
 void Read::load_finish(int err) {
-  if(err)
+  if(err) {
     SWC_LOG_OUT(LOG_ERROR,
       Error::print(SWC_LOG_OSTREAM << "CellStore::Block load ", err);
       cellstore->smartfd->print(SWC_LOG_OSTREAM << ' ');
       print(SWC_LOG_OSTREAM << ' ');
     );
+    if(err == Error::FS_PATH_NOT_FOUND)
+      err = Error::OK;
+
+    m_buffer.free();
+    Env::Rgr::res().less_mem_usage(header.size_plain);
+  }
+
+  m_err.store(err);
+  m_state.store(err ? State::NONE : State::LOADED);
 
   Env::Rgr::post([this](){ cellstore->_run_queued(); });
-
-  {
-    Core::MutexSptd::scope lock(m_mutex);
-    if((m_err = err) == Error::FS_PATH_NOT_FOUND) {
-      m_err = Error::OK;
-      m_buffer.free();
-      Env::Rgr::res().less_mem_usage(header.size_plain);
-    }
-    if(m_err) {
-      m_state = State::NONE;
-      m_buffer.free();
-      Env::Rgr::res().less_mem_usage(header.size_plain);
-    } else {
-      m_state = State::LOADED;
-    }
-  }
 
   for(BlockLoader* loader;;) {
     {
