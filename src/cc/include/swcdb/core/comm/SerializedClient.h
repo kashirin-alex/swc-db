@@ -132,7 +132,7 @@ class Serialized final :
   ConfigSSL*            m_ssl_cfg;
 
   Core::MutexSptd       m_mutex;
-  std::atomic<bool>     m_run;
+  Core::AtomicBool      m_run;
 
 };
 

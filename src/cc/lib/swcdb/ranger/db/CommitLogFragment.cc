@@ -333,13 +333,16 @@ void Fragment::load(const Fragment::LoadCb_t& cb) {
 }
 
 void Fragment::load_cells(int&, Ranger::Block::Ptr cells_block) {
+  ssize_t remain_hint(0);
   if(!marked_removed()) {
     bool was_splitted = false;
     if(m_buffer.size) {
-      m_cells_remain -= cells_block->load_cells(
-        m_buffer.base, m_buffer.size,
-        cell_revs, cells_count,
-        was_splitted
+      remain_hint = m_cells_remain.sub_rslt(
+        cells_block->load_cells(
+          m_buffer.base, m_buffer.size,
+          cell_revs, cells_count,
+          was_splitted
+        )
       );
     } else {
     SWC_LOG_OUT(LOG_WARN, 
@@ -349,7 +352,7 @@ void Fragment::load_cells(int&, Ranger::Block::Ptr cells_block) {
   }
   processing_decrement();
 
-  if(!m_cells_remain || Env::Rgr::res().need_ram(size_plain))
+  if(remain_hint <= 0 || Env::Rgr::res().need_ram(size_plain))
     release();
 }
 
@@ -451,7 +454,7 @@ size_t Fragment::release() {
       m_state = State::NONE;
       released += m_buffer.size;
       m_buffer.free();
-      m_cells_remain = cells_count;
+      m_cells_remain.store(cells_count);
     }
     m_mutex.unlock(support);
   }

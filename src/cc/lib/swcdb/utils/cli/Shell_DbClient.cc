@@ -214,7 +214,7 @@ bool DbClient::compact_column(std::string& cmd) {
   }
 
   std::promise<void> res;
-  std::atomic<size_t> proccessing = schemas.size();
+  Core::Atomic<size_t> proccessing(schemas.size());
   for(auto& schema : schemas) {
     Comm::Protocol::Mngr::Req::ColumnCompact::request(
       schema->cid,
@@ -225,7 +225,7 @@ bool DbClient::compact_column(std::string& cmd) {
                   << " '" << schema->col_name << "' err=" << rsp.err 
                   << "(" << Error::get_text(rsp.err) << ")" 
                   << SWC_PRINT_CLOSE;
-        if(!--proccessing)
+        if(proccessing.fetch_sub(1) == 1)
           await->set_value();
       },
       300000

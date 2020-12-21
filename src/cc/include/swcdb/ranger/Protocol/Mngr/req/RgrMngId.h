@@ -150,7 +150,7 @@ class RgrMngId: public client::ConnQueue::ReqBase {
            (rgr_data->rgrid != rsp_params.rgrid && 
            rsp_params.flag == Params::RgrMngId::Flag::MNGR_REASSIGN)) {
 
-          rgr_data->rgrid = rsp_params.rgrid;
+          rgr_data->rgrid.store(rsp_params.rgrid);
           flag = Params::RgrMngId::Flag::RS_ACK;
           SWC_LOG_OUT(LOG_DEBUG,
             rgr_data->print(SWC_LOG_OSTREAM << "RS_ACK "); );
@@ -182,10 +182,11 @@ class RgrMngId: public client::ConnQueue::ReqBase {
   }
 
   void stop() {
-    Core::MutexAtomic::scope lock(m_mutex);
-    if(m_run) 
+    bool at = true;
+    if(m_run.compare_exchange_weak(at, false)) {
+      Core::MutexAtomic::scope lock(m_mutex);
       m_timer.cancel();
-    m_run = false;
+    }
   }
 
   void set(uint32_t ms) {
@@ -217,8 +218,8 @@ class RgrMngId: public client::ConnQueue::ReqBase {
   
   Core::MutexAtomic             m_mutex;
   asio::high_resolution_timer   m_timer;
-  bool                          m_run;
-  std::atomic<size_t>           m_failures;
+  Core::AtomicBool              m_run;
+  Core::Atomic<size_t>          m_failures;
 
 };
 

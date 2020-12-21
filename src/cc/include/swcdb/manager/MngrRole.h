@@ -92,13 +92,13 @@ class MngrRole final {
   MngrsStatus                     m_states;
   Core::StateRunning              m_checkin;
   client::Mngr::Groups::Vec       m_local_groups;
-  std::atomic<uint8_t>            m_local_active_role;
+  Core::Atomic<uint8_t>           m_local_active_role;
   bool                            m_major_updates = false;
   std::unordered_map<uint64_t,  Comm::EndPoint> m_mngrs_client_srv;
   
   Core::MutexAtomic               m_mutex_timer;
   asio::high_resolution_timer     m_check_timer; 
-  bool                            m_run = true; 
+  Core::AtomicBool                m_run; 
   
   Comm::client::ConnQueuePtr      m_mngr_inchain;
 

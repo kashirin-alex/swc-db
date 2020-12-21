@@ -7,7 +7,6 @@
 #define swcdb_core_PageArena_h
 
 #include <mutex>
-#include <atomic>
 #include "swcdb/core/Comparators.h"
 
 #include <unordered_set>
@@ -24,7 +23,7 @@ struct Item final {
   
   typedef Item*           Ptr;
 
-  std::atomic<uint64_t>   count;
+  Core::Atomic<uint64_t>  count;
   const uint32_t          size_;
   const uint8_t*          data_;
   const size_t            hash_;
@@ -75,12 +74,12 @@ struct Item final {
   }
   
   Ptr use() {
-    ++count;
+    count.fetch_add(1);
     return this;
   }
 
   bool unused() {
-    return !--count;
+    return count.fetch_sub(1) == 1;
   }
 
   void release();

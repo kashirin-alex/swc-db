@@ -320,8 +320,7 @@ class Column final : private std::vector<Range::Ptr> {
   bool do_remove() {
     std::scoped_lock lock(m_mutex);
 
-    bool was = m_state == State::DELETED;
-    m_state = State::DELETED;
+    bool was = m_state.exchange(State::DELETED) == State::DELETED;
     m_schemas_rev.clear();
     
     if(!was) {
@@ -393,10 +392,9 @@ class Column final : private std::vector<Range::Ptr> {
   }
 
   void _set_loading() {
-    if(m_state == State::OK) {
-      m_state = State::LOADING;
+    State at(State::OK);
+    if(m_state.compare_exchange_weak(at, State::LOADING))
       m_check_ts = 0;
-    }
   }
   
   rid_t _get_next_rid() {
@@ -426,13 +424,13 @@ class Column final : private std::vector<Range::Ptr> {
          once on start, Master & Meta column check rid consistency
          on dup. cell of rid, delete earliest
       */
-      m_state = State::OK;
+      m_state.store(State::OK);
       m_check_ts = Time::now_ms();
     }
   }
 
   std::shared_mutex         m_mutex;
-  std::atomic<State>        m_state;
+  Core::Atomic<State>       m_state;
   int64_t                   m_check_ts;
 
   std::unordered_map<rgrid_t, int64_t>   m_schemas_rev;

@@ -65,7 +65,8 @@ class FileSystem : public std::enable_shared_from_this<FileSystem> {
 
   const Config::Property::V_GINT32::Ptr cfg_fds_max;
 
-  std::atomic<size_t> fds_count;
+  Core::Atomic<size_t>  fds_count;
+  Core::AtomicBool      m_run;
   
   FileSystem(const Configurables& config);
 

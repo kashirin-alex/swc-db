@@ -72,8 +72,8 @@ class MngrStatus : public Comm::Protocol::Common::Params::HostEndPoints {
     out << ')';
   }
 
-  std::atomic<uint32_t>               priority;
-  std::atomic<DB::Types::MngrState>   state;
+  Core::Atomic<uint32_t>              priority;
+  Core::Atomic<DB::Types::MngrState>  state;
   uint8_t                             role;
   cid_t                               cid_begin;
   cid_t                               cid_end;

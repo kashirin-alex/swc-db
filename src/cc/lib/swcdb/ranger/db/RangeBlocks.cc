@@ -37,12 +37,12 @@ void Blocks::schema_update() {
 
 SWC_SHOULD_INLINE
 void Blocks::processing_increment() {
-  ++m_processing;
+  m_processing.fetch_add(1);
 }
 
 SWC_SHOULD_INLINE
 void Blocks::processing_decrement() {
-  --m_processing;
+  m_processing.fetch_sub(1);
 }
 
 void Blocks::load(int& err) {

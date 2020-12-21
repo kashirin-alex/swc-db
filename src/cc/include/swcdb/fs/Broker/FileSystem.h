@@ -163,7 +163,6 @@ class FileSystemBroker final : public FileSystem {
   Comm::client::Serialized::Ptr m_service = nullptr;
   Type                          m_type_underlying;
   const Comm::EndPoints         m_endpoints;
-  std::atomic<bool>             m_run;
 
   const Config::Property::V_GINT32::Ptr cfg_timeout;
   const Config::Property::V_GINT32::Ptr cfg_timeout_ratio;

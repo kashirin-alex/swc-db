@@ -21,8 +21,7 @@ Range::Range(const ColumnCfg::Ptr& cfg, const rid_t rid)
               m_interval(cfg->key_seq),
               m_state(State::NOTLOADED), 
               m_compacting(COMPACT_NONE), m_require_compact(false),
-              m_q_run_add(false), m_q_run_scan(false), 
-              m_inbytes(0) {
+              m_q_run_add(false), m_q_run_scan(false) { //, m_inbytes(0)
   Env::Rgr::in_process(1);
   Env::Rgr::res().more_mem_usage(size_of());
 }
@@ -125,7 +124,7 @@ void Range::schema_update(bool compact) {
 
 void Range::set_state(Range::State new_state) {
   std::scoped_lock lock(m_mutex);
-  m_state = new_state;
+  m_state.store(new_state);
 }
 
 bool Range::is_loaded() {
@@ -201,7 +200,7 @@ void Range::load(const Callback::RangeLoad::Ptr& req) {
     std::scoped_lock lock(m_mutex);
     need = m_state == State::NOTLOADED;
     if(need)
-      m_state = State::LOADING;
+      m_state.store(State::LOADING);
   }
 
   int err = Env::Rgr::is_shuttingdown() ||
@@ -245,11 +244,11 @@ void Range::internal_unload(bool completely) {
     std::scoped_lock lock(m_mutex);
     if(m_state != State::LOADED && !blocks.range)
       return;
-    m_state = State::UNLOADING;
+    m_state.store(State::UNLOADING);
   }
   SWC_LOGF(LOG_DEBUG, "UNLOADING RANGE(%lu/%lu)", cfg->cid, rid);
 
-  blocks.commitlog.stopping = true;
+  blocks.commitlog.stopping.store(true);
 
   wait();
   wait_queue();
@@ -263,7 +262,7 @@ void Range::internal_unload(bool completely) {
 
   {
     std::scoped_lock lock(m_mutex);
-    m_state = State::NOTLOADED;
+    m_state.store(State::NOTLOADED);
   }
   SWC_LOGF(LOG_INFO, "UNLOADED RANGE(%lu/%lu) error=%d(%s)", 
                       cfg->cid, rid, err, Error::get_text(err));
@@ -272,13 +271,12 @@ void Range::internal_unload(bool completely) {
 void Range::remove(const Callback::ColumnDelete::Ptr& req) {
   {
     std::scoped_lock lock(m_mutex);
-    if(m_state == State::DELETED)
+    if(m_state.exchange(State::DELETED) == State::DELETED)
       return req->removed(shared_from_this());
-    m_state = State::DELETED;
   }
   SWC_LOGF(LOG_DEBUG, "REMOVING RANGE(%lu/%lu)", cfg->cid, rid);
 
-  blocks.commitlog.stopping = true;
+  blocks.commitlog.stopping.store(true);
 
   on_change(true, [req, range=shared_from_this()]
     (const client::Query::Update::Result::Ptr&) {
@@ -297,13 +295,12 @@ void Range::remove(const Callback::ColumnDelete::Ptr& req) {
 void Range::internal_remove(int& err) {
   {
     std::scoped_lock lock(m_mutex);
-    if(m_state == State::DELETED)
+    if(m_state.exchange(State::DELETED) == State::DELETED)
       return;
-    m_state = State::DELETED;
   }
   SWC_LOGF(LOG_DEBUG, "REMOVING RANGE(%lu/%lu)", cfg->cid, rid);
 
-  blocks.commitlog.stopping = true;
+  blocks.commitlog.stopping.store(true);
   
   wait();
   wait_queue();
@@ -788,7 +785,7 @@ void Range::loaded(int err, const Callback::RangeLoad::Ptr& req) {
     std::scoped_lock lock(m_mutex);
     tried = m_state == State::LOADING;
     if(tried)
-      m_state = err ? State::NOTLOADED : State::LOADED;
+      m_state.store(err ? State::NOTLOADED : State::LOADED);
   }
 
   SWC_LOG_OUT((is_loaded() ? LOG_INFO : LOG_WARN),
@@ -845,7 +842,8 @@ void Range::run_add_queue() {
   
     req = m_q_add.front();
     ptr = req->input.base;
-    m_inbytes += remain = req->input.size;
+    remain = req->input.size;
+    //m_inbytes.fetch_add(remain);
     intval_chg = false;
 
     auto params = new Comm::Protocol::Rgr::Params::RangeQueryUpdateRsp(

@@ -26,14 +26,18 @@ using ReqBase = Comm::client::ConnQueue::ReqBase;
 
 
 struct Profiling {
-  const int64_t         ts_start = Time::now_ns();
-  std::atomic<int64_t>  ts_finish = ts_start;
+  const int64_t          ts_start;
+  Core::Atomic<int64_t>  ts_finish;
+
+  Profiling() : ts_start(Time::now_ns()), ts_finish(ts_start) { }
 
   struct Component {
 
-    std::atomic<uint64_t> count = 0;
-    std::atomic<uint64_t> time = 0;
-    std::atomic<uint64_t> error = 0;
+    Core::Atomic<uint64_t> count;
+    Core::Atomic<uint64_t> time;
+    Core::Atomic<uint64_t> error;
+
+    Component() : count(0), time(0), error(0) { }
 
     struct Start {
       Component&    _m;
@@ -53,19 +57,20 @@ struct Profiling {
     }
 
     void add(uint64_t ts, bool err) {
-      ++count;
-      time += Time::now_ns() - ts;
+      count.fetch_add(1);
+      time.fetch_add(Time::now_ns() - ts);
       if(err)
-        ++error;
+        error.fetch_add(1);
     }
 
     void print(std::ostream& out) const {
-      out << "(count=" << count 
-          << " time=" << time << "ns errors=" << error << ')';
+      out << "(count=" << count.load()
+          << " time=" << time.load() << "ns errors=" << error.load() << ')';
     }
     
     void display(std::ostream& out) const { 
-      out << time << "ns" << "/" << count << "(" << error << ")\n";
+      out << time.load() << "ns" << '/'
+          << count.load() << '(' << error.load() << ")\n";
     }
   };
 
@@ -76,7 +81,7 @@ struct Profiling {
   Component _rgr_data;
 
   void finished() {
-    ts_finish = Time::now_ns();
+    ts_finish.store(Time::now_ns());
   }
 
   Component::Start mngr_locate() {

@@ -19,11 +19,11 @@ namespace SWC { namespace Ranger {
 class BlockLoader final {
   public:
 
-  Block::Ptr          block;
-  const uint8_t       preload;
-  std::atomic<size_t> count_cs_blocks;
-  std::atomic<size_t> count_fragments;
-  std::atomic<int>    error;
+  Block::Ptr           block;
+  const uint8_t        preload;
+  Core::Atomic<size_t> count_cs_blocks;
+  Core::Atomic<size_t> count_fragments;
+  Core::Atomic<int>    error;
 
   struct ReqQueue {
     ReqScan::Ptr  req;

@@ -165,7 +165,7 @@ class Fragment final : public std::enable_shared_from_this<Fragment> {
   StaticBuffer                      m_buffer;
   size_t                            m_processing;
   int                               m_err;
-  std::atomic<uint32_t>             m_cells_remain;
+  Core::Atomic<uint32_t>            m_cells_remain;
   bool                              m_marked_removed;
 
   std::queue<LoadCb_t>              m_queue;

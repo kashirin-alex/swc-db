@@ -29,7 +29,7 @@ const std::string& SmartFd::filepath() const {
 }
 
 void SmartFd::flags(uint32_t flags) {
-  m_flags = flags; 
+  m_flags.store(flags);
 }
 
 uint32_t SmartFd::flags() const {
@@ -37,7 +37,7 @@ uint32_t SmartFd::flags() const {
 }
 
 void SmartFd::fd(int32_t fd) {
-  m_fd = fd; 
+  m_fd.store(fd); 
 }
 
 int32_t SmartFd::fd() const {
@@ -49,7 +49,7 @@ bool SmartFd::valid() const {
 }
 
 void SmartFd::pos(uint64_t pos) {
-  m_pos = pos; 
+  m_pos.store(pos);
 }
   
 uint64_t SmartFd::pos() const {
@@ -57,7 +57,7 @@ uint64_t SmartFd::pos() const {
 }
 
 void SmartFd::forward(uint64_t nbytes) {
-  m_pos += nbytes; 
+  m_pos.fetch_add(nbytes);
 }
 
 std::string SmartFd::to_string() const {
@@ -67,7 +67,10 @@ std::string SmartFd::to_string() const {
 
 void SmartFd::print(std::ostream& out) const {
   out << "SmartFd(filepath='" << m_filepath
-      << "' flags=" << m_flags << " fd=" << m_fd << " pos=" << m_pos << ')';
+      << "' flags=" << m_flags.load()
+      << " fd=" << m_fd.load()
+      << " pos=" << m_pos.load()
+      << ')';
 }
 
 

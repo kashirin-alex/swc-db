@@ -31,11 +31,11 @@ Compaction::Compaction()
 Compaction::~Compaction() { }
 
 bool Compaction::available() {
-  return m_running.load(std::memory_order_relaxed) < cfg_max_range->get();
+  return m_running < cfg_max_range->get();
 }
 
 void Compaction::stop() {
-  m_run.store(false, std::memory_order_relaxed);
+  m_run.store(false);
   std::unique_lock lock_wait(m_mutex);
   m_check_timer.cancel();
   if(m_running || m_schedule.running())
@@ -54,14 +54,14 @@ void Compaction::schedule(uint32_t t_ms) {
 }
 
 bool Compaction::stopped() {
-  return !m_run.load(std::memory_order_relaxed);
+  return !m_run;
 }
 
-void Compaction::run() {
+void Compaction::run(bool initial) {
   if(stopped() || m_schedule.running())
     return;
 
-  uint32_t running = m_running.fetch_add(1, std::memory_order_relaxed);
+  uint8_t added = 0;
   RangePtr range  = nullptr;
   for(ColumnPtr col = nullptr; 
       !stopped() && !Env::Rgr::res().is_low_mem_state() &&
@@ -84,20 +84,24 @@ void Compaction::run() {
         !range->compact_possible())
       continue;
 
-    running = m_running.fetch_add(1, std::memory_order_relaxed);
-    Env::Rgr::maintenance_post([this, range](){ compact(range); } );
-    if(running == cfg_max_range->get())
-      break;
+    if(uint8_t running = compact(range)) {
+      ++added;
+      if(running == cfg_max_range->get())
+        break;
+    }
   }
   
   m_schedule.stop();
-  compacted();
+  if(initial && !added && !stopped())
+    schedule();
 }
 
-void Compaction::compact(const RangePtr& range) {
+uint8_t Compaction::compact(const RangePtr& range) {
 
-  if(!range->is_loaded() || stopped())
-    return compacted(nullptr, range);
+  if(!range->is_loaded() || stopped()) {
+    range->compacting(Range::COMPACT_NONE);
+    return 0;
+  }
 
   auto& commitlog  = range->blocks.commitlog;
 
@@ -144,8 +148,10 @@ void Compaction::compact(const RangePtr& range) {
     need.append("CsVersions");
   }
 
-  if(stopped() || !do_compaction)
-    return compacted(nullptr, range);
+  if(stopped() || !do_compaction) {
+    range->compacting(Range::COMPACT_NONE);
+    return 0;
+  }
     
   SWC_LOGF(LOG_INFO, "COMPACT-STARTED %lu/%lu %s", 
            range->cfg->cid, range->rid, need.c_str());
@@ -160,7 +166,9 @@ void Compaction::compact(const RangePtr& range) {
     std::scoped_lock lock(m_mutex); 
     m_compacting.push_back(req);
   }
-  req->initialize();
+  uint8_t running = m_running.add_rslt(1);
+  Env::Rgr::maintenance_post([req](){ req->initialize(); } );
+  return running;
 }
 
 
@@ -179,18 +187,16 @@ void Compaction::compacted(const CompactRange::Ptr req,
   range->compacting(Range::COMPACT_NONE);
   compacted();
   
-  if(req) {
-    std::scoped_lock lock(m_mutex); 
-    auto it = std::find(m_compacting.begin(), m_compacting.end(), req);
-    if(it != m_compacting.end())
-      m_compacting.erase(it);
-  }
+  std::scoped_lock lock(m_mutex);
+  auto it = std::find(m_compacting.begin(), m_compacting.end(), req);
+  if(it != m_compacting.end())
+    m_compacting.erase(it);
 }
 
 void Compaction::compacted() {
-  uint32_t ran = m_running.fetch_sub(1, std::memory_order_relaxed);
+  uint8_t ran = m_running.fetch_sub(1);
   if(ran == cfg_max_range->get()) {
-    Env::Rgr::maintenance_post([this](){ run(); });
+    Env::Rgr::maintenance_post([this](){ run(false); });
 
   } else if(ran == 1) {
     if(stopped()) {

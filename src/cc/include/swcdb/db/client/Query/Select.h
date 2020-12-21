@@ -30,7 +30,7 @@ struct Select final {
   const bool                                  notify;
   std::mutex                                  mutex;
   std::condition_variable                     cv;
-  std::atomic<int>                            err;
+  Core::Atomic<int>                           err;
   Profiling                                   profile;
   Core::CompletionCounter<uint64_t>           completion;
 

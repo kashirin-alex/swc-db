@@ -78,7 +78,7 @@ void ColumnsUnload::handle(ConnHandlerPtr, const Event::Ptr& ev) {
 }
 
 void ColumnsUnload::handle_no_conn() {
-  ++rgr->failures;
+  rgr->failures.fetch_add(1);
 }
   
 

@@ -32,14 +32,15 @@ using namespace SWC;
 
 size_t buffer_sz = 0;
 
-std::atomic<size_t> failures=0;
-std::atomic<ssize_t> expected=0;
 
 class Checker {
   public:
+  Core::Atomic<size_t>  failures;
+  Core::Atomic<ssize_t> expected;
+
   Checker(int num_req, int batch_sz, int threads_conn)
-          : num_req(num_req), batch_sz(batch_sz), threads_conn(threads_conn) {
-    expected = num_req * batch_sz * threads_conn;
+          : failures(0), expected(num_req * batch_sz * threads_conn),
+            num_req(num_req), batch_sz(batch_sz), threads_conn(threads_conn) {
   }
 
   void run(Comm::ConnHandlerPtr conn, int req_n = 0){
@@ -52,21 +53,21 @@ class Checker {
         [this, req_n, conn, last=i==batch_sz, start_ts=std::chrono::system_clock::now()]
         (bool state){
           if(!state)
-            ++failures;
-          --expected;
+            failures.fetch_add(1);
+          ssize_t sz = expected.sub_rslt(1);
 
           latency.add(
             std::chrono::duration_cast<std::chrono::nanoseconds>(
               std::chrono::system_clock::now() - start_ts).count());   
       
-          if(!(expected % 100000))
+          if(!(sz % 100000))
             print_stats();
 
-          if(expected <= 0) {
-            std::cout << "notify_all expected=" << expected << "\n";
+          if(sz <= 0) {
+            std::cout << "notify_all expected=" << sz << "\n";
             cv.notify_all();
             return;
-          } 
+          }
 
           if(!last)
             return;
@@ -107,7 +108,7 @@ class Checker {
   }
 
   void run(int num_threads){
-    expected = expected * num_threads;
+    expected.store(expected * num_threads);
 
     auto start = std::chrono::system_clock::now();
 
@@ -115,7 +116,7 @@ class Checker {
       std::thread([this](){get_conn();}).detach();
 
     std::unique_lock lock_wait(lock);
-    cv.wait(lock_wait, []{return !expected.load();});
+    cv.wait(lock_wait, [this]{return !expected.load();});
 
 
     int64_t took = std::chrono::duration_cast<std::chrono::nanoseconds>(

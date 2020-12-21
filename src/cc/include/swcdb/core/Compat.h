@@ -110,6 +110,7 @@ namespace Core { }
 
 
 
+#include "swcdb/core/Atomic.h"
 #include "swcdb/core/BitFieldInt.h" // for u/int24/40/48/56_t
 
 

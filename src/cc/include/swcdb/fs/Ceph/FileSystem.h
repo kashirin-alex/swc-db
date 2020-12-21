@@ -80,7 +80,6 @@ class FileSystemCeph final : public FileSystem {
 
   struct ceph_mount_info* m_filesystem;
   UserPerm*               m_perm;
-  std::atomic<bool>       m_run;
 
   int ceph_cfg_min_obj_sz = 1048576;
 

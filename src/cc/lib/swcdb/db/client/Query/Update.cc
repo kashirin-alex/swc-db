@@ -14,16 +14,18 @@ namespace SWC { namespace client { namespace Query {
 
 namespace Result {
 
+Update::Update() : m_err(Error::OK), m_resend_cells(0) { }
+
 int Update::error() {
   return m_err;
 }
 
 void Update::error(int err) {
-  m_err = err;
+  m_err.store(err);
 }
 
 void Update::add_resend_count(size_t count) {
-  m_resend_cells += count;
+  m_resend_cells.fetch_add(count);
 }
 
 size_t Update::get_resend_count(bool reset) {

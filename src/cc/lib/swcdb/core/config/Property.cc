@@ -30,10 +30,9 @@ bool Value::is_guarded() const {
 }
 
 Value::Ptr Value::default_value(bool defaulted) {
-  if(defaulted)
-    flags ^= Value::DEFAULT;
-  else
-    flags &= Value::DEFAULT;
+  defaulted 
+    ? flags.fetch_xor(Value::DEFAULT)
+    : flags.fetch_and(Value::DEFAULT);
   return this;
 }
 
@@ -42,7 +41,7 @@ bool Value::is_default() const {
 }
   
 Value::Ptr Value::zero_token() {
-  flags ^= Value::NO_TOKEN;
+  flags.fetch_xor(Value::NO_TOKEN);
   return this;
 }
 
@@ -597,9 +596,9 @@ void V_GBOOL::set_from(Value::Ptr ptr) {
   
 void V_GBOOL::set_from(const Strings& values) {
   auto& str = values.back();
-  value = !str.compare("1") ||
-          !strncasecmp(str.data(), "true", 4) ||
-          !strncasecmp(str.data(), "yes", 3);
+  value.store(!str.compare("1") ||
+              !strncasecmp(str.data(), "true", 4) ||
+              !strncasecmp(str.data(), "yes", 3));
 }
 
 Value::Type V_GBOOL::type() const {

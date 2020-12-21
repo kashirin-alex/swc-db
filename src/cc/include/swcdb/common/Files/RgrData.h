@@ -69,7 +69,7 @@ class RgrData final {
     }
 
     timestamp = Serialization::decode_i64(&ptr, &remain);
-    rgrid = Serialization::decode_vi64(&ptr, &remain);
+    rgrid.store(Serialization::decode_vi64(&ptr, &remain));
 
     uint32_t len = Serialization::decode_i32(&ptr, &remain);
     endpoints.clear();
@@ -129,16 +129,16 @@ class RgrData final {
     out << "RgrData(endpoints=[";
     for(auto& endpoint : endpoints)
       out << endpoint << ',';
-    out << "] version=" << int(version)
-        << " rgrid=" << rgrid
-        << " timestamp=" << timestamp
+    out << "] version="   << int(version)
+        << " rgrid="      << rgrid.load()
+        << " timestamp="  << timestamp
         << ')';
   }
   
   ~RgrData(){ }
 
   int8_t                version;
-  std::atomic<rgrid_t>  rgrid;
+  Core::Atomic<rgrid_t> rgrid;
   int64_t               timestamp;
   Comm::EndPoints       endpoints;
 

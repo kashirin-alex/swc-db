@@ -89,7 +89,7 @@ FileSystemHadoopJVM::get_fd(SmartFd::Ptr& smartfd){
 
 FileSystemHadoopJVM::FileSystemHadoopJVM()
     : FileSystem(apply_hadoop_jvm()),
-      m_run(true), m_nxt_fd(0), m_connecting(false), 
+      m_nxt_fd(0), m_connecting(false), 
       m_fs(setup_connection()),
       cfg_use_delay(
         Env::Config::settings()->get<Config::Property::V_GINT32>(
@@ -449,7 +449,7 @@ void FileSystemHadoopJVM::create(int& err, SmartFd::Ptr& smartfd,
         err = Error::FS_PERMISSION_DENIED;
     } else {
       hadoop_fd->file(fd);
-      hadoop_fd->fd(++m_nxt_fd);
+      hadoop_fd->fd(m_nxt_fd.add_rslt(1));
       fd_open_incr();
     }
   }
@@ -484,7 +484,7 @@ void FileSystemHadoopJVM::open(int& err, SmartFd::Ptr& smartfd,
         err = Error::FS_PERMISSION_DENIED;
     } else {
       hadoop_fd->file(fd);
-      hadoop_fd->fd(++m_nxt_fd);
+      hadoop_fd->fd(m_nxt_fd.add_rslt(1));
       fd_open_incr();
     }
   }

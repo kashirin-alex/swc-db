@@ -35,23 +35,18 @@ void write(int nthread, Core::QueueSafe<size_t>* queue) {
 
 
 void run(int threads) {
-  std::mutex m;
-  std::condition_variable cv;
-  std::atomic<int> completing = threads;
+  Core::Semaphore sem(threads, threads)
   Core::QueueSafe<size_t> queue;
   
   for(auto n=0; n<threads; ++n) {
       std::thread t(
-        [n, &completing, &cv, q=&queue]() { 
+        [n, &sem, &cv, q=&queue]() { 
           write(n, q); 
-          --completing;
-          cv.notify_all();
+          sem.release();
         });
       t.detach();
   }
-
-  std::unique_lock lock_wait(m);
-  cv.wait(lock_wait, [&completing]() { return !completing; });
+  sem.wait_all();
 }
 
 }

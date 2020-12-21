@@ -4,6 +4,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
+
+#include "swcdb/core/Semaphore.h"
 #include "swcdb/manager/MngdColumns.h"
 #include "swcdb/manager/Protocol/Mngr/req/ColumnUpdate.h"
 
@@ -32,7 +34,7 @@ MngdColumns::MngdColumns()
 MngdColumns::~MngdColumns() {}
 
 void MngdColumns::stop() {
-  m_run = false;
+  m_run.store(false);
 }
 
 void MngdColumns::reset(bool schemas_mngr) {
@@ -437,12 +439,12 @@ bool MngdColumns::initialize() {
     }
   }
 
-  std::atomic<int64_t> pending = 1;
-  int32_t vol = entries.size()/(Env::Mngr::io()->get_size()/4 + 1) + 1;
+  Core::Semaphore pending(Env::Mngr::io()->get_size()/4 + 1, 1);
+  int32_t vol = entries.size()/pending.available() + 1;
   auto it = entries.begin();
   FS::IdEntries_t::iterator it_to;
   do {
-    ++pending;
+    pending.acquire();
     it_to = it + vol < entries.end() ? (it + vol) : entries.end();
     Env::Mngr::post(
       [&pending,
@@ -459,15 +461,14 @@ bool MngdColumns::initialize() {
             SWC_LOGF(LOG_ERROR, "Schema cid=%lu err=%d(%s)",
                      cid, err, Error::get_text(err));
         }
-        --pending;
+        pending.release();
       }
     );
     it += vol;
   } while(it_to < entries.end());
-  --pending;
 
-  while(pending) // keep_locking
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+  pending.release();
+  pending.wait_all();
     
   m_schemas_set = true;
   return true;

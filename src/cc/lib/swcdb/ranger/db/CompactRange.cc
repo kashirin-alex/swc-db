@@ -119,8 +119,10 @@ CompactRange::CompactRange(Compaction* compactor, const RangePtr& range,
               blk_cells(range->cfg->block_cells()), 
               blk_encoding(range->cfg->block_enc()),
               m_inblock(new InBlock(range->cfg->key_seq, blk_size)),
+              total_cells(0), total_blocks(0),
+              time_intval(0), time_encode(0), time_write(0),
               state_default(Range::COMPACT_COMPACTING),
-              req_last_time(0),
+              req_last_time(0), m_stopped(false), m_chk_final(false),
               m_get(true), m_log_sz(0),
               m_chk_timer(
                 asio::high_resolution_timer(Env::Rgr::io()->executor())) {
@@ -250,7 +252,7 @@ void CompactRange::initial_commitlog_done(const CommitLog::Compact* compact) {
   );
 
   range->compacting(state_default); // range scan &/ add can continue
-  req_ts = Time::now_ns();
+  req_ts.store(Time::now_ns());
   progress_check_timer();
 
   range->scan_internal(shared());
@@ -286,10 +288,10 @@ void CompactRange::response(int& err) {
   if(m_stopped)
     return;
 
-  total_cells = profile.cells_count;
-  ++total_blocks;
-  req_last_time = Time::now_ns() - req_ts;
-  req_ts = Time::now_ns();
+  total_cells.store(profile.cells_count);
+  total_blocks.fetch_add(1);
+  req_last_time.store(Time::now_ns() - req_ts);
+  req_ts.store(Time::now_ns());
 
   profile.finished();
   SWC_LOG_OUT(LOG_INFO, 
@@ -313,7 +315,8 @@ void CompactRange::response(int& err) {
   bool finishing;
   if((finishing = !reached_limits())) {
     stop_check_timer();
-    range->compacting(state_default = Range::COMPACT_APPLYING);
+    state_default.store(Range::COMPACT_APPLYING);
+    range->compacting(Range::COMPACT_APPLYING);
     range->blocks.wait_processing();
     range->blocks.commitlog.commit_new_fragment(true);
   }
@@ -401,7 +404,8 @@ void CompactRange::commitlog_done(const CommitLog::Compact* compact) {
       if((size_t)fits + 1 >= range->cfg->cellstore_max() &&
          fits - (size_t)fits >= (float)range->cfg->compact_percent()/100) {
         stop_check_timer();
-        range->compacting(state_default = Range::COMPACT_PREPARING);
+        state_default.store(Range::COMPACT_PREPARING);
+        range->compacting(Range::COMPACT_PREPARING);
         SWC_LOGF(LOG_INFO,
           "COMPACT-MITIGATE(add req.) %lu/%lu reached max-log-size(%lu)",
           range->cfg->cid, range->rid, bytes);
@@ -449,9 +453,9 @@ void CompactRange::progress_check_timer() {
 }
 
 void CompactRange::stop_check_timer() {
-  Core::MutexSptd::scope lock(m_mutex);
-  if(!m_chk_final) {
-    m_chk_final = true;
+  bool at = false;
+  if(m_chk_final.compare_exchange_weak(at, true)) {
+    Core::MutexSptd::scope lock(m_mutex);
     m_chk_timer.cancel();
   }
 }
@@ -484,7 +488,7 @@ void CompactRange::process_interval() {
     if(m_q_encode.push_and_is_1st(in_block))
       Env::Rgr::maintenance_post([ptr=shared()](){ ptr->process_encode(); });
   } while(m_q_intval.pop_and_more() && !m_stopped);
-  time_intval += Time::now_ns() - start;
+  time_intval.fetch_add(Time::now_ns() - start);
   request_more();
 }
 
@@ -501,7 +505,7 @@ void CompactRange::process_encode() {
     if(m_q_write.push_and_is_1st(in_block))
       Env::Rgr::maintenance_post([ptr=shared()](){ ptr->process_write(); });
   } while(m_q_encode.pop_and_more() && !m_stopped);
-  time_encode += Time::now_ns() - start;
+  time_encode.fetch_add(Time::now_ns() - start);
   request_more();
 }
 
@@ -514,7 +518,7 @@ void CompactRange::process_write() {
       return;
 
     if(!(in_block = m_q_write.front())) {
-      time_write += Time::now_ns() - start;
+      time_write.fetch_add(Time::now_ns() - start);
       return finalize();
     }
 
@@ -533,7 +537,7 @@ void CompactRange::process_write() {
     delete in_block;
   } while(m_q_write.pop_and_more() && !m_stopped);
 
-  time_write += Time::now_ns() - start;
+  time_write.fetch_add(Time::now_ns() - start);
   request_more();
 }
 
@@ -567,8 +571,8 @@ csid_t CompactRange::create_cs(int& err) {
     uint32_t p = range->cfg->compact_percent()/10;
     if(csid == range->cfg->cellstore_max() * (p ? p : 1)) {
       stop_check_timer();
-      if(range->compacting_ifnot_applying(
-          state_default = Range::COMPACT_PREPARING)) {
+      state_default.store(Range::COMPACT_PREPARING);
+      if(range->compacting_ifnot_applying(Range::COMPACT_PREPARING)) {
         SWC_LOGF(LOG_INFO,
           "COMPACT-MITIGATE(add req.) %lu/%lu reached cs-max(%u)",
           range->cfg->cid, range->rid, csid);
@@ -688,7 +692,7 @@ void CompactRange::finalize() {
     if(err)
       return quit();
   }
-  time_write += Time::now_ns() - start;
+  time_write.fetch_add(Time::now_ns() - start);
 
   range->compacting(Range::COMPACT_APPLYING);
   range->blocks.wait_processing();
@@ -875,12 +879,10 @@ void CompactRange::apply_new(bool clear) {
 }
 
 bool CompactRange::completion() {
-  {
-    Core::MutexSptd::scope lock(m_mutex);
-    if(m_stopped)
-      return false;
-    m_stopped = true;
-  }
+  bool at = false;
+  if(!m_stopped.compare_exchange_weak(at, true))
+    return false;
+    
   stop_check_timer();
 
   auto ptr = shared();

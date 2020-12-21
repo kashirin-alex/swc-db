@@ -49,6 +49,8 @@ struct Update final {
   Profiling                          profile;
   Core::CompletionCounter<uint64_t>  completion;
 
+  Update();
+
   int error();
 
   void error(int err);
@@ -58,8 +60,8 @@ struct Update final {
   size_t get_resend_count(bool reset = true);
 
   private:
-  std::atomic<int>    m_err = Error::OK;
-  std::atomic<size_t> m_resend_cells = 0;
+  Core::Atomic<int>    m_err;
+  Core::Atomic<size_t> m_resend_cells;
 };
 
 }

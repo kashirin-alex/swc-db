@@ -39,7 +39,8 @@ class Resources final {
               m_timer(ioctx->executor()),
               m_release_call(release_call),
               next_major_chk(99),
-              ram(MAX_RAM_CHK_INTVAL_MS) {
+              ram(MAX_RAM_CHK_INTVAL_MS),
+              m_concurrency(0), m_cpu_mhz(0) {
 
 #if defined TCMALLOC_MINIMAL || defined TCMALLOC
     release_rate_default = MallocExtension::instance()->GetMemoryReleaseRate();
@@ -93,9 +94,9 @@ class Resources final {
     if(sz) {
       m_mutex.lock();
       if(sz < 0 && ram.used_reg < size_t(-sz))
-        ram.used_reg = 0;
+        ram.used_reg.store(0);
       else 
-        ram.used_reg += sz;
+        ram.used_reg.fetch_add(sz);
       m_mutex.unlock();
     }
   }
@@ -103,7 +104,7 @@ class Resources final {
   void more_mem_usage(size_t sz) {
     if(sz) {
       m_mutex.lock();
-      ram.used_reg += sz;
+      ram.used_reg.fetch_add(sz);
       m_mutex.unlock();
     }
   }
@@ -112,9 +113,9 @@ class Resources final {
     if(sz) {
       m_mutex.lock();
       if(ram.used_reg < sz)
-        ram.used_reg = 0;
+        ram.used_reg.store(0);
       else 
-        ram.used_reg -= sz;
+        ram.used_reg.fetch_sub(sz);
       m_mutex.unlock();
     }
   }
@@ -219,12 +220,12 @@ class Resources final {
       ram.total   = page_size * sysconf(_SC_PHYS_PAGES); 
       ram.free    = page_size * sysconf(_SC_AVPHYS_PAGES);
       */
-      ram.allowed = (ram.total/100) * cfg_ram_percent_allowed->get();
-      ram.reserved = (ram.total/100) * cfg_ram_percent_reserved->get();
+      ram.allowed.store((ram.total/100) * cfg_ram_percent_allowed->get());
+      ram.reserved.store((ram.total/100) * cfg_ram_percent_reserved->get());
 
-      ram.chk_ms  = ram.allowed / 3000; //~= ram-buff   
+      ram.chk_ms.store(ram.allowed / 3000); //~= ram-buff   
       if(ram.chk_ms > MAX_RAM_CHK_INTVAL_MS)
-        ram.chk_ms = MAX_RAM_CHK_INTVAL_MS;
+        ram.chk_ms.store(MAX_RAM_CHK_INTVAL_MS);
       
       if(!(next_major_chk % 100) && is_low_mem_state())
         SWC_LOG_OUT(LOG_WARN, print(SWC_LOG_OSTREAM << "Low-Memory state "););
@@ -239,8 +240,8 @@ class Resources final {
           buffer >> khz;
           buffer.close();
           if(khz) {
-            m_cpu_mhz = concurrency * (khz/1000);
-            m_concurrency = concurrency;
+            m_cpu_mhz.store(concurrency * (khz/1000));
+            m_concurrency.store(concurrency);
           }
         } else {
           std::ifstream buffer("/proc/cpuinfo");
@@ -260,8 +261,8 @@ class Resources final {
             } while (!buffer.eof());
             buffer.close();
             if(mhz) {
-              m_cpu_mhz = mhz;
-              m_concurrency = concurrency;
+              m_cpu_mhz.store(mhz);
+              m_concurrency.store(concurrency);
             }
           }
         }
@@ -274,8 +275,8 @@ class Resources final {
       buffer >> sz >> rss;
       buffer.close();
       rss *= page_size;
-      ram.used = ram.used > ram.allowed || ram.used > rss
-                  ? (ram.used + rss) / 2 : rss;
+      ram.used.store(ram.used > ram.allowed || ram.used > rss
+                      ? (ram.used + rss) / 2 : rss);
     }
   }
 
@@ -299,18 +300,20 @@ class Resources final {
   }
 
   struct Component final {
-    typedef std::atomic<size_t> Bytes;
-    Bytes   total    = 0;
-    Bytes   free     = 0;
-    Bytes   used     = 0;
-    Bytes   used_reg = 0;
-    Bytes   allowed  = 0;
-    Bytes   reserved = 0;
-    std::atomic<uint32_t> chk_ms   = 0;
+    typedef Core::Atomic<size_t> Bytes;
+    Bytes   total;
+    Bytes   free;
+    Bytes   used;
+    Bytes   used_reg;
+    Bytes   allowed;
+    Bytes   reserved;
+    Core::Atomic<uint32_t> chk_ms;
 
-    Component(uint32_t ms): chk_ms(ms) { }
+    Component(uint32_t ms=0)
+              : total(0), free(0), used(0), used_reg(0),
+                allowed(0), reserved(0), chk_ms(ms) { }
 
-    void print(std::ostream& out, uint32_t base = 1) const {
+    void print(std::ostream& out, size_t base = 1) const {
       out << "Res("
           << "total=" << (total/base)
           << " free=" << (free/base)
@@ -335,8 +338,8 @@ class Resources final {
   Component                           ram;
   // Component                     storage;
   
-  std::atomic<uint32_t>               m_concurrency = 0;
-  std::atomic<uint32_t>               m_cpu_mhz = 0;
+  Core::Atomic<uint32_t>              m_concurrency;
+  Core::Atomic<uint32_t>              m_cpu_mhz;
   
 #if defined TCMALLOC_MINIMAL || defined TCMALLOC
   double release_rate_default; 

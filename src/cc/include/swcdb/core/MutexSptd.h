@@ -6,7 +6,6 @@
 #ifndef swcdb_core_Mutex_h
 #define swcdb_core_Mutex_h
 
-#include <atomic>
 #include <mutex>
 #include "swcdb/core/MutexAtomic.h"
 

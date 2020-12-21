@@ -7,6 +7,7 @@
 #ifndef swcdb_core_config_Property_h
 #define swcdb_core_config_Property_h
 
+#include "swcdb/core/Compat.h"
 #include "swcdb/core/MutexAtomic.h"
 #include <functional>
 #include <vector>
@@ -93,7 +94,7 @@ class Value {
 
   bool is_zero_token() const;
 
-  std::atomic<uint8_t> flags;
+  Core::Atomic<uint8_t> flags;
 };
 
 
@@ -416,7 +417,7 @@ class V_GBOOL final : public Value {
 
   void set_cb_on_chg(const OnChg_t& cb);
 
-  std::atomic<bool> value;
+  Core::AtomicBool  value;
   OnChg_t           on_chg_cb;
 };
 
@@ -448,7 +449,7 @@ class V_GUINT8 final : public Value {
 
   void set_cb_on_chg(const OnChg_t& cb);
 
-  std::atomic<uint8_t>  value;
+  Core::Atomic<uint8_t> value;
   OnChg_t               on_chg_cb;
 };
 
@@ -481,7 +482,7 @@ class V_GINT32 final : public Value {
 
   void set_cb_on_chg(const OnChg_t& cb);
 
-  std::atomic<int32_t>  value;
+  Core::Atomic<int32_t> value;
   OnChg_t               on_chg_cb;
 
 };
@@ -522,7 +523,7 @@ class V_GENUM final : public Value {
 
   void set_cb_on_chg(const OnChg_t& cb);
 
-  std::atomic<int32_t>  value;
+  Core::Atomic<int32_t> value;
   OnChg_t               on_chg_cb;
   FromString_t          call_from_string = 0;
   Repr_t                call_repr = 0;

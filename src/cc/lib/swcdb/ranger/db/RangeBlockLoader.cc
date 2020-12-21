@@ -67,13 +67,13 @@ void BlockLoader::load_cellstores_cells() {
       }
       if(err) {
         blk->processing_decrement();
-        if(!error)
-          error = Error::RANGE_CELLSTORES;
+        err = Error::OK;
+        error.compare_exchange_weak(err, Error::RANGE_CELLSTORES);
       }
     }
     if(loaded) {
       blk->load_cells(err, block);
-      ++count_cs_blocks;
+      count_cs_blocks.fetch_add(1);
     }
     {
       Core::MutexSptd::scope lock(m_mutex);
@@ -174,7 +174,7 @@ void BlockLoader::load_log_cells() {
       continue;
     }
     frag->load_cells(err = Error::OK, block);
-    ++count_fragments;
+    count_fragments.fetch_add(1);
     if(more && !m_check_log.running())
       Env::Rgr::post([this](){ load_log(false, true); });
   }

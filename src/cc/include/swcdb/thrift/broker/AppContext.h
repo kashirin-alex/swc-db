@@ -110,10 +110,9 @@ class AppContext final : virtual public BrokerIfFactory {
       return;
     } else {
 
-      std::scoped_lock lock(m_mutex);
-      if(!m_run)
+      bool at = true;
+      if(!m_run.compare_exchange_weak(at, false))
         return;
-      m_run = false;
     }
 
     SWC_LOGF(LOG_INFO, "Shutdown signal, sig=%d ec=%s", sig, ec.message().c_str());
@@ -136,7 +135,7 @@ class AppContext final : virtual public BrokerIfFactory {
   }
 
   std::mutex                                    m_mutex;
-  bool                                          m_run;
+  Core::AtomicBool                              m_run;
   std::condition_variable                       m_cv;
   Core::CompletionCounter<size_t>               m_connections;
 };

@@ -53,8 +53,8 @@ class ColumnHealthCheck final
     std::queue<Range::Ptr>    m_ranges;
     uint8_t                   m_checkings;
 
-    std::atomic<size_t>       m_success;
-    std::atomic<size_t>       m_failures;
+    Core::Atomic<size_t>      m_success;
+    Core::Atomic<size_t>      m_failures;
   };
   
 

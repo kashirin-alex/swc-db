@@ -63,8 +63,7 @@ Configurables apply_ceph() {
 
 FileSystemCeph::FileSystemCeph() 
         : FileSystem(apply_ceph()),
-          m_filesystem(nullptr), m_perm(nullptr),
-          m_run(true) { 
+          m_filesystem(nullptr), m_perm(nullptr) { 
   setup_connection();
 }
 
@@ -72,7 +71,7 @@ void FileSystemCeph::setup_connection() {
   auto settings = Env::Config::settings();
 
   uint32_t tries=0; 
-  while(m_run.load() && !initialize()) {
+  while(m_run && !initialize()) {
     SWC_LOGF(LOG_ERROR, 
       "FS-Ceph, unable to initialize connection to Ceph, try=%d",
       ++tries);

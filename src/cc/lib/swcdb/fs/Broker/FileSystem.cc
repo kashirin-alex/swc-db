@@ -135,7 +135,6 @@ FileSystemBroker::FileSystemBroker()
     m_type_underlying(fs_type(
       Env::Config::settings()->get_str("swc.fs.broker.underlying"))),
     m_endpoints(get_endpoints()),
-    m_run(true),
     cfg_timeout(
       Env::Config::settings()->get<Config::Property::V_GINT32>(
         "swc.fs.broker.timeout")),
@@ -147,7 +146,7 @@ FileSystemBroker::FileSystemBroker()
 FileSystemBroker::~FileSystemBroker() { }
 
 void FileSystemBroker::stop() {
-  m_run = false;
+  m_run.store(false);
   m_service->stop();
   m_io->stop();
   FileSystem::stop();

@@ -19,7 +19,7 @@ using namespace SWC;
 void count_all_cells(size_t num_cells, 
                      SWC::Ranger::Blocks& blocks) {
   std::cout << " count_all_cells: \n";
-  std::atomic<int> chk = 1;
+  Core::Semaphore sem(1, 1);
   
   auto req = Ranger::ReqScanTest::make();
   req->spec.flags.max_versions = blocks.range->cfg->cell_versions();
@@ -30,7 +30,7 @@ void count_all_cells(size_t num_cells,
   );
   req->spec.flags.limit = num_cells * blocks.range->cfg->cell_versions();
     
-  req->cb = [req, &chk](int err) { // , blocks=&blocks
+  req->cb = [req, &sem](int err) { // , blocks=&blocks
     std::cout << " err=" <<  err 
               << "(" << SWC::Error::get_text(err) << ") \n" ;
     if(req->cells.size() != req->spec.flags.limit) {
@@ -39,13 +39,13 @@ void count_all_cells(size_t num_cells,
                 << " != "  << req->spec.flags.limit <<"\n";
       exit(1);
     }
-    --chk;
+    sem.release();
   };
 
   blocks.scan(req);
 
-  while(chk > 0)
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+  sem.wait_all();
+
   std::cout << " count_all_cells, OK\n";
 }
 
@@ -96,11 +96,11 @@ int main(int argc, char** argv) {
   std::cout << "\n";
 
   int num_threads = 8;
-  std::atomic<int> threads_processing = num_threads;
+  Core::Semaphore sem(num_threads, num_threads);
 
   for(int t=0;t<num_threads;++t) {
     
-    std::thread([t, versions, commitlog = &commitlog, &threads_processing, 
+    std::thread([t, versions, commitlog = &commitlog, &sem, 
                  num=num_cells/num_threads]() {
       std::cout << "thread-adding=" << t 
                 << " offset=" << t*num 
@@ -139,12 +139,11 @@ int main(int argc, char** argv) {
                     << " progress=" << i << "\n";
       }
       }
-      --threads_processing;
+      sem.release();
     }).detach();
   }
 
-  while(threads_processing > 0)
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+  sem.wait_all();
 
   commitlog.commit_new_fragment(true);
 
@@ -174,14 +173,14 @@ int main(int argc, char** argv) {
   std::cout << '\n';
 
   int num_chks = 10;
-  std::atomic<int> chk = num_chks;
+  Core::Semaphore sem2(num_chks, num_chks);
   for(int i = 1;i<=num_chks; ++i){
     
     auto req = Ranger::ReqScanTest::make();
     req->cells.reset(1, 0, SWC::DB::Types::Column::PLAIN);
     req->spec.flags.limit = num_cells;
     
-    req->cb = [req, &chk, i](int err) { // , blocks=&blocks
+    req->cb = [req, &sem2, i](int err) { // , blocks=&blocks
       std::cout << " chk=" << i 
                 << " err=" <<  err 
                 << "(" << SWC::Error::get_text(err) << ") \n" ;
@@ -191,7 +190,7 @@ int main(int argc, char** argv) {
                   << " !="  << req->spec.flags.limit <<"\n";
         exit(1);
       }
-      --chk;
+      sem2.release();
     };
     blocks.scan(req);
   }
@@ -199,8 +198,7 @@ int main(int argc, char** argv) {
   blocks.print(std::cout << "scanned blocks: \n", true);
   std::cout << '\n';
 
-  while(chk > 0)
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+  sem2.wait_all();
   
   count_all_cells(num_cells, blocks);
 

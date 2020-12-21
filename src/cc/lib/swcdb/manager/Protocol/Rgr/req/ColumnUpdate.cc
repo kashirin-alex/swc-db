@@ -35,7 +35,7 @@ void ColumnUpdate::handle(ConnHandlerPtr, const Event::Ptr& ev) {
 
 void ColumnUpdate::handle_no_conn() {
   if(rgr->state == DB::Types::MngrRangerState::ACK) { 
-    ++rgr->failures;
+    rgr->failures.fetch_add(1);
     request_again();
   } else {
     updated();

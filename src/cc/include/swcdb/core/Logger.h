@@ -68,7 +68,7 @@ class LogWriter final {
   void daemon(const std::string& logs_path);
 
   void set_level(uint8_t level) {
-    m_priority = level;
+    m_priority.store(level);
   }
 
   uint8_t get_level() const {
@@ -121,7 +121,7 @@ class LogWriter final {
   std::string           m_logs_path;
   FILE*                 m_file_out;
   //FILE*               m_file_err;
-  std::atomic<uint8_t>  m_priority;
+  Core::Atomic<uint8_t> m_priority;
   bool                  m_show_line_numbers;
   bool                  m_daemon;
   time_t                m_last_time;

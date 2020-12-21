@@ -3,6 +3,7 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
  
+#include "swcdb/core/Semaphore.h"
 #include "swcdb/core/config/Settings.h"
 #include "swcdb/core/comm/Settings.h"
 
@@ -36,9 +37,9 @@ struct ExpctedRsp final {
               exists(exists), chks(0) { }
 
   std::string name;
-  DB::Types::Encoder blk_encoding;
-  bool exists;
-  std::atomic<int> chks;
+  DB::Types::Encoder  blk_encoding;
+  bool                exists;
+  Core::Atomic<int>   chks;
 };
 
 std::string get_name(int n, bool modified=false){
@@ -51,14 +52,12 @@ std::string get_name(int n, bool modified=false){
 
 
 void check_delete(int num_of_cols, bool modified) {
-  std::atomic<int> count = num_of_cols;
-  std::condition_variable cv;
-  std::mutex mutex;
+  Core::Semaphore sem(num_of_cols, num_of_cols);
 
   for(int n=1; n<=num_of_cols; ++n) {
     Comm::Protocol::Mngr::Req::ColumnGet::schema(
       get_name(n, modified), 
-      [&cv, &count] 
+      [&sem] 
       (Comm::client::ConnQueue::ReqBase::Ptr req_ptr, 
        int err, const Comm::Protocol::Mngr::Params::ColumnGetRsp& rsp) {
         if(err)
@@ -68,15 +67,14 @@ void check_delete(int num_of_cols, bool modified) {
         if(err == Error::REQUEST_TIMEOUT)
           return req_ptr->request_again();
         if(err) {
-          --count;
-          cv.notify_all();
+          sem.release();
           return;
         }
         
         Comm::Protocol::Mngr::Req::ColumnMng::request(
           Comm::Protocol::Mngr::Req::ColumnMng::Func::DELETE,
           rsp.schema,
-          [&cv, &count]
+          [&sem]
           (Comm::client::ConnQueue::ReqBase::Ptr req_ptr, int err){
             if(err)
               SWC_PRINT << "ColumnMng DELETE err=" << err 
@@ -84,8 +82,7 @@ void check_delete(int num_of_cols, bool modified) {
                         << SWC_PRINT_CLOSE;
             if(err == Error::REQUEST_TIMEOUT)
               return req_ptr->request_again();
-            --count;
-            cv.notify_one();
+            sem.release();
           },
           300000
         );
@@ -93,20 +90,9 @@ void check_delete(int num_of_cols, bool modified) {
       },
       300000
     );
-    /*
-    if(!(n % 100)) {
-      std::unique_lock lock_wait(mutex);
-      cv.wait(lock_wait, [&count]() { return !(count.load() % 100); });
-    }
-    */
   }
   
-  std::unique_lock lock_wait(mutex);
-  cv.wait(lock_wait, [&count]() {
-      SWC_PRINT << "check_delete waiting=" << count << SWC_PRINT_CLOSE; 
-      return !count; 
-    }
-  );
+  sem.wait_all();
 }
 
 void check_get(size_t num_of_cols, bool modified, 
@@ -165,7 +151,7 @@ void check_get(size_t num_of_cols, bool modified,
           std::cerr << " SHOULD exist name=" << req->name << "\n";
           exit(1);  
         }
-        ++req->chks;
+        req->chks.fetch_add(1);
       },
       300000
     );
@@ -218,7 +204,7 @@ void check_get(size_t num_of_cols, bool modified,
           std::cerr << " SHOULD exist name=" << req->name << "\n";
           exit(1);  
         }
-        ++req->chks;
+        req->chks.fetch_add(1);
 
       },
       300000

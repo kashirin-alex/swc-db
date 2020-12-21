@@ -29,7 +29,7 @@ namespace Cells = SWC::DB::Cells;
 namespace Query = SWC::client::Query;
 
 bool quite = true;
-std::atomic<bool> finished = false;
+Core::AtomicBool finished(false);
 int fraction_start = 0;
 int fraction_finish = 26;
 int num_fractions = fraction_finish-fraction_start;
@@ -499,7 +499,7 @@ int main(int argc, char** argv) {
             std::cout << "test_1 chk=" << i << "\n";
             std::this_thread::sleep_for(std::chrono::milliseconds(10000));
           }
-          finished = true;
+          finished.store(true);
         },
         10000
       );

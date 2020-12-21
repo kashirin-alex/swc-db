@@ -114,8 +114,7 @@ class FileSystemHadoop final : public FileSystem {
   
   SmartFdHadoop::Ptr get_fd(SmartFd::Ptr& smartfd);
 
-  std::atomic<bool>       m_run;
-  std::atomic<int32_t>    m_nxt_fd;
+  Core::Atomic<int32_t>   m_nxt_fd;
   
   std::mutex              m_mutex;
   std::condition_variable m_cv;

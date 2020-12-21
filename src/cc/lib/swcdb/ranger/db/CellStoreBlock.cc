@@ -127,19 +127,21 @@ void Read::load() {
 
 void Read::load_cells(int&, Ranger::Block::Ptr cells_block) {
   bool was_splitted = false;
-  if(m_buffer.size) {
-    m_cells_remain -= cells_block->load_cells(
-      m_buffer.base, m_buffer.size, 
-      cellstore->cell_revs, header.cells_count, 
-      was_splitted,
-      true
-    );
-  }
+  ssize_t remain_hint = m_buffer.size
+    ? m_cells_remain.sub_rslt(
+        cells_block->load_cells(
+          m_buffer.base, m_buffer.size,
+          cellstore->cell_revs, header.cells_count,
+          was_splitted,
+          true
+        )
+      )
+    : 0;
 
   processing_decrement();
 
   if(!was_splitted && 
-     (!m_cells_remain || Env::Rgr::res().need_ram(header.size_plain)))
+     (remain_hint <= 0 || Env::Rgr::res().need_ram(header.size_plain)))
     release();
 }
 
@@ -156,7 +158,7 @@ size_t Read::release() {
       released += m_buffer.size;
       m_state = State::NONE;
       m_buffer.free();
-      m_cells_remain = header.cells_count;
+      m_cells_remain.store(header.cells_count);
     }
     m_mutex.unlock(support);
   }

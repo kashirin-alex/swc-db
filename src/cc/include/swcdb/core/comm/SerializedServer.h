@@ -82,7 +82,7 @@ class SerializedServer final {
   private:
   
   std::string                     m_appname;
-  std::atomic<bool>               m_run;
+  Core::AtomicBool                m_run;
   std::vector<IoContextPtr>       m_io_contexts;
   std::vector<Acceptor::Ptr>      m_acceptors;
 

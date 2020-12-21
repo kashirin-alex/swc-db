@@ -13,12 +13,11 @@
 namespace SWC { namespace Core {
   
   
-class StateRunning final : private std::atomic<bool> {
-  public:
+struct StateRunning final : private AtomicBool {
 
   SWC_CAN_INLINE
   explicit StateRunning(bool initial=false) noexcept
-                        : std::atomic<bool>(initial) {
+                        : AtomicBool(initial) {
   }
 
   StateRunning(const StateRunning&) = delete;
@@ -32,18 +31,18 @@ class StateRunning final : private std::atomic<bool> {
 
   SWC_CAN_INLINE
   void stop() noexcept {
-    store(false, std::memory_order_relaxed);
+    store(false);
   }
 
   SWC_CAN_INLINE
   bool running() noexcept {
     bool at = false;
-    return !compare_exchange_weak(at, true, std::memory_order_relaxed);
+    return !compare_exchange_weak(at, true);
   }
 
   SWC_CAN_INLINE
   operator bool() const noexcept {
-    return load(std::memory_order_relaxed);
+    return load();
   }
 
 };

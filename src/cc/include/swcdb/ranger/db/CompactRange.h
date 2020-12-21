@@ -104,19 +104,19 @@ class CompactRange final : public ReqScan {
   Core::QueueSafe<InBlock*>       m_q_encode;
   Core::QueueSafe<InBlock*>       m_q_write;
 
-  std::atomic<uint64_t>           total_cells = 0;
-  std::atomic<uint64_t>           total_blocks = 0;
+  Core::Atomic<uint64_t>          total_cells;
+  Core::Atomic<uint64_t>          total_blocks;
 
-  std::atomic<uint64_t>           time_intval = 0;
-  std::atomic<uint64_t>           time_encode = 0;
-  std::atomic<uint64_t>           time_write = 0;
+  Core::Atomic<uint64_t>          time_intval;
+  Core::Atomic<uint64_t>          time_encode;
+  Core::Atomic<uint64_t>          time_write;
 
-  std::atomic<uint8_t>            state_default;
-  std::atomic<int64_t>            req_last_time;
-  std::atomic<int64_t>            req_ts;
+  Core::Atomic<uint8_t>           state_default;
+  Core::Atomic<int64_t>           req_last_time;
+  Core::Atomic<int64_t>           req_ts;
 
-  std::atomic<bool>               m_stopped = false;
-  std::atomic<bool>               m_chk_final = false;
+  Core::AtomicBool                m_stopped;
+  Core::AtomicBool                m_chk_final;
 
   Core::StateRunning              m_get;
   

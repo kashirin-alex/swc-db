@@ -100,7 +100,7 @@ class Read final {
   State                    m_state;
   size_t                   m_processing;
   StaticBuffer             m_buffer;
-  std::atomic<uint32_t>    m_cells_remain;
+  Core::Atomic<uint32_t>   m_cells_remain;
   int                      m_err;
   std::queue<BlockLoader*> m_queue;
 

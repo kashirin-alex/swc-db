@@ -191,7 +191,7 @@ bool Fragments::try_compact(int tnum) {
       return false;
     }
     need = _need_compact(groups, {}, cointervaling);
-    m_compacting = true;
+    m_compacting.store(true);
   }
 
   if(need) {
@@ -207,7 +207,7 @@ bool Fragments::try_compact(int tnum) {
 }
 
 void Fragments::finish_compact(const Compact* compact) {
-  m_compacting = false;
+  m_compacting.store(false);
   {
     std::scoped_lock lock(m_mutex);
     m_cv.notify_all();
@@ -344,7 +344,7 @@ void Fragments::remove(int &err, Fragment::Ptr& frag, bool remove_file) {
 }
 
 void Fragments::remove() {
-  stopping = true;
+  stopping.store(true);
   {
     std::unique_lock lock_wait(m_mutex);
     m_deleting = true;
@@ -361,7 +361,7 @@ void Fragments::remove() {
 }
 
 void Fragments::unload() {
-  stopping = true;
+  stopping.store(true);
   {
     std::unique_lock lock_wait(m_mutex);
     if(m_compacting || m_commit.running())

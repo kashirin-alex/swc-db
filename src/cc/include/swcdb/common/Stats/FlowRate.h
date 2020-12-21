@@ -6,9 +6,6 @@
 #ifndef swcdb_common_Stats_FlowRate_h
 #define swcdb_common_Stats_FlowRate_h
 
-#include <atomic>
-#include <mutex>
-#include "swcdb/core/MutexAtomic.h"
 
 
 namespace SWC { namespace Common { namespace Stats { namespace FlowRate {

@@ -88,7 +88,7 @@ class MngdColumns final {
   void run_actions();
 
 
-  std::atomic<bool>      m_run; 
+  Core::AtomicBool       m_run; 
 
   Core::StateRunning     m_columns_load;
 

@@ -177,7 +177,7 @@ Select::~Select() { }
  
 void Select::response(int err) {
   if(err)
-    result->err = err;
+    result->err.store(err);
   
   result->profile.finished();
 
@@ -704,7 +704,7 @@ bool Select::Scanner::mngr_resolved_rgr_select(
   if(rsp.err) {
     if(rsp.err == Error::COLUMN_NOT_EXISTS) {
       SWC_SCANNER_RSP_DEBUG("mngr_resolved_rgr_select QUIT");
-      selector->result->err = rsp.err; // Error::CONSIST_ERRORS;
+      selector->result->err.store(rsp.err); // Error::CONSIST_ERRORS;
       selector->result->error(data_cid, rsp.err);
       return true;
     }

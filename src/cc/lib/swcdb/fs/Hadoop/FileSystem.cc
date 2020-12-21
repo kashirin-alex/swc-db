@@ -91,7 +91,7 @@ FileSystemHadoop::get_fd(SmartFd::Ptr& smartfd){
 
 FileSystemHadoop::FileSystemHadoop() 
     : FileSystem(apply_hadoop()),
-      m_run(true), m_nxt_fd(0), m_connecting(false), 
+      m_nxt_fd(0), m_connecting(false), 
       m_fs(setup_connection()) {
 }
 
@@ -448,7 +448,7 @@ void FileSystemHadoop::create(int& err, SmartFd::Ptr& smartfd,
         err = Error::FS_PERMISSION_DENIED;
     } else {
       hadoop_fd->file(fd);
-      hadoop_fd->fd(++m_nxt_fd);
+      hadoop_fd->fd(m_nxt_fd.add_rslt(1));
       fd_open_incr();
     }
   }
@@ -486,7 +486,7 @@ void FileSystemHadoop::open(int& err, SmartFd::Ptr& smartfd,
         err = Error::FS_PERMISSION_DENIED;
     } else {
       hadoop_fd->file(fd);
-      hadoop_fd->fd(++m_nxt_fd);
+      hadoop_fd->fd(m_nxt_fd.add_rslt(1));
       fd_open_incr();
     }
   }

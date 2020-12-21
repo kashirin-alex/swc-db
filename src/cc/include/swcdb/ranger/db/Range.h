@@ -187,7 +187,7 @@ class Range final : public std::enable_shared_from_this<Range> {
 
   std::shared_mutex             m_mutex;
 
-  std::atomic<State>            m_state;
+  Core::Atomic<State>           m_state;
   uint8_t                       m_compacting;
   bool                          m_require_compact;
 
@@ -199,7 +199,7 @@ class Range final : public std::enable_shared_from_this<Range> {
 
   std::condition_variable_any   m_cv;
 
-  std::atomic<size_t>           m_inbytes;
+  //Core::Atomic<size_t>          m_inbytes;
 };
 
 

@@ -150,7 +150,7 @@ class Block final {
 
   Core::MutexSptd             m_mutex_state;
   State                       m_state;
-  std::atomic<size_t>         m_processing;
+  Core::Atomic<size_t>        m_processing;
   BlockLoader*                m_loader;
 
 };

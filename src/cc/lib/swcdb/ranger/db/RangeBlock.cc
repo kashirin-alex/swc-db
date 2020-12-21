@@ -359,12 +359,12 @@ size_t Block::release() {
 
 SWC_SHOULD_INLINE
 void Block::processing_increment() {
-  ++m_processing;
+  m_processing.fetch_add(1);
 }
 
 SWC_SHOULD_INLINE
 void Block::processing_decrement() {
-  --m_processing;
+  m_processing.fetch_sub(1);
 }
 
 bool Block::loaded() {

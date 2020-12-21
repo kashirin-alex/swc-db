@@ -49,7 +49,7 @@ void RangeUnload::handle(ConnHandlerPtr, const Event::Ptr& ev) {
 void RangeUnload::unloaded(int err) {
   if(err) {
     if(!ignore_error)
-      ++rgr->failures;
+      rgr->failures.fetch_add(1);
   } else if(range->get_rgr_id() == rgr->rgrid) {
     col->set_unloaded(range);
     Env::Mngr::rangers()->schedule_check(2);

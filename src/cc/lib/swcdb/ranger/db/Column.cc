@@ -274,7 +274,7 @@ void Column::remove(const Callback::ColumnDelete::Ptr& req) {
   if(cfg->deleting)
     return req->response_ok();
 
-  cfg->deleting = true;
+  cfg->deleting.store(true);
   std::vector<RangePtr> ranges;
   {
     Core::MutexSptd::scope lock(m_mutex);

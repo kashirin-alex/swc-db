@@ -99,7 +99,7 @@ class Rangers final {
   void _changes(const RangerList& hosts, bool sync_all=false);
   
   
-  std::atomic<bool>             m_run; 
+  Core::AtomicBool              m_run; 
 
   Core::MutexSptd               m_mutex;
   asio::high_resolution_timer   m_timer; 
@@ -107,7 +107,7 @@ class Rangers final {
   RangersResources              m_rangers_resources;
 
   Core::StateRunning            m_assign;
-  std::atomic<int32_t>          m_assignments;
+  Core::Atomic<int32_t>         m_assignments;
 
   Core::MutexSptd               m_mutex_columns_check;
   ColumnHealthChecks            m_columns_check;

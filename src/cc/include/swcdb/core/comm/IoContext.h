@@ -44,7 +44,7 @@ class IoContext final : public std::enable_shared_from_this<IoContext> {
   static IoContextPtr make(const std::string& name, int32_t size);
 
 
-  std::atomic<bool>                    running;
+  Core::AtomicBool                     running;
   const std::string                    name;
   asio::thread_pool                    pool;
   std::unique_ptr<asio::signal_set>    signals;

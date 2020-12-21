@@ -105,7 +105,7 @@ class Blocks final {
   Core::MutexSptd           m_mutex;
   Block::Ptr                m_block;
   std::vector<Block::Ptr>   m_blocks_idx;
-  std::atomic<size_t>       m_processing;
+  Core::Atomic<size_t>      m_processing;
   
 
 };

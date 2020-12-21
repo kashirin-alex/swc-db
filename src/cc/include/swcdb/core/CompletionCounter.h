@@ -13,11 +13,11 @@
 namespace SWC { namespace Core {
   
 template<class CountT=uint32_t>
-class CompletionCounter final {
-  public:
+struct CompletionCounter final: private Core::Atomic<CountT> {
 
-  explicit CompletionCounter(CountT start=0) 
-                            : m_count(start) {
+  SWC_CAN_INLINE
+  explicit CompletionCounter(CountT start=0) noexcept
+                            : Core::Atomic<CountT>(start) {
   };
 
   CompletionCounter(const CompletionCounter&) = delete;
@@ -26,30 +26,34 @@ class CompletionCounter final {
     
   CompletionCounter& operator=(const CompletionCounter&) = delete;
   
-  ~CompletionCounter() {}
+  SWC_CAN_INLINE
+  ~CompletionCounter() noexcept { }
 
-  void increment() {
-    ++m_count;
+  SWC_CAN_INLINE
+  void increment() noexcept {
+    Core::Atomic<CountT>::fetch_add(1);
   }
 
-  bool is_last() {
-    return m_count.fetch_sub(1, std::memory_order_relaxed) == 1;
+  SWC_CAN_INLINE
+  bool is_last() noexcept {
+    return Core::Atomic<CountT>::fetch_sub(1) == 1;
   }
 
-  CountT count() {
-    return m_count;
+  SWC_CAN_INLINE
+  CountT count() const noexcept {
+    return Core::Atomic<CountT>::load();
   }
 
-  CountT increment_and_count() {
-    return m_count.fetch_add(1, std::memory_order_relaxed) + 1;
+  SWC_CAN_INLINE
+  CountT increment_and_count() noexcept {
+    return Core::Atomic<CountT>::add_rslt(1);
   }
 
-  CountT decrement_and_count() {
-    return m_count.fetch_sub(1, std::memory_order_relaxed) - 1;
+  SWC_CAN_INLINE
+  CountT decrement_and_count() noexcept {
+    return Core::Atomic<CountT>::sub_rslt(1);
   }
 
-  private:
-  std::atomic<CountT>              m_count;
 };
 
 }} // namespace SWC::Core

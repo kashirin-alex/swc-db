@@ -28,7 +28,7 @@ class Fragments final : private std::vector<Fragment::Ptr> {
   typedef Fragments*                 Ptr;
 
   RangePtr            range;
-  std::atomic<bool>   stopping;
+  Core::AtomicBool    stopping;
 
   explicit Fragments(const DB::Types::KeySeq key_seq);
 
@@ -130,7 +130,7 @@ class Fragments final : private std::vector<Fragment::Ptr> {
   uint8_t                     m_roll_chk;
 
   Core::StateRunning          m_commit;
-  std::atomic<bool>           m_compacting;
+  Core::AtomicBool            m_compacting;
 
   std::shared_mutex           m_mutex;
   bool                        m_deleting;

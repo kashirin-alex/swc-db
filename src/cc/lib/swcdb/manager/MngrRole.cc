@@ -15,6 +15,7 @@ MngrRole::MngrRole(const Comm::IoContextPtr& app_io,
       m_local_token(Comm::endpoints_hash(m_local_endpoints)),
       m_local_active_role(DB::Types::MngrRole::NONE),
       m_check_timer(asio::high_resolution_timer(app_io->executor())),
+      m_run(true),
       m_mngr_inchain(std::make_shared<Comm::client::ConnQueue>(app_io)),
       cfg_conn_probes(
         Env::Config::settings()->get<Config::Property::V_GINT32>(
@@ -70,7 +71,7 @@ bool MngrRole::is_active(cid_t cid) {
 }
 
 bool MngrRole::is_active_role(uint8_t role) {
-  return m_local_active_role.load() & role;
+  return m_local_active_role & role;
 }
 
 MngrStatus::Ptr MngrRole::active_mngr(cid_t cid) {
@@ -303,10 +304,11 @@ void MngrRole::disconnection(const Comm::EndPoint& endpoint_server,
 void MngrRole::stop() {
   Env::Mngr::rangers()->stop();
   Env::Mngr::mngd_columns()->stop();
+  
+  m_run.store(false);
   {
     Core::MutexAtomic::scope lock(m_mutex_timer);
     m_check_timer.cancel();
-    m_run = false;
   }
 
   m_mngr_inchain->stop();
@@ -345,7 +347,7 @@ void MngrRole::_apply_cfg() {
       bool found = false;
       for(auto& host : m_states) {
         if((found = Comm::has_endpoint(endpoints, host->endpoints))) {
-          host->priority = pr;
+          host->priority.store(pr);
           break;
         }
       }
@@ -467,7 +469,7 @@ void MngrRole::manager_checker(MngrStatus::Ptr host,
                 host->failures);
       return schedule_checkin(cfg_delay_fallback->get());
     }
-    host->state = DB::Types::MngrState::OFF;
+    host->state.store(DB::Types::MngrState::OFF);
     return managers_checker(next, total-1, flw);
   }
   host->conn = conn;
@@ -483,7 +485,7 @@ void MngrRole::update_state(const Comm::EndPoint& endpoint,
 
   for(auto& host : m_states) {
     if(Comm::has_endpoint(endpoint, host->endpoints)) {
-      host->state = state;
+      host->state.store(state);
     }
   }
 }
@@ -494,7 +496,7 @@ void MngrRole::update_state(const Comm::EndPoints& endpoints,
 
   for(auto& host : m_states) {
     if(Comm::has_endpoint(endpoints, host->endpoints)) {
-      host->state = state;
+      host->state.store(state);
     }
   }
 }
@@ -550,13 +552,13 @@ void MngrRole::apply_role_changes() {
       }
     }
     if(host_local && host_local->state == DB::Types::MngrState::ACTIVE) {
-      m_local_active_role = host_local->role;
+      m_local_active_role.store(host_local->role);
       if((has_cols = m_local_active_role & DB::Types::MngrRole::COLUMNS)) {
         cid_begin = host_local->cid_begin;
         cid_end = host_local->cid_end;
       }
     } else {
-      m_local_active_role = DB::Types::MngrRole::NONE;
+      m_local_active_role.store(DB::Types::MngrRole::NONE);
     }
     role_new = m_local_active_role;
   }

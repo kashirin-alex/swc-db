@@ -52,7 +52,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
   public:
 
-  std::atomic<bool>     connected;
+  Core::AtomicBool      connected;
   const AppContext::Ptr app_ctx;
   EndPoint              endpoint_remote;
   EndPoint              endpoint_local;
@@ -157,7 +157,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   };
 
   uint32_t                          m_next_req_id;
-  std::atomic<bool>                 m_accepting;
+  Core::AtomicBool                  m_accepting;
   Core::StateRunning                m_read;
   Core::QueueSafeStated<Pending*>   m_outgoing;
   std::unordered_map<uint32_t, 

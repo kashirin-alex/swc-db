@@ -138,7 +138,7 @@ class Write final {
   DB::Cells::Interval       interval;
   DB::Cell::Key             prev_key_end;
   
-  //std::atomic<uint32_t>     completion;
+  //Core::Atomic<uint32_t>    completion;
  
   Write(const csid_t csid, const std::string& filepath, 
         const RangePtr& range, uint32_t cell_revs);

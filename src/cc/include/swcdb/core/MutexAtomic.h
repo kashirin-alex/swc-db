@@ -30,7 +30,7 @@ class MutexAtomic {
     return !want.test_and_set(std::memory_order_acquire);
     /*
     bool at=false;
-    return want.compare_exchange_weak(at, true, std::memory_order_seq_cst);
+    return want.compare_exchange_weak(at, true);
     */
   }
   
@@ -42,7 +42,7 @@ class MutexAtomic {
     }
     /*
     for(auto at=false;
-        !want.compare_exchange_weak(at, true, std::memory_order_seq_cst);
+        !want.compare_exchange_weak(at, true);
         at=false)
       if(!++i)
         std::this_thread::yield();
@@ -58,7 +58,7 @@ class MutexAtomic {
     /*
     uint16_t i = 0;
     for(auto at=false;
-        !want.compare_exchange_weak(at, true, std::memory_order_seq_cst);
+        !want.compare_exchange_weak(at, true);
         at=false)
       if(!++i)
         std::this_thread::sleep_for(std::chrono::microseconds(us_sleep));
@@ -67,7 +67,7 @@ class MutexAtomic {
 
   void unlock() const noexcept {
     want.clear(std::memory_order_release);
-    //want.store(false, std::memory_order_release);
+    //want.store(false);
   }
   
   class scope final {
@@ -90,7 +90,7 @@ class MutexAtomic {
   private:
 
   mutable std::atomic_flag want;
-  //mutable std::atomic<bool> want;
+  //mutable Core::AtomicBase<bool, std::memory_order_seq_cst> want;
 };
 
 

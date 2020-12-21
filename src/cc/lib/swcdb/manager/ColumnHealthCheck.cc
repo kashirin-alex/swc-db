@@ -21,7 +21,7 @@ ColumnHealthCheck::RangerCheck::RangerCheck(
 
 ColumnHealthCheck::RangerCheck::~RangerCheck() { 
   if(!m_success && m_failures) // && m_success < m_failures)
-    ++rgr->failures;
+    rgr->failures.fetch_add(1);
 }
 
 void ColumnHealthCheck::RangerCheck::add_range(const Range::Ptr& range) {
@@ -61,11 +61,11 @@ void ColumnHealthCheck::RangerCheck::handle(const Range::Ptr& range, int err) {
   }
 
   if(err == Error::COMM_CONNECT_ERROR) {
-    ++m_failures;
+    m_failures.fetch_add(1);
   } else {
-    ++m_success;
+    m_success.fetch_add(1);
     if(!err) {
-      rgr->failures = 0;
+      rgr->failures.store(0);
     } else if(err == Error::RGR_NOT_LOADED_RANGE) {
       col_checker->col->set_unloaded(range);
       Env::Mngr::rangers()->schedule_check(2000);

@@ -134,7 +134,7 @@ bool ConnHandler::send_request(Buffers::Ptr& cbuf,
 }
 
 void ConnHandler::accept_requests() {
-  m_accepting.store(true, std::memory_order_relaxed);
+  m_accepting.store(true);
   read_pending();
 }
 
@@ -410,7 +410,7 @@ void ConnHandler::received(const Event::Ptr& ev, const asio::error_code& ec) {
   if(ev->header.flags & Header::FLAGS_BIT_REQUEST)
     ev->received();
 
-  bool more = m_accepting.load(std::memory_order_relaxed);
+  bool more = m_accepting.load();
   if(!more) {
     Core::MutexSptd::scope lock(m_mutex);
     more = !m_pending.empty();
@@ -495,12 +495,9 @@ void ConnHandlerPlain::do_close() {
 }
 
 void ConnHandlerPlain::close() {
-  {
-    Core::MutexSptd::scope lock(m_mutex);
-    if(!connected)
-      return;
-    connected = false;
-  }
+  bool at = true;
+  if(!connected.compare_exchange_weak(at, false))
+    return;
   if(m_sock.is_open()) {
     asio::error_code ec;
     m_sock.cancel(ec);
@@ -566,12 +563,9 @@ void ConnHandlerSSL::do_close() {
 }
 
 void ConnHandlerSSL::close() {
-  {
-    Core::MutexSptd::scope lock(m_mutex);
-    if(!connected)
-      return;
-    connected = false;
-  }
+  bool at = true;
+  if(!connected.compare_exchange_weak(at, false))
+    return;
   if(m_sock.lowest_layer().is_open()) {
     asio::error_code ec;
     m_sock.lowest_layer().cancel(ec);

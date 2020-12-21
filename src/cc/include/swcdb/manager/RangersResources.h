@@ -180,10 +180,10 @@ class RangersResources final : private std::vector<RangerResources> {
         }
 
         if(balance || rgr->load_scale != res.load_scale) {
-          rgr->load_scale = res.load_scale;
+          rgr->load_scale.store(res.load_scale);
           changed.push_back(rgr);
         }
-        rgr->interm_ranges = 0;
+        rgr->interm_ranges.store(0);
         break;
       }
     }

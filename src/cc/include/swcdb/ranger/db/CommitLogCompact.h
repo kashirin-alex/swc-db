@@ -42,11 +42,11 @@ class Compact final {
 
     void write();
     
-    std::atomic<int>                  error;
+    Core::Atomic<int>                 error;
     Compact*                          compact;
-    std::atomic<ssize_t>              m_idx;
-    std::atomic<ssize_t>              m_running;
-    std::atomic<ssize_t>              m_finishing;
+    Core::Atomic<ssize_t>             m_idx;
+    Core::Atomic<ssize_t>             m_running;
+    Core::Atomic<ssize_t>             m_finishing;
     Core::MutexSptd                   m_mutex;
     DB::Cells::MutableVec             m_cells;
     Fragments::Vec                    m_remove;
@@ -84,7 +84,7 @@ class Compact final {
 
   const std::string get_filepath(const int64_t frag) const;
 
-  std::atomic<size_t>   m_workers;
+  Core::Atomic<size_t>  m_workers;
   std::vector<Group*>   m_groups;
   Cb_t                  m_cb;
 

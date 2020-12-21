@@ -72,9 +72,10 @@ struct SmartFd {
 
   private:
 
-  std::atomic<uint32_t> m_flags;
-  std::atomic<int32_t>  m_fd;
-  std::atomic<uint64_t> m_pos;
+  Core::Atomic<uint32_t> m_flags;
+  Core::Atomic<int32_t>  m_fd;
+  Core::Atomic<uint64_t> m_pos;
+
 };
 
 }}

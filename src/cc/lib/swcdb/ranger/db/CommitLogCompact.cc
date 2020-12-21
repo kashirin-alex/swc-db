@@ -29,26 +29,26 @@ void Compact::Group::run(bool initial) {
   size_t running;
   if(initial) {
     running = compact->preload;
-    m_finishing = read_frags.size() + 1;
+    m_finishing.store(read_frags.size() + 1);
   } else {
-    running = m_running.fetch_sub(1, std::memory_order_relaxed);
+    running = m_running.fetch_sub(1);
   }
 
   if(running == compact->preload) do {
-    size_t idx = m_idx.fetch_add(1, std::memory_order_relaxed);
+    size_t idx = m_idx.fetch_add(1);
     if(idx >= read_frags.size())
       break;
     if(error || compact->log->stopping) {
-      m_finishing -= read_frags.size() - idx;
+      m_finishing.fetch_sub(read_frags.size() - idx);
       break;
     }
-    running = m_running.fetch_add(1, std::memory_order_relaxed) + 1;
+    running = m_running.add_rslt(1);
     read_frags[idx]->load([this] (const Fragment::Ptr& frag) {
       Env::Rgr::post([this, frag]() { loaded(frag); });
     });
   } while(running < compact->preload);
 
-  if(m_finishing.fetch_sub(1, std::memory_order_relaxed) == 1)
+  if(m_finishing.fetch_sub(1) == 1)
     write();
 }
 
@@ -118,7 +118,7 @@ void Compact::Group::write() {
       buff_write
     );
     if(err)
-      error = err;
+      error.store(err);
     if(!frag)
       break;
     m_fragments.push_back(frag);
@@ -209,7 +209,7 @@ Compact::Compact(Fragments* log, int repetition,
     m_groups.size(), nfrags, ngroups, log->size(), repetition
   );
 
-  m_workers = m_groups.size();
+  m_workers.store(m_groups.size());
 
   std::sort(m_groups.begin(), m_groups.end(), 
     [](const Group* p1, const Group* p2) {
@@ -222,8 +222,7 @@ Compact::Compact(Fragments* log, int repetition,
 Compact::~Compact() { }
 
 void Compact::finished(Group* group, size_t cells_count) {
-  size_t running = m_workers.fetch_sub(1, std::memory_order_relaxed);
-  --running;
+  size_t running(m_workers.sub_rslt(1));
 
   SWC_LOGF(LOG_INFO,
     "COMPACT-LOG-PROGRESS %lu/%lu running=%lu "
@@ -241,13 +240,13 @@ void Compact::finished(Group* group, size_t cells_count) {
   log->range->compacting(Range::COMPACT_APPLYING);
   log->range->blocks.wait_processing(); // sync processing state
   
-  m_workers = m_groups.size();
+  m_workers.store(m_groups.size());
   for(auto g : m_groups)
     Env::Rgr::post([g]() { g->finalize(); });
 }
 
 void Compact::finalized() {
-  if(m_workers.fetch_sub(1, std::memory_order_relaxed) > 1)
+  if(m_workers.fetch_sub(1) > 1)
     return;
 
   for(auto g : m_groups)

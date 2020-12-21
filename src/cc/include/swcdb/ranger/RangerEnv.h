@@ -57,7 +57,7 @@ class Rgr final {
   }
 
   static void in_process(int64_t count) {
-    m_env->m_in_process += count;
+    m_env->m_in_process.fetch_add(count);
   }
 
   static Rgr* get() {
@@ -127,12 +127,12 @@ class Rgr final {
   ~Rgr();
 
   private:
-  inline static std::shared_ptr<Rgr>  m_env           = nullptr;
+  inline static std::shared_ptr<Rgr>  m_env = nullptr;
 
   Common::Files::RgrData              m_rgr_data;
-  std::atomic<bool>                   m_shuttingdown     = false;
-  std::atomic<bool>                   m_not_accepting    = false;
-  std::atomic<int64_t>                m_in_process       = 0;
+  Core::AtomicBool                    m_shuttingdown;
+  Core::AtomicBool                    m_not_accepting;
+  Core::Atomic<int64_t>               m_in_process;
  
 };
 
@@ -202,7 +202,8 @@ Rgr::Rgr()
         SWC::Env::Config::settings()->get<SWC::Config::Property::V_GINT32>(
           "swc.rgr.ram.release.rate"),
         [this](size_t bytes) { return _columns->release(bytes); }
-      ) {
+      ),
+      m_shuttingdown(false), m_not_accepting(false), m_in_process(0) {
 }
 
 Rgr::~Rgr() {
@@ -219,7 +220,7 @@ void Rgr::start() {
 }
 
 void Rgr::shuttingdown() {
-  m_env->m_not_accepting = true;
+  m_env->m_not_accepting.store(true);
 
   m_env->_compaction->stop();
   m_env->mnt_io->stop();
@@ -231,7 +232,7 @@ void Rgr::shuttingdown() {
 
   wait_if_in_process();
 
-  m_env->m_shuttingdown = true;
+  m_env->m_shuttingdown.store(true);
 
   m_env->_resources.stop();
 }
