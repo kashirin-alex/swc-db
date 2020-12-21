@@ -28,7 +28,7 @@ Block::Block(const DB::Cells::Interval& interval,
                   blocks->range->cfg->cell_ttl(), 
                   blocks->range->cfg->column_type())),
               m_key_end(interval.key_end),  
-              m_state(state), m_processing(0), m_loader(nullptr) {
+              m_processing(0), m_state(state), m_loader(nullptr) {
   Env::Rgr::res().more_mem_usage(size_of());
 }
 
@@ -149,8 +149,7 @@ bool Block::add_logged(const DB::Cells::Cell& cell) {
 
 void Block::load_final(const DB::Cells::MutableVec& vec_cells) {
   if(vec_cells.empty()) {
-    Core::MutexSptd::scope lock(m_mutex_state);
-    m_state = State::LOADED;
+    m_state.store(State::LOADED);
 
   } else {
     ssize_t sz;
@@ -162,10 +161,7 @@ void Block::load_final(const DB::Cells::MutableVec& vec_cells) {
           break;
         splitter();
       }
-      {
-        Core::MutexSptd::scope lock(m_mutex_state);
-        m_state = State::LOADED;
-      }
+      m_state.store(State::LOADED);
       sz = ssize_t(m_cells.size_of_internal()) - sz;
     }
     Env::Rgr::res().adj_mem_usage(sz);
@@ -242,29 +238,23 @@ bool Block::splitter() {
 }
 
 Block::ScanState Block::scan(const ReqScan::Ptr& req) {
-  {
-    Core::MutexSptd::scope lock(m_mutex_state);
-    switch(m_state) {
-      case State::NONE: {
-        m_loader = new BlockLoader(ptr());
-        m_loader->add(req);
-        m_state = State::LOADING;
-        break;
-      }
-      case State::LOADING: {
-        m_loader->add(req);
-        return ScanState::QUEUED;
-      }
-      case State::LOADED: {
-        goto proceed;
-      }
-    }
+  State at = State::NONE;
+  if(m_state.compare_exchange_weak(at, State::LOADING)) {
+    auto loader = new BlockLoader(ptr());
+    m_loader.store(loader);
+    loader->add(req);
+    loader->run();
+    return ScanState::QUEUED;
   }
+  if(at == State::LOADING) do {
+    auto loader = m_loader.load();
+    if(loader) {
+      loader->add(req);
+      return ScanState::QUEUED;
+    }
+  } while (!loaded());
 
-  m_loader->run();
-  return ScanState::QUEUED;
-
-  proceed: switch(req->type) {
+  switch(req->type) {
     case ReqScan::Type::BLK_PRELOAD: {
       processing_decrement();
       return ScanState::RESPONDED;
@@ -275,31 +265,31 @@ Block::ScanState Block::scan(const ReqScan::Ptr& req) {
 }
 
 void Block::loader_loaded() {
+  auto loader = m_loader.exchange(nullptr);
   do {
-    auto& q = m_loader->q_req.front();
+    auto& q = loader->q_req.front();
     switch(q.req->type) {
       case ReqScan::Type::BLK_PRELOAD: {
         processing_decrement();
         break;
       }
       default: {
-        if(!m_loader->error) {
+        if(!loader->error) {
           q.req->profile.add_block_load(
-            q.ts, m_loader->count_cs_blocks, m_loader->count_fragments);
+            q.ts, loader->count_cs_blocks, loader->count_fragments);
           Env::Rgr::post([this, req=q.req]() { _scan(req); } );
           break;
         }
         blocks->processing_decrement();
         processing_decrement();
-        int err = m_loader->error;
+        int err = loader->error;
         q.req->response(err);
       }
     }
-    m_loader->q_req.pop();
-  } while(!m_loader->q_req.empty());
+    loader->q_req.pop();
+  } while(!loader->q_req.empty());
 
-  delete m_loader;
-  m_loader = nullptr;
+  delete loader;
 }
 
 Block::Ptr Block::split(bool loaded) {
@@ -344,9 +334,8 @@ void Block::_add(Block::Ptr blk) {
 size_t Block::release() {
   size_t released = 0;
   if(!m_processing && m_mutex.try_lock()) {
-    Core::MutexSptd::scope lock(m_mutex_state);
-    if(!m_processing && m_state == State::LOADED) {
-      m_state = State::NONE;
+    State at = State::LOADED;
+    if(!m_processing && m_state.compare_exchange_weak(at, State::NONE)) {
       released += m_cells.size_of_internal();
       m_cells.free();
     }
@@ -367,21 +356,19 @@ void Block::processing_decrement() {
   m_processing.fetch_sub(1);
 }
 
+SWC_SHOULD_INLINE
 bool Block::loaded() {
-  Core::MutexSptd::scope lock(m_mutex_state);
   return m_state == State::LOADED;
 }
 
+SWC_SHOULD_INLINE
 bool Block::need_load() {
-  Core::MutexSptd::scope lock(m_mutex_state);
   return m_state == State::NONE;
 }
 
+SWC_SHOULD_INLINE
 bool Block::processing() {
-  if(m_processing)
-    return true;
-  Core::MutexSptd::scope lock(m_mutex_state);
-  return m_state == State::LOADING;
+  return m_processing || m_state == State::LOADING;
 }
 
 size_t Block::size() {
@@ -413,12 +400,8 @@ bool Block::_need_split() const {
 }
 
 void Block::print(std::ostream& out) {
-  out << "Block(state=";
-  {
-    Core::MutexSptd::scope lock(m_mutex_state);
-    out << (int)m_state;
-  }
-  out << ' ' << DB::Types::to_string(m_cells.key_seq)
+  out << "Block(state=" <<  (int)m_state.load()
+      << ' ' << DB::Types::to_string(m_cells.key_seq)
       << ' ' << m_prev_key_end << " < key <= ";
   {
     Core::MutexAtomic::scope lock(m_mutex_intval);
@@ -432,7 +415,7 @@ void Block::print(std::ostream& out) {
   } else {
     out << "CellsLocked";
   }
-  out << " processing=" << m_processing << ')';
+  out << " processing=" << m_processing.load() << ')';
 }
 
 Block::ScanState Block::_scan(const ReqScan::Ptr& req, bool synced) {

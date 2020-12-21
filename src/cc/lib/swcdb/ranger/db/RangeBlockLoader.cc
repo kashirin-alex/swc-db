@@ -25,6 +25,7 @@ BlockLoader::~BlockLoader() { }
 
 SWC_SHOULD_INLINE
 void BlockLoader::add(const ReqScan::Ptr& req) {
+  Core::MutexSptd::scope lock(m_mutex);
   q_req.push({.req=req, .ts=Time::now_ns()});
 }
 

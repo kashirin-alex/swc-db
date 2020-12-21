@@ -148,10 +148,9 @@ class Block final {
   DB::Cell::Key               m_prev_key_end;
   DB::Cell::Key               m_key_end;
 
-  Core::MutexSptd             m_mutex_state;
-  State                       m_state;
   Core::Atomic<size_t>        m_processing;
-  BlockLoader*                m_loader;
+  Core::Atomic<State>         m_state;
+  Core::Atomic<BlockLoader*>  m_loader;
 
 };
 

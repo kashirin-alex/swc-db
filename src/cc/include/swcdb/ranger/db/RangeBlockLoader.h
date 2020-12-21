@@ -29,7 +29,7 @@ class BlockLoader final {
     ReqScan::Ptr  req;
     const int64_t ts;
   };
-  std::queue<ReqQueue> q_req; // synced by Block mutex
+  std::queue<ReqQueue> q_req;
 
 
   explicit BlockLoader(Block::Ptr block);
