@@ -117,9 +117,7 @@ class Read final {
 
   void _release_fd();
 
-  mutable Core::MutexSptd       m_mutex;
-  bool                          m_q_running;
-  std::queue<Block::Read::Ptr>  m_queue;
+  mutable Core::QueueSafeStated<Block::Read::Ptr>  m_queue;
 
 };
 

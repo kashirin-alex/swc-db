@@ -262,7 +262,7 @@ Read::Read(const csid_t csid,
             interval(interval),
             blocks(blocks),
             cell_revs(cell_revs),
-            smartfd(smartfd), m_q_running(false) {
+            smartfd(smartfd) {
   Env::Rgr::res().more_mem_usage(size_of());
   for(auto blk : blocks)
     blk->init(this);
@@ -292,13 +292,8 @@ void Read::load_cells(BlockLoader* loader) {
     if(loader->block->is_consist(blk->header.interval)) {
       loader->add(blk);
       if(blk->load(loader)) {
-        Core::MutexSptd::scope lock(m_mutex);
-        if(m_q_running) {
-          m_queue.push(blk);
-        } else {
-          m_q_running = true;
+        if(m_queue.activating(blk))
           blk->load();
-        }
       }
     } else if(!blk->header.interval.key_end.empty() && 
               !loader->block->is_in_end(blk->header.interval.key_end))
@@ -308,16 +303,7 @@ void Read::load_cells(BlockLoader* loader) {
 
 void Read::_run_queued() {
   Block::Read::Ptr blk;
-  {
-    Core::MutexSptd::scope lock(m_mutex);
-    if(m_queue.empty()) {
-      m_q_running = false;
-      return _release_fd();
-    }
-    blk = m_queue.front();
-    m_queue.pop();
-  }
-  blk->load();
+  m_queue.deactivating(&blk) ? _release_fd() : blk->load();
 }
 
 void Read::get_blocks(int&, std::vector<Block::Read::Ptr>& to) const {
@@ -332,11 +318,8 @@ size_t Read::release(size_t bytes) {
       break;
   }
 
-  {
-    Core::MutexSptd::scope lock(m_mutex);
-    if(!m_q_running && m_queue.empty())
-      _release_fd();
-  }
+  if(!m_queue.is_active())
+    _release_fd();
   return released;
 }
 
@@ -358,15 +341,8 @@ void Read::remove(int &err) {
 } 
 
 bool Read::processing() const {
-  bool support;
-  bool busy = !m_mutex.try_full_lock(support);
-  if(busy) 
-    return busy;
-    
-  busy = m_q_running || !m_queue.empty();
-  m_mutex.unlock(support);
-  if(busy) 
-    return busy;
+  if(m_queue.is_active())
+    return true;
 
   for(auto blk : blocks)
     if(blk->processing())
@@ -409,12 +385,8 @@ void Read::print(std::ostream& out, bool minimal) const {
     }
     out << ']';
   }
-  out << " queue=";
-  {
-    Core::MutexSptd::scope lock(m_mutex);
-    out << m_queue.size();
-  }
-  out << " processing=" << processing()
+  out << " queue=" << m_queue.size()
+      << " processing=" << processing()
       << " used/actual=" << size_bytes(true) << '/' << size_bytes()
       << ')';
 }
