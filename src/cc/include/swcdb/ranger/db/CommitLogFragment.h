@@ -42,7 +42,7 @@ class Fragment final : public std::enable_shared_from_this<Fragment> {
     WRITING,
   };
 
-  static std::string to_string(State state);
+  static const char* to_string(State state) noexcept;
 
 
   static Ptr make_read(int& err, const std::string& filepath, 
@@ -103,9 +103,9 @@ class Fragment final : public std::enable_shared_from_this<Fragment> {
 
   Ptr ptr();
 
-  size_t size_of() const;
+  size_t size_of() const noexcept;
 
-  const std::string& get_filepath() const;
+  const std::string& get_filepath() const noexcept;
 
   void write(int err, uint8_t blk_replicas, int64_t blksz, 
              const StaticBuffer::Ptr& buff_write, Core::Semaphore* sem);
@@ -119,29 +119,29 @@ class Fragment final : public std::enable_shared_from_this<Fragment> {
   void split(int& err, const DB::Cell::Key& key, 
              FragmentsPtr log_left, FragmentsPtr log_right);
 
-  void processing_increment();
+  void processing_increment() noexcept;
 
-  void processing_decrement();
+  void processing_decrement() noexcept;
   
   size_t release();
 
-  bool loaded();
+  bool loaded() const noexcept;
 
-  int error();
+  int error() const noexcept;
 
-  bool loaded(int& err);
+  bool loaded(int& err) const noexcept;
 
-  size_t size_bytes() const;
+  size_t size_bytes() const noexcept;
 
-  size_t size_bytes(bool only_loaded);
+  size_t size_bytes(bool only_loaded) const noexcept;
 
-  size_t size_bytes_encoded();
+  size_t size_bytes_encoded() const noexcept;
 
   bool processing();
 
-  bool marked_removed();
+  bool marked_removed() const noexcept;
 
-  bool mark_removed();
+  bool mark_removed() noexcept;
 
   void remove(int &err);
 
@@ -158,16 +158,16 @@ class Fragment final : public std::enable_shared_from_this<Fragment> {
   void run_queued();
 
 
-  Core::MutexSptd                   m_mutex;
-  State                             m_state;
-  FS::SmartFd::Ptr                  m_smartfd;
-  
-  StaticBuffer                      m_buffer;
-  size_t                            m_processing;
-  int                               m_err;
+  Core::Atomic<State>               m_state;
+  Core::Atomic<bool>                m_marked_removed;
+  Core::Atomic<int>                 m_err;
+  Core::Atomic<size_t>              m_processing;
   Core::Atomic<uint32_t>            m_cells_remain;
-  bool                              m_marked_removed;
 
+  FS::SmartFd::Ptr                  m_smartfd;
+  StaticBuffer                      m_buffer;
+
+  Core::MutexSptd                   m_mutex;
   std::queue<LoadCb_t>              m_queue;
 
 };
