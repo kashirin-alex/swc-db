@@ -21,9 +21,9 @@ class FileSystemLocal final : public FileSystem {
 
   virtual ~FileSystemLocal();
 
-  Type get_type() override;
+  Type get_type() const noexcept override;
 
-  std::string to_string() override;
+  std::string to_string() const override;
 
 
   bool exists(int& err, const std::string& name) override;

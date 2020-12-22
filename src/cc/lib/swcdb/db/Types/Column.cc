@@ -24,12 +24,12 @@ namespace {
 }
 
 
-bool is_counter(const Column typ) {
+bool is_counter(const Column typ) noexcept {
   return typ >= Column::COUNTER_I64 &&
          typ <= Column::COUNTER_I8;
 }
 
-std::string to_string(Column typ) {
+const char* to_string(Column typ) noexcept {
   switch(typ) {
     case Column::PLAIN:
       return Column_PLAIN;
@@ -48,7 +48,7 @@ std::string to_string(Column typ) {
   }
 }
 
-Column column_type_from(const std::string& typ) {
+Column column_type_from(const std::string& typ) noexcept {
 
   if(!typ.compare("1") || 
      !strncasecmp(typ.data(), Column_PLAIN, 5))
@@ -80,7 +80,7 @@ std::string repr_col_type(int typ) {
 }
 
 SWC_SHOULD_INLINE
-int from_string_col_type(const std::string& typ) {
+int from_string_col_type(const std::string& typ) noexcept {
   return (int)column_type_from(typ);
 }
 

@@ -22,7 +22,7 @@ namespace {
 }
 
 
-std::string to_string(MngrState state) {
+const char* to_string(MngrState state) noexcept {
   switch(state) {
 
     case MngrState::NOTSET:

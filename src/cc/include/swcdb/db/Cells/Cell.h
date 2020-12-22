@@ -61,9 +61,9 @@ enum Flag : uint8_t {
   DELETE_VERSION            = 0x3
 };
 
-std::string to_string(Flag flag);
+const char* to_string(Flag flag) noexcept;
 
-Flag flag_from(const uint8_t* rptr, uint32_t len);
+Flag flag_from(const uint8_t* rptr, uint32_t len) noexcept;
 
 
 static const int64_t TIMESTAMP_MIN  = INT64_MIN;

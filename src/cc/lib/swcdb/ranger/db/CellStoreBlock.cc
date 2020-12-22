@@ -11,7 +11,7 @@ namespace SWC { namespace Ranger { namespace CellStore { namespace Block {
 
 
 
-std::string Read::to_string(const Read::State state) {
+const char* Read::to_string(const Read::State state) noexcept {
   switch(state) {
     case State::LOADED:
       return "LOADED";
@@ -30,7 +30,7 @@ Read::Ptr Read::make(int& err,
   Header header(interval.key_seq);
   header.interval.copy(interval);
   header.offset_data = offset;
-  load_header(err, cellstore->smartfd, header);  
+  load_header(err, cellstore->smartfd, header);
   return err ? nullptr : new Read(cellstore, header);
 }
 */
@@ -94,7 +94,7 @@ Read::~Read() {
   );
 }
 
-size_t Read::size_of() const {
+size_t Read::size_of() const noexcept {
   return sizeof(*this) + header.interval.size_of_internal();
 }
 
@@ -104,7 +104,7 @@ bool Read::load(BlockLoader* loader) {
   State at = State::NONE;
   if(m_state.compare_exchange_weak(at, State::LOADING))
     Env::Rgr::res().more_mem_usage(header.size_plain);
-  if(at != State::LOADED) {
+  if(at != State::LOADED && !loaded()) {
     Core::MutexSptd::scope lock(m_mutex);
     m_queue.push(loader);
     return at == State::NONE;
@@ -137,11 +137,11 @@ void Read::load_cells(int&, Ranger::Block::Ptr cells_block) {
 }
 
 SWC_SHOULD_INLINE
-void Read::processing_decrement() {
+void Read::processing_decrement() noexcept {
   m_processing.fetch_sub(1);
 }
 
-size_t Read::release() {    
+size_t Read::release() {
   size_t released = 0;
   bool support;
   if(header.size_plain &&
@@ -171,25 +171,27 @@ bool Read::processing() {
 }
 
 SWC_SHOULD_INLINE
-int Read::error() {
+int Read::error() const noexcept {
   return m_err;
 }
 
 SWC_SHOULD_INLINE
-bool Read::loaded() {
+bool Read::loaded() const noexcept {
   return m_state == State::LOADED;
 }
 
 SWC_SHOULD_INLINE
-bool Read::loaded(int& err) {
+bool Read::loaded(int& err) const noexcept {
   return !(err = error()) && loaded();
 }
 
-size_t Read::size_bytes(bool only_loaded) {
+SWC_SHOULD_INLINE
+size_t Read::size_bytes(bool only_loaded) const noexcept {
   return only_loaded && !loaded() ? 0 : header.size_plain;
 }
 
-size_t Read::size_bytes_enc(bool only_loaded) {
+SWC_SHOULD_INLINE
+size_t Read::size_bytes_enc(bool only_loaded) const noexcept {
   return only_loaded && !loaded() ? 0 : header.size_enc;
 }
 

@@ -27,7 +27,7 @@ Block::Block(const DB::Cells::Interval& interval,
                   blocks->range->cfg->cell_versions(), 
                   blocks->range->cfg->cell_ttl(), 
                   blocks->range->cfg->column_type())),
-              m_key_end(interval.key_end),  
+              m_key_end(interval.key_end),
               m_processing(0), m_state(state), m_loader(nullptr) {
   Env::Rgr::res().more_mem_usage(size_of());
 }
@@ -39,7 +39,7 @@ Block::~Block() {
   );
 }
 
-size_t Block::size_of() const {
+size_t Block::size_of() const noexcept {
   return sizeof(*this);
 }
 
@@ -48,7 +48,7 @@ Block::Ptr Block::ptr() {
   return this;
 }
 
-void Block::schema_update() {
+void Block::schema_update() noexcept {
   std::scoped_lock lock(m_mutex);
   m_cells.configure(
     blocks->range->cfg->cell_versions(), 
@@ -201,7 +201,7 @@ size_t Block::load_cells(const uint8_t* buf, size_t remain,
       break;
     }
     
-    if(!m_prev_key_end.empty() &&  
+    if(!m_prev_key_end.empty() &&
         DB::KeySeq::compare(m_cells.key_seq, m_prev_key_end, cell.key) 
           != Condition::GT)
       continue;
@@ -347,27 +347,27 @@ size_t Block::release() {
 }
 
 SWC_SHOULD_INLINE
-void Block::processing_increment() {
+void Block::processing_increment() noexcept {
   m_processing.fetch_add(1);
 }
 
 SWC_SHOULD_INLINE
-void Block::processing_decrement() {
+void Block::processing_decrement() noexcept {
   m_processing.fetch_sub(1);
 }
 
 SWC_SHOULD_INLINE
-bool Block::loaded() {
+bool Block::loaded() const noexcept {
   return m_state == State::LOADED;
 }
 
 SWC_SHOULD_INLINE
-bool Block::need_load() {
+bool Block::need_load() const noexcept {
   return m_state == State::NONE;
 }
 
 SWC_SHOULD_INLINE
-bool Block::processing() {
+bool Block::processing() const noexcept {
   return m_processing || m_state == State::LOADING;
 }
 
@@ -377,7 +377,7 @@ size_t Block::size() {
 }
 
 SWC_SHOULD_INLINE
-size_t Block::_size() const {
+size_t Block::_size() const noexcept {
   return m_cells.size();
 }
   
@@ -391,7 +391,7 @@ size_t Block::size_of_internal() {
   return m_cells.size_of_internal();
 }
 
-bool Block::_need_split() const {
+bool Block::_need_split() const noexcept {
   auto sz = _size();
   return sz > 1 && 
     (sz >= blocks->range->cfg->block_cells() * 2 || 

@@ -25,7 +25,7 @@ namespace MngrRange {
 }
 
 
-std::string to_string(MngrRange::State state);
+const char* to_string(MngrRange::State state) noexcept;
 
 
 }}}

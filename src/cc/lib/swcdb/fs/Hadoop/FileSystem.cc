@@ -97,11 +97,11 @@ FileSystemHadoop::FileSystemHadoop()
 
 FileSystemHadoop::~FileSystemHadoop() { }
 
-Type FileSystemHadoop::get_type() {
+Type FileSystemHadoop::get_type() const noexcept {
   return Type::HADOOP;
 };
 
-std::string FileSystemHadoop::to_string() {
+std::string FileSystemHadoop::to_string() const {
   return format(
     "(type=HADOOP path_root=%s path_data=%s)", 
     path_root.c_str(),

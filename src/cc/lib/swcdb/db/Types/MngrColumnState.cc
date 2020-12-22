@@ -20,7 +20,7 @@ namespace {
 }
 
 
-std::string to_string(MngrColumn::State state) {
+const char* to_string(MngrColumn::State state) noexcept {
   switch(state) {
 
     case MngrColumn::State::NOTSET:

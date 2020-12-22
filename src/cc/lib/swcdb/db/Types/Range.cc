@@ -19,7 +19,7 @@ namespace {
 }
 
 
-std::string to_string(Range typ) {
+const char* to_string(Range typ) noexcept {
   switch(typ) {
     case Range::MASTER:
       return Range_MASTER;

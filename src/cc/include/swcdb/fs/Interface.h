@@ -55,11 +55,11 @@ class Interface {
 
   virtual ~Interface();
 
-  Type get_type();
+  Type get_type() const noexcept;
 
   FileSystem::Ptr get_fs();
 
-  std::string to_string();
+  std::string to_string() const;
 
   bool need_fds() const;
   

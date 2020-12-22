@@ -21,7 +21,7 @@ namespace {
   const char KeySeq_UNKNOWN[]    = "UNKNOWN";
 }
 
-bool is_fc(KeySeq typ) {
+bool is_fc(KeySeq typ) noexcept {
   switch(typ) {
     case KeySeq::FC_LEXIC:
     case KeySeq::FC_VOLUME:
@@ -32,7 +32,7 @@ bool is_fc(KeySeq typ) {
 }
 
 
-std::string to_string(KeySeq typ) {
+const char* to_string(KeySeq typ) noexcept {
   switch(typ) {
     case KeySeq::LEXIC:
       return KeySeq_LEXIC;
@@ -47,7 +47,7 @@ std::string to_string(KeySeq typ) {
   }
 }
 
-KeySeq range_seq_from(const std::string& typ) {
+KeySeq range_seq_from(const std::string& typ) noexcept {
   if(!typ.compare("1") || 
       (typ.length() == 5 && !strncasecmp(typ.data(), KeySeq_LEXIC, 5)))
       return KeySeq::LEXIC;
@@ -74,7 +74,7 @@ std::string repr_range_seq(int typ) {
 }
 
 SWC_SHOULD_INLINE
-int from_string_range_seq(const std::string& typ) {
+int from_string_range_seq(const std::string& typ) noexcept {
   return (int)range_seq_from(typ);
 }
 

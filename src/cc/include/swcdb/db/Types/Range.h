@@ -18,7 +18,7 @@ enum class Range : uint8_t {
   DATA    = 3
 };
 
-std::string to_string(Range typ);
+const char* to_string(Range typ) noexcept;
 
 }}}
 

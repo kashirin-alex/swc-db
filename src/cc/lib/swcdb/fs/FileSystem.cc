@@ -43,7 +43,7 @@ Type fs_type(std::string fs_name) {
   return Type::UNKNOWN;
 }
 
-std::string to_string(Type typ) {
+const char* to_string(Type typ) noexcept {
   switch(typ) {
     case Type::LOCAL:
       return "Local";
@@ -82,11 +82,11 @@ void FileSystem::stop() {
              to_string().c_str(), fds_count.load());  
 }
 
-Type FileSystem::get_type() {
+Type FileSystem::get_type() const noexcept {
   return Type::UNKNOWN;
 }
   
-std::string FileSystem::to_string() {
+std::string FileSystem::to_string() const {
   return format(
     "(type=UNKNOWN path_root=%s path_data=%s)", 
     path_root.c_str(),

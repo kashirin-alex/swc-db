@@ -34,9 +34,9 @@ class FileSystemHadoop final : public FileSystem {
 
   virtual ~FileSystemHadoop();
 
-  Type get_type() override;
+  Type get_type() const noexcept override;
 
-  std::string to_string() override;
+  std::string to_string() const override;
 
   void stop() override;
 

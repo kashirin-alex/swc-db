@@ -14,22 +14,22 @@
 namespace SWC { namespace DB { namespace Cells {
 
 
-std::string to_string(Flag flag) {
+const char* to_string(Flag flag) noexcept {
   switch(flag) {
     case Flag::INSERT:
-      return std::string("INSERT");
+      return "INSERT";
     case Flag::DELETE:
-      return std::string("DELETE");
+      return "DELETE";
     case Flag::DELETE_VERSION:
-      return std::string("DELETE_VERSION");
+      return "DELETE_VERSION";
     case Flag::NONE:
-      return std::string("NONE");
+      return "NONE";
     default:
-      return std::string("UKNONWN");
+      return "UKNONWN";
   }
 }
 
-Flag flag_from(const uint8_t* rptr, uint32_t len) {
+Flag flag_from(const uint8_t* rptr, uint32_t len) noexcept {
   const char* ptr = (const char*)rptr;
   if(len >= 14) {
     if(!strncasecmp(ptr, "delete_version", 14))

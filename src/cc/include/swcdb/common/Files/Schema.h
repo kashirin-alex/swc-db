@@ -142,8 +142,9 @@ DB::Schema::Ptr load(int &err, cid_t cid,
       } else {
         schema->col_seq = DB::Types::MetaColumn::get_seq_type(cid);
         schema->col_name.append(
-          (DB::Types::MetaColumn::is_master(cid) ? "MASTER_": "META_") 
-          + DB::Types::to_string(schema->col_seq) );
+          DB::Types::MetaColumn::is_master(cid) ? "MASTER_": "META_");
+        schema->col_name.append(
+          DB::Types::to_string(schema->col_seq));
       }
     
     } else {

@@ -52,7 +52,7 @@ std::string normalize_pathname(std::string s);
 
 Type fs_type(std::string fs_name);
 
-std::string to_string(Type typ);
+const char* to_string(Type typ) noexcept;
 
 
 class FileSystem : public std::enable_shared_from_this<FileSystem> {
@@ -74,9 +74,9 @@ class FileSystem : public std::enable_shared_from_this<FileSystem> {
 
   virtual void stop();
 
-  virtual Type get_type();
-  
-  virtual std::string to_string();
+  virtual Type get_type() const noexcept;
+
+  virtual std::string to_string() const;
 
   virtual void get_abspath(const std::string& name, std::string& abspath);
 

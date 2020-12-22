@@ -21,7 +21,7 @@ namespace {
 }
 
 
-std::string to_string(MngrRange::State state) {
+const char* to_string(MngrRange::State state) noexcept {
   switch(state) {
 
     case MngrRange::State::NOTSET:

@@ -26,16 +26,16 @@ enum class Column : uint8_t {
   CELL_DEFINED  = 0xf
 };
 
-bool is_counter(const Column typ);
+bool is_counter(const Column typ) noexcept;
 
-std::string to_string(Column typ);
+const char* to_string(Column typ) noexcept;
 
-Column column_type_from(const std::string& typ);
+Column column_type_from(const std::string& typ) noexcept;
 
 
 std::string repr_col_type(int typ);
 
-int from_string_col_type(const std::string& typ);
+int from_string_col_type(const std::string& typ) noexcept;
 
 }}}
 

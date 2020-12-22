@@ -22,7 +22,7 @@ namespace {
   const char STR_UNKNOWN[]           = "UNKNOWN";
 }
 
-std::string to_string(uint8_t state) {
+const char* to_string(uint8_t state) noexcept {
   switch(state) {
 
     case NONE:

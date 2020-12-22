@@ -152,14 +152,14 @@ void FileSystemBroker::stop() {
   FileSystem::stop();
 }
 
-Type FileSystemBroker::get_type() {
+Type FileSystemBroker::get_type() const noexcept {
   return m_type_underlying;
 }
 
-std::string FileSystemBroker::to_string() {
+std::string FileSystemBroker::to_string() const {
   return format(
     "(type=BROKER underlying-type=%s)",
-    FS::to_string(m_type_underlying).c_str()
+    FS::to_string(m_type_underlying)
   );
 }
 

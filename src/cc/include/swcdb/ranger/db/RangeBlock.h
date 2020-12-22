@@ -60,11 +60,11 @@ class Block final {
 
   ~Block();
 
-  size_t size_of() const;
+  size_t size_of() const noexcept;
 
   Ptr ptr();
 
-  void schema_update();
+  void schema_update() noexcept;
 
   void set_prev_key_end(const DB::Cell::Key& key);
 
@@ -114,25 +114,25 @@ class Block final {
 
   size_t release();
 
-  void processing_increment();
+  void processing_increment() noexcept;
 
-  void processing_decrement();
+  void processing_decrement() noexcept;
 
-  bool loaded();
+  bool loaded() const noexcept;
 
-  bool need_load();
+  bool need_load() const noexcept;
 
-  bool processing();
+  bool processing() const noexcept;
 
   size_t size();
 
-  size_t _size() const;
+  size_t _size() const noexcept;
   
   size_t size_bytes();
 
   size_t size_of_internal();
 
-  bool _need_split() const;
+  bool _need_split() const noexcept;
 
   void print(std::ostream& out);
 

@@ -215,11 +215,11 @@ void FileSystemCeph::stop() {
   FileSystem::stop();
 }
 
-Type FileSystemCeph::get_type() {
+Type FileSystemCeph::get_type() const noexcept {
   return Type::CEPH;
 };
 
-std::string FileSystemCeph::to_string() {
+std::string FileSystemCeph::to_string() const {
   return format(
     "(type=CEPH path_root=%s path_data=%s)", 
     path_root.c_str(),

@@ -23,7 +23,7 @@ namespace {
 }
 
 
-std::string Encoder::to_string(Encoder::Type typ) {
+const char* Encoder::to_string(Encoder::Type typ) noexcept {
   switch(typ) {
     case Encoder::Type::DEFAULT:
       return Encoder_DEFAULT;
@@ -38,11 +38,11 @@ std::string Encoder::to_string(Encoder::Type typ) {
     case Encoder::Type::UNKNOWN:
       return Encoder_UNKNOWN;
     default:
-      return std::string("UNKNOWN(" + std::to_string((uint8_t)typ) +")");
+      return "UNKNOWN";
   }
 }
 
-Encoder::Type Encoder::encoding_from(const std::string& typ) {
+Encoder::Type Encoder::encoding_from(const std::string& typ) noexcept {
 
   if(!strncasecmp(typ.data(), Encoder_DEFAULT, typ.length()) || 
      !typ.compare("0"))
@@ -73,7 +73,7 @@ std::string Encoder::repr_encoding(int typ) {
 }
 
 SWC_SHOULD_INLINE
-int Encoder::from_string_encoding(const std::string& typ) {
+int Encoder::from_string_encoding(const std::string& typ) noexcept {
   return (int)Encoder::encoding_from(typ);
 }
 

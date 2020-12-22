@@ -46,11 +46,11 @@ FileSystemLocal::FileSystemLocal()
 
 FileSystemLocal::~FileSystemLocal() { }
 
-Type FileSystemLocal::get_type() {
+Type FileSystemLocal::get_type() const noexcept {
   return Type::LOCAL;
 };
 
-std::string FileSystemLocal::to_string() {
+std::string FileSystemLocal::to_string() const {
   return format(
     "(type=LOCAL path_root=%s path_data=%s)",
     path_root.c_str(),

@@ -392,9 +392,9 @@ int main(int argc, char** argv) {
   test.col_type = col_type;
   test.col_seq = col_seq;
   test.col_name = "test-"
-                + SWC::DB::Types::to_string(col_type)
+                + std::string(SWC::DB::Types::to_string(col_type))
                 + "-"
-                + SWC::DB::Types::to_string(col_seq)
+                + std::string(SWC::DB::Types::to_string(col_seq))
                 + "-v" 
                 + std::to_string(cell_versions)
                 + "-c"

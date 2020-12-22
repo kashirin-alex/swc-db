@@ -35,7 +35,7 @@ class Read final {
     LOADED
   };
 
-  static std::string to_string(const State state);
+  static const char* to_string(const State state) noexcept;
   
   /*
   static Ptr make(int& err, CellStore::Read* cellstore,
@@ -61,7 +61,7 @@ class Read final {
 
   ~Read();
   
-  size_t size_of() const;
+  size_t size_of() const noexcept;
   
   bool load(BlockLoader* loader);
 
@@ -69,21 +69,21 @@ class Read final {
 
   void load_cells(int& err, Ranger::Block::Ptr cells_block);
 
-  void processing_decrement();
+  void processing_decrement() noexcept;
 
   size_t release();
 
   bool processing();
 
-  int error();
+  int error() const noexcept;
 
-  bool loaded();
+  bool loaded() const noexcept;
   
-  bool loaded(int& err);
+  bool loaded(int& err) const noexcept;
 
-  size_t size_bytes(bool only_loaded=false);
+  size_t size_bytes(bool only_loaded=false) const noexcept;
 
-  size_t size_bytes_enc(bool only_loaded=false);
+  size_t size_bytes_enc(bool only_loaded=false) const noexcept;
 
   void print(std::ostream& out);
   
@@ -100,7 +100,7 @@ class Read final {
   Core::Atomic<int>        m_err;
   Core::Atomic<uint32_t>   m_cells_remain;
   Core::Atomic<size_t>     m_processing;
-  
+
   StaticBuffer             m_buffer;
 
   Core::MutexSptd          m_mutex;
@@ -110,7 +110,7 @@ class Read final {
 
 
 
-class Write final {  
+class Write final {
   public:
   typedef std::shared_ptr<Write> Ptr;
 

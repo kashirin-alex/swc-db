@@ -34,13 +34,13 @@ enum class Type : uint8_t {
   UNKNOWN = 0xff
 };
 
-std::string to_string(Type typ);
+const char* to_string(Type typ) noexcept;
 
-Type encoding_from(const std::string& typ);
+Type encoding_from(const std::string& typ) noexcept;
 
 std::string repr_encoding(int typ);
 
-int from_string_encoding(const std::string& typ);
+int from_string_encoding(const std::string& typ) noexcept;
 
 
 

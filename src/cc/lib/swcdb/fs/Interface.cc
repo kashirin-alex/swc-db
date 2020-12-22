@@ -127,15 +127,15 @@ Interface::~Interface() {
   }
 }
 
-Type Interface::get_type(){
+Type Interface::get_type() const noexcept {
   return m_fs->get_type();
 }
 
-FileSystem::Ptr Interface::get_fs(){
+FileSystem::Ptr Interface::get_fs() {
   return m_fs;
 }
 
-std::string Interface::to_string() {
+std::string Interface::to_string() const {
   return format("FS::Interface(type=%d, details=%s)", 
                 (int)m_type, m_fs ? m_fs->to_string().c_str() : "NULL");
 }

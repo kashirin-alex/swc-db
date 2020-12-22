@@ -98,11 +98,11 @@ FileSystemHadoopJVM::FileSystemHadoopJVM()
 
 FileSystemHadoopJVM::~FileSystemHadoopJVM() { }
 
-Type FileSystemHadoopJVM::get_type() {
+Type FileSystemHadoopJVM::get_type() const noexcept {
   return Type::HADOOP_JVM;
 };
 
-std::string FileSystemHadoopJVM::to_string() {
+std::string FileSystemHadoopJVM::to_string() const {
   return format(
     "(type=HADOOP_JVM path_root=%s path_data=%s)", 
     path_root.c_str(),

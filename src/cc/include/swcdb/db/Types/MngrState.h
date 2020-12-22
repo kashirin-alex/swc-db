@@ -22,7 +22,7 @@ enum class MngrState : uint8_t {
 };
 
 
-std::string to_string(MngrState state);
+const char* to_string(MngrState state) noexcept;
 
 
 }}}
