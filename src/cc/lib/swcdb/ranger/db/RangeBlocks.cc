@@ -324,8 +324,11 @@ bool Blocks::processing() {
 }
 
 void Blocks::wait_processing() {
-  while(processing() || commitlog.processing() || cellstores.processing())
-    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+  do {
+    while(processing() || commitlog.processing() || cellstores.processing())
+      std::this_thread::sleep_for(std::chrono::microseconds(50));
+    std::this_thread::yield();
+  } while(processing() || commitlog.processing() || cellstores.processing());
 }
 
 void Blocks::print(std::ostream& out, bool minimal) {
