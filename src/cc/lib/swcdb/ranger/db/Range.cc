@@ -830,7 +830,7 @@ void Range::run_add_queue() {
   bool intval_chg;
   uint64_t ttl = cfg->cell_ttl();
 
-  do {
+  _do: {
     {
       std::scoped_lock lock(m_mutex);
       if(m_compacting >= COMPACT_PREPARING) {
@@ -846,17 +846,14 @@ void Range::run_add_queue() {
     //m_inbytes.fetch_add(remain);
     intval_chg = false;
 
-    auto params = new Comm::Protocol::Rgr::Params::RangeQueryUpdateRsp(
-      Error::OK);
-
     if(req->cb->expired(remain/100000))
-      params->err = Error::REQUEST_TIMEOUT;
+      req->rsp.err = Error::REQUEST_TIMEOUT;
       
     if(m_state != State::LOADED && m_state != State::UNLOADING)
-       params->err = m_state == State::DELETED 
+       req->rsp.err = m_state == State::DELETED 
         ? Error::COLUMN_MARKED_REMOVED : Error::RGR_NOT_LOADED_RANGE;
 
-    if(!params->err) { try { while(remain) {
+    if(!req->rsp.err) { try { while(remain) {
       
       cell.read(&ptr, &remain);
 
@@ -866,9 +863,9 @@ void Range::run_add_queue() {
         if(!m_interval.key_end.empty() && 
             DB::KeySeq::compare(cfg->key_seq, m_interval.key_end, cell.key)
              == Condition::GT) {
-          if(params->range_end.empty()) {
-            params->range_end.copy(m_interval.key_end);
-            params->err = Error::RANGE_BAD_INTERVAL;
+          if(req->rsp.range_end.empty()) {
+            req->rsp.range_end.copy(m_interval.key_end);
+            req->rsp.err = Error::RANGE_BAD_INTERVAL;
           }
           continue;
         }
@@ -877,14 +874,14 @@ void Range::run_add_queue() {
       if(!prev_range_end.empty() && 
           DB::KeySeq::compare(cfg->key_seq, prev_range_end, cell.key)
            != Condition::GT) {
-        if(params->range_prev_end.empty()) {
-          params->range_prev_end.copy(prev_range_end);
-          params->err = Error::RANGE_BAD_INTERVAL;
+        if(req->rsp.range_prev_end.empty()) {
+          req->rsp.range_prev_end.copy(prev_range_end);
+          req->rsp.err = Error::RANGE_BAD_INTERVAL;
         }
         continue;
       }
 
-      ++params->cells_added;
+      ++req->rsp.cells_added;
       if(cell.has_expired(ttl))
         continue;
 
@@ -923,7 +920,7 @@ void Range::run_add_queue() {
       }
     } } catch(...) {
       SWC_LOG_CURRENT_EXCEPTION("");
-      params->err = Error::RANGE_BAD_CELLS_INPUT;
+      req->rsp.err = Error::RANGE_BAD_CELLS_INPUT;
     } }
 
 
@@ -931,23 +928,24 @@ void Range::run_add_queue() {
 
     if(intval_chg)
       return on_change(false, 
-        [req, params, range=shared_from_this()]
+        [req, range=shared_from_this()]
         (const client::Query::Update::Result::Ptr& res) {
-          if(!params->err)
-            params->err = res->error();
-          req->cb->response(*params);
-          delete params;
+          if(!req->rsp.err)
+            req->rsp.err = res->error();
+          req->cb->response(req->rsp);
+          bool more = range->m_q_add.pop_and_more();
           delete req;
-          if(range->m_q_add.pop_and_more())
+          if(more)
             range->run_add_queue();
         }
       );
 
-    req->cb->response(*params);
-    delete params;
+    req->cb->response(req->rsp);
+    bool more = m_q_add.pop_and_more();
     delete req;
-
-  } while(m_q_add.pop_and_more());
+    if(more)
+      goto _do;
+  }
     
 }
 

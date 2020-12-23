@@ -7,6 +7,8 @@
 #ifndef swcdb_ranger_db_Range_h
 #define swcdb_ranger_db_Range_h
 
+
+#include "swcdb/core/QueuePointer.h"
 #include "swcdb/core/QueueSafe.h"
 #include "swcdb/db/Types/Range.h"
 #include "swcdb/db/Columns/RangeBase.h"
@@ -30,11 +32,10 @@ class Range final : public std::enable_shared_from_this<Range> {
   static constexpr const char LOG_DIR[]             = "log"; 
   static constexpr const char LOG_TMP_DIR[]         = "log_tmp"; 
 
-  struct ReqAdd final {
-    public:
+  struct ReqAdd final : Core::QueuePointer<ReqAdd*>::Pointer {
 
-    ReqAdd(StaticBuffer& input, const Callback::RangeQueryUpdate::Ptr& cb) 
-          : input(input), cb(cb) {
+    ReqAdd(StaticBuffer& input, const Callback::RangeQueryUpdate::Ptr& cb)
+          : input(input), rsp(Error::OK), cb(cb) {
       Env::Rgr::res().more_mem_usage(size_of());
     }
 
@@ -47,8 +48,9 @@ class Range final : public std::enable_shared_from_this<Range> {
              sizeof(*cb.get()) + input.size;
     }
 
-    StaticBuffer                          input;
-    const Callback::RangeQueryUpdate::Ptr cb;
+    StaticBuffer                                     input;
+    Comm::Protocol::Rgr::Params::RangeQueryUpdateRsp rsp;
+    const Callback::RangeQueryUpdate::Ptr            cb;
 
   };
 
@@ -194,7 +196,7 @@ class Range final : public std::enable_shared_from_this<Range> {
   bool                          m_q_run_add;
   bool                          m_q_run_scan;
 
-  Core::QueueSafe<ReqAdd*>      m_q_add;
+  Core::QueuePointer<ReqAdd*>   m_q_add;
   Core::QueueSafe<ReqScan::Ptr> m_q_scan;
 
   std::condition_variable_any   m_cv;
