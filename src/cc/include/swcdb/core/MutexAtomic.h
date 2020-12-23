@@ -8,6 +8,7 @@
 
 #include <atomic>
 #include <thread>
+#include "swcdb/core/Compat.h"
 
 
 namespace SWC { namespace Core {
@@ -26,6 +27,7 @@ class MutexAtomic {
 
   ~MutexAtomic() { }
 
+  SWC_CAN_INLINE
   bool try_lock() const noexcept {
     return !want.test_and_set(std::memory_order_acquire);
     /*
@@ -34,6 +36,7 @@ class MutexAtomic {
     */
   }
   
+  SWC_CAN_INLINE
   void lock() const noexcept {
     uint16_t i = 0;
     while(want.test_and_set(std::memory_order_acquire)) {
@@ -65,6 +68,7 @@ class MutexAtomic {
     */
   }
 
+  SWC_CAN_INLINE
   void unlock() const noexcept {
     want.clear(std::memory_order_release);
     //want.store(false);
