@@ -14,11 +14,19 @@
 
 namespace SWC { namespace Ranger {
   
-struct CompactRange::InBlock {
+struct CompactRange::InBlock final : Core::QueuePointer<InBlock*>::Pointer {
+
+  const bool is_last;
+
+  InBlock(const DB::Types::KeySeq key_seq)
+          : is_last(true), 
+            header(key_seq), err(Error::OK), last_cell(0) {
+  }
 
   InBlock(const DB::Types::KeySeq key_seq, size_t size, 
           InBlock* inblock = nullptr)
-          : cells(size + 1000000), header(key_seq), err(Error::OK),
+          : is_last(false),
+            cells(size + 1000000), header(key_seq), err(Error::OK),
             last_cell(0) {
     if(inblock)
       inblock->move_last(this);
@@ -119,6 +127,7 @@ CompactRange::CompactRange(Compaction* compactor, const RangePtr& range,
               blk_cells(range->cfg->block_cells()), 
               blk_encoding(range->cfg->block_enc()),
               m_inblock(new InBlock(range->cfg->key_seq, blk_size)),
+              m_processing(0),
               total_cells(0), total_blocks(0),
               time_intval(0), time_encode(0), time_write(0),
               state_default(Range::COMPACT_COMPACTING),
@@ -133,17 +142,13 @@ CompactRange::~CompactRange() {
   if(m_inblock)
     delete m_inblock;
     
-  if(!m_q_intval.empty()) do {
-    if(m_q_intval.front()) delete m_q_intval.front();
-  } while(m_q_intval.pop_and_more());
-
-  if(!m_q_encode.empty()) do {
-    if(m_q_encode.front()) delete m_q_encode.front();
-  } while(m_q_encode.pop_and_more());
-
-  if(!m_q_write.empty()) do {
-    if(m_q_write.front()) delete m_q_write.front();
-  } while(m_q_write.pop_and_more());
+  InBlock* blk;
+  while(m_q_intval.pop(&blk))
+    delete blk;
+  while(m_q_encode.pop(&blk)) 
+    delete blk;
+  while(m_q_write.pop(&blk))
+    delete blk;
 }
 
 SWC_SHOULD_INLINE
@@ -321,8 +326,11 @@ void CompactRange::response(int& err) {
     range->blocks.commitlog.commit_new_fragment(true);
   }
 
+  bool is_last;
   auto in_block = m_inblock->header.cells_count <= 1 ? nullptr : m_inblock;
   if(in_block) {
+    m_processing.fetch_add(1);
+    is_last = false;
     m_inblock = new InBlock(range->cfg->key_seq, blk_size, in_block);
     m_inblock->set_offset(spec);
 
@@ -342,12 +350,15 @@ void CompactRange::response(int& err) {
         spec.offset_key.print(SWC_LOG_OSTREAM);
       );
     }
+  } else {
+    is_last = true;
+    in_block = new InBlock(range->cfg->key_seq);
   }
 
   if(m_q_intval.push_and_is_1st(in_block))
     Env::Rgr::maintenance_post([ptr=shared()](){ ptr->process_interval(); });
 
-  if(m_stopped || !in_block)
+  if(m_stopped || is_last)
     return;
 
   finishing
@@ -464,7 +475,7 @@ void CompactRange::request_more() {
   if(m_get || m_stopped)
     return;
 
-  size_t sz = m_q_write.size() + m_q_intval.size() + m_q_encode.size();
+  size_t sz = m_processing;
   if(sz && (sz >= compactor->cfg_read_ahead->get() ||
       (sz > Env::Rgr::res().avail_ram()/blk_size &&
        range->blocks.release(sz * blk_size) < sz * blk_size))) {
@@ -477,34 +488,38 @@ void CompactRange::request_more() {
 
 void CompactRange::process_interval() {
   auto start = Time::now_ns();
-  InBlock* in_block;
-  do {
-    if(m_stopped) 
-      return;
-    if((in_block = m_q_intval.front())) {
+  _do: {
+    auto in_block(m_q_intval.front());
+    if(!in_block->is_last) {
       request_more();
       in_block->finalize_interval(false, false);
     }
+    bool more = m_q_intval.pop_and_more() && !m_stopped;
+    in_block->_other = nullptr;
     if(m_q_encode.push_and_is_1st(in_block))
       Env::Rgr::maintenance_post([ptr=shared()](){ ptr->process_encode(); });
-  } while(m_q_intval.pop_and_more() && !m_stopped);
+    if(more)
+      goto _do;
+  }
   time_intval.fetch_add(Time::now_ns() - start);
   request_more();
 }
 
 void CompactRange::process_encode() {
   auto start = Time::now_ns();
-  InBlock* in_block;
-  do {
-    if(m_stopped) 
-      return;
-    if((in_block = m_q_encode.front())) {
+  _do: {
+    auto in_block(m_q_encode.front());
+    if(!in_block->is_last) {
       request_more();
       in_block->finalize_encode(blk_encoding);
     }
+    bool more = m_q_encode.pop_and_more() && !m_stopped;
+    in_block->_other = nullptr;
     if(m_q_write.push_and_is_1st(in_block))
       Env::Rgr::maintenance_post([ptr=shared()](){ ptr->process_write(); });
-  } while(m_q_encode.pop_and_more() && !m_stopped);
+    if(more)
+      goto _do;
+  }
   time_encode.fetch_add(Time::now_ns() - start);
   request_more();
 }
@@ -512,12 +527,9 @@ void CompactRange::process_encode() {
 void CompactRange::process_write() {
   auto start = Time::now_ns();
   int err = Error::OK;
-  InBlock* in_block;
-  do {
-    if(m_stopped)
-      return;
-
-    if(!(in_block = m_q_write.front())) {
+  _do: {
+    auto in_block(m_q_write.front());
+    if(in_block->is_last) {
       time_write.fetch_add(Time::now_ns() - start);
       return finalize();
     }
@@ -529,13 +541,15 @@ void CompactRange::process_write() {
 
     write_cells(err, in_block);
 
-    if(m_stopped)
-      return;
     if(err || !range->is_loaded() || compactor->stopped())
       return quit();
 
+    bool more = m_q_write.pop_and_more() && !m_stopped;
     delete in_block;
-  } while(m_q_write.pop_and_more() && !m_stopped);
+    m_processing.fetch_sub(1);
+    if(more)
+      goto _do;
+  }
 
   time_write.fetch_add(Time::now_ns() - start);
   request_more();
@@ -646,6 +660,8 @@ ssize_t CompactRange::can_split_at() {
 }
 
 void CompactRange::finalize() {
+  if(m_stopped)
+    return;
   stop_check_timer();
   
   if(!range->is_loaded())

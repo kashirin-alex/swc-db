@@ -209,7 +209,7 @@ void Compaction::compacted() {
 }
 
 void Compaction::_schedule(uint32_t t_ms) {
-  if(stopped() || m_running || m_schedule)
+  if(stopped() || m_schedule)
     return;
 
   auto set_in = std::chrono::milliseconds(t_ms);

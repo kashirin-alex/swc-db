@@ -100,9 +100,10 @@ class CompactRange final : public ReqScan {
   CellStore::Writers              cellstores;
   InBlock*                        m_inblock = nullptr;
 
-  Core::QueueSafe<InBlock*>       m_q_intval;
-  Core::QueueSafe<InBlock*>       m_q_encode;
-  Core::QueueSafe<InBlock*>       m_q_write;
+  Core::Atomic<size_t>            m_processing;
+  Core::QueuePointer<InBlock*>    m_q_intval; 
+  Core::QueuePointer<InBlock*>    m_q_encode;
+  Core::QueuePointer<InBlock*>    m_q_write;
 
   Core::Atomic<uint64_t>          total_cells;
   Core::Atomic<uint64_t>          total_blocks;
