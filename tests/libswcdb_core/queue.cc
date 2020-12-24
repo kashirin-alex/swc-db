@@ -24,13 +24,45 @@ namespace SWC {
 
 
 struct A1 {
+  static A1* make(size_t n) { 
+    return new A1(n);
+  }
   A1(size_t n) : n(n) { }
+  void done() {
+    delete this;
+  }
   size_t n;
 };
 
 
 struct A2 : Core::QueuePointer<A2*>::Pointer {
+  static A2* make(size_t n) { 
+    return new A2(n);
+  }
   A2(size_t n) : n(n) { }
+  void done() {
+    delete this;
+  }
+  size_t n;
+};
+
+
+struct A3 : Core::QueuePointer<std::shared_ptr<A3>>::Pointer {
+  static std::shared_ptr<A3> make(size_t n) { 
+    return std::shared_ptr<A3>(new A3(n));
+  }
+  A3(size_t n) : n(n) { }
+  void done() {}
+  size_t n;
+};
+
+
+struct A4  {
+  static std::shared_ptr<A4> make(size_t n) { 
+    return std::shared_ptr<A4>(new A4(n));
+  }
+  A4(size_t n) : n(n) { }
+  void done() {}
   size_t n;
 };
 
@@ -71,7 +103,7 @@ struct Test {
     size_t start = t * WORK_LOAD;
     size_t end = start + WORK_LOAD;
     for(size_t i=start;i<end; ++i) {
-      ItemT* v = new ItemT(i);
+      auto v = ItemT::make(i);
       auto ts = Time::now_ns();
       queue.push(v);
       time_producer.fetch_add(Time::now_ns() - ts);
@@ -86,14 +118,14 @@ struct Test {
     sem_consumer.release();
     sem_consumer.wait_all();
 
-    ItemT* v;
+    auto v = queue.front();
     for(;;) {
       auto ts = Time::now_ns();
       if(!queue.pop(&v))
         break;
       time_consumer.fetch_add(Time::now_ns() - ts);
       counted.fetch_add(1);
-      delete v;
+      v->done();
     }
 
     printf(" stopping run_consumer=%lu \n", t);
@@ -128,14 +160,21 @@ struct Test {
 
 void run() {
 
-  printf("\n START Test<Core::QueuePointer<A2*>, A2*>\n");
+  printf("\n START Test<Core::QueuePointer<std::shared_ptr<A3>>, A3>\n");
+  Test<Core::QueuePointer<std::shared_ptr<A3>>, A3> test3;
+  test3.run();
+
+  printf("\n START Test<Core::QueuePointer<A2*>, A2>\n");
   Test<Core::QueuePointer<A2*>, A2> test2;
   test2.run();
 
-  printf("\n START Test<Core::QueueSafe<A1*>, A1*>\n");
+  printf("\n START Test<Core::QueueSafe<A1*>, A1>\n");
   Test<Core::QueueSafe<A1*>, A1>    test1;
   test1.run();
 
+  printf("\n START Test<Core::QueueSafe<std::shared_ptr<A4>>, A4>\n");
+  Test<Core::QueueSafe<std::shared_ptr<A4>>, A4>    test4;
+  test4.run();
 }
 
 }

@@ -31,27 +31,25 @@ class QueuePointer : private MutexAtomic {
   QueuePointer& operator=(const QueuePointer&) = delete;
 
 
-  bool push_and_is_1st(PtrT ptr) {
-    bool is_1st;
+  bool push_and_is_1st(PtrT& ptr) {
     lock();
-    is_1st = !_front;
+    bool has(_front);
     _push(ptr);
     unlock();
-    return is_1st;
+    return !has;
   }
 
-  void push(PtrT ptr) {
+  void push(PtrT& ptr) {
     lock();
     _push(ptr);
     unlock();
   }
  
   bool empty() {
-    bool more;
     lock();
-    more = _front;
+    bool has(_front);
     unlock();
-    return !more;
+    return !has;
   }
 
   PtrT front() {
@@ -63,23 +61,28 @@ class QueuePointer : private MutexAtomic {
   }
   
   bool pop_and_more() {
-    bool more;
     lock();
-    if(!(more = (_front = _front->_other)))
+    _front = std::move(_front->_other);
+    bool more(_front);
+    if(!more)
       _back = nullptr;
     unlock();
     return more;
   }
 
   bool pop(PtrT* ptr) {
-    *ptr = next();
-    return *ptr;
+    lock();
+    *ptr = std::move(_front);
+    if(*ptr && !(_front = std::move((*ptr)->_other)))
+      _back = nullptr;
+    unlock();
+    return bool(*ptr);
   }
 
   PtrT next() {
-    PtrT ptr;
     lock();
-    if((ptr = _front) && !(_front = _front->_other))
+    PtrT ptr(std::move(_front));
+    if(ptr && !(_front = std::move(ptr->_other)))
       _back = nullptr;
     unlock();
     return ptr;
@@ -89,7 +92,7 @@ class QueuePointer : private MutexAtomic {
   private:
   
   SWC_CAN_INLINE
-  void _push(PtrT ptr) {
+  void _push(PtrT& ptr) {
     (_back ? _back->_other : _front) = ptr;
     _back = ptr;
   }
