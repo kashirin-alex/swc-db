@@ -45,15 +45,7 @@ void RangeQueryUpdateReq::internal_decode(const uint8_t** bufp,
 
 
 RangeQueryUpdateRsp::RangeQueryUpdateRsp(int err)
-                                        : err(err),
-                                          cells_added(0) {
-}
-
-RangeQueryUpdateRsp::RangeQueryUpdateRsp(int err, 
-                      const DB::Cell::Key& range_prev_end, 
-                      const DB::Cell::Key& range_end) 
-                    : err(err), cells_added(0),
-                      range_prev_end(range_prev_end), range_end(range_end) {
+                                         : err(err), cells_added(0) {
 }
 
 RangeQueryUpdateRsp::~RangeQueryUpdateRsp() { }

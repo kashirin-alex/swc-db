@@ -145,7 +145,7 @@ void Range::state(int& err) const {
   }
 }
 
-void Range::add(Range::ReqAdd* req) {
+void Range::add(Callback::RangeQueryUpdate* req) {
   if(m_q_add.push_and_is_1st(req))
     Env::Rgr::post([ptr=shared_from_this()](){ ptr->run_add_queue(); } );
 }
@@ -822,7 +822,7 @@ bool Range::wait(uint8_t from_state, bool incr) {
 }
 
 void Range::run_add_queue() {
-  ReqAdd* req;
+  Callback::RangeQueryUpdate* req;
 
   DB::Cells::Cell cell;
   const uint8_t* ptr;
@@ -846,7 +846,7 @@ void Range::run_add_queue() {
     //m_inbytes.fetch_add(remain);
     intval_chg = false;
 
-    if(req->cb->expired(remain/100000))
+    if(req->expired())
       req->rsp.err = Error::REQUEST_TIMEOUT;
       
     if(m_state != State::LOADED && m_state != State::UNLOADING)
@@ -932,7 +932,7 @@ void Range::run_add_queue() {
         (const client::Query::Update::Result::Ptr& res) {
           if(!req->rsp.err)
             req->rsp.err = res->error();
-          req->cb->response(req->rsp);
+          req->response();
           bool more = range->m_q_add.pop_and_more();
           delete req;
           if(more)
@@ -940,7 +940,7 @@ void Range::run_add_queue() {
         }
       );
 
-    req->cb->response(req->rsp);
+    req->response();
     bool more = m_q_add.pop_and_more();
     delete req;
     if(more)

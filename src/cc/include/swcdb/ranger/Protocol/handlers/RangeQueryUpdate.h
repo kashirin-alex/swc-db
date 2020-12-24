@@ -40,21 +40,22 @@ void range_query_update(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
   }
 
   try{
-    auto cb = std::make_shared<Ranger::Callback::RangeQueryUpdate>(
-      conn, ev);
+
     if(err) {
-      cb->response(err);
-      return;
+      conn->send_response(
+        Buffers::make(ev, Params::RangeQueryUpdateRsp(err)));
+  
+    } else {
+      range->add(
+        new Ranger::Callback::RangeQueryUpdate(conn, ev, ev->data_ext));
     }
-      
-    range->add(new Ranger::Range::ReqAdd(ev->data_ext, cb));
 
   } catch(...) {
     SWC_LOG_CURRENT_EXCEPTION("");
   }
   
 }
-  
+
 
 }}}}}
 

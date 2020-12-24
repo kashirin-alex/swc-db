@@ -32,28 +32,6 @@ class Range final : public std::enable_shared_from_this<Range> {
   static constexpr const char LOG_DIR[]             = "log"; 
   static constexpr const char LOG_TMP_DIR[]         = "log_tmp"; 
 
-  struct ReqAdd final : Core::QueuePointer<ReqAdd*>::Pointer {
-
-    ReqAdd(StaticBuffer& input, const Callback::RangeQueryUpdate::Ptr& cb)
-          : input(input), rsp(Error::OK), cb(cb) {
-      Env::Rgr::res().more_mem_usage(size_of());
-    }
-
-    ~ReqAdd() {
-      Env::Rgr::res().less_mem_usage(size_of());
-    }
-
-    size_t size_of() const {
-      return sizeof(*this) + sizeof(this) + 
-             sizeof(*cb.get()) + input.size;
-    }
-
-    StaticBuffer                                     input;
-    Comm::Protocol::Rgr::Params::RangeQueryUpdateRsp rsp;
-    const Callback::RangeQueryUpdate::Ptr            cb;
-
-  };
-
   enum State : uint8_t {
     NOTLOADED,
     LOADING,
@@ -117,7 +95,7 @@ class Range final : public std::enable_shared_from_this<Range> {
 
   void state(int& err) const;
 
-  void add(ReqAdd* req);
+  void add(Callback::RangeQueryUpdate* req);
 
   void scan(const ReqScan::Ptr& req);
 
@@ -196,8 +174,8 @@ class Range final : public std::enable_shared_from_this<Range> {
   bool                          m_q_run_add;
   bool                          m_q_run_scan;
 
-  Core::QueuePointer<ReqAdd*>   m_q_add;
-  Core::QueueSafe<ReqScan::Ptr> m_q_scan;
+  Core::QueuePointer<Callback::RangeQueryUpdate*>  m_q_add;
+  Core::QueueSafe<ReqScan::Ptr>                    m_q_scan;
 
   std::condition_variable_any   m_cv;
 
