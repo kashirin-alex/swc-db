@@ -465,7 +465,7 @@ size_t Fragments::size_bytes_encoded() {
   return size;
 }
 
-bool Fragments::processing() {
+bool Fragments::processing() noexcept {
   bool busy;
   if(!(busy = !m_mutex.try_lock())) {
     busy = _processing();
@@ -601,7 +601,7 @@ bool Fragments::_need_compact_major() {
   return need;
 }
 
-bool Fragments::_processing() const {
+bool Fragments::_processing() const noexcept {
   if(m_commit)
     return true;
   for(auto& frag : *this)

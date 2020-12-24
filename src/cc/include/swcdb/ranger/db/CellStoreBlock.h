@@ -73,13 +73,11 @@ class Read final {
 
   size_t release();
 
-  bool processing();
-
-  int error() const noexcept;
+  bool processing() noexcept;
 
   bool loaded() const noexcept;
   
-  bool loaded(int& err) const noexcept;
+  bool loaded(int& err) noexcept;
 
   size_t size_bytes(bool only_loaded=false) const noexcept;
 
@@ -96,14 +94,12 @@ class Read final {
   void load_finish(int err);
 
 
+  Core::MutexSptd          m_mutex;
   Core::Atomic<State>      m_state;
-  Core::Atomic<int>        m_err;
+  int                      m_err;
   Core::Atomic<uint32_t>   m_cells_remain;
   Core::Atomic<size_t>     m_processing;
-
   StaticBuffer             m_buffer;
-
-  Core::MutexSptd          m_mutex;
   std::queue<BlockLoader*> m_queue;
 
 };

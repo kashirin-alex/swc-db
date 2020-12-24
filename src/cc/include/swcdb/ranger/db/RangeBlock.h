@@ -122,7 +122,7 @@ class Block final {
 
   bool need_load() const noexcept;
 
-  bool processing() const noexcept;
+  bool processing() noexcept;
 
   size_t size();
 
@@ -141,16 +141,17 @@ class Block final {
   ScanState _scan(const ReqScan::Ptr& req, bool synced=false);
 
 
-  mutable std::shared_mutex   m_mutex;
+  std::shared_mutex           m_mutex;
   DB::Cells::Mutable          m_cells;
 
   mutable Core::MutexAtomic   m_mutex_intval;
   DB::Cell::Key               m_prev_key_end;
   DB::Cell::Key               m_key_end;
 
+  Core::MutexSptd             m_mutex_state;
   Core::Atomic<size_t>        m_processing;
   Core::Atomic<State>         m_state;
-  Core::Atomic<BlockLoader*>  m_loader;
+  BlockLoader*                m_loader;
 
 };
 

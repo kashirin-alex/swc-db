@@ -100,17 +100,23 @@ size_t Read::size_of() const noexcept {
 
 bool Read::load(BlockLoader* loader) {
   m_processing.fetch_add(1);
-
-  State at = State::NONE;
-  if(m_state.compare_exchange_weak(at, State::LOADING))
-    Env::Rgr::res().more_mem_usage(header.size_plain);
-  if(at != State::LOADED && !loaded()) {
+  auto at(State::NONE);
+  {
     Core::MutexSptd::scope lock(m_mutex);
-    m_queue.push(loader);
-    return at == State::NONE;
+    if(m_state.compare_exchange_weak(at, State::LOADING) || 
+       at == State::LOADING)
+      m_queue.push(loader);
   }
-  loader->loaded_blk();
-  return false;
+  switch(at) {
+    case State::NONE:
+      Env::Rgr::res().more_mem_usage(header.size_plain);
+      return true;
+    case State::LOADING:
+      return false;
+    default: //case State::LOADED:
+      loader->loaded_blk();
+      return false;
+  }
 }
 
 void Read::load() {
@@ -144,11 +150,11 @@ void Read::processing_decrement() noexcept {
 size_t Read::release() {
   size_t released = 0;
   bool support;
-  if(header.size_plain &&
-     !m_processing &&
+  if(header.size_plain && !m_processing && loaded() &&
      m_mutex.try_full_lock(support)) {
     State at = State::LOADED;
-    if(!m_processing && m_state.compare_exchange_weak(at, State::NONE)) {
+    if(m_queue.empty() && !m_processing && 
+       m_state.compare_exchange_weak(at, State::NONE)) {
       released += m_buffer.size;
       m_buffer.free();
       m_cells_remain.store(header.cells_count);
@@ -160,20 +166,20 @@ size_t Read::release() {
   return released;
 }
 
-bool Read::processing() {
+bool Read::processing() noexcept {
   bool support;
-  bool busy = m_processing;
-  if(!busy && !(busy = !m_mutex.try_full_lock(support))) {
-    busy = m_processing;
+  bool busy = m_processing ||
+              m_state == State::LOADING ||
+              !m_mutex.try_full_lock(support);
+  if(!busy) {
+    busy = m_processing ||
+           m_state == State::LOADING ||
+           !m_queue.empty();
     m_mutex.unlock(support);
   }
   return busy;
 }
 
-SWC_SHOULD_INLINE
-int Read::error() const noexcept {
-  return m_err;
-}
 
 SWC_SHOULD_INLINE
 bool Read::loaded() const noexcept {
@@ -181,8 +187,9 @@ bool Read::loaded() const noexcept {
 }
 
 SWC_SHOULD_INLINE
-bool Read::loaded(int& err) const noexcept {
-  return !(err = error()) && loaded();
+bool Read::loaded(int& err) noexcept {
+  Core::MutexSptd::scope lock(m_mutex);
+  return !(err = m_err) && loaded();
 }
 
 SWC_SHOULD_INLINE
@@ -203,9 +210,9 @@ void Read::print(std::ostream& out) {
   {
     Core::MutexSptd::scope lock(m_mutex);
     out << " queue="    << m_queue.size();
+    if(m_err)
+      Error::print(out, m_err);
   }
-  if(m_err)
-    Error::print(out, m_err);
   out << ')';
 }
 
@@ -288,8 +295,11 @@ void Read::load_finish(int err) {
     Env::Rgr::res().less_mem_usage(header.size_plain);
   }
 
-  m_err.store(err);
-  m_state.store(err ? State::NONE : State::LOADED);
+  {
+    Core::MutexSptd::scope lock(m_mutex);
+    m_state.store(err ? State::NONE : State::LOADED);
+    m_err = err;
+  }
 
   Env::Rgr::post([this](){ cellstore->_run_queued(); });
 
@@ -297,7 +307,7 @@ void Read::load_finish(int err) {
     {
       Core::MutexSptd::scope lock(m_mutex);
       if(m_queue.empty())
-        return;
+        break;
       loader = m_queue.front();
       m_queue.pop();
     }

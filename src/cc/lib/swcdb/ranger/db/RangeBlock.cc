@@ -149,7 +149,10 @@ bool Block::add_logged(const DB::Cells::Cell& cell) {
 
 void Block::load_final(const DB::Cells::MutableVec& vec_cells) {
   if(vec_cells.empty()) {
-    m_state.store(State::LOADED);
+    {
+      Core::MutexSptd::scope lock(m_mutex_state);
+      m_state.store(State::LOADED);
+    }
 
   } else {
     ssize_t sz;
@@ -161,7 +164,10 @@ void Block::load_final(const DB::Cells::MutableVec& vec_cells) {
           break;
         splitter();
       }
-      m_state.store(State::LOADED);
+      {
+        Core::MutexSptd::scope lock(m_mutex_state);
+        m_state.store(State::LOADED);
+      }
       sz = ssize_t(m_cells.size_of_internal()) - sz;
     }
     Env::Rgr::res().adj_mem_usage(sz);
@@ -238,23 +244,29 @@ bool Block::splitter() {
 }
 
 Block::ScanState Block::scan(const ReqScan::Ptr& req) {
-  State at = State::NONE;
-  if(m_state.compare_exchange_weak(at, State::LOADING)) {
-    auto loader = new BlockLoader(ptr());
-    m_loader.store(loader);
-    loader->add(req);
-    loader->run();
-    return ScanState::QUEUED;
-  }
-  if(at == State::LOADING) do {
-    auto loader = m_loader.load();
-    if(loader) {
-      loader->add(req);
-      return ScanState::QUEUED;
+  {
+    State at(State::NONE);
+    Core::MutexSptd::scope lock(m_mutex_state);
+    m_state.compare_exchange_weak(at, State::LOADING);
+    switch(at) {
+      case State::NONE: {
+        m_loader = new BlockLoader(ptr());
+        m_loader->add(req);
+        break;
+      }
+      case State::LOADING: {
+        m_loader->add(req);
+        return ScanState::QUEUED;
+      }
+      case State::LOADED: {
+        goto proceed;
+      }
     }
-  } while (!loaded());
+  }
+  m_loader->run();
+  return ScanState::QUEUED;
 
-  switch(req->type) {
+  proceed: switch(req->type) {
     case ReqScan::Type::BLK_PRELOAD: {
       processing_decrement();
       return ScanState::RESPONDED;
@@ -265,31 +277,32 @@ Block::ScanState Block::scan(const ReqScan::Ptr& req) {
 }
 
 void Block::loader_loaded() {
-  auto loader = m_loader.exchange(nullptr);
   do {
-    auto& q = loader->q_req.front();
+    auto& q = m_loader->q_req.front();
     switch(q.req->type) {
       case ReqScan::Type::BLK_PRELOAD: {
         processing_decrement();
         break;
       }
       default: {
-        if(!loader->error) {
+        if(!m_loader->error) {
           q.req->profile.add_block_load(
-            q.ts, loader->count_cs_blocks, loader->count_fragments);
+            q.ts, m_loader->count_cs_blocks, m_loader->count_fragments);
           Env::Rgr::post([this, req=q.req]() { _scan(req); } );
           break;
         }
         blocks->processing_decrement();
         processing_decrement();
-        int err = loader->error;
+        int err = m_loader->error;
         q.req->response(err);
       }
     }
-    loader->q_req.pop();
-  } while(!loader->q_req.empty());
+    m_loader->q_req.pop();
+  } while(!m_loader->q_req.empty());
 
-  delete loader;
+  Core::MutexSptd::scope lock(m_mutex_state);
+  delete m_loader;
+  m_loader = nullptr;
 }
 
 Block::Ptr Block::split(bool loaded) {
@@ -333,11 +346,16 @@ void Block::_add(Block::Ptr blk) {
 
 size_t Block::release() {
   size_t released = 0;
-  if(!m_processing && m_mutex.try_lock()) {
-    State at = State::LOADED;
-    if(!m_processing && m_state.compare_exchange_weak(at, State::NONE)) {
-      released += m_cells.size_of_internal();
-      m_cells.free();
+  if(!m_processing && loaded() && m_mutex.try_lock()) {
+    bool support;
+    if(!m_processing && loaded() && m_mutex_state.try_full_lock(support)) {
+      auto at(State::LOADED);
+      if(!m_loader && !m_processing && 
+         m_state.compare_exchange_weak(at, State::NONE)) {
+        released += m_cells.size_of_internal();
+        m_cells.free();
+      }
+      m_mutex_state.unlock(support);
     }
     m_mutex.unlock();
   }
@@ -367,8 +385,24 @@ bool Block::need_load() const noexcept {
 }
 
 SWC_SHOULD_INLINE
-bool Block::processing() const noexcept {
-  return m_processing || m_state == State::LOADING;
+bool Block::processing() noexcept {
+  bool busy = m_processing || 
+              m_state == State::LOADING ||
+              !m_mutex.try_lock();
+  if(!busy) {
+    bool support;
+    busy = m_processing ||
+           m_state == State::LOADING ||
+           !m_mutex_state.try_full_lock(support);
+    if(!busy) {
+      busy = m_processing || 
+             m_state == State::LOADING ||
+             m_loader;
+      m_mutex_state.unlock(support);
+    }
+    m_mutex.unlock();
+  }
+  return busy;
 }
 
 size_t Block::size() {

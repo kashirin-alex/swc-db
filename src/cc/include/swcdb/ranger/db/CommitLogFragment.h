@@ -127,9 +127,7 @@ class Fragment final : public std::enable_shared_from_this<Fragment> {
 
   bool loaded() const noexcept;
 
-  int error() const noexcept;
-
-  bool loaded(int& err) const noexcept;
+  bool loaded(int& err) noexcept;
 
   size_t size_bytes() const noexcept;
 
@@ -137,7 +135,7 @@ class Fragment final : public std::enable_shared_from_this<Fragment> {
 
   size_t size_bytes_encoded() const noexcept;
 
-  bool processing();
+  bool processing() noexcept;
 
   bool marked_removed() const noexcept;
 
@@ -158,16 +156,14 @@ class Fragment final : public std::enable_shared_from_this<Fragment> {
   void run_queued();
 
 
+  Core::MutexSptd                   m_mutex;
   Core::Atomic<State>               m_state;
   Core::Atomic<bool>                m_marked_removed;
-  Core::Atomic<int>                 m_err;
+  int                               m_err;
   Core::Atomic<size_t>              m_processing;
   Core::Atomic<uint32_t>            m_cells_remain;
-
   FS::SmartFd::Ptr                  m_smartfd;
   StaticBuffer                      m_buffer;
-
-  Core::MutexSptd                   m_mutex;
   std::queue<LoadCb_t>              m_queue;
 
 };

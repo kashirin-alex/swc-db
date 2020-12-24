@@ -98,7 +98,7 @@ class Fragments final : private std::vector<Fragment::Ptr> {
 
   size_t size_bytes_encoded();
 
-  bool processing();
+  bool processing() noexcept;
 
   uint64_t next_id();
 
@@ -119,7 +119,7 @@ class Fragments final : private std::vector<Fragment::Ptr> {
 
   void _load_cells(BlockLoader* loader, Vec& frags, uint8_t& vol);
 
-  bool _processing() const;
+  bool _processing() const noexcept;
 
   size_t _size_bytes(bool only_loaded=false);
 

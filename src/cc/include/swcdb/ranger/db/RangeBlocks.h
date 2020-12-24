@@ -78,7 +78,7 @@ class Blocks final {
 
   size_t release(size_t bytes=0);
 
-  bool processing();
+  bool processing() noexcept;
 
   void wait_processing();
 
@@ -90,7 +90,7 @@ class Blocks final {
 
   size_t _size_bytes();
   
-  bool _processing() const ;
+  bool _processing() const noexcept;
 
   void _clear();
 

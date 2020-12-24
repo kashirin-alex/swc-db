@@ -283,16 +283,20 @@ void Fragment::write(int err, uint8_t blk_replicas, int64_t blksz,
   sem->release();
   buff_write->own = true;
 
-  m_err.store(err);
   if(err) {
     m_buffer.free();
     Env::Rgr::res().less_mem_usage(size_plain);
-    m_state.store(State::NONE);
-  } else {
-    m_state.store(State::LOADED);
   }
 
-  if(m_processing.fetch_sub(1) > 1)
+  bool keep = m_processing.fetch_sub(1) > 1;
+  {
+    Core::MutexSptd::scope lock(m_mutex);
+    if(!keep)
+      keep = !m_queue.empty();
+    m_state.store(err ? State::NONE : State::LOADED);
+    m_err = err;
+  }
+  if(keep)
     Env::Rgr::post([frag=ptr()](){ frag->run_queued(); });
   else
     release();
@@ -300,36 +304,33 @@ void Fragment::write(int err, uint8_t blk_replicas, int64_t blksz,
 
 void Fragment::load(const Fragment::LoadCb_t& cb) {
   m_processing.fetch_add(1);
-
   auto at(State::NONE);
-  m_state.compare_exchange_weak(
-    at, marked_removed() ? State::LOADED : State::LOADING);
-
-  if(at == State::LOADED || marked_removed()) {
-    cb(ptr());
-    return;
-  }
-
   {
     Core::MutexSptd::scope lock(m_mutex);
-    m_queue.push(cb);
+    m_state.compare_exchange_weak(at, State::LOADING);
+    if(at != State::LOADED) 
+      m_queue.push(cb);
   }
-
-  if(at == State::NONE) {
-    Env::Rgr::res().more_mem_usage(size_plain);
-    Env::Rgr::post([frag=ptr()](){
-      Env::FsInterface::fs()->combi_pread(
-        [frag](int err, FS::SmartFd::Ptr, const StaticBuffer::Ptr& buffer) {
-          Env::Rgr::post([frag, err, buffer](){ 
-            frag->load_read(err, buffer); 
-          });
-        }, 
-        frag->m_smartfd, frag->offset_data, frag->size_enc
-      );
-    });
-
-  } else if(loaded()) { // at == State::WRITING && 
-    Env::Rgr::post([frag=ptr()](){ frag->run_queued(); });
+  switch(at) {
+    case State::NONE: {
+      Env::Rgr::res().more_mem_usage(size_plain);
+      Env::Rgr::post([frag=ptr()](){
+        Env::FsInterface::fs()->combi_pread(
+          [frag](int err, FS::SmartFd::Ptr, const StaticBuffer::Ptr& buffer) {
+            Env::Rgr::post([frag, err, buffer](){
+              frag->load_read(err, buffer);
+            });
+          },
+          frag->m_smartfd, frag->offset_data, frag->size_enc
+        );
+      });
+      return;
+    }
+    case State::WRITING:
+    case State::LOADING:
+      return;
+    default: // case State::LOADED:
+      return cb(ptr());
   }
 }
 
@@ -448,14 +449,17 @@ void Fragment::processing_decrement() noexcept {
 }
 
 size_t Fragment::release() {
-  size_t released = 0;     
+  size_t released = 0;
   bool support;
-  if(!m_processing && m_mutex.try_full_lock(support)) {
-    auto at(State::LOADED);
-    if(!m_processing && m_state.compare_exchange_weak(at, State::NONE)) {
-      released += m_buffer.size;
-      m_buffer.free();
-      m_cells_remain.store(cells_count);
+  if(!m_processing && !marked_removed() && loaded() &&
+      m_mutex.try_full_lock(support)) {
+    if(!m_processing && !marked_removed() && m_queue.empty()) {
+      auto at(State::LOADED);
+      if(m_state.compare_exchange_weak(at, State::NONE)) {
+        released += m_buffer.size;
+        m_buffer.free();
+        m_cells_remain.store(cells_count);
+      }
     }
     m_mutex.unlock(support);
   }
@@ -470,13 +474,9 @@ bool Fragment::loaded() const noexcept {
 }
 
 SWC_SHOULD_INLINE
-int Fragment::error() const noexcept {
-  return m_err;
-}
-
-SWC_SHOULD_INLINE
-bool Fragment::loaded(int& err) const noexcept {
-  return !(err = error()) && m_state == State::LOADED;
+bool Fragment::loaded(int& err) noexcept {
+  Core::MutexSptd::scope lock(m_mutex);
+  return !(err = m_err) && loaded();
 }
 
 SWC_SHOULD_INLINE
@@ -494,11 +494,17 @@ size_t Fragment::size_bytes_encoded() const noexcept {
   return size_enc;
 }
 
-bool Fragment::processing() {
+bool Fragment::processing() noexcept {
   bool support;
-  bool busy = m_processing;
-  if(!busy && !(busy = !m_mutex.try_full_lock(support))) {
-    busy = m_processing;
+  bool busy = m_processing ||
+              m_state == State::WRITING ||
+              m_state == State::LOADING ||
+              !m_mutex.try_full_lock(support);
+  if(!busy) {
+    busy = m_processing ||
+           m_state == State::WRITING ||
+           m_state == State::LOADING ||
+           !m_queue.empty();
     m_mutex.unlock(support);
   }
   return busy;
@@ -511,7 +517,10 @@ bool Fragment::marked_removed() const noexcept {
 
 SWC_SHOULD_INLINE
 bool Fragment::mark_removed() noexcept {
-  return !m_marked_removed.exchange(true);
+  bool do_remove = !m_marked_removed.exchange(true);
+  Core::MutexSptd::scope lock(m_mutex);
+  m_state.store(State::LOADED);
+  return do_remove;
 }
 
 void Fragment::remove(int &err) {
@@ -552,11 +561,11 @@ void Fragment::print(std::ostream& out) {
     Core::MutexSptd::scope lock(m_mutex);;
     out << " queue=" << m_queue.size();
     m_smartfd->print(out);
+    if(m_err)
+      Error::print(out << ' ', m_err);
   }
   if(m_marked_removed)
     out << " MARKED-REMOVED";
-  if(m_err)
-    Error::print(out << ' ', m_err);
   out << ' ' << interval << ')';
 }
 
@@ -618,22 +627,23 @@ void Fragment::load_read(int err, const StaticBuffer::Ptr& buffer) {
 }
 
 void Fragment::load_finish(int err) {
-  if(err) {
+  if(err)
     SWC_LOG_OUT(LOG_ERROR, 
       Error::print(SWC_LOG_OSTREAM << "CommitLog::Fragment load ", err);
       print(SWC_LOG_OSTREAM << ' ');
     );
-    m_err.store(
-      m_marked_removed || err == Error::FS_PATH_NOT_FOUND ? Error::OK : err);
-  } else {
-    m_err.store(err);
-  }
 
-  if(err || m_marked_removed) {
+  if(m_marked_removed || err) {
     m_buffer.free();
     Env::Rgr::res().less_mem_usage(size_plain);
+    if(m_marked_removed || err == Error::FS_PATH_NOT_FOUND)
+      err = Error::OK;
   }
-  m_state.store(m_err ? State::NONE : State::LOADED);
+  {
+    Core::MutexSptd::scope lock(m_mutex);
+    m_state.store(err ? State::NONE : State::LOADED);
+    m_err = err;
+  }
 
   run_queued();
 }

@@ -340,7 +340,7 @@ void Read::remove(int &err) {
   Env::FsInterface::interface()->remove(err, smartfd->filepath());
 } 
 
-bool Read::processing() const {
+bool Read::processing() const noexcept{
   if(m_queue.is_active())
     return true;
 

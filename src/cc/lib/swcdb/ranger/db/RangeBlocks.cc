@@ -313,7 +313,7 @@ size_t Blocks::release(size_t bytes) {
   return released;
 }
 
-bool Blocks::processing() {
+bool Blocks::processing() noexcept {
   bool support;
   bool busy;
   if(!(busy = !m_mutex.try_full_lock(support))) {
@@ -373,7 +373,7 @@ size_t Blocks::_size_bytes() {
   return sz;
 }
   
-bool Blocks::_processing() const {
+bool Blocks::_processing() const noexcept {
   if(m_processing)
     return true;
   for(Block::Ptr blk=m_block; blk; blk=blk->next) {

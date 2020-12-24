@@ -58,7 +58,7 @@ class Readers final : private std::vector<Read::Ptr> {
 
   size_t release(size_t bytes);
 
-  bool processing() const;
+  bool processing() const noexcept;
   
   void remove(int &err);
 

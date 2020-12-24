@@ -80,7 +80,7 @@ size_t Readers::release(size_t bytes) {
   return released;
 }
 
-bool Readers::processing() const {
+bool Readers::processing() const noexcept {
   for(auto cs : *this)
     if(cs->processing())
       return true;

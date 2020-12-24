@@ -103,7 +103,7 @@ class Read final {
 
   void remove(int &err);
 
-  bool processing() const;
+  bool processing() const noexcept;
 
   size_t size_bytes(bool only_loaded=false) const;
 
