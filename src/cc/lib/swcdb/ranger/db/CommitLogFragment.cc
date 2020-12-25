@@ -473,7 +473,6 @@ bool Fragment::loaded() const noexcept {
   return m_state == State::LOADED;
 }
 
-SWC_SHOULD_INLINE
 bool Fragment::loaded(int& err) noexcept {
   Core::MutexSptd::scope lock(m_mutex);
   return !(err = m_err) && loaded();
@@ -515,7 +514,6 @@ bool Fragment::marked_removed() const noexcept {
   return m_marked_removed;
 }
 
-SWC_SHOULD_INLINE
 bool Fragment::mark_removed() noexcept {
   bool do_remove = !m_marked_removed.exchange(true);
   Core::MutexSptd::scope lock(m_mutex);

@@ -619,13 +619,17 @@ void CompactRange::write_cells(int& err, InBlock* in_block) {
 void CompactRange::add_cs(int& err) {
   {
     Core::MutexSptd::scope lock(m_mutex);
-    if(cellstores.empty())
-      cs_writer->prev_key_end.copy(range->prev_range_end);
-    else
-      cs_writer->prev_key_end.copy(cellstores.back()->interval.key_end);
-    cellstores.push_back(cs_writer);
+    cs_writer->prev_key_end.copy(
+      cellstores.empty()
+        ? range->prev_range_end 
+        : cellstores.back()->interval.key_end
+    );
   }
   cs_writer->finalize(err);
+  {
+    Core::MutexSptd::scope lock(m_mutex);
+    cellstores.push_back(cs_writer);
+  }
   cs_writer = nullptr;
 }
 

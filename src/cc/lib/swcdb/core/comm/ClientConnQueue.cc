@@ -217,11 +217,12 @@ void ConnQueue::run_queue() {
     }
     SWC_ASSERT(req->cbp);
     if(req->valid() && (!conn || !conn->send_request(req->cbp, req))) {
-      req->handle_no_conn();
       if(req->insistent) {
         m_q_state.stop();
+        req->handle_no_conn();
         break;
       }
+      req->handle_no_conn();
     }
     {
       Core::MutexSptd::scope lock(m_mutex);

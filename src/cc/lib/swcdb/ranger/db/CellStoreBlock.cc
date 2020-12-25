@@ -186,7 +186,6 @@ bool Read::loaded() const noexcept {
   return m_state == State::LOADED;
 }
 
-SWC_SHOULD_INLINE
 bool Read::loaded(int& err) noexcept {
   Core::MutexSptd::scope lock(m_mutex);
   return !(err = m_err) && loaded();

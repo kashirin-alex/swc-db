@@ -149,10 +149,8 @@ bool Block::add_logged(const DB::Cells::Cell& cell) {
 
 void Block::load_final(const DB::Cells::MutableVec& vec_cells) {
   if(vec_cells.empty()) {
-    {
-      Core::MutexSptd::scope lock(m_mutex_state);
-      m_state.store(State::LOADED);
-    }
+    Core::MutexSptd::scope lock(m_mutex_state);
+    m_state.store(State::LOADED);
 
   } else {
     ssize_t sz;
