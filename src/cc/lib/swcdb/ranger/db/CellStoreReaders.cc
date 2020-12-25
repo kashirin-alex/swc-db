@@ -200,6 +200,7 @@ void Readers::load_from_path(int &err) {
     push_back(
       Read::make(err, csid, range, DB::Cells::Interval(range->cfg->key_seq))
     );
+    // add sorted by cs interval-key_end, for range & cellstores after merge
   }
 }
 

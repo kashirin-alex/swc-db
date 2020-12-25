@@ -425,7 +425,7 @@ void Blocks::init_blocks(int& err) {
     return;
   }
 
-  if(range->is_any_end()) 
+  if(range->_is_any_end()) 
     blk->free_key_end();
 }
 

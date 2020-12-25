@@ -599,7 +599,7 @@ csid_t CompactRange::create_cs(int& err) {
 
 void CompactRange::write_cells(int& err, InBlock* in_block) {
   if(!cs_writer) {
-    if(create_cs(err) == 1 && range->is_any_begin())
+    if(create_cs(err) == 1 && range->_is_any_begin())
       in_block->header.is_any |= CellStore::Block::Header::ANY_BEGIN;
     if(err)
       return;
@@ -675,11 +675,11 @@ void CompactRange::finalize() {
     // first or/and last block of any-type set with empty-key
     bool any_begin = false;
     if(!cs_writer) {
-      any_begin = create_cs(err) == 1 && range->is_any_begin();
+      any_begin = create_cs(err) == 1 && range->_is_any_begin();
       if(err)
         return quit();
     }
-    m_inblock->finalize_interval(any_begin, range->is_any_end());
+    m_inblock->finalize_interval(any_begin, range->_is_any_end());
     cs_writer->block_encode(err, m_inblock->cells, m_inblock->header);
  
   } else if(!cellstores.size() && !cs_writer) {
@@ -688,7 +688,7 @@ void CompactRange::finalize() {
     create_cs(err); //csid_t csid = 
     if(err)
       return quit();
-    range->get_interval(
+    range->_get_interval(
       m_inblock->header.interval.key_begin, 
       m_inblock->header.interval.key_end
     );

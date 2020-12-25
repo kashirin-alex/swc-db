@@ -29,8 +29,8 @@ class Range final : public std::enable_shared_from_this<Range> {
   static constexpr const char CELLSTORES_DIR[]      = "cs";
   static constexpr const char CELLSTORES_BAK_DIR[]  = "cs_bak";
   static constexpr const char CELLSTORES_TMP_DIR[]  = "cs_tmp";
-  static constexpr const char LOG_DIR[]             = "log"; 
-  static constexpr const char LOG_TMP_DIR[]         = "log_tmp"; 
+  static constexpr const char LOG_DIR[]             = "log";
+  static constexpr const char LOG_TMP_DIR[]         = "log_tmp";
 
   enum State : uint8_t {
     NOTLOADED,
@@ -40,7 +40,7 @@ class Range final : public std::enable_shared_from_this<Range> {
     DELETED,
   };
 
-  // Compact states by process weight 
+  // Compact states by process weight
   static const uint8_t COMPACT_NONE        = 0x00;
   static const uint8_t COMPACT_CHECKING    = 0x01;
   static const uint8_t COMPACT_COMPACTING  = 0x02;
@@ -64,25 +64,23 @@ class Range final : public std::enable_shared_from_this<Range> {
 
   const std::string get_path_cs(const csid_t csid) const;
 
-  const std::string get_path_cs_on(const std::string folder, 
+  const std::string get_path_cs_on(const std::string folder,
                                    const csid_t csid) const;
 
   Common::Files::RgrData::Ptr get_last_rgr(int &err);
 
   void get_interval(DB::Cells::Interval& interval);
 
-  void get_interval(DB::Cell::Key& key_begin, DB::Cell::Key& key_end);
+  void _get_interval(DB::Cells::Interval& interval) const;
 
-  void get_key_end(DB::Cell::Key& key);
-  
-  bool is_any_begin();
+  void _get_interval(DB::Cell::Key& key_begin, DB::Cell::Key& key_end) const;
 
-  bool is_any_end();
+  bool _is_any_begin() const;
+
+  bool _is_any_end() const;
 
   uint24_t known_interval_count();
 
-  bool align(const DB::Cells::Interval& interval);
-  
   bool align(const DB::Cell::Key& key);
 
   void schema_update(bool compact);
@@ -116,7 +114,7 @@ class Range final : public std::enable_shared_from_this<Range> {
   bool compacting();
 
   void compacting(uint8_t state);
-  
+
   bool compacting_ifnot_applying(uint8_t state);
 
   bool compact_possible(bool minor=true);
@@ -126,13 +124,13 @@ class Range final : public std::enable_shared_from_this<Range> {
   bool compact_required();
 
   void apply_new(int &err,
-                CellStore::Writers& w_cellstores, 
-                CommitLog::Fragments::Vec& fragments_old, 
+                CellStore::Writers& w_cellstores,
+                CommitLog::Fragments::Vec& fragments_old,
                 const client::Query::Update::Cb_t& cb=0);
-  
+
   void expand_and_align(bool w_chg_chk,
                         const client::Query::Update::Cb_t& cb);
-  
+
   void internal_create_folders(int& err);
 
   void internal_create(int &err, const CellStore::Writers& w_cellstores);
@@ -146,15 +144,15 @@ class Range final : public std::enable_shared_from_this<Range> {
   void last_rgr_chk(int &err, const Callback::RangeLoad::Ptr& req);
 
   void load(int &err, const Callback::RangeLoad::Ptr& req);
-  
+
   void check_meta(const Callback::RangeLoad::Ptr& req,
-                  const DB::Specs::Column::Ptr& col_spec, 
+                  const DB::Specs::Column::Ptr& col_spec,
                   const client::Query::Select::Result::Ptr& result);
 
   void loaded(int err, const Callback::RangeLoad::Ptr& req);
 
   void on_change(bool removal,
-                 const client::Query::Update::Cb_t& cb, 
+                 const client::Query::Update::Cb_t& cb,
                  const DB::Cell::Key* old_key_begin=nullptr);
 
   bool wait(uint8_t from_state=COMPACT_CHECKING, bool incr=false);
@@ -165,6 +163,7 @@ class Range final : public std::enable_shared_from_this<Range> {
 
   const std::string             m_path;
   Core::MutexAtomic             m_mutex_intval;
+  Core::MutexAtomic             m_mutex_intval_alignment;
   DB::Cells::Interval           m_interval;
 
   std::shared_mutex             m_mutex;

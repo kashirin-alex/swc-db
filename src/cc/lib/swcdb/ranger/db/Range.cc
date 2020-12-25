@@ -15,11 +15,11 @@
 namespace SWC { namespace Ranger {
 
 Range::Range(const ColumnCfg::Ptr& cfg, const rid_t rid)
-            : cfg(cfg), rid(rid), 
-              blocks(cfg->key_seq), 
+            : cfg(cfg), rid(rid),
+              blocks(cfg->key_seq),
               m_path(DB::RangeBase::get_path(cfg->cid, rid)),
               m_interval(cfg->key_seq),
-              m_state(State::NOTLOADED), 
+              m_state(State::NOTLOADED),
               m_compacting(COMPACT_NONE), m_require_compact(false),
               m_q_run_add(false), m_q_run_scan(false),
               m_adding(0) { //, m_inbytes(0)
@@ -55,7 +55,7 @@ const std::string Range::get_path_cs(const csid_t csid) const {
   return s;
 }
 
-const std::string Range::get_path_cs_on(const std::string folder, 
+const std::string Range::get_path_cs_on(const std::string folder,
                                         const csid_t csid) const {
   std::string s(m_path);
   s.append(folder);
@@ -72,48 +72,38 @@ Common::Files::RgrData::Ptr Range::get_last_rgr(int &err) {
 }
 
 void Range::get_interval(DB::Cells::Interval& interval) {
-  m_mutex_intval.lock();
-  interval.copy(m_interval); 
-  m_mutex_intval.unlock();
+  Core::MutexAtomic::scope lock(m_mutex_intval);
+  Core::MutexAtomic::scope lock_align(m_mutex_intval_alignment);
+  _get_interval(interval);
 }
 
-void Range::get_interval(DB::Cell::Key& key_begin, DB::Cell::Key& key_end) {
-  m_mutex_intval.lock();
+void Range::_get_interval(DB::Cells::Interval& interval) const {
+  interval.copy(m_interval);
+}
+
+void Range::_get_interval(DB::Cell::Key& key_begin,
+                          DB::Cell::Key& key_end) const {
   key_begin.copy(m_interval.key_begin);
   key_end.copy(m_interval.key_end);
-  m_mutex_intval.unlock();
 }
 
-void Range::get_key_end(DB::Cell::Key& key) {
-  m_mutex_intval.lock();
-  key.copy(m_interval.key_end);
-  m_mutex_intval.unlock();
-}
-  
-bool Range::is_any_begin() {
-  Core::MutexAtomic::scope lock(m_mutex_intval);
+bool Range::_is_any_begin() const {
   return m_interval.key_begin.empty();
 }
 
-bool Range::is_any_end() {
-  Core::MutexAtomic::scope lock(m_mutex_intval);
+bool Range::_is_any_end() const {
   return m_interval.key_end.empty();
 }
 
 uint24_t Range::known_interval_count() {
   Core::MutexAtomic::scope lock(m_mutex_intval);
   return m_interval.key_end.empty()
-          ? m_interval.key_begin.count 
+          ? m_interval.key_begin.count
           : m_interval.key_end.count;
 }
 
-bool Range::align(const DB::Cells::Interval& interval) {
-  Core::MutexAtomic::scope lock(m_mutex_intval);
-  return m_interval.align(interval);
-}
-  
 bool Range::align(const DB::Cell::Key& key) {
-  Core::MutexAtomic::scope lock(m_mutex_intval);
+  Core::MutexAtomic::scope lock_align(m_mutex_intval_alignment);
   return m_interval.align(key);
 }
 
@@ -133,14 +123,14 @@ bool Range::is_loaded() {
   return m_state == State::LOADED;
 }
 
-bool Range::deleted() { 
+bool Range::deleted() {
   std::shared_lock lock(m_mutex);
   return m_state == State::DELETED;
 }
 
 void Range::state(int& err) const {
   if(m_state != State::LOADED) {
-    err = m_state == State::DELETED 
+    err = m_state == State::DELETED
       ? Error::COLUMN_MARKED_REMOVED
       : Error::RGR_NOT_LOADED_RANGE;
   }
@@ -217,7 +207,7 @@ void Range::load(const Callback::RangeLoad::Ptr& req) {
       internal_create_folders(err);
     if(err)
       return loaded(err, req);
-      
+
     internal_take_ownership(err, req);
   } else {
     last_rgr_chk(err, req);
@@ -227,8 +217,8 @@ void Range::load(const Callback::RangeLoad::Ptr& req) {
 void Range::internal_take_ownership(int &err, const Callback::RangeLoad::Ptr& req) {
   SWC_LOGF(LOG_DEBUG, "LOADING RANGE(%lu/%lu)-TAKE OWNERSHIP", cfg->cid, rid);
 
-  if(Env::Rgr::is_shuttingdown() || 
-     (Env::Rgr::is_not_accepting() && 
+  if(Env::Rgr::is_shuttingdown() ||
+     (Env::Rgr::is_not_accepting() &&
       DB::Types::MetaColumn::is_data(cfg->cid))) {
     return loaded(Error::SERVER_SHUTTING_DOWN, req);
   }
@@ -264,7 +254,7 @@ void Range::internal_unload(bool completely) {
     std::scoped_lock lock(m_mutex);
     m_state.store(State::NOTLOADED);
   }
-  SWC_LOGF(LOG_INFO, "UNLOADED RANGE(%lu/%lu) error=%d(%s)", 
+  SWC_LOGF(LOG_INFO, "UNLOADED RANGE(%lu/%lu) error=%d(%s)",
                       cfg->cid, rid, err, Error::get_text(err));
 }
 
@@ -281,7 +271,7 @@ void Range::remove(const Callback::ColumnDelete::Ptr& req) {
   on_change(true, [req, range=shared_from_this()]
     (const client::Query::Update::Result::Ptr&) {
       int err = Error::OK;
-      
+
       range->wait();
       range->wait_queue();
       range->blocks.remove(err);
@@ -301,12 +291,12 @@ void Range::internal_remove(int& err) {
   SWC_LOGF(LOG_DEBUG, "REMOVING RANGE(%lu/%lu)", cfg->cid, rid);
 
   blocks.commitlog.stopping.store(true);
-  
+
   wait();
   wait_queue();
   blocks.remove(err);
 
-  Env::FsInterface::interface()->rmdir(err, get_path(""));  
+  Env::FsInterface::interface()->rmdir(err, get_path(""));
 
   SWC_LOG_OUT(LOG_INFO, print(SWC_LOG_OSTREAM << "REMOVED RANGE "); );
 }
@@ -328,7 +318,7 @@ void Range::compacting(uint8_t state) {
     std::scoped_lock lock(m_mutex);
     m_compacting = state;
     m_cv.notify_all();
-    if(m_compacting == COMPACT_APPLYING) 
+    if(m_compacting == COMPACT_APPLYING)
       return;
 
     if((do_q_run_add = m_q_run_add && state < COMPACT_PREPARING))
@@ -347,7 +337,7 @@ bool Range::compacting_ifnot_applying(uint8_t state) {
   bool do_q_run_scan;
   {
     std::scoped_lock lock(m_mutex);
-    if(m_compacting == COMPACT_APPLYING) 
+    if(m_compacting == COMPACT_APPLYING)
       return false;
     m_compacting = state;
     m_cv.notify_all();
@@ -384,7 +374,7 @@ bool Range::compact_required() {
 }
 
 void Range::on_change(bool removal,
-                      const client::Query::Update::Cb_t& cb, 
+                      const client::Query::Update::Cb_t& cb,
                       const DB::Cell::Key* old_key_begin) {
   if(cfg->range_type == DB::Types::Range::MASTER) {
     // update manager-root
@@ -394,7 +384,7 @@ void Range::on_change(bool removal,
   }
 
   // std::scoped_lock lock(m_mutex);
-    
+
   auto updater = std::make_shared<client::Query::Update>(cb, Env::Rgr::io());
   // Env::Rgr::updater(); require an updater with cb on cell-base
 
@@ -407,9 +397,9 @@ void Range::on_change(bool removal,
 
   if(removal) {
     cell.flag = DB::Cells::DELETE;
-    m_mutex_intval.lock();
+    //m_mutex_intval.lock();
     cell.key.copy(m_interval.key_begin);
-    m_mutex_intval.unlock();
+    //m_mutex_intval.unlock();
     cell.key.insert(0, cid_f);
     col->add(cell);
 
@@ -419,26 +409,25 @@ void Range::on_change(bool removal,
     DB::Cell::KeyVec aligned_max;
     bool chg;
 
-    m_mutex_intval.lock();
     cell.key.copy(m_interval.key_begin);
     DB::Cell::Key key_end(m_interval.key_end);
-    if(cfg->range_type == DB::Types::Range::DATA) { 
+    if(cfg->range_type == DB::Types::Range::DATA) {
       // only DATA until MASTER/META aligned on cells value min/max
+      Core::MutexAtomic::scope lock_align(m_mutex_intval_alignment);
       aligned_min.copy(m_interval.aligned_min);
       aligned_max.copy(m_interval.aligned_max);
     }
     chg = old_key_begin && !old_key_begin->equal(m_interval.key_begin);
-    m_mutex_intval.unlock();
 
     cell.key.insert(0, cid_f);
     key_end.insert(0, cid_f);
-    if(cfg->range_type == DB::Types::Range::DATA) { 
+    if(cfg->range_type == DB::Types::Range::DATA) {
       aligned_min.insert(0, cid_f);
       aligned_max.insert(0, cid_f);
     }
 
     cell.own = true;
-    cell.vlen = key_end.encoded_length() 
+    cell.vlen = key_end.encoded_length()
                 + Serialization::encoded_length_vi64(rid)
                 + aligned_min.encoded_length()
                 + aligned_max.encoded_length() ;
@@ -454,7 +443,7 @@ void Range::on_change(bool removal,
     col->add(cell);
 
     if(chg) {
-      SWC_ASSERT(!old_key_begin->empty()); 
+      SWC_ASSERT(!old_key_begin->empty());
       // remove begin-any should not happen
 
       cell.free();
@@ -465,13 +454,13 @@ void Range::on_change(bool removal,
     }
   }
   updater->commit(col);
-      
+
   // INSERT master-range(col-{1,4}), key[cid+m_interval(data(cid)+key)], value[rid]
   // INSERT meta-range(col-{5,8}), key[cid+m_interval(key)], value[rid]
 }
 
 void Range::apply_new(int &err,
-                      CellStore::Writers& w_cellstores, 
+                      CellStore::Writers& w_cellstores,
                       CommitLog::Fragments::Vec& fragments_old,
                       const client::Query::Update::Cb_t& cb) {
   {
@@ -489,9 +478,8 @@ void Range::expand_and_align(bool w_chg_chk,
   DB::Cell::Key     old_key_begin;
   DB::Cell::Key     key_end;
   DB::Cell::KeyVec  aligned_min;
-  DB::Cell::KeyVec  aligned_max; 
+  DB::Cell::KeyVec  aligned_max;
 
-  m_mutex_intval.lock();
   if(w_chg_chk) {
     old_key_begin.copy(m_interval.key_begin);
     key_end.copy(m_interval.key_end);
@@ -499,20 +487,22 @@ void Range::expand_and_align(bool w_chg_chk,
     aligned_max.copy(m_interval.aligned_max);
   }
 
-  m_interval.free();
-  if(cfg->range_type == DB::Types::Range::DATA)
-    blocks.expand_and_align(m_interval);
-  else
-    blocks.expand(m_interval);
+  {
+    Core::MutexAtomic::scope lock(m_mutex_intval);
+    Core::MutexAtomic::scope lock_align(m_mutex_intval_alignment);
+    m_interval.free();
+    if(cfg->range_type == DB::Types::Range::DATA)
+      blocks.expand_and_align(m_interval);
+    else
+      blocks.expand(m_interval);
+  }
 
-  bool intval_chg = !w_chg_chk || 
+  bool intval_chg = !w_chg_chk ||
                     !m_interval.key_begin.equal(old_key_begin) ||
                     !m_interval.key_end.equal(key_end) ||
                     !m_interval.aligned_min.equal(aligned_min) ||
                     !m_interval.aligned_max.equal(aligned_max);
-  m_mutex_intval.unlock();
-
-  intval_chg 
+  intval_chg
     ? on_change(false, cb, w_chg_chk ? &old_key_begin : nullptr)
     : cb(nullptr);
 }
@@ -532,13 +522,13 @@ void Range::internal_create(int &err, const CellStore::Writers& w_cellstores) {
   auto fs = Env::FsInterface::interface();
   for(auto& cs : w_cellstores) {
     fs->rename(
-      err, 
-      cs->smartfd->filepath(), 
+      err,
+      cs->smartfd->filepath(),
       get_path_cs(cs->csid)
     );
     if(err)
       return;
-        
+
     blocks.cellstores.add(
       CellStore::Read::make(
         err, cs->csid, shared_from_this(), cs->interval, true)
@@ -578,10 +568,12 @@ void Range::print(std::ostream& out, bool minimal) {
   }
   blocks.print(out << ' ', minimal);
   prev_range_end.print(out << " prev=");
-  m_mutex_intval.lock();
-  m_interval.print(out << ' ');
-  m_mutex_intval.unlock();
-  out << ')'; 
+  {
+    Core::MutexAtomic::scope lock(m_mutex_intval);
+    Core::MutexAtomic::scope lock_align(m_mutex_intval_alignment);
+    m_interval.print(out << ' ');
+  }
+  out << ')';
 }
 
 void Range::last_rgr_chk(int &err, const Callback::RangeLoad::Ptr& req) {
@@ -591,7 +583,7 @@ void Range::last_rgr_chk(int &err, const Callback::RangeLoad::Ptr& req) {
   auto rgr_data = Env::Rgr::rgr_data();
   Common::Files::RgrData::Ptr rs_last = get_last_rgr(err);
 
-  if(rs_last->endpoints.size() && 
+  if(rs_last->endpoints.size() &&
      !Comm::has_endpoint(rgr_data->endpoints, rs_last->endpoints)) {
     SWC_LOG_OUT(LOG_DEBUG,
       rs_last->print(SWC_LOG_OSTREAM << "RANGER LAST=");
@@ -630,7 +622,7 @@ void Range::load(int &err, const Callback::RangeLoad::Ptr& req) {
       is_initial_column_range = true;
     }
   }
- 
+
   if(!err)
     blocks.load(err);
 
@@ -638,12 +630,15 @@ void Range::load(int &err, const Callback::RangeLoad::Ptr& req) {
     return loaded(err, req);
 
   blocks.cellstores.get_prev_key_end(0, prev_range_end);
-
-  m_interval.free();
-  if(cfg->range_type == DB::Types::Range::DATA)
-    blocks.expand_and_align(m_interval);
-  else
-    blocks.expand(m_interval);
+  {
+    Core::MutexAtomic::scope lock(m_mutex_intval);
+    Core::MutexAtomic::scope lock_align(m_mutex_intval_alignment);
+    m_interval.free();
+    if(cfg->range_type == DB::Types::Range::DATA)
+      blocks.expand_and_align(m_interval);
+    else
+      blocks.expand(m_interval);
+  }
 
   if(is_initial_column_range) {
     RangeData::save(err, blocks.cellstores);
@@ -663,14 +658,14 @@ void Range::load(int &err, const Callback::RangeLoad::Ptr& req) {
   intval->set_opt__key_equal();
   intval->flags.limit = 1;
 
-  /* or select ranges of cid, with rid match in value 
+  /* or select ranges of cid, with rid match in value
         and on dup. cell of rid, delete earliest */
   auto& key_intval = intval->key_intervals.add();
   key_intval->start.set(m_interval.key_begin, Condition::EQ);
   key_intval->start.insert(0, std::to_string(cfg->cid), Condition::EQ);
 
   auto selector = std::make_shared<client::Query::Select>(
-    [req, col_spec, range=shared_from_this()] 
+    [req, col_spec, range=shared_from_this()]
     (const client::Query::Select::Result::Ptr& res) {
       range->check_meta(req, col_spec, res);
     },
@@ -685,7 +680,7 @@ void Range::load(int &err, const Callback::RangeLoad::Ptr& req) {
     return loaded(Error::SERVER_SHUTTING_DOWN, req);
 
   selector->scan(err);
-  SWC_LOGF(LOG_DEBUG, "LOADING RANGE(%lu/%lu)-SELECTOR err=%d(%s)", 
+  SWC_LOGF(LOG_DEBUG, "LOADING RANGE(%lu/%lu)-SELECTOR err=%d(%s)",
                       cfg->cid, rid, err, Error::get_text(err));
   if(err)
     return loaded(Error::RGR_NOT_LOADED_RANGE, req);
@@ -694,7 +689,7 @@ void Range::load(int &err, const Callback::RangeLoad::Ptr& req) {
 void Range::check_meta(const Callback::RangeLoad::Ptr& req,
                        const DB::Specs::Column::Ptr& col_spec,
                        const client::Query::Select::Result::Ptr& result) {
-  DB::Cells::Result cells; 
+  DB::Cells::Result cells;
   int err = result->err;
   if(!err) {
     auto col = result->get_columnn(cfg->meta_cid);
@@ -712,11 +707,11 @@ void Range::check_meta(const Callback::RangeLoad::Ptr& req,
     return loaded(Error::SERVER_SHUTTING_DOWN, req);
 
   if(cells.empty()) {
-    SWC_LOG_OUT(LOG_ERROR, 
-      SWC_LOG_OSTREAM 
+    SWC_LOG_OUT(LOG_ERROR,
+      SWC_LOG_OSTREAM
         << "Range MetaData missing cid=" << cfg->cid << " rid=" << rid;
       m_interval.print(SWC_LOG_OSTREAM << "\n\t auto-registering=");
-      col_spec->print(SWC_LOG_OSTREAM << "\n\t"); 
+      col_spec->print(SWC_LOG_OSTREAM << "\n\t");
     );
     return on_change(false, [req, range=shared_from_this()]
       (const client::Query::Update::Result::Ptr& res) {
@@ -724,7 +719,7 @@ void Range::check_meta(const Callback::RangeLoad::Ptr& req,
       }
     );
   }
-  
+
   DB::Cells::Interval interval(cfg->key_seq);
   interval.was_set = true;
   /* Range MetaData does not include timestamp
@@ -761,8 +756,8 @@ void Range::check_meta(const Callback::RangeLoad::Ptr& req,
     return loaded(Error::SERVER_SHUTTING_DOWN, req);
 
   if(!synced) {
-    SWC_LOG_OUT(LOG_ERROR, 
-      SWC_LOG_OSTREAM 
+    SWC_LOG_OUT(LOG_ERROR,
+      SWC_LOG_OSTREAM
         << "Range MetaData NOT-SYNCED cid=" << cfg->cid;
       SWC_LOG_OSTREAM << "\n\t     loaded-rid=" << rid;
       m_interval.print(SWC_LOG_OSTREAM << ' ');
@@ -810,7 +805,7 @@ bool Range::wait(uint8_t from_state, bool incr) {
   std::unique_lock lock_wait(m_mutex);
   if((waited = (m_compacting >= from_state))) {
     m_cv.wait(
-      lock_wait, 
+      lock_wait,
       [this, from_state]() {
         return m_compacting < from_state;
       }
@@ -833,7 +828,7 @@ void Range::_run_add_queue() {
 
   DB::Cells::Cell cell;
   const uint8_t* ptr;
-  size_t remain; 
+  size_t remain;
   bool intval_chg;
   uint64_t ttl = cfg->cell_ttl();
 
@@ -847,7 +842,7 @@ void Range::_run_add_queue() {
       }
       blocks.processing_increment();
     }
-  
+
     if(!(req = m_q_add.next())) {
       blocks.processing_decrement();
       break;
@@ -860,19 +855,21 @@ void Range::_run_add_queue() {
 
     if(req->expired())
       req->rsp.err = Error::REQUEST_TIMEOUT;
-      
+
     if(m_state != State::LOADED && m_state != State::UNLOADING)
-       req->rsp.err = m_state == State::DELETED 
+       req->rsp.err = m_state == State::DELETED
         ? Error::COLUMN_MARKED_REMOVED : Error::RGR_NOT_LOADED_RANGE;
 
     if(!req->rsp.err) { try { while(remain) {
-      
+
       cell.read(&ptr, &remain);
 
       {
-        Core::MutexAtomic::scope lock(m_mutex_intval);
+        // Core::MutexAtomic::scope lock(m_mutex_intval);
+        // Compaction won't change key_end while processing positive
+        // _run_add_queue is not running at COMPACT_PREPARING+
 
-        if(!m_interval.key_end.empty() && 
+        if(!m_interval.key_end.empty() &&
             DB::KeySeq::compare(cfg->key_seq, m_interval.key_end, cell.key)
              == Condition::GT) {
           if(req->rsp.range_end.empty()) {
@@ -883,7 +880,7 @@ void Range::_run_add_queue() {
         }
       }
 
-      if(!prev_range_end.empty() && 
+      if(!prev_range_end.empty() &&
           DB::KeySeq::compare(cfg->key_seq, prev_range_end, cell.key)
            != Condition::GT) {
         if(req->rsp.range_prev_end.empty()) {
@@ -907,12 +904,12 @@ void Range::_run_add_queue() {
       }
 
       blocks.add_logged(cell);
-        
+
       if(cfg->range_type == DB::Types::Range::DATA) {
         if(align(cell.key))
           intval_chg = true;
       } else {
-        /* MASTER/META need aligned interval 
+        /* MASTER/META need aligned interval
              over cells value +plus (cs+logs) at compact
         if(cell.flag == DB::Cells::INSERT) {
           size_t remain = cell.vlen;
@@ -938,7 +935,7 @@ void Range::_run_add_queue() {
 
 
     if(intval_chg)
-      return on_change(false, 
+      return on_change(false,
         [req, range=shared_from_this()]
         (const client::Query::Update::Result::Ptr& res) {
           if(!req->rsp.err)

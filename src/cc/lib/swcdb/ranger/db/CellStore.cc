@@ -601,7 +601,7 @@ Read::Ptr create_initial(int& err, const RangePtr& range) {
   
 
   Block::Header header(range->cfg->key_seq);
-  range->get_interval(header.interval);
+  range->_get_interval(header.interval);
 
   if(header.interval.key_begin.empty())
     header.is_any |= Block::Header::ANY_BEGIN;
