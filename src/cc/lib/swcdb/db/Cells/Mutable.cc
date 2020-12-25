@@ -175,28 +175,24 @@ size_t Mutable::add_sorted(const uint8_t* ptr, size_t remain) {
 
 
 void Mutable::add_raw(const DynamicBuffer& cells) {
-  Cell cell;
   const uint8_t* ptr = cells.base;
   size_t remain = cells.fill();
-  while(remain) {
-    cell.read(&ptr, &remain);
-    add_raw(cell);
-  }
+  while(remain)
+    add_raw(Cell(&ptr, &remain));
 }
 
-void Mutable::add_raw(const DynamicBuffer& cells, 
+void Mutable::add_raw(const DynamicBuffer& cells,
                       const DB::Cell::Key& upto_key,
                       const DB::Cell::Key& from_key,
                       uint32_t skip, bool malformed) {
-  Cell cell;
   const uint8_t* ptr = cells.base;
   size_t remain = cells.fill();
   while(remain) {
-    cell.read(&ptr, &remain);
+    Cell cell(&ptr, &remain);
     if(malformed && !skip) {
       add_raw(cell);
     } else if(
-        (!upto_key.empty() && 
+        (!upto_key.empty() &&
          DB::KeySeq::compare(key_seq, upto_key, cell.key) != Condition::GT) ||
         DB::KeySeq::compare(key_seq, from_key, cell.key) == Condition::GT) {
       add_raw(cell);

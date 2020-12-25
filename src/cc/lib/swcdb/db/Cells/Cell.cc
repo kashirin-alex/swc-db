@@ -72,7 +72,7 @@ Cell::Cell(const Cell& other, bool no_value)
 
 SWC_SHOULD_INLINE
 Cell::Cell(const uint8_t** bufp, size_t* remainp, bool own)
-              : value(0) { 
+           : value(0) {
   read(bufp, remainp, own);
 }
 
@@ -94,11 +94,17 @@ Cell::~Cell() {
     delete [] value;
 }
 
-void Cell::free() {
+SWC_SHOULD_INLINE
+void Cell::_free() {
   if(own && value)
     delete [] value;
+}
+
+SWC_SHOULD_INLINE
+void Cell::free() {
+  _free();
   vlen = 0;
-  value = 0;
+  value = nullptr;
 }
 
 void Cell::set_time_order_desc(bool desc) {
@@ -119,7 +125,7 @@ void Cell::set_revision(int64_t ts) {
 }
 
 void Cell::set_value(uint8_t* v, uint32_t len, bool owner) {
-  free();
+  _free();
   vlen = len;
   value = (own = owner) ? _value(v) : v;
 }
@@ -140,7 +146,7 @@ void Cell::set_value(const std::string& v, bool owner) {
 }
 
 void Cell::set_counter(uint8_t op, int64_t v, Types::Column typ, int64_t rev) {
-  free();
+  _free();
   own = true;
 
   switch(typ) {
@@ -207,12 +213,15 @@ void Cell::read(const uint8_t** bufp, size_t* remainp, bool owner) {
   else if(control & REV_IS_TS)
     revision = timestamp;
 
-  free();
+  _free();
   if((vlen = Serialization::decode_vi32(bufp, remainp))) {
     value = (own = owner) ? _value(*bufp) : (uint8_t *)*bufp;
     *bufp += vlen;
     SWC_ASSERT(*remainp >= vlen);
     *remainp -= vlen;
+  } else {
+    own = owner;
+    value = nullptr;
   }
 }
 

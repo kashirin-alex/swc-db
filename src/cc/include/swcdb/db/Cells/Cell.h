@@ -15,7 +15,7 @@
 #include "swcdb/db/Cells/CellKey.h"
 
 
-namespace SWC { 
+namespace SWC {
 
 
 
@@ -23,7 +23,7 @@ namespace SWC {
  * \defgroup Database The Database Group
  * @brief A group with all related to SWC-DB Database (libswcdb).
  *
- * 
+ *
  */
 
 
@@ -102,14 +102,16 @@ class Cell final {
 
   ~Cell();
 
+  void _free();
+
   void free();
 
   void set_time_order_desc(bool desc);
 
   void set_timestamp(int64_t ts);
-  
+
   void set_revision(int64_t ts);
-  
+
   void set_value(uint8_t* v, uint32_t len, bool owner);
 
   void set_value(const char* v, uint32_t len, bool owner);
@@ -118,8 +120,8 @@ class Cell final {
 
   void set_value(const std::string& v, bool owner=true);
 
-  void set_counter(uint8_t op, int64_t v,  
-                  Types::Column typ = Types::Column::COUNTER_I64, 
+  void set_counter(uint8_t op, int64_t v,
+                  Types::Column typ = Types::Column::COUNTER_I64,
                   int64_t rev = TIMESTAMP_NULL);
 
   uint8_t get_counter_op() const;
@@ -137,7 +139,7 @@ class Cell final {
   bool equal(const Cell& other) const;
 
   bool removal() const;
-  
+
   bool is_removing(const int64_t& rev) const;
 
   int64_t get_timestamp() const;
@@ -146,7 +148,7 @@ class Cell final {
 
   bool has_expired(const int64_t ttl) const;
 
-  void display(std::ostream& out, Types::Column typ = Types::Column::PLAIN, 
+  void display(std::ostream& out, Types::Column typ = Types::Column::PLAIN,
                uint8_t flags=0, bool meta=false) const;
 
   std::string to_string(Types::Column typ = Types::Column::PLAIN) const;
@@ -174,6 +176,6 @@ class Cell final {
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/db/Cells/Cell.cc"
-#endif 
+#endif
 
 #endif // swcdb_db_Cells_Cell_h

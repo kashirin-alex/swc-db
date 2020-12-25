@@ -13,17 +13,17 @@
 #include "swcdb/ranger/db/RangeSplit.h"
 
 namespace SWC { namespace Ranger {
-  
+
 struct CompactRange::InBlock final : Core::QueuePointer<InBlock*>::Pointer {
 
   const bool is_last;
 
   InBlock(const DB::Types::KeySeq key_seq)
-          : is_last(true), 
+          : is_last(true),
             header(key_seq), err(Error::OK), last_cell(0) {
   }
 
-  InBlock(const DB::Types::KeySeq key_seq, size_t size, 
+  InBlock(const DB::Types::KeySeq key_seq, size_t size,
           InBlock* inblock = nullptr)
           : is_last(false),
             cells(size + 1000000), header(key_seq), err(Error::OK),
@@ -35,7 +35,7 @@ struct CompactRange::InBlock final : Core::QueuePointer<InBlock*>::Pointer {
   InBlock(const InBlock&) = delete;
 
   InBlock(const InBlock&&) = delete;
-  
+
   InBlock& operator=(const InBlock&) = delete;
 
   ~InBlock() { }
@@ -52,10 +52,9 @@ struct CompactRange::InBlock final : Core::QueuePointer<InBlock*>::Pointer {
   }
 
   void set_offset(DB::Specs::Interval& spec) const {
-    DB::Cells::Cell cell;
     const uint8_t* ptr = last_cell;
     size_t remain = cells.ptr - ptr;
-    cell.read(&ptr, &remain); 
+    DB::Cells::Cell cell(&ptr, &remain);
     spec.offset_key.copy(cell.key);
     spec.offset_rev = cell.timestamp;
   }
@@ -63,27 +62,25 @@ struct CompactRange::InBlock final : Core::QueuePointer<InBlock*>::Pointer {
   void move_last(InBlock* to) {
     const uint8_t* ptr = last_cell;
     size_t remain = cells.ptr - ptr;
-    
-    DB::Cells::Cell cell;
-    cell.read(&ptr, &remain); 
-    to->add(cell);
+
+    to->add(DB::Cells::Cell(&ptr, &remain));
 
     --header.cells_count;
     cells.ptr = (uint8_t*)last_cell;
     cells.mark = 0;
   }
 
-  void finalize_interval(bool any_begin, bool any_end) {    
+  void finalize_interval(bool any_begin, bool any_end) {
     const uint8_t* ptr = cells.base;
     size_t remain = cells.fill();
     bool set_begin = true;
 
     DB::Cells::Cell cell;
     while(remain) {
-      cell.read(&ptr, &remain); 
+      cell.read(&ptr, &remain);
       header.interval.align(cell.key);
       header.interval.expand(cell.timestamp);
-      
+
       if(set_begin) {
         header.interval.expand_begin(cell);
         set_begin = false;
