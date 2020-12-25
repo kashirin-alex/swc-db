@@ -50,6 +50,9 @@ void Settings::init_app_options(){
     ("swc.rgr.id.validation.interval", g_i32(120000), 
      "Validation of Ranger-ID against Mngr(root)")
 
+    ("swc.rgr.Range.req.update.concurrency", g_i8(1), 
+     "Max Allowed Concurrency a Range for Update Requests")
+
     ("swc.rgr.compaction.check.interval", g_i32(300000), 
      "Interval in ms for Compaction ")
     ("swc.rgr.compaction.read.ahead", g_i8(5), 

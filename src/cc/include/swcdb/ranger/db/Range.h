@@ -161,6 +161,8 @@ class Range final : public std::enable_shared_from_this<Range> {
 
   void run_add_queue();
 
+  void _run_add_queue();
+
   const std::string             m_path;
   Core::MutexAtomic             m_mutex_intval;
   DB::Cells::Interval           m_interval;
@@ -174,6 +176,7 @@ class Range final : public std::enable_shared_from_this<Range> {
   bool                          m_q_run_add;
   bool                          m_q_run_scan;
 
+  Core::Atomic<uint32_t>                           m_adding;
   Core::QueuePointer<Callback::RangeQueryUpdate*>  m_q_add;
   Core::QueueSafe<ReqScan::Ptr>                    m_q_scan;
 

@@ -21,7 +21,8 @@ Range::Range(const ColumnCfg::Ptr& cfg, const rid_t rid)
               m_interval(cfg->key_seq),
               m_state(State::NOTLOADED), 
               m_compacting(COMPACT_NONE), m_require_compact(false),
-              m_q_run_add(false), m_q_run_scan(false) { //, m_inbytes(0)
+              m_q_run_add(false), m_q_run_scan(false),
+              m_adding(0) { //, m_inbytes(0)
   Env::Rgr::in_process(1);
   Env::Rgr::res().more_mem_usage(size_of());
 }
@@ -146,8 +147,8 @@ void Range::state(int& err) const {
 }
 
 void Range::add(Callback::RangeQueryUpdate* req) {
-  if(m_q_add.push_and_is_1st(req))
-    Env::Rgr::post([ptr=shared_from_this()](){ ptr->run_add_queue(); } );
+  m_q_add.push(req);
+  run_add_queue();
 }
 
 void Range::scan(const ReqScan::Ptr& req) {
@@ -197,10 +198,9 @@ void Range::load(const Callback::RangeLoad::Ptr& req) {
 
   bool need;
   {
+    auto at(State::NOTLOADED);
     std::scoped_lock lock(m_mutex);
-    need = m_state == State::NOTLOADED;
-    if(need)
-      m_state.store(State::LOADING);
+    need = m_state.compare_exchange_weak(at, State::LOADING);
   }
 
   int err = Env::Rgr::is_shuttingdown() ||
@@ -312,7 +312,7 @@ void Range::internal_remove(int& err) {
 }
 
 void Range::wait_queue() {
-  while(!m_q_add.empty() || !m_q_scan.empty())
+  while(m_adding || !m_q_add.empty() || !m_q_scan.empty())
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
 }
 
@@ -337,7 +337,7 @@ void Range::compacting(uint8_t state) {
       m_q_run_scan = false;
   }
   if(do_q_run_add)
-    Env::Rgr::post([ptr=shared_from_this()](){ ptr->run_add_queue(); });
+    run_add_queue();
   if(do_q_run_scan)
     Env::Rgr::post([ptr=shared_from_this()](){ ptr->scan(nullptr); });
 }
@@ -358,7 +358,7 @@ bool Range::compacting_ifnot_applying(uint8_t state) {
       m_q_run_scan = false;
   }
   if(do_q_run_add)
-    Env::Rgr::post([ptr=shared_from_this()](){ ptr->run_add_queue(); });
+    run_add_queue();
   if(do_q_run_scan)
     Env::Rgr::post([ptr=shared_from_this()](){ ptr->scan(nullptr); });
   return true;
@@ -393,7 +393,7 @@ void Range::on_change(bool removal,
     return;
   }
 
-  std::scoped_lock lock(m_mutex);
+  // std::scoped_lock lock(m_mutex);
     
   auto updater = std::make_shared<client::Query::Update>(cb, Env::Rgr::io());
   // Env::Rgr::updater(); require an updater with cb on cell-base
@@ -822,6 +822,13 @@ bool Range::wait(uint8_t from_state, bool incr) {
 }
 
 void Range::run_add_queue() {
+  if(m_adding.fetch_add(1) < Env::Rgr::get()->cfg_req_add_concurrency->get())
+    Env::Rgr::post([ptr=shared_from_this()](){ ptr->_run_add_queue(); });
+  else
+    m_adding.fetch_sub(1);
+}
+
+void Range::_run_add_queue() {
   Callback::RangeQueryUpdate* req;
 
   DB::Cells::Cell cell;
@@ -830,17 +837,22 @@ void Range::run_add_queue() {
   bool intval_chg;
   uint64_t ttl = cfg->cell_ttl();
 
-  _do: {
+  _do: while(!m_q_add.empty()) {
     {
       std::scoped_lock lock(m_mutex);
       if(m_compacting >= COMPACT_PREPARING) {
         m_q_run_add = true;
+        m_adding.fetch_sub(1);
         return;
       }
       blocks.processing_increment();
     }
   
-    req = m_q_add.front();
+    if(!(req = m_q_add.next())) {
+      blocks.processing_decrement();
+      break;
+    }
+
     ptr = req->input.base;
     remain = req->input.size;
     //m_inbytes.fetch_add(remain);
@@ -924,7 +936,6 @@ void Range::run_add_queue() {
     } }
 
 
-    blocks.processing_decrement();
 
     if(intval_chg)
       return on_change(false, 
@@ -933,20 +944,21 @@ void Range::run_add_queue() {
           if(!req->rsp.err)
             req->rsp.err = res->error();
           req->response();
-          bool more = range->m_q_add.pop_and_more();
           delete req;
-          if(more)
-            range->run_add_queue();
+          range->blocks.processing_decrement();
+          range->_run_add_queue();
         }
       );
 
     req->response();
-    bool more = m_q_add.pop_and_more();
     delete req;
-    if(more)
-      goto _do;
+    blocks.processing_decrement();
   }
-    
+
+  if(m_adding.fetch_sub(1) == 1 && !m_q_add.empty()) {
+    m_adding.fetch_add(1);
+    goto _do;
+  }
 }
 
 

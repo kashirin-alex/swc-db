@@ -101,19 +101,21 @@ class Rgr final {
     return m_env->_updater.get();
   }
 
-  const SWC::Config::Property::V_GUINT8::Ptr      cfg_cs_max;
-  const SWC::Config::Property::V_GINT32::Ptr      cfg_cs_sz;
-  
-  const SWC::Config::Property::V_GUINT8::Ptr      cfg_log_rollout_ratio;
-  const SWC::Config::Property::V_GUINT8::Ptr      cfg_log_compact_cointervaling;
-  const SWC::Config::Property::V_GUINT8::Ptr      cfg_log_fragment_preload;
-  
-  const SWC::Config::Property::V_GUINT8::Ptr      cfg_compact_percent;
-  const SWC::Config::Property::V_GUINT8::Ptr      cfg_cs_replication;
+  const SWC::Config::Property::V_GUINT8::Ptr  cfg_req_add_concurrency;
 
-  const SWC::Config::Property::V_GINT32::Ptr      cfg_blk_size;
-  const SWC::Config::Property::V_GINT32::Ptr      cfg_blk_cells;
-  const SWC::Config::Property::V_GENUM::Ptr       cfg_blk_enc;
+  const SWC::Config::Property::V_GUINT8::Ptr  cfg_cs_max;
+  const SWC::Config::Property::V_GINT32::Ptr  cfg_cs_sz;
+  
+  const SWC::Config::Property::V_GUINT8::Ptr  cfg_log_rollout_ratio;
+  const SWC::Config::Property::V_GUINT8::Ptr  cfg_log_compact_cointervaling;
+  const SWC::Config::Property::V_GUINT8::Ptr  cfg_log_fragment_preload;
+  
+  const SWC::Config::Property::V_GUINT8::Ptr  cfg_compact_percent;
+  const SWC::Config::Property::V_GUINT8::Ptr  cfg_cs_replication;
+
+  const SWC::Config::Property::V_GINT32::Ptr  cfg_blk_size;
+  const SWC::Config::Property::V_GINT32::Ptr  cfg_blk_cells;
+  const SWC::Config::Property::V_GENUM::Ptr   cfg_blk_enc;
   
   Comm::IoContextPtr          app_io;
   Comm::IoContextPtr          mnt_io;
@@ -150,7 +152,10 @@ class Rgr final {
 namespace SWC { namespace Env {
 
 Rgr::Rgr() 
-    : cfg_cs_max(
+    : cfg_req_add_concurrency(
+        SWC::Env::Config::settings()->get<SWC::Config::Property::V_GUINT8>(
+          "swc.rgr.Range.req.update.concurrency")),
+      cfg_cs_max(
         SWC::Env::Config::settings()->get<SWC::Config::Property::V_GUINT8>(
           "swc.rgr.Range.CellStore.count.max")),
       cfg_cs_sz(
