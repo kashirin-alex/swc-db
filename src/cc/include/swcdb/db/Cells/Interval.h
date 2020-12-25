@@ -67,6 +67,8 @@ class Interval final {
 
   bool align(const Interval &other);
 
+  bool align(const DB::Cell::KeyVec& _min, const DB::Cell::KeyVec& _max);
+
   bool align(const DB::Cell::Key &key);
 
   bool equal(const Interval& other) const;

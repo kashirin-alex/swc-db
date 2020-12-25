@@ -138,10 +138,13 @@ void Interval::expand(const int64_t& ts) {
 }
 
 bool Interval::align(const Interval &other) {
-  bool start = DB::KeySeq::align(
-    key_seq, aligned_min, other.aligned_min, Condition::LT);
-  bool finish = DB::KeySeq::align(
-    key_seq, aligned_max, other.aligned_max, Condition::GT);
+  return align(other.aligned_min, other.aligned_max);
+}
+
+bool Interval::align(const DB::Cell::KeyVec& _min,
+                     const DB::Cell::KeyVec& _max) {
+  bool start = DB::KeySeq::align(key_seq, aligned_min, _min, Condition::LT);
+  bool finish = DB::KeySeq::align(key_seq, aligned_max, _max, Condition::GT);
   return start || finish;
 }
 
