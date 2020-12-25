@@ -69,6 +69,8 @@ class Range final : public std::enable_shared_from_this<Range> {
 
   Common::Files::RgrData::Ptr get_last_rgr(int &err);
 
+  uint24_t known_interval_count();
+
   void get_interval(DB::Cells::Interval& interval);
 
   void _get_interval(DB::Cells::Interval& interval) const;
@@ -78,10 +80,6 @@ class Range final : public std::enable_shared_from_this<Range> {
   bool _is_any_begin() const;
 
   bool _is_any_end() const;
-
-  uint24_t known_interval_count();
-
-  bool align(const DB::Cell::Key& key);
 
   void schema_update(bool compact);
 

@@ -102,10 +102,9 @@ void Blocks::apply_new(int &err,
 }
 
 void Blocks::add_logged(const DB::Cells::Cell& cell) {
-  processing_increment();
 
   commitlog.add(cell);
-    
+
   Block::Ptr blk;
   {
     Core::MutexSptd::scope lock(m_mutex);
@@ -115,8 +114,6 @@ void Blocks::add_logged(const DB::Cells::Cell& cell) {
     Core::MutexSptd::scope lock(m_mutex);
     blk = blk->next;
   }
-
-  processing_decrement();
 }
 
 void Blocks::scan(ReqScan::Ptr req, Block::Ptr blk_ptr) {

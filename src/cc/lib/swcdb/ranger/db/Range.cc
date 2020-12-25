@@ -71,6 +71,13 @@ Common::Files::RgrData::Ptr Range::get_last_rgr(int &err) {
     err, DB::RangeBase::get_path_ranger(m_path));
 }
 
+uint24_t Range::known_interval_count() {
+  Core::MutexAtomic::scope lock(m_mutex_intval);
+  return m_interval.key_end.empty()
+          ? m_interval.key_begin.count
+          : m_interval.key_end.count;
+}
+
 void Range::get_interval(DB::Cells::Interval& interval) {
   Core::MutexAtomic::scope lock(m_mutex_intval);
   Core::MutexAtomic::scope lock_align(m_mutex_intval_alignment);
@@ -93,18 +100,6 @@ bool Range::_is_any_begin() const {
 
 bool Range::_is_any_end() const {
   return m_interval.key_end.empty();
-}
-
-uint24_t Range::known_interval_count() {
-  Core::MutexAtomic::scope lock(m_mutex_intval);
-  return m_interval.key_end.empty()
-          ? m_interval.key_begin.count
-          : m_interval.key_end.count;
-}
-
-bool Range::align(const DB::Cell::Key& key) {
-  Core::MutexAtomic::scope lock_align(m_mutex_intval_alignment);
-  return m_interval.align(key);
 }
 
 void Range::schema_update(bool compact) {
@@ -383,8 +378,6 @@ void Range::on_change(bool removal,
     return;
   }
 
-  // std::scoped_lock lock(m_mutex);
-
   auto updater = std::make_shared<client::Query::Update>(cb, Env::Rgr::io());
   // Env::Rgr::updater(); require an updater with cb on cell-base
 
@@ -397,9 +390,7 @@ void Range::on_change(bool removal,
 
   if(removal) {
     cell.flag = DB::Cells::DELETE;
-    //m_mutex_intval.lock();
     cell.key.copy(m_interval.key_begin);
-    //m_mutex_intval.unlock();
     cell.key.insert(0, cid_f);
     col->add(cell);
 
@@ -824,13 +815,10 @@ void Range::run_add_queue() {
 }
 
 void Range::_run_add_queue() {
-  Callback::RangeQueryUpdate* req;
+  const uint64_t ttl = cfg->cell_ttl();
 
-  DB::Cells::Cell cell;
-  const uint8_t* ptr;
-  size_t remain;
-  bool intval_chg;
-  uint64_t ttl = cfg->cell_ttl();
+  DB::Cell::KeyVec align_min;
+  DB::Cell::KeyVec align_max;
 
   _do: while(!m_q_add.empty()) {
     {
@@ -841,43 +829,45 @@ void Range::_run_add_queue() {
         return;
       }
       blocks.processing_increment();
+      // Compaction won't change m_interval while processing positive
+      // _run_add_queue is not running at COMPACT_PREPARING+
     }
 
-    if(!(req = m_q_add.next())) {
+    Callback::RangeQueryUpdate* req = m_q_add.next();
+    if(!req) {
       blocks.processing_decrement();
       break;
     }
 
-    ptr = req->input.base;
-    remain = req->input.size;
-    //m_inbytes.fetch_add(remain);
-    intval_chg = false;
-
-    if(req->expired())
+    if(req->expired()) {
       req->rsp.err = Error::REQUEST_TIMEOUT;
+      goto _response;
+    }
 
-    if(m_state != State::LOADED && m_state != State::UNLOADING)
+    if(m_state != State::LOADED && m_state != State::UNLOADING) {
        req->rsp.err = m_state == State::DELETED
         ? Error::COLUMN_MARKED_REMOVED : Error::RGR_NOT_LOADED_RANGE;
+      goto _response;
+    }
 
-    if(!req->rsp.err) { try { while(remain) {
+    {
 
-      cell.read(&ptr, &remain);
+    const uint8_t* ptr = req->input.base;
+    size_t remain = req->input.size;
+    bool aligned_chg = false;
 
-      {
-        // Core::MutexAtomic::scope lock(m_mutex_intval);
-        // Compaction won't change key_end while processing positive
-        // _run_add_queue is not running at COMPACT_PREPARING+
+    try { while(remain) {
 
-        if(!m_interval.key_end.empty() &&
-            DB::KeySeq::compare(cfg->key_seq, m_interval.key_end, cell.key)
-             == Condition::GT) {
-          if(req->rsp.range_end.empty()) {
-            req->rsp.range_end.copy(m_interval.key_end);
-            req->rsp.err = Error::RANGE_BAD_INTERVAL;
-          }
-          continue;
+      DB::Cells::Cell cell(&ptr, &remain);
+
+      if(!m_interval.key_end.empty() &&
+          DB::KeySeq::compare(cfg->key_seq, m_interval.key_end, cell.key)
+           == Condition::GT) {
+        if(req->rsp.range_end.empty()) {
+          req->rsp.range_end.copy(m_interval.key_end);
+          req->rsp.err = Error::RANGE_BAD_INTERVAL;
         }
+        continue;
       }
 
       if(!prev_range_end.empty() &&
@@ -906,8 +896,8 @@ void Range::_run_add_queue() {
       blocks.add_logged(cell);
 
       if(cfg->range_type == DB::Types::Range::DATA) {
-        if(align(cell.key))
-          intval_chg = true;
+        if(DB::KeySeq::align(cfg->key_seq, cell.key, align_min, align_max))
+          aligned_chg = true;
       } else {
         /* MASTER/META need aligned interval
              over cells value +plus (cs+logs) at compact
@@ -921,20 +911,23 @@ void Range::_run_add_queue() {
           aligned_min.decode(&ptr, &remain);
           DB::Cell::Key aligned_max;
           aligned_max.decode(&ptr, &remain);
-          intval_chg = align(aligned_min);
+          aligned_chg = align(aligned_min);
           if(align(aligned_max))
-            intval_chg = true;
+            aligned_chg = true;
         }
         */
       }
     } } catch(...) {
       SWC_LOG_CURRENT_EXCEPTION("");
       req->rsp.err = Error::RANGE_BAD_CELLS_INPUT;
-    } }
+    }
 
+    if(aligned_chg) {
+      Core::MutexAtomic::scope lock(m_mutex_intval_alignment);
+      aligned_chg = m_interval.align(align_min, align_max);
+    }
 
-
-    if(intval_chg)
+    if(aligned_chg) {
       return on_change(false,
         [req, range=shared_from_this()]
         (const client::Query::Update::Result::Ptr& res) {
@@ -946,10 +939,13 @@ void Range::_run_add_queue() {
           range->_run_add_queue();
         }
       );
+    }
+    }
 
-    req->response();
-    delete req;
-    blocks.processing_decrement();
+    _response:
+      req->response();
+      delete req;
+      blocks.processing_decrement();
   }
 
   if(m_adding.fetch_sub(1) == 1 && !m_q_add.empty()) {
