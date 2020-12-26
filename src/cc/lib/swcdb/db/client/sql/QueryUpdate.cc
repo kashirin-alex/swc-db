@@ -11,7 +11,7 @@
 namespace SWC { namespace client { namespace SQL {
 
 namespace {
-  
+
   static const char     TOKEN_CELL[] = "cell";
   static const uint8_t  LEN_CELL = 4;
   static const char     TOKEN_UPDATE[] = "update";
@@ -20,12 +20,12 @@ namespace {
   static const uint8_t  LEN_LOAD = 4;
 }
 
-QueryUpdate::QueryUpdate(const std::string& sql, 
-                         DB::Cells::MutableMap& columns, 
+QueryUpdate::QueryUpdate(const std::string& sql,
+                         DB::Cells::MutableMap& columns,
                          DB::Cells::MutableMap& columns_onfractions,
                          std::string& message)
-                        : Reader(sql, message), 
-                          columns(columns), 
+                        : Reader(sql, message),
+                          columns(columns),
                           columns_onfractions(columns_onfractions) {
 }
 
@@ -52,42 +52,42 @@ int QueryUpdate::parse_load(std::string& filepath, cid_t& cid) {
 
     while(remain && !err && found_space());
     expect_token(TOKEN_LOAD, LEN_LOAD, token);
-    if(err) 
+    if(err)
       return err;
 
     while(remain && !err && found_space());
     expect_token("from", 4, token);
-    if(err) 
+    if(err)
       return err;
 
     read(filepath);
     if(!err && filepath.empty())
       error_msg(Error::SQL_PARSE_ERROR, "missing 'filepath'");
-    if(err) 
-      return err;  
+    if(err)
+      return err;
 
     while(remain && !err && found_space());
     expect_token("into", 4, token);
-    if(err) 
+    if(err)
       return err;
 
     while(remain && !err && found_space());
     expect_token("col", 3, token);
-    if(err) 
+    if(err)
       return err;
     expect_eq();
-    if(err) 
+    if(err)
       return err;
 
     std::string col;
     read(col);
     if(!err && col.empty())
       error_msg(Error::SQL_PARSE_ERROR, "missing col 'id|name'");
-    if(err) 
+    if(err)
       return err;
 
-    auto schema = get_schema(col);    
-    if(!err) 
+    auto schema = get_schema(col);
+    if(!err)
       cid = schema->cid;
     return err;
 }
@@ -97,7 +97,7 @@ void QueryUpdate::parse_display_flags(uint8_t& display_flags) {
     bool any = true;
     while(any && remain && !err) {
       if(found_space())
-        continue;    
+        continue;
 
       if((any = found_token("DISPLAY_SPECS", 13))) {
         display_flags |= DB::DisplayFlag::SPECS;
@@ -113,12 +113,12 @@ void QueryUpdate::parse_display_flags(uint8_t& display_flags) {
 void QueryUpdate::read_cells() {
     bool possible_and = false;
     bool bracket = false;
-    
+
     while(remain && !err) {
       if(found_space())
         continue;
 
-      if(possible_and) {   
+      if(possible_and) {
         if(found_token(",", 1)) {
           possible_and = false;
           continue;
@@ -128,11 +128,11 @@ void QueryUpdate::read_cells() {
 
       expect_token(TOKEN_CELL, LEN_CELL, possible_and);
 
-      if(remain && !err) {    
+      if(remain && !err) {
 
         while(remain && !err && found_space());
         expect_token("(", 1, bracket);
-        if(err) 
+        if(err)
           return;
 
         bool on_fraction = false;
@@ -142,35 +142,35 @@ void QueryUpdate::read_cells() {
 
         while(remain && !err && found_space());
         expect_token(")", 1, bracket);
-        if(err) 
+        if(err)
           return;
         if(on_fraction)
           columns_onfractions.add(cid, cell);
-        else 
+        else
           columns.add(cid, cell);
       }
     }
 }
 
-void QueryUpdate::read_cell(cid_t& cid, DB::Cells::Cell& cell, 
+void QueryUpdate::read_cell(cid_t& cid, DB::Cells::Cell& cell,
                             bool& on_fraction) {
     bool comma = false;
-    
+
     read_flag(cell.flag, on_fraction);
-    if(!err) 
+    if(!err)
       expect_comma(comma);
-    if(err) 
+    if(err)
       return;
 
 
     std::string col;
     read(col, ",");
-    if(!err) 
+    if(!err)
       expect_comma(comma);
-    if(err) 
+    if(err)
       return;
     auto schema = get_schema(col);
-    if(err) 
+    if(err)
       return;
     cid = schema->cid;
     columns.create(schema);
@@ -180,9 +180,9 @@ void QueryUpdate::read_cell(cid_t& cid, DB::Cells::Cell& cell,
 
     comma = false;
     bool require_ts = cell.flag == DB::Cells::DELETE_VERSION;
-    if(!err && require_ts) 
+    if(!err && require_ts)
       expect_comma(comma);
-    if(err) 
+    if(err)
       return;
 
     while(remain && !err && found_space());
@@ -194,7 +194,7 @@ void QueryUpdate::read_cell(cid_t& cid, DB::Cells::Cell& cell,
     if(cell.flag == DB::Cells::INSERT) {
       bool time_order;
       while(remain && !err && found_space());
-      if((time_order = found_token("DESC", 4)) || 
+      if((time_order = found_token("DESC", 4)) ||
          !(time_order = found_token("ASC", 3)))
         cell.set_time_order_desc(true);
       if(time_order) {
@@ -206,22 +206,22 @@ void QueryUpdate::read_cell(cid_t& cid, DB::Cells::Cell& cell,
 
     std::string buf;
     read(buf, ",)");
-    if(err) 
+    if(err)
       return;
-    if(!buf.empty()) 
+    if(!buf.empty())
       cell.set_timestamp(Time::parse_ns(err, buf));
     if(err || (require_ts && buf.empty())) {
       error_msg(Error::SQL_PARSE_ERROR, "bad datetime format");
       return;
     }
-      
+
     while(remain && !err && found_space());
     if(err || !found_char(','))
       return;
 
     std::string value;
     read(value, ")");
-    if(err) 
+    if(err)
       return;
 
     if(schema->col_type == DB::Types::Column::PLAIN)
@@ -238,16 +238,16 @@ void QueryUpdate::read_cell(cid_t& cid, DB::Cells::Cell& cell,
         return;
       }
       cell.set_counter(
-        op, 
-        v, 
-        op & DB::Cells::OP_EQUAL 
-          ? schema->col_type 
+        op,
+        v,
+        op & DB::Cells::OP_EQUAL
+          ? schema->col_type
           : DB::Types::Column::COUNTER_I64
       );
     }
 }
   
-void QueryUpdate::op_from(const uint8_t** ptr, size_t* remainp, 
+void QueryUpdate::op_from(const uint8_t** ptr, size_t* remainp,
                           uint8_t& op, int64_t& value) {
     if(!*remainp) {
       op = DB::Cells::OP_EQUAL;
@@ -261,8 +261,9 @@ void QueryUpdate::op_from(const uint8_t** ptr, size_t* remainp,
         value = 0;
         return;
       }
-    } else 
+    } else {
       op = 0;
+    }
 
     char *last = (char*)*ptr + (*remainp > 30 ? 30 : *remainp);
     errno = 0;
@@ -272,43 +273,97 @@ void QueryUpdate::op_from(const uint8_t** ptr, size_t* remainp,
     } else if((const uint8_t*)last > *ptr) {
       *remainp -= (const uint8_t*)last - *ptr;
       *ptr = (const uint8_t*)last;
-    } else 
+    } else {
       err = EINVAL;
+    }
 }
 
 void QueryUpdate::read_flag(uint8_t& flag, bool& on_fraction) {
-    std::string buf;
-    read(buf, ",");
-    if(err) 
-      return;
+  std::string buf;
+  read(buf, ",");
+  if(err)
+    return;
 
-    if(!buf.compare("1") || 
-       !strncasecmp(buf.data(), "INSERT", buf.length())) {
-      flag = DB::Cells::INSERT;
-      on_fraction = false;
-    } else if(!buf.compare("2") ||
-              !strncasecmp(buf.data(), "DELETE", buf.length())) {
-      flag = DB::Cells::DELETE;
-      on_fraction = false;
-    } else if(!buf.compare("3") ||
-              !strncasecmp(buf.data(), "DELETE_VERSION", buf.length())) {
-      flag = DB::Cells::DELETE_VERSION;
-      on_fraction = false;
-    } else if(!buf.compare("4") ||
-              !strncasecmp(buf.data(), "INSERT_FRACTION", buf.length())) {
-      flag = DB::Cells::INSERT;
-      on_fraction = true;
-    } else if(!buf.compare("5") ||
-              !strncasecmp(buf.data(), "DELETE_FRACTION", buf.length())) {
-      flag = DB::Cells::DELETE;
-      on_fraction = true;
-    } else if(!buf.compare("6") ||
-          !strncasecmp(buf.data(), "DELETE_FRACTION_VERSION", buf.length())) {
-      flag = DB::Cells::DELETE_VERSION;
-      on_fraction = true;
-    } else {
-      error_msg(Error::SQL_PARSE_ERROR, "unsupported cell flag='"+buf+"'");
+  switch(buf.length()) {
+    case 1: {
+      switch(*buf.data()) {
+        case '1':
+          flag = DB::Cells::INSERT;
+          on_fraction = false;
+          return;
+        case '2':
+          flag = DB::Cells::DELETE;
+          on_fraction = false;
+          return;
+        case '3':
+          flag = DB::Cells::DELETE_VERSION;
+          on_fraction = false;
+          return;
+        case '4':
+          flag = DB::Cells::INSERT;
+          on_fraction = true;
+          return;
+        case '5':
+          flag = DB::Cells::DELETE;
+          on_fraction = true;
+          return;
+        case '6':
+          flag = DB::Cells::DELETE_VERSION;
+          on_fraction = true;
+          return;
+        default:
+          break;
+      }
+      break;
     }
+    case 6: {
+      if(!strncasecmp(buf.data(), "INSERT", 6)) {
+        flag = DB::Cells::INSERT;
+        on_fraction = false;
+        return;
+      }
+      if(!strncasecmp(buf.data(), "DELETE", 6)) {
+        flag = DB::Cells::DELETE;
+        on_fraction = false;
+        return;
+      }
+      break;
+    }
+    case 14: {
+      if(!strncasecmp(buf.data(), "DELETE_VERSION", 14)) {
+        flag = DB::Cells::DELETE_VERSION;
+        on_fraction = false;
+        return;
+      }
+      break;
+    }
+    case 15: {
+      if(!strncasecmp(buf.data(), "INSERT_FRACTION", 15)) {
+        flag = DB::Cells::INSERT;
+        on_fraction = true;
+        return;
+      }
+      if(!strncasecmp(buf.data(), "DELETE_FRACTION", 15)) {
+        flag = DB::Cells::DELETE;
+        on_fraction = true;
+        return;
+      }
+      break;
+    }
+    case 23: {
+      if(!strncasecmp(buf.data(), "DELETE_FRACTION_VERSION", 23)) {
+        flag = DB::Cells::DELETE_VERSION;
+        on_fraction = true;
+        return;
+      }
+      break;
+    }
+    default:
+      break;
+  }
+
+  error_msg(Error::SQL_PARSE_ERROR, "unsupported cell flag='"+buf+"'");
+
 }
 
 

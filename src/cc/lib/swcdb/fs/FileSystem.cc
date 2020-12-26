@@ -6,39 +6,40 @@
 
 #include "swcdb/fs/FileSystem.h"
 
-#include <algorithm>
-
 
 namespace SWC { namespace FS {
 
 
 std::string normalize_pathname(std::string s) {
-  if(*(--s.end()) != '/') 
-    s.append("/"); 
+  if(*(--s.end()) != '/')
+    s.append("/");
   return s;
 }
 
-Type fs_type(std::string fs_name) {
-  std::transform(fs_name.begin(), fs_name.end(), fs_name.begin(),
-                 [](unsigned char c){ return std::tolower(c); });
-    
+Type fs_type(const std::string& fs_name) {
+
 #if !defined (FS_BROKER_APP)
-  if(!fs_name.compare("broker"))
+  if(!strncasecmp(fs_name.data(), "broker", fs_name.size()))
     return Type::BROKER;
 #endif
 
-  if(!fs_name.compare("local"))
+  if(!strncasecmp(fs_name.data(), "local", fs_name.size()))
     return Type::LOCAL;
-  if(!fs_name.compare("hadoop"))
+
+  if(!strncasecmp(fs_name.data(), "hadoop", fs_name.size()))
     return Type::HADOOP;
-  if(!fs_name.compare("hadoop_jvm"))
+
+  if(!strncasecmp(fs_name.data(), "hadoop_jvm", fs_name.size()))
     return Type::HADOOP_JVM;
-  if(!fs_name.compare("ceph"))
+
+  if(!strncasecmp(fs_name.data(), "ceph", fs_name.size()))
     return Type::CEPH;
-  if(!fs_name.compare("custom"))
+
+  if(!strncasecmp(fs_name.data(), "custom", fs_name.size()))
     return Type::CUSTOM;
+
   else
-    SWC_THROWF(Error::CONFIG_BAD_VALUE, 
+    SWC_THROWF(Error::CONFIG_BAD_VALUE,
               "Unknown FileSystem name=%s", fs_name.c_str());
   return Type::UNKNOWN;
 }
@@ -64,7 +65,7 @@ const char* to_string(Type typ) noexcept {
 
 
 FileSystem::FileSystem(const Configurables& config)
-    : path_root(config.path_root.empty() 
+    : path_root(config.path_root.empty()
         ? "" : normalize_pathname(config.path_root)),
       path_data(
         normalize_pathname(
@@ -72,14 +73,14 @@ FileSystem::FileSystem(const Configurables& config)
       cfg_fds_max(config.cfg_fds_max), fds_count(0), m_run(true) {
 }
 
-FileSystem::~FileSystem() { 
+FileSystem::~FileSystem() {
 }
 
 void FileSystem::stop() {
   m_run.store(false);
   if(fds_count.load())
-    SWC_LOGF(LOG_WARN, "FS %s remained with open-fds=%lu", 
-             to_string().c_str(), fds_count.load());  
+    SWC_LOGF(LOG_WARN, "FS %s remained with open-fds=%lu",
+             to_string().c_str(), fds_count.load());
 }
 
 Type FileSystem::get_type() const noexcept {
@@ -88,7 +89,7 @@ Type FileSystem::get_type() const noexcept {
   
 std::string FileSystem::to_string() const {
   return format(
-    "(type=UNKNOWN path_root=%s path_data=%s)", 
+    "(type=UNKNOWN path_root=%s path_data=%s)",
     path_root.c_str(),
     path_data.c_str()
   );
@@ -121,39 +122,39 @@ size_t FileSystem::fds_open() const {
 }
 
 
-/* Default functions of an async call, 
- * used if a FileSystem(typ) does not implement 
+/* Default functions of an async call,
+ * used if a FileSystem(typ) does not implement
 */
 
-void FileSystem::exists(const Callback::ExistsCb_t& cb, 
+void FileSystem::exists(const Callback::ExistsCb_t& cb,
                         const std::string& name) {
   int err = Error::OK;
   bool state = exists(err, name);
   cb(err, state);
 }
 
-void FileSystem::remove(const Callback::RemoveCb_t& cb, 
+void FileSystem::remove(const Callback::RemoveCb_t& cb,
                         const std::string& name) {
   int err = Error::OK;
   remove(err, name);
   cb(err);
 }
  
-void FileSystem::length(const Callback::LengthCb_t& cb, 
+void FileSystem::length(const Callback::LengthCb_t& cb,
                         const std::string& name) {
   int err = Error::OK;
   size_t len = length(err, name);
   cb(err, len);
 }
  
-void FileSystem::mkdirs(const Callback::MkdirsCb_t& cb, 
+void FileSystem::mkdirs(const Callback::MkdirsCb_t& cb,
                         const std::string& name) {
   int err = Error::OK;
   mkdirs(err, name);
   cb(err);
 }
 
-void FileSystem::readdir(const Callback::ReaddirCb_t& cb, 
+void FileSystem::readdir(const Callback::ReaddirCb_t& cb,
                          const std::string& name) {
   int err = Error::OK;
   DirentList listing;
@@ -161,7 +162,7 @@ void FileSystem::readdir(const Callback::ReaddirCb_t& cb,
   cb(err, listing);
 }
 
-void FileSystem::rmdir(const Callback::RmdirCb_t& cb, 
+void FileSystem::rmdir(const Callback::RmdirCb_t& cb,
                        const std::string& name) {
   int err = Error::OK;
   rmdir(err, name);
@@ -176,13 +177,13 @@ void FileSystem::rename(const Callback::RmdirCb_t& cb,
 }
 
 void FileSystem::write(int& err, SmartFd::Ptr& smartfd,
-                       uint8_t replication, int64_t blksz, 
+                       uint8_t replication, int64_t blksz,
                        StaticBuffer& buffer) {
   SWC_LOG_OUT(LOG_DEBUG, smartfd->print(SWC_LOG_OSTREAM << "write "); );
 
   create(err, smartfd, 0, replication, blksz);
   if(!smartfd->valid() || err) {
-    if(!err) 
+    if(!err)
       err = EBADF;
     goto finish;
   }
@@ -192,28 +193,28 @@ void FileSystem::write(int& err, SmartFd::Ptr& smartfd,
     if(err)
       goto finish;
   }
-  
+
   finish:
     int errtmp;
     if(smartfd->valid())
       close(err ? errtmp : err, smartfd);
-    
+
   if(err)
-    SWC_LOG_OUT(LOG_ERROR, 
+    SWC_LOG_OUT(LOG_ERROR,
       Error::print(SWC_LOG_OSTREAM <<  "write failed: ", err);
       smartfd->print(SWC_LOG_OSTREAM << " ");
     );
 }
 
 void FileSystem::write(const Callback::WriteCb_t& cb, SmartFd::Ptr& smartfd,
-                       uint8_t replication, int64_t blksz, 
+                       uint8_t replication, int64_t blksz,
                        StaticBuffer& buffer) {
   int err = Error::OK;
   write(err, smartfd, replication, blksz, buffer);
   cb(err, smartfd);
 }
 
-void FileSystem::read(int& err, const std::string& name, 
+void FileSystem::read(int& err, const std::string& name,
                       StaticBuffer* buffer) {
   SWC_LOGF(LOG_DEBUG, "read-all %s", name.c_str());
 
@@ -224,7 +225,7 @@ void FileSystem::read(int& err, const std::string& name,
     if(!err)
       err = Error::FS_PATH_NOT_FOUND;
     goto finish;
-  } 
+  }
   len = length(err, name);
   if(err)
     goto finish;
@@ -243,14 +244,14 @@ void FileSystem::read(int& err, const std::string& name,
     int errtmp;
     close(err ? errtmp : err, smartfd);
   }
-    
+
   finish:
   if(err)
-    SWC_LOGF(LOG_ERROR, "read-all failed: %d(%s), %s", 
+    SWC_LOGF(LOG_ERROR, "read-all failed: %d(%s), %s",
               err, Error::get_text(err), name.c_str());
 }
 
-void FileSystem::read(const Callback::ReadAllCb_t& cb, 
+void FileSystem::read(const Callback::ReadAllCb_t& cb,
                       const std::string& name) {
   int err = Error::OK;
   auto dst = std::make_shared<StaticBuffer>();
@@ -261,7 +262,7 @@ void FileSystem::read(const Callback::ReadAllCb_t& cb,
 void FileSystem::combi_pread(int& err, SmartFd::Ptr& smartfd,
                              uint64_t offset, uint32_t amount,
                              StaticBuffer* buffer) {
-  SWC_LOGF(LOG_DEBUG, "combi-pread %s offset=%lu amount=%u", 
+  SWC_LOGF(LOG_DEBUG, "combi-pread %s offset=%lu amount=%u",
            smartfd->filepath().c_str(), offset, amount);
 
   open(err, smartfd);
@@ -275,14 +276,14 @@ void FileSystem::combi_pread(int& err, SmartFd::Ptr& smartfd,
   buffer->free();
   if(pread(err, smartfd, offset, buffer, amount) != amount)
     err = Error::FS_EOF;
-  
+
   finish:
     int errtmp;
     if(smartfd->valid())
       close(err ? errtmp : err, smartfd);
 
   if(err)
-    SWC_LOGF(LOG_ERROR, "combi-pread failed: %d(%s), %s", 
+    SWC_LOGF(LOG_ERROR, "combi-pread failed: %d(%s), %s",
               err, Error::get_text(err), smartfd->filepath().c_str());
 }
 
@@ -302,21 +303,21 @@ void FileSystem::create(const Callback::CreateCb_t& cb, SmartFd::Ptr& smartfd,
   cb(err, smartfd);
 }
 
-void FileSystem::open(const Callback::OpenCb_t& cb, SmartFd::Ptr& smartfd, 
+void FileSystem::open(const Callback::OpenCb_t& cb, SmartFd::Ptr& smartfd,
                       int32_t bufsz) {
   int err = Error::OK;
   open(err, smartfd, bufsz);
   cb(err, smartfd);
 }
 
-size_t FileSystem::read(int& err, SmartFd::Ptr& smartfd, 
+size_t FileSystem::read(int& err, SmartFd::Ptr& smartfd,
                         StaticBuffer* dst, size_t amount) {
   if(!dst->size)
     dst->reallocate(amount);
   return read(err, smartfd, dst->base, amount);
 }
    
-void FileSystem::read(const Callback::ReadCb_t& cb, SmartFd::Ptr& smartfd, 
+void FileSystem::read(const Callback::ReadCb_t& cb, SmartFd::Ptr& smartfd,
                       size_t amount) {
   int err = Error::OK;
   auto dst = std::make_shared<StaticBuffer>();
@@ -324,29 +325,29 @@ void FileSystem::read(const Callback::ReadCb_t& cb, SmartFd::Ptr& smartfd,
   cb(err, smartfd, dst);
 }
   
-size_t FileSystem::pread(int& err, SmartFd::Ptr& smartfd, 
+size_t FileSystem::pread(int& err, SmartFd::Ptr& smartfd,
                          uint64_t offset, StaticBuffer* dst, size_t amount) {
   if(!dst->size)
     dst->reallocate(amount);
   return pread(err, smartfd, offset, dst->base, amount);
 }
 
-void FileSystem::pread(const Callback::PreadCb_t& cb, SmartFd::Ptr& smartfd, 
+void FileSystem::pread(const Callback::PreadCb_t& cb, SmartFd::Ptr& smartfd,
                        uint64_t offset, size_t amount) {
   int err = Error::OK;
   auto dst = std::make_shared<StaticBuffer>();
   pread(err, smartfd, offset, dst.get(), amount);
   cb(err, smartfd, dst);
 }
- 
-void FileSystem::append(const Callback::AppendCb_t& cb, SmartFd::Ptr& smartfd, 
+
+void FileSystem::append(const Callback::AppendCb_t& cb, SmartFd::Ptr& smartfd,
                         StaticBuffer& buffer, Flags flags) {
   int err = Error::OK;
   size_t len = append(err, smartfd, buffer, flags);
   cb(err, smartfd, len);
 }
 
-void FileSystem::seek(const Callback::CloseCb_t& cb, SmartFd::Ptr& smartfd, 
+void FileSystem::seek(const Callback::CloseCb_t& cb, SmartFd::Ptr& smartfd,
                       size_t offset) {
   int err = Error::OK;
   seek(err, smartfd, offset);

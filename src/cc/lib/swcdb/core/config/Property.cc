@@ -30,7 +30,7 @@ bool Value::is_guarded() const {
 }
 
 Value::Ptr Value::default_value(bool defaulted) {
-  defaulted 
+  defaulted
     ? flags.fetch_xor(Value::DEFAULT)
     : flags.fetch_and(Value::DEFAULT);
   return this;
@@ -69,9 +69,9 @@ void from_string(const std::string& s, double* value) {
     case 'M': res *= 1000000LL;      break;
     case 'g':
     case 'G': res *= 1000000000LL;   break;
-    case '\0':                          break;
-    default: 
-      SWC_THROWF(Error::CONFIG_GET_ERROR, 
+    case '\0':                       break;
+    default:
+      SWC_THROWF(Error::CONFIG_GET_ERROR,
                 "Bad Value %s unknown suffix %s", s.c_str(), last);
   }
   *value = res;
@@ -84,11 +84,11 @@ void from_string(const std::string& s, int64_t* value) {
 
   if (s.c_str() == last)
     SWC_THROWF(Error::CONFIG_GET_ERROR, "Bad Value %s", s.c_str());
-  
-  if(errno) 
-    SWC_THROWF(Error::CONFIG_GET_ERROR, 
+
+  if(errno)
+    SWC_THROWF(Error::CONFIG_GET_ERROR,
               "Bad Value %s, number out of range of 64-bit integer", s.c_str());
-  
+
   switch (*last) {
     case 'k':
     case 'K': *value *= 1000LL;         break;
@@ -97,8 +97,8 @@ void from_string(const std::string& s, int64_t* value) {
     case 'g':
     case 'G': *value *= 1000000000LL;   break;
     case '\0':                          break;
-    default: 
-      SWC_THROWF(Error::CONFIG_GET_ERROR, 
+    default:
+      SWC_THROWF(Error::CONFIG_GET_ERROR,
                 "Bad Value %s unknown suffix %s", s.c_str(), last);
   }
 }
@@ -107,8 +107,8 @@ void from_string(const std::string& s, uint8_t* value) {
   int64_t res;
   from_string(s, &res);
 
-  if (res > UINT8_MAX || res < 0) 
-    SWC_THROWF(Error::CONFIG_GET_ERROR, 
+  if (res > UINT8_MAX || res < 0)
+    SWC_THROWF(Error::CONFIG_GET_ERROR,
       "Bad Value %s, number out of range of 8-bit unsigned integer", s.c_str());
   *value = (uint8_t)res;
 }
@@ -117,8 +117,8 @@ void from_string(const std::string& s, uint16_t* value) {
   int64_t res;
   from_string(s, &res);
 
-  if (res > UINT16_MAX || res < 0) 
-    SWC_THROWF(Error::CONFIG_GET_ERROR, 
+  if (res > UINT16_MAX || res < 0)
+    SWC_THROWF(Error::CONFIG_GET_ERROR,
       "Bad Value %s, number out of range of 16-bit unsigned integer", s.c_str());
   *value = (uint16_t)res;
 }
@@ -127,8 +127,8 @@ void from_string(const std::string& s, int32_t* value) {
   int64_t res;
   from_string(s, &res);
 
-  if (res > INT32_MAX || res < INT32_MIN) 
-    SWC_THROWF(Error::CONFIG_GET_ERROR, 
+  if (res > INT32_MAX || res < INT32_MIN)
+    SWC_THROWF(Error::CONFIG_GET_ERROR,
         "Bad Value %s, number out of range of 32-bit integer", s.c_str());
   *value = (int32_t)res;
 }
@@ -156,7 +156,7 @@ void V_BOOL::set_from(Value::Ptr ptr) {
   
 void V_BOOL::set_from(const Strings& values) {
   auto& str = values.back();
-  value = !str.compare("1") ||
+  value = (str.length() == 1 && *str.data() == '1') ||
           !strncasecmp(str.data(), "true", 4) ||
           !strncasecmp(str.data(), "yes", 3);
 }
@@ -242,7 +242,7 @@ std::string V_UINT16::to_string() const {
 uint16_t V_UINT16::get() const {
   return value;
 }
-  
+
 
 
 V_INT32::V_INT32(const int32_t& v, uint8_t flags) : Value(flags), value(v) { }
@@ -277,7 +277,7 @@ std::string V_INT32::to_string() const {
 int32_t V_INT32::get() const {
   return value;
 }
-  
+
 
 
 V_INT64::V_INT64(const int64_t& v, uint8_t flags) : Value(flags), value(v) { }
@@ -312,7 +312,7 @@ std::string V_INT64::to_string() const {
 int64_t V_INT64::get() const {
   return value;
 }
-  
+
 
 
 V_DOUBLE::V_DOUBLE(const double& v, uint8_t flags) : Value(flags), value(v) { }
@@ -385,18 +385,18 @@ std::string V_STRING::get() const {
 
 
 
-V_ENUM::V_ENUM(const int32_t& v, 
-               const FromString_t& from_string, 
+V_ENUM::V_ENUM(const int32_t& v,
+               const FromString_t& from_string,
                const Repr_t& repr,
                uint8_t flags)
-              : Value(flags), value(v), 
-                call_from_string(from_string), 
+              : Value(flags), value(v),
+                call_from_string(from_string),
                 call_repr(repr) {
 }
 
-V_ENUM::V_ENUM(V_ENUM* ptr) 
+V_ENUM::V_ENUM(V_ENUM* ptr)
               : Value(ptr), value(ptr->get()),
-                call_from_string(ptr->call_from_string), 
+                call_from_string(ptr->call_from_string),
                 call_repr(ptr->call_repr) {
 }
 
@@ -419,12 +419,12 @@ void V_ENUM::set_from(Value::Ptr ptr) {
 
 void V_ENUM::set_from(const Strings& values) {
   if(!call_from_string)
-    SWC_THROWF(Error::CONFIG_GET_ERROR, 
+    SWC_THROWF(Error::CONFIG_GET_ERROR,
               "Bad Value %s, no from_string cb set", values.back().c_str());
-    
+
   int nv = call_from_string(values.back());
-  if(nv < 0) 
-    SWC_THROWF(Error::CONFIG_GET_ERROR, 
+  if(nv < 0)
+    SWC_THROWF(Error::CONFIG_GET_ERROR,
               "Bad Value %s, no corresponding enum", values.back().c_str());
   value = nv;
 }
@@ -435,14 +435,14 @@ Value::Type V_ENUM::type() const {
 
 std::string V_ENUM::to_string() const {
   return format(
-    "%s  # (%d)", 
+    "%s  # (%d)",
     (call_repr ? call_repr(get()).c_str() : "repr not defined"), get());
 }
 
 int32_t V_ENUM::get() const {
   return value;
 }
-  
+
 
 // lists
 V_STRINGS::V_STRINGS(const Strings& v, uint8_t flags)
@@ -478,7 +478,7 @@ std::string V_STRINGS::to_string() const {
 Strings V_STRINGS::get() const {
   return value;
 }
-  
+
 
 
 V_INT64S::V_INT64S(const Int64s& v, uint8_t flags)
@@ -520,7 +520,7 @@ std::string V_INT64S::to_string() const {
 Int64s V_INT64S::get() const {
   return value;
 }
-  
+
 
 
 V_DOUBLES::V_DOUBLES(const Doubles& v, uint8_t flags)
@@ -570,8 +570,8 @@ V_GBOOL::V_GBOOL(const bool& v, const V_GBOOL::OnChg_t& cb, uint8_t flags)
                 : Value(flags | Value::GUARDED), value(v), on_chg_cb(cb) {
 }
 
-V_GBOOL::V_GBOOL(V_GBOOL* ptr) 
-                : Value(ptr), 
+V_GBOOL::V_GBOOL(V_GBOOL* ptr)
+                : Value(ptr),
                   value(ptr->get()), on_chg_cb(ptr->on_chg_cb) {
 }
   
@@ -585,7 +585,7 @@ Value::Ptr V_GBOOL::make_new(const Strings& values) {
 void V_GBOOL::set_from(Value::Ptr ptr) {
   auto from = ((V_GBOOL*)ptr);
   flags.store(from->flags);
-    
+
   bool chg = value != from->value;
   value.store(from->value.load());
   if(!on_chg_cb)
@@ -596,7 +596,7 @@ void V_GBOOL::set_from(Value::Ptr ptr) {
   
 void V_GBOOL::set_from(const Strings& values) {
   auto& str = values.back();
-  value.store(!str.compare("1") ||
+  value.store((str.length() == 1 && *str.data() == '1') ||
               !strncasecmp(str.data(), "true", 4) ||
               !strncasecmp(str.data(), "yes", 3));
 }
@@ -633,8 +633,8 @@ V_GUINT8::V_GUINT8(const uint8_t& v, const V_GUINT8::OnChg_t& cb, uint8_t flags)
                   : Value(flags | Value::GUARDED), value(v), on_chg_cb(cb) {
 }
 
-V_GUINT8::V_GUINT8(V_GUINT8* ptr) 
-                  : Value(ptr), 
+V_GUINT8::V_GUINT8(V_GUINT8* ptr)
+                  : Value(ptr),
                     value(ptr->get()), on_chg_cb(ptr->on_chg_cb) {
 }
 
@@ -682,15 +682,15 @@ void V_GUINT8::on_change() const {
 void V_GUINT8::set_cb_on_chg(const V_GUINT8::OnChg_t& cb) {
   on_chg_cb = cb;
 }
-  
+
 
 
 V_GINT32::V_GINT32(const int32_t& v, const V_GINT32::OnChg_t& cb, uint8_t flags)
                   : Value(flags | Value::GUARDED), value(v), on_chg_cb(cb) {
 }
 
-V_GINT32::V_GINT32(V_GINT32* ptr) 
-                  : Value(ptr), 
+V_GINT32::V_GINT32(V_GINT32* ptr)
+                  : Value(ptr),
                     value(ptr->get()), on_chg_cb(ptr->on_chg_cb) {
 }
 
@@ -741,22 +741,22 @@ void V_GINT32::set_cb_on_chg(const V_GINT32::OnChg_t& cb) {
 
 
 
-V_GENUM::V_GENUM(const int32_t& v, 
-                 const V_GENUM::OnChg_t& cb, 
-                 const V_GENUM::FromString_t& from_string, 
+V_GENUM::V_GENUM(const int32_t& v,
+                 const V_GENUM::OnChg_t& cb,
+                 const V_GENUM::FromString_t& from_string,
                  const V_GENUM::Repr_t& repr,
                  uint8_t flags)
-                : Value(flags | Value::GUARDED), value(v), 
-                  on_chg_cb(cb), 
-                  call_from_string(from_string), 
+                : Value(flags | Value::GUARDED), value(v),
+                  on_chg_cb(cb),
+                  call_from_string(from_string),
                   call_repr(repr) {
 }
 
-V_GENUM::V_GENUM(V_GENUM* ptr) 
-                : Value(ptr), value(ptr->get()), 
+V_GENUM::V_GENUM(V_GENUM* ptr)
+                : Value(ptr), value(ptr->get()),
                   on_chg_cb(ptr->on_chg_cb),
-                  call_from_string(ptr->call_from_string), 
-                  call_repr(ptr->call_repr) { 
+                  call_from_string(ptr->call_from_string),
+                  call_repr(ptr->call_repr) {
 }
 
 Value::Ptr V_GENUM::make_new(const Strings& values) {
@@ -784,11 +784,11 @@ void V_GENUM::set_from(Value::Ptr ptr) {
 
 void V_GENUM::set_from(const Strings& values) {
   if(!call_from_string)
-    SWC_THROWF(Error::CONFIG_GET_ERROR, 
-              "Bad Value %s, no from_string cb set", values.back().c_str());    
+    SWC_THROWF(Error::CONFIG_GET_ERROR,
+              "Bad Value %s, no from_string cb set", values.back().c_str());
   int nv = call_from_string(values.back());
-  if(nv < 0) 
-    SWC_THROWF(Error::CONFIG_GET_ERROR, 
+  if(nv < 0)
+    SWC_THROWF(Error::CONFIG_GET_ERROR,
               "Bad Value %s, no corresponding enum", values.back().c_str());
   value.store(nv);
 }
@@ -799,7 +799,7 @@ Value::Type V_GENUM::type() const {
 
 std::string V_GENUM::to_string() const {
   return format(
-    "%s  # (%d)", 
+    "%s  # (%d)",
     (call_repr ? call_repr(get()).c_str() : "repr not defined"), get());
 }
 
@@ -824,13 +824,13 @@ void V_GENUM::set_cb_on_chg(const V_GENUM::OnChg_t& cb) {
 
 
 // Guarded Mutex
-V_GSTRINGS::V_GSTRINGS(const Strings& v, const V_GSTRINGS::OnChg_t& cb, 
+V_GSTRINGS::V_GSTRINGS(const Strings& v, const V_GSTRINGS::OnChg_t& cb,
                        uint8_t flags)
                       : Value(flags | Value::GUARDED), value(v), on_chg_cb(cb) {
 }
 
-V_GSTRINGS::V_GSTRINGS(V_GSTRINGS* ptr) 
-                      : Value(ptr), 
+V_GSTRINGS::V_GSTRINGS(V_GSTRINGS* ptr)
+                      : Value(ptr),
                         value(ptr->get()), on_chg_cb(ptr->on_chg_cb) {
 }
 

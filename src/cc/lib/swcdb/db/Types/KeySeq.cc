@@ -48,22 +48,45 @@ const char* to_string(KeySeq typ) noexcept {
 }
 
 KeySeq range_seq_from(const std::string& typ) noexcept {
-  if(!typ.compare("1") || 
-      (typ.length() == 5 && !strncasecmp(typ.data(), KeySeq_LEXIC, 5)))
-      return KeySeq::LEXIC;
-      
-  if(!typ.compare("2") || 
-    (typ.length() == 6 && !strncasecmp(typ.data(), KeySeq_VOLUME, 6)))
-  return KeySeq::VOLUME;
-    
-  if(!typ.compare("3") || 
-      (typ.length() == 8 && !strncasecmp(typ.data(), KeySeq_FC_LEXIC, 8)))
-    return KeySeq::FC_LEXIC;
-
-  if(!typ.compare("4") || 
-      (typ.length() == 9 && !strncasecmp(typ.data(), KeySeq_FC_VOLUME, 9)))
-    return KeySeq::FC_VOLUME;
-
+  switch(typ.length()) {
+    case 1: {
+      switch(*typ.data()) {
+        case '1':
+          return KeySeq::LEXIC;
+        case '2':
+          return KeySeq::VOLUME;
+        case '3':
+          return KeySeq::FC_LEXIC;
+        case '4':
+          return KeySeq::FC_VOLUME;
+        default:
+          break;
+      }
+      break;
+    }
+    case 5: {
+      if(!strncasecmp(typ.data(), KeySeq_LEXIC, 5))
+        return KeySeq::LEXIC;
+      break;
+    }
+    case 6: {
+      if(!strncasecmp(typ.data(), KeySeq_VOLUME, 6))
+        return KeySeq::VOLUME;
+      break;
+    }
+    case 8: {
+      if(!strncasecmp(typ.data(), KeySeq_FC_LEXIC, 8))
+        return KeySeq::FC_LEXIC;
+      break;
+    }
+    case 9: {
+      if(!strncasecmp(typ.data(), KeySeq_FC_VOLUME, 9))
+        return KeySeq::FC_VOLUME;
+      break;
+    }
+    default:
+      break;
+  }
   return KeySeq::UNKNOWN;
 }
 

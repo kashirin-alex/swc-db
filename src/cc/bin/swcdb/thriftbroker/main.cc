@@ -29,7 +29,7 @@ namespace ThriftBroker {
 
 
 int run() {
-  SWC_TRY_OR_LOG("", 
+  SWC_TRY_OR_LOG("",
 
   auto settings = Env::Config::settings();
 
@@ -40,10 +40,11 @@ int run() {
   std::string transport = settings->get_str("swc.ThriftBroker.transport");
 
   std::shared_ptr<thrift::transport::TTransportFactory> transportFactory;
-  if(!transport.compare("framed")) {
+
+  if(!strncasecmp(transport.data(), "framed", 6)) {
     transportFactory.reset(new thrift::transport::TFramedTransportFactory());
 
-  } else if(!transport.compare("zlib")) {
+  } else if(!strncasecmp(transport.data(), "zlib", 4)) {
     transportFactory.reset(new thrift::transport::TZlibTransportFactory());
 
   } else {
@@ -64,7 +65,7 @@ int run() {
     gethostname(hostname, sizeof(hostname));
     host.append(hostname);
   }
-    
+
   Comm::EndPoints endpoints = Comm::Resolver::get_endpoints(
     settings->get_i16("swc.ThriftBroker.port"),
     addrs,
@@ -73,8 +74,9 @@ int run() {
     true
   );
 
-  SWC_LOGF(LOG_INFO, "STARTING SERVER: THRIFT-BROKER, reactors=%d workers=%d transport=%s", 
-           reactors, workers, transport.c_str());
+  SWC_LOGF(LOG_INFO,
+    "STARTING SERVER: THRIFT-BROKER, reactors=%d workers=%d transport=%s",
+    reactors, workers, transport.c_str());
 
 
   auto app_ctx = std::make_shared<AppContext>();
@@ -92,7 +94,7 @@ int run() {
     for(auto& endpoint : endpoints) {
       bool is_plain = true; // if use_ssl && need ssl.. transportFactory.reset(..)
       std::shared_ptr<thrift::transport::TServerSocket> socket;
-      if(!reactor) { 
+      if(!reactor) {
         socket = std::make_shared<thrift::transport::TServerSocket>(
           endpoint.address().to_string(), endpoint.port());
       } else {
@@ -103,10 +105,10 @@ int run() {
       socket->setRecvTimeout(timeout_ms);
 
       auto protocol = std::make_shared<thrift::protocol::TBinaryProtocolFactory>();
-      /* 
-      protocol->setRecurisionLimit(...);  
+      /*
+      protocol->setRecurisionLimit(...);
       set the DEFAULT_RECURSION_LIMIT
-        FCells in sql_select_rslt_on_fraction 
+        FCells in sql_select_rslt_on_fraction
           requirment depends on the length/depth of key-fractions
       */
       auto server = std::make_shared<thrift::server::TThreadPoolServer>(
@@ -121,7 +123,7 @@ int run() {
       servers.push_back(server);
       threads.emplace_back(
         new std::thread([app_ctx, is_plain, endpoint, server] {
-          SWC_LOG_OUT(LOG_INFO, SWC_LOG_OSTREAM 
+          SWC_LOG_OUT(LOG_INFO, SWC_LOG_OSTREAM
             << "Listening On: " << endpoint
             << " fd=" << (ssize_t)server->getServerTransport()->getSocketFD()
             << ' ' << (is_plain ? "PLAIN" : "SECURE");
@@ -129,7 +131,7 @@ int run() {
 
           server->serve();
 
-          SWC_LOG_OUT(LOG_INFO, SWC_LOG_OSTREAM 
+          SWC_LOG_OUT(LOG_INFO, SWC_LOG_OSTREAM
             << "Stopping to Listen On: " << endpoint
             << " fd=" << (ssize_t)server->getServerTransport()->getSocketFD()
             << ' ' << (is_plain ? "PLAIN" : "SECURE");
@@ -148,7 +150,7 @@ int run() {
   }
   servers.clear();
 
-  for(auto& th : threads) 
+  for(auto& th : threads)
     th->join();
   threads.clear();
 

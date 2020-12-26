@@ -49,27 +49,46 @@ const char* to_string(Column typ) noexcept {
 }
 
 Column column_type_from(const std::string& typ) noexcept {
-
-  if(!typ.compare("1") || 
-     !strncasecmp(typ.data(), Column_PLAIN, 5))
-    return Column::PLAIN;
-
-  if(!typ.compare("2") ||
-     !strncasecmp(typ.data(), Column_COUNTER_I64, typ.length()))
-    return Column::COUNTER_I64;
-  
-  if(!typ.compare("3") || 
-     !strncasecmp(typ.data(), Column_COUNTER_I32, 11))
-    return Column::COUNTER_I32;
-
-  if(!typ.compare("4") || 
-     !strncasecmp(typ.data(), Column_COUNTER_I16, 11))
-    return Column::COUNTER_I16;
-
-  if(!typ.compare("5") || 
-     !strncasecmp(typ.data(), Column_COUNTER_I8, 10))
-    return Column::COUNTER_I8;
-
+  switch(typ.length()) {
+    case 1: {
+      switch(*typ.data()) {
+        case '1':
+          return Column::PLAIN;
+        case '2':
+          return Column::COUNTER_I64;
+        case '3':
+          return Column::COUNTER_I32;
+        case '4':
+          return Column::COUNTER_I16;
+        case '5':
+          return Column::COUNTER_I8;
+        default:
+          break;
+      }
+      break;
+    }
+    case 5: {
+      if(!strncasecmp(typ.data(), Column_PLAIN, 5))
+        return Column::PLAIN;
+      break;
+    }
+    case 11: {
+      if(!strncasecmp(typ.data(), Column_COUNTER_I64, 11))
+        return Column::COUNTER_I64;
+      if(!strncasecmp(typ.data(), Column_COUNTER_I32, 11))
+        return Column::COUNTER_I32;
+      if(!strncasecmp(typ.data(), Column_COUNTER_I16, 11))
+        return Column::COUNTER_I16;
+      break;
+    }
+    case 10: {
+      if(!strncasecmp(typ.data(), Column_COUNTER_I8, 10))
+        return Column::COUNTER_I8;
+      break;
+    }
+    default:
+      break;
+  }
   return Column::UNKNOWN;
 }
 

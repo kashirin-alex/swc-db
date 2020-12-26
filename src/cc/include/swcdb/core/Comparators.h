@@ -184,6 +184,7 @@ const char* to_string(uint8_t comp) {
 
 
 namespace { // local namespace
+
 static int
 _memcomp(const uint8_t* s1, const uint8_t* s2, size_t count) noexcept
   __attribute__((optimize("-O3")));
@@ -192,8 +193,42 @@ SWC_SHOULD_NOT_INLINE
 static int
 _memcomp(const uint8_t* s1, const uint8_t* s2, size_t count) noexcept {
   for(; count; --count, ++s1, ++s2)
-    if(*s1 != *s2) 
+    if(*s1 != *s2)
       return *s1 < *s2 ? -1 : 1;
+  return 0;
+}
+
+
+static int
+_strncomp(const char* s1, const char* s2, size_t count) noexcept
+  __attribute__((optimize("-O3")));
+
+SWC_SHOULD_NOT_INLINE
+static int
+_strncomp(const char* s1, const char* s2, size_t count) noexcept {
+  for(uint8_t b1, b2; count; --count, ++s1, ++s2) {
+    if((b1 = *s1) != (b2 = *s2))
+      return b1 < b2 ? -1 : 1;
+    if(!b1)
+      break;
+  }
+  return 0;
+}
+
+
+static int
+_strcomp(const char* s1, const char* s2) noexcept
+  __attribute__((optimize("-O3")));
+
+SWC_SHOULD_NOT_INLINE
+static int
+_strcomp(const char* s1, const char* s2) noexcept {
+  for(uint8_t b1, b2; ; ++s1, ++s2) {
+    if((b1 = *s1) != (b2 = *s2))
+      return b1 < b2 ? -1 : 1;
+    if(!b1)
+      break;
+  }
   return 0;
 }
 }
@@ -208,6 +243,27 @@ int
 memcomp(const uint8_t* s1, const uint8_t* s2, size_t count) noexcept {
   return _memcomp(s1, s2, count);
 }
+
+extern int
+strncomp(const char* s1, const char* s2, size_t count) noexcept
+  __attribute__((optimize("-O3")));
+
+extern SWC_CAN_INLINE   
+int
+strncomp(const char* s1, const char* s2, size_t count) noexcept {
+  return _strncomp(s1, s2, count);
+}
+
+extern int
+strcomp(const char* s1, const char* s2) noexcept
+  __attribute__((optimize("-O3")));
+
+extern SWC_CAN_INLINE   
+int
+strcomp(const char* s1, const char* s2) noexcept {
+  return _strcomp(s1, s2);
+}
+
 
 
 

@@ -43,27 +43,49 @@ const char* Encoder::to_string(Encoder::Type typ) noexcept {
 }
 
 Encoder::Type Encoder::encoding_from(const std::string& typ) noexcept {
-
-  if(!strncasecmp(typ.data(), Encoder_DEFAULT, typ.length()) || 
-     !typ.compare("0"))
-    return Encoder::Type::DEFAULT;
-
-  if(!strncasecmp(typ.data(), Encoder_PLAIN, typ.length()) || 
-     !typ.compare("1"))
-    return Encoder::Type::PLAIN;
-
-  if(!strncasecmp(typ.data(), Encoder_ZLIB, typ.length()) ||
-     !typ.compare("2"))
-    return Encoder::Type::ZLIB;
-
-  if(!strncasecmp(typ.data(), Encoder_SNAPPY, typ.length()) ||
-     !typ.compare("3"))
-    return Encoder::Type::SNAPPY;
-  
-  if(!strncasecmp(typ.data(), Encoder_ZSTD, typ.length()) ||
-     !typ.compare("4"))
-    return Encoder::Type::ZSTD;
-
+  switch(typ.length()) {
+    case 1: {
+      switch(*typ.data()) {
+        case '0':
+          return Encoder::Type::DEFAULT;
+        case '1':
+          return Encoder::Type::PLAIN;
+        case '2':
+          return Encoder::Type::ZLIB;
+        case '3':
+          return Encoder::Type::SNAPPY;
+        case '4':
+          return Encoder::Type::ZSTD;
+        default:
+          break;
+      }
+      break;
+    }
+    case 4: {
+      if(!strncasecmp(typ.data(), Encoder_ZLIB, 4))
+        return Encoder::Type::ZLIB;
+      if(!strncasecmp(typ.data(), Encoder_ZSTD, 4))
+        return Encoder::Type::ZSTD;
+      break;
+    }
+    case 5: {
+      if(!strncasecmp(typ.data(), Encoder_PLAIN, 5))
+        return Encoder::Type::PLAIN;
+      break;
+    }
+    case 6: {
+      if(!strncasecmp(typ.data(), Encoder_SNAPPY, 6))
+        return Encoder::Type::SNAPPY;
+      break;
+    }
+    case 7: {
+      if(!strncasecmp(typ.data(), Encoder_DEFAULT, 7))
+        return Encoder::Type::DEFAULT;
+      break;
+    }
+    default:
+      break;
+  }
   return Encoder::Type::UNKNOWN;
 }
 
@@ -80,8 +102,8 @@ int Encoder::from_string_encoding(const std::string& typ) noexcept {
 
 
 void Encoder::decode(
-            int& err, Encoder::Type encoder, 
-            const uint8_t* src, size_t sz_enc, 
+            int& err, Encoder::Type encoder,
+            const uint8_t* src, size_t sz_enc,
             uint8_t *dst, size_t sz) {
 
   switch(encoder) {
@@ -128,11 +150,11 @@ void Encoder::decode(
 
 
 void Encoder::encode(
-            int&, Encoder::Type encoder, 
-            const uint8_t* src, size_t src_sz, 
-            size_t* sz_enc, DynamicBuffer& output, 
+            int&, Encoder::Type encoder,
+            const uint8_t* src, size_t src_sz,
+            size_t* sz_enc, DynamicBuffer& output,
             uint32_t reserve, bool no_plain_out) {
-  
+
   switch(encoder) {
     case Encoder::Type::ZLIB: {
 
@@ -146,7 +168,7 @@ void Encoder::encode(
         uint32_t avail_out = src_sz + 6 + (((src_sz / 16000) + 1) * 5);
         output.ensure(reserve + avail_out);
         output.ptr += reserve;
-        
+
         strm.avail_out = avail_out;
         strm.next_out = output.ptr;
         strm.avail_in = src_sz;
@@ -165,7 +187,7 @@ void Encoder::encode(
     case Encoder::Type::SNAPPY: {
       output.ensure(reserve + snappy::MaxCompressedLength(src_sz));
       output.ptr += reserve;
-      snappy::RawCompress((const char *)src, src_sz, 
+      snappy::RawCompress((const char *)src, src_sz,
                           (char *)output.ptr, sz_enc);
       if(*sz_enc && *sz_enc < src_sz) {
         output.ptr += *sz_enc;
@@ -178,7 +200,7 @@ void Encoder::encode(
       size_t const avail_out = ZSTD_compressBound(src_sz);
       output.ensure(reserve + avail_out);
       output.ptr += reserve;
-      
+
       *sz_enc = ZSTD_compress(
         (void *)output.ptr, avail_out,
         (void *)src, src_sz,
@@ -191,11 +213,11 @@ void Encoder::encode(
       break;
     }
 
-    default: 
+    default:
       break;
   }
 
-  *sz_enc = 0; 
+  *sz_enc = 0;
   if(no_plain_out)
     return;
 
