@@ -18,14 +18,14 @@ Block::Ptr Block::make(const DB::Cells::Interval& interval,
   return new Block(interval, blocks, state);
 }
 
-Block::Block(const DB::Cells::Interval& interval, 
+Block::Block(const DB::Cells::Interval& interval,
              Blocks* blocks, State state)
             : blocks(blocks), next(nullptr), prev(nullptr),
               m_cells(
                 DB::Cells::Mutable(
-                  blocks->range->cfg->key_seq, 
-                  blocks->range->cfg->cell_versions(), 
-                  blocks->range->cfg->cell_ttl(), 
+                  blocks->range->cfg->key_seq,
+                  blocks->range->cfg->cell_versions(),
+                  blocks->range->cfg->cell_ttl(),
                   blocks->range->cfg->column_type())),
               m_key_end(interval.key_end),
               m_processing(0), m_state(state), m_loader(nullptr) {
@@ -51,8 +51,8 @@ Block::Ptr Block::ptr() {
 void Block::schema_update() noexcept {
   std::scoped_lock lock(m_mutex);
   m_cells.configure(
-    blocks->range->cfg->cell_versions(), 
-    blocks->range->cfg->cell_ttl(), 
+    blocks->range->cfg->cell_versions(),
+    blocks->range->cfg->cell_ttl(),
     blocks->range->cfg->column_type()
   );
 }
@@ -83,7 +83,7 @@ void Block::get_key_end(DB::Cell::Key& key) const {
 }
 
 bool Block::is_consist(const DB::Cells::Interval& intval) const {
-  return 
+  return
     (intval.key_end.empty() || m_prev_key_end.empty() ||
      DB::KeySeq::compare(m_cells.key_seq, m_prev_key_end, intval.key_end)
       == Condition::GT)
@@ -97,15 +97,15 @@ bool Block::is_in_end(const DB::Cell::Key& key) const {
 }
 
 bool Block::_is_in_end(const DB::Cell::Key& key) const {
-  return m_key_end.empty() || (!key.empty() && 
-          DB::KeySeq::compare(m_cells.key_seq, m_key_end, key) 
+  return m_key_end.empty() || (!key.empty() &&
+          DB::KeySeq::compare(m_cells.key_seq, m_key_end, key)
                                               != Condition::GT);
 }
 
 bool Block::is_next(const DB::Specs::Interval& spec) const {
   if(includes_end(spec)) {
     Core::MutexAtomic::scope lock(m_mutex_intval);
-    return (spec.offset_key.empty() || _is_in_end(spec.offset_key)) && 
+    return (spec.offset_key.empty() || _is_in_end(spec.offset_key)) &&
             _includes_begin(spec);
   }
   return false;
@@ -120,7 +120,7 @@ bool Block::includes(const DB::Specs::Interval& spec) const {
 }
 
 bool Block::_includes_begin(const DB::Specs::Interval& spec) const {
-  return m_key_end.empty() || 
+  return m_key_end.empty() ||
          spec.is_matching_begin(m_cells.key_seq, m_key_end);
 }
 
@@ -136,7 +136,7 @@ void Block::preload() {
 bool Block::add_logged(const DB::Cells::Cell& cell) {
   if(!is_in_end(cell.key))
     return false;
-  
+
   if(loaded()) {
     std::scoped_lock lock(m_mutex);
     ssize_t sz = m_cells.size_of_internal();
@@ -172,10 +172,9 @@ void Block::load_final(const DB::Cells::MutableVec& vec_cells) {
   }
 }
 
-size_t Block::load_cells(const uint8_t* buf, size_t remain, 
+size_t Block::load_cells(const uint8_t* buf, size_t remain,
                          uint32_t revs, size_t avail,
                          bool& was_splitted, bool synced) {
-  DB::Cells::Cell cell;
   size_t count = 0;
   size_t added = 0;
   size_t offset_hint = 0;
@@ -188,29 +187,16 @@ size_t Block::load_cells(const uint8_t* buf, size_t remain,
     synced = true;
   ssize_t sz = m_cells.size_of_internal();
 
-  while(remain) {
+  try { while(remain) {
     ++count;
-    try {
-      cell.read(&buf, &remain);
-      
-    } catch(...) {
-      const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
-      SWC_LOG_OUT(LOG_ERROR,
-        SWC_LOG_OSTREAM << "Cell trunclated at count="
-          << count << '/' << avail << " remain=" << remain;
-        m_prev_key_end.print(SWC_LOG_OSTREAM << ' ');
-        m_key_end.print(SWC_LOG_OSTREAM << " < key <= ");
-        e.print(SWC_LOG_OSTREAM << ' ');
-      );
-      break;
-    }
-    
+    DB::Cells::Cell cell(&buf, &remain);
+
     if(!m_prev_key_end.empty() &&
-        DB::KeySeq::compare(m_cells.key_seq, m_prev_key_end, cell.key) 
+        DB::KeySeq::compare(m_cells.key_seq, m_prev_key_end, cell.key)
           != Condition::GT)
       continue;
-    
-    if(!m_key_end.empty() && 
+
+    if(!m_key_end.empty() &&
         DB::KeySeq::compare(m_cells.key_seq, m_key_end, cell.key)
           == Condition::GT)
       break;
@@ -218,11 +204,10 @@ size_t Block::load_cells(const uint8_t* buf, size_t remain,
     if(cell.has_expired(m_cells.ttl))
       continue;
 
-    if(synced)
-      m_cells.add_sorted(cell);
-    else
-      m_cells.add_raw(cell, &offset_hint);
-      
+    synced
+      ? m_cells.add_sorted(cell)
+      : m_cells.add_raw(cell, &offset_hint);
+
     if(!(++added % 1000)) {
       Env::Rgr::res().adj_mem_usage(ssize_t(m_cells.size_of_internal()) - sz);
       if(splitter()) {
@@ -231,6 +216,16 @@ size_t Block::load_cells(const uint8_t* buf, size_t remain,
       }
       sz = m_cells.size_of_internal();
     }
+
+  } } catch(...) {
+    const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
+    SWC_LOG_OUT(LOG_ERROR,
+      SWC_LOG_OSTREAM << "Cell trunclated at count="
+        << count << '/' << avail << " remain=" << remain;
+      m_prev_key_end.print(SWC_LOG_OSTREAM << ' ');
+      m_key_end.print(SWC_LOG_OSTREAM << " < key <= ");
+      e.print(SWC_LOG_OSTREAM << ' ');
+    );
   }
   Env::Rgr::res().adj_mem_usage(ssize_t(m_cells.size_of_internal()) - sz);
   return added;
@@ -314,7 +309,7 @@ Block::Ptr Block::split(bool loaded) {
 
 Block::Ptr Block::_split(bool loaded) {
   Block::Ptr blk = Block::make(
-    DB::Cells::Interval(m_cells.key_seq), 
+    DB::Cells::Interval(m_cells.key_seq),
     blocks,
     loaded ? State::LOADED : State::NONE
   );
@@ -348,7 +343,7 @@ size_t Block::release() {
     bool support;
     if(!m_processing && loaded() && m_mutex_state.try_full_lock(support)) {
       auto at(State::LOADED);
-      if(!m_loader && !m_processing && 
+      if(!m_loader && !m_processing &&
          m_state.compare_exchange_weak(at, State::NONE)) {
         released += m_cells.size_of_internal();
         m_cells.free();
@@ -384,7 +379,7 @@ bool Block::need_load() const noexcept {
 
 SWC_SHOULD_INLINE
 bool Block::processing() noexcept {
-  bool busy = m_processing || 
+  bool busy = m_processing ||
               m_state == State::LOADING ||
               !m_mutex.try_lock();
   if(!busy) {
@@ -393,7 +388,7 @@ bool Block::processing() noexcept {
            m_state == State::LOADING ||
            !m_mutex_state.try_full_lock(support);
     if(!busy) {
-      busy = m_processing || 
+      busy = m_processing ||
              m_state == State::LOADING ||
              m_loader;
       m_mutex_state.unlock(support);
@@ -425,9 +420,9 @@ size_t Block::size_of_internal() {
 
 bool Block::_need_split() const noexcept {
   auto sz = _size();
-  return sz > 1 && 
-    (sz >= blocks->range->cfg->block_cells() * 2 || 
-     m_cells.size_bytes() >= blocks->range->cfg->block_size() * 2) && 
+  return sz > 1 &&
+    (sz >= blocks->range->cfg->block_cells() * 2 ||
+     m_cells.size_bytes() >= blocks->range->cfg->block_size() * 2) &&
     !m_cells.has_one_key();
 }
 
@@ -480,7 +475,7 @@ Block::ScanState Block::_scan(const ReqScan::Ptr& req, bool synced) {
 
   if(!synced)
     blocks->scan(req, ptr());
-  
+
   return ScanState::SYNCED;
 }
 
