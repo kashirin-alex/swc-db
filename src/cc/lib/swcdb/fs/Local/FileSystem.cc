@@ -79,7 +79,7 @@ void FileSystemLocal::remove(int& err, const std::string& name) {
     if(errno != ENOENT) {
       err = errno;
       SWC_LOGF(LOG_ERROR, "remove('%s') failed - %d(%s)", 
-                abspath.c_str(), errno, strerror(errno));
+                abspath.c_str(), errno, Error::get_text(errno));
       return;
     }
   }
@@ -95,7 +95,7 @@ size_t FileSystemLocal::length(int& err, const std::string& name) {
   if ((len = FileUtils::length(abspath)) == (size_t)-1) {
     err = errno;
     SWC_LOGF(LOG_ERROR, "length('%s') failed - %d(%s)", 
-              abspath.c_str(), errno, strerror(errno));
+              abspath.c_str(), errno, Error::get_text(errno));
     len = 0;
     return len;
   }
@@ -125,7 +125,7 @@ void FileSystemLocal::readdir(int& err, const std::string& name,
   if (errno) {
     err = errno;
     SWC_LOGF(LOG_ERROR, "FileUtils::readdir('%s') failed - %s", 
-              abspath.c_str(), strerror(errno));
+              abspath.c_str(), Error::get_text(errno));
     return;
   }
     
@@ -153,7 +153,7 @@ void FileSystemLocal::readdir(int& err, const std::string& name,
       }
       err = errno;
       SWC_LOGF(LOG_ERROR, "readdir('%s') stat failed - %d(%s)", 
-                full_entry_path.c_str(), errno, strerror(errno));
+                full_entry_path.c_str(), errno, Error::get_text(errno));
       return;
     }
     entry.length = (uint64_t)statbuf.st_size;
@@ -169,7 +169,7 @@ void FileSystemLocal::rmdir(int& err, const std::string& name) {
   if (ec) {
     err = ec.value();
     SWC_LOGF(LOG_ERROR, "rmdir('%s') failed - %s", 
-              abspath.c_str(), strerror(errno));
+              abspath.c_str(), Error::get_text(errno));
     return;
   }
   SWC_LOGF(LOG_DEBUG, "rmdir('%s')", abspath.c_str());
@@ -186,7 +186,7 @@ void FileSystemLocal::rename(int& err, const std::string& from,
   if (ec) {
     err = ec.value();
     SWC_LOGF(LOG_ERROR, "rename('%s' to '%s') failed - %s", 
-              abspath_from.c_str(), abspath_to.c_str(), strerror(errno));
+              abspath_from.c_str(), abspath_to.c_str(), Error::get_text(errno));
     return;
   }
   SWC_LOGF(LOG_DEBUG, "rename('%s' to '%s')", 
@@ -215,7 +215,7 @@ void FileSystemLocal::create(int& err, SmartFd::Ptr& smartfd,
   if (!smartfd->valid()) {
     err = errno;
     SWC_LOGF(LOG_ERROR, "create failed: %d(%s), %s", 
-              errno, strerror(errno), smartfd->to_string().c_str());
+              errno, Error::get_text(errno), smartfd->to_string().c_str());
 
     if(err == EACCES || err == ENOENT)
       err = Error::FS_PATH_NOT_FOUND;
@@ -257,7 +257,7 @@ void FileSystemLocal::open(int& err, SmartFd::Ptr& smartfd, int32_t bufsz) {
   if (!smartfd->valid()) {
     err = errno;
     SWC_LOGF(LOG_ERROR, "open failed: %d(%s), %s", 
-              errno, strerror(errno), smartfd->to_string().c_str());
+              errno, Error::get_text(errno), smartfd->to_string().c_str());
                 
     if(err == EACCES || err == ENOENT)
       err = Error::FS_PATH_NOT_FOUND;
@@ -284,7 +284,7 @@ size_t FileSystemLocal::read(int& err, SmartFd::Ptr& smartfd,
   if ((offset = (uint64_t)lseek(smartfd->fd(), 0, SEEK_CUR)) == (uint64_t)-1) {
     err = errno;
     SWC_LOGF(LOG_ERROR, "read, lseek failed: %d(%s), %s offset=%lu", 
-              errno, strerror(errno), smartfd->to_string().c_str(), offset);
+              errno, Error::get_text(errno), smartfd->to_string().c_str(), offset);
     return nread;
   }
   */
@@ -297,7 +297,7 @@ size_t FileSystemLocal::read(int& err, SmartFd::Ptr& smartfd,
     nread = 0;
     err = errno;
     SWC_LOGF(LOG_ERROR, "read failed: %d(%s), %s", 
-              errno, strerror(errno), smartfd->to_string().c_str());
+              errno, Error::get_text(errno), smartfd->to_string().c_str());
   } else {
     if((ret = nread) != amount)
       err = Error::FS_EOF;
@@ -322,7 +322,7 @@ size_t FileSystemLocal::pread(int& err, SmartFd::Ptr& smartfd,
     nread = 0;
     err = errno;
     SWC_LOGF(LOG_ERROR, "pread failed: %d(%s), %s", 
-              errno, strerror(errno), smartfd->to_string().c_str());
+              errno, Error::get_text(errno), smartfd->to_string().c_str());
   } else {
     if((ret = nread) != amount)
       err = Error::FS_EOF;
@@ -346,7 +346,7 @@ size_t FileSystemLocal::append(int& err, SmartFd::Ptr& smartfd,
     && lseek(smartfd->fd(), 0, SEEK_CUR) == (uint64_t)-1) {
     err = errno;
     SWC_LOGF(LOG_ERROR, "append, lseek failed: %d(%s), %s", 
-              errno, strerror(errno), smartfd->to_string().c_str());
+              errno, Error::get_text(errno), smartfd->to_string().c_str());
     return nwritten;
   }
   */
@@ -356,7 +356,7 @@ size_t FileSystemLocal::append(int& err, SmartFd::Ptr& smartfd,
     nwritten = 0;
     err = errno;
     SWC_LOGF(LOG_ERROR, "write failed: %d(%s), %s", 
-              errno, strerror(errno), smartfd->to_string().c_str());
+              errno, Error::get_text(errno), smartfd->to_string().c_str());
     return nwritten;
   }
   smartfd->forward(nwritten);
@@ -365,7 +365,7 @@ size_t FileSystemLocal::append(int& err, SmartFd::Ptr& smartfd,
     if(fsync(smartfd->fd())) {
       err = errno;
       SWC_LOGF(LOG_ERROR, "write, fsync failed: %d(%s), %s", 
-                errno, strerror(errno), smartfd->to_string().c_str());
+                errno, Error::get_text(errno), smartfd->to_string().c_str());
     }
   }
     
@@ -383,7 +383,7 @@ void FileSystemLocal::seek(int& err, SmartFd::Ptr& smartfd, size_t offset) {
   if (at == (uint64_t)-1 || at != offset || errno) {
     err = errno;
     SWC_LOGF(LOG_ERROR, "seek failed - %d(%s) %s", 
-              err, strerror(errno), smartfd->to_string().c_str());
+              err, Error::get_text(errno), smartfd->to_string().c_str());
     if(!errno)
       smartfd->pos(at);
     return;
@@ -402,7 +402,7 @@ void FileSystemLocal::sync(int& err, SmartFd::Ptr& smartfd) {
   if(fsync(smartfd->fd()) != Error::OK) {
     err = errno;
     SWC_LOGF(LOG_ERROR, "sync failed - %d(%s) %s", 
-              err, strerror(errno), smartfd->to_string().c_str());
+              err, Error::get_text(errno), smartfd->to_string().c_str());
   }
 }
 

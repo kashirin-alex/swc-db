@@ -547,7 +547,7 @@ void Fragment::print(std::ostream& out) {
   {
     Core::MutexSptd::scope lock(m_mutex);;
     out << " queue=" << m_queue.size();
-    m_smartfd->print(out);
+    m_smartfd->print(out << ' ');
     if(m_err)
       Error::print(out << ' ', m_err);
   }

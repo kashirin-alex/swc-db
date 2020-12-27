@@ -106,7 +106,7 @@ ssize_t write(const std::string& fname, const std::string& contents) {
   if (fd < 0) {
     int saved_errno = errno;
     SWC_LOGF(LOG_ERROR, "Unable to open file \"%s\" for writing - %s", fname.c_str(),
-              strerror(saved_errno));
+              Error::get_text(saved_errno));
     errno = saved_errno;
     return -1;
   }
@@ -157,14 +157,14 @@ bool mkdirs(const std::string& dirname) {
       if (errno != ENOENT) {
         saved_errno = errno;
         SWC_LOGF(LOG_ERROR, "Problem stat'ing directory '%s' - %d(%s)", tmpdir,
-                  saved_errno, strerror(saved_errno));
+                  saved_errno, Error::get_text(saved_errno));
         break;
       }
       errno = 0;
       if(mkdir(tmpdir, 0755) && errno != EEXIST) {
         saved_errno = errno;
         SWC_LOGF(LOG_ERROR, "Problem creating directory '%s' - %d(%s)", tmpdir,
-                   saved_errno, strerror(saved_errno));
+                   saved_errno, Error::get_text(saved_errno));
         break;
       }
     }
@@ -185,7 +185,7 @@ bool unlink(const std::string& fname) {
   if (::unlink(fname.c_str()) == -1 && errno != 2) {
     int saved_errno = errno;
     SWC_LOGF(LOG_ERROR, "unlink(\"%s\") failed - %s", fname.c_str(),
-              strerror(saved_errno));
+              Error::get_text(saved_errno));
     errno = saved_errno;
     return false;
   }
@@ -196,7 +196,7 @@ bool rename(const std::string& oldpath, const std::string& newpath) {
   if (::rename(oldpath.c_str(), newpath.c_str()) == -1) {
     int saved_errno = errno;
     SWC_LOGF(LOG_ERROR, "rename(\"%s\", \"%s\") failed - %s",
-              oldpath.c_str(), newpath.c_str(), strerror(saved_errno));
+              oldpath.c_str(), newpath.c_str(), Error::get_text(saved_errno));
     errno = saved_errno;
     return false;
   }
@@ -227,7 +227,7 @@ void readdir(const std::string& dirname,
   DIR* dirp = opendir(dirname.c_str());
   if(!dirp || errno) {
     SWC_LOGF(LOG_ERROR, "Problem reading directory '%s' - %s", dirname.c_str(),
-              strerror(errno));
+              Error::get_text(errno));
     return;
   }
   re2::RE2* regex = fname_regex.length()
@@ -259,7 +259,7 @@ void readdir(const std::string& dirname,
 
   if(errno)
     SWC_LOGF(LOG_ERROR, "Problem reading directory '%s' - %s", dirname.c_str(),
-              strerror(errno));
+              Error::get_text(errno));
   (void)closedir(dirp);
   if(regex)
     delete regex;
@@ -275,7 +275,7 @@ char* file_to_buffer(const std::string& fname, off_t *lenp) {
   if((fd = open(fname.c_str(), O_RDONLY)) < 0) {
     int saved_errno = errno;
     SWC_LOGF(LOG_ERROR, "open(\"%s\") failure - %s", fname.c_str(),
-            strerror(saved_errno));
+            Error::get_text(saved_errno));
     errno = saved_errno;
     return 0;
   }
@@ -283,7 +283,7 @@ char* file_to_buffer(const std::string& fname, off_t *lenp) {
   if(fstat(fd, &statbuf) < 0) {
     int saved_errno = errno;
     SWC_LOGF(LOG_ERROR, "fstat(\"%s\") failure - %s", fname.c_str(),
-           strerror(saved_errno));
+           Error::get_text(saved_errno));
     errno = saved_errno;
     return 0;
   }
@@ -299,7 +299,7 @@ char* file_to_buffer(const std::string& fname, off_t *lenp) {
   if(nread == (ssize_t)-1) {
     int saved_errno = errno;
     SWC_LOGF(LOG_ERROR, "read(\"%s\") failure - %s", fname.c_str(),
-            strerror(saved_errno));
+            Error::get_text(saved_errno));
     errno = saved_errno;
     delete [] rbuf;
     *lenp = 0;

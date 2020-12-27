@@ -34,7 +34,7 @@ std::map<const int, const char *> text_map {
   { Error::BAD_FORMAT,                      "bad format"},
   { Error::BAD_REGEXP,                      "bad regexp"},
   { Error::BAD_LOGIC,                       "bad logic"},
-  
+
   { Error::CANCELLED,                       "cancelled"},
   { Error::NOT_ALLOWED,                     "not allowed" },
   { Error::INVALID_ARGUMENT,                "invalid argument" },
@@ -82,7 +82,7 @@ std::map<const int, const char *> text_map {
   { Error::COLUMN_REACHED_ID_LIMIT,         "Columd ID max-reached"},
   { Error::COLUMN_MARKED_REMOVED,           "Column is being removed"},
   { Error::COLUMN_UNKNOWN_GET_FLAG,         "unknown get column flag!"},
-    
+
   { Error::COLUMN_SCHEMA_NAME_EXISTS,       "Schema column name already exists!"},
   { Error::COLUMN_SCHEMA_NAME_NOT_EXISTS,   "Schema column name doesn't exist!"},
   { Error::COLUMN_SCHEMA_BAD_SAVE,          "Schema for save not matches saved"},
@@ -93,7 +93,7 @@ std::map<const int, const char *> text_map {
   { Error::COLUMN_SCHEMA_MISSING,           "cid's Schema is missing"},
   { Error::COLUMN_SCHEMA_IS_SYSTEM,         "Action not allowed on system schema"},
   { Error::COLUMN_CHANGE_INCOMPATIBLE,      "Schema seq/type/sysname incompatible"},
-  
+
   { Error::RANGE_NOT_FOUND,                 "No corresponding range"},
   { Error::RANGE_CELLSTORES,                "Cellstores had Errors"},
   { Error::RANGE_COMMITLOG,                 "Commitlog had Errors"},
@@ -114,7 +114,7 @@ static const char ERROR_NOT_REGISTERED[] = "ERROR NOT REGISTERED";
 
 
 SWC_SHOULD_NOT_INLINE
-const char* Error::get_text(const int err) {
+const char* Error::get_text(const int err) noexcept {
   const char* text = nullptr;
   switch(err) {
     case SWC_ERRNO_SYS_BEGIN ... SWC_ERRNO_SYS_END:

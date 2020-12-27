@@ -1,8 +1,9 @@
-/* 
+/*
  * SWC-DB© Copyright since 2019 Alex Kashirin <kashirin.alex@gmail.com>
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
+#include "swcdb/core/Error.h"
 #include "swcdb/core/Logger.h"
 #include <stdarg.h>
 
@@ -26,8 +27,8 @@ const char* priority_name[] = {
 };
 
 std::string LogWriter::repr(uint8_t priority) {
-  return priority < LOG_NOTSET ? 
-          get_name(priority) 
+  return priority < LOG_NOTSET ?
+          get_name(priority)
         : "undefined logging level: " +std::to_string(priority);
 }
 
@@ -55,19 +56,19 @@ uint8_t LogWriter::from_string(const std::string& loglevel) {
   return -1;
 }
 
-LogWriter::LogWriter(const std::string& name, const std::string& logs_path) 
-                    : m_name(name), m_logs_path(logs_path), 
-                      m_file_out(stdout), //m_file_err(stderr), 
-                      m_priority(LOG_INFO), m_show_line_numbers(true), 
+LogWriter::LogWriter(const std::string& name, const std::string& logs_path)
+                    : m_name(name), m_logs_path(logs_path),
+                      m_file_out(stdout), //m_file_err(stderr),
+                      m_priority(LOG_INFO), m_show_line_numbers(true),
                       m_daemon(false), m_last_time(0) {
   //std::cout << " LogWriter()=" << (size_t)this << "\n";
 }
-LogWriter::~LogWriter() { 
+LogWriter::~LogWriter() {
   std::cout << std::flush;
 }
 
 void LogWriter::initialize(const std::string& name) {
-  //std::cout << " LogWriter::initialize name=" << name 
+  //std::cout << " LogWriter::initialize name=" << name
   //          << " ptr=" << (size_t)this << "\n";
   Core::MutexSptd::scope lock(mutex);
   m_name.clear();
@@ -75,7 +76,7 @@ void LogWriter::initialize(const std::string& name) {
 }
 
 void LogWriter::daemon(const std::string& logs_path) {
-  //std::cout << " LogWriter::daemon logs_path=" << logs_path 
+  //std::cout << " LogWriter::daemon logs_path=" << logs_path
   //          << " ptr=" << (size_t)this << "\n";
   errno = 0;
 
@@ -87,10 +88,10 @@ void LogWriter::daemon(const std::string& logs_path) {
 
   renew_files();
 
-  if(errno) 
+  if(errno)
     throw std::runtime_error(
       "SWC::Core::LogWriter::initialize err="
-      + std::to_string(errno)+"("+strerror(errno)+")"
+      + std::to_string(errno)+"("+Error::get_text(errno)+")"
     );
   std::fclose(stderr);
   std::cerr << " AFTER(std::fclose(stderr);) \n";
@@ -102,7 +103,7 @@ uint32_t LogWriter::_seconds() {
   auto t = ::time(0);
   if(m_daemon && m_last_time < t-86400)
     renew_files();
-  return (uint32_t)(t-86400*(t/86400)); 
+  return (uint32_t)(t-86400*(t/86400));
   // seconds since start of a day
 }
 
@@ -110,7 +111,7 @@ void LogWriter::renew_files() {
   errno = 0;
   m_last_time = (::time(0)/86400)*86400;
   auto ltm = localtime(&m_last_time);
-    
+
   std::string filepath(m_logs_path);
   ::mkdir(filepath.c_str(), 0755);
   filepath.append(std::to_string(1900+ltm->tm_year));
@@ -133,8 +134,8 @@ void LogWriter::renew_files() {
   if(!errno) {
     std::cout << "Changing Standard Output File to=" << filepath_out << "\n";
     m_file_out = std::freopen(filepath_out.c_str(), "w", m_file_out);
-      
-    std::cerr.rdbuf(std::cout.rdbuf()); 
+
+    std::cerr.rdbuf(std::cout.rdbuf());
     //std::cerr << "Changing Error Output File to=" << filepath_err << "\n";
     //m_file_err = std::freopen(filepath_err.c_str(), "w", m_file_err);
   }
@@ -160,7 +161,7 @@ void LogWriter::log(uint8_t priority, const char* fmt, ...) {
 }
 
 SWC_SHOULD_NOT_INLINE
-void LogWriter::log(uint8_t priority, const char* filen, int fline, 
+void LogWriter::log(uint8_t priority, const char* filen, int fline,
                     const char* fmt, ...) {
   va_list ap;
   va_start(ap, fmt);

@@ -11,7 +11,7 @@
 
 
 
-namespace SWC { 
+namespace SWC {
 
 
 /**
@@ -23,7 +23,7 @@ namespace Error {
 
 
 #define SWC_ERRNO_SYS_BEGIN     0
-#define SWC_ERRNO_SYS_END       2048  
+#define SWC_ERRNO_SYS_END       2048
 
 #define SWC_ERRNO_FUTURE_BEGIN  2049
 #define SWC_ERRNO_FUTURE_END    2059
@@ -32,11 +32,11 @@ namespace Error {
 #define SWC_ERRNO_EAI_END       2080
 
 #define SWC_ERRNO_APP_BEGIN     3000
-#define SWC_ERRNO_APP_END       3100  
+#define SWC_ERRNO_APP_END       3100
 
 
 enum Code : int32_t {
-  
+
   EXCEPTION_BAD                                = -4,
   EXCEPTION_UNKNOWN                            = -3,
   UNPOSSIBLE                                   = -2,
@@ -52,7 +52,7 @@ enum Code : int32_t {
   BAD_FORMAT                                   = SWC_ERRNO_APP_BEGIN + 5,
   BAD_REGEXP                                   = SWC_ERRNO_APP_BEGIN + 6,
   BAD_LOGIC                                    = SWC_ERRNO_APP_BEGIN + 7,
-  
+
   CANCELLED                                    = SWC_ERRNO_APP_BEGIN + 8,
   NOT_ALLOWED                                  = SWC_ERRNO_APP_BEGIN + 9,
   INVALID_ARGUMENT                             = SWC_ERRNO_APP_BEGIN + 10,
@@ -72,7 +72,7 @@ enum Code : int32_t {
   REQUEST_TRUNCATED_PAYLOAD                    = SWC_ERRNO_APP_BEGIN + 21,
   REQUEST_TIMEOUT                              = SWC_ERRNO_APP_BEGIN + 22,
   NOT_IMPLEMENTED                              = SWC_ERRNO_APP_BEGIN + 23,
-      
+
   ENCODER_ENCODE                               = SWC_ERRNO_APP_BEGIN + 24,
   ENCODER_DECODE                               = SWC_ERRNO_APP_BEGIN + 25,
 
@@ -82,7 +82,7 @@ enum Code : int32_t {
 
   SERVER_NOT_READY                             = SWC_ERRNO_APP_BEGIN + 29,
   SERVER_SHUTTING_DOWN                         = SWC_ERRNO_APP_BEGIN + 30,
-      
+
   MNGR_NOT_ACTIVE                              = SWC_ERRNO_APP_BEGIN + 31,
   MNGR_NOT_INITIALIZED                         = SWC_ERRNO_APP_BEGIN + 32,
 
@@ -126,7 +126,7 @@ enum Code : int32_t {
 
 
 
-const char* get_text(const int err);
+const char* get_text(const int err) noexcept;
 
 void print(std::ostream& out, int err);
 
@@ -138,7 +138,7 @@ void print(std::ostream& out, int err);
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/core/Error.cc"
-#endif 
+#endif
 
 
 #endif // swcdb_core_Error_h

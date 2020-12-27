@@ -138,7 +138,7 @@ bool FileSystemCeph::initialize() {
 	if(err < 0 || errno) {
     err = err ? -err : errno;
     SWC_LOGF(LOG_ERROR, "ceph_create('%s') failed - %d(%s)", 
-                            client_id.c_str(), err, strerror(err));
+                            client_id.c_str(), err, Error::get_text(err));
     return false;
 	}
 
@@ -152,7 +152,7 @@ bool FileSystemCeph::initialize() {
     if(err < 0 || errno) {
       err = err ? -err : errno;
       SWC_LOGF(LOG_ERROR, "ceph_conf_read_file('%s') failed - %d(%s)", 
-                            conf_file.c_str(), err, strerror(err));
+                            conf_file.c_str(), err, Error::get_text(err));
       stop();
       m_run.store(true);
       return false;
@@ -165,7 +165,7 @@ bool FileSystemCeph::initialize() {
 	  if(err < 0 || errno) {
       err = err ? -err : errno;
       SWC_LOGF(LOG_ERROR, "ceph_create('%s') failed - %d(%s)", 
-                              client_id.c_str(), err, strerror(err));
+                              client_id.c_str(), err, Error::get_text(err));
       stop();
       m_run.store(true);
       return false;
@@ -186,7 +186,7 @@ bool FileSystemCeph::initialize() {
   if(err < 0 || errno) {
     err = err ? -err : errno;
     SWC_LOGF(LOG_ERROR, "ceph_mount('%s') failed - %d(%s)", 
-                        path_root.c_str(), err, strerror(err));
+                        path_root.c_str(), err, Error::get_text(err));
     stop();
     m_run.store(true);
     return false;
@@ -258,7 +258,7 @@ void FileSystemCeph::remove(int& err, const std::string& name) {
 
   if(err) {
     SWC_LOGF(LOG_ERROR, "remove('%s') failed - %s",
-              abspath.c_str(), strerror(err));
+              abspath.c_str(), Error::get_text(err));
     return;
   }
   SWC_LOGF(LOG_DEBUG, "remove('%s')", abspath.c_str());
@@ -278,7 +278,7 @@ size_t FileSystemCeph::length(int& err, const std::string& name) {
     err = errno;
   if(err) {
     SWC_LOGF(LOG_ERROR, "length('%s') failed - %s", 
-              abspath.c_str(), strerror(err));
+              abspath.c_str(), Error::get_text(err));
     return 0;
   }
 
@@ -314,7 +314,7 @@ void FileSystemCeph::readdir(int& err, const std::string& name,
     err = errno;
   if(err) {
     SWC_LOGF(LOG_ERROR, "readdir('%s') failed - %s", 
-              abspath.c_str(), strerror(err)); 
+              abspath.c_str(), Error::get_text(err)); 
     return;
   }
 
@@ -358,7 +358,7 @@ void FileSystemCeph::rmdir(int& err, const std::string& name) {
     err = errno;
   if(err) {
     SWC_LOGF(LOG_ERROR, "readdir('%s') failed - %s", 
-              abspath.c_str(), strerror(err)); 
+              abspath.c_str(), Error::get_text(err)); 
     return;
   }
 
@@ -410,7 +410,7 @@ void FileSystemCeph::rename(int& err, const std::string& from,
     err = errno;
   if(err) {
     SWC_LOGF(LOG_ERROR, "rename('%s' to '%s') failed - %s", 
-              abspath_from.c_str(), abspath_to.c_str(), strerror(err));
+              abspath_from.c_str(), abspath_to.c_str(), Error::get_text(err));
     return;
   }
   SWC_LOGF(LOG_DEBUG, "rename('%s' to '%s')", 
@@ -457,7 +457,7 @@ void FileSystemCeph::create(int& err, SmartFd::Ptr& smartfd,
   if (err) {
     smartfd->fd(-1);
     SWC_LOGF(LOG_ERROR, "create failed: %d(%s) objsz=%ld, %s ", 
-              err, strerror(err), objsz, smartfd->to_string().c_str());
+              err, Error::get_text(err), objsz, smartfd->to_string().c_str());
                 
     if(err == EACCES || err == ENOENT)
       err = Error::FS_PATH_NOT_FOUND;
@@ -491,7 +491,7 @@ void FileSystemCeph::open(int& err, SmartFd::Ptr& smartfd, int32_t bufsz) {
   if (err) {
     smartfd->fd(-1);
     SWC_LOGF(LOG_ERROR, "open failed: %d(%s), %s", 
-              err, strerror(err), smartfd->to_string().c_str());
+              err, Error::get_text(err), smartfd->to_string().c_str());
                 
     if(err == EACCES || err == ENOENT)
       err = Error::FS_PATH_NOT_FOUND;
@@ -521,7 +521,7 @@ size_t FileSystemCeph::read(int& err, SmartFd::Ptr& smartfd,
     ret = 0;
     nread = 0;
     SWC_LOGF(LOG_ERROR, "read failed: %d(%s), %s", 
-              err, strerror(err), smartfd->to_string().c_str());
+              err, Error::get_text(err), smartfd->to_string().c_str());
   } else {
     if((ret = nread) != amount)
       err = Error::FS_EOF;
@@ -551,7 +551,7 @@ size_t FileSystemCeph::pread(int& err, SmartFd::Ptr& smartfd,
     ret = 0;
     nread = 0;
     SWC_LOGF(LOG_ERROR, "pread failed: %d(%s), %s", 
-              err, strerror(err), smartfd->to_string().c_str());
+              err, Error::get_text(err), smartfd->to_string().c_str());
   } else {
     if((ret = nread) != amount)
       err = Error::FS_EOF;
@@ -581,7 +581,7 @@ size_t FileSystemCeph::append(int& err, SmartFd::Ptr& smartfd,
 
   if (err) {
     SWC_LOGF(LOG_ERROR, "write failed: %d(%s), %s", 
-              err, strerror(err), smartfd->to_string().c_str());
+              err, Error::get_text(err), smartfd->to_string().c_str());
     return 0;
   }
   smartfd->forward(nwritten);
@@ -609,7 +609,7 @@ void FileSystemCeph::seek(int& err, SmartFd::Ptr& smartfd, size_t offset) {
 
   if(err) {
     SWC_LOGF(LOG_ERROR, "seek failed - %d(%s) %s", 
-               err, strerror(err), smartfd->to_string().c_str());
+               err, Error::get_text(err), smartfd->to_string().c_str());
     return;
   }
   smartfd->pos(offset);
@@ -627,7 +627,7 @@ void FileSystemCeph::flush(int& err, SmartFd::Ptr& smartfd) {
   
   if (err)
     SWC_LOGF(LOG_ERROR, "flush failed: %d(%s), %s", 
-              err, strerror(err), smartfd->to_string().c_str());
+              err, Error::get_text(err), smartfd->to_string().c_str());
 }
 
 void FileSystemCeph::sync(int& err, SmartFd::Ptr& smartfd) {
@@ -642,7 +642,7 @@ void FileSystemCeph::sync(int& err, SmartFd::Ptr& smartfd) {
   
   if (err)
     SWC_LOGF(LOG_ERROR, "sync failed: %d(%s), %s", 
-              err, strerror(err), smartfd->to_string().c_str());
+              err, Error::get_text(err), smartfd->to_string().c_str());
 }
 
 void FileSystemCeph::close(int& err, SmartFd::Ptr& smartfd) {
@@ -659,7 +659,7 @@ void FileSystemCeph::close(int& err, SmartFd::Ptr& smartfd) {
 
     if(err)
       SWC_LOGF(LOG_ERROR, "close, failed: %d(%s), %s", 
-                 err, strerror(err), smartfd->to_string().c_str());
+                 err, Error::get_text(err), smartfd->to_string().c_str());
     fd_open_decr();
   } else {
     err = EBADR;

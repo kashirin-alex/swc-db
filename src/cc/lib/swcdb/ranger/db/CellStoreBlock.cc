@@ -210,7 +210,7 @@ void Read::print(std::ostream& out) {
     Core::MutexSptd::scope lock(m_mutex);
     out << " queue="    << m_queue.size();
     if(m_err)
-      Error::print(out, m_err);
+      Error::print(out << ' ', m_err);
   }
   out << ')';
 }

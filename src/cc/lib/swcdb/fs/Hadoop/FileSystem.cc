@@ -277,7 +277,7 @@ bool FileSystemHadoop::exists(int& err, const std::string& name) {
   }
   SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG, 
     "exists('%s') state='%d' - %d(%s)", 
-    abspath.c_str(), (int)state, err, strerror(err));
+    abspath.c_str(), (int)state, err, Error::get_text(err));
   return state;
 }
   
@@ -297,7 +297,7 @@ void FileSystemHadoop::remove(int& err, const std::string& name) {
   }
   SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG, 
     "remove('%s') - %d(%s)", 
-    abspath.c_str(), tmperr, strerror(tmperr));
+    abspath.c_str(), tmperr, Error::get_text(tmperr));
 }
 
 size_t FileSystemHadoop::length(int& err, const std::string& name) {
@@ -318,7 +318,7 @@ size_t FileSystemHadoop::length(int& err, const std::string& name) {
   }
   SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG,
     "length('%s') len='%lu' - %d(%s)", 
-    abspath.c_str(), len, err, strerror(err));
+    abspath.c_str(), len, err, Error::get_text(err));
   return len;
 }
 
@@ -334,7 +334,7 @@ void FileSystemHadoop::mkdirs(int& err, const std::string& name) {
   }
   SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG, 
     "mkdirs('%s') - %d(%s)", 
-    abspath.c_str(), err, strerror(err));
+    abspath.c_str(), err, Error::get_text(err));
 }
 
 void FileSystemHadoop::readdir(int& err, const std::string& name, 
@@ -374,7 +374,7 @@ void FileSystemHadoop::readdir(int& err, const std::string& name,
   */
   SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG, 
     "readdir('%s') - %d(%s)", 
-    abspath.c_str(), err, strerror(err));
+    abspath.c_str(), err, Error::get_text(err));
 }
 
 void FileSystemHadoop::rmdir(int& err, const std::string& name) {
@@ -392,7 +392,7 @@ void FileSystemHadoop::rmdir(int& err, const std::string& name) {
   }
   SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG, 
     "rmdir('%s') - %d(%s)", 
-    abspath.c_str(), tmperr, strerror(tmperr));
+    abspath.c_str(), tmperr, Error::get_text(tmperr));
 }
 
 void FileSystemHadoop::rename(int& err, const std::string& from, 
@@ -410,7 +410,7 @@ void FileSystemHadoop::rename(int& err, const std::string& from,
   }
   SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG, 
     "rename('%s' to '%s') - %d(%s)", 
-    abspath_from.c_str(), abspath_to.c_str(), err, strerror(err));
+    abspath_from.c_str(), abspath_to.c_str(), err, Error::get_text(err));
 }
 
 void FileSystemHadoop::create(int& err, SmartFd::Ptr& smartfd, 
@@ -454,7 +454,7 @@ void FileSystemHadoop::create(int& err, SmartFd::Ptr& smartfd,
   }
   SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG,
     "create %d(%s) bufsz=%d replication=%d blksz=%ld %s", 
-    tmperr, strerror(tmperr), bufsz, replication, blksz, 
+    tmperr, Error::get_text(tmperr), bufsz, replication, blksz, 
     smartfd->to_string().c_str());
 }
 
@@ -492,7 +492,7 @@ void FileSystemHadoop::open(int& err, SmartFd::Ptr& smartfd,
   }
   SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG,
     "open %d(%s) %s", 
-    tmperr, strerror(tmperr), smartfd->to_string().c_str());
+    tmperr, Error::get_text(tmperr), smartfd->to_string().c_str());
 }
   
 size_t FileSystemHadoop::read(int& err, SmartFd::Ptr& smartfd, 
@@ -509,7 +509,7 @@ size_t FileSystemHadoop::read(int& err, SmartFd::Ptr& smartfd,
                   == (uint64_t)-1) {
       err = errno;
       SWC_LOGF(LOG_ERROR, "read, tell failed: %d(%s), %s offset=%lu", 
-                err, strerror(err), smartfd->to_string().c_str(), offset);
+                err, Error::get_text(err), smartfd->to_string().c_str(), offset);
       return nread;
     }
     */
@@ -528,7 +528,7 @@ size_t FileSystemHadoop::read(int& err, SmartFd::Ptr& smartfd,
   }
   SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG, 
     "read %d(%s) amount=%lu/%lu eof=%d %s", 
-    tmperr, strerror(tmperr), ret, amount, err == Error::FS_EOF,
+    tmperr, Error::get_text(tmperr), ret, amount, err == Error::FS_EOF,
     hadoop_fd->to_string().c_str());
   return ret;
 }
@@ -556,7 +556,7 @@ size_t FileSystemHadoop::pread(int& err, SmartFd::Ptr& smartfd,
   }
   SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG, 
     "pread %d(%s) offset=%lu amount=%lu/%lu eof=%d %s", 
-    tmperr, strerror(tmperr), offset, ret, amount, 
+    tmperr, Error::get_text(tmperr), offset, ret, amount, 
     err == Error::FS_EOF, hadoop_fd->to_string().c_str());
   return ret;
 }
@@ -574,7 +574,7 @@ size_t FileSystemHadoop::append(int& err, SmartFd::Ptr& smartfd,
             == (uint64_t)-1) {
       err = errno;
       SWC_LOGF(LOG_ERROR, "write, tell failed: %d(%s), %s offset=%lu", 
-                err, strerror(err), smartfd->to_string().c_str(), offset);
+                err, Error::get_text(err), smartfd->to_string().c_str(), offset);
       return nwritten;
     }
     */
@@ -590,14 +590,14 @@ size_t FileSystemHadoop::append(int& err, SmartFd::Ptr& smartfd,
         if(true) { //hdfsFlush(fs->srv, hadoop_fd->file()) == -1) {
           need_reconnect(err = errno, fs);
           SWC_LOGF(LOG_ERROR, "write-fsync %d(%s) %s", 
-                    err, strerror(err), smartfd->to_string().c_str());
+                    err, Error::get_text(err), smartfd->to_string().c_str());
         }
       }
     }
   }
   SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG, 
     "append %d(%s) amount=%lu flags=%d %s", 
-    err, strerror(err), buffer.size, flags,
+    err, Error::get_text(err), buffer.size, flags,
     hadoop_fd->to_string().c_str());
   return nwritten;
 }
@@ -616,7 +616,7 @@ void FileSystemHadoop::seek(int& err, SmartFd::Ptr& smartfd,
   }
   SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG, 
     "seek %d(%s) offset=%lu %s", 
-    err, strerror(err), offset, hadoop_fd->to_string().c_str());
+    err, Error::get_text(err), offset, hadoop_fd->to_string().c_str());
 }
 
 void FileSystemHadoop::flush(int& err, SmartFd::Ptr& smartfd) {
@@ -630,7 +630,7 @@ void FileSystemHadoop::flush(int& err, SmartFd::Ptr& smartfd) {
   }
   SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG, 
     "flush %d(%s) %s", 
-    err, strerror(err), hadoop_fd->to_string().c_str());
+    err, Error::get_text(err), hadoop_fd->to_string().c_str());
 }
 
 void FileSystemHadoop::sync(int& err, SmartFd::Ptr& smartfd) {
@@ -644,7 +644,7 @@ void FileSystemHadoop::sync(int& err, SmartFd::Ptr& smartfd) {
   }
   SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG, 
     "sync %d(%s) %s", 
-    err, strerror(err), hadoop_fd->to_string().c_str());
+    err, Error::get_text(err), hadoop_fd->to_string().c_str());
 }
 
 void FileSystemHadoop::close(int& err, SmartFd::Ptr& smartfd) {
@@ -668,7 +668,7 @@ void FileSystemHadoop::close(int& err, SmartFd::Ptr& smartfd) {
 
   SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG,
     "close %d(%s) %s", 
-    err, strerror(err), hadoop_fd->to_string().c_str());
+    err, Error::get_text(err), hadoop_fd->to_string().c_str());
 }
 
 
