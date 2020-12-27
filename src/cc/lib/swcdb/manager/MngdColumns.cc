@@ -557,22 +557,28 @@ bool MngdColumns::columns_load() {
 cid_t MngdColumns::get_next_cid() {
   cid_t cid = Common::Files::Schema::SYS_CID_END;
   while(++cid && Env::Mngr::schemas()->get(cid));
-  // if schema does exist on fs (? sanity-check) 
+  // if schema does exist on fs (? sanity-check)
   return cid; // err !cid
 }
 
 void MngdColumns::create(int &err, DB::Schema::Ptr& schema) {
-  cid_t cid = get_next_cid();
-  if(!cid) {
-    err = Error::COLUMN_REACHED_ID_LIMIT;
-    return;
-  } 
-  if(schema->col_seq == DB::Types::KeySeq::UNKNOWN || 
+  cid_t cid;
+  if(schema->cid == DB::Schema::NO_CID) {
+    cid = get_next_cid();
+    if(!cid) {
+      err = Error::COLUMN_REACHED_ID_LIMIT;
+      return;
+    }
+  } else {
+    cid = schema->cid;
+  }
+
+  if(schema->col_seq == DB::Types::KeySeq::UNKNOWN ||
      schema->col_type == DB::Types::Column::UNKNOWN) {
     err = Error::INVALID_ARGUMENT;
     return;
   }
-  
+
   Column::create(err, cid);
   if(err)
     return;
@@ -584,15 +590,15 @@ void MngdColumns::create(int &err, DB::Schema::Ptr& schema) {
   schema_save->cid = cid;
   if(!schema_save->revision)
     schema_save->revision = Time::now_ns();
-    
+
   Common::Files::Schema::save_with_validation(
     err, schema_save, cfg_schema_replication->get());
-  if(!err) 
+  if(!err)
     Env::Mngr::schemas()->add(err, schema_save);
 
-  if(!err) 
+  if(!err)
     schema = Env::Mngr::schemas()->get(schema_save->cid);
-  else 
+  else
     Column::remove(err, cid);
 }
   
@@ -748,7 +754,9 @@ void MngdColumns::run_actions() {
       if(!err) switch(req->function) {
         case ColumnMngFunc::CREATE: {
           if(schema)
-            err = Error::COLUMN_SCHEMA_NAME_EXISTS;
+            err = req->schema->cid == schema->cid
+              ? Error::COLUMN_SCHEMA_ID_EXISTS
+              : Error::COLUMN_SCHEMA_NAME_EXISTS;
           else
             create(err, req->schema);
           break;

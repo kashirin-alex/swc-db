@@ -106,21 +106,23 @@ enum Code : int32_t {
   COLUMN_SCHEMA_NAME_EMPTY                     = SWC_ERRNO_APP_BEGIN + 48,
   COLUMN_SCHEMA_NAME_NOT_CORRES                = SWC_ERRNO_APP_BEGIN + 49,
   COLUMN_SCHEMA_ID_EMPTY                       = SWC_ERRNO_APP_BEGIN + 50,
-  COLUMN_SCHEMA_NOT_DIFFERENT                  = SWC_ERRNO_APP_BEGIN + 51,
-  COLUMN_SCHEMA_MISSING                        = SWC_ERRNO_APP_BEGIN + 52,
-  COLUMN_SCHEMA_IS_SYSTEM                      = SWC_ERRNO_APP_BEGIN + 53,
-  COLUMN_CHANGE_INCOMPATIBLE                   = SWC_ERRNO_APP_BEGIN + 54,
+  COLUMN_SCHEMA_ID_EXISTS                      = SWC_ERRNO_APP_BEGIN + 51,
+  COLUMN_SCHEMA_NOT_DIFFERENT                  = SWC_ERRNO_APP_BEGIN + 52,
+  COLUMN_SCHEMA_MISSING                        = SWC_ERRNO_APP_BEGIN + 53,
+  COLUMN_SCHEMA_IS_SYSTEM                      = SWC_ERRNO_APP_BEGIN + 54,
+  COLUMN_CHANGE_INCOMPATIBLE                   = SWC_ERRNO_APP_BEGIN + 55,
 
-  RANGE_NOT_FOUND                              = SWC_ERRNO_APP_BEGIN + 55,
-  RANGE_CELLSTORES                             = SWC_ERRNO_APP_BEGIN + 56,
-  RANGE_COMMITLOG                              = SWC_ERRNO_APP_BEGIN + 57,
-  RANGE_BAD_INTERVAL                           = SWC_ERRNO_APP_BEGIN + 58,
-  RANGE_BAD_CELLS_INPUT                        = SWC_ERRNO_APP_BEGIN + 59,
+  RANGE_NOT_FOUND                              = SWC_ERRNO_APP_BEGIN + 56,
+  RANGE_CELLSTORES                             = SWC_ERRNO_APP_BEGIN + 57,
+  RANGE_COMMITLOG                              = SWC_ERRNO_APP_BEGIN + 58,
+  RANGE_BAD_INTERVAL                           = SWC_ERRNO_APP_BEGIN + 59,
+  RANGE_BAD_CELLS_INPUT                        = SWC_ERRNO_APP_BEGIN + 60,
 
-  SQL_PARSE_ERROR                              = SWC_ERRNO_APP_BEGIN + 60,
-  SQL_BAD_LOAD_FILE_FORMAT                     = SWC_ERRNO_APP_BEGIN + 61,
+  SQL_PARSE_ERROR                              = SWC_ERRNO_APP_BEGIN + 61,
+  SQL_BAD_LOAD_FILE_FORMAT                     = SWC_ERRNO_APP_BEGIN + 62,
 
-  CLIENT_DATA_REMAINED                         = SWC_ERRNO_APP_BEGIN + 62,
+  CLIENT_DATA_REMAINED                         = SWC_ERRNO_APP_BEGIN + 63,
+
 
 };
 

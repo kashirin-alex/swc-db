@@ -89,6 +89,7 @@ std::map<const int, const char *> text_map {
   { Error::COLUMN_SCHEMA_NAME_EMPTY,        "Schema's column name cannot be empty"},
   { Error::COLUMN_SCHEMA_NAME_NOT_CORRES,   "Schema's column name not correspond"},
   { Error::COLUMN_SCHEMA_ID_EMPTY,          "Schema's column id cannot be empty"},
+  { Error::COLUMN_SCHEMA_ID_EXISTS,         "Schema's column id already exists!"},
   { Error::COLUMN_SCHEMA_NOT_DIFFERENT,     "Schemas expected to be different"},
   { Error::COLUMN_SCHEMA_MISSING,           "cid's Schema is missing"},
   { Error::COLUMN_SCHEMA_IS_SYSTEM,         "Action not allowed on system schema"},
