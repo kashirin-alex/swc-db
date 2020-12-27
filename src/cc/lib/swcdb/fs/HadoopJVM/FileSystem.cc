@@ -13,20 +13,20 @@ namespace SWC { namespace FS {
  
 Configurables apply_hadoop_jvm() {
   Env::Config::settings()->file_desc.add_options()
-    ("swc.fs.hadoop_jvm.path.root", Config::str(""), 
+    ("swc.fs.hadoop_jvm.path.root", Config::str(""),
       "HadoopJVM FileSystem's base root path")
-    ("swc.fs.hadoop_jvm.cfg.dyn", Config::strs(), 
+    ("swc.fs.hadoop_jvm.cfg.dyn", Config::strs(),
       "Dyn-config file")
 
-    ("swc.fs.hadoop_jvm.namenode", Config::strs(), 
+    ("swc.fs.hadoop_jvm.namenode", Config::strs(),
       "Namenode Host + optional(:Port), muliple")
-    ("swc.fs.hadoop_jvm.namenode.port", Config::i16(), 
+    ("swc.fs.hadoop_jvm.namenode.port", Config::i16(),
       "Namenode Port")
-    ("swc.fs.hadoop_jvm.user", Config::str(), 
+    ("swc.fs.hadoop_jvm.user", Config::str(),
       "HadoopJVM user")
-    ("swc.fs.hadoop_jvm.fds.max", Config::g_i32(256), 
+    ("swc.fs.hadoop_jvm.fds.max", Config::g_i32(256),
       "Max Open Fds for opt. without closing")
-    ("swc.fs.hadoop_jvm.reconnect.delay.ms", Config::g_i32(3000), 
+    ("swc.fs.hadoop_jvm.reconnect.delay.ms", Config::g_i32(3000),
       "In ms delay use of connection after re-connect")
   ;
 
@@ -54,24 +54,53 @@ FileSystemHadoopJVM::SmartFdHadoopJVM::make_ptr(
 FileSystemHadoopJVM::SmartFdHadoopJVM::Ptr 
 FileSystemHadoopJVM::SmartFdHadoopJVM::make_ptr(SmartFd::Ptr& smart_fd) {
   return std::make_shared<SmartFdHadoopJVM>(
-    smart_fd->filepath(), smart_fd->flags(), 
+    smart_fd->filepath(), smart_fd->flags(),
     smart_fd->fd(), smart_fd->pos()
   );
 }
 
 FileSystemHadoopJVM::SmartFdHadoopJVM::SmartFdHadoopJVM(
     const std::string& filepath, uint32_t flags, int32_t fd, uint64_t pos)
-    : SmartFd(filepath, flags, fd, pos), m_file(nullptr) { 
+    : SmartFd(filepath, flags, fd, pos), m_hfile(nullptr), m_use_count(0) {
 }
 
 FileSystemHadoopJVM::SmartFdHadoopJVM::~SmartFdHadoopJVM() { }
 
-hdfsFile FileSystemHadoopJVM::SmartFdHadoopJVM::file() const {
-  return m_file;
+hdfsFile FileSystemHadoopJVM::SmartFdHadoopJVM::file() noexcept {
+  auto c = m_use_count.fetch_add(1);
+  auto hfile = m_hfile.load();
+  if(!hfile) {
+     m_use_count.fetch_sub(1);
+  } else if(c) {
+    // Debugging Info -- that should not be happening!
+    SWC_LOGF(LOG_WARN, "hfile '%s' waiting for file-use-released=%lu",
+             to_string().c_str(), c);
+    do std::this_thread::sleep_for(std::chrono::microseconds(1));
+    while(m_use_count > 1);
+    SWC_LOGF(LOG_WARN, "hfile '%s' waited for file-use-released",
+             to_string().c_str());
+  }
+  return hfile;
 }
 
-void FileSystemHadoopJVM::SmartFdHadoopJVM::file(const hdfsFile& file) {
-  m_file = file;
+void FileSystemHadoopJVM::SmartFdHadoopJVM::file(const hdfsFile& file)
+                                                              noexcept {
+  m_hfile.store(file);
+}
+
+void FileSystemHadoopJVM::SmartFdHadoopJVM::use_release() noexcept {
+  m_use_count.fetch_sub(1);
+}
+
+bool FileSystemHadoopJVM::SmartFdHadoopJVM::file_used() const noexcept {
+  return m_use_count;
+}
+
+hdfsFile FileSystemHadoopJVM::SmartFdHadoopJVM::invalidate() noexcept {
+  auto hfile = m_hfile.exchange(nullptr);
+  pos(0);
+  fd(-1);
+  return hfile;
 }
 
 
@@ -89,7 +118,7 @@ FileSystemHadoopJVM::get_fd(SmartFd::Ptr& smartfd){
 
 FileSystemHadoopJVM::FileSystemHadoopJVM()
     : FileSystem(apply_hadoop_jvm()),
-      m_nxt_fd(0), m_connecting(false), 
+      m_nxt_fd(0), m_connecting(false),
       m_fs(setup_connection()),
       cfg_use_delay(
         Env::Config::settings()->get<Config::Property::V_GINT32>(
@@ -104,7 +133,7 @@ Type FileSystemHadoopJVM::get_type() const noexcept {
 
 std::string FileSystemHadoopJVM::to_string() const {
   return format(
-    "(type=HADOOP_JVM path_root=%s path_data=%s)", 
+    "(type=HADOOP_JVM path_root=%s path_data=%s)",
     path_root.c_str(),
     path_data.c_str()
   );
@@ -123,16 +152,16 @@ void FileSystemHadoopJVM::stop() {
 FileSystemHadoopJVM::Service::Ptr 
 FileSystemHadoopJVM::setup_connection() {
   Service::Ptr fs;
-  uint32_t tries=0; 
+  uint32_t tries=0;
   while(m_run && !initialize(fs)) {
-    SWC_LOGF(LOG_ERROR, 
+    SWC_LOGF(LOG_ERROR,
       "FS-HadoopJVM, unable to initialize connection to hadoop_jvm, try=%d",
       ++tries);
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
   }
   if(!fs)
     return fs;
-  
+
   std::string abspath;
   get_abspath("", abspath);
   hdfsSetWorkingDirectory(fs->srv, abspath.c_str());
@@ -141,12 +170,12 @@ FileSystemHadoopJVM::setup_connection() {
   hdfsConfGetInt("dfs.namenode.fs-limits.min-block-size", &value);
   if(value)
     hdfs_cfg_min_blk_sz = value;
-  /* 
-  char* host;    
+  /*
+  char* host;
   uint16_t port;
   hdfsConfGetStr("hdfs.namenode.host", &host);
   hdfsConfGetInt("hdfs.namenode.port", &port);
-  SWC_LOGF(LOG_INFO, 
+  SWC_LOGF(LOG_INFO,
             "FS-HadoopJV<, connected to namenode=[%s]:%d", host, port);
   hdfsConfStrFree(host);
   */
@@ -167,16 +196,16 @@ bool FileSystemHadoopJVM::initialize(FileSystemHadoopJVM::Service::Ptr& fs) {
       hdfsBuilder* bld = hdfsNewBuilder();
       hdfsBuilderSetNameNode(bld, h.c_str());
 
-      if (settings->has("swc.fs.hadoop_jvm.namenode.port")) 
+      if (settings->has("swc.fs.hadoop_jvm.namenode.port"))
         hdfsBuilderSetNameNodePort(
           bld, settings->get_i16("swc.fs.hadoop_jvm.namenode.port"));
 
-      if (settings->has("swc.fs.hadoop_jvm.user")) 
+      if (settings->has("swc.fs.hadoop_jvm.user"))
         hdfsBuilderSetUserName(
-          bld, 
+          bld,
           settings->get_str("swc.fs.hadoop_jvm.user").c_str()
         );
-        
+
       SWC_LOGF(LOG_INFO, "Connecting to namenode=%s", h.c_str());
       connection = hdfsBuilderConnect(bld);
       // java.lang.IllegalArgumentException: java.net.UnknownHostException:
@@ -185,24 +214,24 @@ bool FileSystemHadoopJVM::initialize(FileSystemHadoopJVM::Service::Ptr& fs) {
 
       // check status, namenode need to be active
       errno = 0;
-      int64_t sz_used = hdfsGetUsed(connection); 
+      int64_t sz_used = hdfsGetUsed(connection);
       if(sz_used == -1) {
         if(errno != 255)
           hdfsDisconnect(connection);
         connection = nullptr;
-        SWC_LOGF(LOG_ERROR, "hdfsGetUsed('%s') failed - %d(%s)", 
+        SWC_LOGF(LOG_ERROR, "hdfsGetUsed('%s') failed - %d(%s)",
                   h.c_str(), errno, strerror(errno));
         continue;
       }
       SWC_LOGF(LOG_INFO, "Non DFS Used bytes: %ld", sz_used);
-          
+
       errno = 0;
-      sz_used = hdfsGetCapacity(connection); 
+      sz_used = hdfsGetCapacity(connection);
       if(sz_used == -1) {
         if(errno != 255)
           hdfsDisconnect(connection);
         connection = nullptr;
-        SWC_LOGF(LOG_ERROR, "hdfsGetCapacity('%s') failed - %d(%s)", 
+        SWC_LOGF(LOG_ERROR, "hdfsGetCapacity('%s') failed - %d(%s)",
                   h.c_str(), errno, strerror(errno));
         continue;
       }
@@ -214,14 +243,14 @@ bool FileSystemHadoopJVM::initialize(FileSystemHadoopJVM::Service::Ptr& fs) {
     //"default" > from the XML configuration file
     /*
     hdfsBuilder* bld = hdfsNewBuilder();
-    hdfsBuilderSetNameNode(bld, "default"); 
+    hdfsBuilderSetNameNode(bld, "default");
     connection = hdfsBuilderConnect(bld);
     */
     connection = hdfsConnect("default", 0);
 
     char* value;
     hdfsConfGetStr("fs.defaultFS", &value);
-    SWC_LOGF(LOG_INFO, 
+    SWC_LOGF(LOG_INFO,
       "FS-HadoopJVM, connecting to default namenode=%s", value);
   }
 
@@ -252,8 +281,8 @@ FileSystemHadoopJVM::Service::Ptr FileSystemHadoopJVM::get_fs(int& err) {
   }
 
   auto fs = m_fs;
-  err = m_run 
-    ? (fs ? Error::OK : Error::SERVER_NOT_READY) 
+  err = m_run
+    ? (fs ? Error::OK : Error::SERVER_NOT_READY)
     : Error::SERVER_SHUTTING_DOWN;
   return fs;
 }
@@ -280,8 +309,8 @@ bool FileSystemHadoopJVM::exists(int& err, const std::string& name) {
     state = !hdfsExists(fs->srv, abspath.c_str());
     need_reconnect(err = errno == ENOENT ? Error::OK : errno, fs);
   }
-  SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG, 
-    "exists('%s') state='%d' - %d(%s)", 
+  SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG,
+    "exists('%s') state='%d' - %d(%s)",
     abspath.c_str(), (int)state, err, strerror(err));
   return state;
 }
@@ -300,8 +329,8 @@ void FileSystemHadoopJVM::remove(int& err, const std::string& name) {
         err = (errno == EIO || errno == ENOENT ? Error::OK: errno), fs);
     }
   }
-  SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG, 
-    "remove('%s') - %d(%s)", 
+  SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG,
+    "remove('%s') - %d(%s)",
     abspath.c_str(), tmperr, strerror(tmperr));
 }
 
@@ -309,7 +338,7 @@ size_t FileSystemHadoopJVM::length(int& err, const std::string& name) {
   std::string abspath;
   get_abspath(name, abspath);
   hdfsFileInfo *fileInfo;
-  size_t len = 0; 
+  size_t len = 0;
 
   auto fs = get_fs(err);
   if(!err) {
@@ -322,7 +351,7 @@ size_t FileSystemHadoopJVM::length(int& err, const std::string& name) {
     }
   }
   SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG,
-    "length('%s') len='%lu' - %d(%s)", 
+    "length('%s') len='%lu' - %d(%s)",
     abspath.c_str(), len, err, strerror(err));
   return len;
 }
@@ -330,19 +359,19 @@ size_t FileSystemHadoopJVM::length(int& err, const std::string& name) {
 void FileSystemHadoopJVM::mkdirs(int& err, const std::string& name) {
   std::string abspath;
   get_abspath(name, abspath);
-  
+
   auto fs = get_fs(err);
   if(!err) {
     errno = 0;
     if(hdfsCreateDirectory(fs->srv, abspath.c_str()) == -1)
       need_reconnect(err = errno, fs);
   }
-  SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG, 
-    "mkdirs('%s') - %d(%s)", 
+  SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG,
+    "mkdirs('%s') - %d(%s)",
     abspath.c_str(), err, strerror(err));
 }
 
-void FileSystemHadoopJVM::readdir(int& err, const std::string& name, 
+void FileSystemHadoopJVM::readdir(int& err, const std::string& name,
                                   DirentList& results) {
   std::string abspath;
   get_abspath(name, abspath);
@@ -375,8 +404,8 @@ void FileSystemHadoopJVM::readdir(int& err, const std::string& name,
     }
   }
 
-  SWC_LOGF(err && err != ENOENT ? LOG_ERROR: LOG_DEBUG, 
-    "readdir('%s') - %d(%s)", 
+  SWC_LOGF(err && err != ENOENT ? LOG_ERROR: LOG_DEBUG,
+    "readdir('%s') - %d(%s)",
     abspath.c_str(), err, strerror(err));
 }
 
@@ -393,12 +422,12 @@ void FileSystemHadoopJVM::rmdir(int& err, const std::string& name) {
       need_reconnect(err = (tmperr = errno) == EIO ? ENOENT: tmperr, fs);
     }
   }
-  SWC_LOGF(err && err != ENOENT ? LOG_ERROR: LOG_DEBUG, 
-    "rmdir('%s') - %d(%s)", 
+  SWC_LOGF(err && err != ENOENT ? LOG_ERROR: LOG_DEBUG,
+    "rmdir('%s') - %d(%s)",
     abspath.c_str(), tmperr, strerror(tmperr));
 }
 
-void FileSystemHadoopJVM::rename(int& err, const std::string& from, 
+void FileSystemHadoopJVM::rename(int& err, const std::string& from,
                                  const std::string& to)  {
   std::string abspath_from;
   get_abspath(from, abspath_from);
@@ -411,13 +440,13 @@ void FileSystemHadoopJVM::rename(int& err, const std::string& from,
     if(hdfsRename(fs->srv, abspath_from.c_str(), abspath_to.c_str()) == -1)
       need_reconnect(err = errno == EIO ? ENOENT : errno, fs);
   }
-  SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG, 
-    "rename('%s' to '%s') - %d(%s)", 
+  SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG,
+    "rename('%s' to '%s') - %d(%s)",
     abspath_from.c_str(), abspath_to.c_str(), err, strerror(err));
 }
 
-void FileSystemHadoopJVM::create(int& err, SmartFd::Ptr& smartfd, 
-                                 int32_t bufsz, uint8_t replication, 
+void FileSystemHadoopJVM::create(int& err, SmartFd::Ptr& smartfd,
+                                 int32_t bufsz, uint8_t replication,
                                  int64_t blksz) {
   std::string abspath;
   get_abspath(smartfd->filepath(), abspath);
@@ -436,30 +465,27 @@ void FileSystemHadoopJVM::create(int& err, SmartFd::Ptr& smartfd,
     auto hadoop_fd = get_fd(smartfd);
     errno = 0;
     /* Open the file */
-    auto fd = hdfsOpenFile(
+    auto hfile = hdfsOpenFile(
       fs->srv, abspath.c_str(), oflags, bufsz, replication, blksz);
-    if(!fd) {
+    if(!hfile) {
       need_reconnect(tmperr = err = errno, fs);
-      hadoop_fd->file(fd);
-      hadoop_fd->fd(-1);
-                
       if(err == EACCES || err == ENOENT)
         err = Error::FS_PATH_NOT_FOUND;
       else if (err == EPERM)
         err = Error::FS_PERMISSION_DENIED;
     } else {
-      hadoop_fd->file(fd);
+      hadoop_fd->file(hfile);
       hadoop_fd->fd(m_nxt_fd.add_rslt(1));
       fd_open_incr();
     }
   }
   SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG,
-    "create %d(%s) bufsz=%d replication=%d blksz=%ld %s", 
-    tmperr, strerror(tmperr), bufsz, replication, blksz, 
+    "create %d(%s) bufsz=%d replication=%d blksz=%ld %s",
+    tmperr, strerror(tmperr), bufsz, replication, blksz,
     smartfd->to_string().c_str());
 }
 
-void FileSystemHadoopJVM::open(int& err, SmartFd::Ptr& smartfd, 
+void FileSystemHadoopJVM::open(int& err, SmartFd::Ptr& smartfd,
                                int32_t bufsz) {
   std::string abspath;
   get_abspath(smartfd->filepath(), abspath);
@@ -471,29 +497,26 @@ void FileSystemHadoopJVM::open(int& err, SmartFd::Ptr& smartfd,
     auto hadoop_fd = get_fd(smartfd);
     errno = 0;
     /* Open the file */
-    auto fd = hdfsOpenFile(fs->srv, abspath.c_str(), oflags, 
-                            bufsz<=-1 ? 0 : bufsz, 0, 0);
-    if(!fd) {
+    auto hfile = hdfsOpenFile(fs->srv, abspath.c_str(), oflags,
+                              bufsz<=-1 ? 0 : bufsz, 0, 0);
+    if(!hfile) {
       need_reconnect(err = tmperr = errno, fs);
-      hadoop_fd->file(fd);
-      hadoop_fd->fd(-1);
-                
       if(err == EACCES || err == ENOENT)
         err = Error::FS_PATH_NOT_FOUND;
       else if (err == EPERM)
         err = Error::FS_PERMISSION_DENIED;
     } else {
-      hadoop_fd->file(fd);
+      hadoop_fd->file(hfile);
       hadoop_fd->fd(m_nxt_fd.add_rslt(1));
       fd_open_incr();
     }
   }
   SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG,
-    "open %d(%s) %s", 
+    "open %d(%s) %s",
     tmperr, strerror(tmperr), smartfd->to_string().c_str());
 }
   
-size_t FileSystemHadoopJVM::read(int& err, SmartFd::Ptr& smartfd, 
+size_t FileSystemHadoopJVM::read(int& err, SmartFd::Ptr& smartfd,
               void *dst, size_t amount) {
   auto hadoop_fd = get_fd(smartfd);
   size_t ret = 0;
@@ -501,36 +524,31 @@ size_t FileSystemHadoopJVM::read(int& err, SmartFd::Ptr& smartfd,
 
   auto fs = get_fs(err);
   if(!err) {
-    /*
-    uint64_t offset;
-    if ((offset = (uint64_t)hdfsTell(fs->srv, hadoop_fd->file()))
-                  == (uint64_t)-1) {
-      err = errno;
-      SWC_LOGF(LOG_ERROR, "read, tell failed: %d(%s), %s offset=%lu", 
-                err, strerror(err), smartfd->to_string().c_str(), offset);
-      return nread;
-    }
-    */
-    errno = 0;
-    ssize_t nread = (ssize_t)hdfsRead(fs->srv, hadoop_fd->file(), 
-                                      dst, (tSize)amount);
-    if(nread == -1) {
-      nread = 0;
-      need_reconnect(err = tmperr = errno, fs);
+    auto hfile = hadoop_fd->file();
+    if(hfile) {
+      errno = 0;
+      ssize_t nread = hdfsRead(fs->srv, hfile, dst, (tSize)amount);
+      hadoop_fd->use_release();
+      if(nread == -1) {
+        nread = 0;
+        need_reconnect(err = tmperr = errno, fs);
+      } else {
+        if((ret = nread) != amount)
+          err = Error::FS_EOF;
+        hadoop_fd->forward(nread);
+      }
     } else {
-      if((ret = nread) != amount)
-        err = Error::FS_EOF;
-      hadoop_fd->forward(nread);
+      err = EBADR;
     }
   }
-  SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG, 
-    "read %d(%s) amount=%lu/%lu eof=%d %s", 
+  SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG,
+    "read %d(%s) amount=%lu/%lu eof=%d %s",
     tmperr, strerror(tmperr), ret, amount, err == Error::FS_EOF,
     hadoop_fd->to_string().c_str());
   return ret;
 }
 
-size_t FileSystemHadoopJVM::pread(int& err, SmartFd::Ptr& smartfd, 
+size_t FileSystemHadoopJVM::pread(int& err, SmartFd::Ptr& smartfd,
                                uint64_t offset, void *dst, size_t amount) {
   auto hadoop_fd = get_fd(smartfd);
   size_t ret = 0;
@@ -538,80 +556,93 @@ size_t FileSystemHadoopJVM::pread(int& err, SmartFd::Ptr& smartfd,
 
   auto fs = get_fs(err);
   if(!err) {
-    errno = 0;
-    ssize_t nread = (ssize_t)hdfsPread(
-      fs->srv, hadoop_fd->file(), (tOffset)offset, dst, (tSize)amount);
-    if(nread == -1) {
-      nread = 0;
-      need_reconnect(err = tmperr = errno, fs);
+    auto hfile = hadoop_fd->file();
+    if(hfile) {
+      errno = 0;
+      ssize_t nread = hdfsPread(
+        fs->srv, hfile, (tOffset)offset, dst, (tSize)amount);
+      hadoop_fd->use_release();
+      if(nread == -1) {
+        nread = 0;
+        need_reconnect(err = tmperr = errno, fs);
+      } else {
+        if((ret = nread) != amount)
+          err = Error::FS_EOF;
+        hadoop_fd->pos(offset + nread);
+      }
     } else {
-      if((ret = nread) != amount)
-        err = Error::FS_EOF;
-      hadoop_fd->pos(offset + nread);
+      err = EBADR;
     }
   }
-  SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG, 
-    "pread %d(%s) offset=%lu amount=%lu/%lu eof=%d %s", 
-    tmperr, strerror(tmperr), offset, ret, amount, 
+  SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG,
+    "pread %d(%s) offset=%lu amount=%lu/%lu eof=%d %s",
+    tmperr, strerror(tmperr), offset, ret, amount,
     err == Error::FS_EOF, hadoop_fd->to_string().c_str());
   return ret;
 }
 
-size_t FileSystemHadoopJVM::append(int& err, SmartFd::Ptr& smartfd, 
+size_t FileSystemHadoopJVM::append(int& err, SmartFd::Ptr& smartfd,
                                 StaticBuffer& buffer, Flags flags) {
   auto hadoop_fd = get_fd(smartfd);
   ssize_t nwritten = 0;
 
   auto fs = get_fs(err);
   if(!err) {
-    /* 
-    uint64_t offset;
-    if ((offset = (uint64_t)hdfsTell(fs->srv, hadoop_fd->file()))
-            == (uint64_t)-1) {
-      err = errno;
-      SWC_LOGF(LOG_ERROR, "write, tell failed: %d(%s), %s offset=%lu", 
-                err, strerror(err), smartfd->to_string().c_str(), offset);
-      return nwritten;
-    }
-    */
-    errno = 0;
-    if((nwritten = (ssize_t)hdfsWrite(fs->srv, hadoop_fd->file(), 
-                               buffer.base, (tSize)buffer.size)) == -1) {
-      nwritten = 0;
-      need_reconnect(err = errno, fs);
-    } else {
-      hadoop_fd->forward(nwritten);
+    auto hfile = hadoop_fd->file();
+    if(hfile) {
+      errno = 0;
+      nwritten = hdfsWrite(fs->srv, hfile, buffer.base, (tSize)buffer.size);
+      if(nwritten == -1) {
+        hadoop_fd->use_release();
+        nwritten = 0;
+        need_reconnect(err = errno, fs);
+      } else {
+        hadoop_fd->forward(nwritten);
 
-      if(flags == Flags::FLUSH || flags == Flags::SYNC) {
-        if(hdfsFlush(fs->srv, hadoop_fd->file()) == -1) {
-          need_reconnect(err = errno, fs);
-          SWC_LOGF(LOG_ERROR, "write-fsync %d(%s) %s", 
-                    err, strerror(err), smartfd->to_string().c_str());
+        if(flags == Flags::FLUSH || flags == Flags::SYNC) {
+          auto res = hdfsFlush(fs->srv, hfile);
+          hadoop_fd->use_release();
+          if(res == -1) {
+            need_reconnect(err = errno, fs);
+            SWC_LOGF(LOG_ERROR, "write-fsync %d(%s) %s",
+                      err, strerror(err), smartfd->to_string().c_str());
+          }
+        } else {
+          hadoop_fd->use_release();
         }
       }
+    } else {
+      err = EBADR;
     }
   }
-  SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG, 
-    "append %d(%s) amount=%lu flags=%d %s", 
+  SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG,
+    "append %d(%s) amount=%lu flags=%d %s",
     err, strerror(err), buffer.size, flags,
     hadoop_fd->to_string().c_str());
   return nwritten;
 }
 
-void FileSystemHadoopJVM::seek(int& err, SmartFd::Ptr& smartfd, 
+void FileSystemHadoopJVM::seek(int& err, SmartFd::Ptr& smartfd,
                                size_t offset) {
   auto hadoop_fd = get_fd(smartfd);
 
   auto fs = get_fs(err);
   if(!err) {
-    errno = 0;
-    if(hdfsSeek(fs->srv, hadoop_fd->file(), (tOffset)offset) == -1)
-      need_reconnect(err = errno, fs);
-    else
-      hadoop_fd->pos(offset);
+    auto hfile = hadoop_fd->file();
+    if(hfile) {
+      errno = 0;
+      auto res = hdfsSeek(fs->srv, hfile, (tOffset)offset);
+      hadoop_fd->use_release();
+      if(res == -1)
+        need_reconnect(err = errno, fs);
+      else
+        hadoop_fd->pos(offset);
+    } else {
+      err = EBADR;
+    }
   }
-  SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG, 
-    "seek %d(%s) offset=%lu %s", 
+  SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG,
+    "seek %d(%s) offset=%lu %s",
     err, strerror(err), offset, hadoop_fd->to_string().c_str());
 }
 
@@ -620,12 +651,19 @@ void FileSystemHadoopJVM::flush(int& err, SmartFd::Ptr& smartfd) {
 
   auto fs = get_fs(err);
   if(!err) {
-    errno = 0;
-    if(hdfsHFlush(fs->srv, hadoop_fd->file()) == -1)
-      need_reconnect(err = errno, fs);
+    auto hfile = hadoop_fd->file();
+    if(hfile) {
+      errno = 0;
+      auto res = hdfsHFlush(fs->srv, hfile);
+      hadoop_fd->use_release();
+      if(res == -1)
+        need_reconnect(err = errno, fs);
+    } else {
+      err = EBADR;
+    }
   }
-  SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG, 
-    "flush %d(%s) %s", 
+  SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG,
+    "flush %d(%s) %s",
     err, strerror(err), hadoop_fd->to_string().c_str());
 }
 
@@ -634,12 +672,19 @@ void FileSystemHadoopJVM::sync(int& err, SmartFd::Ptr& smartfd) {
 
   auto fs = get_fs(err);
   if(!err) {
-    errno = 0;
-    if(hdfsHSync(fs->srv, hadoop_fd->file()) == -1)
-      need_reconnect(err = errno, fs);
+    auto hfile = hadoop_fd->file();
+    if(hfile) {
+      errno = 0;
+      auto res = hdfsHSync(fs->srv, hfile);
+      hadoop_fd->use_release();
+      if(res == -1)
+        need_reconnect(err = errno, fs);
+    } else {
+      err = EBADR;
+    }
   }
-  SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG, 
-    "sync %d(%s) %s", 
+  SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG,
+    "sync %d(%s) %s",
     err, strerror(err), hadoop_fd->to_string().c_str());
 }
 
@@ -647,23 +692,28 @@ void FileSystemHadoopJVM::close(int& err, SmartFd::Ptr& smartfd) {
   auto hadoop_fd = get_fd(smartfd);
   SWC_LOGF(LOG_DEBUG, "close %s", hadoop_fd->to_string().c_str());
 
-  if(hadoop_fd->file()) {
-    fd_open_decr();
-    auto fs = get_fs(err);
-    if(!err) {
+  auto fs = get_fs(err);
+  if(!err) {
+    auto hfile = hadoop_fd->invalidate();
+    if(hfile) {
+      fd_open_decr();
+      if(hadoop_fd->file_used()) {
+        SWC_LOGF(LOG_WARN, "close '%s' waiting for file-use-released",
+          hadoop_fd->to_string().c_str());
+        do std::this_thread::sleep_for(std::chrono::microseconds(1));
+        while(hadoop_fd->file_used());
+        SWC_LOGF(LOG_WARN, "close '%s' waited for file-use-released",
+          hadoop_fd->to_string().c_str());
+      }
       errno = 0;
-      if(hdfsCloseFile(fs->srv, hadoop_fd->file()) == -1)
+      if(hdfsCloseFile(fs->srv, hfile) == -1)
         err = errno == 255 ? Error::FS_BAD_FILE_HANDLE : errno;
-      hadoop_fd->file(0);
+    } else {
+      err = EBADR;
     }
-  } else {
-    err = EBADR;
   }
-  hadoop_fd->fd(-1);
-  smartfd->pos(0);
-
-  SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG, 
-    "close %d(%s) %s", 
+  SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG,
+    "close %d(%s) %s",
     err, strerror(err), hadoop_fd->to_string().c_str());
 }
 

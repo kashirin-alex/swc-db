@@ -20,7 +20,7 @@ class FileSystemHadoopJVM final : public FileSystem {
 
   struct Service {
     typedef std::shared_ptr<Service> Ptr;
-    
+
     Service(hdfsFS srv) : srv(srv) { }
 
     ~Service() { if(srv) hdfsDisconnect(srv); }
@@ -48,33 +48,33 @@ class FileSystemHadoopJVM final : public FileSystem {
 
 
   bool exists(int& err, const std::string& name) override;
-  
+
   void remove(int& err, const std::string& name) override;
 
   size_t length(int& err, const std::string& name) override;
 
   void mkdirs(int& err, const std::string& name) override;
 
-  void readdir(int& err, const std::string& name, 
+  void readdir(int& err, const std::string& name,
                 DirentList& results) override;
 
   void rmdir(int& err, const std::string& name) override;
 
-  void rename(int& err, const std::string& from, 
+  void rename(int& err, const std::string& from,
                         const std::string& to)  override;
 
-  void create(int& err, SmartFd::Ptr& smartfd, 
+  void create(int& err, SmartFd::Ptr& smartfd,
               int32_t bufsz, uint8_t replication, int64_t blksz) override;
 
   void open(int& err, SmartFd::Ptr& smartfd, int32_t bufsz = -1) override;
-  
-  size_t read(int& err, SmartFd::Ptr& smartfd, 
+
+  size_t read(int& err, SmartFd::Ptr& smartfd,
               void *dst, size_t amount) override;
 
-  size_t pread(int& err, SmartFd::Ptr& smartfd, 
+  size_t pread(int& err, SmartFd::Ptr& smartfd,
                uint64_t offset, void *dst, size_t amount) override;
 
-  size_t append(int& err, SmartFd::Ptr& smartfd, 
+  size_t append(int& err, SmartFd::Ptr& smartfd,
                 StaticBuffer& buffer, Flags flags) override;
 
   void seek(int& err, SmartFd::Ptr& smartfd, size_t offset) override;
@@ -89,9 +89,9 @@ class FileSystemHadoopJVM final : public FileSystem {
 
   struct SmartFdHadoopJVM final : public SmartFd {
     public:
-  
+
     typedef std::shared_ptr<SmartFdHadoopJVM> Ptr;
-  
+
     static Ptr make_ptr(const std::string& filepath, uint32_t flags);
 
     static Ptr make_ptr(SmartFd::Ptr& smart_fd);
@@ -101,25 +101,33 @@ class FileSystemHadoopJVM final : public FileSystem {
 
     virtual ~SmartFdHadoopJVM();
 
-    hdfsFile file() const;
+    hdfsFile file() noexcept;
 
-    void file(const hdfsFile& file);
+    void file(const hdfsFile& file) noexcept;
+
+    void use_release() noexcept;
+
+    bool file_used() const noexcept;
+
+    hdfsFile invalidate() noexcept;
 
     private:
 
-    std::atomic<hdfsFile> m_file;
+    std::atomic<hdfsFile>   m_hfile;
+    Core::Atomic<size_t>    m_use_count;
+
   };
 
   SmartFdHadoopJVM::Ptr get_fd(SmartFd::Ptr& smartfd);
 
   Core::Atomic<int32_t>   m_nxt_fd;
-  
+
   std::mutex              m_mutex;
   std::condition_variable m_cv;
   bool                    m_connecting;
 
   Service::Ptr            m_fs;
-  
+
   int hdfs_cfg_min_blk_sz = 1048576;
   const Config::Property::V_GINT32::Ptr cfg_use_delay;
 
@@ -137,7 +145,7 @@ void fs_apply_cfg_hadoop_jvm(SWC::Env::Config::Ptr env);
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/fs/HadoopJVM/FileSystem.cc"
-#endif 
+#endif
 
 
 #endif // swcdb_fs_HadoopJVM_FileSystem_h
