@@ -36,8 +36,8 @@ void read_all(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
       if(!err)
         err = Error::FS_PATH_NOT_FOUND;
       goto finish;
-    } 
-    
+    }
+
     len = fs->length(err, params.name);
     if(err)
       goto finish;
@@ -54,16 +54,20 @@ void read_all(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
       err = Error::FS_EOF;
 
     finish:
-      int errtmp;
-      if(fd != -1 && (smartfd = Env::FsBroker::fds()->remove(fd)))
-        fs->close(!err ? err : errtmp, smartfd);
+      if(fd != -1 && (smartfd = Env::FsBroker::fds()->remove(fd))) {
+        int errtmp;
+        do fs->close(errtmp, smartfd);
+        while (errtmp == Error::SERVER_NOT_READY);
+        if(!err && errtmp)
+          err = errtmp;
+      }
 
   } catch(...) {
     const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
     SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
     err = e.code();
   }
-  
+
   auto cbp = err ? Buffers::make(ev, 4) : Buffers::make(ev, rbuf, 4);
   cbp->append_i32(err);
   conn->send_response(cbp);

@@ -35,13 +35,16 @@ void write(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     fs->create(err, smartfd, 0, params.replication, params.blksz);
     if(smartfd->valid()) {
       int32_t fd = Env::FsBroker::fds()->add(smartfd);
-      
+
       if(!err && ev->data_ext.size)
         fs->append(err, smartfd, ev->data_ext, FS::Flags::FLUSH);
-      
+
       if((smartfd = Env::FsBroker::fds()->remove(fd))) {
         int errtmp;
-        fs->close(!err ? err : errtmp, smartfd);
+        do fs->close(errtmp, smartfd);
+        while (errtmp == Error::SERVER_NOT_READY);
+        if(!err && errtmp)
+          err = errtmp;
       }
     } else if(!err) {
       err = Error::FS_BAD_FILE_HANDLE;
@@ -52,13 +55,13 @@ void write(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
     err = e.code();
   }
-  
+
   auto cbp = Buffers::make(ev, 4);
   cbp->append_i32(err);
   conn->send_response(cbp);
 
 }
-  
+
 
 }}}}}
 

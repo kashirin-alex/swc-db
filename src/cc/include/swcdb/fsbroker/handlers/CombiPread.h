@@ -24,7 +24,7 @@ void combi_pread(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     size_t remain = ev->data.size;
 
     Params::CombiPreadReq params;
-    params.decode(&ptr, &remain); 
+    params.decode(&ptr, &remain);
 
     int32_t fd = -1;
     auto fs = Env::FsInterface::fs();
@@ -36,7 +36,7 @@ void combi_pread(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     }
     if(err)
       goto finish;
-    
+
     fd = Env::FsBroker::fds()->add(params.smartfd);
 
     rbuf.reallocate(params.amount);
@@ -47,16 +47,20 @@ void combi_pread(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
       err = Error::FS_EOF;
 
     finish:
-      int errtmp;
-      if(fd != -1 && (params.smartfd = Env::FsBroker::fds()->remove(fd)))
-        fs->close(err ? errtmp : err, params.smartfd);
+      if(fd != -1 && (params.smartfd = Env::FsBroker::fds()->remove(fd))) {
+        int errtmp;
+        do fs->close(errtmp, params.smartfd);
+        while (errtmp == Error::SERVER_NOT_READY);
+        if(!err && errtmp)
+          err = errtmp;
+      }
 
   } catch(...) {
     const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
     SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
     err = e.code();
   }
-  
+
   auto cbp = err ? Buffers::make(ev, 4) : Buffers::make(ev, rbuf, 4);
   cbp->append_i32(err);
   conn->send_response(cbp);

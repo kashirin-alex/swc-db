@@ -604,7 +604,7 @@ size_t FileSystemHadoopJVM::append(int& err, SmartFd::Ptr& smartfd,
           hadoop_fd->use_release();
           if(res == -1) {
             need_reconnect(err = errno, fs);
-            SWC_LOGF(LOG_ERROR, "write-fsync %d(%s) %s",
+            SWC_LOGF(LOG_ERROR, "append-fsync %d(%s) %s",
                       err, Error::get_text(err), smartfd->to_string().c_str());
           }
         } else {

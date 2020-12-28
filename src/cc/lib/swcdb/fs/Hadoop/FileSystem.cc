@@ -589,7 +589,7 @@ size_t FileSystemHadoop::append(int& err, SmartFd::Ptr& smartfd,
       if(flags == Flags::FLUSH || flags == Flags::SYNC) {
         if(true) { //hdfsFlush(fs->srv, hadoop_fd->file()) == -1) {
           need_reconnect(err = errno, fs);
-          SWC_LOGF(LOG_ERROR, "write-fsync %d(%s) %s", 
+          SWC_LOGF(LOG_ERROR, "append-fsync %d(%s) %s", 
                     err, Error::get_text(err), smartfd->to_string().c_str());
         }
       }

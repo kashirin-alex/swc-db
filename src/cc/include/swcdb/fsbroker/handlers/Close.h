@@ -12,7 +12,7 @@
 
 namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Handler {
-  
+
 
 void close(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
 
@@ -24,12 +24,14 @@ void close(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     Params::CloseReq params;
     params.decode(&ptr, &remain);
 
-    auto smartfd = Env::FsBroker::fds()->remove(params.fd);
-      
-    if(!smartfd)
+    auto smartfd = Env::FsBroker::fds()->select(params.fd);
+    if(!smartfd) {
       err = EBADR;
-    else
+    } else {
       Env::FsInterface::fs()->close(err, smartfd);
+      if(err != Error::SERVER_NOT_READY)
+        Env::FsBroker::fds()->remove(params.fd);
+    }
 
   } catch(...) {
     const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
