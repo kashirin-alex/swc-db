@@ -32,17 +32,19 @@ class Key final {
   explicit Key(const Key& other, bool own);
 
   Key(const Key&&) = delete;
-  
+
   Key& operator=(const Key&) = delete;
 
   void copy(const Key& other);
 
   ~Key();
 
+  void _free();
+
   void free();
 
   bool sane() const;
-  
+
   void add(const std::string_view& fraction);
 
   void add(const std::string& fraction);
@@ -53,11 +55,11 @@ class Key final {
 
   void add(const uint8_t* fraction, uint32_t len);
 
-  void add(const std::vector<std::string>::const_iterator cbegin, 
+  void add(const std::vector<std::string>::const_iterator cbegin,
            const std::vector<std::string>::const_iterator cend);
 
   void add(const std::vector<std::string>& fractions);
-  
+
   void insert(uint32_t idx, const std::string& fraction);
 
   void insert(uint32_t idx, const char* fraction);
@@ -65,7 +67,7 @@ class Key final {
   void insert(uint32_t idx, const char* fraction, uint32_t len);
 
   void insert(uint32_t idx, const uint8_t* fraction, uint32_t len);
-  
+
   void remove(uint32_t idx, bool recursive=false);
 
   std::string get_string(uint32_t idx) const;
@@ -75,7 +77,7 @@ class Key final {
   bool equal(const Key& other) const;
 
   bool empty() const;
-  
+
   uint32_t encoded_length() const;
 
   void encode(uint8_t** bufp) const;
@@ -91,7 +93,7 @@ class Key final {
   bool equal(const std::vector<std::string>& key) const;
 
   std::string to_string() const;
-  
+
   void display(std::ostream& out, bool pretty=true,
                const char* sep = ",") const;
 
@@ -99,7 +101,7 @@ class Key final {
 
   void print(std::ostream& out) const;
 
-  friend std::ostream& operator<<(std::ostream& out, const Key& key) { 
+  friend std::ostream& operator<<(std::ostream& out, const Key& key) {
     key.print(out);
     return out;
   }
@@ -110,7 +112,7 @@ class Key final {
   uint8_t*  data;
 
   private:
-  
+
   uint8_t* _data(const uint8_t* ptr);
 
 };
@@ -119,6 +121,6 @@ class Key final {
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/db/Cells/CellKey.cc"
-#endif 
+#endif
 
 #endif // swcdb_db_Cells_CellKey_h

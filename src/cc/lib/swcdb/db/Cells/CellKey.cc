@@ -27,7 +27,7 @@ Key::Key(const Key& other, bool own)
 }
 
 void Key::copy(const Key& other) {
-  free(); 
+  _free();
   own = true;
   size = other.size;
   count = other.count;
@@ -35,14 +35,19 @@ void Key::copy(const Key& other) {
 }
 
 Key::~Key() {
+  _free();
+}
+
+SWC_SHOULD_INLINE
+void Key::_free() {
   if(own && data)
     delete [] data;
 }
 
+SWC_SHOULD_INLINE
 void Key::free() {
-  if(own && data)
-    delete [] data;
-  data = 0;
+  _free();
+  data = nullptr;
   size = 0;
   count = 0;
 }
@@ -75,7 +80,7 @@ void Key::add(const uint8_t* fraction, uint32_t len) {
   const uint8_t* old = data;
   uint32_t old_size = size;
 
-  uint8_t* ptr = data = 
+  uint8_t* ptr = data =
     new uint8_t[size += Serialization::encoded_length_vi24(len) + len];
   if(old) {
     memcpy(ptr, old, old_size);
@@ -90,11 +95,11 @@ void Key::add(const uint8_t* fraction, uint32_t len) {
 }
 
 SWC_SHOULD_INLINE
-void Key::add(const std::vector<std::string>& fractions) {  
+void Key::add(const std::vector<std::string>& fractions) {
   add(fractions.cbegin(), fractions.cend());
 }
 
-void Key::add(const std::vector<std::string>::const_iterator cbegin, 
+void Key::add(const std::vector<std::string>::const_iterator cbegin,
               const std::vector<std::string>::const_iterator cend) {
   if(cbegin == cend)
     return;
@@ -104,7 +109,7 @@ void Key::add(const std::vector<std::string>::const_iterator cbegin,
 
   for(auto it=cbegin; it < cend; ++it)
     size += Serialization::encoded_length_vi24(it->size()) + it->size();
-  
+
   uint8_t* ptr = data = new uint8_t[size];
   if(old) {
     memcpy(ptr, old, old_size);
@@ -146,15 +151,15 @@ void Key::insert(uint32_t idx, const uint8_t* fraction, uint32_t len) {
   uint32_t f_size = Serialization::encoded_length_vi24(len) + len;
   size += f_size;
 
-  uint8_t* data_tmp = new uint8_t[size]; 
+  uint8_t* data_tmp = new uint8_t[size];
   const uint8_t* ptr_tmp = data;
- 
+
   uint8_t* fraction_ptr;
-  
+
   uint32_t offset = 0;
   for(uint32_t pos = 0;; ++pos) {
     if(idx == pos) {
-      if(offset) 
+      if(offset)
         memcpy(data_tmp, data, offset);
       fraction_ptr = data_tmp + offset;
       Serialization::encode_vi24(&fraction_ptr, len);
@@ -165,10 +170,10 @@ void Key::insert(uint32_t idx, const uint8_t* fraction, uint32_t len) {
     ptr_tmp += Serialization::decode_vi24(&ptr_tmp);
     offset += ptr_tmp-data;
   }
-  
+
   if(prev_size-offset)
     memcpy(fraction_ptr, ptr_tmp, prev_size-offset);
-  
+
   if(own)
     delete [] data;
   else
@@ -191,22 +196,22 @@ void Key::remove(uint32_t idx, bool recursive) {
   for(uint24_t offset = 0; offset < count; ++offset) {
     begin = (uint8_t*)ptr_tmp;
     ptr_tmp += Serialization::decode_vi24(&ptr_tmp);
-    if(offset < idx) 
+    if(offset < idx)
       continue;
-    
+
     if(recursive) {
       count = offset;
       size = begin-data;
     } else if(--count) {
-      memmove(begin, ptr_tmp, size-(ptr_tmp-data)); 
+      memmove(begin, ptr_tmp, size-(ptr_tmp-data));
       size -= ptr_tmp-begin;
     }
-    
+
     ptr_tmp = data;
     if(count) {
       data = _data(ptr_tmp);
     } else {
-      data = 0;
+      data = nullptr;
       size = 0;
     }
     delete ptr_tmp;
@@ -228,7 +233,7 @@ void Key::get(uint32_t idx, const char** fraction, uint32_t* length) const {
     const uint8_t* ptr = data;
     for(; idx ; --idx)
       ptr += (*length = Serialization::decode_vi24(&ptr));
-    if(!idx) { 
+    if(!idx) {
       *fraction = (const char*)ptr - *length;
       return;
     }
@@ -236,8 +241,8 @@ void Key::get(uint32_t idx, const char** fraction, uint32_t* length) const {
 }
 
 bool Key::equal(const Key& other) const {
-  return count == other.count && 
-        ((!data && !other.data) || 
+  return count == other.count &&
+        ((!data && !other.data) ||
          Condition::eq(data, size, other.data, other.size));
 }
 
@@ -259,14 +264,18 @@ void Key::encode(uint8_t** bufp) const {
 }
 
 void Key::decode(const uint8_t** bufp, size_t* remainp, bool owner) {
-  free();
+  _free();
   if((count = Serialization::decode_vi24(bufp, remainp))) {
     uint24_t n=count;
     const uint8_t* ptr_start = *bufp;
-    do *bufp += Serialization::decode_vi24(bufp); 
+    do *bufp += Serialization::decode_vi24(bufp);
     while(--n);
     *remainp -= (size = *bufp - ptr_start);
     data = (own = owner) ? _data(ptr_start) : (uint8_t*)ptr_start;
+  } else {
+    own = owner;
+    data = nullptr;
+    size = 0;
   }
 }
 
@@ -300,7 +309,7 @@ void Key::read(const std::vector<std::string>& key)  {
 bool Key::equal(const std::vector<std::string>& key) const {
   if(key.size() != count)
     return false;
-    
+
   uint24_t len;
   const uint8_t* ptr = data;
   for(auto it = key.begin(); it<key.end(); ++it, ptr+=len) {
@@ -323,9 +332,9 @@ void Key::display_details(std::ostream& out, bool pretty) const {
 }
 
 void Key::display(std::ostream& out, bool pretty, const char* sep) const {
-  out << '['; 
+  out << '[';
   if(!count) {
-    out << ']'; 
+    out << ']';
     return;
   }
   uint24_t len;
@@ -346,10 +355,10 @@ void Key::display(std::ostream& out, bool pretty, const char* sep) const {
     }
     out << '"';
     if(++n < count)
-      out << sep; 
+      out << sep;
   }
-  out << ']'; 
-  
+  out << ']';
+
 }
 
 void Key::print(std::ostream& out) const {
