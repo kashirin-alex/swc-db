@@ -65,19 +65,23 @@ class Buffer {
 
 
   ~Buffer() {
+    _free();
+  }
+
+  SWC_CAN_INLINE
+  void _free() SWC_NOEXCEPT {
     if(own && base)
       delete [] base;
   }
 
   void free() SWC_NOEXCEPT {
-    if(own && base)
-      delete [] base;
+    _free();
     size = 0;
     base = nullptr;
   }
 
   void reallocate(size_t len) {
-    free();
+    _free();
     own = true;
     base = allocate(size = len);
   }
@@ -97,14 +101,14 @@ class Buffer {
   }
 
   void set(value_type* data, size_t len, bool take_ownership) SWC_NOEXCEPT {
-    free();
+    _free();
     own = take_ownership;
     size = len;
     base = data;
   }
   
   void set(BufferT& other) SWC_NOEXCEPT {
-    free();
+    _free();
     base = other.base;
     size = other.size;
     if((own = other.own)) {
@@ -224,7 +228,7 @@ class BufferDyn : public BufferT {
   }
 
   void take_ownership(BufferDyn<BufferT>& other) SWC_NOEXCEPT { 
-    free();
+    BufferT::_free();
     BufferT::own = other.own;
     BufferT::size = other.size;
     other.size = 0;
@@ -276,7 +280,7 @@ template<>
 template<>
 SWC_CAN_INLINE
 void StaticBuffer::set(DynamicBuffer& other) SWC_NOEXCEPT {
-  free();
+  _free();
   base = other.base;
   size = other.fill();
   if((own = other.own)) {
