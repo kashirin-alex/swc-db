@@ -41,7 +41,7 @@ namespace SWC { namespace FsBroker {
 
 
 class AppContext final : public Comm::AppContext {
-  
+
   // in-order of Protocol::FsBroker::Coomand
   static constexpr const Comm::AppHandler_t handlers[] = {
     &Comm::Protocol::Common::Handler::not_implemented,
@@ -68,11 +68,11 @@ class AppContext final : public Comm::AppContext {
     //&Comm::Protocol::FsBroker::Handler::debug,
     //&Comm::Protocol::FsBroker::Handler::status,
     //&Comm::Protocol::FsBroker::Handler::shutdown
-  }; 
+  };
 
   public:
 
-  AppContext() 
+  AppContext()
       : Comm::AppContext(
           Env::Config::settings()->get<Config::Property::V_GENUM>(
             "swc.FsBroker.comm.encoder")) {
@@ -86,7 +86,7 @@ class AppContext final : public Comm::AppContext {
     Env::FsInterface::init(fs_type);
 
     Env::FsBroker::init();
-    
+
     auto period = settings->get<Config::Property::V_GINT32>(
       "swc.cfg.dyn.period");
     if(period->get()) {
@@ -96,7 +96,7 @@ class AppContext final : public Comm::AppContext {
       );
     }
   }
-  
+
   void init(const Comm::EndPoints&) override {
     int sig = 0;
     Env::IoCtx::io()->set_signals();
@@ -110,14 +110,14 @@ class AppContext final : public Comm::AppContext {
   virtual ~AppContext() { }
 
   void handle(Comm::ConnHandlerPtr conn, const Comm::Event::Ptr& ev) override {
-    SWC_LOG_OUT(LOG_DEBUG, ev->print(SWC_LOG_OSTREAM << "handle: "); );
+    // SWC_LOG_OUT(LOG_DEBUG, ev->print(SWC_LOG_OSTREAM << "handle: "); );
 
     switch (ev->type) {
 
       case Comm::Event::Type::ESTABLISHED:
         m_srv->connection_add(conn);
-        return; 
-        
+        return;
+
       case Comm::Event::Type::DISCONNECT:
         m_srv->connection_del(conn);
         return;
@@ -129,7 +129,10 @@ class AppContext final : public Comm::AppContext {
         uint8_t cmd = ev->header.command >= Comm::Protocol::FsBroker::MAX_CMD
                         ? (uint8_t)Comm::Protocol::FsBroker::NOT_IMPLEMENTED
                         : ev->header.command;
-        Env::IoCtx::post([cmd, conn, ev]() { handlers[cmd](conn, ev); });
+        Env::IoCtx::post([cmd, conn, ev]() {
+          if(!ev->expired())
+            handlers[cmd](conn, ev);
+          });
         return;
       }
 
@@ -139,16 +142,16 @@ class AppContext final : public Comm::AppContext {
 
     }
   }
-  
+
   void shutting_down(const std::error_code &ec, const int &sig) {
     if(!sig) { // set signals listener
       Env::IoCtx::io()->signals->async_wait(
         [ptr=this](const std::error_code &ec, const int &sig){
           SWC_LOGF(LOG_INFO, "Received signal, sig=%d ec=%s", sig, ec.message().c_str());
-          ptr->shutting_down(ec, sig); 
+          ptr->shutting_down(ec, sig);
         }
-      ); 
-      SWC_LOGF(LOG_INFO, "Listening for Shutdown signal, set at sig=%d ec=%s", 
+      );
+      SWC_LOGF(LOG_INFO, "Listening for Shutdown signal, set at sig=%d ec=%s",
               sig, ec.message().c_str());
       return;
     }
@@ -160,7 +163,7 @@ class AppContext final : public Comm::AppContext {
   }
 
   void stop() override {
-     
+
     auto guard = m_srv->stop_accepting(); // no further requests accepted
 
     int err;
@@ -172,11 +175,11 @@ class AppContext final : public Comm::AppContext {
         Env::FsInterface::fs()->close(err, fd);
       }
     }
-    
+
     Env::FsInterface::interface()->stop();
-    
+
     Env::IoCtx::io()->stop();
-    
+
     m_srv->shutdown();
 
     guard = nullptr;

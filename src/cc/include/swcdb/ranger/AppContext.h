@@ -38,12 +38,12 @@ namespace SWC { namespace Ranger {
 
 
 
-class AppContext final : public Comm::AppContext { 
+class AppContext final : public Comm::AppContext {
   public:
 
   static std::shared_ptr<AppContext> make() {
     auto settings = Env::Config::settings();
-    
+
     settings->parse_file(
       settings->get_str("swc.rgr.cfg", ""),
       "swc.rgr.cfg.dyn"
@@ -59,7 +59,7 @@ class AppContext final : public Comm::AppContext {
     );
 
     Env::FsInterface::init(FS::fs_type(settings->get_str("swc.fs")));
-  
+
     Env::Rgr::init();
 
     auto period = settings->get<Config::Property::V_GINT32>(
@@ -73,7 +73,7 @@ class AppContext final : public Comm::AppContext {
 
     auto app = std::make_shared<AppContext>();
     app->id_mngr = std::make_shared<Comm::Protocol::Mngr::Req::RgrMngId>(
-      Env::Rgr::io(), 
+      Env::Rgr::io(),
       [app]() {
         std::shared_ptr<std::thread> d(new std::thread);
         *d.get() = std::thread([d, app]{ app->stop(); });
@@ -83,7 +83,7 @@ class AppContext final : public Comm::AppContext {
     return app;
   }
 
-  AppContext() 
+  AppContext()
       : Comm::AppContext(
           Env::Config::settings()->get<Config::Property::V_GENUM>(
             "swc.rgr.comm.encoder")) {
@@ -91,7 +91,7 @@ class AppContext final : public Comm::AppContext {
 
   void init(const Comm::EndPoints& endpoints) override {
     Env::Rgr::rgr_data()->endpoints = endpoints;
-    
+
     int sig = 0;
     Env::Rgr::io()->set_signals();
     shutting_down(std::error_code(), sig);
@@ -108,15 +108,14 @@ class AppContext final : public Comm::AppContext {
 
 
   void handle(Comm::ConnHandlerPtr conn, const Comm::Event::Ptr& ev) override {
+    // SWC_LOG_OUT(LOG_DEBUG, ev->print(SWC_LOG_OSTREAM << "handle: "); );
 
-    // SWC_LOGF(LOG_DEBUG, "handle: %s", ev->to_str().c_str());
-    
     switch (ev->type) {
 
       case Comm::Event::Type::ESTABLISHED:
         m_srv->connection_add(conn);
-        break; 
-        
+        break;
+
       case Comm::Event::Type::DISCONNECT:
         m_srv->connection_del(conn);
         break;
@@ -159,7 +158,8 @@ class AppContext final : public Comm::AppContext {
 
           case Comm::Protocol::Rgr::Command::RANGE_LOAD:
             Env::Rgr::post([conn, ev]() {
-              Comm::Protocol::Rgr::Handler::range_load(conn, ev);
+              if(!ev->expired())
+                Comm::Protocol::Rgr::Handler::range_load(conn, ev);
             });
             break;
 
@@ -169,7 +169,8 @@ class AppContext final : public Comm::AppContext {
 
           case Comm::Protocol::Rgr::Command::RANGE_LOCATE:
             Env::Rgr::post([conn, ev]() {
-              Comm::Protocol::Rgr::Handler::range_locate(conn, ev);
+              if(!ev->expired())
+                Comm::Protocol::Rgr::Handler::range_locate(conn, ev);
             });
             break;
 
@@ -179,13 +180,15 @@ class AppContext final : public Comm::AppContext {
 
           case Comm::Protocol::Rgr::Command::RANGE_QUERY_SELECT:
             Env::Rgr::post([conn, ev]() {
-              Comm::Protocol::Rgr::Handler::range_query_select(conn, ev);
+              if(!ev->expired())
+                Comm::Protocol::Rgr::Handler::range_query_select(conn, ev);
             });
             break;
 
           case Comm::Protocol::Rgr::Command::REPORT:
             Env::Rgr::post([conn, ev]() {
-              Comm::Protocol::Rgr::Handler::report(conn, ev);
+              if(!ev->expired())
+                Comm::Protocol::Rgr::Handler::report(conn, ev);
             });
             break;
 
@@ -210,18 +213,18 @@ class AppContext final : public Comm::AppContext {
     if(!sig) { // set signals listener
       Env::Rgr::io()->signals->async_wait(
         [this](const std::error_code &ec, const int &sig) {
-          SWC_LOGF(LOG_INFO, "Received signal, sig=%d ec=%s", 
+          SWC_LOGF(LOG_INFO, "Received signal, sig=%d ec=%s",
                    sig, ec.message().c_str());
-          shutting_down(ec, sig); 
+          shutting_down(ec, sig);
         }
-      ); 
-      SWC_LOGF(LOG_INFO, "Listening for Shutdown signal, set at sig=%d ec=%s", 
+      );
+      SWC_LOGF(LOG_INFO, "Listening for Shutdown signal, set at sig=%d ec=%s",
               sig, ec.message().c_str());
       return;
     }
-    SWC_LOGF(LOG_INFO, "Shutdown signal, sig=%d ec=%s", 
+    SWC_LOGF(LOG_INFO, "Shutdown signal, sig=%d ec=%s",
              sig, ec.message().c_str());
-    
+
     if(!m_srv) {
       SWC_LOG(LOG_INFO, "Exit");
       std::quick_exit(0);
@@ -243,7 +246,7 @@ class AppContext final : public Comm::AppContext {
     Env::IoCtx::io()->stop();
 
     Env::FsInterface::interface()->stop();
-    
+
     Env::Rgr::io()->stop();
 
     m_srv->shutdown();
@@ -252,11 +255,11 @@ class AppContext final : public Comm::AppContext {
   }
 
   private:
-  
+
   Comm::Protocol::Mngr::Req::RgrMngId::Ptr  id_mngr = nullptr;
   Comm::server::SerializedServer::Ptr       m_srv = nullptr;
   std::shared_ptr<Comm::IoContext::ExecutorWorkGuard> m_guard;
-  
+
 };
 
 
