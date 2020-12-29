@@ -8,7 +8,33 @@
 
 ### [SWC-DB master](https://github.com/kashirin-alex/swc-db/tree/master) (upcoming-release)
 
-    
+    added class Core::StateRunning & changed running-state vars to StateRunning
+    added core/Atomic.h & changed use cases of std::atomic<> to Core::Atomic<>
+    changed possible returns of std::string to const char* as noexcept
+    changed Ranger::CellStore::Read::m_queue to QueueSafeStated<Block::Read::Ptr>
+    changed Ranger::Blocks::wait_processing() to shorter check-up and dual
+    changed Ranger{Block,Fragment,Cs::Block} m_err,m_state,m_processing to atomic
+    added class Core::QueuePointer<PtrT>
+    fixed Ranger::CompactRange::add_cs, after finalize add to vector<Write::Ptr>
+    changed Ranger::CompactRange::InBlock to QueuePointer<InBlock*>::Pointer base
+    changed Ranger::CompactRange::m_q_{intval,encode,write} to QueuePointer<>
+    merged Ranger class RangeQueryUpdate & ReqAdd with base QueuePointer<>::Pointer
+    changed Ranger::Range::m_q_add to QueuePointer<Callback::RangeQueryUpdate*>
+    added Ranger g_i8 configuraion-property swc.rgr.Range.req.update.concurrency
+    added Ranger::Range::m_mutex_intval_alignment & adjusted use of m_mutex_intval
+    changed Ranger::Range not-mutex based functions to an internal '_'-prefixed
+    added temp align_{min,max} in Ranger::Range::run_add_queue
+    changed Ranger cases of read-cells loops with a wider try-block over a loop
+    changed possible DB::Cells:Cell Conctructor cases to use the buffer-ctor
+    added void DB::Cell::Key::_free(), Core::Buffer<T>_free() and Cell::_free()
+    added bool DB::Interval::align(KeyVec& min, KeyVec& max)
+    changed cases of str-compare to case-insensitive
+    changed strerror to Error::get_text
+    added option to create a schema with designated cid in Manager::MngdColumns
+    added condition ev->expired() in Programs-AppContext - skip run handler
+    added use-count of hdfsFile in FileSystemHadoopJVM::SmartFdHadoopJVM
+    fixed FS::FileSystemHadoopJVM cases of invalidated hdfsFile instance usage
+    fixed FsBroker handlers using 'close', remove fd from map after close
 
 [_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.4.13...master)
 ******
