@@ -35,6 +35,7 @@
     added use-count of hdfsFile in FileSystemHadoopJVM::SmartFdHadoopJVM
     fixed FS::FileSystemHadoopJVM cases of invalidated hdfsFile instance usage
     fixed FsBroker handlers using 'close', remove fd from map after close
+    fixed client::Query::Select interval-offset clear key at range-key_end is GE
 
 [_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.4.13...master)
 ******

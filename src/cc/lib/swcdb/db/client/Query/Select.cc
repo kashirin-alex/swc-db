@@ -2,7 +2,7 @@
 /*
  * SWC-DB© Copyright since 2019 Alex Kashirin <kashirin.alex@gmail.com>
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
- */ 
+ */
 
 #include "swcdb/db/Types/MetaColumn.h"
 #include "swcdb/db/client/Clients.h"
@@ -10,7 +10,7 @@
 
 
 namespace SWC { namespace client { namespace Query {
- 
+
 namespace Result {
 
 
@@ -19,7 +19,7 @@ Select::Rsp::Rsp() : m_err(Error::OK) {
 
 Select::Rsp::~Rsp() { }
 
-bool Select::Rsp::add_cells(const StaticBuffer& buffer, bool reached_limit, 
+bool Select::Rsp::add_cells(const StaticBuffer& buffer, bool reached_limit,
                             DB::Specs::Interval& interval) {
   Core::MutexSptd::scope lock(m_mutex);
   size_t recved = m_cells.add(buffer.base, buffer.size);
@@ -28,7 +28,7 @@ bool Select::Rsp::add_cells(const StaticBuffer& buffer, bool reached_limit,
     if(interval.flags.limit <= recved) {
       interval.flags.limit = 0;
       return false;
-    } 
+    }
     interval.flags.limit -= recved;
   }
 
@@ -38,8 +38,8 @@ bool Select::Rsp::add_cells(const StaticBuffer& buffer, bool reached_limit,
     interval.offset_rev = last->get_timestamp();
   }
   return true;
-}  
-    
+}
+
 void Select::Rsp::get_cells(DB::Cells::Result& cells) {
   Core::MutexSptd::scope lock(m_mutex);
   cells.take(m_cells);
@@ -77,8 +77,8 @@ int Select::Rsp::error() {
 }
 
 
-Select::Select(bool notify) 
-              : notify(notify), err(Error::OK),  
+Select::Select(bool notify)
+              : notify(notify), err(Error::OK),
                 completion(0) {
 }
 
@@ -95,8 +95,8 @@ void Select::add_column(const cid_t cid) {
 Select::Rsp::Ptr Select::get_columnn(const cid_t cid) {
   return m_columns[cid];
 }
-  
-bool Select::add_cells(const cid_t cid, const StaticBuffer& buffer, 
+
+bool Select::add_cells(const cid_t cid, const StaticBuffer& buffer,
                        bool reached_limit, DB::Specs::Interval& interval) {
   return m_columns[cid]->add_cells(buffer, reached_limit, interval);
 }
@@ -147,38 +147,38 @@ void Select::remove(const cid_t cid) {
   // unused
   m_columns.erase(cid);
 }
-  
+
 } // namespace Result
 
 
 
 Select::Select(const Cb_t& cb, bool rsp_partials,
                const Comm::IoContextPtr& io)
-        : buff_sz(Env::Clients::ref().cfg_recv_buff_sz->get()), 
-          buff_ahead(Env::Clients::ref().cfg_recv_ahead->get()), 
-          timeout(Env::Clients::ref().cfg_recv_timeout->get()), 
+        : buff_sz(Env::Clients::ref().cfg_recv_buff_sz->get()),
+          buff_ahead(Env::Clients::ref().cfg_recv_ahead->get()),
+          timeout(Env::Clients::ref().cfg_recv_timeout->get()),
           cb(cb), dispatcher_io(io),
           result(std::make_shared<Result>(cb && rsp_partials)),
-          m_rsp_partial_runs(false) { 
+          m_rsp_partial_runs(false) {
 }
 
-Select::Select(const DB::Specs::Scan& specs, 
+Select::Select(const DB::Specs::Scan& specs,
                const Cb_t& cb, bool rsp_partials,
                const Comm::IoContextPtr& io)
-        : buff_sz(Env::Clients::ref().cfg_recv_buff_sz->get()), 
-          buff_ahead(Env::Clients::ref().cfg_recv_ahead->get()), 
-          timeout(Env::Clients::ref().cfg_recv_timeout->get()), 
+        : buff_sz(Env::Clients::ref().cfg_recv_buff_sz->get()),
+          buff_ahead(Env::Clients::ref().cfg_recv_ahead->get()),
+          timeout(Env::Clients::ref().cfg_recv_timeout->get()),
           cb(cb), dispatcher_io(io), specs(specs),
           result(std::make_shared<Result>(cb && rsp_partials)),
           m_rsp_partial_runs(false) {
 }
 
 Select::~Select() { }
- 
+
 void Select::response(int err) {
   if(err)
     result->err.store(err);
-  
+
   result->profile.finished();
 
   if(result->notify) {
@@ -201,7 +201,7 @@ void Select::response(int err) {
 void Select::response_partials() {
   if(!result->notify)
     return;
-    
+
   {
     std::unique_lock lock_wait(result->mutex);
     if(m_rsp_partial_runs) {
@@ -209,7 +209,7 @@ void Select::response_partials() {
         result->cv.wait(
           lock_wait,
           [selector=shared_from_this()] () {
-            return !selector->m_rsp_partial_runs || 
+            return !selector->m_rsp_partial_runs ||
                    !selector->wait_on_partials();
           }
         );
@@ -227,7 +227,7 @@ bool Select::wait_on_partials() const {
 }
 
 void Select::response_partial() {
-    
+
   send_result();
 
   std::scoped_lock lock(result->mutex);
@@ -238,7 +238,7 @@ void Select::response_partial() {
 void Select::wait() {
   std::unique_lock lock_wait(result->mutex);
   result->cv.wait(
-    lock_wait, 
+    lock_wait,
     [selector=shared_from_this()] () {
       return !selector->m_rsp_partial_runs &&
              !selector->result->completion.count();
@@ -291,9 +291,9 @@ void Select::scan(int& err) {
 
 
 Select::Scanner::Scanner(const Select::Ptr& selector,
-                         const DB::Types::KeySeq col_seq, 
-                         DB::Specs::Interval& interval, 
-                         const cid_t cid) 
+                         const DB::Types::KeySeq col_seq,
+                         DB::Specs::Interval& interval,
+                         const cid_t cid)
             : completion(0),
               selector(selector),
               col_seq(col_seq),
@@ -316,14 +316,14 @@ void Select::Scanner::print(std::ostream& out) {
       << " master(" << master_cid << '/' << master_rid
         << " mngr-next=" << master_mngr_next
         << " rgr-next=" << master_rgr_next << ')'
-      << " meta(" << meta_cid << '/' << meta_rid  
+      << " meta(" << meta_cid << '/' << meta_rid
         << " next=" << meta_next << ')'
       << " data(" << data_cid << '/' << data_rid  << ") ";
   interval.print(out);
   out << " completion=" << completion.count() << ')';
 }
 
-bool Select::Scanner::add_cells(const StaticBuffer& buffer, 
+bool Select::Scanner::add_cells(const StaticBuffer& buffer,
                                 bool reached_limit) {
   return selector->result->add_cells(data_cid, buffer, reached_limit, interval);
 }
@@ -339,10 +339,14 @@ void Select::Scanner::response_if_last() {
 }
 
 void Select::Scanner::next_call() {
-  interval.offset_key.free();
-  interval.offset_rev = 0;
-
   if(meta_next) {
+    if(!interval.offset_key.empty() && !meta_end.empty()) {
+      if(DB::KeySeq::compare(col_seq, interval.offset_key, meta_end)
+         != Condition::LT) {
+        interval.offset_key.free();
+        interval.offset_rev = 0;
+      }
+    }
     rgr_locate_meta();
 
   } else if(master_rgr_next) {
@@ -370,10 +374,10 @@ void Select::Scanner::mngr_locate_master() {
       params.range_begin, params.range_end);
   } else {
     params.range_begin.copy(master_mngr_offset);
-    interval.apply_possible_range_end(params.range_end); 
+    interval.apply_possible_range_end(params.range_end);
   }
   ***/
-  
+
   if(DB::Types::MetaColumn::is_data(data_cid)) {
     auto data_cid_str = std::to_string(data_cid);
     params.range_begin.insert(0, data_cid_str);
@@ -390,7 +394,7 @@ void Select::Scanner::mngr_locate_master() {
     params,
     [profile=selector->result->profile.mngr_locate(),
      scanner=shared_from_this()]
-    (const ReqBase::Ptr& req, 
+    (const ReqBase::Ptr& req,
      const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
       profile.add(rsp.err || !rsp.rid);
       if(scanner->mngr_located_master(req, rsp))
@@ -400,7 +404,7 @@ void Select::Scanner::mngr_locate_master() {
 }
 
 bool Select::Scanner::mngr_located_master(
-        const ReqBase::Ptr& req, 
+        const ReqBase::Ptr& req,
         const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
 
   if(rsp.err) {
@@ -460,10 +464,10 @@ void Select::Scanner::rgr_locate_master() {
   interval.apply_possible_range(
     params.range_begin, params.range_end, &range_end_rest);
   if(range_end_rest)
-    params.flags 
+    params.flags
       |= Comm::Protocol::Rgr::Params::RangeLocateReq::RANGE_END_REST;
   if(interval.has_opt__key_equal())
-    params.flags 
+    params.flags
       |= Comm::Protocol::Rgr::Params::RangeLocateReq::KEY_EQUAL;
   ***/
 
@@ -482,7 +486,7 @@ void Select::Scanner::rgr_locate_master() {
     params, master_rgr_endpoints,
     [profile=selector->result->profile.rgr_locate(DB::Types::Range::MASTER),
      scanner=shared_from_this()]
-    (const ReqBase::Ptr& req, 
+    (const ReqBase::Ptr& req,
      const Comm::Protocol::Rgr::Params::RangeLocateRsp& rsp) {
       profile.add(!rsp.rid || rsp.err);
       scanner->rgr_located_master(req, rsp);
@@ -491,7 +495,7 @@ void Select::Scanner::rgr_locate_master() {
 }
 
 void Select::Scanner::rgr_located_master(
-          const ReqBase::Ptr& req, 
+          const ReqBase::Ptr& req,
           const Comm::Protocol::Rgr::Params::RangeLocateRsp& rsp) {
   if(rsp.err) {
     if(master_rgr_next && rsp.err == Error::RANGE_NOT_FOUND) {
@@ -500,7 +504,7 @@ void Select::Scanner::rgr_located_master(
       next_call();
       return response_if_last();
     }
-    SWC_SCANNER_RSP_DEBUG("rgr_located_master RETRYING");    
+    SWC_SCANNER_RSP_DEBUG("rgr_located_master RETRYING");
     if(rsp.err == Error::RGR_NOT_LOADED_RANGE ||
        rsp.err == Error::RANGE_NOT_FOUND  ||
        rsp.err == Error::SERVER_SHUTTING_DOWN ||
@@ -541,20 +545,20 @@ void Select::Scanner::rgr_located_master(
 //
 void Select::Scanner::mngr_resolve_rgr_meta() {
   completion.increment();
-  
+
   auto profile = selector->result->profile.mngr_res();
   auto params = Comm::Protocol::Mngr::Params::RgrGetReq(meta_cid, meta_rid);
   auto req = Comm::Protocol::Mngr::Req::RgrGet::make(
     params,
     [profile, scanner=shared_from_this()]
-    (const ReqBase::Ptr& req, 
+    (const ReqBase::Ptr& req,
      const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
       profile.add(rsp.err || !rsp.rid || rsp.endpoints.empty());
       if(scanner->mngr_resolved_rgr_meta(req, rsp))
         scanner->response_if_last();
     }
   );
-  
+
   Comm::Protocol::Mngr::Params::RgrGetRsp rsp(meta_cid, meta_rid);
   if(Env::Clients::get()->rangers.get(meta_cid, meta_rid, rsp.endpoints)) {
     SWC_SCANNER_RSP_DEBUG("mngr_resolve_rgr_meta Cache hit");
@@ -569,7 +573,7 @@ void Select::Scanner::mngr_resolve_rgr_meta() {
 }
 
 bool Select::Scanner::mngr_resolved_rgr_meta(
-        const ReqBase::Ptr& req, 
+        const ReqBase::Ptr& req,
         const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
   if(rsp.err) {
     SWC_SCANNER_RSP_DEBUG("mngr_resolved_rgr_meta RETRYING");
@@ -601,10 +605,10 @@ void Select::Scanner::rgr_locate_meta() {
     params.range_begin, params.range_end, &range_end_rest);
   if(range_end_rest ||
      (!interval.range_end.empty() && interval.has_opt__range_end_rest()))
-    params.flags 
+    params.flags
       |= Comm::Protocol::Rgr::Params::RangeLocateReq::RANGE_END_REST;
   if(interval.has_opt__key_equal())
-    params.flags 
+    params.flags
       |= Comm::Protocol::Rgr::Params::RangeLocateReq::KEY_EQUAL;
 
   params.range_begin.insert(0, data_cid_str);
@@ -615,7 +619,7 @@ void Select::Scanner::rgr_locate_meta() {
     params, meta_endpoints,
     [profile=selector->result->profile.rgr_locate(DB::Types::Range::META),
      scanner=shared_from_this()]
-    (const ReqBase::Ptr& req, 
+    (const ReqBase::Ptr& req,
      const Comm::Protocol::Rgr::Params::RangeLocateRsp& rsp) {
       profile.add(!rsp.rid || rsp.err);
       scanner->rgr_located_meta(req, rsp);
@@ -624,7 +628,7 @@ void Select::Scanner::rgr_locate_meta() {
 }
 
 void Select::Scanner::rgr_located_meta(
-          const ReqBase::Ptr& req, 
+          const ReqBase::Ptr& req,
           const Comm::Protocol::Rgr::Params::RangeLocateRsp& rsp) {
   switch(rsp.err) {
     case Error::OK:
@@ -661,6 +665,7 @@ void Select::Scanner::rgr_located_meta(
   SWC_SCANNER_RSP_DEBUG("rgr_located_meta)");
   meta_next = true;
   meta_offset.copy(rsp.range_begin);
+  meta_end.copy(rsp.range_end);
   data_rid = rsp.rid;
   data_req_base = req;
   mngr_resolve_rgr_select();
@@ -671,20 +676,20 @@ void Select::Scanner::rgr_located_meta(
 //
 void Select::Scanner::mngr_resolve_rgr_select() {
   completion.increment();
-  
+
   auto profile = selector->result->profile.mngr_res();
   Comm::Protocol::Mngr::Params::RgrGetReq params(data_cid, data_rid);
   auto req = Comm::Protocol::Mngr::Req::RgrGet::make(
     params,
     [profile, scanner=shared_from_this()]
-    (const ReqBase::Ptr& req, 
+    (const ReqBase::Ptr& req,
      const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
       profile.add(rsp.err || !rsp.rid || rsp.endpoints.empty());
       if(scanner->mngr_resolved_rgr_select(req, rsp))
         scanner->response_if_last();
     }
   );
-  
+
   Comm::Protocol::Mngr::Params::RgrGetRsp rsp(data_cid, data_rid);
   if(Env::Clients::get()->rangers.get(data_cid, data_rid, rsp.endpoints)) {
     SWC_SCANNER_RSP_DEBUG("mngr_resolve_rgr_select Cache hit");
@@ -699,7 +704,7 @@ void Select::Scanner::mngr_resolve_rgr_select() {
 }
 
 bool Select::Scanner::mngr_resolved_rgr_select(
-        const ReqBase::Ptr& req, 
+        const ReqBase::Ptr& req,
         const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
   if(rsp.err) {
     if(rsp.err == Error::COLUMN_NOT_EXISTS) {
@@ -742,11 +747,11 @@ void Select::Scanner::rgr_select() {
 }
 
 void Select::Scanner::rgr_selected(
-                const ReqBase::Ptr& req, 
+                const ReqBase::Ptr& req,
                 const Comm::Protocol::Rgr::Params::RangeQuerySelectRsp& rsp) {
   if(rsp.err) {
     SWC_SCANNER_RSP_DEBUG("rgr_selected RETRYING");
-    if(rsp.err == Error::RGR_NOT_LOADED_RANGE || 
+    if(rsp.err == Error::RGR_NOT_LOADED_RANGE ||
        rsp.err == Error::SERVER_SHUTTING_DOWN ||
        rsp.err == Error::COMM_NOT_CONNECTED) {
       Env::Clients::get()->rangers.remove(data_cid, data_rid);
@@ -771,5 +776,5 @@ void Select::Scanner::rgr_selected(
 
 #undef SWC_SCANNER_REQ_DEBUG
 #undef SWC_SCANNER_RSP_DEBUG
-  
+
 }}}

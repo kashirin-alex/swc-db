@@ -2,7 +2,7 @@
 /*
  * SWC-DB© Copyright since 2019 Alex Kashirin <kashirin.alex@gmail.com>
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
- */ 
+ */
 
 #ifndef swcdb_db_client_Query_Select_h
 #define swcdb_db_client_Query_Select_h
@@ -46,9 +46,9 @@ struct Select final {
 
     ~Rsp();
 
-    bool add_cells(const StaticBuffer& buffer, bool reached_limit, 
-                   DB::Specs::Interval& interval); 
-    
+    bool add_cells(const StaticBuffer& buffer, bool reached_limit,
+                   DB::Specs::Interval& interval);
+
     void get_cells(DB::Cells::Result& cells);
 
     size_t get_size();
@@ -73,10 +73,10 @@ struct Select final {
   void error(const cid_t cid, int err);
 
   void add_column(const cid_t cid);
-  
+
   Rsp::Ptr get_columnn(const cid_t cid);
 
-  bool add_cells(const cid_t cid, const StaticBuffer& buffer, 
+  bool add_cells(const cid_t cid, const StaticBuffer& buffer,
                  bool reached_limit, DB::Specs::Interval& interval);
 
   void get_cells(const cid_t cid, DB::Cells::Result& cells);
@@ -92,7 +92,7 @@ struct Select final {
   void free(const cid_t cid);
 
   void remove(const cid_t cid);
-  
+
   private:
 
   std::unordered_map<cid_t, Rsp::Ptr>  m_columns;
@@ -108,7 +108,7 @@ class Select final : public std::enable_shared_from_this<Select> {
 
   typedef std::shared_ptr<Select>           Ptr;
   typedef std::function<void(Result::Ptr)>  Cb_t;
-  
+
   uint32_t            buff_sz;
   uint8_t             buff_ahead;
   uint32_t            timeout;
@@ -121,12 +121,12 @@ class Select final : public std::enable_shared_from_this<Select> {
   Select(const Cb_t& cb=0, bool rsp_partials=false,
          const Comm::IoContextPtr& io=nullptr);
 
-  Select(const DB::Specs::Scan& specs, 
+  Select(const DB::Specs::Scan& specs,
          const Cb_t& cb=0, bool rsp_partials=false,
          const Comm::IoContextPtr& io=nullptr);
 
   virtual ~Select();
- 
+
   void response(int err=Error::OK);
 
   void response_partials();
@@ -176,6 +176,7 @@ class Select final : public std::enable_shared_from_this<Select> {
     DB::Cell::Key                           master_mngr_offset;
     DB::Cell::Key                           master_rgr_offset;
     DB::Cell::Key                           meta_offset;
+    DB::Cell::Key                           meta_end;
     // DB::Cell::Key                        data_offset;
 
     Comm::EndPoints                         master_rgr_endpoints;
@@ -183,8 +184,8 @@ class Select final : public std::enable_shared_from_this<Select> {
     Comm::EndPoints                         data_endpoints;
 
     Scanner(const Select::Ptr& selector,
-            const DB::Types::KeySeq col_seq, 
-            DB::Specs::Interval& interval, 
+            const DB::Types::KeySeq col_seq,
+            DB::Specs::Interval& interval,
             const cid_t cid);
 
     virtual ~Scanner();
@@ -240,7 +241,7 @@ class Select final : public std::enable_shared_from_this<Select> {
         const Comm::Protocol::Rgr::Params::RangeQuerySelectRsp& rsp);
 
   };
-  
+
 };
 
 }}}
@@ -249,7 +250,7 @@ class Select final : public std::enable_shared_from_this<Select> {
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/db/client/Query/Select.cc"
-#endif 
+#endif
 
 
 #endif // swcdb_db_client_Query_Select_h
