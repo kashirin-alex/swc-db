@@ -11,33 +11,34 @@
 namespace SWC { namespace DB { namespace Specs {
 
 Value::Value(bool own)
-              : own(own), data(0), size(0), comp(Condition::NONE) {
+              : own(own), comp(Condition::NONE),
+                data(0), size(0), compiled(nullptr) {
 }
 
-Value::Value(const char* data_n, Condition::Comp comp_n, bool owner) 
-            : own(false) {
+Value::Value(const char* data_n, Condition::Comp comp_n, bool owner)
+            : own(false), compiled(nullptr) {
   set((uint8_t*)data_n, strlen(data_n), comp_n, owner);
 }
 
-Value::Value(const char* data_n, const uint32_t size_n, 
-             Condition::Comp comp_n, bool owner) 
-            : own(false) {
+Value::Value(const char* data_n, const uint32_t size_n,
+             Condition::Comp comp_n, bool owner)
+            : own(false), compiled(nullptr) {
   set((uint8_t*)data_n, size_n, comp_n, owner);
 }
 
-Value::Value(const uint8_t* data_n, const uint32_t size_n, 
-             Condition::Comp comp_n, bool owner) 
-            : own(false) {
+Value::Value(const uint8_t* data_n, const uint32_t size_n,
+             Condition::Comp comp_n, bool owner)
+            : own(false), compiled(nullptr) {
   set(data_n, size_n, comp_n, owner);
 }
 
-Value::Value(int64_t count, Condition::Comp comp_n) 
-            : own(false) {
+Value::Value(int64_t count, Condition::Comp comp_n)
+            : own(false), compiled(nullptr) {
   set_counter(count, comp_n);
 }
 
-Value::Value(const Value &other) 
-            : own(false) {
+Value::Value(const Value &other)
+            : own(false), compiled(nullptr) {
   copy(other);
 }
 
@@ -58,39 +59,53 @@ void Value::set(const std::string& data_n, Condition::Comp comp_n) {
 }
 
 void Value::copy(const Value &other) {
-  free(); 
   set(other.data, other.size, other.comp, true);
 }
 
-void Value::set(const uint8_t* data_n, const uint32_t size_n, 
+void Value::set(const uint8_t* data_n, const uint32_t size_n,
                 Condition::Comp comp_n, bool owner) {
   free();
   own   = owner;
   comp = comp_n;
   if((size = size_n))
-    data = own ? (uint8_t*)memcpy(new uint8_t[size], data_n, size) 
+    data = own ? (uint8_t*)memcpy(new uint8_t[size], data_n, size)
                : (uint8_t*)data_n;
 }
 
 Value::~Value() {
-  if(own && data) 
+  _free();
+}
+
+void Value::_free() {
+  if(own && data)
     delete [] data;
+  if(compiled) {
+    switch(comp) {
+      case Condition::RE:
+        delete (re2::RE2*)compiled;
+        break;
+      default: {
+        //if(size) switch(col_type) { }
+      };
+    }
+  }
 }
 
 void Value::free() {
-  if(own && data) 
-    delete [] data;
+  _free();
   data = 0;
   size = 0;
+  compiled = nullptr;
 }
 
+SWC_CAN_INLINE
 bool Value::empty() const {
   return comp == Condition::NONE;
 }
 
 bool Value::equal(const Value &other) const {
-  return size == other.size && 
-         ((!data && !other.data) || 
+  return size == other.size &&
+         ((!data && !other.data) ||
           (data && other.data && !memcmp(data, other.data, size)));
 }
 
@@ -119,17 +134,31 @@ void Value::decode(const uint8_t** bufp, size_t* remainp) {
   }
 }
 
-bool Value::is_matching(const uint8_t *other_data, 
-                        const uint32_t other_size) const {
-  return Condition::is_matching_extended(
-    comp, data, size, other_data, other_size);
+bool Value::is_matching(const Cells::Cell& cell) const {
+  if(empty())
+    return true;
+  return Types::is_counter(col_type)
+    ? is_matching(cell.get_counter())
+    : is_matching(cell.value, cell.vlen);
 }
 
-bool Value::is_matching(int64_t other) const {
-  errno = 0;    
+bool Value::is_matching(const uint8_t* v_data, const uint32_t v_len) const {
+  switch(comp) {
+    case Condition::RE: {
+      if(!compiled)
+        compiled = new re2::RE2(re2::StringPiece((const char*)data, size));
+      return Condition::re(*(re2::RE2*)compiled, (const char*)v_data, v_len);
+    }
+    default:
+      return Condition::is_matching_extended(comp, data, size, v_data, v_len);
+  }
+}
+
+bool Value::is_matching(int64_t v) const {
+  errno = 0;
   char *last = (char*)data + size;
   int64_t value = strtoll((const char*)data, &last, 0); // ?cls-storage
-    return Condition::is_matching(comp, value, other);
+  return Condition::is_matching(comp, value, v);
 }
 
 std::string Value::to_string() const {
@@ -162,7 +191,7 @@ void Value::display(std::ostream& out, bool pretty) const {
         out << hex;
       }
     }
-  }  
+  }
   out << '"';
 }
 

@@ -14,17 +14,17 @@ namespace SWC { namespace Ranger { namespace Callback {
 class RangeQuerySelect : public ReqScan {
   public:
 
-  RangeQuerySelect(const Comm::ConnHandlerPtr& conn, 
-                   const Comm::Event::Ptr& ev, 
+  RangeQuerySelect(const Comm::ConnHandlerPtr& conn,
+                   const Comm::Event::Ptr& ev,
                    const DB::Specs::Interval& req_spec,
                    const RangePtr& range)
-                  : ReqScan(conn, ev, req_spec), 
+                  : ReqScan(conn, ev, req_spec),
                     range(range) {
     if(!spec.value.empty())
-      spec.col_type = range->cfg->column_type();
+      spec.value.col_type = range->cfg->column_type();
     if(!spec.flags.max_versions)
       spec.flags.max_versions = range->cfg->cell_versions();
-    if(!spec.flags.max_buffer || 
+    if(!spec.flags.max_buffer ||
         spec.flags.max_buffer > range->cfg->block_size())
       spec.flags.max_buffer = range->cfg->block_size();
 
@@ -38,7 +38,7 @@ class RangeQuerySelect : public ReqScan {
     Env::Rgr::res().more_mem_usage(size_of());
   }
 
-  virtual ~RangeQuerySelect() { 
+  virtual ~RangeQuerySelect() {
     Env::Rgr::res().less_mem_usage(size_of());
   }
 
@@ -64,9 +64,9 @@ class RangeQuerySelect : public ReqScan {
   }
 
   bool reached_limits() override {
-    return (spec.flags.limit && spec.flags.limit <= profile.cells_count) || 
-      (profile.cells_count && 
-       spec.flags.max_buffer <= profile.cells_bytes + 
+    return (spec.flags.limit && spec.flags.limit <= profile.cells_count) ||
+      (profile.cells_count &&
+       spec.flags.max_buffer <= profile.cells_bytes +
                                 profile.cells_bytes / profile.cells_count);
   }
 
@@ -90,7 +90,7 @@ class RangeQuerySelect : public ReqScan {
       Env::Rgr::res().less_mem_usage(cells.fill());
       cells.free();
     }
-    
+
     Comm::Protocol::Rgr::Params::RangeQuerySelectRsp params(
       err, err ? false : reached_limits(), offset);
 
@@ -106,7 +106,7 @@ class RangeQuerySelect : public ReqScan {
 
     profile.finished();
     SWC_LOG_OUT(LOG_INFO,
-      SWC_LOG_OSTREAM 
+      SWC_LOG_OSTREAM
         << "Range(" << range->cfg->cid  << '/' << range->rid << ") ";
       Error::print(SWC_LOG_OSTREAM, err);
       profile.print(SWC_LOG_OSTREAM << " Select-");

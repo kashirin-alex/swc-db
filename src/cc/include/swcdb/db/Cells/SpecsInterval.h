@@ -32,38 +32,38 @@ class Interval {
 
   static Ptr make_ptr(
       const Key& key_start, const Key& key_finish, const Value& value,
-      const Timestamp& ts_start, const Timestamp& ts_finish, 
+      const Timestamp& ts_start, const Timestamp& ts_finish,
       const Flags& flags=Flags());
-  
+
   static Ptr make_ptr(
       const Cell::Key& range_begin, const Cell::Key& range_end,
-      const Key& key_start, const Key& key_finish, 
-      const Value& value, 
-      const Timestamp& ts_start, const Timestamp& ts_finish, 
+      const Key& key_start, const Key& key_finish,
+      const Value& value,
+      const Timestamp& ts_start, const Timestamp& ts_finish,
       const Flags& flags=Flags());
-  
+
   static Ptr make_ptr(const uint8_t** bufp, size_t* remainp);
 
   static Ptr make_ptr(const Interval& other);
 
   static Ptr make_ptr(Ptr other);
-  
+
 
   explicit Interval();
 
   explicit Interval(const Cell::Key& range_begin, const Cell::Key& range_end);
 
-  explicit Interval(const Key& key_start, const Key& key_finish, 
-                    const Value& value, 
-                    const Timestamp& ts_start, const Timestamp& ts_finish, 
+  explicit Interval(const Key& key_start, const Key& key_finish,
+                    const Value& value,
+                    const Timestamp& ts_start, const Timestamp& ts_finish,
                     const Flags& flags=Flags());
 
-  explicit Interval(const Cell::Key& range_begin, const Cell::Key& range_end, 
-                    const Key& key_start, const Key& key_finish, 
-                    const Value& value, 
-                    const Timestamp& ts_start, const Timestamp& ts_finish, 
+  explicit Interval(const Cell::Key& range_begin, const Cell::Key& range_end,
+                    const Key& key_start, const Key& key_finish,
+                    const Value& value,
+                    const Timestamp& ts_start, const Timestamp& ts_finish,
                     const Flags& flags=Flags());
-  
+
   explicit Interval(const uint8_t** bufp, size_t* remainp);
 
   explicit Interval(const Interval& other);
@@ -71,7 +71,7 @@ class Interval {
   void copy(const Interval& other);
 
   ~Interval();
-  
+
   void free() ;
 
   size_t size_of_internal() const;
@@ -80,22 +80,22 @@ class Interval {
 
   bool equal(const Interval& other) const;
 
-  bool is_matching(const Types::KeySeq key_seq, 
-                   const Cell::Key& key, 
+  bool is_matching(const Types::KeySeq key_seq,
+                   const Cell::Key& key,
                    int64_t timestamp, bool desc) const;
 
   bool is_matching(int64_t timestamp, bool desc) const;
 
-  bool is_matching(const Types::KeySeq key_seq, 
+  bool is_matching(const Types::KeySeq key_seq,
                    const Cells::Cell& cell, bool& stop) const;
 
-  bool is_matching_begin(const Types::KeySeq key_seq, 
+  bool is_matching_begin(const Types::KeySeq key_seq,
                          const DB::Cell::Key& key) const;
 
-  bool is_matching_end(const Types::KeySeq key_seq, 
+  bool is_matching_end(const Types::KeySeq key_seq,
                        const DB::Cell::Key& key) const;
 
-  bool is_in_previous(const Types::KeySeq key_seq, 
+  bool is_in_previous(const Types::KeySeq key_seq,
                       const DB::Cell::Key& prev) const;
 
   size_t encoded_length() const;
@@ -103,7 +103,7 @@ class Interval {
   void encode(uint8_t** bufp) const;
 
   void decode(const uint8_t** bufp, size_t* remainp);
-  
+
   void set_opt__key_equal();
 
   void set_opt__range_end_rest();
@@ -129,7 +129,7 @@ class Interval {
 
   void print(std::ostream& out) const;
 
-  void display(std::ostream& out, bool pretty=false, 
+  void display(std::ostream& out, bool pretty=false,
                const std::string& offset = "") const;
 
   Cell::Key     range_begin, range_end, range_offset;
@@ -143,8 +143,6 @@ class Interval {
 
   uint8_t       options;
 
-  Types::Column col_type;
-
 };
 
 
@@ -153,6 +151,6 @@ class Interval {
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/db/Cells/SpecsInterval.cc"
-#endif 
+#endif
 
 #endif // swcdb_db_cells_SpecsInterval_h

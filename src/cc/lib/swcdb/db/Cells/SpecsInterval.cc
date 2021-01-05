@@ -17,7 +17,7 @@ Interval::Ptr Interval::make_ptr() {
 
 Interval::Ptr Interval::make_ptr(
     const Key& key_start, const Key& key_finish, const Value& value,
-    const Timestamp& ts_start, const Timestamp& ts_finish, 
+    const Timestamp& ts_start, const Timestamp& ts_finish,
     const Flags& flags) {
   return std::make_shared<Interval>(
     key_start, key_finish, value, ts_start, ts_finish, flags);
@@ -25,12 +25,12 @@ Interval::Ptr Interval::make_ptr(
 
 Interval::Ptr Interval::make_ptr(
     const Cell::Key& range_begin, const Cell::Key& range_end,
-    const Key& key_start, const Key& key_finish, 
-    const Value& value, 
-    const Timestamp& ts_start, const Timestamp& ts_finish, 
+    const Key& key_start, const Key& key_finish,
+    const Value& value,
+    const Timestamp& ts_start, const Timestamp& ts_finish,
     const Flags& flags) {
   return std::make_shared<Interval>(
-    range_begin, range_end, 
+    range_begin, range_end,
     key_start, key_finish, value, ts_start, ts_finish, flags
     );
 }
@@ -51,34 +51,34 @@ Interval::Ptr Interval::make_ptr(Interval::Ptr other) {
 Interval::Interval() : offset_rev(0), options(0) { }
 
 Interval::Interval(const Cell::Key& range_begin, const Cell::Key& range_end)
-                  : range_begin(range_begin), range_end(range_end), 
+                  : range_begin(range_begin), range_end(range_end),
                     offset_rev(0), options(0) {
 }
 
-Interval::Interval(const Key& key_start, const Key& key_finish, 
-                   const Value& value, 
-                   const Timestamp& ts_start, const Timestamp& ts_finish, 
+Interval::Interval(const Key& key_start, const Key& key_finish,
+                   const Value& value,
+                   const Timestamp& ts_start, const Timestamp& ts_finish,
                    const Flags& flags)
                   : value(value),
-                    ts_start(ts_start), ts_finish(ts_finish), 
+                    ts_start(ts_start), ts_finish(ts_finish),
                     flags(flags), offset_rev(0), options(0) {
   key_intervals.add(key_start, key_finish);
 }
 
-Interval::Interval(const Cell::Key& range_begin, const Cell::Key& range_end, 
-                   const Key& key_start, const Key& key_finish, 
-                   const Value& value, 
-                   const Timestamp& ts_start, const Timestamp& ts_finish, 
+Interval::Interval(const Cell::Key& range_begin, const Cell::Key& range_end,
+                   const Key& key_start, const Key& key_finish,
+                   const Value& value,
+                   const Timestamp& ts_start, const Timestamp& ts_finish,
                    const Flags& flags)
-                  : range_begin(range_begin), range_end(range_end), 
+                  : range_begin(range_begin), range_end(range_end),
                     value(value),
-                    ts_start(ts_start), ts_finish(ts_finish), 
+                    ts_start(ts_start), ts_finish(ts_finish),
                     flags(flags), offset_rev(0), options(0) {
   key_intervals.add(key_start, key_finish);
 }
 
 Interval::Interval(const uint8_t** bufp, size_t* remainp) {
-  decode(bufp, remainp); 
+  decode(bufp, remainp);
 }
 
 Interval::Interval(const Interval& other) {
@@ -148,10 +148,10 @@ bool Interval::equal(const Interval& other) const {
           offset_rev == other.offset_rev ;
 }
 
-bool Interval::is_matching(const Types::KeySeq key_seq, 
-                           const Cell::Key& key, int64_t timestamp, 
+bool Interval::is_matching(const Types::KeySeq key_seq,
+                           const Cell::Key& key, int64_t timestamp,
                            bool desc) const {
-  if(offset_key.empty()) 
+  if(offset_key.empty())
     return true;
 
   switch(DB::KeySeq::compare(key_seq, offset_key, key)) {
@@ -168,57 +168,50 @@ bool Interval::is_matching(int64_t timestamp, bool desc) const {
   return desc ? offset_rev > timestamp : offset_rev < timestamp;
 }
 
-bool Interval::is_matching(const Types::KeySeq key_seq, 
+bool Interval::is_matching(const Types::KeySeq key_seq,
                            const Cells::Cell& cell, bool& stop) const {
-  bool match = is_matching(
-    key_seq, cell.key, cell.timestamp, cell.control & Cells::TS_DESC);
-  if(!match)
-    return match;
-
-  match =   
-    ts_start.is_matching(cell.timestamp) 
+  return
+    is_matching(
+      key_seq, cell.key, cell.timestamp, cell.control & Cells::TS_DESC)
     &&
-    ts_finish.is_matching(cell.timestamp) 
+    ts_start.is_matching(cell.timestamp)
+    &&
+    ts_finish.is_matching(cell.timestamp)
     &&
     is_matching_begin(key_seq, cell.key)
     &&
     !(stop = !is_matching_end(key_seq, cell.key))
     &&
-    key_intervals.is_matching(key_seq, cell.key);
-  if(!match || value.empty())
-    return match;
-
-  if(Types::is_counter(col_type))
-    return value.is_matching(cell.get_counter());
-    
-  return value.is_matching(cell.value, cell.vlen);
+    key_intervals.is_matching(key_seq, cell.key)
+    &&
+    value.is_matching(cell);
 }
 
 
-bool Interval::is_matching_begin(const Types::KeySeq key_seq, 
+bool Interval::is_matching_begin(const Types::KeySeq key_seq,
                                  const DB::Cell::Key& key) const {
   if(!range_begin.empty()) switch(key_seq) {
 
     case Types::KeySeq::LEXIC:
-      return 
+      return
         DB::KeySeq::compare_opt_lexic(
           range_begin, key, range_begin.count, true
         ) != Condition::LT;
 
     case Types::KeySeq::VOLUME:
-      return 
+      return
         DB::KeySeq::compare_opt_volume(
           range_begin, key, range_begin.count, true
         ) != Condition::LT;
 
     case Types::KeySeq::FC_LEXIC:
-      return 
+      return
         DB::KeySeq::compare_opt_fc_lexic(
           range_begin, key, key.count, true
         ) != Condition::LT;
 
     case Types::KeySeq::FC_VOLUME:
-      return 
+      return
         DB::KeySeq::compare_opt_fc_volume(
           range_begin, key, key.count, true
         ) != Condition::LT;
@@ -229,25 +222,25 @@ bool Interval::is_matching_begin(const Types::KeySeq key_seq,
   return true;
 }
 
-bool Interval::is_matching_end(const Types::KeySeq key_seq, 
+bool Interval::is_matching_end(const Types::KeySeq key_seq,
                                const DB::Cell::Key& key) const {
   if(!range_end.empty()) switch(key_seq) {
 
     case Types::KeySeq::LEXIC:
-      return 
+      return
         DB::KeySeq::compare_opt_lexic(
           range_end, key,
           has_opt__range_end_rest() && !has_opt__key_equal()
-            ? range_end.count : key.count, 
+            ? range_end.count : key.count,
           true
         ) != Condition::GT;
 
     case Types::KeySeq::VOLUME:
-      return 
+      return
         DB::KeySeq::compare_opt_volume(
-          range_end, key, 
+          range_end, key,
           has_opt__range_end_rest() && !has_opt__key_equal()
-            ? range_end.count : key.count, 
+            ? range_end.count : key.count,
           true
         ) != Condition::GT;
 
@@ -259,12 +252,12 @@ bool Interval::is_matching_end(const Types::KeySeq key_seq,
         DB::KeySeq::compare_opt_fc_lexic(
           range_end, key,
           has_opt__range_end_rest() && !has_opt__key_equal()
-            ? range_end.count : key.count, 
+            ? range_end.count : key.count,
           true
         ) != Condition::GT;
 
     case Types::KeySeq::FC_VOLUME:
-      return 
+      return
         (has_opt__key_equal()
           ? key.count < range_end.count
           : has_opt__range_end_rest()) ||
@@ -280,12 +273,12 @@ bool Interval::is_matching_end(const Types::KeySeq key_seq,
   return true;
 }
 
-bool Interval::is_in_previous(const Types::KeySeq key_seq, 
+bool Interval::is_in_previous(const Types::KeySeq key_seq,
                               const DB::Cell::Key& prev) const {
   if(!range_end.empty()) switch(key_seq) {
 
     case Types::KeySeq::LEXIC:
-      return 
+      return
         DB::KeySeq::compare_opt_lexic(
           range_end, prev,
           has_opt__range_end_rest()
@@ -294,7 +287,7 @@ bool Interval::is_in_previous(const Types::KeySeq key_seq,
         ) != Condition::GT;
 
     case Types::KeySeq::VOLUME:
-      return 
+      return
         DB::KeySeq::compare_opt_volume(
           range_end, prev,
           has_opt__range_end_rest()
@@ -303,7 +296,7 @@ bool Interval::is_in_previous(const Types::KeySeq key_seq,
         ) != Condition::GT;
 
     case Types::KeySeq::FC_LEXIC:
-      return 
+      return
         has_opt__range_end_rest()
         ? (prev.count >= range_end.count
             ? true
@@ -318,7 +311,7 @@ bool Interval::is_in_previous(const Types::KeySeq key_seq,
           ) != Condition::GT;
 
     case Types::KeySeq::FC_VOLUME:
-      return 
+      return
         has_opt__range_end_rest()
         ? (prev.count >= range_end.count
             ? true
@@ -418,8 +411,8 @@ void Interval::apply_possible_range_pure() {
   }
 }
 
-void Interval::apply_possible_range(DB::Cell::Key& begin, DB::Cell::Key& end, 
-                                    bool* end_restp) const {   
+void Interval::apply_possible_range(DB::Cell::Key& begin, DB::Cell::Key& end,
+                                    bool* end_restp) const {
   apply_possible_range_begin(begin);
   apply_possible_range_end(end, end_restp);
 }
@@ -427,7 +420,7 @@ void Interval::apply_possible_range(DB::Cell::Key& begin, DB::Cell::Key& end,
 void Interval::apply_possible_range_begin(DB::Cell::Key& begin) const {
   if(!offset_key.empty()) {
     begin.copy(offset_key);
-  
+
   } else if(!range_begin.empty()) {
     if(&begin != &range_begin)
       begin.copy(range_begin);
@@ -466,7 +459,7 @@ void Interval::apply_possible_range(DB::Cell::Key& key, bool ending,
   bool found = false;
   do_:
     for(auto& intval : key_intervals) {
-      auto* keyp = ending 
+      auto* keyp = ending
         ? (initial ? &intval->finish : &intval->start )
         : (initial ? &intval->start  : &intval->finish);
       for(size_t idx=0; idx < keyp->size(); ++idx) {
@@ -543,20 +536,20 @@ void Interval::print(std::ostream& out) const {
   offset_key.print(out << " Offset");
   if(!offset_key.empty())
     out << " OffsetRev=" << offset_rev;
-  
+
   value.print(out << " ");
   flags.print(out << " ");
-  
-  out << " Options(" 
+
+  out << " Options("
     << "range-end-rest=" << has_opt__range_end_rest()
     << " key-eq=" << has_opt__key_equal()
     << ')';
   out << ')';
 }
 
-void Interval::display(std::ostream& out, bool pretty, 
+void Interval::display(std::ostream& out, bool pretty,
                        const std::string& offset) const {
-  out << offset << "Interval(\n"; 
+  out << offset << "Interval(\n";
 
   out << offset << " Range(\n"
       << offset << "   begin(";
@@ -587,18 +580,18 @@ void Interval::display(std::ostream& out, bool pretty,
 
   out << offset << " Value(";
   value.display(out, pretty);
-  out << ")\n"; 
+  out << ")\n";
 
   out << offset << " Flags(";
   flags.display(out);
-  out << ")\n"; 
+  out << ")\n";
 
-  out << offset << " Options(" 
+  out << offset << " Options("
     << "range-end-rest=" << has_opt__range_end_rest()
     << " key-eq=" << has_opt__key_equal()
     << ")\n";
 
-  out << offset << ")\n"; 
+  out << offset << ")\n";
 }
 
 

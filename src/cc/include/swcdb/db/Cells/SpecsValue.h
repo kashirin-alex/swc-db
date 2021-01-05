@@ -9,6 +9,7 @@
 
 
 #include "swcdb/core/Comparators.h"
+#include "swcdb/db/Cells/Cell.h"
 
 
 namespace SWC { namespace DB { namespace Specs {
@@ -21,10 +22,10 @@ class Value {
   explicit Value(const char* data_n, Condition::Comp comp_n,
                  bool owner=false);
 
-  explicit Value(const char* data_n, const uint32_t size_n, 
+  explicit Value(const char* data_n, const uint32_t size_n,
                  Condition::Comp comp_n, bool owner=false);
 
-  explicit Value(const uint8_t* data_n, const uint32_t size_n, 
+  explicit Value(const uint8_t* data_n, const uint32_t size_n,
                  Condition::Comp comp_n, bool owner=false);
 
   explicit Value(int64_t count, Condition::Comp comp_n);
@@ -34,15 +35,17 @@ class Value {
   void set_counter(int64_t count, Condition::Comp comp_n);
 
   void set(const char* data_n, Condition::Comp comp_n, bool owner=true);
-  
+
   void set(const std::string& data_n, Condition::Comp comp_n);
 
   void copy(const Value &other);
-  
-  void set(const uint8_t* data_n, const uint32_t size_n, 
+
+  void set(const uint8_t* data_n, const uint32_t size_n,
            Condition::Comp comp_n, bool owner=false);
 
   ~Value();
+
+  void _free();
 
   void free();
 
@@ -51,14 +54,16 @@ class Value {
   bool equal(const Value &other) const;
 
   size_t encoded_length() const;
-  
+
   void encode(uint8_t** bufp) const;
 
   void decode(const uint8_t** bufp, size_t* remainp);
 
-  bool is_matching(const uint8_t *other_data, const uint32_t other_size) const;
-  
-  bool is_matching(int64_t other) const;
+  bool is_matching(const Cells::Cell& cell) const;
+
+  bool is_matching(const uint8_t* v_data, const uint32_t v_len) const;
+
+  bool is_matching(int64_t v) const;
 
   std::string to_string() const;
 
@@ -67,9 +72,11 @@ class Value {
   void display(std::ostream& out, bool pretty=true) const;
 
   bool            own;
-  uint8_t*        data;
-  uint32_t        size;    
   Condition::Comp comp;
+  Types::Column   col_type;
+  uint8_t*        data;
+  uint32_t        size;
+  mutable void*   compiled;
 
 };
 
@@ -78,6 +85,6 @@ class Value {
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/db/Cells/SpecsValue.cc"
-#endif 
+#endif
 
 #endif // swcdb_db_cells_SpecsValue_h
