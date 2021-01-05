@@ -16,7 +16,7 @@ namespace SWC { namespace DB { namespace KeySeq {
 
 ///
 template<Types::KeySeq T_seq>
-Condition::Comp 
+Condition::Comp
 compare(const Cell::Key& key,  const Cell::Key& other) {
   if(uint24_t min = key.count < other.count ? key.count : other.count) {
     const uint8_t* p1 = key.data;
@@ -36,8 +36,8 @@ compare(const Cell::Key& key,  const Cell::Key& other) {
 }
 
 template<>
-Condition::Comp 
-compare<Types::KeySeq::FC_LEXIC>(const Cell::Key& key, 
+Condition::Comp
+compare<Types::KeySeq::FC_LEXIC>(const Cell::Key& key,
                                  const Cell::Key& other) {
   if(key.count < other.count)
     return Condition::GT;
@@ -47,8 +47,8 @@ compare<Types::KeySeq::FC_LEXIC>(const Cell::Key& key,
 }
 
 template<>
-Condition::Comp 
-compare<Types::KeySeq::FC_VOLUME>(const Cell::Key& key, 
+Condition::Comp
+compare<Types::KeySeq::FC_VOLUME>(const Cell::Key& key,
                                   const Cell::Key& other) {
   if(key.count < other.count)
     return Condition::GT;
@@ -57,8 +57,8 @@ compare<Types::KeySeq::FC_VOLUME>(const Cell::Key& key,
   return compare<Types::KeySeq::VOLUME>(key, other);
 }
 
-Condition::Comp 
-compare(const Types::KeySeq seq, const Cell::Key& key, 
+Condition::Comp
+compare(const Types::KeySeq seq, const Cell::Key& key,
                                  const Cell::Key& other) {
   switch(seq) {
 
@@ -84,13 +84,13 @@ compare(const Types::KeySeq seq, const Cell::Key& key,
 
 ///
 template<Types::KeySeq T_seq>
-Condition::Comp 
+Condition::Comp
 compare_opt(const Cell::Key& opt_empty, const Cell::Key& other,
             uint24_t max, bool empty_eq) {
-  if(uint24_t min = opt_empty.count < other.count 
+  if(uint24_t min = opt_empty.count < other.count
                       ? opt_empty.count : other.count) {
     if(max && min > max)
-      min = max;  
+      min = max;
     const uint8_t* p1 = opt_empty.data;
     const uint8_t* p2 = other.data;
     uint24_t sz1;
@@ -103,16 +103,16 @@ compare_opt(const Cell::Key& opt_empty, const Cell::Key& other,
         return comp;
     }
   }
-  return opt_empty.count != other.count && 
+  return opt_empty.count != other.count &&
          (!max || max > opt_empty.count || max > other.count)
         ? opt_empty.count > other.count ? Condition::LT : Condition::GT
           : Condition::EQ;
 }
 
 template<>
-Condition::Comp 
+Condition::Comp
 compare_opt<Types::KeySeq::FC_LEXIC>(
-        const Cell::Key& opt_empty, const Cell::Key& other, 
+        const Cell::Key& opt_empty, const Cell::Key& other,
         uint24_t max, bool empty_eq) {
   if(!max || max > opt_empty.count || max > other.count) {
     if(opt_empty.count < other.count)
@@ -125,9 +125,9 @@ compare_opt<Types::KeySeq::FC_LEXIC>(
 }
 
 template<>
-Condition::Comp 
+Condition::Comp
 compare_opt<Types::KeySeq::FC_VOLUME>(
-        const Cell::Key& opt_empty, const Cell::Key& other, 
+        const Cell::Key& opt_empty, const Cell::Key& other,
         uint24_t max, bool empty_eq) {
   if(!max || max > opt_empty.count || max > other.count) {
     if(opt_empty.count < other.count)
@@ -169,9 +169,9 @@ compare_opt_fc_volume(const Cell::Key& opt_empty, const Cell::Key& other,
 }
 
 
-Condition::Comp 
-compare_upto(const Types::KeySeq seq, 
-             const Cell::Key& key, const Cell::Key& other, 
+Condition::Comp
+compare_upto(const Types::KeySeq seq,
+             const Cell::Key& key, const Cell::Key& other,
              uint24_t max) {
   switch(seq) {
     case Types::KeySeq::LEXIC:
@@ -199,10 +199,10 @@ compare_upto(const Types::KeySeq seq,
 
 
 ///
-template<Types::KeySeq T_seq> 
+template<Types::KeySeq T_seq>
 SWC_CAN_INLINE
 bool
-compare(const Cell::Key& key, const Cell::KeyVec& other, 
+compare(const Cell::Key& key, const Cell::KeyVec& other,
         Condition::Comp break_if, uint32_t max, bool empty_ok) {
   const uint8_t* ptr = key.data;
   uint24_t len;
@@ -211,8 +211,8 @@ compare(const Cell::Key& key, const Cell::KeyVec& other,
   for(uint32_t c = 0; c<max; ++c, ptr += len) {
 
     if(c == key.count || c == other.size())
-      return key.count > other.size() 
-            ? break_if != Condition::LT 
+      return key.count > other.size()
+            ? break_if != Condition::LT
             : break_if != Condition::GT;
 
     if(!(len = Serialization::decode_vi24(&ptr)) && empty_ok)
@@ -230,7 +230,7 @@ template<>
 SWC_CAN_INLINE
 bool
 compare<Types::KeySeq::FC_LEXIC>(
-        const Cell::Key& key, const Cell::KeyVec& other, 
+        const Cell::Key& key, const Cell::KeyVec& other,
         Condition::Comp break_if, uint32_t max, bool empty_ok) {
   if(!max || max > key.count || max > other.size() ) {
     if(key.count < other.size())
@@ -245,7 +245,7 @@ template<>
 SWC_CAN_INLINE
 bool
 compare<Types::KeySeq::FC_VOLUME>(
-        const Cell::Key& key, const Cell::KeyVec& other, 
+        const Cell::Key& key, const Cell::KeyVec& other,
         Condition::Comp break_if, uint32_t max, bool empty_ok) {
   if(!max || max > key.count || max > other.size() ) {
     if(key.count < other.size())
@@ -257,8 +257,8 @@ compare<Types::KeySeq::FC_VOLUME>(
 }
 
 
-bool 
-compare(const Types::KeySeq seq, 
+bool
+compare(const Types::KeySeq seq,
         const Cell::Key& key, const Cell::KeyVec& other,
         Condition::Comp break_if, uint32_t max, bool empty_ok) {
   switch(seq) {
@@ -330,8 +330,8 @@ align(const Cell::Key& key, Cell::KeyVec& start, Cell::KeyVec& finish) {
 }
 
 
-bool 
-align(const Types::KeySeq seq, const Cell::Key& key, 
+bool
+align(const Types::KeySeq seq, const Cell::Key& key,
       Cell::KeyVec& start, Cell::KeyVec& finish) {
   switch(seq) {
 
@@ -352,7 +352,7 @@ align(const Types::KeySeq seq, const Cell::Key& key,
 
 
 ///
-template<Types::KeySeq T_seq> 
+template<Types::KeySeq T_seq>
 SWC_SHOULD_NOT_INLINE
 bool
 align(Cell::KeyVec& key, const Cell::KeyVec& other, Condition::Comp comp) {
@@ -383,8 +383,8 @@ align(Cell::KeyVec& key, const Cell::KeyVec& other, Condition::Comp comp) {
 }
 
 
-bool 
-align(const Types::KeySeq seq, Cell::KeyVec& key, 
+bool
+align(const Types::KeySeq seq, Cell::KeyVec& key,
       const Cell::KeyVec& other, Condition::Comp comp) {
   switch(seq) {
 
@@ -401,73 +401,6 @@ align(const Types::KeySeq seq, Cell::KeyVec& key,
   }
 }
 ///
-
-
-
-
-
-
-///
-template<Types::KeySeq T_seq> 
-SWC_CAN_INLINE
-bool
-is_matching(const Specs::Key& key, const Cell::Key &other) {
-  Condition::Comp comp = Condition::NONE;
-
-  const uint8_t* ptr = other.data;
-  uint32_t len;
-  auto it = key.cbegin();
-  for(uint24_t c = other.count; c && it < key.cend(); ++it, --c, ptr += len) {
-    len = Serialization::decode_vi24(&ptr);
-    if(!is_matching<T_seq>(
-        comp = it->comp, 
-        (const uint8_t*)it->data(), it->size(),
-        ptr, len ))
-      return false;
-  }
-  if(key.size() == other.count || ( // [,,>=''] spec incl. prior-match
-      key.size() == other.count + 1 && it->empty() && 
-      it->comp == Condition::GE))
-    return true;
-
-  switch(comp) {
-    case Condition::LT:
-    case Condition::LE:
-      return key.empty() || key.size() > other.count;
-    case Condition::GT:
-    case Condition::GE:
-      return key.empty() || key.size() < other.count;
-    case Condition::PF:
-    case Condition::RE:
-      return key.size() < other.count;
-    case Condition::NE:
-    case Condition::NONE:
-      return true;
-    default: // Condition::EQ:
-      return false;
-  }
-}
-
-
-bool 
-is_matching(const Types::KeySeq seq, const Specs::Key& key, 
-                                     const Cell::Key &other) {
-  switch(seq) {
-
-    case Types::KeySeq::LEXIC:
-    case Types::KeySeq::FC_LEXIC:
-      return is_matching<Types::KeySeq::LEXIC>(key, other);
-      
-    case Types::KeySeq::VOLUME:
-    case Types::KeySeq::FC_VOLUME:
-      return is_matching<Types::KeySeq::VOLUME>(key, other);
-
-    default:
-      return false;
-  }
-}
-///
-
 
 
 

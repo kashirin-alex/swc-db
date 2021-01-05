@@ -71,33 +71,57 @@ bool KeyIntervals::equal(const KeyIntervals& other) const {
   if(size() == other.size()) {
     auto it = begin();
     for(auto it2 = other.begin(); it < end(); ++it, ++it2)
-      if(!(*it)->start.equal((*it2)->start) || 
+      if(!(*it)->start.equal((*it2)->start) ||
          !(*it)->finish.equal((*it2)->finish))
         return false;
   }
   return true;
 }
 
-bool KeyIntervals::is_matching(const Types::KeySeq key_seq, 
+bool KeyIntervals::is_matching(const Types::KeySeq key_seq,
                                const DB::Cell::Key& cellkey) const {
-  for(auto& key : *this) {
-    if((!key->start.empty() &&
-        !DB::KeySeq::is_matching(key_seq, key->start, cellkey)) ||
-       (!key->finish.empty() && 
-        !DB::KeySeq::is_matching(key_seq, key->finish, cellkey)))
+  switch(key_seq) {
+    case Types::KeySeq::LEXIC:
+    case Types::KeySeq::FC_LEXIC:
+      for(auto& key : *this) {
+        if(!key->start.is_matching_lexic(cellkey) ||
+           !key->finish.is_matching_lexic(cellkey))
+          return false;
+      }
+      return true;
+    case Types::KeySeq::VOLUME:
+    case Types::KeySeq::FC_VOLUME:
+      for(auto& key : *this) {
+        if(!key->start.is_matching_volume(cellkey) ||
+           !key->finish.is_matching_volume(cellkey))
+          return false;
+      }
+      return true;
+    default:
       return false;
   }
-  return true;
 }
 
-bool KeyIntervals::is_matching_start(const Types::KeySeq key_seq, 
+bool KeyIntervals::is_matching_start(const Types::KeySeq key_seq,
                                      const DB::Cell::Key& cellkey) const {
-  for(auto& key : *this) {
-    if(!key->start.empty() &&
-       !DB::KeySeq::is_matching(key_seq, key->start, cellkey))
+  switch(key_seq) {
+    case Types::KeySeq::LEXIC:
+    case Types::KeySeq::FC_LEXIC:
+      for(auto& key : *this) {
+        if(!key->start.is_matching_lexic(cellkey))
+          return false;
+      }
+      return true;
+    case Types::KeySeq::VOLUME:
+    case Types::KeySeq::FC_VOLUME:
+      for(auto& key : *this) {
+        if(!key->start.is_matching_volume(cellkey))
+          return false;
+      }
+      return true;
+    default:
       return false;
   }
-  return true;
 }
 
 size_t KeyIntervals::encoded_length() const {
@@ -128,7 +152,7 @@ void KeyIntervals::decode(const uint8_t** bufp, size_t* remainp) {
 void KeyIntervals::print(std::ostream& out) const {
   out << "KeyIntervals(";
   if(!empty()) {
-    out << "size=" << size(); 
+    out << "size=" << size();
     for(auto& key : *this) {
       key->start.print(out << " [Start");
       key->finish.print(out << " Finish");
@@ -138,9 +162,9 @@ void KeyIntervals::print(std::ostream& out) const {
   out << ')';
 }
 
-void KeyIntervals::display(std::ostream& out, bool pretty, 
+void KeyIntervals::display(std::ostream& out, bool pretty,
                             const std::string& offset) const {
-  out << offset << "KeyIntervals([\n"; 
+  out << offset << "KeyIntervals([\n";
   for(auto& key : *this) {
     out << offset << " Key(\n"
         << offset << "   start(";

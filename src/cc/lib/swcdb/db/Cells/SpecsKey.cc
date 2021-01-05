@@ -10,11 +10,19 @@
 
 
 namespace SWC { namespace DB { namespace Specs {
-  
 
+
+Fraction::~Fraction() {
+  if(compiled) switch(comp) {
+    case Condition::RE:
+      delete (re2::RE2*)compiled;
+      break;
+    default: break;
+  }
+}
 
 bool Fraction::operator==(const Fraction &other) const {
-  return other.comp == comp && length() == other.length() && 
+  return other.comp == comp && length() == other.length() &&
          !memcmp(data(), other.data(), length());
 }
 
@@ -38,6 +46,22 @@ void Fraction::decode(const uint8_t** bufp, size_t* remainp) {
     append((const char*)*bufp, len);
     *bufp += len;
     *remainp -= len;
+  }
+}
+
+template<Types::KeySeq T_seq>
+SWC_CAN_INLINE
+bool
+Fraction::_is_matching(const uint8_t* ptr, uint32_t len) {
+  switch(comp) {
+    case Condition::RE: {
+      if(!compiled)
+        compiled = new re2::RE2(re2::StringPiece(data(), size()));
+      return Condition::re(*(re2::RE2*)compiled, (const char*)ptr, len);
+    }
+    default:
+      return KeySeq::is_matching<T_seq>(comp,
+          (const uint8_t*)data(), size(), ptr, len);
   }
 }
 
@@ -76,7 +100,7 @@ bool Key::equal(const Key &other) const {
 void Key::set(const DB::Cell::Key &cell_key, Condition::Comp comp) {
   clear();
   resize(cell_key.count);
-  
+
   uint32_t len;
   const uint8_t* ptr = cell_key.data;
   for(auto it=begin(); it < end(); ++it) {
@@ -118,7 +142,7 @@ void Key::add(const uint8_t* fraction, uint32_t len, Condition::Comp comp) {
 }
 
 
-void Key::insert(uint32_t idx, const char* buf, uint32_t len, 
+void Key::insert(uint32_t idx, const char* buf, uint32_t len,
                  Condition::Comp comp) {
   auto it = emplace(begin() + idx);
   it->comp = comp;
@@ -126,12 +150,12 @@ void Key::insert(uint32_t idx, const char* buf, uint32_t len,
     it->append(buf, len);
 }
 
-void Key::insert(uint32_t idx, const std::string& fraction, 
+void Key::insert(uint32_t idx, const std::string& fraction,
                  Condition::Comp comp) {
   insert(idx, fraction.data(), fraction.length(), comp);
 }
 
-void Key::insert(uint32_t idx, const std::string_view& fraction, 
+void Key::insert(uint32_t idx, const std::string_view& fraction,
                  Condition::Comp comp) {
   insert(idx, fraction.data(), fraction.length(), comp);
 }
@@ -158,7 +182,7 @@ std::string_view Key::get(const uint32_t idx) const {
 
 void Key::get(DB::Cell::Key& key) const {
   key.free();
-  if(!empty()) 
+  if(!empty())
     for(auto it=begin(); it < end(); ++it)
       key.add(*it);
 }
@@ -179,7 +203,7 @@ uint32_t Key::encoded_length() const {
 
 void Key::encode(uint8_t** bufp) const {
   Serialization::encode_vi32(bufp, size());
-  for(auto it = begin(); it < end(); ++it) 
+  for(auto it = begin(); it < end(); ++it)
     it->encode(bufp);
 }
 
@@ -189,6 +213,70 @@ void Key::decode(const uint8_t** bufp, size_t* remainp) {
   for(auto it = begin(); it < end(); ++it)
     it->decode(bufp, remainp);
 }
+
+
+bool Key::is_matching(const Types::KeySeq seq, const Cell::Key &key) {
+  switch(seq) {
+    case Types::KeySeq::LEXIC:
+    case Types::KeySeq::FC_LEXIC:
+      return is_matching_lexic(key);
+    case Types::KeySeq::VOLUME:
+    case Types::KeySeq::FC_VOLUME:
+      return is_matching_volume(key);
+    default:
+      return false;
+  }
+}
+
+bool Key::is_matching_lexic(const Cell::Key &key) {
+  return _is_matching<Types::KeySeq::LEXIC>(key);
+}
+
+bool Key::is_matching_volume(const Cell::Key &key) {
+  return _is_matching<Types::KeySeq::VOLUME>(key);
+}
+
+template<Types::KeySeq T_seq>
+SWC_CAN_INLINE
+bool
+Key::_is_matching(const Cell::Key &key) {
+  if(empty())
+    return true;
+  Condition::Comp comp = Condition::NONE;
+
+  const uint8_t* ptr = key.data;
+  uint32_t len;
+  auto it = begin();
+  for(uint24_t c = key.count; c && it < end(); ++it, --c, ptr += len) {
+    len = Serialization::decode_vi24(&ptr);
+    if(!it->_is_matching<T_seq>(ptr, len))
+      return false;
+    comp = it->comp;
+  }
+  if(size() == key.count)
+    return true;
+
+  switch(comp) {
+    case Condition::LT:
+    case Condition::LE:
+      return empty() || size() > key.count;
+    case Condition::GT:
+      return empty() || size() < key.count;
+    case Condition::GE:
+      // + or [,,>=''] spec incl. prior-match
+      return empty() || size() < key.count ||
+             (size() == key.count + 1 && it->empty());
+    case Condition::PF:
+    case Condition::RE:
+      return size() < key.count;
+    case Condition::NE:
+    case Condition::NONE:
+      return true;
+    default: // Condition::EQ:
+      return false;
+  }
+}
+
 
 std::string Key::to_string() const {
   std::stringstream ss;
@@ -208,7 +296,7 @@ void Key::display(std::ostream& out, bool pretty) const {
   char hex[5];
   hex[4] = 0;
   for(auto it = cbegin(); it < cend(); ) {
-    out << Condition::to_string(it->comp) 
+    out << Condition::to_string(it->comp)
         << '"';
     for(auto chrp = it->cbegin(); chrp < it->cend(); ++chrp) {
       if(*chrp == '"')
@@ -222,9 +310,9 @@ void Key::display(std::ostream& out, bool pretty) const {
     }
     out << '"';
     if(++it < cend())
-      out << ", "; 
+      out << ", ";
   }
-  out << "]"; 
+  out << "]";
 }
 
 

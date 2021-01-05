@@ -9,23 +9,30 @@
 
 #include <vector>
 #include <string>
-#include "swcdb/core/Comparators.h"
-#include "swcdb/db/Cells/CellKey.h"
+#include "swcdb/db/Cells/KeyComparator.h"
+
 
 namespace SWC { namespace DB { namespace Specs {
-      
+
 
 struct Fraction final : public std::string {
 
   Condition::Comp comp;
+  void*           compiled = nullptr;
+
+  ~Fraction();
 
   bool operator==(const Fraction &other) const;
-  
+
   uint32_t encoded_length() const;
-  
+
   void encode(uint8_t** bufp) const;
 
   void decode(const uint8_t** bufp, size_t* remainp);
+
+  template<Types::KeySeq T_seq> // internal use
+  bool _is_matching(const uint8_t* ptr, uint32_t len);
+
 };
 
 
@@ -63,15 +70,15 @@ class Key final : public std::vector<Fraction> {
   void add(const char* fraction, Condition::Comp comp);
 
   void add(const uint8_t* fraction, uint32_t len, Condition::Comp comp);
-  
 
-  void insert(uint32_t idx, const char* buf, uint32_t len, 
+
+  void insert(uint32_t idx, const char* buf, uint32_t len,
               Condition::Comp comp);
 
-  void insert(uint32_t idx, const std::string& fraction, 
+  void insert(uint32_t idx, const std::string& fraction,
               Condition::Comp comp);
 
-  void insert(uint32_t idx, const std::string_view& fraction, 
+  void insert(uint32_t idx, const std::string_view& fraction,
               Condition::Comp comp);
 
   void insert(uint32_t idx, const uint8_t* fraction, uint32_t len,
@@ -86,20 +93,29 @@ class Key final : public std::vector<Fraction> {
   void get(DB::Cell::Key& key) const;
 
   void remove(uint32_t idx, bool recursive=false);
-  
-  //bool is_matching(const DB::Cell::Key &other) const;
 
   uint32_t encoded_length() const;
-  
+
   void encode(uint8_t** bufp) const;
 
   void decode(const uint8_t** bufp, size_t* remainp);
+
+  bool is_matching(const Types::KeySeq seq, const Cell::Key &key);
+
+  bool is_matching_lexic(const Cell::Key &key);
+
+  bool is_matching_volume(const Cell::Key &key);
 
   std::string to_string() const;
 
   void print(std::ostream& out) const;
 
   void display(std::ostream& out, bool pretty=true) const;
+
+  private:
+
+  template<Types::KeySeq T_seq> // internal use
+  bool _is_matching(const Cell::Key &key);
 
 };
 
@@ -108,6 +124,6 @@ class Key final : public std::vector<Fraction> {
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/db/Cells/SpecsKey.cc"
-#endif 
+#endif
 
 #endif // swcdb_db_cells_SpecsKey_h

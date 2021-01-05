@@ -8,7 +8,7 @@
 #include <vector>
 #include <iostream>
 
-#include "swcdb/db/Cells/KeyComparator.h"
+#include "swcdb/db/Cells/SpecsKey.h"
 
 #include "swcdb/core/config/Settings.h"
 namespace SWC { namespace Config {
@@ -124,7 +124,7 @@ void test_basic(){
 
   std::cout <<  key.to_string() <<"\n";
   std::cout << "spec_key.is_matching(key) \n";
-  if(!DB::KeySeq::is_matching(SWC::DB::Types::KeySeq::VOLUME, spec_key, key))
+  if(!spec_key.is_matching(SWC::DB::Types::KeySeq::VOLUME, key))
     exit(1);
     
   std::cout << "key2.equal(key) \n";

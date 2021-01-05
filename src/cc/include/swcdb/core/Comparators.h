@@ -373,33 +373,30 @@ bool lt_volume(const uint8_t *p1, uint32_t p1_len,
   return p1_len > p2_len || (p1_len == p2_len && memcmp(p1, p2, p1_len) > 0);
 } 
 
-extern SWC_CAN_INLINE 
-bool ne(const uint8_t *p1, uint32_t p1_len, 
+extern SWC_CAN_INLINE
+bool ne(const uint8_t *p1, uint32_t p1_len,
         const uint8_t *p2, uint32_t p2_len) noexcept {
   return !eq(p1, p1_len, p2, p2_len);
 }
 
-extern SWC_CAN_INLINE 
-bool re(const uint8_t *p1, uint32_t p1_len, 
+extern SWC_CAN_INLINE
+bool re(const re2::RE2& regex, const char* v, uint32_t v_len) {
+  return re2::RE2::PartialMatch(re2::StringPiece(v, v_len), regex);
+}
+
+extern SWC_CAN_INLINE
+bool re(const uint8_t *p1, uint32_t p1_len,
         const uint8_t *p2, uint32_t p2_len) {
-  return re2::RE2::PartialMatch(
-    re2::StringPiece((const char *)p2, p2_len), 
-    re2::RE2(re2::StringPiece((const char *)p1, p1_len))
-  );
-}
-
-extern SWC_CAN_INLINE 
-bool re(const RE2* regex, const uint8_t *p2, uint32_t p2_len) {
-  return RE2::PartialMatch(
-    re2::StringPiece((const char *)p2, p2_len), 
-    *regex
+  return re(
+    re2::RE2(re2::StringPiece((const char *)p1, p1_len)),
+    (const char *)p2, p2_len
   );
 }
 
 
-extern SWC_CAN_INLINE 
-bool is_matching_lexic(uint8_t comp, 
-                       const uint8_t *p1, uint32_t p1_len, 
+extern SWC_CAN_INLINE
+bool is_matching_lexic(uint8_t comp,
+                       const uint8_t *p1, uint32_t p1_len,
                        const uint8_t *p2, uint32_t p2_len) {
   switch (comp) {
 
