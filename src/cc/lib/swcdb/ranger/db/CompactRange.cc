@@ -116,12 +116,12 @@ struct CompactRange::InBlock final : Core::QueuePointer<InBlock*>::Pointer {
 
 
 CompactRange::CompactRange(Compaction* compactor, const RangePtr& range,
-                           const uint32_t cs_size, const uint32_t blk_size) 
-            : ReqScan(ReqScan::Type::COMPACTION, true, 
-                      compactor->cfg_read_ahead->get()/2), 
+                           const uint32_t cs_size, const uint32_t blk_size)
+            : ReqScan(ReqScan::Type::COMPACTION, true,
+                      compactor->cfg_read_ahead->get()/2),
               compactor(compactor), range(range),
-              cs_size(cs_size), blk_size(blk_size), 
-              blk_cells(range->cfg->block_cells()), 
+              cs_size(cs_size), blk_size(blk_size),
+              blk_cells(range->cfg->block_cells()),
               blk_encoding(range->cfg->block_enc()),
               m_inblock(new InBlock(range->cfg->key_seq, blk_size)),
               m_processing(0),
@@ -135,14 +135,14 @@ CompactRange::CompactRange(Compaction* compactor, const RangePtr& range,
   spec.flags.max_versions = range->cfg->cell_versions();
 }
 
-CompactRange::~CompactRange() { 
+CompactRange::~CompactRange() {
   if(m_inblock)
     delete m_inblock;
-    
+
   InBlock* blk;
   while(m_q_intval.pop(&blk))
     delete blk;
-  while(m_q_encode.pop(&blk)) 
+  while(m_q_encode.pop(&blk))
     delete blk;
   while(m_q_write.pop(&blk))
     delete blk;
@@ -165,7 +165,7 @@ void CompactRange::initialize() {
     size_t split_at = range->blocks.cellstores.size() / 2;
     auto it = range->blocks.cellstores.begin();
 
-    split_option: 
+    split_option:
       it = range->blocks.cellstores.begin() + split_at;
       do {
         if(!(*it)->interval.key_begin.equal((*(it-1))->interval.key_end))
@@ -177,25 +177,20 @@ void CompactRange::initialize() {
         split_at = 1;
         goto split_option;
       }
-      split_at = -1;
     } else {
-      split_at = it - range->blocks.cellstores.begin();
-    }
-
-    if(split_at > 0) {
-      RangeSplit splitter(range, split_at);
+      RangeSplit splitter(range, it - range->blocks.cellstores.begin());
       int err = splitter.run();
-      if(!err) {
+      if(!err)
         return finished(true);
-      }
-      SWC_LOG_OUT(LOG_WARN, 
+
+      SWC_LOG_OUT(LOG_WARN,
         SWC_LOG_PRINTF("COMPACT-PROGRESS SPLIT RANGE cancelled %lu/%lu ",
                         range->cfg->cid, range->rid);
         Error::print(SWC_LOG_OSTREAM, err);
       );
     }
   }
-  
+
   initial_commitlog(1);
 }
 
@@ -210,17 +205,17 @@ void CompactRange::initial_commitlog(int tnum) {
     new CommitLog::Compact(
       &range->blocks.commitlog, tnum, groups, cointervaling,
       [ptr=shared()] (const CommitLog::Compact* compact) {
-        ptr->initial_commitlog_done(compact); 
+        ptr->initial_commitlog_done(compact);
       }
     );
   } else {
     initial_commitlog_done(nullptr);
-  } 
+  }
 }
 
 void CompactRange::initial_commitlog_done(const CommitLog::Compact* compact) {
   if(m_stopped) {
-    if(compact) 
+    if(compact)
       delete compact;
     return quit();
   }
@@ -242,11 +237,11 @@ void CompactRange::initial_commitlog_done(const CommitLog::Compact* compact) {
 
   range->blocks.cellstores.get_key_end(m_required_key_last);
   for(auto& frag : fragments_old) {
-    if(DB::KeySeq::compare(range->cfg->key_seq, 
+    if(DB::KeySeq::compare(range->cfg->key_seq,
         m_required_key_last, frag->interval.key_end) == Condition::GT)
     m_required_key_last.copy(frag->interval.key_end);
   }
-  SWC_LOG_OUT(LOG_INFO, 
+  SWC_LOG_OUT(LOG_INFO,
     SWC_LOG_PRINTF(
       "COMPACT-PROGRESS %lu/%lu early-split possible from scan offset ",
       range->cfg->cid, range->rid);
@@ -264,7 +259,7 @@ bool CompactRange::with_block() {
   return true;
 }
 
-bool CompactRange::selector(const DB::Types::KeySeq key_seq, 
+bool CompactRange::selector(const DB::Types::KeySeq key_seq,
                             const DB::Cells::Cell& cell, bool&) {
   return spec.is_matching(
     key_seq, cell.key, cell.timestamp, cell.control & DB::Cells::TS_DESC)
@@ -273,8 +268,8 @@ bool CompactRange::selector(const DB::Types::KeySeq key_seq,
 }
 
 bool CompactRange::reached_limits() {
-  return m_stopped 
-      || (m_inblock->header.cells_count > 1 && 
+  return m_stopped
+      || (m_inblock->header.cells_count > 1 &&
           m_inblock->cells.fill() + m_inblock->cell_avg_size() >= blk_size)
       || m_inblock->header.cells_count >= blk_cells + 1;
 }
@@ -296,7 +291,7 @@ void CompactRange::response(int& err) {
   req_ts.store(Time::now_ns());
 
   profile.finished();
-  SWC_LOG_OUT(LOG_INFO, 
+  SWC_LOG_OUT(LOG_INFO,
     SWC_LOG_PRINTF(
       "COMPACT-PROGRESS %lu/%lu blocks=%lu avg(i=%ld e=%ld w=%ld)us ",
       range->cfg->cid, range->rid,
@@ -331,7 +326,7 @@ void CompactRange::response(int& err) {
     m_inblock = new InBlock(range->cfg->key_seq, blk_size, in_block);
     m_inblock->set_offset(spec);
 
-    if(can_split_at() > 0 && DB::KeySeq::compare(range->cfg->key_seq, 
+    if(can_split_at() > 0 && DB::KeySeq::compare(range->cfg->key_seq,
         m_required_key_last, spec.offset_key) == Condition::GT) {
       if(spec.key_intervals.empty())
         spec.key_intervals.add();
@@ -339,7 +334,7 @@ void CompactRange::response(int& err) {
       spec.range_end.copy(spec.offset_key);
       spec.set_opt__key_equal();
 
-      SWC_LOG_OUT(LOG_INFO, 
+      SWC_LOG_OUT(LOG_INFO,
         SWC_LOG_PRINTF(
           "COMPACT-PROGRESS %lu/%lu finishing early-split scan offset ",
           range->cfg->cid, range->rid
@@ -365,7 +360,7 @@ void CompactRange::response(int& err) {
 
 bool CompactRange::is_slow_req(int64_t& median) const {
   median = (total_cells
-    ? (Time::now_ns() - profile.ts_start) / total_cells : 10000) 
+    ? (Time::now_ns() - profile.ts_start) / total_cells : 10000)
     * blk_cells * 3;
   return req_last_time > median || Time::now_ns() - req_ts > median;
 }
@@ -383,7 +378,7 @@ void CompactRange::commitlog(int tnum) {
     new CommitLog::Compact(
       &range->blocks.commitlog, tnum, groups, cointervaling,
       [ptr=shared()] (const CommitLog::Compact* compact) {
-        ptr->commitlog_done(compact); 
+        ptr->commitlog_done(compact);
       }
     );
   } else {
@@ -426,7 +421,7 @@ void CompactRange::commitlog_done(const CommitLog::Compact* compact) {
         return commitlog(tnum);
     }
   }
-  
+
   m_get.stop();
   request_more();
 }
@@ -534,8 +529,6 @@ void CompactRange::process_write() {
     if(in_block->err)
       return quit();
 
-    request_more();
-
     write_cells(err, in_block);
 
     if(err || !range->is_loaded() || compactor->stopped())
@@ -543,7 +536,9 @@ void CompactRange::process_write() {
 
     bool more = m_q_write.pop_and_more() && !m_stopped;
     delete in_block;
+
     m_processing.fetch_sub(1);
+    request_more();
     if(more)
       goto _do;
   }
@@ -552,7 +547,7 @@ void CompactRange::process_write() {
   request_more();
 }
 
-csid_t CompactRange::create_cs(int& err) { 
+csid_t CompactRange::create_cs(int& err) {
   if(!tmp_dir) {
     err = Error::OK;
     auto cs_tmp_dir = range->get_path(Range::CELLSTORES_TMP_DIR);
@@ -571,9 +566,9 @@ csid_t CompactRange::create_cs(int& err) {
     csid += cellstores.size();
   }
   cs_writer = std::make_shared<CellStore::Write>(
-    csid, 
-    range->get_path_cs_on(Range::CELLSTORES_TMP_DIR, csid), 
-    range, 
+    csid,
+    range->get_path_cs_on(Range::CELLSTORES_TMP_DIR, csid),
+    range,
     spec.flags.max_versions
   );
   cs_writer->create(err, -1, range->cfg->file_replication(), blk_size);
@@ -618,7 +613,7 @@ void CompactRange::add_cs(int& err) {
     Core::MutexSptd::scope lock(m_mutex);
     cs_writer->prev_key_end.copy(
       cellstores.empty()
-        ? range->prev_range_end 
+        ? range->prev_range_end
         : cellstores.back()->interval.key_end
     );
   }
@@ -643,7 +638,7 @@ ssize_t CompactRange::can_split_at() {
 
   size_t at = cellstores.size() / 2;
 
-  split_option: 
+  split_option:
     it = cellstores.begin() + at;
     do {
       if(!(*it)->interval.key_begin.equal((*(it-1))->interval.key_end))
@@ -664,7 +659,7 @@ void CompactRange::finalize() {
   if(m_stopped)
     return;
   stop_check_timer();
-  
+
   if(!range->is_loaded())
     return quit();
 
@@ -682,15 +677,15 @@ void CompactRange::finalize() {
     }
     m_inblock->finalize_interval(any_begin, range->_is_any_end());
     cs_writer->block_encode(err, m_inblock->cells, m_inblock->header);
- 
+
   } else if(!cellstores.size() && !cs_writer) {
     // as an initial empty range cs with range intervals
     empty_cs = true;
-    create_cs(err); //csid_t csid = 
+    create_cs(err); //csid_t csid =
     if(err)
       return quit();
     range->_get_interval(
-      m_inblock->header.interval.key_begin, 
+      m_inblock->header.interval.key_begin,
       m_inblock->header.interval.key_end
     );
     if(m_inblock->header.interval.key_begin.empty())
@@ -727,7 +722,7 @@ void CompactRange::finalize() {
   }
 
   split_at > 0
-    ? mngr_create_range(split_at) 
+    ? mngr_create_range(split_at)
     : apply_new(empty_cs);
 
 }
@@ -737,14 +732,14 @@ void CompactRange::mngr_create_range(uint32_t split_at) {
     range->cfg->cid,
     Env::Rgr::rgr_data()->rgrid,
     [split_at, cid=range->cfg->cid, ptr=shared()]
-    (const Comm::client::ConnQueue::ReqBase::Ptr& req, 
+    (const Comm::client::ConnQueue::ReqBase::Ptr& req,
      const Comm::Protocol::Mngr::Params::RangeCreateRsp& rsp) {
-      
-      SWC_LOGF(LOG_DEBUG, 
-        "Compact::Mngr::Req::RangeCreate err=%d(%s) %lu/%lu", 
+
+      SWC_LOGF(LOG_DEBUG,
+        "Compact::Mngr::Req::RangeCreate err=%d(%s) %lu/%lu",
         rsp.err, Error::get_text(rsp.err), cid, rsp.rid);
 
-      if(!ptr->m_stopped && rsp.err && 
+      if(!ptr->m_stopped && rsp.err &&
          rsp.err != Error::COLUMN_NOT_EXISTS &&
          rsp.err != Error::COLUMN_MARKED_REMOVED &&
          rsp.err != Error::COLUMN_NOT_READY) {
@@ -753,7 +748,7 @@ void CompactRange::mngr_create_range(uint32_t split_at) {
       }
       if((!rsp.err || rsp.err == Error::COLUMN_NOT_READY) && rsp.rid)
         ptr->split(rsp.rid, split_at);
-      else 
+      else
         ptr->apply_new();
     }
   );
@@ -765,15 +760,15 @@ void CompactRange::mngr_remove_range(const RangePtr& new_range) {
     new_range->cfg->cid,
     new_range->rid,
     [new_range, await=&res]
-    (const Comm::client::ConnQueue::ReqBase::Ptr& req, 
+    (const Comm::client::ConnQueue::ReqBase::Ptr& req,
      const Comm::Protocol::Mngr::Params::RangeRemoveRsp& rsp) {
-      
-      SWC_LOGF(LOG_DEBUG, 
-        "Compact::Mngr::Req::RangeRemove err=%d(%s) %lu/%lu", 
-        rsp.err, Error::get_text(rsp.err), 
+
+      SWC_LOGF(LOG_DEBUG,
+        "Compact::Mngr::Req::RangeRemove err=%d(%s) %lu/%lu",
+        rsp.err, Error::get_text(rsp.err),
         new_range->cfg->cid, new_range->rid);
-      
-      if(rsp.err && 
+
+      if(rsp.err &&
          rsp.err != Error::COLUMN_NOT_EXISTS &&
          rsp.err != Error::COLUMN_MARKED_REMOVED &&
          rsp.err != Error::COLUMN_NOT_READY) {
@@ -792,7 +787,7 @@ void CompactRange::split(rid_t new_rid, uint32_t split_at) {
     return quit();
 
   int64_t ts = Time::now_ns();
-  SWC_LOGF(LOG_INFO, "COMPACT-SPLIT %lu/%lu new-rid=%lu", 
+  SWC_LOGF(LOG_INFO, "COMPACT-SPLIT %lu/%lu new-rid=%lu",
            range->cfg->cid, range->rid, new_rid);
 
   int err = Error::OK;
@@ -800,7 +795,7 @@ void CompactRange::split(rid_t new_rid, uint32_t split_at) {
   if(!err)
     new_range->internal_create_folders(err);
   if(err) {
-    SWC_LOGF(LOG_INFO, "COMPACT-SPLIT cancelled err=%d %lu/%lu new-rid=%lu", 
+    SWC_LOGF(LOG_INFO, "COMPACT-SPLIT cancelled err=%d %lu/%lu new-rid=%lu",
             err, range->cfg->cid, range->rid, new_rid);
     err = Error::OK;
     new_range->compacting(Range::COMPACT_NONE);
@@ -808,14 +803,14 @@ void CompactRange::split(rid_t new_rid, uint32_t split_at) {
     mngr_remove_range(new_range);
     return apply_new();
   }
-  
+
   CellStore::Writers new_cellstores;
   auto it = cellstores.begin()+split_at;
   new_cellstores.assign(it, cellstores.end());
   cellstores.erase(it, cellstores.end());
 
   new_range->internal_create(err, new_cellstores);
-  if(!err) 
+  if(!err)
     range->apply_new(err, cellstores, fragments_old);
 
   if(err) {
@@ -832,7 +827,7 @@ void CompactRange::split(rid_t new_rid, uint32_t split_at) {
     fragments_old.clear();
     range->blocks.commitlog.commit_new_fragment(true);
     range->blocks.commitlog.get(fragments_old); // fragments for removal
-      
+
     CommitLog::Splitter splitter(
       cellstores.back()->interval.key_end,
       fragments_old,
@@ -850,7 +845,7 @@ void CompactRange::split(rid_t new_rid, uint32_t split_at) {
   new_range->expand_and_align(false,
     [ts, col, new_range, ptr=shared()]
     (const client::Query::Update::Result::Ptr&) {
-      SWC_LOGF(LOG_INFO, 
+      SWC_LOGF(LOG_INFO,
         "COMPACT-SPLIT %lu/%lu unloading new-rid=%lu",
         col->cfg->cid, ptr->range->rid, new_range->rid);
       new_range->compacting(Range::COMPACT_NONE);
@@ -899,13 +894,13 @@ bool CompactRange::completion() {
   bool at = false;
   if(!m_stopped.compare_exchange_weak(at, true))
     return false;
-    
+
   stop_check_timer();
 
   auto ptr = shared();
   for(int chk = 0; ptr.use_count() > 3; ++chk) { // insure sane
     if(chk == 3000) {
-      SWC_LOGF(LOG_INFO, "COMPACT-STOPPING %lu/%lu use_count=%ld", 
+      SWC_LOGF(LOG_INFO, "COMPACT-STOPPING %lu/%lu use_count=%ld",
                 range->cfg->cid, range->rid, ptr.use_count());
       chk = 0;
     }
@@ -918,7 +913,7 @@ void CompactRange::finished(bool clear) {
   completion();
   profile.finished();
 
-  SWC_LOG_OUT(LOG_INFO, 
+  SWC_LOG_OUT(LOG_INFO,
     SWC_LOG_PRINTF(
       "COMPACT-FINISHED %lu/%lu cells=%lu blocks=%lu "
       "(total=%ld intval=%ld encode=%ld write=%ld)ms ",
@@ -947,7 +942,7 @@ void CompactRange::quit() {
     Env::FsInterface::interface()->rmdir(
       err, range->get_path(Range::CELLSTORES_TMP_DIR));
   }
-  SWC_LOGF(LOG_INFO, "COMPACT-ERROR cancelled %lu/%lu", 
+  SWC_LOGF(LOG_INFO, "COMPACT-ERROR cancelled %lu/%lu",
            range->cfg->cid, range->rid);
 
   compactor->compacted(shared(), range);
