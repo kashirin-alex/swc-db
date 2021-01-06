@@ -79,15 +79,25 @@ Value::~Value() {
 void Value::_free() {
   if(own && data)
     delete [] data;
-  if(compiled) {
-    switch(comp) {
-      case Condition::RE:
-        delete (re2::RE2*)compiled;
-        break;
-      default: {
-        //if(size) switch(col_type) { }
-      };
+
+  if(compiled) switch(col_type) {
+
+    case Types::Column::PLAIN: {
+      switch(comp) {
+        case Condition::RE: {
+          delete (re2::RE2*)compiled;
+          return;
+        }
+        default: return;
+      }
     }
+
+    case Types::Column::COUNTER_I64 ... Types::Column::COUNTER_I8: {
+      delete (int64_t*)compiled;
+      return;
+    }
+
+    default: return;
   }
 }
 
@@ -137,29 +147,39 @@ void Value::decode(const uint8_t** bufp, size_t* remainp) {
 bool Value::is_matching(const Cells::Cell& cell) const {
   if(empty())
     return true;
-  return Types::is_counter(col_type)
-    ? is_matching(cell.get_counter())
-    : is_matching(cell.value, cell.vlen);
-}
 
-bool Value::is_matching(const uint8_t* v_data, const uint32_t v_len) const {
-  switch(comp) {
-    case Condition::RE: {
-      if(!compiled)
-        compiled = new re2::RE2(re2::StringPiece((const char*)data, size));
-      return Condition::re(*(re2::RE2*)compiled, (const char*)v_data, v_len);
+  switch(col_type) {
+
+    case Types::Column::PLAIN: {
+      switch(comp) {
+        case Condition::RE: {
+          if(!compiled)
+            compiled = new re2::RE2(
+              re2::StringPiece((const char*)data, size));
+          return Condition::re(
+            *(re2::RE2*)compiled, (const char*)cell.value, cell.vlen);
+        }
+        default:
+          return Condition::is_matching_extended(
+            comp, data, size, cell.value, cell.vlen);
+      }
     }
+
+    case Types::Column::COUNTER_I64 ... Types::Column::COUNTER_I8: {
+      if(!compiled) {
+        errno = 0;
+        char *last = (char*)data + size;
+        compiled = new int64_t(strtoll((const char*)data, &last, 0));
+      }
+      return Condition::is_matching(
+        comp, *(int64_t*)compiled, cell.get_counter());
+    }
+
     default:
-      return Condition::is_matching_extended(comp, data, size, v_data, v_len);
+      return false;
   }
 }
 
-bool Value::is_matching(int64_t v) const {
-  errno = 0;
-  char *last = (char*)data + size;
-  int64_t value = strtoll((const char*)data, &last, 0); // ?cls-storage
-  return Condition::is_matching(comp, value, v);
-}
 
 std::string Value::to_string() const {
   std::stringstream ss;

@@ -61,10 +61,6 @@ class Value {
 
   bool is_matching(const Cells::Cell& cell) const;
 
-  bool is_matching(const uint8_t* v_data, const uint32_t v_len) const;
-
-  bool is_matching(int64_t v) const;
-
   std::string to_string() const;
 
   void print(std::ostream& out) const;
@@ -74,8 +70,10 @@ class Value {
   bool            own;
   Condition::Comp comp;
   Types::Column   col_type;
+
   uint8_t*        data;
   uint32_t        size;
+
   mutable void*   compiled;
 
 };
