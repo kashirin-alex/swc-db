@@ -14,8 +14,7 @@ namespace SWC { namespace Core {
 
 
 template<typename T>
-class Buffer {
-  public:
+struct Buffer {
 
   typedef T                         value_type;
   typedef Buffer<value_type>        BufferT;
@@ -35,7 +34,7 @@ class Buffer {
 
   template<size_t SizeOfT=sizeof(value_type)>
   SWC_CAN_INLINE
-  static size_t length_base_byte(size_t sz) {
+  static size_t length_base_byte(size_t sz) SWC_NOEXCEPT {
     return sz * SizeOfT;
   }
 
@@ -121,7 +120,7 @@ class Buffer {
   void set(OtherT& other) SWC_NOEXCEPT;
 
   bool          own;
-  size_t        size;
+  size_t        size : 56;
   value_type*   base;
   
 };
@@ -129,8 +128,7 @@ class Buffer {
 
 
 template<typename BufferT>
-class BufferDyn : public BufferT {
-  public:
+struct BufferDyn : BufferT {
 
   using value_type  = typename BufferT::value_type;
   typedef std::shared_ptr<BufferDyn> Ptr;
