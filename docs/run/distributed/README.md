@@ -29,6 +29,11 @@ Usage: swcdb_cluster [--core-opts] <subcommand> [--subcommand-opts] ...
 Subcommands:
 
   deploy
+  kill
+  kill-fsbrokers
+  kill-managers
+  kill-rangers
+  kill-thriftbrokers
   push-config
   shell
   start

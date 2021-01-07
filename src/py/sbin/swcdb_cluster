@@ -169,18 +169,18 @@ def swcdb_proc_pids(name, c):
     #
 
 
-def swcdb_stop_proc(task, name, c):
+def swcdb_stop_proc(task, name, c, gracefull):
     swcdb_print_start(task, c)
     pids = swcdb_proc_pids(name, c)
     for pid in pids:
-        kres = c.run("kill " + pid, hide=True)
+        kres = c.run("kill " + ("" if gracefull else "-9 ") + pid, hide=True)
         swcdb_print_result(
             task, c, 
-            "SIGINT pid(" + pid + ") " + 
+            ("SIGINT" if gracefull else "SIGTERM") + " pid(" + pid + ") " + 
             kres.stdout.strip() + " " + 
             kres.stderr.strip()
         )
-            
+
     if pids:
         check = 0
         time.sleep(1)
@@ -337,7 +337,14 @@ def start_fsbrokers(c):
 def stop_fsbrokers(c):
     for host in swcdb_fsbrokers:
         with fabric.Connection(host) as c:
-            swcdb_stop_proc("stop-fsbrokers", "swcdbFsBroker", c)
+            swcdb_stop_proc("stop-fsbrokers", "swcdbFsBroker", c, True)
+    #
+
+@fabric.task
+def kill_fsbrokers(c):
+    for host in swcdb_fsbrokers:
+        with fabric.Connection(host) as c:
+            swcdb_stop_proc("kill-fsbrokers", "swcdbFsBroker", c, False)
     #
 
 
@@ -362,7 +369,14 @@ def start_managers(c):
 def stop_managers(c):
     for saddr in set(cfg[0] for cfg in swcdb_cfg["swc.mngr.host"]):
         with fabric.Connection(saddr) as c:
-            swcdb_stop_proc("stop-managers", "swcdbManager", c)
+            swcdb_stop_proc("stop-managers", "swcdbManager", c, True)
+    #
+
+@fabric.task
+def kill_managers(c):
+    for saddr in set(cfg[0] for cfg in swcdb_cfg["swc.mngr.host"]):
+        with fabric.Connection(saddr) as c:
+            swcdb_stop_proc("kill-managers", "swcdbManager", c, False)
     #
 
 
@@ -387,7 +401,14 @@ def start_rangers(c):
 def stop_rangers(c):
     for saddr in set(cfg[0] for cfg in swcdb_cfg["swc.cluster.rgr.host"]):
         with fabric.Connection(saddr) as c:
-            swcdb_stop_proc("stop-rangers", "swcdbRanger", c)
+            swcdb_stop_proc("stop-rangers", "swcdbRanger", c, True)
+    #
+
+@fabric.task
+def kill_rangers(c):
+    for saddr in set(cfg[0] for cfg in swcdb_cfg["swc.cluster.rgr.host"]):
+        with fabric.Connection(saddr) as c:
+            swcdb_stop_proc("kill-rangers", "swcdbRanger", c, False)
     #
 
 
@@ -412,7 +433,14 @@ def start_thriftbrokers(c):
 def stop_thriftbrokers(c):
     for saddr in set(cfg[0] for cfg in swcdb_cfg["swc.cluster.thriftbroker.host"]):
         with fabric.Connection(saddr) as c:
-            swcdb_stop_proc("stop-thriftbrokers", "swcdbThriftBroker", c)
+            swcdb_stop_proc("stop-thriftbrokers", "swcdbThriftBroker", c, True)
+    #
+
+@fabric.task
+def kill_thriftbrokers(c):
+    for saddr in set(cfg[0] for cfg in swcdb_cfg["swc.cluster.thriftbroker.host"]):
+        with fabric.Connection(saddr) as c:
+            swcdb_stop_proc("kill-thriftbrokers", "swcdbThriftBroker", c, False)
     #
 
 
@@ -447,6 +475,19 @@ def stop(c):
         run(c)
     #
 
+
+# KILL
+
+@fabric.task
+def kill(c):
+    for name, run in [
+            ("thriftbrokers",   kill_thriftbrokers),
+            ("rangers",         kill_rangers),
+            ("managers",        kill_managers),
+            ("fsbrokers",       kill_fsbrokers)]:
+        print("-- killing " + name + " --")
+        run(c)
+    #
 
 # @fabric.task(hosts=[swcdb_cfg["swc.mngr.host"][0]]) -- root mngr
 # def stop(c):
