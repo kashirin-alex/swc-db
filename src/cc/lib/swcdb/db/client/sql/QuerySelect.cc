@@ -11,7 +11,7 @@
 namespace SWC { namespace client { namespace SQL {
 
 namespace {
-    
+
   static const char     TOKEN_SELECT[] = "select";
   static const uint8_t  LEN_SELECT = 6;
   static const char     TOKEN_DUMP[] = "dump";
@@ -23,7 +23,7 @@ namespace {
   static const char     TOKEN_CELLS[] = "cells";
   static const uint8_t  LEN_CELLS = 5;
 
-  
+
   static const char     TOKEN_RANGE[] = "range";
   static const uint8_t  LEN_RANGE = 5;
   static const char     TOKEN_KEY[] = "key";
@@ -54,7 +54,7 @@ namespace {
 
 }
 
-QuerySelect::QuerySelect(const std::string& sql, DB::Specs::Scan& specs, 
+QuerySelect::QuerySelect(const std::string& sql, DB::Specs::Scan& specs,
                          std::string& message)
                         : Reader(sql, message), specs(specs) {
 }
@@ -91,7 +91,7 @@ int QuerySelect::parse_select() {
           }
         }
       }
-    } 
+    }
     return err;
 }
 
@@ -104,44 +104,44 @@ int QuerySelect::parse_dump(std::string& filepath) {
 
     while(remain && !err && found_space());
     expect_token(TOKEN_DUMP, LEN_DUMP, token_cmd);
-    if(err) 
+    if(err)
       return err;
     while(remain && !err && found_space());
     expect_token(TOKEN_COL, LEN_COL, token_col);
-    if(err) 
+    if(err)
       return err;
 
     expect_eq();
-    if(err) 
+    if(err)
       return err;
     std::string col;
     read(col);
     if(!err && col.empty())
       error_msg(Error::SQL_PARSE_ERROR, "missing col 'id|name'");
-    if(err) 
+    if(err)
       return err;
     cid_t cid = add_column(col);
-    if(err) 
+    if(err)
       return err;
 
     bool into = false;
     while(remain && !err && found_space());
     expect_token("into", 4, into);
-    if(err) 
-      return err;  
-      
+    if(err)
+      return err;
+
     read(filepath);
     if(!err && filepath.empty())
       error_msg(Error::SQL_PARSE_ERROR, "missing 'filepath'");
-    if(err) 
-      return err;  
+    if(err)
+      return err;
 
 
     while(remain && !err && found_space());
     if(found_token(TOKEN_WHERE, LEN_WHERE)) {
       std::vector<cid_t> cols = {cid};
       read_cells_intervals(cols);
-      
+
       for(auto& col : specs.columns)
         if(!col->intervals.size()) {
           error_msg(Error::SQL_PARSE_ERROR, "missing cells-intervals");
@@ -160,7 +160,7 @@ void QuerySelect::parse_output_flags(uint8_t& output_flags) {
     bool any = true;
     while(any && remain && !err) {
       if(found_space())
-        continue;    
+        continue;
 
       if((any = found_token("OUTPUT_NO_TS", 12))) {
         output_flags |= DB::OutputFlag::NO_TS;
@@ -168,6 +168,10 @@ void QuerySelect::parse_output_flags(uint8_t& output_flags) {
       }
       if((any = found_token("OUTPUT_NO_VALUE", 15))) {
         output_flags |= DB::OutputFlag::NO_VALUE;
+        continue;
+      }
+      if((any = found_token("OUTPUT_NO_ENCODE", 16))) {
+        output_flags |= DB::OutputFlag::NO_ENCODE;
         continue;
       }
     }
@@ -178,7 +182,7 @@ void QuerySelect::parse_display_flags(uint8_t& display_flags) {
     bool any = true;
     while(any && remain && !err) {
       if(found_space())
-        continue;    
+        continue;
 
       if((any = found_token("DISPLAY_TIMESTAMP", 17))) {
         display_flags |= DB::DisplayFlag::TIMESTAMP;
@@ -241,12 +245,12 @@ void QuerySelect::read_columns_intervals() {
         //"col(, 1 2 ,re"aa$, =^"Ds", "3 4")" => ["1","2", [patterns], "3 4"]
         if(found_space())
           continue;
-        
+
         if(!bracket_round) {
           expect_token("(", 1, bracket_round);
           continue;
         }
-        
+
         if(found_char(','))
           continue;
 
@@ -274,7 +278,7 @@ void QuerySelect::read_columns_intervals() {
         if(comp != Condition::NONE) {
           if(col_name.empty()) {
             error_msg(
-              Error::SQL_PARSE_ERROR, 
+              Error::SQL_PARSE_ERROR,
               "expected column name(expression) after comparator"
             );
             break;
@@ -286,11 +290,11 @@ void QuerySelect::read_columns_intervals() {
         col_name.clear();
         continue;
       }
-      
+
       if(col_names_set) {
 
         if(!processed) {
-          
+
           if(!eq) {
             expect_token("=", 1, eq);
             continue;
@@ -308,7 +312,7 @@ void QuerySelect::read_columns_intervals() {
           processed = true;
           continue;
         }
-        
+
         if(!bracket_round) {
           expect_token(")", 1, bracket_round);
           continue;
@@ -320,7 +324,7 @@ void QuerySelect::read_columns_intervals() {
         token_col = false;
         possible_and = true;
       }
-      
+
     }
 
 }
@@ -330,24 +334,24 @@ cid_t QuerySelect::add_column(const std::string& col) {
     if(err)
       return DB::Schema::NO_CID;
     for(auto& col : specs.columns) {
-      if(schema->cid == col->cid) 
+      if(schema->cid == col->cid)
         return schema->cid;
     }
     specs.columns.push_back(DB::Specs::Column::make_ptr(schema->cid, {}));
     return schema->cid;
 }
 
-void QuerySelect::add_column(const std::vector<DB::Schemas::Pattern>& patterns, 
+void QuerySelect::add_column(const std::vector<DB::Schemas::Pattern>& patterns,
                              std::vector<cid_t>& cols) {
   auto schemas = get_schema(patterns);
   if(err)
     return;
-    
+
   bool found;
   for(auto& schema : schemas) {
     found = false;
     for(auto& col : specs.columns) {
-      if((found = schema->cid == col->cid)) 
+      if((found = schema->cid == col->cid))
         break;
     }
     if(!found)
@@ -377,7 +381,7 @@ void QuerySelect::read_cells_intervals(const std::vector<cid_t>& cols) {
         expect_token(TOKEN_CELLS, LEN_CELLS, token_cells);
         continue;
       }
-      
+
       if(!processed) {
 
         if(!eq) {
@@ -391,7 +395,7 @@ void QuerySelect::read_cells_intervals(const std::vector<cid_t>& cols) {
 
         auto spec = DB::Specs::Interval::make_ptr();
         read_cells_interval(*spec.get());
-        
+
         for(auto& col : specs.columns) {
           for(cid_t cid : cols) {
             if(col->cid == cid)
@@ -404,7 +408,7 @@ void QuerySelect::read_cells_intervals(const std::vector<cid_t>& cols) {
         processed = true;
         continue;
       }
-        
+
       if(!bracket_round) {
         expect_token(")", 1, bracket_round);
         continue;
@@ -416,7 +420,7 @@ void QuerySelect::read_cells_intervals(const std::vector<cid_t>& cols) {
     }
 
 }
-  
+
 void QuerySelect::read_cells_interval(DB::Specs::Interval& spec) {
 
     uint32_t escape = 0;
@@ -428,10 +432,10 @@ void QuerySelect::read_cells_interval(DB::Specs::Interval& spec) {
     bool flw_and = false;
     uint32_t base_remain = remain;
     const char* base_rptr = ptr;
-    
+
     while(remain && !err) {
 
-      if(possible_and) {        
+      if(possible_and) {
         found_any = true;
         if(found_space())
           continue;
@@ -441,7 +445,7 @@ void QuerySelect::read_cells_interval(DB::Specs::Interval& spec) {
         } else
           break;
       }
-      
+
       if(!escape && found_char('\\')) {
         escape = remain;
         continue;
@@ -449,7 +453,7 @@ void QuerySelect::read_cells_interval(DB::Specs::Interval& spec) {
         escape = 0;
 
       if(!escape) {
-        if(((!is_quoted || quote_1) && found_quote_single(quote_1)) || 
+        if(((!is_quoted || quote_1) && found_quote_single(quote_1)) ||
            ((!is_quoted || quote_2) && found_quote_double(quote_2))) {
           is_quoted = quote_1 || quote_2;
           continue;
@@ -457,14 +461,14 @@ void QuerySelect::read_cells_interval(DB::Specs::Interval& spec) {
         if(found_space())
           continue;
       }
-      
+
       if(is_quoted) {
         ++ptr;
         --remain;
         continue;
       }
 
-      if(found_token(TOKEN_RANGE, LEN_RANGE)) {        
+      if(found_token(TOKEN_RANGE, LEN_RANGE)) {
         read_range(spec.range_begin, spec.range_end, flw_and);
         while(found_space());
         if(found_token(TOKEN_RANGE_END_REST, LEN_RANGE_END_REST))
@@ -473,7 +477,7 @@ void QuerySelect::read_cells_interval(DB::Specs::Interval& spec) {
         continue;
       }
 
-      if(!found_token(TOKEN_ONLY_KEYS, LEN_ONLY_KEYS) && 
+      if(!found_token(TOKEN_ONLY_KEYS, LEN_ONLY_KEYS) &&
           found_token(TOKEN_KEY, LEN_KEY)) {
         auto& key_intval = spec.key_intervals.add();
         read_key(
@@ -505,33 +509,33 @@ void QuerySelect::read_cells_interval(DB::Specs::Interval& spec) {
         expect_eq();
         std::string buf;
         read(buf);
-        if(err) 
+        if(err)
           return;
         spec.offset_rev = Time::parse_ns(err, buf);
         if(err) {
           error_msg(Error::SQL_PARSE_ERROR, "bad datetime format");
           return;
         }
-        possible_and = true; 
+        possible_and = true;
         continue;
       }
-      
-      if(*ptr == ')') 
+
+      if(*ptr == ')')
         break;
       ++ptr;
       --remain;
 
     }
 
-    if(!found_any) {        
+    if(!found_any) {
       remain = base_remain;
       ptr = base_rptr;
     }
     read_flags(spec.flags);
 }
 
-  
-void QuerySelect::read_range(DB::Cell::Key& begin, DB::Cell::Key& end, 
+
+void QuerySelect::read_range(DB::Cell::Key& begin, DB::Cell::Key& end,
                              bool flw) {
     uint32_t base_remain = remain;
     const char* base_ptr = ptr;
@@ -546,9 +550,9 @@ void QuerySelect::read_range(DB::Cell::Key& begin, DB::Cell::Key& end,
 
     if(comp_right == Condition::GE)
       Reader::read_key(begin);
-    else 
+    else
       Reader::read_key(end);
-    if(err) 
+    if(err)
       return;
 
     uint32_t mark_remain = remain;
@@ -565,7 +569,7 @@ void QuerySelect::read_range(DB::Cell::Key& begin, DB::Cell::Key& end,
       } else if(found_char('('))
         break;
     }
-    
+
     while(remain && !err && found_space());
     if(*ptr != '[') {
       remain = mark_remain;
@@ -575,14 +579,14 @@ void QuerySelect::read_range(DB::Cell::Key& begin, DB::Cell::Key& end,
 
     if(comp_right == Condition::GE)
       Reader::read_key(end);
-    else 
+    else
       Reader::read_key(begin);
     if(err) {
       remain = mark_remain;
       ptr = mark_ptr;
       return;
     }
-   
+
     Condition::Comp comp_left = Condition::NONE;
     expect_comparator(comp_left);
     remain += base_remain;
@@ -601,14 +605,14 @@ void QuerySelect::read_range(DB::Cell::Key& begin, DB::Cell::Key& end,
     ptr = mark_ptr;
 }
 
-void QuerySelect::read_key(DB::Specs::Key& start, DB::Specs::Key& finish, 
+void QuerySelect::read_key(DB::Specs::Key& start, DB::Specs::Key& finish,
                            bool flw, uint8_t& options) {
     uint32_t base_remain = remain;
     const char* base_ptr = ptr;
 
     Condition::Comp comp_right;
     expect_comparator(comp_right);
-    if(comp_right != Condition::EQ && 
+    if(comp_right != Condition::EQ &&
        comp_right != Condition::GE && comp_right != Condition::LE) {
       error_msg(
         Error::SQL_PARSE_ERROR, "unsupported 'comparator' allowed EQ|GE|LE");
@@ -617,7 +621,7 @@ void QuerySelect::read_key(DB::Specs::Key& start, DB::Specs::Key& finish,
 
     if(comp_right == Condition::EQ || comp_right == Condition::GE)
       read_key(start);
-    else 
+    else
       read_key(finish);
 
     if(err)
@@ -641,7 +645,7 @@ void QuerySelect::read_key(DB::Specs::Key& start, DB::Specs::Key& finish,
       } else if(found_char('('))
         break;
     }
-    
+
     while(remain && !err && found_space());
     if(*ptr != '[') {
       remain = mark_remain;
@@ -651,14 +655,14 @@ void QuerySelect::read_key(DB::Specs::Key& start, DB::Specs::Key& finish,
 
     if(comp_right == Condition::GE)
       read_key(finish);
-    else 
+    else
       read_key(start);
     if(err) {
       remain = mark_remain;
       ptr = mark_ptr;
       return;
     }
-   
+
     Condition::Comp comp_left = Condition::NONE;
     expect_comparator(comp_left);
     remain += base_remain;
@@ -680,7 +684,7 @@ void QuerySelect::read_key(DB::Specs::Key& start, DB::Specs::Key& finish,
 void QuerySelect::read_key(DB::Specs::Key& key) {
 
     bool bracket_square = false;
-    
+
     while(remain && !err && found_space());
     expect_token("[", 1, bracket_square);
 
@@ -689,7 +693,7 @@ void QuerySelect::read_key(DB::Specs::Key& key) {
     while(remain && !err) {
       if(found_space())
         continue;
-      
+
       found_comparator(comp);
       if(comp == Condition::NONE)
         comp = Condition::EQ;
@@ -698,11 +702,11 @@ void QuerySelect::read_key(DB::Specs::Key& key) {
       fraction.clear();
 
       while(remain && !err && found_space());
-      if(found_char(',')) 
+      if(found_char(','))
         continue;
       break;
     }
-    
+
     expect_token("]", 1, bracket_square);
 }
 
@@ -714,8 +718,8 @@ void QuerySelect::read_value(DB::Specs::Value& value) {
     if(!err)
       value.set((uint8_t*)buf.data(), buf.length(), comp, true);
 }
-  
-void QuerySelect::read_timestamp(DB::Specs::Timestamp& start, 
+
+void QuerySelect::read_timestamp(DB::Specs::Timestamp& start,
                                  DB::Specs::Timestamp& finish, bool flw) {
     uint32_t base_remain = remain;
     const char* base_ptr = ptr;
@@ -724,12 +728,12 @@ void QuerySelect::read_timestamp(DB::Specs::Timestamp& start,
     expect_comparator(comp_right);
     if(comp_right != Condition::EQ &&
        comp_right != Condition::NE &&
-       comp_right != Condition::GE && 
-       comp_right != Condition::GT &&  
-       comp_right != Condition::LE && 
+       comp_right != Condition::GE &&
+       comp_right != Condition::GT &&
+       comp_right != Condition::LE &&
        comp_right != Condition::LT) {
       error_msg(
-        Error::SQL_PARSE_ERROR, 
+        Error::SQL_PARSE_ERROR,
         "unsupported 'comparator' allowed NE|EQ|GE|GT|LE|LT"
       );
       return;
@@ -737,7 +741,7 @@ void QuerySelect::read_timestamp(DB::Specs::Timestamp& start,
 
     std::string buf;
     read(buf);
-    if(err) 
+    if(err)
       return;
     int64_t ts = Time::parse_ns(err, buf);
     if(err) {
@@ -745,10 +749,10 @@ void QuerySelect::read_timestamp(DB::Specs::Timestamp& start,
       return;
     }
 
-    if(comp_right == Condition::EQ || comp_right == Condition::NE || 
+    if(comp_right == Condition::EQ || comp_right == Condition::NE ||
        comp_right == Condition::GE || comp_right == Condition::GT)
       start.set(ts, comp_right);
-    else 
+    else
       finish.set(ts, comp_right);
 
     if(comp_right == Condition::EQ || comp_right == Condition::NE)
@@ -769,7 +773,7 @@ void QuerySelect::read_timestamp(DB::Specs::Timestamp& start,
       } else if(found_char('('))
         break;
     }
-    
+
     buf.clear();
     read(buf);
     if(buf.empty()) {
@@ -777,7 +781,7 @@ void QuerySelect::read_timestamp(DB::Specs::Timestamp& start,
       ptr = mark_ptr;
       return;
     }
-    if(err) 
+    if(err)
       return;
     ts = Time::parse_ns(err, buf);
     if(err) {
@@ -788,20 +792,20 @@ void QuerySelect::read_timestamp(DB::Specs::Timestamp& start,
     Condition::Comp comp_left = Condition::NONE;
     expect_comparator(comp_left);
     remain += base_remain;
-    if(comp_left != Condition::GE && 
-       comp_left != Condition::GT && 
-       comp_left != Condition::LE && 
+    if(comp_left != Condition::GE &&
+       comp_left != Condition::GT &&
+       comp_left != Condition::LE &&
        comp_left != Condition::LT) {
       error_msg(
-        Error::SQL_PARSE_ERROR, 
+        Error::SQL_PARSE_ERROR,
         "unsupported 'comparator' allowed GE|GT|LE|LT"
       );
       return;
     }
 
-    comp_left = comp_left == Condition::GE ? Condition::LE 
-        : (comp_left == Condition::GT ? Condition::LT 
-        : (comp_left == Condition::LE ? Condition::GE 
+    comp_left = comp_left == Condition::GE ? Condition::LE
+        : (comp_left == Condition::GT ? Condition::LT
+        : (comp_left == Condition::LE ? Condition::GE
         : (comp_left == Condition::LT ? Condition::GT : comp_left)));
 
     if(comp_left == comp_right) {
@@ -811,7 +815,7 @@ void QuerySelect::read_timestamp(DB::Specs::Timestamp& start,
 
     if(finish.was_set)
       start.set(ts, comp_left);
-    else  
+    else
       finish.set(ts, comp_left);
 
     remain = mark_remain;
@@ -824,7 +828,7 @@ void QuerySelect::read_flags(DB::Specs::Flags& flags) {
     bool was_set;
     while(any && remain && !err) {
       if(found_space())
-        continue;    
+        continue;
 
       if((any = found_token(TOKEN_LIMIT, LEN_LIMIT))) {
         expect_eq();
@@ -862,7 +866,7 @@ void QuerySelect::read_flags(DB::Specs::Flags& flags) {
         flags.was_set = true;
         continue;
       }
-      if((any = found_token(TOKEN_ONLY_KEYS, LEN_ONLY_KEYS))) { 
+      if((any = found_token(TOKEN_ONLY_KEYS, LEN_ONLY_KEYS))) {
         flags.set_only_keys();
         flags.was_set = true;
         continue;

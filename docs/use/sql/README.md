@@ -130,6 +130,8 @@ modify schema(
   cs_size=0 
   cs_max=0 
   log_rollout=0
+  log_compact=0 
+  log_preload=0
 )
 ```
 
@@ -313,7 +315,7 @@ UPDATE
   cell(DELETE_VERSION,          CID, ['K','E','Y'], TS         ),
   cell(INSERT,                  CID, ['K','E','Y'], ASC, TS, 'DATA' ),
   cell(INSERT,                  CID, ['K','E','Y'], DESC, 'DATA' ),
-  cell(INSERT,                 NAME, ['K','E','Y'], '', 'DATA' )
+  cell(INSERT,                 NAME, ['K','E','Y'], '', 'DATA', 'ENC' )
 ```
 
 
@@ -371,5 +373,8 @@ The Syntax by Flags and Options:
 ``` "" ``` 
 ```,``` 
 ``` VALUE-DATA ```
+```,``` 
+``` ENCODER ```
 ``` ) ```
-
+  > * _ENCODER_  the Encoder to use for cell-value encoding, options: ZLIB/SNAPPY/ZSTD - default without.
+  

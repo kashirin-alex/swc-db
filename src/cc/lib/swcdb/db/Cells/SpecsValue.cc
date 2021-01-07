@@ -92,7 +92,10 @@ void Value::_free() {
       }
     }
 
-    case Types::Column::COUNTER_I64 ... Types::Column::COUNTER_I8: {
+    case DB::Types::Column::COUNTER_I64:
+    case DB::Types::Column::COUNTER_I32:
+    case DB::Types::Column::COUNTER_I16:
+    case DB::Types::Column::COUNTER_I8: {
       delete (int64_t*)compiled;
       return;
     }
@@ -151,21 +154,26 @@ bool Value::is_matching(const Cells::Cell& cell) const {
   switch(col_type) {
 
     case Types::Column::PLAIN: {
+      StaticBuffer v;
+      cell.get_value(v);
       switch(comp) {
         case Condition::RE: {
           if(!compiled)
             compiled = new re2::RE2(
               re2::StringPiece((const char*)data, size));
           return Condition::re(
-            *(re2::RE2*)compiled, (const char*)cell.value, cell.vlen);
+            *(re2::RE2*)compiled, (const char*)v.base, v.size);
         }
         default:
           return Condition::is_matching_extended(
-            comp, data, size, cell.value, cell.vlen);
+            comp, data, size, v.base, v.size);
       }
     }
 
-    case Types::Column::COUNTER_I64 ... Types::Column::COUNTER_I8: {
+    case DB::Types::Column::COUNTER_I64:
+    case DB::Types::Column::COUNTER_I32:
+    case DB::Types::Column::COUNTER_I16:
+    case DB::Types::Column::COUNTER_I8: {
       if(!compiled) {
         errno = 0;
         char *last = (char*)data + size;

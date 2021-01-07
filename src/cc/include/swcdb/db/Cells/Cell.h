@@ -12,6 +12,7 @@
 #include "swcdb/core/Buffer.h"
 
 #include "swcdb/db/Types/Column.h"
+#include "swcdb/db/Types/Encoder.h"
 #include "swcdb/db/Cells/CellKey.h"
 
 
@@ -47,7 +48,8 @@ enum DisplayFlag : uint8_t {
 
 enum OutputFlag : uint8_t {
   NO_TS     = 0x01,
-  NO_VALUE  = 0x04
+  NO_VALUE  = 0x04,
+  NO_ENCODE = 0x08
 };
 
 
@@ -76,10 +78,12 @@ static const uint8_t HAVE_REVISION      =  0x80;
 static const uint8_t HAVE_TIMESTAMP     =  0x40;
 static const uint8_t AUTO_TIMESTAMP     =  0x20;
 static const uint8_t REV_IS_TS          =  0x10;
-//static const uint8_t TYPE_DEFINED     =  0x2;
+static const uint8_t HAVE_ENCODER       =  0x2;
+static const uint8_t HAVE_ENCODER_MASK  =  0xff - HAVE_ENCODER;
 static const uint8_t TS_DESC            =  0x1;
 
 static const uint8_t OP_EQUAL  = 0x1;
+
 
 
 class Cell final {
@@ -120,6 +124,12 @@ class Cell final {
 
   void set_value(const std::string& v, bool owner=true);
 
+  void set_value(Types::Encoder encoder, const uint8_t* v, uint32_t len);
+
+  void set_value(Types::Encoder encoder, const std::string& v);
+
+  void get_value(StaticBuffer& v, bool owner=false) const;
+
   void set_counter(uint8_t op, int64_t v,
                   Types::Column typ = Types::Column::COUNTER_I64,
                   int64_t rev = TIMESTAMP_NULL);
@@ -147,6 +157,8 @@ class Cell final {
   int64_t get_revision() const;
 
   bool has_expired(const int64_t ttl) const;
+
+  bool have_encoder() const;
 
   void display(std::ostream& out, Types::Column typ = Types::Column::PLAIN,
                uint8_t flags=0, bool meta=false) const;

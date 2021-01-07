@@ -17,7 +17,7 @@ void Settings::init_post_cmd_args() {}
 
 namespace Cells = SWC::DB::Cells;
 
-void check_load() {
+void check_load(bool encode) {
   Cells::Cell cell;
 
   cell.flag = Cells::INSERT;
@@ -35,7 +35,10 @@ void check_load() {
     for(uint32_t chr=0; chr<=255; ++chr)
       value += (char)chr;
   value += ")END";
-  cell.set_value(value);
+  if(encode)
+    cell.set_value(SWC::DB::Types::Encoder::ZSTD, value);
+  else
+    cell.set_value(value);
 
   auto ts = SWC::Time::now_ns();
   auto chks = 10000;
@@ -99,7 +102,14 @@ void check_load() {
     cell.read(&bptr, &remain);
   ts = SWC::Time::now_ns() - ts;
   std::cout << "Cell::read took=" << ts << " avg=" << ts/chks << "\n";
-      
+  
+  SWC::Core::StaticBuffer v;
+  cell.get_value(v);
+  std::cout << "value.size()=" << value.size()  << "\n";
+  std::cout << "      v.size=" << v.size        << "\n";
+  std::cout << "   cell.vlen=" << cell.vlen     << "\n";
+  SWC_ASSERT(value.size() == v.size);
+  SWC_ASSERT(!memcmp(v.base, value.data(), v.size));
 }
 
 int main() {
@@ -256,7 +266,8 @@ int main() {
    std::cout << " sizeof(SWC::DB::Cells::Cell)=" << sizeof(SWC::DB::Cells::Cell) << "\n";
    std::cout << " sizeof(SWC::DB::Cell::Key)=" << sizeof(SWC::DB::Cell::Key) << "\n";
    std::cout << " sizeof(SWC::DB::Cell::KeyVec)=" << sizeof(SWC::DB::Cell::KeyVec) << "\n";
-   check_load();;
+   check_load(false);
+   check_load(true);
    std::cout << "\n-------------------------------\n";
 
 }

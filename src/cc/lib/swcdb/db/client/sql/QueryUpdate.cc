@@ -91,7 +91,7 @@ int QueryUpdate::parse_load(std::string& filepath, cid_t& cid) {
       cid = schema->cid;
     return err;
 }
-  
+
 void QueryUpdate::parse_display_flags(uint8_t& display_flags) {
 
     bool any = true;
@@ -220,33 +220,57 @@ void QueryUpdate::read_cell(cid_t& cid, DB::Cells::Cell& cell,
       return;
 
     std::string value;
-    read(value, ")");
+    read(value, ",)");
     if(err)
       return;
 
-    if(schema->col_type == DB::Types::Column::PLAIN)
-      cell.set_value(value, true);
+    switch(schema->col_type) {
+      case DB::Types::Column::PLAIN: {
+        while(remain && !err && (found_char(' ') || found_char('\t')));
+        if(err)
+          return;
+        if(found_char(',')) {
+          std::string encoder;
+          read(encoder, ")");
 
-    else if(DB::Types::is_counter(schema->col_type)) {
-      const uint8_t* buf = (const uint8_t*)value.data();
-      size_t remain = value.length();
-      uint8_t op;
-      int64_t v;
-      op_from(&buf, &remain, op, v);
-      if(err) {
-        error_msg(Error::SQL_PARSE_ERROR, Error::get_text(err));
-        return;
+          DB::Types::Encoder enc = Core::Encoder::encoding_from(encoder);
+          if(err || enc == DB::Types::Encoder::UNKNOWN)
+            return error_msg(Error::SQL_PARSE_ERROR, "bad encoder");
+
+          cell.set_value(enc, value);
+
+        } else {
+          cell.set_value(value, true);
+        }
+        break;
       }
-      cell.set_counter(
-        op,
-        v,
-        op & DB::Cells::OP_EQUAL
-          ? schema->col_type
-          : DB::Types::Column::COUNTER_I64
-      );
+      case DB::Types::Column::COUNTER_I64:
+      case DB::Types::Column::COUNTER_I32:
+      case DB::Types::Column::COUNTER_I16:
+      case DB::Types::Column::COUNTER_I8: {
+        const uint8_t* buf = (const uint8_t*)value.data();
+        size_t remain = value.length();
+        uint8_t op;
+        int64_t v;
+        op_from(&buf, &remain, op, v);
+        if(err) {
+          error_msg(Error::SQL_PARSE_ERROR, Error::get_text(err));
+          return;
+        }
+        cell.set_counter(
+          op,
+          v,
+          op & DB::Cells::OP_EQUAL
+            ? schema->col_type
+            : DB::Types::Column::COUNTER_I64
+        );
+        break;
+      }
+      default:
+        break;
     }
 }
-  
+
 void QueryUpdate::op_from(const uint8_t** ptr, size_t* remainp,
                           uint8_t& op, int64_t& value) {
     if(!*remainp) {

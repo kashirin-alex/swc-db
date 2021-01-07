@@ -77,16 +77,24 @@ void Settings::init_app_options() {
         DB::Types::from_string_col_type,
         DB::Types::repr_col_type
       ), 
-     "Schema col-type PLAIN/COUNTER_I64/COUNTER_I32/COUNTER_I16/COUNTER_I8")  
-    
-    ("gen-cell-versions", i32(1), "cell key versions") 
+     "Schema col-type PLAIN/COUNTER_I64/COUNTER_I32/COUNTER_I16/COUNTER_I8")
 
-    ("gen-cs-count", i8(0), "Schema cs-count")  
-    ("gen-cs-size", i32(0), "Schema cs-size")    
+    ("gen-cell-versions", i32(1), "cell key versions")
+    ("gen-cell-encoding",
+      g_enum(
+        (int)DB::Types::Encoder::PLAIN,
+        0,
+        Core::Encoder::from_string_encoding,
+        Core::Encoder::repr_encoding
+      ),
+     "Cell's Value encoding ZSTD/SNAPPY/ZLIB")
+
+    ("gen-cs-count", i8(0), "Schema cs-count")
+    ("gen-cs-size", i32(0), "Schema cs-size")
     ("gen-cs-replication", i8(0), "Schema cs-replication")    
      
     ("gen-blk-size", i32(0), "Schema blk-size")    
-    ("gen-blk-cells", i32(0), "Schema blk-cells")    
+    ("gen-blk-cells", i32(0), "Schema blk-cells")
     ("gen-blk-encoding", 
       g_enum(
         (int)DB::Types::Encoder::DEFAULT,
@@ -218,24 +226,27 @@ void apply_key(ssize_t i, ssize_t f, uint32_t fraction_size,
 void update_data(const std::vector<DB::Schema::Ptr>& schemas, uint8_t flag) {
   auto settings = Env::Config::settings();
 
-  uint32_t versions = flag == DB::Cells::INSERT 
+  uint32_t versions = flag == DB::Cells::INSERT
     ? settings->get_i32("gen-cell-versions")
     : 1;
 
   uint32_t fractions = settings->get_i32("gen-key-fractions");
   uint32_t fraction_size = settings->get_i32("gen-fraction-size");
-  
+
   bool tree = settings->get_bool("gen-key-tree");
   uint64_t cells = settings->get_i64("gen-cells");
   bool reverse = settings->get_bool("gen-reverse");
   auto seq = reverse ? CountIt::REVERSE : CountIt::REGULAR;
-  
-  uint32_t value = flag == DB::Cells::INSERT 
+
+  uint32_t value = flag == DB::Cells::INSERT
     ? settings->get_i32("gen-value-size")
     : 1;
 
   uint32_t progress = settings->get_i32("gen-progress");
   bool cellatime = settings->get_bool("gen-cell-a-time");
+
+  auto cell_encoder = (DB::Types::Encoder)settings->get_genum(
+    "gen-cell-encoding");
 
   std::vector<DB::Cells::ColCells::Ptr> colms;
   auto req = std::make_shared<client::Query::Update>();
@@ -251,7 +262,7 @@ void update_data(const std::vector<DB::Schema::Ptr>& schemas, uint8_t flag) {
   cell.flag = flag;
   cell.set_time_order_desc(true);
 
-  
+
   bool is_counter = DB::Types::is_counter(schemas.front()->col_type);
   std::string value_data;
   if(flag == DB::Cells::INSERT && !is_counter) {
@@ -277,13 +288,15 @@ void update_data(const std::vector<DB::Schema::Ptr>& schemas, uint8_t flag) {
 
           apply_key(i, f, fraction_size, cell.key);
 
-          if(flag == DB::Cells::INSERT) { 
+          if(flag == DB::Cells::INSERT) {
             if(is_counter)
               cell.set_counter(0, 1, schemas.front()->col_type);
+            else if(cell_encoder != DB::Types::Encoder::PLAIN)
+              cell.set_value(cell_encoder, value_data);
             else
               cell.set_value(value_data);
           }
-          
+
           for(auto& col : colms) {
             col->add(cell);
 
@@ -299,9 +312,9 @@ void update_data(const std::vector<DB::Schema::Ptr>& schemas, uint8_t flag) {
 
           if(progress && !(added_count % progress)) {
             ts_progress = Time::now_ns() - ts_progress;
-            SWC_PRINT 
+            SWC_PRINT
               << "update-progress(time_ns=" <<  Time::now_ns()
-              << " cells=" << added_count 
+              << " cells=" << added_count
               << " bytes=" << added_bytes
               << " avg=" << ts_progress/progress << "ns/cell) ";
             req->result->profile.finished();
@@ -321,7 +334,7 @@ void update_data(const std::vector<DB::Schema::Ptr>& schemas, uint8_t flag) {
 
   resend_cells += req->result->get_resend_count();
   SWC_ASSERT(added_count && added_bytes);
-  
+
   Common::Stats::FlowRate::Data rate(added_bytes, Time::now_ns() - ts);
   SWC_PRINT << std::endl << std::endl;
   rate.print_cells_statistics(SWC_LOG_OSTREAM, added_count, resend_cells);
@@ -338,12 +351,12 @@ void select_data(const std::vector<DB::Schema::Ptr>& schemas) {
   uint32_t versions = settings->get_i32("gen-cell-versions");
   uint32_t fractions = settings->get_i32("gen-key-fractions");
   uint32_t fraction_size = settings->get_i32("gen-fraction-size");
-  
+
   bool tree = settings->get_bool("gen-key-tree");
   uint64_t ncells = settings->get_i64("gen-cells");
   bool reverse = settings->get_bool("gen-reverse");
   auto seq = reverse ? CountIt::REVERSE : CountIt::REGULAR;
-  
+
   uint32_t progress = settings->get_i32("gen-progress");
   bool cellatime = settings->get_bool("gen-cell-a-time");
 

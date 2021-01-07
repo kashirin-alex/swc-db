@@ -95,11 +95,11 @@ DbClient::DbClient()
       new re2::RE2(
         "(?i)^(select)(\\s+|$)")
     )
-  ); 
+  );
   options.push_back(
     new Option(
-      "update", 
-      {"update cell(FLAG, CID|NAME, KEY, TIMESTAMP, VALUE), CELL(..)      ;",
+      "update",
+      {"update cell(FLAG, CID|NAME, KEY, TIMESTAMP, VALUE, ENC), CELL(..) ;",
       "-> UPDATE ",
       "     cell(DELETE,                  CID, ['K','E','Y']             );",
       "     cell(DELETE_VERSION,          CID, ['K','E','Y'], TS         );",
@@ -110,30 +110,31 @@ DbClient::DbClient()
       "     cell(INSERT,                 NAME, ['K','E','Y'], '', 'DATA' ),",
       "     cell(INSERT_FRACTION,        NAME, ['K','E'],     '', 'DATA' );",
       " Flags: INSERT|1 DELETE|2 DELETE_VERSION|3 ",
-      "        INSERT_FRACTION|4 DELETE_FRACTION|5 DELETE_FRACTION_VERSION|6"
+      "        INSERT_FRACTION|4 DELETE_FRACTION|5 DELETE_FRACTION_VERSION|6",
+      " Encoder(ENC) for INSERT with DATA - options: ZLIB|2 SNAPPY|3 ZSTD|4 ",
       },
-      [ptr=this](std::string& cmd){return ptr->update(cmd);}, 
+      [ptr=this](std::string& cmd){return ptr->update(cmd);},
       new re2::RE2(
         "(?i)^(update)(\\s+|$)")
     )
   );
   options.push_back(
     new Option(
-      "dump", 
+      "dump",
       {"dump col='ID|NAME' into 'folder/path/' "
       "where [cells=(Interval Flags) AND] OutputFlags DisplayFlags;",
-      "-> dump col='ColName' into 'FolderName' OUTPUT_NO_* TS / VALUE;"
+      "-> dump col='ColName' into 'FolderName' OUTPUT_NO_ * TS/VALUE|ENCODE;"
       },
-      [ptr=this](std::string& cmd){return ptr->dump(cmd);}, 
+      [ptr=this](std::string& cmd){return ptr->dump(cmd);},
       new re2::RE2(
         "(?i)^(dump)(\\s+|$)")
     )
   );
   options.push_back(
     new Option(
-      "load", 
+      "load",
       {"load from 'folder/path/' into col='ID|NAME' DisplayFlags;"},
-      [ptr=this](std::string& cmd){return ptr->load(cmd);}, 
+      [ptr=this](std::string& cmd){return ptr->load(cmd);},
       new re2::RE2(
         "(?i)^(load)(\\s+|$)")
     )

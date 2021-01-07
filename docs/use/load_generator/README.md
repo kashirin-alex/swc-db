@@ -40,6 +40,7 @@ Options:
   --gen-blk-encoding                      Schema blk-encoding NONE/ZSTD/SNAPPY/ZLIB                                    DEFAULT  # (0)
   --gen-blk-size                          Schema blk-size                                                              0
   --gen-cell-a-time                       Write one cell at a time                                                     false
+  --gen-cell-encoding                     Cell's Value encoding ZSTD/SNAPPY/ZLIB                                       PLAIN  # (1)
   --gen-cell-versions                     cell key versions                                                            1
   --gen-cells                             number of cells, total=cells*versions*(key-tree? key-fractions : 1)          1000
   --gen-col-name                          Gen. load column name, joins with colm-number                                load_generator-
@@ -56,6 +57,8 @@ Options:
   --gen-insert                            Generate new data                                                            true
   --gen-key-fractions                     Number of Fractions per cell key                                             10
   --gen-key-tree                          Key Fractions in a tree form [1], [1, 2]                                     true
+  --gen-log-compact-cointervaling         CommitLog minimal cointervaling Fragments for compaction                     0
+  --gen-log-preload                       Number of CommitLog Fragments to preload                                     0
   --gen-log-rollout                       CommitLog rollout block ratio                                                0
   --gen-progress                          display progress every N cells or 0 for quiet                                100000
   --gen-reverse                           Generate in reverse, always writes to 1st range                              false
@@ -69,9 +72,11 @@ Options:
   --swc.cfg.dyn                           Main dynamic configuration file                                              []
   --swc.cfg.dyn.period                    Dynamic cfg-file check interval in ms, zero without                          600000
   --swc.cfg.path                          Path of configuration files                                                  /opt/swcdb/etc/swcdb/
+  --swc.client.Mngr.comm.encoder          The encoding to use in communication, options PLAIN/ZSTD/SNAPPY/ZLIB         ZSTD  # (4)
   --swc.client.Mngr.connection.keepalive  Manager client connection keepalive for ms since last action                 30000
   --swc.client.Mngr.connection.probes     Manager client connect probes                                                1
   --swc.client.Mngr.connection.timeout    Manager client connect timeout                                               10000
+  --swc.client.Rgr.comm.encoder           The encoding to use in communication, options PLAIN/ZSTD/SNAPPY/ZLIB         ZSTD  # (4)
   --swc.client.Rgr.connection.keepalive   Ranger client connection keepalive for ms since last action                  30000
   --swc.client.Rgr.connection.probes      Ranger client connect probes                                                 1
   --swc.client.Rgr.connection.timeout     Ranger client connect timeout                                                10000

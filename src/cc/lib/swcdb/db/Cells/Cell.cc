@@ -25,7 +25,7 @@ const char* to_string(Flag flag) noexcept {
     case Flag::NONE:
       return "NONE";
     default:
-      return "UKNONWN";
+      return "UNKNOWN";
   }
 }
 
@@ -46,27 +46,27 @@ Flag flag_from(const uint8_t* rptr, uint32_t len) noexcept {
 
 
 SWC_SHOULD_INLINE
-Cell::Cell() :  own(false), flag(Flag::NONE), control(0), 
-                vlen(0), value(0) { 
+Cell::Cell() :  own(false), flag(Flag::NONE), control(0),
+                vlen(0), value(0) {
 }
 
 SWC_SHOULD_INLINE
 Cell::Cell(const Cell& other)
-  : key(other.key), own(other.vlen), flag(other.flag), 
-    control(other.control), 
-    vlen(other.vlen), 
-    timestamp(other.timestamp), 
-    revision(other.revision), 
+  : key(other.key), own(other.vlen), flag(other.flag),
+    control(other.control),
+    vlen(other.vlen),
+    timestamp(other.timestamp),
+    revision(other.revision),
     value(_value(other.value)) {
 }
 
 SWC_SHOULD_INLINE
 Cell::Cell(const Cell& other, bool no_value)
-  : key(other.key), own(!no_value && other.vlen), flag(other.flag), 
-    control(other.control), 
-    vlen(own ? other.vlen : 0), 
-    timestamp(other.timestamp), 
-    revision(other.revision), 
+  : key(other.key), own(!no_value && other.vlen), flag(other.flag),
+    control(no_value ? other.control & HAVE_ENCODER_MASK : other.control),
+    vlen(own ? other.vlen : 0),
+    timestamp(other.timestamp),
+    revision(other.revision),
     value(_value(other.value)) {
 }
 
@@ -82,11 +82,13 @@ void Cell::copy(const Cell& other, bool no_value) {
   control   = other.control;
   timestamp = other.timestamp;
   revision  = other.revision;
-  
-  if(no_value)
+
+  if(no_value) {
+    control &= HAVE_ENCODER_MASK;
     free();
-  else 
-    set_value(other.value, other.vlen, true); 
+  } else {
+    set_value(other.value, other.vlen, true);
+  }
 }
 
 Cell::~Cell() {
@@ -108,9 +110,9 @@ void Cell::free() {
 }
 
 void Cell::set_time_order_desc(bool desc) {
-  if(desc)  
+  if(desc)
     control |= TS_DESC;
-  else if(control & TS_DESC)  
+  else if(control & TS_DESC)
     control -= TS_DESC;
 }
 
@@ -145,6 +147,58 @@ void Cell::set_value(const std::string& v, bool owner) {
   set_value((uint8_t *)v.data(), v.length(), owner);
 }
 
+void Cell::set_value(Types::Encoder encoder, const uint8_t* v, uint32_t len) {
+  _free();
+  if(!len) {
+    vlen = 0;
+    value = nullptr;
+    return;
+  }
+
+  int err = Error::OK;
+  size_t len_enc = 0;
+  DynamicBuffer output;
+  Core::Encoder::encode(err, encoder, v, len, &len_enc, output,
+                        Serialization::encoded_length_vi32(len) + 1, false);
+  if(len_enc) {
+    control |= HAVE_ENCODER;
+    uint8_t* ptr = output.base;
+    Serialization::encode_vi32(&ptr, len);
+    Serialization::encode_i8(&ptr, (uint8_t)encoder);
+    vlen = output.fill();
+    value = _value(output.base);
+    // or keep as - value = output.base, output.own = false;
+  } else {
+    control &= HAVE_ENCODER_MASK;
+    vlen = len;
+    value = _value(v);
+  }
+  own = true;
+}
+
+SWC_SHOULD_INLINE
+void Cell::set_value(Types::Encoder encoder, const std::string& v) {
+  set_value(encoder, (const uint8_t*)v.data(), v.size());
+}
+
+void Cell::get_value(StaticBuffer& v, bool owner) const {
+  if(have_encoder()) {
+    const uint8_t* ptr = value;
+    size_t remain = vlen;
+    v.reallocate(Serialization::decode_vi32(&ptr, &remain));
+    auto encoder = (Types::Encoder)Serialization::decode_i8(&ptr, &remain);
+    int err = Error::OK;
+    Core::Encoder::decode(err, encoder, ptr, remain, v.base, v.size);
+    if(err) {
+      v.free();
+      SWC_THROWF(Error::ENCODER_DECODE, "Cell(key=%s) value-encoder(%s)",
+        key.to_string().c_str(), Core::Encoder::to_string(encoder));
+    }
+  } else if(vlen) {
+    v.set(value, vlen, owner);
+  }
+}
+
 void Cell::set_counter(uint8_t op, int64_t v, Types::Column typ, int64_t rev) {
   _free();
   own = true;
@@ -174,7 +228,7 @@ void Cell::set_counter(uint8_t op, int64_t v, Types::Column typ, int64_t rev) {
   *ptr++ = op;
   if(op & HAVE_REVISION)
     Serialization::encode_vi64(&ptr, rev);
-  // +? i64's storing epochs 
+  // +? i64's storing epochs
 }
 
 uint8_t Cell::get_counter_op() const {
@@ -191,8 +245,8 @@ int64_t Cell::get_counter() const {
 int64_t Cell::get_counter(uint8_t& op, int64_t& rev) const {
   const uint8_t *ptr = value;
   int64_t v = Serialization::decode_vi64(&ptr);
-  rev = ((op = *ptr) & HAVE_REVISION) 
-        ? Serialization::decode_vi64(&++ptr) 
+  rev = ((op = *ptr) & HAVE_REVISION)
+        ? Serialization::decode_vi64(&++ptr)
         : TIMESTAMP_NULL;
   return v;
 }
@@ -207,7 +261,7 @@ void Cell::read(const uint8_t** bufp, size_t* remainp, bool owner) {
     timestamp = Serialization::decode_i64(bufp, remainp);
   else if(control & AUTO_TIMESTAMP)
     timestamp = AUTO_ASSIGN;
- 
+
   if(control & HAVE_REVISION)
     revision = Serialization::decode_i64(bufp, remainp);
   else if(control & REV_IS_TS)
@@ -215,9 +269,11 @@ void Cell::read(const uint8_t** bufp, size_t* remainp, bool owner) {
 
   _free();
   if((vlen = Serialization::decode_vi32(bufp, remainp))) {
+    if(*remainp < vlen)
+      SWC_THROWF(Error::SERIALIZATION_INPUT_OVERRUN,
+        "Read Cell(key=%s) value", key.to_string().c_str());
     value = (own = owner) ? _value(*bufp) : (uint8_t *)*bufp;
     *bufp += vlen;
-    SWC_ASSERT(*remainp >= vlen);
     *remainp -= vlen;
   } else {
     own = owner;
@@ -244,12 +300,16 @@ void Cell::write(DynamicBuffer &dst_buf, bool no_value) const {
   Serialization::encode_i8(&dst_buf.ptr, flag);
   key.encode(&dst_buf.ptr);
 
-  Serialization::encode_i8(&dst_buf.ptr, control);
-  if(control & HAVE_TIMESTAMP)
+  uint8_t ctrl = control;
+  if(no_value)
+    ctrl &= HAVE_ENCODER_MASK;
+
+  Serialization::encode_i8(&dst_buf.ptr, ctrl);
+  if(ctrl & HAVE_TIMESTAMP)
     Serialization::encode_i64(&dst_buf.ptr, timestamp);
-  if(control & HAVE_REVISION)
+  if(ctrl & HAVE_REVISION)
     Serialization::encode_i64(&dst_buf.ptr, revision);
-    
+
   if(no_value) {
     Serialization::encode_i8(&dst_buf.ptr, 0);
   } else {
@@ -261,10 +321,10 @@ void Cell::write(DynamicBuffer &dst_buf, bool no_value) const {
 }
 
 bool Cell::equal(const Cell& other) const {
-  return  flag == other.flag && 
+  return  flag == other.flag &&
           control == other.control &&
           (!(control & HAVE_TIMESTAMP) || timestamp == other.timestamp) &&
-          (!(control & HAVE_REVISION) || revision == other.revision) && 
+          (!(control & HAVE_REVISION) || revision == other.revision) &&
           vlen == other.vlen &&
           key.equal(other.key) &&
           !memcmp(value, other.value, vlen);
@@ -288,7 +348,7 @@ int64_t Cell::get_timestamp() const {
 }
 
 int64_t Cell::get_revision() const {
-  return control & HAVE_REVISION ? revision 
+  return control & HAVE_REVISION ? revision
         : (control & REV_IS_TS ? timestamp : AUTO_ASSIGN );
 }
 
@@ -296,15 +356,20 @@ bool Cell::has_expired(const int64_t ttl) const {
   return ttl && control & HAVE_TIMESTAMP && Time::now_ns() >= timestamp + ttl;
 }
 
-void Cell::display(std::ostream& out, 
+SWC_SHOULD_INLINE
+bool Cell::have_encoder() const {
+  return control & HAVE_ENCODER;
+}
+
+void Cell::display(std::ostream& out,
                    Types::Column typ, uint8_t flags, bool meta) const {
 
-  if(flags & DisplayFlag::DATETIME) 
+  if(flags & DisplayFlag::DATETIME)
     out << Time::fmt_ns(timestamp) << '\t';
 
-  if(flags & DisplayFlag::TIMESTAMP) 
+  if(flags & DisplayFlag::TIMESTAMP)
     out << timestamp << '\t';
-  
+
   bool bin = flags & DisplayFlag::BINARY;
   key.display(out, !bin);
   out << '\t';
@@ -312,9 +377,9 @@ void Cell::display(std::ostream& out,
   if(flag != Flag::INSERT) {
     out << '(' << Cells::to_string((Flag)flag) << ')';
     return;
-  } 
+  }
 
-  if(!vlen) 
+  if(!vlen)
     return;
 
   if(Types::is_counter(typ)) {
@@ -330,7 +395,7 @@ void Cell::display(std::ostream& out,
     } else
         out << get_counter();
 
-  } else if(meta && !bin) {    
+  } else if(meta && !bin) {
     const uint8_t* ptr = value;
     size_t remain = vlen;
     DB::Cell::Key de_key;
@@ -346,11 +411,13 @@ void Cell::display(std::ostream& out,
     de_key.display(out, true);
 
   } else {
-    const uint8_t* ptr = value;
+    StaticBuffer v;
+    get_value(v);
+    const uint8_t* ptr = v.base;
     char hex[5];
     hex[4] = 0;
 
-    for(uint32_t i=vlen; i; --i, ++ptr) {
+    for(uint32_t i=v.size; i; --i, ++ptr) {
       if(!bin && (*ptr < 32 || *ptr > 126)) {
         sprintf(hex, "0x%X", *ptr);
         out << hex;
@@ -373,10 +440,11 @@ void Cell::print(std::ostream& out, Types::Column typ) const {
   out << " control=" << int(control)
       << " ts=" << get_timestamp()
       << " rev=" << get_revision()
+      << " enc=" << have_encoder()
       << " value=(len=" << vlen;
 
   if(Types::is_counter(typ)) {
-    out << " count=";  
+    out << " count=";
     uint8_t op;
     int64_t eq_rev = TIMESTAMP_NULL;
     out << get_counter(op, eq_rev);
@@ -386,11 +454,13 @@ void Cell::print(std::ostream& out, Types::Column typ) const {
       out << " eq-since=" << Time::fmt_ns(eq_rev);
 
   } else {
-    out << " data=\"";  
+    out << " data=\"";
     char hex[5];
     hex[4] = 0;
-    const uint8_t* ptr = value;
-    for(uint32_t len = vlen; len; --len, ++ptr) {
+    StaticBuffer v;
+    get_value(v);
+    const uint8_t* ptr = v.base;
+    for(uint32_t len = v.size; len; --len, ++ptr) {
       if(*ptr == '"')
         out << '\\';
       if(31 < *ptr && *ptr < 127) {
