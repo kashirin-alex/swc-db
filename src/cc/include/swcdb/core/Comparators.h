@@ -13,7 +13,7 @@
 
 
 
-namespace SWC { 
+namespace SWC {
 
 /**
  * @brief The SWC-DB Comparators C++ namespace 'SWC::Condition'
@@ -34,7 +34,7 @@ enum Comp : uint8_t {
   LT   = 0x6,   // [  <   ]  :   -lt            (lower-than)
   NE   = 0x7,   // [  !=  ]  :   -ne            (not-equal)
   RE   = 0x8,   // [  re  ]  :   -re [r,regexp] (regular-expression)
-  
+
   // extended logic options: ge,le,gt,lt are LEXIC and with 'V' VOLUME
   VGT  = 0x9,   // [  v>  ]  :   -vgt           (vol greater-than)
   VGE  = 0xA,   // [  v>= ]  :   -vge           (vol greater-equal)
@@ -60,22 +60,23 @@ const char COMP_VLT[]   = "v<";
 
 
 
-extern SWC_CAN_INLINE 
-Comp from(const char** buf, uint32_t* remainp, bool extended=false) {
+extern SWC_CAN_INLINE
+Comp from(const char** buf, uint32_t* remainp,
+          bool extended=false)  noexcept {
   Comp comp = Comp::NONE;
 
   if(extended && *remainp > 2) {
-    if(!strncasecmp(*buf, COMP_VGE, 3) || 
+    if(!strncasecmp(*buf, COMP_VGE, 3) ||
        !strncasecmp(*buf, "vge", 3))
       comp = Comp::VGE;
-    else if(!strncasecmp(*buf, COMP_VLE, 3) || 
+    else if(!strncasecmp(*buf, COMP_VLE, 3) ||
             !strncasecmp(*buf, "vle", 3))
       comp = Comp::VLE;
     else if(!strncasecmp(*buf, "vgt", 3))
       comp = Comp::VGT;
     else if(!strncasecmp(*buf, "vlt", 3))
       comp = Comp::VLT;
-    
+
     if(comp != Comp::NONE) {
       *buf += 3;
       *remainp -= 3;
@@ -84,21 +85,21 @@ Comp from(const char** buf, uint32_t* remainp, bool extended=false) {
   }
 
   if(*remainp > 1) {
-    if(!strncasecmp(*buf, COMP_PF, 2) || 
+    if(!strncasecmp(*buf, COMP_PF, 2) ||
        !strncasecmp(*buf, "pf", 2))
       comp = Comp::PF;
-    else if(!strncasecmp(*buf, COMP_GE, 2) || 
+    else if(!strncasecmp(*buf, COMP_GE, 2) ||
             !strncasecmp(*buf, "ge", 2))
       comp = Comp::GE;
-    else if(!strncasecmp(*buf, COMP_LE, 2) || 
+    else if(!strncasecmp(*buf, COMP_LE, 2) ||
             !strncasecmp(*buf, "le", 2))
       comp = Comp::LE;
-    else if(!strncasecmp(*buf, COMP_NE, 2) || 
+    else if(!strncasecmp(*buf, COMP_NE, 2) ||
             !strncasecmp(*buf, "ne", 2))
       comp = Comp::NE;
     else if(!strncasecmp(*buf, COMP_RE, 2))
       comp = Comp::RE;
-    else if(!strncasecmp(*buf, COMP_EQ, 2) || 
+    else if(!strncasecmp(*buf, COMP_EQ, 2) ||
             !strncasecmp(*buf, "eq", 2))
       comp = Comp::EQ;
     else if(!strncasecmp(*buf, "gt", 2))
@@ -120,7 +121,7 @@ Comp from(const char** buf, uint32_t* remainp, bool extended=false) {
   }
 
   if(*remainp > 0) {
-    if(**buf == '>') 
+    if(**buf == '>')
       comp = Comp::GT;
     else if(**buf == '<')
       comp = Comp::LT;
@@ -139,9 +140,9 @@ Comp from(const char** buf, uint32_t* remainp, bool extended=false) {
   return comp;
 };
 
-extern SWC_CAN_INLINE 
-const char* to_string(Comp comp, bool extended=false) {
-  
+extern SWC_CAN_INLINE
+const char* to_string(Comp comp, bool extended=false) noexcept {
+
   if(extended) switch (comp) {
     case Comp::VGT:
       return COMP_VGT;
@@ -177,7 +178,7 @@ const char* to_string(Comp comp, bool extended=false) {
   }
 };
 
-extern SWC_CAN_INLINE 
+extern SWC_CAN_INLINE
 const char* to_string(uint8_t comp) {
   return to_string((Comp)comp);
 };
@@ -238,7 +239,7 @@ extern int
 memcomp(const uint8_t* s1, const uint8_t* s2, size_t count) noexcept
   __attribute__((optimize("-O3")));
 
-extern SWC_CAN_INLINE   
+extern SWC_CAN_INLINE
 int
 memcomp(const uint8_t* s1, const uint8_t* s2, size_t count) noexcept {
   return _memcomp(s1, s2, count);
@@ -248,7 +249,7 @@ extern int
 strncomp(const char* s1, const char* s2, size_t count) noexcept
   __attribute__((optimize("-O3")));
 
-extern SWC_CAN_INLINE   
+extern SWC_CAN_INLINE
 int
 strncomp(const char* s1, const char* s2, size_t count) noexcept {
   return _strncomp(s1, s2, count);
@@ -258,7 +259,7 @@ extern int
 strcomp(const char* s1, const char* s2) noexcept
   __attribute__((optimize("-O3")));
 
-extern SWC_CAN_INLINE   
+extern SWC_CAN_INLINE
 int
 strcomp(const char* s1, const char* s2) noexcept {
   return _strcomp(s1, s2);
@@ -267,111 +268,111 @@ strcomp(const char* s1, const char* s2) noexcept {
 
 
 
-extern SWC_CAN_INLINE 
-Comp condition_lexic(const uint8_t *p1, uint32_t p1_len, 
+extern SWC_CAN_INLINE
+Comp condition_lexic(const uint8_t *p1, uint32_t p1_len,
                      const uint8_t *p2, uint32_t p2_len) noexcept {
   int diff = memcmp(p1, p2, p1_len < p2_len ? p1_len: p2_len);
   return !diff
-          ? (p1_len == p2_len 
-            ? Comp::EQ 
+          ? (p1_len == p2_len
+            ? Comp::EQ
             : (p1_len < p2_len ? Comp::GT : Comp::LT)
             )
           : (diff < 0 ? Comp::GT : Comp::LT)
           ;
 }
 
-extern SWC_CAN_INLINE 
-Comp condition_volume(const uint8_t *p1, uint32_t p1_len, 
+extern SWC_CAN_INLINE
+Comp condition_volume(const uint8_t *p1, uint32_t p1_len,
                       const uint8_t *p2, uint32_t p2_len) noexcept {
   int diff;
   return (
-    p1_len < p2_len 
-    ? Comp::GT 
-    : (p1_len > p2_len 
+    p1_len < p2_len
+    ? Comp::GT
+    : (p1_len > p2_len
       ? Comp::LT
       : (!(diff = memcmp(p1, p2, p1_len))
-        ? Comp::EQ 
-        : (diff < 0 
-          ? Comp::GT 
+        ? Comp::EQ
+        : (diff < 0
+          ? Comp::GT
           : Comp::LT
           )
-        ) 
+        )
       )
     );
 }
 
 
 
-extern SWC_CAN_INLINE 
-Comp condition(bool vol, const uint8_t *p1, uint32_t p1_len, 
+extern SWC_CAN_INLINE
+Comp condition(bool vol, const uint8_t *p1, uint32_t p1_len,
                          const uint8_t *p2, uint32_t p2_len) noexcept {
   return (vol ? condition_volume : condition_lexic)
         (p1, p1_len, p2, p2_len);
 }
 
-extern SWC_CAN_INLINE 
-bool pf(const uint8_t *p1, uint32_t p1_len, 
+extern SWC_CAN_INLINE
+bool pf(const uint8_t *p1, uint32_t p1_len,
         const uint8_t *p2, uint32_t p2_len) noexcept {
   return p1_len <= p2_len && !memcmp(p1, p2, p1_len);
 }
 
-extern SWC_CAN_INLINE 
-bool gt_lexic(const uint8_t *p1, uint32_t p1_len, 
+extern SWC_CAN_INLINE
+bool gt_lexic(const uint8_t *p1, uint32_t p1_len,
               const uint8_t *p2, uint32_t p2_len) noexcept {
   int diff = memcmp(p1, p2, p1_len < p2_len? p1_len: p2_len);
   return diff < 0 || (!diff && p1_len < p2_len);
 }
 
-extern SWC_CAN_INLINE 
-bool gt_volume(const uint8_t *p1, uint32_t p1_len, 
+extern SWC_CAN_INLINE
+bool gt_volume(const uint8_t *p1, uint32_t p1_len,
                const uint8_t *p2, uint32_t p2_len) noexcept{
   return p1_len < p2_len || (p1_len == p2_len && memcmp(p1, p2, p2_len) < 0);
 }
 
-extern SWC_CAN_INLINE 
-bool ge_lexic(const uint8_t *p1, uint32_t p1_len, 
+extern SWC_CAN_INLINE
+bool ge_lexic(const uint8_t *p1, uint32_t p1_len,
               const uint8_t *p2, uint32_t p2_len) noexcept {
   int diff = memcmp(p1, p2, p1_len < p2_len? p1_len: p2_len);
   return diff < 0 || (!diff && p1_len <= p2_len);
 }
 
-extern SWC_CAN_INLINE 
-bool ge_volume(const uint8_t *p1, uint32_t p1_len, 
+extern SWC_CAN_INLINE
+bool ge_volume(const uint8_t *p1, uint32_t p1_len,
                const uint8_t *p2, uint32_t p2_len) noexcept {
   return p1_len < p2_len || (p1_len == p2_len && memcmp(p1, p2, p2_len) <= 0);
 }
 
-extern SWC_CAN_INLINE 
-bool eq(const uint8_t *p1, uint32_t p1_len, 
+extern SWC_CAN_INLINE
+bool eq(const uint8_t *p1, uint32_t p1_len,
         const uint8_t *p2, uint32_t p2_len) noexcept {
   return p1_len == p2_len && !memcmp(p1, p2, p1_len);
 }
 
-extern SWC_CAN_INLINE 
-bool le_lexic(const uint8_t *p1, uint32_t p1_len, 
+extern SWC_CAN_INLINE
+bool le_lexic(const uint8_t *p1, uint32_t p1_len,
               const uint8_t *p2, uint32_t p2_len) noexcept {
   int diff = memcmp(p1, p2, p1_len < p2_len? p1_len: p2_len);
   return diff > 0 || (!diff && p1_len >= p2_len);
 }
 
-extern SWC_CAN_INLINE 
-bool le_volume(const uint8_t *p1, uint32_t p1_len, 
+extern SWC_CAN_INLINE
+bool le_volume(const uint8_t *p1, uint32_t p1_len,
                const uint8_t *p2, uint32_t p2_len) noexcept {
   return p1_len > p2_len || (p1_len == p2_len && memcmp(p1, p2, p1_len) >= 0);
 }
 
-extern SWC_CAN_INLINE 
-bool lt_lexic(const uint8_t *p1, uint32_t p1_len, 
+extern SWC_CAN_INLINE
+bool lt_lexic(const uint8_t *p1, uint32_t p1_len,
               const uint8_t *p2, uint32_t p2_len) noexcept {
   int diff = memcmp(p1, p2, p1_len < p2_len? p1_len: p2_len);
   return diff > 0 || (!diff && p1_len > p2_len);
-} 
+}
 
-extern SWC_CAN_INLINE 
-bool lt_volume(const uint8_t *p1, uint32_t p1_len, 
+extern SWC_CAN_INLINE
+bool lt_volume(const uint8_t *p1, uint32_t p1_len,
                const uint8_t *p2, uint32_t p2_len) noexcept {
   return p1_len > p2_len || (p1_len == p2_len && memcmp(p1, p2, p1_len) > 0);
-} 
+}
 
 extern SWC_CAN_INLINE
 bool ne(const uint8_t *p1, uint32_t p1_len,
@@ -429,9 +430,9 @@ bool is_matching_lexic(uint8_t comp,
   }
 }
 
-extern SWC_CAN_INLINE 
-bool is_matching_volume(uint8_t comp, 
-                        const uint8_t *p1, uint32_t p1_len, 
+extern SWC_CAN_INLINE
+bool is_matching_volume(uint8_t comp,
+                        const uint8_t *p1, uint32_t p1_len,
                         const uint8_t *p2, uint32_t p2_len) {
   switch (comp) {
 
@@ -465,43 +466,43 @@ bool is_matching_volume(uint8_t comp,
 }
 
 
-extern SWC_CAN_INLINE 
-bool is_matching_lexic(uint8_t comp, 
-                       const char *p1, uint32_t p1_len, 
+extern SWC_CAN_INLINE
+bool is_matching_lexic(uint8_t comp,
+                       const char *p1, uint32_t p1_len,
                        const char *p2, uint32_t p2_len) {
   return is_matching_lexic(
     comp, (const uint8_t *)p1, p1_len, (const uint8_t *)p2, p2_len);
 }
 
-extern SWC_CAN_INLINE 
-bool is_matching_volume(uint8_t comp, 
-                        const char *p1, uint32_t p1_len, 
+extern SWC_CAN_INLINE
+bool is_matching_volume(uint8_t comp,
+                        const char *p1, uint32_t p1_len,
                         const char *p2, uint32_t p2_len) {
   return is_matching_volume(
     comp, (const uint8_t *)p1, p1_len, (const uint8_t *)p2, p2_len);
 }
 
 
-extern SWC_CAN_INLINE 
-bool is_matching(bool volumetric, uint8_t comp, 
-                 const uint8_t *p1, uint32_t p1_len, 
+extern SWC_CAN_INLINE
+bool is_matching(bool volumetric, uint8_t comp,
+                 const uint8_t *p1, uint32_t p1_len,
                  const uint8_t *p2, uint32_t p2_len) {
-  return volumetric 
+  return volumetric
     ? is_matching_volume(comp, p1, p1_len, p2, p2_len)
     : is_matching_lexic(comp, p1, p1_len, p2, p2_len);
 }
 
-extern SWC_CAN_INLINE 
-bool is_matching(bool volumetric, uint8_t comp, 
-                 const char *p1, uint32_t p1_len, 
+extern SWC_CAN_INLINE
+bool is_matching(bool volumetric, uint8_t comp,
+                 const char *p1, uint32_t p1_len,
                  const char *p2, uint32_t p2_len) {
-  return is_matching(volumetric, comp, 
+  return is_matching(volumetric, comp,
                     (const uint8_t *)p1, p1_len, (const uint8_t *)p2, p2_len);
 }
 
-extern SWC_CAN_INLINE 
-bool is_matching_extended(uint8_t comp, 
-                          const uint8_t *p1, uint32_t p1_len, 
+extern SWC_CAN_INLINE
+bool is_matching_extended(uint8_t comp,
+                          const uint8_t *p1, uint32_t p1_len,
                           const uint8_t *p2, uint32_t p2_len) {
   switch (comp) {
 
@@ -547,40 +548,47 @@ bool is_matching_extended(uint8_t comp,
 }
 
 
-// const int64_t
+// const T
 
-extern SWC_CAN_INLINE 
-bool gt(const int64_t p1, const int64_t p2) {
+template<typename T>
+extern SWC_CAN_INLINE
+bool gt(const T p1, const T p2) noexcept {
   return p1 < p2;
 }
 
-extern SWC_CAN_INLINE 
-bool ge(const int64_t p1, const int64_t p2) {
+template<typename T>
+extern SWC_CAN_INLINE
+bool ge(const T p1, const T p2) noexcept {
   return p1 <= p2;
 }
 
-extern SWC_CAN_INLINE 
-bool eq(const int64_t p1, const int64_t p2) {
+template<typename T>
+extern SWC_CAN_INLINE
+bool eq(const T p1, const T p2) noexcept {
   return p1 == p2;
 }
 
-extern SWC_CAN_INLINE 
-bool le(const int64_t p1, const int64_t p2) {
+template<typename T>
+extern SWC_CAN_INLINE
+bool le(const T p1, const T p2) noexcept {
   return p1 >= p2;
 }
 
-extern SWC_CAN_INLINE 
-bool lt(const int64_t p1, const int64_t p2) {
+template<typename T>
+extern SWC_CAN_INLINE
+bool lt(const T p1, const T p2) noexcept {
   return p1 > p2;
 }
 
-extern SWC_CAN_INLINE 
-bool ne(const int64_t p1, const int64_t p2) {
+template<typename T>
+extern SWC_CAN_INLINE
+bool ne(const T p1, const T p2) noexcept {
   return p1 != p2;
 }
 
-extern SWC_CAN_INLINE 
-bool is_matching(uint8_t comp, const int64_t p1, const int64_t p2) {
+template<typename T>
+extern SWC_CAN_INLINE
+bool is_matching(uint8_t comp, const T p1, const T p2) noexcept {
   switch (comp) {
 
     case Comp::GT:
