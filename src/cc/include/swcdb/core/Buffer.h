@@ -99,6 +99,11 @@ struct Buffer {
     own = true;
   }
 
+  void assign(const value_type* data, size_t len) {
+    reallocate(len);
+    memcpy(base, data, length_base_byte(len));
+  }
+
   void set(value_type* data, size_t len, bool take_ownership) SWC_NOEXCEPT {
     _free();
     own = take_ownership;
