@@ -35,6 +35,24 @@ enum Comp : uint8_t {
   NE   = 0x7,   // [  !=  ]  :   -ne            (not-equal)
   RE   = 0x8,   // [  re  ]  :   -re [r,regexp] (regular-expression)
 
+
+  ///// in-progress (algorithmic + has domain items + has sequential domain)
+  /*
+  MODULO:
+    algorithmic - True is ((p1 % p2) == 0)
+    domain object True is ([1,2,3] in [6,3,2,1,9])
+    domain object as chars True is ('abc' in 'VcVbVaV')
+  MOD  = 0xD,   // [  %   ]  :   -mod           (modulo, has domain items)
+  */
+
+  /*
+  OR:
+    algorithmic - True is ((p1 | p2) == p1)
+    domain object True is ([1,2,3] in [6,1,2,3,9])
+    domain object as chars True is ('abc' in 'VabcV')
+  OR   = 0xE,   // [  |   ]  :   -or            (or, has sequential domain)
+  */
+
   // extended logic options: ge,le,gt,lt are LEXIC and with 'V' VOLUME
   VGT  = 0x9,   // [  v>  ]  :   -vgt           (vol greater-than)
   VGE  = 0xA,   // [  v>= ]  :   -vge           (vol greater-equal)

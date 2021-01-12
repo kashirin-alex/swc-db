@@ -31,7 +31,6 @@ cd /opt/swcdb;          # if SWCDB_INSTALL_PATH not on PATH
 # along with this program.
 # If not, see <https://github.com/kashirin-alex/swc-db/blob/master/LICENSE>.
 
-SWC-DB(load_generator) Usage: swcdb_load_generator [options]
 
 Options:
   --daemon                                Start process in background mode                                             true
@@ -46,7 +45,7 @@ Options:
   --gen-col-name                          Gen. load column name, joins with colm-number                                load_generator-
   --gen-col-number                        Number of columns to generate                                                1
   --gen-col-seq                           Schema col-seq FC_+/LEXIC/VOLUME                                             LEXIC  # (1)
-  --gen-col-type                          Schema col-type PLAIN/COUNTER_I64/COUNTER_I32/COUNTER_I16/COUNTER_I8         PLAIN  # (1)
+  --gen-col-type                          Schema col-type PLAIN/COUNTER_I{64,32,16,8}/SERIAL                           PLAIN  # (1)
   --gen-compaction-percent                Compaction threshold in % applied over size of either by cellstore or block  0
   --gen-cs-count                          Schema cs-count                                                              0
   --gen-cs-replication                    Schema cs-replication                                                        0

@@ -19,14 +19,22 @@ namespace {
   const char Column_COUNTER_I32[]  = "COUNTER_I32";
   const char Column_COUNTER_I16[]  = "COUNTER_I16";
   const char Column_COUNTER_I8[]   = "COUNTER_I8";
+  const char Column_SERIAL[]       = "SERIAL";
   const char Column_CELL_DEFINED[] = "CELL_DEFINED";
   const char Column_UNKNOWN[]      = "UNKNOWN";
 }
 
 
 bool is_counter(const Column typ) noexcept {
-  return typ >= Column::COUNTER_I64 &&
-         typ <= Column::COUNTER_I8;
+  switch(typ) {
+    case Column::COUNTER_I64:
+    case Column::COUNTER_I32:
+    case Column::COUNTER_I16:
+    case Column::COUNTER_I8:
+      return true;
+    default:
+      return false;
+  }
 }
 
 const char* to_string(Column typ) noexcept {
@@ -41,6 +49,8 @@ const char* to_string(Column typ) noexcept {
       return Column_COUNTER_I16;
     case Column::COUNTER_I8:
       return Column_COUNTER_I8;
+    case Column::SERIAL:
+      return Column_SERIAL;
     case Column::CELL_DEFINED:
       return Column_CELL_DEFINED;
     default:
@@ -62,6 +72,8 @@ Column column_type_from(const std::string& typ) noexcept {
           return Column::COUNTER_I16;
         case '5':
           return Column::COUNTER_I8;
+        case '6':
+          return Column::SERIAL;
         default:
           break;
       }
@@ -72,6 +84,16 @@ Column column_type_from(const std::string& typ) noexcept {
         return Column::PLAIN;
       break;
     }
+    case 6: {
+      if(!strncasecmp(typ.data(), Column_SERIAL, 6))
+        return Column::SERIAL;
+      break;
+    }
+    case 10: {
+      if(!strncasecmp(typ.data(), Column_COUNTER_I8, 10))
+        return Column::COUNTER_I8;
+      break;
+    }
     case 11: {
       if(!strncasecmp(typ.data(), Column_COUNTER_I64, 11))
         return Column::COUNTER_I64;
@@ -79,11 +101,6 @@ Column column_type_from(const std::string& typ) noexcept {
         return Column::COUNTER_I32;
       if(!strncasecmp(typ.data(), Column_COUNTER_I16, 11))
         return Column::COUNTER_I16;
-      break;
-    }
-    case 10: {
-      if(!strncasecmp(typ.data(), Column_COUNTER_I8, 10))
-        return Column::COUNTER_I8;
       break;
     }
     default:

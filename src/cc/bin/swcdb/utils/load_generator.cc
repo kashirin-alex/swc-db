@@ -2,7 +2,7 @@
  * SWC-DB© Copyright since 2019 Alex Kashirin <kashirin.alex@gmail.com>
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
- 
+
 #include "swcdb/core/config/Settings.h"
 #include "swcdb/core/comm/Settings.h"
 
@@ -15,69 +15,69 @@
 #include "swcdb/common/Stats/FlowRate.h"
 
 namespace SWC {
-  
+
 namespace Config {
 
 void Settings::init_app_options() {
-  ((Property::V_GENUM*) cmdline_desc.get_default("swc.logging.level") 
+  ((Property::V_GENUM*) cmdline_desc.get_default("swc.logging.level")
     )->set(LOG_ERROR); // default level
 
   init_comm_options();
   init_client_options();
-  
+
   cmdline_desc.definition(usage_str(
     "SWC-DB(load_generator) Usage: swcdb_load_generator [options]\n\nOptions:")
   );
 
   cmdline_desc.add_options()
-    ("gen-insert", boo(true),   "Generate new data") 
+    ("gen-insert", boo(true),   "Generate new data")
     ("gen-select", boo(false),  "Select generated data")
-    ("gen-delete", boo(false),  "Delete generated data") 
+    ("gen-delete", boo(false),  "Delete generated data")
 
-    ("gen-select-empty", boo(false),  "Expect empty select results") 
-    ("gen-delete-column", boo(false),  "Delete Column after") 
+    ("gen-select-empty", boo(false),  "Expect empty select results")
+    ("gen-delete-column", boo(false),  "Delete Column after")
 
-    ("gen-progress", i32(100000), 
-      "display progress every N cells or 0 for quiet") 
-    ("gen-cell-a-time", boo(false), "Write one cell at a time") 
+    ("gen-progress", i32(100000),
+      "display progress every N cells or 0 for quiet")
+    ("gen-cell-a-time", boo(false), "Write one cell at a time")
 
-    ("gen-cells", i64(1000), 
+    ("gen-cells", i64(1000),
       "number of cells, total=cells*versions*(key-tree? key-fractions : 1)")
 
-    ("gen-key-fractions", i32(10), 
-      "Number of Fractions per cell key") 
-    ("gen-key-tree", boo(true), 
-      "Key Fractions in a tree form [1], [1, 2] ") 
-    ("gen-fraction-size", i32(10), 
-      "fraction size in bytes at least") 
-    ("gen-reverse", boo(false), 
-      "Generate in reverse, always writes to 1st range") 
+    ("gen-key-fractions", i32(10),
+      "Number of Fractions per cell key")
+    ("gen-key-tree", boo(true),
+      "Key Fractions in a tree form [1], [1, 2] ")
+    ("gen-fraction-size", i32(10),
+      "fraction size in bytes at least")
+    ("gen-reverse", boo(false),
+      "Generate in reverse, always writes to 1st range")
 
-    ("gen-value-size", i32(256), 
+    ("gen-value-size", i32(256),
       "cell value in bytes or counts for a col-counter")
 
-    ("gen-col-name", str("load_generator-"), 
-     "Gen. load column name, joins with colm-number") 
+    ("gen-col-name", str("load_generator-"),
+     "Gen. load column name, joins with colm-number")
     ("gen-col-number", i32(1),
       "Number of columns to generate")
-    
-    ("gen-col-seq", 
+
+    ("gen-col-seq",
       g_enum(
         (int)DB::Types::KeySeq::LEXIC,
         0,
         DB::Types::from_string_range_seq,
         DB::Types::repr_range_seq
-      ), 
-     "Schema col-seq FC_+/LEXIC/VOLUME")  
+      ),
+     "Schema col-seq FC_+/LEXIC/VOLUME")
 
-    ("gen-col-type", 
+    ("gen-col-type",
       g_enum(
         (int)DB::Types::Column::PLAIN,
         0,
         DB::Types::from_string_col_type,
         DB::Types::repr_col_type
-      ), 
-     "Schema col-type PLAIN/COUNTER_I64/COUNTER_I32/COUNTER_I16/COUNTER_I8")
+      ),
+     "Schema col-type PLAIN/COUNTER_I{64,32,16,8}/SERIAL")
 
     ("gen-cell-versions", i32(1), "cell key versions")
     ("gen-cell-encoding",
@@ -91,27 +91,27 @@ void Settings::init_app_options() {
 
     ("gen-cs-count", i8(0), "Schema cs-count")
     ("gen-cs-size", i32(0), "Schema cs-size")
-    ("gen-cs-replication", i8(0), "Schema cs-replication")    
-     
-    ("gen-blk-size", i32(0), "Schema blk-size")    
+    ("gen-cs-replication", i8(0), "Schema cs-replication")
+
+    ("gen-blk-size", i32(0), "Schema blk-size")
     ("gen-blk-cells", i32(0), "Schema blk-cells")
-    ("gen-blk-encoding", 
+    ("gen-blk-encoding",
       g_enum(
         (int)DB::Types::Encoder::DEFAULT,
         0,
         Core::Encoder::from_string_encoding,
         Core::Encoder::repr_encoding
-      ), 
-     "Schema blk-encoding NONE/ZSTD/SNAPPY/ZLIB")  
+      ),
+     "Schema blk-encoding NONE/ZSTD/SNAPPY/ZLIB")
 
-    ("gen-log-rollout", i8(0), 
+    ("gen-log-rollout", i8(0),
      "CommitLog rollout block ratio")
     ("gen-log-compact-cointervaling", i8(0),
      "CommitLog minimal cointervaling Fragments for compaction")
     ("gen-log-preload", i8(0),
      "Number of CommitLog Fragments to preload")
 
-    ("gen-compaction-percent", i8(0), 
+    ("gen-compaction-percent", i8(0),
      "Compaction threshold in % applied over size of either by cellstore or block")
   ;
 }
@@ -123,7 +123,7 @@ void Settings::init_post_cmd_args() { }
 
 
 
-namespace Utils { 
+namespace Utils {
 
 
 /**
@@ -137,7 +137,7 @@ namespace LoadGenerator {
 void quit_error(int err) {
   if(!err)
     return;
-  SWC_PRINT << "Error " << err << "(" << Error::get_text(err) << ")" 
+  SWC_PRINT << "Error " << err << "(" << Error::get_text(err) << ")"
             << SWC_PRINT_CLOSE;
   exit(1);
 }
@@ -151,11 +151,11 @@ class CountIt {
     REVERSE
   };
 
-  CountIt(SEQ seq, ssize_t min, ssize_t max) 
+  CountIt(SEQ seq, ssize_t min, ssize_t max)
           : seq(seq), min(min), max(max) {
     reset();
   }
-  
+
   bool next(ssize_t* nxt) {
     switch(seq) {
       case REVERSE: {
@@ -179,7 +179,7 @@ class CountIt {
       case REVERSE: {
         pos = max;
         break;
-      } 
+      }
       default: {
         pos = min;
         break;
@@ -188,14 +188,14 @@ class CountIt {
   }
 
   SEQ     seq;
-  ssize_t min; 
+  ssize_t min;
   ssize_t max;
-  ssize_t pos; 
+  ssize_t pos;
 };
 
 
 
-void apply_key(ssize_t i, ssize_t f, uint32_t fraction_size, 
+void apply_key(ssize_t i, ssize_t f, uint32_t fraction_size,
                DB::Cell::Key& key) {
   std::vector<std::string> fractions;
   fractions.resize(f);
@@ -209,7 +209,7 @@ void apply_key(ssize_t i, ssize_t f, uint32_t fraction_size,
   key.add(fractions);
 }
 
-void apply_key(ssize_t i, ssize_t f, uint32_t fraction_size, 
+void apply_key(ssize_t i, ssize_t f, uint32_t fraction_size,
                DB::Specs::Key& key, Condition::Comp comp) {
   key.free();
   key.resize(f);
@@ -264,6 +264,7 @@ void update_data(const std::vector<DB::Schema::Ptr>& schemas, uint8_t flag) {
 
 
   bool is_counter = DB::Types::is_counter(schemas.front()->col_type);
+  bool is_serial = schemas.front()->col_type == DB::Types::Column::SERIAL;
   std::string value_data;
   if(flag == DB::Cells::INSERT && !is_counter) {
     uint8_t c=122;
@@ -289,12 +290,39 @@ void update_data(const std::vector<DB::Schema::Ptr>& schemas, uint8_t flag) {
           apply_key(i, f, fraction_size, cell.key);
 
           if(flag == DB::Cells::INSERT) {
-            if(is_counter)
+            if(is_counter) {
               cell.set_counter(0, 1, schemas.front()->col_type);
-            else if(cell_encoder != DB::Types::Encoder::PLAIN)
+
+            } else if(is_serial) {
+
+              DB::Cell::Serial::Value::FieldsWriter wfields;
+              wfields.ensure(value_data.size() * 10);
+              auto t = DB::Cell::Serial::Value::Type::INT64;
+              for(auto it = value_data.begin(); it < value_data.end(); ++it) {
+                if(t == DB::Cell::Serial::Value::Type::INT64) {
+                  wfields.add((int64_t)*it);
+                  t = DB::Cell::Serial::Value::Type::DOUBLE;
+                } else if(t == DB::Cell::Serial::Value::Type::DOUBLE) {
+                  wfields.add((long double)*it);
+                  t = DB::Cell::Serial::Value::Type::BYTES;
+                } else if(t == DB::Cell::Serial::Value::Type::BYTES) {
+                  char c = *it;
+                  wfields.add((const uint8_t*)&c, 1);
+                  t = DB::Cell::Serial::Value::Type::INT64;
+                }
+              }
+
+              if(cell_encoder != DB::Types::Encoder::PLAIN) {
+                cell.set_value(cell_encoder, wfields.base, wfields.fill());
+              } else {
+                cell.set_value(wfields.base, wfields.fill(), true);
+              }
+
+            } else if(cell_encoder != DB::Types::Encoder::PLAIN) {
               cell.set_value(cell_encoder, value_data);
-            else
+            } else {
               cell.set_value(value_data);
+            }
           }
 
           for(auto& col : colms) {
@@ -368,7 +396,7 @@ void select_data(const std::vector<DB::Schema::Ptr>& schemas) {
     req = std::make_shared<client::Query::Select>();
   else
     req = std::make_shared<client::Query::Select>(
-      [&select_bytes, &select_count, &schemas] 
+      [&select_bytes, &select_count, &schemas]
       (const client::Query::Select::Result::Ptr& result) {
         for(auto& schema : schemas) {
           DB::Cells::Result cells;
@@ -382,8 +410,8 @@ void select_data(const std::vector<DB::Schema::Ptr>& schemas) {
 
   if(DB::Types::is_counter(schemas.front()->col_type))
     versions = 1;
-  
-  int err; 
+
+  int err;
   uint64_t ts = Time::now_ns();
   uint64_t ts_progress = ts;
 
@@ -419,13 +447,13 @@ void select_data(const std::vector<DB::Schema::Ptr>& schemas) {
 
         select_bytes += req->result->get_size_bytes();
         ++select_count;
-        
+
         for(auto& schema : schemas)
           req->result->free(schema->cid);
 
         if(progress && !(select_count % progress)) {
           ts_progress = Time::now_ns() - ts_progress;
-          SWC_PRINT 
+          SWC_PRINT
             << "select-progress(time_ns=" << Time::now_ns()
             << " cells=" << select_count
             << " avg=" << ts_progress/progress << "ns/cell) ";
@@ -454,7 +482,7 @@ void select_data(const std::vector<DB::Schema::Ptr>& schemas) {
     SWC_ASSERT(
       expect_empty
       ? req->result->empty()
-      : select_count == versions * (tree ? fractions : 1) 
+      : select_count == versions * (tree ? fractions : 1)
                           * ncells * schemas.size()
     );
   }
@@ -472,7 +500,7 @@ void make_work_load(const std::vector<DB::Schema::Ptr>& schemas) {
 
   if(settings->get_bool("gen-insert"))
     update_data(schemas, DB::Cells::INSERT);
-    
+
   if(settings->get_bool("gen-select"))
     select_data(schemas);
 
@@ -494,7 +522,7 @@ void make_work_load(const std::vector<DB::Schema::Ptr>& schemas) {
       quit_error(res.get_future().get());
     }
   }
-    
+
 }
 
 
@@ -502,9 +530,9 @@ void generate() {
   auto settings = Env::Config::settings();
 
   std::string col_name(settings->get_str("gen-col-name"));
-  
+
   uint32_t ncolumns(settings->get_i32("gen-col-number"));
-  
+
   std::vector<DB::Schemas::Pattern> patterns;
   patterns.push_back(DB::Schemas::Pattern(Condition::PF, col_name));
 
@@ -567,7 +595,7 @@ void generate() {
 
 int main(int argc, char** argv) {
   SWC::Env::Config::init(argc, argv);
-  
+
   SWC::Env::Clients::init(
     std::make_shared<SWC::client::Clients>(
       nullptr, // Env::IoCtx::io(),

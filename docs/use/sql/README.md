@@ -18,11 +18,11 @@ The key fields:
 | ---           | ---               | ---                                 | ---                                                               |
 |cid            |```i64```          | NO_CID == 0                         | the Column ID                                                     |
 |name           |```string```       | empty                               | The Column Name                                                   |
-|seq            |```string```       | VOLUME                              | The Column Key Sequence, options LEXIC/VOLUME/FC_LEXIC/FC_VOLUME  |
-|type           |```string```       | PLAIN                               | The Column Value Type, options PLAIN/COUNTER_(I64/I32/I16/I8)     |
+|seq            |```string```       | VOLUME                              | The Column Key Sequence, options LEXIC / VOLUME / FC_LEXIC / FC_VOLUME  |
+|type           |```string```       | PLAIN                               | The Column Value Type, options PLAIN / COUNTER_I{I64,32,16,8} / SERIAL     |
 |cell_versions  |```i32```          | 0 == 1                              | The Cell Versions                                                 |
 |cell_ttl       |```i32```          | 0 == without                        | The Time to Live in milliseconds                                  |
-|blk_encoding   |```string```       | DEFAULT = Rangers' default cfg      | The Block Encoding, options PLAIN/ZSTD/ZLIB/SNAPPY                |
+|blk_encoding   |```string```       | DEFAULT = Rangers' default cfg      | The Block Encoding, options PLAIN / ZSTD / ZLIB / SNAPPY                |
 |blk_size       |```i32```          | 0 == Rangers' default cfg           | The Block Size in Bytes                                           |
 |blk_cells      |```i32```          | 0 == Rangers' default cfg           | The Number of Cells in a Block                                    |
 |cs_replication |```i8```           | 0 == Rangers' default cfg           | The CellStore file Replication                                    |
@@ -274,7 +274,26 @@ Optionally to select all the inner/deeper-level fractions including or excluding
 
 * ##### The Condition-Value syntax
 The Condition of Value. The Comparator is auto-set to EQ, If no Comparator was applied. \
-***``` value COMP "EXPR/VALUE " ```***
+***``` value ``` [```Condition-Value-Expression```](#the-condition-value-expression-syntax)***
+
+
+* ##### The Condition-Value-Expression syntax
+The Expression of Value Condition dependable on the [Schema's column value type](#the-schema-syntax). 
+  * **_PLAIN_**: \
+  ``` COMP "VALUE" ``` - applicable with Extended Comparators
+
+  * **_COUNTER_**: \
+  ``` COMP "VALUE" ``` - not supported Comparators PF and RE
+
+  * **_SERIAL_**: \
+  ``` [ID:TYPE:COMP "VALUE", ... ] ``` - in square-brackets a comma-separated sets, a set is separated by colon with Field-ID, Field-Type and a Comparator with a Value. \
+  The applicable Comparators depend on the Field-Type: ```BYTES(B)``` as PLAIN, ```INT64(I)```/```DOUBLE(D)``` as COUNTER, ```KEY(K)``` with KeySeq(LEXIC/VOLUME) followed by a [Condition-Key](#the-condition-key-syntax) and ```LIST_INT64(LI)``` Value as COUNTER with list-syntax ```COMP[COMP VALUE, .. ]```. \
+  The SERIAL match requires all field-definitions matching ID+TYPE+COND, whereas Field-ID can have multiple Field-Type and Value definitions.\
+  _A data-set Example, a cell-value: \
+    ``` TS KEY  [0:I:1, 1:I:5, 2:I:1, 3:D:1.0, 4:B:"aBcdef", 5:K:[abc,def,ghi,4,5], 6:LI:[1,2,3,4,5,6,7], 7:B:"More-Bytes] ``` \
+    can have the following Condition-Value syntax: \
+    ``` value == [0:I:==1, 1:I:>4, 2:I:<5, 3:D:>0.123456, 4:B:=^aBc, 5:K:VOLUME[abc,def,ghi,>=""], 6:LI:<=[1,2,3,>0,5,6,==7,0] ] ```
+    * In this case Field with ID=7 of BYTES type does not require the expression match.
 
 
 * ##### The Condition-Timestamp syntax
@@ -306,75 +325,49 @@ The following flags, ```token``` and ```key=value```, are available: \
 
 
 ### Update Query
-The Update Query command performs cells write to the designated range/s.
-
-* _An Example:_
-```
-UPDATE
-  cell(DELETE,                  CID, ['K','E','Y']             ),
-  cell(DELETE_VERSION,          CID, ['K','E','Y'], TS         ),
-  cell(INSERT,                  CID, ['K','E','Y'], ASC, TS, 'DATA' ),
-  cell(INSERT,                  CID, ['K','E','Y'], DESC, 'DATA' ),
-  cell(INSERT,                 NAME, ['K','E','Y'], '', 'DATA', 'ENC' )
-```
-
+The Update Query command performs cells write to the column/s and the designated range/s.
 
 * #### The Update Query syntax
 The Update Query sytrax consists the 'update' command followed by Cell or comma-separated Cell/s
 ``` UPDATE ``` [```Cell```](#the-cell-for-update-syntax) ```,``` [```Cell```](#the-cell-for-update-syntax)
+* _An Example:_
+```
+UPDATE
+  cell(DELETE,                  CID, ['K','E','Y']                         ),
+  cell(DELETE_VERSION,          CID, ['K','E','Y'], TS                     ),
+  cell(INSERT,                  CID, ['K','E','Y'], ASC, TS, 'DATA'        ),
+  cell(INSERT,                  CID, ['K','E','Y'], DESC,    'DATA'        ),
+  cell(INSERT,                 NAME, ['K','E','Y'], '',      'DATA', 'ENC' );
+```
 
 
-* ##### The Cell for Update syntax
-The Syntax by Flags and Options:
-  * **DELETE** \
-``` cell( ``` 
-``` DELETE ```
-```,``` 
-``` column ID/NAME``` 
-```,``` 
-``` Key``` 
-``` ) ```
+* #### The Cell for Update syntax
+The Syntax depends on the Flags and available definitions. 
 
-  * **DELETE_VERSION** \
-``` cell( ```
-``` DELETE_VERSION```
-```,``` 
-``` column ID/NAME```
-```,``` 
-``` Key```
-```,``` 
-``` TIMESTAMP ```
-``` ) ```
+* ##### A _**DELETE**_ Flag requires:
+  ```cell(``` ``` DELETE ``` ```,``` ``` Column ID|NAME ``` ```,``` ``` Key ``` ```) ``` 
 
-  * **INSERT** with version-timestamp config \
-``` cell( ```
-``` INSERT```
-```,``` 
-``` column ID/NAME```
-```,``` 
-``` Key```
-```,``` 
-``` TIME_ORDER,```
-``` TIMESTAMP``` 
-```,``` 
-``` VALUE-DATA ```
-``` ) ```
+* ##### A _**DELETE_VERSION**_ Flag requires:
+  ```cell(``` ``` DELETE_VERSION ``` ```,``` ``` Column ID|NAME ``` ```,``` ``` Key ``` ```,``` ``` TIMESTAMP ``` ```) ``` 
+
+* ##### An _**INSERT**_ Flag with auto-timestamp requires:
+  ```cell(``` ``` INSERT ``` ```,``` ``` Column ID|NAME ``` ```,``` ``` Key ``` ```,``` ``` "" ``` ```,``` ``` VALUE-DATA ``` ```) ``` 
+
+* ##### An _**INSERT**_ Flag with version-timestamp config requires:
+  ```cell(``` ``` INSERT ``` ```,``` ``` Column ID|NAME ``` ```,``` ``` Key ``` ```,``` ``` TIME_ORDER ``` ```,``` ``` TIMESTAMP ``` ```,``` ``` VALUE-DATA ``` ```) ```
   > * _TIME_ODER_ options are ```ASC```/```DESC``` - empty-```entry,``` defaults to ```DESC``` .
   > * _TIMESTAMP_ in nanoseconds or a Date and Time in format ```"YYYY/MM/DDD HH:mm:ss.nanoseconds"```, empty-field is auto-assign.
 
-  * **INSERT** with auto-timestamp \
-``` cell( ```
-``` INSERT```
-```,``` 
-``` column ID/NAME```
-```,``` 
-``` Key```
-```,``` 
-``` "" ``` 
-```,``` 
-``` VALUE-DATA ```
-```,``` 
-``` ENCODER ```
-``` ) ```
-  > * _ENCODER_  the Encoder to use for cell-value encoding, options: ZLIB/SNAPPY/ZSTD - default without.
-  
+* ##### An _**INSERT**_ Flag for a SERIAL Column Type requires:
+  As other **INSERT** with or without timestamp whereas ``` VALUE-DATA ``` defined in a serialization format. \
+  The ``` VALUE-DATA ``` is a square-brackets of a field-sets ```[ID:TYPE:VALUE, ... ]```. The field-sets are unordered makes the less accessed field to be preferred as last.\
+  An expectation of Field ID is to be a unique ID per each type, It is OK to have ```[1:I:123, 1:D:0.123, 1:B:"123", 1:K:[1,2,3]], 1:LI:[1,2,3]```
+  * The Field-ID is a UINT24_T - max 16,777,215 possible Field-IDs.
+  * The Available Field-Type: ```INT64```|```I``` , ```DOUBLE```|```D```, ```BYTES```|```B```, ```KEY```|```K``` and ```LIST_INT64```|```LI```.
+
+* ##### An _**INSERT**_ Flag with Encoded-Value requires:
+  The last definition of cell is set with the ENCODER.\
+  ```cell(``` ``` INSERT``` ```,``` ``` Column ID/NAME``` ```,``` ``` Key ``` ```,``` ``` "" ``` ```,``` ``` VALUE-DATA ``` ```,``` ``` ENCODER ``` ```) ```
+  * The available encoding for cell-value: ```ZLIB```, ```SNAPPY```, ```ZSTD``` - default without.
+
+

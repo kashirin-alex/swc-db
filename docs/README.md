@@ -35,12 +35,12 @@ _The proven test, on one machine(CPU Intel E3-1246V3 RAM 32GB SW-RAID 2x 2TB-720
 | **a DB with ACID(concept) for a many data-entries**   | **```✗```**  | write with acknowledgment many data-entries(cells) with one request, problem - one entry can exist while other yet to exist |
 | **a Relational DB**                                   | **```✗```**  | achievable by the client-side |
 | **a Time Series DB**                                  | **```✔```**  | without relational propotions |
-| **a Object Oriented DB**                              | **```–✔```** | binary key(Fractions) and value allowed, user defined Serialization IO |
+| **an Object Oriented DB**                              | **```–✔```** | binary key(Fractions) and value allowed, user defined Serialization IO or/and Serializations available with the SERIAL column-type |
 | **a XML DB / Tripel Stores**                          | **```–✔```** | require Native XML Client process XML-schema to Database structure |
 | **a Schema Free DB**                                  | **```✔```**  | except to data/column type, schema/column-definition is without inner data schematics | 
 | **a DB with User Concepts (Access Controls)**         | **```✗```**  |     |
 | **a Shard Partitioning DB**                           | **```✔```**  |     |
-| **a Spatial DB**                                      | **```✔```**  | user defined Factions order in a Cell Key |
+| **a Spatial DB**                                      | **```✔```**  | user defined Fractions order and sequence in a Cell Key |
 | **a Variable Key Sequences DB**                       | **```✔```**  | infinite size (indefinite other limitation apply ) |
 | **a Distributed + Scalable DB**                       | **```✔```**  | O(1) performance |
 | **a DB with Multihoming Capabilities**                | **```✔```**  |     |

@@ -6,6 +6,7 @@
 
 #include "swcdb/db/Cells/SpecsValue.h"
 #include "swcdb/core/Serialization.h"
+#include "swcdb/db/Cells/SpecsValueSerialFields.h"
 
 
 namespace SWC { namespace DB { namespace Specs {
@@ -60,6 +61,7 @@ void Value::set(const std::string& data_n, Condition::Comp comp_n) {
 
 void Value::copy(const Value &other) {
   set(other.data, other.size, other.comp, true);
+  col_type = other.col_type;
 }
 
 void Value::set(const uint8_t* data_n, const uint32_t size_n,
@@ -92,10 +94,15 @@ void Value::_free() {
       }
     }
 
-    case DB::Types::Column::COUNTER_I64:
-    case DB::Types::Column::COUNTER_I32:
-    case DB::Types::Column::COUNTER_I16:
-    case DB::Types::Column::COUNTER_I8: {
+    case Types::Column::SERIAL: {
+      delete (Serial::Value::Fields*)compiled;
+      return;
+    }
+
+    case Types::Column::COUNTER_I64:
+    case Types::Column::COUNTER_I32:
+    case Types::Column::COUNTER_I16:
+    case Types::Column::COUNTER_I8: {
       delete (int64_t*)compiled;
       return;
     }
@@ -111,7 +118,7 @@ void Value::free() {
   compiled = nullptr;
 }
 
-SWC_CAN_INLINE
+SWC_SHOULD_INLINE
 bool Value::empty() const {
   return comp == Condition::NONE;
 }
@@ -170,10 +177,16 @@ bool Value::is_matching(const Cells::Cell& cell) const {
       }
     }
 
-    case DB::Types::Column::COUNTER_I64:
-    case DB::Types::Column::COUNTER_I32:
-    case DB::Types::Column::COUNTER_I16:
-    case DB::Types::Column::COUNTER_I8: {
+    case Types::Column::SERIAL: {
+      if(!compiled)
+        compiled = new Serial::Value::Fields(data, size);
+      return ((Serial::Value::Fields*)compiled)->is_matching(cell);
+    }
+
+    case Types::Column::COUNTER_I64:
+    case Types::Column::COUNTER_I32:
+    case Types::Column::COUNTER_I16:
+    case Types::Column::COUNTER_I8: {
       if(!compiled) {
         errno = 0;
         char *last = (char*)data + size;
@@ -203,24 +216,28 @@ void Value::print(std::ostream& out) const {
 }
 
 void Value::display(std::ostream& out, bool pretty) const {
-  out << "size=" << size << ' ' << Condition::to_string(comp, true)
-      << '"';
+  out << "size=" << size << ' ' << Condition::to_string(comp, true);
   if(size) {
-    char hex[5];
-    hex[4] = '\0';
-    const uint8_t* end = data + size;
-    for(const uint8_t* ptr = data; ptr < end; ++ptr) {
-      if(*ptr == '"')
-        out << '\\';
-      if(!pretty || (31 < *ptr && *ptr < 127)) {
-        out << *ptr;
-      } else {
-        sprintf(hex, "0x%X", *ptr);
-        out << hex;
+    if(col_type == Types::Column::SERIAL) {
+      Serial::Value::Fields(data, size).print(out);
+    } else {
+      out << '"';
+      char hex[5];
+      hex[4] = '\0';
+      const uint8_t* end = data + size;
+      for(const uint8_t* ptr = data; ptr < end; ++ptr) {
+        if(*ptr == '"')
+          out << '\\';
+        if(!pretty || (31 < *ptr && *ptr < 127)) {
+          out << *ptr;
+        } else {
+          sprintf(hex, "0x%X", *ptr);
+          out << hex;
+        }
       }
+      out << '"';
     }
   }
-  out << '"';
 }
 
 }}}

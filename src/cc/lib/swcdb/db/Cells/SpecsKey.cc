@@ -69,6 +69,8 @@ Fraction::_is_matching(const uint8_t* ptr, uint32_t len) {
 
 Key::Key() { }
 
+Key::Key(const Key &other) : std::vector<Fraction>(other) { }
+
 Key::~Key() { }
 
 Key::Key(const DB::Cell::Key &cell_key, Condition::Comp comp) {
@@ -287,12 +289,12 @@ std::string Key::to_string() const {
 void Key::print(std::ostream& out) const {
   out << "Key(";
   if(size())
-    display(out);
+    display(out << "size=" << size() << " fractions=");
   out << ')';
 }
 
 void Key::display(std::ostream& out, bool pretty) const {
-  out << "size=" << size() << " fractions=[";
+  out << '[';
   char hex[5];
   hex[4] = 0;
   for(auto it = cbegin(); it < cend(); ) {

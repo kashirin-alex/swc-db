@@ -6,6 +6,7 @@
 
 
 #include "swcdb/db/Cells/Cell.h"
+#include "swcdb/db/Cells/CellValueSerialFields.h"
 
 #include "swcdb/core/Time.h"
 #include "swcdb/core/Serialization.h"
@@ -413,16 +414,22 @@ void Cell::display(std::ostream& out,
   } else {
     StaticBuffer v;
     get_value(v);
-    const uint8_t* ptr = v.base;
-    char hex[5];
-    hex[4] = 0;
 
-    for(uint32_t i=v.size; i; --i, ++ptr) {
-      if(!bin && (*ptr < 32 || *ptr > 126)) {
-        sprintf(hex, "0x%X", *ptr);
-        out << hex;
-      } else {
-        out << *ptr;
+    if(typ == Types::Column::SERIAL) {
+      DB::Cell::Serial::Value::Fields::display(v.base, v.size, out);
+
+    } else {
+      const uint8_t* ptr = v.base;
+      char hex[5];
+      hex[4] = 0;
+
+      for(uint32_t i=v.size; i; --i, ++ptr) {
+        if(!bin && (*ptr < 32 || *ptr > 126)) {
+          sprintf(hex, "0x%X", *ptr);
+          out << hex;
+        } else {
+          out << *ptr;
+        }
       }
     }
   }

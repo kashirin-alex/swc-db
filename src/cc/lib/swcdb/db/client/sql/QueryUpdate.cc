@@ -139,6 +139,8 @@ void QueryUpdate::read_cells() {
         cid_t cid = DB::Schema::NO_CID;
         DB::Cells::Cell cell;
         read_cell(cid, cell, on_fraction);
+        if(err)
+          return;
 
         while(remain && !err && found_space());
         expect_token(")", 1, bracket);
@@ -219,35 +221,138 @@ void QueryUpdate::read_cell(cid_t& cid, DB::Cells::Cell& cell,
     if(err || !found_char(','))
       return;
 
-    std::string value;
-    read(value, ",)");
-    if(err)
-      return;
-
     switch(schema->col_type) {
       case DB::Types::Column::PLAIN: {
-        while(remain && !err && (found_char(' ') || found_char('\t')));
+        std::string value;
+        read(value, ",)");
+        if(err)
+          return;
+        while(remain && !err && found_space());
         if(err)
           return;
         if(found_char(',')) {
-          std::string encoder;
-          read(encoder, ")");
-
-          DB::Types::Encoder enc = Core::Encoder::encoding_from(encoder);
-          if(err || enc == DB::Types::Encoder::UNKNOWN)
-            return error_msg(Error::SQL_PARSE_ERROR, "bad encoder");
-
+          DB::Types::Encoder enc = read_encoder();
+          if(err)
+            return;
           cell.set_value(enc, value);
-
         } else {
           cell.set_value(value, true);
         }
         break;
       }
+
+      case DB::Types::Column::SERIAL: {
+        bool bracket_square = false;
+        bool was_set;
+        while(remain && !err && found_space());
+        expect_token("[", 1, bracket_square);
+        if(err)
+          return;
+
+        DB::Cell::Serial::Value::FieldsWriter wfields;
+        do {
+          uint32_t fid;
+          read_uint32_t(fid, was_set, ":");
+          if(err)
+            return;
+          while(remain && !err && found_space());
+          expect_token(":", 1, was_set);
+          if(err)
+            return;
+
+          DB::Cell::Serial::Value::Type typ = read_serial_value_type();
+          if(err)
+            return;
+          switch(typ) {
+
+            case DB::Cell::Serial::Value::Type::INT64: {
+              int64_t v;
+              read_int64_t(v, was_set, ",]");
+              if(err)
+                return;
+              wfields.add(fid, v);
+              break;
+            }
+
+            case DB::Cell::Serial::Value::Type::DOUBLE: {
+              long double v;
+              read_double_t(v, was_set, ",]");
+              if(err)
+                return;
+              wfields.add(fid, v);
+              break;
+            }
+
+            case DB::Cell::Serial::Value::Type::BYTES: {
+              std::string buf;
+              read(buf, ",]");
+              if(err)
+                return;
+              wfields.add(fid, (const uint8_t*)buf.data(), buf.size());
+              break;
+            }
+
+            case DB::Cell::Serial::Value::Type::KEY: {
+              DB::Cell::Key fkey;
+              read_key(fkey);
+              if(err)
+                return;
+              wfields.add(fid, fkey);
+              break;
+            }
+
+            case DB::Cell::Serial::Value::Type::LIST_INT64: {
+              while(remain && !err && found_space());
+              expect_token("[", 1, bracket_square);
+              if(err)
+                return;
+              std::vector<int64_t> items;
+              do {
+                read_int64_t(items.emplace_back(), was_set, ",]");
+                if(err)
+                  return;
+                while(remain && !err && found_space());
+              } while(found_char(','));
+              expect_token("]", 1, bracket_square);
+              if(err)
+                return;
+              wfields.add(fid, items);
+              break;
+            }
+
+            default: {
+              return error_msg(
+                Error::SQL_PARSE_ERROR, "Not Supported Serial Value Type");
+            }
+          }
+          while(remain && !err && found_space());
+        } while(found_char(','));
+
+        expect_token("]", 1, bracket_square);
+
+        while(remain && !err && (found_char(' ') || found_char('\t')));
+        if(err)
+          return;
+
+        if(found_char(',')) {
+          DB::Types::Encoder enc = read_encoder();
+          if(err)
+            return;
+          cell.set_value(enc, wfields.base, wfields.fill());
+        } else {
+          cell.set_value(wfields.base, wfields.fill(), true);
+        }
+        break;
+      }
+
       case DB::Types::Column::COUNTER_I64:
       case DB::Types::Column::COUNTER_I32:
       case DB::Types::Column::COUNTER_I16:
       case DB::Types::Column::COUNTER_I8: {
+        std::string value;
+        read(value, ",)");
+        if(err)
+          return;
         const uint8_t* buf = (const uint8_t*)value.data();
         size_t remain = value.length();
         uint8_t op;

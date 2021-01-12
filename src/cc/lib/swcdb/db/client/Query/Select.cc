@@ -256,24 +256,26 @@ void Select::send_result() {
 }
 
 void Select::scan(int& err) {
-  std::vector<DB::Types::KeySeq> sequences;
-  DB::Schema::Ptr schema;
+  std::vector<DB::Schema::Ptr> schemas(specs.columns.size());
+  auto it_seq = schemas.begin();
   for(auto& col : specs.columns) {
-    schema = Env::Clients::get()->schemas->get(err, col->cid);
+    auto schema = Env::Clients::get()->schemas->get(err, col->cid);
     if(err)
       return;
     result->add_column(col->cid);
-    sequences.push_back(schema->col_seq);
+    *it_seq++ = schema;
     result->completion.increment();
   }
 
-  auto it_seq = sequences.begin();
+  it_seq = schemas.begin();
   for(auto& col : specs.columns) {
     for(auto& intval : col->intervals) {
       if(!intval->flags.max_buffer)
         intval->flags.max_buffer = buff_sz;
+      intval->value.col_type = (*it_seq)->col_type;
       std::make_shared<Scanner>(
-        shared_from_this(), *it_seq, *intval.get(), col->cid
+        shared_from_this(),
+        (*it_seq)->col_seq, *intval.get(), col->cid
       )->mngr_locate_master();
     }
     ++it_seq;

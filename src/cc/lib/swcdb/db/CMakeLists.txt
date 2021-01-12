@@ -15,6 +15,7 @@ set(swcdb_sources
   Cells/Interval.cc
   Cells/CellKeyVec.cc
   Cells/CellKey.cc
+  Cells/CellValueSerialFields.cc
   Cells/Cell.cc
   Cells/KeyComparator.cc
 
@@ -25,10 +26,11 @@ set(swcdb_sources
   Cells/SpecsKey.cc
   Cells/SpecsTimestamp.cc
   Cells/SpecsValue.cc
+  Cells/SpecsValueSerialFields.cc
   Cells/SpecsFlags.cc
-  
+
   Cells/ReqScan.cc
-  
+
   Columns/Schema.cc
   Columns/Schemas.cc
 
@@ -54,7 +56,7 @@ set(swcdb_sources
   Protocol/Rgr/req/RangeQueryUpdate.cc
   Protocol/Rgr/params/RangeQuerySelect.cc
   Protocol/Rgr/req/RangeQuerySelect.cc
-  
+
   Protocol/Mngr/params/MngrActive.cc
   Protocol/Mngr/req/MngrActive.cc
   Protocol/Mngr/params/RgrGet.cc
@@ -69,7 +71,7 @@ set(swcdb_sources
   Protocol/Mngr/req/ColumnMng.cc
   Protocol/Mngr/params/Report.cc
   Protocol/Mngr/req/Report.cc
-  
+
   client/Settings.cc
   client/Clients.cc
   client/Schemas.cc

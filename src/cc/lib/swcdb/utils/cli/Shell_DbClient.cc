@@ -18,80 +18,81 @@
 namespace SWC { namespace Utils { namespace shell {
 
 
-DbClient::DbClient() 
+DbClient::DbClient()
   : Interface("\033[32mSWC-DB(\033[36mclient\033[32m)\033[33m> \033[00m",
-              "/tmp/.swc-cli-dbclient-history") {    
-  
+              "/tmp/.swc-cli-dbclient-history") {
+
   options.push_back(
     new Option(
-      "add column", 
+      "add column",
       {"add column|schema (schema definitions [name=value ]);"},
       [ptr=this](std::string& cmd){
         return ptr->mng_column(
           Comm::Protocol::Mngr::Req::ColumnMng::Func::CREATE, cmd);
-      }, 
+      },
       new re2::RE2(
         "(?i)^(add|create)\\s+(column|schema)(.*|$)")
     )
-  ); 
+  );
   options.push_back(
     new Option(
-      "modify column", 
+      "modify column",
       {"modify column|schema (schema definitions [name=value ]);"},
       [ptr=this](std::string& cmd){
         return ptr->mng_column(
           Comm::Protocol::Mngr::Req::ColumnMng::Func::MODIFY, cmd);
-      }, 
+      },
       new re2::RE2(
         "(?i)^(modify|change|update)\\s+(column|schema)(.*|$)")
     )
-  ); 
+  );
   options.push_back(
     new Option(
-      "delete column", 
+      "delete column",
       {"delete column|schema (schema definitions [name=value ]);"},
       [ptr=this](std::string& cmd){
         return ptr->mng_column(
           Comm::Protocol::Mngr::Req::ColumnMng::Func::DELETE, cmd);
-      }, 
+      },
       new re2::RE2(
         "(?i)^(delete|remove)\\s+(column|schema)(.*|$)")
     )
-  ); 
+  );
   options.push_back(
     new Option(
-      "list columns", 
+      "list columns",
       {"list|get column|s [(NAME|ID)|Comp'expr'..];"},
-      [ptr=this](std::string& cmd){return ptr->list_columns(cmd);}, 
+      [ptr=this](std::string& cmd){return ptr->list_columns(cmd);},
       new re2::RE2(
         "(?i)^(get|list)\\s+((column(|s))|(schema|s))(.*|$)")
     )
-  );   
+  );
   options.push_back(
     new Option(
-      "compact column", 
+      "compact column",
       {"compact column|s [(NAME|ID)|Comp'expr',..];"},
       [ptr=this](std::string& cmd) {
         return ptr->compact_column(cmd);
-      }, 
+      },
       new re2::RE2(
         "(?i)^(compact)\\s+(column(|s))(.*|$)")
     )
-  );  
+  );
   options.push_back(
     new Option(
-      "select", 
+      "select",
       {"select where [Columns[Cells[Interval Flags]]] Flags DisplayFlags;",
       "-> select where COL(NAME|ID|Comp'expr',)=(cells=(Interval Flags)) AND",
       "     COL(NAME-2|ID-2,) = ( cells=(Interval Flags) AND cells=(",
-      "       [F-begin] <= range <= [F-end]                   AND", 
-      "       [COMP 'F-start'] <=  key  <= [COMP 'F-finish']  AND", 
-      "       'TS-begin' <= timestamp <= 'TS-finish'          AND", 
-      "       offset_key = [F] offset_rev='TS'                AND", 
+      "       [F-begin] <= range <= [F-end]                   AND",
+      "       [[COMP 'F-start'] <=  key  <= [COMP 'F-finish'] AND]",
+      "       'TS-begin' <= timestamp <= 'TS-finish'          AND",
+      "       offset_key = [F] offset_rev='TS'                AND",
       "       value COMP 'DATA'                                  ",
       "       LIMIT=NUM   OFFSET=NUM  ONLY_KEYS   ONLY_DELETES     )",
-      "     ) DISPLAY_* TIMESTAMP, DATETIME, SPECS, STATS, BINARY, COLUMN;"},
-      [ptr=this](std::string& cmd){return ptr->select(cmd);}, 
+      "     ) DISPLAY_* TIMESTAMP, DATETIME, SPECS, STATS, BINARY, COLUMN;",
+      " * DATA-value: PLAN, COUNTER, SERIAL([ID:TYPE:COMP \"VALUE\", ..]) "},
+      [ptr=this](std::string& cmd){return ptr->select(cmd);},
       new re2::RE2(
         "(?i)^(select)(\\s+|$)")
     )
@@ -109,9 +110,10 @@ DbClient::DbClient()
       "     cell(INSERT,                  CID, ['K','E','Y'], DESC       ),",
       "     cell(INSERT,                 NAME, ['K','E','Y'], '', 'DATA' ),",
       "     cell(INSERT_FRACTION,        NAME, ['K','E'],     '', 'DATA' );",
-      " Flags: INSERT|1 DELETE|2 DELETE_VERSION|3 ",
-      "        INSERT_FRACTION|4 DELETE_FRACTION|5 DELETE_FRACTION_VERSION|6",
-      " Encoder(ENC) for INSERT with DATA - options: ZLIB|2 SNAPPY|3 ZSTD|4 ",
+      "* FLAG: INSERT|1 DELETE|2 DELETE_VERSION|3 ",
+      "       INSERT_FRACTION|4 DELETE_FRACTION|5 DELETE_FRACTION_VERSION|6",
+      "* Encoder(ENC): at INSERT with DATA, options: ZLIB|2 SNAPPY|3 ZSTD|4",
+      "* DATA: PLAIN( val ) COUNTER( -/+/=val ) SERIAL( [ID:TYPE:val, ..] )",
       },
       [ptr=this](std::string& cmd){return ptr->update(cmd);},
       new re2::RE2(
@@ -121,9 +123,9 @@ DbClient::DbClient()
   options.push_back(
     new Option(
       "dump",
-      {"dump col='ID|NAME' into 'folder/path/' "
-      "where [cells=(Interval Flags) AND] OutputFlags DisplayFlags;",
-      "-> dump col='ColName' into 'FolderName' OUTPUT_NO_ * TS/VALUE|ENCODE;"
+      {"dump col='ID|NAME' into 'folder/path/' ",
+      "   where [cells=(Interval Flags) AND .. ] OutputFlags DisplayFlags;",
+      "-> dump col='ColName' into 'FolderName' OUTPUT_NO_* TS/VALUE|ENCODE;"
       },
       [ptr=this](std::string& cmd){return ptr->dump(cmd);},
       new re2::RE2(
@@ -153,7 +155,7 @@ DbClient::DbClient()
 }
 
 // CREATE/MODIFY/DELETE COLUMN
-bool DbClient::mng_column(Comm::Protocol::Mngr::Req::ColumnMng::Func func, 
+bool DbClient::mng_column(Comm::Protocol::Mngr::Req::ColumnMng::Func func,
                           std::string& cmd) {
   std::string message;
   DB::Schema::Ptr schema;
@@ -174,7 +176,7 @@ bool DbClient::mng_column(Comm::Protocol::Mngr::Req::ColumnMng::Func func,
     },
     1800000
   );
-  
+
   if((err = res.get_future().get())) {
     message.append(Error::get_text(err));
     message.append("\n");
@@ -189,17 +191,17 @@ bool DbClient::mng_column(Comm::Protocol::Mngr::Req::ColumnMng::Func func,
 
 // COMPACT COLUMN
 bool DbClient::compact_column(std::string& cmd) {
-  std::vector<DB::Schema::Ptr> schemas;  
+  std::vector<DB::Schema::Ptr> schemas;
   std::string message;
   client::SQL::parse_list_columns(err, cmd, schemas, message, "compact");
-  if(err) 
+  if(err)
     return error(message);
 
   if(schemas.empty()) {
     std::promise<int> res;
     Comm::Protocol::Mngr::Req::ColumnList::request(
       [&schemas, await=&res]
-      (const Comm::client::ConnQueue::ReqBase::Ptr&, int error, 
+      (const Comm::client::ConnQueue::ReqBase::Ptr&, int error,
        const Comm::Protocol::Mngr::Params::ColumnListRsp& rsp) {
         if(!error)
           schemas = rsp.schemas;
@@ -220,11 +222,11 @@ bool DbClient::compact_column(std::string& cmd) {
     Comm::Protocol::Mngr::Req::ColumnCompact::request(
       schema->cid,
       [schema, &proccessing, await=&res]
-      (const Comm::client::ConnQueue::ReqBase::Ptr&, 
+      (const Comm::client::ConnQueue::ReqBase::Ptr&,
        const Comm::Protocol::Mngr::Params::ColumnCompactRsp& rsp) {
-        SWC_PRINT << "Compactig Column cid=" << schema->cid 
-                  << " '" << schema->col_name << "' err=" << rsp.err 
-                  << "(" << Error::get_text(rsp.err) << ")" 
+        SWC_PRINT << "Compactig Column cid=" << schema->cid
+                  << " '" << schema->col_name << "' err=" << rsp.err
+                  << "(" << Error::get_text(rsp.err) << ")"
                   << SWC_PRINT_CLOSE;
         if(proccessing.fetch_sub(1) == 1)
           await->set_value();
@@ -238,20 +240,20 @@ bool DbClient::compact_column(std::string& cmd) {
 
 // LIST COLUMN/s
 bool DbClient::list_columns(std::string& cmd) {
-  std::vector<DB::Schema::Ptr> schemas;  
+  std::vector<DB::Schema::Ptr> schemas;
   Comm::Protocol::Mngr::Params::ColumnListReq params;
   std::string message;
   client::SQL::parse_list_columns(err, cmd, schemas, params, message, "list");
-  if(err) 
+  if(err)
     return error(message);
 
-  if(!params.patterns.empty() || schemas.empty()) { 
-    // get all schemas or on patterns 
+  if(!params.patterns.empty() || schemas.empty()) {
+    // get all schemas or on patterns
     std::promise<int> res;
     Comm::Protocol::Mngr::Req::ColumnList::request(
       params,
       [&schemas, await=&res]
-      (const Comm::client::ConnQueue::ReqBase::Ptr&, int error, 
+      (const Comm::client::ConnQueue::ReqBase::Ptr&, int error,
        const Comm::Protocol::Mngr::Params::ColumnListRsp& rsp) {
         if(!error)
           schemas.insert(
@@ -271,7 +273,7 @@ bool DbClient::list_columns(std::string& cmd) {
     schemas.begin(), schemas.end(),
     [](const DB::Schema::Ptr& s1, const DB::Schema::Ptr& s2) {
       return s1->cid < s2->cid;
-    }); 
+    });
 
   Core::MutexSptd::scope lock(Core::logger.mutex);
   for(auto& schema : schemas) {
@@ -296,7 +298,7 @@ bool DbClient::select(std::string& cmd) {
   );
   std::string message;
   client::SQL::parse_select(err, cmd, req->specs, display_flags, message);
-  if(err) 
+  if(err)
     return error(message);
 
   if(display_flags & DB::DisplayFlag::SPECS) {
@@ -307,17 +309,17 @@ bool DbClient::select(std::string& cmd) {
   }
 
   req->scan(err);
-  if(!err) 
+  if(!err)
     req->wait();
-  
-  if(err) 
+
+  if(err)
     return error(message);
 
   if(display_flags & DB::DisplayFlag::STATS)
     display_stats(
       req->result->profile,
-      SWC::Time::now_ns() - ts, 
-      cells_bytes, 
+      SWC::Time::now_ns() - ts,
+      cells_bytes,
       cells_count
     );
 
@@ -325,10 +327,10 @@ bool DbClient::select(std::string& cmd) {
 }
 
 void DbClient::display(const client::Query::Select::Result::Ptr& result,
-                       uint8_t display_flags, 
+                       uint8_t display_flags,
                        size_t& cells_count, size_t& cells_bytes) const {
   DB::Schema::Ptr schema = 0;
-  DB::Cells::Result cells; 
+  DB::Cells::Result cells;
   bool meta;
   size_t count_state;
   do {
@@ -347,12 +349,12 @@ void DbClient::display(const client::Query::Select::Result::Ptr& result,
           SWC_LOG_OSTREAM << schema->col_name << '\t';
         }
         cell->display(
-          SWC_LOG_OSTREAM, 
+          SWC_LOG_OSTREAM,
           err ? DB::Types::Column::PLAIN: schema->col_type,
           display_flags,
           meta
         );
-        SWC_LOG_OSTREAM << std::endl;  
+        SWC_LOG_OSTREAM << std::endl;
       }
     }
   } while(count_state != cells_count);
@@ -362,34 +364,34 @@ void DbClient::display(const client::Query::Select::Result::Ptr& result,
 bool DbClient::update(std::string& cmd) {
   int64_t ts = Time::now_ns();
   uint8_t display_flags = 0;
- 
+
   auto req = std::make_shared<client::Query::Update>();
   std::string message;
   client::SQL::parse_update(
-    err, cmd, 
-    *req->columns.get(), *req->columns_onfractions.get(), 
+    err, cmd,
+    *req->columns.get(), *req->columns_onfractions.get(),
     display_flags, message
   );
-  if(err) 
+  if(err)
     return error(message);
-  
-  size_t cells_count = req->columns->size() 
+
+  size_t cells_count = req->columns->size()
                      + req->columns_onfractions->size();
-  size_t cells_bytes = req->columns->size_bytes() 
+  size_t cells_bytes = req->columns->size_bytes()
                      + req->columns_onfractions->size_bytes();
 
   req->commit();
   req->wait();
 
   // req->result->errored
-  if(display_flags & DB::DisplayFlag::STATS) 
+  if(display_flags & DB::DisplayFlag::STATS)
     display_stats(
       req->result->profile,
-      SWC::Time::now_ns() - ts, 
-      cells_bytes, 
+      SWC::Time::now_ns() - ts,
+      cells_bytes,
       cells_count
     );
-  if(err) 
+  if(err)
     return error(message);
   return true;
 }
@@ -397,7 +399,7 @@ bool DbClient::update(std::string& cmd) {
 // LOAD
 bool DbClient::load(std::string& cmd) {
   int64_t ts = Time::now_ns();
-  
+
   Env::FsInterface::init(FS::fs_type(
     Env::Config::settings()->get_str("swc.fs")));
   DB::Cells::TSV::FileReader reader(Env::FsInterface::interface());
@@ -405,18 +407,18 @@ bool DbClient::load(std::string& cmd) {
   uint8_t display_flags = 0;
   client::SQL::parse_load(
     err, cmd, reader.base_path, reader.cid, display_flags, reader.message);
-  if(err) 
+  if(err)
     return error(reader.message);
-            
+
   auto res = reader.read_and_load();
 
   if(display_flags & DB::DisplayFlag::STATS) {
     client::Query::Profiling tmp;
     display_stats(
       res ? res->profile : tmp,
-      SWC::Time::now_ns() - ts, 
-      reader.cells_bytes, 
-      reader.cells_count, 
+      SWC::Time::now_ns() - ts,
+      reader.cells_bytes,
+      reader.cells_count,
       reader.resend_cells
     );
   }
@@ -439,26 +441,26 @@ bool DbClient::dump(std::string& cmd) {
   Env::FsInterface::init(FS::fs_type(
     Env::Config::settings()->get_str("swc.fs")));
   DB::Cells::TSV::FileWriter writer(Env::FsInterface::interface());
-  
+
   auto req = std::make_shared<client::Query::Select>(
     [&writer] (const client::Query::Select::Result::Ptr& result) {
-      writer.write(result);   
+      writer.write(result);
       // writer.err ? req->stop();
     },
     true // cb on partial rsp
   );
-  
+
   uint8_t display_flags = 0;
   std::string message;
   client::SQL::parse_dump(
-    err, cmd, 
-    writer.base_path, req->specs, 
-    writer.output_flags, display_flags, 
+    err, cmd,
+    writer.base_path, req->specs,
+    writer.output_flags, display_flags,
     message
   );
-  if(err) 
+  if(err)
     return error(message);
-  
+
   writer.initialize();
   if((err = writer.err))
     return error(Error::get_text(err));
@@ -471,7 +473,7 @@ bool DbClient::dump(std::string& cmd) {
   }
 
   req->scan(err);
-  if(!err) 
+  if(!err)
     req->wait();
 
   writer.finalize();
@@ -481,19 +483,19 @@ bool DbClient::dump(std::string& cmd) {
   if(display_flags & DB::DisplayFlag::STATS) {
     display_stats(
       req->result->profile,
-      SWC::Time::now_ns() - ts, 
-      writer.cells_bytes, 
+      SWC::Time::now_ns() - ts,
+      writer.cells_bytes,
       writer.cells_count
     );
 
     std::vector<FS::SmartFd::Ptr> files;
     writer.get_length(files);
-    if(err) 
+    if(err)
       return error(Error::get_text(err));
-    
+
     SWC_PRINT << " Files Count:            " << files.size() << "\n";
     for(auto& file : files)
-      SWC_LOG_OSTREAM << " File:                   " << file->filepath() 
+      SWC_LOG_OSTREAM << " File:                   " << file->filepath()
                       << " (" << file->pos()  << " bytes)\n";
     SWC_LOG_OSTREAM << SWC_PRINT_CLOSE;
   }
@@ -502,7 +504,7 @@ bool DbClient::dump(std::string& cmd) {
   return err ? error(Error::get_text(err)) : true;
 }
 
-void DbClient::display_stats(const client::Query::Profiling& profile, 
+void DbClient::display_stats(const client::Query::Profiling& profile,
                              size_t took, size_t bytes,
                              size_t cells_count, size_t resend_cells) const {
   Common::Stats::FlowRate::Data rate(bytes, took);

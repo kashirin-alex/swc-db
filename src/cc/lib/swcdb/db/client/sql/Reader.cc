@@ -13,7 +13,7 @@ namespace SWC { namespace client { namespace SQL {
 
 Reader::Reader(const std::string& sql, std::string& message)
               : sql(sql), message(message),
-                ptr(sql.data()), remain(sql.length()), 
+                ptr(sql.data()), remain(sql.length()),
                 err(Error::OK) {
 }
 
@@ -37,7 +37,7 @@ bool Reader::found_char(const char c) {
 }
 
 bool Reader::found_space() {
-  return found_char(' ') || found_char('\t') 
+  return found_char(' ') || found_char('\t')
       || found_char('\n') || found_char('\r');
 }
 
@@ -88,7 +88,7 @@ void Reader::expect_comma(bool& comma) {
   while(remain && !err && found_space());
   expect_token(",", 1, comma);
 }
-  
+
 void Reader::expect_comparator(Condition::Comp& comp, bool extended) {
   if(found_comparator(comp, extended) && comp != Condition::NONE)
     return;
@@ -135,11 +135,11 @@ void Reader::expect_token(const char* token, uint8_t token_len, bool& found) {
 
 DB::Schema::Ptr Reader::get_schema(const std::string& col) {
   DB::Schema::Ptr schema = 0;
-  if(std::find_if(col.begin(), col.end(), 
+  if(std::find_if(col.begin(), col.end(),
       [](unsigned char c){ return !std::isdigit(c); } ) != col.end()){
     schema = Env::Clients::get()->schemas->get(err, col);
   } else {
-    try { 
+    try {
       schema = Env::Clients::get()->schemas->get(err, std::stoll(col));
     } catch(...) {
       const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
@@ -151,7 +151,7 @@ DB::Schema::Ptr Reader::get_schema(const std::string& col) {
   return schema;
 }
 
-std::vector<DB::Schema::Ptr> 
+std::vector<DB::Schema::Ptr>
 Reader::get_schema(const std::vector<DB::Schemas::Pattern>& patterns) {
   auto schemas = Env::Clients::get()->schemas->get(err, patterns);
   if(err) {
@@ -186,13 +186,13 @@ void Reader::read(std::string& buf, const char* stop, bool keep_escape) {
     if(!escape) {
       if(!is_quoted && buf.empty() && found_space())
         continue;
-      if(((!is_quoted || quote_1) && found_quote_single(quote_1)) || 
+      if(((!is_quoted || quote_1) && found_quote_single(quote_1)) ||
           ((!is_quoted || quote_2) && found_quote_double(quote_2))) {
         is_quoted = quote_1 || quote_2;
         was_quoted = true;
         continue;
       }
-      if((was_quoted && !is_quoted) || 
+      if((was_quoted && !is_quoted) ||
           (!was_quoted && (found_space() || is_char(stop))))
         break;
     }
@@ -222,19 +222,19 @@ void Reader::read_uint16_t(uint16_t& value, bool& was_set) {
 }
 
 
-void Reader::read_uint32_t(uint32_t& value, bool& was_set) {
+void Reader::read_uint32_t(uint32_t& value, bool& was_set, const char* stop) {
   int64_t v;
-  read_int64_t(v, was_set);
+  read_int64_t(v, was_set, stop);
   if (v > UINT32_MAX || v < INT32_MIN)
     error_msg(Error::SQL_PARSE_ERROR, " unsigned 32-bit integer out of range");
   else
     value = (uint32_t)v;
 }
 
-void Reader::read_int64_t(int64_t& value, bool& was_set) {
+void Reader::read_int64_t(int64_t& value, bool& was_set, const char* stop) {
   std::string buf;
-  read(buf, "),]");
-  if(err) 
+  read(buf, stop ? stop : "),]");
+  if(err)
     return;
   try {
     value = std::stoll(buf);
@@ -244,11 +244,56 @@ void Reader::read_int64_t(int64_t& value, bool& was_set) {
   }
 }
 
+void Reader::read_double_t(long double& value, bool& was_set,
+                           const char* stop) {
+  std::string buf;
+  read(buf, stop ? stop : "),]");
+  if(err)
+    return;
+  try {
+    value = std::stold(buf);
+    was_set = true;
+  } catch(...) {
+    error_msg(Error::SQL_PARSE_ERROR, "double out of range");
+  }
+}
+
+DB::Types::Encoder Reader::read_encoder() {
+  std::string encoder;
+  read(encoder, ")");
+  DB::Types::Encoder enc = Core::Encoder::encoding_from(encoder);
+  if(err || enc == DB::Types::Encoder::UNKNOWN)
+    error_msg(Error::SQL_PARSE_ERROR, "bad encoder");
+  return enc;
+}
+
+DB::Cell::Serial::Value::Type Reader::read_serial_value_type() {
+  DB::Cell::Serial::Value::Type typ;
+  if(found_token("INT64", 5) || found_token("I", 1)) {
+    typ = DB::Cell::Serial::Value::Type::INT64;
+  } else if (found_token("DOUBLE", 6) || found_token("D", 1)) {
+    typ = DB::Cell::Serial::Value::Type::DOUBLE;
+  } else if (found_token("BYTES", 5) || found_token("B", 1)) {
+    typ = DB::Cell::Serial::Value::Type::BYTES;
+  } else if (found_token("KEY", 3) || found_token("K", 1)) {
+    typ = DB::Cell::Serial::Value::Type::KEY;
+  } else if (found_token("LIST_INT64", 10) || found_token("LI", 2)) {
+    typ = DB::Cell::Serial::Value::Type::LIST_INT64;
+  } else {
+    error_msg(
+      Error::SQL_PARSE_ERROR, "Not Supported Serial Value Type");
+    return DB::Cell::Serial::Value::Type::UNKNOWN;
+  }
+  while(remain && !err && found_space());
+  bool was_set;
+  expect_token(":", 1, was_set);
+  return typ;
+}
 
 void Reader::read_key(DB::Cell::Key& key) {
   bool bracket_square = false;
   std::string fraction;
-    
+
   while(remain && !err && found_space());
   expect_token("[", 1, bracket_square);
 
@@ -261,11 +306,11 @@ void Reader::read_key(DB::Cell::Key& key) {
     fraction.clear();
 
     while(remain && !err && found_space());
-    if(found_char(',')) 
+    if(found_char(','))
       continue;
     break;
   }
-    
+
   expect_token("]", 1, bracket_square);
 }
 
@@ -278,7 +323,7 @@ void Reader::error_msg(int error, const std::string& msg) {
   message.append("(");
   message.append(Error::get_text(err));
   message.append(")\n");
-  
+
   message.append(" SQL='");
   message.append(sql);
   message.append("'\n");

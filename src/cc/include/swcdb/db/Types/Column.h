@@ -9,11 +9,11 @@
 
 #include <string>
 
-namespace SWC { namespace DB { 
+namespace SWC { namespace DB {
 
 
 //! The SWC-DB Types C++ namespace 'SWC::DB::Types'
-namespace Types { 
+namespace Types {
 
 
 enum class Column : uint8_t {
@@ -23,6 +23,7 @@ enum class Column : uint8_t {
   COUNTER_I32   = 0x3,
   COUNTER_I16   = 0x4,
   COUNTER_I8    = 0x5,
+  SERIAL        = 0x6,
   CELL_DEFINED  = 0xf
 };
 
@@ -42,6 +43,6 @@ int from_string_col_type(const std::string& typ) noexcept;
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/db/Types/Column.cc"
-#endif 
+#endif
 
 #endif // swcdb_db_types_Column_h

@@ -19,20 +19,20 @@ ADD_TEST_EXEC(
 foreach(nfractions 1;26) #;159
   foreach(ncells 10;1000)
     foreach(versions 1;3;10)
-      foreach(col_type PLAIN;COUNTER)
+      foreach(col_type PLAIN;COUNTER;SERIAL)
         foreach(key_seq LEXIC;VOLUME;FC_LEXIC;FC_VOLUME)
 
           add_test(
-            NAME 
+            NAME
               test-query-${col_type}-${key_seq}-v${versions}-c${ncells}-f${nfractions}
-            COMMAND 
+            COMMAND
               query
                 --swc.cfg.path=${CMAKE_INSTALL_PREFIX}/etc/swcdb/
-                --col-type=${col_type}  
-                --col-seq=${key_seq} 
-                --cell-versions=${versions} 
-                --ncells=${ncells} 
-                --nfractions=${nfractions} 
+                --col-type=${col_type}
+                --col-seq=${key_seq}
+                --cell-versions=${versions}
+                --ncells=${ncells}
+                --nfractions=${nfractions}
           )
 
         endforeach()

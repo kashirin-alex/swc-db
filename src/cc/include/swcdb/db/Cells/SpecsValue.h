@@ -69,7 +69,7 @@ class Value {
 
   bool            own;
   Condition::Comp comp;
-  Types::Column   col_type;
+  Types::Column   col_type = Types::Column::UNKNOWN;
 
   uint8_t*        data;
   uint32_t        size;

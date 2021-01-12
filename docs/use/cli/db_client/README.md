@@ -29,19 +29,20 @@ Usage Help:  'command' [options];
   add column        add column|schema (schema definitions [name=value ]);
   modify column     modify column|schema (schema definitions [name=value ]);
   delete column     delete column|schema (schema definitions [name=value ]);
-  list columns      list|get column|s [NAME|ID,..];
-  compact column    compact column|s [NAME|ID,..];
+  list columns      list|get column|s [(NAME|ID)|Comp'expr'..];
+  compact column    compact column|s [(NAME|ID)|Comp'expr',..];
   select            select where [Columns[Cells[Interval Flags]]] Flags DisplayFlags;
-                    -> select where COL(NAME|ID,) = ( cells=(Interval Flags) ) AND
+                    -> select where COL(NAME|ID|Comp'expr',)=(cells=(Interval Flags)) AND
                          COL(NAME-2|ID-2,) = ( cells=(Interval Flags) AND cells=(
                            [F-begin] <= range <= [F-end]                   AND
-                           [COMP 'F-start'] <=  key  <= [COMP 'F-finish']  AND
+                           [[COMP 'F-start'] <=  key  <= [COMP 'F-finish'] AND]
                            'TS-begin' <= timestamp <= 'TS-finish'          AND
                            offset_key = [F] offset_rev='TS'                AND
                            value COMP 'DATA'
                            LIMIT=NUM   OFFSET=NUM  ONLY_KEYS   ONLY_DELETES     )
-                         ) DISPLAY_* TIMESTAMP / DATETIME / SPECS / STATS / BINARY;
-  update            update cell(FLAG, CID|NAME, KEY, TIMESTAMP, VALUE), CELL(..)      ;
+                         ) DISPLAY_* TIMESTAMP, DATETIME, SPECS, STATS, BINARY, COLUMN;
+                     * DATA-value: PLAN, COUNTER, SERIAL([ID:TYPE:COMP "VALUE", ..])
+  update            update cell(FLAG, CID|NAME, KEY, TIMESTAMP, VALUE, ENC), CELL(..) ;
                     -> UPDATE
                          cell(DELETE,                  CID, ['K','E','Y']             );
                          cell(DELETE_VERSION,          CID, ['K','E','Y'], TS         );
@@ -51,11 +52,15 @@ Usage Help:  'command' [options];
                          cell(INSERT,                  CID, ['K','E','Y'], DESC       ),
                          cell(INSERT,                 NAME, ['K','E','Y'], '', 'DATA' ),
                          cell(INSERT_FRACTION,        NAME, ['K','E'],     '', 'DATA' );
-                     Flags: INSERT|1 DELETE|2 DELETE_VERSION|3
-                            INSERT_FRACTION|4 DELETE_FRACTION|5 DELETE_FRACTION_VERSION|6
-  dump              dump col='ID|NAME' into 'folder/path/' where [cells=(Interval Flags) AND] OutputFlags DisplayFlags;
-                    -> dump col='ColName' into 'FolderName' OUTPUT_NO_* TS / VALUE;
+                    * FLAG: INSERT|1 DELETE|2 DELETE_VERSION|3
+                           INSERT_FRACTION|4 DELETE_FRACTION|5 DELETE_FRACTION_VERSION|6
+                    * Encoder(ENC): at INSERT with DATA, options: ZLIB|2 SNAPPY|3 ZSTD|4
+                    * DATA: PLAIN( val ) COUNTER( -/+/=val ) SERIAL( [ID:TYPE:val, ..] )
+  dump              dump col='ID|NAME' into 'folder/path/'
+                       where [cells=(Interval Flags) AND .. ] OutputFlags DisplayFlags;
+                    -> dump col='ColName' into 'FolderName' OUTPUT_NO_* TS/VALUE|ENCODE;
   load              load from 'folder/path/' into col='ID|NAME' DisplayFlags;
+
 SWC-DB(client)>
 ```
 
@@ -64,8 +69,7 @@ SWC-DB(client)>
 ```bash
 SWC-DB(client)> add column(name=FirstColumn);
 SWC-DB(client)> get column FirstColumn;
-cid=N name="FirstColumn" type=PLAIN revision=N compact=0 cell_versions=1 cell_ttl=0 
-blk_replication=0 blk_encoding=DEFAULT blk_size=0 blk_cells=0 cs_size=0 cs_max=0
+Schema(cid=10 name="FirstColumn" seq=LEXIC type=PLAIN revision=1610393297905674262 compact=0 cell_versions=1 cell_ttl=0 blk_encoding=DEFAULT blk_size=0 blk_cells=0 cs_replication=0 cs_size=0 cs_max=0 log_rollout=0 log_compact=0 log_preload=0)
 SWC-DB(client)>
 ```
 

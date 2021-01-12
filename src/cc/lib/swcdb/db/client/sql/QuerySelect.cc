@@ -6,6 +6,7 @@
 
 #include "swcdb/db/client/sql/QuerySelect.h"
 #include "swcdb/core/Time.h"
+#include "swcdb/db/Cells/SpecsValueSerialFields.h"
 
 
 namespace SWC { namespace client { namespace SQL {
@@ -120,7 +121,7 @@ int QuerySelect::parse_dump(std::string& filepath) {
       error_msg(Error::SQL_PARSE_ERROR, "missing col 'id|name'");
     if(err)
       return err;
-    cid_t cid = add_column(col);
+    auto schema = add_column(col);
     if(err)
       return err;
 
@@ -139,7 +140,7 @@ int QuerySelect::parse_dump(std::string& filepath) {
 
     while(remain && !err && found_space());
     if(found_token(TOKEN_WHERE, LEN_WHERE)) {
-      std::vector<cid_t> cols = {cid};
+      std::vector<DB::Schema::Ptr> cols = {schema};
       read_cells_intervals(cols);
 
       for(auto& col : specs.columns)
@@ -224,7 +225,7 @@ void QuerySelect::read_columns_intervals() {
     std::vector<DB::Schemas::Pattern> schema_patterns;
 
     std::string col_name;
-    std::vector<cid_t> cols;
+    std::vector<DB::Schema::Ptr> cols;
 
     while(remain && !err) {
       if(found_space())
@@ -329,20 +330,20 @@ void QuerySelect::read_columns_intervals() {
 
 }
 
-cid_t QuerySelect::add_column(const std::string& col) {
+DB::Schema::Ptr QuerySelect::add_column(const std::string& col) {
     auto schema = get_schema(col);
     if(err)
-      return DB::Schema::NO_CID;
+      return nullptr;
     for(auto& col : specs.columns) {
       if(schema->cid == col->cid)
-        return schema->cid;
+        return schema;
     }
     specs.columns.push_back(DB::Specs::Column::make_ptr(schema->cid, {}));
-    return schema->cid;
+    return schema;
 }
 
 void QuerySelect::add_column(const std::vector<DB::Schemas::Pattern>& patterns,
-                             std::vector<cid_t>& cols) {
+                             std::vector<DB::Schema::Ptr>& cols) {
   auto schemas = get_schema(patterns);
   if(err)
     return;
@@ -356,12 +357,12 @@ void QuerySelect::add_column(const std::vector<DB::Schemas::Pattern>& patterns,
     }
     if(!found)
       specs.columns.push_back(DB::Specs::Column::make_ptr(schema->cid, {}));
-    cols.push_back(schema->cid);
+    cols.push_back(schema);
   }
 }
 
-void QuerySelect::read_cells_intervals(const std::vector<cid_t>& cols) {
-
+void QuerySelect::read_cells_intervals(
+                                const std::vector<DB::Schema::Ptr>& cols) {
     bool token_cells = false;
     bool bracket_round = false;
     bool eq = false;
@@ -393,12 +394,20 @@ void QuerySelect::read_cells_intervals(const std::vector<cid_t>& cols) {
           continue;
         }
 
+        bool value_except = false;
+        auto col_type = cols.front()->col_type;
+        for(auto& schema : cols) {
+          if(col_type != schema->col_type) {
+            value_except = true;
+            break;
+          }
+        }
         auto spec = DB::Specs::Interval::make_ptr();
-        read_cells_interval(*spec.get());
+        read_cells_interval(*spec.get(), col_type, value_except);
 
         for(auto& col : specs.columns) {
-          for(cid_t cid : cols) {
-            if(col->cid == cid)
+          for(auto& schema : cols) {
+            if(col->cid == schema->cid)
               col->intervals.push_back(DB::Specs::Interval::make_ptr(spec));
           }
         }
@@ -421,7 +430,9 @@ void QuerySelect::read_cells_intervals(const std::vector<cid_t>& cols) {
 
 }
 
-void QuerySelect::read_cells_interval(DB::Specs::Interval& spec) {
+void QuerySelect::read_cells_interval(DB::Specs::Interval& spec,
+                                      DB::Types::Column col_type,
+                                      bool value_except) {
 
     uint32_t escape = 0;
     bool quote_1 = false;
@@ -493,6 +504,10 @@ void QuerySelect::read_cells_interval(DB::Specs::Interval& spec) {
       }
 
       if(found_token(TOKEN_VALUE, LEN_VALUE)) {
+        if(value_except)
+          return error_msg(
+            Error::SQL_PARSE_ERROR, "Value require the same columns type");
+        spec.value.col_type = col_type;
         read_value(spec.value);
         possible_and = true;
         continue;
@@ -712,11 +727,188 @@ void QuerySelect::read_key(DB::Specs::Key& key) {
 
 void QuerySelect::read_value(DB::Specs::Value& value) {
     Condition::Comp comp;
-    expect_comparator(comp, true);
-    std::string buf;
-    read(buf, 0, comp == Condition::RE);
-    if(!err)
-      value.set((uint8_t*)buf.data(), buf.length(), comp, true);
+    switch(value.col_type) {
+      case DB::Types::Column::SERIAL: {
+        found_comparator(comp = Condition::NONE, false);
+        if(comp == Condition::NONE)
+          comp = Condition::EQ;
+        else if(comp != Condition::EQ)
+          return error_msg(
+            Error::SQL_PARSE_ERROR, "unsupported 'comparator' allowed EQ");
+
+        bool bracket_square = false;
+        bool was_set;
+        while(remain && !err && found_space());
+        expect_token("[", 1, bracket_square);
+        if(err)
+          return;
+
+        DB::Specs::Serial::Value::Fields fields;
+        do {
+          uint32_t fid;
+          read_uint32_t(fid, was_set, ":");
+          if(err)
+            return;
+          while(remain && !err && found_space());
+          expect_token(":", 1, was_set);
+          if(err)
+            return;
+
+          DB::Cell::Serial::Value::Type typ = read_serial_value_type();
+          if(err)
+            return;
+          switch(typ) {
+
+            case DB::Specs::Serial::Value::Type::INT64: {
+              found_comparator(comp = Condition::NONE, false);
+              if(comp == Condition::NONE)
+                comp = Condition::EQ;
+              else if(comp == Condition::RE || comp == Condition::PF)
+                return error_msg(
+                  Error::SQL_PARSE_ERROR, "unsupported PF,RE 'comparator'");
+              int64_t v;
+              read_int64_t(v, was_set, ",]");
+              if(err)
+                return;
+              fields.add(
+                DB::Specs::Serial::Value::Field_INT64::make(
+                  fid, comp, v));
+              break;
+            }
+
+            case DB::Specs::Serial::Value::Type::DOUBLE: {
+              found_comparator(comp = Condition::NONE, false);
+              if(comp == Condition::NONE)
+                comp = Condition::EQ;
+              else if(comp == Condition::RE || comp == Condition::PF)
+                return error_msg(
+                  Error::SQL_PARSE_ERROR, "unsupported PF,RE 'comparator'");
+              long double v;
+              read_double_t(v, was_set, ",]");
+              if(err)
+                return;
+              fields.add(
+                DB::Specs::Serial::Value::Field_DOUBLE::make(
+                  fid, comp, v));
+              break;
+            }
+
+            case DB::Specs::Serial::Value::Type::BYTES: {
+              found_comparator(comp = Condition::NONE, true);
+              if(comp == Condition::NONE)
+                comp = Condition::EQ;
+              std::string buf;
+              read(buf, ",]");
+              if(err)
+                return;
+              fields.add(
+                DB::Specs::Serial::Value::Field_BYTES::make(
+                  fid, comp, (const uint8_t*)buf.data(), buf.size()));
+              break;
+            }
+
+            case DB::Specs::Serial::Value::Type::KEY: {
+              found_comparator(comp = Condition::NONE, false);
+              if(comp == Condition::NONE)
+                comp = Condition::EQ;
+              else if(comp != Condition::EQ)
+                return error_msg(
+                  Error::SQL_PARSE_ERROR,
+                  "unsupported 'comparator' allowed EQ");
+              std::string buf;
+              read(buf, "[");
+              if(err)
+                return;
+              auto seq = DB::Types::range_seq_from(buf);
+              if(seq == DB::Types::KeySeq::UNKNOWN)
+                return error_msg(Error::SQL_PARSE_ERROR, "bad 'KeqSeq'");
+              DB::Specs::Key fkey;
+              read_key(fkey);
+              if(err)
+                return;
+              fields.add(DB::Specs::Serial::Value::Field_KEY::make(
+                fid, seq, fkey));
+              break;
+            }
+
+            case DB::Specs::Serial::Value::Type::LIST_INT64: {
+              found_comparator(comp = Condition::NONE, false);
+              if(comp == Condition::NONE)
+                comp = Condition::EQ;
+              else if(comp == Condition::RE || comp == Condition::PF)
+                return error_msg(
+                  Error::SQL_PARSE_ERROR, "unsupported PF,RE 'comparator'");
+              while(remain && !err && found_space());
+              expect_token("[", 1, bracket_square);
+              if(err)
+                return;
+              std::vector<DB::Specs::Serial::Value::Field_LIST_INT64::Item> items;
+              do {
+                auto& item = items.emplace_back();
+                found_comparator(item.comp = Condition::NONE, false);
+                if(item.comp == Condition::NONE)
+                  item.comp = Condition::EQ;
+                else if(item.comp == Condition::RE || item.comp == Condition::PF)
+                  return error_msg(
+                    Error::SQL_PARSE_ERROR, "unsupported PF,RE 'comparator'");
+                read_int64_t(item.value, was_set, ",]");
+                if(err)
+                  return;
+                while(remain && !err && found_space());
+              } while(found_char(','));
+
+              expect_token("]", 1, bracket_square);
+              if(err)
+                return;
+              fields.add(
+                DB::Specs::Serial::Value::Field_LIST_INT64::make(
+                  fid, comp, items));
+              break;
+            }
+
+            default: {
+              return error_msg(
+                Error::SQL_PARSE_ERROR, "Not Supported Serial Value Type");
+            }
+          }
+          while(remain && !err && found_space());
+        } while(found_char(','));
+
+        expect_token("]", 1, bracket_square);
+        while(remain && !err && (found_char(' ') || found_char('\t')));
+        if(err)
+          return;
+
+        fields.encode(value);
+        break;
+      }
+      case DB::Types::Column::COUNTER_I64:
+      case DB::Types::Column::COUNTER_I32:
+      case DB::Types::Column::COUNTER_I16:
+      case DB::Types::Column::COUNTER_I8: {
+        found_comparator(comp = Condition::NONE, false);
+        if(comp == Condition::NONE)
+          comp = Condition::EQ;
+       else if(comp == Condition::RE || comp == Condition::PF)
+          return error_msg(
+            Error::SQL_PARSE_ERROR, "unsupported PF,RE 'comparator'");
+        std::string buf;
+        read(buf, 0, comp == Condition::RE);
+        if(!err)
+          value.set((uint8_t*)buf.data(), buf.length(), comp, true);
+        break;
+      }
+      default: {
+        found_comparator(comp = Condition::NONE, true);
+        if(comp == Condition::NONE)
+          comp = Condition::EQ;
+        std::string buf;
+        read(buf, 0, comp == Condition::RE);
+        if(!err)
+          value.set((uint8_t*)buf.data(), buf.length(), comp, true);
+        break;
+      }
+    }
 }
 
 void QuerySelect::read_timestamp(DB::Specs::Timestamp& start,
