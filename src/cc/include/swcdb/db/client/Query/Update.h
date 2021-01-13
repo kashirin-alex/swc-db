@@ -103,9 +103,10 @@ class Update final : public std::enable_shared_from_this<Update> {
 
   void wait();
 
-  bool wait_ahead_buffers();
+  bool wait_ahead_buffers(uint64_t from=0);
 
-  void commit_or_wait(const DB::Cells::ColCells::Ptr& col = nullptr);
+  void commit_or_wait(const DB::Cells::ColCells::Ptr& col = nullptr,
+                      uint64_t from=0);
 
   void commit_if_need();
   

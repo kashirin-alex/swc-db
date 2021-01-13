@@ -89,6 +89,11 @@ Column column_type_from(const std::string& typ) noexcept {
         return Column::SERIAL;
       break;
     }
+    case 7: {
+      if(!strncasecmp(typ.data(), Column_COUNTER_I64, 7))
+        return Column::COUNTER_I64;
+      break;
+    }
     case 10: {
       if(!strncasecmp(typ.data(), Column_COUNTER_I8, 10))
         return Column::COUNTER_I8;

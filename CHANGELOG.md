@@ -8,6 +8,16 @@
 
 ### [SWC-DB master](https://github.com/kashirin-alex/swc-db/tree/master) (upcoming-release)
 
+
+
+[_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.4.14...master)
+******
+
+
+
+
+### [SWC-DB v0.4.14](https://github.com/kashirin-alex/swc-db/releases/tag/v0.4.14) (2021-01-13)
+
     added class Core::StateRunning & changed running-state vars to StateRunning
     added core/Atomic.h & changed use cases of std::atomic<> to Core::Atomic<>
     changed possible returns of std::string to const char* as noexcept
@@ -16,6 +26,7 @@
     changed Ranger{Block,Fragment,Cs::Block} m_err,m_state,m_processing to atomic
     added class Core::QueuePointer<PtrT>
     fixed Ranger::CompactRange::add_cs, after finalize add to vector<Write::Ptr>
+    fixed Ranger::CompactRange::initialize, bad usage of signed-size 'split_at'
     changed Ranger::CompactRange::InBlock to QueuePointer<InBlock*>::Pointer base
     changed Ranger::CompactRange::m_q_{intval,encode,write} to QueuePointer<>
     merged Ranger class RangeQueryUpdate & ReqAdd with base QueuePointer<>::Pointer
@@ -36,8 +47,35 @@
     fixed FS::FileSystemHadoopJVM cases of invalidated hdfsFile instance usage
     fixed FsBroker handlers using 'close', remove fd from map after close
     fixed client::Query::Select interval-offset clear key at range-key_end is GE
+    changed client::Query::Update commit_or_/wait_ahead_buffers accept `from` count
+    moved KeySeq::is_matching(Specs::Key& key, Cell::Key& key) to Specs::Key
+    added void* Fraction::compiled precompiled case of Condition::RE
+    changed Specs::KeyIntervals::is_matching switch over keys loop
+    changed Buffer<T,SZ>::size to 56 Bit-Fields (a 16-byte struct)
+    added Buffer<T,SZ>::assign(const value_type* data, size_t len)
+    added sbin/swcdb_cluster tasks with 'kill' a not gracefull stop with SIGTERM
+    changed Condition::is_matching(comp, int64, int64) to template<T>
+    changed 'double' serialization in Core::Serialization
+    added Cell-Value encoding option in Cell serialization
+        added sql-update sytax with ENCODER (after value)
+        added TSV field 'Encoder' - '1' for encoded
+        added client::SQL token OUTPUT_NO_ENCODE
+        added control DB::Cells::HAVE_ENCODER & HAVE_ENCODER_MASK
+        added DB::Cells::OutputFlag::NO_ENCODE
+        added Cell::set_value(Types::Encoder enc, const uint8_t*, uint32_t);
+        added Cell::set_value(Types::Encoder enc, const std::string&)
+        added Cell::get_value(StaticBuffer& v, bool owner=false)
+        added bool Cell::have_encoder() const;
+        added load_generator option 'gen-cell-encoding'
+    added DB::Types::Column::SERIAL
+        added {Cell,Specs}ValueSerialFields.{h,cc}
+        added support for Serial types: INT64 ,DOUBLE ,BYTES ,KEY, LIST_INT64
+        added sql-{Select,Update} sytax for SERIAL value expressions
+    added bool Specs::Value::is_matching(const Cells::Cell& cell)
+    added void* Specs::Value::compiled precompiled specs cond. RE,COUNTER,SERIAL
 
-[_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.4.13...master)
+
+[_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.4.13...v0.4.14)
 ******
 
 

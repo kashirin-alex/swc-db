@@ -8,6 +8,47 @@ sort: 2
 
 
 
+## Table of Contents
+
+* [The Syntax Structure of Forms/Types](#syntax-structure-of-formstypes)
+  * [The Schema Syntax](#the-schema-syntax)
+  * [The Comparators syntax](#the-comparators-syntax)
+  * [The Column Selector Syntax](#the-column-selector-syntax)
+* [The Available Commands](#the-available-commands)
+* [The Commands](#the-available-commands)
+  * [Create/Modify/Remove Columns](#createmodifyremove-columns)
+  * [Get Columns](#get-columns)
+    * [A get columns example](#a-get-columns-example)
+  * [Compact Columns](#compact-columns)
+    * [A compact columns example](#a-compact-columns-example)
+  * [Select Query](#select-query)
+    * [The Select Query syntax](#the-select-query-syntax)
+    * [The Columns-Intervals syntax](#the-columns-intervals-syntax)
+    * [The Column-Intervals syntax](#the-column-intervals-syntax)
+    * [The Cells-Interval syntax](#the-cells-interval-syntax)
+    * [The Condition-Range syntax](#the-condition-range-syntax)
+    * [The Key-Intervals syntax](#the-key-intervals-syntax)
+    * [The Condition-Key-Interval syntax](#the-condition-key-interval-syntax)
+    * [The Condition-Key syntax](#the-condition-key-syntax)
+    * [The Condition-Value syntax](#the-condition-value-syntax)
+    * [The Condition-Value-Expression syntax](#the-condition-value-expression-syntax)
+    * [The Condition-Timestamp syntax](#the-condition-timestamp-syntax)
+    * [The Condition-Offset-Key syntax](#the-condition-offset-key-syntax)
+    * [The Condition-Offset-Revision syntax](#the-condition-offset-revision-syntax)
+    * [The Flags syntax](#the-flags-syntax)
+  * [Update Query](#update-query)
+    * [The Update Query syntax](#the-update-query-syntax)
+    * [The Cell for Update syntax](#the-cell-for-update-syntax)
+    * [A DELETE Flag](#a-delete-flag)
+    * [A DELETE_VERSION Flag](#a-delete_version-flag)
+    * [An INSERT Flag with auto-timestamp](#an-insert-flag-with-auto-timestamp)
+    * [An INSERT Flag with version-timestamp config](#an-insert-flag-with-version-timestamp-config)
+    * [An INSERT Flag for a SERIAL Column Type](#an-insert-flag-for-a-serial-column-type)
+    * [An INSERT Flag with Encoded-Value](#an-insert-flag-with-encoded-value)
+
+*****
+
+
 ## Syntax Structure of Forms/Types
 
 ### The Schema Syntax
@@ -19,7 +60,7 @@ The key fields:
 |cid            |```i64```          | NO_CID == 0                         | the Column ID                                                     |
 |name           |```string```       | empty                               | The Column Name                                                   |
 |seq            |```string```       | VOLUME                              | The Column Key Sequence, options LEXIC / VOLUME / FC_LEXIC / FC_VOLUME  |
-|type           |```string```       | PLAIN                               | The Column Value Type, options PLAIN / COUNTER_I{I64,32,16,8} / SERIAL     |
+|type           |```string```       | PLAIN                               | The Column Value Type, options PLAIN / COUNTER_I{64,32,16,8} / SERIAL     |
 |cell_versions  |```i32```          | 0 == 1                              | The Cell Versions                                                 |
 |cell_ttl       |```i32```          | 0 == without                        | The Time to Live in milliseconds                                  |
 |blk_encoding   |```string```       | DEFAULT = Rangers' default cfg      | The Block Encoding, options PLAIN / ZSTD / ZLIB / SNAPPY                |
@@ -36,7 +77,7 @@ The key fields:
 
 
 
-### Comparators syntax
+### The Comparators syntax
 
 | TOKEN syntax | Logic Syntax         | Description           |
 | ---          | ---                  | ---                   |
@@ -55,7 +96,7 @@ The key fields:
 
 
 
-### Column Selector Syntax
+### The Column Selector Syntax
 The Column Selector Syntax is comma-separated value (name, cid, and a Comparator-Expresssion) such as ```nameOne, 2,r'test$'``` with or without word-separators or a single column by name or cid.
 
 
@@ -150,7 +191,7 @@ remove column(
 > * ```column``` == ```schema```
 > * ```columns``` == ```schemas```
 
-The Syntax of the **Get Column** command [```The Command```] and, optionally in round-brackes ```()``` a [```Column Selector Syntax```](#column-selector-syntax).
+The Syntax of the **Get Column** command [```The Command```] and, optionally in round-brackes ```()``` a [```Column Selector Syntax```](#the-column-selector-syntax).
 > _COMPARATOR'expr' is not applicable for ```SYS_``` name-type columns._ \
 > The response is All columns if the _Column Selector_ is not applied.
 
@@ -168,7 +209,7 @@ get columns 1,SYS_MASTER_VOLUME, =^test
 > The command has aliases for Noun:
 > * ```columns``` == ```schemas```
 
-The Syntax of the **Compact Columns** command [```The Command```] and, optionally in round-brackes ```()``` [```Column Selector Syntax```](#column-selector-syntax) exclusing the Comparator-Expression.
+The Syntax of the **Compact Columns** command [```The Command```] and, optionally in round-brackes ```()``` [```Column Selector Syntax```](#the-column-selector-syntax) exclusing the Comparator-Expression.
 > If the _Column Selector_ is not applied, the request is to compact all columns.
 
 #### _a ```compact columns``` example:_
@@ -211,7 +252,7 @@ The Columns-Intervals is a grouping of Column-Intervals with the TOKEN ``` AND `
 
 
 * ##### The Column-Intervals syntax
-***```col(```[```Column Selector Syntax```](#column-selector-syntax) ```) = (``` [[```Cells-Intervals```](#the-cells-intervals-syntax)] ```)```***
+***```col(```[```Column Selector Syntax```](#the-column-selector-syntax) ```) = (``` [[```Cells-Intervals```](#the-cells-intervals-syntax)] ```)```***
 
 
 * ##### The Cells-Intervals syntax
@@ -289,7 +330,7 @@ The Expression of Value Condition dependable on the [Schema's column value type]
   ``` [ID:TYPE:COMP "VALUE", ... ] ``` - in square-brackets a comma-separated sets, a set is separated by colon with Field-ID, Field-Type and a Comparator with a Value. \
   The applicable Comparators depend on the Field-Type: ```BYTES(B)``` as PLAIN, ```INT64(I)```/```DOUBLE(D)``` as COUNTER, ```KEY(K)``` with KeySeq(LEXIC/VOLUME) followed by a [Condition-Key](#the-condition-key-syntax) and ```LIST_INT64(LI)``` Value as COUNTER with list-syntax ```COMP[COMP VALUE, .. ]```. \
   The SERIAL match requires all field-definitions matching ID+TYPE+COND, whereas Field-ID can have multiple Field-Type and Value definitions.\
-  _A data-set Example, a cell-value: \
+  _A data-set Example_, a cell-value: \
     ``` TS KEY  [0:I:1, 1:I:5, 2:I:1, 3:D:1.0, 4:B:"aBcdef", 5:K:[abc,def,ghi,4,5], 6:LI:[1,2,3,4,5,6,7], 7:B:"More-Bytes] ``` \
     can have the following Condition-Value syntax: \
     ``` value == [0:I:==1, 1:I:>4, 2:I:<5, 3:D:>0.123456, 4:B:=^aBc, 5:K:VOLUME[abc,def,ghi,>=""], 6:LI:<=[1,2,3,>0,5,6,==7,0] ] ```
@@ -344,28 +385,28 @@ UPDATE
 * #### The Cell for Update syntax
 The Syntax depends on the Flags and available definitions. 
 
-* ##### A _**DELETE**_ Flag requires:
+* ##### A **DELETE** Flag:
   ```cell(``` ``` DELETE ``` ```,``` ``` Column ID|NAME ``` ```,``` ``` Key ``` ```) ``` 
 
-* ##### A _**DELETE_VERSION**_ Flag requires:
+* ##### A **DELETE_VERSION** Flag:
   ```cell(``` ``` DELETE_VERSION ``` ```,``` ``` Column ID|NAME ``` ```,``` ``` Key ``` ```,``` ``` TIMESTAMP ``` ```) ``` 
 
-* ##### An _**INSERT**_ Flag with auto-timestamp requires:
+* ##### An **INSERT** Flag with auto-timestamp:
   ```cell(``` ``` INSERT ``` ```,``` ``` Column ID|NAME ``` ```,``` ``` Key ``` ```,``` ``` "" ``` ```,``` ``` VALUE-DATA ``` ```) ``` 
 
-* ##### An _**INSERT**_ Flag with version-timestamp config requires:
+* ##### An **INSERT** Flag with version-timestamp config:
   ```cell(``` ``` INSERT ``` ```,``` ``` Column ID|NAME ``` ```,``` ``` Key ``` ```,``` ``` TIME_ORDER ``` ```,``` ``` TIMESTAMP ``` ```,``` ``` VALUE-DATA ``` ```) ```
   > * _TIME_ODER_ options are ```ASC```/```DESC``` - empty-```entry,``` defaults to ```DESC``` .
   > * _TIMESTAMP_ in nanoseconds or a Date and Time in format ```"YYYY/MM/DDD HH:mm:ss.nanoseconds"```, empty-field is auto-assign.
 
-* ##### An _**INSERT**_ Flag for a SERIAL Column Type requires:
+* ##### An **INSERT** Flag for a SERIAL Column Type:
   As other **INSERT** with or without timestamp whereas ``` VALUE-DATA ``` defined in a serialization format. \
   The ``` VALUE-DATA ``` is a square-brackets of a field-sets ```[ID:TYPE:VALUE, ... ]```. The field-sets are unordered makes the less accessed field to be preferred as last.\
   An expectation of Field ID is to be a unique ID per each type, It is OK to have ```[1:I:123, 1:D:0.123, 1:B:"123", 1:K:[1,2,3]], 1:LI:[1,2,3]```
   * The Field-ID is a UINT24_T - max 16,777,215 possible Field-IDs.
-  * The Available Field-Type: ```INT64```|```I``` , ```DOUBLE```|```D```, ```BYTES```|```B```, ```KEY```|```K``` and ```LIST_INT64```|```LI```.
+  * The Available Field-Type: | ```INT64``` / ```I``` | ```DOUBLE``` / ```D``` | ```BYTES``` / ```B``` | ```KEY``` / ```K``` | ```LIST_INT64``` / ```LI``` |
 
-* ##### An _**INSERT**_ Flag with Encoded-Value requires:
+* ##### An **INSERT** Flag with Encoded-Value:
   The last definition of cell is set with the ENCODER.\
   ```cell(``` ``` INSERT``` ```,``` ``` Column ID/NAME``` ```,``` ``` Key ``` ```,``` ``` "" ``` ```,``` ``` VALUE-DATA ``` ```,``` ``` ENCODER ``` ```) ```
   * The available encoding for cell-value: ```ZLIB```, ```SNAPPY```, ```ZSTD``` - default without.

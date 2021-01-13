@@ -140,6 +140,7 @@ void check(SWC::DB::Types::KeySeq key_seq, SWC::DB::Types::Column typ,
 
 
   SWC::DB::Specs::Interval specs;
+  specs.value.col_type = typ;
   //specs.flags.limit = 5;
   specs.flags.offset = 0;
   /*

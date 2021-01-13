@@ -102,11 +102,11 @@ void Update::wait() {
   );
 }
 
-bool Update::wait_ahead_buffers() {
+bool Update::wait_ahead_buffers(uint64_t from) {
   std::unique_lock lock_wait(m_mutex);
   
   size_t bytes = columns->size_bytes() + columns_onfractions->size_bytes();
-  if(!result->completion.count())
+  if(from == result->completion.count())
     return bytes >= buff_sz;
 
   if(bytes < buff_sz * buff_ahead)
@@ -120,13 +120,14 @@ bool Update::wait_ahead_buffers() {
               < updater->buff_sz * updater->buff_ahead;
     }
   );
-  return !result->completion.count() && 
+  return from == result->completion.count() && 
           columns->size_bytes() + columns_onfractions->size_bytes() >= buff_sz;
 }
 
 
-void Update::commit_or_wait(const DB::Cells::ColCells::Ptr& col) {
-  if(wait_ahead_buffers())
+void Update::commit_or_wait(const DB::Cells::ColCells::Ptr& col,
+                            uint64_t from) {
+  if(wait_ahead_buffers(from))
     col ? commit(col) : commit();
 }
 

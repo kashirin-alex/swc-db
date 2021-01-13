@@ -255,7 +255,8 @@ Key::_is_matching(const Cell::Key &key) {
       return false;
     comp = it->comp;
   }
-  if(size() == key.count)
+  if(size() == key.count || // [,,>=''] spec incl. prior-match
+     (size() == key.count + 1 && it->empty() && it->comp == Condition::GE))
     return true;
 
   switch(comp) {
@@ -265,9 +266,7 @@ Key::_is_matching(const Cell::Key &key) {
     case Condition::GT:
       return empty() || size() < key.count;
     case Condition::GE:
-      // + or [,,>=''] spec incl. prior-match
-      return empty() || size() < key.count ||
-             (size() == key.count + 1 && it->empty());
+      return empty() || size() < key.count;
     case Condition::PF:
     case Condition::RE:
       return size() < key.count;

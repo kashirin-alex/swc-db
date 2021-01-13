@@ -91,7 +91,7 @@ DbClient::DbClient()
       "       value COMP 'DATA'                                  ",
       "       LIMIT=NUM   OFFSET=NUM  ONLY_KEYS   ONLY_DELETES     )",
       "     ) DISPLAY_* TIMESTAMP, DATETIME, SPECS, STATS, BINARY, COLUMN;",
-      " * DATA-value: PLAN, COUNTER, SERIAL([ID:TYPE:COMP \"VALUE\", ..]) "},
+      "* DATA-value: PLAN, COUNTER, SERIAL([ID:TYPE:COMP \"VALUE\", ..]) "},
       [ptr=this](std::string& cmd){return ptr->select(cmd);},
       new re2::RE2(
         "(?i)^(select)(\\s+|$)")

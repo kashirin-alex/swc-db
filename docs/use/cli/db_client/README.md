@@ -41,7 +41,7 @@ Usage Help:  'command' [options];
                            value COMP 'DATA'
                            LIMIT=NUM   OFFSET=NUM  ONLY_KEYS   ONLY_DELETES     )
                          ) DISPLAY_* TIMESTAMP, DATETIME, SPECS, STATS, BINARY, COLUMN;
-                     * DATA-value: PLAN, COUNTER, SERIAL([ID:TYPE:COMP "VALUE", ..])
+                    * DATA-value: PLAN, COUNTER, SERIAL([ID:TYPE:COMP "VALUE", ..])
   update            update cell(FLAG, CID|NAME, KEY, TIMESTAMP, VALUE, ENC), CELL(..) ;
                     -> UPDATE
                          cell(DELETE,                  CID, ['K','E','Y']             );

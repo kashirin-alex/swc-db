@@ -242,7 +242,7 @@ class Test {
           wfields.add((int64_t)*it);
           t = DB::Cell::Serial::Value::Type::DOUBLE;
         } else if(t == DB::Cell::Serial::Value::Type::DOUBLE) {
-          wfields.add((long double)*it);
+          wfields.add((long double)(int)*it);
           t = DB::Cell::Serial::Value::Type::BYTES;
         } else if(t == DB::Cell::Serial::Value::Type::BYTES) {
           char c = *it;
@@ -294,6 +294,9 @@ class Test {
         query_select(0, 0);
       }
     );
+    
+    req->result->completion.increment();
+
     req->columns->create(schema);
     auto col = req->columns->get_col(schema->cid);
 
@@ -312,11 +315,11 @@ class Test {
             apply_cell_value(cell);
           }
           col->add(cell);
-          req->commit_or_wait(col);
+          req->commit_or_wait(col, 1);
         }
       }
     }
-    req->commit_if_need();
+    req->response(Error::OK);
   }
 
 
