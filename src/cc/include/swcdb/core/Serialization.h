@@ -193,7 +193,7 @@ uint64_t decode_i64(const uint8_t** bufp, size_t* remainp) {
 
 
 extern SWC_CAN_INLINE
-int encoded_length_vi24(uint24_t val) {
+uint8_t encoded_length_vi24(uint24_t val) {
   return
   (val <= MAX_V1B ? 1 :
    (val <= MAX_V2B ? 2 :
@@ -228,7 +228,7 @@ uint24_t decode_vi24(const uint8_t** bufp) {
 
 
 extern SWC_CAN_INLINE
-int encoded_length_vi32(uint32_t val) {
+uint8_t encoded_length_vi32(uint32_t val) {
   return
   (val <= MAX_V1B ? 1 :
    (val <= MAX_V2B ? 2 :
@@ -266,7 +266,7 @@ uint32_t decode_vi32(const uint8_t** bufp) {
 }
 
 extern SWC_CAN_INLINE
-int encoded_length_vi64(uint64_t val) {
+uint8_t encoded_length_vi64(uint64_t val) {
   return
   (val <= MAX_V1B ? 1 :
    (val <= MAX_V2B ? 2 :
@@ -319,8 +319,218 @@ uint64_t decode_vi64(const uint8_t** bufp) {
 }
 
 
+template<uint8_t BITS, uint8_t SZ, typename T>
 extern SWC_CAN_INLINE
-int encoded_length_double() {
+void encode_fixed_vi(uint8_t** bufp, Core::BitFieldInt<T, BITS> val) {
+  **bufp = SZ;
+  memcpy(++*bufp, (const uint8_t*)&val, SZ);
+  *bufp += SZ;
+}
+
+template<uint8_t BITS, uint8_t SZ, typename T>
+extern SWC_CAN_INLINE
+T decode_fixed_vi(const uint8_t** bufp) {
+  Core::BitFieldInt<T, BITS> val;
+  memcpy((uint8_t*)&val, *bufp, SZ);
+  *bufp += SZ;
+  return val;
+}
+
+
+extern SWC_CAN_INLINE
+uint8_t encoded_length_fixed_vi24(uint24_t val) {
+  switch((uint32_t)val) {
+    case 0x00       ... 0xFB:
+      return 1;
+    case 0xFB   + 1 ... 0xFF:
+      return 2;
+    case 0xFF   + 1 ... 0xFFFF:
+      return 3;
+    default:
+      return 4;
+  }
+}
+
+extern SWC_CAN_INLINE
+void encode_fixed_vi24(uint8_t** bufp, uint24_t val) {
+  switch((uint32_t)val) {
+    case 0x00       ... 0xFB:
+     return encode_i8(bufp, val + 4);
+    case 0xFB   + 1 ... 0xFF:
+      return encode_fixed_vi<8,  1, uint32_t>(bufp, val);
+    case 0xFF   + 1 ... 0xFFFF:
+      return encode_fixed_vi<16, 2, uint32_t>(bufp, val);
+    default:
+      return encode_fixed_vi<24, 3, uint32_t>(bufp, val);
+  }
+}
+
+extern SWC_CAN_INLINE
+uint24_t decode_fixed_vi24(const uint8_t** bufp, size_t* remainp) {
+  uint8_t b = decode_i8(bufp, remainp);
+  if(b > 3)
+    return b - 4;
+  decode_needed(remainp, b);
+  switch(b) {
+    case 1:
+      return decode_fixed_vi<8,  1, uint32_t>(bufp);
+    case 2: 
+      return decode_fixed_vi<16, 2, uint32_t>(bufp);
+    default: 
+      return decode_fixed_vi<24, 3, uint32_t>(bufp);
+  }
+}
+
+extern SWC_CAN_INLINE
+uint24_t decode_fixed_vi24(const uint8_t** bufp) {
+  size_t remain = 4;
+  return decode_fixed_vi24(bufp, &remain);
+}
+
+
+extern SWC_CAN_INLINE
+uint8_t encoded_length_fixed_vi32(uint32_t val) {
+  switch(val) {
+    case 0x00       ... 0xFA:
+      return 1;
+    case 0xFA   + 1 ... 0xFF:
+      return 2;
+    case 0xFF   + 1 ... 0xFFFF:
+      return 3;
+    case 0xFFFF + 1 ... 0xFFFFFF:
+      return 4;
+    default:
+      return 5;
+  }
+}
+
+extern SWC_CAN_INLINE
+void encode_fixed_vi32(uint8_t** bufp, uint32_t val) {
+  switch(val) {
+    case 0x00       ... 0xFA:
+      return encode_i8(bufp, val + 5);
+    case 0xFA + 1   ... 0xFF: 
+      return encode_fixed_vi<8,  1, uint32_t>(bufp, val);
+    case 0xFF + 1   ... 0xFFFF:
+      return encode_fixed_vi<16, 2, uint32_t>(bufp, val);
+    case 0xFFFF + 1 ... 0xFFFFFF:
+      return encode_fixed_vi<24, 3, uint32_t>(bufp, val);
+    default:
+      return encode_fixed_vi<32, 4, uint32_t>(bufp, val);
+  }
+}
+
+extern SWC_CAN_INLINE
+uint32_t decode_fixed_vi32(const uint8_t** bufp, size_t* remainp) {
+  uint8_t b = decode_i8(bufp, remainp);
+  if(b > 4)
+    return b - 5;
+  decode_needed(remainp, b);
+  switch(b) {
+    case 1:
+      return decode_fixed_vi<8,  1, uint32_t>(bufp);
+    case 2:
+      return decode_fixed_vi<16, 2, uint32_t>(bufp);
+    case 3:
+      return decode_fixed_vi<24, 3, uint32_t>(bufp);
+    default:
+      return decode_fixed_vi<32, 4, uint32_t>(bufp);
+  }
+}
+
+extern SWC_CAN_INLINE
+uint32_t decode_fixed_vi32(const uint8_t** bufp) {
+  size_t remain = 5;
+  return decode_fixed_vi32(bufp, &remain);
+}
+
+
+extern SWC_CAN_INLINE
+uint8_t encoded_length_fixed_vi64(uint64_t val) {
+  switch(val) {
+    case 0x00                 ... 0xF6:
+      return 1;
+    case 0xF6             + 1 ... 0xFF:
+      return 2;
+    case 0xFF             + 1 ... 0xFFFF:
+      return 3;
+    case 0xFFFF           + 1 ... 0xFFFFFF:
+      return 4;
+    case 0xFFFFFF         + 1 ... 0xFFFFFFFF:
+      return 5;
+    default:  
+      break;
+  }
+  if(val < 0xFFFFFFFFFF)
+    return 6;
+  if(val < 0xFFFFFFFFFFFF)
+    return 7;
+  if(val < 0xFFFFFFFFFFFFFF)
+    return 8;
+  return 9;
+}
+
+extern SWC_CAN_INLINE
+void encode_fixed_vi64(uint8_t** bufp, uint64_t val) {
+  switch(val) {
+    case 0x00                 ... 0xF6:
+      return encode_i8(bufp, val + 9);
+    case 0xF6             + 1 ... 0xFF: 
+      return encode_fixed_vi<8,  1, uint64_t>(bufp, val);
+    case 0xFF             + 1 ... 0xFFFF:
+      return encode_fixed_vi<16, 2, uint64_t>(bufp, val);
+    case 0xFFFF           + 1 ... 0xFFFFFF:
+      return encode_fixed_vi<24, 3, uint64_t>(bufp, val); 
+    case 0xFFFFFF         + 1 ... 0xFFFFFFFF:
+      return encode_fixed_vi<32, 4, uint64_t>(bufp, val); 
+    default: 
+      break;
+  }
+  if(val < 0xFFFFFFFFFF)
+    return encode_fixed_vi<40, 5, uint64_t>(bufp, val);
+  if(val < 0xFFFFFFFFFFFF)
+    return encode_fixed_vi<48, 6, uint64_t>(bufp, val);
+  if(val < 0xFFFFFFFFFFFFFF)
+    return encode_fixed_vi<56, 7, uint64_t>(bufp, val);
+  return encode_fixed_vi<64, 8, uint64_t>(bufp, val);
+}
+
+extern SWC_CAN_INLINE
+uint64_t decode_fixed_vi64(const uint8_t** bufp, size_t* remainp) {
+  uint8_t b = decode_i8(bufp, remainp);
+  if(b > 8)
+    return b - 9;
+  decode_needed(remainp, b);
+  switch(b) {
+    case 1:
+      return decode_fixed_vi<8,  1, uint64_t>(bufp);
+    case 2:
+      return decode_fixed_vi<16, 2, uint64_t>(bufp);
+    case 3:
+      return decode_fixed_vi<24, 3, uint64_t>(bufp);
+    case 4:
+      return decode_fixed_vi<32, 4, uint64_t>(bufp);
+    case 5:
+      return decode_fixed_vi<40, 5, uint64_t>(bufp);
+    case 6:
+      return decode_fixed_vi<48, 6, uint64_t>(bufp);
+    case 7:
+      return decode_fixed_vi<56, 7, uint64_t>(bufp);
+    default:
+      return decode_fixed_vi<64, 8, uint64_t>(bufp);
+  }
+}
+
+extern SWC_CAN_INLINE
+uint64_t decode_fixed_vi64(const uint8_t** bufp) {
+  size_t remain = 9;
+  return decode_fixed_vi64(bufp, &remain);
+}
+
+
+
+extern SWC_CAN_INLINE
+uint8_t encoded_length_double() {
   return sizeof(long double);
 }
 

@@ -92,7 +92,7 @@ void test_i24() {
   }
   ns = Time::now_ns() - ns;
   std::cout << "i24 took=" << ns 
-            << " avg=" << (double)ns / UINT24_MAX << "\n";
+            << " avg=" << double(ns) / double(UINT24_MAX) << "\n";
 }
 
 void test_i32() {
@@ -118,7 +118,7 @@ void test_i32() {
   }
   ns = Time::now_ns() - ns;
   std::cout << "i32 took=" << ns 
-            << " avg=" << (double)ns / UINT32_MAX << "\n";
+            << " avg=" << double(ns) / double(UINT32_MAX) << "\n";
 }
 
 void test_i64() {
@@ -236,7 +236,7 @@ void chk_vi64(uint64_t n) {
   uint8_t* p = buf;
   const uint8_t *p2 = buf;
   encode_vi64(&p, n);
-  SWC_TRY("decoding vint32",
+  SWC_TRY("decoding vint64",
     SWC_ASSERT(decode_vi64(&p2) == n);
     SWC_ASSERT(p2-buf == encoded_length_vi64(n)));
 }
@@ -275,6 +275,139 @@ void test_vi64() {
   }
   ns = Time::now_ns() - ns;
   std::cout << "vi64 upper took=" << ns 
+            << " avg=" << (double)ns / c << " c=" << c << "\n";
+}
+
+
+
+void chk_fixed_vi24(uint24_t n) {
+  uint8_t buf[4] = {0};
+  uint8_t *p = buf;
+  const uint8_t *p2 = buf;
+  encode_fixed_vi24(&p, n);
+  SWC_TRY("decoding fixed_vint24",
+    SWC_ASSERT(decode_fixed_vi24(&p2) == n);
+    SWC_ASSERT(p2-buf == encoded_length_fixed_vi24(n)));
+}
+
+void test_fixed_vi24() {
+  {
+  uint8_t buf[4], *p = buf;
+  uint24_t input = 0xfebabe;
+  encode_fixed_vi24(&p, 0xfebabe);
+  const uint8_t *p2 = buf;
+  size_t len = sizeof(buf);
+  SWC_TRY("decoding fixed_vint24",
+    SWC_ASSERT(decode_fixed_vi24(&p2, &len) == input);
+    SWC_ASSERT(p2 - buf == 4);
+    SWC_ASSERT(!len));
+  }
+
+  uint64_t c = 0;
+  auto ns = Time::now_ns();
+  for(uint32_t p=0; p<PROBES;++p)
+  for(uint24_t n=0; n<MAX_CHECKS;++n) {
+    chk_fixed_vi24(n);
+    ++c;
+  }
+  ns = Time::now_ns() - ns;
+  std::cout << "fixed_vi24       took=" << ns 
+            << " avg=" << (double)ns / c << " c=" << c << "\n";
+}
+
+
+void chk_fixed_vi32(uint32_t n) {
+  uint8_t buf[5] = {0};
+  uint8_t* p = buf;
+  const uint8_t *p2 = buf;
+  encode_fixed_vi32(&p, n);
+  SWC_TRY("decoding fixed_vint32",
+    SWC_ASSERT(decode_fixed_vi32(&p2) == n);
+    SWC_ASSERT(p2-buf == encoded_length_fixed_vi32(n)));
+}
+
+void test_fixed_vi32() {
+  {
+  uint8_t buf[5], *p = buf;
+  uint32_t input = 0xcafebabe;
+  encode_fixed_vi32(&p, 0xcafebabe);
+  const uint8_t *p2 = buf;
+  size_t len = sizeof(buf);
+  SWC_TRY("decoding fixed_vint32",
+    SWC_ASSERT(decode_fixed_vi32(&p2, &len) == input);
+    SWC_ASSERT(p2 - buf == 5);
+    SWC_ASSERT(!len));
+  }
+
+  uint64_t c = 0;
+  auto ns = Time::now_ns();
+  for(uint32_t p=0; p<PROBES;++p)
+  for(uint32_t n=0; n<MAX_CHECKS;++n) {
+    chk_fixed_vi32(n);
+    ++c;
+  }
+  ns = Time::now_ns() - ns;
+  std::cout << "fixed_vi32 lower took=" << ns 
+            << " avg=" << (double)ns / c << " c=" << c << "\n";
+  c = 0;
+  ns = Time::now_ns();
+  for(uint32_t p=0; p<PROBES;++p)
+  for(uint32_t n=UINT32_MAX-MAX_CHECKS+1; n <= UINT32_MAX ;++n) {
+    chk_fixed_vi32(n);  
+    ++c;
+    if(n == UINT32_MAX)
+      break;
+  }
+  ns = Time::now_ns() - ns;
+  std::cout << "fixed_vi32 upper took=" << ns 
+            << " avg=" << (double)ns / c << " c=" << c << "\n";
+}
+
+
+void chk_fixed_vi64(uint64_t n) {
+  uint8_t buf[9] = {0};
+  uint8_t* p = buf;
+  const uint8_t *p2 = buf;
+  encode_fixed_vi64(&p, n);
+  SWC_TRY("decoding fixed_vint64",
+    SWC_ASSERT(decode_fixed_vi64(&p2) == n);
+    SWC_ASSERT(p2-buf == encoded_length_fixed_vi64(n)));
+}
+
+void test_fixed_vi64() {
+  {
+  uint8_t buf[9], *p = buf;
+  uint64_t input = 0xfcafebabeabadbab;
+  encode_fixed_vi64(&p, input);
+  const uint8_t *p2 = buf;
+  size_t len = sizeof(buf);
+  SWC_TRY("decoding fixed_vint64",
+    SWC_ASSERT(decode_fixed_vi64(&p2, &len) == input);
+    SWC_ASSERT(p2 - buf == 9);
+    SWC_ASSERT(!len));
+  }
+  
+  uint64_t c = 0;
+  auto ns = Time::now_ns();
+  for(uint32_t p=0; p<PROBES;++p)
+  for(uint64_t n=0; n<MAX_CHECKS;++n) {
+    chk_fixed_vi64(n);
+    ++c;
+  }
+  ns = Time::now_ns() - ns;
+  std::cout << "fixed_vi64 lower took=" << ns 
+            << " avg=" << (double)ns / c << " c=" << c << "\n";
+  c = 0;
+  ns = Time::now_ns();
+  for(uint32_t p=0; p<PROBES;++p)
+  for(uint64_t n=UINT64_MAX-MAX_CHECKS+1; n<=UINT64_MAX;++n) {
+    chk_fixed_vi64(n);
+    ++c;
+    if(n == UINT64_MAX)
+      break;
+  }
+  ns = Time::now_ns() - ns;
+  std::cout << "fixed_vi64 upper took=" << ns 
             << " avg=" << (double)ns / c << " c=" << c << "\n";
 }
 
@@ -354,6 +487,9 @@ void test_ser() {
   test_vi24();
   test_vi32();
   test_vi64();
+  test_fixed_vi24();
+  test_fixed_vi32();
+  test_fixed_vi64();
   test_bytes_string();
   
   test_bad_vi24();
