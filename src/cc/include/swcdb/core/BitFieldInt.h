@@ -17,15 +17,12 @@ struct BitFieldInt final {
 
   BitFieldInt<T, SZ>() { }
 
-  ~BitFieldInt<T, SZ>() { }
+  template<typename FROM_T>
+  BitFieldInt<T, SZ>(const FROM_T& v) : data(v) { }
   
   operator bool() const {
     return data;
   }
-
-  template<typename FROM_T>
-  BitFieldInt<T, SZ>(const FROM_T& v) : data(v) { }
-
 
   BitFieldInt<T, SZ>& operator++() {
     ++data;
