@@ -84,6 +84,8 @@ class Reader {
 
   void read_key(DB::Cell::Key& key);
 
+  bool is_numeric_comparator(Condition::Comp& comp, bool _double=false);
+
   void error_msg(int error, const std::string& msg);
 
   const std::string&  sql;

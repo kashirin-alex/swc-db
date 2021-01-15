@@ -314,6 +314,33 @@ void Reader::read_key(DB::Cell::Key& key) {
   expect_token("]", 1, bracket_square);
 }
 
+bool Reader::is_numeric_comparator(Condition::Comp& comp, bool _double) {
+  switch(comp) {
+    case Condition::NONE: {
+      comp = Condition::EQ;
+      return true;
+    }
+    case Condition::RE:
+    case Condition::PF:
+    case Condition::POSBS:
+    case Condition::POSPS: {
+      error_msg(Error::SQL_PARSE_ERROR,
+        "unsupported numeric 'comparator' PF,RE,POSBS,POSPS");
+      return false;
+    }
+    case Condition::FOSBS:
+    case Condition::FOSPS: {
+      if(_double) {
+        error_msg(Error::SQL_PARSE_ERROR,
+          "unsupported double numeric 'comparator' FOSPS,FOSBS");
+        return false;
+      }
+      return true;
+    }
+    default:
+      return true;
+  }
+}
 
 void Reader::error_msg(int error, const std::string& msg) {
   err = error;

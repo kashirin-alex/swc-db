@@ -238,14 +238,14 @@ bool Field_LIST_INT64::is_matching(Cell::Serial::Value::Field* vfieldp) {
   switch(comp) {
 
     case Condition::NE: {
-      uint32_t i = 0;
-      for(; remain && i < items.size(); ++i) {
+      auto it = items.begin();
+      for(; remain && it < items.end(); ++it) {
         if(!Condition::is_matching(
-              items[i].comp, items[i].value,
+              it->comp, it->value,
               (int64_t)Serialization::decode_vi64(&ptr, &remain)))
           return true;
       }
-      return remain || i < items.size();
+      return remain || it < items.end();
     }
 
     case Condition::GT:
@@ -253,19 +253,131 @@ bool Field_LIST_INT64::is_matching(Cell::Serial::Value::Field* vfieldp) {
     case Condition::GE:
     case Condition::LE:
     case Condition::EQ: {
-      uint32_t i = 0;
-      for(; remain && i < items.size(); ++i) {
+      auto it = items.begin();
+      for(; remain && it < items.end(); ++it) {
         if(!Condition::is_matching(
-              items[i].comp, items[i].value,
+              it->comp, it->value,
               (int64_t)Serialization::decode_vi64(&ptr, &remain)))
           break;
       }
       return remain
         ? (comp == Condition::GT || comp == Condition::GE)
-        : (i == items.size()
+        : (it == items.end()
             ? (comp == Condition::EQ ||
                comp == Condition::LE || comp == Condition::GE)
             : (comp == Condition::LT || comp == Condition::LE));
+    }
+
+    case Condition::SBS: {
+      std::vector<std::vector<Item>::const_iterator> found(
+        items.size(), items.cend());
+      while(remain) {
+        int64_t v = Serialization::decode_vi64(&ptr, &remain);
+        for(auto it = items.begin(); ; ) {
+          if(Condition::is_matching(it->comp, it->value, v)) {
+            auto f = found.begin();
+            for(; *f != items.cend(); ++f) {
+              if(*f == it)
+                goto _continue_sbs;
+            }
+            *f = it;
+            if(++f == found.end())
+              remain = 0;
+            break;
+          }
+          _continue_sbs:
+            if(++it == items.end())
+              break;
+        }
+      }
+      for(auto& f : found) {
+        if(f == items.cend())
+          return false;
+      }
+      return true;
+    }
+
+    case Condition::SPS: {
+      std::vector<std::vector<Item>::const_iterator> found(
+        items.size(), items.cend());
+      while(remain) {
+        int64_t v = Serialization::decode_vi64(&ptr, &remain);
+        for(auto it = items.begin(); ;) {
+          if(Condition::is_matching(it->comp, it->value, v)) {
+            auto f = found.begin();
+            for(; *f != items.cend(); ++f) {
+              if(*f == it)
+                goto _continue_sps;
+            }
+            *f = it;
+            break;
+          }
+          _continue_sps:
+            if(++it == items.end())
+              return false;
+        }
+      }
+      return true;
+    }
+
+    case Condition::POSBS: {
+      auto it = items.begin();
+      for(; remain && it < items.end(); ) {
+        if(Condition::is_matching(
+              it->comp, it->value,
+              (int64_t)Serialization::decode_vi64(&ptr, &remain)))
+          ++it;
+      }
+      return it == items.end();
+    }
+
+    case Condition::FOSBS: {
+      auto it = items.begin();
+      for(bool start = false; remain && it < items.end(); ) {
+        if(Condition::is_matching(
+              it->comp, it->value,
+              (int64_t)Serialization::decode_vi64(&ptr, &remain))) {
+          start = true;
+          ++it;
+        } else if(start) {
+          return false;
+        }
+      }
+      return it == items.end();
+    }
+
+    case Condition::POSPS: {
+      for(auto ord = items.begin(); remain && ord < items.end(); ) {
+        int64_t v = Serialization::decode_vi64(&ptr, &remain);
+        for(auto it = ord; ;) {
+          if(Condition::is_matching(it->comp, it->value, v)) {
+            ++ord;
+            break;
+          }
+          if(++it == items.end())
+            return false;
+        }
+      }
+      return !remain;
+    }
+
+    case Condition::FOSPS: {
+      bool start = false;
+      for(auto ord = items.begin(); remain && ord < items.end(); ) {
+        int64_t v = Serialization::decode_vi64(&ptr, &remain);
+        for(auto it = ord; ;) {
+          if(Condition::is_matching(it->comp, it->value, v)) {
+            start = true;
+            ord = ++it;
+            break;
+          } else if(start) {
+            return false;
+          }
+          if(++it == items.end())
+            return false;
+        }
+      }
+      return !remain;
     }
 
     default:

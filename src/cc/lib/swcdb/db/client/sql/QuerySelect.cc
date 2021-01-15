@@ -761,11 +761,8 @@ void QuerySelect::read_value(DB::Specs::Value& value) {
 
             case DB::Specs::Serial::Value::Type::INT64: {
               found_comparator(comp = Condition::NONE, false);
-              if(comp == Condition::NONE)
-                comp = Condition::EQ;
-              else if(comp == Condition::RE || comp == Condition::PF)
-                return error_msg(
-                  Error::SQL_PARSE_ERROR, "unsupported PF,RE 'comparator'");
+              if(!is_numeric_comparator(comp))
+                return;
               int64_t v;
               read_int64_t(v, was_set, ",]");
               if(err)
@@ -778,11 +775,8 @@ void QuerySelect::read_value(DB::Specs::Value& value) {
 
             case DB::Specs::Serial::Value::Type::DOUBLE: {
               found_comparator(comp = Condition::NONE, false);
-              if(comp == Condition::NONE)
-                comp = Condition::EQ;
-              else if(comp == Condition::RE || comp == Condition::PF)
-                return error_msg(
-                  Error::SQL_PARSE_ERROR, "unsupported PF,RE 'comparator'");
+              if(!is_numeric_comparator(comp, true))
+                return;
               long double v;
               read_double_t(v, was_set, ",]");
               if(err)
@@ -798,7 +792,7 @@ void QuerySelect::read_value(DB::Specs::Value& value) {
               if(comp == Condition::NONE)
                 comp = Condition::EQ;
               std::string buf;
-              read(buf, ",]");
+              read(buf, ",]", comp == Condition::RE);
               if(err)
                 return;
               fields.add(
@@ -846,11 +840,8 @@ void QuerySelect::read_value(DB::Specs::Value& value) {
               do {
                 auto& item = items.emplace_back();
                 found_comparator(item.comp = Condition::NONE, false);
-                if(item.comp == Condition::NONE)
-                  item.comp = Condition::EQ;
-                else if(item.comp == Condition::RE || item.comp == Condition::PF)
-                  return error_msg(
-                    Error::SQL_PARSE_ERROR, "unsupported PF,RE 'comparator'");
+               if(!is_numeric_comparator(item.comp))
+                  return;
                 read_int64_t(item.value, was_set, ",]");
                 if(err)
                   return;
@@ -887,13 +878,10 @@ void QuerySelect::read_value(DB::Specs::Value& value) {
       case DB::Types::Column::COUNTER_I16:
       case DB::Types::Column::COUNTER_I8: {
         found_comparator(comp = Condition::NONE, false);
-        if(comp == Condition::NONE)
-          comp = Condition::EQ;
-       else if(comp == Condition::RE || comp == Condition::PF)
-          return error_msg(
-            Error::SQL_PARSE_ERROR, "unsupported PF,RE 'comparator'");
+        if(!is_numeric_comparator(comp))
+          return;
         std::string buf;
-        read(buf, 0, comp == Condition::RE);
+        read(buf, 0, false);
         if(!err)
           value.set((uint8_t*)buf.data(), buf.length(), comp, true);
         break;
