@@ -54,6 +54,7 @@ class ColumnType(object):
     COUNTER_I32 = 3
     COUNTER_I16 = 4
     COUNTER_I8 = 5
+    SERIAL = 6
     CELL_DEFINED = 15
 
     _VALUES_TO_NAMES = {
@@ -63,6 +64,7 @@ class ColumnType(object):
         3: "COUNTER_I32",
         4: "COUNTER_I16",
         5: "COUNTER_I8",
+        6: "SERIAL",
         15: "CELL_DEFINED",
     }
 
@@ -73,6 +75,7 @@ class ColumnType(object):
         "COUNTER_I32": 3,
         "COUNTER_I16": 4,
         "COUNTER_I8": 5,
+        "SERIAL": 6,
         "CELL_DEFINED": 15,
     }
 
@@ -148,6 +151,12 @@ class Comp(object):
     VGE = 10
     VLE = 11
     VLT = 12
+    SBS = 13
+    SPS = 14
+    POSBS = 15
+    POSPS = 16
+    FOSBS = 17
+    FOSPS = 18
 
     _VALUES_TO_NAMES = {
         0: "NONE",
@@ -163,6 +172,12 @@ class Comp(object):
         10: "VGE",
         11: "VLE",
         12: "VLT",
+        13: "SBS",
+        14: "SPS",
+        15: "POSBS",
+        16: "POSPS",
+        17: "FOSBS",
+        18: "FOSPS",
     }
 
     _NAMES_TO_VALUES = {
@@ -179,6 +194,12 @@ class Comp(object):
         "VGE": 10,
         "VLE": 11,
         "VLT": 12,
+        "SBS": 13,
+        "SPS": 14,
+        "POSBS": 15,
+        "POSPS": 16,
+        "FOSBS": 17,
+        "FOSPS": 18,
     }
 
 

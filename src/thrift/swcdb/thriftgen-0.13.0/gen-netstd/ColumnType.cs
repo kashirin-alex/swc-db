@@ -35,6 +35,10 @@ public enum ColumnType
   /// </summary>
   COUNTER_I8 = 5,
   /// <summary>
+  /// A Serial Column Value
+  /// </summary>
+  SERIAL = 6,
+  /// <summary>
   /// Not used - experimental
   /// </summary>
   CELL_DEFINED = 15,

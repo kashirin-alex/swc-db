@@ -55,6 +55,7 @@ int _kColumnTypeValues[] = {
   ColumnType::COUNTER_I32,
   ColumnType::COUNTER_I16,
   ColumnType::COUNTER_I8,
+  ColumnType::SERIAL,
   ColumnType::CELL_DEFINED
 };
 const char* _kColumnTypeNames[] = {
@@ -64,9 +65,10 @@ const char* _kColumnTypeNames[] = {
   "COUNTER_I32",
   "COUNTER_I16",
   "COUNTER_I8",
+  "SERIAL",
   "CELL_DEFINED"
 };
-const std::map<int, const char*> _ColumnType_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(7, _kColumnTypeValues, _kColumnTypeNames), ::apache::thrift::TEnumIterator(-1, NULL, NULL));
+const std::map<int, const char*> _ColumnType_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(8, _kColumnTypeValues, _kColumnTypeNames), ::apache::thrift::TEnumIterator(-1, NULL, NULL));
 
 std::ostream& operator<<(std::ostream& out, const ColumnType::type& val) {
   std::map<int, const char*>::const_iterator it = _ColumnType_VALUES_TO_NAMES.find(val);
@@ -168,7 +170,13 @@ int _kCompValues[] = {
   Comp::VGT,
   Comp::VGE,
   Comp::VLE,
-  Comp::VLT
+  Comp::VLT,
+  Comp::SBS,
+  Comp::SPS,
+  Comp::POSBS,
+  Comp::POSPS,
+  Comp::FOSBS,
+  Comp::FOSPS
 };
 const char* _kCompNames[] = {
   "NONE",
@@ -183,9 +191,15 @@ const char* _kCompNames[] = {
   "VGT",
   "VGE",
   "VLE",
-  "VLT"
+  "VLT",
+  "SBS",
+  "SPS",
+  "POSBS",
+  "POSPS",
+  "FOSBS",
+  "FOSPS"
 };
-const std::map<int, const char*> _Comp_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(13, _kCompValues, _kCompNames), ::apache::thrift::TEnumIterator(-1, NULL, NULL));
+const std::map<int, const char*> _Comp_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(19, _kCompValues, _kCompNames), ::apache::thrift::TEnumIterator(-1, NULL, NULL));
 
 std::ostream& operator<<(std::ostream& out, const Comp::type& val) {
   std::map<int, const char*>::const_iterator it = _Comp_VALUES_TO_NAMES.find(val);

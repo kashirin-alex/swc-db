@@ -62,7 +62,31 @@ public enum Comp implements org.apache.thrift.TEnum {
   /**
    * [  v<  ]  :   -vlt           (vol lower-than)
    */
-  VLT(12);
+  VLT(12),
+  /**
+   * [  %>  ] :    -subset [sbs]  (subset)
+   */
+  SBS(13),
+  /**
+   * [  <%  ] :    -supset [sps]  (superset)
+   */
+  SPS(14),
+  /**
+   * [  ~>  ] :    -posubset [posbs] (eq/part ordered subset)
+   */
+  POSBS(15),
+  /**
+   * [  <~  ] :    -posupset [posps] (eq/part ordered superset)
+   */
+  POSPS(16),
+  /**
+   * [  ->  ] :    -fosubset [fosbs] (eq/full ordered subset)
+   */
+  FOSBS(17),
+  /**
+   * [  <-  ] :    -fosupset [fosps] (eq/full ordered superset)
+   */
+  FOSPS(18);
 
   private final int value;
 
@@ -110,6 +134,18 @@ public enum Comp implements org.apache.thrift.TEnum {
         return VLE;
       case 12:
         return VLT;
+      case 13:
+        return SBS;
+      case 14:
+        return SPS;
+      case 15:
+        return POSBS;
+      case 16:
+        return POSPS;
+      case 17:
+        return FOSBS;
+      case 18:
+        return FOSPS;
       default:
         return null;
     }

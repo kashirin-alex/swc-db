@@ -29,8 +29,8 @@ namespace rb    SWC.thrift
 
 
 
-/** 
-The SWC::Thrift::Exception a base for any Exceptions 
+/**
+The SWC::Thrift::Exception a base for any Exceptions
 both for the Thrift-Protocol and SWC-DB Errors. */
 exception Exception {
   /** The corresponding Thrift-Procotol or SWC-DB Error Code */
@@ -51,7 +51,7 @@ enum KeySeq {
   LEXIC         = 1,
 
   /** The Volumetric Key Order Sequence */
-  VOLUME        = 2, 
+  VOLUME        = 2,
 
   /** The by Fractions Count on Lexical Key Order Sequence */
   FC_LEXIC      = 3,
@@ -82,6 +82,9 @@ enum ColumnType {
 
   /** A Counter Column Value with integrity of signed-8bit */
   COUNTER_I8    = 5,
+
+  /** A Serial Column Value */
+  SERIAL        = 6,
 
   /** Not used - experimental */
   CELL_DEFINED  = 15
@@ -120,10 +123,10 @@ struct Schema {
 
   /** Column Name */
   2: optional string        col_name
-  
+
   /** Column Key Sequence */
   3: optional KeySeq        col_seq
-  
+
   /** Column Type */
   4: optional ColumnType    col_type
 
@@ -133,7 +136,7 @@ struct Schema {
 
   /** Cell Time to Live */
   6: optional i32           cell_ttl
-  
+
 
   /** Block Encoding */
   7: optional EncodingType  blk_encoding
@@ -143,7 +146,7 @@ struct Schema {
 
   /** Number of Cells in Block */
   9: optional i32           blk_cells
-  
+
 
   /** CellStore file Replication */
   10: optional i8            cs_replication
@@ -167,7 +170,7 @@ struct Schema {
 
   /** Compact at percent reach */
   16: optional i8           compact_percent
-  
+
 
   /** Schema's revision/id */
   17: optional i64          revision
@@ -202,9 +205,9 @@ enum Comp {
   /** [      ]  :   none           (no comparison aplied) */
   NONE = 0x0,
 
-  /** [  =^  ]  :   -pf [prefix]   (starts-with) */ 
+  /** [  =^  ]  :   -pf [prefix]   (starts-with) */
   PF   = 0x1,
-  
+
   /** [  >   ]  :   -gt            (greater-than) */
   GT   = 0x2,
 
@@ -218,14 +221,14 @@ enum Comp {
   LE   = 0x5,
 
   /** [  <   ]  :   -lt            (lower-than) */
-  LT   = 0x6, 
+  LT   = 0x6,
 
   /** [  !=  ]  :   -ne            (not-equal) */
   NE   = 0x7,
 
   /** [  re  ]  :   -re [r,regexp] (regular-expression) */
   RE   = 0x8,
-  
+
   /** [  v>  ]  :   -vgt           (vol greater-than) */
   VGT  = 0x9,
 
@@ -236,9 +239,27 @@ enum Comp {
   VLE  = 0xB,
 
   /** [  v<  ]  :   -vlt           (vol lower-than) */
-  VLT  = 0xC
-}
+  VLT  = 0xC,
 
+  /** [  %>  ] :    -subset [sbs]  (subset) */
+  SBS     = 0x0D,
+
+  /** [  <%  ] :    -supset [sps]  (superset) */
+  SPS     = 0x0E,
+
+  /** [  ~>  ] :    -posubset [posbs] (eq/part ordered subset) */
+  POSBS   = 0x0F,
+
+  /** [  <~  ] :    -posupset [posps] (eq/part ordered superset) */
+  POSPS   = 0x10,
+
+  /** [  ->  ] :    -fosubset [fosbs] (eq/full ordered subset) */
+  FOSBS   = 0x11,
+
+  /** [  <-  ] :    -fosupset [fosps] (eq/full ordered superset) */
+  FOSPS   = 0x12,
+
+}
 
 
 /** The Schema Matching Pattern for the SpecSchema patterns */
@@ -270,7 +291,7 @@ struct SpecSchemas {
 enum SpecFlagsOpt {
   /** No Flag Applied */
   NONE              = 0,
-  
+
   /** Cells Limit by Keys */
   LIMIT_BY_KEYS     = 1,
 
@@ -293,7 +314,7 @@ struct SpecFlags {
 
   /** Scan from this number of cells Offset on matching Cell-Interval */
   2: optional i64     offset
-  
+
   /** Select only this number of Versions of a given Cell-Key */
   3: optional i32     max_versions
 
@@ -377,13 +398,13 @@ struct SpecInterval {
 
   /** The Cell Value Spec, cell-value match */
   7: optional SpecValue         value;
-  
+
   /** The Timestamp Start Spec, the start of cells-interval timestamp match */
   8: optional SpecTimestamp     ts_start
-  
+
   /** The Timestamp Finish Spec, the finish of cells-interval timestamp match */
   9: optional SpecTimestamp    ts_finish
-  
+
   /** The Interval Flags Specification */
   10: optional SpecFlags        flags
 }
@@ -433,13 +454,13 @@ enum Flag {
 struct UCell {
   /** The Cell Flag */
   1: Flag             f
-  
+
   /** The Cell Key */
   2: Key              k
 
   /** The Cell Timestamp in nanoseconds */
   3: optional i64     ts
-  
+
   /** The Cell Version is in timestamp descending */
   4: optional bool    ts_desc
 
@@ -462,7 +483,7 @@ struct Cell {
 
   /** The Cell Key */
   2: Key              k
-  
+
   /** The Cell Timestamp */
   3: i64              ts
 
@@ -538,7 +559,7 @@ struct FCells {
 
   /** The Fraction Container for the Next Fractions Tree,  defined as FCells items in a map-container by current Fraction bytes */
   1: map<binary, FCells>   f
-  
+
   /** The current Fraction's Cells, defined as FCell items in a list-container */
   2: optional list<FCell>  cells
 }
@@ -549,13 +570,13 @@ struct FCells {
 struct CellsGroup {
   /** The Cells in a list, defined as Cell items in a list-container */
   1: optional Cells   cells
-  
+
   /** The Columns Cells in a map-container, defined as ColCells items by Column Name */
   2: optional CCells  ccells
-  
+
   /** The Keys Cells in a list, defined as kCells items in a list-container */
   3: optional KCells  kcells
-  
+
   /** The Fraction Cells in struct FCells */
   4: optional FCells  fcells
 }
@@ -582,7 +603,7 @@ enum CellsResult {
 struct CompactResult {
   /** Column ID */
   1: i64 cid
-  
+
   /** Error */
   2: i32 err
 }
@@ -596,10 +617,10 @@ typedef list<CompactResult> CompactResults
 struct Result {
   /** Set with result for 'list columns' query */
   1: optional Schemas        schemas
-  
+
   /** Set with result for 'select' query */
   2: optional Cells          cells
-  
+
   /** Set with result for 'compact columns' query */
   3: optional CompactResults compact
 }
@@ -610,36 +631,36 @@ struct Result {
 service Service {
 
 
-  /** 
-    * The direct SQL method to Manage Column. 
+  /**
+    * The direct SQL method to Manage Column.
     */
   void sql_mng_column(
 
     /** The SQL string to Execute */
-    1:string sql 
+    1:string sql
 
   ) throws (1:Exception e),
 
 
-  /** 
+  /**
     * The direct SQL method to List Columns
     */
   Schemas sql_list_columns(
-  
+
     /** The SQL string to Execute */
     1:string sql
-  
+
   )  throws (1:Exception e),
 
 
-  /** 
+  /**
     * The direct SQL method to Compact Columns
     */
   CompactResults sql_compact_columns(
-  
+
     /** The SQL string to Execute */
     1:string sql
-  
+
   )  throws (1:Exception e),
 
 
@@ -650,20 +671,20 @@ service Service {
     1:string sql
 
   ) throws (1:Exception e),
-  
+
 
   /** The direct SQL method to select cells with result in Columns Cells map. */
   CCells sql_select_rslt_on_column(
-  
+
     /** The SQL string to Execute */
     1:string sql
 
   ) throws (1:Exception e),
-  
+
 
   /** The direct SQL method to select cells with result in Key Cells list. */
   KCells sql_select_rslt_on_key(
-  
+
     /** The SQL string to Execute */
     1:string sql
 
@@ -681,21 +702,21 @@ service Service {
 
   /** The SQL method to select cells with result set by the request's type of CellsResult. */
   CellsGroup  sql_query(
-    
+
     /** The SQL string to Execute */
-    1:string sql, 
-    
+    1:string sql,
+
     /** The Type of Cells Result for the response */
     2:CellsResult rslt
-  
+
   ) throws (1:Exception e),
 
 
   /** The direct SQL method to update cells optionally to work with updater-id. */
   void sql_update(
-    
+
     /** The SQL string to Execute */
-    1:string sql, 
+    1:string sql,
 
     /** The Updater ID to work with */
     2:i64 updater_id = 0
@@ -705,26 +726,26 @@ service Service {
 
   /** The SQL method to execute any query. */
   Result exec_sql(
-    
+
     /** The SQL string to Execute */
     1:string sql
-  
+
   ) throws (1:Exception e),
 
 
 
   /** The method to Create an Updater ID with buffering size in bytes. */
   i64 updater_create(
-    
+
     /** The buffer size of the Updater */
     1:i32 buffer_size
-  
+
   ) throws (1:Exception e),
 
 
   /** The method to Close an Updater ID. */
   void updater_close(
-    
+
     /** The Updater ID to close */
     1:i64 id
 
@@ -732,13 +753,13 @@ service Service {
 
 
 
-  /** The direct method to update cells with cell in Update-Columns-Cells, 
-    * optionally to work with updater-id. 
+  /** The direct method to update cells with cell in Update-Columns-Cells,
+    * optionally to work with updater-id.
     */
   void update(
 
     /** The Cells to update  */
-    1:UCCells cells, 
+    1:UCCells cells,
 
     /** The Updater ID to use for write */
     2:i64 updater_id = 0
@@ -750,29 +771,29 @@ service Service {
   void  mng_column(
 
     /** The Action Function to use */
-    1:SchemaFunc func, 
+    1:SchemaFunc func,
 
     /** The Schema for the Action */
     2:Schema schema
 
   ) throws (1:Exception e),
-  
+
 
   /** The direct method to List Columns  */
   Schemas list_columns(
-    
+
     /** The Schemas Specifications to match Schema for response */
     1:SpecSchemas spec
 
   ) throws (1:Exception e),
-  
+
 
   /** The direct method to Compact Columns  */
   CompactResults compact_columns(
 
     /** The Schemas Specifications to match columns to Compact */
     1:SpecSchemas spec
-  
+
   )throws (1:Exception e),
 
 
@@ -808,7 +829,7 @@ service Service {
 
     /** The Scan Specifications for the scan */
     1:SpecScan spec
-    
+
   ) throws (1:Exception e),
 
 
@@ -816,7 +837,7 @@ service Service {
   CellsGroup scan_rslt_on(
 
     /** The Scan Specifications for the scan */
-    1:SpecScan spec, 
+    1:SpecScan spec,
 
     /** The Type of Cells Result for the response */
     2:CellsResult rslt

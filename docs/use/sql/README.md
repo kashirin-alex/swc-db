@@ -79,20 +79,26 @@ The key fields:
 
 ### The Comparators syntax
 
-| TOKEN syntax | Logic Syntax         | Description           |
-| ---          | ---                  | ---                   |
-|```PF```      | ``` =^ ```           | starts-with [prefix]  |
-|```GT```      | ``` >  ```           | greater-than          |
-|```GE```      | ``` >= ```           | greater-equal         |
-|```EQ```      | ``` == ``` ``` = ``` | equal                 |
-|```LE```      | ``` <= ```           | lower-equal           |
-|```LT```      | ``` < ```            | lower-than            |
-|```NE```      | ``` != ```           | not-equal             |
-|```RE```      | ``` r ```            | regular-expression    |
-|```VGT```     | ``` v> ```           | volume greater-than   |
-|```VGE```     | ``` v>= ```          | volume greater-equal  |
-|```VLE```     | ``` v<= ```          | volume lower-equal    |
-|```VLT```     | ``` v< ```           | volume lower-than     |
+| TOKEN syntax | Logic Syntax         | Description               |
+| ---          | ---                  | ---                       |
+|```PF```      | ``` =^ ```           | starts-with [prefix]      |
+|```GT```      | ``` >  ```           | greater-than              |
+|```GE```      | ``` >= ```           | greater-equal             |
+|```EQ```      | ``` == ``` ``` = ``` | equal                     |
+|```LE```      | ``` <= ```           | lower-equal               |
+|```LT```      | ``` < ```            | lower-than                |
+|```NE```      | ``` != ```           | not-equal                 |
+|```RE```      | ``` r ```            | regular-expression        |
+|```VGT```     | ``` v> ```           | volume greater-than       |
+|```VGE```     | ``` v>= ```          | volume greater-equal      |
+|```VLE```     | ``` v<= ```          | volume lower-equal        |
+|```VLT```     | ``` v< ```           | volume lower-than         |
+|```SBS```     | ``` %> ```           | subset                    |
+|```SPS```     | ``` <% ```           | superset                  |
+|```POSBS```   | ``` ~> ```           | eq/part ordered subset    |
+|```POSPS```   | ``` <~ ```           | eq/part ordered superset  |
+|```FOSBS```   | ``` <- ```           | eq/full ordered superset  |
+|```FOSPS```   | ``` -> ```           | eq/full ordered superset  |
 
 
 
@@ -324,7 +330,7 @@ The Expression of Value Condition dependable on the [Schema's column value type]
   ``` COMP "VALUE" ``` - applicable with Extended Comparators
 
   * **_COUNTER_**: \
-  ``` COMP "VALUE" ``` - not supported Comparators PF and RE
+  ``` COMP "VALUE" ``` - not supported Comparators PF, RE, POSBS and PSSPS
 
   * **_SERIAL_**: \
   ``` [ID:TYPE:COMP "VALUE", ... ] ``` - in square-brackets a comma-separated sets, a set is separated by colon with Field-ID, Field-Type and a Comparator with a Value. \

@@ -37,6 +37,7 @@ toString_ColumnType(int value)
   case SWCDB_THRIFT_COLUMN_TYPE_COUNTER_I32:return "SWCDB_THRIFT_COLUMN_TYPE_COUNTER_I32";
   case SWCDB_THRIFT_COLUMN_TYPE_COUNTER_I16:return "SWCDB_THRIFT_COLUMN_TYPE_COUNTER_I16";
   case SWCDB_THRIFT_COLUMN_TYPE_COUNTER_I8:return "SWCDB_THRIFT_COLUMN_TYPE_COUNTER_I8";
+  case SWCDB_THRIFT_COLUMN_TYPE_SERIAL:return "SWCDB_THRIFT_COLUMN_TYPE_SERIAL";
   case SWCDB_THRIFT_COLUMN_TYPE_CELL_DEFINED:return "SWCDB_THRIFT_COLUMN_TYPE_CELL_DEFINED";
   default: g_snprintf(buf, 16, "%d", value); return buf;
   }
@@ -90,6 +91,12 @@ toString_Comp(int value)
   case SWCDB_THRIFT_COMP_VGE:return "SWCDB_THRIFT_COMP_VGE";
   case SWCDB_THRIFT_COMP_VLE:return "SWCDB_THRIFT_COMP_VLE";
   case SWCDB_THRIFT_COMP_VLT:return "SWCDB_THRIFT_COMP_VLT";
+  case SWCDB_THRIFT_COMP_SBS:return "SWCDB_THRIFT_COMP_SBS";
+  case SWCDB_THRIFT_COMP_SPS:return "SWCDB_THRIFT_COMP_SPS";
+  case SWCDB_THRIFT_COMP_POSBS:return "SWCDB_THRIFT_COMP_POSBS";
+  case SWCDB_THRIFT_COMP_POSPS:return "SWCDB_THRIFT_COMP_POSPS";
+  case SWCDB_THRIFT_COMP_FOSBS:return "SWCDB_THRIFT_COMP_FOSBS";
+  case SWCDB_THRIFT_COMP_FOSPS:return "SWCDB_THRIFT_COMP_FOSPS";
   default: g_snprintf(buf, 16, "%d", value); return buf;
   }
 }
@@ -1691,7 +1698,7 @@ swcdb_thrift_schema_pattern_class_init (swcdb_thriftSchemaPatternClass * cls)
                        NULL,
                        NULL,
                        0,
-                       12,
+                       18,
                        0,
                        G_PARAM_READWRITE));
 
@@ -2859,7 +2866,7 @@ swcdb_thrift_spec_fraction_class_init (swcdb_thriftSpecFractionClass * cls)
                        NULL,
                        NULL,
                        0,
-                       12,
+                       18,
                        0,
                        G_PARAM_READWRITE));
 
@@ -3150,7 +3157,7 @@ swcdb_thrift_spec_value_class_init (swcdb_thriftSpecValueClass * cls)
                        NULL,
                        NULL,
                        0,
-                       12,
+                       18,
                        0,
                        G_PARAM_READWRITE));
 
@@ -3425,7 +3432,7 @@ swcdb_thrift_spec_timestamp_class_init (swcdb_thriftSpecTimestampClass * cls)
                        NULL,
                        NULL,
                        0,
-                       12,
+                       18,
                        0,
                        G_PARAM_READWRITE));
 

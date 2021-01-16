@@ -36,6 +36,10 @@ public enum ColumnType implements org.apache.thrift.TEnum {
    */
   COUNTER_I8(5),
   /**
+   * A Serial Column Value
+   */
+  SERIAL(6),
+  /**
    * Not used - experimental
    */
   CELL_DEFINED(15);
@@ -72,6 +76,8 @@ public enum ColumnType implements org.apache.thrift.TEnum {
         return COUNTER_I16;
       case 5:
         return COUNTER_I8;
+      case 6:
+        return SERIAL;
       case 15:
         return CELL_DEFINED;
       default:

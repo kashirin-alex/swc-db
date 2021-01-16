@@ -62,4 +62,28 @@ public enum Comp
   /// [  v<  ]  :   -vlt           (vol lower-than)
   /// </summary>
   VLT = 12,
+  /// <summary>
+  /// [  %>  ] :    -subset [sbs]  (subset)
+  /// </summary>
+  SBS = 13,
+  /// <summary>
+  /// [  <%  ] :    -supset [sps]  (superset)
+  /// </summary>
+  SPS = 14,
+  /// <summary>
+  /// [  ~>  ] :    -posubset [posbs] (eq/part ordered subset)
+  /// </summary>
+  POSBS = 15,
+  /// <summary>
+  /// [  <~  ] :    -posupset [posps] (eq/part ordered superset)
+  /// </summary>
+  POSPS = 16,
+  /// <summary>
+  /// [  ->  ] :    -fosubset [fosbs] (eq/full ordered subset)
+  /// </summary>
+  FOSBS = 17,
+  /// <summary>
+  /// [  <-  ] :    -fosupset [fosps] (eq/full ordered superset)
+  /// </summary>
+  FOSPS = 18,
 }

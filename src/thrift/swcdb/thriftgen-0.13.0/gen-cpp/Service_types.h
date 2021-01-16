@@ -45,6 +45,7 @@ struct ColumnType {
     COUNTER_I32 = 3,
     COUNTER_I16 = 4,
     COUNTER_I8 = 5,
+    SERIAL = 6,
     CELL_DEFINED = 15
   };
 };
@@ -100,7 +101,13 @@ struct Comp {
     VGT = 9,
     VGE = 10,
     VLE = 11,
-    VLT = 12
+    VLT = 12,
+    SBS = 13,
+    SPS = 14,
+    POSBS = 15,
+    POSPS = 16,
+    FOSBS = 17,
+    FOSPS = 18
   };
 };
 

@@ -104,6 +104,7 @@ Column Value Types
 |```COUNTER_I32```|```3```|A Counter Column Value with integrity of signed-32bit |
 |```COUNTER_I16```|```4```|A Counter Column Value with integrity of signed-16bit |
 |```COUNTER_I8```|```5```|A Counter Column Value with integrity of signed-8bit |
+|```SERIAL```|```6```|A Serial Column Value |
 |```CELL_DEFINED```|```15```|Not used - experimental |
 
 ### Enumeration: EncodingType
@@ -137,14 +138,20 @@ The available logical Comparators, plus extended logic options applied with 'v' 
 |```GT```|```2```|[  &gt;   ]  :   -gt            (greater-than) |
 |```GE```|```3```|[  &gt;=  ]  :   -ge            (greater-equal) |
 |```EQ```|```4```|[  =   ]  :   -eq            (equal) |
-|```LE```|```5```|[  &lt;=  ]  :   -le            (lower-equal) &gt;|
-|```LT```|```6```|[  &lt;   ]  :   -lt            (lower-than) &gt;|
+|```LE```|```5```|[  &lt;=  ]  :   -le            (lower-equal) |
+|```LT```|```6```|[  &lt;   ]  :   -lt            (lower-than) |
 |```NE```|```7```|[  !=  ]  :   -ne            (not-equal) |
 |```RE```|```8```|[  re  ]  :   -re [r,regexp] (regular-expression) |
 |```VGT```|```9```|[  v&gt;  ]  :   -vgt           (vol greater-than) |
 |```VGE```|```10```|[  v&gt;= ]  :   -vge           (vol greater-equal) |
-|```VLE```|```11```|[  v&lt;= ]  :   -vle           (vol lower-equal) &gt;|
-|```VLT```|```12```|[  v&lt;  ]  :   -vlt           (vol lower-than) &gt;|
+|```VLE```|```11```|[  v&lt;= ]  :   -vle           (vol lower-equal) |
+|```VLT```|```12```|[  v&lt;  ]  :   -vlt           (vol lower-than) |
+|```SBS```|```13```|[  %&gt;  ] :    -subset [sbs]  (subset) |
+|```SPS```|```14```|[  &lt;%  ] :    -supset [sps]  (superset) |
+|```POSBS```|```15```|[  ~&gt;  ] :    -posubset [posbs] (eq/part ordered subset) |
+|```POSPS```|```16```|[  &lt;~  ] :    -posupset [posps] (eq/part ordered superset) |
+|```FOSBS```|```17```|[  -&gt;  ] :    -fosubset [fosbs] (eq/full ordered subset) |
+|```FOSPS```|```18```|[  &lt;-  ] :    -fosupset [fosps] (eq/full ordered superset) |
 
 ### Enumeration: SpecFlagsOpt
 The Scan options Flags Specifications for the SpecFlags 'options' bit 
@@ -275,8 +282,10 @@ The Schema Definition
 |11|cs_size|```i32```|CellStore Size in Bytes |optional||
 |12|cs_max|```i8```|Max CellStores in a Range |optional||
 |13|log_rollout_ratio|```i8```|Write Fragment File on ratio reached |optional||
-|14|compact_percent|```i8```|Compact at percent reach |optional||
-|15|revision|```i64```|Schema's revision/id |optional||
+|14|log_compact_cointervaling|```i8```|Min. Cointervaling Fragments for Compaction |optional||
+|15|log_fragment_preload|```i8```|Number of Fragment to Preload |optional||
+|16|compact_percent|```i8```|Compact at percent reach |optional||
+|17|revision|```i64```|Schema's revision/id |optional||
 
 ### Struct: SchemaPattern
 The Schema Matching Pattern for the SpecSchema patterns 
