@@ -97,14 +97,14 @@ public partial class SpecScan : TBase
             if (field.Type == TType.List)
             {
               {
-                TList _list44 = await iprot.ReadListBeginAsync(cancellationToken);
-                Columns = new List<SpecColumn>(_list44.Count);
-                for(int _i45 = 0; _i45 < _list44.Count; ++_i45)
+                TList _list48 = await iprot.ReadListBeginAsync(cancellationToken);
+                Columns = new List<SpecColumn>(_list48.Count);
+                for(int _i49 = 0; _i49 < _list48.Count; ++_i49)
                 {
-                  SpecColumn _elem46;
-                  _elem46 = new SpecColumn();
-                  await _elem46.ReadAsync(iprot, cancellationToken);
-                  Columns.Add(_elem46);
+                  SpecColumn _elem50;
+                  _elem50 = new SpecColumn();
+                  await _elem50.ReadAsync(iprot, cancellationToken);
+                  Columns.Add(_elem50);
                 }
                 await iprot.ReadListEndAsync(cancellationToken);
               }
@@ -157,9 +157,9 @@ public partial class SpecScan : TBase
         await oprot.WriteFieldBeginAsync(field, cancellationToken);
         {
           await oprot.WriteListBeginAsync(new TList(TType.Struct, Columns.Count), cancellationToken);
-          foreach (SpecColumn _iter47 in Columns)
+          foreach (SpecColumn _iter51 in Columns)
           {
-            await _iter47.WriteAsync(oprot, cancellationToken);
+            await _iter51.WriteAsync(oprot, cancellationToken);
           }
           await oprot.WriteListEndAsync(cancellationToken);
         }

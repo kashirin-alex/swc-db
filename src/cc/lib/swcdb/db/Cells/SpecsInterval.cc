@@ -11,70 +11,11 @@
 namespace SWC { namespace DB { namespace Specs {
 
 
-Interval::Ptr Interval::make_ptr() {
-  return std::make_shared<Interval>();
-}
-
-Interval::Ptr Interval::make_ptr(
-    const Key& key_start, const Key& key_finish, const Value& value,
-    const Timestamp& ts_start, const Timestamp& ts_finish,
-    const Flags& flags) {
-  return std::make_shared<Interval>(
-    key_start, key_finish, value, ts_start, ts_finish, flags);
-}
-
-Interval::Ptr Interval::make_ptr(
-    const Cell::Key& range_begin, const Cell::Key& range_end,
-    const Key& key_start, const Key& key_finish,
-    const Value& value,
-    const Timestamp& ts_start, const Timestamp& ts_finish,
-    const Flags& flags) {
-  return std::make_shared<Interval>(
-    range_begin, range_end,
-    key_start, key_finish, value, ts_start, ts_finish, flags
-    );
-}
-
-Interval::Ptr Interval::make_ptr(const uint8_t** bufp, size_t* remainp) {
-  return std::make_shared<Interval>(bufp, remainp);
-}
-
-Interval::Ptr Interval::make_ptr(const Interval& other) {
-  return std::make_shared<Interval>(other);
-}
-
-Interval::Ptr Interval::make_ptr(Interval::Ptr other) {
-  return std::make_shared<Interval>(*other.get());
-}
-
-
 Interval::Interval() : offset_rev(0), options(0) { }
 
 Interval::Interval(const Cell::Key& range_begin, const Cell::Key& range_end)
                   : range_begin(range_begin), range_end(range_end),
                     offset_rev(0), options(0) {
-}
-
-Interval::Interval(const Key& key_start, const Key& key_finish,
-                   const Value& value,
-                   const Timestamp& ts_start, const Timestamp& ts_finish,
-                   const Flags& flags)
-                  : value(value),
-                    ts_start(ts_start), ts_finish(ts_finish),
-                    flags(flags), offset_rev(0), options(0) {
-  key_intervals.add(key_start, key_finish);
-}
-
-Interval::Interval(const Cell::Key& range_begin, const Cell::Key& range_end,
-                   const Key& key_start, const Key& key_finish,
-                   const Value& value,
-                   const Timestamp& ts_start, const Timestamp& ts_finish,
-                   const Flags& flags)
-                  : range_begin(range_begin), range_end(range_end),
-                    value(value),
-                    ts_start(ts_start), ts_finish(ts_finish),
-                    flags(flags), offset_rev(0), options(0) {
-  key_intervals.add(key_start, key_finish);
 }
 
 Interval::Interval(const uint8_t** bufp, size_t* remainp) {
@@ -92,7 +33,7 @@ void Interval::copy(const Interval& other) {
 
   key_intervals.copy(other.key_intervals);
 
-  value.copy(other.value);
+  values.copy(other.values);
 
   ts_start.copy(other.ts_start);
   ts_finish.copy(other.ts_finish);
@@ -113,27 +54,16 @@ void Interval::free() {
   range_begin.free();
   range_end.free();
   key_intervals.free();
-  value.free();
+  values.free();
   offset_key.free();
 }
 
 size_t Interval::size_of_internal() const {
   return range_begin.size + range_end.size
         + key_intervals.size_of_internal()
-        + value.size
+        + values.size_of_internal()
         + offset_key.size;
 }
-
-/*
-void Interval::expand(const Cells::Cell& cell) {
-  if(key_start.empty() || !key_start.is_matching(cell.key)){
-    key_start.set(cell.key, Condition::GE);
-  }
-  if(key_finish.empty() || !key_finish.is_matching(cell.key)){
-    key_finish.set(cell.key, Condition::LE);
-  }
-}
-*/
 
 bool Interval::equal(const Interval& other) const {
   return  ts_start.equal(other.ts_start) &&
@@ -143,7 +73,7 @@ bool Interval::equal(const Interval& other) const {
           range_begin.equal(other.range_begin) &&
           range_end.equal(other.range_end) &&
           key_intervals.equal(other.key_intervals) &&
-          value.equal(other.value) &&
+          values.equal(other.values) &&
           offset_key.equal(other.offset_key) &&
           offset_rev == other.offset_rev ;
 }
@@ -184,7 +114,7 @@ bool Interval::is_matching(const Types::KeySeq key_seq,
     &&
     key_intervals.is_matching(key_seq, cell.key)
     &&
-    value.is_matching(cell);
+    values.is_matching(cell);
 }
 
 
@@ -335,7 +265,7 @@ bool Interval::is_in_previous(const Types::KeySeq key_seq,
 size_t Interval::encoded_length() const {
   return range_begin.encoded_length() + range_end.encoded_length()
         + key_intervals.encoded_length()
-        + value.encoded_length()
+        + values.encoded_length()
         + ts_start.encoded_length() + ts_finish.encoded_length()
         + flags.encoded_length()
         + offset_key.encoded_length()
@@ -349,7 +279,7 @@ void Interval::encode(uint8_t** bufp) const {
 
   key_intervals.encode(bufp);
 
-  value.encode(bufp);
+  values.encode(bufp);
 
   ts_start.encode(bufp);
   ts_finish.encode(bufp);
@@ -367,7 +297,7 @@ void Interval::decode(const uint8_t** bufp, size_t* remainp) {
 
   key_intervals.decode(bufp, remainp);
 
-  value.decode(bufp, remainp);
+  values.decode(bufp, remainp);
 
   ts_start.decode(bufp, remainp);
   ts_finish.decode(bufp, remainp);
@@ -537,8 +467,9 @@ void Interval::print(std::ostream& out) const {
   if(!offset_key.empty())
     out << " OffsetRev=" << offset_rev;
 
-  value.print(out << " ");
-  flags.print(out << " ");
+  values.print(out << ' ');
+
+  flags.print(out << ' ');
 
   out << " Options("
     << "range-end-rest=" << has_opt__range_end_rest()
@@ -578,9 +509,7 @@ void Interval::display(std::ostream& out, bool pretty,
       << offset << "     rev(" << offset_rev << " )\n"
       << offset << " )\n";
 
-  out << offset << " Value(";
-  value.display(out, pretty);
-  out << ")\n";
+  values.display(out, pretty, offset + ' ');
 
   out << offset << " Flags(";
   flags.display(out);

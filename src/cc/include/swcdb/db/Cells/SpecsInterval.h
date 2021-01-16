@@ -13,7 +13,7 @@
 #include "swcdb/db/Cells/SpecsKey.h"
 #include "swcdb/db/Cells/SpecsKeyIntervals.h"
 #include "swcdb/db/Cells/SpecsTimestamp.h"
-#include "swcdb/db/Cells/SpecsValue.h"
+#include "swcdb/db/Cells/SpecsValues.h"
 #include "swcdb/db/Cells/SpecsFlags.h"
 #include "swcdb/db/Cells/Cell.h"
 
@@ -28,41 +28,25 @@ class Interval {
 
   typedef std::shared_ptr<Interval> Ptr;
 
-  static Ptr make_ptr();
+  SWC_CAN_INLINE
+  static Ptr make_ptr(){
+    return std::make_shared<Interval>();
+  }
 
-  static Ptr make_ptr(
-      const Key& key_start, const Key& key_finish, const Value& value,
-      const Timestamp& ts_start, const Timestamp& ts_finish,
-      const Flags& flags=Flags());
+  SWC_CAN_INLINE
+  static Ptr make_ptr(const uint8_t** bufp, size_t* remainp){
+    return std::make_shared<Interval>(bufp, remainp);
+  }
 
-  static Ptr make_ptr(
-      const Cell::Key& range_begin, const Cell::Key& range_end,
-      const Key& key_start, const Key& key_finish,
-      const Value& value,
-      const Timestamp& ts_start, const Timestamp& ts_finish,
-      const Flags& flags=Flags());
-
-  static Ptr make_ptr(const uint8_t** bufp, size_t* remainp);
-
-  static Ptr make_ptr(const Interval& other);
-
-  static Ptr make_ptr(Ptr other);
+  SWC_CAN_INLINE
+  static Ptr make_ptr(const Interval& other) {
+    return std::make_shared<Interval>(other);
+  }
 
 
   explicit Interval();
 
   explicit Interval(const Cell::Key& range_begin, const Cell::Key& range_end);
-
-  explicit Interval(const Key& key_start, const Key& key_finish,
-                    const Value& value,
-                    const Timestamp& ts_start, const Timestamp& ts_finish,
-                    const Flags& flags=Flags());
-
-  explicit Interval(const Cell::Key& range_begin, const Cell::Key& range_end,
-                    const Key& key_start, const Key& key_finish,
-                    const Value& value,
-                    const Timestamp& ts_start, const Timestamp& ts_finish,
-                    const Flags& flags=Flags());
 
   explicit Interval(const uint8_t** bufp, size_t* remainp);
 
@@ -75,8 +59,6 @@ class Interval {
   void free() ;
 
   size_t size_of_internal() const;
-
-  //void expand(const Cells::Cell& cell);
 
   bool equal(const Interval& other) const;
 
@@ -134,7 +116,7 @@ class Interval {
 
   Cell::Key     range_begin, range_end, range_offset;
   KeyIntervals  key_intervals;
-  Value         value;
+  Values        values;
   Timestamp     ts_start, ts_finish;
   Flags         flags;
 

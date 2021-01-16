@@ -141,6 +141,8 @@ typedef GPtrArray swcdb_thriftSpecKey;
 
 typedef GPtrArray swcdb_thriftSpecKeyIntervals;
 
+typedef GPtrArray swcdb_thriftSpecValues;
+
 typedef GPtrArray swcdb_thriftUCells;
 
 typedef GHashTable swcdb_thriftUCCells;
@@ -463,8 +465,8 @@ struct _swcdb_thriftSpecInterval
   gboolean __isset_offset_rev;
   GPtrArray * key_intervals;
   gboolean __isset_key_intervals;
-  swcdb_thriftSpecValue * value;
-  gboolean __isset_value;
+  GPtrArray * values;
+  gboolean __isset_values;
   swcdb_thriftSpecTimestamp * ts_start;
   gboolean __isset_ts_start;
   swcdb_thriftSpecTimestamp * ts_finish;

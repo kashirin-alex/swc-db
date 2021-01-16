@@ -537,13 +537,13 @@ public class CCell implements org.apache.thrift.TBase<CCell, CCell._Fields>, jav
           case 1: // K
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list112 = iprot.readListBegin();
-                struct.k = new java.util.ArrayList<java.nio.ByteBuffer>(_list112.size);
-                @org.apache.thrift.annotation.Nullable java.nio.ByteBuffer _elem113;
-                for (int _i114 = 0; _i114 < _list112.size; ++_i114)
+                org.apache.thrift.protocol.TList _list120 = iprot.readListBegin();
+                struct.k = new java.util.ArrayList<java.nio.ByteBuffer>(_list120.size);
+                @org.apache.thrift.annotation.Nullable java.nio.ByteBuffer _elem121;
+                for (int _i122 = 0; _i122 < _list120.size; ++_i122)
                 {
-                  _elem113 = iprot.readBinary();
-                  struct.k.add(_elem113);
+                  _elem121 = iprot.readBinary();
+                  struct.k.add(_elem121);
                 }
                 iprot.readListEnd();
               }
@@ -587,9 +587,9 @@ public class CCell implements org.apache.thrift.TBase<CCell, CCell._Fields>, jav
         oprot.writeFieldBegin(K_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.k.size()));
-          for (java.nio.ByteBuffer _iter115 : struct.k)
+          for (java.nio.ByteBuffer _iter123 : struct.k)
           {
-            oprot.writeBinary(_iter115);
+            oprot.writeBinary(_iter123);
           }
           oprot.writeListEnd();
         }
@@ -636,9 +636,9 @@ public class CCell implements org.apache.thrift.TBase<CCell, CCell._Fields>, jav
       if (struct.isSetK()) {
         {
           oprot.writeI32(struct.k.size());
-          for (java.nio.ByteBuffer _iter116 : struct.k)
+          for (java.nio.ByteBuffer _iter124 : struct.k)
           {
-            oprot.writeBinary(_iter116);
+            oprot.writeBinary(_iter124);
           }
         }
       }
@@ -656,13 +656,13 @@ public class CCell implements org.apache.thrift.TBase<CCell, CCell._Fields>, jav
       java.util.BitSet incoming = iprot.readBitSet(3);
       if (incoming.get(0)) {
         {
-          org.apache.thrift.protocol.TList _list117 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-          struct.k = new java.util.ArrayList<java.nio.ByteBuffer>(_list117.size);
-          @org.apache.thrift.annotation.Nullable java.nio.ByteBuffer _elem118;
-          for (int _i119 = 0; _i119 < _list117.size; ++_i119)
+          org.apache.thrift.protocol.TList _list125 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.k = new java.util.ArrayList<java.nio.ByteBuffer>(_list125.size);
+          @org.apache.thrift.annotation.Nullable java.nio.ByteBuffer _elem126;
+          for (int _i127 = 0; _i127 < _list125.size; ++_i127)
           {
-            _elem118 = iprot.readBinary();
-            struct.k.add(_elem118);
+            _elem126 = iprot.readBinary();
+            struct.k.add(_elem126);
           }
         }
         struct.setKIsSet(true);

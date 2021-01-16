@@ -408,7 +408,8 @@ void QuerySelect::read_cells_intervals(
         for(auto& col : specs.columns) {
           for(auto& schema : cols) {
             if(col->cid == schema->cid)
-              col->intervals.push_back(DB::Specs::Interval::make_ptr(spec));
+              col->intervals.push_back(
+                DB::Specs::Interval::make_ptr(*spec.get()));
           }
         }
 
@@ -507,8 +508,8 @@ void QuerySelect::read_cells_interval(DB::Specs::Interval& spec,
         if(value_except)
           return error_msg(
             Error::SQL_PARSE_ERROR, "Value require the same columns type");
-        spec.value.col_type = col_type;
-        read_value(spec.value);
+        spec.values.col_type = col_type;
+        read_value(spec.values.add());
         possible_and = true;
         continue;
       }

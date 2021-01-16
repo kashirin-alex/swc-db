@@ -17,7 +17,8 @@ namespace SWC { namespace DB { namespace Specs {
 class Value {
   public:
 
-  explicit Value(bool own=true);
+  explicit Value(Types::Column col_type = Types::Column::UNKNOWN, 
+                 bool own=true);
 
   explicit Value(const char* data_n, Condition::Comp comp_n,
                  bool owner=false);
@@ -31,6 +32,8 @@ class Value {
   explicit Value(int64_t count, Condition::Comp comp_n);
 
   explicit Value(const Value &other);
+
+  explicit Value(Value&& other);
 
   void set_counter(int64_t count, Condition::Comp comp_n);
 
@@ -67,9 +70,9 @@ class Value {
 
   void display(std::ostream& out, bool pretty=true) const;
 
+  Types::Column   col_type = Types::Column::UNKNOWN;
   bool            own;
   Condition::Comp comp;
-  Types::Column   col_type = Types::Column::UNKNOWN;
 
   uint8_t*        data;
   uint32_t        size;

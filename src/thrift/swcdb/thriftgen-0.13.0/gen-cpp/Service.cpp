@@ -304,14 +304,14 @@ uint32_t Service_sql_list_columns_result::read(::apache::thrift::protocol::TProt
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->success.clear();
-            uint32_t _size212;
-            ::apache::thrift::protocol::TType _etype215;
-            xfer += iprot->readListBegin(_etype215, _size212);
-            this->success.resize(_size212);
-            uint32_t _i216;
-            for (_i216 = 0; _i216 < _size212; ++_i216)
+            uint32_t _size218;
+            ::apache::thrift::protocol::TType _etype221;
+            xfer += iprot->readListBegin(_etype221, _size218);
+            this->success.resize(_size218);
+            uint32_t _i222;
+            for (_i222 = 0; _i222 < _size218; ++_i222)
             {
-              xfer += this->success[_i216].read(iprot);
+              xfer += this->success[_i222].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -350,10 +350,10 @@ uint32_t Service_sql_list_columns_result::write(::apache::thrift::protocol::TPro
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_LIST, 0);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->success.size()));
-      std::vector<Schema> ::const_iterator _iter217;
-      for (_iter217 = this->success.begin(); _iter217 != this->success.end(); ++_iter217)
+      std::vector<Schema> ::const_iterator _iter223;
+      for (_iter223 = this->success.begin(); _iter223 != this->success.end(); ++_iter223)
       {
-        xfer += (*_iter217).write(oprot);
+        xfer += (*_iter223).write(oprot);
       }
       xfer += oprot->writeListEnd();
     }
@@ -398,14 +398,14 @@ uint32_t Service_sql_list_columns_presult::read(::apache::thrift::protocol::TPro
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             (*(this->success)).clear();
-            uint32_t _size218;
-            ::apache::thrift::protocol::TType _etype221;
-            xfer += iprot->readListBegin(_etype221, _size218);
-            (*(this->success)).resize(_size218);
-            uint32_t _i222;
-            for (_i222 = 0; _i222 < _size218; ++_i222)
+            uint32_t _size224;
+            ::apache::thrift::protocol::TType _etype227;
+            xfer += iprot->readListBegin(_etype227, _size224);
+            (*(this->success)).resize(_size224);
+            uint32_t _i228;
+            for (_i228 = 0; _i228 < _size224; ++_i228)
             {
-              xfer += (*(this->success))[_i222].read(iprot);
+              xfer += (*(this->success))[_i228].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -543,14 +543,14 @@ uint32_t Service_sql_compact_columns_result::read(::apache::thrift::protocol::TP
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->success.clear();
-            uint32_t _size223;
-            ::apache::thrift::protocol::TType _etype226;
-            xfer += iprot->readListBegin(_etype226, _size223);
-            this->success.resize(_size223);
-            uint32_t _i227;
-            for (_i227 = 0; _i227 < _size223; ++_i227)
+            uint32_t _size229;
+            ::apache::thrift::protocol::TType _etype232;
+            xfer += iprot->readListBegin(_etype232, _size229);
+            this->success.resize(_size229);
+            uint32_t _i233;
+            for (_i233 = 0; _i233 < _size229; ++_i233)
             {
-              xfer += this->success[_i227].read(iprot);
+              xfer += this->success[_i233].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -589,10 +589,10 @@ uint32_t Service_sql_compact_columns_result::write(::apache::thrift::protocol::T
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_LIST, 0);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->success.size()));
-      std::vector<CompactResult> ::const_iterator _iter228;
-      for (_iter228 = this->success.begin(); _iter228 != this->success.end(); ++_iter228)
+      std::vector<CompactResult> ::const_iterator _iter234;
+      for (_iter234 = this->success.begin(); _iter234 != this->success.end(); ++_iter234)
       {
-        xfer += (*_iter228).write(oprot);
+        xfer += (*_iter234).write(oprot);
       }
       xfer += oprot->writeListEnd();
     }
@@ -637,14 +637,14 @@ uint32_t Service_sql_compact_columns_presult::read(::apache::thrift::protocol::T
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             (*(this->success)).clear();
-            uint32_t _size229;
-            ::apache::thrift::protocol::TType _etype232;
-            xfer += iprot->readListBegin(_etype232, _size229);
-            (*(this->success)).resize(_size229);
-            uint32_t _i233;
-            for (_i233 = 0; _i233 < _size229; ++_i233)
+            uint32_t _size235;
+            ::apache::thrift::protocol::TType _etype238;
+            xfer += iprot->readListBegin(_etype238, _size235);
+            (*(this->success)).resize(_size235);
+            uint32_t _i239;
+            for (_i239 = 0; _i239 < _size235; ++_i239)
             {
-              xfer += (*(this->success))[_i233].read(iprot);
+              xfer += (*(this->success))[_i239].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -782,14 +782,14 @@ uint32_t Service_sql_select_result::read(::apache::thrift::protocol::TProtocol* 
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->success.clear();
-            uint32_t _size234;
-            ::apache::thrift::protocol::TType _etype237;
-            xfer += iprot->readListBegin(_etype237, _size234);
-            this->success.resize(_size234);
-            uint32_t _i238;
-            for (_i238 = 0; _i238 < _size234; ++_i238)
+            uint32_t _size240;
+            ::apache::thrift::protocol::TType _etype243;
+            xfer += iprot->readListBegin(_etype243, _size240);
+            this->success.resize(_size240);
+            uint32_t _i244;
+            for (_i244 = 0; _i244 < _size240; ++_i244)
             {
-              xfer += this->success[_i238].read(iprot);
+              xfer += this->success[_i244].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -828,10 +828,10 @@ uint32_t Service_sql_select_result::write(::apache::thrift::protocol::TProtocol*
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_LIST, 0);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->success.size()));
-      std::vector<Cell> ::const_iterator _iter239;
-      for (_iter239 = this->success.begin(); _iter239 != this->success.end(); ++_iter239)
+      std::vector<Cell> ::const_iterator _iter245;
+      for (_iter245 = this->success.begin(); _iter245 != this->success.end(); ++_iter245)
       {
-        xfer += (*_iter239).write(oprot);
+        xfer += (*_iter245).write(oprot);
       }
       xfer += oprot->writeListEnd();
     }
@@ -876,14 +876,14 @@ uint32_t Service_sql_select_presult::read(::apache::thrift::protocol::TProtocol*
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             (*(this->success)).clear();
-            uint32_t _size240;
-            ::apache::thrift::protocol::TType _etype243;
-            xfer += iprot->readListBegin(_etype243, _size240);
-            (*(this->success)).resize(_size240);
-            uint32_t _i244;
-            for (_i244 = 0; _i244 < _size240; ++_i244)
+            uint32_t _size246;
+            ::apache::thrift::protocol::TType _etype249;
+            xfer += iprot->readListBegin(_etype249, _size246);
+            (*(this->success)).resize(_size246);
+            uint32_t _i250;
+            for (_i250 = 0; _i250 < _size246; ++_i250)
             {
-              xfer += (*(this->success))[_i244].read(iprot);
+              xfer += (*(this->success))[_i250].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -1021,26 +1021,26 @@ uint32_t Service_sql_select_rslt_on_column_result::read(::apache::thrift::protoc
         if (ftype == ::apache::thrift::protocol::T_MAP) {
           {
             this->success.clear();
-            uint32_t _size245;
-            ::apache::thrift::protocol::TType _ktype246;
-            ::apache::thrift::protocol::TType _vtype247;
-            xfer += iprot->readMapBegin(_ktype246, _vtype247, _size245);
-            uint32_t _i249;
-            for (_i249 = 0; _i249 < _size245; ++_i249)
+            uint32_t _size251;
+            ::apache::thrift::protocol::TType _ktype252;
+            ::apache::thrift::protocol::TType _vtype253;
+            xfer += iprot->readMapBegin(_ktype252, _vtype253, _size251);
+            uint32_t _i255;
+            for (_i255 = 0; _i255 < _size251; ++_i255)
             {
-              std::string _key250;
-              xfer += iprot->readString(_key250);
-              ColCells& _val251 = this->success[_key250];
+              std::string _key256;
+              xfer += iprot->readString(_key256);
+              ColCells& _val257 = this->success[_key256];
               {
-                _val251.clear();
-                uint32_t _size252;
-                ::apache::thrift::protocol::TType _etype255;
-                xfer += iprot->readListBegin(_etype255, _size252);
-                _val251.resize(_size252);
-                uint32_t _i256;
-                for (_i256 = 0; _i256 < _size252; ++_i256)
+                _val257.clear();
+                uint32_t _size258;
+                ::apache::thrift::protocol::TType _etype261;
+                xfer += iprot->readListBegin(_etype261, _size258);
+                _val257.resize(_size258);
+                uint32_t _i262;
+                for (_i262 = 0; _i262 < _size258; ++_i262)
                 {
-                  xfer += _val251[_i256].read(iprot);
+                  xfer += _val257[_i262].read(iprot);
                 }
                 xfer += iprot->readListEnd();
               }
@@ -1082,16 +1082,16 @@ uint32_t Service_sql_select_rslt_on_column_result::write(::apache::thrift::proto
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_MAP, 0);
     {
       xfer += oprot->writeMapBegin(::apache::thrift::protocol::T_STRING, ::apache::thrift::protocol::T_LIST, static_cast<uint32_t>(this->success.size()));
-      std::map<std::string, ColCells> ::const_iterator _iter257;
-      for (_iter257 = this->success.begin(); _iter257 != this->success.end(); ++_iter257)
+      std::map<std::string, ColCells> ::const_iterator _iter263;
+      for (_iter263 = this->success.begin(); _iter263 != this->success.end(); ++_iter263)
       {
-        xfer += oprot->writeString(_iter257->first);
+        xfer += oprot->writeString(_iter263->first);
         {
-          xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(_iter257->second.size()));
-          std::vector<CCell> ::const_iterator _iter258;
-          for (_iter258 = _iter257->second.begin(); _iter258 != _iter257->second.end(); ++_iter258)
+          xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(_iter263->second.size()));
+          std::vector<CCell> ::const_iterator _iter264;
+          for (_iter264 = _iter263->second.begin(); _iter264 != _iter263->second.end(); ++_iter264)
           {
-            xfer += (*_iter258).write(oprot);
+            xfer += (*_iter264).write(oprot);
           }
           xfer += oprot->writeListEnd();
         }
@@ -1139,26 +1139,26 @@ uint32_t Service_sql_select_rslt_on_column_presult::read(::apache::thrift::proto
         if (ftype == ::apache::thrift::protocol::T_MAP) {
           {
             (*(this->success)).clear();
-            uint32_t _size259;
-            ::apache::thrift::protocol::TType _ktype260;
-            ::apache::thrift::protocol::TType _vtype261;
-            xfer += iprot->readMapBegin(_ktype260, _vtype261, _size259);
-            uint32_t _i263;
-            for (_i263 = 0; _i263 < _size259; ++_i263)
+            uint32_t _size265;
+            ::apache::thrift::protocol::TType _ktype266;
+            ::apache::thrift::protocol::TType _vtype267;
+            xfer += iprot->readMapBegin(_ktype266, _vtype267, _size265);
+            uint32_t _i269;
+            for (_i269 = 0; _i269 < _size265; ++_i269)
             {
-              std::string _key264;
-              xfer += iprot->readString(_key264);
-              ColCells& _val265 = (*(this->success))[_key264];
+              std::string _key270;
+              xfer += iprot->readString(_key270);
+              ColCells& _val271 = (*(this->success))[_key270];
               {
-                _val265.clear();
-                uint32_t _size266;
-                ::apache::thrift::protocol::TType _etype269;
-                xfer += iprot->readListBegin(_etype269, _size266);
-                _val265.resize(_size266);
-                uint32_t _i270;
-                for (_i270 = 0; _i270 < _size266; ++_i270)
+                _val271.clear();
+                uint32_t _size272;
+                ::apache::thrift::protocol::TType _etype275;
+                xfer += iprot->readListBegin(_etype275, _size272);
+                _val271.resize(_size272);
+                uint32_t _i276;
+                for (_i276 = 0; _i276 < _size272; ++_i276)
                 {
-                  xfer += _val265[_i270].read(iprot);
+                  xfer += _val271[_i276].read(iprot);
                 }
                 xfer += iprot->readListEnd();
               }
@@ -1299,14 +1299,14 @@ uint32_t Service_sql_select_rslt_on_key_result::read(::apache::thrift::protocol:
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->success.clear();
-            uint32_t _size271;
-            ::apache::thrift::protocol::TType _etype274;
-            xfer += iprot->readListBegin(_etype274, _size271);
-            this->success.resize(_size271);
-            uint32_t _i275;
-            for (_i275 = 0; _i275 < _size271; ++_i275)
+            uint32_t _size277;
+            ::apache::thrift::protocol::TType _etype280;
+            xfer += iprot->readListBegin(_etype280, _size277);
+            this->success.resize(_size277);
+            uint32_t _i281;
+            for (_i281 = 0; _i281 < _size277; ++_i281)
             {
-              xfer += this->success[_i275].read(iprot);
+              xfer += this->success[_i281].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -1345,10 +1345,10 @@ uint32_t Service_sql_select_rslt_on_key_result::write(::apache::thrift::protocol
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_LIST, 0);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->success.size()));
-      std::vector<kCells> ::const_iterator _iter276;
-      for (_iter276 = this->success.begin(); _iter276 != this->success.end(); ++_iter276)
+      std::vector<kCells> ::const_iterator _iter282;
+      for (_iter282 = this->success.begin(); _iter282 != this->success.end(); ++_iter282)
       {
-        xfer += (*_iter276).write(oprot);
+        xfer += (*_iter282).write(oprot);
       }
       xfer += oprot->writeListEnd();
     }
@@ -1393,14 +1393,14 @@ uint32_t Service_sql_select_rslt_on_key_presult::read(::apache::thrift::protocol
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             (*(this->success)).clear();
-            uint32_t _size277;
-            ::apache::thrift::protocol::TType _etype280;
-            xfer += iprot->readListBegin(_etype280, _size277);
-            (*(this->success)).resize(_size277);
-            uint32_t _i281;
-            for (_i281 = 0; _i281 < _size277; ++_i281)
+            uint32_t _size283;
+            ::apache::thrift::protocol::TType _etype286;
+            xfer += iprot->readListBegin(_etype286, _size283);
+            (*(this->success)).resize(_size283);
+            uint32_t _i287;
+            for (_i287 = 0; _i287 < _size283; ++_i287)
             {
-              xfer += (*(this->success))[_i281].read(iprot);
+              xfer += (*(this->success))[_i287].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -1672,9 +1672,9 @@ uint32_t Service_sql_query_args::read(::apache::thrift::protocol::TProtocol* ipr
         break;
       case 2:
         if (ftype == ::apache::thrift::protocol::T_I32) {
-          int32_t ecast282;
-          xfer += iprot->readI32(ecast282);
-          this->rslt = (CellsResult::type)ecast282;
+          int32_t ecast288;
+          xfer += iprot->readI32(ecast288);
+          this->rslt = (CellsResult::type)ecast288;
           this->__isset.rslt = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -2695,26 +2695,26 @@ uint32_t Service_update_args::read(::apache::thrift::protocol::TProtocol* iprot)
         if (ftype == ::apache::thrift::protocol::T_MAP) {
           {
             this->cells.clear();
-            uint32_t _size283;
-            ::apache::thrift::protocol::TType _ktype284;
-            ::apache::thrift::protocol::TType _vtype285;
-            xfer += iprot->readMapBegin(_ktype284, _vtype285, _size283);
-            uint32_t _i287;
-            for (_i287 = 0; _i287 < _size283; ++_i287)
+            uint32_t _size289;
+            ::apache::thrift::protocol::TType _ktype290;
+            ::apache::thrift::protocol::TType _vtype291;
+            xfer += iprot->readMapBegin(_ktype290, _vtype291, _size289);
+            uint32_t _i293;
+            for (_i293 = 0; _i293 < _size289; ++_i293)
             {
-              int64_t _key288;
-              xfer += iprot->readI64(_key288);
-              UCells& _val289 = this->cells[_key288];
+              int64_t _key294;
+              xfer += iprot->readI64(_key294);
+              UCells& _val295 = this->cells[_key294];
               {
-                _val289.clear();
-                uint32_t _size290;
-                ::apache::thrift::protocol::TType _etype293;
-                xfer += iprot->readListBegin(_etype293, _size290);
-                _val289.resize(_size290);
-                uint32_t _i294;
-                for (_i294 = 0; _i294 < _size290; ++_i294)
+                _val295.clear();
+                uint32_t _size296;
+                ::apache::thrift::protocol::TType _etype299;
+                xfer += iprot->readListBegin(_etype299, _size296);
+                _val295.resize(_size296);
+                uint32_t _i300;
+                for (_i300 = 0; _i300 < _size296; ++_i300)
                 {
-                  xfer += _val289[_i294].read(iprot);
+                  xfer += _val295[_i300].read(iprot);
                 }
                 xfer += iprot->readListEnd();
               }
@@ -2754,16 +2754,16 @@ uint32_t Service_update_args::write(::apache::thrift::protocol::TProtocol* oprot
   xfer += oprot->writeFieldBegin("cells", ::apache::thrift::protocol::T_MAP, 1);
   {
     xfer += oprot->writeMapBegin(::apache::thrift::protocol::T_I64, ::apache::thrift::protocol::T_LIST, static_cast<uint32_t>(this->cells.size()));
-    std::map<int64_t, UCells> ::const_iterator _iter295;
-    for (_iter295 = this->cells.begin(); _iter295 != this->cells.end(); ++_iter295)
+    std::map<int64_t, UCells> ::const_iterator _iter301;
+    for (_iter301 = this->cells.begin(); _iter301 != this->cells.end(); ++_iter301)
     {
-      xfer += oprot->writeI64(_iter295->first);
+      xfer += oprot->writeI64(_iter301->first);
       {
-        xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(_iter295->second.size()));
-        std::vector<UCell> ::const_iterator _iter296;
-        for (_iter296 = _iter295->second.begin(); _iter296 != _iter295->second.end(); ++_iter296)
+        xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(_iter301->second.size()));
+        std::vector<UCell> ::const_iterator _iter302;
+        for (_iter302 = _iter301->second.begin(); _iter302 != _iter301->second.end(); ++_iter302)
         {
-          xfer += (*_iter296).write(oprot);
+          xfer += (*_iter302).write(oprot);
         }
         xfer += oprot->writeListEnd();
       }
@@ -2794,16 +2794,16 @@ uint32_t Service_update_pargs::write(::apache::thrift::protocol::TProtocol* opro
   xfer += oprot->writeFieldBegin("cells", ::apache::thrift::protocol::T_MAP, 1);
   {
     xfer += oprot->writeMapBegin(::apache::thrift::protocol::T_I64, ::apache::thrift::protocol::T_LIST, static_cast<uint32_t>((*(this->cells)).size()));
-    std::map<int64_t, UCells> ::const_iterator _iter297;
-    for (_iter297 = (*(this->cells)).begin(); _iter297 != (*(this->cells)).end(); ++_iter297)
+    std::map<int64_t, UCells> ::const_iterator _iter303;
+    for (_iter303 = (*(this->cells)).begin(); _iter303 != (*(this->cells)).end(); ++_iter303)
     {
-      xfer += oprot->writeI64(_iter297->first);
+      xfer += oprot->writeI64(_iter303->first);
       {
-        xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(_iter297->second.size()));
-        std::vector<UCell> ::const_iterator _iter298;
-        for (_iter298 = _iter297->second.begin(); _iter298 != _iter297->second.end(); ++_iter298)
+        xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(_iter303->second.size()));
+        std::vector<UCell> ::const_iterator _iter304;
+        for (_iter304 = _iter303->second.begin(); _iter304 != _iter303->second.end(); ++_iter304)
         {
-          xfer += (*_iter298).write(oprot);
+          xfer += (*_iter304).write(oprot);
         }
         xfer += oprot->writeListEnd();
       }
@@ -2957,9 +2957,9 @@ uint32_t Service_mng_column_args::read(::apache::thrift::protocol::TProtocol* ip
     {
       case 1:
         if (ftype == ::apache::thrift::protocol::T_I32) {
-          int32_t ecast299;
-          xfer += iprot->readI32(ecast299);
-          this->func = (SchemaFunc::type)ecast299;
+          int32_t ecast305;
+          xfer += iprot->readI32(ecast305);
+          this->func = (SchemaFunc::type)ecast305;
           this->__isset.func = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -3243,14 +3243,14 @@ uint32_t Service_list_columns_result::read(::apache::thrift::protocol::TProtocol
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->success.clear();
-            uint32_t _size300;
-            ::apache::thrift::protocol::TType _etype303;
-            xfer += iprot->readListBegin(_etype303, _size300);
-            this->success.resize(_size300);
-            uint32_t _i304;
-            for (_i304 = 0; _i304 < _size300; ++_i304)
+            uint32_t _size306;
+            ::apache::thrift::protocol::TType _etype309;
+            xfer += iprot->readListBegin(_etype309, _size306);
+            this->success.resize(_size306);
+            uint32_t _i310;
+            for (_i310 = 0; _i310 < _size306; ++_i310)
             {
-              xfer += this->success[_i304].read(iprot);
+              xfer += this->success[_i310].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -3289,10 +3289,10 @@ uint32_t Service_list_columns_result::write(::apache::thrift::protocol::TProtoco
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_LIST, 0);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->success.size()));
-      std::vector<Schema> ::const_iterator _iter305;
-      for (_iter305 = this->success.begin(); _iter305 != this->success.end(); ++_iter305)
+      std::vector<Schema> ::const_iterator _iter311;
+      for (_iter311 = this->success.begin(); _iter311 != this->success.end(); ++_iter311)
       {
-        xfer += (*_iter305).write(oprot);
+        xfer += (*_iter311).write(oprot);
       }
       xfer += oprot->writeListEnd();
     }
@@ -3337,14 +3337,14 @@ uint32_t Service_list_columns_presult::read(::apache::thrift::protocol::TProtoco
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             (*(this->success)).clear();
-            uint32_t _size306;
-            ::apache::thrift::protocol::TType _etype309;
-            xfer += iprot->readListBegin(_etype309, _size306);
-            (*(this->success)).resize(_size306);
-            uint32_t _i310;
-            for (_i310 = 0; _i310 < _size306; ++_i310)
+            uint32_t _size312;
+            ::apache::thrift::protocol::TType _etype315;
+            xfer += iprot->readListBegin(_etype315, _size312);
+            (*(this->success)).resize(_size312);
+            uint32_t _i316;
+            for (_i316 = 0; _i316 < _size312; ++_i316)
             {
-              xfer += (*(this->success))[_i310].read(iprot);
+              xfer += (*(this->success))[_i316].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -3482,14 +3482,14 @@ uint32_t Service_compact_columns_result::read(::apache::thrift::protocol::TProto
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->success.clear();
-            uint32_t _size311;
-            ::apache::thrift::protocol::TType _etype314;
-            xfer += iprot->readListBegin(_etype314, _size311);
-            this->success.resize(_size311);
-            uint32_t _i315;
-            for (_i315 = 0; _i315 < _size311; ++_i315)
+            uint32_t _size317;
+            ::apache::thrift::protocol::TType _etype320;
+            xfer += iprot->readListBegin(_etype320, _size317);
+            this->success.resize(_size317);
+            uint32_t _i321;
+            for (_i321 = 0; _i321 < _size317; ++_i321)
             {
-              xfer += this->success[_i315].read(iprot);
+              xfer += this->success[_i321].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -3528,10 +3528,10 @@ uint32_t Service_compact_columns_result::write(::apache::thrift::protocol::TProt
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_LIST, 0);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->success.size()));
-      std::vector<CompactResult> ::const_iterator _iter316;
-      for (_iter316 = this->success.begin(); _iter316 != this->success.end(); ++_iter316)
+      std::vector<CompactResult> ::const_iterator _iter322;
+      for (_iter322 = this->success.begin(); _iter322 != this->success.end(); ++_iter322)
       {
-        xfer += (*_iter316).write(oprot);
+        xfer += (*_iter322).write(oprot);
       }
       xfer += oprot->writeListEnd();
     }
@@ -3576,14 +3576,14 @@ uint32_t Service_compact_columns_presult::read(::apache::thrift::protocol::TProt
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             (*(this->success)).clear();
-            uint32_t _size317;
-            ::apache::thrift::protocol::TType _etype320;
-            xfer += iprot->readListBegin(_etype320, _size317);
-            (*(this->success)).resize(_size317);
-            uint32_t _i321;
-            for (_i321 = 0; _i321 < _size317; ++_i321)
+            uint32_t _size323;
+            ::apache::thrift::protocol::TType _etype326;
+            xfer += iprot->readListBegin(_etype326, _size323);
+            (*(this->success)).resize(_size323);
+            uint32_t _i327;
+            for (_i327 = 0; _i327 < _size323; ++_i327)
             {
-              xfer += (*(this->success))[_i321].read(iprot);
+              xfer += (*(this->success))[_i327].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -3721,14 +3721,14 @@ uint32_t Service_scan_result::read(::apache::thrift::protocol::TProtocol* iprot)
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->success.clear();
-            uint32_t _size322;
-            ::apache::thrift::protocol::TType _etype325;
-            xfer += iprot->readListBegin(_etype325, _size322);
-            this->success.resize(_size322);
-            uint32_t _i326;
-            for (_i326 = 0; _i326 < _size322; ++_i326)
+            uint32_t _size328;
+            ::apache::thrift::protocol::TType _etype331;
+            xfer += iprot->readListBegin(_etype331, _size328);
+            this->success.resize(_size328);
+            uint32_t _i332;
+            for (_i332 = 0; _i332 < _size328; ++_i332)
             {
-              xfer += this->success[_i326].read(iprot);
+              xfer += this->success[_i332].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -3767,10 +3767,10 @@ uint32_t Service_scan_result::write(::apache::thrift::protocol::TProtocol* oprot
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_LIST, 0);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->success.size()));
-      std::vector<Cell> ::const_iterator _iter327;
-      for (_iter327 = this->success.begin(); _iter327 != this->success.end(); ++_iter327)
+      std::vector<Cell> ::const_iterator _iter333;
+      for (_iter333 = this->success.begin(); _iter333 != this->success.end(); ++_iter333)
       {
-        xfer += (*_iter327).write(oprot);
+        xfer += (*_iter333).write(oprot);
       }
       xfer += oprot->writeListEnd();
     }
@@ -3815,14 +3815,14 @@ uint32_t Service_scan_presult::read(::apache::thrift::protocol::TProtocol* iprot
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             (*(this->success)).clear();
-            uint32_t _size328;
-            ::apache::thrift::protocol::TType _etype331;
-            xfer += iprot->readListBegin(_etype331, _size328);
-            (*(this->success)).resize(_size328);
-            uint32_t _i332;
-            for (_i332 = 0; _i332 < _size328; ++_i332)
+            uint32_t _size334;
+            ::apache::thrift::protocol::TType _etype337;
+            xfer += iprot->readListBegin(_etype337, _size334);
+            (*(this->success)).resize(_size334);
+            uint32_t _i338;
+            for (_i338 = 0; _i338 < _size334; ++_i338)
             {
-              xfer += (*(this->success))[_i332].read(iprot);
+              xfer += (*(this->success))[_i338].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -3960,26 +3960,26 @@ uint32_t Service_scan_rslt_on_column_result::read(::apache::thrift::protocol::TP
         if (ftype == ::apache::thrift::protocol::T_MAP) {
           {
             this->success.clear();
-            uint32_t _size333;
-            ::apache::thrift::protocol::TType _ktype334;
-            ::apache::thrift::protocol::TType _vtype335;
-            xfer += iprot->readMapBegin(_ktype334, _vtype335, _size333);
-            uint32_t _i337;
-            for (_i337 = 0; _i337 < _size333; ++_i337)
+            uint32_t _size339;
+            ::apache::thrift::protocol::TType _ktype340;
+            ::apache::thrift::protocol::TType _vtype341;
+            xfer += iprot->readMapBegin(_ktype340, _vtype341, _size339);
+            uint32_t _i343;
+            for (_i343 = 0; _i343 < _size339; ++_i343)
             {
-              std::string _key338;
-              xfer += iprot->readString(_key338);
-              ColCells& _val339 = this->success[_key338];
+              std::string _key344;
+              xfer += iprot->readString(_key344);
+              ColCells& _val345 = this->success[_key344];
               {
-                _val339.clear();
-                uint32_t _size340;
-                ::apache::thrift::protocol::TType _etype343;
-                xfer += iprot->readListBegin(_etype343, _size340);
-                _val339.resize(_size340);
-                uint32_t _i344;
-                for (_i344 = 0; _i344 < _size340; ++_i344)
+                _val345.clear();
+                uint32_t _size346;
+                ::apache::thrift::protocol::TType _etype349;
+                xfer += iprot->readListBegin(_etype349, _size346);
+                _val345.resize(_size346);
+                uint32_t _i350;
+                for (_i350 = 0; _i350 < _size346; ++_i350)
                 {
-                  xfer += _val339[_i344].read(iprot);
+                  xfer += _val345[_i350].read(iprot);
                 }
                 xfer += iprot->readListEnd();
               }
@@ -4021,16 +4021,16 @@ uint32_t Service_scan_rslt_on_column_result::write(::apache::thrift::protocol::T
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_MAP, 0);
     {
       xfer += oprot->writeMapBegin(::apache::thrift::protocol::T_STRING, ::apache::thrift::protocol::T_LIST, static_cast<uint32_t>(this->success.size()));
-      std::map<std::string, ColCells> ::const_iterator _iter345;
-      for (_iter345 = this->success.begin(); _iter345 != this->success.end(); ++_iter345)
+      std::map<std::string, ColCells> ::const_iterator _iter351;
+      for (_iter351 = this->success.begin(); _iter351 != this->success.end(); ++_iter351)
       {
-        xfer += oprot->writeString(_iter345->first);
+        xfer += oprot->writeString(_iter351->first);
         {
-          xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(_iter345->second.size()));
-          std::vector<CCell> ::const_iterator _iter346;
-          for (_iter346 = _iter345->second.begin(); _iter346 != _iter345->second.end(); ++_iter346)
+          xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(_iter351->second.size()));
+          std::vector<CCell> ::const_iterator _iter352;
+          for (_iter352 = _iter351->second.begin(); _iter352 != _iter351->second.end(); ++_iter352)
           {
-            xfer += (*_iter346).write(oprot);
+            xfer += (*_iter352).write(oprot);
           }
           xfer += oprot->writeListEnd();
         }
@@ -4078,26 +4078,26 @@ uint32_t Service_scan_rslt_on_column_presult::read(::apache::thrift::protocol::T
         if (ftype == ::apache::thrift::protocol::T_MAP) {
           {
             (*(this->success)).clear();
-            uint32_t _size347;
-            ::apache::thrift::protocol::TType _ktype348;
-            ::apache::thrift::protocol::TType _vtype349;
-            xfer += iprot->readMapBegin(_ktype348, _vtype349, _size347);
-            uint32_t _i351;
-            for (_i351 = 0; _i351 < _size347; ++_i351)
+            uint32_t _size353;
+            ::apache::thrift::protocol::TType _ktype354;
+            ::apache::thrift::protocol::TType _vtype355;
+            xfer += iprot->readMapBegin(_ktype354, _vtype355, _size353);
+            uint32_t _i357;
+            for (_i357 = 0; _i357 < _size353; ++_i357)
             {
-              std::string _key352;
-              xfer += iprot->readString(_key352);
-              ColCells& _val353 = (*(this->success))[_key352];
+              std::string _key358;
+              xfer += iprot->readString(_key358);
+              ColCells& _val359 = (*(this->success))[_key358];
               {
-                _val353.clear();
-                uint32_t _size354;
-                ::apache::thrift::protocol::TType _etype357;
-                xfer += iprot->readListBegin(_etype357, _size354);
-                _val353.resize(_size354);
-                uint32_t _i358;
-                for (_i358 = 0; _i358 < _size354; ++_i358)
+                _val359.clear();
+                uint32_t _size360;
+                ::apache::thrift::protocol::TType _etype363;
+                xfer += iprot->readListBegin(_etype363, _size360);
+                _val359.resize(_size360);
+                uint32_t _i364;
+                for (_i364 = 0; _i364 < _size360; ++_i364)
                 {
-                  xfer += _val353[_i358].read(iprot);
+                  xfer += _val359[_i364].read(iprot);
                 }
                 xfer += iprot->readListEnd();
               }
@@ -4238,14 +4238,14 @@ uint32_t Service_scan_rslt_on_key_result::read(::apache::thrift::protocol::TProt
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->success.clear();
-            uint32_t _size359;
-            ::apache::thrift::protocol::TType _etype362;
-            xfer += iprot->readListBegin(_etype362, _size359);
-            this->success.resize(_size359);
-            uint32_t _i363;
-            for (_i363 = 0; _i363 < _size359; ++_i363)
+            uint32_t _size365;
+            ::apache::thrift::protocol::TType _etype368;
+            xfer += iprot->readListBegin(_etype368, _size365);
+            this->success.resize(_size365);
+            uint32_t _i369;
+            for (_i369 = 0; _i369 < _size365; ++_i369)
             {
-              xfer += this->success[_i363].read(iprot);
+              xfer += this->success[_i369].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -4284,10 +4284,10 @@ uint32_t Service_scan_rslt_on_key_result::write(::apache::thrift::protocol::TPro
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_LIST, 0);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->success.size()));
-      std::vector<kCells> ::const_iterator _iter364;
-      for (_iter364 = this->success.begin(); _iter364 != this->success.end(); ++_iter364)
+      std::vector<kCells> ::const_iterator _iter370;
+      for (_iter370 = this->success.begin(); _iter370 != this->success.end(); ++_iter370)
       {
-        xfer += (*_iter364).write(oprot);
+        xfer += (*_iter370).write(oprot);
       }
       xfer += oprot->writeListEnd();
     }
@@ -4332,14 +4332,14 @@ uint32_t Service_scan_rslt_on_key_presult::read(::apache::thrift::protocol::TPro
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             (*(this->success)).clear();
-            uint32_t _size365;
-            ::apache::thrift::protocol::TType _etype368;
-            xfer += iprot->readListBegin(_etype368, _size365);
-            (*(this->success)).resize(_size365);
-            uint32_t _i369;
-            for (_i369 = 0; _i369 < _size365; ++_i369)
+            uint32_t _size371;
+            ::apache::thrift::protocol::TType _etype374;
+            xfer += iprot->readListBegin(_etype374, _size371);
+            (*(this->success)).resize(_size371);
+            uint32_t _i375;
+            for (_i375 = 0; _i375 < _size371; ++_i375)
             {
-              xfer += (*(this->success))[_i369].read(iprot);
+              xfer += (*(this->success))[_i375].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -4611,9 +4611,9 @@ uint32_t Service_scan_rslt_on_args::read(::apache::thrift::protocol::TProtocol* 
         break;
       case 2:
         if (ftype == ::apache::thrift::protocol::T_I32) {
-          int32_t ecast370;
-          xfer += iprot->readI32(ecast370);
-          this->rslt = (CellsResult::type)ecast370;
+          int32_t ecast376;
+          xfer += iprot->readI32(ecast376);
+          this->rslt = (CellsResult::type)ecast376;
           this->__isset.rslt = true;
         } else {
           xfer += iprot->skip(ftype);

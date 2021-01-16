@@ -171,6 +171,8 @@ typedef std::vector<class SpecFraction>  SpecKey;
 
 typedef std::vector<class SpecKeyInterval>  SpecKeyIntervals;
 
+typedef std::vector<class SpecValue>  SpecValues;
+
 typedef std::vector<class UCell>  UCells;
 
 typedef std::map<int64_t, UCells>  UCCells;
@@ -832,14 +834,14 @@ void swap(SpecKeyInterval &a, SpecKeyInterval &b);
 std::ostream& operator<<(std::ostream& out, const SpecKeyInterval& obj);
 
 typedef struct _SpecInterval__isset {
-  _SpecInterval__isset() : range_begin(false), range_end(false), range_offset(false), offset_key(false), offset_rev(false), key_intervals(false), value(false), ts_start(false), ts_finish(false), flags(false) {}
+  _SpecInterval__isset() : range_begin(false), range_end(false), range_offset(false), offset_key(false), offset_rev(false), key_intervals(false), values(false), ts_start(false), ts_finish(false), flags(false) {}
   bool range_begin :1;
   bool range_end :1;
   bool range_offset :1;
   bool offset_key :1;
   bool offset_rev :1;
   bool key_intervals :1;
-  bool value :1;
+  bool values :1;
   bool ts_start :1;
   bool ts_finish :1;
   bool flags :1;
@@ -860,7 +862,7 @@ class SpecInterval : public virtual ::apache::thrift::TBase {
   Key offset_key;
   int64_t offset_rev;
   SpecKeyIntervals key_intervals;
-  SpecValue value;
+  SpecValues values;
   SpecTimestamp ts_start;
   SpecTimestamp ts_finish;
   SpecFlags flags;
@@ -879,7 +881,7 @@ class SpecInterval : public virtual ::apache::thrift::TBase {
 
   void __set_key_intervals(const SpecKeyIntervals& val);
 
-  void __set_value(const SpecValue& val);
+  void __set_values(const SpecValues& val);
 
   void __set_ts_start(const SpecTimestamp& val);
 
@@ -913,9 +915,9 @@ class SpecInterval : public virtual ::apache::thrift::TBase {
       return false;
     else if (__isset.key_intervals && !(key_intervals == rhs.key_intervals))
       return false;
-    if (__isset.value != rhs.__isset.value)
+    if (__isset.values != rhs.__isset.values)
       return false;
-    else if (__isset.value && !(value == rhs.value))
+    else if (__isset.values && !(values == rhs.values))
       return false;
     if (__isset.ts_start != rhs.__isset.ts_start)
       return false;

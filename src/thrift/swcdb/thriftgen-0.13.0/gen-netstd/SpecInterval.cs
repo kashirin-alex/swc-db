@@ -35,7 +35,7 @@ public partial class SpecInterval : TBase
   private List<byte[]> _offset_key;
   private long _offset_rev;
   private List<SpecKeyInterval> _key_intervals;
-  private SpecValue _value;
+  private List<SpecValue> _values;
   private SpecTimestamp _ts_start;
   private SpecTimestamp _ts_finish;
   private SpecFlags _flags;
@@ -137,18 +137,18 @@ public partial class SpecInterval : TBase
   }
 
   /// <summary>
-  /// The Cell Value Spec, cell-value match
+  /// The Cell Values Spec, cell-values match
   /// </summary>
-  public SpecValue Value
+  public List<SpecValue> Values
   {
     get
     {
-      return _value;
+      return _values;
     }
     set
     {
-      __isset.@value = true;
-      this._value = value;
+      __isset.values = true;
+      this._values = value;
     }
   }
 
@@ -210,7 +210,7 @@ public partial class SpecInterval : TBase
     public bool offset_key;
     public bool offset_rev;
     public bool key_intervals;
-    public bool @value;
+    public bool values;
     public bool ts_start;
     public bool ts_finish;
     public bool flags;
@@ -349,10 +349,20 @@ public partial class SpecInterval : TBase
             }
             break;
           case 7:
-            if (field.Type == TType.Struct)
+            if (field.Type == TType.List)
             {
-              Value = new SpecValue();
-              await Value.ReadAsync(iprot, cancellationToken);
+              {
+                TList _list35 = await iprot.ReadListBeginAsync(cancellationToken);
+                Values = new List<SpecValue>(_list35.Count);
+                for(int _i36 = 0; _i36 < _list35.Count; ++_i36)
+                {
+                  SpecValue _elem37;
+                  _elem37 = new SpecValue();
+                  await _elem37.ReadAsync(iprot, cancellationToken);
+                  Values.Add(_elem37);
+                }
+                await iprot.ReadListEndAsync(cancellationToken);
+              }
             }
             else
             {
@@ -424,9 +434,9 @@ public partial class SpecInterval : TBase
         await oprot.WriteFieldBeginAsync(field, cancellationToken);
         {
           await oprot.WriteListBeginAsync(new TList(TType.String, Range_begin.Count), cancellationToken);
-          foreach (byte[] _iter35 in Range_begin)
+          foreach (byte[] _iter38 in Range_begin)
           {
-            await oprot.WriteBinaryAsync(_iter35, cancellationToken);
+            await oprot.WriteBinaryAsync(_iter38, cancellationToken);
           }
           await oprot.WriteListEndAsync(cancellationToken);
         }
@@ -440,9 +450,9 @@ public partial class SpecInterval : TBase
         await oprot.WriteFieldBeginAsync(field, cancellationToken);
         {
           await oprot.WriteListBeginAsync(new TList(TType.String, Range_end.Count), cancellationToken);
-          foreach (byte[] _iter36 in Range_end)
+          foreach (byte[] _iter39 in Range_end)
           {
-            await oprot.WriteBinaryAsync(_iter36, cancellationToken);
+            await oprot.WriteBinaryAsync(_iter39, cancellationToken);
           }
           await oprot.WriteListEndAsync(cancellationToken);
         }
@@ -456,9 +466,9 @@ public partial class SpecInterval : TBase
         await oprot.WriteFieldBeginAsync(field, cancellationToken);
         {
           await oprot.WriteListBeginAsync(new TList(TType.String, Range_offset.Count), cancellationToken);
-          foreach (byte[] _iter37 in Range_offset)
+          foreach (byte[] _iter40 in Range_offset)
           {
-            await oprot.WriteBinaryAsync(_iter37, cancellationToken);
+            await oprot.WriteBinaryAsync(_iter40, cancellationToken);
           }
           await oprot.WriteListEndAsync(cancellationToken);
         }
@@ -472,9 +482,9 @@ public partial class SpecInterval : TBase
         await oprot.WriteFieldBeginAsync(field, cancellationToken);
         {
           await oprot.WriteListBeginAsync(new TList(TType.String, Offset_key.Count), cancellationToken);
-          foreach (byte[] _iter38 in Offset_key)
+          foreach (byte[] _iter41 in Offset_key)
           {
-            await oprot.WriteBinaryAsync(_iter38, cancellationToken);
+            await oprot.WriteBinaryAsync(_iter41, cancellationToken);
           }
           await oprot.WriteListEndAsync(cancellationToken);
         }
@@ -497,21 +507,28 @@ public partial class SpecInterval : TBase
         await oprot.WriteFieldBeginAsync(field, cancellationToken);
         {
           await oprot.WriteListBeginAsync(new TList(TType.Struct, Key_intervals.Count), cancellationToken);
-          foreach (SpecKeyInterval _iter39 in Key_intervals)
+          foreach (SpecKeyInterval _iter42 in Key_intervals)
           {
-            await _iter39.WriteAsync(oprot, cancellationToken);
+            await _iter42.WriteAsync(oprot, cancellationToken);
           }
           await oprot.WriteListEndAsync(cancellationToken);
         }
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
-      if (Value != null && __isset.@value)
+      if (Values != null && __isset.values)
       {
-        field.Name = "value";
-        field.Type = TType.Struct;
+        field.Name = "values";
+        field.Type = TType.List;
         field.ID = 7;
         await oprot.WriteFieldBeginAsync(field, cancellationToken);
-        await Value.WriteAsync(oprot, cancellationToken);
+        {
+          await oprot.WriteListBeginAsync(new TList(TType.Struct, Values.Count), cancellationToken);
+          foreach (SpecValue _iter43 in Values)
+          {
+            await _iter43.WriteAsync(oprot, cancellationToken);
+          }
+          await oprot.WriteListEndAsync(cancellationToken);
+        }
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
       if (Ts_start != null && __isset.ts_start)
@@ -561,7 +578,7 @@ public partial class SpecInterval : TBase
       && ((__isset.offset_key == other.__isset.offset_key) && ((!__isset.offset_key) || (System.Object.Equals(Offset_key, other.Offset_key))))
       && ((__isset.offset_rev == other.__isset.offset_rev) && ((!__isset.offset_rev) || (System.Object.Equals(Offset_rev, other.Offset_rev))))
       && ((__isset.key_intervals == other.__isset.key_intervals) && ((!__isset.key_intervals) || (System.Object.Equals(Key_intervals, other.Key_intervals))))
-      && ((__isset.@value == other.__isset.@value) && ((!__isset.@value) || (System.Object.Equals(Value, other.Value))))
+      && ((__isset.values == other.__isset.values) && ((!__isset.values) || (System.Object.Equals(Values, other.Values))))
       && ((__isset.ts_start == other.__isset.ts_start) && ((!__isset.ts_start) || (System.Object.Equals(Ts_start, other.Ts_start))))
       && ((__isset.ts_finish == other.__isset.ts_finish) && ((!__isset.ts_finish) || (System.Object.Equals(Ts_finish, other.Ts_finish))))
       && ((__isset.flags == other.__isset.flags) && ((!__isset.flags) || (System.Object.Equals(Flags, other.Flags))));
@@ -582,8 +599,8 @@ public partial class SpecInterval : TBase
         hashcode = (hashcode * 397) + Offset_rev.GetHashCode();
       if(__isset.key_intervals)
         hashcode = (hashcode * 397) + Key_intervals.GetHashCode();
-      if(__isset.@value)
-        hashcode = (hashcode * 397) + Value.GetHashCode();
+      if(__isset.values)
+        hashcode = (hashcode * 397) + Values.GetHashCode();
       if(__isset.ts_start)
         hashcode = (hashcode * 397) + Ts_start.GetHashCode();
       if(__isset.ts_finish)
@@ -640,12 +657,12 @@ public partial class SpecInterval : TBase
       sb.Append("Key_intervals: ");
       sb.Append(Key_intervals);
     }
-    if (Value != null && __isset.@value)
+    if (Values != null && __isset.values)
     {
       if(!__first) { sb.Append(", "); }
       __first = false;
-      sb.Append("Value: ");
-      sb.Append(Value== null ? "<null>" : Value.ToString());
+      sb.Append("Values: ");
+      sb.Append(Values);
     }
     if (Ts_start != null && __isset.ts_start)
     {

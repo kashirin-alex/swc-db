@@ -97,13 +97,13 @@ public partial class kCells : TBase
             if (field.Type == TType.List)
             {
               {
-                TList _list60 = await iprot.ReadListBeginAsync(cancellationToken);
-                K = new List<byte[]>(_list60.Count);
-                for(int _i61 = 0; _i61 < _list60.Count; ++_i61)
+                TList _list64 = await iprot.ReadListBeginAsync(cancellationToken);
+                K = new List<byte[]>(_list64.Count);
+                for(int _i65 = 0; _i65 < _list64.Count; ++_i65)
                 {
-                  byte[] _elem62;
-                  _elem62 = await iprot.ReadBinaryAsync(cancellationToken);
-                  K.Add(_elem62);
+                  byte[] _elem66;
+                  _elem66 = await iprot.ReadBinaryAsync(cancellationToken);
+                  K.Add(_elem66);
                 }
                 await iprot.ReadListEndAsync(cancellationToken);
               }
@@ -117,14 +117,14 @@ public partial class kCells : TBase
             if (field.Type == TType.List)
             {
               {
-                TList _list63 = await iprot.ReadListBeginAsync(cancellationToken);
-                Cells = new List<KCell>(_list63.Count);
-                for(int _i64 = 0; _i64 < _list63.Count; ++_i64)
+                TList _list67 = await iprot.ReadListBeginAsync(cancellationToken);
+                Cells = new List<KCell>(_list67.Count);
+                for(int _i68 = 0; _i68 < _list67.Count; ++_i68)
                 {
-                  KCell _elem65;
-                  _elem65 = new KCell();
-                  await _elem65.ReadAsync(iprot, cancellationToken);
-                  Cells.Add(_elem65);
+                  KCell _elem69;
+                  _elem69 = new KCell();
+                  await _elem69.ReadAsync(iprot, cancellationToken);
+                  Cells.Add(_elem69);
                 }
                 await iprot.ReadListEndAsync(cancellationToken);
               }
@@ -166,9 +166,9 @@ public partial class kCells : TBase
         await oprot.WriteFieldBeginAsync(field, cancellationToken);
         {
           await oprot.WriteListBeginAsync(new TList(TType.String, K.Count), cancellationToken);
-          foreach (byte[] _iter66 in K)
+          foreach (byte[] _iter70 in K)
           {
-            await oprot.WriteBinaryAsync(_iter66, cancellationToken);
+            await oprot.WriteBinaryAsync(_iter70, cancellationToken);
           }
           await oprot.WriteListEndAsync(cancellationToken);
         }
@@ -182,9 +182,9 @@ public partial class kCells : TBase
         await oprot.WriteFieldBeginAsync(field, cancellationToken);
         {
           await oprot.WriteListBeginAsync(new TList(TType.Struct, Cells.Count), cancellationToken);
-          foreach (KCell _iter67 in Cells)
+          foreach (KCell _iter71 in Cells)
           {
-            await _iter67.WriteAsync(oprot, cancellationToken);
+            await _iter71.WriteAsync(oprot, cancellationToken);
           }
           await oprot.WriteListEndAsync(cancellationToken);
         }

@@ -113,47 +113,40 @@ void test(int chk) {
     //std::cout << "- " << key_finish.to_string() << "\n";
 
     Specs::Column::Ptr cs_is_1 = Specs::Column::make_ptr(5555, 1);
-    cs_is_1->intervals.push_back(
-      Specs::Interval::make_ptr(
-        key_start,
-        key_finish,
-        Specs::Value(va1, Condition::EQ),
-        Specs::Timestamp(ts1, Condition::EQ),
-        Specs::Timestamp(ts2, Condition::EQ),
-        ss.flags
-      )
-    );
+
+    auto intval = Specs::Interval::make_ptr();
+    intval->key_intervals.add(key_start, key_finish);
+    intval->ts_start.set(ts1, Condition::EQ);
+    intval->ts_finish.set(ts2, Condition::EQ);
+    intval->values.add().set(va1, Condition::EQ);
+    intval->flags.copy(ss.flags);
+    cs_is_1->intervals.push_back(intval);
     //std::cout << "- " << cs_is_1->to_string() << "\n";
     
     key_start.add(a3, Condition::EQ);
     key_start.add(a4, Condition::EQ);
     key_finish.add(a1, 2, Condition::EQ);
     key_finish.add(a2, 2, Condition::EQ);
-    cs_is_1->intervals.push_back(
-      Specs::Interval::make_ptr(
-        key_start,
-        key_finish,
-        Specs::Value(va2, Condition::EQ),
-        Specs::Timestamp(ts3, Condition::EQ),
-        Specs::Timestamp(ts4, Condition::EQ),
-        ss.flags
-      )
-    );
+  
+    intval = Specs::Interval::make_ptr();
+    intval->key_intervals.add(key_start, key_finish);
+    intval->ts_start.set(ts3, Condition::EQ);
+    intval->ts_finish.set(ts4, Condition::EQ);
+    intval->values.add().set(va2, Condition::EQ);
+    intval->flags.copy(ss.flags);
+    cs_is_1->intervals.push_back(intval);
     //std::cout << "- " << cs_is_1->to_string() << "\n";
 
     ss.columns.push_back(cs_is_1);
     //std::cout << "- " << ss.to_string() << "\n";
     
     Specs::Column::Ptr cs_is_2 = Specs::Column::make_ptr(11111, 1);
-    cs_is_2->intervals.push_back(
-      Specs::Interval::make_ptr(
-        key_start,
-        key_finish,
-        Specs::Value(vb1, Condition::EQ),
-        Specs::Timestamp(ts5, Condition::EQ),
-        Specs::Timestamp(ts6, Condition::EQ)
-      )
-    );
+    intval = Specs::Interval::make_ptr();
+    intval->key_intervals.add(key_start, key_finish);
+    intval->ts_start.set(ts5, Condition::EQ);
+    intval->ts_finish.set(ts6, Condition::EQ);
+    intval->values.add().set(vb1, Condition::EQ);
+    cs_is_2->intervals.push_back(intval);
     //std::cout << "- " << cs_is_2->to_string() << "\n\n";
         
     Specs::Key key_start2;
@@ -164,15 +157,13 @@ void test(int chk) {
     key_start2.add(b3, Condition::EQ);
     key_start2.add(b4, Condition::EQ);
 
-    cs_is_2->intervals.push_back(
-      Specs::Interval::make_ptr(
-        key_start2,
-        key_finish2,
-        Specs::Value(vb2, Condition::EQ),
-        Specs::Timestamp(ts7, Condition::EQ),
-        Specs::Timestamp(ts8, Condition::EQ)
-      )
-    );
+    intval = Specs::Interval::make_ptr();
+    intval->key_intervals.add(key_start2, key_finish2);
+    intval->ts_start.set(ts7, Condition::EQ);
+    intval->ts_finish.set(ts8, Condition::EQ);
+    intval->values.add().set(vb2, Condition::EQ);
+    cs_is_2->intervals.push_back(intval);
+    
     ss.columns.push_back(cs_is_2);
 
     //std::cout << "- " << ss.to_string() << "\n\n";

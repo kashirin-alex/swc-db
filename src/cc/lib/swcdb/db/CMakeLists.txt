@@ -25,6 +25,7 @@ set(swcdb_sources
   Cells/SpecsKeyIntervals.cc
   Cells/SpecsKey.cc
   Cells/SpecsTimestamp.cc
+  Cells/SpecsValues.cc
   Cells/SpecsValue.cc
   Cells/SpecsValueSerialFields.cc
   Cells/SpecsFlags.cc

@@ -140,7 +140,8 @@ void check(SWC::DB::Types::KeySeq key_seq, SWC::DB::Types::Column typ,
 
 
   SWC::DB::Specs::Interval specs;
-  specs.value.col_type = typ;
+  specs.values.col_type = typ;
+  auto& value = specs.values.add();
   //specs.flags.limit = 5;
   specs.flags.offset = 0;
   /*
@@ -152,9 +153,9 @@ void check(SWC::DB::Types::KeySeq key_seq, SWC::DB::Types::Column typ,
   //specs.key_start.add(".*-2$", SWC::Condition::RE);
   //specs.key_start.add("", SWC::Condition::NONE);
   if(SWC::DB::Types::is_counter(typ)) {
-    specs.value.set_counter(0,  SWC::Condition::EQ);
+    value.set_counter(0,  SWC::Condition::EQ);
   } else {
-    specs.value.set(
+    value.set(
       "V_OF: "+std::to_string(num_cells-3),  SWC::Condition::VGT);
   }
   specs.flags.max_versions=max_versions;

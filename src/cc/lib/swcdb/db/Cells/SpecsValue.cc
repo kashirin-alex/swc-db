@@ -11,8 +11,8 @@
 
 namespace SWC { namespace DB { namespace Specs {
 
-Value::Value(bool own)
-              : own(own), comp(Condition::NONE),
+Value::Value(Types::Column col_type, bool own)
+              : col_type(col_type), own(own), comp(Condition::NONE),
                 data(0), size(0), compiled(nullptr) {
 }
 
@@ -41,6 +41,14 @@ Value::Value(int64_t count, Condition::Comp comp_n)
 Value::Value(const Value &other)
             : own(false), compiled(nullptr) {
   copy(other);
+}
+
+Value::Value(Value&& other)
+            : col_type(other.col_type), own(other.own), comp(other.comp),
+              data(other.data), size(other.size), compiled(nullptr) {
+  other.comp = Condition::NONE;
+  other.data = nullptr;
+  other.size = 0;
 }
 
 void Value::set_counter(int64_t count, Condition::Comp comp_n) {
@@ -130,8 +138,8 @@ bool Value::equal(const Value &other) const {
 }
 
 size_t Value::encoded_length() const {
-  return 1+(
-    comp==Condition::NONE? 0: Serialization::encoded_length_vi32(size)+size);
+  return 1 + (comp == Condition::NONE
+    ? 0 : Serialization::encoded_length_vi32(size) + size);
 }
 
 void Value::encode(uint8_t** bufp) const {
@@ -146,7 +154,7 @@ void Value::encode(uint8_t** bufp) const {
 void Value::decode(const uint8_t** bufp, size_t* remainp) {
   own = false;
   comp = (Condition::Comp)Serialization::decode_i8(bufp, remainp);
-  if(comp != Condition::NONE){
+  if(comp != Condition::NONE) {
     size = Serialization::decode_vi32(bufp, remainp);
     data = (uint8_t*)*bufp;
     *remainp -= size;

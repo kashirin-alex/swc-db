@@ -53,7 +53,7 @@ void Column::copy(const Column &other) {
   intervals.resize(other.intervals.size());
   int i = 0;
   for(const auto& intval : other.intervals)
-    intervals[i++] = Interval::make_ptr(intval);
+    intervals[i++] = Interval::make_ptr(*intval.get());
 }
 
 Column::~Column(){

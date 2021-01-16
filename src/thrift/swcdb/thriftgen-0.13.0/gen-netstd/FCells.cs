@@ -97,16 +97,16 @@ public partial class FCells : TBase
             if (field.Type == TType.Map)
             {
               {
-                TMap _map68 = await iprot.ReadMapBeginAsync(cancellationToken);
-                F = new Dictionary<byte[], FCells>(_map68.Count);
-                for(int _i69 = 0; _i69 < _map68.Count; ++_i69)
+                TMap _map72 = await iprot.ReadMapBeginAsync(cancellationToken);
+                F = new Dictionary<byte[], FCells>(_map72.Count);
+                for(int _i73 = 0; _i73 < _map72.Count; ++_i73)
                 {
-                  byte[] _key70;
-                  FCells _val71;
-                  _key70 = await iprot.ReadBinaryAsync(cancellationToken);
-                  _val71 = new FCells();
-                  await _val71.ReadAsync(iprot, cancellationToken);
-                  F[_key70] = _val71;
+                  byte[] _key74;
+                  FCells _val75;
+                  _key74 = await iprot.ReadBinaryAsync(cancellationToken);
+                  _val75 = new FCells();
+                  await _val75.ReadAsync(iprot, cancellationToken);
+                  F[_key74] = _val75;
                 }
                 await iprot.ReadMapEndAsync(cancellationToken);
               }
@@ -120,14 +120,14 @@ public partial class FCells : TBase
             if (field.Type == TType.List)
             {
               {
-                TList _list72 = await iprot.ReadListBeginAsync(cancellationToken);
-                Cells = new List<FCell>(_list72.Count);
-                for(int _i73 = 0; _i73 < _list72.Count; ++_i73)
+                TList _list76 = await iprot.ReadListBeginAsync(cancellationToken);
+                Cells = new List<FCell>(_list76.Count);
+                for(int _i77 = 0; _i77 < _list76.Count; ++_i77)
                 {
-                  FCell _elem74;
-                  _elem74 = new FCell();
-                  await _elem74.ReadAsync(iprot, cancellationToken);
-                  Cells.Add(_elem74);
+                  FCell _elem78;
+                  _elem78 = new FCell();
+                  await _elem78.ReadAsync(iprot, cancellationToken);
+                  Cells.Add(_elem78);
                 }
                 await iprot.ReadListEndAsync(cancellationToken);
               }
@@ -169,10 +169,10 @@ public partial class FCells : TBase
         await oprot.WriteFieldBeginAsync(field, cancellationToken);
         {
           await oprot.WriteMapBeginAsync(new TMap(TType.String, TType.Struct, F.Count), cancellationToken);
-          foreach (byte[] _iter75 in F.Keys)
+          foreach (byte[] _iter79 in F.Keys)
           {
-            await oprot.WriteBinaryAsync(_iter75, cancellationToken);
-            await F[_iter75].WriteAsync(oprot, cancellationToken);
+            await oprot.WriteBinaryAsync(_iter79, cancellationToken);
+            await F[_iter79].WriteAsync(oprot, cancellationToken);
           }
           await oprot.WriteMapEndAsync(cancellationToken);
         }
@@ -186,9 +186,9 @@ public partial class FCells : TBase
         await oprot.WriteFieldBeginAsync(field, cancellationToken);
         {
           await oprot.WriteListBeginAsync(new TList(TType.Struct, Cells.Count), cancellationToken);
-          foreach (FCell _iter76 in Cells)
+          foreach (FCell _iter80 in Cells)
           {
-            await _iter76.WriteAsync(oprot, cancellationToken);
+            await _iter80.WriteAsync(oprot, cancellationToken);
           }
           await oprot.WriteListEndAsync(cancellationToken);
         }

@@ -55,6 +55,11 @@ void set(const SpecValue& spec, DB::Specs::Value& dbspec) {
   dbspec.set(spec.v, (Condition::Comp)spec.comp);
 }
 
+void set(const SpecValues& spec, DB::Specs::Values& dbspec) {
+  for(auto& value : spec)
+    set(value, dbspec.add());
+}
+
 void set(const SpecTimestamp& spec, DB::Specs::Timestamp& dbspec) {
   dbspec.set(spec.ts, (Condition::Comp)spec.comp);
 }
@@ -85,8 +90,8 @@ void set(const SpecInterval& intval, DB::Specs::Interval& dbintval) {
     }
   }
 
-  if(intval.__isset.value)
-    set(intval.value, dbintval.value);
+  if(intval.__isset.values)
+    set(intval.values, dbintval.values);
 
   if(intval.__isset.ts_start)
     set(intval.ts_start, dbintval.ts_start);

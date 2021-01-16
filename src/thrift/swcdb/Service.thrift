@@ -375,6 +375,9 @@ struct SpecKeyInterval {
 typedef list<SpecKeyInterval> SpecKeyIntervals
 
 
+/** The Cell Value Specifications defined as SpecValue items in a list-container */
+typedef list<SpecValue> SpecValues
+
 
 /** The Cells Interval Specifications with interval-scope Flags */
 struct SpecInterval {
@@ -396,8 +399,8 @@ struct SpecInterval {
   /** The Key Intervals */
   6: optional SpecKeyIntervals  key_intervals
 
-  /** The Cell Value Spec, cell-value match */
-  7: optional SpecValue         value;
+  /** The Cell Value Specifications, cell-value match */
+  7: optional SpecValues        values;
 
   /** The Timestamp Start Spec, the start of cells-interval timestamp match */
   8: optional SpecTimestamp     ts_start
