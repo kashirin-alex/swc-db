@@ -400,6 +400,257 @@ void Field_LIST_INT64::print(std::ostream& out) const {
 
 
 
+// Field LIST_BYTES
+Field_LIST_BYTES::Field_LIST_BYTES(uint24_t fid, Condition::Comp comp,
+                                   const std::vector<Item>& items)
+                                  : Field(fid),
+                                    comp(comp), items(items) {
+}
+
+Field_LIST_BYTES::Field_LIST_BYTES(const uint8_t** bufp, size_t* remainp)
+        : Field(bufp, remainp),
+          comp((Condition::Comp)Serialization::decode_i8(bufp, remainp)) {
+  size_t len;
+  const uint8_t* ptr = Serialization::decode_bytes(bufp, remainp, &len);
+  while(len) {
+    auto& item = items.emplace_back();
+    item.comp = (Condition::Comp)Serialization::decode_i8(&ptr, &len);
+    size_t vlen;
+    const uint8_t* vptr = Serialization::decode_bytes(&ptr, &len, &vlen);
+    item.value.append((const char*)vptr, vlen);
+  }
+}
+
+size_t Field_LIST_BYTES::encoded_length() const {
+  size_t len = items.size();
+  for(const Item& item : items)
+    len += Serialization::encoded_length_bytes(item.value.size());
+  return Field::encoded_length()
+        + 1 + Serialization::encoded_length_bytes(len);
+}
+
+void Field_LIST_BYTES::encode(uint8_t** bufp) const {
+  Field::encode(bufp, Type::LIST_BYTES);
+  Serialization::encode_i8(bufp, (uint8_t)comp);
+
+  size_t len = items.size();
+  for(const Item& item : items)
+    len += Serialization::encoded_length_bytes(item.value.size());
+
+  StaticBuffer value(len);
+  uint8_t* ptr = value.base;
+  for(const Item& item : items) {
+    Serialization::encode_i8(&ptr, item.comp);
+    Serialization::encode_bytes(&ptr, item.value.data(), item.value.size());
+  }
+  Serialization::encode_bytes(bufp, value.base, value.size);
+}
+
+bool Field_LIST_BYTES::is_matching(Cell::Serial::Value::Field* vfieldp) {
+  auto vfield = (Cell::Serial::Value::Field_LIST_BYTES*)vfieldp;
+
+  const uint8_t* ptr = vfield->base;
+  size_t remain = vfield->size;
+  switch(comp) {
+
+    case Condition::NE: {
+      auto it = items.begin();
+      for(; remain && it < items.end(); ++it) {
+        size_t vlen;
+        const uint8_t* vptr = Serialization::decode_bytes(&ptr, &remain, &vlen);
+        if(!Condition::is_matching_extended(
+              it->comp, (const uint8_t*)it->value.data(), it->value.size(),
+              vptr, vlen))
+          return true;
+      }
+      return remain || it < items.end();
+    }
+
+    case Condition::GT:
+    case Condition::LT:
+    case Condition::GE:
+    case Condition::LE:
+    case Condition::EQ: {
+      auto it = items.begin();
+      for(; remain && it < items.end(); ++it) {
+        size_t vlen;
+        const uint8_t* vptr = Serialization::decode_bytes(&ptr, &remain, &vlen);
+        if(!Condition::is_matching_extended(
+              it->comp, (const uint8_t*)it->value.data(), it->value.size(),
+              vptr, vlen))
+          break;
+      }
+      return remain
+        ? (comp == Condition::GT || comp == Condition::GE)
+        : (it == items.end()
+            ? (comp == Condition::EQ ||
+               comp == Condition::LE || comp == Condition::GE)
+            : (comp == Condition::LT || comp == Condition::LE));
+    }
+
+    case Condition::SBS: {
+      std::vector<std::vector<Item>::const_iterator> found(
+        items.size(), items.cend());
+      while(remain) {
+        size_t vlen;
+        const uint8_t* vptr = Serialization::decode_bytes(&ptr, &remain, &vlen);
+        for(auto it = items.begin(); ; ) {
+          if(Condition::is_matching_extended(
+              it->comp, (const uint8_t*)it->value.data(), it->value.size(),
+              vptr, vlen)) {
+            auto f = found.begin();
+            for(; *f != items.cend(); ++f) {
+              if(*f == it)
+                goto _continue_sbs;
+            }
+            *f = it;
+            if(++f == found.end())
+              remain = 0;
+            break;
+          }
+          _continue_sbs:
+            if(++it == items.end())
+              break;
+        }
+      }
+      for(auto& f : found) {
+        if(f == items.cend())
+          return false;
+      }
+      return true;
+    }
+
+    case Condition::SPS: {
+      std::vector<std::vector<Item>::const_iterator> found(
+        items.size(), items.cend());
+      while(remain) {
+        size_t vlen;
+        const uint8_t* vptr = Serialization::decode_bytes(&ptr, &remain, &vlen);
+        for(auto it = items.begin(); ;) {
+          if(Condition::is_matching_extended(
+              it->comp, (const uint8_t*)it->value.data(), it->value.size(),
+              vptr, vlen)) {
+            auto f = found.begin();
+            for(; *f != items.cend(); ++f) {
+              if(*f == it)
+                goto _continue_sps;
+            }
+            *f = it;
+            break;
+          }
+          _continue_sps:
+            if(++it == items.end())
+              return false;
+        }
+      }
+      return true;
+    }
+
+    case Condition::POSBS: {
+      auto it = items.begin();
+      for(; remain && it < items.end(); ) {
+        size_t vlen;
+        const uint8_t* vptr = Serialization::decode_bytes(&ptr, &remain, &vlen);
+        if(Condition::is_matching_extended(
+            it->comp, (const uint8_t*)it->value.data(), it->value.size(),
+            vptr, vlen))
+          ++it;
+      }
+      return it == items.end();
+    }
+
+    case Condition::FOSBS: {
+      auto it = items.begin();
+      for(bool start = false; remain && it < items.end(); ) {
+        size_t vlen;
+        const uint8_t* vptr = Serialization::decode_bytes(&ptr, &remain, &vlen);
+        if(Condition::is_matching_extended(
+            it->comp, (const uint8_t*)it->value.data(), it->value.size(),
+            vptr, vlen)) {
+          start = true;
+          ++it;
+        } else if(start) {
+          return false;
+        }
+      }
+      return it == items.end();
+    }
+
+    case Condition::POSPS: {
+      for(auto ord = items.begin(); remain && ord < items.end(); ) {
+        size_t vlen;
+        const uint8_t* vptr = Serialization::decode_bytes(&ptr, &remain, &vlen);
+        for(auto it = ord; ;) {
+          if(Condition::is_matching_extended(
+              it->comp, (const uint8_t*)it->value.data(), it->value.size(),
+              vptr, vlen)) {
+            ++ord;
+            break;
+          }
+          if(++it == items.end())
+            return false;
+        }
+      }
+      return !remain;
+    }
+
+    case Condition::FOSPS: {
+      bool start = false;
+      for(auto ord = items.begin(); remain && ord < items.end(); ) {
+        size_t vlen;
+        const uint8_t* vptr = Serialization::decode_bytes(&ptr, &remain, &vlen);
+        for(auto it = ord; ;) {
+          if(Condition::is_matching_extended(
+              it->comp, (const uint8_t*)it->value.data(), it->value.size(),
+              vptr, vlen)) {
+            start = true;
+            ord = ++it;
+            break;
+          } else if(start) {
+            return false;
+          }
+          if(++it == items.end())
+            return false;
+        }
+      }
+      return !remain;
+    }
+
+    default:
+      break;
+  }
+  return false;
+}
+
+void Field_LIST_BYTES::print(std::ostream& out) const {
+  out << fid << ":LB:" << Condition::to_string(comp, true) << '[';
+  if(!items.empty()) for(auto it = items.cbegin(); ;) {
+    out << Condition::to_string(it->comp, true) << '\'';
+    char hex[5];
+    hex[4] = '\0';
+    const uint8_t* cptr = (const uint8_t*)it->value.data();
+    const uint8_t* end = cptr + it->value.size();
+    for(; cptr < end; ++cptr) {
+      if(*cptr == '"')
+        out << '\\';
+      if(31 < *cptr && *cptr < 127) {
+        out << *cptr;
+      } else {
+        sprintf(hex, "0x%X", *cptr);
+        out << hex;
+      }
+    }
+    out << '\'';
+    if(++it == items.cend())
+      break;
+    out << ',';
+  }
+  out << ']';
+}
+//
+
+
+
 //
 Fields::Fields(const uint8_t* ptr, size_t len) {
   while(len) {
@@ -422,6 +673,10 @@ Fields::Fields(const uint8_t* ptr, size_t len) {
       }
       case Type::LIST_INT64: {
         fields.emplace_back(new Field_LIST_INT64(&ptr, &len));
+        break;
+      }
+      case Type::LIST_BYTES: {
+        fields.emplace_back(new Field_LIST_BYTES(&ptr, &len));
         break;
       }
       default:
@@ -534,6 +789,13 @@ bool Fields::is_matching(const Cells::Cell& cell) {
       case Type::LIST_INT64: {
         Cell::Serial::Value::Field_LIST_INT64 vfield(&ptr, &remain);
         if(!Value::is_matching<Type::LIST_INT64>(fields_ptr, &vfield, &more))
+          return false;
+        break;
+      }
+
+      case Type::LIST_BYTES: {
+        Cell::Serial::Value::Field_LIST_BYTES vfield(&ptr, &remain);
+        if(!Value::is_matching<Type::LIST_BYTES>(fields_ptr, &vfield, &more))
           return false;
         break;
       }

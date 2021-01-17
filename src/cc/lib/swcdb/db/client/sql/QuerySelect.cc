@@ -836,9 +836,10 @@ void QuerySelect::read_value(DB::Types::Column col_type,
               expect_token("[", 1, bracket_square);
               if(err)
                 return;
-              std::vector<DB::Specs::Serial::Value::Field_LIST_INT64::Item> items;
+              auto field = DB::Specs::Serial::Value::Field_LIST_INT64::make(
+                fid, comp);
               do {
-                auto& item = items.emplace_back();
+                auto& item = field->items.emplace_back();
                 found_comparator(item.comp = Condition::NONE, false);
                if(!is_numeric_comparator(item.comp))
                   return;
@@ -851,9 +852,33 @@ void QuerySelect::read_value(DB::Types::Column col_type,
               expect_token("]", 1, bracket_square);
               if(err)
                 return;
-              fields.add(
-                DB::Specs::Serial::Value::Field_LIST_INT64::make(
-                  fid, comp, items));
+              fields.add(std::move(field));
+              break;
+            }
+
+            case DB::Specs::Serial::Value::Type::LIST_BYTES: {
+              found_comparator(comp = Condition::NONE, true);
+              if(comp == Condition::NONE)
+                comp = Condition::EQ;
+              while(remain && !err && found_space());
+              expect_token("[", 1, bracket_square);
+              if(err)
+                return;
+              auto field = DB::Specs::Serial::Value::Field_LIST_BYTES::make(
+                fid, comp);
+              do {
+                auto& item = field->items.emplace_back();
+                found_comparator(item.comp = Condition::NONE, false);
+                read(item.value, ",]", item.comp == Condition::RE);
+                if(err)
+                  return;
+                while(remain && !err && found_space());
+              } while(found_char(','));
+
+              expect_token("]", 1, bracket_square);
+              if(err)
+                return;
+              fields.add(std::move(field));
               break;
             }
 

@@ -320,6 +320,25 @@ void QueryUpdate::read_cell(cid_t& cid, DB::Cells::Cell& cell,
               break;
             }
 
+            case DB::Cell::Serial::Value::Type::LIST_BYTES: {
+              while(remain && !err && found_space());
+              expect_token("[", 1, bracket_square);
+              if(err)
+                return;
+              std::vector<std::string> items;
+              do {
+                read(items.emplace_back(), ",]");
+                if(err)
+                  return;
+                while(remain && !err && found_space());
+              } while(found_char(','));
+              expect_token("]", 1, bracket_square);
+              if(err)
+                return;
+              wfields.add(fid, items);
+              break;
+            }
+
             default: {
               return error_msg(
                 Error::SQL_PARSE_ERROR, "Not Supported Serial Value Type");

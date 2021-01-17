@@ -279,6 +279,8 @@ DB::Cell::Serial::Value::Type Reader::read_serial_value_type() {
     typ = DB::Cell::Serial::Value::Type::KEY;
   } else if (found_token("LIST_INT64", 10) || found_token("LI", 2)) {
     typ = DB::Cell::Serial::Value::Type::LIST_INT64;
+  } else if (found_token("LIST_BYTES", 10) || found_token("LB", 2)) {
+    typ = DB::Cell::Serial::Value::Type::LIST_BYTES;
   } else {
     error_msg(
       Error::SQL_PARSE_ERROR, "Not Supported Serial Value Type");

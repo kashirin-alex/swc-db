@@ -190,9 +190,18 @@ struct Field_LIST_INT64 : Field {
     Item(Condition::Comp comp, int64_t value) : comp(comp), value(value) { }
   };
 
-  static Field::Ptr make(uint24_t fid, Condition::Comp comp,
-                         const std::vector<Item>& items) {
+  static std::unique_ptr<Field_LIST_INT64>
+  make(uint24_t fid, Condition::Comp comp) {
+    return std::make_unique<Field_LIST_INT64>(fid, comp);
+  }
+
+  static Field::Ptr
+  make(uint24_t fid, Condition::Comp comp, const std::vector<Item>& items) {
     return std::make_unique<Field_LIST_INT64>(fid, comp, items);
+  }
+
+  Field_LIST_INT64(uint24_t fid, Condition::Comp comp)
+                  : Field(fid), comp(comp) {
   }
 
   Field_LIST_INT64(uint24_t fid, Condition::Comp comp,
@@ -203,6 +212,56 @@ struct Field_LIST_INT64 : Field {
   virtual ~Field_LIST_INT64() { }
 
   Type type() const override { return Type::LIST_INT64; };
+
+  size_t encoded_length() const override;
+
+  void encode(uint8_t** bufp) const override;
+
+  bool is_matching(Cell::Serial::Value::Field* vfieldp) override;
+
+  void print(std::ostream& out) const override;
+
+  Condition::Comp   comp;
+  std::vector<Item> items;
+
+};
+//
+
+
+
+// Field LIST_BYTES
+struct Field_LIST_BYTES : Field {
+
+  struct Item {
+    Condition::Comp comp;
+    std::string     value;
+    Item() { }
+    Item(Condition::Comp comp, const std::string& value)
+        : comp(comp), value(value) { }
+  };
+
+  static std::unique_ptr<Field_LIST_BYTES>
+  make(uint24_t fid, Condition::Comp comp) {
+    return std::make_unique<Field_LIST_BYTES>(fid, comp);
+  }
+
+  static Field::Ptr
+  make(uint24_t fid, Condition::Comp comp, const std::vector<Item>& items) {
+    return std::make_unique<Field_LIST_BYTES>(fid, comp, items);
+  }
+
+  Field_LIST_BYTES(uint24_t fid, Condition::Comp comp)
+                  : Field(fid), comp(comp) {
+  }
+
+  Field_LIST_BYTES(uint24_t fid, Condition::Comp comp,
+                   const std::vector<Item>& items);
+
+  Field_LIST_BYTES(const uint8_t** bufp, size_t* remainp);
+
+  virtual ~Field_LIST_BYTES() { }
+
+  Type type() const override { return Type::LIST_BYTES; };
 
   size_t encoded_length() const override;
 

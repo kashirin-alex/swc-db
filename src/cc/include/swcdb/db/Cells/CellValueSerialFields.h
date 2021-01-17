@@ -26,9 +26,9 @@ enum Type : uint8_t {
   BYTES         = 0x03,
   KEY           = 0x04,
   LIST_INT64    = 0x05,
+  LIST_BYTES    = 0x06,
 
   //LIST_DOUBLE   = 0x06,
-  //LIST_BYTES    = 0x07,
   //LIST_ANY      = 0x08,
   //MAP     = 0x06,
 
@@ -200,6 +200,31 @@ struct Field_LIST_INT64 : Field, StaticBuffer {
 
 
 
+// Field LIST_BYTES
+struct Field_LIST_BYTES : Field, StaticBuffer {
+
+  Field_LIST_BYTES()  { }
+
+  Field_LIST_BYTES(uint24_t fid, const std::vector<std::string>& items);
+
+  Field_LIST_BYTES(const uint8_t** bufp, size_t* remainp,
+                   bool take_ownership=false);
+
+  virtual ~Field_LIST_BYTES() { }
+
+  Type type() const override { return Type::LIST_BYTES; };
+
+  size_t encoded_length() const override;
+
+  void encode(uint8_t** bufp) const override;
+
+  void print(std::ostream& out) const override;
+
+};
+//
+
+
+
 /*
 FieldsWriter wfields;
 wfields.add(123);
@@ -240,6 +265,11 @@ struct FieldsWriter final : DynamicBuffer {
   void add(const std::vector<int64_t>& items);
 
   void add(uint24_t fid, const std::vector<int64_t>& items);
+
+
+  void add(const std::vector<std::string>& items);
+
+  void add(uint24_t fid, const std::vector<std::string>& items);
 
 
   std::string to_string() const;

@@ -24,7 +24,8 @@ const char* to_string(Type typ) noexcept {
       return "KEY";
     case Type::LIST_INT64:
       return "LIST_INT64";
-
+    case Type::LIST_BYTES:
+      return "LIST_BYTES";
     /*
     case Type::MAP:
       return "MAP";
@@ -236,6 +237,73 @@ void Field_LIST_INT64::print(std::ostream& out) const {
 
 
 
+// Field LIST_BYTES
+Field_LIST_BYTES::Field_LIST_BYTES(uint24_t fid,
+                                   const std::vector<std::string>& items)
+                                  : Field(fid) {
+  uint32_t len = 0;
+  for(auto& v : items)
+    len += Serialization::encoded_length_bytes(v.size());
+  reallocate(len);
+  uint8_t* ptr = base;
+  for(auto& v : items)
+    Serialization::encode_bytes(&ptr, v.data(), v.size());
+}
+
+Field_LIST_BYTES::Field_LIST_BYTES(const uint8_t** bufp, size_t* remainp,
+                                   bool take_ownership)
+                                  : Field(bufp, remainp) {
+  size_t len;
+  const uint8_t* ptr = Serialization::decode_bytes(bufp, remainp, &len);
+  take_ownership
+    ? assign(ptr, len)
+    : set((uint8_t*)ptr, len, false);
+}
+
+size_t Field_LIST_BYTES::encoded_length() const {
+  return Field::encoded_length() +
+         Serialization::encoded_length_bytes(size);
+}
+
+void Field_LIST_BYTES::encode(uint8_t** bufp) const {
+  Field::encode(bufp, Type::LIST_BYTES);
+  Serialization::encode_bytes(bufp, base, size);
+}
+
+void Field_LIST_BYTES::print(std::ostream& out) const {
+  out << fid << ":LB:[";
+  if(size) {
+    const uint8_t* ptr = base;
+    for(size_t remain = size;;) {
+      out << '\'';
+      char hex[5];
+      hex[4] = '\0';
+      size_t len;
+      const uint8_t* cptr = (const uint8_t*)Serialization::decode_bytes(
+        &ptr, &remain, &len);
+      const uint8_t* end = cptr + len;
+      for(; cptr < end; ++cptr) {
+        if(*cptr == '"')
+          out << '\\';
+        if(31 < *cptr && *cptr < 127) {
+          out << *cptr;
+        } else {
+          sprintf(hex, "0x%X", *cptr);
+          out << hex;
+        }
+      }
+      out << '\'';
+      if(!remain)
+        break;
+      out << ',';
+    }
+  }
+  out << ']';
+}
+//
+
+
+
 //
 void FieldsWriter::add(Field* field) {
   ensure(field->encoded_length());
@@ -298,6 +366,17 @@ void FieldsWriter::add(uint24_t fid, const std::vector<int64_t>& items) {
 }
 
 
+void FieldsWriter::add(const std::vector<std::string>& items) {
+  Field_LIST_BYTES field(index_count++, items);
+  add(&field);
+}
+
+void FieldsWriter::add(uint24_t fid, const std::vector<std::string>& items) {
+  Field_LIST_BYTES field(fid, items);
+  add(&field);
+}
+
+
 std::string FieldsWriter::to_string() const {
   std::stringstream ss;
   print(ss);
@@ -340,6 +419,9 @@ void Fields::display(const uint8_t* ptr, size_t remain, std::ostream& out) {
         break;
       case Type::LIST_INT64:
         Field_LIST_INT64(&ptr, &remain).print(out);
+        break;
+      case Type::LIST_BYTES:
+        Field_LIST_BYTES(&ptr, &remain).print(out);
         break;
       default:
         out << "Type Unknown - corrupted remain=" << remain;
