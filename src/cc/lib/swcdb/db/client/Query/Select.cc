@@ -272,11 +272,8 @@ void Select::scan(int& err) {
     for(auto& intval : col->intervals) {
       if(!intval->flags.max_buffer)
         intval->flags.max_buffer = buff_sz;
-      if(!intval->values.empty()) {
+      if(!intval->values.empty())
         intval->values.col_type = (*it_seq)->col_type;
-        for(auto& value : intval->values)
-          value.col_type = (*it_seq)->col_type;
-      }
       std::make_shared<Scanner>(
         shared_from_this(),
         (*it_seq)->col_seq, *intval.get(), col->cid

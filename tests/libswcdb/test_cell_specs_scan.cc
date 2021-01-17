@@ -18,9 +18,9 @@ namespace Condition = SWC::Condition;
 
 
 void test_encode_decode(const Specs::Scan& ss){
-  
+
   size_t len = ss.internal_encoded_length();
-  
+
   uint8_t* base = new uint8_t[len];
   const uint8_t* mark1 = base;
   uint8_t* ptr = base;
@@ -29,7 +29,7 @@ void test_encode_decode(const Specs::Scan& ss){
   if(size_t(ptr - base) != len) {
     std::cout << "\n Encode/Decode \n";
     std::cout << "ERROR, encode wrote less than expected\n";
-    exit(1);    
+    exit(1);
   }
 
   size_t remain = len;
@@ -37,11 +37,11 @@ void test_encode_decode(const Specs::Scan& ss){
   Specs::Scan ss_decoded(&ptr1, &remain);
   if(remain > 0 || ptr1 != base+len) {
     std::cout << "\n Encode/Decode \n";
-    std::cout << "ERROR, remain-len remain=" << remain 
+    std::cout << "ERROR, remain-len remain=" << remain
               << " ptr~=" << ptr1-(base+len) << "\n";
     exit(1);
   }
-        
+
   if(!ss_decoded.equal(ss)) {
     std::cout << "\n Encode/Decode \n";
     std::cout << "!ss.equal(ss_decoded): ERROR\n";
@@ -49,13 +49,13 @@ void test_encode_decode(const Specs::Scan& ss){
   }
 
   //col_decoded.cid = 444;
-        
+
   len = ss_decoded.internal_encoded_length();
   uint8_t* base2 = new uint8_t[len];
   const uint8_t* mark2 = base2;
   uint8_t* ptr2 = base2;
   ss_decoded.internal_encode(&ptr2);
-        
+
   if(memcmp(mark1, mark2, len)) {
     std::cout << "\nERROR, encoding mismatch (memcmp) \n";
     std::cout << Specs::Scan(&mark2, &len).to_string() << "\n\n";
@@ -67,7 +67,6 @@ void test_encode_decode(const Specs::Scan& ss){
 
   delete [] base;
   delete [] base2;
-        
 }
 
 
@@ -78,7 +77,7 @@ void test(int chk) {
     ss.flags.limit = 111;
     ss.flags.offset = 222;
     ss.flags.max_versions = 2;
-    
+
     const char * a1 = "a1";
     const char * a2 = "a2";
     const char * a3 = "a3";
@@ -101,12 +100,12 @@ void test(int chk) {
     int64_t ts6 = 116;
     int64_t ts7 = 117;
     int64_t ts8 = 118;
-    
+
     Specs::Key key_start;
     key_start.add(a1, Condition::EQ);
     key_start.add(a2, 2, Condition::EQ);
     //std::cout << "- " << key_start.to_string() << "\n";
-    
+
     Specs::Key key_finish;
     key_finish.add(a3, Condition::EQ);
     key_finish.add(a4, Condition::EQ);
@@ -114,7 +113,7 @@ void test(int chk) {
 
     Specs::Column::Ptr cs_is_1 = Specs::Column::make_ptr(5555, 1);
 
-    auto intval = Specs::Interval::make_ptr();
+    auto intval = Specs::Interval::make_ptr(SWC::DB::Types::Column::PLAIN);
     intval->key_intervals.add(key_start, key_finish);
     intval->ts_start.set(ts1, Condition::EQ);
     intval->ts_finish.set(ts2, Condition::EQ);
@@ -122,13 +121,13 @@ void test(int chk) {
     intval->flags.copy(ss.flags);
     cs_is_1->intervals.push_back(intval);
     //std::cout << "- " << cs_is_1->to_string() << "\n";
-    
+
     key_start.add(a3, Condition::EQ);
     key_start.add(a4, Condition::EQ);
     key_finish.add(a1, 2, Condition::EQ);
     key_finish.add(a2, 2, Condition::EQ);
-  
-    intval = Specs::Interval::make_ptr();
+
+    intval = Specs::Interval::make_ptr(SWC::DB::Types::Column::PLAIN);
     intval->key_intervals.add(key_start, key_finish);
     intval->ts_start.set(ts3, Condition::EQ);
     intval->ts_finish.set(ts4, Condition::EQ);
@@ -139,16 +138,16 @@ void test(int chk) {
 
     ss.columns.push_back(cs_is_1);
     //std::cout << "- " << ss.to_string() << "\n";
-    
+
     Specs::Column::Ptr cs_is_2 = Specs::Column::make_ptr(11111, 1);
-    intval = Specs::Interval::make_ptr();
+    intval = Specs::Interval::make_ptr(SWC::DB::Types::Column::PLAIN);
     intval->key_intervals.add(key_start, key_finish);
     intval->ts_start.set(ts5, Condition::EQ);
     intval->ts_finish.set(ts6, Condition::EQ);
     intval->values.add().set(vb1, Condition::EQ);
     cs_is_2->intervals.push_back(intval);
     //std::cout << "- " << cs_is_2->to_string() << "\n\n";
-        
+
     Specs::Key key_start2;
     key_start2.add(b1, Condition::EQ);
     key_start2.add(b2, 2, Condition::EQ);
@@ -157,18 +156,18 @@ void test(int chk) {
     key_start2.add(b3, Condition::EQ);
     key_start2.add(b4, Condition::EQ);
 
-    intval = Specs::Interval::make_ptr();
+    intval = Specs::Interval::make_ptr(SWC::DB::Types::Column::PLAIN);
     intval->key_intervals.add(key_start2, key_finish2);
     intval->ts_start.set(ts7, Condition::EQ);
     intval->ts_finish.set(ts8, Condition::EQ);
     intval->values.add().set(vb2, Condition::EQ);
     cs_is_2->intervals.push_back(intval);
-    
+
     ss.columns.push_back(cs_is_2);
 
     //std::cout << "- " << ss.to_string() << "\n\n";
 
-    
+
     if(!ss.equal(ss)) {
       std::cout << "\n!ss.equal(ss): ERROR\n";
       exit(1);
@@ -186,7 +185,7 @@ void test(int chk) {
       std::cout << "\nss_copy key_intervals.empty(): ERROR\n";
       exit(1);
     }
-    if(&ss.columns[0]->intervals[0]->key_intervals[0]->start 
+    if(&ss.columns[0]->intervals[0]->key_intervals[0]->start
         == &ss_copy.columns[0]->intervals[0]->key_intervals[0]->start) {
       std::cout << "\ncopy key.data ptr equal: ERROR\n";
       exit(1);
@@ -225,7 +224,7 @@ void test(int chk) {
     }
 
     //std::cout << "\n OK \n";
-    
+
 
 
 
@@ -235,7 +234,7 @@ void test(int chk) {
     }
 
     std::cout << " chk=" << chk;
-    
+
 }
 
 int main() {

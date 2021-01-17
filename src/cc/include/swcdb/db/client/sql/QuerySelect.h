@@ -40,8 +40,7 @@ class QuerySelect final : public Reader {
 
   void read_cells_intervals(const std::vector<DB::Schema::Ptr>& cols);
 
-  void read_cells_interval(DB::Specs::Interval& spec,
-                           DB::Types::Column col_type, bool value_except);
+  void read_cells_interval(DB::Specs::Interval& spec, bool value_except);
 
   void read_range(DB::Cell::Key& begin, DB::Cell::Key& end, bool flw);
 
@@ -50,7 +49,7 @@ class QuerySelect final : public Reader {
 
   void read_key(DB::Specs::Key& key);
 
-  void read_value(DB::Specs::Value& value);
+  void read_value(DB::Types::Column col_type, DB::Specs::Value& value);
 
   void read_timestamp(DB::Specs::Timestamp& start,
                       DB::Specs::Timestamp& finish, bool flw);

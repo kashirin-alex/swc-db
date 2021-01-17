@@ -9,6 +9,7 @@
 
 
 #include "swcdb/db/Types/Identifiers.h"
+#include "swcdb/db/Types/Column.h"
 #include "swcdb/db/Cells/KeyComparator.h"
 #include "swcdb/db/Cells/SpecsKey.h"
 #include "swcdb/db/Cells/SpecsKeyIntervals.h"
@@ -29,12 +30,12 @@ class Interval {
   typedef std::shared_ptr<Interval> Ptr;
 
   SWC_CAN_INLINE
-  static Ptr make_ptr(){
-    return std::make_shared<Interval>();
+  static Ptr make_ptr(Types::Column col_type = Types::Column::UNKNOWN) {
+    return std::make_shared<Interval>(col_type);
   }
 
   SWC_CAN_INLINE
-  static Ptr make_ptr(const uint8_t** bufp, size_t* remainp){
+  static Ptr make_ptr(const uint8_t** bufp, size_t* remainp) {
     return std::make_shared<Interval>(bufp, remainp);
   }
 
@@ -44,7 +45,7 @@ class Interval {
   }
 
 
-  explicit Interval();
+  explicit Interval(Types::Column col_type = Types::Column::UNKNOWN);
 
   explicit Interval(const Cell::Key& range_begin, const Cell::Key& range_end);
 

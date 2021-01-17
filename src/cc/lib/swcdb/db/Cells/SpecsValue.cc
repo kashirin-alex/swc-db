@@ -11,43 +11,45 @@
 
 namespace SWC { namespace DB { namespace Specs {
 
-Value::Value(Types::Column col_type, bool own)
-              : col_type(col_type), own(own), comp(Condition::NONE),
-                data(0), size(0), compiled(nullptr) {
+Value::Value(bool own)
+              : own(own), comp(Condition::NONE),
+                data(0), size(0), matcher(nullptr) {
 }
 
 Value::Value(const char* data_n, Condition::Comp comp_n, bool owner)
-            : own(false), compiled(nullptr) {
+            : own(false), matcher(nullptr) {
   set((uint8_t*)data_n, strlen(data_n), comp_n, owner);
 }
 
 Value::Value(const char* data_n, const uint32_t size_n,
              Condition::Comp comp_n, bool owner)
-            : own(false), compiled(nullptr) {
+            : own(false), matcher(nullptr) {
   set((uint8_t*)data_n, size_n, comp_n, owner);
 }
 
 Value::Value(const uint8_t* data_n, const uint32_t size_n,
              Condition::Comp comp_n, bool owner)
-            : own(false), compiled(nullptr) {
+            : own(false), matcher(nullptr) {
   set(data_n, size_n, comp_n, owner);
 }
 
 Value::Value(int64_t count, Condition::Comp comp_n)
-            : own(false), compiled(nullptr) {
+            : own(false), matcher(nullptr) {
   set_counter(count, comp_n);
 }
 
 Value::Value(const Value &other)
-            : own(false), compiled(nullptr) {
+            : own(false), matcher(nullptr) {
   copy(other);
 }
 
 Value::Value(Value&& other)
-            : col_type(other.col_type), own(other.own), comp(other.comp),
-              data(other.data), size(other.size), compiled(nullptr) {
+            : own(other.own), comp(other.comp),
+              data(other.data), size(other.size),
+              matcher(other.matcher) {
   other.comp = Condition::NONE;
   other.data = nullptr;
+  other.matcher = nullptr;
   other.size = 0;
 }
 
@@ -69,7 +71,6 @@ void Value::set(const std::string& data_n, Condition::Comp comp_n) {
 
 void Value::copy(const Value &other) {
   set(other.data, other.size, other.comp, true);
-  col_type = other.col_type;
 }
 
 void Value::set(const uint8_t* data_n, const uint32_t size_n,
@@ -90,40 +91,15 @@ void Value::_free() {
   if(own && data)
     delete [] data;
 
-  if(compiled) switch(col_type) {
-
-    case Types::Column::PLAIN: {
-      switch(comp) {
-        case Condition::RE: {
-          delete (re2::RE2*)compiled;
-          return;
-        }
-        default: return;
-      }
-    }
-
-    case Types::Column::SERIAL: {
-      delete (Serial::Value::Fields*)compiled;
-      return;
-    }
-
-    case Types::Column::COUNTER_I64:
-    case Types::Column::COUNTER_I32:
-    case Types::Column::COUNTER_I16:
-    case Types::Column::COUNTER_I8: {
-      delete (int64_t*)compiled;
-      return;
-    }
-
-    default: return;
-  }
+  if(matcher)
+    delete matcher;
 }
 
 void Value::free() {
   _free();
-  data = 0;
+  data = nullptr;
   size = 0;
-  compiled = nullptr;
+  matcher = nullptr;
 }
 
 SWC_SHOULD_INLINE
@@ -162,68 +138,98 @@ void Value::decode(const uint8_t** bufp, size_t* remainp) {
   }
 }
 
-bool Value::is_matching(const Cells::Cell& cell) const {
-  if(empty())
-    return true;
-
+bool Value::is_matching(Types::Column col_type,
+                        const Cells::Cell& cell) const {
   switch(col_type) {
-
-    case Types::Column::PLAIN: {
-      StaticBuffer v;
-      cell.get_value(v);
-      switch(comp) {
-        case Condition::RE: {
-          if(!compiled)
-            compiled = new re2::RE2(
-              re2::StringPiece((const char*)data, size));
-          return Condition::re(
-            *(re2::RE2*)compiled, (const char*)v.base, v.size);
-        }
-        default:
-          return Condition::is_matching_extended(
-            comp, data, size, v.base, v.size);
-      }
-    }
-
-    case Types::Column::SERIAL: {
-      if(!compiled)
-        compiled = new Serial::Value::Fields(data, size);
-      return ((Serial::Value::Fields*)compiled)->is_matching(cell);
-    }
-
+    case Types::Column::PLAIN:
+      return is_matching_plain(cell);
+    case Types::Column::SERIAL:
+      return is_matching_serial(cell);
     case Types::Column::COUNTER_I64:
     case Types::Column::COUNTER_I32:
     case Types::Column::COUNTER_I16:
-    case Types::Column::COUNTER_I8: {
-      if(!compiled) {
-        errno = 0;
-        char *last = (char*)data + size;
-        compiled = new int64_t(strtoll((const char*)data, &last, 0));
-      }
-      return Condition::is_matching(
-        comp, *(int64_t*)compiled, cell.get_counter());
-    }
-
+    case Types::Column::COUNTER_I8:
+      return is_matching_counter(cell);
     default:
       return false;
   }
 }
 
+struct MatcherPlainRE : Value::TypeMatcher {
+  MatcherPlainRE(const uint8_t* data, uint32_t size)
+                : re(re2::StringPiece((const char*)data, size)) {
+  }
+  re2::RE2 re;
+};
 
-std::string Value::to_string() const {
+
+bool Value::is_matching_plain(const Cells::Cell& cell) const {
+  if(empty())
+    return true;
+
+  StaticBuffer v;
+  cell.get_value(v);
+  switch(comp) {
+    case Condition::RE: {
+      if(!matcher)
+        matcher = new MatcherPlainRE(data, size);
+      return Condition::re(
+        ((MatcherPlainRE*)matcher)->re, (const char*)v.base, v.size);
+    }
+    default:
+      return Condition::is_matching_extended(comp, data, size, v.base, v.size);
+  }
+}
+
+struct MatcherSerial : Value::TypeMatcher {
+  MatcherSerial(const uint8_t* data, uint32_t size)
+                : fields(data, size) {
+  }
+  Serial::Value::Fields fields;
+};
+
+bool Value::is_matching_serial(const Cells::Cell& cell) const {
+  if(empty())
+    return true;
+  if(!matcher)
+    matcher = new MatcherSerial(data, size);
+  return ((MatcherSerial*)matcher)->fields.is_matching(cell);
+}
+
+struct MatcherCounter : Value::TypeMatcher {
+  MatcherCounter(const uint8_t* data, uint32_t size) {
+    errno = 0;
+    char *last = (char*)data + size;
+    value = strtoll((const char*)data, &last, 0);
+  }
+  int64_t value;
+};
+
+bool Value::is_matching_counter(const Cells::Cell& cell) const {
+  if(empty())
+    return true;
+  if(!matcher)
+    matcher = new MatcherCounter(data, size);
+  return Condition::is_matching(
+    comp, ((MatcherCounter*)matcher)->value, cell.get_counter());
+}
+
+
+std::string Value::to_string(Types::Column col_type) const {
   std::stringstream ss;
-  print(ss);
+  print(col_type, ss);
   return ss.str();
 }
 
-void Value::print(std::ostream& out) const {
+void Value::print(Types::Column col_type, std::ostream& out) const {
   out << "Value(";
   if(size)
-    display(out);
+    display(col_type, out);
   out << ')';
 }
 
-void Value::display(std::ostream& out, bool pretty) const {
+void Value::display(Types::Column col_type, std::ostream& out,
+                    bool pretty) const {
   out << "size=" << size << ' ' << Condition::to_string(comp, true);
   if(size) {
     if(col_type == Types::Column::SERIAL) {

@@ -11,7 +11,8 @@
 namespace SWC { namespace DB { namespace Specs {
 
 
-Interval::Interval() : offset_rev(0), options(0) { }
+Interval::Interval(Types::Column col_type)
+                  : values(col_type), offset_rev(0), options(0) { }
 
 Interval::Interval(const Cell::Key& range_begin, const Cell::Key& range_end)
                   : range_begin(range_begin), range_end(range_end),

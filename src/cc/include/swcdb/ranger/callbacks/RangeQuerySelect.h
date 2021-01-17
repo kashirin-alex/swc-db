@@ -20,11 +20,8 @@ class RangeQuerySelect : public ReqScan {
                    const RangePtr& range)
                   : ReqScan(conn, ev, req_spec),
                     range(range) {
-    if(!spec.values.empty()) {
+    if(!spec.values.empty())
       spec.values.col_type = range->cfg->column_type();
-      for(auto& value : spec.values)
-        value.col_type = spec.values.col_type;
-    }
     if(!spec.flags.max_versions)
       spec.flags.max_versions = range->cfg->cell_versions();
     if(!spec.flags.max_buffer ||

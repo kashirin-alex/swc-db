@@ -323,9 +323,9 @@ Optionally to select all the inner/deeper-level fractions including or excluding
 The Condition of Value, a single or several Value Conditions joined by an ```AND``` TOKEN. The Comparator is auto-set to EQ, If no Comparator was applied. \
 ***``` value ``` [```Condition-Value-Expression```](#the-condition-value-expression-syntax)```...```
 [``` AND ```]
-``` value ``` [```Condition-Value-Expression```](#the-condition-value-expression-syntax)```...```
+``` value ``` [```Condition-Value-Expression```](#the-condition-value-expression-syntax)
 [``` AND ```]
-``` value ``` [```Condition-Value-Expression```](#the-condition-value-expression-syntax)```...```***
+``` value ``` [```Condition-Value-Expression```](#the-condition-value-expression-syntax)***
 
 
 * ##### The Condition-Value-Expression syntax

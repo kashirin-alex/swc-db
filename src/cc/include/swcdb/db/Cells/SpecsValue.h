@@ -17,8 +17,7 @@ namespace SWC { namespace DB { namespace Specs {
 class Value {
   public:
 
-  explicit Value(Types::Column col_type = Types::Column::UNKNOWN, 
-                 bool own=true);
+  explicit Value(bool own=true);
 
   explicit Value(const char* data_n, Condition::Comp comp_n,
                  bool owner=false);
@@ -62,23 +61,32 @@ class Value {
 
   void decode(const uint8_t** bufp, size_t* remainp);
 
-  bool is_matching(const Cells::Cell& cell) const;
+  bool is_matching(Types::Column col_type, const Cells::Cell& cell) const;
 
-  std::string to_string() const;
+  bool is_matching_plain(const Cells::Cell& cell) const;
 
-  void print(std::ostream& out) const;
+  bool is_matching_serial(const Cells::Cell& cell) const;
 
-  void display(std::ostream& out, bool pretty=true) const;
+  bool is_matching_counter(const Cells::Cell& cell) const;
 
-  Types::Column   col_type = Types::Column::UNKNOWN;
+  std::string to_string(Types::Column col_type) const;
+
+  void print(Types::Column col_type, std::ostream& out) const;
+
+  void display(Types::Column col_type, std::ostream& out,
+               bool pretty=true) const;
+
   bool            own;
   Condition::Comp comp;
 
   uint8_t*        data;
   uint32_t        size;
 
-  mutable void*   compiled;
-
+  struct TypeMatcher {
+    virtual ~TypeMatcher() { }
+  };
+  private:
+  mutable TypeMatcher*  matcher;
 };
 
 

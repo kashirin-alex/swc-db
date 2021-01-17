@@ -17,6 +17,7 @@ void Values::copy(const Values& other) {
   auto it = begin();
   for(auto it2 = other.begin(); it < end(); ++it, ++it2)
     it->copy(*it2);
+  col_type = other.col_type;
 }
 
 void Values::free() {
@@ -24,22 +25,22 @@ void Values::free() {
 }
 
 Value& Values::add() {
-  return emplace_back(col_type);
+  return emplace_back();
 }
 
 Value& Values::add(Value&& other) {
-  return emplace_back(other);
+  return emplace_back(std::move(other));
 }
 
 size_t Values::size_of_internal() const {
-  size_t sz = 0;
+  size_t sz = sizeof(*this);
   for(auto& value : *this)
     sz += sizeof(value) + value.size;
   return sz;
 }
 
 bool Values::equal(const Values& other) const {
-  if(size() == other.size()) {
+  if(col_type == other.col_type && size() == other.size()) {
     auto it = begin();
     for(auto it2 = other.begin(); it < end(); ++it, ++it2)
       if(!it->equal(*it2))
@@ -49,11 +50,34 @@ bool Values::equal(const Values& other) const {
 }
 
 bool Values::is_matching(const Cells::Cell& cell) const {
-  for(auto& value : *this) {
-    if(!value.is_matching(cell))
+  switch(col_type) {
+    case Types::Column::PLAIN: {
+      for(auto& value : *this) {
+        if(!value.is_matching_plain(cell))
+          return false;
+      }
+      return true;
+    }
+    case Types::Column::SERIAL: {
+      for(auto& value : *this) {
+        if(!value.is_matching_serial(cell))
+          return false;
+      }
+      return true;
+    }
+    case Types::Column::COUNTER_I64:
+    case Types::Column::COUNTER_I32:
+    case Types::Column::COUNTER_I16:
+    case Types::Column::COUNTER_I8: {
+      for(auto& value : *this) {
+        if(!value.is_matching_counter(cell))
+          return false;
+      }
+      return true;
+    }
+    default:
       return false;
   }
-  return true;
 }
 
 size_t Values::encoded_length() const {
@@ -93,7 +117,7 @@ void Values::print(std::ostream& out) const {
   if(!empty()) {
     out << "size=" << size() << " [";
     for(auto& value : *this) {
-      value.print(out);
+      value.print(col_type, out);
       out << ", ";
     }
     out << ']';
@@ -101,11 +125,11 @@ void Values::print(std::ostream& out) const {
   out << ')';
 }
 
-void Values::display(std::ostream& out, bool pretty, 
+void Values::display(std::ostream& out, bool pretty,
                      const std::string& offset) const {
   out << offset << "Values([\n";
   for(auto& value : *this) {
-    value.display(out << offset << " Value(", pretty);
+    value.display(col_type, out << offset << " Value(", pretty);
     out << ")\n";
   }
   out << offset << "])\n";

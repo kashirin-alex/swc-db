@@ -274,7 +274,7 @@ class AppHandler final : virtual public BrokerIf {
   client::Query::Select::Ptr sync_select(const SpecScan& spec) {
     auto req = std::make_shared<client::Query::Select>();
     int err = Error::OK;
-    
+
     if(spec.__isset.flags)
       Converter::set(spec.flags, req->specs.flags);
 
@@ -290,7 +290,7 @@ class AppHandler final : virtual public BrokerIf {
       auto& dbcol = req->specs.columns.back();
 
       for(auto& intval : col.intervals) {
-        dbintval = DB::Specs::Interval::make_ptr();
+        dbintval = DB::Specs::Interval::make_ptr(schema->col_type);
         Converter::set(intval, *dbintval.get());
         dbcol->intervals.push_back(dbintval);
       }
@@ -301,12 +301,12 @@ class AppHandler final : virtual public BrokerIf {
       if(!err)
         req->wait();
     }
-    if(err) 
+    if(err)
       Converter::exception(err);
     return req;
   }
 
-  void scan_rslt_on(CellsGroup& _return, const SpecScan& specs, 
+  void scan_rslt_on(CellsGroup& _return, const SpecScan& specs,
                     const CellsResult::type rslt) {
     switch(rslt) {
       case CellsResult::ON_COLUMN : {

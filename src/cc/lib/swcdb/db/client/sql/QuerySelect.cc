@@ -402,8 +402,8 @@ void QuerySelect::read_cells_intervals(
             break;
           }
         }
-        auto spec = DB::Specs::Interval::make_ptr();
-        read_cells_interval(*spec.get(), col_type, value_except);
+        auto spec = DB::Specs::Interval::make_ptr(col_type);
+        read_cells_interval(*spec.get(), value_except);
 
         for(auto& col : specs.columns) {
           for(auto& schema : cols) {
@@ -432,7 +432,6 @@ void QuerySelect::read_cells_intervals(
 }
 
 void QuerySelect::read_cells_interval(DB::Specs::Interval& spec,
-                                      DB::Types::Column col_type,
                                       bool value_except) {
 
     uint32_t escape = 0;
@@ -508,8 +507,7 @@ void QuerySelect::read_cells_interval(DB::Specs::Interval& spec,
         if(value_except)
           return error_msg(
             Error::SQL_PARSE_ERROR, "Value require the same columns type");
-        spec.values.col_type = col_type;
-        read_value(spec.values.add());
+        read_value(spec.values.col_type, spec.values.add());
         possible_and = true;
         continue;
       }
@@ -726,9 +724,10 @@ void QuerySelect::read_key(DB::Specs::Key& key) {
     expect_token("]", 1, bracket_square);
 }
 
-void QuerySelect::read_value(DB::Specs::Value& value) {
+void QuerySelect::read_value(DB::Types::Column col_type,
+                             DB::Specs::Value& value) {
     Condition::Comp comp;
-    switch(value.col_type) {
+    switch(col_type) {
       case DB::Types::Column::SERIAL: {
         found_comparator(comp = Condition::NONE, false);
         if(comp == Condition::NONE)

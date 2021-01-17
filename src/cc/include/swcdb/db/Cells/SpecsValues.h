@@ -16,9 +16,9 @@ namespace SWC { namespace DB { namespace Specs {
 
 class Values : private std::vector<Value> {
   public:
-  
+
   typedef std::vector<Value> Vec;
-  
+
   using Vec::empty;
   using Vec::size;
   using Vec::begin;
@@ -29,8 +29,8 @@ class Values : private std::vector<Value> {
 
   Types::Column col_type;
 
-  Values(Types::Column col_type = Types::Column::UNKNOWN) 
-        : col_type(col_type) { 
+  Values(Types::Column col_type = Types::Column::UNKNOWN)
+        : col_type(col_type) {
   }
 
   Values(const Values& other) = delete;
@@ -48,7 +48,7 @@ class Values : private std::vector<Value> {
   size_t size_of_internal() const;
 
   bool equal(const Values& other) const;
-  
+
   bool is_matching(const Cells::Cell& cell) const;
 
   size_t encoded_length() const;
@@ -59,7 +59,7 @@ class Values : private std::vector<Value> {
 
   void print(std::ostream& out) const;
 
-  void display(std::ostream& out, bool pretty, 
+  void display(std::ostream& out, bool pretty,
                const std::string& offset) const;
 
 };
@@ -71,7 +71,7 @@ class Values : private std::vector<Value> {
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/db/Cells/SpecsValues.cc"
-#endif 
+#endif
 
 
 #endif // swcdb_db_cells_SpecsValues_h
