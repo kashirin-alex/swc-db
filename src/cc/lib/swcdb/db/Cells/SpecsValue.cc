@@ -193,7 +193,9 @@ bool Value::is_matching_serial(const Cells::Cell& cell) const {
     return true;
   if(!matcher)
     matcher = new MatcherSerial(data, size);
-  return ((MatcherSerial*)matcher)->fields.is_matching(cell);
+  return ((MatcherSerial*)matcher)->fields.is_matching(cell)
+    ? comp == Condition::EQ
+    : comp == Condition::NE;
 }
 
 struct MatcherCounter : Value::TypeMatcher {

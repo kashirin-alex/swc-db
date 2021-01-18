@@ -726,15 +726,14 @@ void QuerySelect::read_key(DB::Specs::Key& key) {
 
 void QuerySelect::read_value(DB::Types::Column col_type,
                              DB::Specs::Value& value) {
-    Condition::Comp comp;
     switch(col_type) {
       case DB::Types::Column::SERIAL: {
-        found_comparator(comp = Condition::NONE, false);
-        if(comp == Condition::NONE)
-          comp = Condition::EQ;
-        else if(comp != Condition::EQ)
-          return error_msg(
-            Error::SQL_PARSE_ERROR, "unsupported 'comparator' allowed EQ");
+        found_comparator(value.comp, false);
+        if(value.comp == Condition::NONE)
+          value.comp = Condition::EQ;
+        else if(value.comp != Condition::EQ && value.comp != Condition::NE)
+          return error_msg(Error::SQL_PARSE_ERROR,
+            "unsupported 'comparator' allowed EQ, NE");
 
         bool bracket_square = false;
         bool was_set;
@@ -760,7 +759,8 @@ void QuerySelect::read_value(DB::Types::Column col_type,
           switch(typ) {
 
             case DB::Specs::Serial::Value::Type::INT64: {
-              found_comparator(comp = Condition::NONE, false);
+              Condition::Comp comp = Condition::NONE;
+              found_comparator(comp, false);
               if(!is_numeric_comparator(comp))
                 return;
               int64_t v;
@@ -774,7 +774,8 @@ void QuerySelect::read_value(DB::Types::Column col_type,
             }
 
             case DB::Specs::Serial::Value::Type::DOUBLE: {
-              found_comparator(comp = Condition::NONE, false);
+              Condition::Comp comp = Condition::NONE;
+              found_comparator(comp, false);
               if(!is_numeric_comparator(comp, true))
                 return;
               long double v;
@@ -788,7 +789,8 @@ void QuerySelect::read_value(DB::Types::Column col_type,
             }
 
             case DB::Specs::Serial::Value::Type::BYTES: {
-              found_comparator(comp = Condition::NONE, true);
+              Condition::Comp comp = Condition::NONE;
+              found_comparator(comp, true);
               if(comp == Condition::NONE)
                 comp = Condition::EQ;
               std::string buf;
@@ -802,7 +804,8 @@ void QuerySelect::read_value(DB::Types::Column col_type,
             }
 
             case DB::Specs::Serial::Value::Type::KEY: {
-              found_comparator(comp = Condition::NONE, false);
+              Condition::Comp comp = Condition::NONE;
+              found_comparator(comp, false);
               if(comp == Condition::NONE)
                 comp = Condition::EQ;
               else if(comp != Condition::EQ)
@@ -826,7 +829,8 @@ void QuerySelect::read_value(DB::Types::Column col_type,
             }
 
             case DB::Specs::Serial::Value::Type::LIST_INT64: {
-              found_comparator(comp = Condition::NONE, false);
+              Condition::Comp comp = Condition::NONE;
+              found_comparator(comp, false);
               if(comp == Condition::NONE)
                 comp = Condition::EQ;
               else if(comp == Condition::RE || comp == Condition::PF)
@@ -857,7 +861,8 @@ void QuerySelect::read_value(DB::Types::Column col_type,
             }
 
             case DB::Specs::Serial::Value::Type::LIST_BYTES: {
-              found_comparator(comp = Condition::NONE, true);
+              Condition::Comp comp = Condition::NONE;
+              found_comparator(comp, true);
               if(comp == Condition::NONE)
                 comp = Condition::EQ;
               while(remain && !err && found_space());
@@ -902,23 +907,23 @@ void QuerySelect::read_value(DB::Types::Column col_type,
       case DB::Types::Column::COUNTER_I32:
       case DB::Types::Column::COUNTER_I16:
       case DB::Types::Column::COUNTER_I8: {
-        found_comparator(comp = Condition::NONE, false);
-        if(!is_numeric_comparator(comp))
+        found_comparator(value.comp, false);
+        if(!is_numeric_comparator(value.comp))
           return;
         std::string buf;
         read(buf, 0, false);
         if(!err)
-          value.set((uint8_t*)buf.data(), buf.length(), comp, true);
+          value.set(buf, value.comp);
         break;
       }
       default: {
-        found_comparator(comp = Condition::NONE, true);
-        if(comp == Condition::NONE)
-          comp = Condition::EQ;
+        found_comparator(value.comp, true);
+        if(value.comp == Condition::NONE)
+          value.comp = Condition::EQ;
         std::string buf;
-        read(buf, 0, comp == Condition::RE);
+        read(buf, 0, value.comp == Condition::RE);
         if(!err)
-          value.set((uint8_t*)buf.data(), buf.length(), comp, true);
+          value.set(buf, value.comp);
         break;
       }
     }

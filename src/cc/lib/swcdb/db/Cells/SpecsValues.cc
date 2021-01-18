@@ -50,6 +50,9 @@ bool Values::equal(const Values& other) const {
 }
 
 bool Values::is_matching(const Cells::Cell& cell) const {
+  if(empty())
+    return true;
+
   switch(col_type) {
     case Types::Column::PLAIN: {
       for(auto& value : *this) {

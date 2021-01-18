@@ -710,7 +710,7 @@ void Fields::encode(Specs::Value& value) const {
     StaticBuffer buffer(len);
     uint8_t* ptr = buffer.base;
     encode(&ptr);
-    value.set(buffer.base, buffer.size, Condition::EQ, false);
+    value.set(buffer.base, buffer.size, value.comp, false);
     buffer.own = false;
     value.own = true;
   } else {
