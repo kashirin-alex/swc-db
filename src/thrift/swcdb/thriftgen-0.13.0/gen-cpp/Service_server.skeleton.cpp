@@ -158,6 +158,19 @@ class ServiceHandler : virtual public ServiceIf {
   }
 
   /**
+   * The direct method to update cells with cell in Update-Columns-Cells-Serial,
+   * optionally to work with updater-id.
+   * 
+   * @param cells The Serial Cells to update
+   * 
+   * @param updater_id The Updater ID to use for write
+   */
+  void update_serial(const UCCellsSerial& cells, const int64_t updater_id) {
+    // Your implementation goes here
+    printf("update_serial\n");
+  }
+
+  /**
    * The direct method to Manage Column
    * 
    * @param func The Action Function to use

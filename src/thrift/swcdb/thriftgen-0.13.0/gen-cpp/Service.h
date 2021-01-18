@@ -122,6 +122,16 @@ class ServiceIf {
   virtual void update(const UCCells& cells, const int64_t updater_id) = 0;
 
   /**
+   * The direct method to update cells with cell in Update-Columns-Cells-Serial,
+   * optionally to work with updater-id.
+   * 
+   * @param cells The Serial Cells to update
+   * 
+   * @param updater_id The Updater ID to use for write
+   */
+  virtual void update_serial(const UCCellsSerial& cells, const int64_t updater_id) = 0;
+
+  /**
    * The direct method to Manage Column
    * 
    * @param func The Action Function to use
@@ -247,6 +257,9 @@ class ServiceNull : virtual public ServiceIf {
     return;
   }
   void update(const UCCells& /* cells */, const int64_t /* updater_id */) {
+    return;
+  }
+  void update_serial(const UCCellsSerial& /* cells */, const int64_t /* updater_id */) {
     return;
   }
   void mng_column(const SchemaFunc::type /* func */, const Schema& /* schema */) {
@@ -1720,6 +1733,117 @@ class Service_update_presult {
 
 };
 
+typedef struct _Service_update_serial_args__isset {
+  _Service_update_serial_args__isset() : cells(false), updater_id(true) {}
+  bool cells :1;
+  bool updater_id :1;
+} _Service_update_serial_args__isset;
+
+class Service_update_serial_args {
+ public:
+
+  Service_update_serial_args(const Service_update_serial_args&);
+  Service_update_serial_args& operator=(const Service_update_serial_args&);
+  Service_update_serial_args() : updater_id(0LL) {
+  }
+
+  virtual ~Service_update_serial_args() noexcept;
+  UCCellsSerial cells;
+  int64_t updater_id;
+
+  _Service_update_serial_args__isset __isset;
+
+  void __set_cells(const UCCellsSerial& val);
+
+  void __set_updater_id(const int64_t val);
+
+  bool operator == (const Service_update_serial_args & rhs) const
+  {
+    if (!(cells == rhs.cells))
+      return false;
+    if (!(updater_id == rhs.updater_id))
+      return false;
+    return true;
+  }
+  bool operator != (const Service_update_serial_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Service_update_serial_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class Service_update_serial_pargs {
+ public:
+
+
+  virtual ~Service_update_serial_pargs() noexcept;
+  const UCCellsSerial* cells;
+  const int64_t* updater_id;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _Service_update_serial_result__isset {
+  _Service_update_serial_result__isset() : e(false) {}
+  bool e :1;
+} _Service_update_serial_result__isset;
+
+class Service_update_serial_result {
+ public:
+
+  Service_update_serial_result(const Service_update_serial_result&);
+  Service_update_serial_result& operator=(const Service_update_serial_result&);
+  Service_update_serial_result() {
+  }
+
+  virtual ~Service_update_serial_result() noexcept;
+  Exception e;
+
+  _Service_update_serial_result__isset __isset;
+
+  void __set_e(const Exception& val);
+
+  bool operator == (const Service_update_serial_result & rhs) const
+  {
+    if (!(e == rhs.e))
+      return false;
+    return true;
+  }
+  bool operator != (const Service_update_serial_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Service_update_serial_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _Service_update_serial_presult__isset {
+  _Service_update_serial_presult__isset() : e(false) {}
+  bool e :1;
+} _Service_update_serial_presult__isset;
+
+class Service_update_serial_presult {
+ public:
+
+
+  virtual ~Service_update_serial_presult() noexcept;
+  Exception e;
+
+  _Service_update_serial_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 typedef struct _Service_mng_column_args__isset {
   _Service_mng_column_args__isset() : func(false), schema(false) {}
   bool func :1;
@@ -2686,6 +2810,9 @@ class ServiceClient : virtual public ServiceIf {
   void update(const UCCells& cells, const int64_t updater_id);
   void send_update(const UCCells& cells, const int64_t updater_id);
   void recv_update();
+  void update_serial(const UCCellsSerial& cells, const int64_t updater_id);
+  void send_update_serial(const UCCellsSerial& cells, const int64_t updater_id);
+  void recv_update_serial();
   void mng_column(const SchemaFunc::type func, const Schema& schema);
   void send_mng_column(const SchemaFunc::type func, const Schema& schema);
   void recv_mng_column();
@@ -2738,6 +2865,7 @@ class ServiceProcessor : public ::apache::thrift::TDispatchProcessor {
   void process_updater_create(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_updater_close(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_update(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_update_serial(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_mng_column(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_list_columns(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_compact_columns(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -2762,6 +2890,7 @@ class ServiceProcessor : public ::apache::thrift::TDispatchProcessor {
     processMap_["updater_create"] = &ServiceProcessor::process_updater_create;
     processMap_["updater_close"] = &ServiceProcessor::process_updater_close;
     processMap_["update"] = &ServiceProcessor::process_update;
+    processMap_["update_serial"] = &ServiceProcessor::process_update_serial;
     processMap_["mng_column"] = &ServiceProcessor::process_mng_column;
     processMap_["list_columns"] = &ServiceProcessor::process_list_columns;
     processMap_["compact_columns"] = &ServiceProcessor::process_compact_columns;
@@ -2923,6 +3052,15 @@ class ServiceMultiface : virtual public ServiceIf {
     ifaces_[i]->update(cells, updater_id);
   }
 
+  void update_serial(const UCCellsSerial& cells, const int64_t updater_id) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->update_serial(cells, updater_id);
+    }
+    ifaces_[i]->update_serial(cells, updater_id);
+  }
+
   void mng_column(const SchemaFunc::type func, const Schema& schema) {
     size_t sz = ifaces_.size();
     size_t i = 0;
@@ -3073,6 +3211,9 @@ class ServiceConcurrentClient : virtual public ServiceIf {
   void update(const UCCells& cells, const int64_t updater_id);
   int32_t send_update(const UCCells& cells, const int64_t updater_id);
   void recv_update(const int32_t seqid);
+  void update_serial(const UCCellsSerial& cells, const int64_t updater_id);
+  int32_t send_update_serial(const UCCellsSerial& cells, const int64_t updater_id);
+  void recv_update_serial(const int32_t seqid);
   void mng_column(const SchemaFunc::type func, const Schema& schema);
   int32_t send_mng_column(const SchemaFunc::type func, const Schema& schema);
   void recv_mng_column(const int32_t seqid);

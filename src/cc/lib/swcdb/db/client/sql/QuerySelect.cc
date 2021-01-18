@@ -819,12 +819,11 @@ void QuerySelect::read_value(DB::Types::Column col_type,
               auto seq = DB::Types::range_seq_from(buf);
               if(seq == DB::Types::KeySeq::UNKNOWN)
                 return error_msg(Error::SQL_PARSE_ERROR, "bad 'KeqSeq'");
-              DB::Specs::Key fkey;
-              read_key(fkey);
+              auto field = DB::Specs::Serial::Value::Field_KEY::make(fid, seq);
+              read_key(field->key);
               if(err)
                 return;
-              fields.add(DB::Specs::Serial::Value::Field_KEY::make(
-                fid, seq, fkey));
+              fields.add(std::move(field));
               break;
             }
 

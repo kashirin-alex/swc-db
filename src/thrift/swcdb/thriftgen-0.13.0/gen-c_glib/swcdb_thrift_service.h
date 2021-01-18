@@ -31,6 +31,7 @@ struct _swcdb_thriftServiceIfInterface
   gboolean (*updater_create) (swcdb_thriftServiceIf *iface, gint64* _return, const gint32 buffer_size, swcdb_thriftException ** e, GError **error);
   gboolean (*updater_close) (swcdb_thriftServiceIf *iface, const gint64 id, swcdb_thriftException ** e, GError **error);
   gboolean (*update) (swcdb_thriftServiceIf *iface, const swcdb_thriftUCCells * cells, const gint64 updater_id, swcdb_thriftException ** e, GError **error);
+  gboolean (*update_serial) (swcdb_thriftServiceIf *iface, const swcdb_thriftUCCellsSerial * cells, const gint64 updater_id, swcdb_thriftException ** e, GError **error);
   gboolean (*mng_column) (swcdb_thriftServiceIf *iface, const swcdb_thriftSchemaFunc func, const swcdb_thriftSchema * schema, swcdb_thriftException ** e, GError **error);
   gboolean (*list_columns) (swcdb_thriftServiceIf *iface, swcdb_thriftSchemas ** _return, const swcdb_thriftSpecSchemas * spec, swcdb_thriftException ** e, GError **error);
   gboolean (*compact_columns) (swcdb_thriftServiceIf *iface, swcdb_thriftCompactResults ** _return, const swcdb_thriftSpecSchemas * spec, swcdb_thriftException ** e, GError **error);
@@ -61,6 +62,7 @@ gboolean swcdb_thrift_service_if_exec_sql (swcdb_thriftServiceIf *iface, swcdb_t
 gboolean swcdb_thrift_service_if_updater_create (swcdb_thriftServiceIf *iface, gint64* _return, const gint32 buffer_size, swcdb_thriftException ** e, GError **error);
 gboolean swcdb_thrift_service_if_updater_close (swcdb_thriftServiceIf *iface, const gint64 id, swcdb_thriftException ** e, GError **error);
 gboolean swcdb_thrift_service_if_update (swcdb_thriftServiceIf *iface, const swcdb_thriftUCCells * cells, const gint64 updater_id, swcdb_thriftException ** e, GError **error);
+gboolean swcdb_thrift_service_if_update_serial (swcdb_thriftServiceIf *iface, const swcdb_thriftUCCellsSerial * cells, const gint64 updater_id, swcdb_thriftException ** e, GError **error);
 gboolean swcdb_thrift_service_if_mng_column (swcdb_thriftServiceIf *iface, const swcdb_thriftSchemaFunc func, const swcdb_thriftSchema * schema, swcdb_thriftException ** e, GError **error);
 gboolean swcdb_thrift_service_if_list_columns (swcdb_thriftServiceIf *iface, swcdb_thriftSchemas ** _return, const swcdb_thriftSpecSchemas * spec, swcdb_thriftException ** e, GError **error);
 gboolean swcdb_thrift_service_if_compact_columns (swcdb_thriftServiceIf *iface, swcdb_thriftCompactResults ** _return, const swcdb_thriftSpecSchemas * spec, swcdb_thriftException ** e, GError **error);
@@ -133,6 +135,9 @@ gboolean swcdb_thrift_service_client_recv_updater_close (swcdb_thriftServiceIf *
 gboolean swcdb_thrift_service_client_update (swcdb_thriftServiceIf * iface, const swcdb_thriftUCCells * cells, const gint64 updater_id, swcdb_thriftException ** e, GError ** error);
 gboolean swcdb_thrift_service_client_send_update (swcdb_thriftServiceIf * iface, const swcdb_thriftUCCells * cells, const gint64 updater_id, GError ** error);
 gboolean swcdb_thrift_service_client_recv_update (swcdb_thriftServiceIf * iface, swcdb_thriftException ** e, GError ** error);
+gboolean swcdb_thrift_service_client_update_serial (swcdb_thriftServiceIf * iface, const swcdb_thriftUCCellsSerial * cells, const gint64 updater_id, swcdb_thriftException ** e, GError ** error);
+gboolean swcdb_thrift_service_client_send_update_serial (swcdb_thriftServiceIf * iface, const swcdb_thriftUCCellsSerial * cells, const gint64 updater_id, GError ** error);
+gboolean swcdb_thrift_service_client_recv_update_serial (swcdb_thriftServiceIf * iface, swcdb_thriftException ** e, GError ** error);
 gboolean swcdb_thrift_service_client_mng_column (swcdb_thriftServiceIf * iface, const swcdb_thriftSchemaFunc func, const swcdb_thriftSchema * schema, swcdb_thriftException ** e, GError ** error);
 gboolean swcdb_thrift_service_client_send_mng_column (swcdb_thriftServiceIf * iface, const swcdb_thriftSchemaFunc func, const swcdb_thriftSchema * schema, GError ** error);
 gboolean swcdb_thrift_service_client_recv_mng_column (swcdb_thriftServiceIf * iface, swcdb_thriftException ** e, GError ** error);
@@ -184,6 +189,7 @@ struct _swcdb_thriftServiceHandlerClass
   gboolean (*updater_create) (swcdb_thriftServiceIf *iface, gint64* _return, const gint32 buffer_size, swcdb_thriftException ** e, GError **error);
   gboolean (*updater_close) (swcdb_thriftServiceIf *iface, const gint64 id, swcdb_thriftException ** e, GError **error);
   gboolean (*update) (swcdb_thriftServiceIf *iface, const swcdb_thriftUCCells * cells, const gint64 updater_id, swcdb_thriftException ** e, GError **error);
+  gboolean (*update_serial) (swcdb_thriftServiceIf *iface, const swcdb_thriftUCCellsSerial * cells, const gint64 updater_id, swcdb_thriftException ** e, GError **error);
   gboolean (*mng_column) (swcdb_thriftServiceIf *iface, const swcdb_thriftSchemaFunc func, const swcdb_thriftSchema * schema, swcdb_thriftException ** e, GError **error);
   gboolean (*list_columns) (swcdb_thriftServiceIf *iface, swcdb_thriftSchemas ** _return, const swcdb_thriftSpecSchemas * spec, swcdb_thriftException ** e, GError **error);
   gboolean (*compact_columns) (swcdb_thriftServiceIf *iface, swcdb_thriftCompactResults ** _return, const swcdb_thriftSpecSchemas * spec, swcdb_thriftException ** e, GError **error);
@@ -216,6 +222,7 @@ gboolean swcdb_thrift_service_handler_exec_sql (swcdb_thriftServiceIf *iface, sw
 gboolean swcdb_thrift_service_handler_updater_create (swcdb_thriftServiceIf *iface, gint64* _return, const gint32 buffer_size, swcdb_thriftException ** e, GError **error);
 gboolean swcdb_thrift_service_handler_updater_close (swcdb_thriftServiceIf *iface, const gint64 id, swcdb_thriftException ** e, GError **error);
 gboolean swcdb_thrift_service_handler_update (swcdb_thriftServiceIf *iface, const swcdb_thriftUCCells * cells, const gint64 updater_id, swcdb_thriftException ** e, GError **error);
+gboolean swcdb_thrift_service_handler_update_serial (swcdb_thriftServiceIf *iface, const swcdb_thriftUCCellsSerial * cells, const gint64 updater_id, swcdb_thriftException ** e, GError **error);
 gboolean swcdb_thrift_service_handler_mng_column (swcdb_thriftServiceIf *iface, const swcdb_thriftSchemaFunc func, const swcdb_thriftSchema * schema, swcdb_thriftException ** e, GError **error);
 gboolean swcdb_thrift_service_handler_list_columns (swcdb_thriftServiceIf *iface, swcdb_thriftSchemas ** _return, const swcdb_thriftSpecSchemas * spec, swcdb_thriftException ** e, GError **error);
 gboolean swcdb_thrift_service_handler_compact_columns (swcdb_thriftServiceIf *iface, swcdb_thriftCompactResults ** _return, const swcdb_thriftSpecSchemas * spec, swcdb_thriftException ** e, GError **error);

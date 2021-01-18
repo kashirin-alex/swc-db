@@ -22,11 +22,11 @@ public class SpecKeyInterval implements org.apache.thrift.TBase<SpecKeyInterval,
   /**
    * The Key Start Spec, the start of cells-interval key match
    */
-  public @org.apache.thrift.annotation.Nullable java.util.List<SpecFraction> start; // optional
+  public @org.apache.thrift.annotation.Nullable java.util.List<SpecFraction> start; // required
   /**
    * The Key Finish Spec, the finish of cells-interval key match
    */
-  public @org.apache.thrift.annotation.Nullable java.util.List<SpecFraction> finish; // optional
+  public @org.apache.thrift.annotation.Nullable java.util.List<SpecFraction> finish; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -98,19 +98,27 @@ public class SpecKeyInterval implements org.apache.thrift.TBase<SpecKeyInterval,
   }
 
   // isset id assignments
-  private static final _Fields optionals[] = {_Fields.START,_Fields.FINISH};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.START, new org.apache.thrift.meta_data.FieldMetaData("start", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+    tmpMap.put(_Fields.START, new org.apache.thrift.meta_data.FieldMetaData("start", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.LIST        , "SpecKey")));
-    tmpMap.put(_Fields.FINISH, new org.apache.thrift.meta_data.FieldMetaData("finish", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+    tmpMap.put(_Fields.FINISH, new org.apache.thrift.meta_data.FieldMetaData("finish", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.LIST        , "SpecKey")));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(SpecKeyInterval.class, metaDataMap);
   }
 
   public SpecKeyInterval() {
+  }
+
+  public SpecKeyInterval(
+    java.util.List<SpecFraction> start,
+    java.util.List<SpecFraction> finish)
+  {
+    this();
+    this.start = start;
+    this.finish = finish;
   }
 
   /**
@@ -386,25 +394,21 @@ public class SpecKeyInterval implements org.apache.thrift.TBase<SpecKeyInterval,
     java.lang.StringBuilder sb = new java.lang.StringBuilder("SpecKeyInterval(");
     boolean first = true;
 
-    if (isSetStart()) {
-      sb.append("start:");
-      if (this.start == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.start);
-      }
-      first = false;
+    sb.append("start:");
+    if (this.start == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.start);
     }
-    if (isSetFinish()) {
-      if (!first) sb.append(", ");
-      sb.append("finish:");
-      if (this.finish == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.finish);
-      }
-      first = false;
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("finish:");
+    if (this.finish == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.finish);
     }
+    first = false;
     sb.append(")");
     return sb.toString();
   }
@@ -502,32 +506,28 @@ public class SpecKeyInterval implements org.apache.thrift.TBase<SpecKeyInterval,
 
       oprot.writeStructBegin(STRUCT_DESC);
       if (struct.start != null) {
-        if (struct.isSetStart()) {
-          oprot.writeFieldBegin(START_FIELD_DESC);
+        oprot.writeFieldBegin(START_FIELD_DESC);
+        {
+          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.start.size()));
+          for (SpecFraction _iter30 : struct.start)
           {
-            oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.start.size()));
-            for (SpecFraction _iter30 : struct.start)
-            {
-              _iter30.write(oprot);
-            }
-            oprot.writeListEnd();
+            _iter30.write(oprot);
           }
-          oprot.writeFieldEnd();
+          oprot.writeListEnd();
         }
+        oprot.writeFieldEnd();
       }
       if (struct.finish != null) {
-        if (struct.isSetFinish()) {
-          oprot.writeFieldBegin(FINISH_FIELD_DESC);
+        oprot.writeFieldBegin(FINISH_FIELD_DESC);
+        {
+          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.finish.size()));
+          for (SpecFraction _iter31 : struct.finish)
           {
-            oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.finish.size()));
-            for (SpecFraction _iter31 : struct.finish)
-            {
-              _iter31.write(oprot);
-            }
-            oprot.writeListEnd();
+            _iter31.write(oprot);
           }
-          oprot.writeFieldEnd();
+          oprot.writeListEnd();
         }
+        oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
       oprot.writeStructEnd();

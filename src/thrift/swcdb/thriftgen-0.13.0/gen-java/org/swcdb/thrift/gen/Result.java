@@ -14,7 +14,7 @@ public class Result implements org.apache.thrift.TBase<Result, Result._Fields>, 
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("Result");
 
   private static final org.apache.thrift.protocol.TField SCHEMAS_FIELD_DESC = new org.apache.thrift.protocol.TField("schemas", org.apache.thrift.protocol.TType.LIST, (short)1);
-  private static final org.apache.thrift.protocol.TField CELLS_FIELD_DESC = new org.apache.thrift.protocol.TField("cells", org.apache.thrift.protocol.TType.LIST, (short)2);
+  private static final org.apache.thrift.protocol.TField CELLS_FIELD_DESC = new org.apache.thrift.protocol.TField("cells", org.apache.thrift.protocol.TType.STRUCT, (short)2);
   private static final org.apache.thrift.protocol.TField COMPACT_FIELD_DESC = new org.apache.thrift.protocol.TField("compact", org.apache.thrift.protocol.TType.LIST, (short)3);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new ResultStandardSchemeFactory();
@@ -23,15 +23,15 @@ public class Result implements org.apache.thrift.TBase<Result, Result._Fields>, 
   /**
    * Set with result for 'list columns' query
    */
-  public @org.apache.thrift.annotation.Nullable java.util.List<Schema> schemas; // optional
+  public @org.apache.thrift.annotation.Nullable java.util.List<Schema> schemas; // required
   /**
    * Set with result for 'select' query
    */
-  public @org.apache.thrift.annotation.Nullable java.util.List<Cell> cells; // optional
+  public @org.apache.thrift.annotation.Nullable Cells cells; // required
   /**
    * Set with result for 'compact columns' query
    */
-  public @org.apache.thrift.annotation.Nullable java.util.List<CompactResult> compact; // optional
+  public @org.apache.thrift.annotation.Nullable java.util.List<CompactResult> compact; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -109,21 +109,31 @@ public class Result implements org.apache.thrift.TBase<Result, Result._Fields>, 
   }
 
   // isset id assignments
-  private static final _Fields optionals[] = {_Fields.SCHEMAS,_Fields.CELLS,_Fields.COMPACT};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.SCHEMAS, new org.apache.thrift.meta_data.FieldMetaData("schemas", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+    tmpMap.put(_Fields.SCHEMAS, new org.apache.thrift.meta_data.FieldMetaData("schemas", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.LIST        , "Schemas")));
-    tmpMap.put(_Fields.CELLS, new org.apache.thrift.meta_data.FieldMetaData("cells", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.LIST        , "Cells")));
-    tmpMap.put(_Fields.COMPACT, new org.apache.thrift.meta_data.FieldMetaData("compact", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+    tmpMap.put(_Fields.CELLS, new org.apache.thrift.meta_data.FieldMetaData("cells", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Cells.class)));
+    tmpMap.put(_Fields.COMPACT, new org.apache.thrift.meta_data.FieldMetaData("compact", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.LIST        , "CompactResults")));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(Result.class, metaDataMap);
   }
 
   public Result() {
+  }
+
+  public Result(
+    java.util.List<Schema> schemas,
+    Cells cells,
+    java.util.List<CompactResult> compact)
+  {
+    this();
+    this.schemas = schemas;
+    this.cells = cells;
+    this.compact = compact;
   }
 
   /**
@@ -138,11 +148,7 @@ public class Result implements org.apache.thrift.TBase<Result, Result._Fields>, 
       this.schemas = __this__schemas;
     }
     if (other.isSetCells()) {
-      java.util.List<Cell> __this__cells = new java.util.ArrayList<Cell>(other.cells.size());
-      for (Cell other_element : other.cells) {
-        __this__cells.add(new Cell(other_element));
-      }
-      this.cells = __this__cells;
+      this.cells = new Cells(other.cells);
     }
     if (other.isSetCompact()) {
       java.util.List<CompactResult> __this__compact = new java.util.ArrayList<CompactResult>(other.compact.size());
@@ -211,34 +217,18 @@ public class Result implements org.apache.thrift.TBase<Result, Result._Fields>, 
     }
   }
 
-  public int getCellsSize() {
-    return (this.cells == null) ? 0 : this.cells.size();
-  }
-
-  @org.apache.thrift.annotation.Nullable
-  public java.util.Iterator<Cell> getCellsIterator() {
-    return (this.cells == null) ? null : this.cells.iterator();
-  }
-
-  public void addToCells(Cell elem) {
-    if (this.cells == null) {
-      this.cells = new java.util.ArrayList<Cell>();
-    }
-    this.cells.add(elem);
-  }
-
   /**
    * Set with result for 'select' query
    */
   @org.apache.thrift.annotation.Nullable
-  public java.util.List<Cell> getCells() {
+  public Cells getCells() {
     return this.cells;
   }
 
   /**
    * Set with result for 'select' query
    */
-  public Result setCells(@org.apache.thrift.annotation.Nullable java.util.List<Cell> cells) {
+  public Result setCells(@org.apache.thrift.annotation.Nullable Cells cells) {
     this.cells = cells;
     return this;
   }
@@ -319,7 +309,7 @@ public class Result implements org.apache.thrift.TBase<Result, Result._Fields>, 
       if (value == null) {
         unsetCells();
       } else {
-        setCells((java.util.List<Cell>)value);
+        setCells((Cells)value);
       }
       break;
 
@@ -490,35 +480,29 @@ public class Result implements org.apache.thrift.TBase<Result, Result._Fields>, 
     java.lang.StringBuilder sb = new java.lang.StringBuilder("Result(");
     boolean first = true;
 
-    if (isSetSchemas()) {
-      sb.append("schemas:");
-      if (this.schemas == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.schemas);
-      }
-      first = false;
+    sb.append("schemas:");
+    if (this.schemas == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.schemas);
     }
-    if (isSetCells()) {
-      if (!first) sb.append(", ");
-      sb.append("cells:");
-      if (this.cells == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.cells);
-      }
-      first = false;
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("cells:");
+    if (this.cells == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.cells);
     }
-    if (isSetCompact()) {
-      if (!first) sb.append(", ");
-      sb.append("compact:");
-      if (this.compact == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.compact);
-      }
-      first = false;
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("compact:");
+    if (this.compact == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.compact);
     }
+    first = false;
     sb.append(")");
     return sb.toString();
   }
@@ -526,6 +510,9 @@ public class Result implements org.apache.thrift.TBase<Result, Result._Fields>, 
   public void validate() throws org.apache.thrift.TException {
     // check for required fields
     // check for sub-struct validity
+    if (cells != null) {
+      cells.validate();
+    }
   }
 
   private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
@@ -565,14 +552,14 @@ public class Result implements org.apache.thrift.TBase<Result, Result._Fields>, 
           case 1: // SCHEMAS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list196 = iprot.readListBegin();
-                struct.schemas = new java.util.ArrayList<Schema>(_list196.size);
-                @org.apache.thrift.annotation.Nullable Schema _elem197;
-                for (int _i198 = 0; _i198 < _list196.size; ++_i198)
+                org.apache.thrift.protocol.TList _list412 = iprot.readListBegin();
+                struct.schemas = new java.util.ArrayList<Schema>(_list412.size);
+                @org.apache.thrift.annotation.Nullable Schema _elem413;
+                for (int _i414 = 0; _i414 < _list412.size; ++_i414)
                 {
-                  _elem197 = new Schema();
-                  _elem197.read(iprot);
-                  struct.schemas.add(_elem197);
+                  _elem413 = new Schema();
+                  _elem413.read(iprot);
+                  struct.schemas.add(_elem413);
                 }
                 iprot.readListEnd();
               }
@@ -582,19 +569,9 @@ public class Result implements org.apache.thrift.TBase<Result, Result._Fields>, 
             }
             break;
           case 2: // CELLS
-            if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
-              {
-                org.apache.thrift.protocol.TList _list199 = iprot.readListBegin();
-                struct.cells = new java.util.ArrayList<Cell>(_list199.size);
-                @org.apache.thrift.annotation.Nullable Cell _elem200;
-                for (int _i201 = 0; _i201 < _list199.size; ++_i201)
-                {
-                  _elem200 = new Cell();
-                  _elem200.read(iprot);
-                  struct.cells.add(_elem200);
-                }
-                iprot.readListEnd();
-              }
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+              struct.cells = new Cells();
+              struct.cells.read(iprot);
               struct.setCellsIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
@@ -603,14 +580,14 @@ public class Result implements org.apache.thrift.TBase<Result, Result._Fields>, 
           case 3: // COMPACT
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list202 = iprot.readListBegin();
-                struct.compact = new java.util.ArrayList<CompactResult>(_list202.size);
-                @org.apache.thrift.annotation.Nullable CompactResult _elem203;
-                for (int _i204 = 0; _i204 < _list202.size; ++_i204)
+                org.apache.thrift.protocol.TList _list415 = iprot.readListBegin();
+                struct.compact = new java.util.ArrayList<CompactResult>(_list415.size);
+                @org.apache.thrift.annotation.Nullable CompactResult _elem416;
+                for (int _i417 = 0; _i417 < _list415.size; ++_i417)
                 {
-                  _elem203 = new CompactResult();
-                  _elem203.read(iprot);
-                  struct.compact.add(_elem203);
+                  _elem416 = new CompactResult();
+                  _elem416.read(iprot);
+                  struct.compact.add(_elem416);
                 }
                 iprot.readListEnd();
               }
@@ -635,46 +612,33 @@ public class Result implements org.apache.thrift.TBase<Result, Result._Fields>, 
 
       oprot.writeStructBegin(STRUCT_DESC);
       if (struct.schemas != null) {
-        if (struct.isSetSchemas()) {
-          oprot.writeFieldBegin(SCHEMAS_FIELD_DESC);
+        oprot.writeFieldBegin(SCHEMAS_FIELD_DESC);
+        {
+          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.schemas.size()));
+          for (Schema _iter418 : struct.schemas)
           {
-            oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.schemas.size()));
-            for (Schema _iter205 : struct.schemas)
-            {
-              _iter205.write(oprot);
-            }
-            oprot.writeListEnd();
+            _iter418.write(oprot);
           }
-          oprot.writeFieldEnd();
+          oprot.writeListEnd();
         }
+        oprot.writeFieldEnd();
       }
       if (struct.cells != null) {
-        if (struct.isSetCells()) {
-          oprot.writeFieldBegin(CELLS_FIELD_DESC);
-          {
-            oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.cells.size()));
-            for (Cell _iter206 : struct.cells)
-            {
-              _iter206.write(oprot);
-            }
-            oprot.writeListEnd();
-          }
-          oprot.writeFieldEnd();
-        }
+        oprot.writeFieldBegin(CELLS_FIELD_DESC);
+        struct.cells.write(oprot);
+        oprot.writeFieldEnd();
       }
       if (struct.compact != null) {
-        if (struct.isSetCompact()) {
-          oprot.writeFieldBegin(COMPACT_FIELD_DESC);
+        oprot.writeFieldBegin(COMPACT_FIELD_DESC);
+        {
+          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.compact.size()));
+          for (CompactResult _iter419 : struct.compact)
           {
-            oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.compact.size()));
-            for (CompactResult _iter207 : struct.compact)
-            {
-              _iter207.write(oprot);
-            }
-            oprot.writeListEnd();
+            _iter419.write(oprot);
           }
-          oprot.writeFieldEnd();
+          oprot.writeListEnd();
         }
+        oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
@@ -707,27 +671,21 @@ public class Result implements org.apache.thrift.TBase<Result, Result._Fields>, 
       if (struct.isSetSchemas()) {
         {
           oprot.writeI32(struct.schemas.size());
-          for (Schema _iter208 : struct.schemas)
+          for (Schema _iter420 : struct.schemas)
           {
-            _iter208.write(oprot);
+            _iter420.write(oprot);
           }
         }
       }
       if (struct.isSetCells()) {
-        {
-          oprot.writeI32(struct.cells.size());
-          for (Cell _iter209 : struct.cells)
-          {
-            _iter209.write(oprot);
-          }
-        }
+        struct.cells.write(oprot);
       }
       if (struct.isSetCompact()) {
         {
           oprot.writeI32(struct.compact.size());
-          for (CompactResult _iter210 : struct.compact)
+          for (CompactResult _iter421 : struct.compact)
           {
-            _iter210.write(oprot);
+            _iter421.write(oprot);
           }
         }
       }
@@ -739,42 +697,33 @@ public class Result implements org.apache.thrift.TBase<Result, Result._Fields>, 
       java.util.BitSet incoming = iprot.readBitSet(3);
       if (incoming.get(0)) {
         {
-          org.apache.thrift.protocol.TList _list211 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-          struct.schemas = new java.util.ArrayList<Schema>(_list211.size);
-          @org.apache.thrift.annotation.Nullable Schema _elem212;
-          for (int _i213 = 0; _i213 < _list211.size; ++_i213)
+          org.apache.thrift.protocol.TList _list422 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+          struct.schemas = new java.util.ArrayList<Schema>(_list422.size);
+          @org.apache.thrift.annotation.Nullable Schema _elem423;
+          for (int _i424 = 0; _i424 < _list422.size; ++_i424)
           {
-            _elem212 = new Schema();
-            _elem212.read(iprot);
-            struct.schemas.add(_elem212);
+            _elem423 = new Schema();
+            _elem423.read(iprot);
+            struct.schemas.add(_elem423);
           }
         }
         struct.setSchemasIsSet(true);
       }
       if (incoming.get(1)) {
-        {
-          org.apache.thrift.protocol.TList _list214 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-          struct.cells = new java.util.ArrayList<Cell>(_list214.size);
-          @org.apache.thrift.annotation.Nullable Cell _elem215;
-          for (int _i216 = 0; _i216 < _list214.size; ++_i216)
-          {
-            _elem215 = new Cell();
-            _elem215.read(iprot);
-            struct.cells.add(_elem215);
-          }
-        }
+        struct.cells = new Cells();
+        struct.cells.read(iprot);
         struct.setCellsIsSet(true);
       }
       if (incoming.get(2)) {
         {
-          org.apache.thrift.protocol.TList _list217 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-          struct.compact = new java.util.ArrayList<CompactResult>(_list217.size);
-          @org.apache.thrift.annotation.Nullable CompactResult _elem218;
-          for (int _i219 = 0; _i219 < _list217.size; ++_i219)
+          org.apache.thrift.protocol.TList _list425 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+          struct.compact = new java.util.ArrayList<CompactResult>(_list425.size);
+          @org.apache.thrift.annotation.Nullable CompactResult _elem426;
+          for (int _i427 = 0; _i427 < _list425.size; ++_i427)
           {
-            _elem218 = new CompactResult();
-            _elem218.read(iprot);
-            struct.compact.add(_elem218);
+            _elem426 = new CompactResult();
+            _elem426.read(iprot);
+            struct.compact.add(_elem426);
           }
         }
         struct.setCompactIsSet(true);

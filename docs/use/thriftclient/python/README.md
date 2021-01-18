@@ -126,11 +126,11 @@ client.sql_update(
     0)
 
 # Select all the cells, expect in Volume Sequence
-cells = client.sql_select("select where col(" + str(schema.cid) + ")=(cells=())")
-assert(len(cells) == n_cells)
+lists = client.sql_select("select where col(" + str(schema.cid) + ")=(cells=())")
+assert(len(lists.cells) == n_cells)
 
 n = 0
-for cell in cells:
+for cell in lists.cells:
     assert(int(cell.k[0]) == n)
     n += 1
 
@@ -185,7 +185,8 @@ client.update(
                 f=service.Flag.INSERT,
                 k=[bytearray(str(n), 'utf8')],
                 ts=None, ts_desc=None,
-                v=bytearray("Value of F(1) is " + str(n), 'utf8'))
+                v=bytearray("Value of F(1) is " + str(n), 'utf8'),
+                encoder=None)
             for n in range(0, n_cells, 1)
             ]},
     0)
@@ -202,11 +203,11 @@ specs = service.SpecScan(
     ],
     flags=None
 )
-cells = client.scan(specs)
-assert(len(cells) == n_cells)
+list = client.scan(specs)
+assert(len(list.cells) == n_cells)
 
 n = 0
-for cell in cells:
+for cell in list.cells:
     assert(int(cell.k[0]) == n)
     n += 1
 

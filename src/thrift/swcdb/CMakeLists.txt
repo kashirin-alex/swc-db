@@ -185,3 +185,36 @@ endif(LANGS OR LANG_NETSTD)
 
 
 
+######## SET THRIFT RUST CLIENT SOURCES
+if (LANGS OR LANG_RUST)
+# set(THRIFT_RUST_GEN_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../../rs/include/swcdb/thrift)
+
+# if(NOT EXISTS ${THRIFT_RUST_GEN_PATH}/gen-rs OR NOT EXISTS ${VER_GEN_PATH}/gen-rs)
+  if(NOT EXISTS ${VER_GEN_PATH}/gen-rs)
+    if(THRIFT_COMPILER_FOUND)
+      execute_process(COMMAND rm -rf ${VER_GEN_PATH}/gen-rs )
+      execute_process(COMMAND mkdir -p ${VER_GEN_PATH}/gen-rs )
+
+      message(STATUS "Generating Thrift Rust:")
+      execute_process(COMMAND thrift -r --gen rs 
+                      -o ${VER_GEN_PATH}/gen-rs
+                      ${CMAKE_CURRENT_SOURCE_DIR}/Service.thrift)
+      message("       ${VER_GEN_PATH}/gen-rs")
+    endif()
+
+#    if(EXISTS ${VER_GEN_PATH}/gen-rs) # set current gen-rs/ included path
+#      execute_process(COMMAND rm -rf ${THRIFT_RUST_GEN_PATH}/gen-rs )
+#      execute_process(COMMAND mkdir -p ${THRIFT_RUST_GEN_PATH} )
+#      execute_process(COMMAND cp -r  ${VER_GEN_PATH}/gen-rs ${THRIFT_RUST_GEN_PATH}/)
+#    endif()
+  endif()
+
+#  if(EXISTS ${THRIFT_RUST_GEN_PATH}/gen-rs)
+#      set(THRIFT_RUST_GEN_PATH ${THRIFT_RUST_GEN_PATH} PARENT_SCOPE)
+# endif()
+endif(LANGS OR LANG_RUST)
+
+
+
+
+

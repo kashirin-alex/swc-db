@@ -1937,81 +1937,75 @@ swcdb_thrift_spec_schemas_write (ThriftStruct *object, ThriftProtocol *protocol,
   if ((ret = thrift_protocol_write_struct_begin (protocol, "SpecSchemas", error)) < 0)
     return -1;
   xfer += ret;
-  if (this_object->__isset_cids == TRUE) {
-    if ((ret = thrift_protocol_write_field_begin (protocol, "cids", T_LIST, 1, error)) < 0)
+  if ((ret = thrift_protocol_write_field_begin (protocol, "cids", T_LIST, 1, error)) < 0)
+    return -1;
+  xfer += ret;
+  {
+    guint i7;
+
+    if ((ret = thrift_protocol_write_list_begin (protocol, T_I64, (gint32) (this_object->cids ? this_object->cids->len : 0), error)) < 0)
       return -1;
     xfer += ret;
+    for (i7 = 0; i7 < (this_object->cids ? this_object->cids->len : 0); i7++)
     {
-      guint i7;
-
-      if ((ret = thrift_protocol_write_list_begin (protocol, T_I64, (gint32) (this_object->cids ? this_object->cids->len : 0), error)) < 0)
+      if ((ret = thrift_protocol_write_i64 (protocol, (g_array_index (this_object->cids, gint64, i7)), error)) < 0)
         return -1;
       xfer += ret;
-      for (i7 = 0; i7 < (this_object->cids ? this_object->cids->len : 0); i7++)
-      {
-        if ((ret = thrift_protocol_write_i64 (protocol, (g_array_index (this_object->cids, gint64, i7)), error)) < 0)
-          return -1;
-        xfer += ret;
 
-      }
-      if ((ret = thrift_protocol_write_list_end (protocol, error)) < 0)
-        return -1;
-      xfer += ret;
     }
-    if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    if ((ret = thrift_protocol_write_list_end (protocol, error)) < 0)
       return -1;
     xfer += ret;
   }
-  if (this_object->__isset_names == TRUE) {
-    if ((ret = thrift_protocol_write_field_begin (protocol, "names", T_LIST, 2, error)) < 0)
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_begin (protocol, "names", T_LIST, 2, error)) < 0)
+    return -1;
+  xfer += ret;
+  {
+    guint i8;
+
+    if ((ret = thrift_protocol_write_list_begin (protocol, T_STRING, (gint32) (this_object->names ? this_object->names->len : 0), error)) < 0)
       return -1;
     xfer += ret;
+    for (i8 = 0; i8 < (this_object->names ? this_object->names->len : 0); i8++)
     {
-      guint i8;
-
-      if ((ret = thrift_protocol_write_list_begin (protocol, T_STRING, (gint32) (this_object->names ? this_object->names->len : 0), error)) < 0)
+      if ((ret = thrift_protocol_write_string (protocol, ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->names, i8)), error)) < 0)
         return -1;
       xfer += ret;
-      for (i8 = 0; i8 < (this_object->names ? this_object->names->len : 0); i8++)
-      {
-        if ((ret = thrift_protocol_write_string (protocol, ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->names, i8)), error)) < 0)
-          return -1;
-        xfer += ret;
 
-      }
-      if ((ret = thrift_protocol_write_list_end (protocol, error)) < 0)
-        return -1;
-      xfer += ret;
     }
-    if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    if ((ret = thrift_protocol_write_list_end (protocol, error)) < 0)
       return -1;
     xfer += ret;
   }
-  if (this_object->__isset_patterns == TRUE) {
-    if ((ret = thrift_protocol_write_field_begin (protocol, "patterns", T_LIST, 3, error)) < 0)
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_begin (protocol, "patterns", T_LIST, 3, error)) < 0)
+    return -1;
+  xfer += ret;
+  {
+    guint i9;
+
+    if ((ret = thrift_protocol_write_list_begin (protocol, T_STRUCT, (gint32) (this_object->patterns ? this_object->patterns->len : 0), error)) < 0)
       return -1;
     xfer += ret;
+    for (i9 = 0; i9 < (this_object->patterns ? this_object->patterns->len : 0); i9++)
     {
-      guint i9;
-
-      if ((ret = thrift_protocol_write_list_begin (protocol, T_STRUCT, (gint32) (this_object->patterns ? this_object->patterns->len : 0), error)) < 0)
+      if ((ret = thrift_struct_write (THRIFT_STRUCT ((g_ptr_array_index ((GPtrArray *) this_object->patterns, i9))), protocol, error)) < 0)
         return -1;
       xfer += ret;
-      for (i9 = 0; i9 < (this_object->patterns ? this_object->patterns->len : 0); i9++)
-      {
-        if ((ret = thrift_struct_write (THRIFT_STRUCT ((g_ptr_array_index ((GPtrArray *) this_object->patterns, i9))), protocol, error)) < 0)
-          return -1;
-        xfer += ret;
 
-      }
-      if ((ret = thrift_protocol_write_list_end (protocol, error)) < 0)
-        return -1;
-      xfer += ret;
     }
-    if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    if ((ret = thrift_protocol_write_list_end (protocol, error)) < 0)
       return -1;
     xfer += ret;
   }
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
   if ((ret = thrift_protocol_write_field_stop (protocol, error)) < 0)
     return -1;
   xfer += ret;
@@ -2909,297 +2903,6 @@ swcdb_thrift_spec_fraction_get_type (void)
   return type;
 }
 
-enum _swcdb_thriftSpecValueProperties
-{
-  PROP_SWCDB_THRIFT_SPEC_VALUE_0,
-  PROP_SWCDB_THRIFT_SPEC_VALUE_COMP,
-  PROP_SWCDB_THRIFT_SPEC_VALUE_V
-};
-
-/* reads a spec_value object */
-static gint32
-swcdb_thrift_spec_value_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
-{
-  gint32 ret;
-  gint32 xfer = 0;
-  gchar *name = NULL;
-  ThriftType ftype;
-  gint16 fid;
-  guint32 len = 0;
-  gpointer data = NULL;
-  swcdb_thriftSpecValue * this_object = SWCDB_THRIFT_SPEC_VALUE(object);
-
-  /* satisfy -Wall in case these aren't used */
-  THRIFT_UNUSED_VAR (len);
-  THRIFT_UNUSED_VAR (data);
-  THRIFT_UNUSED_VAR (this_object);
-
-  /* read the struct begin marker */
-  if ((ret = thrift_protocol_read_struct_begin (protocol, &name, error)) < 0)
-  {
-    if (name) g_free (name);
-    return -1;
-  }
-  xfer += ret;
-  if (name) g_free (name);
-  name = NULL;
-
-  /* read the struct fields */
-  while (1)
-  {
-    /* read the beginning of a field */
-    if ((ret = thrift_protocol_read_field_begin (protocol, &name, &ftype, &fid, error)) < 0)
-    {
-      if (name) g_free (name);
-      return -1;
-    }
-    xfer += ret;
-    if (name) g_free (name);
-    name = NULL;
-
-    /* break if we get a STOP field */
-    if (ftype == T_STOP)
-    {
-      break;
-    }
-
-    switch (fid)
-    {
-      case 1:
-        if (ftype == T_I32)
-        {
-          gint32 ecast11;
-          if ((ret = thrift_protocol_read_i32 (protocol, &ecast11, error)) < 0)
-            return -1;
-          xfer += ret;
-          this_object->comp = (swcdb_thriftComp)ecast11;
-          this_object->__isset_comp = TRUE;
-        } else {
-          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
-            return -1;
-          xfer += ret;
-        }
-        break;
-      case 2:
-        if (ftype == T_STRING)
-        {
-          if (this_object->v != NULL)
-          {
-            g_free(this_object->v);
-            this_object->v = NULL;
-          }
-
-          if ((ret = thrift_protocol_read_binary (protocol, &data, &len, error)) < 0)
-            return -1;
-          xfer += ret;
-          this_object->v = g_byte_array_new();
-          g_byte_array_append (this_object->v, (guint8 *) data, (guint) len);
-          g_free (data);
-          this_object->__isset_v = TRUE;
-        } else {
-          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
-            return -1;
-          xfer += ret;
-        }
-        break;
-      default:
-        if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
-          return -1;
-        xfer += ret;
-        break;
-    }
-    if ((ret = thrift_protocol_read_field_end (protocol, error)) < 0)
-      return -1;
-    xfer += ret;
-  }
-
-  if ((ret = thrift_protocol_read_struct_end (protocol, error)) < 0)
-    return -1;
-  xfer += ret;
-
-  return xfer;
-}
-
-static gint32
-swcdb_thrift_spec_value_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
-{
-  gint32 ret;
-  gint32 xfer = 0;
-
-  swcdb_thriftSpecValue * this_object = SWCDB_THRIFT_SPEC_VALUE(object);
-  THRIFT_UNUSED_VAR (this_object);
-  if ((ret = thrift_protocol_write_struct_begin (protocol, "SpecValue", error)) < 0)
-    return -1;
-  xfer += ret;
-  if ((ret = thrift_protocol_write_field_begin (protocol, "comp", T_I32, 1, error)) < 0)
-    return -1;
-  xfer += ret;
-  if ((ret = thrift_protocol_write_i32 (protocol, (gint32) this_object->comp, error)) < 0)
-    return -1;
-  xfer += ret;
-
-  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
-    return -1;
-  xfer += ret;
-  if ((ret = thrift_protocol_write_field_begin (protocol, "v", T_STRING, 2, error)) < 0)
-    return -1;
-  xfer += ret;
-  if ((ret = thrift_protocol_write_binary (protocol, this_object->v ? ((GByteArray *) this_object->v)->data : NULL, this_object->v ? ((GByteArray *) this_object->v)->len : 0, error)) < 0)
-    return -1;
-  xfer += ret;
-
-  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
-    return -1;
-  xfer += ret;
-  if ((ret = thrift_protocol_write_field_stop (protocol, error)) < 0)
-    return -1;
-  xfer += ret;
-  if ((ret = thrift_protocol_write_struct_end (protocol, error)) < 0)
-    return -1;
-  xfer += ret;
-
-  return xfer;
-}
-
-static void
-swcdb_thrift_spec_value_set_property (GObject *object,
-                                      guint property_id,
-                                      const GValue *value,
-                                      GParamSpec *pspec)
-{
-  swcdb_thriftSpecValue *self = SWCDB_THRIFT_SPEC_VALUE (object);
-
-  switch (property_id)
-  {
-    case PROP_SWCDB_THRIFT_SPEC_VALUE_COMP:
-      self->comp = g_value_get_int (value);
-      self->__isset_comp = TRUE;
-      break;
-
-    case PROP_SWCDB_THRIFT_SPEC_VALUE_V:
-      if (self->v != NULL)
-        g_byte_array_unref (self->v);
-      self->v = g_value_dup_boxed (value);
-      self->__isset_v = TRUE;
-      break;
-
-    default:
-      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
-      break;
-  }
-}
-
-static void
-swcdb_thrift_spec_value_get_property (GObject *object,
-                                      guint property_id,
-                                      GValue *value,
-                                      GParamSpec *pspec)
-{
-  swcdb_thriftSpecValue *self = SWCDB_THRIFT_SPEC_VALUE (object);
-
-  switch (property_id)
-  {
-    case PROP_SWCDB_THRIFT_SPEC_VALUE_COMP:
-      g_value_set_int (value, self->comp);
-      break;
-
-    case PROP_SWCDB_THRIFT_SPEC_VALUE_V:
-      g_value_set_boxed (value, self->v);
-      break;
-
-    default:
-      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
-      break;
-  }
-}
-
-static void 
-swcdb_thrift_spec_value_instance_init (swcdb_thriftSpecValue * object)
-{
-  /* satisfy -Wall */
-  THRIFT_UNUSED_VAR (object);
-  object->__isset_comp = FALSE;
-  object->v = NULL;
-  object->__isset_v = FALSE;
-}
-
-static void 
-swcdb_thrift_spec_value_finalize (GObject *object)
-{
-  swcdb_thriftSpecValue *tobject = SWCDB_THRIFT_SPEC_VALUE (object);
-
-  /* satisfy -Wall in case we don't use tobject */
-  THRIFT_UNUSED_VAR (tobject);
-  if (tobject->v != NULL)
-  {
-    thrift_string_free(tobject->v);
-    tobject->v = NULL;
-  }
-}
-
-static void
-swcdb_thrift_spec_value_class_init (swcdb_thriftSpecValueClass * cls)
-{
-  GObjectClass *gobject_class = G_OBJECT_CLASS (cls);
-  ThriftStructClass *struct_class = THRIFT_STRUCT_CLASS (cls);
-
-  struct_class->read = swcdb_thrift_spec_value_read;
-  struct_class->write = swcdb_thrift_spec_value_write;
-
-  gobject_class->finalize = swcdb_thrift_spec_value_finalize;
-  gobject_class->get_property = swcdb_thrift_spec_value_get_property;
-  gobject_class->set_property = swcdb_thrift_spec_value_set_property;
-
-  g_object_class_install_property
-    (gobject_class,
-     PROP_SWCDB_THRIFT_SPEC_VALUE_COMP,
-     g_param_spec_int ("comp",
-                       NULL,
-                       NULL,
-                       0,
-                       18,
-                       0,
-                       G_PARAM_READWRITE));
-
-  g_object_class_install_property
-    (gobject_class,
-     PROP_SWCDB_THRIFT_SPEC_VALUE_V,
-     g_param_spec_boxed ("v",
-                         NULL,
-                         NULL,
-                         G_TYPE_BYTE_ARRAY,
-                         G_PARAM_READWRITE));
-}
-
-GType
-swcdb_thrift_spec_value_get_type (void)
-{
-  static GType type = 0;
-
-  if (type == 0) 
-  {
-    static const GTypeInfo type_info = 
-    {
-      sizeof (swcdb_thriftSpecValueClass),
-      NULL, /* base_init */
-      NULL, /* base_finalize */
-      (GClassInitFunc) swcdb_thrift_spec_value_class_init,
-      NULL, /* class_finalize */
-      NULL, /* class_data */
-      sizeof (swcdb_thriftSpecValue),
-      0, /* n_preallocs */
-      (GInstanceInitFunc) swcdb_thrift_spec_value_instance_init,
-      NULL, /* value_table */
-    };
-
-    type = g_type_register_static (THRIFT_TYPE_STRUCT, 
-                                   "swcdb_thriftSpecValueType",
-                                   &type_info, 0);
-  }
-
-  return type;
-}
-
 enum _swcdb_thriftSpecTimestampProperties
 {
   PROP_SWCDB_THRIFT_SPEC_TIMESTAMP_0,
@@ -3259,11 +2962,11 @@ swcdb_thrift_spec_timestamp_read (ThriftStruct *object, ThriftProtocol *protocol
       case 1:
         if (ftype == T_I32)
         {
-          gint32 ecast12;
-          if ((ret = thrift_protocol_read_i32 (protocol, &ecast12, error)) < 0)
+          gint32 ecast11;
+          if ((ret = thrift_protocol_read_i32 (protocol, &ecast11, error)) < 0)
             return -1;
           xfer += ret;
-          this_object->comp = (swcdb_thriftComp)ecast12;
+          this_object->comp = (swcdb_thriftComp)ecast11;
           this_object->__isset_comp = TRUE;
         } else {
           if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
@@ -3548,19 +3251,19 @@ swcdb_thrift_spec_key_interval_read (ThriftStruct *object, ThriftProtocol *proto
             /* iterate through list elements */
             for (i = 0; i < size; i++)
             {
-              swcdb_thriftSpecFraction * _elem13 = NULL;
-              if ( _elem13 != NULL)
+              swcdb_thriftSpecFraction * _elem12 = NULL;
+              if ( _elem12 != NULL)
               {
-                g_object_unref (_elem13);
+                g_object_unref (_elem12);
               }
-              _elem13 = g_object_new (SWCDB_THRIFT_TYPE_SPEC_FRACTION, NULL);
-              if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem13), protocol, error)) < 0)
+              _elem12 = g_object_new (SWCDB_THRIFT_TYPE_SPEC_FRACTION, NULL);
+              if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem12), protocol, error)) < 0)
               {
-                g_object_unref (_elem13);
+                g_object_unref (_elem12);
                 return -1;
               }
               xfer += ret;
-              g_ptr_array_add (this_object->start, _elem13);
+              g_ptr_array_add (this_object->start, _elem12);
             }
             if ((ret = thrift_protocol_read_list_end (protocol, error)) < 0)
               return -1;
@@ -3588,19 +3291,19 @@ swcdb_thrift_spec_key_interval_read (ThriftStruct *object, ThriftProtocol *proto
             /* iterate through list elements */
             for (i = 0; i < size; i++)
             {
-              swcdb_thriftSpecFraction * _elem14 = NULL;
-              if ( _elem14 != NULL)
+              swcdb_thriftSpecFraction * _elem13 = NULL;
+              if ( _elem13 != NULL)
               {
-                g_object_unref (_elem14);
+                g_object_unref (_elem13);
               }
-              _elem14 = g_object_new (SWCDB_THRIFT_TYPE_SPEC_FRACTION, NULL);
-              if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem14), protocol, error)) < 0)
+              _elem13 = g_object_new (SWCDB_THRIFT_TYPE_SPEC_FRACTION, NULL);
+              if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem13), protocol, error)) < 0)
               {
-                g_object_unref (_elem14);
+                g_object_unref (_elem13);
                 return -1;
               }
               xfer += ret;
-              g_ptr_array_add (this_object->finish, _elem14);
+              g_ptr_array_add (this_object->finish, _elem13);
             }
             if ((ret = thrift_protocol_read_list_end (protocol, error)) < 0)
               return -1;
@@ -3642,56 +3345,52 @@ swcdb_thrift_spec_key_interval_write (ThriftStruct *object, ThriftProtocol *prot
   if ((ret = thrift_protocol_write_struct_begin (protocol, "SpecKeyInterval", error)) < 0)
     return -1;
   xfer += ret;
-  if (this_object->__isset_start == TRUE) {
-    if ((ret = thrift_protocol_write_field_begin (protocol, "start", T_LIST, 1, error)) < 0)
+  if ((ret = thrift_protocol_write_field_begin (protocol, "start", T_LIST, 1, error)) < 0)
+    return -1;
+  xfer += ret;
+  {
+    guint i14;
+
+    if ((ret = thrift_protocol_write_list_begin (protocol, T_STRUCT, (gint32) (this_object->start ? this_object->start->len : 0), error)) < 0)
       return -1;
     xfer += ret;
+    for (i14 = 0; i14 < (this_object->start ? this_object->start->len : 0); i14++)
     {
-      guint i15;
-
-      if ((ret = thrift_protocol_write_list_begin (protocol, T_STRUCT, (gint32) (this_object->start ? this_object->start->len : 0), error)) < 0)
+      if ((ret = thrift_struct_write (THRIFT_STRUCT ((g_ptr_array_index ((GPtrArray *) this_object->start, i14))), protocol, error)) < 0)
         return -1;
       xfer += ret;
-      for (i15 = 0; i15 < (this_object->start ? this_object->start->len : 0); i15++)
-      {
-        if ((ret = thrift_struct_write (THRIFT_STRUCT ((g_ptr_array_index ((GPtrArray *) this_object->start, i15))), protocol, error)) < 0)
-          return -1;
-        xfer += ret;
 
-      }
-      if ((ret = thrift_protocol_write_list_end (protocol, error)) < 0)
-        return -1;
-      xfer += ret;
     }
-    if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    if ((ret = thrift_protocol_write_list_end (protocol, error)) < 0)
       return -1;
     xfer += ret;
   }
-  if (this_object->__isset_finish == TRUE) {
-    if ((ret = thrift_protocol_write_field_begin (protocol, "finish", T_LIST, 2, error)) < 0)
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_begin (protocol, "finish", T_LIST, 2, error)) < 0)
+    return -1;
+  xfer += ret;
+  {
+    guint i15;
+
+    if ((ret = thrift_protocol_write_list_begin (protocol, T_STRUCT, (gint32) (this_object->finish ? this_object->finish->len : 0), error)) < 0)
       return -1;
     xfer += ret;
+    for (i15 = 0; i15 < (this_object->finish ? this_object->finish->len : 0); i15++)
     {
-      guint i16;
-
-      if ((ret = thrift_protocol_write_list_begin (protocol, T_STRUCT, (gint32) (this_object->finish ? this_object->finish->len : 0), error)) < 0)
+      if ((ret = thrift_struct_write (THRIFT_STRUCT ((g_ptr_array_index ((GPtrArray *) this_object->finish, i15))), protocol, error)) < 0)
         return -1;
       xfer += ret;
-      for (i16 = 0; i16 < (this_object->finish ? this_object->finish->len : 0); i16++)
-      {
-        if ((ret = thrift_struct_write (THRIFT_STRUCT ((g_ptr_array_index ((GPtrArray *) this_object->finish, i16))), protocol, error)) < 0)
-          return -1;
-        xfer += ret;
 
-      }
-      if ((ret = thrift_protocol_write_list_end (protocol, error)) < 0)
-        return -1;
-      xfer += ret;
     }
-    if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    if ((ret = thrift_protocol_write_list_end (protocol, error)) < 0)
       return -1;
     xfer += ret;
   }
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
   if ((ret = thrift_protocol_write_field_stop (protocol, error)) < 0)
     return -1;
   xfer += ret;
@@ -3841,6 +3540,297 @@ swcdb_thrift_spec_key_interval_get_type (void)
 
     type = g_type_register_static (THRIFT_TYPE_STRUCT, 
                                    "swcdb_thriftSpecKeyIntervalType",
+                                   &type_info, 0);
+  }
+
+  return type;
+}
+
+enum _swcdb_thriftSpecValueProperties
+{
+  PROP_SWCDB_THRIFT_SPEC_VALUE_0,
+  PROP_SWCDB_THRIFT_SPEC_VALUE_COMP,
+  PROP_SWCDB_THRIFT_SPEC_VALUE_V
+};
+
+/* reads a spec_value object */
+static gint32
+swcdb_thrift_spec_value_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+{
+  gint32 ret;
+  gint32 xfer = 0;
+  gchar *name = NULL;
+  ThriftType ftype;
+  gint16 fid;
+  guint32 len = 0;
+  gpointer data = NULL;
+  swcdb_thriftSpecValue * this_object = SWCDB_THRIFT_SPEC_VALUE(object);
+
+  /* satisfy -Wall in case these aren't used */
+  THRIFT_UNUSED_VAR (len);
+  THRIFT_UNUSED_VAR (data);
+  THRIFT_UNUSED_VAR (this_object);
+
+  /* read the struct begin marker */
+  if ((ret = thrift_protocol_read_struct_begin (protocol, &name, error)) < 0)
+  {
+    if (name) g_free (name);
+    return -1;
+  }
+  xfer += ret;
+  if (name) g_free (name);
+  name = NULL;
+
+  /* read the struct fields */
+  while (1)
+  {
+    /* read the beginning of a field */
+    if ((ret = thrift_protocol_read_field_begin (protocol, &name, &ftype, &fid, error)) < 0)
+    {
+      if (name) g_free (name);
+      return -1;
+    }
+    xfer += ret;
+    if (name) g_free (name);
+    name = NULL;
+
+    /* break if we get a STOP field */
+    if (ftype == T_STOP)
+    {
+      break;
+    }
+
+    switch (fid)
+    {
+      case 1:
+        if (ftype == T_I32)
+        {
+          gint32 ecast16;
+          if ((ret = thrift_protocol_read_i32 (protocol, &ecast16, error)) < 0)
+            return -1;
+          xfer += ret;
+          this_object->comp = (swcdb_thriftComp)ecast16;
+          this_object->__isset_comp = TRUE;
+        } else {
+          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+            return -1;
+          xfer += ret;
+        }
+        break;
+      case 2:
+        if (ftype == T_STRING)
+        {
+          if (this_object->v != NULL)
+          {
+            g_free(this_object->v);
+            this_object->v = NULL;
+          }
+
+          if ((ret = thrift_protocol_read_binary (protocol, &data, &len, error)) < 0)
+            return -1;
+          xfer += ret;
+          this_object->v = g_byte_array_new();
+          g_byte_array_append (this_object->v, (guint8 *) data, (guint) len);
+          g_free (data);
+          this_object->__isset_v = TRUE;
+        } else {
+          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+            return -1;
+          xfer += ret;
+        }
+        break;
+      default:
+        if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+          return -1;
+        xfer += ret;
+        break;
+    }
+    if ((ret = thrift_protocol_read_field_end (protocol, error)) < 0)
+      return -1;
+    xfer += ret;
+  }
+
+  if ((ret = thrift_protocol_read_struct_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+
+  return xfer;
+}
+
+static gint32
+swcdb_thrift_spec_value_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+{
+  gint32 ret;
+  gint32 xfer = 0;
+
+  swcdb_thriftSpecValue * this_object = SWCDB_THRIFT_SPEC_VALUE(object);
+  THRIFT_UNUSED_VAR (this_object);
+  if ((ret = thrift_protocol_write_struct_begin (protocol, "SpecValue", error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_begin (protocol, "comp", T_I32, 1, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_i32 (protocol, (gint32) this_object->comp, error)) < 0)
+    return -1;
+  xfer += ret;
+
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_begin (protocol, "v", T_STRING, 2, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_binary (protocol, this_object->v ? ((GByteArray *) this_object->v)->data : NULL, this_object->v ? ((GByteArray *) this_object->v)->len : 0, error)) < 0)
+    return -1;
+  xfer += ret;
+
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_stop (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_struct_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+
+  return xfer;
+}
+
+static void
+swcdb_thrift_spec_value_set_property (GObject *object,
+                                      guint property_id,
+                                      const GValue *value,
+                                      GParamSpec *pspec)
+{
+  swcdb_thriftSpecValue *self = SWCDB_THRIFT_SPEC_VALUE (object);
+
+  switch (property_id)
+  {
+    case PROP_SWCDB_THRIFT_SPEC_VALUE_COMP:
+      self->comp = g_value_get_int (value);
+      self->__isset_comp = TRUE;
+      break;
+
+    case PROP_SWCDB_THRIFT_SPEC_VALUE_V:
+      if (self->v != NULL)
+        g_byte_array_unref (self->v);
+      self->v = g_value_dup_boxed (value);
+      self->__isset_v = TRUE;
+      break;
+
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+      break;
+  }
+}
+
+static void
+swcdb_thrift_spec_value_get_property (GObject *object,
+                                      guint property_id,
+                                      GValue *value,
+                                      GParamSpec *pspec)
+{
+  swcdb_thriftSpecValue *self = SWCDB_THRIFT_SPEC_VALUE (object);
+
+  switch (property_id)
+  {
+    case PROP_SWCDB_THRIFT_SPEC_VALUE_COMP:
+      g_value_set_int (value, self->comp);
+      break;
+
+    case PROP_SWCDB_THRIFT_SPEC_VALUE_V:
+      g_value_set_boxed (value, self->v);
+      break;
+
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+      break;
+  }
+}
+
+static void 
+swcdb_thrift_spec_value_instance_init (swcdb_thriftSpecValue * object)
+{
+  /* satisfy -Wall */
+  THRIFT_UNUSED_VAR (object);
+  object->__isset_comp = FALSE;
+  object->v = NULL;
+  object->__isset_v = FALSE;
+}
+
+static void 
+swcdb_thrift_spec_value_finalize (GObject *object)
+{
+  swcdb_thriftSpecValue *tobject = SWCDB_THRIFT_SPEC_VALUE (object);
+
+  /* satisfy -Wall in case we don't use tobject */
+  THRIFT_UNUSED_VAR (tobject);
+  if (tobject->v != NULL)
+  {
+    thrift_string_free(tobject->v);
+    tobject->v = NULL;
+  }
+}
+
+static void
+swcdb_thrift_spec_value_class_init (swcdb_thriftSpecValueClass * cls)
+{
+  GObjectClass *gobject_class = G_OBJECT_CLASS (cls);
+  ThriftStructClass *struct_class = THRIFT_STRUCT_CLASS (cls);
+
+  struct_class->read = swcdb_thrift_spec_value_read;
+  struct_class->write = swcdb_thrift_spec_value_write;
+
+  gobject_class->finalize = swcdb_thrift_spec_value_finalize;
+  gobject_class->get_property = swcdb_thrift_spec_value_get_property;
+  gobject_class->set_property = swcdb_thrift_spec_value_set_property;
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_SWCDB_THRIFT_SPEC_VALUE_COMP,
+     g_param_spec_int ("comp",
+                       NULL,
+                       NULL,
+                       0,
+                       18,
+                       0,
+                       G_PARAM_READWRITE));
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_SWCDB_THRIFT_SPEC_VALUE_V,
+     g_param_spec_boxed ("v",
+                         NULL,
+                         NULL,
+                         G_TYPE_BYTE_ARRAY,
+                         G_PARAM_READWRITE));
+}
+
+GType
+swcdb_thrift_spec_value_get_type (void)
+{
+  static GType type = 0;
+
+  if (type == 0) 
+  {
+    static const GTypeInfo type_info = 
+    {
+      sizeof (swcdb_thriftSpecValueClass),
+      NULL, /* base_init */
+      NULL, /* base_finalize */
+      (GClassInitFunc) swcdb_thrift_spec_value_class_init,
+      NULL, /* class_finalize */
+      NULL, /* class_data */
+      sizeof (swcdb_thriftSpecValue),
+      0, /* n_preallocs */
+      (GInstanceInitFunc) swcdb_thrift_spec_value_instance_init,
+      NULL, /* value_table */
+    };
+
+    type = g_type_register_static (THRIFT_TYPE_STRUCT, 
+                                   "swcdb_thriftSpecValueType",
                                    &type_info, 0);
   }
 
@@ -4242,106 +4232,98 @@ swcdb_thrift_spec_interval_write (ThriftStruct *object, ThriftProtocol *protocol
   if ((ret = thrift_protocol_write_struct_begin (protocol, "SpecInterval", error)) < 0)
     return -1;
   xfer += ret;
-  if (this_object->__isset_range_begin == TRUE) {
-    if ((ret = thrift_protocol_write_field_begin (protocol, "range_begin", T_LIST, 1, error)) < 0)
+  if ((ret = thrift_protocol_write_field_begin (protocol, "range_begin", T_LIST, 1, error)) < 0)
+    return -1;
+  xfer += ret;
+  {
+    guint i23;
+
+    if ((ret = thrift_protocol_write_list_begin (protocol, T_STRING, (gint32) (this_object->range_begin ? this_object->range_begin->len : 0), error)) < 0)
       return -1;
     xfer += ret;
+    for (i23 = 0; i23 < (this_object->range_begin ? this_object->range_begin->len : 0); i23++)
     {
-      guint i23;
-
-      if ((ret = thrift_protocol_write_list_begin (protocol, T_STRING, (gint32) (this_object->range_begin ? this_object->range_begin->len : 0), error)) < 0)
+      if ((ret = thrift_protocol_write_binary (protocol, ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->range_begin, i23)) ? ((GByteArray *) ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->range_begin, i23)))->data : NULL, ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->range_begin, i23)) ? ((GByteArray *) ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->range_begin, i23)))->len : 0, error)) < 0)
         return -1;
       xfer += ret;
-      for (i23 = 0; i23 < (this_object->range_begin ? this_object->range_begin->len : 0); i23++)
-      {
-        if ((ret = thrift_protocol_write_binary (protocol, ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->range_begin, i23)) ? ((GByteArray *) ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->range_begin, i23)))->data : NULL, ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->range_begin, i23)) ? ((GByteArray *) ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->range_begin, i23)))->len : 0, error)) < 0)
-          return -1;
-        xfer += ret;
 
-      }
-      if ((ret = thrift_protocol_write_list_end (protocol, error)) < 0)
-        return -1;
-      xfer += ret;
     }
-    if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    if ((ret = thrift_protocol_write_list_end (protocol, error)) < 0)
       return -1;
     xfer += ret;
   }
-  if (this_object->__isset_range_end == TRUE) {
-    if ((ret = thrift_protocol_write_field_begin (protocol, "range_end", T_LIST, 2, error)) < 0)
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_begin (protocol, "range_end", T_LIST, 2, error)) < 0)
+    return -1;
+  xfer += ret;
+  {
+    guint i24;
+
+    if ((ret = thrift_protocol_write_list_begin (protocol, T_STRING, (gint32) (this_object->range_end ? this_object->range_end->len : 0), error)) < 0)
       return -1;
     xfer += ret;
+    for (i24 = 0; i24 < (this_object->range_end ? this_object->range_end->len : 0); i24++)
     {
-      guint i24;
-
-      if ((ret = thrift_protocol_write_list_begin (protocol, T_STRING, (gint32) (this_object->range_end ? this_object->range_end->len : 0), error)) < 0)
+      if ((ret = thrift_protocol_write_binary (protocol, ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->range_end, i24)) ? ((GByteArray *) ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->range_end, i24)))->data : NULL, ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->range_end, i24)) ? ((GByteArray *) ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->range_end, i24)))->len : 0, error)) < 0)
         return -1;
       xfer += ret;
-      for (i24 = 0; i24 < (this_object->range_end ? this_object->range_end->len : 0); i24++)
-      {
-        if ((ret = thrift_protocol_write_binary (protocol, ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->range_end, i24)) ? ((GByteArray *) ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->range_end, i24)))->data : NULL, ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->range_end, i24)) ? ((GByteArray *) ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->range_end, i24)))->len : 0, error)) < 0)
-          return -1;
-        xfer += ret;
 
-      }
-      if ((ret = thrift_protocol_write_list_end (protocol, error)) < 0)
-        return -1;
-      xfer += ret;
     }
-    if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    if ((ret = thrift_protocol_write_list_end (protocol, error)) < 0)
       return -1;
     xfer += ret;
   }
-  if (this_object->__isset_range_offset == TRUE) {
-    if ((ret = thrift_protocol_write_field_begin (protocol, "range_offset", T_LIST, 3, error)) < 0)
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_begin (protocol, "range_offset", T_LIST, 3, error)) < 0)
+    return -1;
+  xfer += ret;
+  {
+    guint i25;
+
+    if ((ret = thrift_protocol_write_list_begin (protocol, T_STRING, (gint32) (this_object->range_offset ? this_object->range_offset->len : 0), error)) < 0)
       return -1;
     xfer += ret;
+    for (i25 = 0; i25 < (this_object->range_offset ? this_object->range_offset->len : 0); i25++)
     {
-      guint i25;
-
-      if ((ret = thrift_protocol_write_list_begin (protocol, T_STRING, (gint32) (this_object->range_offset ? this_object->range_offset->len : 0), error)) < 0)
+      if ((ret = thrift_protocol_write_binary (protocol, ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->range_offset, i25)) ? ((GByteArray *) ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->range_offset, i25)))->data : NULL, ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->range_offset, i25)) ? ((GByteArray *) ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->range_offset, i25)))->len : 0, error)) < 0)
         return -1;
       xfer += ret;
-      for (i25 = 0; i25 < (this_object->range_offset ? this_object->range_offset->len : 0); i25++)
-      {
-        if ((ret = thrift_protocol_write_binary (protocol, ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->range_offset, i25)) ? ((GByteArray *) ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->range_offset, i25)))->data : NULL, ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->range_offset, i25)) ? ((GByteArray *) ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->range_offset, i25)))->len : 0, error)) < 0)
-          return -1;
-        xfer += ret;
 
-      }
-      if ((ret = thrift_protocol_write_list_end (protocol, error)) < 0)
-        return -1;
-      xfer += ret;
     }
-    if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    if ((ret = thrift_protocol_write_list_end (protocol, error)) < 0)
       return -1;
     xfer += ret;
   }
-  if (this_object->__isset_offset_key == TRUE) {
-    if ((ret = thrift_protocol_write_field_begin (protocol, "offset_key", T_LIST, 4, error)) < 0)
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_begin (protocol, "offset_key", T_LIST, 4, error)) < 0)
+    return -1;
+  xfer += ret;
+  {
+    guint i26;
+
+    if ((ret = thrift_protocol_write_list_begin (protocol, T_STRING, (gint32) (this_object->offset_key ? this_object->offset_key->len : 0), error)) < 0)
       return -1;
     xfer += ret;
+    for (i26 = 0; i26 < (this_object->offset_key ? this_object->offset_key->len : 0); i26++)
     {
-      guint i26;
-
-      if ((ret = thrift_protocol_write_list_begin (protocol, T_STRING, (gint32) (this_object->offset_key ? this_object->offset_key->len : 0), error)) < 0)
+      if ((ret = thrift_protocol_write_binary (protocol, ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->offset_key, i26)) ? ((GByteArray *) ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->offset_key, i26)))->data : NULL, ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->offset_key, i26)) ? ((GByteArray *) ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->offset_key, i26)))->len : 0, error)) < 0)
         return -1;
       xfer += ret;
-      for (i26 = 0; i26 < (this_object->offset_key ? this_object->offset_key->len : 0); i26++)
-      {
-        if ((ret = thrift_protocol_write_binary (protocol, ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->offset_key, i26)) ? ((GByteArray *) ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->offset_key, i26)))->data : NULL, ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->offset_key, i26)) ? ((GByteArray *) ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->offset_key, i26)))->len : 0, error)) < 0)
-          return -1;
-        xfer += ret;
 
-      }
-      if ((ret = thrift_protocol_write_list_end (protocol, error)) < 0)
-        return -1;
-      xfer += ret;
     }
-    if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    if ((ret = thrift_protocol_write_list_end (protocol, error)) < 0)
       return -1;
     xfer += ret;
   }
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
   if (this_object->__isset_offset_rev == TRUE) {
     if ((ret = thrift_protocol_write_field_begin (protocol, "offset_rev", T_I64, 5, error)) < 0)
       return -1;
@@ -4354,56 +4336,52 @@ swcdb_thrift_spec_interval_write (ThriftStruct *object, ThriftProtocol *protocol
       return -1;
     xfer += ret;
   }
-  if (this_object->__isset_key_intervals == TRUE) {
-    if ((ret = thrift_protocol_write_field_begin (protocol, "key_intervals", T_LIST, 6, error)) < 0)
+  if ((ret = thrift_protocol_write_field_begin (protocol, "key_intervals", T_LIST, 6, error)) < 0)
+    return -1;
+  xfer += ret;
+  {
+    guint i27;
+
+    if ((ret = thrift_protocol_write_list_begin (protocol, T_STRUCT, (gint32) (this_object->key_intervals ? this_object->key_intervals->len : 0), error)) < 0)
       return -1;
     xfer += ret;
+    for (i27 = 0; i27 < (this_object->key_intervals ? this_object->key_intervals->len : 0); i27++)
     {
-      guint i27;
-
-      if ((ret = thrift_protocol_write_list_begin (protocol, T_STRUCT, (gint32) (this_object->key_intervals ? this_object->key_intervals->len : 0), error)) < 0)
+      if ((ret = thrift_struct_write (THRIFT_STRUCT ((g_ptr_array_index ((GPtrArray *) this_object->key_intervals, i27))), protocol, error)) < 0)
         return -1;
       xfer += ret;
-      for (i27 = 0; i27 < (this_object->key_intervals ? this_object->key_intervals->len : 0); i27++)
-      {
-        if ((ret = thrift_struct_write (THRIFT_STRUCT ((g_ptr_array_index ((GPtrArray *) this_object->key_intervals, i27))), protocol, error)) < 0)
-          return -1;
-        xfer += ret;
 
-      }
-      if ((ret = thrift_protocol_write_list_end (protocol, error)) < 0)
-        return -1;
-      xfer += ret;
     }
-    if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    if ((ret = thrift_protocol_write_list_end (protocol, error)) < 0)
       return -1;
     xfer += ret;
   }
-  if (this_object->__isset_values == TRUE) {
-    if ((ret = thrift_protocol_write_field_begin (protocol, "values", T_LIST, 7, error)) < 0)
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_begin (protocol, "values", T_LIST, 7, error)) < 0)
+    return -1;
+  xfer += ret;
+  {
+    guint i28;
+
+    if ((ret = thrift_protocol_write_list_begin (protocol, T_STRUCT, (gint32) (this_object->values ? this_object->values->len : 0), error)) < 0)
       return -1;
     xfer += ret;
+    for (i28 = 0; i28 < (this_object->values ? this_object->values->len : 0); i28++)
     {
-      guint i28;
-
-      if ((ret = thrift_protocol_write_list_begin (protocol, T_STRUCT, (gint32) (this_object->values ? this_object->values->len : 0), error)) < 0)
+      if ((ret = thrift_struct_write (THRIFT_STRUCT ((g_ptr_array_index ((GPtrArray *) this_object->values, i28))), protocol, error)) < 0)
         return -1;
       xfer += ret;
-      for (i28 = 0; i28 < (this_object->values ? this_object->values->len : 0); i28++)
-      {
-        if ((ret = thrift_struct_write (THRIFT_STRUCT ((g_ptr_array_index ((GPtrArray *) this_object->values, i28))), protocol, error)) < 0)
-          return -1;
-        xfer += ret;
 
-      }
-      if ((ret = thrift_protocol_write_list_end (protocol, error)) < 0)
-        return -1;
-      xfer += ret;
     }
-    if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    if ((ret = thrift_protocol_write_list_end (protocol, error)) < 0)
       return -1;
     xfer += ret;
   }
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
   if (this_object->__isset_ts_start == TRUE) {
     if ((ret = thrift_protocol_write_field_begin (protocol, "ts_start", T_STRUCT, 8, error)) < 0)
       return -1;
@@ -5127,10 +5105,3964 @@ swcdb_thrift_spec_column_get_type (void)
   return type;
 }
 
+enum _swcdb_thriftSpecValueSerial_INT64Properties
+{
+  PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL__I_N_T64_0,
+  PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL__I_N_T64_COMP,
+  PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL__I_N_T64_V
+};
+
+/* reads a spec_value_serial__i_n_t64 object */
+static gint32
+swcdb_thrift_spec_value_serial__i_n_t64_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+{
+  gint32 ret;
+  gint32 xfer = 0;
+  gchar *name = NULL;
+  ThriftType ftype;
+  gint16 fid;
+  guint32 len = 0;
+  gpointer data = NULL;
+  swcdb_thriftSpecValueSerial_INT64 * this_object = SWCDB_THRIFT_SPEC_VALUE_SERIAL__I_N_T64(object);
+
+  /* satisfy -Wall in case these aren't used */
+  THRIFT_UNUSED_VAR (len);
+  THRIFT_UNUSED_VAR (data);
+  THRIFT_UNUSED_VAR (this_object);
+
+  /* read the struct begin marker */
+  if ((ret = thrift_protocol_read_struct_begin (protocol, &name, error)) < 0)
+  {
+    if (name) g_free (name);
+    return -1;
+  }
+  xfer += ret;
+  if (name) g_free (name);
+  name = NULL;
+
+  /* read the struct fields */
+  while (1)
+  {
+    /* read the beginning of a field */
+    if ((ret = thrift_protocol_read_field_begin (protocol, &name, &ftype, &fid, error)) < 0)
+    {
+      if (name) g_free (name);
+      return -1;
+    }
+    xfer += ret;
+    if (name) g_free (name);
+    name = NULL;
+
+    /* break if we get a STOP field */
+    if (ftype == T_STOP)
+    {
+      break;
+    }
+
+    switch (fid)
+    {
+      case 1:
+        if (ftype == T_I32)
+        {
+          gint32 ecast31;
+          if ((ret = thrift_protocol_read_i32 (protocol, &ecast31, error)) < 0)
+            return -1;
+          xfer += ret;
+          this_object->comp = (swcdb_thriftComp)ecast31;
+          this_object->__isset_comp = TRUE;
+        } else {
+          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+            return -1;
+          xfer += ret;
+        }
+        break;
+      case 2:
+        if (ftype == T_I64)
+        {
+          if ((ret = thrift_protocol_read_i64 (protocol, &this_object->v, error)) < 0)
+            return -1;
+          xfer += ret;
+          this_object->__isset_v = TRUE;
+        } else {
+          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+            return -1;
+          xfer += ret;
+        }
+        break;
+      default:
+        if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+          return -1;
+        xfer += ret;
+        break;
+    }
+    if ((ret = thrift_protocol_read_field_end (protocol, error)) < 0)
+      return -1;
+    xfer += ret;
+  }
+
+  if ((ret = thrift_protocol_read_struct_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+
+  return xfer;
+}
+
+static gint32
+swcdb_thrift_spec_value_serial__i_n_t64_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+{
+  gint32 ret;
+  gint32 xfer = 0;
+
+  swcdb_thriftSpecValueSerial_INT64 * this_object = SWCDB_THRIFT_SPEC_VALUE_SERIAL__I_N_T64(object);
+  THRIFT_UNUSED_VAR (this_object);
+  if ((ret = thrift_protocol_write_struct_begin (protocol, "SpecValueSerial_INT64", error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_begin (protocol, "comp", T_I32, 1, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_i32 (protocol, (gint32) this_object->comp, error)) < 0)
+    return -1;
+  xfer += ret;
+
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_begin (protocol, "v", T_I64, 2, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_i64 (protocol, this_object->v, error)) < 0)
+    return -1;
+  xfer += ret;
+
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_stop (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_struct_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+
+  return xfer;
+}
+
+static void
+swcdb_thrift_spec_value_serial__i_n_t64_set_property (GObject *object,
+                                                      guint property_id,
+                                                      const GValue *value,
+                                                      GParamSpec *pspec)
+{
+  swcdb_thriftSpecValueSerial_INT64 *self = SWCDB_THRIFT_SPEC_VALUE_SERIAL__I_N_T64 (object);
+
+  switch (property_id)
+  {
+    case PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL__I_N_T64_COMP:
+      self->comp = g_value_get_int (value);
+      self->__isset_comp = TRUE;
+      break;
+
+    case PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL__I_N_T64_V:
+      self->v = g_value_get_int64 (value);
+      self->__isset_v = TRUE;
+      break;
+
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+      break;
+  }
+}
+
+static void
+swcdb_thrift_spec_value_serial__i_n_t64_get_property (GObject *object,
+                                                      guint property_id,
+                                                      GValue *value,
+                                                      GParamSpec *pspec)
+{
+  swcdb_thriftSpecValueSerial_INT64 *self = SWCDB_THRIFT_SPEC_VALUE_SERIAL__I_N_T64 (object);
+
+  switch (property_id)
+  {
+    case PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL__I_N_T64_COMP:
+      g_value_set_int (value, self->comp);
+      break;
+
+    case PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL__I_N_T64_V:
+      g_value_set_int64 (value, self->v);
+      break;
+
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+      break;
+  }
+}
+
+static void 
+swcdb_thrift_spec_value_serial__i_n_t64_instance_init (swcdb_thriftSpecValueSerial_INT64 * object)
+{
+  /* satisfy -Wall */
+  THRIFT_UNUSED_VAR (object);
+  object->__isset_comp = FALSE;
+  object->v = 0;
+  object->__isset_v = FALSE;
+}
+
+static void 
+swcdb_thrift_spec_value_serial__i_n_t64_finalize (GObject *object)
+{
+  swcdb_thriftSpecValueSerial_INT64 *tobject = SWCDB_THRIFT_SPEC_VALUE_SERIAL__I_N_T64 (object);
+
+  /* satisfy -Wall in case we don't use tobject */
+  THRIFT_UNUSED_VAR (tobject);
+}
+
+static void
+swcdb_thrift_spec_value_serial__i_n_t64_class_init (swcdb_thriftSpecValueSerial_INT64Class * cls)
+{
+  GObjectClass *gobject_class = G_OBJECT_CLASS (cls);
+  ThriftStructClass *struct_class = THRIFT_STRUCT_CLASS (cls);
+
+  struct_class->read = swcdb_thrift_spec_value_serial__i_n_t64_read;
+  struct_class->write = swcdb_thrift_spec_value_serial__i_n_t64_write;
+
+  gobject_class->finalize = swcdb_thrift_spec_value_serial__i_n_t64_finalize;
+  gobject_class->get_property = swcdb_thrift_spec_value_serial__i_n_t64_get_property;
+  gobject_class->set_property = swcdb_thrift_spec_value_serial__i_n_t64_set_property;
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL__I_N_T64_COMP,
+     g_param_spec_int ("comp",
+                       NULL,
+                       NULL,
+                       0,
+                       18,
+                       0,
+                       G_PARAM_READWRITE));
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL__I_N_T64_V,
+     g_param_spec_int64 ("v",
+                         NULL,
+                         NULL,
+                         G_MININT64,
+                         G_MAXINT64,
+                         0,
+                         G_PARAM_READWRITE));
+}
+
+GType
+swcdb_thrift_spec_value_serial__i_n_t64_get_type (void)
+{
+  static GType type = 0;
+
+  if (type == 0) 
+  {
+    static const GTypeInfo type_info = 
+    {
+      sizeof (swcdb_thriftSpecValueSerial_INT64Class),
+      NULL, /* base_init */
+      NULL, /* base_finalize */
+      (GClassInitFunc) swcdb_thrift_spec_value_serial__i_n_t64_class_init,
+      NULL, /* class_finalize */
+      NULL, /* class_data */
+      sizeof (swcdb_thriftSpecValueSerial_INT64),
+      0, /* n_preallocs */
+      (GInstanceInitFunc) swcdb_thrift_spec_value_serial__i_n_t64_instance_init,
+      NULL, /* value_table */
+    };
+
+    type = g_type_register_static (THRIFT_TYPE_STRUCT, 
+                                   "swcdb_thriftSpecValueSerial_INT64Type",
+                                   &type_info, 0);
+  }
+
+  return type;
+}
+
+enum _swcdb_thriftSpecValueSerial_DOUBLEProperties
+{
+  PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL__D_O_U_B_L_E_0,
+  PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL__D_O_U_B_L_E_COMP,
+  PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL__D_O_U_B_L_E_V
+};
+
+/* reads a spec_value_serial__d_o_u_b_l_e object */
+static gint32
+swcdb_thrift_spec_value_serial__d_o_u_b_l_e_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+{
+  gint32 ret;
+  gint32 xfer = 0;
+  gchar *name = NULL;
+  ThriftType ftype;
+  gint16 fid;
+  guint32 len = 0;
+  gpointer data = NULL;
+  swcdb_thriftSpecValueSerial_DOUBLE * this_object = SWCDB_THRIFT_SPEC_VALUE_SERIAL__D_O_U_B_L_E(object);
+
+  /* satisfy -Wall in case these aren't used */
+  THRIFT_UNUSED_VAR (len);
+  THRIFT_UNUSED_VAR (data);
+  THRIFT_UNUSED_VAR (this_object);
+
+  /* read the struct begin marker */
+  if ((ret = thrift_protocol_read_struct_begin (protocol, &name, error)) < 0)
+  {
+    if (name) g_free (name);
+    return -1;
+  }
+  xfer += ret;
+  if (name) g_free (name);
+  name = NULL;
+
+  /* read the struct fields */
+  while (1)
+  {
+    /* read the beginning of a field */
+    if ((ret = thrift_protocol_read_field_begin (protocol, &name, &ftype, &fid, error)) < 0)
+    {
+      if (name) g_free (name);
+      return -1;
+    }
+    xfer += ret;
+    if (name) g_free (name);
+    name = NULL;
+
+    /* break if we get a STOP field */
+    if (ftype == T_STOP)
+    {
+      break;
+    }
+
+    switch (fid)
+    {
+      case 1:
+        if (ftype == T_I32)
+        {
+          gint32 ecast32;
+          if ((ret = thrift_protocol_read_i32 (protocol, &ecast32, error)) < 0)
+            return -1;
+          xfer += ret;
+          this_object->comp = (swcdb_thriftComp)ecast32;
+          this_object->__isset_comp = TRUE;
+        } else {
+          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+            return -1;
+          xfer += ret;
+        }
+        break;
+      case 2:
+        if (ftype == T_DOUBLE)
+        {
+          if ((ret = thrift_protocol_read_double (protocol, &this_object->v, error)) < 0)
+            return -1;
+          xfer += ret;
+          this_object->__isset_v = TRUE;
+        } else {
+          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+            return -1;
+          xfer += ret;
+        }
+        break;
+      default:
+        if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+          return -1;
+        xfer += ret;
+        break;
+    }
+    if ((ret = thrift_protocol_read_field_end (protocol, error)) < 0)
+      return -1;
+    xfer += ret;
+  }
+
+  if ((ret = thrift_protocol_read_struct_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+
+  return xfer;
+}
+
+static gint32
+swcdb_thrift_spec_value_serial__d_o_u_b_l_e_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+{
+  gint32 ret;
+  gint32 xfer = 0;
+
+  swcdb_thriftSpecValueSerial_DOUBLE * this_object = SWCDB_THRIFT_SPEC_VALUE_SERIAL__D_O_U_B_L_E(object);
+  THRIFT_UNUSED_VAR (this_object);
+  if ((ret = thrift_protocol_write_struct_begin (protocol, "SpecValueSerial_DOUBLE", error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_begin (protocol, "comp", T_I32, 1, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_i32 (protocol, (gint32) this_object->comp, error)) < 0)
+    return -1;
+  xfer += ret;
+
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_begin (protocol, "v", T_DOUBLE, 2, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_double (protocol, this_object->v, error)) < 0)
+    return -1;
+  xfer += ret;
+
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_stop (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_struct_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+
+  return xfer;
+}
+
+static void
+swcdb_thrift_spec_value_serial__d_o_u_b_l_e_set_property (GObject *object,
+                                                          guint property_id,
+                                                          const GValue *value,
+                                                          GParamSpec *pspec)
+{
+  swcdb_thriftSpecValueSerial_DOUBLE *self = SWCDB_THRIFT_SPEC_VALUE_SERIAL__D_O_U_B_L_E (object);
+
+  switch (property_id)
+  {
+    case PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL__D_O_U_B_L_E_COMP:
+      self->comp = g_value_get_int (value);
+      self->__isset_comp = TRUE;
+      break;
+
+    case PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL__D_O_U_B_L_E_V:
+      self->v = g_value_get_double (value);
+      self->__isset_v = TRUE;
+      break;
+
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+      break;
+  }
+}
+
+static void
+swcdb_thrift_spec_value_serial__d_o_u_b_l_e_get_property (GObject *object,
+                                                          guint property_id,
+                                                          GValue *value,
+                                                          GParamSpec *pspec)
+{
+  swcdb_thriftSpecValueSerial_DOUBLE *self = SWCDB_THRIFT_SPEC_VALUE_SERIAL__D_O_U_B_L_E (object);
+
+  switch (property_id)
+  {
+    case PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL__D_O_U_B_L_E_COMP:
+      g_value_set_int (value, self->comp);
+      break;
+
+    case PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL__D_O_U_B_L_E_V:
+      g_value_set_double (value, self->v);
+      break;
+
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+      break;
+  }
+}
+
+static void 
+swcdb_thrift_spec_value_serial__d_o_u_b_l_e_instance_init (swcdb_thriftSpecValueSerial_DOUBLE * object)
+{
+  /* satisfy -Wall */
+  THRIFT_UNUSED_VAR (object);
+  object->__isset_comp = FALSE;
+  object->v = 0;
+  object->__isset_v = FALSE;
+}
+
+static void 
+swcdb_thrift_spec_value_serial__d_o_u_b_l_e_finalize (GObject *object)
+{
+  swcdb_thriftSpecValueSerial_DOUBLE *tobject = SWCDB_THRIFT_SPEC_VALUE_SERIAL__D_O_U_B_L_E (object);
+
+  /* satisfy -Wall in case we don't use tobject */
+  THRIFT_UNUSED_VAR (tobject);
+}
+
+static void
+swcdb_thrift_spec_value_serial__d_o_u_b_l_e_class_init (swcdb_thriftSpecValueSerial_DOUBLEClass * cls)
+{
+  GObjectClass *gobject_class = G_OBJECT_CLASS (cls);
+  ThriftStructClass *struct_class = THRIFT_STRUCT_CLASS (cls);
+
+  struct_class->read = swcdb_thrift_spec_value_serial__d_o_u_b_l_e_read;
+  struct_class->write = swcdb_thrift_spec_value_serial__d_o_u_b_l_e_write;
+
+  gobject_class->finalize = swcdb_thrift_spec_value_serial__d_o_u_b_l_e_finalize;
+  gobject_class->get_property = swcdb_thrift_spec_value_serial__d_o_u_b_l_e_get_property;
+  gobject_class->set_property = swcdb_thrift_spec_value_serial__d_o_u_b_l_e_set_property;
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL__D_O_U_B_L_E_COMP,
+     g_param_spec_int ("comp",
+                       NULL,
+                       NULL,
+                       0,
+                       18,
+                       0,
+                       G_PARAM_READWRITE));
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL__D_O_U_B_L_E_V,
+     g_param_spec_double ("v",
+                          NULL,
+                          NULL,
+                          -INFINITY,
+                          INFINITY,
+                          0,
+                          G_PARAM_READWRITE));
+}
+
+GType
+swcdb_thrift_spec_value_serial__d_o_u_b_l_e_get_type (void)
+{
+  static GType type = 0;
+
+  if (type == 0) 
+  {
+    static const GTypeInfo type_info = 
+    {
+      sizeof (swcdb_thriftSpecValueSerial_DOUBLEClass),
+      NULL, /* base_init */
+      NULL, /* base_finalize */
+      (GClassInitFunc) swcdb_thrift_spec_value_serial__d_o_u_b_l_e_class_init,
+      NULL, /* class_finalize */
+      NULL, /* class_data */
+      sizeof (swcdb_thriftSpecValueSerial_DOUBLE),
+      0, /* n_preallocs */
+      (GInstanceInitFunc) swcdb_thrift_spec_value_serial__d_o_u_b_l_e_instance_init,
+      NULL, /* value_table */
+    };
+
+    type = g_type_register_static (THRIFT_TYPE_STRUCT, 
+                                   "swcdb_thriftSpecValueSerial_DOUBLEType",
+                                   &type_info, 0);
+  }
+
+  return type;
+}
+
+enum _swcdb_thriftSpecValueSerial_BYTESProperties
+{
+  PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL__B_Y_T_E_S_0,
+  PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL__B_Y_T_E_S_COMP,
+  PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL__B_Y_T_E_S_V
+};
+
+/* reads a spec_value_serial__b_y_t_e_s object */
+static gint32
+swcdb_thrift_spec_value_serial__b_y_t_e_s_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+{
+  gint32 ret;
+  gint32 xfer = 0;
+  gchar *name = NULL;
+  ThriftType ftype;
+  gint16 fid;
+  guint32 len = 0;
+  gpointer data = NULL;
+  swcdb_thriftSpecValueSerial_BYTES * this_object = SWCDB_THRIFT_SPEC_VALUE_SERIAL__B_Y_T_E_S(object);
+
+  /* satisfy -Wall in case these aren't used */
+  THRIFT_UNUSED_VAR (len);
+  THRIFT_UNUSED_VAR (data);
+  THRIFT_UNUSED_VAR (this_object);
+
+  /* read the struct begin marker */
+  if ((ret = thrift_protocol_read_struct_begin (protocol, &name, error)) < 0)
+  {
+    if (name) g_free (name);
+    return -1;
+  }
+  xfer += ret;
+  if (name) g_free (name);
+  name = NULL;
+
+  /* read the struct fields */
+  while (1)
+  {
+    /* read the beginning of a field */
+    if ((ret = thrift_protocol_read_field_begin (protocol, &name, &ftype, &fid, error)) < 0)
+    {
+      if (name) g_free (name);
+      return -1;
+    }
+    xfer += ret;
+    if (name) g_free (name);
+    name = NULL;
+
+    /* break if we get a STOP field */
+    if (ftype == T_STOP)
+    {
+      break;
+    }
+
+    switch (fid)
+    {
+      case 1:
+        if (ftype == T_I32)
+        {
+          gint32 ecast33;
+          if ((ret = thrift_protocol_read_i32 (protocol, &ecast33, error)) < 0)
+            return -1;
+          xfer += ret;
+          this_object->comp = (swcdb_thriftComp)ecast33;
+          this_object->__isset_comp = TRUE;
+        } else {
+          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+            return -1;
+          xfer += ret;
+        }
+        break;
+      case 2:
+        if (ftype == T_STRING)
+        {
+          if (this_object->v != NULL)
+          {
+            g_free(this_object->v);
+            this_object->v = NULL;
+          }
+
+          if ((ret = thrift_protocol_read_binary (protocol, &data, &len, error)) < 0)
+            return -1;
+          xfer += ret;
+          this_object->v = g_byte_array_new();
+          g_byte_array_append (this_object->v, (guint8 *) data, (guint) len);
+          g_free (data);
+          this_object->__isset_v = TRUE;
+        } else {
+          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+            return -1;
+          xfer += ret;
+        }
+        break;
+      default:
+        if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+          return -1;
+        xfer += ret;
+        break;
+    }
+    if ((ret = thrift_protocol_read_field_end (protocol, error)) < 0)
+      return -1;
+    xfer += ret;
+  }
+
+  if ((ret = thrift_protocol_read_struct_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+
+  return xfer;
+}
+
+static gint32
+swcdb_thrift_spec_value_serial__b_y_t_e_s_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+{
+  gint32 ret;
+  gint32 xfer = 0;
+
+  swcdb_thriftSpecValueSerial_BYTES * this_object = SWCDB_THRIFT_SPEC_VALUE_SERIAL__B_Y_T_E_S(object);
+  THRIFT_UNUSED_VAR (this_object);
+  if ((ret = thrift_protocol_write_struct_begin (protocol, "SpecValueSerial_BYTES", error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_begin (protocol, "comp", T_I32, 1, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_i32 (protocol, (gint32) this_object->comp, error)) < 0)
+    return -1;
+  xfer += ret;
+
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_begin (protocol, "v", T_STRING, 2, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_binary (protocol, this_object->v ? ((GByteArray *) this_object->v)->data : NULL, this_object->v ? ((GByteArray *) this_object->v)->len : 0, error)) < 0)
+    return -1;
+  xfer += ret;
+
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_stop (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_struct_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+
+  return xfer;
+}
+
+static void
+swcdb_thrift_spec_value_serial__b_y_t_e_s_set_property (GObject *object,
+                                                        guint property_id,
+                                                        const GValue *value,
+                                                        GParamSpec *pspec)
+{
+  swcdb_thriftSpecValueSerial_BYTES *self = SWCDB_THRIFT_SPEC_VALUE_SERIAL__B_Y_T_E_S (object);
+
+  switch (property_id)
+  {
+    case PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL__B_Y_T_E_S_COMP:
+      self->comp = g_value_get_int (value);
+      self->__isset_comp = TRUE;
+      break;
+
+    case PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL__B_Y_T_E_S_V:
+      if (self->v != NULL)
+        g_byte_array_unref (self->v);
+      self->v = g_value_dup_boxed (value);
+      self->__isset_v = TRUE;
+      break;
+
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+      break;
+  }
+}
+
+static void
+swcdb_thrift_spec_value_serial__b_y_t_e_s_get_property (GObject *object,
+                                                        guint property_id,
+                                                        GValue *value,
+                                                        GParamSpec *pspec)
+{
+  swcdb_thriftSpecValueSerial_BYTES *self = SWCDB_THRIFT_SPEC_VALUE_SERIAL__B_Y_T_E_S (object);
+
+  switch (property_id)
+  {
+    case PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL__B_Y_T_E_S_COMP:
+      g_value_set_int (value, self->comp);
+      break;
+
+    case PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL__B_Y_T_E_S_V:
+      g_value_set_boxed (value, self->v);
+      break;
+
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+      break;
+  }
+}
+
+static void 
+swcdb_thrift_spec_value_serial__b_y_t_e_s_instance_init (swcdb_thriftSpecValueSerial_BYTES * object)
+{
+  /* satisfy -Wall */
+  THRIFT_UNUSED_VAR (object);
+  object->__isset_comp = FALSE;
+  object->v = NULL;
+  object->__isset_v = FALSE;
+}
+
+static void 
+swcdb_thrift_spec_value_serial__b_y_t_e_s_finalize (GObject *object)
+{
+  swcdb_thriftSpecValueSerial_BYTES *tobject = SWCDB_THRIFT_SPEC_VALUE_SERIAL__B_Y_T_E_S (object);
+
+  /* satisfy -Wall in case we don't use tobject */
+  THRIFT_UNUSED_VAR (tobject);
+  if (tobject->v != NULL)
+  {
+    thrift_string_free(tobject->v);
+    tobject->v = NULL;
+  }
+}
+
+static void
+swcdb_thrift_spec_value_serial__b_y_t_e_s_class_init (swcdb_thriftSpecValueSerial_BYTESClass * cls)
+{
+  GObjectClass *gobject_class = G_OBJECT_CLASS (cls);
+  ThriftStructClass *struct_class = THRIFT_STRUCT_CLASS (cls);
+
+  struct_class->read = swcdb_thrift_spec_value_serial__b_y_t_e_s_read;
+  struct_class->write = swcdb_thrift_spec_value_serial__b_y_t_e_s_write;
+
+  gobject_class->finalize = swcdb_thrift_spec_value_serial__b_y_t_e_s_finalize;
+  gobject_class->get_property = swcdb_thrift_spec_value_serial__b_y_t_e_s_get_property;
+  gobject_class->set_property = swcdb_thrift_spec_value_serial__b_y_t_e_s_set_property;
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL__B_Y_T_E_S_COMP,
+     g_param_spec_int ("comp",
+                       NULL,
+                       NULL,
+                       0,
+                       18,
+                       0,
+                       G_PARAM_READWRITE));
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL__B_Y_T_E_S_V,
+     g_param_spec_boxed ("v",
+                         NULL,
+                         NULL,
+                         G_TYPE_BYTE_ARRAY,
+                         G_PARAM_READWRITE));
+}
+
+GType
+swcdb_thrift_spec_value_serial__b_y_t_e_s_get_type (void)
+{
+  static GType type = 0;
+
+  if (type == 0) 
+  {
+    static const GTypeInfo type_info = 
+    {
+      sizeof (swcdb_thriftSpecValueSerial_BYTESClass),
+      NULL, /* base_init */
+      NULL, /* base_finalize */
+      (GClassInitFunc) swcdb_thrift_spec_value_serial__b_y_t_e_s_class_init,
+      NULL, /* class_finalize */
+      NULL, /* class_data */
+      sizeof (swcdb_thriftSpecValueSerial_BYTES),
+      0, /* n_preallocs */
+      (GInstanceInitFunc) swcdb_thrift_spec_value_serial__b_y_t_e_s_instance_init,
+      NULL, /* value_table */
+    };
+
+    type = g_type_register_static (THRIFT_TYPE_STRUCT, 
+                                   "swcdb_thriftSpecValueSerial_BYTESType",
+                                   &type_info, 0);
+  }
+
+  return type;
+}
+
+enum _swcdb_thriftSpecValueSerial_KEYProperties
+{
+  PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL__K_E_Y_0,
+  PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL__K_E_Y_SEQ,
+  PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL__K_E_Y_V
+};
+
+/* reads a spec_value_serial__k_e_y object */
+static gint32
+swcdb_thrift_spec_value_serial__k_e_y_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+{
+  gint32 ret;
+  gint32 xfer = 0;
+  gchar *name = NULL;
+  ThriftType ftype;
+  gint16 fid;
+  guint32 len = 0;
+  gpointer data = NULL;
+  swcdb_thriftSpecValueSerial_KEY * this_object = SWCDB_THRIFT_SPEC_VALUE_SERIAL__K_E_Y(object);
+
+  /* satisfy -Wall in case these aren't used */
+  THRIFT_UNUSED_VAR (len);
+  THRIFT_UNUSED_VAR (data);
+  THRIFT_UNUSED_VAR (this_object);
+
+  /* read the struct begin marker */
+  if ((ret = thrift_protocol_read_struct_begin (protocol, &name, error)) < 0)
+  {
+    if (name) g_free (name);
+    return -1;
+  }
+  xfer += ret;
+  if (name) g_free (name);
+  name = NULL;
+
+  /* read the struct fields */
+  while (1)
+  {
+    /* read the beginning of a field */
+    if ((ret = thrift_protocol_read_field_begin (protocol, &name, &ftype, &fid, error)) < 0)
+    {
+      if (name) g_free (name);
+      return -1;
+    }
+    xfer += ret;
+    if (name) g_free (name);
+    name = NULL;
+
+    /* break if we get a STOP field */
+    if (ftype == T_STOP)
+    {
+      break;
+    }
+
+    switch (fid)
+    {
+      case 1:
+        if (ftype == T_I32)
+        {
+          gint32 ecast34;
+          if ((ret = thrift_protocol_read_i32 (protocol, &ecast34, error)) < 0)
+            return -1;
+          xfer += ret;
+          this_object->seq = (swcdb_thriftKeySeq)ecast34;
+          this_object->__isset_seq = TRUE;
+        } else {
+          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+            return -1;
+          xfer += ret;
+        }
+        break;
+      case 2:
+        if (ftype == T_LIST)
+        {
+          {
+            guint32 size;
+            guint32 i;
+            ThriftType element_type;
+
+            if ((ret = thrift_protocol_read_list_begin (protocol, &element_type,&size, error)) < 0)
+              return -1;
+            xfer += ret;
+
+            /* iterate through list elements */
+            for (i = 0; i < size; i++)
+            {
+              swcdb_thriftSpecFraction * _elem35 = NULL;
+              if ( _elem35 != NULL)
+              {
+                g_object_unref (_elem35);
+              }
+              _elem35 = g_object_new (SWCDB_THRIFT_TYPE_SPEC_FRACTION, NULL);
+              if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem35), protocol, error)) < 0)
+              {
+                g_object_unref (_elem35);
+                return -1;
+              }
+              xfer += ret;
+              g_ptr_array_add (this_object->v, _elem35);
+            }
+            if ((ret = thrift_protocol_read_list_end (protocol, error)) < 0)
+              return -1;
+            xfer += ret;
+          }
+          this_object->__isset_v = TRUE;
+        } else {
+          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+            return -1;
+          xfer += ret;
+        }
+        break;
+      default:
+        if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+          return -1;
+        xfer += ret;
+        break;
+    }
+    if ((ret = thrift_protocol_read_field_end (protocol, error)) < 0)
+      return -1;
+    xfer += ret;
+  }
+
+  if ((ret = thrift_protocol_read_struct_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+
+  return xfer;
+}
+
+static gint32
+swcdb_thrift_spec_value_serial__k_e_y_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+{
+  gint32 ret;
+  gint32 xfer = 0;
+
+  swcdb_thriftSpecValueSerial_KEY * this_object = SWCDB_THRIFT_SPEC_VALUE_SERIAL__K_E_Y(object);
+  THRIFT_UNUSED_VAR (this_object);
+  if ((ret = thrift_protocol_write_struct_begin (protocol, "SpecValueSerial_KEY", error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_begin (protocol, "seq", T_I32, 1, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_i32 (protocol, (gint32) this_object->seq, error)) < 0)
+    return -1;
+  xfer += ret;
+
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_begin (protocol, "v", T_LIST, 2, error)) < 0)
+    return -1;
+  xfer += ret;
+  {
+    guint i36;
+
+    if ((ret = thrift_protocol_write_list_begin (protocol, T_STRUCT, (gint32) (this_object->v ? this_object->v->len : 0), error)) < 0)
+      return -1;
+    xfer += ret;
+    for (i36 = 0; i36 < (this_object->v ? this_object->v->len : 0); i36++)
+    {
+      if ((ret = thrift_struct_write (THRIFT_STRUCT ((g_ptr_array_index ((GPtrArray *) this_object->v, i36))), protocol, error)) < 0)
+        return -1;
+      xfer += ret;
+
+    }
+    if ((ret = thrift_protocol_write_list_end (protocol, error)) < 0)
+      return -1;
+    xfer += ret;
+  }
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_stop (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_struct_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+
+  return xfer;
+}
+
+static void
+swcdb_thrift_spec_value_serial__k_e_y_set_property (GObject *object,
+                                                    guint property_id,
+                                                    const GValue *value,
+                                                    GParamSpec *pspec)
+{
+  swcdb_thriftSpecValueSerial_KEY *self = SWCDB_THRIFT_SPEC_VALUE_SERIAL__K_E_Y (object);
+
+  switch (property_id)
+  {
+    case PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL__K_E_Y_SEQ:
+      self->seq = g_value_get_int (value);
+      self->__isset_seq = TRUE;
+      break;
+
+    case PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL__K_E_Y_V:
+      if (self->v != NULL)
+        g_ptr_array_unref (self->v);
+      self->v = g_value_dup_boxed (value);
+      self->__isset_v = TRUE;
+      break;
+
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+      break;
+  }
+}
+
+static void
+swcdb_thrift_spec_value_serial__k_e_y_get_property (GObject *object,
+                                                    guint property_id,
+                                                    GValue *value,
+                                                    GParamSpec *pspec)
+{
+  swcdb_thriftSpecValueSerial_KEY *self = SWCDB_THRIFT_SPEC_VALUE_SERIAL__K_E_Y (object);
+
+  switch (property_id)
+  {
+    case PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL__K_E_Y_SEQ:
+      g_value_set_int (value, self->seq);
+      break;
+
+    case PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL__K_E_Y_V:
+      g_value_set_boxed (value, self->v);
+      break;
+
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+      break;
+  }
+}
+
+static void 
+swcdb_thrift_spec_value_serial__k_e_y_instance_init (swcdb_thriftSpecValueSerial_KEY * object)
+{
+  /* satisfy -Wall */
+  THRIFT_UNUSED_VAR (object);
+  object->__isset_seq = FALSE;
+  object->v = g_ptr_array_new_with_free_func (g_object_unref);
+  object->__isset_v = FALSE;
+}
+
+static void 
+swcdb_thrift_spec_value_serial__k_e_y_finalize (GObject *object)
+{
+  swcdb_thriftSpecValueSerial_KEY *tobject = SWCDB_THRIFT_SPEC_VALUE_SERIAL__K_E_Y (object);
+
+  /* satisfy -Wall in case we don't use tobject */
+  THRIFT_UNUSED_VAR (tobject);
+  if (tobject->v != NULL)
+  {
+    g_ptr_array_unref (tobject->v);
+    tobject->v = NULL;
+  }
+}
+
+static void
+swcdb_thrift_spec_value_serial__k_e_y_class_init (swcdb_thriftSpecValueSerial_KEYClass * cls)
+{
+  GObjectClass *gobject_class = G_OBJECT_CLASS (cls);
+  ThriftStructClass *struct_class = THRIFT_STRUCT_CLASS (cls);
+
+  struct_class->read = swcdb_thrift_spec_value_serial__k_e_y_read;
+  struct_class->write = swcdb_thrift_spec_value_serial__k_e_y_write;
+
+  gobject_class->finalize = swcdb_thrift_spec_value_serial__k_e_y_finalize;
+  gobject_class->get_property = swcdb_thrift_spec_value_serial__k_e_y_get_property;
+  gobject_class->set_property = swcdb_thrift_spec_value_serial__k_e_y_set_property;
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL__K_E_Y_SEQ,
+     g_param_spec_int ("seq",
+                       NULL,
+                       NULL,
+                       0,
+                       4,
+                       0,
+                       G_PARAM_READWRITE));
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL__K_E_Y_V,
+     g_param_spec_boxed ("v",
+                         NULL,
+                         NULL,
+                         G_TYPE_PTR_ARRAY,
+                         G_PARAM_READWRITE));
+}
+
+GType
+swcdb_thrift_spec_value_serial__k_e_y_get_type (void)
+{
+  static GType type = 0;
+
+  if (type == 0) 
+  {
+    static const GTypeInfo type_info = 
+    {
+      sizeof (swcdb_thriftSpecValueSerial_KEYClass),
+      NULL, /* base_init */
+      NULL, /* base_finalize */
+      (GClassInitFunc) swcdb_thrift_spec_value_serial__k_e_y_class_init,
+      NULL, /* class_finalize */
+      NULL, /* class_data */
+      sizeof (swcdb_thriftSpecValueSerial_KEY),
+      0, /* n_preallocs */
+      (GInstanceInitFunc) swcdb_thrift_spec_value_serial__k_e_y_instance_init,
+      NULL, /* value_table */
+    };
+
+    type = g_type_register_static (THRIFT_TYPE_STRUCT, 
+                                   "swcdb_thriftSpecValueSerial_KEYType",
+                                   &type_info, 0);
+  }
+
+  return type;
+}
+
+enum _swcdb_thriftSpecValueSerial_LIProperties
+{
+  PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL__L_I_0,
+  PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL__L_I_COMP,
+  PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL__L_I_V
+};
+
+/* reads a spec_value_serial__l_i object */
+static gint32
+swcdb_thrift_spec_value_serial__l_i_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+{
+  gint32 ret;
+  gint32 xfer = 0;
+  gchar *name = NULL;
+  ThriftType ftype;
+  gint16 fid;
+  guint32 len = 0;
+  gpointer data = NULL;
+  swcdb_thriftSpecValueSerial_LI * this_object = SWCDB_THRIFT_SPEC_VALUE_SERIAL__L_I(object);
+
+  /* satisfy -Wall in case these aren't used */
+  THRIFT_UNUSED_VAR (len);
+  THRIFT_UNUSED_VAR (data);
+  THRIFT_UNUSED_VAR (this_object);
+
+  /* read the struct begin marker */
+  if ((ret = thrift_protocol_read_struct_begin (protocol, &name, error)) < 0)
+  {
+    if (name) g_free (name);
+    return -1;
+  }
+  xfer += ret;
+  if (name) g_free (name);
+  name = NULL;
+
+  /* read the struct fields */
+  while (1)
+  {
+    /* read the beginning of a field */
+    if ((ret = thrift_protocol_read_field_begin (protocol, &name, &ftype, &fid, error)) < 0)
+    {
+      if (name) g_free (name);
+      return -1;
+    }
+    xfer += ret;
+    if (name) g_free (name);
+    name = NULL;
+
+    /* break if we get a STOP field */
+    if (ftype == T_STOP)
+    {
+      break;
+    }
+
+    switch (fid)
+    {
+      case 1:
+        if (ftype == T_I32)
+        {
+          gint32 ecast37;
+          if ((ret = thrift_protocol_read_i32 (protocol, &ecast37, error)) < 0)
+            return -1;
+          xfer += ret;
+          this_object->comp = (swcdb_thriftComp)ecast37;
+          this_object->__isset_comp = TRUE;
+        } else {
+          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+            return -1;
+          xfer += ret;
+        }
+        break;
+      case 2:
+        if (ftype == T_LIST)
+        {
+          {
+            guint32 size;
+            guint32 i;
+            ThriftType element_type;
+
+            if ((ret = thrift_protocol_read_list_begin (protocol, &element_type,&size, error)) < 0)
+              return -1;
+            xfer += ret;
+
+            /* iterate through list elements */
+            for (i = 0; i < size; i++)
+            {
+              swcdb_thriftSpecValueSerial_INT64 * _elem38 = NULL;
+              if ( _elem38 != NULL)
+              {
+                g_object_unref (_elem38);
+              }
+              _elem38 = g_object_new (SWCDB_THRIFT_TYPE_SPEC_VALUE_SERIAL__I_N_T64, NULL);
+              if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem38), protocol, error)) < 0)
+              {
+                g_object_unref (_elem38);
+                return -1;
+              }
+              xfer += ret;
+              g_ptr_array_add (this_object->v, _elem38);
+            }
+            if ((ret = thrift_protocol_read_list_end (protocol, error)) < 0)
+              return -1;
+            xfer += ret;
+          }
+          this_object->__isset_v = TRUE;
+        } else {
+          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+            return -1;
+          xfer += ret;
+        }
+        break;
+      default:
+        if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+          return -1;
+        xfer += ret;
+        break;
+    }
+    if ((ret = thrift_protocol_read_field_end (protocol, error)) < 0)
+      return -1;
+    xfer += ret;
+  }
+
+  if ((ret = thrift_protocol_read_struct_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+
+  return xfer;
+}
+
+static gint32
+swcdb_thrift_spec_value_serial__l_i_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+{
+  gint32 ret;
+  gint32 xfer = 0;
+
+  swcdb_thriftSpecValueSerial_LI * this_object = SWCDB_THRIFT_SPEC_VALUE_SERIAL__L_I(object);
+  THRIFT_UNUSED_VAR (this_object);
+  if ((ret = thrift_protocol_write_struct_begin (protocol, "SpecValueSerial_LI", error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_begin (protocol, "comp", T_I32, 1, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_i32 (protocol, (gint32) this_object->comp, error)) < 0)
+    return -1;
+  xfer += ret;
+
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_begin (protocol, "v", T_LIST, 2, error)) < 0)
+    return -1;
+  xfer += ret;
+  {
+    guint i39;
+
+    if ((ret = thrift_protocol_write_list_begin (protocol, T_STRUCT, (gint32) (this_object->v ? this_object->v->len : 0), error)) < 0)
+      return -1;
+    xfer += ret;
+    for (i39 = 0; i39 < (this_object->v ? this_object->v->len : 0); i39++)
+    {
+      if ((ret = thrift_struct_write (THRIFT_STRUCT ((g_ptr_array_index ((GPtrArray *) this_object->v, i39))), protocol, error)) < 0)
+        return -1;
+      xfer += ret;
+
+    }
+    if ((ret = thrift_protocol_write_list_end (protocol, error)) < 0)
+      return -1;
+    xfer += ret;
+  }
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_stop (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_struct_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+
+  return xfer;
+}
+
+static void
+swcdb_thrift_spec_value_serial__l_i_set_property (GObject *object,
+                                                  guint property_id,
+                                                  const GValue *value,
+                                                  GParamSpec *pspec)
+{
+  swcdb_thriftSpecValueSerial_LI *self = SWCDB_THRIFT_SPEC_VALUE_SERIAL__L_I (object);
+
+  switch (property_id)
+  {
+    case PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL__L_I_COMP:
+      self->comp = g_value_get_int (value);
+      self->__isset_comp = TRUE;
+      break;
+
+    case PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL__L_I_V:
+      if (self->v != NULL)
+        g_ptr_array_unref (self->v);
+      self->v = g_value_dup_boxed (value);
+      self->__isset_v = TRUE;
+      break;
+
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+      break;
+  }
+}
+
+static void
+swcdb_thrift_spec_value_serial__l_i_get_property (GObject *object,
+                                                  guint property_id,
+                                                  GValue *value,
+                                                  GParamSpec *pspec)
+{
+  swcdb_thriftSpecValueSerial_LI *self = SWCDB_THRIFT_SPEC_VALUE_SERIAL__L_I (object);
+
+  switch (property_id)
+  {
+    case PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL__L_I_COMP:
+      g_value_set_int (value, self->comp);
+      break;
+
+    case PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL__L_I_V:
+      g_value_set_boxed (value, self->v);
+      break;
+
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+      break;
+  }
+}
+
+static void 
+swcdb_thrift_spec_value_serial__l_i_instance_init (swcdb_thriftSpecValueSerial_LI * object)
+{
+  /* satisfy -Wall */
+  THRIFT_UNUSED_VAR (object);
+  object->__isset_comp = FALSE;
+  object->v = g_ptr_array_new_with_free_func (g_object_unref);
+  object->__isset_v = FALSE;
+}
+
+static void 
+swcdb_thrift_spec_value_serial__l_i_finalize (GObject *object)
+{
+  swcdb_thriftSpecValueSerial_LI *tobject = SWCDB_THRIFT_SPEC_VALUE_SERIAL__L_I (object);
+
+  /* satisfy -Wall in case we don't use tobject */
+  THRIFT_UNUSED_VAR (tobject);
+  if (tobject->v != NULL)
+  {
+    g_ptr_array_unref (tobject->v);
+    tobject->v = NULL;
+  }
+}
+
+static void
+swcdb_thrift_spec_value_serial__l_i_class_init (swcdb_thriftSpecValueSerial_LIClass * cls)
+{
+  GObjectClass *gobject_class = G_OBJECT_CLASS (cls);
+  ThriftStructClass *struct_class = THRIFT_STRUCT_CLASS (cls);
+
+  struct_class->read = swcdb_thrift_spec_value_serial__l_i_read;
+  struct_class->write = swcdb_thrift_spec_value_serial__l_i_write;
+
+  gobject_class->finalize = swcdb_thrift_spec_value_serial__l_i_finalize;
+  gobject_class->get_property = swcdb_thrift_spec_value_serial__l_i_get_property;
+  gobject_class->set_property = swcdb_thrift_spec_value_serial__l_i_set_property;
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL__L_I_COMP,
+     g_param_spec_int ("comp",
+                       NULL,
+                       NULL,
+                       0,
+                       18,
+                       0,
+                       G_PARAM_READWRITE));
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL__L_I_V,
+     g_param_spec_boxed ("v",
+                         NULL,
+                         NULL,
+                         G_TYPE_PTR_ARRAY,
+                         G_PARAM_READWRITE));
+}
+
+GType
+swcdb_thrift_spec_value_serial__l_i_get_type (void)
+{
+  static GType type = 0;
+
+  if (type == 0) 
+  {
+    static const GTypeInfo type_info = 
+    {
+      sizeof (swcdb_thriftSpecValueSerial_LIClass),
+      NULL, /* base_init */
+      NULL, /* base_finalize */
+      (GClassInitFunc) swcdb_thrift_spec_value_serial__l_i_class_init,
+      NULL, /* class_finalize */
+      NULL, /* class_data */
+      sizeof (swcdb_thriftSpecValueSerial_LI),
+      0, /* n_preallocs */
+      (GInstanceInitFunc) swcdb_thrift_spec_value_serial__l_i_instance_init,
+      NULL, /* value_table */
+    };
+
+    type = g_type_register_static (THRIFT_TYPE_STRUCT, 
+                                   "swcdb_thriftSpecValueSerial_LIType",
+                                   &type_info, 0);
+  }
+
+  return type;
+}
+
+enum _swcdb_thriftSpecValueSerial_LBProperties
+{
+  PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL__L_B_0,
+  PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL__L_B_COMP,
+  PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL__L_B_V
+};
+
+/* reads a spec_value_serial__l_b object */
+static gint32
+swcdb_thrift_spec_value_serial__l_b_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+{
+  gint32 ret;
+  gint32 xfer = 0;
+  gchar *name = NULL;
+  ThriftType ftype;
+  gint16 fid;
+  guint32 len = 0;
+  gpointer data = NULL;
+  swcdb_thriftSpecValueSerial_LB * this_object = SWCDB_THRIFT_SPEC_VALUE_SERIAL__L_B(object);
+
+  /* satisfy -Wall in case these aren't used */
+  THRIFT_UNUSED_VAR (len);
+  THRIFT_UNUSED_VAR (data);
+  THRIFT_UNUSED_VAR (this_object);
+
+  /* read the struct begin marker */
+  if ((ret = thrift_protocol_read_struct_begin (protocol, &name, error)) < 0)
+  {
+    if (name) g_free (name);
+    return -1;
+  }
+  xfer += ret;
+  if (name) g_free (name);
+  name = NULL;
+
+  /* read the struct fields */
+  while (1)
+  {
+    /* read the beginning of a field */
+    if ((ret = thrift_protocol_read_field_begin (protocol, &name, &ftype, &fid, error)) < 0)
+    {
+      if (name) g_free (name);
+      return -1;
+    }
+    xfer += ret;
+    if (name) g_free (name);
+    name = NULL;
+
+    /* break if we get a STOP field */
+    if (ftype == T_STOP)
+    {
+      break;
+    }
+
+    switch (fid)
+    {
+      case 1:
+        if (ftype == T_I32)
+        {
+          gint32 ecast40;
+          if ((ret = thrift_protocol_read_i32 (protocol, &ecast40, error)) < 0)
+            return -1;
+          xfer += ret;
+          this_object->comp = (swcdb_thriftComp)ecast40;
+          this_object->__isset_comp = TRUE;
+        } else {
+          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+            return -1;
+          xfer += ret;
+        }
+        break;
+      case 2:
+        if (ftype == T_LIST)
+        {
+          {
+            guint32 size;
+            guint32 i;
+            ThriftType element_type;
+
+            if ((ret = thrift_protocol_read_list_begin (protocol, &element_type,&size, error)) < 0)
+              return -1;
+            xfer += ret;
+
+            /* iterate through list elements */
+            for (i = 0; i < size; i++)
+            {
+              swcdb_thriftSpecValueSerial_BYTES * _elem41 = NULL;
+              if ( _elem41 != NULL)
+              {
+                g_object_unref (_elem41);
+              }
+              _elem41 = g_object_new (SWCDB_THRIFT_TYPE_SPEC_VALUE_SERIAL__B_Y_T_E_S, NULL);
+              if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem41), protocol, error)) < 0)
+              {
+                g_object_unref (_elem41);
+                return -1;
+              }
+              xfer += ret;
+              g_ptr_array_add (this_object->v, _elem41);
+            }
+            if ((ret = thrift_protocol_read_list_end (protocol, error)) < 0)
+              return -1;
+            xfer += ret;
+          }
+          this_object->__isset_v = TRUE;
+        } else {
+          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+            return -1;
+          xfer += ret;
+        }
+        break;
+      default:
+        if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+          return -1;
+        xfer += ret;
+        break;
+    }
+    if ((ret = thrift_protocol_read_field_end (protocol, error)) < 0)
+      return -1;
+    xfer += ret;
+  }
+
+  if ((ret = thrift_protocol_read_struct_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+
+  return xfer;
+}
+
+static gint32
+swcdb_thrift_spec_value_serial__l_b_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+{
+  gint32 ret;
+  gint32 xfer = 0;
+
+  swcdb_thriftSpecValueSerial_LB * this_object = SWCDB_THRIFT_SPEC_VALUE_SERIAL__L_B(object);
+  THRIFT_UNUSED_VAR (this_object);
+  if ((ret = thrift_protocol_write_struct_begin (protocol, "SpecValueSerial_LB", error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_begin (protocol, "comp", T_I32, 1, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_i32 (protocol, (gint32) this_object->comp, error)) < 0)
+    return -1;
+  xfer += ret;
+
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_begin (protocol, "v", T_LIST, 2, error)) < 0)
+    return -1;
+  xfer += ret;
+  {
+    guint i42;
+
+    if ((ret = thrift_protocol_write_list_begin (protocol, T_STRUCT, (gint32) (this_object->v ? this_object->v->len : 0), error)) < 0)
+      return -1;
+    xfer += ret;
+    for (i42 = 0; i42 < (this_object->v ? this_object->v->len : 0); i42++)
+    {
+      if ((ret = thrift_struct_write (THRIFT_STRUCT ((g_ptr_array_index ((GPtrArray *) this_object->v, i42))), protocol, error)) < 0)
+        return -1;
+      xfer += ret;
+
+    }
+    if ((ret = thrift_protocol_write_list_end (protocol, error)) < 0)
+      return -1;
+    xfer += ret;
+  }
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_stop (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_struct_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+
+  return xfer;
+}
+
+static void
+swcdb_thrift_spec_value_serial__l_b_set_property (GObject *object,
+                                                  guint property_id,
+                                                  const GValue *value,
+                                                  GParamSpec *pspec)
+{
+  swcdb_thriftSpecValueSerial_LB *self = SWCDB_THRIFT_SPEC_VALUE_SERIAL__L_B (object);
+
+  switch (property_id)
+  {
+    case PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL__L_B_COMP:
+      self->comp = g_value_get_int (value);
+      self->__isset_comp = TRUE;
+      break;
+
+    case PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL__L_B_V:
+      if (self->v != NULL)
+        g_ptr_array_unref (self->v);
+      self->v = g_value_dup_boxed (value);
+      self->__isset_v = TRUE;
+      break;
+
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+      break;
+  }
+}
+
+static void
+swcdb_thrift_spec_value_serial__l_b_get_property (GObject *object,
+                                                  guint property_id,
+                                                  GValue *value,
+                                                  GParamSpec *pspec)
+{
+  swcdb_thriftSpecValueSerial_LB *self = SWCDB_THRIFT_SPEC_VALUE_SERIAL__L_B (object);
+
+  switch (property_id)
+  {
+    case PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL__L_B_COMP:
+      g_value_set_int (value, self->comp);
+      break;
+
+    case PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL__L_B_V:
+      g_value_set_boxed (value, self->v);
+      break;
+
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+      break;
+  }
+}
+
+static void 
+swcdb_thrift_spec_value_serial__l_b_instance_init (swcdb_thriftSpecValueSerial_LB * object)
+{
+  /* satisfy -Wall */
+  THRIFT_UNUSED_VAR (object);
+  object->__isset_comp = FALSE;
+  object->v = g_ptr_array_new_with_free_func (g_object_unref);
+  object->__isset_v = FALSE;
+}
+
+static void 
+swcdb_thrift_spec_value_serial__l_b_finalize (GObject *object)
+{
+  swcdb_thriftSpecValueSerial_LB *tobject = SWCDB_THRIFT_SPEC_VALUE_SERIAL__L_B (object);
+
+  /* satisfy -Wall in case we don't use tobject */
+  THRIFT_UNUSED_VAR (tobject);
+  if (tobject->v != NULL)
+  {
+    g_ptr_array_unref (tobject->v);
+    tobject->v = NULL;
+  }
+}
+
+static void
+swcdb_thrift_spec_value_serial__l_b_class_init (swcdb_thriftSpecValueSerial_LBClass * cls)
+{
+  GObjectClass *gobject_class = G_OBJECT_CLASS (cls);
+  ThriftStructClass *struct_class = THRIFT_STRUCT_CLASS (cls);
+
+  struct_class->read = swcdb_thrift_spec_value_serial__l_b_read;
+  struct_class->write = swcdb_thrift_spec_value_serial__l_b_write;
+
+  gobject_class->finalize = swcdb_thrift_spec_value_serial__l_b_finalize;
+  gobject_class->get_property = swcdb_thrift_spec_value_serial__l_b_get_property;
+  gobject_class->set_property = swcdb_thrift_spec_value_serial__l_b_set_property;
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL__L_B_COMP,
+     g_param_spec_int ("comp",
+                       NULL,
+                       NULL,
+                       0,
+                       18,
+                       0,
+                       G_PARAM_READWRITE));
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL__L_B_V,
+     g_param_spec_boxed ("v",
+                         NULL,
+                         NULL,
+                         G_TYPE_PTR_ARRAY,
+                         G_PARAM_READWRITE));
+}
+
+GType
+swcdb_thrift_spec_value_serial__l_b_get_type (void)
+{
+  static GType type = 0;
+
+  if (type == 0) 
+  {
+    static const GTypeInfo type_info = 
+    {
+      sizeof (swcdb_thriftSpecValueSerial_LBClass),
+      NULL, /* base_init */
+      NULL, /* base_finalize */
+      (GClassInitFunc) swcdb_thrift_spec_value_serial__l_b_class_init,
+      NULL, /* class_finalize */
+      NULL, /* class_data */
+      sizeof (swcdb_thriftSpecValueSerial_LB),
+      0, /* n_preallocs */
+      (GInstanceInitFunc) swcdb_thrift_spec_value_serial__l_b_instance_init,
+      NULL, /* value_table */
+    };
+
+    type = g_type_register_static (THRIFT_TYPE_STRUCT, 
+                                   "swcdb_thriftSpecValueSerial_LBType",
+                                   &type_info, 0);
+  }
+
+  return type;
+}
+
+enum _swcdb_thriftSpecValueSerialFieldProperties
+{
+  PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL_FIELD_0,
+  PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL_FIELD_FIELD_ID,
+  PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL_FIELD_SPEC_INT64,
+  PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL_FIELD_SPEC_DOUBLE,
+  PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL_FIELD_SPEC_BYTES,
+  PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL_FIELD_SPEC_KEY,
+  PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL_FIELD_SPEC_LI,
+  PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL_FIELD_SPEC_LB
+};
+
+/* reads a spec_value_serial_field object */
+static gint32
+swcdb_thrift_spec_value_serial_field_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+{
+  gint32 ret;
+  gint32 xfer = 0;
+  gchar *name = NULL;
+  ThriftType ftype;
+  gint16 fid;
+  guint32 len = 0;
+  gpointer data = NULL;
+  swcdb_thriftSpecValueSerialField * this_object = SWCDB_THRIFT_SPEC_VALUE_SERIAL_FIELD(object);
+
+  /* satisfy -Wall in case these aren't used */
+  THRIFT_UNUSED_VAR (len);
+  THRIFT_UNUSED_VAR (data);
+  THRIFT_UNUSED_VAR (this_object);
+
+  /* read the struct begin marker */
+  if ((ret = thrift_protocol_read_struct_begin (protocol, &name, error)) < 0)
+  {
+    if (name) g_free (name);
+    return -1;
+  }
+  xfer += ret;
+  if (name) g_free (name);
+  name = NULL;
+
+  /* read the struct fields */
+  while (1)
+  {
+    /* read the beginning of a field */
+    if ((ret = thrift_protocol_read_field_begin (protocol, &name, &ftype, &fid, error)) < 0)
+    {
+      if (name) g_free (name);
+      return -1;
+    }
+    xfer += ret;
+    if (name) g_free (name);
+    name = NULL;
+
+    /* break if we get a STOP field */
+    if (ftype == T_STOP)
+    {
+      break;
+    }
+
+    switch (fid)
+    {
+      case 1:
+        if (ftype == T_I32)
+        {
+          if ((ret = thrift_protocol_read_i32 (protocol, &this_object->field_id, error)) < 0)
+            return -1;
+          xfer += ret;
+          this_object->__isset_field_id = TRUE;
+        } else {
+          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+            return -1;
+          xfer += ret;
+        }
+        break;
+      case 2:
+        if (ftype == T_STRUCT)
+        {
+          if ((ret = thrift_struct_read (THRIFT_STRUCT (this_object->spec_int64), protocol, error)) < 0)
+          {
+            return -1;
+          }
+          xfer += ret;
+          this_object->__isset_spec_int64 = TRUE;
+        } else {
+          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+            return -1;
+          xfer += ret;
+        }
+        break;
+      case 3:
+        if (ftype == T_STRUCT)
+        {
+          if ((ret = thrift_struct_read (THRIFT_STRUCT (this_object->spec_double), protocol, error)) < 0)
+          {
+            return -1;
+          }
+          xfer += ret;
+          this_object->__isset_spec_double = TRUE;
+        } else {
+          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+            return -1;
+          xfer += ret;
+        }
+        break;
+      case 4:
+        if (ftype == T_STRUCT)
+        {
+          if ((ret = thrift_struct_read (THRIFT_STRUCT (this_object->spec_bytes), protocol, error)) < 0)
+          {
+            return -1;
+          }
+          xfer += ret;
+          this_object->__isset_spec_bytes = TRUE;
+        } else {
+          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+            return -1;
+          xfer += ret;
+        }
+        break;
+      case 5:
+        if (ftype == T_STRUCT)
+        {
+          if ((ret = thrift_struct_read (THRIFT_STRUCT (this_object->spec_key), protocol, error)) < 0)
+          {
+            return -1;
+          }
+          xfer += ret;
+          this_object->__isset_spec_key = TRUE;
+        } else {
+          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+            return -1;
+          xfer += ret;
+        }
+        break;
+      case 6:
+        if (ftype == T_STRUCT)
+        {
+          if ((ret = thrift_struct_read (THRIFT_STRUCT (this_object->spec_li), protocol, error)) < 0)
+          {
+            return -1;
+          }
+          xfer += ret;
+          this_object->__isset_spec_li = TRUE;
+        } else {
+          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+            return -1;
+          xfer += ret;
+        }
+        break;
+      case 7:
+        if (ftype == T_STRUCT)
+        {
+          if ((ret = thrift_struct_read (THRIFT_STRUCT (this_object->spec_lb), protocol, error)) < 0)
+          {
+            return -1;
+          }
+          xfer += ret;
+          this_object->__isset_spec_lb = TRUE;
+        } else {
+          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+            return -1;
+          xfer += ret;
+        }
+        break;
+      default:
+        if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+          return -1;
+        xfer += ret;
+        break;
+    }
+    if ((ret = thrift_protocol_read_field_end (protocol, error)) < 0)
+      return -1;
+    xfer += ret;
+  }
+
+  if ((ret = thrift_protocol_read_struct_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+
+  return xfer;
+}
+
+static gint32
+swcdb_thrift_spec_value_serial_field_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+{
+  gint32 ret;
+  gint32 xfer = 0;
+
+  swcdb_thriftSpecValueSerialField * this_object = SWCDB_THRIFT_SPEC_VALUE_SERIAL_FIELD(object);
+  THRIFT_UNUSED_VAR (this_object);
+  if ((ret = thrift_protocol_write_struct_begin (protocol, "SpecValueSerialField", error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_begin (protocol, "field_id", T_I32, 1, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_i32 (protocol, this_object->field_id, error)) < 0)
+    return -1;
+  xfer += ret;
+
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if (this_object->__isset_spec_int64 == TRUE) {
+    if ((ret = thrift_protocol_write_field_begin (protocol, "spec_int64", T_STRUCT, 2, error)) < 0)
+      return -1;
+    xfer += ret;
+    if ((ret = thrift_struct_write (THRIFT_STRUCT (this_object->spec_int64), protocol, error)) < 0)
+      return -1;
+    xfer += ret;
+
+    if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+      return -1;
+    xfer += ret;
+  }
+  if (this_object->__isset_spec_double == TRUE) {
+    if ((ret = thrift_protocol_write_field_begin (protocol, "spec_double", T_STRUCT, 3, error)) < 0)
+      return -1;
+    xfer += ret;
+    if ((ret = thrift_struct_write (THRIFT_STRUCT (this_object->spec_double), protocol, error)) < 0)
+      return -1;
+    xfer += ret;
+
+    if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+      return -1;
+    xfer += ret;
+  }
+  if ((ret = thrift_protocol_write_field_begin (protocol, "spec_bytes", T_STRUCT, 4, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_struct_write (THRIFT_STRUCT (this_object->spec_bytes), protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_begin (protocol, "spec_key", T_STRUCT, 5, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_struct_write (THRIFT_STRUCT (this_object->spec_key), protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_begin (protocol, "spec_li", T_STRUCT, 6, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_struct_write (THRIFT_STRUCT (this_object->spec_li), protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_begin (protocol, "spec_lb", T_STRUCT, 7, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_struct_write (THRIFT_STRUCT (this_object->spec_lb), protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_stop (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_struct_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+
+  return xfer;
+}
+
+static void
+swcdb_thrift_spec_value_serial_field_set_property (GObject *object,
+                                                   guint property_id,
+                                                   const GValue *value,
+                                                   GParamSpec *pspec)
+{
+  swcdb_thriftSpecValueSerialField *self = SWCDB_THRIFT_SPEC_VALUE_SERIAL_FIELD (object);
+
+  switch (property_id)
+  {
+    case PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL_FIELD_FIELD_ID:
+      self->field_id = g_value_get_int (value);
+      self->__isset_field_id = TRUE;
+      break;
+
+    case PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL_FIELD_SPEC_INT64:
+      if (self->spec_int64 != NULL)
+        g_object_unref (self->spec_int64);
+      self->spec_int64 = g_value_dup_object (value);
+      self->__isset_spec_int64 = TRUE;
+      break;
+
+    case PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL_FIELD_SPEC_DOUBLE:
+      if (self->spec_double != NULL)
+        g_object_unref (self->spec_double);
+      self->spec_double = g_value_dup_object (value);
+      self->__isset_spec_double = TRUE;
+      break;
+
+    case PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL_FIELD_SPEC_BYTES:
+      if (self->spec_bytes != NULL)
+        g_object_unref (self->spec_bytes);
+      self->spec_bytes = g_value_dup_object (value);
+      self->__isset_spec_bytes = TRUE;
+      break;
+
+    case PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL_FIELD_SPEC_KEY:
+      if (self->spec_key != NULL)
+        g_object_unref (self->spec_key);
+      self->spec_key = g_value_dup_object (value);
+      self->__isset_spec_key = TRUE;
+      break;
+
+    case PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL_FIELD_SPEC_LI:
+      if (self->spec_li != NULL)
+        g_object_unref (self->spec_li);
+      self->spec_li = g_value_dup_object (value);
+      self->__isset_spec_li = TRUE;
+      break;
+
+    case PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL_FIELD_SPEC_LB:
+      if (self->spec_lb != NULL)
+        g_object_unref (self->spec_lb);
+      self->spec_lb = g_value_dup_object (value);
+      self->__isset_spec_lb = TRUE;
+      break;
+
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+      break;
+  }
+}
+
+static void
+swcdb_thrift_spec_value_serial_field_get_property (GObject *object,
+                                                   guint property_id,
+                                                   GValue *value,
+                                                   GParamSpec *pspec)
+{
+  swcdb_thriftSpecValueSerialField *self = SWCDB_THRIFT_SPEC_VALUE_SERIAL_FIELD (object);
+
+  switch (property_id)
+  {
+    case PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL_FIELD_FIELD_ID:
+      g_value_set_int (value, self->field_id);
+      break;
+
+    case PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL_FIELD_SPEC_INT64:
+      g_value_set_object (value, self->spec_int64);
+      break;
+
+    case PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL_FIELD_SPEC_DOUBLE:
+      g_value_set_object (value, self->spec_double);
+      break;
+
+    case PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL_FIELD_SPEC_BYTES:
+      g_value_set_object (value, self->spec_bytes);
+      break;
+
+    case PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL_FIELD_SPEC_KEY:
+      g_value_set_object (value, self->spec_key);
+      break;
+
+    case PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL_FIELD_SPEC_LI:
+      g_value_set_object (value, self->spec_li);
+      break;
+
+    case PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL_FIELD_SPEC_LB:
+      g_value_set_object (value, self->spec_lb);
+      break;
+
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+      break;
+  }
+}
+
+static void 
+swcdb_thrift_spec_value_serial_field_instance_init (swcdb_thriftSpecValueSerialField * object)
+{
+  /* satisfy -Wall */
+  THRIFT_UNUSED_VAR (object);
+  object->field_id = 0;
+  object->__isset_field_id = FALSE;
+  object->spec_int64 = g_object_new (SWCDB_THRIFT_TYPE_SPEC_VALUE_SERIAL__I_N_T64, NULL);
+  object->__isset_spec_int64 = FALSE;
+  object->spec_double = g_object_new (SWCDB_THRIFT_TYPE_SPEC_VALUE_SERIAL__D_O_U_B_L_E, NULL);
+  object->__isset_spec_double = FALSE;
+  object->spec_bytes = g_object_new (SWCDB_THRIFT_TYPE_SPEC_VALUE_SERIAL__B_Y_T_E_S, NULL);
+  object->__isset_spec_bytes = FALSE;
+  object->spec_key = g_object_new (SWCDB_THRIFT_TYPE_SPEC_VALUE_SERIAL__K_E_Y, NULL);
+  object->__isset_spec_key = FALSE;
+  object->spec_li = g_object_new (SWCDB_THRIFT_TYPE_SPEC_VALUE_SERIAL__L_I, NULL);
+  object->__isset_spec_li = FALSE;
+  object->spec_lb = g_object_new (SWCDB_THRIFT_TYPE_SPEC_VALUE_SERIAL__L_B, NULL);
+  object->__isset_spec_lb = FALSE;
+}
+
+static void 
+swcdb_thrift_spec_value_serial_field_finalize (GObject *object)
+{
+  swcdb_thriftSpecValueSerialField *tobject = SWCDB_THRIFT_SPEC_VALUE_SERIAL_FIELD (object);
+
+  /* satisfy -Wall in case we don't use tobject */
+  THRIFT_UNUSED_VAR (tobject);
+  if (tobject->spec_int64 != NULL)
+  {
+    g_object_unref(tobject->spec_int64);
+    tobject->spec_int64 = NULL;
+  }
+  if (tobject->spec_double != NULL)
+  {
+    g_object_unref(tobject->spec_double);
+    tobject->spec_double = NULL;
+  }
+  if (tobject->spec_bytes != NULL)
+  {
+    g_object_unref(tobject->spec_bytes);
+    tobject->spec_bytes = NULL;
+  }
+  if (tobject->spec_key != NULL)
+  {
+    g_object_unref(tobject->spec_key);
+    tobject->spec_key = NULL;
+  }
+  if (tobject->spec_li != NULL)
+  {
+    g_object_unref(tobject->spec_li);
+    tobject->spec_li = NULL;
+  }
+  if (tobject->spec_lb != NULL)
+  {
+    g_object_unref(tobject->spec_lb);
+    tobject->spec_lb = NULL;
+  }
+}
+
+static void
+swcdb_thrift_spec_value_serial_field_class_init (swcdb_thriftSpecValueSerialFieldClass * cls)
+{
+  GObjectClass *gobject_class = G_OBJECT_CLASS (cls);
+  ThriftStructClass *struct_class = THRIFT_STRUCT_CLASS (cls);
+
+  struct_class->read = swcdb_thrift_spec_value_serial_field_read;
+  struct_class->write = swcdb_thrift_spec_value_serial_field_write;
+
+  gobject_class->finalize = swcdb_thrift_spec_value_serial_field_finalize;
+  gobject_class->get_property = swcdb_thrift_spec_value_serial_field_get_property;
+  gobject_class->set_property = swcdb_thrift_spec_value_serial_field_set_property;
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL_FIELD_FIELD_ID,
+     g_param_spec_int ("field_id",
+                       NULL,
+                       NULL,
+                       G_MININT32,
+                       G_MAXINT32,
+                       0,
+                       G_PARAM_READWRITE));
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL_FIELD_SPEC_INT64,
+     g_param_spec_object ("spec_int64",
+                         NULL,
+                         NULL,
+                         SWCDB_THRIFT_TYPE_SPEC_VALUE_SERIAL__I_N_T64,
+                         G_PARAM_READWRITE));
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL_FIELD_SPEC_DOUBLE,
+     g_param_spec_object ("spec_double",
+                         NULL,
+                         NULL,
+                         SWCDB_THRIFT_TYPE_SPEC_VALUE_SERIAL__D_O_U_B_L_E,
+                         G_PARAM_READWRITE));
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL_FIELD_SPEC_BYTES,
+     g_param_spec_object ("spec_bytes",
+                         NULL,
+                         NULL,
+                         SWCDB_THRIFT_TYPE_SPEC_VALUE_SERIAL__B_Y_T_E_S,
+                         G_PARAM_READWRITE));
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL_FIELD_SPEC_KEY,
+     g_param_spec_object ("spec_key",
+                         NULL,
+                         NULL,
+                         SWCDB_THRIFT_TYPE_SPEC_VALUE_SERIAL__K_E_Y,
+                         G_PARAM_READWRITE));
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL_FIELD_SPEC_LI,
+     g_param_spec_object ("spec_li",
+                         NULL,
+                         NULL,
+                         SWCDB_THRIFT_TYPE_SPEC_VALUE_SERIAL__L_I,
+                         G_PARAM_READWRITE));
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL_FIELD_SPEC_LB,
+     g_param_spec_object ("spec_lb",
+                         NULL,
+                         NULL,
+                         SWCDB_THRIFT_TYPE_SPEC_VALUE_SERIAL__L_B,
+                         G_PARAM_READWRITE));
+}
+
+GType
+swcdb_thrift_spec_value_serial_field_get_type (void)
+{
+  static GType type = 0;
+
+  if (type == 0) 
+  {
+    static const GTypeInfo type_info = 
+    {
+      sizeof (swcdb_thriftSpecValueSerialFieldClass),
+      NULL, /* base_init */
+      NULL, /* base_finalize */
+      (GClassInitFunc) swcdb_thrift_spec_value_serial_field_class_init,
+      NULL, /* class_finalize */
+      NULL, /* class_data */
+      sizeof (swcdb_thriftSpecValueSerialField),
+      0, /* n_preallocs */
+      (GInstanceInitFunc) swcdb_thrift_spec_value_serial_field_instance_init,
+      NULL, /* value_table */
+    };
+
+    type = g_type_register_static (THRIFT_TYPE_STRUCT, 
+                                   "swcdb_thriftSpecValueSerialFieldType",
+                                   &type_info, 0);
+  }
+
+  return type;
+}
+
+enum _swcdb_thriftSpecValueSerialProperties
+{
+  PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL_0,
+  PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL_COMP,
+  PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL_FIELDS
+};
+
+/* reads a spec_value_serial object */
+static gint32
+swcdb_thrift_spec_value_serial_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+{
+  gint32 ret;
+  gint32 xfer = 0;
+  gchar *name = NULL;
+  ThriftType ftype;
+  gint16 fid;
+  guint32 len = 0;
+  gpointer data = NULL;
+  swcdb_thriftSpecValueSerial * this_object = SWCDB_THRIFT_SPEC_VALUE_SERIAL(object);
+
+  /* satisfy -Wall in case these aren't used */
+  THRIFT_UNUSED_VAR (len);
+  THRIFT_UNUSED_VAR (data);
+  THRIFT_UNUSED_VAR (this_object);
+
+  /* read the struct begin marker */
+  if ((ret = thrift_protocol_read_struct_begin (protocol, &name, error)) < 0)
+  {
+    if (name) g_free (name);
+    return -1;
+  }
+  xfer += ret;
+  if (name) g_free (name);
+  name = NULL;
+
+  /* read the struct fields */
+  while (1)
+  {
+    /* read the beginning of a field */
+    if ((ret = thrift_protocol_read_field_begin (protocol, &name, &ftype, &fid, error)) < 0)
+    {
+      if (name) g_free (name);
+      return -1;
+    }
+    xfer += ret;
+    if (name) g_free (name);
+    name = NULL;
+
+    /* break if we get a STOP field */
+    if (ftype == T_STOP)
+    {
+      break;
+    }
+
+    switch (fid)
+    {
+      case 1:
+        if (ftype == T_I32)
+        {
+          gint32 ecast43;
+          if ((ret = thrift_protocol_read_i32 (protocol, &ecast43, error)) < 0)
+            return -1;
+          xfer += ret;
+          this_object->comp = (swcdb_thriftComp)ecast43;
+          this_object->__isset_comp = TRUE;
+        } else {
+          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+            return -1;
+          xfer += ret;
+        }
+        break;
+      case 2:
+        if (ftype == T_LIST)
+        {
+          {
+            guint32 size;
+            guint32 i;
+            ThriftType element_type;
+
+            if ((ret = thrift_protocol_read_list_begin (protocol, &element_type,&size, error)) < 0)
+              return -1;
+            xfer += ret;
+
+            /* iterate through list elements */
+            for (i = 0; i < size; i++)
+            {
+              swcdb_thriftSpecValueSerialField * _elem44 = NULL;
+              if ( _elem44 != NULL)
+              {
+                g_object_unref (_elem44);
+              }
+              _elem44 = g_object_new (SWCDB_THRIFT_TYPE_SPEC_VALUE_SERIAL_FIELD, NULL);
+              if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem44), protocol, error)) < 0)
+              {
+                g_object_unref (_elem44);
+                return -1;
+              }
+              xfer += ret;
+              g_ptr_array_add (this_object->fields, _elem44);
+            }
+            if ((ret = thrift_protocol_read_list_end (protocol, error)) < 0)
+              return -1;
+            xfer += ret;
+          }
+          this_object->__isset_fields = TRUE;
+        } else {
+          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+            return -1;
+          xfer += ret;
+        }
+        break;
+      default:
+        if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+          return -1;
+        xfer += ret;
+        break;
+    }
+    if ((ret = thrift_protocol_read_field_end (protocol, error)) < 0)
+      return -1;
+    xfer += ret;
+  }
+
+  if ((ret = thrift_protocol_read_struct_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+
+  return xfer;
+}
+
+static gint32
+swcdb_thrift_spec_value_serial_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+{
+  gint32 ret;
+  gint32 xfer = 0;
+
+  swcdb_thriftSpecValueSerial * this_object = SWCDB_THRIFT_SPEC_VALUE_SERIAL(object);
+  THRIFT_UNUSED_VAR (this_object);
+  if ((ret = thrift_protocol_write_struct_begin (protocol, "SpecValueSerial", error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_begin (protocol, "comp", T_I32, 1, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_i32 (protocol, (gint32) this_object->comp, error)) < 0)
+    return -1;
+  xfer += ret;
+
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_begin (protocol, "fields", T_LIST, 2, error)) < 0)
+    return -1;
+  xfer += ret;
+  {
+    guint i45;
+
+    if ((ret = thrift_protocol_write_list_begin (protocol, T_STRUCT, (gint32) (this_object->fields ? this_object->fields->len : 0), error)) < 0)
+      return -1;
+    xfer += ret;
+    for (i45 = 0; i45 < (this_object->fields ? this_object->fields->len : 0); i45++)
+    {
+      if ((ret = thrift_struct_write (THRIFT_STRUCT ((g_ptr_array_index ((GPtrArray *) this_object->fields, i45))), protocol, error)) < 0)
+        return -1;
+      xfer += ret;
+
+    }
+    if ((ret = thrift_protocol_write_list_end (protocol, error)) < 0)
+      return -1;
+    xfer += ret;
+  }
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_stop (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_struct_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+
+  return xfer;
+}
+
+static void
+swcdb_thrift_spec_value_serial_set_property (GObject *object,
+                                             guint property_id,
+                                             const GValue *value,
+                                             GParamSpec *pspec)
+{
+  swcdb_thriftSpecValueSerial *self = SWCDB_THRIFT_SPEC_VALUE_SERIAL (object);
+
+  switch (property_id)
+  {
+    case PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL_COMP:
+      self->comp = g_value_get_int (value);
+      self->__isset_comp = TRUE;
+      break;
+
+    case PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL_FIELDS:
+      if (self->fields != NULL)
+        g_ptr_array_unref (self->fields);
+      self->fields = g_value_dup_boxed (value);
+      self->__isset_fields = TRUE;
+      break;
+
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+      break;
+  }
+}
+
+static void
+swcdb_thrift_spec_value_serial_get_property (GObject *object,
+                                             guint property_id,
+                                             GValue *value,
+                                             GParamSpec *pspec)
+{
+  swcdb_thriftSpecValueSerial *self = SWCDB_THRIFT_SPEC_VALUE_SERIAL (object);
+
+  switch (property_id)
+  {
+    case PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL_COMP:
+      g_value_set_int (value, self->comp);
+      break;
+
+    case PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL_FIELDS:
+      g_value_set_boxed (value, self->fields);
+      break;
+
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+      break;
+  }
+}
+
+static void 
+swcdb_thrift_spec_value_serial_instance_init (swcdb_thriftSpecValueSerial * object)
+{
+  /* satisfy -Wall */
+  THRIFT_UNUSED_VAR (object);
+  object->__isset_comp = FALSE;
+  object->fields = g_ptr_array_new_with_free_func (g_object_unref);
+  object->__isset_fields = FALSE;
+}
+
+static void 
+swcdb_thrift_spec_value_serial_finalize (GObject *object)
+{
+  swcdb_thriftSpecValueSerial *tobject = SWCDB_THRIFT_SPEC_VALUE_SERIAL (object);
+
+  /* satisfy -Wall in case we don't use tobject */
+  THRIFT_UNUSED_VAR (tobject);
+  if (tobject->fields != NULL)
+  {
+    g_ptr_array_unref (tobject->fields);
+    tobject->fields = NULL;
+  }
+}
+
+static void
+swcdb_thrift_spec_value_serial_class_init (swcdb_thriftSpecValueSerialClass * cls)
+{
+  GObjectClass *gobject_class = G_OBJECT_CLASS (cls);
+  ThriftStructClass *struct_class = THRIFT_STRUCT_CLASS (cls);
+
+  struct_class->read = swcdb_thrift_spec_value_serial_read;
+  struct_class->write = swcdb_thrift_spec_value_serial_write;
+
+  gobject_class->finalize = swcdb_thrift_spec_value_serial_finalize;
+  gobject_class->get_property = swcdb_thrift_spec_value_serial_get_property;
+  gobject_class->set_property = swcdb_thrift_spec_value_serial_set_property;
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL_COMP,
+     g_param_spec_int ("comp",
+                       NULL,
+                       NULL,
+                       0,
+                       18,
+                       0,
+                       G_PARAM_READWRITE));
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_SWCDB_THRIFT_SPEC_VALUE_SERIAL_FIELDS,
+     g_param_spec_boxed ("fields",
+                         NULL,
+                         NULL,
+                         G_TYPE_PTR_ARRAY,
+                         G_PARAM_READWRITE));
+}
+
+GType
+swcdb_thrift_spec_value_serial_get_type (void)
+{
+  static GType type = 0;
+
+  if (type == 0) 
+  {
+    static const GTypeInfo type_info = 
+    {
+      sizeof (swcdb_thriftSpecValueSerialClass),
+      NULL, /* base_init */
+      NULL, /* base_finalize */
+      (GClassInitFunc) swcdb_thrift_spec_value_serial_class_init,
+      NULL, /* class_finalize */
+      NULL, /* class_data */
+      sizeof (swcdb_thriftSpecValueSerial),
+      0, /* n_preallocs */
+      (GInstanceInitFunc) swcdb_thrift_spec_value_serial_instance_init,
+      NULL, /* value_table */
+    };
+
+    type = g_type_register_static (THRIFT_TYPE_STRUCT, 
+                                   "swcdb_thriftSpecValueSerialType",
+                                   &type_info, 0);
+  }
+
+  return type;
+}
+
+enum _swcdb_thriftSpecIntervalSerialProperties
+{
+  PROP_SWCDB_THRIFT_SPEC_INTERVAL_SERIAL_0,
+  PROP_SWCDB_THRIFT_SPEC_INTERVAL_SERIAL_RANGE_BEGIN,
+  PROP_SWCDB_THRIFT_SPEC_INTERVAL_SERIAL_RANGE_END,
+  PROP_SWCDB_THRIFT_SPEC_INTERVAL_SERIAL_RANGE_OFFSET,
+  PROP_SWCDB_THRIFT_SPEC_INTERVAL_SERIAL_OFFSET_KEY,
+  PROP_SWCDB_THRIFT_SPEC_INTERVAL_SERIAL_OFFSET_REV,
+  PROP_SWCDB_THRIFT_SPEC_INTERVAL_SERIAL_KEY_INTERVALS,
+  PROP_SWCDB_THRIFT_SPEC_INTERVAL_SERIAL_VALUES,
+  PROP_SWCDB_THRIFT_SPEC_INTERVAL_SERIAL_TS_START,
+  PROP_SWCDB_THRIFT_SPEC_INTERVAL_SERIAL_TS_FINISH,
+  PROP_SWCDB_THRIFT_SPEC_INTERVAL_SERIAL_FLAGS
+};
+
+/* reads a spec_interval_serial object */
+static gint32
+swcdb_thrift_spec_interval_serial_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+{
+  gint32 ret;
+  gint32 xfer = 0;
+  gchar *name = NULL;
+  ThriftType ftype;
+  gint16 fid;
+  guint32 len = 0;
+  gpointer data = NULL;
+  swcdb_thriftSpecIntervalSerial * this_object = SWCDB_THRIFT_SPEC_INTERVAL_SERIAL(object);
+
+  /* satisfy -Wall in case these aren't used */
+  THRIFT_UNUSED_VAR (len);
+  THRIFT_UNUSED_VAR (data);
+  THRIFT_UNUSED_VAR (this_object);
+
+  /* read the struct begin marker */
+  if ((ret = thrift_protocol_read_struct_begin (protocol, &name, error)) < 0)
+  {
+    if (name) g_free (name);
+    return -1;
+  }
+  xfer += ret;
+  if (name) g_free (name);
+  name = NULL;
+
+  /* read the struct fields */
+  while (1)
+  {
+    /* read the beginning of a field */
+    if ((ret = thrift_protocol_read_field_begin (protocol, &name, &ftype, &fid, error)) < 0)
+    {
+      if (name) g_free (name);
+      return -1;
+    }
+    xfer += ret;
+    if (name) g_free (name);
+    name = NULL;
+
+    /* break if we get a STOP field */
+    if (ftype == T_STOP)
+    {
+      break;
+    }
+
+    switch (fid)
+    {
+      case 1:
+        if (ftype == T_LIST)
+        {
+          {
+            guint32 size;
+            guint32 i;
+            ThriftType element_type;
+
+            if ((ret = thrift_protocol_read_list_begin (protocol, &element_type,&size, error)) < 0)
+              return -1;
+            xfer += ret;
+
+            /* iterate through list elements */
+            for (i = 0; i < size; i++)
+            {
+              GByteArray * _elem46 = NULL;
+              if (_elem46 != NULL)
+              {
+                g_free(_elem46);
+                _elem46 = NULL;
+              }
+
+              if ((ret = thrift_protocol_read_binary (protocol, &data, &len, error)) < 0)
+                return -1;
+              xfer += ret;
+              _elem46 = g_byte_array_new();
+              g_byte_array_append (_elem46, (guint8 *) data, (guint) len);
+              g_free (data);
+              g_ptr_array_add (this_object->range_begin, _elem46);
+            }
+            if ((ret = thrift_protocol_read_list_end (protocol, error)) < 0)
+              return -1;
+            xfer += ret;
+          }
+          this_object->__isset_range_begin = TRUE;
+        } else {
+          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+            return -1;
+          xfer += ret;
+        }
+        break;
+      case 2:
+        if (ftype == T_LIST)
+        {
+          {
+            guint32 size;
+            guint32 i;
+            ThriftType element_type;
+
+            if ((ret = thrift_protocol_read_list_begin (protocol, &element_type,&size, error)) < 0)
+              return -1;
+            xfer += ret;
+
+            /* iterate through list elements */
+            for (i = 0; i < size; i++)
+            {
+              GByteArray * _elem47 = NULL;
+              if (_elem47 != NULL)
+              {
+                g_free(_elem47);
+                _elem47 = NULL;
+              }
+
+              if ((ret = thrift_protocol_read_binary (protocol, &data, &len, error)) < 0)
+                return -1;
+              xfer += ret;
+              _elem47 = g_byte_array_new();
+              g_byte_array_append (_elem47, (guint8 *) data, (guint) len);
+              g_free (data);
+              g_ptr_array_add (this_object->range_end, _elem47);
+            }
+            if ((ret = thrift_protocol_read_list_end (protocol, error)) < 0)
+              return -1;
+            xfer += ret;
+          }
+          this_object->__isset_range_end = TRUE;
+        } else {
+          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+            return -1;
+          xfer += ret;
+        }
+        break;
+      case 3:
+        if (ftype == T_LIST)
+        {
+          {
+            guint32 size;
+            guint32 i;
+            ThriftType element_type;
+
+            if ((ret = thrift_protocol_read_list_begin (protocol, &element_type,&size, error)) < 0)
+              return -1;
+            xfer += ret;
+
+            /* iterate through list elements */
+            for (i = 0; i < size; i++)
+            {
+              GByteArray * _elem48 = NULL;
+              if (_elem48 != NULL)
+              {
+                g_free(_elem48);
+                _elem48 = NULL;
+              }
+
+              if ((ret = thrift_protocol_read_binary (protocol, &data, &len, error)) < 0)
+                return -1;
+              xfer += ret;
+              _elem48 = g_byte_array_new();
+              g_byte_array_append (_elem48, (guint8 *) data, (guint) len);
+              g_free (data);
+              g_ptr_array_add (this_object->range_offset, _elem48);
+            }
+            if ((ret = thrift_protocol_read_list_end (protocol, error)) < 0)
+              return -1;
+            xfer += ret;
+          }
+          this_object->__isset_range_offset = TRUE;
+        } else {
+          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+            return -1;
+          xfer += ret;
+        }
+        break;
+      case 4:
+        if (ftype == T_LIST)
+        {
+          {
+            guint32 size;
+            guint32 i;
+            ThriftType element_type;
+
+            if ((ret = thrift_protocol_read_list_begin (protocol, &element_type,&size, error)) < 0)
+              return -1;
+            xfer += ret;
+
+            /* iterate through list elements */
+            for (i = 0; i < size; i++)
+            {
+              GByteArray * _elem49 = NULL;
+              if (_elem49 != NULL)
+              {
+                g_free(_elem49);
+                _elem49 = NULL;
+              }
+
+              if ((ret = thrift_protocol_read_binary (protocol, &data, &len, error)) < 0)
+                return -1;
+              xfer += ret;
+              _elem49 = g_byte_array_new();
+              g_byte_array_append (_elem49, (guint8 *) data, (guint) len);
+              g_free (data);
+              g_ptr_array_add (this_object->offset_key, _elem49);
+            }
+            if ((ret = thrift_protocol_read_list_end (protocol, error)) < 0)
+              return -1;
+            xfer += ret;
+          }
+          this_object->__isset_offset_key = TRUE;
+        } else {
+          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+            return -1;
+          xfer += ret;
+        }
+        break;
+      case 5:
+        if (ftype == T_I64)
+        {
+          if ((ret = thrift_protocol_read_i64 (protocol, &this_object->offset_rev, error)) < 0)
+            return -1;
+          xfer += ret;
+          this_object->__isset_offset_rev = TRUE;
+        } else {
+          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+            return -1;
+          xfer += ret;
+        }
+        break;
+      case 6:
+        if (ftype == T_LIST)
+        {
+          {
+            guint32 size;
+            guint32 i;
+            ThriftType element_type;
+
+            if ((ret = thrift_protocol_read_list_begin (protocol, &element_type,&size, error)) < 0)
+              return -1;
+            xfer += ret;
+
+            /* iterate through list elements */
+            for (i = 0; i < size; i++)
+            {
+              swcdb_thriftSpecKeyInterval * _elem50 = NULL;
+              if ( _elem50 != NULL)
+              {
+                g_object_unref (_elem50);
+              }
+              _elem50 = g_object_new (SWCDB_THRIFT_TYPE_SPEC_KEY_INTERVAL, NULL);
+              if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem50), protocol, error)) < 0)
+              {
+                g_object_unref (_elem50);
+                return -1;
+              }
+              xfer += ret;
+              g_ptr_array_add (this_object->key_intervals, _elem50);
+            }
+            if ((ret = thrift_protocol_read_list_end (protocol, error)) < 0)
+              return -1;
+            xfer += ret;
+          }
+          this_object->__isset_key_intervals = TRUE;
+        } else {
+          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+            return -1;
+          xfer += ret;
+        }
+        break;
+      case 7:
+        if (ftype == T_LIST)
+        {
+          {
+            guint32 size;
+            guint32 i;
+            ThriftType element_type;
+
+            if ((ret = thrift_protocol_read_list_begin (protocol, &element_type,&size, error)) < 0)
+              return -1;
+            xfer += ret;
+
+            /* iterate through list elements */
+            for (i = 0; i < size; i++)
+            {
+              swcdb_thriftSpecValueSerial * _elem51 = NULL;
+              if ( _elem51 != NULL)
+              {
+                g_object_unref (_elem51);
+              }
+              _elem51 = g_object_new (SWCDB_THRIFT_TYPE_SPEC_VALUE_SERIAL, NULL);
+              if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem51), protocol, error)) < 0)
+              {
+                g_object_unref (_elem51);
+                return -1;
+              }
+              xfer += ret;
+              g_ptr_array_add (this_object->values, _elem51);
+            }
+            if ((ret = thrift_protocol_read_list_end (protocol, error)) < 0)
+              return -1;
+            xfer += ret;
+          }
+          this_object->__isset_values = TRUE;
+        } else {
+          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+            return -1;
+          xfer += ret;
+        }
+        break;
+      case 8:
+        if (ftype == T_STRUCT)
+        {
+          if ((ret = thrift_struct_read (THRIFT_STRUCT (this_object->ts_start), protocol, error)) < 0)
+          {
+            return -1;
+          }
+          xfer += ret;
+          this_object->__isset_ts_start = TRUE;
+        } else {
+          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+            return -1;
+          xfer += ret;
+        }
+        break;
+      case 9:
+        if (ftype == T_STRUCT)
+        {
+          if ((ret = thrift_struct_read (THRIFT_STRUCT (this_object->ts_finish), protocol, error)) < 0)
+          {
+            return -1;
+          }
+          xfer += ret;
+          this_object->__isset_ts_finish = TRUE;
+        } else {
+          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+            return -1;
+          xfer += ret;
+        }
+        break;
+      case 10:
+        if (ftype == T_STRUCT)
+        {
+          if ((ret = thrift_struct_read (THRIFT_STRUCT (this_object->flags), protocol, error)) < 0)
+          {
+            return -1;
+          }
+          xfer += ret;
+          this_object->__isset_flags = TRUE;
+        } else {
+          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+            return -1;
+          xfer += ret;
+        }
+        break;
+      default:
+        if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+          return -1;
+        xfer += ret;
+        break;
+    }
+    if ((ret = thrift_protocol_read_field_end (protocol, error)) < 0)
+      return -1;
+    xfer += ret;
+  }
+
+  if ((ret = thrift_protocol_read_struct_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+
+  return xfer;
+}
+
+static gint32
+swcdb_thrift_spec_interval_serial_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+{
+  gint32 ret;
+  gint32 xfer = 0;
+
+  swcdb_thriftSpecIntervalSerial * this_object = SWCDB_THRIFT_SPEC_INTERVAL_SERIAL(object);
+  THRIFT_UNUSED_VAR (this_object);
+  if ((ret = thrift_protocol_write_struct_begin (protocol, "SpecIntervalSerial", error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_begin (protocol, "range_begin", T_LIST, 1, error)) < 0)
+    return -1;
+  xfer += ret;
+  {
+    guint i52;
+
+    if ((ret = thrift_protocol_write_list_begin (protocol, T_STRING, (gint32) (this_object->range_begin ? this_object->range_begin->len : 0), error)) < 0)
+      return -1;
+    xfer += ret;
+    for (i52 = 0; i52 < (this_object->range_begin ? this_object->range_begin->len : 0); i52++)
+    {
+      if ((ret = thrift_protocol_write_binary (protocol, ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->range_begin, i52)) ? ((GByteArray *) ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->range_begin, i52)))->data : NULL, ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->range_begin, i52)) ? ((GByteArray *) ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->range_begin, i52)))->len : 0, error)) < 0)
+        return -1;
+      xfer += ret;
+
+    }
+    if ((ret = thrift_protocol_write_list_end (protocol, error)) < 0)
+      return -1;
+    xfer += ret;
+  }
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_begin (protocol, "range_end", T_LIST, 2, error)) < 0)
+    return -1;
+  xfer += ret;
+  {
+    guint i53;
+
+    if ((ret = thrift_protocol_write_list_begin (protocol, T_STRING, (gint32) (this_object->range_end ? this_object->range_end->len : 0), error)) < 0)
+      return -1;
+    xfer += ret;
+    for (i53 = 0; i53 < (this_object->range_end ? this_object->range_end->len : 0); i53++)
+    {
+      if ((ret = thrift_protocol_write_binary (protocol, ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->range_end, i53)) ? ((GByteArray *) ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->range_end, i53)))->data : NULL, ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->range_end, i53)) ? ((GByteArray *) ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->range_end, i53)))->len : 0, error)) < 0)
+        return -1;
+      xfer += ret;
+
+    }
+    if ((ret = thrift_protocol_write_list_end (protocol, error)) < 0)
+      return -1;
+    xfer += ret;
+  }
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_begin (protocol, "range_offset", T_LIST, 3, error)) < 0)
+    return -1;
+  xfer += ret;
+  {
+    guint i54;
+
+    if ((ret = thrift_protocol_write_list_begin (protocol, T_STRING, (gint32) (this_object->range_offset ? this_object->range_offset->len : 0), error)) < 0)
+      return -1;
+    xfer += ret;
+    for (i54 = 0; i54 < (this_object->range_offset ? this_object->range_offset->len : 0); i54++)
+    {
+      if ((ret = thrift_protocol_write_binary (protocol, ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->range_offset, i54)) ? ((GByteArray *) ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->range_offset, i54)))->data : NULL, ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->range_offset, i54)) ? ((GByteArray *) ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->range_offset, i54)))->len : 0, error)) < 0)
+        return -1;
+      xfer += ret;
+
+    }
+    if ((ret = thrift_protocol_write_list_end (protocol, error)) < 0)
+      return -1;
+    xfer += ret;
+  }
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_begin (protocol, "offset_key", T_LIST, 4, error)) < 0)
+    return -1;
+  xfer += ret;
+  {
+    guint i55;
+
+    if ((ret = thrift_protocol_write_list_begin (protocol, T_STRING, (gint32) (this_object->offset_key ? this_object->offset_key->len : 0), error)) < 0)
+      return -1;
+    xfer += ret;
+    for (i55 = 0; i55 < (this_object->offset_key ? this_object->offset_key->len : 0); i55++)
+    {
+      if ((ret = thrift_protocol_write_binary (protocol, ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->offset_key, i55)) ? ((GByteArray *) ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->offset_key, i55)))->data : NULL, ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->offset_key, i55)) ? ((GByteArray *) ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->offset_key, i55)))->len : 0, error)) < 0)
+        return -1;
+      xfer += ret;
+
+    }
+    if ((ret = thrift_protocol_write_list_end (protocol, error)) < 0)
+      return -1;
+    xfer += ret;
+  }
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if (this_object->__isset_offset_rev == TRUE) {
+    if ((ret = thrift_protocol_write_field_begin (protocol, "offset_rev", T_I64, 5, error)) < 0)
+      return -1;
+    xfer += ret;
+    if ((ret = thrift_protocol_write_i64 (protocol, this_object->offset_rev, error)) < 0)
+      return -1;
+    xfer += ret;
+
+    if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+      return -1;
+    xfer += ret;
+  }
+  if ((ret = thrift_protocol_write_field_begin (protocol, "key_intervals", T_LIST, 6, error)) < 0)
+    return -1;
+  xfer += ret;
+  {
+    guint i56;
+
+    if ((ret = thrift_protocol_write_list_begin (protocol, T_STRUCT, (gint32) (this_object->key_intervals ? this_object->key_intervals->len : 0), error)) < 0)
+      return -1;
+    xfer += ret;
+    for (i56 = 0; i56 < (this_object->key_intervals ? this_object->key_intervals->len : 0); i56++)
+    {
+      if ((ret = thrift_struct_write (THRIFT_STRUCT ((g_ptr_array_index ((GPtrArray *) this_object->key_intervals, i56))), protocol, error)) < 0)
+        return -1;
+      xfer += ret;
+
+    }
+    if ((ret = thrift_protocol_write_list_end (protocol, error)) < 0)
+      return -1;
+    xfer += ret;
+  }
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_begin (protocol, "values", T_LIST, 7, error)) < 0)
+    return -1;
+  xfer += ret;
+  {
+    guint i57;
+
+    if ((ret = thrift_protocol_write_list_begin (protocol, T_STRUCT, (gint32) (this_object->values ? this_object->values->len : 0), error)) < 0)
+      return -1;
+    xfer += ret;
+    for (i57 = 0; i57 < (this_object->values ? this_object->values->len : 0); i57++)
+    {
+      if ((ret = thrift_struct_write (THRIFT_STRUCT ((g_ptr_array_index ((GPtrArray *) this_object->values, i57))), protocol, error)) < 0)
+        return -1;
+      xfer += ret;
+
+    }
+    if ((ret = thrift_protocol_write_list_end (protocol, error)) < 0)
+      return -1;
+    xfer += ret;
+  }
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if (this_object->__isset_ts_start == TRUE) {
+    if ((ret = thrift_protocol_write_field_begin (protocol, "ts_start", T_STRUCT, 8, error)) < 0)
+      return -1;
+    xfer += ret;
+    if ((ret = thrift_struct_write (THRIFT_STRUCT (this_object->ts_start), protocol, error)) < 0)
+      return -1;
+    xfer += ret;
+
+    if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+      return -1;
+    xfer += ret;
+  }
+  if (this_object->__isset_ts_finish == TRUE) {
+    if ((ret = thrift_protocol_write_field_begin (protocol, "ts_finish", T_STRUCT, 9, error)) < 0)
+      return -1;
+    xfer += ret;
+    if ((ret = thrift_struct_write (THRIFT_STRUCT (this_object->ts_finish), protocol, error)) < 0)
+      return -1;
+    xfer += ret;
+
+    if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+      return -1;
+    xfer += ret;
+  }
+  if (this_object->__isset_flags == TRUE) {
+    if ((ret = thrift_protocol_write_field_begin (protocol, "flags", T_STRUCT, 10, error)) < 0)
+      return -1;
+    xfer += ret;
+    if ((ret = thrift_struct_write (THRIFT_STRUCT (this_object->flags), protocol, error)) < 0)
+      return -1;
+    xfer += ret;
+
+    if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+      return -1;
+    xfer += ret;
+  }
+  if ((ret = thrift_protocol_write_field_stop (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_struct_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+
+  return xfer;
+}
+
+static void
+swcdb_thrift_spec_interval_serial_set_property (GObject *object,
+                                                guint property_id,
+                                                const GValue *value,
+                                                GParamSpec *pspec)
+{
+  swcdb_thriftSpecIntervalSerial *self = SWCDB_THRIFT_SPEC_INTERVAL_SERIAL (object);
+
+  switch (property_id)
+  {
+    case PROP_SWCDB_THRIFT_SPEC_INTERVAL_SERIAL_RANGE_BEGIN:
+      if (self->range_begin != NULL)
+        g_ptr_array_unref (self->range_begin);
+      self->range_begin = g_value_dup_boxed (value);
+      self->__isset_range_begin = TRUE;
+      break;
+
+    case PROP_SWCDB_THRIFT_SPEC_INTERVAL_SERIAL_RANGE_END:
+      if (self->range_end != NULL)
+        g_ptr_array_unref (self->range_end);
+      self->range_end = g_value_dup_boxed (value);
+      self->__isset_range_end = TRUE;
+      break;
+
+    case PROP_SWCDB_THRIFT_SPEC_INTERVAL_SERIAL_RANGE_OFFSET:
+      if (self->range_offset != NULL)
+        g_ptr_array_unref (self->range_offset);
+      self->range_offset = g_value_dup_boxed (value);
+      self->__isset_range_offset = TRUE;
+      break;
+
+    case PROP_SWCDB_THRIFT_SPEC_INTERVAL_SERIAL_OFFSET_KEY:
+      if (self->offset_key != NULL)
+        g_ptr_array_unref (self->offset_key);
+      self->offset_key = g_value_dup_boxed (value);
+      self->__isset_offset_key = TRUE;
+      break;
+
+    case PROP_SWCDB_THRIFT_SPEC_INTERVAL_SERIAL_OFFSET_REV:
+      self->offset_rev = g_value_get_int64 (value);
+      self->__isset_offset_rev = TRUE;
+      break;
+
+    case PROP_SWCDB_THRIFT_SPEC_INTERVAL_SERIAL_KEY_INTERVALS:
+      if (self->key_intervals != NULL)
+        g_ptr_array_unref (self->key_intervals);
+      self->key_intervals = g_value_dup_boxed (value);
+      self->__isset_key_intervals = TRUE;
+      break;
+
+    case PROP_SWCDB_THRIFT_SPEC_INTERVAL_SERIAL_VALUES:
+      if (self->values != NULL)
+        g_ptr_array_unref (self->values);
+      self->values = g_value_dup_boxed (value);
+      self->__isset_values = TRUE;
+      break;
+
+    case PROP_SWCDB_THRIFT_SPEC_INTERVAL_SERIAL_TS_START:
+      if (self->ts_start != NULL)
+        g_object_unref (self->ts_start);
+      self->ts_start = g_value_dup_object (value);
+      self->__isset_ts_start = TRUE;
+      break;
+
+    case PROP_SWCDB_THRIFT_SPEC_INTERVAL_SERIAL_TS_FINISH:
+      if (self->ts_finish != NULL)
+        g_object_unref (self->ts_finish);
+      self->ts_finish = g_value_dup_object (value);
+      self->__isset_ts_finish = TRUE;
+      break;
+
+    case PROP_SWCDB_THRIFT_SPEC_INTERVAL_SERIAL_FLAGS:
+      if (self->flags != NULL)
+        g_object_unref (self->flags);
+      self->flags = g_value_dup_object (value);
+      self->__isset_flags = TRUE;
+      break;
+
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+      break;
+  }
+}
+
+static void
+swcdb_thrift_spec_interval_serial_get_property (GObject *object,
+                                                guint property_id,
+                                                GValue *value,
+                                                GParamSpec *pspec)
+{
+  swcdb_thriftSpecIntervalSerial *self = SWCDB_THRIFT_SPEC_INTERVAL_SERIAL (object);
+
+  switch (property_id)
+  {
+    case PROP_SWCDB_THRIFT_SPEC_INTERVAL_SERIAL_RANGE_BEGIN:
+      g_value_set_boxed (value, self->range_begin);
+      break;
+
+    case PROP_SWCDB_THRIFT_SPEC_INTERVAL_SERIAL_RANGE_END:
+      g_value_set_boxed (value, self->range_end);
+      break;
+
+    case PROP_SWCDB_THRIFT_SPEC_INTERVAL_SERIAL_RANGE_OFFSET:
+      g_value_set_boxed (value, self->range_offset);
+      break;
+
+    case PROP_SWCDB_THRIFT_SPEC_INTERVAL_SERIAL_OFFSET_KEY:
+      g_value_set_boxed (value, self->offset_key);
+      break;
+
+    case PROP_SWCDB_THRIFT_SPEC_INTERVAL_SERIAL_OFFSET_REV:
+      g_value_set_int64 (value, self->offset_rev);
+      break;
+
+    case PROP_SWCDB_THRIFT_SPEC_INTERVAL_SERIAL_KEY_INTERVALS:
+      g_value_set_boxed (value, self->key_intervals);
+      break;
+
+    case PROP_SWCDB_THRIFT_SPEC_INTERVAL_SERIAL_VALUES:
+      g_value_set_boxed (value, self->values);
+      break;
+
+    case PROP_SWCDB_THRIFT_SPEC_INTERVAL_SERIAL_TS_START:
+      g_value_set_object (value, self->ts_start);
+      break;
+
+    case PROP_SWCDB_THRIFT_SPEC_INTERVAL_SERIAL_TS_FINISH:
+      g_value_set_object (value, self->ts_finish);
+      break;
+
+    case PROP_SWCDB_THRIFT_SPEC_INTERVAL_SERIAL_FLAGS:
+      g_value_set_object (value, self->flags);
+      break;
+
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+      break;
+  }
+}
+
+static void 
+swcdb_thrift_spec_interval_serial_instance_init (swcdb_thriftSpecIntervalSerial * object)
+{
+  /* satisfy -Wall */
+  THRIFT_UNUSED_VAR (object);
+  object->range_begin = g_ptr_array_new_with_free_func (thrift_string_free);
+  object->__isset_range_begin = FALSE;
+  object->range_end = g_ptr_array_new_with_free_func (thrift_string_free);
+  object->__isset_range_end = FALSE;
+  object->range_offset = g_ptr_array_new_with_free_func (thrift_string_free);
+  object->__isset_range_offset = FALSE;
+  object->offset_key = g_ptr_array_new_with_free_func (thrift_string_free);
+  object->__isset_offset_key = FALSE;
+  object->offset_rev = 0;
+  object->__isset_offset_rev = FALSE;
+  object->key_intervals = g_ptr_array_new_with_free_func (g_object_unref);
+  object->__isset_key_intervals = FALSE;
+  object->values = g_ptr_array_new_with_free_func (g_object_unref);
+  object->__isset_values = FALSE;
+  object->ts_start = g_object_new (SWCDB_THRIFT_TYPE_SPEC_TIMESTAMP, NULL);
+  object->__isset_ts_start = FALSE;
+  object->ts_finish = g_object_new (SWCDB_THRIFT_TYPE_SPEC_TIMESTAMP, NULL);
+  object->__isset_ts_finish = FALSE;
+  object->flags = g_object_new (SWCDB_THRIFT_TYPE_SPEC_FLAGS, NULL);
+  object->__isset_flags = FALSE;
+}
+
+static void 
+swcdb_thrift_spec_interval_serial_finalize (GObject *object)
+{
+  swcdb_thriftSpecIntervalSerial *tobject = SWCDB_THRIFT_SPEC_INTERVAL_SERIAL (object);
+
+  /* satisfy -Wall in case we don't use tobject */
+  THRIFT_UNUSED_VAR (tobject);
+  if (tobject->range_begin != NULL)
+  {
+    g_ptr_array_unref (tobject->range_begin);
+    tobject->range_begin = NULL;
+  }
+  if (tobject->range_end != NULL)
+  {
+    g_ptr_array_unref (tobject->range_end);
+    tobject->range_end = NULL;
+  }
+  if (tobject->range_offset != NULL)
+  {
+    g_ptr_array_unref (tobject->range_offset);
+    tobject->range_offset = NULL;
+  }
+  if (tobject->offset_key != NULL)
+  {
+    g_ptr_array_unref (tobject->offset_key);
+    tobject->offset_key = NULL;
+  }
+  if (tobject->key_intervals != NULL)
+  {
+    g_ptr_array_unref (tobject->key_intervals);
+    tobject->key_intervals = NULL;
+  }
+  if (tobject->values != NULL)
+  {
+    g_ptr_array_unref (tobject->values);
+    tobject->values = NULL;
+  }
+  if (tobject->ts_start != NULL)
+  {
+    g_object_unref(tobject->ts_start);
+    tobject->ts_start = NULL;
+  }
+  if (tobject->ts_finish != NULL)
+  {
+    g_object_unref(tobject->ts_finish);
+    tobject->ts_finish = NULL;
+  }
+  if (tobject->flags != NULL)
+  {
+    g_object_unref(tobject->flags);
+    tobject->flags = NULL;
+  }
+}
+
+static void
+swcdb_thrift_spec_interval_serial_class_init (swcdb_thriftSpecIntervalSerialClass * cls)
+{
+  GObjectClass *gobject_class = G_OBJECT_CLASS (cls);
+  ThriftStructClass *struct_class = THRIFT_STRUCT_CLASS (cls);
+
+  struct_class->read = swcdb_thrift_spec_interval_serial_read;
+  struct_class->write = swcdb_thrift_spec_interval_serial_write;
+
+  gobject_class->finalize = swcdb_thrift_spec_interval_serial_finalize;
+  gobject_class->get_property = swcdb_thrift_spec_interval_serial_get_property;
+  gobject_class->set_property = swcdb_thrift_spec_interval_serial_set_property;
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_SWCDB_THRIFT_SPEC_INTERVAL_SERIAL_RANGE_BEGIN,
+     g_param_spec_boxed ("range_begin",
+                         NULL,
+                         NULL,
+                         G_TYPE_PTR_ARRAY,
+                         G_PARAM_READWRITE));
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_SWCDB_THRIFT_SPEC_INTERVAL_SERIAL_RANGE_END,
+     g_param_spec_boxed ("range_end",
+                         NULL,
+                         NULL,
+                         G_TYPE_PTR_ARRAY,
+                         G_PARAM_READWRITE));
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_SWCDB_THRIFT_SPEC_INTERVAL_SERIAL_RANGE_OFFSET,
+     g_param_spec_boxed ("range_offset",
+                         NULL,
+                         NULL,
+                         G_TYPE_PTR_ARRAY,
+                         G_PARAM_READWRITE));
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_SWCDB_THRIFT_SPEC_INTERVAL_SERIAL_OFFSET_KEY,
+     g_param_spec_boxed ("offset_key",
+                         NULL,
+                         NULL,
+                         G_TYPE_PTR_ARRAY,
+                         G_PARAM_READWRITE));
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_SWCDB_THRIFT_SPEC_INTERVAL_SERIAL_OFFSET_REV,
+     g_param_spec_int64 ("offset_rev",
+                         NULL,
+                         NULL,
+                         G_MININT64,
+                         G_MAXINT64,
+                         0,
+                         G_PARAM_READWRITE));
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_SWCDB_THRIFT_SPEC_INTERVAL_SERIAL_KEY_INTERVALS,
+     g_param_spec_boxed ("key_intervals",
+                         NULL,
+                         NULL,
+                         G_TYPE_PTR_ARRAY,
+                         G_PARAM_READWRITE));
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_SWCDB_THRIFT_SPEC_INTERVAL_SERIAL_VALUES,
+     g_param_spec_boxed ("values",
+                         NULL,
+                         NULL,
+                         G_TYPE_PTR_ARRAY,
+                         G_PARAM_READWRITE));
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_SWCDB_THRIFT_SPEC_INTERVAL_SERIAL_TS_START,
+     g_param_spec_object ("ts_start",
+                         NULL,
+                         NULL,
+                         SWCDB_THRIFT_TYPE_SPEC_TIMESTAMP,
+                         G_PARAM_READWRITE));
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_SWCDB_THRIFT_SPEC_INTERVAL_SERIAL_TS_FINISH,
+     g_param_spec_object ("ts_finish",
+                         NULL,
+                         NULL,
+                         SWCDB_THRIFT_TYPE_SPEC_TIMESTAMP,
+                         G_PARAM_READWRITE));
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_SWCDB_THRIFT_SPEC_INTERVAL_SERIAL_FLAGS,
+     g_param_spec_object ("flags",
+                         NULL,
+                         NULL,
+                         SWCDB_THRIFT_TYPE_SPEC_FLAGS,
+                         G_PARAM_READWRITE));
+}
+
+GType
+swcdb_thrift_spec_interval_serial_get_type (void)
+{
+  static GType type = 0;
+
+  if (type == 0) 
+  {
+    static const GTypeInfo type_info = 
+    {
+      sizeof (swcdb_thriftSpecIntervalSerialClass),
+      NULL, /* base_init */
+      NULL, /* base_finalize */
+      (GClassInitFunc) swcdb_thrift_spec_interval_serial_class_init,
+      NULL, /* class_finalize */
+      NULL, /* class_data */
+      sizeof (swcdb_thriftSpecIntervalSerial),
+      0, /* n_preallocs */
+      (GInstanceInitFunc) swcdb_thrift_spec_interval_serial_instance_init,
+      NULL, /* value_table */
+    };
+
+    type = g_type_register_static (THRIFT_TYPE_STRUCT, 
+                                   "swcdb_thriftSpecIntervalSerialType",
+                                   &type_info, 0);
+  }
+
+  return type;
+}
+
+enum _swcdb_thriftSpecColumnSerialProperties
+{
+  PROP_SWCDB_THRIFT_SPEC_COLUMN_SERIAL_0,
+  PROP_SWCDB_THRIFT_SPEC_COLUMN_SERIAL_CID,
+  PROP_SWCDB_THRIFT_SPEC_COLUMN_SERIAL_INTERVALS
+};
+
+/* reads a spec_column_serial object */
+static gint32
+swcdb_thrift_spec_column_serial_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+{
+  gint32 ret;
+  gint32 xfer = 0;
+  gchar *name = NULL;
+  ThriftType ftype;
+  gint16 fid;
+  guint32 len = 0;
+  gpointer data = NULL;
+  swcdb_thriftSpecColumnSerial * this_object = SWCDB_THRIFT_SPEC_COLUMN_SERIAL(object);
+
+  /* satisfy -Wall in case these aren't used */
+  THRIFT_UNUSED_VAR (len);
+  THRIFT_UNUSED_VAR (data);
+  THRIFT_UNUSED_VAR (this_object);
+
+  /* read the struct begin marker */
+  if ((ret = thrift_protocol_read_struct_begin (protocol, &name, error)) < 0)
+  {
+    if (name) g_free (name);
+    return -1;
+  }
+  xfer += ret;
+  if (name) g_free (name);
+  name = NULL;
+
+  /* read the struct fields */
+  while (1)
+  {
+    /* read the beginning of a field */
+    if ((ret = thrift_protocol_read_field_begin (protocol, &name, &ftype, &fid, error)) < 0)
+    {
+      if (name) g_free (name);
+      return -1;
+    }
+    xfer += ret;
+    if (name) g_free (name);
+    name = NULL;
+
+    /* break if we get a STOP field */
+    if (ftype == T_STOP)
+    {
+      break;
+    }
+
+    switch (fid)
+    {
+      case 1:
+        if (ftype == T_I64)
+        {
+          if ((ret = thrift_protocol_read_i64 (protocol, &this_object->cid, error)) < 0)
+            return -1;
+          xfer += ret;
+          this_object->__isset_cid = TRUE;
+        } else {
+          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+            return -1;
+          xfer += ret;
+        }
+        break;
+      case 2:
+        if (ftype == T_LIST)
+        {
+          {
+            guint32 size;
+            guint32 i;
+            ThriftType element_type;
+
+            if ((ret = thrift_protocol_read_list_begin (protocol, &element_type,&size, error)) < 0)
+              return -1;
+            xfer += ret;
+
+            /* iterate through list elements */
+            for (i = 0; i < size; i++)
+            {
+              swcdb_thriftSpecIntervalSerial * _elem58 = NULL;
+              if ( _elem58 != NULL)
+              {
+                g_object_unref (_elem58);
+              }
+              _elem58 = g_object_new (SWCDB_THRIFT_TYPE_SPEC_INTERVAL_SERIAL, NULL);
+              if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem58), protocol, error)) < 0)
+              {
+                g_object_unref (_elem58);
+                return -1;
+              }
+              xfer += ret;
+              g_ptr_array_add (this_object->intervals, _elem58);
+            }
+            if ((ret = thrift_protocol_read_list_end (protocol, error)) < 0)
+              return -1;
+            xfer += ret;
+          }
+          this_object->__isset_intervals = TRUE;
+        } else {
+          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+            return -1;
+          xfer += ret;
+        }
+        break;
+      default:
+        if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+          return -1;
+        xfer += ret;
+        break;
+    }
+    if ((ret = thrift_protocol_read_field_end (protocol, error)) < 0)
+      return -1;
+    xfer += ret;
+  }
+
+  if ((ret = thrift_protocol_read_struct_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+
+  return xfer;
+}
+
+static gint32
+swcdb_thrift_spec_column_serial_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+{
+  gint32 ret;
+  gint32 xfer = 0;
+
+  swcdb_thriftSpecColumnSerial * this_object = SWCDB_THRIFT_SPEC_COLUMN_SERIAL(object);
+  THRIFT_UNUSED_VAR (this_object);
+  if ((ret = thrift_protocol_write_struct_begin (protocol, "SpecColumnSerial", error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_begin (protocol, "cid", T_I64, 1, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_i64 (protocol, this_object->cid, error)) < 0)
+    return -1;
+  xfer += ret;
+
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_begin (protocol, "intervals", T_LIST, 2, error)) < 0)
+    return -1;
+  xfer += ret;
+  {
+    guint i59;
+
+    if ((ret = thrift_protocol_write_list_begin (protocol, T_STRUCT, (gint32) (this_object->intervals ? this_object->intervals->len : 0), error)) < 0)
+      return -1;
+    xfer += ret;
+    for (i59 = 0; i59 < (this_object->intervals ? this_object->intervals->len : 0); i59++)
+    {
+      if ((ret = thrift_struct_write (THRIFT_STRUCT ((g_ptr_array_index ((GPtrArray *) this_object->intervals, i59))), protocol, error)) < 0)
+        return -1;
+      xfer += ret;
+
+    }
+    if ((ret = thrift_protocol_write_list_end (protocol, error)) < 0)
+      return -1;
+    xfer += ret;
+  }
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_stop (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_struct_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+
+  return xfer;
+}
+
+static void
+swcdb_thrift_spec_column_serial_set_property (GObject *object,
+                                              guint property_id,
+                                              const GValue *value,
+                                              GParamSpec *pspec)
+{
+  swcdb_thriftSpecColumnSerial *self = SWCDB_THRIFT_SPEC_COLUMN_SERIAL (object);
+
+  switch (property_id)
+  {
+    case PROP_SWCDB_THRIFT_SPEC_COLUMN_SERIAL_CID:
+      self->cid = g_value_get_int64 (value);
+      self->__isset_cid = TRUE;
+      break;
+
+    case PROP_SWCDB_THRIFT_SPEC_COLUMN_SERIAL_INTERVALS:
+      if (self->intervals != NULL)
+        g_ptr_array_unref (self->intervals);
+      self->intervals = g_value_dup_boxed (value);
+      self->__isset_intervals = TRUE;
+      break;
+
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+      break;
+  }
+}
+
+static void
+swcdb_thrift_spec_column_serial_get_property (GObject *object,
+                                              guint property_id,
+                                              GValue *value,
+                                              GParamSpec *pspec)
+{
+  swcdb_thriftSpecColumnSerial *self = SWCDB_THRIFT_SPEC_COLUMN_SERIAL (object);
+
+  switch (property_id)
+  {
+    case PROP_SWCDB_THRIFT_SPEC_COLUMN_SERIAL_CID:
+      g_value_set_int64 (value, self->cid);
+      break;
+
+    case PROP_SWCDB_THRIFT_SPEC_COLUMN_SERIAL_INTERVALS:
+      g_value_set_boxed (value, self->intervals);
+      break;
+
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+      break;
+  }
+}
+
+static void 
+swcdb_thrift_spec_column_serial_instance_init (swcdb_thriftSpecColumnSerial * object)
+{
+  /* satisfy -Wall */
+  THRIFT_UNUSED_VAR (object);
+  object->cid = 0;
+  object->__isset_cid = FALSE;
+  object->intervals = g_ptr_array_new_with_free_func (g_object_unref);
+  object->__isset_intervals = FALSE;
+}
+
+static void 
+swcdb_thrift_spec_column_serial_finalize (GObject *object)
+{
+  swcdb_thriftSpecColumnSerial *tobject = SWCDB_THRIFT_SPEC_COLUMN_SERIAL (object);
+
+  /* satisfy -Wall in case we don't use tobject */
+  THRIFT_UNUSED_VAR (tobject);
+  if (tobject->intervals != NULL)
+  {
+    g_ptr_array_unref (tobject->intervals);
+    tobject->intervals = NULL;
+  }
+}
+
+static void
+swcdb_thrift_spec_column_serial_class_init (swcdb_thriftSpecColumnSerialClass * cls)
+{
+  GObjectClass *gobject_class = G_OBJECT_CLASS (cls);
+  ThriftStructClass *struct_class = THRIFT_STRUCT_CLASS (cls);
+
+  struct_class->read = swcdb_thrift_spec_column_serial_read;
+  struct_class->write = swcdb_thrift_spec_column_serial_write;
+
+  gobject_class->finalize = swcdb_thrift_spec_column_serial_finalize;
+  gobject_class->get_property = swcdb_thrift_spec_column_serial_get_property;
+  gobject_class->set_property = swcdb_thrift_spec_column_serial_set_property;
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_SWCDB_THRIFT_SPEC_COLUMN_SERIAL_CID,
+     g_param_spec_int64 ("cid",
+                         NULL,
+                         NULL,
+                         G_MININT64,
+                         G_MAXINT64,
+                         0,
+                         G_PARAM_READWRITE));
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_SWCDB_THRIFT_SPEC_COLUMN_SERIAL_INTERVALS,
+     g_param_spec_boxed ("intervals",
+                         NULL,
+                         NULL,
+                         G_TYPE_PTR_ARRAY,
+                         G_PARAM_READWRITE));
+}
+
+GType
+swcdb_thrift_spec_column_serial_get_type (void)
+{
+  static GType type = 0;
+
+  if (type == 0) 
+  {
+    static const GTypeInfo type_info = 
+    {
+      sizeof (swcdb_thriftSpecColumnSerialClass),
+      NULL, /* base_init */
+      NULL, /* base_finalize */
+      (GClassInitFunc) swcdb_thrift_spec_column_serial_class_init,
+      NULL, /* class_finalize */
+      NULL, /* class_data */
+      sizeof (swcdb_thriftSpecColumnSerial),
+      0, /* n_preallocs */
+      (GInstanceInitFunc) swcdb_thrift_spec_column_serial_instance_init,
+      NULL, /* value_table */
+    };
+
+    type = g_type_register_static (THRIFT_TYPE_STRUCT, 
+                                   "swcdb_thriftSpecColumnSerialType",
+                                   &type_info, 0);
+  }
+
+  return type;
+}
+
 enum _swcdb_thriftSpecScanProperties
 {
   PROP_SWCDB_THRIFT_SPEC_SCAN_0,
   PROP_SWCDB_THRIFT_SPEC_SCAN_COLUMNS,
+  PROP_SWCDB_THRIFT_SPEC_SCAN_COLUMNS_SERIAL,
   PROP_SWCDB_THRIFT_SPEC_SCAN_FLAGS
 };
 
@@ -5198,19 +9130,19 @@ swcdb_thrift_spec_scan_read (ThriftStruct *object, ThriftProtocol *protocol, GEr
             /* iterate through list elements */
             for (i = 0; i < size; i++)
             {
-              swcdb_thriftSpecColumn * _elem31 = NULL;
-              if ( _elem31 != NULL)
+              swcdb_thriftSpecColumn * _elem60 = NULL;
+              if ( _elem60 != NULL)
               {
-                g_object_unref (_elem31);
+                g_object_unref (_elem60);
               }
-              _elem31 = g_object_new (SWCDB_THRIFT_TYPE_SPEC_COLUMN, NULL);
-              if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem31), protocol, error)) < 0)
+              _elem60 = g_object_new (SWCDB_THRIFT_TYPE_SPEC_COLUMN, NULL);
+              if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem60), protocol, error)) < 0)
               {
-                g_object_unref (_elem31);
+                g_object_unref (_elem60);
                 return -1;
               }
               xfer += ret;
-              g_ptr_array_add (this_object->columns, _elem31);
+              g_ptr_array_add (this_object->columns, _elem60);
             }
             if ((ret = thrift_protocol_read_list_end (protocol, error)) < 0)
               return -1;
@@ -5224,6 +9156,46 @@ swcdb_thrift_spec_scan_read (ThriftStruct *object, ThriftProtocol *protocol, GEr
         }
         break;
       case 2:
+        if (ftype == T_LIST)
+        {
+          {
+            guint32 size;
+            guint32 i;
+            ThriftType element_type;
+
+            if ((ret = thrift_protocol_read_list_begin (protocol, &element_type,&size, error)) < 0)
+              return -1;
+            xfer += ret;
+
+            /* iterate through list elements */
+            for (i = 0; i < size; i++)
+            {
+              swcdb_thriftSpecColumnSerial * _elem61 = NULL;
+              if ( _elem61 != NULL)
+              {
+                g_object_unref (_elem61);
+              }
+              _elem61 = g_object_new (SWCDB_THRIFT_TYPE_SPEC_COLUMN_SERIAL, NULL);
+              if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem61), protocol, error)) < 0)
+              {
+                g_object_unref (_elem61);
+                return -1;
+              }
+              xfer += ret;
+              g_ptr_array_add (this_object->columns_serial, _elem61);
+            }
+            if ((ret = thrift_protocol_read_list_end (protocol, error)) < 0)
+              return -1;
+            xfer += ret;
+          }
+          this_object->__isset_columns_serial = TRUE;
+        } else {
+          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+            return -1;
+          xfer += ret;
+        }
+        break;
+      case 3:
         if (ftype == T_STRUCT)
         {
           if ((ret = thrift_struct_read (THRIFT_STRUCT (this_object->flags), protocol, error)) < 0)
@@ -5271,14 +9243,37 @@ swcdb_thrift_spec_scan_write (ThriftStruct *object, ThriftProtocol *protocol, GE
     return -1;
   xfer += ret;
   {
-    guint i32;
+    guint i62;
 
     if ((ret = thrift_protocol_write_list_begin (protocol, T_STRUCT, (gint32) (this_object->columns ? this_object->columns->len : 0), error)) < 0)
       return -1;
     xfer += ret;
-    for (i32 = 0; i32 < (this_object->columns ? this_object->columns->len : 0); i32++)
+    for (i62 = 0; i62 < (this_object->columns ? this_object->columns->len : 0); i62++)
     {
-      if ((ret = thrift_struct_write (THRIFT_STRUCT ((g_ptr_array_index ((GPtrArray *) this_object->columns, i32))), protocol, error)) < 0)
+      if ((ret = thrift_struct_write (THRIFT_STRUCT ((g_ptr_array_index ((GPtrArray *) this_object->columns, i62))), protocol, error)) < 0)
+        return -1;
+      xfer += ret;
+
+    }
+    if ((ret = thrift_protocol_write_list_end (protocol, error)) < 0)
+      return -1;
+    xfer += ret;
+  }
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_begin (protocol, "columns_serial", T_LIST, 2, error)) < 0)
+    return -1;
+  xfer += ret;
+  {
+    guint i63;
+
+    if ((ret = thrift_protocol_write_list_begin (protocol, T_STRUCT, (gint32) (this_object->columns_serial ? this_object->columns_serial->len : 0), error)) < 0)
+      return -1;
+    xfer += ret;
+    for (i63 = 0; i63 < (this_object->columns_serial ? this_object->columns_serial->len : 0); i63++)
+    {
+      if ((ret = thrift_struct_write (THRIFT_STRUCT ((g_ptr_array_index ((GPtrArray *) this_object->columns_serial, i63))), protocol, error)) < 0)
         return -1;
       xfer += ret;
 
@@ -5291,7 +9286,7 @@ swcdb_thrift_spec_scan_write (ThriftStruct *object, ThriftProtocol *protocol, GE
     return -1;
   xfer += ret;
   if (this_object->__isset_flags == TRUE) {
-    if ((ret = thrift_protocol_write_field_begin (protocol, "flags", T_STRUCT, 2, error)) < 0)
+    if ((ret = thrift_protocol_write_field_begin (protocol, "flags", T_STRUCT, 3, error)) < 0)
       return -1;
     xfer += ret;
     if ((ret = thrift_struct_write (THRIFT_STRUCT (this_object->flags), protocol, error)) < 0)
@@ -5329,6 +9324,13 @@ swcdb_thrift_spec_scan_set_property (GObject *object,
       self->__isset_columns = TRUE;
       break;
 
+    case PROP_SWCDB_THRIFT_SPEC_SCAN_COLUMNS_SERIAL:
+      if (self->columns_serial != NULL)
+        g_ptr_array_unref (self->columns_serial);
+      self->columns_serial = g_value_dup_boxed (value);
+      self->__isset_columns_serial = TRUE;
+      break;
+
     case PROP_SWCDB_THRIFT_SPEC_SCAN_FLAGS:
       if (self->flags != NULL)
         g_object_unref (self->flags);
@@ -5356,6 +9358,10 @@ swcdb_thrift_spec_scan_get_property (GObject *object,
       g_value_set_boxed (value, self->columns);
       break;
 
+    case PROP_SWCDB_THRIFT_SPEC_SCAN_COLUMNS_SERIAL:
+      g_value_set_boxed (value, self->columns_serial);
+      break;
+
     case PROP_SWCDB_THRIFT_SPEC_SCAN_FLAGS:
       g_value_set_object (value, self->flags);
       break;
@@ -5373,6 +9379,8 @@ swcdb_thrift_spec_scan_instance_init (swcdb_thriftSpecScan * object)
   THRIFT_UNUSED_VAR (object);
   object->columns = g_ptr_array_new_with_free_func (g_object_unref);
   object->__isset_columns = FALSE;
+  object->columns_serial = g_ptr_array_new_with_free_func (g_object_unref);
+  object->__isset_columns_serial = FALSE;
   object->flags = g_object_new (SWCDB_THRIFT_TYPE_SPEC_FLAGS, NULL);
   object->__isset_flags = FALSE;
 }
@@ -5388,6 +9396,11 @@ swcdb_thrift_spec_scan_finalize (GObject *object)
   {
     g_ptr_array_unref (tobject->columns);
     tobject->columns = NULL;
+  }
+  if (tobject->columns_serial != NULL)
+  {
+    g_ptr_array_unref (tobject->columns_serial);
+    tobject->columns_serial = NULL;
   }
   if (tobject->flags != NULL)
   {
@@ -5413,6 +9426,15 @@ swcdb_thrift_spec_scan_class_init (swcdb_thriftSpecScanClass * cls)
     (gobject_class,
      PROP_SWCDB_THRIFT_SPEC_SCAN_COLUMNS,
      g_param_spec_boxed ("columns",
+                         NULL,
+                         NULL,
+                         G_TYPE_PTR_ARRAY,
+                         G_PARAM_READWRITE));
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_SWCDB_THRIFT_SPEC_SCAN_COLUMNS_SERIAL,
+     g_param_spec_boxed ("columns_serial",
                          NULL,
                          NULL,
                          G_TYPE_PTR_ARRAY,
@@ -5464,7 +9486,8 @@ enum _swcdb_thriftUCellProperties
   PROP_SWCDB_THRIFT_U_CELL_K,
   PROP_SWCDB_THRIFT_U_CELL_TS,
   PROP_SWCDB_THRIFT_U_CELL_TS_DESC,
-  PROP_SWCDB_THRIFT_U_CELL_V
+  PROP_SWCDB_THRIFT_U_CELL_V,
+  PROP_SWCDB_THRIFT_U_CELL_ENCODER
 };
 
 /* reads a u_cell object */
@@ -5519,11 +9542,11 @@ swcdb_thrift_u_cell_read (ThriftStruct *object, ThriftProtocol *protocol, GError
       case 1:
         if (ftype == T_I32)
         {
-          gint32 ecast33;
-          if ((ret = thrift_protocol_read_i32 (protocol, &ecast33, error)) < 0)
+          gint32 ecast64;
+          if ((ret = thrift_protocol_read_i32 (protocol, &ecast64, error)) < 0)
             return -1;
           xfer += ret;
-          this_object->f = (swcdb_thriftFlag)ecast33;
+          this_object->f = (swcdb_thriftFlag)ecast64;
           this_object->__isset_f = TRUE;
         } else {
           if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
@@ -5546,20 +9569,20 @@ swcdb_thrift_u_cell_read (ThriftStruct *object, ThriftProtocol *protocol, GError
             /* iterate through list elements */
             for (i = 0; i < size; i++)
             {
-              GByteArray * _elem34 = NULL;
-              if (_elem34 != NULL)
+              GByteArray * _elem65 = NULL;
+              if (_elem65 != NULL)
               {
-                g_free(_elem34);
-                _elem34 = NULL;
+                g_free(_elem65);
+                _elem65 = NULL;
               }
 
               if ((ret = thrift_protocol_read_binary (protocol, &data, &len, error)) < 0)
                 return -1;
               xfer += ret;
-              _elem34 = g_byte_array_new();
-              g_byte_array_append (_elem34, (guint8 *) data, (guint) len);
+              _elem65 = g_byte_array_new();
+              g_byte_array_append (_elem65, (guint8 *) data, (guint) len);
               g_free (data);
-              g_ptr_array_add (this_object->k, _elem34);
+              g_ptr_array_add (this_object->k, _elem65);
             }
             if ((ret = thrift_protocol_read_list_end (protocol, error)) < 0)
               return -1;
@@ -5620,6 +9643,21 @@ swcdb_thrift_u_cell_read (ThriftStruct *object, ThriftProtocol *protocol, GError
           xfer += ret;
         }
         break;
+      case 6:
+        if (ftype == T_I32)
+        {
+          gint32 ecast66;
+          if ((ret = thrift_protocol_read_i32 (protocol, &ecast66, error)) < 0)
+            return -1;
+          xfer += ret;
+          this_object->encoder = (swcdb_thriftEncodingType)ecast66;
+          this_object->__isset_encoder = TRUE;
+        } else {
+          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+            return -1;
+          xfer += ret;
+        }
+        break;
       default:
         if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
           return -1;
@@ -5663,14 +9701,14 @@ swcdb_thrift_u_cell_write (ThriftStruct *object, ThriftProtocol *protocol, GErro
     return -1;
   xfer += ret;
   {
-    guint i35;
+    guint i67;
 
     if ((ret = thrift_protocol_write_list_begin (protocol, T_STRING, (gint32) (this_object->k ? this_object->k->len : 0), error)) < 0)
       return -1;
     xfer += ret;
-    for (i35 = 0; i35 < (this_object->k ? this_object->k->len : 0); i35++)
+    for (i67 = 0; i67 < (this_object->k ? this_object->k->len : 0); i67++)
     {
-      if ((ret = thrift_protocol_write_binary (protocol, ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->k, i35)) ? ((GByteArray *) ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->k, i35)))->data : NULL, ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->k, i35)) ? ((GByteArray *) ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->k, i35)))->len : 0, error)) < 0)
+      if ((ret = thrift_protocol_write_binary (protocol, ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->k, i67)) ? ((GByteArray *) ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->k, i67)))->data : NULL, ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->k, i67)) ? ((GByteArray *) ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->k, i67)))->len : 0, error)) < 0)
         return -1;
       xfer += ret;
 
@@ -5706,11 +9744,21 @@ swcdb_thrift_u_cell_write (ThriftStruct *object, ThriftProtocol *protocol, GErro
       return -1;
     xfer += ret;
   }
-  if (this_object->__isset_v == TRUE) {
-    if ((ret = thrift_protocol_write_field_begin (protocol, "v", T_STRING, 5, error)) < 0)
+  if ((ret = thrift_protocol_write_field_begin (protocol, "v", T_STRING, 5, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_binary (protocol, this_object->v ? ((GByteArray *) this_object->v)->data : NULL, this_object->v ? ((GByteArray *) this_object->v)->len : 0, error)) < 0)
+    return -1;
+  xfer += ret;
+
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if (this_object->__isset_encoder == TRUE) {
+    if ((ret = thrift_protocol_write_field_begin (protocol, "encoder", T_I32, 6, error)) < 0)
       return -1;
     xfer += ret;
-    if ((ret = thrift_protocol_write_binary (protocol, this_object->v ? ((GByteArray *) this_object->v)->data : NULL, this_object->v ? ((GByteArray *) this_object->v)->len : 0, error)) < 0)
+    if ((ret = thrift_protocol_write_i32 (protocol, (gint32) this_object->encoder, error)) < 0)
       return -1;
     xfer += ret;
 
@@ -5767,6 +9815,11 @@ swcdb_thrift_u_cell_set_property (GObject *object,
       self->__isset_v = TRUE;
       break;
 
+    case PROP_SWCDB_THRIFT_U_CELL_ENCODER:
+      self->encoder = g_value_get_int (value);
+      self->__isset_encoder = TRUE;
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
       break;
@@ -5803,6 +9856,10 @@ swcdb_thrift_u_cell_get_property (GObject *object,
       g_value_set_boxed (value, self->v);
       break;
 
+    case PROP_SWCDB_THRIFT_U_CELL_ENCODER:
+      g_value_set_int (value, self->encoder);
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
       break;
@@ -5823,6 +9880,7 @@ swcdb_thrift_u_cell_instance_init (swcdb_thriftUCell * object)
   object->__isset_ts_desc = FALSE;
   object->v = NULL;
   object->__isset_v = FALSE;
+  object->__isset_encoder = FALSE;
 }
 
 static void 
@@ -5905,6 +9963,17 @@ swcdb_thrift_u_cell_class_init (swcdb_thriftUCellClass * cls)
                          NULL,
                          G_TYPE_BYTE_ARRAY,
                          G_PARAM_READWRITE));
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_SWCDB_THRIFT_U_CELL_ENCODER,
+     g_param_spec_int ("encoder",
+                       NULL,
+                       NULL,
+                       0,
+                       255,
+                       0,
+                       G_PARAM_READWRITE));
 }
 
 GType
@@ -5930,6 +9999,1216 @@ swcdb_thrift_u_cell_get_type (void)
 
     type = g_type_register_static (THRIFT_TYPE_STRUCT, 
                                    "swcdb_thriftUCellType",
+                                   &type_info, 0);
+  }
+
+  return type;
+}
+
+enum _swcdb_thriftCellValueSerialProperties
+{
+  PROP_SWCDB_THRIFT_CELL_VALUE_SERIAL_0,
+  PROP_SWCDB_THRIFT_CELL_VALUE_SERIAL_FIELD_ID,
+  PROP_SWCDB_THRIFT_CELL_VALUE_SERIAL_V_INT64,
+  PROP_SWCDB_THRIFT_CELL_VALUE_SERIAL_V_DOUBLE,
+  PROP_SWCDB_THRIFT_CELL_VALUE_SERIAL_V_BYTES,
+  PROP_SWCDB_THRIFT_CELL_VALUE_SERIAL_V_KEY,
+  PROP_SWCDB_THRIFT_CELL_VALUE_SERIAL_V_LI,
+  PROP_SWCDB_THRIFT_CELL_VALUE_SERIAL_V_LB
+};
+
+/* reads a cell_value_serial object */
+static gint32
+swcdb_thrift_cell_value_serial_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+{
+  gint32 ret;
+  gint32 xfer = 0;
+  gchar *name = NULL;
+  ThriftType ftype;
+  gint16 fid;
+  guint32 len = 0;
+  gpointer data = NULL;
+  swcdb_thriftCellValueSerial * this_object = SWCDB_THRIFT_CELL_VALUE_SERIAL(object);
+
+  /* satisfy -Wall in case these aren't used */
+  THRIFT_UNUSED_VAR (len);
+  THRIFT_UNUSED_VAR (data);
+  THRIFT_UNUSED_VAR (this_object);
+
+  /* read the struct begin marker */
+  if ((ret = thrift_protocol_read_struct_begin (protocol, &name, error)) < 0)
+  {
+    if (name) g_free (name);
+    return -1;
+  }
+  xfer += ret;
+  if (name) g_free (name);
+  name = NULL;
+
+  /* read the struct fields */
+  while (1)
+  {
+    /* read the beginning of a field */
+    if ((ret = thrift_protocol_read_field_begin (protocol, &name, &ftype, &fid, error)) < 0)
+    {
+      if (name) g_free (name);
+      return -1;
+    }
+    xfer += ret;
+    if (name) g_free (name);
+    name = NULL;
+
+    /* break if we get a STOP field */
+    if (ftype == T_STOP)
+    {
+      break;
+    }
+
+    switch (fid)
+    {
+      case 1:
+        if (ftype == T_I32)
+        {
+          if ((ret = thrift_protocol_read_i32 (protocol, &this_object->field_id, error)) < 0)
+            return -1;
+          xfer += ret;
+          this_object->__isset_field_id = TRUE;
+        } else {
+          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+            return -1;
+          xfer += ret;
+        }
+        break;
+      case 2:
+        if (ftype == T_I64)
+        {
+          if ((ret = thrift_protocol_read_i64 (protocol, &this_object->v_int64, error)) < 0)
+            return -1;
+          xfer += ret;
+          this_object->__isset_v_int64 = TRUE;
+        } else {
+          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+            return -1;
+          xfer += ret;
+        }
+        break;
+      case 3:
+        if (ftype == T_DOUBLE)
+        {
+          if ((ret = thrift_protocol_read_double (protocol, &this_object->v_double, error)) < 0)
+            return -1;
+          xfer += ret;
+          this_object->__isset_v_double = TRUE;
+        } else {
+          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+            return -1;
+          xfer += ret;
+        }
+        break;
+      case 4:
+        if (ftype == T_STRING)
+        {
+          if (this_object->v_bytes != NULL)
+          {
+            g_free(this_object->v_bytes);
+            this_object->v_bytes = NULL;
+          }
+
+          if ((ret = thrift_protocol_read_binary (protocol, &data, &len, error)) < 0)
+            return -1;
+          xfer += ret;
+          this_object->v_bytes = g_byte_array_new();
+          g_byte_array_append (this_object->v_bytes, (guint8 *) data, (guint) len);
+          g_free (data);
+          this_object->__isset_v_bytes = TRUE;
+        } else {
+          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+            return -1;
+          xfer += ret;
+        }
+        break;
+      case 5:
+        if (ftype == T_LIST)
+        {
+          {
+            guint32 size;
+            guint32 i;
+            ThriftType element_type;
+
+            if ((ret = thrift_protocol_read_list_begin (protocol, &element_type,&size, error)) < 0)
+              return -1;
+            xfer += ret;
+
+            /* iterate through list elements */
+            for (i = 0; i < size; i++)
+            {
+              GByteArray * _elem68 = NULL;
+              if (_elem68 != NULL)
+              {
+                g_free(_elem68);
+                _elem68 = NULL;
+              }
+
+              if ((ret = thrift_protocol_read_binary (protocol, &data, &len, error)) < 0)
+                return -1;
+              xfer += ret;
+              _elem68 = g_byte_array_new();
+              g_byte_array_append (_elem68, (guint8 *) data, (guint) len);
+              g_free (data);
+              g_ptr_array_add (this_object->v_key, _elem68);
+            }
+            if ((ret = thrift_protocol_read_list_end (protocol, error)) < 0)
+              return -1;
+            xfer += ret;
+          }
+          this_object->__isset_v_key = TRUE;
+        } else {
+          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+            return -1;
+          xfer += ret;
+        }
+        break;
+      case 6:
+        if (ftype == T_LIST)
+        {
+          {
+            guint32 size;
+            guint32 i;
+            ThriftType element_type;
+
+            if ((ret = thrift_protocol_read_list_begin (protocol, &element_type,&size, error)) < 0)
+              return -1;
+            xfer += ret;
+
+            /* iterate through list elements */
+            for (i = 0; i < size; i++)
+            {
+              gint64* _elem69 = g_new (gint64, 1);
+              if ((ret = thrift_protocol_read_i64 (protocol, &*_elem69, error)) < 0)
+                return -1;
+              xfer += ret;
+              g_array_append_vals (this_object->v_li, _elem69, 1);
+            }
+            if ((ret = thrift_protocol_read_list_end (protocol, error)) < 0)
+              return -1;
+            xfer += ret;
+          }
+          this_object->__isset_v_li = TRUE;
+        } else {
+          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+            return -1;
+          xfer += ret;
+        }
+        break;
+      case 7:
+        if (ftype == T_LIST)
+        {
+          {
+            guint32 size;
+            guint32 i;
+            ThriftType element_type;
+
+            if ((ret = thrift_protocol_read_list_begin (protocol, &element_type,&size, error)) < 0)
+              return -1;
+            xfer += ret;
+
+            /* iterate through list elements */
+            for (i = 0; i < size; i++)
+            {
+              GByteArray * _elem70 = NULL;
+              if (_elem70 != NULL)
+              {
+                g_free(_elem70);
+                _elem70 = NULL;
+              }
+
+              if ((ret = thrift_protocol_read_binary (protocol, &data, &len, error)) < 0)
+                return -1;
+              xfer += ret;
+              _elem70 = g_byte_array_new();
+              g_byte_array_append (_elem70, (guint8 *) data, (guint) len);
+              g_free (data);
+              g_ptr_array_add (this_object->v_lb, _elem70);
+            }
+            if ((ret = thrift_protocol_read_list_end (protocol, error)) < 0)
+              return -1;
+            xfer += ret;
+          }
+          this_object->__isset_v_lb = TRUE;
+        } else {
+          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+            return -1;
+          xfer += ret;
+        }
+        break;
+      default:
+        if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+          return -1;
+        xfer += ret;
+        break;
+    }
+    if ((ret = thrift_protocol_read_field_end (protocol, error)) < 0)
+      return -1;
+    xfer += ret;
+  }
+
+  if ((ret = thrift_protocol_read_struct_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+
+  return xfer;
+}
+
+static gint32
+swcdb_thrift_cell_value_serial_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+{
+  gint32 ret;
+  gint32 xfer = 0;
+
+  swcdb_thriftCellValueSerial * this_object = SWCDB_THRIFT_CELL_VALUE_SERIAL(object);
+  THRIFT_UNUSED_VAR (this_object);
+  if ((ret = thrift_protocol_write_struct_begin (protocol, "CellValueSerial", error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_begin (protocol, "field_id", T_I32, 1, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_i32 (protocol, this_object->field_id, error)) < 0)
+    return -1;
+  xfer += ret;
+
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if (this_object->__isset_v_int64 == TRUE) {
+    if ((ret = thrift_protocol_write_field_begin (protocol, "v_int64", T_I64, 2, error)) < 0)
+      return -1;
+    xfer += ret;
+    if ((ret = thrift_protocol_write_i64 (protocol, this_object->v_int64, error)) < 0)
+      return -1;
+    xfer += ret;
+
+    if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+      return -1;
+    xfer += ret;
+  }
+  if (this_object->__isset_v_double == TRUE) {
+    if ((ret = thrift_protocol_write_field_begin (protocol, "v_double", T_DOUBLE, 3, error)) < 0)
+      return -1;
+    xfer += ret;
+    if ((ret = thrift_protocol_write_double (protocol, this_object->v_double, error)) < 0)
+      return -1;
+    xfer += ret;
+
+    if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+      return -1;
+    xfer += ret;
+  }
+  if ((ret = thrift_protocol_write_field_begin (protocol, "v_bytes", T_STRING, 4, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_binary (protocol, this_object->v_bytes ? ((GByteArray *) this_object->v_bytes)->data : NULL, this_object->v_bytes ? ((GByteArray *) this_object->v_bytes)->len : 0, error)) < 0)
+    return -1;
+  xfer += ret;
+
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_begin (protocol, "v_key", T_LIST, 5, error)) < 0)
+    return -1;
+  xfer += ret;
+  {
+    guint i71;
+
+    if ((ret = thrift_protocol_write_list_begin (protocol, T_STRING, (gint32) (this_object->v_key ? this_object->v_key->len : 0), error)) < 0)
+      return -1;
+    xfer += ret;
+    for (i71 = 0; i71 < (this_object->v_key ? this_object->v_key->len : 0); i71++)
+    {
+      if ((ret = thrift_protocol_write_binary (protocol, ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->v_key, i71)) ? ((GByteArray *) ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->v_key, i71)))->data : NULL, ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->v_key, i71)) ? ((GByteArray *) ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->v_key, i71)))->len : 0, error)) < 0)
+        return -1;
+      xfer += ret;
+
+    }
+    if ((ret = thrift_protocol_write_list_end (protocol, error)) < 0)
+      return -1;
+    xfer += ret;
+  }
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_begin (protocol, "v_li", T_LIST, 6, error)) < 0)
+    return -1;
+  xfer += ret;
+  {
+    guint i72;
+
+    if ((ret = thrift_protocol_write_list_begin (protocol, T_I64, (gint32) (this_object->v_li ? this_object->v_li->len : 0), error)) < 0)
+      return -1;
+    xfer += ret;
+    for (i72 = 0; i72 < (this_object->v_li ? this_object->v_li->len : 0); i72++)
+    {
+      if ((ret = thrift_protocol_write_i64 (protocol, (g_array_index (this_object->v_li, gint64, i72)), error)) < 0)
+        return -1;
+      xfer += ret;
+
+    }
+    if ((ret = thrift_protocol_write_list_end (protocol, error)) < 0)
+      return -1;
+    xfer += ret;
+  }
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_begin (protocol, "v_lb", T_LIST, 7, error)) < 0)
+    return -1;
+  xfer += ret;
+  {
+    guint i73;
+
+    if ((ret = thrift_protocol_write_list_begin (protocol, T_STRING, (gint32) (this_object->v_lb ? this_object->v_lb->len : 0), error)) < 0)
+      return -1;
+    xfer += ret;
+    for (i73 = 0; i73 < (this_object->v_lb ? this_object->v_lb->len : 0); i73++)
+    {
+      if ((ret = thrift_protocol_write_binary (protocol, ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->v_lb, i73)) ? ((GByteArray *) ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->v_lb, i73)))->data : NULL, ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->v_lb, i73)) ? ((GByteArray *) ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->v_lb, i73)))->len : 0, error)) < 0)
+        return -1;
+      xfer += ret;
+
+    }
+    if ((ret = thrift_protocol_write_list_end (protocol, error)) < 0)
+      return -1;
+    xfer += ret;
+  }
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_stop (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_struct_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+
+  return xfer;
+}
+
+static void
+swcdb_thrift_cell_value_serial_set_property (GObject *object,
+                                             guint property_id,
+                                             const GValue *value,
+                                             GParamSpec *pspec)
+{
+  swcdb_thriftCellValueSerial *self = SWCDB_THRIFT_CELL_VALUE_SERIAL (object);
+
+  switch (property_id)
+  {
+    case PROP_SWCDB_THRIFT_CELL_VALUE_SERIAL_FIELD_ID:
+      self->field_id = g_value_get_int (value);
+      self->__isset_field_id = TRUE;
+      break;
+
+    case PROP_SWCDB_THRIFT_CELL_VALUE_SERIAL_V_INT64:
+      self->v_int64 = g_value_get_int64 (value);
+      self->__isset_v_int64 = TRUE;
+      break;
+
+    case PROP_SWCDB_THRIFT_CELL_VALUE_SERIAL_V_DOUBLE:
+      self->v_double = g_value_get_double (value);
+      self->__isset_v_double = TRUE;
+      break;
+
+    case PROP_SWCDB_THRIFT_CELL_VALUE_SERIAL_V_BYTES:
+      if (self->v_bytes != NULL)
+        g_byte_array_unref (self->v_bytes);
+      self->v_bytes = g_value_dup_boxed (value);
+      self->__isset_v_bytes = TRUE;
+      break;
+
+    case PROP_SWCDB_THRIFT_CELL_VALUE_SERIAL_V_KEY:
+      if (self->v_key != NULL)
+        g_ptr_array_unref (self->v_key);
+      self->v_key = g_value_dup_boxed (value);
+      self->__isset_v_key = TRUE;
+      break;
+
+    case PROP_SWCDB_THRIFT_CELL_VALUE_SERIAL_V_LI:
+      if (self->v_li != NULL)
+        g_array_unref (self->v_li);
+      self->v_li = g_value_dup_boxed (value);
+      self->__isset_v_li = TRUE;
+      break;
+
+    case PROP_SWCDB_THRIFT_CELL_VALUE_SERIAL_V_LB:
+      if (self->v_lb != NULL)
+        g_ptr_array_unref (self->v_lb);
+      self->v_lb = g_value_dup_boxed (value);
+      self->__isset_v_lb = TRUE;
+      break;
+
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+      break;
+  }
+}
+
+static void
+swcdb_thrift_cell_value_serial_get_property (GObject *object,
+                                             guint property_id,
+                                             GValue *value,
+                                             GParamSpec *pspec)
+{
+  swcdb_thriftCellValueSerial *self = SWCDB_THRIFT_CELL_VALUE_SERIAL (object);
+
+  switch (property_id)
+  {
+    case PROP_SWCDB_THRIFT_CELL_VALUE_SERIAL_FIELD_ID:
+      g_value_set_int (value, self->field_id);
+      break;
+
+    case PROP_SWCDB_THRIFT_CELL_VALUE_SERIAL_V_INT64:
+      g_value_set_int64 (value, self->v_int64);
+      break;
+
+    case PROP_SWCDB_THRIFT_CELL_VALUE_SERIAL_V_DOUBLE:
+      g_value_set_double (value, self->v_double);
+      break;
+
+    case PROP_SWCDB_THRIFT_CELL_VALUE_SERIAL_V_BYTES:
+      g_value_set_boxed (value, self->v_bytes);
+      break;
+
+    case PROP_SWCDB_THRIFT_CELL_VALUE_SERIAL_V_KEY:
+      g_value_set_boxed (value, self->v_key);
+      break;
+
+    case PROP_SWCDB_THRIFT_CELL_VALUE_SERIAL_V_LI:
+      g_value_set_boxed (value, self->v_li);
+      break;
+
+    case PROP_SWCDB_THRIFT_CELL_VALUE_SERIAL_V_LB:
+      g_value_set_boxed (value, self->v_lb);
+      break;
+
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+      break;
+  }
+}
+
+static void 
+swcdb_thrift_cell_value_serial_instance_init (swcdb_thriftCellValueSerial * object)
+{
+  /* satisfy -Wall */
+  THRIFT_UNUSED_VAR (object);
+  object->field_id = 0;
+  object->__isset_field_id = FALSE;
+  object->v_int64 = 0;
+  object->__isset_v_int64 = FALSE;
+  object->v_double = 0;
+  object->__isset_v_double = FALSE;
+  object->v_bytes = NULL;
+  object->__isset_v_bytes = FALSE;
+  object->v_key = g_ptr_array_new_with_free_func (thrift_string_free);
+  object->__isset_v_key = FALSE;
+  object->v_li = g_array_new (0, 1, sizeof (gint64));
+  object->__isset_v_li = FALSE;
+  object->v_lb = g_ptr_array_new_with_free_func (thrift_string_free);
+  object->__isset_v_lb = FALSE;
+}
+
+static void 
+swcdb_thrift_cell_value_serial_finalize (GObject *object)
+{
+  swcdb_thriftCellValueSerial *tobject = SWCDB_THRIFT_CELL_VALUE_SERIAL (object);
+
+  /* satisfy -Wall in case we don't use tobject */
+  THRIFT_UNUSED_VAR (tobject);
+  if (tobject->v_bytes != NULL)
+  {
+    thrift_string_free(tobject->v_bytes);
+    tobject->v_bytes = NULL;
+  }
+  if (tobject->v_key != NULL)
+  {
+    g_ptr_array_unref (tobject->v_key);
+    tobject->v_key = NULL;
+  }
+  if (tobject->v_li != NULL)
+  {
+    g_array_unref (tobject->v_li);
+    tobject->v_li = NULL;
+  }
+  if (tobject->v_lb != NULL)
+  {
+    g_ptr_array_unref (tobject->v_lb);
+    tobject->v_lb = NULL;
+  }
+}
+
+static void
+swcdb_thrift_cell_value_serial_class_init (swcdb_thriftCellValueSerialClass * cls)
+{
+  GObjectClass *gobject_class = G_OBJECT_CLASS (cls);
+  ThriftStructClass *struct_class = THRIFT_STRUCT_CLASS (cls);
+
+  struct_class->read = swcdb_thrift_cell_value_serial_read;
+  struct_class->write = swcdb_thrift_cell_value_serial_write;
+
+  gobject_class->finalize = swcdb_thrift_cell_value_serial_finalize;
+  gobject_class->get_property = swcdb_thrift_cell_value_serial_get_property;
+  gobject_class->set_property = swcdb_thrift_cell_value_serial_set_property;
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_SWCDB_THRIFT_CELL_VALUE_SERIAL_FIELD_ID,
+     g_param_spec_int ("field_id",
+                       NULL,
+                       NULL,
+                       G_MININT32,
+                       G_MAXINT32,
+                       0,
+                       G_PARAM_READWRITE));
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_SWCDB_THRIFT_CELL_VALUE_SERIAL_V_INT64,
+     g_param_spec_int64 ("v_int64",
+                         NULL,
+                         NULL,
+                         G_MININT64,
+                         G_MAXINT64,
+                         0,
+                         G_PARAM_READWRITE));
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_SWCDB_THRIFT_CELL_VALUE_SERIAL_V_DOUBLE,
+     g_param_spec_double ("v_double",
+                          NULL,
+                          NULL,
+                          -INFINITY,
+                          INFINITY,
+                          0,
+                          G_PARAM_READWRITE));
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_SWCDB_THRIFT_CELL_VALUE_SERIAL_V_BYTES,
+     g_param_spec_boxed ("v_bytes",
+                         NULL,
+                         NULL,
+                         G_TYPE_BYTE_ARRAY,
+                         G_PARAM_READWRITE));
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_SWCDB_THRIFT_CELL_VALUE_SERIAL_V_KEY,
+     g_param_spec_boxed ("v_key",
+                         NULL,
+                         NULL,
+                         G_TYPE_PTR_ARRAY,
+                         G_PARAM_READWRITE));
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_SWCDB_THRIFT_CELL_VALUE_SERIAL_V_LI,
+     g_param_spec_boxed ("v_li",
+                         NULL,
+                         NULL,
+                         G_TYPE_ARRAY,
+                         G_PARAM_READWRITE));
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_SWCDB_THRIFT_CELL_VALUE_SERIAL_V_LB,
+     g_param_spec_boxed ("v_lb",
+                         NULL,
+                         NULL,
+                         G_TYPE_PTR_ARRAY,
+                         G_PARAM_READWRITE));
+}
+
+GType
+swcdb_thrift_cell_value_serial_get_type (void)
+{
+  static GType type = 0;
+
+  if (type == 0) 
+  {
+    static const GTypeInfo type_info = 
+    {
+      sizeof (swcdb_thriftCellValueSerialClass),
+      NULL, /* base_init */
+      NULL, /* base_finalize */
+      (GClassInitFunc) swcdb_thrift_cell_value_serial_class_init,
+      NULL, /* class_finalize */
+      NULL, /* class_data */
+      sizeof (swcdb_thriftCellValueSerial),
+      0, /* n_preallocs */
+      (GInstanceInitFunc) swcdb_thrift_cell_value_serial_instance_init,
+      NULL, /* value_table */
+    };
+
+    type = g_type_register_static (THRIFT_TYPE_STRUCT, 
+                                   "swcdb_thriftCellValueSerialType",
+                                   &type_info, 0);
+  }
+
+  return type;
+}
+
+enum _swcdb_thriftUCellSerialProperties
+{
+  PROP_SWCDB_THRIFT_U_CELL_SERIAL_0,
+  PROP_SWCDB_THRIFT_U_CELL_SERIAL_F,
+  PROP_SWCDB_THRIFT_U_CELL_SERIAL_K,
+  PROP_SWCDB_THRIFT_U_CELL_SERIAL_TS,
+  PROP_SWCDB_THRIFT_U_CELL_SERIAL_TS_DESC,
+  PROP_SWCDB_THRIFT_U_CELL_SERIAL_V,
+  PROP_SWCDB_THRIFT_U_CELL_SERIAL_ENCODER
+};
+
+/* reads a u_cell_serial object */
+static gint32
+swcdb_thrift_u_cell_serial_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+{
+  gint32 ret;
+  gint32 xfer = 0;
+  gchar *name = NULL;
+  ThriftType ftype;
+  gint16 fid;
+  guint32 len = 0;
+  gpointer data = NULL;
+  swcdb_thriftUCellSerial * this_object = SWCDB_THRIFT_U_CELL_SERIAL(object);
+
+  /* satisfy -Wall in case these aren't used */
+  THRIFT_UNUSED_VAR (len);
+  THRIFT_UNUSED_VAR (data);
+  THRIFT_UNUSED_VAR (this_object);
+
+  /* read the struct begin marker */
+  if ((ret = thrift_protocol_read_struct_begin (protocol, &name, error)) < 0)
+  {
+    if (name) g_free (name);
+    return -1;
+  }
+  xfer += ret;
+  if (name) g_free (name);
+  name = NULL;
+
+  /* read the struct fields */
+  while (1)
+  {
+    /* read the beginning of a field */
+    if ((ret = thrift_protocol_read_field_begin (protocol, &name, &ftype, &fid, error)) < 0)
+    {
+      if (name) g_free (name);
+      return -1;
+    }
+    xfer += ret;
+    if (name) g_free (name);
+    name = NULL;
+
+    /* break if we get a STOP field */
+    if (ftype == T_STOP)
+    {
+      break;
+    }
+
+    switch (fid)
+    {
+      case 1:
+        if (ftype == T_I32)
+        {
+          gint32 ecast74;
+          if ((ret = thrift_protocol_read_i32 (protocol, &ecast74, error)) < 0)
+            return -1;
+          xfer += ret;
+          this_object->f = (swcdb_thriftFlag)ecast74;
+          this_object->__isset_f = TRUE;
+        } else {
+          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+            return -1;
+          xfer += ret;
+        }
+        break;
+      case 2:
+        if (ftype == T_LIST)
+        {
+          {
+            guint32 size;
+            guint32 i;
+            ThriftType element_type;
+
+            if ((ret = thrift_protocol_read_list_begin (protocol, &element_type,&size, error)) < 0)
+              return -1;
+            xfer += ret;
+
+            /* iterate through list elements */
+            for (i = 0; i < size; i++)
+            {
+              GByteArray * _elem75 = NULL;
+              if (_elem75 != NULL)
+              {
+                g_free(_elem75);
+                _elem75 = NULL;
+              }
+
+              if ((ret = thrift_protocol_read_binary (protocol, &data, &len, error)) < 0)
+                return -1;
+              xfer += ret;
+              _elem75 = g_byte_array_new();
+              g_byte_array_append (_elem75, (guint8 *) data, (guint) len);
+              g_free (data);
+              g_ptr_array_add (this_object->k, _elem75);
+            }
+            if ((ret = thrift_protocol_read_list_end (protocol, error)) < 0)
+              return -1;
+            xfer += ret;
+          }
+          this_object->__isset_k = TRUE;
+        } else {
+          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+            return -1;
+          xfer += ret;
+        }
+        break;
+      case 3:
+        if (ftype == T_I64)
+        {
+          if ((ret = thrift_protocol_read_i64 (protocol, &this_object->ts, error)) < 0)
+            return -1;
+          xfer += ret;
+          this_object->__isset_ts = TRUE;
+        } else {
+          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+            return -1;
+          xfer += ret;
+        }
+        break;
+      case 4:
+        if (ftype == T_BOOL)
+        {
+          if ((ret = thrift_protocol_read_bool (protocol, &this_object->ts_desc, error)) < 0)
+            return -1;
+          xfer += ret;
+          this_object->__isset_ts_desc = TRUE;
+        } else {
+          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+            return -1;
+          xfer += ret;
+        }
+        break;
+      case 5:
+        if (ftype == T_LIST)
+        {
+          {
+            guint32 size;
+            guint32 i;
+            ThriftType element_type;
+
+            if ((ret = thrift_protocol_read_list_begin (protocol, &element_type,&size, error)) < 0)
+              return -1;
+            xfer += ret;
+
+            /* iterate through list elements */
+            for (i = 0; i < size; i++)
+            {
+              swcdb_thriftCellValueSerial * _elem76 = NULL;
+              if ( _elem76 != NULL)
+              {
+                g_object_unref (_elem76);
+              }
+              _elem76 = g_object_new (SWCDB_THRIFT_TYPE_CELL_VALUE_SERIAL, NULL);
+              if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem76), protocol, error)) < 0)
+              {
+                g_object_unref (_elem76);
+                return -1;
+              }
+              xfer += ret;
+              g_ptr_array_add (this_object->v, _elem76);
+            }
+            if ((ret = thrift_protocol_read_list_end (protocol, error)) < 0)
+              return -1;
+            xfer += ret;
+          }
+          this_object->__isset_v = TRUE;
+        } else {
+          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+            return -1;
+          xfer += ret;
+        }
+        break;
+      case 6:
+        if (ftype == T_I32)
+        {
+          gint32 ecast77;
+          if ((ret = thrift_protocol_read_i32 (protocol, &ecast77, error)) < 0)
+            return -1;
+          xfer += ret;
+          this_object->encoder = (swcdb_thriftEncodingType)ecast77;
+          this_object->__isset_encoder = TRUE;
+        } else {
+          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+            return -1;
+          xfer += ret;
+        }
+        break;
+      default:
+        if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+          return -1;
+        xfer += ret;
+        break;
+    }
+    if ((ret = thrift_protocol_read_field_end (protocol, error)) < 0)
+      return -1;
+    xfer += ret;
+  }
+
+  if ((ret = thrift_protocol_read_struct_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+
+  return xfer;
+}
+
+static gint32
+swcdb_thrift_u_cell_serial_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+{
+  gint32 ret;
+  gint32 xfer = 0;
+
+  swcdb_thriftUCellSerial * this_object = SWCDB_THRIFT_U_CELL_SERIAL(object);
+  THRIFT_UNUSED_VAR (this_object);
+  if ((ret = thrift_protocol_write_struct_begin (protocol, "UCellSerial", error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_begin (protocol, "f", T_I32, 1, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_i32 (protocol, (gint32) this_object->f, error)) < 0)
+    return -1;
+  xfer += ret;
+
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_begin (protocol, "k", T_LIST, 2, error)) < 0)
+    return -1;
+  xfer += ret;
+  {
+    guint i78;
+
+    if ((ret = thrift_protocol_write_list_begin (protocol, T_STRING, (gint32) (this_object->k ? this_object->k->len : 0), error)) < 0)
+      return -1;
+    xfer += ret;
+    for (i78 = 0; i78 < (this_object->k ? this_object->k->len : 0); i78++)
+    {
+      if ((ret = thrift_protocol_write_binary (protocol, ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->k, i78)) ? ((GByteArray *) ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->k, i78)))->data : NULL, ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->k, i78)) ? ((GByteArray *) ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->k, i78)))->len : 0, error)) < 0)
+        return -1;
+      xfer += ret;
+
+    }
+    if ((ret = thrift_protocol_write_list_end (protocol, error)) < 0)
+      return -1;
+    xfer += ret;
+  }
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if (this_object->__isset_ts == TRUE) {
+    if ((ret = thrift_protocol_write_field_begin (protocol, "ts", T_I64, 3, error)) < 0)
+      return -1;
+    xfer += ret;
+    if ((ret = thrift_protocol_write_i64 (protocol, this_object->ts, error)) < 0)
+      return -1;
+    xfer += ret;
+
+    if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+      return -1;
+    xfer += ret;
+  }
+  if (this_object->__isset_ts_desc == TRUE) {
+    if ((ret = thrift_protocol_write_field_begin (protocol, "ts_desc", T_BOOL, 4, error)) < 0)
+      return -1;
+    xfer += ret;
+    if ((ret = thrift_protocol_write_bool (protocol, this_object->ts_desc, error)) < 0)
+      return -1;
+    xfer += ret;
+
+    if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+      return -1;
+    xfer += ret;
+  }
+  if ((ret = thrift_protocol_write_field_begin (protocol, "v", T_LIST, 5, error)) < 0)
+    return -1;
+  xfer += ret;
+  {
+    guint i79;
+
+    if ((ret = thrift_protocol_write_list_begin (protocol, T_STRUCT, (gint32) (this_object->v ? this_object->v->len : 0), error)) < 0)
+      return -1;
+    xfer += ret;
+    for (i79 = 0; i79 < (this_object->v ? this_object->v->len : 0); i79++)
+    {
+      if ((ret = thrift_struct_write (THRIFT_STRUCT ((g_ptr_array_index ((GPtrArray *) this_object->v, i79))), protocol, error)) < 0)
+        return -1;
+      xfer += ret;
+
+    }
+    if ((ret = thrift_protocol_write_list_end (protocol, error)) < 0)
+      return -1;
+    xfer += ret;
+  }
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if (this_object->__isset_encoder == TRUE) {
+    if ((ret = thrift_protocol_write_field_begin (protocol, "encoder", T_I32, 6, error)) < 0)
+      return -1;
+    xfer += ret;
+    if ((ret = thrift_protocol_write_i32 (protocol, (gint32) this_object->encoder, error)) < 0)
+      return -1;
+    xfer += ret;
+
+    if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+      return -1;
+    xfer += ret;
+  }
+  if ((ret = thrift_protocol_write_field_stop (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_struct_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+
+  return xfer;
+}
+
+static void
+swcdb_thrift_u_cell_serial_set_property (GObject *object,
+                                         guint property_id,
+                                         const GValue *value,
+                                         GParamSpec *pspec)
+{
+  swcdb_thriftUCellSerial *self = SWCDB_THRIFT_U_CELL_SERIAL (object);
+
+  switch (property_id)
+  {
+    case PROP_SWCDB_THRIFT_U_CELL_SERIAL_F:
+      self->f = g_value_get_int (value);
+      self->__isset_f = TRUE;
+      break;
+
+    case PROP_SWCDB_THRIFT_U_CELL_SERIAL_K:
+      if (self->k != NULL)
+        g_ptr_array_unref (self->k);
+      self->k = g_value_dup_boxed (value);
+      self->__isset_k = TRUE;
+      break;
+
+    case PROP_SWCDB_THRIFT_U_CELL_SERIAL_TS:
+      self->ts = g_value_get_int64 (value);
+      self->__isset_ts = TRUE;
+      break;
+
+    case PROP_SWCDB_THRIFT_U_CELL_SERIAL_TS_DESC:
+      self->ts_desc = g_value_get_boolean (value);
+      self->__isset_ts_desc = TRUE;
+      break;
+
+    case PROP_SWCDB_THRIFT_U_CELL_SERIAL_V:
+      if (self->v != NULL)
+        g_ptr_array_unref (self->v);
+      self->v = g_value_dup_boxed (value);
+      self->__isset_v = TRUE;
+      break;
+
+    case PROP_SWCDB_THRIFT_U_CELL_SERIAL_ENCODER:
+      self->encoder = g_value_get_int (value);
+      self->__isset_encoder = TRUE;
+      break;
+
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+      break;
+  }
+}
+
+static void
+swcdb_thrift_u_cell_serial_get_property (GObject *object,
+                                         guint property_id,
+                                         GValue *value,
+                                         GParamSpec *pspec)
+{
+  swcdb_thriftUCellSerial *self = SWCDB_THRIFT_U_CELL_SERIAL (object);
+
+  switch (property_id)
+  {
+    case PROP_SWCDB_THRIFT_U_CELL_SERIAL_F:
+      g_value_set_int (value, self->f);
+      break;
+
+    case PROP_SWCDB_THRIFT_U_CELL_SERIAL_K:
+      g_value_set_boxed (value, self->k);
+      break;
+
+    case PROP_SWCDB_THRIFT_U_CELL_SERIAL_TS:
+      g_value_set_int64 (value, self->ts);
+      break;
+
+    case PROP_SWCDB_THRIFT_U_CELL_SERIAL_TS_DESC:
+      g_value_set_boolean (value, self->ts_desc);
+      break;
+
+    case PROP_SWCDB_THRIFT_U_CELL_SERIAL_V:
+      g_value_set_boxed (value, self->v);
+      break;
+
+    case PROP_SWCDB_THRIFT_U_CELL_SERIAL_ENCODER:
+      g_value_set_int (value, self->encoder);
+      break;
+
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+      break;
+  }
+}
+
+static void 
+swcdb_thrift_u_cell_serial_instance_init (swcdb_thriftUCellSerial * object)
+{
+  /* satisfy -Wall */
+  THRIFT_UNUSED_VAR (object);
+  object->__isset_f = FALSE;
+  object->k = g_ptr_array_new_with_free_func (thrift_string_free);
+  object->__isset_k = FALSE;
+  object->ts = 0;
+  object->__isset_ts = FALSE;
+  object->ts_desc = 0;
+  object->__isset_ts_desc = FALSE;
+  object->v = g_ptr_array_new_with_free_func (g_object_unref);
+  object->__isset_v = FALSE;
+  object->__isset_encoder = FALSE;
+}
+
+static void 
+swcdb_thrift_u_cell_serial_finalize (GObject *object)
+{
+  swcdb_thriftUCellSerial *tobject = SWCDB_THRIFT_U_CELL_SERIAL (object);
+
+  /* satisfy -Wall in case we don't use tobject */
+  THRIFT_UNUSED_VAR (tobject);
+  if (tobject->k != NULL)
+  {
+    g_ptr_array_unref (tobject->k);
+    tobject->k = NULL;
+  }
+  if (tobject->v != NULL)
+  {
+    g_ptr_array_unref (tobject->v);
+    tobject->v = NULL;
+  }
+}
+
+static void
+swcdb_thrift_u_cell_serial_class_init (swcdb_thriftUCellSerialClass * cls)
+{
+  GObjectClass *gobject_class = G_OBJECT_CLASS (cls);
+  ThriftStructClass *struct_class = THRIFT_STRUCT_CLASS (cls);
+
+  struct_class->read = swcdb_thrift_u_cell_serial_read;
+  struct_class->write = swcdb_thrift_u_cell_serial_write;
+
+  gobject_class->finalize = swcdb_thrift_u_cell_serial_finalize;
+  gobject_class->get_property = swcdb_thrift_u_cell_serial_get_property;
+  gobject_class->set_property = swcdb_thrift_u_cell_serial_set_property;
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_SWCDB_THRIFT_U_CELL_SERIAL_F,
+     g_param_spec_int ("f",
+                       NULL,
+                       NULL,
+                       0,
+                       3,
+                       0,
+                       G_PARAM_READWRITE));
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_SWCDB_THRIFT_U_CELL_SERIAL_K,
+     g_param_spec_boxed ("k",
+                         NULL,
+                         NULL,
+                         G_TYPE_PTR_ARRAY,
+                         G_PARAM_READWRITE));
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_SWCDB_THRIFT_U_CELL_SERIAL_TS,
+     g_param_spec_int64 ("ts",
+                         NULL,
+                         NULL,
+                         G_MININT64,
+                         G_MAXINT64,
+                         0,
+                         G_PARAM_READWRITE));
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_SWCDB_THRIFT_U_CELL_SERIAL_TS_DESC,
+     g_param_spec_boolean ("ts_desc",
+                           NULL,
+                           NULL,
+                           FALSE,
+                           G_PARAM_READWRITE));
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_SWCDB_THRIFT_U_CELL_SERIAL_V,
+     g_param_spec_boxed ("v",
+                         NULL,
+                         NULL,
+                         G_TYPE_PTR_ARRAY,
+                         G_PARAM_READWRITE));
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_SWCDB_THRIFT_U_CELL_SERIAL_ENCODER,
+     g_param_spec_int ("encoder",
+                       NULL,
+                       NULL,
+                       0,
+                       255,
+                       0,
+                       G_PARAM_READWRITE));
+}
+
+GType
+swcdb_thrift_u_cell_serial_get_type (void)
+{
+  static GType type = 0;
+
+  if (type == 0) 
+  {
+    static const GTypeInfo type_info = 
+    {
+      sizeof (swcdb_thriftUCellSerialClass),
+      NULL, /* base_init */
+      NULL, /* base_finalize */
+      (GClassInitFunc) swcdb_thrift_u_cell_serial_class_init,
+      NULL, /* class_finalize */
+      NULL, /* class_data */
+      sizeof (swcdb_thriftUCellSerial),
+      0, /* n_preallocs */
+      (GInstanceInitFunc) swcdb_thrift_u_cell_serial_instance_init,
+      NULL, /* value_table */
+    };
+
+    type = g_type_register_static (THRIFT_TYPE_STRUCT, 
+                                   "swcdb_thriftUCellSerialType",
                                    &type_info, 0);
   }
 
@@ -6028,20 +11307,20 @@ swcdb_thrift_cell_read (ThriftStruct *object, ThriftProtocol *protocol, GError *
             /* iterate through list elements */
             for (i = 0; i < size; i++)
             {
-              GByteArray * _elem36 = NULL;
-              if (_elem36 != NULL)
+              GByteArray * _elem80 = NULL;
+              if (_elem80 != NULL)
               {
-                g_free(_elem36);
-                _elem36 = NULL;
+                g_free(_elem80);
+                _elem80 = NULL;
               }
 
               if ((ret = thrift_protocol_read_binary (protocol, &data, &len, error)) < 0)
                 return -1;
               xfer += ret;
-              _elem36 = g_byte_array_new();
-              g_byte_array_append (_elem36, (guint8 *) data, (guint) len);
+              _elem80 = g_byte_array_new();
+              g_byte_array_append (_elem80, (guint8 *) data, (guint) len);
               g_free (data);
-              g_ptr_array_add (this_object->k, _elem36);
+              g_ptr_array_add (this_object->k, _elem80);
             }
             if ((ret = thrift_protocol_read_list_end (protocol, error)) < 0)
               return -1;
@@ -6132,14 +11411,14 @@ swcdb_thrift_cell_write (ThriftStruct *object, ThriftProtocol *protocol, GError 
     return -1;
   xfer += ret;
   {
-    guint i37;
+    guint i81;
 
     if ((ret = thrift_protocol_write_list_begin (protocol, T_STRING, (gint32) (this_object->k ? this_object->k->len : 0), error)) < 0)
       return -1;
     xfer += ret;
-    for (i37 = 0; i37 < (this_object->k ? this_object->k->len : 0); i37++)
+    for (i81 = 0; i81 < (this_object->k ? this_object->k->len : 0); i81++)
     {
-      if ((ret = thrift_protocol_write_binary (protocol, ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->k, i37)) ? ((GByteArray *) ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->k, i37)))->data : NULL, ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->k, i37)) ? ((GByteArray *) ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->k, i37)))->len : 0, error)) < 0)
+      if ((ret = thrift_protocol_write_binary (protocol, ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->k, i81)) ? ((GByteArray *) ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->k, i81)))->data : NULL, ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->k, i81)) ? ((GByteArray *) ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->k, i81)))->len : 0, error)) < 0)
         return -1;
       xfer += ret;
 
@@ -6161,18 +11440,16 @@ swcdb_thrift_cell_write (ThriftStruct *object, ThriftProtocol *protocol, GError 
   if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
     return -1;
   xfer += ret;
-  if (this_object->__isset_v == TRUE) {
-    if ((ret = thrift_protocol_write_field_begin (protocol, "v", T_STRING, 4, error)) < 0)
-      return -1;
-    xfer += ret;
-    if ((ret = thrift_protocol_write_binary (protocol, this_object->v ? ((GByteArray *) this_object->v)->data : NULL, this_object->v ? ((GByteArray *) this_object->v)->len : 0, error)) < 0)
-      return -1;
-    xfer += ret;
+  if ((ret = thrift_protocol_write_field_begin (protocol, "v", T_STRING, 4, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_binary (protocol, this_object->v ? ((GByteArray *) this_object->v)->data : NULL, this_object->v ? ((GByteArray *) this_object->v)->len : 0, error)) < 0)
+    return -1;
+  xfer += ret;
 
-    if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
-      return -1;
-    xfer += ret;
-  }
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
   if ((ret = thrift_protocol_write_field_stop (protocol, error)) < 0)
     return -1;
   xfer += ret;
@@ -6377,6 +11654,842 @@ swcdb_thrift_cell_get_type (void)
   return type;
 }
 
+enum _swcdb_thriftCellSerialProperties
+{
+  PROP_SWCDB_THRIFT_CELL_SERIAL_0,
+  PROP_SWCDB_THRIFT_CELL_SERIAL_C,
+  PROP_SWCDB_THRIFT_CELL_SERIAL_K,
+  PROP_SWCDB_THRIFT_CELL_SERIAL_TS,
+  PROP_SWCDB_THRIFT_CELL_SERIAL_V
+};
+
+/* reads a cell_serial object */
+static gint32
+swcdb_thrift_cell_serial_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+{
+  gint32 ret;
+  gint32 xfer = 0;
+  gchar *name = NULL;
+  ThriftType ftype;
+  gint16 fid;
+  guint32 len = 0;
+  gpointer data = NULL;
+  swcdb_thriftCellSerial * this_object = SWCDB_THRIFT_CELL_SERIAL(object);
+
+  /* satisfy -Wall in case these aren't used */
+  THRIFT_UNUSED_VAR (len);
+  THRIFT_UNUSED_VAR (data);
+  THRIFT_UNUSED_VAR (this_object);
+
+  /* read the struct begin marker */
+  if ((ret = thrift_protocol_read_struct_begin (protocol, &name, error)) < 0)
+  {
+    if (name) g_free (name);
+    return -1;
+  }
+  xfer += ret;
+  if (name) g_free (name);
+  name = NULL;
+
+  /* read the struct fields */
+  while (1)
+  {
+    /* read the beginning of a field */
+    if ((ret = thrift_protocol_read_field_begin (protocol, &name, &ftype, &fid, error)) < 0)
+    {
+      if (name) g_free (name);
+      return -1;
+    }
+    xfer += ret;
+    if (name) g_free (name);
+    name = NULL;
+
+    /* break if we get a STOP field */
+    if (ftype == T_STOP)
+    {
+      break;
+    }
+
+    switch (fid)
+    {
+      case 1:
+        if (ftype == T_STRING)
+        {
+          if (this_object->c != NULL)
+          {
+            g_free(this_object->c);
+            this_object->c = NULL;
+          }
+
+          if ((ret = thrift_protocol_read_string (protocol, &this_object->c, error)) < 0)
+            return -1;
+          xfer += ret;
+          this_object->__isset_c = TRUE;
+        } else {
+          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+            return -1;
+          xfer += ret;
+        }
+        break;
+      case 2:
+        if (ftype == T_LIST)
+        {
+          {
+            guint32 size;
+            guint32 i;
+            ThriftType element_type;
+
+            if ((ret = thrift_protocol_read_list_begin (protocol, &element_type,&size, error)) < 0)
+              return -1;
+            xfer += ret;
+
+            /* iterate through list elements */
+            for (i = 0; i < size; i++)
+            {
+              GByteArray * _elem82 = NULL;
+              if (_elem82 != NULL)
+              {
+                g_free(_elem82);
+                _elem82 = NULL;
+              }
+
+              if ((ret = thrift_protocol_read_binary (protocol, &data, &len, error)) < 0)
+                return -1;
+              xfer += ret;
+              _elem82 = g_byte_array_new();
+              g_byte_array_append (_elem82, (guint8 *) data, (guint) len);
+              g_free (data);
+              g_ptr_array_add (this_object->k, _elem82);
+            }
+            if ((ret = thrift_protocol_read_list_end (protocol, error)) < 0)
+              return -1;
+            xfer += ret;
+          }
+          this_object->__isset_k = TRUE;
+        } else {
+          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+            return -1;
+          xfer += ret;
+        }
+        break;
+      case 3:
+        if (ftype == T_I64)
+        {
+          if ((ret = thrift_protocol_read_i64 (protocol, &this_object->ts, error)) < 0)
+            return -1;
+          xfer += ret;
+          this_object->__isset_ts = TRUE;
+        } else {
+          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+            return -1;
+          xfer += ret;
+        }
+        break;
+      case 4:
+        if (ftype == T_LIST)
+        {
+          {
+            guint32 size;
+            guint32 i;
+            ThriftType element_type;
+
+            if ((ret = thrift_protocol_read_list_begin (protocol, &element_type,&size, error)) < 0)
+              return -1;
+            xfer += ret;
+
+            /* iterate through list elements */
+            for (i = 0; i < size; i++)
+            {
+              swcdb_thriftCellValueSerial * _elem83 = NULL;
+              if ( _elem83 != NULL)
+              {
+                g_object_unref (_elem83);
+              }
+              _elem83 = g_object_new (SWCDB_THRIFT_TYPE_CELL_VALUE_SERIAL, NULL);
+              if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem83), protocol, error)) < 0)
+              {
+                g_object_unref (_elem83);
+                return -1;
+              }
+              xfer += ret;
+              g_ptr_array_add (this_object->v, _elem83);
+            }
+            if ((ret = thrift_protocol_read_list_end (protocol, error)) < 0)
+              return -1;
+            xfer += ret;
+          }
+          this_object->__isset_v = TRUE;
+        } else {
+          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+            return -1;
+          xfer += ret;
+        }
+        break;
+      default:
+        if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+          return -1;
+        xfer += ret;
+        break;
+    }
+    if ((ret = thrift_protocol_read_field_end (protocol, error)) < 0)
+      return -1;
+    xfer += ret;
+  }
+
+  if ((ret = thrift_protocol_read_struct_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+
+  return xfer;
+}
+
+static gint32
+swcdb_thrift_cell_serial_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+{
+  gint32 ret;
+  gint32 xfer = 0;
+
+  swcdb_thriftCellSerial * this_object = SWCDB_THRIFT_CELL_SERIAL(object);
+  THRIFT_UNUSED_VAR (this_object);
+  if ((ret = thrift_protocol_write_struct_begin (protocol, "CellSerial", error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_begin (protocol, "c", T_STRING, 1, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_string (protocol, this_object->c, error)) < 0)
+    return -1;
+  xfer += ret;
+
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_begin (protocol, "k", T_LIST, 2, error)) < 0)
+    return -1;
+  xfer += ret;
+  {
+    guint i84;
+
+    if ((ret = thrift_protocol_write_list_begin (protocol, T_STRING, (gint32) (this_object->k ? this_object->k->len : 0), error)) < 0)
+      return -1;
+    xfer += ret;
+    for (i84 = 0; i84 < (this_object->k ? this_object->k->len : 0); i84++)
+    {
+      if ((ret = thrift_protocol_write_binary (protocol, ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->k, i84)) ? ((GByteArray *) ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->k, i84)))->data : NULL, ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->k, i84)) ? ((GByteArray *) ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->k, i84)))->len : 0, error)) < 0)
+        return -1;
+      xfer += ret;
+
+    }
+    if ((ret = thrift_protocol_write_list_end (protocol, error)) < 0)
+      return -1;
+    xfer += ret;
+  }
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_begin (protocol, "ts", T_I64, 3, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_i64 (protocol, this_object->ts, error)) < 0)
+    return -1;
+  xfer += ret;
+
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_begin (protocol, "v", T_LIST, 4, error)) < 0)
+    return -1;
+  xfer += ret;
+  {
+    guint i85;
+
+    if ((ret = thrift_protocol_write_list_begin (protocol, T_STRUCT, (gint32) (this_object->v ? this_object->v->len : 0), error)) < 0)
+      return -1;
+    xfer += ret;
+    for (i85 = 0; i85 < (this_object->v ? this_object->v->len : 0); i85++)
+    {
+      if ((ret = thrift_struct_write (THRIFT_STRUCT ((g_ptr_array_index ((GPtrArray *) this_object->v, i85))), protocol, error)) < 0)
+        return -1;
+      xfer += ret;
+
+    }
+    if ((ret = thrift_protocol_write_list_end (protocol, error)) < 0)
+      return -1;
+    xfer += ret;
+  }
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_stop (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_struct_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+
+  return xfer;
+}
+
+static void
+swcdb_thrift_cell_serial_set_property (GObject *object,
+                                       guint property_id,
+                                       const GValue *value,
+                                       GParamSpec *pspec)
+{
+  swcdb_thriftCellSerial *self = SWCDB_THRIFT_CELL_SERIAL (object);
+
+  switch (property_id)
+  {
+    case PROP_SWCDB_THRIFT_CELL_SERIAL_C:
+      if (self->c != NULL)
+        g_free (self->c);
+      self->c = g_value_dup_string (value);
+      self->__isset_c = TRUE;
+      break;
+
+    case PROP_SWCDB_THRIFT_CELL_SERIAL_K:
+      if (self->k != NULL)
+        g_ptr_array_unref (self->k);
+      self->k = g_value_dup_boxed (value);
+      self->__isset_k = TRUE;
+      break;
+
+    case PROP_SWCDB_THRIFT_CELL_SERIAL_TS:
+      self->ts = g_value_get_int64 (value);
+      self->__isset_ts = TRUE;
+      break;
+
+    case PROP_SWCDB_THRIFT_CELL_SERIAL_V:
+      if (self->v != NULL)
+        g_ptr_array_unref (self->v);
+      self->v = g_value_dup_boxed (value);
+      self->__isset_v = TRUE;
+      break;
+
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+      break;
+  }
+}
+
+static void
+swcdb_thrift_cell_serial_get_property (GObject *object,
+                                       guint property_id,
+                                       GValue *value,
+                                       GParamSpec *pspec)
+{
+  swcdb_thriftCellSerial *self = SWCDB_THRIFT_CELL_SERIAL (object);
+
+  switch (property_id)
+  {
+    case PROP_SWCDB_THRIFT_CELL_SERIAL_C:
+      g_value_set_string (value, self->c);
+      break;
+
+    case PROP_SWCDB_THRIFT_CELL_SERIAL_K:
+      g_value_set_boxed (value, self->k);
+      break;
+
+    case PROP_SWCDB_THRIFT_CELL_SERIAL_TS:
+      g_value_set_int64 (value, self->ts);
+      break;
+
+    case PROP_SWCDB_THRIFT_CELL_SERIAL_V:
+      g_value_set_boxed (value, self->v);
+      break;
+
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+      break;
+  }
+}
+
+static void 
+swcdb_thrift_cell_serial_instance_init (swcdb_thriftCellSerial * object)
+{
+  /* satisfy -Wall */
+  THRIFT_UNUSED_VAR (object);
+  object->c = NULL;
+  object->__isset_c = FALSE;
+  object->k = g_ptr_array_new_with_free_func (thrift_string_free);
+  object->__isset_k = FALSE;
+  object->ts = 0;
+  object->__isset_ts = FALSE;
+  object->v = g_ptr_array_new_with_free_func (g_object_unref);
+  object->__isset_v = FALSE;
+}
+
+static void 
+swcdb_thrift_cell_serial_finalize (GObject *object)
+{
+  swcdb_thriftCellSerial *tobject = SWCDB_THRIFT_CELL_SERIAL (object);
+
+  /* satisfy -Wall in case we don't use tobject */
+  THRIFT_UNUSED_VAR (tobject);
+  if (tobject->c != NULL)
+  {
+    g_free(tobject->c);
+    tobject->c = NULL;
+  }
+  if (tobject->k != NULL)
+  {
+    g_ptr_array_unref (tobject->k);
+    tobject->k = NULL;
+  }
+  if (tobject->v != NULL)
+  {
+    g_ptr_array_unref (tobject->v);
+    tobject->v = NULL;
+  }
+}
+
+static void
+swcdb_thrift_cell_serial_class_init (swcdb_thriftCellSerialClass * cls)
+{
+  GObjectClass *gobject_class = G_OBJECT_CLASS (cls);
+  ThriftStructClass *struct_class = THRIFT_STRUCT_CLASS (cls);
+
+  struct_class->read = swcdb_thrift_cell_serial_read;
+  struct_class->write = swcdb_thrift_cell_serial_write;
+
+  gobject_class->finalize = swcdb_thrift_cell_serial_finalize;
+  gobject_class->get_property = swcdb_thrift_cell_serial_get_property;
+  gobject_class->set_property = swcdb_thrift_cell_serial_set_property;
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_SWCDB_THRIFT_CELL_SERIAL_C,
+     g_param_spec_string ("c",
+                          NULL,
+                          NULL,
+                          NULL,
+                          G_PARAM_READWRITE));
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_SWCDB_THRIFT_CELL_SERIAL_K,
+     g_param_spec_boxed ("k",
+                         NULL,
+                         NULL,
+                         G_TYPE_PTR_ARRAY,
+                         G_PARAM_READWRITE));
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_SWCDB_THRIFT_CELL_SERIAL_TS,
+     g_param_spec_int64 ("ts",
+                         NULL,
+                         NULL,
+                         G_MININT64,
+                         G_MAXINT64,
+                         0,
+                         G_PARAM_READWRITE));
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_SWCDB_THRIFT_CELL_SERIAL_V,
+     g_param_spec_boxed ("v",
+                         NULL,
+                         NULL,
+                         G_TYPE_PTR_ARRAY,
+                         G_PARAM_READWRITE));
+}
+
+GType
+swcdb_thrift_cell_serial_get_type (void)
+{
+  static GType type = 0;
+
+  if (type == 0) 
+  {
+    static const GTypeInfo type_info = 
+    {
+      sizeof (swcdb_thriftCellSerialClass),
+      NULL, /* base_init */
+      NULL, /* base_finalize */
+      (GClassInitFunc) swcdb_thrift_cell_serial_class_init,
+      NULL, /* class_finalize */
+      NULL, /* class_data */
+      sizeof (swcdb_thriftCellSerial),
+      0, /* n_preallocs */
+      (GInstanceInitFunc) swcdb_thrift_cell_serial_instance_init,
+      NULL, /* value_table */
+    };
+
+    type = g_type_register_static (THRIFT_TYPE_STRUCT, 
+                                   "swcdb_thriftCellSerialType",
+                                   &type_info, 0);
+  }
+
+  return type;
+}
+
+enum _swcdb_thriftCellsProperties
+{
+  PROP_SWCDB_THRIFT_CELLS_0,
+  PROP_SWCDB_THRIFT_CELLS_CELLS,
+  PROP_SWCDB_THRIFT_CELLS_SERIAL_CELLS
+};
+
+/* reads a cells object */
+static gint32
+swcdb_thrift_cells_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+{
+  gint32 ret;
+  gint32 xfer = 0;
+  gchar *name = NULL;
+  ThriftType ftype;
+  gint16 fid;
+  guint32 len = 0;
+  gpointer data = NULL;
+  swcdb_thriftCells * this_object = SWCDB_THRIFT_CELLS(object);
+
+  /* satisfy -Wall in case these aren't used */
+  THRIFT_UNUSED_VAR (len);
+  THRIFT_UNUSED_VAR (data);
+  THRIFT_UNUSED_VAR (this_object);
+
+  /* read the struct begin marker */
+  if ((ret = thrift_protocol_read_struct_begin (protocol, &name, error)) < 0)
+  {
+    if (name) g_free (name);
+    return -1;
+  }
+  xfer += ret;
+  if (name) g_free (name);
+  name = NULL;
+
+  /* read the struct fields */
+  while (1)
+  {
+    /* read the beginning of a field */
+    if ((ret = thrift_protocol_read_field_begin (protocol, &name, &ftype, &fid, error)) < 0)
+    {
+      if (name) g_free (name);
+      return -1;
+    }
+    xfer += ret;
+    if (name) g_free (name);
+    name = NULL;
+
+    /* break if we get a STOP field */
+    if (ftype == T_STOP)
+    {
+      break;
+    }
+
+    switch (fid)
+    {
+      case 1:
+        if (ftype == T_LIST)
+        {
+          {
+            guint32 size;
+            guint32 i;
+            ThriftType element_type;
+
+            if ((ret = thrift_protocol_read_list_begin (protocol, &element_type,&size, error)) < 0)
+              return -1;
+            xfer += ret;
+
+            /* iterate through list elements */
+            for (i = 0; i < size; i++)
+            {
+              swcdb_thriftCell * _elem86 = NULL;
+              if ( _elem86 != NULL)
+              {
+                g_object_unref (_elem86);
+              }
+              _elem86 = g_object_new (SWCDB_THRIFT_TYPE_CELL, NULL);
+              if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem86), protocol, error)) < 0)
+              {
+                g_object_unref (_elem86);
+                return -1;
+              }
+              xfer += ret;
+              g_ptr_array_add (this_object->cells, _elem86);
+            }
+            if ((ret = thrift_protocol_read_list_end (protocol, error)) < 0)
+              return -1;
+            xfer += ret;
+          }
+          this_object->__isset_cells = TRUE;
+        } else {
+          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+            return -1;
+          xfer += ret;
+        }
+        break;
+      case 2:
+        if (ftype == T_LIST)
+        {
+          {
+            guint32 size;
+            guint32 i;
+            ThriftType element_type;
+
+            if ((ret = thrift_protocol_read_list_begin (protocol, &element_type,&size, error)) < 0)
+              return -1;
+            xfer += ret;
+
+            /* iterate through list elements */
+            for (i = 0; i < size; i++)
+            {
+              swcdb_thriftCellSerial * _elem87 = NULL;
+              if ( _elem87 != NULL)
+              {
+                g_object_unref (_elem87);
+              }
+              _elem87 = g_object_new (SWCDB_THRIFT_TYPE_CELL_SERIAL, NULL);
+              if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem87), protocol, error)) < 0)
+              {
+                g_object_unref (_elem87);
+                return -1;
+              }
+              xfer += ret;
+              g_ptr_array_add (this_object->serial_cells, _elem87);
+            }
+            if ((ret = thrift_protocol_read_list_end (protocol, error)) < 0)
+              return -1;
+            xfer += ret;
+          }
+          this_object->__isset_serial_cells = TRUE;
+        } else {
+          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+            return -1;
+          xfer += ret;
+        }
+        break;
+      default:
+        if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+          return -1;
+        xfer += ret;
+        break;
+    }
+    if ((ret = thrift_protocol_read_field_end (protocol, error)) < 0)
+      return -1;
+    xfer += ret;
+  }
+
+  if ((ret = thrift_protocol_read_struct_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+
+  return xfer;
+}
+
+static gint32
+swcdb_thrift_cells_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+{
+  gint32 ret;
+  gint32 xfer = 0;
+
+  swcdb_thriftCells * this_object = SWCDB_THRIFT_CELLS(object);
+  THRIFT_UNUSED_VAR (this_object);
+  if ((ret = thrift_protocol_write_struct_begin (protocol, "Cells", error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_begin (protocol, "cells", T_LIST, 1, error)) < 0)
+    return -1;
+  xfer += ret;
+  {
+    guint i88;
+
+    if ((ret = thrift_protocol_write_list_begin (protocol, T_STRUCT, (gint32) (this_object->cells ? this_object->cells->len : 0), error)) < 0)
+      return -1;
+    xfer += ret;
+    for (i88 = 0; i88 < (this_object->cells ? this_object->cells->len : 0); i88++)
+    {
+      if ((ret = thrift_struct_write (THRIFT_STRUCT ((g_ptr_array_index ((GPtrArray *) this_object->cells, i88))), protocol, error)) < 0)
+        return -1;
+      xfer += ret;
+
+    }
+    if ((ret = thrift_protocol_write_list_end (protocol, error)) < 0)
+      return -1;
+    xfer += ret;
+  }
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_begin (protocol, "serial_cells", T_LIST, 2, error)) < 0)
+    return -1;
+  xfer += ret;
+  {
+    guint i89;
+
+    if ((ret = thrift_protocol_write_list_begin (protocol, T_STRUCT, (gint32) (this_object->serial_cells ? this_object->serial_cells->len : 0), error)) < 0)
+      return -1;
+    xfer += ret;
+    for (i89 = 0; i89 < (this_object->serial_cells ? this_object->serial_cells->len : 0); i89++)
+    {
+      if ((ret = thrift_struct_write (THRIFT_STRUCT ((g_ptr_array_index ((GPtrArray *) this_object->serial_cells, i89))), protocol, error)) < 0)
+        return -1;
+      xfer += ret;
+
+    }
+    if ((ret = thrift_protocol_write_list_end (protocol, error)) < 0)
+      return -1;
+    xfer += ret;
+  }
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_stop (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_struct_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+
+  return xfer;
+}
+
+static void
+swcdb_thrift_cells_set_property (GObject *object,
+                                 guint property_id,
+                                 const GValue *value,
+                                 GParamSpec *pspec)
+{
+  swcdb_thriftCells *self = SWCDB_THRIFT_CELLS (object);
+
+  switch (property_id)
+  {
+    case PROP_SWCDB_THRIFT_CELLS_CELLS:
+      if (self->cells != NULL)
+        g_ptr_array_unref (self->cells);
+      self->cells = g_value_dup_boxed (value);
+      self->__isset_cells = TRUE;
+      break;
+
+    case PROP_SWCDB_THRIFT_CELLS_SERIAL_CELLS:
+      if (self->serial_cells != NULL)
+        g_ptr_array_unref (self->serial_cells);
+      self->serial_cells = g_value_dup_boxed (value);
+      self->__isset_serial_cells = TRUE;
+      break;
+
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+      break;
+  }
+}
+
+static void
+swcdb_thrift_cells_get_property (GObject *object,
+                                 guint property_id,
+                                 GValue *value,
+                                 GParamSpec *pspec)
+{
+  swcdb_thriftCells *self = SWCDB_THRIFT_CELLS (object);
+
+  switch (property_id)
+  {
+    case PROP_SWCDB_THRIFT_CELLS_CELLS:
+      g_value_set_boxed (value, self->cells);
+      break;
+
+    case PROP_SWCDB_THRIFT_CELLS_SERIAL_CELLS:
+      g_value_set_boxed (value, self->serial_cells);
+      break;
+
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+      break;
+  }
+}
+
+static void 
+swcdb_thrift_cells_instance_init (swcdb_thriftCells * object)
+{
+  /* satisfy -Wall */
+  THRIFT_UNUSED_VAR (object);
+  object->cells = g_ptr_array_new_with_free_func (g_object_unref);
+  object->__isset_cells = FALSE;
+  object->serial_cells = g_ptr_array_new_with_free_func (g_object_unref);
+  object->__isset_serial_cells = FALSE;
+}
+
+static void 
+swcdb_thrift_cells_finalize (GObject *object)
+{
+  swcdb_thriftCells *tobject = SWCDB_THRIFT_CELLS (object);
+
+  /* satisfy -Wall in case we don't use tobject */
+  THRIFT_UNUSED_VAR (tobject);
+  if (tobject->cells != NULL)
+  {
+    g_ptr_array_unref (tobject->cells);
+    tobject->cells = NULL;
+  }
+  if (tobject->serial_cells != NULL)
+  {
+    g_ptr_array_unref (tobject->serial_cells);
+    tobject->serial_cells = NULL;
+  }
+}
+
+static void
+swcdb_thrift_cells_class_init (swcdb_thriftCellsClass * cls)
+{
+  GObjectClass *gobject_class = G_OBJECT_CLASS (cls);
+  ThriftStructClass *struct_class = THRIFT_STRUCT_CLASS (cls);
+
+  struct_class->read = swcdb_thrift_cells_read;
+  struct_class->write = swcdb_thrift_cells_write;
+
+  gobject_class->finalize = swcdb_thrift_cells_finalize;
+  gobject_class->get_property = swcdb_thrift_cells_get_property;
+  gobject_class->set_property = swcdb_thrift_cells_set_property;
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_SWCDB_THRIFT_CELLS_CELLS,
+     g_param_spec_boxed ("cells",
+                         NULL,
+                         NULL,
+                         G_TYPE_PTR_ARRAY,
+                         G_PARAM_READWRITE));
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_SWCDB_THRIFT_CELLS_SERIAL_CELLS,
+     g_param_spec_boxed ("serial_cells",
+                         NULL,
+                         NULL,
+                         G_TYPE_PTR_ARRAY,
+                         G_PARAM_READWRITE));
+}
+
+GType
+swcdb_thrift_cells_get_type (void)
+{
+  static GType type = 0;
+
+  if (type == 0) 
+  {
+    static const GTypeInfo type_info = 
+    {
+      sizeof (swcdb_thriftCellsClass),
+      NULL, /* base_init */
+      NULL, /* base_finalize */
+      (GClassInitFunc) swcdb_thrift_cells_class_init,
+      NULL, /* class_finalize */
+      NULL, /* class_data */
+      sizeof (swcdb_thriftCells),
+      0, /* n_preallocs */
+      (GInstanceInitFunc) swcdb_thrift_cells_instance_init,
+      NULL, /* value_table */
+    };
+
+    type = g_type_register_static (THRIFT_TYPE_STRUCT, 
+                                   "swcdb_thriftCellsType",
+                                   &type_info, 0);
+  }
+
+  return type;
+}
+
 enum _swcdb_thriftCCellProperties
 {
   PROP_SWCDB_THRIFT_C_CELL_0,
@@ -6449,20 +12562,20 @@ swcdb_thrift_c_cell_read (ThriftStruct *object, ThriftProtocol *protocol, GError
             /* iterate through list elements */
             for (i = 0; i < size; i++)
             {
-              GByteArray * _elem38 = NULL;
-              if (_elem38 != NULL)
+              GByteArray * _elem90 = NULL;
+              if (_elem90 != NULL)
               {
-                g_free(_elem38);
-                _elem38 = NULL;
+                g_free(_elem90);
+                _elem90 = NULL;
               }
 
               if ((ret = thrift_protocol_read_binary (protocol, &data, &len, error)) < 0)
                 return -1;
               xfer += ret;
-              _elem38 = g_byte_array_new();
-              g_byte_array_append (_elem38, (guint8 *) data, (guint) len);
+              _elem90 = g_byte_array_new();
+              g_byte_array_append (_elem90, (guint8 *) data, (guint) len);
               g_free (data);
-              g_ptr_array_add (this_object->k, _elem38);
+              g_ptr_array_add (this_object->k, _elem90);
             }
             if ((ret = thrift_protocol_read_list_end (protocol, error)) < 0)
               return -1;
@@ -6543,14 +12656,14 @@ swcdb_thrift_c_cell_write (ThriftStruct *object, ThriftProtocol *protocol, GErro
     return -1;
   xfer += ret;
   {
-    guint i39;
+    guint i91;
 
     if ((ret = thrift_protocol_write_list_begin (protocol, T_STRING, (gint32) (this_object->k ? this_object->k->len : 0), error)) < 0)
       return -1;
     xfer += ret;
-    for (i39 = 0; i39 < (this_object->k ? this_object->k->len : 0); i39++)
+    for (i91 = 0; i91 < (this_object->k ? this_object->k->len : 0); i91++)
     {
-      if ((ret = thrift_protocol_write_binary (protocol, ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->k, i39)) ? ((GByteArray *) ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->k, i39)))->data : NULL, ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->k, i39)) ? ((GByteArray *) ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->k, i39)))->len : 0, error)) < 0)
+      if ((ret = thrift_protocol_write_binary (protocol, ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->k, i91)) ? ((GByteArray *) ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->k, i91)))->data : NULL, ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->k, i91)) ? ((GByteArray *) ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->k, i91)))->len : 0, error)) < 0)
         return -1;
       xfer += ret;
 
@@ -6572,18 +12685,16 @@ swcdb_thrift_c_cell_write (ThriftStruct *object, ThriftProtocol *protocol, GErro
   if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
     return -1;
   xfer += ret;
-  if (this_object->__isset_v == TRUE) {
-    if ((ret = thrift_protocol_write_field_begin (protocol, "v", T_STRING, 3, error)) < 0)
-      return -1;
-    xfer += ret;
-    if ((ret = thrift_protocol_write_binary (protocol, this_object->v ? ((GByteArray *) this_object->v)->data : NULL, this_object->v ? ((GByteArray *) this_object->v)->len : 0, error)) < 0)
-      return -1;
-    xfer += ret;
+  if ((ret = thrift_protocol_write_field_begin (protocol, "v", T_STRING, 3, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_binary (protocol, this_object->v ? ((GByteArray *) this_object->v)->data : NULL, this_object->v ? ((GByteArray *) this_object->v)->len : 0, error)) < 0)
+    return -1;
+  xfer += ret;
 
-    if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
-      return -1;
-    xfer += ret;
-  }
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
   if ((ret = thrift_protocol_write_field_stop (protocol, error)) < 0)
     return -1;
   xfer += ret;
@@ -6761,6 +12872,785 @@ swcdb_thrift_c_cell_get_type (void)
   return type;
 }
 
+enum _swcdb_thriftCCellSerialProperties
+{
+  PROP_SWCDB_THRIFT_C_CELL_SERIAL_0,
+  PROP_SWCDB_THRIFT_C_CELL_SERIAL_K,
+  PROP_SWCDB_THRIFT_C_CELL_SERIAL_TS,
+  PROP_SWCDB_THRIFT_C_CELL_SERIAL_V
+};
+
+/* reads a c_cell_serial object */
+static gint32
+swcdb_thrift_c_cell_serial_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+{
+  gint32 ret;
+  gint32 xfer = 0;
+  gchar *name = NULL;
+  ThriftType ftype;
+  gint16 fid;
+  guint32 len = 0;
+  gpointer data = NULL;
+  swcdb_thriftCCellSerial * this_object = SWCDB_THRIFT_C_CELL_SERIAL(object);
+
+  /* satisfy -Wall in case these aren't used */
+  THRIFT_UNUSED_VAR (len);
+  THRIFT_UNUSED_VAR (data);
+  THRIFT_UNUSED_VAR (this_object);
+
+  /* read the struct begin marker */
+  if ((ret = thrift_protocol_read_struct_begin (protocol, &name, error)) < 0)
+  {
+    if (name) g_free (name);
+    return -1;
+  }
+  xfer += ret;
+  if (name) g_free (name);
+  name = NULL;
+
+  /* read the struct fields */
+  while (1)
+  {
+    /* read the beginning of a field */
+    if ((ret = thrift_protocol_read_field_begin (protocol, &name, &ftype, &fid, error)) < 0)
+    {
+      if (name) g_free (name);
+      return -1;
+    }
+    xfer += ret;
+    if (name) g_free (name);
+    name = NULL;
+
+    /* break if we get a STOP field */
+    if (ftype == T_STOP)
+    {
+      break;
+    }
+
+    switch (fid)
+    {
+      case 1:
+        if (ftype == T_LIST)
+        {
+          {
+            guint32 size;
+            guint32 i;
+            ThriftType element_type;
+
+            if ((ret = thrift_protocol_read_list_begin (protocol, &element_type,&size, error)) < 0)
+              return -1;
+            xfer += ret;
+
+            /* iterate through list elements */
+            for (i = 0; i < size; i++)
+            {
+              GByteArray * _elem92 = NULL;
+              if (_elem92 != NULL)
+              {
+                g_free(_elem92);
+                _elem92 = NULL;
+              }
+
+              if ((ret = thrift_protocol_read_binary (protocol, &data, &len, error)) < 0)
+                return -1;
+              xfer += ret;
+              _elem92 = g_byte_array_new();
+              g_byte_array_append (_elem92, (guint8 *) data, (guint) len);
+              g_free (data);
+              g_ptr_array_add (this_object->k, _elem92);
+            }
+            if ((ret = thrift_protocol_read_list_end (protocol, error)) < 0)
+              return -1;
+            xfer += ret;
+          }
+          this_object->__isset_k = TRUE;
+        } else {
+          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+            return -1;
+          xfer += ret;
+        }
+        break;
+      case 2:
+        if (ftype == T_I64)
+        {
+          if ((ret = thrift_protocol_read_i64 (protocol, &this_object->ts, error)) < 0)
+            return -1;
+          xfer += ret;
+          this_object->__isset_ts = TRUE;
+        } else {
+          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+            return -1;
+          xfer += ret;
+        }
+        break;
+      case 3:
+        if (ftype == T_LIST)
+        {
+          {
+            guint32 size;
+            guint32 i;
+            ThriftType element_type;
+
+            if ((ret = thrift_protocol_read_list_begin (protocol, &element_type,&size, error)) < 0)
+              return -1;
+            xfer += ret;
+
+            /* iterate through list elements */
+            for (i = 0; i < size; i++)
+            {
+              swcdb_thriftCellValueSerial * _elem93 = NULL;
+              if ( _elem93 != NULL)
+              {
+                g_object_unref (_elem93);
+              }
+              _elem93 = g_object_new (SWCDB_THRIFT_TYPE_CELL_VALUE_SERIAL, NULL);
+              if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem93), protocol, error)) < 0)
+              {
+                g_object_unref (_elem93);
+                return -1;
+              }
+              xfer += ret;
+              g_ptr_array_add (this_object->v, _elem93);
+            }
+            if ((ret = thrift_protocol_read_list_end (protocol, error)) < 0)
+              return -1;
+            xfer += ret;
+          }
+          this_object->__isset_v = TRUE;
+        } else {
+          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+            return -1;
+          xfer += ret;
+        }
+        break;
+      default:
+        if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+          return -1;
+        xfer += ret;
+        break;
+    }
+    if ((ret = thrift_protocol_read_field_end (protocol, error)) < 0)
+      return -1;
+    xfer += ret;
+  }
+
+  if ((ret = thrift_protocol_read_struct_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+
+  return xfer;
+}
+
+static gint32
+swcdb_thrift_c_cell_serial_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+{
+  gint32 ret;
+  gint32 xfer = 0;
+
+  swcdb_thriftCCellSerial * this_object = SWCDB_THRIFT_C_CELL_SERIAL(object);
+  THRIFT_UNUSED_VAR (this_object);
+  if ((ret = thrift_protocol_write_struct_begin (protocol, "CCellSerial", error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_begin (protocol, "k", T_LIST, 1, error)) < 0)
+    return -1;
+  xfer += ret;
+  {
+    guint i94;
+
+    if ((ret = thrift_protocol_write_list_begin (protocol, T_STRING, (gint32) (this_object->k ? this_object->k->len : 0), error)) < 0)
+      return -1;
+    xfer += ret;
+    for (i94 = 0; i94 < (this_object->k ? this_object->k->len : 0); i94++)
+    {
+      if ((ret = thrift_protocol_write_binary (protocol, ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->k, i94)) ? ((GByteArray *) ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->k, i94)))->data : NULL, ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->k, i94)) ? ((GByteArray *) ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->k, i94)))->len : 0, error)) < 0)
+        return -1;
+      xfer += ret;
+
+    }
+    if ((ret = thrift_protocol_write_list_end (protocol, error)) < 0)
+      return -1;
+    xfer += ret;
+  }
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_begin (protocol, "ts", T_I64, 2, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_i64 (protocol, this_object->ts, error)) < 0)
+    return -1;
+  xfer += ret;
+
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_begin (protocol, "v", T_LIST, 3, error)) < 0)
+    return -1;
+  xfer += ret;
+  {
+    guint i95;
+
+    if ((ret = thrift_protocol_write_list_begin (protocol, T_STRUCT, (gint32) (this_object->v ? this_object->v->len : 0), error)) < 0)
+      return -1;
+    xfer += ret;
+    for (i95 = 0; i95 < (this_object->v ? this_object->v->len : 0); i95++)
+    {
+      if ((ret = thrift_struct_write (THRIFT_STRUCT ((g_ptr_array_index ((GPtrArray *) this_object->v, i95))), protocol, error)) < 0)
+        return -1;
+      xfer += ret;
+
+    }
+    if ((ret = thrift_protocol_write_list_end (protocol, error)) < 0)
+      return -1;
+    xfer += ret;
+  }
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_stop (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_struct_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+
+  return xfer;
+}
+
+static void
+swcdb_thrift_c_cell_serial_set_property (GObject *object,
+                                         guint property_id,
+                                         const GValue *value,
+                                         GParamSpec *pspec)
+{
+  swcdb_thriftCCellSerial *self = SWCDB_THRIFT_C_CELL_SERIAL (object);
+
+  switch (property_id)
+  {
+    case PROP_SWCDB_THRIFT_C_CELL_SERIAL_K:
+      if (self->k != NULL)
+        g_ptr_array_unref (self->k);
+      self->k = g_value_dup_boxed (value);
+      self->__isset_k = TRUE;
+      break;
+
+    case PROP_SWCDB_THRIFT_C_CELL_SERIAL_TS:
+      self->ts = g_value_get_int64 (value);
+      self->__isset_ts = TRUE;
+      break;
+
+    case PROP_SWCDB_THRIFT_C_CELL_SERIAL_V:
+      if (self->v != NULL)
+        g_ptr_array_unref (self->v);
+      self->v = g_value_dup_boxed (value);
+      self->__isset_v = TRUE;
+      break;
+
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+      break;
+  }
+}
+
+static void
+swcdb_thrift_c_cell_serial_get_property (GObject *object,
+                                         guint property_id,
+                                         GValue *value,
+                                         GParamSpec *pspec)
+{
+  swcdb_thriftCCellSerial *self = SWCDB_THRIFT_C_CELL_SERIAL (object);
+
+  switch (property_id)
+  {
+    case PROP_SWCDB_THRIFT_C_CELL_SERIAL_K:
+      g_value_set_boxed (value, self->k);
+      break;
+
+    case PROP_SWCDB_THRIFT_C_CELL_SERIAL_TS:
+      g_value_set_int64 (value, self->ts);
+      break;
+
+    case PROP_SWCDB_THRIFT_C_CELL_SERIAL_V:
+      g_value_set_boxed (value, self->v);
+      break;
+
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+      break;
+  }
+}
+
+static void 
+swcdb_thrift_c_cell_serial_instance_init (swcdb_thriftCCellSerial * object)
+{
+  /* satisfy -Wall */
+  THRIFT_UNUSED_VAR (object);
+  object->k = g_ptr_array_new_with_free_func (thrift_string_free);
+  object->__isset_k = FALSE;
+  object->ts = 0;
+  object->__isset_ts = FALSE;
+  object->v = g_ptr_array_new_with_free_func (g_object_unref);
+  object->__isset_v = FALSE;
+}
+
+static void 
+swcdb_thrift_c_cell_serial_finalize (GObject *object)
+{
+  swcdb_thriftCCellSerial *tobject = SWCDB_THRIFT_C_CELL_SERIAL (object);
+
+  /* satisfy -Wall in case we don't use tobject */
+  THRIFT_UNUSED_VAR (tobject);
+  if (tobject->k != NULL)
+  {
+    g_ptr_array_unref (tobject->k);
+    tobject->k = NULL;
+  }
+  if (tobject->v != NULL)
+  {
+    g_ptr_array_unref (tobject->v);
+    tobject->v = NULL;
+  }
+}
+
+static void
+swcdb_thrift_c_cell_serial_class_init (swcdb_thriftCCellSerialClass * cls)
+{
+  GObjectClass *gobject_class = G_OBJECT_CLASS (cls);
+  ThriftStructClass *struct_class = THRIFT_STRUCT_CLASS (cls);
+
+  struct_class->read = swcdb_thrift_c_cell_serial_read;
+  struct_class->write = swcdb_thrift_c_cell_serial_write;
+
+  gobject_class->finalize = swcdb_thrift_c_cell_serial_finalize;
+  gobject_class->get_property = swcdb_thrift_c_cell_serial_get_property;
+  gobject_class->set_property = swcdb_thrift_c_cell_serial_set_property;
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_SWCDB_THRIFT_C_CELL_SERIAL_K,
+     g_param_spec_boxed ("k",
+                         NULL,
+                         NULL,
+                         G_TYPE_PTR_ARRAY,
+                         G_PARAM_READWRITE));
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_SWCDB_THRIFT_C_CELL_SERIAL_TS,
+     g_param_spec_int64 ("ts",
+                         NULL,
+                         NULL,
+                         G_MININT64,
+                         G_MAXINT64,
+                         0,
+                         G_PARAM_READWRITE));
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_SWCDB_THRIFT_C_CELL_SERIAL_V,
+     g_param_spec_boxed ("v",
+                         NULL,
+                         NULL,
+                         G_TYPE_PTR_ARRAY,
+                         G_PARAM_READWRITE));
+}
+
+GType
+swcdb_thrift_c_cell_serial_get_type (void)
+{
+  static GType type = 0;
+
+  if (type == 0) 
+  {
+    static const GTypeInfo type_info = 
+    {
+      sizeof (swcdb_thriftCCellSerialClass),
+      NULL, /* base_init */
+      NULL, /* base_finalize */
+      (GClassInitFunc) swcdb_thrift_c_cell_serial_class_init,
+      NULL, /* class_finalize */
+      NULL, /* class_data */
+      sizeof (swcdb_thriftCCellSerial),
+      0, /* n_preallocs */
+      (GInstanceInitFunc) swcdb_thrift_c_cell_serial_instance_init,
+      NULL, /* value_table */
+    };
+
+    type = g_type_register_static (THRIFT_TYPE_STRUCT, 
+                                   "swcdb_thriftCCellSerialType",
+                                   &type_info, 0);
+  }
+
+  return type;
+}
+
+enum _swcdb_thriftColCellsProperties
+{
+  PROP_SWCDB_THRIFT_COL_CELLS_0,
+  PROP_SWCDB_THRIFT_COL_CELLS_CELLS,
+  PROP_SWCDB_THRIFT_COL_CELLS_SERIAL_CELLS
+};
+
+/* reads a col_cells object */
+static gint32
+swcdb_thrift_col_cells_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+{
+  gint32 ret;
+  gint32 xfer = 0;
+  gchar *name = NULL;
+  ThriftType ftype;
+  gint16 fid;
+  guint32 len = 0;
+  gpointer data = NULL;
+  swcdb_thriftColCells * this_object = SWCDB_THRIFT_COL_CELLS(object);
+
+  /* satisfy -Wall in case these aren't used */
+  THRIFT_UNUSED_VAR (len);
+  THRIFT_UNUSED_VAR (data);
+  THRIFT_UNUSED_VAR (this_object);
+
+  /* read the struct begin marker */
+  if ((ret = thrift_protocol_read_struct_begin (protocol, &name, error)) < 0)
+  {
+    if (name) g_free (name);
+    return -1;
+  }
+  xfer += ret;
+  if (name) g_free (name);
+  name = NULL;
+
+  /* read the struct fields */
+  while (1)
+  {
+    /* read the beginning of a field */
+    if ((ret = thrift_protocol_read_field_begin (protocol, &name, &ftype, &fid, error)) < 0)
+    {
+      if (name) g_free (name);
+      return -1;
+    }
+    xfer += ret;
+    if (name) g_free (name);
+    name = NULL;
+
+    /* break if we get a STOP field */
+    if (ftype == T_STOP)
+    {
+      break;
+    }
+
+    switch (fid)
+    {
+      case 1:
+        if (ftype == T_LIST)
+        {
+          {
+            guint32 size;
+            guint32 i;
+            ThriftType element_type;
+
+            if ((ret = thrift_protocol_read_list_begin (protocol, &element_type,&size, error)) < 0)
+              return -1;
+            xfer += ret;
+
+            /* iterate through list elements */
+            for (i = 0; i < size; i++)
+            {
+              swcdb_thriftCCell * _elem96 = NULL;
+              if ( _elem96 != NULL)
+              {
+                g_object_unref (_elem96);
+              }
+              _elem96 = g_object_new (SWCDB_THRIFT_TYPE_C_CELL, NULL);
+              if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem96), protocol, error)) < 0)
+              {
+                g_object_unref (_elem96);
+                return -1;
+              }
+              xfer += ret;
+              g_ptr_array_add (this_object->cells, _elem96);
+            }
+            if ((ret = thrift_protocol_read_list_end (protocol, error)) < 0)
+              return -1;
+            xfer += ret;
+          }
+          this_object->__isset_cells = TRUE;
+        } else {
+          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+            return -1;
+          xfer += ret;
+        }
+        break;
+      case 2:
+        if (ftype == T_LIST)
+        {
+          {
+            guint32 size;
+            guint32 i;
+            ThriftType element_type;
+
+            if ((ret = thrift_protocol_read_list_begin (protocol, &element_type,&size, error)) < 0)
+              return -1;
+            xfer += ret;
+
+            /* iterate through list elements */
+            for (i = 0; i < size; i++)
+            {
+              swcdb_thriftCCellSerial * _elem97 = NULL;
+              if ( _elem97 != NULL)
+              {
+                g_object_unref (_elem97);
+              }
+              _elem97 = g_object_new (SWCDB_THRIFT_TYPE_C_CELL_SERIAL, NULL);
+              if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem97), protocol, error)) < 0)
+              {
+                g_object_unref (_elem97);
+                return -1;
+              }
+              xfer += ret;
+              g_ptr_array_add (this_object->serial_cells, _elem97);
+            }
+            if ((ret = thrift_protocol_read_list_end (protocol, error)) < 0)
+              return -1;
+            xfer += ret;
+          }
+          this_object->__isset_serial_cells = TRUE;
+        } else {
+          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+            return -1;
+          xfer += ret;
+        }
+        break;
+      default:
+        if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+          return -1;
+        xfer += ret;
+        break;
+    }
+    if ((ret = thrift_protocol_read_field_end (protocol, error)) < 0)
+      return -1;
+    xfer += ret;
+  }
+
+  if ((ret = thrift_protocol_read_struct_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+
+  return xfer;
+}
+
+static gint32
+swcdb_thrift_col_cells_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+{
+  gint32 ret;
+  gint32 xfer = 0;
+
+  swcdb_thriftColCells * this_object = SWCDB_THRIFT_COL_CELLS(object);
+  THRIFT_UNUSED_VAR (this_object);
+  if ((ret = thrift_protocol_write_struct_begin (protocol, "ColCells", error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_begin (protocol, "cells", T_LIST, 1, error)) < 0)
+    return -1;
+  xfer += ret;
+  {
+    guint i98;
+
+    if ((ret = thrift_protocol_write_list_begin (protocol, T_STRUCT, (gint32) (this_object->cells ? this_object->cells->len : 0), error)) < 0)
+      return -1;
+    xfer += ret;
+    for (i98 = 0; i98 < (this_object->cells ? this_object->cells->len : 0); i98++)
+    {
+      if ((ret = thrift_struct_write (THRIFT_STRUCT ((g_ptr_array_index ((GPtrArray *) this_object->cells, i98))), protocol, error)) < 0)
+        return -1;
+      xfer += ret;
+
+    }
+    if ((ret = thrift_protocol_write_list_end (protocol, error)) < 0)
+      return -1;
+    xfer += ret;
+  }
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_begin (protocol, "serial_cells", T_LIST, 2, error)) < 0)
+    return -1;
+  xfer += ret;
+  {
+    guint i99;
+
+    if ((ret = thrift_protocol_write_list_begin (protocol, T_STRUCT, (gint32) (this_object->serial_cells ? this_object->serial_cells->len : 0), error)) < 0)
+      return -1;
+    xfer += ret;
+    for (i99 = 0; i99 < (this_object->serial_cells ? this_object->serial_cells->len : 0); i99++)
+    {
+      if ((ret = thrift_struct_write (THRIFT_STRUCT ((g_ptr_array_index ((GPtrArray *) this_object->serial_cells, i99))), protocol, error)) < 0)
+        return -1;
+      xfer += ret;
+
+    }
+    if ((ret = thrift_protocol_write_list_end (protocol, error)) < 0)
+      return -1;
+    xfer += ret;
+  }
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_stop (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_struct_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+
+  return xfer;
+}
+
+static void
+swcdb_thrift_col_cells_set_property (GObject *object,
+                                     guint property_id,
+                                     const GValue *value,
+                                     GParamSpec *pspec)
+{
+  swcdb_thriftColCells *self = SWCDB_THRIFT_COL_CELLS (object);
+
+  switch (property_id)
+  {
+    case PROP_SWCDB_THRIFT_COL_CELLS_CELLS:
+      if (self->cells != NULL)
+        g_ptr_array_unref (self->cells);
+      self->cells = g_value_dup_boxed (value);
+      self->__isset_cells = TRUE;
+      break;
+
+    case PROP_SWCDB_THRIFT_COL_CELLS_SERIAL_CELLS:
+      if (self->serial_cells != NULL)
+        g_ptr_array_unref (self->serial_cells);
+      self->serial_cells = g_value_dup_boxed (value);
+      self->__isset_serial_cells = TRUE;
+      break;
+
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+      break;
+  }
+}
+
+static void
+swcdb_thrift_col_cells_get_property (GObject *object,
+                                     guint property_id,
+                                     GValue *value,
+                                     GParamSpec *pspec)
+{
+  swcdb_thriftColCells *self = SWCDB_THRIFT_COL_CELLS (object);
+
+  switch (property_id)
+  {
+    case PROP_SWCDB_THRIFT_COL_CELLS_CELLS:
+      g_value_set_boxed (value, self->cells);
+      break;
+
+    case PROP_SWCDB_THRIFT_COL_CELLS_SERIAL_CELLS:
+      g_value_set_boxed (value, self->serial_cells);
+      break;
+
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+      break;
+  }
+}
+
+static void 
+swcdb_thrift_col_cells_instance_init (swcdb_thriftColCells * object)
+{
+  /* satisfy -Wall */
+  THRIFT_UNUSED_VAR (object);
+  object->cells = g_ptr_array_new_with_free_func (g_object_unref);
+  object->__isset_cells = FALSE;
+  object->serial_cells = g_ptr_array_new_with_free_func (g_object_unref);
+  object->__isset_serial_cells = FALSE;
+}
+
+static void 
+swcdb_thrift_col_cells_finalize (GObject *object)
+{
+  swcdb_thriftColCells *tobject = SWCDB_THRIFT_COL_CELLS (object);
+
+  /* satisfy -Wall in case we don't use tobject */
+  THRIFT_UNUSED_VAR (tobject);
+  if (tobject->cells != NULL)
+  {
+    g_ptr_array_unref (tobject->cells);
+    tobject->cells = NULL;
+  }
+  if (tobject->serial_cells != NULL)
+  {
+    g_ptr_array_unref (tobject->serial_cells);
+    tobject->serial_cells = NULL;
+  }
+}
+
+static void
+swcdb_thrift_col_cells_class_init (swcdb_thriftColCellsClass * cls)
+{
+  GObjectClass *gobject_class = G_OBJECT_CLASS (cls);
+  ThriftStructClass *struct_class = THRIFT_STRUCT_CLASS (cls);
+
+  struct_class->read = swcdb_thrift_col_cells_read;
+  struct_class->write = swcdb_thrift_col_cells_write;
+
+  gobject_class->finalize = swcdb_thrift_col_cells_finalize;
+  gobject_class->get_property = swcdb_thrift_col_cells_get_property;
+  gobject_class->set_property = swcdb_thrift_col_cells_set_property;
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_SWCDB_THRIFT_COL_CELLS_CELLS,
+     g_param_spec_boxed ("cells",
+                         NULL,
+                         NULL,
+                         G_TYPE_PTR_ARRAY,
+                         G_PARAM_READWRITE));
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_SWCDB_THRIFT_COL_CELLS_SERIAL_CELLS,
+     g_param_spec_boxed ("serial_cells",
+                         NULL,
+                         NULL,
+                         G_TYPE_PTR_ARRAY,
+                         G_PARAM_READWRITE));
+}
+
+GType
+swcdb_thrift_col_cells_get_type (void)
+{
+  static GType type = 0;
+
+  if (type == 0) 
+  {
+    static const GTypeInfo type_info = 
+    {
+      sizeof (swcdb_thriftColCellsClass),
+      NULL, /* base_init */
+      NULL, /* base_finalize */
+      (GClassInitFunc) swcdb_thrift_col_cells_class_init,
+      NULL, /* class_finalize */
+      NULL, /* class_data */
+      sizeof (swcdb_thriftColCells),
+      0, /* n_preallocs */
+      (GInstanceInitFunc) swcdb_thrift_col_cells_instance_init,
+      NULL, /* value_table */
+    };
+
+    type = g_type_register_static (THRIFT_TYPE_STRUCT, 
+                                   "swcdb_thriftColCellsType",
+                                   &type_info, 0);
+  }
+
+  return type;
+}
+
 enum _swcdb_thriftKCellProperties
 {
   PROP_SWCDB_THRIFT_K_CELL_0,
@@ -6921,18 +13811,16 @@ swcdb_thrift_k_cell_write (ThriftStruct *object, ThriftProtocol *protocol, GErro
   if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
     return -1;
   xfer += ret;
-  if (this_object->__isset_v == TRUE) {
-    if ((ret = thrift_protocol_write_field_begin (protocol, "v", T_STRING, 3, error)) < 0)
-      return -1;
-    xfer += ret;
-    if ((ret = thrift_protocol_write_binary (protocol, this_object->v ? ((GByteArray *) this_object->v)->data : NULL, this_object->v ? ((GByteArray *) this_object->v)->len : 0, error)) < 0)
-      return -1;
-    xfer += ret;
+  if ((ret = thrift_protocol_write_field_begin (protocol, "v", T_STRING, 3, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_binary (protocol, this_object->v ? ((GByteArray *) this_object->v)->data : NULL, this_object->v ? ((GByteArray *) this_object->v)->len : 0, error)) < 0)
+    return -1;
+  xfer += ret;
 
-    if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
-      return -1;
-    xfer += ret;
-  }
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
   if ((ret = thrift_protocol_write_field_stop (protocol, error)) < 0)
     return -1;
   xfer += ret;
@@ -7110,11 +13998,390 @@ swcdb_thrift_k_cell_get_type (void)
   return type;
 }
 
+enum _swcdb_thriftKCellSerialProperties
+{
+  PROP_SWCDB_THRIFT_K_CELL_SERIAL_0,
+  PROP_SWCDB_THRIFT_K_CELL_SERIAL_C,
+  PROP_SWCDB_THRIFT_K_CELL_SERIAL_TS,
+  PROP_SWCDB_THRIFT_K_CELL_SERIAL_V
+};
+
+/* reads a k_cell_serial object */
+static gint32
+swcdb_thrift_k_cell_serial_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+{
+  gint32 ret;
+  gint32 xfer = 0;
+  gchar *name = NULL;
+  ThriftType ftype;
+  gint16 fid;
+  guint32 len = 0;
+  gpointer data = NULL;
+  swcdb_thriftKCellSerial * this_object = SWCDB_THRIFT_K_CELL_SERIAL(object);
+
+  /* satisfy -Wall in case these aren't used */
+  THRIFT_UNUSED_VAR (len);
+  THRIFT_UNUSED_VAR (data);
+  THRIFT_UNUSED_VAR (this_object);
+
+  /* read the struct begin marker */
+  if ((ret = thrift_protocol_read_struct_begin (protocol, &name, error)) < 0)
+  {
+    if (name) g_free (name);
+    return -1;
+  }
+  xfer += ret;
+  if (name) g_free (name);
+  name = NULL;
+
+  /* read the struct fields */
+  while (1)
+  {
+    /* read the beginning of a field */
+    if ((ret = thrift_protocol_read_field_begin (protocol, &name, &ftype, &fid, error)) < 0)
+    {
+      if (name) g_free (name);
+      return -1;
+    }
+    xfer += ret;
+    if (name) g_free (name);
+    name = NULL;
+
+    /* break if we get a STOP field */
+    if (ftype == T_STOP)
+    {
+      break;
+    }
+
+    switch (fid)
+    {
+      case 1:
+        if (ftype == T_STRING)
+        {
+          if (this_object->c != NULL)
+          {
+            g_free(this_object->c);
+            this_object->c = NULL;
+          }
+
+          if ((ret = thrift_protocol_read_string (protocol, &this_object->c, error)) < 0)
+            return -1;
+          xfer += ret;
+          this_object->__isset_c = TRUE;
+        } else {
+          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+            return -1;
+          xfer += ret;
+        }
+        break;
+      case 2:
+        if (ftype == T_I64)
+        {
+          if ((ret = thrift_protocol_read_i64 (protocol, &this_object->ts, error)) < 0)
+            return -1;
+          xfer += ret;
+          this_object->__isset_ts = TRUE;
+        } else {
+          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+            return -1;
+          xfer += ret;
+        }
+        break;
+      case 3:
+        if (ftype == T_LIST)
+        {
+          {
+            guint32 size;
+            guint32 i;
+            ThriftType element_type;
+
+            if ((ret = thrift_protocol_read_list_begin (protocol, &element_type,&size, error)) < 0)
+              return -1;
+            xfer += ret;
+
+            /* iterate through list elements */
+            for (i = 0; i < size; i++)
+            {
+              swcdb_thriftCellValueSerial * _elem100 = NULL;
+              if ( _elem100 != NULL)
+              {
+                g_object_unref (_elem100);
+              }
+              _elem100 = g_object_new (SWCDB_THRIFT_TYPE_CELL_VALUE_SERIAL, NULL);
+              if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem100), protocol, error)) < 0)
+              {
+                g_object_unref (_elem100);
+                return -1;
+              }
+              xfer += ret;
+              g_ptr_array_add (this_object->v, _elem100);
+            }
+            if ((ret = thrift_protocol_read_list_end (protocol, error)) < 0)
+              return -1;
+            xfer += ret;
+          }
+          this_object->__isset_v = TRUE;
+        } else {
+          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+            return -1;
+          xfer += ret;
+        }
+        break;
+      default:
+        if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+          return -1;
+        xfer += ret;
+        break;
+    }
+    if ((ret = thrift_protocol_read_field_end (protocol, error)) < 0)
+      return -1;
+    xfer += ret;
+  }
+
+  if ((ret = thrift_protocol_read_struct_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+
+  return xfer;
+}
+
+static gint32
+swcdb_thrift_k_cell_serial_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+{
+  gint32 ret;
+  gint32 xfer = 0;
+
+  swcdb_thriftKCellSerial * this_object = SWCDB_THRIFT_K_CELL_SERIAL(object);
+  THRIFT_UNUSED_VAR (this_object);
+  if ((ret = thrift_protocol_write_struct_begin (protocol, "KCellSerial", error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_begin (protocol, "c", T_STRING, 1, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_string (protocol, this_object->c, error)) < 0)
+    return -1;
+  xfer += ret;
+
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_begin (protocol, "ts", T_I64, 2, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_i64 (protocol, this_object->ts, error)) < 0)
+    return -1;
+  xfer += ret;
+
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_begin (protocol, "v", T_LIST, 3, error)) < 0)
+    return -1;
+  xfer += ret;
+  {
+    guint i101;
+
+    if ((ret = thrift_protocol_write_list_begin (protocol, T_STRUCT, (gint32) (this_object->v ? this_object->v->len : 0), error)) < 0)
+      return -1;
+    xfer += ret;
+    for (i101 = 0; i101 < (this_object->v ? this_object->v->len : 0); i101++)
+    {
+      if ((ret = thrift_struct_write (THRIFT_STRUCT ((g_ptr_array_index ((GPtrArray *) this_object->v, i101))), protocol, error)) < 0)
+        return -1;
+      xfer += ret;
+
+    }
+    if ((ret = thrift_protocol_write_list_end (protocol, error)) < 0)
+      return -1;
+    xfer += ret;
+  }
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_stop (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_struct_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+
+  return xfer;
+}
+
+static void
+swcdb_thrift_k_cell_serial_set_property (GObject *object,
+                                         guint property_id,
+                                         const GValue *value,
+                                         GParamSpec *pspec)
+{
+  swcdb_thriftKCellSerial *self = SWCDB_THRIFT_K_CELL_SERIAL (object);
+
+  switch (property_id)
+  {
+    case PROP_SWCDB_THRIFT_K_CELL_SERIAL_C:
+      if (self->c != NULL)
+        g_free (self->c);
+      self->c = g_value_dup_string (value);
+      self->__isset_c = TRUE;
+      break;
+
+    case PROP_SWCDB_THRIFT_K_CELL_SERIAL_TS:
+      self->ts = g_value_get_int64 (value);
+      self->__isset_ts = TRUE;
+      break;
+
+    case PROP_SWCDB_THRIFT_K_CELL_SERIAL_V:
+      if (self->v != NULL)
+        g_ptr_array_unref (self->v);
+      self->v = g_value_dup_boxed (value);
+      self->__isset_v = TRUE;
+      break;
+
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+      break;
+  }
+}
+
+static void
+swcdb_thrift_k_cell_serial_get_property (GObject *object,
+                                         guint property_id,
+                                         GValue *value,
+                                         GParamSpec *pspec)
+{
+  swcdb_thriftKCellSerial *self = SWCDB_THRIFT_K_CELL_SERIAL (object);
+
+  switch (property_id)
+  {
+    case PROP_SWCDB_THRIFT_K_CELL_SERIAL_C:
+      g_value_set_string (value, self->c);
+      break;
+
+    case PROP_SWCDB_THRIFT_K_CELL_SERIAL_TS:
+      g_value_set_int64 (value, self->ts);
+      break;
+
+    case PROP_SWCDB_THRIFT_K_CELL_SERIAL_V:
+      g_value_set_boxed (value, self->v);
+      break;
+
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+      break;
+  }
+}
+
+static void 
+swcdb_thrift_k_cell_serial_instance_init (swcdb_thriftKCellSerial * object)
+{
+  /* satisfy -Wall */
+  THRIFT_UNUSED_VAR (object);
+  object->c = NULL;
+  object->__isset_c = FALSE;
+  object->ts = 0;
+  object->__isset_ts = FALSE;
+  object->v = g_ptr_array_new_with_free_func (g_object_unref);
+  object->__isset_v = FALSE;
+}
+
+static void 
+swcdb_thrift_k_cell_serial_finalize (GObject *object)
+{
+  swcdb_thriftKCellSerial *tobject = SWCDB_THRIFT_K_CELL_SERIAL (object);
+
+  /* satisfy -Wall in case we don't use tobject */
+  THRIFT_UNUSED_VAR (tobject);
+  if (tobject->c != NULL)
+  {
+    g_free(tobject->c);
+    tobject->c = NULL;
+  }
+  if (tobject->v != NULL)
+  {
+    g_ptr_array_unref (tobject->v);
+    tobject->v = NULL;
+  }
+}
+
+static void
+swcdb_thrift_k_cell_serial_class_init (swcdb_thriftKCellSerialClass * cls)
+{
+  GObjectClass *gobject_class = G_OBJECT_CLASS (cls);
+  ThriftStructClass *struct_class = THRIFT_STRUCT_CLASS (cls);
+
+  struct_class->read = swcdb_thrift_k_cell_serial_read;
+  struct_class->write = swcdb_thrift_k_cell_serial_write;
+
+  gobject_class->finalize = swcdb_thrift_k_cell_serial_finalize;
+  gobject_class->get_property = swcdb_thrift_k_cell_serial_get_property;
+  gobject_class->set_property = swcdb_thrift_k_cell_serial_set_property;
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_SWCDB_THRIFT_K_CELL_SERIAL_C,
+     g_param_spec_string ("c",
+                          NULL,
+                          NULL,
+                          NULL,
+                          G_PARAM_READWRITE));
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_SWCDB_THRIFT_K_CELL_SERIAL_TS,
+     g_param_spec_int64 ("ts",
+                         NULL,
+                         NULL,
+                         G_MININT64,
+                         G_MAXINT64,
+                         0,
+                         G_PARAM_READWRITE));
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_SWCDB_THRIFT_K_CELL_SERIAL_V,
+     g_param_spec_boxed ("v",
+                         NULL,
+                         NULL,
+                         G_TYPE_PTR_ARRAY,
+                         G_PARAM_READWRITE));
+}
+
+GType
+swcdb_thrift_k_cell_serial_get_type (void)
+{
+  static GType type = 0;
+
+  if (type == 0) 
+  {
+    static const GTypeInfo type_info = 
+    {
+      sizeof (swcdb_thriftKCellSerialClass),
+      NULL, /* base_init */
+      NULL, /* base_finalize */
+      (GClassInitFunc) swcdb_thrift_k_cell_serial_class_init,
+      NULL, /* class_finalize */
+      NULL, /* class_data */
+      sizeof (swcdb_thriftKCellSerial),
+      0, /* n_preallocs */
+      (GInstanceInitFunc) swcdb_thrift_k_cell_serial_instance_init,
+      NULL, /* value_table */
+    };
+
+    type = g_type_register_static (THRIFT_TYPE_STRUCT, 
+                                   "swcdb_thriftKCellSerialType",
+                                   &type_info, 0);
+  }
+
+  return type;
+}
+
 enum _swcdb_thriftkCellsProperties
 {
   PROP_SWCDB_THRIFT_K_CELLS_0,
   PROP_SWCDB_THRIFT_K_CELLS_K,
-  PROP_SWCDB_THRIFT_K_CELLS_CELLS
+  PROP_SWCDB_THRIFT_K_CELLS_CELLS,
+  PROP_SWCDB_THRIFT_K_CELLS_SERIAL_CELLS
 };
 
 /* reads a k_cells object */
@@ -7181,20 +14448,20 @@ swcdb_thrift_k_cells_read (ThriftStruct *object, ThriftProtocol *protocol, GErro
             /* iterate through list elements */
             for (i = 0; i < size; i++)
             {
-              GByteArray * _elem40 = NULL;
-              if (_elem40 != NULL)
+              GByteArray * _elem102 = NULL;
+              if (_elem102 != NULL)
               {
-                g_free(_elem40);
-                _elem40 = NULL;
+                g_free(_elem102);
+                _elem102 = NULL;
               }
 
               if ((ret = thrift_protocol_read_binary (protocol, &data, &len, error)) < 0)
                 return -1;
               xfer += ret;
-              _elem40 = g_byte_array_new();
-              g_byte_array_append (_elem40, (guint8 *) data, (guint) len);
+              _elem102 = g_byte_array_new();
+              g_byte_array_append (_elem102, (guint8 *) data, (guint) len);
               g_free (data);
-              g_ptr_array_add (this_object->k, _elem40);
+              g_ptr_array_add (this_object->k, _elem102);
             }
             if ((ret = thrift_protocol_read_list_end (protocol, error)) < 0)
               return -1;
@@ -7222,25 +14489,65 @@ swcdb_thrift_k_cells_read (ThriftStruct *object, ThriftProtocol *protocol, GErro
             /* iterate through list elements */
             for (i = 0; i < size; i++)
             {
-              swcdb_thriftKCell * _elem41 = NULL;
-              if ( _elem41 != NULL)
+              swcdb_thriftKCell * _elem103 = NULL;
+              if ( _elem103 != NULL)
               {
-                g_object_unref (_elem41);
+                g_object_unref (_elem103);
               }
-              _elem41 = g_object_new (SWCDB_THRIFT_TYPE_K_CELL, NULL);
-              if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem41), protocol, error)) < 0)
+              _elem103 = g_object_new (SWCDB_THRIFT_TYPE_K_CELL, NULL);
+              if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem103), protocol, error)) < 0)
               {
-                g_object_unref (_elem41);
+                g_object_unref (_elem103);
                 return -1;
               }
               xfer += ret;
-              g_ptr_array_add (this_object->cells, _elem41);
+              g_ptr_array_add (this_object->cells, _elem103);
             }
             if ((ret = thrift_protocol_read_list_end (protocol, error)) < 0)
               return -1;
             xfer += ret;
           }
           this_object->__isset_cells = TRUE;
+        } else {
+          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+            return -1;
+          xfer += ret;
+        }
+        break;
+      case 3:
+        if (ftype == T_LIST)
+        {
+          {
+            guint32 size;
+            guint32 i;
+            ThriftType element_type;
+
+            if ((ret = thrift_protocol_read_list_begin (protocol, &element_type,&size, error)) < 0)
+              return -1;
+            xfer += ret;
+
+            /* iterate through list elements */
+            for (i = 0; i < size; i++)
+            {
+              swcdb_thriftKCellSerial * _elem104 = NULL;
+              if ( _elem104 != NULL)
+              {
+                g_object_unref (_elem104);
+              }
+              _elem104 = g_object_new (SWCDB_THRIFT_TYPE_K_CELL_SERIAL, NULL);
+              if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem104), protocol, error)) < 0)
+              {
+                g_object_unref (_elem104);
+                return -1;
+              }
+              xfer += ret;
+              g_ptr_array_add (this_object->serial_cells, _elem104);
+            }
+            if ((ret = thrift_protocol_read_list_end (protocol, error)) < 0)
+              return -1;
+            xfer += ret;
+          }
+          this_object->__isset_serial_cells = TRUE;
         } else {
           if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
             return -1;
@@ -7280,14 +14587,14 @@ swcdb_thrift_k_cells_write (ThriftStruct *object, ThriftProtocol *protocol, GErr
     return -1;
   xfer += ret;
   {
-    guint i42;
+    guint i105;
 
     if ((ret = thrift_protocol_write_list_begin (protocol, T_STRING, (gint32) (this_object->k ? this_object->k->len : 0), error)) < 0)
       return -1;
     xfer += ret;
-    for (i42 = 0; i42 < (this_object->k ? this_object->k->len : 0); i42++)
+    for (i105 = 0; i105 < (this_object->k ? this_object->k->len : 0); i105++)
     {
-      if ((ret = thrift_protocol_write_binary (protocol, ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->k, i42)) ? ((GByteArray *) ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->k, i42)))->data : NULL, ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->k, i42)) ? ((GByteArray *) ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->k, i42)))->len : 0, error)) < 0)
+      if ((ret = thrift_protocol_write_binary (protocol, ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->k, i105)) ? ((GByteArray *) ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->k, i105)))->data : NULL, ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->k, i105)) ? ((GByteArray *) ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->k, i105)))->len : 0, error)) < 0)
         return -1;
       xfer += ret;
 
@@ -7303,14 +14610,37 @@ swcdb_thrift_k_cells_write (ThriftStruct *object, ThriftProtocol *protocol, GErr
     return -1;
   xfer += ret;
   {
-    guint i43;
+    guint i106;
 
     if ((ret = thrift_protocol_write_list_begin (protocol, T_STRUCT, (gint32) (this_object->cells ? this_object->cells->len : 0), error)) < 0)
       return -1;
     xfer += ret;
-    for (i43 = 0; i43 < (this_object->cells ? this_object->cells->len : 0); i43++)
+    for (i106 = 0; i106 < (this_object->cells ? this_object->cells->len : 0); i106++)
     {
-      if ((ret = thrift_struct_write (THRIFT_STRUCT ((g_ptr_array_index ((GPtrArray *) this_object->cells, i43))), protocol, error)) < 0)
+      if ((ret = thrift_struct_write (THRIFT_STRUCT ((g_ptr_array_index ((GPtrArray *) this_object->cells, i106))), protocol, error)) < 0)
+        return -1;
+      xfer += ret;
+
+    }
+    if ((ret = thrift_protocol_write_list_end (protocol, error)) < 0)
+      return -1;
+    xfer += ret;
+  }
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_begin (protocol, "serial_cells", T_LIST, 3, error)) < 0)
+    return -1;
+  xfer += ret;
+  {
+    guint i107;
+
+    if ((ret = thrift_protocol_write_list_begin (protocol, T_STRUCT, (gint32) (this_object->serial_cells ? this_object->serial_cells->len : 0), error)) < 0)
+      return -1;
+    xfer += ret;
+    for (i107 = 0; i107 < (this_object->serial_cells ? this_object->serial_cells->len : 0); i107++)
+    {
+      if ((ret = thrift_struct_write (THRIFT_STRUCT ((g_ptr_array_index ((GPtrArray *) this_object->serial_cells, i107))), protocol, error)) < 0)
         return -1;
       xfer += ret;
 
@@ -7356,6 +14686,13 @@ swcdb_thrift_k_cells_set_property (GObject *object,
       self->__isset_cells = TRUE;
       break;
 
+    case PROP_SWCDB_THRIFT_K_CELLS_SERIAL_CELLS:
+      if (self->serial_cells != NULL)
+        g_ptr_array_unref (self->serial_cells);
+      self->serial_cells = g_value_dup_boxed (value);
+      self->__isset_serial_cells = TRUE;
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
       break;
@@ -7380,6 +14717,10 @@ swcdb_thrift_k_cells_get_property (GObject *object,
       g_value_set_boxed (value, self->cells);
       break;
 
+    case PROP_SWCDB_THRIFT_K_CELLS_SERIAL_CELLS:
+      g_value_set_boxed (value, self->serial_cells);
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
       break;
@@ -7395,6 +14736,8 @@ swcdb_thrift_k_cells_instance_init (swcdb_thriftkCells * object)
   object->__isset_k = FALSE;
   object->cells = g_ptr_array_new_with_free_func (g_object_unref);
   object->__isset_cells = FALSE;
+  object->serial_cells = g_ptr_array_new_with_free_func (g_object_unref);
+  object->__isset_serial_cells = FALSE;
 }
 
 static void 
@@ -7413,6 +14756,11 @@ swcdb_thrift_k_cells_finalize (GObject *object)
   {
     g_ptr_array_unref (tobject->cells);
     tobject->cells = NULL;
+  }
+  if (tobject->serial_cells != NULL)
+  {
+    g_ptr_array_unref (tobject->serial_cells);
+    tobject->serial_cells = NULL;
   }
 }
 
@@ -7442,6 +14790,15 @@ swcdb_thrift_k_cells_class_init (swcdb_thriftkCellsClass * cls)
     (gobject_class,
      PROP_SWCDB_THRIFT_K_CELLS_CELLS,
      g_param_spec_boxed ("cells",
+                         NULL,
+                         NULL,
+                         G_TYPE_PTR_ARRAY,
+                         G_PARAM_READWRITE));
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_SWCDB_THRIFT_K_CELLS_SERIAL_CELLS,
+     g_param_spec_boxed ("serial_cells",
                          NULL,
                          NULL,
                          G_TYPE_PTR_ARRAY,
@@ -7637,18 +14994,16 @@ swcdb_thrift_f_cell_write (ThriftStruct *object, ThriftProtocol *protocol, GErro
   if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
     return -1;
   xfer += ret;
-  if (this_object->__isset_v == TRUE) {
-    if ((ret = thrift_protocol_write_field_begin (protocol, "v", T_STRING, 3, error)) < 0)
-      return -1;
-    xfer += ret;
-    if ((ret = thrift_protocol_write_binary (protocol, this_object->v ? ((GByteArray *) this_object->v)->data : NULL, this_object->v ? ((GByteArray *) this_object->v)->len : 0, error)) < 0)
-      return -1;
-    xfer += ret;
+  if ((ret = thrift_protocol_write_field_begin (protocol, "v", T_STRING, 3, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_binary (protocol, this_object->v ? ((GByteArray *) this_object->v)->data : NULL, this_object->v ? ((GByteArray *) this_object->v)->len : 0, error)) < 0)
+    return -1;
+  xfer += ret;
 
-    if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
-      return -1;
-    xfer += ret;
-  }
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
   if ((ret = thrift_protocol_write_field_stop (protocol, error)) < 0)
     return -1;
   xfer += ret;
@@ -7826,11 +15181,390 @@ swcdb_thrift_f_cell_get_type (void)
   return type;
 }
 
+enum _swcdb_thriftFCellSerialProperties
+{
+  PROP_SWCDB_THRIFT_F_CELL_SERIAL_0,
+  PROP_SWCDB_THRIFT_F_CELL_SERIAL_C,
+  PROP_SWCDB_THRIFT_F_CELL_SERIAL_TS,
+  PROP_SWCDB_THRIFT_F_CELL_SERIAL_V
+};
+
+/* reads a f_cell_serial object */
+static gint32
+swcdb_thrift_f_cell_serial_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+{
+  gint32 ret;
+  gint32 xfer = 0;
+  gchar *name = NULL;
+  ThriftType ftype;
+  gint16 fid;
+  guint32 len = 0;
+  gpointer data = NULL;
+  swcdb_thriftFCellSerial * this_object = SWCDB_THRIFT_F_CELL_SERIAL(object);
+
+  /* satisfy -Wall in case these aren't used */
+  THRIFT_UNUSED_VAR (len);
+  THRIFT_UNUSED_VAR (data);
+  THRIFT_UNUSED_VAR (this_object);
+
+  /* read the struct begin marker */
+  if ((ret = thrift_protocol_read_struct_begin (protocol, &name, error)) < 0)
+  {
+    if (name) g_free (name);
+    return -1;
+  }
+  xfer += ret;
+  if (name) g_free (name);
+  name = NULL;
+
+  /* read the struct fields */
+  while (1)
+  {
+    /* read the beginning of a field */
+    if ((ret = thrift_protocol_read_field_begin (protocol, &name, &ftype, &fid, error)) < 0)
+    {
+      if (name) g_free (name);
+      return -1;
+    }
+    xfer += ret;
+    if (name) g_free (name);
+    name = NULL;
+
+    /* break if we get a STOP field */
+    if (ftype == T_STOP)
+    {
+      break;
+    }
+
+    switch (fid)
+    {
+      case 1:
+        if (ftype == T_STRING)
+        {
+          if (this_object->c != NULL)
+          {
+            g_free(this_object->c);
+            this_object->c = NULL;
+          }
+
+          if ((ret = thrift_protocol_read_string (protocol, &this_object->c, error)) < 0)
+            return -1;
+          xfer += ret;
+          this_object->__isset_c = TRUE;
+        } else {
+          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+            return -1;
+          xfer += ret;
+        }
+        break;
+      case 2:
+        if (ftype == T_I64)
+        {
+          if ((ret = thrift_protocol_read_i64 (protocol, &this_object->ts, error)) < 0)
+            return -1;
+          xfer += ret;
+          this_object->__isset_ts = TRUE;
+        } else {
+          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+            return -1;
+          xfer += ret;
+        }
+        break;
+      case 3:
+        if (ftype == T_LIST)
+        {
+          {
+            guint32 size;
+            guint32 i;
+            ThriftType element_type;
+
+            if ((ret = thrift_protocol_read_list_begin (protocol, &element_type,&size, error)) < 0)
+              return -1;
+            xfer += ret;
+
+            /* iterate through list elements */
+            for (i = 0; i < size; i++)
+            {
+              swcdb_thriftCellValueSerial * _elem108 = NULL;
+              if ( _elem108 != NULL)
+              {
+                g_object_unref (_elem108);
+              }
+              _elem108 = g_object_new (SWCDB_THRIFT_TYPE_CELL_VALUE_SERIAL, NULL);
+              if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem108), protocol, error)) < 0)
+              {
+                g_object_unref (_elem108);
+                return -1;
+              }
+              xfer += ret;
+              g_ptr_array_add (this_object->v, _elem108);
+            }
+            if ((ret = thrift_protocol_read_list_end (protocol, error)) < 0)
+              return -1;
+            xfer += ret;
+          }
+          this_object->__isset_v = TRUE;
+        } else {
+          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+            return -1;
+          xfer += ret;
+        }
+        break;
+      default:
+        if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+          return -1;
+        xfer += ret;
+        break;
+    }
+    if ((ret = thrift_protocol_read_field_end (protocol, error)) < 0)
+      return -1;
+    xfer += ret;
+  }
+
+  if ((ret = thrift_protocol_read_struct_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+
+  return xfer;
+}
+
+static gint32
+swcdb_thrift_f_cell_serial_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+{
+  gint32 ret;
+  gint32 xfer = 0;
+
+  swcdb_thriftFCellSerial * this_object = SWCDB_THRIFT_F_CELL_SERIAL(object);
+  THRIFT_UNUSED_VAR (this_object);
+  if ((ret = thrift_protocol_write_struct_begin (protocol, "FCellSerial", error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_begin (protocol, "c", T_STRING, 1, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_string (protocol, this_object->c, error)) < 0)
+    return -1;
+  xfer += ret;
+
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_begin (protocol, "ts", T_I64, 2, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_i64 (protocol, this_object->ts, error)) < 0)
+    return -1;
+  xfer += ret;
+
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_begin (protocol, "v", T_LIST, 3, error)) < 0)
+    return -1;
+  xfer += ret;
+  {
+    guint i109;
+
+    if ((ret = thrift_protocol_write_list_begin (protocol, T_STRUCT, (gint32) (this_object->v ? this_object->v->len : 0), error)) < 0)
+      return -1;
+    xfer += ret;
+    for (i109 = 0; i109 < (this_object->v ? this_object->v->len : 0); i109++)
+    {
+      if ((ret = thrift_struct_write (THRIFT_STRUCT ((g_ptr_array_index ((GPtrArray *) this_object->v, i109))), protocol, error)) < 0)
+        return -1;
+      xfer += ret;
+
+    }
+    if ((ret = thrift_protocol_write_list_end (protocol, error)) < 0)
+      return -1;
+    xfer += ret;
+  }
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_stop (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_struct_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+
+  return xfer;
+}
+
+static void
+swcdb_thrift_f_cell_serial_set_property (GObject *object,
+                                         guint property_id,
+                                         const GValue *value,
+                                         GParamSpec *pspec)
+{
+  swcdb_thriftFCellSerial *self = SWCDB_THRIFT_F_CELL_SERIAL (object);
+
+  switch (property_id)
+  {
+    case PROP_SWCDB_THRIFT_F_CELL_SERIAL_C:
+      if (self->c != NULL)
+        g_free (self->c);
+      self->c = g_value_dup_string (value);
+      self->__isset_c = TRUE;
+      break;
+
+    case PROP_SWCDB_THRIFT_F_CELL_SERIAL_TS:
+      self->ts = g_value_get_int64 (value);
+      self->__isset_ts = TRUE;
+      break;
+
+    case PROP_SWCDB_THRIFT_F_CELL_SERIAL_V:
+      if (self->v != NULL)
+        g_ptr_array_unref (self->v);
+      self->v = g_value_dup_boxed (value);
+      self->__isset_v = TRUE;
+      break;
+
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+      break;
+  }
+}
+
+static void
+swcdb_thrift_f_cell_serial_get_property (GObject *object,
+                                         guint property_id,
+                                         GValue *value,
+                                         GParamSpec *pspec)
+{
+  swcdb_thriftFCellSerial *self = SWCDB_THRIFT_F_CELL_SERIAL (object);
+
+  switch (property_id)
+  {
+    case PROP_SWCDB_THRIFT_F_CELL_SERIAL_C:
+      g_value_set_string (value, self->c);
+      break;
+
+    case PROP_SWCDB_THRIFT_F_CELL_SERIAL_TS:
+      g_value_set_int64 (value, self->ts);
+      break;
+
+    case PROP_SWCDB_THRIFT_F_CELL_SERIAL_V:
+      g_value_set_boxed (value, self->v);
+      break;
+
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+      break;
+  }
+}
+
+static void 
+swcdb_thrift_f_cell_serial_instance_init (swcdb_thriftFCellSerial * object)
+{
+  /* satisfy -Wall */
+  THRIFT_UNUSED_VAR (object);
+  object->c = NULL;
+  object->__isset_c = FALSE;
+  object->ts = 0;
+  object->__isset_ts = FALSE;
+  object->v = g_ptr_array_new_with_free_func (g_object_unref);
+  object->__isset_v = FALSE;
+}
+
+static void 
+swcdb_thrift_f_cell_serial_finalize (GObject *object)
+{
+  swcdb_thriftFCellSerial *tobject = SWCDB_THRIFT_F_CELL_SERIAL (object);
+
+  /* satisfy -Wall in case we don't use tobject */
+  THRIFT_UNUSED_VAR (tobject);
+  if (tobject->c != NULL)
+  {
+    g_free(tobject->c);
+    tobject->c = NULL;
+  }
+  if (tobject->v != NULL)
+  {
+    g_ptr_array_unref (tobject->v);
+    tobject->v = NULL;
+  }
+}
+
+static void
+swcdb_thrift_f_cell_serial_class_init (swcdb_thriftFCellSerialClass * cls)
+{
+  GObjectClass *gobject_class = G_OBJECT_CLASS (cls);
+  ThriftStructClass *struct_class = THRIFT_STRUCT_CLASS (cls);
+
+  struct_class->read = swcdb_thrift_f_cell_serial_read;
+  struct_class->write = swcdb_thrift_f_cell_serial_write;
+
+  gobject_class->finalize = swcdb_thrift_f_cell_serial_finalize;
+  gobject_class->get_property = swcdb_thrift_f_cell_serial_get_property;
+  gobject_class->set_property = swcdb_thrift_f_cell_serial_set_property;
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_SWCDB_THRIFT_F_CELL_SERIAL_C,
+     g_param_spec_string ("c",
+                          NULL,
+                          NULL,
+                          NULL,
+                          G_PARAM_READWRITE));
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_SWCDB_THRIFT_F_CELL_SERIAL_TS,
+     g_param_spec_int64 ("ts",
+                         NULL,
+                         NULL,
+                         G_MININT64,
+                         G_MAXINT64,
+                         0,
+                         G_PARAM_READWRITE));
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_SWCDB_THRIFT_F_CELL_SERIAL_V,
+     g_param_spec_boxed ("v",
+                         NULL,
+                         NULL,
+                         G_TYPE_PTR_ARRAY,
+                         G_PARAM_READWRITE));
+}
+
+GType
+swcdb_thrift_f_cell_serial_get_type (void)
+{
+  static GType type = 0;
+
+  if (type == 0) 
+  {
+    static const GTypeInfo type_info = 
+    {
+      sizeof (swcdb_thriftFCellSerialClass),
+      NULL, /* base_init */
+      NULL, /* base_finalize */
+      (GClassInitFunc) swcdb_thrift_f_cell_serial_class_init,
+      NULL, /* class_finalize */
+      NULL, /* class_data */
+      sizeof (swcdb_thriftFCellSerial),
+      0, /* n_preallocs */
+      (GInstanceInitFunc) swcdb_thrift_f_cell_serial_instance_init,
+      NULL, /* value_table */
+    };
+
+    type = g_type_register_static (THRIFT_TYPE_STRUCT, 
+                                   "swcdb_thriftFCellSerialType",
+                                   &type_info, 0);
+  }
+
+  return type;
+}
+
 enum _swcdb_thriftFCellsProperties
 {
   PROP_SWCDB_THRIFT_F_CELLS_0,
   PROP_SWCDB_THRIFT_F_CELLS_F,
-  PROP_SWCDB_THRIFT_F_CELLS_CELLS
+  PROP_SWCDB_THRIFT_F_CELLS_CELLS,
+  PROP_SWCDB_THRIFT_F_CELLS_SERIAL_CELLS
 };
 
 /* reads a f_cells object */
@@ -7899,33 +15633,33 @@ swcdb_thrift_f_cells_read (ThriftStruct *object, ThriftProtocol *protocol, GErro
             /* iterate through each of the map's fields */
             for (i = 0; i < size; i++)
             {
-              GByteArray * key44 = NULL;
-              swcdb_thriftFCells * val45 = NULL;
-              if (key44 != NULL)
+              GByteArray * key110 = NULL;
+              swcdb_thriftFCells * val111 = NULL;
+              if (key110 != NULL)
               {
-                g_free(key44);
-                key44 = NULL;
+                g_free(key110);
+                key110 = NULL;
               }
 
               if ((ret = thrift_protocol_read_binary (protocol, &data, &len, error)) < 0)
                 return -1;
               xfer += ret;
-              key44 = g_byte_array_new();
-              g_byte_array_append (key44, (guint8 *) data, (guint) len);
+              key110 = g_byte_array_new();
+              g_byte_array_append (key110, (guint8 *) data, (guint) len);
               g_free (data);
-              if ( val45 != NULL)
+              if ( val111 != NULL)
               {
-                g_object_unref (val45);
+                g_object_unref (val111);
               }
-              val45 = g_object_new (SWCDB_THRIFT_TYPE_F_CELLS, NULL);
-              if ((ret = thrift_struct_read (THRIFT_STRUCT (val45), protocol, error)) < 0)
+              val111 = g_object_new (SWCDB_THRIFT_TYPE_F_CELLS, NULL);
+              if ((ret = thrift_struct_read (THRIFT_STRUCT (val111), protocol, error)) < 0)
               {
-                g_object_unref (val45);
+                g_object_unref (val111);
                 return -1;
               }
               xfer += ret;
-              if (this_object->f && key44)
-                g_hash_table_insert ((GHashTable *)this_object->f, (gpointer) key44, (gpointer) val45);
+              if (this_object->f && key110)
+                g_hash_table_insert ((GHashTable *)this_object->f, (gpointer) key110, (gpointer) val111);
             }
 
             /* read the map end marker */
@@ -7955,25 +15689,65 @@ swcdb_thrift_f_cells_read (ThriftStruct *object, ThriftProtocol *protocol, GErro
             /* iterate through list elements */
             for (i = 0; i < size; i++)
             {
-              swcdb_thriftFCell * _elem46 = NULL;
-              if ( _elem46 != NULL)
+              swcdb_thriftFCell * _elem112 = NULL;
+              if ( _elem112 != NULL)
               {
-                g_object_unref (_elem46);
+                g_object_unref (_elem112);
               }
-              _elem46 = g_object_new (SWCDB_THRIFT_TYPE_F_CELL, NULL);
-              if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem46), protocol, error)) < 0)
+              _elem112 = g_object_new (SWCDB_THRIFT_TYPE_F_CELL, NULL);
+              if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem112), protocol, error)) < 0)
               {
-                g_object_unref (_elem46);
+                g_object_unref (_elem112);
                 return -1;
               }
               xfer += ret;
-              g_ptr_array_add (this_object->cells, _elem46);
+              g_ptr_array_add (this_object->cells, _elem112);
             }
             if ((ret = thrift_protocol_read_list_end (protocol, error)) < 0)
               return -1;
             xfer += ret;
           }
           this_object->__isset_cells = TRUE;
+        } else {
+          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+            return -1;
+          xfer += ret;
+        }
+        break;
+      case 3:
+        if (ftype == T_LIST)
+        {
+          {
+            guint32 size;
+            guint32 i;
+            ThriftType element_type;
+
+            if ((ret = thrift_protocol_read_list_begin (protocol, &element_type,&size, error)) < 0)
+              return -1;
+            xfer += ret;
+
+            /* iterate through list elements */
+            for (i = 0; i < size; i++)
+            {
+              swcdb_thriftFCellSerial * _elem113 = NULL;
+              if ( _elem113 != NULL)
+              {
+                g_object_unref (_elem113);
+              }
+              _elem113 = g_object_new (SWCDB_THRIFT_TYPE_F_CELL_SERIAL, NULL);
+              if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem113), protocol, error)) < 0)
+              {
+                g_object_unref (_elem113);
+                return -1;
+              }
+              xfer += ret;
+              g_ptr_array_add (this_object->serial_cells, _elem113);
+            }
+            if ((ret = thrift_protocol_read_list_end (protocol, error)) < 0)
+              return -1;
+            xfer += ret;
+          }
+          this_object->__isset_serial_cells = TRUE;
         } else {
           if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
             return -1;
@@ -8013,8 +15787,8 @@ swcdb_thrift_f_cells_write (ThriftStruct *object, ThriftProtocol *protocol, GErr
     return -1;
   xfer += ret;
   {
-    GByteArray * key47 = NULL;
-    swcdb_thriftFCells * val48 = NULL;
+    GByteArray * key114 = NULL;
+    swcdb_thriftFCells * val115 = NULL;
     GList *key_list = NULL, *iter = NULL;
     GByteArray ** keys;
     int i = 0, key_count;
@@ -8032,14 +15806,14 @@ swcdb_thrift_f_cells_write (ThriftStruct *object, ThriftProtocol *protocol, GErr
 
     for (i = 0; i < key_count; ++i)
     {
-      key47 = keys[i];
-      val48 = (swcdb_thriftFCells *) g_hash_table_lookup (((GHashTable *) this_object->f), (gpointer) key47);
+      key114 = keys[i];
+      val115 = (swcdb_thriftFCells *) g_hash_table_lookup (((GHashTable *) this_object->f), (gpointer) key114);
 
-      if ((ret = thrift_protocol_write_binary (protocol,  key47 ? ((GByteArray *)  key47)->data : NULL,  key47 ? ((GByteArray *)  key47)->len : 0, error)) < 0)
+      if ((ret = thrift_protocol_write_binary (protocol,  key114 ? ((GByteArray *)  key114)->data : NULL,  key114 ? ((GByteArray *)  key114)->len : 0, error)) < 0)
         return -1;
       xfer += ret;
 
-      if ((ret = thrift_struct_write (THRIFT_STRUCT ( val48), protocol, error)) < 0)
+      if ((ret = thrift_struct_write (THRIFT_STRUCT ( val115), protocol, error)) < 0)
         return -1;
       xfer += ret;
 
@@ -8051,31 +15825,52 @@ swcdb_thrift_f_cells_write (ThriftStruct *object, ThriftProtocol *protocol, GErr
   if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
     return -1;
   xfer += ret;
-  if (this_object->__isset_cells == TRUE) {
-    if ((ret = thrift_protocol_write_field_begin (protocol, "cells", T_LIST, 2, error)) < 0)
+  if ((ret = thrift_protocol_write_field_begin (protocol, "cells", T_LIST, 2, error)) < 0)
+    return -1;
+  xfer += ret;
+  {
+    guint i116;
+
+    if ((ret = thrift_protocol_write_list_begin (protocol, T_STRUCT, (gint32) (this_object->cells ? this_object->cells->len : 0), error)) < 0)
       return -1;
     xfer += ret;
+    for (i116 = 0; i116 < (this_object->cells ? this_object->cells->len : 0); i116++)
     {
-      guint i49;
-
-      if ((ret = thrift_protocol_write_list_begin (protocol, T_STRUCT, (gint32) (this_object->cells ? this_object->cells->len : 0), error)) < 0)
+      if ((ret = thrift_struct_write (THRIFT_STRUCT ((g_ptr_array_index ((GPtrArray *) this_object->cells, i116))), protocol, error)) < 0)
         return -1;
       xfer += ret;
-      for (i49 = 0; i49 < (this_object->cells ? this_object->cells->len : 0); i49++)
-      {
-        if ((ret = thrift_struct_write (THRIFT_STRUCT ((g_ptr_array_index ((GPtrArray *) this_object->cells, i49))), protocol, error)) < 0)
-          return -1;
-        xfer += ret;
 
-      }
-      if ((ret = thrift_protocol_write_list_end (protocol, error)) < 0)
-        return -1;
-      xfer += ret;
     }
-    if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    if ((ret = thrift_protocol_write_list_end (protocol, error)) < 0)
       return -1;
     xfer += ret;
   }
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_begin (protocol, "serial_cells", T_LIST, 3, error)) < 0)
+    return -1;
+  xfer += ret;
+  {
+    guint i117;
+
+    if ((ret = thrift_protocol_write_list_begin (protocol, T_STRUCT, (gint32) (this_object->serial_cells ? this_object->serial_cells->len : 0), error)) < 0)
+      return -1;
+    xfer += ret;
+    for (i117 = 0; i117 < (this_object->serial_cells ? this_object->serial_cells->len : 0); i117++)
+    {
+      if ((ret = thrift_struct_write (THRIFT_STRUCT ((g_ptr_array_index ((GPtrArray *) this_object->serial_cells, i117))), protocol, error)) < 0)
+        return -1;
+      xfer += ret;
+
+    }
+    if ((ret = thrift_protocol_write_list_end (protocol, error)) < 0)
+      return -1;
+    xfer += ret;
+  }
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
   if ((ret = thrift_protocol_write_field_stop (protocol, error)) < 0)
     return -1;
   xfer += ret;
@@ -8110,6 +15905,13 @@ swcdb_thrift_f_cells_set_property (GObject *object,
       self->__isset_cells = TRUE;
       break;
 
+    case PROP_SWCDB_THRIFT_F_CELLS_SERIAL_CELLS:
+      if (self->serial_cells != NULL)
+        g_ptr_array_unref (self->serial_cells);
+      self->serial_cells = g_value_dup_boxed (value);
+      self->__isset_serial_cells = TRUE;
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
       break;
@@ -8134,6 +15936,10 @@ swcdb_thrift_f_cells_get_property (GObject *object,
       g_value_set_boxed (value, self->cells);
       break;
 
+    case PROP_SWCDB_THRIFT_F_CELLS_SERIAL_CELLS:
+      g_value_set_boxed (value, self->serial_cells);
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
       break;
@@ -8149,6 +15955,8 @@ swcdb_thrift_f_cells_instance_init (swcdb_thriftFCells * object)
   object->__isset_f = FALSE;
   object->cells = g_ptr_array_new_with_free_func (g_object_unref);
   object->__isset_cells = FALSE;
+  object->serial_cells = g_ptr_array_new_with_free_func (g_object_unref);
+  object->__isset_serial_cells = FALSE;
 }
 
 static void 
@@ -8167,6 +15975,11 @@ swcdb_thrift_f_cells_finalize (GObject *object)
   {
     g_ptr_array_unref (tobject->cells);
     tobject->cells = NULL;
+  }
+  if (tobject->serial_cells != NULL)
+  {
+    g_ptr_array_unref (tobject->serial_cells);
+    tobject->serial_cells = NULL;
   }
 }
 
@@ -8196,6 +16009,15 @@ swcdb_thrift_f_cells_class_init (swcdb_thriftFCellsClass * cls)
     (gobject_class,
      PROP_SWCDB_THRIFT_F_CELLS_CELLS,
      g_param_spec_boxed ("cells",
+                         NULL,
+                         NULL,
+                         G_TYPE_PTR_ARRAY,
+                         G_PARAM_READWRITE));
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_SWCDB_THRIFT_F_CELLS_SERIAL_CELLS,
+     g_param_spec_boxed ("serial_cells",
                          NULL,
                          NULL,
                          G_TYPE_PTR_ARRAY,
@@ -8290,38 +16112,13 @@ swcdb_thrift_cells_group_read (ThriftStruct *object, ThriftProtocol *protocol, G
     switch (fid)
     {
       case 1:
-        if (ftype == T_LIST)
+        if (ftype == T_STRUCT)
         {
+          if ((ret = thrift_struct_read (THRIFT_STRUCT (this_object->cells), protocol, error)) < 0)
           {
-            guint32 size;
-            guint32 i;
-            ThriftType element_type;
-
-            if ((ret = thrift_protocol_read_list_begin (protocol, &element_type,&size, error)) < 0)
-              return -1;
-            xfer += ret;
-
-            /* iterate through list elements */
-            for (i = 0; i < size; i++)
-            {
-              swcdb_thriftCell * _elem50 = NULL;
-              if ( _elem50 != NULL)
-              {
-                g_object_unref (_elem50);
-              }
-              _elem50 = g_object_new (SWCDB_THRIFT_TYPE_CELL, NULL);
-              if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem50), protocol, error)) < 0)
-              {
-                g_object_unref (_elem50);
-                return -1;
-              }
-              xfer += ret;
-              g_ptr_array_add (this_object->cells, _elem50);
-            }
-            if ((ret = thrift_protocol_read_list_end (protocol, error)) < 0)
-              return -1;
-            xfer += ret;
+            return -1;
           }
+          xfer += ret;
           this_object->__isset_cells = TRUE;
         } else {
           if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
@@ -8346,49 +16143,30 @@ swcdb_thrift_cells_group_read (ThriftStruct *object, ThriftProtocol *protocol, G
             /* iterate through each of the map's fields */
             for (i = 0; i < size; i++)
             {
-              gchar * key51 = NULL;
-              swcdb_thriftColCells * val52 = g_ptr_array_new_with_free_func (g_object_unref);
-              if (key51 != NULL)
+              gchar * key118 = NULL;
+              swcdb_thriftColCells * val119 = NULL;
+              if (key118 != NULL)
               {
-                g_free(key51);
-                key51 = NULL;
+                g_free(key118);
+                key118 = NULL;
               }
 
-              if ((ret = thrift_protocol_read_string (protocol, &key51, error)) < 0)
+              if ((ret = thrift_protocol_read_string (protocol, &key118, error)) < 0)
                 return -1;
               xfer += ret;
+              if ( val119 != NULL)
               {
-                guint32 size;
-                guint32 i;
-                ThriftType element_type;
-
-                if ((ret = thrift_protocol_read_list_begin (protocol, &element_type,&size, error)) < 0)
-                  return -1;
-                xfer += ret;
-
-                /* iterate through list elements */
-                for (i = 0; i < size; i++)
-                {
-                  swcdb_thriftCCell * _elem53 = NULL;
-                  if ( _elem53 != NULL)
-                  {
-                    g_object_unref (_elem53);
-                  }
-                  _elem53 = g_object_new (SWCDB_THRIFT_TYPE_C_CELL, NULL);
-                  if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem53), protocol, error)) < 0)
-                  {
-                    g_object_unref (_elem53);
-                    return -1;
-                  }
-                  xfer += ret;
-                  g_ptr_array_add (val52, _elem53);
-                }
-                if ((ret = thrift_protocol_read_list_end (protocol, error)) < 0)
-                  return -1;
-                xfer += ret;
+                g_object_unref (val119);
               }
-              if (this_object->ccells && key51)
-                g_hash_table_insert ((GHashTable *)this_object->ccells, (gpointer) key51, (gpointer) val52);
+              val119 = g_object_new (SWCDB_THRIFT_TYPE_COL_CELLS, NULL);
+              if ((ret = thrift_struct_read (THRIFT_STRUCT (val119), protocol, error)) < 0)
+              {
+                g_object_unref (val119);
+                return -1;
+              }
+              xfer += ret;
+              if (this_object->ccells && key118)
+                g_hash_table_insert ((GHashTable *)this_object->ccells, (gpointer) key118, (gpointer) val119);
             }
 
             /* read the map end marker */
@@ -8418,19 +16196,19 @@ swcdb_thrift_cells_group_read (ThriftStruct *object, ThriftProtocol *protocol, G
             /* iterate through list elements */
             for (i = 0; i < size; i++)
             {
-              swcdb_thriftkCells * _elem54 = NULL;
-              if ( _elem54 != NULL)
+              swcdb_thriftkCells * _elem120 = NULL;
+              if ( _elem120 != NULL)
               {
-                g_object_unref (_elem54);
+                g_object_unref (_elem120);
               }
-              _elem54 = g_object_new (SWCDB_THRIFT_TYPE_K_CELLS, NULL);
-              if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem54), protocol, error)) < 0)
+              _elem120 = g_object_new (SWCDB_THRIFT_TYPE_K_CELLS, NULL);
+              if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem120), protocol, error)) < 0)
               {
-                g_object_unref (_elem54);
+                g_object_unref (_elem120);
                 return -1;
               }
               xfer += ret;
-              g_ptr_array_add (this_object->kcells, _elem54);
+              g_ptr_array_add (this_object->kcells, _elem120);
             }
             if ((ret = thrift_protocol_read_list_end (protocol, error)) < 0)
               return -1;
@@ -8487,125 +16265,91 @@ swcdb_thrift_cells_group_write (ThriftStruct *object, ThriftProtocol *protocol, 
   if ((ret = thrift_protocol_write_struct_begin (protocol, "CellsGroup", error)) < 0)
     return -1;
   xfer += ret;
-  if (this_object->__isset_cells == TRUE) {
-    if ((ret = thrift_protocol_write_field_begin (protocol, "cells", T_LIST, 1, error)) < 0)
+  if ((ret = thrift_protocol_write_field_begin (protocol, "cells", T_STRUCT, 1, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_struct_write (THRIFT_STRUCT (this_object->cells), protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_begin (protocol, "ccells", T_MAP, 2, error)) < 0)
+    return -1;
+  xfer += ret;
+  {
+    gchar * key121 = NULL;
+    swcdb_thriftColCells * val122 = NULL;
+    GList *key_list = NULL, *iter = NULL;
+    gchar ** keys;
+    int i = 0, key_count;
+
+    if ((ret = thrift_protocol_write_map_begin (protocol, T_STRING, T_STRUCT, this_object->ccells ? (gint32) g_hash_table_size ((GHashTable *) this_object->ccells) : 0, error)) < 0)
       return -1;
     xfer += ret;
+    if (this_object->ccells)
+      g_hash_table_foreach ((GHashTable *) this_object->ccells, thrift_hash_table_get_keys, &key_list);
+    key_count = g_list_length (key_list);
+    keys = g_newa (gchar *, key_count);
+    for (iter = g_list_first (key_list); iter; iter = iter->next)
+      keys[i++] = (gchar *) iter->data;
+    g_list_free (key_list);
+
+    for (i = 0; i < key_count; ++i)
     {
-      guint i55;
+      key121 = keys[i];
+      val122 = (swcdb_thriftColCells *) g_hash_table_lookup (((GHashTable *) this_object->ccells), (gpointer) key121);
 
-      if ((ret = thrift_protocol_write_list_begin (protocol, T_STRUCT, (gint32) (this_object->cells ? this_object->cells->len : 0), error)) < 0)
+      if ((ret = thrift_protocol_write_string (protocol,  key121, error)) < 0)
         return -1;
       xfer += ret;
-      for (i55 = 0; i55 < (this_object->cells ? this_object->cells->len : 0); i55++)
-      {
-        if ((ret = thrift_struct_write (THRIFT_STRUCT ((g_ptr_array_index ((GPtrArray *) this_object->cells, i55))), protocol, error)) < 0)
-          return -1;
-        xfer += ret;
 
-      }
-      if ((ret = thrift_protocol_write_list_end (protocol, error)) < 0)
+      if ((ret = thrift_struct_write (THRIFT_STRUCT ( val122), protocol, error)) < 0)
         return -1;
       xfer += ret;
+
     }
-    if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    if ((ret = thrift_protocol_write_map_end (protocol, error)) < 0)
       return -1;
     xfer += ret;
   }
-  if (this_object->__isset_ccells == TRUE) {
-    if ((ret = thrift_protocol_write_field_begin (protocol, "ccells", T_MAP, 2, error)) < 0)
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_begin (protocol, "kcells", T_LIST, 3, error)) < 0)
+    return -1;
+  xfer += ret;
+  {
+    guint i123;
+
+    if ((ret = thrift_protocol_write_list_begin (protocol, T_STRUCT, (gint32) (this_object->kcells ? this_object->kcells->len : 0), error)) < 0)
       return -1;
     xfer += ret;
+    for (i123 = 0; i123 < (this_object->kcells ? this_object->kcells->len : 0); i123++)
     {
-      gchar * key56 = NULL;
-      swcdb_thriftColCells * val57 = NULL;
-      GList *key_list = NULL, *iter = NULL;
-      gchar ** keys;
-      int i = 0, key_count;
-
-      if ((ret = thrift_protocol_write_map_begin (protocol, T_STRING, T_LIST, this_object->ccells ? (gint32) g_hash_table_size ((GHashTable *) this_object->ccells) : 0, error)) < 0)
+      if ((ret = thrift_struct_write (THRIFT_STRUCT ((g_ptr_array_index ((GPtrArray *) this_object->kcells, i123))), protocol, error)) < 0)
         return -1;
       xfer += ret;
-      if (this_object->ccells)
-        g_hash_table_foreach ((GHashTable *) this_object->ccells, thrift_hash_table_get_keys, &key_list);
-      key_count = g_list_length (key_list);
-      keys = g_newa (gchar *, key_count);
-      for (iter = g_list_first (key_list); iter; iter = iter->next)
-        keys[i++] = (gchar *) iter->data;
-      g_list_free (key_list);
 
-      for (i = 0; i < key_count; ++i)
-      {
-        key56 = keys[i];
-        val57 = (swcdb_thriftColCells *) g_hash_table_lookup (((GHashTable *) this_object->ccells), (gpointer) key56);
-
-        if ((ret = thrift_protocol_write_string (protocol,  key56, error)) < 0)
-          return -1;
-        xfer += ret;
-
-        {
-          guint i58;
-
-          if ((ret = thrift_protocol_write_list_begin (protocol, T_STRUCT, (gint32) ( val57 ?  val57->len : 0), error)) < 0)
-            return -1;
-          xfer += ret;
-          for (i58 = 0; i58 < ( val57 ?  val57->len : 0); i58++)
-          {
-            if ((ret = thrift_struct_write (THRIFT_STRUCT ((g_ptr_array_index ((GPtrArray *)  val57, i58))), protocol, error)) < 0)
-              return -1;
-            xfer += ret;
-
-          }
-          if ((ret = thrift_protocol_write_list_end (protocol, error)) < 0)
-            return -1;
-          xfer += ret;
-        }
-      }
-      if ((ret = thrift_protocol_write_map_end (protocol, error)) < 0)
-        return -1;
-      xfer += ret;
     }
-    if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    if ((ret = thrift_protocol_write_list_end (protocol, error)) < 0)
       return -1;
     xfer += ret;
   }
-  if (this_object->__isset_kcells == TRUE) {
-    if ((ret = thrift_protocol_write_field_begin (protocol, "kcells", T_LIST, 3, error)) < 0)
-      return -1;
-    xfer += ret;
-    {
-      guint i59;
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_begin (protocol, "fcells", T_STRUCT, 4, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_struct_write (THRIFT_STRUCT (this_object->fcells), protocol, error)) < 0)
+    return -1;
+  xfer += ret;
 
-      if ((ret = thrift_protocol_write_list_begin (protocol, T_STRUCT, (gint32) (this_object->kcells ? this_object->kcells->len : 0), error)) < 0)
-        return -1;
-      xfer += ret;
-      for (i59 = 0; i59 < (this_object->kcells ? this_object->kcells->len : 0); i59++)
-      {
-        if ((ret = thrift_struct_write (THRIFT_STRUCT ((g_ptr_array_index ((GPtrArray *) this_object->kcells, i59))), protocol, error)) < 0)
-          return -1;
-        xfer += ret;
-
-      }
-      if ((ret = thrift_protocol_write_list_end (protocol, error)) < 0)
-        return -1;
-      xfer += ret;
-    }
-    if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
-      return -1;
-    xfer += ret;
-  }
-  if (this_object->__isset_fcells == TRUE) {
-    if ((ret = thrift_protocol_write_field_begin (protocol, "fcells", T_STRUCT, 4, error)) < 0)
-      return -1;
-    xfer += ret;
-    if ((ret = thrift_struct_write (THRIFT_STRUCT (this_object->fcells), protocol, error)) < 0)
-      return -1;
-    xfer += ret;
-
-    if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
-      return -1;
-    xfer += ret;
-  }
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
   if ((ret = thrift_protocol_write_field_stop (protocol, error)) < 0)
     return -1;
   xfer += ret;
@@ -8628,8 +16372,8 @@ swcdb_thrift_cells_group_set_property (GObject *object,
   {
     case PROP_SWCDB_THRIFT_CELLS_GROUP_CELLS:
       if (self->cells != NULL)
-        g_ptr_array_unref (self->cells);
-      self->cells = g_value_dup_boxed (value);
+        g_object_unref (self->cells);
+      self->cells = g_value_dup_object (value);
       self->__isset_cells = TRUE;
       break;
 
@@ -8671,7 +16415,7 @@ swcdb_thrift_cells_group_get_property (GObject *object,
   switch (property_id)
   {
     case PROP_SWCDB_THRIFT_CELLS_GROUP_CELLS:
-      g_value_set_boxed (value, self->cells);
+      g_value_set_object (value, self->cells);
       break;
 
     case PROP_SWCDB_THRIFT_CELLS_GROUP_CCELLS:
@@ -8697,9 +16441,9 @@ swcdb_thrift_cells_group_instance_init (swcdb_thriftCellsGroup * object)
 {
   /* satisfy -Wall */
   THRIFT_UNUSED_VAR (object);
-  object->cells = g_ptr_array_new_with_free_func (g_object_unref);
+  object->cells = g_object_new (SWCDB_THRIFT_TYPE_CELLS, NULL);
   object->__isset_cells = FALSE;
-  object->ccells = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, (GDestroyNotify) g_ptr_array_unref);
+  object->ccells = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_object_unref);
   object->__isset_ccells = FALSE;
   object->kcells = g_ptr_array_new_with_free_func (g_object_unref);
   object->__isset_kcells = FALSE;
@@ -8716,7 +16460,7 @@ swcdb_thrift_cells_group_finalize (GObject *object)
   THRIFT_UNUSED_VAR (tobject);
   if (tobject->cells != NULL)
   {
-    g_ptr_array_unref (tobject->cells);
+    g_object_unref(tobject->cells);
     tobject->cells = NULL;
   }
   if (tobject->ccells != NULL)
@@ -8752,10 +16496,10 @@ swcdb_thrift_cells_group_class_init (swcdb_thriftCellsGroupClass * cls)
   g_object_class_install_property
     (gobject_class,
      PROP_SWCDB_THRIFT_CELLS_GROUP_CELLS,
-     g_param_spec_boxed ("cells",
+     g_param_spec_object ("cells",
                          NULL,
                          NULL,
-                         G_TYPE_PTR_ARRAY,
+                         SWCDB_THRIFT_TYPE_CELLS,
                          G_PARAM_READWRITE));
 
   g_object_class_install_property
@@ -9163,19 +16907,19 @@ swcdb_thrift_result_read (ThriftStruct *object, ThriftProtocol *protocol, GError
             /* iterate through list elements */
             for (i = 0; i < size; i++)
             {
-              swcdb_thriftSchema * _elem60 = NULL;
-              if ( _elem60 != NULL)
+              swcdb_thriftSchema * _elem124 = NULL;
+              if ( _elem124 != NULL)
               {
-                g_object_unref (_elem60);
+                g_object_unref (_elem124);
               }
-              _elem60 = g_object_new (SWCDB_THRIFT_TYPE_SCHEMA, NULL);
-              if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem60), protocol, error)) < 0)
+              _elem124 = g_object_new (SWCDB_THRIFT_TYPE_SCHEMA, NULL);
+              if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem124), protocol, error)) < 0)
               {
-                g_object_unref (_elem60);
+                g_object_unref (_elem124);
                 return -1;
               }
               xfer += ret;
-              g_ptr_array_add (this_object->schemas, _elem60);
+              g_ptr_array_add (this_object->schemas, _elem124);
             }
             if ((ret = thrift_protocol_read_list_end (protocol, error)) < 0)
               return -1;
@@ -9189,38 +16933,13 @@ swcdb_thrift_result_read (ThriftStruct *object, ThriftProtocol *protocol, GError
         }
         break;
       case 2:
-        if (ftype == T_LIST)
+        if (ftype == T_STRUCT)
         {
+          if ((ret = thrift_struct_read (THRIFT_STRUCT (this_object->cells), protocol, error)) < 0)
           {
-            guint32 size;
-            guint32 i;
-            ThriftType element_type;
-
-            if ((ret = thrift_protocol_read_list_begin (protocol, &element_type,&size, error)) < 0)
-              return -1;
-            xfer += ret;
-
-            /* iterate through list elements */
-            for (i = 0; i < size; i++)
-            {
-              swcdb_thriftCell * _elem61 = NULL;
-              if ( _elem61 != NULL)
-              {
-                g_object_unref (_elem61);
-              }
-              _elem61 = g_object_new (SWCDB_THRIFT_TYPE_CELL, NULL);
-              if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem61), protocol, error)) < 0)
-              {
-                g_object_unref (_elem61);
-                return -1;
-              }
-              xfer += ret;
-              g_ptr_array_add (this_object->cells, _elem61);
-            }
-            if ((ret = thrift_protocol_read_list_end (protocol, error)) < 0)
-              return -1;
-            xfer += ret;
+            return -1;
           }
+          xfer += ret;
           this_object->__isset_cells = TRUE;
         } else {
           if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
@@ -9243,19 +16962,19 @@ swcdb_thrift_result_read (ThriftStruct *object, ThriftProtocol *protocol, GError
             /* iterate through list elements */
             for (i = 0; i < size; i++)
             {
-              swcdb_thriftCompactResult * _elem62 = NULL;
-              if ( _elem62 != NULL)
+              swcdb_thriftCompactResult * _elem125 = NULL;
+              if ( _elem125 != NULL)
               {
-                g_object_unref (_elem62);
+                g_object_unref (_elem125);
               }
-              _elem62 = g_object_new (SWCDB_THRIFT_TYPE_COMPACT_RESULT, NULL);
-              if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem62), protocol, error)) < 0)
+              _elem125 = g_object_new (SWCDB_THRIFT_TYPE_COMPACT_RESULT, NULL);
+              if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem125), protocol, error)) < 0)
               {
-                g_object_unref (_elem62);
+                g_object_unref (_elem125);
                 return -1;
               }
               xfer += ret;
-              g_ptr_array_add (this_object->compact, _elem62);
+              g_ptr_array_add (this_object->compact, _elem125);
             }
             if ((ret = thrift_protocol_read_list_end (protocol, error)) < 0)
               return -1;
@@ -9297,81 +17016,62 @@ swcdb_thrift_result_write (ThriftStruct *object, ThriftProtocol *protocol, GErro
   if ((ret = thrift_protocol_write_struct_begin (protocol, "Result", error)) < 0)
     return -1;
   xfer += ret;
-  if (this_object->__isset_schemas == TRUE) {
-    if ((ret = thrift_protocol_write_field_begin (protocol, "schemas", T_LIST, 1, error)) < 0)
+  if ((ret = thrift_protocol_write_field_begin (protocol, "schemas", T_LIST, 1, error)) < 0)
+    return -1;
+  xfer += ret;
+  {
+    guint i126;
+
+    if ((ret = thrift_protocol_write_list_begin (protocol, T_STRUCT, (gint32) (this_object->schemas ? this_object->schemas->len : 0), error)) < 0)
       return -1;
     xfer += ret;
+    for (i126 = 0; i126 < (this_object->schemas ? this_object->schemas->len : 0); i126++)
     {
-      guint i63;
-
-      if ((ret = thrift_protocol_write_list_begin (protocol, T_STRUCT, (gint32) (this_object->schemas ? this_object->schemas->len : 0), error)) < 0)
+      if ((ret = thrift_struct_write (THRIFT_STRUCT ((g_ptr_array_index ((GPtrArray *) this_object->schemas, i126))), protocol, error)) < 0)
         return -1;
       xfer += ret;
-      for (i63 = 0; i63 < (this_object->schemas ? this_object->schemas->len : 0); i63++)
-      {
-        if ((ret = thrift_struct_write (THRIFT_STRUCT ((g_ptr_array_index ((GPtrArray *) this_object->schemas, i63))), protocol, error)) < 0)
-          return -1;
-        xfer += ret;
 
-      }
-      if ((ret = thrift_protocol_write_list_end (protocol, error)) < 0)
-        return -1;
-      xfer += ret;
     }
-    if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    if ((ret = thrift_protocol_write_list_end (protocol, error)) < 0)
       return -1;
     xfer += ret;
   }
-  if (this_object->__isset_cells == TRUE) {
-    if ((ret = thrift_protocol_write_field_begin (protocol, "cells", T_LIST, 2, error)) < 0)
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_begin (protocol, "cells", T_STRUCT, 2, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_struct_write (THRIFT_STRUCT (this_object->cells), protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_begin (protocol, "compact", T_LIST, 3, error)) < 0)
+    return -1;
+  xfer += ret;
+  {
+    guint i127;
+
+    if ((ret = thrift_protocol_write_list_begin (protocol, T_STRUCT, (gint32) (this_object->compact ? this_object->compact->len : 0), error)) < 0)
       return -1;
     xfer += ret;
+    for (i127 = 0; i127 < (this_object->compact ? this_object->compact->len : 0); i127++)
     {
-      guint i64;
-
-      if ((ret = thrift_protocol_write_list_begin (protocol, T_STRUCT, (gint32) (this_object->cells ? this_object->cells->len : 0), error)) < 0)
+      if ((ret = thrift_struct_write (THRIFT_STRUCT ((g_ptr_array_index ((GPtrArray *) this_object->compact, i127))), protocol, error)) < 0)
         return -1;
       xfer += ret;
-      for (i64 = 0; i64 < (this_object->cells ? this_object->cells->len : 0); i64++)
-      {
-        if ((ret = thrift_struct_write (THRIFT_STRUCT ((g_ptr_array_index ((GPtrArray *) this_object->cells, i64))), protocol, error)) < 0)
-          return -1;
-        xfer += ret;
 
-      }
-      if ((ret = thrift_protocol_write_list_end (protocol, error)) < 0)
-        return -1;
-      xfer += ret;
     }
-    if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    if ((ret = thrift_protocol_write_list_end (protocol, error)) < 0)
       return -1;
     xfer += ret;
   }
-  if (this_object->__isset_compact == TRUE) {
-    if ((ret = thrift_protocol_write_field_begin (protocol, "compact", T_LIST, 3, error)) < 0)
-      return -1;
-    xfer += ret;
-    {
-      guint i65;
-
-      if ((ret = thrift_protocol_write_list_begin (protocol, T_STRUCT, (gint32) (this_object->compact ? this_object->compact->len : 0), error)) < 0)
-        return -1;
-      xfer += ret;
-      for (i65 = 0; i65 < (this_object->compact ? this_object->compact->len : 0); i65++)
-      {
-        if ((ret = thrift_struct_write (THRIFT_STRUCT ((g_ptr_array_index ((GPtrArray *) this_object->compact, i65))), protocol, error)) < 0)
-          return -1;
-        xfer += ret;
-
-      }
-      if ((ret = thrift_protocol_write_list_end (protocol, error)) < 0)
-        return -1;
-      xfer += ret;
-    }
-    if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
-      return -1;
-    xfer += ret;
-  }
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
   if ((ret = thrift_protocol_write_field_stop (protocol, error)) < 0)
     return -1;
   xfer += ret;
@@ -9401,8 +17101,8 @@ swcdb_thrift_result_set_property (GObject *object,
 
     case PROP_SWCDB_THRIFT_RESULT_CELLS:
       if (self->cells != NULL)
-        g_ptr_array_unref (self->cells);
-      self->cells = g_value_dup_boxed (value);
+        g_object_unref (self->cells);
+      self->cells = g_value_dup_object (value);
       self->__isset_cells = TRUE;
       break;
 
@@ -9434,7 +17134,7 @@ swcdb_thrift_result_get_property (GObject *object,
       break;
 
     case PROP_SWCDB_THRIFT_RESULT_CELLS:
-      g_value_set_boxed (value, self->cells);
+      g_value_set_object (value, self->cells);
       break;
 
     case PROP_SWCDB_THRIFT_RESULT_COMPACT:
@@ -9454,7 +17154,7 @@ swcdb_thrift_result_instance_init (swcdb_thriftResult * object)
   THRIFT_UNUSED_VAR (object);
   object->schemas = g_ptr_array_new_with_free_func (g_object_unref);
   object->__isset_schemas = FALSE;
-  object->cells = g_ptr_array_new_with_free_func (g_object_unref);
+  object->cells = g_object_new (SWCDB_THRIFT_TYPE_CELLS, NULL);
   object->__isset_cells = FALSE;
   object->compact = g_ptr_array_new_with_free_func (g_object_unref);
   object->__isset_compact = FALSE;
@@ -9474,7 +17174,7 @@ swcdb_thrift_result_finalize (GObject *object)
   }
   if (tobject->cells != NULL)
   {
-    g_ptr_array_unref (tobject->cells);
+    g_object_unref(tobject->cells);
     tobject->cells = NULL;
   }
   if (tobject->compact != NULL)
@@ -9509,10 +17209,10 @@ swcdb_thrift_result_class_init (swcdb_thriftResultClass * cls)
   g_object_class_install_property
     (gobject_class,
      PROP_SWCDB_THRIFT_RESULT_CELLS,
-     g_param_spec_boxed ("cells",
+     g_param_spec_object ("cells",
                          NULL,
                          NULL,
-                         G_TYPE_PTR_ARRAY,
+                         SWCDB_THRIFT_TYPE_CELLS,
                          G_PARAM_READWRITE));
 
   g_object_class_install_property
@@ -10356,19 +18056,19 @@ swcdb_thrift_service_sql_list_columns_result_read (ThriftStruct *object, ThriftP
             /* iterate through list elements */
             for (i = 0; i < size; i++)
             {
-              swcdb_thriftSchema * _elem66 = NULL;
-              if ( _elem66 != NULL)
+              swcdb_thriftSchema * _elem128 = NULL;
+              if ( _elem128 != NULL)
               {
-                g_object_unref (_elem66);
+                g_object_unref (_elem128);
               }
-              _elem66 = g_object_new (SWCDB_THRIFT_TYPE_SCHEMA, NULL);
-              if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem66), protocol, error)) < 0)
+              _elem128 = g_object_new (SWCDB_THRIFT_TYPE_SCHEMA, NULL);
+              if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem128), protocol, error)) < 0)
               {
-                g_object_unref (_elem66);
+                g_object_unref (_elem128);
                 return -1;
               }
               xfer += ret;
-              g_ptr_array_add (this_object->success, _elem66);
+              g_ptr_array_add (this_object->success, _elem128);
             }
             if ((ret = thrift_protocol_read_list_end (protocol, error)) < 0)
               return -1;
@@ -10438,14 +18138,14 @@ swcdb_thrift_service_sql_list_columns_result_write (ThriftStruct *object, Thrift
       return -1;
     xfer += ret;
     {
-      guint i67;
+      guint i129;
 
       if ((ret = thrift_protocol_write_list_begin (protocol, T_STRUCT, (gint32) (this_object->success ? this_object->success->len : 0), error)) < 0)
         return -1;
       xfer += ret;
-      for (i67 = 0; i67 < (this_object->success ? this_object->success->len : 0); i67++)
+      for (i129 = 0; i129 < (this_object->success ? this_object->success->len : 0); i129++)
       {
-        if ((ret = thrift_struct_write (THRIFT_STRUCT ((g_ptr_array_index ((GPtrArray *) this_object->success, i67))), protocol, error)) < 0)
+        if ((ret = thrift_struct_write (THRIFT_STRUCT ((g_ptr_array_index ((GPtrArray *) this_object->success, i129))), protocol, error)) < 0)
           return -1;
         xfer += ret;
 
@@ -10937,19 +18637,19 @@ swcdb_thrift_service_sql_compact_columns_result_read (ThriftStruct *object, Thri
             /* iterate through list elements */
             for (i = 0; i < size; i++)
             {
-              swcdb_thriftCompactResult * _elem68 = NULL;
-              if ( _elem68 != NULL)
+              swcdb_thriftCompactResult * _elem130 = NULL;
+              if ( _elem130 != NULL)
               {
-                g_object_unref (_elem68);
+                g_object_unref (_elem130);
               }
-              _elem68 = g_object_new (SWCDB_THRIFT_TYPE_COMPACT_RESULT, NULL);
-              if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem68), protocol, error)) < 0)
+              _elem130 = g_object_new (SWCDB_THRIFT_TYPE_COMPACT_RESULT, NULL);
+              if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem130), protocol, error)) < 0)
               {
-                g_object_unref (_elem68);
+                g_object_unref (_elem130);
                 return -1;
               }
               xfer += ret;
-              g_ptr_array_add (this_object->success, _elem68);
+              g_ptr_array_add (this_object->success, _elem130);
             }
             if ((ret = thrift_protocol_read_list_end (protocol, error)) < 0)
               return -1;
@@ -11019,14 +18719,14 @@ swcdb_thrift_service_sql_compact_columns_result_write (ThriftStruct *object, Thr
       return -1;
     xfer += ret;
     {
-      guint i69;
+      guint i131;
 
       if ((ret = thrift_protocol_write_list_begin (protocol, T_STRUCT, (gint32) (this_object->success ? this_object->success->len : 0), error)) < 0)
         return -1;
       xfer += ret;
-      for (i69 = 0; i69 < (this_object->success ? this_object->success->len : 0); i69++)
+      for (i131 = 0; i131 < (this_object->success ? this_object->success->len : 0); i131++)
       {
-        if ((ret = thrift_struct_write (THRIFT_STRUCT ((g_ptr_array_index ((GPtrArray *) this_object->success, i69))), protocol, error)) < 0)
+        if ((ret = thrift_struct_write (THRIFT_STRUCT ((g_ptr_array_index ((GPtrArray *) this_object->success, i131))), protocol, error)) < 0)
           return -1;
         xfer += ret;
 
@@ -11504,38 +19204,13 @@ swcdb_thrift_service_sql_select_result_read (ThriftStruct *object, ThriftProtoco
     switch (fid)
     {
       case 0:
-        if (ftype == T_LIST)
+        if (ftype == T_STRUCT)
         {
+          if ((ret = thrift_struct_read (THRIFT_STRUCT (this_object->success), protocol, error)) < 0)
           {
-            guint32 size;
-            guint32 i;
-            ThriftType element_type;
-
-            if ((ret = thrift_protocol_read_list_begin (protocol, &element_type,&size, error)) < 0)
-              return -1;
-            xfer += ret;
-
-            /* iterate through list elements */
-            for (i = 0; i < size; i++)
-            {
-              swcdb_thriftCell * _elem70 = NULL;
-              if ( _elem70 != NULL)
-              {
-                g_object_unref (_elem70);
-              }
-              _elem70 = g_object_new (SWCDB_THRIFT_TYPE_CELL, NULL);
-              if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem70), protocol, error)) < 0)
-              {
-                g_object_unref (_elem70);
-                return -1;
-              }
-              xfer += ret;
-              g_ptr_array_add (this_object->success, _elem70);
-            }
-            if ((ret = thrift_protocol_read_list_end (protocol, error)) < 0)
-              return -1;
-            xfer += ret;
+            return -1;
           }
+          xfer += ret;
           this_object->__isset_success = TRUE;
         } else {
           if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
@@ -11596,26 +19271,13 @@ swcdb_thrift_service_sql_select_result_write (ThriftStruct *object, ThriftProtoc
     return -1;
   xfer += ret;
   if (this_object->__isset_success == TRUE) {
-    if ((ret = thrift_protocol_write_field_begin (protocol, "success", T_LIST, 0, error)) < 0)
+    if ((ret = thrift_protocol_write_field_begin (protocol, "success", T_STRUCT, 0, error)) < 0)
       return -1;
     xfer += ret;
-    {
-      guint i71;
+    if ((ret = thrift_struct_write (THRIFT_STRUCT (this_object->success), protocol, error)) < 0)
+      return -1;
+    xfer += ret;
 
-      if ((ret = thrift_protocol_write_list_begin (protocol, T_STRUCT, (gint32) (this_object->success ? this_object->success->len : 0), error)) < 0)
-        return -1;
-      xfer += ret;
-      for (i71 = 0; i71 < (this_object->success ? this_object->success->len : 0); i71++)
-      {
-        if ((ret = thrift_struct_write (THRIFT_STRUCT ((g_ptr_array_index ((GPtrArray *) this_object->success, i71))), protocol, error)) < 0)
-          return -1;
-        xfer += ret;
-
-      }
-      if ((ret = thrift_protocol_write_list_end (protocol, error)) < 0)
-        return -1;
-      xfer += ret;
-    }
     if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
       return -1;
     xfer += ret;
@@ -11654,8 +19316,8 @@ swcdb_thrift_service_sql_select_result_set_property (GObject *object,
   {
     case PROP_SWCDB_THRIFT_SERVICE_SQL_SELECT_RESULT_SUCCESS:
       if (self->success != NULL)
-        g_ptr_array_unref (self->success);
-      self->success = g_value_dup_boxed (value);
+        g_object_unref (self->success);
+      self->success = g_value_dup_object (value);
       self->__isset_success = TRUE;
       break;
 
@@ -11683,7 +19345,7 @@ swcdb_thrift_service_sql_select_result_get_property (GObject *object,
   switch (property_id)
   {
     case PROP_SWCDB_THRIFT_SERVICE_SQL_SELECT_RESULT_SUCCESS:
-      g_value_set_boxed (value, self->success);
+      g_value_set_object (value, self->success);
       break;
 
     case PROP_SWCDB_THRIFT_SERVICE_SQL_SELECT_RESULT_E:
@@ -11701,7 +19363,7 @@ swcdb_thrift_service_sql_select_result_instance_init (swcdb_thriftServiceSqlSele
 {
   /* satisfy -Wall */
   THRIFT_UNUSED_VAR (object);
-  object->success = g_ptr_array_new_with_free_func (g_object_unref);
+  object->success = g_object_new (SWCDB_THRIFT_TYPE_CELLS, NULL);
   object->__isset_success = FALSE;
   object->e = NULL;
   object->__isset_e = FALSE;
@@ -11716,7 +19378,7 @@ swcdb_thrift_service_sql_select_result_finalize (GObject *object)
   THRIFT_UNUSED_VAR (tobject);
   if (tobject->success != NULL)
   {
-    g_ptr_array_unref (tobject->success);
+    g_object_unref(tobject->success);
     tobject->success = NULL;
   }
   if (tobject->e != NULL)
@@ -11742,10 +19404,10 @@ swcdb_thrift_service_sql_select_result_class_init (swcdb_thriftServiceSqlSelectR
   g_object_class_install_property
     (gobject_class,
      PROP_SWCDB_THRIFT_SERVICE_SQL_SELECT_RESULT_SUCCESS,
-     g_param_spec_boxed ("success",
+     g_param_spec_object ("success",
                          NULL,
                          NULL,
-                         G_TYPE_PTR_ARRAY,
+                         SWCDB_THRIFT_TYPE_CELLS,
                          G_PARAM_READWRITE));
 
   g_object_class_install_property
@@ -12101,49 +19763,30 @@ swcdb_thrift_service_sql_select_rslt_on_column_result_read (ThriftStruct *object
             /* iterate through each of the map's fields */
             for (i = 0; i < size; i++)
             {
-              gchar * key72 = NULL;
-              swcdb_thriftColCells * val73 = g_ptr_array_new_with_free_func (g_object_unref);
-              if (key72 != NULL)
+              gchar * key132 = NULL;
+              swcdb_thriftColCells * val133 = NULL;
+              if (key132 != NULL)
               {
-                g_free(key72);
-                key72 = NULL;
+                g_free(key132);
+                key132 = NULL;
               }
 
-              if ((ret = thrift_protocol_read_string (protocol, &key72, error)) < 0)
+              if ((ret = thrift_protocol_read_string (protocol, &key132, error)) < 0)
                 return -1;
               xfer += ret;
+              if ( val133 != NULL)
               {
-                guint32 size;
-                guint32 i;
-                ThriftType element_type;
-
-                if ((ret = thrift_protocol_read_list_begin (protocol, &element_type,&size, error)) < 0)
-                  return -1;
-                xfer += ret;
-
-                /* iterate through list elements */
-                for (i = 0; i < size; i++)
-                {
-                  swcdb_thriftCCell * _elem74 = NULL;
-                  if ( _elem74 != NULL)
-                  {
-                    g_object_unref (_elem74);
-                  }
-                  _elem74 = g_object_new (SWCDB_THRIFT_TYPE_C_CELL, NULL);
-                  if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem74), protocol, error)) < 0)
-                  {
-                    g_object_unref (_elem74);
-                    return -1;
-                  }
-                  xfer += ret;
-                  g_ptr_array_add (val73, _elem74);
-                }
-                if ((ret = thrift_protocol_read_list_end (protocol, error)) < 0)
-                  return -1;
-                xfer += ret;
+                g_object_unref (val133);
               }
-              if (this_object->success && key72)
-                g_hash_table_insert ((GHashTable *)this_object->success, (gpointer) key72, (gpointer) val73);
+              val133 = g_object_new (SWCDB_THRIFT_TYPE_COL_CELLS, NULL);
+              if ((ret = thrift_struct_read (THRIFT_STRUCT (val133), protocol, error)) < 0)
+              {
+                g_object_unref (val133);
+                return -1;
+              }
+              xfer += ret;
+              if (this_object->success && key132)
+                g_hash_table_insert ((GHashTable *)this_object->success, (gpointer) key132, (gpointer) val133);
             }
 
             /* read the map end marker */
@@ -12215,13 +19858,13 @@ swcdb_thrift_service_sql_select_rslt_on_column_result_write (ThriftStruct *objec
       return -1;
     xfer += ret;
     {
-      gchar * key75 = NULL;
-      swcdb_thriftColCells * val76 = NULL;
+      gchar * key134 = NULL;
+      swcdb_thriftColCells * val135 = NULL;
       GList *key_list = NULL, *iter = NULL;
       gchar ** keys;
       int i = 0, key_count;
 
-      if ((ret = thrift_protocol_write_map_begin (protocol, T_STRING, T_LIST, this_object->success ? (gint32) g_hash_table_size ((GHashTable *) this_object->success) : 0, error)) < 0)
+      if ((ret = thrift_protocol_write_map_begin (protocol, T_STRING, T_STRUCT, this_object->success ? (gint32) g_hash_table_size ((GHashTable *) this_object->success) : 0, error)) < 0)
         return -1;
       xfer += ret;
       if (this_object->success)
@@ -12234,30 +19877,17 @@ swcdb_thrift_service_sql_select_rslt_on_column_result_write (ThriftStruct *objec
 
       for (i = 0; i < key_count; ++i)
       {
-        key75 = keys[i];
-        val76 = (swcdb_thriftColCells *) g_hash_table_lookup (((GHashTable *) this_object->success), (gpointer) key75);
+        key134 = keys[i];
+        val135 = (swcdb_thriftColCells *) g_hash_table_lookup (((GHashTable *) this_object->success), (gpointer) key134);
 
-        if ((ret = thrift_protocol_write_string (protocol,  key75, error)) < 0)
+        if ((ret = thrift_protocol_write_string (protocol,  key134, error)) < 0)
           return -1;
         xfer += ret;
 
-        {
-          guint i77;
+        if ((ret = thrift_struct_write (THRIFT_STRUCT ( val135), protocol, error)) < 0)
+          return -1;
+        xfer += ret;
 
-          if ((ret = thrift_protocol_write_list_begin (protocol, T_STRUCT, (gint32) ( val76 ?  val76->len : 0), error)) < 0)
-            return -1;
-          xfer += ret;
-          for (i77 = 0; i77 < ( val76 ?  val76->len : 0); i77++)
-          {
-            if ((ret = thrift_struct_write (THRIFT_STRUCT ((g_ptr_array_index ((GPtrArray *)  val76, i77))), protocol, error)) < 0)
-              return -1;
-            xfer += ret;
-
-          }
-          if ((ret = thrift_protocol_write_list_end (protocol, error)) < 0)
-            return -1;
-          xfer += ret;
-        }
       }
       if ((ret = thrift_protocol_write_map_end (protocol, error)) < 0)
         return -1;
@@ -12348,7 +19978,7 @@ swcdb_thrift_service_sql_select_rslt_on_column_result_instance_init (swcdb_thrif
 {
   /* satisfy -Wall */
   THRIFT_UNUSED_VAR (object);
-  object->success = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, (GDestroyNotify) g_ptr_array_unref);
+  object->success = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_object_unref);
   object->__isset_success = FALSE;
   object->e = NULL;
   object->__isset_e = FALSE;
@@ -12746,19 +20376,19 @@ swcdb_thrift_service_sql_select_rslt_on_key_result_read (ThriftStruct *object, T
             /* iterate through list elements */
             for (i = 0; i < size; i++)
             {
-              swcdb_thriftkCells * _elem78 = NULL;
-              if ( _elem78 != NULL)
+              swcdb_thriftkCells * _elem136 = NULL;
+              if ( _elem136 != NULL)
               {
-                g_object_unref (_elem78);
+                g_object_unref (_elem136);
               }
-              _elem78 = g_object_new (SWCDB_THRIFT_TYPE_K_CELLS, NULL);
-              if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem78), protocol, error)) < 0)
+              _elem136 = g_object_new (SWCDB_THRIFT_TYPE_K_CELLS, NULL);
+              if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem136), protocol, error)) < 0)
               {
-                g_object_unref (_elem78);
+                g_object_unref (_elem136);
                 return -1;
               }
               xfer += ret;
-              g_ptr_array_add (this_object->success, _elem78);
+              g_ptr_array_add (this_object->success, _elem136);
             }
             if ((ret = thrift_protocol_read_list_end (protocol, error)) < 0)
               return -1;
@@ -12828,14 +20458,14 @@ swcdb_thrift_service_sql_select_rslt_on_key_result_write (ThriftStruct *object, 
       return -1;
     xfer += ret;
     {
-      guint i79;
+      guint i137;
 
       if ((ret = thrift_protocol_write_list_begin (protocol, T_STRUCT, (gint32) (this_object->success ? this_object->success->len : 0), error)) < 0)
         return -1;
       xfer += ret;
-      for (i79 = 0; i79 < (this_object->success ? this_object->success->len : 0); i79++)
+      for (i137 = 0; i137 < (this_object->success ? this_object->success->len : 0); i137++)
       {
-        if ((ret = thrift_struct_write (THRIFT_STRUCT ((g_ptr_array_index ((GPtrArray *) this_object->success, i79))), protocol, error)) < 0)
+        if ((ret = thrift_struct_write (THRIFT_STRUCT ((g_ptr_array_index ((GPtrArray *) this_object->success, i137))), protocol, error)) < 0)
           return -1;
         xfer += ret;
 
@@ -13636,11 +21266,11 @@ swcdb_thrift_service_sql_query_args_read (ThriftStruct *object, ThriftProtocol *
       case 2:
         if (ftype == T_I32)
         {
-          gint32 ecast80;
-          if ((ret = thrift_protocol_read_i32 (protocol, &ecast80, error)) < 0)
+          gint32 ecast138;
+          if ((ret = thrift_protocol_read_i32 (protocol, &ecast138, error)) < 0)
             return -1;
           xfer += ret;
-          this_object->rslt = (swcdb_thriftCellsResult)ecast80;
+          this_object->rslt = (swcdb_thriftCellsResult)ecast138;
           this_object->__isset_rslt = TRUE;
         } else {
           if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
@@ -16300,9 +23930,9 @@ swcdb_thrift_service_update_args_read (ThriftStruct *object, ThriftProtocol *pro
             /* iterate through each of the map's fields */
             for (i = 0; i < size; i++)
             {
-              gint64* key81 = g_new (gint64, 1);
-              swcdb_thriftUCells * val82 = g_ptr_array_new_with_free_func (g_object_unref);
-              if ((ret = thrift_protocol_read_i64 (protocol, &*key81, error)) < 0)
+              gint64* key139 = g_new (gint64, 1);
+              swcdb_thriftUCells * val140 = g_ptr_array_new_with_free_func (g_object_unref);
+              if ((ret = thrift_protocol_read_i64 (protocol, &*key139, error)) < 0)
                 return -1;
               xfer += ret;
               {
@@ -16317,26 +23947,26 @@ swcdb_thrift_service_update_args_read (ThriftStruct *object, ThriftProtocol *pro
                 /* iterate through list elements */
                 for (i = 0; i < size; i++)
                 {
-                  swcdb_thriftUCell * _elem83 = NULL;
-                  if ( _elem83 != NULL)
+                  swcdb_thriftUCell * _elem141 = NULL;
+                  if ( _elem141 != NULL)
                   {
-                    g_object_unref (_elem83);
+                    g_object_unref (_elem141);
                   }
-                  _elem83 = g_object_new (SWCDB_THRIFT_TYPE_U_CELL, NULL);
-                  if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem83), protocol, error)) < 0)
+                  _elem141 = g_object_new (SWCDB_THRIFT_TYPE_U_CELL, NULL);
+                  if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem141), protocol, error)) < 0)
                   {
-                    g_object_unref (_elem83);
+                    g_object_unref (_elem141);
                     return -1;
                   }
                   xfer += ret;
-                  g_ptr_array_add (val82, _elem83);
+                  g_ptr_array_add (val140, _elem141);
                 }
                 if ((ret = thrift_protocol_read_list_end (protocol, error)) < 0)
                   return -1;
                 xfer += ret;
               }
-              if (this_object->cells && key81)
-                g_hash_table_insert ((GHashTable *)this_object->cells, (gpointer) key81, (gpointer) val82);
+              if (this_object->cells && key139)
+                g_hash_table_insert ((GHashTable *)this_object->cells, (gpointer) key139, (gpointer) val140);
             }
 
             /* read the map end marker */
@@ -16397,8 +24027,8 @@ swcdb_thrift_service_update_args_write (ThriftStruct *object, ThriftProtocol *pr
     return -1;
   xfer += ret;
   {
-    gint64* key84 = NULL;
-    swcdb_thriftUCells * val85 = NULL;
+    gint64* key142 = NULL;
+    swcdb_thriftUCells * val143 = NULL;
     GList *key_list = NULL, *iter = NULL;
     gint64** keys;
     int i = 0, key_count;
@@ -16416,22 +24046,22 @@ swcdb_thrift_service_update_args_write (ThriftStruct *object, ThriftProtocol *pr
 
     for (i = 0; i < key_count; ++i)
     {
-      key84 = keys[i];
-      val85 = (swcdb_thriftUCells *) g_hash_table_lookup (((GHashTable *) this_object->cells), (gpointer) key84);
+      key142 = keys[i];
+      val143 = (swcdb_thriftUCells *) g_hash_table_lookup (((GHashTable *) this_object->cells), (gpointer) key142);
 
-      if ((ret = thrift_protocol_write_i64 (protocol, * key84, error)) < 0)
+      if ((ret = thrift_protocol_write_i64 (protocol, * key142, error)) < 0)
         return -1;
       xfer += ret;
 
       {
-        guint i86;
+        guint i144;
 
-        if ((ret = thrift_protocol_write_list_begin (protocol, T_STRUCT, (gint32) ( val85 ?  val85->len : 0), error)) < 0)
+        if ((ret = thrift_protocol_write_list_begin (protocol, T_STRUCT, (gint32) ( val143 ?  val143->len : 0), error)) < 0)
           return -1;
         xfer += ret;
-        for (i86 = 0; i86 < ( val85 ?  val85->len : 0); i86++)
+        for (i144 = 0; i144 < ( val143 ?  val143->len : 0); i144++)
         {
-          if ((ret = thrift_struct_write (THRIFT_STRUCT ((g_ptr_array_index ((GPtrArray *)  val85, i86))), protocol, error)) < 0)
+          if ((ret = thrift_struct_write (THRIFT_STRUCT ((g_ptr_array_index ((GPtrArray *)  val143, i144))), protocol, error)) < 0)
             return -1;
           xfer += ret;
 
@@ -16855,6 +24485,634 @@ swcdb_thrift_service_update_result_get_type (void)
   return type;
 }
 
+enum _swcdb_thriftServiceUpdateSerialArgsProperties
+{
+  PROP_SWCDB_THRIFT_SERVICE_UPDATE_SERIAL_ARGS_0,
+  PROP_SWCDB_THRIFT_SERVICE_UPDATE_SERIAL_ARGS_CELLS,
+  PROP_SWCDB_THRIFT_SERVICE_UPDATE_SERIAL_ARGS_UPDATER_ID
+};
+
+/* reads a service_update_serial_args object */
+static gint32
+swcdb_thrift_service_update_serial_args_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+{
+  gint32 ret;
+  gint32 xfer = 0;
+  gchar *name = NULL;
+  ThriftType ftype;
+  gint16 fid;
+  guint32 len = 0;
+  gpointer data = NULL;
+  swcdb_thriftServiceUpdateSerialArgs * this_object = SWCDB_THRIFT_SERVICE_UPDATE_SERIAL_ARGS(object);
+
+  /* satisfy -Wall in case these aren't used */
+  THRIFT_UNUSED_VAR (len);
+  THRIFT_UNUSED_VAR (data);
+  THRIFT_UNUSED_VAR (this_object);
+
+  /* read the struct begin marker */
+  if ((ret = thrift_protocol_read_struct_begin (protocol, &name, error)) < 0)
+  {
+    if (name) g_free (name);
+    return -1;
+  }
+  xfer += ret;
+  if (name) g_free (name);
+  name = NULL;
+
+  /* read the struct fields */
+  while (1)
+  {
+    /* read the beginning of a field */
+    if ((ret = thrift_protocol_read_field_begin (protocol, &name, &ftype, &fid, error)) < 0)
+    {
+      if (name) g_free (name);
+      return -1;
+    }
+    xfer += ret;
+    if (name) g_free (name);
+    name = NULL;
+
+    /* break if we get a STOP field */
+    if (ftype == T_STOP)
+    {
+      break;
+    }
+
+    switch (fid)
+    {
+      case 1:
+        if (ftype == T_MAP)
+        {
+          {
+            guint32 size;
+            guint32 i;
+            ThriftType key_type;
+            ThriftType value_type;
+
+            /* read the map begin marker */
+            if ((ret = thrift_protocol_read_map_begin (protocol, &key_type, &value_type, &size, error)) < 0)
+              return -1;
+            xfer += ret;
+
+            /* iterate through each of the map's fields */
+            for (i = 0; i < size; i++)
+            {
+              gint64* key145 = g_new (gint64, 1);
+              swcdb_thriftUCellsSerial * val146 = g_ptr_array_new_with_free_func (g_object_unref);
+              if ((ret = thrift_protocol_read_i64 (protocol, &*key145, error)) < 0)
+                return -1;
+              xfer += ret;
+              {
+                guint32 size;
+                guint32 i;
+                ThriftType element_type;
+
+                if ((ret = thrift_protocol_read_list_begin (protocol, &element_type,&size, error)) < 0)
+                  return -1;
+                xfer += ret;
+
+                /* iterate through list elements */
+                for (i = 0; i < size; i++)
+                {
+                  swcdb_thriftUCellSerial * _elem147 = NULL;
+                  if ( _elem147 != NULL)
+                  {
+                    g_object_unref (_elem147);
+                  }
+                  _elem147 = g_object_new (SWCDB_THRIFT_TYPE_U_CELL_SERIAL, NULL);
+                  if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem147), protocol, error)) < 0)
+                  {
+                    g_object_unref (_elem147);
+                    return -1;
+                  }
+                  xfer += ret;
+                  g_ptr_array_add (val146, _elem147);
+                }
+                if ((ret = thrift_protocol_read_list_end (protocol, error)) < 0)
+                  return -1;
+                xfer += ret;
+              }
+              if (this_object->cells && key145)
+                g_hash_table_insert ((GHashTable *)this_object->cells, (gpointer) key145, (gpointer) val146);
+            }
+
+            /* read the map end marker */
+            if ((ret = thrift_protocol_read_map_end (protocol, error)) < 0)
+              return -1;
+            xfer += ret;
+          }
+          this_object->__isset_cells = TRUE;
+        } else {
+          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+            return -1;
+          xfer += ret;
+        }
+        break;
+      case 2:
+        if (ftype == T_I64)
+        {
+          if ((ret = thrift_protocol_read_i64 (protocol, &this_object->updater_id, error)) < 0)
+            return -1;
+          xfer += ret;
+          this_object->__isset_updater_id = TRUE;
+        } else {
+          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+            return -1;
+          xfer += ret;
+        }
+        break;
+      default:
+        if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+          return -1;
+        xfer += ret;
+        break;
+    }
+    if ((ret = thrift_protocol_read_field_end (protocol, error)) < 0)
+      return -1;
+    xfer += ret;
+  }
+
+  if ((ret = thrift_protocol_read_struct_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+
+  return xfer;
+}
+
+static gint32
+swcdb_thrift_service_update_serial_args_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+{
+  gint32 ret;
+  gint32 xfer = 0;
+
+  swcdb_thriftServiceUpdateSerialArgs * this_object = SWCDB_THRIFT_SERVICE_UPDATE_SERIAL_ARGS(object);
+  THRIFT_UNUSED_VAR (this_object);
+  if ((ret = thrift_protocol_write_struct_begin (protocol, "ServiceUpdateSerialArgs", error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_begin (protocol, "cells", T_MAP, 1, error)) < 0)
+    return -1;
+  xfer += ret;
+  {
+    gint64* key148 = NULL;
+    swcdb_thriftUCellsSerial * val149 = NULL;
+    GList *key_list = NULL, *iter = NULL;
+    gint64** keys;
+    int i = 0, key_count;
+
+    if ((ret = thrift_protocol_write_map_begin (protocol, T_I64, T_LIST, this_object->cells ? (gint32) g_hash_table_size ((GHashTable *) this_object->cells) : 0, error)) < 0)
+      return -1;
+    xfer += ret;
+    if (this_object->cells)
+      g_hash_table_foreach ((GHashTable *) this_object->cells, thrift_hash_table_get_keys, &key_list);
+    key_count = g_list_length (key_list);
+    keys = g_newa (gint64*, key_count);
+    for (iter = g_list_first (key_list); iter; iter = iter->next)
+      keys[i++] = (gint64*) iter->data;
+    g_list_free (key_list);
+
+    for (i = 0; i < key_count; ++i)
+    {
+      key148 = keys[i];
+      val149 = (swcdb_thriftUCellsSerial *) g_hash_table_lookup (((GHashTable *) this_object->cells), (gpointer) key148);
+
+      if ((ret = thrift_protocol_write_i64 (protocol, * key148, error)) < 0)
+        return -1;
+      xfer += ret;
+
+      {
+        guint i150;
+
+        if ((ret = thrift_protocol_write_list_begin (protocol, T_STRUCT, (gint32) ( val149 ?  val149->len : 0), error)) < 0)
+          return -1;
+        xfer += ret;
+        for (i150 = 0; i150 < ( val149 ?  val149->len : 0); i150++)
+        {
+          if ((ret = thrift_struct_write (THRIFT_STRUCT ((g_ptr_array_index ((GPtrArray *)  val149, i150))), protocol, error)) < 0)
+            return -1;
+          xfer += ret;
+
+        }
+        if ((ret = thrift_protocol_write_list_end (protocol, error)) < 0)
+          return -1;
+        xfer += ret;
+      }
+    }
+    if ((ret = thrift_protocol_write_map_end (protocol, error)) < 0)
+      return -1;
+    xfer += ret;
+  }
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_begin (protocol, "updater_id", T_I64, 2, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_i64 (protocol, this_object->updater_id, error)) < 0)
+    return -1;
+  xfer += ret;
+
+  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_field_stop (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_struct_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+
+  return xfer;
+}
+
+static void
+swcdb_thrift_service_update_serial_args_set_property (GObject *object,
+                                                      guint property_id,
+                                                      const GValue *value,
+                                                      GParamSpec *pspec)
+{
+  swcdb_thriftServiceUpdateSerialArgs *self = SWCDB_THRIFT_SERVICE_UPDATE_SERIAL_ARGS (object);
+
+  switch (property_id)
+  {
+    case PROP_SWCDB_THRIFT_SERVICE_UPDATE_SERIAL_ARGS_CELLS:
+      if (self->cells != NULL)
+        g_hash_table_unref (self->cells);
+      self->cells = g_value_dup_boxed (value);
+      self->__isset_cells = TRUE;
+      break;
+
+    case PROP_SWCDB_THRIFT_SERVICE_UPDATE_SERIAL_ARGS_UPDATER_ID:
+      self->updater_id = g_value_get_int64 (value);
+      self->__isset_updater_id = TRUE;
+      break;
+
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+      break;
+  }
+}
+
+static void
+swcdb_thrift_service_update_serial_args_get_property (GObject *object,
+                                                      guint property_id,
+                                                      GValue *value,
+                                                      GParamSpec *pspec)
+{
+  swcdb_thriftServiceUpdateSerialArgs *self = SWCDB_THRIFT_SERVICE_UPDATE_SERIAL_ARGS (object);
+
+  switch (property_id)
+  {
+    case PROP_SWCDB_THRIFT_SERVICE_UPDATE_SERIAL_ARGS_CELLS:
+      g_value_set_boxed (value, self->cells);
+      break;
+
+    case PROP_SWCDB_THRIFT_SERVICE_UPDATE_SERIAL_ARGS_UPDATER_ID:
+      g_value_set_int64 (value, self->updater_id);
+      break;
+
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+      break;
+  }
+}
+
+static void 
+swcdb_thrift_service_update_serial_args_instance_init (swcdb_thriftServiceUpdateSerialArgs * object)
+{
+  /* satisfy -Wall */
+  THRIFT_UNUSED_VAR (object);
+  object->cells = g_hash_table_new_full (g_int64_hash, g_int64_equal, g_free, (GDestroyNotify) g_ptr_array_unref);
+  object->__isset_cells = FALSE;
+  object->updater_id = G_GINT64_CONSTANT (0);
+  object->__isset_updater_id = FALSE;
+}
+
+static void 
+swcdb_thrift_service_update_serial_args_finalize (GObject *object)
+{
+  swcdb_thriftServiceUpdateSerialArgs *tobject = SWCDB_THRIFT_SERVICE_UPDATE_SERIAL_ARGS (object);
+
+  /* satisfy -Wall in case we don't use tobject */
+  THRIFT_UNUSED_VAR (tobject);
+  if (tobject->cells != NULL)
+  {
+    g_hash_table_destroy (tobject->cells);
+    tobject->cells = NULL;
+  }
+}
+
+static void
+swcdb_thrift_service_update_serial_args_class_init (swcdb_thriftServiceUpdateSerialArgsClass * cls)
+{
+  GObjectClass *gobject_class = G_OBJECT_CLASS (cls);
+  ThriftStructClass *struct_class = THRIFT_STRUCT_CLASS (cls);
+
+  struct_class->read = swcdb_thrift_service_update_serial_args_read;
+  struct_class->write = swcdb_thrift_service_update_serial_args_write;
+
+  gobject_class->finalize = swcdb_thrift_service_update_serial_args_finalize;
+  gobject_class->get_property = swcdb_thrift_service_update_serial_args_get_property;
+  gobject_class->set_property = swcdb_thrift_service_update_serial_args_set_property;
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_SWCDB_THRIFT_SERVICE_UPDATE_SERIAL_ARGS_CELLS,
+     g_param_spec_boxed ("cells",
+                         NULL,
+                         NULL,
+                         G_TYPE_HASH_TABLE,
+                         G_PARAM_READWRITE));
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_SWCDB_THRIFT_SERVICE_UPDATE_SERIAL_ARGS_UPDATER_ID,
+     g_param_spec_int64 ("updater_id",
+                         NULL,
+                         NULL,
+                         G_MININT64,
+                         G_MAXINT64,
+                         0,
+                         G_PARAM_READWRITE));
+}
+
+GType
+swcdb_thrift_service_update_serial_args_get_type (void)
+{
+  static GType type = 0;
+
+  if (type == 0) 
+  {
+    static const GTypeInfo type_info = 
+    {
+      sizeof (swcdb_thriftServiceUpdateSerialArgsClass),
+      NULL, /* base_init */
+      NULL, /* base_finalize */
+      (GClassInitFunc) swcdb_thrift_service_update_serial_args_class_init,
+      NULL, /* class_finalize */
+      NULL, /* class_data */
+      sizeof (swcdb_thriftServiceUpdateSerialArgs),
+      0, /* n_preallocs */
+      (GInstanceInitFunc) swcdb_thrift_service_update_serial_args_instance_init,
+      NULL, /* value_table */
+    };
+
+    type = g_type_register_static (THRIFT_TYPE_STRUCT, 
+                                   "swcdb_thriftServiceUpdateSerialArgsType",
+                                   &type_info, 0);
+  }
+
+  return type;
+}
+
+enum _swcdb_thriftServiceUpdateSerialResultProperties
+{
+  PROP_SWCDB_THRIFT_SERVICE_UPDATE_SERIAL_RESULT_0,
+  PROP_SWCDB_THRIFT_SERVICE_UPDATE_SERIAL_RESULT_E
+};
+
+/* reads a service_update_serial_result object */
+static gint32
+swcdb_thrift_service_update_serial_result_read (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+{
+  gint32 ret;
+  gint32 xfer = 0;
+  gchar *name = NULL;
+  ThriftType ftype;
+  gint16 fid;
+  guint32 len = 0;
+  gpointer data = NULL;
+  swcdb_thriftServiceUpdateSerialResult * this_object = SWCDB_THRIFT_SERVICE_UPDATE_SERIAL_RESULT(object);
+
+  /* satisfy -Wall in case these aren't used */
+  THRIFT_UNUSED_VAR (len);
+  THRIFT_UNUSED_VAR (data);
+  THRIFT_UNUSED_VAR (this_object);
+
+  /* read the struct begin marker */
+  if ((ret = thrift_protocol_read_struct_begin (protocol, &name, error)) < 0)
+  {
+    if (name) g_free (name);
+    return -1;
+  }
+  xfer += ret;
+  if (name) g_free (name);
+  name = NULL;
+
+  /* read the struct fields */
+  while (1)
+  {
+    /* read the beginning of a field */
+    if ((ret = thrift_protocol_read_field_begin (protocol, &name, &ftype, &fid, error)) < 0)
+    {
+      if (name) g_free (name);
+      return -1;
+    }
+    xfer += ret;
+    if (name) g_free (name);
+    name = NULL;
+
+    /* break if we get a STOP field */
+    if (ftype == T_STOP)
+    {
+      break;
+    }
+
+    switch (fid)
+    {
+      case 1:
+        if (ftype == T_STRUCT)
+        {
+          /* This struct is an exception */
+          if ( this_object->e != NULL)
+          {
+            g_object_unref (this_object->e);
+          }
+          this_object->e = g_object_new (SWCDB_THRIFT_TYPE_EXCEPTION, NULL);
+          if ((ret = thrift_struct_read (THRIFT_STRUCT (this_object->e), protocol, error)) < 0)
+          {
+            g_object_unref (this_object->e);
+            this_object->e = NULL;
+            return -1;
+          }
+          xfer += ret;
+          this_object->__isset_e = TRUE;
+        } else {
+          if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+            return -1;
+          xfer += ret;
+        }
+        break;
+      default:
+        if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
+          return -1;
+        xfer += ret;
+        break;
+    }
+    if ((ret = thrift_protocol_read_field_end (protocol, error)) < 0)
+      return -1;
+    xfer += ret;
+  }
+
+  if ((ret = thrift_protocol_read_struct_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+
+  return xfer;
+}
+
+static gint32
+swcdb_thrift_service_update_serial_result_write (ThriftStruct *object, ThriftProtocol *protocol, GError **error)
+{
+  gint32 ret;
+  gint32 xfer = 0;
+
+  swcdb_thriftServiceUpdateSerialResult * this_object = SWCDB_THRIFT_SERVICE_UPDATE_SERIAL_RESULT(object);
+  THRIFT_UNUSED_VAR (this_object);
+  if ((ret = thrift_protocol_write_struct_begin (protocol, "ServiceUpdateSerialResult", error)) < 0)
+    return -1;
+  xfer += ret;
+  if (this_object->__isset_e == TRUE) {
+    if ((ret = thrift_protocol_write_field_begin (protocol, "e", T_STRUCT, 1, error)) < 0)
+      return -1;
+    xfer += ret;
+    if ((ret = thrift_struct_write (THRIFT_STRUCT (this_object->e), protocol, error)) < 0)
+      return -1;
+    xfer += ret;
+
+    if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+      return -1;
+    xfer += ret;
+  }
+  if ((ret = thrift_protocol_write_field_stop (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+  if ((ret = thrift_protocol_write_struct_end (protocol, error)) < 0)
+    return -1;
+  xfer += ret;
+
+  return xfer;
+}
+
+static void
+swcdb_thrift_service_update_serial_result_set_property (GObject *object,
+                                                        guint property_id,
+                                                        const GValue *value,
+                                                        GParamSpec *pspec)
+{
+  swcdb_thriftServiceUpdateSerialResult *self = SWCDB_THRIFT_SERVICE_UPDATE_SERIAL_RESULT (object);
+
+  switch (property_id)
+  {
+    case PROP_SWCDB_THRIFT_SERVICE_UPDATE_SERIAL_RESULT_E:
+      if (self->e != NULL)
+        g_object_unref (self->e);
+      self->e = g_value_dup_object (value);
+      self->__isset_e = TRUE;
+      break;
+
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+      break;
+  }
+}
+
+static void
+swcdb_thrift_service_update_serial_result_get_property (GObject *object,
+                                                        guint property_id,
+                                                        GValue *value,
+                                                        GParamSpec *pspec)
+{
+  swcdb_thriftServiceUpdateSerialResult *self = SWCDB_THRIFT_SERVICE_UPDATE_SERIAL_RESULT (object);
+
+  switch (property_id)
+  {
+    case PROP_SWCDB_THRIFT_SERVICE_UPDATE_SERIAL_RESULT_E:
+      g_value_set_object (value, self->e);
+      break;
+
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+      break;
+  }
+}
+
+static void 
+swcdb_thrift_service_update_serial_result_instance_init (swcdb_thriftServiceUpdateSerialResult * object)
+{
+  /* satisfy -Wall */
+  THRIFT_UNUSED_VAR (object);
+  object->e = NULL;
+  object->__isset_e = FALSE;
+}
+
+static void 
+swcdb_thrift_service_update_serial_result_finalize (GObject *object)
+{
+  swcdb_thriftServiceUpdateSerialResult *tobject = SWCDB_THRIFT_SERVICE_UPDATE_SERIAL_RESULT (object);
+
+  /* satisfy -Wall in case we don't use tobject */
+  THRIFT_UNUSED_VAR (tobject);
+  if (tobject->e != NULL)
+  {
+    g_object_unref(tobject->e);
+    tobject->e = NULL;
+  }
+}
+
+static void
+swcdb_thrift_service_update_serial_result_class_init (swcdb_thriftServiceUpdateSerialResultClass * cls)
+{
+  GObjectClass *gobject_class = G_OBJECT_CLASS (cls);
+  ThriftStructClass *struct_class = THRIFT_STRUCT_CLASS (cls);
+
+  struct_class->read = swcdb_thrift_service_update_serial_result_read;
+  struct_class->write = swcdb_thrift_service_update_serial_result_write;
+
+  gobject_class->finalize = swcdb_thrift_service_update_serial_result_finalize;
+  gobject_class->get_property = swcdb_thrift_service_update_serial_result_get_property;
+  gobject_class->set_property = swcdb_thrift_service_update_serial_result_set_property;
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_SWCDB_THRIFT_SERVICE_UPDATE_SERIAL_RESULT_E,
+     g_param_spec_object ("e",
+                         NULL,
+                         NULL,
+                         SWCDB_THRIFT_TYPE_EXCEPTION,
+                         G_PARAM_READWRITE));
+}
+
+GType
+swcdb_thrift_service_update_serial_result_get_type (void)
+{
+  static GType type = 0;
+
+  if (type == 0) 
+  {
+    static const GTypeInfo type_info = 
+    {
+      sizeof (swcdb_thriftServiceUpdateSerialResultClass),
+      NULL, /* base_init */
+      NULL, /* base_finalize */
+      (GClassInitFunc) swcdb_thrift_service_update_serial_result_class_init,
+      NULL, /* class_finalize */
+      NULL, /* class_data */
+      sizeof (swcdb_thriftServiceUpdateSerialResult),
+      0, /* n_preallocs */
+      (GInstanceInitFunc) swcdb_thrift_service_update_serial_result_instance_init,
+      NULL, /* value_table */
+    };
+
+    type = g_type_register_static (THRIFT_TYPE_STRUCT, 
+                                   "swcdb_thriftServiceUpdateSerialResultType",
+                                   &type_info, 0);
+  }
+
+  return type;
+}
+
 enum _swcdb_thriftServiceMngColumnArgsProperties
 {
   PROP_SWCDB_THRIFT_SERVICE_MNG_COLUMN_ARGS_0,
@@ -16914,11 +25172,11 @@ swcdb_thrift_service_mng_column_args_read (ThriftStruct *object, ThriftProtocol 
       case 1:
         if (ftype == T_I32)
         {
-          gint32 ecast87;
-          if ((ret = thrift_protocol_read_i32 (protocol, &ecast87, error)) < 0)
+          gint32 ecast151;
+          if ((ret = thrift_protocol_read_i32 (protocol, &ecast151, error)) < 0)
             return -1;
           xfer += ret;
-          this_object->func = (swcdb_thriftSchemaFunc)ecast87;
+          this_object->func = (swcdb_thriftSchemaFunc)ecast151;
           this_object->__isset_func = TRUE;
         } else {
           if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
@@ -17694,19 +25952,19 @@ swcdb_thrift_service_list_columns_result_read (ThriftStruct *object, ThriftProto
             /* iterate through list elements */
             for (i = 0; i < size; i++)
             {
-              swcdb_thriftSchema * _elem88 = NULL;
-              if ( _elem88 != NULL)
+              swcdb_thriftSchema * _elem152 = NULL;
+              if ( _elem152 != NULL)
               {
-                g_object_unref (_elem88);
+                g_object_unref (_elem152);
               }
-              _elem88 = g_object_new (SWCDB_THRIFT_TYPE_SCHEMA, NULL);
-              if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem88), protocol, error)) < 0)
+              _elem152 = g_object_new (SWCDB_THRIFT_TYPE_SCHEMA, NULL);
+              if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem152), protocol, error)) < 0)
               {
-                g_object_unref (_elem88);
+                g_object_unref (_elem152);
                 return -1;
               }
               xfer += ret;
-              g_ptr_array_add (this_object->success, _elem88);
+              g_ptr_array_add (this_object->success, _elem152);
             }
             if ((ret = thrift_protocol_read_list_end (protocol, error)) < 0)
               return -1;
@@ -17776,14 +26034,14 @@ swcdb_thrift_service_list_columns_result_write (ThriftStruct *object, ThriftProt
       return -1;
     xfer += ret;
     {
-      guint i89;
+      guint i153;
 
       if ((ret = thrift_protocol_write_list_begin (protocol, T_STRUCT, (gint32) (this_object->success ? this_object->success->len : 0), error)) < 0)
         return -1;
       xfer += ret;
-      for (i89 = 0; i89 < (this_object->success ? this_object->success->len : 0); i89++)
+      for (i153 = 0; i153 < (this_object->success ? this_object->success->len : 0); i153++)
       {
-        if ((ret = thrift_struct_write (THRIFT_STRUCT ((g_ptr_array_index ((GPtrArray *) this_object->success, i89))), protocol, error)) < 0)
+        if ((ret = thrift_struct_write (THRIFT_STRUCT ((g_ptr_array_index ((GPtrArray *) this_object->success, i153))), protocol, error)) < 0)
           return -1;
         xfer += ret;
 
@@ -18271,19 +26529,19 @@ swcdb_thrift_service_compact_columns_result_read (ThriftStruct *object, ThriftPr
             /* iterate through list elements */
             for (i = 0; i < size; i++)
             {
-              swcdb_thriftCompactResult * _elem90 = NULL;
-              if ( _elem90 != NULL)
+              swcdb_thriftCompactResult * _elem154 = NULL;
+              if ( _elem154 != NULL)
               {
-                g_object_unref (_elem90);
+                g_object_unref (_elem154);
               }
-              _elem90 = g_object_new (SWCDB_THRIFT_TYPE_COMPACT_RESULT, NULL);
-              if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem90), protocol, error)) < 0)
+              _elem154 = g_object_new (SWCDB_THRIFT_TYPE_COMPACT_RESULT, NULL);
+              if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem154), protocol, error)) < 0)
               {
-                g_object_unref (_elem90);
+                g_object_unref (_elem154);
                 return -1;
               }
               xfer += ret;
-              g_ptr_array_add (this_object->success, _elem90);
+              g_ptr_array_add (this_object->success, _elem154);
             }
             if ((ret = thrift_protocol_read_list_end (protocol, error)) < 0)
               return -1;
@@ -18353,14 +26611,14 @@ swcdb_thrift_service_compact_columns_result_write (ThriftStruct *object, ThriftP
       return -1;
     xfer += ret;
     {
-      guint i91;
+      guint i155;
 
       if ((ret = thrift_protocol_write_list_begin (protocol, T_STRUCT, (gint32) (this_object->success ? this_object->success->len : 0), error)) < 0)
         return -1;
       xfer += ret;
-      for (i91 = 0; i91 < (this_object->success ? this_object->success->len : 0); i91++)
+      for (i155 = 0; i155 < (this_object->success ? this_object->success->len : 0); i155++)
       {
-        if ((ret = thrift_struct_write (THRIFT_STRUCT ((g_ptr_array_index ((GPtrArray *) this_object->success, i91))), protocol, error)) < 0)
+        if ((ret = thrift_struct_write (THRIFT_STRUCT ((g_ptr_array_index ((GPtrArray *) this_object->success, i155))), protocol, error)) < 0)
           return -1;
         xfer += ret;
 
@@ -18834,38 +27092,13 @@ swcdb_thrift_service_scan_result_read (ThriftStruct *object, ThriftProtocol *pro
     switch (fid)
     {
       case 0:
-        if (ftype == T_LIST)
+        if (ftype == T_STRUCT)
         {
+          if ((ret = thrift_struct_read (THRIFT_STRUCT (this_object->success), protocol, error)) < 0)
           {
-            guint32 size;
-            guint32 i;
-            ThriftType element_type;
-
-            if ((ret = thrift_protocol_read_list_begin (protocol, &element_type,&size, error)) < 0)
-              return -1;
-            xfer += ret;
-
-            /* iterate through list elements */
-            for (i = 0; i < size; i++)
-            {
-              swcdb_thriftCell * _elem92 = NULL;
-              if ( _elem92 != NULL)
-              {
-                g_object_unref (_elem92);
-              }
-              _elem92 = g_object_new (SWCDB_THRIFT_TYPE_CELL, NULL);
-              if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem92), protocol, error)) < 0)
-              {
-                g_object_unref (_elem92);
-                return -1;
-              }
-              xfer += ret;
-              g_ptr_array_add (this_object->success, _elem92);
-            }
-            if ((ret = thrift_protocol_read_list_end (protocol, error)) < 0)
-              return -1;
-            xfer += ret;
+            return -1;
           }
+          xfer += ret;
           this_object->__isset_success = TRUE;
         } else {
           if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)
@@ -18926,26 +27159,13 @@ swcdb_thrift_service_scan_result_write (ThriftStruct *object, ThriftProtocol *pr
     return -1;
   xfer += ret;
   if (this_object->__isset_success == TRUE) {
-    if ((ret = thrift_protocol_write_field_begin (protocol, "success", T_LIST, 0, error)) < 0)
+    if ((ret = thrift_protocol_write_field_begin (protocol, "success", T_STRUCT, 0, error)) < 0)
       return -1;
     xfer += ret;
-    {
-      guint i93;
+    if ((ret = thrift_struct_write (THRIFT_STRUCT (this_object->success), protocol, error)) < 0)
+      return -1;
+    xfer += ret;
 
-      if ((ret = thrift_protocol_write_list_begin (protocol, T_STRUCT, (gint32) (this_object->success ? this_object->success->len : 0), error)) < 0)
-        return -1;
-      xfer += ret;
-      for (i93 = 0; i93 < (this_object->success ? this_object->success->len : 0); i93++)
-      {
-        if ((ret = thrift_struct_write (THRIFT_STRUCT ((g_ptr_array_index ((GPtrArray *) this_object->success, i93))), protocol, error)) < 0)
-          return -1;
-        xfer += ret;
-
-      }
-      if ((ret = thrift_protocol_write_list_end (protocol, error)) < 0)
-        return -1;
-      xfer += ret;
-    }
     if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
       return -1;
     xfer += ret;
@@ -18984,8 +27204,8 @@ swcdb_thrift_service_scan_result_set_property (GObject *object,
   {
     case PROP_SWCDB_THRIFT_SERVICE_SCAN_RESULT_SUCCESS:
       if (self->success != NULL)
-        g_ptr_array_unref (self->success);
-      self->success = g_value_dup_boxed (value);
+        g_object_unref (self->success);
+      self->success = g_value_dup_object (value);
       self->__isset_success = TRUE;
       break;
 
@@ -19013,7 +27233,7 @@ swcdb_thrift_service_scan_result_get_property (GObject *object,
   switch (property_id)
   {
     case PROP_SWCDB_THRIFT_SERVICE_SCAN_RESULT_SUCCESS:
-      g_value_set_boxed (value, self->success);
+      g_value_set_object (value, self->success);
       break;
 
     case PROP_SWCDB_THRIFT_SERVICE_SCAN_RESULT_E:
@@ -19031,7 +27251,7 @@ swcdb_thrift_service_scan_result_instance_init (swcdb_thriftServiceScanResult * 
 {
   /* satisfy -Wall */
   THRIFT_UNUSED_VAR (object);
-  object->success = g_ptr_array_new_with_free_func (g_object_unref);
+  object->success = g_object_new (SWCDB_THRIFT_TYPE_CELLS, NULL);
   object->__isset_success = FALSE;
   object->e = NULL;
   object->__isset_e = FALSE;
@@ -19046,7 +27266,7 @@ swcdb_thrift_service_scan_result_finalize (GObject *object)
   THRIFT_UNUSED_VAR (tobject);
   if (tobject->success != NULL)
   {
-    g_ptr_array_unref (tobject->success);
+    g_object_unref(tobject->success);
     tobject->success = NULL;
   }
   if (tobject->e != NULL)
@@ -19072,10 +27292,10 @@ swcdb_thrift_service_scan_result_class_init (swcdb_thriftServiceScanResultClass 
   g_object_class_install_property
     (gobject_class,
      PROP_SWCDB_THRIFT_SERVICE_SCAN_RESULT_SUCCESS,
-     g_param_spec_boxed ("success",
+     g_param_spec_object ("success",
                          NULL,
                          NULL,
-                         G_TYPE_PTR_ARRAY,
+                         SWCDB_THRIFT_TYPE_CELLS,
                          G_PARAM_READWRITE));
 
   g_object_class_install_property
@@ -19427,49 +27647,30 @@ swcdb_thrift_service_scan_rslt_on_column_result_read (ThriftStruct *object, Thri
             /* iterate through each of the map's fields */
             for (i = 0; i < size; i++)
             {
-              gchar * key94 = NULL;
-              swcdb_thriftColCells * val95 = g_ptr_array_new_with_free_func (g_object_unref);
-              if (key94 != NULL)
+              gchar * key156 = NULL;
+              swcdb_thriftColCells * val157 = NULL;
+              if (key156 != NULL)
               {
-                g_free(key94);
-                key94 = NULL;
+                g_free(key156);
+                key156 = NULL;
               }
 
-              if ((ret = thrift_protocol_read_string (protocol, &key94, error)) < 0)
+              if ((ret = thrift_protocol_read_string (protocol, &key156, error)) < 0)
                 return -1;
               xfer += ret;
+              if ( val157 != NULL)
               {
-                guint32 size;
-                guint32 i;
-                ThriftType element_type;
-
-                if ((ret = thrift_protocol_read_list_begin (protocol, &element_type,&size, error)) < 0)
-                  return -1;
-                xfer += ret;
-
-                /* iterate through list elements */
-                for (i = 0; i < size; i++)
-                {
-                  swcdb_thriftCCell * _elem96 = NULL;
-                  if ( _elem96 != NULL)
-                  {
-                    g_object_unref (_elem96);
-                  }
-                  _elem96 = g_object_new (SWCDB_THRIFT_TYPE_C_CELL, NULL);
-                  if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem96), protocol, error)) < 0)
-                  {
-                    g_object_unref (_elem96);
-                    return -1;
-                  }
-                  xfer += ret;
-                  g_ptr_array_add (val95, _elem96);
-                }
-                if ((ret = thrift_protocol_read_list_end (protocol, error)) < 0)
-                  return -1;
-                xfer += ret;
+                g_object_unref (val157);
               }
-              if (this_object->success && key94)
-                g_hash_table_insert ((GHashTable *)this_object->success, (gpointer) key94, (gpointer) val95);
+              val157 = g_object_new (SWCDB_THRIFT_TYPE_COL_CELLS, NULL);
+              if ((ret = thrift_struct_read (THRIFT_STRUCT (val157), protocol, error)) < 0)
+              {
+                g_object_unref (val157);
+                return -1;
+              }
+              xfer += ret;
+              if (this_object->success && key156)
+                g_hash_table_insert ((GHashTable *)this_object->success, (gpointer) key156, (gpointer) val157);
             }
 
             /* read the map end marker */
@@ -19541,13 +27742,13 @@ swcdb_thrift_service_scan_rslt_on_column_result_write (ThriftStruct *object, Thr
       return -1;
     xfer += ret;
     {
-      gchar * key97 = NULL;
-      swcdb_thriftColCells * val98 = NULL;
+      gchar * key158 = NULL;
+      swcdb_thriftColCells * val159 = NULL;
       GList *key_list = NULL, *iter = NULL;
       gchar ** keys;
       int i = 0, key_count;
 
-      if ((ret = thrift_protocol_write_map_begin (protocol, T_STRING, T_LIST, this_object->success ? (gint32) g_hash_table_size ((GHashTable *) this_object->success) : 0, error)) < 0)
+      if ((ret = thrift_protocol_write_map_begin (protocol, T_STRING, T_STRUCT, this_object->success ? (gint32) g_hash_table_size ((GHashTable *) this_object->success) : 0, error)) < 0)
         return -1;
       xfer += ret;
       if (this_object->success)
@@ -19560,30 +27761,17 @@ swcdb_thrift_service_scan_rslt_on_column_result_write (ThriftStruct *object, Thr
 
       for (i = 0; i < key_count; ++i)
       {
-        key97 = keys[i];
-        val98 = (swcdb_thriftColCells *) g_hash_table_lookup (((GHashTable *) this_object->success), (gpointer) key97);
+        key158 = keys[i];
+        val159 = (swcdb_thriftColCells *) g_hash_table_lookup (((GHashTable *) this_object->success), (gpointer) key158);
 
-        if ((ret = thrift_protocol_write_string (protocol,  key97, error)) < 0)
+        if ((ret = thrift_protocol_write_string (protocol,  key158, error)) < 0)
           return -1;
         xfer += ret;
 
-        {
-          guint i99;
+        if ((ret = thrift_struct_write (THRIFT_STRUCT ( val159), protocol, error)) < 0)
+          return -1;
+        xfer += ret;
 
-          if ((ret = thrift_protocol_write_list_begin (protocol, T_STRUCT, (gint32) ( val98 ?  val98->len : 0), error)) < 0)
-            return -1;
-          xfer += ret;
-          for (i99 = 0; i99 < ( val98 ?  val98->len : 0); i99++)
-          {
-            if ((ret = thrift_struct_write (THRIFT_STRUCT ((g_ptr_array_index ((GPtrArray *)  val98, i99))), protocol, error)) < 0)
-              return -1;
-            xfer += ret;
-
-          }
-          if ((ret = thrift_protocol_write_list_end (protocol, error)) < 0)
-            return -1;
-          xfer += ret;
-        }
       }
       if ((ret = thrift_protocol_write_map_end (protocol, error)) < 0)
         return -1;
@@ -19674,7 +27862,7 @@ swcdb_thrift_service_scan_rslt_on_column_result_instance_init (swcdb_thriftServi
 {
   /* satisfy -Wall */
   THRIFT_UNUSED_VAR (object);
-  object->success = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, (GDestroyNotify) g_ptr_array_unref);
+  object->success = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_object_unref);
   object->__isset_success = FALSE;
   object->e = NULL;
   object->__isset_e = FALSE;
@@ -20068,19 +28256,19 @@ swcdb_thrift_service_scan_rslt_on_key_result_read (ThriftStruct *object, ThriftP
             /* iterate through list elements */
             for (i = 0; i < size; i++)
             {
-              swcdb_thriftkCells * _elem100 = NULL;
-              if ( _elem100 != NULL)
+              swcdb_thriftkCells * _elem160 = NULL;
+              if ( _elem160 != NULL)
               {
-                g_object_unref (_elem100);
+                g_object_unref (_elem160);
               }
-              _elem100 = g_object_new (SWCDB_THRIFT_TYPE_K_CELLS, NULL);
-              if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem100), protocol, error)) < 0)
+              _elem160 = g_object_new (SWCDB_THRIFT_TYPE_K_CELLS, NULL);
+              if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem160), protocol, error)) < 0)
               {
-                g_object_unref (_elem100);
+                g_object_unref (_elem160);
                 return -1;
               }
               xfer += ret;
-              g_ptr_array_add (this_object->success, _elem100);
+              g_ptr_array_add (this_object->success, _elem160);
             }
             if ((ret = thrift_protocol_read_list_end (protocol, error)) < 0)
               return -1;
@@ -20150,14 +28338,14 @@ swcdb_thrift_service_scan_rslt_on_key_result_write (ThriftStruct *object, Thrift
       return -1;
     xfer += ret;
     {
-      guint i101;
+      guint i161;
 
       if ((ret = thrift_protocol_write_list_begin (protocol, T_STRUCT, (gint32) (this_object->success ? this_object->success->len : 0), error)) < 0)
         return -1;
       xfer += ret;
-      for (i101 = 0; i101 < (this_object->success ? this_object->success->len : 0); i101++)
+      for (i161 = 0; i161 < (this_object->success ? this_object->success->len : 0); i161++)
       {
-        if ((ret = thrift_struct_write (THRIFT_STRUCT ((g_ptr_array_index ((GPtrArray *) this_object->success, i101))), protocol, error)) < 0)
+        if ((ret = thrift_struct_write (THRIFT_STRUCT ((g_ptr_array_index ((GPtrArray *) this_object->success, i161))), protocol, error)) < 0)
           return -1;
         xfer += ret;
 
@@ -20950,11 +29138,11 @@ swcdb_thrift_service_scan_rslt_on_args_read (ThriftStruct *object, ThriftProtoco
       case 2:
         if (ftype == T_I32)
         {
-          gint32 ecast102;
-          if ((ret = thrift_protocol_read_i32 (protocol, &ecast102, error)) < 0)
+          gint32 ecast162;
+          if ((ret = thrift_protocol_read_i32 (protocol, &ecast162, error)) < 0)
             return -1;
           xfer += ret;
-          this_object->rslt = (swcdb_thriftCellsResult)ecast102;
+          this_object->rslt = (swcdb_thriftCellsResult)ecast162;
           this_object->__isset_rslt = TRUE;
         } else {
           if ((ret = thrift_protocol_skip (protocol, ftype, error)) < 0)

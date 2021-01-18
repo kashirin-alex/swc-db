@@ -30,7 +30,7 @@ using Thrift.Processor;
 public partial class Result : TBase
 {
   private List<Schema> _schemas;
-  private List<Cell> _cells;
+  private Cells _cells;
   private List<CompactResult> _compact;
 
   /// <summary>
@@ -52,7 +52,7 @@ public partial class Result : TBase
   /// <summary>
   /// Set with result for 'select' query
   /// </summary>
-  public List<Cell> Cells
+  public Cells Cells
   {
     get
     {
@@ -115,14 +115,14 @@ public partial class Result : TBase
             if (field.Type == TType.List)
             {
               {
-                TList _list98 = await iprot.ReadListBeginAsync(cancellationToken);
-                Schemas = new List<Schema>(_list98.Count);
-                for(int _i99 = 0; _i99 < _list98.Count; ++_i99)
+                TList _list206 = await iprot.ReadListBeginAsync(cancellationToken);
+                Schemas = new List<Schema>(_list206.Count);
+                for(int _i207 = 0; _i207 < _list206.Count; ++_i207)
                 {
-                  Schema _elem100;
-                  _elem100 = new Schema();
-                  await _elem100.ReadAsync(iprot, cancellationToken);
-                  Schemas.Add(_elem100);
+                  Schema _elem208;
+                  _elem208 = new Schema();
+                  await _elem208.ReadAsync(iprot, cancellationToken);
+                  Schemas.Add(_elem208);
                 }
                 await iprot.ReadListEndAsync(cancellationToken);
               }
@@ -133,20 +133,10 @@ public partial class Result : TBase
             }
             break;
           case 2:
-            if (field.Type == TType.List)
+            if (field.Type == TType.Struct)
             {
-              {
-                TList _list101 = await iprot.ReadListBeginAsync(cancellationToken);
-                Cells = new List<Cell>(_list101.Count);
-                for(int _i102 = 0; _i102 < _list101.Count; ++_i102)
-                {
-                  Cell _elem103;
-                  _elem103 = new Cell();
-                  await _elem103.ReadAsync(iprot, cancellationToken);
-                  Cells.Add(_elem103);
-                }
-                await iprot.ReadListEndAsync(cancellationToken);
-              }
+              Cells = new Cells();
+              await Cells.ReadAsync(iprot, cancellationToken);
             }
             else
             {
@@ -157,14 +147,14 @@ public partial class Result : TBase
             if (field.Type == TType.List)
             {
               {
-                TList _list104 = await iprot.ReadListBeginAsync(cancellationToken);
-                Compact = new List<CompactResult>(_list104.Count);
-                for(int _i105 = 0; _i105 < _list104.Count; ++_i105)
+                TList _list209 = await iprot.ReadListBeginAsync(cancellationToken);
+                Compact = new List<CompactResult>(_list209.Count);
+                for(int _i210 = 0; _i210 < _list209.Count; ++_i210)
                 {
-                  CompactResult _elem106;
-                  _elem106 = new CompactResult();
-                  await _elem106.ReadAsync(iprot, cancellationToken);
-                  Compact.Add(_elem106);
+                  CompactResult _elem211;
+                  _elem211 = new CompactResult();
+                  await _elem211.ReadAsync(iprot, cancellationToken);
+                  Compact.Add(_elem211);
                 }
                 await iprot.ReadListEndAsync(cancellationToken);
               }
@@ -206,9 +196,9 @@ public partial class Result : TBase
         await oprot.WriteFieldBeginAsync(field, cancellationToken);
         {
           await oprot.WriteListBeginAsync(new TList(TType.Struct, Schemas.Count), cancellationToken);
-          foreach (Schema _iter107 in Schemas)
+          foreach (Schema _iter212 in Schemas)
           {
-            await _iter107.WriteAsync(oprot, cancellationToken);
+            await _iter212.WriteAsync(oprot, cancellationToken);
           }
           await oprot.WriteListEndAsync(cancellationToken);
         }
@@ -217,17 +207,10 @@ public partial class Result : TBase
       if (Cells != null && __isset.cells)
       {
         field.Name = "cells";
-        field.Type = TType.List;
+        field.Type = TType.Struct;
         field.ID = 2;
         await oprot.WriteFieldBeginAsync(field, cancellationToken);
-        {
-          await oprot.WriteListBeginAsync(new TList(TType.Struct, Cells.Count), cancellationToken);
-          foreach (Cell _iter108 in Cells)
-          {
-            await _iter108.WriteAsync(oprot, cancellationToken);
-          }
-          await oprot.WriteListEndAsync(cancellationToken);
-        }
+        await Cells.WriteAsync(oprot, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
       if (Compact != null && __isset.compact)
@@ -238,9 +221,9 @@ public partial class Result : TBase
         await oprot.WriteFieldBeginAsync(field, cancellationToken);
         {
           await oprot.WriteListBeginAsync(new TList(TType.Struct, Compact.Count), cancellationToken);
-          foreach (CompactResult _iter109 in Compact)
+          foreach (CompactResult _iter213 in Compact)
           {
-            await _iter109.WriteAsync(oprot, cancellationToken);
+            await _iter213.WriteAsync(oprot, cancellationToken);
           }
           await oprot.WriteListEndAsync(cancellationToken);
         }
@@ -294,7 +277,7 @@ public partial class Result : TBase
       if(!__first) { sb.Append(", "); }
       __first = false;
       sb.Append("Cells: ");
-      sb.Append(Cells);
+      sb.Append(Cells== null ? "<null>" : Cells.ToString());
     }
     if (Compact != null && __isset.compact)
     {

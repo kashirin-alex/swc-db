@@ -23,15 +23,15 @@ public class SpecSchemas implements org.apache.thrift.TBase<SpecSchemas, SpecSch
   /**
    * The Column IDs
    */
-  public @org.apache.thrift.annotation.Nullable java.util.List<java.lang.Long> cids; // optional
+  public @org.apache.thrift.annotation.Nullable java.util.List<java.lang.Long> cids; // required
   /**
    * The Column Names
    */
-  public @org.apache.thrift.annotation.Nullable java.util.List<java.lang.String> names; // optional
+  public @org.apache.thrift.annotation.Nullable java.util.List<java.lang.String> names; // required
   /**
    * The Schema's Column Name patterns
    */
-  public @org.apache.thrift.annotation.Nullable java.util.List<SchemaPattern> patterns; // optional
+  public @org.apache.thrift.annotation.Nullable java.util.List<SchemaPattern> patterns; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -109,17 +109,16 @@ public class SpecSchemas implements org.apache.thrift.TBase<SpecSchemas, SpecSch
   }
 
   // isset id assignments
-  private static final _Fields optionals[] = {_Fields.CIDS,_Fields.NAMES,_Fields.PATTERNS};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.CIDS, new org.apache.thrift.meta_data.FieldMetaData("cids", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+    tmpMap.put(_Fields.CIDS, new org.apache.thrift.meta_data.FieldMetaData("cids", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64))));
-    tmpMap.put(_Fields.NAMES, new org.apache.thrift.meta_data.FieldMetaData("names", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+    tmpMap.put(_Fields.NAMES, new org.apache.thrift.meta_data.FieldMetaData("names", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
-    tmpMap.put(_Fields.PATTERNS, new org.apache.thrift.meta_data.FieldMetaData("patterns", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+    tmpMap.put(_Fields.PATTERNS, new org.apache.thrift.meta_data.FieldMetaData("patterns", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, SchemaPattern.class))));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
@@ -127,6 +126,17 @@ public class SpecSchemas implements org.apache.thrift.TBase<SpecSchemas, SpecSch
   }
 
   public SpecSchemas() {
+  }
+
+  public SpecSchemas(
+    java.util.List<java.lang.Long> cids,
+    java.util.List<java.lang.String> names,
+    java.util.List<SchemaPattern> patterns)
+  {
+    this();
+    this.cids = cids;
+    this.names = names;
+    this.patterns = patterns;
   }
 
   /**
@@ -487,35 +497,29 @@ public class SpecSchemas implements org.apache.thrift.TBase<SpecSchemas, SpecSch
     java.lang.StringBuilder sb = new java.lang.StringBuilder("SpecSchemas(");
     boolean first = true;
 
-    if (isSetCids()) {
-      sb.append("cids:");
-      if (this.cids == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.cids);
-      }
-      first = false;
+    sb.append("cids:");
+    if (this.cids == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.cids);
     }
-    if (isSetNames()) {
-      if (!first) sb.append(", ");
-      sb.append("names:");
-      if (this.names == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.names);
-      }
-      first = false;
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("names:");
+    if (this.names == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.names);
     }
-    if (isSetPatterns()) {
-      if (!first) sb.append(", ");
-      sb.append("patterns:");
-      if (this.patterns == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.patterns);
-      }
-      first = false;
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("patterns:");
+    if (this.patterns == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.patterns);
     }
+    first = false;
     sb.append(")");
     return sb.toString();
   }
@@ -630,46 +634,40 @@ public class SpecSchemas implements org.apache.thrift.TBase<SpecSchemas, SpecSch
 
       oprot.writeStructBegin(STRUCT_DESC);
       if (struct.cids != null) {
-        if (struct.isSetCids()) {
-          oprot.writeFieldBegin(CIDS_FIELD_DESC);
+        oprot.writeFieldBegin(CIDS_FIELD_DESC);
+        {
+          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, struct.cids.size()));
+          for (long _iter9 : struct.cids)
           {
-            oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, struct.cids.size()));
-            for (long _iter9 : struct.cids)
-            {
-              oprot.writeI64(_iter9);
-            }
-            oprot.writeListEnd();
+            oprot.writeI64(_iter9);
           }
-          oprot.writeFieldEnd();
+          oprot.writeListEnd();
         }
+        oprot.writeFieldEnd();
       }
       if (struct.names != null) {
-        if (struct.isSetNames()) {
-          oprot.writeFieldBegin(NAMES_FIELD_DESC);
+        oprot.writeFieldBegin(NAMES_FIELD_DESC);
+        {
+          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.names.size()));
+          for (java.lang.String _iter10 : struct.names)
           {
-            oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.names.size()));
-            for (java.lang.String _iter10 : struct.names)
-            {
-              oprot.writeString(_iter10);
-            }
-            oprot.writeListEnd();
+            oprot.writeString(_iter10);
           }
-          oprot.writeFieldEnd();
+          oprot.writeListEnd();
         }
+        oprot.writeFieldEnd();
       }
       if (struct.patterns != null) {
-        if (struct.isSetPatterns()) {
-          oprot.writeFieldBegin(PATTERNS_FIELD_DESC);
+        oprot.writeFieldBegin(PATTERNS_FIELD_DESC);
+        {
+          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.patterns.size()));
+          for (SchemaPattern _iter11 : struct.patterns)
           {
-            oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.patterns.size()));
-            for (SchemaPattern _iter11 : struct.patterns)
-            {
-              _iter11.write(oprot);
-            }
-            oprot.writeListEnd();
+            _iter11.write(oprot);
           }
-          oprot.writeFieldEnd();
+          oprot.writeListEnd();
         }
+        oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
       oprot.writeStructEnd();

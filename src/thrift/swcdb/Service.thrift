@@ -276,13 +276,13 @@ struct SchemaPattern {
 /** The Specs for Schemas for using with list_columns or compact_columns */
 struct SpecSchemas {
   /** The Column IDs */
-  1: optional list<i64>             cids
+  1: list<i64>             cids
 
   /** The Column Names */
-  2: optional list<string>          names
+  2: list<string>          names
 
   /** The Schema's Column Name patterns */
-  3: optional list<SchemaPattern>   patterns
+  3: list<SchemaPattern>   patterns
 }
 
 
@@ -340,17 +340,6 @@ typedef list<SpecFraction> SpecKey
 
 
 
-/** The Value Specifications, option to use with Extended Logical Comparators  */
-struct SpecValue {
-  /** Logical comparator to Apply */
-  1: Comp   comp
-
-  /** The binary(bytes) to match against the Cell value */
-  2: binary v
-}
-
-
-
 /** The Timestamp Specifications */
 struct SpecTimestamp {
   /** Logical comparator to Apply */
@@ -365,15 +354,25 @@ struct SpecTimestamp {
 /** The Key Interval Specifications */
 struct SpecKeyInterval {
   /** The Key Start Spec, the start of cells-interval key match */
-  1: optional SpecKey  start
+  1: SpecKey  start
 
   /** The Key Finish Spec, the finish of cells-interval key match */
-  2: optional SpecKey  finish
+  2: SpecKey  finish
 }
 
 /** The Key Intervals Specifications defined as SpecKeyInterval items in a list-container */
 typedef list<SpecKeyInterval> SpecKeyIntervals
 
+
+
+/** The Value Specifications, option to use with Extended Logical Comparators  */
+struct SpecValue {
+  /** Logical comparator to Apply */
+  1: Comp   comp
+
+  /** The binary(bytes) to match against the Cell value */
+  2: binary v
+}
 
 /** The Cell Value Specifications defined as SpecValue items in a list-container */
 typedef list<SpecValue> SpecValues
@@ -382,31 +381,31 @@ typedef list<SpecValue> SpecValues
 /** The Cells Interval Specifications with interval-scope Flags */
 struct SpecInterval {
   /** Begin of Ranges evaluation with this Key inclusive */
-  1: optional Key               range_begin
+  1: Key                        range_begin
 
   /** End of Ranges evaluation with this Key inclusive */
-  2: optional Key               range_end
+  2: Key                        range_end
 
   /** Offset of Ranges evaluation with this Key inclusive */
-  3: optional Key               range_offset
+  3: Key                        range_offset
 
   /** Offset Cell Key of a Scan, select cells from this key inclusive */
-  4: optional Key               offset_key
+  4: Key                        offset_key
 
   /** Offset Cell Timestamp of a Scan, select cells after this timestamp  */
   5: optional i64               offset_rev
 
   /** The Key Intervals */
-  6: optional SpecKeyIntervals  key_intervals
+  6: SpecKeyIntervals           key_intervals
 
   /** The Cell Value Specifications, cell-value match */
-  7: optional SpecValues        values;
+  7: SpecValues                 values;
 
   /** The Timestamp Start Spec, the start of cells-interval timestamp match */
   8: optional SpecTimestamp     ts_start
 
   /** The Timestamp Finish Spec, the finish of cells-interval timestamp match */
-  9: optional SpecTimestamp    ts_finish
+  9: optional SpecTimestamp     ts_finish
 
   /** The Interval Flags Specification */
   10: optional SpecFlags        flags
@@ -425,13 +424,151 @@ struct SpecColumn {
 
 
 
+
+/** The Specifications of INT64 Serial Value Field */
+struct SpecValueSerial_INT64 {
+  /** Logical comparator to Apply */
+  1: Comp     comp
+
+  /** The int64 to match against the value field */
+  2: i64      v
+}
+
+/** The Specifications of DOUBLE Serial Value Field */
+struct SpecValueSerial_DOUBLE {
+  /** Logical comparator to Apply */
+  1: Comp     comp
+
+  /** The double to match against the value field */
+  2: double   v
+}
+
+/** The Specifications of BYTES Serial Value Field */
+struct SpecValueSerial_BYTES {
+  /** Logical comparator to Apply */
+  1: Comp     comp
+
+  /** The binary(bytes) to match against the value field */
+  2: binary   v
+}
+
+/** The Specifications of KEY Serial Value Field */
+struct SpecValueSerial_KEY {
+  /** The Key Sequence to use */
+  1: KeySeq   seq
+
+  /** The Specification of the Key to match against the value field */
+  2: SpecKey  v
+}
+
+/** The Specifications of LIST_INT64(LI) Serial Value Field */
+struct SpecValueSerial_LI {
+  /** Logical comparator to Apply */
+  1: Comp                         comp
+
+  /** The List of Int64 to match against the value field */
+  2: list<SpecValueSerial_INT64>  v
+}
+
+/** The Specifications of LIST_BYTES(LB) Serial Value Field */
+struct SpecValueSerial_LB {
+  /** Logical comparator to Apply */
+  1: Comp                         comp
+
+  /** The List of Bytes to match against the value field */
+  2: list<SpecValueSerial_BYTES>  v
+}
+
+struct SpecValueSerialField {
+  /** The Field Id of the Value Field */
+  1: i32                              field_id
+  /** The specifications of Int64 for the field */
+  2: optional SpecValueSerial_INT64   spec_int64
+  /** The specifications of Double for the field */
+  3: optional SpecValueSerial_DOUBLE  spec_double
+  /** The specifications of Bytes for the field */
+  4: SpecValueSerial_BYTES            spec_bytes
+  /** The specifications of Cell-Key for the field */
+  5: SpecValueSerial_KEY              spec_key
+  /** The specifications of List Int64 for the field */
+  6: SpecValueSerial_LI               spec_li
+  /** The specifications of List Bytes for the field */
+  7: SpecValueSerial_LB               spec_lb
+}
+/** The Serial Cell Value Specifications defined as SpecValueSerialField items in a list-container */
+typedef list<SpecValueSerialField> SpecValueSerialFields
+
+
+
+/** The Serial Value Specifications */
+struct SpecValueSerial {
+  /** Logical comparator to Apply */
+  1: Comp                   comp
+
+  /** The Serial Value Specifications to match against the SERIAL Cell value fields */
+  2: SpecValueSerialFields  fields
+}
+/** The Cell Value Specifications defined as SpecValueSerial items in a list-container */
+typedef list<SpecValueSerial> SpecValuesSerial
+
+
+/** The Serial Value Cells Interval Specifications with interval-scope Flags */
+struct SpecIntervalSerial {
+  /** Begin of Ranges evaluation with this Key inclusive */
+  1: Key                        range_begin
+
+  /** End of Ranges evaluation with this Key inclusive */
+  2: Key                        range_end
+
+  /** Offset of Ranges evaluation with this Key inclusive */
+  3: Key                        range_offset
+
+  /** Offset Cell Key of a Scan, select cells from this key inclusive */
+  4: Key                        offset_key
+
+  /** Offset Cell Timestamp of a Scan, select cells after this timestamp  */
+  5: optional i64               offset_rev
+
+  /** The Key Intervals */
+  6: SpecKeyIntervals           key_intervals
+
+  /** The Serial Cell Value Specifications, cell-value fields match */
+  7: SpecValuesSerial           values;
+
+  /** The Timestamp Start Spec, the start of cells-interval timestamp match */
+  8: optional SpecTimestamp     ts_start
+
+  /** The Timestamp Finish Spec, the finish of cells-interval timestamp match */
+  9: optional SpecTimestamp     ts_finish
+
+  /** The Interval Flags Specification */
+  10: optional SpecFlags        flags
+}
+
+
+
+/** The Column Specifications, the Cells-Intervals(SpecInterval/s) specification for a SERIAL Type Column */
+struct SpecColumnSerial {
+  /** The Column ID */
+  1: i64                      cid
+
+  /** The Serial Cells Interval in a list-container*/
+  2: list<SpecIntervalSerial> intervals
+}
+
+
+
+
 /** The Scan Specifications, the Columns-Intervals(SpecColumn/s) with global-scope Flags */
 struct SpecScan {
   /** The Column Intervals(SpecColumn) in a list-container */
-  1: list<SpecColumn>    columns
+  1: list<SpecColumn>       columns
+
+  /** The Serial Column Intervals(SpecColumnSerial) in a list-container */
+  2: list<SpecColumnSerial> columns_serial
 
   /** The Global Flags Specification */
-  2: optional SpecFlags  flags
+  3: optional SpecFlags     flags
 }
 
 
@@ -456,19 +593,22 @@ enum Flag {
 /** The Cell data for using with Update */
 struct UCell {
   /** The Cell Flag */
-  1: Flag             f
+  1: Flag                   f
 
   /** The Cell Key */
-  2: Key              k
+  2: Key                    k
 
   /** The Cell Timestamp in nanoseconds */
-  3: optional i64     ts
+  3: optional i64           ts
 
   /** The Cell Version is in timestamp descending */
-  4: optional bool    ts_desc
+  4: optional bool          ts_desc
 
   /** The Cell Value */
-  5: optional binary  v
+  5: binary                 v
+
+  /** Optionally the Cell Value Encoding Type: ZLIB/SNAPPY/ZSTD */
+  6: optional EncodingType  encoder
 }
 
 /** The Cells for Update defined as UCell items in a list-container */
@@ -476,6 +616,49 @@ typedef list<UCell> UCells
 
 /** The Cells for Update for a Column Id defined as UCells items in a map-container by CID */
 typedef map<i64, UCells> UCCells
+
+
+
+/** The Serial Value Cell field  */
+struct CellValueSerial {
+  1: i32             field_id
+  2: optional i64    v_int64
+  3: optional double v_double
+  4: binary          v_bytes
+  5: Key             v_key
+  6: list<i64>       v_li
+  7: list<binary>    v_lb
+}
+/** The Serial Cell Value Fields defined as CellValueSerial items in a list-container */
+typedef list<CellValueSerial> CellValuesSerial
+//
+
+/** The Cell data for using with Update of SERIAL Column Type */
+struct UCellSerial {
+  /** The Cell Flag */
+  1: Flag                       f
+
+  /** The Cell Key */
+  2: Key                        k
+
+  /** The Cell Timestamp in nanoseconds */
+  3: optional i64               ts
+
+  /** The Cell Version is in timestamp descending */
+  4: optional bool              ts_desc
+
+  /** The Serial Cell Value fields */
+  5: CellValuesSerial           v
+
+  /** Optionally the Cell Value Encoding Type: ZLIB/SNAPPY/ZSTD */
+  6: optional EncodingType      encoder
+}
+
+/** The Cells for Update defined as UCellSerial items in a list-container */
+typedef list<UCellSerial> UCellsSerial
+
+/** The Cells for Update for a Column Id defined as UCellsSerial items in a map-container by CID */
+typedef map<i64, UCellsSerial> UCCellsSerial
 
 
 
@@ -491,11 +674,33 @@ struct Cell {
   3: i64              ts
 
   /** The Cell Value */
-  4: optional binary  v
+  4: binary           v
 }
 
-/** The Cells for results list of scan, defined as Cell items in a list-container */
-typedef list<Cell> Cells
+/** The Serial Cell for results list of scan */
+struct CellSerial {
+  /** The Column Name */
+  1: string           c
+
+  /** The Cell Key */
+  2: Key              k
+
+  /** The Cell Timestamp */
+  3: i64              ts
+
+  /** The Cell Serial Value */
+  4: CellValuesSerial v
+}
+
+/** The Cells for results list of scan */
+struct Cells {
+  /** The Cells, defined as KCell items in a list-container */
+  1: list<Cell>        cells
+
+  /** The Serial Cells, defined as CellSerial items in a list-container */
+  2: list<CellSerial>  serial_cells
+}
+
 
 
 
@@ -508,14 +713,33 @@ struct CCell {
   2: i64              ts
 
   /** The Cell Value */
-  3: optional binary  v
+  3: binary           v
+}
+
+/** The Column Serial Cell for results on Columns of scan */
+struct CCellSerial {
+  /** The Cell Key */
+  1: Key              k
+
+  /** The Cell Timestamp */
+  2: i64              ts
+
+  /** The Cell Serial Value */
+  3: CellValuesSerial v
 }
 
 /** The Column Cells for results on Columns of scan, defined as Cell items in a list-container */
-typedef list<CCell> ColCells
+struct ColCells {
+  /** The Cells, defined as KCell items in a list-container */
+  1: list<CCell>       cells
+
+  /** The Serial Cells, defined as CCellSerial items in a list-container */
+  2: list<CCellSerial> serial_cells
+}
 
 /** The Columns Cells for results on Columns of scan, defined as ColCells items in a map-container by Column Name */
 typedef map<string, ColCells> CCells
+
 
 
 
@@ -528,20 +752,36 @@ struct KCell {
   2: i64              ts
 
   /** The Cell Value */
-  3: optional binary  v
+  3: binary           v
+}
+
+/** The Key Serial Cell for results on Key of scan */
+struct KCellSerial {
+  /** The Column Name */
+  1: string           c
+
+  /** The Cell Timestamp */
+  2: i64              ts
+
+  /** The Cell Serial Value */
+  3: CellValuesSerial v
 }
 
 /** The Key Cells for results on Key of scan */
 struct kCells {
   /** The Cell Key */
-  1: Key            k
+  1: Key                k
 
   /** The Key's Cells, defined as KCell items in a list-container */
-  2: list<KCell>    cells
+  2: list<KCell>        cells
+
+  /** The Key's Serial Cells, defined as KCellSerial items in a list-container */
+  3: list<KCellSerial>  serial_cells
 }
 
 /** The Keys Cells for results on Key of scan, defined as kCells items in a list-container */
 typedef list<kCells> KCells
+
 
 
 
@@ -554,34 +794,52 @@ struct FCell {
   2: i64              ts
 
   /** The Cell Value */
-  3: optional binary  v
+  3: binary           v
+}
+
+/** The Fraction Serial Cell for results on Fraction of scan */
+struct FCellSerial {
+  /** The Column Name */
+  1: string           c
+
+  /** The Cell Timestamp */
+  2: i64              ts
+
+  /** The Cell Serial Value */
+  3: CellValuesSerial v
 }
 
 /** The Fraction Cells for results on Fraction of scan */
 struct FCells {
 
   /** The Fraction Container for the Next Fractions Tree,  defined as FCells items in a map-container by current Fraction bytes */
-  1: map<binary, FCells>   f
+  1: map<binary, FCells>  f
 
   /** The current Fraction's Cells, defined as FCell items in a list-container */
-  2: optional list<FCell>  cells
+  2: list<FCell>          cells
+
+  /** The current Fraction's Serial Cells, defined as FCellSerial items in a list-container */
+  3: list<FCellSerial>    serial_cells
+
 }
+
+
 
 
 
 /** A Grouped Cells result for results of scan, determined by the request's CellsResult enum */
 struct CellsGroup {
   /** The Cells in a list, defined as Cell items in a list-container */
-  1: optional Cells   cells
+  1: Cells   cells
 
   /** The Columns Cells in a map-container, defined as ColCells items by Column Name */
-  2: optional CCells  ccells
+  2: CCells  ccells
 
   /** The Keys Cells in a list, defined as kCells items in a list-container */
-  3: optional KCells  kcells
+  3: KCells  kcells
 
   /** The Fraction Cells in struct FCells */
-  4: optional FCells  fcells
+  4: FCells  fcells
 }
 
 
@@ -619,13 +877,13 @@ typedef list<CompactResult> CompactResults
 /** The Result of 'exec_sql' */
 struct Result {
   /** Set with result for 'list columns' query */
-  1: optional Schemas        schemas
+  1: Schemas        schemas
 
   /** Set with result for 'select' query */
-  2: optional Cells          cells
+  2: Cells          cells
 
   /** Set with result for 'compact columns' query */
-  3: optional CompactResults compact
+  3: CompactResults compact
 }
 
 
@@ -763,6 +1021,20 @@ service Service {
 
     /** The Cells to update  */
     1:UCCells cells,
+
+    /** The Updater ID to use for write */
+    2:i64 updater_id = 0
+
+  ) throws (1:Exception e),
+
+
+  /** The direct method to update cells with cell in Update-Columns-Cells-Serial,
+    * optionally to work with updater-id.
+    */
+  void update_serial(
+
+    /** The Serial Cells to update  */
+    1:UCCellsSerial cells,
 
     /** The Updater ID to use for write */
     2:i64 updater_id = 0

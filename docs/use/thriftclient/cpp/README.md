@@ -64,7 +64,7 @@ int main() {
   SWC::Thrift::Schemas schemas;
   client.list_columns(schemas, spec);
 
-  std::cout << std::endl << "All Columns List size=" 
+  std::cout << std::endl << "All Columns List size="
             << schemas.size() << std::endl;
   for(auto& schema : schemas) {
     schema.printTo(std::cout << " ");
@@ -85,7 +85,6 @@ int main() {
 
   /* 4. Get the Created Column */
   schemas.clear();
-  spec.__isset.names = true; // important !!!
   spec.names.push_back(schema.col_name);
   std::cout << "Get Column spec: \n " << spec << std::endl;
   client.list_columns(schemas, spec);
@@ -129,9 +128,10 @@ int main() {
     for(uint8_t f=1; f < num_fractions; ++f) {
       cell.k[f] += (char)(f + 97);
     }
-    
+
     // cell.__set_ts(now_ns());
     // cell.__set_ts_desc(true);
+    // cell.__set_encoder(SWC::Thrift::EncodingType::ZSTD);
     cell.__set_v(value);
   }
 
@@ -152,14 +152,11 @@ int main() {
 
   // set cell matching F(2) == "b", expect all
   speccol.intervals.emplace_back();
-  speccol.__isset.intervals = true;
   auto& intval = speccol.intervals.back();
 
   intval.key_intervals.emplace_back();
-  intval.__isset.key_intervals = true;
 
   auto& key_intval = intval.key_intervals.back();
-  key_intval.__isset.start = true;
   key_intval.start.resize(3);
   key_intval.start[0].__set_comp(SWC::Thrift::Comp::GT);
   key_intval.start[0].__set_f("");
@@ -167,16 +164,16 @@ int main() {
   key_intval.start[1].__set_f("b");
   key_intval.start[2].__set_comp(SWC::Thrift::Comp::GE);
   key_intval.start[2].__set_f(""); // all on the depth
-  
+
   specs.printTo(std::cout << " Select SpecScan='");
   std::cout << "'\n";
 
-  SWC::Thrift::Cells cells;
-  client.scan(cells, specs);
+  SWC::Thrift::Cells container;
+  client.scan(container, specs);
 
-  std::cout << "Select cells.size()=" << cells.size()  << "\n";
-  assert(cells.size() == n_cells);
-  for(auto& cell : cells)
+  std::cout << "Select cells.size()=" << container.cells.size()  << "\n";
+  assert(container.cells.size() == n_cells);
+  for(auto& cell : container.cells)
     assert(value.compare(cell.v) == 0);
 
 
@@ -192,7 +189,7 @@ int main() {
   try {
     client.list_columns(schemas, spec);
   } catch(const SWC::Thrift::Exception& e) {
-    // OK 
+    // OK
   }
   assert(schemas.empty());
 
@@ -214,7 +211,7 @@ int main() {
 
 
 Build the **`basic_swcdb_thrift_program`**:
-```bash 
+```bash
 
 c++ basic_swcdb_thrift_program.cc \
   -I${SWCDB_INSTALL_PREFIX}/include \
@@ -226,7 +223,7 @@ c++ basic_swcdb_thrift_program.cc \
 
 
 Run the **`basic_swcdb_thrift_program`**:
-```bash 
+```bash
 
 LD_LIBRARY_PATH=/opt/swcdb/lib ./basic_swcdb_thrift_program;
 ```

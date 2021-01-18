@@ -124,6 +124,11 @@ struct Field_BYTES : Field {
     return std::make_unique<Field_BYTES>(fid, comp, ptr, len, true);
   }
 
+  static Field::Ptr make(uint24_t fid, Condition::Comp comp,
+                         const std::string& value) {
+    return make(fid, comp, (const uint8_t*)value.data(), value.size());
+  }
+
   Field_BYTES(uint24_t fid, Condition::Comp comp,
               const uint8_t* ptr, size_t len, bool take_ownership=false);
 
@@ -152,8 +157,18 @@ struct Field_BYTES : Field {
 // Field KEY
 struct Field_KEY : Field {
 
-  static Field::Ptr make(uint24_t fid, Types::KeySeq seq, const Key& key) {
+  static std::unique_ptr<Field_KEY>
+  make(uint24_t fid, Types::KeySeq seq) {
+    return std::make_unique<Field_KEY>(fid, seq);
+  }
+
+  static Field::Ptr
+  make(uint24_t fid, Types::KeySeq seq, const Key& key) {
     return std::make_unique<Field_KEY>(fid, seq, key);
+  }
+
+  Field_KEY(uint24_t fid, Types::KeySeq seq)
+           : Field(fid), seq(seq) {
   }
 
   Field_KEY(uint24_t fid, Types::KeySeq seq, const Key& key);

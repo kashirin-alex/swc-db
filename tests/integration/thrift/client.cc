@@ -57,7 +57,7 @@ void key(int i, int f, Key& key) {
 std::string cell_value(int c, int i, int f, int batch) {
   return "DATAOF:"
           + column_name(c)
-          + "-" 
+          + "-"
           + std::to_string(i)
           + "/"
           + std::to_string(f)
@@ -69,29 +69,27 @@ std::string cell_value(int c, int i, int f, int batch) {
 
 
 /* OUTPUT */
-void print(const Cells& cells) {
-  std::cout << "cells.size=" << cells.size() << std::endl;
-  for(auto& cell : cells) {
-    cell.printTo(std::cout << " ");
+void print(const Cells& container) {
+  std::cout << "cells.size=" << container.cells.size() << std::endl;
+  container.printTo(std::cout << " ");
+  std::cout << std::endl;
+}
+
+void print(const CCells& columns) {
+  std::cout << "columns.size=" << columns.size() << std::endl;
+  for(auto& col : columns) {
+    std::cout << "column=" << col.first
+              << " cells.size=" << col.second.cells.size()
+              << " serial_cells.size=" << col.second.serial_cells.size()
+              << std::endl;
+    col.second.printTo(std::cout << " ");
     std::cout << std::endl;
   }
 }
 
-void print(const CCells& cells) {
-  std::cout << "columns.size=" << cells.size() << std::endl;
-  for(auto& col : cells) {
-    std::cout << "column=" << col.first 
-              << " cells.size=" << col.second.size() << std::endl;
-    for(auto& cell : col.second) {
-      cell.printTo(std::cout << " ");
-      std::cout << std::endl;
-    }
-  }
-}
-
-void print(const KCells& cells) {
-  std::cout << "keys.size=" << cells.size() << std::endl;
-  for(auto& key_cells : cells) {
+void print(const KCells& keys) {
+  std::cout << "keys.size=" << keys.size() << std::endl;
+  for(auto& key_cells : keys) {
     key_cells.printTo(std::cout << " ");
     std::cout << std::endl;
   }
@@ -101,14 +99,14 @@ void print(FCells* fcells, Key& key) {
   for(auto& f : fcells->f) {
     key.emplace_back(f.first);
     std::cout << "fraction='" << f.first << "'"
-              << " cells.size=" << f.second.cells.size() 
+              << " cells.size=" << f.second.cells.size()
+              << " serial_cells.size=" << f.second.serial_cells.size()
               << " key.size=" << key.size() << " ";
     for(auto& fraction : key)
       std::cout << "/" << fraction;
     std::cout << std::endl;
-    for(auto& cell : f.second.cells) {
-      std::cout << " " << cell << "\n";
-    }
+    f.second.printTo(std::cout << " ");
+    std::cout << std::endl;
     print(&f.second, key);
     key.clear();
   }
@@ -117,7 +115,7 @@ void print(FCells* fcells, Key& key) {
 void print(FCells& cells) {
   cells.printTo(std::cout);
   std::cout << std::endl;
-  
+
   Key key;
   print(&cells, key);
 }
@@ -131,7 +129,7 @@ void sql_mng_and_list_column(Client& client) {
   Schemas schemas;
   try {
     client.sql_list_columns(
-      schemas, 
+      schemas,
       "get schema col-test-create-1"
     );
     if(schemas.size()) {
@@ -150,7 +148,7 @@ void sql_mng_and_list_column(Client& client) {
   );
   schemas.clear();
   client.sql_list_columns(
-    schemas, 
+    schemas,
     "get schema col-test-create-1"
   );
   assert(schemas.size() == 1);
@@ -159,10 +157,10 @@ void sql_mng_and_list_column(Client& client) {
   sql.append(std::to_string(schemas.back().cid));
   sql.append(" name='col-test-create-1' cell_ttl=123456789)");
   client.sql_mng_column(sql);
-  
+
   schemas.clear();
   client.sql_list_columns(
-    schemas, 
+    schemas,
     "get schema col-test-create-1"
   );
   assert(schemas.size() == 1);
@@ -175,7 +173,7 @@ void sql_mng_and_list_column(Client& client) {
 
   try {
     client.sql_list_columns(
-      schemas, 
+      schemas,
       "get schema col-test-create-1"
     );
     assert(false);
@@ -190,7 +188,7 @@ void sql_list_columns_all(Client& client) {
 
   Schemas schemas;
   client.sql_list_columns(
-    schemas, 
+    schemas,
     "list columns"
   );
   assert(schemas.size() >= 3);
@@ -211,8 +209,8 @@ void sql_compact_columns(Client& client) {
     res.clear();
     client.sql_compact_columns(res,  "compact columns ");
     assert(res.size() >= 2);
-    std::cout << std::endl 
-              << "CompactResults.size=" << res.size() 
+    std::cout << std::endl
+              << "CompactResults.size=" << res.size()
               << " waited=" << count << "ms" << std::endl;
     for(auto& r : res) {
       r.printTo(std::cout << " ");
@@ -251,7 +249,7 @@ void sql_delete_test_column(Client& client) {
     try{
       Schemas schemas;
       client.sql_list_columns(
-        schemas, 
+        schemas,
         "get schema " + column_name(c)
       );
       if(!schemas.empty())
@@ -278,7 +276,7 @@ void sql_update(Client& client, size_t updater_id=0, int batch=0) {
   if(updater_id)
     std::cout << " updater_id=" << updater_id;
   std::cout << ": " << std::endl;
-  
+
   // UPDATE cell(FLAG, CID|NAME, KEY, TS_ORDER, TIMESTAMP, VALUE), cell(..)
   std::string cells("UPDATE ");
   for(auto c=1; c <= num_columns; ++c) {
@@ -300,7 +298,7 @@ void sql_update(Client& client, size_t updater_id=0, int batch=0) {
 
         cells.append(cell_value(c, i, f, batch));
         cells.append(")");
-        if(i != num_cells || c != num_columns || f != num_fractions) 
+        if(i != num_cells || c != num_columns || f != num_fractions)
           cells.append(",");
       }
     }
@@ -311,7 +309,7 @@ void sql_update(Client& client, size_t updater_id=0, int batch=0) {
 
 void sql_update_with_id(Client& client) {
   std::cout << std::endl << "test: sql_update_with_id: " << std::endl;
-  
+
   size_t updater_id = client.updater_create(4096);
   std::cout << "test: updater_create: " << std::endl;
   std::cout << " updater_id="<< updater_id << std::endl;
@@ -341,14 +339,14 @@ void sql_select(Client& client) {
   std::string sql = select_sql();
   std::cout << " SQL='" << sql << "'\n";
 
-  Cells cells;
-  client.sql_select(cells, sql);
+  Cells container;
+  client.sql_select(container, sql);
 
-  print(cells);
-  
-  std::cout << " cells.size()=" << cells.size() 
+  print(container);
+
+  std::cout << " cells.size()=" << container.cells.size()
             << " expected=" << total_cells*batches << "\n";
-  assert(cells.size() == total_cells*batches);
+  assert(container.cells.size() == total_cells*batches);
 }
 
 void sql_select_rslt_on_column(Client& client) {
@@ -421,7 +419,7 @@ void sql_query(Client& client, CellsResult::type rslt) {
     }
     default : {
       print(group.cells);
-      assert(group.cells.size() == total_cells);
+      assert(group.cells.cells.size() == total_cells);
       break;
     }
   }
@@ -433,13 +431,12 @@ void sql_query(Client& client, CellsResult::type rslt) {
 
 void spec_delete_test_column(Client& client) {
   std::cout << std::endl << "test: spec_delete_test_column: " << std::endl;
-  
+
 
   for(auto c=1; c <= num_columns; ++c) {
     try {
       Schemas schemas;
       SpecSchemas spec;
-      spec.__isset.names = true;
       spec.names.emplace_back(column_name(c));
       client.list_columns(schemas, spec);
 
@@ -453,13 +450,16 @@ void spec_delete_test_column(Client& client) {
   }
 }
 
-void spec_create_test_column(Client& client, uint32_t cell_versions=1) {
+void spec_create_test_column(Client& client, uint32_t cell_versions=1, 
+                             bool serial=false) {
   spec_delete_test_column(client);
   std::cout << std::endl << "test: spec_create_test_column: " << std::endl;
   Schema schema;
   for(auto c=1; c <= num_columns; ++c) {
     schema.__set_col_name(column_name(c));
     schema.__set_cell_versions(cell_versions);
+    if(serial)
+      schema.__set_col_type(ColumnType::type::SERIAL);
 
     std::cout << " create: " << schema << std::endl;
     client.mng_column(SchemaFunc::CREATE, schema);
@@ -468,9 +468,8 @@ void spec_create_test_column(Client& client, uint32_t cell_versions=1) {
 
 void spec_compact_test_column(Client& client) {
   std::cout << std::endl << "test: spec_compact_test_column: " << std::endl;
-  
+
   SpecSchemas spec;
-  spec.__isset.names = true;
   for(auto c=1; c <= num_columns; ++c)
     spec.names.emplace_back(column_name(c));
 
@@ -484,13 +483,11 @@ void spec_compact_test_column(Client& client) {
 
 void spec_list_columns(Client& client) {
   std::cout << std::endl << "test: spec_list_columns: " << std::endl;
-  
+
   SpecSchemas spec;
-  spec.__isset.patterns = true;
   auto& pattern = spec.patterns.emplace_back();
   pattern.value = column_pre;
   pattern.comp = Comp::PF;
-  //pattern.__isset.comp = pattern.__isset.value = true;
 
   Schemas schemas;
   client.list_columns(schemas, spec);
@@ -508,7 +505,7 @@ void spec_update(Client& client, size_t updater_id=0, int batch=0) {
   if(updater_id)
     std::cout << " updater_id=" << updater_id;
   std::cout << ": " << std::endl;
-  
+
   Schemas schemas;
   std::string sql("get schema ");
   for(auto c=1; c <= num_columns; ++c) {
@@ -538,12 +535,64 @@ void spec_update(Client& client, size_t updater_id=0, int batch=0) {
   client.update(cells, updater_id);
 }
 
+void spec_update_serial(Client& client, size_t updater_id=0, int batch=0) {
+  std::cout << std::endl << "test: spec_update_serial";
+  if(updater_id)
+    std::cout << " updater_id=" << updater_id;
+  std::cout << ": " << std::endl;
+
+  Schemas schemas;
+  std::string sql("get schema ");
+  for(auto c=1; c <= num_columns; ++c) {
+    sql.append(column_name(c));
+    if(c != num_columns)
+      sql += ',';
+  }
+  client.sql_list_columns(schemas, sql);
+
+  UCCellsSerial cells;
+  auto c=0;
+  for(auto& schema : schemas) {
+    ++c;
+    auto& col = cells[schema.cid];
+    for(auto i=1; i <= num_cells; ++i) {
+      for(auto f=1; f <= num_fractions; ++f) {
+        auto& cell = col.emplace_back();
+        cell.f = Flag::INSERT;
+        key(i, f, cell.k);
+        cell.__set_ts(i*f*c);//now_ns());
+        cell.__set_ts_desc(true);
+        cell.__set_encoder(EncodingType::SNAPPY);
+        cell.v.resize(10);
+        for(int fid=0; fid<10; ++fid) {
+          auto& fields = cell.v[fid];
+          fields.__set_field_id(fid);
+          fields.__set_v_int64(f);
+          fields.__set_v_double(f);
+          fields.__set_v_bytes(apache::thrift::to_string(cell.k));
+          fields.__set_v_key(cell.k);
+          fields.__set_v_li({c, i, f, batch});
+          fields.__set_v_lb({
+            column_name(c),
+            std::to_string(c),
+            std::to_string(i), 
+            std::to_string(f), 
+            std::to_string(batch)
+          });
+        }
+      }
+    }
+  }
+  //std::cout << cells << "\n";
+  client.update_serial(cells, updater_id);
+}
+
 SpecScan select_specs(Client& client) {
   SpecScan ss;
   for(auto c=1; c <= num_columns; ++c) {
     Schemas schemas;
     client.sql_list_columns(
-      schemas, 
+      schemas,
       "get schema " + column_name(c)
     );
     assert(!schemas.empty());
@@ -551,20 +600,16 @@ SpecScan select_specs(Client& client) {
     auto& col = ss.columns.emplace_back();
     col.__set_cid(schemas.back().cid);
     auto& intval = col.intervals.emplace_back();
-    col.__isset.intervals = true;
 
     intval.key_intervals.emplace_back();
-    intval.__isset.key_intervals = true;
     auto& key_intval = intval.key_intervals.back();
 
-    key_intval.__isset.start = true;
     key_intval.start.resize(2);
     key_intval.start[0].__set_comp(Comp::EQ);
     key_intval.start[0].__set_f("a1");
     key_intval.start[1].__set_comp(Comp::GE);
     key_intval.start[1].__set_f("");
   }
-  ss.__isset.columns = true;
   return ss;
 }
 
@@ -575,18 +620,20 @@ void spec_select(Client& client) {
   specs.printTo(std::cout << " spec_select='");
   std::cout << "'\n";
 
-  Cells cells;
-  client.scan(cells, specs);
+  Cells container;
+  client.scan(container, specs);
 
-  print(cells);
-  std::cout << " cells.size()=" << cells.size() 
+  print(container);
+  std::cout << " cells.size()=" << container.cells.size()
+            << " serial_cells.size()=" << container.serial_cells.size()
             << " expected=" << num_fractions*num_columns << "\n";
-  assert(cells.size() == num_fractions*num_columns);
+  assert(container.cells.size() + container.serial_cells.size() 
+         == num_fractions*num_columns);
 
   for(auto rslt_typ : {
-    CellsResult::IN_LIST, 
-    CellsResult::ON_COLUMN, 
-    CellsResult::ON_KEY, 
+    CellsResult::IN_LIST,
+    CellsResult::ON_COLUMN,
+    CellsResult::ON_KEY,
     CellsResult::ON_FRACTION}) {
 
     CellsGroup gcells;
@@ -596,27 +643,45 @@ void spec_select(Client& client) {
     std::cout << "\n";
     switch(rslt_typ) {
       case CellsResult::ON_COLUMN: {
-        std::cout << rslt_typ << " ccells.size()=" << gcells.ccells.size() 
+        std::cout << rslt_typ << " ccells.size()=" << gcells.ccells.size()
                   << " expected=" << num_columns << "\n";
         assert(gcells.ccells.size() == num_columns);
+        for(auto& col : gcells.ccells) {
+          for(auto& cell : col.second.serial_cells) {
+            int f = cell.k.size();
+            for(int fid=0; fid<10; ++fid) {
+              auto& fields = cell.v[fid];
+              assert(fields.field_id == fid);
+              assert(fields.v_int64 == f);
+              assert(fields.v_double == (double)f);
+              assert(fields.v_key == cell.k);
+              assert(!fields.v_bytes.compare(apache::thrift::to_string(cell.k)));
+              assert(fields.v_li[2] == f);
+              assert(!fields.v_lb[3].compare(std::to_string(f)));
+            }
+          }
+        }
         break;
       }
       case CellsResult::ON_FRACTION: {
-        std::cout << rslt_typ << " fcells.f.size()=" << gcells.fcells.f.size() 
+        std::cout << rslt_typ << " fcells.f.size()=" << gcells.fcells.f.size()
                   << " expected=" << 1 << "\n";
         assert(gcells.fcells.f.size() == 1);
         break;
       }
       case CellsResult::ON_KEY: {
-        std::cout << rslt_typ << " kcells.size()=" << gcells.kcells.size() 
+        std::cout << rslt_typ << " kcells.size()=" << gcells.kcells.size()
                   << " expected=" << num_fractions << "\n";
         assert(gcells.kcells.size() == num_fractions);
         break;
       }
       default: { // IN_LIST
-        std::cout << rslt_typ << " cells.f.size()=" << gcells.cells.size() 
+        std::cout << rslt_typ 
+                  << " cells.size()=" << gcells.cells.cells.size()
+                  << " serial_cells.size()=" << gcells.cells.serial_cells.size()
                   << " expected=" << num_fractions*num_columns << "\n";
-        assert(gcells.cells.size() == num_fractions*num_columns);
+        assert(gcells.cells.cells.size() + gcells.cells.serial_cells.size() 
+                == num_fractions*num_columns);
         break;
       }
     }
@@ -634,7 +699,7 @@ int main() {
   //auto client = SWC::Thrift::Client::make("localhost", 18000);
 
   SWC::Thrift::Client client("localhost", 18000);
-  
+
   /** SQL **/
   Test::sql_list_columns_all(client);
   Test::sql_mng_and_list_column(client);
@@ -670,8 +735,14 @@ int main() {
   Test::spec_select(client);
   Test::spec_compact_test_column(client);
   Test::spec_select(client);
-  
+
   Test::spec_list_columns(client);
+  Test::spec_delete_test_column(client);
+
+  /** SPECS Serial Value **/
+  Test::spec_create_test_column(client, 1, true);
+  Test::spec_update_serial(client);
+  Test::spec_select(client);
   Test::spec_delete_test_column(client);
 
 

@@ -18,6 +18,7 @@ public class UCell implements org.apache.thrift.TBase<UCell, UCell._Fields>, jav
   private static final org.apache.thrift.protocol.TField TS_FIELD_DESC = new org.apache.thrift.protocol.TField("ts", org.apache.thrift.protocol.TType.I64, (short)3);
   private static final org.apache.thrift.protocol.TField TS_DESC_FIELD_DESC = new org.apache.thrift.protocol.TField("ts_desc", org.apache.thrift.protocol.TType.BOOL, (short)4);
   private static final org.apache.thrift.protocol.TField V_FIELD_DESC = new org.apache.thrift.protocol.TField("v", org.apache.thrift.protocol.TType.STRING, (short)5);
+  private static final org.apache.thrift.protocol.TField ENCODER_FIELD_DESC = new org.apache.thrift.protocol.TField("encoder", org.apache.thrift.protocol.TType.I32, (short)6);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new UCellStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new UCellTupleSchemeFactory();
@@ -43,7 +44,13 @@ public class UCell implements org.apache.thrift.TBase<UCell, UCell._Fields>, jav
   /**
    * The Cell Value
    */
-  public @org.apache.thrift.annotation.Nullable java.nio.ByteBuffer v; // optional
+  public @org.apache.thrift.annotation.Nullable java.nio.ByteBuffer v; // required
+  /**
+   * Optionally the Cell Value Encoding Type: ZLIB/SNAPPY/ZSTD
+   * 
+   * @see EncodingType
+   */
+  public @org.apache.thrift.annotation.Nullable EncodingType encoder; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -68,7 +75,13 @@ public class UCell implements org.apache.thrift.TBase<UCell, UCell._Fields>, jav
     /**
      * The Cell Value
      */
-    V((short)5, "v");
+    V((short)5, "v"),
+    /**
+     * Optionally the Cell Value Encoding Type: ZLIB/SNAPPY/ZSTD
+     * 
+     * @see EncodingType
+     */
+    ENCODER((short)6, "encoder");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -94,6 +107,8 @@ public class UCell implements org.apache.thrift.TBase<UCell, UCell._Fields>, jav
           return TS_DESC;
         case 5: // V
           return V;
+        case 6: // ENCODER
+          return ENCODER;
         default:
           return null;
       }
@@ -138,7 +153,7 @@ public class UCell implements org.apache.thrift.TBase<UCell, UCell._Fields>, jav
   private static final int __TS_ISSET_ID = 0;
   private static final int __TS_DESC_ISSET_ID = 1;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.TS,_Fields.TS_DESC,_Fields.V};
+  private static final _Fields optionals[] = {_Fields.TS,_Fields.TS_DESC,_Fields.ENCODER};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -150,8 +165,10 @@ public class UCell implements org.apache.thrift.TBase<UCell, UCell._Fields>, jav
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     tmpMap.put(_Fields.TS_DESC, new org.apache.thrift.meta_data.FieldMetaData("ts_desc", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
-    tmpMap.put(_Fields.V, new org.apache.thrift.meta_data.FieldMetaData("v", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+    tmpMap.put(_Fields.V, new org.apache.thrift.meta_data.FieldMetaData("v", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING        , true)));
+    tmpMap.put(_Fields.ENCODER, new org.apache.thrift.meta_data.FieldMetaData("encoder", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, EncodingType.class)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(UCell.class, metaDataMap);
   }
@@ -161,11 +178,13 @@ public class UCell implements org.apache.thrift.TBase<UCell, UCell._Fields>, jav
 
   public UCell(
     Flag f,
-    java.util.List<java.nio.ByteBuffer> k)
+    java.util.List<java.nio.ByteBuffer> k,
+    java.nio.ByteBuffer v)
   {
     this();
     this.f = f;
     this.k = k;
+    this.v = org.apache.thrift.TBaseHelper.copyBinary(v);
   }
 
   /**
@@ -185,6 +204,9 @@ public class UCell implements org.apache.thrift.TBase<UCell, UCell._Fields>, jav
     if (other.isSetV()) {
       this.v = org.apache.thrift.TBaseHelper.copyBinary(other.v);
     }
+    if (other.isSetEncoder()) {
+      this.encoder = other.encoder;
+    }
   }
 
   public UCell deepCopy() {
@@ -200,6 +222,7 @@ public class UCell implements org.apache.thrift.TBase<UCell, UCell._Fields>, jav
     setTs_descIsSet(false);
     this.ts_desc = false;
     this.v = null;
+    this.encoder = null;
   }
 
   /**
@@ -382,6 +405,41 @@ public class UCell implements org.apache.thrift.TBase<UCell, UCell._Fields>, jav
     }
   }
 
+  /**
+   * Optionally the Cell Value Encoding Type: ZLIB/SNAPPY/ZSTD
+   * 
+   * @see EncodingType
+   */
+  @org.apache.thrift.annotation.Nullable
+  public EncodingType getEncoder() {
+    return this.encoder;
+  }
+
+  /**
+   * Optionally the Cell Value Encoding Type: ZLIB/SNAPPY/ZSTD
+   * 
+   * @see EncodingType
+   */
+  public UCell setEncoder(@org.apache.thrift.annotation.Nullable EncodingType encoder) {
+    this.encoder = encoder;
+    return this;
+  }
+
+  public void unsetEncoder() {
+    this.encoder = null;
+  }
+
+  /** Returns true if field encoder is set (has been assigned a value) and false otherwise */
+  public boolean isSetEncoder() {
+    return this.encoder != null;
+  }
+
+  public void setEncoderIsSet(boolean value) {
+    if (!value) {
+      this.encoder = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
     case F:
@@ -428,6 +486,14 @@ public class UCell implements org.apache.thrift.TBase<UCell, UCell._Fields>, jav
       }
       break;
 
+    case ENCODER:
+      if (value == null) {
+        unsetEncoder();
+      } else {
+        setEncoder((EncodingType)value);
+      }
+      break;
+
     }
   }
 
@@ -448,6 +514,9 @@ public class UCell implements org.apache.thrift.TBase<UCell, UCell._Fields>, jav
 
     case V:
       return getV();
+
+    case ENCODER:
+      return getEncoder();
 
     }
     throw new java.lang.IllegalStateException();
@@ -470,6 +539,8 @@ public class UCell implements org.apache.thrift.TBase<UCell, UCell._Fields>, jav
       return isSetTs_desc();
     case V:
       return isSetV();
+    case ENCODER:
+      return isSetEncoder();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -534,6 +605,15 @@ public class UCell implements org.apache.thrift.TBase<UCell, UCell._Fields>, jav
         return false;
     }
 
+    boolean this_present_encoder = true && this.isSetEncoder();
+    boolean that_present_encoder = true && that.isSetEncoder();
+    if (this_present_encoder || that_present_encoder) {
+      if (!(this_present_encoder && that_present_encoder))
+        return false;
+      if (!this.encoder.equals(that.encoder))
+        return false;
+    }
+
     return true;
   }
 
@@ -560,6 +640,10 @@ public class UCell implements org.apache.thrift.TBase<UCell, UCell._Fields>, jav
     hashCode = hashCode * 8191 + ((isSetV()) ? 131071 : 524287);
     if (isSetV())
       hashCode = hashCode * 8191 + v.hashCode();
+
+    hashCode = hashCode * 8191 + ((isSetEncoder()) ? 131071 : 524287);
+    if (isSetEncoder())
+      hashCode = hashCode * 8191 + encoder.getValue();
 
     return hashCode;
   }
@@ -622,6 +706,16 @@ public class UCell implements org.apache.thrift.TBase<UCell, UCell._Fields>, jav
         return lastComparison;
       }
     }
+    lastComparison = java.lang.Boolean.valueOf(isSetEncoder()).compareTo(other.isSetEncoder());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetEncoder()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.encoder, other.encoder);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -670,13 +764,21 @@ public class UCell implements org.apache.thrift.TBase<UCell, UCell._Fields>, jav
       sb.append(this.ts_desc);
       first = false;
     }
-    if (isSetV()) {
+    if (!first) sb.append(", ");
+    sb.append("v:");
+    if (this.v == null) {
+      sb.append("null");
+    } else {
+      org.apache.thrift.TBaseHelper.toString(this.v, sb);
+    }
+    first = false;
+    if (isSetEncoder()) {
       if (!first) sb.append(", ");
-      sb.append("v:");
-      if (this.v == null) {
+      sb.append("encoder:");
+      if (this.encoder == null) {
         sb.append("null");
       } else {
-        org.apache.thrift.TBaseHelper.toString(this.v, sb);
+        sb.append(this.encoder);
       }
       first = false;
     }
@@ -736,13 +838,13 @@ public class UCell implements org.apache.thrift.TBase<UCell, UCell._Fields>, jav
           case 2: // K
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list104 = iprot.readListBegin();
-                struct.k = new java.util.ArrayList<java.nio.ByteBuffer>(_list104.size);
-                @org.apache.thrift.annotation.Nullable java.nio.ByteBuffer _elem105;
-                for (int _i106 = 0; _i106 < _list104.size; ++_i106)
+                org.apache.thrift.protocol.TList _list200 = iprot.readListBegin();
+                struct.k = new java.util.ArrayList<java.nio.ByteBuffer>(_list200.size);
+                @org.apache.thrift.annotation.Nullable java.nio.ByteBuffer _elem201;
+                for (int _i202 = 0; _i202 < _list200.size; ++_i202)
                 {
-                  _elem105 = iprot.readBinary();
-                  struct.k.add(_elem105);
+                  _elem201 = iprot.readBinary();
+                  struct.k.add(_elem201);
                 }
                 iprot.readListEnd();
               }
@@ -775,6 +877,14 @@ public class UCell implements org.apache.thrift.TBase<UCell, UCell._Fields>, jav
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 6: // ENCODER
+            if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
+              struct.encoder = org.swcdb.thrift.gen.EncodingType.findByValue(iprot.readI32());
+              struct.setEncoderIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -799,9 +909,9 @@ public class UCell implements org.apache.thrift.TBase<UCell, UCell._Fields>, jav
         oprot.writeFieldBegin(K_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.k.size()));
-          for (java.nio.ByteBuffer _iter107 : struct.k)
+          for (java.nio.ByteBuffer _iter203 : struct.k)
           {
-            oprot.writeBinary(_iter107);
+            oprot.writeBinary(_iter203);
           }
           oprot.writeListEnd();
         }
@@ -818,9 +928,14 @@ public class UCell implements org.apache.thrift.TBase<UCell, UCell._Fields>, jav
         oprot.writeFieldEnd();
       }
       if (struct.v != null) {
-        if (struct.isSetV()) {
-          oprot.writeFieldBegin(V_FIELD_DESC);
-          oprot.writeBinary(struct.v);
+        oprot.writeFieldBegin(V_FIELD_DESC);
+        oprot.writeBinary(struct.v);
+        oprot.writeFieldEnd();
+      }
+      if (struct.encoder != null) {
+        if (struct.isSetEncoder()) {
+          oprot.writeFieldBegin(ENCODER_FIELD_DESC);
+          oprot.writeI32(struct.encoder.getValue());
           oprot.writeFieldEnd();
         }
       }
@@ -857,16 +972,19 @@ public class UCell implements org.apache.thrift.TBase<UCell, UCell._Fields>, jav
       if (struct.isSetV()) {
         optionals.set(4);
       }
-      oprot.writeBitSet(optionals, 5);
+      if (struct.isSetEncoder()) {
+        optionals.set(5);
+      }
+      oprot.writeBitSet(optionals, 6);
       if (struct.isSetF()) {
         oprot.writeI32(struct.f.getValue());
       }
       if (struct.isSetK()) {
         {
           oprot.writeI32(struct.k.size());
-          for (java.nio.ByteBuffer _iter108 : struct.k)
+          for (java.nio.ByteBuffer _iter204 : struct.k)
           {
-            oprot.writeBinary(_iter108);
+            oprot.writeBinary(_iter204);
           }
         }
       }
@@ -879,25 +997,28 @@ public class UCell implements org.apache.thrift.TBase<UCell, UCell._Fields>, jav
       if (struct.isSetV()) {
         oprot.writeBinary(struct.v);
       }
+      if (struct.isSetEncoder()) {
+        oprot.writeI32(struct.encoder.getValue());
+      }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, UCell struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
-      java.util.BitSet incoming = iprot.readBitSet(5);
+      java.util.BitSet incoming = iprot.readBitSet(6);
       if (incoming.get(0)) {
         struct.f = org.swcdb.thrift.gen.Flag.findByValue(iprot.readI32());
         struct.setFIsSet(true);
       }
       if (incoming.get(1)) {
         {
-          org.apache.thrift.protocol.TList _list109 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-          struct.k = new java.util.ArrayList<java.nio.ByteBuffer>(_list109.size);
-          @org.apache.thrift.annotation.Nullable java.nio.ByteBuffer _elem110;
-          for (int _i111 = 0; _i111 < _list109.size; ++_i111)
+          org.apache.thrift.protocol.TList _list205 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.k = new java.util.ArrayList<java.nio.ByteBuffer>(_list205.size);
+          @org.apache.thrift.annotation.Nullable java.nio.ByteBuffer _elem206;
+          for (int _i207 = 0; _i207 < _list205.size; ++_i207)
           {
-            _elem110 = iprot.readBinary();
-            struct.k.add(_elem110);
+            _elem206 = iprot.readBinary();
+            struct.k.add(_elem206);
           }
         }
         struct.setKIsSet(true);
@@ -913,6 +1034,10 @@ public class UCell implements org.apache.thrift.TBase<UCell, UCell._Fields>, jav
       if (incoming.get(4)) {
         struct.v = iprot.readBinary();
         struct.setVIsSet(true);
+      }
+      if (incoming.get(5)) {
+        struct.encoder = org.swcdb.thrift.gen.EncodingType.findByValue(iprot.readI32());
+        struct.setEncoderIsSet(true);
       }
     }
   }

@@ -142,6 +142,8 @@ struct Field_BYTES : Field, StaticBuffer {
 
   void encode(uint8_t** bufp) const override;
 
+  void convert_to(std::string& item) const;
+
   void print(std::ostream& out) const override;
 
 };
@@ -193,6 +195,8 @@ struct Field_LIST_INT64 : Field, StaticBuffer {
 
   void encode(uint8_t** bufp) const override;
 
+  void convert_to(std::vector<int64_t>& items) const;
+
   void print(std::ostream& out) const override;
 
 };
@@ -217,6 +221,8 @@ struct Field_LIST_BYTES : Field, StaticBuffer {
   size_t encoded_length() const override;
 
   void encode(uint8_t** bufp) const override;
+
+  void convert_to(std::vector<std::string>& items) const;
 
   void print(std::ostream& out) const override;
 

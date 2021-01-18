@@ -137,6 +137,13 @@ void Field_BYTES::encode(uint8_t** bufp) const {
   Serialization::encode_bytes(bufp, base, size);
 }
 
+void Field_BYTES::convert_to(std::string& item) const {
+  if(size) {
+    item.clear();
+    item.append((const char*)base, size);
+  }
+}
+
 void Field_BYTES::print(std::ostream& out) const {
   out << fid << ':' << 'B' << ':' << '"';
   char hex[5];
@@ -220,6 +227,14 @@ void Field_LIST_INT64::encode(uint8_t** bufp) const {
   Serialization::encode_bytes(bufp, base, size);
 }
 
+void Field_LIST_INT64::convert_to(std::vector<int64_t>& items) const {
+  if(size) {
+    const uint8_t* ptr = base;
+    for(size_t remain = size; remain;)
+      items.push_back(Serialization::decode_vi64(&ptr, &remain));
+  }
+}
+
 void Field_LIST_INT64::print(std::ostream& out) const {
   out << fid << ":LI:[";
   if(size) {
@@ -268,6 +283,18 @@ size_t Field_LIST_BYTES::encoded_length() const {
 void Field_LIST_BYTES::encode(uint8_t** bufp) const {
   Field::encode(bufp, Type::LIST_BYTES);
   Serialization::encode_bytes(bufp, base, size);
+}
+
+void Field_LIST_BYTES::convert_to(std::vector<std::string>& items) const {
+  if(size) {
+    const uint8_t* ptr = base;
+    for(size_t remain = size; remain;) {
+      size_t len;
+      const char* cptr = (const char*)Serialization::decode_bytes(
+        &ptr, &remain, &len);
+      items.emplace_back(cptr, len);
+    }
+  }
 }
 
 void Field_LIST_BYTES::print(std::ostream& out) const {

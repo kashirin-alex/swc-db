@@ -1030,88 +1030,6 @@ class SpecFraction(object):
         return not (self == other)
 
 
-class SpecValue(object):
-    """
-    The Value Specifications, option to use with Extended Logical Comparators
-
-    Attributes:
-     - comp: Logical comparator to Apply
-     - v: The binary(bytes) to match against the Cell value
-
-    """
-
-    __slots__ = (
-        'comp',
-        'v',
-    )
-
-
-    def __init__(self, comp=None, v=None,):
-        self.comp = comp
-        self.v = v
-
-    def read(self, iprot):
-        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
-            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
-            return
-        iprot.readStructBegin()
-        while True:
-            (fname, ftype, fid) = iprot.readFieldBegin()
-            if ftype == TType.STOP:
-                break
-            if fid == 1:
-                if ftype == TType.I32:
-                    self.comp = iprot.readI32()
-                else:
-                    iprot.skip(ftype)
-            elif fid == 2:
-                if ftype == TType.STRING:
-                    self.v = iprot.readBinary()
-                else:
-                    iprot.skip(ftype)
-            else:
-                iprot.skip(ftype)
-            iprot.readFieldEnd()
-        iprot.readStructEnd()
-
-    def write(self, oprot):
-        if oprot._fast_encode is not None and self.thrift_spec is not None:
-            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
-            return
-        oprot.writeStructBegin('SpecValue')
-        if self.comp is not None:
-            oprot.writeFieldBegin('comp', TType.I32, 1)
-            oprot.writeI32(self.comp)
-            oprot.writeFieldEnd()
-        if self.v is not None:
-            oprot.writeFieldBegin('v', TType.STRING, 2)
-            oprot.writeBinary(self.v)
-            oprot.writeFieldEnd()
-        oprot.writeFieldStop()
-        oprot.writeStructEnd()
-
-    def validate(self):
-        return
-
-    def __repr__(self):
-        L = ['%s=%r' % (key, getattr(self, key))
-             for key in self.__slots__]
-        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-    def __eq__(self, other):
-        if not isinstance(other, self.__class__):
-            return False
-        for attr in self.__slots__:
-            my_val = getattr(self, attr)
-            other_val = getattr(other, attr)
-            if my_val != other_val:
-                return False
-        return True
-
-    def __ne__(self, other):
-        return not (self == other)
-
-
 class SpecTimestamp(object):
     """
     The Timestamp Specifications
@@ -1294,6 +1212,88 @@ class SpecKeyInterval(object):
         return not (self == other)
 
 
+class SpecValue(object):
+    """
+    The Value Specifications, option to use with Extended Logical Comparators
+
+    Attributes:
+     - comp: Logical comparator to Apply
+     - v: The binary(bytes) to match against the Cell value
+
+    """
+
+    __slots__ = (
+        'comp',
+        'v',
+    )
+
+
+    def __init__(self, comp=None, v=None,):
+        self.comp = comp
+        self.v = v
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.I32:
+                    self.comp = iprot.readI32()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRING:
+                    self.v = iprot.readBinary()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('SpecValue')
+        if self.comp is not None:
+            oprot.writeFieldBegin('comp', TType.I32, 1)
+            oprot.writeI32(self.comp)
+            oprot.writeFieldEnd()
+        if self.v is not None:
+            oprot.writeFieldBegin('v', TType.STRING, 2)
+            oprot.writeBinary(self.v)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, getattr(self, key))
+             for key in self.__slots__]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return False
+        for attr in self.__slots__:
+            my_val = getattr(self, attr)
+            other_val = getattr(other, attr)
+            if my_val != other_val:
+                return False
+        return True
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
 class SpecInterval(object):
     """
     The Cells Interval Specifications with interval-scope Flags
@@ -1305,7 +1305,7 @@ class SpecInterval(object):
      - offset_key: Offset Cell Key of a Scan, select cells from this key inclusive
      - offset_rev: Offset Cell Timestamp of a Scan, select cells after this timestamp
      - key_intervals: The Key Intervals
-     - values: The Cell Values Spec, cell-values match
+     - values: The Cell Value Specifications, cell-value match
      - ts_start: The Timestamp Start Spec, the start of cells-interval timestamp match
      - ts_finish: The Timestamp Finish Spec, the finish of cells-interval timestamp match
      - flags: The Interval Flags Specification
@@ -1616,24 +1616,1105 @@ class SpecColumn(object):
         return not (self == other)
 
 
+class SpecValueSerial_INT64(object):
+    """
+    The Specifications of INT64 Serial Value Field
+
+    Attributes:
+     - comp: Logical comparator to Apply
+     - v: The int64 to match against the value field
+
+    """
+
+    __slots__ = (
+        'comp',
+        'v',
+    )
+
+
+    def __init__(self, comp=None, v=None,):
+        self.comp = comp
+        self.v = v
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.I32:
+                    self.comp = iprot.readI32()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.I64:
+                    self.v = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('SpecValueSerial_INT64')
+        if self.comp is not None:
+            oprot.writeFieldBegin('comp', TType.I32, 1)
+            oprot.writeI32(self.comp)
+            oprot.writeFieldEnd()
+        if self.v is not None:
+            oprot.writeFieldBegin('v', TType.I64, 2)
+            oprot.writeI64(self.v)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, getattr(self, key))
+             for key in self.__slots__]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return False
+        for attr in self.__slots__:
+            my_val = getattr(self, attr)
+            other_val = getattr(other, attr)
+            if my_val != other_val:
+                return False
+        return True
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
+class SpecValueSerial_DOUBLE(object):
+    """
+    The Specifications of DOUBLE Serial Value Field
+
+    Attributes:
+     - comp: Logical comparator to Apply
+     - v: The double to match against the value field
+
+    """
+
+    __slots__ = (
+        'comp',
+        'v',
+    )
+
+
+    def __init__(self, comp=None, v=None,):
+        self.comp = comp
+        self.v = v
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.I32:
+                    self.comp = iprot.readI32()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.DOUBLE:
+                    self.v = iprot.readDouble()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('SpecValueSerial_DOUBLE')
+        if self.comp is not None:
+            oprot.writeFieldBegin('comp', TType.I32, 1)
+            oprot.writeI32(self.comp)
+            oprot.writeFieldEnd()
+        if self.v is not None:
+            oprot.writeFieldBegin('v', TType.DOUBLE, 2)
+            oprot.writeDouble(self.v)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, getattr(self, key))
+             for key in self.__slots__]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return False
+        for attr in self.__slots__:
+            my_val = getattr(self, attr)
+            other_val = getattr(other, attr)
+            if my_val != other_val:
+                return False
+        return True
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
+class SpecValueSerial_BYTES(object):
+    """
+    The Specifications of BYTES Serial Value Field
+
+    Attributes:
+     - comp: Logical comparator to Apply
+     - v: The binary(bytes) to match against the value field
+
+    """
+
+    __slots__ = (
+        'comp',
+        'v',
+    )
+
+
+    def __init__(self, comp=None, v=None,):
+        self.comp = comp
+        self.v = v
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.I32:
+                    self.comp = iprot.readI32()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRING:
+                    self.v = iprot.readBinary()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('SpecValueSerial_BYTES')
+        if self.comp is not None:
+            oprot.writeFieldBegin('comp', TType.I32, 1)
+            oprot.writeI32(self.comp)
+            oprot.writeFieldEnd()
+        if self.v is not None:
+            oprot.writeFieldBegin('v', TType.STRING, 2)
+            oprot.writeBinary(self.v)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, getattr(self, key))
+             for key in self.__slots__]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return False
+        for attr in self.__slots__:
+            my_val = getattr(self, attr)
+            other_val = getattr(other, attr)
+            if my_val != other_val:
+                return False
+        return True
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
+class SpecValueSerial_KEY(object):
+    """
+    The Specifications of KEY Serial Value Field
+
+    Attributes:
+     - seq: The Key Sequence to use
+     - v: The Specification of the Key to match against the value field
+
+    """
+
+    __slots__ = (
+        'seq',
+        'v',
+    )
+
+
+    def __init__(self, seq=None, v=None,):
+        self.seq = seq
+        self.v = v
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.I32:
+                    self.seq = iprot.readI32()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.LIST:
+                    self.v = []
+                    (_etype87, _size84) = iprot.readListBegin()
+                    for _i88 in range(_size84):
+                        _elem89 = SpecFraction()
+                        _elem89.read(iprot)
+                        self.v.append(_elem89)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('SpecValueSerial_KEY')
+        if self.seq is not None:
+            oprot.writeFieldBegin('seq', TType.I32, 1)
+            oprot.writeI32(self.seq)
+            oprot.writeFieldEnd()
+        if self.v is not None:
+            oprot.writeFieldBegin('v', TType.LIST, 2)
+            oprot.writeListBegin(TType.STRUCT, len(self.v))
+            for iter90 in self.v:
+                iter90.write(oprot)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, getattr(self, key))
+             for key in self.__slots__]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return False
+        for attr in self.__slots__:
+            my_val = getattr(self, attr)
+            other_val = getattr(other, attr)
+            if my_val != other_val:
+                return False
+        return True
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
+class SpecValueSerial_LI(object):
+    """
+    The Specifications of LIST_INT64(LI) Serial Value Field
+
+    Attributes:
+     - comp: Logical comparator to Apply
+     - v: The List of Int64 to match against the value field
+
+    """
+
+    __slots__ = (
+        'comp',
+        'v',
+    )
+
+
+    def __init__(self, comp=None, v=None,):
+        self.comp = comp
+        self.v = v
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.I32:
+                    self.comp = iprot.readI32()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.LIST:
+                    self.v = []
+                    (_etype94, _size91) = iprot.readListBegin()
+                    for _i95 in range(_size91):
+                        _elem96 = SpecValueSerial_INT64()
+                        _elem96.read(iprot)
+                        self.v.append(_elem96)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('SpecValueSerial_LI')
+        if self.comp is not None:
+            oprot.writeFieldBegin('comp', TType.I32, 1)
+            oprot.writeI32(self.comp)
+            oprot.writeFieldEnd()
+        if self.v is not None:
+            oprot.writeFieldBegin('v', TType.LIST, 2)
+            oprot.writeListBegin(TType.STRUCT, len(self.v))
+            for iter97 in self.v:
+                iter97.write(oprot)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, getattr(self, key))
+             for key in self.__slots__]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return False
+        for attr in self.__slots__:
+            my_val = getattr(self, attr)
+            other_val = getattr(other, attr)
+            if my_val != other_val:
+                return False
+        return True
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
+class SpecValueSerial_LB(object):
+    """
+    The Specifications of LIST_BYTES(LB) Serial Value Field
+
+    Attributes:
+     - comp: Logical comparator to Apply
+     - v: The List of Bytes to match against the value field
+
+    """
+
+    __slots__ = (
+        'comp',
+        'v',
+    )
+
+
+    def __init__(self, comp=None, v=None,):
+        self.comp = comp
+        self.v = v
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.I32:
+                    self.comp = iprot.readI32()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.LIST:
+                    self.v = []
+                    (_etype101, _size98) = iprot.readListBegin()
+                    for _i102 in range(_size98):
+                        _elem103 = SpecValueSerial_BYTES()
+                        _elem103.read(iprot)
+                        self.v.append(_elem103)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('SpecValueSerial_LB')
+        if self.comp is not None:
+            oprot.writeFieldBegin('comp', TType.I32, 1)
+            oprot.writeI32(self.comp)
+            oprot.writeFieldEnd()
+        if self.v is not None:
+            oprot.writeFieldBegin('v', TType.LIST, 2)
+            oprot.writeListBegin(TType.STRUCT, len(self.v))
+            for iter104 in self.v:
+                iter104.write(oprot)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, getattr(self, key))
+             for key in self.__slots__]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return False
+        for attr in self.__slots__:
+            my_val = getattr(self, attr)
+            other_val = getattr(other, attr)
+            if my_val != other_val:
+                return False
+        return True
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
+class SpecValueSerialField(object):
+    """
+    Attributes:
+     - field_id: The Field Id of the Value Field
+     - spec_int64: The specifications of Int64 for the field
+     - spec_double: The specifications of Double for the field
+     - spec_bytes: The specifications of Bytes for the field
+     - spec_key: The specifications of Cell-Key for the field
+     - spec_li: The specifications of List Int64 for the field
+     - spec_lb: The specifications of List Bytes for the field
+
+    """
+
+    __slots__ = (
+        'field_id',
+        'spec_int64',
+        'spec_double',
+        'spec_bytes',
+        'spec_key',
+        'spec_li',
+        'spec_lb',
+    )
+
+
+    def __init__(self, field_id=None, spec_int64=None, spec_double=None, spec_bytes=None, spec_key=None, spec_li=None, spec_lb=None,):
+        self.field_id = field_id
+        self.spec_int64 = spec_int64
+        self.spec_double = spec_double
+        self.spec_bytes = spec_bytes
+        self.spec_key = spec_key
+        self.spec_li = spec_li
+        self.spec_lb = spec_lb
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.I32:
+                    self.field_id = iprot.readI32()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRUCT:
+                    self.spec_int64 = SpecValueSerial_INT64()
+                    self.spec_int64.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.STRUCT:
+                    self.spec_double = SpecValueSerial_DOUBLE()
+                    self.spec_double.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 4:
+                if ftype == TType.STRUCT:
+                    self.spec_bytes = SpecValueSerial_BYTES()
+                    self.spec_bytes.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 5:
+                if ftype == TType.STRUCT:
+                    self.spec_key = SpecValueSerial_KEY()
+                    self.spec_key.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 6:
+                if ftype == TType.STRUCT:
+                    self.spec_li = SpecValueSerial_LI()
+                    self.spec_li.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 7:
+                if ftype == TType.STRUCT:
+                    self.spec_lb = SpecValueSerial_LB()
+                    self.spec_lb.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('SpecValueSerialField')
+        if self.field_id is not None:
+            oprot.writeFieldBegin('field_id', TType.I32, 1)
+            oprot.writeI32(self.field_id)
+            oprot.writeFieldEnd()
+        if self.spec_int64 is not None:
+            oprot.writeFieldBegin('spec_int64', TType.STRUCT, 2)
+            self.spec_int64.write(oprot)
+            oprot.writeFieldEnd()
+        if self.spec_double is not None:
+            oprot.writeFieldBegin('spec_double', TType.STRUCT, 3)
+            self.spec_double.write(oprot)
+            oprot.writeFieldEnd()
+        if self.spec_bytes is not None:
+            oprot.writeFieldBegin('spec_bytes', TType.STRUCT, 4)
+            self.spec_bytes.write(oprot)
+            oprot.writeFieldEnd()
+        if self.spec_key is not None:
+            oprot.writeFieldBegin('spec_key', TType.STRUCT, 5)
+            self.spec_key.write(oprot)
+            oprot.writeFieldEnd()
+        if self.spec_li is not None:
+            oprot.writeFieldBegin('spec_li', TType.STRUCT, 6)
+            self.spec_li.write(oprot)
+            oprot.writeFieldEnd()
+        if self.spec_lb is not None:
+            oprot.writeFieldBegin('spec_lb', TType.STRUCT, 7)
+            self.spec_lb.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, getattr(self, key))
+             for key in self.__slots__]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return False
+        for attr in self.__slots__:
+            my_val = getattr(self, attr)
+            other_val = getattr(other, attr)
+            if my_val != other_val:
+                return False
+        return True
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
+class SpecValueSerial(object):
+    """
+    The Serial Value Specifications
+
+    Attributes:
+     - comp: Logical comparator to Apply
+     - fields: The Serial Value Specifications to match against the SERIAL Cell value fields
+
+    """
+
+    __slots__ = (
+        'comp',
+        'fields',
+    )
+
+
+    def __init__(self, comp=None, fields=None,):
+        self.comp = comp
+        self.fields = fields
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.I32:
+                    self.comp = iprot.readI32()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.LIST:
+                    self.fields = []
+                    (_etype108, _size105) = iprot.readListBegin()
+                    for _i109 in range(_size105):
+                        _elem110 = SpecValueSerialField()
+                        _elem110.read(iprot)
+                        self.fields.append(_elem110)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('SpecValueSerial')
+        if self.comp is not None:
+            oprot.writeFieldBegin('comp', TType.I32, 1)
+            oprot.writeI32(self.comp)
+            oprot.writeFieldEnd()
+        if self.fields is not None:
+            oprot.writeFieldBegin('fields', TType.LIST, 2)
+            oprot.writeListBegin(TType.STRUCT, len(self.fields))
+            for iter111 in self.fields:
+                iter111.write(oprot)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, getattr(self, key))
+             for key in self.__slots__]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return False
+        for attr in self.__slots__:
+            my_val = getattr(self, attr)
+            other_val = getattr(other, attr)
+            if my_val != other_val:
+                return False
+        return True
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
+class SpecIntervalSerial(object):
+    """
+    The Serial Value Cells Interval Specifications with interval-scope Flags
+
+    Attributes:
+     - range_begin: Begin of Ranges evaluation with this Key inclusive
+     - range_end: End of Ranges evaluation with this Key inclusive
+     - range_offset: Offset of Ranges evaluation with this Key inclusive
+     - offset_key: Offset Cell Key of a Scan, select cells from this key inclusive
+     - offset_rev: Offset Cell Timestamp of a Scan, select cells after this timestamp
+     - key_intervals: The Key Intervals
+     - values: The Serial Cell Value Specifications, cell-value fields match
+     - ts_start: The Timestamp Start Spec, the start of cells-interval timestamp match
+     - ts_finish: The Timestamp Finish Spec, the finish of cells-interval timestamp match
+     - flags: The Interval Flags Specification
+
+    """
+
+    __slots__ = (
+        'range_begin',
+        'range_end',
+        'range_offset',
+        'offset_key',
+        'offset_rev',
+        'key_intervals',
+        'values',
+        'ts_start',
+        'ts_finish',
+        'flags',
+    )
+
+
+    def __init__(self, range_begin=None, range_end=None, range_offset=None, offset_key=None, offset_rev=None, key_intervals=None, values=None, ts_start=None, ts_finish=None, flags=None,):
+        self.range_begin = range_begin
+        self.range_end = range_end
+        self.range_offset = range_offset
+        self.offset_key = offset_key
+        self.offset_rev = offset_rev
+        self.key_intervals = key_intervals
+        self.values = values
+        self.ts_start = ts_start
+        self.ts_finish = ts_finish
+        self.flags = flags
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.LIST:
+                    self.range_begin = []
+                    (_etype115, _size112) = iprot.readListBegin()
+                    for _i116 in range(_size112):
+                        _elem117 = iprot.readBinary()
+                        self.range_begin.append(_elem117)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.LIST:
+                    self.range_end = []
+                    (_etype121, _size118) = iprot.readListBegin()
+                    for _i122 in range(_size118):
+                        _elem123 = iprot.readBinary()
+                        self.range_end.append(_elem123)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.LIST:
+                    self.range_offset = []
+                    (_etype127, _size124) = iprot.readListBegin()
+                    for _i128 in range(_size124):
+                        _elem129 = iprot.readBinary()
+                        self.range_offset.append(_elem129)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 4:
+                if ftype == TType.LIST:
+                    self.offset_key = []
+                    (_etype133, _size130) = iprot.readListBegin()
+                    for _i134 in range(_size130):
+                        _elem135 = iprot.readBinary()
+                        self.offset_key.append(_elem135)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 5:
+                if ftype == TType.I64:
+                    self.offset_rev = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 6:
+                if ftype == TType.LIST:
+                    self.key_intervals = []
+                    (_etype139, _size136) = iprot.readListBegin()
+                    for _i140 in range(_size136):
+                        _elem141 = SpecKeyInterval()
+                        _elem141.read(iprot)
+                        self.key_intervals.append(_elem141)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 7:
+                if ftype == TType.LIST:
+                    self.values = []
+                    (_etype145, _size142) = iprot.readListBegin()
+                    for _i146 in range(_size142):
+                        _elem147 = SpecValueSerial()
+                        _elem147.read(iprot)
+                        self.values.append(_elem147)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 8:
+                if ftype == TType.STRUCT:
+                    self.ts_start = SpecTimestamp()
+                    self.ts_start.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 9:
+                if ftype == TType.STRUCT:
+                    self.ts_finish = SpecTimestamp()
+                    self.ts_finish.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 10:
+                if ftype == TType.STRUCT:
+                    self.flags = SpecFlags()
+                    self.flags.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('SpecIntervalSerial')
+        if self.range_begin is not None:
+            oprot.writeFieldBegin('range_begin', TType.LIST, 1)
+            oprot.writeListBegin(TType.STRING, len(self.range_begin))
+            for iter148 in self.range_begin:
+                oprot.writeBinary(iter148)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        if self.range_end is not None:
+            oprot.writeFieldBegin('range_end', TType.LIST, 2)
+            oprot.writeListBegin(TType.STRING, len(self.range_end))
+            for iter149 in self.range_end:
+                oprot.writeBinary(iter149)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        if self.range_offset is not None:
+            oprot.writeFieldBegin('range_offset', TType.LIST, 3)
+            oprot.writeListBegin(TType.STRING, len(self.range_offset))
+            for iter150 in self.range_offset:
+                oprot.writeBinary(iter150)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        if self.offset_key is not None:
+            oprot.writeFieldBegin('offset_key', TType.LIST, 4)
+            oprot.writeListBegin(TType.STRING, len(self.offset_key))
+            for iter151 in self.offset_key:
+                oprot.writeBinary(iter151)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        if self.offset_rev is not None:
+            oprot.writeFieldBegin('offset_rev', TType.I64, 5)
+            oprot.writeI64(self.offset_rev)
+            oprot.writeFieldEnd()
+        if self.key_intervals is not None:
+            oprot.writeFieldBegin('key_intervals', TType.LIST, 6)
+            oprot.writeListBegin(TType.STRUCT, len(self.key_intervals))
+            for iter152 in self.key_intervals:
+                iter152.write(oprot)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        if self.values is not None:
+            oprot.writeFieldBegin('values', TType.LIST, 7)
+            oprot.writeListBegin(TType.STRUCT, len(self.values))
+            for iter153 in self.values:
+                iter153.write(oprot)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        if self.ts_start is not None:
+            oprot.writeFieldBegin('ts_start', TType.STRUCT, 8)
+            self.ts_start.write(oprot)
+            oprot.writeFieldEnd()
+        if self.ts_finish is not None:
+            oprot.writeFieldBegin('ts_finish', TType.STRUCT, 9)
+            self.ts_finish.write(oprot)
+            oprot.writeFieldEnd()
+        if self.flags is not None:
+            oprot.writeFieldBegin('flags', TType.STRUCT, 10)
+            self.flags.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, getattr(self, key))
+             for key in self.__slots__]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return False
+        for attr in self.__slots__:
+            my_val = getattr(self, attr)
+            other_val = getattr(other, attr)
+            if my_val != other_val:
+                return False
+        return True
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
+class SpecColumnSerial(object):
+    """
+    The Column Specifications, the Cells-Intervals(SpecInterval/s) specification for a SERIAL Type Column
+
+    Attributes:
+     - cid: The Column ID
+     - intervals: The Serial Cells Interval in a list-container
+
+    """
+
+    __slots__ = (
+        'cid',
+        'intervals',
+    )
+
+
+    def __init__(self, cid=None, intervals=None,):
+        self.cid = cid
+        self.intervals = intervals
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.I64:
+                    self.cid = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.LIST:
+                    self.intervals = []
+                    (_etype157, _size154) = iprot.readListBegin()
+                    for _i158 in range(_size154):
+                        _elem159 = SpecIntervalSerial()
+                        _elem159.read(iprot)
+                        self.intervals.append(_elem159)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('SpecColumnSerial')
+        if self.cid is not None:
+            oprot.writeFieldBegin('cid', TType.I64, 1)
+            oprot.writeI64(self.cid)
+            oprot.writeFieldEnd()
+        if self.intervals is not None:
+            oprot.writeFieldBegin('intervals', TType.LIST, 2)
+            oprot.writeListBegin(TType.STRUCT, len(self.intervals))
+            for iter160 in self.intervals:
+                iter160.write(oprot)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, getattr(self, key))
+             for key in self.__slots__]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return False
+        for attr in self.__slots__:
+            my_val = getattr(self, attr)
+            other_val = getattr(other, attr)
+            if my_val != other_val:
+                return False
+        return True
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
 class SpecScan(object):
     """
     The Scan Specifications, the Columns-Intervals(SpecColumn/s) with global-scope Flags
 
     Attributes:
      - columns: The Column Intervals(SpecColumn) in a list-container
+     - columns_serial: The Serial Column Intervals(SpecColumnSerial) in a list-container
      - flags: The Global Flags Specification
 
     """
 
     __slots__ = (
         'columns',
+        'columns_serial',
         'flags',
     )
 
 
-    def __init__(self, columns=None, flags=None,):
+    def __init__(self, columns=None, columns_serial=None, flags=None,):
         self.columns = columns
+        self.columns_serial = columns_serial
         self.flags = flags
 
     def read(self, iprot):
@@ -1648,15 +2729,26 @@ class SpecScan(object):
             if fid == 1:
                 if ftype == TType.LIST:
                     self.columns = []
-                    (_etype87, _size84) = iprot.readListBegin()
-                    for _i88 in range(_size84):
-                        _elem89 = SpecColumn()
-                        _elem89.read(iprot)
-                        self.columns.append(_elem89)
+                    (_etype164, _size161) = iprot.readListBegin()
+                    for _i165 in range(_size161):
+                        _elem166 = SpecColumn()
+                        _elem166.read(iprot)
+                        self.columns.append(_elem166)
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
             elif fid == 2:
+                if ftype == TType.LIST:
+                    self.columns_serial = []
+                    (_etype170, _size167) = iprot.readListBegin()
+                    for _i171 in range(_size167):
+                        _elem172 = SpecColumnSerial()
+                        _elem172.read(iprot)
+                        self.columns_serial.append(_elem172)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 3:
                 if ftype == TType.STRUCT:
                     self.flags = SpecFlags()
                     self.flags.read(iprot)
@@ -1675,12 +2767,19 @@ class SpecScan(object):
         if self.columns is not None:
             oprot.writeFieldBegin('columns', TType.LIST, 1)
             oprot.writeListBegin(TType.STRUCT, len(self.columns))
-            for iter90 in self.columns:
-                iter90.write(oprot)
+            for iter173 in self.columns:
+                iter173.write(oprot)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        if self.columns_serial is not None:
+            oprot.writeFieldBegin('columns_serial', TType.LIST, 2)
+            oprot.writeListBegin(TType.STRUCT, len(self.columns_serial))
+            for iter174 in self.columns_serial:
+                iter174.write(oprot)
             oprot.writeListEnd()
             oprot.writeFieldEnd()
         if self.flags is not None:
-            oprot.writeFieldBegin('flags', TType.STRUCT, 2)
+            oprot.writeFieldBegin('flags', TType.STRUCT, 3)
             self.flags.write(oprot)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
@@ -1718,6 +2817,7 @@ class UCell(object):
      - ts: The Cell Timestamp in nanoseconds
      - ts_desc: The Cell Version is in timestamp descending
      - v: The Cell Value
+     - encoder: Optionally the Cell Value Encoding Type: ZLIB/SNAPPY/ZSTD
 
     """
 
@@ -1727,15 +2827,17 @@ class UCell(object):
         'ts',
         'ts_desc',
         'v',
+        'encoder',
     )
 
 
-    def __init__(self, f=None, k=None, ts=None, ts_desc=None, v=None,):
+    def __init__(self, f=None, k=None, ts=None, ts_desc=None, v=None, encoder=None,):
         self.f = f
         self.k = k
         self.ts = ts
         self.ts_desc = ts_desc
         self.v = v
+        self.encoder = encoder
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -1754,10 +2856,10 @@ class UCell(object):
             elif fid == 2:
                 if ftype == TType.LIST:
                     self.k = []
-                    (_etype94, _size91) = iprot.readListBegin()
-                    for _i95 in range(_size91):
-                        _elem96 = iprot.readBinary()
-                        self.k.append(_elem96)
+                    (_etype178, _size175) = iprot.readListBegin()
+                    for _i179 in range(_size175):
+                        _elem180 = iprot.readBinary()
+                        self.k.append(_elem180)
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
@@ -1774,6 +2876,11 @@ class UCell(object):
             elif fid == 5:
                 if ftype == TType.STRING:
                     self.v = iprot.readBinary()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 6:
+                if ftype == TType.I32:
+                    self.encoder = iprot.readI32()
                 else:
                     iprot.skip(ftype)
             else:
@@ -1793,8 +2900,8 @@ class UCell(object):
         if self.k is not None:
             oprot.writeFieldBegin('k', TType.LIST, 2)
             oprot.writeListBegin(TType.STRING, len(self.k))
-            for iter97 in self.k:
-                oprot.writeBinary(iter97)
+            for iter181 in self.k:
+                oprot.writeBinary(iter181)
             oprot.writeListEnd()
             oprot.writeFieldEnd()
         if self.ts is not None:
@@ -1808,6 +2915,323 @@ class UCell(object):
         if self.v is not None:
             oprot.writeFieldBegin('v', TType.STRING, 5)
             oprot.writeBinary(self.v)
+            oprot.writeFieldEnd()
+        if self.encoder is not None:
+            oprot.writeFieldBegin('encoder', TType.I32, 6)
+            oprot.writeI32(self.encoder)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, getattr(self, key))
+             for key in self.__slots__]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return False
+        for attr in self.__slots__:
+            my_val = getattr(self, attr)
+            other_val = getattr(other, attr)
+            if my_val != other_val:
+                return False
+        return True
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
+class CellValueSerial(object):
+    """
+    The Serial Value Cell field
+
+    Attributes:
+     - field_id
+     - v_int64
+     - v_double
+     - v_bytes
+     - v_key
+     - v_li
+     - v_lb
+
+    """
+
+    __slots__ = (
+        'field_id',
+        'v_int64',
+        'v_double',
+        'v_bytes',
+        'v_key',
+        'v_li',
+        'v_lb',
+    )
+
+
+    def __init__(self, field_id=None, v_int64=None, v_double=None, v_bytes=None, v_key=None, v_li=None, v_lb=None,):
+        self.field_id = field_id
+        self.v_int64 = v_int64
+        self.v_double = v_double
+        self.v_bytes = v_bytes
+        self.v_key = v_key
+        self.v_li = v_li
+        self.v_lb = v_lb
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.I32:
+                    self.field_id = iprot.readI32()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.I64:
+                    self.v_int64 = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.DOUBLE:
+                    self.v_double = iprot.readDouble()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 4:
+                if ftype == TType.STRING:
+                    self.v_bytes = iprot.readBinary()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 5:
+                if ftype == TType.LIST:
+                    self.v_key = []
+                    (_etype185, _size182) = iprot.readListBegin()
+                    for _i186 in range(_size182):
+                        _elem187 = iprot.readBinary()
+                        self.v_key.append(_elem187)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 6:
+                if ftype == TType.LIST:
+                    self.v_li = []
+                    (_etype191, _size188) = iprot.readListBegin()
+                    for _i192 in range(_size188):
+                        _elem193 = iprot.readI64()
+                        self.v_li.append(_elem193)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 7:
+                if ftype == TType.LIST:
+                    self.v_lb = []
+                    (_etype197, _size194) = iprot.readListBegin()
+                    for _i198 in range(_size194):
+                        _elem199 = iprot.readBinary()
+                        self.v_lb.append(_elem199)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('CellValueSerial')
+        if self.field_id is not None:
+            oprot.writeFieldBegin('field_id', TType.I32, 1)
+            oprot.writeI32(self.field_id)
+            oprot.writeFieldEnd()
+        if self.v_int64 is not None:
+            oprot.writeFieldBegin('v_int64', TType.I64, 2)
+            oprot.writeI64(self.v_int64)
+            oprot.writeFieldEnd()
+        if self.v_double is not None:
+            oprot.writeFieldBegin('v_double', TType.DOUBLE, 3)
+            oprot.writeDouble(self.v_double)
+            oprot.writeFieldEnd()
+        if self.v_bytes is not None:
+            oprot.writeFieldBegin('v_bytes', TType.STRING, 4)
+            oprot.writeBinary(self.v_bytes)
+            oprot.writeFieldEnd()
+        if self.v_key is not None:
+            oprot.writeFieldBegin('v_key', TType.LIST, 5)
+            oprot.writeListBegin(TType.STRING, len(self.v_key))
+            for iter200 in self.v_key:
+                oprot.writeBinary(iter200)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        if self.v_li is not None:
+            oprot.writeFieldBegin('v_li', TType.LIST, 6)
+            oprot.writeListBegin(TType.I64, len(self.v_li))
+            for iter201 in self.v_li:
+                oprot.writeI64(iter201)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        if self.v_lb is not None:
+            oprot.writeFieldBegin('v_lb', TType.LIST, 7)
+            oprot.writeListBegin(TType.STRING, len(self.v_lb))
+            for iter202 in self.v_lb:
+                oprot.writeBinary(iter202)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, getattr(self, key))
+             for key in self.__slots__]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return False
+        for attr in self.__slots__:
+            my_val = getattr(self, attr)
+            other_val = getattr(other, attr)
+            if my_val != other_val:
+                return False
+        return True
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
+class UCellSerial(object):
+    """
+    The Cell data for using with Update of SERIAL Column Type
+
+    Attributes:
+     - f: The Cell Flag
+     - k: The Cell Key
+     - ts: The Cell Timestamp in nanoseconds
+     - ts_desc: The Cell Version is in timestamp descending
+     - v: The Serial Cell Value fields
+     - encoder: Optionally the Cell Value Encoding Type: ZLIB/SNAPPY/ZSTD
+
+    """
+
+    __slots__ = (
+        'f',
+        'k',
+        'ts',
+        'ts_desc',
+        'v',
+        'encoder',
+    )
+
+
+    def __init__(self, f=None, k=None, ts=None, ts_desc=None, v=None, encoder=None,):
+        self.f = f
+        self.k = k
+        self.ts = ts
+        self.ts_desc = ts_desc
+        self.v = v
+        self.encoder = encoder
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.I32:
+                    self.f = iprot.readI32()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.LIST:
+                    self.k = []
+                    (_etype206, _size203) = iprot.readListBegin()
+                    for _i207 in range(_size203):
+                        _elem208 = iprot.readBinary()
+                        self.k.append(_elem208)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.I64:
+                    self.ts = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 4:
+                if ftype == TType.BOOL:
+                    self.ts_desc = iprot.readBool()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 5:
+                if ftype == TType.LIST:
+                    self.v = []
+                    (_etype212, _size209) = iprot.readListBegin()
+                    for _i213 in range(_size209):
+                        _elem214 = CellValueSerial()
+                        _elem214.read(iprot)
+                        self.v.append(_elem214)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 6:
+                if ftype == TType.I32:
+                    self.encoder = iprot.readI32()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('UCellSerial')
+        if self.f is not None:
+            oprot.writeFieldBegin('f', TType.I32, 1)
+            oprot.writeI32(self.f)
+            oprot.writeFieldEnd()
+        if self.k is not None:
+            oprot.writeFieldBegin('k', TType.LIST, 2)
+            oprot.writeListBegin(TType.STRING, len(self.k))
+            for iter215 in self.k:
+                oprot.writeBinary(iter215)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        if self.ts is not None:
+            oprot.writeFieldBegin('ts', TType.I64, 3)
+            oprot.writeI64(self.ts)
+            oprot.writeFieldEnd()
+        if self.ts_desc is not None:
+            oprot.writeFieldBegin('ts_desc', TType.BOOL, 4)
+            oprot.writeBool(self.ts_desc)
+            oprot.writeFieldEnd()
+        if self.v is not None:
+            oprot.writeFieldBegin('v', TType.LIST, 5)
+            oprot.writeListBegin(TType.STRUCT, len(self.v))
+            for iter216 in self.v:
+                iter216.write(oprot)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        if self.encoder is not None:
+            oprot.writeFieldBegin('encoder', TType.I32, 6)
+            oprot.writeI32(self.encoder)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -1877,10 +3301,10 @@ class Cell(object):
             elif fid == 2:
                 if ftype == TType.LIST:
                     self.k = []
-                    (_etype101, _size98) = iprot.readListBegin()
-                    for _i102 in range(_size98):
-                        _elem103 = iprot.readBinary()
-                        self.k.append(_elem103)
+                    (_etype220, _size217) = iprot.readListBegin()
+                    for _i221 in range(_size217):
+                        _elem222 = iprot.readBinary()
+                        self.k.append(_elem222)
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
@@ -1911,8 +3335,8 @@ class Cell(object):
         if self.k is not None:
             oprot.writeFieldBegin('k', TType.LIST, 2)
             oprot.writeListBegin(TType.STRING, len(self.k))
-            for iter104 in self.k:
-                oprot.writeBinary(iter104)
+            for iter223 in self.k:
+                oprot.writeBinary(iter223)
             oprot.writeListEnd()
             oprot.writeFieldEnd()
         if self.ts is not None:
@@ -1922,6 +3346,229 @@ class Cell(object):
         if self.v is not None:
             oprot.writeFieldBegin('v', TType.STRING, 4)
             oprot.writeBinary(self.v)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, getattr(self, key))
+             for key in self.__slots__]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return False
+        for attr in self.__slots__:
+            my_val = getattr(self, attr)
+            other_val = getattr(other, attr)
+            if my_val != other_val:
+                return False
+        return True
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
+class CellSerial(object):
+    """
+    The Serial Cell for results list of scan
+
+    Attributes:
+     - c: The Column Name
+     - k: The Cell Key
+     - ts: The Cell Timestamp
+     - v: The Cell Serial Value
+
+    """
+
+    __slots__ = (
+        'c',
+        'k',
+        'ts',
+        'v',
+    )
+
+
+    def __init__(self, c=None, k=None, ts=None, v=None,):
+        self.c = c
+        self.k = k
+        self.ts = ts
+        self.v = v
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRING:
+                    self.c = iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.LIST:
+                    self.k = []
+                    (_etype227, _size224) = iprot.readListBegin()
+                    for _i228 in range(_size224):
+                        _elem229 = iprot.readBinary()
+                        self.k.append(_elem229)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.I64:
+                    self.ts = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 4:
+                if ftype == TType.LIST:
+                    self.v = []
+                    (_etype233, _size230) = iprot.readListBegin()
+                    for _i234 in range(_size230):
+                        _elem235 = CellValueSerial()
+                        _elem235.read(iprot)
+                        self.v.append(_elem235)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('CellSerial')
+        if self.c is not None:
+            oprot.writeFieldBegin('c', TType.STRING, 1)
+            oprot.writeString(self.c)
+            oprot.writeFieldEnd()
+        if self.k is not None:
+            oprot.writeFieldBegin('k', TType.LIST, 2)
+            oprot.writeListBegin(TType.STRING, len(self.k))
+            for iter236 in self.k:
+                oprot.writeBinary(iter236)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        if self.ts is not None:
+            oprot.writeFieldBegin('ts', TType.I64, 3)
+            oprot.writeI64(self.ts)
+            oprot.writeFieldEnd()
+        if self.v is not None:
+            oprot.writeFieldBegin('v', TType.LIST, 4)
+            oprot.writeListBegin(TType.STRUCT, len(self.v))
+            for iter237 in self.v:
+                iter237.write(oprot)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, getattr(self, key))
+             for key in self.__slots__]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return False
+        for attr in self.__slots__:
+            my_val = getattr(self, attr)
+            other_val = getattr(other, attr)
+            if my_val != other_val:
+                return False
+        return True
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
+class Cells(object):
+    """
+    The Cells for results list of scan
+
+    Attributes:
+     - cells: The Cells, defined as KCell items in a list-container
+     - serial_cells: The Serial Cells, defined as CellSerial items in a list-container
+
+    """
+
+    __slots__ = (
+        'cells',
+        'serial_cells',
+    )
+
+
+    def __init__(self, cells=None, serial_cells=None,):
+        self.cells = cells
+        self.serial_cells = serial_cells
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.LIST:
+                    self.cells = []
+                    (_etype241, _size238) = iprot.readListBegin()
+                    for _i242 in range(_size238):
+                        _elem243 = Cell()
+                        _elem243.read(iprot)
+                        self.cells.append(_elem243)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.LIST:
+                    self.serial_cells = []
+                    (_etype247, _size244) = iprot.readListBegin()
+                    for _i248 in range(_size244):
+                        _elem249 = CellSerial()
+                        _elem249.read(iprot)
+                        self.serial_cells.append(_elem249)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('Cells')
+        if self.cells is not None:
+            oprot.writeFieldBegin('cells', TType.LIST, 1)
+            oprot.writeListBegin(TType.STRUCT, len(self.cells))
+            for iter250 in self.cells:
+                iter250.write(oprot)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        if self.serial_cells is not None:
+            oprot.writeFieldBegin('serial_cells', TType.LIST, 2)
+            oprot.writeListBegin(TType.STRUCT, len(self.serial_cells))
+            for iter251 in self.serial_cells:
+                iter251.write(oprot)
+            oprot.writeListEnd()
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -1983,10 +3630,10 @@ class CCell(object):
             if fid == 1:
                 if ftype == TType.LIST:
                     self.k = []
-                    (_etype108, _size105) = iprot.readListBegin()
-                    for _i109 in range(_size105):
-                        _elem110 = iprot.readBinary()
-                        self.k.append(_elem110)
+                    (_etype255, _size252) = iprot.readListBegin()
+                    for _i256 in range(_size252):
+                        _elem257 = iprot.readBinary()
+                        self.k.append(_elem257)
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
@@ -2013,8 +3660,8 @@ class CCell(object):
         if self.k is not None:
             oprot.writeFieldBegin('k', TType.LIST, 1)
             oprot.writeListBegin(TType.STRING, len(self.k))
-            for iter111 in self.k:
-                oprot.writeBinary(iter111)
+            for iter258 in self.k:
+                oprot.writeBinary(iter258)
             oprot.writeListEnd()
             oprot.writeFieldEnd()
         if self.ts is not None:
@@ -2024,6 +3671,217 @@ class CCell(object):
         if self.v is not None:
             oprot.writeFieldBegin('v', TType.STRING, 3)
             oprot.writeBinary(self.v)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, getattr(self, key))
+             for key in self.__slots__]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return False
+        for attr in self.__slots__:
+            my_val = getattr(self, attr)
+            other_val = getattr(other, attr)
+            if my_val != other_val:
+                return False
+        return True
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
+class CCellSerial(object):
+    """
+    The Column Serial Cell for results on Columns of scan
+
+    Attributes:
+     - k: The Cell Key
+     - ts: The Cell Timestamp
+     - v: The Cell Serial Value
+
+    """
+
+    __slots__ = (
+        'k',
+        'ts',
+        'v',
+    )
+
+
+    def __init__(self, k=None, ts=None, v=None,):
+        self.k = k
+        self.ts = ts
+        self.v = v
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.LIST:
+                    self.k = []
+                    (_etype262, _size259) = iprot.readListBegin()
+                    for _i263 in range(_size259):
+                        _elem264 = iprot.readBinary()
+                        self.k.append(_elem264)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.I64:
+                    self.ts = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.LIST:
+                    self.v = []
+                    (_etype268, _size265) = iprot.readListBegin()
+                    for _i269 in range(_size265):
+                        _elem270 = CellValueSerial()
+                        _elem270.read(iprot)
+                        self.v.append(_elem270)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('CCellSerial')
+        if self.k is not None:
+            oprot.writeFieldBegin('k', TType.LIST, 1)
+            oprot.writeListBegin(TType.STRING, len(self.k))
+            for iter271 in self.k:
+                oprot.writeBinary(iter271)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        if self.ts is not None:
+            oprot.writeFieldBegin('ts', TType.I64, 2)
+            oprot.writeI64(self.ts)
+            oprot.writeFieldEnd()
+        if self.v is not None:
+            oprot.writeFieldBegin('v', TType.LIST, 3)
+            oprot.writeListBegin(TType.STRUCT, len(self.v))
+            for iter272 in self.v:
+                iter272.write(oprot)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, getattr(self, key))
+             for key in self.__slots__]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return False
+        for attr in self.__slots__:
+            my_val = getattr(self, attr)
+            other_val = getattr(other, attr)
+            if my_val != other_val:
+                return False
+        return True
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
+class ColCells(object):
+    """
+    The Column Cells for results on Columns of scan, defined as Cell items in a list-container
+
+    Attributes:
+     - cells: The Cells, defined as KCell items in a list-container
+     - serial_cells: The Serial Cells, defined as CCellSerial items in a list-container
+
+    """
+
+    __slots__ = (
+        'cells',
+        'serial_cells',
+    )
+
+
+    def __init__(self, cells=None, serial_cells=None,):
+        self.cells = cells
+        self.serial_cells = serial_cells
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.LIST:
+                    self.cells = []
+                    (_etype276, _size273) = iprot.readListBegin()
+                    for _i277 in range(_size273):
+                        _elem278 = CCell()
+                        _elem278.read(iprot)
+                        self.cells.append(_elem278)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.LIST:
+                    self.serial_cells = []
+                    (_etype282, _size279) = iprot.readListBegin()
+                    for _i283 in range(_size279):
+                        _elem284 = CCellSerial()
+                        _elem284.read(iprot)
+                        self.serial_cells.append(_elem284)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('ColCells')
+        if self.cells is not None:
+            oprot.writeFieldBegin('cells', TType.LIST, 1)
+            oprot.writeListBegin(TType.STRUCT, len(self.cells))
+            for iter285 in self.cells:
+                iter285.write(oprot)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        if self.serial_cells is not None:
+            oprot.writeFieldBegin('serial_cells', TType.LIST, 2)
+            oprot.writeListBegin(TType.STRUCT, len(self.serial_cells))
+            for iter286 in self.serial_cells:
+                iter286.write(oprot)
+            oprot.writeListEnd()
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -2144,6 +4002,109 @@ class KCell(object):
         return not (self == other)
 
 
+class KCellSerial(object):
+    """
+    The Key Serial Cell for results on Key of scan
+
+    Attributes:
+     - c: The Column Name
+     - ts: The Cell Timestamp
+     - v: The Cell Serial Value
+
+    """
+
+    __slots__ = (
+        'c',
+        'ts',
+        'v',
+    )
+
+
+    def __init__(self, c=None, ts=None, v=None,):
+        self.c = c
+        self.ts = ts
+        self.v = v
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRING:
+                    self.c = iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.I64:
+                    self.ts = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.LIST:
+                    self.v = []
+                    (_etype290, _size287) = iprot.readListBegin()
+                    for _i291 in range(_size287):
+                        _elem292 = CellValueSerial()
+                        _elem292.read(iprot)
+                        self.v.append(_elem292)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('KCellSerial')
+        if self.c is not None:
+            oprot.writeFieldBegin('c', TType.STRING, 1)
+            oprot.writeString(self.c)
+            oprot.writeFieldEnd()
+        if self.ts is not None:
+            oprot.writeFieldBegin('ts', TType.I64, 2)
+            oprot.writeI64(self.ts)
+            oprot.writeFieldEnd()
+        if self.v is not None:
+            oprot.writeFieldBegin('v', TType.LIST, 3)
+            oprot.writeListBegin(TType.STRUCT, len(self.v))
+            for iter293 in self.v:
+                iter293.write(oprot)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, getattr(self, key))
+             for key in self.__slots__]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return False
+        for attr in self.__slots__:
+            my_val = getattr(self, attr)
+            other_val = getattr(other, attr)
+            if my_val != other_val:
+                return False
+        return True
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
 class kCells(object):
     """
     The Key Cells for results on Key of scan
@@ -2151,18 +4112,21 @@ class kCells(object):
     Attributes:
      - k: The Cell Key
      - cells: The Key's Cells, defined as KCell items in a list-container
+     - serial_cells: The Key's Serial Cells, defined as KCellSerial items in a list-container
 
     """
 
     __slots__ = (
         'k',
         'cells',
+        'serial_cells',
     )
 
 
-    def __init__(self, k=None, cells=None,):
+    def __init__(self, k=None, cells=None, serial_cells=None,):
         self.k = k
         self.cells = cells
+        self.serial_cells = serial_cells
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -2176,21 +4140,32 @@ class kCells(object):
             if fid == 1:
                 if ftype == TType.LIST:
                     self.k = []
-                    (_etype115, _size112) = iprot.readListBegin()
-                    for _i116 in range(_size112):
-                        _elem117 = iprot.readBinary()
-                        self.k.append(_elem117)
+                    (_etype297, _size294) = iprot.readListBegin()
+                    for _i298 in range(_size294):
+                        _elem299 = iprot.readBinary()
+                        self.k.append(_elem299)
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
             elif fid == 2:
                 if ftype == TType.LIST:
                     self.cells = []
-                    (_etype121, _size118) = iprot.readListBegin()
-                    for _i122 in range(_size118):
-                        _elem123 = KCell()
-                        _elem123.read(iprot)
-                        self.cells.append(_elem123)
+                    (_etype303, _size300) = iprot.readListBegin()
+                    for _i304 in range(_size300):
+                        _elem305 = KCell()
+                        _elem305.read(iprot)
+                        self.cells.append(_elem305)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.LIST:
+                    self.serial_cells = []
+                    (_etype309, _size306) = iprot.readListBegin()
+                    for _i310 in range(_size306):
+                        _elem311 = KCellSerial()
+                        _elem311.read(iprot)
+                        self.serial_cells.append(_elem311)
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
@@ -2207,15 +4182,22 @@ class kCells(object):
         if self.k is not None:
             oprot.writeFieldBegin('k', TType.LIST, 1)
             oprot.writeListBegin(TType.STRING, len(self.k))
-            for iter124 in self.k:
-                oprot.writeBinary(iter124)
+            for iter312 in self.k:
+                oprot.writeBinary(iter312)
             oprot.writeListEnd()
             oprot.writeFieldEnd()
         if self.cells is not None:
             oprot.writeFieldBegin('cells', TType.LIST, 2)
             oprot.writeListBegin(TType.STRUCT, len(self.cells))
-            for iter125 in self.cells:
-                iter125.write(oprot)
+            for iter313 in self.cells:
+                iter313.write(oprot)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        if self.serial_cells is not None:
+            oprot.writeFieldBegin('serial_cells', TType.LIST, 3)
+            oprot.writeListBegin(TType.STRUCT, len(self.serial_cells))
+            for iter314 in self.serial_cells:
+                iter314.write(oprot)
             oprot.writeListEnd()
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
@@ -2337,6 +4319,109 @@ class FCell(object):
         return not (self == other)
 
 
+class FCellSerial(object):
+    """
+    The Fraction Serial Cell for results on Fraction of scan
+
+    Attributes:
+     - c: The Column Name
+     - ts: The Cell Timestamp
+     - v: The Cell Serial Value
+
+    """
+
+    __slots__ = (
+        'c',
+        'ts',
+        'v',
+    )
+
+
+    def __init__(self, c=None, ts=None, v=None,):
+        self.c = c
+        self.ts = ts
+        self.v = v
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRING:
+                    self.c = iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.I64:
+                    self.ts = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.LIST:
+                    self.v = []
+                    (_etype318, _size315) = iprot.readListBegin()
+                    for _i319 in range(_size315):
+                        _elem320 = CellValueSerial()
+                        _elem320.read(iprot)
+                        self.v.append(_elem320)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('FCellSerial')
+        if self.c is not None:
+            oprot.writeFieldBegin('c', TType.STRING, 1)
+            oprot.writeString(self.c)
+            oprot.writeFieldEnd()
+        if self.ts is not None:
+            oprot.writeFieldBegin('ts', TType.I64, 2)
+            oprot.writeI64(self.ts)
+            oprot.writeFieldEnd()
+        if self.v is not None:
+            oprot.writeFieldBegin('v', TType.LIST, 3)
+            oprot.writeListBegin(TType.STRUCT, len(self.v))
+            for iter321 in self.v:
+                iter321.write(oprot)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, getattr(self, key))
+             for key in self.__slots__]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return False
+        for attr in self.__slots__:
+            my_val = getattr(self, attr)
+            other_val = getattr(other, attr)
+            if my_val != other_val:
+                return False
+        return True
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
 class FCells(object):
     """
     The Fraction Cells for results on Fraction of scan
@@ -2344,18 +4429,21 @@ class FCells(object):
     Attributes:
      - f: The Fraction Container for the Next Fractions Tree,  defined as FCells items in a map-container by current Fraction bytes
      - cells: The current Fraction's Cells, defined as FCell items in a list-container
+     - serial_cells: The current Fraction's Serial Cells, defined as FCellSerial items in a list-container
 
     """
 
     __slots__ = (
         'f',
         'cells',
+        'serial_cells',
     )
 
 
-    def __init__(self, f=None, cells=None,):
+    def __init__(self, f=None, cells=None, serial_cells=None,):
         self.f = f
         self.cells = cells
+        self.serial_cells = serial_cells
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -2369,23 +4457,34 @@ class FCells(object):
             if fid == 1:
                 if ftype == TType.MAP:
                     self.f = {}
-                    (_ktype127, _vtype128, _size126) = iprot.readMapBegin()
-                    for _i130 in range(_size126):
-                        _key131 = iprot.readBinary()
-                        _val132 = FCells()
-                        _val132.read(iprot)
-                        self.f[_key131] = _val132
+                    (_ktype323, _vtype324, _size322) = iprot.readMapBegin()
+                    for _i326 in range(_size322):
+                        _key327 = iprot.readBinary()
+                        _val328 = FCells()
+                        _val328.read(iprot)
+                        self.f[_key327] = _val328
                     iprot.readMapEnd()
                 else:
                     iprot.skip(ftype)
             elif fid == 2:
                 if ftype == TType.LIST:
                     self.cells = []
-                    (_etype136, _size133) = iprot.readListBegin()
-                    for _i137 in range(_size133):
-                        _elem138 = FCell()
-                        _elem138.read(iprot)
-                        self.cells.append(_elem138)
+                    (_etype332, _size329) = iprot.readListBegin()
+                    for _i333 in range(_size329):
+                        _elem334 = FCell()
+                        _elem334.read(iprot)
+                        self.cells.append(_elem334)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.LIST:
+                    self.serial_cells = []
+                    (_etype338, _size335) = iprot.readListBegin()
+                    for _i339 in range(_size335):
+                        _elem340 = FCellSerial()
+                        _elem340.read(iprot)
+                        self.serial_cells.append(_elem340)
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
@@ -2402,16 +4501,23 @@ class FCells(object):
         if self.f is not None:
             oprot.writeFieldBegin('f', TType.MAP, 1)
             oprot.writeMapBegin(TType.STRING, TType.STRUCT, len(self.f))
-            for kiter139, viter140 in self.f.items():
-                oprot.writeBinary(kiter139)
-                viter140.write(oprot)
+            for kiter341, viter342 in self.f.items():
+                oprot.writeBinary(kiter341)
+                viter342.write(oprot)
             oprot.writeMapEnd()
             oprot.writeFieldEnd()
         if self.cells is not None:
             oprot.writeFieldBegin('cells', TType.LIST, 2)
             oprot.writeListBegin(TType.STRUCT, len(self.cells))
-            for iter141 in self.cells:
-                iter141.write(oprot)
+            for iter343 in self.cells:
+                iter343.write(oprot)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        if self.serial_cells is not None:
+            oprot.writeFieldBegin('serial_cells', TType.LIST, 3)
+            oprot.writeListBegin(TType.STRUCT, len(self.serial_cells))
+            for iter344 in self.serial_cells:
+                iter344.write(oprot)
             oprot.writeListEnd()
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
@@ -2475,41 +4581,31 @@ class CellsGroup(object):
             if ftype == TType.STOP:
                 break
             if fid == 1:
-                if ftype == TType.LIST:
-                    self.cells = []
-                    (_etype145, _size142) = iprot.readListBegin()
-                    for _i146 in range(_size142):
-                        _elem147 = Cell()
-                        _elem147.read(iprot)
-                        self.cells.append(_elem147)
-                    iprot.readListEnd()
+                if ftype == TType.STRUCT:
+                    self.cells = Cells()
+                    self.cells.read(iprot)
                 else:
                     iprot.skip(ftype)
             elif fid == 2:
                 if ftype == TType.MAP:
                     self.ccells = {}
-                    (_ktype149, _vtype150, _size148) = iprot.readMapBegin()
-                    for _i152 in range(_size148):
-                        _key153 = iprot.readString()
-                        _val154 = []
-                        (_etype158, _size155) = iprot.readListBegin()
-                        for _i159 in range(_size155):
-                            _elem160 = CCell()
-                            _elem160.read(iprot)
-                            _val154.append(_elem160)
-                        iprot.readListEnd()
-                        self.ccells[_key153] = _val154
+                    (_ktype346, _vtype347, _size345) = iprot.readMapBegin()
+                    for _i349 in range(_size345):
+                        _key350 = iprot.readString()
+                        _val351 = ColCells()
+                        _val351.read(iprot)
+                        self.ccells[_key350] = _val351
                     iprot.readMapEnd()
                 else:
                     iprot.skip(ftype)
             elif fid == 3:
                 if ftype == TType.LIST:
                     self.kcells = []
-                    (_etype164, _size161) = iprot.readListBegin()
-                    for _i165 in range(_size161):
-                        _elem166 = kCells()
-                        _elem166.read(iprot)
-                        self.kcells.append(_elem166)
+                    (_etype355, _size352) = iprot.readListBegin()
+                    for _i356 in range(_size352):
+                        _elem357 = kCells()
+                        _elem357.read(iprot)
+                        self.kcells.append(_elem357)
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
@@ -2530,28 +4626,22 @@ class CellsGroup(object):
             return
         oprot.writeStructBegin('CellsGroup')
         if self.cells is not None:
-            oprot.writeFieldBegin('cells', TType.LIST, 1)
-            oprot.writeListBegin(TType.STRUCT, len(self.cells))
-            for iter167 in self.cells:
-                iter167.write(oprot)
-            oprot.writeListEnd()
+            oprot.writeFieldBegin('cells', TType.STRUCT, 1)
+            self.cells.write(oprot)
             oprot.writeFieldEnd()
         if self.ccells is not None:
             oprot.writeFieldBegin('ccells', TType.MAP, 2)
-            oprot.writeMapBegin(TType.STRING, TType.LIST, len(self.ccells))
-            for kiter168, viter169 in self.ccells.items():
-                oprot.writeString(kiter168)
-                oprot.writeListBegin(TType.STRUCT, len(viter169))
-                for iter170 in viter169:
-                    iter170.write(oprot)
-                oprot.writeListEnd()
+            oprot.writeMapBegin(TType.STRING, TType.STRUCT, len(self.ccells))
+            for kiter358, viter359 in self.ccells.items():
+                oprot.writeString(kiter358)
+                viter359.write(oprot)
             oprot.writeMapEnd()
             oprot.writeFieldEnd()
         if self.kcells is not None:
             oprot.writeFieldBegin('kcells', TType.LIST, 3)
             oprot.writeListBegin(TType.STRUCT, len(self.kcells))
-            for iter171 in self.kcells:
-                iter171.write(oprot)
+            for iter360 in self.kcells:
+                iter360.write(oprot)
             oprot.writeListEnd()
             oprot.writeFieldEnd()
         if self.fcells is not None:
@@ -2700,33 +4790,28 @@ class Result(object):
             if fid == 1:
                 if ftype == TType.LIST:
                     self.schemas = []
-                    (_etype175, _size172) = iprot.readListBegin()
-                    for _i176 in range(_size172):
-                        _elem177 = Schema()
-                        _elem177.read(iprot)
-                        self.schemas.append(_elem177)
+                    (_etype364, _size361) = iprot.readListBegin()
+                    for _i365 in range(_size361):
+                        _elem366 = Schema()
+                        _elem366.read(iprot)
+                        self.schemas.append(_elem366)
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
             elif fid == 2:
-                if ftype == TType.LIST:
-                    self.cells = []
-                    (_etype181, _size178) = iprot.readListBegin()
-                    for _i182 in range(_size178):
-                        _elem183 = Cell()
-                        _elem183.read(iprot)
-                        self.cells.append(_elem183)
-                    iprot.readListEnd()
+                if ftype == TType.STRUCT:
+                    self.cells = Cells()
+                    self.cells.read(iprot)
                 else:
                     iprot.skip(ftype)
             elif fid == 3:
                 if ftype == TType.LIST:
                     self.compact = []
-                    (_etype187, _size184) = iprot.readListBegin()
-                    for _i188 in range(_size184):
-                        _elem189 = CompactResult()
-                        _elem189.read(iprot)
-                        self.compact.append(_elem189)
+                    (_etype370, _size367) = iprot.readListBegin()
+                    for _i371 in range(_size367):
+                        _elem372 = CompactResult()
+                        _elem372.read(iprot)
+                        self.compact.append(_elem372)
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
@@ -2743,22 +4828,19 @@ class Result(object):
         if self.schemas is not None:
             oprot.writeFieldBegin('schemas', TType.LIST, 1)
             oprot.writeListBegin(TType.STRUCT, len(self.schemas))
-            for iter190 in self.schemas:
-                iter190.write(oprot)
+            for iter373 in self.schemas:
+                iter373.write(oprot)
             oprot.writeListEnd()
             oprot.writeFieldEnd()
         if self.cells is not None:
-            oprot.writeFieldBegin('cells', TType.LIST, 2)
-            oprot.writeListBegin(TType.STRUCT, len(self.cells))
-            for iter191 in self.cells:
-                iter191.write(oprot)
-            oprot.writeListEnd()
+            oprot.writeFieldBegin('cells', TType.STRUCT, 2)
+            self.cells.write(oprot)
             oprot.writeFieldEnd()
         if self.compact is not None:
             oprot.writeFieldBegin('compact', TType.LIST, 3)
             oprot.writeListBegin(TType.STRUCT, len(self.compact))
-            for iter192 in self.compact:
-                iter192.write(oprot)
+            for iter374 in self.compact:
+                iter374.write(oprot)
             oprot.writeListEnd()
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
@@ -2839,12 +4921,6 @@ SpecFraction.thrift_spec = (
     (1, TType.I32, 'comp', None, None, ),  # 1
     (2, TType.STRING, 'f', 'BINARY', None, ),  # 2
 )
-all_structs.append(SpecValue)
-SpecValue.thrift_spec = (
-    None,  # 0
-    (1, TType.I32, 'comp', None, None, ),  # 1
-    (2, TType.STRING, 'v', 'BINARY', None, ),  # 2
-)
 all_structs.append(SpecTimestamp)
 SpecTimestamp.thrift_spec = (
     None,  # 0
@@ -2856,6 +4932,12 @@ SpecKeyInterval.thrift_spec = (
     None,  # 0
     (1, TType.LIST, 'start', (TType.STRUCT, [SpecFraction, None], False), None, ),  # 1
     (2, TType.LIST, 'finish', (TType.STRUCT, [SpecFraction, None], False), None, ),  # 2
+)
+all_structs.append(SpecValue)
+SpecValue.thrift_spec = (
+    None,  # 0
+    (1, TType.I32, 'comp', None, None, ),  # 1
+    (2, TType.STRING, 'v', 'BINARY', None, ),  # 2
 )
 all_structs.append(SpecInterval)
 SpecInterval.thrift_spec = (
@@ -2877,11 +4959,85 @@ SpecColumn.thrift_spec = (
     (1, TType.I64, 'cid', None, None, ),  # 1
     (2, TType.LIST, 'intervals', (TType.STRUCT, [SpecInterval, None], False), None, ),  # 2
 )
+all_structs.append(SpecValueSerial_INT64)
+SpecValueSerial_INT64.thrift_spec = (
+    None,  # 0
+    (1, TType.I32, 'comp', None, None, ),  # 1
+    (2, TType.I64, 'v', None, None, ),  # 2
+)
+all_structs.append(SpecValueSerial_DOUBLE)
+SpecValueSerial_DOUBLE.thrift_spec = (
+    None,  # 0
+    (1, TType.I32, 'comp', None, None, ),  # 1
+    (2, TType.DOUBLE, 'v', None, None, ),  # 2
+)
+all_structs.append(SpecValueSerial_BYTES)
+SpecValueSerial_BYTES.thrift_spec = (
+    None,  # 0
+    (1, TType.I32, 'comp', None, None, ),  # 1
+    (2, TType.STRING, 'v', 'BINARY', None, ),  # 2
+)
+all_structs.append(SpecValueSerial_KEY)
+SpecValueSerial_KEY.thrift_spec = (
+    None,  # 0
+    (1, TType.I32, 'seq', None, None, ),  # 1
+    (2, TType.LIST, 'v', (TType.STRUCT, [SpecFraction, None], False), None, ),  # 2
+)
+all_structs.append(SpecValueSerial_LI)
+SpecValueSerial_LI.thrift_spec = (
+    None,  # 0
+    (1, TType.I32, 'comp', None, None, ),  # 1
+    (2, TType.LIST, 'v', (TType.STRUCT, [SpecValueSerial_INT64, None], False), None, ),  # 2
+)
+all_structs.append(SpecValueSerial_LB)
+SpecValueSerial_LB.thrift_spec = (
+    None,  # 0
+    (1, TType.I32, 'comp', None, None, ),  # 1
+    (2, TType.LIST, 'v', (TType.STRUCT, [SpecValueSerial_BYTES, None], False), None, ),  # 2
+)
+all_structs.append(SpecValueSerialField)
+SpecValueSerialField.thrift_spec = (
+    None,  # 0
+    (1, TType.I32, 'field_id', None, None, ),  # 1
+    (2, TType.STRUCT, 'spec_int64', [SpecValueSerial_INT64, None], None, ),  # 2
+    (3, TType.STRUCT, 'spec_double', [SpecValueSerial_DOUBLE, None], None, ),  # 3
+    (4, TType.STRUCT, 'spec_bytes', [SpecValueSerial_BYTES, None], None, ),  # 4
+    (5, TType.STRUCT, 'spec_key', [SpecValueSerial_KEY, None], None, ),  # 5
+    (6, TType.STRUCT, 'spec_li', [SpecValueSerial_LI, None], None, ),  # 6
+    (7, TType.STRUCT, 'spec_lb', [SpecValueSerial_LB, None], None, ),  # 7
+)
+all_structs.append(SpecValueSerial)
+SpecValueSerial.thrift_spec = (
+    None,  # 0
+    (1, TType.I32, 'comp', None, None, ),  # 1
+    (2, TType.LIST, 'fields', (TType.STRUCT, [SpecValueSerialField, None], False), None, ),  # 2
+)
+all_structs.append(SpecIntervalSerial)
+SpecIntervalSerial.thrift_spec = (
+    None,  # 0
+    (1, TType.LIST, 'range_begin', (TType.STRING, 'BINARY', False), None, ),  # 1
+    (2, TType.LIST, 'range_end', (TType.STRING, 'BINARY', False), None, ),  # 2
+    (3, TType.LIST, 'range_offset', (TType.STRING, 'BINARY', False), None, ),  # 3
+    (4, TType.LIST, 'offset_key', (TType.STRING, 'BINARY', False), None, ),  # 4
+    (5, TType.I64, 'offset_rev', None, None, ),  # 5
+    (6, TType.LIST, 'key_intervals', (TType.STRUCT, [SpecKeyInterval, None], False), None, ),  # 6
+    (7, TType.LIST, 'values', (TType.STRUCT, [SpecValueSerial, None], False), None, ),  # 7
+    (8, TType.STRUCT, 'ts_start', [SpecTimestamp, None], None, ),  # 8
+    (9, TType.STRUCT, 'ts_finish', [SpecTimestamp, None], None, ),  # 9
+    (10, TType.STRUCT, 'flags', [SpecFlags, None], None, ),  # 10
+)
+all_structs.append(SpecColumnSerial)
+SpecColumnSerial.thrift_spec = (
+    None,  # 0
+    (1, TType.I64, 'cid', None, None, ),  # 1
+    (2, TType.LIST, 'intervals', (TType.STRUCT, [SpecIntervalSerial, None], False), None, ),  # 2
+)
 all_structs.append(SpecScan)
 SpecScan.thrift_spec = (
     None,  # 0
     (1, TType.LIST, 'columns', (TType.STRUCT, [SpecColumn, None], False), None, ),  # 1
-    (2, TType.STRUCT, 'flags', [SpecFlags, None], None, ),  # 2
+    (2, TType.LIST, 'columns_serial', (TType.STRUCT, [SpecColumnSerial, None], False), None, ),  # 2
+    (3, TType.STRUCT, 'flags', [SpecFlags, None], None, ),  # 3
 )
 all_structs.append(UCell)
 UCell.thrift_spec = (
@@ -2891,6 +5047,28 @@ UCell.thrift_spec = (
     (3, TType.I64, 'ts', None, None, ),  # 3
     (4, TType.BOOL, 'ts_desc', None, None, ),  # 4
     (5, TType.STRING, 'v', 'BINARY', None, ),  # 5
+    (6, TType.I32, 'encoder', None, None, ),  # 6
+)
+all_structs.append(CellValueSerial)
+CellValueSerial.thrift_spec = (
+    None,  # 0
+    (1, TType.I32, 'field_id', None, None, ),  # 1
+    (2, TType.I64, 'v_int64', None, None, ),  # 2
+    (3, TType.DOUBLE, 'v_double', None, None, ),  # 3
+    (4, TType.STRING, 'v_bytes', 'BINARY', None, ),  # 4
+    (5, TType.LIST, 'v_key', (TType.STRING, 'BINARY', False), None, ),  # 5
+    (6, TType.LIST, 'v_li', (TType.I64, None, False), None, ),  # 6
+    (7, TType.LIST, 'v_lb', (TType.STRING, 'BINARY', False), None, ),  # 7
+)
+all_structs.append(UCellSerial)
+UCellSerial.thrift_spec = (
+    None,  # 0
+    (1, TType.I32, 'f', None, None, ),  # 1
+    (2, TType.LIST, 'k', (TType.STRING, 'BINARY', False), None, ),  # 2
+    (3, TType.I64, 'ts', None, None, ),  # 3
+    (4, TType.BOOL, 'ts_desc', None, None, ),  # 4
+    (5, TType.LIST, 'v', (TType.STRUCT, [CellValueSerial, None], False), None, ),  # 5
+    (6, TType.I32, 'encoder', None, None, ),  # 6
 )
 all_structs.append(Cell)
 Cell.thrift_spec = (
@@ -2900,12 +5078,39 @@ Cell.thrift_spec = (
     (3, TType.I64, 'ts', None, None, ),  # 3
     (4, TType.STRING, 'v', 'BINARY', None, ),  # 4
 )
+all_structs.append(CellSerial)
+CellSerial.thrift_spec = (
+    None,  # 0
+    (1, TType.STRING, 'c', None, None, ),  # 1
+    (2, TType.LIST, 'k', (TType.STRING, 'BINARY', False), None, ),  # 2
+    (3, TType.I64, 'ts', None, None, ),  # 3
+    (4, TType.LIST, 'v', (TType.STRUCT, [CellValueSerial, None], False), None, ),  # 4
+)
+all_structs.append(Cells)
+Cells.thrift_spec = (
+    None,  # 0
+    (1, TType.LIST, 'cells', (TType.STRUCT, [Cell, None], False), None, ),  # 1
+    (2, TType.LIST, 'serial_cells', (TType.STRUCT, [CellSerial, None], False), None, ),  # 2
+)
 all_structs.append(CCell)
 CCell.thrift_spec = (
     None,  # 0
     (1, TType.LIST, 'k', (TType.STRING, 'BINARY', False), None, ),  # 1
     (2, TType.I64, 'ts', None, None, ),  # 2
     (3, TType.STRING, 'v', 'BINARY', None, ),  # 3
+)
+all_structs.append(CCellSerial)
+CCellSerial.thrift_spec = (
+    None,  # 0
+    (1, TType.LIST, 'k', (TType.STRING, 'BINARY', False), None, ),  # 1
+    (2, TType.I64, 'ts', None, None, ),  # 2
+    (3, TType.LIST, 'v', (TType.STRUCT, [CellValueSerial, None], False), None, ),  # 3
+)
+all_structs.append(ColCells)
+ColCells.thrift_spec = (
+    None,  # 0
+    (1, TType.LIST, 'cells', (TType.STRUCT, [CCell, None], False), None, ),  # 1
+    (2, TType.LIST, 'serial_cells', (TType.STRUCT, [CCellSerial, None], False), None, ),  # 2
 )
 all_structs.append(KCell)
 KCell.thrift_spec = (
@@ -2914,11 +5119,19 @@ KCell.thrift_spec = (
     (2, TType.I64, 'ts', None, None, ),  # 2
     (3, TType.STRING, 'v', 'BINARY', None, ),  # 3
 )
+all_structs.append(KCellSerial)
+KCellSerial.thrift_spec = (
+    None,  # 0
+    (1, TType.STRING, 'c', None, None, ),  # 1
+    (2, TType.I64, 'ts', None, None, ),  # 2
+    (3, TType.LIST, 'v', (TType.STRUCT, [CellValueSerial, None], False), None, ),  # 3
+)
 all_structs.append(kCells)
 kCells.thrift_spec = (
     None,  # 0
     (1, TType.LIST, 'k', (TType.STRING, 'BINARY', False), None, ),  # 1
     (2, TType.LIST, 'cells', (TType.STRUCT, [KCell, None], False), None, ),  # 2
+    (3, TType.LIST, 'serial_cells', (TType.STRUCT, [KCellSerial, None], False), None, ),  # 3
 )
 all_structs.append(FCell)
 FCell.thrift_spec = (
@@ -2927,17 +5140,25 @@ FCell.thrift_spec = (
     (2, TType.I64, 'ts', None, None, ),  # 2
     (3, TType.STRING, 'v', 'BINARY', None, ),  # 3
 )
+all_structs.append(FCellSerial)
+FCellSerial.thrift_spec = (
+    None,  # 0
+    (1, TType.STRING, 'c', None, None, ),  # 1
+    (2, TType.I64, 'ts', None, None, ),  # 2
+    (3, TType.LIST, 'v', (TType.STRUCT, [CellValueSerial, None], False), None, ),  # 3
+)
 all_structs.append(FCells)
 FCells.thrift_spec = (
     None,  # 0
     (1, TType.MAP, 'f', (TType.STRING, 'BINARY', TType.STRUCT, [FCells, None], False), None, ),  # 1
     (2, TType.LIST, 'cells', (TType.STRUCT, [FCell, None], False), None, ),  # 2
+    (3, TType.LIST, 'serial_cells', (TType.STRUCT, [FCellSerial, None], False), None, ),  # 3
 )
 all_structs.append(CellsGroup)
 CellsGroup.thrift_spec = (
     None,  # 0
-    (1, TType.LIST, 'cells', (TType.STRUCT, [Cell, None], False), None, ),  # 1
-    (2, TType.MAP, 'ccells', (TType.STRING, None, TType.LIST, (TType.STRUCT, [CCell, None], False), False), None, ),  # 2
+    (1, TType.STRUCT, 'cells', [Cells, None], None, ),  # 1
+    (2, TType.MAP, 'ccells', (TType.STRING, None, TType.STRUCT, [ColCells, None], False), None, ),  # 2
     (3, TType.LIST, 'kcells', (TType.STRUCT, [kCells, None], False), None, ),  # 3
     (4, TType.STRUCT, 'fcells', [FCells, None], None, ),  # 4
 )
@@ -2951,7 +5172,7 @@ all_structs.append(Result)
 Result.thrift_spec = (
     None,  # 0
     (1, TType.LIST, 'schemas', (TType.STRUCT, [Schema, None], False), None, ),  # 1
-    (2, TType.LIST, 'cells', (TType.STRUCT, [Cell, None], False), None, ),  # 2
+    (2, TType.STRUCT, 'cells', [Cells, None], None, ),  # 2
     (3, TType.LIST, 'compact', (TType.STRUCT, [CompactResult, None], False), None, ),  # 3
 )
 fix_spec(all_structs)

@@ -49,31 +49,52 @@ sort: 3
 ||	[ &bull; exec_sql](#function-serviceexec_sql)|[SpecKey](#typedef-speckey)||
 ||	[ &bull; updater_create](#function-serviceupdater_create)|[SpecKeyIntervals](#typedef-speckeyintervals)||
 ||	[ &bull; updater_close](#function-serviceupdater_close)|[SpecValues](#typedef-specvalues)||
-||	[ &bull; update](#function-serviceupdate)|[UCells](#typedef-ucells)||
-||	[ &bull; mng_column](#function-servicemng_column)|[UCCells](#typedef-uccells)||
-||	[ &bull; list_columns](#function-servicelist_columns)|[Cells](#typedef-cells)||
-||	[ &bull; compact_columns](#function-servicecompact_columns)|[ColCells](#typedef-colcells)||
-||	[ &bull; scan](#function-servicescan)|[CCells](#typedef-ccells)||
-||	[ &bull; scan_rslt_on_column](#function-servicescan_rslt_on_column)|[KCells](#typedef-kcells)||
-||	[ &bull; scan_rslt_on_key](#function-servicescan_rslt_on_key)|[CompactResults](#typedef-compactresults)||
-||	[ &bull; scan_rslt_on_fraction](#function-servicescan_rslt_on_fraction)|[Exception](#exception-exception)||
-||	[ &bull; scan_rslt_on](#function-servicescan_rslt_on)|[Schema](#struct-schema)||
+||	[ &bull; update](#function-serviceupdate)|[SpecValueSerialFields](#typedef-specvalueserialfields)||
+||	[ &bull; update_serial](#function-serviceupdate_serial)|[SpecValuesSerial](#typedef-specvaluesserial)||
+||	[ &bull; mng_column](#function-servicemng_column)|[UCells](#typedef-ucells)||
+||	[ &bull; list_columns](#function-servicelist_columns)|[UCCells](#typedef-uccells)||
+||	[ &bull; compact_columns](#function-servicecompact_columns)|[CellValuesSerial](#typedef-cellvaluesserial)||
+||	[ &bull; scan](#function-servicescan)|[UCellsSerial](#typedef-ucellsserial)||
+||	[ &bull; scan_rslt_on_column](#function-servicescan_rslt_on_column)|[UCCellsSerial](#typedef-uccellsserial)||
+||	[ &bull; scan_rslt_on_key](#function-servicescan_rslt_on_key)|[CCells](#typedef-ccells)||
+||	[ &bull; scan_rslt_on_fraction](#function-servicescan_rslt_on_fraction)|[KCells](#typedef-kcells)||
+||	[ &bull; scan_rslt_on](#function-servicescan_rslt_on)|[CompactResults](#typedef-compactresults)||
+|||[Exception](#exception-exception)||
+|||[Schema](#struct-schema)||
 |||[SchemaPattern](#struct-schemapattern)||
 |||[SpecSchemas](#struct-specschemas)||
 |||[SpecFlags](#struct-specflags)||
 |||[SpecFraction](#struct-specfraction)||
-|||[SpecValue](#struct-specvalue)||
 |||[SpecTimestamp](#struct-spectimestamp)||
 |||[SpecKeyInterval](#struct-speckeyinterval)||
+|||[SpecValue](#struct-specvalue)||
 |||[SpecInterval](#struct-specinterval)||
 |||[SpecColumn](#struct-speccolumn)||
+|||[SpecValueSerial_INT64](#struct-specvalueserial_int64)||
+|||[SpecValueSerial_DOUBLE](#struct-specvalueserial_double)||
+|||[SpecValueSerial_BYTES](#struct-specvalueserial_bytes)||
+|||[SpecValueSerial_KEY](#struct-specvalueserial_key)||
+|||[SpecValueSerial_LI](#struct-specvalueserial_li)||
+|||[SpecValueSerial_LB](#struct-specvalueserial_lb)||
+|||[SpecValueSerialField](#struct-specvalueserialfield)||
+|||[SpecValueSerial](#struct-specvalueserial)||
+|||[SpecIntervalSerial](#struct-specintervalserial)||
+|||[SpecColumnSerial](#struct-speccolumnserial)||
 |||[SpecScan](#struct-specscan)||
 |||[UCell](#struct-ucell)||
+|||[CellValueSerial](#struct-cellvalueserial)||
+|||[UCellSerial](#struct-ucellserial)||
 |||[Cell](#struct-cell)||
+|||[CellSerial](#struct-cellserial)||
+|||[Cells](#struct-cells)||
 |||[CCell](#struct-ccell)||
+|||[CCellSerial](#struct-ccellserial)||
+|||[ColCells](#struct-colcells)||
 |||[KCell](#struct-kcell)||
+|||[KCellSerial](#struct-kcellserial)||
 |||[kCells](#struct-kcells)||
 |||[FCell](#struct-fcell)||
+|||[FCellSerial](#struct-fcellserial)||
 |||[FCells](#struct-fcells)||
 |||[CellsGroup](#struct-cellsgroup)||
 |||[CompactResult](#struct-compactresult)||
@@ -213,9 +234,21 @@ _Base type_: **list&lt;[```SpecKeyInterval```](#struct-speckeyinterval)&gt;**
 
 
 ### Typedef: SpecValues
-The Cell Value Specification defined as SpecValue items in a list-container 
+The Cell Value Specifications defined as SpecValue items in a list-container 
 
 _Base type_: **list&lt;[```SpecValue```](#struct-specvalue)&gt;**
+
+
+### Typedef: SpecValueSerialFields
+The Serial Cell Value Specifications defined as SpecValueSerialField items in a list-container 
+
+_Base type_: **list&lt;[```SpecValueSerialField```](#struct-specvalueserialfield)&gt;**
+
+
+### Typedef: SpecValuesSerial
+The Cell Value Specifications defined as SpecValueSerial items in a list-container 
+
+_Base type_: **list&lt;[```SpecValueSerial```](#struct-specvalueserial)&gt;**
 
 
 ### Typedef: UCells
@@ -230,22 +263,28 @@ The Cells for Update for a Column Id defined as UCells items in a map-container 
 _Base type_: **map&lt;```i64```, [```UCells```](#typedef-ucells)&gt;**
 
 
-### Typedef: Cells
-The Cells for results list of scan, defined as Cell items in a list-container 
+### Typedef: CellValuesSerial
+The Serial Cell Value Fields defined as CellValueSerial items in a list-container 
 
-_Base type_: **list&lt;[```Cell```](#struct-cell)&gt;**
+_Base type_: **list&lt;[```CellValueSerial```](#struct-cellvalueserial)&gt;**
 
 
-### Typedef: ColCells
-The Column Cells for results on Columns of scan, defined as Cell items in a list-container 
+### Typedef: UCellsSerial
+The Cells for Update defined as UCellSerial items in a list-container 
 
-_Base type_: **list&lt;[```CCell```](#struct-ccell)&gt;**
+_Base type_: **list&lt;[```UCellSerial```](#struct-ucellserial)&gt;**
+
+
+### Typedef: UCCellsSerial
+The Cells for Update for a Column Id defined as UCellsSerial items in a map-container by CID 
+
+_Base type_: **map&lt;```i64```, [```UCellsSerial```](#typedef-ucellsserial)&gt;**
 
 
 ### Typedef: CCells
 The Columns Cells for results on Columns of scan, defined as ColCells items in a map-container by Column Name 
 
-_Base type_: **map&lt;```string```, [```ColCells```](#typedef-colcells)&gt;**
+_Base type_: **map&lt;```string```, [```ColCells```](#struct-colcells)&gt;**
 
 
 ### Typedef: KCells
@@ -307,9 +346,9 @@ The Specs for Schemas for using with list_columns or compact_columns
 
 | Key | Field | Type | Description | Requiredness | Default value |
 | --- | --- | --- | --- | --- | --- |
-|1|cids|list&lt;```i64```&gt;|The Column IDs |optional||
-|2|names|list&lt;```string```&gt;|The Column Names |optional||
-|3|patterns|list&lt;[```SchemaPattern```](#struct-schemapattern)&gt;|The Schema's Column Name patterns |optional||
+|1|cids|list&lt;```i64```&gt;|The Column IDs |default||
+|2|names|list&lt;```string```&gt;|The Column Names |default||
+|3|patterns|list&lt;[```SchemaPattern```](#struct-schemapattern)&gt;|The Schema's Column Name patterns |default||
 
 ### Struct: SpecFlags
 The Scan Specifications Flags 
@@ -330,14 +369,6 @@ The Fraction Specifications
 |1|comp|[```Comp```](#enumeration-comp)|Logical comparator to Apply |default||
 |2|f|```binary```|The binary(bytes) to match against a fraction of a Cell-Key |default||
 
-### Struct: SpecValue
-The Value Specifications, option to use with Extended Logical Comparators 
-
-| Key | Field | Type | Description | Requiredness | Default value |
-| --- | --- | --- | --- | --- | --- |
-|1|comp|[```Comp```](#enumeration-comp)|Logical comparator to Apply |default||
-|2|v|```binary```|The binary(bytes) to match against the Cell value |default||
-
 ### Struct: SpecTimestamp
 The Timestamp Specifications 
 
@@ -351,21 +382,29 @@ The Key Interval Specifications
 
 | Key | Field | Type | Description | Requiredness | Default value |
 | --- | --- | --- | --- | --- | --- |
-|1|start|[```SpecKey```](#typedef-speckey)|The Key Start Spec, the start of cells-interval key match |optional||
-|2|finish|[```SpecKey```](#typedef-speckey)|The Key Finish Spec, the finish of cells-interval key match |optional||
+|1|start|[```SpecKey```](#typedef-speckey)|The Key Start Spec, the start of cells-interval key match |default||
+|2|finish|[```SpecKey```](#typedef-speckey)|The Key Finish Spec, the finish of cells-interval key match |default||
+
+### Struct: SpecValue
+The Value Specifications, option to use with Extended Logical Comparators 
+
+| Key | Field | Type | Description | Requiredness | Default value |
+| --- | --- | --- | --- | --- | --- |
+|1|comp|[```Comp```](#enumeration-comp)|Logical comparator to Apply |default||
+|2|v|```binary```|The binary(bytes) to match against the Cell value |default||
 
 ### Struct: SpecInterval
 The Cells Interval Specifications with interval-scope Flags 
 
 | Key | Field | Type | Description | Requiredness | Default value |
 | --- | --- | --- | --- | --- | --- |
-|1|range_begin|[```Key```](#typedef-key)|Begin of Ranges evaluation with this Key inclusive |optional||
-|2|range_end|[```Key```](#typedef-key)|End of Ranges evaluation with this Key inclusive |optional||
-|3|range_offset|[```Key```](#typedef-key)|Offset of Ranges evaluation with this Key inclusive |optional||
-|4|offset_key|[```Key```](#typedef-key)|Offset Cell Key of a Scan, select cells from this key inclusive |optional||
+|1|range_begin|[```Key```](#typedef-key)|Begin of Ranges evaluation with this Key inclusive |default||
+|2|range_end|[```Key```](#typedef-key)|End of Ranges evaluation with this Key inclusive |default||
+|3|range_offset|[```Key```](#typedef-key)|Offset of Ranges evaluation with this Key inclusive |default||
+|4|offset_key|[```Key```](#typedef-key)|Offset Cell Key of a Scan, select cells from this key inclusive |default||
 |5|offset_rev|```i64```|Offset Cell Timestamp of a Scan, select cells after this timestamp |optional||
-|6|key_intervals|[```SpecKeyIntervals```](#typedef-speckeyintervals)|The Key Intervals |optional||
-|7|values|[```SpecValues```](#typedef-specvalues)|The Cell Values Spec, cell-values match |optional||
+|6|key_intervals|[```SpecKeyIntervals```](#typedef-speckeyintervals)|The Key Intervals |default||
+|7|values|[```SpecValues```](#typedef-specvalues)|The Cell Value Specifications, cell-value match |default||
 |8|ts_start|[```SpecTimestamp```](#struct-spectimestamp)|The Timestamp Start Spec, the start of cells-interval timestamp match |optional||
 |9|ts_finish|[```SpecTimestamp```](#struct-spectimestamp)|The Timestamp Finish Spec, the finish of cells-interval timestamp match |optional||
 |10|flags|[```SpecFlags```](#struct-specflags)|The Interval Flags Specification |optional||
@@ -378,13 +417,107 @@ The Column Specifications, the Cells-Intervals(SpecInterval/s) specification for
 |1|cid|```i64```|The Column ID |default||
 |2|intervals|list&lt;[```SpecInterval```](#struct-specinterval)&gt;|The Cells Interval in a list-container |default||
 
+### Struct: SpecValueSerial_INT64
+The Specifications of INT64 Serial Value Field 
+
+| Key | Field | Type | Description | Requiredness | Default value |
+| --- | --- | --- | --- | --- | --- |
+|1|comp|[```Comp```](#enumeration-comp)|Logical comparator to Apply |default||
+|2|v|```i64```|The int64 to match against the value field |default||
+
+### Struct: SpecValueSerial_DOUBLE
+The Specifications of DOUBLE Serial Value Field 
+
+| Key | Field | Type | Description | Requiredness | Default value |
+| --- | --- | --- | --- | --- | --- |
+|1|comp|[```Comp```](#enumeration-comp)|Logical comparator to Apply |default||
+|2|v|```double```|The double to match against the value field |default||
+
+### Struct: SpecValueSerial_BYTES
+The Specifications of BYTES Serial Value Field 
+
+| Key | Field | Type | Description | Requiredness | Default value |
+| --- | --- | --- | --- | --- | --- |
+|1|comp|[```Comp```](#enumeration-comp)|Logical comparator to Apply |default||
+|2|v|```binary```|The binary(bytes) to match against the value field |default||
+
+### Struct: SpecValueSerial_KEY
+The Specifications of KEY Serial Value Field 
+
+| Key | Field | Type | Description | Requiredness | Default value |
+| --- | --- | --- | --- | --- | --- |
+|1|seq|[```KeySeq```](#enumeration-keyseq)|The Key Sequence to use |default||
+|2|v|[```SpecKey```](#typedef-speckey)|The Specification of the Key to match against the value field |default||
+
+### Struct: SpecValueSerial_LI
+The Specifications of LIST_INT64(LI) Serial Value Field 
+
+| Key | Field | Type | Description | Requiredness | Default value |
+| --- | --- | --- | --- | --- | --- |
+|1|comp|[```Comp```](#enumeration-comp)|Logical comparator to Apply |default||
+|2|v|list&lt;[```SpecValueSerial_INT64```](#struct-specvalueserial_int64)&gt;|The List of Int64 to match against the value field |default||
+
+### Struct: SpecValueSerial_LB
+The Specifications of LIST_BYTES(LB) Serial Value Field 
+
+| Key | Field | Type | Description | Requiredness | Default value |
+| --- | --- | --- | --- | --- | --- |
+|1|comp|[```Comp```](#enumeration-comp)|Logical comparator to Apply |default||
+|2|v|list&lt;[```SpecValueSerial_BYTES```](#struct-specvalueserial_bytes)&gt;|The List of Bytes to match against the value field |default||
+
+### Struct: SpecValueSerialField
+
+
+| Key | Field | Type | Description | Requiredness | Default value |
+| --- | --- | --- | --- | --- | --- |
+|1|field_id|```i32```|The Field Id of the Value Field |default||
+|2|spec_int64|[```SpecValueSerial_INT64```](#struct-specvalueserial_int64)|The specifications of Int64 for the field |optional||
+|3|spec_double|[```SpecValueSerial_DOUBLE```](#struct-specvalueserial_double)|The specifications of Double for the field |optional||
+|4|spec_bytes|[```SpecValueSerial_BYTES```](#struct-specvalueserial_bytes)|The specifications of Bytes for the field |default||
+|5|spec_key|[```SpecValueSerial_KEY```](#struct-specvalueserial_key)|The specifications of Cell-Key for the field |default||
+|6|spec_li|[```SpecValueSerial_LI```](#struct-specvalueserial_li)|The specifications of List Int64 for the field |default||
+|7|spec_lb|[```SpecValueSerial_LB```](#struct-specvalueserial_lb)|The specifications of List Bytes for the field |default||
+
+### Struct: SpecValueSerial
+The Serial Value Specifications 
+
+| Key | Field | Type | Description | Requiredness | Default value |
+| --- | --- | --- | --- | --- | --- |
+|1|comp|[```Comp```](#enumeration-comp)|Logical comparator to Apply |default||
+|2|fields|[```SpecValueSerialFields```](#typedef-specvalueserialfields)|The Serial Value Specifications to match against the SERIAL Cell value fields |default||
+
+### Struct: SpecIntervalSerial
+The Serial Value Cells Interval Specifications with interval-scope Flags 
+
+| Key | Field | Type | Description | Requiredness | Default value |
+| --- | --- | --- | --- | --- | --- |
+|1|range_begin|[```Key```](#typedef-key)|Begin of Ranges evaluation with this Key inclusive |default||
+|2|range_end|[```Key```](#typedef-key)|End of Ranges evaluation with this Key inclusive |default||
+|3|range_offset|[```Key```](#typedef-key)|Offset of Ranges evaluation with this Key inclusive |default||
+|4|offset_key|[```Key```](#typedef-key)|Offset Cell Key of a Scan, select cells from this key inclusive |default||
+|5|offset_rev|```i64```|Offset Cell Timestamp of a Scan, select cells after this timestamp |optional||
+|6|key_intervals|[```SpecKeyIntervals```](#typedef-speckeyintervals)|The Key Intervals |default||
+|7|values|[```SpecValuesSerial```](#typedef-specvaluesserial)|The Serial Cell Value Specifications, cell-value fields match |default||
+|8|ts_start|[```SpecTimestamp```](#struct-spectimestamp)|The Timestamp Start Spec, the start of cells-interval timestamp match |optional||
+|9|ts_finish|[```SpecTimestamp```](#struct-spectimestamp)|The Timestamp Finish Spec, the finish of cells-interval timestamp match |optional||
+|10|flags|[```SpecFlags```](#struct-specflags)|The Interval Flags Specification |optional||
+
+### Struct: SpecColumnSerial
+The Column Specifications, the Cells-Intervals(SpecInterval/s) specification for a SERIAL Type Column 
+
+| Key | Field | Type | Description | Requiredness | Default value |
+| --- | --- | --- | --- | --- | --- |
+|1|cid|```i64```|The Column ID |default||
+|2|intervals|list&lt;[```SpecIntervalSerial```](#struct-specintervalserial)&gt;|The Serial Cells Interval in a list-container |default||
+
 ### Struct: SpecScan
 The Scan Specifications, the Columns-Intervals(SpecColumn/s) with global-scope Flags 
 
 | Key | Field | Type | Description | Requiredness | Default value |
 | --- | --- | --- | --- | --- | --- |
 |1|columns|list&lt;[```SpecColumn```](#struct-speccolumn)&gt;|The Column Intervals(SpecColumn) in a list-container |default||
-|2|flags|[```SpecFlags```](#struct-specflags)|The Global Flags Specification |optional||
+|2|columns_serial|list&lt;[```SpecColumnSerial```](#struct-speccolumnserial)&gt;|The Serial Column Intervals(SpecColumnSerial) in a list-container |default||
+|3|flags|[```SpecFlags```](#struct-specflags)|The Global Flags Specification |optional||
 
 ### Struct: UCell
 The Cell data for using with Update 
@@ -395,7 +528,33 @@ The Cell data for using with Update
 |2|k|[```Key```](#typedef-key)|The Cell Key |default||
 |3|ts|```i64```|The Cell Timestamp in nanoseconds |optional||
 |4|ts_desc|```bool```|The Cell Version is in timestamp descending |optional||
-|5|v|```binary```|The Cell Value |optional||
+|5|v|```binary```|The Cell Value |default||
+|6|encoder|[```EncodingType```](#enumeration-encodingtype)|Optionally the Cell Value Encoding Type: ZLIB/SNAPPY/ZSTD |optional||
+
+### Struct: CellValueSerial
+The Serial Value Cell field 
+
+| Key | Field | Type | Description | Requiredness | Default value |
+| --- | --- | --- | --- | --- | --- |
+|1|field_id|```i32```||default||
+|2|v_int64|```i64```||optional||
+|3|v_double|```double```||optional||
+|4|v_bytes|```binary```||default||
+|5|v_key|[```Key```](#typedef-key)||default||
+|6|v_li|list&lt;```i64```&gt;||default||
+|7|v_lb|list&lt;```binary```&gt;||default||
+
+### Struct: UCellSerial
+The Cell data for using with Update of SERIAL Column Type 
+
+| Key | Field | Type | Description | Requiredness | Default value |
+| --- | --- | --- | --- | --- | --- |
+|1|f|[```Flag```](#enumeration-flag)|The Cell Flag |default||
+|2|k|[```Key```](#typedef-key)|The Cell Key |default||
+|3|ts|```i64```|The Cell Timestamp in nanoseconds |optional||
+|4|ts_desc|```bool```|The Cell Version is in timestamp descending |optional||
+|5|v|[```CellValuesSerial```](#typedef-cellvaluesserial)|The Serial Cell Value fields |default||
+|6|encoder|[```EncodingType```](#enumeration-encodingtype)|Optionally the Cell Value Encoding Type: ZLIB/SNAPPY/ZSTD |optional||
 
 ### Struct: Cell
 The Cell for results list of scan 
@@ -405,7 +564,25 @@ The Cell for results list of scan
 |1|c|```string```|The Column Name |default||
 |2|k|[```Key```](#typedef-key)|The Cell Key |default||
 |3|ts|```i64```|The Cell Timestamp |default||
-|4|v|```binary```|The Cell Value |optional||
+|4|v|```binary```|The Cell Value |default||
+
+### Struct: CellSerial
+The Serial Cell for results list of scan 
+
+| Key | Field | Type | Description | Requiredness | Default value |
+| --- | --- | --- | --- | --- | --- |
+|1|c|```string```|The Column Name |default||
+|2|k|[```Key```](#typedef-key)|The Cell Key |default||
+|3|ts|```i64```|The Cell Timestamp |default||
+|4|v|[```CellValuesSerial```](#typedef-cellvaluesserial)|The Cell Serial Value |default||
+
+### Struct: Cells
+The Cells for results list of scan 
+
+| Key | Field | Type | Description | Requiredness | Default value |
+| --- | --- | --- | --- | --- | --- |
+|1|cells|list&lt;[```Cell```](#struct-cell)&gt;|The Cells, defined as KCell items in a list-container |default||
+|2|serial_cells|list&lt;[```CellSerial```](#struct-cellserial)&gt;|The Serial Cells, defined as CellSerial items in a list-container |default||
 
 ### Struct: CCell
 The Column Cell for results on Columns of scan 
@@ -414,7 +591,24 @@ The Column Cell for results on Columns of scan
 | --- | --- | --- | --- | --- | --- |
 |1|k|[```Key```](#typedef-key)|The Cell Key |default||
 |2|ts|```i64```|The Cell Timestamp |default||
-|3|v|```binary```|The Cell Value |optional||
+|3|v|```binary```|The Cell Value |default||
+
+### Struct: CCellSerial
+The Column Serial Cell for results on Columns of scan 
+
+| Key | Field | Type | Description | Requiredness | Default value |
+| --- | --- | --- | --- | --- | --- |
+|1|k|[```Key```](#typedef-key)|The Cell Key |default||
+|2|ts|```i64```|The Cell Timestamp |default||
+|3|v|[```CellValuesSerial```](#typedef-cellvaluesserial)|The Cell Serial Value |default||
+
+### Struct: ColCells
+The Column Cells for results on Columns of scan, defined as Cell items in a list-container 
+
+| Key | Field | Type | Description | Requiredness | Default value |
+| --- | --- | --- | --- | --- | --- |
+|1|cells|list&lt;[```CCell```](#struct-ccell)&gt;|The Cells, defined as KCell items in a list-container |default||
+|2|serial_cells|list&lt;[```CCellSerial```](#struct-ccellserial)&gt;|The Serial Cells, defined as CCellSerial items in a list-container |default||
 
 ### Struct: KCell
 The Key Cell for results on Key of scan 
@@ -423,7 +617,16 @@ The Key Cell for results on Key of scan
 | --- | --- | --- | --- | --- | --- |
 |1|c|```string```|The Column Name |default||
 |2|ts|```i64```|The Cell Timestamp |default||
-|3|v|```binary```|The Cell Value |optional||
+|3|v|```binary```|The Cell Value |default||
+
+### Struct: KCellSerial
+The Key Serial Cell for results on Key of scan 
+
+| Key | Field | Type | Description | Requiredness | Default value |
+| --- | --- | --- | --- | --- | --- |
+|1|c|```string```|The Column Name |default||
+|2|ts|```i64```|The Cell Timestamp |default||
+|3|v|[```CellValuesSerial```](#typedef-cellvaluesserial)|The Cell Serial Value |default||
 
 ### Struct: kCells
 The Key Cells for results on Key of scan 
@@ -432,6 +635,7 @@ The Key Cells for results on Key of scan
 | --- | --- | --- | --- | --- | --- |
 |1|k|[```Key```](#typedef-key)|The Cell Key |default||
 |2|cells|list&lt;[```KCell```](#struct-kcell)&gt;|The Key's Cells, defined as KCell items in a list-container |default||
+|3|serial_cells|list&lt;[```KCellSerial```](#struct-kcellserial)&gt;|The Key's Serial Cells, defined as KCellSerial items in a list-container |default||
 
 ### Struct: FCell
 The Fraction Cell for results on Fraction of scan 
@@ -440,7 +644,16 @@ The Fraction Cell for results on Fraction of scan
 | --- | --- | --- | --- | --- | --- |
 |1|c|```string```|The Column Name |default||
 |2|ts|```i64```|The Cell Timestamp |default||
-|3|v|```binary```|The Cell Value |optional||
+|3|v|```binary```|The Cell Value |default||
+
+### Struct: FCellSerial
+The Fraction Serial Cell for results on Fraction of scan 
+
+| Key | Field | Type | Description | Requiredness | Default value |
+| --- | --- | --- | --- | --- | --- |
+|1|c|```string```|The Column Name |default||
+|2|ts|```i64```|The Cell Timestamp |default||
+|3|v|[```CellValuesSerial```](#typedef-cellvaluesserial)|The Cell Serial Value |default||
 
 ### Struct: FCells
 The Fraction Cells for results on Fraction of scan 
@@ -448,17 +661,18 @@ The Fraction Cells for results on Fraction of scan
 | Key | Field | Type | Description | Requiredness | Default value |
 | --- | --- | --- | --- | --- | --- |
 |1|f|map&lt;```binary```, [```FCells```](#typedef-fcells)&gt;|The Fraction Container for the Next Fractions Tree,  defined as FCells items in a map-container by current Fraction bytes |default||
-|2|cells|list&lt;[```FCell```](#struct-fcell)&gt;|The current Fraction's Cells, defined as FCell items in a list-container |optional||
+|2|cells|list&lt;[```FCell```](#struct-fcell)&gt;|The current Fraction's Cells, defined as FCell items in a list-container |default||
+|3|serial_cells|list&lt;[```FCellSerial```](#struct-fcellserial)&gt;|The current Fraction's Serial Cells, defined as FCellSerial items in a list-container |default||
 
 ### Struct: CellsGroup
 A Grouped Cells result for results of scan, determined by the request's CellsResult enum 
 
 | Key | Field | Type | Description | Requiredness | Default value |
 | --- | --- | --- | --- | --- | --- |
-|1|cells|[```Cells```](#typedef-cells)|The Cells in a list, defined as Cell items in a list-container |optional||
-|2|ccells|[```CCells```](#typedef-ccells)|The Columns Cells in a map-container, defined as ColCells items by Column Name |optional||
-|3|kcells|[```KCells```](#typedef-kcells)|The Keys Cells in a list, defined as kCells items in a list-container |optional||
-|4|fcells|[```FCells```](#struct-fcells)|The Fraction Cells in struct FCells |optional||
+|1|cells|[```Cells```](#struct-cells)|The Cells in a list, defined as Cell items in a list-container |default||
+|2|ccells|[```CCells```](#typedef-ccells)|The Columns Cells in a map-container, defined as ColCells items by Column Name |default||
+|3|kcells|[```KCells```](#typedef-kcells)|The Keys Cells in a list, defined as kCells items in a list-container |default||
+|4|fcells|[```FCells```](#struct-fcells)|The Fraction Cells in struct FCells |default||
 
 ### Struct: CompactResult
 The Compact Result 
@@ -473,9 +687,9 @@ The Result of 'exec_sql'
 
 | Key | Field | Type | Description | Requiredness | Default value |
 | --- | --- | --- | --- | --- | --- |
-|1|schemas|[```Schemas```](#typedef-schemas)|Set with result for 'list columns' query |optional||
-|2|cells|[```Cells```](#typedef-cells)|Set with result for 'select' query |optional||
-|3|compact|[```CompactResults```](#typedef-compactresults)|Set with result for 'compact columns' query |optional||
+|1|schemas|[```Schemas```](#typedef-schemas)|Set with result for 'list columns' query |default||
+|2|cells|[```Cells```](#struct-cells)|Set with result for 'select' query |default||
+|3|compact|[```CompactResults```](#typedef-compactresults)|Set with result for 'compact columns' query |default||
 
 ***
 ## Services
@@ -518,7 +732,7 @@ The direct SQL method to Compact Columns
 #### Function: Service.sql_select
 The direct SQL method to select cells with result in Cells List. 
 
-[```Cells```](#typedef-cells)
+[```Cells```](#struct-cells)
  _sql_select_(```string``` sql)
 > throws [```Exception```](#exception-exception)
 
@@ -631,6 +845,19 @@ The direct method to update cells with cell in Update-Columns-Cells, optionally 
 2. updater_id - The Updater ID to use for write 
 
 
+#### Function: Service.update_serial
+The direct method to update cells with cell in Update-Columns-Cells-Serial, optionally to work with updater-id. 
+
+```void```
+ _update_serial_([```UCCellsSerial```](#typedef-uccellsserial) cells,
+```i64``` updater_id = ```0```)
+> throws [```Exception```](#exception-exception)
+
+* parameters:
+1. cells - The Serial Cells to update 
+2. updater_id - The Updater ID to use for write 
+
+
 #### Function: Service.mng_column
 The direct method to Manage Column 
 
@@ -669,7 +896,7 @@ The direct method to Compact Columns
 #### Function: Service.scan
 The direct method to select cells with result in Cells List. 
 
-[```Cells```](#typedef-cells)
+[```Cells```](#struct-cells)
  _scan_([```SpecScan```](#struct-specscan) spec)
 > throws [```Exception```](#exception-exception)
 

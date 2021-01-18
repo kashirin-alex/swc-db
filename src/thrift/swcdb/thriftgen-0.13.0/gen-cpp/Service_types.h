@@ -173,15 +173,21 @@ typedef std::vector<class SpecKeyInterval>  SpecKeyIntervals;
 
 typedef std::vector<class SpecValue>  SpecValues;
 
+typedef std::vector<class SpecValueSerialField>  SpecValueSerialFields;
+
+typedef std::vector<class SpecValueSerial>  SpecValuesSerial;
+
 typedef std::vector<class UCell>  UCells;
 
 typedef std::map<int64_t, UCells>  UCCells;
 
-typedef std::vector<class Cell>  Cells;
+typedef std::vector<class CellValueSerial>  CellValuesSerial;
 
-typedef std::vector<class CCell>  ColCells;
+typedef std::vector<class UCellSerial>  UCellsSerial;
 
-typedef std::map<std::string, ColCells>  CCells;
+typedef std::map<int64_t, UCellsSerial>  UCCellsSerial;
+
+typedef std::map<std::string, class ColCells>  CCells;
 
 typedef std::vector<class kCells>  KCells;
 
@@ -199,29 +205,65 @@ class SpecFlags;
 
 class SpecFraction;
 
-class SpecValue;
-
 class SpecTimestamp;
 
 class SpecKeyInterval;
+
+class SpecValue;
 
 class SpecInterval;
 
 class SpecColumn;
 
+class SpecValueSerial_INT64;
+
+class SpecValueSerial_DOUBLE;
+
+class SpecValueSerial_BYTES;
+
+class SpecValueSerial_KEY;
+
+class SpecValueSerial_LI;
+
+class SpecValueSerial_LB;
+
+class SpecValueSerialField;
+
+class SpecValueSerial;
+
+class SpecIntervalSerial;
+
+class SpecColumnSerial;
+
 class SpecScan;
 
 class UCell;
 
+class CellValueSerial;
+
+class UCellSerial;
+
 class Cell;
+
+class CellSerial;
+
+class Cells;
 
 class CCell;
 
+class CCellSerial;
+
+class ColCells;
+
 class KCell;
+
+class KCellSerial;
 
 class kCells;
 
 class FCell;
+
+class FCellSerial;
 
 class FCells;
 
@@ -531,17 +573,11 @@ class SpecSchemas : public virtual ::apache::thrift::TBase {
 
   bool operator == (const SpecSchemas & rhs) const
   {
-    if (__isset.cids != rhs.__isset.cids)
+    if (!(cids == rhs.cids))
       return false;
-    else if (__isset.cids && !(cids == rhs.cids))
+    if (!(names == rhs.names))
       return false;
-    if (__isset.names != rhs.__isset.names)
-      return false;
-    else if (__isset.names && !(names == rhs.names))
-      return false;
-    if (__isset.patterns != rhs.__isset.patterns)
-      return false;
-    else if (__isset.patterns && !(patterns == rhs.patterns))
+    if (!(patterns == rhs.patterns))
       return false;
     return true;
   }
@@ -685,54 +721,6 @@ void swap(SpecFraction &a, SpecFraction &b);
 
 std::ostream& operator<<(std::ostream& out, const SpecFraction& obj);
 
-typedef struct _SpecValue__isset {
-  _SpecValue__isset() : comp(false), v(false) {}
-  bool comp :1;
-  bool v :1;
-} _SpecValue__isset;
-
-class SpecValue : public virtual ::apache::thrift::TBase {
- public:
-
-  SpecValue(const SpecValue&);
-  SpecValue& operator=(const SpecValue&);
-  SpecValue() : comp((Comp::type)0), v() {
-  }
-
-  virtual ~SpecValue() noexcept;
-  Comp::type comp;
-  std::string v;
-
-  _SpecValue__isset __isset;
-
-  void __set_comp(const Comp::type val);
-
-  void __set_v(const std::string& val);
-
-  bool operator == (const SpecValue & rhs) const
-  {
-    if (!(comp == rhs.comp))
-      return false;
-    if (!(v == rhs.v))
-      return false;
-    return true;
-  }
-  bool operator != (const SpecValue &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const SpecValue & ) const;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-  virtual void printTo(std::ostream& out) const;
-};
-
-void swap(SpecValue &a, SpecValue &b);
-
-std::ostream& operator<<(std::ostream& out, const SpecValue& obj);
-
 typedef struct _SpecTimestamp__isset {
   _SpecTimestamp__isset() : comp(false), ts(false) {}
   bool comp :1;
@@ -807,13 +795,9 @@ class SpecKeyInterval : public virtual ::apache::thrift::TBase {
 
   bool operator == (const SpecKeyInterval & rhs) const
   {
-    if (__isset.start != rhs.__isset.start)
+    if (!(start == rhs.start))
       return false;
-    else if (__isset.start && !(start == rhs.start))
-      return false;
-    if (__isset.finish != rhs.__isset.finish)
-      return false;
-    else if (__isset.finish && !(finish == rhs.finish))
+    if (!(finish == rhs.finish))
       return false;
     return true;
   }
@@ -832,6 +816,54 @@ class SpecKeyInterval : public virtual ::apache::thrift::TBase {
 void swap(SpecKeyInterval &a, SpecKeyInterval &b);
 
 std::ostream& operator<<(std::ostream& out, const SpecKeyInterval& obj);
+
+typedef struct _SpecValue__isset {
+  _SpecValue__isset() : comp(false), v(false) {}
+  bool comp :1;
+  bool v :1;
+} _SpecValue__isset;
+
+class SpecValue : public virtual ::apache::thrift::TBase {
+ public:
+
+  SpecValue(const SpecValue&);
+  SpecValue& operator=(const SpecValue&);
+  SpecValue() : comp((Comp::type)0), v() {
+  }
+
+  virtual ~SpecValue() noexcept;
+  Comp::type comp;
+  std::string v;
+
+  _SpecValue__isset __isset;
+
+  void __set_comp(const Comp::type val);
+
+  void __set_v(const std::string& val);
+
+  bool operator == (const SpecValue & rhs) const
+  {
+    if (!(comp == rhs.comp))
+      return false;
+    if (!(v == rhs.v))
+      return false;
+    return true;
+  }
+  bool operator != (const SpecValue &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const SpecValue & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(SpecValue &a, SpecValue &b);
+
+std::ostream& operator<<(std::ostream& out, const SpecValue& obj);
 
 typedef struct _SpecInterval__isset {
   _SpecInterval__isset() : range_begin(false), range_end(false), range_offset(false), offset_key(false), offset_rev(false), key_intervals(false), values(false), ts_start(false), ts_finish(false), flags(false) {}
@@ -891,33 +923,21 @@ class SpecInterval : public virtual ::apache::thrift::TBase {
 
   bool operator == (const SpecInterval & rhs) const
   {
-    if (__isset.range_begin != rhs.__isset.range_begin)
+    if (!(range_begin == rhs.range_begin))
       return false;
-    else if (__isset.range_begin && !(range_begin == rhs.range_begin))
+    if (!(range_end == rhs.range_end))
       return false;
-    if (__isset.range_end != rhs.__isset.range_end)
+    if (!(range_offset == rhs.range_offset))
       return false;
-    else if (__isset.range_end && !(range_end == rhs.range_end))
-      return false;
-    if (__isset.range_offset != rhs.__isset.range_offset)
-      return false;
-    else if (__isset.range_offset && !(range_offset == rhs.range_offset))
-      return false;
-    if (__isset.offset_key != rhs.__isset.offset_key)
-      return false;
-    else if (__isset.offset_key && !(offset_key == rhs.offset_key))
+    if (!(offset_key == rhs.offset_key))
       return false;
     if (__isset.offset_rev != rhs.__isset.offset_rev)
       return false;
     else if (__isset.offset_rev && !(offset_rev == rhs.offset_rev))
       return false;
-    if (__isset.key_intervals != rhs.__isset.key_intervals)
+    if (!(key_intervals == rhs.key_intervals))
       return false;
-    else if (__isset.key_intervals && !(key_intervals == rhs.key_intervals))
-      return false;
-    if (__isset.values != rhs.__isset.values)
-      return false;
-    else if (__isset.values && !(values == rhs.values))
+    if (!(values == rhs.values))
       return false;
     if (__isset.ts_start != rhs.__isset.ts_start)
       return false;
@@ -997,9 +1017,580 @@ void swap(SpecColumn &a, SpecColumn &b);
 
 std::ostream& operator<<(std::ostream& out, const SpecColumn& obj);
 
+typedef struct _SpecValueSerial_INT64__isset {
+  _SpecValueSerial_INT64__isset() : comp(false), v(false) {}
+  bool comp :1;
+  bool v :1;
+} _SpecValueSerial_INT64__isset;
+
+class SpecValueSerial_INT64 : public virtual ::apache::thrift::TBase {
+ public:
+
+  SpecValueSerial_INT64(const SpecValueSerial_INT64&);
+  SpecValueSerial_INT64& operator=(const SpecValueSerial_INT64&);
+  SpecValueSerial_INT64() : comp((Comp::type)0), v(0) {
+  }
+
+  virtual ~SpecValueSerial_INT64() noexcept;
+  Comp::type comp;
+  int64_t v;
+
+  _SpecValueSerial_INT64__isset __isset;
+
+  void __set_comp(const Comp::type val);
+
+  void __set_v(const int64_t val);
+
+  bool operator == (const SpecValueSerial_INT64 & rhs) const
+  {
+    if (!(comp == rhs.comp))
+      return false;
+    if (!(v == rhs.v))
+      return false;
+    return true;
+  }
+  bool operator != (const SpecValueSerial_INT64 &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const SpecValueSerial_INT64 & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(SpecValueSerial_INT64 &a, SpecValueSerial_INT64 &b);
+
+std::ostream& operator<<(std::ostream& out, const SpecValueSerial_INT64& obj);
+
+typedef struct _SpecValueSerial_DOUBLE__isset {
+  _SpecValueSerial_DOUBLE__isset() : comp(false), v(false) {}
+  bool comp :1;
+  bool v :1;
+} _SpecValueSerial_DOUBLE__isset;
+
+class SpecValueSerial_DOUBLE : public virtual ::apache::thrift::TBase {
+ public:
+
+  SpecValueSerial_DOUBLE(const SpecValueSerial_DOUBLE&);
+  SpecValueSerial_DOUBLE& operator=(const SpecValueSerial_DOUBLE&);
+  SpecValueSerial_DOUBLE() : comp((Comp::type)0), v(0) {
+  }
+
+  virtual ~SpecValueSerial_DOUBLE() noexcept;
+  Comp::type comp;
+  double v;
+
+  _SpecValueSerial_DOUBLE__isset __isset;
+
+  void __set_comp(const Comp::type val);
+
+  void __set_v(const double val);
+
+  bool operator == (const SpecValueSerial_DOUBLE & rhs) const
+  {
+    if (!(comp == rhs.comp))
+      return false;
+    if (!(v == rhs.v))
+      return false;
+    return true;
+  }
+  bool operator != (const SpecValueSerial_DOUBLE &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const SpecValueSerial_DOUBLE & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(SpecValueSerial_DOUBLE &a, SpecValueSerial_DOUBLE &b);
+
+std::ostream& operator<<(std::ostream& out, const SpecValueSerial_DOUBLE& obj);
+
+typedef struct _SpecValueSerial_BYTES__isset {
+  _SpecValueSerial_BYTES__isset() : comp(false), v(false) {}
+  bool comp :1;
+  bool v :1;
+} _SpecValueSerial_BYTES__isset;
+
+class SpecValueSerial_BYTES : public virtual ::apache::thrift::TBase {
+ public:
+
+  SpecValueSerial_BYTES(const SpecValueSerial_BYTES&);
+  SpecValueSerial_BYTES& operator=(const SpecValueSerial_BYTES&);
+  SpecValueSerial_BYTES() : comp((Comp::type)0), v() {
+  }
+
+  virtual ~SpecValueSerial_BYTES() noexcept;
+  Comp::type comp;
+  std::string v;
+
+  _SpecValueSerial_BYTES__isset __isset;
+
+  void __set_comp(const Comp::type val);
+
+  void __set_v(const std::string& val);
+
+  bool operator == (const SpecValueSerial_BYTES & rhs) const
+  {
+    if (!(comp == rhs.comp))
+      return false;
+    if (!(v == rhs.v))
+      return false;
+    return true;
+  }
+  bool operator != (const SpecValueSerial_BYTES &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const SpecValueSerial_BYTES & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(SpecValueSerial_BYTES &a, SpecValueSerial_BYTES &b);
+
+std::ostream& operator<<(std::ostream& out, const SpecValueSerial_BYTES& obj);
+
+typedef struct _SpecValueSerial_KEY__isset {
+  _SpecValueSerial_KEY__isset() : seq(false), v(false) {}
+  bool seq :1;
+  bool v :1;
+} _SpecValueSerial_KEY__isset;
+
+class SpecValueSerial_KEY : public virtual ::apache::thrift::TBase {
+ public:
+
+  SpecValueSerial_KEY(const SpecValueSerial_KEY&);
+  SpecValueSerial_KEY& operator=(const SpecValueSerial_KEY&);
+  SpecValueSerial_KEY() : seq((KeySeq::type)0) {
+  }
+
+  virtual ~SpecValueSerial_KEY() noexcept;
+  KeySeq::type seq;
+  SpecKey v;
+
+  _SpecValueSerial_KEY__isset __isset;
+
+  void __set_seq(const KeySeq::type val);
+
+  void __set_v(const SpecKey& val);
+
+  bool operator == (const SpecValueSerial_KEY & rhs) const
+  {
+    if (!(seq == rhs.seq))
+      return false;
+    if (!(v == rhs.v))
+      return false;
+    return true;
+  }
+  bool operator != (const SpecValueSerial_KEY &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const SpecValueSerial_KEY & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(SpecValueSerial_KEY &a, SpecValueSerial_KEY &b);
+
+std::ostream& operator<<(std::ostream& out, const SpecValueSerial_KEY& obj);
+
+typedef struct _SpecValueSerial_LI__isset {
+  _SpecValueSerial_LI__isset() : comp(false), v(false) {}
+  bool comp :1;
+  bool v :1;
+} _SpecValueSerial_LI__isset;
+
+class SpecValueSerial_LI : public virtual ::apache::thrift::TBase {
+ public:
+
+  SpecValueSerial_LI(const SpecValueSerial_LI&);
+  SpecValueSerial_LI& operator=(const SpecValueSerial_LI&);
+  SpecValueSerial_LI() : comp((Comp::type)0) {
+  }
+
+  virtual ~SpecValueSerial_LI() noexcept;
+  Comp::type comp;
+  std::vector<SpecValueSerial_INT64>  v;
+
+  _SpecValueSerial_LI__isset __isset;
+
+  void __set_comp(const Comp::type val);
+
+  void __set_v(const std::vector<SpecValueSerial_INT64> & val);
+
+  bool operator == (const SpecValueSerial_LI & rhs) const
+  {
+    if (!(comp == rhs.comp))
+      return false;
+    if (!(v == rhs.v))
+      return false;
+    return true;
+  }
+  bool operator != (const SpecValueSerial_LI &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const SpecValueSerial_LI & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(SpecValueSerial_LI &a, SpecValueSerial_LI &b);
+
+std::ostream& operator<<(std::ostream& out, const SpecValueSerial_LI& obj);
+
+typedef struct _SpecValueSerial_LB__isset {
+  _SpecValueSerial_LB__isset() : comp(false), v(false) {}
+  bool comp :1;
+  bool v :1;
+} _SpecValueSerial_LB__isset;
+
+class SpecValueSerial_LB : public virtual ::apache::thrift::TBase {
+ public:
+
+  SpecValueSerial_LB(const SpecValueSerial_LB&);
+  SpecValueSerial_LB& operator=(const SpecValueSerial_LB&);
+  SpecValueSerial_LB() : comp((Comp::type)0) {
+  }
+
+  virtual ~SpecValueSerial_LB() noexcept;
+  Comp::type comp;
+  std::vector<SpecValueSerial_BYTES>  v;
+
+  _SpecValueSerial_LB__isset __isset;
+
+  void __set_comp(const Comp::type val);
+
+  void __set_v(const std::vector<SpecValueSerial_BYTES> & val);
+
+  bool operator == (const SpecValueSerial_LB & rhs) const
+  {
+    if (!(comp == rhs.comp))
+      return false;
+    if (!(v == rhs.v))
+      return false;
+    return true;
+  }
+  bool operator != (const SpecValueSerial_LB &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const SpecValueSerial_LB & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(SpecValueSerial_LB &a, SpecValueSerial_LB &b);
+
+std::ostream& operator<<(std::ostream& out, const SpecValueSerial_LB& obj);
+
+typedef struct _SpecValueSerialField__isset {
+  _SpecValueSerialField__isset() : field_id(false), spec_int64(false), spec_double(false), spec_bytes(false), spec_key(false), spec_li(false), spec_lb(false) {}
+  bool field_id :1;
+  bool spec_int64 :1;
+  bool spec_double :1;
+  bool spec_bytes :1;
+  bool spec_key :1;
+  bool spec_li :1;
+  bool spec_lb :1;
+} _SpecValueSerialField__isset;
+
+class SpecValueSerialField : public virtual ::apache::thrift::TBase {
+ public:
+
+  SpecValueSerialField(const SpecValueSerialField&);
+  SpecValueSerialField& operator=(const SpecValueSerialField&);
+  SpecValueSerialField() : field_id(0) {
+  }
+
+  virtual ~SpecValueSerialField() noexcept;
+  int32_t field_id;
+  SpecValueSerial_INT64 spec_int64;
+  SpecValueSerial_DOUBLE spec_double;
+  SpecValueSerial_BYTES spec_bytes;
+  SpecValueSerial_KEY spec_key;
+  SpecValueSerial_LI spec_li;
+  SpecValueSerial_LB spec_lb;
+
+  _SpecValueSerialField__isset __isset;
+
+  void __set_field_id(const int32_t val);
+
+  void __set_spec_int64(const SpecValueSerial_INT64& val);
+
+  void __set_spec_double(const SpecValueSerial_DOUBLE& val);
+
+  void __set_spec_bytes(const SpecValueSerial_BYTES& val);
+
+  void __set_spec_key(const SpecValueSerial_KEY& val);
+
+  void __set_spec_li(const SpecValueSerial_LI& val);
+
+  void __set_spec_lb(const SpecValueSerial_LB& val);
+
+  bool operator == (const SpecValueSerialField & rhs) const
+  {
+    if (!(field_id == rhs.field_id))
+      return false;
+    if (__isset.spec_int64 != rhs.__isset.spec_int64)
+      return false;
+    else if (__isset.spec_int64 && !(spec_int64 == rhs.spec_int64))
+      return false;
+    if (__isset.spec_double != rhs.__isset.spec_double)
+      return false;
+    else if (__isset.spec_double && !(spec_double == rhs.spec_double))
+      return false;
+    if (!(spec_bytes == rhs.spec_bytes))
+      return false;
+    if (!(spec_key == rhs.spec_key))
+      return false;
+    if (!(spec_li == rhs.spec_li))
+      return false;
+    if (!(spec_lb == rhs.spec_lb))
+      return false;
+    return true;
+  }
+  bool operator != (const SpecValueSerialField &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const SpecValueSerialField & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(SpecValueSerialField &a, SpecValueSerialField &b);
+
+std::ostream& operator<<(std::ostream& out, const SpecValueSerialField& obj);
+
+typedef struct _SpecValueSerial__isset {
+  _SpecValueSerial__isset() : comp(false), fields(false) {}
+  bool comp :1;
+  bool fields :1;
+} _SpecValueSerial__isset;
+
+class SpecValueSerial : public virtual ::apache::thrift::TBase {
+ public:
+
+  SpecValueSerial(const SpecValueSerial&);
+  SpecValueSerial& operator=(const SpecValueSerial&);
+  SpecValueSerial() : comp((Comp::type)0) {
+  }
+
+  virtual ~SpecValueSerial() noexcept;
+  Comp::type comp;
+  SpecValueSerialFields fields;
+
+  _SpecValueSerial__isset __isset;
+
+  void __set_comp(const Comp::type val);
+
+  void __set_fields(const SpecValueSerialFields& val);
+
+  bool operator == (const SpecValueSerial & rhs) const
+  {
+    if (!(comp == rhs.comp))
+      return false;
+    if (!(fields == rhs.fields))
+      return false;
+    return true;
+  }
+  bool operator != (const SpecValueSerial &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const SpecValueSerial & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(SpecValueSerial &a, SpecValueSerial &b);
+
+std::ostream& operator<<(std::ostream& out, const SpecValueSerial& obj);
+
+typedef struct _SpecIntervalSerial__isset {
+  _SpecIntervalSerial__isset() : range_begin(false), range_end(false), range_offset(false), offset_key(false), offset_rev(false), key_intervals(false), values(false), ts_start(false), ts_finish(false), flags(false) {}
+  bool range_begin :1;
+  bool range_end :1;
+  bool range_offset :1;
+  bool offset_key :1;
+  bool offset_rev :1;
+  bool key_intervals :1;
+  bool values :1;
+  bool ts_start :1;
+  bool ts_finish :1;
+  bool flags :1;
+} _SpecIntervalSerial__isset;
+
+class SpecIntervalSerial : public virtual ::apache::thrift::TBase {
+ public:
+
+  SpecIntervalSerial(const SpecIntervalSerial&);
+  SpecIntervalSerial& operator=(const SpecIntervalSerial&);
+  SpecIntervalSerial() : offset_rev(0) {
+  }
+
+  virtual ~SpecIntervalSerial() noexcept;
+  Key range_begin;
+  Key range_end;
+  Key range_offset;
+  Key offset_key;
+  int64_t offset_rev;
+  SpecKeyIntervals key_intervals;
+  SpecValuesSerial values;
+  SpecTimestamp ts_start;
+  SpecTimestamp ts_finish;
+  SpecFlags flags;
+
+  _SpecIntervalSerial__isset __isset;
+
+  void __set_range_begin(const Key& val);
+
+  void __set_range_end(const Key& val);
+
+  void __set_range_offset(const Key& val);
+
+  void __set_offset_key(const Key& val);
+
+  void __set_offset_rev(const int64_t val);
+
+  void __set_key_intervals(const SpecKeyIntervals& val);
+
+  void __set_values(const SpecValuesSerial& val);
+
+  void __set_ts_start(const SpecTimestamp& val);
+
+  void __set_ts_finish(const SpecTimestamp& val);
+
+  void __set_flags(const SpecFlags& val);
+
+  bool operator == (const SpecIntervalSerial & rhs) const
+  {
+    if (!(range_begin == rhs.range_begin))
+      return false;
+    if (!(range_end == rhs.range_end))
+      return false;
+    if (!(range_offset == rhs.range_offset))
+      return false;
+    if (!(offset_key == rhs.offset_key))
+      return false;
+    if (__isset.offset_rev != rhs.__isset.offset_rev)
+      return false;
+    else if (__isset.offset_rev && !(offset_rev == rhs.offset_rev))
+      return false;
+    if (!(key_intervals == rhs.key_intervals))
+      return false;
+    if (!(values == rhs.values))
+      return false;
+    if (__isset.ts_start != rhs.__isset.ts_start)
+      return false;
+    else if (__isset.ts_start && !(ts_start == rhs.ts_start))
+      return false;
+    if (__isset.ts_finish != rhs.__isset.ts_finish)
+      return false;
+    else if (__isset.ts_finish && !(ts_finish == rhs.ts_finish))
+      return false;
+    if (__isset.flags != rhs.__isset.flags)
+      return false;
+    else if (__isset.flags && !(flags == rhs.flags))
+      return false;
+    return true;
+  }
+  bool operator != (const SpecIntervalSerial &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const SpecIntervalSerial & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(SpecIntervalSerial &a, SpecIntervalSerial &b);
+
+std::ostream& operator<<(std::ostream& out, const SpecIntervalSerial& obj);
+
+typedef struct _SpecColumnSerial__isset {
+  _SpecColumnSerial__isset() : cid(false), intervals(false) {}
+  bool cid :1;
+  bool intervals :1;
+} _SpecColumnSerial__isset;
+
+class SpecColumnSerial : public virtual ::apache::thrift::TBase {
+ public:
+
+  SpecColumnSerial(const SpecColumnSerial&);
+  SpecColumnSerial& operator=(const SpecColumnSerial&);
+  SpecColumnSerial() : cid(0) {
+  }
+
+  virtual ~SpecColumnSerial() noexcept;
+  int64_t cid;
+  std::vector<SpecIntervalSerial>  intervals;
+
+  _SpecColumnSerial__isset __isset;
+
+  void __set_cid(const int64_t val);
+
+  void __set_intervals(const std::vector<SpecIntervalSerial> & val);
+
+  bool operator == (const SpecColumnSerial & rhs) const
+  {
+    if (!(cid == rhs.cid))
+      return false;
+    if (!(intervals == rhs.intervals))
+      return false;
+    return true;
+  }
+  bool operator != (const SpecColumnSerial &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const SpecColumnSerial & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(SpecColumnSerial &a, SpecColumnSerial &b);
+
+std::ostream& operator<<(std::ostream& out, const SpecColumnSerial& obj);
+
 typedef struct _SpecScan__isset {
-  _SpecScan__isset() : columns(false), flags(false) {}
+  _SpecScan__isset() : columns(false), columns_serial(false), flags(false) {}
   bool columns :1;
+  bool columns_serial :1;
   bool flags :1;
 } _SpecScan__isset;
 
@@ -1013,17 +1604,22 @@ class SpecScan : public virtual ::apache::thrift::TBase {
 
   virtual ~SpecScan() noexcept;
   std::vector<SpecColumn>  columns;
+  std::vector<SpecColumnSerial>  columns_serial;
   SpecFlags flags;
 
   _SpecScan__isset __isset;
 
   void __set_columns(const std::vector<SpecColumn> & val);
 
+  void __set_columns_serial(const std::vector<SpecColumnSerial> & val);
+
   void __set_flags(const SpecFlags& val);
 
   bool operator == (const SpecScan & rhs) const
   {
     if (!(columns == rhs.columns))
+      return false;
+    if (!(columns_serial == rhs.columns_serial))
       return false;
     if (__isset.flags != rhs.__isset.flags)
       return false;
@@ -1048,12 +1644,13 @@ void swap(SpecScan &a, SpecScan &b);
 std::ostream& operator<<(std::ostream& out, const SpecScan& obj);
 
 typedef struct _UCell__isset {
-  _UCell__isset() : f(false), k(false), ts(false), ts_desc(false), v(false) {}
+  _UCell__isset() : f(false), k(false), ts(false), ts_desc(false), v(false), encoder(false) {}
   bool f :1;
   bool k :1;
   bool ts :1;
   bool ts_desc :1;
   bool v :1;
+  bool encoder :1;
 } _UCell__isset;
 
 class UCell : public virtual ::apache::thrift::TBase {
@@ -1061,7 +1658,7 @@ class UCell : public virtual ::apache::thrift::TBase {
 
   UCell(const UCell&);
   UCell& operator=(const UCell&);
-  UCell() : f((Flag::type)0), ts(0), ts_desc(0), v() {
+  UCell() : f((Flag::type)0), ts(0), ts_desc(0), v(), encoder((EncodingType::type)0) {
   }
 
   virtual ~UCell() noexcept;
@@ -1070,6 +1667,7 @@ class UCell : public virtual ::apache::thrift::TBase {
   int64_t ts;
   bool ts_desc;
   std::string v;
+  EncodingType::type encoder;
 
   _UCell__isset __isset;
 
@@ -1082,6 +1680,8 @@ class UCell : public virtual ::apache::thrift::TBase {
   void __set_ts_desc(const bool val);
 
   void __set_v(const std::string& val);
+
+  void __set_encoder(const EncodingType::type val);
 
   bool operator == (const UCell & rhs) const
   {
@@ -1097,9 +1697,11 @@ class UCell : public virtual ::apache::thrift::TBase {
       return false;
     else if (__isset.ts_desc && !(ts_desc == rhs.ts_desc))
       return false;
-    if (__isset.v != rhs.__isset.v)
+    if (!(v == rhs.v))
       return false;
-    else if (__isset.v && !(v == rhs.v))
+    if (__isset.encoder != rhs.__isset.encoder)
+      return false;
+    else if (__isset.encoder && !(encoder == rhs.encoder))
       return false;
     return true;
   }
@@ -1118,6 +1720,166 @@ class UCell : public virtual ::apache::thrift::TBase {
 void swap(UCell &a, UCell &b);
 
 std::ostream& operator<<(std::ostream& out, const UCell& obj);
+
+typedef struct _CellValueSerial__isset {
+  _CellValueSerial__isset() : field_id(false), v_int64(false), v_double(false), v_bytes(false), v_key(false), v_li(false), v_lb(false) {}
+  bool field_id :1;
+  bool v_int64 :1;
+  bool v_double :1;
+  bool v_bytes :1;
+  bool v_key :1;
+  bool v_li :1;
+  bool v_lb :1;
+} _CellValueSerial__isset;
+
+class CellValueSerial : public virtual ::apache::thrift::TBase {
+ public:
+
+  CellValueSerial(const CellValueSerial&);
+  CellValueSerial& operator=(const CellValueSerial&);
+  CellValueSerial() : field_id(0), v_int64(0), v_double(0), v_bytes() {
+  }
+
+  virtual ~CellValueSerial() noexcept;
+  int32_t field_id;
+  int64_t v_int64;
+  double v_double;
+  std::string v_bytes;
+  Key v_key;
+  std::vector<int64_t>  v_li;
+  std::vector<std::string>  v_lb;
+
+  _CellValueSerial__isset __isset;
+
+  void __set_field_id(const int32_t val);
+
+  void __set_v_int64(const int64_t val);
+
+  void __set_v_double(const double val);
+
+  void __set_v_bytes(const std::string& val);
+
+  void __set_v_key(const Key& val);
+
+  void __set_v_li(const std::vector<int64_t> & val);
+
+  void __set_v_lb(const std::vector<std::string> & val);
+
+  bool operator == (const CellValueSerial & rhs) const
+  {
+    if (!(field_id == rhs.field_id))
+      return false;
+    if (__isset.v_int64 != rhs.__isset.v_int64)
+      return false;
+    else if (__isset.v_int64 && !(v_int64 == rhs.v_int64))
+      return false;
+    if (__isset.v_double != rhs.__isset.v_double)
+      return false;
+    else if (__isset.v_double && !(v_double == rhs.v_double))
+      return false;
+    if (!(v_bytes == rhs.v_bytes))
+      return false;
+    if (!(v_key == rhs.v_key))
+      return false;
+    if (!(v_li == rhs.v_li))
+      return false;
+    if (!(v_lb == rhs.v_lb))
+      return false;
+    return true;
+  }
+  bool operator != (const CellValueSerial &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const CellValueSerial & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(CellValueSerial &a, CellValueSerial &b);
+
+std::ostream& operator<<(std::ostream& out, const CellValueSerial& obj);
+
+typedef struct _UCellSerial__isset {
+  _UCellSerial__isset() : f(false), k(false), ts(false), ts_desc(false), v(false), encoder(false) {}
+  bool f :1;
+  bool k :1;
+  bool ts :1;
+  bool ts_desc :1;
+  bool v :1;
+  bool encoder :1;
+} _UCellSerial__isset;
+
+class UCellSerial : public virtual ::apache::thrift::TBase {
+ public:
+
+  UCellSerial(const UCellSerial&);
+  UCellSerial& operator=(const UCellSerial&);
+  UCellSerial() : f((Flag::type)0), ts(0), ts_desc(0), encoder((EncodingType::type)0) {
+  }
+
+  virtual ~UCellSerial() noexcept;
+  Flag::type f;
+  Key k;
+  int64_t ts;
+  bool ts_desc;
+  CellValuesSerial v;
+  EncodingType::type encoder;
+
+  _UCellSerial__isset __isset;
+
+  void __set_f(const Flag::type val);
+
+  void __set_k(const Key& val);
+
+  void __set_ts(const int64_t val);
+
+  void __set_ts_desc(const bool val);
+
+  void __set_v(const CellValuesSerial& val);
+
+  void __set_encoder(const EncodingType::type val);
+
+  bool operator == (const UCellSerial & rhs) const
+  {
+    if (!(f == rhs.f))
+      return false;
+    if (!(k == rhs.k))
+      return false;
+    if (__isset.ts != rhs.__isset.ts)
+      return false;
+    else if (__isset.ts && !(ts == rhs.ts))
+      return false;
+    if (__isset.ts_desc != rhs.__isset.ts_desc)
+      return false;
+    else if (__isset.ts_desc && !(ts_desc == rhs.ts_desc))
+      return false;
+    if (!(v == rhs.v))
+      return false;
+    if (__isset.encoder != rhs.__isset.encoder)
+      return false;
+    else if (__isset.encoder && !(encoder == rhs.encoder))
+      return false;
+    return true;
+  }
+  bool operator != (const UCellSerial &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const UCellSerial & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(UCellSerial &a, UCellSerial &b);
+
+std::ostream& operator<<(std::ostream& out, const UCellSerial& obj);
 
 typedef struct _Cell__isset {
   _Cell__isset() : c(false), k(false), ts(false), v(false) {}
@@ -1159,9 +1921,7 @@ class Cell : public virtual ::apache::thrift::TBase {
       return false;
     if (!(ts == rhs.ts))
       return false;
-    if (__isset.v != rhs.__isset.v)
-      return false;
-    else if (__isset.v && !(v == rhs.v))
+    if (!(v == rhs.v))
       return false;
     return true;
   }
@@ -1180,6 +1940,114 @@ class Cell : public virtual ::apache::thrift::TBase {
 void swap(Cell &a, Cell &b);
 
 std::ostream& operator<<(std::ostream& out, const Cell& obj);
+
+typedef struct _CellSerial__isset {
+  _CellSerial__isset() : c(false), k(false), ts(false), v(false) {}
+  bool c :1;
+  bool k :1;
+  bool ts :1;
+  bool v :1;
+} _CellSerial__isset;
+
+class CellSerial : public virtual ::apache::thrift::TBase {
+ public:
+
+  CellSerial(const CellSerial&);
+  CellSerial& operator=(const CellSerial&);
+  CellSerial() : c(), ts(0) {
+  }
+
+  virtual ~CellSerial() noexcept;
+  std::string c;
+  Key k;
+  int64_t ts;
+  CellValuesSerial v;
+
+  _CellSerial__isset __isset;
+
+  void __set_c(const std::string& val);
+
+  void __set_k(const Key& val);
+
+  void __set_ts(const int64_t val);
+
+  void __set_v(const CellValuesSerial& val);
+
+  bool operator == (const CellSerial & rhs) const
+  {
+    if (!(c == rhs.c))
+      return false;
+    if (!(k == rhs.k))
+      return false;
+    if (!(ts == rhs.ts))
+      return false;
+    if (!(v == rhs.v))
+      return false;
+    return true;
+  }
+  bool operator != (const CellSerial &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const CellSerial & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(CellSerial &a, CellSerial &b);
+
+std::ostream& operator<<(std::ostream& out, const CellSerial& obj);
+
+typedef struct _Cells__isset {
+  _Cells__isset() : cells(false), serial_cells(false) {}
+  bool cells :1;
+  bool serial_cells :1;
+} _Cells__isset;
+
+class Cells : public virtual ::apache::thrift::TBase {
+ public:
+
+  Cells(const Cells&);
+  Cells& operator=(const Cells&);
+  Cells() {
+  }
+
+  virtual ~Cells() noexcept;
+  std::vector<Cell>  cells;
+  std::vector<CellSerial>  serial_cells;
+
+  _Cells__isset __isset;
+
+  void __set_cells(const std::vector<Cell> & val);
+
+  void __set_serial_cells(const std::vector<CellSerial> & val);
+
+  bool operator == (const Cells & rhs) const
+  {
+    if (!(cells == rhs.cells))
+      return false;
+    if (!(serial_cells == rhs.serial_cells))
+      return false;
+    return true;
+  }
+  bool operator != (const Cells &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Cells & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(Cells &a, Cells &b);
+
+std::ostream& operator<<(std::ostream& out, const Cells& obj);
 
 typedef struct _CCell__isset {
   _CCell__isset() : k(false), ts(false), v(false) {}
@@ -1215,9 +2083,7 @@ class CCell : public virtual ::apache::thrift::TBase {
       return false;
     if (!(ts == rhs.ts))
       return false;
-    if (__isset.v != rhs.__isset.v)
-      return false;
-    else if (__isset.v && !(v == rhs.v))
+    if (!(v == rhs.v))
       return false;
     return true;
   }
@@ -1236,6 +2102,108 @@ class CCell : public virtual ::apache::thrift::TBase {
 void swap(CCell &a, CCell &b);
 
 std::ostream& operator<<(std::ostream& out, const CCell& obj);
+
+typedef struct _CCellSerial__isset {
+  _CCellSerial__isset() : k(false), ts(false), v(false) {}
+  bool k :1;
+  bool ts :1;
+  bool v :1;
+} _CCellSerial__isset;
+
+class CCellSerial : public virtual ::apache::thrift::TBase {
+ public:
+
+  CCellSerial(const CCellSerial&);
+  CCellSerial& operator=(const CCellSerial&);
+  CCellSerial() : ts(0) {
+  }
+
+  virtual ~CCellSerial() noexcept;
+  Key k;
+  int64_t ts;
+  CellValuesSerial v;
+
+  _CCellSerial__isset __isset;
+
+  void __set_k(const Key& val);
+
+  void __set_ts(const int64_t val);
+
+  void __set_v(const CellValuesSerial& val);
+
+  bool operator == (const CCellSerial & rhs) const
+  {
+    if (!(k == rhs.k))
+      return false;
+    if (!(ts == rhs.ts))
+      return false;
+    if (!(v == rhs.v))
+      return false;
+    return true;
+  }
+  bool operator != (const CCellSerial &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const CCellSerial & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(CCellSerial &a, CCellSerial &b);
+
+std::ostream& operator<<(std::ostream& out, const CCellSerial& obj);
+
+typedef struct _ColCells__isset {
+  _ColCells__isset() : cells(false), serial_cells(false) {}
+  bool cells :1;
+  bool serial_cells :1;
+} _ColCells__isset;
+
+class ColCells : public virtual ::apache::thrift::TBase {
+ public:
+
+  ColCells(const ColCells&);
+  ColCells& operator=(const ColCells&);
+  ColCells() {
+  }
+
+  virtual ~ColCells() noexcept;
+  std::vector<CCell>  cells;
+  std::vector<CCellSerial>  serial_cells;
+
+  _ColCells__isset __isset;
+
+  void __set_cells(const std::vector<CCell> & val);
+
+  void __set_serial_cells(const std::vector<CCellSerial> & val);
+
+  bool operator == (const ColCells & rhs) const
+  {
+    if (!(cells == rhs.cells))
+      return false;
+    if (!(serial_cells == rhs.serial_cells))
+      return false;
+    return true;
+  }
+  bool operator != (const ColCells &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ColCells & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(ColCells &a, ColCells &b);
+
+std::ostream& operator<<(std::ostream& out, const ColCells& obj);
 
 typedef struct _KCell__isset {
   _KCell__isset() : c(false), ts(false), v(false) {}
@@ -1271,9 +2239,7 @@ class KCell : public virtual ::apache::thrift::TBase {
       return false;
     if (!(ts == rhs.ts))
       return false;
-    if (__isset.v != rhs.__isset.v)
-      return false;
-    else if (__isset.v && !(v == rhs.v))
+    if (!(v == rhs.v))
       return false;
     return true;
   }
@@ -1293,10 +2259,65 @@ void swap(KCell &a, KCell &b);
 
 std::ostream& operator<<(std::ostream& out, const KCell& obj);
 
+typedef struct _KCellSerial__isset {
+  _KCellSerial__isset() : c(false), ts(false), v(false) {}
+  bool c :1;
+  bool ts :1;
+  bool v :1;
+} _KCellSerial__isset;
+
+class KCellSerial : public virtual ::apache::thrift::TBase {
+ public:
+
+  KCellSerial(const KCellSerial&);
+  KCellSerial& operator=(const KCellSerial&);
+  KCellSerial() : c(), ts(0) {
+  }
+
+  virtual ~KCellSerial() noexcept;
+  std::string c;
+  int64_t ts;
+  CellValuesSerial v;
+
+  _KCellSerial__isset __isset;
+
+  void __set_c(const std::string& val);
+
+  void __set_ts(const int64_t val);
+
+  void __set_v(const CellValuesSerial& val);
+
+  bool operator == (const KCellSerial & rhs) const
+  {
+    if (!(c == rhs.c))
+      return false;
+    if (!(ts == rhs.ts))
+      return false;
+    if (!(v == rhs.v))
+      return false;
+    return true;
+  }
+  bool operator != (const KCellSerial &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const KCellSerial & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(KCellSerial &a, KCellSerial &b);
+
+std::ostream& operator<<(std::ostream& out, const KCellSerial& obj);
+
 typedef struct _kCells__isset {
-  _kCells__isset() : k(false), cells(false) {}
+  _kCells__isset() : k(false), cells(false), serial_cells(false) {}
   bool k :1;
   bool cells :1;
+  bool serial_cells :1;
 } _kCells__isset;
 
 class kCells : public virtual ::apache::thrift::TBase {
@@ -1310,6 +2331,7 @@ class kCells : public virtual ::apache::thrift::TBase {
   virtual ~kCells() noexcept;
   Key k;
   std::vector<KCell>  cells;
+  std::vector<KCellSerial>  serial_cells;
 
   _kCells__isset __isset;
 
@@ -1317,11 +2339,15 @@ class kCells : public virtual ::apache::thrift::TBase {
 
   void __set_cells(const std::vector<KCell> & val);
 
+  void __set_serial_cells(const std::vector<KCellSerial> & val);
+
   bool operator == (const kCells & rhs) const
   {
     if (!(k == rhs.k))
       return false;
     if (!(cells == rhs.cells))
+      return false;
+    if (!(serial_cells == rhs.serial_cells))
       return false;
     return true;
   }
@@ -1375,9 +2401,7 @@ class FCell : public virtual ::apache::thrift::TBase {
       return false;
     if (!(ts == rhs.ts))
       return false;
-    if (__isset.v != rhs.__isset.v)
-      return false;
-    else if (__isset.v && !(v == rhs.v))
+    if (!(v == rhs.v))
       return false;
     return true;
   }
@@ -1397,10 +2421,65 @@ void swap(FCell &a, FCell &b);
 
 std::ostream& operator<<(std::ostream& out, const FCell& obj);
 
+typedef struct _FCellSerial__isset {
+  _FCellSerial__isset() : c(false), ts(false), v(false) {}
+  bool c :1;
+  bool ts :1;
+  bool v :1;
+} _FCellSerial__isset;
+
+class FCellSerial : public virtual ::apache::thrift::TBase {
+ public:
+
+  FCellSerial(const FCellSerial&);
+  FCellSerial& operator=(const FCellSerial&);
+  FCellSerial() : c(), ts(0) {
+  }
+
+  virtual ~FCellSerial() noexcept;
+  std::string c;
+  int64_t ts;
+  CellValuesSerial v;
+
+  _FCellSerial__isset __isset;
+
+  void __set_c(const std::string& val);
+
+  void __set_ts(const int64_t val);
+
+  void __set_v(const CellValuesSerial& val);
+
+  bool operator == (const FCellSerial & rhs) const
+  {
+    if (!(c == rhs.c))
+      return false;
+    if (!(ts == rhs.ts))
+      return false;
+    if (!(v == rhs.v))
+      return false;
+    return true;
+  }
+  bool operator != (const FCellSerial &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const FCellSerial & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(FCellSerial &a, FCellSerial &b);
+
+std::ostream& operator<<(std::ostream& out, const FCellSerial& obj);
+
 typedef struct _FCells__isset {
-  _FCells__isset() : f(false), cells(false) {}
+  _FCells__isset() : f(false), cells(false), serial_cells(false) {}
   bool f :1;
   bool cells :1;
+  bool serial_cells :1;
 } _FCells__isset;
 
 class FCells : public virtual ::apache::thrift::TBase {
@@ -1414,6 +2493,7 @@ class FCells : public virtual ::apache::thrift::TBase {
   virtual ~FCells() noexcept;
   std::map<std::string, FCells>  f;
   std::vector<FCell>  cells;
+  std::vector<FCellSerial>  serial_cells;
 
   _FCells__isset __isset;
 
@@ -1421,13 +2501,15 @@ class FCells : public virtual ::apache::thrift::TBase {
 
   void __set_cells(const std::vector<FCell> & val);
 
+  void __set_serial_cells(const std::vector<FCellSerial> & val);
+
   bool operator == (const FCells & rhs) const
   {
     if (!(f == rhs.f))
       return false;
-    if (__isset.cells != rhs.__isset.cells)
+    if (!(cells == rhs.cells))
       return false;
-    else if (__isset.cells && !(cells == rhs.cells))
+    if (!(serial_cells == rhs.serial_cells))
       return false;
     return true;
   }
@@ -1481,21 +2563,13 @@ class CellsGroup : public virtual ::apache::thrift::TBase {
 
   bool operator == (const CellsGroup & rhs) const
   {
-    if (__isset.cells != rhs.__isset.cells)
+    if (!(cells == rhs.cells))
       return false;
-    else if (__isset.cells && !(cells == rhs.cells))
+    if (!(ccells == rhs.ccells))
       return false;
-    if (__isset.ccells != rhs.__isset.ccells)
+    if (!(kcells == rhs.kcells))
       return false;
-    else if (__isset.ccells && !(ccells == rhs.ccells))
-      return false;
-    if (__isset.kcells != rhs.__isset.kcells)
-      return false;
-    else if (__isset.kcells && !(kcells == rhs.kcells))
-      return false;
-    if (__isset.fcells != rhs.__isset.fcells)
-      return false;
-    else if (__isset.fcells && !(fcells == rhs.fcells))
+    if (!(fcells == rhs.fcells))
       return false;
     return true;
   }
@@ -1593,17 +2667,11 @@ class Result : public virtual ::apache::thrift::TBase {
 
   bool operator == (const Result & rhs) const
   {
-    if (__isset.schemas != rhs.__isset.schemas)
+    if (!(schemas == rhs.schemas))
       return false;
-    else if (__isset.schemas && !(schemas == rhs.schemas))
+    if (!(cells == rhs.cells))
       return false;
-    if (__isset.cells != rhs.__isset.cells)
-      return false;
-    else if (__isset.cells && !(cells == rhs.cells))
-      return false;
-    if (__isset.compact != rhs.__isset.compact)
-      return false;
-    else if (__isset.compact && !(compact == rhs.compact))
+    if (!(compact == rhs.compact))
       return false;
     return true;
   }

@@ -31,6 +31,7 @@ public partial class FCells : TBase
 {
   private Dictionary<byte[], FCells> _f;
   private List<FCell> _cells;
+  private List<FCellSerial> _serial_cells;
 
   /// <summary>
   /// The Fraction Container for the Next Fractions Tree,  defined as FCells items in a map-container by current Fraction bytes
@@ -64,12 +65,29 @@ public partial class FCells : TBase
     }
   }
 
+  /// <summary>
+  /// The current Fraction's Serial Cells, defined as FCellSerial items in a list-container
+  /// </summary>
+  public List<FCellSerial> Serial_cells
+  {
+    get
+    {
+      return _serial_cells;
+    }
+    set
+    {
+      __isset.serial_cells = true;
+      this._serial_cells = value;
+    }
+  }
+
 
   public Isset __isset;
   public struct Isset
   {
     public bool f;
     public bool cells;
+    public bool serial_cells;
   }
 
   public FCells()
@@ -97,16 +115,16 @@ public partial class FCells : TBase
             if (field.Type == TType.Map)
             {
               {
-                TMap _map72 = await iprot.ReadMapBeginAsync(cancellationToken);
-                F = new Dictionary<byte[], FCells>(_map72.Count);
-                for(int _i73 = 0; _i73 < _map72.Count; ++_i73)
+                TMap _map184 = await iprot.ReadMapBeginAsync(cancellationToken);
+                F = new Dictionary<byte[], FCells>(_map184.Count);
+                for(int _i185 = 0; _i185 < _map184.Count; ++_i185)
                 {
-                  byte[] _key74;
-                  FCells _val75;
-                  _key74 = await iprot.ReadBinaryAsync(cancellationToken);
-                  _val75 = new FCells();
-                  await _val75.ReadAsync(iprot, cancellationToken);
-                  F[_key74] = _val75;
+                  byte[] _key186;
+                  FCells _val187;
+                  _key186 = await iprot.ReadBinaryAsync(cancellationToken);
+                  _val187 = new FCells();
+                  await _val187.ReadAsync(iprot, cancellationToken);
+                  F[_key186] = _val187;
                 }
                 await iprot.ReadMapEndAsync(cancellationToken);
               }
@@ -120,14 +138,35 @@ public partial class FCells : TBase
             if (field.Type == TType.List)
             {
               {
-                TList _list76 = await iprot.ReadListBeginAsync(cancellationToken);
-                Cells = new List<FCell>(_list76.Count);
-                for(int _i77 = 0; _i77 < _list76.Count; ++_i77)
+                TList _list188 = await iprot.ReadListBeginAsync(cancellationToken);
+                Cells = new List<FCell>(_list188.Count);
+                for(int _i189 = 0; _i189 < _list188.Count; ++_i189)
                 {
-                  FCell _elem78;
-                  _elem78 = new FCell();
-                  await _elem78.ReadAsync(iprot, cancellationToken);
-                  Cells.Add(_elem78);
+                  FCell _elem190;
+                  _elem190 = new FCell();
+                  await _elem190.ReadAsync(iprot, cancellationToken);
+                  Cells.Add(_elem190);
+                }
+                await iprot.ReadListEndAsync(cancellationToken);
+              }
+            }
+            else
+            {
+              await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
+            }
+            break;
+          case 3:
+            if (field.Type == TType.List)
+            {
+              {
+                TList _list191 = await iprot.ReadListBeginAsync(cancellationToken);
+                Serial_cells = new List<FCellSerial>(_list191.Count);
+                for(int _i192 = 0; _i192 < _list191.Count; ++_i192)
+                {
+                  FCellSerial _elem193;
+                  _elem193 = new FCellSerial();
+                  await _elem193.ReadAsync(iprot, cancellationToken);
+                  Serial_cells.Add(_elem193);
                 }
                 await iprot.ReadListEndAsync(cancellationToken);
               }
@@ -169,10 +208,10 @@ public partial class FCells : TBase
         await oprot.WriteFieldBeginAsync(field, cancellationToken);
         {
           await oprot.WriteMapBeginAsync(new TMap(TType.String, TType.Struct, F.Count), cancellationToken);
-          foreach (byte[] _iter79 in F.Keys)
+          foreach (byte[] _iter194 in F.Keys)
           {
-            await oprot.WriteBinaryAsync(_iter79, cancellationToken);
-            await F[_iter79].WriteAsync(oprot, cancellationToken);
+            await oprot.WriteBinaryAsync(_iter194, cancellationToken);
+            await F[_iter194].WriteAsync(oprot, cancellationToken);
           }
           await oprot.WriteMapEndAsync(cancellationToken);
         }
@@ -186,9 +225,25 @@ public partial class FCells : TBase
         await oprot.WriteFieldBeginAsync(field, cancellationToken);
         {
           await oprot.WriteListBeginAsync(new TList(TType.Struct, Cells.Count), cancellationToken);
-          foreach (FCell _iter80 in Cells)
+          foreach (FCell _iter195 in Cells)
           {
-            await _iter80.WriteAsync(oprot, cancellationToken);
+            await _iter195.WriteAsync(oprot, cancellationToken);
+          }
+          await oprot.WriteListEndAsync(cancellationToken);
+        }
+        await oprot.WriteFieldEndAsync(cancellationToken);
+      }
+      if (Serial_cells != null && __isset.serial_cells)
+      {
+        field.Name = "serial_cells";
+        field.Type = TType.List;
+        field.ID = 3;
+        await oprot.WriteFieldBeginAsync(field, cancellationToken);
+        {
+          await oprot.WriteListBeginAsync(new TList(TType.Struct, Serial_cells.Count), cancellationToken);
+          foreach (FCellSerial _iter196 in Serial_cells)
+          {
+            await _iter196.WriteAsync(oprot, cancellationToken);
           }
           await oprot.WriteListEndAsync(cancellationToken);
         }
@@ -209,7 +264,8 @@ public partial class FCells : TBase
     if (other == null) return false;
     if (ReferenceEquals(this, other)) return true;
     return ((__isset.f == other.__isset.f) && ((!__isset.f) || (TCollections.Equals(F, other.F))))
-      && ((__isset.cells == other.__isset.cells) && ((!__isset.cells) || (TCollections.Equals(Cells, other.Cells))));
+      && ((__isset.cells == other.__isset.cells) && ((!__isset.cells) || (TCollections.Equals(Cells, other.Cells))))
+      && ((__isset.serial_cells == other.__isset.serial_cells) && ((!__isset.serial_cells) || (TCollections.Equals(Serial_cells, other.Serial_cells))));
   }
 
   public override int GetHashCode() {
@@ -219,6 +275,8 @@ public partial class FCells : TBase
         hashcode = (hashcode * 397) + TCollections.GetHashCode(F);
       if(__isset.cells)
         hashcode = (hashcode * 397) + TCollections.GetHashCode(Cells);
+      if(__isset.serial_cells)
+        hashcode = (hashcode * 397) + TCollections.GetHashCode(Serial_cells);
     }
     return hashcode;
   }
@@ -240,6 +298,13 @@ public partial class FCells : TBase
       __first = false;
       sb.Append("Cells: ");
       sb.Append(Cells);
+    }
+    if (Serial_cells != null && __isset.serial_cells)
+    {
+      if(!__first) { sb.Append(", "); }
+      __first = false;
+      sb.Append("Serial_cells: ");
+      sb.Append(Serial_cells);
     }
     sb.Append(")");
     return sb.ToString();

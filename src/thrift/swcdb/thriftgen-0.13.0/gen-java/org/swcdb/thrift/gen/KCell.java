@@ -31,7 +31,7 @@ public class KCell implements org.apache.thrift.TBase<KCell, KCell._Fields>, jav
   /**
    * The Cell Value
    */
-  public @org.apache.thrift.annotation.Nullable java.nio.ByteBuffer v; // optional
+  public @org.apache.thrift.annotation.Nullable java.nio.ByteBuffer v; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -111,7 +111,6 @@ public class KCell implements org.apache.thrift.TBase<KCell, KCell._Fields>, jav
   // isset id assignments
   private static final int __TS_ISSET_ID = 0;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.V};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -119,7 +118,7 @@ public class KCell implements org.apache.thrift.TBase<KCell, KCell._Fields>, jav
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.TS, new org.apache.thrift.meta_data.FieldMetaData("ts", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
-    tmpMap.put(_Fields.V, new org.apache.thrift.meta_data.FieldMetaData("v", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+    tmpMap.put(_Fields.V, new org.apache.thrift.meta_data.FieldMetaData("v", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING        , true)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(KCell.class, metaDataMap);
@@ -130,12 +129,14 @@ public class KCell implements org.apache.thrift.TBase<KCell, KCell._Fields>, jav
 
   public KCell(
     java.lang.String c,
-    long ts)
+    long ts,
+    java.nio.ByteBuffer v)
   {
     this();
     this.c = c;
     this.ts = ts;
     setTsIsSet(true);
+    this.v = org.apache.thrift.TBaseHelper.copyBinary(v);
   }
 
   /**
@@ -462,16 +463,14 @@ public class KCell implements org.apache.thrift.TBase<KCell, KCell._Fields>, jav
     sb.append("ts:");
     sb.append(this.ts);
     first = false;
-    if (isSetV()) {
-      if (!first) sb.append(", ");
-      sb.append("v:");
-      if (this.v == null) {
-        sb.append("null");
-      } else {
-        org.apache.thrift.TBaseHelper.toString(this.v, sb);
-      }
-      first = false;
+    if (!first) sb.append(", ");
+    sb.append("v:");
+    if (this.v == null) {
+      sb.append("null");
+    } else {
+      org.apache.thrift.TBaseHelper.toString(this.v, sb);
     }
+    first = false;
     sb.append(")");
     return sb.toString();
   }
@@ -565,11 +564,9 @@ public class KCell implements org.apache.thrift.TBase<KCell, KCell._Fields>, jav
       oprot.writeI64(struct.ts);
       oprot.writeFieldEnd();
       if (struct.v != null) {
-        if (struct.isSetV()) {
-          oprot.writeFieldBegin(V_FIELD_DESC);
-          oprot.writeBinary(struct.v);
-          oprot.writeFieldEnd();
-        }
+        oprot.writeFieldBegin(V_FIELD_DESC);
+        oprot.writeBinary(struct.v);
+        oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
       oprot.writeStructEnd();

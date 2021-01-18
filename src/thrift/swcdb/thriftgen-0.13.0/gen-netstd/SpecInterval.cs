@@ -137,7 +137,7 @@ public partial class SpecInterval : TBase
   }
 
   /// <summary>
-  /// The Cell Values Spec, cell-values match
+  /// The Cell Value Specifications, cell-value match
   /// </summary>
   public List<SpecValue> Values
   {

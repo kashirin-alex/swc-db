@@ -41,7 +41,7 @@ class AppHandler final : virtual public BrokerIf {
     int err = Error::OK;
     std::string message;
     auto cmd = client::SQL::recognize_cmd(err, sql, message);
-    if(err) 
+    if(err)
       Converter::exception(err, message);
 
     switch(cmd) {
@@ -50,22 +50,19 @@ class AppHandler final : virtual public BrokerIf {
       case client::SQL::MODIFY_COLUMN :
       case client::SQL::REMOVE_COLUMN :
         return sql_mng_column(sql);
-      
+
       case client::SQL::GET_COLUMNS : {
         sql_list_columns(_return.schemas, sql);
-        _return.__isset.schemas = true;
         return;
       }
-        
+
       case client::SQL::SELECT : {
         sql_select(_return.cells, sql);
-        _return.__isset.cells = true;
         return;
       }
 
       case client::SQL::COMPACT_COLUMNS : {
         sql_compact_columns(_return.compact, sql);
-        _return.__isset.compact = true;
         return;
       }
 
@@ -80,12 +77,12 @@ class AppHandler final : virtual public BrokerIf {
   /* SQL SCHEMAS/COLUMNS */
   void sql_list_columns(Schemas& _return, const std::string& sql) {
     int err = Error::OK;
-    std::vector<DB::Schema::Ptr> dbschemas;  
+    std::vector<DB::Schema::Ptr> dbschemas;
     std::string message;
     client::SQL::parse_list_columns(err, sql, dbschemas, message, "list");
-    if(err) 
+    if(err)
       Converter::exception(err, message);
-      
+
     process_results(err, dbschemas, _return);
   }
 
@@ -95,8 +92,8 @@ class AppHandler final : virtual public BrokerIf {
     DB::Schema::Ptr schema;
     auto func = Comm::Protocol::Mngr::Req::ColumnMng::Func::CREATE;
     client::SQL::parse_column_schema(
-      err, sql, 
-      &func, 
+      err, sql,
+      &func,
       schema, message);
     if(err)
       Converter::exception(err, message);
@@ -106,15 +103,15 @@ class AppHandler final : virtual public BrokerIf {
 
   void sql_compact_columns(CompactResults& _return, const std::string& sql) {
     int err = Error::OK;
-    std::vector<DB::Schema::Ptr> dbschemas;  
+    std::vector<DB::Schema::Ptr> dbschemas;
     std::string message;
     client::SQL::parse_list_columns(err, sql, dbschemas, message, "compact");
-    if(err) 
+    if(err)
       Converter::exception(err, message);
 
     process_results(err, dbschemas, _return);
   }
-  
+
   /* SQL QUERY */
   client::Query::Select::Ptr sync_select(const std::string& sql) {
     auto req = std::make_shared<client::Query::Select>();
@@ -127,32 +124,28 @@ class AppHandler final : virtual public BrokerIf {
       if(!err)
         req->wait();
     }
-    if(err) 
+    if(err)
       Converter::exception(err, message);
     return req;
   }
-  
-  void sql_query(CellsGroup& _return, const std::string& sql, 
+
+  void sql_query(CellsGroup& _return, const std::string& sql,
                  const CellsResult::type rslt) {
     switch(rslt) {
       case CellsResult::ON_COLUMN : {
         sql_select_rslt_on_column(_return.ccells, sql);
-        _return.__isset.ccells = true;
         break;
       }
       case CellsResult::ON_KEY : {
         sql_select_rslt_on_key(_return.kcells, sql);
-        _return.__isset.kcells = true;
         break;
       }
       case CellsResult::ON_FRACTION : {
         sql_select_rslt_on_fraction(_return.fcells, sql);
-        _return.__isset.fcells = true;
         break;
       }
       default : {
         sql_select(_return.cells, sql);
-        _return.__isset.cells = true;
         break;
       }
     }
@@ -160,15 +153,10 @@ class AppHandler final : virtual public BrokerIf {
 
   void sql_select(Cells& _return, const std::string& sql) {
     auto req = sync_select(sql);
-    
+
     int err = Error::OK;
-    process_results(
-      err, 
-      req->result, 
-      !req->specs.flags.is_only_keys() && !req->specs.flags.is_only_deletes(),
-      _return
-    );
-    if(err) 
+    process_results(err, req->result, _return);
+    if(err)
       Converter::exception(err);
   }
 
@@ -176,47 +164,32 @@ class AppHandler final : virtual public BrokerIf {
     auto req = sync_select(sql);
 
     int err = Error::OK;
-    process_results(
-      err, 
-      req->result, 
-      !req->specs.flags.is_only_keys() && !req->specs.flags.is_only_deletes(),
-      _return
-    );
-    if(err) 
+    process_results(err, req->result, _return);
+    if(err)
       Converter::exception(err);
   }
 
   void sql_select_rslt_on_key(KCells& _return, const std::string& sql) {
     auto req = sync_select(sql);
-    
+
     int err = Error::OK;
-    process_results(
-      err, 
-      req->result, 
-      !req->specs.flags.is_only_keys() && !req->specs.flags.is_only_deletes(),
-      _return
-    );
-    if(err) 
+    process_results(err, req->result, _return);
+    if(err)
       Converter::exception(err);
   }
 
   void sql_select_rslt_on_fraction(FCells& _return, const std::string& sql) {
     auto req = sync_select(sql);
-    
+
     int err = Error::OK;
-    process_results(
-      err, 
-      req->result, 
-      !req->specs.flags.is_only_keys() && !req->specs.flags.is_only_deletes(),
-      _return
-    );
-    if(err) 
+    process_results(err, req->result, _return);
+    if(err)
       Converter::exception(err);
   }
-  
+
   /* SQL UPDATE */
   void sql_update(const std::string& sql, const int64_t updater_id) {
-    
+
     client::Query::Update::Ptr req = nullptr;
     if(updater_id)
       updater(updater_id, req);
@@ -227,13 +200,13 @@ class AppHandler final : virtual public BrokerIf {
     uint8_t display_flags = 0;
     int err = Error::OK;
     client::SQL::parse_update(
-      err, sql, 
-      *req->columns.get(), *req->columns_onfractions.get(), 
+      err, sql,
+      *req->columns.get(), *req->columns_onfractions.get(),
       display_flags, message
     );
-    if(err) 
+    if(err)
       Converter::exception(err, message);
-      
+
     if(updater_id) {
       req->commit_or_wait();
     } else {
@@ -253,12 +226,12 @@ class AppHandler final : virtual public BrokerIf {
     get_schemas(err, spec, dbschemas);
     process_results(err, dbschemas, _return);
   }
-  
+
   void mng_column(const SchemaFunc::type func, const Schema& schema) {
     DB::Schema::Ptr dbschema = DB::Schema::make();
     Converter::set(schema, dbschema);
     mng_column(
-      (Comm::Protocol::Mngr::Req::ColumnMng::Func)(uint8_t)func, 
+      (Comm::Protocol::Mngr::Req::ColumnMng::Func)(uint8_t)func,
       dbschema
     );
   }
@@ -296,6 +269,21 @@ class AppHandler final : virtual public BrokerIf {
       }
     }
 
+    for(auto& col : spec.columns_serial) {
+      schema = Env::Clients::get()->schemas->get(err, col.cid);
+      if(!schema)
+        Converter::exception(err, "cid=" + std::to_string(col.cid));
+
+      req->specs.columns.push_back(DB::Specs::Column::make_ptr(col.cid));
+      auto& dbcol = req->specs.columns.back();
+
+      for(auto& intval : col.intervals) {
+        dbintval = DB::Specs::Interval::make_ptr(schema->col_type);
+        Converter::set(intval, *dbintval.get());
+        dbcol->intervals.push_back(dbintval);
+      }
+    }
+
     if(!err) {
       req->scan(err);
       if(!err)
@@ -311,22 +299,18 @@ class AppHandler final : virtual public BrokerIf {
     switch(rslt) {
       case CellsResult::ON_COLUMN : {
         scan_rslt_on_column(_return.ccells, specs);
-        _return.__isset.ccells = true;
         break;
       }
       case CellsResult::ON_KEY : {
         scan_rslt_on_key(_return.kcells, specs);
-        _return.__isset.kcells = true;
         break;
       }
       case CellsResult::ON_FRACTION : {
         scan_rslt_on_fraction(_return.fcells, specs);
-        _return.__isset.fcells = true;
         break;
       }
       default : {
         scan(_return.cells, specs);
-        _return.__isset.cells = true;
         break;
       }
     }
@@ -334,15 +318,10 @@ class AppHandler final : virtual public BrokerIf {
 
   void scan(Cells& _return, const SpecScan& specs) {
     auto req = sync_select(specs);
-    
+
     int err = Error::OK;
-    process_results(
-      err, 
-      req->result, 
-      !req->specs.flags.is_only_keys() && !req->specs.flags.is_only_deletes(),
-      _return
-    );
-    if(err) 
+    process_results(err, req->result, _return);
+    if(err)
       Converter::exception(err);
   }
 
@@ -350,41 +329,26 @@ class AppHandler final : virtual public BrokerIf {
     auto req = sync_select(specs);
 
     int err = Error::OK;
-    process_results(
-      err, 
-      req->result, 
-      !req->specs.flags.is_only_keys() && !req->specs.flags.is_only_deletes(),
-      _return
-    );
-    if(err) 
+    process_results(err, req->result, _return);
+    if(err)
       Converter::exception(err);
   }
 
   void scan_rslt_on_key(KCells& _return, const SpecScan& specs) {
     auto req = sync_select(specs);
-    
+
     int err = Error::OK;
-    process_results(
-      err, 
-      req->result, 
-      !req->specs.flags.is_only_keys() && !req->specs.flags.is_only_deletes(),
-      _return
-    );
-    if(err) 
+    process_results(err, req->result, _return);
+    if(err)
       Converter::exception(err);
   }
 
   void scan_rslt_on_fraction(FCells& _return, const SpecScan& specs) {
     auto req = sync_select(specs);
-    
+
     int err = Error::OK;
-    process_results(
-      err, 
-      req->result, 
-      !req->specs.flags.is_only_keys() && !req->specs.flags.is_only_deletes(),
-      _return
-    );
-    if(err) 
+    process_results(err, req->result, _return);
+    if(err)
       Converter::exception(err);
   }
 
@@ -408,7 +372,7 @@ class AppHandler final : virtual public BrokerIf {
     client::Query::Update:: Ptr req;
     {
       std::scoped_lock lock(m_mutex);
-    
+
       auto it = m_updaters.find(id);
       if(it == m_updaters.end())
         Converter::exception(ERANGE, "Updater ID not found");
@@ -429,13 +393,11 @@ class AppHandler final : virtual public BrokerIf {
     int err = Error::OK;
     DB::Cells::Cell dbcell;
     cid_t cid;
-    // req->columns_onfractions
     for(auto& col_cells : cells) {
-              // req->columns_onfractions
       auto col = req->columns->get_col(cid = col_cells.first);
       if(!col) {
         auto schema = Env::Clients::get()->schemas->get(err, cid);
-        if(err) 
+        if(err)
           Converter::exception(err);
         req->columns->create(schema);
         col = req->columns->get_col(cid);
@@ -444,11 +406,101 @@ class AppHandler final : virtual public BrokerIf {
         dbcell.flag = (uint8_t)cell.f;
         dbcell.key.read(cell.k);
         dbcell.control = 0;
-        if(cell.__isset.ts) 
+        if(cell.__isset.ts)
           dbcell.set_timestamp(cell.ts);
-        if(cell.__isset.ts_desc) 
+        if(cell.__isset.ts_desc)
           dbcell.set_time_order_desc(cell.ts_desc);
-        dbcell.set_value(cell.v);
+          
+        cell.__isset.encoder 
+          ? dbcell.set_value((DB::Types::Encoder)(uint8_t)cell.encoder, cell.v)
+          : dbcell.set_value(cell.v);
+
+        col->add(dbcell);
+        req->commit_or_wait(col);
+      }
+    }
+
+    if(updater_id) {
+      req->commit_or_wait();
+    } else {
+      req->commit();
+      req->wait();
+    }
+    if((err = req->result->error()))
+      Converter::exception(err);
+  }
+
+  /* UPDATE-SERIAL */
+  void update_serial(const UCCellsSerial& cells, const int64_t updater_id) {
+    client::Query::Update::Ptr req = nullptr;
+    if(updater_id)
+      updater(updater_id, req);
+    else
+      req = std::make_shared<client::Query::Update>();
+
+    int err = Error::OK;
+    DB::Cells::Cell dbcell;
+    cid_t cid;
+    for(auto& col_cells : cells) {
+      auto col = req->columns->get_col(cid = col_cells.first);
+      if(!col) {
+        auto schema = Env::Clients::get()->schemas->get(err, cid);
+        if(err)
+          Converter::exception(err);
+        req->columns->create(schema);
+        col = req->columns->get_col(cid);
+      }
+      for(auto& cell : col_cells.second) {
+        dbcell.flag = (uint8_t)cell.f;
+        dbcell.key.read(cell.k);
+        dbcell.control = 0;
+        if(cell.__isset.ts)
+          dbcell.set_timestamp(cell.ts);
+        if(cell.__isset.ts_desc)
+          dbcell.set_time_order_desc(cell.ts_desc);
+
+        DB::Cell::Serial::Value::FieldsWriter wfields;
+        size_t len = 0;
+        for(auto& fields : cell.v) {
+          if(fields.__isset.v_int64)
+            len += 16;
+          if(fields.__isset.v_double)
+            len += 24;
+          if(!fields.v_bytes.empty())
+            len += fields.v_bytes.size() + 8;
+          if(!fields.v_key.empty())
+            len += fields.v_key.size() + 8;
+          if(!fields.v_li.empty())
+            len += fields.v_li.size() * 16;
+          for(auto& v : fields.v_lb)
+            len += v.size() + 8;
+        }
+        wfields.ensure(len);
+        for(auto& fields : cell.v) {
+          if(fields.__isset.v_int64)
+            wfields.add(fields.field_id, fields.v_int64);
+          if(fields.__isset.v_double)
+            wfields.add(fields.field_id, (long double)fields.v_double);
+          if(!fields.v_bytes.empty())
+            wfields.add(fields.field_id,
+              (const uint8_t*)fields.v_bytes.data(), fields.v_bytes.size());
+          if(!fields.v_key.empty()) {
+            DB::Cell::Serial::Value::Field_KEY field;
+            field.fid = fields.field_id;
+            Converter::set(fields.v_key, field.key);
+            //
+            wfields.add(&field);
+          }
+          if(!fields.v_li.empty())
+            wfields.add(fields.field_id, fields.v_li);
+          if(!fields.v_lb.empty())
+            wfields.add(fields.field_id, fields.v_lb);
+        }
+
+        cell.__isset.encoder
+          ? dbcell.set_value((DB::Types::Encoder)(uint8_t)cell.encoder, 
+                              wfields.base, wfields.fill() )
+          : dbcell.set_value(wfields.base, wfields.fill(), false);
 
         col->add(dbcell);
         req->commit_or_wait(col);
@@ -478,7 +530,7 @@ class AppHandler final : virtual public BrokerIf {
       {
         std::scoped_lock lock(m_mutex);
         auto it = m_updaters.begin();
-        if(it == m_updaters.end()) 
+        if(it == m_updaters.end())
           break;
         m_updaters.erase(it);
         req = it->second;
@@ -504,7 +556,7 @@ class AppHandler final : virtual public BrokerIf {
       Converter::exception(err);
   }
 
-  void get_schemas(int& err, const SpecSchemas& spec, 
+  void get_schemas(int& err, const SpecSchemas& spec,
                    std::vector<DB::Schema::Ptr>& dbschemas) {
     if(!spec.patterns.empty()) {
       std::vector<DB::Schemas::Pattern> dbpatterns;
@@ -542,7 +594,7 @@ class AppHandler final : virtual public BrokerIf {
       dbschemas.push_back(schema);
     }
   }
-  
+
   void mng_column(Comm::Protocol::Mngr::Req::ColumnMng::Func func,
                   DB::Schema::Ptr& schema) {
     std::promise<int> res;
@@ -554,7 +606,7 @@ class AppHandler final : virtual public BrokerIf {
       300000
     );
     int err = res.get_future().get();
-    if(err) 
+    if(err)
       Converter::exception(err);
 
     if(schema->cid != DB::Schema::NO_CID)
@@ -564,13 +616,13 @@ class AppHandler final : virtual public BrokerIf {
   }
 
   static void process_results(
-          int& err, std::vector<DB::Schema::Ptr>& dbschemas, 
+          int& err, std::vector<DB::Schema::Ptr>& dbschemas,
           Schemas& _return) {
     if(dbschemas.empty()) { // get all schema
       std::promise<int> res;
       Comm::Protocol::Mngr::Req::ColumnList::request(
         [&dbschemas, await=&res]
-        (const Comm::client::ConnQueue::ReqBase::Ptr&, int error, 
+        (const Comm::client::ConnQueue::ReqBase::Ptr&, int error,
          const Comm::Protocol::Mngr::Params::ColumnListRsp& rsp) {
           if(!error)
             dbschemas = rsp.schemas;
@@ -581,7 +633,7 @@ class AppHandler final : virtual public BrokerIf {
       if((err = res.get_future().get()))
         Converter::exception(err);
     }
-    
+
     _return.resize(dbschemas.size());
     uint32_t c = 0;
     for(auto& dbschema : dbschemas) {
@@ -591,13 +643,13 @@ class AppHandler final : virtual public BrokerIf {
   }
 
   static void process_results(
-          int& err, std::vector<DB::Schema::Ptr>& dbschemas, 
+          int& err, std::vector<DB::Schema::Ptr>& dbschemas,
           CompactResults& _return) {
     if(dbschemas.empty()) { // get all schema
       std::promise<int> res;
       Comm::Protocol::Mngr::Req::ColumnList::request(
         [&dbschemas, await=&res]
-        (const Comm::client::ConnQueue::ReqBase::Ptr&, int error, 
+        (const Comm::client::ConnQueue::ReqBase::Ptr&, int error,
          const Comm::Protocol::Mngr::Params::ColumnListRsp& rsp) {
           if(!error)
             dbschemas = rsp.schemas;
@@ -608,7 +660,7 @@ class AppHandler final : virtual public BrokerIf {
       if((err = res.get_future().get()))
         Converter::exception(err);
     }
-    
+
     size_t sz = dbschemas.size();
     Core::Semaphore sem(sz, sz);
     _return.resize(sz);
@@ -617,7 +669,7 @@ class AppHandler final : virtual public BrokerIf {
       Comm::Protocol::Mngr::Req::ColumnCompact::request(
         (r.cid = dbschemas[idx]->cid),
         [&sem, err=&r.err]
-        (const Comm::client::ConnQueue::ReqBase::Ptr&, 
+        (const Comm::client::ConnQueue::ReqBase::Ptr&,
          const Comm::Protocol::Mngr::Params::ColumnCompactRsp& rsp) {
           *err = rsp.err;
           sem.release();
@@ -630,58 +682,47 @@ class AppHandler final : virtual public BrokerIf {
 
   static void process_results(
           int& err, const client::Query::Select::Result::Ptr& result,
-          bool with_value, Cells& _return) {
+          Cells& _return) {
     DB::Schema::Ptr schema = 0;
     DB::Cells::Result cells;
 
-    size_t c;
     for(cid_t cid : result->get_cids()) {
       cells.free();
       result->get_cells(cid, cells);
 
       schema = Env::Clients::get()->schemas->get(err, cid);
-      c = _return.size();
-      _return.resize(c+cells.size());
-
-      for(auto dbcell : cells) {
-        auto& cell = _return[c++];
-        
-        cell.c = schema->col_name;
-        dbcell->key.convert_to(cell.k);
-        cell.ts = dbcell->timestamp;
-        if((cell.__isset.v = with_value)) {
-          if(dbcell->vlen)
-            cell.v = std::string((const char*)dbcell->value, dbcell->vlen);
-        }
-      }
-    }                            
-  }
-  
-  static void process_results(
-          int& err, const client::Query::Select::Result::Ptr& result,
-          bool with_value, CCells& _return) {
-    DB::Schema::Ptr schema = 0;
-    DB::Cells::Result cells; 
-
-    for(cid_t cid : result->get_cids()) {
-      cells.free();
-      result->get_cells(cid, cells); 
-
-      schema = Env::Clients::get()->schemas->get(err, cid);
       if(err)
         return;
-      auto& list = _return[schema->col_name];     
-      list.resize(cells.size());
-
-      uint32_t c = 0;
-      for(auto dbcell : cells) {
-        auto& cell = list[c++];
-        
-        dbcell->key.convert_to(cell.k);
-        cell.ts = dbcell->timestamp;
-        if((cell.__isset.v = with_value)) {
-          if(dbcell->vlen)
-            cell.v = std::string((const char*)dbcell->value, dbcell->vlen);
+      switch(schema->col_type) {
+        case DB::Types::Column::SERIAL: {
+          auto& rcells = _return.serial_cells;
+          size_t c = rcells.size();
+          rcells.resize(c + cells.size());
+          for(auto dbcell : cells) {
+            auto& cell = rcells[c++];
+            cell.c = schema->col_name;
+            dbcell->key.convert_to(cell.k);
+            cell.ts = dbcell->timestamp;
+            if(dbcell->vlen)
+              Converter::set(*dbcell, cell.v);
+          }
+          break;
+        }
+        default: {
+          auto& rcells = _return.cells;
+          size_t c = rcells.size();
+          rcells.resize(c + cells.size());
+          for(auto dbcell : cells) {
+            auto& cell = rcells[c++];
+            cell.c = schema->col_name;
+            dbcell->key.convert_to(cell.k);
+            cell.ts = dbcell->timestamp;
+            if(dbcell->vlen) {
+              StaticBuffer v;
+              dbcell->get_value(v);
+              cell.v.append((const char*)v.base, v.size);
+            }
+          }
         }
       }
     }
@@ -689,34 +730,105 @@ class AppHandler final : virtual public BrokerIf {
 
   static void process_results(
           int& err, const client::Query::Select::Result::Ptr& result,
-          bool with_value, KCells& _return) {
+          CCells& _return) {
     DB::Schema::Ptr schema = 0;
     DB::Cells::Result cells;
 
     for(cid_t cid : result->get_cids()) {
       cells.free();
-      result->get_cells(cid, cells); 
+      result->get_cells(cid, cells);
 
       schema = Env::Clients::get()->schemas->get(err, cid);
       if(err)
         return;
+      auto& _col = _return[schema->col_name];
 
-      for(auto dbcell : cells) {
-        auto it = std::find_if(_return.begin(), _return.end(), 
+      switch(schema->col_type) {
+        case DB::Types::Column::SERIAL: {
+          auto& rcells = _col.serial_cells;
+          size_t c = rcells.size();
+          rcells.resize(c + cells.size());
+          for(auto dbcell : cells) {
+            auto& cell = rcells[c++];
+            dbcell->key.convert_to(cell.k);
+            cell.ts = dbcell->timestamp;
+            if(dbcell->vlen)
+              Converter::set(*dbcell, cell.v);
+          }
+          break;
+        }
+        default: {
+          auto& rcells = _col.cells;
+          size_t c = rcells.size();
+          rcells.resize(c + cells.size());
+          for(auto dbcell : cells) {
+            auto& cell = rcells[c++];
+            dbcell->key.convert_to(cell.k);
+            cell.ts = dbcell->timestamp;
+            if(dbcell->vlen) {
+              StaticBuffer v;
+              dbcell->get_value(v);
+              cell.v.append((const char*)v.base, v.size);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  static void process_results(
+          int& err, const client::Query::Select::Result::Ptr& result,
+          KCells& _return) {
+    DB::Schema::Ptr schema = 0;
+    DB::Cells::Result cells;
+
+    for(cid_t cid : result->get_cids()) {
+      cells.free();
+      result->get_cells(cid, cells);
+
+      schema = Env::Clients::get()->schemas->get(err, cid);
+      if(err)
+        return;
+      switch(schema->col_type) {
+        case DB::Types::Column::SERIAL: {
+          for(auto dbcell : cells) {
+            auto it = std::find_if(_return.begin(), _return.end(),
                               [dbcell](const kCells& key_cells)
                               {return dbcell->key.equal(key_cells.k);});
-        if(it == _return.end()) {
-          _return.emplace_back();
-          it = _return.end()-1;
-          dbcell->key.convert_to(it->k);
+            if(it == _return.end()) {
+              _return.emplace_back();
+              it = _return.end()-1;
+              dbcell->key.convert_to(it->k);
+            }
+
+            auto& cell = it->serial_cells.emplace_back();
+            cell.c = schema->col_name;
+            cell.ts = dbcell->timestamp;
+            if(dbcell->vlen)
+              Converter::set(*dbcell, cell.v);
+          }
+          break;
         }
-        
-        auto& cell = it->cells.emplace_back();
-        cell.c = schema->col_name;
-        cell.ts = dbcell->timestamp;
-        if((cell.__isset.v = with_value)) {
-          if(dbcell->vlen)
-            cell.v = std::string((const char*)dbcell->value, dbcell->vlen);
+        default: {
+          for(auto dbcell : cells) {
+            auto it = std::find_if(_return.begin(), _return.end(),
+                              [dbcell](const kCells& key_cells)
+                              {return dbcell->key.equal(key_cells.k);});
+            if(it == _return.end()) {
+              _return.emplace_back();
+              it = _return.end()-1;
+              dbcell->key.convert_to(it->k);
+            }
+
+            auto& cell = it->cells.emplace_back();
+            cell.c = schema->col_name;
+            cell.ts = dbcell->timestamp;
+            if(dbcell->vlen) {
+              StaticBuffer v;
+              dbcell->get_value(v);
+              cell.v.append((const char*)v.base, v.size);
+            }
+          }
         }
       }
     }
@@ -724,36 +836,53 @@ class AppHandler final : virtual public BrokerIf {
 
   static void process_results(
           int& err, const client::Query::Select::Result::Ptr& result,
-          bool with_value, FCells& _return) {
+          FCells& _return) {
     DB::Schema::Ptr schema = 0;
     DB::Cells::Result cells;
-    
+
     std::vector<std::string> key;
 
     for(cid_t cid : result->get_cids()) {
       cells.free();
-      result->get_cells(cid, cells); 
+      result->get_cells(cid, cells);
 
       schema = Env::Clients::get()->schemas->get(err, cid);
       if(err)
         return;
-      
-      FCells* fraction_cells;
-      
-      for(auto dbcell : cells) {
-        fraction_cells = &_return;
-        key.clear();
-        dbcell->key.convert_to(key);
-        for(auto& f : key) 
-          fraction_cells = &fraction_cells->f[f];
-        
-        fraction_cells->__isset.cells = true;
-        auto& cell = fraction_cells->cells.emplace_back();
-        cell.c = schema->col_name;
-        cell.ts = dbcell->timestamp;
-        if((cell.__isset.v = with_value)) {
-          if(dbcell->vlen)
-            cell.v = std::string((const char*)dbcell->value, dbcell->vlen);
+      switch(schema->col_type) {
+        case DB::Types::Column::SERIAL: {
+          FCells* fraction_cells;
+          for(auto dbcell : cells) {
+            fraction_cells = &_return;
+            key.clear();
+            dbcell->key.convert_to(key);
+            for(auto& f : key)
+              fraction_cells = &fraction_cells->f[f];
+            auto& cell = fraction_cells->serial_cells.emplace_back();
+            cell.c = schema->col_name;
+            cell.ts = dbcell->timestamp;
+            if(dbcell->vlen)
+              Converter::set(*dbcell, cell.v);
+          }
+          break;
+        }
+        default: {
+          FCells* fraction_cells;
+          for(auto dbcell : cells) {
+            fraction_cells = &_return;
+            key.clear();
+            dbcell->key.convert_to(key);
+            for(auto& f : key)
+              fraction_cells = &fraction_cells->f[f];
+            auto& cell = fraction_cells->cells.emplace_back();
+            cell.c = schema->col_name;
+            cell.ts = dbcell->timestamp;
+            if(dbcell->vlen) {
+              StaticBuffer v;
+              dbcell->get_value(v);
+              cell.v.append((const char*)v.base, v.size);
+            }
+          }
         }
       }
     }

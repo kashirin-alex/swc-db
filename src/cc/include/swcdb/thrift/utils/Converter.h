@@ -7,6 +7,9 @@
 #define swcdb_thrift_utils_Converter_h
 
 
+#include "swcdb/db/Cells/SpecsValueSerialFields.h"
+
+
 namespace SWC {  namespace Thrift {
 
 
@@ -51,6 +54,11 @@ void set(const SpecKey& spec, DB::Specs::Key& dbspec) {
   }
 }
 
+void set(const SpecTimestamp& spec, DB::Specs::Timestamp& dbspec) {
+  dbspec.set(spec.ts, (Condition::Comp)spec.comp);
+}
+
+
 void set(const SpecValue& spec, DB::Specs::Value& dbspec) {
   dbspec.set(spec.v, (Condition::Comp)spec.comp);
 }
@@ -60,38 +68,29 @@ void set(const SpecValues& spec, DB::Specs::Values& dbspec) {
     set(value, dbspec.add());
 }
 
-void set(const SpecTimestamp& spec, DB::Specs::Timestamp& dbspec) {
-  dbspec.set(spec.ts, (Condition::Comp)spec.comp);
-}
-
 void set(const SpecInterval& intval, DB::Specs::Interval& dbintval) {
-  if(intval.__isset.range_begin)
+  if(!intval.range_begin.empty())
     set(intval.range_begin, dbintval.range_begin);
 
-  if(intval.__isset.range_end)
+  if(!intval.range_end.empty())
     set(intval.range_end, dbintval.range_end);
 
-  if(intval.__isset.range_offset)
+  if(!intval.range_offset.empty())
     set(intval.range_offset, dbintval.range_offset);
 
-  if(intval.__isset.offset_key)
+  if(!intval.offset_key.empty())
     set(intval.offset_key, dbintval.offset_key);
 
   if(intval.__isset.offset_rev)
     dbintval.offset_rev = intval.offset_rev;
 
-  if(intval.__isset.key_intervals) {
-    for(auto& key_intval : intval.key_intervals) {
-      auto& dbkey_intval = dbintval.key_intervals.add();
-      if(key_intval.__isset.start)
-        set(key_intval.start, dbkey_intval->start);
-      if(key_intval.__isset.finish)
-        set(key_intval.finish, dbkey_intval->finish);
-    }
+  for(auto& key_intval : intval.key_intervals) {
+    auto& dbkey_intval = dbintval.key_intervals.add();
+    if(!key_intval.start.empty())
+      set(key_intval.start, dbkey_intval->start);
+    if(!key_intval.finish.empty())
+      set(key_intval.finish, dbkey_intval->finish);
   }
-
-  if(intval.__isset.values)
-    set(intval.values, dbintval.values);
 
   if(intval.__isset.ts_start)
     set(intval.ts_start, dbintval.ts_start);
@@ -101,7 +100,114 @@ void set(const SpecInterval& intval, DB::Specs::Interval& dbintval) {
 
   if(intval.__isset.flags)
     set(intval.flags, dbintval.flags);
+
+  if(!intval.values.empty())
+    set(intval.values, dbintval.values);
 }
+
+
+void set(const SpecValueSerial& spec, DB::Specs::Value& dbspec) {
+  DB::Specs::Serial::Value::Fields dbfields;
+
+  for(auto& fields : spec.fields) {
+    if(fields.__isset.spec_int64) {
+      dbfields.add(
+        DB::Specs::Serial::Value::Field_INT64::make(
+          fields.field_id,
+          (Condition::Comp)(uint8_t)fields.spec_int64.comp, fields.spec_int64.v));
+    }
+    if(fields.__isset.spec_double) {
+      dbfields.add(
+        DB::Specs::Serial::Value::Field_DOUBLE::make(
+          fields.field_id,
+          (Condition::Comp)(uint8_t)fields.spec_double.comp, fields.spec_double.v));
+    }
+    if(!fields.spec_bytes.v.empty()) {
+      dbfields.add(
+        DB::Specs::Serial::Value::Field_BYTES::make(
+          fields.field_id,
+          (Condition::Comp)(uint8_t)fields.spec_bytes.comp, fields.spec_bytes.v));
+    }
+    if(!fields.spec_key.v.empty()) {
+      auto field = DB::Specs::Serial::Value::Field_KEY::make(
+        fields.field_id, (DB::Types::KeySeq)(uint8_t)fields.spec_key.seq);
+      Converter::set(fields.spec_key.v, field->key);
+      dbfields.add(std::move(field));
+    }
+    if(!fields.spec_li.v.empty()) {
+      auto field = DB::Specs::Serial::Value::Field_LIST_INT64::make(
+        fields.field_id, (Condition::Comp)(uint8_t)fields.spec_li.comp);
+      field->items.resize(fields.spec_li.v.size());
+      size_t i = 0;
+      for(auto& data : fields.spec_li.v) {
+        auto& f = field->items[i];
+        f.comp = (Condition::Comp)(uint8_t)data.comp;
+        f.value = data.v;
+        ++i;
+      }
+      dbfields.add(std::move(field));
+    }
+    if(!fields.spec_lb.v.empty()) {
+      auto field = DB::Specs::Serial::Value::Field_LIST_BYTES::make(
+        fields.field_id, (Condition::Comp)(uint8_t)fields.spec_lb.comp);
+      field->items.resize(fields.spec_lb.v.size());
+      size_t i = 0;
+      for(auto& data : fields.spec_lb.v) {
+        auto& f = field->items[i];
+        f.comp = (Condition::Comp)(uint8_t)data.comp;
+        f.value = data.v;
+        ++i;
+      }
+      dbfields.add(std::move(field));
+    }
+  }
+
+  dbspec.comp = (Condition::Comp)(uint8_t)spec.comp;
+  dbfields.encode(dbspec);
+}
+
+void set(const SpecValuesSerial& spec, DB::Specs::Values& dbspec) {
+  for(auto& value : spec)
+    set(value, dbspec.add());
+}
+
+void set(const SpecIntervalSerial& intval, DB::Specs::Interval& dbintval) {
+  if(!intval.range_begin.empty())
+    set(intval.range_begin, dbintval.range_begin);
+
+  if(!intval.range_end.empty())
+    set(intval.range_end, dbintval.range_end);
+
+  if(!intval.range_offset.empty())
+    set(intval.range_offset, dbintval.range_offset);
+
+  if(!intval.offset_key.empty())
+    set(intval.offset_key, dbintval.offset_key);
+
+  if(intval.__isset.offset_rev)
+    dbintval.offset_rev = intval.offset_rev;
+
+  for(auto& key_intval : intval.key_intervals) {
+    auto& dbkey_intval = dbintval.key_intervals.add();
+    if(!key_intval.start.empty())
+      set(key_intval.start, dbkey_intval->start);
+    if(!key_intval.finish.empty())
+      set(key_intval.finish, dbkey_intval->finish);
+  }
+
+  if(intval.__isset.ts_start)
+    set(intval.ts_start, dbintval.ts_start);
+
+  if(intval.__isset.ts_finish)
+    set(intval.ts_finish, dbintval.ts_finish);
+
+  if(intval.__isset.flags)
+    set(intval.flags, dbintval.flags);
+
+  if(!intval.values.empty())
+    set(intval.values, dbintval.values);
+}
+
 
 void set(const DB::Schema::Ptr& dbschema, Schema& schema) {
   schema.__set_cid(dbschema->cid);
@@ -123,11 +229,11 @@ void set(const DB::Schema::Ptr& dbschema, Schema& schema) {
   schema.__set_cs_replication(dbschema->cs_replication);
   schema.__set_cs_size(dbschema->cs_size);
   schema.__set_cs_max(dbschema->cs_max);
-      
+
   schema.__set_log_rollout_ratio(dbschema->log_rollout_ratio);
   schema.__set_log_compact_cointervaling(dbschema->log_compact_cointervaling);
   schema.__set_log_fragment_preload(dbschema->log_fragment_preload);
-      
+
   schema.__set_compact_percent(dbschema->compact_percent);
 
   schema.__set_revision(dbschema->revision);
@@ -143,33 +249,33 @@ void set(const Schema& schema, DB::Schema::Ptr& dbschema) {
     dbschema->col_seq = (DB::Types::KeySeq)(uint8_t)schema.col_seq;
   if(schema.__isset.col_type)
     dbschema->col_type = (DB::Types::Column)(uint8_t)schema.col_type;
-    
+
   if(schema.__isset.cell_versions)
     dbschema->cell_versions = schema.cell_versions;
   if(schema.__isset.cell_ttl)
     dbschema->cell_ttl = schema.cell_ttl;
-  
+
   if(schema.__isset.blk_encoding)
     dbschema->blk_encoding = (DB::Types::Encoder)(uint8_t)schema.blk_encoding;
   if(schema.__isset.blk_size)
     dbschema->blk_size = schema.blk_size;
   if(schema.__isset.blk_cells)
     dbschema->blk_cells = schema.blk_cells;
-    
+
   if(schema.__isset.cs_replication)
     dbschema->cs_replication = schema.cs_replication;
   if(schema.__isset.cs_size)
     dbschema->cs_size = schema.cs_size;
   if(schema.__isset.cs_max)
     dbschema->cs_max = schema.cs_max;
-      
+
   if(schema.__isset.log_rollout_ratio)
     dbschema->log_rollout_ratio = schema.log_rollout_ratio;
   if(schema.__isset.log_compact_cointervaling)
     dbschema->log_compact_cointervaling = schema.log_compact_cointervaling;
   if(schema.__isset.log_fragment_preload)
     dbschema->log_fragment_preload = schema.log_fragment_preload;
-      
+
   if(schema.__isset.compact_percent)
     dbschema->compact_percent = schema.compact_percent;
 
@@ -177,12 +283,77 @@ void set(const Schema& schema, DB::Schema::Ptr& dbschema) {
     dbschema->revision = schema.revision;
 }
 
+CellValueSerial& get_fields(int32_t fid, CellValuesSerial& values) {
+  for(auto& fields : values) {
+    if(fid == fields.field_id)
+      return fields;
+  }
+  auto& fields = values.emplace_back();
+  fields.field_id = fid;
+  return fields;
+}
+
+void set(const DB::Cells::Cell& dbcell, CellValuesSerial& values) {
+  if(!dbcell.vlen)
+    return;
+    
+  StaticBuffer v;
+  dbcell.get_value(v);
+  const uint8_t* ptr = v.base;
+  size_t remain = v.size;
+
+  while(remain) {
+    switch(DB::Cell::Serial::Value::read_type(&ptr, &remain)) {
+
+      case DB::Cell::Serial::Value::Type::INT64: {
+        DB::Cell::Serial::Value::Field_INT64 dbfield(&ptr, &remain);
+        auto& fields = get_fields(dbfield.fid, values);
+        fields.__set_v_int64(dbfield.value);
+        break;
+      }
+      case DB::Cell::Serial::Value::Type::DOUBLE: {
+        DB::Cell::Serial::Value::Field_DOUBLE dbfield(&ptr, &remain);
+        auto& fields = get_fields(dbfield.fid, values);
+        fields.__set_v_double(dbfield.value);
+        break;
+      }
+      case DB::Cell::Serial::Value::Type::BYTES: {
+        DB::Cell::Serial::Value::Field_BYTES dbfield(&ptr, &remain);
+        auto& fields = get_fields(dbfield.fid, values);
+        dbfield.convert_to(fields.v_bytes);
+        break;
+      }
+      case DB::Cell::Serial::Value::Type::KEY: {
+        DB::Cell::Serial::Value::Field_KEY dbfield(&ptr, &remain);
+        auto& fields = get_fields(dbfield.fid, values);
+        dbfield.key.convert_to(fields.v_key);
+        break;
+      }
+      case DB::Cell::Serial::Value::Type::LIST_INT64: {
+        DB::Cell::Serial::Value::Field_LIST_INT64 dbfield(&ptr, &remain);
+        auto& fields = get_fields(dbfield.fid, values);
+        dbfield.convert_to(fields.v_li);
+        break;
+      }
+      case DB::Cell::Serial::Value::Type::LIST_BYTES: {
+        DB::Cell::Serial::Value::Field_LIST_BYTES dbfield(&ptr, &remain);
+        auto& fields = get_fields(dbfield.fid, values);
+        dbfield.convert_to(fields.v_lb);
+        break;
+      }
+      default: {
+        exception(Error::SERIALIZATION_INPUT_OVERRUN, "Serial Cell Value");
+        remain = 0;
+        break;
+      }
+    }
+  }
 }
 
 
 
 
-
+}
 
 }}
 

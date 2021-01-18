@@ -15,6 +15,7 @@ public class FCells implements org.apache.thrift.TBase<FCells, FCells._Fields>, 
 
   private static final org.apache.thrift.protocol.TField F_FIELD_DESC = new org.apache.thrift.protocol.TField("f", org.apache.thrift.protocol.TType.MAP, (short)1);
   private static final org.apache.thrift.protocol.TField CELLS_FIELD_DESC = new org.apache.thrift.protocol.TField("cells", org.apache.thrift.protocol.TType.LIST, (short)2);
+  private static final org.apache.thrift.protocol.TField SERIAL_CELLS_FIELD_DESC = new org.apache.thrift.protocol.TField("serial_cells", org.apache.thrift.protocol.TType.LIST, (short)3);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new FCellsStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new FCellsTupleSchemeFactory();
@@ -26,7 +27,11 @@ public class FCells implements org.apache.thrift.TBase<FCells, FCells._Fields>, 
   /**
    * The current Fraction's Cells, defined as FCell items in a list-container
    */
-  public @org.apache.thrift.annotation.Nullable java.util.List<FCell> cells; // optional
+  public @org.apache.thrift.annotation.Nullable java.util.List<FCell> cells; // required
+  /**
+   * The current Fraction's Serial Cells, defined as FCellSerial items in a list-container
+   */
+  public @org.apache.thrift.annotation.Nullable java.util.List<FCellSerial> serial_cells; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -37,7 +42,11 @@ public class FCells implements org.apache.thrift.TBase<FCells, FCells._Fields>, 
     /**
      * The current Fraction's Cells, defined as FCell items in a list-container
      */
-    CELLS((short)2, "cells");
+    CELLS((short)2, "cells"),
+    /**
+     * The current Fraction's Serial Cells, defined as FCellSerial items in a list-container
+     */
+    SERIAL_CELLS((short)3, "serial_cells");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -57,6 +66,8 @@ public class FCells implements org.apache.thrift.TBase<FCells, FCells._Fields>, 
           return F;
         case 2: // CELLS
           return CELLS;
+        case 3: // SERIAL_CELLS
+          return SERIAL_CELLS;
         default:
           return null;
       }
@@ -98,7 +109,6 @@ public class FCells implements org.apache.thrift.TBase<FCells, FCells._Fields>, 
   }
 
   // isset id assignments
-  private static final _Fields optionals[] = {_Fields.CELLS};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -106,9 +116,12 @@ public class FCells implements org.apache.thrift.TBase<FCells, FCells._Fields>, 
         new org.apache.thrift.meta_data.MapMetaData(org.apache.thrift.protocol.TType.MAP, 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING            , true), 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT            , "FCells"))));
-    tmpMap.put(_Fields.CELLS, new org.apache.thrift.meta_data.FieldMetaData("cells", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+    tmpMap.put(_Fields.CELLS, new org.apache.thrift.meta_data.FieldMetaData("cells", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, FCell.class))));
+    tmpMap.put(_Fields.SERIAL_CELLS, new org.apache.thrift.meta_data.FieldMetaData("serial_cells", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
+            new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, FCellSerial.class))));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(FCells.class, metaDataMap);
   }
@@ -117,10 +130,14 @@ public class FCells implements org.apache.thrift.TBase<FCells, FCells._Fields>, 
   }
 
   public FCells(
-    java.util.Map<java.nio.ByteBuffer,FCells> f)
+    java.util.Map<java.nio.ByteBuffer,FCells> f,
+    java.util.List<FCell> cells,
+    java.util.List<FCellSerial> serial_cells)
   {
     this();
     this.f = f;
+    this.cells = cells;
+    this.serial_cells = serial_cells;
   }
 
   /**
@@ -149,6 +166,13 @@ public class FCells implements org.apache.thrift.TBase<FCells, FCells._Fields>, 
       }
       this.cells = __this__cells;
     }
+    if (other.isSetSerial_cells()) {
+      java.util.List<FCellSerial> __this__serial_cells = new java.util.ArrayList<FCellSerial>(other.serial_cells.size());
+      for (FCellSerial other_element : other.serial_cells) {
+        __this__serial_cells.add(new FCellSerial(other_element));
+      }
+      this.serial_cells = __this__serial_cells;
+    }
   }
 
   public FCells deepCopy() {
@@ -159,6 +183,7 @@ public class FCells implements org.apache.thrift.TBase<FCells, FCells._Fields>, 
   public void clear() {
     this.f = null;
     this.cells = null;
+    this.serial_cells = null;
   }
 
   public int getFSize() {
@@ -250,6 +275,53 @@ public class FCells implements org.apache.thrift.TBase<FCells, FCells._Fields>, 
     }
   }
 
+  public int getSerial_cellsSize() {
+    return (this.serial_cells == null) ? 0 : this.serial_cells.size();
+  }
+
+  @org.apache.thrift.annotation.Nullable
+  public java.util.Iterator<FCellSerial> getSerial_cellsIterator() {
+    return (this.serial_cells == null) ? null : this.serial_cells.iterator();
+  }
+
+  public void addToSerial_cells(FCellSerial elem) {
+    if (this.serial_cells == null) {
+      this.serial_cells = new java.util.ArrayList<FCellSerial>();
+    }
+    this.serial_cells.add(elem);
+  }
+
+  /**
+   * The current Fraction's Serial Cells, defined as FCellSerial items in a list-container
+   */
+  @org.apache.thrift.annotation.Nullable
+  public java.util.List<FCellSerial> getSerial_cells() {
+    return this.serial_cells;
+  }
+
+  /**
+   * The current Fraction's Serial Cells, defined as FCellSerial items in a list-container
+   */
+  public FCells setSerial_cells(@org.apache.thrift.annotation.Nullable java.util.List<FCellSerial> serial_cells) {
+    this.serial_cells = serial_cells;
+    return this;
+  }
+
+  public void unsetSerial_cells() {
+    this.serial_cells = null;
+  }
+
+  /** Returns true if field serial_cells is set (has been assigned a value) and false otherwise */
+  public boolean isSetSerial_cells() {
+    return this.serial_cells != null;
+  }
+
+  public void setSerial_cellsIsSet(boolean value) {
+    if (!value) {
+      this.serial_cells = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
     case F:
@@ -268,6 +340,14 @@ public class FCells implements org.apache.thrift.TBase<FCells, FCells._Fields>, 
       }
       break;
 
+    case SERIAL_CELLS:
+      if (value == null) {
+        unsetSerial_cells();
+      } else {
+        setSerial_cells((java.util.List<FCellSerial>)value);
+      }
+      break;
+
     }
   }
 
@@ -279,6 +359,9 @@ public class FCells implements org.apache.thrift.TBase<FCells, FCells._Fields>, 
 
     case CELLS:
       return getCells();
+
+    case SERIAL_CELLS:
+      return getSerial_cells();
 
     }
     throw new java.lang.IllegalStateException();
@@ -295,6 +378,8 @@ public class FCells implements org.apache.thrift.TBase<FCells, FCells._Fields>, 
       return isSetF();
     case CELLS:
       return isSetCells();
+    case SERIAL_CELLS:
+      return isSetSerial_cells();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -332,6 +417,15 @@ public class FCells implements org.apache.thrift.TBase<FCells, FCells._Fields>, 
         return false;
     }
 
+    boolean this_present_serial_cells = true && this.isSetSerial_cells();
+    boolean that_present_serial_cells = true && that.isSetSerial_cells();
+    if (this_present_serial_cells || that_present_serial_cells) {
+      if (!(this_present_serial_cells && that_present_serial_cells))
+        return false;
+      if (!this.serial_cells.equals(that.serial_cells))
+        return false;
+    }
+
     return true;
   }
 
@@ -346,6 +440,10 @@ public class FCells implements org.apache.thrift.TBase<FCells, FCells._Fields>, 
     hashCode = hashCode * 8191 + ((isSetCells()) ? 131071 : 524287);
     if (isSetCells())
       hashCode = hashCode * 8191 + cells.hashCode();
+
+    hashCode = hashCode * 8191 + ((isSetSerial_cells()) ? 131071 : 524287);
+    if (isSetSerial_cells())
+      hashCode = hashCode * 8191 + serial_cells.hashCode();
 
     return hashCode;
   }
@@ -378,6 +476,16 @@ public class FCells implements org.apache.thrift.TBase<FCells, FCells._Fields>, 
         return lastComparison;
       }
     }
+    lastComparison = java.lang.Boolean.valueOf(isSetSerial_cells()).compareTo(other.isSetSerial_cells());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetSerial_cells()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.serial_cells, other.serial_cells);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -406,16 +514,22 @@ public class FCells implements org.apache.thrift.TBase<FCells, FCells._Fields>, 
       sb.append(this.f);
     }
     first = false;
-    if (isSetCells()) {
-      if (!first) sb.append(", ");
-      sb.append("cells:");
-      if (this.cells == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.cells);
-      }
-      first = false;
+    if (!first) sb.append(", ");
+    sb.append("cells:");
+    if (this.cells == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.cells);
     }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("serial_cells:");
+    if (this.serial_cells == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.serial_cells);
+    }
+    first = false;
     sb.append(")");
     return sb.toString();
   }
@@ -462,16 +576,16 @@ public class FCells implements org.apache.thrift.TBase<FCells, FCells._Fields>, 
           case 1: // F
             if (schemeField.type == org.apache.thrift.protocol.TType.MAP) {
               {
-                org.apache.thrift.protocol.TMap _map144 = iprot.readMapBegin();
-                struct.f = new java.util.HashMap<java.nio.ByteBuffer,FCells>(2*_map144.size);
-                @org.apache.thrift.annotation.Nullable java.nio.ByteBuffer _key145;
-                @org.apache.thrift.annotation.Nullable FCells _val146;
-                for (int _i147 = 0; _i147 < _map144.size; ++_i147)
+                org.apache.thrift.protocol.TMap _map368 = iprot.readMapBegin();
+                struct.f = new java.util.HashMap<java.nio.ByteBuffer,FCells>(2*_map368.size);
+                @org.apache.thrift.annotation.Nullable java.nio.ByteBuffer _key369;
+                @org.apache.thrift.annotation.Nullable FCells _val370;
+                for (int _i371 = 0; _i371 < _map368.size; ++_i371)
                 {
-                  _key145 = iprot.readBinary();
-                  _val146 = new FCells();
-                  _val146.read(iprot);
-                  struct.f.put(_key145, _val146);
+                  _key369 = iprot.readBinary();
+                  _val370 = new FCells();
+                  _val370.read(iprot);
+                  struct.f.put(_key369, _val370);
                 }
                 iprot.readMapEnd();
               }
@@ -483,18 +597,37 @@ public class FCells implements org.apache.thrift.TBase<FCells, FCells._Fields>, 
           case 2: // CELLS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list148 = iprot.readListBegin();
-                struct.cells = new java.util.ArrayList<FCell>(_list148.size);
-                @org.apache.thrift.annotation.Nullable FCell _elem149;
-                for (int _i150 = 0; _i150 < _list148.size; ++_i150)
+                org.apache.thrift.protocol.TList _list372 = iprot.readListBegin();
+                struct.cells = new java.util.ArrayList<FCell>(_list372.size);
+                @org.apache.thrift.annotation.Nullable FCell _elem373;
+                for (int _i374 = 0; _i374 < _list372.size; ++_i374)
                 {
-                  _elem149 = new FCell();
-                  _elem149.read(iprot);
-                  struct.cells.add(_elem149);
+                  _elem373 = new FCell();
+                  _elem373.read(iprot);
+                  struct.cells.add(_elem373);
                 }
                 iprot.readListEnd();
               }
               struct.setCellsIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 3: // SERIAL_CELLS
+            if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
+              {
+                org.apache.thrift.protocol.TList _list375 = iprot.readListBegin();
+                struct.serial_cells = new java.util.ArrayList<FCellSerial>(_list375.size);
+                @org.apache.thrift.annotation.Nullable FCellSerial _elem376;
+                for (int _i377 = 0; _i377 < _list375.size; ++_i377)
+                {
+                  _elem376 = new FCellSerial();
+                  _elem376.read(iprot);
+                  struct.serial_cells.add(_elem376);
+                }
+                iprot.readListEnd();
+              }
+              struct.setSerial_cellsIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -518,28 +651,38 @@ public class FCells implements org.apache.thrift.TBase<FCells, FCells._Fields>, 
         oprot.writeFieldBegin(F_FIELD_DESC);
         {
           oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRUCT, struct.f.size()));
-          for (java.util.Map.Entry<java.nio.ByteBuffer, FCells> _iter151 : struct.f.entrySet())
+          for (java.util.Map.Entry<java.nio.ByteBuffer, FCells> _iter378 : struct.f.entrySet())
           {
-            oprot.writeBinary(_iter151.getKey());
-            _iter151.getValue().write(oprot);
+            oprot.writeBinary(_iter378.getKey());
+            _iter378.getValue().write(oprot);
           }
           oprot.writeMapEnd();
         }
         oprot.writeFieldEnd();
       }
       if (struct.cells != null) {
-        if (struct.isSetCells()) {
-          oprot.writeFieldBegin(CELLS_FIELD_DESC);
+        oprot.writeFieldBegin(CELLS_FIELD_DESC);
+        {
+          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.cells.size()));
+          for (FCell _iter379 : struct.cells)
           {
-            oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.cells.size()));
-            for (FCell _iter152 : struct.cells)
-            {
-              _iter152.write(oprot);
-            }
-            oprot.writeListEnd();
+            _iter379.write(oprot);
           }
-          oprot.writeFieldEnd();
+          oprot.writeListEnd();
         }
+        oprot.writeFieldEnd();
+      }
+      if (struct.serial_cells != null) {
+        oprot.writeFieldBegin(SERIAL_CELLS_FIELD_DESC);
+        {
+          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.serial_cells.size()));
+          for (FCellSerial _iter380 : struct.serial_cells)
+          {
+            _iter380.write(oprot);
+          }
+          oprot.writeListEnd();
+        }
+        oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
@@ -565,23 +708,35 @@ public class FCells implements org.apache.thrift.TBase<FCells, FCells._Fields>, 
       if (struct.isSetCells()) {
         optionals.set(1);
       }
-      oprot.writeBitSet(optionals, 2);
+      if (struct.isSetSerial_cells()) {
+        optionals.set(2);
+      }
+      oprot.writeBitSet(optionals, 3);
       if (struct.isSetF()) {
         {
           oprot.writeI32(struct.f.size());
-          for (java.util.Map.Entry<java.nio.ByteBuffer, FCells> _iter153 : struct.f.entrySet())
+          for (java.util.Map.Entry<java.nio.ByteBuffer, FCells> _iter381 : struct.f.entrySet())
           {
-            oprot.writeBinary(_iter153.getKey());
-            _iter153.getValue().write(oprot);
+            oprot.writeBinary(_iter381.getKey());
+            _iter381.getValue().write(oprot);
           }
         }
       }
       if (struct.isSetCells()) {
         {
           oprot.writeI32(struct.cells.size());
-          for (FCell _iter154 : struct.cells)
+          for (FCell _iter382 : struct.cells)
           {
-            _iter154.write(oprot);
+            _iter382.write(oprot);
+          }
+        }
+      }
+      if (struct.isSetSerial_cells()) {
+        {
+          oprot.writeI32(struct.serial_cells.size());
+          for (FCellSerial _iter383 : struct.serial_cells)
+          {
+            _iter383.write(oprot);
           }
         }
       }
@@ -590,36 +745,50 @@ public class FCells implements org.apache.thrift.TBase<FCells, FCells._Fields>, 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, FCells struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
-      java.util.BitSet incoming = iprot.readBitSet(2);
+      java.util.BitSet incoming = iprot.readBitSet(3);
       if (incoming.get(0)) {
         {
-          org.apache.thrift.protocol.TMap _map155 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-          struct.f = new java.util.HashMap<java.nio.ByteBuffer,FCells>(2*_map155.size);
-          @org.apache.thrift.annotation.Nullable java.nio.ByteBuffer _key156;
-          @org.apache.thrift.annotation.Nullable FCells _val157;
-          for (int _i158 = 0; _i158 < _map155.size; ++_i158)
+          org.apache.thrift.protocol.TMap _map384 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+          struct.f = new java.util.HashMap<java.nio.ByteBuffer,FCells>(2*_map384.size);
+          @org.apache.thrift.annotation.Nullable java.nio.ByteBuffer _key385;
+          @org.apache.thrift.annotation.Nullable FCells _val386;
+          for (int _i387 = 0; _i387 < _map384.size; ++_i387)
           {
-            _key156 = iprot.readBinary();
-            _val157 = new FCells();
-            _val157.read(iprot);
-            struct.f.put(_key156, _val157);
+            _key385 = iprot.readBinary();
+            _val386 = new FCells();
+            _val386.read(iprot);
+            struct.f.put(_key385, _val386);
           }
         }
         struct.setFIsSet(true);
       }
       if (incoming.get(1)) {
         {
-          org.apache.thrift.protocol.TList _list159 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-          struct.cells = new java.util.ArrayList<FCell>(_list159.size);
-          @org.apache.thrift.annotation.Nullable FCell _elem160;
-          for (int _i161 = 0; _i161 < _list159.size; ++_i161)
+          org.apache.thrift.protocol.TList _list388 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+          struct.cells = new java.util.ArrayList<FCell>(_list388.size);
+          @org.apache.thrift.annotation.Nullable FCell _elem389;
+          for (int _i390 = 0; _i390 < _list388.size; ++_i390)
           {
-            _elem160 = new FCell();
-            _elem160.read(iprot);
-            struct.cells.add(_elem160);
+            _elem389 = new FCell();
+            _elem389.read(iprot);
+            struct.cells.add(_elem389);
           }
         }
         struct.setCellsIsSet(true);
+      }
+      if (incoming.get(2)) {
+        {
+          org.apache.thrift.protocol.TList _list391 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+          struct.serial_cells = new java.util.ArrayList<FCellSerial>(_list391.size);
+          @org.apache.thrift.annotation.Nullable FCellSerial _elem392;
+          for (int _i393 = 0; _i393 < _list391.size; ++_i393)
+          {
+            _elem392 = new FCellSerial();
+            _elem392.read(iprot);
+            struct.serial_cells.add(_elem392);
+          }
+        }
+        struct.setSerial_cellsIsSet(true);
       }
     }
   }
