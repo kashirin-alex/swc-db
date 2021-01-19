@@ -33,7 +33,7 @@ public partial class Cells : TBase
   private List<CellSerial> _serial_cells;
 
   /// <summary>
-  /// The Cells, defined as KCell items in a list-container
+  /// The Cells, defined as Cell items in a list-container
   /// </summary>
   public List<Cell> Cells_
   {

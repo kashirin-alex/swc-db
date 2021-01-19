@@ -619,14 +619,27 @@ typedef map<i64, UCells> UCCells
 
 
 
-/** The Serial Value Cell field  */
+/** The Serial Value Cell field */
 struct CellValueSerial {
+  /** The Field ID, a single ID can have any/all the field types */
   1: i32             field_id
+
+  /** The INT64 type field */
   2: optional i64    v_int64
+
+  /** The DOUBLE type field */
   3: optional double v_double
+
+  /** The BYTES type field */
   4: binary          v_bytes
+
+  /** The Cell KEY type field */
   5: Key             v_key
+
+  /** The LIST INT64 type field */
   6: list<i64>       v_li
+
+  /** The LIST BYTES type field */
   7: list<binary>    v_lb
 }
 /** The Serial Cell Value Fields defined as CellValueSerial items in a list-container */
@@ -694,7 +707,7 @@ struct CellSerial {
 
 /** The Cells for results list of scan */
 struct Cells {
-  /** The Cells, defined as KCell items in a list-container */
+  /** The Cells, defined as Cell items in a list-container */
   1: list<Cell>        cells
 
   /** The Serial Cells, defined as CellSerial items in a list-container */
@@ -728,9 +741,9 @@ struct CCellSerial {
   3: CellValuesSerial v
 }
 
-/** The Column Cells for results on Columns of scan, defined as Cell items in a list-container */
+/** The Column Cells for results on Columns of scan */
 struct ColCells {
-  /** The Cells, defined as KCell items in a list-container */
+  /** The Cells, defined as CCell items in a list-container */
   1: list<CCell>       cells
 
   /** The Serial Cells, defined as CCellSerial items in a list-container */

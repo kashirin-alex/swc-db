@@ -20,7 +20,7 @@ public class Cells implements org.apache.thrift.TBase<Cells, Cells._Fields>, jav
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new CellsTupleSchemeFactory();
 
   /**
-   * The Cells, defined as KCell items in a list-container
+   * The Cells, defined as Cell items in a list-container
    */
   public @org.apache.thrift.annotation.Nullable java.util.List<Cell> cells; // required
   /**
@@ -31,7 +31,7 @@ public class Cells implements org.apache.thrift.TBase<Cells, Cells._Fields>, jav
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     /**
-     * The Cells, defined as KCell items in a list-container
+     * The Cells, defined as Cell items in a list-container
      */
     CELLS((short)1, "cells"),
     /**
@@ -170,7 +170,7 @@ public class Cells implements org.apache.thrift.TBase<Cells, Cells._Fields>, jav
   }
 
   /**
-   * The Cells, defined as KCell items in a list-container
+   * The Cells, defined as Cell items in a list-container
    */
   @org.apache.thrift.annotation.Nullable
   public java.util.List<Cell> getCells() {
@@ -178,7 +178,7 @@ public class Cells implements org.apache.thrift.TBase<Cells, Cells._Fields>, jav
   }
 
   /**
-   * The Cells, defined as KCell items in a list-container
+   * The Cells, defined as Cell items in a list-container
    */
   public Cells setCells(@org.apache.thrift.annotation.Nullable java.util.List<Cell> cells) {
     this.cells = cells;

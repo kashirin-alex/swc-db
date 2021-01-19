@@ -1,0 +1,56 @@
+#titlearea {
+	background: #d6c3bc40;
+}
+
+#projectname
+{
+	font: 200% Tahoma, Arial,sans-serif;
+}
+    
+#projectbrief
+{
+	font: 110% Tahoma, Arial,sans-serif;
+	font-style: italic;
+}
+
+#projectnumber
+{
+	font: 50% Tahoma, Arial,sans-serif;
+}
+
+
+.navpath ul
+{
+	height:20px;
+	line-height:20px;
+}
+
+img.footer {
+  margin: -4px 0px 0 0;
+}
+
+#nav-tree li {
+	margin: 5px 0;
+}
+
+#nav-tree .item {
+	margin: 0px;
+	padding: 2px 0;
+	border: 1px solid #fff0;
+	border-right: none;
+	border-left: none;
+}
+
+#nav-tree .item:hover {
+	border: 1px solid #98989845;
+	border-right: none;
+	border-left: none;
+}
+
+#nav-tree .children_ul {
+	border-bottom: 1px solid #00000042;
+}
+
+#nav-tree .label {
+	font: 13px;
+}

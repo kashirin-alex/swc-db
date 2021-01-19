@@ -37,6 +37,9 @@ public partial class CellValueSerial : TBase
   private List<long> _v_li;
   private List<byte[]> _v_lb;
 
+  /// <summary>
+  /// The Field ID, a single ID can have any/all the field types
+  /// </summary>
   public int Field_id
   {
     get
@@ -50,6 +53,9 @@ public partial class CellValueSerial : TBase
     }
   }
 
+  /// <summary>
+  /// The INT64 type field
+  /// </summary>
   public long V_int64
   {
     get
@@ -63,6 +69,9 @@ public partial class CellValueSerial : TBase
     }
   }
 
+  /// <summary>
+  /// The DOUBLE type field
+  /// </summary>
   public double V_double
   {
     get
@@ -76,6 +85,9 @@ public partial class CellValueSerial : TBase
     }
   }
 
+  /// <summary>
+  /// The BYTES type field
+  /// </summary>
   public byte[] V_bytes
   {
     get
@@ -89,6 +101,9 @@ public partial class CellValueSerial : TBase
     }
   }
 
+  /// <summary>
+  /// The Cell KEY type field
+  /// </summary>
   public List<byte[]> V_key
   {
     get
@@ -102,6 +117,9 @@ public partial class CellValueSerial : TBase
     }
   }
 
+  /// <summary>
+  /// The LIST INT64 type field
+  /// </summary>
   public List<long> V_li
   {
     get
@@ -115,6 +133,9 @@ public partial class CellValueSerial : TBase
     }
   }
 
+  /// <summary>
+  /// The LIST BYTES type field
+  /// </summary>
   public List<byte[]> V_lb
   {
     get

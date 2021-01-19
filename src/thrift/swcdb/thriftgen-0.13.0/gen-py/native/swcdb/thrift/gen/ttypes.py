@@ -2950,13 +2950,13 @@ class CellValueSerial(object):
     The Serial Value Cell field
 
     Attributes:
-     - field_id
-     - v_int64
-     - v_double
-     - v_bytes
-     - v_key
-     - v_li
-     - v_lb
+     - field_id: The Field ID, a single ID can have any/all the field types
+     - v_int64: The INT64 type field
+     - v_double: The DOUBLE type field
+     - v_bytes: The BYTES type field
+     - v_key: The Cell KEY type field
+     - v_li: The LIST INT64 type field
+     - v_lb: The LIST BYTES type field
 
     """
 
@@ -3500,7 +3500,7 @@ class Cells(object):
     The Cells for results list of scan
 
     Attributes:
-     - cells: The Cells, defined as KCell items in a list-container
+     - cells: The Cells, defined as Cell items in a list-container
      - serial_cells: The Serial Cells, defined as CellSerial items in a list-container
 
     """
@@ -3810,10 +3810,10 @@ class CCellSerial(object):
 
 class ColCells(object):
     """
-    The Column Cells for results on Columns of scan, defined as Cell items in a list-container
+    The Column Cells for results on Columns of scan
 
     Attributes:
-     - cells: The Cells, defined as KCell items in a list-container
+     - cells: The Cells, defined as CCell items in a list-container
      - serial_cells: The Serial Cells, defined as CCellSerial items in a list-container
 
     """

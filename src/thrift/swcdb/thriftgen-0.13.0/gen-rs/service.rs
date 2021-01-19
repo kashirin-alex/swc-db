@@ -3517,12 +3517,19 @@ impl Default for UCell {
 /// The Serial Value Cell field
 #[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct CellValueSerial {
+  /// The Field ID, a single ID can have any/all the field types
   pub field_id: Option<i32>,
+  /// The INT64 type field
   pub v_int64: Option<i64>,
+  /// The DOUBLE type field
   pub v_double: Option<OrderedFloat<f64>>,
+  /// The BYTES type field
   pub v_bytes: Option<Vec<u8>>,
+  /// The Cell KEY type field
   pub v_key: Option<Key>,
+  /// The LIST INT64 type field
   pub v_li: Option<Vec<i64>>,
+  /// The LIST BYTES type field
   pub v_lb: Option<Vec<Vec<u8>>>,
 }
 
@@ -4164,7 +4171,7 @@ impl Default for CellSerial {
 /// The Cells for results list of scan
 #[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct Cells {
-  /// The Cells, defined as KCell items in a list-container
+  /// The Cells, defined as Cell items in a list-container
   pub cells: Option<Vec<Cell>>,
   /// The Serial Cells, defined as CellSerial items in a list-container
   pub serial_cells: Option<Vec<CellSerial>>,
@@ -4502,10 +4509,10 @@ impl Default for CCellSerial {
 // ColCells
 //
 
-/// The Column Cells for results on Columns of scan, defined as Cell items in a list-container
+/// The Column Cells for results on Columns of scan
 #[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct ColCells {
-  /// The Cells, defined as KCell items in a list-container
+  /// The Cells, defined as CCell items in a list-container
   pub cells: Option<Vec<CCell>>,
   /// The Serial Cells, defined as CCellSerial items in a list-container
   pub serial_cells: Option<Vec<CCellSerial>>,

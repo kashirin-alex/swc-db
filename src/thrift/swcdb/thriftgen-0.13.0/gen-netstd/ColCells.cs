@@ -25,7 +25,7 @@ using Thrift.Processor;
 
 
 /// <summary>
-/// The Column Cells for results on Columns of scan, defined as Cell items in a list-container
+/// The Column Cells for results on Columns of scan
 /// </summary>
 public partial class ColCells : TBase
 {
@@ -33,7 +33,7 @@ public partial class ColCells : TBase
   private List<CCellSerial> _serial_cells;
 
   /// <summary>
-  /// The Cells, defined as KCell items in a list-container
+  /// The Cells, defined as CCell items in a list-container
   /// </summary>
   public List<CCell> Cells
   {

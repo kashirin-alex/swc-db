@@ -19,6 +19,7 @@ sort: 3
  _**Additional only generated SWC-DB Thrift Client Service**_:
 
   * [Netstd](netstd/)
+  * [Rust](rust/)
 
 
 > Languages Support can be extended upto [supported languages by Apache-Thrift ](https://github.com/apache/thrift/blob/master/LANGUAGES.md)
@@ -536,13 +537,13 @@ The Serial Value Cell field
 
 | Key | Field | Type | Description | Requiredness | Default value |
 | --- | --- | --- | --- | --- | --- |
-|1|field_id|```i32```||default||
-|2|v_int64|```i64```||optional||
-|3|v_double|```double```||optional||
-|4|v_bytes|```binary```||default||
-|5|v_key|[```Key```](#typedef-key)||default||
-|6|v_li|list&lt;```i64```&gt;||default||
-|7|v_lb|list&lt;```binary```&gt;||default||
+|1|field_id|```i32```|The Field ID, a single ID can have any/all the field types |default||
+|2|v_int64|```i64```|The INT64 type field |optional||
+|3|v_double|```double```|The DOUBLE type field |optional||
+|4|v_bytes|```binary```|The BYTES type field |default||
+|5|v_key|[```Key```](#typedef-key)|The Cell KEY type field |default||
+|6|v_li|list&lt;```i64```&gt;|The LIST INT64 type field |default||
+|7|v_lb|list&lt;```binary```&gt;|The LIST BYTES type field |default||
 
 ### Struct: UCellSerial
 The Cell data for using with Update of SERIAL Column Type 
@@ -581,7 +582,7 @@ The Cells for results list of scan
 
 | Key | Field | Type | Description | Requiredness | Default value |
 | --- | --- | --- | --- | --- | --- |
-|1|cells|list&lt;[```Cell```](#struct-cell)&gt;|The Cells, defined as KCell items in a list-container |default||
+|1|cells|list&lt;[```Cell```](#struct-cell)&gt;|The Cells, defined as Cell items in a list-container |default||
 |2|serial_cells|list&lt;[```CellSerial```](#struct-cellserial)&gt;|The Serial Cells, defined as CellSerial items in a list-container |default||
 
 ### Struct: CCell
@@ -603,11 +604,11 @@ The Column Serial Cell for results on Columns of scan
 |3|v|[```CellValuesSerial```](#typedef-cellvaluesserial)|The Cell Serial Value |default||
 
 ### Struct: ColCells
-The Column Cells for results on Columns of scan, defined as Cell items in a list-container 
+The Column Cells for results on Columns of scan 
 
 | Key | Field | Type | Description | Requiredness | Default value |
 | --- | --- | --- | --- | --- | --- |
-|1|cells|list&lt;[```CCell```](#struct-ccell)&gt;|The Cells, defined as KCell items in a list-container |default||
+|1|cells|list&lt;[```CCell```](#struct-ccell)&gt;|The Cells, defined as CCell items in a list-container |default||
 |2|serial_cells|list&lt;[```CCellSerial```](#struct-ccellserial)&gt;|The Serial Cells, defined as CCellSerial items in a list-container |default||
 
 ### Struct: KCell

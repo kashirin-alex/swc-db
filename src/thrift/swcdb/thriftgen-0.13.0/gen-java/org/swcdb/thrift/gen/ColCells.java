@@ -8,7 +8,7 @@ package org.swcdb.thrift.gen;
 
 @SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused"})
 /**
- * The Column Cells for results on Columns of scan, defined as Cell items in a list-container
+ * The Column Cells for results on Columns of scan
  */
 public class ColCells implements org.apache.thrift.TBase<ColCells, ColCells._Fields>, java.io.Serializable, Cloneable, Comparable<ColCells> {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("ColCells");
@@ -20,7 +20,7 @@ public class ColCells implements org.apache.thrift.TBase<ColCells, ColCells._Fie
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new ColCellsTupleSchemeFactory();
 
   /**
-   * The Cells, defined as KCell items in a list-container
+   * The Cells, defined as CCell items in a list-container
    */
   public @org.apache.thrift.annotation.Nullable java.util.List<CCell> cells; // required
   /**
@@ -31,7 +31,7 @@ public class ColCells implements org.apache.thrift.TBase<ColCells, ColCells._Fie
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     /**
-     * The Cells, defined as KCell items in a list-container
+     * The Cells, defined as CCell items in a list-container
      */
     CELLS((short)1, "cells"),
     /**
@@ -170,7 +170,7 @@ public class ColCells implements org.apache.thrift.TBase<ColCells, ColCells._Fie
   }
 
   /**
-   * The Cells, defined as KCell items in a list-container
+   * The Cells, defined as CCell items in a list-container
    */
   @org.apache.thrift.annotation.Nullable
   public java.util.List<CCell> getCells() {
@@ -178,7 +178,7 @@ public class ColCells implements org.apache.thrift.TBase<ColCells, ColCells._Fie
   }
 
   /**
-   * The Cells, defined as KCell items in a list-container
+   * The Cells, defined as CCell items in a list-container
    */
   public ColCells setCells(@org.apache.thrift.annotation.Nullable java.util.List<CCell> cells) {
     this.cells = cells;

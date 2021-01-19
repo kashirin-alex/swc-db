@@ -8,7 +8,22 @@
 
 ### [SWC-DB master](https://github.com/kashirin-alex/swc-db/tree/master) (upcoming-release)
 
-
+    updated for TCMalloc 2.8.1 version
+    updated for ASIO 1.18.1 version
+    removed BitFieldInt<T, SZ> destructor
+    added Serialization::fixed_vi_i{24,32,64} consumes length-byte + actual
+    added Serial Field LIST_BYTES in DB::(Specs,Cell}::Serial::Value 
+    added constructor DB::Specs::Interval(Types::Column col_type)
+    added support for multiple DB::Specs::Value & added class Specs::Values
+    added specialized Specs::Value::is_matching_{plain, serial, counter}
+    added struct DB::Specs::Value::TypeMatcher (a defined base instead void*)
+    added domain Condition Comparators SBS, SPS, POSBS, POSPS, FOSBS, FOSPS
+    added bool client::SQL::Reader::is_numeric_comparator(Condition::Comp&)
+    added NE(!=) condition support in DB::Specs::Value of SERIAL Column Type
+    added support to SWC-DB Thrift Service for Serial Cell-Value
+    added Encoder support in Thrift Service for update cell(UCell,UCellSerial)
+    removed 'optional' Thrift annotation from Container,Struct,Binary,String
+    added generated SWC-DB Thrift Service for Rust
 
 [_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.4.14...master)
 ******
@@ -73,7 +88,6 @@
         added sql-{Select,Update} sytax for SERIAL value expressions
     added bool Specs::Value::is_matching(const Cells::Cell& cell)
     added void* Specs::Value::compiled precompiled specs cond. RE,COUNTER,SERIAL
-
 
 [_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.4.13...v0.4.14)
 ******

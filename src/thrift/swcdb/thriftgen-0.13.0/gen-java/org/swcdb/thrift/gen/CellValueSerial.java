@@ -24,22 +24,64 @@ public class CellValueSerial implements org.apache.thrift.TBase<CellValueSerial,
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new CellValueSerialStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new CellValueSerialTupleSchemeFactory();
 
+  /**
+   * The Field ID, a single ID can have any/all the field types
+   */
   public int field_id; // required
+  /**
+   * The INT64 type field
+   */
   public long v_int64; // optional
+  /**
+   * The DOUBLE type field
+   */
   public double v_double; // optional
+  /**
+   * The BYTES type field
+   */
   public @org.apache.thrift.annotation.Nullable java.nio.ByteBuffer v_bytes; // required
+  /**
+   * The Cell KEY type field
+   */
   public @org.apache.thrift.annotation.Nullable java.util.List<java.nio.ByteBuffer> v_key; // required
+  /**
+   * The LIST INT64 type field
+   */
   public @org.apache.thrift.annotation.Nullable java.util.List<java.lang.Long> v_li; // required
+  /**
+   * The LIST BYTES type field
+   */
   public @org.apache.thrift.annotation.Nullable java.util.List<java.nio.ByteBuffer> v_lb; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+    /**
+     * The Field ID, a single ID can have any/all the field types
+     */
     FIELD_ID((short)1, "field_id"),
+    /**
+     * The INT64 type field
+     */
     V_INT64((short)2, "v_int64"),
+    /**
+     * The DOUBLE type field
+     */
     V_DOUBLE((short)3, "v_double"),
+    /**
+     * The BYTES type field
+     */
     V_BYTES((short)4, "v_bytes"),
+    /**
+     * The Cell KEY type field
+     */
     V_KEY((short)5, "v_key"),
+    /**
+     * The LIST INT64 type field
+     */
     V_LI((short)6, "v_li"),
+    /**
+     * The LIST BYTES type field
+     */
     V_LB((short)7, "v_lb");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
@@ -201,10 +243,16 @@ public class CellValueSerial implements org.apache.thrift.TBase<CellValueSerial,
     this.v_lb = null;
   }
 
+  /**
+   * The Field ID, a single ID can have any/all the field types
+   */
   public int getField_id() {
     return this.field_id;
   }
 
+  /**
+   * The Field ID, a single ID can have any/all the field types
+   */
   public CellValueSerial setField_id(int field_id) {
     this.field_id = field_id;
     setField_idIsSet(true);
@@ -224,10 +272,16 @@ public class CellValueSerial implements org.apache.thrift.TBase<CellValueSerial,
     __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __FIELD_ID_ISSET_ID, value);
   }
 
+  /**
+   * The INT64 type field
+   */
   public long getV_int64() {
     return this.v_int64;
   }
 
+  /**
+   * The INT64 type field
+   */
   public CellValueSerial setV_int64(long v_int64) {
     this.v_int64 = v_int64;
     setV_int64IsSet(true);
@@ -247,10 +301,16 @@ public class CellValueSerial implements org.apache.thrift.TBase<CellValueSerial,
     __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __V_INT64_ISSET_ID, value);
   }
 
+  /**
+   * The DOUBLE type field
+   */
   public double getV_double() {
     return this.v_double;
   }
 
+  /**
+   * The DOUBLE type field
+   */
   public CellValueSerial setV_double(double v_double) {
     this.v_double = v_double;
     setV_doubleIsSet(true);
@@ -270,6 +330,9 @@ public class CellValueSerial implements org.apache.thrift.TBase<CellValueSerial,
     __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __V_DOUBLE_ISSET_ID, value);
   }
 
+  /**
+   * The BYTES type field
+   */
   public byte[] getV_bytes() {
     setV_bytes(org.apache.thrift.TBaseHelper.rightSize(v_bytes));
     return v_bytes == null ? null : v_bytes.array();
@@ -279,6 +342,9 @@ public class CellValueSerial implements org.apache.thrift.TBase<CellValueSerial,
     return org.apache.thrift.TBaseHelper.copyBinary(v_bytes);
   }
 
+  /**
+   * The BYTES type field
+   */
   public CellValueSerial setV_bytes(byte[] v_bytes) {
     this.v_bytes = v_bytes == null ? (java.nio.ByteBuffer)null   : java.nio.ByteBuffer.wrap(v_bytes.clone());
     return this;
@@ -320,11 +386,17 @@ public class CellValueSerial implements org.apache.thrift.TBase<CellValueSerial,
     this.v_key.add(elem);
   }
 
+  /**
+   * The Cell KEY type field
+   */
   @org.apache.thrift.annotation.Nullable
   public java.util.List<java.nio.ByteBuffer> getV_key() {
     return this.v_key;
   }
 
+  /**
+   * The Cell KEY type field
+   */
   public CellValueSerial setV_key(@org.apache.thrift.annotation.Nullable java.util.List<java.nio.ByteBuffer> v_key) {
     this.v_key = v_key;
     return this;
@@ -361,11 +433,17 @@ public class CellValueSerial implements org.apache.thrift.TBase<CellValueSerial,
     this.v_li.add(elem);
   }
 
+  /**
+   * The LIST INT64 type field
+   */
   @org.apache.thrift.annotation.Nullable
   public java.util.List<java.lang.Long> getV_li() {
     return this.v_li;
   }
 
+  /**
+   * The LIST INT64 type field
+   */
   public CellValueSerial setV_li(@org.apache.thrift.annotation.Nullable java.util.List<java.lang.Long> v_li) {
     this.v_li = v_li;
     return this;
@@ -402,11 +480,17 @@ public class CellValueSerial implements org.apache.thrift.TBase<CellValueSerial,
     this.v_lb.add(elem);
   }
 
+  /**
+   * The LIST BYTES type field
+   */
   @org.apache.thrift.annotation.Nullable
   public java.util.List<java.nio.ByteBuffer> getV_lb() {
     return this.v_lb;
   }
 
+  /**
+   * The LIST BYTES type field
+   */
   public CellValueSerial setV_lb(@org.apache.thrift.annotation.Nullable java.util.List<java.nio.ByteBuffer> v_lb) {
     this.v_lb = v_lb;
     return this;
