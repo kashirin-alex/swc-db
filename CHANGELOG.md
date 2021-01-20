@@ -9,6 +9,16 @@
 
 ### [SWC-DB master](https://github.com/kashirin-alex/swc-db/tree/master) (upcoming-release)
 
+
+
+[_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.4.15...master)
+******
+
+
+
+
+### [SWC-DB v0.4.15](https://github.com/kashirin-alex/swc-db/releases/tag/v0.4.15) (2021-01-20)
+
     updated for TCMalloc 2.8.1 version
     updated for ASIO 1.18.1 version
     removed BitFieldInt<T, SZ> destructor
@@ -26,7 +36,7 @@
     removed 'optional' Thrift annotation from Container,Struct,Binary,String
     added generated SWC-DB Thrift Service for Rust
 
-[_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.4.14...master)
+[_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.4.14...v0.4.15)
 ******
 
 
