@@ -334,7 +334,7 @@ The Expression of Value Condition dependable on the [Schema's column value type]
   ``` COMP "VALUE" ``` - applicable with Extended Comparators
 
   * **_COUNTER_**: \
-  ``` COMP "VALUE" ``` - not supported Comparators PF, RE, POSBS and PSSPS
+  ``` COMP "VALUE" ``` - not supported Comparators PF, RE, POSBS and POSPS
 
   * **_SERIAL_**: \
   ``` [ID:TYPE:COMP "VALUE", ... ] ``` - in square-brackets a comma-separated sets, a set is separated by colon with Field-ID, Field-Type and a Comparator with a Value. \
