@@ -86,7 +86,7 @@ void FileSystem::stop() {
 Type FileSystem::get_type() const noexcept {
   return Type::UNKNOWN;
 }
-  
+
 std::string FileSystem::to_string() const {
   return format(
     "(type=UNKNOWN path_root=%s path_data=%s)",
@@ -139,14 +139,14 @@ void FileSystem::remove(const Callback::RemoveCb_t& cb,
   remove(err, name);
   cb(err);
 }
- 
+
 void FileSystem::length(const Callback::LengthCb_t& cb,
                         const std::string& name) {
   int err = Error::OK;
   size_t len = length(err, name);
   cb(err, len);
 }
- 
+
 void FileSystem::mkdirs(const Callback::MkdirsCb_t& cb,
                         const std::string& name) {
   int err = Error::OK;
@@ -168,7 +168,7 @@ void FileSystem::rmdir(const Callback::RmdirCb_t& cb,
   rmdir(err, name);
   cb(err);
 }
-  
+
 void FileSystem::rename(const Callback::RmdirCb_t& cb,
                         const std::string& from, const std::string& to) {
   int err = Error::OK;
@@ -176,9 +176,9 @@ void FileSystem::rename(const Callback::RmdirCb_t& cb,
   cb(err);
 }
 
-void FileSystem::write(int& err, SmartFd::Ptr& smartfd,
-                       uint8_t replication, int64_t blksz,
-                       StaticBuffer& buffer) {
+void FileSystem::default_write(int& err, SmartFd::Ptr& smartfd,
+                               uint8_t replication, int64_t blksz,
+                               StaticBuffer& buffer) {
   SWC_LOG_OUT(LOG_DEBUG, smartfd->print(SWC_LOG_OSTREAM << "write "); );
 
   create(err, smartfd, 0, replication, blksz);
@@ -214,8 +214,8 @@ void FileSystem::write(const Callback::WriteCb_t& cb, SmartFd::Ptr& smartfd,
   cb(err, smartfd);
 }
 
-void FileSystem::read(int& err, const std::string& name,
-                      StaticBuffer* buffer) {
+void FileSystem::default_read(int& err, const std::string& name,
+                              StaticBuffer* buffer) {
   SWC_LOGF(LOG_DEBUG, "read-all %s", name.c_str());
 
   size_t len;
@@ -259,9 +259,9 @@ void FileSystem::read(const Callback::ReadAllCb_t& cb,
   cb(err, name, dst);
 }
 
-void FileSystem::combi_pread(int& err, SmartFd::Ptr& smartfd,
-                             uint64_t offset, uint32_t amount,
-                             StaticBuffer* buffer) {
+void FileSystem::default_combi_pread(int& err, SmartFd::Ptr& smartfd,
+                                     uint64_t offset, uint32_t amount,
+                                     StaticBuffer* buffer) {
   SWC_LOGF(LOG_DEBUG, "combi-pread %s offset=%lu amount=%u",
            smartfd->filepath().c_str(), offset, amount);
 
@@ -310,13 +310,13 @@ void FileSystem::open(const Callback::OpenCb_t& cb, SmartFd::Ptr& smartfd,
   cb(err, smartfd);
 }
 
-size_t FileSystem::read(int& err, SmartFd::Ptr& smartfd,
-                        StaticBuffer* dst, size_t amount) {
+size_t FileSystem::default_read(int& err, SmartFd::Ptr& smartfd,
+                                StaticBuffer* dst, size_t amount) {
   if(!dst->size)
     dst->reallocate(amount);
   return read(err, smartfd, dst->base, amount);
 }
-   
+
 void FileSystem::read(const Callback::ReadCb_t& cb, SmartFd::Ptr& smartfd,
                       size_t amount) {
   int err = Error::OK;
@@ -324,9 +324,10 @@ void FileSystem::read(const Callback::ReadCb_t& cb, SmartFd::Ptr& smartfd,
   read(err, smartfd, dst.get(), amount);
   cb(err, smartfd, dst);
 }
-  
-size_t FileSystem::pread(int& err, SmartFd::Ptr& smartfd,
-                         uint64_t offset, StaticBuffer* dst, size_t amount) {
+
+size_t FileSystem::default_pread(int& err, SmartFd::Ptr& smartfd,
+                                 uint64_t offset,
+                                 StaticBuffer* dst, size_t amount) {
   if(!dst->size)
     dst->reallocate(amount);
   return pread(err, smartfd, offset, dst->base, amount);

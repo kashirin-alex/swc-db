@@ -63,6 +63,22 @@ class FileSystemHadoopJVM final : public FileSystem {
   void rename(int& err, const std::string& from,
                         const std::string& to)  override;
 
+  void write(int& err, SmartFd::Ptr& smartfd,
+             uint8_t replication, int64_t blksz,
+             StaticBuffer& buffer) override {
+    default_write(err, smartfd, replication, blksz, buffer);
+  }
+
+  void read(int& err, const std::string& name, StaticBuffer* dst) override {
+    default_read(err, name, dst);
+  }
+
+  void combi_pread(int& err, SmartFd::Ptr& smartfd,
+                   uint64_t offset, uint32_t amount,
+                   StaticBuffer* dst) override {
+    default_combi_pread(err, smartfd, offset, amount, dst);
+  }
+
   void create(int& err, SmartFd::Ptr& smartfd,
               int32_t bufsz, uint8_t replication, int64_t blksz) override;
 
@@ -71,8 +87,18 @@ class FileSystemHadoopJVM final : public FileSystem {
   size_t read(int& err, SmartFd::Ptr& smartfd,
               void *dst, size_t amount) override;
 
+  size_t read(int& err, SmartFd::Ptr& smartfd,
+              StaticBuffer* dst, size_t amount) override {
+    return default_read(err, smartfd, dst, amount);
+  }
+
   size_t pread(int& err, SmartFd::Ptr& smartfd,
                uint64_t offset, void *dst, size_t amount) override;
+
+  size_t pread(int& err, SmartFd::Ptr& smartfd, uint64_t offset,
+               StaticBuffer* dst, size_t amount) override {
+    return default_pread(err, smartfd, offset, dst, amount);
+  }
 
   size_t append(int& err, SmartFd::Ptr& smartfd,
                 StaticBuffer& buffer, Flags flags) override;
@@ -99,7 +125,7 @@ class FileSystemHadoopJVM final : public FileSystem {
     SmartFdHadoopJVM(const std::string& filepath, uint32_t flags,
                      int32_t fd=-1, uint64_t pos=0);
 
-    virtual ~SmartFdHadoopJVM();
+    virtual ~SmartFdHadoopJVM() { }
 
     hdfsFile file() noexcept;
 
@@ -138,7 +164,7 @@ class FileSystemHadoopJVM final : public FileSystem {
 
 
 
-extern "C" { 
+extern "C" {
 SWC::FS::FileSystem* fs_make_new_hadoop_jvm();
 void fs_apply_cfg_hadoop_jvm(SWC::Env::Config::Ptr env);
 }

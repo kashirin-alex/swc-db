@@ -76,7 +76,7 @@ class FileSystem : public std::enable_shared_from_this<FileSystem> {
 
   virtual Type get_type() const noexcept;
 
-  virtual std::string to_string() const;
+  virtual std::string to_string() const = 0;
 
   virtual void get_abspath(const std::string& name, std::string& abspath);
 
@@ -123,16 +123,23 @@ class FileSystem : public std::enable_shared_from_this<FileSystem> {
   // File(fd) Actions
   virtual void write(int& err, SmartFd::Ptr& smartfd,
                      uint8_t replication, int64_t blksz,
+                     StaticBuffer& buffer) = 0;
+  void default_write(int& err, SmartFd::Ptr& smartfd,
+                     uint8_t replication, int64_t blksz,
                      StaticBuffer& buffer);
   virtual void write(const Callback::WriteCb_t& cb, SmartFd::Ptr& smartfd,
                      uint8_t replication, int64_t blksz,
                      StaticBuffer& buffer);
 
-  virtual void read(int& err, const std::string& name, StaticBuffer* dst);
+  virtual void read(int& err, const std::string& name, StaticBuffer* dst) = 0;
+  void default_read(int& err, const std::string& name, StaticBuffer* dst);
   virtual void read(const Callback::ReadAllCb_t& cb,
                     const std::string& name);
 
   virtual void combi_pread(int& err, SmartFd::Ptr& smartfd,
+                           uint64_t offset, uint32_t amount,
+                           StaticBuffer* dst) = 0;
+  void default_combi_pread(int& err, SmartFd::Ptr& smartfd,
                            uint64_t offset, uint32_t amount,
                            StaticBuffer* dst);
   virtual void combi_pread(const Callback::CombiPreadCb_t& cb,
@@ -152,6 +159,8 @@ class FileSystem : public std::enable_shared_from_this<FileSystem> {
   virtual size_t read(int& err, SmartFd::Ptr& smartfd,
                       void *dst, size_t amount) = 0;
   virtual size_t read(int& err, SmartFd::Ptr& smartfd,
+                      StaticBuffer* dst, size_t amount) = 0;
+  size_t default_read(int& err, SmartFd::Ptr& smartfd,
                       StaticBuffer* dst, size_t amount);
   virtual void read(const Callback::ReadCb_t& cb, SmartFd::Ptr& smartfd,
                     size_t amount);
@@ -159,6 +168,8 @@ class FileSystem : public std::enable_shared_from_this<FileSystem> {
   virtual size_t pread(int& err, SmartFd::Ptr& smartfd,
                        uint64_t offset, void *dst, size_t amount) = 0;
   virtual size_t pread(int& err, SmartFd::Ptr& smartfd,
+                       uint64_t offset, StaticBuffer* dst, size_t amount) = 0;
+  size_t default_pread(int& err, SmartFd::Ptr& smartfd,
                        uint64_t offset, StaticBuffer* dst, size_t amount);
   virtual void pread(const Callback::PreadCb_t& cb, SmartFd::Ptr& smartfd,
                      uint64_t offset, size_t amount);

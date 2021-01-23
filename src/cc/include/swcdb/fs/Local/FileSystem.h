@@ -29,31 +29,57 @@ class FileSystemLocal final : public FileSystem {
   bool exists(int& err, const std::string& name) override;
 
   void remove(int& err, const std::string& name) override;
-  
+
   size_t length(int& err, const std::string& name) override;
 
   void mkdirs(int& err, const std::string& name) override;
 
-  void readdir(int& err, const std::string& name, 
+  void readdir(int& err, const std::string& name,
                DirentList& results) override;
 
   void rmdir(int& err, const std::string& name) override;
 
-  void rename(int& err, const std::string& from, 
+  void rename(int& err, const std::string& from,
                         const std::string& to) override;
-  
-  void create(int& err, SmartFd::Ptr& smartfd, 
+
+  void write(int& err, SmartFd::Ptr& smartfd,
+             uint8_t replication, int64_t blksz,
+             StaticBuffer& buffer) override {
+    default_write(err, smartfd, replication, blksz, buffer);
+  }
+
+  void read(int& err, const std::string& name, StaticBuffer* dst) override {
+    default_read(err, name, dst);
+  }
+
+  void combi_pread(int& err, SmartFd::Ptr& smartfd,
+                   uint64_t offset, uint32_t amount,
+                   StaticBuffer* dst) override {
+    default_combi_pread(err, smartfd, offset, amount, dst);
+  }
+
+  void create(int& err, SmartFd::Ptr& smartfd,
               int32_t bufsz, uint8_t replication, int64_t blksz) override;
 
   void open(int& err, SmartFd::Ptr& smartfd, int32_t bufsz=0) override;
-  
-  size_t read(int& err, SmartFd::Ptr& smartfd, 
+
+  size_t read(int& err, SmartFd::Ptr& smartfd,
               void *dst, size_t amount) override;
 
-  size_t pread(int& err, SmartFd::Ptr& smartfd, 
+  size_t read(int& err, SmartFd::Ptr& smartfd,
+              StaticBuffer* dst, size_t amount) override {
+    return default_read(err, smartfd, dst, amount);
+  }
+
+  size_t pread(int& err, SmartFd::Ptr& smartfd,
                uint64_t offset, void *dst, size_t amount) override;
 
-  size_t append(int& err, SmartFd::Ptr& smartfd, 
+  size_t pread(int& err, SmartFd::Ptr& smartfd, uint64_t offset,
+               StaticBuffer* dst, size_t amount) override {
+    return default_pread(err, smartfd, offset, dst, amount);
+  }
+
+  size_t append(int& err, SmartFd::Ptr& smartfd,
                 StaticBuffer& buffer, Flags flags) override;
 
   void seek(int& err, SmartFd::Ptr& smartfd, size_t offset) override;
@@ -80,7 +106,7 @@ void fs_apply_cfg_local(SWC::Env::Config::Ptr env);
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/fs/Local/FileSystem.cc"
-#endif 
+#endif
 
 
 #endif // swcdb_fs_Local_FileSystem_h
