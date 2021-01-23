@@ -57,7 +57,7 @@ class Ranger : public Comm::Protocol::Common::Params::HostEndPoints {
     Serialization::encode_i8(bufp, state.load());
     Serialization::encode_vi64(bufp, rgrid.load());
     Serialization::encode_i16(bufp, load_scale.load());
-    Serialization::encode_i8(bufp, (uint8_t)rebalance());
+    Serialization::encode_i8(bufp, rebalance());
     Comm::Protocol::Common::Params::HostEndPoints::internal_encode(bufp);
   }
 

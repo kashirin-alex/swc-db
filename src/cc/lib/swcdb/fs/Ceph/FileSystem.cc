@@ -333,7 +333,7 @@ void FileSystemCeph::readdir(int& err, const std::string& name,
     entry.name.append(de.d_name);
     entry.is_dir = S_ISDIR(stx.stx_mode) || de.d_type == DT_DIR;
 
-    entry.length = (uint64_t)stx.stx_size;
+    entry.length = stx.stx_size;
     entry.last_modification_time = stx.stx_mtime.tv_sec;
   }
 

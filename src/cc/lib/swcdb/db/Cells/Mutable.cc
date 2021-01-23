@@ -848,7 +848,7 @@ void Mutable::_remove(Mutable::Iterator& it) {
 
 void Mutable::_remove(Mutable::Iterator& it, size_t number, bool wdel) { 
   if(wdel) {
-    auto it_del = Iterator(it);
+    Iterator it_del(it);
     for(auto c = number; c && it_del; ++it_del,--c) {
       _remove(*it_del.item);
       delete *it_del.item;

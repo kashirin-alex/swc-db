@@ -72,7 +72,7 @@ int64_t parse_ns(int& err, const std::string& buf) {
 
 std::string fmt_ns(int64_t ns) {
   int64_t secs = ns/1000000000;
-  time_t t_secs = (time_t)secs;
+  time_t t_secs = secs;
 
   std::string nanos;
   if(ns < 0) {

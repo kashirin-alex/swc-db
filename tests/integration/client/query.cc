@@ -343,7 +343,7 @@ class Test {
     apply_cell_key(key, i, f);
 
     auto req = std::make_shared<client::Query::Select>(
-      [this, ts=Time::now_ns(), key=DB::Cell::Key(key), i, f]
+      [this, ts=Time::now_ns(), key=DB::Cell::Key(key, true), i, f]
       (const client::Query::Select::Result::Ptr& result) {
         time_select += Time::now_ns() - ts;
 

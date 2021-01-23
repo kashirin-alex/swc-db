@@ -306,8 +306,7 @@ void Field_LIST_BYTES::print(std::ostream& out) const {
       char hex[5];
       hex[4] = '\0';
       size_t len;
-      const uint8_t* cptr = (const uint8_t*)Serialization::decode_bytes(
-        &ptr, &remain, &len);
+      const uint8_t* cptr = Serialization::decode_bytes(&ptr, &remain, &len);
       const uint8_t* end = cptr + len;
       for(; cptr < end; ++cptr) {
         if(*cptr == '"')

@@ -74,7 +74,7 @@ bool Fs::ls(const std::string& cmd) {
 
   SWC_PRINT << "Directories=" << dirs.size() << ":\n";
   for(auto& entry : dirs) {
-    t_secs = (time_t)entry->last_modification_time;
+    t_secs = entry->last_modification_time;
     std::strftime(modified, 20, "%Y/%m/%d %H:%M:%S", std::gmtime(&t_secs));
       
     SWC_LOG_OSTREAM << std::left << "  " 
@@ -86,7 +86,7 @@ bool Fs::ls(const std::string& cmd) {
 
   SWC_LOG_OSTREAM << "Files=" << files.size() << ":\n";
   for(auto& entry : files) {
-    t_secs = (time_t)entry->last_modification_time;
+    t_secs = entry->last_modification_time;
     std::strftime(modified, 20, "%Y/%m/%d %H:%M:%S", std::gmtime(&t_secs));
     
     SWC_LOG_OSTREAM << std::left << "  " 

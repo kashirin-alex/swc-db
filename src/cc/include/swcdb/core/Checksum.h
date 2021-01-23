@@ -54,7 +54,7 @@ uint32_t checksum32(const uint8_t* data8, size_t len8) noexcept
 
 extern SWC_CAN_INLINE 
 uint32_t checksum32(const uint8_t* data8, size_t len8) noexcept {
-  return fletcher32((const uint8_t*)data8, len8);
+  return fletcher32(data8, len8);
 }
 
 
