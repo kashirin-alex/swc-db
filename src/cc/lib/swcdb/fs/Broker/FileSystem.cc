@@ -9,7 +9,7 @@
 #include "swcdb/fs/Broker/Protocol/Commands.h"
 #include "swcdb/fs/Broker/Protocol/req/Base.h"
 #include "swcdb/fs/Broker/AppContext.h"
- 
+
 #include "swcdb/fs/Broker/Protocol/req/Exists.h"
 #include "swcdb/fs/Broker/Protocol/req/ExistsSync.h"
 #include "swcdb/fs/Broker/Protocol/req/Remove.h"
@@ -59,7 +59,7 @@ Configurables apply_broker() {
      "Dyn-config file")
 
     ("swc.fs.broker.host", Config::str(),
-     "FsBroker host (default by hostname)") 
+     "FsBroker host (default by hostname)")
     ("swc.fs.broker.port", Config::i16(17000),
      "FsBroker port")
 
@@ -68,10 +68,10 @@ Configurables apply_broker() {
 
     ("swc.fs.broker.timeout", Config::g_i32(120000),
      "Default request timeout in ms")
-    ("swc.fs.broker.timeout.bytes.ratio", Config::g_i32(1000), 
+    ("swc.fs.broker.timeout.bytes.ratio", Config::g_i32(1000),
      "Timeout ratio to bytes, bytes/ratio=ms added to default timeout")
 
-    ("swc.fs.broker.comm.encoder", 
+    ("swc.fs.broker.comm.encoder",
       Config::g_enum(
         (int)SWC_DEFAULT_COMM_ENCODER,
         0,
@@ -79,7 +79,7 @@ Configurables apply_broker() {
         Core::Encoder::repr_encoding),
      "The encoding to use in communication, options PLAIN/ZSTD/SNAPPY/ZLIB")
 
-    ("swc.fs.broker.fds.max", Config::g_i32(256), 
+    ("swc.fs.broker.fds.max", Config::g_i32(256),
       "Max Open Fds for opt. without closing")
   ;
   Env::Config::settings()->parse_file(
@@ -127,8 +127,8 @@ FileSystemBroker::FileSystemBroker()
       Env::Config::settings()->get_i32("swc.fs.broker.handlers"))),
     m_service(
       std::make_shared<Comm::client::Serialized>(
-        "FS-BROKER", 
-        m_io, 
+        "FS-BROKER",
+        m_io,
         std::make_shared<client::FsBroker::AppContext>()
       )
     ),
@@ -139,7 +139,7 @@ FileSystemBroker::FileSystemBroker()
       Env::Config::settings()->get<Config::Property::V_GINT32>(
         "swc.fs.broker.timeout")),
     cfg_timeout_ratio(
-      Env::Config::settings()->get<Config::Property::V_GINT32>( 
+      Env::Config::settings()->get<Config::Property::V_GINT32>(
         "swc.fs.broker.timeout.bytes.ratio")) {
 }
 
@@ -191,11 +191,11 @@ bool FileSystemBroker::exists(int& err, const std::string& name) {
     cfg_timeout->get(), name);
   while(!send_request(hdlr));
   hdlr->wait();
-  err = hdlr->error;    
+  err = hdlr->error;
   return hdlr->state;
 }
 
-void FileSystemBroker::exists(const Callback::ExistsCb_t& cb,  
+void FileSystemBroker::exists(const Callback::ExistsCb_t& cb,
                               const std::string& name) {
   SWC_LOGF(LOG_DEBUG, "exists path='%s'", name.c_str());
 
@@ -214,7 +214,7 @@ void FileSystemBroker::remove(int& err, const std::string& name) {
   err = hdlr->error;
 }
 
-void FileSystemBroker::remove(const Callback::RemoveCb_t& cb, 
+void FileSystemBroker::remove(const Callback::RemoveCb_t& cb,
                               const std::string& name) {
   SWC_LOGF(LOG_DEBUG, "remove path='%s'", name.c_str());
 
@@ -222,7 +222,7 @@ void FileSystemBroker::remove(const Callback::RemoveCb_t& cb,
     cfg_timeout->get(), name, cb);
   while(!send_request(hdlr));
 }
-  
+
 size_t FileSystemBroker::length(int& err, const std::string& name) {
   SWC_LOGF(LOG_DEBUG, "length path='%s'", name.c_str());
 
@@ -234,7 +234,7 @@ size_t FileSystemBroker::length(int& err, const std::string& name) {
   return hdlr->length;
 }
 
-void FileSystemBroker::length(const Callback::LengthCb_t& cb, 
+void FileSystemBroker::length(const Callback::LengthCb_t& cb,
                               const std::string& name) {
   SWC_LOGF(LOG_DEBUG, "length path='%s'", name.c_str());
 
@@ -253,7 +253,7 @@ void FileSystemBroker::mkdirs(int& err, const std::string& name) {
   err = hdlr->error;
 }
 
-void FileSystemBroker::mkdirs(const Callback::MkdirsCb_t& cb,  
+void FileSystemBroker::mkdirs(const Callback::MkdirsCb_t& cb,
                               const std::string& name) {
   SWC_LOGF(LOG_DEBUG, "mkdirs path='%s'", name.c_str());
 
@@ -262,7 +262,7 @@ void FileSystemBroker::mkdirs(const Callback::MkdirsCb_t& cb,
   while(!send_request(hdlr));
 }
 
-void FileSystemBroker::readdir(int& err, const std::string& name, 
+void FileSystemBroker::readdir(int& err, const std::string& name,
                                 DirentList& results) {
   SWC_LOGF(LOG_DEBUG, "readdir path='%s'", name.c_str());
 
@@ -273,7 +273,7 @@ void FileSystemBroker::readdir(int& err, const std::string& name,
   err = hdlr->error;
 }
 
-void FileSystemBroker::readdir(const Callback::ReaddirCb_t& cb, 
+void FileSystemBroker::readdir(const Callback::ReaddirCb_t& cb,
                                const std::string& name) {
   SWC_LOGF(LOG_DEBUG, "readdir path='%s'", name.c_str());
 
@@ -292,7 +292,7 @@ void FileSystemBroker::rmdir(int& err, const std::string& name) {
   err = hdlr->error;
 }
 
-void FileSystemBroker::rmdir(const Callback::RmdirCb_t& cb, 
+void FileSystemBroker::rmdir(const Callback::RmdirCb_t& cb,
                              const std::string& name) {
   SWC_LOGF(LOG_DEBUG, "rmdir path='%s'", name.c_str());
 
@@ -301,7 +301,7 @@ void FileSystemBroker::rmdir(const Callback::RmdirCb_t& cb,
   while(!send_request(hdlr));
 }
 
-void FileSystemBroker::rename(int& err, const std::string& from, 
+void FileSystemBroker::rename(int& err, const std::string& from,
                               const std::string& to)  {
   SWC_LOGF(LOG_DEBUG, "rename '%s' to '%s'", from.c_str(), to.c_str());
 
@@ -312,8 +312,8 @@ void FileSystemBroker::rename(int& err, const std::string& from,
   err = hdlr->error;
 }
 
-void FileSystemBroker::rename(const Callback::RenameCb_t& cb, 
-                              const std::string& from, 
+void FileSystemBroker::rename(const Callback::RenameCb_t& cb,
+                              const std::string& from,
                               const std::string& to)  {
   SWC_LOGF(LOG_DEBUG, "rename '%s' to '%s'", from.c_str(), to.c_str());
 
@@ -325,9 +325,9 @@ void FileSystemBroker::rename(const Callback::RenameCb_t& cb,
 /// SmartFd actions
 
 void FileSystemBroker::write(int& err, SmartFd::Ptr& smartfd,
-                             uint8_t replication, int64_t blksz, 
+                             uint8_t replication, int64_t blksz,
                              StaticBuffer& buffer) {
-  SWC_LOG_OUT(LOG_DEBUG, 
+  SWC_LOG_OUT(LOG_DEBUG,
     SWC_LOG_PRINTF("write amount=%lu replication(%u) blksz(%ld) timeout=%d ",
                     buffer.size, replication, blksz, cfg_timeout->get());
     smartfd->print(SWC_LOG_OSTREAM);
@@ -340,11 +340,11 @@ void FileSystemBroker::write(int& err, SmartFd::Ptr& smartfd,
   err = hdlr->error;
 }
 
-void FileSystemBroker::write(const Callback::WriteCb_t& cb, 
+void FileSystemBroker::write(const Callback::WriteCb_t& cb,
                              SmartFd::Ptr& smartfd,
-                             uint8_t replication, int64_t blksz, 
+                             uint8_t replication, int64_t blksz,
                              StaticBuffer& buffer) {
-  SWC_LOG_OUT(LOG_DEBUG, 
+  SWC_LOG_OUT(LOG_DEBUG,
     SWC_LOG_PRINTF("write amount=%lu replication(%u) blksz(%ld) timeout=%d ",
                     buffer.size, replication, blksz, cfg_timeout->get());
     smartfd->print(SWC_LOG_OSTREAM);
@@ -355,9 +355,9 @@ void FileSystemBroker::write(const Callback::WriteCb_t& cb,
   while(!send_request(hdlr));
 }
 
-void FileSystemBroker::read(int& err, const std::string& name, 
+void FileSystemBroker::read(int& err, const std::string& name,
                             StaticBuffer* dst) {
-  SWC_LOGF(LOG_DEBUG, "read-all timeout=%d %s", 
+  SWC_LOGF(LOG_DEBUG, "read-all timeout=%d %s",
             cfg_timeout->get(), name.c_str());
 
   auto hdlr = std::make_shared<Comm::Protocol::FsBroker::Req::ReadAllSync>(
@@ -367,9 +367,9 @@ void FileSystemBroker::read(int& err, const std::string& name,
   err = hdlr->error;
 }
 
-void FileSystemBroker::read(const Callback::ReadAllCb_t& cb, 
+void FileSystemBroker::read(const Callback::ReadAllCb_t& cb,
                             const std::string& name) {
-  SWC_LOGF(LOG_DEBUG, "read-all timeout=%d %s", 
+  SWC_LOGF(LOG_DEBUG, "read-all timeout=%d %s",
             cfg_timeout->get(), name.c_str());
 
   auto hdlr = std::make_shared<Comm::Protocol::FsBroker::Req::ReadAll>(
@@ -377,11 +377,11 @@ void FileSystemBroker::read(const Callback::ReadAllCb_t& cb,
   while(!send_request(hdlr));
 }
 
-void FileSystemBroker::combi_pread(int& err, SmartFd::Ptr& smartfd, 
-                                   uint64_t offset, uint32_t amount, 
+void FileSystemBroker::combi_pread(int& err, SmartFd::Ptr& smartfd,
+                                   uint64_t offset, uint32_t amount,
                                    StaticBuffer* dst) {
   uint32_t timeout = cfg_timeout->get() + amount/cfg_timeout_ratio->get();
-  SWC_LOGF(LOG_DEBUG, "combi-pread timeout=%d %s offset=%lu amount=%u ", 
+  SWC_LOGF(LOG_DEBUG, "combi-pread timeout=%d %s offset=%lu amount=%u ",
            timeout, smartfd->filepath().c_str(), offset, amount);
 
   auto hdlr = std::make_shared<Comm::Protocol::FsBroker::Req::CombiPreadSync>(
@@ -391,11 +391,11 @@ void FileSystemBroker::combi_pread(int& err, SmartFd::Ptr& smartfd,
   err = hdlr->error;
 }
 
-void FileSystemBroker::combi_pread(const Callback::CombiPreadCb_t& cb, 
-                                   SmartFd::Ptr& smartfd, 
+void FileSystemBroker::combi_pread(const Callback::CombiPreadCb_t& cb,
+                                   SmartFd::Ptr& smartfd,
                                    uint64_t offset, uint32_t amount) {
   uint32_t timeout = cfg_timeout->get() + amount/cfg_timeout_ratio->get();
-  SWC_LOGF(LOG_DEBUG, "combi-pread timeout=%d %s offset=%lu amount=%u ", 
+  SWC_LOGF(LOG_DEBUG, "combi-pread timeout=%d %s offset=%lu amount=%u ",
            timeout, smartfd->filepath().c_str(), offset, amount);
 
   auto hdlr = std::make_shared<Comm::Protocol::FsBroker::Req::CombiPread>(
@@ -404,39 +404,39 @@ void FileSystemBroker::combi_pread(const Callback::CombiPreadCb_t& cb,
 }
 
 void FileSystemBroker::create(int& err, SmartFd::Ptr& smartfd,
-                              int32_t bufsz, uint8_t replication, 
+                              int32_t bufsz, uint8_t replication,
                               int64_t blksz) {
-  SWC_LOG_OUT(LOG_DEBUG, 
-    SWC_LOG_PRINTF("create bufsz(%d) replication(%d) blksz(%ld) timeout=%d ", 
+  SWC_LOG_OUT(LOG_DEBUG,
+    SWC_LOG_PRINTF("create bufsz(%d) replication(%d) blksz(%ld) timeout=%d ",
                     bufsz, replication, blksz, cfg_timeout->get());
     smartfd->print(SWC_LOG_OSTREAM);
   );
 
   auto hdlr = std::make_shared<Comm::Protocol::FsBroker::Req::CreateSync>(
-    shared_from_this(), 
+    shared_from_this(),
     cfg_timeout->get(), smartfd, bufsz, replication, blksz);
   while(!send_request(hdlr));
   hdlr->wait();
   err = hdlr->error;
 }
 
-void FileSystemBroker::create(const Callback::CreateCb_t& cb, 
+void FileSystemBroker::create(const Callback::CreateCb_t& cb,
                               SmartFd::Ptr& smartfd,
-                              int32_t bufsz, uint8_t replication, 
+                              int32_t bufsz, uint8_t replication,
                               int64_t blksz) {
-  SWC_LOG_OUT(LOG_DEBUG, 
-    SWC_LOG_PRINTF("create bufsz(%d) replication(%d) blksz(%ld) timeout=%d ", 
+  SWC_LOG_OUT(LOG_DEBUG,
+    SWC_LOG_PRINTF("create bufsz(%d) replication(%d) blksz(%ld) timeout=%d ",
                     bufsz, replication, blksz, cfg_timeout->get());
     smartfd->print(SWC_LOG_OSTREAM);
   );
 
   auto hdlr = std::make_shared<Comm::Protocol::FsBroker::Req::Create>(
-    shared_from_this(), 
+    shared_from_this(),
     cfg_timeout->get(), smartfd, bufsz, replication, blksz, cb);
   while(!send_request(hdlr));
 }
-  
-size_t FileSystemBroker::append(int& err, SmartFd::Ptr& smartfd, 
+
+size_t FileSystemBroker::append(int& err, SmartFd::Ptr& smartfd,
                                 StaticBuffer& buffer, Flags flags) {
   uint32_t timeout = cfg_timeout->get()+buffer.size/cfg_timeout_ratio->get();
   SWC_LOG_OUT(LOG_DEBUG,
@@ -452,13 +452,13 @@ size_t FileSystemBroker::append(int& err, SmartFd::Ptr& smartfd,
   err = hdlr->error;
   return hdlr->amount;
 }
-   
-void FileSystemBroker::append(const Callback::AppendCb_t& cb, 
-                              SmartFd::Ptr& smartfd, 
+
+void FileSystemBroker::append(const Callback::AppendCb_t& cb,
+                              SmartFd::Ptr& smartfd,
                               StaticBuffer& buffer, Flags flags) {
   uint32_t timeout = cfg_timeout->get()+buffer.size/cfg_timeout_ratio->get();
   SWC_LOG_OUT(LOG_DEBUG,
-    SWC_LOG_PRINTF("append flags=%d amount=%lu timeout=%d ", 
+    SWC_LOG_PRINTF("append flags=%d amount=%lu timeout=%d ",
                     flags, buffer.size, timeout);
     smartfd->print(SWC_LOG_OSTREAM);
   );
@@ -471,7 +471,7 @@ void FileSystemBroker::append(const Callback::AppendCb_t& cb,
 void FileSystemBroker::open(int& err, SmartFd::Ptr& smartfd, int32_t bufsz) {
   SWC_LOG_OUT(LOG_DEBUG,
     SWC_LOG_PRINTF("open timeout=%d ", cfg_timeout->get());
-    smartfd->print(SWC_LOG_OSTREAM); 
+    smartfd->print(SWC_LOG_OSTREAM);
   );
 
   auto hdlr = std::make_shared<Comm::Protocol::FsBroker::Req::OpenSync>(
@@ -481,22 +481,22 @@ void FileSystemBroker::open(int& err, SmartFd::Ptr& smartfd, int32_t bufsz) {
   err = hdlr->error;
 }
 
-void FileSystemBroker::open(const Callback::OpenCb_t& cb, 
+void FileSystemBroker::open(const Callback::OpenCb_t& cb,
                             SmartFd::Ptr& smartfd, int32_t bufsz) {
   SWC_LOG_OUT(LOG_DEBUG,
     SWC_LOG_PRINTF("open timeout=%d ", cfg_timeout->get());
-    smartfd->print(SWC_LOG_OSTREAM); 
+    smartfd->print(SWC_LOG_OSTREAM);
   );
 
   auto hdlr = std::make_shared<Comm::Protocol::FsBroker::Req::Open>(
     shared_from_this(), cfg_timeout->get(), smartfd, bufsz, cb);
   while(!send_request(hdlr));
 }
-  
+
 size_t FileSystemBroker::read(int& err, SmartFd::Ptr& smartfd,
                               void* dst, size_t amount) {
   uint32_t timeout = cfg_timeout->get() + amount/cfg_timeout_ratio->get();
-  SWC_LOG_OUT(LOG_DEBUG, 
+  SWC_LOG_OUT(LOG_DEBUG,
     SWC_LOG_PRINTF("read len=%lu timeout=%d ", amount, timeout);
     smartfd->print(SWC_LOG_OSTREAM);
   );
@@ -508,11 +508,11 @@ size_t FileSystemBroker::read(int& err, SmartFd::Ptr& smartfd,
   err = hdlr->error;
   return hdlr->amount;
 }
-   
+
 size_t FileSystemBroker::read(int& err, SmartFd::Ptr& smartfd,
                               StaticBuffer* dst, size_t amount) {
   uint32_t timeout = cfg_timeout->get() + amount/cfg_timeout_ratio->get();
-  SWC_LOG_OUT(LOG_DEBUG, 
+  SWC_LOG_OUT(LOG_DEBUG,
     SWC_LOG_PRINTF("read len=%lu timeout=%d ", amount, timeout);
     smartfd->print(SWC_LOG_OSTREAM);
   );
@@ -524,11 +524,11 @@ size_t FileSystemBroker::read(int& err, SmartFd::Ptr& smartfd,
   err = hdlr->error;
   return hdlr->amount;
 }
-   
+
 void FileSystemBroker::read(const Callback::ReadCb_t& cb,
                             SmartFd::Ptr& smartfd, size_t amount) {
   uint32_t timeout = cfg_timeout->get() + amount/cfg_timeout_ratio->get();
-  SWC_LOG_OUT(LOG_DEBUG, 
+  SWC_LOG_OUT(LOG_DEBUG,
     SWC_LOG_PRINTF("read len=%lu timeout=%d ", amount, timeout);
     smartfd->print(SWC_LOG_OSTREAM);
   );
@@ -537,17 +537,17 @@ void FileSystemBroker::read(const Callback::ReadCb_t& cb,
     timeout, smartfd, amount, cb);
   while(!send_request(hdlr));
 }
-  
+
 size_t FileSystemBroker::pread(int& err, SmartFd::Ptr& smartfd,
-                               uint64_t offset, void* dst, 
+                               uint64_t offset, void* dst,
                                size_t amount) {
   uint32_t timeout = cfg_timeout->get() + amount/cfg_timeout_ratio->get();
-  SWC_LOG_OUT(LOG_DEBUG, 
+  SWC_LOG_OUT(LOG_DEBUG,
     SWC_LOG_PRINTF("pread offset=%lu len=%lu timeout=%d ",
                     offset, amount, timeout);
     smartfd->print(SWC_LOG_OSTREAM);
   );
-  
+
   auto hdlr = std::make_shared<Comm::Protocol::FsBroker::Req::PreadSync>(
     timeout, smartfd, offset, dst, amount, true);
   while(!send_request(hdlr));
@@ -557,10 +557,10 @@ size_t FileSystemBroker::pread(int& err, SmartFd::Ptr& smartfd,
 }
 
 size_t FileSystemBroker::pread(int& err, SmartFd::Ptr& smartfd,
-                               uint64_t offset, StaticBuffer* dst, 
+                               uint64_t offset, StaticBuffer* dst,
                                size_t amount) {
   uint32_t timeout = cfg_timeout->get() + amount/cfg_timeout_ratio->get();
-  SWC_LOG_OUT(LOG_DEBUG, 
+  SWC_LOG_OUT(LOG_DEBUG,
     SWC_LOG_PRINTF("pread offset=%lu len=%lu timeout=%d ",
                     offset, amount, timeout);
     smartfd->print(SWC_LOG_OSTREAM);
@@ -573,13 +573,13 @@ size_t FileSystemBroker::pread(int& err, SmartFd::Ptr& smartfd,
   err = hdlr->error;
   return hdlr->amount;
 }
-   
+
 void FileSystemBroker::pread(const Callback::ReadCb_t& cb,
                              SmartFd::Ptr& smartfd,
                              uint64_t offset, size_t amount) {
   uint32_t timeout = cfg_timeout->get() + amount/cfg_timeout_ratio->get();
-  SWC_LOG_OUT(LOG_DEBUG, 
-    SWC_LOG_PRINTF("pread offset=%lu len=%lu timeout=%d ", 
+  SWC_LOG_OUT(LOG_DEBUG,
+    SWC_LOG_PRINTF("pread offset=%lu len=%lu timeout=%d ",
                     offset, amount, timeout);
     smartfd->print(SWC_LOG_OSTREAM);
   );
@@ -590,7 +590,7 @@ void FileSystemBroker::pread(const Callback::ReadCb_t& cb,
 }
 
 void FileSystemBroker::seek(int& err, SmartFd::Ptr& smartfd, size_t offset) {
-  SWC_LOG_OUT(LOG_DEBUG, 
+  SWC_LOG_OUT(LOG_DEBUG,
     SWC_LOG_PRINTF("seek offset=%lu timeout=%d ", offset, cfg_timeout->get());
     smartfd->print(SWC_LOG_OSTREAM);
   );
@@ -601,11 +601,11 @@ void FileSystemBroker::seek(int& err, SmartFd::Ptr& smartfd, size_t offset) {
   hdlr->wait();
   err = hdlr->error;
 }
-   
-void FileSystemBroker::seek(const Callback::SeekCb_t& cb, 
-                            SmartFd::Ptr& smartfd, 
+
+void FileSystemBroker::seek(const Callback::SeekCb_t& cb,
+                            SmartFd::Ptr& smartfd,
                             size_t offset) {
-  SWC_LOG_OUT(LOG_DEBUG, 
+  SWC_LOG_OUT(LOG_DEBUG,
     SWC_LOG_PRINTF("seek offset=%lu timeout=%d ", offset, cfg_timeout->get());
     smartfd->print(SWC_LOG_OSTREAM);
   );
@@ -627,8 +627,8 @@ void FileSystemBroker::flush(int& err, SmartFd::Ptr& smartfd) {
   hdlr->wait();
   err = hdlr->error;
 }
-  
-void FileSystemBroker::flush(const Callback::FlushCb_t& cb, 
+
+void FileSystemBroker::flush(const Callback::FlushCb_t& cb,
                              SmartFd::Ptr& smartfd) {
   SWC_LOG_OUT(LOG_DEBUG,
     SWC_LOG_PRINTF("flush timeout=%d ", cfg_timeout->get());
@@ -652,8 +652,8 @@ void FileSystemBroker::sync(int& err, SmartFd::Ptr& smartfd) {
   hdlr->wait();
   err = hdlr->error;
 }
-  
-void FileSystemBroker::sync(const Callback::SyncCb_t& cb, 
+
+void FileSystemBroker::sync(const Callback::SyncCb_t& cb,
                             SmartFd::Ptr& smartfd) {
   SWC_LOG_OUT(LOG_DEBUG,
     SWC_LOG_PRINTF("sync timeout=%d ", cfg_timeout->get());
@@ -666,9 +666,9 @@ void FileSystemBroker::sync(const Callback::SyncCb_t& cb,
 }
 
 void FileSystemBroker::close(int& err, SmartFd::Ptr& smartfd) {
-  SWC_LOG_OUT(LOG_DEBUG, 
+  SWC_LOG_OUT(LOG_DEBUG,
     SWC_LOG_PRINTF("close timeout=%d ", cfg_timeout->get());
-    smartfd->print(SWC_LOG_OSTREAM); 
+    smartfd->print(SWC_LOG_OSTREAM);
   );
 
   auto hdlr = std::make_shared<Comm::Protocol::FsBroker::Req::CloseSync>(
@@ -678,11 +678,11 @@ void FileSystemBroker::close(int& err, SmartFd::Ptr& smartfd) {
   err = hdlr->error;
 }
 
-void FileSystemBroker::close(const Callback::CloseCb_t& cb, 
+void FileSystemBroker::close(const Callback::CloseCb_t& cb,
                              SmartFd::Ptr& smartfd) {
-  SWC_LOG_OUT(LOG_DEBUG, 
+  SWC_LOG_OUT(LOG_DEBUG,
     SWC_LOG_PRINTF("close timeout=%d ", cfg_timeout->get());
-    smartfd->print(SWC_LOG_OSTREAM); 
+    smartfd->print(SWC_LOG_OSTREAM);
   );
 
   auto hdlr = std::make_shared<Comm::Protocol::FsBroker::Req::Close>(
@@ -698,8 +698,8 @@ void FileSystemBroker::close(const Callback::CloseCb_t& cb,
 extern "C" {
 SWC::FS::FileSystem* fs_make_new_broker(){
   return (SWC::FS::FileSystem*)(new SWC::FS::FileSystemBroker());
-};
+}
 void fs_apply_cfg_broker(SWC::Env::Config::Ptr env){
   SWC::Env::Config::set(env);
-};
+}
 }

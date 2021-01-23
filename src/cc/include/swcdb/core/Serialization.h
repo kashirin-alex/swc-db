@@ -321,9 +321,10 @@ uint64_t decode_vi64(const uint8_t** bufp) {
 
 template<uint8_t BITS, uint8_t SZ, typename T>
 extern SWC_CAN_INLINE
-void encode_fixed_vi(uint8_t** bufp, Core::BitFieldInt<T, BITS> val) {
+void encode_fixed_vi(uint8_t** bufp, T val) {
   **bufp = SZ;
-  memcpy(++*bufp, (const uint8_t*)&val, SZ);
+  Core::BitFieldInt<T, BITS> _val = val;
+  memcpy(++*bufp, (const uint8_t*)&_val, SZ);
   *bufp += SZ;
 }
 
@@ -339,30 +340,24 @@ T decode_fixed_vi(const uint8_t** bufp) {
 
 extern SWC_CAN_INLINE
 uint8_t encoded_length_fixed_vi24(uint24_t val) {
-  switch((uint32_t)val) {
-    case 0x00       ... 0xFB:
-      return 1;
-    case 0xFB   + 1 ... 0xFF:
-      return 2;
-    case 0xFF   + 1 ... 0xFFFF:
-      return 3;
-    default:
-      return 4;
-  }
+  if(val <= 0xFB)
+    return 1;
+  if(val <= 0xFF)
+    return 2;
+  if(val <= 0xFFFF)
+    return 3;
+  return 4;
 }
 
 extern SWC_CAN_INLINE
 void encode_fixed_vi24(uint8_t** bufp, uint24_t val) {
-  switch((uint32_t)val) {
-    case 0x00       ... 0xFB:
-     return encode_i8(bufp, val + 4);
-    case 0xFB   + 1 ... 0xFF:
-      return encode_fixed_vi<8,  1, uint32_t>(bufp, val);
-    case 0xFF   + 1 ... 0xFFFF:
-      return encode_fixed_vi<16, 2, uint32_t>(bufp, val);
-    default:
-      return encode_fixed_vi<24, 3, uint32_t>(bufp, val);
-  }
+  if(val <= 0xFB)
+    return encode_i8(bufp, val + 4);
+  if(val <= 0xFF)
+    return encode_fixed_vi<8,  1, uint32_t>(bufp, val);
+  if(val <= 0xFFFF)
+    return encode_fixed_vi<16, 2, uint32_t>(bufp, val);
+  return encode_fixed_vi<24, 3, uint32_t>(bufp, val);
 }
 
 extern SWC_CAN_INLINE
@@ -374,9 +369,9 @@ uint24_t decode_fixed_vi24(const uint8_t** bufp, size_t* remainp) {
   switch(b) {
     case 1:
       return decode_fixed_vi<8,  1, uint32_t>(bufp);
-    case 2: 
+    case 2:
       return decode_fixed_vi<16, 2, uint32_t>(bufp);
-    default: 
+    default:
       return decode_fixed_vi<24, 3, uint32_t>(bufp);
   }
 }
@@ -390,34 +385,28 @@ uint24_t decode_fixed_vi24(const uint8_t** bufp) {
 
 extern SWC_CAN_INLINE
 uint8_t encoded_length_fixed_vi32(uint32_t val) {
-  switch(val) {
-    case 0x00       ... 0xFA:
-      return 1;
-    case 0xFA   + 1 ... 0xFF:
-      return 2;
-    case 0xFF   + 1 ... 0xFFFF:
-      return 3;
-    case 0xFFFF + 1 ... 0xFFFFFF:
-      return 4;
-    default:
-      return 5;
-  }
+  if(val <= 0xFA)
+    return 1;
+  if(val <= 0xFF)
+    return 2;
+  if(val <= 0xFFFF)
+    return 3;
+  if(val <= 0xFFFFFF)
+    return 4;
+  return 5;
 }
 
 extern SWC_CAN_INLINE
 void encode_fixed_vi32(uint8_t** bufp, uint32_t val) {
-  switch(val) {
-    case 0x00       ... 0xFA:
-      return encode_i8(bufp, val + 5);
-    case 0xFA + 1   ... 0xFF: 
-      return encode_fixed_vi<8,  1, uint32_t>(bufp, val);
-    case 0xFF + 1   ... 0xFFFF:
-      return encode_fixed_vi<16, 2, uint32_t>(bufp, val);
-    case 0xFFFF + 1 ... 0xFFFFFF:
-      return encode_fixed_vi<24, 3, uint32_t>(bufp, val);
-    default:
-      return encode_fixed_vi<32, 4, uint32_t>(bufp, val);
-  }
+  if(val <= 0xFA)
+    return encode_i8(bufp, val + 5);
+  if(val <= 0xFF)
+    return encode_fixed_vi<8,  1, uint32_t>(bufp, val);
+  if(val <= 0xFFFF)
+    return encode_fixed_vi<16, 2, uint32_t>(bufp, val);
+  if(val <= 0xFFFFFF)
+    return encode_fixed_vi<24, 3, uint32_t>(bufp, val);
+  return encode_fixed_vi<32, 4, uint32_t>(bufp, val);
 }
 
 extern SWC_CAN_INLINE
@@ -447,45 +436,37 @@ uint32_t decode_fixed_vi32(const uint8_t** bufp) {
 
 extern SWC_CAN_INLINE
 uint8_t encoded_length_fixed_vi64(uint64_t val) {
-  switch(val) {
-    case 0x00                 ... 0xF6:
-      return 1;
-    case 0xF6             + 1 ... 0xFF:
-      return 2;
-    case 0xFF             + 1 ... 0xFFFF:
-      return 3;
-    case 0xFFFF           + 1 ... 0xFFFFFF:
-      return 4;
-    case 0xFFFFFF         + 1 ... 0xFFFFFFFF:
-      return 5;
-    default:  
-      break;
-  }
-  if(val < 0xFFFFFFFFFF)
+  if(val <= 0xF6)
+    return 1;
+  if(val <= 0xFF)
+    return 2;
+  if(val <= 0xFFFF)
+    return 3;
+  if(val <= 0xFFFFFF)
+    return 4;
+  if(val <= 0xFFFFFFFF)
+    return 5;
+  if(val <= 0xFFFFFFFFFF)
     return 6;
-  if(val < 0xFFFFFFFFFFFF)
+  if(val <= 0xFFFFFFFFFFFF)
     return 7;
-  if(val < 0xFFFFFFFFFFFFFF)
+  if(val <= 0xFFFFFFFFFFFFFF)
     return 8;
   return 9;
 }
 
 extern SWC_CAN_INLINE
 void encode_fixed_vi64(uint8_t** bufp, uint64_t val) {
-  switch(val) {
-    case 0x00                 ... 0xF6:
-      return encode_i8(bufp, val + 9);
-    case 0xF6             + 1 ... 0xFF: 
-      return encode_fixed_vi<8,  1, uint64_t>(bufp, val);
-    case 0xFF             + 1 ... 0xFFFF:
-      return encode_fixed_vi<16, 2, uint64_t>(bufp, val);
-    case 0xFFFF           + 1 ... 0xFFFFFF:
-      return encode_fixed_vi<24, 3, uint64_t>(bufp, val); 
-    case 0xFFFFFF         + 1 ... 0xFFFFFFFF:
-      return encode_fixed_vi<32, 4, uint64_t>(bufp, val); 
-    default: 
-      break;
-  }
+  if(val <= 0xF6)
+    return encode_i8(bufp, val + 9);
+  if(val <= 0xFF)
+    return encode_fixed_vi<8,  1, uint64_t>(bufp, val);
+  if(val <= 0xFFFF)
+    return encode_fixed_vi<16, 2, uint64_t>(bufp, val);
+  if(val <= 0xFFFFFF)
+    return encode_fixed_vi<24, 3, uint64_t>(bufp, val);
+  if(val <= 0xFFFFFFFF)
+    return encode_fixed_vi<32, 4, uint64_t>(bufp, val);
   if(val < 0xFFFFFFFFFF)
     return encode_fixed_vi<40, 5, uint64_t>(bufp, val);
   if(val < 0xFFFFFFFFFFFF)

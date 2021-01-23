@@ -242,7 +242,7 @@ Comp from(const char** buf, uint32_t* remainp,
   }
 
   return comp;
-};
+}
 
 extern SWC_CAN_INLINE
 const char* to_string(Comp comp, bool extended=false) noexcept {
@@ -292,12 +292,12 @@ const char* to_string(Comp comp, bool extended=false) noexcept {
     default:
       return COMP_NONE;
   }
-};
+}
 
 extern SWC_CAN_INLINE
 const char* to_string(uint8_t comp) {
   return to_string((Comp)comp);
-};
+}
 
 
 namespace { // local namespace

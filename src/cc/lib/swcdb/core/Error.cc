@@ -117,23 +117,15 @@ static const char ERROR_NOT_REGISTERED[] = "ERROR NOT REGISTERED";
 SWC_SHOULD_NOT_INLINE
 const char* Error::get_text(const int err) noexcept {
   const char* text = nullptr;
-  switch(err) {
-    case SWC_ERRNO_SYS_BEGIN ... SWC_ERRNO_SYS_END:
-       text = strerror(err);
-       break;
-    case SWC_ERRNO_FUTURE_BEGIN ... SWC_ERRNO_FUTURE_END:
-       text =  std::future_error(
-         std::future_errc(err - SWC_ERRNO_FUTURE_BEGIN)).what();
-       break;
-    case SWC_ERRNO_EAI_BEGIN ... SWC_ERRNO_EAI_END:
-       text = gai_strerror(-(err - SWC_ERRNO_EAI_BEGIN));
-       break;
-    case SWC_ERRNO_APP_BEGIN ... SWC_ERRNO_APP_END:
-       text = text_map[err];
-       break;
-    default:
-      break;
-  }
+  if(err <= SWC_ERRNO_SYS_END)
+    text = strerror(err);
+  else if(err <= SWC_ERRNO_FUTURE_END)
+    text =  std::future_error(
+      std::future_errc(err - SWC_ERRNO_FUTURE_BEGIN)).what();
+  else if(err <= SWC_ERRNO_EAI_END)
+    text = gai_strerror(-(err - SWC_ERRNO_EAI_BEGIN));
+  else if(err >= SWC_ERRNO_APP_BEGIN && err <= SWC_ERRNO_APP_END)
+    text = text_map[err];
   return text ? text : ERROR_NOT_REGISTERED;
 }
 

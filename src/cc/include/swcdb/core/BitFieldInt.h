@@ -19,7 +19,7 @@ struct BitFieldInt final {
 
   template<typename FROM_T>
   BitFieldInt<T, SZ>(const FROM_T& v) : data(v) { }
-  
+
   operator bool() const {
     return data;
   }
@@ -43,7 +43,7 @@ struct BitFieldInt final {
     return tmp;
   }
 
-  
+
   BitFieldInt<T, SZ>& operator+=(const BitFieldInt<T, SZ>& v) {
     data += v.data;
     return *this;
@@ -174,7 +174,7 @@ struct BitFieldInt final {
   BitFieldInt<T, SZ> operator>>(const IN_T& v) const {
     return BitFieldInt<T, SZ>(data) >>= v;
   }
-  
+
 
   bool operator <=(const BitFieldInt<T, SZ>& v) const {
     return data <= v.data;
@@ -194,7 +194,7 @@ struct BitFieldInt final {
   bool operator !=(const BitFieldInt<T, SZ>& v) const {
     return data != v.data;
   }
-  
+
 
   template<typename IN_T>
   bool operator <=(const IN_T& v) const {
@@ -227,14 +227,14 @@ struct BitFieldInt final {
 
 
 template<typename T, uint8_t SZ>
-extern SWC_CAN_INLINE 
+extern SWC_CAN_INLINE
 std::ostream& operator<<(std::ostream& out, const BitFieldInt<T, SZ>& v) {
   out << v.data;
   return out;
 }
 
 template<class T, uint8_t SZ>
-extern SWC_CAN_INLINE 
+extern SWC_CAN_INLINE
 std::string to_string(const BitFieldInt<T, SZ>& v) {
   return std::to_string(v.data);
 }
@@ -249,15 +249,15 @@ operator _op_ (const BitFieldInt<T, SZ>& v1, \
                const IN_T& v2) { \
   return BitFieldInt<T, SZ>(v1.data _op_ v2);\
 }
-SWC_BITFIELD_op_T(+);
-SWC_BITFIELD_op_T(-);
-SWC_BITFIELD_op_T(/);
-SWC_BITFIELD_op_T(*);
-SWC_BITFIELD_op_T(<<);
-SWC_BITFIELD_op_T(>>);
-SWC_BITFIELD_op_T(&);
-SWC_BITFIELD_op_T(|);
-SWC_BITFIELD_op_T(^);
+SWC_BITFIELD_op_T(+)
+SWC_BITFIELD_op_T(-)
+SWC_BITFIELD_op_T(/)
+SWC_BITFIELD_op_T(*)
+SWC_BITFIELD_op_T(<<)
+SWC_BITFIELD_op_T(>>)
+SWC_BITFIELD_op_T(&)
+SWC_BITFIELD_op_T(|)
+SWC_BITFIELD_op_T(^)
 
 /* IN_T = IN_T op BitFieldInt<T, SZ>*/
 #define SWC_T_op_BITFIELD(_op_) \
@@ -268,15 +268,15 @@ operator _op_ (const IN_T& v1, \
                const BitFieldInt<T, SZ>& v2) { \
   return v1 _op_ v2.data;\
 }
-SWC_T_op_BITFIELD(+);
-SWC_T_op_BITFIELD(-);
-SWC_T_op_BITFIELD(/);
-SWC_T_op_BITFIELD(*);
-SWC_T_op_BITFIELD(<<);
-SWC_T_op_BITFIELD(>>);
-SWC_T_op_BITFIELD(&);
-SWC_T_op_BITFIELD(|);
-SWC_T_op_BITFIELD(^);
+SWC_T_op_BITFIELD(+)
+SWC_T_op_BITFIELD(-)
+SWC_T_op_BITFIELD(/)
+SWC_T_op_BITFIELD(*)
+SWC_T_op_BITFIELD(<<)
+SWC_T_op_BITFIELD(>>)
+SWC_T_op_BITFIELD(&)
+SWC_T_op_BITFIELD(|)
+SWC_T_op_BITFIELD(^)
 
 
 
@@ -289,15 +289,15 @@ operator _op_ (const BitFieldInt<T1, SZ1>& v1, \
                const BitFieldInt<T2, SZ2>& v2) { \
   return BitFieldInt<T1, SZ1>(v1.data _op_ v2.data); \
 }
-SWC_BITFIELD1_op_BITFIELD2(+);
-SWC_BITFIELD1_op_BITFIELD2(-);
-SWC_BITFIELD1_op_BITFIELD2(/);
-SWC_BITFIELD1_op_BITFIELD2(*);
-SWC_BITFIELD1_op_BITFIELD2(<<);
-SWC_BITFIELD1_op_BITFIELD2(>>);
-SWC_BITFIELD1_op_BITFIELD2(&);
-SWC_BITFIELD1_op_BITFIELD2(|);
-SWC_BITFIELD1_op_BITFIELD2(^);
+SWC_BITFIELD1_op_BITFIELD2(+)
+SWC_BITFIELD1_op_BITFIELD2(-)
+SWC_BITFIELD1_op_BITFIELD2(/)
+SWC_BITFIELD1_op_BITFIELD2(*)
+SWC_BITFIELD1_op_BITFIELD2(<<)
+SWC_BITFIELD1_op_BITFIELD2(>>)
+SWC_BITFIELD1_op_BITFIELD2(&)
+SWC_BITFIELD1_op_BITFIELD2(|)
+SWC_BITFIELD1_op_BITFIELD2(^)
 
 
 
@@ -308,12 +308,12 @@ extern SWC_CAN_INLINE \
 bool operator _vs_ (const IN_T& v1, const BitFieldInt<T, SZ>& v2) { \
   return v1 _vs_ v2.data; \
 }
-SWC_T_vs_BITFIELD(==);
-SWC_T_vs_BITFIELD(!=);
-SWC_T_vs_BITFIELD(<=);
-SWC_T_vs_BITFIELD(>=);
-SWC_T_vs_BITFIELD(<);
-SWC_T_vs_BITFIELD(>);
+SWC_T_vs_BITFIELD(==)
+SWC_T_vs_BITFIELD(!=)
+SWC_T_vs_BITFIELD(<=)
+SWC_T_vs_BITFIELD(>=)
+SWC_T_vs_BITFIELD(<)
+SWC_T_vs_BITFIELD(>)
 
 
 
@@ -324,12 +324,12 @@ extern SWC_CAN_INLINE \
 bool operator _vs_ (const BitFieldInt<T, SZ>& v1, const IN_T& v2) { \
   return v1.data _vs_ v2; \
 }
-SWC_BITFIELD_vs_T(==);
-SWC_BITFIELD_vs_T(!=);
-SWC_BITFIELD_vs_T(<=);
-SWC_BITFIELD_vs_T(>=);
-SWC_BITFIELD_vs_T(<);
-SWC_BITFIELD_vs_T(>);
+SWC_BITFIELD_vs_T(==)
+SWC_BITFIELD_vs_T(!=)
+SWC_BITFIELD_vs_T(<=)
+SWC_BITFIELD_vs_T(>=)
+SWC_BITFIELD_vs_T(<)
+SWC_BITFIELD_vs_T(>)
 
 
 
@@ -341,12 +341,12 @@ bool operator _vs_ (const BitFieldInt<T1, SZ1>& v1, \
                     const BitFieldInt<T2, SZ2>& v2) { \
   return v1.data _vs_ v2.data; \
 }
-SWC_BITFIELD1_vs_BITFIELD2(==);
-SWC_BITFIELD1_vs_BITFIELD2(!=);
-SWC_BITFIELD1_vs_BITFIELD2(<=);
-SWC_BITFIELD1_vs_BITFIELD2(>=);
-SWC_BITFIELD1_vs_BITFIELD2(<);
-SWC_BITFIELD1_vs_BITFIELD2(>);
+SWC_BITFIELD1_vs_BITFIELD2(==)
+SWC_BITFIELD1_vs_BITFIELD2(!=)
+SWC_BITFIELD1_vs_BITFIELD2(<=)
+SWC_BITFIELD1_vs_BITFIELD2(>=)
+SWC_BITFIELD1_vs_BITFIELD2(<)
+SWC_BITFIELD1_vs_BITFIELD2(>)
 
 
 
@@ -376,7 +376,7 @@ typedef BitFieldInt<int64_t,  56> int56_t;
 typedef Core::uint24_t uint24_t;
 typedef Core::int24_t  int24_t;
 static const uint24_t UINT24_MAX = uint24_t(UINT32_MAX >> 8);   // 16777215
-static const uint24_t UINT24_MIN = uint24_t(UINT24_MAX + 1);    // 0 
+static const uint24_t UINT24_MIN = uint24_t(UINT24_MAX + 1);    // 0
 static const int24_t   INT24_MAX = int24_t(UINT24_MAX / 2);     // 8388607
 static const int24_t   INT24_MIN = int24_t(INT24_MAX + 1);      // -8388608
 
@@ -384,7 +384,7 @@ static const int24_t   INT24_MIN = int24_t(INT24_MAX + 1);      // -8388608
 typedef Core::uint40_t uint40_t;
 typedef Core::int40_t  int40_t;
 static const uint40_t UINT40_MAX = uint40_t(UINT64_MAX >> 24);  // 1099511627775
-static const uint40_t UINT40_MIN = uint40_t(UINT40_MAX + 1);    // 0 
+static const uint40_t UINT40_MIN = uint40_t(UINT40_MAX + 1);    // 0
 static const int40_t   INT40_MAX = int40_t(UINT40_MAX / 2);     // 549755813887
 static const int40_t   INT40_MIN = int40_t(INT40_MAX + 1);      // -549755813888
 
@@ -392,7 +392,7 @@ static const int40_t   INT40_MIN = int40_t(INT40_MAX + 1);      // -549755813888
 typedef Core::uint48_t uint48_t;
 typedef Core::int48_t  int48_t;
 static const uint48_t UINT48_MAX = uint48_t(UINT64_MAX >> 16);  // 281474976710655
-static const uint48_t UINT48_MIN = uint48_t(UINT48_MAX + 1);    // 0 
+static const uint48_t UINT48_MIN = uint48_t(UINT48_MAX + 1);    // 0
 static const int48_t   INT48_MAX = int48_t(UINT48_MAX / 2);     // 140737488355327
 static const int48_t   INT48_MIN = int48_t(INT48_MAX + 1);      // -140737488355328
 
@@ -400,7 +400,7 @@ static const int48_t   INT48_MIN = int48_t(INT48_MAX + 1);      // -140737488355
 typedef Core::uint56_t uint56_t;
 typedef Core::int56_t  int56_t;
 static const uint56_t UINT56_MAX = uint56_t(UINT64_MAX >> 8);   // 72057594037927935
-static const uint56_t UINT56_MIN = uint56_t(UINT56_MAX + 1);    // 0 
+static const uint56_t UINT56_MIN = uint56_t(UINT56_MAX + 1);    // 0
 static const int56_t   INT56_MAX = int56_t(UINT56_MAX / 2);     // 36028797018963967
 static const int56_t   INT56_MIN = int56_t(INT56_MAX + 1);      // -36028797018963968
 

@@ -30,14 +30,11 @@ bool is_data(cid_t cid) {
 
 
 Range get_range_type(cid_t cid) {
-  switch(cid) {
-    case CID_MASTER_BEGIN ... CID_MASTER_END:
-      return Range::MASTER;
-    case CID_META_BEGIN ... CID_META_END:
-      return Range::META;
-    default:
-      return Range::DATA;
-  }
+  if(cid <= CID_MASTER_END)
+    return Range::MASTER;
+  if(cid <= CID_META_END)
+    return Range::META;
+  return Range::DATA;
 }
 
 KeySeq get_seq_type(cid_t cid) {
@@ -94,7 +91,7 @@ const char* get_meta_cid_str(KeySeq col_seq) {
     default:
       return "5";
   }
-}  
+}
 
 uint8_t get_sys_cid(KeySeq col_seq, Range col_type) {
   switch(col_seq) {
@@ -107,6 +104,6 @@ uint8_t get_sys_cid(KeySeq col_seq, Range col_type) {
     default:
       return col_type == Range::DATA ? 5 : 1;
   }
-}  
+}
 
 }}}}

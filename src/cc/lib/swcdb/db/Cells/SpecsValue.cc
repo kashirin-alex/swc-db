@@ -55,7 +55,7 @@ Value::Value(Value&& other)
 
 void Value::set_counter(int64_t count, Condition::Comp comp_n) {
   uint32_t len = Serialization::encoded_length_vi64(count);
-  uint8_t data_n[len];
+  uint8_t data_n[10];
   uint8_t* ptr = data_n;
   Serialization::encode_vi64(&ptr, count);
   set(data_n, len, comp_n, true);

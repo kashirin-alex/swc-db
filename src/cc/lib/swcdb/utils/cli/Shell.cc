@@ -28,10 +28,10 @@ int run() {
 
   if(settings->has("ranger"))
     return Rgr().run();
-    
+
   if(settings->has("manager"))
     return Mngr().run();
-  
+
   if(settings->has("filesystem"))
     return Fs().run();
 
@@ -48,22 +48,22 @@ Interface::Interface(const std::string& prompt, const std::string& history)
                     : err(Error::OK), prompt(prompt), history(history) {
   init();
 }
-  
+
 Interface::~Interface() {
   for(auto o : options)
     delete o;
 }
 
 int Interface::run() {
-  
+
   read_history(history.c_str());
   char* line;
   char* ptr;
   const char* prompt_state = prompt.c_str();
   char c;
-    
+
   bool stop = false;
-  bool cmd_end = false;    
+  bool cmd_end = false;
   bool escape = false;
   bool comment = false;
   bool quoted_1 = false;
@@ -123,7 +123,7 @@ int Interface::run() {
         escape = true;
         continue;
       }
-        
+
       if((!is_quoted || quoted_1) && c == '\'')
         is_quoted = quoted_1 = !quoted_1;
       else if((!is_quoted || quoted_2) && c == '"')
@@ -135,7 +135,7 @@ int Interface::run() {
       }
 
     } while(!next_line);
-      
+
     free(line);
   }
 
@@ -145,22 +145,22 @@ int Interface::run() {
 void Interface::init() {
   options.push_back(
     new Option(
-      "quit", 
-      {"Quit or Exit the Console"}, 
-      [ptr=this](std::string& cmd){return ptr->quit(cmd);}, 
+      "quit",
+      {"Quit or Exit the Console"},
+      [ptr=this](std::string& cmd){return ptr->quit(cmd);},
       new re2::RE2("(?i)^(quit|exit)(\\s+|$)")
     )
   );
   options.push_back(
     new Option(
-      "help", 
-      {"Commands help information"}, 
-      [ptr=this](std::string& cmd){return ptr->help(cmd);}, 
+      "help",
+      {"Commands help information"},
+      [ptr=this](std::string& cmd){return ptr->help(cmd);},
       new re2::RE2("(?i)^(help)(\\s+|$)")
     )
   );
 }
-  
+
 bool Interface::quit(std::string&) const {
   return false;
 }
@@ -191,28 +191,28 @@ bool Interface::help(std::string&) const {
       SWC_LOG_OSTREAM << std::setw(offset_desc) << desc << std::endl;
       first = false;
     }
-        
+
   }
   SWC_LOG_OSTREAM << SWC_PRINT_CLOSE;
   return true;
 }
 
 bool Interface::error(const std::string& message) {
-  SWC_PRINT << "\033[31mERROR\033[00m: " << message 
-            << " error=" << err << '(' << Error::get_text(err) << ')' 
+  SWC_PRINT << "\033[31mERROR\033[00m: " << message
+            << " error=" << err << '(' << Error::get_text(err) << ')'
             << SWC_PRINT_CLOSE;
   return true; /// ? err
 }
 
 bool Interface::cmd_option(std::string& cmd) const {
   err = Error::OK;
-  auto opt = std::find_if(options.begin(), options.end(), 
-              [cmd](const Option* opt){ 
-                return RE2::PartialMatch(cmd.c_str(), *opt->re); 
+  auto opt = std::find_if(options.begin(), options.end(),
+              [cmd](const Option* opt){
+                return RE2::PartialMatch(cmd.c_str(), *opt->re);
               });
   if(opt != options.end())
     return (*opt)->call(cmd);
-  SWC_PRINT << "Unknown command='\033[31m" << cmd << ";\033[00m'" 
+  SWC_PRINT << "Unknown command='\033[31m" << cmd << ";\033[00m'"
             << SWC_PRINT_CLOSE;
   return true;
 }
@@ -223,8 +223,8 @@ bool Interface::cmd_option(std::string& cmd) const {
 extern "C" {
 int swcdb_utils_run() {
   return SWC::Utils::shell::run();
-};
+}
 void swcdb_utils_apply_cfg(SWC::Env::Config::Ptr env){
   SWC::Env::Config::set(env);
-};
+}
 }

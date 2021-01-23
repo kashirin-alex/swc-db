@@ -12,23 +12,23 @@
 
 namespace SWC { namespace FS {
 
- 
+
 Configurables apply_hadoop() {
   Env::Config::settings()->file_desc.add_options()
-    ("swc.fs.hadoop.path.root", Config::str(""), 
+    ("swc.fs.hadoop.path.root", Config::str(""),
       "Hadoop FileSystem's base root path")
-    ("swc.fs.hadoop.cfg.dyn", Config::strs(), 
+    ("swc.fs.hadoop.cfg.dyn", Config::strs(),
       "Dyn-config file")
 
-    ("swc.fs.hadoop.namenode", Config::strs(), 
+    ("swc.fs.hadoop.namenode", Config::strs(),
       "Namenode Host + optional(:Port), muliple")
-    ("swc.fs.hadoop.namenode.port", Config::i16(), 
+    ("swc.fs.hadoop.namenode.port", Config::i16(),
       "Namenode Port")
-    ("swc.fs.hadoop.user", Config::str(), 
+    ("swc.fs.hadoop.user", Config::str(),
       "Hadoop user")
-    ("swc.fs.hadoop.handlers", Config::i32(48), 
+    ("swc.fs.hadoop.handlers", Config::i32(48),
       "Handlers for hadoop tasks")
-    ("swc.fs.hadoop.fds.max", Config::g_i32(256), 
+    ("swc.fs.hadoop.fds.max", Config::g_i32(256),
       "Max Open Fds for opt. without closing")
   ;
 
@@ -47,38 +47,38 @@ Configurables apply_hadoop() {
 
 
 
-FileSystemHadoop::SmartFdHadoop::Ptr 
+FileSystemHadoop::SmartFdHadoop::Ptr
 FileSystemHadoop::SmartFdHadoop::make_ptr(
       const std::string& filepath, uint32_t flags) {
   return std::make_shared<SmartFdHadoop>(filepath, flags);
 }
 
-FileSystemHadoop::SmartFdHadoop::Ptr 
+FileSystemHadoop::SmartFdHadoop::Ptr
 FileSystemHadoop::SmartFdHadoop::make_ptr(SmartFd::Ptr& smart_fd) {
   return std::make_shared<SmartFdHadoop>(
-    smart_fd->filepath(), smart_fd->flags(), 
+    smart_fd->filepath(), smart_fd->flags(),
     smart_fd->fd(), smart_fd->pos()
   );
 }
 
 FileSystemHadoop::SmartFdHadoop::SmartFdHadoop(
     const std::string& filepath, uint32_t flags, int32_t fd, uint64_t pos)
-    : SmartFd(filepath, flags, fd, pos), m_file(nullptr) { 
+    : SmartFd(filepath, flags, fd, pos), m_file(nullptr) {
 }
 
 FileSystemHadoop::SmartFdHadoop::~SmartFdHadoop() { }
 
 hdfs::FileHandle* FileSystemHadoop::SmartFdHadoop::file() const {
-  return m_file; 
+  return m_file;
 }
 
 void FileSystemHadoop::SmartFdHadoop::file(hdfs::FileHandle* file) {
-  m_file = file; 
+  m_file = file;
 }
 
 
 
-FileSystemHadoop::SmartFdHadoop::Ptr 
+FileSystemHadoop::SmartFdHadoop::Ptr
 FileSystemHadoop::get_fd(SmartFd::Ptr& smartfd){
   auto hd_fd = std::dynamic_pointer_cast<SmartFdHadoop>(smartfd);
   if(!hd_fd){
@@ -89,9 +89,9 @@ FileSystemHadoop::get_fd(SmartFd::Ptr& smartfd){
 }
 
 
-FileSystemHadoop::FileSystemHadoop() 
+FileSystemHadoop::FileSystemHadoop()
     : FileSystem(apply_hadoop()),
-      m_nxt_fd(0), m_connecting(false), 
+      m_nxt_fd(0), m_connecting(false),
       m_fs(setup_connection()) {
 }
 
@@ -99,11 +99,11 @@ FileSystemHadoop::~FileSystemHadoop() { }
 
 Type FileSystemHadoop::get_type() const noexcept {
   return Type::HADOOP;
-};
+}
 
 std::string FileSystemHadoop::to_string() const {
   return format(
-    "(type=HADOOP path_root=%s path_data=%s)", 
+    "(type=HADOOP path_root=%s path_data=%s)",
     path_root.c_str(),
     path_data.c_str()
   );
@@ -119,19 +119,19 @@ void FileSystemHadoop::stop() {
   FileSystem::stop();
 }
 
-FileSystemHadoop::Service::Ptr 
+FileSystemHadoop::Service::Ptr
 FileSystemHadoop::setup_connection() {
   Service::Ptr fs;
-  uint32_t tries=0; 
+  uint32_t tries=0;
   while(m_run && !initialize(fs)) {
-    SWC_LOGF(LOG_ERROR, 
+    SWC_LOGF(LOG_ERROR,
       "FS-Hadoop, unable to initialize connection to hadoop, try=%d",
       ++tries);
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
   }
   if(!fs)
     return fs;
-  
+
   //std::string abspath;
   //get_abspath("", abspath);
   //hdfsSetWorkingDirectory(fs->srv, abspath.c_str());
@@ -140,12 +140,12 @@ FileSystemHadoop::setup_connection() {
   //hdfsConfGetInt("dfs.namenode.fs-limits.min-block-size", &value);
   //if(value)
     //hdfs_cfg_min_blk_sz = value;
-  /* 
-  char* host;    
+  /*
+  char* host;
   uint16_t port;
   hdfsConfGetStr("hdfs.namenode.host", &host);
   hdfsConfGetInt("hdfs.namenode.port", &port);
-  SWC_LOGF(LOG_INFO, 
+  SWC_LOGF(LOG_INFO,
             "FS-HadoopJV<, connected to namenode=[%s]:%d", host, port);
   hdfsConfStrFree(host);
   */
@@ -159,7 +159,7 @@ FileSystemHadoop::setup_connection() {
 
 bool FileSystemHadoop::initialize(FileSystemHadoop::Service::Ptr& fs) {
   auto settings = Env::Config::settings();
-  
+
   hdfs::ConfigParser parser;
   if(!parser.LoadDefaultResources())
     SWC_LOG_FATAL("hdfs::ConfigParser could not load default resources.");
@@ -179,8 +179,8 @@ bool FileSystemHadoop::initialize(FileSystemHadoop::Service::Ptr& fs) {
   io_service->InitWorkers(settings->get_i32("swc.fs.hadoop.handlers"));
 
   hdfs::FileSystem* connection = hdfs::FileSystem::New(
-    io_service, 
-    settings->get_str("swc.fs.hadoop.user", ""), 
+    io_service,
+    settings->get_str("swc.fs.hadoop.user", ""),
     options
   );
   SWC_PRINT << "hdfs::FileSystem Initialized" << SWC_PRINT_CLOSE;
@@ -202,7 +202,7 @@ bool FileSystemHadoop::initialize(FileSystemHadoop::Service::Ptr& fs) {
         if(status.ok())
           break;
       }
-      SWC_PRINT << "FS-Hadoop, Could not connect to " << h << ":" << port 
+      SWC_PRINT << "FS-Hadoop, Could not connect to " << h << ":" << port
                 << ". " << status.ToString() << SWC_PRINT_CLOSE;
     }
 
@@ -247,8 +247,8 @@ FileSystemHadoop::Service::Ptr FileSystemHadoop::get_fs(int& err) {
   }
 
   auto fs = m_fs;
-  err = m_run 
-    ? (fs ? Error::OK : Error::SERVER_NOT_READY) 
+  err = m_run
+    ? (fs ? Error::OK : Error::SERVER_NOT_READY)
     : Error::SERVER_SHUTTING_DOWN;
   return fs;
 }
@@ -684,8 +684,8 @@ void FileSystemHadoop::close(int& err, SmartFd::Ptr& smartfd) {
 extern "C" { 
 SWC::FS::FileSystem* fs_make_new_hadoop() {
   return (SWC::FS::FileSystem*)(new SWC::FS::FileSystemHadoop());
-};
+}
 void fs_apply_cfg_hadoop(SWC::Env::Config::Ptr env) {
   SWC::Env::Config::set(env);
-};
+}
 }

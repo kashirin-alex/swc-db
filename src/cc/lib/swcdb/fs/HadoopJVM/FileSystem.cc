@@ -10,7 +10,7 @@
 
 namespace SWC { namespace FS {
 
- 
+
 Configurables apply_hadoop_jvm() {
   Env::Config::settings()->file_desc.add_options()
     ("swc.fs.hadoop_jvm.path.root", Config::str(""),
@@ -45,13 +45,13 @@ Configurables apply_hadoop_jvm() {
 
 
 
-FileSystemHadoopJVM::SmartFdHadoopJVM::Ptr 
+FileSystemHadoopJVM::SmartFdHadoopJVM::Ptr
 FileSystemHadoopJVM::SmartFdHadoopJVM::make_ptr(
         const std::string& filepath, uint32_t flags) {
   return std::make_shared<SmartFdHadoopJVM>(filepath, flags);
 }
 
-FileSystemHadoopJVM::SmartFdHadoopJVM::Ptr 
+FileSystemHadoopJVM::SmartFdHadoopJVM::Ptr
 FileSystemHadoopJVM::SmartFdHadoopJVM::make_ptr(SmartFd::Ptr& smart_fd) {
   return std::make_shared<SmartFdHadoopJVM>(
     smart_fd->filepath(), smart_fd->flags(),
@@ -63,8 +63,6 @@ FileSystemHadoopJVM::SmartFdHadoopJVM::SmartFdHadoopJVM(
     const std::string& filepath, uint32_t flags, int32_t fd, uint64_t pos)
     : SmartFd(filepath, flags, fd, pos), m_hfile(nullptr), m_use_count(0) {
 }
-
-FileSystemHadoopJVM::SmartFdHadoopJVM::~SmartFdHadoopJVM() { }
 
 hdfsFile FileSystemHadoopJVM::SmartFdHadoopJVM::file() noexcept {
   auto c = m_use_count.fetch_add(1);
@@ -105,7 +103,7 @@ hdfsFile FileSystemHadoopJVM::SmartFdHadoopJVM::invalidate() noexcept {
 
 
 
-FileSystemHadoopJVM::SmartFdHadoopJVM::Ptr 
+FileSystemHadoopJVM::SmartFdHadoopJVM::Ptr
 FileSystemHadoopJVM::get_fd(SmartFd::Ptr& smartfd){
   auto hd_fd = std::dynamic_pointer_cast<SmartFdHadoopJVM>(smartfd);
   if(!hd_fd){
@@ -129,7 +127,7 @@ FileSystemHadoopJVM::~FileSystemHadoopJVM() { }
 
 Type FileSystemHadoopJVM::get_type() const noexcept {
   return Type::HADOOP_JVM;
-};
+}
 
 std::string FileSystemHadoopJVM::to_string() const {
   return format(
@@ -149,7 +147,7 @@ void FileSystemHadoopJVM::stop() {
   FileSystem::stop();
 }
 
-FileSystemHadoopJVM::Service::Ptr 
+FileSystemHadoopJVM::Service::Ptr
 FileSystemHadoopJVM::setup_connection() {
   Service::Ptr fs;
   uint32_t tries=0;
@@ -314,7 +312,7 @@ bool FileSystemHadoopJVM::exists(int& err, const std::string& name) {
     abspath.c_str(), (int)state, err, Error::get_text(err));
   return state;
 }
-  
+
 void FileSystemHadoopJVM::remove(int& err, const std::string& name) {
   std::string abspath;
   get_abspath(name, abspath);
@@ -515,7 +513,7 @@ void FileSystemHadoopJVM::open(int& err, SmartFd::Ptr& smartfd,
     "open %d(%s) %s",
     tmperr, Error::get_text(tmperr), smartfd->to_string().c_str());
 }
-  
+
 size_t FileSystemHadoopJVM::read(int& err, SmartFd::Ptr& smartfd,
               void *dst, size_t amount) {
   auto hadoop_fd = get_fd(smartfd);
@@ -725,11 +723,11 @@ void FileSystemHadoopJVM::close(int& err, SmartFd::Ptr& smartfd) {
 
 
 
-extern "C" { 
+extern "C" {
 SWC::FS::FileSystem* fs_make_new_hadoop_jvm() {
   return (SWC::FS::FileSystem*)(new SWC::FS::FileSystemHadoopJVM());
-};
+}
 void fs_apply_cfg_hadoop_jvm(SWC::Env::Config::Ptr env) {
   SWC::Env::Config::set(env);
-};
+}
 }
