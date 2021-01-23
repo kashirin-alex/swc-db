@@ -14,7 +14,7 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Req {
 
 
-class ReadAll : public Base {
+class ReadAll final : public Base {
   public:
 
   ReadAll(uint32_t timeout, const std::string& name,

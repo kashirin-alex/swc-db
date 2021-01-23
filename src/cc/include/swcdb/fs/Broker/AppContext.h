@@ -8,7 +8,7 @@
 
 #include "swcdb/core/comm/AppContext.h"
 
-namespace SWC { namespace client { 
+namespace SWC { namespace client {
 
 
 
@@ -30,12 +30,12 @@ class AppContext final : public Comm::AppContext {
   }
 
   virtual ~AppContext(){}
-    
+
   void handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) override {
-    
+
     if(ev->type == Comm::Event::Type::DISCONNECT)
       return;
-      
+
     const uint8_t *ptr;
     size_t remain;
     if(Comm::Protocol::FsBroker::Req::Base().is_rsp(

@@ -31,58 +31,58 @@ class RgrMngId  : public Common::Params::HostEndPoints {
 
     RgrMngId() {}
 
-    RgrMngId(rgrid_t rgrid, Flag flag, const EndPoints& endpoints) 
-            : Common::Params::HostEndPoints(endpoints), 
-              rgrid(rgrid), flag(flag) {     
+    RgrMngId(rgrid_t rgrid, Flag flag, const EndPoints& endpoints)
+            : Common::Params::HostEndPoints(endpoints),
+              rgrid(rgrid), flag(flag) {
     }
 
     virtual ~RgrMngId() {}
-    
-    rgrid_t         rgrid; 
+
+    rgrid_t         rgrid;
     Flag            flag;
     FS::Type        fs;
 
   private:
 
-    size_t internal_encoded_length() const {
+    size_t internal_encoded_length() const override {
       size_t len = 1;
       if(flag != Flag::MNGR_NOT_ACTIVE && flag != Flag::MNGR_ACK)
         len += Serialization::encoded_length_vi64(rgrid);
 
-      if(flag >= Flag::RS_REQ) 
+      if(flag >= Flag::RS_REQ)
         len +=  Common::Params::HostEndPoints::internal_encoded_length();
-      
+
       if(flag == Flag::MNGR_ASSIGNED)
         ++len; // fs-type
       return len;
     }
-    
-    void internal_encode(uint8_t** bufp) const {
+
+    void internal_encode(uint8_t** bufp) const override {
       Serialization::encode_i8(bufp, (uint8_t)flag);
       if(flag != Flag::MNGR_NOT_ACTIVE && flag != Flag::MNGR_ACK)
         Serialization::encode_vi64(bufp, rgrid);
-      
+
       if(flag >= Flag::RS_REQ)
         Common::Params::HostEndPoints::internal_encode(bufp);
 
       if(flag == Flag::MNGR_ASSIGNED)
         Serialization::encode_i8(bufp, (uint8_t)fs);
     }
-    
-  void internal_decode(const uint8_t** bufp, size_t* remainp) {
+
+  void internal_decode(const uint8_t** bufp, size_t* remainp) override {
       flag = (Flag)Serialization::decode_i8(bufp, remainp);
       if(flag != Flag::MNGR_NOT_ACTIVE && flag != Flag::MNGR_ACK)
         rgrid = Serialization::decode_vi64(bufp, remainp);
-      
+
       if(flag >= Flag::RS_REQ)
         Common::Params::HostEndPoints::internal_decode(bufp, remainp);
-      
+
       if(flag == Flag::MNGR_ASSIGNED)
         fs = (FS::Type)Serialization::decode_i8(bufp, remainp);
     }
 
   };
-  
+
 
 }}}}}
 

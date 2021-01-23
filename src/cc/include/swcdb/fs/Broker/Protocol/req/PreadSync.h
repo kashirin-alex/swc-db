@@ -14,14 +14,14 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Req {
 
 
-class PreadSync : public BaseSync, public Base {
+class PreadSync final : public BaseSync, public Base {
   public:
-  
+
   void*   buffer;
   bool    allocated;
   size_t  amount;
-  
-  PreadSync(uint32_t timeout, FS::SmartFd::Ptr& smartfd, 
+
+  PreadSync(uint32_t timeout, FS::SmartFd::Ptr& smartfd,
             uint64_t offset, void* dst, size_t len, bool allocated)
             : Base(
                 Buffers::make(
@@ -29,7 +29,7 @@ class PreadSync : public BaseSync, public Base {
                   0,
                   FUNCTION_PREAD, timeout
                 )
-              ), 
+              ),
               buffer(dst), allocated(allocated), amount(0), smartfd(smartfd) {
   }
 

@@ -14,10 +14,10 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Req {
 
 
-class Readdir : public Base {
+class Readdir final : public Base {
   public:
 
-  Readdir(uint32_t timeout, const std::string& name, 
+  Readdir(uint32_t timeout, const std::string& name,
           const FS::Callback::ReaddirCb_t& cb)
           : Base(
               Buffers::make(

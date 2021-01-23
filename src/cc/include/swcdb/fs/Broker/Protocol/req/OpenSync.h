@@ -14,7 +14,7 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Req {
 
 
-class OpenSync : public BaseSync, public Base {
+class OpenSync final : public BaseSync, public Base {
   public:
 
   OpenSync(const FS::FileSystem::Ptr& fs,

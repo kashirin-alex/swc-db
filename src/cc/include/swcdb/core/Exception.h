@@ -19,11 +19,11 @@
 namespace SWC { namespace Error {
 
 
-class Exception : public std::exception {
+class Exception final : public std::exception {
   public:
 
   static const Exception make(const std::exception_ptr& eptr,
-                              const std::string& msg, 
+                              const std::string& msg,
                               const Exception* prev = nullptr);
 
   Exception(int code, const std::string& msg,
@@ -86,8 +86,8 @@ class Exception : public std::exception {
 
   const int           _code;
   const std::string   _msg;
-  const int           _line; 
-  const char*         _func; 
+  const int           _line;
+  const char*         _func;
   const char*         _file;
   const std::string   _inner_msg;
   mutable const  Exception*  _prev;
@@ -104,7 +104,7 @@ class Exception : public std::exception {
 #define SWC_EXCEPTION(_code_, _msg_) \
   ::SWC::Error::Exception(\
     _code_, _msg_, __LINE__, __PRETTY_FUNCTION__, __FILE__)
-  
+
 #define SWC_EXCEPTION2(_code_, _ex_, _msg_) \
   ::SWC::Error::Exception(\
     _code_, _msg_, _ex_, __LINE__, __PRETTY_FUNCTION__, __FILE__)
@@ -163,7 +163,7 @@ try {
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/core/Exception.cc"
-#endif 
+#endif
 
 
 #endif // swcdb_core_Exception_h

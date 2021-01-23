@@ -14,10 +14,10 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Req {
 
 
-class Write : public Base {
+class Write final : public Base {
   public:
-  
-  Write(uint32_t timeout, FS::SmartFd::Ptr& smartfd, 
+
+  Write(uint32_t timeout, FS::SmartFd::Ptr& smartfd,
         uint8_t replication, int64_t blksz, StaticBuffer& buffer,
         const FS::Callback::WriteCb_t& cb)
         : Base(

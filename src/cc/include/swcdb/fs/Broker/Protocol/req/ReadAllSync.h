@@ -13,11 +13,11 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Req {
 
 
-class ReadAllSync : public BaseSync, public Base {
+class ReadAllSync final : public BaseSync, public Base {
   public:
 
   StaticBuffer* buffer;
-  
+
   ReadAllSync(uint32_t timeout, const std::string& name, StaticBuffer* dst)
               : Base(
                   Buffers::make(

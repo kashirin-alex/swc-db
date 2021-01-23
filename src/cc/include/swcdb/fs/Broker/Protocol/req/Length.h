@@ -14,10 +14,10 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Req {
 
 
-class Length : public Base {
+class Length final : public Base {
   public:
 
-  Length(uint32_t timeout, const std::string& name, 
+  Length(uint32_t timeout, const std::string& name,
          const FS::Callback::LengthCb_t& cb)
         : Base(
             Buffers::make(

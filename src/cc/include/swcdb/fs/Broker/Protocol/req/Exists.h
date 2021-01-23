@@ -14,15 +14,15 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Req {
 
 
-class Exists : public Base {
+class Exists final : public Base {
   public:
 
-  Exists(uint32_t timeout, const std::string& name, 
+  Exists(uint32_t timeout, const std::string& name,
          const FS::Callback::ExistsCb_t& cb)
         : Base(
             Buffers::make(
               Params::ExistsReq(name),
-              0, 
+              0,
               FUNCTION_EXISTS, timeout
             )
           ),

@@ -14,7 +14,7 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Req {
 
 
-class ExistsSync : public BaseSync, public Base {
+class ExistsSync final : public BaseSync, public Base {
   public:
 
   bool state;

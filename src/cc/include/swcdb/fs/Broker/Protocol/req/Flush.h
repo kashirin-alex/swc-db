@@ -14,10 +14,10 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Req {
 
 
-class Flush : public Base {
+class Flush final : public Base {
   public:
 
-  Flush(uint32_t timeout, FS::SmartFd::Ptr& smartfd, 
+  Flush(uint32_t timeout, FS::SmartFd::Ptr& smartfd,
         const FS::Callback::FlushCb_t& cb)
         : Base(
             Buffers::make(

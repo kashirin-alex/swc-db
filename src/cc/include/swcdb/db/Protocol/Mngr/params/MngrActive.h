@@ -22,20 +22,20 @@ class MngrActiveReq : public Serializable {
   MngrActiveReq(uint8_t role=DB::Types::MngrRole::COLUMNS, cid_t cid=0);
 
   virtual ~MngrActiveReq();
-  
-  uint8_t   role; 
+
+  uint8_t   role;
   cid_t     cid;
 
   private:
 
-  size_t internal_encoded_length() const;
-    
-  void internal_encode(uint8_t** bufp) const;
-    
-  void internal_decode(const uint8_t** bufp, size_t* remainp);
+  size_t internal_encoded_length() const override;
+
+  void internal_encode(uint8_t** bufp) const override;
+
+  void internal_decode(const uint8_t** bufp, size_t* remainp) override;
 
 };
-  
+
 
 
 class MngrActiveRsp : public Common::Params::HostEndPoints {
@@ -44,21 +44,21 @@ class MngrActiveRsp : public Common::Params::HostEndPoints {
   MngrActiveRsp();
 
   MngrActiveRsp(const EndPoints& endpoints);
-  
+
   virtual ~MngrActiveRsp();
 
   bool available;
-  
+
   private:
 
-  size_t internal_encoded_length() const;
+  size_t internal_encoded_length() const override;
 
-  void internal_encode(uint8_t** bufp) const;
+  void internal_encode(uint8_t** bufp) const override;
 
-  void internal_decode(const uint8_t** bufp, size_t* remainp);
+  void internal_decode(const uint8_t** bufp, size_t* remainp) override;
 
 };
-  
+
 
 
 }}}}}
@@ -67,6 +67,6 @@ class MngrActiveRsp : public Common::Params::HostEndPoints {
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/db/Protocol/Mngr/params/MngrActive.cc"
-#endif 
+#endif
 
 #endif // swcdb_protocol_mngr_params_MngrActive_h

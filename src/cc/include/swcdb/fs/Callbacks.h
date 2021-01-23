@@ -24,12 +24,12 @@ namespace Callback {
   typedef std::function<void(int, DirentList)>   ReaddirCb_t;
   typedef std::function<void(int)>               RmdirCb_t;
   typedef std::function<void(int)>               RenameCb_t;
-  
+
 
   typedef std::function<void(int, SmartFd::Ptr)>                    WriteCb_t;
-  typedef std::function<void(int, const std::string&, 
+  typedef std::function<void(int, const std::string&,
                              StaticBuffer::Ptr)>                    ReadAllCb_t;
-  typedef std::function<void(int, SmartFd::Ptr, 
+  typedef std::function<void(int, SmartFd::Ptr,
                              StaticBuffer::Ptr)>                    CombiPreadCb_t;
 
   typedef std::function<void(int, SmartFd::Ptr)>                    CreateCb_t;
@@ -41,7 +41,7 @@ namespace Callback {
   typedef std::function<void(int, SmartFd::Ptr)>                    FlushCb_t;
   typedef std::function<void(int, SmartFd::Ptr)>                    SyncCb_t;
   typedef std::function<void(int, SmartFd::Ptr)>                    CloseCb_t;
- 
+
 }
 
 }}

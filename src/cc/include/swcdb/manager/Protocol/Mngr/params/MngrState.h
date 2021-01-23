@@ -18,8 +18,8 @@ class MngrState : public Serializable {
 
   MngrState();
 
-  MngrState(Manager::MngrsStatus states, 
-            uint64_t token, 
+  MngrState(Manager::MngrsStatus states,
+            uint64_t token,
             const EndPoint& mngr_host);
 
   Manager::MngrsStatus  states;
@@ -28,14 +28,14 @@ class MngrState : public Serializable {
 
   private:
 
-  size_t internal_encoded_length() const;
-    
-  void internal_encode(uint8_t** bufp) const;
-    
-  void internal_decode(const uint8_t** bufp, size_t* remainp);
+  size_t internal_encoded_length() const override;
+
+  void internal_encode(uint8_t** bufp) const override;
+
+  void internal_decode(const uint8_t** bufp, size_t* remainp) override;
 
 };
-  
+
 
 }}}}}
 

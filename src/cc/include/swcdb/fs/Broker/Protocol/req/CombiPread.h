@@ -14,7 +14,7 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Req {
 
 
-class CombiPread : public Base {
+class CombiPread final : public Base {
   public:
 
   CombiPread(uint32_t timeout, const FS::SmartFd::Ptr& smartfd,

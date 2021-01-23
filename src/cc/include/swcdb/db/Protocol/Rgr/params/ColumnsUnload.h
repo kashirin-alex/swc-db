@@ -17,16 +17,16 @@ class ColumnsUnloadRsp : public Serializable {
   public:
 
   ColumnsUnloadRsp(int err = Error::OK) : err(err) { }
-  
-             
+
+
   virtual ~ColumnsUnloadRsp() {}
 
   int err;
   std::unordered_map<cid_t, std::vector<rid_t>> columns;
-  
+
   private:
 
-  size_t internal_encoded_length() const {
+  size_t internal_encoded_length() const override {
     size_t sz = Serialization::encoded_length_vi32(err);
     if(err)
       return sz;
@@ -39,8 +39,8 @@ class ColumnsUnloadRsp : public Serializable {
     }
     return sz;
   }
-    
-  void internal_encode(uint8_t** bufp) const {
+
+  void internal_encode(uint8_t** bufp) const override {
     Serialization::encode_vi32(bufp, err);
     if(err)
       return;
@@ -52,8 +52,8 @@ class ColumnsUnloadRsp : public Serializable {
         Serialization::encode_vi64(bufp, r);
     }
   }
-    
-  void internal_decode(const uint8_t** bufp, size_t* remainp) {
+
+  void internal_decode(const uint8_t** bufp, size_t* remainp) override {
     err = Serialization::decode_vi32(bufp, remainp);
     if(err)
       return;
@@ -68,7 +68,7 @@ class ColumnsUnloadRsp : public Serializable {
   }
 
 };
-  
+
 
 }}}}}
 

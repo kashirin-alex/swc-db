@@ -14,21 +14,21 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Req {
 
 
-class AppendSync :  public BaseSync, public Base {
+class AppendSync final : public BaseSync, public Base {
   public:
-  
+
   size_t amount;
-  
-  AppendSync(uint32_t timeout, FS::SmartFd::Ptr& smartfd, 
+
+  AppendSync(uint32_t timeout, FS::SmartFd::Ptr& smartfd,
           StaticBuffer& buffer, FS::Flags flags)
         : Base(
             Buffers::make(
               Params::AppendReq(smartfd->fd(), (uint8_t)flags),
               buffer,
-              0, 
+              0,
               FUNCTION_APPEND, timeout
             )
-          ), 
+          ),
           amount(0), smartfd(smartfd) {
   }
 

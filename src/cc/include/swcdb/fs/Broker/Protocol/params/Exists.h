@@ -25,11 +25,11 @@ class ExistsReq : public Serializable {
 
   private:
 
-  size_t internal_encoded_length() const;
+  size_t internal_encoded_length() const override;
 
-  void internal_encode(uint8_t** bufp) const;
+  void internal_encode(uint8_t** bufp) const override;
 
-  void internal_decode(const uint8_t** bufp, size_t* remainp);
+  void internal_decode(const uint8_t** bufp, size_t* remainp) override;
 
 };
 
@@ -38,7 +38,7 @@ class ExistsReq : public Serializable {
 
 class ExistsRsp : public Serializable {
   public:
-  
+
   ExistsRsp();
 
   ExistsRsp(bool exists);
@@ -47,11 +47,11 @@ class ExistsRsp : public Serializable {
 
   private:
 
-  size_t internal_encoded_length() const;
+  size_t internal_encoded_length() const override;
 
-  void internal_encode(uint8_t** bufp) const;
+  void internal_encode(uint8_t** bufp) const override;
 
-  void internal_decode(const uint8_t** bufp, size_t* remainp);
+  void internal_decode(const uint8_t** bufp, size_t* remainp) override;
 
 };
 
@@ -61,7 +61,7 @@ class ExistsRsp : public Serializable {
 #if defined(SWC_IMPL_SOURCE) or \
     (defined(FS_BROKER_APP) and !defined(BUILTIN_FS_BROKER))
 #include "swcdb/fs/Broker/Protocol/params/Exists.cc"
-#endif 
+#endif
 
 
 #endif // swcdb_fs_Broker_Protocol_params_Exists_h

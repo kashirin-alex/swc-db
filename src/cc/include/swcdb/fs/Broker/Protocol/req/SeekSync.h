@@ -14,9 +14,9 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Req {
 
 
-class SeekSync : public BaseSync, public Base {
+class SeekSync final : public BaseSync, public Base {
   public:
-  
+
   SeekSync(uint32_t timeout, FS::SmartFd::Ptr& smartfd, size_t offset)
           : Base(
               Buffers::make(
@@ -28,7 +28,7 @@ class SeekSync : public BaseSync, public Base {
             smartfd(smartfd) {
   }
 
-  void handle(ConnHandlerPtr, const Event::Ptr& ev) override { 
+  void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
     Base::handle_seek(ev, smartfd);
     BaseSync::acknowledge();
   }

@@ -19,7 +19,7 @@ set(STATIC ${SWC_LIB_CORE_STATIC} ${SWC_LIB_FS_STATIC})
 set(FLAGS )
 set(TARGETS )
 
-set(SHARED_TARGETS 
+set(SHARED_TARGETS
   "swcdb_core;swcdb_core_config;swcdb_core_comm;swcdb_fs;swcdb;${BUILTIN_FS_TARGETS}")
 
 if(SWC_IMPL_SOURCE)
@@ -74,7 +74,7 @@ ADD_EXEC_TARGET(
 
   SHARED ${SHARED} ${THRIFT_CPP_LIBRARIES_SHARED}
   STATIC ${STATIC} ${THRIFT_CPP_LIBRARIES_STATIC}
-  FLAGS  ${FLAGS}
+  FLAGS  ${FLAGS} -Wno-suggest-override
 )
 endif()
 
@@ -84,10 +84,10 @@ ADD_EXEC_TARGET(
   NAME    swcdbFsBroker
   SRCS    fsbroker/main.cc
           ${SWC_VERSION_SRC}
-  TARGETS swcdb_core 
-          swcdb_core_config 
-          swcdb_core_comm 
-          swcdb_fs 
+  TARGETS swcdb_core
+          swcdb_core_config
+          swcdb_core_comm
+          swcdb_fs
           ${BUILTIN_FS_TARGETS}
 
   SHARED  ${SHARED}

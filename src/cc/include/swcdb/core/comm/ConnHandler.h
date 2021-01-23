@@ -39,11 +39,11 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     asio::high_resolution_timer*  timer;
 
     Pending(const Buffers::Ptr& cbuf, DispatchHandler::Ptr& hdlr);
-    
+
     Pending(const Pending&) = delete;
 
     Pending(const Pending&&) = delete;
-    
+
     Pending& operator=(const Pending&) = delete;
 
     ~Pending();
@@ -64,9 +64,9 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   virtual ~ConnHandler();
 
   size_t endpoint_remote_hash() const;
-  
+
   size_t endpoint_local_hash() const;
-  
+
   Core::Encoder::Type get_encoder() const;
 
   virtual bool is_secure() const noexcept { return false; };
@@ -85,9 +85,11 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
   void run(const Event::Ptr& ev);
 
-  virtual void do_close();
+  virtual void do_close() = 0;
 
-  bool send_error(int error, const std::string& msg, 
+  void do_close_run();
+
+  bool send_error(int error, const std::string& msg,
                   const Event::Ptr& ev) noexcept;
 
   bool response_ok(const Event::Ptr& ev) noexcept;
@@ -99,7 +101,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
   void accept_requests();
 
-  /* 
+  /*
   void accept_requests(DispatchHandler::Ptr hdlr, uint32_t timeout_ms=0);
   */
 
@@ -135,15 +137,15 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
   void read_pending();
 
-  void recved_header_pre(asio::error_code ec, 
+  void recved_header_pre(asio::error_code ec,
                          const uint8_t* data, size_t filled);
 
-  void recved_header(const Event::Ptr& ev, asio::error_code ec, 
+  void recved_header(const Event::Ptr& ev, asio::error_code ec,
                      const uint8_t* data, size_t filled);
 
   void recv_buffers(const Event::Ptr& ev, uint8_t n);
 
-  void recved_buffer(const Event::Ptr& ev, asio::error_code ec, 
+  void recved_buffer(const Event::Ptr& ev, asio::error_code ec,
                      uint8_t n, size_t filled);
 
   void received(const Event::Ptr& ev, const asio::error_code& ec);
@@ -160,8 +162,8 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   Core::AtomicBool                  m_accepting;
   Core::StateRunning                m_read;
   Core::QueueSafeStated<Pending*>   m_outgoing;
-  std::unordered_map<uint32_t, 
-                    Pending*, 
+  std::unordered_map<uint32_t,
+                    Pending*,
                     PendingHash>    m_pending;
 };
 
@@ -172,7 +174,7 @@ class ConnHandlerPlain final : public ConnHandler {
   public:
 
   ConnHandlerPlain(AppContext::Ptr& app_ctx, SocketPlain& socket);
-  
+
   virtual ~ConnHandlerPlain();
 
   void do_close() override;
@@ -206,9 +208,9 @@ class ConnHandlerPlain final : public ConnHandler {
 class ConnHandlerSSL final : public ConnHandler {
   public:
 
-  ConnHandlerSSL(AppContext::Ptr& app_ctx, asio::ssl::context& ssl_ctx, 
+  ConnHandlerSSL(AppContext::Ptr& app_ctx, asio::ssl::context& ssl_ctx,
                  SocketPlain& socket);
-  
+
   virtual ~ConnHandlerSSL();
 
   bool is_secure() const noexcept override { return true; }
@@ -219,11 +221,11 @@ class ConnHandlerSSL final : public ConnHandler {
 
   bool is_open() const noexcept override;
 
-  void handshake(SocketSSL::handshake_type typ, 
+  void handshake(SocketSSL::handshake_type typ,
                  const std::function<void(const asio::error_code&)>& cb)
                  noexcept;
 
-  void handshake(SocketSSL::handshake_type typ, 
+  void handshake(SocketSSL::handshake_type typ,
                  asio::error_code& ec) noexcept;
 
   void set_verify(
@@ -243,7 +245,7 @@ class ConnHandlerSSL final : public ConnHandler {
 
   void do_async_read(
     uint8_t* data, uint32_t sz,
-    const std::function<void(const asio::error_code&, size_t)>& hdlr) 
+    const std::function<void(const asio::error_code&, size_t)>& hdlr)
     noexcept override;
 
   private:
@@ -259,6 +261,6 @@ class ConnHandlerSSL final : public ConnHandler {
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/core/comm/ConnHandler.cc"
-#endif 
+#endif
 
 #endif // swcdb_core_comm_ConnHandler_h

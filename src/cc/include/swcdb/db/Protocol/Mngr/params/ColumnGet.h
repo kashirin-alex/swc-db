@@ -39,11 +39,11 @@ class ColumnGetReq  : public Serializable {
 
   private:
 
-  size_t internal_encoded_length() const;
+  size_t internal_encoded_length() const override;
 
-  void internal_encode(uint8_t** bufp) const;
+  void internal_encode(uint8_t** bufp) const override;
 
-  void internal_decode(const uint8_t** bufp, size_t* remainp);
+  void internal_decode(const uint8_t** bufp, size_t* remainp) override;
 
 };
 
@@ -64,11 +64,11 @@ class ColumnGetRsp  : public Serializable {
 
   private:
 
-  size_t internal_encoded_length() const;
+  size_t internal_encoded_length() const override;
 
-  void internal_encode(uint8_t** bufp) const;
+  void internal_encode(uint8_t** bufp) const override;
 
-  void internal_decode(const uint8_t** bufp, size_t* remainp);
+  void internal_decode(const uint8_t** bufp, size_t* remainp) override;
 
 };
 
@@ -78,6 +78,6 @@ class ColumnGetRsp  : public Serializable {
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/db/Protocol/Mngr/params/ColumnGet.cc"
-#endif 
+#endif
 
 #endif // swcdb_db_protocol_params_ColumnGetRsp_h

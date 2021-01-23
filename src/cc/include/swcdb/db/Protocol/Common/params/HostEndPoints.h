@@ -14,7 +14,7 @@ namespace SWC { namespace Comm {
 
 
 //! The SWC-DB Communications Protocol C++ namespace 'SWC::Comm::Protocol'
-namespace Protocol { 
+namespace Protocol {
 
 
 
@@ -27,7 +27,7 @@ namespace Common {
 
 
 namespace Params {
- 
+
 
 class HostEndPoints: public Serializable {
   public:
@@ -35,7 +35,7 @@ class HostEndPoints: public Serializable {
   HostEndPoints();
 
   HostEndPoints(const EndPoints& points);
-  
+
   virtual ~HostEndPoints();
 
   void set(const EndPoints& points);
@@ -47,11 +47,11 @@ class HostEndPoints: public Serializable {
 
   protected:
 
-  size_t internal_encoded_length() const;
+  size_t internal_encoded_length() const override;
 
-  void internal_encode(uint8_t** bufp) const;
+  void internal_encode(uint8_t** bufp) const override;
 
-  void internal_decode(const uint8_t** bufp, size_t* remainp);
+  void internal_decode(const uint8_t** bufp, size_t* remainp) override;
 
 
 };
@@ -62,7 +62,7 @@ class HostEndPoints: public Serializable {
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/db/Protocol/Common/params/HostEndPoints.cc"
-#endif 
+#endif
 
 #endif // swcdb_db_protocol_params_HostEndPoints_h
 

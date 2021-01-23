@@ -14,9 +14,9 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Req {
 
 
-class Seek : public Base {
+class Seek final : public Base {
   public:
-  
+
   Seek(uint32_t timeout, FS::SmartFd::Ptr& smartfd, size_t offset,
        const FS::Callback::SeekCb_t& cb)
       : Base(

@@ -45,11 +45,11 @@ class ReqColumnStatus : public Serializable {
 
   private:
 
-  size_t internal_encoded_length() const;
-    
-  void internal_encode(uint8_t** bufp) const;
-    
-  void internal_decode(const uint8_t** bufp, size_t* remainp);
+  size_t internal_encoded_length() const override;
+
+  void internal_encode(uint8_t** bufp) const override;
+
+  void internal_decode(const uint8_t** bufp, size_t* remainp) override;
 
 };
 
@@ -66,7 +66,7 @@ class RspColumnStatus : public Serializable {
     DB::Types::MngrRange::State state;
     rid_t                   rid;
     rgrid_t                 rgr_id;
-    
+
     size_t encoded_length() const;
 
     void encode(uint8_t** bufp) const;
@@ -84,11 +84,11 @@ class RspColumnStatus : public Serializable {
 
   private:
 
-  size_t internal_encoded_length() const;
-    
-  void internal_encode(uint8_t** bufp) const;
-    
-  void internal_decode(const uint8_t** bufp, size_t* remainp);
+  size_t internal_encoded_length() const override;
+
+  void internal_encode(uint8_t** bufp) const override;
+
+  void internal_decode(const uint8_t** bufp, size_t* remainp) override;
 
 };
 
@@ -126,11 +126,11 @@ class RspRangersStatus : public Serializable {
 
   private:
 
-  size_t internal_encoded_length() const;
-    
-  void internal_encode(uint8_t** bufp) const;
-    
-  void internal_decode(const uint8_t** bufp, size_t* remainp);
+  size_t internal_encoded_length() const override;
+
+  void internal_encode(uint8_t** bufp) const override;
+
+  void internal_decode(const uint8_t** bufp, size_t* remainp) override;
 
 };
 
@@ -170,11 +170,11 @@ class RspManagersStatus : public Serializable {
 
   private:
 
-  size_t internal_encoded_length() const;
-    
-  void internal_encode(uint8_t** bufp) const;
-    
-  void internal_decode(const uint8_t** bufp, size_t* remainp);
+  size_t internal_encoded_length() const override;
+
+  void internal_encode(uint8_t** bufp) const override;
+
+  void internal_decode(const uint8_t** bufp, size_t* remainp) override;
 
 };
 
@@ -186,6 +186,6 @@ class RspManagersStatus : public Serializable {
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/db/Protocol/Mngr/params/Report.cc"
-#endif 
+#endif
 
 #endif // swcdb_db_protocol_mngr_params_Report_h

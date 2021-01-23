@@ -15,11 +15,11 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Req {
 
 
-class CreateSync : public BaseSync, public Base {
+class CreateSync final : public BaseSync, public Base {
   public:
-  
-  CreateSync(const FS::FileSystem::Ptr& fs, 
-             uint32_t timeout, FS::SmartFd::Ptr& smartfd, 
+
+  CreateSync(const FS::FileSystem::Ptr& fs,
+             uint32_t timeout, FS::SmartFd::Ptr& smartfd,
              int32_t bufsz, uint8_t replication, int64_t blksz)
             : Base(
                 Buffers::make(

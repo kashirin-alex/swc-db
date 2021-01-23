@@ -23,7 +23,7 @@ class RgrGetReq : public Serializable {
   RgrGetReq(cid_t cid=0, rid_t rid=0, bool next_range=false);
 
   virtual ~RgrGetReq();
-  
+
   void print(std::ostream& out) const;
 
   cid_t          cid;
@@ -34,11 +34,11 @@ class RgrGetReq : public Serializable {
 
   private:
 
-  size_t internal_encoded_length() const;
-    
-  void internal_encode(uint8_t** bufp) const;
-    
-  void internal_decode(const uint8_t** bufp, size_t* remainp);
+  size_t internal_encoded_length() const override;
+
+  void internal_encode(uint8_t** bufp) const override;
+
+  void internal_decode(const uint8_t** bufp, size_t* remainp) override;
 
 };
 
@@ -53,9 +53,9 @@ class RgrGetRsp : public Common::Params::HostEndPoints {
 
   virtual ~RgrGetRsp();
 
-  int             err;         
-  cid_t           cid; 
-  rid_t           rid; 
+  int             err;
+  cid_t           cid;
+  rid_t           rid;
   DB::Cell::Key   range_end;
   DB::Cell::Key   range_begin;
 
@@ -63,14 +63,14 @@ class RgrGetRsp : public Common::Params::HostEndPoints {
 
   private:
 
-  size_t internal_encoded_length() const;
-    
-  void internal_encode(uint8_t** bufp) const;
-    
-  void internal_decode(const uint8_t** bufp, size_t* remainp);
+  size_t internal_encoded_length() const override;
+
+  void internal_encode(uint8_t** bufp) const override;
+
+  void internal_decode(const uint8_t** bufp, size_t* remainp) override;
 
 };
-  
+
 
 }}}}}
 
@@ -78,6 +78,6 @@ class RgrGetRsp : public Common::Params::HostEndPoints {
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/db/Protocol/Mngr/params/RgrGet.cc"
-#endif 
+#endif
 
 #endif // swcdb_db_protocol_mngr_params_RgrGet_h

@@ -18,15 +18,15 @@ class ColumnUpdate : public Serializable {
 
   ColumnUpdate() {}
 
-  ColumnUpdate(ColumnMng::Function function, 
-               const DB::Schema::Ptr& schema, int err, uint64_t id) 
+  ColumnUpdate(ColumnMng::Function function,
+               const DB::Schema::Ptr& schema, int err, uint64_t id)
               : function(function), id(id), schema(schema), err(err) {
   }
 
-  ColumnUpdate(ColumnMng::Function function, 
+  ColumnUpdate(ColumnMng::Function function,
                cid_t cid_begin, cid_t cid_end,
                const std::vector<cid_t>& columns)
-              : function(function), id(0), 
+              : function(function), id(0),
                 columns(columns), cid_begin(cid_begin), cid_end(cid_end),
                 err(Error::OK) {
   }
@@ -48,7 +48,7 @@ class ColumnUpdate : public Serializable {
     }
     out << ')';
   }
-  
+
   ColumnMng::Function function;
   uint64_t            id;
   std::vector<cid_t>  columns;
@@ -59,7 +59,7 @@ class ColumnUpdate : public Serializable {
 
   private:
 
-  size_t internal_encoded_length() const {
+  size_t internal_encoded_length() const override {
     size_t sz = 1 + Serialization::encoded_length_vi64(id);
     switch(function) {
       case ColumnMng::Function::INTERNAL_EXPECT: {
@@ -78,8 +78,8 @@ class ColumnUpdate : public Serializable {
     }
     return sz;
   }
-    
-  void internal_encode(uint8_t** bufp) const {
+
+  void internal_encode(uint8_t** bufp) const override {
     Serialization::encode_i8(bufp, (uint8_t)function);
     Serialization::encode_vi64(bufp, id);
     switch(function) {
@@ -98,8 +98,8 @@ class ColumnUpdate : public Serializable {
       }
     }
   }
-    
-  void internal_decode(const uint8_t** bufp, size_t* remainp) {
+
+  void internal_decode(const uint8_t** bufp, size_t* remainp) override {
     function = (ColumnMng::Function)Serialization::decode_i8(bufp, remainp);
     id = Serialization::decode_vi64(bufp, remainp);
     switch(function) {
@@ -121,7 +121,7 @@ class ColumnUpdate : public Serializable {
   }
 
 };
-  
+
 
 }}}}}
 

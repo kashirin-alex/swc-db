@@ -14,14 +14,14 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Req {
 
 
-class ReadSync : public BaseSync, public Base {
+class ReadSync final : public BaseSync, public Base {
   public:
 
   void*   buffer;
   bool    allocated;
   size_t  amount;
 
-  ReadSync(uint32_t timeout, FS::SmartFd::Ptr& smartfd, 
+  ReadSync(uint32_t timeout, FS::SmartFd::Ptr& smartfd,
            void* dst, size_t len, bool allocated)
           : Base(
               Buffers::make(

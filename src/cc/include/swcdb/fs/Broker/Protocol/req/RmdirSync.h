@@ -14,7 +14,7 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Req {
 
 
-class RmdirSync : public BaseSync, public Base {
+class RmdirSync final : public BaseSync, public Base {
   public:
 
   RmdirSync(uint32_t timeout, const std::string& name)

@@ -14,7 +14,7 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Req {
 
 
-class RemoveSync : public BaseSync, public Base {
+class RemoveSync final : public BaseSync, public Base {
   public:
 
   RemoveSync(uint32_t timeout, const std::string& name)

@@ -14,10 +14,10 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Req {
 
 
-class Remove : public Base {
+class Remove final : public Base {
   public:
 
-  Remove(uint32_t timeout, const std::string& name, 
+  Remove(uint32_t timeout, const std::string& name,
          const FS::Callback::RemoveCb_t& cb)
         : Base(
             Buffers::make(

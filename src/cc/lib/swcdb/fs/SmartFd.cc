@@ -11,21 +11,19 @@ namespace SWC { namespace FS {
 
 
 SWC_SHOULD_INLINE
-SmartFd::Ptr SmartFd::make_ptr(const std::string& filepath, uint32_t flags, 
+SmartFd::Ptr SmartFd::make_ptr(const std::string& filepath, uint32_t flags,
                               int32_t fd, uint64_t pos){
   return std::make_shared<SmartFd>(filepath, flags, fd, pos);
 }
 
-SmartFd::SmartFd(const std::string& filepath, uint32_t flags, 
+SmartFd::SmartFd(const std::string& filepath, uint32_t flags,
                  int32_t fd, uint64_t pos)
                 : m_filepath(filepath), m_flags(flags), m_fd(fd), m_pos(pos) {
 }
 
-SmartFd::~SmartFd() { }
-
 SWC_SHOULD_INLINE
-const std::string& SmartFd::filepath() const { 
-  return m_filepath; 
+const std::string& SmartFd::filepath() const {
+  return m_filepath;
 }
 
 void SmartFd::flags(uint32_t flags) {
@@ -33,27 +31,27 @@ void SmartFd::flags(uint32_t flags) {
 }
 
 uint32_t SmartFd::flags() const {
-  return m_flags; 
+  return m_flags;
 }
 
 void SmartFd::fd(int32_t fd) {
-  m_fd.store(fd); 
+  m_fd.store(fd);
 }
 
 int32_t SmartFd::fd() const {
-  return m_fd; 
+  return m_fd;
 }
 
 bool SmartFd::valid() const {
-  return m_fd != -1; 
+  return m_fd != -1;
 }
 
 void SmartFd::pos(uint64_t pos) {
   m_pos.store(pos);
 }
-  
+
 uint64_t SmartFd::pos() const {
-  return m_pos; 
+  return m_pos;
 }
 
 void SmartFd::forward(uint64_t nbytes) {
@@ -61,7 +59,7 @@ void SmartFd::forward(uint64_t nbytes) {
 }
 
 std::string SmartFd::to_string() const {
-  return format("SmartFd(filepath='%s' flags=%u fd=%d pos=%lu)", 
+  return format("SmartFd(filepath='%s' flags=%u fd=%d pos=%lu)",
     m_filepath.c_str(), m_flags.load(), m_fd.load(), m_pos.load());
 }
 

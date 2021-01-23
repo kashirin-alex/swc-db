@@ -37,7 +37,7 @@ class AppHandler final : virtual public BrokerIf {
   virtual ~AppHandler() { }
 
   /* SQL any */
-  void exec_sql(Result& _return, const std::string& sql) {
+  void exec_sql(Result& _return, const std::string& sql) override {
     int err = Error::OK;
     std::string message;
     auto cmd = client::SQL::recognize_cmd(err, sql, message);
@@ -75,7 +75,7 @@ class AppHandler final : virtual public BrokerIf {
 
 
   /* SQL SCHEMAS/COLUMNS */
-  void sql_list_columns(Schemas& _return, const std::string& sql) {
+  void sql_list_columns(Schemas& _return, const std::string& sql) override {
     int err = Error::OK;
     std::vector<DB::Schema::Ptr> dbschemas;
     std::string message;
@@ -86,7 +86,7 @@ class AppHandler final : virtual public BrokerIf {
     process_results(err, dbschemas, _return);
   }
 
-  void sql_mng_column(const std::string& sql) {
+  void sql_mng_column(const std::string& sql) override {
     int err = Error::OK;
     std::string message;
     DB::Schema::Ptr schema;
@@ -101,7 +101,8 @@ class AppHandler final : virtual public BrokerIf {
     mng_column(func, schema);
   }
 
-  void sql_compact_columns(CompactResults& _return, const std::string& sql) {
+  void sql_compact_columns(CompactResults& _return,
+                           const std::string& sql) override {
     int err = Error::OK;
     std::vector<DB::Schema::Ptr> dbschemas;
     std::string message;
@@ -130,7 +131,7 @@ class AppHandler final : virtual public BrokerIf {
   }
 
   void sql_query(CellsGroup& _return, const std::string& sql,
-                 const CellsResult::type rslt) {
+                 const CellsResult::type rslt) override {
     switch(rslt) {
       case CellsResult::ON_COLUMN : {
         sql_select_rslt_on_column(_return.ccells, sql);
@@ -151,7 +152,7 @@ class AppHandler final : virtual public BrokerIf {
     }
   }
 
-  void sql_select(Cells& _return, const std::string& sql) {
+  void sql_select(Cells& _return, const std::string& sql) override {
     auto req = sync_select(sql);
 
     int err = Error::OK;
@@ -160,7 +161,8 @@ class AppHandler final : virtual public BrokerIf {
       Converter::exception(err);
   }
 
-  void sql_select_rslt_on_column(CCells& _return, const std::string& sql) {
+  void sql_select_rslt_on_column(CCells& _return,
+                                 const std::string& sql) override {
     auto req = sync_select(sql);
 
     int err = Error::OK;
@@ -169,7 +171,8 @@ class AppHandler final : virtual public BrokerIf {
       Converter::exception(err);
   }
 
-  void sql_select_rslt_on_key(KCells& _return, const std::string& sql) {
+  void sql_select_rslt_on_key(KCells& _return,
+                              const std::string& sql) override {
     auto req = sync_select(sql);
 
     int err = Error::OK;
@@ -178,7 +181,8 @@ class AppHandler final : virtual public BrokerIf {
       Converter::exception(err);
   }
 
-  void sql_select_rslt_on_fraction(FCells& _return, const std::string& sql) {
+  void sql_select_rslt_on_fraction(FCells& _return,
+                                   const std::string& sql) override {
     auto req = sync_select(sql);
 
     int err = Error::OK;
@@ -188,7 +192,7 @@ class AppHandler final : virtual public BrokerIf {
   }
 
   /* SQL UPDATE */
-  void sql_update(const std::string& sql, const int64_t updater_id) {
+  void sql_update(const std::string& sql, const int64_t updater_id) override {
 
     client::Query::Update::Ptr req = nullptr;
     if(updater_id)
@@ -220,14 +224,16 @@ class AppHandler final : virtual public BrokerIf {
 
   /* SPECS SCHEMAS/COLUMNS */
 
-  void list_columns(Schemas& _return, const SpecSchemas& spec) {
+  void list_columns(Schemas& _return,
+                    const SpecSchemas& spec) override {
     int err = Error::OK;
     std::vector<DB::Schema::Ptr> dbschemas;
     get_schemas(err, spec, dbschemas);
     process_results(err, dbschemas, _return);
   }
 
-  void mng_column(const SchemaFunc::type func, const Schema& schema) {
+  void mng_column(const SchemaFunc::type func,
+                  const Schema& schema) override {
     DB::Schema::Ptr dbschema = DB::Schema::make();
     Converter::set(schema, dbschema);
     mng_column(
@@ -236,7 +242,8 @@ class AppHandler final : virtual public BrokerIf {
     );
   }
 
-  void compact_columns(CompactResults& _return, const SpecSchemas& spec) {
+  void compact_columns(CompactResults& _return,
+                       const SpecSchemas& spec) override {
     int err = Error::OK;
     std::vector<DB::Schema::Ptr> dbschemas;
     get_schemas(err, spec, dbschemas);
@@ -295,7 +302,7 @@ class AppHandler final : virtual public BrokerIf {
   }
 
   void scan_rslt_on(CellsGroup& _return, const SpecScan& specs,
-                    const CellsResult::type rslt) {
+                    const CellsResult::type rslt) override {
     switch(rslt) {
       case CellsResult::ON_COLUMN : {
         scan_rslt_on_column(_return.ccells, specs);
@@ -316,7 +323,7 @@ class AppHandler final : virtual public BrokerIf {
     }
   }
 
-  void scan(Cells& _return, const SpecScan& specs) {
+  void scan(Cells& _return, const SpecScan& specs) override {
     auto req = sync_select(specs);
 
     int err = Error::OK;
@@ -325,7 +332,7 @@ class AppHandler final : virtual public BrokerIf {
       Converter::exception(err);
   }
 
-  void scan_rslt_on_column(CCells& _return, const SpecScan& specs) {
+  void scan_rslt_on_column(CCells& _return, const SpecScan& specs) override {
     auto req = sync_select(specs);
 
     int err = Error::OK;
@@ -334,7 +341,7 @@ class AppHandler final : virtual public BrokerIf {
       Converter::exception(err);
   }
 
-  void scan_rslt_on_key(KCells& _return, const SpecScan& specs) {
+  void scan_rslt_on_key(KCells& _return, const SpecScan& specs) override {
     auto req = sync_select(specs);
 
     int err = Error::OK;
@@ -343,7 +350,7 @@ class AppHandler final : virtual public BrokerIf {
       Converter::exception(err);
   }
 
-  void scan_rslt_on_fraction(FCells& _return, const SpecScan& specs) {
+  void scan_rslt_on_fraction(FCells& _return, const SpecScan& specs) override {
     auto req = sync_select(specs);
 
     int err = Error::OK;
@@ -354,7 +361,7 @@ class AppHandler final : virtual public BrokerIf {
 
 
   /* UPDATER */
-  int64_t updater_create(const int32_t buffer_size) {
+  int64_t updater_create(const int32_t buffer_size) override {
     std::scoped_lock lock(m_mutex);
 
     int64_t id = 1;
@@ -368,7 +375,7 @@ class AppHandler final : virtual public BrokerIf {
     return id;
   }
 
-  void updater_close(const int64_t id) {
+  void updater_close(const int64_t id) override {
     client::Query::Update:: Ptr req;
     {
       std::scoped_lock lock(m_mutex);
@@ -383,7 +390,7 @@ class AppHandler final : virtual public BrokerIf {
   }
 
   /* UPDATE */
-  void update(const UCCells& cells, const int64_t updater_id) {
+  void update(const UCCells& cells, const int64_t updater_id) override  {
     client::Query::Update::Ptr req = nullptr;
     if(updater_id)
       updater(updater_id, req);
@@ -410,8 +417,8 @@ class AppHandler final : virtual public BrokerIf {
           dbcell.set_timestamp(cell.ts);
         if(cell.__isset.ts_desc)
           dbcell.set_time_order_desc(cell.ts_desc);
-          
-        cell.__isset.encoder 
+
+        cell.__isset.encoder
           ? dbcell.set_value((DB::Types::Encoder)(uint8_t)cell.encoder, cell.v)
           : dbcell.set_value(cell.v);
 
@@ -431,7 +438,8 @@ class AppHandler final : virtual public BrokerIf {
   }
 
   /* UPDATE-SERIAL */
-  void update_serial(const UCCellsSerial& cells, const int64_t updater_id) {
+  void update_serial(const UCCellsSerial& cells,
+                     const int64_t updater_id) override {
     client::Query::Update::Ptr req = nullptr;
     if(updater_id)
       updater(updater_id, req);
@@ -498,7 +506,7 @@ class AppHandler final : virtual public BrokerIf {
         }
 
         cell.__isset.encoder
-          ? dbcell.set_value((DB::Types::Encoder)(uint8_t)cell.encoder, 
+          ? dbcell.set_value((DB::Types::Encoder)(uint8_t)cell.encoder,
                               wfields.base, wfields.fill() )
           : dbcell.set_value(wfields.base, wfields.fill(), false);
 

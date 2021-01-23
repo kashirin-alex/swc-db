@@ -26,7 +26,7 @@ class RangeLocateReq : public Serializable {
   static const uint8_t KEY_EQUAL      = 0x08;
 
   RangeLocateReq(cid_t cid=0, rid_t rid=0);
-  
+
   virtual ~RangeLocateReq();
 
   void print(std::ostream& out) const;
@@ -38,11 +38,11 @@ class RangeLocateReq : public Serializable {
 
   private:
 
-  size_t internal_encoded_length() const;
-    
-  void internal_encode(uint8_t** bufp) const;
-    
-  void internal_decode(const uint8_t** bufp, size_t* remainp);
+  size_t internal_encoded_length() const override;
+
+  void internal_encode(uint8_t** bufp) const override;
+
+  void internal_decode(const uint8_t** bufp, size_t* remainp) override;
 
 };
 
@@ -57,28 +57,28 @@ class RangeLocateRsp  : public Serializable {
 
   void print(std::ostream& out) const;
 
-  int             err;         
-  cid_t           cid; 
+  int             err;
+  cid_t           cid;
   rid_t           rid;
   DB::Cell::Key   range_end;
   DB::Cell::Key   range_begin;
 
   private:
 
-  size_t internal_encoded_length() const;
-    
-  void internal_encode(uint8_t** bufp) const;
-    
-  void internal_decode(const uint8_t** bufp, size_t* remainp);
+  size_t internal_encoded_length() const override;
+
+  void internal_encode(uint8_t** bufp) const override;
+
+  void internal_decode(const uint8_t** bufp, size_t* remainp) override;
 
 };
-  
+
 
 }}}}}
 
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/db/Protocol/Rgr/params/RangeLocate.cc"
-#endif 
+#endif
 
 #endif // swcdb_db_protocol_rgr_params_RangeLocate_h

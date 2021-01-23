@@ -20,31 +20,31 @@ class MngrStatus : public Comm::Protocol::Common::Params::HostEndPoints {
   MngrStatus() {}
 
   MngrStatus(uint8_t role, cid_t begin, cid_t end,
-             const Comm::EndPoints& points, 
+             const Comm::EndPoints& points,
              Comm::ConnHandlerPtr c, uint32_t pr)
-             : Comm::Protocol::Common::Params::HostEndPoints(points), 
-               priority(pr), state(DB::Types::MngrState::NOTSET), role(role), 
-               cid_begin(begin), cid_end(end), 
-               conn(c), failures(0) { 
+             : Comm::Protocol::Common::Params::HostEndPoints(points),
+               priority(pr), state(DB::Types::MngrState::NOTSET), role(role),
+               cid_begin(begin), cid_end(end),
+               conn(c), failures(0) {
   }
-  
+
   virtual ~MngrStatus(){ }
 
   bool eq_grouping(const MngrStatus& other) const {
-    return role == other.role && 
+    return role == other.role &&
            cid_begin == other.cid_begin &&
            cid_end == other.cid_end;
   }
 
-  size_t internal_encoded_length() const {
-    size_t len = 6 
+  size_t internal_encoded_length() const override {
+    size_t len = 6
       + Serialization::encoded_length_vi64(cid_begin)
       + Serialization::encoded_length_vi64(cid_end)
       + Comm::Protocol::Common::Params::HostEndPoints::internal_encoded_length();
     return len;
   }
 
-  void internal_encode(uint8_t** bufp) const {
+  void internal_encode(uint8_t** bufp) const override {
     Serialization::encode_i32(bufp, priority.load());
     Serialization::encode_i8(bufp, (uint8_t)state.load());
     Serialization::encode_i8(bufp, role);
@@ -53,7 +53,7 @@ class MngrStatus : public Comm::Protocol::Common::Params::HostEndPoints {
     Comm::Protocol::Common::Params::HostEndPoints::internal_encode(bufp);
   }
 
-  void internal_decode(const uint8_t** bufp, size_t* remainp) {
+  void internal_decode(const uint8_t** bufp, size_t* remainp) override {
     priority.store(Serialization::decode_i32(bufp, remainp));
     state.store((DB::Types::MngrState)Serialization::decode_i8(bufp, remainp));
     role = Serialization::decode_i8(bufp, remainp);

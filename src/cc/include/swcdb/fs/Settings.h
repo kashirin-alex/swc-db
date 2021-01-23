@@ -15,6 +15,6 @@ namespace SWC { namespace Config {
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/fs/Settings.cc"
-#endif 
+#endif
 
 #endif // swcdb_fs_Settings_h

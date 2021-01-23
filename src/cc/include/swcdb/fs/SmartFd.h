@@ -9,14 +9,14 @@
 #include "swcdb/core/Compat.h"
 #include "swcdb/core/MutexAtomic.h"
 
-namespace SWC { 
+namespace SWC {
 
 
 /**
  * \defgroup FileSystem The File-System Group
  * @brief A group with all related to SWC-DB File-System (libswcdb_fs).
  *
- * 
+ *
  */
 
 
@@ -29,20 +29,20 @@ namespace SWC {
 namespace FS {
 
 
-/// Smart FileDescriptor 
+/// Smart FileDescriptor
 
 struct SmartFd {
   public:
 
   typedef std::shared_ptr<SmartFd> Ptr;
-  
-  static Ptr make_ptr(const std::string& filepath, uint32_t flags, 
+
+  static Ptr make_ptr(const std::string& filepath, uint32_t flags,
                       int32_t fd=-1, uint64_t pos=0);
 
-  SmartFd(const std::string& filepath, uint32_t flags, 
+  SmartFd(const std::string& filepath, uint32_t flags,
           int32_t fd=-1, uint64_t pos=0);
 
-  virtual ~SmartFd();
+  virtual ~SmartFd() { }
 
   const std::string& filepath() const;
 
@@ -57,14 +57,14 @@ struct SmartFd {
   bool valid() const;
 
   void pos(uint64_t pos);
-  
+
   uint64_t pos() const;
 
   void forward(uint64_t pos);
 
   std::string to_string() const;
 
-  void print(std::ostream& out) const; 
+  void print(std::ostream& out) const;
 
   protected:
 
@@ -84,6 +84,6 @@ struct SmartFd {
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/fs/SmartFd.cc"
-#endif 
+#endif
 
 #endif // swcdb_fs_SmartFd_h

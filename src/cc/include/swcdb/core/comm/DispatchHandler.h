@@ -21,9 +21,9 @@ class DispatchHandler : public std::enable_shared_from_this<DispatchHandler> {
   typedef std::shared_ptr<DispatchHandler> Ptr;
 
   virtual void handle(ConnHandlerPtr conn, const Event::Ptr& ev);
-    
+
   virtual bool run();
-  
+
   virtual ~DispatchHandler() { };
 
 };
@@ -35,6 +35,6 @@ class DispatchHandler : public std::enable_shared_from_this<DispatchHandler> {
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/core/comm/DispatchHandler.cc"
-#endif 
+#endif
 
 #endif // swcdb_core_comm_DispatchHandler_h

@@ -14,10 +14,10 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Req {
 
 
-class Close : public Base {
+class Close final : public Base {
   public:
 
-  Close(const FS::FileSystem::Ptr& fs, uint32_t timeout, 
+  Close(const FS::FileSystem::Ptr& fs, uint32_t timeout,
         FS::SmartFd::Ptr& smartfd,
         const FS::Callback::CloseCb_t& cb)
         : Base(

@@ -14,7 +14,7 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Req {
 
 
-class MkdirsSync : public BaseSync, public Base {
+class MkdirsSync final : public BaseSync, public Base {
   public:
 
   MkdirsSync(uint32_t timeout, const std::string& name)

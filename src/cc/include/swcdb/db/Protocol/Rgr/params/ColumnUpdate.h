@@ -16,31 +16,31 @@ class ColumnUpdate : public Serializable {
   public:
 
   ColumnUpdate() {}
-  
-  ColumnUpdate(const DB::Schema::Ptr& schema) 
-              : schema(schema) { 
+
+  ColumnUpdate(const DB::Schema::Ptr& schema)
+              : schema(schema) {
   }
-             
+
   virtual ~ColumnUpdate() {}
 
   DB::Schema::Ptr schema;
-  
+
   private:
 
-  size_t internal_encoded_length() const {
+  size_t internal_encoded_length() const override {
     return schema->encoded_length();
   }
-    
-  void internal_encode(uint8_t** bufp) const {
+
+  void internal_encode(uint8_t** bufp) const override {
     schema->encode(bufp);
   }
-    
-  void internal_decode(const uint8_t** bufp, size_t* remainp) {
+
+  void internal_decode(const uint8_t** bufp, size_t* remainp) override {
     schema = std::make_shared<DB::Schema>(bufp, remainp);
   }
 
 };
-  
+
 
 }}}}}
 

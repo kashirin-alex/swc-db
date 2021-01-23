@@ -8,7 +8,7 @@
 
 #include "swcdb/core/comm/ConnHandler.h"
 
-namespace SWC { namespace client { 
+namespace SWC { namespace client {
 
 class ContextManager : public Comm::AppContext {
   public:
@@ -29,6 +29,6 @@ class ContextManager : public Comm::AppContext {
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/db/client/ContextManager.cc"
-#endif 
+#endif
 
 #endif // swcdb_db_client_ContextManager_h

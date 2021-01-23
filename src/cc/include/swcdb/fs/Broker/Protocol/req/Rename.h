@@ -14,7 +14,7 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Req {
 
 
-class Rename : public Base {
+class Rename final : public Base {
   public:
 
   Rename(uint32_t timeout, const std::string& from, const std::string& to,

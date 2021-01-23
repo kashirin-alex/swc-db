@@ -20,7 +20,7 @@ class BaseSync : private std::promise<void> {
   void wait() {
     get_future().wait();
   }
-  
+
   protected:
 
   void acknowledge() {

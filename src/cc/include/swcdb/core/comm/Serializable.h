@@ -58,8 +58,8 @@ SWC_CAN_INLINE
 extern
 void Serializable::decode(const uint8_t** bufp, size_t* remainp) {
   size_t len = Serialization::decode_vi32(bufp, remainp);
-  if(len > *remainp) 
-    SWC_THROWF(Error::PROTOCOL_ERROR, 
+  if(len > *remainp)
+    SWC_THROWF(Error::PROTOCOL_ERROR,
                "Buffer-Trunclated remain=%lu len=%lu", *remainp, len);
   *remainp -= len;
 
@@ -67,10 +67,10 @@ void Serializable::decode(const uint8_t** bufp, size_t* remainp) {
   internal_decode(bufp, &len);
 
   if(len)
-    SWC_THROWF(Error::PROTOCOL_ERROR, 
+    SWC_THROWF(Error::PROTOCOL_ERROR,
                 "Bad Decode missing=%lu in buffer", len);
   if(*bufp > end)
-    SWC_THROWF(Error::PROTOCOL_ERROR, 
+    SWC_THROWF(Error::PROTOCOL_ERROR,
                "Bad Decode buffer overrun by=%lu", *bufp - end);
 }
 

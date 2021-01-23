@@ -17,15 +17,15 @@ namespace Mngr { namespace Params {
 class RangeCreateReq : public Serializable {
   public:
 
-  RangeCreateReq(cid_t cid=0, rgrid_t rgrid=0) 
+  RangeCreateReq(cid_t cid=0, rgrid_t rgrid=0)
                  : cid(cid), rgrid(rgrid) {
   }
 
   virtual ~RangeCreateReq(){ }
-  
+
   cid_t       cid;
   rgrid_t     rgrid;
-  
+
   std::string to_string() const {
     std::string s("RangeCreateReq(");
     s.append("cid=");
@@ -37,17 +37,17 @@ class RangeCreateReq : public Serializable {
 
   private:
 
-  size_t internal_encoded_length() const {
+  size_t internal_encoded_length() const override {
     return Serialization::encoded_length_vi64(cid)
       + Serialization::encoded_length_vi64(rgrid);
   }
-    
-  void internal_encode(uint8_t** bufp) const {
+
+  void internal_encode(uint8_t** bufp) const override {
     Serialization::encode_vi64(bufp, cid);
     Serialization::encode_vi64(bufp, rgrid);
   }
-    
-  void internal_decode(const uint8_t** bufp, size_t* remainp) {
+
+  void internal_decode(const uint8_t** bufp, size_t* remainp) override {
     cid = Serialization::decode_vi64(bufp, remainp);
     rgrid = Serialization::decode_vi64(bufp, remainp);
   }
@@ -63,8 +63,8 @@ class RangeCreateRsp : public Serializable {
 
   virtual ~RangeCreateRsp() {}
 
-  int           err;        
-  rid_t         rid; 
+  int           err;
+  rid_t         rid;
 
   std::string to_string() const {
     std::string s("RangeCreateRsp(");
@@ -84,25 +84,25 @@ class RangeCreateRsp : public Serializable {
 
   private:
 
-  size_t internal_encoded_length() const {
-    return Serialization::encoded_length_vi32(err) 
+  size_t internal_encoded_length() const override {
+    return Serialization::encoded_length_vi32(err)
           + (err ? 0 : Serialization::encoded_length_vi64(rid));
   }
-    
-  void internal_encode(uint8_t** bufp) const {
+
+  void internal_encode(uint8_t** bufp) const override {
     Serialization::encode_vi32(bufp, err);
     if(!err)
       Serialization::encode_vi64(bufp, rid);
   }
-    
-  void internal_decode(const uint8_t** bufp, size_t* remainp) {
+
+  void internal_decode(const uint8_t** bufp, size_t* remainp) override {
     err = Serialization::decode_vi32(bufp, remainp);
     if(!err)
       rid = Serialization::decode_vi64(bufp, remainp);
   }
 
 };
-  
+
 
 }}}}}
 

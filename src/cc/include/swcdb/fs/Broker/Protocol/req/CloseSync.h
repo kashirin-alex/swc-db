@@ -14,18 +14,18 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Req {
 
 
-class CloseSync : public BaseSync, public Base {
+class CloseSync final : public BaseSync, public Base {
   public:
 
-  CloseSync(const FS::FileSystem::Ptr& fs, uint32_t timeout, 
+  CloseSync(const FS::FileSystem::Ptr& fs, uint32_t timeout,
             FS::SmartFd::Ptr& smartfd)
             : Base(
                 Buffers::make(
                   Params::CloseReq(smartfd->fd()),
-                  0, 
+                  0,
                   FUNCTION_CLOSE, timeout
                 )
-              ), 
+              ),
               fs(fs), smartfd(smartfd) {
 }
 

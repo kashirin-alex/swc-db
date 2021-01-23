@@ -16,36 +16,36 @@ namespace Common { namespace Params {
 class ColumnsInterval : public Serializable {
   public:
 
-  ColumnsInterval(cid_t cid_begin = DB::Schema::NO_CID, 
+  ColumnsInterval(cid_t cid_begin = DB::Schema::NO_CID,
                   cid_t cid_end = DB::Schema::NO_CID)
                  : cid_begin(cid_begin), cid_end(cid_end) {
   }
-             
+
   virtual ~ColumnsInterval() { }
-  
+
   cid_t cid_begin;
   cid_t cid_end;
 
   protected:
-    
-  size_t internal_encoded_length() const {
+
+  size_t internal_encoded_length() const override {
     return Serialization::encoded_length_vi64(cid_begin)
          + Serialization::encoded_length_vi64(cid_end);
   }
-    
-  void internal_encode(uint8_t** bufp) const {
+
+  void internal_encode(uint8_t** bufp) const override {
     Serialization::encode_vi64(bufp, cid_begin);
     Serialization::encode_vi64(bufp, cid_end);
   }
-    
-  void internal_decode(const uint8_t** bufp, size_t* remainp) {
+
+  void internal_decode(const uint8_t** bufp, size_t* remainp) override {
     cid_begin = Serialization::decode_vi64(bufp, remainp);
     cid_end = Serialization::decode_vi64(bufp, remainp);
   }
 
 
 };
-  
+
 
 }}}}}
 

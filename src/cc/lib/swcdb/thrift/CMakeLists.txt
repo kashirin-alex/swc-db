@@ -6,13 +6,15 @@
 
 if(THRIFT_CPP_GEN_PATH)
 
+SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-suggest-override")
+
 # libswcdb_thrift
 ADD_LIB_TARGET(
   NAME    swcdb_thrift
-  SRCS    ${THRIFT_CPP_GEN_PATH}/gen-cpp/Service_constants.cpp 
+  SRCS    ${THRIFT_CPP_GEN_PATH}/gen-cpp/Service_constants.cpp
           ${THRIFT_CPP_GEN_PATH}/gen-cpp/Service_types.cpp
-          ${THRIFT_CPP_GEN_PATH}/gen-cpp/Service.cpp 
-          # Converters.cc 
+          ${THRIFT_CPP_GEN_PATH}/gen-cpp/Service.cpp
+          # Converters.cc
             # Client.cc
           ${SWC_VERSION_SRC}
   SHARED  ${THRIFT_CPP_LIBRARIES_SHARED}

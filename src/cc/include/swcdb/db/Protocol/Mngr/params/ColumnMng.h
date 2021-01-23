@@ -14,7 +14,7 @@
 
 namespace SWC { namespace Comm { namespace Protocol {
 namespace Mngr { namespace Params {
-  
+
 
 class ColumnMng : public Serializable {
   public:
@@ -48,11 +48,11 @@ class ColumnMng : public Serializable {
 
   private:
 
-  size_t internal_encoded_length() const;
-    
-  void internal_encode(uint8_t** bufp) const;
-    
-  void internal_decode(const uint8_t** bufp, size_t* remainp);
+  size_t internal_encoded_length() const override;
+
+  void internal_encode(uint8_t** bufp) const override;
+
+  void internal_decode(const uint8_t** bufp, size_t* remainp) override;
 
   };
 
@@ -62,6 +62,6 @@ class ColumnMng : public Serializable {
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/db/Protocol/Mngr/params/ColumnMng.cc"
-#endif 
+#endif
 
 #endif // swcdb_db_protocol_mngr_params_ColumnMng_h

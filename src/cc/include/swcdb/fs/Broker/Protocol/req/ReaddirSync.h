@@ -14,12 +14,12 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Req {
 
 
-class ReaddirSync : public BaseSync, public Base {
+class ReaddirSync final : public BaseSync, public Base {
   public:
 
   FS::DirentList& listing;
 
-  ReaddirSync(uint32_t timeout, const std::string& name, 
+  ReaddirSync(uint32_t timeout, const std::string& name,
               FS::DirentList& listing)
               : Base(
                   Buffers::make(

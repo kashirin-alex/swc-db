@@ -20,20 +20,18 @@ typedef std::shared_ptr<ConnHandler> ConnHandlerPtr;
 
 class AppContext : public std::enable_shared_from_this<AppContext> {
   public:
-  
+
   typedef std::shared_ptr<AppContext> Ptr;
 
   AppContext(Config::Property::V_GENUM::Ptr cfg_encoder);
 
   virtual ~AppContext();
 
-  virtual void handle(ConnHandlerPtr conn, const Event::Ptr& ev);
+  virtual void handle(ConnHandlerPtr conn, const Event::Ptr& ev) = 0;
 
-  virtual void init(const EndPoints& endpoints);
+  virtual void init(const Comm::EndPoints&) { }
 
   virtual void stop();
-
-  EndPoints m_endpoints;
 
   const Config::Property::V_GENUM::Ptr cfg_encoder;
 
@@ -46,6 +44,6 @@ class AppContext : public std::enable_shared_from_this<AppContext> {
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/core/comm/AppContext.cc"
-#endif 
+#endif
 
 #endif // swcdb_core_comm_AppContext_h

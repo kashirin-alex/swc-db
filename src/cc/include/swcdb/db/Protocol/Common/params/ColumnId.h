@@ -19,29 +19,29 @@ class ColumnId : public Serializable {
   ColumnId(cid_t cid = DB::Schema::NO_CID)
           : cid(cid){
   }
-             
+
   virtual ~ColumnId() {}
 
   cid_t  cid;
 
 
   protected:
-    
-  size_t internal_encoded_length() const {
+
+  size_t internal_encoded_length() const override {
     return Serialization::encoded_length_vi64(cid);
   }
-    
-  void internal_encode(uint8_t** bufp) const {
+
+  void internal_encode(uint8_t** bufp) const override {
     Serialization::encode_vi64(bufp, cid);
   }
-    
-  void internal_decode(const uint8_t** bufp, size_t* remainp) {
+
+  void internal_decode(const uint8_t** bufp, size_t* remainp) override {
     cid = Serialization::decode_vi64(bufp, remainp);
   }
 
 
 };
-  
+
 
 }}}}}
 

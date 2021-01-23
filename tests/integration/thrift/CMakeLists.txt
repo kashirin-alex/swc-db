@@ -14,7 +14,8 @@ if(THRIFT_CPP_FOUND)
   ADD_TEST_TARGET(
     NAME      thrift_cc_client
     SRCS      client.cc
-    TARGETS   swcdb_thrift 
+    TARGETS   swcdb_thrift
+    FLAGS     "-Wno-suggest-override"
   )
 endif()
 
@@ -30,7 +31,7 @@ if(THRIFT_C_FOUND)
 
   # gcc-10.2, pcre/sljit/sljitNativeX86_64.c:183:12: error: writing 1 byte into a region of size 0
   SET (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-stringop-overflow")
-  
+
   ADD_TEST_TARGET(
     NAME      thrift_c_client_c
     SRCS      client.c
@@ -43,7 +44,7 @@ endif()
 get_property(THRIFT_JAVA_TEST GLOBAL PROPERTY THRIFT_JAVA_TEST)
 if(THRIFT_JAVA_TEST)
   add_test(thrift_java_client
-	  java -cp 
+	  java -cp
       ${CMAKE_INSTALL_PREFIX}/lib/java/swcdb-thrift-${SWCDB_VERSION}-v${THRIFT_VERSION}-bundled.jar:${THRIFT_JAVA_TEST}
       org.swcdb.thrift.Tests
   )

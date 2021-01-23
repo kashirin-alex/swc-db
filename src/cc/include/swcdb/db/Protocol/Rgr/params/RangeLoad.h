@@ -18,59 +18,59 @@ class RangeLoad : public Common::Params::ColRangeId {
 
   RangeLoad() {}
 
-  RangeLoad(cid_t cid, rid_t rid, const DB::Schema::Ptr& schema) 
+  RangeLoad(cid_t cid, rid_t rid, const DB::Schema::Ptr& schema)
             : Common::Params::ColRangeId(cid, rid), schema(schema) {
   }
-             
+
   virtual ~RangeLoad() {}
 
   DB::Schema::Ptr schema;
-  
+
   private:
 
-  size_t internal_encoded_length() const {
+  size_t internal_encoded_length() const override {
     return ColRangeId::internal_encoded_length() + schema->encoded_length();
   }
-    
-  void internal_encode(uint8_t** bufp) const {
+
+  void internal_encode(uint8_t** bufp) const override {
     ColRangeId::internal_encode(bufp);
     schema->encode(bufp);
   }
-    
-  void internal_decode(const uint8_t** bufp, size_t* remainp) {
+
+  void internal_decode(const uint8_t** bufp, size_t* remainp) override {
     ColRangeId::internal_decode(bufp, remainp);
     schema = std::make_shared<DB::Schema>(bufp, remainp);
   }
 
 };
-  
+
 class RangeLoaded : public Serializable {
   public:
-  
+
   RangeLoaded(const DB::Types::KeySeq key_seq)
-              : intval(false), interval(key_seq) { 
+              : intval(false), interval(key_seq) {
   }
 
   //RangeLoaded(const DB::Cells::Interval& interval): interval(interval) {}
 
   virtual ~RangeLoaded() {}
-  
+
   bool                intval;
   DB::Cells::Interval interval;
 
   private:
 
-  size_t internal_encoded_length() const {
+  size_t internal_encoded_length() const override {
     return 1 + (intval ? interval.encoded_length() : 0);
   }
-    
-  void internal_encode(uint8_t** bufp) const {
+
+  void internal_encode(uint8_t** bufp) const override {
     Serialization::encode_bool(bufp, intval);
     if(intval)
       interval.encode(bufp);
   }
-    
-  void internal_decode(const uint8_t** bufp, size_t* remainp) {
+
+  void internal_decode(const uint8_t** bufp, size_t* remainp) override {
     if((intval = Serialization::decode_bool(bufp, remainp)))
       interval.decode(bufp, remainp, false);
   }

@@ -14,10 +14,10 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Req {
 
 
-class Pread : public Base {
+class Pread final : public Base {
   public:
-  
-  Pread(uint32_t timeout, FS::SmartFd::Ptr& smartfd, 
+
+  Pread(uint32_t timeout, FS::SmartFd::Ptr& smartfd,
         uint64_t offset, size_t len,
         const FS::Callback::PreadCb_t& cb)
         : Base(

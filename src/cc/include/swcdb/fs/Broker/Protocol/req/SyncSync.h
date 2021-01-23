@@ -14,9 +14,9 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Req {
 
 
-class SyncSync : public BaseSync, public Base {
+class SyncSync final : public BaseSync, public Base {
   public:
-  
+
   SyncSync(uint32_t timeout, FS::SmartFd::Ptr& smartfd)
           : Base(
               Buffers::make(

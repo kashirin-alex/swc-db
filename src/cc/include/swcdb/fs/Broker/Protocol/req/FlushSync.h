@@ -14,7 +14,7 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Req {
 
 
-class FlushSync : public BaseSync, public Base {
+class FlushSync final : public BaseSync, public Base {
   public:
 
   FlushSync(uint32_t timeout, FS::SmartFd::Ptr& smartfd)

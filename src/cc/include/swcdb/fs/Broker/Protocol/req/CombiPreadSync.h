@@ -13,11 +13,11 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Req {
 
 
-class CombiPreadSync : public BaseSync, public Base {
+class CombiPreadSync final : public BaseSync, public Base {
   public:
 
   StaticBuffer* buffer;
-  
+
   CombiPreadSync(uint32_t timeout, const FS::SmartFd::Ptr& smartfd,
                  uint64_t offset, uint32_t amount, StaticBuffer* dst)
                 : Base(

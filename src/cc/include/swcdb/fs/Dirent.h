@@ -29,15 +29,15 @@ class Dirent final : public Comm::Serializable {
   std::string to_string() const;
 
   ~Dirent();
-  
+
   private:
 
-  size_t internal_encoded_length() const;
+  size_t internal_encoded_length() const override;
 
-  void internal_encode(uint8_t** bufp) const;
+  void internal_encode(uint8_t** bufp) const override;
 
-  void internal_decode(const uint8_t** bufp, size_t* remainp);
-      
+  void internal_decode(const uint8_t** bufp, size_t* remainp) override;
+
 };
 
 typedef std::vector<Dirent> DirentList;
@@ -47,7 +47,7 @@ typedef std::vector<Dirent> DirentList;
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/fs/Dirent.cc"
-#endif 
+#endif
 
 
 #endif // swcdb_fs_Dirent_h

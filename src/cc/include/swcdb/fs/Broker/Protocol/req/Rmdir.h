@@ -14,10 +14,10 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Req {
 
 
-class Rmdir : public Base {
+class Rmdir final : public Base {
   public:
 
-  Rmdir(uint32_t timeout, const std::string& name, 
+  Rmdir(uint32_t timeout, const std::string& name,
         const FS::Callback::RmdirCb_t& cb)
         : Base(
             Buffers::make(

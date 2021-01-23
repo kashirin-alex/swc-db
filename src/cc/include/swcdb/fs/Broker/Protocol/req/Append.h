@@ -14,20 +14,20 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Req {
 
 
-class Append : public Base {
+class Append final : public Base {
   public:
-  
-  Append(uint32_t timeout, FS::SmartFd::Ptr& smartfd, 
-         StaticBuffer& buffer, FS::Flags flags, 
+
+  Append(uint32_t timeout, FS::SmartFd::Ptr& smartfd,
+         StaticBuffer& buffer, FS::Flags flags,
          const FS::Callback::AppendCb_t& cb)
         : Base(
             Buffers::make(
               Params::AppendReq(smartfd->fd(), (uint8_t)flags),
-              buffer, 
-              0, 
+              buffer,
+              0,
               FUNCTION_APPEND, timeout
             )
-          ), 
+          ),
           smartfd(smartfd), cb(cb) {
   }
 

@@ -16,10 +16,10 @@ namespace SWC { namespace DB { namespace Specs {
 
 class Column final : public Comm::Serializable {
   public:
-  
+
   typedef std::vector<Interval::Ptr> Intervals;
   typedef std::shared_ptr<Column> Ptr;
-  
+
   static Ptr make_ptr(cid_t cid=0, uint32_t reserve=0);
 
   static Ptr make_ptr(cid_t cid, const Intervals& intervals);
@@ -46,19 +46,19 @@ class Column final : public Comm::Serializable {
 
   bool equal(const Column &other);
 
-  size_t internal_encoded_length() const;
+  size_t internal_encoded_length() const override;
 
-  void internal_encode(uint8_t** bufp) const;
+  void internal_encode(uint8_t** bufp) const override;
 
-  void internal_decode(const uint8_t** bufp, size_t* remainp);
+  void internal_decode(const uint8_t** bufp, size_t* remainp) override;
 
   std::string to_string() const;
 
   void print(std::ostream& out) const;
 
-  void display(std::ostream& out, bool pretty=false, 
+  void display(std::ostream& out, bool pretty=false,
                std::string offset = "") const;
-  
+
   cid_t     cid;
   Intervals intervals;
 };
@@ -68,6 +68,6 @@ class Column final : public Comm::Serializable {
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/db/Cells/SpecsColumn.cc"
-#endif 
+#endif
 
 #endif // swcdb_db_cells_SpecsColumn_h

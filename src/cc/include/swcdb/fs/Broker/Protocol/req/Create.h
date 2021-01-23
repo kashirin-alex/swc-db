@@ -15,11 +15,11 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Req {
 
 
-class Create : public Base {
+class Create final : public Base {
   public:
-  
-  Create(const FS::FileSystem::Ptr& fs, 
-         uint32_t timeout, FS::SmartFd::Ptr& smartfd, 
+
+  Create(const FS::FileSystem::Ptr& fs,
+         uint32_t timeout, FS::SmartFd::Ptr& smartfd,
          int32_t bufsz, uint8_t replication, int64_t blksz,
          const FS::Callback::CreateCb_t& cb)
          : Base(

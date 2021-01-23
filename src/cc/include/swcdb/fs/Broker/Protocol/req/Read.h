@@ -14,9 +14,9 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Req {
 
 
-class Read : public Base {
+class Read final : public Base {
   public:
-  
+
   Read(uint32_t timeout, FS::SmartFd::Ptr& smartfd, size_t len,
        const FS::Callback::ReadCb_t& cb)
       : Base(
@@ -25,7 +25,7 @@ class Read : public Base {
             0,
             FUNCTION_READ, timeout
           )
-        ), 
+        ),
         smartfd(smartfd), cb(cb) {
   }
 

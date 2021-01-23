@@ -27,12 +27,12 @@ class AppendReq : public Serializable {
 
   private:
 
-  size_t internal_encoded_length() const;
+  size_t internal_encoded_length() const override;
 
-  void internal_encode(uint8_t** bufp) const;
+  void internal_encode(uint8_t** bufp) const override;
 
-  void internal_decode(const uint8_t** bufp, size_t* remainp);
-  
+  void internal_decode(const uint8_t** bufp, size_t* remainp) override;
+
 };
 
 
@@ -50,11 +50,11 @@ class AppendRsp : public Serializable {
 
   private:
 
-  size_t internal_encoded_length() const;
+  size_t internal_encoded_length() const override;
 
-  void internal_encode(uint8_t** bufp) const;
+  void internal_encode(uint8_t** bufp) const override;
 
-  void internal_decode(const uint8_t** bufp, size_t* remainp);
+  void internal_decode(const uint8_t** bufp, size_t* remainp) override;
 
 };
 

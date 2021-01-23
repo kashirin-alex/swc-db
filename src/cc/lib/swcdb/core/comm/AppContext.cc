@@ -11,7 +11,7 @@
 
 namespace SWC { namespace Comm {
 
-AppContext::AppContext(Config::Property::V_GENUM::Ptr cfg_encoder) 
+AppContext::AppContext(Config::Property::V_GENUM::Ptr cfg_encoder)
                       : cfg_encoder(cfg_encoder) {
 }
 
@@ -23,10 +23,6 @@ void AppContext::handle(ConnHandlerPtr, const Event::Ptr& ev) {
   );
 }
 
-void AppContext::init(const EndPoints& endpoints) {
-  m_endpoints = endpoints;
-}
-  
 void AppContext::stop() {
   SWC_LOG(LOG_WARN, "AppContext(stop is Virtual)!");
 }

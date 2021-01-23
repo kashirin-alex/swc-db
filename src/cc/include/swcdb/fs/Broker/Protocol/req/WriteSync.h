@@ -14,11 +14,11 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Req {
 
 
-class WriteSync : public BaseSync, public Base {
+class WriteSync final : public BaseSync, public Base {
 
   public:
-  
-  WriteSync(uint32_t timeout, FS::SmartFd::Ptr& smartfd, 
+
+  WriteSync(uint32_t timeout, FS::SmartFd::Ptr& smartfd,
             uint8_t replication, int64_t blksz, StaticBuffer& buffer)
             : Base(
                 Buffers::make(

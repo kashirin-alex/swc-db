@@ -14,7 +14,7 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Req {
 
 
-class LengthSync : public BaseSync, public Base {
+class LengthSync final : public BaseSync, public Base {
   public:
 
   size_t length;

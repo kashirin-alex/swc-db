@@ -35,25 +35,25 @@
 
 
 namespace SWC { namespace FS {
-  
+
 typedef std::vector<int64_t> IdEntries_t;
 const int   id_split_len = 3;
 const char  id_split_last = 'g';
 
 /// Interface to FileSystems
 
-class Interface {
+class Interface final {
   public:
 
   typedef Interface* Ptr;
 
   Interface(Type typ);
-  
+
   FileSystem::Ptr use_filesystem();
 
   Ptr ptr();
 
-  virtual ~Interface();
+  ~Interface();
 
   Type get_type() const noexcept;
 
@@ -62,13 +62,13 @@ class Interface {
   std::string to_string() const;
 
   bool need_fds() const;
-  
+
   void stop();
 
-  void get_structured_ids(int& err, const std::string& base_path, 
-                          IdEntries_t& entries, 
+  void get_structured_ids(int& err, const std::string& base_path,
+                          IdEntries_t& entries,
                           const std::string& base_id="");
-  
+
   // default form to FS methods
 
   void readdir(int& err, const std::string& base_path, DirentList& dirs);
@@ -81,28 +81,28 @@ class Interface {
 
   void rmdir(int& err, const std::string& name);
 
-  void rmdir_incl_opt_subs(int& err, const std::string& name, 
+  void rmdir_incl_opt_subs(int& err, const std::string& name,
                            const std::string& up_to);
-                           
+
   void remove(int& err, const std::string& name);
-  
+
   void remove(const Callback::RemoveCb_t& cb, const std::string& name);
-  
+
   void rename(int& err, const std::string& from , const std::string& to);
 
   size_t length(int& err, const std::string& name);
-  
+
   void read(int& err, const std::string& name, StaticBuffer* dst);
 
   void write(int& err, SmartFd::Ptr smartfd,
-             uint8_t replication, int64_t blksz, 
+             uint8_t replication, int64_t blksz,
              StaticBuffer& buffer);
-  
+
   bool open(int& err, SmartFd::Ptr& smartfd);
-  
+
   bool create(int& err, SmartFd::Ptr& smartfd,
               int32_t bufsz, uint8_t replication, int64_t blksz);
-              
+
   void close(int& err, SmartFd::Ptr& smartfd);
 
   void close(const Callback::CloseCb_t& cb, SmartFd::Ptr& smartfd);
@@ -128,10 +128,10 @@ void set_structured_id(const std::string& number, std::string& s);
 
 namespace Env {
 
-class FsInterface {
-  
+class FsInterface final {
+
   public:
-  
+
   typedef std::shared_ptr<FsInterface> Ptr;
 
   static void init(FS::Type typ);
@@ -146,7 +146,7 @@ class FsInterface {
 
   FsInterface(FS::Type typ);
 
-  virtual ~FsInterface();
+  ~FsInterface();
 
   private:
   FS::Interface::Ptr  m_interface = nullptr;
@@ -159,7 +159,7 @@ class FsInterface {
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/fs/Interface.cc"
-#endif 
+#endif
 
 
 #endif // swcdb_fs_Interface_h
