@@ -273,37 +273,27 @@ void ConnHandler::read_pending() {
 }
 
 SWC_SHOULD_INLINE
-void ConnHandler::recved_header_pre(asio::error_code ec,
+void ConnHandler::recved_header_pre(const asio::error_code& ec,
                                     const uint8_t* data, size_t filled) {
+  if(ec || filled != Header::PREFIX_LENGTH)
+    return do_close();
+
   auto ev = Event::make(Event::Type::MESSAGE, Error::OK);
-
-  if(filled != Header::PREFIX_LENGTH) {
-    ec = asio::error::eof;
-
-  } else if(!ec) {
-    try {
-      const uint8_t* pre_bufp = data;
-      ev->header.decode_prefix(&pre_bufp, &filled);
-      if(!ev->header.header_len)
-        throw;
-    } catch(...) {
-      ec = asio::error::eof;
-      ev->type = Event::Type::ERROR;
-      ev->error = Error::REQUEST_TRUNCATED_HEADER;
-      ev->header.reset();
-      SWC_LOGF(LOG_WARN, "read, REQUEST HEADER_PREFIX_TRUNCATED: remain=%lu",
-               filled);
-    }
+  try {
+    const uint8_t* pre_bufp = data;
+    ev->header.decode_prefix(&pre_bufp, &filled);
+  } catch(...) {
+    ev->header.header_len = 0;
   }
 
-  if(ec) {
-    received(ev, ec);
-    return;
+  if(!ev->header.header_len) {
+    SWC_LOGF(LOG_WARN, "read, REQUEST HEADER_PREFIX_TRUNCATED: remain=%lu",
+             filled);
+    return do_close();
   }
 
-  uint8_t* buf_header;
-  memcpy(buf_header = new uint8_t[ev->header.header_len],
-         data, Header::PREFIX_LENGTH);
+  uint8_t* buf_header = new uint8_t[ev->header.header_len];
+  memcpy(buf_header, data, Header::PREFIX_LENGTH);
   do_async_read(
     buf_header + Header::PREFIX_LENGTH,
     ev->header.header_len - Header::PREFIX_LENGTH,
@@ -317,31 +307,27 @@ void ConnHandler::recved_header_pre(asio::error_code ec,
 SWC_SHOULD_INLINE
 void ConnHandler::recved_header(const Event::Ptr& ev, asio::error_code ec,
                                 const uint8_t* data, size_t filled) {
-  if(filled + Header::PREFIX_LENGTH != ev->header.header_len) {
-    ec = asio::error::eof;
-
-  } else if(!ec) {
-    filled = ev->header.header_len;
-    try {
-      ev->header.decode(&data, &filled);
-    } catch(...) {
+  if(!ec) {
+    if(filled + Header::PREFIX_LENGTH != ev->header.header_len) {
       ec = asio::error::eof;
+    } else {
+      filled = ev->header.header_len;
+      try {
+        ev->header.decode(&data, &filled);
+      } catch(...) {
+        ec = asio::error::eof;
+      }
     }
   }
-
   if(ec) {
-    ec = asio::error::eof;
-    ev->type = Event::Type::ERROR;
-    ev->error = Error::REQUEST_TRUNCATED_HEADER;
-    ev->header.reset();
     SWC_LOGF(LOG_WARN, "read, REQUEST HEADER_TRUNCATED: len=%d",
              ev->header.header_len);
-  }
-
-  if(ec || !ev->header.buffers)
-    received(ev, ec);
-  else
+    do_close();
+  } else if(ev->header.buffers) {
     recv_buffers(ev, 0);
+  } else {
+    received(ev);
+  }
 }
 
 void ConnHandler::recv_buffers(const Event::Ptr& ev, uint8_t n) {
@@ -383,30 +369,23 @@ void ConnHandler::recved_buffer(const Event::Ptr& ev, asio::error_code ec,
     if(filled != buffer->size ||
        !Core::checksum_i32_chk(checksum, buffer->base, buffer->size)) {
       ec = asio::error::eof;
-      ev->type = Event::Type::ERROR;
-      ev->error = Error::REQUEST_TRUNCATED_PAYLOAD;
-      ev->data.free();
-      ev->data_ext.free();
-      SWC_LOG_OUT(LOG_WARN,
-        SWC_LOG_OSTREAM
-          << "read, REQUEST PAYLOAD_TRUNCATED: n(" << int(n) << ") ";
-        ev->print(SWC_LOG_OSTREAM);
-      );
     }
   }
-
-  if(ec || ev->header.buffers == ++n)
-    received(ev, ec);
-  else
+  if(ec) {
+    SWC_LOG_OUT(LOG_WARN,
+      SWC_LOG_OSTREAM
+        << "read, REQUEST PAYLOAD_TRUNCATED: n(" << int(n) << ") ";
+      ev->print(SWC_LOG_OSTREAM);
+    );
+    do_close();
+  } else if(ev->header.buffers == ++n) {
+    received(ev);
+  } else {
     recv_buffers(ev, n);
+  }
 }
 
-void ConnHandler::received(const Event::Ptr& ev, const asio::error_code& ec) {
-  if(ec) {
-    do_close();
-    return;
-  }
-
+void ConnHandler::received(const Event::Ptr& ev) {
   if(ev->header.flags & Header::FLAGS_BIT_REQUEST)
     ev->received();
 

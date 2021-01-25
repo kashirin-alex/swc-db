@@ -137,7 +137,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
   void read_pending();
 
-  void recved_header_pre(asio::error_code ec,
+  void recved_header_pre(const asio::error_code& ec,
                          const uint8_t* data, size_t filled);
 
   void recved_header(const Event::Ptr& ev, asio::error_code ec,
@@ -148,7 +148,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   void recved_buffer(const Event::Ptr& ev, asio::error_code ec,
                      uint8_t n, size_t filled);
 
-  void received(const Event::Ptr& ev, const asio::error_code& ec);
+  void received(const Event::Ptr& ev);
 
   void run_pending(const Event::Ptr& ev);
 
