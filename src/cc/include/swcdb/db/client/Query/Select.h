@@ -42,7 +42,7 @@ struct Select final {
     public:
     typedef std::shared_ptr<Rsp> Ptr;
 
-    Rsp();
+    Rsp() noexcept;
 
     ~Rsp();
 

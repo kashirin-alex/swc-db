@@ -19,14 +19,14 @@ class ColumnDelete : public ManageBase {
   ColumnPtr    col;
 
   ColumnDelete(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev,
-               const cid_t cid);
+               const cid_t cid) noexcept;
 
   virtual ~ColumnDelete();
 
   void add(const RangePtr& range);
 
   void removed(const RangePtr& range);
-  
+
   void response();
 
   private:

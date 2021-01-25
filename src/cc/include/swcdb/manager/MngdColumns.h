@@ -20,6 +20,7 @@ class MngdColumns final {
     typedef std::shared_ptr<ColumnReq> Ptr;
     uint64_t id;
     ColumnReq(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev)
+              noexcept
               : Comm::ResponseCallback(conn, ev), id(0) { }
   };
 
@@ -46,7 +47,7 @@ class MngdColumns final {
 
   Column::Ptr get_column(int& err, cid_t cid);
 
-  void change_active(const cid_t cid_begin, const cid_t cid_end, 
+  void change_active(const cid_t cid_begin, const cid_t cid_end,
                      bool has_cols);
 
 
@@ -57,7 +58,7 @@ class MngdColumns final {
   void set_expect(cid_t cid_begin, cid_t cid_end,
                   const std::vector<cid_t>& columns, bool initial);
 
-  void update_status(Comm::Protocol::Mngr::Params::ColumnMng::Function func, 
+  void update_status(Comm::Protocol::Mngr::Params::ColumnMng::Function func,
                      const DB::Schema::Ptr& schema, int err, uint64_t req_id,
                      bool initial=false);
 
@@ -78,7 +79,7 @@ class MngdColumns final {
   cid_t get_next_cid();
 
   void create(int &err, DB::Schema::Ptr& schema);
-  
+
   void update(int &err, DB::Schema::Ptr& schema, const DB::Schema::Ptr& old);
 
   void update_status_ack(
@@ -88,7 +89,7 @@ class MngdColumns final {
   void run_actions();
 
 
-  Core::AtomicBool       m_run; 
+  Core::AtomicBool       m_run;
 
   Core::StateRunning     m_columns_load;
 
@@ -110,7 +111,7 @@ class MngdColumns final {
 
   const Config::Property::V_GUINT8::Ptr cfg_schema_replication;
   const Config::Property::V_GINT32::Ptr cfg_delay_cols_init;
-  
+
 };
 
 

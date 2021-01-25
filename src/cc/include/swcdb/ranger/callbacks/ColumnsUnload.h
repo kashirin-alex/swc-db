@@ -8,7 +8,7 @@
 
 #include "swcdb/db/Protocol/Rgr/params/ColumnsUnload.h"
 
-namespace SWC { namespace Ranger { 
+namespace SWC { namespace Ranger {
 
 
 namespace Callback {
@@ -22,7 +22,7 @@ class ColumnsUnload : public ManageBase {
   const bool completely;
 
   ColumnsUnload(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev,
-                bool completely);
+                bool completely) noexcept;
 
   virtual ~ColumnsUnload();
 
@@ -31,13 +31,13 @@ class ColumnsUnload : public ManageBase {
   void run() override;
 
   virtual void unloaded(RangePtr range);
-  
+
   virtual void unloaded(const ColumnPtr& col);
 
   virtual void response();
 
   private:
-  
+
   Core::MutexSptd                                 m_mutex;
   std::vector<ColumnPtr>                          m_cols;
   Comm::Protocol::Rgr::Params::ColumnsUnloadRsp   m_rsp_params;

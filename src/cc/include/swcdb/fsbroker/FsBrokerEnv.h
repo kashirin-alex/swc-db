@@ -18,7 +18,7 @@ class Fds final : private std::unordered_map<int32_t, FS::SmartFd::Ptr> {
   typedef Fds* Ptr;
 
   Fds() : m_next_fd(0) {}
-  
+
   ~Fds() { }
 
   int32_t add(const FS::SmartFd::Ptr& smartfd) {
@@ -37,7 +37,7 @@ class Fds final : private std::unordered_map<int32_t, FS::SmartFd::Ptr> {
 
   FS::SmartFd::Ptr remove(int32_t fd) {
     Core::MutexSptd::scope lock(m_mutex);
-    
+
     auto it = find(fd);
     if(it == end())
       return nullptr;
@@ -48,14 +48,14 @@ class Fds final : private std::unordered_map<int32_t, FS::SmartFd::Ptr> {
 
   FS::SmartFd::Ptr select(int32_t fd) {
     Core::MutexSptd::scope lock(m_mutex);
-    
+
     auto it = find(fd);
     return it == end() ? nullptr : it->second;
   }
 
   FS::SmartFd::Ptr pop_next() {
     Core::MutexSptd::scope lock(m_mutex);
-    
+
     auto it = begin();
     if(it == end())
       return nullptr;
@@ -80,20 +80,17 @@ class FsBroker final {
     m_env = std::make_shared<FsBroker>();
   }
 
-  static SWC::FsBroker::Fds::Ptr fds() {
-    SWC_ASSERT(m_env);
+  static SWC::FsBroker::Fds& fds() {
+    //SWC_ASSERT(m_env);
     return m_env->m_fds;
   }
 
-  FsBroker() : m_fds(new SWC::FsBroker::Fds()) {}
+  FsBroker() noexcept {}
 
-  ~FsBroker(){
-    if(m_fds)  
-      delete m_fds;
-  }
+  ~FsBroker() { }
 
   private:
-  SWC::FsBroker::Fds::Ptr                 m_fds;
+  SWC::FsBroker::Fds                      m_fds;
   inline static std::shared_ptr<FsBroker> m_env = nullptr;
 };
 

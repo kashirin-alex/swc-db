@@ -7,21 +7,21 @@
 namespace SWC { namespace Ranger { namespace Callback {
 
 
-ColumnDelete::ColumnDelete(const Comm::ConnHandlerPtr& conn, 
+ColumnDelete::ColumnDelete(const Comm::ConnHandlerPtr& conn,
                            const Comm::Event::Ptr& ev,
-                           const cid_t cid)
-                          : ManageBase(conn, ev, ManageBase::COLUMN_DELETE), 
+                           const cid_t cid) noexcept
+                          : ManageBase(conn, ev, ManageBase::COLUMN_DELETE),
                             cid(cid) {
 }
 
 ColumnDelete::~ColumnDelete() { }
 
-void ColumnDelete::add(const RangePtr& range) { 
+void ColumnDelete::add(const RangePtr& range) {
   Core::MutexSptd::scope lock(m_mutex);
   m_ranges.push_back(range);
 }
 
-void ColumnDelete::removed(const RangePtr& range) { 
+void ColumnDelete::removed(const RangePtr& range) {
   col->internal_delete(range->rid);
   SWC_LOG_OUT(LOG_INFO, range->print(SWC_LOG_OSTREAM << "REMOVED RANGE "); );
   {

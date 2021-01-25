@@ -24,13 +24,13 @@ void close(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     Params::CloseReq params;
     params.decode(&ptr, &remain);
 
-    auto smartfd = Env::FsBroker::fds()->select(params.fd);
+    auto smartfd = Env::FsBroker::fds().select(params.fd);
     if(!smartfd) {
       err = EBADR;
     } else {
       Env::FsInterface::fs()->close(err, smartfd);
       if(err != Error::SERVER_NOT_READY)
-        Env::FsBroker::fds()->remove(params.fd);
+        Env::FsBroker::fds().remove(params.fd);
     }
 
   } catch(...) {

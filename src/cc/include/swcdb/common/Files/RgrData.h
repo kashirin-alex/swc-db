@@ -18,10 +18,10 @@ namespace SWC { namespace Common { namespace Files {
 
 
 class RgrData final {
-  /* file-format: 
-      header: i8(version), i32(data-len), 
+  /* file-format:
+      header: i8(version), i32(data-len),
               i32(data-checksum), i32(header-checksum),
-      data:   i64(ts), vi64(rgrid), 
+      data:   i64(ts), vi64(rgrid),
               i32(num-points), [endpoint]
   */
 
@@ -31,7 +31,7 @@ class RgrData final {
 
   static const int HEADER_SIZE=13;
   static const int HEADER_OFFSET_CHKSUM=9;
-  
+
   static const int8_t VERSION=1;
 
   static Ptr get_rgr(int &err, const std::string& filepath) {
@@ -44,24 +44,24 @@ class RgrData final {
     return data;
   }
 
-  RgrData(): version(VERSION), rgrid(0), timestamp(0) { }
+  RgrData() noexcept : version(VERSION), rgrid(0), timestamp(0) { }
 
   void read(int &err, const std::string& filepath) {
 
     StaticBuffer read_buf;
     Env::FsInterface::interface()->read(err, filepath, &read_buf);
-    if(err) 
+    if(err)
       return;
-  
+
     const uint8_t *ptr = read_buf.base;
     size_t remain = read_buf.size;
 
     version = Serialization::decode_i8(&ptr, &remain);
     size_t sz = Serialization::decode_i32(&ptr, &remain);
     size_t chksum_data = Serialization::decode_i32(&ptr, &remain);
-      
+
     if(!Core::checksum_i32_chk(
-          Serialization::decode_i32(&ptr, &remain), 
+          Serialization::decode_i32(&ptr, &remain),
           read_buf.base, HEADER_SIZE, HEADER_OFFSET_CHKSUM) ||
        !Core::checksum_i32_chk(chksum_data, ptr, sz) ) {
       err = Error::CHECKSUM_MISMATCH;
@@ -77,9 +77,9 @@ class RgrData final {
     for(size_t i=0;i<len;++i)
       endpoints[i] = Serialization::decode(&ptr, &remain);
   }
-  
-  // SET 
-  void set_rgr(int &err, std::string filepath, uint8_t replication, 
+
+  // SET
+  void set_rgr(int &err, std::string filepath, uint8_t replication,
                int64_t ts = 0) {
 
     DynamicBuffer input;
@@ -88,15 +88,15 @@ class RgrData final {
 
     Env::FsInterface::interface()->write(
       err,
-      FS::SmartFd::make_ptr(filepath, FS::OpenFlags::OPEN_FLAG_OVERWRITE), 
-      replication, 
-      -1, 
+      FS::SmartFd::make_ptr(filepath, FS::OpenFlags::OPEN_FLAG_OVERWRITE),
+      replication,
+      -1,
       send_buf
     );
   }
 
   void write(SWC::DynamicBuffer &dst_buf, int64_t ts){
-    
+
     size_t len = 12 // (ts+endpoints.size)
                + Serialization::encoded_length_vi64(rgrid.load());
     for(auto& endpoint : endpoints)
@@ -114,7 +114,7 @@ class RgrData final {
     const uint8_t* start_data_ptr = dst_buf.ptr;
     Serialization::encode_i64(&dst_buf.ptr, ts);
     Serialization::encode_vi64(&dst_buf.ptr, rgrid.load());
-    
+
     Serialization::encode_i32(&dst_buf.ptr, endpoints.size());
     for(auto& endpoint : endpoints)
       Serialization::encode(endpoint, &dst_buf.ptr);
@@ -134,7 +134,7 @@ class RgrData final {
         << " timestamp="  << timestamp
         << ')';
   }
-  
+
   ~RgrData(){ }
 
   int8_t                version;

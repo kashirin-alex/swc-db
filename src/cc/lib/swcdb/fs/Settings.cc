@@ -11,7 +11,7 @@ namespace SWC { namespace Config {
 
 void Settings::init_fs_options() {
   file_desc.add_options()
-    ("swc.fs.path.data", str("swcdb/"), 
+    ("swc.fs.path.data", str("swcdb/"),
      "SWC-DB data-path, within the FS(specific) base-path")
 
     ("swc.fs", str(), "main FileSystem: local|hadoop|hadoop_jvm|ceph|broker|custom")
@@ -32,10 +32,10 @@ void Settings::init_fs_options() {
     ("swc.fs.lib.custom", str(), "FS-custom Lib-path based on fs/FileSystem.h")
 
     ("swc.fs.broker.cfg", str(), "Specific cfg-file for FS-broker")
-    ("swc.fs.broker.underlying", str(), 
+    ("swc.fs.broker.underlying", str(),
       "as main FileSystem, without 'broker': local|hadoop|ceph|custom")
     ("swc.fs.lib.broker", str(), "FS-broker Lib-path based on fs/FileSystem.h")
-  
+
   ;
 }
 

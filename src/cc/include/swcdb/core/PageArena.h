@@ -316,7 +316,7 @@ struct ItemPtr final { // Item as SmartPtr
 
   ItemPtr() : ptr(nullptr) { }
 
-  ItemPtr(const ItemPtr& other)
+  ItemPtr(const ItemPtr& other) noexcept
           : ptr(other.ptr ? other.ptr->use() : nullptr) {
   }
 

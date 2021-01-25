@@ -27,24 +27,24 @@ void open(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     params.decode(&ptr, &remain);
 
     auto smartfd = FS::SmartFd::make_ptr(params.fname, params.flags);
- 
+
     Env::FsInterface::fs()->open(err, smartfd, params.bufsz);
-      
+
     if(smartfd->valid())
-      fd = Env::FsBroker::fds()->add(smartfd);
+      fd = Env::FsBroker::fds().add(smartfd);
 
   } catch(...) {
     const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
     SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
     err = e.code();
   }
-  
+
   auto cbp = Buffers::make(ev, Params::OpenRsp(fd), 4);
   cbp->append_i32(err);
   conn->send_response(cbp);
 
 }
-  
+
 
 }}}}}
 

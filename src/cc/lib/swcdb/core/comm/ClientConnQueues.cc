@@ -7,15 +7,15 @@
 
 namespace SWC { namespace Comm { namespace client {
 
-Host::Host(const ConnQueuesPtr queues, const EndPoints& endpoints, 
-           const Config::Property::V_GINT32::Ptr keepalive_ms, 
+Host::Host(const ConnQueuesPtr queues, const EndPoints& endpoints,
+           const Config::Property::V_GINT32::Ptr keepalive_ms,
            const Config::Property::V_GINT32::Ptr again_delay_ms)
           : ConnQueue(queues->service->io(), keepalive_ms, again_delay_ms),
             endpoints(endpoints), queues(queues) {
 }
 
 Host::~Host() {
-  stop();  
+  stop();
 }
 
 void Host::close_issued() {
@@ -24,23 +24,24 @@ void Host::close_issued() {
 
 bool Host::connect() {
   queues->service->get_connection(
-    endpoints, 
+    endpoints,
     [ptr=shared_from_this()] (const ConnHandlerPtr& conn){ptr->set(conn);},
-    std::chrono::milliseconds(queues->cfg_conn_timeout->get()), 
+    std::chrono::milliseconds(queues->cfg_conn_timeout->get()),
     queues->cfg_conn_probes->get(),
     bool(cfg_keepalive_ms)
   );
-  return true;  
+  return true;
 }
 
-ConnQueues::ConnQueues(const Serialized::Ptr service, 
+ConnQueues::ConnQueues(const Serialized::Ptr service,
                        const Config::Property::V_GINT32::Ptr timeout,
-                       const Config::Property::V_GINT32::Ptr probes, 
+                       const Config::Property::V_GINT32::Ptr probes,
                        const Config::Property::V_GINT32::Ptr keepalive_ms,
                        const Config::Property::V_GINT32::Ptr again_delay_ms)
+                       noexcept
                       : service(service),
                         cfg_conn_timeout(timeout),
-                        cfg_conn_probes(probes), 
+                        cfg_conn_probes(probes),
                         cfg_keepalive_ms(keepalive_ms),
                         cfg_again_delay_ms(again_delay_ms) {
 }

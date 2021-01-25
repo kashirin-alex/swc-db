@@ -20,12 +20,12 @@ class Host final : public ConnQueue  {
 
   const EndPoints   endpoints;
 
-  Host(const ConnQueuesPtr queues, const EndPoints& endpoints, 
-       const Config::Property::V_GINT32::Ptr keepalive_ms, 
+  Host(const ConnQueuesPtr queues, const EndPoints& endpoints,
+       const Config::Property::V_GINT32::Ptr keepalive_ms,
        const Config::Property::V_GINT32::Ptr again_delay_ms);
 
   virtual ~Host();
-  
+
   bool connect() override;
 
   void close_issued() override;
@@ -35,8 +35,8 @@ class Host final : public ConnQueue  {
 };
 
 
-class ConnQueues final : 
-    private std::vector<Host::Ptr>, 
+class ConnQueues final :
+    private std::vector<Host::Ptr>,
     public std::enable_shared_from_this<ConnQueues> {
 
   public:
@@ -46,13 +46,13 @@ class ConnQueues final :
   const Config::Property::V_GINT32::Ptr    cfg_conn_probes;
   const Config::Property::V_GINT32::Ptr    cfg_keepalive_ms;
   const Config::Property::V_GINT32::Ptr    cfg_again_delay_ms;
-  
-  
-  ConnQueues(const Serialized::Ptr service, 
-             const Config::Property::V_GINT32::Ptr timeout, 
-             const Config::Property::V_GINT32::Ptr probes, 
+
+
+  ConnQueues(const Serialized::Ptr service,
+             const Config::Property::V_GINT32::Ptr timeout,
+             const Config::Property::V_GINT32::Ptr probes,
              const Config::Property::V_GINT32::Ptr keepalive_ms,
-             const Config::Property::V_GINT32::Ptr again_delay_ms);
+             const Config::Property::V_GINT32::Ptr again_delay_ms) noexcept;
 
   ~ConnQueues();
 
@@ -67,7 +67,7 @@ class ConnQueues final :
   private:
 
   Core::MutexSptd m_mutex;
-  
+
 };
 
 
@@ -77,8 +77,8 @@ class ConnQueues final :
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/core/comm/ClientConnQueues.cc"
-#endif 
+#endif
 
 
-// 
+//
 #endif // swcdb_core_comm_ClientConnQueues_h

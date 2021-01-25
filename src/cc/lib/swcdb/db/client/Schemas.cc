@@ -9,17 +9,17 @@
 
 namespace SWC { namespace client {
 
-Schemas::Schemas(const Config::Property::V_GINT32::Ptr expiry_ms) 
+Schemas::Schemas(const Config::Property::V_GINT32::Ptr expiry_ms) noexcept
                 : m_expiry_ms(expiry_ms) {
-} 
+}
 
 Schemas::~Schemas() { }
-  
-void Schemas::remove(cid_t cid) {    
+
+void Schemas::remove(cid_t cid) {
   Core::MutexSptd::scope lock(m_mutex);
 
   auto it = m_track.find(cid);
-  if(it != m_track.end()) 
+  if(it != m_track.end())
     m_track.erase(it);
   _remove(cid);
 }
@@ -31,7 +31,7 @@ void Schemas::remove(const std::string& name) {
   if(!schema)
     return;
   auto it = m_track.find(schema->cid);
-  if(it != m_track.end()) 
+  if(it != m_track.end())
     m_track.erase(it);
   _remove(schema->cid);
 }
@@ -41,8 +41,8 @@ DB::Schema::Ptr Schemas::get(int& err, cid_t cid) {
   Core::MutexSptd::scope lock(m_mutex);
 
   auto it = m_track.find(cid);
-  if(it != m_track.end() && 
-     Time::now_ms() - it->second < m_expiry_ms->get() && 
+  if(it != m_track.end() &&
+     Time::now_ms() - it->second < m_expiry_ms->get() &&
      (schema = _get(cid)))
     return schema;
 
@@ -54,7 +54,7 @@ DB::Schema::Ptr Schemas::get(int& err, cid_t cid) {
     err = Error::COLUMN_SCHEMA_MISSING;
   return schema;
 }
-  
+
 DB::Schema::Ptr Schemas::get(int& err, const std::string& name) {
   DB::Schema::Ptr schema;
   Core::MutexSptd::scope lock(m_mutex);
@@ -76,7 +76,7 @@ DB::Schema::Ptr Schemas::get(int& err, const std::string& name) {
   return schema;
 }
 
-void 
+void
 Schemas::get(int& err, const std::vector<DB::Schemas::Pattern>& patterns,
              std::vector<DB::Schema::Ptr>& schemas) {
   _request(err, patterns, schemas);
@@ -93,7 +93,7 @@ Schemas::get(int& err, const std::vector<DB::Schemas::Pattern>& patterns,
   }
 }
 
-std::vector<DB::Schema::Ptr> 
+std::vector<DB::Schema::Ptr>
 Schemas::get(int& err, const std::vector<DB::Schemas::Pattern>& patterns) {
   std::vector<DB::Schema::Ptr> schemas;
   get(err, patterns, schemas);
@@ -101,17 +101,17 @@ Schemas::get(int& err, const std::vector<DB::Schemas::Pattern>& patterns) {
 }
 
 
-void Schemas::_request(int& err, cid_t cid, 
+void Schemas::_request(int& err, cid_t cid,
                        DB::Schema::Ptr& schema) {
   std::promise<int> res;
 
   Comm::Protocol::Mngr::Req::ColumnGet::schema(
-    cid, 
-    [schema=&schema, await=&res] 
+    cid,
+    [schema=&schema, await=&res]
     (const Comm::client::ConnQueue::ReqBase::Ptr& req,
       int error, const Comm::Protocol::Mngr::Params::ColumnGetRsp& rsp) {
       if(error == Error::REQUEST_TIMEOUT) {
-        SWC_PRINT << " error=" << error 
+        SWC_PRINT << " error=" << error
                   << "(" << Error::get_text(error) << ")" << SWC_PRINT_CLOSE;
         req->request_again();
         return;
@@ -126,17 +126,17 @@ void Schemas::_request(int& err, cid_t cid,
   err = res.get_future().get();
 }
 
-void Schemas::_request(int& err, const std::string& name, 
+void Schemas::_request(int& err, const std::string& name,
                        DB::Schema::Ptr& schema) {
   std::promise<int> res;
 
   Comm::Protocol::Mngr::Req::ColumnGet::schema(
-    name, 
-    [schema=&schema, await=&res] 
+    name,
+    [schema=&schema, await=&res]
     (const Comm::client::ConnQueue::ReqBase::Ptr& req,
       int error, const Comm::Protocol::Mngr::Params::ColumnGetRsp& rsp) {
       if(error == Error::REQUEST_TIMEOUT) {
-        SWC_PRINT << " error=" << error 
+        SWC_PRINT << " error=" << error
                   << "(" << Error::get_text(error) << ")" << SWC_PRINT_CLOSE;
         req->request_again();
         return;
@@ -151,20 +151,20 @@ void Schemas::_request(int& err, const std::string& name,
   err = res.get_future().get();
 }
 
-void Schemas::_request(int& err, 
+void Schemas::_request(int& err,
                        const std::vector<DB::Schemas::Pattern>& patterns,
                        std::vector<DB::Schema::Ptr>& schemas) {
   Comm::Protocol::Mngr::Params::ColumnListReq params;
   params.patterns = patterns;
-    
+
   std::promise<int> res;
   Comm::Protocol::Mngr::Req::ColumnList::request(
     params,
     [&schemas, await=&res]
-    (const Comm::client::ConnQueue::ReqBase::Ptr& req, int error, 
+    (const Comm::client::ConnQueue::ReqBase::Ptr& req, int error,
      const Comm::Protocol::Mngr::Params::ColumnListRsp& rsp) {
       if(error == Error::REQUEST_TIMEOUT) {
-        SWC_PRINT << " error=" << error 
+        SWC_PRINT << " error=" << error
                   << "(" << Error::get_text(error) << ")" << SWC_PRINT_CLOSE;
         req->request_again();
         return;

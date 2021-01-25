@@ -26,8 +26,8 @@ void seek(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     Params::SeekReq params;
     params.decode(&ptr, &remain);
 
-    auto smartfd = Env::FsBroker::fds()->select(params.fd);
-      
+    auto smartfd = Env::FsBroker::fds().select(params.fd);
+
     if(!smartfd) {
       err = EBADR;
     } else {
@@ -40,13 +40,13 @@ void seek(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
     err = e.code();
   }
-  
+
   auto cbp = Buffers::make(ev, Params::SeekRsp(offset), 4);
   cbp->append_i32(err);
   conn->send_response(cbp);
-    
+
 }
-  
+
 
 }}}}}
 

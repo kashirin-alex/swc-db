@@ -47,14 +47,14 @@ void read_all(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
       err = EBADR;
     if(err)
       goto finish;
-    fd = Env::FsBroker::fds()->add(smartfd);
+    fd = Env::FsBroker::fds().add(smartfd);
 
     rbuf.free();
     if(fs->read(err, smartfd, &rbuf, len) != len)
       err = Error::FS_EOF;
 
     finish:
-      if(fd != -1 && (smartfd = Env::FsBroker::fds()->remove(fd))) {
+      if(fd != -1 && (smartfd = Env::FsBroker::fds().remove(fd))) {
         int errtmp;
         do fs->close(errtmp, smartfd);
         while (errtmp == Error::SERVER_NOT_READY);

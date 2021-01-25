@@ -37,7 +37,7 @@ void combi_pread(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     if(err)
       goto finish;
 
-    fd = Env::FsBroker::fds()->add(params.smartfd);
+    fd = Env::FsBroker::fds().add(params.smartfd);
 
     rbuf.reallocate(params.amount);
     rbuf.size = fs->pread(
@@ -47,7 +47,7 @@ void combi_pread(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
       err = Error::FS_EOF;
 
     finish:
-      if(fd != -1 && (params.smartfd = Env::FsBroker::fds()->remove(fd))) {
+      if(fd != -1 && (params.smartfd = Env::FsBroker::fds().remove(fd))) {
         int errtmp;
         do fs->close(errtmp, params.smartfd);
         while (errtmp == Error::SERVER_NOT_READY);

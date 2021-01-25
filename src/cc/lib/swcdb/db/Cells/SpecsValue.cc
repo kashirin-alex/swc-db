@@ -11,7 +11,7 @@
 
 namespace SWC { namespace DB { namespace Specs {
 
-Value::Value(bool own)
+Value::Value(bool own) noexcept
               : own(own), comp(Condition::NONE),
                 data(0), size(0), matcher(nullptr) {
 }
@@ -43,7 +43,7 @@ Value::Value(const Value &other)
   copy(other);
 }
 
-Value::Value(Value&& other)
+Value::Value(Value&& other) noexcept
             : own(other.own), comp(other.comp),
               data(other.data), size(other.size),
               matcher(other.matcher) {

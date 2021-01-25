@@ -21,7 +21,7 @@ Schema::Ptr Schema::make(const Schema::Ptr& other) {
   return std::make_shared<Schema>(*other.get());
 }
 
-Schema::Schema()
+Schema::Schema() noexcept
       : cid(NO_CID),
         col_seq(Types::KeySeq::LEXIC), col_type(Types::Column::PLAIN),
         cell_versions(1), cell_ttl(0),

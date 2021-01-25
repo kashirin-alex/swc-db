@@ -13,25 +13,25 @@ namespace SWC { namespace client {
 
 class Schemas final : private DB::Schemas {
   public:
-  
+
   typedef std::shared_ptr<Schemas> Ptr;
 
-  Schemas(const Config::Property::V_GINT32::Ptr expiry_ms);
+  Schemas(const Config::Property::V_GINT32::Ptr expiry_ms) noexcept;
 
   ~Schemas();
-  
+
   void remove(cid_t cid);
 
   void remove(const std::string& name);
 
   DB::Schema::Ptr get(int& err, cid_t cid);
-  
+
   DB::Schema::Ptr get(int& err, const std::string& name);
 
   void get(int& err, const std::vector<DB::Schemas::Pattern>& patterns,
            std::vector<DB::Schema::Ptr>& schemas);
 
-  std::vector<DB::Schema::Ptr> 
+  std::vector<DB::Schema::Ptr>
   get(int& err, const std::vector<DB::Schemas::Pattern>& patterns);
 
   private:
@@ -39,14 +39,14 @@ class Schemas final : private DB::Schemas {
   void _request(int& err, cid_t cid, DB::Schema::Ptr& schema);
 
   void _request(int& err, const std::string& name, DB::Schema::Ptr& schema);
-  
-  void _request(int& err, 
+
+  void _request(int& err,
                 const std::vector<DB::Schemas::Pattern>& patterns,
                 std::vector<DB::Schema::Ptr>& schemas);
 
   std::unordered_map<cid_t, int64_t>  m_track; // .second {time,queue(promises)}
   Config::Property::V_GINT32::Ptr     m_expiry_ms;
-  
+
 };
 
 

@@ -20,10 +20,10 @@ foreach(fs ${FILE_SYSTEMS})
       COMMAND ${CMAKE_INSTALL_PREFIX}/sbin/swcdb_cluster start-fsbrokers
     )
   endif()
-  
+
   add_test(NAME test-fs_client-${fs}
-    COMMAND fs_client 
-      --swc.fs=${fs} 
+    COMMAND fs_client
+      --swc.fs=${fs}
       --swc.fs.lib.${fs}=${CMAKE_INSTALL_PREFIX}/lib/libswcdb_fs_${fs}.so
       --swc.cfg.path=${CMAKE_INSTALL_PREFIX}/etc/swcdb/
   )

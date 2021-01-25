@@ -21,10 +21,10 @@ class RangeLoad : public ManageBase {
   ColumnPtr    col;
 
   RangeLoad(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev,
-            const cid_t cid, const rid_t rid);
+            const cid_t cid, const rid_t rid) noexcept;
 
   virtual ~RangeLoad();
-  
+
   void loaded(int& err);
 
 };

@@ -55,15 +55,15 @@ Comm::EndPoint decode(const uint8_t** bufp, size_t* remainp) {
 namespace Comm {
 
 
-Network::Network(const asio::ip::network_v4& v4)
+Network::Network(const asio::ip::network_v4& v4) noexcept
   : is_v4(true), v4(v4) {
 }
 
-Network::Network(const asio::ip::network_v6& v6)
+Network::Network(const asio::ip::network_v6& v6) noexcept
   : is_v4(false), v6(v6) {
 }
 
-Network::Network(const Network& net)
+Network::Network(const Network& net) noexcept
   : is_v4(net.is_v4), v4(net.v4), v6(net.v6) {
 }
 

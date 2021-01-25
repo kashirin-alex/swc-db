@@ -14,9 +14,10 @@ namespace SWC { namespace Manager {
 
 struct RangerResources {
 
-  RangerResources(rgrid_t rgrid = 0, 
-                  uint32_t mem = 0, uint32_t cpu = 0, size_t ranges = 0) 
-                  : rgrid(rgrid), mem(mem), cpu(cpu), ranges(ranges), 
+  RangerResources(rgrid_t rgrid = 0,
+                  uint32_t mem = 0, uint32_t cpu = 0, size_t ranges = 0)
+                  noexcept
+                  : rgrid(rgrid), mem(mem), cpu(cpu), ranges(ranges),
                     load_scale(0), rebalance(0) {
   }
 
@@ -53,9 +54,9 @@ class RangersResources final : private std::vector<RangerResources> {
         cfg_rebalance_max(
           Env::Config::settings()->get<Config::Property::V_GUINT8>(
             "swc.mngr.rangers.range.rebalance.max")),
-        m_due(0), m_last_check(0) { 
+        m_due(0), m_last_check(0) {
   }
-      
+
   ~RangersResources() { }
 
   void print(std::ostream& out) {
@@ -66,12 +67,12 @@ class RangersResources final : private std::vector<RangerResources> {
       r.print(out << "\n ");
     out << "\n])";
   }
-  
+
   void check(const RangerList& rangers) {
     bool support;
     if(!m_mutex.try_full_lock(support))
       return;
-    if(m_due || 
+    if(m_due ||
        int64_t(m_last_check + cfg_check->get()) > Time::now_ns())
       return m_mutex.unlock(support);
 
@@ -92,7 +93,7 @@ class RangersResources final : private std::vector<RangerResources> {
     if(!err && m_due) {
       auto& res = emplace_back(rgrid, rsp.mem, rsp.cpu, rsp.ranges);
       if(!res.mem || !res.cpu) {
-        SWC_LOG_OUT(LOG_WARN, 
+        SWC_LOG_OUT(LOG_WARN,
           res.print(SWC_LOG_OSTREAM << "received zero(resource) "); );
       }
     }
@@ -121,14 +122,14 @@ class RangersResources final : private std::vector<RangerResources> {
           max_ranges = res.ranges;
         total_ranges += res.ranges;
       }
-      
+
       for(auto& res : *this) {
         size_t ranges_scale = (res.ranges * 100) / max_ranges;
         size_t load_scale = (
             ( (res.mem * 100 * INT16_MAX) / max_mem +
               (res.cpu * 100 * INT16_MAX) / max_cpu )
           ) / (ranges_scale ? ranges_scale : 1);
-        res.load_scale = load_scale > UINT16_MAX 
+        res.load_scale = load_scale > UINT16_MAX
           ? UINT16_MAX : (load_scale ? load_scale : 1);
         if(res.load_scale > max_scale)
           max_scale = res.load_scale;
@@ -138,7 +139,7 @@ class RangersResources final : private std::vector<RangerResources> {
         if(max_load_scale < res.load_scale)
           max_load_scale = res.load_scale;
       }
-      
+
       if(balanceable) {
         std::sort(begin(), end(),
                   [](const RangerResources& rr1, const RangerResources& rr2) {
@@ -189,7 +190,7 @@ class RangersResources final : private std::vector<RangerResources> {
     }
     std::vector<RangerResources>::clear();
   }
-  
+
   private:
 
   Core::MutexSptd    m_mutex;

@@ -19,8 +19,9 @@ class RangeUnload : public ManageBase {
   const rid_t   rid;
   const bool    completely;
 
-  RangeUnload(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev, 
-              const cid_t cid, const rid_t rid, const bool completely);
+  RangeUnload(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev,
+              const cid_t cid, const rid_t rid,
+              const bool completely) noexcept;
 
   virtual ~RangeUnload();
 

@@ -28,13 +28,13 @@ void create(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     params.decode(&ptr, &remain);
 
     auto smartfd = FS::SmartFd::make_ptr(params.fname, params.flags);
- 
+
     Env::FsInterface::fs()->create(
       err, smartfd, params.bufsz, params.replication, params.blksz
     );
 
     if(smartfd->valid())
-      fd = Env::FsBroker::fds()->add(smartfd);
+      fd = Env::FsBroker::fds().add(smartfd);
 
   } catch(...) {
     const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
@@ -47,7 +47,7 @@ void create(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
   conn->send_response(cbp);
 
 }
-  
+
 
 }}}}}
 

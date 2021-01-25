@@ -203,8 +203,9 @@ struct Field_LIST_INT64 : Field {
   struct Item {
     Condition::Comp comp;
     int64_t         value;
-    Item() { }
-    Item(Condition::Comp comp, int64_t value) : comp(comp), value(value) { }
+    Item() noexcept { }
+    Item(Condition::Comp comp, int64_t value) noexcept
+          : comp(comp), value(value) { }
   };
 
   static std::unique_ptr<Field_LIST_INT64>
@@ -252,7 +253,7 @@ struct Field_LIST_BYTES : Field {
   struct Item {
     Condition::Comp comp;
     std::string     value;
-    Item() { }
+    Item() noexcept { }
     Item(Condition::Comp comp, const std::string& value)
         : comp(comp), value(value) { }
   };

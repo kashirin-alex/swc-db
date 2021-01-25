@@ -18,7 +18,7 @@ Event::Ptr Event::make(Type type, int error) {
 }
 
 SWC_SHOULD_INLINE
-Event::Event(Type type_, int error_)
+Event::Event(Type type_, int error_) noexcept
             : type(type_), error(error_), expiry_ms(0) {
 }
 

@@ -21,7 +21,7 @@ namespace SWC { namespace DB {
 class Schema final {
 
   public:
-  
+
   typedef std::shared_ptr<Schema>  Ptr;
 
   static constexpr const cid_t     NO_CID = 0;
@@ -30,18 +30,18 @@ class Schema final {
 
   static Ptr make(const Ptr& other);
 
-  Schema();
+  Schema() noexcept;
 
   Schema(const Schema& other);
-  
+
   Schema(const uint8_t** bufp, size_t* remainp);
 
   ~Schema();
 
   bool equal(const Ptr& other, bool with_rev=true);
-  
+
   size_t encoded_length() const;
- 
+
   void encode(uint8_t** bufp) const;
 
   void display(std::ostream& out) const;
@@ -70,7 +70,7 @@ class Schema final {
   uint8_t               log_rollout_ratio;
   uint8_t               log_compact_cointervaling;
   uint8_t               log_fragment_preload;
-  
+
   uint8_t               compact_percent;
 
   int64_t               revision;
@@ -81,6 +81,6 @@ class Schema final {
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/db/Columns/Schema.cc"
-#endif 
+#endif
 
 #endif // swcdb_db_Columns_Schema_h

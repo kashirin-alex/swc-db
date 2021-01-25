@@ -14,7 +14,7 @@ namespace SWC { namespace Common { namespace Stats {
 class Stat {
   public:
 
-  Stat(): m_count(0), m_avg(0), m_min(-1), m_max(0) { }
+  Stat() noexcept : m_count(0), m_avg(0), m_min(-1), m_max(0) { }
 
   virtual ~Stat() { }
 

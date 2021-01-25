@@ -9,10 +9,10 @@
 namespace SWC { namespace Ranger { namespace Callback {
 
 
-RangeLoad::RangeLoad(const Comm::ConnHandlerPtr& conn, 
+RangeLoad::RangeLoad(const Comm::ConnHandlerPtr& conn,
                      const Comm::Event::Ptr& ev,
-                     const cid_t cid, const rid_t rid)
-                    : ManageBase(conn, ev, ManageBase::RANGE_LOAD), 
+                     const cid_t cid, const rid_t rid) noexcept
+                    : ManageBase(conn, ev, ManageBase::RANGE_LOAD),
                       cid(cid), rid(rid) {
 }
 
@@ -33,7 +33,7 @@ void RangeLoad::loaded(int& err) {
 
   if(err) {
     SWC_LOG_OUT(LOG_WARN,
-      Error::print(SWC_LOG_OSTREAM 
+      Error::print(SWC_LOG_OSTREAM
         << "BAD LOAD RANGE, Unloading(" << cid << '/' << rid << ") ", err);
     );
     col->internal_unload(rid);
@@ -45,12 +45,12 @@ void RangeLoad::loaded(int& err) {
     Comm::Protocol::Rgr::Params::RangeLoaded params(range->cfg->key_seq);
     if((params.intval = range->cfg->range_type == DB::Types::Range::MASTER))
       range->get_interval(params.interval);
-        
+
     auto cbp = Comm::Buffers::make(m_ev, params, 4);
     cbp->append_i32(err);
     m_conn->send_response(cbp);
   }
-  
+
   col->run_mng_queue();
 }
 

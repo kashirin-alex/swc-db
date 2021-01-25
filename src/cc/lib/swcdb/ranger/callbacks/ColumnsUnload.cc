@@ -7,16 +7,16 @@
 namespace SWC { namespace Ranger { namespace Callback {
 
 
-ColumnsUnload::ColumnsUnload(const Comm::ConnHandlerPtr& conn, 
+ColumnsUnload::ColumnsUnload(const Comm::ConnHandlerPtr& conn,
                              const Comm::Event::Ptr& ev,
-                             bool completely)
+                             bool completely) noexcept
                         : ManageBase(conn, ev, ManageBase::COLUMNS_UNLOAD),
                           completely(completely) {
 }
 
 ColumnsUnload::~ColumnsUnload() { }
 
-void ColumnsUnload::add(const ColumnPtr& col) {    
+void ColumnsUnload::add(const ColumnPtr& col) {
   Core::MutexSptd::scope lock(m_mutex);
   m_cols.push_back(col);
 }
@@ -38,7 +38,7 @@ void ColumnsUnload::unloaded(RangePtr range) {
     m_rsp_params.columns[range->cfg->cid].push_back(range->rid);
   }
 }
-  
+
 void ColumnsUnload::unloaded(const ColumnPtr& col) {
   {
     Core::MutexSptd::scope lock(m_mutex);

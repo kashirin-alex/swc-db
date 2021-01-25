@@ -1,7 +1,7 @@
 /*
  * SWC-DB© Copyright since 2019 Alex Kashirin <kashirin.alex@gmail.com>
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
- */ 
+ */
 
 #ifndef swcdb_db_Cells_MutableMap_h
 #define swcdb_db_Cells_MutableMap_h
@@ -22,13 +22,13 @@ class ColCells final {
 
   const cid_t cid;
 
-  static Ptr make(const cid_t cid, Types::KeySeq seq, 
+  static Ptr make(const cid_t cid, Types::KeySeq seq,
                   uint32_t versions, uint32_t ttl, Types::Column type);
 
   static Ptr make(const cid_t cid, Mutable& cells);
 
 
-  ColCells(const cid_t cid, Types::KeySeq seq, 
+  ColCells(const cid_t cid, Types::KeySeq seq,
            uint32_t versions, uint32_t ttl, Types::Column type);
 
   ColCells(const cid_t cid, Mutable& cells);
@@ -44,12 +44,12 @@ class ColCells final {
   Types::KeySeq get_sequence() const;
 
   DB::Cell::Key::Ptr get_first_key();
-  
-  DB::Cell::Key::Ptr get_key_next(const DB::Cell::Key& eval_key, 
+
+  DB::Cell::Key::Ptr get_key_next(const DB::Cell::Key& eval_key,
                                   bool start_key=false);
 
-  DynamicBuffer::Ptr get_buff(const DB::Cell::Key& key_start, 
-                              const DB::Cell::Key& key_end, 
+  DynamicBuffer::Ptr get_buff(const DB::Cell::Key& key_start,
+                              const DB::Cell::Key& key_end,
                               size_t buff_sz, bool& more);
 
   void add(const DB::Cells::Cell& cell);
@@ -76,29 +76,29 @@ class ColCells final {
 
 class MutableMap final : private std::unordered_map<cid_t, ColCells::Ptr> {
   public:
-  
+
   typedef std::shared_ptr<MutableMap>               Ptr;
   typedef std::unordered_map<cid_t, ColCells::Ptr>  Columns;
-  
-  explicit MutableMap();
+
+  explicit MutableMap() noexcept;
 
   MutableMap(const MutableMap&) = delete;
 
   MutableMap(const MutableMap&&) = delete;
 
   MutableMap& operator=(const MutableMap&) = delete;
-  
+
   ~MutableMap();
 
   bool create(const Schema::Ptr& schema);
 
-  bool create(const cid_t cid, Types::KeySeq seq, 
+  bool create(const cid_t cid, Types::KeySeq seq,
               uint32_t versions, uint32_t ttl, Types::Column type);
 
   bool create(const cid_t cid, Mutable& cells);
 
   bool exists(const cid_t cid);
-  
+
   void add(const cid_t cid, const Cell& cell);
 
   ColCells::Ptr get_idx(size_t offset);
@@ -130,6 +130,6 @@ class MutableMap final : private std::unordered_map<cid_t, ColCells::Ptr> {
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/db/Cells/MutableMap.cc"
-#endif 
+#endif
 
 #endif // swcdb_db_Cells_MutableMap_h

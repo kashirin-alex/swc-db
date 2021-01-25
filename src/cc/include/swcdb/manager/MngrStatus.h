@@ -17,7 +17,7 @@ class MngrStatus : public Comm::Protocol::Common::Params::HostEndPoints {
 
   typedef std::shared_ptr<MngrStatus> Ptr;
 
-  MngrStatus() {}
+  MngrStatus() noexcept {}
 
   MngrStatus(uint8_t role, cid_t begin, cid_t end,
              const Comm::EndPoints& points,

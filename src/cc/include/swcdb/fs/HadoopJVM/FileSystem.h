@@ -21,7 +21,7 @@ class FileSystemHadoopJVM final : public FileSystem {
   struct Service {
     typedef std::shared_ptr<Service> Ptr;
 
-    Service(hdfsFS srv) : srv(srv) { }
+    Service(hdfsFS srv) noexcept : srv(srv) { }
 
     ~Service() { if(srv) hdfsDisconnect(srv); }
 

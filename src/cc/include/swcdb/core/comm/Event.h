@@ -1,4 +1,4 @@
-/* 
+/*
  * SWC-DB© Copyright since 2019 Alex Kashirin <kashirin.alex@gmail.com>
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
@@ -21,7 +21,7 @@ class Event final {
   public:
 
   /** Enumeration for event types.*/
-  enum Type : uint8_t { 
+  enum Type : uint8_t {
     ESTABLISHED,  ///< Connection established event
     DISCONNECT,   ///< Connection disconnected event
     MESSAGE,      ///< Request/response message event
@@ -32,7 +32,7 @@ class Event final {
 
   static Ptr make(Type type, int error);
 
-  explicit Event(Type type_, int error_);
+  explicit Event(Type type_, int error_) noexcept;
 
   ~Event();
 
@@ -41,7 +41,7 @@ class Event final {
   void decode_buffers();
 
   bool expired(int64_t within=0) const;
-  
+
   int32_t response_code();
 
   void print(std::ostream& out) const;
@@ -59,6 +59,6 @@ class Event final {
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/core/comm/Event.cc"
-#endif 
+#endif
 
 #endif // swcdb_core_comm_Event_h

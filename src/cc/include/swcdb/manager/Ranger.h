@@ -21,7 +21,8 @@ class Ranger : public Comm::Protocol::Common::Params::HostEndPoints {
 
   typedef std::shared_ptr<Ranger> Ptr;
 
-  Ranger(): rgrid(0), state(RangerState::NONE),
+  Ranger() noexcept
+          : rgrid(0), state(RangerState::NONE),
             failures(0), interm_ranges(0), load_scale(0), m_rebalance(0) {
   }
 

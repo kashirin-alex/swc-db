@@ -14,7 +14,7 @@ namespace SWC { namespace client { namespace Query {
 namespace Result {
 
 
-Select::Rsp::Rsp() : m_err(Error::OK) {
+Select::Rsp::Rsp() noexcept : m_err(Error::OK) {
 }
 
 Select::Rsp::~Rsp() { }
