@@ -10,6 +10,9 @@
 #include <zlib.h>
 #include <zstd.h>
 
+#undef Z_NULL
+#define Z_NULL nullptr
+
 namespace SWC { namespace Core {
 
 

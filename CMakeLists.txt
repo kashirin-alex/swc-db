@@ -72,7 +72,7 @@ SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wformat -Wformat-security")
 SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wsuggest-override -Wuseless-cast -Wold-style-cast -Wnoexcept")
 
 SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wduplicated-cond -Wduplicated-branches -Wmissing-attributes -Wlogical-op")
-SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wstrict-null-sentinel")
+SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wstrict-null-sentinel -Wzero-as-null-pointer-constant")
 
 if(SWC_MALLOC_NOT_INSISTENT)
   SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DSWC_MALLOC_NOT_INSISTENT")

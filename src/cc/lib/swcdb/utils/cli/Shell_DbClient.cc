@@ -329,7 +329,7 @@ bool DbClient::select(std::string& cmd) {
 void DbClient::display(const client::Query::Select::Result::Ptr& result,
                        uint8_t display_flags,
                        size_t& cells_count, size_t& cells_bytes) const {
-  DB::Schema::Ptr schema = 0;
+  DB::Schema::Ptr schema;
   DB::Cells::Result cells;
   bool meta;
   size_t count_state;

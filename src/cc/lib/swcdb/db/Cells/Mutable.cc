@@ -7,7 +7,7 @@
 #include "swcdb/db/Cells/Mutable.h"
 
 
-namespace SWC { namespace DB { namespace Cells { 
+namespace SWC { namespace DB { namespace Cells {
 
 
 Mutable::Bucket* Mutable::make_bucket(uint16_t reserve) {
@@ -18,25 +18,25 @@ Mutable::Bucket* Mutable::make_bucket(uint16_t reserve) {
 }
 
 SWC_SHOULD_INLINE
-Mutable::Ptr Mutable::make(const Types::KeySeq key_seq, 
-                           const uint32_t max_revs, const uint64_t ttl_ns, 
+Mutable::Ptr Mutable::make(const Types::KeySeq key_seq,
+                           const uint32_t max_revs, const uint64_t ttl_ns,
                            const Types::Column type) {
   return std::make_shared<Mutable>(key_seq, max_revs, ttl_ns, type);
 }
 
 Mutable::Mutable(const Types::KeySeq key_seq,
-                 const uint32_t max_revs, const uint64_t ttl_ns, 
+                 const uint32_t max_revs, const uint64_t ttl_ns,
                  const Types::Column type)
-                : key_seq(key_seq), 
+                : key_seq(key_seq),
                   type(type), max_revs(max_revs), ttl(ttl_ns),
                   _bytes(0), _size(0) {
   buckets.emplace_back(make_bucket(0));
 }
 
 Mutable::Mutable(Mutable& other)
-                : key_seq(other.key_seq), type(other.type), 
-                  max_revs(other.max_revs), ttl(other.ttl), 
-                  buckets(other.buckets), 
+                : key_seq(other.key_seq), type(other.type),
+                  max_revs(other.max_revs), ttl(other.ttl),
+                  buckets(other.buckets),
                   _bytes(other.size_bytes()), _size(other.size()) {
   other.buckets.clear();
   other.free();
@@ -73,13 +73,13 @@ void Mutable::free() {
   buckets.emplace_back(make_bucket(0));
 }
 
-void Mutable::reset(const uint32_t revs, const uint64_t ttl_ns, 
+void Mutable::reset(const uint32_t revs, const uint64_t ttl_ns,
                     const Types::Column typ) {
   free();
   configure(revs, ttl_ns, typ);
 }
 
-void Mutable::configure(const uint32_t revs, const uint64_t ttl_ns, 
+void Mutable::configure(const uint32_t revs, const uint64_t ttl_ns,
                         const Types::Column typ) {
   type = typ;
   max_revs = revs;
@@ -108,7 +108,7 @@ size_t Mutable::size_bytes() const {
 
 size_t Mutable::size_of_internal() const {
   return  _bytes
-        + _size * (_cell_sz + sizeof(Cell)) 
+        + _size * (_cell_sz + sizeof(Cell))
         + buckets.size() * (_bucket_sz + sizeof(Bucket));
 }
 
@@ -251,18 +251,18 @@ Cell* Mutable::takeout(size_t idx) {
 
 
 void Mutable::write_and_free(DynamicBuffer& cells, uint32_t& cell_count,
-                             Interval& intval, uint32_t threshold, 
+                             Interval& intval, uint32_t threshold,
                              uint32_t max_cells) {
   if(!_size)
     return;
-    
+
   cells.ensure(_bytes < threshold? _bytes: threshold);
   Cell* first = nullptr;
   Cell* last = nullptr;
   Cell* cell;
   size_t count = 0;
   auto it_start = Iterator(&buckets);
-  for(auto it = it_start; it && (!threshold || threshold > cells.fill()) && 
+  for(auto it = it_start; it && (!threshold || threshold > cells.fill()) &&
                                 (!max_cells || max_cells > cell_count); ++it) {
     ++count;
     if((cell=*it.item)->has_expired(ttl))
@@ -279,14 +279,14 @@ void Mutable::write_and_free(DynamicBuffer& cells, uint32_t& cell_count,
     intval.expand_begin(*first);
     intval.expand_end(*(last ? last : first));
   }
-  
+
   if(_size == count)
     free();
   else if(count)
     _remove(it_start, count);
 }
 
-bool Mutable::write_and_free(const DB::Cell::Key& key_start, 
+bool Mutable::write_and_free(const DB::Cell::Key& key_start,
                              const DB::Cell::Key& key_finish,
                              DynamicBuffer& cells, uint32_t threshold) {
   bool more = _size;
@@ -301,10 +301,10 @@ bool Mutable::write_and_free(const DB::Cell::Key& key_start,
   for(Cell* cell; it && (!threshold || threshold > cells.fill()); ++it) {
     cell=*it.item;
 
-    if(!key_start.empty() && 
+    if(!key_start.empty() &&
         DB::KeySeq::compare(key_seq, key_start, cell->key) == Condition::LT)
       continue;
-    if(!key_finish.empty() && 
+    if(!key_finish.empty() &&
         DB::KeySeq::compare(key_seq, key_finish, cell->key) == Condition::GT) {
       more = false;
       break;
@@ -314,7 +314,7 @@ bool Mutable::write_and_free(const DB::Cell::Key& key_start,
       it_start = it;
     ++count;
 
-    if(!cell->has_expired(ttl)) 
+    if(!cell->has_expired(ttl))
       cell->write(cells);
   }
 
@@ -330,11 +330,11 @@ bool Mutable::write_and_free(const DB::Cell::Key& key_start,
 }
 
 void Mutable::print(std::ostream& out, bool with_cells) const {
-  out << "Cells(size=" << size() << '/' << _size 
-      << " bytes=" << _bytes 
+  out << "Cells(size=" << size() << '/' << _size
+      << " bytes=" << _bytes
       << " type=" << Types::to_string(type)
       << " max_revs=" << max_revs
-      << " ttl=" << ttl 
+      << " ttl=" << ttl
       << " buckets=" << buckets.size();
   if(with_cells) {
     size_t count = 0;
@@ -349,7 +349,7 @@ void Mutable::print(std::ostream& out, bool with_cells) const {
     }
     out << "] counted=" << count;
   }
-  
+
   out << ')';
 }
 
@@ -357,13 +357,13 @@ void Mutable::print(std::ostream& out, bool with_cells) const {
 void Mutable::get(int32_t idx, DB::Cell::Key& key) const {
   key.copy((*ConstIterator(&buckets, idx < 0 ? size()+idx : idx).item)->key);
 }
- 
-bool Mutable::get(const DB::Cell::Key& key, Condition::Comp comp, 
+
+bool Mutable::get(const DB::Cell::Key& key, Condition::Comp comp,
                   DB::Cell::Key& res) const {
-  Condition::Comp chk;  
+  Condition::Comp chk;
   for(auto it = ConstIterator(&buckets, _narrow(key)); it; ++it) {
     if((chk = DB::KeySeq::compare(key_seq, key, (*it.item)->key))
-                == Condition::GT 
+                == Condition::GT
       || (comp == Condition::GE && chk == Condition::EQ)){
       res.copy((*it.item)->key);
       return true;
@@ -385,7 +385,7 @@ SWC_SHOULD_INLINE
 void Mutable::scan(ReqScan* req) const {
   if(!_size)
     return;
-  if(max_revs == 1) 
+  if(max_revs == 1)
     scan_version_single(req);
   else
     scan_version_multi(req);
@@ -395,7 +395,7 @@ void Mutable::scan_version_single(ReqScan* req) const {
   bool stop = false;
   bool only_deletes = req->spec.flags.is_only_deletes();
 
-  size_t offset = req->spec.offset_key.empty() 
+  size_t offset = req->spec.offset_key.empty()
                   ? 0 : _narrow(req->spec.offset_key); // ?specs.key_start
 
   for(auto it = ConstIterator(&buckets, offset); !stop && it; ++it) {
@@ -415,7 +415,7 @@ void Mutable::scan_version_single(ReqScan* req) const {
 void Mutable::scan_version_multi(ReqScan* req) const {
   bool stop = false;
   bool only_deletes = req->spec.flags.is_only_deletes();
-  
+
   bool chk_align;
   uint32_t rev;
   size_t offset;
@@ -426,12 +426,12 @@ void Mutable::scan_version_multi(ReqScan* req) const {
     rev = 0;
     offset = 0;
   }
-  const DB::Cell::Key* last_key = 0;
+  const DB::Cell::Key* last_key = nullptr;
 
   for(auto it = ConstIterator(&buckets, offset); !stop && it; ++it) {
     const Cell& cell = **it.item;
 
-    if((only_deletes ? cell.flag == INSERT : cell.flag != INSERT) || 
+    if((only_deletes ? cell.flag == INSERT : cell.flag != INSERT) ||
        cell.has_expired(ttl)) {
       req->profile.skip_cell();
       continue;
@@ -444,7 +444,7 @@ void Mutable::scan_version_multi(ReqScan* req) const {
         req->profile.skip_cell();
         continue;
       }
-      if(comp == Condition::EQ && 
+      if(comp == Condition::EQ &&
          !req->spec.is_matching(cell.timestamp, cell.control & TS_DESC)) {
         if(!--rev)
           chk_align = false;
@@ -481,7 +481,7 @@ void Mutable::scan_version_multi(ReqScan* req) const {
   }
 }
 
-void Mutable::scan_test_use(const Specs::Interval& specs, 
+void Mutable::scan_test_use(const Specs::Interval& specs,
                             DynamicBuffer& result,
                             size_t& count, size_t& skips) const {
   bool stop = false;
@@ -490,7 +490,7 @@ void Mutable::scan_test_use(const Specs::Interval& specs,
   for(auto it = ConstIterator(&buckets); !stop && it; ++it) {
     const Cell& cell = **it.item;
 
-    if(!cell.has_expired(ttl) && 
+    if(!cell.has_expired(ttl) &&
        (only_deletes ? cell.flag != INSERT : cell.flag == INSERT) &&
        specs.is_matching(key_seq, cell, stop)) {
 
@@ -499,27 +499,27 @@ void Mutable::scan_test_use(const Specs::Interval& specs,
         ++skips;
         continue;
       }
-      
+
       cell.write(result);
-      if(++count == specs.flags.limit) 
+      if(++count == specs.flags.limit)
         // specs.flags.limit_by && specs.flags.max_versions
         break;
-    } else 
+    } else
       ++skips;
   }
 }
 
-bool Mutable::scan_after(const DB::Cell::Key& after, 
+bool Mutable::scan_after(const DB::Cell::Key& after,
                          const DB::Cell::Key& to, Mutable& cells) const {
   if(!_size)
     return false;
 
   for(auto it=ConstIterator(&buckets, _narrow(after)); it; ++it) {
     const Cell& cell = **it.item;
-    if(!to.empty() 
+    if(!to.empty()
         && DB::KeySeq::compare(key_seq, to, cell.key) == Condition::GT)
       return false;
-    if(cell.has_expired(ttl) || (!after.empty() 
+    if(cell.has_expired(ttl) || (!after.empty()
         && DB::KeySeq::compare(key_seq, after, cell.key) != Condition::GT))
       continue;
 
@@ -586,7 +586,7 @@ void Mutable::split(Mutable& cells) {
   size_t split_at = buckets.size() / 2;
   if(!split_at)
     return;
-  
+
   delete *cells.buckets.begin();
   cells.buckets.clear();
 
@@ -620,7 +620,7 @@ void Mutable::_add_remove(const Cell& e_cell, size_t* offsetp) {
       continue;
     }
 
-    if((cond = DB::KeySeq::compare(key_seq, cell->key, e_cell.key)) 
+    if((cond = DB::KeySeq::compare(key_seq, cell->key, e_cell.key))
                 == Condition::GT) {
       ++it;
       ++*offsetp;
@@ -632,16 +632,16 @@ void Mutable::_add_remove(const Cell& e_cell, size_t* offsetp) {
       return;
     }
 
-    if(cell->is_removing(ts) || 
+    if(cell->is_removing(ts) ||
       (chk_rev && (e_ts = cell->get_revision()) != AUTO_ASSIGN && e_ts >= rev))
       return;
-    
+
     if(e_cell.is_removing(cell->get_timestamp()))
       _remove(it);
     else
       ++it;
   }
-  
+
   add_sorted(e_cell);
 }
 
@@ -688,9 +688,9 @@ void Mutable::_add_plain(const Cell& e_cell, size_t* offsetp) {
         return cell->copy(e_cell);
       return;
     }
-    
+
     ++revs;
-    if(e_cell.control & TS_DESC 
+    if(e_cell.control & TS_DESC
         ? (chk_ts && ts < cell->get_timestamp())
         : (!chk_ts || ts > cell->get_timestamp()) ) {
       if(max_revs == revs)
@@ -698,7 +698,7 @@ void Mutable::_add_plain(const Cell& e_cell, size_t* offsetp) {
       ++it;
       continue;
     }
-    
+
     if(max_revs == revs) {
       if(!chk_rev || rev > cell->get_revision())
         cell->copy(e_cell);
@@ -719,9 +719,9 @@ void Mutable::_add_counter(const Cell& e_cell, size_t* offsetp) {
   int64_t ts = e_cell.get_timestamp();
   int64_t rev;
   bool chk_rev = (rev = e_cell.get_revision()) != AUTO_ASSIGN;
-  
+
   Cell* cell;
-  auto it = Iterator(&buckets, *offsetp); 
+  auto it = Iterator(&buckets, *offsetp);
   while(it) {
 
     if((cell=*it.item)->has_expired(ttl)) {
@@ -729,8 +729,8 @@ void Mutable::_add_counter(const Cell& e_cell, size_t* offsetp) {
       continue;
     }
 
-    if((cond = DB::KeySeq::compare(key_seq, cell->key, e_cell.key)) 
-                == Condition::GT) { 
+    if((cond = DB::KeySeq::compare(key_seq, cell->key, e_cell.key))
+                == Condition::GT) {
       ++it;
       ++*offsetp;
       continue;
@@ -756,7 +756,7 @@ void Mutable::_add_counter(const Cell& e_cell, size_t* offsetp) {
       if(eq_rev_1 > ts)
         return;
     }
-    
+
     if(e_cell.get_counter_op() & OP_EQUAL)
       cell->copy(e_cell);
     else {
@@ -782,7 +782,7 @@ void Mutable::_add_counter(const Cell& e_cell, size_t* offsetp) {
 
 
 size_t Mutable::_narrow(const DB::Cell::Key& key, size_t offset) const {
-  if(key.empty() || _size <= narrow_sz) 
+  if(key.empty() || _size <= narrow_sz)
     return 0;
   size_t step = _size;
   if(1 < offset && offset < _size) {
@@ -800,7 +800,7 @@ size_t Mutable::_narrow(const DB::Cell::Key& key, size_t offset) const {
         return offset;
       if(offset + (step >>= 1) >= _size)
         offset = _size - (step >>= 1);
-      else 
+      else
         offset += step;
       goto try_narrow;
     }
@@ -833,20 +833,20 @@ void Mutable::_push_back(Cell* cell) {
 Cell* Mutable::_insert(Mutable::Iterator& it, const Cell& cell) {
   Cell* adding;
   _add(adding = new Cell(cell));
-  if(!it) 
+  if(!it)
     _push_back(adding);
-  else 
+  else
     it.insert(adding);
   return adding;
 }
 
 void Mutable::_remove(Mutable::Iterator& it) {
-  _remove(*it.item); 
+  _remove(*it.item);
   delete *it.item;
   it.remove();
 }
 
-void Mutable::_remove(Mutable::Iterator& it, size_t number, bool wdel) { 
+void Mutable::_remove(Mutable::Iterator& it, size_t number, bool wdel) {
   if(wdel) {
     Iterator it_del(it);
     for(auto c = number; c && it_del; ++it_del,--c) {
@@ -862,14 +862,14 @@ void Mutable::_remove_overhead(Mutable::Iterator& it, const DB::Cell::Key& key,
   while(it && key.equal((*it.item)->key)) {
     if((*it.item)->flag == INSERT && ++revs > max_revs)
       _remove(it);
-    else 
+    else
       ++it;
   }
 }
 
 
 
-Mutable::ConstIterator::ConstIterator(const Mutable::Buckets* buckets, 
+Mutable::ConstIterator::ConstIterator(const Mutable::Buckets* buckets,
                                       size_t offset) : buckets(buckets) {
   bucket = buckets->begin();
   if(offset) {
@@ -886,12 +886,12 @@ Mutable::ConstIterator::ConstIterator(const Mutable::Buckets* buckets,
 }
 
 Mutable::ConstIterator::ConstIterator(const Mutable::ConstIterator& other)
-                                      : buckets(other.buckets), 
-                                        bucket(other.bucket), 
+                                      : buckets(other.buckets),
+                                        bucket(other.bucket),
                                         item(other.item) {
 }
 
-Mutable::ConstIterator& 
+Mutable::ConstIterator&
 Mutable::ConstIterator::operator=(const Mutable::ConstIterator& other) {
   buckets = other.buckets;
   bucket = other.bucket;
@@ -921,7 +921,7 @@ void Mutable::ConstIterator::operator++() {
 SWC_SHOULD_INLINE
 Mutable::Iterator::Iterator() : buckets(nullptr) { }
 
-Mutable::Iterator::Iterator(Mutable::Buckets* buckets, size_t offset) 
+Mutable::Iterator::Iterator(Mutable::Buckets* buckets, size_t offset)
                             : buckets(buckets) {
   bucket = buckets->begin();
   if(offset) {
@@ -937,12 +937,12 @@ Mutable::Iterator::Iterator(Mutable::Buckets* buckets, size_t offset)
   }
 }
 
-Mutable::Iterator::Iterator(const Mutable::Iterator& other) 
-                            : buckets(other.buckets), 
+Mutable::Iterator::Iterator(const Mutable::Iterator& other)
+                            : buckets(other.buckets),
                               bucket(other.bucket), item(other.item) {
 }
 
-Mutable::Iterator& 
+Mutable::Iterator&
 Mutable::Iterator::operator=(const Mutable::Iterator& other) {
   buckets = other.buckets;
   bucket = other.bucket;
@@ -1003,7 +1003,7 @@ void Mutable::Iterator::insert(Cell* value) {
 void Mutable::Iterator::remove() {
   (*bucket)->erase(item);
   if((*bucket)->empty() && buckets->size() > 1) {
-    delete *bucket; 
+    delete *bucket;
     if((bucket = buckets->erase(bucket)) != buckets->end())
       item = (*bucket)->begin();
   } else if(item == (*bucket)->end() && ++bucket < buckets->end()) {
@@ -1034,7 +1034,7 @@ void Mutable::Iterator::remove(size_t number) {
       (*bucket)->erase(item, item + avail);
       ++bucket;
     }
-    
+
     if(bucket == buckets->end())
       return;
     item = (*bucket)->begin();

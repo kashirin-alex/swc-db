@@ -124,7 +124,7 @@ class Range final : public std::enable_shared_from_this<Range> {
   void apply_new(int &err,
                 CellStore::Writers& w_cellstores,
                 CommitLog::Fragments::Vec& fragments_old,
-                const client::Query::Update::Cb_t& cb=0);
+                const client::Query::Update::Cb_t& cb=nullptr);
 
   void expand_and_align(bool w_chg_chk,
                         const client::Query::Update::Cb_t& cb);

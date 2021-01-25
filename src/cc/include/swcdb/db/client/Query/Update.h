@@ -2,7 +2,7 @@
 /*
  * SWC-DB© Copyright since 2019 Alex Kashirin <kashirin.alex@gmail.com>
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
- */ 
+ */
 
 #ifndef swcdb_db_client_Query_Update_h
 #define swcdb_db_client_Query_Update_h
@@ -21,28 +21,28 @@ namespace SWC { namespace client { namespace Query {
 
 
 /*
-range-master: 
+range-master:
   req-mngr.   cid({1,4}) + [n(cid), next_key_start]
               => cid({1,4}) + rid + rgr(endpoints) + range_begin + range_end
     req-rgr.  cid({1,4}) + rid + [cid(n), next_key_start]
               => cid({5,8}) + rid + range_begin + range_end
-range-meta: 
-  req-mngr.   cid({5,8}) + rid                           
+range-meta:
+  req-mngr.   cid({5,8}) + rid
               => cid({5,8}) + rid + rgr(endpoints)
     req-rgr.  cid({5,8}) + rid + [cid(n), next_key_start]
               => cid(n) + rid + range_begin + range_end
-range-data: 
-  req-mngr.   cid(n) + rid                          
+range-data:
+  req-mngr.   cid(n) + rid
               => cid(n) + rid + rgr(endpoints)
-    req-rgr.  cid(n) + rid + Specs::Interval         
+    req-rgr.  cid(n) + rid + Specs::Interval
               => results
 */
- 
+
 namespace Result {
 
 struct Update final {
   public:
-  
+
   typedef std::shared_ptr<Update> Ptr;
 
   DB::Cells::MutableMap              errored;
@@ -65,7 +65,7 @@ struct Update final {
 };
 
 }
-  
+
 
 class Update final : public std::enable_shared_from_this<Update> {
   public:
@@ -74,12 +74,12 @@ class Update final : public std::enable_shared_from_this<Update> {
 
   typedef std::shared_ptr<Update>                  Ptr;
   typedef std::function<void(const Result::Ptr&)>  Cb_t;
-  
+
   uint32_t                    buff_sz;
   uint8_t                     buff_ahead;
   uint32_t                    timeout;
   uint32_t                    timeout_ratio;
-  
+
   const Cb_t                  cb;
   Comm::IoContextPtr          dispatcher_io;
 
@@ -91,14 +91,14 @@ class Update final : public std::enable_shared_from_this<Update> {
   std::mutex                  m_mutex;
   std::condition_variable     cv;
 
-  Update(const Cb_t& cb=0, const Comm::IoContextPtr& io=nullptr);
+  Update(const Cb_t& cb=nullptr, const Comm::IoContextPtr& io=nullptr);
 
-  Update(const DB::Cells::MutableMap::Ptr& columns, 
-         const DB::Cells::MutableMap::Ptr& columns_onfractions, 
-         const Cb_t& cb=0, const Comm::IoContextPtr& io=nullptr);
+  Update(const DB::Cells::MutableMap::Ptr& columns,
+         const DB::Cells::MutableMap::Ptr& columns_onfractions,
+         const Cb_t& cb=nullptr, const Comm::IoContextPtr& io=nullptr);
 
   virtual ~Update();
- 
+
   void response(int err=Error::OK);
 
   void wait();
@@ -109,7 +109,7 @@ class Update final : public std::enable_shared_from_this<Update> {
                       uint64_t from=0);
 
   void commit_if_need();
-  
+
 
   void commit();
 
@@ -129,10 +129,10 @@ class Update final : public std::enable_shared_from_this<Update> {
     ReqBase::Ptr              parent;
     const rid_t               rid;
     const DB::Cell::Key       key_finish;
-    
+
     Locator(const DB::Types::Range type,
             const cid_t cid,
-            const DB::Cells::ColCells::Ptr& col, 
+            const DB::Cells::ColCells::Ptr& col,
             const DB::Cell::Key::Ptr& key_start,
             const Update::Ptr& updater,
             const ReqBase::Ptr& parent=nullptr,
@@ -183,7 +183,7 @@ class Update final : public std::enable_shared_from_this<Update> {
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/db/client/Query/Update.cc"
-#endif 
+#endif
 
 
 #endif // swcdb_db_client_Query_Update_h

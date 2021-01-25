@@ -10,22 +10,22 @@
 
 namespace SWC { namespace Ranger { namespace CommitLog {
 
-  
+
 class Compact final {
-    
+
   class Group final {
     public:
 
     const uint64_t              ts;
     const uint8_t               worker;
     Fragments::Vec              read_frags;
-    
+
     Group(Compact* compact, uint8_t worker);
 
     Group(const Group&) = delete;
 
     Group(const Group&&) = delete;
-  
+
     Group& operator=(const Group&) = delete;
 
     ~Group();
@@ -41,7 +41,7 @@ class Compact final {
     void loaded(const Fragment::Ptr& frag);
 
     void write();
-    
+
     Core::Atomic<int>                 error;
     Compact*                          compact;
     Core::Atomic<ssize_t>             m_idx;
@@ -66,12 +66,12 @@ class Compact final {
 
   Compact(Fragments* log, int repetition,
           const std::vector<Fragments::Vec>& groups,
-          uint8_t cointervaling, Cb_t& cb = 0);
+          uint8_t cointervaling, Cb_t& cb = nullptr);
 
   Compact(const Compact&) = delete;
 
   Compact(const Compact&&) = delete;
-  
+
   Compact& operator=(const Compact&) = delete;
 
   ~Compact();

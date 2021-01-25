@@ -25,14 +25,14 @@ namespace SWC { namespace Common {
 
 class Resources final {
   static const uint32_t MAX_RAM_CHK_INTVAL_MS = 5000;
-  
+
   public:
-  
+
   Resources(const Comm::IoContextPtr& ioctx,
             Config::Property::V_GINT32::Ptr ram_percent_allowed,
             Config::Property::V_GINT32::Ptr ram_percent_reserved,
             Config::Property::V_GINT32::Ptr ram_release_rate,
-            const std::function<size_t(size_t)>& release_call=0)
+            const std::function<size_t(size_t)>& release_call=nullptr)
             : cfg_ram_percent_allowed(ram_percent_allowed),
               cfg_ram_percent_reserved(ram_percent_reserved),
               cfg_ram_release_rate(ram_release_rate),
@@ -52,24 +52,24 @@ class Resources final {
   }
 
   Resources(const Resources& other) = delete;
-  
+
   Resources(const Resources&& other) = delete;
 
   Resources operator=(const Resources& other) = delete;
-  
+
   ~Resources() { }
 
-  SWC_CAN_INLINE 
+  SWC_CAN_INLINE
   bool is_low_mem_state() const {
     return ram.free < ram.reserved;
   }
 
-  SWC_CAN_INLINE 
+  SWC_CAN_INLINE
   size_t need_ram() const {
-    return is_low_mem_state() 
+    return is_low_mem_state()
             ? ram.used_reg.load()
-            : (ram.used > ram.allowed 
-                ? ram.used - ram.allowed 
+            : (ram.used > ram.allowed
+                ? ram.used - ram.allowed
                 : (ram.used_reg > ram.allowed
                     ? ram.used_reg - ram.allowed
                     : 0
@@ -77,16 +77,16 @@ class Resources final {
               );
   }
 
-  SWC_CAN_INLINE 
+  SWC_CAN_INLINE
   size_t avail_ram() const {
-    return !is_low_mem_state() && ram.allowed > ram.used_reg 
+    return !is_low_mem_state() && ram.allowed > ram.used_reg
             ? (ram.allowed > ram.used ? ram.allowed - ram.used_reg : 0)
             : 0;
   }
 
-  SWC_CAN_INLINE 
+  SWC_CAN_INLINE
   bool need_ram(uint32_t sz) const {
-    return is_low_mem_state() || ram.free < sz * 2 || 
+    return is_low_mem_state() || ram.free < sz * 2 ||
            (ram.used_reg + sz > ram.allowed || ram.used + sz > ram.allowed);
   }
 
@@ -95,7 +95,7 @@ class Resources final {
       m_mutex.lock();
       if(sz < 0 && ram.used_reg < size_t(-sz))
         ram.used_reg.store(0);
-      else 
+      else
         ram.used_reg.fetch_add(sz);
       m_mutex.unlock();
     }
@@ -114,23 +114,23 @@ class Resources final {
       m_mutex.lock();
       if(ram.used_reg < sz)
         ram.used_reg.store(0);
-      else 
+      else
         ram.used_reg.fetch_sub(sz);
       m_mutex.unlock();
     }
   }
 
-  SWC_CAN_INLINE 
+  SWC_CAN_INLINE
   uint32_t concurrency() const {
     return m_concurrency;
   }
 
-  SWC_CAN_INLINE 
+  SWC_CAN_INLINE
   uint32_t available_cpu_mhz() const {
     return m_cpu_mhz;
   }
 
-  SWC_CAN_INLINE 
+  SWC_CAN_INLINE
   uint32_t available_mem_mb() const {
     return (ram.total - ram.reserved) / 1024 / 1024;
   }
@@ -172,7 +172,7 @@ class Resources final {
         size_t released_bytes = m_release_call(bytes);
         SWC_LOG_OUT(LOG_DEBUG,
           print(SWC_LOG_OSTREAM);
-          SWC_LOG_OSTREAM 
+          SWC_LOG_OSTREAM
             << " mem-released=" << released_bytes << '/' << bytes;
         );
       }
@@ -186,7 +186,7 @@ class Resources final {
   void refresh_stats() {
     if(!(++next_major_chk % (is_low_mem_state() ? 10 : 100))) {
       page_size = sysconf(_SC_PAGE_SIZE);
-    
+
       std::ifstream buffer("/proc/meminfo");
       if(buffer.is_open()) {
         size_t sz = 0;
@@ -195,19 +195,19 @@ class Resources final {
         Component::Bytes* metric(nullptr);
         do {
           buffer >> tmp;
-          if(tmp.length() == 9 && 
+          if(tmp.length() == 9 &&
              !memcmp(tmp.c_str(), "MemTotal:", 9)) {
             metric = &ram.total;
-          } else 
-          if(tmp.length() == 13 && 
+          } else
+          if(tmp.length() == 13 &&
              !memcmp(tmp.c_str(), "MemAvailable:", 13)) {
             metric = &ram.free;
           }
           if(metric) {
-            buffer >> sz >> tmp;            
+            buffer >> sz >> tmp;
             metric->store(
-              sz * (tmp.front() == 'k' 
-                    ? 1024 
+              sz * (tmp.front() == 'k'
+                    ? 1024
                     : (tmp.front() == 'm' ? 1048576 : 0))
             );
             metric = nullptr;
@@ -217,19 +217,19 @@ class Resources final {
         buffer.close();
       }
       /*
-      ram.total   = page_size * sysconf(_SC_PHYS_PAGES); 
+      ram.total   = page_size * sysconf(_SC_PHYS_PAGES);
       ram.free    = page_size * sysconf(_SC_AVPHYS_PAGES);
       */
       ram.allowed.store((ram.total/100) * cfg_ram_percent_allowed->get());
       ram.reserved.store((ram.total/100) * cfg_ram_percent_reserved->get());
 
-      ram.chk_ms.store(ram.allowed / 3000); //~= ram-buff   
+      ram.chk_ms.store(ram.allowed / 3000); //~= ram-buff
       if(ram.chk_ms > MAX_RAM_CHK_INTVAL_MS)
         ram.chk_ms.store(MAX_RAM_CHK_INTVAL_MS);
-      
+
       if(!(next_major_chk % 100) && is_low_mem_state())
         SWC_LOG_OUT(LOG_WARN, print(SWC_LOG_OSTREAM << "Low-Memory state "););
-      
+
       size_t concurrency = !m_concurrency || !(next_major_chk % 100)
         ? std::thread::hardware_concurrency() : 0;
       if(concurrency) {
@@ -252,7 +252,7 @@ class Resources final {
             do {
               buffer >> tmp;
               if(!memcmp(tmp.c_str(), "cpu", 3)) {
-                buffer >> tmp; 
+                buffer >> tmp;
                 if(!memcmp(tmp.c_str(), "MHz", 3)) {
                   buffer >> tmp >> tmp_speed;
                   mhz += tmp_speed;
@@ -290,13 +290,13 @@ class Resources final {
           checker();
         } catch(...) {
           const Error::Exception& e = SWC_CURRENT_EXCEPTION("Resources:checker");
-          SWC_LOG_OUT(LOG_ERROR, 
+          SWC_LOG_OUT(LOG_ERROR,
             print(SWC_LOG_OSTREAM);
-            SWC_LOG_OSTREAM << e; 
+            SWC_LOG_OSTREAM << e;
           );
           schedule();
         }
-    }); 
+    });
   }
 
   struct Component final {
@@ -328,8 +328,8 @@ class Resources final {
   Config::Property::V_GINT32::Ptr     cfg_ram_percent_allowed;
   Config::Property::V_GINT32::Ptr     cfg_ram_percent_reserved;
   Config::Property::V_GINT32::Ptr     cfg_ram_release_rate;
-  asio::high_resolution_timer         m_timer; 
-  
+  asio::high_resolution_timer         m_timer;
+
   const std::function<size_t(size_t)> m_release_call;
   int8_t                              next_major_chk;
 
@@ -337,12 +337,12 @@ class Resources final {
   uint32_t                            page_size;
   Component                           ram;
   // Component                     storage;
-  
+
   Core::Atomic<uint32_t>              m_concurrency;
   Core::Atomic<uint32_t>              m_cpu_mhz;
-  
+
 #if defined TCMALLOC_MINIMAL || defined TCMALLOC
-  double release_rate_default; 
+  double release_rate_default;
 #endif
 
 

@@ -58,15 +58,17 @@ class IoContext final : public std::enable_shared_from_this<IoContext> {
 
   Executor executor();
 
+# pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
   template <typename T_Handler>
   SWC_CAN_INLINE
   void post(T_Handler&& handler) {
     asio::post(pool, handler);
   }
+#pragma GCC diagnostic pop
 
   void set_signals();
 
-  void set_periodic_timer(const Config::Property::V_GINT32::Ptr ms, 
+  void set_periodic_timer(const Config::Property::V_GINT32::Ptr ms,
                           const PeriodicTimer::Call_t& call);
 
   void stop();
@@ -83,14 +85,14 @@ class IoContext final : public std::enable_shared_from_this<IoContext> {
 
 
 namespace Env {
-  
+
 class IoCtx final {
   public:
 
   static void init(int32_t size);
 
   static bool ok();
-  
+
   static Comm::IoContextPtr io();
 
   template <typename T_Handler>
@@ -120,6 +122,6 @@ class IoCtx final {
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/core/comm/IoContext.cc"
 #include "swcdb/core/comm/PeriodicTimer.cc"
-#endif 
+#endif
 
 #endif // swcdb_core_comm_IoContext_h

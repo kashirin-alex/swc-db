@@ -909,7 +909,7 @@ void QuerySelect::read_value(DB::Types::Column col_type,
         if(!is_numeric_comparator(value.comp))
           return;
         std::string buf;
-        read(buf, 0, false);
+        read(buf, nullptr, false);
         if(!err)
           value.set(buf, value.comp);
         break;
@@ -919,7 +919,7 @@ void QuerySelect::read_value(DB::Types::Column col_type,
         if(value.comp == Condition::NONE)
           value.comp = Condition::EQ;
         std::string buf;
-        read(buf, 0, value.comp == Condition::RE);
+        read(buf, nullptr, value.comp == Condition::RE);
         if(!err)
           value.set(buf, value.comp);
         break;

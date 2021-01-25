@@ -315,8 +315,8 @@ class V_ENUM final : public Value {
   int32_t get() const;
 
   int32_t       value;
-  FromString_t  call_from_string = 0;
-  Repr_t        call_repr = 0;
+  FromString_t  call_from_string = nullptr;
+  Repr_t        call_repr = nullptr;
 };
 
 // lists
@@ -531,8 +531,8 @@ class V_GENUM final : public Value {
 
   Core::Atomic<int32_t> value;
   OnChg_t               on_chg_cb;
-  FromString_t          call_from_string = 0;
-  Repr_t                call_repr = 0;
+  FromString_t          call_from_string = nullptr;
+  Repr_t                call_repr = nullptr;
 };
 
 

@@ -515,6 +515,7 @@ SocketLayer* ConnHandlerPlain::socket_layer() noexcept {
   return &m_sock.lowest_layer();
 }
 
+# pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
 void ConnHandlerPlain::do_async_write(
         const std::vector<asio::const_buffer>& buffers,
         const std::function<void(const asio::error_code&, uint32_t)>& hdlr)
@@ -528,6 +529,7 @@ void ConnHandlerPlain::do_async_read(
         noexcept {
   asio::async_read(m_sock, asio::mutable_buffer(data, sz), hdlr);
 }
+#pragma GCC diagnostic pop
 
 void ConnHandlerPlain::read(uint8_t** bufp, size_t* remainp,
                             asio::error_code& ec) { // unused
@@ -631,6 +633,7 @@ SocketLayer* ConnHandlerSSL::socket_layer() noexcept {
   return &m_sock.lowest_layer();
 }
 
+# pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
 void ConnHandlerSSL::do_async_write(
         const std::vector<asio::const_buffer>& buffers,
         const std::function<void(const asio::error_code&, uint32_t)>& hdlr)
@@ -650,6 +653,7 @@ void ConnHandlerSSL::do_async_read(
     asio::bind_executor(m_strand, hdlr)
   );
 }
+#pragma GCC diagnostic pop
 
 void ConnHandlerSSL::read(uint8_t** bufp, size_t* remainp,
                             asio::error_code& ec) { // unused

@@ -48,7 +48,7 @@ Flag flag_from(const uint8_t* rptr, uint32_t len) noexcept {
 
 SWC_SHOULD_INLINE
 Cell::Cell() :  own(false), flag(Flag::NONE), control(0),
-                vlen(0), value(0) {
+                vlen(0), value(nullptr) {
 }
 
 SWC_SHOULD_INLINE
@@ -73,7 +73,7 @@ Cell::Cell(const Cell& other, bool no_value)
 
 SWC_SHOULD_INLINE
 Cell::Cell(const uint8_t** bufp, size_t* remainp, bool own)
-           : value(0) {
+           : value(nullptr) {
   read(bufp, remainp, own);
 }
 
@@ -484,7 +484,9 @@ void Cell::print(std::ostream& out, Types::Column typ) const {
 
 SWC_SHOULD_INLINE
 uint8_t* Cell::_value(const uint8_t* v) {
-  return vlen ? static_cast<uint8_t*>(memcpy(new uint8_t[vlen], v, vlen)) : 0;
+  return vlen
+    ? static_cast<uint8_t*>(memcpy(new uint8_t[vlen], v, vlen))
+    : nullptr;
 }
 
 

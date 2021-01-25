@@ -100,7 +100,7 @@ void LogWriter::daemon(const std::string& logs_path) {
 
 SWC_SHOULD_NOT_INLINE
 uint32_t LogWriter::_seconds() {
-  auto t = ::time(0);
+  auto t = ::time(nullptr);
   if(m_daemon && m_last_time < t-86400)
     renew_files();
   return t-86400*(t/86400);
@@ -109,7 +109,7 @@ uint32_t LogWriter::_seconds() {
 
 void LogWriter::renew_files() {
   errno = 0;
-  m_last_time = (::time(0)/86400)*86400;
+  m_last_time = (::time(nullptr)/86400)*86400;
   auto ltm = localtime(&m_last_time);
 
   std::string filepath(m_logs_path);

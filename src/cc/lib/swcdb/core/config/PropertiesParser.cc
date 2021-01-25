@@ -64,19 +64,19 @@ Config::f64s(const Doubles& v) {
 */
 Config::Property::V_GBOOL::Ptr
 Config::g_boo(const bool& v) {
-  return new Config::Property::V_GBOOL(v, 0);
+  return new Config::Property::V_GBOOL(v, nullptr);
 }
 Config::Property::V_GUINT8::Ptr
 Config::g_i8(const uint8_t& v) {
-  return new Config::Property::V_GUINT8(v, 0);
+  return new Config::Property::V_GUINT8(v, nullptr);
 }
 Config::Property::V_GINT32::Ptr
 Config::g_i32(const int32_t& v) {
-  return new Config::Property::V_GINT32(v, 0);
+  return new Config::Property::V_GINT32(v, nullptr);
 }
 Config::Property::V_GSTRINGS::Ptr
 Config::g_strs(const Strings& v) {
-  return new Config::Property::V_GSTRINGS(v, 0);
+  return new Config::Property::V_GSTRINGS(v, nullptr);
 }
 Config::Property::V_GENUM::Ptr
 Config::g_enum(const int32_t& v,

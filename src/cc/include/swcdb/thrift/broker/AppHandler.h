@@ -580,7 +580,7 @@ class AppHandler final : virtual public BrokerIf {
           err, "problem getting columns schemas on patterns");
     }
 
-    DB::Schema::Ptr schema = 0;
+    DB::Schema::Ptr schema;
     for(auto& cid : spec.cids) {
       schema = Env::Clients::get()->schemas->get(err, cid);
       if(!schema && !err)
@@ -690,7 +690,7 @@ class AppHandler final : virtual public BrokerIf {
   static void process_results(
           int& err, const client::Query::Select::Result::Ptr& result,
           Cells& _return) {
-    DB::Schema::Ptr schema = 0;
+    DB::Schema::Ptr schema;
     DB::Cells::Result cells;
 
     for(cid_t cid : result->get_cids()) {
@@ -738,7 +738,7 @@ class AppHandler final : virtual public BrokerIf {
   static void process_results(
           int& err, const client::Query::Select::Result::Ptr& result,
           CCells& _return) {
-    DB::Schema::Ptr schema = 0;
+    DB::Schema::Ptr schema;
     DB::Cells::Result cells;
 
     for(cid_t cid : result->get_cids()) {
@@ -786,7 +786,7 @@ class AppHandler final : virtual public BrokerIf {
   static void process_results(
           int& err, const client::Query::Select::Result::Ptr& result,
           KCells& _return) {
-    DB::Schema::Ptr schema = 0;
+    DB::Schema::Ptr schema;
     DB::Cells::Result cells;
 
     for(cid_t cid : result->get_cids()) {
@@ -844,7 +844,7 @@ class AppHandler final : virtual public BrokerIf {
   static void process_results(
           int& err, const client::Query::Select::Result::Ptr& result,
           FCells& _return) {
-    DB::Schema::Ptr schema = 0;
+    DB::Schema::Ptr schema;
     DB::Cells::Result cells;
 
     std::vector<std::string> key;

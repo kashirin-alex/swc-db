@@ -20,14 +20,14 @@ struct CompactRange::InBlock final : Core::QueuePointer<InBlock*>::Pointer {
 
   InBlock(const DB::Types::KeySeq key_seq)
           : is_last(true),
-            header(key_seq), err(Error::OK), last_cell(0) {
+            header(key_seq), err(Error::OK), last_cell(nullptr) {
   }
 
   InBlock(const DB::Types::KeySeq key_seq, size_t size,
           InBlock* inblock = nullptr)
           : is_last(false),
             cells(size + 1000000), header(key_seq), err(Error::OK),
-            last_cell(0) {
+            last_cell(nullptr) {
     if(inblock)
       inblock->move_last(this);
   }
@@ -67,7 +67,7 @@ struct CompactRange::InBlock final : Core::QueuePointer<InBlock*>::Pointer {
 
     --header.cells_count;
     cells.ptr = const_cast<uint8_t*>(last_cell);
-    cells.mark = 0;
+    cells.mark = nullptr;
   }
 
   void finalize_interval(bool any_begin, bool any_end) {

@@ -118,11 +118,11 @@ class Select final : public std::enable_shared_from_this<Select> {
   DB::Specs::Scan     specs;
   Result::Ptr         result;
 
-  Select(const Cb_t& cb=0, bool rsp_partials=false,
+  Select(const Cb_t& cb=nullptr, bool rsp_partials=false,
          const Comm::IoContextPtr& io=nullptr);
 
   Select(const DB::Specs::Scan& specs,
-         const Cb_t& cb=0, bool rsp_partials=false,
+         const Cb_t& cb=nullptr, bool rsp_partials=false,
          const Comm::IoContextPtr& io=nullptr);
 
   virtual ~Select();

@@ -21,8 +21,8 @@ Clients::Clients(Comm::IoContextPtr ioctx,
 
       mngr(std::make_shared<Comm::client::ConnQueues>(
         std::make_shared<Comm::client::Serialized>(
-          "MANAGER", 
-          ioctx ? ioctx: ioctx = default_io(), 
+          "MANAGER",
+          ioctx ? ioctx: ioctx = default_io(),
           mngr_ctx ? mngr_ctx : std::make_shared<ContextManager>()
         ),
         Env::Config::settings()->get<Config::Property::V_GINT32>(
@@ -37,7 +37,7 @@ Clients::Clients(Comm::IoContextPtr ioctx,
 
       rgr(std::make_shared<Comm::client::ConnQueues>(
         std::make_shared<Comm::client::Serialized>(
-          "RANGER", 
+          "RANGER",
           ioctx,
           rgr_ctx ? rgr_ctx : std::make_shared<ContextRanger>()
         ),
@@ -62,7 +62,7 @@ Clients::Clients(Comm::IoContextPtr ioctx,
 
 Clients::~Clients() { }
 
-} // namespace client 
+} // namespace client
 
 
 namespace Env {
@@ -80,7 +80,7 @@ const Clients& Clients::ref() {
   return *m_env.get();
 }
 
-Clients::Clients(const client::Clients::Ptr& clients) 
+Clients::Clients(const client::Clients::Ptr& clients)
           : cfg_send_buff_sz(
               Env::Config::settings()->get<SWC::Config::Property::V_GINT32>(
                 "swc.client.send.buffer")),
@@ -109,7 +109,7 @@ Clients::Clients(const client::Clients::Ptr& clients)
 
 Clients::~Clients() { }
 
-} 
+}
 
 } //namespace SWC
 

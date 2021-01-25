@@ -277,7 +277,7 @@ char* file_to_buffer(const std::string& fname, off_t *lenp) {
     SWC_LOGF(LOG_ERROR, "open(\"%s\") failure - %s", fname.c_str(),
             Error::get_text(saved_errno));
     errno = saved_errno;
-    return 0;
+    return nullptr;
   }
 
   if(fstat(fd, &statbuf) < 0) {
@@ -285,7 +285,7 @@ char* file_to_buffer(const std::string& fname, off_t *lenp) {
     SWC_LOGF(LOG_ERROR, "fstat(\"%s\") failure - %s", fname.c_str(),
            Error::get_text(saved_errno));
     errno = saved_errno;
-    return 0;
+    return nullptr;
   }
 
   *lenp = statbuf.st_size;
@@ -303,7 +303,7 @@ char* file_to_buffer(const std::string& fname, off_t *lenp) {
     errno = saved_errno;
     delete [] rbuf;
     *lenp = 0;
-    return 0;
+    return nullptr;
   }
 
   if(nread < *lenp) {

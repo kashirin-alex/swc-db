@@ -13,7 +13,7 @@ namespace SWC { namespace DB { namespace Specs {
 
 Value::Value(bool own) noexcept
               : own(own), comp(Condition::NONE),
-                data(0), size(0), matcher(nullptr) {
+                data(nullptr), size(0), matcher(nullptr) {
 }
 
 Value::Value(const char* data_n, Condition::Comp comp_n, bool owner)

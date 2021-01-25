@@ -16,7 +16,7 @@
 size_t num_cellstores = 9;
 size_t num_cells = 1000000;
 size_t num_len = 7;
-size_t group_fractions = 9; // Xnum_cells = total in a cs 
+size_t group_fractions = 9; // Xnum_cells = total in a cs
 
 namespace Cells = SWC::DB::Cells;
 
@@ -27,12 +27,12 @@ void hdlr_err(int err){
   }
 }
 
-void apply_key(const std::string& idn, 
-               std::string n, 
-               const std::string& gn, 
+void apply_key(const std::string& idn,
+               std::string n,
+               const std::string& gn,
                SWC::DB::Cell::Key& key) {
   key.free();
-  key.add("F1"); 
+  key.add("F1");
   key.add("cs"+idn);
   if(num_len > n.size())
     n.insert(0, num_len - n.size(), '0');
@@ -41,22 +41,22 @@ void apply_key(const std::string& idn,
   key.add("F5");
   key.add("F6");
   key.add(gn);
- 
+
   if(!key.get_string(0).compare("")) {
     std::cout << "BAD: " << key.to_string() << "\n";
     exit(1);
   }
 }
 
-void read_cs(SWC::csid_t csid, SWC::Ranger::RangePtr range, 
-             size_t expected_blocks, 
+void read_cs(SWC::csid_t csid, SWC::Ranger::RangePtr range,
+             size_t expected_blocks,
              const SWC::DB::Cell::Key& expected_key);
 
 size_t write_cs(SWC::csid_t csid, SWC::Ranger::RangePtr range, int any) {
   int err = SWC::Error::OK;
 
   SWC::Ranger::CellStore::Write cs_writer(
-    csid, range->get_path_cs(csid), 
+    csid, range->get_path_cs(csid),
     range, range->cfg->cell_versions()
   );
   cs_writer.create(err);
@@ -73,7 +73,7 @@ size_t write_cs(SWC::csid_t csid, SWC::Ranger::RangePtr range, int any) {
   for(size_t i=1; i<=num_cells; ++i) {
 
     for(size_t g=1; g<=group_fractions; ++g) {
-      
+
 
       rev = SWC::Time::now_ns();
       cell.flag = Cells::INSERT;
@@ -91,7 +91,7 @@ size_t write_cs(SWC::csid_t csid, SWC::Ranger::RangePtr range, int any) {
 
       cell.write(buff);
       ++header.cells_count;
-      header.interval.expand(cell);   
+      header.interval.expand(cell);
       if(!header.interval.key_begin.get_string(0).compare("")) {
         std::cout << cell.to_string() << "\n";
         std::cout << "expand: " << header.interval.to_string() << "\n";
@@ -102,8 +102,8 @@ size_t write_cs(SWC::csid_t csid, SWC::Ranger::RangePtr range, int any) {
       if(num_cells == i && group_fractions == g)
         expected_key.copy(cell.key);
 
-      if(buff.fill() >= range->cfg->block_size() 
-        || header.cells_count >= range->cfg->block_cells() 
+      if(buff.fill() >= range->cfg->block_size()
+        || header.cells_count >= range->cfg->block_cells()
         || (num_cells == i && group_fractions == g)) {
 
         ++expected_blocks;
@@ -147,11 +147,11 @@ size_t write_cs(SWC::csid_t csid, SWC::Ranger::RangePtr range, int any) {
   return expected_blocks;
 }
 
-void read_cs(SWC::csid_t csid, SWC::Ranger::RangePtr range, 
-             size_t expected_blocks, 
+void read_cs(SWC::csid_t csid, SWC::Ranger::RangePtr range,
+             size_t expected_blocks,
              const SWC::DB::Cell::Key& expected_key) {
-  int err = SWC::Error::OK;  
-  
+  int err = SWC::Error::OK;
+
   SWC::DB::Cells::Interval intval_r(range->cfg->key_seq);
   SWC::Ranger::Blocks blocks(range->cfg->key_seq);
   blocks.init(range);
@@ -161,7 +161,7 @@ void read_cs(SWC::csid_t csid, SWC::Ranger::RangePtr range,
   hdlr_err(err);
 
   if(blocks.cellstores.blocks_count() != expected_blocks) {
-    std::cerr << "ERROR: .cellstores.blocks_count() != expected_blocks \n" 
+    std::cerr << "ERROR: .cellstores.blocks_count() != expected_blocks \n"
               << " expected=" << expected_blocks << "\n"
               << " counted=" << blocks.cellstores.blocks_count() << "\n";
     exit(1);
@@ -175,9 +175,9 @@ void read_cs(SWC::csid_t csid, SWC::Ranger::RangePtr range,
   req->cells.reset(
     req->spec.flags.max_versions, 0, SWC::DB::Types::Column::PLAIN);
   req->spec.flags.limit = num_cells*group_fractions;
-  
+
   std::promise<void> r_promise;
-  req->cb = [req, &blocks, expected_key, 
+  req->cb = [req, &blocks, expected_key,
              await=&r_promise, took=SWC::Time::now_ns()]
     (int err) {
     std::cout << " took=" <<  SWC::Time::now_ns()-took << " ";
@@ -188,28 +188,28 @@ void read_cs(SWC::csid_t csid, SWC::Ranger::RangePtr range,
       req->print(std::cout);
       std::cout << "\n";
     }
-  
+
     if(req->cells.size() != req->spec.flags.limit) {
-      std::cerr << "ERROR: req->cells.size()=" << req->cells.size() 
+      std::cerr << "ERROR: req->cells.size()=" << req->cells.size()
                 << " expected=" << req->spec.flags.limit << "\n\n";
       blocks.print(std::cerr, true);
       std::cerr << '\n';
       exit(1);
     }
-    
+
     auto cell = req->cells.back();
     if(!cell->key.equal(expected_key)) {
-      std::cerr << "ERROR: !cell.key.equal(expected_key) " << cell->to_string() 
+      std::cerr << "ERROR: !cell.key.equal(expected_key) " << cell->to_string()
                 << " expected=" << expected_key.to_string()  << "\n";
       exit(1);
     }
-    
+
     await->set_value();
   };
 
   blocks.scan(req);
   r_promise.get_future().wait();
-  req->cb = 0; // release cross-ref of req.
+  req->cb = nullptr; // release cross-ref of req.
 
   blocks.unload();
 }
@@ -220,7 +220,7 @@ int main(int argc, char** argv) {
   SWC::Env::FsInterface::init(SWC::FS::fs_type(
     SWC::Env::Config::settings()->get_str("swc.fs")));
 
-  
+
   SWC::Env::IoCtx::init(8);
   SWC::Env::Clients::init(
     std::make_shared<SWC::client::Clients>(
@@ -231,7 +231,7 @@ int main(int argc, char** argv) {
   );
 
   SWC::Env::Rgr::init();
-  
+
   SWC::cid_t cid = 11;
   SWC::DB::Schema schema;
   schema.cid = cid;
@@ -242,13 +242,13 @@ int main(int argc, char** argv) {
   schema.blk_encoding = SWC::DB::Types::Encoder::SNAPPY;
   SWC::Ranger::ColumnCfg::Ptr col_cfg(
     new SWC::Ranger::ColumnCfg(cid, schema));
-  
+
   int err = SWC::Error::OK;
 
   auto range = std::make_shared<SWC::Ranger::Range>(col_cfg, 1);
   range->set_state(SWC::Ranger::Range::State::LOADED);
   range->compacting(SWC::Ranger::Range::COMPACT_CHECKING);
-  
+
   SWC::Env::FsInterface::interface()->rmdir(err, range->get_path(""));
   SWC::Env::FsInterface::interface()->mkdirs(
     err, range->get_path(range->CELLSTORES_DIR));
@@ -256,27 +256,27 @@ int main(int argc, char** argv) {
   size_t expected_blocks = 0;
   for(size_t i=1; i<=num_cellstores; ++i) {
     expected_blocks += write_cs(
-      i, range, 
+      i, range,
       i == 1 ? -1 : (i == num_cellstores ? 1 : 0) // -1:first 1:last
     );
   }
 
 
   std::cout << "\n cellstores-scan:\n";
-  
-  err = SWC::Error::OK;  
-  
+
+  err = SWC::Error::OK;
+
   SWC::Ranger::Blocks blocks(range->cfg->key_seq);
   blocks.init(range);
   blocks.cellstores.load_from_path(err);
 
   hdlr_err(err);
-  
+
   blocks.print(std::cout, true);
   std::cout << '\n';
-  
+
   if(blocks.cellstores.blocks_count() != expected_blocks) {
-    std::cerr << "ERROR: .cellstores.blocks_count() != expected_blocks \n" 
+    std::cerr << "ERROR: .cellstores.blocks_count() != expected_blocks \n"
               << " expected=" << expected_blocks << "\n"
               << " counted=" << blocks.cellstores.blocks_count() << "\n";
     exit(1);
@@ -286,9 +286,9 @@ int main(int argc, char** argv) {
   size_t match_on_offset = num_cellstores * num_cells * group_fractions - 1;
   SWC::DB::Cell::Key match_key;
   apply_key(
-    std::to_string(num_cellstores), 
-    std::to_string(num_cells), 
-    std::to_string(group_fractions), 
+    std::to_string(num_cellstores),
+    std::to_string(num_cells),
+    std::to_string(group_fractions),
     match_key
   );
 
@@ -296,7 +296,7 @@ int main(int argc, char** argv) {
   SWC::csid_t csid = 0;
   for(int n=1; n<=10; ++n) {
     ++csid;
-    
+
     threads.push_back(new std::thread(
       [&blocks, match_on_offset, &match_key, csid] () {
 
@@ -313,7 +313,7 @@ int main(int argc, char** argv) {
         std::cout << " took=" <<  SWC::Time::now_ns()-took << "\n" ;
 
         if(err) {
-          std::cout << " err=" <<  err 
+          std::cout << " err=" <<  err
                     << "(" << SWC::Error::get_text(err) << ") ";
           req->print(std::cout);
           std::cout << "\n";
@@ -322,9 +322,9 @@ int main(int argc, char** argv) {
         if(req->cells.size() != req->spec.flags.limit) {
           blocks.print(std::cout << '\n', true);
           std::cout << '\n';
-          std::cout << " err=" <<  err 
+          std::cout << " err=" <<  err
                     << "(" << SWC::Error::get_text(err) << ")\n";
-          std::cerr << "ERROR: req->cells.size()=" << req->cells.size() 
+          std::cerr << "ERROR: req->cells.size()=" << req->cells.size()
                     << " expected=" << req->spec.flags.limit << " \n";
           req->print(std::cout);
           std::cout << "\n";
@@ -336,7 +336,7 @@ int main(int argc, char** argv) {
           blocks.print(std::cout << '\n', true);
           std::cout << '\n';
 
-          std::cerr << "ERROR: !cell.key.equal(match_key) " << cell->to_string() 
+          std::cerr << "ERROR: !cell.key.equal(match_key) " << cell->to_string()
                     << " expected=" << match_key.to_string()  << "\n"
                     << req->spec.to_string() << "\n";
           exit(1);
@@ -353,7 +353,7 @@ int main(int argc, char** argv) {
     delete threads.front();
     threads.erase(threads.begin());
   }
-    
+
   blocks.remove(err);
 
   hdlr_err(err);

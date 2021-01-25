@@ -18,8 +18,8 @@ namespace SWC { namespace Error {
 
 
 SWC_SHOULD_NOT_INLINE
-const Exception Exception::make(const std::exception_ptr& eptr, 
-                                const std::string& msg, 
+const Exception Exception::make(const std::exception_ptr& eptr,
+                                const std::string& msg,
                                 const Exception* prev) {
   try {
     std::rethrow_exception(eptr);
@@ -38,7 +38,7 @@ const Exception Exception::make(const std::exception_ptr& eptr,
 
   } catch (const std::regex_error& e) {
     return Exception(Error::BAD_REGEXP, msg, prev, e.what());
-  
+
   } catch (const std::overflow_error& e) {
     return Exception(EOVERFLOW, msg, prev, e.what());
 
@@ -64,7 +64,7 @@ const Exception Exception::make(const std::exception_ptr& eptr,
   } catch (const std::future_error& e) {
     return Exception(
       SWC_ERRNO_FUTURE_BEGIN + e.code().value(), msg, prev, e.what());
-  
+
   } catch (const std::logic_error& e) {
     return Exception(Error::BAD_LOGIC, msg, prev, e.what());
 
@@ -100,49 +100,49 @@ const Exception Exception::make(const std::exception_ptr& eptr,
 
   /* instead std::rethrow_exception(eptr) :
     std::exception_ptr missing exception ptr access let to cast
-    typeid(std::system_error) == *e.__cxa_exception_type() 
+    typeid(std::system_error) == *e.__cxa_exception_type()
     or if e=std::dynamic_pointer_cast<std::system_error>(eptr.get());
   */
   return Exception(Error::EXCEPTION_UNKNOWN, msg, prev);
 }
 
-Exception::Exception(int code, const std::string& msg, 
+Exception::Exception(int code, const std::string& msg,
                      int line, const char* func, const char* file,
                      const std::string& inner_msg)
-                    : _code(code), _msg(msg), 
+                    : _code(code), _msg(msg),
                     _line(line), _func(func), _file(file),
-                    _inner_msg(inner_msg), 
+                    _inner_msg(inner_msg),
                     _prev(nullptr) {
 }
 
 Exception::Exception(int code, const std::string& msg, const Exception* prev,
                      const std::string& inner_msg)
-                    : _code(code), _msg(msg), 
-                      _line(0), _func(0), _file(0), 
-                      _inner_msg(inner_msg), 
+                    : _code(code), _msg(msg),
+                      _line(0), _func(nullptr), _file(nullptr),
+                      _inner_msg(inner_msg),
                       _prev(prev ? new Exception(*prev) : prev) {
 }
 
 Exception::Exception(int code, const std::string& msg, const Exception* prev,
                      int line , const char* func, const char* file,
                      const std::string& inner_msg)
-                    : _code(code), _msg(msg), 
-                      _line(line), _func(func), _file(file), 
-                      _inner_msg(inner_msg), 
+                    : _code(code), _msg(msg),
+                      _line(line), _func(func), _file(file),
+                      _inner_msg(inner_msg),
                       _prev(prev ? new Exception(*prev) : prev) {
 }
 
 Exception::Exception(int code, const std::string& msg, const Exception& prev,
                      int line, const char* func, const char* file,
                      const std::string& inner_msg)
-                    : _code(code), _msg(msg), 
-                      _line(line), _func(func), _file(file), 
-                      _inner_msg(inner_msg), 
+                    : _code(code), _msg(msg),
+                      _line(line), _func(func), _file(file),
+                      _inner_msg(inner_msg),
                       _prev(new Exception(prev)) {
 }
 
-Exception::Exception(const Exception& other) 
-                    : _code(other._code), _msg(other._msg), 
+Exception::Exception(const Exception& other)
+                    : _code(other._code), _msg(other._msg),
                       _line(other._line), _func(other._func), _file(other._file),
                       _inner_msg(other._inner_msg),
                       _prev(other._prev) {
@@ -170,7 +170,7 @@ void Exception::print(std::ostream& out) const {
 
 void Exception::print_base(std::ostream& out) const {
   out << "Exception: ";
-  if(!_msg.empty()) 
+  if(!_msg.empty())
     out << _msg << " ";
 
   out << _code << "(" << Error::get_text(_code);
@@ -179,7 +179,7 @@ void Exception::print_base(std::ostream& out) const {
   out << ")";
 
   if(_line) {
-    out << "\n\tat " << (_func ? _func : "-") 
+    out << "\n\tat " << (_func ? _func : "-")
         << " (" << (_file ? _file : "-");
     if (Core::logger.show_line_numbers())
       out << ':'<< _line;

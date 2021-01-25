@@ -63,7 +63,8 @@ class Reader {
   std::vector<DB::Schema::Ptr>
   get_schema(const  std::vector<DB::Schemas::Pattern>& patterns);
 
-  void read(std::string& buf, const char* stop = 0, bool keep_escape=false);
+  void read(std::string& buf,
+            const char* stop = nullptr, bool keep_escape=false);
 
   void read_uint8_t(uint8_t& value, bool& was_set);
 

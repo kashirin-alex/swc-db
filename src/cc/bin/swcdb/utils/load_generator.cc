@@ -66,7 +66,7 @@ void Settings::init_app_options() {
     ("gen-col-seq",
       g_enum(
         int(DB::Types::KeySeq::LEXIC),
-        0,
+        nullptr,
         DB::Types::from_string_range_seq,
         DB::Types::repr_range_seq
       ),
@@ -75,7 +75,7 @@ void Settings::init_app_options() {
     ("gen-col-type",
       g_enum(
         int(DB::Types::Column::PLAIN),
-        0,
+        nullptr,
         DB::Types::from_string_col_type,
         DB::Types::repr_col_type
       ),
@@ -85,7 +85,7 @@ void Settings::init_app_options() {
     ("gen-cell-encoding",
       g_enum(
         int(DB::Types::Encoder::PLAIN),
-        0,
+        nullptr,
         Core::Encoder::from_string_encoding,
         Core::Encoder::repr_encoding
       ),
@@ -100,7 +100,7 @@ void Settings::init_app_options() {
     ("gen-blk-encoding",
       g_enum(
         int(DB::Types::Encoder::DEFAULT),
-        0,
+        nullptr,
         Core::Encoder::from_string_encoding,
         Core::Encoder::repr_encoding
       ),

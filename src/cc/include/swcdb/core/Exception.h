@@ -27,18 +27,21 @@ class Exception final : public std::exception {
                               const Exception* prev = nullptr);
 
   Exception(int code, const std::string& msg,
-            int line = 0, const char* func = 0, const char* file = 0,
+            int line = 0, const char* func = nullptr,
+            const char* file = nullptr,
             const std::string& inner_msg = "");
 
   Exception(int code, const std::string& msg, const Exception* prev,
             const std::string& inner_msg);
 
   Exception(int code, const std::string& msg, const Exception* prev,
-            int line = 0, const char* func = 0, const char* file = 0,
+            int line = 0, const char* func = nullptr,
+            const char* file = nullptr,
             const std::string& inner_msg = "");
 
   Exception(int code, const std::string& msg, const Exception& prev,
-            int line = 0, const char* func = 0, const char* file = 0,
+            int line = 0, const char* func = nullptr,
+            const char* file = nullptr,
             const std::string& inner_msg = "");
 
   Exception(const Exception& other);

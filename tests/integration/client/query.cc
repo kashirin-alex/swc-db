@@ -32,7 +32,7 @@ void Settings::init_app_options(){
     ("col-seq",
       g_enum(
         int(DB::Types::KeySeq::LEXIC),
-        0,
+        nullptr,
         DB::Types::from_string_range_seq,
         DB::Types::repr_range_seq
       ),
@@ -41,7 +41,7 @@ void Settings::init_app_options(){
     ("col-type",
       g_enum(
         int(DB::Types::Column::PLAIN),
-        0,
+        nullptr,
         DB::Types::from_string_col_type,
         DB::Types::repr_col_type
       ),

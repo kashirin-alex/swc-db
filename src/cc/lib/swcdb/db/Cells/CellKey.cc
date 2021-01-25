@@ -12,7 +12,7 @@ namespace SWC { namespace DB { namespace Cell {
 
 
 SWC_SHOULD_INLINE
-Key::Key(bool own): own(own), count(0), size(0), data(0) { }
+Key::Key(bool own): own(own), count(0), size(0), data(nullptr) { }
 
 SWC_SHOULD_INLINE
 Key::Key(const Key& other)
@@ -220,7 +220,7 @@ void Key::remove(uint32_t idx, bool recursive) {
 }
 
 std::string Key::get_string(uint32_t idx) const {
-  const char* fraction = 0;
+  const char* fraction = nullptr;
   uint32_t length = 0;
   get(idx, &fraction, &length);
   if(!fraction)
@@ -374,7 +374,7 @@ SWC_SHOULD_INLINE
 uint8_t* Key::_data(const uint8_t* ptr) {
   return size
     ? static_cast<uint8_t*>(memcpy(new uint8_t[size], ptr, size))
-    : 0;
+    : nullptr;
 }
 
 

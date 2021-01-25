@@ -4,7 +4,7 @@
  */
 
 
-/* 
+/*
 THE DATA INPUT IS WITH DATA-SAMPLES AVAILABLE AT:
   https://ailab.criteo.com/download-criteo-1tb-click-logs-dataset/
   steps:
@@ -14,7 +14,7 @@ THE DATA INPUT IS WITH DATA-SAMPLES AVAILABLE AT:
     3) run the example,
         * set cmd-arg --criteo-samples-path="samples-path"
           if {criteo-samples-path} is other than ./criteo_samples
-        * optional, set cmd-arg --criteo-separated-days=BOOL 
+        * optional, set cmd-arg --criteo-separated-days=BOOL
           add Day# fraction at end of a Key
 */
 
@@ -32,10 +32,10 @@ void Settings::init_app_options() {
   init_client_options();
 
   cmdline_desc.add_options()
-   ("criteo-samples-path",  str("./criteo_samples"), 
+   ("criteo-samples-path",  str("./criteo_samples"),
     "Path to Criteo data-samples 'day_[1-28]` "
     "files from https://ailab.criteo.com/download-criteo-1tb-click-logs-dataset/")
-   ("criteo-separated-days",  boo(false), 
+   ("criteo-separated-days",  boo(false),
     "add Day# fraction at end of a Key")
   ;
 }
@@ -70,7 +70,7 @@ void generate_criteo_logs() {
   fractions.resize(39 + separate_days);
   // value (clicks)
 
-  
+
   auto req = std::make_shared<SWC::client::Query::Update>();
   auto schema = create_column();
   req->columns->create(schema);
@@ -80,7 +80,7 @@ void generate_criteo_logs() {
   // day_1 == cells(199,563,535) unique(199,555,996)
   // data-samples from https://ailab.criteo.com/download-criteo-1tb-click-logs-dataset/
   std::string data_path(SWC::Env::Config::settings()->get_str("criteo-samples-path"));
-  
+
   for(int day=1;day<29;++day) {
 
   std::ifstream buffer(data_path + "/day_" + std::to_string(day));
@@ -98,7 +98,7 @@ void generate_criteo_logs() {
       if(*pline == '\t' || !*pline) {
         std::string v(pline_s, pline - pline_s);
         if(n_frac == -1) {
-          cell.set_counter(0, std::strtoull(v.data(), 0, 10));
+          cell.set_counter(0, std::strtoull(v.data(), nullptr, 10));
         } else {
           fractions[n_frac] = v;
         }
@@ -119,7 +119,7 @@ void generate_criteo_logs() {
     req->commit_or_wait(col);
 
     /*
-      on classifications groupings count 
+      on classifications groupings count
         - more combinations of sequential permutations
           and/or with std::next_permutation
     for(int n1=0; n1<40; ++n1) {
@@ -127,7 +127,7 @@ void generate_criteo_logs() {
       for(int n2=n1; n2<40; ) {
         cell.key.free();
         cell.key.add(it, fractions.begin() + (++n2));
-        col->add(cell); 
+        col->add(cell);
         req->commit_or_wait(col);
       }
     }
@@ -137,7 +137,7 @@ void generate_criteo_logs() {
 
     added_bytes += cell.encoded_length();
     if(!(++added_cells % 100000)) {
-      SWC_PRINT 
+      SWC_PRINT
         << "progress day="<< day
         << " cells=" << added_cells
         << " avg=" << ((SWC::Time::now_ns() - ts_progress) / 100000)
@@ -157,7 +157,7 @@ void generate_criteo_logs() {
 
   resend_cells += req->result->get_resend_count();
   SWC_ASSERT(added_cells && added_bytes);
-  
+
   SWC::Common::Stats::FlowRate::Data rate(
     added_bytes, SWC::Time::now_ns() - ts);
   SWC_PRINT << std::endl << std::endl;
@@ -193,7 +193,7 @@ SWC::DB::Schema::Ptr create_column() {
     schema,
     [await=&res] (const SWC::Comm::client::ConnQueue::ReqBase::Ptr&, int err) {
       if(err == SWC::Error::COLUMN_SCHEMA_NAME_EXISTS)
-        err = SWC::Error::OK; 
+        err = SWC::Error::OK;
       await->set_value(err);
     },
     10000
@@ -216,7 +216,7 @@ SWC::DB::Schema::Ptr create_column() {
 
 
 int main(int argc, char** argv) {
-    
+
   SWC::Env::Config::init(argc, argv);
 
   SWC::Env::Clients::init(

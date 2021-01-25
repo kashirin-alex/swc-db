@@ -29,7 +29,7 @@ void Settings::init_client_options() {
     ("swc.client.Rgr.comm.encoder",
       g_enum(
         int(SWC_DEFAULT_COMM_ENCODER),
-        0,
+        nullptr,
         Core::Encoder::from_string_encoding,
         Core::Encoder::repr_encoding),
      "The encoding to use in communication, options PLAIN/ZSTD/SNAPPY/ZLIB")
@@ -47,7 +47,7 @@ void Settings::init_client_options() {
     ("swc.client.Mngr.comm.encoder",
       g_enum(
         int(SWC_DEFAULT_COMM_ENCODER),
-        0,
+        nullptr,
         Core::Encoder::from_string_encoding,
         Core::Encoder::repr_encoding),
      "The encoding to use in communication, options PLAIN/ZSTD/SNAPPY/ZLIB")

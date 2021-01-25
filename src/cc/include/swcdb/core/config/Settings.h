@@ -11,7 +11,7 @@
 #include "swcdb/core/config/PropertiesParser.h"
 
 
-namespace SWC { 
+namespace SWC {
 
 
 /**
@@ -42,24 +42,24 @@ class Settings final : public Properties {
   void init_app_options();
 
   void init_comm_options();
-  
+
   void init_fs_options();
 
   void init_client_options();
-  
+
   void init_post_cmd_args();
- 
+
   void parse_args(int argc, char *argv[]);
 
-  void load_files_by(const std::string& fileprop, 
+  void load_files_by(const std::string& fileprop,
                      bool allow_unregistered);
 
   void parse_file(const std::string& fname, const std::string& onchg);
 
-  void init_process(bool with_pid_file, 
-                    const std::string& port_cfg = 0);
+  void init_process(bool with_pid_file,
+                    const std::string& port_cfg = nullptr);
 
-  std::string usage_str(const char *usage = 0);
+  std::string usage_str(const char *usage = nullptr);
 
   void check_dynamic_files();
 
@@ -84,7 +84,7 @@ class Settings final : public Properties {
 namespace Env {
 
 class Config final {
-  
+
   public:
 
   typedef std::shared_ptr<Config> Ptr;
@@ -126,6 +126,6 @@ class Config final {
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/core/config/Settings.cc"
-#endif 
+#endif
 
 #endif // swcdb_core_config_Config_h

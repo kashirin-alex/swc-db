@@ -134,7 +134,7 @@ void Reader::expect_token(const char* token, uint8_t token_len, bool& found) {
 }
 
 DB::Schema::Ptr Reader::get_schema(const std::string& col) {
-  DB::Schema::Ptr schema = 0;
+  DB::Schema::Ptr schema;
   if(std::find_if(col.begin(), col.end(),
       [](unsigned char c){ return !std::isdigit(c); } ) != col.end()){
     schema = Env::Clients::get()->schemas->get(err, col);

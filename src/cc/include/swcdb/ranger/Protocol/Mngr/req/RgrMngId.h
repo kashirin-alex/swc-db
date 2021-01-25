@@ -19,7 +19,8 @@ class RgrMngId: public client::ConnQueue::ReqBase {
   public:
   typedef std::shared_ptr<RgrMngId> Ptr;
 
-  RgrMngId(const IoContextPtr& ioctx, const std::function<void()>& cb = 0)
+  RgrMngId(const IoContextPtr& ioctx,
+           const std::function<void()>& cb = nullptr)
           : client::ConnQueue::ReqBase(false, nullptr),
             cfg_check_interval(
               Env::Config::settings()->get<Config::Property::V_GINT32>(
@@ -28,7 +29,7 @@ class RgrMngId: public client::ConnQueue::ReqBase {
             m_timer(asio::high_resolution_timer(ioctx->executor())),
             m_run(true), m_failures(0) {
   }
-  
+
   virtual ~RgrMngId() { }
 
   void create(const Params::RgrMngId& params) {
@@ -45,8 +46,8 @@ class RgrMngId: public client::ConnQueue::ReqBase {
         rgr_data->print(SWC_LOG_OSTREAM << "RS_SHUTTINGDOWN(req) "); );
       create(
         Params::RgrMngId(
-          rgr_data->rgrid.load(), 
-          Params::RgrMngId::Flag::RS_SHUTTINGDOWN, 
+          rgr_data->rgrid.load(),
+          Params::RgrMngId::Flag::RS_SHUTTINGDOWN,
           rgr_data->endpoints
         )
       );
@@ -57,8 +58,8 @@ class RgrMngId: public client::ConnQueue::ReqBase {
     } else {
       create(
         Params::RgrMngId(
-          0, 
-          Params::RgrMngId::Flag::RS_REQ, 
+          0,
+          Params::RgrMngId::Flag::RS_REQ,
           rgr_data->endpoints
         )
       );
@@ -102,7 +103,7 @@ class RgrMngId: public client::ConnQueue::ReqBase {
       SWC_LOG_CURRENT_EXCEPTION("");
       return set(500);
     }
-    
+
     switch(rsp_params.flag) {
 
       case Params::RgrMngId::Flag::MNGR_ACK: {
@@ -130,24 +131,24 @@ class RgrMngId: public client::ConnQueue::ReqBase {
 
         auto rgr_data = Env::Rgr::rgr_data();
 
-        if(rsp_params.flag == Params::RgrMngId::Flag::MNGR_ASSIGNED && 
+        if(rsp_params.flag == Params::RgrMngId::Flag::MNGR_ASSIGNED &&
            rsp_params.fs != Env::FsInterface::interface()->get_type()) {
 
           SWC_LOG_OUT(LOG_ERROR,
-            SWC_LOG_OSTREAM 
+            SWC_LOG_OSTREAM
               << "Ranger's " << Env::FsInterface::interface()->to_string()
-              << " not matching with Mngr's FS-type=" 
+              << " not matching with Mngr's FS-type="
               << FS::to_string(rsp_params.fs);
             rgr_data->print(SWC_LOG_OSTREAM << ", RS_SHUTTINGDOWN ");
           );
-        
+
           std::raise(SIGTERM);
           return;
         }
 
         Params::RgrMngId::Flag flag;
         if(!rgr_data->rgrid || rgr_data->rgrid == rsp_params.rgrid ||
-           (rgr_data->rgrid != rsp_params.rgrid && 
+           (rgr_data->rgrid != rsp_params.rgrid &&
            rsp_params.flag == Params::RgrMngId::Flag::MNGR_REASSIGN)) {
 
           rgr_data->rgrid.store(rsp_params.rgrid);
@@ -168,12 +169,12 @@ class RgrMngId: public client::ConnQueue::ReqBase {
 
       default: {
         clear_endpoints();
-        // remain Flag can be only MNGR_NOT_ACTIVE || no other action 
+        // remain Flag can be only MNGR_NOT_ACTIVE || no other action
         return set(1000);
       }
     }
   }
-  
+
   private:
 
   void clear_endpoints() {
@@ -215,7 +216,7 @@ class RgrMngId: public client::ConnQueue::ReqBase {
   const Config::Property::V_GINT32::Ptr cfg_check_interval;
   const std::function<void()>   cb_shutdown;
   EndPoints                     endpoints;
-  
+
   Core::MutexAtomic             m_mutex;
   asio::high_resolution_timer   m_timer;
   Core::AtomicBool              m_run;
