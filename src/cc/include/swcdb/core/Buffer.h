@@ -28,8 +28,8 @@ struct Buffer {
 
   template<size_t SizeOfT=sizeof(value_type)>
   SWC_CAN_INLINE
-  static size_t length_base_bytes(size_t len8) SWC_NOEXCEPT { 
-    return len8 / SizeOfT; 
+  static size_t length_base_bytes(size_t len8) SWC_NOEXCEPT {
+    return len8 / SizeOfT;
   }
 
   template<size_t SizeOfT=sizeof(value_type)>
@@ -38,19 +38,19 @@ struct Buffer {
     return sz * SizeOfT;
   }
 
-  
-  explicit Buffer() SWC_NOEXCEPT 
-                  : own(false), size(0), base(nullptr) { 
+
+  explicit Buffer() SWC_NOEXCEPT
+                  : own(false), size(0), base(nullptr) {
   }
 
-  Buffer(size_t sz) 
+  Buffer(size_t sz)
         : own(sz), size(sz), base(own ? allocate(size) : nullptr) {
   }
 
   Buffer(value_type* data, size_t sz, bool take_ownership) SWC_NOEXCEPT
         : own(take_ownership), size(sz), base(data) {
   }
-  
+
   Buffer(BufferT& other) SWC_NOEXCEPT
         : own(other.own), size(other.size), base(other.base) {
     if(own) {
@@ -110,7 +110,7 @@ struct Buffer {
     size = len;
     base = data;
   }
-  
+
   void set(BufferT& other) SWC_NOEXCEPT {
     _free();
     base = other.base;
@@ -127,7 +127,7 @@ struct Buffer {
   bool          own;
   size_t        size : 56;
   value_type*   base;
-  
+
 };
 
 
@@ -139,12 +139,12 @@ struct BufferDyn : BufferT {
   typedef std::shared_ptr<BufferDyn> Ptr;
 
 
-  explicit BufferDyn() SWC_NOEXCEPT 
-                    : ptr(nullptr), mark(nullptr)  { 
+  explicit BufferDyn() SWC_NOEXCEPT
+                    : ptr(nullptr), mark(nullptr)  {
   }
 
-  BufferDyn(size_t sz) 
-            : BufferT(sz), ptr(BufferT::base), mark(BufferT::base) { 
+  BufferDyn(size_t sz)
+            : BufferT(sz), ptr(BufferT::base), mark(BufferT::base) {
   }
 
   ~BufferDyn() { }
@@ -164,18 +164,18 @@ struct BufferDyn : BufferT {
   }
 
   SWC_CAN_INLINE
-  size_t remaining() const SWC_NOEXCEPT { 
+  size_t remaining() const SWC_NOEXCEPT {
     return ptr ? BufferT::size - fill() : 0;
   }
 
   SWC_CAN_INLINE
-  size_t fill() const SWC_NOEXCEPT { 
-    return BufferT::length_base_bytes(ptr - BufferT::base); 
+  size_t fill() const SWC_NOEXCEPT {
+    return BufferT::length_base_bytes(ptr - BufferT::base);
   }
 
   SWC_CAN_INLINE
-  bool empty() const SWC_NOEXCEPT { 
-    return ptr == BufferT::base; 
+  bool empty() const SWC_NOEXCEPT {
+    return ptr == BufferT::base;
   }
 
   SWC_CAN_INLINE
@@ -192,15 +192,15 @@ struct BufferDyn : BufferT {
     if(!ptr || len > remaining()) {
       size_t offset_mark = BufferT::length_base_bytes(mark - BufferT::base);
       size_t offset_ptr = BufferT::length_base_bytes(ptr - BufferT::base);
-      
+
       BufferT::grow(len - remaining()); // actual size required to add
       //BufferT::grow((fill() + len) * 3 / 2); // grow by 1.5
-      
+
       mark = BufferT::base + offset_mark;
       ptr = BufferT::base + offset_ptr;
     }
   }
-  
+
   value_type* add_unchecked(const value_type* data, size_t len) SWC_NOEXCEPT {
     if(!data)
       return ptr;
@@ -217,6 +217,12 @@ struct BufferDyn : BufferT {
   }
 
   SWC_CAN_INLINE
+  value_type* add(const std::string& data) {
+    return add(
+      reinterpret_cast<const value_type*>(data.c_str()), data.length());
+  }
+
+  SWC_CAN_INLINE
   void add(const value_type data) {
     ensure(1);
     *ptr = data;
@@ -230,7 +236,7 @@ struct BufferDyn : BufferT {
     add_unchecked(data, len);
   }
 
-  void take_ownership(BufferDyn<BufferT>& other) SWC_NOEXCEPT { 
+  void take_ownership(BufferDyn<BufferT>& other) SWC_NOEXCEPT {
     BufferT::_free();
     BufferT::own = other.own;
     BufferT::size = other.size;
@@ -254,21 +260,21 @@ typedef BufferDyn <StaticBuffer>  DynamicBuffer;
 template<>
 template<size_t SizeOf=1>
 SWC_CAN_INLINE
-size_t StaticBuffer::length_base_bytes(size_t len8) SWC_NOEXCEPT { 
+size_t StaticBuffer::length_base_bytes(size_t len8) SWC_NOEXCEPT {
   return len8;
 }
 
 template<>
 template<size_t SizeOf=1>
 SWC_CAN_INLINE
-size_t StaticBuffer::length_base_byte(size_t sz) SWC_NOEXCEPT { 
+size_t StaticBuffer::length_base_byte(size_t sz) SWC_NOEXCEPT {
   return sz;
 }
 
 
 // StaticBuffer specializations to DynamicBuffer
-template<> 
-template<> 
+template<>
+template<>
 SWC_CAN_INLINE
 StaticBuffer::Buffer(DynamicBuffer& other) SWC_NOEXCEPT
                     : own(other.own), size(other.fill()), base(other.base) {
@@ -277,9 +283,9 @@ StaticBuffer::Buffer(DynamicBuffer& other) SWC_NOEXCEPT
     other.size = 0;
     other.base = other.ptr = other.mark = nullptr;
   }
-} 
+}
 
-template<> 
+template<>
 template<>
 SWC_CAN_INLINE
 void StaticBuffer::set(DynamicBuffer& other) SWC_NOEXCEPT {

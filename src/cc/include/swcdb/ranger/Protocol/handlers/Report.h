@@ -19,14 +19,12 @@ void report(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
   Buffers::Ptr cbp;
 
   try {
-    
+
     const uint8_t *ptr = ev->data.base;
     size_t remain = ev->data.size;
 
-    auto func(
-      (Params::Report::Function)Serialization::decode_i8(&ptr, &remain));
-
-    switch(func) {
+    switch(
+      Params::Report::Function(Serialization::decode_i8(&ptr, &remain))) {
 
       case Params::Report::Function::RESOURCES: {
         Params::Report::RspRes rsp_params;
@@ -64,7 +62,7 @@ void report(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
 
         Params::Report::RspColumnRids rsp_params;
         col->get_rids(rsp_params.rids);
-  
+
         cbp = Buffers::make(ev, rsp_params, 4);
         cbp->append_i32(err);
         goto send_response;
@@ -73,7 +71,7 @@ void report(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
       case Params::Report::Function::COLUMN_RANGES: {
         Params::Report::ReqColumn params;
         params.decode(&ptr, &remain);
-        
+
         auto rgr_data = Env::Rgr::rgr_data();
         rgrid_t rgrid;
         if(!(rgrid = rgr_data->rgrid)) {
@@ -104,7 +102,7 @@ void report(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
           r->rid = range->rid;
           range->get_interval(r->interval);
         }
-      
+
         cbp = Buffers::make(ev, rsp_params, 4);
         cbp->append_i32(err);
         goto send_response;
@@ -149,16 +147,16 @@ void report(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
         err = Error::NOT_IMPLEMENTED;
         break;
       }
-    
+
     }
-    
+
   } catch(...) {
     const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
     SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
     err = e.code();
   }
 
-  
+
   send_error:
     cbp = Buffers::make(ev, 4);
     cbp->append_i32(err);
@@ -167,7 +165,7 @@ void report(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
   send_response:
     conn->send_response(cbp);
 }
-  
+
 
 }}}}}
 

@@ -22,7 +22,7 @@ class Append final : public Base {
          const FS::Callback::AppendCb_t& cb)
         : Base(
             Buffers::make(
-              Params::AppendReq(smartfd->fd(), (uint8_t)flags),
+              Params::AppendReq(smartfd->fd(), flags),
               buffer,
               0,
               FUNCTION_APPEND, timeout

@@ -262,6 +262,14 @@ struct FieldsWriter final : DynamicBuffer {
 
   void add(uint24_t fid, const uint8_t* data, uint32_t len);
 
+  void add(const std::string& data) {
+    add(reinterpret_cast<const uint8_t*>(data.c_str()), data.size());
+  }
+
+  void add(uint24_t fid, const std::string& data) {
+    add(fid, reinterpret_cast<const uint8_t*>(data.c_str()), data.size());
+  }
+
 
   void add(const Key& key);
 

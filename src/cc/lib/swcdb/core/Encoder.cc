@@ -91,12 +91,12 @@ Encoder::Type Encoder::encoding_from(const std::string& typ) noexcept {
 
 SWC_SHOULD_INLINE
 std::string Encoder::repr_encoding(int typ) {
-  return Encoder::to_string((Encoder::Type)typ);
+  return Encoder::to_string(Encoder::Type(typ));
 }
 
 SWC_SHOULD_INLINE
 int Encoder::from_string_encoding(const std::string& typ) noexcept {
-  return (int)Encoder::encoding_from(typ);
+  return int(Encoder::encoding_from(typ));
 }
 
 
@@ -120,7 +120,7 @@ void Encoder::decode(
         return;
       }
       strm.avail_in = sz_enc;
-      strm.next_in = (Bytef *)src;
+      strm.next_in = const_cast<Bytef*>(src);
       strm.avail_out = sz;
       strm.next_out = dst;
       if(::inflate(&strm, Z_NO_FLUSH) != Z_STREAM_END || strm.avail_out)
@@ -130,13 +130,17 @@ void Encoder::decode(
     }
 
     case Encoder::Type::SNAPPY: {
-      if(!snappy::RawUncompress((const char *)src, sz_enc, (char *)dst))
+      if(!snappy::RawUncompress(
+            reinterpret_cast<const char*>(src), sz_enc,
+            reinterpret_cast<char*>(dst)))
         err = Error::ENCODER_DECODE;
       return;
     }
 
     case Encoder::Type::ZSTD: {
-      if(ZSTD_decompress((void *)dst, sz, (void *)src, sz_enc) != sz)
+      if(ZSTD_decompress(
+          static_cast<void*>(dst), sz,
+          static_cast<void*>(const_cast<uint8_t*>(src)), sz_enc) != sz)
         err = Error::ENCODER_DECODE;
       return;
     }
@@ -172,7 +176,7 @@ void Encoder::encode(
         strm.avail_out = avail_out;
         strm.next_out = output.ptr;
         strm.avail_in = src_sz;
-        strm.next_in = (Bytef*)src;
+        strm.next_in = const_cast<Bytef*>(src);
         if(::deflate(&strm, Z_FINISH) == Z_STREAM_END)
           *sz_enc = avail_out - strm.avail_out;
       }
@@ -187,8 +191,9 @@ void Encoder::encode(
     case Encoder::Type::SNAPPY: {
       output.ensure(reserve + snappy::MaxCompressedLength(src_sz));
       output.ptr += reserve;
-      snappy::RawCompress((const char *)src, src_sz,
-                          (char *)output.ptr, sz_enc);
+      snappy::RawCompress(
+        reinterpret_cast<const char*>(src), src_sz,
+        reinterpret_cast<char*>(output.ptr), sz_enc);
       if(*sz_enc && *sz_enc < src_sz) {
         output.ptr += *sz_enc;
         return;
@@ -202,8 +207,8 @@ void Encoder::encode(
       output.ptr += reserve;
 
       *sz_enc = ZSTD_compress(
-        (void *)output.ptr, avail_out,
-        (void *)src, src_sz,
+        static_cast<void*>(output.ptr), avail_out,
+        static_cast<void*>(const_cast<uint8_t*>(src)), src_sz,
         ZSTD_CLEVEL_DEFAULT
       );
       if(*sz_enc && !ZSTD_isError(*sz_enc) && *sz_enc < src_sz) {

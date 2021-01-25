@@ -35,7 +35,7 @@ Read::Ptr Read::make(int& err,
 }
 */
 
-void Read::load_header(int& err, FS::SmartFd::Ptr& smartfd, 
+void Read::load_header(int& err, FS::SmartFd::Ptr& smartfd,
                        Header& header) {
   auto fs_if = Env::FsInterface::interface();
   auto fs = Env::FsInterface::fs();
@@ -43,7 +43,7 @@ void Read::load_header(int& err, FS::SmartFd::Ptr& smartfd,
   while(err != Error::FS_EOF) {
 
     if(err) {
-      SWC_LOG_OUT(LOG_WARN, 
+      SWC_LOG_OUT(LOG_WARN,
         Error::print(SWC_LOG_OSTREAM << "Retrying to ", err);
         smartfd->print(SWC_LOG_OSTREAM << ' ');
         SWC_LOG_OSTREAM << " blk-offset=" << header.offset_data;
@@ -56,10 +56,10 @@ void Read::load_header(int& err, FS::SmartFd::Ptr& smartfd,
       return;
     if(err)
       continue;
-    
+
     uint8_t buf[Header::SIZE];
     const uint8_t *ptr = buf;
-    if(fs->pread(err, smartfd, header.offset_data, buf, 
+    if(fs->pread(err, smartfd, header.offset_data, buf,
                  Header::SIZE) != Header::SIZE)
       continue;
 
@@ -78,7 +78,7 @@ void Read::load_header(int& err, FS::SmartFd::Ptr& smartfd,
 Read::Read(const Header& header)
           : header(header), cellstore(nullptr),
             m_state(header.size_plain ? State::NONE : State::LOADED),
-            m_err(Error::OK), m_cells_remain(header.cells_count), 
+            m_err(Error::OK), m_cells_remain(header.cells_count),
             m_processing(0) {
   Env::Rgr::res().more_mem_usage(size_of());
 }
@@ -87,9 +87,9 @@ void Read::init(CellStore::Read* _cellstore) {
   cellstore = _cellstore;
 }
 
-Read::~Read() { 
+Read::~Read() {
   Env::Rgr::res().less_mem_usage(
-    size_of() + 
+    size_of() +
     (m_buffer.size && m_state == State::NONE ? 0 : header.size_plain)
   );
 }
@@ -103,7 +103,7 @@ bool Read::load(BlockLoader* loader) {
   auto at(State::NONE);
   {
     Core::MutexSptd::scope lock(m_mutex);
-    if(m_state.compare_exchange_weak(at, State::LOADING) || 
+    if(m_state.compare_exchange_weak(at, State::LOADING) ||
        at == State::LOADING)
       m_queue.push(loader);
   }
@@ -137,7 +137,7 @@ void Read::load_cells(int&, Ranger::Block::Ptr cells_block) {
     : 0;
 
   if(m_processing.fetch_sub(1) == 1 &&
-     !was_splitted && 
+     !was_splitted &&
      (remain_hint <= 0 || Env::Rgr::res().need_ram(header.size_plain)))
     release();
 }
@@ -153,7 +153,7 @@ size_t Read::release() {
   if(header.size_plain && !m_processing && loaded() &&
      m_mutex.try_full_lock(support)) {
     State at = State::LOADED;
-    if(m_queue.empty() && !m_processing && 
+    if(m_queue.empty() && !m_processing &&
        m_state.compare_exchange_weak(at, State::NONE)) {
       released += m_buffer.size;
       m_buffer.free();
@@ -254,7 +254,7 @@ void Read::load_open(int err) {
 
 void Read::load_read(int err, const StaticBuffer::Ptr& buffer) {
   if(!err) {
-    if(!Core::checksum_i32_chk(header.checksum_data, 
+    if(!Core::checksum_i32_chk(header.checksum_data,
                                buffer->base, header.size_enc)) {
       err = Error::CHECKSUM_MISMATCH;
 
@@ -263,7 +263,7 @@ void Read::load_read(int err, const StaticBuffer::Ptr& buffer) {
 
     } else {
       if(header.encoder != DB::Types::Encoder::PLAIN) {
-        StaticBuffer decoded_buf((size_t)header.size_plain);
+        StaticBuffer decoded_buf(static_cast<size_t>(header.size_plain));
         Core::Encoder::decode(
           err, header.encoder,
           buffer->base, header.size_enc,
@@ -326,7 +326,7 @@ Write::Write(const Header& header)
   );
 }
 
-Write::~Write() { 
+Write::~Write() {
   Env::Rgr::res().less_mem_usage(
     sizeof(Write::Ptr) + sizeof(Write)
     + header.interval.size_of_internal()
@@ -334,11 +334,11 @@ Write::~Write() {
   );
 }
 
-void Write::encode(int& err, DynamicBuffer& cells, DynamicBuffer& output, 
+void Write::encode(int& err, DynamicBuffer& cells, DynamicBuffer& output,
                    Header& header) {
   header.size_plain = cells.fill();
   size_t len_enc = 0;
-  Core::Encoder::encode(err, header.encoder, cells.base, header.size_plain, 
+  Core::Encoder::encode(err, header.encoder, cells.base, header.size_plain,
                         &len_enc, output, Header::SIZE);
   if(err)
     return;

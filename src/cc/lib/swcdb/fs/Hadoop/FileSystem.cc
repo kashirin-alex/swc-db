@@ -193,7 +193,7 @@ bool FileSystemHadoop::initialize(FileSystemHadoop::Service::Ptr& fs) {
       port = std::to_string(settings->get_i16(
         "swc.fs.hadoop.namenode.port", 0));
 
-      SWC_LOGF(LOG_DEBUG, "FS-Hadoop, Connecting to namenode=[%s]:%s", 
+      SWC_LOGF(LOG_DEBUG, "FS-Hadoop, Connecting to namenode=[%s]:%s",
                             h.c_str(), port.c_str());
 
       status = connection->Connect(h, port);
@@ -275,12 +275,12 @@ bool FileSystemHadoop::exists(int& err, const std::string& name) {
     state = false; //!hdfsExists(fs->srv, abspath.c_str());
     need_reconnect(err = errno == ENOENT ? Error::OK : errno, fs);
   }
-  SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG, 
-    "exists('%s') state='%d' - %d(%s)", 
-    abspath.c_str(), (int)state, err, Error::get_text(err));
+  SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG,
+    "exists('%s') state='%d' - %d(%s)",
+    abspath.c_str(), state, err, Error::get_text(err));
   return state;
 }
-  
+
 void FileSystemHadoop::remove(int& err, const std::string& name) {
   std::string abspath;
   get_abspath(name, abspath);
@@ -295,8 +295,8 @@ void FileSystemHadoop::remove(int& err, const std::string& name) {
         err = (errno == EIO || errno == ENOENT ? Error::OK: errno), fs);
     }
   }
-  SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG, 
-    "remove('%s') - %d(%s)", 
+  SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG,
+    "remove('%s') - %d(%s)",
     abspath.c_str(), tmperr, Error::get_text(tmperr));
 }
 
@@ -304,7 +304,7 @@ size_t FileSystemHadoop::length(int& err, const std::string& name) {
   std::string abspath;
   get_abspath(name, abspath);
   //hdfsFileInfo *fileInfo;
-  size_t len = 0; 
+  size_t len = 0;
 
   auto fs = get_fs(err);
   if(!err) {
@@ -317,7 +317,7 @@ size_t FileSystemHadoop::length(int& err, const std::string& name) {
     }
   }
   SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG,
-    "length('%s') len='%lu' - %d(%s)", 
+    "length('%s') len='%lu' - %d(%s)",
     abspath.c_str(), len, err, Error::get_text(err));
   return len;
 }
@@ -325,19 +325,19 @@ size_t FileSystemHadoop::length(int& err, const std::string& name) {
 void FileSystemHadoop::mkdirs(int& err, const std::string& name) {
   std::string abspath;
   get_abspath(name, abspath);
-  
+
   auto fs = get_fs(err);
   if(!err) {
     errno = 0;
     if(false) //hdfsCreateDirectory(fs->srv, abspath.c_str()) == -1)
       need_reconnect(err = errno, fs);
   }
-  SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG, 
-    "mkdirs('%s') - %d(%s)", 
+  SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG,
+    "mkdirs('%s') - %d(%s)",
     abspath.c_str(), err, Error::get_text(err));
 }
 
-void FileSystemHadoop::readdir(int& err, const std::string& name, 
+void FileSystemHadoop::readdir(int& err, const std::string& name,
                                DirentList& results) {
   std::string abspath;
   get_abspath(name, abspath);
@@ -359,7 +359,7 @@ void FileSystemHadoop::readdir(int& err, const std::string& name,
           continue;
         auto& entry = results.emplace_back();
         const char *ptr;
-        if ((ptr = strrchr(fileInfo[i].mName, '/')))
+        if((ptr = strrchr(fileInfo[i].mName, '/')))
           entry.name = (std::string)(ptr+1);
         else
           entry.name = (std::string)fileInfo[i].mName;
@@ -372,8 +372,8 @@ void FileSystemHadoop::readdir(int& err, const std::string& name,
     }
   }
   */
-  SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG, 
-    "readdir('%s') - %d(%s)", 
+  SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG,
+    "readdir('%s') - %d(%s)",
     abspath.c_str(), err, Error::get_text(err));
 }
 
@@ -390,12 +390,12 @@ void FileSystemHadoop::rmdir(int& err, const std::string& name) {
       need_reconnect(err = (tmperr = errno) == EIO ? ENOENT: tmperr, fs);
     }
   }
-  SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG, 
-    "rmdir('%s') - %d(%s)", 
+  SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG,
+    "rmdir('%s') - %d(%s)",
     abspath.c_str(), tmperr, Error::get_text(tmperr));
 }
 
-void FileSystemHadoop::rename(int& err, const std::string& from, 
+void FileSystemHadoop::rename(int& err, const std::string& from,
                                  const std::string& to)  {
   std::string abspath_from;
   get_abspath(from, abspath_from);
@@ -408,13 +408,13 @@ void FileSystemHadoop::rename(int& err, const std::string& from,
     if(false) // hdfsRename(fs->srv, abspath_from.c_str(), abspath_to.c_str()) == -1)
       need_reconnect(err = errno == EIO ? ENOENT : errno, fs);
   }
-  SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG, 
-    "rename('%s' to '%s') - %d(%s)", 
+  SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG,
+    "rename('%s' to '%s') - %d(%s)",
     abspath_from.c_str(), abspath_to.c_str(), err, Error::get_text(err));
 }
 
-void FileSystemHadoop::create(int& err, SmartFd::Ptr& smartfd, 
-                                 int32_t bufsz, uint8_t replication, 
+void FileSystemHadoop::create(int& err, SmartFd::Ptr& smartfd,
+                                 int32_t bufsz, uint8_t replication,
                                  int64_t blksz) {
   std::string abspath;
   get_abspath(smartfd->filepath(), abspath);
@@ -441,7 +441,7 @@ void FileSystemHadoop::create(int& err, SmartFd::Ptr& smartfd,
       need_reconnect(tmperr = err = errno, fs);
       hadoop_fd->file(fd);
       hadoop_fd->fd(-1);
-                
+
       if(err == EACCES || err == ENOENT)
         err = Error::FS_PATH_NOT_FOUND;
       else if (err == EPERM)
@@ -453,12 +453,12 @@ void FileSystemHadoop::create(int& err, SmartFd::Ptr& smartfd,
     }
   }
   SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG,
-    "create %d(%s) bufsz=%d replication=%d blksz=%ld %s", 
-    tmperr, Error::get_text(tmperr), bufsz, replication, blksz, 
+    "create %d(%s) bufsz=%d replication=%d blksz=%ld %s",
+    tmperr, Error::get_text(tmperr), bufsz, replication, blksz,
     smartfd->to_string().c_str());
 }
 
-void FileSystemHadoop::open(int& err, SmartFd::Ptr& smartfd, 
+void FileSystemHadoop::open(int& err, SmartFd::Ptr& smartfd,
                                int32_t bufsz) {
   std::string abspath;
   get_abspath(smartfd->filepath(), abspath);
@@ -473,13 +473,13 @@ void FileSystemHadoop::open(int& err, SmartFd::Ptr& smartfd,
     hdfs::FileHandle* fd = 0;
     (void)oflags;
     (void)bufsz;
-    //fd = hdfsOpenFile(fs->srv, abspath.c_str(), oflags, 
+    //fd = hdfsOpenFile(fs->srv, abspath.c_str(), oflags,
     //                        bufsz<=-1 ? 0 : bufsz, 0, 0);
     if(!fd) {
       need_reconnect(err = tmperr = errno, fs);
       hadoop_fd->file(fd);
       hadoop_fd->fd(-1);
-                
+
       if(err == EACCES || err == ENOENT)
         err = Error::FS_PATH_NOT_FOUND;
       else if (err == EPERM)
@@ -491,11 +491,11 @@ void FileSystemHadoop::open(int& err, SmartFd::Ptr& smartfd,
     }
   }
   SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG,
-    "open %d(%s) %s", 
+    "open %d(%s) %s",
     tmperr, Error::get_text(tmperr), smartfd->to_string().c_str());
 }
-  
-size_t FileSystemHadoop::read(int& err, SmartFd::Ptr& smartfd, 
+
+size_t FileSystemHadoop::read(int& err, SmartFd::Ptr& smartfd,
               void *dst, size_t amount) {
   auto hadoop_fd = get_fd(smartfd);
   size_t ret = 0;
@@ -508,14 +508,14 @@ size_t FileSystemHadoop::read(int& err, SmartFd::Ptr& smartfd,
     if ((offset = (uint64_t)hdfsTell(fs->srv, hadoop_fd->file()))
                   == (uint64_t)-1) {
       err = errno;
-      SWC_LOGF(LOG_ERROR, "read, tell failed: %d(%s), %s offset=%lu", 
+      SWC_LOGF(LOG_ERROR, "read, tell failed: %d(%s), %s offset=%lu",
                 err, Error::get_text(err), smartfd->to_string().c_str(), offset);
       return nread;
     }
     */
     (void)dst;
     errno = 0;
-    ssize_t nread = -1; //(ssize_t)hdfsRead(fs->srv, hadoop_fd->file(), 
+    ssize_t nread = -1; //(ssize_t)hdfsRead(fs->srv, hadoop_fd->file(),
                         //              dst, (tSize)amount);
     if(nread == -1) {
       nread = 0;
@@ -527,7 +527,7 @@ size_t FileSystemHadoop::read(int& err, SmartFd::Ptr& smartfd,
     }
   }
   SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG, 
-    "read %d(%s) amount=%lu/%lu eof=%d %s", 
+    "read %d(%s) amount=%lu/%lu eof=%d %s",
     tmperr, Error::get_text(tmperr), ret, amount, err == Error::FS_EOF,
     hadoop_fd->to_string().c_str());
   return ret;
@@ -681,7 +681,7 @@ void FileSystemHadoop::close(int& err, SmartFd::Ptr& smartfd) {
 
 
 
-extern "C" { 
+extern "C" {
 SWC::FS::FileSystem* fs_make_new_hadoop() {
   return (SWC::FS::FileSystem*)(new SWC::FS::FileSystemHadoop());
 }

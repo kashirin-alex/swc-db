@@ -24,7 +24,7 @@ class ColumnCfg final : public Core::NotMovableSharedPtr<ColumnCfg> {
 
   mutable Core::Atomic<DB::Types::Column>         col_type;
 
-  mutable Core::Atomic<uint32_t>                  c_versions; 
+  mutable Core::Atomic<uint32_t>                  c_versions;
   mutable Core::Atomic<uint64_t>                  c_ttl;
 
   mutable Core::Atomic<DB::Types::Encoder>        blk_enc;
@@ -38,13 +38,13 @@ class ColumnCfg final : public Core::NotMovableSharedPtr<ColumnCfg> {
   mutable Core::Atomic<uint8_t>                   log_rout_ratio;
   mutable Core::Atomic<uint8_t>                   log_compact;
   mutable Core::Atomic<uint8_t>                   log_preload;
-  
+
   mutable Core::Atomic<uint8_t>                   compact_perc;
 
   mutable Core::AtomicBool                        deleting;
 
 
-  ColumnCfg(const cid_t cid, const DB::Schema& schema) 
+  ColumnCfg(const cid_t cid, const DB::Schema& schema)
       : cid(cid),
         range_type(
           DB::Types::MetaColumn::get_range_type(cid)),
@@ -58,7 +58,7 @@ class ColumnCfg final : public Core::NotMovableSharedPtr<ColumnCfg> {
   ColumnCfg(const ColumnCfg&) = delete;
 
   ColumnCfg(const ColumnCfg&&) = delete;
-  
+
   ColumnCfg& operator=(const ColumnCfg&) = delete;
 
   ~ColumnCfg() { }
@@ -72,7 +72,7 @@ class ColumnCfg final : public Core::NotMovableSharedPtr<ColumnCfg> {
     blk_enc.store(schema.blk_encoding);
     blk_size.store(schema.blk_size);
     blk_cells.store(schema.blk_cells);
-    
+
     cs_replication.store(schema.cs_replication);
     cs_size.store(schema.cs_size);
     cs_max.store(schema.cs_max);
@@ -80,7 +80,7 @@ class ColumnCfg final : public Core::NotMovableSharedPtr<ColumnCfg> {
     log_rout_ratio.store(schema.log_rollout_ratio);
     log_compact.store(schema.log_compact_cointervaling);
     log_preload.store(schema.log_fragment_preload);
-    
+
     compact_perc.store(schema.compact_percent);
   }
 
@@ -100,7 +100,7 @@ class ColumnCfg final : public Core::NotMovableSharedPtr<ColumnCfg> {
   DB::Types::Encoder block_enc() const {
     DB::Types::Encoder tmp(blk_enc);
     return tmp == DB::Types::Encoder::DEFAULT
-            ? (DB::Types::Encoder)Env::Rgr::get()->cfg_blk_enc->get()
+            ? DB::Types::Encoder(Env::Rgr::get()->cfg_blk_enc->get())
             : tmp;
   }
 
@@ -151,15 +151,15 @@ class ColumnCfg final : public Core::NotMovableSharedPtr<ColumnCfg> {
 
   void print(std::ostream& out) const {
     out << "col(";
-    if(deleting) 
+    if(deleting)
       out << "DELETING ";
     out
       << "cid="   << cid
       << " seq="  << DB::Types::to_string(key_seq)
       << " type=" << DB::Types::to_string(col_type)
       << " range_type=" << DB::Types::to_string(range_type)
-      << " meta_cid="   << (int)meta_cid
-      << " compact="    << (int)compact_perc.load() << '%'
+      << " meta_cid="   << int(meta_cid)
+      << " compact="    << int(compact_perc.load()) << '%'
       << ')'
       << " cell(versions=" << c_versions.load()
       << " ttl="           << c_ttl.load()
@@ -168,13 +168,13 @@ class ColumnCfg final : public Core::NotMovableSharedPtr<ColumnCfg> {
       << " size="     << blk_size.load()
       << " cells="    << blk_cells.load()
       << ')'
-      << " cs(replication=" << (int)cs_replication.load()
+      << " cs(replication=" << int(cs_replication.load())
       << " size="           << cs_size.load()
-      << " max="            << (int)cs_max.load()
+      << " max="            << int(cs_max.load())
       << ')'
-      << " log(rollout="            << (int)log_rout_ratio.load()
-      << " compact_cointervaling="  << (int)log_compact.load()
-      << " preload="                << (int)log_preload.load()
+      << " log(rollout="            << int(log_rout_ratio.load())
+      << " compact_cointervaling="  << int(log_compact.load())
+      << " preload="                << int(log_preload.load())
       << ')';
   }
 

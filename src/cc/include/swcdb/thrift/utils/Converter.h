@@ -17,7 +17,11 @@ namespace SWC {  namespace Thrift {
 namespace Converter {
 
 
-void exception(int err, const std::string& msg = "") {
+[[noreturn]]
+void exception(int err, const std::string& msg = "");
+
+void exception(int err, const std::string& msg) {
+  // switch on err with exception error type
   Exception e;
   e.__set_code(err);
   e.__set_message(msg + " - " + Error::get_text(err));
@@ -296,7 +300,7 @@ CellValueSerial& get_fields(int32_t fid, CellValuesSerial& values) {
 void set(const DB::Cells::Cell& dbcell, CellValuesSerial& values) {
   if(!dbcell.vlen)
     return;
-    
+
   StaticBuffer v;
   dbcell.get_value(v);
   const uint8_t* ptr = v.base;

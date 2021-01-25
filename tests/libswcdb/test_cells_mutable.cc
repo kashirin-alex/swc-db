@@ -22,11 +22,11 @@ void Settings::init_post_cmd_args() {}
 
 namespace Cells = SWC::DB::Cells;
 
-void op(Cells::Mutable::Ptr cells_mutable, 
-        int& truclations, int64_t& ts_total, 
+void op(Cells::Mutable::Ptr cells_mutable,
+        int& truclations, int64_t& ts_total,
         std::shared_ptr<SWC::Common::Stats::Stat> latency_mutable,
-        int num_revs, bool reverse, int num_cells, 
-        bool gen_historic, Cells::Flag flag, 
+        int num_revs, bool reverse, int num_cells,
+        bool gen_historic, Cells::Flag flag,
         SWC::DB::Types::Column typ, bool time_order_desc) {
 
   Cells::Cell cell;
@@ -34,11 +34,11 @@ void op(Cells::Mutable::Ptr cells_mutable,
   int64_t rev;
   int64_t took;
   std::string cell_number;
-  
+
   for(auto r=1;r<=(flag==Cells::DELETE ? 1 : num_revs);++r){
   for(auto i=(reverse?num_cells:1);(reverse?i>=1:i<=num_cells);(reverse?--i:++i)){
       cell_number = std::to_string(i);
-      
+
       rev = SWC::Time::now_ns()-(gen_historic?r*1000000:0);
       cell.flag = flag;
       cell.set_timestamp(rev-1);
@@ -47,7 +47,7 @@ void op(Cells::Mutable::Ptr cells_mutable,
 
       cell.key.free();
       for(uint8_t chr=97; chr<=122;++chr)
-        cell.key.add(((char)chr)+cell_number);
+        cell.key.add(char(chr)+cell_number);
 
       if(cell.flag == Cells::INSERT) {
         if(SWC::DB::Types::is_counter(typ)) {
@@ -56,13 +56,13 @@ void op(Cells::Mutable::Ptr cells_mutable,
             ++truclations;
           } else
             cell.set_counter(0, 1);
-      
+
         } else {
           cell.set_value("V_OF: "+cell_number);
         }
       }
 
-      
+
       took = SWC::Time::now_ns();
 
       //cells_mutable->insert(0, cell);
@@ -71,11 +71,11 @@ void op(Cells::Mutable::Ptr cells_mutable,
 
       took = SWC::Time::now_ns()-took;
       ts_total += took;
-      latency_mutable->add(took); 
+      latency_mutable->add(took);
 
       if(!(i % 1000000)) {
         //std::cout << "v:took=" << took_vector  << " " << r << "/" << i << " = " << cells.size() << "\n";
-        std::cout << "   m:took=" << took << " " << r << "/" << i 
+        std::cout << "   m:took=" << took << " " << r << "/" << i
                   << " = " << cells_mutable->size() << "\n";
       }
   }
@@ -84,18 +84,18 @@ void op(Cells::Mutable::Ptr cells_mutable,
 
 
 
-void check(SWC::DB::Types::KeySeq key_seq, SWC::DB::Types::Column typ, 
-           size_t num_cells = 1, int num_revs = 1, int max_versions = 1, 
-           bool reverse=false, bool time_order_desc=false, 
+void check(SWC::DB::Types::KeySeq key_seq, SWC::DB::Types::Column typ,
+           size_t num_cells = 1, int num_revs = 1, int max_versions = 1,
+           bool reverse=false, bool time_order_desc=false,
            bool gen_historic=false) {
-  std::cout << "\nchecking with seq=" << SWC::DB::Types::to_string(key_seq) 
-                           << " type=" << SWC::DB::Types::to_string(typ) 
-                           << " cells=" << num_cells 
-                           << " revs=" << num_revs 
+  std::cout << "\nchecking with seq=" << SWC::DB::Types::to_string(key_seq)
+                           << " type=" << SWC::DB::Types::to_string(typ)
+                           << " cells=" << num_cells
+                           << " revs=" << num_revs
                            << " reverse=" << reverse
-                           << " max_versions=" << max_versions 
-                           << " time_order_desc=" << time_order_desc 
-                           << " gen_historic=" << gen_historic 
+                           << " max_versions=" << max_versions
+                           << " time_order_desc=" << time_order_desc
+                           << " gen_historic=" << gen_historic
                            << "\n";
   int truclations = 0;
 
@@ -108,21 +108,21 @@ void check(SWC::DB::Types::KeySeq key_seq, SWC::DB::Types::Column typ,
       max_versions, 0, typ));
 
   op(cells_mutable, truclations, ts_total, latency_mutable,
-     num_revs, reverse, num_cells, gen_historic, 
+     num_revs, reverse, num_cells, gen_historic,
      Cells::INSERT, typ, time_order_desc);
-  /// 
+  ///
 
   size_t expected_sz = num_cells;
   if(SWC::DB::Types::is_counter(typ))
    expected_sz *= 1;
-  else 
+  else
    expected_sz *= (max_versions > num_revs ? num_revs : max_versions);
 
 
   if(cells_mutable->size() != expected_sz) {
     cells_mutable->print(std::cerr << "\n", true);
     std::cerr << "INSERT SIZE NOT AS EXPECTED, "
-              << "expected(" << expected_sz 
+              << "expected(" << expected_sz
               << ") != result(" << cells_mutable->size()  << ")\n";
     exit(1);
   }
@@ -135,7 +135,7 @@ void check(SWC::DB::Types::KeySeq key_seq, SWC::DB::Types::Column typ,
             << " max="    << latency_mutable->max()
             << " median=" << ts_total / num_cells
             << " took="   << ts_total / 1000000 << "ms"
-            << "\n"; 
+            << "\n";
 
 
 
@@ -162,9 +162,9 @@ void check(SWC::DB::Types::KeySeq key_seq, SWC::DB::Types::Column typ,
 
   Cells::Cell cell;
   SWC::DynamicBuffer result;
-  size_t count = 0; 
+  size_t count = 0;
   size_t skips = 0;
-      
+
   int64_t took = SWC::Time::now_ns();
   cells_mutable->scan_test_use(specs, result, count, skips);
   took = SWC::Time::now_ns()-took;
@@ -178,12 +178,12 @@ void check(SWC::DB::Types::KeySeq key_seq, SWC::DB::Types::Column typ,
     //std::cout << "v='" << std::string((const char*)cell.value, cell.vlen) <<"'\n";
     ++counted;
   }
-  if(SWC::DB::Types::is_counter(typ) 
-      ? count == num_cells : count != (size_t)3*max_versions ) {
+  if(SWC::DB::Types::is_counter(typ)
+      ? count == num_cells : count != size_t(3*max_versions) ) {
     //cells_mutable->print(std::cerr << "\n", true);
-    std::cout << " skips=" << skips 
+    std::cout << " skips=" << skips
               << " count="<< count << " counted=" << counted << " \n";
-    std::cerr << "\nBad scan, expected=" << 3*max_versions 
+    std::cerr << "\nBad scan, expected=" << 3*max_versions
               << " result=" << count << "\n";
     std::cerr << specs.to_string() <<"\n";
     exit(1);
@@ -192,25 +192,25 @@ void check(SWC::DB::Types::KeySeq key_seq, SWC::DB::Types::Column typ,
             << " num="  << cells_mutable->size()
             << " avg="  << took / cells_mutable->size()
             << " took=" << took / 1000000 << "ms"
-            << "\n"; 
+            << "\n";
 
 
   latency_mutable = std::make_shared<SWC::Common::Stats::Stat>();
   ts_total = 0;
   truclations = 0;
   op(cells_mutable, truclations, ts_total, latency_mutable,
-     num_revs, reverse, num_cells, gen_historic, 
+     num_revs, reverse, num_cells, gen_historic,
      Cells::DELETE, typ, time_order_desc);
-  /// 
+  ///
 
   if(cells_mutable->size() != num_cells) {
     cells_mutable->print(std::cerr << "\n", true);
     std::cerr << "\nDELETE SIZE NOT AS EXPECTED, "
-              << "expected(" << num_cells 
+              << "expected(" << num_cells
               << ") != result(" << cells_mutable->size()  << ")\n";
     exit(1);
   }
-  
+
   SWC::DB::Cells::ReqScanTest req;
   req.spec.flags.max_versions = max_versions;
   req.cells.configure(max_versions, 0, typ);
@@ -219,7 +219,7 @@ void check(SWC::DB::Types::KeySeq key_seq, SWC::DB::Types::Column typ,
 
   if(req.cells.size()) {
     std::cerr << "AFTER DELETE SIZE NOT AS EXPECTED, "
-              << "expected(" << 0 
+              << "expected(" << 0
               << ") != result(" <<req.cells.size()  << ")\n";
     exit(1);
   }
@@ -230,19 +230,19 @@ void check(SWC::DB::Types::KeySeq key_seq, SWC::DB::Types::Column typ,
             << " min="    << latency_mutable->min()
             << " max="    << latency_mutable->max()
             << " median=" << ts_total / num_cells
-            << " took="   << ts_total / 1000000 << "ms ";       
-  req.profile.print(std::cout); 
-  std::cout << '\n'; 
+            << " took="   << ts_total / 1000000 << "ms ";
+  req.profile.print(std::cout);
+  std::cout << '\n';
 
   //std::cout << " clearing, ";
-  
+
   //cells_mutable->free();
   cells_mutable = nullptr;
-  
+
   //std::cout << " cleared check with cells=" << num_cells << "\n";
 
 }
-  
+
 
 
 
@@ -301,7 +301,7 @@ int main() {
     }
   }
 
-  // ++ bool reverse=false, bool time_order_desc=false, bool gen_historic=false) 
+  // ++ bool reverse=false, bool time_order_desc=false, bool gen_historic=false)
   /*
   check(SWC::DB::Types::Column::PLAIN, 11, 3, true);
   check(SWC::DB::Types::Column::PLAIN, 11, 3, true, true);

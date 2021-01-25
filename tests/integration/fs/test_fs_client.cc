@@ -171,7 +171,8 @@ void run(size_t thread_id){
       for(size_t i=0;i<file_blk;++i)
         data.append("+");
       data.append(data_end);
-      StaticBuffer buffer((uint8_t*)data.data(), data.length(), false);
+      StaticBuffer buffer(
+        reinterpret_cast<uint8_t*>(data.data()), data.length(), false);
       size_t amount = Env::FsInterface::fs()->append(err, smartfd, buffer, FS::Flags::FLUSH);
       written += amount;
       if(err != Error::OK || amount!=data.length() || smartfd->pos() != written) {
@@ -244,13 +245,15 @@ void run(size_t thread_id){
     uint8_t buf[7];
     if (Env::FsInterface::fs()->read(err, smartfd, buf,  data_start.length()) != data_start.length()
         || err != Error::OK
-        || strncmp((char*)buf, data_start.c_str(), data_start.length())) {
+        || strncmp(
+              reinterpret_cast<char*>(buf), data_start.c_str(), data_start.length())) {
      std::cerr << "ERROR(read) err=" << err
-               << " buf=" << std::string((char*)buf, data_start.length())
+               << " buf=" << std::string(reinterpret_cast<char*> (buf), data_start.length())
                 << " " << smartfd->to_string() <<"\n";
      exit(1);
     }
-    std::cout << "read-data='" << std::string((char*)buf, data_start.length()) << "'\n";
+    std::cout << "read-data='"
+              << std::string(reinterpret_cast<char*>(buf), data_start.length()) << "'\n";
 
     // seek >>
     err = Error::OK;
@@ -266,11 +269,12 @@ void run(size_t thread_id){
     uint8_t bufsuf[6];
     if (Env::FsInterface::fs()->read(err, smartfd, bufsuf,  data_end.length()) != data_end.length()
         || err != Error::OK
-        || strncmp((char*)bufsuf, data_end.c_str(), data_end.length())) {
+        || strncmp(reinterpret_cast<char*>(bufsuf), data_end.c_str(), data_end.length())) {
      std::cerr << "ERROR(read(suff)) err=" << err << " buf=" << bufsuf << " " << smartfd->to_string() <<"\n";
      exit(1);
     }
-    std::cout << "read(suff)-data='" << std::string((char*)bufsuf, data_start.length()) << "'\n";
+    std::cout << "read(suff)-data='"
+              << std::string(reinterpret_cast<char*> (bufsuf), data_start.length()) << "'\n";
 
     // seek(for EOF) >>
     err = Error::OK;
@@ -286,11 +290,12 @@ void run(size_t thread_id){
     uint8_t bufeof[6];
     if (Env::FsInterface::fs()->read(err, smartfd, bufeof, data_end.length()) != data_end.length()-1
         || err != Error::FS_EOF
-        || memcmp ((char*)bufeof, data_end.data()+1, data_end.length()-1 )) {
+        || memcmp (reinterpret_cast<char*>(bufeof), data_end.data()+1, data_end.length()-1 )) {
      std::cerr << "ERROR(read(with EOF)) err=" << err << " buf=" << bufeof << " " << smartfd->to_string() <<"\n";
      exit(1);
     }
-    std::cout << "read(with EOF)-data='" << std::string((char*)bufeof, data_end.length()-1) << "'\n";
+    std::cout << "read(with EOF)-data='"
+              << std::string(reinterpret_cast<char*> (bufeof), data_end.length()-1) << "'\n";
 
 
     // pread >>
@@ -302,13 +307,14 @@ void run(size_t thread_id){
           != data_start.length()
           || err != Error::OK
           || smartfd->pos() != pread_offset+data_start.length()
-          || strncmp((char*)buf_start, data_start.c_str(), data_start.length())) {
+          || strncmp(reinterpret_cast<char*>(buf_start), data_start.c_str(), data_start.length())) {
         std::cerr << "ERROR(pread) err=" << err << " buf=" << buf_start << " " << smartfd->to_string() <<"\n";
         exit(1);
       }
       pread_offset+=block_sz;
       std::cout << "pread thread=" << thread_id << " blk=" << i
-                << " start_data='" << std::string((char*)buf_start, data_start.length()) << "'\n";
+                << " start_data='"
+                << std::string(reinterpret_cast<char*>(buf_start), data_start.length()) << "'\n";
     }
 
     // pread(with EOF) >>
@@ -318,11 +324,12 @@ void run(size_t thread_id){
                                       len-data_end.length()+1,
                                       bufpeof, data_end.length()) != data_end.length()-1
         || err != Error::FS_EOF
-        || memcmp ((char*)bufpeof, data_end.data()+1, data_end.length()-1 )) {
+        || memcmp (reinterpret_cast<char*>(bufpeof), data_end.data()+1, data_end.length()-1 )) {
      std::cerr << "ERROR(pread(with EOF)) err=" << err << " buf=" << bufpeof << " " << smartfd->to_string() <<"\n";
      exit(1);
     }
-    std::cout << "pread(with EOF)-data='" << std::string((char*)bufpeof, data_end.length()-1) << "'\n";
+    std::cout << "pread(with EOF)-data='"
+              << std::string(reinterpret_cast<char*>(bufpeof), data_end.length()-1) << "'\n";
 
 
 

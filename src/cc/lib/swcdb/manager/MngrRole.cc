@@ -61,7 +61,7 @@ void MngrRole::schedule_checkin(uint32_t t_ms) {
       if(ec != asio::error::operation_aborted) {
         managers_checkin();
       }
-  }); 
+  });
   SWC_LOGF(LOG_DEBUG, "MngrRole managers_checkin scheduled in ms=%d", t_ms);
 }
 
@@ -79,7 +79,7 @@ MngrStatus::Ptr MngrRole::active_mngr(cid_t cid) {
   for(auto& host : m_states) {
     if(host->state == DB::Types::MngrState::ACTIVE &&
        host->role & DB::Types::MngrRole::COLUMNS &&
-       host->cid_begin <= cid && 
+       host->cid_begin <= cid &&
        (!host->cid_end || host->cid_end >= cid))
       return host;
   }
@@ -89,7 +89,7 @@ MngrStatus::Ptr MngrRole::active_mngr(cid_t cid) {
 MngrStatus::Ptr MngrRole::active_mngr_role(uint8_t role) {
   std::shared_lock lock(m_mutex);
   for(auto& host : m_states) {
-    if(host->state == DB::Types::MngrState::ACTIVE && 
+    if(host->state == DB::Types::MngrState::ACTIVE &&
        host->role & role)
       return host;
   }
@@ -102,7 +102,7 @@ bool MngrRole::are_all_active(const client::Mngr::Groups::Vec& groups) {
     std::shared_lock lock(m_mutex);
     for(auto& host : m_states) {
       if(host->state == DB::Types::MngrState::ACTIVE &&
-         g->role == host->role && 
+         g->role == host->role &&
          g->cid_begin == host->cid_begin && g->cid_end == host->cid_end) {
         found = true;
         break;
@@ -123,11 +123,12 @@ Comm::EndPoint MngrRole::get_inchain_endpoint() const {
   return m_mngr_inchain->get_endpoint_remote();
 }
 
-void MngrRole::req_mngr_inchain(const Comm::client::ConnQueue::ReqBase::Ptr& req) {
+void MngrRole::req_mngr_inchain(
+      const Comm::client::ConnQueue::ReqBase::Ptr& req) {
   m_mngr_inchain->put(req);
 }
 
-void MngrRole::fill_states(const MngrsStatus& states, uint64_t token, 
+void MngrRole::fill_states(const MngrsStatus& states, uint64_t token,
                            const Comm::ResponseCallback::Ptr& cb) {
   bool new_recs = false;
   bool turn_around = token == m_local_token;
@@ -136,27 +137,27 @@ void MngrRole::fill_states(const MngrsStatus& states, uint64_t token,
 
     bool local = Comm::has_endpoint(host->endpoints, m_local_endpoints);
 
-    if(local && !token && 
-       (uint8_t)host->state.load() < (uint8_t)DB::Types::MngrState::STANDBY) {
+    if(local && !token &&
+       uint8_t(host->state.load()) < uint8_t(DB::Types::MngrState::STANDBY)) {
       update_state(host->endpoints, DB::Types::MngrState::STANDBY);
       continue;
     }
-      
+
     MngrStatus::Ptr host_set = get_host(host->endpoints);
     if(!host_set)
       continue;
 
-    if(host_set->state == DB::Types::MngrState::OFF 
+    if(host_set->state == DB::Types::MngrState::OFF
        && host->state > DB::Types::MngrState::OFF) {
       //m_major_updates = true;
       schedule_checkin(500);
     }
 
-    if((uint8_t)host->state.load() < (uint8_t)DB::Types::MngrState::STANDBY) {
+    if(uint8_t(host->state.load()) < uint8_t(DB::Types::MngrState::STANDBY)) {
       if(host->state != host_set->state) {
-        update_state(host->endpoints, 
+        update_state(host->endpoints,
           host->state != DB::Types::MngrState::NOTSET?
-          host->state : host_set->state);  
+          host->state : host_set->state);
         new_recs = true;
       }
       continue;
@@ -180,37 +181,37 @@ void MngrRole::fill_states(const MngrsStatus& states, uint64_t token,
       // m_major_updates = true;
       continue;
     }
-      
-    
+
+
     if(host->priority > high_set->priority) {
-      if((uint8_t)host->state.load() 
-          > (uint8_t)DB::Types::MngrState::STANDBY) {
+      if(uint8_t(host->state.load())
+          > uint8_t(DB::Types::MngrState::STANDBY)) {
         update_state(
-          host->endpoints, 
-          (DB::Types::MngrState)((uint8_t)host->state.load() - 1)
+          host->endpoints,
+          DB::Types::MngrState(uint8_t(host->state.load()) - 1)
         );
         new_recs = true;
       }
     } else {
-      if((uint8_t)host->state.load() 
-          < (uint8_t)DB::Types::MngrState::ACTIVE) {
+      if(uint8_t(host->state.load())
+          < uint8_t(DB::Types::MngrState::ACTIVE)) {
         update_state(
-          host->endpoints, 
-          (DB::Types::MngrState)((uint8_t)host->state.load() + 1)
+          host->endpoints,
+          DB::Types::MngrState(uint8_t(host->state.load()) + 1)
         );
         new_recs = true;
       }
     }
   }
-    
+
   for(auto& host : states) {
     if(!is_group_off(host))
       continue;
-    auto hosts_pr_group = 
+    auto hosts_pr_group =
         Env::Clients::get()->mngrs_groups->get_endpoints(
         host->role, host->cid_begin, host->cid_end);
     for(auto& h : hosts_pr_group) {
-      if(Comm::has_endpoint(h, host->endpoints) 
+      if(Comm::has_endpoint(h, host->endpoints)
         || !Comm::has_endpoint(h, m_local_endpoints))
         continue;
 
@@ -231,7 +232,7 @@ void MngrRole::fill_states(const MngrsStatus& states, uint64_t token,
         token = m_local_token;
 
       req_mngr_inchain(std::make_shared<Comm::Protocol::Mngr::Req::MngrState>(
-        cb, m_states, token, m_local_endpoints[0], 
+        cb, m_states, token, m_local_endpoints[0],
         (cfg_conn_probes->get() * cfg_conn_timeout->get()
         + cfg_req_timeout->get()) * m_states.size()
         ));
@@ -245,12 +246,12 @@ void MngrRole::fill_states(const MngrsStatus& states, uint64_t token,
 
   schedule_checkin(
     new_recs ? cfg_delay_updated->get() : cfg_check_interval->get());
-    
+
   SWC_LOG_OUT(LOG_DEBUG, print(SWC_LOG_OSTREAM); );
   apply_role_changes();
 }
 
-void MngrRole::update_manager_addr(uint64_t hash, 
+void MngrRole::update_manager_addr(uint64_t hash,
                                    const Comm::EndPoint& mngr_host) {
   bool major_updates;
   {
@@ -267,19 +268,19 @@ void MngrRole::update_manager_addr(uint64_t hash,
   if(major_updates)
     Env::Mngr::mngd_columns()->require_sync();
 }
-  
-void MngrRole::disconnection(const Comm::EndPoint& endpoint_server, 
-                             const Comm::EndPoint& endpoint_client, 
+
+void MngrRole::disconnection(const Comm::EndPoint& endpoint_server,
+                             const Comm::EndPoint& endpoint_client,
                              bool srv) {
   Comm::EndPoints endpoints;
   {
     std::scoped_lock lock(m_mutex);
-    
+
     auto it = m_mngrs_client_srv.find(Comm::endpoint_hash(endpoint_server));
     if(it != m_mngrs_client_srv.end()) {
       endpoints.push_back(it->second);
       m_mngrs_client_srv.erase(it);
-    } else 
+    } else
       endpoints.push_back(endpoint_server);
   }
   MngrStatus::Ptr host_set = get_host(endpoints);
@@ -287,11 +288,11 @@ void MngrRole::disconnection(const Comm::EndPoint& endpoint_server,
     return;
 
   schedule_checkin(
-    host_set->state == DB::Types::MngrState::ACTIVE ? 
+    host_set->state == DB::Types::MngrState::ACTIVE ?
     cfg_delay_fallback->get() : cfg_check_interval->get());
 
-  SWC_LOG_OUT(LOG_DEBUG, 
-    SWC_LOG_OSTREAM << "disconnection, srv=" << srv 
+  SWC_LOG_OUT(LOG_DEBUG,
+    SWC_LOG_OSTREAM << "disconnection, srv=" << srv
                     << " server=" << endpoint_server
                     << " client=" << endpoint_client;
   );
@@ -304,7 +305,7 @@ void MngrRole::disconnection(const Comm::EndPoint& endpoint_server,
 void MngrRole::stop() {
   Env::Mngr::rangers()->stop();
   Env::Mngr::mngd_columns()->stop();
-  
+
   m_run.store(false);
   {
     Core::MutexAtomic::scope lock(m_mutex_timer);
@@ -334,7 +335,7 @@ void MngrRole::print(std::ostream& out) {
     out << endpoint << ',';
   out << ']';
 }
- 
+
 void MngrRole::_apply_cfg() {
   auto groups = Env::Clients::get()->mngrs_groups->get_groups();
   std::vector<Comm::EndPoint> tmp;
@@ -365,7 +366,7 @@ void MngrRole::_apply_cfg() {
     else
       m_states.erase(it);
   }
-    
+
   m_local_groups = Env::Clients::get()->mngrs_groups->get_groups(
     m_local_endpoints);
 }
@@ -390,7 +391,7 @@ void MngrRole::managers_checkin() {
   std::string s;
   for(auto& endpoint : m_local_endpoints) {
     s.append(
-      endpoint.address().to_string() + "|" + 
+      endpoint.address().to_string() + "|" +
       std::to_string(endpoint.port())+ ",");
   }
 
@@ -444,28 +445,28 @@ void MngrRole::managers_checker(size_t next, size_t total, bool flw) {
 
   if(!flw)
     return managers_checker(next, total, flw);
-        
+
   if(host_chk->conn && host_chk->conn->is_open())
     return set_mngr_inchain(host_chk->conn);
 
   Env::Clients::get()->mngr->service->get_connection(
-    host_chk->endpoints, 
+    host_chk->endpoints,
     [this, host_chk, next, total, flw] (const Comm::ConnHandlerPtr& conn) {
       manager_checker(host_chk, next, total, flw, conn);
     },
-    std::chrono::milliseconds(cfg_conn_timeout->get()), 
+    std::chrono::milliseconds(cfg_conn_timeout->get()),
     cfg_conn_probes->get()
   );
 }
 
-void MngrRole::manager_checker(MngrStatus::Ptr host, 
-                               size_t next, size_t total, bool flw, 
+void MngrRole::manager_checker(MngrStatus::Ptr host,
+                               size_t next, size_t total, bool flw,
                                const Comm::ConnHandlerPtr& conn) {
   if(!conn || !conn->is_open()) {
     if(host->state == DB::Types::MngrState::ACTIVE
-       && ++host->failures <= cfg_conn_fb_failures->get()) {   
+       && ++host->failures <= cfg_conn_fb_failures->get()) {
       m_checkin.stop();
-      SWC_LOGF(LOG_DEBUG, "Allowed conn Failure=%d before fallback", 
+      SWC_LOGF(LOG_DEBUG, "Allowed conn Failure=%d before fallback",
                 host->failures);
       return schedule_checkin(cfg_delay_fallback->get());
     }
@@ -478,8 +479,8 @@ void MngrRole::manager_checker(MngrStatus::Ptr host,
   m_major_updates = true;
   set_mngr_inchain(host->conn);
 }
-  
-void MngrRole::update_state(const Comm::EndPoint& endpoint, 
+
+void MngrRole::update_state(const Comm::EndPoint& endpoint,
                             DB::Types::MngrState state) {
   std::scoped_lock lock(m_mutex);
 
@@ -490,7 +491,7 @@ void MngrRole::update_state(const Comm::EndPoint& endpoint,
   }
 }
 
-void MngrRole::update_state(const Comm::EndPoints& endpoints, 
+void MngrRole::update_state(const Comm::EndPoints& endpoints,
                             DB::Types::MngrState state) {
   std::scoped_lock lock(m_mutex);
 
@@ -500,7 +501,7 @@ void MngrRole::update_state(const Comm::EndPoints& endpoints,
     }
   }
 }
-  
+
 MngrStatus::Ptr MngrRole::get_host(const Comm::EndPoints& endpoints) {
   std::shared_lock lock(m_mutex);
 
@@ -516,19 +517,19 @@ MngrStatus::Ptr MngrRole::get_highest_state_host(const MngrStatus::Ptr& other) {
 
   MngrStatus::Ptr h = nullptr;
   for(auto& host : m_states) {
-    if(host->eq_grouping(*other.get()) && 
+    if(host->eq_grouping(*other.get()) &&
        (!h || h->state < host->state))
       h = host;
   }
   return h;
 }
-  
+
 bool MngrRole::is_group_off(const MngrStatus::Ptr& other) {
   std::shared_lock lock(m_mutex);
 
   bool offline = true;
   for(auto& host : m_states) {
-    if(host->eq_grouping(*other.get()) && 
+    if(host->eq_grouping(*other.get()) &&
        host->state != DB::Types::MngrState::OFF)
       offline = false;
   }
@@ -597,7 +598,7 @@ void MngrRole::apply_role_changes() {
   }
 
 }
-  
+
 void MngrRole::set_mngr_inchain(const Comm::ConnHandlerPtr& mngr) {
   m_mngr_inchain->set(mngr);
 

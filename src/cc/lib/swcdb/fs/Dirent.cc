@@ -20,8 +20,8 @@ std::string Dirent::to_string() const {
   s.append(" is_dir=");
   s.append(std::to_string(is_dir));
   s.append(" modified=");
-  s.append(std::to_string((int64_t)last_modification_time));
-  
+  s.append(std::to_string(last_modification_time));
+
   s.append(")\n");
   return s;
 }

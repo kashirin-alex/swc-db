@@ -126,7 +126,9 @@ struct Field_BYTES : Field {
 
   static Field::Ptr make(uint24_t fid, Condition::Comp comp,
                          const std::string& value) {
-    return make(fid, comp, (const uint8_t*)value.data(), value.size());
+    return make(
+      fid, comp,
+      reinterpret_cast<const uint8_t*>(value.c_str()), value.size());
   }
 
   Field_BYTES(uint24_t fid, Condition::Comp comp,

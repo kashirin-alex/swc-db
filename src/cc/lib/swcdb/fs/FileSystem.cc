@@ -114,7 +114,7 @@ void FileSystem::fd_open_decr() {
 }
 
 bool FileSystem::need_fds() const {
-  return fds_count >= (size_t)cfg_fds_max->get();
+  return fds_count >= size_t(cfg_fds_max->get());
 }
 
 size_t FileSystem::fds_open() const {

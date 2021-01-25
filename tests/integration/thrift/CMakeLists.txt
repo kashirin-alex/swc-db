@@ -15,7 +15,7 @@ if(THRIFT_CPP_FOUND)
     NAME      thrift_cc_client
     SRCS      client.cc
     TARGETS   swcdb_thrift
-    FLAGS     "-Wno-suggest-override"
+    FLAGS     -Wno-suggest-override -Wno-old-style-cast
   )
 endif()
 

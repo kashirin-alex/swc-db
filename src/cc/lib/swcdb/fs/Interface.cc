@@ -19,10 +19,10 @@ Interface::Interface(Type typ) : m_type(typ), m_fs(use_filesystem()) {
 
   SWC_LOGF(LOG_INFO, "INIT-%s", to_string().c_str());
 }
-  
+
 FileSystem::Ptr Interface::use_filesystem() {
   std::string fs_name;
-    
+
   switch(m_type){
 
     case Type::LOCAL:{
@@ -71,11 +71,11 @@ FileSystem::Ptr Interface::use_filesystem() {
     }
 
     default:
-      SWC_THROWF(Error::CONFIG_BAD_VALUE, 
-        "Not implemented FileSystem name=%s type=%d", 
-        fs_name.c_str(), (int)m_type);
+      SWC_THROWF(Error::CONFIG_BAD_VALUE,
+        "Not implemented FileSystem name=%s type=%d",
+        fs_name.c_str(), int(m_type));
   }
-    
+
   std::string fs_lib;
   if(Env::Config::settings()->has("swc.fs.lib."+fs_name)) {
     fs_lib.append(
@@ -90,39 +90,39 @@ FileSystem::Ptr Interface::use_filesystem() {
   const char* err = dlerror();
   void* handle = dlopen(fs_lib.c_str(), RTLD_NOW | RTLD_LAZY | RTLD_LOCAL);
   if (err || !handle)
-    SWC_THROWF(Error::CONFIG_BAD_VALUE, 
-              "Shared Lib %s, open fail: %s\n", 
+    SWC_THROWF(Error::CONFIG_BAD_VALUE,
+              "Shared Lib %s, open fail: %s\n",
               fs_lib.c_str(), err);
 
   err = dlerror();
   std::string handler_name =  "fs_apply_cfg_"+fs_name;
   void* f_cfg_ptr = dlsym(handle, handler_name.c_str());
   if (err || !f_cfg_ptr)
-    SWC_THROWF(Error::CONFIG_BAD_VALUE, 
-              "Shared Lib %s, link(%s) fail: %s handle=%lu\n", 
-              fs_lib.c_str(), handler_name.c_str(), err, (size_t)handle);
-  ((fs_apply_cfg_t*)f_cfg_ptr)(Env::Config::get());
-    
+    SWC_THROWF(Error::CONFIG_BAD_VALUE,
+              "Shared Lib %s, link(%s) fail: %s handle=%p\n",
+              fs_lib.c_str(), handler_name.c_str(), err, handle);
+  reinterpret_cast<fs_apply_cfg_t*>(f_cfg_ptr)(Env::Config::get());
+
   err = dlerror();
   handler_name =  "fs_make_new_"+fs_name;
   void* f_new_ptr = dlsym(handle, handler_name.c_str());
   if (err || !f_new_ptr)
-    SWC_THROWF(Error::CONFIG_BAD_VALUE, 
-              "Shared Lib %s, link(%s) fail: %s handle=%lu\n", 
-              fs_lib.c_str(), handler_name.c_str(), err, (size_t)handle);
-    
+    SWC_THROWF(Error::CONFIG_BAD_VALUE,
+              "Shared Lib %s, link(%s) fail: %s handle=%p\n",
+              fs_lib.c_str(), handler_name.c_str(), err, handle);
+
   loaded_dl = {.lib=handle, .cfg=f_cfg_ptr, .make=f_new_ptr};
-  return FileSystem::Ptr(((fs_make_new_t*)f_new_ptr)());
+  return FileSystem::Ptr(reinterpret_cast<fs_make_new_t*>(f_new_ptr)());
 }
 
-Interface::Ptr Interface::ptr(){ 
-  return this; 
+Interface::Ptr Interface::ptr() {
+  return this;
 }
 
 Interface::~Interface() {
   m_fs = nullptr;
   if(loaded_dl.lib) {
-    ((fs_apply_cfg_t*)loaded_dl.cfg)(nullptr);
+    reinterpret_cast<fs_apply_cfg_t*>(loaded_dl.cfg)(nullptr);
     dlclose(loaded_dl.lib);
   }
 }
@@ -136,28 +136,29 @@ FileSystem::Ptr Interface::get_fs() {
 }
 
 std::string Interface::to_string() const {
-  return format("FS::Interface(type=%d, details=%s)", 
-                (int)m_type, m_fs ? m_fs->to_string().c_str() : "NULL");
+  return format("FS::Interface(type=%d, details=%s)",
+                int(m_type), m_fs ? m_fs->to_string().c_str() : "NULL");
 }
 
 bool Interface::need_fds() const {
   return m_fs->need_fds();
 }
 
-void Interface::stop() { 
+void Interface::stop() {
   m_fs->stop();
 }
 
-void Interface::get_structured_ids(int& err, const std::string& base_path, 
-                                  IdEntries_t& entries, 
+void Interface::get_structured_ids(int& err, const std::string& base_path,
+                                  IdEntries_t& entries,
                                   const std::string& base_id) {
   //path(base_path) .../111/222/333/444f >> IdEntries_t{(int64_t)111222333444}
-    
+
   DirentList dirs;
   readdir(err, base_path, dirs);
   if(err)
     return;
 
+  entries.reserve(entries.size() + dirs.size());
   for(auto& entry : dirs) {
     if(!entry.is_dir) continue;
 
@@ -165,14 +166,14 @@ void Interface::get_structured_ids(int& err, const std::string& base_path,
     if(entry.name.back() == id_split_last){
       id_name.append(entry.name.substr(0, entry.name.length()-1));
       try {
-        entries.push_back((int64_t)strtoll(id_name.c_str(), NULL, 0));
+        entries.push_back(strtoll(id_name.c_str(), NULL, 0));
       } catch(...){
-        SWC_LOGF(LOG_ERROR, "Error converting id_name=%s to int64", 
+        SWC_LOGF(LOG_ERROR, "Error converting id_name=%s to int64",
                   id_name.c_str());
       }
       continue;
     }
-      
+
     std::string new_base_path = base_path;
     new_base_path.append("/");
     new_base_path.append(entry.name);
@@ -182,21 +183,19 @@ void Interface::get_structured_ids(int& err, const std::string& base_path,
       return;
   }
 }
-  
+
 // default form to FS methods
 
-void Interface::readdir(int& err, const std::string& base_path, 
+void Interface::readdir(int& err, const std::string& base_path,
                         DirentList& dirs) {
   for(;;) {
-    DirentList found_dirs;
-    m_fs->readdir(err = Error::OK, base_path, found_dirs);
+    dirs.clear();
+    m_fs->readdir(err = Error::OK, base_path, dirs);
     switch(err) {
       case Error::OK:
       case ENOENT:
-      case Error::SERVER_SHUTTING_DOWN: {
-        dirs = found_dirs;
+      case Error::SERVER_SHUTTING_DOWN:
         return;
-      }
       default:
         hold_delay();
         SWC_LOGF(LOG_WARN, "readdir, retrying to err=%d(%s) dir(%s)",
@@ -220,13 +219,13 @@ bool Interface::exists(int& err, const std::string& name) {
   }
 }
 
-void Interface::exists(const Callback::ExistsCb_t& cb, 
+void Interface::exists(const Callback::ExistsCb_t& cb,
                        const std::string& name) {
   m_fs->exists([cb, name, ptr=ptr()]
-    (int err, bool state) { 
-      if(!err || err == Error::SERVER_SHUTTING_DOWN) 
+    (int err, bool state) {
+      if(!err || err == Error::SERVER_SHUTTING_DOWN)
         cb(err, state);
-      else 
+      else
         ptr->exists(cb, name);
     },
     name
@@ -265,7 +264,7 @@ void Interface::rmdir(int& err, const std::string& name) {
   }
 }
 
-void Interface::rmdir_incl_opt_subs(int& err, const std::string& name, 
+void Interface::rmdir_incl_opt_subs(int& err, const std::string& name,
                                     const std::string& up_to) {
   rmdir(err, name);
   if(err)
@@ -330,7 +329,7 @@ void Interface::remove(const Callback::RemoveCb_t& cb,
   );
 }
 
-void Interface::rename(int& err, const std::string& from, 
+void Interface::rename(int& err, const std::string& from,
                        const std::string& to) {
   for(;;) {
     m_fs->rename(err = Error::OK, from, to);
@@ -346,18 +345,18 @@ void Interface::rename(int& err, const std::string& from,
         }
         [[fallthrough]];
       }
-      case ENOTEMPTY: { // overwrite dir like rename of file 
+      case ENOTEMPTY: { // overwrite dir like rename of file
         int e_err;
         rmdir(e_err, to);
         [[fallthrough]];
       }
       default:
         hold_delay();
-        SWC_LOGF(LOG_WARN, "rename, retrying to err=%d(%s) from(%s) to(%s)", 
+        SWC_LOGF(LOG_WARN, "rename, retrying to err=%d(%s) from(%s) to(%s)",
                   err, Error::get_text(err), from.c_str(), to.c_str());
     }
   }
-} 
+}
 
 size_t Interface::length(int& err, const std::string& name) {
   for(size_t length;;) {
@@ -370,7 +369,7 @@ size_t Interface::length(int& err, const std::string& name) {
         return length;
       default:
         hold_delay();
-        SWC_LOGF(LOG_WARN, "length, retrying to err=%d(%s) file(%s)", 
+        SWC_LOGF(LOG_WARN, "length, retrying to err=%d(%s) file(%s)",
                   err, Error::get_text(err), name.c_str());
     }
   }
@@ -378,7 +377,7 @@ size_t Interface::length(int& err, const std::string& name) {
 
 
 void Interface::write(int& err, SmartFd::Ptr smartfd,
-                      uint8_t replication, int64_t blksz, 
+                      uint8_t replication, int64_t blksz,
                       StaticBuffer& buffer) {
   for(buffer.own=false;;) {
     m_fs->write(err = Error::OK, smartfd, replication, blksz, buffer);
@@ -392,12 +391,12 @@ void Interface::write(int& err, SmartFd::Ptr smartfd,
       }
       default:
         hold_delay();
-        SWC_LOGF(LOG_WARN, "write, retrying to err=%d(%s) file(%s)", 
+        SWC_LOGF(LOG_WARN, "write, retrying to err=%d(%s) file(%s)",
                 err, Error::get_text(err), smartfd->filepath().c_str());
     }
   }
 }
-    
+
 void Interface::read(int& err, const std::string& name, StaticBuffer* dst) {
   for(;;) {
     m_fs->read(err = Error::OK, name, dst);
@@ -406,7 +405,7 @@ void Interface::read(int& err, const std::string& name, StaticBuffer* dst) {
       case Error::FS_EOF:
       case Error::FS_PATH_NOT_FOUND:
       //case Error::FS_PERMISSION_DENIED:
-      case Error::SERVER_SHUTTING_DOWN: 
+      case Error::SERVER_SHUTTING_DOWN:
         return;
       default:
         hold_delay();
@@ -432,7 +431,7 @@ bool Interface::open(int& err, SmartFd::Ptr& smartfd) {
     return true;
   }
 }
-  
+
 bool Interface::create(int& err, SmartFd::Ptr& smartfd,
                        int32_t bufsz, uint8_t replication, int64_t blksz) {
   m_fs->create(err = Error::OK, smartfd, bufsz, replication, blksz);
@@ -465,13 +464,13 @@ void Interface::close(int& err, SmartFd::Ptr& smartfd) {
         return;
       default:
         hold_delay();
-        SWC_LOGF(LOG_WARN, "close, retrying to err=%d(%s) file(%s)", 
+        SWC_LOGF(LOG_WARN, "close, retrying to err=%d(%s) file(%s)",
                  err, Error::get_text(err), smartfd->filepath().c_str());
     }
   }
 }
 
-void Interface::close(const Callback::CloseCb_t& cb, 
+void Interface::close(const Callback::CloseCb_t& cb,
                       SmartFd::Ptr& smartfd) {
   m_fs->close([cb, ptr=ptr()]
     (int err, SmartFd::Ptr smartfd) {
@@ -543,7 +542,7 @@ void FsInterface::reset() {
   m_env = nullptr;
 }
 
-FsInterface::FsInterface(FS::Type typ) 
+FsInterface::FsInterface(FS::Type typ)
                         : m_interface(new FS::Interface(typ)) {}
 
 FsInterface::~FsInterface(){

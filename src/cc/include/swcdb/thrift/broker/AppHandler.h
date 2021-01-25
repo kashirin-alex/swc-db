@@ -490,8 +490,7 @@ class AppHandler final : virtual public BrokerIf {
           if(fields.__isset.v_double)
             wfields.add(fields.field_id, (long double)fields.v_double);
           if(!fields.v_bytes.empty())
-            wfields.add(fields.field_id,
-              (const uint8_t*)fields.v_bytes.data(), fields.v_bytes.size());
+            wfields.add(fields.field_id, fields.v_bytes);
           if(!fields.v_key.empty()) {
             DB::Cell::Serial::Value::Field_KEY field;
             field.fid = fields.field_id;

@@ -31,7 +31,7 @@ const char* to_string(Flag flag) noexcept {
 }
 
 Flag flag_from(const uint8_t* rptr, uint32_t len) noexcept {
-  const char* ptr = (const char*)rptr;
+  const char* ptr = reinterpret_cast<const char*>(rptr);
   if(len >= 14) {
     if(!strncasecmp(ptr, "delete_version", 14))
       return Flag::DELETE_VERSION;
@@ -135,17 +135,17 @@ void Cell::set_value(uint8_t* v, uint32_t len, bool owner) {
 
 SWC_SHOULD_INLINE
 void Cell::set_value(const char* v, uint32_t len, bool owner) {
-  set_value((uint8_t *)v, len, owner);
+  set_value(reinterpret_cast<uint8_t*>(const_cast<char*>(v)), len, owner);
 }
 
 SWC_SHOULD_INLINE
 void Cell::set_value(const char* v, bool owner) {
-  set_value((uint8_t *)v, strlen(v), owner);
+  set_value(v, strlen(v), owner);
 }
 
 SWC_SHOULD_INLINE
 void Cell::set_value(const std::string& v, bool owner) {
-  set_value((uint8_t *)v.data(), v.length(), owner);
+  set_value(v.c_str(), v.length(), owner);
 }
 
 void Cell::set_value(Types::Encoder encoder, const uint8_t* v, uint32_t len) {
@@ -165,7 +165,7 @@ void Cell::set_value(Types::Encoder encoder, const uint8_t* v, uint32_t len) {
     control |= HAVE_ENCODER;
     uint8_t* ptr = output.base;
     Serialization::encode_vi32(&ptr, len);
-    Serialization::encode_i8(&ptr, (uint8_t)encoder);
+    Serialization::encode_i8(&ptr, uint8_t(encoder));
     vlen = output.fill();
     value = _value(output.base);
     // or keep as - value = output.base, output.own = false;
@@ -179,7 +179,7 @@ void Cell::set_value(Types::Encoder encoder, const uint8_t* v, uint32_t len) {
 
 SWC_SHOULD_INLINE
 void Cell::set_value(Types::Encoder encoder, const std::string& v) {
-  set_value(encoder, (const uint8_t*)v.data(), v.size());
+  set_value(encoder, reinterpret_cast<const uint8_t*>(v.c_str()), v.size());
 }
 
 void Cell::get_value(StaticBuffer& v, bool owner) const {
@@ -187,7 +187,7 @@ void Cell::get_value(StaticBuffer& v, bool owner) const {
     const uint8_t* ptr = value;
     size_t remain = vlen;
     v.reallocate(Serialization::decode_vi32(&ptr, &remain));
-    auto encoder = (Types::Encoder)Serialization::decode_i8(&ptr, &remain);
+    auto encoder = Types::Encoder(Serialization::decode_i8(&ptr, &remain));
     int err = Error::OK;
     Core::Encoder::decode(err, encoder, ptr, remain, v.base, v.size);
     if(err) {
@@ -206,13 +206,13 @@ void Cell::set_counter(uint8_t op, int64_t v, Types::Column typ, int64_t rev) {
 
   switch(typ) {
     case Types::Column::COUNTER_I8:
-      v = (int8_t)v;
+      v = int8_t(v);
       break;
     case Types::Column::COUNTER_I16:
-      v = (int16_t)v;
+      v = int16_t(v);
       break;
     case Types::Column::COUNTER_I32:
-      v = (int32_t)v;
+      v = int32_t(v);
       break;
     default:
       break;
@@ -273,7 +273,7 @@ void Cell::read(const uint8_t** bufp, size_t* remainp, bool owner) {
     if(*remainp < vlen)
       SWC_THROWF(Error::SERIALIZATION_INPUT_OVERRUN,
         "Read Cell(key=%s) value", key.to_string().c_str());
-    value = (own = owner) ? _value(*bufp) : (uint8_t *)*bufp;
+    value = (own = owner) ? _value(*bufp) : const_cast<uint8_t*>(*bufp);
     *bufp += vlen;
     *remainp -= vlen;
   } else {
@@ -376,7 +376,7 @@ void Cell::display(std::ostream& out,
   out << '\t';
 
   if(flag != Flag::INSERT) {
-    out << '(' << Cells::to_string((Flag)flag) << ')';
+    out << '(' << Cells::to_string(Flag(flag)) << ')';
     return;
   }
 
@@ -442,7 +442,7 @@ std::string Cell::to_string(Types::Column typ) const {
 }
 
 void Cell::print(std::ostream& out, Types::Column typ) const {
-  out << "Cell(flag=" << Cells::to_string((Flag)flag);
+  out << "Cell(flag=" << Cells::to_string(Flag(flag));
   key.print(out << " key=");
   out << " control=" << int(control)
       << " ts=" << get_timestamp()
@@ -484,7 +484,7 @@ void Cell::print(std::ostream& out, Types::Column typ) const {
 
 SWC_SHOULD_INLINE
 uint8_t* Cell::_value(const uint8_t* v) {
-  return vlen ? (uint8_t*)memcpy(new uint8_t[vlen], v, vlen) : 0;
+  return vlen ? static_cast<uint8_t*>(memcpy(new uint8_t[vlen], v, vlen)) : 0;
 }
 
 

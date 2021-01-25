@@ -26,15 +26,15 @@ void append(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
 
     Params::AppendReq params;
     params.decode(&ptr, &remain);
-      
+
     auto smartfd = Env::FsBroker::fds()->select(params.fd);
-      
+
     if(!smartfd) {
       err = EBADR;
     } else {
       offset = smartfd->pos();
       amount = Env::FsInterface::fs()->append(
-        err, smartfd, ev->data_ext, (FS::Flags)params.flags);
+        err, smartfd, ev->data_ext, FS::Flags(params.flags));
     }
 
   } catch(...) {

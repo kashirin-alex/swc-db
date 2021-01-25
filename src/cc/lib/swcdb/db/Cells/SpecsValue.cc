@@ -18,13 +18,13 @@ Value::Value(bool own)
 
 Value::Value(const char* data_n, Condition::Comp comp_n, bool owner)
             : own(false), matcher(nullptr) {
-  set((uint8_t*)data_n, strlen(data_n), comp_n, owner);
+  set(data_n, strlen(data_n), comp_n, owner);
 }
 
 Value::Value(const char* data_n, const uint32_t size_n,
              Condition::Comp comp_n, bool owner)
             : own(false), matcher(nullptr) {
-  set((uint8_t*)data_n, size_n, comp_n, owner);
+  set(data_n, size_n, comp_n, owner);
 }
 
 Value::Value(const uint8_t* data_n, const uint32_t size_n,
@@ -62,15 +62,20 @@ void Value::set_counter(int64_t count, Condition::Comp comp_n) {
 }
 
 void Value::set(const char* data_n, Condition::Comp comp_n, bool owner) {
-  set((uint8_t*)data_n, strlen(data_n), comp_n, owner);
+  set(data_n, strlen(data_n), comp_n, owner);
 }
 
 void Value::set(const std::string& data_n, Condition::Comp comp_n) {
-  set((uint8_t*)data_n.data(), data_n.length(), comp_n, true);
+  set(data_n.c_str(), data_n.length(), comp_n, true);
 }
 
 void Value::copy(const Value &other) {
   set(other.data, other.size, other.comp, true);
+}
+
+void Value::set(const char* data_n, uint32_t size_n,
+                Condition::Comp comp_n, bool owner) {
+  set(reinterpret_cast<const uint8_t*>(data_n), size_n, comp_n, owner);
 }
 
 void Value::set(const uint8_t* data_n, const uint32_t size_n,
@@ -79,8 +84,9 @@ void Value::set(const uint8_t* data_n, const uint32_t size_n,
   own   = owner;
   comp = comp_n;
   if((size = size_n))
-    data = own ? (uint8_t*)memcpy(new uint8_t[size], data_n, size)
-               : (uint8_t*)data_n;
+    data = own
+      ? static_cast<uint8_t*>(memcpy(new uint8_t[size], data_n, size))
+      : const_cast<uint8_t*>(data_n);
 }
 
 Value::~Value() {
@@ -119,7 +125,7 @@ size_t Value::encoded_length() const {
 }
 
 void Value::encode(uint8_t** bufp) const {
-  Serialization::encode_i8(bufp, (uint8_t)comp);
+  Serialization::encode_i8(bufp, comp);
   if(comp != Condition::NONE) {
     Serialization::encode_vi32(bufp, size);
     memcpy(*bufp, data, size);
@@ -129,10 +135,10 @@ void Value::encode(uint8_t** bufp) const {
 
 void Value::decode(const uint8_t** bufp, size_t* remainp) {
   own = false;
-  comp = (Condition::Comp)Serialization::decode_i8(bufp, remainp);
+  comp = Condition::Comp(Serialization::decode_i8(bufp, remainp));
   if(comp != Condition::NONE) {
     size = Serialization::decode_vi32(bufp, remainp);
-    data = (uint8_t*)*bufp;
+    data = const_cast<uint8_t*>(*bufp);
     *remainp -= size;
     *bufp += size;
   }
@@ -157,7 +163,7 @@ bool Value::is_matching(Types::Column col_type,
 
 struct MatcherPlainRE : Value::TypeMatcher {
   MatcherPlainRE(const uint8_t* data, uint32_t size)
-                : re(re2::StringPiece((const char*)data, size)) {
+    : re(re2::StringPiece(reinterpret_cast<const char*>(data), size)) {
   }
   re2::RE2 re;
 };
@@ -174,7 +180,8 @@ bool Value::is_matching_plain(const Cells::Cell& cell) const {
       if(!matcher)
         matcher = new MatcherPlainRE(data, size);
       return Condition::re(
-        ((MatcherPlainRE*)matcher)->re, (const char*)v.base, v.size);
+        static_cast<MatcherPlainRE*>(matcher)->re,
+        reinterpret_cast<char*>(v.base), v.size);
     }
     default:
       return Condition::is_matching_extended(comp, data, size, v.base, v.size);
@@ -193,7 +200,7 @@ bool Value::is_matching_serial(const Cells::Cell& cell) const {
     return true;
   if(!matcher)
     matcher = new MatcherSerial(data, size);
-  return ((MatcherSerial*)matcher)->fields.is_matching(cell)
+  return static_cast<MatcherSerial*>(matcher)->fields.is_matching(cell)
     ? comp == Condition::EQ
     : comp == Condition::NE;
 }
@@ -201,8 +208,8 @@ bool Value::is_matching_serial(const Cells::Cell& cell) const {
 struct MatcherCounter : Value::TypeMatcher {
   MatcherCounter(const uint8_t* data, uint32_t size) {
     errno = 0;
-    char *last = (char*)data + size;
-    value = strtoll((const char*)data, &last, 0);
+    char *last = reinterpret_cast<char*>(const_cast<uint8_t*>(data)) + size;
+    value = strtoll(reinterpret_cast<const char*>(data), &last, 0);
   }
   int64_t value;
 };
@@ -213,7 +220,7 @@ bool Value::is_matching_counter(const Cells::Cell& cell) const {
   if(!matcher)
     matcher = new MatcherCounter(data, size);
   return Condition::is_matching(
-    comp, ((MatcherCounter*)matcher)->value, cell.get_counter());
+    comp, static_cast<MatcherCounter*>(matcher)->value, cell.get_counter());
 }
 
 

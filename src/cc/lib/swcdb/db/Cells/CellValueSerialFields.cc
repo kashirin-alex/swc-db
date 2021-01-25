@@ -38,7 +38,7 @@ const char* to_string(Type typ) noexcept {
 }
 
 Type read_type(const uint8_t** bufp, size_t* remainp) {
-  return (Type)Serialization::decode_i8(bufp, remainp);
+  return Type(Serialization::decode_i8(bufp, remainp));
 }
 //
 
@@ -54,7 +54,7 @@ size_t Field::encoded_length() const {
 }
 
 void Field::encode(uint8_t** bufp, Type type) const {
-  Serialization::encode_i8(bufp, (uint8_t)type);
+  Serialization::encode_i8(bufp, type);
   Serialization::encode_vi24(bufp, fid);
 }
 //
@@ -114,7 +114,7 @@ Field_BYTES::Field_BYTES(uint24_t fid,
                         : Field(fid) {
   take_ownership
     ? assign(data, len)
-    : set((uint8_t*)data, len, false);
+    : set(const_cast<uint8_t*>(data), len, false);
 }
 
 Field_BYTES::Field_BYTES(const uint8_t** bufp, size_t* remainp,
@@ -124,7 +124,7 @@ Field_BYTES::Field_BYTES(const uint8_t** bufp, size_t* remainp,
   const uint8_t* ptr = Serialization::decode_bytes(bufp, remainp, &len);
   take_ownership
     ? assign(ptr, len)
-    : set((uint8_t*)ptr, len, false);
+    : set(const_cast<uint8_t*>(ptr), len, false);
 }
 
 size_t Field_BYTES::encoded_length() const {
@@ -140,7 +140,7 @@ void Field_BYTES::encode(uint8_t** bufp) const {
 void Field_BYTES::convert_to(std::string& item) const {
   if(size) {
     item.clear();
-    item.append((const char*)base, size);
+    item.append(reinterpret_cast<const char*>(base), size);
   }
 }
 
@@ -214,7 +214,7 @@ Field_LIST_INT64::Field_LIST_INT64(const uint8_t** bufp, size_t* remainp,
   const uint8_t* ptr = Serialization::decode_bytes(bufp, remainp, &len);
   take_ownership
     ? assign(ptr, len)
-    : set((uint8_t*)ptr, len, false);
+    : set(const_cast<uint8_t*>(ptr), len, false);
 }
 
 size_t Field_LIST_INT64::encoded_length() const {
@@ -272,7 +272,7 @@ Field_LIST_BYTES::Field_LIST_BYTES(const uint8_t** bufp, size_t* remainp,
   const uint8_t* ptr = Serialization::decode_bytes(bufp, remainp, &len);
   take_ownership
     ? assign(ptr, len)
-    : set((uint8_t*)ptr, len, false);
+    : set(const_cast<uint8_t*>(ptr), len, false);
 }
 
 size_t Field_LIST_BYTES::encoded_length() const {
@@ -290,8 +290,8 @@ void Field_LIST_BYTES::convert_to(std::vector<std::string>& items) const {
     const uint8_t* ptr = base;
     for(size_t remain = size; remain;) {
       size_t len;
-      const char* cptr = (const char*)Serialization::decode_bytes(
-        &ptr, &remain, &len);
+      const char* cptr = reinterpret_cast<const char*>(
+        Serialization::decode_bytes(&ptr, &remain, &len));
       items.emplace_back(cptr, len);
     }
   }

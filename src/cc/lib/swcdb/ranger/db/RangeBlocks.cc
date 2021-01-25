@@ -9,11 +9,11 @@
 namespace SWC { namespace Ranger {
 
 
-Blocks::Blocks(const DB::Types::KeySeq key_seq) 
-              : commitlog(key_seq), 
-                m_block(nullptr), m_processing(0) { 
+Blocks::Blocks(const DB::Types::KeySeq key_seq)
+              : commitlog(key_seq),
+                m_block(nullptr), m_processing(0) {
 }
-  
+
 void Blocks::init(const RangePtr& for_range) {
   range = for_range;
   commitlog.init(range);
@@ -53,16 +53,16 @@ void Blocks::load(int& err) {
 void Blocks::unload() {
   wait_processing();
   processing_increment();
-  commitlog.commit_new_fragment(true);  
+  commitlog.commit_new_fragment(true);
   Core::MutexSptd::scope lock(m_mutex);
-    
+
   commitlog.unload();
-  cellstores.unload();  
+  cellstores.unload();
   _clear();
   range = nullptr;
   processing_decrement();
 }
-  
+
 void Blocks::remove(int&) {
   wait_processing();
   processing_increment();
@@ -88,7 +88,7 @@ void Blocks::expand_and_align(DB::Cells::Interval& intval) {
 }
 
 void Blocks::apply_new(int &err,
-                       CellStore::Writers& w_cellstores, 
+                       CellStore::Writers& w_cellstores,
                        CommitLog::Fragments::Vec& fragments_old) {
   wait_processing();
   Core::MutexSptd::scope lock(m_mutex);
@@ -97,7 +97,7 @@ void Blocks::apply_new(int &err,
   if(err)
     return;
   RangeData::save(err, cellstores);
-      
+
   commitlog.remove(err, fragments_old);
 }
 
@@ -123,7 +123,7 @@ void Blocks::scan(ReqScan::Ptr req, Block::Ptr blk_ptr) {
   if(req->expired()) {
     processing_decrement();
     return;
-  }    
+  }
 
   int err = Error::OK;
   range->state(err);
@@ -145,7 +145,8 @@ void Blocks::scan(ReqScan::Ptr req, Block::Ptr blk_ptr) {
     int64_t ts = Time::now_ns();
 
     if(req->with_block() && req->block) {
-      (blk = blk_ptr = (Block*)req->block)->processing_increment();
+      (blk = blk_ptr = static_cast<Block*>(req->block))
+        ->processing_increment();
       req->block = nullptr;
 
     } else {
@@ -153,10 +154,10 @@ void Blocks::scan(ReqScan::Ptr req, Block::Ptr blk_ptr) {
         blk_ptr->release();
 
       bool support = m_mutex.lock();
-      blk_ptr = blk_ptr 
-        ? blk_ptr->next 
+      blk_ptr = blk_ptr
+        ? blk_ptr->next
         : (req->spec.offset_key.empty()
-            ? m_block 
+            ? m_block
             : *(m_blocks_idx.begin() + _narrow(req->spec.offset_key)));
       m_mutex.unlock(support);
 
@@ -195,8 +196,8 @@ void Blocks::scan(ReqScan::Ptr req, Block::Ptr blk_ptr) {
       case Block::ScanState::QUEUED: {
         processing_increment();
         bool support;
-        for(size_t n=0; 
-            n < req->readahead && 
+        for(size_t n=0;
+            n < req->readahead &&
             !Env::Rgr::res().need_ram(need * (++n))
             && m_mutex.try_full_lock(support); ) {
           blk = blk->next;
@@ -270,9 +271,9 @@ size_t Blocks::size_bytes() {
 
 size_t Blocks::size_bytes_total(bool only_loaded) {
   Core::MutexSptd::scope lock(m_mutex);
-  return _size_bytes() 
-        + cellstores.size_bytes(only_loaded) 
-        + commitlog.size_bytes(only_loaded);  
+  return _size_bytes()
+        + cellstores.size_bytes(only_loaded)
+        + commitlog.size_bytes(only_loaded);
 }
 
 size_t Blocks::release(size_t bytes) {
@@ -306,7 +307,7 @@ size_t Blocks::release(size_t bytes) {
   }
   //else if(_size() > 1000)
   // merge in pairs down to 1000 blks
-    
+
   return released;
 }
 
@@ -343,18 +344,18 @@ void Blocks::print(std::ostream& out, bool minimal) {
   } else {
     out << " blocks=[";
     for(Block::Ptr blk = m_block; blk; blk=blk->next) {
-      blk->print(out); 
+      blk->print(out);
       out << ", ";
     }
     out << ']';
   }
   commitlog.print(out << ' ', minimal);
   cellstores.print(out << ' ', minimal);
-  out 
+  out
     << " processing=" << _processing()
-    << " bytes=" << _size_bytes() 
+    << " bytes=" << _size_bytes()
     << ')';
-} 
+}
 
 size_t Blocks::_size() {
   size_t sz = 0;
@@ -369,12 +370,12 @@ size_t Blocks::_size_bytes() {
     sz += blk->size_bytes();
   return sz;
 }
-  
+
 bool Blocks::_processing() const noexcept {
   if(m_processing)
     return true;
   for(Block::Ptr blk=m_block; blk; blk=blk->next) {
-    if(blk->processing()) 
+    if(blk->processing())
       return true;
   }
   return false;
@@ -408,7 +409,7 @@ void Blocks::init_blocks(int& err) {
       m_block = blk = Block::make(cs_blk->header.interval, ptr());
       m_block->set_prev_key_end(range->prev_range_end);
       m_blocks_idx.push_back(blk);
-    } else if(blk->cond_key_end(cs_blk->header.interval.key_begin) 
+    } else if(blk->cond_key_end(cs_blk->header.interval.key_begin)
                                             != Condition::EQ) {
       blk->_add(Block::make(cs_blk->header.interval, ptr()));
       blk = blk->next;
@@ -422,7 +423,7 @@ void Blocks::init_blocks(int& err) {
     return;
   }
 
-  if(range->_is_any_end()) 
+  if(range->_is_any_end())
     blk->free_key_end();
 }
 
@@ -437,7 +438,7 @@ size_t Blocks::_narrow(const DB::Cell::Key& key) const {
   size_t offset = 0;
   if(key.empty() || m_blocks_idx.size() <= MAX_IDX_NARROW)
     return offset;
-  
+
   size_t step = offset = m_blocks_idx.size() >> 1;
   try_narrow:
     if(!(*(m_blocks_idx.begin() + offset))->is_in_end(key)) {

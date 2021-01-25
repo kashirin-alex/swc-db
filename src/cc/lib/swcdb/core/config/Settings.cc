@@ -19,7 +19,7 @@ Settings::Settings() {
 Settings::~Settings() { }
 
 void Settings::init(int argc, char *argv[]) {
-  
+
   char path[1024];
   errno = 0;
   ssize_t r = readlink("/proc/self/exe", path, 1024);
@@ -27,7 +27,7 @@ void Settings::init(int argc, char *argv[]) {
     throw;
 
   install_path = std::string(path, r); // install_path = std::string(argv[0]);
- 
+
   auto at = install_path.find_last_of("/");
   if(at == std::string::npos) {
     executable = install_path;
@@ -46,7 +46,7 @@ void Settings::init(int argc, char *argv[]) {
   parse_args(argc, argv);
 
   init_post_cmd_args();
-  
+
   auto verbose = get<Property::V_GBOOL>("verbose");
   if(verbose->get() && get_bool("quiet")) {
     verbose->set(false);
@@ -60,7 +60,7 @@ void Settings::init(int argc, char *argv[]) {
     loglevel->set(LOG_DEBUG);
 
   } else if(loglevel->get() == -1) {
-    SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM 
+    SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM
       << "unknown logging level: "<< loglevel->to_string();
     );
     std::quick_exit(EXIT_SUCCESS);
@@ -83,20 +83,20 @@ void Settings::init_options() {
     ("swc.cfg", str("swc.cfg"), "Main configuration file")
     ("swc.cfg.dyn", strs(), "Main dynamic configuration file")
 
-    ("swc.logging.level,l", 
+    ("swc.logging.level,l",
       g_enum(
         LOG_INFO,
         [](int value){ Core::logger.set_level(value); },
         Core::logger.from_string,
         Core::logger.repr
-      ), 
+      ),
      "Logging level: debug|info|notice|warn|error|crit|alert|fatal")
     ("swc.logging.path", str(install_path + "/var/log/swcdb/"), "Path of log files")
 
     //("induce-failure", str(), "Arguments for inducing failure")
     /* Interactive-Shell options
     ("silent", boo()->zero_token(),
-     "as Not Interactive or Show as little output as possible") 
+     "as Not Interactive or Show as little output as possible")
     */
     ;
 }
@@ -107,11 +107,11 @@ void Settings::parse_args(int argc, char *argv[]) {
   prs.config.add(cmdline_desc);
   prs.config.add(file_desc);
   prs.parse_cmdline(argc, argv);
- 
+
   prs.own_options(m_cmd_args);
-  
+
   load_from(prs.get_options());
-    
+
   // some built-in behavior
   if (has("help")) {
     SWC_PRINT << cmdline_desc << SWC_PRINT_CLOSE;
@@ -124,12 +124,12 @@ void Settings::parse_args(int argc, char *argv[]) {
   }
 
   if (has("version")) {
-    SWC_PRINT << swcdb_version() << '\n' 
+    SWC_PRINT << swcdb_version() << '\n'
               << swcdb_copyrights() << SWC_PRINT_CLOSE;
     std::quick_exit(EXIT_SUCCESS);
   }
 
-  if(has("swc.cfg")) 
+  if(has("swc.cfg"))
     parse_file(get_str("swc.cfg"), "swc.cfg.dyn");
 }
 
@@ -138,19 +138,19 @@ void Settings::parse_file(const std::string& name, const std::string& onchg) {
     return;
 
   std::string fname;
-  if(name.front() != '/' && name.front() != '.') 
+  if(name.front() != '/' && name.front() != '.')
     fname = get_str("swc.cfg.path");
   fname.append(name);
-  
+
   if(!FileUtils::exists(fname))
     SWC_THROWF(ENOENT, "cfg file=%s not found", fname.c_str());
-    
+
   load(fname, file_desc, cmdline_desc, false);
   load_files_by(onchg, false);
-  load_from(m_cmd_args);  // Inforce cmdline properties 
+  load_from(m_cmd_args);  // Inforce cmdline properties
 }
 
-void Settings::load_files_by(const std::string& fileprop,  
+void Settings::load_files_by(const std::string& fileprop,
                              bool allow_unregistered) {
   if(fileprop.empty() || !has(fileprop))
     return;
@@ -172,7 +172,7 @@ void Settings::load_files_by(const std::string& fileprop,
         m_dyn_files.push_back({.filename=fname, .modified=0});
     } catch(...) {
       const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
-      SWC_LOG_OUT(LOG_WARN, SWC_LOG_OSTREAM 
+      SWC_LOG_OUT(LOG_WARN, SWC_LOG_OSTREAM
         << fileprop << " has bad cfg file " << *it << ": " << e;
       );
     }
@@ -192,10 +192,10 @@ void Settings::init_process(bool with_pid_file, const std::string& port_cfg) {
     pid_file = install_path + "/run/" + executable;
     if(!port_cfg.empty() && !defaulted(port_cfg)) {
       pid_file.append(".");
-      pid_file.append(std::to_string((size_t)get_i16(port_cfg)));
+      pid_file.append(std::to_string(get_i16(port_cfg)));
     }
     pid_file.append(".pid");
-  
+
     if(FileUtils::exists(pid_file)) {
       errno = 0;
       std::string old_pid;
@@ -207,7 +207,7 @@ void Settings::init_process(bool with_pid_file, const std::string& port_cfg) {
       if(old_pid.empty()) {
         std::cerr << "Problem reading pid-file='" << pid_file << '\'';
         if(errno)
-          Error::print(std::cerr << ' ', errno); 
+          Error::print(std::cerr << ' ', errno);
         std::cerr << std::endl;
         quick_exit(EXIT_FAILURE);
       }
@@ -220,7 +220,7 @@ void Settings::init_process(bool with_pid_file, const std::string& port_cfg) {
         if(r == -1 || errno) {
           std::cerr << "Problem reading running-pid='" << pid_exe << '\'';
           if(errno)
-            Error::print(std::cerr << ' ', errno); 
+            Error::print(std::cerr << ' ', errno);
           std::cerr << std::endl;
           quick_exit(EXIT_FAILURE);
         }
@@ -228,8 +228,8 @@ void Settings::init_process(bool with_pid_file, const std::string& port_cfg) {
         if((size_t(r) == prog_path.size() ||
             (size_t(r) > prog_path.size() && path[prog_path.size()] == ' ')
            ) && !strncmp(prog_path.c_str(), path, prog_path.size())) {
-          std::cerr << "Problem executing '" << executable 
-                    << "', process already running-pid=" << old_pid 
+          std::cerr << "Problem executing '" << executable
+                    << "', process already running-pid=" << old_pid
                     << ", stop it first" << std::endl;
           quick_exit(EXIT_FAILURE);
         }
@@ -240,7 +240,7 @@ void Settings::init_process(bool with_pid_file, const std::string& port_cfg) {
   }
 
   auto pid = getpid();
-  
+
   if(with_pid_file) {
     errno = 0;
     std::ofstream pid_file_buff(pid_file, std::ios::out);
@@ -251,26 +251,26 @@ void Settings::init_process(bool with_pid_file, const std::string& port_cfg) {
     if(errno) {
       std::cerr << "Problem writing pid-file='" << pid_file << '\'';
       if(errno)
-        Error::print(std::cerr << ' ', errno); 
+        Error::print(std::cerr << ' ', errno);
       std::cerr << std::endl;
       quick_exit(EXIT_FAILURE);
     }
 
-    std::cout << "Executing '"<< executable 
+    std::cout << "Executing '"<< executable
               << "' with pid-file='" << pid_file << '\'' << std::endl;
   }
 
   executable.append(".");
-  executable.append(std::to_string((size_t)pid));
+  executable.append(std::to_string(size_t(pid)));
 
   Core::logger.initialize(executable);
   if(daemon)
     Core::logger.daemon(get_str("swc.logging.path"));
-    
+
   if(daemon || get_gbool("verbose")) {
-    SWC_LOG_OUT(LOG_NOTICE, SWC_LOG_OSTREAM 
+    SWC_LOG_OUT(LOG_NOTICE, SWC_LOG_OSTREAM
       << "Initialized " << executable << " "
-      << swcdb_version() << "\n" << swcdb_copyrights() << '\n' 
+      << swcdb_version() << "\n" << swcdb_copyrights() << '\n'
       << "Process Settings: \n" << to_string_all();
     );
   }
@@ -294,7 +294,7 @@ void Settings::check_dynamic_files() {
     errno = 0;
     ts = FileUtils::modification(dyn.filename);
     if(errno > 0) {
-      SWC_LOGF(LOG_WARN, "cfg-file '%s' err(%s)", 
+      SWC_LOGF(LOG_WARN, "cfg-file '%s' err(%s)",
                dyn.filename.c_str(), Error::get_text(errno));
       continue;
     }

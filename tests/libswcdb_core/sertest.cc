@@ -65,8 +65,8 @@ void test_i16() {
       SWC_ASSERT(!len));
   }
   ns = Time::now_ns() - ns;
-  std::cout << "i16 took=" << ns 
-            << " avg=" << (double)ns / UINT16_MAX << "\n";
+  std::cout << "i16 took=" << ns
+            << " avg=" << double(ns) / UINT16_MAX << "\n";
 }
 
 void test_i24() {
@@ -91,7 +91,7 @@ void test_i24() {
       SWC_ASSERT(!len));
   }
   ns = Time::now_ns() - ns;
-  std::cout << "i24 took=" << ns 
+  std::cout << "i24 took=" << ns
             << " avg=" << double(ns) / double(UINT24_MAX) << "\n";
 }
 
@@ -117,7 +117,7 @@ void test_i32() {
       SWC_ASSERT(!len));
   }
   ns = Time::now_ns() - ns;
-  std::cout << "i32 took=" << ns 
+  std::cout << "i32 took=" << ns
             << " avg=" << double(ns) / double(UINT32_MAX) << "\n";
 }
 
@@ -180,8 +180,8 @@ void test_vi24() {
     ++c;
   }
   ns = Time::now_ns() - ns;
-  std::cout << "vi24       took=" << ns 
-            << " avg=" << (double)ns / c << " c=" << c << "\n";
+  std::cout << "vi24       took=" << ns
+            << " avg=" << double(ns) / c << " c=" << c << "\n";
 }
 
 void chk_vi32(uint32_t n) {
@@ -215,20 +215,20 @@ void test_vi32() {
     ++c;
   }
   ns = Time::now_ns() - ns;
-  std::cout << "vi32 lower took=" << ns 
-            << " avg=" << (double)ns / c << " c=" << c << "\n";
+  std::cout << "vi32 lower took=" << ns
+            << " avg=" << double(ns) / c << " c=" << c << "\n";
   c = 0;
   ns = Time::now_ns();
   for(uint32_t p=0; p<PROBES;++p)
   for(uint32_t n=UINT32_MAX-MAX_CHECKS+1; n <= UINT32_MAX ;++n) {
-    chk_vi32(n);  
+    chk_vi32(n);
     ++c;
     if(n == UINT32_MAX)
       break;
   }
   ns = Time::now_ns() - ns;
-  std::cout << "vi32 upper took=" << ns 
-            << " avg=" << (double)ns / c << " c=" << c << "\n";
+  std::cout << "vi32 upper took=" << ns
+            << " avg=" << double(ns) / c << " c=" << c << "\n";
 }
 
 void chk_vi64(uint64_t n) {
@@ -253,7 +253,7 @@ void test_vi64() {
     SWC_ASSERT(p2 - buf == 10);
     SWC_ASSERT(!len));
   }
-  
+
   uint64_t c = 0;
   auto ns = Time::now_ns();
   for(uint32_t p=0; p<PROBES;++p)
@@ -262,8 +262,8 @@ void test_vi64() {
     ++c;
   }
   ns = Time::now_ns() - ns;
-  std::cout << "vi64 lower took=" << ns 
-            << " avg=" << (double)ns / c << " c=" << c << "\n";
+  std::cout << "vi64 lower took=" << ns
+            << " avg=" << double(ns) / c << " c=" << c << "\n";
   c = 0;
   ns = Time::now_ns();
   for(uint32_t p=0; p<PROBES;++p)
@@ -274,8 +274,8 @@ void test_vi64() {
       break;
   }
   ns = Time::now_ns() - ns;
-  std::cout << "vi64 upper took=" << ns 
-            << " avg=" << (double)ns / c << " c=" << c << "\n";
+  std::cout << "vi64 upper took=" << ns
+            << " avg=" << double(ns) / c << " c=" << c << "\n";
 }
 
 
@@ -311,8 +311,8 @@ void test_fixed_vi24() {
     ++c;
   }
   ns = Time::now_ns() - ns;
-  std::cout << "fixed_vi24       took=" << ns 
-            << " avg=" << (double)ns / c << " c=" << c << "\n";
+  std::cout << "fixed_vi24       took=" << ns
+            << " avg=" << double(ns) / c << " c=" << c << "\n";
 }
 
 
@@ -347,20 +347,20 @@ void test_fixed_vi32() {
     ++c;
   }
   ns = Time::now_ns() - ns;
-  std::cout << "fixed_vi32 lower took=" << ns 
-            << " avg=" << (double)ns / c << " c=" << c << "\n";
+  std::cout << "fixed_vi32 lower took=" << ns
+            << " avg=" << double(ns) / c << " c=" << c << "\n";
   c = 0;
   ns = Time::now_ns();
   for(uint32_t p=0; p<PROBES;++p)
   for(uint32_t n=UINT32_MAX-MAX_CHECKS+1; n <= UINT32_MAX ;++n) {
-    chk_fixed_vi32(n);  
+    chk_fixed_vi32(n);
     ++c;
     if(n == UINT32_MAX)
       break;
   }
   ns = Time::now_ns() - ns;
-  std::cout << "fixed_vi32 upper took=" << ns 
-            << " avg=" << (double)ns / c << " c=" << c << "\n";
+  std::cout << "fixed_vi32 upper took=" << ns
+            << " avg=" << double(ns) / c << " c=" << c << "\n";
 }
 
 
@@ -386,7 +386,7 @@ void test_fixed_vi64() {
     SWC_ASSERT(p2 - buf == 9);
     SWC_ASSERT(!len));
   }
-  
+
   uint64_t c = 0;
   auto ns = Time::now_ns();
   for(uint32_t p=0; p<PROBES;++p)
@@ -395,8 +395,8 @@ void test_fixed_vi64() {
     ++c;
   }
   ns = Time::now_ns() - ns;
-  std::cout << "fixed_vi64 lower took=" << ns 
-            << " avg=" << (double)ns / c << " c=" << c << "\n";
+  std::cout << "fixed_vi64 lower took=" << ns
+            << " avg=" << double(ns) / c << " c=" << c << "\n";
   c = 0;
   ns = Time::now_ns();
   for(uint32_t p=0; p<PROBES;++p)
@@ -407,8 +407,8 @@ void test_fixed_vi64() {
       break;
   }
   ns = Time::now_ns() - ns;
-  std::cout << "fixed_vi64 upper took=" << ns 
-            << " avg=" << (double)ns / c << " c=" << c << "\n";
+  std::cout << "fixed_vi64 upper took=" << ns
+            << " avg=" << double(ns) / c << " c=" << c << "\n";
 }
 
 void test_bytes_string() {
@@ -420,7 +420,7 @@ void test_bytes_string() {
   auto s = decode_bytes_string(&p2, &len);
   SWC_TRY("testing bytes_string",
     SWC_ASSERT(!strcmp(s.c_str(), input));
-    SWC_ASSERT(p2 - buf == (int)(encoded_length_bytes(strlen(input))));
+    SWC_ASSERT(p2 - buf == int(encoded_length_bytes(strlen(input))));
     SWC_ASSERT(len == sizeof(buf) - (p2 - buf)));
 }
 
@@ -491,7 +491,7 @@ void test_ser() {
   test_fixed_vi32();
   test_fixed_vi64();
   test_bytes_string();
-  
+
   test_bad_vi24();
   test_bad_vi32();
   test_bad_vi64();

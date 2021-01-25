@@ -2,7 +2,7 @@
 /*
  * SWC-DB© Copyright since 2019 Alex Kashirin <kashirin.alex@gmail.com>
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
- */ 
+ */
 
 #include "swcdb/manager/Protocol/Rgr/req/ReportRes.h"
 
@@ -14,7 +14,7 @@ namespace Rgr { namespace Req {
 ReportRes::ReportRes(const Manager::Ranger::Ptr& rgr)
                     : client::ConnQueue::ReqBase(false), rgr(rgr) {
   cbp = Buffers::make(1);
-  cbp->append_i8((uint8_t)Params::Report::Function::RESOURCES);
+  cbp->append_i8(Params::Report::Function::RESOURCES);
   cbp->header.set(REPORT, 60000);
 }
 
@@ -22,7 +22,7 @@ ReportRes::~ReportRes() { }
 
 void ReportRes::handle_no_conn() {
   Env::Mngr::rangers()->rgr_report(
-    rgr->rgrid, 
+    rgr->rgrid,
     Error::COMM_NOT_CONNECTED,
     Params::Report::RspRes()
   );
@@ -31,7 +31,7 @@ void ReportRes::handle_no_conn() {
 void ReportRes::handle(ConnHandlerPtr, const Event::Ptr& ev) {
   if(ev->type == Event::Type::DISCONNECT)
     return handle_no_conn();
-  
+
   Params::Report::RspRes rsp_params;
   int err = ev->error;
   if(!err) {

@@ -105,7 +105,7 @@ void Fragment::load_header(int& err, FS::SmartFd::Ptr& smartfd,
     remain = header_extlen;
 
     interval.decode(&ptr, &remain, true);
-    encoder = (DB::Types::Encoder)Serialization::decode_i8(&ptr, &remain);
+    encoder = DB::Types::Encoder(Serialization::decode_i8(&ptr, &remain));
     size_enc = Serialization::decode_i32(&ptr, &remain);
     size_plain = Serialization::decode_i32(&ptr, &remain);
     cell_revs = Serialization::decode_i32(&ptr, &remain);
@@ -195,7 +195,7 @@ void Fragment::write(int& err,
 
   uint8_t * header_extptr = bufp;
   interval.encode(&bufp);
-  Serialization::encode_i8(&bufp, (uint8_t)encoder);
+  Serialization::encode_i8(&bufp, uint8_t(encoder));
   Serialization::encode_i32(&bufp, size_enc);
   Serialization::encode_i32(&bufp, size_plain);
   Serialization::encode_i32(&bufp, cell_revs);
@@ -537,7 +537,7 @@ void Fragment::remove(int&, Core::Semaphore* sem) {
 }
 
 void Fragment::print(std::ostream& out) {
-  out << "Fragment(version=" << (int)version
+  out << "Fragment(version=" << int(version)
       << " count=" << cells_count
       << " offset=" << offset_data
       << " encoder=" << Core::Encoder::to_string(encoder)

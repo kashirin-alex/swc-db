@@ -19,8 +19,8 @@ RangeLocateReq::RangeLocateReq(cid_t cid, rid_t rid)
 RangeLocateReq::~RangeLocateReq() { }
 
 void RangeLocateReq::print(std::ostream& out) const {
-  out << "RangeLocateReq(cid=" << cid << " rid=" << rid 
-      << " flags=" << (int)flags;
+  out << "RangeLocateReq(cid=" << cid << " rid=" << rid
+      << " flags=" << int(flags);
   range_begin.print(out << " RangeBegin");
   range_end.print(out << " RangeEnd");
   if(flags & NEXT_RANGE)
@@ -31,12 +31,12 @@ void RangeLocateReq::print(std::ostream& out) const {
 size_t RangeLocateReq::internal_encoded_length() const {
   return  Serialization::encoded_length_vi64(cid)
         + Serialization::encoded_length_vi64(rid)
-        + range_begin.encoded_length() 
+        + range_begin.encoded_length()
         + range_end.encoded_length()
         + 1
           + (flags & NEXT_RANGE ? range_offset.encoded_length() : 0);
 }
-  
+
 void RangeLocateReq::internal_encode(uint8_t** bufp) const {
   Serialization::encode_vi64(bufp, cid);
   Serialization::encode_vi64(bufp, rid);
@@ -46,7 +46,7 @@ void RangeLocateReq::internal_encode(uint8_t** bufp) const {
   if(flags & NEXT_RANGE)
     range_offset.encode(bufp);
 }
-  
+
 void RangeLocateReq::internal_decode(const uint8_t** bufp, size_t* remainp) {
   cid = Serialization::decode_vi64(bufp, remainp);
   rid = Serialization::decode_vi64(bufp, remainp);
@@ -59,7 +59,7 @@ void RangeLocateReq::internal_decode(const uint8_t** bufp, size_t* remainp) {
 
 
 
-RangeLocateRsp::RangeLocateRsp(int err) 
+RangeLocateRsp::RangeLocateRsp(int err)
                               : err(err), cid(0), rid(0) { }
 
 RangeLocateRsp::~RangeLocateRsp() { }
@@ -76,7 +76,7 @@ void RangeLocateRsp::print(std::ostream& out) const {
 }
 
 size_t RangeLocateRsp::internal_encoded_length() const {
-  return Serialization::encoded_length_vi32(err) 
+  return Serialization::encoded_length_vi32(err)
     + (err ? 0 : (
         Serialization::encoded_length_vi64(cid)
       + Serialization::encoded_length_vi64(rid)
@@ -84,7 +84,7 @@ size_t RangeLocateRsp::internal_encoded_length() const {
       + range_begin.encoded_length()
       ) );
 }
-  
+
 void RangeLocateRsp::internal_encode(uint8_t** bufp) const {
   Serialization::encode_vi32(bufp, err);
   if(!err) {
@@ -94,7 +94,7 @@ void RangeLocateRsp::internal_encode(uint8_t** bufp) const {
     range_begin.encode(bufp);
   }
 }
-  
+
 void RangeLocateRsp::internal_decode(const uint8_t** bufp, size_t* remainp) {
   if(!(err = Serialization::decode_vi32(bufp, remainp))) {
     cid = Serialization::decode_vi64(bufp, remainp);

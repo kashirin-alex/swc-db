@@ -798,8 +798,7 @@ void QuerySelect::read_value(DB::Types::Column col_type,
               if(err)
                 return;
               fields.add(
-                DB::Specs::Serial::Value::Field_BYTES::make(
-                  fid, comp, (const uint8_t*)buf.data(), buf.size()));
+                DB::Specs::Serial::Value::Field_BYTES::make(fid, comp, buf));
               break;
             }
 

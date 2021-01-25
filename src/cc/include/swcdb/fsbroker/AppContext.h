@@ -127,7 +127,7 @@ class AppContext final : public Comm::AppContext {
 
       case Comm::Event::Type::MESSAGE: {
         uint8_t cmd = ev->header.command >= Comm::Protocol::FsBroker::MAX_CMD
-                        ? (uint8_t)Comm::Protocol::FsBroker::NOT_IMPLEMENTED
+                        ? uint8_t(Comm::Protocol::FsBroker::NOT_IMPLEMENTED)
                         : ev->header.command;
         Env::IoCtx::post([cmd, conn, ev]() {
           if(!ev->expired())
@@ -137,7 +137,7 @@ class AppContext final : public Comm::AppContext {
       }
 
       default:
-        SWC_LOGF(LOG_WARN, "Unimplemented event-type (%d)", (int)ev->type);
+        SWC_LOGF(LOG_WARN, "Unimplemented event-type (%d)", int(ev->type));
         break;
 
     }

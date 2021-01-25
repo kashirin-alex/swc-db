@@ -16,8 +16,8 @@
 namespace SWC { namespace Ranger {
 
 
-// SET 
-void RangeData::write(DynamicBuffer& dst_buf, 
+// SET
+void RangeData::write(DynamicBuffer& dst_buf,
                       CellStore::Readers& cellstores) {
 
   size_t sz = cellstores.encoded_length();
@@ -36,7 +36,7 @@ void RangeData::write(DynamicBuffer& dst_buf,
 
   Core::checksum_i32(start_data_ptr, dst_buf.ptr, &checksum_data_ptr);
   Core::checksum_i32(dst_buf.base, start_data_ptr, &checksum_header_ptr);
-  
+
   SWC_ASSERT(dst_buf.fill() <= dst_buf.size);
 }
 
@@ -49,11 +49,11 @@ void RangeData::save(int& err, CellStore::Readers& cellstores) {
   Env::FsInterface::interface()->write(
     err,
     FS::SmartFd::make_ptr(
-      cellstores.range->get_path(Range::RANGE_FILE), 
+      cellstores.range->get_path(Range::RANGE_FILE),
       FS::OpenFlags::OPEN_FLAG_OVERWRITE
-    ), 
-    cellstores.range->cfg->file_replication(), 
-    -1, 
+    ),
+    cellstores.range->cfg->file_replication(),
+    -1,
     send_buf
   );
 }
@@ -62,7 +62,7 @@ void RangeData::save(int& err, CellStore::Readers& cellstores) {
 //  GET
 void RangeData::read(int& err, const uint8_t **ptr, size_t* remain,
                      CellStore::Readers& cellstores) {
-  
+
   const uint8_t *ptr_end = *ptr+*remain;
   cellstores.decode(err, ptr, remain);
 
@@ -75,21 +75,21 @@ void RangeData::read(int& err, const uint8_t **ptr, size_t* remain,
 void RangeData::load(int& err, CellStore::Readers& cellstores) {
   StaticBuffer read_buf;
   Env::FsInterface::interface()->read(
-    err, 
-    cellstores.range->get_path(Range::RANGE_FILE), 
+    err,
+    cellstores.range->get_path(Range::RANGE_FILE),
     &read_buf
   );
   if(!err) {
     const uint8_t *ptr = read_buf.base;
     size_t remain = read_buf.size;
 
-    Serialization::decode_i8(&ptr, &remain); //int8_t version = 
+    Serialization::decode_i8(&ptr, &remain); //int8_t version =
     size_t sz = Serialization::decode_i32(&ptr, &remain);
 
     size_t chksum_data = Serialization::decode_i32(&ptr, &remain);
-      
+
     if(!Core::checksum_i32_chk(
-          Serialization::decode_i32(&ptr, &remain), 
+          Serialization::decode_i32(&ptr, &remain),
           read_buf.base, HEADER_SIZE, HEADER_OFFSET_CHKSUM) ||
        !Core::checksum_i32_chk(chksum_data, ptr, sz)) {
       err = Error::CHECKSUM_MISMATCH;

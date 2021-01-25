@@ -49,7 +49,7 @@ class Value {
     STRINGS,
     INT64S,
     DOUBLES,
-  
+
     G_BOOL,
     G_UINT8,
     G_INT32,
@@ -64,14 +64,20 @@ class Value {
 
   typedef Value* Ptr;
 
+  template <typename T>
+  SWC_CAN_INLINE
+  static T* get_pointer(Ptr ptr) {
+    return static_cast<T*>(ptr);
+  }
+
   Value(uint8_t flags=0);
-  
+
   Value(Ptr ptr);
 
   virtual ~Value();
 
   virtual Ptr make_new(const Strings& values = Strings()) = 0;
-  
+
   virtual Type type() const = 0;
 
   virtual void set_from(Ptr ptr) = 0;
@@ -81,7 +87,7 @@ class Value {
   virtual std::string to_string() const = 0;
 
   std::ostream& operator<<(std::ostream& ostream);
-  
+
   bool is_skippable() const;
 
   bool is_guarded() const;
@@ -89,7 +95,7 @@ class Value {
   Ptr default_value(bool defaulted);
 
   bool is_default() const;
-  
+
   Ptr zero_token();
 
   bool is_zero_token() const;
@@ -117,15 +123,15 @@ void from_string(const std::string& s, int32_t* value);
 class V_BOOL final : public Value {
   public:
   static const Type value_type = BOOL;
-  
+
   V_BOOL(const bool& v, uint8_t flags=0);
-  
+
   V_BOOL(V_BOOL* ptr);
-  
+
   Ptr make_new(const Strings& values = Strings()) override;
 
   void set_from(Ptr ptr) override;
-  
+
   void set_from(const Strings& values) override;
 
   Type type() const override;
@@ -143,13 +149,13 @@ class V_UINT8 final : public Value {
   static const Type value_type = UINT8;
 
   V_UINT8(const uint8_t& v, uint8_t flags=0);
-  
+
   V_UINT8(V_UINT8* ptr);
 
   Ptr make_new(const Strings& values = Strings()) override;
-  
+
   void set_from(Ptr ptr) override;
-  
+
   void set_from(const Strings& values) override;
 
   Type type() const override;
@@ -165,13 +171,13 @@ class V_UINT8 final : public Value {
 class V_UINT16 final : public Value {
   public:
   static const Type value_type = UINT16;
-  
+
   V_UINT16(const uint16_t& v, uint8_t flags=0);
-  
+
   V_UINT16(V_UINT16* ptr);
 
   Ptr make_new(const Strings& values = Strings()) override;
-  
+
   void set_from(Ptr ptr) override;
 
   void set_from(const Strings& values) override;
@@ -189,13 +195,13 @@ class V_UINT16 final : public Value {
 class V_INT32 final : public Value {
   public:
   static const Type value_type = INT32;
-  
+
   V_INT32(const int32_t& v, uint8_t flags=0);
 
   V_INT32(V_INT32* ptr);
 
   Ptr make_new(const Strings& values = Strings()) override;
-  
+
   void set_from(Ptr ptr) override;
 
   void set_from(const Strings& values) override;
@@ -213,13 +219,13 @@ class V_INT32 final : public Value {
 class V_INT64 final : public Value {
   public:
   static const Type value_type = INT64;
-  
+
   V_INT64(const int64_t& v, uint8_t flags=0);
 
   V_INT64(V_INT64* ptr);
 
   Ptr make_new(const Strings& values = Strings()) override;
-  
+
   void set_from(Ptr ptr) override;
 
   void set_from(const Strings& values) override;
@@ -239,11 +245,11 @@ class V_DOUBLE final : public Value {
   static const Type value_type = DOUBLE;
 
   V_DOUBLE(const double& v, uint8_t flags=0);
-  
+
   V_DOUBLE(V_DOUBLE* ptr);
 
   Ptr make_new(const Strings& values = Strings()) override;
-  
+
   void set_from(Ptr ptr) override;
 
   void set_from(const Strings& values) override;
@@ -263,11 +269,11 @@ class V_STRING final : public Value {
   static const Type value_type = STRING;
 
   V_STRING(const std::string& v, uint8_t flags=0);
-  
+
   V_STRING(V_STRING* ptr);
 
   Ptr make_new(const Strings& values = Strings()) override;
-  
+
   void set_from(Ptr ptr) override;
 
   void set_from(const Strings& values) override;
@@ -286,18 +292,18 @@ class V_ENUM final : public Value {
   public:
   static const Type value_type = ENUM;
 
-  typedef std::function<int(const std::string&)>  FromString_t; 
-  typedef std::function<std::string(int)>         Repr_t; 
+  typedef std::function<int(const std::string&)>  FromString_t;
+  typedef std::function<std::string(int)>         Repr_t;
 
-  V_ENUM(const int32_t& v, 
-         const FromString_t& from_string, 
+  V_ENUM(const int32_t& v,
+         const FromString_t& from_string,
          const Repr_t& repr,
          uint8_t flags=0);
 
   V_ENUM(V_ENUM* ptr);
 
   Ptr make_new(const Strings& values = Strings()) override;
-  
+
   void set_from(Ptr ptr) override;
 
   void set_from(const Strings& values) override;
@@ -319,11 +325,11 @@ class V_STRINGS final : public Value {
   static const Type value_type = STRINGS;
 
   V_STRINGS(const Strings& v, uint8_t flags=0);
-  
+
   V_STRINGS(V_STRINGS* ptr);
 
   Ptr make_new(const Strings& values = Strings()) override;
-  
+
   void set_from(Ptr ptr) override;
 
   void set_from(const Strings& values) override;
@@ -343,11 +349,11 @@ class V_INT64S final : public Value {
   static const Type value_type = INT64S;
 
   V_INT64S(const Int64s& v, uint8_t flags=0);
-  
+
   V_INT64S(V_INT64S* ptr);
 
   Ptr make_new(const Strings& values = Strings()) override;
-  
+
   void set_from(Ptr ptr) override;
 
   void set_from(const Strings& values) override;
@@ -367,11 +373,11 @@ class V_DOUBLES final : public Value {
   static const Type value_type = DOUBLES;
 
   V_DOUBLES(const Doubles& v, uint8_t flags=0);
-  
+
   V_DOUBLES(V_DOUBLES* ptr);
 
   Ptr make_new(const Strings& values = Strings()) override;
-  
+
   void set_from(Ptr ptr) override;
 
   void set_from(const Strings& values) override;
@@ -394,15 +400,15 @@ class V_GBOOL final : public Value {
 
   typedef V_GBOOL*                   Ptr;
   typedef std::function<void(bool)>  OnChg_t;
-  
+
   V_GBOOL(const bool& v, const OnChg_t& cb, uint8_t flags=0);
 
   V_GBOOL(V_GBOOL* ptr);
-  
+
   Value::Ptr make_new(const Strings& values = Strings()) override;
 
   void set_from(Value::Ptr ptr) override;
-  
+
   void set_from(const Strings& values) override;
 
   Type type() const override;
@@ -425,7 +431,7 @@ class V_GBOOL final : public Value {
 class V_GUINT8 final : public Value {
   public:
   static const Type value_type = G_UINT8;
-  
+
   typedef V_GUINT8*                     Ptr;
   typedef std::function<void(uint8_t)>  OnChg_t;
 
@@ -434,9 +440,9 @@ class V_GUINT8 final : public Value {
   V_GUINT8(V_GUINT8* ptr);
 
   Value::Ptr make_new(const Strings& values = Strings()) override;
-  
+
   void set_from(Value::Ptr ptr) override;
-  
+
   void set_from(const Strings& values) override;
 
   Type type() const override;
@@ -457,7 +463,7 @@ class V_GUINT8 final : public Value {
 class V_GINT32 final : public Value {
   public:
   static const Type value_type = G_INT32;
-  
+
   typedef V_GINT32*                     Ptr;
   typedef std::function<void(int32_t)>  OnChg_t;
 
@@ -467,7 +473,7 @@ class V_GINT32 final : public Value {
 
 
   Value::Ptr make_new(const Strings& values = Strings()) override;
-  
+
   void set_from(Value::Ptr ptr) override;
 
   void set_from(const Strings& values) override;
@@ -491,22 +497,22 @@ class V_GINT32 final : public Value {
 class V_GENUM final : public Value {
   public:
   static const Type value_type = G_ENUM;
-  
+
   typedef V_GENUM*                      Ptr;
   typedef std::function<void(int32_t)>  OnChg_t;
-  typedef V_ENUM::FromString_t          FromString_t; 
-  typedef V_ENUM::Repr_t                Repr_t; 
+  typedef V_ENUM::FromString_t          FromString_t;
+  typedef V_ENUM::Repr_t                Repr_t;
 
-  V_GENUM(const int32_t& v, 
-          const OnChg_t& cb, 
-          const FromString_t& from_string, 
+  V_GENUM(const int32_t& v,
+          const OnChg_t& cb,
+          const FromString_t& from_string,
           const Repr_t& repr,
           uint8_t flags=0);
 
   V_GENUM(V_GENUM* ptr);
 
   Value::Ptr make_new(const Strings& values = Strings()) override;
-  
+
   void set_from(Value::Ptr ptr) override;
 
   void set_from(const Strings& values) override;
@@ -535,7 +541,7 @@ class V_GENUM final : public Value {
 class V_GSTRINGS final : public Value {
   public:
   static const Type value_type = G_STRINGS;
-  
+
   typedef V_GSTRINGS*            Ptr;
   typedef std::function<void()>  OnChg_t;
 
@@ -544,7 +550,7 @@ class V_GSTRINGS final : public Value {
   V_GSTRINGS(V_GSTRINGS* ptr);
 
   Value::Ptr make_new(const Strings& values = Strings()) override;
-  
+
   void set_from(Value::Ptr ptr) override;
 
   void set_from(const Strings& values) override;
@@ -578,6 +584,6 @@ class V_GSTRINGS final : public Value {
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/core/config/Property.cc"
-#endif 
+#endif
 
 #endif // swcdb_core_config_Property_h

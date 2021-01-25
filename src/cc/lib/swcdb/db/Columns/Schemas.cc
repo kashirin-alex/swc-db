@@ -23,7 +23,7 @@ void Schemas::add(int& err, const Schema::Ptr& schema) {
 void Schemas::_add(int& err, const Schema::Ptr& schema) {
   if(!emplace(schema->cid, schema).second) {
     err = Error::COLUMN_SCHEMA_NAME_EXISTS;
-    SWC_LOG_OUT(LOG_WARN, 
+    SWC_LOG_OUT(LOG_WARN,
       schema->print(SWC_LOG_OSTREAM << "Unable to add column ");
       Error::print(SWC_LOG_OSTREAM << ", remove first ", err);
     );
@@ -79,7 +79,7 @@ void Schemas::all(std::vector<Schema::Ptr>& entries) {
   size_t i = entries.size();
   Core::MutexSptd::scope lock(m_mutex);
   entries.resize(i + size());
-  for(const auto& it : *this) 
+  for(const auto& it : *this)
     entries[i++] = it.second;
 }
 
@@ -87,14 +87,15 @@ void Schemas::matching(const std::vector<Schemas::Pattern>& patterns,
                        std::vector<Schema::Ptr>& entries, bool no_sys) {
   Core::MutexSptd::scope lock(m_mutex);
   for(const auto& it : *this) {
-    if(no_sys && 
+    if(no_sys &&
        (!Types::MetaColumn::is_data(it.second->cid) || it.second->cid == 9))
       continue;
     for(auto& pattern : patterns) {
       if(Condition::is_matching_extended(
           pattern.comp,
-          (const uint8_t*)pattern.value.data(), pattern.value.size(),
-          (const uint8_t*)it.second->col_name.data(), 
+          reinterpret_cast<const uint8_t*>(pattern.value.c_str()),
+          pattern.value.size(),
+          reinterpret_cast<const uint8_t*>(it.second->col_name.c_str()),
           it.second->col_name.size() )
         ) {
         entries.push_back(it.second);

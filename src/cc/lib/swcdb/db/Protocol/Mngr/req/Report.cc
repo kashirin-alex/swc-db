@@ -18,27 +18,27 @@ namespace Mngr { namespace Req {
 Report::Report(Params::Report::Function func, const uint32_t timeout)
               : client::ConnQueue::ReqBase(false) {
   cbp = Buffers::make(1);
-  cbp->append_i8((uint8_t)func);
+  cbp->append_i8(func);
   cbp->header.set(REPORT, timeout);
 }
 
-Report::Report(const EndPoints& endpoints, 
-               Params::Report::Function func, 
+Report::Report(const EndPoints& endpoints,
+               Params::Report::Function func,
                const uint32_t timeout)
               : client::ConnQueue::ReqBase(false), endpoints(endpoints) {
   cbp = Buffers::make(1);
-  cbp->append_i8((uint8_t)func);
+  cbp->append_i8(func);
   cbp->header.set(REPORT, timeout);
 }
 
-Report::Report(const Serializable& params, 
-               Params::Report::Function func, 
-               const uint32_t timeout) 
+Report::Report(const Serializable& params,
+               Params::Report::Function func,
+               const uint32_t timeout)
               : client::ConnQueue::ReqBase(
                   false,
                   Buffers::make(params, 1, REPORT, timeout)
                 ) {
-  cbp->append_i8((uint8_t)func);
+  cbp->append_i8(func);
 }
 
 Report::~Report() { }
@@ -56,22 +56,22 @@ void Report::clear_endpoints() {
 
 
 SWC_SHOULD_INLINE
-void ClusterStatus::request(const EndPoints& endpoints, 
-                            const ClusterStatus::Cb_t& cb, 
+void ClusterStatus::request(const EndPoints& endpoints,
+                            const ClusterStatus::Cb_t& cb,
                             const uint32_t timeout) {
   std::make_shared<ClusterStatus>(endpoints, cb, timeout)->run();
 }
 
 SWC_SHOULD_INLINE
-ClusterStatus::Ptr 
+ClusterStatus::Ptr
 ClusterStatus::make(const EndPoints& endpoints,
-                    const ClusterStatus::Cb_t& cb, 
+                    const ClusterStatus::Cb_t& cb,
                     const uint32_t timeout) {
   return std::make_shared<ClusterStatus>(endpoints, cb, timeout);
 }
 
-ClusterStatus::ClusterStatus(const EndPoints& endpoints, 
-                             const Cb_t& cb, 
+ClusterStatus::ClusterStatus(const EndPoints& endpoints,
+                             const Cb_t& cb,
                              const uint32_t timeout)
                             : Report(
                                 endpoints,
@@ -113,37 +113,37 @@ void ClusterStatus::handle(ConnHandlerPtr, const Event::Ptr& ev) {
   cb(req(), err);
 }
 
- 
+
 
 
 SWC_SHOULD_INLINE
-void ColumnStatus::request(cid_t cid, const ColumnStatus::Cb_t& cb, 
+void ColumnStatus::request(cid_t cid, const ColumnStatus::Cb_t& cb,
                            const uint32_t timeout) {
   request(Params::Report::ReqColumnStatus(cid), cb, timeout);
 }
 
 SWC_SHOULD_INLINE
 void ColumnStatus::request(const Params::Report::ReqColumnStatus& params,
-                           const ColumnStatus::Cb_t& cb, 
+                           const ColumnStatus::Cb_t& cb,
                            const uint32_t timeout) {
   std::make_shared<ColumnStatus>(params, cb, timeout)->run();
 }
 
 SWC_SHOULD_INLINE
-ColumnStatus::Ptr 
+ColumnStatus::Ptr
 ColumnStatus::make(const Params::Report::ReqColumnStatus& params,
                    const ColumnStatus::Cb_t& cb, const uint32_t timeout) {
   return std::make_shared<ColumnStatus>(params, cb, timeout);
 }
 
-ColumnStatus::ColumnStatus(const Params::Report::ReqColumnStatus& params, 
-                           const Cb_t& cb, 
-                           const uint32_t timeout) 
+ColumnStatus::ColumnStatus(const Params::Report::ReqColumnStatus& params,
+                           const Cb_t& cb,
+                           const uint32_t timeout)
                           : Report(
                               params,
                               Params::Report::Function::COLUMN_STATUS,
                               timeout
-                            ), 
+                            ),
                             cb(cb), cid(params.cid) {
 }
 
@@ -151,7 +151,7 @@ ColumnStatus::~ColumnStatus() { }
 
 bool ColumnStatus::run() {
   if(endpoints.empty()) {
-    Env::Clients::get()->mngrs_groups->select(cid, endpoints); 
+    Env::Clients::get()->mngrs_groups->select(cid, endpoints);
     if(endpoints.empty()) {
       MngrActive::make(cid, shared_from_this())->run();
       return false;
@@ -164,7 +164,7 @@ bool ColumnStatus::run() {
 void ColumnStatus::handle(ConnHandlerPtr, const Event::Ptr& ev) {
   if(ev->type == Event::Type::DISCONNECT)
     return handle_no_conn();
-  
+
   Params::Report::RspColumnStatus rsp_params;
   int err = ev->error;
   if(!err) {
@@ -189,19 +189,19 @@ void ColumnStatus::handle(ConnHandlerPtr, const Event::Ptr& ev) {
 
 
 SWC_SHOULD_INLINE
-void RangersStatus::request(cid_t cid, const RangersStatus::Cb_t& cb, 
+void RangersStatus::request(cid_t cid, const RangersStatus::Cb_t& cb,
                             const uint32_t timeout) {
   std::make_shared<RangersStatus>(cid, cb, timeout)->run();
 }
 
 SWC_SHOULD_INLINE
-RangersStatus::Ptr 
-RangersStatus::make(cid_t cid, const RangersStatus::Cb_t& cb, 
+RangersStatus::Ptr
+RangersStatus::make(cid_t cid, const RangersStatus::Cb_t& cb,
                     const uint32_t timeout) {
   return std::make_shared<RangersStatus>(cid, cb, timeout);
 }
 
-RangersStatus::RangersStatus(cid_t cid, const Cb_t& cb, const uint32_t timeout) 
+RangersStatus::RangersStatus(cid_t cid, const Cb_t& cb, const uint32_t timeout)
                             : Report(
                                 Params::Report::Function::RANGERS_STATUS,
                                 timeout
@@ -217,7 +217,7 @@ bool RangersStatus::run() {
       Env::Clients::get()->mngrs_groups->select(
         DB::Types::MngrRole::RANGERS, endpoints);
     else
-      Env::Clients::get()->mngrs_groups->select(cid, endpoints); 
+      Env::Clients::get()->mngrs_groups->select(cid, endpoints);
 
     if(endpoints.empty()) {
       if(no_cid)
@@ -235,7 +235,7 @@ bool RangersStatus::run() {
 void RangersStatus::handle(ConnHandlerPtr, const Event::Ptr& ev) {
   if(ev->type == Event::Type::DISCONNECT)
     return handle_no_conn();
-  
+
   Params::Report::RspRangersStatus rsp_params;
   int err = ev->error;
   if(!err) {
@@ -260,22 +260,22 @@ void RangersStatus::handle(ConnHandlerPtr, const Event::Ptr& ev) {
 
 
 SWC_SHOULD_INLINE
-void ManagersStatus::request(const EndPoints& endpoints, 
-                             const ManagersStatus::Cb_t& cb, 
+void ManagersStatus::request(const EndPoints& endpoints,
+                             const ManagersStatus::Cb_t& cb,
                              const uint32_t timeout) {
   std::make_shared<ManagersStatus>(endpoints, cb, timeout)->run();
 }
 
 SWC_SHOULD_INLINE
-ManagersStatus::Ptr 
+ManagersStatus::Ptr
 ManagersStatus::make(const EndPoints& endpoints,
-                     const ManagersStatus::Cb_t& cb, 
+                     const ManagersStatus::Cb_t& cb,
                      const uint32_t timeout) {
   return std::make_shared<ManagersStatus>(endpoints, cb, timeout);
 }
 
-ManagersStatus::ManagersStatus(const EndPoints& endpoints, 
-                               const Cb_t& cb, 
+ManagersStatus::ManagersStatus(const EndPoints& endpoints,
+                               const Cb_t& cb,
                                const uint32_t timeout)
                               : Report(
                                   endpoints,
@@ -307,7 +307,7 @@ void ManagersStatus::handle_no_conn() {
 void ManagersStatus::handle(ConnHandlerPtr, const Event::Ptr& ev) {
   if(ev->type == Event::Type::DISCONNECT)
     return handle_no_conn();
-  
+
   Params::Report::RspManagersStatus rsp_params;
   int err = ev->error;
   if(!err) {

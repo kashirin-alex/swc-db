@@ -33,7 +33,7 @@ void check_load(bool encode) {
   std::string value = "(";
   for(uint32_t n=0; n<4; ++n)
     for(uint32_t chr=0; chr<=255; ++chr)
-      value += (char)chr;
+      value += char(chr);
   value += ")END";
   if(encode)
     cell.set_value(SWC::DB::Types::Encoder::ZSTD, value);
@@ -58,8 +58,8 @@ void check_load(bool encode) {
   ts = SWC::Time::now_ns() - ts;
   std::cout << "Copy took=" << ts << " avg=" << ts/chks << "\n";
 
-  
-  
+
+
   ts = SWC::Time::now_ns();
   for(auto n = chks; n; --n){
     auto c = new SWC::DB::Cell::Key(cell.key);
@@ -84,7 +84,7 @@ void check_load(bool encode) {
     cell.write(buff);
   ts = SWC::Time::now_ns() - ts;
   std::cout << "Cell::write took=" << ts << " avg=" << ts/chks << " without pre-alloc\n";
-  
+
   auto sz = buff.fill();
   buff.free();
   buff.ensure(sz);
@@ -102,7 +102,7 @@ void check_load(bool encode) {
     cell.read(&bptr, &remain);
   ts = SWC::Time::now_ns() - ts;
   std::cout << "Cell::read took=" << ts << " avg=" << ts/chks << "\n";
-  
+
   SWC::Core::StaticBuffer v;
   cell.get_value(v);
   std::cout << "value.size()=" << value.size()  << "\n";
@@ -113,9 +113,9 @@ void check_load(bool encode) {
 }
 
 int main() {
-   
+
    size_t num_cells = 10000;
-   
+
    size_t i;
    std::vector<Cells::Cell*> cells;
    //cells.reserve(num_cells);
@@ -125,9 +125,9 @@ int main() {
       std::string n = std::to_string(i);
       char* cell_num = new char[n.length()];
       strcpy(cell_num, n.c_str());
-      
+
       Cells::Cell* cell = new Cells::Cell();
-      
+
       cell->flag = Cells::INSERT;
       cell->set_timestamp(111);
       //cell->set_revision(222);
@@ -164,13 +164,13 @@ int main() {
    for(auto it=cells.begin();it<cells.end();++it){
       std::cout << "Copying Cell-"<< i << ":\n";
       //std::cout << (*it)->to_string() << "\n\n";
-      cells_copied.push_back(new Cells::Cell(**it));  // OK 
+      cells_copied.push_back(new Cells::Cell(**it));  // OK
       //cells_copied.push_back(Cells::Cell(**it));      // !move
       auto last_cell = cells_copied.back();
-      std::cout << " ptrs-orig key:"<<(size_t)(*it)->key.data 
-                << " value:"<<(size_t)(*it)->value << "\n";
-      std::cout << " ptrs-copy key:"<<(size_t)last_cell->key.data  
-                << " value:"<<(size_t)last_cell->value << "\n";
+      std::cout << " ptrs-orig key:"<<size_t((*it)->key.data)
+                << " value:"<<size_t((*it)->value) << "\n";
+      std::cout << " ptrs-copy key:"<<size_t(last_cell->key.data)
+                << " value:"<<size_t(last_cell->value) << "\n";
 
       if((*it)->key.data == last_cell->key.data || (*it)->value == last_cell->value){
          std::cout << "COPY PTRs SHOUT NOT BE EQUAL:\n";
@@ -195,7 +195,7 @@ int main() {
 
 
    std::cout << "\n---Write Serialized Buffer-----\n";
-   
+
    SWC::DynamicBuffer buff;
 
    for(auto it=cells.begin();it<cells.end();++it){
@@ -213,7 +213,7 @@ int main() {
    uint8_t* mark = buff.mark;
    const uint8_t* bptr = buff.base;
    size_t remain = mark-bptr;
-   std::cout << " remain=" << remain << " base:"<< (size_t)bptr << ", mark:"<< (size_t)mark << ":\n";
+   std::cout << " remain=" << remain << " base:"<< size_t(bptr) << ", mark:"<< size_t(mark) << ":\n";
 
    i=0;
    Cells::Cell cell;
@@ -222,12 +222,12 @@ int main() {
 
    while(mark > bptr) {
     cell.read(&bptr, &remain);
-      
+
     std::cout << "Loaded Cell-"<< i << ":\n";
     std::cout << cell.to_string() << "\n\n";
-    std::cout << "base:"<< (size_t)buff.base  << ",bptr:"<< (size_t)bptr << ",mark:"<< (size_t)mark << "\n";
+    std::cout << "base:"<< size_t(buff.base)  << ",bptr:"<< size_t(bptr) << ",mark:"<< size_t(mark) << "\n";
     ++i;
-      
+
     if( !(*it1)->equal(cell) || !(*it2)->equal(cell) ){
       std::cout << "LOADED SERIALIZED CELL NOT EQUAL:\n";
       std::cout << cell.to_string() << "\n\n";
@@ -249,15 +249,18 @@ int main() {
    uint8_t* last_skey = new uint8_t[k_len];
    uint8_t* last_skey_ptr = cells_copied.back()->key.data;
    memcpy(last_skey, last_skey_ptr, k_len);
-   
+
   for(auto c : cells_copied)
     delete c;
    cells_copied.clear();
    //cells_copied.clear();
    if (*last_skey_ptr && !memcmp(last_skey, last_skey_ptr, k_len)) {
          std::cout << "DESTRUCTION DID NOT HAPPEN:\n";
-         std::cout << (size_t)last_skey_ptr << ":" << std::string((const char *)last_skey_ptr, k_len) 
-            << "==" << std::string((const char *)last_skey, k_len)<< "\n\n";
+         std::cout << size_t(last_skey_ptr) << ":"
+            << std::string(reinterpret_cast<const char*>(last_skey_ptr), k_len)
+            << "=="
+            << std::string(reinterpret_cast<const char*>(last_skey), k_len)
+            << "\n\n";
          exit(1);
    }
    delete []last_skey;

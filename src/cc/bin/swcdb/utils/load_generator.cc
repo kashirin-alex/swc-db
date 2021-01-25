@@ -20,8 +20,9 @@ namespace SWC {
 namespace Config {
 
 void Settings::init_app_options() {
-  ((Property::V_GENUM*) cmdline_desc.get_default("swc.logging.level")
-    )->set(LOG_ERROR); // default level
+  Property::Value::get_pointer<Property::V_GENUM>(
+    cmdline_desc.get_default("swc.logging.level")
+  )->set(LOG_ERROR); // default level
 
   init_comm_options();
   init_client_options();
@@ -64,7 +65,7 @@ void Settings::init_app_options() {
 
     ("gen-col-seq",
       g_enum(
-        (int)DB::Types::KeySeq::LEXIC,
+        int(DB::Types::KeySeq::LEXIC),
         0,
         DB::Types::from_string_range_seq,
         DB::Types::repr_range_seq
@@ -73,7 +74,7 @@ void Settings::init_app_options() {
 
     ("gen-col-type",
       g_enum(
-        (int)DB::Types::Column::PLAIN,
+        int(DB::Types::Column::PLAIN),
         0,
         DB::Types::from_string_col_type,
         DB::Types::repr_col_type
@@ -83,7 +84,7 @@ void Settings::init_app_options() {
     ("gen-cell-versions", i32(1), "cell key versions")
     ("gen-cell-encoding",
       g_enum(
-        (int)DB::Types::Encoder::PLAIN,
+        int(DB::Types::Encoder::PLAIN),
         0,
         Core::Encoder::from_string_encoding,
         Core::Encoder::repr_encoding
@@ -98,7 +99,7 @@ void Settings::init_app_options() {
     ("gen-blk-cells", i32(0), "Schema blk-cells")
     ("gen-blk-encoding",
       g_enum(
-        (int)DB::Types::Encoder::DEFAULT,
+        int(DB::Types::Encoder::DEFAULT),
         0,
         Core::Encoder::from_string_encoding,
         Core::Encoder::repr_encoding
@@ -246,8 +247,8 @@ void update_data(const std::vector<DB::Schema::Ptr>& schemas, uint8_t flag) {
   uint32_t progress = settings->get_i32("gen-progress");
   bool cellatime = settings->get_bool("gen-cell-a-time");
 
-  auto cell_encoder = (DB::Types::Encoder)settings->get_genum(
-    "gen-cell-encoding");
+  auto cell_encoder = DB::Types::Encoder(settings->get_genum(
+    "gen-cell-encoding"));
 
   std::vector<DB::Cells::ColCells::Ptr> colms;
   auto req = std::make_shared<client::Query::Update>();
@@ -270,7 +271,7 @@ void update_data(const std::vector<DB::Schema::Ptr>& schemas, uint8_t flag) {
   if(flag == DB::Cells::INSERT && !is_counter) {
     uint8_t c=122;
     for(uint32_t n=0; n<value;++n)
-      value_data += (char)(c == 122 ? c = 97 : ++c);
+      value_data += char(c == 122 ? c = 97 : ++c);
   }
 
   uint64_t ts = Time::now_ns();
@@ -301,14 +302,15 @@ void update_data(const std::vector<DB::Schema::Ptr>& schemas, uint8_t flag) {
               auto t = DB::Cell::Serial::Value::Type::INT64;
               for(auto it = value_data.begin(); it < value_data.end(); ++it) {
                 if(t == DB::Cell::Serial::Value::Type::INT64) {
-                  wfields.add((int64_t)*it);
+                  wfields.add(int64_t(*it));
                   t = DB::Cell::Serial::Value::Type::DOUBLE;
                 } else if(t == DB::Cell::Serial::Value::Type::DOUBLE) {
-                  wfields.add((long double)*it);
+                  long double v(*it);
+                  wfields.add(v);
                   t = DB::Cell::Serial::Value::Type::BYTES;
                 } else if(t == DB::Cell::Serial::Value::Type::BYTES) {
-                  char c = *it;
-                  wfields.add((const uint8_t*)&c, 1);
+                  const uint8_t c = *it;
+                  wfields.add(&c, 1);
                   t = DB::Cell::Serial::Value::Type::INT64;
                 }
               }
@@ -550,11 +552,14 @@ void generate() {
   for(uint32_t ncol=1; ncol<=ncolumns; ++ncol) {
   auto schema = DB::Schema::make();
   schema->col_name = col_name + std::to_string(ncol);
-  schema->col_seq = (DB::Types::KeySeq)settings->get_genum("gen-col-seq");
-  schema->col_type = (DB::Types::Column)settings->get_genum("gen-col-type");
+  schema->col_seq = DB::Types::KeySeq(
+    settings->get_genum("gen-col-seq"));
+  schema->col_type = DB::Types::Column(
+    settings->get_genum("gen-col-type"));
   schema->cell_versions = settings->get_i32("gen-cell-versions");
   schema->cell_ttl = 0;
-  schema->blk_encoding = (DB::Types::Encoder)settings->get_genum("gen-blk-encoding");
+  schema->blk_encoding = DB::Types::Encoder(
+    settings->get_genum("gen-blk-encoding"));
   schema->blk_size = settings->get_i32("gen-blk-size");
   schema->blk_cells = settings->get_i32("gen-blk-cells");
   schema->cs_replication = settings->get_i8("gen-cs-replication");

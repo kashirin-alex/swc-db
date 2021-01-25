@@ -37,9 +37,9 @@ class PreadSync final : public BaseSync, public Base {
     Base::handle_pread(ev, smartfd, amount);
     if(amount) {
       if(allocated) {
-          memcpy(buffer, ev->data_ext.base, amount);
+        memcpy(buffer, ev->data_ext.base, amount);
       } else {
-        ((StaticBuffer*)buffer)->set(ev->data_ext);
+        static_cast<StaticBuffer*>(buffer)->set(ev->data_ext);
       }
     }
     BaseSync::acknowledge();

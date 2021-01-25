@@ -14,7 +14,7 @@
 #include "swcdb/core/config/Settings.h"
 #include "swcdb/db/Cells/KeyComparator.h"
 
-namespace SWC { 
+namespace SWC {
 
 namespace Config {
 void Settings::init_app_options() {}
@@ -23,8 +23,8 @@ void Settings::init_post_cmd_args() {}
 
 
 SWC_SHOULD_NOT_INLINE
-static 
-void load_check_compare(const DB::Types::KeySeq key_seq, 
+static
+void load_check_compare(const DB::Types::KeySeq key_seq,
                         int chks, size_t fractions) {
   DB::Cell::Key key1;
   DB::Cell::Key key2;
@@ -35,19 +35,19 @@ void load_check_compare(const DB::Types::KeySeq key_seq,
   auto ts = Time::now_ns();
   for(int n=0; n < chks; ++n)
     SWC_ASSERT(DB::KeySeq::compare(key_seq, key1, key2) == Condition::EQ);
-  
+
   uint64_t took = Time::now_ns() - ts;
-  std::cout << "load_check_compare,      fractions=" << fractions 
+  std::cout << "load_check_compare,      fractions=" << fractions
             << " avg=" << took/chks
-            << " took=" << took 
-            << " seq=" << DB::Types::to_string(key_seq) 
+            << " took=" << took
+            << " seq=" << DB::Types::to_string(key_seq)
             << "\n";
 }
 
 
 SWC_SHOULD_NOT_INLINE
-static 
-void load_check_compare_max(const DB::Types::KeySeq key_seq, 
+static
+void load_check_compare_max(const DB::Types::KeySeq key_seq,
                             int chks, size_t fractions) {
   DB::Cell::Key key1;
   DB::Cell::Key key2;
@@ -60,18 +60,18 @@ void load_check_compare_max(const DB::Types::KeySeq key_seq,
     SWC_ASSERT(
       DB::KeySeq::compare_upto(key_seq, key1, key2, key2.size)
        == Condition::EQ);
-  
+
   uint64_t took = Time::now_ns() - ts;
-  std::cout << "load_check_compare(max), fractions=" << fractions 
+  std::cout << "load_check_compare(max), fractions=" << fractions
             << " avg=" << took/chks
-            << " took=" << took 
-            << " seq=" << DB::Types::to_string(key_seq) 
+            << " took=" << took
+            << " seq=" << DB::Types::to_string(key_seq)
             << "\n";
 }
 
 SWC_SHOULD_NOT_INLINE
-static 
-void load_check_compare_to_vec(const DB::Types::KeySeq key_seq, 
+static
+void load_check_compare_to_vec(const DB::Types::KeySeq key_seq,
                                int chks, size_t fractions) {
   DB::Cell::Key key1;
   DB::Cell::KeyVec key2;
@@ -85,18 +85,18 @@ void load_check_compare_to_vec(const DB::Types::KeySeq key_seq,
   auto ts = Time::now_ns();
   for(int n=0; n < chks; ++n)
     SWC_ASSERT(DB::KeySeq::compare(key_seq, key1, key2, Condition::GT));
-  
+
   uint64_t took = Time::now_ns() - ts;
-  std::cout << "load_check_compare_vec,  fractions=" << fractions 
+  std::cout << "load_check_compare_vec,  fractions=" << fractions
             << " avg=" << took/chks
-            << " took=" << took 
-            << " seq=" << DB::Types::to_string(key_seq) 
+            << " took=" << took
+            << " seq=" << DB::Types::to_string(key_seq)
             << "\n";
 }
 
 SWC_SHOULD_NOT_INLINE
-static 
-void load_check_align(const DB::Types::KeySeq key_seq, 
+static
+void load_check_align(const DB::Types::KeySeq key_seq,
                       int chks, size_t fractions) {
 
   DB::Cell::KeyVec key;
@@ -109,18 +109,18 @@ void load_check_align(const DB::Types::KeySeq key_seq,
     DB::KeySeq::align(key_seq, key, key1, Condition::GT);
     SWC_ASSERT(key.size() == fractions);
   }
-  
+
   uint64_t took = Time::now_ns() - ts;
-  std::cout << "load_check_align,        fractions=" << fractions 
+  std::cout << "load_check_align,        fractions=" << fractions
             << " avg=" << took/chks
-            << " took=" << took 
+            << " took=" << took
             << " seq=" << DB::Types::to_string(key_seq)
             << "\n";
 }
 
 SWC_SHOULD_NOT_INLINE
-static 
-void load_check_align_min_max(const DB::Types::KeySeq key_seq, 
+static
+void load_check_align_min_max(const DB::Types::KeySeq key_seq,
                               int chks, size_t fractions) {
 
   DB::Cell::Key key;
@@ -137,9 +137,9 @@ void load_check_align_min_max(const DB::Types::KeySeq key_seq,
   }
 
   uint64_t took = Time::now_ns() - ts;
-  std::cout << "load_check_align_min_max,fractions=" << fractions 
+  std::cout << "load_check_align_min_max,fractions=" << fractions
             << " avg=" << took/chks
-            << " took=" << took 
+            << " took=" << took
             << " seq=" << DB::Types::to_string(key_seq)
             << "\n";
 }
@@ -157,13 +157,13 @@ void load_check_align_min_max(const DB::Types::KeySeq key_seq,
             << " " _name_ << "\n";
 
 SWC_SHOULD_NOT_INLINE
-static 
+static
 void load_check_condition_base1()  __attribute__((optimize("-O3")));
 
 SWC_SHOULD_NOT_INLINE
-static 
+static
 void load_check_condition_base1() {
-  
+
   uint64_t ns;
   uint64_t took;
   uint64_t checks = UINT64_MAX;
@@ -172,25 +172,25 @@ void load_check_condition_base1() {
   std::string s1 = tmp.substr(0, len-1) + "2";
   std::string s2 = tmp.substr(0, len-1) + "1";
 
-  const uint8_t* ptr1 = (const uint8_t*)s1.data();
-  const uint8_t* ptr2 = (const uint8_t*)s2.data();
+  const uint8_t* ptr1 = reinterpret_cast<const uint8_t*>(s1.c_str());
+  const uint8_t* ptr2 = reinterpret_cast<const uint8_t*>(s2.c_str());
 
   for(int probe=10;probe;--probe) {
     LOAD_TEST(
-      "memcmp", 
+      "memcmp",
       !memcmp(ptr1, ptr2, s2.size() - 1)
     );// base of memcmp for conditions
   }
 }
 
 SWC_SHOULD_NOT_INLINE
-static 
+static
 void load_check_condition_base2()  __attribute__((optimize("-O3")));
 
 SWC_SHOULD_NOT_INLINE
-static 
+static
 void load_check_condition_base2() {
-  
+
   uint64_t ns;
   uint64_t took;
   uint64_t checks = UINT64_MAX;
@@ -199,12 +199,12 @@ void load_check_condition_base2() {
   std::string s1 = tmp.substr(0, len-1) + "2";
   std::string s2 = tmp.substr(0, len-1) + "1";
 
-  const uint8_t* ptr1 = (const uint8_t*)s1.data();
-  const uint8_t* ptr2 = (const uint8_t*)s2.data();
+  const uint8_t* ptr1 = reinterpret_cast<const uint8_t*>(s1.c_str());
+  const uint8_t* ptr2 = reinterpret_cast<const uint8_t*>(s2.c_str());
 
   for(int probe=10;probe;--probe) {
     LOAD_TEST(
-      "SWC::DB::KeySeq::condition(LEXIC, ptr1, len, ptr2, len)", 
+      "SWC::DB::KeySeq::condition(LEXIC, ptr1, len, ptr2, len)",
       SWC::DB::KeySeq::condition(
         SWC::DB::Types::KeySeq::LEXIC,
         ptr1, len, ptr2, len) == SWC::Condition::LT
@@ -213,13 +213,13 @@ void load_check_condition_base2() {
 }
 
 SWC_SHOULD_NOT_INLINE
-static 
+static
 void load_check_condition_base3()  __attribute__((optimize("-O3")));
 
 SWC_SHOULD_NOT_INLINE
-static 
+static
 void load_check_condition_base3() {
-  
+
   uint64_t ns;
   uint64_t took;
   uint64_t checks = UINT64_MAX;
@@ -228,12 +228,12 @@ void load_check_condition_base3() {
   std::string s1 = tmp.substr(0, len-1) + "2";
   std::string s2 = tmp.substr(0, len-1) + "1";
 
-  const uint8_t* ptr1 = (const uint8_t*)s1.data();
-  const uint8_t* ptr2 = (const uint8_t*)s2.data();
+  const uint8_t* ptr1 = reinterpret_cast<const uint8_t*>(s1.c_str());
+  const uint8_t* ptr2 = reinterpret_cast<const uint8_t*>(s2.c_str());
 
   for(int probe=10;probe;--probe) {
     LOAD_TEST(
-      "SWC::DB::KeySeq::condition(VOLUME, ptr1, len, ptr2, len)", 
+      "SWC::DB::KeySeq::condition(VOLUME, ptr1, len, ptr2, len)",
       SWC::DB::KeySeq::condition(
         SWC::DB::Types::KeySeq::VOLUME,
         ptr1, len, ptr2, len) == SWC::Condition::LT
@@ -268,5 +268,5 @@ int main() {
 
 
   exit(0);
-   
+
 }

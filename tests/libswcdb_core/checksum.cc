@@ -17,11 +17,11 @@ uint64_t i;
 void do_load_fletcher32(const uint8_t* buffer, size_t len) {
   uint32_t tmp_chksum = SWC::Core::fletcher32(buffer, len);
   ns = SWC::Time::now_ns();
-  for(i=0; i<checks; ++i) { 
-    assert(tmp_chksum == SWC::Core::fletcher32(buffer, len)); 
+  for(i=0; i<checks; ++i) {
+    assert(tmp_chksum == SWC::Core::fletcher32(buffer, len));
   }
 
-  ns = SWC::Time::now_ns() - ns; 
+  ns = SWC::Time::now_ns() - ns;
   std::cout << " buffer=" << len << " Core::fletcher32 "
             << " took=" << ns << " avg=" << ns/checks
             << " checksum=" << tmp_chksum << "\n";
@@ -31,13 +31,13 @@ void do_load_checksum_i32(const uint8_t* buffer, size_t len) {
   uint32_t tmp_chksum;
   uint8_t outf[4];
   uint8_t* out;
-  ns = SWC::Time::now_ns(); 
+  ns = SWC::Time::now_ns();
 
-  for(i=0; i<checks; ++i) { 
-    out = (uint8_t*)&outf;  
+  for(i=0; i<checks; ++i) {
+    out = outf;
     SWC::Core::checksum_i32(buffer, len, &out, tmp_chksum);
     SWC::Core::checksum_i32_chk(tmp_chksum, buffer, len);
-  } 
+  }
 
   ns = SWC::Time::now_ns() - ns;
   std::cout << " buffer=" << len << " Core::checksum_i32 "

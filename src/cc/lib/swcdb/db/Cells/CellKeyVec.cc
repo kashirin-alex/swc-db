@@ -43,7 +43,7 @@ void KeyVec::add(const KeyVec::Fraction& fraction) {
 
 SWC_SHOULD_INLINE
 void KeyVec::add(const std::string& fraction) {
-  add(fraction.data(), fraction.length());
+  add(fraction.c_str(), fraction.length());
 }
 
 SWC_SHOULD_INLINE
@@ -53,7 +53,7 @@ void KeyVec::add(const char* fraction) {
 
 SWC_SHOULD_INLINE
 void KeyVec::add(const char* fraction, const uint32_t len) {
-  add((const uint8_t*)fraction, len);
+  add(reinterpret_cast<const uint8_t*>(fraction), len);
 }
 
 SWC_SHOULD_INLINE
@@ -68,7 +68,7 @@ void KeyVec::insert(const uint32_t idx, const KeyVec::Fraction& fraction) {
 
 SWC_SHOULD_INLINE
 void KeyVec::insert(const uint32_t idx, const std::string& fraction) {
-  insert(idx, fraction.data(), fraction.length());
+  insert(idx, fraction.c_str(), fraction.length());
 }
 
 SWC_SHOULD_INLINE
@@ -77,13 +77,13 @@ void KeyVec::insert(const uint32_t idx, const char* fraction) {
 }
 
 SWC_SHOULD_INLINE
-void KeyVec::insert(const uint32_t idx, const char* fraction, 
+void KeyVec::insert(const uint32_t idx, const char* fraction,
                     const uint32_t len) {
-  insert(idx, (const uint8_t*)fraction, len);
+  insert(idx, reinterpret_cast<const uint8_t*>(fraction), len);
 }
 
 SWC_SHOULD_INLINE
-void KeyVec::insert(const uint32_t idx, const uint8_t* fraction, 
+void KeyVec::insert(const uint32_t idx, const uint8_t* fraction,
                     const uint32_t len) {
   emplace(cbegin() + idx, fraction, len);
 }
@@ -95,7 +95,7 @@ void KeyVec::set(const uint32_t idx, const KeyVec::Fraction& fraction) {
 
 SWC_SHOULD_INLINE
 void KeyVec::set(const uint32_t idx, const std::string& fraction) {
-  set(idx, fraction.data(), fraction.length());
+  set(idx, fraction.c_str(), fraction.length());
 }
 
 SWC_SHOULD_INLINE
@@ -104,13 +104,13 @@ void KeyVec::set(const uint32_t idx, const char* fraction) {
 }
 
 SWC_SHOULD_INLINE
-void KeyVec::set(const uint32_t idx, const char* fraction, 
+void KeyVec::set(const uint32_t idx, const char* fraction,
                  const uint32_t len) {
-  set(idx, (const uint8_t*)fraction, len);
+  set(idx, reinterpret_cast<const uint8_t*>(fraction), len);
 }
 
 SWC_SHOULD_INLINE
-void KeyVec::set(const uint32_t idx, const uint8_t* fraction, 
+void KeyVec::set(const uint32_t idx, const uint8_t* fraction,
                  const uint32_t len) {
   (*this)[idx].assign(fraction, len);
 }
@@ -134,7 +134,10 @@ void KeyVec::get(const uint32_t idx, KeyVec::Fraction& fraction) const {
 
 SWC_SHOULD_INLINE
 void KeyVec::get(const uint32_t idx, std::string& fraction) const {
-  fraction.assign((const char*)(*this)[idx].data(), (*this)[idx].size());
+  fraction.assign(
+    reinterpret_cast<const char*>((*this)[idx].data()),
+    (*this)[idx].size()
+  );
 }
 
 uint32_t KeyVec::encoded_length() const {
@@ -166,7 +169,7 @@ void KeyVec::decode(const uint8_t** bufp, size_t* remainp) {
 }
 
 std::string KeyVec::to_string() const {
-  std::stringstream ss; 
+  std::stringstream ss;
   print(ss);
   return ss.str();
 }

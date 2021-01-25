@@ -33,7 +33,7 @@ void test_encode_decode(const Specs::Scan& ss){
   }
 
   size_t remain = len;
-  const uint8_t* ptr1 = (const uint8_t*)base;
+  const uint8_t* ptr1 = base;
   Specs::Scan ss_decoded(&ptr1, &remain);
   if(remain > 0 || ptr1 != base+len) {
     std::cout << "\n Encode/Decode \n";
@@ -59,9 +59,11 @@ void test_encode_decode(const Specs::Scan& ss){
   if(memcmp(mark1, mark2, len)) {
     std::cout << "\nERROR, encoding mismatch (memcmp) \n";
     std::cout << Specs::Scan(&mark2, &len).to_string() << "\n\n";
-    std::cout << "data:\"" << std::string((const char*)mark1, len) << "\"\n";
+    std::cout << "data:\""
+      << std::string(reinterpret_cast<const char*>(mark1), len) << "\"\n";
     std::cout << "!==\n";
-    std::cout << "data:\"" << std::string((const char*)mark2, len) << "\"\n";
+    std::cout << "data:\""
+      << std::string(reinterpret_cast<const char*>(mark2), len) << "\"\n";
     exit(1);
   }
 

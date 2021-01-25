@@ -66,8 +66,7 @@ bool FileSystemLocal::exists(int& err, const std::string& name) {
   errno = 0;
   bool state = FileUtils::exists(abspath);
   err = errno == ENOENT ? Error::OK : errno;
-  SWC_LOGF(LOG_DEBUG, "exists state='%d' path='%s'",
-            (int)state, abspath.c_str());
+  SWC_LOGF(LOG_DEBUG, "exists state='%d' path='%s'", state, abspath.c_str());
   return state;
 }
 
@@ -92,7 +91,7 @@ size_t FileSystemLocal::length(int& err, const std::string& name) {
   errno = 0;
 
   size_t len = 0;
-  if ((len = FileUtils::length(abspath)) == (size_t)-1) {
+  if ((len = FileUtils::length(abspath)) == size_t(-1)) {
     err = errno;
     SWC_LOGF(LOG_ERROR, "length('%s') failed - %d(%s)",
               abspath.c_str(), errno, Error::get_text(errno));
@@ -131,8 +130,8 @@ void FileSystemLocal::readdir(int& err, const std::string& name,
 
   std::string full_entry_path;
   struct stat statbuf;
-
-  for(auto& result : listing){
+  results.reserve(listing.size());
+  for(auto& result : listing) {
     if (result.d_name[0] == '.' || !result.d_name[0])
       continue;
 
@@ -156,7 +155,7 @@ void FileSystemLocal::readdir(int& err, const std::string& name,
                 full_entry_path.c_str(), errno, Error::get_text(errno));
       return;
     }
-    entry.length = (uint64_t)statbuf.st_size;
+    entry.length = statbuf.st_size;
     entry.last_modification_time = statbuf.st_mtime;
   }
 }
@@ -316,7 +315,7 @@ size_t FileSystemLocal::pread(int& err, SmartFd::Ptr& smartfd,
 
   size_t ret;
   errno = 0;
-  ssize_t nread = FileUtils::pread(smartfd->fd(), (off_t)offset, dst, amount);
+  ssize_t nread = FileUtils::pread(smartfd->fd(), off_t(offset), dst, amount);
   if (nread == -1) {
     ret = 0;
     nread = 0;
@@ -380,7 +379,7 @@ void FileSystemLocal::seek(int& err, SmartFd::Ptr& smartfd, size_t offset) {
 
   errno = 0;
   uint64_t at = lseek(smartfd->fd(), offset, SEEK_SET);
-  if (at == (uint64_t)-1 || at != offset || errno) {
+  if (at == uint64_t(-1) || at != offset || errno) {
     err = errno;
     SWC_LOGF(LOG_ERROR, "seek failed - %d(%s) %s",
               err, Error::get_text(errno), smartfd->to_string().c_str());

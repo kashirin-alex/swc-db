@@ -1,4 +1,4 @@
-/* 
+/*
  * SWC-DB© Copyright since 2019 Alex Kashirin <kashirin.alex@gmail.com>
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
@@ -18,7 +18,7 @@ Event::Ptr Event::make(Type type, int error) {
 }
 
 SWC_SHOULD_INLINE
-Event::Event(Type type_, int error_) 
+Event::Event(Type type_, int error_)
             : type(type_), error(error_), expiry_ms(0) {
 }
 
@@ -27,7 +27,7 @@ Event::~Event() { }
 SWC_SHOULD_INLINE
 void Event::received() {
   if(header.timeout_ms)
-    expiry_ms = Time::now_ms() + header.timeout_ms - 1; 
+    expiry_ms = Time::now_ms() + header.timeout_ms - 1;
 }
 
 void Event::decode_buffers() {
@@ -62,15 +62,15 @@ int32_t Event::response_code() {
   const uint8_t *ptr = data.base;
   size_t remaining = data.size;
 
-  try { 
-    return Serialization::decode_i32(&ptr, &remaining); 
+  try {
+    return Serialization::decode_i32(&ptr, &remaining);
     /* opt
     std::string msg = Serialization::decode_bytes_string(&ptr, &remaining);
     */
   } catch(...) {
     const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
     SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
-    return e.code(); 
+    return e.code();
   }
 }
 
@@ -91,10 +91,10 @@ void Event::print(std::ostream& out) const {
     out << "ERROR";
     break;
   default:
-    out << "UKNOWN(" << (int)type << ')';
+    out << "UKNOWN(" << int(type) << ')';
     break;
   }
-  if(error) 
+  if(error)
     Error::print(out << ' ', error);
 }
 

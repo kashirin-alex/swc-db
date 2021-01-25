@@ -18,43 +18,43 @@ namespace SWC {
 /* cfg methods for types
 *  @param v The default Value and a Type
 */
-Config::Property::V_BOOL::Ptr 
+Config::Property::V_BOOL::Ptr
 Config::boo(const bool& v) {
   return new Config::Property::V_BOOL(v);
 }
-Config::Property::V_UINT8::Ptr 
+Config::Property::V_UINT8::Ptr
 Config::i8(const uint8_t& v) {
   return new Config::Property::V_UINT8(v);
 }
-Config::Property::V_UINT16::Ptr 
+Config::Property::V_UINT16::Ptr
 Config::i16(const uint16_t& v) {
   return new Config::Property::V_UINT16(v);
 }
-Config::Property::V_INT32::Ptr 
+Config::Property::V_INT32::Ptr
 Config::i32(const int32_t& v) {
   return new Config::Property::V_INT32(v);
 }
-Config::Property::V_INT64::Ptr 
+Config::Property::V_INT64::Ptr
 Config::i64(const int64_t& v) {
   return new Config::Property::V_INT64(v);
 }
-Config::Property::V_DOUBLE::Ptr 
+Config::Property::V_DOUBLE::Ptr
 Config::f64(const double& v) {
   return new Config::Property::V_DOUBLE(v);
 }
-Config::Property::V_STRING::Ptr 
+Config::Property::V_STRING::Ptr
 Config::str(const std::string& v) {
   return new Config::Property::V_STRING(v);
 }
-Config::Property::V_STRINGS::Ptr 
+Config::Property::V_STRINGS::Ptr
 Config::strs(const Strings& v) {
   return new Config::Property::V_STRINGS(v);
 }
-Config::Property::V_INT64S::Ptr 
+Config::Property::V_INT64S::Ptr
 Config::i64s(const Int64s& v) {
   return new Config::Property::V_INT64S(v);
 }
-Config::Property::V_DOUBLES::Ptr 
+Config::Property::V_DOUBLES::Ptr
 Config::f64s(const Doubles& v) {
   return new Config::Property::V_DOUBLES(v);
 }
@@ -62,23 +62,23 @@ Config::f64s(const Doubles& v) {
 /* cfg methods for guarded types
 *  @param v The default Value and a Type
 */
-Config::Property::V_GBOOL::Ptr 
+Config::Property::V_GBOOL::Ptr
 Config::g_boo(const bool& v) {
   return new Config::Property::V_GBOOL(v, 0);
 }
-Config::Property::V_GUINT8::Ptr 
+Config::Property::V_GUINT8::Ptr
 Config::g_i8(const uint8_t& v) {
   return new Config::Property::V_GUINT8(v, 0);
 }
-Config::Property::V_GINT32::Ptr 
+Config::Property::V_GINT32::Ptr
 Config::g_i32(const int32_t& v) {
   return new Config::Property::V_GINT32(v, 0);
 }
-Config::Property::V_GSTRINGS::Ptr 
+Config::Property::V_GSTRINGS::Ptr
 Config::g_strs(const Strings& v) {
   return new Config::Property::V_GSTRINGS(v, 0);
 }
-Config::Property::V_GENUM::Ptr 
+Config::Property::V_GENUM::Ptr
 Config::g_enum(const int32_t& v,
                const Config::Property::V_GENUM::OnChg_t& cb,
                const Config::Property::V_GENUM::FromString_t& from_string,
@@ -134,8 +134,8 @@ Config::Property::V_DOUBLES::Ptr Config::f64s() {
 
 namespace Config {
 
-  
-ParserConfig::ParserConfig(const std::string& usage, 
+
+ParserConfig::ParserConfig(const std::string& usage,
                            int line_len, bool own)
                           : usage(usage), line_length(line_len), own(own) {
 }
@@ -155,7 +155,7 @@ void ParserConfig::free() {
     options.clear();
   }
 }
-  
+
 ParserConfig& ParserConfig::definition(const std::string& u) {
   usage = u;
   return *this;
@@ -164,8 +164,8 @@ ParserConfig& ParserConfig::definition(const std::string& u) {
 /* populate from other Parser Config */
 ParserConfig& ParserConfig::add(const ParserConfig& other_cfg) {
   usage.append(other_cfg.usage);
-      
-  for (auto& pos : other_cfg.positions) 
+
+  for (auto& pos : other_cfg.positions)
     add_pos(pos.second, pos.first);
 
   for(const auto& kv : other_cfg.options)
@@ -175,17 +175,17 @@ ParserConfig& ParserConfig::add(const ParserConfig& other_cfg) {
 }
 
 /* Method to add option */
-ParserConfig& ParserConfig::add(const std::string& names, 
-                                Property::Value::Ptr vptr, 
+ParserConfig& ParserConfig::add(const std::string& names,
+                                Property::Value::Ptr vptr,
                                 const std::string& description) {
   Strings aliases;
   std::istringstream f(names);
-  std::string s;    
+  std::string s;
   while (getline(f, s, ',')) {
     s.erase(std::remove_if(s.begin(), s.end(),
     [](unsigned char x){return std::isspace(x);}), s.end());
     aliases.push_back(s);
-  }  
+  }
   ParserOpt& opt = options[aliases.front()];
   opt.value = vptr;
   opt.desc = description;
@@ -193,8 +193,8 @@ ParserConfig& ParserConfig::add(const std::string& names,
   return *this;
 }
 
-ParserConfig& ParserConfig::operator()(const std::string& name, 
-                                       Property::Value::Ptr vptr, 
+ParserConfig& ParserConfig::operator()(const std::string& name,
+                                       Property::Value::Ptr vptr,
                                        const std::string& description) {
   return add(name, vptr, description);
 }
@@ -203,22 +203,22 @@ ParserConfig& ParserConfig::add_options(){
   return *this;
 }
 
-ParserConfig& ParserConfig::add_options(const std::string& name, 
-                                        Property::Value::Ptr vptr, 
+ParserConfig& ParserConfig::add_options(const std::string& name,
+                                        Property::Value::Ptr vptr,
                                         const std::string& description) {
   return add(name, vptr, description);
 }
 
-ParserConfig& ParserConfig::add(const std::string& name, 
+ParserConfig& ParserConfig::add(const std::string& name,
                                 const std::string& description) {
    return add(name, boo()->zero_token(), description);
 }
 
-ParserConfig& ParserConfig::operator()(const std::string& name, 
-                                       const std::string&  description) {
+ParserConfig& ParserConfig::operator()(const std::string& name,
+                                       const std::string& description) {
   return add(name, description);
 }
-    
+
 /* Method to add_pos option */
 ParserConfig& ParserConfig::add_pos(const std::string& s, int pos) {
   positions.emplace_back(pos, s);
@@ -231,7 +231,7 @@ ParserConfig& ParserConfig::operator()(const std::string& s, int pos) {
 
 std::string ParserConfig::position_name(int n) {
   for (auto& pos : positions) {
-    if(pos.first == n) 
+    if(pos.first == n)
       return pos.second;
   }
   return "";
@@ -258,7 +258,7 @@ bool ParserConfig::has(const std::string& name, std::string& alias_to) const {
         return true;
       }
   }
-  return false;    
+  return false;
 }
 
 Property::Value::Ptr ParserConfig::get_default(const std::string& name){
@@ -281,12 +281,12 @@ void ParserConfig::remove(const std::string& name) {
 
 void ParserConfig::print(std::ostream& os) const {
   os << usage << "\n";
-  
+
   size_t tmp;
   size_t len_name=5;
   size_t len_desc=5;
   for (const auto& kv : options) {
-    tmp = (!kv.second.aliases.empty()? 
+    tmp = (!kv.second.aliases.empty()?
             format_list(kv.second.aliases).length()+2 : 0);
     if(len_name < tmp+kv.first.length())
       len_name = tmp+kv.first.length();
@@ -298,9 +298,9 @@ void ParserConfig::print(std::ostream& os) const {
 
   for (const auto& kv : options) {
     os  << std::left << std::setw(2) << " "
-        << std::left << std::setw(offset_name+2) << 
+        << std::left << std::setw(offset_name+2) <<
           format("--%s %s", kv.first.c_str(),
-                (!kv.second.aliases.empty()? 
+                (!kv.second.aliases.empty()?
                   format("-%s",format_list(kv.second.aliases).c_str()).c_str()
                   : ""))
         << std::left << std::setw(offset_desc+2) << kv.second.desc
@@ -320,7 +320,7 @@ std::ostream& operator<<(std::ostream& os, const ParserConfig& cfg) {
 
 Strings Parser::args_to_strings(int argc, char *argv[]) {
   Strings raw_strings;
-  for(int n=1; n<argc; ++n)  
+  for(int n=1; n<argc; ++n)
     raw_strings.emplace_back(argv[n]);
   return raw_strings;
 }
@@ -340,11 +340,11 @@ void Parser::Options::free() {
   }
 
 
-Parser::Parser(bool unregistered) 
+Parser::Parser(bool unregistered)
               : config("", 0, false),
-                m_unregistered(unregistered) { 
+                m_unregistered(unregistered) {
 }
-  
+
 Parser::~Parser() {
   free();
 }
@@ -353,29 +353,28 @@ void Parser::free() {
   m_opts.free();
   config.free();
 }
-  
+
 void Parser::parse_filedata(std::ifstream& in) {
   size_t at;
   std::string group = "";
   std::string line, g_tmp;
-  while(getline (in, line)){
-    at = line.find_first_of("[");
-    if(at == (size_t)0){
+  while(getline(in, line)) {
+    if(line.find_first_of("[") == 0) {
 
-      at = line.find_first_of("]");      
+      at = line.find_first_of("]");
       if(at != std::string::npos) {
 
-        g_tmp = line.substr(1, at-1);  
+        g_tmp = line.substr(1, at-1);
         if(!group.empty()){
-          group.pop_back(); // remove a dot      
-          if(!g_tmp.compare(group+"=end")) { 
+          group.pop_back(); // remove a dot
+          if(!g_tmp.compare(group+"=end")) {
             // an end of group  "[groupname=end]"
             group.clear();
             line.clear();
             continue;
           }
         }
-        group = g_tmp+".";               
+        group = g_tmp+".";
         // a start of group "[groupname]"
         line.clear();
         continue;
@@ -387,11 +386,11 @@ void Parser::parse_filedata(std::ifstream& in) {
   make_options();
 }
 
-void Parser::parse_cmdline(int argc, char *argv[]) { 
+void Parser::parse_cmdline(int argc, char *argv[]) {
   parse_cmdline(args_to_strings(argc, argv));
 }
 
-void Parser::parse_cmdline(const Strings& raw_strings) { 
+void Parser::parse_cmdline(const Strings& raw_strings) {
 
   if(raw_strings.empty()) {
     make_options();
@@ -414,7 +413,7 @@ void Parser::parse_cmdline(const Strings& raw_strings) {
         name = name.substr(1);
       opt.append(name);
 
-      // if not arg with name=Value 
+      // if not arg with name=Value
       if(name.find_first_of("=") == std::string::npos){
         opt.append("=");
 
@@ -424,7 +423,7 @@ void Parser::parse_cmdline(const Strings& raw_strings) {
             continue;
           }
         }
-        opt.append("1"); // zero-token true default 
+        opt.append("1"); // zero-token true default
       }
     } else {
       // position based name with position's value
@@ -435,36 +434,36 @@ void Parser::parse_cmdline(const Strings& raw_strings) {
       }
       opt.append(raw_opt);
     }
-    
+
     // SWC_LOGF(LOG_INFO, "parsing: %s", opt.c_str());
     cfg_name = parse_opt(opt); // << input need to be NAME=VALUE else false
     if(!cfg_name) {
       name = config.position_name(-1);
       if(!name.empty())
         set_pos_parse(name, raw_opt);
-      else if(!m_unregistered) 
+      else if(!m_unregistered)
         // if no pos -1  if(n) ignore app-file, unregistered arg-positions
-        SWC_THROWF(Error::CONFIG_GET_ERROR, 
+        SWC_THROWF(Error::CONFIG_GET_ERROR,
                     "unknown cfg  with %s", raw_opt.c_str());
     }
 
     opt.clear();
     fill = false;
   }
-  
+
   make_options();
 }
 
 void Parser::parse_line(const std::string& line) {
   size_t at = line.find_first_of("="); // is a cfg type
-  if(at == std::string::npos) 
+  if(at == std::string::npos)
     return;
-      
+
   std::string name = line.substr(0, at);
   size_t cmt = name.find_first_of("#"); // is comment in name
-  if(cmt != std::string::npos) 
+  if(cmt != std::string::npos)
     return;
-      
+
   name.erase(std::remove_if(name.begin(), name.end(),
                 [](unsigned char x){return std::isspace(x);}),
             name.end());
@@ -475,18 +474,18 @@ void Parser::parse_line(const std::string& line) {
     value = value.substr(0, cmt);
 
   at = value.find_first_of("\"");
-  if(at != std::string::npos) {   
+  if(at != std::string::npos) {
     // quoted value
     value = value.substr(at+1);
     at = value.find_first_of("\"");
     if(at != std::string::npos)
       value = value.substr(0, at);
-  } else                 
+  } else {
     // remove spaces
     value.erase(std::remove_if(value.begin(), value.end(),
                   [](unsigned char x){return std::isspace(x);}),
                 value.end());
-
+  }
   parse_opt(name+"="+value); // << input must be NAME=VALUE !
 
   //cfg_name = parse_opt(line);
@@ -501,7 +500,7 @@ void Parser::set_pos_parse(const std::string& name, const std::string& value) {
 
 bool Parser::parse_opt(const std::string& s){
   size_t at = s.find_first_of("=");
-  if(at == std::string::npos) 
+  if(at == std::string::npos)
     return false;
 
   std::string name = s.substr(0, at);
@@ -509,11 +508,11 @@ bool Parser::parse_opt(const std::string& s){
   // SWC_LOGF(LOG_INFO, "looking: %s", name.c_str());
   if(!config.has(name, alias_to) && !m_unregistered)
     return false;
-    
+
   auto& r = raw_opts[alias_to.length() ? alias_to : name];
   std::string value = s.substr(at+1);
   // SWC_LOGF(LOG_INFO, "value: %s", value.c_str());
-  if(value.empty()) 
+  if(value.empty())
     return true;
   r.push_back(value);
   return true;
@@ -535,17 +534,17 @@ void Parser::make_options() {
 }
 
 // convert, validate and add property to options
-void Parser::add_opt(const std::string& name, Property::Value::Ptr p, 
+void Parser::add_opt(const std::string& name, Property::Value::Ptr p,
                      const Strings& raw_opt) {
   auto tmp = p ? p : str();
   auto& p_set = m_opts.map.emplace(name, tmp->make_new(raw_opt)).first->second;
   if(!p)
     delete tmp;
-  
+
   if(raw_opt.empty())
     p_set->default_value(true);
 }
-      
+
 void Parser::own_options(Parser::Options& opts) {
   opts = m_opts;
   m_opts.own = false;

@@ -89,19 +89,15 @@ class FileWriter {
   void write(const Cell &cell, Types::Column typ) {
     buffer.ensure(8096);
 
-    std::string ts;
     if(!(output_flags & OutputFlag::NO_TS)) {
-      ts = std::to_string(cell.timestamp);
-      buffer.add((const uint8_t*)ts.c_str(), ts.length());
+      buffer.add(std::to_string(cell.timestamp));
       buffer.add('\t'); //
     }
 
     uint32_t len = 0;
-    std::string f_len;
     const uint8_t* ptr = cell.key.data;
     for(uint32_t n=1; n<=cell.key.count; ++n, ptr+=len) {
-      f_len = std::to_string((len = Serialization::decode_vi32(&ptr)));
-      buffer.add((const uint8_t*)f_len.c_str(), f_len.length());
+      buffer.add(std::to_string((len = Serialization::decode_vi32(&ptr))));
       if(n < cell.key.count)
         buffer.add(',');
     }
@@ -116,8 +112,7 @@ class FileWriter {
     }
     buffer.add('\t'); //
 
-    std::string flag = DB::Cells::to_string((DB::Cells::Flag)cell.flag);
-    buffer.add((const uint8_t*)flag.c_str(), flag.length());
+    buffer.add(DB::Cells::to_string(DB::Cells::Flag(cell.flag)));
 
     if(output_flags & OutputFlag::NO_VALUE ||
       cell.flag == Flag::DELETE || cell.flag == Flag::DELETE_VERSION) {
@@ -130,16 +125,14 @@ class FileWriter {
       uint8_t op;
       int64_t eq_rev = TIMESTAMP_NULL;
       int64_t v = cell.get_counter(op, eq_rev);
-      std::string counter = (v > 0 ? "+" : "") + std::to_string(v);
-      buffer.add((const uint8_t*)counter.c_str(), counter.length());
+      buffer.add((v > 0 ? "+" : "") + std::to_string(v));
 
       if(op & OP_EQUAL) {
         buffer.add('\t'); //
         buffer.add('=');
         if(eq_rev != TIMESTAMP_NULL) {
-          ts = std::to_string(eq_rev);
           buffer.add('\t'); //
-          buffer.add((const uint8_t*)ts.c_str(), ts.length());
+          buffer.add(std::to_string(eq_rev));
         }
       }
     } else {
@@ -150,19 +143,16 @@ class FileWriter {
       if(cell.have_encoder() && output_flags & OutputFlag::NO_ENCODE) {
         StaticBuffer v;
         cell.get_value(v);
-        std::string vlen = std::to_string(v.size);
-        buffer.add((const uint8_t*)vlen.c_str(), vlen.length());
+        buffer.add(std::to_string(v.size));
         buffer.add('\t');
         buffer.add(v.base, v.size);
       } else {
-        std::string vlen = std::to_string(cell.vlen);
-        buffer.add((const uint8_t*)vlen.c_str(), vlen.length());
+        buffer.add(std::to_string(cell.vlen));
         buffer.add('\t');
         buffer.add(cell.value, cell.vlen);
         if(cell.have_encoder()) {
           has_encoder = true;
-          std::string s("\t1");
-          buffer.add((const uint8_t*)s.c_str(), s.length());
+          buffer.add(std::string("\t1"));
         }
       }
     }
@@ -187,7 +177,7 @@ class FileWriter {
       header.append("\tENCODER");
 
     header.append("\n");
-    header_buffer.add((const uint8_t*)header.c_str(), header.length());
+    header_buffer.add(header);
   }
 
   void write(Types::Column typ) {
@@ -439,7 +429,7 @@ class FileReader {
       ++ptr;
       --remain;
       if(*ptr == '\t' || *ptr == '\n') {
-        header.emplace_back((const char*)s, ptr-s);
+        header.emplace_back(reinterpret_cast<const char*>(s), ptr-s);
         s = ptr+1;
       }
     }
@@ -473,7 +463,8 @@ class FileReader {
       }
       if(!remain)
         return false;
-      cell.set_timestamp(std::stoll(std::string((const char*)s, ptr-s)));
+      cell.set_timestamp(
+        std::stoll(std::string(reinterpret_cast<const char*>(s), ptr-s)));
       s = ++ptr; // tab
       --remain;
     }
@@ -481,7 +472,8 @@ class FileReader {
     std::vector<uint32_t> flen;
     while(remain) {
       if(*ptr == ',' || *ptr == '\t') {
-        flen.push_back(std::stol(std::string((const char*)s, ptr-s)));
+        flen.push_back(
+          std::stol(std::string(reinterpret_cast<const char*>(s), ptr-s)));
         if(*ptr == '\t')
           break;
         if(!--remain)
@@ -534,7 +526,8 @@ class FileReader {
       return false;
 
     if(Types::is_counter(typ)) {
-      int64_t counter = std::stol(std::string((const char*)s, ptr-s));
+      int64_t counter = std::stol(
+        std::string(reinterpret_cast<const char*>(s), ptr-s));
       int64_t eq_rev = TIMESTAMP_NULL;
       uint8_t op = 0;
       if(*ptr == '\t') {
@@ -558,7 +551,8 @@ class FileReader {
           }
           if(!remain)
             return false;
-          eq_rev = std::stol(std::string((const char*)s, ptr-s));
+          eq_rev = std::stol(
+            std::string(reinterpret_cast<const char*>(s), ptr-s));
         }
       }
       cell.set_counter(op, counter, typ, eq_rev);
@@ -576,12 +570,13 @@ class FileReader {
       if(!remain)
         return false;
 
-      cell.vlen = std::stol(std::string((const char*)s, ptr-s));
+      cell.vlen = std::stol(
+        std::string(reinterpret_cast<const char*>(s), ptr-s));
       if(--remain < cell.vlen+1)
         return false;
       ++ptr; // tab
       if(cell.vlen)
-        cell.value = (uint8_t*)ptr;
+        cell.value = const_cast<uint8_t*>(ptr);
       ptr += cell.vlen;
       remain -= cell.vlen;
 

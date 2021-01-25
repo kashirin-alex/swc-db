@@ -66,7 +66,7 @@ struct CompactRange::InBlock final : Core::QueuePointer<InBlock*>::Pointer {
     to->add(DB::Cells::Cell(&ptr, &remain));
 
     --header.cells_count;
-    cells.ptr = (uint8_t*)last_cell;
+    cells.ptr = const_cast<uint8_t*>(last_cell);
     cells.mark = 0;
   }
 
@@ -403,9 +403,9 @@ void CompactRange::commitlog_done(const CommitLog::Compact* compact) {
 
     if(!m_stopped && !m_chk_final) {
       size_t bytes = range->blocks.commitlog.size_bytes_encoded();
-      float fits = (float)bytes/cs_size;
-      if((size_t)fits + 1 >= range->cfg->cellstore_max() &&
-         fits - (size_t)fits >= (float)range->cfg->compact_percent()/100) {
+      float fits = float(bytes)/cs_size;
+      if(size_t(fits) + 1 >= range->cfg->cellstore_max() &&
+         fits - size_t(fits) >= float(range->cfg->compact_percent())/100) {
         stop_check_timer();
         state_default.store(Range::COMPACT_PREPARING);
         range->compacting(Range::COMPACT_PREPARING);

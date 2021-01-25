@@ -58,22 +58,22 @@ bool Key::sane() const {
 
 SWC_SHOULD_INLINE
 void Key::add(const std::string_view& fraction) {
-  add((const uint8_t*)fraction.data(), fraction.length());
+  add(fraction.data(), fraction.length());
 }
 
 SWC_SHOULD_INLINE
 void Key::add(const std::string& fraction) {
-  add((const uint8_t*)fraction.data(), fraction.length());
+  add(fraction.c_str(), fraction.length());
 }
 
 SWC_SHOULD_INLINE
 void Key::add(const char* fraction) {
-  add((const uint8_t*)fraction, strlen(fraction));
+  add(fraction, strlen(fraction));
 }
 
 SWC_SHOULD_INLINE
 void Key::add(const char* fraction, uint32_t len) {
-  add((const uint8_t*)fraction, len);
+  add(reinterpret_cast<const uint8_t*>(fraction), len);
 }
 
 void Key::add(const uint8_t* fraction, uint32_t len) {
@@ -119,7 +119,7 @@ void Key::add(const std::vector<std::string>::const_iterator cbegin,
   }
   for(auto it=cbegin; it < cend; ++it) {
     Serialization::encode_vi24(&ptr, it->size());
-    memcpy(ptr, (const uint8_t*)it->data(), it->size());
+    memcpy(ptr, reinterpret_cast<const uint8_t*>(it->c_str()), it->size());
     ptr += it->size();
   }
   count += cend - cbegin;
@@ -128,17 +128,17 @@ void Key::add(const std::vector<std::string>::const_iterator cbegin,
 
 SWC_SHOULD_INLINE
 void Key::insert(uint32_t idx, const std::string& fraction) {
-  insert(idx, (const uint8_t*)fraction.data(), fraction.length());
+  insert(idx, fraction.c_str(), fraction.length());
 }
 
 SWC_SHOULD_INLINE
 void Key::insert(uint32_t idx, const char* fraction) {
-  insert(idx, (const uint8_t*)fraction, strlen(fraction));
+  insert(idx, fraction, strlen(fraction));
 }
 
 SWC_SHOULD_INLINE
 void Key::insert(uint32_t idx, const char* fraction, uint32_t len) {
-  insert(idx, (const uint8_t*)fraction, len);
+  insert(idx, reinterpret_cast<const uint8_t*>(fraction), len);
 }
 
 void Key::insert(uint32_t idx, const uint8_t* fraction, uint32_t len) {
@@ -194,7 +194,7 @@ void Key::remove(uint32_t idx, bool recursive) {
 
   uint8_t* begin;
   for(uint24_t offset = 0; offset < count; ++offset) {
-    begin = (uint8_t*)ptr_tmp;
+    begin = const_cast<uint8_t*>(ptr_tmp);
     ptr_tmp += Serialization::decode_vi24(&ptr_tmp);
     if(offset < idx)
       continue;
@@ -234,7 +234,7 @@ void Key::get(uint32_t idx, const char** fraction, uint32_t* length) const {
     for(; idx ; --idx)
       ptr += (*length = Serialization::decode_vi24(&ptr));
     if(!idx) {
-      *fraction = (const char*)ptr - *length;
+      *fraction = reinterpret_cast<const char*>(ptr) - *length;
       return;
     }
   }
@@ -271,7 +271,7 @@ void Key::decode(const uint8_t** bufp, size_t* remainp, bool owner) {
     do *bufp += Serialization::decode_vi24(bufp);
     while(--n);
     *remainp -= (size = *bufp - ptr_start);
-    data = (own = owner) ? _data(ptr_start) : (uint8_t*)ptr_start;
+    data = (own = owner) ? _data(ptr_start) : const_cast<uint8_t*>(ptr_start);
   } else {
     own = owner;
     data = nullptr;
@@ -286,7 +286,7 @@ void Key::convert_to(std::vector<std::string>& key) const {
   key.resize(count);
   for(auto it = key.begin(); it<key.end(); ++it, ptr+=len) {
     len = Serialization::decode_vi24(&ptr);
-    it->assign((const char*)ptr, len);
+    it->assign(reinterpret_cast<const char*>(ptr), len);
   }
 }
 
@@ -314,7 +314,9 @@ bool Key::equal(const std::vector<std::string>& key) const {
   const uint8_t* ptr = data;
   for(auto it = key.begin(); it<key.end(); ++it, ptr+=len) {
     len = Serialization::decode_vi24(&ptr);
-    if(!Condition::eq(ptr, len, (const uint8_t*)it->data(), it->length()))
+    if(!Condition::eq(
+          ptr, len,
+          reinterpret_cast<const uint8_t*>(it->c_str()), it->length()))
       return false;
   }
   return true;
@@ -370,7 +372,9 @@ void Key::print(std::ostream& out) const {
 
 SWC_SHOULD_INLINE
 uint8_t* Key::_data(const uint8_t* ptr) {
-  return size ? (uint8_t*)memcpy(new uint8_t[size], ptr, size) : 0;
+  return size
+    ? static_cast<uint8_t*>(memcpy(new uint8_t[size], ptr, size))
+    : 0;
 }
 
 

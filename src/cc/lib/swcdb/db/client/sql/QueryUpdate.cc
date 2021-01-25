@@ -288,7 +288,7 @@ void QueryUpdate::read_cell(cid_t& cid, DB::Cells::Cell& cell,
               read(buf, ",]");
               if(err)
                 return;
-              wfields.add(fid, (const uint8_t*)buf.data(), buf.size());
+              wfields.add(fid, buf);
               break;
             }
 
@@ -372,7 +372,7 @@ void QueryUpdate::read_cell(cid_t& cid, DB::Cells::Cell& cell,
         read(value, ",)");
         if(err)
           return;
-        const uint8_t* buf = (const uint8_t*)value.data();
+        const uint8_t* buf = reinterpret_cast<const uint8_t*>(value.c_str());
         size_t remain = value.length();
         uint8_t op;
         int64_t v;
@@ -412,15 +412,15 @@ void QueryUpdate::op_from(const uint8_t** ptr, size_t* remainp,
     } else {
       op = 0;
     }
-
-    char *last = (char*)*ptr + (*remainp > 30 ? 30 : *remainp);
+    const char* p = reinterpret_cast<const char*>(*ptr);
+    char *last = const_cast<char*>(p + (*remainp > 30 ? 30 : *remainp));
     errno = 0;
-    value = strtoll((const char*)*ptr, &last, 0);
+    value = strtoll(p, &last, 0);
     if(errno) {
       err = errno;
-    } else if((const uint8_t*)last > *ptr) {
-      *remainp -= (const uint8_t*)last - *ptr;
-      *ptr = (const uint8_t*)last;
+    } else if(last > p) {
+      *remainp -= last - p;
+      *ptr = reinterpret_cast<const uint8_t*>(last);
     } else {
       err = EINVAL;
     }

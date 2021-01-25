@@ -40,7 +40,7 @@ Column::Column(cid_t cid, const Intervals& intervals)
                 : cid(cid), intervals(intervals) {}
 
 Column::Column(const uint8_t** bufp, size_t* remainp) {
-  internal_decode(bufp, remainp); 
+  internal_decode(bufp, remainp);
 }
 
 Column::Column(const Column& other) {
@@ -87,13 +87,13 @@ size_t Column::internal_encoded_length() const {
   size_t len = Serialization::encoded_length_vi64(cid)
               + Serialization::encoded_length_vi32(intervals.size());
   for(auto& intval : intervals)
-    len += intval->encoded_length(); 
+    len += intval->encoded_length();
   return len;
 }
 
 void Column::internal_encode(uint8_t** bufp) const {
   Serialization::encode_vi64(bufp, cid);
-  Serialization::encode_vi32(bufp, (uint32_t)intervals.size());
+  Serialization::encode_vi32(bufp, intervals.size());
   for(auto& intval : intervals)
     intval->encode(bufp);
 }
@@ -123,15 +123,15 @@ void Column::print(std::ostream& out) const {
   out << "])";
 }
 
-void Column::display(std::ostream& out, bool pretty, 
+void Column::display(std::ostream& out, bool pretty,
                      std::string offset) const {
   out << offset << "Column(\n"
       << offset << " cid=" << cid << " size=" << intervals.size() << "\n"
-      << offset << " intervals=[\n"; 
+      << offset << " intervals=[\n";
   for(auto& intval : intervals)
     intval->display(out, pretty, offset+"  ");
   out << offset << " ]\n"
-      << offset << ")\n"; 
+      << offset << ")\n";
 }
 
 

@@ -97,7 +97,7 @@ void Reader::expect_comparator(Condition::Comp& comp, bool extended) {
 
 void Reader::expect_digit() {
   if(remain >= 1) {
-    if(std::isdigit((unsigned char)*ptr)) {
+    if(std::isdigit(*ptr)) {
       ++ptr;
       --remain;
       return;
@@ -209,7 +209,7 @@ void Reader::read_uint8_t(uint8_t& value, bool& was_set) {
   if (v > UINT8_MAX || v < INT8_MIN)
     error_msg(Error::SQL_PARSE_ERROR, " unsigned 8-bit integer out of range");
   else
-    value = (uint8_t)v;
+    value = v;
 }
 
 void Reader::read_uint16_t(uint16_t& value, bool& was_set) {
@@ -218,7 +218,7 @@ void Reader::read_uint16_t(uint16_t& value, bool& was_set) {
   if (v > UINT16_MAX || v < INT16_MIN)
     error_msg(Error::SQL_PARSE_ERROR, " unsigned 16-bit integer out of range");
   else
-    value = (uint16_t)v;
+    value = v;
 }
 
 
@@ -228,7 +228,7 @@ void Reader::read_uint32_t(uint32_t& value, bool& was_set, const char* stop) {
   if (v > UINT32_MAX || v < INT32_MIN)
     error_msg(Error::SQL_PARSE_ERROR, " unsigned 32-bit integer out of range");
   else
-    value = (uint32_t)v;
+    value = v;
 }
 
 void Reader::read_int64_t(int64_t& value, bool& was_set, const char* stop) {

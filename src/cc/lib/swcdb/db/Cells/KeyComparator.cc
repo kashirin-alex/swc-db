@@ -207,7 +207,7 @@ compare(const Cell::Key& key, const Cell::KeyVec& other,
   const uint8_t* ptr = key.data;
   uint24_t len;
   if(!max)
-    max = key.count > other.size() ? (uint32_t)key.count : other.size();
+    max = key.count > other.size() ? uint32_t(key.count) : other.size();
   for(uint32_t c = 0; c<max; ++c, ptr += len) {
 
     if(c == key.count || c == other.size())

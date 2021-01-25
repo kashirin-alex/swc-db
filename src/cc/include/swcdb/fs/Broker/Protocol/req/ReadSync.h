@@ -37,9 +37,9 @@ class ReadSync final : public BaseSync, public Base {
     Base::handle_read(ev, smartfd, amount);
     if(amount) {
       if(allocated) {
-          memcpy(buffer, ev->data_ext.base, amount);
+        memcpy(buffer, ev->data_ext.base, amount);
       } else {
-        ((StaticBuffer*)buffer)->set(ev->data_ext);
+        static_cast<StaticBuffer*>(buffer)->set(ev->data_ext);
       }
     }
     BaseSync::acknowledge();

@@ -33,11 +33,11 @@ void readdir(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
     err = e.code();
   }
-  
+
   auto cbp = Buffers::make(ev, Params::ReaddirRsp(results), 4);
   cbp->append_i32(err);
   conn->send_response(cbp);
- 
+
 }
 
 

@@ -128,7 +128,7 @@ bool Block::includes_end(const DB::Specs::Interval& spec) const {
   return m_prev_key_end.empty() ||
          spec.is_in_previous(m_cells.key_seq, m_prev_key_end);
 }
-    
+
 void Block::preload() {
   Env::Rgr::post([this](){ scan(std::make_shared<ReqScanBlockLoader>());} );
 }
@@ -407,12 +407,12 @@ SWC_SHOULD_INLINE
 size_t Block::_size() const noexcept {
   return m_cells.size();
 }
-  
+
 size_t Block::size_bytes() {
   std::shared_lock lock(m_mutex);
   return m_cells.size_bytes();
 }
-  
+
 size_t Block::size_of_internal() {
   std::shared_lock lock(m_mutex);
   return m_cells.size_of_internal();
@@ -427,7 +427,7 @@ bool Block::_need_split() const noexcept {
 }
 
 void Block::print(std::ostream& out) {
-  out << "Block(state=" <<  (int)m_state.load()
+  out << "Block(state=" <<  int(m_state.load())
       << ' ' << DB::Types::to_string(m_cells.key_seq)
       << ' ' << m_prev_key_end << " < key <= ";
   {

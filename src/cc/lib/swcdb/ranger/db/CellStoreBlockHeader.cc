@@ -11,9 +11,9 @@ namespace SWC { namespace Ranger { namespace CellStore { namespace Block {
 
 
 
-Header::Header(DB::Types::KeySeq key_seq) 
-              : offset_data(0), 
-                interval(key_seq), 
+Header::Header(DB::Types::KeySeq key_seq)
+              : offset_data(0),
+                interval(key_seq),
                 is_any(0),
                 encoder(DB::Types::Encoder::UNKNOWN),
                 size_plain(0),
@@ -22,7 +22,7 @@ Header::Header(DB::Types::KeySeq key_seq)
                 checksum_data(0) {
 }
 
-Header::Header(const Header& other) 
+Header::Header(const Header& other)
               : offset_data(other.offset_data),
                 interval(other.interval),
                 is_any(other.is_any),
@@ -37,19 +37,19 @@ Header::~Header() { }
 
 void Header::encode(uint8_t** bufp) {
   const uint8_t* base = *bufp;
-  Serialization::encode_i8(bufp, (uint8_t)encoder);
+  Serialization::encode_i8(bufp, uint8_t(encoder));
   Serialization::encode_i32(bufp, size_enc);
   Serialization::encode_i32(bufp, size_plain);
   Serialization::encode_i32(bufp, cells_count);
-  if(size_enc) 
+  if(size_enc)
     Core::checksum_i32(base + Header::SIZE, size_enc, bufp, checksum_data);
-  else 
+  else
     Serialization::encode_i32(bufp, 0);
   Core::checksum_i32(base, *bufp, bufp);
 }
 
 void Header::decode(const uint8_t** bufp, size_t* remainp) {
-  encoder = (DB::Types::Encoder)Serialization::decode_i8(bufp, remainp);
+  encoder = DB::Types::Encoder(Serialization::decode_i8(bufp, remainp));
   size_enc = Serialization::decode_i32(bufp, remainp);
   size_plain = Serialization::decode_i32(bufp, remainp);
   cells_count = Serialization::decode_i32(bufp, remainp);
@@ -58,7 +58,7 @@ void Header::decode(const uint8_t** bufp, size_t* remainp) {
 }
 
 size_t Header::encoded_length_idx() const {
-  return Serialization::encoded_length_vi64(offset_data) 
+  return Serialization::encoded_length_vi64(offset_data)
         + interval.encoded_length()
         + 2
         + Serialization::encoded_length_vi32(size_enc)
@@ -71,7 +71,7 @@ void Header::encode_idx(uint8_t** bufp) const {
   Serialization::encode_vi64(bufp, offset_data);
   interval.encode(bufp);
   Serialization::encode_i8(bufp, is_any);
-  Serialization::encode_i8(bufp, (uint8_t)encoder);
+  Serialization::encode_i8(bufp, uint8_t(encoder));
   Serialization::encode_vi32(bufp, size_enc);
   Serialization::encode_vi32(bufp, size_plain);
   Serialization::encode_vi32(bufp, cells_count);
@@ -82,7 +82,7 @@ void Header::decode_idx(const uint8_t** bufp, size_t* remainp) {
   offset_data = Serialization::decode_vi64(bufp, remainp);
   interval.decode(bufp, remainp, false);
   is_any = Serialization::decode_i8(bufp, remainp);
-  encoder = (DB::Types::Encoder)Serialization::decode_i8(bufp, remainp);
+  encoder = DB::Types::Encoder(Serialization::decode_i8(bufp, remainp));
   size_enc = Serialization::decode_vi32(bufp, remainp);
   size_plain = Serialization::decode_vi32(bufp, remainp);
   cells_count = Serialization::decode_vi32(bufp, remainp);
@@ -95,7 +95,7 @@ void Header::print(std::ostream& out) const {
       << " enc/size=" << size_enc << '/' << size_plain
       << " cells_count=" << cells_count
       << " checksum=" << checksum_data
-      << " is_any=" << (int)is_any
+      << " is_any=" << int(is_any)
       << ' ' << interval;
 }
 

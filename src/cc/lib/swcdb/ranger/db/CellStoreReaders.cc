@@ -57,7 +57,7 @@ uint32_t Readers::get_cell_revs() const {
 int64_t Readers::get_ts_earliest() const {
   int64_t ts = DB::Cells::AUTO_ASSIGN;
   for(auto cs : *this)
-    if(cs->interval.ts_earliest.comp != Condition::NONE && 
+    if(cs->interval.ts_earliest.comp != Condition::NONE &&
        (ts == DB::Cells::AUTO_ASSIGN || cs->interval.ts_earliest.value < ts))
       ts = cs->interval.ts_earliest.value;
   return ts;
@@ -70,7 +70,7 @@ size_t Readers::blocks_count() const {
   return sz;
 }
 
-size_t Readers::release(size_t bytes) {    
+size_t Readers::release(size_t bytes) {
   size_t released = 0;
   for(auto cs : *this) {
     released += cs->release(bytes ? bytes-released : bytes);
@@ -110,7 +110,7 @@ void Readers::load_cells(BlockLoader* loader) {
   for(auto cs : *this) {
     if(loader->block->is_consist(cs->interval)) {
       cs->load_cells(loader);
-    } else if(!cs->interval.key_end.empty() && 
+    } else if(!cs->interval.key_end.empty() &&
               !loader->block->is_in_end(cs->interval.key_end)) {
       break;
     }
@@ -172,7 +172,7 @@ void Readers::decode(int &err, const uint8_t** ptr, size_t* remain) {
     csid = Serialization::decode_vi32(ptr, remain);
     push_back(
       Read::make(
-        err, csid, range, 
+        err, csid, range,
         DB::Cells::Interval(range->cfg->key_seq, ptr, remain)));
     //if(err == Error::FS_PATH_NOT_FOUND) ?without cs
   }
@@ -183,15 +183,16 @@ void Readers::load_from_path(int &err) {
   FS::DirentList dirs;
   Env::FsInterface::interface()->readdir(
     err, range->get_path(Range::CELLSTORES_DIR), dirs);
-  
+
   FS::IdEntries_t entries;
+  entries.reserve(dirs.size());
   for(auto& entry : dirs) {
     if(entry.name.find(".cs", entry.name.length()-3) != std::string::npos) {
       auto idn = entry.name.substr(0, entry.name.length()-3);
-      entries.push_back( (csid_t)strtoll(idn.c_str(), NULL, 0) );
+      entries.push_back(strtoll(idn.c_str(), NULL, 0));
     }
   }
-  
+
   _close();
   _free();
 
@@ -210,16 +211,16 @@ void Readers::replace(int &err, Writers& w_cellstores) {
   _close();
 
   fs->rename(
-    err, 
-    range->get_path(Range::CELLSTORES_DIR), 
+    err,
+    range->get_path(Range::CELLSTORES_DIR),
     range->get_path(Range::CELLSTORES_BAK_DIR)
   );
-  if(err) 
+  if(err)
     return;
 
   fs->rename(
-    err, 
-    range->get_path(Range::CELLSTORES_TMP_DIR), 
+    err,
+    range->get_path(Range::CELLSTORES_TMP_DIR),
     range->get_path(Range::CELLSTORES_DIR)
   );
 
@@ -244,13 +245,13 @@ void Readers::replace(int &err, Writers& w_cellstores) {
   if(err) {
     fs->rmdir(err, range->get_path(Range::CELLSTORES_DIR));
     fs->rename(
-      err, 
-      range->get_path(Range::CELLSTORES_BAK_DIR), 
+      err,
+      range->get_path(Range::CELLSTORES_BAK_DIR),
       range->get_path(Range::CELLSTORES_DIR)
     );
     return;
   }
-  
+
   fs->rmdir(err, range->get_path(Range::CELLSTORES_BAK_DIR));
 
   err = Error::OK;
@@ -284,7 +285,7 @@ void Readers::move_from(int &err, Readers::Vec& mv_css) {
         break;
     }
   }
-  
+
   if(err) {
     for(auto cs : cellstores)
       delete cs;

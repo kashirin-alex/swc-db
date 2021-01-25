@@ -73,7 +73,7 @@ Configurables apply_broker() {
 
     ("swc.fs.broker.comm.encoder",
       Config::g_enum(
-        (int)SWC_DEFAULT_COMM_ENCODER,
+        int(SWC_DEFAULT_COMM_ENCODER),
         0,
         Core::Encoder::from_string_encoding,
         Core::Encoder::repr_encoding),
@@ -518,7 +518,7 @@ size_t FileSystemBroker::read(int& err, SmartFd::Ptr& smartfd,
   );
 
   auto hdlr = std::make_shared<Comm::Protocol::FsBroker::Req::ReadSync>(
-    timeout, smartfd, (void*)dst, amount, false);
+    timeout, smartfd, static_cast<void*>(dst), amount, false);
   while(!send_request(hdlr));
   hdlr->wait();
   err = hdlr->error;
@@ -567,7 +567,7 @@ size_t FileSystemBroker::pread(int& err, SmartFd::Ptr& smartfd,
   );
 
   auto hdlr = std::make_shared<Comm::Protocol::FsBroker::Req::PreadSync>(
-    timeout, smartfd, offset, (void*)dst, amount, false);
+    timeout, smartfd, offset, static_cast<void*>(dst), amount, false);
   while(!send_request(hdlr));
   hdlr->wait();
   err = hdlr->error;

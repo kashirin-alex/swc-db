@@ -46,7 +46,7 @@ class MngrStatus : public Comm::Protocol::Common::Params::HostEndPoints {
 
   void internal_encode(uint8_t** bufp) const override {
     Serialization::encode_i32(bufp, priority.load());
-    Serialization::encode_i8(bufp, (uint8_t)state.load());
+    Serialization::encode_i8(bufp, uint8_t(state.load()));
     Serialization::encode_i8(bufp, role);
     Serialization::encode_vi64(bufp, cid_begin);
     Serialization::encode_vi64(bufp, cid_end);
@@ -55,7 +55,7 @@ class MngrStatus : public Comm::Protocol::Common::Params::HostEndPoints {
 
   void internal_decode(const uint8_t** bufp, size_t* remainp) override {
     priority.store(Serialization::decode_i32(bufp, remainp));
-    state.store((DB::Types::MngrState)Serialization::decode_i8(bufp, remainp));
+    state.store(DB::Types::MngrState(Serialization::decode_i8(bufp, remainp)));
     role = Serialization::decode_i8(bufp, remainp);
     cid_begin = Serialization::decode_vi64(bufp, remainp);
     cid_end = Serialization::decode_vi64(bufp, remainp);

@@ -22,7 +22,7 @@ class Properties {
   typedef std::map<std::string, Property::Value::Ptr>   Map;
   typedef std::map<std::string, std::string>  AliasMap;
   typedef std::pair<Map::iterator, bool>      InsRet;
-  
+
   public:
 
   std::shared_mutex    mutex;
@@ -33,15 +33,15 @@ class Properties {
 
   void reset();
 
-  void load_from(const Config::Parser::Options& opts, 
+  void load_from(const Config::Parser::Options& opts,
                  bool only_guarded=false);
 
-  void load(const std::string& fname, 
+  void load(const std::string& fname,
             const Config::ParserConfig& filedesc,
             const Config::ParserConfig& cmddesc,
             bool allow_unregistered=false, bool only_guarded=false);
-  
-  void reload(const std::string& fname, 
+
+  void reload(const std::string& fname,
               const Config::ParserConfig& filedesc,
               const Config::ParserConfig& cmddesc);
 
@@ -54,7 +54,7 @@ class Properties {
   bool defaulted(const std::string& name);
 
   std::string to_string(const std::string& name);
-  
+
   void get_names(std::vector<std::string>& names) const;
 
   void remove(const std::string& name);
@@ -63,9 +63,9 @@ class Properties {
 
   template <typename T>
   T* get(const std::string& name) {
-    return (T*)get_ptr(name);
+    return Property::Value::get_pointer<T>(get_ptr(name));
   }
-  
+
 
   std::string get_str(const std::string& name) {
     return get<Property::V_STRING>(name)->get();
@@ -125,9 +125,9 @@ class Properties {
 
 
   void print(std::ostream& out, bool include_default = false) const;
-  
+
   std::string to_string_all(bool include_default = false) const;
-  
+
   private:
 
   Map       m_map;
@@ -140,6 +140,6 @@ class Properties {
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/core/config/Properties.cc"
-#endif 
+#endif
 
 #endif // swcdb_core_config_Properties_h

@@ -107,53 +107,53 @@ bool decode_bool(const uint8_t** bufp, size_t* remainp) {
 
 extern SWC_CAN_INLINE
 void encode_i16(uint8_t** bufp , uint16_t val) {
-  memcopy(bufp, (const uint8_t*)&val, 2);
+  memcopy(bufp, reinterpret_cast<const uint8_t*>(&val), 2);
 }
 
 extern SWC_CAN_INLINE
 uint16_t decode_i16(const uint8_t** bufp, size_t* remainp) {
   decode_needed(remainp, 2);
   uint16_t val;
-  memcopy((uint8_t*)&val, bufp, 2);
+  memcopy(reinterpret_cast<uint8_t*>(&val), bufp, 2);
   return val;
 }
 
 extern SWC_CAN_INLINE
 void encode_i24(uint8_t** bufp , uint24_t val) {
-  memcopy(bufp, (const uint8_t*)&val, 3);
+  memcopy(bufp, reinterpret_cast<const uint8_t*>(&val), 3);
 }
 
 extern SWC_CAN_INLINE
 uint24_t decode_i24(const uint8_t** bufp, size_t* remainp) {
   decode_needed(remainp, 3);
   uint24_t val;
-  memcopy((uint8_t*)&val, bufp, 3);
+  memcopy(reinterpret_cast<uint8_t*>(&val), bufp, 3);
   return val;
 }
 
 extern SWC_CAN_INLINE
 void encode_i32(uint8_t** bufp, uint32_t val) {
-  memcopy(bufp, (const uint8_t*)&val, 4);
+  memcopy(bufp, reinterpret_cast<const uint8_t*>(&val), 4);
 }
 
 extern SWC_CAN_INLINE
 uint32_t decode_i32(const uint8_t** bufp, size_t* remainp) {
   decode_needed(remainp, 4);
   uint32_t val;
-  memcopy((uint8_t*)&val, bufp, 4);
+  memcopy(reinterpret_cast<uint8_t*>(&val), bufp, 4);
   return val;
 }
 
 extern SWC_CAN_INLINE
 void encode_i64(uint8_t** bufp, uint64_t val) {
-  memcopy(bufp, (const uint8_t*)&val, 8);
+  memcopy(bufp, reinterpret_cast<const uint8_t*>(&val), 8);
 }
 
 extern SWC_CAN_INLINE
 uint64_t decode_i64(const uint8_t** bufp, size_t* remainp) {
   decode_needed(remainp, 8);
   uint64_t val;
-  memcopy((uint8_t*)&val, bufp, 8);
+  memcopy(reinterpret_cast<uint8_t*>(&val), bufp, 8);
   return val;
 }
 
@@ -324,7 +324,7 @@ extern SWC_CAN_INLINE
 void encode_fixed_vi(uint8_t** bufp, T val) {
   **bufp = SZ;
   Core::BitFieldInt<T, BITS> _val = val;
-  memcpy(++*bufp, (const uint8_t*)&_val, SZ);
+  memcpy(++*bufp, reinterpret_cast<const uint8_t*>(&_val), SZ);
   *bufp += SZ;
 }
 
@@ -332,7 +332,7 @@ template<uint8_t BITS, uint8_t SZ, typename T>
 extern SWC_CAN_INLINE
 T decode_fixed_vi(const uint8_t** bufp) {
   Core::BitFieldInt<T, BITS> val;
-  memcpy((uint8_t*)&val, *bufp, SZ);
+  memcpy(reinterpret_cast<uint8_t*>(&val), *bufp, SZ);
   *bufp += SZ;
   return val;
 }
@@ -517,14 +517,15 @@ uint8_t encoded_length_double() {
 
 extern SWC_CAN_INLINE
 void encode_double(uint8_t** bufp, long double val) {
-  memcopy(bufp, (const uint8_t*)&val, encoded_length_double());
+  memcopy(
+    bufp, reinterpret_cast<const uint8_t*>(&val), encoded_length_double());
 }
 
 extern SWC_CAN_INLINE
 long double decode_double(const uint8_t** bufp, size_t* remainp) {
   decode_needed(remainp, sizeof(long double));
   long double v;
-  memcopy((uint8_t*)&v, bufp, encoded_length_double());
+  memcopy(reinterpret_cast<uint8_t*>(&v), bufp, encoded_length_double());
   return v;
 }
 
@@ -538,7 +539,7 @@ size_t encoded_length_bytes(size_t len) {
 extern SWC_CAN_INLINE
 void encode_bytes(uint8_t** bufp, const void* data, size_t len) {
   encode_vi64(bufp, len);
-  memcopy(bufp, (const uint8_t*)data, len);
+  memcopy(bufp, static_cast<const uint8_t*>(data), len);
 }
 
 extern SWC_CAN_INLINE
@@ -554,7 +555,8 @@ const uint8_t* decode_bytes(const uint8_t** bufp, size_t* remainp,
 extern SWC_CAN_INLINE
 std::string decode_bytes_string(const uint8_t** bufp, size_t* remainp) {
   size_t len;
-  const char* s = (const char*)decode_bytes(bufp, remainp, &len);
+  const char* s = reinterpret_cast<const char*>(
+    decode_bytes(bufp, remainp, &len));
   return std::string(s, len);
 }
 
@@ -563,7 +565,7 @@ std::string decode_bytes_string(const uint8_t** bufp, size_t* remainp) {
 extern SWC_CAN_INLINE
 void encode_bytes_fixed(uint8_t** bufp, const void* data,
                         uint32_t len) {
-  memcopy(bufp, (const uint8_t*)data, len);
+  memcopy(bufp, static_cast<const uint8_t*>(data), len);
 }
 
 extern SWC_CAN_INLINE

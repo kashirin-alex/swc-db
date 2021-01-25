@@ -23,11 +23,11 @@ ReqColumn::~ReqColumn(){ }
 size_t ReqColumn::internal_encoded_length() const {
   return Serialization::encoded_length_vi64(cid);
 }
-  
+
 void ReqColumn::internal_encode(uint8_t** bufp) const {
   Serialization::encode_vi64(bufp, cid);
 }
-  
+
 void ReqColumn::internal_decode(const uint8_t** bufp, size_t* remainp) {
   cid = Serialization::decode_vi64(bufp, remainp);
 }
@@ -39,10 +39,10 @@ RspRes::RspRes() { }
 RspRes::~RspRes() { }
 
 void RspRes::display(std::ostream& out, const std::string& offset) const {
-  out << offset 
+  out << offset
       << "Ranger(mem="
-      << mem << "MB cpu=" 
-      << cpu << "Mhz ranges=" 
+      << mem << "MB cpu="
+      << cpu << "Mhz ranges="
       << ranges << ")" << std::endl;
 }
 
@@ -51,13 +51,13 @@ size_t RspRes::internal_encoded_length() const {
         + Serialization::encoded_length_vi32(cpu)
         + Serialization::encoded_length_vi64(ranges);
 }
-  
+
 void RspRes::internal_encode(uint8_t** bufp) const {
   Serialization::encode_vi32(bufp, mem);
   Serialization::encode_vi32(bufp, cpu);
   Serialization::encode_vi64(bufp, ranges);
 }
-  
+
 void RspRes::internal_decode(const uint8_t** bufp, size_t* remainp) {
   mem = Serialization::decode_vi32(bufp, remainp);
   cpu = Serialization::decode_vi32(bufp, remainp);
@@ -71,26 +71,26 @@ RspCids::RspCids() { }
 RspCids::~RspCids() { }
 
 void RspCids::display(std::ostream& out, const std::string& offset) const {
-  std::sort(cids.begin(), cids.end()); 
+  std::sort(cids.begin(), cids.end());
   out << offset << "cids=[";
-  for(auto& cid : cids) 
+  for(auto& cid : cids)
     out << cid << ',';
   out << ']' << std::endl;
 }
 
 size_t RspCids::internal_encoded_length() const {
   size_t sz = Serialization::encoded_length_vi64(cids.size());
-  for(auto& cid : cids) 
+  for(auto& cid : cids)
     sz += Serialization::encoded_length_vi64(cid);
   return sz;
 }
-  
+
 void RspCids::internal_encode(uint8_t** bufp) const {
   Serialization::encode_vi64(bufp, cids.size());
-  for(auto& cid : cids) 
+  for(auto& cid : cids)
     Serialization::encode_vi64(bufp, cid);
 }
-  
+
 void RspCids::internal_decode(const uint8_t** bufp, size_t* remainp) {
   cids.resize(Serialization::decode_vi64(bufp, remainp));
   for(auto it = cids.begin(); it < cids.end(); ++it)
@@ -104,26 +104,26 @@ RspColumnRids::RspColumnRids() { }
 RspColumnRids::~RspColumnRids() { }
 
 void RspColumnRids::display(std::ostream& out, const std::string& offset) const {
-  std::sort(rids.begin(), rids.end()); 
+  std::sort(rids.begin(), rids.end());
   out << offset << "rids=[";
-  for(auto& rid : rids) 
+  for(auto& rid : rids)
     out << rid << ',';
   out << ']' << std::endl;
 }
 
 size_t RspColumnRids::internal_encoded_length() const {
   size_t sz = Serialization::encoded_length_vi64(rids.size());
-  for(auto& rid : rids) 
+  for(auto& rid : rids)
     sz += Serialization::encoded_length_vi64(rid);
   return sz;
 }
-  
+
 void RspColumnRids::internal_encode(uint8_t** bufp) const {
   Serialization::encode_vi64(bufp, rids.size());
-  for(auto& rid : rids) 
+  for(auto& rid : rids)
     Serialization::encode_vi64(bufp, rid);
 }
-  
+
 void RspColumnRids::internal_decode(const uint8_t** bufp, size_t* remainp) {
   rids.resize(Serialization::decode_vi64(bufp, remainp));
   for(auto it = rids.begin(); it < rids.end(); ++it)
@@ -132,13 +132,13 @@ void RspColumnRids::internal_decode(const uint8_t** bufp, size_t* remainp) {
 
 
 
-RspColumnsRanges::Range::Range(DB::Types::KeySeq seq) 
+RspColumnsRanges::Range::Range(DB::Types::KeySeq seq)
                               : interval(seq) {
 }
 
 RspColumnsRanges::Range::~Range() { }
 
-bool RspColumnsRanges::Range::before(RspColumnsRanges::Range* r1, 
+bool RspColumnsRanges::Range::before(RspColumnsRanges::Range* r1,
                                      RspColumnsRanges::Range* r2) {
   return r2->interval.is_in_end(r1->interval.key_end);
 }
@@ -146,7 +146,7 @@ bool RspColumnsRanges::Range::before(RspColumnsRanges::Range* r1,
 size_t RspColumnsRanges::Range::encoded_length () const {
   return Serialization::encoded_length_vi64(rid)
           + interval.encoded_length();
-} 
+}
 
 void RspColumnsRanges::Range::encode(uint8_t** bufp) const {
   Serialization::encode_vi64(bufp, rid);
@@ -158,7 +158,7 @@ void RspColumnsRanges::Range::decode(const uint8_t** bufp, size_t* remainp) {
   interval.decode(bufp, remainp, false);
 }
 
-void RspColumnsRanges::Range::display(std::ostream& out, bool pretty, 
+void RspColumnsRanges::Range::display(std::ostream& out, bool pretty,
                                       const std::string& offset) const {
   out << offset << "-------------------------------------" << std::endl;
   out << offset << "rid(" << rid << "):" << std::endl;
@@ -168,13 +168,13 @@ void RspColumnsRanges::Range::display(std::ostream& out, bool pretty,
   out << offset << "   end";
   interval.key_end.display(out, pretty);
   out << std::endl;
-  out << offset << " " << interval.ts_earliest.value 
+  out << offset << " " << interval.ts_earliest.value
       << "<=TS<=" << interval.ts_latest.value ;
   out << std::endl;
 }
 
 
-bool RspColumnsRanges::Column::before(RspColumnsRanges::Column* c1, 
+bool RspColumnsRanges::Column::before(RspColumnsRanges::Column* c1,
                                       RspColumnsRanges::Column* c2) {
   return c1->cid < c2->cid;
 }
@@ -196,7 +196,7 @@ size_t RspColumnsRanges::Column::encoded_length () const {
 
 void RspColumnsRanges::Column::encode(uint8_t** bufp) const {
   Serialization::encode_vi64(bufp, cid);
-  Serialization::encode_i8(bufp, (uint8_t)col_seq);
+  Serialization::encode_i8(bufp, uint8_t(col_seq));
   Serialization::encode_vi64(bufp, mem_bytes);
   Serialization::encode_vi64(bufp, ranges.size());
   for(auto r : ranges)
@@ -205,21 +205,21 @@ void RspColumnsRanges::Column::encode(uint8_t** bufp) const {
 
 void RspColumnsRanges::Column::decode(const uint8_t** bufp, size_t* remainp) {
   cid = Serialization::decode_vi64(bufp, remainp);
-  col_seq = (DB::Types::KeySeq)Serialization::decode_i8(bufp, remainp);
+  col_seq = DB::Types::KeySeq(Serialization::decode_i8(bufp, remainp));
   mem_bytes = Serialization::decode_vi64(bufp, remainp);
   for(int64_t n = Serialization::decode_vi64(bufp, remainp); n; --n) {
     auto r = new Range(col_seq);
     r->decode(bufp, remainp);
     ranges.push_back(r);
   }
-  std::sort(ranges.begin(), ranges.end(), Range::before); 
+  std::sort(ranges.begin(), ranges.end(), Range::before);
 }
-  
-void RspColumnsRanges::Column::display(std::ostream& out, bool pretty, 
+
+void RspColumnsRanges::Column::display(std::ostream& out, bool pretty,
                                        const std::string& offset) const {
   out << offset << "**************************************" << std::endl;
-  out << offset << "cid(" << cid << ") seq(" 
-      << DB::Types::to_string(col_seq) << ") in-memory(" 
+  out << offset << "cid(" << cid << ") seq("
+      << DB::Types::to_string(col_seq) << ") in-memory("
       << mem_bytes << " bytes) ranges("
       << ranges.size() << ')';
   if(!ranges.empty())
@@ -232,9 +232,9 @@ void RspColumnsRanges::Column::display(std::ostream& out, bool pretty,
 
 RspColumnsRanges::RspColumnsRanges() : rgrid(0) { }
 
-RspColumnsRanges::RspColumnsRanges(rgrid_t rgrid, 
-                                   const EndPoints& endpoints) 
-                                  : rgrid(rgrid), endpoints(endpoints) { 
+RspColumnsRanges::RspColumnsRanges(rgrid_t rgrid,
+                                   const EndPoints& endpoints)
+                                  : rgrid(rgrid), endpoints(endpoints) {
 }
 
 RspColumnsRanges::~RspColumnsRanges() {
@@ -245,7 +245,7 @@ RspColumnsRanges::~RspColumnsRanges() {
 
 void RspColumnsRanges::display(std::ostream& out, bool pretty,
                                const std::string& offset) const {
-  out << offset << "Ranger: rgrid("<< rgrid << ")" 
+  out << offset << "Ranger: rgrid("<< rgrid << ")"
       << " endpoints(";
   for(auto& endpoint : endpoints)
     out << endpoint << ", ";
@@ -257,7 +257,7 @@ void RspColumnsRanges::display(std::ostream& out, bool pretty,
 }
 
 size_t RspColumnsRanges::internal_encoded_length() const {
-  size_t sz = Serialization::encoded_length_vi64(rgrid);  
+  size_t sz = Serialization::encoded_length_vi64(rgrid);
   sz += Serialization::encoded_length_vi32(endpoints.size());
   for(auto& endpoint : endpoints)
     sz += Serialization::encoded_length(endpoint);
@@ -267,7 +267,7 @@ size_t RspColumnsRanges::internal_encoded_length() const {
     sz += c->encoded_length();
   return sz;
 }
-  
+
 void RspColumnsRanges::internal_encode(uint8_t** bufp) const {
   Serialization::encode_vi64(bufp, rgrid);
   Serialization::encode_vi32(bufp, endpoints.size());
@@ -278,11 +278,11 @@ void RspColumnsRanges::internal_encode(uint8_t** bufp) const {
   for(auto c : columns)
     c->encode(bufp);
 }
-  
-void RspColumnsRanges::internal_decode(const uint8_t** bufp, 
+
+void RspColumnsRanges::internal_decode(const uint8_t** bufp,
                                        size_t* remainp) {
   rgrid = Serialization::decode_vi64(bufp, remainp);
-    
+
   size_t len = Serialization::decode_vi32(bufp, remainp);
   endpoints.clear();
   endpoints.resize(len);
@@ -294,7 +294,7 @@ void RspColumnsRanges::internal_decode(const uint8_t** bufp,
     c->decode(bufp, remainp);
     columns.push_back(c);
   }
-  std::sort(columns.begin(), columns.end(), Column::before); 
+  std::sort(columns.begin(), columns.end(), Column::before);
 }
 
 

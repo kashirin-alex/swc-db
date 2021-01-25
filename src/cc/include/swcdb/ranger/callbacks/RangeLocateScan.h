@@ -21,14 +21,14 @@ class RangeLocateScan : public ReqScan {
                   const Comm::Event::Ptr& ev,
                   const DB::Cell::Key& range_begin,
                   const DB::Cell::Key& range_end,
-                  const RangePtr& range, 
+                  const RangePtr& range,
                   uint8_t flags)
                   : ReqScan(conn, ev, range_begin, range_end),
                     range(range), flags(flags),
                     any_is(range->cfg->range_type != DB::Types::Range::DATA),
                     range_begin(range_begin, false) {
     auto c = range->known_interval_count();
-    spec.range_begin.remove(c ? c : (uint24_t)1, true);
+    spec.range_begin.remove(c ? c : uint24_t(1), true);
     if(flags & Comm::Protocol::Rgr::Params::RangeLocateReq::KEY_EQUAL)
       spec.set_opt__key_equal();
     if(flags & Comm::Protocol::Rgr::Params::RangeLocateReq::RANGE_END_REST ||
@@ -36,23 +36,23 @@ class RangeLocateScan : public ReqScan {
       spec.set_opt__range_end_rest();
     /*
     SWC_PRINT << "--------------------- "
-      << range->cfg->cid << '/' << range->rid 
+      << range->cfg->cid << '/' << range->rid
       << "\n\t" << spec.to_string() << SWC_PRINT_CLOSE;
     */
   }
 
   virtual ~RangeLocateScan() { }
 
-  bool selector(const DB::Types::KeySeq key_seq, 
+  bool selector(const DB::Types::KeySeq key_seq,
                 const DB::Cells::Cell& cell, bool& stop) override {
     //SWC_PRINT << "---------------------"
     //  << "  cell.key: " << cell.key.to_string() << SWC_PRINT_CLOSE;
-    if(any_is && 
+    if(any_is &&
        DB::KeySeq::compare_upto(key_seq, spec.range_begin, cell.key, any_is)
         != Condition::EQ)
       return false;
 
-    if(flags & Comm::Protocol::Rgr::Params::RangeLocateReq::NEXT_RANGE && 
+    if(flags & Comm::Protocol::Rgr::Params::RangeLocateReq::NEXT_RANGE &&
         DB::KeySeq::compare(key_seq, spec.range_offset, cell.key)
           != Condition::GT)
       return false;
@@ -69,21 +69,21 @@ class RangeLocateScan : public ReqScan {
     DB::Cell::Key key_end;
     key_end.decode(&ptr, &remain, false);
 
-    if(key_end.count > any_is && range_begin.count > any_is && 
+    if(key_end.count > any_is && range_begin.count > any_is &&
        !spec.is_matching_begin(key_seq, key_end)) {
       //SWC_PRINT << "-- KEY-END NO MATCH --" << SWC_PRINT_CLOSE;
       return false;
     }
     //return true; // without aligned min-max
 
-    Serialization::decode_vi64(&ptr, &remain); // rid_t rid = 
+    Serialization::decode_vi64(&ptr, &remain); // rid_t rid =
 
     DB::Cell::KeyVec aligned_min;
     aligned_min.decode(&ptr, &remain);
     DB::Cell::KeyVec aligned_max;
     aligned_max.decode(&ptr, &remain);
     /*
-    SWC_PRINT 
+    SWC_PRINT
       << "range_begin: " << range_begin.to_string() << "\n"
       << "  key_begin: " << cell.key.to_string() << "\n"
       << "aligned_min: " << aligned_min.to_string() << "\n"
@@ -92,9 +92,9 @@ class RangeLocateScan : public ReqScan {
       << "aligned_max: " << aligned_max.to_string() << "\n"
       << "        rid: " << rid << SWC_PRINT_CLOSE;
     */
-    if(range_begin.count == any_is || aligned_max.empty() || 
-        DB::KeySeq::compare(key_seq, 
-         range_begin, aligned_max, 
+    if(range_begin.count == any_is || aligned_max.empty() ||
+        DB::KeySeq::compare(key_seq,
+         range_begin, aligned_max,
          Condition::LT, range_begin.count, true)) {
       if(spec.range_end.count == any_is || aligned_min.empty() ||
           DB::KeySeq::compare(key_seq,
@@ -115,9 +115,9 @@ class RangeLocateScan : public ReqScan {
   bool add_cell_and_more(const DB::Cells::Cell& cell) override {
     profile.add_cell(cell.encoded_length());
 
-    params.range_begin.copy(cell.key); 
+    params.range_begin.copy(cell.key);
     std::string id_name(params.range_begin.get_string(0));
-    params.cid = (cid_t)strtoll(id_name.c_str(), NULL, 0);
+    params.cid = strtoll(id_name.c_str(), NULL, 0);
 
     const uint8_t* ptr = cell.value;
     size_t remain = cell.vlen;
@@ -133,7 +133,7 @@ class RangeLocateScan : public ReqScan {
     return false;
   }
 
-  
+
   void response(int &err) override {
 
     if(err)
@@ -146,10 +146,10 @@ class RangeLocateScan : public ReqScan {
       params.err = Error::RANGE_NOT_FOUND;
 
     m_conn->send_response(Comm::Buffers::make(m_ev, params));
-  
+
     profile.finished();
-    SWC_LOG_OUT(LOG_DEBUG, 
-      SWC_LOG_OSTREAM 
+    SWC_LOG_OUT(LOG_DEBUG,
+      SWC_LOG_OSTREAM
         << "Range(" << range->cfg->cid  << '/' << range->rid << ") ";
       Error::print(SWC_LOG_OSTREAM, err);
       profile.print(SWC_LOG_OSTREAM << " flags=" << int(flags) << " Locate-");

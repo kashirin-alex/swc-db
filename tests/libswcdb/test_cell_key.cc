@@ -33,7 +33,7 @@ void test_basic(){
   key.add("jkl4");
 
   std::cout << "\n # DB::Cell::Key\n";
-  
+
   key.get(0, &fraction, &length);
   std::cout << std::string(fraction, length) << "(" << length <<"),";
   key.get(1, &fraction, &length);
@@ -61,7 +61,7 @@ void test_basic(){
     std::cout <<  key_cpy.to_string() <<"\n";
     exit(1);
   }
-  
+
   std::cout << "key_insert \n";
   DB::Cell::Key key_insert;
   key_insert.add("abc");
@@ -86,7 +86,7 @@ void test_basic(){
   std::cout << "key_cpy.encode \n";
   key_cpy.encode(&ptr);
   DB::Cell::Key key_encoded;
-  const uint8_t* rptr = (const uint8_t*)buff;
+  const uint8_t* rptr = buff;
   std::cout << "key_encoded.decode \n";
   key_encoded.decode(&rptr, &remain, true);
 
@@ -102,7 +102,7 @@ void test_basic(){
   }
   delete [] buff;
   std::cout << "delete [] buff OK \n";
-  
+
   std::cout << "\n # DB::Specs::Key\n";
   DB::Specs::Key spec_key;
   spec_key.add("abc", Condition::LE);
@@ -112,13 +112,13 @@ void test_basic(){
 
   std::string_view vw;
   vw = spec_key.get(0, comp);
-  std::cout << vw << "(" << vw.length() <<")"  << " " << (int)comp << ",";
+  std::cout << vw << "(" << vw.length() <<")"  << " " << int(comp) << ",";
   vw = spec_key.get(1, comp);
-  std::cout << vw << "(" << vw.length() <<")"  << " " << (int)comp << ",";
+  std::cout << vw << "(" << vw.length() <<")"  << " " << int(comp) << ",";
   vw = spec_key.get(2, comp);
-  std::cout << vw << "(" << vw.length() <<")"  << " " << (int)comp << ",";
+  std::cout << vw << "(" << vw.length() <<")"  << " " << int(comp) << ",";
   vw = spec_key.get(3, comp);
-  std::cout << vw << "(" << vw.length() <<")"  << " " << (int)comp << ",";
+  std::cout << vw << "(" << vw.length() <<")"  << " " << int(comp) << ",";
   std::cout << "\nfractions-count=" <<  spec_key.size() <<"\n";
   std::cout <<  spec_key.to_string() <<"\n";
 
@@ -126,7 +126,7 @@ void test_basic(){
   std::cout << "spec_key.is_matching(key) \n";
   if(!spec_key.is_matching(SWC::DB::Types::KeySeq::VOLUME, key))
     exit(1);
-    
+
   std::cout << "key2.equal(key) \n";
     std::cout <<  key.to_string() <<"\n";
   DB::Cell::Key key2(key);
@@ -145,14 +145,14 @@ void test_basic(){
     std::cout <<  spec_key2.to_string() <<"\n";
     exit(1);
   }
-  
-  
+
+
   DB::Specs::Key spec_key_insert;
   spec_key_insert.add("def", 3, Condition::EQ);
   spec_key_insert.add(std::string("ghi"), Condition::GE);
   spec_key_insert.insert(0, "abc", Condition::LE);
   spec_key_insert.insert(3, "jkl", Condition::GT);
-  
+
   if(!spec_key.equal(spec_key_insert)) {
     std::cout << "\n Bad-!spec_key.equal(spec_key_insert) \n";
     std::cout <<  spec_key.to_string() <<"\n";
@@ -218,7 +218,7 @@ void load_check_key(int chks, int num_fractions, int chk_count) {
                     std::chrono::system_clock::now() - ts).count();
 
     ts = std::chrono::system_clock::now();
-    for(auto b=0;b<num_fractions;++b) 
+    for(auto b=0;b<num_fractions;++b)
       key.get(b, &fraction, &length);
     took_get += std::chrono::duration_cast<std::chrono::nanoseconds>(
                     std::chrono::system_clock::now() - ts).count();
@@ -235,28 +235,28 @@ void load_check_key(int chks, int num_fractions, int chk_count) {
     took_insert += std::chrono::duration_cast<std::chrono::nanoseconds>(
                     std::chrono::system_clock::now() - ts).count();
   }
-        
 
-  
+
+
   DB::Cell::Key key;
   for(auto b=0; b<num_fractions; ++b)
     key.add(std::to_string(b+(1LL << 60)));
-    
+
   size_t sz = sizeof(key)+key.size;
 
   std::cout << "Cell::Key,    sz=" << sz
-                    << " add=" << took_add 
+                    << " add=" << took_add
                     << " remove=" << took_remove
                     << " insert=" << took_insert
                     << " get=" << took_get
-                    << " avg(add)=" << took_add/chks 
-                    << " avg(remove)=" << took_remove/chks 
-                    << " avg(insert)=" << took_insert/chks 
-                    << " avg(get)=" << took_get/chks 
+                    << " avg(add)=" << took_add/chks
+                    << " avg(remove)=" << took_remove/chks
+                    << " avg(insert)=" << took_insert/chks
+                    << " avg(get)=" << took_get/chks
                     << " total=" << took_add+took_remove+took_insert+took_get
                     << " chk_count=" << chk_count
                     <<  "\n";
-  
+
 }
 
 
@@ -275,7 +275,7 @@ void load_check_key_vec(int chks, int num_fractions, int chk_count) {
                     std::chrono::system_clock::now() - ts).count();
 
     ts = std::chrono::system_clock::now();
-    for(auto b=0;b<num_fractions;++b) 
+    for(auto b=0;b<num_fractions;++b)
       key.get(b, fraction);
     took_get += std::chrono::duration_cast<std::chrono::nanoseconds>(
                     std::chrono::system_clock::now() - ts).count();
@@ -292,9 +292,9 @@ void load_check_key_vec(int chks, int num_fractions, int chk_count) {
     took_insert += std::chrono::duration_cast<std::chrono::nanoseconds>(
                     std::chrono::system_clock::now() - ts).count();
   }
-        
 
-  
+
+
   DB::Cell::KeyVec key;
   size_t sz = sizeof(key);
   for(auto b=0; b<num_fractions; ++b) {
@@ -303,18 +303,18 @@ void load_check_key_vec(int chks, int num_fractions, int chk_count) {
   }
 
   std::cout << "Cell::KeyVec, sz=" << sz
-                    << " add=" << took_add 
+                    << " add=" << took_add
                     << " remove=" << took_remove
                     << " insert=" << took_insert
                     << " get=" << took_get
-                    << " avg(add)=" << took_add/chks 
-                    << " avg(remove)=" << took_remove/chks 
-                    << " avg(insert)=" << took_insert/chks 
-                    << " avg(get)=" << took_get/chks 
+                    << " avg(add)=" << took_add/chks
+                    << " avg(remove)=" << took_remove/chks
+                    << " avg(insert)=" << took_insert/chks
+                    << " avg(get)=" << took_get/chks
                     << " total=" << took_add+took_remove+took_insert+took_get
                     << " chk_count=" << chk_count
                     <<  "\n";
-  
+
 }
 
 void load_check_vec(int chks, int num_fractions, int chk_count) {
@@ -343,7 +343,7 @@ void load_check_vec(int chks, int num_fractions, int chk_count) {
       key.erase(key.begin());
     took_remove += std::chrono::duration_cast<std::chrono::nanoseconds>(
                     std::chrono::system_clock::now() - ts).count();
-    
+
     ts = std::chrono::system_clock::now();
     for(auto b=0;b<num_fractions;++b)
       key.insert(key.begin(), std::to_string(b+(1LL << 60)));
@@ -351,7 +351,7 @@ void load_check_vec(int chks, int num_fractions, int chk_count) {
                     std::chrono::system_clock::now() - ts).count();
   }
 
-  
+
   std::vector<std::string> key;
   size_t sz = 0;
   for(auto b=0; b<num_fractions; ++b) {
@@ -361,21 +361,21 @@ void load_check_vec(int chks, int num_fractions, int chk_count) {
   sz += sizeof(key);
 
   std::cout << "vector,       sz=" << sz
-                    << " add=" << took_add 
+                    << " add=" << took_add
                     << " remove=" << took_remove
                     << " insert=" << took_insert
                     << " get=" << took_get
-                    << " avg(add)=" << took_add/chks 
-                    << " avg(remove)=" << took_remove/chks 
-                    << " avg(insert)=" << took_insert/chks 
-                    << " avg(get)=" << took_get/chks 
+                    << " avg(add)=" << took_add/chks
+                    << " avg(remove)=" << took_remove/chks
+                    << " avg(insert)=" << took_insert/chks
+                    << " avg(get)=" << took_get/chks
                     << " total=" << took_add+took_remove+took_insert+took_get
                     << " chk_count=" << chk_count
                     <<  "\n";
 }
 
 int main() {
-  
+
   test_basic();
   //exit(0);
   std::cout << "\n";
@@ -391,5 +391,5 @@ int main() {
   }
 
   exit(0);
-   
+
 }

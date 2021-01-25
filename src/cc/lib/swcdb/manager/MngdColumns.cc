@@ -19,8 +19,8 @@ using ColumnMngFunc = Comm::Protocol::Mngr::Params::ColumnMng::Function;
 
 
 MngdColumns::MngdColumns()
-    : m_run(true), m_schemas_set(false), 
-      m_cid_active(false), 
+    : m_run(true), m_schemas_set(false),
+      m_cid_active(false),
       m_cid_begin(DB::Schema::NO_CID), m_cid_end(DB::Schema::NO_CID),
       m_expected_ready(false),
       cfg_schema_replication(
@@ -114,7 +114,7 @@ Column::Ptr MngdColumns::get_column(int& err, cid_t cid) {
   }
   if(is_schemas_mngr(err) && err)
     return col;
-    
+
   if((col = Env::Mngr::columns()->get_column(err, cid))) {
     col->state(err);
   } else {
@@ -125,7 +125,7 @@ Column::Ptr MngdColumns::get_column(int& err, cid_t cid) {
   return col;
 }
 
-void MngdColumns::change_active(const cid_t cid_begin, const cid_t cid_end, 
+void MngdColumns::change_active(const cid_t cid_begin, const cid_t cid_end,
                                 bool has_cols) {
   if(!has_cols) {
     {
@@ -157,7 +157,7 @@ void MngdColumns::change_active(const cid_t cid_begin, const cid_t cid_end,
   if(m_run)
     Env::Mngr::rangers()->schedule_check(cfg_delay_cols_init->get());
 
-  //if(Env::Mngr::role()->is_active_role(DB::Types::MngrRole::SCHEMAS)) 
+  //if(Env::Mngr::role()->is_active_role(DB::Types::MngrRole::SCHEMAS))
   //  (scheduled on column changes ) + chk(cid) LOAD_ACK
 }
 
@@ -176,9 +176,9 @@ void MngdColumns::action(const ColumnReq::Ptr& req) {
 }
 
 void MngdColumns::set_expect(cid_t cid_begin, cid_t cid_end,
-                             const std::vector<cid_t>& columns, 
+                             const std::vector<cid_t>& columns,
                              bool initial) {
-  if(!initial && 
+  if(!initial &&
      Env::Mngr::role()->is_active_role(DB::Types::MngrRole::SCHEMAS))
     return;
 
@@ -198,7 +198,7 @@ void MngdColumns::set_expect(cid_t cid_begin, cid_t cid_end,
     auto _cols = Env::Mngr::columns();
     Core::MutexSptd::scope lock(m_mutex_expect);
     for(auto cid : columns) {
-      if(std::find(m_expected_load.begin(), m_expected_load.end(), cid) 
+      if(std::find(m_expected_load.begin(), m_expected_load.end(), cid)
                                               == m_expected_load.end() &&
          !_cols->get_column(err = Error::OK, cid))
         m_expected_load.push_back(cid);
@@ -208,13 +208,13 @@ void MngdColumns::set_expect(cid_t cid_begin, cid_t cid_end,
       m_expected_load = {};
     }
   }
-  if(need) 
+  if(need)
     SWC_LOGF(LOG_DEBUG,
       "Expected Columns to Load size=%lu for cid(begin=%lu end=%lu)",
       need, cid_begin, cid_end);
 }
 
-void MngdColumns::update_status(ColumnMngFunc func, 
+void MngdColumns::update_status(ColumnMngFunc func,
                                 const DB::Schema::Ptr& schema, int err,
                                 uint64_t req_id, bool initial) {
   bool schemas_mngr = Env::Mngr::role()->is_active_role(
@@ -232,7 +232,7 @@ void MngdColumns::update_status(ColumnMngFunc func,
 
     case ColumnMngFunc::DELETE: {
       auto col = get_column(err, schema->cid);
-      if(err && 
+      if(err &&
          err != Error::COLUMN_NOT_EXISTS &&
          err != Error::COLUMN_NOT_READY) {
         do_update = true;
@@ -240,7 +240,7 @@ void MngdColumns::update_status(ColumnMngFunc func,
       } else if(!col) {
         err = Error::OK;
         remove(schema, 0, req_id);
-        do_update = true; 
+        do_update = true;
 
       } else if(!col->do_remove()) {
         do_update = true;
@@ -252,10 +252,10 @@ void MngdColumns::update_status(ColumnMngFunc func,
         do_update = rgrids.empty();
         if(do_update)
           remove(schema, 0, req_id);
-        else 
+        else
           Env::Mngr::rangers()->column_delete(schema, req_id, rgrids);
       }
-      break;  
+      break;
     }
 
     case ColumnMngFunc::CREATE:
@@ -277,7 +277,7 @@ void MngdColumns::update_status(ColumnMngFunc func,
               }
               init = true;
               SWC_LOGF(LOG_DEBUG,
-                "Expected Column(%lu) Loaded remain=%lu", 
+                "Expected Column(%lu) Loaded remain=%lu",
                 schema->cid, m_expected_load.size());
             }
           }
@@ -303,13 +303,13 @@ void MngdColumns::update_status(ColumnMngFunc func,
                   !Env::Mngr::rangers()->update(col, schema, req_id, true);
       break;
     }
-    
+
     default:
       break;
   }
 
   if(do_update) {
-    auto co_func = (ColumnMngFunc)(((uint8_t)func)+1);
+    auto co_func = ColumnMngFunc(uint8_t(func)+1);
     schemas_mngr
       ? update_status_ack(co_func, schema, err, req_id)
       : update(co_func, schema, err, req_id);
@@ -330,7 +330,7 @@ void MngdColumns::remove(const DB::Schema::Ptr& schema,
   if(DB::Types::MetaColumn::is_master(schema->cid))
     return update(
       ColumnMngFunc::INTERNAL_ACK_DELETE, schema, Error::OK, req_id);
-    
+
   cid_t meta_cid = DB::Types::MetaColumn::get_sys_cid(
     schema->col_seq, DB::Types::MetaColumn::get_range_type(schema->cid));
   auto col_spec = DB::Specs::Column::make_ptr(
@@ -362,7 +362,7 @@ void MngdColumns::remove(const DB::Schema::Ptr& schema,
           ColumnMngFunc::INTERNAL_ACK_DELETE, schema, Error::OK, req_id);
 
       SWC_LOG_OUT(LOG_INFO,
-        SWC_LOG_OSTREAM << "Column(cid=" << schema->cid 
+        SWC_LOG_OSTREAM << "Column(cid=" << schema->cid
           << " meta_cid=" << meta_cid << ')'
           << " deleting Range MetaData, remained(" << cells.size() << ')'
           << " cells=[";
@@ -449,7 +449,7 @@ bool MngdColumns::initialize() {
     Env::Mngr::post(
       [&pending,
        entries=FS::IdEntries_t(it, it_to),
-       replicas=cfg_schema_replication->get()]() { 
+       replicas=cfg_schema_replication->get()]() {
         DB::Schema::Ptr schema;
         int err;
         for(cid_t cid : entries) {
@@ -469,7 +469,7 @@ bool MngdColumns::initialize() {
 
   pending.release();
   pending.wait_all();
-    
+
   m_schemas_set = true;
   return true;
 }
@@ -601,13 +601,13 @@ void MngdColumns::create(int &err, DB::Schema::Ptr& schema) {
   else
     Column::remove(err, cid);
 }
-  
-void MngdColumns::update(int &err, DB::Schema::Ptr& schema, 
+
+void MngdColumns::update(int &err, DB::Schema::Ptr& schema,
                          const DB::Schema::Ptr& old) {
-  if(old->col_seq != schema->col_seq || 
-     DB::Types::is_counter(old->col_type) 
+  if(old->col_seq != schema->col_seq ||
+     DB::Types::is_counter(old->col_type)
       != DB::Types::is_counter(schema->col_type) ||
-     (schema->cid <= Common::Files::Schema::SYS_CID_END && 
+     (schema->cid <= Common::Files::Schema::SYS_CID_END &&
       schema->col_name.compare(old->col_name))) {
     err = Error::COLUMN_CHANGE_INCOMPATIBLE;
     return;
@@ -616,7 +616,7 @@ void MngdColumns::update(int &err, DB::Schema::Ptr& schema,
   if(DB::Types::is_counter(schema->col_type))
     schema->cell_versions = 1;
 
-  if(schema->cid < Common::Files::Schema::SYS_CID_END) { 
+  if(schema->cid < Common::Files::Schema::SYS_CID_END) {
     //different values bad for range-colms
     schema->cell_versions = 1;
     schema->cell_ttl = 0;
@@ -691,7 +691,7 @@ void MngdColumns::update_status_ack(ColumnMngFunc func,
       return;
   }
 
-  auto co_func = (ColumnMngFunc)(((uint8_t)func)-1);
+  auto co_func = ColumnMngFunc(uint8_t(func)-1);
 
   if(err)
     SWC_LOG_OUT(LOG_DEBUG,
@@ -699,7 +699,7 @@ void MngdColumns::update_status_ack(ColumnMngFunc func,
       Error::print(SWC_LOG_OSTREAM << ' ', err);
       schema->print(SWC_LOG_OSTREAM << ' ');
     );
-  
+
   ColumnReq::Ptr pending = nullptr;
   {
     Core::MutexSptd::scope lock(m_mutex_actions);
@@ -714,7 +714,7 @@ void MngdColumns::update_status_ack(ColumnMngFunc func,
     pending->response(err);
   } else {
     SWC_LOG_OUT(LOG_WARN,
-      SWC_LOG_OSTREAM 
+      SWC_LOG_OSTREAM
         << "Missing Pending Req-Ack for func=" << co_func << " req_id=" << req_id;
       schema->print(SWC_LOG_OSTREAM << ' ');
     );

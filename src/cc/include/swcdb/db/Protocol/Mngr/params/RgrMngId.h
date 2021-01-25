@@ -58,7 +58,7 @@ class RgrMngId  : public Common::Params::HostEndPoints {
     }
 
     void internal_encode(uint8_t** bufp) const override {
-      Serialization::encode_i8(bufp, (uint8_t)flag);
+      Serialization::encode_i8(bufp, flag);
       if(flag != Flag::MNGR_NOT_ACTIVE && flag != Flag::MNGR_ACK)
         Serialization::encode_vi64(bufp, rgrid);
 
@@ -66,11 +66,11 @@ class RgrMngId  : public Common::Params::HostEndPoints {
         Common::Params::HostEndPoints::internal_encode(bufp);
 
       if(flag == Flag::MNGR_ASSIGNED)
-        Serialization::encode_i8(bufp, (uint8_t)fs);
+        Serialization::encode_i8(bufp, fs);
     }
 
   void internal_decode(const uint8_t** bufp, size_t* remainp) override {
-      flag = (Flag)Serialization::decode_i8(bufp, remainp);
+      flag = Flag(Serialization::decode_i8(bufp, remainp));
       if(flag != Flag::MNGR_NOT_ACTIVE && flag != Flag::MNGR_ACK)
         rgrid = Serialization::decode_vi64(bufp, remainp);
 
@@ -78,7 +78,7 @@ class RgrMngId  : public Common::Params::HostEndPoints {
         Common::Params::HostEndPoints::internal_decode(bufp, remainp);
 
       if(flag == Flag::MNGR_ASSIGNED)
-        fs = (FS::Type)Serialization::decode_i8(bufp, remainp);
+        fs = FS::Type(Serialization::decode_i8(bufp, remainp));
     }
 
   };

@@ -23,7 +23,7 @@ size_t Field::encoded_length() const {
 }
 
 void Field::encode(uint8_t** bufp, Type type) const {
-  Serialization::encode_i8(bufp, (uint8_t)type);
+  Serialization::encode_i8(bufp, type);
   Serialization::encode_vi24(bufp, fid);
 }
 //
@@ -33,7 +33,7 @@ void Field::encode(uint8_t** bufp, Type type) const {
 // Field INT64
 Field_INT64::Field_INT64(const uint8_t** bufp, size_t* remainp)
         : Field(bufp, remainp),
-          comp((Condition::Comp)Serialization::decode_i8(bufp, remainp)),
+          comp(Condition::Comp(Serialization::decode_i8(bufp, remainp))),
           value(Serialization::decode_vi64(bufp, remainp)) {
 }
 
@@ -44,13 +44,14 @@ size_t Field_INT64::encoded_length() const {
 
 void Field_INT64::encode(uint8_t** bufp) const {
   Field::encode(bufp, Type::INT64);
-  Serialization::encode_i8(bufp, (uint8_t)comp);
+  Serialization::encode_i8(bufp, comp);
   Serialization::encode_vi64(bufp, value);
 }
 
 bool Field_INT64::is_matching(Cell::Serial::Value::Field* vfieldp) {
   return Condition::is_matching(
-    comp, value, ((Cell::Serial::Value::Field_INT64*)vfieldp)->value);
+    comp, value,
+    static_cast<Cell::Serial::Value::Field_INT64*>(vfieldp)->value);
 }
 
 void Field_INT64::print(std::ostream& out) const {
@@ -64,7 +65,7 @@ void Field_INT64::print(std::ostream& out) const {
 // Field DOUBLE
 Field_DOUBLE::Field_DOUBLE(const uint8_t** bufp, size_t* remainp)
         : Field(bufp, remainp),
-          comp((Condition::Comp)Serialization::decode_i8(bufp, remainp)),
+          comp(Condition::Comp(Serialization::decode_i8(bufp, remainp))),
           value(Serialization::decode_double(bufp, remainp)) {
 }
 
@@ -75,13 +76,14 @@ size_t Field_DOUBLE::encoded_length() const {
 
 void Field_DOUBLE::encode(uint8_t** bufp) const {
   Field::encode(bufp, Type::DOUBLE);
-  Serialization::encode_i8(bufp, (uint8_t)comp);
+  Serialization::encode_i8(bufp, comp);
   Serialization::encode_double(bufp, value);
 }
 
 bool Field_DOUBLE::is_matching(Cell::Serial::Value::Field* vfieldp) {
   return Condition::is_matching(
-    comp, value, ((Cell::Serial::Value::Field_DOUBLE*)vfieldp)->value);
+    comp, value,
+    static_cast<Cell::Serial::Value::Field_DOUBLE*>(vfieldp)->value);
 }
 
 void Field_DOUBLE::print(std::ostream& out) const {
@@ -99,18 +101,18 @@ Field_BYTES::Field_BYTES(uint24_t fid, Condition::Comp comp,
                         : Field(fid), comp(comp) {
   take_ownership
     ? value.assign(ptr, len)
-    : value.set((uint8_t*)ptr, len, false);
+    : value.set(const_cast<uint8_t*>(ptr), len, false);
 }
 
 Field_BYTES::Field_BYTES(const uint8_t** bufp, size_t* remainp,
                          bool take_ownership)
         : Field(bufp, remainp),
-          comp((Condition::Comp)Serialization::decode_i8(bufp, remainp)) {
+          comp(Condition::Comp(Serialization::decode_i8(bufp, remainp))) {
   size_t len;
   const uint8_t* ptr = Serialization::decode_bytes(bufp, remainp, &len);
   take_ownership
     ? value.assign(ptr, len)
-    : value.set((uint8_t*)ptr, len, false);
+    : value.set(const_cast<uint8_t*>(ptr), len, false);
 }
 
 size_t Field_BYTES::encoded_length() const {
@@ -120,12 +122,12 @@ size_t Field_BYTES::encoded_length() const {
 
 void Field_BYTES::encode(uint8_t** bufp) const {
   Field::encode(bufp, Type::BYTES);
-  Serialization::encode_i8(bufp, (uint8_t)comp);
+  Serialization::encode_i8(bufp, comp);
   Serialization::encode_bytes(bufp, value.base, value.size);
 }
 
 bool Field_BYTES::is_matching(Cell::Serial::Value::Field* vfieldp) {
-  auto vfield = (Cell::Serial::Value::Field_BYTES*)vfieldp;
+  auto vfield = static_cast<Cell::Serial::Value::Field_BYTES*>(vfieldp);
   // compiled RE
   return Condition::is_matching_extended(
     comp, value.base, value.size, vfield->base, vfield->size);
@@ -160,7 +162,7 @@ Field_KEY::Field_KEY(uint24_t fid, Types::KeySeq seq, const Key& key)
 
 Field_KEY::Field_KEY(const uint8_t** bufp, size_t* remainp)
         : Field(bufp, remainp),
-          seq((Types::KeySeq)Serialization::decode_i8(bufp, remainp)) {
+          seq(Types::KeySeq(Serialization::decode_i8(bufp, remainp))) {
   key.decode(bufp, remainp);
 }
 
@@ -170,13 +172,13 @@ size_t Field_KEY::encoded_length() const {
 
 void Field_KEY::encode(uint8_t** bufp) const {
   Field::encode(bufp, Type::KEY);
-  Serialization::encode_i8(bufp, (uint8_t)seq);
+  Serialization::encode_i8(bufp, uint8_t(seq));
   key.encode(bufp);
 }
 
 bool Field_KEY::is_matching(Cell::Serial::Value::Field* vfieldp) {
   return key.is_matching(
-    seq, ((Cell::Serial::Value::Field_KEY*)vfieldp)->key);
+    seq, static_cast<Cell::Serial::Value::Field_KEY*>(vfieldp)->key);
 }
 
 void Field_KEY::print(std::ostream& out) const {
@@ -196,11 +198,11 @@ Field_LIST_INT64::Field_LIST_INT64(uint24_t fid, Condition::Comp comp,
 
 Field_LIST_INT64::Field_LIST_INT64(const uint8_t** bufp, size_t* remainp)
         : Field(bufp, remainp),
-          comp((Condition::Comp)Serialization::decode_i8(bufp, remainp)) {
+          comp(Condition::Comp(Serialization::decode_i8(bufp, remainp))) {
   size_t len;
   const uint8_t* ptr = Serialization::decode_bytes(bufp, remainp, &len);
   while(len) {
-    auto vcomp = (Condition::Comp)Serialization::decode_i8(&ptr, &len);
+    auto vcomp = Condition::Comp(Serialization::decode_i8(&ptr, &len));
     items.emplace_back(vcomp, Serialization::decode_vi64(&ptr, &len));
   }
 }
@@ -215,7 +217,7 @@ size_t Field_LIST_INT64::encoded_length() const {
 
 void Field_LIST_INT64::encode(uint8_t** bufp) const {
   Field::encode(bufp, Type::LIST_INT64);
-  Serialization::encode_i8(bufp, (uint8_t)comp);
+  Serialization::encode_i8(bufp, comp);
 
   size_t len = items.size();
   for(const Item& item : items)
@@ -231,7 +233,7 @@ void Field_LIST_INT64::encode(uint8_t** bufp) const {
 }
 
 bool Field_LIST_INT64::is_matching(Cell::Serial::Value::Field* vfieldp) {
-  auto vfield = (Cell::Serial::Value::Field_LIST_INT64*)vfieldp;
+  auto vfield = static_cast<Cell::Serial::Value::Field_LIST_INT64*>(vfieldp);
 
   const uint8_t* ptr = vfield->base;
   size_t remain = vfield->size;
@@ -242,7 +244,7 @@ bool Field_LIST_INT64::is_matching(Cell::Serial::Value::Field* vfieldp) {
       for(; remain && it < items.end(); ++it) {
         if(!Condition::is_matching(
               it->comp, it->value,
-              (int64_t)Serialization::decode_vi64(&ptr, &remain)))
+              int64_t(Serialization::decode_vi64(&ptr, &remain))))
           return true;
       }
       return remain || it < items.end();
@@ -257,7 +259,7 @@ bool Field_LIST_INT64::is_matching(Cell::Serial::Value::Field* vfieldp) {
       for(; remain && it < items.end(); ++it) {
         if(!Condition::is_matching(
               it->comp, it->value,
-              (int64_t)Serialization::decode_vi64(&ptr, &remain)))
+              int64_t(Serialization::decode_vi64(&ptr, &remain))))
           break;
       }
       return remain
@@ -325,7 +327,7 @@ bool Field_LIST_INT64::is_matching(Cell::Serial::Value::Field* vfieldp) {
       for(; remain && it < items.end(); ) {
         if(Condition::is_matching(
               it->comp, it->value,
-              (int64_t)Serialization::decode_vi64(&ptr, &remain)))
+              int64_t(Serialization::decode_vi64(&ptr, &remain))))
           ++it;
       }
       return it == items.end();
@@ -336,7 +338,7 @@ bool Field_LIST_INT64::is_matching(Cell::Serial::Value::Field* vfieldp) {
       for(bool start = false; remain && it < items.end(); ) {
         if(Condition::is_matching(
               it->comp, it->value,
-              (int64_t)Serialization::decode_vi64(&ptr, &remain))) {
+              int64_t(Serialization::decode_vi64(&ptr, &remain)))) {
           start = true;
           ++it;
         } else if(start) {
@@ -409,15 +411,15 @@ Field_LIST_BYTES::Field_LIST_BYTES(uint24_t fid, Condition::Comp comp,
 
 Field_LIST_BYTES::Field_LIST_BYTES(const uint8_t** bufp, size_t* remainp)
         : Field(bufp, remainp),
-          comp((Condition::Comp)Serialization::decode_i8(bufp, remainp)) {
+          comp(Condition::Comp(Serialization::decode_i8(bufp, remainp))) {
   size_t len;
   const uint8_t* ptr = Serialization::decode_bytes(bufp, remainp, &len);
   while(len) {
     auto& item = items.emplace_back();
-    item.comp = (Condition::Comp)Serialization::decode_i8(&ptr, &len);
+    item.comp = Condition::Comp(Serialization::decode_i8(&ptr, &len));
     size_t vlen;
     const uint8_t* vptr = Serialization::decode_bytes(&ptr, &len, &vlen);
-    item.value.append((const char*)vptr, vlen);
+    item.value.append(reinterpret_cast<const char*>(vptr), vlen);
   }
 }
 
@@ -431,7 +433,7 @@ size_t Field_LIST_BYTES::encoded_length() const {
 
 void Field_LIST_BYTES::encode(uint8_t** bufp) const {
   Field::encode(bufp, Type::LIST_BYTES);
-  Serialization::encode_i8(bufp, (uint8_t)comp);
+  Serialization::encode_i8(bufp, comp);
 
   size_t len = items.size();
   for(const Item& item : items)
@@ -447,7 +449,7 @@ void Field_LIST_BYTES::encode(uint8_t** bufp) const {
 }
 
 bool Field_LIST_BYTES::is_matching(Cell::Serial::Value::Field* vfieldp) {
-  auto vfield = (Cell::Serial::Value::Field_LIST_BYTES*)vfieldp;
+  auto vfield = static_cast<Cell::Serial::Value::Field_LIST_BYTES*>(vfieldp);
 
   const uint8_t* ptr = vfield->base;
   size_t remain = vfield->size;
@@ -459,7 +461,9 @@ bool Field_LIST_BYTES::is_matching(Cell::Serial::Value::Field* vfieldp) {
         size_t vlen;
         const uint8_t* vptr = Serialization::decode_bytes(&ptr, &remain, &vlen);
         if(!Condition::is_matching_extended(
-              it->comp, (const uint8_t*)it->value.data(), it->value.size(),
+              it->comp,
+              reinterpret_cast<const uint8_t*>(it->value.c_str()),
+              it->value.size(),
               vptr, vlen))
           return true;
       }
@@ -476,7 +480,9 @@ bool Field_LIST_BYTES::is_matching(Cell::Serial::Value::Field* vfieldp) {
         size_t vlen;
         const uint8_t* vptr = Serialization::decode_bytes(&ptr, &remain, &vlen);
         if(!Condition::is_matching_extended(
-              it->comp, (const uint8_t*)it->value.data(), it->value.size(),
+              it->comp,
+              reinterpret_cast<const uint8_t*>(it->value.c_str()),
+              it->value.size(),
               vptr, vlen))
           break;
       }
@@ -496,7 +502,9 @@ bool Field_LIST_BYTES::is_matching(Cell::Serial::Value::Field* vfieldp) {
         const uint8_t* vptr = Serialization::decode_bytes(&ptr, &remain, &vlen);
         for(auto it = items.begin(); ; ) {
           if(Condition::is_matching_extended(
-              it->comp, (const uint8_t*)it->value.data(), it->value.size(),
+              it->comp,
+              reinterpret_cast<const uint8_t*>(it->value.c_str()),
+              it->value.size(),
               vptr, vlen)) {
             auto f = found.begin();
             for(; *f != items.cend(); ++f) {
@@ -528,7 +536,9 @@ bool Field_LIST_BYTES::is_matching(Cell::Serial::Value::Field* vfieldp) {
         const uint8_t* vptr = Serialization::decode_bytes(&ptr, &remain, &vlen);
         for(auto it = items.begin(); ;) {
           if(Condition::is_matching_extended(
-              it->comp, (const uint8_t*)it->value.data(), it->value.size(),
+              it->comp,
+              reinterpret_cast<const uint8_t*>(it->value.c_str()),
+              it->value.size(),
               vptr, vlen)) {
             auto f = found.begin();
             for(; *f != items.cend(); ++f) {
@@ -552,7 +562,9 @@ bool Field_LIST_BYTES::is_matching(Cell::Serial::Value::Field* vfieldp) {
         size_t vlen;
         const uint8_t* vptr = Serialization::decode_bytes(&ptr, &remain, &vlen);
         if(Condition::is_matching_extended(
-            it->comp, (const uint8_t*)it->value.data(), it->value.size(),
+            it->comp,
+            reinterpret_cast<const uint8_t*>(it->value.c_str()),
+            it->value.size(),
             vptr, vlen))
           ++it;
       }
@@ -565,7 +577,9 @@ bool Field_LIST_BYTES::is_matching(Cell::Serial::Value::Field* vfieldp) {
         size_t vlen;
         const uint8_t* vptr = Serialization::decode_bytes(&ptr, &remain, &vlen);
         if(Condition::is_matching_extended(
-            it->comp, (const uint8_t*)it->value.data(), it->value.size(),
+            it->comp,
+            reinterpret_cast<const uint8_t*>(it->value.c_str()),
+            it->value.size(),
             vptr, vlen)) {
           start = true;
           ++it;
@@ -582,7 +596,9 @@ bool Field_LIST_BYTES::is_matching(Cell::Serial::Value::Field* vfieldp) {
         const uint8_t* vptr = Serialization::decode_bytes(&ptr, &remain, &vlen);
         for(auto it = ord; ;) {
           if(Condition::is_matching_extended(
-              it->comp, (const uint8_t*)it->value.data(), it->value.size(),
+              it->comp,
+              reinterpret_cast<const uint8_t*>(it->value.c_str()),
+              it->value.size(),
               vptr, vlen)) {
             ++ord;
             break;
@@ -601,7 +617,9 @@ bool Field_LIST_BYTES::is_matching(Cell::Serial::Value::Field* vfieldp) {
         const uint8_t* vptr = Serialization::decode_bytes(&ptr, &remain, &vlen);
         for(auto it = ord; ;) {
           if(Condition::is_matching_extended(
-              it->comp, (const uint8_t*)it->value.data(), it->value.size(),
+              it->comp,
+              reinterpret_cast<const uint8_t*>(it->value.c_str()),
+              it->value.size(),
               vptr, vlen)) {
             start = true;
             ord = ++it;
@@ -628,7 +646,7 @@ void Field_LIST_BYTES::print(std::ostream& out) const {
     out << Condition::to_string(it->comp, true) << '\'';
     char hex[5];
     hex[4] = '\0';
-    const uint8_t* cptr = (const uint8_t*)it->value.data();
+    const uint8_t* cptr = reinterpret_cast<const uint8_t*>(it->value.c_str());
     const uint8_t* end = cptr + it->value.size();
     for(; cptr < end; ++cptr) {
       if(*cptr == '"')

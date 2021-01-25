@@ -296,7 +296,7 @@ const char* to_string(Comp comp, bool extended=false) noexcept {
 
 extern SWC_CAN_INLINE
 const char* to_string(uint8_t comp) {
-  return to_string((Comp)comp);
+  return to_string(Comp(comp));
 }
 
 
@@ -505,8 +505,9 @@ extern SWC_CAN_INLINE
 bool re(const uint8_t* p1, uint32_t p1_len,
         const uint8_t* p2, uint32_t p2_len) {
   return re(
-    re2::RE2(re2::StringPiece((const char *)p1, p1_len)),
-    (const char *)p2, p2_len
+    re2::RE2(
+      re2::StringPiece(reinterpret_cast<const char*>(p1), p1_len)),
+    reinterpret_cast<const char*>(p2), p2_len
   );
 }
 
@@ -683,7 +684,10 @@ bool is_matching_lexic(uint8_t comp,
                        const char *p1, uint32_t p1_len,
                        const char *p2, uint32_t p2_len) {
   return is_matching_lexic(
-    comp, (const uint8_t *)p1, p1_len, (const uint8_t *)p2, p2_len);
+    comp,
+    reinterpret_cast<const uint8_t*>(p1), p1_len,
+    reinterpret_cast<const uint8_t*>(p2), p2_len
+  );
 }
 
 extern SWC_CAN_INLINE
@@ -691,7 +695,10 @@ bool is_matching_volume(uint8_t comp,
                         const char *p1, uint32_t p1_len,
                         const char *p2, uint32_t p2_len) {
   return is_matching_volume(
-    comp, (const uint8_t *)p1, p1_len, (const uint8_t *)p2, p2_len);
+    comp,
+    reinterpret_cast<const uint8_t*>(p1), p1_len,
+    reinterpret_cast<const uint8_t*>(p2), p2_len
+  );
 }
 
 
@@ -708,8 +715,11 @@ extern SWC_CAN_INLINE
 bool is_matching(bool volumetric, uint8_t comp,
                  const char *p1, uint32_t p1_len,
                  const char *p2, uint32_t p2_len) {
-  return is_matching(volumetric, comp,
-                    (const uint8_t *)p1, p1_len, (const uint8_t *)p2, p2_len);
+  return is_matching(
+    volumetric, comp,
+    reinterpret_cast<const uint8_t*>(p1), p1_len,
+    reinterpret_cast<const uint8_t*>(p2), p2_len
+  );
 }
 
 extern SWC_CAN_INLINE

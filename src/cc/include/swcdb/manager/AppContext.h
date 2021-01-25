@@ -204,7 +204,7 @@ class AppContext final : public Comm::AppContext {
       }
 
       default:
-        SWC_LOGF(LOG_WARN, "Unimplemented event-type (%d)", (int)ev->type);
+        SWC_LOGF(LOG_WARN, "Unimplemented event-type (%d)", int(ev->type));
         break;
 
     }

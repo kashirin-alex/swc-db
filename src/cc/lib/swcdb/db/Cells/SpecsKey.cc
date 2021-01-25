@@ -15,7 +15,7 @@ namespace SWC { namespace DB { namespace Specs {
 Fraction::~Fraction() {
   if(compiled) switch(comp) {
     case Condition::RE:
-      delete (re2::RE2*)compiled;
+      delete static_cast<re2::RE2*>(compiled);
       break;
     default: break;
   }
@@ -31,7 +31,7 @@ uint32_t Fraction::encoded_length() const {
 }
 
 void Fraction::encode(uint8_t** bufp) const {
-  Serialization::encode_i8(bufp, (uint8_t)comp);
+  Serialization::encode_i8(bufp, comp);
   Serialization::encode_vi32(bufp, size());
   if(!empty()) {
     memcpy(*bufp, data(), size());
@@ -41,9 +41,9 @@ void Fraction::encode(uint8_t** bufp) const {
 
 void Fraction::decode(const uint8_t** bufp, size_t* remainp) {
   clear();
-  comp = (Condition::Comp)Serialization::decode_i8(bufp, remainp);
+  comp = Condition::Comp(Serialization::decode_i8(bufp, remainp));
   if(uint32_t len = Serialization::decode_vi32(bufp, remainp)) {
-    append((const char*)*bufp, len);
+    append(reinterpret_cast<const char*>(*bufp), len);
     *bufp += len;
     *remainp -= len;
   }
@@ -57,11 +57,14 @@ Fraction::_is_matching(const uint8_t* ptr, uint32_t len) {
     case Condition::RE: {
       if(!compiled)
         compiled = new re2::RE2(re2::StringPiece(data(), size()));
-      return Condition::re(*(re2::RE2*)compiled, (const char*)ptr, len);
+      return Condition::re(
+        *static_cast<re2::RE2*>(compiled),
+        reinterpret_cast<const char*>(ptr), len
+      );
     }
     default:
-      return KeySeq::is_matching<T_seq>(comp,
-          (const uint8_t*)data(), size(), ptr, len);
+      return KeySeq::is_matching<T_seq>(
+        comp, reinterpret_cast<const uint8_t*>(c_str()), size(), ptr, len);
   }
 }
 
@@ -108,7 +111,7 @@ void Key::set(const DB::Cell::Key &cell_key, Condition::Comp comp) {
   for(auto it=begin(); it < end(); ++it) {
     it->comp = comp;
     if((len = Serialization::decode_vi32(&ptr))) {
-      it->append((const char*)ptr, len);
+      it->append(reinterpret_cast<const char*>(ptr), len);
       ptr += len;
     }
   }
@@ -128,7 +131,7 @@ void Key::add(const char* buf, uint32_t len, Condition::Comp comp) {
 }
 
 void Key::add(const std::string& fraction, Condition::Comp comp) {
-  add(fraction.data(), fraction.length(), comp);
+  add(fraction.c_str(), fraction.length(), comp);
 }
 
 void Key::add(const std::string_view& fraction, Condition::Comp comp) {
@@ -140,7 +143,7 @@ void Key::add(const char* fraction, Condition::Comp comp) {
 }
 
 void Key::add(const uint8_t* fraction, uint32_t len, Condition::Comp comp) {
-  add((const char*)fraction, len, comp);
+  add(reinterpret_cast<const char*>(fraction), len, comp);
 }
 
 
@@ -154,7 +157,7 @@ void Key::insert(uint32_t idx, const char* buf, uint32_t len,
 
 void Key::insert(uint32_t idx, const std::string& fraction,
                  Condition::Comp comp) {
-  insert(idx, fraction.data(), fraction.length(), comp);
+  insert(idx, fraction.c_str(), fraction.length(), comp);
 }
 
 void Key::insert(uint32_t idx, const std::string_view& fraction,
@@ -164,7 +167,7 @@ void Key::insert(uint32_t idx, const std::string_view& fraction,
 
 void Key::insert(uint32_t idx, const uint8_t* fraction, uint32_t len,
                  Condition::Comp comp) {
-  insert(idx, (const char*)fraction, len, comp);
+  insert(idx, reinterpret_cast<const char*>(fraction), len, comp);
 }
 
 void Key::insert(uint32_t idx, const char* fraction, Condition::Comp comp) {
@@ -296,16 +299,18 @@ void Key::display(std::ostream& out, bool pretty) const {
   out << '[';
   char hex[5];
   hex[4] = 0;
+  uint8_t byte;
   for(auto it = cbegin(); it < cend(); ) {
     out << Condition::to_string(it->comp)
         << '"';
     for(auto chrp = it->cbegin(); chrp < it->cend(); ++chrp) {
-      if(*chrp == '"')
+      byte = *chrp;
+      if(byte == '"')
         out << '\\';
-      if(!pretty || (31 < (uint8_t)*chrp && (uint8_t)*chrp < 127)) {
+      if(!pretty || (31 < byte && byte < 127)) {
         out << *chrp;
       } else {
-        sprintf(hex, "0x%X", (uint8_t)*chrp);
+        sprintf(hex, "0x%X", byte);
         out << hex;
       }
     }

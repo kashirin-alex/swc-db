@@ -11,10 +11,10 @@
 
 namespace SWC { namespace Comm { namespace server {
 
-Acceptor::Acceptor(asio::ip::tcp::acceptor& acceptor, 
-                   AppContext::Ptr& app_ctx, 
+Acceptor::Acceptor(asio::ip::tcp::acceptor& acceptor,
+                   AppContext::Ptr& app_ctx,
                    ConfigSSL* ssl_cfg)
-                  : asio::ip::tcp::acceptor(std::move(acceptor)), 
+                  : asio::ip::tcp::acceptor(std::move(acceptor)),
                     m_app_ctx(app_ctx),
                     m_ssl_cfg(ssl_cfg) {
   set_option(asio::ip::tcp::acceptor::reuse_address(true));
@@ -24,7 +24,7 @@ Acceptor::Acceptor(asio::ip::tcp::acceptor& acceptor,
 
   SWC_LOG_OUT(LOG_INFO,
     SWC_LOG_OSTREAM << "Listening On: " << local_endpoint()
-      << " fd=" << (size_t)native_handle()
+      << " fd=" << native_handle()
       << ' ' << (m_ssl_cfg ? "SECURE" : "PLAIN");
   );
 }
@@ -32,7 +32,7 @@ Acceptor::Acceptor(asio::ip::tcp::acceptor& acceptor,
 void Acceptor::stop() {
   SWC_LOG_OUT(LOG_INFO,
     SWC_LOG_OSTREAM << "Stopping to Listen On: " << local_endpoint()
-      << " fd=" << (size_t)native_handle();
+      << " fd=" << native_handle();
   );
 
   if(is_open())
@@ -49,15 +49,15 @@ void Acceptor::do_accept_mixed() noexcept {
   async_accept(
     [this](const std::error_code& ec, asio::ip::tcp::socket new_sock) {
       if(ec) {
-        if(ec.value() != 125) 
-          SWC_LOGF(LOG_DEBUG, "SRV-accept error=%d(%s)", 
+        if(ec.value() != ECANCELED)
+          SWC_LOGF(LOG_DEBUG, "SRV-accept error=%d(%s)",
                     ec.value(), ec.message().c_str());
         return;
       }
-      
+
       try {
-        if(!m_ssl_cfg || 
-           new_sock.remote_endpoint().address() 
+        if(!m_ssl_cfg ||
+           new_sock.remote_endpoint().address()
             == new_sock.local_endpoint().address()) {
           auto conn = std::make_shared<ConnHandlerPlain>(m_app_ctx, new_sock);
           conn->new_connection();
@@ -80,8 +80,8 @@ void Acceptor::do_accept_plain() noexcept {
   async_accept(
     [this](const std::error_code& ec, asio::ip::tcp::socket new_sock) {
       if(ec) {
-        if(ec.value() != 125) 
-          SWC_LOGF(LOG_DEBUG, "SRV-accept error=%d(%s)", 
+        if(ec.value() != ECANCELED)
+          SWC_LOGF(LOG_DEBUG, "SRV-accept error=%d(%s)",
                     ec.value(), ec.message().c_str());
         return;
       }
@@ -111,8 +111,8 @@ SerializedServer::SerializedServer(
   ) : m_appname(name), m_run(true),
       m_ssl_cfg(Env::Config::settings()->get_bool("swc.comm.ssl")
                 ? new ConfigSSL(false) : nullptr) {
-    
-  SWC_LOGF(LOG_INFO, "STARTING SERVER: %s, reactors=%d, workers=%d", 
+
+  SWC_LOGF(LOG_INFO, "STARTING SERVER: %s, reactors=%d, workers=%d",
            m_appname.c_str(), reactors, workers);
 
   auto settings = Env::Config::settings();
@@ -129,7 +129,7 @@ SerializedServer::SerializedServer(
     gethostname(hostname, sizeof(hostname));
     host.append(hostname);
   }
-    
+
   Networks nets;
   asio::error_code ec;
   Resolver::get_networks(
@@ -165,7 +165,7 @@ SerializedServer::SerializedServer(
 
       if(!reactor) {
         auto acceptor = asio::ip::tcp::acceptor(
-          m_io_contexts.back()->executor(), 
+          m_io_contexts.back()->executor(),
           endpoint
         );
         m_acceptors.push_back(std::make_shared<Acceptor>(
@@ -201,7 +201,7 @@ void SerializedServer::run() {
   SWC_LOGF(LOG_INFO, "STOPPED SERVER: %s", m_appname.c_str());
 }
 
-std::shared_ptr<IoContext::ExecutorWorkGuard> 
+std::shared_ptr<IoContext::ExecutorWorkGuard>
 SerializedServer::stop_accepting() {
   auto guard = std::make_shared<IoContext::ExecutorWorkGuard>(
     m_io_contexts.back()->executor());
@@ -218,7 +218,7 @@ SerializedServer::stop_accepting() {
 void SerializedServer::shutdown() {
   SWC_LOGF(LOG_INFO, "STOPPING SERVER: %s", m_appname.c_str());
   m_run.store(false);
-  
+
   ConnHandlerPtr conn;
   for(;;) {
     {

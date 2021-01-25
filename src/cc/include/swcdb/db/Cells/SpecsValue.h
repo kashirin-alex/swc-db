@@ -42,6 +42,9 @@ class Value {
 
   void copy(const Value &other);
 
+  void set(const char* data_n, uint32_t size_n,
+           Condition::Comp comp_n, bool owner=true);
+
   void set(const uint8_t* data_n, const uint32_t size_n,
            Condition::Comp comp_n, bool owner=false);
 

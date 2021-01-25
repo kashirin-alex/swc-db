@@ -31,62 +31,62 @@ void Settings::init_app_options(){
     ("swc.rgr.handlers", i32(8), "Number of App Handlers")
     ("swc.rgr.clients.handlers", i32(8), "Number of DB-Client Handlers")
 
-    ("swc.rgr.comm.encoder", 
+    ("swc.rgr.comm.encoder",
       g_enum(
-        (int)SWC_DEFAULT_COMM_ENCODER,
+        int(SWC_DEFAULT_COMM_ENCODER),
         0,
         Core::Encoder::from_string_encoding,
         Core::Encoder::repr_encoding),
      "The encoding to use in communication, options PLAIN/ZSTD/SNAPPY/ZLIB")
 
     ("swc.rgr.maintenance.handlers", i32(2), "Number of Maintenance Handlers")
-    ("swc.rgr.ram.allowed.percent", g_i32(33), 
+    ("swc.rgr.ram.allowed.percent", g_i32(33),
      "Memory RSS % allowed without freeing/releasing")
-    ("swc.rgr.ram.reserved.percent", g_i32(33), 
+    ("swc.rgr.ram.reserved.percent", g_i32(33),
      "Memory Total % reserved, threshold of low-memory enter state")
-    ("swc.rgr.ram.release.rate", g_i32(100), 
+    ("swc.rgr.ram.release.rate", g_i32(100),
      "Memory release-rate (malloc dependable)")
 
-    ("swc.rgr.id.validation.interval", g_i32(120000), 
+    ("swc.rgr.id.validation.interval", g_i32(120000),
      "Validation of Ranger-ID against Mngr(root)")
 
-    ("swc.rgr.Range.req.update.concurrency", g_i8(1), 
+    ("swc.rgr.Range.req.update.concurrency", g_i8(1),
      "Max Allowed Concurrency a Range for Update Requests")
 
-    ("swc.rgr.compaction.check.interval", g_i32(300000), 
+    ("swc.rgr.compaction.check.interval", g_i32(300000),
      "Interval in ms for Compaction ")
-    ("swc.rgr.compaction.read.ahead", g_i8(5), 
+    ("swc.rgr.compaction.read.ahead", g_i8(5),
      "Allowed read-ahead scans per Range compaction")
-    ("swc.rgr.compaction.range.max", g_i8(2), 
+    ("swc.rgr.compaction.range.max", g_i8(2),
      "Max Allowed Ranges at a time for compaction")
 
-    ("swc.rgr.Range.CellStore.count.max", g_i8(10), 
-     "Schema default cellstore-max in range before range-split")  
-    ("swc.rgr.Range.CellStore.size.max", g_i32(1000000000), 
-     "Schema default cellstore-size")  
-    ("swc.rgr.Range.CellStore.replication", g_i8(3), 
-     "Schema default cellstore-replication (fs-dependent)") 
-     
-    ("swc.rgr.Range.block.size", g_i32(64000000), 
+    ("swc.rgr.Range.CellStore.count.max", g_i8(10),
+     "Schema default cellstore-max in range before range-split")
+    ("swc.rgr.Range.CellStore.size.max", g_i32(1000000000),
+     "Schema default cellstore-size")
+    ("swc.rgr.Range.CellStore.replication", g_i8(3),
+     "Schema default cellstore-replication (fs-dependent)")
+
+    ("swc.rgr.Range.block.size", g_i32(64000000),
      "Schema default block-size")
-    ("swc.rgr.Range.block.cells", g_i32(100000), 
+    ("swc.rgr.Range.block.cells", g_i32(100000),
      "Schema default block-cells")
-    ("swc.rgr.Range.block.encoding", 
+    ("swc.rgr.Range.block.encoding",
       g_enum(
-        (int)SWC_DEFAULT_STORAGE_ENCODER,
+        int(SWC_DEFAULT_STORAGE_ENCODER),
         0,
         Core::Encoder::from_string_encoding,
-        Core::Encoder::repr_encoding), 
-     "Schema default block-encoding NONE/ZSTD/SNAPPY/ZLIB")  
-     
-    ("swc.rgr.Range.CommitLog.rollout.ratio", g_i8(3), 
+        Core::Encoder::repr_encoding),
+     "Schema default block-encoding NONE/ZSTD/SNAPPY/ZLIB")
+
+    ("swc.rgr.Range.CommitLog.rollout.ratio", g_i8(3),
      "Schema default CommitLog new fragment Rollout Block Ratio")
-    ("swc.rgr.Range.CommitLog.Compact.cointervaling", g_i8(3), 
+    ("swc.rgr.Range.CommitLog.Compact.cointervaling", g_i8(3),
      "The minimal cointervaling Fragments for Compaction")
-    ("swc.rgr.Range.CommitLog.Fragment.preload", g_i8(2), 
+    ("swc.rgr.Range.CommitLog.Fragment.preload", g_i8(2),
      "The number of CommitLog Fragment to preload")
 
-    ("swc.rgr.Range.compaction.percent", g_i8(33), 
+    ("swc.rgr.Range.compaction.percent", g_i8(33),
      "Schema default compact-percent threshold")
   ;
 

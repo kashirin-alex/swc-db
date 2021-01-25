@@ -41,7 +41,7 @@ class ColumnUpdate : public Serializable {
       for(cid_t cid : columns)
         out << cid << ',';
       out << ']';
-  
+
     } else {
       schema->print(out << ' ');
       Error::print(out << ' ', err);
@@ -80,7 +80,7 @@ class ColumnUpdate : public Serializable {
   }
 
   void internal_encode(uint8_t** bufp) const override {
-    Serialization::encode_i8(bufp, (uint8_t)function);
+    Serialization::encode_i8(bufp, function);
     Serialization::encode_vi64(bufp, id);
     switch(function) {
       case ColumnMng::Function::INTERNAL_EXPECT: {
@@ -100,7 +100,7 @@ class ColumnUpdate : public Serializable {
   }
 
   void internal_decode(const uint8_t** bufp, size_t* remainp) override {
-    function = (ColumnMng::Function)Serialization::decode_i8(bufp, remainp);
+    function = ColumnMng::Function(Serialization::decode_i8(bufp, remainp));
     id = Serialization::decode_vi64(bufp, remainp);
     switch(function) {
       case ColumnMng::Function::INTERNAL_EXPECT: {

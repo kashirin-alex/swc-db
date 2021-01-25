@@ -138,7 +138,7 @@ uint8_t Compaction::compact(const RangePtr& range) {
     need.append("CsResize");
 
   } else if((do_compaction = cell_ttl &&
-             (int64_t)(value = range->blocks.cellstores.get_ts_earliest())
+             int64_t(value = range->blocks.cellstores.get_ts_earliest())
                 != DB::Cells::AUTO_ASSIGN &&
              value < Time::now_ns()-cell_ttl*100)) {
     need.append("CsTTL");

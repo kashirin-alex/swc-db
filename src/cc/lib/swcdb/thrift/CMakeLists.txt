@@ -6,7 +6,7 @@
 
 if(THRIFT_CPP_GEN_PATH)
 
-SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-suggest-override")
+SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-suggest-override -Wno-old-style-cast")
 
 # libswcdb_thrift
 ADD_LIB_TARGET(

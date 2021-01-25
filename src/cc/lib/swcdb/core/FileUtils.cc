@@ -53,7 +53,7 @@ ssize_t read(int fd, void *vptr, size_t n) {
   ssize_t nread;
   char *ptr;
 
-  ptr = (char *)vptr;
+  ptr = static_cast<char*>(vptr);
   nleft = n;
   while (nleft) {
     if ((nread = ::read(fd, ptr, nleft)) < 0) {
@@ -79,7 +79,7 @@ ssize_t pread(int fd, off_t offset, void *vptr, size_t n) {
   ssize_t nread;
   char *ptr;
 
-  ptr = (char *)vptr;
+  ptr = static_cast<char*>(vptr);
   nleft = n;
   while (nleft) {
     if ((nread = ::pread(fd, ptr, nleft, offset)) < 0) {
@@ -121,7 +121,7 @@ ssize_t write(int fd, const void *vptr, size_t n) {
   ssize_t nwritten;
   const char *ptr;
 
-  ptr = (const char *)vptr;
+  ptr = static_cast<const char*>(vptr);
   nleft = n;
   while (nleft) {
     if ((nwritten = ::write(fd, ptr, nleft)) <= 0) {
@@ -219,7 +219,7 @@ time_t modification(const std::string& fname) {
   return stat(fname.c_str(), &statbuf) ? 0 : statbuf.st_mtime;
 }
 
-void readdir(const std::string& dirname, 
+void readdir(const std::string& dirname,
              const std::string& fname_regex,
              std::vector<struct dirent>& listing) {
 
@@ -254,7 +254,7 @@ void readdir(const std::string& dirname,
     if (!regex || re2::RE2::FullMatch(dep->d_name, *regex))
       listing.push_back(*dep);
   }
-  
+
 #endif
 
   if(errno)
@@ -296,7 +296,7 @@ char* file_to_buffer(const std::string& fname, off_t *lenp) {
 
   ::close(fd);
 
-  if(nread == (ssize_t)-1) {
+  if(nread == -1) {
     int saved_errno = errno;
     SWC_LOGF(LOG_ERROR, "read(\"%s\") failure - %s", fname.c_str(),
             Error::get_text(saved_errno));
@@ -307,7 +307,7 @@ char* file_to_buffer(const std::string& fname, off_t *lenp) {
   }
 
   if(nread < *lenp) {
-    SWC_LOGF(LOG_WARN, "short read (%d of %d bytes)", (int)nread, (int)*lenp);
+    SWC_LOGF(LOG_WARN, "short read (%ld of %ld bytes)", nread, *lenp);
     *lenp = nread;
   }
 

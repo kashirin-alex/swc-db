@@ -12,7 +12,7 @@ namespace SWC { namespace Config { namespace Property {
 
 
 Value::Value(uint8_t flags) : flags(flags) { }
-  
+
 Value::Value(Value::Ptr ptr) : flags(ptr->flags.load()) { }
 
 Value::~Value() { }
@@ -20,7 +20,7 @@ Value::~Value() { }
 std::ostream& Value::operator<<(std::ostream& ostream) {
   return ostream << to_string();
 }
-  
+
 bool Value::is_skippable() const {
   return flags & Value::SKIPPABLE;
 }
@@ -39,7 +39,7 @@ Value::Ptr Value::default_value(bool defaulted) {
 bool Value::is_default() const {
   return flags & Value::DEFAULT;
 }
-  
+
 Value::Ptr Value::zero_token() {
   flags.fetch_xor(Value::NO_TOKEN);
   return this;
@@ -110,7 +110,7 @@ void from_string(const std::string& s, uint8_t* value) {
   if (res > UINT8_MAX || res < 0)
     SWC_THROWF(Error::CONFIG_GET_ERROR,
       "Bad Value %s, number out of range of 8-bit unsigned integer", s.c_str());
-  *value = (uint8_t)res;
+  *value = res;
 }
 
 void from_string(const std::string& s, uint16_t* value) {
@@ -120,7 +120,7 @@ void from_string(const std::string& s, uint16_t* value) {
   if (res > UINT16_MAX || res < 0)
     SWC_THROWF(Error::CONFIG_GET_ERROR,
       "Bad Value %s, number out of range of 16-bit unsigned integer", s.c_str());
-  *value = (uint16_t)res;
+  *value = res;
 }
 
 void from_string(const std::string& s, int32_t* value) {
@@ -130,7 +130,7 @@ void from_string(const std::string& s, int32_t* value) {
   if (res > INT32_MAX || res < INT32_MIN)
     SWC_THROWF(Error::CONFIG_GET_ERROR,
         "Bad Value %s, number out of range of 32-bit integer", s.c_str());
-  *value = (int32_t)res;
+  *value = res;
 }
 
 
@@ -138,9 +138,9 @@ void from_string(const std::string& s, int32_t* value) {
 
 
 V_BOOL::V_BOOL(const bool& v, uint8_t flags) : Value(flags), value(v) { }
-  
+
 V_BOOL::V_BOOL(V_BOOL* ptr) : Value(ptr), value(ptr->get()) { }
-  
+
 Value::Ptr V_BOOL::make_new(const Strings& values) {
   auto ptr = new V_BOOL(this);
   if(!values.empty())
@@ -149,11 +149,11 @@ Value::Ptr V_BOOL::make_new(const Strings& values) {
 }
 
 void V_BOOL::set_from(Value::Ptr ptr) {
-  auto from = ((V_BOOL*)ptr);
+  auto from = get_pointer<V_BOOL>(ptr);
   flags.store(from->flags);
   value = from->value;
 }
-  
+
 void V_BOOL::set_from(const Strings& values) {
   auto& str = values.back();
   value = (str.length() == 1 && *str.data() == '1') ||
@@ -176,7 +176,7 @@ bool V_BOOL::get() const {
 
 
 V_UINT8::V_UINT8(const uint8_t& v, uint8_t flags) : Value(flags), value(v) { }
-  
+
 V_UINT8::V_UINT8(V_UINT8* ptr) : Value(ptr), value(ptr->get()) { }
 
 Value::Ptr V_UINT8::make_new(const Strings& values) {
@@ -185,13 +185,13 @@ Value::Ptr V_UINT8::make_new(const Strings& values) {
     ptr->set_from(values);
   return ptr;
 }
-  
+
 void V_UINT8::set_from(Value::Ptr ptr) {
-  auto from = ((V_UINT8*)ptr);
+  auto from = get_pointer<V_UINT8>(ptr);
   flags.store(from->flags);
   value = from->value;
 }
-  
+
 void V_UINT8::set_from(const Strings& values) {
   from_string(values.back(), &value);
 }
@@ -201,7 +201,7 @@ Value::Type V_UINT8::type() const {
 }
 
 std::string V_UINT8::to_string() const {
-  return std::to_string((int16_t)value);
+  return std::to_string(int16_t(value));
 }
 
 uint8_t V_UINT8::get() const {
@@ -211,7 +211,7 @@ uint8_t V_UINT8::get() const {
 
 
 V_UINT16::V_UINT16(const uint16_t& v, uint8_t flags) : Value(flags), value(v) { }
-  
+
 V_UINT16::V_UINT16(V_UINT16* ptr) : Value(ptr), value(ptr->get()) { }
 
 Value::Ptr V_UINT16::make_new(const Strings& values) {
@@ -220,9 +220,9 @@ Value::Ptr V_UINT16::make_new(const Strings& values) {
     ptr->set_from(values);
   return ptr;
 }
-  
+
 void V_UINT16::set_from(Value::Ptr ptr) {
-  auto from = ((V_UINT16*)ptr);
+  auto from = get_pointer<V_UINT16>(ptr);
   flags.store(from->flags);
   value = from->value;
 }
@@ -255,9 +255,9 @@ Value::Ptr V_INT32::make_new(const Strings& values) {
     ptr->set_from(values);
   return ptr;
 }
-  
+
 void V_INT32::set_from(Value::Ptr ptr) {
-  auto from = ((V_INT32*)ptr);
+  auto from = get_pointer<V_INT32>(ptr);
   flags.store(from->flags);
   value = from->value;
 }
@@ -290,9 +290,9 @@ Value::Ptr V_INT64::make_new(const Strings& values) {
     ptr->set_from(values);
   return ptr;
 }
-  
+
 void V_INT64::set_from(Value::Ptr ptr) {
-  auto from = ((V_INT64*)ptr);
+  auto from = get_pointer<V_INT64>(ptr);
   flags.store(from->flags);
   value = from->value;
 }
@@ -316,7 +316,7 @@ int64_t V_INT64::get() const {
 
 
 V_DOUBLE::V_DOUBLE(const double& v, uint8_t flags) : Value(flags), value(v) { }
-  
+
 V_DOUBLE::V_DOUBLE(V_DOUBLE* ptr) : Value(ptr), value(ptr->get()) { }
 
 Value::Ptr V_DOUBLE::make_new(const Strings& values) {
@@ -325,9 +325,9 @@ Value::Ptr V_DOUBLE::make_new(const Strings& values) {
     ptr->set_from(values);
   return ptr;
 }
-  
+
 void V_DOUBLE::set_from(Value::Ptr ptr) {
-  auto from = ((V_DOUBLE*)ptr);
+  auto from = get_pointer<V_DOUBLE>(ptr);
   flags.store(from->flags);
   value = from->value;
 }
@@ -351,7 +351,7 @@ double V_DOUBLE::get() const {
 
 
 V_STRING::V_STRING(const std::string& v, uint8_t flags) : Value(flags), value(v) { }
-  
+
 V_STRING::V_STRING(V_STRING* ptr) : Value(ptr), value(ptr->get()) { }
 
 Value::Ptr V_STRING::make_new(const Strings& values) {
@@ -360,9 +360,9 @@ Value::Ptr V_STRING::make_new(const Strings& values) {
     ptr->set_from(values);
   return ptr;
 }
-  
+
 void V_STRING::set_from(Value::Ptr ptr) {
-  auto from = ((V_STRING*)ptr);
+  auto from = get_pointer<V_STRING>(ptr);
   flags.store(from->flags);
   value = from->value;
 }
@@ -406,9 +406,9 @@ Value::Ptr V_ENUM::make_new(const Strings& values) {
     ptr->set_from(values);
   return ptr;
 }
-  
+
 void V_ENUM::set_from(Value::Ptr ptr) {
-  auto from = ((V_ENUM*)ptr);
+  auto from = get_pointer<V_ENUM>(ptr);
   flags.store(from->flags);
   value = from->value;
   if(!call_from_string)
@@ -447,7 +447,7 @@ int32_t V_ENUM::get() const {
 // lists
 V_STRINGS::V_STRINGS(const Strings& v, uint8_t flags)
                     : Value(flags), value(v) { }
-  
+
 V_STRINGS::V_STRINGS(V_STRINGS* ptr) : Value(ptr), value(ptr->get()) { }
 
 Value::Ptr V_STRINGS::make_new(const Strings& values) {
@@ -456,9 +456,9 @@ Value::Ptr V_STRINGS::make_new(const Strings& values) {
     ptr->set_from(values);
   return ptr;
 }
-  
+
 void V_STRINGS::set_from(Value::Ptr ptr) {
-  auto from = ((V_STRINGS*)ptr);
+  auto from = get_pointer<V_STRINGS>(ptr);
   flags.store(from->flags);
   value = from->value;
 }
@@ -484,7 +484,7 @@ Strings V_STRINGS::get() const {
 V_INT64S::V_INT64S(const Int64s& v, uint8_t flags)
                   : Value(flags), value(v) {
 }
-  
+
 V_INT64S::V_INT64S(V_INT64S* ptr) : Value(ptr), value(ptr->get()) { }
 
 Value::Ptr V_INT64S::make_new(const Strings& values) {
@@ -493,9 +493,9 @@ Value::Ptr V_INT64S::make_new(const Strings& values) {
     ptr->set_from(values);
   return ptr;
 }
-  
+
 void V_INT64S::set_from(Value::Ptr ptr) {
-  auto from = ((V_INT64S*)ptr);
+  auto from = get_pointer<V_INT64S>(ptr);
   flags.store(from->flags);
   value = from->value;
 }
@@ -526,7 +526,7 @@ Int64s V_INT64S::get() const {
 V_DOUBLES::V_DOUBLES(const Doubles& v, uint8_t flags)
                      : Value(flags), value(v) {
 }
-  
+
 V_DOUBLES::V_DOUBLES(V_DOUBLES* ptr) : Value(ptr), value(ptr->get()) { }
 
 Value::Ptr V_DOUBLES::make_new(const Strings& values) {
@@ -535,9 +535,9 @@ Value::Ptr V_DOUBLES::make_new(const Strings& values) {
     ptr->set_from(values);
   return ptr;
 }
-  
+
 void V_DOUBLES::set_from(Value::Ptr ptr) {
-  auto from = ((V_DOUBLES*)ptr);
+  auto from = get_pointer<V_DOUBLES>(ptr);
   flags.store(from->flags);
   value = from->get();
 }
@@ -574,7 +574,7 @@ V_GBOOL::V_GBOOL(V_GBOOL* ptr)
                 : Value(ptr),
                   value(ptr->get()), on_chg_cb(ptr->on_chg_cb) {
 }
-  
+
 Value::Ptr V_GBOOL::make_new(const Strings& values) {
   auto ptr = new V_GBOOL(this);
   if(!values.empty())
@@ -583,7 +583,7 @@ Value::Ptr V_GBOOL::make_new(const Strings& values) {
 }
 
 void V_GBOOL::set_from(Value::Ptr ptr) {
-  auto from = ((V_GBOOL*)ptr);
+  auto from = get_pointer<V_GBOOL>(ptr);
   flags.store(from->flags);
 
   bool chg = value != from->value;
@@ -593,7 +593,7 @@ void V_GBOOL::set_from(Value::Ptr ptr) {
   if(chg)
     on_change();
 }
-  
+
 void V_GBOOL::set_from(const Strings& values) {
   auto& str = values.back();
   value.store((str.length() == 1 && *str.data() == '1') ||
@@ -644,9 +644,9 @@ Value::Ptr V_GUINT8::make_new(const Strings& values) {
     ptr->set_from(values);
   return ptr;
 }
-  
+
 void V_GUINT8::set_from(Value::Ptr ptr) {
-  auto from = ((V_GUINT8*)ptr);
+  auto from = get_pointer<V_GUINT8>(ptr);
   flags.store(from->flags);
   bool chg = value != from->value;
   value.store(from->value.load());
@@ -655,7 +655,7 @@ void V_GUINT8::set_from(Value::Ptr ptr) {
   if(chg)
     on_change();
 }
-  
+
 void V_GUINT8::set_from(const Strings& values) {
   uint8_t v;
   from_string(values.back(), &v);
@@ -667,7 +667,7 @@ Value::Type V_GUINT8::type() const {
 }
 
 std::string V_GUINT8::to_string() const {
-  return std::to_string((int16_t)value);
+  return std::to_string(int16_t(value));
 }
 
 uint8_t V_GUINT8::get() const {
@@ -700,9 +700,9 @@ Value::Ptr V_GINT32::make_new(const Strings& values) {
     ptr->set_from(values);
   return ptr;
 }
-  
+
 void V_GINT32::set_from(Value::Ptr ptr) {
-  auto from = ((V_GINT32*)ptr);
+  auto from = get_pointer<V_GINT32>(ptr);
   flags.store(from->flags);
   bool chg = value != from->value;
   value.store(from->value.load());
@@ -765,9 +765,9 @@ Value::Ptr V_GENUM::make_new(const Strings& values) {
     ptr->set_from(values);
   return ptr;
 }
-  
+
 void V_GENUM::set_from(Value::Ptr ptr) {
-  auto from = ((V_GENUM*)ptr);
+  auto from = get_pointer<V_GENUM>(ptr);
   flags.store(from->flags);
   bool chg = value != from->value;
   value.store(from->get());
@@ -840,9 +840,9 @@ Value::Ptr V_GSTRINGS::make_new(const Strings& values) {
     ptr->set_from(values);
   return ptr;
 }
-  
+
 void V_GSTRINGS::set_from(Value::Ptr ptr) {
-  auto from = ((V_GSTRINGS*)ptr);
+  auto from = get_pointer<V_GSTRINGS>(ptr);
   flags.store(from->flags);
   bool chg;
   {

@@ -14,9 +14,9 @@ Scan::Scan(uint32_t reserve): columns(0) {
 }
 
 Scan::Scan(Columns& columns): columns(columns) {}
-     
+
 Scan::Scan(const uint8_t** bufp, size_t* remainp) {
-  internal_decode(bufp, remainp); 
+  internal_decode(bufp, remainp);
 }
 
 void Scan::copy(const Scan &other) {
@@ -58,12 +58,12 @@ bool Scan::equal(const Scan &other) {
 size_t Scan::internal_encoded_length() const {
   size_t len = Serialization::encoded_length_vi32(columns.size());
   for(auto& col : columns)
-    len += col->internal_encoded_length(); 
+    len += col->internal_encoded_length();
   return len + flags.encoded_length();
 }
 
 void Scan::internal_encode(uint8_t** bufp) const {
-  Serialization::encode_vi32(bufp, (uint32_t)columns.size());
+  Serialization::encode_vi32(bufp, columns.size());
   for(auto& col : columns)
     col->internal_encode(bufp);
   flags.encode(bufp);
@@ -96,15 +96,15 @@ void Scan::print(std::ostream& out) const {
 
 void Scan::display(std::ostream& out, bool pretty, std::string offset) const {
   out << offset << "SpecsScan(\n"
-      << offset << " columns=[\n"; 
+      << offset << " columns=[\n";
   for(auto& col : columns)
     col->display(out, pretty, "  ");
   out << offset << " ]\n";
-  
+
   out << offset << " Flags(";
   flags.display(out);
-  out << ")\n"; 
-  out << offset << ")\n"; 
+  out << ")\n";
+  out << offset << ")\n";
 }
 
 

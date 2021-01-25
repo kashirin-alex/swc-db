@@ -19,27 +19,27 @@ void Settings::init_client_options() { }
 void Settings::init_app_options() {
   init_comm_options();
   init_fs_options();
-  
+
   file_desc.add_options()
-    ("swc.fs.broker.host", str(), 
+    ("swc.fs.broker.host", str(),
       "FsBroker host (default resolve by hostname)")
-    ("swc.fs.broker.port", i16(17000), 
+    ("swc.fs.broker.port", i16(17000),
       "FsBroker port")
-    
-    ("swc.FsBroker.cfg", str(), 
+
+    ("swc.FsBroker.cfg", str(),
       "Specific cfg-file for FsBroker")
-    ("swc.FsBroker.cfg.dyn", strs(), 
+    ("swc.FsBroker.cfg.dyn", strs(),
       "Specific dyn. cfg-file for FsBroker")
-    ("swc.cfg.dyn.period", g_i32(60000), 
+    ("swc.cfg.dyn.period", g_i32(60000),
      "Dynamic cfg-file check interval in ms, zero without")
 
     ("swc.FsBroker.reactors", i32(8), "Number of Communication Reactors")
     ("swc.FsBroker.workers", i32(32), "Number of Workers a Reactor")
     ("swc.FsBroker.handlers", i32(8), "Number of App Handlers")
-    
-    ("swc.FsBroker.comm.encoder", 
+
+    ("swc.FsBroker.comm.encoder",
       g_enum(
-        (int)SWC_DEFAULT_COMM_ENCODER,
+        int(SWC_DEFAULT_COMM_ENCODER),
         0,
         Core::Encoder::from_string_encoding,
         Core::Encoder::repr_encoding),

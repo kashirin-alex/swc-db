@@ -31,7 +31,7 @@ void Settings::init_app_options(){
 
     ("col-seq",
       g_enum(
-        (int)DB::Types::KeySeq::LEXIC,
+        int(DB::Types::KeySeq::LEXIC),
         0,
         DB::Types::from_string_range_seq,
         DB::Types::repr_range_seq
@@ -40,7 +40,7 @@ void Settings::init_app_options(){
 
     ("col-type",
       g_enum(
-        (int)DB::Types::Column::PLAIN,
+        int(DB::Types::Column::PLAIN),
         0,
         DB::Types::from_string_col_type,
         DB::Types::repr_col_type
@@ -52,7 +52,7 @@ void Settings::init_app_options(){
     /*
     ("cell-enc",
       g_enum(
-        (int)DB::Types::Encoder::PLAIN,
+        int(DB::Types::Encoder::PLAIN),
         0,
         Core::Encoder::from_string_encoding,
         Core::Encoder::repr_encoding
@@ -221,13 +221,13 @@ class Test {
     key.free();
     std::string cell_number(std::to_string(i));
     for(uint32_t chr=0; chr<=f; ++chr)
-      key.add(((char)(uint8_t)(chr+97))+cell_number);
+      key.add(char(uint8_t(chr+97))+cell_number);
   }
 
   void apply_cell_value(DB::Cells::Cell& cell) {
     std::string value = "V_OF:(" + cell.key.to_string() + "):(";
     for(uint32_t chr=0; chr<=255; ++chr)
-      value += (char)chr;
+      value += char(chr);
     value += ")END";
 
     uint8_t* data;
@@ -239,14 +239,15 @@ class Test {
       auto t = DB::Cell::Serial::Value::Type::INT64; // roundrobin Type
       for(auto it = value.begin(); it < value.end(); ++it) {
         if(t == DB::Cell::Serial::Value::Type::INT64) {
-          wfields.add((int64_t)*it);
+          wfields.add(int64_t(*it));
           t = DB::Cell::Serial::Value::Type::DOUBLE;
         } else if(t == DB::Cell::Serial::Value::Type::DOUBLE) {
-          wfields.add((long double)(int)*it);
+          long double v(*it);
+          wfields.add(v);
           t = DB::Cell::Serial::Value::Type::BYTES;
         } else if(t == DB::Cell::Serial::Value::Type::BYTES) {
-          char c = *it;
-          wfields.add((const uint8_t*)&c, 1);
+          const uint8_t c = *it;
+          wfields.add(&c, 1);
           t = DB::Cell::Serial::Value::Type::INT64;
         }
       }
@@ -254,7 +255,7 @@ class Test {
       size = wfields.fill();
 
     } else {
-      data = (uint8_t*)value.data();
+      data = reinterpret_cast<uint8_t*>(value.data());
       size = value.size();
     }
 
@@ -294,7 +295,7 @@ class Test {
         query_select(0, 0);
       }
     );
-    
+
     req->result->completion.increment();
 
     req->columns->create(schema);
@@ -441,15 +442,15 @@ int main(int argc, char** argv) {
 
   SWC::Test test;
 
-  test.col_type = (SWC::DB::Types::Column)settings->get_genum("col-type");
-  test.col_seq = (SWC::DB::Types::KeySeq)settings->get_genum("col-seq");
+  test.col_type = SWC::DB::Types::Column(settings->get_genum("col-type"));
+  test.col_seq = SWC::DB::Types::KeySeq(settings->get_genum("col-seq"));
 
   test.ncells = settings->get_i64("ncells");
   test.nfractions = settings->get_i32("nfractions");
   test.cell_versions = settings->get_i32("cell-versions");
   //uint32_t value = settings->get_i32("value-size");
 
-  //test.cell_enc = (SWC::DB::Types::Encoder)settings->get_genum("cell-enc");
+  //test.cell_enc = SWC::DB::Types::Encoder(settings->get_genum("cell-enc"));
   test.col_name = "test-"
                 + std::string(SWC::DB::Types::to_string(test.col_type))
                 + "-"

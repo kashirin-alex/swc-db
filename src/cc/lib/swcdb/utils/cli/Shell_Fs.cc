@@ -11,11 +11,11 @@
 
 namespace SWC { namespace Utils { namespace shell {
 
-Fs::Fs() 
-  : Interface("\033[32mSWC-DB(\033[36mfs-" + 
-              Env::Config::settings()->get_str("swc.fs") + 
+Fs::Fs()
+  : Interface("\033[32mSWC-DB(\033[36mfs-" +
+              Env::Config::settings()->get_str("swc.fs") +
               "\033[32m)\033[33m> \033[00m",
-              "/tmp/.swc-cli-fs-" + 
+              "/tmp/.swc-cli-fs-" +
               Env::Config::settings()->get_str("swc.fs") + "-history") {
 
   Env::FsInterface::init(FS::fs_type(
@@ -23,10 +23,10 @@ Fs::Fs()
 
   options.push_back(
     new Option(
-      "list", 
+      "list",
       {"list directory contents",
        "list 'path';"},
-      [ptr=this](const std::string& cmd){ return ptr->ls(cmd); }, 
+      [ptr=this](const std::string& cmd){ return ptr->ls(cmd); },
       new re2::RE2("(?i)^(ls|list)")
     )
   );
@@ -49,20 +49,24 @@ bool Fs::ls(const std::string& cmd) {
   Env::FsInterface::fs()->readdir(err, path, entries);
   if(err)
     return error("Problem reading '"+path+"'");
-  
+
   size_t lname = 0;
   std::vector<FS::Dirent*> dirs;
   std::vector<FS::Dirent*> files;
+  dirs.reserve(entries.size());
+  files.reserve(entries.size());
   for(auto& entry : entries) {
     if(entry.name.size() > lname)
       lname = entry.name.size();
 
     auto& tmp = entry.is_dir ? dirs : files;
     for(auto it = tmp.begin(); ; ++it) {
-      if(it == tmp.end() || 
+      if(it == tmp.end() ||
          Condition::lt_volume(
-           (const uint8_t*)(*it)->name.c_str(), (*it)->name.size(),
-           (const uint8_t*)entry.name.c_str(), entry.name.size() ) ) {
+           reinterpret_cast<const uint8_t*>((*it)->name.c_str()),
+           (*it)->name.size(),
+           reinterpret_cast<const uint8_t*>(entry.name.c_str()),
+           entry.name.size() ) ) {
         tmp.insert(it, &entry);
         break;
       }
@@ -76,8 +80,8 @@ bool Fs::ls(const std::string& cmd) {
   for(auto& entry : dirs) {
     t_secs = entry->last_modification_time;
     std::strftime(modified, 20, "%Y/%m/%d %H:%M:%S", std::gmtime(&t_secs));
-      
-    SWC_LOG_OSTREAM << std::left << "  " 
+
+    SWC_LOG_OSTREAM << std::left << "  "
       << std::left << std::setw(lname + 2)
       << format("'%s'", entry->name.c_str())
       << std::left << "  modified=" << modified
@@ -88,8 +92,8 @@ bool Fs::ls(const std::string& cmd) {
   for(auto& entry : files) {
     t_secs = entry->last_modification_time;
     std::strftime(modified, 20, "%Y/%m/%d %H:%M:%S", std::gmtime(&t_secs));
-    
-    SWC_LOG_OSTREAM << std::left << "  " 
+
+    SWC_LOG_OSTREAM << std::left << "  "
       << std::left << std::setw(lname + 2)
       << format("'%s'", entry->name.c_str())
       << std::left << "  modified=" << modified

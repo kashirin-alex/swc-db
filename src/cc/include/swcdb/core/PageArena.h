@@ -15,12 +15,12 @@
 
 
 
-namespace SWC { namespace Core { namespace Mem { 
+namespace SWC { namespace Core { namespace Mem {
 
 
 struct Item final {
   public:
-  
+
   typedef Item*           Ptr;
 
   Core::Atomic<uint64_t>  count;
@@ -53,18 +53,18 @@ struct Item final {
   }
 
   void allocate() {
-    data_ = (uint8_t*)memcpy(new uint8_t[size_], data_, size_);
+    data_ = static_cast<uint8_t*>(memcpy(new uint8_t[size_], data_, size_));
   }
 
-  ~Item() { 
+  ~Item() {
     if(data_)
       delete data_;
-  } 
+  }
 
   uint32_t size() const {
     return size_;
   }
-  
+
   const uint8_t* data() const {
     return data_;
   }
@@ -72,7 +72,7 @@ struct Item final {
   size_t hash() const {
     return hash_;
   }
-  
+
   Ptr use() {
     count.fetch_add(1);
     return this;
@@ -85,7 +85,7 @@ struct Item final {
   void release();
 
   std::string_view to_string() const {
-    return std::string_view((const char*)data_, size_);
+    return std::string_view(reinterpret_cast<const char*>(data_), size_);
   }
 
   bool less(const Item& other) const {
@@ -125,9 +125,9 @@ class Page final : public PageBase {
   //public std::set<Item::Ptr, Item::Less> {
   public:
   Page() : PageBase(8) { }
-  
+
   ~Page() { }
-  
+
   Item::Ptr use(const uint8_t* buf, uint32_t size) {
     std::scoped_lock lock(m_mutex);
 
@@ -135,16 +135,16 @@ class Page final : public PageBase {
     auto r = insert(tmp);
     if(r.second) {
       (*r.first)->allocate();
-    } else { 
+    } else {
       tmp->data_ = nullptr;
       delete tmp;
     }
     return (*r.first)->use();
   }
-  
+
   void free(Item::Ptr ptr) {
     std::scoped_lock lock(m_mutex);
-    
+
     auto it = find(ptr);
     if(it != end() && !ptr->count) {
       erase(it);
@@ -196,11 +196,11 @@ class Page final : public PageBase {
     insert(it, ptr);
     return ptr->use();
   }
-  
+
   void free(Item::Ptr ptr) {
     std::scoped_lock lock(m_mutex);
 
-    for(auto it = begin() + _narrow(*ptr); 
+    for(auto it = begin() + _narrow(*ptr);
         it < end() && (*it)->hash() <= ptr->hash(); ++it) {
       if((*it)->hash() == ptr->hash() && (*it)->equal(*ptr)) {
         delete *it;
@@ -217,23 +217,23 @@ class Page final : public PageBase {
   }
 
   private:
-    
+
   size_t _narrow(const Item& item) const {
     size_t offset = 0;
     if(size() < narrow_sz || !item.size())
       return offset;
 
     size_t sz = size() >> 1;
-    offset = sz; 
+    offset = sz;
     for(;;) {
       if((*(begin() + offset))->hash() < item.hash()) {
         if(sz < narrow_sz)
           break;
-        offset += sz >>= 1; 
+        offset += sz >>= 1;
         continue;
       }
       if(!(sz >>= 1))
-        ++sz;  
+        ++sz;
       if(offset < sz) {
         offset = 0;
         break;
@@ -251,19 +251,19 @@ class Page final : public PageBase {
 
 
 class Arena final {
-  
+
   public:
   Item::Ptr use(const uint8_t* buf, uint32_t size) {
     return page_by_sz(size).use(buf, size);
   }
-  
+
   void free(Item::Ptr ptr) {
     page_by_sz(ptr->size()).free(ptr);
   }
 
   Page& page_by_sz(uint32_t sz) {
     return _pages[(sz > 1022 ? 1023 : (sz ? sz-1 : 0) ) >> 2];
-  } 
+  }
 
   size_t count() const {
     size_t sz = 0;
@@ -295,15 +295,15 @@ namespace SWC { namespace Env {
 
 
 
-namespace SWC { namespace Core { namespace Mem { 
+namespace SWC { namespace Core { namespace Mem {
 
 
 
-Item::Ptr Item::make(const uint8_t* buf, uint32_t size) { 
+Item::Ptr Item::make(const uint8_t* buf, uint32_t size) {
   return Env::PageArena.use(buf, size);
 }
 
-void Item::release() { 
+void Item::release() {
   if(unused())
     Env::PageArena.free(this);
 }
@@ -316,11 +316,11 @@ struct ItemPtr final { // Item as SmartPtr
 
   ItemPtr() : ptr(nullptr) { }
 
-  ItemPtr(const ItemPtr& other) 
-          : ptr(other.ptr ? other.ptr->use() : nullptr) { 
+  ItemPtr(const ItemPtr& other)
+          : ptr(other.ptr ? other.ptr->use() : nullptr) {
   }
 
-  ItemPtr(const uint8_t* buf, uint32_t size) 
+  ItemPtr(const uint8_t* buf, uint32_t size)
           : ptr(Item::make(buf, size)) {
   }
 
@@ -329,7 +329,7 @@ struct ItemPtr final { // Item as SmartPtr
     return *this;
   }
 
-  ~ItemPtr() { 
+  ~ItemPtr() {
     release();
   }
 
@@ -338,12 +338,12 @@ struct ItemPtr final { // Item as SmartPtr
       ptr->release();
   }
 
-  void use(const ItemPtr& other) { 
+  void use(const ItemPtr& other) {
     release();
     ptr = other.ptr->use();
   }
 
-  void use(const uint8_t* buf, uint32_t size) { 
+  void use(const uint8_t* buf, uint32_t size) {
     release();
     ptr = Item::make(buf, size);
   }
@@ -359,7 +359,7 @@ struct ItemPtr final { // Item as SmartPtr
   std::string_view to_string() const {
     return ptr->to_string();
   }
-  
+
   mutable Item::Ptr ptr = nullptr;
 };
 

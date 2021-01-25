@@ -13,7 +13,7 @@ namespace SWC { namespace Core {
 
 /** INITIATE SINGLETONE LOGGER INSTANCE. **/
 LogWriter logger;
- 
+
 const char* priority_name[] = {
   "FATAL",
   "ALERT",
@@ -61,7 +61,7 @@ LogWriter::LogWriter(const std::string& name, const std::string& logs_path)
                       m_file_out(stdout), //m_file_err(stderr),
                       m_priority(LOG_INFO), m_show_line_numbers(true),
                       m_daemon(false), m_last_time(0) {
-  //std::cout << " LogWriter()=" << (size_t)this << "\n";
+  //std::cout << " LogWriter()=" << size_t(this) << "\n";
 }
 LogWriter::~LogWriter() {
   std::cout << std::flush;
@@ -69,7 +69,7 @@ LogWriter::~LogWriter() {
 
 void LogWriter::initialize(const std::string& name) {
   //std::cout << " LogWriter::initialize name=" << name
-  //          << " ptr=" << (size_t)this << "\n";
+  //          << " ptr=" << size_t(this) << "\n";
   Core::MutexSptd::scope lock(mutex);
   m_name.clear();
   m_name.append(name);
@@ -77,7 +77,7 @@ void LogWriter::initialize(const std::string& name) {
 
 void LogWriter::daemon(const std::string& logs_path) {
   //std::cout << " LogWriter::daemon logs_path=" << logs_path
-  //          << " ptr=" << (size_t)this << "\n";
+  //          << " ptr=" << size_t(this) << "\n";
   errno = 0;
 
   Core::MutexSptd::scope lock(mutex);
@@ -103,7 +103,7 @@ uint32_t LogWriter::_seconds() {
   auto t = ::time(0);
   if(m_daemon && m_last_time < t-86400)
     renew_files();
-  return (uint32_t)(t-86400*(t/86400));
+  return t-86400*(t/86400);
   // seconds since start of a day
 }
 

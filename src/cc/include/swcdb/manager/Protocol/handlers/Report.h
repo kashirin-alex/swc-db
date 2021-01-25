@@ -15,21 +15,20 @@ namespace Mngr { namespace Handler {
 
 
 void report(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
-  
+
   int err = Error::OK;
   Buffers::Ptr cbp;
 
   try {
-    
+
     const uint8_t *ptr = ev->data.base;
     size_t remain = ev->data.size;
 
-    auto func((Params::Report::Function)Serialization::decode_i8(&ptr, &remain));
-    
-    switch(func) {
+    switch(
+      Params::Report::Function(Serialization::decode_i8(&ptr, &remain))) {
 
       case Params::Report::Function::CLUSTER_STATUS: {
-        
+
         if(Env::Mngr::mngd_columns()->is_schemas_mngr(err) && err)
           goto function_send_response;
 
@@ -40,7 +39,7 @@ void report(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
         }
 
         Env::Mngr::mngd_columns()->columns_ready(err);
-        
+
         function_send_response:
           cbp = Buffers::make(ev, 4);
           cbp->append_i32(err);
@@ -52,7 +51,7 @@ void report(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
 
         Manager::MngrsStatus mngrs;
         role.get_states(mngrs);
-        
+
         Params::Report::RspManagersStatus rsp_params;
         rsp_params.managers.resize(mngrs.size());
         size_t i = 0;
@@ -68,7 +67,7 @@ void report(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
           ++i;
         }
         rsp_params.inchain = role.get_inchain_endpoint();
-          
+
         cbp = Buffers::make(ev, rsp_params, 4);
         cbp->append_i32(err);
         goto send_response;
@@ -79,7 +78,7 @@ void report(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
 
         Manager::RangerList rangers;
         mngr_rangers.rgr_list(0, rangers);
-        
+
         Params::Report::RspRangersStatus rsp_params;
         rsp_params.rangers.resize(rangers.size());
         size_t i = 0;
@@ -102,7 +101,7 @@ void report(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
       case Params::Report::Function::COLUMN_STATUS: {
         Params::Report::ReqColumnStatus params;
         params.decode(&ptr, &remain);
-        
+
         Params::Report::RspColumnStatus rsp_params;
         auto col = Env::Mngr::mngd_columns()->get_column(err, params.cid);
         if(err == Error::COLUMN_NOT_READY)
@@ -113,7 +112,7 @@ void report(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
         std::vector<Manager::Range::Ptr> ranges;
         col->get_ranges(ranges);
         rsp_params.ranges.resize(ranges.size());
-        size_t i = 0; 
+        size_t i = 0;
         for(auto& r : ranges) {
           auto& set_r = rsp_params.ranges[i];
           set_r.state = r->state();
@@ -131,14 +130,14 @@ void report(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
         err = Error::NOT_IMPLEMENTED;
         break;
     }
-    
+
   } catch(...) {
     const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
     SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
     err = e.code();
   }
 
-  
+
   send_error:
     cbp = Buffers::make(ev, 4);
     cbp->append_i32(err);

@@ -93,12 +93,12 @@ KeySeq range_seq_from(const std::string& typ) noexcept {
 
 SWC_SHOULD_INLINE
 std::string repr_range_seq(int typ) {
-  return to_string((KeySeq)typ);
+  return to_string(KeySeq(typ));
 }
 
 SWC_SHOULD_INLINE
 int from_string_range_seq(const std::string& typ) noexcept {
-  return (int)range_seq_from(typ);
+  return int(range_seq_from(typ));
 }
 
 }}}

@@ -309,7 +309,7 @@ bool FileSystemHadoopJVM::exists(int& err, const std::string& name) {
   }
   SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG,
     "exists('%s') state='%d' - %d(%s)",
-    abspath.c_str(), (int)state, err, Error::get_text(err));
+    abspath.c_str(), state, err, Error::get_text(err));
   return state;
 }
 
@@ -384,16 +384,13 @@ void FileSystemHadoopJVM::readdir(int& err, const std::string& name,
       need_reconnect(err = errno, fs);
 
     } else {
-      for (int i=0; i<numEntries; ++i) {
-        if (fileInfo[i].mName[0] == '.' || !fileInfo[i].mName[0])
+      results.reserve(numEntries);
+      for(int i=0; i < numEntries; ++i) {
+        if(fileInfo[i].mName[0] == '.' || !fileInfo[i].mName[0])
           continue;
         auto& entry = results.emplace_back();
-        const char *ptr;
-        if ((ptr = strrchr(fileInfo[i].mName, '/')))
-          entry.name = (std::string)(ptr+1);
-        else
-          entry.name = (std::string)fileInfo[i].mName;
-
+        const char *ptr = strrchr(fileInfo[i].mName, '/');
+        entry.name.append(ptr ? ++ptr : fileInfo[i].mName);
         entry.length = fileInfo[i].mSize;
         entry.last_modification_time = fileInfo[i].mLastMod;
         entry.is_dir = fileInfo[i].mKind == kObjectKindDirectory;
@@ -525,7 +522,7 @@ size_t FileSystemHadoopJVM::read(int& err, SmartFd::Ptr& smartfd,
     auto hfile = hadoop_fd->file();
     if(hfile) {
       errno = 0;
-      ssize_t nread = hdfsRead(fs->srv, hfile, dst, (tSize)amount);
+      ssize_t nread = hdfsRead(fs->srv, hfile, dst, tSize(amount));
       hadoop_fd->use_release();
       if(nread == -1) {
         nread = 0;
@@ -558,7 +555,7 @@ size_t FileSystemHadoopJVM::pread(int& err, SmartFd::Ptr& smartfd,
     if(hfile) {
       errno = 0;
       ssize_t nread = hdfsPread(
-        fs->srv, hfile, (tOffset)offset, dst, (tSize)amount);
+        fs->srv, hfile, tOffset(offset), dst, tSize(amount));
       hadoop_fd->use_release();
       if(nread == -1) {
         nread = 0;
@@ -589,7 +586,7 @@ size_t FileSystemHadoopJVM::append(int& err, SmartFd::Ptr& smartfd,
     auto hfile = hadoop_fd->file();
     if(hfile) {
       errno = 0;
-      nwritten = hdfsWrite(fs->srv, hfile, buffer.base, (tSize)buffer.size);
+      nwritten = hdfsWrite(fs->srv, hfile, buffer.base, tSize(buffer.size));
       if(nwritten == -1) {
         hadoop_fd->use_release();
         nwritten = 0;
@@ -629,7 +626,7 @@ void FileSystemHadoopJVM::seek(int& err, SmartFd::Ptr& smartfd,
     auto hfile = hadoop_fd->file();
     if(hfile) {
       errno = 0;
-      auto res = hdfsSeek(fs->srv, hfile, (tOffset)offset);
+      auto res = hdfsSeek(fs->srv, hfile, tOffset(offset));
       hadoop_fd->use_release();
       if(res == -1)
         need_reconnect(err = errno, fs);
