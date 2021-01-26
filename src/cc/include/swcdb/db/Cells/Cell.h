@@ -130,6 +130,8 @@ class Cell final {
 
   void get_value(StaticBuffer& v, bool owner=false) const;
 
+  void get_value(std::string& v) const;
+
   void set_counter(uint8_t op, int64_t v,
                   Types::Column typ = Types::Column::COUNTER_I64,
                   int64_t rev = TIMESTAMP_NULL);

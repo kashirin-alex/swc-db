@@ -48,23 +48,23 @@ void set(const Key& key, DB::Cell::Key& dbkey) {
 
 void set(const SpecKey& spec, DB::Specs::Key& dbspec) {
   for(auto& fraction : spec) {
-    if((uint8_t)fraction.comp > 0x8) {
+    if(uint8_t(fraction.comp) > 0x8) {
       std::string msg("Key ext-fraction-comp(");
-      msg.append(Condition::to_string((Condition::Comp)fraction.comp, true));
+      msg.append(Condition::to_string(Condition::Comp(fraction.comp), true));
       msg += ')';
       exception(Error::INCOMPATIBLE_OPTIONS, msg);
     }
-    dbspec.add(fraction.f, (Condition::Comp)fraction.comp);
+    dbspec.add(fraction.f, Condition::Comp(fraction.comp));
   }
 }
 
 void set(const SpecTimestamp& spec, DB::Specs::Timestamp& dbspec) {
-  dbspec.set(spec.ts, (Condition::Comp)spec.comp);
+  dbspec.set(spec.ts, Condition::Comp(spec.comp));
 }
 
 
 void set(const SpecValue& spec, DB::Specs::Value& dbspec) {
-  dbspec.set(spec.v, (Condition::Comp)spec.comp);
+  dbspec.set(spec.v, Condition::Comp(spec.comp));
 }
 
 void set(const SpecValues& spec, DB::Specs::Values& dbspec) {
@@ -118,34 +118,37 @@ void set(const SpecValueSerial& spec, DB::Specs::Value& dbspec) {
       dbfields.add(
         DB::Specs::Serial::Value::Field_INT64::make(
           fields.field_id,
-          (Condition::Comp)(uint8_t)fields.spec_int64.comp, fields.spec_int64.v));
+          Condition::Comp(uint8_t(fields.spec_int64.comp)),
+          fields.spec_int64.v));
     }
     if(fields.__isset.spec_double) {
       dbfields.add(
         DB::Specs::Serial::Value::Field_DOUBLE::make(
           fields.field_id,
-          (Condition::Comp)(uint8_t)fields.spec_double.comp, fields.spec_double.v));
+          Condition::Comp(uint8_t(fields.spec_double.comp)),
+          fields.spec_double.v));
     }
     if(!fields.spec_bytes.v.empty()) {
       dbfields.add(
         DB::Specs::Serial::Value::Field_BYTES::make(
           fields.field_id,
-          (Condition::Comp)(uint8_t)fields.spec_bytes.comp, fields.spec_bytes.v));
+          Condition::Comp(uint8_t(fields.spec_bytes.comp)),
+          fields.spec_bytes.v));
     }
     if(!fields.spec_key.v.empty()) {
       auto field = DB::Specs::Serial::Value::Field_KEY::make(
-        fields.field_id, (DB::Types::KeySeq)(uint8_t)fields.spec_key.seq);
+        fields.field_id, DB::Types::KeySeq(uint8_t(fields.spec_key.seq)));
       Converter::set(fields.spec_key.v, field->key);
       dbfields.add(std::move(field));
     }
     if(!fields.spec_li.v.empty()) {
       auto field = DB::Specs::Serial::Value::Field_LIST_INT64::make(
-        fields.field_id, (Condition::Comp)(uint8_t)fields.spec_li.comp);
+        fields.field_id, Condition::Comp(uint8_t(fields.spec_li.comp)));
       field->items.resize(fields.spec_li.v.size());
       size_t i = 0;
       for(auto& data : fields.spec_li.v) {
         auto& f = field->items[i];
-        f.comp = (Condition::Comp)(uint8_t)data.comp;
+        f.comp = Condition::Comp(uint8_t(data.comp));
         f.value = data.v;
         ++i;
       }
@@ -153,12 +156,12 @@ void set(const SpecValueSerial& spec, DB::Specs::Value& dbspec) {
     }
     if(!fields.spec_lb.v.empty()) {
       auto field = DB::Specs::Serial::Value::Field_LIST_BYTES::make(
-        fields.field_id, (Condition::Comp)(uint8_t)fields.spec_lb.comp);
+        fields.field_id, Condition::Comp(uint8_t(fields.spec_lb.comp)));
       field->items.resize(fields.spec_lb.v.size());
       size_t i = 0;
       for(auto& data : fields.spec_lb.v) {
         auto& f = field->items[i];
-        f.comp = (Condition::Comp)(uint8_t)data.comp;
+        f.comp = Condition::Comp(uint8_t(data.comp));
         f.value = data.v;
         ++i;
       }
@@ -166,7 +169,7 @@ void set(const SpecValueSerial& spec, DB::Specs::Value& dbspec) {
     }
   }
 
-  dbspec.comp = (Condition::Comp)(uint8_t)spec.comp;
+  dbspec.comp = Condition::Comp(uint8_t(spec.comp));
   dbfields.encode(dbspec);
 }
 
@@ -218,15 +221,15 @@ void set(const DB::Schema::Ptr& dbschema, Schema& schema) {
   schema.__set_col_name(dbschema->col_name);
 
   schema.__set_col_seq(
-    (KeySeq::type)(uint8_t)dbschema->col_seq);
+    KeySeq::type(uint8_t(dbschema->col_seq)));
   schema.__set_col_type(
-    (ColumnType::type)(uint8_t)dbschema->col_type);
+    ColumnType::type(uint8_t(dbschema->col_type)));
 
   schema.__set_cell_versions(dbschema->cell_versions);
   schema.__set_cell_ttl(dbschema->cell_ttl);
 
   schema.__set_blk_encoding(
-    (EncodingType::type)(uint8_t)dbschema->blk_encoding);
+    EncodingType::type(uint8_t(dbschema->blk_encoding)));
   schema.__set_blk_size(dbschema->blk_size);
   schema.__set_blk_cells(dbschema->blk_cells);
 
@@ -250,9 +253,9 @@ void set(const Schema& schema, DB::Schema::Ptr& dbschema) {
     dbschema->col_name = schema.col_name;
 
   if(schema.__isset.col_seq)
-    dbschema->col_seq = (DB::Types::KeySeq)(uint8_t)schema.col_seq;
+    dbschema->col_seq = DB::Types::KeySeq(uint8_t(schema.col_seq));
   if(schema.__isset.col_type)
-    dbschema->col_type = (DB::Types::Column)(uint8_t)schema.col_type;
+    dbschema->col_type = DB::Types::Column(uint8_t(schema.col_type));
 
   if(schema.__isset.cell_versions)
     dbschema->cell_versions = schema.cell_versions;
@@ -260,7 +263,7 @@ void set(const Schema& schema, DB::Schema::Ptr& dbschema) {
     dbschema->cell_ttl = schema.cell_ttl;
 
   if(schema.__isset.blk_encoding)
-    dbschema->blk_encoding = (DB::Types::Encoder)(uint8_t)schema.blk_encoding;
+    dbschema->blk_encoding = DB::Types::Encoder(uint8_t(schema.blk_encoding));
   if(schema.__isset.blk_size)
     dbschema->blk_size = schema.blk_size;
   if(schema.__isset.blk_cells)

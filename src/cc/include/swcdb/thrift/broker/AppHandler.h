@@ -237,7 +237,7 @@ class AppHandler final : virtual public BrokerIf {
     DB::Schema::Ptr dbschema = DB::Schema::make();
     Converter::set(schema, dbschema);
     mng_column(
-      (Comm::Protocol::Mngr::Req::ColumnMng::Func)(uint8_t)func,
+      Comm::Protocol::Mngr::Req::ColumnMng::Func(uint8_t(func)),
       dbschema
     );
   }
@@ -410,7 +410,7 @@ class AppHandler final : virtual public BrokerIf {
         col = req->columns->get_col(cid);
       }
       for(auto& cell : col_cells.second) {
-        dbcell.flag = (uint8_t)cell.f;
+        dbcell.flag = uint8_t(cell.f);
         dbcell.key.read(cell.k);
         dbcell.control = 0;
         if(cell.__isset.ts)
@@ -419,7 +419,8 @@ class AppHandler final : virtual public BrokerIf {
           dbcell.set_time_order_desc(cell.ts_desc);
 
         cell.__isset.encoder
-          ? dbcell.set_value((DB::Types::Encoder)(uint8_t)cell.encoder, cell.v)
+          ? dbcell.set_value(
+              DB::Types::Encoder(uint8_t(cell.encoder)), cell.v)
           : dbcell.set_value(cell.v);
 
         col->add(dbcell);
@@ -459,7 +460,7 @@ class AppHandler final : virtual public BrokerIf {
         col = req->columns->get_col(cid);
       }
       for(auto& cell : col_cells.second) {
-        dbcell.flag = (uint8_t)cell.f;
+        dbcell.flag = uint8_t(cell.f);
         dbcell.key.read(cell.k);
         dbcell.control = 0;
         if(cell.__isset.ts)
@@ -487,8 +488,10 @@ class AppHandler final : virtual public BrokerIf {
         for(auto& fields : cell.v) {
           if(fields.__isset.v_int64)
             wfields.add(fields.field_id, fields.v_int64);
-          if(fields.__isset.v_double)
-            wfields.add(fields.field_id, (long double)fields.v_double);
+          if(fields.__isset.v_double) {
+            long double v(fields.v_double);
+            wfields.add(fields.field_id, v);
+          }
           if(!fields.v_bytes.empty())
             wfields.add(fields.field_id, fields.v_bytes);
           if(!fields.v_key.empty()) {
@@ -505,8 +508,8 @@ class AppHandler final : virtual public BrokerIf {
         }
 
         cell.__isset.encoder
-          ? dbcell.set_value((DB::Types::Encoder)(uint8_t)cell.encoder,
-                              wfields.base, wfields.fill() )
+          ? dbcell.set_value(DB::Types::Encoder(uint8_t(cell.encoder)),
+                             wfields.base, wfields.fill())
           : dbcell.set_value(wfields.base, wfields.fill(), false);
 
         col->add(dbcell);
@@ -570,7 +573,7 @@ class AppHandler final : virtual public BrokerIf {
       dbpatterns.resize(spec.patterns.size());
       size_t i = 0;
       for(auto& pattern : spec.patterns) {
-        dbpatterns[i].comp  = (Condition::Comp)(uint8_t)pattern.comp;
+        dbpatterns[i].comp  = Condition::Comp(uint8_t(pattern.comp));
         dbpatterns[i].value = pattern.value;
         ++i;
       }
@@ -724,11 +727,7 @@ class AppHandler final : virtual public BrokerIf {
             cell.c = schema->col_name;
             dbcell->key.convert_to(cell.k);
             cell.ts = dbcell->timestamp;
-            if(dbcell->vlen) {
-              StaticBuffer v;
-              dbcell->get_value(v);
-              cell.v.append((const char*)v.base, v.size);
-            }
+            dbcell->get_value(cell.v);
           }
         }
       }
@@ -772,11 +771,7 @@ class AppHandler final : virtual public BrokerIf {
             auto& cell = rcells[c++];
             dbcell->key.convert_to(cell.k);
             cell.ts = dbcell->timestamp;
-            if(dbcell->vlen) {
-              StaticBuffer v;
-              dbcell->get_value(v);
-              cell.v.append((const char*)v.base, v.size);
-            }
+            dbcell->get_value(cell.v);
           }
         }
       }
@@ -830,11 +825,7 @@ class AppHandler final : virtual public BrokerIf {
             auto& cell = it->cells.emplace_back();
             cell.c = schema->col_name;
             cell.ts = dbcell->timestamp;
-            if(dbcell->vlen) {
-              StaticBuffer v;
-              dbcell->get_value(v);
-              cell.v.append((const char*)v.base, v.size);
-            }
+            dbcell->get_value(cell.v);
           }
         }
       }
@@ -884,11 +875,7 @@ class AppHandler final : virtual public BrokerIf {
             auto& cell = fraction_cells->cells.emplace_back();
             cell.c = schema->col_name;
             cell.ts = dbcell->timestamp;
-            if(dbcell->vlen) {
-              StaticBuffer v;
-              dbcell->get_value(v);
-              cell.v.append((const char*)v.base, v.size);
-            }
+            dbcell->get_value(cell.v);
           }
         }
       }

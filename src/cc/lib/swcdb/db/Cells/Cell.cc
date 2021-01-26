@@ -200,6 +200,15 @@ void Cell::get_value(StaticBuffer& v, bool owner) const {
   }
 }
 
+void Cell::get_value(std::string& v) const {
+  v.clear();
+  if(vlen) {
+    StaticBuffer _v;
+    get_value(_v);
+    v.append(reinterpret_cast<const char*>(_v.base), _v.size);
+  }
+}
+
 void Cell::set_counter(uint8_t op, int64_t v, Types::Column typ, int64_t rev) {
   _free();
   own = true;
