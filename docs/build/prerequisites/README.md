@@ -99,6 +99,7 @@ mkdir swcdb;
 _**The following Environments with installation/setup information of prerequisites are available:**_
 
 * [Debian/Ubuntu](environment/debian_ubuntu/)
+* [Archlinux](environment/archlinux/)
 * [Linux From Scratch](environment/linux_from_scratch/)
 
 

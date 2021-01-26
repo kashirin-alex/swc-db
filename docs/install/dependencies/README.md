@@ -27,3 +27,26 @@ apt-get install -y \
 ```
 
 
+## on Archlinux
+
+All 3rd-part dependencies are available from the os-distribution.
+
+_Update your repositories if outdated._
+```bash
+pacman -Syu;
+```
+
+_Install the Libraries_
+```bash
+pacman -S \
+  snappy \
+  re2 \
+  gperftools \
+  boost \
+  libevent \
+  thrift;
+```
+
+
+
+

@@ -193,7 +193,12 @@ table inet filter {
 
 
 #### 5. Applying the nftables rules with the system start
-Create and Apply '/etc/init.d/nft' with nft loading the Cluster Rules.
+* A case of service based, replace the config file, expected to be the `/etc/nftables.conf`, which is loaded by the `systemctl status nftables` with the Cluster Rules `/YourPathTo/nftable/rules.nft`
+```bash
+rm -f /etc/nftables.conf; ln -s /YourPathTo/nftable/rules.nft /etc/nftables.conf;
+```
+
+* A case of scripts loaded from `/etc/init.d/`. Create and Apply '/etc/init.d/nft' with nft loading the Cluster Rules.
 ```bash
 echo '#! /bin/sh' > /etc/init.d/nft;
 echo "nft -f /YourPathTo/nftables/rules.nft;" >> /etc/init.d/nft;
