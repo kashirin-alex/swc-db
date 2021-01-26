@@ -498,12 +498,16 @@ bool ne(const uint8_t* p1, uint32_t p1_len,
 
 extern SWC_CAN_INLINE
 bool re(const re2::RE2& regex, const char* v, uint32_t v_len) {
+  if(!v || !v_len)
+    return false;
   return re2::RE2::PartialMatch(re2::StringPiece(v, v_len), regex);
 }
 
 extern SWC_CAN_INLINE
 bool re(const uint8_t* p1, uint32_t p1_len,
         const uint8_t* p2, uint32_t p2_len) {
+  if(!p1 || !p1_len)
+    return !p2 || !p2_len;
   return re(
     re2::RE2(
       re2::StringPiece(reinterpret_cast<const char*>(p1), p1_len)),

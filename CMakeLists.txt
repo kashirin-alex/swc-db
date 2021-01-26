@@ -69,10 +69,21 @@ SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DASIO_STANDALONE -DASIO_NO_DEPRECATED"
 
 SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror -Wextra -Wpedantic") # -Weffc++
 SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wformat -Wformat-security")
-SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wsuggest-override -Wuseless-cast -Wold-style-cast -Wnoexcept")
+SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wnoexcept")
+SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wcast-align -Wuseless-cast -Wold-style-cast")
+SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wsuggest-override -Wnon-virtual-dtor")
 
-SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wduplicated-cond -Wduplicated-branches -Wmissing-attributes -Wlogical-op")
+SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wduplicated-cond -Wduplicated-branches -Wlogical-op")
 SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wstrict-null-sentinel -Wzero-as-null-pointer-constant")
+SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wnull-dereference -Wno-error=null-dereference") # -Walloc-zero
+
+## additional considerations
+# SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Woverloaded-virtual")
+# use 'default_*' base methods and pure for override calling 'default_*'
+# -Wsuggest-final-types -Wsuggest-final-methods
+
+# gcc 10+, -Wredundant-tags -Wmismatched-tags
+##
 
 if(SWC_MALLOC_NOT_INSISTENT)
   SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DSWC_MALLOC_NOT_INSISTENT")

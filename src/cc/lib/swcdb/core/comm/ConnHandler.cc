@@ -494,7 +494,8 @@ SocketLayer* ConnHandlerPlain::socket_layer() noexcept {
   return &m_sock.lowest_layer();
 }
 
-# pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
 void ConnHandlerPlain::do_async_write(
         const std::vector<asio::const_buffer>& buffers,
         const std::function<void(const asio::error_code&, uint32_t)>& hdlr)
@@ -612,7 +613,8 @@ SocketLayer* ConnHandlerSSL::socket_layer() noexcept {
   return &m_sock.lowest_layer();
 }
 
-# pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
 void ConnHandlerSSL::do_async_write(
         const std::vector<asio::const_buffer>& buffers,
         const std::function<void(const asio::error_code&, uint32_t)>& hdlr)

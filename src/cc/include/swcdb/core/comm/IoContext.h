@@ -58,7 +58,8 @@ class IoContext final : public std::enable_shared_from_this<IoContext> {
 
   Executor executor();
 
-# pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
   template <typename T_Handler>
   SWC_CAN_INLINE
   void post(T_Handler&& handler) {

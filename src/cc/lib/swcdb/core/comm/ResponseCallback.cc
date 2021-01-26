@@ -13,8 +13,8 @@ namespace SWC { namespace Comm {
 void ResponseCallback::run() { }
 
 bool ResponseCallback::expired(int64_t within) const {
-  return  (m_ev && m_ev->expired(within)) || 
-          (m_conn && !m_conn->is_open());
+  return  (m_ev != nullptr && m_ev->expired(within)) ||
+          (m_conn != nullptr && !m_conn->is_open());
 }
 
 void ResponseCallback::response(int& err) {

@@ -55,6 +55,8 @@ bool
 Fraction::_is_matching(const uint8_t* ptr, uint32_t len) {
   switch(comp) {
     case Condition::RE: {
+      if(empty())
+        return !ptr|| !len;
       if(!compiled)
         compiled = new re2::RE2(re2::StringPiece(data(), size()));
       return Condition::re(

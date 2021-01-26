@@ -74,7 +74,7 @@ ADD_EXEC_TARGET(
 
   SHARED ${SHARED} ${THRIFT_CPP_LIBRARIES_SHARED}
   STATIC ${STATIC} ${THRIFT_CPP_LIBRARIES_STATIC}
-  FLAGS  ${FLAGS} -Wno-suggest-override -Wno-old-style-cast -Wno-noexcept
+  FLAGS  ${FLAGS} -Wno-error=suggest-override -Wno-error=old-style-cast -Wno-error=noexcept
 )
 endif()
 

@@ -579,10 +579,12 @@ function(ADD_LIB_TARGET)
   # OBJECT 
   add_library(obj_${OPT_NAME} OBJECT ${OPT_SRCS})
   set_property(TARGET obj_${OPT_NAME} PROPERTY POSITION_INDEPENDENT_CODE 1)
+  target_compile_options(obj_${OPT_NAME} PRIVATE ${OPT_FLAGS})
   
   # ARCHIVE - intermidiate form
   add_library(${OPT_NAME}-archive STATIC $<TARGET_OBJECTS:obj_${OPT_NAME}>)
   target_link_libraries(${OPT_NAME}-archive LINK_PRIVATE ${STATIC_TARGETS})
+  target_link_options(${OPT_NAME}-archive PRIVATE ${OPT_FLAGS})
   
   set_property(GLOBAL PROPERTY ${OPT_NAME}-ARCHIVE_SHARED   "${OPT_SHARED}")
   set_property(GLOBAL PROPERTY ${OPT_NAME}-ARCHIVE_STATIC   "${OPT_STATIC}")
@@ -593,11 +595,13 @@ function(ADD_LIB_TARGET)
   add_library(${OPT_NAME}-static STATIC $<TARGET_OBJECTS:obj_${OPT_NAME}>)
   SET_TARGET_PROPERTIES(${OPT_NAME}-static PROPERTIES OUTPUT_NAME ${OPT_NAME} CLEAN_DIRECT_OUTPUT 1)
   target_compile_options(${OPT_NAME}-static PRIVATE ${OPT_FLAGS})
+  target_link_options(${OPT_NAME}-static PRIVATE ${OPT_FLAGS})
 
   # SHARED LIBS
   add_library(${OPT_NAME}-shared SHARED $<TARGET_OBJECTS:obj_${OPT_NAME}>)
   SET_TARGET_PROPERTIES(${OPT_NAME}-shared PROPERTIES OUTPUT_NAME ${OPT_NAME} CLEAN_DIRECT_OUTPUT 1)
   target_compile_options(${OPT_NAME}-shared PRIVATE ${OPT_FLAGS})
+  target_link_options(${OPT_NAME}-shared PRIVATE ${OPT_FLAGS})
 
   
   # SHARED AND STATIC LIBS - WITH STATIC LINKING 
@@ -666,8 +670,9 @@ function(ADD_UTIL_TARGET)
   endif()
   
   add_executable(${OPT_NAME} ${OPT_SRCS})
-  target_link_libraries(${OPT_NAME} ${LINKED_LIBS} ${TARGETS_LINKED})
   target_compile_options(${OPT_NAME} PRIVATE ${OPT_FLAGS} ${MALLOC_FLAGS})
+  target_link_libraries(${OPT_NAME} ${LINKED_LIBS} ${TARGETS_LINKED})
+  target_link_options(${OPT_NAME} PRIVATE ${OPT_FLAGS})
 
   if(NOT INSTALL_TARGETS OR ${OPT_NAME} IN_LIST INSTALL_TARGETS)
     install(TARGETS ${OPT_NAME} RUNTIME DESTINATION bin)
@@ -714,8 +719,9 @@ function(ADD_EXEC_TARGET)
   endif()
   
   add_executable(${OPT_NAME} ${OPT_SRCS})
-  target_link_libraries(${OPT_NAME} ${LINKED_LIBS} ${TARGETS_LINKED})
   target_compile_options(${OPT_NAME} PRIVATE ${OPT_FLAGS} ${MALLOC_FLAGS})
+  target_link_libraries(${OPT_NAME} ${LINKED_LIBS} ${TARGETS_LINKED})
+  target_link_options(${OPT_NAME} PRIVATE ${OPT_FLAGS})
 
   if(NOT INSTALL_TARGETS OR ${OPT_NAME} IN_LIST INSTALL_TARGETS)
     install(TARGETS ${OPT_NAME} RUNTIME DESTINATION bin)
@@ -768,8 +774,9 @@ function(ADD_TEST_TARGET)
     endif ()
 
     add_executable(test-${OPT_NAME}-static ${OPT_SRCS} ${OPT_EXEC_DEPS})
-    target_link_libraries(test-${OPT_NAME}-static ${STATIC_LINKING} ${STATIC_TARGETS})
     target_compile_options(test-${OPT_NAME}-static PRIVATE ${OPT_FLAGS} ${MALLOC_FLAGS})
+    target_link_libraries(test-${OPT_NAME}-static ${STATIC_LINKING} ${STATIC_TARGETS})
+    target_link_options(test-${OPT_NAME}-static PRIVATE ${OPT_FLAGS})
 
     if(OPT_EXEC_OPTS)
       foreach(exec_opt ${OPT_EXEC_OPTS})
@@ -795,8 +802,9 @@ function(ADD_TEST_TARGET)
     endif ()
 
     add_executable(test-${OPT_NAME}-shared ${OPT_SRCS} ${OPT_EXEC_DEPS})
-    target_link_libraries(test-${OPT_NAME}-shared ${SHARED_LINKING} ${SHARED_TARGETS})
     target_compile_options(test-${OPT_NAME}-shared PRIVATE ${OPT_FLAGS} ${MALLOC_FLAGS})
+    target_link_libraries(test-${OPT_NAME}-shared ${SHARED_LINKING} ${SHARED_TARGETS})
+    target_link_options(test-${OPT_NAME}-shared PRIVATE ${OPT_FLAGS})
     
     if(OPT_EXEC_OPTS)
       foreach(exec_opt ${OPT_EXEC_OPTS})
@@ -863,8 +871,9 @@ endif()
 
 
 add_executable(${OPT_NAME} ${OPT_SRCS})
-target_link_libraries(${OPT_NAME} ${TARGETS_LINKED} ${LINKED_LIBS})
 target_compile_options(${OPT_NAME} PRIVATE ${OPT_FLAGS} ${MALLOC_FLAGS})
+target_link_libraries(${OPT_NAME} ${TARGETS_LINKED} ${LINKED_LIBS})
+target_link_options(${OPT_NAME} PRIVATE ${OPT_FLAGS})
 
 endfunction()
 # END ADD_TEST_EXEC

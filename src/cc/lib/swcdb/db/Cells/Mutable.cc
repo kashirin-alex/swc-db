@@ -355,7 +355,11 @@ void Mutable::print(std::ostream& out, bool with_cells) const {
 
 
 void Mutable::get(int32_t idx, DB::Cell::Key& key) const {
-  key.copy((*ConstIterator(&buckets, idx < 0 ? size()+idx : idx).item)->key);
+  if((idx < 0 && size() < size_t(-idx)) || size_t(idx) >= size())
+    return;
+  auto it = ConstIterator(&buckets, idx < 0 ? size() + idx : idx);
+  if(it)
+    key.copy((*it.item)->key);
 }
 
 bool Mutable::get(const DB::Cell::Key& key, Condition::Comp comp,
@@ -793,9 +797,10 @@ size_t Mutable::_narrow(const DB::Cell::Key& key, size_t offset) const {
   }
 
   try_narrow:
-    if(DB::KeySeq::compare(
-        key_seq, (*ConstIterator(&buckets, offset).item)->key, key)
-        == Condition::GT) {
+    auto it = ConstIterator(&buckets, offset);
+    if(!it)
+      return 0;
+    if(DB::KeySeq::compare(key_seq, (*it.item)->key, key) == Condition::GT) {
       if(step < narrow_sz + max_revs)
         return offset;
       if(offset + (step >>= 1) >= _size)

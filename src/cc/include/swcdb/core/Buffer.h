@@ -44,7 +44,7 @@ struct Buffer {
   }
 
   Buffer(size_t sz)
-        : own(sz), size(sz), base(own ? allocate(size) : nullptr) {
+        : own(sz), size(sz), base(size ? allocate(size) : nullptr) {
   }
 
   Buffer(value_type* data, size_t sz, bool take_ownership) SWC_NOEXCEPT

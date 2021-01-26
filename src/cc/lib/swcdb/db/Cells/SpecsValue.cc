@@ -177,6 +177,8 @@ bool Value::is_matching_plain(const Cells::Cell& cell) const {
   cell.get_value(v);
   switch(comp) {
     case Condition::RE: {
+      if(!data || !size)
+        return !v.base || !v.size;
       if(!matcher)
         matcher = new MatcherPlainRE(data, size);
       return Condition::re(
