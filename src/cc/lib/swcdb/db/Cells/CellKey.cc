@@ -76,7 +76,7 @@ void Key::add(const char* fraction, uint32_t len) {
   add(reinterpret_cast<const uint8_t*>(fraction), len);
 }
 
-void Key::add(const uint8_t* fraction, uint32_t len) {
+void Key::add(const uint8_t* fraction, uint24_t len) {
   const uint8_t* old = data;
   uint32_t old_size = size;
 
@@ -141,17 +141,14 @@ void Key::insert(uint32_t idx, const char* fraction, uint32_t len) {
   insert(idx, reinterpret_cast<const uint8_t*>(fraction), len);
 }
 
-void Key::insert(uint32_t idx, const uint8_t* fraction, uint32_t len) {
+void Key::insert(uint32_t idx, const uint8_t* fraction, uint24_t len) {
   if(!data || idx >= count) {
     add(fraction, len);
     return;
   }
 
   uint32_t prev_size = size;
-  uint32_t f_size = Serialization::encoded_length_vi24(len) + len;
-  size += f_size;
-  if(prev_size > size)
-    SWC_THROW_OVERRUN("Cell::Key");
+  size += Serialization::encoded_length_vi24(len) + len;
 
   uint8_t* data_tmp = new uint8_t[size];
   const uint8_t* ptr_tmp = data;

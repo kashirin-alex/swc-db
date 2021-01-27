@@ -53,7 +53,7 @@ class Key final {
 
   void add(const char* fraction, uint32_t len);
 
-  void add(const uint8_t* fraction, uint32_t len);
+  void add(const uint8_t* fraction, uint24_t len);
 
   void add(const std::vector<std::string>::const_iterator cbegin,
            const std::vector<std::string>::const_iterator cend);
@@ -66,7 +66,7 @@ class Key final {
 
   void insert(uint32_t idx, const char* fraction, uint32_t len);
 
-  void insert(uint32_t idx, const uint8_t* fraction, uint32_t len);
+  void insert(uint32_t idx, const uint8_t* fraction, uint24_t len);
 
   void remove(uint32_t idx, bool recursive=false);
 
