@@ -315,7 +315,6 @@ def start_fsbrokers(c):
             swcdb_print("start-fsbrokers", c, c.run(
                 " ".join([
                     'source /etc/profile;', 
-                    'source ~/.bashrc;',
                     swcdb_install_path+"/bin/swcdbFsBroker",
                     ((" --host=" + host) if host else "".join([" --addr=" + addr for addr in addrs]) if addrs else "")
                 ] + opts),
