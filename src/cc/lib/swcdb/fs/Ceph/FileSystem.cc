@@ -236,13 +236,16 @@ bool FileSystemCeph::exists(int& err, const std::string& name) {
 	struct ceph_statx stx;
   err = ceph_statx(m_filesystem, abspath.c_str(), &stx,
                    CEPH_STATX_CTIME, AT_SYMLINK_NOFOLLOW);
-  if(err < 0)
+  if(err)
     err = -err;
   else if(errno)
-    err = errno == ENOENT ? Error::OK : errno;
+    err = errno;
+  bool state = !err;
+  if(err == ENOENT)
+    err = Error::OK;
   SWC_LOGF(LOG_DEBUG, "exists state='%d' err='%d' path='%s'",
-            (int)!err, err, abspath.c_str());
-  return !err;
+            state, err, abspath.c_str());
+  return state;
 }
 
 void FileSystemCeph::remove(int& err, const std::string& name) {
@@ -510,8 +513,8 @@ size_t FileSystemCeph::read(int& err, SmartFd::Ptr& smartfd,
 
   size_t ret;
   errno = 0;
-  ssize_t nread = ceph_read(m_filesystem, smartfd->fd(), (char*)dst, amount,
-                            smartfd->pos());
+  ssize_t nread = ceph_read(m_filesystem, smartfd->fd(),
+                            static_cast<char*>(dst), amount, smartfd->pos());
   if(nread < 0)
     err = -nread;
   else if(errno)
@@ -540,8 +543,8 @@ size_t FileSystemCeph::pread(int& err, SmartFd::Ptr& smartfd,
 
   size_t ret;
   errno = 0;
-  ssize_t nread = ceph_read(m_filesystem, smartfd->fd(), (char*)dst, amount,
-                            offset);
+  ssize_t nread = ceph_read(m_filesystem, smartfd->fd(),
+                            static_cast<char*>(dst), amount, offset);
   if(nread < 0)
     err = -nread;
   else if(errno)
@@ -572,8 +575,8 @@ size_t FileSystemCeph::append(int& err, SmartFd::Ptr& smartfd,
   errno = 0;
 
   nwritten = ceph_write(m_filesystem, smartfd->fd(),
-                        (const char*)buffer.base, buffer.size,
-	                      smartfd->pos());
+                        reinterpret_cast<const char*>(buffer.base),
+                        buffer.size, smartfd->pos());
   if(nwritten < 0)
     err = -nwritten;
   else if(errno)

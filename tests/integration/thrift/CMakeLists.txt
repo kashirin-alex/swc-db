@@ -15,7 +15,7 @@ if(THRIFT_CPP_FOUND)
     NAME      thrift_cc_client
     SRCS      client.cc
     TARGETS   swcdb_thrift
-    FLAGS     -Wno-error=suggest-override -Wno-error=old-style-cast -Wno-error=noexcept
+    FLAGS     -Wno-error=suggest-override -Wno-error=noexcept
   )
 endif()
 
@@ -31,7 +31,7 @@ if(THRIFT_C_FOUND)
 
   # gcc-10.2, pcre/sljit/sljitNativeX86_64.c:183:12: error: writing 1 byte into a region of size 0
   SET (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-stringop-overflow")
-
+  # set(TEST_LINKING SHARED)
   ADD_TEST_TARGET(
     NAME      thrift_c_client_c
     SRCS      client.c
