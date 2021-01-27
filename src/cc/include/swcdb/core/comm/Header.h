@@ -18,6 +18,7 @@ struct Header final {
   static const uint8_t PROTOCOL_VERSION = 1;
   static const uint8_t PREFIX_LENGTH    = 2;
   static const uint8_t FIXED_LENGTH     = PREFIX_LENGTH + 16;
+  static const uint8_t MAX_LENGTH       = FIXED_LENGTH + 15 * 2;
 
   enum Flags : uint8_t {
     FLAGS_BIT_REQUEST          = 0x1, //!< Request message
@@ -60,15 +61,14 @@ struct Header final {
   uint8_t     header_len;   //!< Length of header
 
   uint8_t     flags;        //!< Flags
+  uint8_t     buffers;      //!< number of buffers from 0 to 2 (data+data_ext)
   uint32_t    id;           //!< Request ID
   uint32_t    timeout_ms;   //!< Request timeout
+  uint32_t    checksum;     //!< Header checksum (excl. it self)
   uint16_t    command;      //!< Request command number
-  uint8_t     buffers;      //!< number of buffers from 0 to 2 (data+data_ext)
 
   BufferInfo  data;         //!< Data Buffer
   BufferInfo  data_ext;     //!< Data Extended Buffer
-
-  uint32_t    checksum;     //!< Header checksum (excl. it self)
 
 } __attribute__((packed));
 

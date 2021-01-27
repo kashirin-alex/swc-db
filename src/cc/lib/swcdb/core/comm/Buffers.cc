@@ -27,7 +27,7 @@ Buffers::Ptr Buffers::make(const Serializable& params, uint32_t reserve) {
 }
 
 SWC_SHOULD_INLINE
-Buffers::Ptr Buffers::make(const Serializable& params, StaticBuffer& buffer, 
+Buffers::Ptr Buffers::make(const Serializable& params, StaticBuffer& buffer,
                            uint32_t reserve) {
   return std::make_shared<Buffers>(params, buffer, reserve);
 }
@@ -46,7 +46,7 @@ Buffers::Ptr Buffers::make(const Serializable& params, uint32_t reserve,
 }
 
 SWC_SHOULD_INLINE
-Buffers::Ptr Buffers::make(const Serializable& params, StaticBuffer& buffer, 
+Buffers::Ptr Buffers::make(const Serializable& params, StaticBuffer& buffer,
                            uint32_t reserve,
                            uint64_t cmd, uint32_t timeout) {
   return std::make_shared<Buffers>(params, buffer, reserve, cmd, timeout);
@@ -60,20 +60,20 @@ Buffers::Ptr Buffers::make(const Event::Ptr& ev, uint32_t reserve) {
 }
 
 SWC_SHOULD_INLINE
-Buffers::Ptr Buffers::make(const Event::Ptr& ev, 
+Buffers::Ptr Buffers::make(const Event::Ptr& ev,
                            const Serializable& params, uint32_t reserve) {
   return std::make_shared<Buffers>(ev, params, reserve);
 }
 
 SWC_SHOULD_INLINE
-Buffers::Ptr Buffers::make(const Event::Ptr& ev, 
-                           const Serializable& params, StaticBuffer& buffer, 
+Buffers::Ptr Buffers::make(const Event::Ptr& ev,
+                           const Serializable& params, StaticBuffer& buffer,
                            uint32_t reserve) {
   return std::make_shared<Buffers>(ev, params, buffer, reserve);
 }
 
 SWC_SHOULD_INLINE
-Buffers::Ptr Buffers::make(const Event::Ptr& ev, 
+Buffers::Ptr Buffers::make(const Event::Ptr& ev,
                            StaticBuffer& buffer, uint32_t reserve) {
   return std::make_shared<Buffers>(ev, buffer, reserve);
 }
@@ -91,7 +91,7 @@ Buffers::create_error_message(const Event::Ptr& ev,
 
 
 /* Init Common */
-Buffers::Buffers(uint32_t reserve) 
+Buffers::Buffers(uint32_t reserve)
                 : expiry_ms(0) {
   if(reserve)
     set_data(reserve);
@@ -102,8 +102,8 @@ Buffers::Buffers(const Serializable& params, uint32_t reserve)
   set_data(params, reserve);
 }
 
-Buffers::Buffers(const Serializable& params, StaticBuffer& buffer, 
-                 uint32_t reserve) 
+Buffers::Buffers(const Serializable& params, StaticBuffer& buffer,
+                 uint32_t reserve)
                 : expiry_ms(0), buf_ext(buffer) {
   set_data(params, reserve);
 }
@@ -138,21 +138,21 @@ Buffers::Buffers(const Event::Ptr& ev, uint32_t reserve)
     set_data(reserve);
 }
 
-Buffers::Buffers(const Event::Ptr& ev, 
+Buffers::Buffers(const Event::Ptr& ev,
                  const Serializable& params, uint32_t reserve)
                 : header(ev->header), expiry_ms(ev->expiry_ms) {
   set_data(params, reserve);
 }
 
-Buffers::Buffers(const Event::Ptr& ev, 
-                 const Serializable& params, StaticBuffer& buffer, 
-                 uint32_t reserve) 
-                : header(ev->header), expiry_ms(ev->expiry_ms), 
+Buffers::Buffers(const Event::Ptr& ev,
+                 const Serializable& params, StaticBuffer& buffer,
+                 uint32_t reserve)
+                : header(ev->header), expiry_ms(ev->expiry_ms),
                   buf_ext(buffer) {
   set_data(params, reserve);
 }
 
-Buffers::Buffers(const Event::Ptr& ev, 
+Buffers::Buffers(const Event::Ptr& ev,
                  StaticBuffer& buffer, uint32_t reserve)
                 : header(ev->header), expiry_ms(ev->expiry_ms),
                   buf_ext(buffer) {
@@ -168,7 +168,7 @@ void Buffers::set_data(uint32_t sz) {
     header.data.reset();
 
   buf_data.reallocate(sz);
-  data_ptr = buf_data.base; 
+  data_ptr = buf_data.base;
 }
 
 void Buffers::set_data(const Serializable& params, uint32_t reserve) {
@@ -193,16 +193,15 @@ bool Buffers::expired() const {
 }
 
 SWC_SHOULD_INLINE
-void Buffers::write_header() {
-  uint8_t len;
-  while((len = header.encoded_length()) == 0);
-  buf_header.reallocate(len);
-  uint8_t* buf = buf_header.base;
+uint8_t Buffers::write_header() {
+  uint8_t len = header.encoded_length();
+  uint8_t* buf = buf_header;
   header.encode(&buf);
+  return len;
 }
 
 std::vector<asio::const_buffer> Buffers::get_buffers() {
-  write_header();
+  uint8_t buf_header_len = write_header();
 
   size_t nchunks = 1;
 
@@ -215,12 +214,12 @@ std::vector<asio::const_buffer> Buffers::get_buffers() {
   size_t buf_ext_chunks = 0;
   bool buf_ext_not_aligned = false;
   if(buf_ext.size)
-    nchunks += (buf_ext_chunks += buf_ext.size / BUFFER_CHUNK_SZ) 
+    nchunks += (buf_ext_chunks += buf_ext.size / BUFFER_CHUNK_SZ)
             + (buf_ext_not_aligned = buf_ext.size % BUFFER_CHUNK_SZ);
 
   std::vector<asio::const_buffer> buffers(nchunks);
   auto it = buffers.begin();
-  *it = asio::const_buffer(buf_header.base, buf_header.size);
+  *it = asio::const_buffer(buf_header, buf_header_len);
 
   if(buf_data.size) {
     auto p = buf_data.base;

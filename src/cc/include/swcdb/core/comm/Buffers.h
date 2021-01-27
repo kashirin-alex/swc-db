@@ -29,17 +29,17 @@ class Buffers final {
 
   static Ptr make(const Serializable& params, uint32_t reserve=0);
 
-  static Ptr make(const Serializable& params, StaticBuffer& buffer, 
+  static Ptr make(const Serializable& params, StaticBuffer& buffer,
                   uint32_t reserve=0);
 
   static Ptr make(StaticBuffer& buffer, uint32_t reserve=0);
 
   /* Make Request */
-  static Ptr make(const Serializable& params, uint32_t reserve, 
+  static Ptr make(const Serializable& params, uint32_t reserve,
                   uint64_t cmd, uint32_t timeout);
 
-  static Ptr make(const Serializable& params, StaticBuffer& buffer, 
-                  uint32_t reserve, 
+  static Ptr make(const Serializable& params, StaticBuffer& buffer,
+                  uint32_t reserve,
                   uint64_t cmd, uint32_t timeout);
 
   /* Make Response */
@@ -49,7 +49,7 @@ class Buffers final {
                   const Serializable& params, uint32_t reserve=0);
 
   static Ptr make(const Event::Ptr& ev,
-                  const Serializable& params, StaticBuffer& buffer, 
+                  const Serializable& params, StaticBuffer& buffer,
                   uint32_t reserve=0);
 
   static Ptr make(const Event::Ptr& ev,
@@ -63,17 +63,17 @@ class Buffers final {
 
   Buffers(const Serializable& params, uint32_t reserve=0);
 
-  Buffers(const Serializable& params, StaticBuffer& buffer, 
+  Buffers(const Serializable& params, StaticBuffer& buffer,
           uint32_t reserve=0);
 
   Buffers(StaticBuffer& buffer, uint32_t reserve=0);
 
   /* Init Request */
-  Buffers(const Serializable& params, uint32_t reserve, 
+  Buffers(const Serializable& params, uint32_t reserve,
           uint64_t cmd, uint32_t timeout);
-  
-  Buffers(const Serializable& params, StaticBuffer& buffer, 
-          uint32_t reserve, 
+
+  Buffers(const Serializable& params, StaticBuffer& buffer,
+          uint32_t reserve,
           uint64_t cmd, uint32_t timeout);
 
   /* Init Response */
@@ -86,7 +86,7 @@ class Buffers final {
           StaticBuffer& buffer, uint32_t reserve=0);
 
   Buffers(const Event::Ptr& ev,
-          const Serializable& params, StaticBuffer& buffer, 
+          const Serializable& params, StaticBuffer& buffer,
           uint32_t reserve=0);
 
   ~Buffers();
@@ -99,7 +99,7 @@ class Buffers final {
 
   bool expired() const;
 
-  void write_header();
+  uint8_t write_header();
 
   std::vector<asio::const_buffer> get_buffers();
 
@@ -113,7 +113,7 @@ class Buffers final {
 
   private:
 
-  StaticBuffer  buf_header;
+  uint8_t       buf_header[Header::MAX_LENGTH];
   StaticBuffer  buf_data;
   StaticBuffer  buf_ext;
 
@@ -127,6 +127,6 @@ class Buffers final {
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/core/comm/Buffers.cc"
-#endif 
+#endif
 
 #endif // swcdb_core_comm_Buffers_h
