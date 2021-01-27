@@ -51,7 +51,7 @@ void Header::set(uint64_t cmd, uint32_t timeout) {
 }
 
 SWC_SHOULD_INLINE
-size_t Header::encoded_length() {
+uint8_t Header::encoded_length() {
   header_len = FIXED_LENGTH;
   buffers = 0;
   if(data.size) {

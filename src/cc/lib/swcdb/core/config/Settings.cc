@@ -86,7 +86,7 @@ void Settings::init_options() {
     ("swc.logging.level,l",
       g_enum(
         LOG_INFO,
-        [](int value){ Core::logger.set_level(value); },
+        [](int value) noexcept { Core::logger.set_level(value); },
         Core::logger.from_string,
         Core::logger.repr
       ),

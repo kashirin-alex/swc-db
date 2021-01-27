@@ -150,6 +150,8 @@ void Key::insert(uint32_t idx, const uint8_t* fraction, uint32_t len) {
   uint32_t prev_size = size;
   uint32_t f_size = Serialization::encoded_length_vi24(len) + len;
   size += f_size;
+  if(prev_size > size)
+    SWC_THROW_OVERRUN("Cell::Key");
 
   uint8_t* data_tmp = new uint8_t[size];
   const uint8_t* ptr_tmp = data;
@@ -168,7 +170,7 @@ void Key::insert(uint32_t idx, const uint8_t* fraction, uint32_t len) {
       break;
     }
     ptr_tmp += Serialization::decode_vi24(&ptr_tmp);
-    offset += ptr_tmp-data;
+    offset += ptr_tmp - data;
   }
 
   if(prev_size-offset)

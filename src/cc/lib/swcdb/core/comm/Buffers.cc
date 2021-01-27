@@ -194,8 +194,10 @@ bool Buffers::expired() const {
 
 SWC_SHOULD_INLINE
 void Buffers::write_header() {
-  buf_header.reallocate(header.encoded_length());
-  uint8_t *buf = buf_header.base;
+  uint8_t len;
+  while((len = header.encoded_length()) == 0);
+  buf_header.reallocate(len);
+  uint8_t* buf = buf_header.base;
   header.encode(&buf);
 }
 

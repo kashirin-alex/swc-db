@@ -1,4 +1,4 @@
-/* 
+/*
  * SWC-DB© Copyright since 2019 Alex Kashirin <kashirin.alex@gmail.com>
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
@@ -24,7 +24,7 @@ struct Header final {
     FLAGS_BIT_IGNORE_RESPONSE  = 0x2, //!< Response should be ignored
     FLAGS_BIT_URGENT           = 0x4, //!< Request is urgent
   };
-  
+
   enum FlagMask : uint8_t {
     FLAGS_MASK_REQUEST          = 0xE, //!< Request message bit
     FLAGS_MASK_IGNORE_RESPONSE  = 0xD, //!< Response should be ignored bit
@@ -42,7 +42,7 @@ struct Header final {
 
   void set(uint64_t cmd=0, uint32_t timeout=0);
 
-  size_t encoded_length();
+  uint8_t encoded_length();
 
   void encode(uint8_t** bufp) const;
 
@@ -79,6 +79,6 @@ struct Header final {
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/core/comm/Header.cc"
-#endif 
+#endif
 
 #endif // swcdb_core_comm_Header_h

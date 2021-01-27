@@ -27,8 +27,8 @@ void BufferInfo::reset() {
   chksum = 0;
 }
 
-size_t BufferInfo::encoded_length() const {
-  size_t sz = Serialization::encoded_length_vi32(size) + 5;
+uint8_t BufferInfo::encoded_length() const {
+  uint8_t sz = Serialization::encoded_length_vi32(size) + 5;
   if(encoder != Core::Encoder::Type::PLAIN)
     sz += Serialization::encoded_length_vi32(size_plain);
   return sz;

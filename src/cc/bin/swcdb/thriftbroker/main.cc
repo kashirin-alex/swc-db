@@ -125,7 +125,7 @@ int run() {
         new std::thread([app_ctx, is_plain, endpoint, server] {
           SWC_LOG_OUT(LOG_INFO, SWC_LOG_OSTREAM
             << "Listening On: " << endpoint
-            << " fd=" << (ssize_t)server->getServerTransport()->getSocketFD()
+            << " fd=" << server->getServerTransport()->getSocketFD()
             << ' ' << (is_plain ? "PLAIN" : "SECURE");
           );
 
@@ -133,7 +133,7 @@ int run() {
 
           SWC_LOG_OUT(LOG_INFO, SWC_LOG_OSTREAM
             << "Stopping to Listen On: " << endpoint
-            << " fd=" << (ssize_t)server->getServerTransport()->getSocketFD()
+            << " fd=" << server->getServerTransport()->getSocketFD()
             << ' ' << (is_plain ? "PLAIN" : "SECURE");
           );
           app_ctx->shutting_down(std::error_code(), SIGINT);
