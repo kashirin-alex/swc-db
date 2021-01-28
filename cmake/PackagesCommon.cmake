@@ -38,7 +38,18 @@ SET_DEPS(
 )
 
 
-if(USE_GNU_READLINE)
+if(NOT USE_GNU_READLINE)
+  SET_DEPS(
+    NAME      "EDITLINE" 
+    REQUIRED  FALSE 
+    LIB_PATHS "" INC_PATHS "" 
+    STATIC    libeditline.a
+    SHARED    editline 
+    INCLUDE   editline.h
+    INSTALL   TRUE
+  )
+endif()
+if(NOT EDITLINE_FOUND)
   SET_DEPS(
     NAME      "EDITLINE" 
     REQUIRED  TRUE 
@@ -46,16 +57,6 @@ if(USE_GNU_READLINE)
     STATIC    libreadline.a 
     SHARED    readline 
     INCLUDE   readline/readline.h readline/history.h
-    INSTALL   TRUE
-  )
-else()
-  SET_DEPS(
-    NAME      "EDITLINE" 
-    REQUIRED  TRUE 
-    LIB_PATHS "" INC_PATHS "" 
-    STATIC    libeditline.a
-    SHARED    editline 
-    INCLUDE   editline.h
     INSTALL   TRUE
   )
 endif()

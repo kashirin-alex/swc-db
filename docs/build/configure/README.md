@@ -11,7 +11,7 @@ sort: 3
 
 | CONFIG OPTION | DESCRIPTION | VALUE OPTIONS | DEFAULT VALUE |
 | ---  | --- | --- | --- |
-|O_LEVEL| Level of optimizations: <br/>  0: = -Os1 <br/>  1: = -O2s <br/>  2: += -flto -floop-interchange <br/>  3: = -O3 <br/>  4: += -flto -floop-interchange <br/>  5: += BUILD_LINKING=STATIC <br/>  6: += BUILD_LINKING_CORE=STATIC | 0-7 | 3 |
+|O_LEVEL| Level of optimizations: <br/>  0: = -Os <br/>  1: = -O2s <br/>  2: += -floop-interchange -flto -fuse-linker-plugin -ffat-lto-objects <br/>  3: = -O3 <br/>  4: += -flto -fuse-linker-plugin -ffat-lto-objects<br/>  5: += BUILD_LINKING=STATIC <br/>  6: += BUILD_LINKING_CORE=STATIC | 0-7 | 3 |
 |SWC_IMPL_SOURCE| when possible implement SWC-DB source-code | ON/OFF | OFF |
 |USE_GNU_READLINE| whether to use GNU libreadline | ON/OFF | OFF |
 |LOOKUP_INCLUDE_PATHS| additional paths to headers | posix-dir-path_LIST; | "/opt/local/include;/usr/local/include;usr/local/lib;/usr/include" |
