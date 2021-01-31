@@ -77,7 +77,7 @@ int Select::Rsp::error() {
 }
 
 
-Select::Select(bool notify)
+Select::Select(bool notify) noexcept
               : notify(notify), err(Error::OK),
                 completion(0) {
 }

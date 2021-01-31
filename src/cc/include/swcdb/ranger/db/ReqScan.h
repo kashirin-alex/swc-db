@@ -15,7 +15,7 @@ namespace SWC { namespace Ranger {
   
 class ReqScan  : public DB::Cells::ReqScan {
   public:
-  
+
   enum Type : uint8_t {
     QUERY,
     BLK_PRELOAD,
@@ -25,24 +25,25 @@ class ReqScan  : public DB::Cells::ReqScan {
   typedef std::shared_ptr<ReqScan>  Ptr;
 
   ReqScan(Type type=Type::QUERY, bool release_block=false, uint8_t readahead=1)
-          : type(type), 
-            release_block(release_block), readahead(readahead), 
-            block(nullptr) {
-  }
-        
-  ReqScan(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev, 
-          const DB::Cell::Key& range_begin, const DB::Cell::Key& range_end)
-          : DB::Cells::ReqScan(conn, ev, range_begin, range_end),
-            type(Type::QUERY), 
-            release_block(false), readahead(0), 
+          noexcept
+          : type(type),
+            release_block(release_block), readahead(readahead),
             block(nullptr) {
   }
 
-  ReqScan(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev, 
+  ReqScan(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev,
+          const DB::Cell::Key& range_begin, const DB::Cell::Key& range_end)
+          : DB::Cells::ReqScan(conn, ev, range_begin, range_end),
+            type(Type::QUERY),
+            release_block(false), readahead(0),
+            block(nullptr) {
+  }
+
+  ReqScan(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev,
           const DB::Specs::Interval& spec)
           : DB::Cells::ReqScan(conn, ev, spec),
-            type(Type::QUERY), 
-            release_block(false), 
+            type(Type::QUERY),
+            release_block(false),
             readahead((!spec.flags.limit || spec.flags.offset)//?>block_cells
                         ? 2 : spec.flags.limit > 1),
             block(nullptr) {
@@ -50,11 +51,11 @@ class ReqScan  : public DB::Cells::ReqScan {
 
   virtual ~ReqScan() { }
 
-  Ptr get_req_scan() {
+  Ptr get_req_scan() noexcept {
     return std::dynamic_pointer_cast<ReqScan>(shared_from_this());
   }
 
-  virtual bool with_block() {
+  virtual bool with_block() const noexcept {
     return false;
   }
 
@@ -68,8 +69,8 @@ class ReqScan  : public DB::Cells::ReqScan {
 
 class ReqScanBlockLoader : public ReqScan {
   public:
-  
-  ReqScanBlockLoader() : ReqScan(ReqScan::Type::BLK_PRELOAD) {
+
+  ReqScanBlockLoader() noexcept : ReqScan(ReqScan::Type::BLK_PRELOAD) {
   }
 
   virtual ~ReqScanBlockLoader() { }
@@ -87,15 +88,15 @@ class ReqScanBlockLoader : public ReqScan {
 
 class ReqScanTest : public ReqScan {
   public:
-  
+
   typedef std::shared_ptr<ReqScanTest>  Ptr;
 
   static Ptr make() { return std::make_shared<ReqScanTest>(); }
 
-  ReqScanTest() { }
+  ReqScanTest() noexcept { }
 
   bool reached_limits() override {
-    return (spec.flags.limit && spec.flags.limit <= cells.size())   || 
+    return (spec.flags.limit && spec.flags.limit <= cells.size())   ||
       (spec.flags.max_buffer && spec.flags.max_buffer <= cells.size_bytes());
   }
 

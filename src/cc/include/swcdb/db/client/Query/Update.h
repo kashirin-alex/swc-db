@@ -49,15 +49,15 @@ struct Update final {
   Profiling                          profile;
   Core::CompletionCounter<uint64_t>  completion;
 
-  Update();
+  Update() noexcept;
 
-  int error();
+  int error() noexcept;
 
-  void error(int err);
+  void error(int err) noexcept;
 
-  void add_resend_count(size_t count);
+  void add_resend_count(size_t count) noexcept;
 
-  size_t get_resend_count(bool reset = true);
+  size_t get_resend_count(bool reset = true) noexcept;
 
   private:
   Core::Atomic<int>    m_err;

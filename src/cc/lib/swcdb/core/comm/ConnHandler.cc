@@ -14,7 +14,7 @@ namespace SWC { namespace Comm {
 
 SWC_SHOULD_INLINE
 ConnHandler::Pending::Pending(const Buffers::Ptr& cbuf,
-                              DispatchHandler::Ptr& hdlr)
+                              DispatchHandler::Ptr& hdlr) noexcept
                               : cbuf(cbuf), hdlr(hdlr), timer(nullptr) {
 }
 
@@ -26,14 +26,14 @@ ConnHandler::Pending::~Pending() {
 
 
 SWC_SHOULD_INLINE
-ConnHandler::ConnHandler(AppContext::Ptr& app_ctx)
+ConnHandler::ConnHandler(AppContext::Ptr& app_ctx) noexcept
                         : connected(true),
                           app_ctx(app_ctx), m_next_req_id(0),
                           m_accepting(false) {
 }
 
 SWC_SHOULD_INLINE
-ConnHandlerPtr ConnHandler::ptr() {
+ConnHandlerPtr ConnHandler::ptr() noexcept {
   return shared_from_this();
 }
 
@@ -57,7 +57,7 @@ size_t ConnHandler::endpoint_local_hash() const {
 }
 
 SWC_SHOULD_INLINE
-Core::Encoder::Type ConnHandler::get_encoder() const {
+Core::Encoder::Type ConnHandler::get_encoder() const noexcept {
   return !app_ctx->cfg_encoder ||
          endpoint_local.address() == endpoint_remote.address()
           ? Core::Encoder::Type::PLAIN
@@ -455,7 +455,7 @@ void ConnHandler::run_pending(const Event::Ptr& ev) {
 
 
 ConnHandlerPlain::ConnHandlerPlain(AppContext::Ptr& app_ctx,
-                                   SocketPlain& socket)
+                                   SocketPlain& socket) noexcept
                                   : ConnHandler(app_ctx),
                                     m_sock(std::move(socket)) {
   m_sock.lowest_layer().set_option(asio::ip::tcp::no_delay(true));
@@ -525,7 +525,7 @@ void ConnHandlerPlain::read(uint8_t** bufp, size_t* remainp,
 
 ConnHandlerSSL::ConnHandlerSSL(AppContext::Ptr& app_ctx,
                                asio::ssl::context& ssl_ctx,
-                               SocketPlain& socket)
+                               SocketPlain& socket) noexcept
                               : ConnHandler(app_ctx),
                                 m_sock(std::move(socket), ssl_ctx),
                                 m_strand(m_sock.get_executor()) {

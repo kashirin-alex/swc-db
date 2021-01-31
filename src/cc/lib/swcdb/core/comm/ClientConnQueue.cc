@@ -10,12 +10,13 @@ namespace SWC { namespace Comm { namespace client {
 
 
 ConnQueueReqBase::ConnQueueReqBase(bool insistent, const Buffers::Ptr& cbp)
-                                  : insistent(insistent), cbp(cbp), 
+                                  noexcept
+                                  : insistent(insistent), cbp(cbp),
                                     queue(nullptr) {
 }
 
 SWC_SHOULD_INLINE
-ConnQueueReqBase::Ptr ConnQueueReqBase::req() {
+ConnQueueReqBase::Ptr ConnQueueReqBase::req() noexcept {
   return std::dynamic_pointer_cast<ConnQueueReqBase>(shared_from_this());
 }
 
@@ -35,7 +36,7 @@ bool ConnQueueReqBase::is_timeout(const Event::Ptr& ev) {
 }
 
 bool ConnQueueReqBase::is_rsp(const Event::Ptr& ev) {
-  if(ev->type == Event::Type::DISCONNECT || 
+  if(ev->type == Event::Type::DISCONNECT ||
      ev->error == Error::Code::REQUEST_TIMEOUT) {
     request_again();
     return false;
@@ -78,8 +79,8 @@ ConnQueue::~ConnQueue() {
     delete m_timer;
 }
 
-bool ConnQueue::connect() { 
-  return false; // not implemented by default 
+bool ConnQueue::connect() {
+  return false; // not implemented by default
 }
 
 void ConnQueue::close_issued() { }
@@ -131,7 +132,7 @@ EndPoint ConnQueue::get_endpoint_local() {
 }
 
 void ConnQueue::put(const ConnQueue::ReqBase::Ptr& req) {
-  if(!req->queue) 
+  if(!req->queue)
     req->queue = shared_from_this();
   bool make_conn;
   {
@@ -233,10 +234,10 @@ void ConnQueue::run_queue() {
       }
     }
   }
-  
+
   if(m_timer) // nullptr -eq persistent
     schedule_close();
-    // ~ on timer after ms+ OR socket_opt ka(0)+interval(ms+) 
+    // ~ on timer after ms+ OR socket_opt ka(0)+interval(ms+)
 }
 
 void ConnQueue::schedule_close() {

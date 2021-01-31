@@ -24,14 +24,14 @@ class Group final : private Hosts {
   const cid_t   cid_end;
 
 
-  Group(uint8_t role, cid_t cid_begin, cid_t cid_end, 
+  Group(uint8_t role, cid_t cid_begin, cid_t cid_end,
         const Comm::EndPoints& endpoints);
 
-  Group(uint8_t role, cid_t cid_begin, cid_t cid_end, 
+  Group(uint8_t role, cid_t cid_begin, cid_t cid_end,
         const Hosts& hosts);
-  
+
   ~Group();
-  
+
   Ptr copy();
 
   void add_host(Comm::EndPoints& new_endpoints);
@@ -46,7 +46,8 @@ class Group final : private Hosts {
 
   private:
 
-  void _get_host(const Comm::EndPoint& point, Comm::EndPoints*& found_host);
+  void _get_host(const Comm::EndPoint& point,
+                 Comm::EndPoints*& found_host) noexcept;
 
   std::mutex    m_mutex;
 };
@@ -58,7 +59,7 @@ class Groups final : private std::vector<Group::Ptr>,
                      public std::enable_shared_from_this<Groups>{
 
   public:
-  
+
   struct GroupHost final {
     uint8_t         role;
     cid_t           cid_begin;
@@ -101,7 +102,7 @@ class Groups final : private std::vector<Group::Ptr>,
 
   private:
 
-  void _add_host(uint8_t role, cid_t cid_begin, cid_t cid_end, 
+  void _add_host(uint8_t role, cid_t cid_begin, cid_t cid_end,
                  uint16_t port, std::string host_or_ips);
 
   std::mutex                  m_mutex;
@@ -113,7 +114,7 @@ class Groups final : private std::vector<Group::Ptr>,
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/db/client/mngr/Groups.cc"
-#endif 
+#endif
 
 
 #endif // swcdb_db_client_mngr_Groups_h

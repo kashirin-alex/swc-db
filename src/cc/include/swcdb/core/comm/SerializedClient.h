@@ -18,7 +18,7 @@
 #include "swcdb/core/comm/ConfigSSL.h"
 
 
-namespace SWC { namespace Comm { 
+namespace SWC { namespace Comm {
 
 
 //! The SWC-DB client C++ namespace 'SWC::Comm::client'
@@ -26,8 +26,8 @@ namespace client {
 
 
 
-class ServerConnections final : 
-      private Core::QueueSafe<ConnHandlerPtr>, 
+class ServerConnections final :
+      private Core::QueueSafe<ConnHandlerPtr>,
       public std::enable_shared_from_this<ServerConnections> {
 
   public:
@@ -41,16 +41,16 @@ class ServerConnections final :
   ServerConnections(const std::string& srv_name, const EndPoint& endpoint,
                     const IoContextPtr& ioctx, const AppContext::Ptr& ctx,
                     ConfigSSL* ssl_cfg);
-  
+
  ~ServerConnections();
 
   void reusable(ConnHandlerPtr& conn, bool preserve);
 
-  void connection(ConnHandlerPtr& conn, 
-                  const std::chrono::milliseconds& timeout, 
+  void connection(ConnHandlerPtr& conn,
+                  const std::chrono::milliseconds& timeout,
                   bool preserve);
-  
-  void connection(const std::chrono::milliseconds& timeout, 
+
+  void connection(const std::chrono::milliseconds& timeout,
                   const NewCb_t& cb, bool preserve);
 
   void close_all();
@@ -65,7 +65,7 @@ class ServerConnections final :
 };
 
 
-class Serialized final : 
+class Serialized final :
       private std::unordered_map<size_t, ServerConnections::Ptr>,
       public std::enable_shared_from_this<Serialized> {
 
@@ -73,21 +73,21 @@ class Serialized final :
 
   typedef std::shared_ptr<Serialized>                        Ptr;
 
-  Serialized(const std::string& srv_name, 
+  Serialized(const std::string& srv_name,
              const IoContextPtr& ioctx,
              const AppContext::Ptr& ctx);
 
   ServerConnections::Ptr get_srv(const EndPoint& endpoint);
 
   ConnHandlerPtr get_connection(
-        const EndPoints& endpoints, 
+        const EndPoints& endpoints,
         const std::chrono::milliseconds& timeout=std::chrono::milliseconds(0),
         uint32_t probes=0,
         bool preserve=false
   ) noexcept;
 
   void get_connection(
-        const EndPoints& endpoints, 
+        const EndPoints& endpoints,
         const ServerConnections::NewCb_t& cb,
         const std::chrono::milliseconds& timeout=std::chrono::milliseconds(0),
         uint32_t probes=0,
@@ -98,28 +98,28 @@ class Serialized final :
 
   void close(ConnHandlerPtr& conn);
 
-  IoContextPtr io();
-  
+  IoContextPtr io() noexcept;
+
   void print(std::ostream& out, ConnHandlerPtr& conn);
-  
+
   void stop();
 
   virtual ~Serialized();
 
   private:
-  
+
   ConnHandlerPtr _get_connection(
-        const EndPoints& endpoints, 
+        const EndPoints& endpoints,
         const std::chrono::milliseconds& timeout=std::chrono::milliseconds(0),
         uint32_t probes=0,
         bool preserve=false
   );
-  
+
   void _get_connection(
-        const EndPoints& endpoints, 
+        const EndPoints& endpoints,
         const ServerConnections::NewCb_t& cb,
         const std::chrono::milliseconds& timeout,
-        uint32_t probes, uint32_t tries, 
+        uint32_t probes, uint32_t tries,
         size_t next,
         bool preserve=false
   );
@@ -142,6 +142,6 @@ class Serialized final :
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/core/comm/SerializedClient.cc"
-#endif 
+#endif
 
 #endif // swcdb_core_comm_SerializedClient_h

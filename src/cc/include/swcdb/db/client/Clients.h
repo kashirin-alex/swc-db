@@ -16,7 +16,7 @@
 #include "swcdb/db/client/mngr/Groups.h"
 #include "swcdb/db/client/rgr/Rangers.h"
 
-namespace SWC { 
+namespace SWC {
 
 
 /**
@@ -40,7 +40,7 @@ class Clients final {
           const ContextRanger::Ptr& rgr_ctx);
 
   ~Clients();
-  
+
   const Mngr::Groups::Ptr         mngrs_groups;
   Comm::client::ConnQueuesPtr     mngr;
   Comm::client::ConnQueuesPtr     rgr;
@@ -49,7 +49,7 @@ class Clients final {
 
 };
 
-} // namespace client 
+} // namespace client
 
 
 
@@ -63,7 +63,7 @@ class Clients final {
 
   static client::Clients::Ptr get();
 
-  static const Clients& ref();
+  static const Clients& ref() noexcept;
 
   const SWC::Config::Property::V_GINT32::Ptr      cfg_send_buff_sz;
   const SWC::Config::Property::V_GUINT8::Ptr      cfg_send_ahead;
@@ -93,7 +93,7 @@ class Clients final {
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/db/client/Clients.cc"
 #include "swcdb/db/client/Schemas.cc"
-#endif 
+#endif
 
 
 #endif // swcdb_db_client_Clients_h

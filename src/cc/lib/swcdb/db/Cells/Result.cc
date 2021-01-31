@@ -10,17 +10,16 @@
 namespace SWC { namespace DB { namespace Cells {
 
 
-Result::Result(const uint32_t max_revs, const uint64_t ttl_ns, 
-               const Types::Column type)
-              : bytes(0), type(type), max_revs(max_revs), 
+Result::Result(const uint32_t max_revs, const uint64_t ttl_ns,
+               const Types::Column type) noexcept
+              : bytes(0), type(type), max_revs(max_revs),
                 ttl(ttl_ns) {
 }
 
-Result::Result(Result& other)
-              : std::vector<Cell*>(other), bytes(other.bytes), 
-                type(other.type), 
+Result::Result(Result&& other) noexcept
+              : std::vector<Cell*>(std::move(other)),
+                bytes(other.bytes), type(other.type),
                 max_revs(other.max_revs), ttl(other.ttl) {
-  other.clear();
   other.bytes = 0;
 }
 
@@ -36,28 +35,28 @@ void Result::free() {
   bytes = 0;
 }
 
-void Result::reset(const uint32_t revs, const uint64_t ttl_ns, 
+void Result::reset(const uint32_t revs, const uint64_t ttl_ns,
                    const Types::Column typ) {
   free();
   configure(revs, ttl_ns, typ);
 }
 
-void Result::configure(const uint32_t revs, const uint64_t ttl_ns, 
-                       const Types::Column typ) {
+void Result::configure(const uint32_t revs, const uint64_t ttl_ns,
+                       const Types::Column typ) noexcept {
   type = typ;
   max_revs = revs;
   ttl = ttl_ns;
 }
 
 
-size_t Result::size_bytes() const {
+size_t Result::size_bytes() const noexcept {
   return bytes;
 }
 
 void Result::take(Result& other) {
   bytes += other.bytes;
   insert(end(), other.begin(), other.end());
-  
+
   other.clear();
   other.bytes = 0;
 }
@@ -105,7 +104,7 @@ void Result::write(DynamicBuffer& cells) const {
 }
 
 void Result::write_and_free(DynamicBuffer& cells, uint32_t& cell_count,
-                            Interval& intval, uint32_t threshold, 
+                            Interval& intval, uint32_t threshold,
                             uint32_t max_cells) {
   if(empty())
     return;
@@ -115,7 +114,7 @@ void Result::write_and_free(DynamicBuffer& cells, uint32_t& cell_count,
   Cell* last = nullptr;
   auto it = begin();
   for(Cell* cell; it < end() && (
-                  (!threshold || threshold > cells.fill()) && 
+                  (!threshold || threshold > cells.fill()) &&
                   (!max_cells || max_cells > cell_count) ); ++it) {
     if((cell = *it)->has_expired(ttl))
       continue;
@@ -131,7 +130,7 @@ void Result::write_and_free(DynamicBuffer& cells, uint32_t& cell_count,
     intval.expand_begin(*first);
     intval.expand_end(*(last ? last : first));
   }
-  
+
   if(it == end()) {
     free();
     return;
@@ -140,7 +139,7 @@ void Result::write_and_free(DynamicBuffer& cells, uint32_t& cell_count,
   do {
     --it;
     bytes -= (*it)->encoded_length();
-    delete *it; 
+    delete *it;
   } while(it > begin());
   erase(begin(), it_end);
 }

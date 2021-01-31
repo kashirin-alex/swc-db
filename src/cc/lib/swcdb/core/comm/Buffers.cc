@@ -188,7 +188,7 @@ void Buffers::prepare(Core::Encoder::Type encoder) {
 }
 
 SWC_SHOULD_INLINE
-bool Buffers::expired() const {
+bool Buffers::expired() const noexcept {
   return expiry_ms && Time::now_ms() > expiry_ms;
 }
 
@@ -239,12 +239,12 @@ std::vector<asio::const_buffer> Buffers::get_buffers() {
 }
 
 SWC_SHOULD_INLINE
-void Buffers::append_i8(uint8_t ival) {
+void Buffers::append_i8(uint8_t ival) noexcept {
   Serialization::encode_i8(&data_ptr, ival);
 }
 
 SWC_SHOULD_INLINE
-void Buffers::append_i32(uint32_t ival) {
+void Buffers::append_i32(uint32_t ival) noexcept {
   Serialization::encode_i32(&data_ptr, ival);
 }
 

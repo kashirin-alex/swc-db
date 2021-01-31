@@ -45,7 +45,7 @@ namespace Thrift {
 class CommClient {
   public:
 
-  CommClient(const std::string& host, const uint16_t port, 
+  CommClient(const std::string& host, const uint16_t port,
              const uint32_t timeout, bool open=true) {
     auto sock = new thrift::transport::TSocket(host, port);
     sock->setConnTimeout(timeout);
@@ -57,7 +57,7 @@ class CommClient {
       transport->open();
     protocol.reset(new thrift::protocol::TBinaryProtocol(transport));
   }
-  
+
   void open() {
     if(!transport->isOpen())
       transport->open();
@@ -68,7 +68,7 @@ class CommClient {
       transport->close();
   }
 
-  virtual ~CommClient() { 
+  virtual ~CommClient() {
     if(transport) {
        try { close(); } catch(...) {}
     }
@@ -85,14 +85,14 @@ class Client : public CommClient, public ServiceClient {
   public:
   typedef std::shared_ptr<Client> Ptr;
 
-  static Ptr make(const std::string& host, const uint16_t port, 
+  static Ptr make(const std::string& host, const uint16_t port,
                   const uint32_t timeout_ms=900000) {
     return std::make_shared<Client>(host, port, timeout_ms);
   }
 
-  Client(const std::string& host, const uint16_t port, 
+  Client(const std::string& host, const uint16_t port,
          const uint32_t timeout_ms=900000, bool open = true)
-        : CommClient(host, port, timeout_ms, open), 
+        : CommClient(host, port, timeout_ms, open),
           ServiceClient(protocol) {
   }
 
@@ -106,10 +106,9 @@ class Client : public CommClient, public ServiceClient {
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/thrift/gen-cpp/Service.cpp"
-#include "swcdb/thrift/gen-cpp/Service_constants.cpp"
 #include "swcdb/thrift/gen-cpp/Service_types.cpp"
 //#include "swcdb/thrift/Converters.cc"
-#endif 
+#endif
 
 
 #endif // swcdb_thrift_client_Client_h

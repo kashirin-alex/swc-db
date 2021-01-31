@@ -18,10 +18,10 @@ typedef void (*AppHandler_t)(const ConnHandlerPtr& conn,
 class AppHandler {
   public:
 
-  AppHandler(const ConnHandlerPtr& conn, const Event::Ptr& ev)
+  AppHandler(const ConnHandlerPtr& conn, const Event::Ptr& ev) noexcept
             : m_conn(conn), m_ev(ev) {
   }
-    
+
   virtual ~AppHandler() { }
 
   virtual void run() = 0;

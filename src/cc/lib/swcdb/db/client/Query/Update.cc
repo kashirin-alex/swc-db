@@ -2,7 +2,7 @@
 /*
  * SWC-DB© Copyright since 2019 Alex Kashirin <kashirin.alex@gmail.com>
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
- */ 
+ */
 
 #include "swcdb/db/Types/MetaColumn.h"
 #include "swcdb/db/client/Clients.h"
@@ -14,21 +14,21 @@ namespace SWC { namespace client { namespace Query {
 
 namespace Result {
 
-Update::Update() : m_err(Error::OK), m_resend_cells(0) { }
+Update::Update() noexcept : m_err(Error::OK), m_resend_cells(0) { }
 
-int Update::error() {
+int Update::error() noexcept {
   return m_err;
 }
 
-void Update::error(int err) {
+void Update::error(int err) noexcept {
   m_err.store(err);
 }
 
-void Update::add_resend_count(size_t count) {
+void Update::add_resend_count(size_t count) noexcept {
   m_resend_cells.fetch_add(count);
 }
 
-size_t Update::get_resend_count(bool reset) {
+size_t Update::get_resend_count(bool reset) noexcept {
   return reset ? m_resend_cells.exchange(0) : m_resend_cells.load();
 }
 
@@ -37,27 +37,27 @@ size_t Update::get_resend_count(bool reset) {
 
 
 Update::Update(const Cb_t& cb, const Comm::IoContextPtr& io)
-        : buff_sz(Env::Clients::ref().cfg_send_buff_sz->get()), 
-          buff_ahead(Env::Clients::ref().cfg_send_ahead->get()), 
-          timeout(Env::Clients::ref().cfg_send_timeout->get()), 
+        : buff_sz(Env::Clients::ref().cfg_send_buff_sz->get()),
+          buff_ahead(Env::Clients::ref().cfg_send_ahead->get()),
+          timeout(Env::Clients::ref().cfg_send_timeout->get()),
           timeout_ratio(Env::Clients::ref().cfg_send_timeout_ratio->get()),
           cb(cb), dispatcher_io(io),
           columns(std::make_shared<DB::Cells::MutableMap>()),
           columns_onfractions(std::make_shared<DB::Cells::MutableMap>()),
-          result(std::make_shared<Result>()) { 
+          result(std::make_shared<Result>()) {
 }
 
-Update::Update(const DB::Cells::MutableMap::Ptr& columns, 
-         const DB::Cells::MutableMap::Ptr& columns_onfractions, 
+Update::Update(const DB::Cells::MutableMap::Ptr& columns,
+         const DB::Cells::MutableMap::Ptr& columns_onfractions,
          const Cb_t& cb, const Comm::IoContextPtr& io)
-        : buff_sz(Env::Clients::ref().cfg_send_buff_sz->get()), 
-          buff_ahead(Env::Clients::ref().cfg_send_ahead->get()), 
-          timeout(Env::Clients::ref().cfg_send_timeout->get()), 
+        : buff_sz(Env::Clients::ref().cfg_send_buff_sz->get()),
+          buff_ahead(Env::Clients::ref().cfg_send_ahead->get()),
+          timeout(Env::Clients::ref().cfg_send_timeout->get()),
           timeout_ratio(Env::Clients::ref().cfg_send_timeout_ratio->get()),
           cb(cb), dispatcher_io(io),
-          columns(columns), 
-          columns_onfractions(columns_onfractions), 
-          result(std::make_shared<Result>()) { 
+          columns(columns),
+          columns_onfractions(columns_onfractions),
+          result(std::make_shared<Result>()) {
 }
 
 Update::~Update() { }

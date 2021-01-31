@@ -34,7 +34,7 @@ struct Select final {
   Profiling                                   profile;
   Core::CompletionCounter<uint64_t>           completion;
 
-  Select(bool notify);
+  Select(bool notify) noexcept;
 
   ~Select();
 

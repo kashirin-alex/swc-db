@@ -44,9 +44,9 @@ class Column final : public Comm::Serializable {
 
   void free();
 
-  bool equal(const Column &other);
+  bool equal(const Column &other) const noexcept;
 
-  size_t internal_encoded_length() const override;
+  size_t internal_encoded_length() const noexcept override;
 
   void internal_encode(uint8_t** bufp) const override;
 

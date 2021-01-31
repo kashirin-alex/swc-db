@@ -51,17 +51,17 @@ class Interface final {
 
   FileSystem::Ptr use_filesystem();
 
-  Ptr ptr();
+  Ptr ptr() noexcept;
 
   ~Interface();
 
   Type get_type() const noexcept;
 
-  FileSystem::Ptr get_fs();
+  FileSystem::Ptr get_fs() noexcept;
 
   std::string to_string() const;
 
-  bool need_fds() const;
+  bool need_fds() const noexcept;
 
   void stop();
 
@@ -136,7 +136,7 @@ class FsInterface final {
 
   static void init(FS::Type typ);
 
-  static Ptr get();
+  static Ptr get() noexcept;
 
   static FS::Interface::Ptr interface();
 

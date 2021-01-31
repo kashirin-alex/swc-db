@@ -80,13 +80,13 @@ class FileSystem : public std::enable_shared_from_this<FileSystem> {
 
   virtual void get_abspath(const std::string& name, std::string& abspath);
 
-  void fd_open_incr();
+  void fd_open_incr() noexcept;
 
-  void fd_open_decr();
+  void fd_open_decr() noexcept;
 
-  bool need_fds() const;
+  bool need_fds() const noexcept;
 
-  size_t fds_open() const;
+  size_t fds_open() const noexcept;
 
   virtual bool exists(int& err, const std::string& name) = 0;
   virtual void exists(const Callback::ExistsCb_t& cb,

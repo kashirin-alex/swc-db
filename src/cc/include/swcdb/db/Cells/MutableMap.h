@@ -41,7 +41,7 @@ class ColCells final {
 
   ~ColCells();
 
-  Types::KeySeq get_sequence() const;
+  Types::KeySeq get_sequence() const noexcept;
 
   DB::Cell::Key::Ptr get_first_key();
 

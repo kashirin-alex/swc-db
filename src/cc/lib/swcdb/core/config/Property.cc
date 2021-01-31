@@ -11,9 +11,9 @@
 namespace SWC { namespace Config { namespace Property {
 
 
-Value::Value(uint8_t flags) : flags(flags) { }
+Value::Value(uint8_t flags) noexcept : flags(flags) { }
 
-Value::Value(Value::Ptr ptr) : flags(ptr->flags.load()) { }
+Value::Value(Value::Ptr ptr) noexcept : flags(ptr->flags.load()) { }
 
 Value::~Value() { }
 
@@ -21,31 +21,31 @@ std::ostream& Value::operator<<(std::ostream& ostream) {
   return ostream << to_string();
 }
 
-bool Value::is_skippable() const {
+bool Value::is_skippable() const noexcept {
   return flags & Value::SKIPPABLE;
 }
 
-bool Value::is_guarded() const {
+bool Value::is_guarded() const noexcept {
   return flags & Value::GUARDED;
 }
 
-Value::Ptr Value::default_value(bool defaulted) {
+Value::Ptr Value::default_value(bool defaulted) noexcept {
   defaulted
     ? flags.fetch_xor(Value::DEFAULT)
     : flags.fetch_and(Value::DEFAULT);
   return this;
 }
 
-bool Value::is_default() const {
+bool Value::is_default() const noexcept {
   return flags & Value::DEFAULT;
 }
 
-Value::Ptr Value::zero_token() {
+Value::Ptr Value::zero_token() noexcept {
   flags.fetch_xor(Value::NO_TOKEN);
   return this;
 }
 
-bool Value::is_zero_token() const {
+bool Value::is_zero_token() const noexcept {
   return flags & Value::NO_TOKEN;
 }
 
@@ -137,9 +137,11 @@ void from_string(const std::string& s, int32_t* value) {
 
 
 
-V_BOOL::V_BOOL(const bool& v, uint8_t flags) : Value(flags), value(v) { }
+V_BOOL::V_BOOL(const bool& v, uint8_t flags) noexcept
+              : Value(flags), value(v) {
+}
 
-V_BOOL::V_BOOL(V_BOOL* ptr) : Value(ptr), value(ptr->get()) { }
+V_BOOL::V_BOOL(V_BOOL* ptr) noexcept : Value(ptr), value(ptr->get()) { }
 
 Value::Ptr V_BOOL::make_new(const Strings& values) {
   auto ptr = new V_BOOL(this);
@@ -161,7 +163,7 @@ void V_BOOL::set_from(const Strings& values) {
           !strncasecmp(str.data(), "yes", 3);
 }
 
-Value::Type V_BOOL::type() const {
+Value::Type V_BOOL::type() const noexcept {
   return value_type;
 }
 
@@ -169,15 +171,17 @@ std::string V_BOOL::to_string() const {
   return value ? "true" : "false";
 }
 
-bool V_BOOL::get() const {
+bool V_BOOL::get() const noexcept {
   return value;
 }
 
 
 
-V_UINT8::V_UINT8(const uint8_t& v, uint8_t flags) : Value(flags), value(v) { }
+V_UINT8::V_UINT8(const uint8_t& v, uint8_t flags) noexcept
+                : Value(flags), value(v) {
+}
 
-V_UINT8::V_UINT8(V_UINT8* ptr) : Value(ptr), value(ptr->get()) { }
+V_UINT8::V_UINT8(V_UINT8* ptr) noexcept : Value(ptr), value(ptr->get()) { }
 
 Value::Ptr V_UINT8::make_new(const Strings& values) {
   auto ptr = new V_UINT8(this);
@@ -196,7 +200,7 @@ void V_UINT8::set_from(const Strings& values) {
   from_string(values.back(), &value);
 }
 
-Value::Type V_UINT8::type() const {
+Value::Type V_UINT8::type() const noexcept {
   return value_type;
 }
 
@@ -204,15 +208,16 @@ std::string V_UINT8::to_string() const {
   return std::to_string(int16_t(value));
 }
 
-uint8_t V_UINT8::get() const {
+uint8_t V_UINT8::get() const noexcept {
   return value;
 }
 
 
 
-V_UINT16::V_UINT16(const uint16_t& v, uint8_t flags) : Value(flags), value(v) { }
+V_UINT16::V_UINT16(const uint16_t& v, uint8_t flags) noexcept
+                  : Value(flags), value(v) { }
 
-V_UINT16::V_UINT16(V_UINT16* ptr) : Value(ptr), value(ptr->get()) { }
+V_UINT16::V_UINT16(V_UINT16* ptr) noexcept : Value(ptr), value(ptr->get()) { }
 
 Value::Ptr V_UINT16::make_new(const Strings& values) {
   auto ptr = new V_UINT16(this);
@@ -231,7 +236,7 @@ void V_UINT16::set_from(const Strings& values) {
   from_string(values.back(), &value);
 }
 
-Value::Type V_UINT16::type() const {
+Value::Type V_UINT16::type() const noexcept {
   return value_type;
 }
 
@@ -239,15 +244,16 @@ std::string V_UINT16::to_string() const {
   return std::to_string(value);
 }
 
-uint16_t V_UINT16::get() const {
+uint16_t V_UINT16::get() const noexcept {
   return value;
 }
 
 
 
-V_INT32::V_INT32(const int32_t& v, uint8_t flags) : Value(flags), value(v) { }
+V_INT32::V_INT32(const int32_t& v, uint8_t flags) noexcept
+                : Value(flags), value(v) { }
 
-V_INT32::V_INT32(V_INT32* ptr) : Value(ptr), value(ptr->get()) { }
+V_INT32::V_INT32(V_INT32* ptr) noexcept : Value(ptr), value(ptr->get()) { }
 
 Value::Ptr V_INT32::make_new(const Strings& values) {
   auto ptr = new V_INT32(this);
@@ -266,7 +272,7 @@ void V_INT32::set_from(const Strings& values) {
   from_string(values.back(), &value);
 }
 
-Value::Type V_INT32::type() const {
+Value::Type V_INT32::type() const noexcept {
   return value_type;
 }
 
@@ -274,15 +280,16 @@ std::string V_INT32::to_string() const {
   return std::to_string(value);
 }
 
-int32_t V_INT32::get() const {
+int32_t V_INT32::get() const noexcept {
   return value;
 }
 
 
 
-V_INT64::V_INT64(const int64_t& v, uint8_t flags) : Value(flags), value(v) { }
+V_INT64::V_INT64(const int64_t& v, uint8_t flags) noexcept
+                 : Value(flags), value(v) { }
 
-V_INT64::V_INT64(V_INT64* ptr) : Value(ptr), value(ptr->get()) { }
+V_INT64::V_INT64(V_INT64* ptr) noexcept : Value(ptr), value(ptr->get()) { }
 
 Value::Ptr V_INT64::make_new(const Strings& values) {
   auto ptr = new V_INT64(this);
@@ -301,7 +308,7 @@ void V_INT64::set_from(const Strings& values) {
   from_string(values.back(), &value);
 }
 
-Value::Type V_INT64::type() const {
+Value::Type V_INT64::type() const noexcept {
   return value_type;
 }
 
@@ -309,15 +316,16 @@ std::string V_INT64::to_string() const {
   return std::to_string(value);
 }
 
-int64_t V_INT64::get() const {
+int64_t V_INT64::get() const noexcept {
   return value;
 }
 
 
 
-V_DOUBLE::V_DOUBLE(const double& v, uint8_t flags) : Value(flags), value(v) { }
+V_DOUBLE::V_DOUBLE(const double& v, uint8_t flags) noexcept
+                  : Value(flags), value(v) { }
 
-V_DOUBLE::V_DOUBLE(V_DOUBLE* ptr) : Value(ptr), value(ptr->get()) { }
+V_DOUBLE::V_DOUBLE(V_DOUBLE* ptr) noexcept : Value(ptr), value(ptr->get()) { }
 
 Value::Ptr V_DOUBLE::make_new(const Strings& values) {
   auto ptr = new V_DOUBLE(this);
@@ -336,7 +344,7 @@ void V_DOUBLE::set_from(const Strings& values) {
   from_string(values.back(), &value);
 }
 
-Value::Type V_DOUBLE::type() const {
+Value::Type V_DOUBLE::type() const noexcept {
   return value_type;
 }
 
@@ -344,7 +352,7 @@ std::string V_DOUBLE::to_string() const {
   return format("%g", value);
 }
 
-double V_DOUBLE::get() const {
+double V_DOUBLE::get() const noexcept {
   return value;
 }
 
@@ -371,7 +379,7 @@ void V_STRING::set_from(const Strings& values) {
   value = values.back();
 }
 
-Value::Type V_STRING::type() const {
+Value::Type V_STRING::type() const noexcept {
   return value_type;
 }
 
@@ -429,7 +437,7 @@ void V_ENUM::set_from(const Strings& values) {
   value = nv;
 }
 
-Value::Type V_ENUM::type() const {
+Value::Type V_ENUM::type() const noexcept {
   return value_type;
 }
 
@@ -439,7 +447,7 @@ std::string V_ENUM::to_string() const {
     (call_repr ? call_repr(get()).c_str() : "repr not defined"), get());
 }
 
-int32_t V_ENUM::get() const {
+int32_t V_ENUM::get() const noexcept {
   return value;
 }
 
@@ -467,7 +475,7 @@ void V_STRINGS::set_from(const Strings& values) {
   value = values;
 }
 
-Value::Type V_STRINGS::type() const {
+Value::Type V_STRINGS::type() const noexcept {
   return value_type;
 }
 
@@ -509,7 +517,7 @@ void V_INT64S::set_from(const Strings& values) {
   }
 }
 
-Value::Type V_INT64S::type() const {
+Value::Type V_INT64S::type() const noexcept {
   return value_type;
 }
 
@@ -551,7 +559,7 @@ void V_DOUBLES::set_from(const Strings& values) {
   }
 }
 
-Value::Type V_DOUBLES::type() const {
+Value::Type V_DOUBLES::type() const noexcept {
   return value_type;
 }
 
@@ -601,7 +609,7 @@ void V_GBOOL::set_from(const Strings& values) {
               !strncasecmp(str.data(), "yes", 3));
 }
 
-Value::Type V_GBOOL::type() const {
+Value::Type V_GBOOL::type() const noexcept {
   return value_type;
 }
 
@@ -609,11 +617,11 @@ std::string V_GBOOL::to_string() const {
   return value ? "true" : "false";
 }
 
-bool V_GBOOL::get() const {
+bool V_GBOOL::get() const noexcept {
   return value;
 }
 
-void V_GBOOL::set(bool v) {
+void V_GBOOL::set(bool v) noexcept {
   value.store(v);
 }
 
@@ -662,7 +670,7 @@ void V_GUINT8::set_from(const Strings& values) {
   value.store(v);
 }
 
-Value::Type V_GUINT8::type() const {
+Value::Type V_GUINT8::type() const noexcept {
   return value_type;
 }
 
@@ -670,7 +678,7 @@ std::string V_GUINT8::to_string() const {
   return std::to_string(int16_t(value));
 }
 
-uint8_t V_GUINT8::get() const {
+uint8_t V_GUINT8::get() const noexcept {
   return value;
 }
 
@@ -718,7 +726,7 @@ void V_GINT32::set_from(const Strings& values) {
   value.store(v);
 }
 
-Value::Type V_GINT32::type() const {
+Value::Type V_GINT32::type() const noexcept {
   return value_type;
 }
 
@@ -726,7 +734,7 @@ std::string V_GINT32::to_string() const {
   return std::to_string(value);
 }
 
-int32_t V_GINT32::get() const {
+int32_t V_GINT32::get() const noexcept {
   return value;
 }
 
@@ -793,7 +801,7 @@ void V_GENUM::set_from(const Strings& values) {
   value.store(nv);
 }
 
-Value::Type V_GENUM::type() const {
+Value::Type V_GENUM::type() const noexcept {
   return value_type;
 }
 
@@ -803,7 +811,7 @@ std::string V_GENUM::to_string() const {
     (call_repr ? call_repr(get()).c_str() : "repr not defined"), get());
 }
 
-int32_t V_GENUM::get() const {
+int32_t V_GENUM::get() const noexcept {
   return value;
 }
 
@@ -861,7 +869,7 @@ void V_GSTRINGS::set_from(const Strings& values) {
   value = values;
 }
 
-Value::Type V_GSTRINGS::type() const {
+Value::Type V_GSTRINGS::type() const noexcept {
   return value_type;
 }
 
@@ -875,7 +883,7 @@ Strings V_GSTRINGS::get() const {
   return value;
 }
 
-size_t V_GSTRINGS::size() {
+size_t V_GSTRINGS::size() noexcept {
   Core::MutexAtomic::scope lock(mutex);
   return value.size();
 }

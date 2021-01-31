@@ -9,7 +9,7 @@
 
 namespace SWC { namespace DB { namespace Cell {
 
-KeyVec::KeyVec() { }
+KeyVec::KeyVec() noexcept { }
 
 KeyVec::~KeyVec() { }
 
@@ -17,7 +17,7 @@ void KeyVec::free() {
   clear();
 }
 
-size_t KeyVec::size_of_internal() const {
+size_t KeyVec::size_of_internal() const noexcept {
   size_t sz = 0;
   for(auto& f : *this) {
     sz += sizeof(f);
@@ -32,7 +32,7 @@ void KeyVec::copy(const KeyVec &other) {
 }
 
 SWC_SHOULD_INLINE
-bool KeyVec::equal(const KeyVec &other) const {
+bool KeyVec::equal(const KeyVec &other) const noexcept {
   return *this == other;
 }
 
@@ -140,7 +140,7 @@ void KeyVec::get(const uint32_t idx, std::string& fraction) const {
   );
 }
 
-uint32_t KeyVec::encoded_length() const {
+uint32_t KeyVec::encoded_length() const noexcept {
   uint32_t len = Serialization::encoded_length_vi32(size());
   for(auto it = cbegin(); it < cend(); ++it)
     len += Serialization::encoded_length_vi32(it->length()) + it->length();

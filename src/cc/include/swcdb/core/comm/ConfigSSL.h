@@ -27,28 +27,28 @@ class ConfigSSL final {
 
   void set_networks(const Config::Strings& networks, bool with_local);
 
-  bool need_ssl(const EndPoint& endpoint) const;
+  bool need_ssl(const EndPoint& endpoint) const noexcept;
 
 
   void make_server(AppContext::Ptr& app_ctx,
                    SocketPlain& socket) const;
 
 
-  std::shared_ptr<ConnHandlerSSL> 
+  std::shared_ptr<ConnHandlerSSL>
   make_client(AppContext::Ptr& app_ctx, SocketPlain& socket) const;
 
   ConnHandlerPtr
   make_client(AppContext::Ptr& app_ctx, SocketPlain& socket,
               asio::error_code& ec) const;
 
-  void 
-  make_client(AppContext::Ptr& app_ctx, SocketPlain& socket, 
+  void
+  make_client(AppContext::Ptr& app_ctx, SocketPlain& socket,
               const HandshakeCb_t& cb) const;
 
   private:
-  
+
   void load_file(std::string filepath, std::string& to) const;
-  
+
   std::vector<asio::ip::network_v4> nets_v4;
   std::vector<asio::ip::network_v6> nets_v6;
   std::string                       subject_name;
@@ -63,6 +63,6 @@ class ConfigSSL final {
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/core/comm/ConfigSSL.cc"
-#endif 
+#endif
 
 #endif // swcdb_core_comm_ConfigSSL_h

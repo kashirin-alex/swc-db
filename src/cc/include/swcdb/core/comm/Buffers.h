@@ -97,15 +97,15 @@ class Buffers final {
 
   void prepare(Core::Encoder::Type encoder);
 
-  bool expired() const;
+  bool expired() const noexcept;
 
   uint8_t write_header();
 
   std::vector<asio::const_buffer> get_buffers();
 
-  void append_i8(uint8_t ival);
+  void append_i8(uint8_t ival) noexcept;
 
-  void append_i32(uint32_t ival);
+  void append_i32(uint32_t ival) noexcept;
 
   Header    header;
   int64_t   expiry_ms;

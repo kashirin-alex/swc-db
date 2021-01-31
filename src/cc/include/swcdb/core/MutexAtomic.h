@@ -22,10 +22,10 @@ class MutexAtomic {
   MutexAtomic(const MutexAtomic&) = delete;
 
   MutexAtomic(const MutexAtomic&&) = delete;
-    
+
   MutexAtomic& operator=(const MutexAtomic&) = delete;
 
-  ~MutexAtomic() { }
+  //~MutexAtomic() { }
 
   SWC_CAN_INLINE
   bool try_lock() const noexcept {
@@ -35,7 +35,7 @@ class MutexAtomic {
     return want.compare_exchange_weak(at, true);
     */
   }
-  
+
   SWC_CAN_INLINE
   void lock() const noexcept {
     uint16_t i = 0;
@@ -73,14 +73,14 @@ class MutexAtomic {
     want.clear(std::memory_order_release);
     //want.store(false);
   }
-  
+
   class scope final {
     public:
 
     scope(const MutexAtomic& m) noexcept : _m(m) {  _m.lock(); }
 
     ~scope() noexcept { _m.unlock(); }
-    
+
     scope(const scope&) = delete;
 
     scope(const scope&&) = delete;
@@ -88,7 +88,7 @@ class MutexAtomic {
     scope& operator=(const scope&) = delete;
 
     private:
-    const MutexAtomic&      _m;
+    const MutexAtomic& _m;
   };
 
   private:

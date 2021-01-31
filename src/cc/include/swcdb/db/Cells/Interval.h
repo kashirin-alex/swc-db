@@ -16,15 +16,15 @@ namespace SWC {  namespace DB { namespace Cells {
 
 class Interval final {
 
-  /* encoded-format: 
+  /* encoded-format:
       key_begin-encoded key_end-encoded vi64(ts_earliest) vi64(ts_latest)
   */
 
   public:
 
   const Types::KeySeq key_seq;
-  
-  explicit Interval(const Types::KeySeq key_seq);
+
+  explicit Interval(const Types::KeySeq key_seq) noexcept;
 
   explicit Interval(const Types::KeySeq key_seq,
                     const uint8_t **ptr, size_t *remain);
@@ -32,16 +32,16 @@ class Interval final {
   explicit Interval(const Interval& other);
 
   Interval(const Interval&&) = delete;
-  
+
   Interval& operator=(const Interval&) = delete;
-  
+
   ~Interval();
 
   void copy(const Interval& other);
 
   void free();
-  
-  size_t size_of_internal() const;
+
+  size_t size_of_internal() const noexcept;
 
   void set_key_begin(const DB::Cell::Key& key);
 
@@ -71,10 +71,10 @@ class Interval final {
 
   bool align(const DB::Cell::Key &key);
 
-  bool equal(const Interval& other) const;
+  bool equal(const Interval& other) const noexcept;
 
   bool is_in_begin(const DB::Cell::Key &key) const;
-  
+
   bool is_in_end(const DB::Cell::Key &key) const;
 
   bool consist(const Interval& other) const;
@@ -91,7 +91,7 @@ class Interval final {
 
   bool includes(const Specs::Interval& interval) const;
 
-  size_t encoded_length() const;
+  size_t encoded_length() const noexcept;
 
   void encode(uint8_t **ptr) const;
 
@@ -107,19 +107,19 @@ class Interval final {
   }
 
   DB::Cell::Key     key_begin;
-  DB::Cell::Key     key_end;  
+  DB::Cell::Key     key_end;
   Specs::Timestamp  ts_earliest;
   Specs::Timestamp  ts_latest;
   DB::Cell::KeyVec  aligned_min;
-  DB::Cell::KeyVec  aligned_max;  
+  DB::Cell::KeyVec  aligned_max;
   bool              was_set = false;
-  
+
 };
 
 }}}
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/db/Cells/Interval.cc"
-#endif 
+#endif
 
 #endif // swcdb_db_Cells_Interval_h

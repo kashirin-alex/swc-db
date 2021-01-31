@@ -44,23 +44,23 @@ struct SmartFd {
 
   virtual ~SmartFd() { }
 
-  const std::string& filepath() const;
+  const std::string& filepath() const noexcept;
 
-  void flags(uint32_t flags);
+  void flags(uint32_t flags) noexcept;
 
-  uint32_t flags() const;
+  uint32_t flags() const noexcept;
 
-  void fd(int32_t fd);
+  void fd(int32_t fd) noexcept;
 
-  int32_t fd() const;
+  int32_t fd() const noexcept;
 
-  bool valid() const;
+  bool valid() const noexcept;
 
-  void pos(uint64_t pos);
+  void pos(uint64_t pos) noexcept;
 
-  uint64_t pos() const;
+  uint64_t pos() const noexcept;
 
-  void forward(uint64_t pos);
+  void forward(uint64_t pos) noexcept;
 
   std::string to_string() const;
 

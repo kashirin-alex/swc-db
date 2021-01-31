@@ -19,16 +19,16 @@ class ReqScan : public Comm::ResponseCallback {
 
   typedef std::shared_ptr<ReqScan>  Ptr;
 
-  ReqScan();
+  ReqScan() noexcept;
 
   ReqScan(const DB::Specs::Interval& spec);
 
-  ReqScan(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev, 
+  ReqScan(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev,
           const DB::Specs::Interval& spec);
 
-  ReqScan(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev, 
+  ReqScan(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev,
           const DB::Cell::Key& range_begin, const DB::Cell::Key& range_end);
-                  
+
   ReqScan(const ReqScan&) = delete;
 
   ReqScan(const ReqScan&&) = delete;
@@ -37,15 +37,15 @@ class ReqScan : public Comm::ResponseCallback {
 
   virtual ~ReqScan();
 
-  Ptr get_req_scan();
+  Ptr get_req_scan() noexcept;
 
-  bool offset_adjusted();
+  bool offset_adjusted() noexcept;
 
-  virtual bool selector(const Types::KeySeq key_seq, const Cell& cell, 
+  virtual bool selector(const Types::KeySeq key_seq, const Cell& cell,
                         bool& stop);
 
   virtual bool reached_limits() = 0;
-  
+
   virtual bool add_cell_and_more(const Cell& cell) = 0;
 
   virtual void print(std::ostream& out) const;
@@ -77,15 +77,15 @@ class ReqScan : public Comm::ResponseCallback {
       ts_finish = Time::now_ns();
     }
 
-    void add_cell(uint32_t bytes) {
+    void add_cell(uint32_t bytes) noexcept {
       ++cells_count;
       cells_bytes += bytes;
     }
 
-    void skip_cell() {
+    void skip_cell() noexcept {
       ++cells_skipped;
     }
-    
+
     void add_block_locate(int64_t ts) {
       ++blocks_located;
       block_time_locate += Time::now_ns() - ts;
@@ -111,7 +111,7 @@ class ReqScan : public Comm::ResponseCallback {
     }
 
     void print(std::ostream& out) const {
-      out << "profile(took=" 
+      out << "profile(took="
           << (ts_finish - ts_start)
           << "ns cells(count=" << cells_count
           << " bytes=" << cells_bytes
@@ -134,15 +134,15 @@ class ReqScan : public Comm::ResponseCallback {
 
 class ReqScanTest : public ReqScan {
   public:
-  
+
   typedef std::shared_ptr<ReqScanTest>  Ptr;
 
   static Ptr make() { return std::make_shared<ReqScanTest>(); }
 
-  ReqScanTest() { }
+  ReqScanTest() noexcept { }
 
   bool reached_limits() override {
-    return (spec.flags.limit && spec.flags.limit <= cells.size()) || 
+    return (spec.flags.limit && spec.flags.limit <= cells.size()) ||
       (spec.flags.max_buffer && spec.flags.max_buffer <= cells.size_bytes());
   }
 
@@ -166,6 +166,6 @@ class ReqScanTest : public ReqScan {
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/db/Cells/ReqScan.cc"
-#endif 
+#endif
 
 #endif // swcdb_db_Cells_ReqScan_h

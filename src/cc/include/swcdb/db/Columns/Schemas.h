@@ -21,17 +21,17 @@ class Schemas : private std::unordered_map<cid_t, Schema::Ptr> {
   public:
 
   struct Pattern {
-    Pattern() {}
-    Pattern(Condition::Comp comp, const std::string& value) 
+    Pattern() noexcept { }
+    Pattern(Condition::Comp comp, const std::string& value)
             : comp(comp), value(value) { }
-    Condition::Comp comp; 
+    Condition::Comp comp;
     std::string     value;
   };
 
-  Schemas();
+  Schemas() noexcept;
 
   ~Schemas();
-  
+
   void add(int& err, const Schema::Ptr& schema);
 
   void remove(cid_t cid);
@@ -39,27 +39,27 @@ class Schemas : private std::unordered_map<cid_t, Schema::Ptr> {
   void replace(const Schema::Ptr& schema);
 
   Schema::Ptr get(cid_t cid);
-  
+
   Schema::Ptr get(const std::string& name);
 
   void all(std::vector<Schema::Ptr>& entries);
 
-  void matching(const std::vector<Pattern>& patterns, 
+  void matching(const std::vector<Pattern>& patterns,
                 std::vector<Schema::Ptr>& entries,
                 bool no_sys=true);
 
   void reset();
 
   protected:
-  
+
   void _add(int& err, const Schema::Ptr& schema);
 
   void _remove(cid_t cid);
 
   void _replace(const Schema::Ptr& schema);
 
-  Schema::Ptr _get(cid_t cid) const;
-  
+  Schema::Ptr _get(cid_t cid) const noexcept;
+
   Schema::Ptr _get(const std::string& name) const;
 
   Core::MutexSptd  m_mutex;
@@ -72,6 +72,6 @@ class Schemas : private std::unordered_map<cid_t, Schema::Ptr> {
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/db/Columns/Schemas.cc"
-#endif 
+#endif
 
 #endif // swcdb_db_Columns_Schemas_h

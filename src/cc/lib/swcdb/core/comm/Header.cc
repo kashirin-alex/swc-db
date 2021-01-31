@@ -13,12 +13,12 @@ namespace SWC { namespace Comm {
 
 
 SWC_SHOULD_INLINE
-Header::Header(uint64_t cmd, uint32_t timeout)
+Header::Header(uint64_t cmd, uint32_t timeout) noexcept
               : version(1), header_len(0), flags(0), buffers(0),
                 id(0), timeout_ms(timeout), checksum(0), command(cmd) {
 }
 SWC_SHOULD_INLINE
-Header::Header(const Header& init_from_req_header)
+Header::Header(const Header& init_from_req_header) noexcept
               : version(1), header_len(0),
                 flags(init_from_req_header.flags), buffers(0),
                 id(init_from_req_header.id),
@@ -26,10 +26,8 @@ Header::Header(const Header& init_from_req_header)
                 command(init_from_req_header.command) {
 }
 
-Header::~Header() { }
-
 SWC_SHOULD_INLINE
-void Header::reset() {
+void Header::reset() noexcept {
   version = 0;
   header_len = 0;
   flags = 0;
@@ -43,13 +41,13 @@ void Header::reset() {
 }
 
 SWC_SHOULD_INLINE
-void Header::set(uint64_t cmd, uint32_t timeout) {
+void Header::set(uint64_t cmd, uint32_t timeout) noexcept {
   command     = cmd;
   timeout_ms  = timeout;
 }
 
 SWC_SHOULD_INLINE
-uint8_t Header::encoded_length() {
+uint8_t Header::encoded_length() noexcept {
   header_len = FIXED_LENGTH;
   buffers = 0;
   if(data.size) {

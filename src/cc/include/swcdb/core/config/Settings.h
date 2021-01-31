@@ -70,8 +70,8 @@ class Settings final : public Properties {
   struct DynFile {
     const std::string filename;
     time_t            modified;
-    bool operator==(const DynFile& other) const;
-    bool operator==(const std::string& other) const;
+    bool operator==(const DynFile& other) const noexcept;
+    bool operator==(const std::string& other) const noexcept;
   };
   std::vector<DynFile> m_dyn_files;
 };

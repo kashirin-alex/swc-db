@@ -32,11 +32,11 @@ std::string LogWriter::repr(uint8_t priority) {
         : "undefined logging level: " +std::to_string(priority);
 }
 
-const char* LogWriter::get_name(uint8_t priority) {
+const char* LogWriter::get_name(uint8_t priority) noexcept {
   return priority <= LOG_NOTSET ? priority_name[priority] : "UNDEFINED";
 }
 
-uint8_t LogWriter::from_string(const std::string& loglevel) {
+uint8_t LogWriter::from_string(const std::string& loglevel) noexcept {
   if(!strncasecmp(loglevel.c_str(), "info", loglevel.length()))
     return LOG_INFO;
   if(!strncasecmp(loglevel.c_str(), "debug", loglevel.length()))

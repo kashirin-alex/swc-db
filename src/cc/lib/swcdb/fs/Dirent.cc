@@ -26,7 +26,7 @@ std::string Dirent::to_string() const {
   return s;
 }
 
-size_t Dirent::internal_encoded_length() const {
+size_t Dirent::internal_encoded_length() const noexcept {
   return 13 + Serialization::encoded_length_bytes(name.size());
 }
 

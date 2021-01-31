@@ -11,7 +11,7 @@
 namespace SWC { namespace DB { namespace Specs {
 
 
-Interval::Interval(Types::Column col_type)
+Interval::Interval(Types::Column col_type) noexcept
                   : values(col_type), offset_rev(0), options(0) { }
 
 Interval::Interval(const Cell::Key& range_begin, const Cell::Key& range_end)
@@ -47,7 +47,7 @@ void Interval::copy(const Interval& other) {
   options = other.options;
 }
 
-Interval::~Interval(){
+Interval::~Interval() {
   free();
 }
 
@@ -59,14 +59,14 @@ void Interval::free() {
   offset_key.free();
 }
 
-size_t Interval::size_of_internal() const {
+size_t Interval::size_of_internal() const noexcept {
   return range_begin.size + range_end.size
         + key_intervals.size_of_internal()
         + values.size_of_internal()
         + offset_key.size;
 }
 
-bool Interval::equal(const Interval& other) const {
+bool Interval::equal(const Interval& other) const noexcept {
   return  ts_start.equal(other.ts_start) &&
           ts_finish.equal(other.ts_finish) &&
           flags.equal(other.flags) &&
@@ -95,7 +95,7 @@ bool Interval::is_matching(const Types::KeySeq key_seq,
   }
 }
 
-bool Interval::is_matching(int64_t timestamp, bool desc) const {
+bool Interval::is_matching(int64_t timestamp, bool desc) const noexcept {
   return desc ? offset_rev > timestamp : offset_rev < timestamp;
 }
 
@@ -263,7 +263,7 @@ bool Interval::is_in_previous(const Types::KeySeq key_seq,
 }
 
 
-size_t Interval::encoded_length() const {
+size_t Interval::encoded_length() const noexcept {
   return range_begin.encoded_length() + range_end.encoded_length()
         + key_intervals.encoded_length()
         + values.encoded_length()
@@ -311,19 +311,19 @@ void Interval::decode(const uint8_t** bufp, size_t* remainp) {
 }
 
 
-void Interval::set_opt__key_equal() {
+void Interval::set_opt__key_equal() noexcept {
   options |= OPT_KEY_EQUAL;
 }
 
-void Interval::set_opt__range_end_rest() {
+void Interval::set_opt__range_end_rest() noexcept {
   options |= OPT_RANGE_END_REST;
 }
 
-bool Interval::has_opt__key_equal() const {
+bool Interval::has_opt__key_equal() const noexcept {
   return options & OPT_KEY_EQUAL;
 }
 
-bool Interval::has_opt__range_end_rest() const {
+bool Interval::has_opt__range_end_rest() const noexcept {
   return options & OPT_RANGE_END_REST;
 }
 

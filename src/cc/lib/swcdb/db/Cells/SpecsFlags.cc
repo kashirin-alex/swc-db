@@ -12,12 +12,13 @@
 namespace SWC { namespace DB { namespace Specs {
 
 
-Flags::Flags(): limit(0), offset(0),
-                max_versions(0), max_buffer(0), 
-                options(0), was_set(false) {
+Flags::Flags() noexcept
+            : limit(0), offset(0),
+              max_versions(0), max_buffer(0),
+              options(0), was_set(false) {
 }
 
-void Flags::copy(const Flags &other) {
+void Flags::copy(const Flags &other) noexcept {
   limit           = other.limit;
   offset          = other.offset;
   max_versions    = other.max_versions;
@@ -28,33 +29,33 @@ void Flags::copy(const Flags &other) {
 
 Flags::~Flags() { }
 
-bool Flags::is_only_keys() const {
+bool Flags::is_only_keys() const noexcept {
   return options & ONLY_KEYS;
 }
 
-bool Flags::is_only_deletes() const {
+bool Flags::is_only_deletes() const noexcept {
   return options & ONLY_DELETES;
 }
 
-void Flags::set_only_keys() {
+void Flags::set_only_keys() noexcept {
   options |= ONLY_KEYS;
 }
 
-void Flags::set_only_deletes() {
+void Flags::set_only_deletes() noexcept {
   options |= ONLY_DELETES;
 }
 
-bool Flags::equal(const Flags &other) const {
-  return  limit == other.limit && 
-          offset == other.offset  && 
-          max_versions == other.max_versions  && 
-          max_buffer == other.max_buffer  && 
-          options == other.options  && 
-          was_set == other.was_set 
+bool Flags::equal(const Flags &other) const noexcept {
+  return  limit == other.limit &&
+          offset == other.offset  &&
+          max_versions == other.max_versions  &&
+          max_buffer == other.max_buffer  &&
+          options == other.options  &&
+          was_set == other.was_set
           ;
 }
 
-size_t Flags::encoded_length() const {
+size_t Flags::encoded_length() const noexcept {
   return  Serialization::encoded_length_vi64(limit)
         + Serialization::encoded_length_vi64(offset)
         + Serialization::encoded_length_vi32(max_versions)
@@ -90,7 +91,7 @@ void Flags::print(std::ostream& out) const {
 }
 
 void Flags::display(std::ostream& out) const {
-  out << "was_set=" << (was_set? "TRUE" : "FALSE"); 
+  out << "was_set=" << (was_set? "TRUE" : "FALSE");
   if(limit)
     out << " limit=" << limit;
   if(offset)

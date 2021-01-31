@@ -22,9 +22,9 @@ class ConnQueueReqBase : public DispatchHandler {
 
   typedef std::shared_ptr<ConnQueueReqBase> Ptr;
 
-  ConnQueueReqBase(bool insistent, const Buffers::Ptr& cbp=nullptr);
+  ConnQueueReqBase(bool insistent, const Buffers::Ptr& cbp=nullptr) noexcept;
 
-  Ptr req();
+  Ptr req() noexcept;
 
   virtual ~ConnQueueReqBase();
 
@@ -41,7 +41,7 @@ class ConnQueueReqBase : public DispatchHandler {
   virtual void handle_no_conn();
 
   void print(std::ostream& out);
-    
+
   const bool            insistent;
   Buffers::Ptr          cbp;
   ConnQueuePtr          queue;
@@ -49,8 +49,8 @@ class ConnQueueReqBase : public DispatchHandler {
 
 
 
-class ConnQueue : 
-    private std::queue<ConnQueueReqBase::Ptr>, 
+class ConnQueue :
+    private std::queue<ConnQueueReqBase::Ptr>,
     public std::enable_shared_from_this<ConnQueue> {
   public:
 
@@ -81,12 +81,12 @@ class ConnQueue :
   void print(std::ostream& out);
 
   protected:
-  
+
   const Config::Property::V_GINT32::Ptr  cfg_keepalive_ms;
   const Config::Property::V_GINT32::Ptr  cfg_again_delay_ms;
 
   private:
-  
+
   void exec_queue();
 
   void run_queue();
@@ -98,7 +98,7 @@ class ConnQueue :
   ConnHandlerPtr                                    m_conn;
   bool                                              m_connecting;
   Core::StateRunning                                m_q_state;
-  asio::high_resolution_timer*                      m_timer; 
+  asio::high_resolution_timer*                      m_timer;
   std::unordered_set<asio::high_resolution_timer*>  m_delayed;
 
 
@@ -111,8 +111,7 @@ class ConnQueue :
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/core/comm/ClientConnQueue.cc"
-#endif 
+#endif
 
 
-// 
 #endif // swcdb_core_comm_ClientConnQueue_h

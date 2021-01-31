@@ -11,7 +11,7 @@
 namespace SWC { namespace DB {
 
 
-Schemas::Schemas() {}
+Schemas::Schemas() noexcept {}
 
 Schemas::~Schemas() {}
 
@@ -57,7 +57,7 @@ Schema::Ptr Schemas::get(cid_t cid) {
   return _get(cid);
 }
 
-Schema::Ptr Schemas::_get(cid_t cid) const {
+Schema::Ptr Schemas::_get(cid_t cid) const noexcept {
   auto it = find(cid);
   return it == end() ? nullptr : it->second;
 }

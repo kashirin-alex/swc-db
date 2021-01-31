@@ -15,7 +15,7 @@ namespace SWC { namespace Core {
 class MutexSptd final : private MutexAtomic {
   public:
 
-  explicit MutexSptd() { }
+  explicit MutexSptd() noexcept { }
 
   MutexSptd(const MutexSptd&) = delete;
 
@@ -23,7 +23,7 @@ class MutexSptd final : private MutexAtomic {
 
   MutexSptd& operator=(const MutexSptd&) = delete;
 
-  ~MutexSptd() { }
+  //~MutexSptd() noexcept { }
 
   bool lock() {
     if(MutexAtomic::try_lock())
@@ -53,14 +53,14 @@ class MutexSptd final : private MutexAtomic {
     if(!support)
       m_mutex.unlock();
   }
-  
+
   class scope final {
     public:
 
     scope(MutexSptd& m) : _m(m), _support(m.lock()) { }
 
     ~scope() { _m.unlock(_support); }
-    
+
     scope(const scope&) = delete;
 
     scope(const scope&&) = delete;
@@ -68,8 +68,8 @@ class MutexSptd final : private MutexAtomic {
     scope& operator=(const scope&) = delete;
 
     private:
-    MutexSptd&      _m;
-    const bool           _support;
+    MutexSptd&   _m;
+    const bool   _support;
   };
 
   private:

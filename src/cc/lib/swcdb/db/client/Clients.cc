@@ -76,7 +76,7 @@ client::Clients::Ptr Clients::get() {
   return m_env->m_clients;
 }
 
-const Clients& Clients::ref() {
+const Clients& Clients::ref() noexcept {
   return *m_env.get();
 }
 

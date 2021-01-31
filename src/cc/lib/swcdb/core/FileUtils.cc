@@ -48,13 +48,10 @@ bool read(const std::string& fname, std::string& contents) {
 }
 
 
-ssize_t read(int fd, void *vptr, size_t n) {
-  size_t nleft;
+ssize_t read(int fd, void *vptr, size_t n) noexcept {
+  char* ptr = static_cast<char*>(vptr);
+  size_t nleft = n;
   ssize_t nread;
-  char *ptr;
-
-  ptr = static_cast<char*>(vptr);
-  nleft = n;
   while (nleft) {
     if ((nread = ::read(fd, ptr, nleft)) < 0) {
       if (errno == EINTR)
@@ -74,13 +71,10 @@ ssize_t read(int fd, void *vptr, size_t n) {
 }
 
 
-ssize_t pread(int fd, off_t offset, void *vptr, size_t n) {
-  ssize_t nleft;
+ssize_t pread(int fd, off_t offset, void* vptr, size_t n) noexcept {
+  char* ptr = static_cast<char*>(vptr);
+  ssize_t nleft = n;
   ssize_t nread;
-  char *ptr;
-
-  ptr = static_cast<char*>(vptr);
-  nleft = n;
   while (nleft) {
     if ((nread = ::pread(fd, ptr, nleft, offset)) < 0) {
       if (errno == EINTR)
@@ -116,13 +110,10 @@ ssize_t write(const std::string& fname, const std::string& contents) {
 }
 
 
-ssize_t write(int fd, const void *vptr, size_t n) {
-  size_t nleft;
+ssize_t write(int fd, const void* vptr, size_t n) noexcept {
+  const char* ptr = static_cast<const char*>(vptr);
+  size_t nleft = n;
   ssize_t nwritten;
-  const char *ptr;
-
-  ptr = static_cast<const char*>(vptr);
-  nleft = n;
   while (nleft) {
     if ((nwritten = ::write(fd, ptr, nleft)) <= 0) {
       if (errno == EINTR)
@@ -176,7 +167,7 @@ bool mkdirs(const std::string& dirname) {
   return !saved_errno;
 }
 
-bool exists(const std::string& fname) {
+bool exists(const std::string& fname) noexcept {
   struct stat statbuf;
   return !stat(fname.c_str(), &statbuf);
 }
@@ -203,18 +194,18 @@ bool rename(const std::string& oldpath, const std::string& newpath) {
   return true;
 }
 
-uint64_t size(const std::string& fname) {
+uint64_t size(const std::string& fname) noexcept {
   struct stat statbuf;
   return stat(fname.c_str(), &statbuf) ? 0 : statbuf.st_size;
 }
 
 
-off_t length(const std::string& fname) {
+off_t length(const std::string& fname) noexcept {
   struct stat statbuf;
   return stat(fname.c_str(), &statbuf) ? -1 : statbuf.st_size;
 }
 
-time_t modification(const std::string& fname) {
+time_t modification(const std::string& fname) noexcept {
   struct stat statbuf;
   return stat(fname.c_str(), &statbuf) ? 0 : statbuf.st_mtime;
 }

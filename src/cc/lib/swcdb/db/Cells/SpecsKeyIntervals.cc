@@ -57,7 +57,7 @@ KeyInterval::Ptr& KeyIntervals::add(const Key& start, const Key& finish) {
   return emplace_back(new KeyInterval(start, finish));
 }
 
-size_t KeyIntervals::size_of_internal() const {
+size_t KeyIntervals::size_of_internal() const noexcept {
   size_t sz = 0;
   for(auto& key : *this) {
     sz += sizeof(key);
@@ -67,7 +67,7 @@ size_t KeyIntervals::size_of_internal() const {
   return sz;
 }
 
-bool KeyIntervals::equal(const KeyIntervals& other) const {
+bool KeyIntervals::equal(const KeyIntervals& other) const noexcept {
   if(size() == other.size()) {
     auto it = begin();
     for(auto it2 = other.begin(); it < end(); ++it, ++it2)
@@ -124,7 +124,7 @@ bool KeyIntervals::is_matching_start(const Types::KeySeq key_seq,
   }
 }
 
-size_t KeyIntervals::encoded_length() const {
+size_t KeyIntervals::encoded_length() const noexcept {
   size_t sz = Serialization::encoded_length_vi64(size());
   for(auto& key : *this) {
     sz += key->start.encoded_length();

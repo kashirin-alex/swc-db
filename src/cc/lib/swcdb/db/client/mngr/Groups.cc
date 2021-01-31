@@ -11,15 +11,15 @@
 namespace SWC { namespace client { namespace Mngr {
 
 
-Group::Group(uint8_t role, cid_t cid_begin, cid_t cid_end, 
+Group::Group(uint8_t role, cid_t cid_begin, cid_t cid_end,
              const Comm::EndPoints& endpoints)
-            : Hosts({endpoints}), 
+            : Hosts({endpoints}),
               role(role), cid_begin(cid_begin), cid_end(cid_end) {
 }
 
-Group::Group(uint8_t role, cid_t cid_begin, cid_t cid_end, 
-             const Hosts& hosts) 
-            : Hosts(hosts), 
+Group::Group(uint8_t role, cid_t cid_begin, cid_t cid_end,
+             const Hosts& hosts)
+            : Hosts(hosts),
               role(role), cid_begin(cid_begin), cid_end(cid_end) {
 }
   
@@ -69,7 +69,7 @@ void Group::print(std::ostream& out) {
 
 void Group::apply_endpoints(Comm::EndPoints& to) {
   std::scoped_lock lock(m_mutex);
-    
+
   for(auto& endpoints : *this) {
     for(auto& point : endpoints) {
       if(std::find(to.begin(), to.end(), point) == to.end())
@@ -78,8 +78,8 @@ void Group::apply_endpoints(Comm::EndPoints& to) {
   }
 }
 
-void Group::_get_host(const Comm::EndPoint& point, 
-                      Comm::EndPoints*& found_host) {
+void Group::_get_host(const Comm::EndPoint& point,
+                      Comm::EndPoints*& found_host) noexcept {
   for(auto& points : *this) {
     if(std::find(points.begin(), points.end(), point) != points.end()) {
       found_host = &points;
@@ -90,7 +90,7 @@ void Group::_get_host(const Comm::EndPoint& point,
 }
 
 
-Groups::Groups() { 
+Groups::Groups() {
   asio::error_code ec;
   Comm::Resolver::get_networks(
     Env::Config::settings()->get_strs("swc.comm.network.priority"),
@@ -103,7 +103,7 @@ Groups::Groups() {
 }
 
 
-Groups::Groups(const Groups::Vec& groups, 
+Groups::Groups(const Groups::Vec& groups,
                const std::vector<Comm::Network>& nets)
                : Vec(groups), m_nets(nets) {
 }
@@ -113,7 +113,7 @@ Groups::~Groups() { }
 Groups::Ptr Groups::init() {
   Env::Config::settings()->get<Config::Property::V_GSTRINGS>("swc.mngr.host")
     ->set_cb_on_chg([cb=shared_from_this()]{cb->on_cfg_update();});
-    
+
   on_cfg_update();
   return shared_from_this();
 }
@@ -133,7 +133,7 @@ void Groups::on_cfg_update() {
     = Env::Config::settings()->get<Config::Property::V_GSTRINGS>(
       "swc.mngr.host");
   uint16_t default_port = Env::Config::settings()->get_i16("swc.mngr.port");
-  
+
   uint8_t role;
   int64_t col_begin;
   int64_t col_end;
@@ -147,13 +147,13 @@ void Groups::on_cfg_update() {
   int c = cfg_mngr_hosts->size();
   std::string cfg;
   std::string cfg_chk;
-  
+
   m_mutex.lock();
   clear();
   for(int n=0; n<c; ++n) {
     cfg = cfg_mngr_hosts->get_item(n);
     SWC_LOGF(LOG_DEBUG, "cfg=%d swc.mngr.host=%s", n, cfg.c_str());
-      
+
     if((at = cfg.find_first_of('|')) == std::string::npos) {
       _add_host(DB::Types::MngrRole::ALL, 0, 0, default_port, cfg);
       continue;
@@ -215,7 +215,7 @@ void Groups::on_cfg_update() {
   SWC_LOG_OUT(LOG_DEBUG, print(SWC_LOG_OSTREAM); );
 }
 
-void Groups::_add_host(uint8_t role, cid_t cid_begin, cid_t cid_end, 
+void Groups::_add_host(uint8_t role, cid_t cid_begin, cid_t cid_end,
                        uint16_t port, std::string host_or_ips) {
   std::vector<std::string> ips;
   std::string host;
@@ -227,12 +227,12 @@ void Groups::_add_host(uint8_t role, cid_t cid_begin, cid_t cid_end,
       addr = host_or_ips.substr(0, at);
       host_or_ips = host_or_ips.substr(at+1, host_or_ips.length());
     }
-    if(Comm::Resolver::is_ipv4_address(addr) || 
+    if(Comm::Resolver::is_ipv4_address(addr) ||
        Comm::Resolver::is_ipv6_address(addr))
       ips.push_back(addr);
     else
       host = addr;
-  
+
   } while(at != std::string::npos);
 
   Comm::EndPoints endpoints = Comm::Resolver::get_endpoints(
@@ -241,10 +241,10 @@ void Groups::_add_host(uint8_t role, cid_t cid_begin, cid_t cid_end,
   if(endpoints.empty())
     return;
   for(auto& group : *this) {
-    if(group->role == role && 
-       group->cid_begin == cid_begin && 
+    if(group->role == role &&
+       group->cid_begin == cid_begin &&
        group->cid_end == cid_end)
-      return group->add_host(endpoints); 
+      return group->add_host(endpoints);
   }
   emplace_back(new Group(role, cid_begin, cid_end, endpoints));
 }
@@ -254,7 +254,7 @@ Groups::Vec Groups::get_groups() {
   return Vec(begin(), end());
 }
 
-void Groups::hosts(uint8_t role, cid_t cid, Hosts& hosts, 
+void Groups::hosts(uint8_t role, cid_t cid, Hosts& hosts,
                    Groups::GroupHost &group_host) {
   std::scoped_lock lock(m_mutex);
 
@@ -275,10 +275,10 @@ void Groups::hosts(uint8_t role, cid_t cid, Hosts& hosts,
 Groups::Vec Groups::get_groups(const Comm::EndPoints& endpoints) {
   Vec hgroups;
   std::scoped_lock lock(m_mutex);
-    
+
   for(auto& group : *this) {
     for(auto& endpoint : endpoints) {
-      if(group->is_in_group(endpoint) && 
+      if(group->is_in_group(endpoint) &&
          std::find(hgroups.begin(), hgroups.end(), group) == hgroups.end())
         hgroups.push_back(group);
     }
@@ -286,17 +286,17 @@ Groups::Vec Groups::get_groups(const Comm::EndPoints& endpoints) {
   return hgroups;
 }
 
-Comm::EndPoints Groups::get_endpoints(uint8_t role, cid_t cid_begin, 
+Comm::EndPoints Groups::get_endpoints(uint8_t role, cid_t cid_begin,
                                       cid_t cid_end) {
   Comm::EndPoints endpoints;
   if(!cid_end)
     cid_end = cid_begin;
   std::scoped_lock lock(m_mutex);
-    
+
   for(auto& group : *this) {
-    if((!role || group->role & role) && 
-       (!cid_begin || group->cid_begin <= cid_begin) && 
-       (!cid_end || group->cid_end || 
+    if((!role || group->role & role) &&
+       (!cid_begin || group->cid_begin <= cid_begin) &&
+       (!cid_end || group->cid_end ||
         (cid_end && group->cid_end >= cid_end))) {
       group->apply_endpoints(endpoints);
     }
@@ -318,8 +318,8 @@ void Groups::add(Groups::GroupHost& g_host) {
   for(auto it=m_active_g_host.begin(); it<m_active_g_host.end(); ++it) {
     if(Comm::has_endpoint(g_host.endpoints, it->endpoints))
       return;
-    if(g_host.role == it->role && 
-       g_host.cid_begin == it->cid_begin && 
+    if(g_host.role == it->role &&
+       g_host.cid_begin == it->cid_begin &&
        g_host.cid_end == it->cid_end) {
       it->endpoints = g_host.endpoints;
       return;
@@ -341,10 +341,10 @@ void Groups::remove(const Comm::EndPoints& endpoints) {
 
 void Groups::select(const cid_t& cid, Comm::EndPoints& endpoints) {
   std::scoped_lock lock(m_mutex);
-    
+
   for(auto& host : m_active_g_host) {
-    if(host.role & DB::Types::MngrRole::COLUMNS && 
-       host.cid_begin <= cid && 
+    if(host.role & DB::Types::MngrRole::COLUMNS &&
+       host.cid_begin <= cid &&
        (!host.cid_end || host.cid_end >= cid)) {
       endpoints = host.endpoints;
       return;
@@ -354,7 +354,7 @@ void Groups::select(const cid_t& cid, Comm::EndPoints& endpoints) {
 
 void Groups::select(const uint8_t& role, Comm::EndPoints& endpoints) {
   std::scoped_lock lock(m_mutex);
-    
+
   for(auto& host : m_active_g_host) {
     if(host.role & role) {
       endpoints = host.endpoints;

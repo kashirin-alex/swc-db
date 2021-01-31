@@ -115,7 +115,7 @@ FileSystem::Ptr Interface::use_filesystem() {
   return FileSystem::Ptr(reinterpret_cast<fs_make_new_t*>(f_new_ptr)());
 }
 
-Interface::Ptr Interface::ptr() {
+Interface::Ptr Interface::ptr() noexcept {
   return this;
 }
 
@@ -131,7 +131,7 @@ Type Interface::get_type() const noexcept {
   return m_fs->get_type();
 }
 
-FileSystem::Ptr Interface::get_fs() {
+FileSystem::Ptr Interface::get_fs() noexcept {
   return m_fs;
 }
 
@@ -140,7 +140,7 @@ std::string Interface::to_string() const {
                 int(m_type), m_fs ? m_fs->to_string().c_str() : "NULL");
 }
 
-bool Interface::need_fds() const {
+bool Interface::need_fds() const noexcept {
   return m_fs->need_fds();
 }
 
@@ -524,7 +524,7 @@ void FsInterface::init(FS::Type typ) {
   m_env = std::make_shared<FsInterface>(typ);
 }
 
-FsInterface::Ptr FsInterface::get(){
+FsInterface::Ptr FsInterface::get() noexcept {
   return m_env;
 }
 

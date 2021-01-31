@@ -31,12 +31,12 @@ class Result final : private std::vector<Cell*> {
   uint32_t          max_revs;
   uint64_t          ttl;
 
-  explicit Result(const uint32_t max_revs=1, const uint64_t ttl_ns=0, 
-                  const Types::Column type=Types::Column::PLAIN);
+  explicit Result(const uint32_t max_revs=1, const uint64_t ttl_ns=0,
+                  const Types::Column type=Types::Column::PLAIN) noexcept;
 
-  explicit Result(Result& other);
+  explicit Result(Result&& other) noexcept;
 
-  Result(const Result&& other) = delete;
+  Result(const Result& other) = delete;
 
   Result& operator=(const Result& other) = delete;
 
@@ -44,19 +44,19 @@ class Result final : private std::vector<Cell*> {
 
   void free();
 
-  void reset(const uint32_t revs=1, const uint64_t ttl_ns=0, 
+  void reset(const uint32_t revs=1, const uint64_t ttl_ns=0,
              const Types::Column typ=Types::Column::PLAIN);
 
   void configure(const uint32_t revs=1, const uint64_t ttl_ns=0,
-                 const Types::Column typ=Types::Column::PLAIN);
+                 const Types::Column typ=Types::Column::PLAIN) noexcept;
 
-  size_t size_bytes() const;
+  size_t size_bytes() const noexcept;
 
 
   void take(Result& other);
 
   void add(const Cell& cell, bool no_value=false);
-  
+
   size_t add(const uint8_t* ptr, size_t remain);
 
 
@@ -68,7 +68,7 @@ class Result final : private std::vector<Cell*> {
   void write(DynamicBuffer& cells) const;
 
   void write_and_free(DynamicBuffer& cells, uint32_t& cell_count,
-                      Interval& intval, uint32_t threshold, 
+                      Interval& intval, uint32_t threshold,
                       uint32_t max_cells);
 
 
@@ -81,6 +81,6 @@ class Result final : private std::vector<Cell*> {
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/db/Cells/Result.cc"
-#endif 
+#endif
 
 #endif // swcdb_db_Cells_Result_h

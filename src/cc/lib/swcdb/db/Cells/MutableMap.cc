@@ -32,7 +32,7 @@ ColCells::ColCells(const cid_t cid, Mutable& cells)
 
 ColCells::~ColCells() {}
 
-Types::KeySeq ColCells::get_sequence() const {
+Types::KeySeq ColCells::get_sequence() const noexcept {
   return m_cells.key_seq;
 }
 

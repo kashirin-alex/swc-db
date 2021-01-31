@@ -22,22 +22,22 @@ ColumnSchema::~ColumnSchema() {}
 int ColumnSchema::parse(ColumnSchema::Func* func) {
 
   while(remain && !err) {
- 
+
     if(found_space())
       continue;
 
-    if(found_token("add", 3) || 
+    if(found_token("add", 3) ||
        found_token("create", 6)) {
       return parse((*func = Func::CREATE), true);
     }
 
-    if(found_token("modify", 6) || 
-       found_token("update", 6) || 
+    if(found_token("modify", 6) ||
+       found_token("update", 6) ||
        found_token("change", 6)) {
       return parse((*func = Func::MODIFY), true);
     }
 
-    if(found_token("delete", 6) || 
+    if(found_token("delete", 6) ||
        found_token("remove", 6)) {
       return parse((*func = Func::DELETE), true);
     }
@@ -54,27 +54,27 @@ int ColumnSchema::parse(ColumnSchema::Func func, bool token_cmd) {
   bool bracket = false;
 
   while(remain && !err) {
- 
+
     if(found_space())
       continue;
 
     if(!token_cmd && (
-       (func == Func::CREATE && (found_token("add", 3)    || 
-                                 found_token("create", 6))) || 
-       (func == Func::MODIFY && (found_token("modify", 6) || 
-                                 found_token("update", 6) || 
-                                 found_token("change", 6))) || 
-       (func == Func::DELETE && (found_token("delete", 6) || 
+       (func == Func::CREATE && (found_token("add", 3)    ||
+                                 found_token("create", 6))) ||
+       (func == Func::MODIFY && (found_token("modify", 6) ||
+                                 found_token("update", 6) ||
+                                 found_token("change", 6))) ||
+       (func == Func::DELETE && (found_token("delete", 6) ||
                                  found_token("remove", 6)))
-      )) {   
+      )) {
       token_cmd = true;
       continue;
-    } 
+    }
     if(!token_cmd) {
       expect_token("CREATE|MODIFY|DELETE", 20, token_cmd);
       break;
     }
-    if(!token_typ && (found_token("column", 6) || found_token("schema", 6))) {   
+    if(!token_typ && (found_token("column", 6) || found_token("schema", 6))) {
       token_typ = true;
       continue;
     }
@@ -110,7 +110,7 @@ void ColumnSchema::read_schema_options(ColumnSchema::Func func) {
 
   while(any && remain && !err) {
     if(found_space())
-      continue;    
+      continue;
 
     if((any = found_token("cid", 3))) {
       expect_eq();
@@ -137,7 +137,7 @@ void ColumnSchema::read_schema_options(ColumnSchema::Func func) {
       if(err)
         return;
       read(buff, stop);
-      if((schema->col_type = DB::Types::column_type_from(buff)) 
+      if((schema->col_type = DB::Types::column_type_from(buff))
           == DB::Types::Column::UNKNOWN) {
         error_msg(Error::SQL_PARSE_ERROR, " unknown column type");
         return;
@@ -150,7 +150,7 @@ void ColumnSchema::read_schema_options(ColumnSchema::Func func) {
       if(err)
         return;
       read(buff, stop);
-      if((schema->col_seq = DB::Types::range_seq_from(buff)) 
+      if((schema->col_seq = DB::Types::range_seq_from(buff))
           == DB::Types::KeySeq::UNKNOWN) {
         error_msg(Error::SQL_PARSE_ERROR, " unknown range seq type");
         return;
@@ -188,8 +188,8 @@ void ColumnSchema::read_schema_options(ColumnSchema::Func func) {
       if(err)
         return;
       read(buff, stop);
-      if((schema->blk_encoding = Core::Encoder::encoding_from(buff)) 
-          == DB::Types::Encoder::UNKNOWN) { 
+      if((schema->blk_encoding = Core::Encoder::encoding_from(buff))
+          == DB::Types::Encoder::UNKNOWN) {
         error_msg(Error::SQL_PARSE_ERROR, " unknown blk_encoding");
         return;
       }
@@ -274,14 +274,14 @@ void ColumnSchema::read_schema_options(ColumnSchema::Func func) {
 
   if(schema->col_name.empty()) {
     error_msg(
-      Error::COLUMN_SCHEMA_NAME_EMPTY, 
+      Error::COLUMN_SCHEMA_NAME_EMPTY,
       "create|delete|modify action require column name"
     );
-  } else if((func == Func::MODIFY) && 
-            !schema->col_name.empty() && 
+  } else if((func == Func::MODIFY) &&
+            !schema->col_name.empty() &&
             schema->cid == DB::Schema::NO_CID ) {
     error_msg(
-      Error::COLUMN_SCHEMA_NAME_EMPTY, 
+      Error::COLUMN_SCHEMA_NAME_EMPTY,
       "modify action require column cid"
     );
     return;

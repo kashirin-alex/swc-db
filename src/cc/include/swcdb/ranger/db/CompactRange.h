@@ -15,7 +15,7 @@ class CompactRange final : public ReqScan {
   public:
 
   typedef std::shared_ptr<CompactRange>  Ptr;
-  
+
   CommitLog::Fragments::Vec              fragments_old;
 
   CompactRange(Compaction* compactor, const RangePtr& range,
@@ -27,15 +27,15 @@ class CompactRange final : public ReqScan {
 
   void initialize();
 
-  bool with_block() override;
+  bool with_block() const noexcept override;
 
-  bool selector(const DB::Types::KeySeq key_seq, 
+  bool selector(const DB::Types::KeySeq key_seq,
                 const DB::Cells::Cell& cell, bool& stop) override;
-  
+
   bool reached_limits() override;
-  
+
   bool add_cell_and_more(const DB::Cells::Cell& cell) override;
-  
+
   void response(int &err) override;
 
   private:
@@ -81,7 +81,7 @@ class CompactRange final : public ReqScan {
   void apply_new(bool clear = false);
 
   bool completion();
-  
+
   void finished(bool clear);
 
   void quit();
@@ -101,7 +101,7 @@ class CompactRange final : public ReqScan {
   InBlock*                        m_inblock = nullptr;
 
   Core::Atomic<size_t>            m_processing;
-  Core::QueuePointer<InBlock*>    m_q_intval; 
+  Core::QueuePointer<InBlock*>    m_q_intval;
   Core::QueuePointer<InBlock*>    m_q_encode;
   Core::QueuePointer<InBlock*>    m_q_write;
 
@@ -120,7 +120,7 @@ class CompactRange final : public ReqScan {
   Core::AtomicBool                m_chk_final;
 
   Core::StateRunning              m_get;
-  
+
   Core::MutexSptd                 m_mutex;
   size_t                          m_log_sz;
   asio::high_resolution_timer     m_chk_timer;

@@ -24,23 +24,23 @@ class KeyVec final : public VecFraction {
 
   typedef VecFraction::value_type Fraction;
 
-  explicit KeyVec();
+  explicit KeyVec() noexcept;
 
   ~KeyVec();
 
   void free();
 
-  size_t size_of_internal() const;
+  size_t size_of_internal() const noexcept;
 
   KeyVec(const KeyVec&) = delete;
 
   KeyVec(const KeyVec&&) = delete;
 
   KeyVec& operator=(const KeyVec&) = delete;
-  
+
   void copy(const KeyVec &other);
 
-  bool equal(const KeyVec &other) const;
+  bool equal(const KeyVec &other) const noexcept;
 
   void add(const Fraction& fraction);
 
@@ -80,8 +80,8 @@ class KeyVec final : public VecFraction {
 
   void get(const uint32_t idx, std::string& fraction) const;
 
-  uint32_t encoded_length() const;
-  
+  uint32_t encoded_length() const noexcept;
+
   void encode(uint8_t** bufp) const;
 
   void decode(const uint8_t** bufp, size_t* remainp);
@@ -101,6 +101,6 @@ class KeyVec final : public VecFraction {
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/db/Cells/CellKeyVec.cc"
-#endif 
+#endif
 
 #endif // swcdb_db_Cells_CellKeyVec_h

@@ -11,11 +11,9 @@
 
 namespace SWC { namespace Comm {
 
-AppContext::AppContext(Config::Property::V_GENUM::Ptr cfg_encoder)
+AppContext::AppContext(Config::Property::V_GENUM::Ptr cfg_encoder) noexcept
                       : cfg_encoder(cfg_encoder) {
 }
-
-AppContext::~AppContext(){}
 
 void AppContext::handle(ConnHandlerPtr, const Event::Ptr& ev) {
   SWC_LOG_OUT(LOG_WARN,

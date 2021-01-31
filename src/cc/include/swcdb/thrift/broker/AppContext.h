@@ -11,7 +11,7 @@
 #include "swcdb/thrift/broker/AppHandler.h"
 
 
-namespace SWC { 
+namespace SWC {
 
 
 namespace client {
@@ -25,11 +25,11 @@ namespace ThriftBroker {
 
 class AppContext final : virtual public BrokerIfFactory {
  public:
-  
-  AppContext() : m_run(true) { 
+
+  AppContext() : m_run(true) {
     auto settings = Env::Config::settings();
     Env::IoCtx::init(settings->get_i32("swc.ThriftBroker.clients.handlers"));
-    
+
     int sig = 0;
     Env::IoCtx::io()->set_signals();
     shutting_down(std::error_code(), sig);
@@ -41,9 +41,9 @@ class AppContext final : virtual public BrokerIfFactory {
         std::make_shared<client::ContextRanger>()
       )
     );
-    
+
     //Env::FsInterface::init(FS::fs_type(settings->get_str("swc.fs")));
-    
+
     auto period = settings->get<Config::Property::V_GINT32>(
       "swc.cfg.dyn.period");
     if(period->get()) {
@@ -102,10 +102,10 @@ class AppContext final : virtual public BrokerIfFactory {
           if(ec == asio::error::operation_aborted)
             return;
           SWC_LOGF(LOG_INFO, "Received signal, sig=%d ec=%s", sig, ec.message().c_str());
-          shutting_down(ec, sig); 
+          shutting_down(ec, sig);
         }
-      ); 
-      SWC_LOGF(LOG_INFO, "Listening for Shutdown signal, set at sig=%d ec=%s", 
+      );
+      SWC_LOGF(LOG_INFO, "Listening for Shutdown signal, set at sig=%d ec=%s",
               sig, ec.message().c_str());
       return;
     } else {
@@ -127,7 +127,7 @@ class AppContext final : virtual public BrokerIfFactory {
     Env::Clients::get()->rgr->stop();
     Env::Clients::get()->mngr->stop();
     Env::IoCtx::io()->stop();
-    
+
     //Env::FsInterface::interface()->stop();
 
     std::scoped_lock lock(m_mutex);
@@ -147,13 +147,10 @@ class AppContext final : virtual public BrokerIfFactory {
 
 //#ifdef SWC_IMPL_SOURCE
 #include "swcdb/thrift/gen-cpp/Broker.cpp"
-#include "swcdb/thrift/gen-cpp/Broker_constants.cpp"
-#include "swcdb/thrift/gen-cpp/Broker_types.cpp"
 #include "swcdb/thrift/gen-cpp/Service.cpp"
-#include "swcdb/thrift/gen-cpp/Service_constants.cpp"
 #include "swcdb/thrift/gen-cpp/Service_types.cpp"
 //#include "swcdb/thrift/Converters.cc"
-//#endif 
+//#endif
 
 
 #endif // swcdb_app_thriftbroker_AppContext_h

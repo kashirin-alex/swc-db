@@ -18,14 +18,14 @@ class QueueSafe : private std::queue<ItemT> {
 
   public:
 
-  explicit QueueSafe() { }
+  explicit QueueSafe() noexcept { }
 
   ~QueueSafe() { }
-  
+
   QueueSafe(const QueueSafe&) = delete;
 
   QueueSafe(const QueueSafe&&) = delete;
-    
+
   QueueSafe& operator=(const QueueSafe&) = delete;
 
   void push(const ItemT& item) {

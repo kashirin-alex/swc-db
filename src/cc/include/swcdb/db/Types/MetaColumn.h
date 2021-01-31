@@ -19,25 +19,25 @@ const cid_t CID_META_BEGIN    = 5;
 const cid_t CID_META_END      = 8;
 
 
-bool is_master(cid_t cid);
+bool is_master(cid_t cid) noexcept;
 
-bool is_meta(cid_t cid);
+bool is_meta(cid_t cid) noexcept;
 
-bool is_data(cid_t cid);
-
-
-Range get_range_type(cid_t cid);
-
-KeySeq get_seq_type(cid_t cid);
+bool is_data(cid_t cid) noexcept;
 
 
-cid_t get_master_cid(KeySeq col_seq);
+Range get_range_type(cid_t cid) noexcept;
 
-cid_t get_meta_cid(KeySeq col_seq);
+KeySeq get_seq_type(cid_t cid) noexcept;
 
-const char* get_meta_cid_str(KeySeq col_seq);
 
-uint8_t get_sys_cid(KeySeq col_seq, Range col_type); 
+cid_t get_master_cid(KeySeq col_seq) noexcept;
+
+cid_t get_meta_cid(KeySeq col_seq) noexcept;
+
+const char* get_meta_cid_str(KeySeq col_seq) noexcept;
+
+uint8_t get_sys_cid(KeySeq col_seq, Range col_type) noexcept;
 
 
 }}}}
@@ -45,6 +45,6 @@ uint8_t get_sys_cid(KeySeq col_seq, Range col_type);
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/db/Types/MetaColumn.cc"
-#endif 
+#endif
 
 #endif // swcdb_db_types_MetaColumn_h

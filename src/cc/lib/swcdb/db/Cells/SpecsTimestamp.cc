@@ -11,27 +11,30 @@
 namespace SWC { namespace DB { namespace Specs {
 
 
-Timestamp::Timestamp(): value(0), comp(Condition::NONE), was_set(false) {}
+Timestamp::Timestamp() noexcept
+    : value(0), comp(Condition::NONE), was_set(false) {}
 
-Timestamp::Timestamp(int64_t timestamp, Condition::Comp comp) {
-  set(timestamp, comp);
+Timestamp::Timestamp(int64_t timestamp, Condition::Comp comp) noexcept
+                    : value(timestamp), comp(comp),
+                      was_set(true) {
 }
 
-Timestamp::Timestamp(const Timestamp &other){
-  copy(other);
+Timestamp::Timestamp(const Timestamp &other) noexcept
+                    : value(other.value), comp(other.comp),
+                      was_set(other.was_set) {
 }
 
-void Timestamp::copy(const Timestamp &other) {
+void Timestamp::copy(const Timestamp &other) noexcept {
   set(other.value, other.comp);
 }
 
-void Timestamp::set(int64_t timestamp, Condition::Comp comperator) {
+void Timestamp::set(int64_t timestamp, Condition::Comp comperator) noexcept {
   value = timestamp;
   comp  = comperator;
   was_set = true;
 }
 
-void Timestamp::free() {
+void Timestamp::free() noexcept {
   value  = 0;
   comp  = Condition::NONE;
   was_set = false;
@@ -39,15 +42,15 @@ void Timestamp::free() {
 
 Timestamp::~Timestamp() { }
 
-bool Timestamp::empty() const {
+bool Timestamp::empty() const noexcept {
   return !was_set;
 }
 
-bool Timestamp::equal(const Timestamp &other) const {
+bool Timestamp::equal(const Timestamp &other) const noexcept {
   return value == other.value && comp == other.comp;
 }
 
-size_t Timestamp::encoded_length() const {
+size_t Timestamp::encoded_length() const noexcept {
   return 1 + (comp == Condition::NONE? 0: 8);
 }
 
@@ -63,7 +66,7 @@ void Timestamp::decode(const uint8_t** bufp, size_t* remainp){
     value = Serialization::decode_i64(bufp, remainp);
 }
 
-bool Timestamp::is_matching(int64_t other) const {
+bool Timestamp::is_matching(int64_t other) const noexcept {
   return Condition::is_matching(comp, value, other);
 }
 

@@ -54,9 +54,9 @@ class IoContext final : public std::enable_shared_from_this<IoContext> {
 
   ~IoContext();
 
-  int32_t get_size() const;
+  int32_t get_size() const noexcept;
 
-  Executor executor();
+  Executor executor() noexcept;
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
@@ -92,7 +92,7 @@ class IoCtx final {
 
   static void init(int32_t size);
 
-  static bool ok();
+  static bool ok() noexcept;
 
   static Comm::IoContextPtr io();
 
@@ -102,7 +102,7 @@ class IoCtx final {
     m_env->m_io->post(handler);
   }
 
-  static bool stopping();
+  static bool stopping() noexcept;
 
   IoCtx(int32_t size);
 

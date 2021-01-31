@@ -21,34 +21,34 @@ class Flags {
   static const uint8_t OFFSET_BY_KEYS     = 0x04;
   static const uint8_t ONLY_KEYS          = 0x08;
   static const uint8_t ONLY_DELETES       = 0x10;
-  
 
-  explicit Flags();
 
-  void copy(const Flags &other);
+  explicit Flags() noexcept;
+
+  void copy(const Flags &other) noexcept;
 
   ~Flags();
 
-  bool is_only_keys() const;
+  bool is_only_keys() const noexcept;
 
-  bool is_only_deletes() const;
+  bool is_only_deletes() const noexcept;
 
-  void set_only_keys();
+  void set_only_keys() noexcept;
 
-  void set_only_deletes();
+  void set_only_deletes() noexcept;
 
-  bool equal(const Flags &other) const;
+  bool equal(const Flags &other) const noexcept;
 
-  size_t encoded_length() const;
+  size_t encoded_length() const noexcept;
 
   void encode(uint8_t** bufp) const;
-  
+
   void decode(const uint8_t** bufp, size_t* remainp);
-  
+
   std::string to_string() const;
 
   void print(std::ostream& out) const;
-  
+
   void display(std::ostream& out) const;
 
   uint64_t  limit, offset;
@@ -64,6 +64,6 @@ class Flags {
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/db/Cells/SpecsFlags.cc"
-#endif 
+#endif
 
 #endif //swcdb_db_cells_SpecsFlags_h

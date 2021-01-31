@@ -7,9 +7,9 @@
 
 namespace SWC { namespace Config {
 
-  Properties::Properties() { }
-  
-  Properties::~Properties() { 
+  Properties::Properties() noexcept { }
+
+  Properties::~Properties() {
     reset();
   }
 
@@ -19,33 +19,33 @@ namespace SWC { namespace Config {
     m_map.clear();
   }
 
-  void Properties::load_from(const Config::Parser::Options& opts, 
+  void Properties::load_from(const Config::Parser::Options& opts,
                              bool only_guarded) {
     for(const auto& kv : opts.map) {
-      if(has(kv.first) && (kv.second->is_default() || 
+      if(has(kv.first) && (kv.second->is_default() ||
                            (only_guarded && !kv.second->is_guarded())))
       continue;
       set(kv.first, kv.second);
     }
   }
 
-  void Properties::load(const std::string& fname, 
+  void Properties::load(const std::string& fname,
                         const Config::ParserConfig& filedesc,
                         const Config::ParserConfig& cmddesc,
-                        bool allow_unregistered, 
+                        bool allow_unregistered,
                         bool only_guarded) {
     Config::Parser prs(false);
     prs.config.add(filedesc);
     prs.config.add(cmddesc);
-    
+
     std::ifstream in(fname.c_str());
     prs.parse_filedata(in);
 
     load_from(prs.get_options(), only_guarded);
     (void)allow_unregistered;
-  } 
-  
-  void Properties::reload(const std::string& fname, 
+  }
+
+  void Properties::reload(const std::string& fname,
                           const Config::ParserConfig& filedesc,
                           const Config::ParserConfig& cmddesc) {
     try {
@@ -53,13 +53,13 @@ namespace SWC { namespace Config {
 
     } catch(...) {
       const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
-      SWC_LOG_OUT(LOG_WARN, SWC_LOG_OSTREAM 
+      SWC_LOG_OUT(LOG_WARN, SWC_LOG_OSTREAM
         << "CONFIG_BAD_CFG_FILE " << fname << ": " << e;
       );
     }
   }
 
-  void Properties::alias(const std::string& primary, 
+  void Properties::alias(const std::string& primary,
                          const std::string& secondary) {
     m_alias_map[primary] = secondary;
     m_alias_map[secondary] = primary;
@@ -75,14 +75,11 @@ namespace SWC { namespace Config {
       ptr->default_value(false);
     }
   }
-  bool Properties::has(const std::string& name) const {
+  bool Properties::has(const std::string& name) const noexcept {
     if(m_map.count(name))
       return true;
-      
     auto alias = m_alias_map.find(name);
-    if(alias == m_alias_map.end()) 
-      return false;
-    return m_map.count(alias->second);
+    return alias != m_alias_map.end() && m_map.count(alias->second);
   }
 
   bool Properties::defaulted(const std::string& name) {
@@ -92,7 +89,7 @@ namespace SWC { namespace Config {
   std::string Properties::to_string(const std::string& name) {
     return get_ptr(name)->to_string();
   }
-  
+
   void Properties::get_names(std::vector<std::string>& names) const {
     for(auto it = m_map.begin(); it != m_map.end(); ++it)
       names.push_back(it->first);
@@ -107,7 +104,7 @@ namespace SWC { namespace Config {
   }
 
 
-  Property::Value::Ptr Properties::get_ptr(const std::string& name, 
+  Property::Value::Ptr Properties::get_ptr(const std::string& name,
                                            bool null_ok) {
     auto it = m_map.find(name);
     if (it != m_map.end())
@@ -121,8 +118,8 @@ namespace SWC { namespace Config {
     }
     if(null_ok)
       return nullptr;
-    
-    SWC_THROWF(Error::CONFIG_GET_ERROR, 
+
+    SWC_THROWF(Error::CONFIG_GET_ERROR,
               "getting value of '%s' - missing",
               name.c_str());
   }

@@ -38,7 +38,7 @@ std::string column_name(int c) {
 std::string key(int i, int f) {
   std::string key;
   for(uint8_t n=97;n<97+f;++n) {
-    key += (char)n;
+    key += char(n);
     key.append(std::to_string(i));
     if(n != 96+f)
       key += ',';
@@ -49,7 +49,7 @@ std::string key(int i, int f) {
 void key(int i, int f, Key& key) {
   for(uint8_t n=97;n<97+f;++n) {
     std::string& fraction = key.emplace_back();
-    fraction += (char)n;
+    fraction += char(n);
     fraction.append(std::to_string(i));
   }
 }
@@ -653,7 +653,7 @@ void spec_select(Client& client) {
               auto& fields = cell.v[fid];
               assert(fields.field_id == fid);
               assert(fields.v_int64 == f);
-              assert(fields.v_double == (double)f);
+              assert(fields.v_double == double(f));
               assert(fields.v_key == cell.k);
               assert(!fields.v_bytes.compare(apache::thrift::to_string(cell.k)));
               assert(fields.v_li[2] == f);

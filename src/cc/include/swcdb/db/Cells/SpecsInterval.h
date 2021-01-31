@@ -45,7 +45,7 @@ class Interval {
   }
 
 
-  explicit Interval(Types::Column col_type = Types::Column::UNKNOWN);
+  explicit Interval(Types::Column col_type = Types::Column::UNKNOWN) noexcept;
 
   explicit Interval(const Cell::Key& range_begin, const Cell::Key& range_end);
 
@@ -59,15 +59,15 @@ class Interval {
 
   void free() ;
 
-  size_t size_of_internal() const;
+  size_t size_of_internal() const noexcept;
 
-  bool equal(const Interval& other) const;
+  bool equal(const Interval& other) const noexcept;
 
   bool is_matching(const Types::KeySeq key_seq,
                    const Cell::Key& key,
                    int64_t timestamp, bool desc) const;
 
-  bool is_matching(int64_t timestamp, bool desc) const;
+  bool is_matching(int64_t timestamp, bool desc) const noexcept;
 
   bool is_matching(const Types::KeySeq key_seq,
                    const Cells::Cell& cell, bool& stop) const;
@@ -81,19 +81,19 @@ class Interval {
   bool is_in_previous(const Types::KeySeq key_seq,
                       const DB::Cell::Key& prev) const;
 
-  size_t encoded_length() const;
+  size_t encoded_length() const noexcept;
 
   void encode(uint8_t** bufp) const;
 
   void decode(const uint8_t** bufp, size_t* remainp);
 
-  void set_opt__key_equal();
+  void set_opt__key_equal() noexcept;
 
-  void set_opt__range_end_rest();
+  void set_opt__range_end_rest() noexcept;
 
-  bool has_opt__key_equal() const;
+  bool has_opt__key_equal() const noexcept;
 
-  bool has_opt__range_end_rest() const;
+  bool has_opt__range_end_rest() const noexcept;
 
   void apply_possible_range_pure();
 

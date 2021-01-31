@@ -306,10 +306,10 @@ void Settings::check_dynamic_files() {
   }
 }
 
-bool Settings::DynFile::operator==(const DynFile& other) const {
+bool Settings::DynFile::operator==(const DynFile& other) const noexcept {
   return other == filename;
 }
-bool Settings::DynFile::operator==(const std::string& other) const {
+bool Settings::DynFile::operator==(const std::string& other) const noexcept {
   return !filename.compare(other);
 }
 

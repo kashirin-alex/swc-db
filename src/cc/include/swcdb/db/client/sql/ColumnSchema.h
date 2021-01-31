@@ -16,7 +16,7 @@ namespace SWC { namespace client { namespace SQL {
 class ColumnSchema final : public Reader {
 
   public:
-  
+
   using Func = Comm::Protocol::Mngr::Params::ColumnMng::Function;
 
   ColumnSchema(const std::string& sql, DB::Schema::Ptr& schema,
@@ -31,7 +31,7 @@ class ColumnSchema final : public Reader {
   void read_schema_options(Func func);
 
   private:
-  
+
   DB::Schema::Ptr& schema;
 };
 
@@ -46,7 +46,7 @@ add|create|modify|delete (schema definitions);
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/db/client/sql/ColumnSchema.cc"
-#endif 
+#endif
 
 
 #endif //swcdb_db_client_sql_ColumnSchema_h

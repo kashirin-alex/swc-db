@@ -17,7 +17,7 @@
 
 
 
-namespace SWC { 
+namespace SWC {
 
 
 /*!
@@ -48,38 +48,38 @@ namespace Core {
 
 class LogWriter final {
   public:
-  
+
   static std::string repr(uint8_t priority);
 
-  static const char* get_name(uint8_t priority);
+  static const char* get_name(uint8_t priority) noexcept;
 
-  static uint8_t from_string(const std::string& loglevel);
+  static uint8_t from_string(const std::string& loglevel) noexcept;
 
 
   MutexSptd    mutex;
 
 
   LogWriter(const std::string& name="", const std::string& logs_path="");
-  
+
   ~LogWriter();
-  
+
   void initialize(const std::string& name);
 
   void daemon(const std::string& logs_path);
 
-  void set_level(uint8_t level) {
+  void set_level(uint8_t level) noexcept {
     m_priority.store(level);
   }
 
-  uint8_t get_level() const {
+  uint8_t get_level() const noexcept {
     return m_priority;
   }
 
-  bool is_enabled(uint8_t level) const {
+  bool is_enabled(uint8_t level) const noexcept {
     return level <= m_priority;
   }
 
-  bool show_line_numbers() const {
+  bool show_line_numbers() const noexcept {
     return m_show_line_numbers;
   }
 
@@ -92,7 +92,7 @@ class LogWriter final {
   void log(uint8_t priority, const char* fmt, ...)
       __attribute__((format(printf, 3, 4)));
 
-  void log(uint8_t priority, const char* filen, int fline, 
+  void log(uint8_t priority, const char* filen, int fline,
            const char* fmt, ...)
       __attribute__((format(printf, 5, 6)));
 
@@ -100,7 +100,7 @@ class LogWriter final {
   SWC_SHOULD_NOT_INLINE
   void msg(uint8_t priority, const T& message) {
     MutexSptd::scope lock(mutex);
-    std::cout << _seconds() << ' ' << get_name(priority) << ": " 
+    std::cout << _seconds() << ' ' << get_name(priority) << ": "
               << message << std::endl;
   }
 
@@ -211,6 +211,6 @@ extern LogWriter logger;
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/core/Logger.cc"
-#endif 
+#endif
 
 #endif // swcdb_core_Logger_h

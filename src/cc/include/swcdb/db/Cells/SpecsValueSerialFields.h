@@ -30,15 +30,15 @@ struct Field {
 
   uint24_t fid;
 
-  Field(uint24_t fid) : fid(fid) { }
+  Field(uint24_t fid) noexcept : fid(fid) { }
 
   Field(const uint8_t** bufp, size_t* remainp);
 
   virtual ~Field() { }
 
-  virtual Type type() const = 0;
+  virtual Type type() const noexcept = 0;
 
-  virtual size_t encoded_length() const;
+  virtual size_t encoded_length() const noexcept;
 
   virtual void encode(uint8_t** bufp) const = 0;
 
@@ -67,9 +67,9 @@ struct Field_INT64 : Field {
 
   virtual ~Field_INT64() { }
 
-  Type type() const override { return Type::INT64; };
+  Type type() const noexcept override { return Type::INT64; };
 
-  size_t encoded_length() const override;
+  size_t encoded_length() const noexcept override;
 
   void encode(uint8_t** bufp) const override;
 
@@ -99,9 +99,9 @@ struct Field_DOUBLE : Field {
 
   virtual ~Field_DOUBLE() { }
 
-  Type type() const override { return Type::DOUBLE; };
+  Type type() const noexcept override { return Type::DOUBLE; };
 
-  size_t encoded_length() const override;
+  size_t encoded_length() const noexcept override;
 
   void encode(uint8_t** bufp) const override;
 
@@ -139,9 +139,9 @@ struct Field_BYTES : Field {
 
   virtual ~Field_BYTES() { }
 
-  Type type() const override { return Type::BYTES; };
+  Type type() const noexcept override { return Type::BYTES; };
 
-  size_t encoded_length() const override;
+  size_t encoded_length() const noexcept override;
 
   void encode(uint8_t** bufp) const override;
 
@@ -179,9 +179,9 @@ struct Field_KEY : Field {
 
   virtual ~Field_KEY() { }
 
-  Type type() const override { return Type::KEY; };
+  Type type() const noexcept override { return Type::KEY; };
 
-  size_t encoded_length() const override;
+  size_t encoded_length() const noexcept override;
 
   void encode(uint8_t** bufp) const override;
 
@@ -229,9 +229,9 @@ struct Field_LIST_INT64 : Field {
 
   virtual ~Field_LIST_INT64() { }
 
-  Type type() const override { return Type::LIST_INT64; };
+  Type type() const noexcept override { return Type::LIST_INT64; };
 
-  size_t encoded_length() const override;
+  size_t encoded_length() const noexcept override;
 
   void encode(uint8_t** bufp) const override;
 
@@ -279,9 +279,9 @@ struct Field_LIST_BYTES : Field {
 
   virtual ~Field_LIST_BYTES() { }
 
-  Type type() const override { return Type::LIST_BYTES; };
+  Type type() const noexcept override { return Type::LIST_BYTES; };
 
-  size_t encoded_length() const override;
+  size_t encoded_length() const noexcept override;
 
   void encode(uint8_t** bufp) const override;
 
@@ -300,15 +300,15 @@ struct Field_LIST_BYTES : Field {
 //
 struct Fields {
 
-  Fields() { }
+  Fields() noexcept { }
 
   Fields(const uint8_t* ptr, size_t len);
 
-  bool has_field_id(uint24_t fid) const;
+  bool has_field_id(uint24_t fid) const noexcept;
 
   void add(Field::Ptr&& field);
 
-  size_t encoded_length() const;
+  size_t encoded_length() const noexcept;
 
   void encode(Specs::Value& value) const;
 

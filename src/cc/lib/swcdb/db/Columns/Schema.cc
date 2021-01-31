@@ -78,7 +78,7 @@ Schema::Schema(const uint8_t** bufp, size_t* remainp)
 
 Schema::~Schema() {}
 
-bool Schema::equal(const Ptr& other, bool with_rev) {
+bool Schema::equal(const Ptr& other, bool with_rev) noexcept {
   return     cid == other->cid
           && col_seq == other->col_seq
           && col_type == other->col_type
@@ -99,7 +99,7 @@ bool Schema::equal(const Ptr& other, bool with_rev) {
           ;
 }
 
-size_t Schema::encoded_length() const {
+size_t Schema::encoded_length() const noexcept {
   return Serialization::encoded_length_vi64(cid)
        + Serialization::encoded_length_bytes(col_name.size())
        + 2

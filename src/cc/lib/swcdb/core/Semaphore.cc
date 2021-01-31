@@ -10,7 +10,7 @@
 namespace SWC { namespace Core {
 
   
-Semaphore::Semaphore(size_t sz, size_t pre_acquire) 
+Semaphore::Semaphore(size_t sz, size_t pre_acquire) noexcept
                     : m_sz(sz), m_count(pre_acquire) {
 }
 
@@ -24,10 +24,10 @@ Semaphore::~Semaphore() {
   m_cv.notify_all();
   m_mutex.unlock();
 
-  m_mutex.lock(); 
+  m_mutex.lock();
   // let cv finish
   m_mutex.unlock();
-} 
+}
 
 size_t Semaphore::available() {
   std::scoped_lock lock(m_mutex);

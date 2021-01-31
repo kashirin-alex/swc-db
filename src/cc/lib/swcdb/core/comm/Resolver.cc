@@ -12,7 +12,7 @@ namespace SWC {
 
 namespace Serialization {
 
-size_t encoded_length(const Comm::EndPoint& endpoint) {
+size_t encoded_length(const Comm::EndPoint& endpoint) noexcept {
   return 3 + (endpoint.address().is_v4() ? 4 : 16);
 }
 
@@ -68,14 +68,15 @@ Network::Network(const Network& net) noexcept
 }
 
 
-bool has_endpoint(const EndPoint& e1, const EndPoints& endpoints_in) {
+bool has_endpoint(const EndPoint& e1,
+                  const EndPoints& endpoints_in) noexcept {
   return !endpoints_in.empty() &&
          std::find(endpoints_in.begin(), endpoints_in.end(), e1)
             != endpoints_in.end();
 }
 
 bool has_endpoint(const EndPoints& endpoints,
-                  const EndPoints& endpoints_in) {
+                  const EndPoints& endpoints_in) noexcept {
   for(auto& endpoint : endpoints) {
     if(has_endpoint(endpoint, endpoints_in))
       return true;
@@ -105,13 +106,13 @@ size_t endpoint_hash(const EndPoint& endpoint) {
 
 
 SWC_SHOULD_INLINE
-bool Resolver::is_ipv4_address(const std::string& str) {
+bool Resolver::is_ipv4_address(const std::string& str) noexcept {
   struct sockaddr_in sa;
   return inet_pton(AF_INET, str.c_str(), &(sa.sin_addr));
 }
 
 SWC_SHOULD_INLINE
-bool Resolver::is_ipv6_address(const std::string& str) {
+bool Resolver::is_ipv6_address(const std::string& str) noexcept {
   struct sockaddr_in6 sa;
   return inet_pton(AF_INET6, str.c_str(), &(sa.sin6_addr));
 }
@@ -251,7 +252,7 @@ void Resolver::get_networks(const Config::Strings& networks,
 void Resolver::get_local_networks(int& err,
                                   std::vector<asio::ip::network_v4>& nets_v4,
                                   std::vector<asio::ip::network_v6>& nets_v6)
-                                  noexcept {
+                                  {
   errno = 0;
   char hostname[256];
   err = gethostname(hostname, sizeof(hostname));
@@ -319,7 +320,8 @@ void Resolver::get_local_networks(int& err,
 
 bool Resolver::is_network(const EndPoint& endpoint,
                           const std::vector<asio::ip::network_v4>& nets_v4,
-                          const std::vector<asio::ip::network_v6>& nets_v6) {
+                          const std::vector<asio::ip::network_v6>& nets_v6)
+                          noexcept {
   if(endpoint.address().is_v4()) {
     for(auto& net : nets_v4)
       if(is_network(endpoint, net))
@@ -337,14 +339,14 @@ bool Resolver::is_network(const EndPoint& endpoint,
 }
 
 bool Resolver::is_network(const EndPoint& endpoint,
-                          const asio::ip::network_v4& net) {
+                          const asio::ip::network_v4& net) noexcept {
   return endpoint.address().to_v4() == net.address() ||
     asio::ip::make_network_v4(endpoint.address().to_v4(), 32)
       .is_subnet_of(net);
 }
 
 bool Resolver::is_network(const EndPoint& endpoint,
-                          const asio::ip::network_v6& net) {
+                          const asio::ip::network_v6& net) noexcept {
   return endpoint.address().to_v6() == net.address() ||
     asio::ip::make_network_v6(endpoint.address().to_v6(), 128)
       .is_subnet_of(net);

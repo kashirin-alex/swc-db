@@ -13,9 +13,9 @@ namespace SWC { namespace DB { namespace Cells {
 
 SWC_SHOULD_INLINE
 MutableVec::MutableVec(const Types::KeySeq key_seq, uint32_t split_size,
-                       const uint32_t max_revs, const uint64_t ttl_ns, 
-                       const Types::Column type)
-                      : key_seq(key_seq), split_size(split_size), 
+                       const uint32_t max_revs, const uint64_t ttl_ns,
+                       const Types::Column type) noexcept
+                      : key_seq(key_seq), split_size(split_size),
                         max_revs(max_revs), ttl(ttl_ns), type(type) {
 }
 
@@ -33,37 +33,39 @@ void MutableVec::free() {
 SWC_SHOULD_INLINE
 void MutableVec::configure(uint32_t split,
                            const uint32_t revs, const uint64_t ttl_ns,
-                           const Types::Column typ) {
+                           const Types::Column typ) noexcept {
   split_size = split;
   max_revs = revs;
   ttl = ttl_ns;
   type = typ;
+  for(auto cells : *this)
+    cells->configure(max_revs, ttl, type);
 }
 
 SWC_SHOULD_INLINE
-bool MutableVec::empty() const {
+bool MutableVec::empty() const noexcept {
   return Vec::empty();
 }
-  
-size_t MutableVec::size() const {
+
+size_t MutableVec::size() const noexcept {
   size_t sz = 0;
-  for(auto it = begin(); it < end(); ++it)
-    sz += (*it)->size();
+  for(auto cells : *this)
+    sz += cells->size();
   return sz;
 }
 
-size_t MutableVec::size_bytes() const {
+size_t MutableVec::size_bytes() const noexcept {
   size_t sz = 0;
-  for(auto it = begin(); it < end(); ++it)
-    sz += (*it)->size_bytes();
+  for(auto cells : *this)
+    sz += cells->size_bytes();
   return sz;
 }
 
-size_t MutableVec::size_of_internal() const {
+size_t MutableVec::size_of_internal() const noexcept {
   size_t sz = 0;
-  for(auto it = begin(); it < end(); ++it) {
-    sz += (*it)->size_of_internal();
-    sz += sizeof(*it);
+  for(auto cells : *this) {
+    sz += cells->size_of_internal();
+    sz += sizeof(cells);
   }
   return sz;
 }
@@ -86,12 +88,12 @@ void MutableVec::add_sorted(const Cell& cell) {
 void MutableVec::add_raw(const Cell& cell) {
   if(Vec::empty())
     return add_sorted(cell);
-  
+
   Mutable* cells;
   for(auto it = begin(); it < end();) {
     cells = *it;
-    if(++it == end() || 
-       DB::KeySeq::compare(key_seq, cell.key, (*it)->front()->key) 
+    if(++it == end() ||
+       DB::KeySeq::compare(key_seq, cell.key, (*it)->front().key)
                                                   == Condition::GT) {
       cells->add_raw(cell);
       split(*cells, it);
@@ -100,16 +102,16 @@ void MutableVec::add_raw(const Cell& cell) {
   }
 }
 
-void MutableVec::add_raw(const Cell& cell, 
+void MutableVec::add_raw(const Cell& cell,
                          size_t* offset_itp, size_t* offsetp) {
   if(Vec::empty())
     return add_sorted(cell);
-  
+
   Mutable* cells;
   for(auto it = begin()+*offset_itp; it < end(); ++*offset_itp, *offsetp=0) {
     cells = *it;
-    if(++it == end() || 
-       DB::KeySeq::compare(key_seq, cell.key, (*it)->front()->key) 
+    if(++it == end() ||
+       DB::KeySeq::compare(key_seq, cell.key, (*it)->front().key)
                                                   == Condition::GT) {
       cells->add_raw(cell, offsetp);
       if(split(*cells, it))
@@ -122,8 +124,8 @@ void MutableVec::add_raw(const Cell& cell,
 void MutableVec::write_and_free(DynamicBuffer& cells, uint32_t& cell_count,
                                 Interval& intval, uint32_t threshold,
                                 uint32_t max_cells) {
-  for(auto it = begin(); it < end() && 
-                         (!threshold || threshold > cells.fill()) && 
+  for(auto it = begin(); it < end() &&
+                         (!threshold || threshold > cells.fill()) &&
                          (!max_cells || max_cells > cell_count);) {
     (*it)->write_and_free(cells, cell_count, intval, threshold, max_cells);
     if((*it)->empty()) {

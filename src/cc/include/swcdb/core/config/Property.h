@@ -66,19 +66,19 @@ class Value {
 
   template <typename T>
   SWC_CAN_INLINE
-  static T* get_pointer(Ptr ptr) {
+  static T* get_pointer(Ptr ptr) noexcept {
     return static_cast<T*>(ptr);
   }
 
-  Value(uint8_t flags=0);
+  Value(uint8_t flags=0) noexcept;
 
-  Value(Ptr ptr);
+  Value(Ptr ptr) noexcept;
 
   virtual ~Value();
 
   virtual Ptr make_new(const Strings& values = Strings()) = 0;
 
-  virtual Type type() const = 0;
+  virtual Type type() const noexcept = 0;
 
   virtual void set_from(Ptr ptr) = 0;
 
@@ -88,17 +88,17 @@ class Value {
 
   std::ostream& operator<<(std::ostream& ostream);
 
-  bool is_skippable() const;
+  bool is_skippable() const noexcept;
 
-  bool is_guarded() const;
+  bool is_guarded() const noexcept;
 
-  Ptr default_value(bool defaulted);
+  Ptr default_value(bool defaulted) noexcept;
 
-  bool is_default() const;
+  bool is_default() const noexcept;
 
-  Ptr zero_token();
+  Ptr zero_token() noexcept;
 
-  bool is_zero_token() const;
+  bool is_zero_token() const noexcept;
 
   Core::Atomic<uint8_t> flags;
 };
@@ -124,9 +124,9 @@ class V_BOOL final : public Value {
   public:
   static const Type value_type = BOOL;
 
-  V_BOOL(const bool& v, uint8_t flags=0);
+  V_BOOL(const bool& v, uint8_t flags=0) noexcept;
 
-  V_BOOL(V_BOOL* ptr);
+  V_BOOL(V_BOOL* ptr) noexcept;
 
   Ptr make_new(const Strings& values = Strings()) override;
 
@@ -134,11 +134,11 @@ class V_BOOL final : public Value {
 
   void set_from(const Strings& values) override;
 
-  Type type() const override;
+  Type type() const noexcept override;
 
   std::string to_string() const override;
 
-  bool get() const;
+  bool get() const noexcept;
 
   bool value;
 };
@@ -148,9 +148,9 @@ class V_UINT8 final : public Value {
   public:
   static const Type value_type = UINT8;
 
-  V_UINT8(const uint8_t& v, uint8_t flags=0);
+  V_UINT8(const uint8_t& v, uint8_t flags=0) noexcept;
 
-  V_UINT8(V_UINT8* ptr);
+  V_UINT8(V_UINT8* ptr) noexcept;
 
   Ptr make_new(const Strings& values = Strings()) override;
 
@@ -158,11 +158,11 @@ class V_UINT8 final : public Value {
 
   void set_from(const Strings& values) override;
 
-  Type type() const override;
+  Type type() const noexcept override;
 
   std::string to_string() const override;
 
-  uint8_t get() const;
+  uint8_t get() const noexcept;
 
   uint8_t value;
 };
@@ -172,9 +172,9 @@ class V_UINT16 final : public Value {
   public:
   static const Type value_type = UINT16;
 
-  V_UINT16(const uint16_t& v, uint8_t flags=0);
+  V_UINT16(const uint16_t& v, uint8_t flags=0) noexcept;
 
-  V_UINT16(V_UINT16* ptr);
+  V_UINT16(V_UINT16* ptr) noexcept;
 
   Ptr make_new(const Strings& values = Strings()) override;
 
@@ -182,11 +182,11 @@ class V_UINT16 final : public Value {
 
   void set_from(const Strings& values) override;
 
-  Type type() const override;
+  Type type() const noexcept override;
 
   std::string to_string() const override;
 
-  uint16_t get() const;
+  uint16_t get() const noexcept;
 
   uint16_t value;
 };
@@ -196,9 +196,9 @@ class V_INT32 final : public Value {
   public:
   static const Type value_type = INT32;
 
-  V_INT32(const int32_t& v, uint8_t flags=0);
+  V_INT32(const int32_t& v, uint8_t flags=0) noexcept;
 
-  V_INT32(V_INT32* ptr);
+  V_INT32(V_INT32* ptr) noexcept;
 
   Ptr make_new(const Strings& values = Strings()) override;
 
@@ -206,11 +206,11 @@ class V_INT32 final : public Value {
 
   void set_from(const Strings& values) override;
 
-  Type type() const override;
+  Type type() const noexcept override;
 
   std::string to_string() const override;
 
-  int32_t get() const;
+  int32_t get() const noexcept;
 
   int32_t value;
 };
@@ -220,9 +220,9 @@ class V_INT64 final : public Value {
   public:
   static const Type value_type = INT64;
 
-  V_INT64(const int64_t& v, uint8_t flags=0);
+  V_INT64(const int64_t& v, uint8_t flags=0) noexcept;
 
-  V_INT64(V_INT64* ptr);
+  V_INT64(V_INT64* ptr) noexcept;
 
   Ptr make_new(const Strings& values = Strings()) override;
 
@@ -230,11 +230,11 @@ class V_INT64 final : public Value {
 
   void set_from(const Strings& values) override;
 
-  Type type() const override;
+  Type type() const noexcept override;
 
   std::string to_string() const override;
 
-  int64_t get() const;
+  int64_t get() const noexcept;
 
   int64_t value;
 };
@@ -244,9 +244,9 @@ class V_DOUBLE final : public Value {
   public:
   static const Type value_type = DOUBLE;
 
-  V_DOUBLE(const double& v, uint8_t flags=0);
+  V_DOUBLE(const double& v, uint8_t flags=0) noexcept;
 
-  V_DOUBLE(V_DOUBLE* ptr);
+  V_DOUBLE(V_DOUBLE* ptr) noexcept;
 
   Ptr make_new(const Strings& values = Strings()) override;
 
@@ -254,11 +254,11 @@ class V_DOUBLE final : public Value {
 
   void set_from(const Strings& values) override;
 
-  Type type() const override;
+  Type type() const noexcept override;
 
   std::string to_string() const override;
 
-  double get() const;
+  double get() const noexcept;
 
   double value;
 };
@@ -278,7 +278,7 @@ class V_STRING final : public Value {
 
   void set_from(const Strings& values) override;
 
-  Type type() const override;
+  Type type() const noexcept override;
 
   std::string to_string() const override;
 
@@ -308,11 +308,11 @@ class V_ENUM final : public Value {
 
   void set_from(const Strings& values) override;
 
-  Type type() const override;
+  Type type() const noexcept override;
 
   std::string to_string() const override;
 
-  int32_t get() const;
+  int32_t get() const noexcept;
 
   int32_t       value;
   FromString_t  call_from_string = nullptr;
@@ -334,7 +334,7 @@ class V_STRINGS final : public Value {
 
   void set_from(const Strings& values) override;
 
-  Type type() const override;
+  Type type() const noexcept override;
 
   std::string to_string() const override;
 
@@ -358,7 +358,7 @@ class V_INT64S final : public Value {
 
   void set_from(const Strings& values) override;
 
-  Type type() const override;
+  Type type() const noexcept override;
 
   std::string to_string() const override;
 
@@ -382,7 +382,7 @@ class V_DOUBLES final : public Value {
 
   void set_from(const Strings& values) override;
 
-  Type type() const override;
+  Type type() const noexcept override;
 
   std::string to_string() const override;
 
@@ -411,13 +411,13 @@ class V_GBOOL final : public Value {
 
   void set_from(const Strings& values) override;
 
-  Type type() const override;
+  Type type() const noexcept override;
 
   std::string to_string() const override;
 
-  bool get() const;
+  bool get() const noexcept;
 
-  void set(bool v);
+  void set(bool v) noexcept;
 
   void on_change() const;
 
@@ -445,11 +445,11 @@ class V_GUINT8 final : public Value {
 
   void set_from(const Strings& values) override;
 
-  Type type() const override;
+  Type type() const noexcept override;
 
   std::string to_string() const override;
 
-  uint8_t get() const;
+  uint8_t get() const noexcept;
 
   void on_change() const;
 
@@ -478,11 +478,11 @@ class V_GINT32 final : public Value {
 
   void set_from(const Strings& values) override;
 
-  Type type() const override;
+  Type type() const noexcept override;
 
   std::string to_string() const override;
 
-  int32_t get() const;
+  int32_t get() const noexcept;
 
   void on_change() const;
 
@@ -517,11 +517,11 @@ class V_GENUM final : public Value {
 
   void set_from(const Strings& values) override;
 
-  Type type() const override;
+  Type type() const noexcept override;
 
   std::string to_string() const override;
 
-  int32_t get() const;
+  int32_t get() const noexcept;
 
   void set(int32_t nv);
 
@@ -555,13 +555,13 @@ class V_GSTRINGS final : public Value {
 
   void set_from(const Strings& values) override;
 
-  Type type() const override;
+  Type type() const noexcept override;
 
   std::string to_string() const override;
 
   Strings get() const;
 
-  size_t size();
+  size_t size() noexcept;
 
   std::string get_item(size_t n);
 

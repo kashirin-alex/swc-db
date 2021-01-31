@@ -60,25 +60,27 @@ uint32_t checksum32(const uint8_t* data8, size_t len8) noexcept {
 
 
 extern SWC_CAN_INLINE
-void checksum_i32(const uint8_t* start, size_t len, uint8_t** ptr) {
+void checksum_i32(const uint8_t* start, size_t len,
+                  uint8_t** ptr) noexcept {
   Serialization::encode_i32(ptr, checksum32(start, len));
 }
 
 extern SWC_CAN_INLINE
-void checksum_i32(const uint8_t* start, const uint8_t* end, uint8_t** ptr) {
+void checksum_i32(const uint8_t* start, const uint8_t* end,
+                  uint8_t** ptr) noexcept {
   Serialization::encode_i32(ptr, checksum32(start, end-start));
 }
 
 
 extern SWC_CAN_INLINE
 void checksum_i32(const uint8_t* start, size_t len, uint8_t** ptr,
-                  uint32_t& checksum) {
+                  uint32_t& checksum) noexcept {
   Serialization::encode_i32(ptr, checksum = checksum32(start, len));
 }
 
 extern SWC_CAN_INLINE
 void checksum_i32(const uint8_t* start, const uint8_t* end, uint8_t** ptr,
-                  uint32_t& checksum) {
+                  uint32_t& checksum) noexcept {
   Serialization::encode_i32(ptr, checksum = checksum32(start, end-start));
 }
 

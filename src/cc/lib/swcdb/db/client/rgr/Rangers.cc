@@ -2,18 +2,18 @@
  * SWC-DB© Copyright since 2019 Alex Kashirin <kashirin.alex@gmail.com>
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
- 
+
 
 #include "swcdb/db/client/rgr/Rangers.h"
 #include "swcdb/core/Time.h"
 
 namespace SWC { namespace client {
 
-Rangers::Rangers(const Config::Property::V_GINT32::Ptr expiry_ms) 
-                : m_expiry_ms(expiry_ms) { 
+Rangers::Rangers(const Config::Property::V_GINT32::Ptr expiry_ms) noexcept
+                : m_expiry_ms(expiry_ms) {
 }
 
-Rangers::~Rangers() { 
+Rangers::~Rangers() {
   for(auto c : *this) {
     for(auto r : c.second)
       delete r.second;
@@ -49,10 +49,10 @@ void Rangers::remove(const cid_t cid, const rid_t rid) {
   Core::MutexSptd::scope lock(m_mutex);
 
   auto c = find(cid);
-  if(c == end()) 
-    return; 
+  if(c == end())
+    return;
   auto r = c->second.find(rid);
-  if(r == c->second.end()) 
+  if(r == c->second.end())
     return;
   delete r->second;
   c->second.erase(r);
@@ -60,7 +60,7 @@ void Rangers::remove(const cid_t cid, const rid_t rid) {
     erase(c);
 }
 
-bool Rangers::get(const cid_t cid, const rid_t rid, 
+bool Rangers::get(const cid_t cid, const rid_t rid,
                   Comm::EndPoints& endpoints) {
   bool found = false;
 
@@ -68,7 +68,7 @@ bool Rangers::get(const cid_t cid, const rid_t rid,
   auto c = find(cid);
   if(c != end()) {
     auto r = c->second.find(rid);
-    if(r != c->second.end() && 
+    if(r != c->second.end() &&
        Time::now_ms() - r->second->ts < m_expiry_ms->get()) {
       found = true;
       endpoints = r->second->endpoints;
@@ -77,7 +77,7 @@ bool Rangers::get(const cid_t cid, const rid_t rid,
   return found;
 }
 
-void Rangers::set(const cid_t cid, const rid_t rid, 
+void Rangers::set(const cid_t cid, const rid_t rid,
                   const Comm::EndPoints& endpoints) {
   auto r_new = new RangeEndPoints(Time::now_ms(), endpoints);
 

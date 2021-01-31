@@ -14,22 +14,22 @@ namespace SWC { namespace DB { namespace Types {  namespace MetaColumn {
 
 
 SWC_SHOULD_INLINE
-bool is_master(cid_t cid) {
+bool is_master(cid_t cid) noexcept {
   return cid <= CID_MASTER_END;
 }
 
 SWC_SHOULD_INLINE
-bool is_meta(cid_t cid) {
+bool is_meta(cid_t cid) noexcept {
   return cid >= CID_META_BEGIN && cid <= CID_META_END;
 }
 
 SWC_SHOULD_INLINE
-bool is_data(cid_t cid) {
+bool is_data(cid_t cid) noexcept {
   return cid > CID_META_END;
 }
 
 
-Range get_range_type(cid_t cid) {
+Range get_range_type(cid_t cid) noexcept {
   if(cid <= CID_MASTER_END)
     return Range::MASTER;
   if(cid <= CID_META_END)
@@ -37,7 +37,7 @@ Range get_range_type(cid_t cid) {
   return Range::DATA;
 }
 
-KeySeq get_seq_type(cid_t cid) {
+KeySeq get_seq_type(cid_t cid) noexcept {
   switch(cid) {
     case 2:
     case 6:
@@ -54,7 +54,7 @@ KeySeq get_seq_type(cid_t cid) {
 }
 
 
-cid_t get_master_cid(KeySeq col_seq) {
+cid_t get_master_cid(KeySeq col_seq) noexcept {
   switch(col_seq) {
     case KeySeq::FC_VOLUME:
       return 4;
@@ -67,7 +67,7 @@ cid_t get_master_cid(KeySeq col_seq) {
   }
 }
 
-cid_t get_meta_cid(KeySeq col_seq) {
+cid_t get_meta_cid(KeySeq col_seq) noexcept {
   switch(col_seq) {
     case KeySeq::FC_VOLUME:
       return 8;
@@ -80,7 +80,7 @@ cid_t get_meta_cid(KeySeq col_seq) {
   }
 }
 
-const char* get_meta_cid_str(KeySeq col_seq) {
+const char* get_meta_cid_str(KeySeq col_seq) noexcept {
   switch(col_seq) {
     case KeySeq::FC_VOLUME:
       return "8";
@@ -93,7 +93,7 @@ const char* get_meta_cid_str(KeySeq col_seq) {
   }
 }
 
-uint8_t get_sys_cid(KeySeq col_seq, Range col_type) {
+uint8_t get_sys_cid(KeySeq col_seq, Range col_type) noexcept {
   switch(col_seq) {
     case KeySeq::FC_VOLUME:
       return col_type == Range::DATA ? 8 : 4;

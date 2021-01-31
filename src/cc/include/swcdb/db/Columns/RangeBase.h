@@ -9,18 +9,18 @@
 
 
 namespace SWC { namespace DB {
-  
+
 
 
 class RangeBase final {
   public:
 
-  static constexpr const char COLUMN_DIR[]  = "C"; 
-  static constexpr const char RANGE_DIR[]   = "/R"; 
+  static constexpr const char COLUMN_DIR[]  = "C";
+  static constexpr const char RANGE_DIR[]   = "/R";
   static constexpr const char RANGER_FILE[] = "ranger.data";
   // (swc.fs.path.data)+COLUMN_DIR+/+{cid}+/RANGE_DIR+/+{rid}+/+(types)
-  
-  static const char* get_column_path() {
+
+  static const char* get_column_path() noexcept {
     return COLUMN_DIR;
   }
 
@@ -37,7 +37,7 @@ class RangeBase final {
     s.append(RANGE_DIR);
     return s;
   }
-  
+
   static const std::string get_path(const cid_t cid, const rid_t rid) {
     std::string s(get_path(cid));
     s.append("/");
@@ -51,8 +51,8 @@ class RangeBase final {
     s.append(RANGER_FILE);
     return s;
   }
-  
-  
+
+
 };
 
 }}

@@ -52,7 +52,7 @@ namespace SWC { namespace FileUtils {
    * @param n Maximum size to read, in bytes
    * @return The number of bytes read, or -1 on error
    */
-  ssize_t read(int fd, void *vptr, size_t n);
+  ssize_t read(int fd, void *vptr, size_t n) noexcept;
 
   /** Reads positional data from a file descriptor into a buffer
    *
@@ -62,7 +62,7 @@ namespace SWC { namespace FileUtils {
    * @param n Maximum size to read, in bytes
    * @return The number of bytes read, or -1 on error
    */
-  ssize_t pread(int fd, off_t offset, void *vptr, size_t n);
+  ssize_t pread(int fd, off_t offset, void *vptr, size_t n) noexcept;
 
   /** Writes a std::string buffer to a file; the file is overwritten if it
    * already exists
@@ -80,7 +80,7 @@ namespace SWC { namespace FileUtils {
    * @param n Size of the memory buffer, in bytes
    * @return Number of bytes written, or -1 on error
    */
-  ssize_t write(int fd, const void *vptr, size_t n);
+  ssize_t write(int fd, const void *vptr, size_t n) noexcept;
 
   /** Writes a string to a file descriptor
    *
@@ -120,7 +120,7 @@ namespace SWC { namespace FileUtils {
    *
    * @return true if the file or directory exists, otherwise false
    */
-  bool exists(const std::string& fname);
+  bool exists(const std::string& fname) noexcept;
 
   /** Unlinks (deletes) a file or directory
    *
@@ -141,21 +141,21 @@ namespace SWC { namespace FileUtils {
    * @param fname The path of the file
    * @return The file size (in bytes) or 0 on error (sets errno)
    */
-  uint64_t size(const std::string& fname);
+  uint64_t size(const std::string& fname) noexcept;
 
   /** Returns the size of a file (-1 on error)
    *
    * @param fname The path of the file
    * @return The file size (in bytes) or -1 on error (sets errno)
    */
-  off_t length(const std::string& fname);
+  off_t length(const std::string& fname) noexcept;
 
   /** Returns the last modification time
    *
    * @param fname The path of the file
    * @return The file modification time_t or 0 on error (sets errno)
    */
-  time_t modification(const std::string& fname);
+  time_t modification(const std::string& fname) noexcept;
 
   /** Reads all directory entries, applies a regular expression and returns
    * those which match.
@@ -172,7 +172,7 @@ namespace SWC { namespace FileUtils {
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/core/FileUtils.cc"
-#endif 
+#endif
 
 #endif // swcdb_core_FileUtils_h
 

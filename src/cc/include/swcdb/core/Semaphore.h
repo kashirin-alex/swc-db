@@ -16,18 +16,18 @@ namespace SWC { namespace Core {
 class Semaphore final {
   public:
 
-  explicit Semaphore(size_t sz=1, size_t pre_acquire = 0);
+  explicit Semaphore(size_t sz=1, size_t pre_acquire = 0) noexcept;
 
   Semaphore(const Semaphore&) = delete;
 
   Semaphore(const Semaphore&&) = delete;
-    
+
   Semaphore& operator=(const Semaphore&) = delete;
-  
+
   ~Semaphore();
 
   size_t available();
-  
+
   bool has_pending();
 
   void acquire();
@@ -56,6 +56,6 @@ class Semaphore final {
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/core/Semaphore.cc"
-#endif 
+#endif
 
 #endif // swcdb_core_Semaphore_h

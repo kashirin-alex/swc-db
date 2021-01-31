@@ -22,39 +22,39 @@ SmartFd::SmartFd(const std::string& filepath, uint32_t flags,
 }
 
 SWC_SHOULD_INLINE
-const std::string& SmartFd::filepath() const {
+const std::string& SmartFd::filepath() const noexcept {
   return m_filepath;
 }
 
-void SmartFd::flags(uint32_t flags) {
+void SmartFd::flags(uint32_t flags) noexcept {
   m_flags.store(flags);
 }
 
-uint32_t SmartFd::flags() const {
+uint32_t SmartFd::flags() const noexcept {
   return m_flags;
 }
 
-void SmartFd::fd(int32_t fd) {
+void SmartFd::fd(int32_t fd) noexcept {
   m_fd.store(fd);
 }
 
-int32_t SmartFd::fd() const {
+int32_t SmartFd::fd() const noexcept {
   return m_fd;
 }
 
-bool SmartFd::valid() const {
+bool SmartFd::valid() const noexcept {
   return m_fd != -1;
 }
 
-void SmartFd::pos(uint64_t pos) {
+void SmartFd::pos(uint64_t pos) noexcept {
   m_pos.store(pos);
 }
 
-uint64_t SmartFd::pos() const {
+uint64_t SmartFd::pos() const noexcept {
   return m_pos;
 }
 
-void SmartFd::forward(uint64_t nbytes) {
+void SmartFd::forward(uint64_t nbytes) noexcept {
   m_pos.fetch_add(nbytes);
 }
 

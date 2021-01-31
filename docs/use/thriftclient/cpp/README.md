@@ -111,8 +111,8 @@ int main() {
 
   // value for a cell, 256 bytes bin
   std::string value;
-  for(int n=0; n < 256; ++n)
-    value += (char)n;
+  for(uint8_t n=0; n <= 255; ++n)
+    value += char(n);
 
   SWC::Thrift::UCCells ucells;
   auto& col = ucells[schema.cid];
@@ -126,7 +126,7 @@ int main() {
     cell.k.resize(num_fractions);
     cell.k[0].append(std::to_string(n++)); // 1st F(unique)
     for(uint8_t f=1; f < num_fractions; ++f) {
-      cell.k[f] += (char)(f + 97);
+      cell.k[f] += char(f + 97);
     }
 
     // cell.__set_ts(now_ns());

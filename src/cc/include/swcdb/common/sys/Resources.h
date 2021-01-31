@@ -60,12 +60,12 @@ class Resources final {
   ~Resources() { }
 
   SWC_CAN_INLINE
-  bool is_low_mem_state() const {
+  bool is_low_mem_state() const noexcept {
     return ram.free < ram.reserved;
   }
 
   SWC_CAN_INLINE
-  size_t need_ram() const {
+  size_t need_ram() const noexcept {
     return is_low_mem_state()
             ? ram.used_reg.load()
             : (ram.used > ram.allowed
@@ -78,19 +78,19 @@ class Resources final {
   }
 
   SWC_CAN_INLINE
-  size_t avail_ram() const {
+  size_t avail_ram() const noexcept {
     return !is_low_mem_state() && ram.allowed > ram.used_reg
             ? (ram.allowed > ram.used ? ram.allowed - ram.used_reg : 0)
             : 0;
   }
 
   SWC_CAN_INLINE
-  bool need_ram(uint32_t sz) const {
+  bool need_ram(uint32_t sz) const noexcept {
     return is_low_mem_state() || ram.free < sz * 2 ||
            (ram.used_reg + sz > ram.allowed || ram.used + sz > ram.allowed);
   }
 
-  void adj_mem_usage(ssize_t sz) {
+  void adj_mem_usage(ssize_t sz) noexcept {
     if(sz) {
       m_mutex.lock();
       if(sz < 0 && ram.used_reg < size_t(-sz))
@@ -101,7 +101,7 @@ class Resources final {
     }
   }
 
-  void more_mem_usage(size_t sz) {
+  void more_mem_usage(size_t sz) noexcept {
     if(sz) {
       m_mutex.lock();
       ram.used_reg.fetch_add(sz);
@@ -109,7 +109,7 @@ class Resources final {
     }
   }
 
-  void less_mem_usage(size_t sz) {
+  void less_mem_usage(size_t sz) noexcept {
     if(sz) {
       m_mutex.lock();
       if(ram.used_reg < sz)
@@ -121,17 +121,17 @@ class Resources final {
   }
 
   SWC_CAN_INLINE
-  uint32_t concurrency() const {
+  uint32_t concurrency() const noexcept {
     return m_concurrency;
   }
 
   SWC_CAN_INLINE
-  uint32_t available_cpu_mhz() const {
+  uint32_t available_cpu_mhz() const noexcept {
     return m_cpu_mhz;
   }
 
   SWC_CAN_INLINE
-  uint32_t available_mem_mb() const {
+  uint32_t available_mem_mb() const noexcept {
     return (ram.total - ram.reserved) / 1024 / 1024;
   }
 
@@ -309,7 +309,7 @@ class Resources final {
     Bytes   reserved;
     Core::Atomic<uint32_t> chk_ms;
 
-    Component(uint32_t ms=0)
+    Component(uint32_t ms=0) noexcept
               : total(0), free(0), used(0), used_reg(0),
                 allowed(0), reserved(0), chk_ms(ms) { }
 

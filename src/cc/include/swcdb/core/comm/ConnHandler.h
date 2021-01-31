@@ -38,7 +38,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     DispatchHandler::Ptr          hdlr;
     asio::high_resolution_timer*  timer;
 
-    Pending(const Buffers::Ptr& cbuf, DispatchHandler::Ptr& hdlr);
+    Pending(const Buffers::Ptr& cbuf, DispatchHandler::Ptr& hdlr) noexcept;
 
     Pending(const Pending&) = delete;
 
@@ -57,9 +57,9 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   EndPoint              endpoint_remote;
   EndPoint              endpoint_local;
 
-  ConnHandler(AppContext::Ptr& app_ctx);
+  ConnHandler(AppContext::Ptr& app_ctx) noexcept;
 
-  ConnHandlerPtr ptr();
+  ConnHandlerPtr ptr() noexcept;
 
   virtual ~ConnHandler();
 
@@ -67,7 +67,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
   size_t endpoint_local_hash() const;
 
-  Core::Encoder::Type get_encoder() const;
+  Core::Encoder::Type get_encoder() const noexcept;
 
   virtual bool is_secure() const noexcept { return false; };
 
@@ -173,7 +173,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 class ConnHandlerPlain final : public ConnHandler {
   public:
 
-  ConnHandlerPlain(AppContext::Ptr& app_ctx, SocketPlain& socket);
+  ConnHandlerPlain(AppContext::Ptr& app_ctx, SocketPlain& socket) noexcept;
 
   virtual ~ConnHandlerPlain();
 
@@ -209,7 +209,7 @@ class ConnHandlerSSL final : public ConnHandler {
   public:
 
   ConnHandlerSSL(AppContext::Ptr& app_ctx, asio::ssl::context& ssl_ctx,
-                 SocketPlain& socket);
+                 SocketPlain& socket) noexcept;
 
   virtual ~ConnHandlerSSL();
 

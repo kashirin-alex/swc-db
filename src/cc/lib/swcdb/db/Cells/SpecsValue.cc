@@ -109,17 +109,17 @@ void Value::free() {
 }
 
 SWC_SHOULD_INLINE
-bool Value::empty() const {
+bool Value::empty() const noexcept {
   return comp == Condition::NONE;
 }
 
-bool Value::equal(const Value &other) const {
+bool Value::equal(const Value &other) const noexcept {
   return size == other.size &&
          ((!data && !other.data) ||
           (data && other.data && !memcmp(data, other.data, size)));
 }
 
-size_t Value::encoded_length() const {
+size_t Value::encoded_length() const noexcept {
   return 1 + (comp == Condition::NONE
     ? 0 : Serialization::encoded_length_vi32(size) + size);
 }

@@ -27,7 +27,7 @@ class Properties {
 
   std::shared_mutex    mutex;
 
-  Properties();
+  Properties() noexcept;
 
   ~Properties();
 
@@ -49,7 +49,7 @@ class Properties {
 
   void set(const std::string& name, Property::Value::Ptr p);
 
-  bool has(const std::string& name) const;
+  bool has(const std::string& name) const noexcept;
 
   bool defaulted(const std::string& name);
 

@@ -37,7 +37,7 @@ typedef std::vector<Network> Networks;
 
 namespace Serialization {
 
-size_t encoded_length(const Comm::EndPoint& endpoint);
+size_t encoded_length(const Comm::EndPoint& endpoint) noexcept;
 
 void encode(const Comm::EndPoint& endpoint, uint8_t** bufp);
 
@@ -49,9 +49,11 @@ Comm::EndPoint decode(const uint8_t** bufp, size_t* remainp);
 
 namespace Comm {
 
-bool has_endpoint(const EndPoint& e1, const EndPoints& endpoints_in);
+bool has_endpoint(const EndPoint& e1,
+                  const EndPoints& endpoints_in) noexcept;
 
-bool has_endpoint(const EndPoints& endpoints, const EndPoints& endpoints_in);
+bool has_endpoint(const EndPoints& endpoints,
+                  const EndPoints& endpoints_in) noexcept;
 
 
 size_t endpoints_hash(const EndPoints& endpoints);
@@ -64,9 +66,9 @@ size_t endpoint_hash(const EndPoint& endpoint);
 namespace Resolver {
 
 
-bool is_ipv4_address(const std::string& str);
+bool is_ipv4_address(const std::string& str) noexcept;
 
-bool is_ipv6_address(const std::string& str);
+bool is_ipv6_address(const std::string& str) noexcept;
 
 EndPoints get_endpoints(uint16_t defaul_port,
                         const Config::Strings& addrs,
@@ -87,15 +89,17 @@ void get_networks(const Config::Strings& networks,
 
 void get_local_networks(int& err,
                         std::vector<asio::ip::network_v4>& nets_v4,
-                        std::vector<asio::ip::network_v6>& nets_v6) noexcept;
+                        std::vector<asio::ip::network_v6>& nets_v6);
 
 bool is_network(const EndPoint& endpoint,
                 const std::vector<asio::ip::network_v4>& nets_v4,
-                const std::vector<asio::ip::network_v6>& nets_v6);
+                const std::vector<asio::ip::network_v6>& nets_v6) noexcept;
 
-bool is_network(const EndPoint& endpoint, const asio::ip::network_v4& net);
+bool is_network(const EndPoint& endpoint,
+                const asio::ip::network_v4& net) noexcept;
 
-bool is_network(const EndPoint& endpoint, const asio::ip::network_v6& net);
+bool is_network(const EndPoint& endpoint,
+                const asio::ip::network_v6& net) noexcept;
 
 
 }} // namespace Comm::Resolver

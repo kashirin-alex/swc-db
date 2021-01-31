@@ -17,8 +17,8 @@ namespace SWC { namespace client { namespace SQL {
 class QueryUpdate final : public Reader {
 
   public:
-  QueryUpdate(const std::string& sql, 
-              DB::Cells::MutableMap& columns, 
+  QueryUpdate(const std::string& sql,
+              DB::Cells::MutableMap& columns,
               DB::Cells::MutableMap& columns_onfractions,
               std::string& message);
 
@@ -27,7 +27,7 @@ class QueryUpdate final : public Reader {
   int parse_update();
 
   int parse_load(std::string& filepath, cid_t& cid);
-  
+
   void parse_display_flags(uint8_t& display_flags);
 
   private:
@@ -35,12 +35,12 @@ class QueryUpdate final : public Reader {
   void read_cells();
 
   void read_cell(cid_t& cid, DB::Cells::Cell& cell, bool& on_fraction);
-  
-  void op_from(const uint8_t** ptr, size_t* remainp, 
+
+  void op_from(const uint8_t** ptr, size_t* remainp,
                uint8_t& op, int64_t& value);
 
   void read_flag(uint8_t& flag, bool& on_fraction);
-  
+
   DB::Cells::MutableMap& columns;
   DB::Cells::MutableMap& columns_onfractions;
 };
@@ -53,6 +53,6 @@ class QueryUpdate final : public Reader {
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/db/client/sql/QueryUpdate.cc"
-#endif 
+#endif
 
 #endif //swcdb_db_client_sql_QueryUpdate_h

@@ -16,14 +16,14 @@ template <class ItemT>
 class QueueSafeStated final : private std::queue<ItemT> {
   public:
 
-  explicit QueueSafeStated() { }
+  explicit QueueSafeStated() noexcept { }
 
   ~QueueSafeStated() { }
 
   QueueSafeStated(const QueueSafeStated&) = delete;
 
   QueueSafeStated(const QueueSafeStated&&) = delete;
-    
+
   QueueSafeStated& operator=(const QueueSafeStated&) = delete;
 
   void push(const ItemT& item) {

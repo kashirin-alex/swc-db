@@ -47,7 +47,7 @@ const uint8_t MAX_LEN_VINT64 = 10;
 
 
 extern SWC_CAN_INLINE
-void memcopy(uint8_t* dest, const uint8_t** bufp, size_t len) {
+void memcopy(uint8_t* dest, const uint8_t** bufp, size_t len) noexcept {
   memcpy(dest, *bufp, len);
   *bufp += len;
 
@@ -55,7 +55,7 @@ void memcopy(uint8_t* dest, const uint8_t** bufp, size_t len) {
 }
 
 extern SWC_CAN_INLINE
-void memcopy(uint8_t** bufp, const uint8_t* src, size_t len) {
+void memcopy(uint8_t** bufp, const uint8_t* src, size_t len) noexcept {
   memcpy(*bufp, src, len);
   *bufp += len;
 
@@ -79,7 +79,7 @@ void decode_needed(size_t* remainp, size_t len) {
 }
 
 extern SWC_CAN_INLINE
-void encode_i8(uint8_t** bufp, uint8_t val) {
+void encode_i8(uint8_t** bufp, uint8_t val) noexcept {
   **bufp = val;
   ++*bufp;
 }
@@ -96,7 +96,7 @@ uint8_t decode_byte(const uint8_t** bufp, size_t* remainp) {
 }
 
 extern SWC_CAN_INLINE
-void encode_bool(uint8_t** bufp, bool bval) {
+void encode_bool(uint8_t** bufp, bool bval) noexcept {
   encode_i8(bufp, bval);
 }
 
@@ -106,7 +106,7 @@ bool decode_bool(const uint8_t** bufp, size_t* remainp) {
 }
 
 extern SWC_CAN_INLINE
-void encode_i16(uint8_t** bufp , uint16_t val) {
+void encode_i16(uint8_t** bufp , uint16_t val) noexcept {
   memcopy(bufp, reinterpret_cast<const uint8_t*>(&val), 2);
 }
 
@@ -119,7 +119,7 @@ uint16_t decode_i16(const uint8_t** bufp, size_t* remainp) {
 }
 
 extern SWC_CAN_INLINE
-void encode_i24(uint8_t** bufp , uint24_t val) {
+void encode_i24(uint8_t** bufp , uint24_t val) noexcept {
   memcopy(bufp, reinterpret_cast<const uint8_t*>(&val), 3);
 }
 
@@ -132,7 +132,7 @@ uint24_t decode_i24(const uint8_t** bufp, size_t* remainp) {
 }
 
 extern SWC_CAN_INLINE
-void encode_i32(uint8_t** bufp, uint32_t val) {
+void encode_i32(uint8_t** bufp, uint32_t val) noexcept {
   memcopy(bufp, reinterpret_cast<const uint8_t*>(&val), 4);
 }
 
@@ -145,7 +145,7 @@ uint32_t decode_i32(const uint8_t** bufp, size_t* remainp) {
 }
 
 extern SWC_CAN_INLINE
-void encode_i64(uint8_t** bufp, uint64_t val) {
+void encode_i64(uint8_t** bufp, uint64_t val) noexcept {
   memcopy(bufp, reinterpret_cast<const uint8_t*>(&val), 8);
 }
 
@@ -193,7 +193,7 @@ uint64_t decode_i64(const uint8_t** bufp, size_t* remainp) {
 
 
 extern SWC_CAN_INLINE
-uint8_t encoded_length_vi24(uint24_t val) {
+uint8_t encoded_length_vi24(uint24_t val) noexcept {
   return
   (val <= MAX_V1B ? 1 :
    (val <= MAX_V2B ? 2 :
@@ -228,7 +228,7 @@ uint24_t decode_vi24(const uint8_t** bufp) {
 
 
 extern SWC_CAN_INLINE
-uint8_t encoded_length_vi32(uint32_t val) {
+uint8_t encoded_length_vi32(uint32_t val) noexcept {
   return
   (val <= MAX_V1B ? 1 :
    (val <= MAX_V2B ? 2 :
@@ -266,7 +266,7 @@ uint32_t decode_vi32(const uint8_t** bufp) {
 }
 
 extern SWC_CAN_INLINE
-uint8_t encoded_length_vi64(uint64_t val) {
+uint8_t encoded_length_vi64(uint64_t val) noexcept {
   return
   (val <= MAX_V1B ? 1 :
    (val <= MAX_V2B ? 2 :
@@ -321,7 +321,7 @@ uint64_t decode_vi64(const uint8_t** bufp) {
 
 template<uint8_t BITS, uint8_t SZ, typename T>
 extern SWC_CAN_INLINE
-void encode_fixed_vi(uint8_t** bufp, T val) {
+void encode_fixed_vi(uint8_t** bufp, T val) noexcept {
   **bufp = SZ;
   Core::BitFieldInt<T, BITS> _val = val;
   memcpy(++*bufp, reinterpret_cast<const uint8_t*>(&_val), SZ);
@@ -330,7 +330,7 @@ void encode_fixed_vi(uint8_t** bufp, T val) {
 
 template<uint8_t BITS, uint8_t SZ, typename T>
 extern SWC_CAN_INLINE
-T decode_fixed_vi(const uint8_t** bufp) {
+T decode_fixed_vi(const uint8_t** bufp) noexcept {
   Core::BitFieldInt<T, BITS> val;
   memcpy(reinterpret_cast<uint8_t*>(&val), *bufp, SZ);
   *bufp += SZ;
@@ -339,7 +339,7 @@ T decode_fixed_vi(const uint8_t** bufp) {
 
 
 extern SWC_CAN_INLINE
-uint8_t encoded_length_fixed_vi24(uint24_t val) {
+uint8_t encoded_length_fixed_vi24(uint24_t val) noexcept {
   if(val <= 0xFB)
     return 1;
   if(val <= 0xFF)
@@ -350,7 +350,7 @@ uint8_t encoded_length_fixed_vi24(uint24_t val) {
 }
 
 extern SWC_CAN_INLINE
-void encode_fixed_vi24(uint8_t** bufp, uint24_t val) {
+void encode_fixed_vi24(uint8_t** bufp, uint24_t val) noexcept {
   if(val <= 0xFB)
     return encode_i8(bufp, val + 4);
   if(val <= 0xFF)
@@ -384,7 +384,7 @@ uint24_t decode_fixed_vi24(const uint8_t** bufp) {
 
 
 extern SWC_CAN_INLINE
-uint8_t encoded_length_fixed_vi32(uint32_t val) {
+uint8_t encoded_length_fixed_vi32(uint32_t val) noexcept {
   if(val <= 0xFA)
     return 1;
   if(val <= 0xFF)
@@ -397,7 +397,7 @@ uint8_t encoded_length_fixed_vi32(uint32_t val) {
 }
 
 extern SWC_CAN_INLINE
-void encode_fixed_vi32(uint8_t** bufp, uint32_t val) {
+void encode_fixed_vi32(uint8_t** bufp, uint32_t val) noexcept {
   if(val <= 0xFA)
     return encode_i8(bufp, val + 5);
   if(val <= 0xFF)
@@ -435,7 +435,7 @@ uint32_t decode_fixed_vi32(const uint8_t** bufp) {
 
 
 extern SWC_CAN_INLINE
-uint8_t encoded_length_fixed_vi64(uint64_t val) {
+uint8_t encoded_length_fixed_vi64(uint64_t val) noexcept {
   if(val <= 0xF6)
     return 1;
   if(val <= 0xFF)
@@ -456,7 +456,7 @@ uint8_t encoded_length_fixed_vi64(uint64_t val) {
 }
 
 extern SWC_CAN_INLINE
-void encode_fixed_vi64(uint8_t** bufp, uint64_t val) {
+void encode_fixed_vi64(uint8_t** bufp, uint64_t val) noexcept {
   if(val <= 0xF6)
     return encode_i8(bufp, val + 9);
   if(val <= 0xFF)
@@ -511,12 +511,12 @@ uint64_t decode_fixed_vi64(const uint8_t** bufp) {
 
 
 extern SWC_CAN_INLINE
-uint8_t encoded_length_double() {
+uint8_t encoded_length_double() noexcept {
   return sizeof(long double);
 }
 
 extern SWC_CAN_INLINE
-void encode_double(uint8_t** bufp, long double val) {
+void encode_double(uint8_t** bufp, long double val) noexcept {
   memcopy(
     bufp, reinterpret_cast<const uint8_t*>(&val), encoded_length_double());
 }
@@ -532,7 +532,7 @@ long double decode_double(const uint8_t** bufp, size_t* remainp) {
 
 
 extern SWC_CAN_INLINE
-size_t encoded_length_bytes(size_t len) {
+size_t encoded_length_bytes(size_t len) noexcept {
   return encoded_length_vi64(len) + len;
 }
 
@@ -564,7 +564,7 @@ std::string decode_bytes_string(const uint8_t** bufp, size_t* remainp) {
 
 extern SWC_CAN_INLINE
 void encode_bytes_fixed(uint8_t** bufp, const void* data,
-                        uint32_t len) {
+                        uint32_t len) noexcept {
   memcopy(bufp, static_cast<const uint8_t*>(data), len);
 }
 

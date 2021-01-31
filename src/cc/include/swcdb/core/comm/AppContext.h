@@ -23,9 +23,9 @@ class AppContext : public std::enable_shared_from_this<AppContext> {
 
   typedef std::shared_ptr<AppContext> Ptr;
 
-  AppContext(Config::Property::V_GENUM::Ptr cfg_encoder);
+  AppContext(Config::Property::V_GENUM::Ptr cfg_encoder) noexcept;
 
-  virtual ~AppContext();
+  virtual ~AppContext() { };
 
   virtual void handle(ConnHandlerPtr conn, const Event::Ptr& ev) = 0;
 

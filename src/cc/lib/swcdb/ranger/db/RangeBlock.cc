@@ -318,7 +318,7 @@ Block::Ptr Block::_split(bool loaded) {
   {
     Core::MutexAtomic::scope lock(m_mutex_intval);
     blk->m_key_end.copy(m_key_end);
-    m_key_end.copy(m_cells.back()->key);
+    m_key_end.copy(m_cells.back().key);
   }
   if(sz)
     Env::Rgr::res().adj_mem_usage(ssize_t(m_cells.size_of_internal()) - sz);

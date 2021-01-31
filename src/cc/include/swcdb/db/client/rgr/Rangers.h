@@ -24,35 +24,35 @@ struct RangeEndPoints final {
 };
 
 
-class Rangers final 
+class Rangers final
     : private std::unordered_map<
         cid_t, std::unordered_map<rid_t, RangeEndPoints*>> {
-  
+
   typedef std::unordered_map<
     cid_t, std::unordered_map<rid_t, RangeEndPoints*>> Map;
-    
+
   public:
 
-  Rangers(const Config::Property::V_GINT32::Ptr expiry_ms);
+  Rangers(const Config::Property::V_GINT32::Ptr expiry_ms) noexcept;
 
   virtual ~Rangers();
-  
+
   void clear();
-  
+
   void clear_expired();
 
   void remove(const cid_t cid, const rid_t rid);
 
   bool get(const cid_t cid, const rid_t rid, Comm::EndPoints& endpoints);
 
-  void set(const cid_t cid, const rid_t rid, 
+  void set(const cid_t cid, const rid_t rid,
            const Comm::EndPoints& endpoints);
 
   private:
 
   Core::MutexSptd                   m_mutex;
   Config::Property::V_GINT32::Ptr   m_expiry_ms;
-  
+
 };
 
 
@@ -61,6 +61,6 @@ class Rangers final
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/db/client/rgr/Rangers.cc"
-#endif 
+#endif
 
 #endif // swcdb_db_client_rgr_Rangers_h

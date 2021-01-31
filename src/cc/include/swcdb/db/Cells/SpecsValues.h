@@ -29,7 +29,7 @@ class Values : private std::vector<Value> {
 
   Types::Column col_type;
 
-  Values(Types::Column col_type = Types::Column::UNKNOWN)
+  Values(Types::Column col_type = Types::Column::UNKNOWN) noexcept
         : col_type(col_type) {
   }
 
@@ -45,13 +45,13 @@ class Values : private std::vector<Value> {
 
   Value& add(Value&& other);
 
-  size_t size_of_internal() const;
+  size_t size_of_internal() const noexcept;
 
-  bool equal(const Values& other) const;
+  bool equal(const Values& other) const noexcept;
 
   bool is_matching(const Cells::Cell& cell) const;
 
-  size_t encoded_length() const;
+  size_t encoded_length() const noexcept;
 
   void encode(uint8_t** bufp) const;
 

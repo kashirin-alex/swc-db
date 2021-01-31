@@ -36,11 +36,11 @@ class Event final {
 
   ~Event();
 
-  void received();
+  void received() noexcept;
 
   void decode_buffers();
 
-  bool expired(int64_t within=0) const;
+  bool expired(int64_t within=0) const noexcept;
 
   int32_t response_code();
 

@@ -237,7 +237,7 @@ std::string ParserConfig::position_name(int n) {
   return "";
 }
 
-bool ParserConfig::has(const std::string& name) const {
+bool ParserConfig::has(const std::string& name) const noexcept {
   for(const auto& info : options) {
     if(!name.compare(info.first))
       return true;
@@ -248,7 +248,8 @@ bool ParserConfig::has(const std::string& name) const {
   return false;
 }
 
-bool ParserConfig::has(const std::string& name, std::string& alias_to) const {
+bool ParserConfig::has(const std::string& name,
+                       std::string& alias_to) const noexcept {
   for(const auto& info : options) {
     if(!name.compare(info.first))
       return true;
@@ -325,7 +326,7 @@ Strings Parser::args_to_strings(int argc, char *argv[]) {
   return raw_strings;
 }
 
-Parser::Options::Options(bool own) : own(own) { }
+Parser::Options::Options(bool own) noexcept : own(own) { }
 
 Parser::Options::~Options() {
   free();
@@ -550,7 +551,7 @@ void Parser::own_options(Parser::Options& opts) {
   m_opts.own = false;
 }
 
-const Parser::Options& Parser::get_options(){
+const Parser::Options& Parser::get_options() const noexcept {
   return m_opts;
 }
 

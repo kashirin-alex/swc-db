@@ -25,7 +25,7 @@ Event::Event(Type type_, int error_) noexcept
 Event::~Event() { }
 
 SWC_SHOULD_INLINE
-void Event::received() {
+void Event::received() noexcept {
   if(header.timeout_ms)
     expiry_ms = Time::now_ms() + header.timeout_ms - 1;
 }
@@ -51,7 +51,7 @@ void Event::decode_buffers() {
   }
 }
 
-bool Event::expired(int64_t within) const {
+bool Event::expired(int64_t within) const noexcept {
   return expiry_ms && Time::now_ms() > (expiry_ms - within);
 }
 

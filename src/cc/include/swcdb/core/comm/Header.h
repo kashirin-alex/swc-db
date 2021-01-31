@@ -33,17 +33,17 @@ struct Header final {
   };
 
 
-  Header(uint64_t cmd=0, uint32_t timeout=0);
+  Header(uint64_t cmd=0, uint32_t timeout=0) noexcept;
 
-  explicit Header(const Header& init_from_req_header);
+  explicit Header(const Header& init_from_req_header) noexcept;
 
-  ~Header();
+  // ~Header() { }
 
-  void reset();
+  void reset() noexcept;
 
-  void set(uint64_t cmd=0, uint32_t timeout=0);
+  void set(uint64_t cmd=0, uint32_t timeout=0) noexcept;
 
-  uint8_t encoded_length();
+  uint8_t encoded_length() noexcept;
 
   void encode(uint8_t** bufp) const;
 

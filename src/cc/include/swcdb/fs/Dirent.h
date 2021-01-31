@@ -32,7 +32,7 @@ class Dirent final : public Comm::Serializable {
 
   private:
 
-  size_t internal_encoded_length() const override;
+  size_t internal_encoded_length() const noexcept override;
 
   void internal_encode(uint8_t** bufp) const override;
 

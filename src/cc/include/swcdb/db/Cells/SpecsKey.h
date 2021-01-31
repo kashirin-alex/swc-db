@@ -24,7 +24,7 @@ struct Fraction final : public std::string {
 
   bool operator==(const Fraction &other) const;
 
-  uint32_t encoded_length() const;
+  uint32_t encoded_length() const noexcept;
 
   void encode(uint8_t** bufp) const;
 
@@ -43,7 +43,7 @@ class Key final : public std::vector<Fraction> {
 
   typedef std::shared_ptr<Key> Ptr;
 
-  explicit Key();
+  explicit Key() noexcept;
 
   explicit Key(const Key &other);
 
@@ -53,11 +53,11 @@ class Key final : public std::vector<Fraction> {
 
   void free();
 
-  size_t size_of_internal() const;
+  size_t size_of_internal() const noexcept;
 
   void copy(const Key &other);
 
-  bool equal(const Key &other) const;
+  bool equal(const Key &other) const noexcept;
 
   void set(const DB::Cell::Key &cell_key, Condition::Comp comp);
 
@@ -96,7 +96,7 @@ class Key final : public std::vector<Fraction> {
 
   void remove(uint32_t idx, bool recursive=false);
 
-  uint32_t encoded_length() const;
+  uint32_t encoded_length() const noexcept;
 
   void encode(uint8_t** bufp) const;
 

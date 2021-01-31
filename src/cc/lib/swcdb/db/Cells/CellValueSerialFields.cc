@@ -49,7 +49,7 @@ Field::Field(const uint8_t** bufp, size_t* remainp)
             : fid(Serialization::decode_vi24(bufp, remainp)) {
 }
 
-size_t Field::encoded_length() const {
+size_t Field::encoded_length() const noexcept {
   return 1 + Serialization::encoded_length_vi24(fid);
 }
 
@@ -67,7 +67,7 @@ Field_INT64::Field_INT64(const uint8_t** bufp, size_t* remainp)
                           value(Serialization::decode_vi64(bufp, remainp)) {
 }
 
-size_t Field_INT64::encoded_length() const {
+size_t Field_INT64::encoded_length() const noexcept {
   return Field::encoded_length() +
          Serialization::encoded_length_vi64(value);
 }
@@ -90,7 +90,7 @@ Field_DOUBLE::Field_DOUBLE(const uint8_t** bufp, size_t* remainp)
                           value(Serialization::decode_double(bufp, remainp)) {
 }
 
-size_t Field_DOUBLE::encoded_length() const {
+size_t Field_DOUBLE::encoded_length() const noexcept {
   return Field::encoded_length() +
          Serialization::encoded_length_double();
 }
@@ -127,7 +127,7 @@ Field_BYTES::Field_BYTES(const uint8_t** bufp, size_t* remainp,
     : set(const_cast<uint8_t*>(ptr), len, false);
 }
 
-size_t Field_BYTES::encoded_length() const {
+size_t Field_BYTES::encoded_length() const noexcept {
   return Field::encoded_length() +
          Serialization::encoded_length_bytes(size);
 }
@@ -176,7 +176,7 @@ Field_KEY::Field_KEY(const uint8_t** bufp, size_t* remainp,
   key.decode(bufp, remainp, take_ownership);
 }
 
-size_t Field_KEY::encoded_length() const {
+size_t Field_KEY::encoded_length() const noexcept {
   return Field::encoded_length() +
          key.encoded_length();
 }
@@ -217,7 +217,7 @@ Field_LIST_INT64::Field_LIST_INT64(const uint8_t** bufp, size_t* remainp,
     : set(const_cast<uint8_t*>(ptr), len, false);
 }
 
-size_t Field_LIST_INT64::encoded_length() const {
+size_t Field_LIST_INT64::encoded_length() const noexcept {
   return Field::encoded_length() +
          Serialization::encoded_length_bytes(size);
 }
@@ -275,7 +275,7 @@ Field_LIST_BYTES::Field_LIST_BYTES(const uint8_t** bufp, size_t* remainp,
     : set(const_cast<uint8_t*>(ptr), len, false);
 }
 
-size_t Field_LIST_BYTES::encoded_length() const {
+size_t Field_LIST_BYTES::encoded_length() const noexcept {
   return Field::encoded_length() +
          Serialization::encoded_length_bytes(size);
 }

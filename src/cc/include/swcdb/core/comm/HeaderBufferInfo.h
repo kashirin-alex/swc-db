@@ -16,11 +16,11 @@ namespace SWC { namespace Comm {
 
 struct BufferInfo final {
 
-  BufferInfo();
+  BufferInfo() noexcept;
 
-  void reset();
+  void reset() noexcept;
 
-  uint8_t encoded_length() const;
+  uint8_t encoded_length() const noexcept;
 
   void encode(uint8_t** bufp) const;
 

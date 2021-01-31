@@ -26,7 +26,7 @@ bool Fraction::operator==(const Fraction &other) const {
          !memcmp(data(), other.data(), length());
 }
 
-uint32_t Fraction::encoded_length() const {
+uint32_t Fraction::encoded_length() const noexcept {
   return 1 + Serialization::encoded_length_vi32(size()) + size();
 }
 
@@ -72,7 +72,7 @@ Fraction::_is_matching(const uint8_t* ptr, uint32_t len) {
 
 
 
-Key::Key() { }
+Key::Key() noexcept { }
 
 Key::Key(const Key &other) : std::vector<Fraction>(other) { }
 
@@ -86,7 +86,7 @@ void Key::free() {
   clear();
 }
 
-size_t Key::size_of_internal() const {
+size_t Key::size_of_internal() const noexcept {
   size_t sz = 0;
   for(auto& f : *this) {
     sz += sizeof(f);
@@ -100,7 +100,7 @@ void Key::copy(const Key &other) {
   assign(other.begin(), other.end());
 }
 
-bool Key::equal(const Key &other) const {
+bool Key::equal(const Key &other) const noexcept {
   return *this == other;
 }
 
@@ -201,7 +201,7 @@ void Key::remove(uint32_t idx, bool recursive) {
     erase(begin()+idx);
 }
 
-uint32_t Key::encoded_length() const {
+uint32_t Key::encoded_length() const noexcept {
   uint32_t len = Serialization::encoded_length_vi32(size());
   for(auto it = begin(); it < end(); ++it)
     len += it->encoded_length();

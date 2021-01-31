@@ -9,8 +9,7 @@ if(THRIFT_CPP_GEN_PATH)
 # libswcdb_thrift
 ADD_LIB_TARGET(
   NAME    swcdb_thrift
-  SRCS    ${THRIFT_CPP_GEN_PATH}/gen-cpp/Service_constants.cpp
-          ${THRIFT_CPP_GEN_PATH}/gen-cpp/Service_types.cpp
+  SRCS    ${THRIFT_CPP_GEN_PATH}/gen-cpp/Service_types.cpp
           ${THRIFT_CPP_GEN_PATH}/gen-cpp/Service.cpp
           # Converters.cc
             # Client.cc

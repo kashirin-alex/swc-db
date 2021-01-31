@@ -23,12 +23,12 @@ IoContext::IoContext(const std::string& name, int32_t size)
   
 IoContext::~IoContext() { }
 
-int32_t IoContext::get_size() const {
+int32_t IoContext::get_size() const noexcept {
   return m_size; // asio::query(executor(), asio::execution::occupancy);
 }
 
 SWC_SHOULD_INLINE
-IoContext::Executor IoContext::executor() {
+IoContext::Executor IoContext::executor() noexcept {
   return pool.get_executor();
 }
 
@@ -43,7 +43,7 @@ void IoContext::set_periodic_timer(const Config::Property::V_GINT32::Ptr ms,
 
 void IoContext::stop() {
   SWC_LOGF(LOG_DEBUG, "Stopping IO-ctx(%s)", name.c_str());
-  
+
   m_periodic_timers.stop();
 
   running.store(false);
@@ -59,9 +59,9 @@ void IoContext::stop() {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
   }
 
-  SWC_LOGF(LOG_DEBUG, "Wait for IO-ctx(%s) finished %sgracefully", 
+  SWC_LOGF(LOG_DEBUG, "Wait for IO-ctx(%s) finished %sgracefully",
            name.c_str(), untracked ? "" : "not-");
-  
+
   //if(!untracked)
   //  pool.join();
   pool.stop();
@@ -78,7 +78,7 @@ void IoCtx::init(int32_t size) {
   m_env = std::make_shared<IoCtx>(size);
 }
 
-bool IoCtx::ok() {
+bool IoCtx::ok() noexcept {
   return bool(m_env);
 }
   
@@ -89,11 +89,11 @@ Comm::IoContextPtr IoCtx::io() {
 }
   
 SWC_SHOULD_INLINE
-bool IoCtx::stopping() {
+bool IoCtx::stopping() noexcept {
   return !m_env->m_io->running;
 }
 
-IoCtx::IoCtx(int32_t size) 
+IoCtx::IoCtx(int32_t size)
             : m_io(std::make_shared<Comm::IoContext>("Env", size)) {
 }
 

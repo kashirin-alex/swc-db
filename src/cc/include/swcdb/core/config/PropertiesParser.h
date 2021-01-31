@@ -37,9 +37,9 @@ Property::V_GBOOL::Ptr g_boo(const bool& v);
 Property::V_GUINT8::Ptr g_i8(const uint8_t& v);
 Property::V_GINT32::Ptr g_i32(const int32_t& v);
 Property::V_GSTRINGS::Ptr g_strs(const Strings& v);
-Property::V_GENUM::Ptr g_enum(const int32_t& v, 
-                              const Property::V_GENUM::OnChg_t& cb, 
-                              const Property::V_GENUM::FromString_t& from_string, 
+Property::V_GENUM::Ptr g_enum(const int32_t& v,
+                              const Property::V_GENUM::OnChg_t& cb,
+                              const Property::V_GENUM::FromString_t& from_string,
                               const Property::V_GENUM::Repr_t& repr);
 
 /* cfg methods for types, a skippable option
@@ -61,7 +61,7 @@ Property::V_DOUBLES::Ptr f64s();
 
   
 class ParserConfig final {
-  
+
   struct ParserOpt final {
     Property::Value::Ptr  value;
     Strings               aliases;
@@ -80,7 +80,7 @@ class ParserConfig final {
   bool          own;
 
 
-  explicit ParserConfig(const std::string& usage = "", 
+  explicit ParserConfig(const std::string& usage = "",
                         int line_len=0, bool own=true);
 
   explicit ParserConfig(const ParserConfig& other);
@@ -88,14 +88,14 @@ class ParserConfig final {
   ~ParserConfig();
 
   void free();
-  
+
   ParserConfig& definition(const std::string& u);
 
   /* populate from other Parser Config */
   ParserConfig& add(const ParserConfig& other_cfg);
 
   /* Method to add option */
-  ParserConfig& add(const std::string& names, Property::Value::Ptr vptr, 
+  ParserConfig& add(const std::string& names, Property::Value::Ptr vptr,
                     const std::string& description);
 
   ParserConfig& operator()(const std::string& name, Property::Value::Ptr vptr,
@@ -108,9 +108,9 @@ class ParserConfig final {
 
   ParserConfig& add(const std::string& name, const std::string& description);
 
-  ParserConfig& operator()(const std::string& name, 
+  ParserConfig& operator()(const std::string& name,
                            const std::string& description);
-    
+
   /* Method to add_pos option */
   ParserConfig& add_pos(const std::string& s, int pos);
 
@@ -118,14 +118,14 @@ class ParserConfig final {
 
   std::string position_name(int n);
 
-  bool has(const std::string& name) const;
+  bool has(const std::string& name) const noexcept;
 
-  bool has(const std::string& name, std::string& alias_to) const;
+  bool has(const std::string& name, std::string& alias_to) const noexcept;
 
   Property::Value::Ptr get_default(const std::string& name);
 
   void remove(const std::string& name);
-  
+
   void print(std::ostream& os) const;
 
 };
@@ -147,7 +147,7 @@ class Parser final {
     bool  own;
     std::map<std::string, Property::Value::Ptr> map;
 
-    Options(bool own=true);
+    Options(bool own=true) noexcept;
 
     ~Options();
 
@@ -155,11 +155,11 @@ class Parser final {
   };
 
   explicit Parser(bool unregistered=false);
-  
+
   ~Parser();
 
   void free();
-  
+
   void parse_filedata(std::ifstream& in);
 
   void parse_cmdline(int argc, char *argv[]);
@@ -175,12 +175,12 @@ class Parser final {
   void make_options();
 
   // convert, validate and add property to options
-  void add_opt(const std::string& name, Property::Value::Ptr p, 
+  void add_opt(const std::string& name, Property::Value::Ptr p,
                const Strings& raw_opt);
-      
+
   void own_options(Options& opts);
 
-  const Options& get_options();
+  const Options& get_options() const noexcept;
 
   void print(std::ostream& os) const;
 
@@ -189,11 +189,11 @@ class Parser final {
   private:
   typedef std::pair<std::string, Strings> Pair;
   typedef std::map<std::string, Strings> Map;
-  
+
   Map           raw_opts;
   bool          m_unregistered;
   Options       m_opts;
-    
+
 };
 
 std::ostream& operator<<(std::ostream& os, const Parser& prs);
@@ -204,6 +204,6 @@ std::ostream& operator<<(std::ostream& os, const Parser& prs);
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/core/config/PropertiesParser.cc"
-#endif 
+#endif
 
 #endif // swcdb_core_config_PropertiesParser_h

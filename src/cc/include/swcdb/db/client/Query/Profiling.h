@@ -9,7 +9,7 @@
 
 
 
-namespace SWC { namespace client { 
+namespace SWC { namespace client {
 
 
 //! The SWC-DB Query C++ namespace 'SWC::client::Query'
@@ -29,7 +29,7 @@ struct Profiling {
   const int64_t          ts_start;
   Core::Atomic<int64_t>  ts_finish;
 
-  Profiling() : ts_start(Time::now_ns()), ts_finish(ts_start) { }
+  Profiling() noexcept : ts_start(Time::now_ns()), ts_finish(ts_start) { }
 
   struct Component {
 
@@ -37,26 +37,26 @@ struct Profiling {
     Core::Atomic<uint64_t> time;
     Core::Atomic<uint64_t> error;
 
-    Component() : count(0), time(0), error(0) { }
+    Component() noexcept : count(0), time(0), error(0) { }
 
     struct Start {
       Component&    _m;
       const int64_t ts;
 
-      Start(Component& m)
+      Start(Component& m) noexcept
             : _m(m), ts(Time::now_ns()) {
       }
 
-      void add(bool err) const {
+      void add(bool err) const noexcept {
         _m.add(ts, err);
       }
     };
 
-    Start start() {
+    Start start() noexcept {
       return Start(*this);
     }
 
-    void add(uint64_t ts, bool err) {
+    void add(uint64_t ts, bool err) noexcept {
       count.fetch_add(1);
       time.fetch_add(Time::now_ns() - ts);
       if(err)
@@ -67,8 +67,8 @@ struct Profiling {
       out << "(count=" << count.load()
           << " time=" << time.load() << "ns errors=" << error.load() << ')';
     }
-    
-    void display(std::ostream& out) const { 
+
+    void display(std::ostream& out) const {
       out << time.load() << "ns" << '/'
           << count.load() << '(' << error.load() << ")\n";
     }
@@ -80,28 +80,28 @@ struct Profiling {
   Component _rgr_locate_meta;
   Component _rgr_data;
 
-  void finished() {
+  void finished() noexcept {
     ts_finish.store(Time::now_ns());
   }
 
-  Component::Start mngr_locate() {
+  Component::Start mngr_locate() noexcept {
     return Component::Start(_mngr_locate);
   }
 
-  Component::Start mngr_res() {
+  Component::Start mngr_res() noexcept {
     return Component::Start(_mngr_res);
   }
 
-  Component::Start rgr_locate(DB::Types::Range type) {    
+  Component::Start rgr_locate(DB::Types::Range type) noexcept {
     switch(type) {
-      case DB::Types::Range::MASTER: 
+      case DB::Types::Range::MASTER:
         return Component::Start(_rgr_locate_master);
       default:
         return Component::Start(_rgr_locate_meta);
     }
   }
 
-  Component::Start rgr_data() {
+  Component::Start rgr_data() noexcept {
     return Component::Start(_rgr_data);
   }
 

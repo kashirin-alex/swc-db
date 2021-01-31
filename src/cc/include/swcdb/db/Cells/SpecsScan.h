@@ -35,9 +35,9 @@ class Scan final : public Comm::Serializable {
 
   void free();
 
-  bool equal(const Scan &other);
+  bool equal(const Scan &other) const noexcept;
 
-  size_t internal_encoded_length() const override;
+  size_t internal_encoded_length() const noexcept override;
 
   void internal_encode(uint8_t** bufp) const override;
 

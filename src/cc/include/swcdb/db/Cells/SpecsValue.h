@@ -54,11 +54,11 @@ class Value {
 
   void free();
 
-  bool empty() const;
+  bool empty() const noexcept;
 
-  bool equal(const Value &other) const;
+  bool equal(const Value &other) const noexcept;
 
-  size_t encoded_length() const;
+  size_t encoded_length() const noexcept;
 
   void encode(uint8_t** bufp) const;
 

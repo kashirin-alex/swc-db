@@ -105,19 +105,19 @@ void FileSystem::get_abspath(const std::string& name, std::string& abspath) {
   }
 }
 
-void FileSystem::fd_open_incr() {
+void FileSystem::fd_open_incr() noexcept {
   fds_count.fetch_add(1);
 }
 
-void FileSystem::fd_open_decr() {
+void FileSystem::fd_open_decr() noexcept {
   fds_count.fetch_sub(1);
 }
 
-bool FileSystem::need_fds() const {
+bool FileSystem::need_fds() const noexcept {
   return fds_count >= size_t(cfg_fds_max->get());
 }
 
-size_t FileSystem::fds_open() const {
+size_t FileSystem::fds_open() const noexcept {
   return fds_count.load();
 }
 

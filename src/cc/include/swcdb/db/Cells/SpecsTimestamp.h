@@ -17,31 +17,31 @@ namespace SWC { namespace DB { namespace Specs {
 class Timestamp {
   public:
 
-  explicit Timestamp();
+  explicit Timestamp() noexcept;
 
-  explicit Timestamp(int64_t timestamp, Condition::Comp comp);
-  
-  explicit Timestamp(const Timestamp &other);
+  explicit Timestamp(int64_t timestamp, Condition::Comp comp) noexcept;
 
-  void copy(const Timestamp &other);
+  explicit Timestamp(const Timestamp &other) noexcept;
 
-  void set(int64_t timestamp, Condition::Comp comperator);
+  void copy(const Timestamp &other) noexcept;
 
-  void free();
+  void set(int64_t timestamp, Condition::Comp comperator) noexcept;
+
+  void free() noexcept;
 
   ~Timestamp();
 
-  bool empty() const;
+  bool empty() const noexcept;
 
-  bool equal(const Timestamp &other) const;
+  bool equal(const Timestamp &other) const noexcept;
 
-  size_t encoded_length() const;
+  size_t encoded_length() const noexcept;
 
   void encode(uint8_t** bufp) const;
 
   void decode(const uint8_t** bufp, size_t* remainp);
 
-  bool is_matching(int64_t other) const;
+  bool is_matching(int64_t other) const noexcept;
 
   std::string to_string() const;
 
@@ -54,10 +54,10 @@ class Timestamp {
     return out;
   }
 
-  int64_t          value; 
+  int64_t          value;
   Condition::Comp  comp;
   bool             was_set;
-  
+
 };
 
 
@@ -65,6 +65,6 @@ class Timestamp {
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/db/Cells/SpecsTimestamp.cc"
-#endif 
+#endif
 
 #endif // swcdb_db_cells_SpecsTimestamp_h

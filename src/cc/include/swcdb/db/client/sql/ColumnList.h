@@ -16,7 +16,7 @@ namespace SWC { namespace client { namespace SQL {
 class ColumnList final : public Reader {
 
   public:
-  
+
   std::vector<DB::Schemas::Pattern> patterns;
 
   ColumnList(const std::string& sql, std::vector<DB::Schema::Ptr>& schemas,
@@ -27,9 +27,9 @@ class ColumnList final : public Reader {
   int parse_list_columns(const char* expect_cmd);
 
   private:
-  
+
   void read_columns(std::vector<DB::Schema::Ptr>& cols, const char* stop);
-  
+
   std::vector<DB::Schema::Ptr>& schemas;
 };
 
@@ -46,7 +46,7 @@ get|list column|columns|schema|schemas "name|ID" "name|ID]";
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/db/client/sql/ColumnList.cc"
-#endif 
+#endif
 
 
 #endif //swcdb_db_client_sql_ColumnList_h

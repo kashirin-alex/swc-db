@@ -255,7 +255,7 @@ void CompactRange::initial_commitlog_done(const CommitLog::Compact* compact) {
   range->scan_internal(shared());
 }
 
-bool CompactRange::with_block() {
+bool CompactRange::with_block() const noexcept {
   return true;
 }
 

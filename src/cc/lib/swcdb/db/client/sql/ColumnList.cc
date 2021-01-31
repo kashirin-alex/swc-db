@@ -25,21 +25,21 @@ int ColumnList::parse_list_columns(const char* expect_cmd) {
   stop[2] = 0;
 
   while(remain && !err) {
- 
+
     if(found_space())
       continue;
 
-    if(!token_cmd && (found_token("get", 3) || found_token("list", 4) || 
-                      found_token("compact", 7))) {   
+    if(!token_cmd && (found_token("get", 3) || found_token("list", 4) ||
+                      found_token("compact", 7))) {
       token_cmd = true;
       continue;
-    } 
+    }
     if(!token_cmd) {
       expect_token(expect_cmd, strlen(expect_cmd), token_cmd);
       break;
     }
-    if(!token_typ && (found_token("columns", 7) || found_token("column", 6) || 
-                      found_token("schemas", 7) || found_token("schema", 6))) {   
+    if(!token_typ && (found_token("columns", 7) || found_token("column", 6) ||
+                      found_token("schemas", 7) || found_token("schema", 6))) {
       token_typ = true;
       continue;
     }
@@ -69,20 +69,20 @@ int ColumnList::parse_list_columns(const char* expect_cmd) {
 
 ColumnList::~ColumnList() {}
   
-void ColumnList::read_columns(std::vector<DB::Schema::Ptr>& cols, 
+void ColumnList::read_columns(std::vector<DB::Schema::Ptr>& cols,
                               const char* stop) {
   std::string col_name;
   Condition::Comp comp;
   while(remain && !err) {
     if(found_char(',') || found_space())
       continue;
-    
+
     found_comparator(comp = Condition::NONE, true);
     if(comp != Condition::NONE) {
       read(col_name, stop, comp == Condition::RE);
       if(col_name.empty()) {
         error_msg(
-          Error::SQL_PARSE_ERROR, 
+          Error::SQL_PARSE_ERROR,
           "expected column name(expression) after comparator"
         );
         break;

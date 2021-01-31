@@ -56,7 +56,7 @@ void Column::copy(const Column &other) {
     intervals[i++] = Interval::make_ptr(*intval.get());
 }
 
-Column::~Column(){
+Column::~Column() {
   free();
 }
 
@@ -72,7 +72,7 @@ void Column::free() {
   */
 }
 
-bool Column::equal(const Column &other) {
+bool Column::equal(const Column &other) const noexcept {
   if(cid != other.cid || intervals.size() != other.intervals.size())
     return false;
 
@@ -83,7 +83,7 @@ bool Column::equal(const Column &other) {
   return true;
 }
 
-size_t Column::internal_encoded_length() const {
+size_t Column::internal_encoded_length() const noexcept {
   size_t len = Serialization::encoded_length_vi64(cid)
               + Serialization::encoded_length_vi32(intervals.size());
   for(auto& intval : intervals)

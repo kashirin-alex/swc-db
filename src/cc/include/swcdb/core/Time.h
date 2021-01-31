@@ -13,7 +13,7 @@
 #include <chrono>
 
 
-namespace SWC { 
+namespace SWC {
 
 
 /**
@@ -28,14 +28,14 @@ void checkings();
 
 SWC_CAN_INLINE
 extern
-int64_t now_ms() {
+int64_t now_ms() noexcept {
   return std::chrono::duration_cast<std::chrono::milliseconds>(
     std::chrono::system_clock::now().time_since_epoch()).count();
 }
 
 SWC_CAN_INLINE
 extern
-int64_t now_ns() {
+int64_t now_ns() noexcept {
   return std::chrono::duration_cast<std::chrono::nanoseconds>(
     std::chrono::system_clock::now().time_since_epoch()).count();
 }
@@ -52,6 +52,6 @@ std::ostream &hires_now_ns(std::ostream &out);
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/core/Time.cc"
-#endif 
+#endif
 
 #endif // swcdb_core_Time_h

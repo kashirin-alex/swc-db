@@ -44,7 +44,7 @@ void Scan::free() {
   */
 }
 
-bool Scan::equal(const Scan &other) {
+bool Scan::equal(const Scan &other) const noexcept {
   if(columns.size() != other.columns.size() || !other.flags.equal(flags))
     return false;
 
@@ -55,7 +55,7 @@ bool Scan::equal(const Scan &other) {
   return true;
 }
 
-size_t Scan::internal_encoded_length() const {
+size_t Scan::internal_encoded_length() const noexcept {
   size_t len = Serialization::encoded_length_vi32(columns.size());
   for(auto& col : columns)
     len += col->internal_encoded_length();

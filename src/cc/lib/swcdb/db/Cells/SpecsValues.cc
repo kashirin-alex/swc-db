@@ -32,14 +32,14 @@ Value& Values::add(Value&& other) {
   return emplace_back(std::move(other));
 }
 
-size_t Values::size_of_internal() const {
+size_t Values::size_of_internal() const noexcept {
   size_t sz = sizeof(*this);
   for(auto& value : *this)
     sz += sizeof(value) + value.size;
   return sz;
 }
 
-bool Values::equal(const Values& other) const {
+bool Values::equal(const Values& other) const noexcept {
   if(col_type == other.col_type && size() == other.size()) {
     auto it = begin();
     for(auto it2 = other.begin(); it < end(); ++it, ++it2)
@@ -83,7 +83,7 @@ bool Values::is_matching(const Cells::Cell& cell) const {
   }
 }
 
-size_t Values::encoded_length() const {
+size_t Values::encoded_length() const noexcept {
   size_t sz = 0;
   size_t c = 0;
   for(auto& value : *this) {

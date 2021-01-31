@@ -13,7 +13,7 @@ namespace SWC { namespace Comm {
   
 ConfigSSL::ConfigSSL(bool is_client)
                     : ctx(is_client
-                            ? asio::ssl::context::tlsv13_client 
+                            ? asio::ssl::context::tlsv13_client
                             : asio::ssl::context::tlsv13_server) {
   auto settings = Env::Config::settings();
   set_networks(settings->get_strs("swc.comm.ssl.secure.network"), is_client);
@@ -107,12 +107,12 @@ void ConfigSSL::set_networks(const Config::Strings& networks,
 
 
 SWC_SHOULD_INLINE
-bool ConfigSSL::need_ssl(const EndPoint& endpoint) const {
+bool ConfigSSL::need_ssl(const EndPoint& endpoint) const noexcept {
   return !Resolver::is_network(endpoint, nets_v4, nets_v6);
 }
 
 
-void ConfigSSL::make_server(AppContext::Ptr& app_ctx, 
+void ConfigSSL::make_server(AppContext::Ptr& app_ctx,
                             SocketPlain& socket) const {
   auto conn = std::make_shared<ConnHandlerSSL>(app_ctx, ctx, socket);
   conn->handshake(
@@ -122,7 +122,7 @@ void ConfigSSL::make_server(AppContext::Ptr& app_ctx,
         conn->new_connection();
         conn->accept_requests();
       } else {
-        SWC_LOGF(LOG_DEBUG, "handshake error=%d(%s)", 
+        SWC_LOGF(LOG_DEBUG, "handshake error=%d(%s)",
                   ec.value(), ec.message().c_str());
         conn->do_close();
       }
@@ -132,7 +132,7 @@ void ConfigSSL::make_server(AppContext::Ptr& app_ctx,
 
 
 std::shared_ptr<ConnHandlerSSL>  
-ConfigSSL::make_client(AppContext::Ptr& app_ctx, 
+ConfigSSL::make_client(AppContext::Ptr& app_ctx,
                        SocketPlain& socket) const {
   auto conn = std::make_shared<ConnHandlerSSL>(app_ctx, ctx, socket);
   if(!subject_name.empty())
@@ -141,8 +141,8 @@ ConfigSSL::make_client(AppContext::Ptr& app_ctx,
 }
 
 ConnHandlerPtr
-ConfigSSL::make_client(AppContext::Ptr& app_ctx, 
-                       SocketPlain& socket, 
+ConfigSSL::make_client(AppContext::Ptr& app_ctx,
+                       SocketPlain& socket,
                        asio::error_code& ec) const {
   auto conn = make_client(app_ctx, socket);
   conn->handshake(SocketSSL::client, ec);
@@ -150,7 +150,7 @@ ConfigSSL::make_client(AppContext::Ptr& app_ctx,
 }
 
 void 
-ConfigSSL::make_client(AppContext::Ptr& app_ctx, 
+ConfigSSL::make_client(AppContext::Ptr& app_ctx,
                        SocketPlain& socket,
                        const HandshakeCb_t& cb) const {
   auto conn = make_client(app_ctx, socket);
