@@ -8,6 +8,7 @@
 
 #include "swcdb/fs/FileSystem.h"
 #include "hdfspp/hdfspp.h"
+#include <condition_variable>
 
 namespace SWC { namespace FS {
 

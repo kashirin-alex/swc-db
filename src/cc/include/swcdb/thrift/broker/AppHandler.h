@@ -362,7 +362,7 @@ class AppHandler final : virtual public BrokerIf {
 
   /* UPDATER */
   int64_t updater_create(const int32_t buffer_size) override {
-    std::scoped_lock lock(m_mutex);
+    Core::MutexSptd::scope lock(m_mutex);
 
     int64_t id = 1;
     for(auto it = m_updaters.begin();
@@ -378,7 +378,7 @@ class AppHandler final : virtual public BrokerIf {
   void updater_close(const int64_t id) override {
     client::Query::Update:: Ptr req;
     {
-      std::scoped_lock lock(m_mutex);
+      Core::MutexSptd::scope lock(m_mutex);
 
       auto it = m_updaters.find(id);
       if(it == m_updaters.end())
@@ -538,7 +538,7 @@ class AppHandler final : virtual public BrokerIf {
     client::Query::Update:: Ptr req;
     for(;;) {
       {
-        std::scoped_lock lock(m_mutex);
+        Core::MutexSptd::scope lock(m_mutex);
         auto it = m_updaters.begin();
         if(it == m_updaters.end())
           break;
@@ -550,7 +550,7 @@ class AppHandler final : virtual public BrokerIf {
   }
 
   void updater(const int64_t id, client::Query::Update::Ptr& req) {
-    std::scoped_lock lock(m_mutex);
+    Core::MutexSptd::scope lock(m_mutex);
 
     auto it = m_updaters.find(id);
     if(it == m_updaters.end())
@@ -882,7 +882,7 @@ class AppHandler final : virtual public BrokerIf {
     }
   }
 
-  std::mutex m_mutex;
+  Core::MutexSptd m_mutex;
   std::unordered_map<
     int64_t, client::Query::Update::Ptr> m_updaters;
 };

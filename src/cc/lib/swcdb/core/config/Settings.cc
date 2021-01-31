@@ -166,7 +166,7 @@ void Settings::load_files_by(const std::string& fileprop,
     try {
       load(fname, file_desc, cmdline_desc, allow_unregistered);
 
-      std::scoped_lock lock(mutex);
+      Core::MutexSptd::scope lock(mutex);
       auto it = std::find(m_dyn_files.begin(), m_dyn_files.end(), fname);
       if(it == m_dyn_files.end())
         m_dyn_files.push_back({.filename=fname, .modified=0});
@@ -289,7 +289,7 @@ std::string Settings::usage_str(const char *usage) {
 
 void Settings::check_dynamic_files() {
   time_t ts;
-  std::scoped_lock lock(mutex);
+  Core::MutexSptd::scope lock(mutex);
   for(auto& dyn : m_dyn_files) {
     errno = 0;
     ts = FileUtils::modification(dyn.filename);

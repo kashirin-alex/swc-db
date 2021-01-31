@@ -30,7 +30,7 @@ Group::Ptr Group::copy() {
 }
 
 void Group::add_host(Comm::EndPoints& new_endpoints) {
-  std::scoped_lock lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
 
   Comm::EndPoints* found_host = nullptr;
   for(auto& endpoint : new_endpoints) {
@@ -42,12 +42,12 @@ void Group::add_host(Comm::EndPoints& new_endpoints) {
 }
 
 Hosts Group::get_hosts() {
-  std::scoped_lock lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   return Hosts(begin(), end());
 }
 
 bool Group::is_in_group(const Comm::EndPoint& endpoint) {
-  std::scoped_lock lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
 
   Comm::EndPoints* found_host;
   _get_host(endpoint, found_host);
@@ -55,7 +55,7 @@ bool Group::is_in_group(const Comm::EndPoint& endpoint) {
 }
 
 void Group::print(std::ostream& out) {
-  std::scoped_lock lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
 
   out << "group:\n"
       << " role=" << DB::Types::MngrRole::to_string(role)
@@ -68,7 +68,7 @@ void Group::print(std::ostream& out) {
 }
 
 void Group::apply_endpoints(Comm::EndPoints& to) {
-  std::scoped_lock lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
 
   for(auto& endpoints : *this) {
     for(auto& point : endpoints) {
@@ -120,7 +120,7 @@ Groups::Ptr Groups::init() {
 
 Groups::Ptr Groups::copy() {
   Vec groups;
-  std::scoped_lock lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   for(auto& group : *this)
     groups.push_back(group->copy());
   return std::make_shared<Groups>(groups, m_nets);
@@ -148,7 +148,7 @@ void Groups::on_cfg_update() {
   std::string cfg;
   std::string cfg_chk;
 
-  m_mutex.lock();
+  bool support = m_mutex.lock();
   clear();
   for(int n=0; n<c; ++n) {
     cfg = cfg_mngr_hosts->get_item(n);
@@ -210,7 +210,7 @@ void Groups::on_cfg_update() {
     _add_host(role, col_begin, col_end, port, host_or_ips);
 
   }
-  m_mutex.unlock();
+  m_mutex.unlock(support);
 
   SWC_LOG_OUT(LOG_DEBUG, print(SWC_LOG_OSTREAM); );
 }
@@ -250,13 +250,13 @@ void Groups::_add_host(uint8_t role, cid_t cid_begin, cid_t cid_end,
 }
 
 Groups::Vec Groups::get_groups() {
-  std::scoped_lock lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
   return Vec(begin(), end());
 }
 
 void Groups::hosts(uint8_t role, cid_t cid, Hosts& hosts,
                    Groups::GroupHost &group_host) {
-  std::scoped_lock lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
 
   for(auto& group : *this) {
     if(group->role & role && (
@@ -274,7 +274,7 @@ void Groups::hosts(uint8_t role, cid_t cid, Hosts& hosts,
 
 Groups::Vec Groups::get_groups(const Comm::EndPoints& endpoints) {
   Vec hgroups;
-  std::scoped_lock lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
 
   for(auto& group : *this) {
     for(auto& endpoint : endpoints) {
@@ -291,7 +291,7 @@ Comm::EndPoints Groups::get_endpoints(uint8_t role, cid_t cid_begin,
   Comm::EndPoints endpoints;
   if(!cid_end)
     cid_end = cid_begin;
-  std::scoped_lock lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
 
   for(auto& group : *this) {
     if((!role || group->role & role) &&
@@ -306,14 +306,14 @@ Comm::EndPoints Groups::get_endpoints(uint8_t role, cid_t cid_begin,
 
 void Groups::print(std::ostream& out) {
   out << "manager-groups:\n";
-  std::scoped_lock lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
 
   for(auto& group : *this)
     group->print(out);
 }
 
 void Groups::add(Groups::GroupHost& g_host) {
-  std::scoped_lock lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
 
   for(auto it=m_active_g_host.begin(); it<m_active_g_host.end(); ++it) {
     if(Comm::has_endpoint(g_host.endpoints, it->endpoints))
@@ -329,7 +329,7 @@ void Groups::add(Groups::GroupHost& g_host) {
 }
 
 void Groups::remove(const Comm::EndPoints& endpoints) {
-  std::scoped_lock lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
 
   for(auto it=m_active_g_host.begin(); it<m_active_g_host.end(); ) {
     if(Comm::has_endpoint(endpoints, it->endpoints))
@@ -340,7 +340,7 @@ void Groups::remove(const Comm::EndPoints& endpoints) {
 }
 
 void Groups::select(const cid_t& cid, Comm::EndPoints& endpoints) {
-  std::scoped_lock lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
 
   for(auto& host : m_active_g_host) {
     if(host.role & DB::Types::MngrRole::COLUMNS &&
@@ -353,7 +353,7 @@ void Groups::select(const cid_t& cid, Comm::EndPoints& endpoints) {
 }
 
 void Groups::select(const uint8_t& role, Comm::EndPoints& endpoints) {
-  std::scoped_lock lock(m_mutex);
+  Core::MutexSptd::scope lock(m_mutex);
 
   for(auto& host : m_active_g_host) {
     if(host.role & role) {

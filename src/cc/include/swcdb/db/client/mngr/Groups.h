@@ -6,6 +6,7 @@
 #ifndef swcdb_db_client_mngr_Groups_h
 #define swcdb_db_client_mngr_Groups_h
 
+#include "swcdb/core/MutexSptd.h"
 #include "swcdb/db/Types/Identifiers.h"
 #include "swcdb/db/Types/MngrRole.h"
 #include "swcdb/core/comm/Resolver.h"
@@ -49,7 +50,7 @@ class Group final : private Hosts {
   void _get_host(const Comm::EndPoint& point,
                  Comm::EndPoints*& found_host) noexcept;
 
-  std::mutex    m_mutex;
+  Core::MutexSptd m_mutex;
 };
 
 
@@ -105,7 +106,7 @@ class Groups final : private std::vector<Group::Ptr>,
   void _add_host(uint8_t role, cid_t cid_begin, cid_t cid_end,
                  uint16_t port, std::string host_or_ips);
 
-  std::mutex                  m_mutex;
+  Core::MutexSptd             m_mutex;
   std::vector<GroupHost>      m_active_g_host;
   std::vector<Comm::Network>  m_nets;
 };

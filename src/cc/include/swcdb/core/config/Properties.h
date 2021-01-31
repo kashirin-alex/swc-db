@@ -8,10 +8,10 @@
 #define swcdb_core_config_Properties_h
 
 #include "swcdb/core/Exception.h"
+#include "swcdb/core/MutexSptd.h"
 #include "swcdb/core/config/Property.h"
 #include "swcdb/core/config/PropertiesParser.h"
 
-#include <shared_mutex>
 #include <map>
 
 
@@ -25,7 +25,7 @@ class Properties {
 
   public:
 
-  std::shared_mutex    mutex;
+  Core::MutexSptd    mutex;
 
   Properties() noexcept;
 
