@@ -77,7 +77,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
   virtual void close() = 0;
 
-  size_t pending_read();
+  size_t pending_read() noexcept;
 
   size_t pending_write();
 

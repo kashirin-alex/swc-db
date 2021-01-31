@@ -121,12 +121,12 @@ void ConnQueue::stop() {
   }
 }
 
-EndPoint ConnQueue::get_endpoint_remote() {
+EndPoint ConnQueue::get_endpoint_remote() noexcept {
   Core::MutexSptd::scope lock(m_mutex);
   return m_conn && m_conn->is_open() ? m_conn->endpoint_remote : EndPoint();
 }
 
-EndPoint ConnQueue::get_endpoint_local() {
+EndPoint ConnQueue::get_endpoint_local() noexcept {
   Core::MutexSptd::scope lock(m_mutex);
   return m_conn && m_conn->is_open() ? m_conn->endpoint_local : EndPoint();
 }

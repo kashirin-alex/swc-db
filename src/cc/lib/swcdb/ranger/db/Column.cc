@@ -21,21 +21,21 @@ Column::~Column() {
   Env::Rgr::in_process(-1);
 }
 
-size_t Column::size_of() const {
+size_t Column::size_of() const noexcept {
   return sizeof(*this) + sizeof(ColumnPtr);
 }
 
-size_t Column::ranges_count() {
+size_t Column::ranges_count() noexcept {
   Core::MutexSptd::scope lock(m_mutex);
   return size();
 }
 
-bool Column::removing() {
+bool Column::removing() noexcept {
   Core::MutexSptd::scope lock(m_mutex);
   return cfg->deleting;
 }
 
-bool Column::is_not_used() {
+bool Column::is_not_used() noexcept {
   return cfg.use_count() == 1 && m_q_mng.empty() && !ranges_count();
 }
 

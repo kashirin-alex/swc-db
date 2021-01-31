@@ -70,7 +70,7 @@ class Blocks final {
 
   size_t cells_count();
 
-  size_t size();
+  size_t size() noexcept;
 
   size_t size_bytes();
 

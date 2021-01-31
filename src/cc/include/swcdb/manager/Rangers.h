@@ -33,7 +33,7 @@ class Rangers final {
 
   void stop(bool shuttingdown=true);
 
-  bool empty();
+  bool empty() noexcept;
   
   void schedule_check(uint32_t t_ms = 10000);
 

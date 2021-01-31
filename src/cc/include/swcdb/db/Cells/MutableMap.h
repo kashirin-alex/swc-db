@@ -60,9 +60,9 @@ class ColCells final {
                                          const DB::Cell::Key& from_key,
                                          uint32_t skip, bool malformed);
 
-  size_t size();
+  size_t size() noexcept;
 
-  size_t size_bytes();
+  size_t size_bytes() noexcept;
 
   void print(std::ostream& out);
 
@@ -97,13 +97,13 @@ class MutableMap final : private std::unordered_map<cid_t, ColCells::Ptr> {
 
   bool create(const cid_t cid, Mutable& cells);
 
-  bool exists(const cid_t cid);
+  bool exists(const cid_t cid) noexcept;
 
   void add(const cid_t cid, const Cell& cell);
 
-  ColCells::Ptr get_idx(size_t offset);
+  ColCells::Ptr get_idx(size_t offset) noexcept;
 
-  ColCells::Ptr get_col(const cid_t cid);
+  ColCells::Ptr get_col(const cid_t cid) noexcept;
 
   void pop(ColCells::Ptr& col);
 
@@ -111,13 +111,13 @@ class MutableMap final : private std::unordered_map<cid_t, ColCells::Ptr> {
 
   void remove(const cid_t cid);
 
-  size_t size();
+  size_t size() noexcept;
 
-  size_t size(const cid_t cid);
+  size_t size(const cid_t cid) noexcept;
 
-  size_t size_bytes();
+  size_t size_bytes() noexcept;
 
-  size_t size_bytes(const cid_t cid);
+  size_t size_bytes(const cid_t cid) noexcept;
 
   void print(std::ostream& out);
 

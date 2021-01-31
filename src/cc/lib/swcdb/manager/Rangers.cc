@@ -60,7 +60,7 @@ void Rangers::stop(bool shuttingdown) {
   }
 }
 
-bool Rangers::empty() {
+bool Rangers::empty() noexcept {
   Core::MutexSptd::scope lock(m_mutex);
   return m_rangers.empty();
 }

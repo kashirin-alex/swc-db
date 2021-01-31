@@ -42,17 +42,17 @@ class QueueSafe : private std::queue<ItemT> {
     return chk;
   }
 
-  ItemT& front() {
+  ItemT& front() noexcept {
     MutexSptd::scope lock(m_mutex);
     return QBase::front();
   }
 
-  bool empty() {
+  bool empty() noexcept {
     MutexSptd::scope lock(m_mutex);
     return QBase::empty();
   }
 
-  size_t size() {
+  size_t size() noexcept {
     MutexSptd::scope lock(m_mutex);
     return QBase::size();
   }

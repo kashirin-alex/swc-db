@@ -52,7 +52,7 @@ void Schemas::_replace(const Schema::Ptr& schema) {
     res.first->second = schema;
 }
 
-Schema::Ptr Schemas::get(cid_t cid) {
+Schema::Ptr Schemas::get(cid_t cid) noexcept {
   Core::MutexSptd::scope lock(m_mutex);
   return _get(cid);
 }
@@ -62,12 +62,12 @@ Schema::Ptr Schemas::_get(cid_t cid) const noexcept {
   return it == end() ? nullptr : it->second;
 }
 
-Schema::Ptr Schemas::get(const std::string& name) {
+Schema::Ptr Schemas::get(const std::string& name) noexcept {
   Core::MutexSptd::scope lock(m_mutex);
   return _get(name);
 }
 
-Schema::Ptr Schemas::_get(const std::string& name) const {
+Schema::Ptr Schemas::_get(const std::string& name) const noexcept {
   for(const auto& it : *this ) {
     if(!name.compare(it.second->col_name))
       return it.second;

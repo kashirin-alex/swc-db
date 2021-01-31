@@ -51,17 +51,17 @@ struct Select final {
 
     void get_cells(DB::Cells::Result& cells);
 
-    size_t get_size();
+    size_t get_size() noexcept;
 
-    size_t get_size_bytes();
+    size_t get_size_bytes() noexcept;
 
-    bool empty();
+    bool empty() noexcept;
 
     void free();
 
-    void error(int err);
+    void error(int err) noexcept;
 
-    int error();
+    int error() noexcept;
 
     private:
     Core::MutexSptd    m_mutex;
@@ -83,9 +83,9 @@ struct Select final {
 
   size_t get_size(const cid_t cid);
 
-  size_t get_size_bytes();
+  size_t get_size_bytes() const noexcept;
 
-  bool empty() const;
+  bool empty() const noexcept;
 
   std::vector<cid_t> get_cids() const;
 

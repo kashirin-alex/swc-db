@@ -32,27 +32,27 @@ class QueueSafeStated final : private std::queue<ItemT> {
     m_mutex.unlock(support);
   }
 
-  ItemT& front() {
+  ItemT& front() noexcept {
     MutexSptd::scope lock(m_mutex);
     return QBase::front();
   }
 
-  bool empty() {
+  bool empty() noexcept {
     MutexSptd::scope lock(m_mutex);
     return QBase::empty();
   }
 
-  size_t size() {
+  size_t size() noexcept {
     MutexSptd::scope lock(m_mutex);
     return QBase::size();
   }
 
-  bool is_active() {
+  bool is_active() noexcept {
     MutexSptd::scope lock(m_mutex);
     return m_state;
   }
 
-  bool activating() {
+  bool activating() noexcept {
     MutexSptd::scope lock(m_mutex);
     return (m_state || QBase::empty()) ? false : (m_state = true);
   }
@@ -65,7 +65,7 @@ class QueueSafeStated final : private std::queue<ItemT> {
     return !m_state;
   }
 
-  void deactivate() {
+  void deactivate() noexcept {
     MutexSptd::scope lock(m_mutex);
     m_state = false;
   }

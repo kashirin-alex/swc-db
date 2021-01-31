@@ -38,9 +38,9 @@ class Schemas : private std::unordered_map<cid_t, Schema::Ptr> {
 
   void replace(const Schema::Ptr& schema);
 
-  Schema::Ptr get(cid_t cid);
+  Schema::Ptr get(cid_t cid) noexcept;
 
-  Schema::Ptr get(const std::string& name);
+  Schema::Ptr get(const std::string& name) noexcept;
 
   void all(std::vector<Schema::Ptr>& entries);
 
@@ -60,7 +60,7 @@ class Schemas : private std::unordered_map<cid_t, Schema::Ptr> {
 
   Schema::Ptr _get(cid_t cid) const noexcept;
 
-  Schema::Ptr _get(const std::string& name) const;
+  Schema::Ptr _get(const std::string& name) const noexcept;
 
   Core::MutexSptd  m_mutex;
 };

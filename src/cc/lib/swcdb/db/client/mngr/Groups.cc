@@ -46,7 +46,7 @@ Hosts Group::get_hosts() {
   return Hosts(begin(), end());
 }
 
-bool Group::is_in_group(const Comm::EndPoint& endpoint) {
+bool Group::is_in_group(const Comm::EndPoint& endpoint) noexcept {
   Core::MutexSptd::scope lock(m_mutex);
 
   Comm::EndPoints* found_host;

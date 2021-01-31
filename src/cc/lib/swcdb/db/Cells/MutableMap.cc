@@ -89,12 +89,12 @@ size_t ColCells::add(const DynamicBuffer& cells,
   return m_cells.size() - sz;
 }
 
-size_t ColCells::size() {
+size_t ColCells::size() noexcept {
   Core::MutexSptd::scope lock(m_mutex);
   return m_cells.size();
 }
 
-size_t ColCells::size_bytes() {
+size_t ColCells::size_bytes() noexcept {
   Core::MutexSptd::scope lock(m_mutex);
   return m_cells.size_bytes();
 }
@@ -136,7 +136,7 @@ bool MutableMap::create(const cid_t cid, Mutable& cells) {
   return emplace(cid, ColCells::make(cid, cells)).second;
 }
 
-bool MutableMap::exists(const cid_t cid) {
+bool MutableMap::exists(const cid_t cid) noexcept {
   Core::MutexSptd::scope lock(m_mutex);
 
   return find(cid) != end();
@@ -151,7 +151,7 @@ void MutableMap::add(const cid_t cid, const Cell& cell) {
   it->second->add(cell);
 }
 
-ColCells::Ptr MutableMap::get_idx(size_t offset) {
+ColCells::Ptr MutableMap::get_idx(size_t offset) noexcept {
   Core::MutexSptd::scope lock(m_mutex);
 
   if(offset < Columns::size()) {
@@ -162,7 +162,7 @@ ColCells::Ptr MutableMap::get_idx(size_t offset) {
   return nullptr;
 }
 
-ColCells::Ptr MutableMap::get_col(const cid_t cid) {
+ColCells::Ptr MutableMap::get_col(const cid_t cid) noexcept {
   Core::MutexSptd::scope lock(m_mutex);
 
   auto it = find(cid);
@@ -200,7 +200,7 @@ void MutableMap::remove(const cid_t cid) {
     erase(it);
 }
 
-size_t MutableMap::size() {
+size_t MutableMap::size() noexcept {
   Core::MutexSptd::scope lock(m_mutex);
 
   size_t total = 0;
@@ -209,14 +209,14 @@ size_t MutableMap::size() {
   return total;
 }
 
-size_t MutableMap::size(const cid_t cid) {
+size_t MutableMap::size(const cid_t cid) noexcept {
   Core::MutexSptd::scope lock(m_mutex);
 
   auto it = find(cid);
   return it == end() ? 0 : it->second->size();
 }
 
-size_t MutableMap::size_bytes() {
+size_t MutableMap::size_bytes() noexcept {
   Core::MutexSptd::scope lock(m_mutex);
 
   size_t total = 0;
@@ -225,7 +225,7 @@ size_t MutableMap::size_bytes() {
   return total;
 }
 
-size_t MutableMap::size_bytes(const cid_t cid) {
+size_t MutableMap::size_bytes(const cid_t cid) noexcept {
   Core::MutexSptd::scope lock(m_mutex);
 
   auto it = find(cid);

@@ -64,19 +64,19 @@ bool MngdColumns::is_schemas_mngr(int& err) {
   return false;
 }
 
-bool MngdColumns::has_active() {
+bool MngdColumns::has_active() noexcept {
   Core::MutexSptd::scope lock(m_mutex_active);
   return m_cid_active;
 }
 
-bool MngdColumns::is_active(cid_t cid) {
+bool MngdColumns::is_active(cid_t cid) noexcept {
   Core::MutexSptd::scope lock(m_mutex_active);
   return m_cid_active && cid &&
         (!m_cid_begin || m_cid_begin <= cid) &&
         (!m_cid_end   || m_cid_end >= cid);
 }
 
-bool MngdColumns::active(cid_t& cid_begin, cid_t& cid_end) {
+bool MngdColumns::active(cid_t& cid_begin, cid_t& cid_end) noexcept {
   Core::MutexSptd::scope lock(m_mutex_active);
   if(m_cid_active) {
     cid_begin = m_cid_begin;
@@ -85,7 +85,7 @@ bool MngdColumns::active(cid_t& cid_begin, cid_t& cid_end) {
   return m_cid_active;
 }
 
-bool MngdColumns::expected_ready() {
+bool MngdColumns::expected_ready() noexcept {
   Core::MutexSptd::scope lock(m_mutex_expect);
   return m_expected_ready;
 }

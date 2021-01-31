@@ -68,9 +68,9 @@ class ConnQueue :
 
   void stop();
 
-  EndPoint get_endpoint_remote();
+  EndPoint get_endpoint_remote() noexcept;
 
-  EndPoint get_endpoint_local();
+  EndPoint get_endpoint_local() noexcept;
 
   void put(const ReqBase::Ptr& req);
 

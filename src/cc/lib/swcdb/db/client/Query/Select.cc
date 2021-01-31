@@ -45,17 +45,17 @@ void Select::Rsp::get_cells(DB::Cells::Result& cells) {
   cells.take(m_cells);
 }
 
-size_t Select::Rsp::get_size() {
+size_t Select::Rsp::get_size() noexcept {
   Core::MutexSptd::scope lock(m_mutex);
   return m_cells.size();
 }
 
-size_t Select::Rsp::get_size_bytes() {
+size_t Select::Rsp::get_size_bytes() noexcept {
   Core::MutexSptd::scope lock(m_mutex);
   return m_cells.size_bytes();
 }
 
-bool Select::Rsp::empty() {
+bool Select::Rsp::empty() noexcept {
   Core::MutexSptd::scope lock(m_mutex);
   return m_cells.empty();
 }
@@ -66,12 +66,12 @@ void Select::Rsp::free() {
 }
 
 
-void Select::Rsp::error(int err) {
+void Select::Rsp::error(int err) noexcept {
   Core::MutexSptd::scope lock(m_mutex);
   m_err = err;
 }
 
-int Select::Rsp::error() {
+int Select::Rsp::error() noexcept {
   Core::MutexSptd::scope lock(m_mutex);
   return m_err;
 }
@@ -113,14 +113,14 @@ size_t Select::get_size(const cid_t cid) {
   return m_columns[cid]->get_size();
 }
 
-size_t Select::get_size_bytes() {
+size_t Select::get_size_bytes() const noexcept {
   size_t sz = 0;
   for(const auto& col : m_columns)
     sz += col.second->get_size_bytes();
   return sz;
 }
 
-bool Select::empty() const {
+bool Select::empty() const noexcept {
   for(const auto& col : m_columns)
     if(!col.second->empty())
       return false;

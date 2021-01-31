@@ -259,7 +259,7 @@ size_t Blocks::cells_count() {
   return sz;
 }
 
-size_t Blocks::size() {
+size_t Blocks::size() noexcept {
   Core::MutexSptd::scope lock(m_mutex);
   return _size();
 }

@@ -35,13 +35,13 @@ class MngdColumns final {
 
   bool is_schemas_mngr(int& err);
 
-  bool has_active();
+  bool has_active() noexcept;
 
-  bool is_active(cid_t cid);
+  bool is_active(cid_t cid) noexcept;
 
-  bool active(cid_t& cid_begin, cid_t& cid_end);
+  bool active(cid_t& cid_begin, cid_t& cid_end) noexcept;
 
-  bool expected_ready();
+  bool expected_ready() noexcept;
 
   void columns_ready(int& err);
 

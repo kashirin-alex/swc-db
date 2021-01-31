@@ -26,13 +26,13 @@ class Column final :
 
   ~Column();
 
-  size_t size_of() const;
+  size_t size_of() const noexcept;
 
-  size_t ranges_count();
+  size_t ranges_count() noexcept;
 
-  bool removing();
+  bool removing() noexcept;
 
-  bool is_not_used(); 
+  bool is_not_used() noexcept; 
 
   RangePtr get_range(const rid_t rid);
 

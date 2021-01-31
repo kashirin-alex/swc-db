@@ -75,7 +75,7 @@ void ConnHandler::new_connection() {
   run(Event::make(Event::Type::ESTABLISHED, Error::OK));
 }
 
-size_t ConnHandler::pending_read() {
+size_t ConnHandler::pending_read() noexcept {
   Core::MutexSptd::scope lock(m_mutex);
   return m_pending.size();
 }

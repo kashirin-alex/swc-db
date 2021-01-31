@@ -46,7 +46,7 @@ class Fds final : private std::unordered_map<int32_t, FS::SmartFd::Ptr> {
     return smartfd;
   }
 
-  FS::SmartFd::Ptr select(int32_t fd) {
+  FS::SmartFd::Ptr select(int32_t fd) noexcept {
     Core::MutexSptd::scope lock(m_mutex);
 
     auto it = find(fd);

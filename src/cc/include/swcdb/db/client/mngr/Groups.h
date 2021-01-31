@@ -39,7 +39,7 @@ class Group final : private Hosts {
 
   Hosts get_hosts();
 
-  bool is_in_group(const Comm::EndPoint& endpoint);
+  bool is_in_group(const Comm::EndPoint& endpoint) noexcept;
 
   void print(std::ostream& out);
 
