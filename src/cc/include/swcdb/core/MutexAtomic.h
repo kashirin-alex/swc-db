@@ -19,11 +19,10 @@ class MutexAtomic {
 
   explicit MutexAtomic() noexcept : want(ATOMIC_FLAG_INIT) { }
 
-  MutexAtomic(const MutexAtomic&) = delete;
-
-  MutexAtomic(const MutexAtomic&&) = delete;
-
-  MutexAtomic& operator=(const MutexAtomic&) = delete;
+  MutexAtomic(const MutexAtomic&)             = delete;
+  MutexAtomic(MutexAtomic&&)                  = delete;
+  MutexAtomic& operator=(const MutexAtomic&)  = delete;
+  MutexAtomic& operator=(MutexAtomic&&)       = delete;
 
   //~MutexAtomic() { }
 
@@ -81,11 +80,10 @@ class MutexAtomic {
 
     ~scope() noexcept { _m.unlock(); }
 
-    scope(const scope&) = delete;
-
-    scope(const scope&&) = delete;
-
-    scope& operator=(const scope&) = delete;
+    scope(const scope&)             = delete;
+    scope(scope&&)                  = delete;
+    scope& operator=(const scope&)  = delete;
+    scope& operator=(scope&&)       = delete;
 
     private:
     const MutexAtomic& _m;

@@ -17,15 +17,14 @@ class MutexSptd final : private MutexAtomic {
 
   explicit MutexSptd() noexcept { }
 
-  MutexSptd(const MutexSptd&) = delete;
-
-  MutexSptd(const MutexSptd&&) = delete;
-
-  MutexSptd& operator=(const MutexSptd&) = delete;
+  MutexSptd(const MutexSptd&)             = delete;
+  MutexSptd(MutexSptd&&)                  = delete;
+  MutexSptd& operator=(const MutexSptd&)  = delete;
+  MutexSptd& operator=(MutexSptd&&)       = delete;
 
   //~MutexSptd() noexcept { }
 
-  bool lock() {
+  bool lock_except() {
     if(MutexAtomic::try_lock())
       return true;
     m_mutex.lock();
@@ -33,7 +32,16 @@ class MutexSptd final : private MutexAtomic {
     return false;
   }
 
-  bool try_full_lock(bool& support) {
+  bool lock() noexcept {
+    if(MutexAtomic::try_lock())
+      return true;
+    while(__gthread_mutex_lock(m_mutex.native_handle()))
+      std::this_thread::yield();
+    MutexAtomic::lock();
+    return false;
+  }
+
+  bool try_full_lock(bool& support) noexcept {
     if(MutexAtomic::try_lock()) {
       support = true;
       return true;
@@ -48,24 +56,40 @@ class MutexSptd final : private MutexAtomic {
     return false;
   }
 
-  void unlock(const bool& support) {
+  void unlock(const bool& support) noexcept {
     MutexAtomic::unlock();
     if(!support)
       m_mutex.unlock();
   }
 
+  class scope_except final {
+    public:
+
+    scope_except(MutexSptd& m) : _m(m), _support(m.lock_except()) { }
+
+    ~scope_except() noexcept { _m.unlock(_support); }
+
+    scope_except(const scope_except&)             = delete;
+    scope_except(scope_except&&)                  = delete;
+    scope_except& operator=(const scope_except&)  = delete;
+    scope_except& operator=(scope_except&&)       = delete;
+
+    private:
+    MutexSptd&   _m;
+    const bool   _support;
+  };
+
   class scope final {
     public:
 
-    scope(MutexSptd& m) : _m(m), _support(m.lock()) { }
+    scope(MutexSptd& m) noexcept : _m(m), _support(m.lock()) { }
 
-    ~scope() { _m.unlock(_support); }
+    ~scope() noexcept { _m.unlock(_support); }
 
-    scope(const scope&) = delete;
-
-    scope(const scope&&) = delete;
-
-    scope& operator=(const scope&) = delete;
+    scope(const scope&)             = delete;
+    scope(scope&&)                  = delete;
+    scope& operator=(const scope&)  = delete;
+    scope& operator=(scope&&)       = delete;
 
     private:
     MutexSptd&   _m;
