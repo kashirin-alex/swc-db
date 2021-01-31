@@ -14,7 +14,7 @@
 namespace SWC { namespace DB { namespace Specs {
 
 
-class Column final : public Comm::Serializable {
+class Column final {
   public:
 
   typedef std::vector<Interval::Ptr> Intervals;
@@ -46,11 +46,11 @@ class Column final : public Comm::Serializable {
 
   bool equal(const Column &other) const noexcept;
 
-  size_t internal_encoded_length() const noexcept override;
+  size_t encoded_length() const noexcept;
 
-  void internal_encode(uint8_t** bufp) const override;
+  void encode(uint8_t** bufp) const;
 
-  void internal_decode(const uint8_t** bufp, size_t* remainp) override;
+  void decode(const uint8_t** bufp, size_t* remainp);
 
   std::string to_string() const;
 

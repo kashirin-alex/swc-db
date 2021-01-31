@@ -38,11 +38,9 @@ class ReaddirReq : public Serializable {
 class ReaddirRsp : public Serializable {
   public:
 
-  FS::DirentList& listing;
+  FS::DirentList listing;
 
-  ReaddirRsp(FS::DirentList& listing)
-            : listing(listing) {
-  }
+  ReaddirRsp() { }
 
   private:
 

@@ -9,7 +9,6 @@
 
 namespace SWC { namespace FS {
 
-Dirent::~Dirent() { }
 
 std::string Dirent::to_string() const {
   std::string s("Dirent(");
@@ -26,21 +25,24 @@ std::string Dirent::to_string() const {
   return s;
 }
 
-size_t Dirent::internal_encoded_length() const noexcept {
-  return 13 + Serialization::encoded_length_bytes(name.size());
+size_t Dirent::encoded_length() const noexcept {
+  return Serialization::encoded_length_bytes(name.size())
+       + Serialization::encoded_length_vi64(length)
+       + Serialization::encoded_length_vi32(last_modification_time)
+       + 1;
 }
 
-void Dirent::internal_encode(uint8_t** bufp) const {
+void Dirent::encode(uint8_t** bufp) const {
   Serialization::encode_bytes(bufp, name.c_str(), name.size());
-  Serialization::encode_i64(bufp, length);
-  Serialization::encode_i32(bufp, last_modification_time);
+  Serialization::encode_vi64(bufp, length);
+  Serialization::encode_vi32(bufp, last_modification_time);
   Serialization::encode_bool(bufp, is_dir);
 }
 
-void Dirent::internal_decode(const uint8_t** bufp, size_t* remainp) {
+void Dirent::decode(const uint8_t** bufp, size_t* remainp) {
   name = Serialization::decode_bytes_string(bufp, remainp);
-  length = Serialization::decode_i64(bufp, remainp);
-  last_modification_time = Serialization::decode_i32(bufp, remainp);
+  length = Serialization::decode_vi64(bufp, remainp);
+  last_modification_time = Serialization::decode_vi32(bufp, remainp);
   is_dir = Serialization::decode_bool(bufp, remainp);
 }
 

@@ -159,8 +159,9 @@ void Base::handle_readdir(const Event::Ptr& ev, const std::string& name,
 
   if(!error) {
     try {
-      Params::ReaddirRsp params(listing);
+      Params::ReaddirRsp params;
       params.decode(&ptr, &remain);
+      listing = std::move(params.listing);
 
     } catch(...) {
       const Error::Exception& e = SWC_CURRENT_EXCEPTION("");

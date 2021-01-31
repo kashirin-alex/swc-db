@@ -14,29 +14,24 @@
 namespace SWC { namespace FS {
 
 /// Directory entry
-class Dirent final : public Comm::Serializable {
+struct Dirent final  {
 
-  public:
   /// File or directory name
   std::string   name;
   /// Length of file
-  uint64_t      length {};
+  uint64_t      length;
   /// Last modification time
-  time_t        last_modification_time {};
+  time_t        last_modification_time;
   /// Flag indicating if entry is a directory
-  bool          is_dir {};
+  bool          is_dir;
 
   std::string to_string() const;
 
-  ~Dirent();
+  size_t encoded_length() const noexcept;
 
-  private:
+  void encode(uint8_t** bufp) const;
 
-  size_t internal_encoded_length() const noexcept override;
-
-  void internal_encode(uint8_t** bufp) const override;
-
-  void internal_decode(const uint8_t** bufp, size_t* remainp) override;
+  void decode(const uint8_t** bufp, size_t* remainp);
 
 };
 

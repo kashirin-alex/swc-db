@@ -40,7 +40,7 @@ Column::Column(cid_t cid, const Intervals& intervals)
                 : cid(cid), intervals(intervals) {}
 
 Column::Column(const uint8_t** bufp, size_t* remainp) {
-  internal_decode(bufp, remainp);
+  decode(bufp, remainp);
 }
 
 Column::Column(const Column& other) {
@@ -62,14 +62,6 @@ Column::~Column() {
 
 void Column::free() {
   intervals.clear();
-  /*
-  while(!intervals.empty()){
-    auto it = intervals.begin();
-    auto p = *it;
-    intervals.erase(it);
-    auto interval = *p; //delete p;
-  }
-  */
 }
 
 bool Column::equal(const Column &other) const noexcept {
@@ -83,7 +75,7 @@ bool Column::equal(const Column &other) const noexcept {
   return true;
 }
 
-size_t Column::internal_encoded_length() const noexcept {
+size_t Column::encoded_length() const noexcept {
   size_t len = Serialization::encoded_length_vi64(cid)
               + Serialization::encoded_length_vi32(intervals.size());
   for(auto& intval : intervals)
@@ -91,20 +83,19 @@ size_t Column::internal_encoded_length() const noexcept {
   return len;
 }
 
-void Column::internal_encode(uint8_t** bufp) const {
+void Column::encode(uint8_t** bufp) const {
   Serialization::encode_vi64(bufp, cid);
   Serialization::encode_vi32(bufp, intervals.size());
   for(auto& intval : intervals)
     intval->encode(bufp);
 }
 
-void Column::internal_decode(const uint8_t** bufp, size_t* remainp) {
-  cid = Serialization::decode_vi64(bufp, remainp);
-  uint32_t sz = Serialization::decode_vi32(bufp, remainp);
+void Column::decode(const uint8_t** bufp, size_t* remainp) {
   free();
-  intervals.resize(sz);
-  for (uint32_t i=0; i<sz; ++i)
-    intervals[i] = Interval::make_ptr(bufp, remainp);
+  cid = Serialization::decode_vi64(bufp, remainp);
+  intervals.resize(Serialization::decode_vi32(bufp, remainp));
+  for(auto& intval : intervals)
+    intval = Interval::make_ptr(bufp, remainp);
 }
 
 std::string Column::to_string() const {

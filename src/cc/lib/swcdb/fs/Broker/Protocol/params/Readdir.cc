@@ -32,23 +32,22 @@ void ReaddirReq::internal_decode(const uint8_t** bufp, size_t* remainp) {
 
 size_t ReaddirRsp::internal_encoded_length() const {
   size_t length = Serialization::encoded_length_vi64(listing.size());
-  for (const FS::Dirent& entry : listing)
+  for(auto& entry : listing)
     length += entry.encoded_length();
   return length;
 }
 
 void ReaddirRsp::internal_encode(uint8_t** bufp) const {
   Serialization::encode_vi64(bufp, listing.size());
-  for (const FS::Dirent& entry : listing)
+  for(auto& entry : listing)
     entry.encode(bufp);
 }
 
 void ReaddirRsp::internal_decode(const uint8_t** bufp, size_t* remainp) {
-  size_t count = Serialization::decode_vi64(bufp, remainp);
   listing.clear();
-  listing.resize(count);
-  for (size_t i=0; i<count; ++i)
-    listing[i].decode(bufp, remainp);
+  listing.resize(Serialization::decode_vi64(bufp, remainp));
+  for(auto& entry : listing)
+    entry.decode(bufp, remainp);
 }
 
 

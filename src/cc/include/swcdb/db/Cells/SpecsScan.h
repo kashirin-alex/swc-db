@@ -18,7 +18,7 @@ namespace SWC { namespace DB {
 namespace Specs {
 
 
-class Scan final : public Comm::Serializable {
+class Scan final {
   public:
 
   typedef std::vector<Column::Ptr> Columns;
@@ -37,11 +37,11 @@ class Scan final : public Comm::Serializable {
 
   bool equal(const Scan &other) const noexcept;
 
-  size_t internal_encoded_length() const noexcept override;
+  size_t encoded_length() const noexcept;
 
-  void internal_encode(uint8_t** bufp) const override;
+  void encode(uint8_t** bufp) const;
 
-  void internal_decode(const uint8_t** bufp, size_t* remainp) override;
+  void decode(const uint8_t** bufp, size_t* remainp);
 
   std::string to_string() const;
 
