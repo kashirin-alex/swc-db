@@ -25,15 +25,19 @@ class Key final {
 
   typedef std::shared_ptr<Key> Ptr;
 
-  explicit Key(bool own = true);
+  explicit Key(bool own = true) noexcept;
 
   explicit Key(const Key& other);
 
   explicit Key(const Key& other, bool own);
 
-  Key(const Key&&) = delete;
+  Key(Key&&) noexcept;
 
   Key& operator=(const Key&) = delete;
+
+  Key& operator=(Key&&) noexcept;
+
+  void move(Key& other) noexcept;
 
   void copy(const Key& other);
 
@@ -43,7 +47,7 @@ class Key final {
 
   void free();
 
-  bool sane() const;
+  bool sane() const noexcept;
 
   void add(const std::string_view& fraction);
 
@@ -74,11 +78,11 @@ class Key final {
 
   void get(uint32_t idx, const char** fraction, uint32_t* length) const;
 
-  bool equal(const Key& other) const;
+  bool equal(const Key& other) const noexcept;
 
-  bool empty() const;
+  bool empty() const noexcept;
 
-  uint32_t encoded_length() const;
+  uint32_t encoded_length() const noexcept;
 
   void encode(uint8_t** bufp) const;
 

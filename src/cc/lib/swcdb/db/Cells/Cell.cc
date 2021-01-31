@@ -47,8 +47,9 @@ Flag flag_from(const uint8_t* rptr, uint32_t len) noexcept {
 
 
 SWC_SHOULD_INLINE
-Cell::Cell() :  own(false), flag(Flag::NONE), control(0),
-                vlen(0), value(nullptr) {
+Cell::Cell() noexcept
+  : own(false), flag(Flag::NONE), control(0),
+    vlen(0), value(nullptr) {
 }
 
 SWC_SHOULD_INLINE
@@ -59,6 +60,20 @@ Cell::Cell(const Cell& other)
     timestamp(other.timestamp),
     revision(other.revision),
     value(_value(other.value)) {
+}
+
+SWC_SHOULD_INLINE
+Cell::Cell(Cell&& other) noexcept
+  : key(std::move(other.key)),
+    own(other.own),
+    flag(other.flag),
+    control(other.control),
+    vlen(other.vlen),
+    timestamp(other.timestamp),
+    revision(other.revision),
+    value(other.value) {
+  other.value = nullptr;
+  other.vlen = 0;
 }
 
 SWC_SHOULD_INLINE
@@ -75,6 +90,27 @@ SWC_SHOULD_INLINE
 Cell::Cell(const uint8_t** bufp, size_t* remainp, bool own)
            : value(nullptr) {
   read(bufp, remainp, own);
+}
+
+SWC_SHOULD_INLINE
+Cell& Cell::operator=(Cell&& other) noexcept {
+  move(other);
+  return *this;
+}
+
+SWC_SHOULD_INLINE
+void Cell::move(Cell& other) noexcept {
+  _free();
+  own       = other.own;
+  key.move(other.key);
+  flag      = other.flag;
+  control   = other.control;
+  timestamp = other.timestamp;
+  revision  = other.revision;
+  value     = other.value;
+  vlen      = other.vlen;
+  other.value = nullptr;
+  other.vlen = 0;
 }
 
 void Cell::copy(const Cell& other, bool no_value) {
@@ -110,19 +146,19 @@ void Cell::free() {
   value = nullptr;
 }
 
-void Cell::set_time_order_desc(bool desc) {
+void Cell::set_time_order_desc(bool desc) noexcept {
   if(desc)
     control |= TS_DESC;
   else if(control & TS_DESC)
     control -= TS_DESC;
 }
 
-void Cell::set_timestamp(int64_t ts) {
+void Cell::set_timestamp(int64_t ts) noexcept {
   timestamp = ts;
   control |= HAVE_TIMESTAMP;
 }
 
-void Cell::set_revision(int64_t ts) {
+void Cell::set_revision(int64_t ts) noexcept {
   revision = ts;
   control |= HAVE_REVISION;
 }
@@ -291,7 +327,7 @@ void Cell::read(const uint8_t** bufp, size_t* remainp, bool owner) {
   }
 }
 
-uint32_t Cell::encoded_length(bool no_value) const {
+uint32_t Cell::encoded_length(bool no_value) const noexcept {
   uint32_t len = key.encoded_length();
   len += 2;
   if(control & HAVE_TIMESTAMP)
@@ -330,7 +366,7 @@ void Cell::write(DynamicBuffer &dst_buf, bool no_value) const {
   SWC_ASSERT(dst_buf.fill() <= dst_buf.size);
 }
 
-bool Cell::equal(const Cell& other) const {
+bool Cell::equal(const Cell& other) const noexcept {
   return  flag == other.flag &&
           control == other.control &&
           (!(control & HAVE_TIMESTAMP) || timestamp == other.timestamp) &&
@@ -341,11 +377,11 @@ bool Cell::equal(const Cell& other) const {
 }
 
 SWC_SHOULD_INLINE
-bool Cell::removal() const {
+bool Cell::removal() const noexcept {
   return flag != Flag::INSERT;
 }
 
-bool Cell::is_removing(const int64_t& rev) const {
+bool Cell::is_removing(const int64_t& rev) const noexcept {
   return rev != AUTO_ASSIGN && removal() && (
     (flag == DELETE  && get_timestamp() >= rev )
     ||
@@ -353,21 +389,21 @@ bool Cell::is_removing(const int64_t& rev) const {
     );
 }
 
-int64_t Cell::get_timestamp() const {
+int64_t Cell::get_timestamp() const noexcept {
   return control & HAVE_TIMESTAMP ? timestamp : AUTO_ASSIGN;
 }
 
-int64_t Cell::get_revision() const {
+int64_t Cell::get_revision() const noexcept {
   return control & HAVE_REVISION ? revision
         : (control & REV_IS_TS ? timestamp : AUTO_ASSIGN );
 }
 
-bool Cell::has_expired(const int64_t ttl) const {
+bool Cell::has_expired(const int64_t ttl) const noexcept {
   return ttl && control & HAVE_TIMESTAMP && Time::now_ns() >= timestamp + ttl;
 }
 
 SWC_SHOULD_INLINE
-bool Cell::have_encoder() const {
+bool Cell::have_encoder() const noexcept {
   return control & HAVE_ENCODER;
 }
 

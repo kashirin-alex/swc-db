@@ -12,7 +12,7 @@ namespace SWC { namespace DB { namespace Cell {
 
 
 SWC_SHOULD_INLINE
-Key::Key(bool own): own(own), count(0), size(0), data(nullptr) { }
+Key::Key(bool own) noexcept : own(own), count(0), size(0), data(nullptr) { }
 
 SWC_SHOULD_INLINE
 Key::Key(const Key& other)
@@ -21,9 +21,35 @@ Key::Key(const Key& other)
 }
 
 SWC_SHOULD_INLINE
+Key::Key(Key&& other) noexcept
+        : own(other.own), count(other.count), size(other.size),
+          data(other.data) {
+  other.data = nullptr;
+  other.size = 0;
+  other.count = 0;
+}
+
+SWC_SHOULD_INLINE
 Key::Key(const Key& other, bool own)
         : own(own), count(other.count), size(other.size),
           data(own ? _data(other.data): other.data) {
+}
+
+SWC_SHOULD_INLINE
+Key& Key::operator=(Key&& other) noexcept {
+  move(other);
+  return *this;
+}
+
+void Key::move(Key& other) noexcept {
+  _free();
+  own =  other.own;
+  size = other.size;
+  count = other.count;
+  data = other.data;
+  other.data = nullptr;
+  other.size = 0;
+  other.count = 0;
 }
 
 void Key::copy(const Key& other) {
@@ -52,7 +78,7 @@ void Key::free() {
   count = 0;
 }
 
-bool Key::sane() const {
+bool Key::sane() const noexcept {
   return (count && size && data) || (!count && !size && !data);
 }
 
@@ -239,18 +265,18 @@ void Key::get(uint32_t idx, const char** fraction, uint32_t* length) const {
   }
 }
 
-bool Key::equal(const Key& other) const {
+bool Key::equal(const Key& other) const noexcept {
   return count == other.count &&
         ((!data && !other.data) ||
          Condition::eq(data, size, other.data, other.size));
 }
 
 SWC_SHOULD_INLINE
-bool Key::empty() const {
+bool Key::empty() const noexcept {
   return !count;
 }
 
-uint32_t Key::encoded_length() const {
+uint32_t Key::encoded_length() const noexcept {
   return Serialization::encoded_length_vi24(count) + size;
 }
 

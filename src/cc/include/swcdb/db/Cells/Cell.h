@@ -90,7 +90,7 @@ class Cell final {
   public:
   typedef std::shared_ptr<Cell> Ptr;
 
-  explicit Cell();
+  explicit Cell() noexcept;
 
   explicit Cell(const Cell& other);
 
@@ -98,9 +98,13 @@ class Cell final {
 
   explicit Cell(const uint8_t** bufp, size_t* remainp, bool own=false);
 
-  Cell(const Cell&&) = delete;
+  Cell(Cell&&) noexcept;
 
   Cell& operator=(const Cell&) = delete;
+
+  Cell& operator=(Cell&&) noexcept;
+
+  void move(Cell& other) noexcept;
 
   void copy(const Cell& other, bool no_value=false);
 
@@ -110,11 +114,11 @@ class Cell final {
 
   void free();
 
-  void set_time_order_desc(bool desc);
+  void set_time_order_desc(bool desc) noexcept;
 
-  void set_timestamp(int64_t ts);
+  void set_timestamp(int64_t ts) noexcept;
 
-  void set_revision(int64_t ts);
+  void set_revision(int64_t ts) noexcept;
 
   void set_value(uint8_t* v, uint32_t len, bool owner);
 
@@ -144,23 +148,23 @@ class Cell final {
 
   void read(const uint8_t** bufp, size_t* remainp, bool owner=false);
 
-  uint32_t encoded_length(bool no_value=false) const;
+  uint32_t encoded_length(bool no_value=false) const noexcept;
 
   void write(DynamicBuffer &dst_buf, bool no_value=false) const;
 
-  bool equal(const Cell& other) const;
+  bool equal(const Cell& other) const noexcept;
 
-  bool removal() const;
+  bool removal() const noexcept;
 
-  bool is_removing(const int64_t& rev) const;
+  bool is_removing(const int64_t& rev) const noexcept;
 
-  int64_t get_timestamp() const;
+  int64_t get_timestamp() const noexcept;
 
-  int64_t get_revision() const;
+  int64_t get_revision() const noexcept;
 
-  bool has_expired(const int64_t ttl) const;
+  bool has_expired(const int64_t ttl) const noexcept;
 
-  bool have_encoder() const;
+  bool have_encoder() const noexcept;
 
   void display(std::ostream& out, Types::Column typ = Types::Column::PLAIN,
                uint8_t flags=0, bool meta=false) const;
