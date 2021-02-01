@@ -35,8 +35,14 @@ class MutexSptd final : private MutexAtomic {
   bool lock() noexcept {
     if(MutexAtomic::try_lock())
       return true;
-    while(__gthread_mutex_lock(m_mutex.native_handle()))
+    //while(__gthread_mutex_lock(m_mutex.native_handle()))
+    //  std::this_thread::yield();
+    _again: try {
+      m_mutex.lock();
+    } catch(...) {
       std::this_thread::yield();
+      goto _again;
+    }
     MutexAtomic::lock();
     return false;
   }
