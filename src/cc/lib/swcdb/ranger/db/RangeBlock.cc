@@ -314,8 +314,7 @@ Block::Ptr Block::_split(bool loaded) {
     loaded ? State::LOADED : State::NONE
   );
   ssize_t sz = loaded ? 0 : m_cells.size_of_internal();
-  m_cells.split(blk->m_cells, loaded);
-  if(blk->m_cells.empty()) {
+  if(!m_cells.split(blk->m_cells, loaded)) {
     delete blk;
     return nullptr;
   }

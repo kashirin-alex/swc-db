@@ -553,10 +553,10 @@ void Mutable::expand_end(Interval& interval) const {
 }
 
 
-void Mutable::split(Mutable& cells, bool loaded) {
+bool Mutable::split(Mutable& cells, bool loaded) {
   auto it = ConstIterator(&buckets, _size / 2);
   if(!it)
-    return;
+    return false;
   Cell* from_cell = *it.item;
   size_t count = _size;
   bool from_set = false;
@@ -585,6 +585,7 @@ void Mutable::split(Mutable& cells, bool loaded) {
   }
 
   _remove(it_start, count, !loaded);
+  return true;
 }
 
 SWC_SHOULD_INLINE

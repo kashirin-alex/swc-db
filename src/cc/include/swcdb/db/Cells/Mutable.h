@@ -214,7 +214,7 @@ class Mutable final {
   void expand_end(Interval& interval) const;
 
 
-  void split(Mutable& cells, bool loaded);
+  bool split(Mutable& cells, bool loaded);
 
   bool can_split() const noexcept;
 
