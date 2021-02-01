@@ -69,14 +69,18 @@ SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DASIO_STANDALONE -DASIO_NO_DEPRECATED"
 
 SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror -Wextra -Wpedantic") # -Weffc++
 SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wformat -Wformat-security")
-SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wnoexcept")
-SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wcast-align -Wuseless-cast")
-SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wsuggest-override -Wnon-virtual-dtor")
-SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wold-style-cast -Wno-error=old-style-cast")
+SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wcast-align -Wnon-virtual-dtor")
 
-SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wduplicated-cond -Wduplicated-branches -Wlogical-op")
-SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wstrict-null-sentinel -Wzero-as-null-pointer-constant")
+SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wnoexcept -Wno-error=noexcept")
+SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wsuggest-override -Wno-error=suggest-override")
+SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wuseless-cast -Wno-error=useless-cast")
+SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wold-style-cast -Wno-error=old-style-cast")
 SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wnull-dereference -Wno-error=null-dereference") # -Walloc-zero
+SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wstrict-null-sentinel -Wno-error=strict-null-sentinel")
+SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wzero-as-null-pointer-constant -Wno-error=zero-as-null-pointer-constant")
+SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wduplicated-cond -Wno-error=duplicated-cond")
+SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wduplicated-branches -Wno-error=duplicated-branches")
+SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wlogical-op -Wno-error=logical-op")
 
 ## additional considerations
 # SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Woverloaded-virtual")

@@ -9,7 +9,28 @@
 
 ### [SWC-DB master](https://github.com/kashirin-alex/swc-db/tree/master) (upcoming-release)
 
-
+    added CXX compiler Warning flags: 
+        -Wpedantic -Wnon-virtual-dtor -Wcast-align
+    added CXX compiler Warning flags with relaxed case of -Wno-error=*:
+        -Wnoexcept -Wsuggest-override -Wuseless-cast -Wold-style-cast 
+        -Wnull-dereference -Wstrict-null-sentinel -Wzero-as-null-pointer-constant
+        -Wduplicated-cond -Wduplicated-branches -Wlogical-op
+    changed to comply with added warning flags by adjustments and fixes
+    added T* Config::Property::Value::get_pointer<Property::Type>(Value::Ptr)
+    added DB::Cell::get_value(std::string& v)
+    added move ctor and operator for DB::Cells::Cell and DB::Cell::Key
+    fixed libpam_swcdb_max_retries with latest SWC-DB Thirft Service structure
+    changed Comm::Buffers::buf_header to bytes-array (uint8_t[Header::MAX_LENGTH])
+    fixed possible 0-length in Comm::ConnHandler::recved_header_pre
+    removed Comm::Serializable base from FS::Direct and DB::Specs{Scan, Column}
+    changed 'len' arg in DB::Cell::Key::{insert,add} to uint24_t
+    changed Core::MutexSptd::lock() noexcept & added MutexSptd::lock_except()
+    added class Core::MutexSptd::scope_except
+    changed mutex to MutexSptd in Properties, Thrift::AppHandler & Mngr::Groups
+    changed cmake, set USE_GNU_READLINE if EDITLINE not-found
+    removed 'source ~/.bashrc;' from `start-fsbrokers` in sbin/swcdb_cluster
+    added FS::FileSystem::default_{write,read,pread,combi_pread}
+    added impl. in Ceph/Hadoop/Local calling on FS::FileSystem::default_*
 
 [_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.4.15...master)
 ******

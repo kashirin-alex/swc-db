@@ -59,6 +59,7 @@ if(NOT EDITLINE_FOUND)
     INCLUDE   readline/readline.h readline/history.h
     INSTALL   TRUE
   )
+  set(USE_GNU_READLINE ON)
 endif()
 
 
