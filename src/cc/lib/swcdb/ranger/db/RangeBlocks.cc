@@ -230,9 +230,14 @@ bool Blocks::_split(Block::Ptr blk, bool loaded) {
   bool support;
   if(blk->_need_split() && m_mutex.try_full_lock(support)) {
     bool preload = false;
+    bool had = false;
     auto offset = _get_block_idx(blk);
     do {
       blk = blk->_split(loaded);
+      if(!blk) {
+        m_mutex.unlock(support);
+        return had;
+      }
       m_blocks_idx.insert(m_blocks_idx.begin()+(++offset), blk);
       if(!blk->loaded()) {
         if((preload = !commitlog.is_compacting() &&
@@ -241,6 +246,7 @@ bool Blocks::_split(Block::Ptr blk, bool loaded) {
           blk->processing_increment();
         break;
       }
+      had = true;
     } while(blk->_need_split());
     m_mutex.unlock(support);
 

@@ -315,6 +315,10 @@ Block::Ptr Block::_split(bool loaded) {
   );
   ssize_t sz = loaded ? 0 : m_cells.size_of_internal();
   m_cells.split(blk->m_cells, loaded);
+  if(blk->m_cells.empty()) {
+    delete blk;
+    return nullptr;
+  }
   {
     Core::MutexAtomic::scope lock(m_mutex_intval);
     blk->m_key_end.copy(m_key_end);

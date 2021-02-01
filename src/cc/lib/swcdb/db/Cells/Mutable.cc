@@ -554,7 +554,10 @@ void Mutable::expand_end(Interval& interval) const {
 
 
 void Mutable::split(Mutable& cells, bool loaded) {
-  Cell* from_cell = *ConstIterator(&buckets, _size / 2).item;
+  auto it = ConstIterator(&buckets, _size / 2);
+  if(!it)
+    return;
+  Cell* from_cell = *it.item;
   size_t count = _size;
   bool from_set = false;
   Iterator it_start;
