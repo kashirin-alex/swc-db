@@ -59,10 +59,12 @@ class Key final {
 
   void add(const uint8_t* fraction, uint24_t len);
 
-  void add(const std::vector<std::string>::const_iterator cbegin,
-           const std::vector<std::string>::const_iterator cend);
+  template<typename T>
+  void add(const T cbegin, const T cend);
 
   void add(const std::vector<std::string>& fractions);
+
+  void add(const std::vector<KeyVec::Fraction>& fractions);
 
   void insert(uint32_t idx, const std::string& fraction);
 

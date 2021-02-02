@@ -125,8 +125,13 @@ void Key::add(const std::vector<std::string>& fractions) {
   add(fractions.cbegin(), fractions.cend());
 }
 
-void Key::add(const std::vector<std::string>::const_iterator cbegin,
-              const std::vector<std::string>::const_iterator cend) {
+SWC_SHOULD_INLINE
+void Key::add(const std::vector<KeyVec::Fraction>& fractions) {
+  add(fractions.cbegin(), fractions.cend());
+}
+
+template<typename T>
+void Key::add(const T cbegin,  const T cend) {
   if(cbegin == cend)
     return;
 
