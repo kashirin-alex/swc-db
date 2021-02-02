@@ -57,6 +57,10 @@ void Field::encode(uint8_t** bufp, Type type) const {
   Serialization::encode_i8(bufp, type);
   Serialization::encode_vi24(bufp, fid);
 }
+
+void Field::decode(const uint8_t** bufp, size_t* remainp) {
+  fid = Serialization::decode_vi24(bufp, remainp);
+}
 //
 
 
@@ -173,6 +177,12 @@ Field_KEY::Field_KEY(uint24_t fid, const Key& key, bool take_ownership)
 Field_KEY::Field_KEY(const uint8_t** bufp, size_t* remainp,
                      bool take_ownership)
                     : Field(bufp, remainp) {
+  key.decode(bufp, remainp, take_ownership);
+}
+
+void Field_KEY::decode(const uint8_t** bufp, size_t* remainp,
+                       bool take_ownership) {
+  Field::decode(bufp, remainp);
   key.decode(bufp, remainp, take_ownership);
 }
 

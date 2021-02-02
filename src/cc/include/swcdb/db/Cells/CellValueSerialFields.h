@@ -62,6 +62,8 @@ struct Field {
 
   virtual void encode(uint8_t** bufp, Type type) const;
 
+  void decode(const uint8_t** bufp, size_t* remainp);
+
   virtual void print(std::ostream& out) const = 0;
 
 };
@@ -167,6 +169,9 @@ struct Field_KEY : Field {
   size_t encoded_length() const noexcept override;
 
   void encode(uint8_t** bufp) const override;
+
+  void decode(const uint8_t** bufp, size_t* remainp,
+              bool take_ownership=false);
 
   void print(std::ostream& out) const override;
 
