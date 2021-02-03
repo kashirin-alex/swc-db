@@ -202,6 +202,96 @@ compare_upto(const Types::KeySeq seq,
 template<Types::KeySeq T_seq>
 SWC_CAN_INLINE
 bool
+compare(const Cell::Key& key, const Cell::Key& other,
+        Condition::Comp break_if, uint24_t max, bool empty_ok) {
+  const uint8_t* ptr = key.data;
+  const uint8_t* ptr_other = other.data;
+  uint24_t len;
+  uint24_t len_other;
+  if(!max)
+    max = key.count > other.count ? key.count : other.count;
+  for(uint32_t c = 0; c<max; ++c, ptr += len) {
+
+    if(c == key.count || c == other.count)
+      return key.count > other.count
+            ? break_if != Condition::LT
+            : break_if != Condition::GT;
+
+    len_other = Serialization::decode_vi24(&ptr_other);
+    if(!(len = Serialization::decode_vi24(&ptr)) && empty_ok)
+      continue;
+
+    if(condition<T_seq>(ptr, len, ptr_other, len_other) == break_if)
+      return false;
+  }
+  return true;
+}
+
+template<>
+SWC_CAN_INLINE
+bool
+compare<Types::KeySeq::FC_LEXIC>(
+        const Cell::Key& key, const Cell::Key& other,
+        Condition::Comp break_if, uint24_t max, bool empty_ok) {
+  if(!max || max > key.count || max > other.count ) {
+    if(key.count < other.count)
+      return break_if != Condition::GT;
+    if(key.count > other.count)
+      return break_if != Condition::LT;
+  }
+  return compare<Types::KeySeq::LEXIC>(key, other, break_if, max, empty_ok);
+}
+
+template<>
+SWC_CAN_INLINE
+bool
+compare<Types::KeySeq::FC_VOLUME>(
+        const Cell::Key& key, const Cell::Key& other,
+        Condition::Comp break_if, uint24_t max, bool empty_ok) {
+  if(!max || max > key.count || max > other.count ) {
+    if(key.count < other.count)
+      return break_if != Condition::GT;
+    if(key.count > other.count)
+      return break_if != Condition::LT;
+  }
+  return compare<Types::KeySeq::VOLUME>(key, other, break_if, max, empty_ok);
+}
+
+
+bool
+compare(const Types::KeySeq seq,
+        const Cell::Key& key, const Cell::Key& other,
+        Condition::Comp break_if, uint24_t max, bool empty_ok) {
+  switch(seq) {
+
+    case Types::KeySeq::LEXIC:
+      return compare<Types::KeySeq::LEXIC>(
+        key, other, break_if, max, empty_ok);
+
+    case Types::KeySeq::VOLUME:
+      return compare<Types::KeySeq::VOLUME>(
+        key, other, break_if, max, empty_ok);
+
+    case Types::KeySeq::FC_LEXIC:
+      return compare<Types::KeySeq::FC_LEXIC>(
+        key, other, break_if, max, empty_ok);
+
+    case Types::KeySeq::FC_VOLUME:
+      return compare<Types::KeySeq::FC_VOLUME>(
+        key, other, break_if, max, empty_ok);
+
+    default:
+      return false;
+  }
+}
+///
+
+
+
+///
+template<Types::KeySeq T_seq>
+SWC_CAN_INLINE
+bool
 compare(const Cell::Key& key, const Cell::KeyVec& other,
         Condition::Comp break_if, uint32_t max, bool empty_ok) {
   const uint8_t* ptr = key.data;

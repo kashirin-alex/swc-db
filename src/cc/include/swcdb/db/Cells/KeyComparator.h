@@ -38,6 +38,11 @@ compare_upto(const Types::KeySeq seq,
 
 bool
 compare(const Types::KeySeq seq,
+        const Cell::Key& key, const Cell::Key& other,
+        Condition::Comp break_if, uint24_t max = 0, bool empty_ok=false);
+
+bool
+compare(const Types::KeySeq seq,
         const Cell::Key& key, const Cell::KeyVec& other,
         Condition::Comp break_if, uint32_t max = 0, bool empty_ok=false);
 
