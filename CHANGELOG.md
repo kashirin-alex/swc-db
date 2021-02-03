@@ -31,6 +31,15 @@
     removed 'source ~/.bashrc;' from `start-fsbrokers` in sbin/swcdb_cluster
     added FS::FileSystem::default_{write,read,pread,combi_pread}
     added impl. in Ceph/Hadoop/Local calling on FS::FileSystem::default_*
+    added DB::Cell::Key::add(std::vector<KeyVec::Fraction>&)
+    added DB::Cell::Serial::Value::Field_KEY::decode(uint8_t**, size_t*, bool)
+    added Serial::Value::{read_field_id,skip_type_and_id}(const uint8_t**,size_t*)
+    added DB::KeySeq::compare(Key&, Key&, Condition::Comp break_if, ..)
+    removed unused max_revs, type, reset() & configure() from DB::Cells::Result
+    added void DB::Cell::Key::copy(uint24_t after_idx, const Key&)
+    added default Comparator to Specs::Values::add(Condition::Comp=Condition::EQ)
+    changed SYS-Columns cids[1-8] to Column::SERIAL, query on value possible
+    added Ranger::Range fix duplicate rid MetaData cells (delete & reg. range)
 
 [_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.4.15...master)
 ******

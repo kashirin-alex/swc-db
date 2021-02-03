@@ -386,15 +386,16 @@ void MngdColumns::remove(const DB::Schema::Ptr& schema,
         },
         Env::Mngr::io()
       );
+      updater->result->completion.increment();
       updater->columns->create(
         meta_cid, schema->col_seq, 1, 0, DB::Types::Column::SERIAL);
       auto col = updater->columns->get_col(meta_cid);
       for(auto cell : cells) {
         cell->flag = DB::Cells::DELETE;
         col->add(*cell);
-        updater->commit_or_wait(col);
+        updater->commit_or_wait(col, 1);
       }
-      updater->commit_if_need();
+      updater->response(Error::OK);
     },
     false,
     Env::Mngr::io()

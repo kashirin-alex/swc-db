@@ -714,24 +714,6 @@ void Range::check_meta(const Callback::RangeLoad::Ptr& req,
     );
   }
 
-  if(cells.size() > 1) {
-    SWC_LOG_OUT(LOG_ERROR,
-      SWC_LOG_OSTREAM
-        << "Range MetaData cid=" << cfg->cid << " duplicate rid=" << rid;
-      m_interval.print(SWC_LOG_OSTREAM << "\n\t auto-del-registering=");
-      col_spec->print(SWC_LOG_OSTREAM << "\n\t");
-      cells.print(SWC_LOG_OSTREAM << "\n\t", DB::Types::Column::SERIAL, true);
-    );
-    // del-all, after:
-    /*
-    return on_change(false, [req, range=shared_from_this()]
-      (const client::Query::Update::Result::Ptr& res) {
-        range->loaded(res ? res->error() : Error::OK, req);
-      }
-    );
-    */
-  }
-
   DB::Cells::Interval interval(cfg->key_seq);
   interval.was_set = true;
   /* Range MetaData does not include timestamp
@@ -740,8 +722,16 @@ void Range::check_meta(const Callback::RangeLoad::Ptr& req,
   interval.ts_latest.copy(m_interval.ts_latest);
 
   rid_t _rid = 0;
-  bool synced = false;
-  try {
+  bool synced = cells.size() == 1;
+  if(!synced) {
+    SWC_LOG_OUT(LOG_ERROR,
+      SWC_LOG_OSTREAM
+        << "Range MetaData DUPLICATE-RID cid=" << cfg->cid << " rid=" << rid;
+      m_interval.print(SWC_LOG_OSTREAM << "\n\t auto-del-registering=");
+      col_spec->print(SWC_LOG_OSTREAM << "\n\t");
+      cells.print(SWC_LOG_OSTREAM << "\n\t", DB::Types::Column::SERIAL, true);
+    );
+  } else { try {
     auto& cell = *cells[0];
     interval.key_begin.copy(cell.key);
     interval.key_begin.remove(0);
@@ -767,33 +757,62 @@ void Range::check_meta(const Callback::RangeLoad::Ptr& req,
     interval.aligned_max.remove(0);
 
     synced = !remain && rid == _rid && m_interval.equal(interval);
-
+    if(!synced) {
+      SWC_LOG_OUT(LOG_ERROR,
+        SWC_LOG_OSTREAM << "Range MetaData NOT-SYNCED cid=" << cfg->cid;
+        SWC_LOG_OSTREAM << "\n\t     loaded-rid=" << rid;
+        m_interval.print(SWC_LOG_OSTREAM << ' ');
+        SWC_LOG_OSTREAM << "\n\t registered-rid=" << _rid;
+        interval.print(SWC_LOG_OSTREAM << ' ');
+      );
+    }
   } catch(...) {
     SWC_LOG_CURRENT_EXCEPTION("");
-  }
+    synced = false;
+  } }
 
   if(Env::Rgr::is_shuttingdown() ||
       (Env::Rgr::is_not_accepting() &&
        DB::Types::MetaColumn::is_data(cfg->cid)))
     return loaded(Error::SERVER_SHUTTING_DOWN, req);
 
-  if(!synced) {
-    SWC_LOG_OUT(LOG_ERROR,
-      SWC_LOG_OSTREAM
-        << "Range MetaData NOT-SYNCED cid=" << cfg->cid;
-      SWC_LOG_OSTREAM << "\n\t     loaded-rid=" << rid;
-      m_interval.print(SWC_LOG_OSTREAM << ' ');
-      SWC_LOG_OSTREAM << "\n\t registered-rid=" << _rid;
-      interval.print(SWC_LOG_OSTREAM << ' ');
-    );
-    return on_change(false, [req, range=shared_from_this()]
-      (const client::Query::Update::Result::Ptr& res) {
-        range->loaded(res ? res->error() : Error::OK, req);
-      }
-    );
-  }
+  if(synced)
+    return loaded(err, req);
 
-  loaded(err, req);
+  auto updater = std::make_shared<client::Query::Update>(
+    [this, req]
+    (const client::Query::Update::Result::Ptr& res) {
+      if(Env::Rgr::is_shuttingdown() ||
+          (Env::Rgr::is_not_accepting() &&
+           DB::Types::MetaColumn::is_data(cfg->cid))) {
+        return loaded(Error::SERVER_SHUTTING_DOWN, req);
+      }
+      int err = res->error();
+      if(err) {
+        SWC_LOGF(LOG_WARN, 
+          "Range MetaData FIX auto-del range-%lu/%lu err=%d(%s)",
+          cfg->cid, rid, err, Error::get_text(err));
+        return loaded(Error::RGR_NOT_LOADED_RANGE, req);
+      }
+      return on_change(false, [req, range=shared_from_this()]
+        (const client::Query::Update::Result::Ptr& res) {
+          range->loaded(res ? res->error() : Error::OK, req);
+        }
+      );
+    },
+    Env::Rgr::io()
+  );
+  updater->result->completion.increment();
+  updater->columns->create(
+    cfg->meta_cid, cfg->key_seq, 1, 0, DB::Types::Column::SERIAL);
+  auto col = updater->columns->get_col(cfg->meta_cid);
+  for(auto cell : cells) {
+    cell->flag = DB::Cells::DELETE;
+    cell->free();
+    col->add(*cell);
+    updater->commit_or_wait(col, 1);
+  }
+  updater->response(Error::OK);
 }
 
 void Range::loaded(int err, const Callback::RangeLoad::Ptr& req) {
