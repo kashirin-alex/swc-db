@@ -10,16 +10,13 @@
 namespace SWC { namespace DB { namespace Cells {
 
 
-Result::Result(const uint32_t max_revs, const uint64_t ttl_ns,
-               const Types::Column type) noexcept
-              : bytes(0), type(type), max_revs(max_revs),
-                ttl(ttl_ns) {
+Result::Result(const uint64_t ttl_ns) noexcept
+              : bytes(0), ttl(ttl_ns) {
 }
 
 Result::Result(Result&& other) noexcept
               : std::vector<Cell*>(std::move(other)),
-                bytes(other.bytes), type(other.type),
-                max_revs(other.max_revs), ttl(other.ttl) {
+                bytes(other.bytes), ttl(other.ttl) {
   other.bytes = 0;
 }
 
@@ -34,20 +31,6 @@ void Result::free() {
   clear();
   bytes = 0;
 }
-
-void Result::reset(const uint32_t revs, const uint64_t ttl_ns,
-                   const Types::Column typ) {
-  free();
-  configure(revs, ttl_ns, typ);
-}
-
-void Result::configure(const uint32_t revs, const uint64_t ttl_ns,
-                       const Types::Column typ) noexcept {
-  type = typ;
-  max_revs = revs;
-  ttl = ttl_ns;
-}
-
 
 size_t Result::size_bytes() const noexcept {
   return bytes;
@@ -144,16 +127,14 @@ void Result::write_and_free(DynamicBuffer& cells, uint32_t& cell_count,
   erase(begin(), it_end);
 }
 
-void Result::print(std::ostream& out, bool with_cells) const {
+void Result::print(std::ostream& out, Types::Column col_type,
+                   bool with_cells) const {
   out << "CellsResult(size=" << size()
-      << " bytes=" << bytes
-      << " type=" << Types::to_string(type)
-      << " max_revs=" << max_revs
-      << " ttl=" << ttl;
+      << " bytes=" << bytes << " ttl=" << ttl;
   if(with_cells) {
     out << " cells=[";
     for(auto cell : *this)
-      cell->print(out << '\n', type);
+      cell->print(out << '\n', col_type);
     out << "\n]";
   }
   out << ')';

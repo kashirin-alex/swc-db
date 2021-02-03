@@ -172,8 +172,6 @@ void read_cs(SWC::csid_t csid, SWC::Ranger::RangePtr range,
 
   auto req = SWC::Ranger::ReqScanTest::make();
   req->spec.flags.max_versions = 2;
-  req->cells.reset(
-    req->spec.flags.max_versions, 0, SWC::DB::Types::Column::PLAIN);
   req->spec.flags.limit = num_cells*group_fractions;
 
   std::promise<void> r_promise;
@@ -302,8 +300,6 @@ int main(int argc, char** argv) {
 
       auto req = SWC::Ranger::ReqScanTest::make();
       req->spec.flags.max_versions = 2;
-      req->cells.reset(
-        req->spec.flags.max_versions, 0, SWC::DB::Types::Column::PLAIN);
       req->spec.flags.offset = match_on_offset;
       req->offset = req->spec.flags.offset;
       req->spec.flags.limit = 1;

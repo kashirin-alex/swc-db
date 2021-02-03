@@ -213,7 +213,6 @@ void check(SWC::DB::Types::KeySeq key_seq, SWC::DB::Types::Column typ,
 
   SWC::DB::Cells::ReqScanTest req;
   req.spec.flags.max_versions = max_versions;
-  req.cells.configure(max_versions, 0, typ);
   cells_mutable->scan(&req);
   req.profile.finished();
 

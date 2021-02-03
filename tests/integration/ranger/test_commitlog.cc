@@ -16,26 +16,21 @@
 using namespace SWC;
 
 
-void count_all_cells(size_t num_cells, 
+void count_all_cells(size_t num_cells,
                      SWC::Ranger::Blocks& blocks) {
   std::cout << " count_all_cells: \n";
   Core::Semaphore sem(1, 1);
-  
+
   auto req = Ranger::ReqScanTest::make();
   req->spec.flags.max_versions = blocks.range->cfg->cell_versions();
-  req->cells.reset(
-    req->spec.flags.max_versions, 
-    0, 
-    SWC::DB::Types::Column::PLAIN
-  );
   req->spec.flags.limit = num_cells * blocks.range->cfg->cell_versions();
-    
+
   req->cb = [req, &sem](int err) { // , blocks=&blocks
-    std::cout << " err=" <<  err 
+    std::cout << " err=" <<  err
               << "(" << SWC::Error::get_text(err) << ") \n" ;
     if(req->cells.size() != req->spec.flags.limit) {
-      std::cerr << "all-ver, req->cells.size() != req->spec.flags.limit  \n" 
-                << " " << req->cells.size() 
+      std::cerr << "all-ver, req->cells.size() != req->spec.flags.limit  \n"
+                << " " << req->cells.size()
                 << " != "  << req->spec.flags.limit <<"\n";
       exit(1);
     }
@@ -65,7 +60,7 @@ int main(int argc, char** argv) {
   );
 
   Env::Rgr::init();
-  
+
   cid_t cid = 11;
   DB::Schema schema;
   schema.cid = cid;
@@ -99,11 +94,11 @@ int main(int argc, char** argv) {
   Core::Semaphore sem(num_threads, num_threads);
 
   for(int t=0;t<num_threads;++t) {
-    
-    std::thread([t, versions, commitlog = &commitlog, &sem, 
+
+    std::thread([t, versions, commitlog = &commitlog, &sem,
                  num=num_cells/num_threads]() {
-      std::cout << "thread-adding=" << t 
-                << " offset=" << t*num 
+      std::cout << "thread-adding=" << t
+                << " offset=" << t*num
                 << " until=" << t*num+num << "\n";
       DB::Cells::Cell cell;
       int64_t rev;
@@ -111,7 +106,7 @@ int main(int argc, char** argv) {
       for(auto i=t*num;i<t*num+num;++i){
 
         std::string n = std::to_string(i);
-      
+
         rev = SWC::Time::now_ns();
         cell.flag = DB::Cells::INSERT;
         cell.set_timestamp(rev-1);
@@ -133,9 +128,9 @@ int main(int argc, char** argv) {
         cell.set_value(s.data(), s.length());
 
         commitlog->add(cell);
-        
+
         if(!(i % 100000))
-          std::cout << "thread-adding=" << t 
+          std::cout << "thread-adding=" << t
                     << " progress=" << i << "\n";
       }
       }
@@ -150,15 +145,15 @@ int main(int argc, char** argv) {
   commitlog.print(std::cout << " added cell=" << num_cells << ": \n", true);
 
   std::cout << "\n cells_count=" << commitlog.cells_count() << "\n";
-  if((versions == 1 || versions == col_cfg->cell_versions()) 
+  if((versions == 1 || versions == col_cfg->cell_versions())
       && num_cells*col_cfg->cell_versions() != commitlog.cells_count()) {
     exit(1);
   }
   commitlog.unload();
   std::cout << "\n FINISH CREATE LOG\n\n ";
-  
+
   std::this_thread::sleep_for(std::chrono::milliseconds(5000));
-  
+
 
   ///
 
@@ -175,18 +170,17 @@ int main(int argc, char** argv) {
   int num_chks = 10;
   Core::Semaphore sem2(num_chks, num_chks);
   for(int i = 1;i<=num_chks; ++i){
-    
+
     auto req = Ranger::ReqScanTest::make();
-    req->cells.reset(1, 0, SWC::DB::Types::Column::PLAIN);
     req->spec.flags.limit = num_cells;
-    
+
     req->cb = [req, &sem2, i](int err) { // , blocks=&blocks
-      std::cout << " chk=" << i 
-                << " err=" <<  err 
+      std::cout << " chk=" << i
+                << " err=" <<  err
                 << "(" << SWC::Error::get_text(err) << ") \n" ;
       if(req->cells.size() != req->spec.flags.limit) {
-        std::cerr << "one-ver, req->cells.size() != req->spec.flags.limit  \n" 
-                  << " " << req->cells.size() 
+        std::cerr << "one-ver, req->cells.size() != req->spec.flags.limit  \n"
+                  << " " << req->cells.size()
                   << " !="  << req->spec.flags.limit <<"\n";
         exit(1);
       }
@@ -199,13 +193,13 @@ int main(int argc, char** argv) {
   std::cout << '\n';
 
   sem2.wait_all();
-  
+
   count_all_cells(num_cells, blocks);
 
   std::cout << " scanned blocks, OK\n";
 
 
-  
+
   std::cout << "blocks.add_logged: \n";
 
   blocks.print(std::cout << "adding to block: \n", true);
@@ -218,7 +212,7 @@ int main(int argc, char** argv) {
     for(auto i=0;i<added_num;++i){
 
         std::string n = std::to_string(i)+"-added";
-      
+
         rev = SWC::Time::now_ns();
         cell.flag = DB::Cells::INSERT;
         cell.set_timestamp(rev-1);
@@ -238,7 +232,7 @@ int main(int argc, char** argv) {
         //  cell.set_counter(0, 1);
         std::string s("A-Data-Value-1234567890-"+n);
         cell.set_value(s.data(), s.length());
-        
+
         blocks.add_logged(cell);
     }
     blocks.print(std::cout << " add_logged ver=" << v << " : \n", true);
@@ -254,7 +248,7 @@ int main(int argc, char** argv) {
 
   Env::FsInterface::interface()->rmdir(
     err, DB::RangeBase::get_column_path(range->cfg->cid));
-  
+
   std::cout << "\n-   OK   -\n\n";
 
   exit(0);

@@ -27,12 +27,9 @@ class Result final : private std::vector<Cell*> {
   using std::vector<Cell*>::operator[];
 
   size_t            bytes;
-  Types::Column     type;
-  uint32_t          max_revs;
   uint64_t          ttl;
 
-  explicit Result(const uint32_t max_revs=1, const uint64_t ttl_ns=0,
-                  const Types::Column type=Types::Column::PLAIN) noexcept;
+  explicit Result(const uint64_t ttl_ns=0) noexcept;
 
   explicit Result(Result&& other) noexcept;
 
@@ -43,12 +40,6 @@ class Result final : private std::vector<Cell*> {
   ~Result();
 
   void free();
-
-  void reset(const uint32_t revs=1, const uint64_t ttl_ns=0,
-             const Types::Column typ=Types::Column::PLAIN);
-
-  void configure(const uint32_t revs=1, const uint64_t ttl_ns=0,
-                 const Types::Column typ=Types::Column::PLAIN) noexcept;
 
   size_t size_bytes() const noexcept;
 
@@ -72,7 +63,8 @@ class Result final : private std::vector<Cell*> {
                       uint32_t max_cells);
 
 
-  void print(std::ostream& out, bool with_cells=false) const;
+  void print(std::ostream& out, Types::Column col_type=Types::Column::PLAIN,
+             bool with_cells=false) const;
 
 };
 
