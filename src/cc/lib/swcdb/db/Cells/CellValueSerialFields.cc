@@ -40,6 +40,15 @@ const char* to_string(Type typ) noexcept {
 Type read_type(const uint8_t** bufp, size_t* remainp) {
   return Type(Serialization::decode_i8(bufp, remainp));
 }
+
+uint24_t read_field_id(const uint8_t** bufp, size_t* remainp) {
+  return Serialization::decode_vi24(bufp, remainp);
+}
+
+void skip_type_and_id(const uint8_t** bufp, size_t* remainp) {
+  read_type(bufp, remainp);
+  read_field_id(bufp, remainp);
+}
 //
 
 

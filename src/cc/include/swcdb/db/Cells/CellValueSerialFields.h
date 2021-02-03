@@ -37,6 +37,10 @@ enum Type : uint8_t {
 const char* to_string(Type typ) noexcept;
 
 Type read_type(const uint8_t** bufp, size_t* remainp);
+
+uint24_t read_field_id(const uint8_t** bufp, size_t* remainp);
+
+void skip_type_and_id(const uint8_t** bufp, size_t* remainp);
 //
 
 
