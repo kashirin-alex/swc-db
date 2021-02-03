@@ -60,6 +60,23 @@ void Key::copy(const Key& other) {
   data = _data(other.data);
 }
 
+void Key::copy(uint24_t after_idx, const Key& other) {
+  _free();
+  own = true;
+  if(other.data && ++after_idx < other.count) {
+    count = other.count - after_idx;
+    const uint8_t* ptr = other.data;
+    for(; after_idx ; --after_idx)
+      ptr += Serialization::decode_vi24(&ptr);
+    size = other.size - (ptr - other.data);
+    data = _data(ptr);
+  } else {
+    size = 0;
+    count = 0;
+    data = nullptr;
+  }
+}
+
 Key::~Key() {
   _free();
 }

@@ -41,6 +41,8 @@ class Key final {
 
   void copy(const Key& other);
 
+  void copy(uint24_t after_idx, const Key& other);
+
   ~Key();
 
   void _free();
