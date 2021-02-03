@@ -204,24 +204,24 @@ SWC_CAN_INLINE
 bool
 compare(const Cell::Key& key, const Cell::Key& other,
         Condition::Comp break_if, uint24_t max, bool empty_ok) {
-  const uint8_t* ptr = key.data;
-  const uint8_t* ptr_other = other.data;
-  uint24_t len;
-  uint24_t len_other;
+  const uint8_t* p1 = key.data;
+  const uint8_t* p2 = other.data;
+  uint24_t sz1;
+  uint24_t sz2;
   if(!max)
     max = key.count > other.count ? key.count : other.count;
-  for(uint32_t c = 0; c<max; ++c, ptr += len) {
+  for(uint24_t c = 0; c<max; ++c, p1 += sz1, p2 += sz2) {
 
     if(c == key.count || c == other.count)
       return key.count > other.count
             ? break_if != Condition::LT
             : break_if != Condition::GT;
 
-    len_other = Serialization::decode_vi24(&ptr_other);
-    if(!(len = Serialization::decode_vi24(&ptr)) && empty_ok)
+    sz2 = Serialization::decode_vi24(&p2);
+    if(!(sz1 = Serialization::decode_vi24(&p1)) && empty_ok)
       continue;
 
-    if(condition<T_seq>(ptr, len, ptr_other, len_other) == break_if)
+    if(condition<T_seq>(p1, sz1, p2, sz2) == break_if)
       return false;
   }
   return true;
