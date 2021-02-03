@@ -11,8 +11,8 @@
 
 namespace SWC { namespace DB { namespace Specs {
 
-Value::Value(bool own) noexcept
-              : own(own), comp(Condition::NONE),
+Value::Value(bool own, Condition::Comp comp) noexcept
+              : own(own), comp(comp),
                 data(nullptr), size(0), matcher(nullptr) {
 }
 

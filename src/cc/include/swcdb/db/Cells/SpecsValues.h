@@ -41,7 +41,7 @@ class Values : private std::vector<Value> {
 
   void free();
 
-  Value& add();
+  Value& add(Condition::Comp comp=Condition::EQ);
 
   Value& add(Value&& other);
 

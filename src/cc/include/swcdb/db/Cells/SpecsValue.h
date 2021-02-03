@@ -17,7 +17,8 @@ namespace SWC { namespace DB { namespace Specs {
 class Value {
   public:
 
-  explicit Value(bool own=true) noexcept;
+  explicit Value(bool own=true, 
+                 Condition::Comp comp=Condition::NONE) noexcept;
 
   explicit Value(const char* data_n, Condition::Comp comp_n,
                  bool owner=false);

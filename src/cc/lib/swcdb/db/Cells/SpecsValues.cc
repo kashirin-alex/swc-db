@@ -24,8 +24,8 @@ void Values::free() {
   clear();
 }
 
-Value& Values::add() {
-  return emplace_back();
+Value& Values::add(Condition::Comp comp) { 
+  return emplace_back(true, comp);
 }
 
 Value& Values::add(Value&& other) {
