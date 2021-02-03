@@ -382,7 +382,7 @@ void Range::on_change(bool removal,
   // Env::Rgr::updater(); require an updater with cb on cell-base
 
   updater->columns->create(
-    cfg->meta_cid, cfg->key_seq, 1, 0, DB::Types::Column::PLAIN);
+    cfg->meta_cid, cfg->key_seq, 1, 0, DB::Types::Column::SERIAL);
   auto col = updater->columns->get_col(cfg->meta_cid);
 
   DB::Cells::Cell cell;
@@ -396,44 +396,42 @@ void Range::on_change(bool removal,
 
   } else {
     cell.flag = DB::Cells::INSERT;
-    DB::Cell::KeyVec aligned_min;
-    DB::Cell::KeyVec aligned_max;
-    bool chg;
 
     cell.key.copy(m_interval.key_begin);
+    cell.key.insert(0, cid_f);
+
     DB::Cell::Key key_end(m_interval.key_end);
+    key_end.insert(0, cid_f);
+
+    DB::Cell::Key aligned_min;
+    DB::Cell::Key aligned_max;
     if(cfg->range_type == DB::Types::Range::DATA) {
+      aligned_min.add(cid_f);
+      aligned_max.add(cid_f);
       // only DATA until MASTER/META aligned on cells value min/max
       Core::MutexAtomic::scope lock_align(m_mutex_intval_alignment);
-      aligned_min.copy(m_interval.aligned_min);
-      aligned_max.copy(m_interval.aligned_max);
-    }
-    chg = old_key_begin && !old_key_begin->equal(m_interval.key_begin);
-
-    cell.key.insert(0, cid_f);
-    key_end.insert(0, cid_f);
-    if(cfg->range_type == DB::Types::Range::DATA) {
-      aligned_min.insert(0, cid_f);
-      aligned_max.insert(0, cid_f);
+      aligned_min.add(m_interval.aligned_min);
+      aligned_max.add(m_interval.aligned_max);
     }
 
-    cell.own = true;
-    cell.vlen = key_end.encoded_length()
-                + Serialization::encoded_length_vi64(rid)
-                + aligned_min.encoded_length()
-                + aligned_max.encoded_length() ;
-
-    cell.value = new uint8_t[cell.vlen];
-    uint8_t * ptr = cell.value;
-    key_end.encode(&ptr);
-    Serialization::encode_vi64(&ptr, rid);
-    aligned_min.encode(&ptr);
-    aligned_max.encode(&ptr);
+    DB::Cell::Serial::Value::FieldsWriter wfields;
+    wfields.ensure(
+      key_end.encoded_length()
+       + Serialization::encoded_length_vi64(rid)
+       + aligned_min.encoded_length()
+       + aligned_max.encoded_length()
+      + 8);
+    uint24_t fid = 0;
+    wfields.add(fid, key_end);
+    wfields.add(fid, int64_t(rid));
+    wfields.add(fid, aligned_min);
+    wfields.add(fid, aligned_max);
+    cell.set_value(wfields.base, wfields.fill(), false);
 
     cell.set_time_order_desc(true);
     col->add(cell);
 
-    if(chg) {
+    if(old_key_begin && !old_key_begin->equal(m_interval.key_begin)) {
       SWC_ASSERT(!old_key_begin->empty());
       // remove begin-any should not happen
 
@@ -644,16 +642,21 @@ void Range::load(int &err, const Callback::RangeLoad::Ptr& req) {
     return loaded(err, req);
 
   auto col_spec = DB::Specs::Column::make_ptr(
-    cfg->meta_cid, {DB::Specs::Interval::make_ptr()});
+    cfg->meta_cid,
+    {DB::Specs::Interval::make_ptr(DB::Types::Column::SERIAL)});
   auto& intval = col_spec->intervals.front();
-  intval->set_opt__key_equal();
-  intval->flags.limit = 1;
-
-  /* or select ranges of cid, with rid match in value
-        and on dup. cell of rid, delete earliest */
   auto& key_intval = intval->key_intervals.add();
-  key_intval->start.set(m_interval.key_begin, Condition::EQ);
-  key_intval->start.insert(0, std::to_string(cfg->cid), Condition::EQ);
+  // key_intval->start.set(m_interval.key_begin, Condition::EQ);
+  // key_intval->start.insert(0, std::to_string(cfg->cid), Condition::EQ);
+  // intval->set_opt__key_equal();
+  // intval->flags.limit = 1;
+  key_intval->start.add(std::to_string(cfg->cid), Condition::EQ);
+  key_intval->start.add("", Condition::GE);
+
+  DB::Specs::Serial::Value::Fields fields;
+  fields.add(
+    DB::Specs::Serial::Value::Field_INT64::make(0, Condition::EQ, rid));
+  fields.encode(intval->values.add());
 
   auto selector = std::make_shared<client::Query::Select>(
     [req, col_spec, range=shared_from_this()]
@@ -711,6 +714,24 @@ void Range::check_meta(const Callback::RangeLoad::Ptr& req,
     );
   }
 
+  if(cells.size() > 1) {
+    SWC_LOG_OUT(LOG_ERROR,
+      SWC_LOG_OSTREAM
+        << "Range MetaData cid=" << cfg->cid << " duplicate rid=" << rid;
+      m_interval.print(SWC_LOG_OSTREAM << "\n\t auto-del-registering=");
+      col_spec->print(SWC_LOG_OSTREAM << "\n\t");
+      cells.print(SWC_LOG_OSTREAM << "\n\t", DB::Types::Column::SERIAL, true);
+    );
+    // del-all, after:
+    /*
+    return on_change(false, [req, range=shared_from_this()]
+      (const client::Query::Update::Result::Ptr& res) {
+        range->loaded(res ? res->error() : Error::OK, req);
+      }
+    );
+    */
+  }
+
   DB::Cells::Interval interval(cfg->key_seq);
   interval.was_set = true;
   /* Range MetaData does not include timestamp
@@ -724,14 +745,24 @@ void Range::check_meta(const Callback::RangeLoad::Ptr& req,
     auto& cell = *cells[0];
     interval.key_begin.copy(cell.key);
     interval.key_begin.remove(0);
-    size_t remain = cell.vlen;
-    const uint8_t* ptr = cell.value;
+
+    StaticBuffer v;
+    cell.get_value(v);
+    const uint8_t* ptr = v.base;
+    size_t remain = v.size;
+
+    DB::Cell::Serial::Value::skip_type_and_id(&ptr, &remain);
     interval.key_end.decode(&ptr, &remain, false);
     interval.key_end.remove(0);
+
+    DB::Cell::Serial::Value::skip_type_and_id(&ptr, &remain);
     _rid = Serialization::decode_vi64(&ptr, &remain);
 
+    DB::Cell::Serial::Value::skip_type_and_id(&ptr, &remain);
     interval.aligned_min.decode(&ptr, &remain);
     interval.aligned_min.remove(0);
+
+    DB::Cell::Serial::Value::skip_type_and_id(&ptr, &remain);
     interval.aligned_max.decode(&ptr, &remain);
     interval.aligned_max.remove(0);
 

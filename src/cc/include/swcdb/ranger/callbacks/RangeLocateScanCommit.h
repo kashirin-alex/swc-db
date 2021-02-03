@@ -16,34 +16,44 @@ class RangeLocateScanCommit : public RangeLocateScan {
 
   typedef std::shared_ptr<RangeLocateScanCommit> Ptr;
 
-  RangeLocateScanCommit(const Comm::ConnHandlerPtr& conn, 
-                        const Comm::Event::Ptr& ev, 
+  RangeLocateScanCommit(const Comm::ConnHandlerPtr& conn,
+                        const Comm::Event::Ptr& ev,
                         const DB::Cell::Key& range_begin,
-                        const RangePtr& range, 
+                        const RangePtr& range,
                         uint8_t flags)
                         : RangeLocateScan(
-                            conn, ev, 
+                            conn, ev,
                             range_begin, DB::Cell::Key(), range, flags) {
   }
 
   virtual ~RangeLocateScanCommit() { }
 
-  bool selector(const DB::Types::KeySeq key_seq, 
+  bool selector(const DB::Types::KeySeq key_seq,
                 const DB::Cells::Cell& cell, bool& stop) override {
-    if(any_is && 
+    if(any_is &&
        DB::KeySeq::compare_upto(key_seq, range_begin, cell.key, any_is)
         != Condition::EQ)
       return false;
 
-    size_t remain = cell.vlen;
-    const uint8_t * ptr = cell.value;
+    StaticBuffer v;
+    cell.get_value(v);
+    const uint8_t* ptr = v.base;
+    size_t remain = v.size;
+
+    DB::Cell::Serial::Value::skip_type_and_id(&ptr, &remain);
     DB::Cell::Key key_end;
     key_end.decode(&ptr, &remain, false);
-    bool match;
-    if((match = key_end.count == any_is || 
-                DB::KeySeq::compare(key_seq,
-                  key_end, range_begin) != Condition::GT))
+    bool match = key_end.count == any_is ||
+                 DB::KeySeq::compare(key_seq, key_end, range_begin)
+                  != Condition::GT;
+    if(match) {
       stop = true;
+      uint8_t after_idx = range->cfg->range_type == DB::Types::Range::MASTER;
+      params.range_begin.copy(after_idx, cell.key);
+      params.range_end.copy(after_idx, key_end);
+      DB::Cell::Serial::Value::skip_type_and_id(&ptr, &remain);
+      params.rid = Serialization::decode_vi64(&ptr, &remain);
+    }
     return match;
   }
 

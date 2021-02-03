@@ -442,19 +442,22 @@ void Cell::display(std::ostream& out,
         out << get_counter();
 
   } else if(meta && !bin) {
-    const uint8_t* ptr = value;
-    size_t remain = vlen;
+    StaticBuffer v;
+    get_value(v);
+    const uint8_t* ptr = v.base;
+    size_t remain = v.size;
     DB::Cell::Key de_key;
+    DB::Cell::Serial::Value::skip_type_and_id(&ptr, &remain);
     de_key.decode(&ptr, &remain, false);
-    out << "end=";
-    de_key.display(out, true);
+    de_key.display(out << "end=", true);
+    DB::Cell::Serial::Value::skip_type_and_id(&ptr, &remain);
     out << " rid=" << Serialization::decode_vi64(&ptr, &remain);
+    DB::Cell::Serial::Value::skip_type_and_id(&ptr, &remain);
     de_key.decode(&ptr, &remain, false);
-    out << " min=";
-    de_key.display(out, true);
+    de_key.display(out << " min=", true);
+    DB::Cell::Serial::Value::skip_type_and_id(&ptr, &remain);
     de_key.decode(&ptr, &remain, false);
-    out << " max=";
-    de_key.display(out, true);
+    de_key.display(out << " max=", true);
 
   } else {
     StaticBuffer v;
@@ -507,19 +510,25 @@ void Cell::print(std::ostream& out, Types::Column typ) const {
 
   } else {
     out << " data=\"";
-    char hex[5];
-    hex[4] = 0;
     StaticBuffer v;
     get_value(v);
-    const uint8_t* ptr = v.base;
-    for(uint32_t len = v.size; len; --len, ++ptr) {
-      if(*ptr == '"')
-        out << '\\';
-      if(31 < *ptr && *ptr < 127) {
-        out << *ptr;
-      } else {
-        sprintf(hex, "0x%X", *ptr);
-        out << hex;
+
+    if(typ == Types::Column::SERIAL) {
+      DB::Cell::Serial::Value::Fields::display(v.base, v.size, out);
+
+    } else {
+      char hex[5];
+      hex[4] = 0;
+      const uint8_t* ptr = v.base;
+      for(uint32_t len = v.size; len; --len, ++ptr) {
+        if(*ptr == '"')
+          out << '\\';
+        if(31 < *ptr && *ptr < 127) {
+          out << *ptr;
+        } else {
+          sprintf(hex, "0x%X", *ptr);
+          out << hex;
+        }
       }
     }
     out << "\")";

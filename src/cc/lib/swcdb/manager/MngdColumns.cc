@@ -334,7 +334,7 @@ void MngdColumns::remove(const DB::Schema::Ptr& schema,
   cid_t meta_cid = DB::Types::MetaColumn::get_sys_cid(
     schema->col_seq, DB::Types::MetaColumn::get_range_type(schema->cid));
   auto col_spec = DB::Specs::Column::make_ptr(
-    meta_cid, {DB::Specs::Interval::make_ptr()});
+    meta_cid, {DB::Specs::Interval::make_ptr(DB::Types::Column::SERIAL)});
   auto& intval = col_spec->intervals.front();
   auto& key_intval = intval->key_intervals.add();
   key_intval->start.add(std::to_string(schema->cid), Condition::EQ);
@@ -387,7 +387,7 @@ void MngdColumns::remove(const DB::Schema::Ptr& schema,
         Env::Mngr::io()
       );
       updater->columns->create(
-        meta_cid, schema->col_seq, 1, 0, DB::Types::Column::PLAIN);
+        meta_cid, schema->col_seq, 1, 0, DB::Types::Column::SERIAL);
       auto col = updater->columns->get_col(meta_cid);
       for(auto cell : cells) {
         cell->flag = DB::Cells::DELETE;
