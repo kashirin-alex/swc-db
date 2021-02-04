@@ -9,6 +9,8 @@
 
 #include "swcdb/ranger/Protocol/Rgr/req/RangeUnload.h"
 #include "swcdb/ranger/callbacks/RangeQueryUpdate.h"
+#include "swcdb/db/Cells/CellValueSerialFields.h"
+#include "swcdb/db/Cells/SpecsValueSerialFields.h"
 
 
 
