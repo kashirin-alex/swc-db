@@ -234,6 +234,9 @@ def wait_ready(c, on_start=False):
 
 @fabric.task(hosts=[swcdb_source_host])
 def deploy(ctx):
+    if swcdb_install_path == "/usr":
+        raise Exception("Deploy not supported for installs on OS base path")
+
     swcdb_print_start("deployment", ctx)
 
     get_archive = swcdb_cfg["swc.install.archive"][-1] if "swc.install.archive" in swcdb_cfg \

@@ -9,6 +9,25 @@
 
 #include "swcdb/core/FileUtils.h"
 
+#if defined(SWC_PATH_ETC)
+#define USE_SWC_PATH_ETC(_) SWC_PATH_ETC
+#else
+#define USE_SWC_PATH_ETC(_default_) _default_
+#endif
+
+#if defined(SWC_PATH_LOG)
+#define USE_SWC_PATH_LOG(_) SWC_PATH_LOG
+#else
+#define USE_SWC_PATH_LOG(_default_) _default_
+#endif
+
+#if defined(SWC_PATH_RUN)
+#define USE_SWC_PATH_RUN(_) SWC_PATH_RUN
+#else
+#define USE_SWC_PATH_RUN(_default_) _default_
+#endif
+
+
 
 namespace SWC { namespace Config {
 
@@ -79,7 +98,10 @@ void Settings::init_options() {
     ("quiet", boo(false)->zero_token(), "Negate verbose")
     ("daemon ", boo()->zero_token(), "Start process in background mode")
 
-    ("swc.cfg.path", str(install_path+"/etc/swcdb/"), "Path of configuration files")
+    ("swc.cfg.path",
+      str(USE_SWC_PATH_ETC(install_path+"/etc/swcdb/")),
+      "Path of configuration files")
+
     ("swc.cfg", str("swc.cfg"), "Main configuration file")
     ("swc.cfg.dyn", strs(), "Main dynamic configuration file")
 
@@ -91,7 +113,9 @@ void Settings::init_options() {
         Core::logger.repr
       ),
      "Logging level: debug|info|notice|warn|error|crit|alert|fatal")
-    ("swc.logging.path", str(install_path + "/var/log/swcdb/"), "Path of log files")
+    ("swc.logging.path",
+      str(USE_SWC_PATH_LOG(install_path + "/var/log/swcdb/")),
+      "Path of log files")
 
     //("induce-failure", str(), "Arguments for inducing failure")
     /* Interactive-Shell options
@@ -189,7 +213,7 @@ void Settings::init_process(bool with_pid_file, const std::string& port_cfg) {
 
   std::string pid_file;
   if(with_pid_file) {
-    pid_file = install_path + "/run/" + executable;
+    pid_file = USE_SWC_PATH_RUN(install_path + "/run/") + executable;
     if(!port_cfg.empty() && !defaulted(port_cfg)) {
       pid_file.append(".");
       pid_file.append(std::to_string(get_i16(port_cfg)));

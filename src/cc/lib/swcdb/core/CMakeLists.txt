@@ -34,6 +34,7 @@ ADD_LIB_TARGET(
   NAME      swcdb_core_config
   SRCS      ${swcdb_core_config_sources}
   TARGETS   swcdb_core
+  FLAGS     ${SWC_DEFAULT_PATH_FLAGS}
 )
 
 
