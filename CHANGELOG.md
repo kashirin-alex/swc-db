@@ -19,7 +19,7 @@
     added T* Config::Property::Value::get_pointer<Property::Type>(Value::Ptr)
     added DB::Cell::get_value(std::string& v)
     added move ctor and operator for DB::Cells::Cell and DB::Cell::Key
-    fixed libpam_swcdb_max_retries with latest SWC-DB Thirft Service structure
+    fixed libpam_swcdb_max_retries with latest SWC-DB Thrift Service structure
     changed Comm::Buffers::buf_header to bytes-array (uint8_t[Header::MAX_LENGTH])
     fixed possible 0-length in Comm::ConnHandler::recved_header_pre
     removed Comm::Serializable base from FS::Direct and DB::Specs{Scan, Column}
@@ -361,7 +361,7 @@
     added enum client::SQL:Cmd & Cmd recognize_cmd(int& err, const string& sql)
     added SWC::Thrift::Result and function Results exec_sql(1:string sql)
     added timestamp interval(one-side) to support Condition::NE in client::SQL
-    moved Python pkg module swcdb.thirft.gen to swcdb.thirft.native
+    moved Python pkg module swcdb.thrift.gen to swcdb.thrift.native
     added Python package with modules swcdb.thrift.{tornado,twisted,zopeif}
     added PyPi package 'swcdb', `pip install swcdb` available
     moved src/py/swcdb/pkg to src/py/package/swcdb

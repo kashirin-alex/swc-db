@@ -5,12 +5,13 @@
 
 if(THRIFT_C_GEN_PATH)
 
-add_subdirectory(thrift)
+  add_subdirectory(thrift)
 
+endif(THRIFT_C_GEN_PATH)
 
-if(NOT WITHOUT_PAM AND (NOT SWC_BUILD_PKG OR SWC_BUILD_PKG MATCHES "^lib-pam"))
+if(NOT WITHOUT_PAM AND 
+   ((NOT SWC_BUILD_PKG AND THRIFT_C_GEN_PATH) OR 
+   SWC_BUILD_PKG MATCHES "^pam"))
   add_subdirectory(pam)
 endif()
 
-
-endif(THRIFT_C_GEN_PATH)

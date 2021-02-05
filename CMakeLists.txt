@@ -232,7 +232,7 @@ if(NOT SWC_BUILD_PKG OR SWC_BUILD_PKG STREQUAL "doc")
 endif()
 
 
-if(NOT SWC_BUILD_PKG OR NOT SWC_BUILD_PKG MATCHES "^(env|doc|(lib-(pam|thrift)))")
+if(NOT SWC_BUILD_PKG OR NOT SWC_BUILD_PKG MATCHES "^(env|doc|pam|lib-thrift)")
   find_package(SWCDB)
 endif()
 

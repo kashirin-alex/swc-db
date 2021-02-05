@@ -88,7 +88,7 @@ endif()
 
 
 
-if(THRIFT_CPP_GEN_PATH AND (NOT SWC_BUILD_PKG OR SWC_BUILD_PKG STREQUAL "lib-thirft"))
+if(THRIFT_CPP_GEN_PATH AND (NOT SWC_BUILD_PKG OR SWC_BUILD_PKG STREQUAL "lib-thrift"))
   install(DIRECTORY cc/include/swcdb/thrift/client      DESTINATION include/swcdb/thrift)
   install(DIRECTORY cc/include/swcdb/thrift/utils       DESTINATION include/swcdb/thrift)
   install(DIRECTORY cc/include/swcdb/thrift/gen-cpp     DESTINATION include/swcdb/thrift)
@@ -96,7 +96,7 @@ endif()
 
 
 
-if(THRIFT_C_GEN_PATH AND (NOT SWC_BUILD_PKG OR SWC_BUILD_PKG STREQUAL "lib-thirft-c"))
+if(THRIFT_C_GEN_PATH AND (NOT SWC_BUILD_PKG OR SWC_BUILD_PKG STREQUAL "lib-thrift-c"))
   install(FILES     c/include/swcdb/version.h           DESTINATION include/swcdb)
   install(DIRECTORY c/include/swcdb/thrift/client       DESTINATION include/swcdb/thrift)
   install(DIRECTORY c/include/swcdb/thrift/gen-c_glib   DESTINATION include/swcdb/thrift)

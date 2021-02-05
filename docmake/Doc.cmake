@@ -33,7 +33,7 @@ if(SWC_DOCUMENTATION)
                      XZ_OPT=-e9 tar -cJf swc-db-doc-cpp-html.tar.xz doc/cpp/html/* )
 
   # add_custom_command(TARGET doc POST_BUILD COMMAND
-  #                   XZ_OPT=-e9 tar -cJf swc-db-thirft-html.tar.xz doc/gen-html/* )
+  #                   XZ_OPT=-e9 tar -cJf swc-db-thrift-html.tar.xz doc/gen-html/* )
 
 
 endif ()
