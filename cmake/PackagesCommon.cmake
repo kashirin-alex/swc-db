@@ -15,11 +15,11 @@ SET_DEPS(NAME "ZSTD"  REQUIRED TRUE LIB_PATHS "" INC_PATHS "" STATIC libzstd.a S
 
 
 if(SWC_DEFAULT_ENCODER)
-  if(NOT SWC_DEFAULT_ENCODER STREQUAL ZSTD AND 
-     NOT SWC_DEFAULT_ENCODER STREQUAL ZLIB AND 
-     NOT SWC_DEFAULT_ENCODER STREQUAL SNAPPY AND 
+  if(NOT SWC_DEFAULT_ENCODER STREQUAL ZSTD AND
+     NOT SWC_DEFAULT_ENCODER STREQUAL ZLIB AND
+     NOT SWC_DEFAULT_ENCODER STREQUAL SNAPPY AND
      NOT SWC_DEFAULT_ENCODER STREQUAL PLAIN )
-    message(FATAL_ERROR 
+    message(FATAL_ERROR
       "Requested SWC_DEFAULT_ENCODER=${SWC_DEFAULT_ENCODER} is not available, ENCODER options: PLAIN|ZSTD|SNAPPY|ZLIB")
   endif()
   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DSWC_DEFAULT_ENCODER=${SWC_DEFAULT_ENCODER}")
@@ -27,54 +27,80 @@ endif()
 
 
 SET_DEPS(
-  NAME      "SSL" 
-  REQUIRED  TRUE 
+  NAME      "SSL"
+  REQUIRED  TRUE
   LIB_PATHS /usr/local/ssl/lib
   INC_PATHS /usr/local/ssl/include
-  STATIC    libssl.a libcrypto.a 
+  STATIC    libssl.a libcrypto.a
   SHARED    ssl crypto
   INCLUDE   openssl/ssl.h openssl/crypto.h
   INSTALL   TRUE
 )
 
 
+if(NOT SWC_BUILD_PKG OR SWC_BUILD_PKG STREQUAL "utils")
 if(NOT USE_GNU_READLINE)
   SET_DEPS(
-    NAME      "EDITLINE" 
-    REQUIRED  FALSE 
-    LIB_PATHS "" INC_PATHS "" 
+    NAME      "EDITLINE"
+    REQUIRED  FALSE
+    LIB_PATHS "" INC_PATHS ""
     STATIC    libeditline.a
-    SHARED    editline 
+    SHARED    editline
     INCLUDE   editline.h
     INSTALL   TRUE
   )
 endif()
 if(NOT EDITLINE_FOUND)
   SET_DEPS(
-    NAME      "EDITLINE" 
-    REQUIRED  TRUE 
-    LIB_PATHS "" INC_PATHS "" 
-    STATIC    libreadline.a 
-    SHARED    readline 
+    NAME      "EDITLINE"
+    REQUIRED  TRUE
+    LIB_PATHS "" INC_PATHS ""
+    STATIC    libreadline.a
+    SHARED    readline
     INCLUDE   readline/readline.h readline/history.h
     INSTALL   TRUE
   )
   set(USE_GNU_READLINE ON)
 endif()
+endif()
 
 
 
 
-find_package(Languages REQUIRED)
+if(NOT SWC_BUILD_PKG OR
+   (SWC_BUILD_PKG MATCHES "^lib-thrift" AND
+    NOT SWC_BUILD_PKG STREQUAL "lib-thrift" AND
+    NOT SWC_BUILD_PKG STREQUAL "lib-thrift-c"))
+  find_package(Languages REQUIRED)
+endif()
 
 
-find_package(FileSystems REQUIRED)
+if(NOT SWC_BUILD_PKG OR SWC_BUILD_PKG MATCHES "^lib-fs")
+  find_package(FileSystems REQUIRED)
+endif()
 
 
-find_package(Thrift REQUIRED)
+if(NOT SWC_BUILD_PKG OR
+   SWC_BUILD_PKG MATCHES "^lib-thrift" OR
+   SWC_BUILD_PKG STREQUAL "thriftbroker")
+  find_package(Thrift REQUIRED)
+endif()
 
 
 
+
+
+
+set(SWC_LIB_CORE_SHARED ${RE2_LIBRARIES_SHARED}
+                        ${ZLIB_LIBRARIES_SHARED} ${SNAPPY_LIBRARIES_SHARED} ${ZSTD_LIBRARIES_SHARED})
+set(SWC_LIB_CORE_STATIC ${RE2_LIBRARIES_STATIC}
+                        ${ZLIB_LIBRARIES_STATIC} ${SNAPPY_LIBRARIES_STATIC} ${ZSTD_LIBRARIES_STATIC})
+
+# ${ATOMIC_LIBRARIES_SHARED} ${BZIP2_LIBRARIES_SHARED} ${LZMA_LIBRARIES_SHARED}
+# ${ATOMIC_LIBRARIES_STATIC} ${BZIP2_LIBRARIES_STATIC} ${LZMA_LIBRARIES_STATIC}
+
+set_property(GLOBAL PROPERTY SWC_LIB_CORE_SHARED ${SWC_LIB_CORE_SHARED} ${SSL_LIBRARIES_SHARED} )
+set_property(GLOBAL PROPERTY SWC_LIB_CORE_STATIC ${SWC_LIB_CORE_STATIC} ${SSL_LIBRARIES_STATIC} )
 
 
 

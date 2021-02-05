@@ -14,11 +14,11 @@ endif()
 SET_DEPS(
   NAME "JAVA"
   LIB_PATHS ${java_home}/jre/lib/amd64
-            ${java_home}/jre/lib/amd64/server  
+            ${java_home}/jre/lib/amd64/server
             ${java_home}/lib/server
             ${java_home}/lib
   INC_PATHS ${java_home}/include
-  # STATIC libjvm.a libjava.a libverify.a # libjawt.a 
+  # STATIC libjvm.a libjava.a libverify.a # libjawt.a
   SHARED    jvm java verify # jawt(requires Xrender, Xtst, Xi)
   INCLUDE   jni.h
 )
@@ -40,7 +40,7 @@ else()
   set(JAVARE_FOUND FALSE)
   message(STATUS "Not Found Java Runtime Enviroment")
 endif()
-   
+
 
 exec_program(env ARGS javac --version OUTPUT_VARIABLE JAVAC_VERSION
              RETURN_VALUE Java_RETURN)
@@ -57,12 +57,12 @@ else()
   set(JAVAC_FOUND FALSE)
   message(STATUS "Not Found Java Compiler")
 endif()
-   
+
 
 exec_program(env ARGS mvn --version OUTPUT_VARIABLE MAVEN_VERSION
              RETURN_VALUE Java_RETURN)
 string(REGEX REPLACE "\n.*" "" MAVEN_VERSION "${MAVEN_VERSION}")
-if(MAVEN_VERSION MATCHES "Apache Maven") 
+if(MAVEN_VERSION MATCHES "Apache Maven")
   set(MAVEN_FOUND TRUE)
   list(GET MAVEN_VERSION 0 MAVEN_VERSION)
 

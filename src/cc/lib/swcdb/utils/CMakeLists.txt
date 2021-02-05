@@ -18,13 +18,26 @@ set(swcdb_utils_shell_sources
   cli/Shell_Manager.cc
   cli/Shell_Ranger.cc
   cli/Shell_Fs.cc
-  
 )
+
 ADD_LIB_TARGET(
-  NAME    swcdb_utils_shell
-  SRCS    ${swcdb_utils_shell_sources}
-  TARGETS 
-  
-  SHARED  ${EDITLINE_LIBRARIES_SHARED}
-  STATIC  ${EDITLINE_LIBRARIES_STATIC}
+  NAME      swcdb_utils_shell
+  SRCS      ${swcdb_utils_shell_sources}
+  TARGETS   ${SWC_LIB_CORE_TARGET}
+            ${SWC_LIB_CORE_CONFIG_TARGET}
+            ${SWC_LIB_CORE_COMM_TARGET}
+            ${SWC_LIB_TARGET}
+            ${SWC_LIB_FS_TARGET}
+  SHARED    ${SWC_LIB_CORE_LIBRARIES_SHARED}
+            ${SWC_LIB_CORE_CONFIG_LIBRARIES_SHARED}
+            ${SWC_LIB_CORE_COMM_LIBRARIES_SHARED}
+            ${SWC_LIB_LIBRARIES_SHARED}
+            ${SWC_LIB_FS_LIBRARIES_SHARED}
+            ${EDITLINE_LIBRARIES_SHARED}
+  STATIC    ${SWC_LIB_CORE_LIBRARIES_STATIC}
+            ${SWC_LIB_CORE_CONFIG_LIBRARIES_STATIC}
+            ${SWC_LIB_CORE_COMM_LIBRARIES_STATIC}
+            ${SWC_LIB_LIBRARIES_STATIC}
+            ${SWC_LIB_FS_LIBRARIES_STATIC}
+            ${EDITLINE_LIBRARIES_STATIC}
 )

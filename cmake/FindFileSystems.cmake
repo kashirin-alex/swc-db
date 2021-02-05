@@ -5,17 +5,20 @@
 
 
 
+if(NOT SWC_BUILD_PKG OR SWC_BUILD_PKG STREQUAL "lib-fs-ceph")
 SET_DEPS(
-  NAME      "CEPH" 
-  LIB_PATHS 
-  INC_PATHS 
+  NAME      "CEPH"
+  LIB_PATHS
+  INC_PATHS
   STATIC    libcephfs.a
-  SHARED    cephfs 
+  SHARED    cephfs
   INCLUDE   cephfs/libcephfs.h
 )
+endif()
 #########
 
 
+if(NOT SWC_BUILD_PKG OR SWC_BUILD_PKG STREQUAL "lib-fs-hadoop-jvm")
 set(hadoop_home)
 if(HADOOP_INSTALL_PATH)
   set(hadoop_home ${HADOOP_INSTALL_PATH})
@@ -24,22 +27,24 @@ else()
 endif()
 
 SET_DEPS(
-  NAME "HADOOP_JVM" 
+  NAME "HADOOP_JVM"
   LIB_PATHS ${hadoop_home}/lib/native
-  INC_PATHS ${hadoop_home}/include 
-  STATIC    libhdfs.a 
-  SHARED    hdfs 
+  INC_PATHS ${hadoop_home}/include
+  STATIC    libhdfs.a
+  SHARED    hdfs
   INCLUDE   hdfs.h
 )
+endif()
 ###########
 
 
+if(NOT SWC_BUILD_PKG OR SWC_BUILD_PKG STREQUAL "lib-fs-hadoop")
 SET_DEPS(
-  NAME      "HADOOP" 
+  NAME      "HADOOP"
   LIB_PATHS ${hadoop_home}/lib/native
-  INC_PATHS ${hadoop_home}/include 
+  INC_PATHS ${hadoop_home}/include
   STATIC    libhdfspp.a
-  SHARED    hdfspp 
+  SHARED    hdfspp
   INCLUDE   hdfspp/hdfspp.h
 )
 if(HADOOP_FOUND)
@@ -69,18 +74,19 @@ if(HADOOP_FOUND)
     message("       Building Version: 'default' set -DHADOOP_VERSION= for version specific")
   endif()
 endif()
+endif()
 ############
 
 
 
 set(BUILTIN_FS_TARGETS "")
 set(BUILTIN_FS_FLAGS "")
-if(SWC_BUILTIN_FS)
+if(NOT SWC_BUILD_PKG AND SWC_BUILTIN_FS)
 
   if (SWC_BUILTIN_FS STREQUAL "all")
     SET (BUILTIN_FS_FLAGS "${BUILTIN_FS_FLAGS} -DBUILTIN_FS_ALL")
   else()
-  
+
     string(REPLACE "," ";" SWC_BUILTIN_FS "${SWC_BUILTIN_FS}")
     list(REMOVE_DUPLICATES SWC_BUILTIN_FS)
     foreach(fs ${SWC_BUILTIN_FS})

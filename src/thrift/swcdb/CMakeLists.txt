@@ -18,8 +18,8 @@ if(THRIFT_CPP_FOUND)
       execute_process(COMMAND rm -rf ${VER_GEN_PATH}/gen-cpp )
       execute_process(COMMAND mkdir -p ${VER_GEN_PATH}/gen-cpp )
 
-      message(STATUS "Generating Thrift C++:")
-      execute_process(COMMAND thrift -r --gen cpp 
+      message(STATUS "Generating Thrift C++:") # :moveable_types
+      execute_process(COMMAND thrift -r --gen cpp
                       -o ${VER_GEN_PATH}/
                       ${CMAKE_CURRENT_SOURCE_DIR}/Broker.thrift)
       message("       ${VER_GEN_PATH}/gen-cpp")
@@ -49,7 +49,7 @@ if(THRIFT_C_FOUND)
       execute_process(COMMAND mkdir -p ${VER_GEN_PATH}/gen-c_glib )
 
       message(STATUS "Generating Thrift C-GLIB:")
-      execute_process(COMMAND thrift -r --gen c_glib  
+      execute_process(COMMAND thrift -r --gen c_glib
                       -o ${VER_GEN_PATH}/
                       ${CMAKE_CURRENT_SOURCE_DIR}/Service.thrift)
       message("       ${VER_GEN_PATH}/gen-c_glib")
@@ -71,14 +71,14 @@ endif(THRIFT_C_FOUND)
 ######## SET THRIFT JAVA CLIENT MODULE
 if(MAVEN_FOUND)
   set(THRIFT_JAVA_GEN_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../../java/mvn/swcdb/thrift/src/main/java/org/swcdb/thrift/)
-  
+
   if(NOT EXISTS ${THRIFT_JAVA_GEN_PATH}/gen OR NOT EXISTS ${VER_GEN_PATH}/gen-java)
     if(THRIFT_COMPILER_FOUND)
       execute_process(COMMAND rm -rf ${VER_GEN_PATH}/gen-java )
       execute_process(COMMAND mkdir -p ${VER_GEN_PATH}/gen-java )
-      
+
       message(STATUS "Generating Thrift JAVA:")
-      execute_process(COMMAND thrift -r --gen java:generated_annotations=suppress 
+      execute_process(COMMAND thrift -r --gen java:generated_annotations=suppress
                       -o ${VER_GEN_PATH}/
                       ${CMAKE_CURRENT_SOURCE_DIR}/Service.thrift)
       message("       ${VER_GEN_PATH}/gen-java")
@@ -92,7 +92,7 @@ if(MAVEN_FOUND)
   endif()
 
   if(EXISTS ${THRIFT_JAVA_GEN_PATH}/gen)
-      set(THRIFT_JAVA_GEN_PATH ${THRIFT_JAVA_GEN_PATH} PARENT_SCOPE)    
+      set(THRIFT_JAVA_GEN_PATH ${THRIFT_JAVA_GEN_PATH} PARENT_SCOPE)
   endif()
 endif(MAVEN_FOUND)
 
@@ -117,11 +117,11 @@ if(PYTHON_EXECUTABLES)
         if(NOT typ STREQUAL "native")
           set(GEN_TYPE "${typ},")
         endif()
-        execute_process(COMMAND thrift -r --gen py:${GEN_TYPE}slots,no_utf8strings 
+        execute_process(COMMAND thrift -r --gen py:${GEN_TYPE}slots,no_utf8strings
                         -o ${VER_GEN_PATH}/tmp/
                         ${CMAKE_CURRENT_SOURCE_DIR}/Service.thrift)
-                
-        set(GEN_TYPE "gen-py")        
+
+        set(GEN_TYPE "gen-py")
         if(NOT typ STREQUAL "native" AND NOT typ STREQUAL "zope.interface")
           set(GEN_TYPE ${GEN_TYPE}.${typ})
         endif()
@@ -135,7 +135,7 @@ if(PYTHON_EXECUTABLES)
     if(EXISTS ${VER_GEN_PATH}/gen-py)  # set module path
       execute_process(COMMAND mkdir -p ${THRIFT_PY_GEN_PATH} )
       execute_process(COMMAND rm -rf ${THRIFT_PY_GEN_PATH}/gen-py )
-      
+
       foreach(typ ${GEN_TYPES})
         if(typ STREQUAL "zope.interface")
           set(dest "zopeif")
@@ -165,7 +165,7 @@ if (LANGS OR LANG_NETSTD)
       execute_process(COMMAND mkdir -p ${VER_GEN_PATH}/gen-netstd )
 
       message(STATUS "Generating Thrift .NET Standard:")
-      execute_process(COMMAND thrift -r --gen netstd 
+      execute_process(COMMAND thrift -r --gen netstd
                       -o ${VER_GEN_PATH}/
                       ${CMAKE_CURRENT_SOURCE_DIR}/Service.thrift)
       message("       ${VER_GEN_PATH}/gen-netstd")
@@ -196,7 +196,7 @@ if (LANGS OR LANG_RUST)
       execute_process(COMMAND mkdir -p ${VER_GEN_PATH}/gen-rs )
 
       message(STATUS "Generating Thrift Rust:")
-      execute_process(COMMAND thrift -r --gen rs 
+      execute_process(COMMAND thrift -r --gen rs
                       -o ${VER_GEN_PATH}/gen-rs
                       ${CMAKE_CURRENT_SOURCE_DIR}/Service.thrift)
       message("       ${VER_GEN_PATH}/gen-rs")

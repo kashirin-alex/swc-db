@@ -3,12 +3,6 @@
 # License details at <https://github.com/kashirin-alex/swc-db/#license>
 
 
-install(FILES sbin/swcdb_cluster DESTINATION sbin
-  PERMISSIONS OWNER_EXECUTE GROUP_EXECUTE WORLD_EXECUTE 
-              OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ
-)
-
-
 if(NOT SWC_WITHOUT_PY AND THRIFT_PY_GEN_PATH)
 
 #### PREPARE SWC-DB PKG DIR
@@ -27,15 +21,15 @@ configure_file(package/MANIFEST.in ${PY_PKG_PATH}/MANIFEST.in @ONLY)
 list(GET PYTHON_EXECUTABLES 0 py)
 install( CODE "execute_process(COMMAND  cmake -E chdir ${PY_PKG_PATH} ${py} setup.py sdist;)")
 install(FILES "${PY_PKG_PATH}/dist/swcdb-${SWCDB_VERSION_PYTHON}.tar.gz" DESTINATION lib/py/)
-  
+
 
 foreach(py ${PYTHON_EXECUTABLES})
 
   #add_test(Thrift-${py} env ${py} ${CMAKE_CURRENT_SOURCE_DIR}/tests/thrift_client_test.py)
   #add_test(Thrift-${py}-scw env ${py} ${CMAKE_CURRENT_SOURCE_DIR}/tests/thrift_client_test_scw.py)
   #add_test(Thrift-${py}-scr env ${py} ${CMAKE_CURRENT_SOURCE_DIR}/tests/thrift_client_test_scr.py)
-  #add_test(Thrift-${py} 
-  #          env LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${INSTALL_DIR}/lib 
+  #add_test(Thrift-${py}
+  #          env LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${INSTALL_DIR}/lib
   #          ${py} ${CMAKE_CURRENT_SOURCE_DIR}/tests/thrift_client_test.py)
 
   install( CODE "execute_process(COMMAND  cmake -E chdir ${PY_PKG_PATH}/dist ${py} -m pip install --verbose --upgrade swcdb-${SWCDB_VERSION_PYTHON}.tar.gz;)")

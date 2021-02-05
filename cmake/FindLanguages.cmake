@@ -10,7 +10,7 @@ message(STATUS "Supported Languages:")
 
 string(TOUPPER "${SWC_LANGUAGES}" SWC_LANGUAGES )
 
-# Build support for all possible or only requested languages 
+# Build support for all possible or only requested languages
 if (NOT SWC_LANGUAGES OR SWC_LANGUAGES STREQUAL "ALL" OR SWC_LANGUAGES STREQUAL "")
   set(LANGS ON)
   message("       Any possibly supported")

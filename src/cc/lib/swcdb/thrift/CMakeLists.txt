@@ -12,7 +12,7 @@ ADD_LIB_TARGET(
   SRCS    ${THRIFT_CPP_GEN_PATH}/gen-cpp/Service_types.cpp
           ${THRIFT_CPP_GEN_PATH}/gen-cpp/Service.cpp
           # Converters.cc
-            # Client.cc
+          # Client.cc
           ${SWC_VERSION_SRC}
   SHARED  ${THRIFT_CPP_LIBRARIES_SHARED}
   STATIC  ${THRIFT_CPP_LIBRARIES_STATIC}

@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
-# self-signed PEM 
-DOMAIN_NAME="swcdb-cluster-1"; 
-CONFIG_PATH=/opt/swcdb/etc/swcdb; 
-CONFIG_FILE=/opt/swcdb/etc/swcdb/openssl.cnf; 
+# self-signed PEM
+DOMAIN_NAME="swcdb-cluster-1";
+CONFIG_PATH=/opt/swcdb/etc/swcdb;
+CONFIG_FILE=/opt/swcdb/etc/swcdb/openssl.cnf;
 
 # CA -- keep rootCA.key safe or delete it.
 openssl req -x509 -new \

@@ -14,7 +14,7 @@ if(NOT SWC_WITHOUT_JAVA AND THRIFT_JAVA_GEN_PATH AND MAVEN_FOUND)
 
 	if(JAVARE_FOUND)
 		set(MODULES_PLACE_HOLDER "${MODULES_PLACE_HOLDER} \n <module>thrift-tests</module>")
-    set_property(GLOBAL PROPERTY THRIFT_JAVA_TEST 
+    set_property(GLOBAL PROPERTY THRIFT_JAVA_TEST
 			${CMAKE_CURRENT_BINARY_DIR}/mvn/swcdb/thrift-tests/target/thrift-tests-${VERSION_STRING}-bundled.jar
 		)
 	endif()
@@ -37,7 +37,7 @@ if(NOT SWC_WITHOUT_JAVA AND THRIFT_JAVA_GEN_PATH AND MAVEN_FOUND)
 		${CMAKE_CURRENT_BINARY_DIR}/mvn/swcdb/jdbc/thrift/pom.xml @ONLY)
 
 
-	add_custom_target(MVN_build ALL 
+	add_custom_target(MVN_build ALL
 					          mvn -f mvn/swcdb/pom.xml -Dmaven.test.skip=true package
 										license:add-third-party
 										)
@@ -50,7 +50,7 @@ if(NOT SWC_WITHOUT_JAVA AND THRIFT_JAVA_GEN_PATH AND MAVEN_FOUND)
 	)
 	install(
     FILES			 	${CMAKE_CURRENT_BINARY_DIR}/mvn/swcdb/thrift/target/classes/THIRD-PARTY.txt
-    DESTINATION share/doc/swcdb/	
+    DESTINATION share/swcdb/	
 		RENAME 			THIRD-PARTY_swcdb-thrift-${SWCDB_VERSION}-v${THRIFT_VERSION}-bundled.jar.txt
 	)
 
@@ -61,7 +61,7 @@ if(NOT SWC_WITHOUT_JAVA AND THRIFT_JAVA_GEN_PATH AND MAVEN_FOUND)
 	)
 	install(
     FILES			 	${CMAKE_CURRENT_BINARY_DIR}/mvn/swcdb/jdbc/thrift/target/classes/THIRD-PARTY.txt
-    DESTINATION share/doc/swcdb/	
+    DESTINATION share/swcdb/	
 		RENAME 			THIRD-PARTY_swcdb-jdbc-thrift-${SWCDB_VERSION}-v${THRIFT_VERSION}-bundled.jar.txt
 	)
 

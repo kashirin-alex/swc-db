@@ -93,5 +93,13 @@ set(swcdb_sources
 ADD_LIB_TARGET(
   NAME      swcdb
   SRCS      ${swcdb_sources}
-  TARGETS   swcdb_core swcdb_core_config swcdb_core_comm
+  TARGETS   ${SWC_LIB_CORE_TARGET}
+            ${SWC_LIB_CORE_CONFIG_TARGET}
+            ${SWC_LIB_CORE_COMM_TARGET}
+  SHARED    ${SWC_LIB_CORE_LIBRARIES_SHARED}
+            ${SWC_LIB_CORE_CONFIG_LIBRARIES_SHARED}
+            ${SWC_LIB_CORE_COMM_LIBRARIES_SHARED}
+  STATIC    ${SWC_LIB_CORE_LIBRARIES_STATIC}
+            ${SWC_LIB_CORE_CONFIG_LIBRARIES_STATIC}
+            ${SWC_LIB_CORE_COMM_LIBRARIES_STATIC}
 )

@@ -145,12 +145,12 @@ class AppContext final : virtual public BrokerIfFactory {
 }}
 
 
-//#ifdef SWC_IMPL_SOURCE
 #include "swcdb/thrift/gen-cpp/Broker.cpp"
+#ifdef SWC_IMPL_SOURCE
 #include "swcdb/thrift/gen-cpp/Service.cpp"
 #include "swcdb/thrift/gen-cpp/Service_types.cpp"
 //#include "swcdb/thrift/Converters.cc"
-//#endif
+#endif
 
 
 #endif // swcdb_app_thriftbroker_AppContext_h

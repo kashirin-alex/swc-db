@@ -16,7 +16,7 @@ set(VERSION_MAJOR "0")
 set(VERSION_MINOR "4")
 set(VERSION_MICRO "15")
 set(VERSION_STRING "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_MICRO}")
-set(VERSION_PATCH ) 
+set(VERSION_PATCH )
 set(VERSION_MISC_SUFFIX  "")
 
 if(VERSION_PATCH)
@@ -28,7 +28,7 @@ endif()
 
 set(SWCDB_VERSION ${VERSION_STRING})
 
-set(SWCDB_COPYRIGHT 
+set(SWCDB_COPYRIGHT
   "# SWC-DB (c) Copyright since 2019 Alex Kashirin <kashirin.alex@gmail.com>\\n"
   "# SWC-DB is free software: you can redistribute it and/or modify\\n"
   "# it under the terms of the GNU General Public License as published by\\n"
@@ -95,6 +95,9 @@ if(SWC_MALLOC_NOT_INSISTENT)
 endif(SWC_MALLOC_NOT_INSISTENT)
 
 
+if(NOT SWC_BUILD_PKG)
+  set(SWC_BUILD_PKG "")
+endif()
 
 # -----------------  OPTIMIZATIONS and BUILD TYPE
 
@@ -122,9 +125,9 @@ else()
   elseif(O_LEVEL MATCHES "[1-2]")
       SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2")
       SET (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O2")
-    
+
     if (O_LEVEL STREQUAL "2")
-    
+
       SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -flto")
       SET (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -flto")
       if (NOT CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
@@ -139,7 +142,7 @@ else()
   elseif(O_LEVEL MATCHES "[3-7]")
     SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
     SET (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3")
-    
+
     if(O_LEVEL MATCHES "[4-7]")
 
       SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -flto")
@@ -166,15 +169,15 @@ else()
         set(LIBS_SHARED_LINKING "STATIC")
       endif ()
     endif ()
-      
+
   endif ()
 
 endif ()
 
 
 
-set(CMAKE_MODULE_PATH 
-  ${CMAKE_SOURCE_DIR}/cmake 
+set(CMAKE_MODULE_PATH
+  ${CMAKE_SOURCE_DIR}/cmake
   ${CMAKE_SOURCE_DIR}/docmake
 )
 
@@ -184,19 +187,19 @@ endif()
 
 set(LOOKUP_LIB_PATHS
   ${LOOKUP_LIB_PATHS}
-  /opt/local/lib 
-  /usr/local/lib  
-  /usr/lib  
-  /lib 
+  /opt/local/lib
+  /usr/local/lib
+  /usr/lib
+  /lib
 )
 
 set(LOOKUP_INCLUDE_PATHS
   ${LOOKUP_INCLUDE_PATHS}
-  /opt/local/include 
-  /usr/local/include 
+  /opt/local/include
+  /usr/local/include
   /usr/local/lib
   /usr/include
-)      
+)
 
 # Utilities on Building
 include(Utils)
@@ -207,19 +210,31 @@ include(PackagesCore)
 # Packages Common
 include(PackagesCommon)
 
-# Packages Common
-include(Doc)
+# Packages Documentations
+if(NOT SWC_BUILD_PKG OR SWC_BUILD_PKG STREQUAL "doc")
+  include(Doc)
+endif()
+
+
+if(NOT SWC_BUILD_PKG OR NOT SWC_BUILD_PKG MATCHES "^lib-(pam|thrift)")
+  find_package(SWCDB)
+endif()
 
 
 add_subdirectory("src")
-add_subdirectory("tests")
-add_subdirectory("examples")
+
+
+if(NOT SWC_BUILD_PKG)
+  add_subdirectory("tests")
+  add_subdirectory("examples")
+endif()
+
 
 install(
-  FILES     README.md  
-            LICENSE  
+  FILES     README.md
+            LICENSE
             NOTICE.md
             COPYING.md
             CHANGELOG.md
-  DESTINATION share/doc/swcdb
+  DESTINATION share/swcdb/${SWC_BUILD_PKG}
 )
