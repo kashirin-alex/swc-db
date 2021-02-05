@@ -2,7 +2,7 @@
 # SWC-DB© Copyright since 2019 Alex Kashirin <kashirin.alex@gmail.com>
 # License details at <https://github.com/kashirin-alex/swc-db/#license>
 
-if(SWC_DOCUMENTATION) 
+if(SWC_DOCUMENTATION)
 
   find_package(Doxygen REQUIRED)
 
@@ -29,10 +29,10 @@ if(SWC_DOCUMENTATION)
   endif ()
 
 
-  add_custom_command(TARGET doc POST_BUILD COMMAND 
+  add_custom_command(TARGET doc POST_BUILD COMMAND
                      XZ_OPT=-e9 tar -cJf swc-db-doc-cpp-html.tar.xz doc/cpp/html/* )
 
-  # add_custom_command(TARGET doc POST_BUILD COMMAND 
+  # add_custom_command(TARGET doc POST_BUILD COMMAND
   #                   XZ_OPT=-e9 tar -cJf swc-db-thirft-html.tar.xz doc/gen-html/* )
 
 

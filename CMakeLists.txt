@@ -213,6 +213,8 @@ set(LOOKUP_INCLUDE_PATHS
   /usr/include
 )
 
+if(NOT SWC_BUILD_PKG OR NOT SWC_BUILD_PKG MATCHES "^(env|doc)")
+
 # Utilities on Building
 include(Utils)
 
@@ -222,13 +224,15 @@ include(PackagesCore)
 # Packages Common
 include(PackagesCommon)
 
+endif()
+
 # Packages Documentations
 if(NOT SWC_BUILD_PKG OR SWC_BUILD_PKG STREQUAL "doc")
   include(Doc)
 endif()
 
 
-if(NOT SWC_BUILD_PKG OR NOT SWC_BUILD_PKG MATCHES "^lib-(pam|thrift)")
+if(NOT SWC_BUILD_PKG OR NOT SWC_BUILD_PKG MATCHES "^(env|doc|(lib-(pam|thrift)))")
   find_package(SWCDB)
 endif()
 
@@ -250,3 +254,8 @@ install(
             CHANGELOG.md
   DESTINATION share/swcdb/${SWC_BUILD_PKG}
 )
+
+
+if(NOT SWC_BUILD_PKG OR SWC_BUILD_PKG STREQUAL "doc")
+  install(DIRECTORY docs DESTINATION share/swcdb/)
+endif()
