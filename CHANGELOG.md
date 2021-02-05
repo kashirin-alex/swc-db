@@ -9,6 +9,16 @@
 
 ### [SWC-DB master](https://github.com/kashirin-alex/swc-db/tree/master) (upcoming-release)
 
+
+
+[_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.4.16...master)
+******
+
+
+
+
+### [SWC-DB v0.4.16](https://github.com/kashirin-alex/swc-db/releases/tag/v0.4.16) (2021-02-05)
+
     added CXX compiler Warning flags: 
         -Wpedantic -Wnon-virtual-dtor -Wcast-align
     added CXX compiler Warning flags with relaxed case of -Wno-error=*:
@@ -40,8 +50,11 @@
     added default Comparator to Specs::Values::add(Condition::Comp=Condition::EQ)
     changed SYS-Columns cids[1-8] to Column::SERIAL, query on value possible
     added Ranger::Range fix duplicate rid MetaData cells (delete & reg. range)
+    added cmake option -DSWC_BUILD_PKG=PKGNAME
+    added cmake & build Definers -DSWC_PATH_{ETC,LOG,RUN}=".."
+    added folder packaging/archlinux/ with the corresponding PKGBUILD folders
 
-[_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.4.15...master)
+[_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.4.15...v0.4.16)
 ******
 
 

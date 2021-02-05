@@ -300,7 +300,7 @@ def push_config(ctx):
 
 def push_config_host(c):
     swcdb_print_start("push_config", c)
-    for dpath, _, filenames in os.walk(swcdb_install_path + "/etc"):
+    for dpath, _, filenames in os.walk(swcdb_cfg["swc.cfg.path"][-1]):
         c.run("mkdir -p " + dpath)
         for fname in filenames:
             c.put(dpath + "/" + fname, dpath + "/" + fname, preserve_mode=True)
