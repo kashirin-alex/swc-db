@@ -35,7 +35,7 @@ Additional detail at [Arch User Repository](https://wiki.archlinux.org/index.php
 pacman -Syu;
 pacman -S git binutils sudo fakeroot;
 ```
-> The README.md in packages describe the use with the user `swcdb_builder`. 
+> The `install_all.sh` and `README.md` in packages describe the use with the user `swcdb_builder`.
 ```
 ## add building user, if required.
 useradd swcdb_builder -g root;
