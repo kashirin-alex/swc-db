@@ -562,11 +562,12 @@ endfunction()
   #   FLAGS         compiler flags
   #   ONLY_STATIC_SHARED TRUE/FALSE - optional
   #   ONLY_SHARED TRUE/FALSE - optional
+  #   SOVERSION     Library SO VERSION 
   # )
 # -------------------------------
 
 function(ADD_LIB_TARGET)
-  cmake_parse_arguments(OPT "ONLY_STATIC_SHARED" "NAME" "SRCS;TARGETS;STATIC;SHARED;FLAGS;FOR;ONLY_SHARED" ${ARGN})
+  cmake_parse_arguments(OPT "ONLY_STATIC_SHARED" "NAME" "SRCS;TARGETS;STATIC;SHARED;FLAGS;FOR;ONLY_SHARED;SOVERSION" ${ARGN})
 
   set(STATIC_LINKING ${OPT_STATIC})
   set(STATIC_TARGETS )
@@ -603,6 +604,10 @@ function(ADD_LIB_TARGET)
   target_compile_options(${OPT_NAME}-shared PRIVATE ${OPT_FLAGS})
   target_link_options(${OPT_NAME}-shared PRIVATE ${OPT_FLAGS})
 
+  if(OPT_SOVERSION)
+    # set_target_properties(${OPT_NAME}-static PROPERTIES SOVERSION ${OPT_SOVERSION})
+    set_target_properties(${OPT_NAME}-shared PROPERTIES SOVERSION ${OPT_SOVERSION})
+  endif()
   
   # SHARED AND STATIC LIBS - WITH STATIC LINKING 
   

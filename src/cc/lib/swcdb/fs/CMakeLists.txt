@@ -160,19 +160,19 @@ if(NOT SWC_BUILD_PKG OR SWC_BUILD_PKG STREQUAL "lib-fs-hadoop")
 ########### HADOOP FILESYSTEM ###########
 
 if(HADOOP_LIBRARIES_SHARED AND PROTOBUF_LIBRARIES_SHARED AND GSASL_LIBRARIES_SHARED)
-  set(haddop_name "hadoop")
-  if(HADOOP_VERSION)
-    set(haddop_name "${haddop_name}_${HADOOP_VERSION}")
-  endif()
+  set(hadoop_name "hadoop")
+  # if(HADOOP_VERSION)
+  #  set(hadoop_name "${hadoop_name}_${HADOOP_VERSION}")
+  # endif()
 
-  set(FILE_SYSTEMS ${FILE_SYSTEMS} ${haddop_name})
+  set(FILE_SYSTEMS ${FILE_SYSTEMS} ${hadoop_name})
   set(swcdb_fsHadoop_sources
     ${SWC_VERSION_SRC}
     Hadoop/FileSystem.cc
   )
 
   ADD_LIB_TARGET(
-    NAME      swcdb_fs_${haddop_name}
+    NAME      swcdb_fs_${hadoop_name}
     SRCS      ${swcdb_fsHadoop_sources}
     TARGETS   ${SWC_LIB_CORE_TARGET}
               ${SWC_LIB_CORE_CONFIG_TARGET}
@@ -189,6 +189,7 @@ if(HADOOP_LIBRARIES_SHARED AND PROTOBUF_LIBRARIES_SHARED AND GSASL_LIBRARIES_SHA
               ${HADOOP_LIBRARIES_STATIC}
               ${PROTOBUF_LIBRARIES_STATIC}
               ${GSASL_LIBRARIES_STATIC}
+    SOVERSION ${HADOOP_VERSION}
   )
 
 

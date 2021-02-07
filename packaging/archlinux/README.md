@@ -41,7 +41,7 @@ pacman -S git binutils sudo fakeroot;
 useradd swcdb_builder -g root;
 passwd swcdb_builder ****;
 ```
-  1. user needs to be with permissions to use/install/upgrade with `pacman -S pkgname` such as (/etc/sudoer group root allow)
+  1. user needs to be with permissions to use/install/upgrade with `pacman -S pkgname` such as (/etc/sudoers group root allow)
   2. `userdel swcdb_builder` if no longer require
 
 

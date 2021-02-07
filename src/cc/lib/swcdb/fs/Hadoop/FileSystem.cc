@@ -7,6 +7,10 @@
 
 #include <iostream>
 
+extern "C" {
+#include <fcntl.h>
+}
+
 #include "hdfspp/config_parser.h"
 
 
