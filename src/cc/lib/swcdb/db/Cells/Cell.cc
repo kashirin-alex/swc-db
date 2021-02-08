@@ -45,13 +45,6 @@ Flag flag_from(const uint8_t* rptr, uint32_t len) noexcept {
   return Flag::NONE;
 }
 
-
-SWC_SHOULD_INLINE
-Cell::Cell() noexcept
-  : own(false), flag(Flag::NONE), control(0),
-    vlen(0), value(nullptr) {
-}
-
 SWC_SHOULD_INLINE
 Cell::Cell(const Cell& other)
   : key(other.key), own(other.vlen), flag(other.flag),
@@ -60,20 +53,6 @@ Cell::Cell(const Cell& other)
     timestamp(other.timestamp),
     revision(other.revision),
     value(_value(other.value)) {
-}
-
-SWC_SHOULD_INLINE
-Cell::Cell(Cell&& other) noexcept
-  : key(std::move(other.key)),
-    own(other.own),
-    flag(other.flag),
-    control(other.control),
-    vlen(other.vlen),
-    timestamp(other.timestamp),
-    revision(other.revision),
-    value(other.value) {
-  other.value = nullptr;
-  other.vlen = 0;
 }
 
 SWC_SHOULD_INLINE
@@ -376,11 +355,6 @@ bool Cell::equal(const Cell& other) const noexcept {
           !memcmp(value, other.value, vlen);
 }
 
-SWC_SHOULD_INLINE
-bool Cell::removal() const noexcept {
-  return flag != Flag::INSERT;
-}
-
 bool Cell::is_removing(const int64_t& rev) const noexcept {
   return rev != AUTO_ASSIGN && removal() && (
     (flag == DELETE  && get_timestamp() >= rev )
@@ -389,23 +363,6 @@ bool Cell::is_removing(const int64_t& rev) const noexcept {
     );
 }
 
-int64_t Cell::get_timestamp() const noexcept {
-  return control & HAVE_TIMESTAMP ? timestamp : AUTO_ASSIGN;
-}
-
-int64_t Cell::get_revision() const noexcept {
-  return control & HAVE_REVISION ? revision
-        : (control & REV_IS_TS ? timestamp : AUTO_ASSIGN );
-}
-
-bool Cell::has_expired(const int64_t ttl) const noexcept {
-  return ttl && control & HAVE_TIMESTAMP && Time::now_ns() >= timestamp + ttl;
-}
-
-SWC_SHOULD_INLINE
-bool Cell::have_encoder() const noexcept {
-  return control & HAVE_ENCODER;
-}
 
 void Cell::display(std::ostream& out,
                    Types::Column typ, uint8_t flags, bool meta) const {

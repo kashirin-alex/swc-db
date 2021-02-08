@@ -25,13 +25,23 @@ class Key final {
 
   typedef std::shared_ptr<Key> Ptr;
 
-  explicit Key(bool own = true) noexcept;
+  SWC_CAN_INLINE
+  explicit Key(bool own = true) noexcept
+              : own(own), count(0), size(0), data(nullptr) {
+  }
 
   explicit Key(const Key& other);
 
   explicit Key(const Key& other, bool own);
 
-  Key(Key&&) noexcept;
+  SWC_CAN_INLINE
+  Key(Key&& other) noexcept
+        : own(other.own), count(other.count), size(other.size),
+          data(other.data) {
+    other.data = nullptr;
+    other.size = 0;
+    other.count = 0;
+  }
 
   Key& operator=(const Key&) = delete;
 
@@ -84,7 +94,10 @@ class Key final {
 
   bool equal(const Key& other) const noexcept;
 
-  bool empty() const noexcept;
+  SWC_CAN_INLINE
+  bool empty() const noexcept {
+    return !count;
+  }
 
   uint32_t encoded_length() const noexcept;
 

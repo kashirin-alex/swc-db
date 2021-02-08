@@ -35,66 +35,160 @@ class Mutable final {
   static Bucket* make_bucket(uint16_t reserve = bucket_size);
 
 
-  class ConstIterator final {
+  struct ConstIterator final {
     const Buckets*            buckets;
-
-    public:
     Buckets::const_iterator   bucket;
     Bucket::const_iterator    item;
 
-    ConstIterator(const Buckets* buckets, size_t offset = 0) noexcept;
+    SWC_CAN_INLINE
+    ConstIterator(const Buckets* buckets, size_t offset = 0) noexcept
+                  : buckets(buckets), bucket(buckets->begin()) {
+      if(offset) {
+        for(; bucket < buckets->end(); ++bucket) {
+          if(offset < (*bucket)->size()) {
+            item = (*bucket)->begin() + offset;
+            break;
+          }
+          offset -= (*bucket)->size();
+        }
+      } else if(bucket < buckets->end()) {
+        item = (*bucket)->begin();
+      }
+    }
 
-    ConstIterator(const ConstIterator& other) noexcept;
+    SWC_CAN_INLINE
+    ConstIterator(const ConstIterator& other) noexcept
+                  : buckets(other.buckets),
+                    bucket(other.bucket), item(other.item) {
+    }
 
-    ConstIterator(const ConstIterator&&) = delete;
+    SWC_CAN_INLINE
+    ConstIterator& operator=(const ConstIterator& other) noexcept {
+      buckets = other.buckets;
+      bucket = other.bucket;
+      item = other.item;
+      return *this;
+    }
 
-    ConstIterator& operator=(const ConstIterator&) noexcept;
+    SWC_CAN_INLINE
+    operator bool() const noexcept {
+      return bucket < buckets->end() && item < (*bucket)->end();
+    }
 
-    //~ConstIterator() { }
-
-    bool avail() const noexcept;
-
-    operator bool() const noexcept;
-
-    void operator++() noexcept;
+    SWC_CAN_INLINE
+    void operator++() noexcept {
+      if(++item == (*bucket)->end() && ++bucket < buckets->end())
+        item = (*bucket)->begin();
+    }
 
   };
 
 
-  class Iterator final {
+  struct Iterator final {
     Buckets*            buckets;
-
-    public:
     Buckets::iterator   bucket;
     Bucket::iterator    item;
 
-    Iterator() noexcept;
+    SWC_CAN_INLINE
+    Iterator() noexcept : buckets(nullptr) { }
 
-    Iterator(Buckets* buckets, size_t offset = 0) noexcept;
+    SWC_CAN_INLINE
+    Iterator(Buckets* buckets, size_t offset = 0) noexcept
+             : buckets(buckets), bucket(buckets->begin()) {
+      if(offset) {
+        for(; bucket < buckets->end(); ++bucket) {
+          if(offset < (*bucket)->size()) {
+            item = (*bucket)->begin() + offset;
+            break;
+          }
+          offset -= (*bucket)->size();
+        }
+      } else if(bucket < buckets->end()) {
+        item = (*bucket)->begin();
+      }
+    }
 
-    Iterator(const Iterator& other) noexcept;
+    SWC_CAN_INLINE
+    Iterator(const Iterator& other) noexcept
+            : buckets(other.buckets), bucket(other.bucket), item(other.item) {
+    }
 
-    Iterator(const Iterator&&) = delete;
+    SWC_CAN_INLINE
+    Iterator& operator=(const Iterator& other) noexcept {
+      buckets = other.buckets;
+      bucket = other.bucket;
+      item = other.item;
+      return *this;
+    }
 
-    Iterator& operator=(const Iterator& other) noexcept;
+    SWC_CAN_INLINE
+    operator bool() const noexcept {
+      return bucket < buckets->end() && item < (*bucket)->end();
+    }
 
-    //~Iterator() { }
+    SWC_CAN_INLINE
+    void operator++() noexcept {
+      if(++item == (*bucket)->end() && ++bucket < buckets->end())
+        item = (*bucket)->begin();
+    }
 
-    operator bool() const noexcept;
+    void insert(Cell* value) {
+      item = (*bucket)->insert(item, value);
 
-    bool avail() const noexcept;
+      if((*bucket)->size() >= bucket_max) {
+        auto offset = item - (*bucket)->begin();
 
-    void operator++() noexcept;
+        auto nbucket = buckets->insert(++bucket, make_bucket());
 
-    bool avail_begin() const noexcept;
+        auto it_b = (*(bucket = nbucket-1))->begin() + bucket_split;
+        auto it_e = (*bucket)->end();
+        (*nbucket)->assign(it_b, it_e);
+        (*bucket)->erase  (it_b, it_e);
 
-    void operator--() noexcept;
+        if(offset >= bucket_split)
+          item = (*(bucket = nbucket))->begin() + offset - bucket_split;
+      }
+    }
 
-    void insert(Cell* value);
+    void remove() {
+      (*bucket)->erase(item);
+      if((*bucket)->empty() && buckets->size() > 1) {
+        delete *bucket;
+        if((bucket = buckets->erase(bucket)) != buckets->end())
+          item = (*bucket)->begin();
+      } else if(item == (*bucket)->end() && ++bucket < buckets->end()) {
+        item = (*bucket)->begin();
+      }
+    }
 
-    void remove();
+    void remove(size_t number) {
+      while(number) {
+        if(item == (*bucket)->begin() && number >= (*bucket)->size()) {
+          if(buckets->size() == 1) {
+            (*bucket)->clear();
+            item = (*bucket)->end();
+            return;
+          }
+          number -= (*bucket)->size();
+          delete *bucket;
+          bucket = buckets->erase(bucket);
 
-    void remove(size_t number);
+        } else {
+          size_t avail;
+          if((avail = (*bucket)->end() - item) > number) {
+            item = (*bucket)->erase(item, item + number);
+            return;
+          }
+          number -= avail;
+          (*bucket)->erase(item, item + avail);
+          ++bucket;
+        }
+
+        if(bucket == buckets->end())
+          return;
+        item = (*bucket)->begin();
+      }
+    }
 
   };
 
@@ -146,7 +240,7 @@ class Mutable final {
 
   Cell& back() const noexcept;
 
-  Cell& operator[](size_t idx) noexcept;
+  Cell* operator[](size_t idx) noexcept;
 
   bool has_one_key() const noexcept;
 
@@ -252,6 +346,7 @@ class Mutable final {
   size_t                _size;
 
 };
+
 
 
 }}}

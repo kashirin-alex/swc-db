@@ -10,6 +10,7 @@
 #include <memory>
 #include "swcdb/core/Serialization.h"
 #include "swcdb/core/Buffer.h"
+#include "swcdb/core/Time.h"
 
 #include "swcdb/db/Types/Column.h"
 #include "swcdb/db/Types/Encoder.h"
@@ -90,7 +91,11 @@ class Cell final {
   public:
   typedef std::shared_ptr<Cell> Ptr;
 
-  explicit Cell() noexcept;
+  SWC_CAN_INLINE
+  explicit Cell() noexcept
+                : own(false), flag(Flag::NONE), control(0),
+                  vlen(0), value(nullptr) {
+  }
 
   explicit Cell(const Cell& other);
 
@@ -98,7 +103,19 @@ class Cell final {
 
   explicit Cell(const uint8_t** bufp, size_t* remainp, bool own=false);
 
-  Cell(Cell&&) noexcept;
+  SWC_CAN_INLINE
+  Cell(Cell&& other) noexcept
+      : key(std::move(other.key)),
+        own(other.own),
+        flag(other.flag),
+        control(other.control),
+        vlen(other.vlen),
+        timestamp(other.timestamp),
+        revision(other.revision),
+        value(other.value) {
+    other.value = nullptr;
+    other.vlen = 0;
+  }
 
   Cell& operator=(const Cell&) = delete;
 
@@ -154,17 +171,35 @@ class Cell final {
 
   bool equal(const Cell& other) const noexcept;
 
-  bool removal() const noexcept;
+  SWC_CAN_INLINE
+  bool removal() const noexcept {
+    return flag != Flag::INSERT;
+  }
 
   bool is_removing(const int64_t& rev) const noexcept;
 
-  int64_t get_timestamp() const noexcept;
+  SWC_CAN_INLINE
+  int64_t get_timestamp() const noexcept {
+    return control & HAVE_TIMESTAMP ? timestamp : AUTO_ASSIGN;
+  }
 
-  int64_t get_revision() const noexcept;
+  SWC_CAN_INLINE
+  int64_t get_revision() const noexcept {
+    return control & HAVE_REVISION ? revision
+          : (control & REV_IS_TS ? timestamp : AUTO_ASSIGN );
+  }
 
-  bool has_expired(const int64_t ttl) const noexcept;
+  SWC_CAN_INLINE
+  bool has_expired(const int64_t ttl) const noexcept {
+    return ttl &&
+           control & HAVE_TIMESTAMP &&
+           Time::now_ns() >= timestamp + ttl;
+  }
 
-  bool have_encoder() const noexcept;
+  SWC_CAN_INLINE
+  bool have_encoder() const noexcept {
+    return control & HAVE_ENCODER;
+  }
 
   void display(std::ostream& out, Types::Column typ = Types::Column::PLAIN,
                uint8_t flags=0, bool meta=false) const;

@@ -12,21 +12,9 @@ namespace SWC { namespace DB { namespace Cell {
 
 
 SWC_SHOULD_INLINE
-Key::Key(bool own) noexcept : own(own), count(0), size(0), data(nullptr) { }
-
-SWC_SHOULD_INLINE
 Key::Key(const Key& other)
         : own(other.size), count(other.count), size(other.size),
           data(_data(other.data)) {
-}
-
-SWC_SHOULD_INLINE
-Key::Key(Key&& other) noexcept
-        : own(other.own), count(other.count), size(other.size),
-          data(other.data) {
-  other.data = nullptr;
-  other.size = 0;
-  other.count = 0;
 }
 
 SWC_SHOULD_INLINE
@@ -270,19 +258,19 @@ std::string Key::get_string(uint32_t idx) const {
   const char* fraction = nullptr;
   uint32_t length = 0;
   get(idx, &fraction, &length);
-  if(!fraction)
-    length = 0;
   return std::string(fraction, length);
 }
 
 void Key::get(uint32_t idx, const char** fraction, uint32_t* length) const {
-  if(data && ++idx <= count) {
+  if(data && idx < count) {
     const uint8_t* ptr = data;
-    for(; idx ; --idx)
-      ptr += (*length = Serialization::decode_vi24(&ptr));
-    if(!idx) {
-      *fraction = reinterpret_cast<const char*>(ptr) - *length;
-      return;
+    for(uint32_t len; ; --idx, ptr += len) {
+      len = Serialization::decode_vi24(&ptr);
+      if(!idx) {
+        *fraction = reinterpret_cast<const char*>(ptr);
+        *length = len;
+        break;
+      }
     }
   }
 }
@@ -291,11 +279,6 @@ bool Key::equal(const Key& other) const noexcept {
   return count == other.count &&
         ((!data && !other.data) ||
          Condition::eq(data, size, other.data, other.size));
-}
-
-SWC_SHOULD_INLINE
-bool Key::empty() const noexcept {
-  return !count;
 }
 
 uint32_t Key::encoded_length() const noexcept {
