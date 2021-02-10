@@ -42,17 +42,17 @@ class Mutable final {
 
     SWC_CAN_INLINE
     ConstIterator(const Buckets* buckets, size_t offset = 0) noexcept
-                  : buckets(buckets), bucket(buckets->begin()) {
+                  : buckets(buckets), bucket(buckets->cbegin()) {
       if(offset) {
-        for(; bucket < buckets->end(); ++bucket) {
+        for(; bucket < buckets->cend(); ++bucket) {
           if(offset < (*bucket)->size()) {
-            item = (*bucket)->begin() + offset;
+            item = (*bucket)->cbegin() + offset;
             break;
           }
           offset -= (*bucket)->size();
         }
-      } else if(bucket < buckets->end()) {
-        item = (*bucket)->begin();
+      } else if(bucket < buckets->cend()) {
+        item = (*bucket)->cbegin();
       }
     }
 
@@ -72,13 +72,13 @@ class Mutable final {
 
     SWC_CAN_INLINE
     operator bool() const noexcept {
-      return bucket < buckets->end() && item < (*bucket)->end();
+      return bucket < buckets->cend() && item < (*bucket)->cend();
     }
 
     SWC_CAN_INLINE
     void operator++() noexcept {
-      if(++item == (*bucket)->end() && ++bucket < buckets->end())
-        item = (*bucket)->begin();
+      if(++item == (*bucket)->cend() && ++bucket < buckets->cend())
+        item = (*bucket)->cbegin();
     }
 
   };
