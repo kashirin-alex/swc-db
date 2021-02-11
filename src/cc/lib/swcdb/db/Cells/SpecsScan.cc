@@ -19,6 +19,16 @@ Scan::Scan(const uint8_t** bufp, size_t* remainp) {
   decode(bufp, remainp);
 }
 
+Scan::Scan(const Scan& specs)
+          : columns(specs.columns),
+            flags(specs.flags) {
+}
+
+Scan::Scan(Scan&& specs) noexcept
+          : columns(std::move(specs.columns)),
+            flags(specs.flags) {
+}
+
 void Scan::copy(const Scan &other) {
   free();
   columns.resize(other.columns.size());
@@ -26,6 +36,18 @@ void Scan::copy(const Scan &other) {
   for(const auto& col : other.columns)
     columns[i++] = Column::make_ptr(col);
   flags.copy(other.flags);
+}
+
+Scan& Scan::operator=(Scan&& specs) noexcept {
+  columns = std::move(specs.columns);
+  flags.copy(specs.flags);
+  return *this;
+}
+
+Scan& Scan::operator=(const Scan& specs) {
+  columns = specs.columns;
+  flags.copy(specs.flags);
+  return *this;
 }
 
 Scan::~Scan() {

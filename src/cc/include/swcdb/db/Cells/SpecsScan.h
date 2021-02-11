@@ -29,7 +29,15 @@ class Scan final {
 
   explicit Scan(const uint8_t** bufp, size_t* remainp);
 
-  void copy(const Scan &other);
+  explicit Scan(const Scan& specs);
+
+  explicit Scan(Scan&& specs) noexcept;
+
+  void copy(const Scan& other);
+
+  Scan& operator=(const Scan&);
+
+  Scan& operator=(Scan&& specs) noexcept;
 
   ~Scan();
 
