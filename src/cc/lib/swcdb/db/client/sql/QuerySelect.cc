@@ -97,7 +97,8 @@ int QuerySelect::parse_select() {
     return err;
 }
 
-int QuerySelect::parse_dump(std::string& filepath, uint64_t& split_size,
+int QuerySelect::parse_dump(std::string& fs, std::string& filepath,
+                            uint64_t& split_size,
                             std::string& ext, int& level) {
     //dump col='ID|NAME' into 'filepath.ext'
     // where [cells=(Interval Flags) AND];
@@ -137,6 +138,20 @@ int QuerySelect::parse_dump(std::string& filepath, uint64_t& split_size,
       error_msg(Error::SQL_PARSE_ERROR, "missing 'filepath'");
     if(err)
       return err;
+
+    while(remain && !err && found_space());
+    if(found_token("fs", 2)) {
+      while(remain && !err && found_space());
+      expect_eq();
+      if(!err) {
+        while(remain && !err && found_space());
+        read(fs);
+        if(!err && fs.empty())
+          error_msg(Error::SQL_PARSE_ERROR, "missing 'fs' value");
+      }
+      if(err)
+        return err;
+    }
 
     while(remain && !err && found_space());
     if(found_token("split", 5)) {

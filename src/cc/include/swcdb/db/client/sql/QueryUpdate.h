@@ -26,7 +26,7 @@ class QueryUpdate final : public Reader {
 
   int parse_update();
 
-  int parse_load(std::string& filepath, cid_t& cid);
+  int parse_load(std::string& fs, std::string& filepath, cid_t& cid);
 
   void parse_display_flags(uint8_t& display_flags);
 

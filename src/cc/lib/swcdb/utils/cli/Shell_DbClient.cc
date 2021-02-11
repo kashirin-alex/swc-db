@@ -123,10 +123,11 @@ DbClient::DbClient()
   options.push_back(
     new Option(
       "dump",
-      {"dump col='ID|NAME' into 'folder/path/' [FORMAT]",
+      {"dump col='ID|NAME' into 'folder/path/' [FS] [FORMAT]",
       "   where [cells=(Interval Flags) AND .. ] OutputFlags DisplayFlags;",
       "-> dump col='ColName' into 'FolderName' split=1GB ext=zst level=3",
       "     OUTPUT_NO_* TS/VALUE|ENCODE;",
+      "* FS optional: [fs=Type] Write to the specified Type",
       "* FORMAT optional: split=1GB ext=zst level=INT(ext-dependent)",
       },
       [ptr=this](std::string& cmd){return ptr->dump(cmd);},
@@ -137,7 +138,8 @@ DbClient::DbClient()
   options.push_back(
     new Option(
       "load",
-      {"load from 'folder/path/' into col='ID|NAME' DisplayFlags;"},
+      {"load from 'folder/path/' [FS] into col='ID|NAME' DisplayFlags;",
+      "* FS optional: [fs=Type] Read from the specified Type"},
       [ptr=this](std::string& cmd){return ptr->load(cmd);},
       new re2::RE2(
         "(?i)^(load)(\\s+|$)")
@@ -401,14 +403,27 @@ bool DbClient::update(std::string& cmd) {
 // LOAD
 bool DbClient::load(std::string& cmd) {
   int64_t ts = Time::now_ns();
+  DB::Cells::TSV::FileReader reader;
 
-  Env::FsInterface::init(FS::fs_type(
-    Env::Config::settings()->get_str("swc.fs")));
-  DB::Cells::TSV::FileReader reader(Env::FsInterface::interface());
-
+  std::string fs;
   uint8_t display_flags = 0;
   client::SQL::parse_load(
-    err, cmd, reader.base_path, reader.cid, display_flags, reader.message);
+    err, cmd,
+    fs, reader.base_path, reader.cid,
+    display_flags, reader.message);
+  if(err)
+    return error(reader.message);
+
+  FS::Interface::Ptr fs_interface;
+  try {
+    fs_interface.reset(new FS::Interface(FS::fs_type(
+      fs.empty() ? Env::Config::settings()->get_str("swc.fs") : fs)));
+  } catch(...) {
+    const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
+    err = e.code();
+    return error(e.what());
+  }
+  reader.initialize(fs_interface);
   if(err)
     return error(reader.message);
 
@@ -432,18 +447,14 @@ bool DbClient::load(std::string& cmd) {
     return error(reader.message);
   }
 
-  Env::FsInterface::reset();
+  fs_interface = nullptr;
   return true;
 }
 
 // DUMP
 bool DbClient::dump(std::string& cmd) {
   int64_t ts = Time::now_ns();
-
-  Env::FsInterface::init(FS::fs_type(
-    Env::Config::settings()->get_str("swc.fs")));
-  DB::Cells::TSV::FileWriter writer(Env::FsInterface::interface());
-
+  DB::Cells::TSV::FileWriter writer;
   auto req = std::make_shared<client::Query::Select>(
     [&writer] (const client::Query::Select::Result::Ptr& result) {
       writer.write(result);
@@ -452,14 +463,14 @@ bool DbClient::dump(std::string& cmd) {
     true // cb on partial rsp
   );
 
-  uint8_t display_flags = 0;
-  std::string message;
+  std::string fs;
   std::string ext;
   int level = 0;
-  uint64_t split_size = 1073741824;
+  uint8_t display_flags = 0;
+  std::string message;
   client::SQL::parse_dump(
     err, cmd,
-    writer.base_path, split_size, ext, level,
+    fs, writer.base_path, writer.split_size, ext, level,
     req->specs,
     writer.output_flags, display_flags,
     message
@@ -469,7 +480,16 @@ bool DbClient::dump(std::string& cmd) {
   if((err = writer.set_extension(ext, level)))
     return error("Problem with file Extension");
 
-  writer.initialize(split_size);
+  FS::Interface::Ptr fs_interface;
+  try {
+    fs_interface.reset(new FS::Interface(FS::fs_type(
+      fs.empty() ? Env::Config::settings()->get_str("swc.fs") : fs)));
+  } catch(...) {
+    const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
+    err = e.code();
+    return error(e.what());
+  }
+  writer.initialize(fs_interface);
   if((err = writer.err))
     return error(Error::get_text(err));
 
@@ -508,7 +528,7 @@ bool DbClient::dump(std::string& cmd) {
     SWC_LOG_OSTREAM << SWC_PRINT_CLOSE;
   }
 
-  Env::FsInterface::reset();
+  fs_interface = nullptr;
   return err ? error(Error::get_text(err)) : true;
 }
 

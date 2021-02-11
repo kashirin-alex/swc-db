@@ -26,12 +26,13 @@ class FileWriter {
   std::string base_path;
   std::string file_ext = ".tsv";
 
+  uint64_t    split_size = 1073741824;
   uint8_t     output_flags = 0;
   size_t      cells_count = 0;
   size_t      cells_bytes = 0;
   size_t      file_num = 0;
 
-  FileWriter(FS::Interface::Ptr interface) : interface(interface) {}
+  FileWriter() { }
 
   virtual ~FileWriter() { }
 
@@ -53,8 +54,8 @@ class FileWriter {
     return Error::INVALID_ARGUMENT;
   }
 
-  void initialize(uint64_t _split_size) {
-    split_size = _split_size;
+  void initialize(const FS::Interface::Ptr& _interface) {
+    interface = _interface;
     if(base_path.back() != '/')
       base_path.append("/");
     interface->get_fs()->mkdirs(err, base_path);
@@ -270,7 +271,6 @@ class FileWriter {
   std::vector<FS::SmartFd::Ptr>  fds;
   DB::Cells::Result              cells;
   bool                           has_encoder = false;
-  uint64_t                       split_size = 1073741824;
   size_t                         flush_vol = 0;
   std::unordered_map<int64_t, DB::Schema::Ptr>  schemas;
   std::unique_ptr<Core::BufferStreamOut>        _stream;
@@ -282,7 +282,7 @@ class FileWriter {
 class FileReader {
   public:
 
-  int             err = Error::OK;
+  int             err = Error::CANCELLED;
   cid_t           cid = DB::Schema::NO_CID;
   std::string     base_path;
   std::string     message;
@@ -291,11 +291,12 @@ class FileReader {
   size_t          resend_cells = 0;
   size_t          cells_bytes = 0;
 
-  FileReader(FS::Interface::Ptr interface) : interface(interface) {}
+  FileReader() { }
 
   virtual ~FileReader() { }
 
-  void initialize() {
+  void initialize(const FS::Interface::Ptr& _interface) {
+    interface = _interface;
     if(base_path.back() != '/')
       base_path.append("/");
 
@@ -324,14 +325,15 @@ class FileReader {
     fds.reserve(files.size());
     for(auto file : files)
       fds.emplace_back(new FS::SmartFd(base_path + file->name, 0));
-    if(fds.empty())
+    if(fds.empty()) {
       err = ENOENT;
-    else
+    } else {
       schema = Env::Clients::get()->schemas->get(err, cid);
+      err = Error::OK;
+    }
   }
 
   client::Query::Update::Result::Ptr read_and_load() {
-    initialize();
     if(err)
       return nullptr;
 

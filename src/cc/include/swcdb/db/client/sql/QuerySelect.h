@@ -21,8 +21,8 @@ class QuerySelect final : public Reader {
 
   int parse_select();
 
-  int parse_dump(std::string& filepath, uint64_t& split_size,
-                 std::string& ext, int& level);
+  int parse_dump(std::string& fs, std::string& filepath,
+                 uint64_t& split_size, std::string& ext, int& level);
 
   void parse_output_flags(uint8_t& output_flags);
 

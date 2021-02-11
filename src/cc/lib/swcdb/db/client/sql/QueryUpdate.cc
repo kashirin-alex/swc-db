@@ -47,7 +47,8 @@ int QueryUpdate::parse_update() {
     return err;
 }
 
-int QueryUpdate::parse_load(std::string& filepath, cid_t& cid) {
+int QueryUpdate::parse_load(std::string& fs, std::string& filepath,
+                            cid_t& cid) {
     bool token = false;
 
     while(remain && !err && found_space());
@@ -65,6 +66,20 @@ int QueryUpdate::parse_load(std::string& filepath, cid_t& cid) {
       error_msg(Error::SQL_PARSE_ERROR, "missing 'filepath'");
     if(err)
       return err;
+
+    while(remain && !err && found_space());
+    if(found_token("fs", 2)) {
+      while(remain && !err && found_space());
+      expect_eq();
+      if(!err) {
+        while(remain && !err && found_space());
+        read(fs);
+        if(!err && fs.empty())
+          error_msg(Error::SQL_PARSE_ERROR, "missing 'fs' value");
+      }
+      if(err)
+        return err;
+    }
 
     while(remain && !err && found_space());
     expect_token("into", 4, token);

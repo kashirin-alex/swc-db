@@ -122,13 +122,13 @@ void parse_column_schema(int& err, const std::string& sql,
 }
 
 void parse_dump(int& err, const std::string& sql,
-                std::string& filepath, uint64_t& split_size,
-                std::string& ext, int& level,
+                std::string& fs, std::string& filepath,
+                uint64_t& split_size, std::string& ext, int& level,
                 DB::Specs::Scan& specs,
                 uint8_t& output_flags, uint8_t& display_flags,
                 std::string& message) {
   QuerySelect parser(sql, specs, message);
-  err = parser.parse_dump(filepath, split_size, ext, level);
+  err = parser.parse_dump(fs, filepath, split_size, ext, level);
   if(!err)
     parser.parse_output_flags(output_flags);
   if(!err)
@@ -136,12 +136,12 @@ void parse_dump(int& err, const std::string& sql,
 }
 
 void parse_load(int& err, const std::string& sql,
-                std::string& filepath, cid_t& cid,
+                std::string& fs, std::string& filepath, cid_t& cid,
                 uint8_t& display_flags, std::string& message) {
   DB::Cells::MutableMap columns;
   DB::Cells::MutableMap columns_onfractions;
   QueryUpdate parser(sql, columns, columns_onfractions, message);
-  err = parser.parse_load(filepath, cid);
+  err = parser.parse_load(fs, filepath, cid);
   if(!err)
     parser.parse_display_flags(display_flags);
 }

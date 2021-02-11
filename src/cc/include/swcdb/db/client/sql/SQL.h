@@ -72,14 +72,14 @@ void parse_column_schema(int& err, const std::string& sql,
                          DB::Schema::Ptr& schema, std::string& message);
 
 void parse_dump(int& err, const std::string& sql,
-                std::string& filepath, uint64_t& split_size,
-                std::string& ext, int& level,
+                std::string& fs, std::string& filepath,
+                uint64_t& split_size, std::string& ext, int& level,
                 DB::Specs::Scan& specs,
                 uint8_t& output_flags, uint8_t& display_flags,
                 std::string& message);
 
 void parse_load(int& err, const std::string& sql,
-                std::string& filepath, cid_t& cid,
+                std::string& fs, std::string& filepath, cid_t& cid,
                 uint8_t& display_flags, std::string& message);
 
 
@@ -91,7 +91,7 @@ void parse_load(int& err, const std::string& sql,
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/db/client/sql/SQL.cc"
-#endif 
+#endif
 
 
 #endif //swcdb_db_client_SQL_h
