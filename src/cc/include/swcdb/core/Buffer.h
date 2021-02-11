@@ -247,6 +247,16 @@ struct BufferDyn : BufferT {
     other.base = other.ptr = other.mark = nullptr;
   }
 
+  void take_ownership(BufferT& other) SWC_NOEXCEPT {
+    BufferT::_free();
+    BufferT::own = other.own;
+    BufferT::size = other.size;
+    BufferT::base = ptr = mark = other.base;
+    ptr += other.size;
+    other.base = nullptr;
+    other.size = 0;
+  }
+
   value_type*  ptr;
   value_type*  mark;
 };
