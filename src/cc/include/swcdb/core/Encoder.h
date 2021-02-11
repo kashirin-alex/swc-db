@@ -9,7 +9,7 @@
 #include "swcdb/core/Buffer.h"
 
 
-namespace SWC { namespace Core { 
+namespace SWC { namespace Core {
 
 
 //! The SWC-DB Encoder C++ namespace 'SWC::Core::Encoder'
@@ -45,14 +45,15 @@ int from_string_encoding(const std::string& typ) noexcept;
 
 
 
-void decode(int& err, Type encoder, 
-            const uint8_t* src, size_t sz_enc, 
+void decode(int& err, Type encoder,
+            const uint8_t* src, size_t sz_enc,
             uint8_t *dst, size_t sz);
 
-void encode(int& err, Type encoder, 
-            const uint8_t* src, size_t src_sz, 
-            size_t* sz_enc, DynamicBuffer& output, 
-            uint32_t reserve, bool no_plain_out = false);
+void encode(int& err, Type encoder,
+            const uint8_t* src, size_t src_sz,
+            size_t* sz_enc, DynamicBuffer& output,
+            uint32_t reserve,
+            bool no_plain_out=false, bool ok_more=false);
 
 
 
@@ -61,7 +62,7 @@ void encode(int& err, Type encoder,
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/core/Encoder.cc"
-#endif 
+#endif
 
 
 #endif // swcdb_core_Encoder_h

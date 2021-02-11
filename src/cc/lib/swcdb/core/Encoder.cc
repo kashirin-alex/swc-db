@@ -160,7 +160,7 @@ void Encoder::encode(
             int&, Encoder::Type encoder,
             const uint8_t* src, size_t src_sz,
             size_t* sz_enc, DynamicBuffer& output,
-            uint32_t reserve, bool no_plain_out) {
+            uint32_t reserve, bool no_plain_out, bool ok_more) {
 
   switch(encoder) {
     case Encoder::Type::ZLIB: {
@@ -184,7 +184,7 @@ void Encoder::encode(
           *sz_enc = avail_out - strm.avail_out;
       }
       ::deflateReset(&strm);
-      if(*sz_enc && *sz_enc < src_sz) {
+      if(*sz_enc && (ok_more || *sz_enc < src_sz)) {
         output.ptr += *sz_enc;
         return;
       }
@@ -197,7 +197,7 @@ void Encoder::encode(
       snappy::RawCompress(
         reinterpret_cast<const char*>(src), src_sz,
         reinterpret_cast<char*>(output.ptr), sz_enc);
-      if(*sz_enc && *sz_enc < src_sz) {
+      if(*sz_enc && (ok_more || *sz_enc < src_sz)) {
         output.ptr += *sz_enc;
         return;
       }
@@ -214,7 +214,7 @@ void Encoder::encode(
         static_cast<void*>(const_cast<uint8_t*>(src)), src_sz,
         ZSTD_CLEVEL_DEFAULT
       );
-      if(*sz_enc && !ZSTD_isError(*sz_enc) && *sz_enc < src_sz) {
+      if(*sz_enc && !ZSTD_isError(*sz_enc) && (ok_more || *sz_enc < src_sz)) {
         output.ptr += *sz_enc;
         return;
       }
