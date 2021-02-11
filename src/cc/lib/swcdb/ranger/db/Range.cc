@@ -510,7 +510,7 @@ void Range::internal_create(int &err, const CellStore::Writers& w_cellstores) {
   if(err)
     return;
 
-  auto fs = Env::FsInterface::interface();
+  const auto& fs = Env::FsInterface::interface();
   for(auto& cs : w_cellstores) {
     fs->rename(
       err,

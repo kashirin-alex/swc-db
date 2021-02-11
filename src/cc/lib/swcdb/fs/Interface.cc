@@ -116,7 +116,7 @@ FileSystem::Ptr Interface::use_filesystem() {
 }
 
 Interface::Ptr Interface::ptr() noexcept {
-  return this;
+  return shared_from_this();
 }
 
 Interface::~Interface() {
@@ -528,7 +528,7 @@ FsInterface::Ptr FsInterface::get() noexcept {
   return m_env;
 }
 
-FS::Interface::Ptr FsInterface::interface(){
+FS::Interface::Ptr& FsInterface::interface() {
   SWC_ASSERT(m_env);
   return m_env->m_interface;
 }
@@ -545,10 +545,8 @@ void FsInterface::reset() {
 FsInterface::FsInterface(FS::Type typ)
                         : m_interface(new FS::Interface(typ)) {}
 
-FsInterface::~FsInterface(){
-  if(m_interface)
-    delete m_interface;
-}
+FsInterface::~FsInterface() { }
+
 }
 
 } // namespace SWC

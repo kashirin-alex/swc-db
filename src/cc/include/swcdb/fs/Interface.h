@@ -42,10 +42,10 @@ const char  id_split_last = 'g';
 
 /// Interface to FileSystems
 
-class Interface final {
+class Interface final : public std::enable_shared_from_this<Interface> {
   public:
 
-  typedef Interface* Ptr;
+  typedef std::shared_ptr<Interface> Ptr;
 
   Interface(Type typ);
 
@@ -138,7 +138,7 @@ class FsInterface final {
 
   static Ptr get() noexcept;
 
-  static FS::Interface::Ptr interface();
+  static FS::Interface::Ptr& interface();
 
   static FS::FileSystem::Ptr fs();
 

@@ -52,8 +52,8 @@ bool Read::load_trailer(int& err, FS::SmartFd::Ptr& smartfd,
                          uint32_t& blks_idx_count,
                          uint64_t& blks_idx_offset,
                          bool close_after, bool chk_base) {
-  auto fs_if = Env::FsInterface::interface();
-  auto fs = Env::FsInterface::fs();
+  const auto& fs_if = Env::FsInterface::interface();
+  const auto& fs = Env::FsInterface::fs();
 
   bool loaded = false;
   err = Error::OK;
@@ -124,8 +124,8 @@ void Read::load_blocks_index(int& err, FS::SmartFd::Ptr& smartfd,
   uint64_t offset_fixed = 0;
   uint64_t offset;
 
-  auto fs_if = Env::FsInterface::interface();
-  auto fs = Env::FsInterface::fs();
+  const auto& fs_if = Env::FsInterface::interface();
+  const auto& fs = Env::FsInterface::fs();
 
   StaticBuffer read_buf;
   bool trailer = false;

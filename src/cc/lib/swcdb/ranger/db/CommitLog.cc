@@ -393,7 +393,7 @@ Fragment::Ptr Fragments::take_ownership(int &err, Fragment::Ptr& take_frag) {
 
 void Fragments::take_ownership(int& err, Fragments::Vec& frags,
                                          Fragments::Vec& removing) {
-  auto fs_if = Env::FsInterface::interface();
+  const auto& fs_if = Env::FsInterface::interface();
   Fragments::Vec tmp_frags;
   for(auto it = frags.begin(); !stopping && it < frags.end(); ) {
     const std::string filepath(get_log_fragment(next_id()));

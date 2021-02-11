@@ -206,7 +206,7 @@ void Readers::load_from_path(int &err) {
 }
 
 void Readers::replace(int &err, Writers& w_cellstores) {
-  auto fs = Env::FsInterface::interface();
+  const auto& fs = Env::FsInterface::interface();
 
   _close();
 
@@ -259,7 +259,7 @@ void Readers::replace(int &err, Writers& w_cellstores) {
 }
 
 void Readers::move_from(int &err, Readers::Vec& mv_css) {
-  auto fs = Env::FsInterface::interface();
+  const auto& fs = Env::FsInterface::interface();
 
   Vec moved;
   int tmperr;

@@ -62,8 +62,8 @@ void Fragment::load_header(int& err, FS::SmartFd::Ptr& smartfd,
                            size_t& size_plain, size_t& size_enc,
                            uint32_t& cell_revs, uint32_t& cells_count,
                            uint32_t& data_checksum, uint32_t& offset_data) {
-  auto fs_if = Env::FsInterface::interface();
-  auto fs = Env::FsInterface::fs();
+  const auto& fs_if = Env::FsInterface::interface();
+  const auto& fs = Env::FsInterface::fs();
 
   while(err != Error::FS_PATH_NOT_FOUND &&
         err != Error::SERVER_SHUTTING_DOWN) {

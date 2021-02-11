@@ -37,8 +37,8 @@ Read::Ptr Read::make(int& err,
 
 void Read::load_header(int& err, FS::SmartFd::Ptr& smartfd,
                        Header& header) {
-  auto fs_if = Env::FsInterface::interface();
-  auto fs = Env::FsInterface::fs();
+  const auto& fs_if = Env::FsInterface::interface();
+  const auto& fs = Env::FsInterface::fs();
   err = Error::OK;
   while(err != Error::FS_EOF) {
 
