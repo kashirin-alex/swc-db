@@ -4,8 +4,9 @@
  */
 
 
-#include "swcdb/db/client/sql/QuerySelect.h"
 #include "swcdb/core/Time.h"
+#include "swcdb/core/config/Property.h"
+#include "swcdb/db/client/sql/QuerySelect.h"
 #include "swcdb/db/Cells/SpecsValueSerialFields.h"
 
 
@@ -96,8 +97,8 @@ int QuerySelect::parse_select() {
     return err;
 }
 
-int QuerySelect::parse_dump(std::string& filepath) {
-
+int QuerySelect::parse_dump(std::string& filepath, uint64_t& split_size,
+                            std::string& ext, int& level) {
     //dump col='ID|NAME' into 'filepath.ext'
     // where [cells=(Interval Flags) AND];
     bool token_cmd = false;
@@ -137,6 +138,59 @@ int QuerySelect::parse_dump(std::string& filepath) {
     if(err)
       return err;
 
+    while(remain && !err && found_space());
+    if(found_token("split", 5)) {
+      while(remain && !err && found_space());
+      expect_eq();
+      if(!err) {
+        while(remain && !err && found_space());
+        std::string n;
+        read(n);
+        if(!err && n.empty()) {
+          error_msg(Error::SQL_PARSE_ERROR, "missing 'split' value");
+        } else if(!err) {
+          try {
+            int64_t v;
+            Config::Property::from_string(n, &v);
+            split_size = v;
+          } catch(...) {
+            const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
+            error_msg(e.code(), e.what());
+          }
+        }
+      }
+      if(err)
+        return err;
+    }
+
+    while(remain && !err && found_space());
+    if(found_token("ext", 3)) {
+      while(remain && !err && found_space());
+      expect_eq();
+      if(!err) {
+        while(remain && !err && found_space());
+        read(ext);
+        if(!err && ext.empty())
+          error_msg(Error::SQL_PARSE_ERROR, "missing 'ext' value");
+      }
+      if(err)
+        return err;
+    }
+    while(remain && !err && found_space());
+    if(found_token("level", 5)) {
+      while(remain && !err && found_space());
+      expect_eq();
+      if(!err) {
+        while(remain && !err && found_space());
+        uint32_t n;
+        bool was_set;
+        read_uint32_t(n, was_set);
+        if(!err)
+          level = n;
+      }
+      if(err)
+        return err;
+    }
 
     while(remain && !err && found_space());
     if(found_token(TOKEN_WHERE, LEN_WHERE)) {

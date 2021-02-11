@@ -56,9 +56,11 @@ Usage Help:  'command' [options];
                            INSERT_FRACTION|4 DELETE_FRACTION|5 DELETE_FRACTION_VERSION|6
                     * Encoder(ENC): at INSERT with DATA, options: ZLIB|2 SNAPPY|3 ZSTD|4
                     * DATA: PLAIN( val ) COUNTER( -/+/=val ) SERIAL( [ID:TYPE:val, ..] )
-  dump              dump col='ID|NAME' into 'folder/path/'
+  dump              dump col='ID|NAME' into 'folder/path/' [FORMAT]
                        where [cells=(Interval Flags) AND .. ] OutputFlags DisplayFlags;
-                    -> dump col='ColName' into 'FolderName' OUTPUT_NO_* TS/VALUE|ENCODE;
+                    -> dump col='ColName' into 'FolderName' split=1GB ext=zst level=3
+                         OUTPUT_NO_* TS/VALUE|ENCODE;
+                    * FORMAT optional: split=1GB ext=zst level=INT(ext-dependent)
   load              load from 'folder/path/' into col='ID|NAME' DisplayFlags;
 
 SWC-DB(client)>

@@ -122,11 +122,13 @@ void parse_column_schema(int& err, const std::string& sql,
 }
 
 void parse_dump(int& err, const std::string& sql,
-                std::string& filepath, DB::Specs::Scan& specs,
+                std::string& filepath, uint64_t& split_size,
+                std::string& ext, int& level,
+                DB::Specs::Scan& specs,
                 uint8_t& output_flags, uint8_t& display_flags,
                 std::string& message) {
   QuerySelect parser(sql, specs, message);
-  err = parser.parse_dump(filepath);
+  err = parser.parse_dump(filepath, split_size, ext, level);
   if(!err)
     parser.parse_output_flags(output_flags);
   if(!err)

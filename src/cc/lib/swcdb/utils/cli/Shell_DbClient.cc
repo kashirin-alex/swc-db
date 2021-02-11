@@ -123,9 +123,11 @@ DbClient::DbClient()
   options.push_back(
     new Option(
       "dump",
-      {"dump col='ID|NAME' into 'folder/path/' ",
+      {"dump col='ID|NAME' into 'folder/path/' [FORMAT]",
       "   where [cells=(Interval Flags) AND .. ] OutputFlags DisplayFlags;",
-      "-> dump col='ColName' into 'FolderName' OUTPUT_NO_* TS/VALUE|ENCODE;"
+      "-> dump col='ColName' into 'FolderName' split=1GB ext=zst level=3",
+      "     OUTPUT_NO_* TS/VALUE|ENCODE;",
+      "* FORMAT optional: split=1GB ext=zst level=INT(ext-dependent)",
       },
       [ptr=this](std::string& cmd){return ptr->dump(cmd);},
       new re2::RE2(
@@ -452,16 +454,22 @@ bool DbClient::dump(std::string& cmd) {
 
   uint8_t display_flags = 0;
   std::string message;
+  std::string ext;
+  int level = 0;
+  uint64_t split_size = 1073741824;
   client::SQL::parse_dump(
     err, cmd,
-    writer.base_path, req->specs,
+    writer.base_path, split_size, ext, level,
+    req->specs,
     writer.output_flags, display_flags,
     message
   );
   if(err)
     return error(message);
+  if((err = writer.set_extension(ext, level)))
+    return error("Problem with file Extension");
 
-  writer.initialize();
+  writer.initialize(split_size);
   if((err = writer.err))
     return error(Error::get_text(err));
 

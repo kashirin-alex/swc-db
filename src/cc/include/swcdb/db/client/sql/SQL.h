@@ -25,7 +25,7 @@
 #include "swcdb/db/client/sql/QueryUpdate.h"
 
 
-namespace SWC { namespace client { 
+namespace SWC { namespace client {
 
 
 //! The SWC-DB SQL C++ namespace 'SWC::client::SQL'
@@ -45,25 +45,25 @@ enum Cmd : uint8_t {
 
 Cmd recognize_cmd(int& err, const std::string& sql, std::string& message);
 
-void parse_select(int& err, const std::string& sql, 
-                  DB::Specs::Scan& specs, 
+void parse_select(int& err, const std::string& sql,
+                  DB::Specs::Scan& specs,
                   uint8_t& display_flags, std::string& message);
 
-void parse_update(int& err, const std::string& sql, 
-                  DB::Cells::MutableMap& columns, 
-                  DB::Cells::MutableMap& columns_onfractions, 
+void parse_update(int& err, const std::string& sql,
+                  DB::Cells::MutableMap& columns,
+                  DB::Cells::MutableMap& columns_onfractions,
                   uint8_t& display_flags, std::string& message);
 
-void parse_list_columns(int& err, const std::string& sql, 
-                        std::vector<DB::Schema::Ptr>& schemas, 
+void parse_list_columns(int& err, const std::string& sql,
+                        std::vector<DB::Schema::Ptr>& schemas,
                         std::string& message, const char* expect_cmd);
 
-void parse_list_columns(int& err, const std::string& sql, 
-                        std::vector<DB::Schema::Ptr>& schemas, 
+void parse_list_columns(int& err, const std::string& sql,
+                        std::vector<DB::Schema::Ptr>& schemas,
                         Comm::Protocol::Mngr::Params::ColumnListReq& params,
                         std::string& message, const char* expect_cmd);
 
-void parse_column_schema(int& err, const std::string& sql, 
+void parse_column_schema(int& err, const std::string& sql,
                          Comm::Protocol::Mngr::Req::ColumnMng::Func func,
                          DB::Schema::Ptr& schema, std::string& message);
 
@@ -71,13 +71,15 @@ void parse_column_schema(int& err, const std::string& sql,
                          Comm::Protocol::Mngr::Req::ColumnMng::Func* func,
                          DB::Schema::Ptr& schema, std::string& message);
 
-void parse_dump(int& err, const std::string& sql, 
-                std::string& filepath, DB::Specs::Scan& specs, 
-                uint8_t& output_flags, uint8_t& display_flags, 
+void parse_dump(int& err, const std::string& sql,
+                std::string& filepath, uint64_t& split_size,
+                std::string& ext, int& level,
+                DB::Specs::Scan& specs,
+                uint8_t& output_flags, uint8_t& display_flags,
                 std::string& message);
 
-void parse_load(int& err, const std::string& sql, 
-                std::string& filepath, cid_t& cid,  
+void parse_load(int& err, const std::string& sql,
+                std::string& filepath, cid_t& cid,
                 uint8_t& display_flags, std::string& message);
 
 

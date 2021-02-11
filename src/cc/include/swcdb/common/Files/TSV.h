@@ -9,7 +9,7 @@
 
 #include <vector>
 
-#include "swcdb/core/Buffer.h"
+#include "swcdb/core/BufferStream.h"
 #include "swcdb/db/Cells/Cell.h"
 
 
@@ -20,17 +20,12 @@ namespace SWC { namespace DB { namespace Cells {
 namespace TSV {
 
 
-std::string get_filepath(const std::string& base_path, size_t& file_num) {
-  std::string filepath(base_path);
-  filepath.append(std::to_string(++file_num));
-  filepath.append(file_num == 1 ? ".tsv" : ".tsv.part");
-  return filepath;
-}
-
 class FileWriter {
   public:
   int         err = Error::OK;
   std::string base_path;
+  std::string file_ext = ".tsv";
+
   uint8_t     output_flags = 0;
   size_t      cells_count = 0;
   size_t      cells_bytes = 0;
@@ -40,15 +35,46 @@ class FileWriter {
 
   virtual ~FileWriter() { }
 
-  void initialize() {
+  int set_extension(const std::string& ext, int level) {
+    if(ext.empty()) {
+      _stream.reset(new Core::BufferStreamOut());
+      return _stream->error;
+    }
+
+    file_ext.append(".");
+    file_ext.append(ext);
+
+    if(ext.length() == 3) {
+      if(!strncmp("zst", ext.c_str(), ext.length())) {
+        _stream.reset(new Core::BufferStreamOut_ZSTD(level));
+        return _stream->error;
+      }
+    }
+    return Error::INVALID_ARGUMENT;
+  }
+
+  void initialize(uint64_t _split_size) {
+    split_size = _split_size;
     if(base_path.back() != '/')
       base_path.append("/");
     interface->get_fs()->mkdirs(err, base_path);
   }
 
   void finalize() {
-    for(auto& s : schemas)
-      write(s.second->col_type);
+    for(auto& s : schemas) {
+      if(!_stream->empty()) {
+        write();
+      } else if(!file_num) { // header-only-file
+        roll_file();
+        if(!err) {
+          write_header(s.second->col_type);
+          if(!err)
+            write();
+        }
+      }
+      if(err)
+        break;
+    }
     close();
   }
 
@@ -70,97 +96,34 @@ class FileWriter {
         cells_count += cells.size();
         cells_bytes += cells.size_bytes();
 
-        buffer.ensure(12582912);
-
-
+        bool need_roll;
         for(auto cell : cells) {
-          write(*cell, col_type);
-          if(buffer.fill() >= 8388608) {
-            write(col_type);
+          need_roll = !smartfd ||
+                      smartfd->pos() + _stream->available() > split_size;
+          if(need_roll) {
+            if(!_stream->empty()) {
+              write();
+              if(err)
+                break;
+            }
+            roll_file();
             if(err)
               break;
-            buffer.ensure(12582912);
+            write_header(col_type);
+          }
+
+          write(*cell, col_type);
+          if(_stream->full()) {
+            write();
+            if(err)
+              break;
           }
         }
       }
     } while(!cells.empty() && !err);
   }
 
-  void write(const Cell &cell, Types::Column typ) {
-    buffer.ensure(8096);
-
-    if(!(output_flags & OutputFlag::NO_TS)) {
-      buffer.add(std::to_string(cell.timestamp));
-      buffer.add('\t'); //
-    }
-
-    uint32_t len = 0;
-    const uint8_t* ptr = cell.key.data;
-    for(uint32_t n=1; n<=cell.key.count; ++n, ptr+=len) {
-      buffer.add(std::to_string((len = Serialization::decode_vi32(&ptr))));
-      if(n < cell.key.count)
-        buffer.add(',');
-    }
-    buffer.add('\t'); //
-
-    ptr = cell.key.data;
-    for(uint32_t n=1; n<=cell.key.count; ++n, ptr+=len) {
-      if((len = Serialization::decode_vi32(&ptr)))
-        buffer.add(ptr, len);
-      if(n < cell.key.count)
-        buffer.add(',');
-    }
-    buffer.add('\t'); //
-
-    buffer.add(DB::Cells::to_string(DB::Cells::Flag(cell.flag)));
-
-    if(output_flags & OutputFlag::NO_VALUE ||
-      cell.flag == Flag::DELETE || cell.flag == Flag::DELETE_VERSION) {
-      buffer.add('\n');
-      return;
-    }
-    buffer.add('\t'); //
-
-    if(Types::is_counter(typ)) {
-      uint8_t op;
-      int64_t eq_rev = TIMESTAMP_NULL;
-      int64_t v = cell.get_counter(op, eq_rev);
-      buffer.add((v > 0 ? "+" : "") + std::to_string(v));
-
-      if(op & OP_EQUAL) {
-        buffer.add('\t'); //
-        buffer.add('=');
-        if(eq_rev != TIMESTAMP_NULL) {
-          buffer.add('\t'); //
-          buffer.add(std::to_string(eq_rev));
-        }
-      }
-    } else {
-
-      buffer.add(cell.control & TS_DESC ? 'D' : 'A');
-      buffer.add('\t'); //
-
-      if(cell.have_encoder() && output_flags & OutputFlag::NO_ENCODE) {
-        StaticBuffer v;
-        cell.get_value(v);
-        buffer.add(std::to_string(v.size));
-        buffer.add('\t');
-        buffer.add(v.base, v.size);
-      } else {
-        buffer.add(std::to_string(cell.vlen));
-        buffer.add('\t');
-        buffer.add(cell.value, cell.vlen);
-        if(cell.have_encoder()) {
-          has_encoder = true;
-          buffer.add(std::string("\t1"));
-        }
-      }
-    }
-
-    buffer.add('\n');
-  }
-
-  void write_header(Types::Column typ, DynamicBuffer& header_buffer) {
+  void write_header(Types::Column typ) {
     std::string header;
 
     if(!(output_flags & OutputFlag::NO_TS))
@@ -177,42 +140,111 @@ class FileWriter {
       header.append("\tENCODER");
 
     header.append("\n");
-    header_buffer.add(header);
+    _stream->add(reinterpret_cast<const uint8_t*>(header.c_str()), header.size());
+    err = _stream->error;
   }
 
-  void write(Types::Column typ) {
+  void write(const Cell &cell, Types::Column typ) {
+    DynamicBuffer cell_buff(8096);
 
-    if(!smartfd || smartfd->pos() + buffer.fill() > 4294967296) {
-      close();
-
-      smartfd = fds.emplace_back(new FS::SmartFd(
-        get_filepath(base_path, file_num),
-        FS::OpenFlags::OPEN_FLAG_OVERWRITE)
-      );
-      while(interface->create(err, smartfd, 0, 0, 0));
-      if(err)
-        return;
-
-      DynamicBuffer header_buffer;
-      write_header(typ, header_buffer);
-      StaticBuffer buff_write(header_buffer);
-      interface->get_fs()->append(err, smartfd, buff_write, FS::Flags::NONE);
-      if(err)
-        return;
-      flush_vol = 0;
+    if(!(output_flags & OutputFlag::NO_TS)) {
+      cell_buff.add(std::to_string(cell.timestamp));
+      cell_buff.add('\t'); //
     }
 
-    if(buffer.fill()) {
-      if((flush_vol += buffer.fill()) > 1073741824) {
-        flush_vol = 0;
+    uint32_t len = 0;
+    const uint8_t* ptr = cell.key.data;
+    for(uint32_t n=1; n<=cell.key.count; ++n, ptr+=len) {
+      cell_buff.add(std::to_string((len = Serialization::decode_vi32(&ptr))));
+      if(n < cell.key.count)
+        cell_buff.add(',');
+    }
+    cell_buff.add('\t'); //
+
+    ptr = cell.key.data;
+    for(uint32_t n=1; n<=cell.key.count; ++n, ptr+=len) {
+      if((len = Serialization::decode_vi32(&ptr)))
+        cell_buff.add(ptr, len);
+      if(n < cell.key.count)
+        cell_buff.add(',');
+    }
+    cell_buff.add('\t'); //
+
+    cell_buff.add(DB::Cells::to_string(DB::Cells::Flag(cell.flag)));
+
+    if(output_flags & OutputFlag::NO_VALUE ||
+      cell.flag == Flag::DELETE || cell.flag == Flag::DELETE_VERSION) {
+      cell_buff.add('\n');
+      return;
+    }
+    cell_buff.add('\t'); //
+
+    if(Types::is_counter(typ)) {
+      uint8_t op;
+      int64_t eq_rev = TIMESTAMP_NULL;
+      int64_t v = cell.get_counter(op, eq_rev);
+      cell_buff.add((v > 0 ? "+" : "") + std::to_string(v));
+
+      if(op & OP_EQUAL) {
+        cell_buff.add('\t'); //
+        cell_buff.add('=');
+        if(eq_rev != TIMESTAMP_NULL) {
+          cell_buff.add('\t'); //
+          cell_buff.add(std::to_string(eq_rev));
+        }
       }
+    } else {
 
-      StaticBuffer buff_write(buffer);
-      interface->get_fs()->append(
-        err, smartfd, buff_write,
-        flush_vol ? FS::Flags::NONE : FS::Flags::FLUSH
-      );
+      cell_buff.add(cell.control & TS_DESC ? 'D' : 'A');
+      cell_buff.add('\t'); //
+
+      if(cell.have_encoder() && output_flags & OutputFlag::NO_ENCODE) {
+        StaticBuffer v;
+        cell.get_value(v);
+        cell_buff.add(std::to_string(v.size));
+        cell_buff.add('\t');
+        cell_buff.add(v.base, v.size);
+      } else {
+        cell_buff.add(std::to_string(cell.vlen));
+        cell_buff.add('\t');
+        cell_buff.add(cell.value, cell.vlen);
+        if(cell.have_encoder()) {
+          has_encoder = true;
+          cell_buff.add(std::string("\t1"));
+        }
+      }
     }
+
+    cell_buff.add('\n');
+    _stream->add(cell_buff.base, cell_buff.fill());
+    err = _stream->error;
+  }
+
+  void roll_file() {
+    close();
+
+    std::string filepath(base_path);
+    filepath.append(std::to_string(++file_num));
+    filepath.append(file_ext);
+    smartfd = fds.emplace_back(
+      new FS::SmartFd(filepath, FS::OpenFlags::OPEN_FLAG_OVERWRITE));
+    while(interface->create(err, smartfd, 0, 0, 0));
+    if(!err)
+      flush_vol = 0;
+  }
+
+  void write() {
+    if((flush_vol += _stream->available()) > 1073741824)
+      flush_vol = 0;
+    StaticBuffer buff_write;
+    _stream->get(buff_write);
+    err = _stream->error;
+    if(err)
+      return;
+    interface->get_fs()->append(
+      err, smartfd, buff_write,
+      flush_vol ? FS::Flags::NONE : FS::Flags::FLUSH
+    );
   }
 
   void get_length(std::vector<FS::SmartFd::Ptr>& files) {
@@ -236,11 +268,12 @@ class FileWriter {
   FS::Interface::Ptr             interface;
   FS::SmartFd::Ptr               smartfd = nullptr;
   std::vector<FS::SmartFd::Ptr>  fds;
-  DynamicBuffer                  buffer;
   DB::Cells::Result              cells;
   bool                           has_encoder = false;
-  std::unordered_map<int64_t, DB::Schema::Ptr>  schemas;
+  uint64_t                       split_size = 1073741824;
   size_t                         flush_vol = 0;
+  std::unordered_map<int64_t, DB::Schema::Ptr>  schemas;
+  std::unique_ptr<Core::BufferStreamOut>        _stream;
 
 };
 
@@ -266,15 +299,31 @@ class FileReader {
     if(base_path.back() != '/')
       base_path.append("/");
 
-    size_t file_num = 0;
-    std::string filepath;
-    do {
-      filepath = get_filepath(base_path, file_num);
-      if(!interface->exists(err, filepath))
-        break;
-      fds.emplace_back(new FS::SmartFd(filepath, 0));
-    } while(!err);
+    FS::DirentList entries;
+    interface->get_fs()->readdir(err, base_path, entries);
+    if(err)
+      return;
 
+    std::vector<FS::Dirent*> files;
+    files.reserve(entries.size());
+    for(auto& entry : entries) {
+      if(entry.is_dir)
+        continue;
+      for(auto it = files.begin(); ; ++it) {
+        if(it == files.end() ||
+           Condition::lt_volume(
+             reinterpret_cast<const uint8_t*>((*it)->name.c_str()),
+             (*it)->name.size(),
+             reinterpret_cast<const uint8_t*>(entry.name.c_str()),
+             entry.name.size() ) ) {
+          files.insert(it, &entry);
+          break;
+        }
+      }
+    }
+    fds.reserve(files.size());
+    for(auto file : files)
+      fds.emplace_back(new FS::SmartFd(base_path + file->name, 0));
     if(fds.empty())
       err = ENOENT;
     else
@@ -307,19 +356,30 @@ class FileReader {
     if(err)
       return;
 
+    auto col = updater->columns->get_col(cid);
+
+    std::unique_ptr<Core::BufferStreamIn> instream;
+    const std::string& path = smartfd->filepath();
+    if(!strncmp("zst", path.c_str()+(path.length()-3), path.length()-3)) {
+      instream.reset(new Core::BufferStreamIn_ZSTD());
+    } else {
+      instream.reset(new Core::BufferStreamIn());
+    }
+    err = instream->error;
+    if(err)
+      return;
+
     size_t offset = 0;
     size_t r_sz;
-
-    auto col = updater->columns->get_col(cid);
     StaticBuffer  buffer;
-    DynamicBuffer buffer_remain;
-    DynamicBuffer buffer_write;
     bool ok;
     size_t cell_pos = 0;
     size_t cell_mark = 0;
     std::vector<std::string> header;
     bool                     has_ts = false;
+    StaticBuffer             buffer_read;
 
+    auto current_bytes = cells_bytes;
     do {
       err = Error::OK;
       if(!smartfd->valid() && !interface->open(err, smartfd) && err)
@@ -327,7 +387,7 @@ class FileReader {
       if(err)
         continue;
 
-      r_sz = length - offset > 8388608 ? 8388608 : length - offset;
+      r_sz = length - offset > 1048576 ? 1048576 : length - offset;
       for(;;) {
         buffer.free();
         err = Error::OK;
@@ -347,17 +407,17 @@ class FileReader {
       if(err)
         break;
       offset += r_sz;
+      instream->add(buffer);
 
-      if(buffer_remain.fill()) {
-        buffer_write.add(buffer_remain.base, buffer_remain.fill());
-        buffer_write.add(buffer.base, buffer.size);
-        buffer_remain.free();
-      } else {
-        buffer_write.set(buffer.base, buffer.size);
+      more_available:
+      if(!instream->get(buffer_read)) {
+        if(offset < length)
+          continue;
+        break;
       }
 
-      const uint8_t* ptr = buffer_write.base;
-      size_t remain = buffer_write.fill();
+      const uint8_t* ptr = buffer_read.base;
+      size_t remain = buffer_read.size;
 
       if(header.empty() &&
          !header_read(&ptr, &remain,  schema->col_type, has_ts, header)) {
@@ -370,44 +430,46 @@ class FileReader {
         break;
       }
 
-      while(remain) {
-        DB::Cells::Cell cell;
-        try {
+      try {
+        while(remain) {
+          DB::Cells::Cell cell;
           cell_mark = remain;
           ok = read(&ptr, &remain, has_ts, schema->col_type, cell);
           cell_pos += cell_mark-remain;
-        } catch(...) {
-          const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
-          message.append(e.message());
-          message.append(", corrupted '");
-          message.append(smartfd->filepath());
-          message.append("' starting at-offset=");
-          message.append(std::to_string(cell_pos));
-          message.append("\n");
-          offset = length;
-          break;
+          if(ok) {
+            col->add(cell);
+            ++cells_count;
+            cells_bytes += cell.encoded_length();
+            if(cells_bytes - current_bytes >= updater->buff_sz) {
+              updater->commit_or_wait(col);
+              current_bytes = cells_bytes;
+            }
+          } else {
+            instream->put_back(ptr, remain);
+            break;
+          }
         }
-        if(ok) {
-          col->add(cell);
-          ++cells_count;
-          cells_bytes += cell.encoded_length();
-          updater->commit_or_wait(col);
-        } else  {
-          buffer_remain.add(ptr, remain);
-          break;
-        }
+        if(!remain)
+          goto more_available;
+      } catch(...) {
+        const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
+        message.append(e.message());
+        message.append(", corrupted '");
+        message.append(smartfd->filepath());
+        message.append("' starting at-offset=");
+        message.append(std::to_string(cell_pos));
+        message.append("\n");
+        offset = length;
+        break;
       }
+      buffer_read.free();
       resend_cells += updater->result->get_resend_count();
-
-      buffer_write.free();
-      buffer.free();
-
     } while(offset < length);
 
     if(smartfd->valid())
       interface->close(err, smartfd);
 
-    if(buffer_remain.fill()) {
+    if(!instream->empty()) {
       message.append("early file end");
       message.append(", corrupted '");
       message.append(smartfd->filepath());
