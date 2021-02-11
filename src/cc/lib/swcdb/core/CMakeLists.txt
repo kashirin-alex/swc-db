@@ -12,6 +12,7 @@ set(swcdb_core_sources
   Logger.cc
   Checksum.cc
   Encoder.cc
+  BufferStream.cc
   FileUtils.cc
   Semaphore.cc
 )
