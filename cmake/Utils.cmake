@@ -365,7 +365,12 @@ function(FIND_LIBS)
       PATHS ${OPT_PATHS} ${LOOKUP_LIB_PATHS} 
     )
     if(FOUND_${lib})
-      set("${OPT_OUTPUT}_SHARED" ${${OPT_OUTPUT}_SHARED} ${FOUND_${lib}})
+      set(real_path)
+      foreach(fpath ${FOUND_${lib}})
+        get_filename_component(tmp ${fpath} REALPATH)
+        set(real_path ${real_path} ${tmp})
+      endforeach()
+      set("${OPT_OUTPUT}_SHARED" ${${OPT_OUTPUT}_SHARED} ${real_path})
     endif()
   endforeach()
 
@@ -401,7 +406,7 @@ function(INSTALL_LIBS)
   foreach(fpath ${OPT_LIBS})
     set(soname )
     if(NOT OPT_ARCHIVE)
-      exec_program(bash ARGS ${CMAKE_MODULE_PATH}/soname.sh ${fpath} 
+      exec_program(bash ARGS ${CMAKE_CURRENT_LIST_DIR}/soname.sh ${fpath} 
                   OUTPUT_VARIABLE SONAME_OUT RETURN_VALUE SONAME_RETURN)
       if (SONAME_RETURN STREQUAL "0")
         set(soname ${SONAME_OUT})
@@ -412,7 +417,7 @@ function(INSTALL_LIBS)
       get_filename_component(soname ${fpath} NAME)
     endif()
     get_filename_component(dir ${fpath} DIRECTORY)
-     
+    
     message("         ${dir}/${soname}")
     configure_file(${dir}/${soname} "${OPT_DEST}/${soname}" COPYONLY)
     install(FILES "${CMAKE_BINARY_DIR}/${OPT_DEST}/${soname}" DESTINATION ${OPT_DEST})
