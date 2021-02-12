@@ -56,13 +56,13 @@ Usage Help:  'command' [options];
                            INSERT_FRACTION|4 DELETE_FRACTION|5 DELETE_FRACTION_VERSION|6
                     * Encoder(ENC): at INSERT with DATA, options: ZLIB|2 SNAPPY|3 ZSTD|4
                     * DATA: PLAIN( val ) COUNTER( -/+/=val ) SERIAL( [ID:TYPE:val, ..] )
-  dump              dump col='ID|NAME' into 'folder/path/' [FS] [FORMAT]
+  dump              dump col='ID|NAME' into [FS] path='folder/path/' [FORMAT]
                        where [cells=(Interval Flags) AND .. ] OutputFlags DisplayFlags;
-                    -> dump col='ColName' into 'FolderName' split=1GB ext=zst level=3
-                         OUTPUT_NO_* TS/VALUE|ENCODE;
+                    -> dump col='ColName' into fs=hadoop_jvm path='FolderName'
+                         split=1GB ext=zst level=6 OUTPUT_NO_* TS/VALUE|ENCODE;
                     * FS optional: [fs=Type] Write to the specified Type
                     * FORMAT optional: split=1GB ext=zst level=INT(ext-dependent)
-  load              load from 'folder/path/' [FS] into col='ID|NAME' DisplayFlags;
+  load              load from [FS] path='folder/path/' into col='ID|NAME' DisplayFlags;
                     * FS optional: [fs=Type] Read from the specified Type
 
 SWC-DB(client)>

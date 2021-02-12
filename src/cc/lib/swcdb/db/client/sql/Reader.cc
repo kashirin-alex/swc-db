@@ -77,15 +77,18 @@ bool Reader::found_comparator(Condition::Comp& comp, bool extended) {
   return false;
 }
 
+void Reader::seek_space() {
+  while(remain && !err && found_space());
+}
 
 void Reader::expect_eq() {
-  while(remain && !err && found_space());
+  seek_space();
   bool eq = false;
   expect_token("=", 1, eq); // ? (not space is eq)
 }
 
 void Reader::expect_comma(bool& comma) {
-  while(remain && !err && found_space());
+  seek_space();
   expect_token(",", 1, comma);
 }
 
@@ -230,7 +233,7 @@ void Reader::read_uint32_t(uint32_t& value, bool& was_set, const char* stop) {
   else
     value = v;
 }
-
+ 
 void Reader::read_int64_t(int64_t& value, bool& was_set, const char* stop) {
   std::string buf;
   read(buf, stop ? stop : "),]");
@@ -286,7 +289,7 @@ DB::Cell::Serial::Value::Type Reader::read_serial_value_type() {
       Error::SQL_PARSE_ERROR, "Not Supported Serial Value Type");
     return DB::Cell::Serial::Value::Type::UNKNOWN;
   }
-  while(remain && !err && found_space());
+  seek_space();
   bool was_set;
   expect_token(":", 1, was_set);
   return typ;
@@ -296,7 +299,7 @@ void Reader::read_key(DB::Cell::Key& key) {
   bool bracket_square = false;
   std::string fraction;
 
-  while(remain && !err && found_space());
+  seek_space();
   expect_token("[", 1, bracket_square);
 
   while(remain && !err) {
@@ -307,7 +310,7 @@ void Reader::read_key(DB::Cell::Key& key) {
     key.add(fraction);
     fraction.clear();
 
-    while(remain && !err && found_space());
+    seek_space();
     if(found_char(','))
       continue;
     break;

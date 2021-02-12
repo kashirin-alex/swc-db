@@ -123,10 +123,10 @@ DbClient::DbClient()
   options.push_back(
     new Option(
       "dump",
-      {"dump col='ID|NAME' into 'folder/path/' [FS] [FORMAT]",
+      {"dump col='ID|NAME' into [FS] path='folder/path/' [FORMAT]",
       "   where [cells=(Interval Flags) AND .. ] OutputFlags DisplayFlags;",
-      "-> dump col='ColName' into 'FolderName' split=1GB ext=zst level=3",
-      "     OUTPUT_NO_* TS/VALUE|ENCODE;",
+      "-> dump col='ColName' into fs=hadoop_jvm path='FolderName' ",
+      "     split=1GB ext=zst level=6 OUTPUT_NO_* TS/VALUE|ENCODE;",
       "* FS optional: [fs=Type] Write to the specified Type",
       "* FORMAT optional: split=1GB ext=zst level=INT(ext-dependent)",
       },
@@ -138,7 +138,7 @@ DbClient::DbClient()
   options.push_back(
     new Option(
       "load",
-      {"load from 'folder/path/' [FS] into col='ID|NAME' DisplayFlags;",
+      {"load from [FS] path='folder/path/' into col='ID|NAME' DisplayFlags;",
       "* FS optional: [fs=Type] Read from the specified Type"},
       [ptr=this](std::string& cmd){return ptr->load(cmd);},
       new re2::RE2(
@@ -424,6 +424,7 @@ bool DbClient::load(std::string& cmd) {
     return error(e.what());
   }
   reader.initialize(fs_interface);
+  err = reader.err;
   if(err)
     return error(reader.message);
 

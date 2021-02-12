@@ -296,6 +296,7 @@ class FileReader {
   virtual ~FileReader() { }
 
   void initialize(const FS::Interface::Ptr& _interface) {
+    err = Error::OK;
     interface = _interface;
     if(base_path.back() != '/')
       base_path.append("/");
@@ -329,7 +330,6 @@ class FileReader {
       err = ENOENT;
     } else {
       schema = Env::Clients::get()->schemas->get(err, cid);
-      err = Error::OK;
     }
   }
 

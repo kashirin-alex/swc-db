@@ -46,6 +46,8 @@ class Reader {
 
   bool found_comparator(Condition::Comp& comp, bool extended=false);
 
+  void seek_space();
+
   void expect_eq();
 
   void expect_comma(bool& comma);
@@ -72,7 +74,7 @@ class Reader {
 
   void read_uint32_t(uint32_t& value, bool& was_set,
                      const char* stop=nullptr);
-
+ 
   void read_int64_t(int64_t& value, bool& was_set,
                     const char* stop=nullptr);
 
