@@ -37,7 +37,7 @@ ${SWCDB_INSTALL_PATH}/bin/swcdb_load_generator -l=warn \
 
 
 ## DUMP 1st sample
-do_test echo "dump col='test-shell-dbclient-1' into 'dumps/dbclient/' DISPLAY_STATS; quit;" | \
+do_test echo "dump col='test-shell-dbclient-1' into path='dumps/dbclient/' DISPLAY_STATS; quit;" | \
 				${SWCDB_INSTALL_PATH}/bin/swcdb shell --debug --swc.cfg.path=${SWCDB_SOURCE_PATH}/;
 
 
@@ -45,12 +45,12 @@ do_test echo "dump col='test-shell-dbclient-1' into 'dumps/dbclient/' DISPLAY_ST
 do_test echo "create column(name='test-shell-dbclient_load'); quit;" | \
 				${SWCDB_INSTALL_PATH}/bin/swcdb shell --debug --swc.cfg.path=${SWCDB_SOURCE_PATH}/;
 
-do_test echo "load from 'dumps/dbclient/' into col='test-shell-dbclient_load' DISPLAY_STATS; quit;" | \
+do_test echo "load from path='dumps/dbclient/' into col='test-shell-dbclient_load' DISPLAY_STATS; quit;" | \
 				${SWCDB_INSTALL_PATH}/bin/swcdb shell --debug --swc.cfg.path=${SWCDB_SOURCE_PATH}/;
 
 
 ## DUMP 2nd sample
-do_test echo "dump col='test-shell-dbclient_load' into 'dumps/dbclient_afterload/' DISPLAY_STATS; quit;" | \
+do_test echo "dump col='test-shell-dbclient_load' into path='dumps/dbclient_afterload/' DISPLAY_STATS; quit;" | \
 				${SWCDB_INSTALL_PATH}/bin/swcdb shell --debug --swc.cfg.path=${SWCDB_SOURCE_PATH}/;
 
 

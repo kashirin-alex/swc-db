@@ -100,8 +100,6 @@ int QuerySelect::parse_select() {
 int QuerySelect::parse_dump(std::string& fs, std::string& filepath,
                             uint64_t& split_size,
                             std::string& ext, int& level) {
-  //dump col='ID|NAME' into 'filepath.ext'
-  // where [cells=(Interval Flags) AND];
   bool token_cmd = false;
   bool token_col = false;
 

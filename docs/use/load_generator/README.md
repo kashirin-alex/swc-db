@@ -188,7 +188,7 @@ SWC-DB(client)>
 ```
 
 ```text
-dump col='load_generator-1' into 'dump/test1/' DISPLAY_STATS;
+dump col='load_generator-1' into path='dump/test1/' DISPLAY_STATS;
 
 
 Statistics:
@@ -210,7 +210,7 @@ SWC-DB(client)>
 ```
 
 ```text
-SWC-DB(client)> load from 'dump/test1/' into col='load_generator-1' DISPLAY_STATS;
+SWC-DB(client)> load from path 'dump/test1/' into col='load_generator-1' DISPLAY_STATS;
 
 
 Statistics:
