@@ -31,7 +31,7 @@ sort: 3
 |USE_HOARD| use libhoard | ON/OFF | OFF |
 |USE_MIMALLOC| use libmimalloc | ON/OFF | OFF |
 |USE_TCMALLOC| use libtcmalloc | ON/OFF | OFF(default libtcmalloc_minimal or USE_GLIBC_MALLOC) |
-|SWC_LANGUAGES| require to build with support of listed languages  | ANY / applicable CSV: py2,py3,pypy2,pypy3,java,netstd,c_glib | any possible |
+|SWC_LANGUAGES| require to build with support of listed languages  | NONE or ANY / applicable CSV: py2,py3,pypy2,pypy3,java,netstd,c_glib | any possible |
 |SWC_BUILTIN_FS| builtin filesystems (impl./prelinked without use of dynamic linking loader), suggested=local,broker | applicable CSV: local,broker,hadoop_jvm,hadoop,ceph | any possible |
 |SWC_DEFAULT_ENCODER| the encoder to use for default config value | PLAIN/ZLIB/SNAPPY/ZSTD | ZSTD |
 |SWC_BUILD_PKG| Build only the specified package | _Environment:_ <br/> * env  <br/> * doc  <br/> _Libraries:_ <br/> * lib-core <br/>   * lib <br/>   * lib-fs <br/>   * lib-fs-local <br/>   * lib-fs-broker <br/>   * lib-fs-ceph <br/>   * lib-fs-hadoop <br/>   * lib-fs-hadoop-jvm <br/>   * lib-thrift <br/>   * lib-thrift-c <br/>   * pam-max-retries <br/>  _Applications:_ <br/>   * manager <br/>   * ranger <br/>   * fsbroker <br/>   * thiriftbroker <br/>   * utils | NONE(build-all) |
