@@ -519,7 +519,9 @@ class Exception : public ::apache::thrift::TException {
 
   Exception(const Exception&);
   Exception& operator=(const Exception&);
-  Exception() : code(0), message() {
+  Exception() noexcept
+            : code(0),
+              message() {
   }
 
   virtual ~Exception() noexcept;
@@ -557,7 +559,7 @@ class Exception : public ::apache::thrift::TException {
 
   virtual void printTo(std::ostream& out) const;
   mutable std::string thriftTExceptionMessageHolder_;
-  const char* what() const noexcept;
+  const char* what() const noexcept override;
 };
 
 void swap(Exception &a, Exception &b);
@@ -593,7 +595,24 @@ class Schema : public virtual ::apache::thrift::TBase {
 
   Schema(const Schema&);
   Schema& operator=(const Schema&);
-  Schema() : cid(0), col_name(), col_seq((KeySeq::type)0), col_type((ColumnType::type)0), cell_versions(0), cell_ttl(0), blk_encoding((EncodingType::type)0), blk_size(0), blk_cells(0), cs_replication(0), cs_size(0), cs_max(0), log_rollout_ratio(0), log_compact_cointervaling(0), log_fragment_preload(0), compact_percent(0), revision(0) {
+  Schema() noexcept
+         : cid(0),
+           col_name(),
+           col_seq(static_cast<KeySeq::type>(0)),
+           col_type(static_cast<ColumnType::type>(0)),
+           cell_versions(0),
+           cell_ttl(0),
+           blk_encoding(static_cast<EncodingType::type>(0)),
+           blk_size(0),
+           blk_cells(0),
+           cs_replication(0),
+           cs_size(0),
+           cs_max(0),
+           log_rollout_ratio(0),
+           log_compact_cointervaling(0),
+           log_fragment_preload(0),
+           compact_percent(0),
+           revision(0) {
   }
 
   virtual ~Schema() noexcept;
@@ -786,8 +805,8 @@ class Schema : public virtual ::apache::thrift::TBase {
 
   bool operator < (const Schema & ) const;
 
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
 
   virtual void printTo(std::ostream& out) const;
 };
@@ -810,7 +829,9 @@ class SchemaPattern : public virtual ::apache::thrift::TBase {
 
   SchemaPattern(const SchemaPattern&);
   SchemaPattern& operator=(const SchemaPattern&);
-  SchemaPattern() : comp((Comp::type)0), value() {
+  SchemaPattern() noexcept
+                : comp(static_cast<Comp::type>(0)),
+                  value() {
   }
 
   virtual ~SchemaPattern() noexcept;
@@ -845,8 +866,8 @@ class SchemaPattern : public virtual ::apache::thrift::TBase {
 
   bool operator < (const SchemaPattern & ) const;
 
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
 
   virtual void printTo(std::ostream& out) const;
 };
@@ -870,7 +891,7 @@ class SpecSchemas : public virtual ::apache::thrift::TBase {
 
   SpecSchemas(const SpecSchemas&);
   SpecSchemas& operator=(const SpecSchemas&);
-  SpecSchemas() {
+  SpecSchemas() noexcept {
   }
 
   virtual ~SpecSchemas() noexcept;
@@ -911,8 +932,8 @@ class SpecSchemas : public virtual ::apache::thrift::TBase {
 
   bool operator < (const SpecSchemas & ) const;
 
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
 
   virtual void printTo(std::ostream& out) const;
 };
@@ -936,9 +957,14 @@ typedef struct _SpecFlags__isset {
 class SpecFlags : public virtual ::apache::thrift::TBase {
  public:
 
-  SpecFlags(const SpecFlags&);
-  SpecFlags& operator=(const SpecFlags&);
-  SpecFlags() : limit(0), offset(0), max_versions(0), max_buffer(0), options(0) {
+  SpecFlags(const SpecFlags&) noexcept;
+  SpecFlags& operator=(const SpecFlags&) noexcept;
+  SpecFlags() noexcept
+            : limit(0),
+              offset(0),
+              max_versions(0),
+              max_buffer(0),
+              options(0) {
   }
 
   virtual ~SpecFlags() noexcept;
@@ -1005,8 +1031,8 @@ class SpecFlags : public virtual ::apache::thrift::TBase {
 
   bool operator < (const SpecFlags & ) const;
 
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
 
   virtual void printTo(std::ostream& out) const;
 };
@@ -1029,7 +1055,9 @@ class SpecFraction : public virtual ::apache::thrift::TBase {
 
   SpecFraction(const SpecFraction&);
   SpecFraction& operator=(const SpecFraction&);
-  SpecFraction() : comp((Comp::type)0), f() {
+  SpecFraction() noexcept
+               : comp(static_cast<Comp::type>(0)),
+                 f() {
   }
 
   virtual ~SpecFraction() noexcept;
@@ -1064,8 +1092,8 @@ class SpecFraction : public virtual ::apache::thrift::TBase {
 
   bool operator < (const SpecFraction & ) const;
 
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
 
   virtual void printTo(std::ostream& out) const;
 };
@@ -1086,9 +1114,11 @@ typedef struct _SpecTimestamp__isset {
 class SpecTimestamp : public virtual ::apache::thrift::TBase {
  public:
 
-  SpecTimestamp(const SpecTimestamp&);
-  SpecTimestamp& operator=(const SpecTimestamp&);
-  SpecTimestamp() : comp((Comp::type)0), ts(0) {
+  SpecTimestamp(const SpecTimestamp&) noexcept;
+  SpecTimestamp& operator=(const SpecTimestamp&) noexcept;
+  SpecTimestamp() noexcept
+                : comp(static_cast<Comp::type>(0)),
+                  ts(0) {
   }
 
   virtual ~SpecTimestamp() noexcept;
@@ -1123,8 +1153,8 @@ class SpecTimestamp : public virtual ::apache::thrift::TBase {
 
   bool operator < (const SpecTimestamp & ) const;
 
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
 
   virtual void printTo(std::ostream& out) const;
 };
@@ -1147,7 +1177,7 @@ class SpecKeyInterval : public virtual ::apache::thrift::TBase {
 
   SpecKeyInterval(const SpecKeyInterval&);
   SpecKeyInterval& operator=(const SpecKeyInterval&);
-  SpecKeyInterval() {
+  SpecKeyInterval() noexcept {
   }
 
   virtual ~SpecKeyInterval() noexcept;
@@ -1180,8 +1210,8 @@ class SpecKeyInterval : public virtual ::apache::thrift::TBase {
 
   bool operator < (const SpecKeyInterval & ) const;
 
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
 
   virtual void printTo(std::ostream& out) const;
 };
@@ -1204,7 +1234,9 @@ class SpecValue : public virtual ::apache::thrift::TBase {
 
   SpecValue(const SpecValue&);
   SpecValue& operator=(const SpecValue&);
-  SpecValue() : comp((Comp::type)0), v() {
+  SpecValue() noexcept
+            : comp(static_cast<Comp::type>(0)),
+              v() {
   }
 
   virtual ~SpecValue() noexcept;
@@ -1239,8 +1271,8 @@ class SpecValue : public virtual ::apache::thrift::TBase {
 
   bool operator < (const SpecValue & ) const;
 
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
 
   virtual void printTo(std::ostream& out) const;
 };
@@ -1271,7 +1303,8 @@ class SpecInterval : public virtual ::apache::thrift::TBase {
 
   SpecInterval(const SpecInterval&);
   SpecInterval& operator=(const SpecInterval&);
-  SpecInterval() : offset_rev(0) {
+  SpecInterval() noexcept
+               : offset_rev(0) {
   }
 
   virtual ~SpecInterval() noexcept;
@@ -1376,8 +1409,8 @@ class SpecInterval : public virtual ::apache::thrift::TBase {
 
   bool operator < (const SpecInterval & ) const;
 
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
 
   virtual void printTo(std::ostream& out) const;
 };
@@ -1400,7 +1433,8 @@ class SpecColumn : public virtual ::apache::thrift::TBase {
 
   SpecColumn(const SpecColumn&);
   SpecColumn& operator=(const SpecColumn&);
-  SpecColumn() : cid(0) {
+  SpecColumn() noexcept
+             : cid(0) {
   }
 
   virtual ~SpecColumn() noexcept;
@@ -1433,8 +1467,8 @@ class SpecColumn : public virtual ::apache::thrift::TBase {
 
   bool operator < (const SpecColumn & ) const;
 
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
 
   virtual void printTo(std::ostream& out) const;
 };
@@ -1455,9 +1489,11 @@ typedef struct _SpecValueSerial_INT64__isset {
 class SpecValueSerial_INT64 : public virtual ::apache::thrift::TBase {
  public:
 
-  SpecValueSerial_INT64(const SpecValueSerial_INT64&);
-  SpecValueSerial_INT64& operator=(const SpecValueSerial_INT64&);
-  SpecValueSerial_INT64() : comp((Comp::type)0), v(0) {
+  SpecValueSerial_INT64(const SpecValueSerial_INT64&) noexcept;
+  SpecValueSerial_INT64& operator=(const SpecValueSerial_INT64&) noexcept;
+  SpecValueSerial_INT64() noexcept
+                        : comp(static_cast<Comp::type>(0)),
+                          v(0) {
   }
 
   virtual ~SpecValueSerial_INT64() noexcept;
@@ -1492,8 +1528,8 @@ class SpecValueSerial_INT64 : public virtual ::apache::thrift::TBase {
 
   bool operator < (const SpecValueSerial_INT64 & ) const;
 
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
 
   virtual void printTo(std::ostream& out) const;
 };
@@ -1514,9 +1550,11 @@ typedef struct _SpecValueSerial_DOUBLE__isset {
 class SpecValueSerial_DOUBLE : public virtual ::apache::thrift::TBase {
  public:
 
-  SpecValueSerial_DOUBLE(const SpecValueSerial_DOUBLE&);
-  SpecValueSerial_DOUBLE& operator=(const SpecValueSerial_DOUBLE&);
-  SpecValueSerial_DOUBLE() : comp((Comp::type)0), v(0) {
+  SpecValueSerial_DOUBLE(const SpecValueSerial_DOUBLE&) noexcept;
+  SpecValueSerial_DOUBLE& operator=(const SpecValueSerial_DOUBLE&) noexcept;
+  SpecValueSerial_DOUBLE() noexcept
+                         : comp(static_cast<Comp::type>(0)),
+                           v(0) {
   }
 
   virtual ~SpecValueSerial_DOUBLE() noexcept;
@@ -1551,8 +1589,8 @@ class SpecValueSerial_DOUBLE : public virtual ::apache::thrift::TBase {
 
   bool operator < (const SpecValueSerial_DOUBLE & ) const;
 
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
 
   virtual void printTo(std::ostream& out) const;
 };
@@ -1575,7 +1613,9 @@ class SpecValueSerial_BYTES : public virtual ::apache::thrift::TBase {
 
   SpecValueSerial_BYTES(const SpecValueSerial_BYTES&);
   SpecValueSerial_BYTES& operator=(const SpecValueSerial_BYTES&);
-  SpecValueSerial_BYTES() : comp((Comp::type)0), v() {
+  SpecValueSerial_BYTES() noexcept
+                        : comp(static_cast<Comp::type>(0)),
+                          v() {
   }
 
   virtual ~SpecValueSerial_BYTES() noexcept;
@@ -1610,8 +1650,8 @@ class SpecValueSerial_BYTES : public virtual ::apache::thrift::TBase {
 
   bool operator < (const SpecValueSerial_BYTES & ) const;
 
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
 
   virtual void printTo(std::ostream& out) const;
 };
@@ -1634,7 +1674,8 @@ class SpecValueSerial_KEY : public virtual ::apache::thrift::TBase {
 
   SpecValueSerial_KEY(const SpecValueSerial_KEY&);
   SpecValueSerial_KEY& operator=(const SpecValueSerial_KEY&);
-  SpecValueSerial_KEY() : seq((KeySeq::type)0) {
+  SpecValueSerial_KEY() noexcept
+                      : seq(static_cast<KeySeq::type>(0)) {
   }
 
   virtual ~SpecValueSerial_KEY() noexcept;
@@ -1669,8 +1710,8 @@ class SpecValueSerial_KEY : public virtual ::apache::thrift::TBase {
 
   bool operator < (const SpecValueSerial_KEY & ) const;
 
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
 
   virtual void printTo(std::ostream& out) const;
 };
@@ -1693,7 +1734,8 @@ class SpecValueSerial_LI : public virtual ::apache::thrift::TBase {
 
   SpecValueSerial_LI(const SpecValueSerial_LI&);
   SpecValueSerial_LI& operator=(const SpecValueSerial_LI&);
-  SpecValueSerial_LI() : comp((Comp::type)0) {
+  SpecValueSerial_LI() noexcept
+                     : comp(static_cast<Comp::type>(0)) {
   }
 
   virtual ~SpecValueSerial_LI() noexcept;
@@ -1728,8 +1770,8 @@ class SpecValueSerial_LI : public virtual ::apache::thrift::TBase {
 
   bool operator < (const SpecValueSerial_LI & ) const;
 
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
 
   virtual void printTo(std::ostream& out) const;
 };
@@ -1752,7 +1794,8 @@ class SpecValueSerial_LB : public virtual ::apache::thrift::TBase {
 
   SpecValueSerial_LB(const SpecValueSerial_LB&);
   SpecValueSerial_LB& operator=(const SpecValueSerial_LB&);
-  SpecValueSerial_LB() : comp((Comp::type)0) {
+  SpecValueSerial_LB() noexcept
+                     : comp(static_cast<Comp::type>(0)) {
   }
 
   virtual ~SpecValueSerial_LB() noexcept;
@@ -1787,8 +1830,8 @@ class SpecValueSerial_LB : public virtual ::apache::thrift::TBase {
 
   bool operator < (const SpecValueSerial_LB & ) const;
 
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
 
   virtual void printTo(std::ostream& out) const;
 };
@@ -1813,7 +1856,8 @@ class SpecValueSerialField : public virtual ::apache::thrift::TBase {
 
   SpecValueSerialField(const SpecValueSerialField&);
   SpecValueSerialField& operator=(const SpecValueSerialField&);
-  SpecValueSerialField() : field_id(0) {
+  SpecValueSerialField() noexcept
+                       : field_id(0) {
   }
 
   virtual ~SpecValueSerialField() noexcept;
@@ -1890,8 +1934,8 @@ class SpecValueSerialField : public virtual ::apache::thrift::TBase {
 
   bool operator < (const SpecValueSerialField & ) const;
 
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
 
   virtual void printTo(std::ostream& out) const;
 };
@@ -1914,7 +1958,8 @@ class SpecValueSerial : public virtual ::apache::thrift::TBase {
 
   SpecValueSerial(const SpecValueSerial&);
   SpecValueSerial& operator=(const SpecValueSerial&);
-  SpecValueSerial() : comp((Comp::type)0) {
+  SpecValueSerial() noexcept
+                  : comp(static_cast<Comp::type>(0)) {
   }
 
   virtual ~SpecValueSerial() noexcept;
@@ -1949,8 +1994,8 @@ class SpecValueSerial : public virtual ::apache::thrift::TBase {
 
   bool operator < (const SpecValueSerial & ) const;
 
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
 
   virtual void printTo(std::ostream& out) const;
 };
@@ -1981,7 +2026,8 @@ class SpecIntervalSerial : public virtual ::apache::thrift::TBase {
 
   SpecIntervalSerial(const SpecIntervalSerial&);
   SpecIntervalSerial& operator=(const SpecIntervalSerial&);
-  SpecIntervalSerial() : offset_rev(0) {
+  SpecIntervalSerial() noexcept
+                     : offset_rev(0) {
   }
 
   virtual ~SpecIntervalSerial() noexcept;
@@ -2086,8 +2132,8 @@ class SpecIntervalSerial : public virtual ::apache::thrift::TBase {
 
   bool operator < (const SpecIntervalSerial & ) const;
 
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
 
   virtual void printTo(std::ostream& out) const;
 };
@@ -2110,7 +2156,8 @@ class SpecColumnSerial : public virtual ::apache::thrift::TBase {
 
   SpecColumnSerial(const SpecColumnSerial&);
   SpecColumnSerial& operator=(const SpecColumnSerial&);
-  SpecColumnSerial() : cid(0) {
+  SpecColumnSerial() noexcept
+                   : cid(0) {
   }
 
   virtual ~SpecColumnSerial() noexcept;
@@ -2143,8 +2190,8 @@ class SpecColumnSerial : public virtual ::apache::thrift::TBase {
 
   bool operator < (const SpecColumnSerial & ) const;
 
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
 
   virtual void printTo(std::ostream& out) const;
 };
@@ -2168,7 +2215,7 @@ class SpecScan : public virtual ::apache::thrift::TBase {
 
   SpecScan(const SpecScan&);
   SpecScan& operator=(const SpecScan&);
-  SpecScan() {
+  SpecScan() noexcept {
   }
 
   virtual ~SpecScan() noexcept;
@@ -2211,8 +2258,8 @@ class SpecScan : public virtual ::apache::thrift::TBase {
 
   bool operator < (const SpecScan & ) const;
 
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
 
   virtual void printTo(std::ostream& out) const;
 };
@@ -2239,7 +2286,12 @@ class UCell : public virtual ::apache::thrift::TBase {
 
   UCell(const UCell&);
   UCell& operator=(const UCell&);
-  UCell() : f((Flag::type)0), ts(0), ts_desc(0), v(), encoder((EncodingType::type)0) {
+  UCell() noexcept
+        : f(static_cast<Flag::type>(0)),
+          ts(0),
+          ts_desc(0),
+          v(),
+          encoder(static_cast<EncodingType::type>(0)) {
   }
 
   virtual ~UCell() noexcept;
@@ -2314,8 +2366,8 @@ class UCell : public virtual ::apache::thrift::TBase {
 
   bool operator < (const UCell & ) const;
 
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
 
   virtual void printTo(std::ostream& out) const;
 };
@@ -2343,7 +2395,11 @@ class CellValueSerial : public virtual ::apache::thrift::TBase {
 
   CellValueSerial(const CellValueSerial&);
   CellValueSerial& operator=(const CellValueSerial&);
-  CellValueSerial() : field_id(0), v_int64(0), v_double(0), v_bytes() {
+  CellValueSerial() noexcept
+                  : field_id(0),
+                    v_int64(0),
+                    v_double(0),
+                    v_bytes() {
   }
 
   virtual ~CellValueSerial() noexcept;
@@ -2420,8 +2476,8 @@ class CellValueSerial : public virtual ::apache::thrift::TBase {
 
   bool operator < (const CellValueSerial & ) const;
 
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
 
   virtual void printTo(std::ostream& out) const;
 };
@@ -2448,7 +2504,11 @@ class UCellSerial : public virtual ::apache::thrift::TBase {
 
   UCellSerial(const UCellSerial&);
   UCellSerial& operator=(const UCellSerial&);
-  UCellSerial() : f((Flag::type)0), ts(0), ts_desc(0), encoder((EncodingType::type)0) {
+  UCellSerial() noexcept
+              : f(static_cast<Flag::type>(0)),
+                ts(0),
+                ts_desc(0),
+                encoder(static_cast<EncodingType::type>(0)) {
   }
 
   virtual ~UCellSerial() noexcept;
@@ -2523,8 +2583,8 @@ class UCellSerial : public virtual ::apache::thrift::TBase {
 
   bool operator < (const UCellSerial & ) const;
 
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
 
   virtual void printTo(std::ostream& out) const;
 };
@@ -2549,7 +2609,10 @@ class Cell : public virtual ::apache::thrift::TBase {
 
   Cell(const Cell&);
   Cell& operator=(const Cell&);
-  Cell() : c(), ts(0), v() {
+  Cell() noexcept
+       : c(),
+         ts(0),
+         v() {
   }
 
   virtual ~Cell() noexcept;
@@ -2598,8 +2661,8 @@ class Cell : public virtual ::apache::thrift::TBase {
 
   bool operator < (const Cell & ) const;
 
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
 
   virtual void printTo(std::ostream& out) const;
 };
@@ -2624,7 +2687,9 @@ class CellSerial : public virtual ::apache::thrift::TBase {
 
   CellSerial(const CellSerial&);
   CellSerial& operator=(const CellSerial&);
-  CellSerial() : c(), ts(0) {
+  CellSerial() noexcept
+             : c(),
+               ts(0) {
   }
 
   virtual ~CellSerial() noexcept;
@@ -2673,8 +2738,8 @@ class CellSerial : public virtual ::apache::thrift::TBase {
 
   bool operator < (const CellSerial & ) const;
 
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
 
   virtual void printTo(std::ostream& out) const;
 };
@@ -2697,7 +2762,7 @@ class Cells : public virtual ::apache::thrift::TBase {
 
   Cells(const Cells&);
   Cells& operator=(const Cells&);
-  Cells() {
+  Cells() noexcept {
   }
 
   virtual ~Cells() noexcept;
@@ -2730,8 +2795,8 @@ class Cells : public virtual ::apache::thrift::TBase {
 
   bool operator < (const Cells & ) const;
 
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
 
   virtual void printTo(std::ostream& out) const;
 };
@@ -2755,7 +2820,9 @@ class CCell : public virtual ::apache::thrift::TBase {
 
   CCell(const CCell&);
   CCell& operator=(const CCell&);
-  CCell() : ts(0), v() {
+  CCell() noexcept
+        : ts(0),
+          v() {
   }
 
   virtual ~CCell() noexcept;
@@ -2796,8 +2863,8 @@ class CCell : public virtual ::apache::thrift::TBase {
 
   bool operator < (const CCell & ) const;
 
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
 
   virtual void printTo(std::ostream& out) const;
 };
@@ -2821,7 +2888,8 @@ class CCellSerial : public virtual ::apache::thrift::TBase {
 
   CCellSerial(const CCellSerial&);
   CCellSerial& operator=(const CCellSerial&);
-  CCellSerial() : ts(0) {
+  CCellSerial() noexcept
+              : ts(0) {
   }
 
   virtual ~CCellSerial() noexcept;
@@ -2862,8 +2930,8 @@ class CCellSerial : public virtual ::apache::thrift::TBase {
 
   bool operator < (const CCellSerial & ) const;
 
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
 
   virtual void printTo(std::ostream& out) const;
 };
@@ -2886,7 +2954,7 @@ class ColCells : public virtual ::apache::thrift::TBase {
 
   ColCells(const ColCells&);
   ColCells& operator=(const ColCells&);
-  ColCells() {
+  ColCells() noexcept {
   }
 
   virtual ~ColCells() noexcept;
@@ -2919,8 +2987,8 @@ class ColCells : public virtual ::apache::thrift::TBase {
 
   bool operator < (const ColCells & ) const;
 
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
 
   virtual void printTo(std::ostream& out) const;
 };
@@ -2944,7 +3012,10 @@ class KCell : public virtual ::apache::thrift::TBase {
 
   KCell(const KCell&);
   KCell& operator=(const KCell&);
-  KCell() : c(), ts(0), v() {
+  KCell() noexcept
+        : c(),
+          ts(0),
+          v() {
   }
 
   virtual ~KCell() noexcept;
@@ -2985,8 +3056,8 @@ class KCell : public virtual ::apache::thrift::TBase {
 
   bool operator < (const KCell & ) const;
 
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
 
   virtual void printTo(std::ostream& out) const;
 };
@@ -3010,7 +3081,9 @@ class KCellSerial : public virtual ::apache::thrift::TBase {
 
   KCellSerial(const KCellSerial&);
   KCellSerial& operator=(const KCellSerial&);
-  KCellSerial() : c(), ts(0) {
+  KCellSerial() noexcept
+              : c(),
+                ts(0) {
   }
 
   virtual ~KCellSerial() noexcept;
@@ -3051,8 +3124,8 @@ class KCellSerial : public virtual ::apache::thrift::TBase {
 
   bool operator < (const KCellSerial & ) const;
 
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
 
   virtual void printTo(std::ostream& out) const;
 };
@@ -3076,7 +3149,7 @@ class kCells : public virtual ::apache::thrift::TBase {
 
   kCells(const kCells&);
   kCells& operator=(const kCells&);
-  kCells() {
+  kCells() noexcept {
   }
 
   virtual ~kCells() noexcept;
@@ -3117,8 +3190,8 @@ class kCells : public virtual ::apache::thrift::TBase {
 
   bool operator < (const kCells & ) const;
 
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
 
   virtual void printTo(std::ostream& out) const;
 };
@@ -3142,7 +3215,10 @@ class FCell : public virtual ::apache::thrift::TBase {
 
   FCell(const FCell&);
   FCell& operator=(const FCell&);
-  FCell() : c(), ts(0), v() {
+  FCell() noexcept
+        : c(),
+          ts(0),
+          v() {
   }
 
   virtual ~FCell() noexcept;
@@ -3183,8 +3259,8 @@ class FCell : public virtual ::apache::thrift::TBase {
 
   bool operator < (const FCell & ) const;
 
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
 
   virtual void printTo(std::ostream& out) const;
 };
@@ -3208,7 +3284,9 @@ class FCellSerial : public virtual ::apache::thrift::TBase {
 
   FCellSerial(const FCellSerial&);
   FCellSerial& operator=(const FCellSerial&);
-  FCellSerial() : c(), ts(0) {
+  FCellSerial() noexcept
+              : c(),
+                ts(0) {
   }
 
   virtual ~FCellSerial() noexcept;
@@ -3249,8 +3327,8 @@ class FCellSerial : public virtual ::apache::thrift::TBase {
 
   bool operator < (const FCellSerial & ) const;
 
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
 
   virtual void printTo(std::ostream& out) const;
 };
@@ -3274,7 +3352,7 @@ class FCells : public virtual ::apache::thrift::TBase {
 
   FCells(const FCells&);
   FCells& operator=(const FCells&);
-  FCells() {
+  FCells() noexcept {
   }
 
   virtual ~FCells() noexcept;
@@ -3315,8 +3393,8 @@ class FCells : public virtual ::apache::thrift::TBase {
 
   bool operator < (const FCells & ) const;
 
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
 
   virtual void printTo(std::ostream& out) const;
 };
@@ -3341,7 +3419,7 @@ class CellsGroup : public virtual ::apache::thrift::TBase {
 
   CellsGroup(const CellsGroup&);
   CellsGroup& operator=(const CellsGroup&);
-  CellsGroup() {
+  CellsGroup() noexcept {
   }
 
   virtual ~CellsGroup() noexcept;
@@ -3390,8 +3468,8 @@ class CellsGroup : public virtual ::apache::thrift::TBase {
 
   bool operator < (const CellsGroup & ) const;
 
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
 
   virtual void printTo(std::ostream& out) const;
 };
@@ -3412,9 +3490,11 @@ typedef struct _CompactResult__isset {
 class CompactResult : public virtual ::apache::thrift::TBase {
  public:
 
-  CompactResult(const CompactResult&);
-  CompactResult& operator=(const CompactResult&);
-  CompactResult() : cid(0), err(0) {
+  CompactResult(const CompactResult&) noexcept;
+  CompactResult& operator=(const CompactResult&) noexcept;
+  CompactResult() noexcept
+                : cid(0),
+                  err(0) {
   }
 
   virtual ~CompactResult() noexcept;
@@ -3447,8 +3527,8 @@ class CompactResult : public virtual ::apache::thrift::TBase {
 
   bool operator < (const CompactResult & ) const;
 
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
 
   virtual void printTo(std::ostream& out) const;
 };
@@ -3472,7 +3552,7 @@ class Result : public virtual ::apache::thrift::TBase {
 
   Result(const Result&);
   Result& operator=(const Result&);
-  Result() {
+  Result() noexcept {
   }
 
   virtual ~Result() noexcept;
@@ -3513,8 +3593,8 @@ class Result : public virtual ::apache::thrift::TBase {
 
   bool operator < (const Result & ) const;
 
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
 
   virtual void printTo(std::ostream& out) const;
 };

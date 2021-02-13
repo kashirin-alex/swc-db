@@ -905,7 +905,7 @@ uint32_t Schema::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_I32) {
           int32_t ecast2;
           xfer += iprot->readI32(ecast2);
-          this->col_seq = (KeySeq::type)ecast2;
+          this->col_seq = static_cast<KeySeq::type>(ecast2);
           this->__isset.col_seq = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -915,7 +915,7 @@ uint32_t Schema::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_I32) {
           int32_t ecast3;
           xfer += iprot->readI32(ecast3);
-          this->col_type = (ColumnType::type)ecast3;
+          this->col_type = static_cast<ColumnType::type>(ecast3);
           this->__isset.col_type = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -941,7 +941,7 @@ uint32_t Schema::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_I32) {
           int32_t ecast4;
           xfer += iprot->readI32(ecast4);
-          this->blk_encoding = (EncodingType::type)ecast4;
+          this->blk_encoding = static_cast<EncodingType::type>(ecast4);
           this->__isset.blk_encoding = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -1056,12 +1056,12 @@ uint32_t Schema::write(::apache::thrift::protocol::TProtocol* oprot) const {
   }
   if (this->__isset.col_seq) {
     xfer += oprot->writeFieldBegin("col_seq", ::apache::thrift::protocol::T_I32, 3);
-    xfer += oprot->writeI32((int32_t)this->col_seq);
+    xfer += oprot->writeI32(static_cast<int32_t>(this->col_seq));
     xfer += oprot->writeFieldEnd();
   }
   if (this->__isset.col_type) {
     xfer += oprot->writeFieldBegin("col_type", ::apache::thrift::protocol::T_I32, 4);
-    xfer += oprot->writeI32((int32_t)this->col_type);
+    xfer += oprot->writeI32(static_cast<int32_t>(this->col_type));
     xfer += oprot->writeFieldEnd();
   }
   if (this->__isset.cell_versions) {
@@ -1076,7 +1076,7 @@ uint32_t Schema::write(::apache::thrift::protocol::TProtocol* oprot) const {
   }
   if (this->__isset.blk_encoding) {
     xfer += oprot->writeFieldBegin("blk_encoding", ::apache::thrift::protocol::T_I32, 7);
-    xfer += oprot->writeI32((int32_t)this->blk_encoding);
+    xfer += oprot->writeI32(static_cast<int32_t>(this->blk_encoding));
     xfer += oprot->writeFieldEnd();
   }
   if (this->__isset.blk_size) {
@@ -1264,7 +1264,7 @@ uint32_t SchemaPattern::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_I32) {
           int32_t ecast7;
           xfer += iprot->readI32(ecast7);
-          this->comp = (Comp::type)ecast7;
+          this->comp = static_cast<Comp::type>(ecast7);
           this->__isset.comp = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -1296,7 +1296,7 @@ uint32_t SchemaPattern::write(::apache::thrift::protocol::TProtocol* oprot) cons
   xfer += oprot->writeStructBegin("SchemaPattern");
 
   xfer += oprot->writeFieldBegin("comp", ::apache::thrift::protocol::T_I32, 1);
-  xfer += oprot->writeI32((int32_t)this->comp);
+  xfer += oprot->writeI32(static_cast<int32_t>(this->comp));
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldBegin("value", ::apache::thrift::protocol::T_STRING, 2);
@@ -1680,7 +1680,7 @@ void swap(SpecFlags &a, SpecFlags &b) {
   swap(a.__isset, b.__isset);
 }
 
-SpecFlags::SpecFlags(const SpecFlags& other30) {
+SpecFlags::SpecFlags(const SpecFlags& other30) noexcept {
   limit = other30.limit;
   offset = other30.offset;
   max_versions = other30.max_versions;
@@ -1688,7 +1688,7 @@ SpecFlags::SpecFlags(const SpecFlags& other30) {
   options = other30.options;
   __isset = other30.__isset;
 }
-SpecFlags& SpecFlags::operator=(const SpecFlags& other31) {
+SpecFlags& SpecFlags::operator=(const SpecFlags& other31) noexcept {
   limit = other31.limit;
   offset = other31.offset;
   max_versions = other31.max_versions;
@@ -1752,7 +1752,7 @@ uint32_t SpecFraction::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_I32) {
           int32_t ecast32;
           xfer += iprot->readI32(ecast32);
-          this->comp = (Comp::type)ecast32;
+          this->comp = static_cast<Comp::type>(ecast32);
           this->__isset.comp = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -1784,7 +1784,7 @@ uint32_t SpecFraction::write(::apache::thrift::protocol::TProtocol* oprot) const
   xfer += oprot->writeStructBegin("SpecFraction");
 
   xfer += oprot->writeFieldBegin("comp", ::apache::thrift::protocol::T_I32, 1);
-  xfer += oprot->writeI32((int32_t)this->comp);
+  xfer += oprot->writeI32(static_cast<int32_t>(this->comp));
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldBegin("f", ::apache::thrift::protocol::T_STRING, 2);
@@ -1866,7 +1866,7 @@ uint32_t SpecTimestamp::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_I32) {
           int32_t ecast35;
           xfer += iprot->readI32(ecast35);
-          this->comp = (Comp::type)ecast35;
+          this->comp = static_cast<Comp::type>(ecast35);
           this->__isset.comp = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -1898,7 +1898,7 @@ uint32_t SpecTimestamp::write(::apache::thrift::protocol::TProtocol* oprot) cons
   xfer += oprot->writeStructBegin("SpecTimestamp");
 
   xfer += oprot->writeFieldBegin("comp", ::apache::thrift::protocol::T_I32, 1);
-  xfer += oprot->writeI32((int32_t)this->comp);
+  xfer += oprot->writeI32(static_cast<int32_t>(this->comp));
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldBegin("ts", ::apache::thrift::protocol::T_I64, 2);
@@ -1917,12 +1917,12 @@ void swap(SpecTimestamp &a, SpecTimestamp &b) {
   swap(a.__isset, b.__isset);
 }
 
-SpecTimestamp::SpecTimestamp(const SpecTimestamp& other36) {
+SpecTimestamp::SpecTimestamp(const SpecTimestamp& other36) noexcept {
   comp = other36.comp;
   ts = other36.ts;
   __isset = other36.__isset;
 }
-SpecTimestamp& SpecTimestamp::operator=(const SpecTimestamp& other37) {
+SpecTimestamp& SpecTimestamp::operator=(const SpecTimestamp& other37) noexcept {
   comp = other37.comp;
   ts = other37.ts;
   __isset = other37.__isset;
@@ -2132,7 +2132,7 @@ uint32_t SpecValue::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_I32) {
           int32_t ecast52;
           xfer += iprot->readI32(ecast52);
-          this->comp = (Comp::type)ecast52;
+          this->comp = static_cast<Comp::type>(ecast52);
           this->__isset.comp = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -2164,7 +2164,7 @@ uint32_t SpecValue::write(::apache::thrift::protocol::TProtocol* oprot) const {
   xfer += oprot->writeStructBegin("SpecValue");
 
   xfer += oprot->writeFieldBegin("comp", ::apache::thrift::protocol::T_I32, 1);
-  xfer += oprot->writeI32((int32_t)this->comp);
+  xfer += oprot->writeI32(static_cast<int32_t>(this->comp));
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldBegin("v", ::apache::thrift::protocol::T_STRING, 2);
@@ -2778,7 +2778,7 @@ uint32_t SpecValueSerial_INT64::read(::apache::thrift::protocol::TProtocol* ipro
         if (ftype == ::apache::thrift::protocol::T_I32) {
           int32_t ecast101;
           xfer += iprot->readI32(ecast101);
-          this->comp = (Comp::type)ecast101;
+          this->comp = static_cast<Comp::type>(ecast101);
           this->__isset.comp = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -2810,7 +2810,7 @@ uint32_t SpecValueSerial_INT64::write(::apache::thrift::protocol::TProtocol* opr
   xfer += oprot->writeStructBegin("SpecValueSerial_INT64");
 
   xfer += oprot->writeFieldBegin("comp", ::apache::thrift::protocol::T_I32, 1);
-  xfer += oprot->writeI32((int32_t)this->comp);
+  xfer += oprot->writeI32(static_cast<int32_t>(this->comp));
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldBegin("v", ::apache::thrift::protocol::T_I64, 2);
@@ -2829,12 +2829,12 @@ void swap(SpecValueSerial_INT64 &a, SpecValueSerial_INT64 &b) {
   swap(a.__isset, b.__isset);
 }
 
-SpecValueSerial_INT64::SpecValueSerial_INT64(const SpecValueSerial_INT64& other102) {
+SpecValueSerial_INT64::SpecValueSerial_INT64(const SpecValueSerial_INT64& other102) noexcept {
   comp = other102.comp;
   v = other102.v;
   __isset = other102.__isset;
 }
-SpecValueSerial_INT64& SpecValueSerial_INT64::operator=(const SpecValueSerial_INT64& other103) {
+SpecValueSerial_INT64& SpecValueSerial_INT64::operator=(const SpecValueSerial_INT64& other103) noexcept {
   comp = other103.comp;
   v = other103.v;
   __isset = other103.__isset;
@@ -2892,7 +2892,7 @@ uint32_t SpecValueSerial_DOUBLE::read(::apache::thrift::protocol::TProtocol* ipr
         if (ftype == ::apache::thrift::protocol::T_I32) {
           int32_t ecast104;
           xfer += iprot->readI32(ecast104);
-          this->comp = (Comp::type)ecast104;
+          this->comp = static_cast<Comp::type>(ecast104);
           this->__isset.comp = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -2924,7 +2924,7 @@ uint32_t SpecValueSerial_DOUBLE::write(::apache::thrift::protocol::TProtocol* op
   xfer += oprot->writeStructBegin("SpecValueSerial_DOUBLE");
 
   xfer += oprot->writeFieldBegin("comp", ::apache::thrift::protocol::T_I32, 1);
-  xfer += oprot->writeI32((int32_t)this->comp);
+  xfer += oprot->writeI32(static_cast<int32_t>(this->comp));
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldBegin("v", ::apache::thrift::protocol::T_DOUBLE, 2);
@@ -2943,12 +2943,12 @@ void swap(SpecValueSerial_DOUBLE &a, SpecValueSerial_DOUBLE &b) {
   swap(a.__isset, b.__isset);
 }
 
-SpecValueSerial_DOUBLE::SpecValueSerial_DOUBLE(const SpecValueSerial_DOUBLE& other105) {
+SpecValueSerial_DOUBLE::SpecValueSerial_DOUBLE(const SpecValueSerial_DOUBLE& other105) noexcept {
   comp = other105.comp;
   v = other105.v;
   __isset = other105.__isset;
 }
-SpecValueSerial_DOUBLE& SpecValueSerial_DOUBLE::operator=(const SpecValueSerial_DOUBLE& other106) {
+SpecValueSerial_DOUBLE& SpecValueSerial_DOUBLE::operator=(const SpecValueSerial_DOUBLE& other106) noexcept {
   comp = other106.comp;
   v = other106.v;
   __isset = other106.__isset;
@@ -3006,7 +3006,7 @@ uint32_t SpecValueSerial_BYTES::read(::apache::thrift::protocol::TProtocol* ipro
         if (ftype == ::apache::thrift::protocol::T_I32) {
           int32_t ecast107;
           xfer += iprot->readI32(ecast107);
-          this->comp = (Comp::type)ecast107;
+          this->comp = static_cast<Comp::type>(ecast107);
           this->__isset.comp = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -3038,7 +3038,7 @@ uint32_t SpecValueSerial_BYTES::write(::apache::thrift::protocol::TProtocol* opr
   xfer += oprot->writeStructBegin("SpecValueSerial_BYTES");
 
   xfer += oprot->writeFieldBegin("comp", ::apache::thrift::protocol::T_I32, 1);
-  xfer += oprot->writeI32((int32_t)this->comp);
+  xfer += oprot->writeI32(static_cast<int32_t>(this->comp));
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldBegin("v", ::apache::thrift::protocol::T_STRING, 2);
@@ -3120,7 +3120,7 @@ uint32_t SpecValueSerial_KEY::read(::apache::thrift::protocol::TProtocol* iprot)
         if (ftype == ::apache::thrift::protocol::T_I32) {
           int32_t ecast110;
           xfer += iprot->readI32(ecast110);
-          this->seq = (KeySeq::type)ecast110;
+          this->seq = static_cast<KeySeq::type>(ecast110);
           this->__isset.seq = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -3164,7 +3164,7 @@ uint32_t SpecValueSerial_KEY::write(::apache::thrift::protocol::TProtocol* oprot
   xfer += oprot->writeStructBegin("SpecValueSerial_KEY");
 
   xfer += oprot->writeFieldBegin("seq", ::apache::thrift::protocol::T_I32, 1);
-  xfer += oprot->writeI32((int32_t)this->seq);
+  xfer += oprot->writeI32(static_cast<int32_t>(this->seq));
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldBegin("v", ::apache::thrift::protocol::T_LIST, 2);
@@ -3254,7 +3254,7 @@ uint32_t SpecValueSerial_LI::read(::apache::thrift::protocol::TProtocol* iprot) 
         if (ftype == ::apache::thrift::protocol::T_I32) {
           int32_t ecast119;
           xfer += iprot->readI32(ecast119);
-          this->comp = (Comp::type)ecast119;
+          this->comp = static_cast<Comp::type>(ecast119);
           this->__isset.comp = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -3298,7 +3298,7 @@ uint32_t SpecValueSerial_LI::write(::apache::thrift::protocol::TProtocol* oprot)
   xfer += oprot->writeStructBegin("SpecValueSerial_LI");
 
   xfer += oprot->writeFieldBegin("comp", ::apache::thrift::protocol::T_I32, 1);
-  xfer += oprot->writeI32((int32_t)this->comp);
+  xfer += oprot->writeI32(static_cast<int32_t>(this->comp));
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldBegin("v", ::apache::thrift::protocol::T_LIST, 2);
@@ -3388,7 +3388,7 @@ uint32_t SpecValueSerial_LB::read(::apache::thrift::protocol::TProtocol* iprot) 
         if (ftype == ::apache::thrift::protocol::T_I32) {
           int32_t ecast128;
           xfer += iprot->readI32(ecast128);
-          this->comp = (Comp::type)ecast128;
+          this->comp = static_cast<Comp::type>(ecast128);
           this->__isset.comp = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -3432,7 +3432,7 @@ uint32_t SpecValueSerial_LB::write(::apache::thrift::protocol::TProtocol* oprot)
   xfer += oprot->writeStructBegin("SpecValueSerial_LB");
 
   xfer += oprot->writeFieldBegin("comp", ::apache::thrift::protocol::T_I32, 1);
-  xfer += oprot->writeI32((int32_t)this->comp);
+  xfer += oprot->writeI32(static_cast<int32_t>(this->comp));
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldBegin("v", ::apache::thrift::protocol::T_LIST, 2);
@@ -3738,7 +3738,7 @@ uint32_t SpecValueSerial::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_I32) {
           int32_t ecast139;
           xfer += iprot->readI32(ecast139);
-          this->comp = (Comp::type)ecast139;
+          this->comp = static_cast<Comp::type>(ecast139);
           this->__isset.comp = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -3782,7 +3782,7 @@ uint32_t SpecValueSerial::write(::apache::thrift::protocol::TProtocol* oprot) co
   xfer += oprot->writeStructBegin("SpecValueSerial");
 
   xfer += oprot->writeFieldBegin("comp", ::apache::thrift::protocol::T_I32, 1);
-  xfer += oprot->writeI32((int32_t)this->comp);
+  xfer += oprot->writeI32(static_cast<int32_t>(this->comp));
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldBegin("fields", ::apache::thrift::protocol::T_LIST, 2);
@@ -4597,7 +4597,7 @@ uint32_t UCell::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_I32) {
           int32_t ecast208;
           xfer += iprot->readI32(ecast208);
-          this->f = (Flag::type)ecast208;
+          this->f = static_cast<Flag::type>(ecast208);
           this->__isset.f = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -4651,7 +4651,7 @@ uint32_t UCell::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_I32) {
           int32_t ecast214;
           xfer += iprot->readI32(ecast214);
-          this->encoder = (EncodingType::type)ecast214;
+          this->encoder = static_cast<EncodingType::type>(ecast214);
           this->__isset.encoder = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -4675,7 +4675,7 @@ uint32_t UCell::write(::apache::thrift::protocol::TProtocol* oprot) const {
   xfer += oprot->writeStructBegin("UCell");
 
   xfer += oprot->writeFieldBegin("f", ::apache::thrift::protocol::T_I32, 1);
-  xfer += oprot->writeI32((int32_t)this->f);
+  xfer += oprot->writeI32(static_cast<int32_t>(this->f));
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldBegin("k", ::apache::thrift::protocol::T_LIST, 2);
@@ -4706,7 +4706,7 @@ uint32_t UCell::write(::apache::thrift::protocol::TProtocol* oprot) const {
 
   if (this->__isset.encoder) {
     xfer += oprot->writeFieldBegin("encoder", ::apache::thrift::protocol::T_I32, 6);
-    xfer += oprot->writeI32((int32_t)this->encoder);
+    xfer += oprot->writeI32(static_cast<int32_t>(this->encoder));
     xfer += oprot->writeFieldEnd();
   }
   xfer += oprot->writeFieldStop();
@@ -5095,7 +5095,7 @@ uint32_t UCellSerial::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_I32) {
           int32_t ecast238;
           xfer += iprot->readI32(ecast238);
-          this->f = (Flag::type)ecast238;
+          this->f = static_cast<Flag::type>(ecast238);
           this->__isset.f = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -5161,7 +5161,7 @@ uint32_t UCellSerial::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_I32) {
           int32_t ecast249;
           xfer += iprot->readI32(ecast249);
-          this->encoder = (EncodingType::type)ecast249;
+          this->encoder = static_cast<EncodingType::type>(ecast249);
           this->__isset.encoder = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -5185,7 +5185,7 @@ uint32_t UCellSerial::write(::apache::thrift::protocol::TProtocol* oprot) const 
   xfer += oprot->writeStructBegin("UCellSerial");
 
   xfer += oprot->writeFieldBegin("f", ::apache::thrift::protocol::T_I32, 1);
-  xfer += oprot->writeI32((int32_t)this->f);
+  xfer += oprot->writeI32(static_cast<int32_t>(this->f));
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldBegin("k", ::apache::thrift::protocol::T_LIST, 2);
@@ -5224,7 +5224,7 @@ uint32_t UCellSerial::write(::apache::thrift::protocol::TProtocol* oprot) const 
 
   if (this->__isset.encoder) {
     xfer += oprot->writeFieldBegin("encoder", ::apache::thrift::protocol::T_I32, 6);
-    xfer += oprot->writeI32((int32_t)this->encoder);
+    xfer += oprot->writeI32(static_cast<int32_t>(this->encoder));
     xfer += oprot->writeFieldEnd();
   }
   xfer += oprot->writeFieldStop();
@@ -7511,12 +7511,12 @@ void swap(CompactResult &a, CompactResult &b) {
   swap(a.__isset, b.__isset);
 }
 
-CompactResult::CompactResult(const CompactResult& other404) {
+CompactResult::CompactResult(const CompactResult& other404) noexcept {
   cid = other404.cid;
   err = other404.err;
   __isset = other404.__isset;
 }
-CompactResult& CompactResult::operator=(const CompactResult& other405) {
+CompactResult& CompactResult::operator=(const CompactResult& other405) noexcept {
   cid = other405.cid;
   err = other405.err;
   __isset = other405.__isset;

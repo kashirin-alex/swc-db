@@ -203,17 +203,17 @@ class ServiceIfFactory {
 
   virtual ServiceIf* getHandler(const ::apache::thrift::TConnectionInfo& connInfo) = 0;
   virtual void releaseHandler(ServiceIf* /* handler */) = 0;
-};
+  };
 
 class ServiceIfSingletonFactory : virtual public ServiceIfFactory {
  public:
   ServiceIfSingletonFactory(const ::std::shared_ptr<ServiceIf>& iface) : iface_(iface) {}
   virtual ~ServiceIfSingletonFactory() {}
 
-  virtual ServiceIf* getHandler(const ::apache::thrift::TConnectionInfo&) {
+  virtual ServiceIf* getHandler(const ::apache::thrift::TConnectionInfo&) override {
     return iface_.get();
   }
-  virtual void releaseHandler(ServiceIf* /* handler */) {}
+  virtual void releaseHandler(ServiceIf* /* handler */) override {}
 
  protected:
   ::std::shared_ptr<ServiceIf> iface_;
@@ -222,71 +222,71 @@ class ServiceIfSingletonFactory : virtual public ServiceIfFactory {
 class ServiceNull : virtual public ServiceIf {
  public:
   virtual ~ServiceNull() {}
-  void sql_mng_column(const std::string& /* sql */) {
+  void sql_mng_column(const std::string& /* sql */) override {
     return;
   }
-  void sql_list_columns(Schemas& /* _return */, const std::string& /* sql */) {
+  void sql_list_columns(Schemas& /* _return */, const std::string& /* sql */) override {
     return;
   }
-  void sql_compact_columns(CompactResults& /* _return */, const std::string& /* sql */) {
+  void sql_compact_columns(CompactResults& /* _return */, const std::string& /* sql */) override {
     return;
   }
-  void sql_select(Cells& /* _return */, const std::string& /* sql */) {
+  void sql_select(Cells& /* _return */, const std::string& /* sql */) override {
     return;
   }
-  void sql_select_rslt_on_column(CCells& /* _return */, const std::string& /* sql */) {
+  void sql_select_rslt_on_column(CCells& /* _return */, const std::string& /* sql */) override {
     return;
   }
-  void sql_select_rslt_on_key(KCells& /* _return */, const std::string& /* sql */) {
+  void sql_select_rslt_on_key(KCells& /* _return */, const std::string& /* sql */) override {
     return;
   }
-  void sql_select_rslt_on_fraction(FCells& /* _return */, const std::string& /* sql */) {
+  void sql_select_rslt_on_fraction(FCells& /* _return */, const std::string& /* sql */) override {
     return;
   }
-  void sql_query(CellsGroup& /* _return */, const std::string& /* sql */, const CellsResult::type /* rslt */) {
+  void sql_query(CellsGroup& /* _return */, const std::string& /* sql */, const CellsResult::type /* rslt */) override {
     return;
   }
-  void sql_update(const std::string& /* sql */, const int64_t /* updater_id */) {
+  void sql_update(const std::string& /* sql */, const int64_t /* updater_id */) override {
     return;
   }
-  void exec_sql(Result& /* _return */, const std::string& /* sql */) {
+  void exec_sql(Result& /* _return */, const std::string& /* sql */) override {
     return;
   }
-  int64_t updater_create(const int32_t /* buffer_size */) {
+  int64_t updater_create(const int32_t /* buffer_size */) override {
     int64_t _return = 0;
     return _return;
   }
-  void updater_close(const int64_t /* id */) {
+  void updater_close(const int64_t /* id */) override {
     return;
   }
-  void update(const UCCells& /* cells */, const int64_t /* updater_id */) {
+  void update(const UCCells& /* cells */, const int64_t /* updater_id */) override {
     return;
   }
-  void update_serial(const UCCellsSerial& /* cells */, const int64_t /* updater_id */) {
+  void update_serial(const UCCellsSerial& /* cells */, const int64_t /* updater_id */) override {
     return;
   }
-  void mng_column(const SchemaFunc::type /* func */, const Schema& /* schema */) {
+  void mng_column(const SchemaFunc::type /* func */, const Schema& /* schema */) override {
     return;
   }
-  void list_columns(Schemas& /* _return */, const SpecSchemas& /* spec */) {
+  void list_columns(Schemas& /* _return */, const SpecSchemas& /* spec */) override {
     return;
   }
-  void compact_columns(CompactResults& /* _return */, const SpecSchemas& /* spec */) {
+  void compact_columns(CompactResults& /* _return */, const SpecSchemas& /* spec */) override {
     return;
   }
-  void scan(Cells& /* _return */, const SpecScan& /* spec */) {
+  void scan(Cells& /* _return */, const SpecScan& /* spec */) override {
     return;
   }
-  void scan_rslt_on_column(CCells& /* _return */, const SpecScan& /* spec */) {
+  void scan_rslt_on_column(CCells& /* _return */, const SpecScan& /* spec */) override {
     return;
   }
-  void scan_rslt_on_key(KCells& /* _return */, const SpecScan& /* spec */) {
+  void scan_rslt_on_key(KCells& /* _return */, const SpecScan& /* spec */) override {
     return;
   }
-  void scan_rslt_on_fraction(FCells& /* _return */, const SpecScan& /* spec */) {
+  void scan_rslt_on_fraction(FCells& /* _return */, const SpecScan& /* spec */) override {
     return;
   }
-  void scan_rslt_on(CellsGroup& /* _return */, const SpecScan& /* spec */, const CellsResult::type /* rslt */) {
+  void scan_rslt_on(CellsGroup& /* _return */, const SpecScan& /* spec */, const CellsResult::type /* rslt */) override {
     return;
   }
 };
@@ -301,7 +301,8 @@ class Service_sql_mng_column_args {
 
   Service_sql_mng_column_args(const Service_sql_mng_column_args&);
   Service_sql_mng_column_args& operator=(const Service_sql_mng_column_args&);
-  Service_sql_mng_column_args() : sql() {
+  Service_sql_mng_column_args() noexcept
+                              : sql() {
   }
 
   virtual ~Service_sql_mng_column_args() noexcept;
@@ -356,7 +357,7 @@ class Service_sql_mng_column_result {
 
   Service_sql_mng_column_result(const Service_sql_mng_column_result&);
   Service_sql_mng_column_result& operator=(const Service_sql_mng_column_result&);
-  Service_sql_mng_column_result() {
+  Service_sql_mng_column_result() noexcept {
   }
 
   virtual ~Service_sql_mng_column_result() noexcept;
@@ -411,7 +412,8 @@ class Service_sql_list_columns_args {
 
   Service_sql_list_columns_args(const Service_sql_list_columns_args&);
   Service_sql_list_columns_args& operator=(const Service_sql_list_columns_args&);
-  Service_sql_list_columns_args() : sql() {
+  Service_sql_list_columns_args() noexcept
+                                : sql() {
   }
 
   virtual ~Service_sql_list_columns_args() noexcept;
@@ -467,7 +469,7 @@ class Service_sql_list_columns_result {
 
   Service_sql_list_columns_result(const Service_sql_list_columns_result&);
   Service_sql_list_columns_result& operator=(const Service_sql_list_columns_result&);
-  Service_sql_list_columns_result() {
+  Service_sql_list_columns_result() noexcept {
   }
 
   virtual ~Service_sql_list_columns_result() noexcept;
@@ -529,7 +531,8 @@ class Service_sql_compact_columns_args {
 
   Service_sql_compact_columns_args(const Service_sql_compact_columns_args&);
   Service_sql_compact_columns_args& operator=(const Service_sql_compact_columns_args&);
-  Service_sql_compact_columns_args() : sql() {
+  Service_sql_compact_columns_args() noexcept
+                                   : sql() {
   }
 
   virtual ~Service_sql_compact_columns_args() noexcept;
@@ -585,7 +588,7 @@ class Service_sql_compact_columns_result {
 
   Service_sql_compact_columns_result(const Service_sql_compact_columns_result&);
   Service_sql_compact_columns_result& operator=(const Service_sql_compact_columns_result&);
-  Service_sql_compact_columns_result() {
+  Service_sql_compact_columns_result() noexcept {
   }
 
   virtual ~Service_sql_compact_columns_result() noexcept;
@@ -647,7 +650,8 @@ class Service_sql_select_args {
 
   Service_sql_select_args(const Service_sql_select_args&);
   Service_sql_select_args& operator=(const Service_sql_select_args&);
-  Service_sql_select_args() : sql() {
+  Service_sql_select_args() noexcept
+                          : sql() {
   }
 
   virtual ~Service_sql_select_args() noexcept;
@@ -703,7 +707,7 @@ class Service_sql_select_result {
 
   Service_sql_select_result(const Service_sql_select_result&);
   Service_sql_select_result& operator=(const Service_sql_select_result&);
-  Service_sql_select_result() {
+  Service_sql_select_result() noexcept {
   }
 
   virtual ~Service_sql_select_result() noexcept;
@@ -765,7 +769,8 @@ class Service_sql_select_rslt_on_column_args {
 
   Service_sql_select_rslt_on_column_args(const Service_sql_select_rslt_on_column_args&);
   Service_sql_select_rslt_on_column_args& operator=(const Service_sql_select_rslt_on_column_args&);
-  Service_sql_select_rslt_on_column_args() : sql() {
+  Service_sql_select_rslt_on_column_args() noexcept
+                                         : sql() {
   }
 
   virtual ~Service_sql_select_rslt_on_column_args() noexcept;
@@ -821,7 +826,7 @@ class Service_sql_select_rslt_on_column_result {
 
   Service_sql_select_rslt_on_column_result(const Service_sql_select_rslt_on_column_result&);
   Service_sql_select_rslt_on_column_result& operator=(const Service_sql_select_rslt_on_column_result&);
-  Service_sql_select_rslt_on_column_result() {
+  Service_sql_select_rslt_on_column_result() noexcept {
   }
 
   virtual ~Service_sql_select_rslt_on_column_result() noexcept;
@@ -883,7 +888,8 @@ class Service_sql_select_rslt_on_key_args {
 
   Service_sql_select_rslt_on_key_args(const Service_sql_select_rslt_on_key_args&);
   Service_sql_select_rslt_on_key_args& operator=(const Service_sql_select_rslt_on_key_args&);
-  Service_sql_select_rslt_on_key_args() : sql() {
+  Service_sql_select_rslt_on_key_args() noexcept
+                                      : sql() {
   }
 
   virtual ~Service_sql_select_rslt_on_key_args() noexcept;
@@ -939,7 +945,7 @@ class Service_sql_select_rslt_on_key_result {
 
   Service_sql_select_rslt_on_key_result(const Service_sql_select_rslt_on_key_result&);
   Service_sql_select_rslt_on_key_result& operator=(const Service_sql_select_rslt_on_key_result&);
-  Service_sql_select_rslt_on_key_result() {
+  Service_sql_select_rslt_on_key_result() noexcept {
   }
 
   virtual ~Service_sql_select_rslt_on_key_result() noexcept;
@@ -1001,7 +1007,8 @@ class Service_sql_select_rslt_on_fraction_args {
 
   Service_sql_select_rslt_on_fraction_args(const Service_sql_select_rslt_on_fraction_args&);
   Service_sql_select_rslt_on_fraction_args& operator=(const Service_sql_select_rslt_on_fraction_args&);
-  Service_sql_select_rslt_on_fraction_args() : sql() {
+  Service_sql_select_rslt_on_fraction_args() noexcept
+                                           : sql() {
   }
 
   virtual ~Service_sql_select_rslt_on_fraction_args() noexcept;
@@ -1057,7 +1064,7 @@ class Service_sql_select_rslt_on_fraction_result {
 
   Service_sql_select_rslt_on_fraction_result(const Service_sql_select_rslt_on_fraction_result&);
   Service_sql_select_rslt_on_fraction_result& operator=(const Service_sql_select_rslt_on_fraction_result&);
-  Service_sql_select_rslt_on_fraction_result() {
+  Service_sql_select_rslt_on_fraction_result() noexcept {
   }
 
   virtual ~Service_sql_select_rslt_on_fraction_result() noexcept;
@@ -1120,7 +1127,9 @@ class Service_sql_query_args {
 
   Service_sql_query_args(const Service_sql_query_args&);
   Service_sql_query_args& operator=(const Service_sql_query_args&);
-  Service_sql_query_args() : sql(), rslt((CellsResult::type)0) {
+  Service_sql_query_args() noexcept
+                         : sql(),
+                           rslt(static_cast<CellsResult::type>(0)) {
   }
 
   virtual ~Service_sql_query_args() noexcept;
@@ -1192,7 +1201,7 @@ class Service_sql_query_result {
 
   Service_sql_query_result(const Service_sql_query_result&);
   Service_sql_query_result& operator=(const Service_sql_query_result&);
-  Service_sql_query_result() {
+  Service_sql_query_result() noexcept {
   }
 
   virtual ~Service_sql_query_result() noexcept;
@@ -1255,7 +1264,9 @@ class Service_sql_update_args {
 
   Service_sql_update_args(const Service_sql_update_args&);
   Service_sql_update_args& operator=(const Service_sql_update_args&);
-  Service_sql_update_args() : sql(), updater_id(0LL) {
+  Service_sql_update_args() noexcept
+                          : sql(),
+                            updater_id(0LL) {
   }
 
   virtual ~Service_sql_update_args() noexcept;
@@ -1322,7 +1333,7 @@ class Service_sql_update_result {
 
   Service_sql_update_result(const Service_sql_update_result&);
   Service_sql_update_result& operator=(const Service_sql_update_result&);
-  Service_sql_update_result() {
+  Service_sql_update_result() noexcept {
   }
 
   virtual ~Service_sql_update_result() noexcept;
@@ -1377,7 +1388,8 @@ class Service_exec_sql_args {
 
   Service_exec_sql_args(const Service_exec_sql_args&);
   Service_exec_sql_args& operator=(const Service_exec_sql_args&);
-  Service_exec_sql_args() : sql() {
+  Service_exec_sql_args() noexcept
+                        : sql() {
   }
 
   virtual ~Service_exec_sql_args() noexcept;
@@ -1433,7 +1445,7 @@ class Service_exec_sql_result {
 
   Service_exec_sql_result(const Service_exec_sql_result&);
   Service_exec_sql_result& operator=(const Service_exec_sql_result&);
-  Service_exec_sql_result() {
+  Service_exec_sql_result() noexcept {
   }
 
   virtual ~Service_exec_sql_result() noexcept;
@@ -1493,9 +1505,10 @@ typedef struct _Service_updater_create_args__isset {
 class Service_updater_create_args {
  public:
 
-  Service_updater_create_args(const Service_updater_create_args&);
-  Service_updater_create_args& operator=(const Service_updater_create_args&);
-  Service_updater_create_args() : buffer_size(0) {
+  Service_updater_create_args(const Service_updater_create_args&) noexcept;
+  Service_updater_create_args& operator=(const Service_updater_create_args&) noexcept;
+  Service_updater_create_args() noexcept
+                              : buffer_size(0) {
   }
 
   virtual ~Service_updater_create_args() noexcept;
@@ -1551,7 +1564,8 @@ class Service_updater_create_result {
 
   Service_updater_create_result(const Service_updater_create_result&);
   Service_updater_create_result& operator=(const Service_updater_create_result&);
-  Service_updater_create_result() : success(0) {
+  Service_updater_create_result() noexcept
+                                : success(0) {
   }
 
   virtual ~Service_updater_create_result() noexcept;
@@ -1611,9 +1625,10 @@ typedef struct _Service_updater_close_args__isset {
 class Service_updater_close_args {
  public:
 
-  Service_updater_close_args(const Service_updater_close_args&);
-  Service_updater_close_args& operator=(const Service_updater_close_args&);
-  Service_updater_close_args() : id(0) {
+  Service_updater_close_args(const Service_updater_close_args&) noexcept;
+  Service_updater_close_args& operator=(const Service_updater_close_args&) noexcept;
+  Service_updater_close_args() noexcept
+                             : id(0) {
   }
 
   virtual ~Service_updater_close_args() noexcept;
@@ -1668,7 +1683,7 @@ class Service_updater_close_result {
 
   Service_updater_close_result(const Service_updater_close_result&);
   Service_updater_close_result& operator=(const Service_updater_close_result&);
-  Service_updater_close_result() {
+  Service_updater_close_result() noexcept {
   }
 
   virtual ~Service_updater_close_result() noexcept;
@@ -1724,7 +1739,8 @@ class Service_update_args {
 
   Service_update_args(const Service_update_args&);
   Service_update_args& operator=(const Service_update_args&);
-  Service_update_args() : updater_id(0LL) {
+  Service_update_args() noexcept
+                      : updater_id(0LL) {
   }
 
   virtual ~Service_update_args() noexcept;
@@ -1791,7 +1807,7 @@ class Service_update_result {
 
   Service_update_result(const Service_update_result&);
   Service_update_result& operator=(const Service_update_result&);
-  Service_update_result() {
+  Service_update_result() noexcept {
   }
 
   virtual ~Service_update_result() noexcept;
@@ -1847,7 +1863,8 @@ class Service_update_serial_args {
 
   Service_update_serial_args(const Service_update_serial_args&);
   Service_update_serial_args& operator=(const Service_update_serial_args&);
-  Service_update_serial_args() : updater_id(0LL) {
+  Service_update_serial_args() noexcept
+                             : updater_id(0LL) {
   }
 
   virtual ~Service_update_serial_args() noexcept;
@@ -1914,7 +1931,7 @@ class Service_update_serial_result {
 
   Service_update_serial_result(const Service_update_serial_result&);
   Service_update_serial_result& operator=(const Service_update_serial_result&);
-  Service_update_serial_result() {
+  Service_update_serial_result() noexcept {
   }
 
   virtual ~Service_update_serial_result() noexcept;
@@ -1970,7 +1987,8 @@ class Service_mng_column_args {
 
   Service_mng_column_args(const Service_mng_column_args&);
   Service_mng_column_args& operator=(const Service_mng_column_args&);
-  Service_mng_column_args() : func((SchemaFunc::type)0) {
+  Service_mng_column_args() noexcept
+                          : func(static_cast<SchemaFunc::type>(0)) {
   }
 
   virtual ~Service_mng_column_args() noexcept;
@@ -2041,7 +2059,7 @@ class Service_mng_column_result {
 
   Service_mng_column_result(const Service_mng_column_result&);
   Service_mng_column_result& operator=(const Service_mng_column_result&);
-  Service_mng_column_result() {
+  Service_mng_column_result() noexcept {
   }
 
   virtual ~Service_mng_column_result() noexcept;
@@ -2096,7 +2114,7 @@ class Service_list_columns_args {
 
   Service_list_columns_args(const Service_list_columns_args&);
   Service_list_columns_args& operator=(const Service_list_columns_args&);
-  Service_list_columns_args() {
+  Service_list_columns_args() noexcept {
   }
 
   virtual ~Service_list_columns_args() noexcept;
@@ -2152,7 +2170,7 @@ class Service_list_columns_result {
 
   Service_list_columns_result(const Service_list_columns_result&);
   Service_list_columns_result& operator=(const Service_list_columns_result&);
-  Service_list_columns_result() {
+  Service_list_columns_result() noexcept {
   }
 
   virtual ~Service_list_columns_result() noexcept;
@@ -2214,7 +2232,7 @@ class Service_compact_columns_args {
 
   Service_compact_columns_args(const Service_compact_columns_args&);
   Service_compact_columns_args& operator=(const Service_compact_columns_args&);
-  Service_compact_columns_args() {
+  Service_compact_columns_args() noexcept {
   }
 
   virtual ~Service_compact_columns_args() noexcept;
@@ -2270,7 +2288,7 @@ class Service_compact_columns_result {
 
   Service_compact_columns_result(const Service_compact_columns_result&);
   Service_compact_columns_result& operator=(const Service_compact_columns_result&);
-  Service_compact_columns_result() {
+  Service_compact_columns_result() noexcept {
   }
 
   virtual ~Service_compact_columns_result() noexcept;
@@ -2332,7 +2350,7 @@ class Service_scan_args {
 
   Service_scan_args(const Service_scan_args&);
   Service_scan_args& operator=(const Service_scan_args&);
-  Service_scan_args() {
+  Service_scan_args() noexcept {
   }
 
   virtual ~Service_scan_args() noexcept;
@@ -2388,7 +2406,7 @@ class Service_scan_result {
 
   Service_scan_result(const Service_scan_result&);
   Service_scan_result& operator=(const Service_scan_result&);
-  Service_scan_result() {
+  Service_scan_result() noexcept {
   }
 
   virtual ~Service_scan_result() noexcept;
@@ -2450,7 +2468,7 @@ class Service_scan_rslt_on_column_args {
 
   Service_scan_rslt_on_column_args(const Service_scan_rslt_on_column_args&);
   Service_scan_rslt_on_column_args& operator=(const Service_scan_rslt_on_column_args&);
-  Service_scan_rslt_on_column_args() {
+  Service_scan_rslt_on_column_args() noexcept {
   }
 
   virtual ~Service_scan_rslt_on_column_args() noexcept;
@@ -2506,7 +2524,7 @@ class Service_scan_rslt_on_column_result {
 
   Service_scan_rslt_on_column_result(const Service_scan_rslt_on_column_result&);
   Service_scan_rslt_on_column_result& operator=(const Service_scan_rslt_on_column_result&);
-  Service_scan_rslt_on_column_result() {
+  Service_scan_rslt_on_column_result() noexcept {
   }
 
   virtual ~Service_scan_rslt_on_column_result() noexcept;
@@ -2568,7 +2586,7 @@ class Service_scan_rslt_on_key_args {
 
   Service_scan_rslt_on_key_args(const Service_scan_rslt_on_key_args&);
   Service_scan_rslt_on_key_args& operator=(const Service_scan_rslt_on_key_args&);
-  Service_scan_rslt_on_key_args() {
+  Service_scan_rslt_on_key_args() noexcept {
   }
 
   virtual ~Service_scan_rslt_on_key_args() noexcept;
@@ -2624,7 +2642,7 @@ class Service_scan_rslt_on_key_result {
 
   Service_scan_rslt_on_key_result(const Service_scan_rslt_on_key_result&);
   Service_scan_rslt_on_key_result& operator=(const Service_scan_rslt_on_key_result&);
-  Service_scan_rslt_on_key_result() {
+  Service_scan_rslt_on_key_result() noexcept {
   }
 
   virtual ~Service_scan_rslt_on_key_result() noexcept;
@@ -2686,7 +2704,7 @@ class Service_scan_rslt_on_fraction_args {
 
   Service_scan_rslt_on_fraction_args(const Service_scan_rslt_on_fraction_args&);
   Service_scan_rslt_on_fraction_args& operator=(const Service_scan_rslt_on_fraction_args&);
-  Service_scan_rslt_on_fraction_args() {
+  Service_scan_rslt_on_fraction_args() noexcept {
   }
 
   virtual ~Service_scan_rslt_on_fraction_args() noexcept;
@@ -2742,7 +2760,7 @@ class Service_scan_rslt_on_fraction_result {
 
   Service_scan_rslt_on_fraction_result(const Service_scan_rslt_on_fraction_result&);
   Service_scan_rslt_on_fraction_result& operator=(const Service_scan_rslt_on_fraction_result&);
-  Service_scan_rslt_on_fraction_result() {
+  Service_scan_rslt_on_fraction_result() noexcept {
   }
 
   virtual ~Service_scan_rslt_on_fraction_result() noexcept;
@@ -2805,7 +2823,8 @@ class Service_scan_rslt_on_args {
 
   Service_scan_rslt_on_args(const Service_scan_rslt_on_args&);
   Service_scan_rslt_on_args& operator=(const Service_scan_rslt_on_args&);
-  Service_scan_rslt_on_args() : rslt((CellsResult::type)0) {
+  Service_scan_rslt_on_args() noexcept
+                            : rslt(static_cast<CellsResult::type>(0)) {
   }
 
   virtual ~Service_scan_rslt_on_args() noexcept;
@@ -2877,7 +2896,7 @@ class Service_scan_rslt_on_result {
 
   Service_scan_rslt_on_result(const Service_scan_rslt_on_result&);
   Service_scan_rslt_on_result& operator=(const Service_scan_rslt_on_result&);
-  Service_scan_rslt_on_result() {
+  Service_scan_rslt_on_result() noexcept {
   }
 
   virtual ~Service_scan_rslt_on_result() noexcept;
@@ -2965,7 +2984,7 @@ class ServiceClient : virtual public ServiceIf {
    * 
    * @param sql The SQL string to Execute
    */
-  void sql_mng_column(const std::string& sql);
+  void sql_mng_column(const std::string& sql) override;
   void send_sql_mng_column(const std::string& sql);
   void recv_sql_mng_column();
   /**
@@ -2973,7 +2992,7 @@ class ServiceClient : virtual public ServiceIf {
    * 
    * @param sql The SQL string to Execute
    */
-  void sql_list_columns(Schemas& _return, const std::string& sql);
+  void sql_list_columns(Schemas& _return, const std::string& sql) override;
   void send_sql_list_columns(const std::string& sql);
   void recv_sql_list_columns(Schemas& _return);
   /**
@@ -2981,7 +3000,7 @@ class ServiceClient : virtual public ServiceIf {
    * 
    * @param sql The SQL string to Execute
    */
-  void sql_compact_columns(CompactResults& _return, const std::string& sql);
+  void sql_compact_columns(CompactResults& _return, const std::string& sql) override;
   void send_sql_compact_columns(const std::string& sql);
   void recv_sql_compact_columns(CompactResults& _return);
   /**
@@ -2989,7 +3008,7 @@ class ServiceClient : virtual public ServiceIf {
    * 
    * @param sql The SQL string to Execute
    */
-  void sql_select(Cells& _return, const std::string& sql);
+  void sql_select(Cells& _return, const std::string& sql) override;
   void send_sql_select(const std::string& sql);
   void recv_sql_select(Cells& _return);
   /**
@@ -2997,7 +3016,7 @@ class ServiceClient : virtual public ServiceIf {
    * 
    * @param sql The SQL string to Execute
    */
-  void sql_select_rslt_on_column(CCells& _return, const std::string& sql);
+  void sql_select_rslt_on_column(CCells& _return, const std::string& sql) override;
   void send_sql_select_rslt_on_column(const std::string& sql);
   void recv_sql_select_rslt_on_column(CCells& _return);
   /**
@@ -3005,7 +3024,7 @@ class ServiceClient : virtual public ServiceIf {
    * 
    * @param sql The SQL string to Execute
    */
-  void sql_select_rslt_on_key(KCells& _return, const std::string& sql);
+  void sql_select_rslt_on_key(KCells& _return, const std::string& sql) override;
   void send_sql_select_rslt_on_key(const std::string& sql);
   void recv_sql_select_rslt_on_key(KCells& _return);
   /**
@@ -3013,7 +3032,7 @@ class ServiceClient : virtual public ServiceIf {
    * 
    * @param sql The SQL string to Execute
    */
-  void sql_select_rslt_on_fraction(FCells& _return, const std::string& sql);
+  void sql_select_rslt_on_fraction(FCells& _return, const std::string& sql) override;
   void send_sql_select_rslt_on_fraction(const std::string& sql);
   void recv_sql_select_rslt_on_fraction(FCells& _return);
   /**
@@ -3023,7 +3042,7 @@ class ServiceClient : virtual public ServiceIf {
    * 
    * @param rslt The Type of Cells Result for the response
    */
-  void sql_query(CellsGroup& _return, const std::string& sql, const CellsResult::type rslt);
+  void sql_query(CellsGroup& _return, const std::string& sql, const CellsResult::type rslt) override;
   void send_sql_query(const std::string& sql, const CellsResult::type rslt);
   void recv_sql_query(CellsGroup& _return);
   /**
@@ -3033,7 +3052,7 @@ class ServiceClient : virtual public ServiceIf {
    * 
    * @param updater_id The Updater ID to work with
    */
-  void sql_update(const std::string& sql, const int64_t updater_id);
+  void sql_update(const std::string& sql, const int64_t updater_id) override;
   void send_sql_update(const std::string& sql, const int64_t updater_id);
   void recv_sql_update();
   /**
@@ -3041,7 +3060,7 @@ class ServiceClient : virtual public ServiceIf {
    * 
    * @param sql The SQL string to Execute
    */
-  void exec_sql(Result& _return, const std::string& sql);
+  void exec_sql(Result& _return, const std::string& sql) override;
   void send_exec_sql(const std::string& sql);
   void recv_exec_sql(Result& _return);
   /**
@@ -3049,7 +3068,7 @@ class ServiceClient : virtual public ServiceIf {
    * 
    * @param buffer_size The buffer size of the Updater
    */
-  int64_t updater_create(const int32_t buffer_size);
+  int64_t updater_create(const int32_t buffer_size) override;
   void send_updater_create(const int32_t buffer_size);
   int64_t recv_updater_create();
   /**
@@ -3057,7 +3076,7 @@ class ServiceClient : virtual public ServiceIf {
    * 
    * @param id The Updater ID to close
    */
-  void updater_close(const int64_t id);
+  void updater_close(const int64_t id) override;
   void send_updater_close(const int64_t id);
   void recv_updater_close();
   /**
@@ -3068,7 +3087,7 @@ class ServiceClient : virtual public ServiceIf {
    * 
    * @param updater_id The Updater ID to use for write
    */
-  void update(const UCCells& cells, const int64_t updater_id);
+  void update(const UCCells& cells, const int64_t updater_id) override;
   void send_update(const UCCells& cells, const int64_t updater_id);
   void recv_update();
   /**
@@ -3079,7 +3098,7 @@ class ServiceClient : virtual public ServiceIf {
    * 
    * @param updater_id The Updater ID to use for write
    */
-  void update_serial(const UCCellsSerial& cells, const int64_t updater_id);
+  void update_serial(const UCCellsSerial& cells, const int64_t updater_id) override;
   void send_update_serial(const UCCellsSerial& cells, const int64_t updater_id);
   void recv_update_serial();
   /**
@@ -3089,7 +3108,7 @@ class ServiceClient : virtual public ServiceIf {
    * 
    * @param schema The Schema for the Action
    */
-  void mng_column(const SchemaFunc::type func, const Schema& schema);
+  void mng_column(const SchemaFunc::type func, const Schema& schema) override;
   void send_mng_column(const SchemaFunc::type func, const Schema& schema);
   void recv_mng_column();
   /**
@@ -3097,7 +3116,7 @@ class ServiceClient : virtual public ServiceIf {
    * 
    * @param spec The Schemas Specifications to match Schema for response
    */
-  void list_columns(Schemas& _return, const SpecSchemas& spec);
+  void list_columns(Schemas& _return, const SpecSchemas& spec) override;
   void send_list_columns(const SpecSchemas& spec);
   void recv_list_columns(Schemas& _return);
   /**
@@ -3105,7 +3124,7 @@ class ServiceClient : virtual public ServiceIf {
    * 
    * @param spec The Schemas Specifications to match columns to Compact
    */
-  void compact_columns(CompactResults& _return, const SpecSchemas& spec);
+  void compact_columns(CompactResults& _return, const SpecSchemas& spec) override;
   void send_compact_columns(const SpecSchemas& spec);
   void recv_compact_columns(CompactResults& _return);
   /**
@@ -3113,7 +3132,7 @@ class ServiceClient : virtual public ServiceIf {
    * 
    * @param spec The Scan Specifications for the scan
    */
-  void scan(Cells& _return, const SpecScan& spec);
+  void scan(Cells& _return, const SpecScan& spec) override;
   void send_scan(const SpecScan& spec);
   void recv_scan(Cells& _return);
   /**
@@ -3121,7 +3140,7 @@ class ServiceClient : virtual public ServiceIf {
    * 
    * @param spec The Scan Specifications for the scan
    */
-  void scan_rslt_on_column(CCells& _return, const SpecScan& spec);
+  void scan_rslt_on_column(CCells& _return, const SpecScan& spec) override;
   void send_scan_rslt_on_column(const SpecScan& spec);
   void recv_scan_rslt_on_column(CCells& _return);
   /**
@@ -3129,7 +3148,7 @@ class ServiceClient : virtual public ServiceIf {
    * 
    * @param spec The Scan Specifications for the scan
    */
-  void scan_rslt_on_key(KCells& _return, const SpecScan& spec);
+  void scan_rslt_on_key(KCells& _return, const SpecScan& spec) override;
   void send_scan_rslt_on_key(const SpecScan& spec);
   void recv_scan_rslt_on_key(KCells& _return);
   /**
@@ -3137,7 +3156,7 @@ class ServiceClient : virtual public ServiceIf {
    * 
    * @param spec The Scan Specifications for the scan
    */
-  void scan_rslt_on_fraction(FCells& _return, const SpecScan& spec);
+  void scan_rslt_on_fraction(FCells& _return, const SpecScan& spec) override;
   void send_scan_rslt_on_fraction(const SpecScan& spec);
   void recv_scan_rslt_on_fraction(FCells& _return);
   /**
@@ -3147,7 +3166,7 @@ class ServiceClient : virtual public ServiceIf {
    * 
    * @param rslt The Type of Cells Result for the response
    */
-  void scan_rslt_on(CellsGroup& _return, const SpecScan& spec, const CellsResult::type rslt);
+  void scan_rslt_on(CellsGroup& _return, const SpecScan& spec, const CellsResult::type rslt) override;
   void send_scan_rslt_on(const SpecScan& spec, const CellsResult::type rslt);
   void recv_scan_rslt_on(CellsGroup& _return);
  protected:
@@ -3160,7 +3179,7 @@ class ServiceClient : virtual public ServiceIf {
 class ServiceProcessor : public ::apache::thrift::TDispatchProcessor {
  protected:
   ::std::shared_ptr<ServiceIf> iface_;
-  virtual bool dispatchCall(::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, const std::string& fname, int32_t seqid, void* callContext);
+  virtual bool dispatchCall(::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, const std::string& fname, int32_t seqid, void* callContext) override;
  private:
   typedef  void (ServiceProcessor::*ProcessFunction)(int32_t, ::apache::thrift::protocol::TProtocol*, ::apache::thrift::protocol::TProtocol*, void*);
   typedef std::map<std::string, ProcessFunction> ProcessMap;
@@ -3219,10 +3238,10 @@ class ServiceProcessor : public ::apache::thrift::TDispatchProcessor {
 
 class ServiceProcessorFactory : public ::apache::thrift::TProcessorFactory {
  public:
-  ServiceProcessorFactory(const ::std::shared_ptr< ServiceIfFactory >& handlerFactory) :
+  ServiceProcessorFactory(const ::std::shared_ptr< ServiceIfFactory >& handlerFactory) noexcept :
       handlerFactory_(handlerFactory) {}
 
-  ::std::shared_ptr< ::apache::thrift::TProcessor > getProcessor(const ::apache::thrift::TConnectionInfo& connInfo);
+  ::std::shared_ptr< ::apache::thrift::TProcessor > getProcessor(const ::apache::thrift::TConnectionInfo& connInfo) override;
 
  protected:
   ::std::shared_ptr< ServiceIfFactory > handlerFactory_;
@@ -3245,7 +3264,7 @@ class ServiceMultiface : virtual public ServiceIf {
    * 
    * @param sql The SQL string to Execute
    */
-  void sql_mng_column(const std::string& sql) {
+  void sql_mng_column(const std::string& sql) override {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
@@ -3259,7 +3278,7 @@ class ServiceMultiface : virtual public ServiceIf {
    * 
    * @param sql The SQL string to Execute
    */
-  void sql_list_columns(Schemas& _return, const std::string& sql) {
+  void sql_list_columns(Schemas& _return, const std::string& sql) override {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
@@ -3274,7 +3293,7 @@ class ServiceMultiface : virtual public ServiceIf {
    * 
    * @param sql The SQL string to Execute
    */
-  void sql_compact_columns(CompactResults& _return, const std::string& sql) {
+  void sql_compact_columns(CompactResults& _return, const std::string& sql) override {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
@@ -3289,7 +3308,7 @@ class ServiceMultiface : virtual public ServiceIf {
    * 
    * @param sql The SQL string to Execute
    */
-  void sql_select(Cells& _return, const std::string& sql) {
+  void sql_select(Cells& _return, const std::string& sql) override {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
@@ -3304,7 +3323,7 @@ class ServiceMultiface : virtual public ServiceIf {
    * 
    * @param sql The SQL string to Execute
    */
-  void sql_select_rslt_on_column(CCells& _return, const std::string& sql) {
+  void sql_select_rslt_on_column(CCells& _return, const std::string& sql) override {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
@@ -3319,7 +3338,7 @@ class ServiceMultiface : virtual public ServiceIf {
    * 
    * @param sql The SQL string to Execute
    */
-  void sql_select_rslt_on_key(KCells& _return, const std::string& sql) {
+  void sql_select_rslt_on_key(KCells& _return, const std::string& sql) override {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
@@ -3334,7 +3353,7 @@ class ServiceMultiface : virtual public ServiceIf {
    * 
    * @param sql The SQL string to Execute
    */
-  void sql_select_rslt_on_fraction(FCells& _return, const std::string& sql) {
+  void sql_select_rslt_on_fraction(FCells& _return, const std::string& sql) override {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
@@ -3351,7 +3370,7 @@ class ServiceMultiface : virtual public ServiceIf {
    * 
    * @param rslt The Type of Cells Result for the response
    */
-  void sql_query(CellsGroup& _return, const std::string& sql, const CellsResult::type rslt) {
+  void sql_query(CellsGroup& _return, const std::string& sql, const CellsResult::type rslt) override {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
@@ -3368,7 +3387,7 @@ class ServiceMultiface : virtual public ServiceIf {
    * 
    * @param updater_id The Updater ID to work with
    */
-  void sql_update(const std::string& sql, const int64_t updater_id) {
+  void sql_update(const std::string& sql, const int64_t updater_id) override {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
@@ -3382,7 +3401,7 @@ class ServiceMultiface : virtual public ServiceIf {
    * 
    * @param sql The SQL string to Execute
    */
-  void exec_sql(Result& _return, const std::string& sql) {
+  void exec_sql(Result& _return, const std::string& sql) override {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
@@ -3397,7 +3416,7 @@ class ServiceMultiface : virtual public ServiceIf {
    * 
    * @param buffer_size The buffer size of the Updater
    */
-  int64_t updater_create(const int32_t buffer_size) {
+  int64_t updater_create(const int32_t buffer_size) override {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
@@ -3411,7 +3430,7 @@ class ServiceMultiface : virtual public ServiceIf {
    * 
    * @param id The Updater ID to close
    */
-  void updater_close(const int64_t id) {
+  void updater_close(const int64_t id) override {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
@@ -3428,7 +3447,7 @@ class ServiceMultiface : virtual public ServiceIf {
    * 
    * @param updater_id The Updater ID to use for write
    */
-  void update(const UCCells& cells, const int64_t updater_id) {
+  void update(const UCCells& cells, const int64_t updater_id) override {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
@@ -3445,7 +3464,7 @@ class ServiceMultiface : virtual public ServiceIf {
    * 
    * @param updater_id The Updater ID to use for write
    */
-  void update_serial(const UCCellsSerial& cells, const int64_t updater_id) {
+  void update_serial(const UCCellsSerial& cells, const int64_t updater_id) override {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
@@ -3461,7 +3480,7 @@ class ServiceMultiface : virtual public ServiceIf {
    * 
    * @param schema The Schema for the Action
    */
-  void mng_column(const SchemaFunc::type func, const Schema& schema) {
+  void mng_column(const SchemaFunc::type func, const Schema& schema) override {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
@@ -3475,7 +3494,7 @@ class ServiceMultiface : virtual public ServiceIf {
    * 
    * @param spec The Schemas Specifications to match Schema for response
    */
-  void list_columns(Schemas& _return, const SpecSchemas& spec) {
+  void list_columns(Schemas& _return, const SpecSchemas& spec) override {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
@@ -3490,7 +3509,7 @@ class ServiceMultiface : virtual public ServiceIf {
    * 
    * @param spec The Schemas Specifications to match columns to Compact
    */
-  void compact_columns(CompactResults& _return, const SpecSchemas& spec) {
+  void compact_columns(CompactResults& _return, const SpecSchemas& spec) override {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
@@ -3505,7 +3524,7 @@ class ServiceMultiface : virtual public ServiceIf {
    * 
    * @param spec The Scan Specifications for the scan
    */
-  void scan(Cells& _return, const SpecScan& spec) {
+  void scan(Cells& _return, const SpecScan& spec) override {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
@@ -3520,7 +3539,7 @@ class ServiceMultiface : virtual public ServiceIf {
    * 
    * @param spec The Scan Specifications for the scan
    */
-  void scan_rslt_on_column(CCells& _return, const SpecScan& spec) {
+  void scan_rslt_on_column(CCells& _return, const SpecScan& spec) override {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
@@ -3535,7 +3554,7 @@ class ServiceMultiface : virtual public ServiceIf {
    * 
    * @param spec The Scan Specifications for the scan
    */
-  void scan_rslt_on_key(KCells& _return, const SpecScan& spec) {
+  void scan_rslt_on_key(KCells& _return, const SpecScan& spec) override {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
@@ -3550,7 +3569,7 @@ class ServiceMultiface : virtual public ServiceIf {
    * 
    * @param spec The Scan Specifications for the scan
    */
-  void scan_rslt_on_fraction(FCells& _return, const SpecScan& spec) {
+  void scan_rslt_on_fraction(FCells& _return, const SpecScan& spec) override {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
@@ -3567,7 +3586,7 @@ class ServiceMultiface : virtual public ServiceIf {
    * 
    * @param rslt The Type of Cells Result for the response
    */
-  void scan_rslt_on(CellsGroup& _return, const SpecScan& spec, const CellsResult::type rslt) {
+  void scan_rslt_on(CellsGroup& _return, const SpecScan& spec, const CellsResult::type rslt) override {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
@@ -3614,7 +3633,7 @@ class ServiceConcurrentClient : virtual public ServiceIf {
    * 
    * @param sql The SQL string to Execute
    */
-  void sql_mng_column(const std::string& sql);
+  void sql_mng_column(const std::string& sql) override;
   int32_t send_sql_mng_column(const std::string& sql);
   void recv_sql_mng_column(const int32_t seqid);
   /**
@@ -3622,7 +3641,7 @@ class ServiceConcurrentClient : virtual public ServiceIf {
    * 
    * @param sql The SQL string to Execute
    */
-  void sql_list_columns(Schemas& _return, const std::string& sql);
+  void sql_list_columns(Schemas& _return, const std::string& sql) override;
   int32_t send_sql_list_columns(const std::string& sql);
   void recv_sql_list_columns(Schemas& _return, const int32_t seqid);
   /**
@@ -3630,7 +3649,7 @@ class ServiceConcurrentClient : virtual public ServiceIf {
    * 
    * @param sql The SQL string to Execute
    */
-  void sql_compact_columns(CompactResults& _return, const std::string& sql);
+  void sql_compact_columns(CompactResults& _return, const std::string& sql) override;
   int32_t send_sql_compact_columns(const std::string& sql);
   void recv_sql_compact_columns(CompactResults& _return, const int32_t seqid);
   /**
@@ -3638,7 +3657,7 @@ class ServiceConcurrentClient : virtual public ServiceIf {
    * 
    * @param sql The SQL string to Execute
    */
-  void sql_select(Cells& _return, const std::string& sql);
+  void sql_select(Cells& _return, const std::string& sql) override;
   int32_t send_sql_select(const std::string& sql);
   void recv_sql_select(Cells& _return, const int32_t seqid);
   /**
@@ -3646,7 +3665,7 @@ class ServiceConcurrentClient : virtual public ServiceIf {
    * 
    * @param sql The SQL string to Execute
    */
-  void sql_select_rslt_on_column(CCells& _return, const std::string& sql);
+  void sql_select_rslt_on_column(CCells& _return, const std::string& sql) override;
   int32_t send_sql_select_rslt_on_column(const std::string& sql);
   void recv_sql_select_rslt_on_column(CCells& _return, const int32_t seqid);
   /**
@@ -3654,7 +3673,7 @@ class ServiceConcurrentClient : virtual public ServiceIf {
    * 
    * @param sql The SQL string to Execute
    */
-  void sql_select_rslt_on_key(KCells& _return, const std::string& sql);
+  void sql_select_rslt_on_key(KCells& _return, const std::string& sql) override;
   int32_t send_sql_select_rslt_on_key(const std::string& sql);
   void recv_sql_select_rslt_on_key(KCells& _return, const int32_t seqid);
   /**
@@ -3662,7 +3681,7 @@ class ServiceConcurrentClient : virtual public ServiceIf {
    * 
    * @param sql The SQL string to Execute
    */
-  void sql_select_rslt_on_fraction(FCells& _return, const std::string& sql);
+  void sql_select_rslt_on_fraction(FCells& _return, const std::string& sql) override;
   int32_t send_sql_select_rslt_on_fraction(const std::string& sql);
   void recv_sql_select_rslt_on_fraction(FCells& _return, const int32_t seqid);
   /**
@@ -3672,7 +3691,7 @@ class ServiceConcurrentClient : virtual public ServiceIf {
    * 
    * @param rslt The Type of Cells Result for the response
    */
-  void sql_query(CellsGroup& _return, const std::string& sql, const CellsResult::type rslt);
+  void sql_query(CellsGroup& _return, const std::string& sql, const CellsResult::type rslt) override;
   int32_t send_sql_query(const std::string& sql, const CellsResult::type rslt);
   void recv_sql_query(CellsGroup& _return, const int32_t seqid);
   /**
@@ -3682,7 +3701,7 @@ class ServiceConcurrentClient : virtual public ServiceIf {
    * 
    * @param updater_id The Updater ID to work with
    */
-  void sql_update(const std::string& sql, const int64_t updater_id);
+  void sql_update(const std::string& sql, const int64_t updater_id) override;
   int32_t send_sql_update(const std::string& sql, const int64_t updater_id);
   void recv_sql_update(const int32_t seqid);
   /**
@@ -3690,7 +3709,7 @@ class ServiceConcurrentClient : virtual public ServiceIf {
    * 
    * @param sql The SQL string to Execute
    */
-  void exec_sql(Result& _return, const std::string& sql);
+  void exec_sql(Result& _return, const std::string& sql) override;
   int32_t send_exec_sql(const std::string& sql);
   void recv_exec_sql(Result& _return, const int32_t seqid);
   /**
@@ -3698,7 +3717,7 @@ class ServiceConcurrentClient : virtual public ServiceIf {
    * 
    * @param buffer_size The buffer size of the Updater
    */
-  int64_t updater_create(const int32_t buffer_size);
+  int64_t updater_create(const int32_t buffer_size) override;
   int32_t send_updater_create(const int32_t buffer_size);
   int64_t recv_updater_create(const int32_t seqid);
   /**
@@ -3706,7 +3725,7 @@ class ServiceConcurrentClient : virtual public ServiceIf {
    * 
    * @param id The Updater ID to close
    */
-  void updater_close(const int64_t id);
+  void updater_close(const int64_t id) override;
   int32_t send_updater_close(const int64_t id);
   void recv_updater_close(const int32_t seqid);
   /**
@@ -3717,7 +3736,7 @@ class ServiceConcurrentClient : virtual public ServiceIf {
    * 
    * @param updater_id The Updater ID to use for write
    */
-  void update(const UCCells& cells, const int64_t updater_id);
+  void update(const UCCells& cells, const int64_t updater_id) override;
   int32_t send_update(const UCCells& cells, const int64_t updater_id);
   void recv_update(const int32_t seqid);
   /**
@@ -3728,7 +3747,7 @@ class ServiceConcurrentClient : virtual public ServiceIf {
    * 
    * @param updater_id The Updater ID to use for write
    */
-  void update_serial(const UCCellsSerial& cells, const int64_t updater_id);
+  void update_serial(const UCCellsSerial& cells, const int64_t updater_id) override;
   int32_t send_update_serial(const UCCellsSerial& cells, const int64_t updater_id);
   void recv_update_serial(const int32_t seqid);
   /**
@@ -3738,7 +3757,7 @@ class ServiceConcurrentClient : virtual public ServiceIf {
    * 
    * @param schema The Schema for the Action
    */
-  void mng_column(const SchemaFunc::type func, const Schema& schema);
+  void mng_column(const SchemaFunc::type func, const Schema& schema) override;
   int32_t send_mng_column(const SchemaFunc::type func, const Schema& schema);
   void recv_mng_column(const int32_t seqid);
   /**
@@ -3746,7 +3765,7 @@ class ServiceConcurrentClient : virtual public ServiceIf {
    * 
    * @param spec The Schemas Specifications to match Schema for response
    */
-  void list_columns(Schemas& _return, const SpecSchemas& spec);
+  void list_columns(Schemas& _return, const SpecSchemas& spec) override;
   int32_t send_list_columns(const SpecSchemas& spec);
   void recv_list_columns(Schemas& _return, const int32_t seqid);
   /**
@@ -3754,7 +3773,7 @@ class ServiceConcurrentClient : virtual public ServiceIf {
    * 
    * @param spec The Schemas Specifications to match columns to Compact
    */
-  void compact_columns(CompactResults& _return, const SpecSchemas& spec);
+  void compact_columns(CompactResults& _return, const SpecSchemas& spec) override;
   int32_t send_compact_columns(const SpecSchemas& spec);
   void recv_compact_columns(CompactResults& _return, const int32_t seqid);
   /**
@@ -3762,7 +3781,7 @@ class ServiceConcurrentClient : virtual public ServiceIf {
    * 
    * @param spec The Scan Specifications for the scan
    */
-  void scan(Cells& _return, const SpecScan& spec);
+  void scan(Cells& _return, const SpecScan& spec) override;
   int32_t send_scan(const SpecScan& spec);
   void recv_scan(Cells& _return, const int32_t seqid);
   /**
@@ -3770,7 +3789,7 @@ class ServiceConcurrentClient : virtual public ServiceIf {
    * 
    * @param spec The Scan Specifications for the scan
    */
-  void scan_rslt_on_column(CCells& _return, const SpecScan& spec);
+  void scan_rslt_on_column(CCells& _return, const SpecScan& spec) override;
   int32_t send_scan_rslt_on_column(const SpecScan& spec);
   void recv_scan_rslt_on_column(CCells& _return, const int32_t seqid);
   /**
@@ -3778,7 +3797,7 @@ class ServiceConcurrentClient : virtual public ServiceIf {
    * 
    * @param spec The Scan Specifications for the scan
    */
-  void scan_rslt_on_key(KCells& _return, const SpecScan& spec);
+  void scan_rslt_on_key(KCells& _return, const SpecScan& spec) override;
   int32_t send_scan_rslt_on_key(const SpecScan& spec);
   void recv_scan_rslt_on_key(KCells& _return, const int32_t seqid);
   /**
@@ -3786,7 +3805,7 @@ class ServiceConcurrentClient : virtual public ServiceIf {
    * 
    * @param spec The Scan Specifications for the scan
    */
-  void scan_rslt_on_fraction(FCells& _return, const SpecScan& spec);
+  void scan_rslt_on_fraction(FCells& _return, const SpecScan& spec) override;
   int32_t send_scan_rslt_on_fraction(const SpecScan& spec);
   void recv_scan_rslt_on_fraction(FCells& _return, const int32_t seqid);
   /**
@@ -3796,7 +3815,7 @@ class ServiceConcurrentClient : virtual public ServiceIf {
    * 
    * @param rslt The Type of Cells Result for the response
    */
-  void scan_rslt_on(CellsGroup& _return, const SpecScan& spec, const CellsResult::type rslt);
+  void scan_rslt_on(CellsGroup& _return, const SpecScan& spec, const CellsResult::type rslt) override;
   int32_t send_scan_rslt_on(const SpecScan& spec, const CellsResult::type rslt);
   void recv_scan_rslt_on(CellsGroup& _return, const int32_t seqid);
  protected:

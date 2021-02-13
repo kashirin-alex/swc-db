@@ -31,19 +31,19 @@ class BrokerIfFactory : virtual public  ::SWC::Thrift::ServiceIfFactory {
 
   virtual ~BrokerIfFactory() {}
 
-  virtual BrokerIf* getHandler(const ::apache::thrift::TConnectionInfo& connInfo) = 0;
-  virtual void releaseHandler( ::SWC::Thrift::ServiceIf* /* handler */) = 0;
-};
+  virtual BrokerIf* getHandler(const ::apache::thrift::TConnectionInfo& connInfo) override = 0;
+  virtual void releaseHandler( ::SWC::Thrift::ServiceIf* /* handler */) override = 0;
+  };
 
 class BrokerIfSingletonFactory : virtual public BrokerIfFactory {
  public:
   BrokerIfSingletonFactory(const ::std::shared_ptr<BrokerIf>& iface) : iface_(iface) {}
   virtual ~BrokerIfSingletonFactory() {}
 
-  virtual BrokerIf* getHandler(const ::apache::thrift::TConnectionInfo&) {
+  virtual BrokerIf* getHandler(const ::apache::thrift::TConnectionInfo&) override {
     return iface_.get();
   }
-  virtual void releaseHandler( ::SWC::Thrift::ServiceIf* /* handler */) {}
+  virtual void releaseHandler( ::SWC::Thrift::ServiceIf* /* handler */) override {}
 
  protected:
   ::std::shared_ptr<BrokerIf> iface_;
@@ -70,7 +70,7 @@ class BrokerClient : virtual public BrokerIf, public  ::SWC::Thrift::ServiceClie
 class BrokerProcessor : public  ::SWC::Thrift::ServiceProcessor {
  protected:
   ::std::shared_ptr<BrokerIf> iface_;
-  virtual bool dispatchCall(::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, const std::string& fname, int32_t seqid, void* callContext);
+  virtual bool dispatchCall(::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, const std::string& fname, int32_t seqid, void* callContext) override;
  private:
   typedef  void (BrokerProcessor::*ProcessFunction)(int32_t, ::apache::thrift::protocol::TProtocol*, ::apache::thrift::protocol::TProtocol*, void*);
   typedef std::map<std::string, ProcessFunction> ProcessMap;
@@ -86,10 +86,10 @@ class BrokerProcessor : public  ::SWC::Thrift::ServiceProcessor {
 
 class BrokerProcessorFactory : public ::apache::thrift::TProcessorFactory {
  public:
-  BrokerProcessorFactory(const ::std::shared_ptr< BrokerIfFactory >& handlerFactory) :
+  BrokerProcessorFactory(const ::std::shared_ptr< BrokerIfFactory >& handlerFactory) noexcept :
       handlerFactory_(handlerFactory) {}
 
-  ::std::shared_ptr< ::apache::thrift::TProcessor > getProcessor(const ::apache::thrift::TConnectionInfo& connInfo);
+  ::std::shared_ptr< ::apache::thrift::TProcessor > getProcessor(const ::apache::thrift::TConnectionInfo& connInfo) override;
 
  protected:
   ::std::shared_ptr< BrokerIfFactory > handlerFactory_;

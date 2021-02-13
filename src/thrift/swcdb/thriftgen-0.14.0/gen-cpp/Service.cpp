@@ -1610,7 +1610,7 @@ uint32_t Service_sql_query_args::read(::apache::thrift::protocol::TProtocol* ipr
         if (ftype == ::apache::thrift::protocol::T_I32) {
           int32_t ecast468;
           xfer += iprot->readI32(ecast468);
-          this->rslt = (CellsResult::type)ecast468;
+          this->rslt = static_cast<CellsResult::type>(ecast468);
           this->__isset.rslt = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -1638,7 +1638,7 @@ uint32_t Service_sql_query_args::write(::apache::thrift::protocol::TProtocol* op
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldBegin("rslt", ::apache::thrift::protocol::T_I32, 2);
-  xfer += oprot->writeI32((int32_t)this->rslt);
+  xfer += oprot->writeI32(static_cast<int32_t>(this->rslt));
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldStop();
@@ -1661,7 +1661,7 @@ uint32_t Service_sql_query_pargs::write(::apache::thrift::protocol::TProtocol* o
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldBegin("rslt", ::apache::thrift::protocol::T_I32, 2);
-  xfer += oprot->writeI32((int32_t)(*(this->rslt)));
+  xfer += oprot->writeI32(static_cast<int32_t>((*(this->rslt))));
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldStop();
@@ -3159,7 +3159,7 @@ uint32_t Service_mng_column_args::read(::apache::thrift::protocol::TProtocol* ip
         if (ftype == ::apache::thrift::protocol::T_I32) {
           int32_t ecast501;
           xfer += iprot->readI32(ecast501);
-          this->func = (SchemaFunc::type)ecast501;
+          this->func = static_cast<SchemaFunc::type>(ecast501);
           this->__isset.func = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -3191,7 +3191,7 @@ uint32_t Service_mng_column_args::write(::apache::thrift::protocol::TProtocol* o
   xfer += oprot->writeStructBegin("Service_mng_column_args");
 
   xfer += oprot->writeFieldBegin("func", ::apache::thrift::protocol::T_I32, 1);
-  xfer += oprot->writeI32((int32_t)this->func);
+  xfer += oprot->writeI32(static_cast<int32_t>(this->func));
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldBegin("schema", ::apache::thrift::protocol::T_STRUCT, 2);
@@ -3214,7 +3214,7 @@ uint32_t Service_mng_column_pargs::write(::apache::thrift::protocol::TProtocol* 
   xfer += oprot->writeStructBegin("Service_mng_column_pargs");
 
   xfer += oprot->writeFieldBegin("func", ::apache::thrift::protocol::T_I32, 1);
-  xfer += oprot->writeI32((int32_t)(*(this->func)));
+  xfer += oprot->writeI32(static_cast<int32_t>((*(this->func))));
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldBegin("schema", ::apache::thrift::protocol::T_STRUCT, 2);
@@ -4749,7 +4749,7 @@ uint32_t Service_scan_rslt_on_args::read(::apache::thrift::protocol::TProtocol* 
         if (ftype == ::apache::thrift::protocol::T_I32) {
           int32_t ecast550;
           xfer += iprot->readI32(ecast550);
-          this->rslt = (CellsResult::type)ecast550;
+          this->rslt = static_cast<CellsResult::type>(ecast550);
           this->__isset.rslt = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -4777,7 +4777,7 @@ uint32_t Service_scan_rslt_on_args::write(::apache::thrift::protocol::TProtocol*
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldBegin("rslt", ::apache::thrift::protocol::T_I32, 2);
-  xfer += oprot->writeI32((int32_t)this->rslt);
+  xfer += oprot->writeI32(static_cast<int32_t>(this->rslt));
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldStop();
@@ -4800,7 +4800,7 @@ uint32_t Service_scan_rslt_on_pargs::write(::apache::thrift::protocol::TProtocol
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldBegin("rslt", ::apache::thrift::protocol::T_I32, 2);
-  xfer += oprot->writeI32((int32_t)(*(this->rslt)));
+  xfer += oprot->writeI32(static_cast<int32_t>((*(this->rslt))));
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldStop();
@@ -6298,7 +6298,7 @@ void ServiceProcessor::process_sql_mng_column(int32_t seqid, ::apache::thrift::p
   try {
     iface_->sql_mng_column(args.sql);
   } catch (Exception &e) {
-    result.e = e;
+    result.e = std::move(e);
     result.__isset.e = true;
   } catch (const std::exception& e) {
     if (this->eventHandler_.get() != nullptr) {
@@ -6355,7 +6355,7 @@ void ServiceProcessor::process_sql_list_columns(int32_t seqid, ::apache::thrift:
     iface_->sql_list_columns(result.success, args.sql);
     result.__isset.success = true;
   } catch (Exception &e) {
-    result.e = e;
+    result.e = std::move(e);
     result.__isset.e = true;
   } catch (const std::exception& e) {
     if (this->eventHandler_.get() != nullptr) {
@@ -6412,7 +6412,7 @@ void ServiceProcessor::process_sql_compact_columns(int32_t seqid, ::apache::thri
     iface_->sql_compact_columns(result.success, args.sql);
     result.__isset.success = true;
   } catch (Exception &e) {
-    result.e = e;
+    result.e = std::move(e);
     result.__isset.e = true;
   } catch (const std::exception& e) {
     if (this->eventHandler_.get() != nullptr) {
@@ -6469,7 +6469,7 @@ void ServiceProcessor::process_sql_select(int32_t seqid, ::apache::thrift::proto
     iface_->sql_select(result.success, args.sql);
     result.__isset.success = true;
   } catch (Exception &e) {
-    result.e = e;
+    result.e = std::move(e);
     result.__isset.e = true;
   } catch (const std::exception& e) {
     if (this->eventHandler_.get() != nullptr) {
@@ -6526,7 +6526,7 @@ void ServiceProcessor::process_sql_select_rslt_on_column(int32_t seqid, ::apache
     iface_->sql_select_rslt_on_column(result.success, args.sql);
     result.__isset.success = true;
   } catch (Exception &e) {
-    result.e = e;
+    result.e = std::move(e);
     result.__isset.e = true;
   } catch (const std::exception& e) {
     if (this->eventHandler_.get() != nullptr) {
@@ -6583,7 +6583,7 @@ void ServiceProcessor::process_sql_select_rslt_on_key(int32_t seqid, ::apache::t
     iface_->sql_select_rslt_on_key(result.success, args.sql);
     result.__isset.success = true;
   } catch (Exception &e) {
-    result.e = e;
+    result.e = std::move(e);
     result.__isset.e = true;
   } catch (const std::exception& e) {
     if (this->eventHandler_.get() != nullptr) {
@@ -6640,7 +6640,7 @@ void ServiceProcessor::process_sql_select_rslt_on_fraction(int32_t seqid, ::apac
     iface_->sql_select_rslt_on_fraction(result.success, args.sql);
     result.__isset.success = true;
   } catch (Exception &e) {
-    result.e = e;
+    result.e = std::move(e);
     result.__isset.e = true;
   } catch (const std::exception& e) {
     if (this->eventHandler_.get() != nullptr) {
@@ -6697,7 +6697,7 @@ void ServiceProcessor::process_sql_query(int32_t seqid, ::apache::thrift::protoc
     iface_->sql_query(result.success, args.sql, args.rslt);
     result.__isset.success = true;
   } catch (Exception &e) {
-    result.e = e;
+    result.e = std::move(e);
     result.__isset.e = true;
   } catch (const std::exception& e) {
     if (this->eventHandler_.get() != nullptr) {
@@ -6753,7 +6753,7 @@ void ServiceProcessor::process_sql_update(int32_t seqid, ::apache::thrift::proto
   try {
     iface_->sql_update(args.sql, args.updater_id);
   } catch (Exception &e) {
-    result.e = e;
+    result.e = std::move(e);
     result.__isset.e = true;
   } catch (const std::exception& e) {
     if (this->eventHandler_.get() != nullptr) {
@@ -6810,7 +6810,7 @@ void ServiceProcessor::process_exec_sql(int32_t seqid, ::apache::thrift::protoco
     iface_->exec_sql(result.success, args.sql);
     result.__isset.success = true;
   } catch (Exception &e) {
-    result.e = e;
+    result.e = std::move(e);
     result.__isset.e = true;
   } catch (const std::exception& e) {
     if (this->eventHandler_.get() != nullptr) {
@@ -6867,7 +6867,7 @@ void ServiceProcessor::process_updater_create(int32_t seqid, ::apache::thrift::p
     result.success = iface_->updater_create(args.buffer_size);
     result.__isset.success = true;
   } catch (Exception &e) {
-    result.e = e;
+    result.e = std::move(e);
     result.__isset.e = true;
   } catch (const std::exception& e) {
     if (this->eventHandler_.get() != nullptr) {
@@ -6923,7 +6923,7 @@ void ServiceProcessor::process_updater_close(int32_t seqid, ::apache::thrift::pr
   try {
     iface_->updater_close(args.id);
   } catch (Exception &e) {
-    result.e = e;
+    result.e = std::move(e);
     result.__isset.e = true;
   } catch (const std::exception& e) {
     if (this->eventHandler_.get() != nullptr) {
@@ -6979,7 +6979,7 @@ void ServiceProcessor::process_update(int32_t seqid, ::apache::thrift::protocol:
   try {
     iface_->update(args.cells, args.updater_id);
   } catch (Exception &e) {
-    result.e = e;
+    result.e = std::move(e);
     result.__isset.e = true;
   } catch (const std::exception& e) {
     if (this->eventHandler_.get() != nullptr) {
@@ -7035,7 +7035,7 @@ void ServiceProcessor::process_update_serial(int32_t seqid, ::apache::thrift::pr
   try {
     iface_->update_serial(args.cells, args.updater_id);
   } catch (Exception &e) {
-    result.e = e;
+    result.e = std::move(e);
     result.__isset.e = true;
   } catch (const std::exception& e) {
     if (this->eventHandler_.get() != nullptr) {
@@ -7091,7 +7091,7 @@ void ServiceProcessor::process_mng_column(int32_t seqid, ::apache::thrift::proto
   try {
     iface_->mng_column(args.func, args.schema);
   } catch (Exception &e) {
-    result.e = e;
+    result.e = std::move(e);
     result.__isset.e = true;
   } catch (const std::exception& e) {
     if (this->eventHandler_.get() != nullptr) {
@@ -7148,7 +7148,7 @@ void ServiceProcessor::process_list_columns(int32_t seqid, ::apache::thrift::pro
     iface_->list_columns(result.success, args.spec);
     result.__isset.success = true;
   } catch (Exception &e) {
-    result.e = e;
+    result.e = std::move(e);
     result.__isset.e = true;
   } catch (const std::exception& e) {
     if (this->eventHandler_.get() != nullptr) {
@@ -7205,7 +7205,7 @@ void ServiceProcessor::process_compact_columns(int32_t seqid, ::apache::thrift::
     iface_->compact_columns(result.success, args.spec);
     result.__isset.success = true;
   } catch (Exception &e) {
-    result.e = e;
+    result.e = std::move(e);
     result.__isset.e = true;
   } catch (const std::exception& e) {
     if (this->eventHandler_.get() != nullptr) {
@@ -7262,7 +7262,7 @@ void ServiceProcessor::process_scan(int32_t seqid, ::apache::thrift::protocol::T
     iface_->scan(result.success, args.spec);
     result.__isset.success = true;
   } catch (Exception &e) {
-    result.e = e;
+    result.e = std::move(e);
     result.__isset.e = true;
   } catch (const std::exception& e) {
     if (this->eventHandler_.get() != nullptr) {
@@ -7319,7 +7319,7 @@ void ServiceProcessor::process_scan_rslt_on_column(int32_t seqid, ::apache::thri
     iface_->scan_rslt_on_column(result.success, args.spec);
     result.__isset.success = true;
   } catch (Exception &e) {
-    result.e = e;
+    result.e = std::move(e);
     result.__isset.e = true;
   } catch (const std::exception& e) {
     if (this->eventHandler_.get() != nullptr) {
@@ -7376,7 +7376,7 @@ void ServiceProcessor::process_scan_rslt_on_key(int32_t seqid, ::apache::thrift:
     iface_->scan_rslt_on_key(result.success, args.spec);
     result.__isset.success = true;
   } catch (Exception &e) {
-    result.e = e;
+    result.e = std::move(e);
     result.__isset.e = true;
   } catch (const std::exception& e) {
     if (this->eventHandler_.get() != nullptr) {
@@ -7433,7 +7433,7 @@ void ServiceProcessor::process_scan_rslt_on_fraction(int32_t seqid, ::apache::th
     iface_->scan_rslt_on_fraction(result.success, args.spec);
     result.__isset.success = true;
   } catch (Exception &e) {
-    result.e = e;
+    result.e = std::move(e);
     result.__isset.e = true;
   } catch (const std::exception& e) {
     if (this->eventHandler_.get() != nullptr) {
@@ -7490,7 +7490,7 @@ void ServiceProcessor::process_scan_rslt_on(int32_t seqid, ::apache::thrift::pro
     iface_->scan_rslt_on(result.success, args.spec, args.rslt);
     result.__isset.success = true;
   } catch (Exception &e) {
-    result.e = e;
+    result.e = std::move(e);
     result.__isset.e = true;
   } catch (const std::exception& e) {
     if (this->eventHandler_.get() != nullptr) {
