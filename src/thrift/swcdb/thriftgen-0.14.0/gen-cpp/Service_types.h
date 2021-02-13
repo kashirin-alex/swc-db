@@ -518,7 +518,9 @@ class Exception : public ::apache::thrift::TException {
  public:
 
   Exception(const Exception&);
+  Exception(Exception&&) noexcept;
   Exception& operator=(const Exception&);
+  Exception& operator=(Exception&&) noexcept;
   Exception() noexcept
             : code(0),
               message() {
@@ -594,7 +596,9 @@ class Schema : public virtual ::apache::thrift::TBase {
  public:
 
   Schema(const Schema&);
+  Schema(Schema&&) noexcept;
   Schema& operator=(const Schema&);
+  Schema& operator=(Schema&&) noexcept;
   Schema() noexcept
          : cid(0),
            col_name(),
@@ -828,7 +832,9 @@ class SchemaPattern : public virtual ::apache::thrift::TBase {
  public:
 
   SchemaPattern(const SchemaPattern&);
+  SchemaPattern(SchemaPattern&&) noexcept;
   SchemaPattern& operator=(const SchemaPattern&);
+  SchemaPattern& operator=(SchemaPattern&&) noexcept;
   SchemaPattern() noexcept
                 : comp(static_cast<Comp::type>(0)),
                   value() {
@@ -890,7 +896,9 @@ class SpecSchemas : public virtual ::apache::thrift::TBase {
  public:
 
   SpecSchemas(const SpecSchemas&);
+  SpecSchemas(SpecSchemas&&) noexcept;
   SpecSchemas& operator=(const SpecSchemas&);
+  SpecSchemas& operator=(SpecSchemas&&) noexcept;
   SpecSchemas() noexcept {
   }
 
@@ -958,7 +966,9 @@ class SpecFlags : public virtual ::apache::thrift::TBase {
  public:
 
   SpecFlags(const SpecFlags&) noexcept;
+  SpecFlags(SpecFlags&&) noexcept;
   SpecFlags& operator=(const SpecFlags&) noexcept;
+  SpecFlags& operator=(SpecFlags&&) noexcept;
   SpecFlags() noexcept
             : limit(0),
               offset(0),
@@ -1054,7 +1064,9 @@ class SpecFraction : public virtual ::apache::thrift::TBase {
  public:
 
   SpecFraction(const SpecFraction&);
+  SpecFraction(SpecFraction&&) noexcept;
   SpecFraction& operator=(const SpecFraction&);
+  SpecFraction& operator=(SpecFraction&&) noexcept;
   SpecFraction() noexcept
                : comp(static_cast<Comp::type>(0)),
                  f() {
@@ -1115,7 +1127,9 @@ class SpecTimestamp : public virtual ::apache::thrift::TBase {
  public:
 
   SpecTimestamp(const SpecTimestamp&) noexcept;
+  SpecTimestamp(SpecTimestamp&&) noexcept;
   SpecTimestamp& operator=(const SpecTimestamp&) noexcept;
+  SpecTimestamp& operator=(SpecTimestamp&&) noexcept;
   SpecTimestamp() noexcept
                 : comp(static_cast<Comp::type>(0)),
                   ts(0) {
@@ -1176,7 +1190,9 @@ class SpecKeyInterval : public virtual ::apache::thrift::TBase {
  public:
 
   SpecKeyInterval(const SpecKeyInterval&);
+  SpecKeyInterval(SpecKeyInterval&&) noexcept;
   SpecKeyInterval& operator=(const SpecKeyInterval&);
+  SpecKeyInterval& operator=(SpecKeyInterval&&) noexcept;
   SpecKeyInterval() noexcept {
   }
 
@@ -1233,7 +1249,9 @@ class SpecValue : public virtual ::apache::thrift::TBase {
  public:
 
   SpecValue(const SpecValue&);
+  SpecValue(SpecValue&&) noexcept;
   SpecValue& operator=(const SpecValue&);
+  SpecValue& operator=(SpecValue&&) noexcept;
   SpecValue() noexcept
             : comp(static_cast<Comp::type>(0)),
               v() {
@@ -1302,7 +1320,9 @@ class SpecInterval : public virtual ::apache::thrift::TBase {
  public:
 
   SpecInterval(const SpecInterval&);
+  SpecInterval(SpecInterval&&) noexcept;
   SpecInterval& operator=(const SpecInterval&);
+  SpecInterval& operator=(SpecInterval&&) noexcept;
   SpecInterval() noexcept
                : offset_rev(0) {
   }
@@ -1432,7 +1452,9 @@ class SpecColumn : public virtual ::apache::thrift::TBase {
  public:
 
   SpecColumn(const SpecColumn&);
+  SpecColumn(SpecColumn&&) noexcept;
   SpecColumn& operator=(const SpecColumn&);
+  SpecColumn& operator=(SpecColumn&&) noexcept;
   SpecColumn() noexcept
              : cid(0) {
   }
@@ -1490,7 +1512,9 @@ class SpecValueSerial_INT64 : public virtual ::apache::thrift::TBase {
  public:
 
   SpecValueSerial_INT64(const SpecValueSerial_INT64&) noexcept;
+  SpecValueSerial_INT64(SpecValueSerial_INT64&&) noexcept;
   SpecValueSerial_INT64& operator=(const SpecValueSerial_INT64&) noexcept;
+  SpecValueSerial_INT64& operator=(SpecValueSerial_INT64&&) noexcept;
   SpecValueSerial_INT64() noexcept
                         : comp(static_cast<Comp::type>(0)),
                           v(0) {
@@ -1551,7 +1575,9 @@ class SpecValueSerial_DOUBLE : public virtual ::apache::thrift::TBase {
  public:
 
   SpecValueSerial_DOUBLE(const SpecValueSerial_DOUBLE&) noexcept;
+  SpecValueSerial_DOUBLE(SpecValueSerial_DOUBLE&&) noexcept;
   SpecValueSerial_DOUBLE& operator=(const SpecValueSerial_DOUBLE&) noexcept;
+  SpecValueSerial_DOUBLE& operator=(SpecValueSerial_DOUBLE&&) noexcept;
   SpecValueSerial_DOUBLE() noexcept
                          : comp(static_cast<Comp::type>(0)),
                            v(0) {
@@ -1612,7 +1638,9 @@ class SpecValueSerial_BYTES : public virtual ::apache::thrift::TBase {
  public:
 
   SpecValueSerial_BYTES(const SpecValueSerial_BYTES&);
+  SpecValueSerial_BYTES(SpecValueSerial_BYTES&&) noexcept;
   SpecValueSerial_BYTES& operator=(const SpecValueSerial_BYTES&);
+  SpecValueSerial_BYTES& operator=(SpecValueSerial_BYTES&&) noexcept;
   SpecValueSerial_BYTES() noexcept
                         : comp(static_cast<Comp::type>(0)),
                           v() {
@@ -1673,7 +1701,9 @@ class SpecValueSerial_KEY : public virtual ::apache::thrift::TBase {
  public:
 
   SpecValueSerial_KEY(const SpecValueSerial_KEY&);
+  SpecValueSerial_KEY(SpecValueSerial_KEY&&) noexcept;
   SpecValueSerial_KEY& operator=(const SpecValueSerial_KEY&);
+  SpecValueSerial_KEY& operator=(SpecValueSerial_KEY&&) noexcept;
   SpecValueSerial_KEY() noexcept
                       : seq(static_cast<KeySeq::type>(0)) {
   }
@@ -1733,7 +1763,9 @@ class SpecValueSerial_LI : public virtual ::apache::thrift::TBase {
  public:
 
   SpecValueSerial_LI(const SpecValueSerial_LI&);
+  SpecValueSerial_LI(SpecValueSerial_LI&&) noexcept;
   SpecValueSerial_LI& operator=(const SpecValueSerial_LI&);
+  SpecValueSerial_LI& operator=(SpecValueSerial_LI&&) noexcept;
   SpecValueSerial_LI() noexcept
                      : comp(static_cast<Comp::type>(0)) {
   }
@@ -1793,7 +1825,9 @@ class SpecValueSerial_LB : public virtual ::apache::thrift::TBase {
  public:
 
   SpecValueSerial_LB(const SpecValueSerial_LB&);
+  SpecValueSerial_LB(SpecValueSerial_LB&&) noexcept;
   SpecValueSerial_LB& operator=(const SpecValueSerial_LB&);
+  SpecValueSerial_LB& operator=(SpecValueSerial_LB&&) noexcept;
   SpecValueSerial_LB() noexcept
                      : comp(static_cast<Comp::type>(0)) {
   }
@@ -1855,7 +1889,9 @@ class SpecValueSerialField : public virtual ::apache::thrift::TBase {
  public:
 
   SpecValueSerialField(const SpecValueSerialField&);
+  SpecValueSerialField(SpecValueSerialField&&) noexcept;
   SpecValueSerialField& operator=(const SpecValueSerialField&);
+  SpecValueSerialField& operator=(SpecValueSerialField&&) noexcept;
   SpecValueSerialField() noexcept
                        : field_id(0) {
   }
@@ -1957,7 +1993,9 @@ class SpecValueSerial : public virtual ::apache::thrift::TBase {
  public:
 
   SpecValueSerial(const SpecValueSerial&);
+  SpecValueSerial(SpecValueSerial&&) noexcept;
   SpecValueSerial& operator=(const SpecValueSerial&);
+  SpecValueSerial& operator=(SpecValueSerial&&) noexcept;
   SpecValueSerial() noexcept
                   : comp(static_cast<Comp::type>(0)) {
   }
@@ -2025,7 +2063,9 @@ class SpecIntervalSerial : public virtual ::apache::thrift::TBase {
  public:
 
   SpecIntervalSerial(const SpecIntervalSerial&);
+  SpecIntervalSerial(SpecIntervalSerial&&) noexcept;
   SpecIntervalSerial& operator=(const SpecIntervalSerial&);
+  SpecIntervalSerial& operator=(SpecIntervalSerial&&) noexcept;
   SpecIntervalSerial() noexcept
                      : offset_rev(0) {
   }
@@ -2155,7 +2195,9 @@ class SpecColumnSerial : public virtual ::apache::thrift::TBase {
  public:
 
   SpecColumnSerial(const SpecColumnSerial&);
+  SpecColumnSerial(SpecColumnSerial&&) noexcept;
   SpecColumnSerial& operator=(const SpecColumnSerial&);
+  SpecColumnSerial& operator=(SpecColumnSerial&&) noexcept;
   SpecColumnSerial() noexcept
                    : cid(0) {
   }
@@ -2214,7 +2256,9 @@ class SpecScan : public virtual ::apache::thrift::TBase {
  public:
 
   SpecScan(const SpecScan&);
+  SpecScan(SpecScan&&) noexcept;
   SpecScan& operator=(const SpecScan&);
+  SpecScan& operator=(SpecScan&&) noexcept;
   SpecScan() noexcept {
   }
 
@@ -2285,7 +2329,9 @@ class UCell : public virtual ::apache::thrift::TBase {
  public:
 
   UCell(const UCell&);
+  UCell(UCell&&) noexcept;
   UCell& operator=(const UCell&);
+  UCell& operator=(UCell&&) noexcept;
   UCell() noexcept
         : f(static_cast<Flag::type>(0)),
           ts(0),
@@ -2394,7 +2440,9 @@ class CellValueSerial : public virtual ::apache::thrift::TBase {
  public:
 
   CellValueSerial(const CellValueSerial&);
+  CellValueSerial(CellValueSerial&&) noexcept;
   CellValueSerial& operator=(const CellValueSerial&);
+  CellValueSerial& operator=(CellValueSerial&&) noexcept;
   CellValueSerial() noexcept
                   : field_id(0),
                     v_int64(0),
@@ -2503,7 +2551,9 @@ class UCellSerial : public virtual ::apache::thrift::TBase {
  public:
 
   UCellSerial(const UCellSerial&);
+  UCellSerial(UCellSerial&&) noexcept;
   UCellSerial& operator=(const UCellSerial&);
+  UCellSerial& operator=(UCellSerial&&) noexcept;
   UCellSerial() noexcept
               : f(static_cast<Flag::type>(0)),
                 ts(0),
@@ -2608,7 +2658,9 @@ class Cell : public virtual ::apache::thrift::TBase {
  public:
 
   Cell(const Cell&);
+  Cell(Cell&&) noexcept;
   Cell& operator=(const Cell&);
+  Cell& operator=(Cell&&) noexcept;
   Cell() noexcept
        : c(),
          ts(0),
@@ -2686,7 +2738,9 @@ class CellSerial : public virtual ::apache::thrift::TBase {
  public:
 
   CellSerial(const CellSerial&);
+  CellSerial(CellSerial&&) noexcept;
   CellSerial& operator=(const CellSerial&);
+  CellSerial& operator=(CellSerial&&) noexcept;
   CellSerial() noexcept
              : c(),
                ts(0) {
@@ -2761,7 +2815,9 @@ class Cells : public virtual ::apache::thrift::TBase {
  public:
 
   Cells(const Cells&);
+  Cells(Cells&&) noexcept;
   Cells& operator=(const Cells&);
+  Cells& operator=(Cells&&) noexcept;
   Cells() noexcept {
   }
 
@@ -2819,7 +2875,9 @@ class CCell : public virtual ::apache::thrift::TBase {
  public:
 
   CCell(const CCell&);
+  CCell(CCell&&) noexcept;
   CCell& operator=(const CCell&);
+  CCell& operator=(CCell&&) noexcept;
   CCell() noexcept
         : ts(0),
           v() {
@@ -2887,7 +2945,9 @@ class CCellSerial : public virtual ::apache::thrift::TBase {
  public:
 
   CCellSerial(const CCellSerial&);
+  CCellSerial(CCellSerial&&) noexcept;
   CCellSerial& operator=(const CCellSerial&);
+  CCellSerial& operator=(CCellSerial&&) noexcept;
   CCellSerial() noexcept
               : ts(0) {
   }
@@ -2953,7 +3013,9 @@ class ColCells : public virtual ::apache::thrift::TBase {
  public:
 
   ColCells(const ColCells&);
+  ColCells(ColCells&&) noexcept;
   ColCells& operator=(const ColCells&);
+  ColCells& operator=(ColCells&&) noexcept;
   ColCells() noexcept {
   }
 
@@ -3011,7 +3073,9 @@ class KCell : public virtual ::apache::thrift::TBase {
  public:
 
   KCell(const KCell&);
+  KCell(KCell&&) noexcept;
   KCell& operator=(const KCell&);
+  KCell& operator=(KCell&&) noexcept;
   KCell() noexcept
         : c(),
           ts(0),
@@ -3080,7 +3144,9 @@ class KCellSerial : public virtual ::apache::thrift::TBase {
  public:
 
   KCellSerial(const KCellSerial&);
+  KCellSerial(KCellSerial&&) noexcept;
   KCellSerial& operator=(const KCellSerial&);
+  KCellSerial& operator=(KCellSerial&&) noexcept;
   KCellSerial() noexcept
               : c(),
                 ts(0) {
@@ -3148,7 +3214,9 @@ class kCells : public virtual ::apache::thrift::TBase {
  public:
 
   kCells(const kCells&);
+  kCells(kCells&&) noexcept;
   kCells& operator=(const kCells&);
+  kCells& operator=(kCells&&) noexcept;
   kCells() noexcept {
   }
 
@@ -3214,7 +3282,9 @@ class FCell : public virtual ::apache::thrift::TBase {
  public:
 
   FCell(const FCell&);
+  FCell(FCell&&) noexcept;
   FCell& operator=(const FCell&);
+  FCell& operator=(FCell&&) noexcept;
   FCell() noexcept
         : c(),
           ts(0),
@@ -3283,7 +3353,9 @@ class FCellSerial : public virtual ::apache::thrift::TBase {
  public:
 
   FCellSerial(const FCellSerial&);
+  FCellSerial(FCellSerial&&) noexcept;
   FCellSerial& operator=(const FCellSerial&);
+  FCellSerial& operator=(FCellSerial&&) noexcept;
   FCellSerial() noexcept
               : c(),
                 ts(0) {
@@ -3351,7 +3423,9 @@ class FCells : public virtual ::apache::thrift::TBase {
  public:
 
   FCells(const FCells&);
+  FCells(FCells&&) noexcept;
   FCells& operator=(const FCells&);
+  FCells& operator=(FCells&&) noexcept;
   FCells() noexcept {
   }
 
@@ -3418,7 +3492,9 @@ class CellsGroup : public virtual ::apache::thrift::TBase {
  public:
 
   CellsGroup(const CellsGroup&);
+  CellsGroup(CellsGroup&&) noexcept;
   CellsGroup& operator=(const CellsGroup&);
+  CellsGroup& operator=(CellsGroup&&) noexcept;
   CellsGroup() noexcept {
   }
 
@@ -3491,7 +3567,9 @@ class CompactResult : public virtual ::apache::thrift::TBase {
  public:
 
   CompactResult(const CompactResult&) noexcept;
+  CompactResult(CompactResult&&) noexcept;
   CompactResult& operator=(const CompactResult&) noexcept;
+  CompactResult& operator=(CompactResult&&) noexcept;
   CompactResult() noexcept
                 : cid(0),
                   err(0) {
@@ -3551,7 +3629,9 @@ class Result : public virtual ::apache::thrift::TBase {
  public:
 
   Result(const Result&);
+  Result(Result&&) noexcept;
   Result& operator=(const Result&);
+  Result& operator=(Result&&) noexcept;
   Result() noexcept {
   }
 

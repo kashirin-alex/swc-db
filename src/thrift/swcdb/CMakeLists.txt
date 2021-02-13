@@ -18,8 +18,8 @@ if(THRIFT_CPP_FOUND)
       execute_process(COMMAND rm -rf ${VER_GEN_PATH}/gen-cpp )
       execute_process(COMMAND mkdir -p ${VER_GEN_PATH}/gen-cpp )
 
-      message(STATUS "Generating Thrift C++:") # :moveable_types
-      execute_process(COMMAND thrift -r --gen cpp
+      message(STATUS "Generating Thrift C++:")
+      execute_process(COMMAND thrift -r --gen cpp:moveable_types
                       -o ${VER_GEN_PATH}/
                       ${CMAKE_CURRENT_SOURCE_DIR}/Broker.thrift)
       message("       ${VER_GEN_PATH}/gen-cpp")

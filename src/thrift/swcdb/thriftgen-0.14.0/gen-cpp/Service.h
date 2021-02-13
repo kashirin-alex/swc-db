@@ -300,7 +300,9 @@ class Service_sql_mng_column_args {
  public:
 
   Service_sql_mng_column_args(const Service_sql_mng_column_args&);
+  Service_sql_mng_column_args(Service_sql_mng_column_args&&) noexcept;
   Service_sql_mng_column_args& operator=(const Service_sql_mng_column_args&);
+  Service_sql_mng_column_args& operator=(Service_sql_mng_column_args&&) noexcept;
   Service_sql_mng_column_args() noexcept
                               : sql() {
   }
@@ -356,7 +358,9 @@ class Service_sql_mng_column_result {
  public:
 
   Service_sql_mng_column_result(const Service_sql_mng_column_result&);
+  Service_sql_mng_column_result(Service_sql_mng_column_result&&) noexcept;
   Service_sql_mng_column_result& operator=(const Service_sql_mng_column_result&);
+  Service_sql_mng_column_result& operator=(Service_sql_mng_column_result&&) noexcept;
   Service_sql_mng_column_result() noexcept {
   }
 
@@ -411,7 +415,9 @@ class Service_sql_list_columns_args {
  public:
 
   Service_sql_list_columns_args(const Service_sql_list_columns_args&);
+  Service_sql_list_columns_args(Service_sql_list_columns_args&&) noexcept;
   Service_sql_list_columns_args& operator=(const Service_sql_list_columns_args&);
+  Service_sql_list_columns_args& operator=(Service_sql_list_columns_args&&) noexcept;
   Service_sql_list_columns_args() noexcept
                                 : sql() {
   }
@@ -468,7 +474,9 @@ class Service_sql_list_columns_result {
  public:
 
   Service_sql_list_columns_result(const Service_sql_list_columns_result&);
+  Service_sql_list_columns_result(Service_sql_list_columns_result&&) noexcept;
   Service_sql_list_columns_result& operator=(const Service_sql_list_columns_result&);
+  Service_sql_list_columns_result& operator=(Service_sql_list_columns_result&&) noexcept;
   Service_sql_list_columns_result() noexcept {
   }
 
@@ -530,7 +538,9 @@ class Service_sql_compact_columns_args {
  public:
 
   Service_sql_compact_columns_args(const Service_sql_compact_columns_args&);
+  Service_sql_compact_columns_args(Service_sql_compact_columns_args&&) noexcept;
   Service_sql_compact_columns_args& operator=(const Service_sql_compact_columns_args&);
+  Service_sql_compact_columns_args& operator=(Service_sql_compact_columns_args&&) noexcept;
   Service_sql_compact_columns_args() noexcept
                                    : sql() {
   }
@@ -587,7 +597,9 @@ class Service_sql_compact_columns_result {
  public:
 
   Service_sql_compact_columns_result(const Service_sql_compact_columns_result&);
+  Service_sql_compact_columns_result(Service_sql_compact_columns_result&&) noexcept;
   Service_sql_compact_columns_result& operator=(const Service_sql_compact_columns_result&);
+  Service_sql_compact_columns_result& operator=(Service_sql_compact_columns_result&&) noexcept;
   Service_sql_compact_columns_result() noexcept {
   }
 
@@ -649,7 +661,9 @@ class Service_sql_select_args {
  public:
 
   Service_sql_select_args(const Service_sql_select_args&);
+  Service_sql_select_args(Service_sql_select_args&&) noexcept;
   Service_sql_select_args& operator=(const Service_sql_select_args&);
+  Service_sql_select_args& operator=(Service_sql_select_args&&) noexcept;
   Service_sql_select_args() noexcept
                           : sql() {
   }
@@ -706,7 +720,9 @@ class Service_sql_select_result {
  public:
 
   Service_sql_select_result(const Service_sql_select_result&);
+  Service_sql_select_result(Service_sql_select_result&&) noexcept;
   Service_sql_select_result& operator=(const Service_sql_select_result&);
+  Service_sql_select_result& operator=(Service_sql_select_result&&) noexcept;
   Service_sql_select_result() noexcept {
   }
 
@@ -768,7 +784,9 @@ class Service_sql_select_rslt_on_column_args {
  public:
 
   Service_sql_select_rslt_on_column_args(const Service_sql_select_rslt_on_column_args&);
+  Service_sql_select_rslt_on_column_args(Service_sql_select_rslt_on_column_args&&) noexcept;
   Service_sql_select_rslt_on_column_args& operator=(const Service_sql_select_rslt_on_column_args&);
+  Service_sql_select_rslt_on_column_args& operator=(Service_sql_select_rslt_on_column_args&&) noexcept;
   Service_sql_select_rslt_on_column_args() noexcept
                                          : sql() {
   }
@@ -825,7 +843,9 @@ class Service_sql_select_rslt_on_column_result {
  public:
 
   Service_sql_select_rslt_on_column_result(const Service_sql_select_rslt_on_column_result&);
+  Service_sql_select_rslt_on_column_result(Service_sql_select_rslt_on_column_result&&) noexcept;
   Service_sql_select_rslt_on_column_result& operator=(const Service_sql_select_rslt_on_column_result&);
+  Service_sql_select_rslt_on_column_result& operator=(Service_sql_select_rslt_on_column_result&&) noexcept;
   Service_sql_select_rslt_on_column_result() noexcept {
   }
 
@@ -887,7 +907,9 @@ class Service_sql_select_rslt_on_key_args {
  public:
 
   Service_sql_select_rslt_on_key_args(const Service_sql_select_rslt_on_key_args&);
+  Service_sql_select_rslt_on_key_args(Service_sql_select_rslt_on_key_args&&) noexcept;
   Service_sql_select_rslt_on_key_args& operator=(const Service_sql_select_rslt_on_key_args&);
+  Service_sql_select_rslt_on_key_args& operator=(Service_sql_select_rslt_on_key_args&&) noexcept;
   Service_sql_select_rslt_on_key_args() noexcept
                                       : sql() {
   }
@@ -944,7 +966,9 @@ class Service_sql_select_rslt_on_key_result {
  public:
 
   Service_sql_select_rslt_on_key_result(const Service_sql_select_rslt_on_key_result&);
+  Service_sql_select_rslt_on_key_result(Service_sql_select_rslt_on_key_result&&) noexcept;
   Service_sql_select_rslt_on_key_result& operator=(const Service_sql_select_rslt_on_key_result&);
+  Service_sql_select_rslt_on_key_result& operator=(Service_sql_select_rslt_on_key_result&&) noexcept;
   Service_sql_select_rslt_on_key_result() noexcept {
   }
 
@@ -1006,7 +1030,9 @@ class Service_sql_select_rslt_on_fraction_args {
  public:
 
   Service_sql_select_rslt_on_fraction_args(const Service_sql_select_rslt_on_fraction_args&);
+  Service_sql_select_rslt_on_fraction_args(Service_sql_select_rslt_on_fraction_args&&) noexcept;
   Service_sql_select_rslt_on_fraction_args& operator=(const Service_sql_select_rslt_on_fraction_args&);
+  Service_sql_select_rslt_on_fraction_args& operator=(Service_sql_select_rslt_on_fraction_args&&) noexcept;
   Service_sql_select_rslt_on_fraction_args() noexcept
                                            : sql() {
   }
@@ -1063,7 +1089,9 @@ class Service_sql_select_rslt_on_fraction_result {
  public:
 
   Service_sql_select_rslt_on_fraction_result(const Service_sql_select_rslt_on_fraction_result&);
+  Service_sql_select_rslt_on_fraction_result(Service_sql_select_rslt_on_fraction_result&&) noexcept;
   Service_sql_select_rslt_on_fraction_result& operator=(const Service_sql_select_rslt_on_fraction_result&);
+  Service_sql_select_rslt_on_fraction_result& operator=(Service_sql_select_rslt_on_fraction_result&&) noexcept;
   Service_sql_select_rslt_on_fraction_result() noexcept {
   }
 
@@ -1126,7 +1154,9 @@ class Service_sql_query_args {
  public:
 
   Service_sql_query_args(const Service_sql_query_args&);
+  Service_sql_query_args(Service_sql_query_args&&) noexcept;
   Service_sql_query_args& operator=(const Service_sql_query_args&);
+  Service_sql_query_args& operator=(Service_sql_query_args&&) noexcept;
   Service_sql_query_args() noexcept
                          : sql(),
                            rslt(static_cast<CellsResult::type>(0)) {
@@ -1200,7 +1230,9 @@ class Service_sql_query_result {
  public:
 
   Service_sql_query_result(const Service_sql_query_result&);
+  Service_sql_query_result(Service_sql_query_result&&) noexcept;
   Service_sql_query_result& operator=(const Service_sql_query_result&);
+  Service_sql_query_result& operator=(Service_sql_query_result&&) noexcept;
   Service_sql_query_result() noexcept {
   }
 
@@ -1263,7 +1295,9 @@ class Service_sql_update_args {
  public:
 
   Service_sql_update_args(const Service_sql_update_args&);
+  Service_sql_update_args(Service_sql_update_args&&) noexcept;
   Service_sql_update_args& operator=(const Service_sql_update_args&);
+  Service_sql_update_args& operator=(Service_sql_update_args&&) noexcept;
   Service_sql_update_args() noexcept
                           : sql(),
                             updater_id(0LL) {
@@ -1332,7 +1366,9 @@ class Service_sql_update_result {
  public:
 
   Service_sql_update_result(const Service_sql_update_result&);
+  Service_sql_update_result(Service_sql_update_result&&) noexcept;
   Service_sql_update_result& operator=(const Service_sql_update_result&);
+  Service_sql_update_result& operator=(Service_sql_update_result&&) noexcept;
   Service_sql_update_result() noexcept {
   }
 
@@ -1387,7 +1423,9 @@ class Service_exec_sql_args {
  public:
 
   Service_exec_sql_args(const Service_exec_sql_args&);
+  Service_exec_sql_args(Service_exec_sql_args&&) noexcept;
   Service_exec_sql_args& operator=(const Service_exec_sql_args&);
+  Service_exec_sql_args& operator=(Service_exec_sql_args&&) noexcept;
   Service_exec_sql_args() noexcept
                         : sql() {
   }
@@ -1444,7 +1482,9 @@ class Service_exec_sql_result {
  public:
 
   Service_exec_sql_result(const Service_exec_sql_result&);
+  Service_exec_sql_result(Service_exec_sql_result&&) noexcept;
   Service_exec_sql_result& operator=(const Service_exec_sql_result&);
+  Service_exec_sql_result& operator=(Service_exec_sql_result&&) noexcept;
   Service_exec_sql_result() noexcept {
   }
 
@@ -1506,7 +1546,9 @@ class Service_updater_create_args {
  public:
 
   Service_updater_create_args(const Service_updater_create_args&) noexcept;
+  Service_updater_create_args(Service_updater_create_args&&) noexcept;
   Service_updater_create_args& operator=(const Service_updater_create_args&) noexcept;
+  Service_updater_create_args& operator=(Service_updater_create_args&&) noexcept;
   Service_updater_create_args() noexcept
                               : buffer_size(0) {
   }
@@ -1563,7 +1605,9 @@ class Service_updater_create_result {
  public:
 
   Service_updater_create_result(const Service_updater_create_result&);
+  Service_updater_create_result(Service_updater_create_result&&) noexcept;
   Service_updater_create_result& operator=(const Service_updater_create_result&);
+  Service_updater_create_result& operator=(Service_updater_create_result&&) noexcept;
   Service_updater_create_result() noexcept
                                 : success(0) {
   }
@@ -1626,7 +1670,9 @@ class Service_updater_close_args {
  public:
 
   Service_updater_close_args(const Service_updater_close_args&) noexcept;
+  Service_updater_close_args(Service_updater_close_args&&) noexcept;
   Service_updater_close_args& operator=(const Service_updater_close_args&) noexcept;
+  Service_updater_close_args& operator=(Service_updater_close_args&&) noexcept;
   Service_updater_close_args() noexcept
                              : id(0) {
   }
@@ -1682,7 +1728,9 @@ class Service_updater_close_result {
  public:
 
   Service_updater_close_result(const Service_updater_close_result&);
+  Service_updater_close_result(Service_updater_close_result&&) noexcept;
   Service_updater_close_result& operator=(const Service_updater_close_result&);
+  Service_updater_close_result& operator=(Service_updater_close_result&&) noexcept;
   Service_updater_close_result() noexcept {
   }
 
@@ -1738,7 +1786,9 @@ class Service_update_args {
  public:
 
   Service_update_args(const Service_update_args&);
+  Service_update_args(Service_update_args&&) noexcept;
   Service_update_args& operator=(const Service_update_args&);
+  Service_update_args& operator=(Service_update_args&&) noexcept;
   Service_update_args() noexcept
                       : updater_id(0LL) {
   }
@@ -1806,7 +1856,9 @@ class Service_update_result {
  public:
 
   Service_update_result(const Service_update_result&);
+  Service_update_result(Service_update_result&&) noexcept;
   Service_update_result& operator=(const Service_update_result&);
+  Service_update_result& operator=(Service_update_result&&) noexcept;
   Service_update_result() noexcept {
   }
 
@@ -1862,7 +1914,9 @@ class Service_update_serial_args {
  public:
 
   Service_update_serial_args(const Service_update_serial_args&);
+  Service_update_serial_args(Service_update_serial_args&&) noexcept;
   Service_update_serial_args& operator=(const Service_update_serial_args&);
+  Service_update_serial_args& operator=(Service_update_serial_args&&) noexcept;
   Service_update_serial_args() noexcept
                              : updater_id(0LL) {
   }
@@ -1930,7 +1984,9 @@ class Service_update_serial_result {
  public:
 
   Service_update_serial_result(const Service_update_serial_result&);
+  Service_update_serial_result(Service_update_serial_result&&) noexcept;
   Service_update_serial_result& operator=(const Service_update_serial_result&);
+  Service_update_serial_result& operator=(Service_update_serial_result&&) noexcept;
   Service_update_serial_result() noexcept {
   }
 
@@ -1986,7 +2042,9 @@ class Service_mng_column_args {
  public:
 
   Service_mng_column_args(const Service_mng_column_args&);
+  Service_mng_column_args(Service_mng_column_args&&) noexcept;
   Service_mng_column_args& operator=(const Service_mng_column_args&);
+  Service_mng_column_args& operator=(Service_mng_column_args&&) noexcept;
   Service_mng_column_args() noexcept
                           : func(static_cast<SchemaFunc::type>(0)) {
   }
@@ -2058,7 +2116,9 @@ class Service_mng_column_result {
  public:
 
   Service_mng_column_result(const Service_mng_column_result&);
+  Service_mng_column_result(Service_mng_column_result&&) noexcept;
   Service_mng_column_result& operator=(const Service_mng_column_result&);
+  Service_mng_column_result& operator=(Service_mng_column_result&&) noexcept;
   Service_mng_column_result() noexcept {
   }
 
@@ -2113,7 +2173,9 @@ class Service_list_columns_args {
  public:
 
   Service_list_columns_args(const Service_list_columns_args&);
+  Service_list_columns_args(Service_list_columns_args&&) noexcept;
   Service_list_columns_args& operator=(const Service_list_columns_args&);
+  Service_list_columns_args& operator=(Service_list_columns_args&&) noexcept;
   Service_list_columns_args() noexcept {
   }
 
@@ -2169,7 +2231,9 @@ class Service_list_columns_result {
  public:
 
   Service_list_columns_result(const Service_list_columns_result&);
+  Service_list_columns_result(Service_list_columns_result&&) noexcept;
   Service_list_columns_result& operator=(const Service_list_columns_result&);
+  Service_list_columns_result& operator=(Service_list_columns_result&&) noexcept;
   Service_list_columns_result() noexcept {
   }
 
@@ -2231,7 +2295,9 @@ class Service_compact_columns_args {
  public:
 
   Service_compact_columns_args(const Service_compact_columns_args&);
+  Service_compact_columns_args(Service_compact_columns_args&&) noexcept;
   Service_compact_columns_args& operator=(const Service_compact_columns_args&);
+  Service_compact_columns_args& operator=(Service_compact_columns_args&&) noexcept;
   Service_compact_columns_args() noexcept {
   }
 
@@ -2287,7 +2353,9 @@ class Service_compact_columns_result {
  public:
 
   Service_compact_columns_result(const Service_compact_columns_result&);
+  Service_compact_columns_result(Service_compact_columns_result&&) noexcept;
   Service_compact_columns_result& operator=(const Service_compact_columns_result&);
+  Service_compact_columns_result& operator=(Service_compact_columns_result&&) noexcept;
   Service_compact_columns_result() noexcept {
   }
 
@@ -2349,7 +2417,9 @@ class Service_scan_args {
  public:
 
   Service_scan_args(const Service_scan_args&);
+  Service_scan_args(Service_scan_args&&) noexcept;
   Service_scan_args& operator=(const Service_scan_args&);
+  Service_scan_args& operator=(Service_scan_args&&) noexcept;
   Service_scan_args() noexcept {
   }
 
@@ -2405,7 +2475,9 @@ class Service_scan_result {
  public:
 
   Service_scan_result(const Service_scan_result&);
+  Service_scan_result(Service_scan_result&&) noexcept;
   Service_scan_result& operator=(const Service_scan_result&);
+  Service_scan_result& operator=(Service_scan_result&&) noexcept;
   Service_scan_result() noexcept {
   }
 
@@ -2467,7 +2539,9 @@ class Service_scan_rslt_on_column_args {
  public:
 
   Service_scan_rslt_on_column_args(const Service_scan_rslt_on_column_args&);
+  Service_scan_rslt_on_column_args(Service_scan_rslt_on_column_args&&) noexcept;
   Service_scan_rslt_on_column_args& operator=(const Service_scan_rslt_on_column_args&);
+  Service_scan_rslt_on_column_args& operator=(Service_scan_rslt_on_column_args&&) noexcept;
   Service_scan_rslt_on_column_args() noexcept {
   }
 
@@ -2523,7 +2597,9 @@ class Service_scan_rslt_on_column_result {
  public:
 
   Service_scan_rslt_on_column_result(const Service_scan_rslt_on_column_result&);
+  Service_scan_rslt_on_column_result(Service_scan_rslt_on_column_result&&) noexcept;
   Service_scan_rslt_on_column_result& operator=(const Service_scan_rslt_on_column_result&);
+  Service_scan_rslt_on_column_result& operator=(Service_scan_rslt_on_column_result&&) noexcept;
   Service_scan_rslt_on_column_result() noexcept {
   }
 
@@ -2585,7 +2661,9 @@ class Service_scan_rslt_on_key_args {
  public:
 
   Service_scan_rslt_on_key_args(const Service_scan_rslt_on_key_args&);
+  Service_scan_rslt_on_key_args(Service_scan_rslt_on_key_args&&) noexcept;
   Service_scan_rslt_on_key_args& operator=(const Service_scan_rslt_on_key_args&);
+  Service_scan_rslt_on_key_args& operator=(Service_scan_rslt_on_key_args&&) noexcept;
   Service_scan_rslt_on_key_args() noexcept {
   }
 
@@ -2641,7 +2719,9 @@ class Service_scan_rslt_on_key_result {
  public:
 
   Service_scan_rslt_on_key_result(const Service_scan_rslt_on_key_result&);
+  Service_scan_rslt_on_key_result(Service_scan_rslt_on_key_result&&) noexcept;
   Service_scan_rslt_on_key_result& operator=(const Service_scan_rslt_on_key_result&);
+  Service_scan_rslt_on_key_result& operator=(Service_scan_rslt_on_key_result&&) noexcept;
   Service_scan_rslt_on_key_result() noexcept {
   }
 
@@ -2703,7 +2783,9 @@ class Service_scan_rslt_on_fraction_args {
  public:
 
   Service_scan_rslt_on_fraction_args(const Service_scan_rslt_on_fraction_args&);
+  Service_scan_rslt_on_fraction_args(Service_scan_rslt_on_fraction_args&&) noexcept;
   Service_scan_rslt_on_fraction_args& operator=(const Service_scan_rslt_on_fraction_args&);
+  Service_scan_rslt_on_fraction_args& operator=(Service_scan_rslt_on_fraction_args&&) noexcept;
   Service_scan_rslt_on_fraction_args() noexcept {
   }
 
@@ -2759,7 +2841,9 @@ class Service_scan_rslt_on_fraction_result {
  public:
 
   Service_scan_rslt_on_fraction_result(const Service_scan_rslt_on_fraction_result&);
+  Service_scan_rslt_on_fraction_result(Service_scan_rslt_on_fraction_result&&) noexcept;
   Service_scan_rslt_on_fraction_result& operator=(const Service_scan_rslt_on_fraction_result&);
+  Service_scan_rslt_on_fraction_result& operator=(Service_scan_rslt_on_fraction_result&&) noexcept;
   Service_scan_rslt_on_fraction_result() noexcept {
   }
 
@@ -2822,7 +2906,9 @@ class Service_scan_rslt_on_args {
  public:
 
   Service_scan_rslt_on_args(const Service_scan_rslt_on_args&);
+  Service_scan_rslt_on_args(Service_scan_rslt_on_args&&) noexcept;
   Service_scan_rslt_on_args& operator=(const Service_scan_rslt_on_args&);
+  Service_scan_rslt_on_args& operator=(Service_scan_rslt_on_args&&) noexcept;
   Service_scan_rslt_on_args() noexcept
                             : rslt(static_cast<CellsResult::type>(0)) {
   }
@@ -2895,7 +2981,9 @@ class Service_scan_rslt_on_result {
  public:
 
   Service_scan_rslt_on_result(const Service_scan_rslt_on_result&);
+  Service_scan_rslt_on_result(Service_scan_rslt_on_result&&) noexcept;
   Service_scan_rslt_on_result& operator=(const Service_scan_rslt_on_result&);
+  Service_scan_rslt_on_result& operator=(Service_scan_rslt_on_result&&) noexcept;
   Service_scan_rslt_on_result() noexcept {
   }
 
