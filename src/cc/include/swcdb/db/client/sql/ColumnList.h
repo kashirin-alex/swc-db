@@ -13,6 +13,12 @@
 
 namespace SWC { namespace client { namespace SQL {
 
+
+enum ColumnOutputFlag : uint8_t {
+  ONLY_CID  = 0x01
+};
+
+
 class ColumnList final : public Reader {
 
   public:
@@ -24,9 +30,15 @@ class ColumnList final : public Reader {
 
   ~ColumnList();
 
+  int parse_list_columns(const char* expect_cmd, uint8_t& output_flags);
+
   int parse_list_columns(const char* expect_cmd);
 
   private:
+
+  void _parse_list_columns(const char* expect_cmd);
+
+  void parse_list_columns();
 
   void read_columns(std::vector<DB::Schema::Ptr>& cols, const char* stop);
 

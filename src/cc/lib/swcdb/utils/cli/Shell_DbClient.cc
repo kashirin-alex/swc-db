@@ -61,7 +61,8 @@ DbClient::DbClient()
   options.push_back(
     new Option(
       "list columns",
-      {"list|get column|s [(NAME|ID)|Comp'expr'..];"},
+      {"list|get column|s [OUTPUT_FLAGS] [(NAME|ID)|Comp'expr'..];",
+       "* OUTPUT_FLAGS: OUTPUT_ONLY_CID"},
       [ptr=this](std::string& cmd){return ptr->list_columns(cmd);},
       new re2::RE2(
         "(?i)^(get|list)\\s+((column(|s))|(schema|s))(.*|$)")
@@ -247,7 +248,9 @@ bool DbClient::list_columns(std::string& cmd) {
   std::vector<DB::Schema::Ptr> schemas;
   Comm::Protocol::Mngr::Params::ColumnListReq params;
   std::string message;
-  client::SQL::parse_list_columns(err, cmd, schemas, params, message, "list");
+  uint8_t output_flags = 0;
+  client::SQL::parse_list_columns(
+    err, cmd, schemas, params, output_flags, message, "list");
   if(err)
     return error(message);
 
@@ -280,9 +283,15 @@ bool DbClient::list_columns(std::string& cmd) {
     });
 
   Core::MutexSptd::scope lock(Core::logger.mutex);
-  for(auto& schema : schemas) {
-    schema->display(SWC_LOG_OSTREAM);
-    SWC_LOG_OSTREAM << std::endl;
+  if(output_flags & client::SQL::ColumnOutputFlag::ONLY_CID) {
+    for(auto& schema : schemas) {
+      SWC_LOG_OSTREAM << schema->cid << std::endl;
+    }
+  } else {
+    for(auto& schema : schemas) {
+      schema->display(SWC_LOG_OSTREAM);
+      SWC_LOG_OSTREAM << std::endl;
+    }
   }
   return true;
 }

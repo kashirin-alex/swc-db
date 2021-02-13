@@ -1,12 +1,14 @@
 ---
-title: CLI SWC-DB(client) 
+title: CLI SWC-DB(client)
 sort: 1
 ---
 
 
 # Using the SWC-DB(client) CLI - The SWC-DB DB-Client Shell
 The DB-Client is a client implementing the [SQL]({{ site.baseurl }}/use/sql/) commands and syntax whereas it has additional Flags and commands.
- 
+
+* [A Backup & Restore procedure](backup_restore/)
+
 
 ##### ENTER SWC-DB(client) CLI:
 ```bash
@@ -29,7 +31,8 @@ Usage Help:  'command' [options];
   add column        add column|schema (schema definitions [name=value ]);
   modify column     modify column|schema (schema definitions [name=value ]);
   delete column     delete column|schema (schema definitions [name=value ]);
-  list columns      list|get column|s [(NAME|ID)|Comp'expr'..];
+  list columns      list|get column|s [OUTPUT_FLAGS] [(NAME|ID)|Comp'expr'..];
+                    * OUTPUT_FLAGS: OUTPUT_ONLY_CID
   compact column    compact column|s [(NAME|ID)|Comp'expr',..];
   select            select where [Columns[Cells[Interval Flags]]] Flags DisplayFlags;
                     -> select where COL(NAME|ID|Comp'expr',)=(cells=(Interval Flags)) AND

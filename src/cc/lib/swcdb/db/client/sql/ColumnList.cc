@@ -15,17 +15,39 @@ ColumnList::ColumnList(const std::string& sql, std::vector<DB::Schema::Ptr>& sch
                       : Reader(sql, message), schemas(schemas) {
 }
 
+ColumnList::~ColumnList() {}
+
+int ColumnList::parse_list_columns(const char* expect_cmd,
+                                   uint8_t& output_flags) {
+  _parse_list_columns(expect_cmd);
+  if(err)
+    return err;
+  bool any = true;
+  while(any && remain && !err) {
+    if(found_space())
+      continue;
+    if((any = found_token("OUTPUT_ONLY_CID", 15))) {
+      output_flags |= ColumnOutputFlag::ONLY_CID;
+      continue;
+    }
+  }
+  if(!err)
+    parse_list_columns();
+  return err;
+}
+
 int ColumnList::parse_list_columns(const char* expect_cmd) {
+  _parse_list_columns(expect_cmd);
+  if(!err)
+    parse_list_columns();
+  return err;
+}
+
+void ColumnList::_parse_list_columns(const char* expect_cmd) {
   bool token_cmd = false;
   bool token_typ = false;
-  bool bracket = false;
-  char stop[3];
-  stop[0] = ',';
-  stop[1] = ' ';
-  stop[2] = 0;
 
   while(remain && !err) {
-
     if(found_space())
       continue;
 
@@ -43,10 +65,23 @@ int ColumnList::parse_list_columns(const char* expect_cmd) {
       token_typ = true;
       continue;
     }
-    if(!token_typ) {
-      expect_token("columns", 7, token_typ);
+    if(token_typ)
       break;
-    }
+    expect_token("columns", 7, token_typ);
+    break;
+  }
+}
+
+void ColumnList::parse_list_columns() {
+  bool bracket = false;
+  char stop[3];
+  stop[0] = ',';
+  stop[1] = ' ';
+  stop[2] = 0;
+
+  while(remain && !err) {
+    if(found_space())
+      continue;
 
     if(found_char('[')) {
       stop[1] = ']';
@@ -64,11 +99,8 @@ int ColumnList::parse_list_columns(const char* expect_cmd) {
       expect_token(&stop[1], 1, bracket);
     break;
   }
-  return err;
 }
 
-ColumnList::~ColumnList() {}
-  
 void ColumnList::read_columns(std::vector<DB::Schema::Ptr>& cols,
                               const char* stop) {
   std::string col_name;
