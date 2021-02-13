@@ -86,15 +86,20 @@ void checksum_i32(const uint8_t* start, const uint8_t* end, uint8_t** ptr,
 
 
 
-void checksum_i32_chk_err(uint32_t checksum, uint32_t computed);
+bool checksum_i32_log_chk(uint32_t checksum, const uint8_t* base,
+                          uint32_t len);
+
+
 
 extern SWC_CAN_INLINE
 bool checksum_i32_chk(uint32_t checksum, const uint8_t* base, uint32_t len) {
-  uint32_t computed = checksum32(base, len);
-  if(checksum == computed)
-    return true;
-  checksum_i32_chk_err(checksum, computed);
-  return false;
+  return checksum == checksum32(base, len);
+}
+
+extern SWC_CAN_INLINE
+bool checksum_i32_chk(uint32_t checksum, const uint8_t* base, uint32_t len,
+                      uint32_t* computed) {
+  return checksum == (*computed = checksum32(base, len));
 }
 
 extern SWC_CAN_INLINE

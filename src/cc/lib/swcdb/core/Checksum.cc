@@ -11,9 +11,15 @@ namespace SWC { namespace Core {
 
 
 
-void checksum_i32_chk_err(uint32_t original, uint32_t computed) {
-  SWC_LOGF(LOG_ERROR, "checksum_i32_chk, original(%u) != computed(%u)", 
-            original, computed);
+bool checksum_i32_log_chk(uint32_t checksum, const uint8_t* base,
+                          uint32_t len) {
+  uint32_t computed = checksum32(base, len);
+  if(checksum == computed)
+    return true;
+  SWC_LOGF(LOG_ERROR,
+    "checksum32, original(%u) != computed(%u)",
+    checksum, computed);
+  return false;
 }
 
 
