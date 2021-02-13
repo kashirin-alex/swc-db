@@ -11,7 +11,30 @@
 
 
 
-[_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.4.16...master)
+[_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.4.17...master)
+******
+
+
+
+
+### [SWC-DB v0.4.17](https://github.com/kashirin-alex/swc-db/releases/tag/v0.4.17) (2021-02-05)
+
+    moved specific functions to header impl. in DB::Cells::Mutable and DB::Cell
+    added void Core::BufferDyn::take_ownership(BufferT& other)
+    added classes Core::BufferStream{Out,In} + _ZSTD
+    added 'zst' ext. support for TSV files in dump & load commands of SWC-DB(client)>
+    added FORMAT syntax: split=Bytes ext=zst level=INT in 'dump' command
+    added support in dump & load for using specific file-system for Write/Read
+    added FS syntax: fs=Type in 'load' & 'dump' command
+    changed PATH syntax to 'path=/PATH' in 'load' & 'dump' command
+    changed FS::Interface::Ptr to std::shared_ptr<FS::Interface>
+    fixed SONAME in cmake INSTALL_LIBS macro, bad use case of CMAKE_MODULE_PATH
+    added OUTPUT_FLAGS to shell::DbClient 'list columns' command
+    removed SWC_LOGF from checksum_i32_chk + added checksum_i32_log_chk (perf.)
+    updated for Apache-Thrift 0.14.0 + github.com/apache/thrift/pull/2318
+    added Move Contructors and Assignments in Thrift::Service
+
+[_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.4.16...v0.4.17)
 ******
 
 
