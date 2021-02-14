@@ -3,20 +3,17 @@
 # License details at <https://github.com/kashirin-alex/swc-db/#license>
 
 
-if(NOT SWC_BUILD_PKG OR NOT SWC_BUILD_PKG MATCHES "^(pam|lib-thrift)")
+if(NOT SWC_BUILD_PKG OR 
+    SWC_BUILD_PKG STREQUAL "lib-fs-broker" OR
+    NOT SWC_BUILD_PKG MATCHES "^(lib-fs|pam|lib-thrift)")
   
-  if(NOT SWC_BUILD_PKG OR SWC_BUILD_PKG STREQUAL "lib-core")
-    SET_DEPS(NAME "ASIO"  REQUIRED TRUE LIB_PATHS "" INC_PATHS ${ASIO_INCLUDE_PATH} STATIC  SHARED  INCLUDE asio.hpp)
-  endif()
+  SET_DEPS(NAME "ASIO"  REQUIRED TRUE LIB_PATHS "" INC_PATHS ${ASIO_INCLUDE_PATH} STATIC  SHARED  INCLUDE asio.hpp)
 
   SET_DEPS(NAME "RE2" REQUIRED TRUE LIB_PATHS "" INC_PATHS "" STATIC libre2.a SHARED re2 INCLUDE re2/re2.h INSTALL TRUE)
-
-
 
   SET_DEPS(NAME "SNAPPY" REQUIRED TRUE LIB_PATHS "" INC_PATHS "" STATIC libsnappy.a SHARED snappy INCLUDE snappy.h INSTALL TRUE)
 
   SET_DEPS(NAME "ZSTD"  REQUIRED TRUE LIB_PATHS "" INC_PATHS "" STATIC libzstd.a SHARED zstd INCLUDE zstd.h INSTALL TRUE)
-
 
   if(SWC_DEFAULT_ENCODER)
     if(NOT SWC_DEFAULT_ENCODER STREQUAL ZSTD AND
@@ -29,22 +26,21 @@ if(NOT SWC_BUILD_PKG OR NOT SWC_BUILD_PKG MATCHES "^(pam|lib-thrift)")
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DSWC_DEFAULT_ENCODER=${SWC_DEFAULT_ENCODER}")
   endif()
   
+  
+  SET_DEPS(NAME "ZLIB"  REQUIRED TRUE LIB_PATHS "" INC_PATHS "" STATIC libz.a SHARED z INCLUDE zlib.h INSTALL TRUE)
+
+  SET_DEPS(
+    NAME      "SSL"
+    REQUIRED  TRUE
+    LIB_PATHS /usr/local/ssl/lib
+    INC_PATHS /usr/local/ssl/include
+    STATIC    libssl.a libcrypto.a
+    SHARED    ssl crypto
+    INCLUDE   openssl/ssl.h openssl/crypto.h
+    INSTALL   TRUE
+  )
 endif()
 
-SET_DEPS(NAME "ZLIB"  REQUIRED TRUE LIB_PATHS "" INC_PATHS "" STATIC libz.a SHARED z INCLUDE zlib.h INSTALL TRUE)
-
-
-
-SET_DEPS(
-  NAME      "SSL"
-  REQUIRED  TRUE
-  LIB_PATHS /usr/local/ssl/lib
-  INC_PATHS /usr/local/ssl/include
-  STATIC    libssl.a libcrypto.a
-  SHARED    ssl crypto
-  INCLUDE   openssl/ssl.h openssl/crypto.h
-  INSTALL   TRUE
-)
 
 
 if(NOT SWC_BUILD_PKG OR SWC_BUILD_PKG STREQUAL "utils")

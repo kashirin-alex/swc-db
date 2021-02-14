@@ -19,7 +19,6 @@ license=('GPLv3')
 
 
 depends=(
-  'swcdb-env'
   'swcdb-lib-core'
 )
 makedepends=(

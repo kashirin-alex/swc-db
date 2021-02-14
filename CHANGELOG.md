@@ -17,7 +17,7 @@
 
 
 
-### [SWC-DB v0.4.17](https://github.com/kashirin-alex/swc-db/releases/tag/v0.4.17) (2021-02-13)
+### [SWC-DB v0.4.17](https://github.com/kashirin-alex/swc-db/releases/tag/v0.4.17) (2021-02-14)
 
     moved specific functions to header impl. in DB::Cells::Mutable and DB::Cell
     added void Core::BufferDyn::take_ownership(BufferT& other)

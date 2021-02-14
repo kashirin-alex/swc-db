@@ -7,7 +7,22 @@
 
 _user="swcdb_builder"
 
-_packages=("swcdb-env swcdb-lib-core swcdb-lib swcdb-lib-fs swcdb-lib-fs-local swcdb-lib-fs-broker swcdb-lib-fs-ceph hdfs-lib-cpp swcdb-lib-fs-hadoop swcdb-lib-fs-hadoop-jvm swcdb-lib-thrift swcdb-lib-thrift-c swcdb-manager swcdb-ranger swcdb-fsbroker swcdb-thiriftbroker swcdb-utils")
+_packages=("swcdb-env
+swcdb-lib-core
+swcdb-lib
+swcdb-lib-fs
+swcdb-lib-fs-local
+swcdb-lib-fs-broker
+swcdb-lib-fs-ceph
+swcdb-lib-fs-hadoop
+swcdb-lib-fs-hadoop-jvm
+swcdb-lib-thrift
+swcdb-lib-thrift-c
+swcdb-manager
+swcdb-ranger
+swcdb-fsbroker
+swcdb-thriftbroker
+swcdb-utils")
 
 
 pacman -Syu;

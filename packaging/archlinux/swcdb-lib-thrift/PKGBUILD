@@ -19,9 +19,6 @@ license=('GPLv3')
 
 
 depends=(
-  'libevent'
-  'zlib'
-  'openssl'
   'thrift'
 )
 makedepends=(
@@ -29,9 +26,6 @@ makedepends=(
   'cmake'
   'make'
   'gcc'
-  'libevent'
-  'zlib'
-  'openssl'
   'boost'
   'thrift'
 )

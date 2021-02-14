@@ -21,8 +21,8 @@ license=('GPLv3')
 
 
 depends=(
-  'openssl'
   'gperftools'
+  'openssl'
   'zlib'
   'snappy'
   'zstd'
@@ -34,9 +34,9 @@ makedepends=(
   'cmake'
   'make'
   'gcc'
+  'gperftools'
   'asio'
   'openssl'
-  'gperftools'
   'zlib'
   'snappy'
   'zstd'

@@ -22,9 +22,12 @@ if(NOT SWC_BUILD_PKG OR SWC_BUILD_PKG STREQUAL "lib-fs-hadoop-jvm")
 set(hadoop_home)
 if(HADOOP_INSTALL_PATH)
   set(hadoop_home ${HADOOP_INSTALL_PATH})
+elseif(HADOOP_COMMON_HOME)
+  set(hadoop_home ${HADOOP_COMMON_HOME})
 else()
   set(hadoop_home $ENV{HADOOP_HOME})
 endif()
+
 
 SET_DEPS(
   NAME "HADOOP_JVM"

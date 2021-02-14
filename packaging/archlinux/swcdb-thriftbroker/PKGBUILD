@@ -20,7 +20,6 @@ license=('GPLv3')
 
 depends=(
   'swcdb-env'
-  'swcdb-lib-core'
   'swcdb-lib-fs'
   'swcdb-lib'
   'swcdb-lib-thrift'
@@ -30,8 +29,8 @@ makedepends=(
   'cmake'
   'make'
   'gcc'
-  'gperftools'
-  'swcdb-lib-core'
+  'boost'
+  'asio'
   'swcdb-lib-fs'
   'swcdb-lib'
   'swcdb-lib-thrift'
