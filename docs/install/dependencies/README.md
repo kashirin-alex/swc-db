@@ -23,6 +23,8 @@ apt-get install -y \
   libre2-(4|5) \
   libsnappy1v5 \
   libthrift-0.13.0 \
+  libreadline8 \
+  libssl \
   python3-pip ;
 ```
 

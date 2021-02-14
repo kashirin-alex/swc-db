@@ -20,7 +20,7 @@ apt-get install -y \
   build-essential \
   libasio-dev \
   libre2-dev \
-  libz-dev \
+  zlib1g-dev \
   libsnappy-dev \
   libzstd-dev \
   libssl-dev \
@@ -47,7 +47,7 @@ apt-get install -y libgoogle-perftools-dev;
 
 ### Thrift Broker
 ```bash
-apt-get install -y 
+apt-get install -y \
   libboost-math-dev \
   libevent-dev \
   libthrift-dev;
@@ -63,7 +63,7 @@ apt-get install -y \
 
 ### C_GLIB-Thrift client & PAM module
 ```bash
-apt-get install -y 
+apt-get install -y \
   libthrift-c-glib-dev \
   libperl-dev \
   libffi-dev \
