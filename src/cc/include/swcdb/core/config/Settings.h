@@ -70,6 +70,7 @@ class Settings final : public Properties {
   struct DynFile {
     const std::string filename;
     time_t            modified;
+    DynFile(std::string&& filename) noexcept;
     bool operator==(const DynFile& other) const noexcept;
     bool operator==(const std::string& other) const noexcept;
   };

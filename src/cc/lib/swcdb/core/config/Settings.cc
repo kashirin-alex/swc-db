@@ -182,7 +182,6 @@ void Settings::load_files_by(const std::string& fileprop,
   std::string fname;
   Strings files = get<Property::V_STRINGS>(fileprop)->get();
   for (auto it=files.begin(); it<files.end(); ++it) {
-    fname.clear();
     if(it->front() != '/' && it->front() != '.')
       fname.append(get_str("swc.cfg.path"));
     fname.append(*it);
@@ -193,13 +192,14 @@ void Settings::load_files_by(const std::string& fileprop,
       Core::MutexSptd::scope lock(mutex);
       auto it = std::find(m_dyn_files.begin(), m_dyn_files.end(), fname);
       if(it == m_dyn_files.end())
-        m_dyn_files.push_back({.filename=fname, .modified=0});
+        m_dyn_files.emplace_back(std::move(fname));
     } catch(...) {
       const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
       SWC_LOG_OUT(LOG_WARN, SWC_LOG_OSTREAM
         << fileprop << " has bad cfg file " << *it << ": " << e;
       );
     }
+    fname.clear();
   }
 }
 
@@ -328,6 +328,12 @@ void Settings::check_dynamic_files() {
     reload(dyn.filename, file_desc, cmdline_desc);
     SWC_LOGF(LOG_DEBUG, "dyn-cfg-file '%s' checked", dyn.filename.c_str());
   }
+}
+
+
+Settings::DynFile::DynFile(std::string&& filename) noexcept
+                          : filename(std::move(filename)),
+                            modified(0) {
 }
 
 bool Settings::DynFile::operator==(const DynFile& other) const noexcept {
