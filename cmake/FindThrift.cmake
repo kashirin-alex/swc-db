@@ -78,7 +78,7 @@ if(NOT WITHOUT_THRIFT_C)
 if(NOT SWC_BUILD_PKG OR SWC_BUILD_PKG MATCHES "^(pam|lib-thrift-c)")
   SET_DEPS(
     NAME      "THRIFT_C"
-    REQUIRED  SWC_BUILD_PKG
+    REQUIRED  ${SWC_BUILD_PKG}
     LIB_PATHS /usr/local/lib
     INC_PATHS /usr/local/include
               /usr/include

@@ -118,7 +118,7 @@ def swcdb_read_config():
         swcdb_cfg.get("swc.cluster.role.delay.start", [2])[0])
     #
 
-# end configurations 
+# end configurations
 
 
 # common-utils
@@ -161,7 +161,7 @@ def swcdb_print(task, c, res=None):
 
 def swcdb_proc_pids(name, c):
     res = c.run(" | ".join([
-        "ps aux", 
+        "ps aux",
         "grep -E \"[0-9]\s" + swcdb_install_path + "/bin/" + name + "\"",
         "tr -s ' '", "cut -f2 -d' '"]),
         hide=True)
@@ -175,9 +175,9 @@ def swcdb_stop_proc(task, name, c, gracefull):
     for pid in pids:
         kres = c.run("kill " + ("" if gracefull else "-9 ") + pid, hide=True)
         swcdb_print_result(
-            task, c, 
-            ("SIGINT" if gracefull else "SIGTERM") + " pid(" + pid + ") " + 
-            kres.stdout.strip() + " " + 
+            task, c,
+            ("SIGINT" if gracefull else "SIGTERM") + " pid(" + pid + ") " +
+            kres.stdout.strip() + " " +
             kres.stderr.strip()
         )
 
@@ -185,7 +185,7 @@ def swcdb_stop_proc(task, name, c, gracefull):
         check = 0
         time.sleep(1)
         while swcdb_proc_pids(name, c):
-            check += 1 
+            check += 1
             swcdb_print_result(task, c, "wait check=" + str(check))
             time.sleep(2)
     else:
@@ -204,7 +204,7 @@ def wait_ready(c, on_start=False):
     while True:
         res = c.local(' '.join([
             "echo 'cluster;quit;'",
-            "| /opt/swcdb/bin/swcdb --mngr --quiet -l=warn"] + 
+            "| "+swcdb_install_path+"/bin/swcdb --mngr --quiet -l=warn"] +
             swcdb_common_options(False) + [";"] ),
                 hide=True)
         code = ""
@@ -227,7 +227,7 @@ def wait_ready(c, on_start=False):
         check += 1
     swcdb_print_finish("wait-ready", c)
     #
-    
+
 
 # DEPLOY
 
@@ -258,7 +258,7 @@ def deploy(ctx):
     if get_archive:
         ctx.local("rm -rf /tmp/swcdb")
         swcdb_cfg["swc.install.archive"][-1] = get_archive
-    
+
     swcdb_print_finish("deployment", ctx)
     #
 
@@ -279,7 +279,7 @@ def deploy_host(c):
         c.run("rm -rf /tmp/swcdb")
     else:
         cp_dirs += ["sbin", "bin", "etc", "lib", "include"]
-    
+
     for dir in cp_dirs:
         for dpath, _, filenames in os.walk(swcdb_install_path + "/" + dir):
             c.run("mkdir -p " + dpath)
@@ -317,7 +317,7 @@ def start_fsbrokers(c):
         with fabric.Connection(saddr) as c:
             swcdb_print("start-fsbrokers", c, c.run(
                 " ".join([
-                    'source /etc/profile;', 
+                    'source /etc/profile;',
                     swcdb_install_path+"/bin/swcdbFsBroker",
                     ((" --host=" + host) if host else "".join([" --addr=" + addr for addr in addrs]) if addrs else "")
                 ] + opts),
@@ -328,7 +328,7 @@ def start_fsbrokers(c):
 # @fabric.task , good for equal command
 # def start_fsbrokers(c):
 #    results = fabric.ThreadingGroup(*swcdb_fsbrokers).run(
-#        " ".join([swcdb_install_path+"/bin/swcdbFsBroker", "--daemon"]), 
+#        " ".join([swcdb_install_path+"/bin/swcdbFsBroker", "--daemon"]),
 #        hide=True
 #    )
 #    for c in results:
@@ -425,7 +425,7 @@ def start_thriftbrokers(c):
                 " ".join([
                     swcdb_install_path+"/bin/swcdbThriftBroker",
                     ((" --host=" + host) if host else "".join([" --addr=" + addr for addr in addrs]) if addrs else "")
-                ] + opts), 
+                ] + opts),
                 hide=True)
             )
     #
@@ -458,7 +458,7 @@ def start(c):
         print("-- starting " + name + " --")
         run(c)
         time.sleep(swcdb_cfg["swc.cluster.role.delay.start"])
-    
+
     print("-- wait for ready --")
     wait_ready(c, True)
     #
@@ -506,11 +506,11 @@ def shell(c):
             continue
         if cmd.lower().strip() in ["q", "quit", "q;", "quit;"]:
             break
-       
+
         results = fabric.ThreadingGroup(
             *(swcdb_remote_hosts + [swcdb_source_host])
         ).run(cmd, hide=True)
-       
+
         for c in results:
             print("on (" + c.host + ":" + str(c.port) + "): ")
             for o in results[c].stdout.strip().split("\n") + results[c].stderr.strip().split("\n"):
@@ -547,7 +547,7 @@ if __name__ == '__main__':
 
     SwcDbClusterProgram(
         name="swcdb_cluster",
-        namespace=fabric.main.Collection.from_module(sys.modules[__name__]), 
+        namespace=fabric.main.Collection.from_module(sys.modules[__name__]),
         version='0.0.1',
 
         executor_class=fabric.executor.Executor,
