@@ -6,8 +6,10 @@
 #ifndef swcdb_fs_Callbacks_h
 #define swcdb_fs_Callbacks_h
 
-#include <functional>
+
 #include "swcdb/core/Buffer.h"
+#include <functional>
+
 
 namespace SWC { namespace FS {
 

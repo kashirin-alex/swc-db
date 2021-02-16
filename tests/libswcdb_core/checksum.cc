@@ -3,10 +3,11 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#include <cassert>
 #include "swcdb/core/Exception.h"
 #include "swcdb/core/Checksum.h"
 #include "swcdb/core/Time.h"
+#include <cassert>
+
 
 const size_t checks = 10000;
 const size_t MB = 64 * 1024 * 1024;

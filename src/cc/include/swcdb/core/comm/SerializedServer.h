@@ -7,10 +7,6 @@
 #ifndef swcdb_core_comm_SerializedServer_h
 #define swcdb_core_comm_SerializedServer_h
 
-#include <string>
-#include <vector>
-#include <memory>
-#include <iostream>
 
 #include "swcdb/core/comm/IoContext.h"
 #include "swcdb/core/comm/ConnHandler.h"

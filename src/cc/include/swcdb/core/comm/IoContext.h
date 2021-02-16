@@ -8,10 +8,8 @@
 #define swcdb_core_comm_IoContext_h
 
 
-
-#include <asio.hpp>
 #include "swcdb/core/Logger.h"
-
+#include "swcdb/core/comm/asio_wrap.h"
 
 
 namespace SWC { namespace Comm {

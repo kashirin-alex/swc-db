@@ -9,16 +9,12 @@
 
 
 #include "swcdb/core/Exception.h"
-#include <asio.hpp>
-#include "asio/ssl.hpp"
-#include <memory>
-#include <mutex>
 #include "swcdb/core/StateRunning.h"
 #include "swcdb/core/QueueSafeStated.h"
+#include "swcdb/core/comm/asio_wrap.h"
 #include "swcdb/core/comm/Event.h"
 #include "swcdb/core/comm/Buffers.h"
 #include "swcdb/core/comm/Resolver.h"
-
 #include "swcdb/core/comm/AppContext.h"
 #include "swcdb/core/comm/DispatchHandler.h"
 

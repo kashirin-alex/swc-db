@@ -3,11 +3,12 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#include <vector>
-#include <iostream>
 
 #include "swcdb/core/Exception.h"
 #include "swcdb/core/PageArena.h"
+#include <vector>
+#include <iostream>
+
 
 int main() {
   size_t num_items = 1000;

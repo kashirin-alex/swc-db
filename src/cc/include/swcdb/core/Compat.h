@@ -55,6 +55,7 @@ namespace Core { }
 #include <signal.h>
 #include <cstddef> // for std::size_t and std::ptrdiff_t
 #include <memory>
+#include <cstring>
 #include <string>
 
 

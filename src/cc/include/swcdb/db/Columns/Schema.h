@@ -7,7 +7,7 @@
 #ifndef swcdb_db_Columns_Schema_h
 #define swcdb_db_Columns_Schema_h
 
-#include <memory>
+
 #include "swcdb/db/Types/Encoder.h"
 #include "swcdb/db/Types/Identifiers.h"
 #include "swcdb/db/Types/KeySeq.h"

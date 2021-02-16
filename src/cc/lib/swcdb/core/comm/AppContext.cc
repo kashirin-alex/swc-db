@@ -7,7 +7,7 @@
 
 #include "swcdb/core/Logger.h"
 #include "swcdb/core/comm/AppContext.h"
-#include <iostream>
+
 
 namespace SWC { namespace Comm {
 

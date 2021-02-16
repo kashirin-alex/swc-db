@@ -7,13 +7,14 @@
 #ifndef swcdb_db_Columns_Schemas_h
 #define swcdb_db_Columns_Schemas_h
 
+
 #include "swcdb/core/MutexSptd.h"
 #include "swcdb/core/Comparators.h"
 #include "swcdb/db/Columns/Schema.h"
 
-#include <vector>
 #include <unordered_map>
 #include <shared_mutex>
+
 
 namespace SWC { namespace DB {
 

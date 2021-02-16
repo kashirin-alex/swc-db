@@ -7,9 +7,8 @@
 #ifndef swcdb_core_Time_h
 #define swcdb_core_Time_h
 
-#include "swcdb/core/Compat.h"
 
-#include <iostream>
+#include "swcdb/core/Compat.h"
 #include <chrono>
 
 

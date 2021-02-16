@@ -7,7 +7,7 @@
 #ifndef swcdb_db_cells_Cell_h
 #define swcdb_db_cells_Cell_h
 
-#include <memory>
+
 #include "swcdb/core/Serialization.h"
 #include "swcdb/core/Buffer.h"
 #include "swcdb/core/Time.h"

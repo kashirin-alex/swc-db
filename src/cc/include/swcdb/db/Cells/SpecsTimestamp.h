@@ -7,7 +7,7 @@
 #ifndef swcdb_db_cells_SpecsTimestamp_h
 #define swcdb_db_cells_SpecsTimestamp_h
 
-#include <string>
+
 #include "swcdb/core/Comparators.h"
 
 

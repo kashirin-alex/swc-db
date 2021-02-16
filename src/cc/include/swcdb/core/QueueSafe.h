@@ -6,8 +6,10 @@
 #ifndef swcdb_core_QueueSafe_h
 #define swcdb_core_QueueSafe_h
 
-#include <queue>
+
 #include "swcdb/core/MutexSptd.h"
+#include <queue>
+
   
 namespace SWC { namespace Core {
 

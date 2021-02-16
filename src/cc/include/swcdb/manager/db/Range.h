@@ -7,7 +7,6 @@
 #ifndef swcdb_manager_db_Range_h
 #define swcdb_manager_db_Range_h
 
-#include <shared_mutex>
 
 #include "swcdb/db/Types/MngrRangeState.h"
 #include "swcdb/common/Files/RgrData.h"
@@ -15,6 +14,7 @@
 #include "swcdb/db/Cells/Interval.h"
 
 #include "swcdb/db/Columns/RangeBase.h"
+#include <shared_mutex>
 
 
 namespace SWC { namespace Manager {

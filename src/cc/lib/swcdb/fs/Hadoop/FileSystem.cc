@@ -3,9 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#include "swcdb/fs/Hadoop/FileSystem.h"
 
-#include <iostream>
+#include "swcdb/fs/Hadoop/FileSystem.h"
 
 extern "C" {
 #include <fcntl.h>

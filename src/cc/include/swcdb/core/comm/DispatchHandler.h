@@ -8,9 +8,9 @@
 #define swcdb_core_comm_DispatchHandler_h
 
 
-#include <memory>
 #include "swcdb/core/comm/Event.h"
 #include "swcdb/core/comm/AppContext.h"
+
 
 namespace SWC { namespace Comm {
 

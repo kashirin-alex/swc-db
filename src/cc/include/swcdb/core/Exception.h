@@ -12,7 +12,6 @@
 #include "swcdb/core/String.h"
 #include "swcdb/core/Logger.h"
 
-#include <ostream>
 #include <stdexcept>
 
 

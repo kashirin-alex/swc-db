@@ -7,11 +7,11 @@
 #ifndef swcdb_core_Comparators_h
 #define swcdb_core_Comparators_h
 
+
 #include "swcdb/core/Compat.h"
-#include <cstring>
 #include <cmath>
 #include <re2/re2.h>
-
+#include <vector>
 
 
 namespace SWC {

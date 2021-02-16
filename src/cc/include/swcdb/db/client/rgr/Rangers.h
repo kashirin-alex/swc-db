@@ -6,12 +6,12 @@
 #ifndef swcdb_db_client_rgr_Rangers_h
 #define swcdb_db_client_rgr_Rangers_h
 
-#include <mutex>
-#include <unordered_map>
 
 #include "swcdb/db/Types/Identifiers.h"
 #include "swcdb/db/client/Settings.h"
 #include "swcdb/core/comm/Resolver.h"
+#include <unordered_map>
+
 
 namespace SWC { namespace client {
 

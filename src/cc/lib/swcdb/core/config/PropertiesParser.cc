@@ -7,7 +7,6 @@
 #include "swcdb/core/Exception.h"
 #include "swcdb/core/config/PropertiesParser.h"
 
-#include <iostream>
 #include <iomanip>
 #include <fstream>
 

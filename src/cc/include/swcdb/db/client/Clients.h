@@ -6,7 +6,6 @@
 #ifndef swcdb_db_client_Clients_h
 #define swcdb_db_client_Clients_h
 
-#include <memory>
 
 #include "swcdb/core/comm/ClientConnQueues.h"
 #include "swcdb/db/client/Settings.h"
@@ -15,6 +14,7 @@
 #include "swcdb/db/client/Schemas.h"
 #include "swcdb/db/client/mngr/Groups.h"
 #include "swcdb/db/client/rgr/Rangers.h"
+
 
 namespace SWC {
 

@@ -3,10 +3,10 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#include <unordered_map>
 
 #include "swcdb/core/comm/Settings.h"
 #include "swcdb/core/comm/SerializedServer.h"
+#include <unordered_map>
 
 
 namespace SWC { namespace Comm { namespace server {

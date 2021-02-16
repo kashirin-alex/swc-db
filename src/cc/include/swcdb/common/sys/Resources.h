@@ -7,11 +7,13 @@
 #ifndef swcdb_common_sys_Resources_h
 #define swcdb_common_sys_Resources_h
 
-#include <sys/sysinfo.h>
-#include <fstream>
 
 #include "swcdb/core/config/Property.h"
 #include "swcdb/core/comm/IoContext.h"
+
+#include <sys/sysinfo.h>
+#include <fstream>
+
 
 #if defined TCMALLOC_MINIMAL || defined TCMALLOC
 #include <gperftools/malloc_extension.h>
@@ -20,6 +22,7 @@
 #include <mimalloc.h>
 
 #endif
+
 
 namespace SWC { namespace Common {
 

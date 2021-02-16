@@ -7,15 +7,13 @@
 #ifndef swcdb_core_comm_SerializedClient_h
 #define swcdb_core_comm_SerializedClient_h
 
-#include <chrono>
-#include <string>
-#include <queue>
-#include <unordered_map>
 
 #include "swcdb/core/QueueSafe.h"
 #include "swcdb/core/comm/IoContext.h"
 #include "swcdb/core/comm/ConnHandler.h"
 #include "swcdb/core/comm/ConfigSSL.h"
+#include <queue>
+#include <unordered_map>
 
 
 namespace SWC { namespace Comm {

@@ -7,10 +7,12 @@
 #ifndef swcdb_core_config_Property_h
 #define swcdb_core_config_Property_h
 
+
 #include "swcdb/core/Compat.h"
 #include "swcdb/core/MutexAtomic.h"
 #include <functional>
 #include <vector>
+
 
 namespace SWC { namespace Config {
 

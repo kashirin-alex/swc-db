@@ -7,12 +7,13 @@
 // THE DATA IN THIS EXAMPLE IS NOT REAL WHILE MIGHT HAVE REALISTIC PROPORTIONS
 
 
-#include <random>
 
 #include "swcdb/db/client/Clients.h"
 #include "swcdb/db/client/Query/Update.h"
 #include "swcdb/db/Protocol/Mngr/req/ColumnMng.h"
 #include "swcdb/common/Stats/FlowRate.h"
+
+#include <random>
 
 
 namespace SWC { namespace Config {

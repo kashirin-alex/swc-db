@@ -9,7 +9,6 @@
 
 
 #include "swcdb/core/Compat.h"
-#include <vector>
 #include "swcdb/core/Buffer.h"
 #include "swcdb/db/Cells/Mutable.h"
 

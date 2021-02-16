@@ -7,20 +7,22 @@
 #ifndef swcdb_core_comm_PeriodicTimer_h
 #define swcdb_core_comm_PeriodicTimer_h
 
-#include <asio.hpp>
+
 #include "swcdb/core/config/Settings.h"
+#include "swcdb/core/comm/asio_wrap.h"
+
 
 namespace SWC { namespace Comm {
-  
+
 class PeriodicTimer final : private asio::high_resolution_timer {
   public:
-  typedef const std::function<void()> Call_t; 
+  typedef const std::function<void()> Call_t;
 
   using asio::high_resolution_timer::cancel;
 
   PeriodicTimer(const Config::Property::V_GINT32::Ptr cfg_ms,
                 const Call_t& call, const IoContextPtr& ioctx);
-  
+
   ~PeriodicTimer();
 
   private:
@@ -32,12 +34,12 @@ class PeriodicTimer final : private asio::high_resolution_timer {
 };
 
 
-class PeriodicTimers final 
+class PeriodicTimers final
     : private std::vector<std::unique_ptr<PeriodicTimer>> {
   public:
 
   ~PeriodicTimers();
-  
+
   void stop();
 
   void set(const Config::Property::V_GINT32::Ptr ms,

@@ -6,9 +6,11 @@
 #ifndef swcdb_fs_HadoopJVM_FileSystem_h
 #define swcdb_fs_HadoopJVM_FileSystem_h
 
+
 #include "swcdb/fs/FileSystem.h"
 #include <hdfs.h>
 #include <condition_variable>
+
 
 namespace SWC { namespace FS {
 

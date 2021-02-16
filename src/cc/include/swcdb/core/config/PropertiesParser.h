@@ -7,11 +7,12 @@
 #ifndef swcdb_core_config_PropertiesParser_h
 #define swcdb_core_config_PropertiesParser_h
 
+
 #include "swcdb/core/config/Property.h"
-#include <iostream>
 #include <iomanip>
 #include <fstream>
 #include <map>
+
 
 namespace SWC { namespace Config {
 

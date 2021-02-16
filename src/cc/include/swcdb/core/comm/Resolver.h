@@ -7,10 +7,10 @@
 #ifndef swcdb_core_comm_Resolver_h
 #define swcdb_core_comm_Resolver_h
 
-#include <asio.hpp>
-#include <string>
-#include <vector>
+
 #include "swcdb/core/config/Property.h"
+#include "swcdb/core/comm/asio_wrap.h"
+
 
 namespace SWC {
 

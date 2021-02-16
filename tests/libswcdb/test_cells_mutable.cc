@@ -4,16 +4,15 @@
  */
 
 
+#include "swcdb/core/Time.h"
+#include "swcdb/core/config/Settings.h"
+#include "swcdb/common/Stats/Stat.h"
+#include "swcdb/db/Cells/Mutable.h"
+
 #include <thread>
 #include <iostream>
-#include <cstring>
-#include <vector>
 
-#include "swcdb/core/Time.h"
-#include "swcdb/db/Cells/Mutable.h"
-#include "swcdb/common/Stats/Stat.h"
 
-#include "swcdb/core/config/Settings.h"
 namespace SWC { namespace Config {
 void Settings::init_app_options() {}
 void Settings::init_post_cmd_args() {}

@@ -6,13 +6,10 @@
 #ifndef swcdb_core_PageArena_h
 #define swcdb_core_PageArena_h
 
-#include <mutex>
+
 #include "swcdb/core/Comparators.h"
-
+#include <mutex>
 #include <unordered_set>
-#include <string>
-#include <cstring>
-
 
 
 namespace SWC { namespace Core { namespace Mem {

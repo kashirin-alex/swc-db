@@ -8,8 +8,6 @@
 #define swcdb_db_cells_CellKeyVec_h
 
 
-#include <vector>
-#include <string>
 #include "swcdb/core/Comparators.h"
 
 

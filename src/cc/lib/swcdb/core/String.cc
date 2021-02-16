@@ -4,8 +4,6 @@
  */
 
 
-
-
 #include "swcdb/core/Compat.h"
 #include "swcdb/core/String.h"
 

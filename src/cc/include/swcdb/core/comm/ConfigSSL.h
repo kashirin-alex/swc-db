@@ -7,11 +7,10 @@
 #ifndef swcdb_core_comm_ConfigSSL_h
 #define swcdb_core_comm_ConfigSSL_h
 
-#include <string>
-#include <vector>
-#include <memory>
+
 #include "swcdb/core/comm/IoContext.h"
 #include "swcdb/core/comm/ConnHandler.h"
+
 
 namespace SWC { namespace Comm {
 

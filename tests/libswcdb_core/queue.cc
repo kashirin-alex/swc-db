@@ -4,16 +4,13 @@
  */
 
 
-#include <iostream>
-#include <thread>
-#include <chrono>
-
 #include "swcdb/core/Exception.h"
 #include "swcdb/core/Time.h"
 #include "swcdb/core/Semaphore.h"
 #include "swcdb/core/QueueSafe.h"
 #include "swcdb/core/QueuePointer.h"
-
+#include <iostream>
+#include <thread>
 
   const size_t num_threads = 2;
   const size_t WORK_LOAD = 10000000; // X producers

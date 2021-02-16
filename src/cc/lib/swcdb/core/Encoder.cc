@@ -3,6 +3,7 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
+
 #include "swcdb/core/Exception.h"
 #include "swcdb/core/Encoder.h"
 
@@ -12,6 +13,7 @@
 
 #undef Z_NULL
 #define Z_NULL nullptr
+
 
 namespace SWC { namespace Core {
 

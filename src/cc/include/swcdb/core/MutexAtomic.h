@@ -6,9 +6,10 @@
 #ifndef swcdb_core_LockAtomicUnique_h
 #define swcdb_core_LockAtomicUnique_h
 
+
+#include "swcdb/core/Compat.h"
 #include <atomic>
 #include <thread>
-#include "swcdb/core/Compat.h"
 
 
 namespace SWC { namespace Core {

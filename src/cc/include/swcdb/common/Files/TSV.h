@@ -7,7 +7,6 @@
 #ifndef swcdb_common_Files_TSV_h
 #define swcdb_common_Files_TSV_h
 
-#include <vector>
 
 #include "swcdb/core/BufferStream.h"
 #include "swcdb/db/Cells/Cell.h"

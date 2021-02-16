@@ -7,10 +7,10 @@
 #ifndef swcdb_db_cells_CellKey_h
 #define swcdb_db_cells_CellKey_h
 
+
 #include "swcdb/core/Compat.h"
 #include "swcdb/core/Comparators.h"
 #include "swcdb/db/Cells/CellKeyVec.h"
-#include <memory>
 
 
 namespace SWC { namespace DB {

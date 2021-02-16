@@ -7,12 +7,11 @@
 #ifndef swcdb_ranger_db_RangeBlock_h
 #define swcdb_ranger_db_RangeBlock_h
 
-#include <shared_mutex>
 
 #include "swcdb/fs/Interface.h"
 #include "swcdb/db/Cells/Mutable.h"
 #include "swcdb/db/Cells/MutableVec.h"
-
+#include <shared_mutex>
 
 
 namespace SWC { namespace Ranger { 

@@ -7,7 +7,7 @@
 #ifndef swcdb_db_cells_SpecsScan_h
 #define swcdb_db_cells_SpecsScan_h
 
-#include "swcdb/core/comm/Serializable.h"
+
 #include "swcdb/db/Cells/SpecsColumn.h"
 
 

@@ -7,8 +7,7 @@
 #ifndef swcdb_db_cells_SpecsKey_h
 #define swcdb_db_cells_SpecsKey_h
 
-#include <vector>
-#include <string>
+
 #include "swcdb/db/Cells/KeyComparator.h"
 
 

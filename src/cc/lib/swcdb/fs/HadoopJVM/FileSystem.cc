@@ -3,9 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#include "swcdb/fs/HadoopJVM/FileSystem.h"
 
-#include <iostream>
+#include "swcdb/fs/HadoopJVM/FileSystem.h"
 
 
 namespace SWC { namespace FS {

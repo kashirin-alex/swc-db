@@ -3,13 +3,15 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
+
+#include "swcdb/thrift/client/Client.h"
 #include <iostream>
 #include <cassert>
-#include "swcdb/thrift/client/Client.h"
 
 #undef assert
 #define assert(_e_) \
   if(!(_e_)) throw std::runtime_error(#_e_);
+
 
 const std::string column_pre("thrift-client-test");
 const int num_columns = 5;

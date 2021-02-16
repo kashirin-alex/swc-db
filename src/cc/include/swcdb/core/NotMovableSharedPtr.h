@@ -5,7 +5,6 @@
 #ifndef swcdb_core_NotMovableSharedPtr_h
 #define swcdb_core_NotMovableSharedPtr_h
 
-#include <memory>
 
 namespace SWC { namespace Core {
 

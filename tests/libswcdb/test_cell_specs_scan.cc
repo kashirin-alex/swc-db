@@ -2,11 +2,13 @@
  * SWC-DB© Copyright since 2019 Alex Kashirin <kashirin.alex@gmail.com>
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
-#include <iostream>
 
-#include "swcdb/db/Cells/SpecsScan.h"
 
 #include "swcdb/core/config/Settings.h"
+#include "swcdb/db/Cells/SpecsScan.h"
+#include <iostream>
+
+
 namespace SWC { namespace Config {
 void Settings::init_app_options() {}
 void Settings::init_post_cmd_args() {}

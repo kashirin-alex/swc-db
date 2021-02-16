@@ -7,6 +7,7 @@
 #ifndef swcdb_manager_db_Columns_h
 #define swcdb_manager_db_Columns_h
 
+
 #include "swcdb/db/Types/MetaColumn.h"
 #include "swcdb/fs/Interface.h"
 
@@ -14,9 +15,8 @@
 #include "swcdb/manager/db/Column.h"
 #include "swcdb/common/Files/Schema.h"
 
-#include <memory>
 #include <unordered_map>
-#include <iostream>
+
 
 namespace SWC { namespace Manager {
 

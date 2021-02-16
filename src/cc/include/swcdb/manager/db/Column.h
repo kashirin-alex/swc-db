@@ -7,11 +7,12 @@
 #ifndef swcdb_manager_db_Column_h
 #define swcdb_manager_db_Column_h
 
+
 #include "swcdb/manager/db/Range.h"
 #include "swcdb/db/Types/MngrColumnState.h"
 
-#include <memory>
 #include <unordered_map>
+
 
 namespace SWC { namespace Manager {
 

@@ -6,15 +6,13 @@
 #ifndef swcdb_core_comm_Buffers_h
 #define swcdb_core_comm_Buffers_h
 
-#include <asio.hpp>
 #include "swcdb/core/Buffer.h"
+#include "swcdb/core/comm/asio_wrap.h"
 #include "swcdb/core/comm/Serializable.h"
 #include "swcdb/core/comm/Header.h"
 #include "swcdb/core/comm/Event.h"
-
-#include <memory>
-#include <string>
 #include <vector>
+
 
 namespace SWC { namespace Comm {
 

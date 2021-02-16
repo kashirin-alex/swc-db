@@ -3,10 +3,10 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
+
 #include "swcdb/core/Error.h"
 #include "swcdb/core/Logger.h"
 #include <stdarg.h>
-
 
 
 namespace SWC { namespace Core {

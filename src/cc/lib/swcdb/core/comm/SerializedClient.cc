@@ -3,13 +3,11 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#include <chrono>
-#include <string>
-#include <queue>
-#include <unordered_map>
 
 #include "swcdb/core/config/Settings.h"
 #include "swcdb/core/comm/SerializedClient.h"
+#include <queue>
+#include <unordered_map>
 
 
 namespace SWC { namespace Comm { namespace client {

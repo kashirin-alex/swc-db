@@ -6,10 +6,10 @@
 #ifndef swcdb_fs_Dirent_h
 #define swcdb_fs_Dirent_h
 
-#include <memory>
-#include <vector>
 
-#include "swcdb/core/comm/Serializable.h"
+#include <vector>
+#include <string>
+
 
 namespace SWC { namespace FS {
 

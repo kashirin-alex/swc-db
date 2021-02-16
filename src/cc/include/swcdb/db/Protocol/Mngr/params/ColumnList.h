@@ -10,7 +10,7 @@
 
 #include "swcdb/core/comm/Serializable.h"
 #include "swcdb/db/Columns/Schemas.h"
-#include <vector>
+
 
 namespace SWC { namespace Comm { namespace Protocol {
 namespace Mngr { namespace Params {

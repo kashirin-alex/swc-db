@@ -6,10 +6,12 @@
 #ifndef swcdb_core_comm_ClientConnQueue_h
 #define swcdb_core_comm_ClientConnQueue_h
 
-#include <queue>
-#include <unordered_set>
+
 #include "swcdb/core/comm/IoContext.h"
 #include "swcdb/core/comm/ConnHandler.h"
+#include <queue>
+#include <unordered_set>
+
 
 namespace SWC { namespace Comm { namespace client {
 

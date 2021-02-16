@@ -3,11 +3,12 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#include <iostream>
 
 #include "swcdb/db/Cells/Interval.h"
-
 #include "swcdb/core/config/Settings.h"
+#include <iostream>
+
+
 namespace SWC { namespace Config {
 void Settings::init_app_options() {}
 void Settings::init_post_cmd_args() {}

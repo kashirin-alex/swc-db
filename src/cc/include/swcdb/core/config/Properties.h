@@ -7,6 +7,7 @@
 #ifndef swcdb_core_config_Properties_h
 #define swcdb_core_config_Properties_h
 
+
 #include "swcdb/core/Exception.h"
 #include "swcdb/core/MutexSptd.h"
 #include "swcdb/core/config/Property.h"

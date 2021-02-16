@@ -7,9 +7,10 @@
 #ifndef swcdb_core_comm_AppContext_h
 #define swcdb_core_comm_AppContext_h
 
-#include <memory>
+
 #include "swcdb/core/comm/Event.h"
 #include "swcdb/core/comm/Resolver.h"
+
 
 namespace SWC { namespace Comm {
 

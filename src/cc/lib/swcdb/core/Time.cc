@@ -8,7 +8,6 @@
 #include "swcdb/core/Time.h"
 
 #include <ratio>
-
 #include <iomanip>
 #include <ctime>
 

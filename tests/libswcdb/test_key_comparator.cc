@@ -4,15 +4,12 @@
  */
 
 
-#include <memory>
-#include <vector>
-#include <iostream>
-
 #include "swcdb/core/Time.h"
 #include "swcdb/core/Serialization.h"
-
 #include "swcdb/core/config/Settings.h"
 #include "swcdb/db/Cells/KeyComparator.h"
+#include <iostream>
+
 
 namespace SWC {
 

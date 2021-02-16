@@ -12,7 +12,6 @@
 #include "swcdb/core/Buffer.h"
 #include "swcdb/core/comm/Header.h"
 
-#include <memory>
 
 namespace SWC { namespace Comm {
 
