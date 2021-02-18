@@ -1,4 +1,3 @@
-
 /*
  * SWC-DB© Copyright since 2019 Alex Kashirin <kashirin.alex@gmail.com>
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
@@ -9,7 +8,7 @@
 
 #include <string>
 
-namespace SWC { namespace DB { namespace Types { 
+namespace SWC { namespace DB { namespace Types {
 
 
 namespace MngrRangerState {
@@ -33,6 +32,6 @@ const char* to_string(uint8_t state) noexcept;
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/db/Types/MngrRangerState.cc"
-#endif 
+#endif
 
 #endif // swcdb_db_types_MngrRangerState_h

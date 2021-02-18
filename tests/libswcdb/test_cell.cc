@@ -161,7 +161,7 @@ int main() {
    i=0;
    std::vector<Cells::Cell*> cells_copied;
    cells_copied.reserve(num_cells);
-   for(auto it=cells.begin();it<cells.end();++it){
+   for(auto it=cells.begin(); it != cells.end(); ++it){
       std::cout << "Copying Cell-"<< i << ":\n";
       //std::cout << (*it)->to_string() << "\n\n";
       cells_copied.push_back(new Cells::Cell(**it));  // OK
@@ -186,7 +186,7 @@ int main() {
       ++i;
    }
    i=0;
-   for(auto it=cells_copied.begin();it<cells_copied.end();++it){
+   for(auto it=cells_copied.begin(); it != cells_copied.end(); ++it){
       std::cout << "Copied Cell-"<< i << ":\n";
       std::cout << (*it)->to_string() << "\n\n";
       ++i;
@@ -198,7 +198,7 @@ int main() {
 
    SWC::DynamicBuffer buff;
 
-   for(auto it=cells.begin();it<cells.end();++it){
+   for(auto it=cells.begin(); it != cells.end(); ++it){
       std::cout << "Serialized buff, fill:" << buff.fill() << " size:" << buff.size << "\n";
       (*it)->write(buff);
    }

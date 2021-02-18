@@ -169,7 +169,7 @@ bool Mngr::managers_status(std::string& cmd) {
     std::promise<void>  r_promise;
     Comm::Protocol::Mngr::Req::ManagersStatus::request(
       endpoints,
-      [this, endpoints, await=&r_promise] 
+      [endpoints, await=&r_promise]
       (const Comm::client::ConnQueue::ReqBase::Ptr& req, const int& error,
        const Comm::Protocol::Mngr::Params::Report::RspManagersStatus& rsp) {
         SWC_PRINT << "# by Manager(";

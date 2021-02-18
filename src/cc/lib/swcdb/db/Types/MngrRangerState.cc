@@ -1,4 +1,3 @@
-
 /*
  * SWC-DB© Copyright since 2019 Alex Kashirin <kashirin.alex@gmail.com>
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
@@ -12,7 +11,6 @@ namespace SWC { namespace DB { namespace Types { namespace MngrRangerState {
 
 namespace {
   const char STR_NONE[]              = "NONE";
-  const char STR_OK[]                = "OK";
   const char STR_AWAIT[]             = "AWAIT";
   const char STR_ACK[]               = "ACK";
   const char STR_REMOVED[]           = "REMOVED";

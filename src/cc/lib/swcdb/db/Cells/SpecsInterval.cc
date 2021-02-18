@@ -438,14 +438,16 @@ void Interval::apply_possible_range(DB::Cell::Key& key, bool ending,
     key.add(key_range.cbegin(), key_range.cend());
 
   } else {
-    for(auto it = key_range.cend() - 1; it >= key_range.cbegin(); --it) {
+    auto it = key_range.cend();
+    do {
+      --it;
       if(!it->empty()) {
         if(ending && !rest)
           ++it;
         key.add(key_range.cbegin(), ++it);
         break;
       }
-    }
+    } while(it != key_range.cbegin());
   }
 }
 

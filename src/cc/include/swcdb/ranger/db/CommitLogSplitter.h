@@ -10,47 +10,47 @@
 
 namespace SWC { namespace Ranger { namespace CommitLog {
 
-  
+
 class Splitter final {
   public:
-  
+
 
   Splitter(const DB::Cell::Key& key, Fragments::Vec& fragments,
-           Fragments::Ptr log_left, Fragments::Ptr log_right) 
-          : m_sem(4), m_fragments(fragments), 
+           Fragments::Ptr log_left, Fragments::Ptr log_right)
+          : m_sem(4), m_fragments(fragments),
             key(key), log_left(log_left), log_right(log_right) {
   }
 
   Splitter(const Splitter&) = delete;
 
   Splitter(const Splitter&&) = delete;
-  
+
   Splitter& operator=(const Splitter&) = delete;
 
   ~Splitter() { }
 
   void run () {
-    SWC_LOGF(LOG_DEBUG, 
+    SWC_LOGF(LOG_DEBUG,
       "COMPACT-SPLIT commitlog START "
       "from(%lu/%lu) to(%lu/%lu) fragments=%lu",
       log_left->range->cfg->cid, log_left->range->rid,
       log_right->range->cfg->cid, log_right->range->rid,
       m_fragments.size()
     );
-    
+
     int err;
     size_t skipped = 0;
     size_t moved = 0;
     size_t splitted = 0;
     Fragment::Ptr frag;
-    for(auto it = m_fragments.begin(); it< m_fragments.end();) {
+    for(auto it = m_fragments.begin(); it != m_fragments.end();) {
       frag = *it;
-      if(DB::KeySeq::compare(frag->interval.key_seq, 
-          key, frag->interval.key_end) != Condition::GT) {    
+      if(DB::KeySeq::compare(frag->interval.key_seq,
+          key, frag->interval.key_end) != Condition::GT) {
         m_fragments.erase(it);
         ++skipped;
 
-      } else if(DB::KeySeq::compare(frag->interval.key_seq, 
+      } else if(DB::KeySeq::compare(frag->interval.key_seq,
                   key, frag->interval.key_begin) == Condition::GT &&
                 log_right->take_ownership(err= Error::OK, frag)) {
         log_left->remove(err, frag, false);

@@ -209,7 +209,7 @@ void Rangers::rgr_shutdown(rgrid_t, const Comm::EndPoints& endpoints) {
   Ranger::Ptr removed = nullptr;
   {
     Core::MutexSptd::scope lock(m_mutex);
-    for(auto it=m_rangers.begin(); it<m_rangers.end(); ++it) {
+    for(auto it=m_rangers.begin(); it != m_rangers.end(); ++it) {
       auto h = *it;
       if(Comm::has_endpoint(h->endpoints, endpoints)) {
         removed = h;
@@ -249,7 +249,7 @@ void Rangers::update_status(RangerList new_rgr_status, bool sync_all) {
 
     for(auto& rs_new : new_rgr_status) {
       found = false;
-      for(auto it=m_rangers.begin(); it<m_rangers.end(); ++it) {
+      for(auto it=m_rangers.begin(); it != m_rangers.end(); ++it) {
         h = *it;
         if(!Comm::has_endpoint(h->endpoints, rs_new->endpoints))
           continue;
@@ -601,7 +601,7 @@ void Rangers::health_check_columns() {
 
 Ranger::Ptr Rangers::rgr_set(const Comm::EndPoints& endpoints,
                              rgrid_t opt_rgrid) {
-  for(auto it=m_rangers.begin();it<m_rangers.end(); ++it) {
+  for(auto it=m_rangers.begin();it != m_rangers.end(); ++it) {
     auto h = *it;
     if(Comm::has_endpoint(h->endpoints, endpoints)) {
       if(h->state & RangerState::ACK) {

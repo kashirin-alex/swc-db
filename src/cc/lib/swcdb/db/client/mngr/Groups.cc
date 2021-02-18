@@ -315,7 +315,7 @@ void Groups::print(std::ostream& out) {
 void Groups::add(Groups::GroupHost& g_host) {
   Core::MutexSptd::scope lock(m_mutex);
 
-  for(auto it=m_active_g_host.begin(); it<m_active_g_host.end(); ++it) {
+  for(auto it=m_active_g_host.begin(); it != m_active_g_host.end(); ++it) {
     if(Comm::has_endpoint(g_host.endpoints, it->endpoints))
       return;
     if(g_host.role == it->role &&
@@ -331,7 +331,7 @@ void Groups::add(Groups::GroupHost& g_host) {
 void Groups::remove(const Comm::EndPoints& endpoints) {
   Core::MutexSptd::scope lock(m_mutex);
 
-  for(auto it=m_active_g_host.begin(); it<m_active_g_host.end(); ) {
+  for(auto it=m_active_g_host.begin(); it != m_active_g_host.end(); ) {
     if(Comm::has_endpoint(endpoints, it->endpoints))
       m_active_g_host.erase(it);
     else

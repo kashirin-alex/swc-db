@@ -360,7 +360,7 @@ void MngrRole::_apply_cfg() {
           g->role, g->cid_begin, g->cid_end, endpoints, nullptr, pr));
     }
   }
-  for(auto it=m_states.begin(); it<m_states.end(); ) {
+  for(auto it=m_states.begin(); it != m_states.end(); ) {
     if(Comm::has_endpoint((*it)->endpoints, tmp))
       ++it;
     else

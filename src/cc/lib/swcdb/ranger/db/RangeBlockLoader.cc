@@ -98,15 +98,16 @@ void BlockLoader::load_log(bool is_final, bool is_more) {
     }
   }
   if(vol) {
-    size_t offset = m_f_selected.size(); 
-    block->blocks->commitlog.load_cells(this, is_final, m_f_selected, vol); 
+    size_t offset = m_f_selected.size();
+    block->blocks->commitlog.load_cells(this, is_final, m_f_selected, vol);
     if(offset < m_f_selected.size()) {
       {
         Core::MutexSptd::scope lock(m_mutex);
         m_logs += m_f_selected.size() - offset;
       }
-      for(auto it=m_f_selected.begin()+offset; it<m_f_selected.end(); ++it) {
-        (*it)->load([this](const CommitLog::Fragment::Ptr& frag) { 
+      for(auto it=m_f_selected.begin() + offset;
+          it != m_f_selected.end(); ++it) {
+        (*it)->load([this](const CommitLog::Fragment::Ptr& frag) {
           loaded_frag(frag); });
         (*it)->processing_decrement();
       }
@@ -122,7 +123,7 @@ void BlockLoader::load_log(bool is_final, bool is_more) {
     more = is_more || (m_logs && !m_fragments.empty());
     wait = m_processing || m_logs || !m_fragments.empty();
   }
-  if(more) 
+  if(more)
     return loaded_frag(nullptr);
   if(wait)
     return;

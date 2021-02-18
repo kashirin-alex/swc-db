@@ -152,7 +152,8 @@ void Fragments::add(Fragment::Ptr& frag) {
 }
 
 void Fragments::_add(Fragment::Ptr& frag) {
-  for(auto it = begin() + _narrow(frag->interval.key_begin); it<end(); ++it) {
+  for(auto it = begin() + _narrow(frag->interval.key_begin);
+      it != end(); ++it) {
     if(DB::KeySeq::compare(m_cells.key_seq,
         (*it)->interval.key_begin, frag->interval.key_begin)
          != Condition::GT) {
@@ -548,7 +549,7 @@ size_t Fragments::_need_compact(std::vector<Fragments::Vec>& groups,
   ++need;
   Fragment::Ptr curt;
   Condition::Comp cond;
-  for(++it; it<fragments.end(); ++it) {
+  for(++it; it != fragments.end(); ++it) {
     auto const& last = *groups.back().back();
     if((cond = DB::KeySeq::compare(m_cells.key_seq, last.interval.key_end,
                         (curt = *it)->interval.key_begin)) == Condition::LT ||
