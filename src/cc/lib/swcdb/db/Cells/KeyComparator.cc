@@ -466,7 +466,7 @@ align(Cell::KeyVec& key, const Cell::KeyVec& other, Condition::Comp comp) {
   }
   if(small) {
     do key.add(*it2);
-    while(++it2 < other.cend());
+    while(++it2 != other.cend());
     return true;
   }
   return chg;

@@ -656,11 +656,13 @@ void Rangers::_changes(const RangerList& hosts, bool sync_all) {
     return;
 
   // batches of 1000 hosts a req
-  for(auto it = hosts.cbegin(); it < hosts.cend(); ) {
+  for(auto it = hosts.cbegin(); it != hosts.cend(); ) {
     auto from = it;
+    size_t n = hosts.cend() - from;
+    it += n > 1000 ? 1000 : n;
     Env::Mngr::role()->req_mngr_inchain(
       std::make_shared<Comm::Protocol::Mngr::Req::RgrUpdate>(
-        RangerList(from, (it+=1000) < hosts.cend() ? it : hosts.cend()),
+        RangerList(from, it),
         sync_all
       )
     );

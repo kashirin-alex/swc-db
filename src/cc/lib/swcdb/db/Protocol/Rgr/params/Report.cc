@@ -93,7 +93,7 @@ void RspCids::internal_encode(uint8_t** bufp) const {
 
 void RspCids::internal_decode(const uint8_t** bufp, size_t* remainp) {
   cids.resize(Serialization::decode_vi64(bufp, remainp));
-  for(auto it = cids.begin(); it < cids.end(); ++it)
+  for(auto it = cids.begin(); it != cids.end(); ++it)
     *it = Serialization::decode_vi64(bufp, remainp);
 }
 
@@ -126,7 +126,7 @@ void RspColumnRids::internal_encode(uint8_t** bufp) const {
 
 void RspColumnRids::internal_decode(const uint8_t** bufp, size_t* remainp) {
   rids.resize(Serialization::decode_vi64(bufp, remainp));
-  for(auto it = rids.begin(); it < rids.end(); ++it)
+  for(auto it = rids.begin(); it != rids.end(); ++it)
     *it = Serialization::decode_vi64(bufp, remainp);
 }
 

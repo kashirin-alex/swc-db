@@ -237,7 +237,7 @@ class Test {
     if(col_type == DB::Types::Column::SERIAL) {
       wfields.ensure(value.size() * 10);
       auto t = DB::Cell::Serial::Value::Type::INT64; // roundrobin Type
-      for(auto it = value.begin(); it < value.end(); ++it) {
+      for(auto it = value.begin(); it != value.end(); ++it) {
         if(t == DB::Cell::Serial::Value::Type::INT64) {
           wfields.add(int64_t(*it));
           t = DB::Cell::Serial::Value::Type::DOUBLE;

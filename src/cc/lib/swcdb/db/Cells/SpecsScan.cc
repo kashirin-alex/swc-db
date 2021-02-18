@@ -63,7 +63,7 @@ bool Scan::equal(const Scan &other) const noexcept {
     return false;
 
   auto it2=other.columns.begin();
-  for(auto it1=columns.begin(); it1 < columns.end(); ++it1, ++it2)
+  for(auto it1=columns.begin(); it1 != columns.end(); ++it1, ++it2)
     if(!(*it1)->equal(*(*it2)))
       return false;
   return true;

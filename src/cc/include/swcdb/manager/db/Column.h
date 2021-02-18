@@ -18,13 +18,13 @@ namespace SWC { namespace Manager {
 
 
 class Column final : private std::vector<Range::Ptr> {
-  
+
   public:
 
   using State = DB::Types::MngrColumn::State;
 
   typedef std::shared_ptr<Column> Ptr;
-  
+
   static bool create(int &err, const cid_t cid) {
     Env::FsInterface::interface()->mkdirs(
       err, DB::RangeBase::get_column_path(cid));
@@ -33,8 +33,8 @@ class Column final : private std::vector<Range::Ptr> {
 
   static bool remove(int &err, const cid_t cid) {
     Env::FsInterface::interface()->rmdir_incl_opt_subs(
-      err, 
-      DB::RangeBase::get_column_path(cid), 
+      err,
+      DB::RangeBase::get_column_path(cid),
       DB::RangeBase::get_column_path()
     );
     return true;
@@ -42,7 +42,7 @@ class Column final : private std::vector<Range::Ptr> {
 
   const ColumnCfg::Ptr cfg;
 
-  Column(const DB::Schema::Ptr& schema) 
+  Column(const DB::Schema::Ptr& schema)
         : cfg(new ColumnCfg(schema)),
           m_state(State::LOADING), m_check_ts(0) {
   }
@@ -58,14 +58,14 @@ class Column final : private std::vector<Range::Ptr> {
       if(!exists_range_path(err))
         create_range_path(err);
       else
-        ranges_by_fs(err, entries); 
+        ranges_by_fs(err, entries);
     }
 
     if(entries.empty())
       entries.push_back(1); // initialize 1st range
 
     for(auto rid : entries)
-      get_range(err, rid, true); 
+      get_range(err, rid, true);
   }
 
   void set_loading() {
@@ -93,7 +93,7 @@ class Column final : private std::vector<Range::Ptr> {
     else
       err = Error::COLUMN_NOT_READY;
   }
-  
+
   size_t ranges() {
     std::shared_lock lock(m_mutex);
     return size();
@@ -118,20 +118,20 @@ class Column final : private std::vector<Range::Ptr> {
   Range::Ptr get_range(int&, const rid_t rid, bool initialize=false) {
     std::scoped_lock lock(m_mutex);
 
-    auto it = std::find_if(begin(), end(), [rid](const Range::Ptr& range) 
+    auto it = std::find_if(begin(), end(), [rid](const Range::Ptr& range)
                                            {return range->rid == rid;});
     if(it != end())
       return *it;
 
     if(initialize)
       return emplace_back(new Range(cfg, rid));
-      
+
     return nullptr;
   }
 
-  Range::Ptr get_range(int&, 
-                       const DB::Cell::Key& range_begin, 
-                       const DB::Cell::Key& range_end, 
+  Range::Ptr get_range(int&,
+                       const DB::Cell::Key& range_begin,
+                       const DB::Cell::Key& range_end,
                        bool next_range) {
     bool found = false;
     uint32_t any_is = DB::Types::MetaColumn::is_master(cfg->cid)
@@ -139,7 +139,7 @@ class Column final : private std::vector<Range::Ptr> {
 
     std::shared_lock lock(m_mutex);
     for(auto& range : *this) {
-      if(!range->includes(range_begin, range_end, any_is)) 
+      if(!range->includes(range_begin, range_end, any_is))
         continue;
       if(!next_range)
         return range;
@@ -154,11 +154,11 @@ class Column final : private std::vector<Range::Ptr> {
 
   void sort(Range::Ptr& range, const DB::Cells::Interval& interval) {
     std::scoped_lock lock(m_mutex);
-    
-    // std::sort(begin(), end(), Range); 
+
+    // std::sort(begin(), end(), Range);
     if(!range->equal(interval)) {
       range->set(interval);
-      
+
       if(size() > 1) {
         auto it = std::find_if(
           begin(), end(), [rid=range->rid](const Range::Ptr& range)
@@ -166,7 +166,7 @@ class Column final : private std::vector<Range::Ptr> {
         if(it != end())
           erase(it);
         bool added = false;
-        for(auto it=begin(); it<end(); ++it) {
+        for(auto it=begin(); it != end(); ++it) {
           if((*it)->after(range)) {
             insert(it, range);
             added = true;
@@ -177,7 +177,7 @@ class Column final : private std::vector<Range::Ptr> {
           push_back(range);
       }
     }
-    
+
     apply_loaded_state();
   }
 
@@ -208,7 +208,7 @@ class Column final : private std::vector<Range::Ptr> {
   }
 
   void set_rgr_unassigned(rgrid_t rgrid) {
-    std::scoped_lock lock(m_mutex);    
+    std::scoped_lock lock(m_mutex);
 
     for(auto& range : *this) {
       if(range->get_rgr_id() == rgrid) {
@@ -264,7 +264,7 @@ class Column final : private std::vector<Range::Ptr> {
       return rev != it->second;
     return true;
   }
-  
+
   void assigned(std::vector<rgrid_t> &rgrids) {
     std::shared_lock lock(m_mutex);
 
@@ -291,8 +291,8 @@ class Column final : private std::vector<Range::Ptr> {
     return false;
   }
 
-  void need_health_check(int64_t ts, uint32_t ms, 
-                         std::vector<Range::Ptr> &ranges, 
+  void need_health_check(int64_t ts, uint32_t ms,
+                         std::vector<Range::Ptr> &ranges,
                          rgrid_t rgrid = 0, size_t max = 0) {
     std::shared_lock lock(m_mutex);
     for(auto& range : *this) {
@@ -303,13 +303,13 @@ class Column final : private std::vector<Range::Ptr> {
       }
     }
   }
-  
+
   void remove_range(rid_t rid) {
     std::scoped_lock lock(m_mutex);
 
-    if(!size()) 
+    if(!size())
       return;
-    auto it = std::find_if(begin(), end(), [rid](const Range::Ptr& range) 
+    auto it = std::find_if(begin(), end(), [rid](const Range::Ptr& range)
                                            {return range->rid == rid;});
     if(it == end())
       return;
@@ -323,7 +323,7 @@ class Column final : private std::vector<Range::Ptr> {
 
     bool was = m_state.exchange(State::DELETED) == State::DELETED;
     m_schemas_rev.clear();
-    
+
     if(!was) {
       for(auto& range : *this)
         range->set_deleted();
@@ -333,12 +333,12 @@ class Column final : private std::vector<Range::Ptr> {
 
   bool finalize_remove(int &err, rgrid_t rgrid=0) {
     std::scoped_lock lock(m_mutex);
-    
+
     if(!rgrid) {
       clear();
     } else {
       rgrid_t eid;
-      for(auto it=begin(); it<end(); ) {
+      for(auto it=begin(); it != end(); ) {
         if((eid = (*it)->get_rgr_id()) == rgrid || !eid)
           erase(it);
         else
@@ -360,7 +360,7 @@ class Column final : private std::vector<Range::Ptr> {
   }
 
   private:
-  
+
   bool exists(int &err) {
     return Env::FsInterface::interface()->exists(
       err, DB::RangeBase::get_column_path(cfg->cid));
@@ -397,7 +397,7 @@ class Column final : private std::vector<Range::Ptr> {
     if(m_state.compare_exchange_weak(at, State::LOADING))
       m_check_ts = 0;
   }
-  
+
   rid_t _get_next_rid() {
     rid_t rid = 0;
     while(++rid && std::find_if(
@@ -421,7 +421,7 @@ class Column final : private std::vector<Range::Ptr> {
         return;
     }
     if(m_state == State::LOADING) {
-      /* if Ranger do not select/check ranges on rid value match 
+      /* if Ranger do not select/check ranges on rid value match
          once on start, Master & Meta column check rid consistency
          on dup. cell of rid, delete earliest
       */

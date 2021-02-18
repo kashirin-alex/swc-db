@@ -434,7 +434,7 @@ void Blocks::init_blocks(int& err) {
 }
 
 size_t Blocks::_get_block_idx(Block::Ptr blk) const {
-  for(auto it=m_blocks_idx.begin(); it < m_blocks_idx.end();++it)
+  for(auto it=m_blocks_idx.begin(); it != m_blocks_idx.end();++it)
     if(*it == blk)
       return it - m_blocks_idx.begin();
   return 0; // eq m_block;

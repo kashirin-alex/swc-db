@@ -108,7 +108,7 @@ class ColumnUpdate : public Serializable {
         cid_end = Serialization::decode_vi64(bufp, remainp);
         columns.clear();
         columns.resize(Serialization::decode_vi64(bufp, remainp));
-        for(auto it = columns.begin(); it < columns.end(); ++it)
+        for(auto it = columns.begin(); it != columns.end(); ++it)
           *it = Serialization::decode_vi64(bufp, remainp);
         break;
       }

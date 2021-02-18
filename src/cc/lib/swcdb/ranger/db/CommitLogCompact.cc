@@ -7,15 +7,15 @@
 
 namespace SWC { namespace Ranger { namespace CommitLog {
 
-Compact::Group::Group(Compact* compact, uint8_t worker) 
-                      : ts(Time::now_ns()), worker(worker), error(Error::OK), 
+Compact::Group::Group(Compact* compact, uint8_t worker)
+                      : ts(Time::now_ns()), worker(worker), error(Error::OK),
                         compact(compact),
                         m_idx(0), m_running(0), m_finishing(0),
                         m_cells(
                           compact->log->range->cfg->key_seq,
                           compact->log->range->cfg->block_cells() * 2,
-                          compact->log->range->cfg->cell_versions(), 
-                          compact->log->range->cfg->cell_ttl(), 
+                          compact->log->range->cfg->cell_versions(),
+                          compact->log->range->cfg->cell_ttl(),
                           compact->log->range->cfg->column_type()
                         ) {
 }
@@ -101,20 +101,20 @@ void Compact::Group::write() {
     auto buff_write = std::make_shared<StaticBuffer>();
     sz = m_cells.size_of_internal();
     m_cells.write_and_free(
-      cells, cells_count = 0, interval, 
-      compact->log->range->cfg->block_size(), 
+      cells, cells_count = 0, interval,
+      compact->log->range->cfg->block_size(),
       compact->log->range->cfg->block_cells()
     );
     Env::Rgr::res().adj_mem_usage(ssize_t(m_cells.size_of_internal()) - sz);
     total_cells_count += cells_count;
 
     auto frag = Fragment::make_write(
-      err = Error::OK, 
+      err = Error::OK,
       compact->get_filepath(compact->log->next_id()),
-      interval, 
-      compact->log->range->cfg->block_enc(), 
+      interval,
+      compact->log->range->cfg->block_enc(),
       compact->log->range->cfg->cell_versions(),
-      cells_count, cells, 
+      cells_count, cells,
       buff_write
     );
     if(err)
@@ -126,9 +126,9 @@ void Compact::Group::write() {
     buff_write->own = false;
     sem.acquire();
     frag->write(
-      Error::UNPOSSIBLE, 
-      compact->log->range->cfg->file_replication(), 
-      frag->offset_data + frag->size_enc, 
+      Error::UNPOSSIBLE,
+      compact->log->range->cfg->file_replication(),
+      frag->offset_data + frag->size_enc,
       buff_write,
       &sem
     );
@@ -141,7 +141,7 @@ void Compact::Group::write() {
 
 void Compact::Group::finalize() {
   int err = Error::OK;
-  if(!error && !compact->log->stopping && 
+  if(!error && !compact->log->stopping &&
      read_frags.size() == m_remove.size()) {
     compact->log->take_ownership(err, m_fragments, m_remove);
   }
@@ -166,11 +166,11 @@ Compact::Compact(Fragments* log, int repetition,
                  Cb_t& cb)
                 : log(log), ts(Time::now_ns()),
                   preload(log->range->cfg->log_fragment_preload()),
-                  repetition(repetition), ngroups(groups.size()), nfrags(0), 
+                  repetition(repetition), ngroups(groups.size()), nfrags(0),
                   m_cb(cb) {
   for(auto frags : groups)
     nfrags += frags.size();
-    
+
   uint32_t blks = Env::Rgr::res().avail_ram() / log->range->cfg->block_size();
   if(blks < nfrags)
     log->range->blocks.release((nfrags-blks) * log->range->cfg->block_size());
@@ -182,7 +182,7 @@ Compact::Compact(Fragments* log, int repetition,
       continue;
     m_groups.push_back(new Group(this, m_groups.size()+1));
 
-    for(auto it = frags.begin(); it < frags.end(); ++it) {
+    for(auto it = frags.begin(); it != frags.end(); ++it) {
       m_groups.back()->read_frags.push_back(*it);
       if(!blks) {
         if(m_groups.back()->read_frags.size() < cointervaling)
@@ -203,15 +203,15 @@ Compact::Compact(Fragments* log, int repetition,
     return;
   }
 
-  SWC_LOGF(LOG_INFO, 
+  SWC_LOGF(LOG_INFO,
     "COMPACT-LOG-START %lu/%lu w=%lu frags=%lu(%lu)/%lu repetition=%d",
-    log->range->cfg->cid, log->range->rid, 
+    log->range->cfg->cid, log->range->rid,
     m_groups.size(), nfrags, ngroups, log->size(), repetition
   );
 
   m_workers.store(m_groups.size());
 
-  std::sort(m_groups.begin(), m_groups.end(), 
+  std::sort(m_groups.begin(), m_groups.end(),
     [](const Group* p1, const Group* p2) {
       return p1->read_frags.size() >= p2->read_frags.size(); });
 
@@ -227,7 +227,7 @@ void Compact::finished(Group* group, size_t cells_count) {
   SWC_LOGF(LOG_INFO,
     "COMPACT-LOG-PROGRESS %lu/%lu running=%lu "
     "worker=%u %ldus cells=%lu(%ldns)",
-    log->range->cfg->cid, log->range->rid, running, 
+    log->range->cfg->cid, log->range->rid, running,
     group->worker, (Time::now_ns() - group->ts)/1000,
     cells_count, cells_count ? (Time::now_ns() - group->ts)/cells_count: 0
   );
@@ -239,7 +239,7 @@ void Compact::finished(Group* group, size_t cells_count) {
 
   log->range->compacting(Range::COMPACT_APPLYING);
   log->range->blocks.wait_processing(); // sync processing state
-  
+
   m_workers.store(m_groups.size());
   for(auto g : m_groups)
     Env::Rgr::post([g]() { g->finalize(); });
@@ -253,10 +253,10 @@ void Compact::finalized() {
     delete g;
 
   auto took = Time::now_ns() - ts;
-  SWC_LOGF(LOG_INFO, 
+  SWC_LOGF(LOG_INFO,
     "COMPACT-LOG-FINISH %lu/%lu w=%ld frags=%ld(%ld)/%ld"
     " repetition=%ld %ldns",
-    log->range->cfg->cid, log->range->rid, 
+    log->range->cfg->cid, log->range->rid,
     m_groups.size(), nfrags, ngroups, log->size(), repetition, took
   );
   if(m_cb)

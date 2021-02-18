@@ -69,7 +69,7 @@ Host::Ptr ConnQueues::get(const EndPoints& endpoints){
 
 void ConnQueues::remove(const EndPoints& endpoints) {
   Core::MutexSptd::scope lock(m_mutex);
-  for(auto it=begin(); it<end(); ++it) {
+  for(auto it=begin(); it != end(); ++it) {
     if(has_endpoint((*it)->endpoints, endpoints)) {
       erase(it);
       break;

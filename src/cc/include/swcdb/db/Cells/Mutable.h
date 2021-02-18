@@ -44,14 +44,14 @@ class Mutable final {
     ConstIterator(const Buckets* buckets, size_t offset = 0) noexcept
                   : buckets(buckets), bucket(buckets->cbegin()) {
       if(offset) {
-        for(; bucket < buckets->cend(); ++bucket) {
+        for(; bucket != buckets->cend(); ++bucket) {
           if(offset < (*bucket)->size()) {
             item = (*bucket)->cbegin() + offset;
             break;
           }
           offset -= (*bucket)->size();
         }
-      } else if(bucket < buckets->cend()) {
+      } else if(bucket != buckets->cend()) {
         item = (*bucket)->cbegin();
       }
     }
@@ -72,12 +72,12 @@ class Mutable final {
 
     SWC_CAN_INLINE
     operator bool() const noexcept {
-      return bucket < buckets->cend() && item < (*bucket)->cend();
+      return bucket != buckets->cend() && item != (*bucket)->cend();
     }
 
     SWC_CAN_INLINE
     void operator++() noexcept {
-      if(++item == (*bucket)->cend() && ++bucket < buckets->cend())
+      if(++item == (*bucket)->cend() && ++bucket != buckets->cend())
         item = (*bucket)->cbegin();
     }
 
@@ -96,14 +96,14 @@ class Mutable final {
     Iterator(Buckets* buckets, size_t offset = 0) noexcept
              : buckets(buckets), bucket(buckets->begin()) {
       if(offset) {
-        for(; bucket < buckets->end(); ++bucket) {
+        for(; bucket != buckets->end(); ++bucket) {
           if(offset < (*bucket)->size()) {
             item = (*bucket)->begin() + offset;
             break;
           }
           offset -= (*bucket)->size();
         }
-      } else if(bucket < buckets->end()) {
+      } else if(bucket != buckets->end()) {
         item = (*bucket)->begin();
       }
     }
@@ -123,12 +123,12 @@ class Mutable final {
 
     SWC_CAN_INLINE
     operator bool() const noexcept {
-      return bucket < buckets->end() && item < (*bucket)->end();
+      return bucket != buckets->end() && item != (*bucket)->end();
     }
 
     SWC_CAN_INLINE
     void operator++() noexcept {
-      if(++item == (*bucket)->end() && ++bucket < buckets->end())
+      if(++item == (*bucket)->end() && ++bucket != buckets->end())
         item = (*bucket)->begin();
     }
 
@@ -156,7 +156,7 @@ class Mutable final {
         delete *bucket;
         if((bucket = buckets->erase(bucket)) != buckets->end())
           item = (*bucket)->begin();
-      } else if(item == (*bucket)->end() && ++bucket < buckets->end()) {
+      } else if(item == (*bucket)->end() && ++bucket != buckets->end()) {
         item = (*bucket)->begin();
       }
     }

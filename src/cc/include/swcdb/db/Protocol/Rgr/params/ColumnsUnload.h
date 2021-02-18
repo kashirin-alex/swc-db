@@ -62,7 +62,7 @@ class ColumnsUnloadRsp : public Serializable {
       cid = Serialization::decode_vi64(bufp, remainp);
       auto& rids = columns[cid];
       rids.resize(Serialization::decode_vi64(bufp, remainp));
-      for(auto it = rids.begin(); it < rids.end(); ++it)
+      for(auto it = rids.begin(); it != rids.end(); ++it)
         *it = Serialization::decode_vi64(bufp, remainp);
     }
   }

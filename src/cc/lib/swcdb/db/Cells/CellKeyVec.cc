@@ -142,7 +142,7 @@ void KeyVec::get(const uint32_t idx, std::string& fraction) const {
 
 uint32_t KeyVec::encoded_length() const noexcept {
   uint32_t len = Serialization::encoded_length_vi32(size());
-  for(auto it = cbegin(); it < cend(); ++it)
+  for(auto it = cbegin(); it != cend(); ++it)
     len += Serialization::encoded_length_vi32(it->length()) + it->length();
   return len;
 }
@@ -150,7 +150,7 @@ uint32_t KeyVec::encoded_length() const noexcept {
 void KeyVec::encode(uint8_t** bufp) const {
   Serialization::encode_vi32(bufp, size());
   uint32_t len;
-  for(auto it = cbegin(); it < cend(); ++it) {
+  for(auto it = cbegin(); it != cend(); ++it) {
     Serialization::encode_vi32(bufp, len = it->length());
     memcpy(*bufp, it->data(), len);
     *bufp += len;
@@ -161,7 +161,7 @@ void KeyVec::decode(const uint8_t** bufp, size_t* remainp) {
   clear();
   resize(Serialization::decode_vi32(bufp, remainp));
   uint32_t len;
-  for(auto it = begin(); it < end(); ++it) {
+  for(auto it = begin(); it != end(); ++it) {
     *remainp -= len = Serialization::decode_vi32(bufp, remainp);
     it->assign(*bufp, len);
     *bufp += len;
@@ -183,9 +183,9 @@ void KeyVec::print(std::ostream& out) const {
   out << "sz=" << size() << " [";
   char hex[5];
   hex[4] = 0;
-  for(auto it = cbegin(); it < cend(); ) {
+  for(auto it = cbegin(); it != cend(); ) {
     out << '"';
-    for(auto chrp = it->cbegin(); chrp < it->cend(); ++chrp) {
+    for(auto chrp = it->cbegin(); chrp != it->cend(); ++chrp) {
       if(*chrp == '"')
         out << '\\';
       if(31 < *chrp && *chrp < 127) {
@@ -196,7 +196,7 @@ void KeyVec::print(std::ostream& out) const {
       }
     }
     out << '"';
-    if(++it < cend())
+    if(++it != cend())
       out << ',';
   }
   out << "])";

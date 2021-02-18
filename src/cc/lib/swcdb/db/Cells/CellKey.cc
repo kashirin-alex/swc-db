@@ -111,8 +111,9 @@ void Key::add(const uint8_t* fraction, uint24_t len) {
   const uint8_t* old = data;
   uint32_t old_size = size;
 
-  uint8_t* ptr = data =
-    new uint8_t[size += Serialization::encoded_length_vi24(len) + len];
+  size += Serialization::encoded_length_vi24(len);
+  size += uint32_t(len);
+  uint8_t* ptr = data = new uint8_t[size];
   if(old) {
     memcpy(ptr, old, old_size);
     ptr += old_size;
@@ -143,7 +144,7 @@ void Key::add(const T cbegin,  const T cend) {
   const uint8_t* old = data;
   uint32_t old_size = size;
 
-  for(auto it=cbegin; it < cend; ++it)
+  for(auto it=cbegin; it != cend; ++it)
     size += Serialization::encoded_length_vi24(it->size()) + it->size();
 
   uint8_t* ptr = data = new uint8_t[size];
@@ -153,7 +154,7 @@ void Key::add(const T cbegin,  const T cend) {
     if(own)
       delete [] old;
   }
-  for(auto it=cbegin; it < cend; ++it) {
+  for(auto it=cbegin; it != cend; ++it) {
     Serialization::encode_vi24(&ptr, it->size());
     memcpy(ptr, reinterpret_cast<const uint8_t*>(it->c_str()), it->size());
     ptr += it->size();
@@ -184,7 +185,8 @@ void Key::insert(uint32_t idx, const uint8_t* fraction, uint24_t len) {
   }
 
   uint32_t prev_size = size;
-  size += Serialization::encoded_length_vi24(len) + len;
+  size += Serialization::encoded_length_vi24(len);
+  size += uint32_t(len);
 
   uint8_t* data_tmp = new uint8_t[size];
   const uint8_t* ptr_tmp = data;
@@ -314,7 +316,7 @@ void Key::convert_to(std::vector<std::string>& key) const {
   const uint8_t* ptr = data;
   key.clear();
   key.resize(count);
-  for(auto it = key.begin(); it<key.end(); ++it, ptr+=len) {
+  for(auto it = key.begin(); it != key.end(); ++it, ptr+=len) {
     len = Serialization::decode_vi24(&ptr);
     it->assign(reinterpret_cast<const char*>(ptr), len);
   }
@@ -325,7 +327,7 @@ void Key::convert_to(std::vector<KeyVec::Fraction>& key) const {
   const uint8_t* ptr = data;
   key.clear();
   key.resize(count);
-  for(auto it = key.begin(); it<key.end(); ++it, ptr+=len) {
+  for(auto it = key.begin(); it != key.end(); ++it, ptr+=len) {
     len = Serialization::decode_vi24(&ptr);
     it->assign(ptr, len);
   }
@@ -342,7 +344,7 @@ bool Key::equal(const std::vector<std::string>& key) const {
 
   uint24_t len;
   const uint8_t* ptr = data;
-  for(auto it = key.begin(); it<key.end(); ++it, ptr+=len) {
+  for(auto it = key.begin(); it != key.end(); ++it, ptr+=len) {
     len = Serialization::decode_vi24(&ptr);
     if(!Condition::eq(
           ptr, len,

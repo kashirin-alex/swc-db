@@ -96,7 +96,7 @@ void Result::write_and_free(DynamicBuffer& cells, uint32_t& cell_count,
   Cell* first = nullptr;
   Cell* last = nullptr;
   auto it = begin();
-  for(Cell* cell; it < end() && (
+  for(Cell* cell; it != end() && (
                   (!threshold || threshold > cells.fill()) &&
                   (!max_cells || max_cells > cell_count) ); ++it) {
     if((cell = *it)->has_expired(ttl))
@@ -123,7 +123,7 @@ void Result::write_and_free(DynamicBuffer& cells, uint32_t& cell_count,
     --it;
     bytes -= (*it)->encoded_length();
     delete *it;
-  } while(it > begin());
+  } while(it != begin());
   erase(begin(), it_end);
 }
 

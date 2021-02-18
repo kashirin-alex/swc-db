@@ -446,7 +446,7 @@ bool MngdColumns::initialize() {
   FS::IdEntries_t::iterator it_to;
   do {
     pending.acquire();
-    it_to = it + vol < entries.end() ? (it + vol) : entries.end();
+    it_to = entries.end() - entries.begin() > vol ? (it + vol) : entries.end();
     Env::Mngr::post(
       [&pending,
        entries=FS::IdEntries_t(it, it_to),
@@ -466,7 +466,7 @@ bool MngdColumns::initialize() {
       }
     );
     it += vol;
-  } while(it_to < entries.end());
+  } while(it_to != entries.end());
 
   pending.release();
   pending.wait_all();
@@ -528,7 +528,7 @@ bool MngdColumns::columns_load() {
 
     make_batch:
       it_batch = it;
-      for(;it < entries.end() && columns.size() < 1000 &&
+      for(;it != entries.end() && columns.size() < 1000 &&
            (!g->cid_begin || g->cid_begin <= (*it)->cid) &&
            (!g->cid_end || g->cid_end >= (*it)->cid); ++it) {
         columns.push_back((*it)->cid);

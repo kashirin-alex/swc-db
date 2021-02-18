@@ -300,7 +300,7 @@ void update_data(const std::vector<DB::Schema::Ptr>& schemas, uint8_t flag) {
               DB::Cell::Serial::Value::FieldsWriter wfields;
               wfields.ensure(value_data.size() * 10);
               auto t = DB::Cell::Serial::Value::Type::INT64;
-              for(auto it = value_data.begin(); it < value_data.end(); ++it) {
+              for(auto it = value_data.begin(); it != value_data.end(); ++it) {
                 if(t == DB::Cell::Serial::Value::Type::INT64) {
                   wfields.add(int64_t(*it));
                   t = DB::Cell::Serial::Value::Type::DOUBLE;

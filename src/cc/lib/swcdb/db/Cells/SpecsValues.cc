@@ -15,7 +15,7 @@ void Values::copy(const Values& other) {
   free();
   resize(other.size());
   auto it = begin();
-  for(auto it2 = other.begin(); it < end(); ++it, ++it2)
+  for(auto it2 = other.begin(); it != end(); ++it, ++it2)
     it->copy(*it2);
   col_type = other.col_type;
 }
@@ -24,7 +24,7 @@ void Values::free() {
   clear();
 }
 
-Value& Values::add(Condition::Comp comp) { 
+Value& Values::add(Condition::Comp comp) {
   return emplace_back(true, comp);
 }
 
@@ -42,7 +42,7 @@ size_t Values::size_of_internal() const noexcept {
 bool Values::equal(const Values& other) const noexcept {
   if(col_type == other.col_type && size() == other.size()) {
     auto it = begin();
-    for(auto it2 = other.begin(); it < end(); ++it, ++it2)
+    for(auto it2 = other.begin(); it != end(); ++it, ++it2)
       if(!it->equal(*it2))
         return false;
   }

@@ -429,7 +429,7 @@ void Interval::apply_possible_range(DB::Cell::Key& key, bool ending,
     return;
 
   if(no_stepping) {
-    for(auto it = key_range.cbegin(); it < key_range.cend(); ++it) {
+    for(auto it = key_range.cbegin(); it != key_range.cend(); ++it) {
       if(it->empty()) {
         key.add(key_range.cbegin(), it);
         return;

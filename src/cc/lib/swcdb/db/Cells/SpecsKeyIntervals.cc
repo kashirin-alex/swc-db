@@ -36,7 +36,7 @@ void KeyIntervals::copy(const KeyIntervals& other) {
   free();
   resize(other.size());
   auto it = begin();
-  for(auto it2 = other.begin(); it < end(); ++it, ++it2) {
+  for(auto it2 = other.begin(); it != end(); ++it, ++it2) {
     it->reset(new KeyInterval(*(it2->get())));
   }
 }
@@ -70,7 +70,7 @@ size_t KeyIntervals::size_of_internal() const noexcept {
 bool KeyIntervals::equal(const KeyIntervals& other) const noexcept {
   if(size() == other.size()) {
     auto it = begin();
-    for(auto it2 = other.begin(); it < end(); ++it, ++it2)
+    for(auto it2 = other.begin(); it != end(); ++it, ++it2)
       if(!(*it)->start.equal((*it2)->start) ||
          !(*it)->finish.equal((*it2)->finish))
         return false;

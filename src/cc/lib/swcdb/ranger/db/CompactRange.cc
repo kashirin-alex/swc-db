@@ -170,7 +170,7 @@ void CompactRange::initialize() {
       do {
         if(!(*it)->interval.key_begin.equal((*(it-1))->interval.key_end))
           break;
-      } while(++it < range->blocks.cellstores.end());
+      } while(++it != range->blocks.cellstores.end());
 
     if(it == range->blocks.cellstores.end()) {
       if(split_at > 1) {
@@ -643,7 +643,7 @@ ssize_t CompactRange::can_split_at() {
     do {
       if(!(*it)->interval.key_begin.equal((*(it-1))->interval.key_end))
         break;
-    } while(++it < cellstores.end());
+    } while(++it != cellstores.end());
 
   if(it == cellstores.end()) {
     if(at > 1) {

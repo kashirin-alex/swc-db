@@ -521,7 +521,7 @@ void Write::write_blocks_index(int& err, uint32_t& blks_idx_count) {
       size += buff_write.size;
       blks_count = len_data = 0;
     }
-  } while (it < m_blocks.end());
+  } while (it != m_blocks.end());
 }
 
 void Write::write_trailer(int& err) {

@@ -110,7 +110,7 @@ void Key::set(const DB::Cell::Key &cell_key, Condition::Comp comp) {
 
   uint32_t len;
   const uint8_t* ptr = cell_key.data;
-  for(auto it=begin(); it < end(); ++it) {
+  for(auto it=begin(); it != end(); ++it) {
     it->comp = comp;
     if((len = Serialization::decode_vi32(&ptr))) {
       it->append(reinterpret_cast<const char*>(ptr), len);
@@ -190,7 +190,7 @@ std::string_view Key::get(const uint32_t idx) const {
 void Key::get(DB::Cell::Key& key) const {
   key.free();
   if(!empty())
-    for(auto it=begin(); it < end(); ++it)
+    for(auto it=begin(); it != end(); ++it)
       key.add(*it);
 }
 
@@ -203,21 +203,21 @@ void Key::remove(uint32_t idx, bool recursive) {
 
 uint32_t Key::encoded_length() const noexcept {
   uint32_t len = Serialization::encoded_length_vi32(size());
-  for(auto it = begin(); it < end(); ++it)
+  for(auto it = begin(); it != end(); ++it)
     len += it->encoded_length();
   return len;
 }
 
 void Key::encode(uint8_t** bufp) const {
   Serialization::encode_vi32(bufp, size());
-  for(auto it = begin(); it < end(); ++it)
+  for(auto it = begin(); it != end(); ++it)
     it->encode(bufp);
 }
 
 void Key::decode(const uint8_t** bufp, size_t* remainp) {
   clear();
   resize(Serialization::decode_vi32(bufp, remainp));
-  for(auto it = begin(); it < end(); ++it)
+  for(auto it = begin(); it != end(); ++it)
     it->decode(bufp, remainp);
 }
 
@@ -254,7 +254,7 @@ Key::_is_matching(const Cell::Key &key) {
   const uint8_t* ptr = key.data;
   uint32_t len;
   auto it = begin();
-  for(uint24_t c = key.count; c && it < end(); ++it, --c, ptr += len) {
+  for(uint24_t c = key.count; c && it != end(); ++it, --c, ptr += len) {
     len = Serialization::decode_vi24(&ptr);
     if(!it->_is_matching<T_seq>(ptr, len))
       return false;
@@ -302,10 +302,10 @@ void Key::display(std::ostream& out, bool pretty) const {
   char hex[5];
   hex[4] = 0;
   uint8_t byte;
-  for(auto it = cbegin(); it < cend(); ) {
+  for(auto it = cbegin(); it != cend(); ) {
     out << Condition::to_string(it->comp)
         << '"';
-    for(auto chrp = it->cbegin(); chrp < it->cend(); ++chrp) {
+    for(auto chrp = it->cbegin(); chrp != it->cend(); ++chrp) {
       byte = *chrp;
       if(byte == '"')
         out << '\\';
@@ -317,7 +317,7 @@ void Key::display(std::ostream& out, bool pretty) const {
       }
     }
     out << '"';
-    if(++it < cend())
+    if(++it != cend())
       out << ", ";
   }
   out << "]";

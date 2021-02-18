@@ -182,7 +182,7 @@ class Page final : public PageBase {
     auto ptr = new Item(buf, sz);
 
     auto it = begin() + _narrow(*ptr);
-    for(; it < end() && (*it)->hash() <= ptr->hash(); ++it) {
+    for(; it != end() && (*it)->hash() <= ptr->hash(); ++it) {
       if((*it)->hash() == ptr->hash() && (*it)->equal(*ptr)) {
         ptr->data_ = nullptr;
         delete ptr;
@@ -198,7 +198,7 @@ class Page final : public PageBase {
     std::scoped_lock lock(m_mutex);
 
     for(auto it = begin() + _narrow(*ptr);
-        it < end() && (*it)->hash() <= ptr->hash(); ++it) {
+        it != end() && (*it)->hash() <= ptr->hash(); ++it) {
       if((*it)->hash() == ptr->hash() && (*it)->equal(*ptr)) {
         delete *it;
         erase(it);
