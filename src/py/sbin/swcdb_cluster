@@ -545,6 +545,9 @@ if __name__ == '__main__':
             swcdb_cfg[n].append(v)
     swcdb_read_config()
 
+    if os.environ.get('SWCDB_CLUSTER_SSH_CONFIG', ''):
+        sys.argv.append('--ssh-config=' + os.environ['SWCDB_CLUSTER_SSH_CONFIG'])
+
     SwcDbClusterProgram(
         name="swcdb_cluster",
         namespace=fabric.main.Collection.from_module(sys.modules[__name__]),
