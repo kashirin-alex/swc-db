@@ -136,8 +136,16 @@ class Update final : public std::enable_shared_from_this<Update> {
             const DB::Cell::Key::Ptr& key_start,
             const Update::Ptr& updater,
             const ReqBase::Ptr& parent=nullptr,
-            const rid_t rid=0,
-            const DB::Cell::Key* key_finish=nullptr);
+            const rid_t rid=0);
+
+    Locator(const DB::Types::Range type,
+            const cid_t cid,
+            const DB::Cells::ColCells::Ptr& col,
+            const DB::Cell::Key::Ptr& key_start,
+            const Update::Ptr& updater,
+            const ReqBase::Ptr& parent,
+            const rid_t rid,
+            const DB::Cell::Key& key_finish);
 
     virtual ~Locator();
 

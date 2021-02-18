@@ -61,7 +61,7 @@ Update::Update(const DB::Cells::MutableMap::Ptr& columns,
 }
 
 Update::~Update() { }
- 
+
 void Update::response(int err) {
 
   if(!result->completion.is_last()) {
@@ -104,7 +104,7 @@ void Update::wait() {
 
 bool Update::wait_ahead_buffers(uint64_t from) {
   std::unique_lock lock_wait(m_mutex);
-  
+
   size_t bytes = columns->size_bytes() + columns_onfractions->size_bytes();
   if(from == result->completion.count())
     return bytes >= buff_sz;
@@ -113,14 +113,14 @@ bool Update::wait_ahead_buffers(uint64_t from) {
     return false;
 
   cv.wait(
-    lock_wait, 
+    lock_wait,
     [updater=shared_from_this()]() {
-      return updater->columns->size_bytes() 
+      return updater->columns->size_bytes()
               + updater->columns_onfractions->size_bytes()
               < updater->buff_sz * updater->buff_ahead;
     }
   );
-  return from == result->completion.count() && 
+  return from == result->completion.count() &&
           columns->size_bytes() + columns_onfractions->size_bytes() >= buff_sz;
 }
 
@@ -132,7 +132,7 @@ void Update::commit_or_wait(const DB::Cells::ColCells::Ptr& col,
 }
 
 void Update::commit_if_need() {
-  if(!result->completion.count() && 
+  if(!result->completion.count() &&
      (columns->size_bytes() || columns_onfractions->size_bytes()))
     commit();
 }
@@ -146,11 +146,11 @@ void Update::commit() {
     commit(col);
   for(size_t idx=0; (col=columns_onfractions->get_idx(idx)); ++idx)
     commit_onfractions(col);
-  
+
   response();
 }
 
-void Update::commit(const cid_t cid) { 
+void Update::commit(const cid_t cid) {
   commit(columns->get_col(cid));
   commit_onfractions(columns_onfractions->get_col(cid));
 }
@@ -161,8 +161,8 @@ void Update::commit(const DB::Cells::ColCells::Ptr& col) {
   result->completion.increment();
 
   std::make_shared<Locator>(
-    DB::Types::Range::MASTER, 
-    col->cid, col, col->get_first_key(), 
+    DB::Types::Range::MASTER,
+    col->cid, col, col->get_first_key(),
     shared_from_this()
   )->locate_on_manager();
 
@@ -193,15 +193,24 @@ void Update::commit_onfractions(const DB::Cells::ColCells::Ptr& col) {
   );
 //
 
-Update::Locator::Locator(const DB::Types::Range type, const cid_t cid, 
-        const DB::Cells::ColCells::Ptr& col, 
+Update::Locator::Locator(const DB::Types::Range type, const cid_t cid,
+        const DB::Cells::ColCells::Ptr& col,
         const DB::Cell::Key::Ptr& key_start,
-        const Update::Ptr& updater, const ReqBase::Ptr& parent, 
-        const rid_t rid, const DB::Cell::Key* key_finish) 
-        : type(type), cid(cid), col(col), key_start(key_start), 
-          updater(updater), parent(parent), 
-          rid(rid), 
-          key_finish(key_finish ? *key_finish : DB::Cell::Key()) {
+        const Update::Ptr& updater, const ReqBase::Ptr& parent,
+        const rid_t rid)
+        : type(type), cid(cid), col(col), key_start(key_start),
+          updater(updater), parent(parent),
+          rid(rid) {
+}
+
+Update::Locator::Locator(const DB::Types::Range type, const cid_t cid,
+        const DB::Cells::ColCells::Ptr& col,
+        const DB::Cell::Key::Ptr& key_start,
+        const Update::Ptr& updater, const ReqBase::Ptr& parent,
+        const rid_t rid, const DB::Cell::Key& key_finish)
+        : type(type), cid(cid), col(col), key_start(key_start),
+          updater(updater), parent(parent),
+          rid(rid), key_finish(key_finish) {
 }
 
 Update::Locator::~Locator() { }
@@ -233,9 +242,9 @@ void Update::Locator::locate_on_manager() {
 
   Comm::Protocol::Mngr::Req::RgrGet::request(
     params,
-    [profile=updater->result->profile.mngr_locate(), 
+    [profile=updater->result->profile.mngr_locate(),
      locator=shared_from_this()]
-    (const ReqBase::Ptr& req, 
+    (const ReqBase::Ptr& req,
      const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
       profile.add(rsp.err || !rsp.rid);
       locator->located_on_manager(req, rsp);
@@ -245,7 +254,7 @@ void Update::Locator::locate_on_manager() {
 
 
 void Update::Locator::located_on_manager(
-      const ReqBase::Ptr& base, 
+      const ReqBase::Ptr& base,
       const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
   switch(rsp.err) {
     case Error::OK:
@@ -267,9 +276,9 @@ void Update::Locator::located_on_manager(
   SWC_LOCATOR_RSP_DEBUG("mngr_located_master");
 
   auto locator = std::make_shared<Locator>(
-    DB::Types::Range::MASTER, 
-    rsp.cid, col, key_start, 
-    updater, base, 
+    DB::Types::Range::MASTER,
+    rsp.cid, col, key_start,
+    updater, base,
     rsp.rid
   );
   DB::Types::MetaColumn::is_master(col->cid)
@@ -280,8 +289,8 @@ void Update::Locator::located_on_manager(
     auto next_key_start = col->get_key_next(rsp.range_end);
     if(next_key_start) {
       std::make_shared<Locator>(
-        DB::Types::Range::MASTER, 
-        col->cid, col, next_key_start, 
+        DB::Types::Range::MASTER,
+        col->cid, col, next_key_start,
         updater
       )->locate_on_manager();
     }
@@ -298,7 +307,7 @@ void Update::Locator::locate_on_ranger(const Comm::EndPoints& endpoints) {
   params.range_begin.copy(*key_start.get());
   if(!DB::Types::MetaColumn::is_master(col->cid)) {
     params.range_begin.insert(0, std::to_string(col->cid));
-    if(type == DB::Types::Range::MASTER && 
+    if(type == DB::Types::Range::MASTER &&
        DB::Types::MetaColumn::is_data(col->cid))
       params.range_begin.insert(
         0, DB::Types::MetaColumn::get_meta_cid_str(col->get_sequence()));
@@ -310,7 +319,7 @@ void Update::Locator::locate_on_ranger(const Comm::EndPoints& endpoints) {
     params, endpoints,
     [profile=updater->result->profile.rgr_locate(type),
      locator=shared_from_this()]
-    (const ReqBase::Ptr& req, 
+    (const ReqBase::Ptr& req,
      const Comm::Protocol::Rgr::Params::RangeLocateRsp& rsp) {
       profile.add(!rsp.rid || rsp.err);
       locator->located_on_ranger(
@@ -323,8 +332,8 @@ void Update::Locator::locate_on_ranger(const Comm::EndPoints& endpoints) {
 }
 
 void Update::Locator::located_on_ranger(
-      const Comm::EndPoints& endpoints, 
-      const ReqBase::Ptr& base, 
+      const Comm::EndPoints& endpoints,
+      const ReqBase::Ptr& base,
       const Comm::Protocol::Rgr::Params::RangeLocateRsp& rsp) {
   switch(rsp.err) {
     case Error::OK:
@@ -352,21 +361,21 @@ void Update::Locator::located_on_ranger(
   SWC_LOCATOR_RSP_DEBUG("rgr_located");
 
   std::make_shared<Locator>(
-    type == DB::Types::Range::MASTER 
-            ? DB::Types::Range::META 
+    type == DB::Types::Range::MASTER
+            ? DB::Types::Range::META
             : DB::Types::Range::DATA,
-    rsp.cid, col, key_start, 
-    updater, base, 
-    rsp.rid, &rsp.range_end
+    rsp.cid, col, key_start,
+    updater, base,
+    rsp.rid, rsp.range_end
   )->resolve_on_manager();
 
   if(!rsp.range_end.empty()) {
     auto next_key_start = col->get_key_next(rsp.range_end);
     if(next_key_start) {
       std::make_shared<Locator>(
-        type, 
-        cid, col, next_key_start, 
-        updater, base, 
+        type,
+        cid, col, next_key_start,
+        updater, base,
         rid
       )->locate_on_ranger(endpoints);
     }
@@ -381,7 +390,7 @@ void Update::Locator::resolve_on_manager() {
   auto req = Comm::Protocol::Mngr::Req::RgrGet::make(
     params,
     [profile=updater->result->profile.mngr_res(), locator=shared_from_this()]
-    (const ReqBase::Ptr& req, 
+    (const ReqBase::Ptr& req,
      const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
       profile.add(rsp.err || !rsp.rid || rsp.endpoints.empty());
       locator->located_ranger(req, rsp);
@@ -399,7 +408,7 @@ void Update::Locator::resolve_on_manager() {
 }
 
 void Update::Locator::located_ranger(
-      const ReqBase::Ptr& base, 
+      const ReqBase::Ptr& base,
       const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
   switch(rsp.err) {
     case Error::OK:
@@ -428,7 +437,7 @@ void Update::Locator::located_ranger(
 }
 
 void Update::Locator::proceed_on_ranger(
-      const ReqBase::Ptr& base, 
+      const ReqBase::Ptr& base,
       const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
   switch(type) {
     case DB::Types::Range::MASTER: {
@@ -455,12 +464,17 @@ void Update::Locator::proceed_on_ranger(
   return updater->response();
 
   do_next_locate: {
-    std::make_shared<Locator>(
-      type,
-      rsp.cid, col, key_start,
-      updater, base,
-      rsp.rid,
-      DB::Types::MetaColumn::is_master(cid) ? &rsp.range_end : nullptr
+    (DB::Types::MetaColumn::is_master(cid)
+      ? std::make_shared<Locator>(
+          type,
+          rsp.cid, col, key_start,
+          updater, base,
+          rsp.rid, rsp.range_end)
+      : std::make_shared<Locator>(
+          type,
+          rsp.cid, col, key_start,
+          updater, base,
+          rsp.rid)
     )->locate_on_ranger(rsp.endpoints);
     return updater->response();
   }
@@ -475,18 +489,18 @@ void Update::Locator::commit_data(
   DynamicBuffer::Ptr cells_buff;
   auto workload = std::make_shared<Core::CompletionCounter<>>(1);
 
-  while(more && 
+  while(more &&
         (cells_buff = col->get_buff(
           *key_start.get(), key_finish, updater->buff_sz, more))) {
     workload->increment();
 
     Comm::Protocol::Rgr::Req::RangeQueryUpdate::request(
-      Comm::Protocol::Rgr::Params::RangeQueryUpdateReq(col->cid, rid), 
-      cells_buff, 
-      endpoints, 
-      [workload, cells_buff, base, 
+      Comm::Protocol::Rgr::Params::RangeQueryUpdateReq(col->cid, rid),
+      cells_buff,
+      endpoints,
+      [workload, cells_buff, base,
        profile=updater->result->profile.rgr_data(), locator=shared_from_this()]
-      (ReqBase::Ptr req, 
+      (ReqBase::Ptr req,
        const Comm::Protocol::Rgr::Params::RangeQueryUpdateRsp& rsp) {
         profile.add(rsp.err);
         switch(rsp.err) {
