@@ -62,9 +62,12 @@ class AppContext final : virtual public BrokerIfFactory {
   }
 
   BrokerIf* getHandler(const thrift::TConnectionInfo& connInfo) override {
-    AppHandler* handler = new AppHandler(
-      std::dynamic_pointer_cast<thrift::transport::TSocket>(
-        connInfo.transport));
+    auto socket = std::dynamic_pointer_cast<thrift::transport::TSocket>(
+      connInfo.transport);
+    if(!socket)
+      Converter::exception(Error::CANCELLED, "Bad Transport Socket");
+
+    AppHandler* handler = new AppHandler(socket);
     if(handler->socket) try {
       SWC_LOG_OUT(LOG_INFO,
         SWC_LOG_OSTREAM << "Connection Opened(hdlr=" << size_t(handler)
@@ -79,7 +82,7 @@ class AppContext final : virtual public BrokerIfFactory {
   }
 
   void releaseHandler(ServiceIf* hdlr) override {
-    AppHandler* handler = dynamic_cast<AppHandler*>(hdlr);
+    AppHandler* handler = reinterpret_cast<AppHandler*>(hdlr);
     handler->disconnected();
 
     if(handler->socket) try {
