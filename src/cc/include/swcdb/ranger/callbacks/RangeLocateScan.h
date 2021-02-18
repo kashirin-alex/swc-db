@@ -120,7 +120,7 @@ class RangeLocateScan : public ReqScan {
     profile.add_cell(cell.encoded_length());
 
     std::string id_name(cell.key.get_string(0));
-    params.cid = strtoll(id_name.c_str(), NULL, 0);
+    params.cid = strtoll(id_name.c_str(), nullptr, 0);
     return false;
   }
 

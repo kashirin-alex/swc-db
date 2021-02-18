@@ -268,14 +268,14 @@ typedef BufferDyn <StaticBuffer>  DynamicBuffer;
 
 // StaticBuffer specializations to SizeOf
 template<>
-template<size_t SizeOf=1>
+template<size_t SizeOf>
 SWC_CAN_INLINE
 size_t StaticBuffer::length_base_bytes(size_t len8) SWC_NOEXCEPT {
   return len8;
 }
 
 template<>
-template<size_t SizeOf=1>
+template<size_t SizeOf>
 SWC_CAN_INLINE
 size_t StaticBuffer::length_base_byte(size_t sz) SWC_NOEXCEPT {
   return sz;

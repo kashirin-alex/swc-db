@@ -697,7 +697,7 @@ void FileSystemBroker::close(const Callback::CloseCb_t& cb,
 
 extern "C" {
 SWC::FS::FileSystem* fs_make_new_broker(){
-  return (SWC::FS::FileSystem*)(new SWC::FS::FileSystemBroker());
+  return static_cast<SWC::FS::FileSystem*>(new SWC::FS::FileSystemBroker());
 }
 void fs_apply_cfg_broker(SWC::Env::Config::Ptr env){
   SWC::Env::Config::set(env);

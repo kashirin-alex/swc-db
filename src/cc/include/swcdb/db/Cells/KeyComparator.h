@@ -104,7 +104,7 @@ Condition::Comp
 condition(const Types::KeySeq seq,
           const uint8_t *p1, uint32_t p1_len,
           const uint8_t *p2, uint32_t p2_len)
-          noexcept __attribute__((optimize("-O3")));
+          noexcept SWC_ATTRIBS((SWC_ATTRIB_O3));
 
 extern SWC_CAN_INLINE
 Condition::Comp
@@ -161,7 +161,7 @@ bool
 is_matching(const Types::KeySeq seq, Condition::Comp comp,
             const uint8_t *p1, uint32_t p1_len,
             const uint8_t *p2, uint32_t p2_len)
-            noexcept __attribute__((optimize("-O3")));
+            noexcept SWC_ATTRIBS((SWC_ATTRIB_O3));
 
 extern SWC_CAN_INLINE
 bool

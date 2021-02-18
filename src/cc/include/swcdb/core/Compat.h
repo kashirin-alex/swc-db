@@ -9,14 +9,14 @@
 
 
 //! The SWC-DB C++ namespace 'SWC'
-namespace SWC { 
+namespace SWC {
 
 
 /**
  * \defgroup Core The Core-Components Group
  * @brief A group with all related to SWC-DB Core-Components (libswcdb_core, libswcdb_core_config, libswcdb_core_comm).
  *
- * 
+ *
  */
 
 /**
@@ -77,13 +77,29 @@ namespace Core { }
 # define SWC_SHOULD_INLINE  \
   SWC_ATTRIBS((SWC_ATTR_INLINE)) \
   extern inline
-#else 
+#else
 # define SWC_SHOULD_INLINE
 #endif
 
 
+#if defined(__clang__) // CLANG specific
+
+# define SWC_SHOULD_NOT_INLINE  \
+  SWC_ATTRIBS((__noinline__))
+
+# define SWC_ATTRIB_O3
+
+
+#elif defined(__GNUC__) // GCC specific
+
 # define SWC_SHOULD_NOT_INLINE  \
   SWC_ATTRIBS((__noinline__, __noclone__))
+
+# define SWC_ATTRIB_O3  \
+  optimize("-O3")
+
+#endif
+
 
 
 # define SWC_CAN_INLINE  \

@@ -328,7 +328,7 @@ void FileSystemCeph::readdir(int& err, const std::string& name,
 
   while((err = ceph_readdirplus_r(
               m_filesystem, dirp, &de,
-              &stx, CEPH_STATX_INO, AT_NO_ATTR_SYNC, NULL)) == 1) {
+              &stx, CEPH_STATX_INO, AT_NO_ATTR_SYNC, nullptr)) == 1) {
     if(de.d_name[0] == '.' || !de.d_name[0])
       continue;
 
@@ -372,7 +372,7 @@ void FileSystemCeph::rmdir(int& err, const std::string& name) {
 
   while((err = ceph_readdirplus_r(
               m_filesystem, dirp, &de,
-              &stx, CEPH_STATX_INO, AT_NO_ATTR_SYNC, NULL)) == 1) {
+              &stx, CEPH_STATX_INO, AT_NO_ATTR_SYNC, nullptr)) == 1) {
     if(de.d_name[0] == '.' || !de.d_name[0])
       continue;
 
@@ -684,7 +684,7 @@ void FileSystemCeph::close(int& err, SmartFd::Ptr& smartfd) {
 
 extern "C" {
 SWC::FS::FileSystem* fs_make_new_ceph() {
-  return (SWC::FS::FileSystem*)(new SWC::FS::FileSystemCeph());
+  return static_cast<SWC::FS::FileSystem*>(new SWC::FS::FileSystemCeph());
 }
 void fs_apply_cfg_ceph(SWC::Env::Config::Ptr env) {
   SWC::Env::Config::set(env);

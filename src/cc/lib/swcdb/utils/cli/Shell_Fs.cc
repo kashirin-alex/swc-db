@@ -40,7 +40,7 @@ Fs::~Fs() {
 bool Fs::ls(const std::string& cmd) {
 
   std::string path;
-  RE2::FullMatch(cmd, "(?i)^(ls|list)\\s+(.*)$", (void*)NULL, &path);
+  RE2::FullMatch(cmd, "(?i)^(ls|list)\\s+(.*)$", nullptr, &path);
   if(path.front() == '"' || path.front() == '\'')
     path = path.substr(1, path.size()-2);
 

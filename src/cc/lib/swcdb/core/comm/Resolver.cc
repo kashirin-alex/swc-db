@@ -158,13 +158,13 @@ EndPoints Resolver::get_endpoints(uint16_t defaul_port,
     hints.ai_flags = 0; //AI_CANONNAME | AI_ALL | AI_ADDRCONFIG;
 
     errno = 0;
-    int x =  getaddrinfo(hostname.c_str(), NULL, &hints, &result);
+    int x =  getaddrinfo(hostname.c_str(), nullptr, &hints, &result);
     if(x) {
       x = x == EAI_SYSTEM ? errno : (SWC_ERRNO_EAI_BEGIN + (-x));
       SWC_THROWF(x, "Bad addr-info for host: %s", hostname.c_str());
     }
 
-    for (rp = result; rp != NULL; rp = rp->ai_next) {
+    for (rp = result; rp != nullptr; rp = rp->ai_next) {
       char c_addr[INET6_ADDRSTRLEN];
       const char * s = nullptr;
       switch(rp->ai_family) {
@@ -269,13 +269,13 @@ void Resolver::get_local_networks(int& err,
   hints.ai_flags = 0;
 
   errno = 0;
-  if((err = getaddrinfo(hostname, NULL, &hints, &result))) {
+  if((err = getaddrinfo(hostname, nullptr, &hints, &result))) {
     err = err == EAI_SYSTEM ? errno : (SWC_ERRNO_EAI_BEGIN + (-err));
     return;
   }
 
   asio::error_code ec;
-  for (rp = result; rp != NULL; rp = rp->ai_next) {
+  for (rp = result; rp != nullptr; rp = rp->ai_next) {
     char c_addr[INET6_ADDRSTRLEN];
     const char * s = nullptr;
     errno = 0;

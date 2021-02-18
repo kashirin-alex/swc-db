@@ -19,7 +19,7 @@ namespace SWC { namespace Core {
 // Fletcher 8-bit by 16-bit implementation (32-bit checksum)
 static
 uint32_t fletcher32(const void *data8, size_t len) noexcept
-  __attribute__((optimize("-O3")));
+  SWC_ATTRIBS((SWC_ATTRIB_O3));
 
 SWC_SHOULD_NOT_INLINE
 static
@@ -50,7 +50,7 @@ uint32_t fletcher32(const void *data8, size_t len) noexcept {
 
 
 uint32_t checksum32(const uint8_t* data8, size_t len8) noexcept
-  __attribute__((optimize("-O3")));
+  SWC_ATTRIBS((SWC_ATTRIB_O3));
 
 extern SWC_CAN_INLINE
 uint32_t checksum32(const uint8_t* data8, size_t len8) noexcept {

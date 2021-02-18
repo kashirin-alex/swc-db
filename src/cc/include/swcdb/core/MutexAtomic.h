@@ -18,7 +18,7 @@ namespace SWC { namespace Core {
 class MutexAtomic {
   public:
 
-  explicit MutexAtomic() noexcept : want(ATOMIC_FLAG_INIT) { }
+  explicit MutexAtomic() noexcept : want(0) { }
 
   MutexAtomic(const MutexAtomic&)             = delete;
   MutexAtomic(MutexAtomic&&)                  = delete;
@@ -92,7 +92,7 @@ class MutexAtomic {
 
   private:
 
-  mutable std::atomic_flag want;
+  mutable std::atomic_flag want; // ATOMIC_FLAG_INIT
   //mutable Core::AtomicBase<bool, std::memory_order_seq_cst> want;
 };
 
@@ -101,7 +101,7 @@ class MutexAtomic {
 
 
 
-// SWC_LOCK_WITH_SUPPORT or use Core::MutexSptd with Core::MutexSptd::scope 
+// SWC_LOCK_WITH_SUPPORT or use Core::MutexSptd with Core::MutexSptd::scope
 #define SWC_LOCK_WITH_SUPPORT(_mutex_, _state_, _code_, _return_) \
   if(_state_.try_lock()) { \
     _code_; \

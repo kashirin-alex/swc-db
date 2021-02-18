@@ -155,7 +155,7 @@ void load_check_align_min_max(const DB::Types::KeySeq key_seq,
 
 SWC_SHOULD_NOT_INLINE
 static
-void load_check_condition_base1()  __attribute__((optimize("-O3")));
+void load_check_condition_base1()  SWC_ATTRIBS((SWC_ATTRIB_O3));
 
 SWC_SHOULD_NOT_INLINE
 static
@@ -182,7 +182,7 @@ void load_check_condition_base1() {
 
 SWC_SHOULD_NOT_INLINE
 static
-void load_check_condition_base2()  __attribute__((optimize("-O3")));
+void load_check_condition_base2()  SWC_ATTRIBS((SWC_ATTRIB_O3));
 
 SWC_SHOULD_NOT_INLINE
 static
@@ -211,7 +211,7 @@ void load_check_condition_base2() {
 
 SWC_SHOULD_NOT_INLINE
 static
-void load_check_condition_base3()  __attribute__((optimize("-O3")));
+void load_check_condition_base3()  SWC_ATTRIBS((SWC_ATTRIB_O3));
 
 SWC_SHOULD_NOT_INLINE
 static

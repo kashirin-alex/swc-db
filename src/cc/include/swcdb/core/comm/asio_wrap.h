@@ -10,18 +10,25 @@
 
 
 #pragma GCC diagnostic push
+
+
+#pragma GCC diagnostic ignored  "-Wold-style-cast"
+#pragma GCC diagnostic ignored  "-Wnull-dereference"
+#pragma GCC diagnostic ignored  "-Wzero-as-null-pointer-constant"
+
+
+#if defined(__GNUC__) && !defined(__clang__) 
 #pragma GCC diagnostic ignored  "-Wnoexcept"
 #pragma GCC diagnostic ignored  "-Wsuggest-override"
 #pragma GCC diagnostic ignored  "-Wuseless-cast"
-#pragma GCC diagnostic ignored  "-Wold-style-cast"
-#pragma GCC diagnostic ignored  "-Wnull-dereference"
 #pragma GCC diagnostic ignored  "-Wstrict-null-sentinel"
-#pragma GCC diagnostic ignored  "-Wzero-as-null-pointer-constant"
 #pragma GCC diagnostic ignored  "-Wduplicated-branches"
+#endif
 
 
 #include <asio.hpp>
 #include <asio/ssl.hpp>
+
 
 
 #pragma GCC diagnostic pop

@@ -178,10 +178,12 @@ void Settings::load_files_by(const std::string& fileprop,
                              bool allow_unregistered) {
   if(fileprop.empty() || !has(fileprop))
     return;
-
+  auto ptr = get<Property::V_STRINGS>(fileprop);
+  if(!ptr)
+    return;
   std::string fname;
-  Strings files = get<Property::V_STRINGS>(fileprop)->get();
-  for (auto it=files.begin(); it<files.end(); ++it) {
+  Strings files = ptr->get();
+  for(auto it=files.cbegin(); it != files.cend(); ++it) {
     if(it->front() != '/' && it->front() != '.')
       fname.append(get_str("swc.cfg.path"));
     fname.append(*it);

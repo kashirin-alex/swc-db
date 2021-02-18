@@ -721,7 +721,7 @@ void FileSystemHadoopJVM::close(int& err, SmartFd::Ptr& smartfd) {
 
 extern "C" {
 SWC::FS::FileSystem* fs_make_new_hadoop_jvm() {
-  return (SWC::FS::FileSystem*)(new SWC::FS::FileSystemHadoopJVM());
+  return static_cast<SWC::FS::FileSystem*>(new SWC::FS::FileSystemHadoopJVM());
 }
 void fs_apply_cfg_hadoop_jvm(SWC::Env::Config::Ptr env) {
   SWC::Env::Config::set(env);

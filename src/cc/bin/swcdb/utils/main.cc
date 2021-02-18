@@ -23,7 +23,7 @@ int run(const std::string& cmd, bool custom=false) {
 
   const char* err = dlerror();
   void* handle = dlopen(lib_path.c_str(), RTLD_NOW | RTLD_LAZY | RTLD_LOCAL);
-  if (handle == NULL || err != NULL)
+  if (handle == nullptr || err != nullptr)
     SWC_THROWF(Error::CONFIG_BAD_VALUE,
               "Shared Lib %s, open fail: %s\n", lib_path.c_str(), err);
 

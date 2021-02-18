@@ -206,7 +206,7 @@ SerializedServer::stop_accepting() {
   auto guard = std::make_shared<IoContext::ExecutorWorkGuard>(
     m_io_contexts.back()->executor());
 
-  for(auto it = m_acceptors.begin(); it < m_acceptors.end(); ) {
+  for(auto it = m_acceptors.begin(); it != m_acceptors.end(); ) {
     (*it)->stop();
     m_acceptors.erase(it);
   }
@@ -244,7 +244,7 @@ void SerializedServer::connection_add(const ConnHandlerPtr& conn) {
 
 void SerializedServer::connection_del(const ConnHandlerPtr& conn) {
   Core::MutexSptd::scope lock(m_mutex);
-  for(auto it=m_conns.begin(); it<m_conns.end(); ++it) {
+  for(auto it=m_conns.begin(); it != m_conns.end(); ++it) {
     if(conn->endpoint_remote == (*it)->endpoint_remote){
       m_conns.erase(it);
       break;

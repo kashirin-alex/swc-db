@@ -304,7 +304,7 @@ namespace { // local namespace
 
 static int
 _memcomp(const uint8_t* s1, const uint8_t* s2, size_t count) noexcept
-  __attribute__((optimize("-O3")));
+  SWC_ATTRIBS((SWC_ATTRIB_O3));
 
 SWC_SHOULD_NOT_INLINE
 static int
@@ -318,7 +318,7 @@ _memcomp(const uint8_t* s1, const uint8_t* s2, size_t count) noexcept {
 
 static int
 _strncomp(const char* s1, const char* s2, size_t count) noexcept
-  __attribute__((optimize("-O3")));
+  SWC_ATTRIBS((SWC_ATTRIB_O3));
 
 SWC_SHOULD_NOT_INLINE
 static int
@@ -335,7 +335,7 @@ _strncomp(const char* s1, const char* s2, size_t count) noexcept {
 
 static int
 _strcomp(const char* s1, const char* s2) noexcept
-  __attribute__((optimize("-O3")));
+  SWC_ATTRIBS((SWC_ATTRIB_O3));
 
 SWC_SHOULD_NOT_INLINE
 static int
@@ -353,7 +353,7 @@ _strcomp(const char* s1, const char* s2) noexcept {
 // performance equal to builtin memcmp
 extern int
 memcomp(const uint8_t* s1, const uint8_t* s2, size_t count) noexcept
-  __attribute__((optimize("-O3")));
+  SWC_ATTRIBS((SWC_ATTRIB_O3));
 
 extern SWC_CAN_INLINE
 int
@@ -363,7 +363,7 @@ memcomp(const uint8_t* s1, const uint8_t* s2, size_t count) noexcept {
 
 extern int
 strncomp(const char* s1, const char* s2, size_t count) noexcept
-  __attribute__((optimize("-O3")));
+  SWC_ATTRIBS((SWC_ATTRIB_O3));
 
 extern SWC_CAN_INLINE
 int
@@ -373,7 +373,7 @@ strncomp(const char* s1, const char* s2, size_t count) noexcept {
 
 extern int
 strcomp(const char* s1, const char* s2) noexcept
-  __attribute__((optimize("-O3")));
+  SWC_ATTRIBS((SWC_ATTRIB_O3));
 
 extern SWC_CAN_INLINE
 int
