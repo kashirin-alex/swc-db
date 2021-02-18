@@ -21,7 +21,7 @@ namespace SWC {
 
 
 struct A1 {
-  static A1* make(size_t n) { 
+  static A1* make(size_t n) {
     return new A1(n);
   }
   A1(size_t n) : n(n) { }
@@ -33,7 +33,7 @@ struct A1 {
 
 
 struct A2 : Core::QueuePointer<A2*>::Pointer {
-  static A2* make(size_t n) { 
+  static A2* make(size_t n) {
     return new A2(n);
   }
   A2(size_t n) : n(n) { }
@@ -45,7 +45,7 @@ struct A2 : Core::QueuePointer<A2*>::Pointer {
 
 
 struct A3 : Core::QueuePointer<std::shared_ptr<A3>>::Pointer {
-  static std::shared_ptr<A3> make(size_t n) { 
+  static std::shared_ptr<A3> make(size_t n) {
     return std::shared_ptr<A3>(new A3(n));
   }
   A3(size_t n) : n(n) { }
@@ -55,7 +55,7 @@ struct A3 : Core::QueuePointer<std::shared_ptr<A3>>::Pointer {
 
 
 struct A4  {
-  static std::shared_ptr<A4> make(size_t n) { 
+  static std::shared_ptr<A4> make(size_t n) {
     return std::shared_ptr<A4>(new A4(n));
   }
   A4(size_t n) : n(n) { }
@@ -76,17 +76,17 @@ struct Test {
   Core::Atomic<size_t> time_producer;
   Core::Atomic<size_t> time_consumer;
 
-  Test() : sem_producer(num_threads, num_threads), 
+  Test() : sem_producer(num_threads, num_threads),
            sem_consumer(num_threads, num_threads),
            counted(0), time_producer(0), time_consumer(0) {
-  } 
+  }
 
   void print() {
     std::cout
       << " workload=" << TOTAL_WORKLOAD << " counted=" << counted << "\n"
       << " time_producer=" << time_producer.load()
         << " avg=" << time_producer/TOTAL_WORKLOAD <<  "\n"
-      << " time_consumer=" << time_consumer.load() 
+      << " time_consumer=" << time_consumer.load()
         << " avg=" << time_consumer/TOTAL_WORKLOAD <<  "\n";
     SWC_ASSERT(counted == TOTAL_WORKLOAD);
   }
@@ -96,7 +96,7 @@ struct Test {
 
     sem_producer.release();
     sem_producer.wait_all();
-  
+
     size_t start = t * WORK_LOAD;
     size_t end = start + WORK_LOAD;
     for(size_t i=start;i<end; ++i) {
@@ -149,7 +149,7 @@ struct Test {
     std::cout << "--4--\n";
     for(auto& t : threads_consumer)
       t.join();
-  
+
     print();
   }
 
@@ -178,8 +178,6 @@ void run() {
 
 int main() {
   printf(" START num_threads=%lu\n", num_threads);
-
-  SWC::run();
 
   SWC::run();
 
