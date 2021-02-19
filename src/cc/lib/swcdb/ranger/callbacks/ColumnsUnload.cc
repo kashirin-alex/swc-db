@@ -23,7 +23,7 @@ void ColumnsUnload::add(const ColumnPtr& col) {
 
 void ColumnsUnload::run() {
   if(m_cols.empty()) {
-    response();
+    complete();
   } else {
     auto req = std::dynamic_pointer_cast<ManageBase>(shared_from_this());
     Core::MutexSptd::scope lock(m_mutex);
@@ -48,10 +48,10 @@ void ColumnsUnload::unloaded(const ColumnPtr& col) {
     if(!m_cols.empty())
       return;
   }
-  response();
+  complete();
 }
 
-void ColumnsUnload::response() {
+void ColumnsUnload::complete() {
   m_conn->send_response(Comm::Buffers::make(m_ev, m_rsp_params));
 }
 

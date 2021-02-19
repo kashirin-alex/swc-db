@@ -34,7 +34,7 @@ class ColumnsUnload : public ManageBase {
 
   virtual void unloaded(const ColumnPtr& col);
 
-  virtual void response();
+  virtual void complete();
 
   private:
 

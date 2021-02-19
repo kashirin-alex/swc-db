@@ -27,7 +27,7 @@ class ColumnDelete : public ManageBase {
 
   void removed(const RangePtr& range);
 
-  void response();
+  void complete();
 
   private:
   Core::MutexSptd       m_mutex;

@@ -26,7 +26,7 @@ class ColumnsUnloadAll : public ColumnsUnload {
   
   void unloaded(const ColumnPtr& col) override;
 
-  void response() override {
+  void complete() override {
     promise.set_value();
   }
 

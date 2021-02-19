@@ -285,7 +285,7 @@ void Column::remove(const Callback::ColumnDelete::Ptr& req) {
   }
   req->col = shared_from_this();
   if(ranges.empty()) {
-    req->response();
+    req->complete();
   } else {
     for(auto& range : ranges)
       range->remove(req);
