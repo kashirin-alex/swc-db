@@ -16,7 +16,7 @@ ADD_LIB_TARGET(
           ${SWC_VERSION_SRC}
   SHARED  ${THRIFT_CPP_LIBRARIES_SHARED}
   STATIC  ${THRIFT_CPP_LIBRARIES_STATIC}
-  FLAGS   -Wno-error=suggest-override
+  FLAGS
 )
 
 endif()

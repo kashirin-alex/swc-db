@@ -82,20 +82,27 @@ class AppContext final : virtual public BrokerIfFactory {
   }
 
   void releaseHandler(ServiceIf* hdlr) override {
-    AppHandler* handler = reinterpret_cast<AppHandler*>(hdlr);
-    handler->disconnected();
+    AppHandler* handler = dynamic_cast<AppHandler*>(hdlr);
+    size_t remain_open = m_connections.decrement_and_count();
+    if(handler) {
+      handler->disconnected();
 
-    if(handler->socket) try {
-      SWC_LOG_OUT(LOG_INFO,
+      if(handler->socket) try {
+        SWC_LOG_OUT(LOG_INFO,
+          SWC_LOG_OSTREAM << "Connection Closed(hdlr=" << size_t(handler)
+                          << " [" << handler->socket->getPeerAddress() << "]:"
+                          << handler->socket->getPeerPort()
+                          << ") open=" << remain_open;
+        );
+      } catch(...) {
+        SWC_LOG_CURRENT_EXCEPTION("");
+      }
+    } else {
+      SWC_LOG_OUT(LOG_WARN,
         SWC_LOG_OSTREAM << "Connection Closed(hdlr=" << size_t(handler)
-                        << " [" << handler->socket->getPeerAddress() << "]:"
-                        << handler->socket->getPeerPort()
-                        << ") open=" << m_connections.decrement_and_count();
-      );
-    } catch(...) {
-      SWC_LOG_CURRENT_EXCEPTION("");
+          << " BAD CAST) open=" << remain_open; );
     }
-    delete handler;
+    delete hdlr;
   }
 
   void shutting_down(const std::error_code& ec, const int& sig) {

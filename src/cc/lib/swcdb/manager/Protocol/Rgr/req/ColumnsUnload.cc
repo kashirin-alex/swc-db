@@ -1,8 +1,7 @@
-
 /*
  * SWC-DB© Copyright since 2019 Alex Kashirin <kashirin.alex@gmail.com>
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
- */ 
+ */
 
 
 #include "swcdb/db/Protocol/Common/params/ColumnsInterval.h"
@@ -12,9 +11,9 @@
 
 namespace SWC { namespace Comm { namespace Protocol {
 namespace Rgr { namespace Req {
-  
 
-ColumnsUnload::ColumnsUnload(const Manager::Ranger::Ptr& rgr, 
+
+ColumnsUnload::ColumnsUnload(const Manager::Ranger::Ptr& rgr,
                              cid_t cid_begin, cid_t cid_end)
             : client::ConnQueue::ReqBase(
                 false,
@@ -24,9 +23,9 @@ ColumnsUnload::ColumnsUnload(const Manager::Ranger::Ptr& rgr,
                   COLUMNS_UNLOAD, 60000
                 )
               ),
-              rgr(rgr), cid_begin(cid_begin), cid_end(cid_end) {
+              rgr(rgr) {
 }
-  
+
 ColumnsUnload::~ColumnsUnload() { }
 
 void ColumnsUnload::handle(ConnHandlerPtr, const Event::Ptr& ev) {
@@ -48,7 +47,7 @@ void ColumnsUnload::handle(ConnHandlerPtr, const Event::Ptr& ev) {
       err = e.code();
     }
   }
-  
+
   if(err)
     return handle_no_conn();
 
@@ -80,6 +79,6 @@ void ColumnsUnload::handle(ConnHandlerPtr, const Event::Ptr& ev) {
 void ColumnsUnload::handle_no_conn() {
   rgr->failures.fetch_add(1);
 }
-  
+
 
 }}}}}

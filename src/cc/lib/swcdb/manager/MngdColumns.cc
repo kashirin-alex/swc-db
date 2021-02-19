@@ -1,4 +1,3 @@
-
 /*
  * SWC-DB© Copyright since 2019 Alex Kashirin <kashirin.alex@gmail.com>
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
@@ -541,7 +540,7 @@ bool MngdColumns::columns_load() {
       g->cid_begin, g->cid_end, g_batches, it - it_batch);
     set_expect(g->cid_begin, g->cid_end, columns, true);
 
-    for(; it_batch < it; ++it_batch) {
+    for(; it_batch != it; ++it_batch) {
       update_status(
         ColumnMngFunc::INTERNAL_LOAD, *it_batch, Error::OK, 0, true);
     }

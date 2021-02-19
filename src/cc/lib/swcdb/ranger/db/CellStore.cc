@@ -485,7 +485,7 @@ void Write::write_blocks_index(int& err, uint32_t& blks_idx_count) {
       ++blks_idx_count;
       Serialization::encode_vi32(&ptr, blks_count);
 
-      for(; it_last < it; ++it_last)
+      for(; it_last != it; ++it_last)
         (*it_last)->header.encode_idx(&ptr);
 
       DynamicBuffer buffer_write;

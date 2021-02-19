@@ -843,7 +843,7 @@ void CompactRange::split(rid_t new_rid, uint32_t split_at) {
   }
 
   new_range->expand_and_align(false,
-    [ts, col, new_range, ptr=shared()]
+    [col, new_range, ptr=shared()]
     (const client::Query::Update::Result::Ptr&) {
       SWC_LOGF(LOG_INFO,
         "COMPACT-SPLIT %lu/%lu unloading new-rid=%lu",
