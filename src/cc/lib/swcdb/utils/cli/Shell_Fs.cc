@@ -7,6 +7,7 @@
 #include "swcdb/utils/cli/Shell_Fs.h"
 #include "swcdb/core/Comparators.h"
 #include "swcdb/fs/Interface.h"
+#include <iomanip>
 
 
 namespace SWC { namespace Utils { namespace shell {

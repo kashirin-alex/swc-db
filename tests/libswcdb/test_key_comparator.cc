@@ -8,7 +8,6 @@
 #include "swcdb/core/Serialization.h"
 #include "swcdb/core/config/Settings.h"
 #include "swcdb/db/Cells/KeyComparator.h"
-#include <iostream>
 
 
 namespace SWC {

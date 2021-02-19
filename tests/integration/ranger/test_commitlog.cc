@@ -10,7 +10,6 @@
 #include "swcdb/db/client/Clients.h"
 
 #include "swcdb/ranger/RangerEnv.h"
-#include <iostream>
 
 
 using namespace SWC;

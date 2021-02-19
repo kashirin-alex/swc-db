@@ -9,7 +9,6 @@
 #include "swcdb/core/Semaphore.h"
 #include "swcdb/core/QueueSafe.h"
 #include "swcdb/core/QueuePointer.h"
-#include <iostream>
 #include <thread>
 
   const size_t num_threads = 2;

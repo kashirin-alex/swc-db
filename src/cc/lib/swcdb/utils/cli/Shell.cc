@@ -3,13 +3,15 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
+
 #include "swcdb/utils/cli/Shell.h"
 #include "swcdb/utils/cli/Shell_DbClient.h"
 #include "swcdb/utils/cli/Shell_Manager.h"
 #include "swcdb/utils/cli/Shell_Ranger.h"
 #include "swcdb/utils/cli/Shell_Fs.h"
-
+#include <iomanip>
 #include <queue>
+
 
 #if defined(USE_GNU_READLINE)
 #include <readline/readline.h>

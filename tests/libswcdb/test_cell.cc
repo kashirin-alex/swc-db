@@ -7,7 +7,6 @@
 #include "swcdb/core/Time.h"
 #include "swcdb/db/Cells/Cell.h"
 #include "swcdb/core/config/Settings.h"
-#include <iostream>
 
 
 namespace SWC { namespace Config {

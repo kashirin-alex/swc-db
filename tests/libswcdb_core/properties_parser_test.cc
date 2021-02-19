@@ -5,6 +5,8 @@
 
 
 #include "swcdb/core/config/Settings.h"
+#include <fstream>
+
 
 namespace SWC{ namespace Config {
 

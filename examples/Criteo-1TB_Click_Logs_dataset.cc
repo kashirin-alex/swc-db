@@ -23,6 +23,7 @@ THE DATA INPUT IS WITH DATA-SAMPLES AVAILABLE AT:
 #include "swcdb/db/client/Query/Update.h"
 #include "swcdb/db/Protocol/Mngr/req/ColumnMng.h"
 #include "swcdb/common/Stats/FlowRate.h"
+#include <fstream>
 
 
 namespace SWC { namespace Config {

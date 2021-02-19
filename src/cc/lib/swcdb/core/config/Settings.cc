@@ -8,6 +8,8 @@
 #include "swcdb/core/config/Settings.h"
 
 #include "swcdb/core/FileUtils.h"
+#include <fstream>
+
 
 #if defined(SWC_PATH_ETC)
 #define USE_SWC_PATH_ETC(_) SWC_PATH_ETC

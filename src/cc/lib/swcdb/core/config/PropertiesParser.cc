@@ -6,9 +6,9 @@
 
 #include "swcdb/core/Exception.h"
 #include "swcdb/core/config/PropertiesParser.h"
-
-#include <iomanip>
+#include <sstream>
 #include <fstream>
+#include <iomanip>
 
 
 namespace SWC {
@@ -180,7 +180,7 @@ ParserConfig& ParserConfig::add(const std::string& names,
   Strings aliases;
   std::istringstream f(names);
   std::string s;
-  while (getline(f, s, ',')) {
+  while (std::getline(f, s, ',')) {
     s.erase(std::remove_if(s.begin(), s.end(),
     [](unsigned char x){return std::isspace(x);}), s.end());
     aliases.push_back(s);
@@ -356,9 +356,9 @@ void Parser::free() {
 
 void Parser::parse_filedata(std::ifstream& in) {
   size_t at;
-  std::string group = "";
+  std::string group;
   std::string line, g_tmp;
-  while(getline(in, line)) {
+  while(std::getline(in, line)) {
     if(line.find_first_of("[") == 0) {
 
       at = line.find_first_of("]");

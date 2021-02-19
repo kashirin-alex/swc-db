@@ -9,7 +9,6 @@
 #include "swcdb/fs/Interface.h"
 
 #include <thread>
-#include <iostream>
 
 
 void SWC::Config::Settings::init_app_options() {

@@ -6,7 +6,6 @@
 
 #include "swcdb/core/config/Settings.h"
 #include "swcdb/db/Cells/SpecsScan.h"
-#include <iostream>
 
 
 namespace SWC { namespace Config {

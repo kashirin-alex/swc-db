@@ -4,9 +4,8 @@
  */
 
 
-#include "swcdb/db/Cells/SpecsKey.h"
 #include "swcdb/core/config/Settings.h"
-#include <iostream>
+#include "swcdb/db/Cells/SpecsKey.h"
 
 
 namespace SWC { namespace Config {

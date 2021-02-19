@@ -10,8 +10,6 @@
 
 #include "swcdb/ranger/RangerEnv.h"
 
-#include <iostream>
-
 
 size_t num_cellstores = 9;
 size_t num_cells = 1000000;

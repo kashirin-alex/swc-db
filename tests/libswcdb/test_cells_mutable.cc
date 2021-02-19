@@ -10,7 +10,6 @@
 #include "swcdb/db/Cells/Mutable.h"
 
 #include <thread>
-#include <iostream>
 
 
 namespace SWC { namespace Config {

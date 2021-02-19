@@ -3,7 +3,10 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
+
 #include "swcdb/core/config/Properties.h"
+#include <fstream>
+
 
 namespace SWC { namespace Config {
 

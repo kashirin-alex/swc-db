@@ -7,7 +7,7 @@
 #include "swcdb/core/Exception.h"
 #include "swcdb/core/Time.h"
 #include "swcdb/core/Comparators.h"
-#include <iostream>
+
 
 namespace Condition = SWC::Condition;
 

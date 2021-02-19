@@ -7,7 +7,6 @@
 #include "swcdb/core/Exception.h"
 #include "swcdb/core/PageArena.h"
 #include <vector>
-#include <iostream>
 
 
 int main() {

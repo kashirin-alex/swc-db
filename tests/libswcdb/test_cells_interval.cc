@@ -6,7 +6,6 @@
 
 #include "swcdb/db/Cells/Interval.h"
 #include "swcdb/core/config/Settings.h"
-#include <iostream>
 
 
 namespace SWC { namespace Config {
