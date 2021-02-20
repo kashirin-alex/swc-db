@@ -103,12 +103,19 @@ endif()
 # swcdbThriftBroker
 if((NOT SWC_BUILD_PKG AND THRIFT_CPP_GEN_PATH) OR
     SWC_BUILD_PKG STREQUAL "thriftbroker")
+
+if(SWC_IMPL_SOURCE)
+  set(_targets )
+else()
+  set(_targets ${SWC_LIB_THRIFT_TARGET})
+endif()
+
 ADD_EXEC_TARGET(
   NAME    swcdbThriftBroker
   SRCS    thriftbroker/main.cc
           ${SWC_VERSION_SRC}
   TARGETS ${TARGETS_WITH_FS}
-          ${SWC_LIB_THRIFT_TARGET}
+          ${_targets}
 
   SHARED  ${SHARED}
           ${SWC_LIB_LIBRARIES_SHARED}

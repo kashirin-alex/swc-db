@@ -25,27 +25,29 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${BUILTIN_FS_FLAGS}")
 ADD_TEST_TARGET(
   NAME      cellstore
   SRCS      test_cellstore.cc
-  TARGETS   ${SHARED_TARGETS}
+            ${SWC_VERSION_SRC}
+  TARGETS   ${TARGETS}
   ARGS      "--swc.fs=local"
             "--swc.rgr.ram.allowed.percent=2"
             "--swc.cfg.path=${CMAKE_INSTALL_PREFIX}/etc/swcdb/"
             "--swc.fs.lib.local=${CMAKE_INSTALL_PREFIX}/lib/libswcdb_fs_local.so"
 
-  SHARED    ${SNAPPY_LIBRARIES_SHARED}
-  STATIC    ${SNAPPY_LIBRARIES_STATIC}
+  SHARED    ${SWC_LIB_CORE_SHARED}
+  STATIC    ${SWC_LIB_CORE_STATIC}
   FLAGS     ${FLAGS}
 )
 
 ADD_TEST_TARGET(
   NAME      commitlog
   SRCS      test_commitlog.cc
-  TARGETS   ${SHARED_TARGETS}
+            ${SWC_VERSION_SRC}
+  TARGETS   ${TARGETS}
   ARGS      "--swc.fs=local"
             "--swc.rgr.ram.allowed.percent=2"
             "--swc.cfg.path=${CMAKE_INSTALL_PREFIX}/etc/swcdb/"
             "--swc.fs.lib.local=${CMAKE_INSTALL_PREFIX}/lib/libswcdb_fs_local.so"
 
-  SHARED    ${SNAPPY_LIBRARIES_SHARED}
-  STATIC    ${SNAPPY_LIBRARIES_STATIC}
+  SHARED    ${SWC_LIB_CORE_SHARED}
+  STATIC    ${SWC_LIB_CORE_STATIC}
   FLAGS     ${FLAGS}
 )
