@@ -189,7 +189,11 @@ struct BufferDyn : BufferT {
   }
 
   void ensure(size_t len) {
-    if(!ptr || len > remaining()) {
+    if(!BufferT::base) {
+      BufferT::own = true;
+      ptr = mark = BufferT::base = BufferT::allocate(BufferT::size = len);
+
+    } else if(len > remaining()) {
       size_t offset_mark = BufferT::length_base_bytes(mark - BufferT::base);
       size_t offset_ptr = BufferT::length_base_bytes(ptr - BufferT::base);
 
