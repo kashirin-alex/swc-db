@@ -29,37 +29,6 @@ namespace Core { }
 }
 
 
-#include <stddef.h>
-
-
-
-#if defined MIMALLOC
-#include <mimalloc.h> // -override
-#endif
-
-
-#ifndef SWC_MALLOC_NOT_INSISTENT
-#include "swcdb/core/Malloc.h"
-
-#elif defined MIMALLOC
-#include <mimalloc-new-delete.h>
-#endif
-
-
-
-
-#include <stdint.h>
-#include <string.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <signal.h>
-#include <cstddef> // for std::size_t and std::ptrdiff_t
-#include <memory>
-#include <cstring>
-#include <string>
-
-
-
 /*!
  *  \addtogroup Core
  *  @{
@@ -107,6 +76,49 @@ namespace Core { }
   inline
 
 
+/*! @} End of Core Group*/
+
+
+
+
+
+#include <stddef.h>
+
+
+
+#if defined MIMALLOC
+#include <mimalloc.h> // -override
+#endif
+
+
+#ifndef SWC_MALLOC_NOT_INSISTENT
+#include "swcdb/core/Malloc.h"
+
+#elif defined MIMALLOC
+#include <mimalloc-new-delete.h>
+#endif
+
+
+
+
+#include <stdint.h>
+#include <string.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <signal.h>
+#include <cstddef> // for std::size_t and std::ptrdiff_t
+#include <memory>
+#include <cstring>
+#include <string>
+
+
+
+
+
+/*!
+ *  \addtogroup Core
+ *  @{
+ */
 
 
 #if defined (__GLIBC__) && (__GLIBC__ >= 2) && (__GLIBC_MINOR__ >= 23)

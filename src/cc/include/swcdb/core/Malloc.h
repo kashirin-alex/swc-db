@@ -14,9 +14,19 @@
 
 
 
+#if !defined(__clang__)
+
 extern void* operator new(size_t sz) __attribute__((__nothrow__));
 extern void* operator new[](size_t sz) __attribute__((__nothrow__));
-// __noclone__
+
+#else
+
+#define SWC_INLINE_NEW_DEL
+extern void* operator new(size_t sz);
+extern void* operator new[](size_t sz);
+
+#endif
+
 
 extern void operator delete(void* ptr) noexcept;
 extern void operator delete[](void* ptr) noexcept;
@@ -25,50 +35,6 @@ extern void operator delete(void* ptr, size_t sz) noexcept;
 extern void operator delete[](void* ptr, size_t sz) noexcept;
 
 
-#include <new>
-#include <thread>
-#include <chrono>
-
-
-inline void* operator new(size_t sz) {
-  //printf("New-Malloc size=%lu\n", sz);
-  void *ptr;
-  again: try {
-    if(!(ptr = std::malloc(sz)) && sz) { // !sz, nullptr for zero bytes
-      printf("Bad-Malloc size=%lu\n", sz);
-      std::this_thread::sleep_for(std::chrono::nanoseconds(sz));
-      goto again;
-    }
-  } catch(...) {
-    goto again;
-  }
-  return ptr;
-}
-
-inline void* operator new[](size_t sz) {
-  //printf("Malloc using new[] size=%lu\n", sz);
-  return ::operator new(sz);
-}
-
-
-inline void operator delete(void* ptr) noexcept {
-  std::free(ptr);
-}
-
-inline void operator delete[](void* ptr) noexcept {
-  //printf("Malloc using delete[]\n");
-  ::operator delete(ptr);
-}
-
-inline void operator delete(void* ptr, size_t ) noexcept {
-  //printf("Malloc using delete size=%lu\n", sz);
-  ::operator delete(ptr);
-}
-
-inline void operator delete[](void* ptr, size_t ) noexcept {
-  //printf("Malloc using delete[] size=%lu\n", sz);
-  ::operator delete(ptr);
-}
 
 
 /*! @} End of Core Group*/
@@ -77,5 +43,9 @@ inline void operator delete[](void* ptr, size_t ) noexcept {
 
 namespace SWC { }
 
+
+#ifdef SWC_IMPL_SOURCE
+#include "swcdb/core/Malloc.cc"
+#endif
 
 #endif // swcdb_core_Malloc_h

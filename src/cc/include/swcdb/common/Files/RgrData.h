@@ -29,10 +29,10 @@ class RgrData final {
 
   typedef std::shared_ptr<RgrData> Ptr;
 
-  static const int HEADER_SIZE=13;
-  static const int HEADER_OFFSET_CHKSUM=9;
+  static const uint8_t HEADER_SIZE = 13;
+  static const uint8_t HEADER_OFFSET_CHKSUM = 9;
 
-  static const int8_t VERSION=1;
+  static const uint8_t VERSION = 1;
 
   static Ptr get_rgr(int &err, const std::string& filepath) {
     Ptr data = std::make_shared<RgrData>();
@@ -97,10 +97,11 @@ class RgrData final {
 
   void write(SWC::DynamicBuffer &dst_buf, int64_t ts){
 
-    size_t len = 12 // (ts+endpoints.size)
-               + Serialization::encoded_length_vi64(rgrid.load());
+    size_t len = 12 + Serialization::encoded_length_vi64(rgrid.load());
+    // (ts+endpoints.size)
     for(auto& endpoint : endpoints)
       len += Serialization::encoded_length(endpoint);
+
     dst_buf.ensure(HEADER_SIZE + len);
 
     Serialization::encode_i8(&dst_buf.ptr, version);
@@ -137,7 +138,7 @@ class RgrData final {
 
   ~RgrData(){ }
 
-  int8_t                version;
+  uint8_t               version;
   Core::Atomic<rgrid_t> rgrid;
   int64_t               timestamp;
   Comm::EndPoints       endpoints;
