@@ -99,7 +99,7 @@ bool Schema::equal(const Ptr& other, bool with_rev) noexcept {
           ;
 }
 
-size_t Schema::encoded_length() const noexcept {
+uint32_t Schema::encoded_length() const noexcept {
   return Serialization::encoded_length_vi64(cid)
        + Serialization::encoded_length_bytes(col_name.size())
        + 2

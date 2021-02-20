@@ -40,7 +40,7 @@ class Schema final {
 
   bool equal(const Ptr& other, bool with_rev=true) noexcept;
 
-  size_t encoded_length() const noexcept;
+  uint32_t encoded_length() const noexcept;
 
   void encode(uint8_t** bufp) const;
 

@@ -61,10 +61,12 @@ ColumnGetRsp::~ColumnGetRsp() { }
 
 
 size_t ColumnGetRsp::internal_encoded_length() const {
-  return 1 +
-        (flag == ColumnGetReq::Flag::ID_BY_NAME
-            ? Serialization::encoded_length_vi64(schema->cid)
-        : schema->encoded_length());
+  size_t sz = 1;
+  if(flag == ColumnGetReq::Flag::ID_BY_NAME)
+    sz += Serialization::encoded_length_vi64(schema->cid);
+  else
+    sz += schema->encoded_length();
+  return sz;
 }
 
 void ColumnGetRsp::internal_encode(uint8_t** bufp) const {
