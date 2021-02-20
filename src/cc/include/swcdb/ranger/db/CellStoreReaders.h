@@ -76,7 +76,7 @@ class Readers final : private std::vector<Read::Ptr> {
 
   bool need_compaction(size_t cs_sz, size_t blk_size) const;
 
-  size_t encoded_length() const;
+  uint32_t encoded_length() const;
 
   void encode(uint8_t** ptr) const;
   

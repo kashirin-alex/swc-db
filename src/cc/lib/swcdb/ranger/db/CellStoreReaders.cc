@@ -146,8 +146,8 @@ bool Readers::need_compaction(size_t cs_sz, size_t blk_size) const {
   return false;
 }
 
-size_t Readers::encoded_length() const {
-  size_t sz = Serialization::encoded_length_vi32(size());
+uint32_t Readers::encoded_length() const {
+  uint32_t sz = Serialization::encoded_length_vi32(size());
   for(auto cs : *this) {
     sz += Serialization::encoded_length_vi32(cs->csid)
         + cs->interval.encoded_length();
