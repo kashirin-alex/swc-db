@@ -248,7 +248,7 @@ void RspManagersStatus::internal_encode(uint8_t** bufp) const {
   Serialization::encode_vi64(bufp, managers.size());
   for(auto& m : managers)
     m.encode(bufp);
-  Serialization::encode(inchain, bufp);
+  Serialization::encode(bufp, inchain);
 }
 
 void RspManagersStatus::internal_decode(const uint8_t** bufp, size_t* remainp) {

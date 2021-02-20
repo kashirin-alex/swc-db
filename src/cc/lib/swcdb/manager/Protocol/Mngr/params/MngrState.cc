@@ -13,9 +13,9 @@ namespace Mngr { namespace Params {
 
 MngrState::MngrState() {}
 
-MngrState::MngrState(Manager::MngrsStatus states, 
-                     uint64_t token, 
-                     const EndPoint& mngr_host) 
+MngrState::MngrState(Manager::MngrsStatus states,
+                     uint64_t token,
+                     const EndPoint& mngr_host)
                     : states(states), token(token), mngr_host(mngr_host) {
 }
 
@@ -25,15 +25,15 @@ size_t MngrState::internal_encoded_length() const {
     len += h->encoded_length();
   return len;
 }
-    
+
 void MngrState::internal_encode(uint8_t** bufp) const {
   Serialization::encode_i32(bufp, states.size());
   Serialization::encode_i64(bufp, token);
-  Serialization::encode(mngr_host, bufp);
+  Serialization::encode(bufp, mngr_host);
   for(auto& h : states )
     h->encode(bufp);
 }
-    
+
 void MngrState::internal_decode(const uint8_t** bufp, size_t* remainp) {
   size_t len = Serialization::decode_i32(bufp, remainp);
   token = Serialization::decode_i64(bufp, remainp);

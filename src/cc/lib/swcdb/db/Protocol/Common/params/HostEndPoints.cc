@@ -10,10 +10,10 @@
 
 namespace SWC { namespace Comm { namespace Protocol {
 namespace Common { namespace Params {
- 
+
 HostEndPoints::HostEndPoints() {}
 
-HostEndPoints::HostEndPoints(const EndPoints& points) 
+HostEndPoints::HostEndPoints(const EndPoints& points)
                             : endpoints(points) { }
 
 HostEndPoints::~HostEndPoints() { }
@@ -33,7 +33,7 @@ size_t HostEndPoints::internal_encoded_length() const {
 void HostEndPoints::internal_encode(uint8_t** bufp) const {
   Serialization::encode_vi32(bufp, endpoints.size());
   for(auto& endpoint : endpoints)
-    Serialization::encode(endpoint, bufp);
+    Serialization::encode(bufp, endpoint);
 }
 
 void HostEndPoints::internal_decode(const uint8_t** bufp, size_t* remainp) {

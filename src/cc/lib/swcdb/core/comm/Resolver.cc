@@ -12,11 +12,11 @@ namespace SWC {
 
 namespace Serialization {
 
-size_t encoded_length(const Comm::EndPoint& endpoint) noexcept {
+uint8_t encoded_length(const Comm::EndPoint& endpoint) noexcept {
   return 3 + (endpoint.address().is_v4() ? 4 : 16);
 }
 
-void encode(const Comm::EndPoint& endpoint, uint8_t** bufp) {
+void encode(uint8_t** bufp, const Comm::EndPoint& endpoint) {
   Serialization::encode_bool(bufp, endpoint.address().is_v4());
   Serialization::encode_i16(bufp, endpoint.port());
   if(endpoint.address().is_v4()) {
@@ -47,6 +47,27 @@ Comm::EndPoint decode(const uint8_t** bufp, size_t* remainp) {
   return Comm::EndPoint(asio::ip::address_v6(v6_bytes), port);
 }
 
+
+uint32_t encoded_length(const Comm::EndPoints& endpoints) noexcept {
+  uint32_t len = 4;
+  for(auto& endpoint : endpoints)
+    len += Serialization::encoded_length(endpoint);
+  return len;
+}
+
+void encode(uint8_t** bufp, const Comm::EndPoints& endpoints) {
+  Serialization::encode_i32(bufp, endpoints.size());
+  for(auto& endpoint : endpoints)
+    Serialization::encode(bufp, endpoint);
+}
+
+void decode(const uint8_t** bufp, size_t* remainp,
+            Comm::EndPoints& endpoints) {
+  endpoints.clear();
+  endpoints.resize(Serialization::decode_i32(bufp, remainp));
+  for(auto& endpoint : endpoints)
+    endpoint = Serialization::decode(bufp, remainp);
+}
 
 } // namespace Serialization
 

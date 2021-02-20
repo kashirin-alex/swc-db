@@ -71,11 +71,7 @@ class RgrData final {
     timestamp = Serialization::decode_i64(&ptr, &remain);
     rgrid.store(Serialization::decode_vi64(&ptr, &remain));
 
-    uint32_t len = Serialization::decode_i32(&ptr, &remain);
-    endpoints.clear();
-    endpoints.resize(len);
-    for(size_t i=0;i<len;++i)
-      endpoints[i] = Serialization::decode(&ptr, &remain);
+    Serialization::decode(&ptr, &remain, endpoints);
   }
 
   // SET
@@ -95,12 +91,11 @@ class RgrData final {
     );
   }
 
-  void write(SWC::DynamicBuffer &dst_buf, int64_t ts){
+  void write(SWC::DynamicBuffer &dst_buf, int64_t ts) {
 
-    size_t len = 12 + Serialization::encoded_length_vi64(rgrid.load());
-    // (ts+endpoints.size)
-    for(auto& endpoint : endpoints)
-      len += Serialization::encoded_length(endpoint);
+    size_t len = 8; // ts
+    len += Serialization::encoded_length_vi64(rgrid.load());
+    len += Serialization::encoded_length(endpoints);
 
     dst_buf.ensure(HEADER_SIZE + len);
 
@@ -116,9 +111,7 @@ class RgrData final {
     Serialization::encode_i64(&dst_buf.ptr, ts);
     Serialization::encode_vi64(&dst_buf.ptr, rgrid.load());
 
-    Serialization::encode_i32(&dst_buf.ptr, endpoints.size());
-    for(auto& endpoint : endpoints)
-      Serialization::encode(endpoint, &dst_buf.ptr);
+    Serialization::encode(&dst_buf.ptr, endpoints);
 
     Core::checksum_i32(start_data_ptr, dst_buf.ptr, &checksum_data_ptr);
     Core::checksum_i32(dst_buf.base, start_data_ptr, &checksum_header_ptr);

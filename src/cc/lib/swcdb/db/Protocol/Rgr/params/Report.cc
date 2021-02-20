@@ -272,7 +272,7 @@ void RspColumnsRanges::internal_encode(uint8_t** bufp) const {
   Serialization::encode_vi64(bufp, rgrid);
   Serialization::encode_vi32(bufp, endpoints.size());
   for(auto& endpoint : endpoints)
-    Serialization::encode(endpoint, bufp);
+    Serialization::encode(bufp, endpoint);
 
   Serialization::encode_vi64(bufp, columns.size());
   for(auto c : columns)

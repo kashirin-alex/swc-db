@@ -37,11 +37,19 @@ typedef std::vector<Network> Networks;
 
 namespace Serialization {
 
-size_t encoded_length(const Comm::EndPoint& endpoint) noexcept;
+uint8_t encoded_length(const Comm::EndPoint& endpoint) noexcept;
 
-void encode(const Comm::EndPoint& endpoint, uint8_t** bufp);
+void encode(uint8_t** bufp, const Comm::EndPoint& endpoint);
 
 Comm::EndPoint decode(const uint8_t** bufp, size_t* remainp);
+
+
+uint32_t encoded_length(const Comm::EndPoints& endpoints) noexcept;
+
+void encode(uint8_t** bufp, const Comm::EndPoints& endpoints);
+
+void decode(const uint8_t** bufp, size_t* remainp,
+            Comm::EndPoints& endpoints);
 
 } //namespace Serialization
 
