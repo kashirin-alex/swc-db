@@ -18,9 +18,8 @@ namespace Rgr { namespace Req {
 Report::Report(const EndPoints& endpoints,
                Params::Report::Function func,
                const uint32_t timeout)
-              : client::ConnQueue::ReqBase(false),
+              : client::ConnQueue::ReqBase(false, Buffers::make(1)),
                 endpoints(endpoints) {
-  cbp = Buffers::make(1);
   cbp->append_i8(func);
   cbp->header.set(REPORT, timeout);
 }
