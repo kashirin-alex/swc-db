@@ -1,0 +1,225 @@
+name: SWC-DB
+
+on:
+  push:
+    branches: [ master, CI-test ]
+  pull_request:
+    branches: [ master, CI-test ]
+    # paths:
+    #  - 'src/*'
+  # schedule:
+  #  - cron: '26 4 * * 6'
+
+
+jobs:
+
+  main:
+    if: "contains(github.event.head_commit.message, '[TEST COMMIT]')"
+
+    strategy:
+      fail-fast: false
+      matrix:
+        runs-on:      ['ubuntu-20.04']
+        compiler:     [g++-9, g++-10, clang++-10] # , clang-11
+        build_type:   ['Release']
+        O_LEVEL:      ['0', '1', '2', '3', '4', '5', '6']
+        IMPL_SOURCE:  ['OFF', 'ON']
+        THRIFT:       ['0.14.0']
+        TEST:         ['OFF']
+        exclude:
+          - compiler: clang++-10
+            O_LEVEL:  5
+          - compiler: clang++-10
+            O_LEVEL:  6
+
+    runs-on: ${{ matrix.runs-on }}
+    
+    name: ${{ matrix.runs-on }} ${{ matrix.compiler }} O=${{ matrix.O_LEVEL }} IMPL=${{ matrix.IMPL_SOURCE }} ${{ matrix.build_type }}
+    
+    env:
+      CXX: ${{ matrix.compiler }}
+      CXXFLAGS: ''
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Config localhost SSH
+      # sudo apt update; sudo apt -y install openssh-server
+      run: |
+        ssh-keygen -t rsa -b 4096 -N '' -f ~/.ssh/id_rsa
+        cat ~/.ssh/id_rsa.pub | tee -a ~/.ssh/authorized_keys
+        ssh-keyscan -t rsa localhost,ip6-localhost,localhost.localdomain,::1,::,127.0.0.1 >> ~/.ssh/known_hosts;
+        chmod 600 ~/.ssh/authorized_keys
+        chmod 700 ~/.ssh
+        sudo chmod -c 0755 ~/
+        ls -la ~/.ssh
+        ssh localhost "echo 'SSH connection to localhost is OK user='$(whoami)"
+
+    - name: Install Dependencies
+      run: |
+        git clone --branch asio-1-18-1 https://github.com/chriskohlhoff/asio.git
+        if [[ ${{ matrix.runs-on }} =~ ^ubuntu-* ]]; then 
+          # sudo apt-get update -y
+          # sudo apt-get upgrade -y
+          # CORE-PREREQUISITES
+          sudo apt-get install -y \
+            ${{ matrix.compiler }} \
+            libgoogle-perftools-dev \
+            libre2-dev \
+            zlib1g-dev \
+            libsnappy-dev \
+            libzstd-dev \
+            libssl-dev \
+            libreadline-dev
+          #
+        fi        
+        if [ ${{ matrix.runs-on }} == 'ubuntu-20.04' ]; then 
+          # THRIFT-PREREQUISITES
+          sudo apt-get install -y \
+            libboost-math-dev \
+            libevent-dev \
+            libthrift-dev
+          #
+          # THRIFT-C_GLIB-PREREQUISITES
+          sudo apt-get install -y \
+            libthrift-c-glib-dev \
+            libpam-dev
+          #
+        fi
+        
+        # SWCDB_CLUSTER-PREREQUISITES
+        sudo apt-get install -y \
+          python3-pip
+        sudo pip3 install fabric
+        #
+        
+        cmake -E make_directory ${{github.workspace}}/build
+
+    - name: Configure
+      shell: bash
+      working-directory: ${{github.workspace}}/build
+      run: |
+        cmake $GITHUB_WORKSPACE \
+            -DO_LEVEL=${{ matrix.O_LEVEL }} \
+            -DSWC_IMPL_SOURCE=${{ matrix.IMPL_SOURCE }} \
+            -DSWC_LANGUAGES=NONE \
+            -DTHRIFT_VERSION=${{ matrix.THRIFT }} \
+            -DASIO_INCLUDE_PATH=${{github.workspace}}/asio/asio/include \
+            -DGLIB_INCLUDE_PATH="$(pkg-config --cflags glib-2.0 | tr ' ' ';' | sed 's/-I//g' )" \
+            -DCMAKE_SKIP_RPATH=OFF \
+            -DCMAKE_INSTALL_PREFIX=/opt/swcdb \
+            -DSWC_DOCUMENTATION=OFF \
+            -DSWC_INSTALL_DEP_LIBS=OFF \
+            -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+        # -DSWC_MALLOC_NOT_INSISTENT=OFF
+
+
+    - name: Build
+      working-directory: ${{github.workspace}}/build
+      shell: bash
+      run: cmake --build . -j$((`grep -c processor < /proc/cpuinfo || echo 1`)) --config ${{ matrix.build_type }}
+
+
+    - name: Install
+      working-directory: ${{github.workspace}}/build
+      run: |
+        cmake --install . --config ${{ matrix.build_type }}
+        sudo mkdir -p /var/opt/swcdb
+        sudo chmod -R 777 /var/opt/swcdb
+        sudo chmod -R 777 /opt/swcdb
+
+
+    - name: Test - libswcdb_core
+      if: ${{ matrix.TEST == 'ON' &&
+              ((matrix.O_LEVEL == '3' && matrix.IMPL_SOURCE == 'OFF') ||
+               (matrix.O_LEVEL == '6' && matrix.IMPL_SOURCE == 'ON'))}}
+      working-directory: ${{github.workspace}}/build/tests/libswcdb_core/
+      shell: bash
+      run: sudo ctest --output-on-failure -C ${{ matrix.build_type }}
+
+
+    - name: Test - libswcdb
+      if: ${{ matrix.TEST == 'ON' &&
+              ((matrix.O_LEVEL == '3' && matrix.IMPL_SOURCE == 'OFF') ||
+               (matrix.O_LEVEL == '6' && matrix.IMPL_SOURCE == 'ON'))}}
+      working-directory: ${{github.workspace}}/build/tests/libswcdb/
+      shell: bash
+      run: sudo ctest --output-on-failure -C ${{ matrix.build_type }}
+
+
+    # do as separate tasks
+    #- name: Test - integration
+    #  if: ${{ matrix.TEST == 'ON' &&
+    #          ((matrix.O_LEVEL == '3' && matrix.IMPL_SOURCE == 'OFF') ||
+    #           (matrix.O_LEVEL == '6' && matrix.IMPL_SOURCE == 'ON'))}}
+    #  working-directory: ${{github.workspace}}/build/tests/integration/
+    #  shell: bash
+    #  run: ctest --output-on-failure -C ${{ matrix.build_type }}
+    
+
+    - name: Test - integration - swcdb_cluster
+      if: ${{ matrix.TEST == 'ON' &&
+              ((matrix.O_LEVEL == '3' && matrix.IMPL_SOURCE == 'OFF') ||
+               (matrix.O_LEVEL == '6' && matrix.IMPL_SOURCE == 'ON'))}}
+      shell: bash
+      run: |
+        /opt/swcdb/sbin/swcdb_cluster deploy
+        /opt/swcdb/sbin/swcdb_cluster start
+        /opt/swcdb/sbin/swcdb_cluster stop
+
+    - name: Test - integration - comm
+      if: ${{ matrix.TEST == 'ON' &&
+              ((matrix.O_LEVEL == '3' && matrix.IMPL_SOURCE == 'OFF') ||
+               (matrix.O_LEVEL == '6' && matrix.IMPL_SOURCE == 'ON'))}}
+      working-directory: ${{github.workspace}}/build/tests/integration/comm/
+      shell: bash
+      run: ctest --output-on-failure -C ${{ matrix.build_type }}
+
+    - name: Test - integration - fs
+      if: ${{ matrix.TEST == 'ON' &&
+              ((matrix.O_LEVEL == '3' && matrix.IMPL_SOURCE == 'OFF') ||
+               (matrix.O_LEVEL == '6' && matrix.IMPL_SOURCE == 'ON'))}}
+      working-directory: ${{github.workspace}}/build/tests/integration/fs/
+      shell: bash
+      run: ctest --output-on-failure -C ${{ matrix.build_type }}
+
+    - name: Test - integration - manager
+      if: ${{ matrix.TEST == 'ON' &&
+              ((matrix.O_LEVEL == '3' && matrix.IMPL_SOURCE == 'OFF') ||
+               (matrix.O_LEVEL == '6' && matrix.IMPL_SOURCE == 'ON'))}}
+      working-directory: ${{github.workspace}}/build/tests/integration/manager/
+      shell: bash
+      run: ctest --output-on-failure -C ${{ matrix.build_type }}
+  
+    - name: Test - integration - ranger
+      if: ${{ matrix.TEST == 'ON' &&
+              ((matrix.O_LEVEL == '3' && matrix.IMPL_SOURCE == 'OFF') ||
+               (matrix.O_LEVEL == '6' && matrix.IMPL_SOURCE == 'ON'))}}
+      working-directory: ${{github.workspace}}/build/tests/integration/ranger/
+      shell: bash
+      run: ctest --output-on-failure -C ${{ matrix.build_type }}
+
+    - name: Test - integration - client
+      if: ${{ matrix.TEST == 'ON' &&
+              ((matrix.O_LEVEL == '3' && matrix.IMPL_SOURCE == 'OFF') ||
+               (matrix.O_LEVEL == '6' && matrix.IMPL_SOURCE == 'ON'))}}
+      working-directory: ${{github.workspace}}/build/tests/integration/client/
+      shell: bash
+      run: ctest --output-on-failure -C ${{ matrix.build_type }}
+
+    - name: Test - integration - utils
+      if: ${{ matrix.TEST == 'ON' &&
+              ((matrix.O_LEVEL == '3' && matrix.IMPL_SOURCE == 'OFF') ||
+               (matrix.O_LEVEL == '6' && matrix.IMPL_SOURCE == 'ON'))}}
+      working-directory: ${{github.workspace}}/build/tests/integration/utils/
+      shell: bash
+      run: ctest --output-on-failure -C ${{ matrix.build_type }}
+
+    - name: Test - integration - thrift
+      if: ${{ matrix.TEST == 'ON' &&
+              ((matrix.O_LEVEL == '3' && matrix.IMPL_SOURCE == 'OFF') ||
+               (matrix.O_LEVEL == '6' && matrix.IMPL_SOURCE == 'ON'))}}
+      working-directory: ${{github.workspace}}/build/tests/integration/thrift/
+      shell: bash
+      run: ctest --output-on-failure -C ${{ matrix.build_type }}
+ 
