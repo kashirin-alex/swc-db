@@ -66,8 +66,6 @@ void write(SWC::DynamicBuffer &dst_buf, const DB::Schema::Ptr& schema) {
 
   Core::checksum_i32(start_data_ptr, dst_buf.ptr, &checksum_data_ptr);
   Core::checksum_i32(dst_buf.base, start_data_ptr, &checksum_header_ptr);
-
-  SWC_ASSERT(dst_buf.fill() <= dst_buf.size);
 }
 
 void save(int &err, const DB::Schema::Ptr& schema, uint8_t replication=0) {

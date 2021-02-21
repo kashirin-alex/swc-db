@@ -115,8 +115,6 @@ class RgrData final {
 
     Core::checksum_i32(start_data_ptr, dst_buf.ptr, &checksum_data_ptr);
     Core::checksum_i32(dst_buf.base, start_data_ptr, &checksum_header_ptr);
-
-    SWC_ASSERT(dst_buf.fill() <= dst_buf.size);
   }
 
   void print(std::ostream& out) {

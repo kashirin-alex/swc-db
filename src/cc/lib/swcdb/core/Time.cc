@@ -2,7 +2,7 @@
  * SWC-DB© Copyright since 2019 Alex Kashirin <kashirin.alex@gmail.com>
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
- 
+
 
 #include "swcdb/core/Exception.h"
 #include "swcdb/core/Time.h"
@@ -19,10 +19,10 @@ extern "C" {
 namespace SWC { namespace Time {
 
 
-void checkings() { // no need runtime checks, call at app start 
+void checkings() { // no need runtime checks, call at app start
   SWC_ASSERT((
     std::ratio_less_equal<
-      std::chrono::system_clock::duration::period, 
+      std::chrono::system_clock::duration::period,
       std::chrono::nanoseconds::period
     >::value
   ));
@@ -30,7 +30,7 @@ void checkings() { // no need runtime checks, call at app start
 
 int64_t parse_ns(int& err, const std::string& buf) {
   const char* ptr = buf.c_str();
-  if(buf.find("/") == std::string::npos) {  
+  if(buf.find("/") == std::string::npos) {
     while(*ptr && *ptr == '0') ++ptr;
     char *last;
     errno = 0;
@@ -46,14 +46,14 @@ int64_t parse_ns(int& err, const std::string& buf) {
   if(!strptime(ptr, "%Y/%m/%d %H:%M:%S", &info)) {
     err = EINVAL;
     return ns;
-  } 
+  }
   ns += mktime(&info) * 1000000000;
 
   while(*ptr && *ptr++ != '.');
 
   uint32_t res = 0;
-  for(int places = 100000000; 
-      *ptr && std::isdigit(*ptr) && places >= 1; 
+  for(int places = 100000000;
+      *ptr && std::isdigit(*ptr) && places >= 1;
       places/=10, ++ptr) {
     res += (*ptr - 48) * places;
   }
@@ -95,8 +95,8 @@ std::string fmt_ns(int64_t ns) {
 std::ostream &hires_now_ns(std::ostream &out) {
   auto now = std::chrono::system_clock::now();
   return out << std::chrono::duration_cast<std::chrono::seconds>(
-                  now.time_since_epoch()).count() 
-             <<'.'<< std::setw(9) << std::setfill('0') 
+                  now.time_since_epoch()).count()
+             <<'.'<< std::setw(9) << std::setfill('0')
              << (std::chrono::duration_cast<std::chrono::nanoseconds>(
                 now.time_since_epoch()).count() % 1000000000LL);
 }

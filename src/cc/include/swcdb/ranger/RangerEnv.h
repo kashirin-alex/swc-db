@@ -84,7 +84,7 @@ class Rgr final {
     m_env->mnt_io->post(handler);
   }
 
-  SWC_CAN_INLINE 
+  SWC_CAN_INLINE
   static Common::Resources& res() {
     return m_env->_resources;
   }
@@ -92,7 +92,7 @@ class Rgr final {
   static bool compaction_available();
 
   static void compaction_schedule(uint32_t ms);
-  
+
   static Ranger::Columns* columns() {
     return m_env->_columns;
   }
@@ -105,18 +105,18 @@ class Rgr final {
 
   const SWC::Config::Property::V_GUINT8::Ptr  cfg_cs_max;
   const SWC::Config::Property::V_GINT32::Ptr  cfg_cs_sz;
-  
+
   const SWC::Config::Property::V_GUINT8::Ptr  cfg_log_rollout_ratio;
   const SWC::Config::Property::V_GUINT8::Ptr  cfg_log_compact_cointervaling;
   const SWC::Config::Property::V_GUINT8::Ptr  cfg_log_fragment_preload;
-  
+
   const SWC::Config::Property::V_GUINT8::Ptr  cfg_compact_percent;
   const SWC::Config::Property::V_GUINT8::Ptr  cfg_cs_replication;
 
   const SWC::Config::Property::V_GINT32::Ptr  cfg_blk_size;
   const SWC::Config::Property::V_GINT32::Ptr  cfg_blk_cells;
   const SWC::Config::Property::V_GENUM::Ptr   cfg_blk_enc;
-  
+
   Comm::IoContextPtr          app_io;
   Comm::IoContextPtr          mnt_io;
   Ranger::Compaction*         _compaction;
@@ -135,7 +135,7 @@ class Rgr final {
   Core::AtomicBool                    m_shuttingdown;
   Core::AtomicBool                    m_not_accepting;
   Core::Atomic<int64_t>               m_in_process;
- 
+
 };
 
 
@@ -151,7 +151,7 @@ class Rgr final {
 
 namespace SWC { namespace Env {
 
-Rgr::Rgr() 
+Rgr::Rgr()
     : cfg_req_add_concurrency(
         SWC::Env::Config::settings()->get<SWC::Config::Property::V_GUINT8>(
           "swc.rgr.Range.req.update.concurrency")),
@@ -187,17 +187,17 @@ Rgr::Rgr()
           "swc.rgr.Range.block.encoding")),
       app_io(
         Comm::IoContext::make(
-          "Ranger", 
+          "Ranger",
           SWC::Env::Config::settings()->get_i32("swc.rgr.handlers"))
       ),
       mnt_io(
         Comm::IoContext::make(
-          "Maintenance", 
+          "Maintenance",
           SWC::Env::Config::settings()->get_i32("swc.rgr.maintenance.handlers"))
       ),
       _compaction(nullptr),
       _columns(new Ranger::Columns()),
-      _updater(std::make_shared<client::Query::Update>()),  
+      _updater(std::make_shared<client::Query::Update>()),
       _resources(
         app_io,
         SWC::Env::Config::settings()->get<SWC::Config::Property::V_GINT32>(
@@ -212,14 +212,12 @@ Rgr::Rgr()
 }
 
 Rgr::~Rgr() {
-  if(_compaction) 
+  if(_compaction)
     delete _compaction;
   delete _columns;
 }
 
 void Rgr::start() {
-  SWC_ASSERT(m_env);
-
   m_env->_compaction = new Ranger::Compaction();
   m_env->_compaction->schedule();
 }
@@ -229,10 +227,10 @@ void Rgr::shuttingdown() {
 
   m_env->_compaction->stop();
   m_env->mnt_io->stop();
-  
+
   m_env->_updater->commit();
   m_env->_updater->wait();
-  
+
   m_env->_columns->unload_all(false);
 
   wait_if_in_process();

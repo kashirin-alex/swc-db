@@ -185,9 +185,25 @@ void BlockLoader::load_log_cells() {
 }
 
 void BlockLoader::completion() {
-  SWC_ASSERT(m_fragments.empty());
-  SWC_ASSERT(!m_logs);
-  SWC_ASSERT(m_cs_blocks.empty());
+  {
+    Core::MutexSptd::scope lock(m_mutex);
+    if(!m_cs_blocks.empty()) {
+      SWC_LOG_OUT(LOG_ERROR,
+        SWC_LOG_OSTREAM << "Not Loaded CellStores: " << m_cs_blocks.size();
+        for(; !m_cs_blocks.empty(); m_cs_blocks.pop())
+          m_cs_blocks.front()->print(SWC_LOG_OSTREAM << "\n\t");
+      );
+      error.store(Error::RANGE_CELLSTORES);
+
+    } else if(m_logs || !m_fragments.empty()) {
+      SWC_LOG_OUT(LOG_ERROR,
+        SWC_LOG_OSTREAM << "Not Loaded Log Fragments: " << m_fragments.size();
+        for(; !m_fragments.empty(); m_fragments.pop())
+          m_fragments.front()->print(SWC_LOG_OSTREAM << "\n\t");
+      );
+      error.store(Error::RANGE_COMMITLOG);
+    }
+  }
 
   block->loader_loaded();
 }

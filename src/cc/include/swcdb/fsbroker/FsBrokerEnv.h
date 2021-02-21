@@ -79,11 +79,11 @@ class FsBroker final {
   public:
 
   static void init() {
+    SWC_ASSERT(!m_env);
     m_env = std::make_shared<FsBroker>();
   }
 
   static SWC::FsBroker::Fds& fds() {
-    //SWC_ASSERT(m_env);
     return m_env->m_fds;
   }
 

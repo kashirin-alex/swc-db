@@ -20,7 +20,7 @@ IoContext::IoContext(const std::string& name, int32_t size)
   SWC_LOGF(LOG_DEBUG, "Starting IO-ctx(%s) size=%u", name.c_str(), m_size);
   SWC_ASSERT(m_size > 0);
 }
-  
+
 IoContext::~IoContext() { }
 
 int32_t IoContext::get_size() const noexcept {
@@ -81,13 +81,13 @@ void IoCtx::init(int32_t size) {
 bool IoCtx::ok() noexcept {
   return bool(m_env);
 }
-  
+
 SWC_SHOULD_INLINE
 Comm::IoContextPtr IoCtx::io() {
   SWC_ASSERT(ok());
   return m_env->m_io;
 }
-  
+
 SWC_SHOULD_INLINE
 bool IoCtx::stopping() noexcept {
   return !m_env->m_io->running;

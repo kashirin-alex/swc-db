@@ -20,6 +20,7 @@ class Mngr final {
   public:
 
   static void init(const Comm::EndPoints& endpoints) {
+    SWC_ASSERT(!m_env);
     m_env = std::make_shared<Mngr>(endpoints);
   }
 
@@ -48,7 +49,7 @@ class Mngr final {
   static Manager::Rangers* rangers() {
     return &m_env->m_rangers;
   }
-  
+
   static Manager::MngdColumns* mngd_columns() {
     return &m_env->m_mngd_columns;
   }
@@ -56,7 +57,7 @@ class Mngr final {
   static void stop();
 
 
-  Mngr(const Comm::EndPoints& endpoints) 
+  Mngr(const Comm::EndPoints& endpoints)
       : app_io(
           Comm::IoContext::make(
             "Manager",
@@ -79,7 +80,7 @@ class Mngr final {
   Manager::MngrRole                   m_role;
   Manager::Rangers                    m_rangers;
   Manager::MngdColumns                m_mngd_columns;
-  
+
 };
 
 
@@ -98,6 +99,6 @@ void Mngr::stop() {
   m_env->m_role.stop();
 }
 
-}} 
+}}
 
 #endif // swcdb_manager_MngrEnv_h

@@ -341,8 +341,6 @@ void Cell::write(DynamicBuffer &dst_buf, bool no_value) const {
     Serialization::encode_vi32(&dst_buf.ptr, vlen);
     dst_buf.add_unchecked(value, vlen);
   }
-
-  SWC_ASSERT(dst_buf.fill() <= dst_buf.size);
 }
 
 bool Cell::equal(const Cell& other) const noexcept {

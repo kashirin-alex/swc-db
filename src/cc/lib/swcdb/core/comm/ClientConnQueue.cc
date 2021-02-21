@@ -216,7 +216,6 @@ void ConnQueue::run_queue() {
       conn = (m_conn && m_conn->is_open()) ? m_conn : nullptr;
       req = front();
     }
-    SWC_ASSERT(req->cbp);
     if(req->valid() && (!conn || !conn->send_request(req->cbp, req))) {
       if(req->insistent) {
         m_q_state.stop();

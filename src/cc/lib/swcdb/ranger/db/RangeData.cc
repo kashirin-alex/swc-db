@@ -19,7 +19,6 @@ namespace SWC { namespace Ranger {
 // SET
 void RangeData::write(DynamicBuffer& dst_buf,
                       CellStore::Readers& cellstores) {
-
   size_t sz = cellstores.encoded_length();
   dst_buf.ensure(HEADER_SIZE + sz);
 
@@ -36,8 +35,6 @@ void RangeData::write(DynamicBuffer& dst_buf,
 
   Core::checksum_i32(start_data_ptr, dst_buf.ptr, &checksum_data_ptr);
   Core::checksum_i32(dst_buf.base, start_data_ptr, &checksum_header_ptr);
-
-  SWC_ASSERT(dst_buf.fill() <= dst_buf.size);
 }
 
 void RangeData::save(int& err, CellStore::Readers& cellstores) {

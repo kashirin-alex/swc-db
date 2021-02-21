@@ -39,8 +39,8 @@ Types::KeySeq ColCells::get_sequence() const noexcept {
 DB::Cell::Key::Ptr ColCells::get_first_key() {
   auto key = std::make_shared<DB::Cell::Key>();
   Core::MutexSptd::scope lock(m_mutex);
-  SWC_ASSERT(m_cells.size()); // bad call , assure size pre-check
-  m_cells.get(0, *key.get());
+  if(m_cells.size())
+    m_cells.get(0, *key.get());
   return key;
 }
 
