@@ -23,7 +23,13 @@ namespace SWC {
 namespace Time {
 
 
-void checkings();
+static_assert(
+  std::ratio_less_equal<
+    std::chrono::system_clock::duration::period,
+    std::chrono::nanoseconds::period
+  >::value
+);
+
 
 SWC_CAN_INLINE
 extern

@@ -19,15 +19,6 @@ extern "C" {
 namespace SWC { namespace Time {
 
 
-void checkings() { // no need runtime checks, call at app start
-  SWC_ASSERT((
-    std::ratio_less_equal<
-      std::chrono::system_clock::duration::period,
-      std::chrono::nanoseconds::period
-    >::value
-  ));
-}
-
 int64_t parse_ns(int& err, const std::string& buf) {
   const char* ptr = buf.c_str();
   if(buf.find("/") == std::string::npos) {
