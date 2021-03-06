@@ -49,7 +49,7 @@
     <dependency>
       <groupId>org.apache.thrift</groupId>
       <artifactId>libthrift</artifactId>
-			<version>@THRIFT_VERSION@</version>
+      <version>@THRIFT_VERSION@</version>
     </dependency>
   </dependencies>
 
