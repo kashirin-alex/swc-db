@@ -218,43 +218,43 @@ impl TryFrom<i32> for SchemaFunc {
 /// The available logical Comparators, plus extended logic options applied with 'v' for VOLUME
 #[derive(Copy, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub enum Comp {
-  /// [      ]  :   none           (no comparison aplied)
+  /// [         ]  :   none               (no comparison aplied)
   None = 0,
-  /// [  =^  ]  :   -pf [prefix]   (starts-with)
+  /// [  =^     ]  :   -pf [prefix]       (starts-with)
   Pf = 1,
-  /// [  >   ]  :   -gt            (greater-than)
+  /// [ &gt;    ]  :   -gt                (greater-than)
   Gt = 2,
-  /// [  >=  ]  :   -ge            (greater-equal)
+  /// [ &gt;=   ]  :   -ge                (greater-equal)
   Ge = 3,
-  /// [  =   ]  :   -eq            (equal)
+  /// [  =      ]  :   -eq                (equal)
   Eq = 4,
-  /// [  <=  ]  :   -le            (lower-equal)
+  /// [ &lt;=   ]  :   -le                (lower-equal)
   Le = 5,
-  /// [  <   ]  :   -lt            (lower-than)
+  /// [ &lt;    ]  :   -lt                (lower-than)
   Lt = 6,
-  /// [  !=  ]  :   -ne            (not-equal)
+  /// [  !=     ]  :   -ne                (not-equal)
   Ne = 7,
-  /// [  re  ]  :   -re [r,regexp] (regular-expression)
+  /// [  re     ]  :   -re [r,regexp]     (regular-expression)
   Re = 8,
-  /// [  v>  ]  :   -vgt           (vol greater-than)
+  /// [ v&gt;   ]  :   -vgt               (vol greater-than)
   Vgt = 9,
-  /// [  v>= ]  :   -vge           (vol greater-equal)
+  /// [ v&gt;=  ]  :   -vge               (vol greater-equal)
   Vge = 10,
-  /// [  v<= ]  :   -vle           (vol lower-equal)
+  /// [ v&lt;=  ]  :   -vle               (vol lower-equal)
   Vle = 11,
-  /// [  v<  ]  :   -vlt           (vol lower-than)
+  /// [ v&lt;   ]  :   -vlt               (vol lower-than)
   Vlt = 12,
-  /// [  %>  ] :    -subset [sbs]  (subset)
+  /// [ %&gt;   ]  :   -subset [sbs]      (subset)
   Sbs = 13,
-  /// [  <%  ] :    -supset [sps]  (superset)
+  /// [ &lt;%   ]  :   -supset [sps]      (superset)
   Sps = 14,
-  /// [  ~>  ] :    -posubset [posbs] (eq/part ordered subset)
+  /// [ ~&gt;   ]  :   -posubset [posbs]  (eq/part ordered subset)
   Posbs = 15,
-  /// [  <~  ] :    -posupset [posps] (eq/part ordered superset)
+  /// [ &lt;~   ]  :   -posupset [posps]  (eq/part ordered superset)
   Posps = 16,
-  /// [  ->  ] :    -fosubset [fosbs] (eq/full ordered subset)
+  /// [ -&gt;   ]  :   -fosubset [fosbs]  (eq/full ordered subset)
   Fosbs = 17,
-  /// [  <-  ] :    -fosupset [fosps] (eq/full ordered superset)
+  /// [ &lt;-   ]  :   -fosupset [fosps]  (eq/full ordered superset)
   Fosps = 18,
 }
 

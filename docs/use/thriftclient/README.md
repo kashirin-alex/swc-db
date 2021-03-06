@@ -156,25 +156,25 @@ The available logical Comparators, plus extended logic options applied with 'v' 
 
 |Name|Value|Description|
 |---|---|---|
-|```NONE```|```0```|[      ]  :   none           (no comparison aplied) |
-|```PF```|```1```|[  =^  ]  :   -pf [prefix]   (starts-with) |
-|```GT```|```2```|[  &gt;   ]  :   -gt            (greater-than) |
-|```GE```|```3```|[  &gt;=  ]  :   -ge            (greater-equal) |
-|```EQ```|```4```|[  =   ]  :   -eq            (equal) |
-|```LE```|```5```|[  &lt;=  ]  :   -le            (lower-equal) |
-|```LT```|```6```|[  &lt;   ]  :   -lt            (lower-than) |
-|```NE```|```7```|[  !=  ]  :   -ne            (not-equal) |
-|```RE```|```8```|[  re  ]  :   -re [r,regexp] (regular-expression) |
-|```VGT```|```9```|[  v&gt;  ]  :   -vgt           (vol greater-than) |
-|```VGE```|```10```|[  v&gt;= ]  :   -vge           (vol greater-equal) |
-|```VLE```|```11```|[  v&lt;= ]  :   -vle           (vol lower-equal) |
-|```VLT```|```12```|[  v&lt;  ]  :   -vlt           (vol lower-than) |
-|```SBS```|```13```|[  %&gt;  ] :    -subset [sbs]  (subset) |
-|```SPS```|```14```|[  &lt;%  ] :    -supset [sps]  (superset) |
-|```POSBS```|```15```|[  ~&gt;  ] :    -posubset [posbs] (eq/part ordered subset) |
-|```POSPS```|```16```|[  &lt;~  ] :    -posupset [posps] (eq/part ordered superset) |
-|```FOSBS```|```17```|[  -&gt;  ] :    -fosubset [fosbs] (eq/full ordered subset) |
-|```FOSPS```|```18```|[  &lt;-  ] :    -fosupset [fosps] (eq/full ordered superset) |
+|```NONE```|```0```|[         ]  :   none               (no comparison applied) |
+|```PF```|```1```|[  =^     ]  :   -pf [prefix]       (starts-with) |
+|```GT```|```2```|[ &gt;    ]  :   -gt                (greater-than) |
+|```GE```|```3```|[ &gt;=   ]  :   -ge                (greater-equal) |
+|```EQ```|```4```|[  =      ]  :   -eq                (equal) |
+|```LE```|```5```|[ &lt;=   ]  :   -le                (lower-equal) |
+|```LT```|```6```|[ &lt;    ]  :   -lt                (lower-than) |
+|```NE```|```7```|[  !=     ]  :   -ne                (not-equal) |
+|```RE```|```8```|[  re     ]  :   -re [r,regexp]     (regular-expression) |
+|```VGT```|```9```|[ v&gt;   ]  :   -vgt               (vol greater-than) |
+|```VGE```|```10```|[ v&gt;=  ]  :   -vge               (vol greater-equal) |
+|```VLE```|```11```|[ v&lt;=  ]  :   -vle               (vol lower-equal) |
+|```VLT```|```12```|[ v&lt;   ]  :   -vlt               (vol lower-than) |
+|```SBS```|```13```|[ %&gt;   ]  :   -subset [sbs]      (subset) |
+|```SPS```|```14```|[ &lt;%   ]  :   -supset [sps]      (superset) |
+|```POSBS```|```15```|[ ~&gt;   ]  :   -posubset [posbs]  (eq/part ordered subset) |
+|```POSPS```|```16```|[ &lt;~   ]  :   -posupset [posps]  (eq/part ordered superset) |
+|```FOSBS```|```17```|[ -&gt;   ]  :   -fosubset [fosbs]  (eq/full ordered subset) |
+|```FOSPS```|```18```|[ &lt;-   ]  :   -fosupset [fosps]  (eq/full ordered superset) |
 
 ### Enumeration: SpecFlagsOpt
 The Scan options Flags Specifications for the SpecFlags 'options' bit 

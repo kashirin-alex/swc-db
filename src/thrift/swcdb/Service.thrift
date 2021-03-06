@@ -202,61 +202,61 @@ enum SchemaFunc {
 
 /** The available logical Comparators, plus extended logic options applied with 'v' for VOLUME */
 enum Comp {
-  /** [      ]  :   none           (no comparison aplied) */
+  /** [         ]  :   none               (no comparison applied) */
   NONE = 0x0,
 
-  /** [  =^  ]  :   -pf [prefix]   (starts-with) */
+  /** [  =^     ]  :   -pf [prefix]       (starts-with) */
   PF   = 0x1,
 
-  /** [  >   ]  :   -gt            (greater-than) */
+  /** [ &gt;    ]  :   -gt                (greater-than) */
   GT   = 0x2,
 
-  /** [  >=  ]  :   -ge            (greater-equal) */
+  /** [ &gt;=   ]  :   -ge                (greater-equal) */
   GE   = 0x3,
 
-  /** [  =   ]  :   -eq            (equal) */
+  /** [  =      ]  :   -eq                (equal) */
   EQ   = 0x4,
 
-  /** [  <=  ]  :   -le            (lower-equal) */
+  /** [ &lt;=   ]  :   -le                (lower-equal) */
   LE   = 0x5,
 
-  /** [  <   ]  :   -lt            (lower-than) */
+  /** [ &lt;    ]  :   -lt                (lower-than) */
   LT   = 0x6,
 
-  /** [  !=  ]  :   -ne            (not-equal) */
+  /** [  !=     ]  :   -ne                (not-equal) */
   NE   = 0x7,
 
-  /** [  re  ]  :   -re [r,regexp] (regular-expression) */
+  /** [  re     ]  :   -re [r,regexp]     (regular-expression) */
   RE   = 0x8,
 
-  /** [  v>  ]  :   -vgt           (vol greater-than) */
+  /** [ v&gt;   ]  :   -vgt               (vol greater-than) */
   VGT  = 0x9,
 
-  /** [  v>= ]  :   -vge           (vol greater-equal) */
+  /** [ v&gt;=  ]  :   -vge               (vol greater-equal) */
   VGE  = 0xA,
 
-  /** [  v<= ]  :   -vle           (vol lower-equal) */
+  /** [ v&lt;=  ]  :   -vle               (vol lower-equal) */
   VLE  = 0xB,
 
-  /** [  v<  ]  :   -vlt           (vol lower-than) */
+  /** [ v&lt;   ]  :   -vlt               (vol lower-than) */
   VLT  = 0xC,
 
-  /** [  %>  ] :    -subset [sbs]  (subset) */
+  /** [ %&gt;   ]  :   -subset [sbs]      (subset) */
   SBS     = 0x0D,
 
-  /** [  <%  ] :    -supset [sps]  (superset) */
+  /** [ &lt;%   ]  :   -supset [sps]      (superset) */
   SPS     = 0x0E,
 
-  /** [  ~>  ] :    -posubset [posbs] (eq/part ordered subset) */
+  /** [ ~&gt;   ]  :   -posubset [posbs]  (eq/part ordered subset) */
   POSBS   = 0x0F,
 
-  /** [  <~  ] :    -posupset [posps] (eq/part ordered superset) */
+  /** [ &lt;~   ]  :   -posupset [posps]  (eq/part ordered superset) */
   POSPS   = 0x10,
 
-  /** [  ->  ] :    -fosubset [fosbs] (eq/full ordered subset) */
+  /** [ -&gt;   ]  :   -fosubset [fosbs]  (eq/full ordered subset) */
   FOSBS   = 0x11,
 
-  /** [  <-  ] :    -fosupset [fosps] (eq/full ordered superset) */
+  /** [ &lt;-   ]  :   -fosupset [fosps]  (eq/full ordered superset) */
   FOSPS   = 0x12,
 
 }

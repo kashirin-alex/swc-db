@@ -26,6 +26,9 @@ if(NOT SWC_WITHOUT_JAVA AND THRIFT_JAVA_GEN_PATH AND MAVEN_FOUND)
 		${CMAKE_CURRENT_SOURCE_DIR}/mvn/swcdb/thrift/pom.xml.in
 		${CMAKE_CURRENT_BINARY_DIR}/mvn/swcdb/thrift/pom.xml @ONLY)
 	configure_file(
+		${CMAKE_CURRENT_SOURCE_DIR}/mvn/swcdb/thrift/pom_sonatype.xml
+		${CMAKE_CURRENT_BINARY_DIR}/mvn/swcdb/thrift/pom_sonatype.xml @ONLY)
+	configure_file(
 		${CMAKE_CURRENT_SOURCE_DIR}/mvn/swcdb/thrift-tests/pom.xml.in
 		${CMAKE_CURRENT_BINARY_DIR}/mvn/swcdb/thrift-tests/pom.xml @ONLY)
 

@@ -291,157 +291,157 @@ std::string to_string(const SchemaFunc::type& val) {
 
 int _kCompValues[] = {
   /**
-   * [      ]  :   none           (no comparison aplied)
+   * [         ]  :   none               (no comparison aplied)
    */
   Comp::NONE,
   /**
-   * [  =^  ]  :   -pf [prefix]   (starts-with)
+   * [  =^     ]  :   -pf [prefix]       (starts-with)
    */
   Comp::PF,
   /**
-   * [  >   ]  :   -gt            (greater-than)
+   * [ &gt;    ]  :   -gt                (greater-than)
    */
   Comp::GT,
   /**
-   * [  >=  ]  :   -ge            (greater-equal)
+   * [ &gt;=   ]  :   -ge                (greater-equal)
    */
   Comp::GE,
   /**
-   * [  =   ]  :   -eq            (equal)
+   * [  =      ]  :   -eq                (equal)
    */
   Comp::EQ,
   /**
-   * [  <=  ]  :   -le            (lower-equal)
+   * [ &lt;=   ]  :   -le                (lower-equal)
    */
   Comp::LE,
   /**
-   * [  <   ]  :   -lt            (lower-than)
+   * [ &lt;    ]  :   -lt                (lower-than)
    */
   Comp::LT,
   /**
-   * [  !=  ]  :   -ne            (not-equal)
+   * [  !=     ]  :   -ne                (not-equal)
    */
   Comp::NE,
   /**
-   * [  re  ]  :   -re [r,regexp] (regular-expression)
+   * [  re     ]  :   -re [r,regexp]     (regular-expression)
    */
   Comp::RE,
   /**
-   * [  v>  ]  :   -vgt           (vol greater-than)
+   * [ v&gt;   ]  :   -vgt               (vol greater-than)
    */
   Comp::VGT,
   /**
-   * [  v>= ]  :   -vge           (vol greater-equal)
+   * [ v&gt;=  ]  :   -vge               (vol greater-equal)
    */
   Comp::VGE,
   /**
-   * [  v<= ]  :   -vle           (vol lower-equal)
+   * [ v&lt;=  ]  :   -vle               (vol lower-equal)
    */
   Comp::VLE,
   /**
-   * [  v<  ]  :   -vlt           (vol lower-than)
+   * [ v&lt;   ]  :   -vlt               (vol lower-than)
    */
   Comp::VLT,
   /**
-   * [  %>  ] :    -subset [sbs]  (subset)
+   * [ %&gt;   ]  :   -subset [sbs]      (subset)
    */
   Comp::SBS,
   /**
-   * [  <%  ] :    -supset [sps]  (superset)
+   * [ &lt;%   ]  :   -supset [sps]      (superset)
    */
   Comp::SPS,
   /**
-   * [  ~>  ] :    -posubset [posbs] (eq/part ordered subset)
+   * [ ~&gt;   ]  :   -posubset [posbs]  (eq/part ordered subset)
    */
   Comp::POSBS,
   /**
-   * [  <~  ] :    -posupset [posps] (eq/part ordered superset)
+   * [ &lt;~   ]  :   -posupset [posps]  (eq/part ordered superset)
    */
   Comp::POSPS,
   /**
-   * [  ->  ] :    -fosubset [fosbs] (eq/full ordered subset)
+   * [ -&gt;   ]  :   -fosubset [fosbs]  (eq/full ordered subset)
    */
   Comp::FOSBS,
   /**
-   * [  <-  ] :    -fosupset [fosps] (eq/full ordered superset)
+   * [ &lt;-   ]  :   -fosupset [fosps]  (eq/full ordered superset)
    */
   Comp::FOSPS
 };
 const char* _kCompNames[] = {
   /**
-   * [      ]  :   none           (no comparison aplied)
+   * [         ]  :   none               (no comparison aplied)
    */
   "NONE",
   /**
-   * [  =^  ]  :   -pf [prefix]   (starts-with)
+   * [  =^     ]  :   -pf [prefix]       (starts-with)
    */
   "PF",
   /**
-   * [  >   ]  :   -gt            (greater-than)
+   * [ &gt;    ]  :   -gt                (greater-than)
    */
   "GT",
   /**
-   * [  >=  ]  :   -ge            (greater-equal)
+   * [ &gt;=   ]  :   -ge                (greater-equal)
    */
   "GE",
   /**
-   * [  =   ]  :   -eq            (equal)
+   * [  =      ]  :   -eq                (equal)
    */
   "EQ",
   /**
-   * [  <=  ]  :   -le            (lower-equal)
+   * [ &lt;=   ]  :   -le                (lower-equal)
    */
   "LE",
   /**
-   * [  <   ]  :   -lt            (lower-than)
+   * [ &lt;    ]  :   -lt                (lower-than)
    */
   "LT",
   /**
-   * [  !=  ]  :   -ne            (not-equal)
+   * [  !=     ]  :   -ne                (not-equal)
    */
   "NE",
   /**
-   * [  re  ]  :   -re [r,regexp] (regular-expression)
+   * [  re     ]  :   -re [r,regexp]     (regular-expression)
    */
   "RE",
   /**
-   * [  v>  ]  :   -vgt           (vol greater-than)
+   * [ v&gt;   ]  :   -vgt               (vol greater-than)
    */
   "VGT",
   /**
-   * [  v>= ]  :   -vge           (vol greater-equal)
+   * [ v&gt;=  ]  :   -vge               (vol greater-equal)
    */
   "VGE",
   /**
-   * [  v<= ]  :   -vle           (vol lower-equal)
+   * [ v&lt;=  ]  :   -vle               (vol lower-equal)
    */
   "VLE",
   /**
-   * [  v<  ]  :   -vlt           (vol lower-than)
+   * [ v&lt;   ]  :   -vlt               (vol lower-than)
    */
   "VLT",
   /**
-   * [  %>  ] :    -subset [sbs]  (subset)
+   * [ %&gt;   ]  :   -subset [sbs]      (subset)
    */
   "SBS",
   /**
-   * [  <%  ] :    -supset [sps]  (superset)
+   * [ &lt;%   ]  :   -supset [sps]      (superset)
    */
   "SPS",
   /**
-   * [  ~>  ] :    -posubset [posbs] (eq/part ordered subset)
+   * [ ~&gt;   ]  :   -posubset [posbs]  (eq/part ordered subset)
    */
   "POSBS",
   /**
-   * [  <~  ] :    -posupset [posps] (eq/part ordered superset)
+   * [ &lt;~   ]  :   -posupset [posps]  (eq/part ordered superset)
    */
   "POSPS",
   /**
-   * [  ->  ] :    -fosubset [fosbs] (eq/full ordered subset)
+   * [ -&gt;   ]  :   -fosubset [fosbs]  (eq/full ordered subset)
    */
   "FOSBS",
   /**
-   * [  <-  ] :    -fosupset [fosps] (eq/full ordered superset)
+   * [ &lt;-   ]  :   -fosupset [fosps]  (eq/full ordered superset)
    */
   "FOSPS"
 };

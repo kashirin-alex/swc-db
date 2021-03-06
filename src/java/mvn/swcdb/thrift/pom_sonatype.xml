@@ -1,0 +1,126 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>org.swcdb</groupId>
+  <artifactId>thrift</artifactId>
+  <version>@SWCDB_VERSION@</version>
+  <name>SWC-DB Thrift Client</name>
+  <description>Apache-Thrift Java Client for SWC-DB</description>
+  <url>https://www.swcdb.org/</url>
+  <packaging>jar</packaging>
+
+  <developers>
+    <developer>
+      <name>Alex Kashirin</name>
+      <email>kashirin.alex@gmail.com</email>
+      <url>https://github.com/kashirin-alex</url>
+      <organization>www.SWCDB.org</organization>
+      <organizationUrl>https://www.swcdb.org/</organizationUrl>
+    </developer>
+  </developers>
+
+  <licenses>
+    <license>
+      <name>GNU General Public License (GPL) version 3.0</name>
+      <url>https://github.com/kashirin-alex/swc-db/#license</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <properties>
+    <maven.compiler.source>1.10</maven.compiler.source>
+    <maven.compiler.target>1.10</maven.compiler.target>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+
+  <scm>
+    <connection>scm:git:git://github.com/kashirin-alex/swc-db.git</connection>
+    <developerConnection>scm:git:ssh://github.com/kashirin-alex/swc-db.git</developerConnection>
+    <url>http://github.com/kashirin-alex/swc-db</url>
+  </scm>
+
+  <issueManagement>
+    <url>http://github.com/kashirin-alex/swc-db/issues</url>
+  </issueManagement>
+  
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.thrift</groupId>
+      <artifactId>libthrift</artifactId>
+			<version>@THRIFT_VERSION@</version>
+    </dependency>
+  </dependencies>
+
+  <distributionManagement>
+    <snapshotRepository>
+      <id>ossrh</id>
+      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+    </snapshotRepository>
+    <repository>
+      <id>ossrh</id>
+      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+    </repository>
+  </distributionManagement>
+  
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+        <version>2.2.1</version>
+        <executions>
+          <execution>
+            <id>attach-sources</id>
+            <goals>
+              <goal>jar-no-fork</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>3.2.0</version>
+        <configuration>
+          <fixTags>all</fixTags>
+        </configuration>
+        <executions>
+          <execution>
+            <id>attach-javadocs</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-gpg-plugin</artifactId>
+        <version>1.5</version>
+        <executions>
+          <execution>
+            <id>sign-artifacts</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>sign</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.sonatype.plugins</groupId>
+        <artifactId>nexus-staging-maven-plugin</artifactId>
+        <version>1.6.7</version>
+        <extensions>true</extensions>
+        <configuration>
+          <serverId>ossrh</serverId>
+          <nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
+          <autoReleaseAfterClose>true</autoReleaseAfterClose>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>

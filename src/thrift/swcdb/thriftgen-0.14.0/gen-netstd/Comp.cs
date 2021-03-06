@@ -14,79 +14,79 @@
 public enum Comp
 {
   /// <summary>
-  /// [      ]  :   none           (no comparison aplied)
+  /// [         ]  :   none               (no comparison aplied)
   /// </summary>
   NONE = 0,
   /// <summary>
-  /// [  =^  ]  :   -pf [prefix]   (starts-with)
+  /// [  =^     ]  :   -pf [prefix]       (starts-with)
   /// </summary>
   PF = 1,
   /// <summary>
-  /// [  >   ]  :   -gt            (greater-than)
+  /// [ &gt;    ]  :   -gt                (greater-than)
   /// </summary>
   GT = 2,
   /// <summary>
-  /// [  >=  ]  :   -ge            (greater-equal)
+  /// [ &gt;=   ]  :   -ge                (greater-equal)
   /// </summary>
   GE = 3,
   /// <summary>
-  /// [  =   ]  :   -eq            (equal)
+  /// [  =      ]  :   -eq                (equal)
   /// </summary>
   EQ = 4,
   /// <summary>
-  /// [  <=  ]  :   -le            (lower-equal)
+  /// [ &lt;=   ]  :   -le                (lower-equal)
   /// </summary>
   LE = 5,
   /// <summary>
-  /// [  <   ]  :   -lt            (lower-than)
+  /// [ &lt;    ]  :   -lt                (lower-than)
   /// </summary>
   LT = 6,
   /// <summary>
-  /// [  !=  ]  :   -ne            (not-equal)
+  /// [  !=     ]  :   -ne                (not-equal)
   /// </summary>
   NE = 7,
   /// <summary>
-  /// [  re  ]  :   -re [r,regexp] (regular-expression)
+  /// [  re     ]  :   -re [r,regexp]     (regular-expression)
   /// </summary>
   RE = 8,
   /// <summary>
-  /// [  v>  ]  :   -vgt           (vol greater-than)
+  /// [ v&gt;   ]  :   -vgt               (vol greater-than)
   /// </summary>
   VGT = 9,
   /// <summary>
-  /// [  v>= ]  :   -vge           (vol greater-equal)
+  /// [ v&gt;=  ]  :   -vge               (vol greater-equal)
   /// </summary>
   VGE = 10,
   /// <summary>
-  /// [  v<= ]  :   -vle           (vol lower-equal)
+  /// [ v&lt;=  ]  :   -vle               (vol lower-equal)
   /// </summary>
   VLE = 11,
   /// <summary>
-  /// [  v<  ]  :   -vlt           (vol lower-than)
+  /// [ v&lt;   ]  :   -vlt               (vol lower-than)
   /// </summary>
   VLT = 12,
   /// <summary>
-  /// [  %>  ] :    -subset [sbs]  (subset)
+  /// [ %&gt;   ]  :   -subset [sbs]      (subset)
   /// </summary>
   SBS = 13,
   /// <summary>
-  /// [  <%  ] :    -supset [sps]  (superset)
+  /// [ &lt;%   ]  :   -supset [sps]      (superset)
   /// </summary>
   SPS = 14,
   /// <summary>
-  /// [  ~>  ] :    -posubset [posbs] (eq/part ordered subset)
+  /// [ ~&gt;   ]  :   -posubset [posbs]  (eq/part ordered subset)
   /// </summary>
   POSBS = 15,
   /// <summary>
-  /// [  <~  ] :    -posupset [posps] (eq/part ordered superset)
+  /// [ &lt;~   ]  :   -posupset [posps]  (eq/part ordered superset)
   /// </summary>
   POSPS = 16,
   /// <summary>
-  /// [  ->  ] :    -fosubset [fosbs] (eq/full ordered subset)
+  /// [ -&gt;   ]  :   -fosubset [fosbs]  (eq/full ordered subset)
   /// </summary>
   FOSBS = 17,
   /// <summary>
-  /// [  <-  ] :    -fosupset [fosps] (eq/full ordered superset)
+  /// [ &lt;-   ]  :   -fosupset [fosps]  (eq/full ordered superset)
   /// </summary>
   FOSPS = 18,
 }

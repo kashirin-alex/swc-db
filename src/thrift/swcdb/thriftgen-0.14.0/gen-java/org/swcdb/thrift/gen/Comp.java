@@ -12,79 +12,79 @@ package org.swcdb.thrift.gen;
  */
 public enum Comp implements org.apache.thrift.TEnum {
   /**
-   * [      ]  :   none           (no comparison aplied)
+   * [         ]  :   none               (no comparison aplied)
    */
   NONE(0),
   /**
-   * [  =^  ]  :   -pf [prefix]   (starts-with)
+   * [  =^     ]  :   -pf [prefix]       (starts-with)
    */
   PF(1),
   /**
-   * [  >   ]  :   -gt            (greater-than)
+   * [ &gt;    ]  :   -gt                (greater-than)
    */
   GT(2),
   /**
-   * [  >=  ]  :   -ge            (greater-equal)
+   * [ &gt;=   ]  :   -ge                (greater-equal)
    */
   GE(3),
   /**
-   * [  =   ]  :   -eq            (equal)
+   * [  =      ]  :   -eq                (equal)
    */
   EQ(4),
   /**
-   * [  <=  ]  :   -le            (lower-equal)
+   * [ &lt;=   ]  :   -le                (lower-equal)
    */
   LE(5),
   /**
-   * [  <   ]  :   -lt            (lower-than)
+   * [ &lt;    ]  :   -lt                (lower-than)
    */
   LT(6),
   /**
-   * [  !=  ]  :   -ne            (not-equal)
+   * [  !=     ]  :   -ne                (not-equal)
    */
   NE(7),
   /**
-   * [  re  ]  :   -re [r,regexp] (regular-expression)
+   * [  re     ]  :   -re [r,regexp]     (regular-expression)
    */
   RE(8),
   /**
-   * [  v>  ]  :   -vgt           (vol greater-than)
+   * [ v&gt;   ]  :   -vgt               (vol greater-than)
    */
   VGT(9),
   /**
-   * [  v>= ]  :   -vge           (vol greater-equal)
+   * [ v&gt;=  ]  :   -vge               (vol greater-equal)
    */
   VGE(10),
   /**
-   * [  v<= ]  :   -vle           (vol lower-equal)
+   * [ v&lt;=  ]  :   -vle               (vol lower-equal)
    */
   VLE(11),
   /**
-   * [  v<  ]  :   -vlt           (vol lower-than)
+   * [ v&lt;   ]  :   -vlt               (vol lower-than)
    */
   VLT(12),
   /**
-   * [  %>  ] :    -subset [sbs]  (subset)
+   * [ %&gt;   ]  :   -subset [sbs]      (subset)
    */
   SBS(13),
   /**
-   * [  <%  ] :    -supset [sps]  (superset)
+   * [ &lt;%   ]  :   -supset [sps]      (superset)
    */
   SPS(14),
   /**
-   * [  ~>  ] :    -posubset [posbs] (eq/part ordered subset)
+   * [ ~&gt;   ]  :   -posubset [posbs]  (eq/part ordered subset)
    */
   POSBS(15),
   /**
-   * [  <~  ] :    -posupset [posps] (eq/part ordered superset)
+   * [ &lt;~   ]  :   -posupset [posps]  (eq/part ordered superset)
    */
   POSPS(16),
   /**
-   * [  ->  ] :    -fosubset [fosbs] (eq/full ordered subset)
+   * [ -&gt;   ]  :   -fosubset [fosbs]  (eq/full ordered subset)
    */
   FOSBS(17),
   /**
-   * [  <-  ] :    -fosupset [fosps] (eq/full ordered superset)
+   * [ &lt;-   ]  :   -fosupset [fosps]  (eq/full ordered superset)
    */
   FOSPS(18);
 
