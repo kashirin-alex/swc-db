@@ -445,7 +445,7 @@ bool MngdColumns::initialize() {
   FS::IdEntries_t::iterator it_to;
   do {
     pending.acquire();
-    it_to = entries.end() - entries.begin() > vol ? (it + vol) : entries.end();
+    it_to = entries.end() - it > vol ? (it + vol) : entries.end();
     Env::Mngr::post(
       [&pending,
        entries=FS::IdEntries_t(it, it_to),
@@ -453,8 +453,8 @@ bool MngdColumns::initialize() {
         DB::Schema::Ptr schema;
         int err;
         for(cid_t cid : entries) {
-          schema = Common::Files::Schema::load(
-            err = Error::OK, cid, replicas);
+          SWC_LOGF(LOG_DEBUG, "Schema Loading cid=%lu", cid);
+          schema = Common::Files::Schema::load(err=Error::OK, cid, replicas);
           if(!err)
             Env::Mngr::schemas()->add(err, schema);
           else
@@ -464,7 +464,7 @@ bool MngdColumns::initialize() {
         pending.release();
       }
     );
-    it += vol;
+    it += it_to - it;
   } while(it_to != entries.end());
 
   pending.release();
