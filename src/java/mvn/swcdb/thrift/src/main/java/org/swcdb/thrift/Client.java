@@ -7,10 +7,11 @@
 package org.swcdb.thrift;
 
 import org.apache.thrift.TException;
-import org.apache.thrift.transport.TSocket;
-import org.apache.thrift.transport.TFramedTransport;
-import org.apache.thrift.transport.TTransportException;
 import org.apache.thrift.protocol.TBinaryProtocol;
+import org.apache.thrift.TConfiguration;
+import org.apache.thrift.transport.TSocket;
+import org.apache.thrift.transport.TTransportException;
+import org.apache.thrift.transport.layered.TFramedTransport;
 
 import org.swcdb.thrift.gen.Service;
 
@@ -23,8 +24,11 @@ public class Client extends Service.Client {
                               throws TTransportException, TException {
     return new Client(
       new TFramedTransport(
-        new TSocket(host, port, timeout_ms), max_framesize), 
-        do_open);
+        new TSocket(new TConfiguration(), host, port, timeout_ms), 
+        max_framesize
+      ), 
+      do_open
+    );
   }
 
   public static Client create(String host, int port, int timeout_ms,
@@ -32,16 +36,18 @@ public class Client extends Service.Client {
                               throws TTransportException, TException {
     return new Client(
       new TFramedTransport(
-        new TSocket(host, port, timeout_ms)), 
-        do_open);
+        new TSocket(new TConfiguration(), host, port, timeout_ms)
+      ), 
+      do_open
+    );
   }
 
   public static Client create(String host, int port, boolean do_open)
                               throws TTransportException, TException {
     return new Client(
-      new TFramedTransport(
-        new TSocket(host, port)), 
-        do_open);
+      new TFramedTransport(new TSocket(host, port)), 
+      do_open
+    );
   }
   ///
 
