@@ -7,9 +7,14 @@
   <artifactId>thrift</artifactId>
   <version>@SWCDB_VERSION@</version>
   <name>SWC-DB Thrift Client</name>
-  <description>Apache-Thrift Java Client for SWC-DB</description>
+  <description>a SWC-DB Java Client package for using with swcdbThriftBroker implementing the Apache-Thrift serialization protocol</description>
   <url>https://www.swcdb.org/</url>
   <packaging>jar</packaging>
+
+  <organization>
+    <name>www.SWCDB.org</name>
+    <url>https://www.swcdb.org/</url>
+  </organization>
 
   <developers>
     <developer>
@@ -44,6 +49,16 @@
   <issueManagement>
     <url>http://github.com/kashirin-alex/swc-db/issues</url>
   </issueManagement>
+  
+  <mailingLists>
+    <mailingList>
+      <name>A group for discussions on SWC-DB and related subjects</name>
+      <subscribe>swc-db+subscribe@googlegroups.com</subscribe>
+      <unsubscribe>swc-db+unsubscribe@googlegroups.com.</unsubscribe>
+      <post>swc-db@googlegroups.com</post>
+      <archive>https://groups.google.com/g/swc-db</archive>
+    </mailingList>
+  </mailingLists>
   
   <dependencies>
     <dependency>

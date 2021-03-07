@@ -218,7 +218,7 @@ impl TryFrom<i32> for SchemaFunc {
 /// The available logical Comparators, plus extended logic options applied with 'v' for VOLUME
 #[derive(Copy, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub enum Comp {
-  /// [         ]  :   none               (no comparison aplied)
+  /// [         ]  :   none               (no comparison applied)
   None = 0,
   /// [  =^     ]  :   -pf [prefix]       (starts-with)
   Pf = 1,

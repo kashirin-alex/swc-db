@@ -11,7 +11,38 @@
 
 
 
-[_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.4.17...master)
+[_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.4.18...master)
+******
+
+
+
+
+### [SWC-DB v0.4.18](https://github.com/kashirin-alex/swc-db/releases/tag/v0.4.18) (2021-03-07)
+
+    added swc-db/.github/workflows/ci.yml, to activate requires [TEST COMMIT]
+    added packaging/debian
+    changed Config::Settings reduced alloc with move to emplace move-ctor
+    added core/comm/asio_wrap.h isolation of ASIO include
+    added environ SWCDB_CLUSTER_SSH_CONFIG to sbin/swcdb_cluster
+    changed fixed cfg-values/paths to dynamic-input sbin/swcdb_cluster
+    added validate transport to socket cast in ThriftBroker
+    changed condition -LT/-GT to -NE at comparison with end-iterator
+    added ctor client::Query::Update::Locator::Locator(without a key_finish)
+    adjusted further the standard to comply with Warning Flags clang-additio
+    renamed response() to complete() of Ranger::Callback::ManageBase derived
+    changed order of #include<*stream> & removed unused/redundant #include<..>
+    added core/Malloc.cc
+    added fast-alloc route in DynamicBuffer at no BufferT::base
+    changed some encoded_length() to uint32_t, avoid overflow on sum of size_t
+    fixed build-linkage at -DSWC_IMPL_SOURCE=ON
+    added Comm::EndPoints Serialization::en/decode
+    changed ctor Comm::Buffers at ReqBase constructor
+    removed avoidable SWC_ASSERT at run-time
+    added system_clock capability check at build-time
+    updated Java org.swcdb.thrift for Thrift 0.14.0 version
+    added pom_sonatype.xml & SWC-DB Thrift Client to Maven Central Repository
+
+[_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.4.17...v0.4.18)
 ******
 
 

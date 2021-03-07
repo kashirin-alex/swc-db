@@ -291,7 +291,7 @@ std::string to_string(const SchemaFunc::type& val) {
 
 int _kCompValues[] = {
   /**
-   * [         ]  :   none               (no comparison aplied)
+   * [         ]  :   none               (no comparison applied)
    */
   Comp::NONE,
   /**
@@ -369,7 +369,7 @@ int _kCompValues[] = {
 };
 const char* _kCompNames[] = {
   /**
-   * [         ]  :   none               (no comparison aplied)
+   * [         ]  :   none               (no comparison applied)
    */
   "NONE",
   /**

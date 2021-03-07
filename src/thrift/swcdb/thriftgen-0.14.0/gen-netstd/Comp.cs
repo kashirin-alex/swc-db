@@ -14,7 +14,7 @@
 public enum Comp
 {
   /// <summary>
-  /// [         ]  :   none               (no comparison aplied)
+  /// [         ]  :   none               (no comparison applied)
   /// </summary>
   NONE = 0,
   /// <summary>

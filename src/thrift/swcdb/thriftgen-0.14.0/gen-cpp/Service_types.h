@@ -171,7 +171,7 @@ std::string to_string(const SchemaFunc::type& val);
 struct Comp {
   enum type {
     /**
-     * [         ]  :   none               (no comparison aplied)
+     * [         ]  :   none               (no comparison applied)
      */
     NONE = 0,
     /**

@@ -12,7 +12,7 @@ package org.swcdb.thrift.gen;
  */
 public enum Comp implements org.apache.thrift.TEnum {
   /**
-   * [         ]  :   none               (no comparison aplied)
+   * [         ]  :   none               (no comparison applied)
    */
   NONE(0),
   /**
