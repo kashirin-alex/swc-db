@@ -29,7 +29,7 @@ class RangeUnload : public ManageBase {
 
   virtual ~RangeUnload();
 
-  void response();
+  void response_params();
 
 };
 

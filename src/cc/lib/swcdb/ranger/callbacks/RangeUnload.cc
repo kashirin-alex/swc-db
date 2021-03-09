@@ -18,7 +18,7 @@ RangeUnload::RangeUnload(const Comm::ConnHandlerPtr& conn,
 
 RangeUnload::~RangeUnload() { }
 
-void RangeUnload::response() {
+void RangeUnload::response_params() {
   m_conn->send_response(Comm::Buffers::make(m_ev, rsp_params));
 }
 
