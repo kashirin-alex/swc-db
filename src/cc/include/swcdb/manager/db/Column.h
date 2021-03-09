@@ -79,6 +79,15 @@ class Column final : private std::vector<Range::Ptr> {
     _set_loading();
   }
 
+  bool set_merging(const Range::Ptr& range) {
+    std::scoped_lock lock(m_mutex);
+    if(m_state == State::DELETED)
+      return false;
+    range->set_state(Range::State::MERGE, 0);
+    m_state.store(State::LOADING);
+    return true;
+  }
+
   State state() {
     std::shared_lock lock(m_mutex);
     return m_state;

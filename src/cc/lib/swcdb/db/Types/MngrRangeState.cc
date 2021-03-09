@@ -17,6 +17,7 @@ namespace {
   const char MngrRange_State_ASSIGNED[]  = "ASSIGNED";
   const char MngrRange_State_CREATED[]   = "CREATED";
   const char MngrRange_State_QUEUED[]    = "QUEUED";
+  const char MngrRange_State_MERGE[]     = "MERGE";
   const char MngrRange_State_UNKNOWN[]   = "UNKNOWN";
 }
 
@@ -38,7 +39,10 @@ const char* to_string(MngrRange::State state) noexcept {
 
     case MngrRange::State::QUEUED:
       return MngrRange_State_QUEUED;
-      
+
+    case MngrRange::State::MERGE:
+      return MngrRange_State_MERGE;
+
     default:
       return MngrRange_State_UNKNOWN;
   }

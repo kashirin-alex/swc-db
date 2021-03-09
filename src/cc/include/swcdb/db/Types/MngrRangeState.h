@@ -9,7 +9,7 @@
 
 #include <string>
 
-namespace SWC { namespace DB { namespace Types { 
+namespace SWC { namespace DB { namespace Types {
 
 
 namespace MngrRange {
@@ -19,7 +19,8 @@ namespace MngrRange {
     DELETED   = 1,
     ASSIGNED  = 2,
     CREATED   = 3,
-    QUEUED    = 4
+    QUEUED    = 4,
+    MERGE     = 5
   };
 
 }
@@ -32,6 +33,6 @@ const char* to_string(MngrRange::State state) noexcept;
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/db/Types/MngrRangeState.cc"
-#endif 
+#endif
 
 #endif // swcdb_db_types_MngrRangeState_h
