@@ -1,7 +1,7 @@
 /*
  * SWC-DB© Copyright since 2019 Alex Kashirin <kashirin.alex@gmail.com>
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
- */ 
+ */
 
 
 
@@ -13,13 +13,13 @@ namespace SWC { namespace Manager {
 
 
 ColumnHealthCheck::RangerCheck::RangerCheck(
-                const ColumnHealthCheck::Ptr& col_checker, 
+                const ColumnHealthCheck::Ptr& col_checker,
                 const Ranger::Ptr& rgr)
                 : col_checker(col_checker), rgr(rgr), m_checkings(0),
-                  m_success(0), m_failures(0) { 
+                  m_success(0), m_failures(0) {
 }
 
-ColumnHealthCheck::RangerCheck::~RangerCheck() { 
+ColumnHealthCheck::RangerCheck::~RangerCheck() {
   if(!m_success && m_failures) // && m_success < m_failures)
     rgr->failures.fetch_add(1);
 }
@@ -28,12 +28,12 @@ void ColumnHealthCheck::RangerCheck::add_range(const Range::Ptr& range) {
   Core::MutexSptd::scope lock(m_mutex);
   _add_range(range);
 }
-    
+
 bool ColumnHealthCheck::RangerCheck::add_ranges(uint8_t more) {
   if(rgr->state == DB::Types::MngrRangerState::ACK) {
     std::vector<Range::Ptr> ranges;
     col_checker->col->need_health_check(
-      col_checker->check_ts, col_checker->check_intval, 
+      col_checker->check_ts, col_checker->check_intval,
       ranges, rgr->rgrid, more
     );
     if(!ranges.empty()) {
@@ -45,7 +45,8 @@ bool ColumnHealthCheck::RangerCheck::add_ranges(uint8_t more) {
   return false;
 }
 
-void ColumnHealthCheck::RangerCheck::handle(const Range::Ptr& range, int err) {
+void ColumnHealthCheck::RangerCheck::handle(const Range::Ptr& range,
+                                            int err, uint8_t flags) {
   uint8_t more;
   {
     Core::MutexSptd::scope lock(m_mutex);
@@ -66,6 +67,9 @@ void ColumnHealthCheck::RangerCheck::handle(const Range::Ptr& range, int err) {
     m_success.fetch_add(1);
     if(!err) {
       rgr->failures.store(0);
+      if(flags & Comm::Protocol::Rgr::Params::RangeIsLoadedRsp::CAN_MERGE) {
+        col_checker->add_mergeable(range);
+      }
     } else if(err == Error::RGR_NOT_LOADED_RANGE) {
       col_checker->col->set_unloaded(range);
       Env::Mngr::rangers()->schedule_check(2000);
@@ -95,18 +99,18 @@ void ColumnHealthCheck::RangerCheck::_add_range(const Range::Ptr& range) {
              range->cfg->cid, range->rid, rgr->rgrid.load());
   }
 }
-  
 
 
-  
-ColumnHealthCheck::ColumnHealthCheck(const Column::Ptr& col, 
+
+
+ColumnHealthCheck::ColumnHealthCheck(const Column::Ptr& col,
                                      int64_t check_ts, uint32_t check_intval)
-                                    : col(col), check_ts(check_ts), 
+                                    : col(col), check_ts(check_ts),
                                       check_intval(check_intval),
                                       completion(1) {
   SWC_LOGF(LOG_DEBUG, "Column-Health START cid(%lu)", col->cfg->cid);
 }
-  
+
 ColumnHealthCheck::~ColumnHealthCheck() { }
 
 void ColumnHealthCheck::run(bool initial) {
@@ -125,8 +129,8 @@ void ColumnHealthCheck::run(bool initial) {
     {
       Core::MutexSptd::scope lock(m_mutex);
       auto it = std::find_if(
-        m_checkers.begin(), m_checkers.end(), 
-        [rgrid](const RangerCheck::Ptr& checker) { 
+        m_checkers.begin(), m_checkers.end(),
+        [rgrid](const RangerCheck::Ptr& checker) {
           return rgrid == checker->rgr->rgrid; }
       );
       checker = it == m_checkers.end() ? nullptr : *it;
@@ -153,21 +157,29 @@ void ColumnHealthCheck::run(bool initial) {
     finishing(false);
 }
 
+void ColumnHealthCheck::add_mergeable(const Range::Ptr& range) {
+  SWC_LOG_OUT(LOG_DEBUG,
+    range->print(SWC_LOG_OSTREAM << "RANGE-CAN-MERGE: ");
+  );
+  Core::MutexSptd::scope lock(m_mutex);
+  m_mergeable_ranges.push_back(range);
+}
+
 void ColumnHealthCheck::finishing(bool finished_range) {
   if(finished_range)
     run(false);
 
-  SWC_LOGF(LOG_DEBUG, "Column-Health finishing cid(%lu) in-process=%lu", 
+  SWC_LOGF(LOG_DEBUG, "Column-Health finishing cid(%lu) in-process=%lu",
                         col->cfg->cid, completion.count());
   if(!completion.is_last())
     return;
-  /*
-  if(col->state() == Error::OK) {
-    // match ranger's rids to mngr assignments (dup. unload from all Rangers)
-    RangerList rangers;
-    Env::Mngr::rangers()->rgr_get(0, rangers);
-  }
-  */
+    /*
+    if(col->state() == Error::OK) {
+      // match ranger's rids to mngr assignments (dup. unload from all Rangers)
+      RangerList rangers;
+      Env::Mngr::rangers()->rgr_get(0, rangers);
+    }
+    */
   SWC_LOGF(LOG_DEBUG, "Column-Health FINISH cid(%lu)", col->cfg->cid);
   Env::Mngr::rangers()->health_check_finished(shared_from_this());
 }

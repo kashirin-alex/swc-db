@@ -15,7 +15,7 @@ namespace Rgr { namespace Handler {
 
 
 void range_is_loaded(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
-  int err = Error::OK;
+  Params::RangeIsLoadedRsp rsp_params(Error::OK);
   try {
     const uint8_t *ptr = ev->data.base;
     size_t remain = ev->data.size;
@@ -23,23 +23,25 @@ void range_is_loaded(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     Params::RangeIsLoaded params;
     params.decode(&ptr, &remain);
 
-    auto range = Env::Rgr::columns()->get_range(err, params.cid, params.rid);
+    auto range = Env::Rgr::columns()->get_range(
+      rsp_params.err, params.cid, params.rid);
     if(range && range->is_loaded()) {
-      conn->response_ok(ev);
-      return;
+      if(range->can_be_merged())
+        rsp_params.can_be_merged();
+
+    } else if(!rsp_params.err) {
+      rsp_params.err = Error::RGR_NOT_LOADED_RANGE;
     }
-    if(!err)
-      err = Error::RGR_NOT_LOADED_RANGE;
-      
+
   } catch(...) {
     const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
     SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
-    err = e.code();
+    rsp_params.err = e.code();
   }
-  
-  conn->send_error(err, "", ev);
+
+  conn->send_response(Buffers::make(ev, rsp_params));
 }
-  
+
 
 }}}}}
 

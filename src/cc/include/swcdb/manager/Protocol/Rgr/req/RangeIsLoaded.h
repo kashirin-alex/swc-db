@@ -41,11 +41,23 @@ class RangeIsLoaded : public client::ConnQueue::ReqBase {
   }
 
   void handle_no_conn() override {
-    checker->handle(range, Error::COMM_CONNECT_ERROR);
+    checker->handle(range, Error::COMM_CONNECT_ERROR, 0);
   }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
-    checker->handle(range, ev->response_code());
+    Params::RangeIsLoadedRsp rsp_params(ev->error);
+    if(!rsp_params.err) {
+      try {
+        const uint8_t *ptr = ev->data.base;
+        size_t remain = ev->data.size;
+        rsp_params.decode(&ptr, &remain);
+      } catch(...) {
+        const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
+        SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
+        rsp_params.err = e.code();
+      }
+    }
+    checker->handle(range, rsp_params.err, rsp_params.flags);
   }
 
 };
