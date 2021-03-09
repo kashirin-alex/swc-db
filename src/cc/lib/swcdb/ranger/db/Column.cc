@@ -255,7 +255,7 @@ void Column::unload(const Callback::RangeUnload::Ptr& req) {
   internal_unload(req->rid, chk_empty);
   if(chk_empty)
     req->rsp_params.set_empty();
-  req->response();
+  req->response_params();
   Env::Rgr::columns()->erase_if_empty(cfg->cid);
   run_mng_queue();
 }
