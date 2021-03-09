@@ -73,6 +73,8 @@ class Range final : public std::enable_shared_from_this<Range> {
 
   void get_interval(DB::Cells::Interval& interval);
 
+  bool can_be_merged();
+
   void _get_interval(DB::Cells::Interval& interval) const;
 
   void _get_interval(DB::Cell::Key& key_begin, DB::Cell::Key& key_end) const;
@@ -101,7 +103,7 @@ class Range final : public std::enable_shared_from_this<Range> {
 
   void internal_take_ownership(int &err, const Callback::RangeLoad::Ptr& req);
 
-  void internal_unload(bool completely);
+  void internal_unload(bool completely, bool& chk_empty);
 
   void remove(const Callback::ColumnDelete::Ptr& req);
 

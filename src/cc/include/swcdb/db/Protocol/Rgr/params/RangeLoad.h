@@ -51,8 +51,6 @@ class RangeLoaded : public Serializable {
               : intval(false), interval(key_seq) {
   }
 
-  //RangeLoaded(const DB::Cells::Interval& interval): interval(interval) {}
-
   virtual ~RangeLoaded() {}
 
   bool                intval;

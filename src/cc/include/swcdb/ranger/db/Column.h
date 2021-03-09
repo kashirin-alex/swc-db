@@ -16,7 +16,7 @@
 namespace SWC { namespace Ranger {
 
 
-class Column final : 
+class Column final :
     private std::unordered_map<rid_t, RangePtr>,
     public std::enable_shared_from_this<Column> {
   public:
@@ -33,7 +33,7 @@ class Column final :
 
   bool removing() noexcept;
 
-  bool is_not_used() noexcept; 
+  bool is_not_used() noexcept;
 
   RangePtr get_range(const rid_t rid);
 
@@ -57,6 +57,8 @@ class Column final :
   RangePtr internal_create(int& err, rid_t rid, bool compacting);
 
   void internal_unload(const rid_t rid);
+
+  void internal_unload(const rid_t rid, bool& chk_empty);
 
   void internal_remove(int &err, const rid_t rid);
 

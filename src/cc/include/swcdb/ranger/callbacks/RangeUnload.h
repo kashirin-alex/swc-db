@@ -7,6 +7,9 @@
 #define swcdb_ranger_callbacks_RangeUnload_h
 
 
+#include "swcdb/db/Protocol/Rgr/params/RangeUnload.h"
+
+
 namespace SWC { namespace Ranger { namespace Callback {
 
 
@@ -15,15 +18,18 @@ class RangeUnload : public ManageBase {
 
   typedef std::shared_ptr<RangeUnload> Ptr;
 
-  const cid_t   cid;
-  const rid_t   rid;
-  const bool    completely;
+  const cid_t                                 cid;
+  const rid_t                                 rid;
+  const bool                                  completely;
+  Comm::Protocol::Rgr::Params::RangeUnloadRsp rsp_params;
 
   RangeUnload(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev,
               const cid_t cid, const rid_t rid,
               const bool completely) noexcept;
 
   virtual ~RangeUnload();
+
+  void response();
 
 };
 

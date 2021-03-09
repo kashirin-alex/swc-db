@@ -63,7 +63,7 @@ void ColumnsUnload::handle(ConnHandlerPtr, const Event::Ptr& ev) {
 
     for(auto& r : c.second) {
 
-      auto range = col->get_range(err, r);
+      auto range = col->get_range(r);
       if(!range || !range->assigned() || !(rgrid = range->get_rgr_id()))
         continue;
 

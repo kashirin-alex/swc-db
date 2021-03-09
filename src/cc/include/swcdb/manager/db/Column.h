@@ -65,7 +65,7 @@ class Column final : private std::vector<Range::Ptr> {
       entries.push_back(1); // initialize 1st range
 
     for(auto rid : entries)
-      get_range(err, rid, true);
+      get_range(rid, true);
   }
 
   void set_loading() {
@@ -115,18 +115,14 @@ class Column final : private std::vector<Range::Ptr> {
     ranges.assign(begin(), end());
   }
 
-  Range::Ptr get_range(int&, const rid_t rid, bool initialize=false) {
+  Range::Ptr get_range(const rid_t rid, bool initialize=false) {
     std::scoped_lock lock(m_mutex);
 
-    auto it = std::find_if(begin(), end(), [rid](const Range::Ptr& range)
-                                           {return range->rid == rid;});
-    if(it != end())
-      return *it;
-
-    if(initialize)
-      return emplace_back(new Range(cfg, rid));
-
-    return nullptr;
+    for(auto& range : *this) {
+      if(range->rid == rid)
+        return range;
+    }
+    return initialize ? emplace_back(new Range(cfg, rid)) : nullptr;
   }
 
   Range::Ptr get_range(int&,
@@ -179,6 +175,16 @@ class Column final : private std::vector<Range::Ptr> {
     }
 
     apply_loaded_state();
+  }
+
+  Range::Ptr left_sibling(const Range::Ptr& right) {
+    std::shared_lock lock(m_mutex);
+
+    for(auto it = begin() + 1; it < end(); ++it) {
+      if((*it)->rid == right->rid)
+        return *--it;
+    }
+    return nullptr;
   }
 
   Range::Ptr create_new_range(rgrid_t rgrid) {

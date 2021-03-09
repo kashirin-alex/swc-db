@@ -26,14 +26,14 @@ void rgr_get(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
       rsp_params.err, params.cid);
     if(rsp_params.err)
       goto send_response;
-    
+
     //if(params.had_err == Error::RGR_NOT_LOADED_RANGE)
     //  Env::Mngr::rangers()->need_health_check(col);
-    
+
     Manager::Range::Ptr range;
     if(!params.rid) {
       range = col->get_range(
-        rsp_params.err, 
+        rsp_params.err,
         params.range_begin,
         params.range_end,
         params.next_range
@@ -45,9 +45,10 @@ void rgr_get(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
         rsp_params.range_end.remove(0);
         rsp_params.range_end.remove(0);
       }
-    } else 
-      range = col->get_range(rsp_params.err, params.rid);
-      
+    } else {
+      range = col->get_range(params.rid);
+    }
+
     if(!range) {
       rsp_params.err = Error::RANGE_NOT_FOUND;
       goto send_response;
@@ -68,22 +69,22 @@ void rgr_get(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
     rsp_params.err = e.code();
   }
-  
+
   send_response:
 
-    SWC_LOG_OUT(LOG_DEBUG,  
-      params.print(SWC_LOG_OSTREAM); 
-      rsp_params.print(SWC_LOG_OSTREAM <<' '); 
+    SWC_LOG_OUT(LOG_DEBUG,
+      params.print(SWC_LOG_OSTREAM);
+      rsp_params.print(SWC_LOG_OSTREAM <<' ');
     );
 
     conn->send_response(Buffers::make(ev, rsp_params));
 
 }
 
-  
-// flag(if cid==1) 
-//      in(cid+interval)  out(cid + rid + rgr-endpoints + ?next) 
-// else 
+
+// flag(if cid==1)
+//      in(cid+interval)  out(cid + rid + rgr-endpoints + ?next)
+// else
 //      in(cid+rid)        out(cid + rid + rgr-endpoints)
 
 }}}}}

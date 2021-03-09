@@ -86,6 +86,15 @@ void Range::get_interval(DB::Cells::Interval& interval) {
   _get_interval(interval);
 }
 
+bool Range::can_be_merged() {
+  bool ok;
+  {
+    Core::MutexAtomic::scope lock(m_mutex_intval);
+    ok = !_is_any_begin();
+  }
+  return ok && !blocks.size_bytes_total(false);
+}
+
 void Range::_get_interval(DB::Cells::Interval& interval) const {
   interval.copy(m_interval);
 }
@@ -226,7 +235,7 @@ void Range::internal_take_ownership(int &err, const Callback::RangeLoad::Ptr& re
   err ? loaded(err, req) : load(err, req);
 }
 
-void Range::internal_unload(bool completely) {
+void Range::internal_unload(bool completely, bool& chk_empty) {
   {
     std::scoped_lock lock(m_mutex);
     if(m_state != State::LOADED && !blocks.range)
@@ -240,6 +249,8 @@ void Range::internal_unload(bool completely) {
   wait();
   wait_queue();
 
+  if(chk_empty)
+    chk_empty = !blocks.size_bytes_total(false);
   blocks.unload();
 
   int err = Error::OK;
@@ -791,7 +802,7 @@ void Range::check_meta(const Callback::RangeLoad::Ptr& req,
       }
       int err = res->error();
       if(err) {
-        SWC_LOGF(LOG_WARN, 
+        SWC_LOGF(LOG_WARN,
           "Range MetaData FIX auto-del range-%lu/%lu err=%d(%s)",
           cfg->cid, rid, err, Error::get_text(err));
         return loaded(Error::RGR_NOT_LOADED_RANGE, req);

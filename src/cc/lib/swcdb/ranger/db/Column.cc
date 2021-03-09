@@ -10,13 +10,13 @@ namespace SWC { namespace Ranger {
 
 
 
-Column::Column(const cid_t cid, const DB::Schema& schema) 
+Column::Column(const cid_t cid, const DB::Schema& schema)
               : cfg(new ColumnCfg(cid, schema)) {
   Env::Rgr::in_process(1);
   Env::Rgr::res().more_mem_usage(size_of());
 }
 
-Column::~Column() { 
+Column::~Column() {
   Env::Rgr::res().less_mem_usage(size_of());
   Env::Rgr::in_process(-1);
 }
@@ -64,7 +64,7 @@ void Column::get_rids(std::vector<rid_t>& rids) {
 }
 
 void Column::schema_update(const DB::Schema& schema) {
-  bool compact = cfg->c_versions > schema.cell_versions || 
+  bool compact = cfg->c_versions > schema.cell_versions ||
                  (schema.cell_ttl && cfg->c_ttl > schema.cell_ttl);
   bool and_cells =  cfg->c_versions != schema.cell_versions ||
                     cfg->c_ttl != schema.cell_ttl ||
@@ -140,22 +140,22 @@ void Column::print(std::ostream& out, bool minimal) {
     it->second->print(out, minimal);
     out << ", ";
   }
-  out << "])"; 
+  out << "])";
 }
 
 
 RangePtr Column::internal_create(int& err, rid_t rid, bool compacting) {
   Core::MutexSptd::scope lock(m_mutex);
   if(Env::Rgr::is_shuttingdown() ||
-     (Env::Rgr::is_not_accepting() && 
+     (Env::Rgr::is_not_accepting() &&
       DB::Types::MetaColumn::is_data(cfg->cid))) {
     err = Error::SERVER_SHUTTING_DOWN;
   } else if(cfg->deleting) {
     err = Error::COLUMN_MARKED_REMOVED;
   }
-  if(err) 
+  if(err)
     return nullptr;
-  
+
   auto res = emplace(rid, nullptr);
   if(res.second) {
     res.first->second.reset(new Range(cfg, rid));
@@ -169,7 +169,17 @@ RangePtr Column::internal_create(int& err, rid_t rid, bool compacting) {
 void Column::internal_unload(const rid_t rid) {
   auto range = get_range(rid);
   if(range) {
-    range->internal_unload(true);
+    bool chk_empty = false;
+    range->internal_unload(true, chk_empty);
+    range = nullptr;
+    internal_delete(rid);
+  }
+}
+
+void Column::internal_unload(const rid_t rid, bool& chk_empty) {
+  auto range = get_range(rid);
+  if(range) {
+    range->internal_unload(true, chk_empty);
     range = nullptr;
     internal_delete(rid);
   }
@@ -240,10 +250,12 @@ void Column::load(const Callback::RangeLoad::Ptr& req) {
 void Column::unload(const Callback::RangeUnload::Ptr& req) {
   if(req->expired(1000))
     return run_mng_queue();
-  
-  internal_unload(req->rid);
 
-  req->response_ok();
+  bool chk_empty = true;
+  internal_unload(req->rid, chk_empty);
+  if(chk_empty)
+    req->rsp_params.set_empty();
+  req->response();
   Env::Rgr::columns()->erase_if_empty(cfg->cid);
   run_mng_queue();
 }
@@ -257,7 +269,8 @@ void Column::unload_all(const Callback::ColumnsUnload::Ptr& req) {
       range = begin()->second;
     }
     if(range) {
-      range->internal_unload(req->completely);
+      bool chk_empty = false;
+      range->internal_unload(req->completely, chk_empty);
       req->unloaded(range);
       internal_delete(range->rid);
     }

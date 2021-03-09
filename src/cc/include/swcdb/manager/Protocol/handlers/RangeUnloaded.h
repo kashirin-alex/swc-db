@@ -34,13 +34,13 @@ void range_unloaded(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
       rsp_params.err = Error::OK;
     }
 
-    auto range = col->get_range(rsp_params.err, params.rid);
-    if(!range && !rsp_params.err)
+    auto range = col->get_range(params.rid);
+    if(!range) {
       rsp_params.err = Error::RANGE_NOT_FOUND;
-    if(rsp_params.err)
       goto send_response;
+    }
     range->set_state(Manager::Range::State::NOTSET, 0);
-    
+
     Env::Mngr::rangers()->schedule_check(1);
 
   } catch(...) {
@@ -48,7 +48,7 @@ void range_unloaded(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
     rsp_params.err = e.code();
   }
-  
+
   send_response:
     SWC_PRINT << "RangeUnloaded(RSP): " << rsp_params.to_string()
               << SWC_PRINT_CLOSE;

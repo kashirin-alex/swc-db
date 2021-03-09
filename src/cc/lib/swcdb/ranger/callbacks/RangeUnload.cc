@@ -12,10 +12,14 @@ RangeUnload::RangeUnload(const Comm::ConnHandlerPtr& conn,
                          const cid_t cid, const rid_t rid,
                          const bool completely) noexcept
                         : ManageBase(conn, ev, ManageBase::RANGE_UNLOAD),
-                          cid(cid), rid(rid), completely(completely) {
+                          cid(cid), rid(rid),
+                          completely(completely), rsp_params(Error::OK) {
 }
 
 RangeUnload::~RangeUnload() { }
 
+void RangeUnload::response() {
+  m_conn->send_response(Comm::Buffers::make(m_ev, rsp_params));
+}
 
 }}}
