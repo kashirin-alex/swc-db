@@ -322,6 +322,8 @@ void MngdColumns::remove(const DB::Schema::Ptr& schema,
   if(col && !col->finalize_remove(err, rgrid))
     return;
 
+  Env::Mngr::rangers()->wait_health_check(schema->cid);
+
   Env::Mngr::columns()->remove(schema->cid);
   if(!Env::Mngr::role()->is_active_role(DB::Types::MngrRole::SCHEMAS))
     Env::Mngr::schemas()->remove(schema->cid);

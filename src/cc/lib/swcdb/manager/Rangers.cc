@@ -50,8 +50,10 @@ Rangers::Rangers(const Comm::IoContextPtr& app_io)
 Rangers::~Rangers() { }
 
 void Rangers::stop(bool shuttingdown) {
-  if(shuttingdown)
+  if(shuttingdown) {
     m_run.store(false);
+    wait_health_check();
+  }
   {
     Core::MutexSptd::scope lock(m_mutex);
     m_timer.cancel();
@@ -466,6 +468,22 @@ void Rangers::health_check_finished(const ColumnHealthCheck::Ptr& chk) {
       m_columns_check.erase(it);
   }
   health_check_columns();
+}
+
+void Rangers::wait_health_check(cid_t cid) {
+  for(;;) {
+    {
+      Core::MutexSptd::scope lock(m_mutex_columns_check);
+      auto it = cid == DB::Schema::NO_CID
+        ? m_columns_check.begin()
+        : std::find_if(m_columns_check.begin(), m_columns_check.end(),
+            [cid](const ColumnHealthCheck::Ptr chk) {
+              return chk->col->cfg->cid == cid; });
+      if(it == m_columns_check.end())
+        return;
+    }
+    std::this_thread::sleep_for(std::chrono::microseconds(100));
+  }
 }
 
 void Rangers::print(std::ostream& out) {

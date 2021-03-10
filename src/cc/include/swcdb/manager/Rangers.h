@@ -34,11 +34,11 @@ class Rangers final {
   void stop(bool shuttingdown=true);
 
   bool empty() noexcept;
-  
+
   void schedule_check(uint32_t t_ms = 10000);
 
   void schedule_run();
-  
+
   void rgr_report(rgrid_t rgrid, int err,
                   const Comm::Protocol::Rgr::Params::Report::RspRes& rsp);
 
@@ -58,22 +58,22 @@ class Rangers final {
 
   void rgr_shutdown(rgrid_t rgrid, const Comm::EndPoints& endpoints);
 
-  
+
   void sync();
 
   void update_status(RangerList new_rgr_status, bool sync_all);
 
-  void range_loaded(Ranger::Ptr rgr, Range::Ptr range, 
+  void range_loaded(Ranger::Ptr rgr, Range::Ptr range,
                     int err, bool failure=false, bool verbose=true);
 
   void assign_ranges();
 
   bool update(const Column::Ptr& col, const DB::Schema::Ptr& schema,
               uint64_t req_id, bool ack_required);
-  
+
   void column_delete(const DB::Schema::Ptr& schema, uint64_t req_id,
                      const std::vector<rgrid_t>& rgrids);
-  
+
   void column_compact(const Column::Ptr& col);
 
 
@@ -81,6 +81,7 @@ class Rangers final {
 
   void health_check_finished(const ColumnHealthCheck::Ptr& chk);
 
+  void wait_health_check(cid_t cid=DB::Schema::NO_CID);
 
   void print(std::ostream& out);
 
@@ -97,12 +98,12 @@ class Rangers final {
   void changes(const RangerList& hosts, bool sync_all=false);
 
   void _changes(const RangerList& hosts, bool sync_all=false);
-  
-  
-  Core::AtomicBool              m_run; 
+
+
+  Core::AtomicBool              m_run;
 
   Core::MutexSptd               m_mutex;
-  asio::high_resolution_timer   m_timer; 
+  asio::high_resolution_timer   m_timer;
   RangerList                    m_rangers;
   RangersResources              m_rangers_resources;
 
@@ -111,7 +112,7 @@ class Rangers final {
 
   Core::MutexSptd               m_mutex_columns_check;
   ColumnHealthChecks            m_columns_check;
-  
+
 };
 
 }}
