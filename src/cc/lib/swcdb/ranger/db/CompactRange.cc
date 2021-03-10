@@ -161,7 +161,8 @@ void CompactRange::initialize() {
     range->blocks.commitlog.commit_new_fragment(true);
 
   // ? immediate split
-  if(range->blocks.cellstores.size() >= range->cfg->cellstore_max() * 2) {
+  if(range->blocks.cellstores.size() >= range->cfg->cellstore_max() * 2 &&
+     range->blocks.cellstores.size_bytes(false) > cs_size) {
     size_t split_at = range->blocks.cellstores.size() / 2;
     auto it = range->blocks.cellstores.begin();
 
