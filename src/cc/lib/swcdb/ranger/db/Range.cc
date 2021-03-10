@@ -49,22 +49,12 @@ const std::string Range::get_path(const std::string suff) const {
 }
 
 const std::string Range::get_path_cs(const csid_t csid) const {
-  std::string s(m_path);
-  s.append(CELLSTORES_DIR);
-  s.append("/");
-  s.append(std::to_string(csid));
-  s.append(".cs");
-  return s;
+  return get_path_cs_on(DB::RangeBase::CELLSTORES_DIR, csid);
 }
 
 const std::string Range::get_path_cs_on(const std::string folder,
                                         const csid_t csid) const {
-  std::string s(m_path);
-  s.append(folder);
-  s.append("/");
-  s.append(std::to_string(csid));
-  s.append(".cs");
-  return s;
+  return DB::RangeBase::get_path_cs(m_path, folder, csid);
 }
 
 SWC_SHOULD_INLINE
@@ -208,7 +198,8 @@ void Range::load(const Callback::RangeLoad::Ptr& req) {
 
   SWC_LOGF(LOG_DEBUG, "LOADING RANGE(%lu/%lu)-STARTED", cfg->cid, rid);
 
-  if(!Env::FsInterface::interface()->exists(err, get_path(CELLSTORES_DIR))) {
+  if(!Env::FsInterface::interface()->exists(
+        err, get_path(DB::RangeBase::CELLSTORES_DIR))) {
     if(!err)
       internal_create_folders(err);
     if(err)
@@ -510,9 +501,12 @@ void Range::expand_and_align(bool w_chg_chk,
 }
 
 void Range::internal_create_folders(int& err) {
-  Env::FsInterface::interface()->mkdirs(err, get_path(LOG_DIR));
-  Env::FsInterface::interface()->mkdirs(err, get_path(LOG_TMP_DIR));
-  Env::FsInterface::interface()->mkdirs(err, get_path(CELLSTORES_DIR));
+  Env::FsInterface::interface()->mkdirs(
+    err, get_path(DB::RangeBase::LOG_DIR));
+  Env::FsInterface::interface()->mkdirs(
+    err, get_path(LOG_TMP_DIR));
+  Env::FsInterface::interface()->mkdirs(
+    err, get_path(DB::RangeBase::CELLSTORES_DIR));
 }
 
 void Range::internal_create(int &err, const CellStore::Writers& w_cellstores) {

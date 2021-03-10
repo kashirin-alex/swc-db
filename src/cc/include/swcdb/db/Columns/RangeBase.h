@@ -15,9 +15,13 @@ namespace SWC { namespace DB {
 class RangeBase final {
   public:
 
-  static constexpr const char COLUMN_DIR[]  = "C";
-  static constexpr const char RANGE_DIR[]   = "/R";
-  static constexpr const char RANGER_FILE[] = "ranger.data";
+  static constexpr const char COLUMN_DIR[]      = "C";
+  static constexpr const char RANGE_DIR[]       = "/R";
+  static constexpr const char RANGER_FILE[]     = "ranger.data";
+  static constexpr const char CELLSTORES_DIR[]  = "cs";
+  static constexpr const char LOG_DIR[]         = "log";
+  static constexpr const char RANGE_FILE[]      = "range.data";
+
   // (swc.fs.path.data)+COLUMN_DIR+/+{cid}+/RANGE_DIR+/+{rid}+/+(types)
 
   static const char* get_column_path() noexcept {
@@ -46,12 +50,36 @@ class RangeBase final {
     return s;
   }
 
+  static const std::string get_path_on_range(const std::string& range_path,
+                                             const std::string& path) {
+    std::string s(range_path);
+    s.append(path);
+    s.append("/");
+    return s;
+  }
+
   static const std::string get_path_ranger(const std::string& range_path) {
     std::string s(range_path);
     s.append(RANGER_FILE);
     return s;
   }
 
+  static const std::string get_path_range_data(const std::string& range_path) {
+    std::string s(range_path);
+    s.append(RANGE_FILE);
+    return s;
+  }
+
+  static const std::string get_path_cs(const std::string& range_path,
+                                       const std::string& folder,
+                                       const csid_t csid) {
+    std::string s(range_path);
+    s.append(folder);
+    s.append("/");
+    s.append(std::to_string(csid));
+    s.append(".cs");
+    return s;
+  }
 
 };
 

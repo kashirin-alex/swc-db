@@ -247,7 +247,7 @@ int main(int argc, char** argv) {
 
   SWC::Env::FsInterface::interface()->rmdir(err, range->get_path(""));
   SWC::Env::FsInterface::interface()->mkdirs(
-    err, range->get_path(range->CELLSTORES_DIR));
+    err, range->get_path(SWC::DB::RangeBase::CELLSTORES_DIR));
 
   size_t expected_blocks = 0;
   for(size_t i=1; i<=num_cellstores; ++i) {

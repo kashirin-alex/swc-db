@@ -223,7 +223,7 @@ void Fragments::finish_compact(const Compact* compact) {
 }
 
 const std::string Fragments::get_log_fragment(const int64_t frag) const {
-  std::string s(range->get_path(Range::LOG_DIR));
+  std::string s(range->get_path(DB::RangeBase::LOG_DIR));
   s.append("/");
   s.append(std::to_string(frag));
   s.append(".frag");
@@ -231,7 +231,7 @@ const std::string Fragments::get_log_fragment(const int64_t frag) const {
 }
 
 const std::string Fragments::get_log_fragment(const std::string& frag) const {
-  std::string s(range->get_path(Range::LOG_DIR));
+  std::string s(range->get_path(DB::RangeBase::LOG_DIR));
   s.append("/");
   s.append(frag);
   return s;
@@ -244,7 +244,7 @@ void Fragments::load(int &err) {
   err = Error::OK;
   FS::DirentList fragments;
   Env::FsInterface::interface()->readdir(
-    err, range->get_path(Range::LOG_DIR), fragments);
+    err, range->get_path(DB::RangeBase::LOG_DIR), fragments);
   if(err)
     return;
 

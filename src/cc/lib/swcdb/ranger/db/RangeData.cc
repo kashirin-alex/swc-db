@@ -46,7 +46,7 @@ void RangeData::save(int& err, CellStore::Readers& cellstores) {
   Env::FsInterface::interface()->write(
     err,
     FS::SmartFd::make_ptr(
-      cellstores.range->get_path(Range::RANGE_FILE),
+      cellstores.range->get_path(DB::RangeBase::RANGE_FILE),
       FS::OpenFlags::OPEN_FLAG_OVERWRITE
     ),
     cellstores.range->cfg->file_replication(),
@@ -73,7 +73,7 @@ void RangeData::load(int& err, CellStore::Readers& cellstores) {
   StaticBuffer read_buf;
   Env::FsInterface::interface()->read(
     err,
-    cellstores.range->get_path(Range::RANGE_FILE),
+    cellstores.range->get_path(DB::RangeBase::RANGE_FILE),
     &read_buf
   );
   if(!err) {

@@ -82,9 +82,9 @@ int main(int argc, char** argv) {
 
   Env::FsInterface::interface()->rmdir(err, range->get_path(""));
   Env::FsInterface::interface()->mkdirs(
-    err, range->get_path(range->LOG_DIR));
+    err, range->get_path(SWC::DB::RangeBase::LOG_DIR));
   Env::FsInterface::interface()->mkdirs(
-    err, range->get_path(range->CELLSTORES_DIR));
+    err, range->get_path(SWC::DB::RangeBase::CELLSTORES_DIR));
 
   commitlog.print(std::cout << " init:\n", true);
   std::cout << "\n";

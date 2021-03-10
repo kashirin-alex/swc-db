@@ -182,7 +182,7 @@ void Readers::load_from_path(int &err) {
 
   FS::DirentList dirs;
   Env::FsInterface::interface()->readdir(
-    err, range->get_path(Range::CELLSTORES_DIR), dirs);
+    err, range->get_path(DB::RangeBase::CELLSTORES_DIR), dirs);
 
   FS::IdEntries_t entries;
   entries.reserve(dirs.size());
@@ -201,7 +201,6 @@ void Readers::load_from_path(int &err) {
     push_back(
       Read::make(err, csid, range, DB::Cells::Interval(range->cfg->key_seq))
     );
-    // add sorted by cs interval-key_end, for range & cellstores after merge
   }
 }
 
@@ -212,7 +211,7 @@ void Readers::replace(int &err, Writers& w_cellstores) {
 
   fs->rename(
     err,
-    range->get_path(Range::CELLSTORES_DIR),
+    range->get_path(DB::RangeBase::CELLSTORES_DIR),
     range->get_path(Range::CELLSTORES_BAK_DIR)
   );
   if(err)
@@ -221,7 +220,7 @@ void Readers::replace(int &err, Writers& w_cellstores) {
   fs->rename(
     err,
     range->get_path(Range::CELLSTORES_TMP_DIR),
-    range->get_path(Range::CELLSTORES_DIR)
+    range->get_path(DB::RangeBase::CELLSTORES_DIR)
   );
 
   if(!err) {
@@ -243,11 +242,11 @@ void Readers::replace(int &err, Writers& w_cellstores) {
   }
 
   if(err) {
-    fs->rmdir(err, range->get_path(Range::CELLSTORES_DIR));
+    fs->rmdir(err, range->get_path(DB::RangeBase::CELLSTORES_DIR));
     fs->rename(
       err,
       range->get_path(Range::CELLSTORES_BAK_DIR),
-      range->get_path(Range::CELLSTORES_DIR)
+      range->get_path(DB::RangeBase::CELLSTORES_DIR)
     );
     return;
   }
