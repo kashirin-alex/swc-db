@@ -64,8 +64,10 @@ void Column::get_rids(std::vector<rid_t>& rids) {
 }
 
 void Column::schema_update(const DB::Schema& schema) {
-  bool compact = cfg->c_versions > schema.cell_versions ||
-                 (schema.cell_ttl && cfg->c_ttl > schema.cell_ttl);
+  bool compact = 
+    cfg->c_versions > schema.cell_versions ||
+    (!cfg->c_ttl && schema.cell_ttl) || 
+    cfg->c_ttl > schema.cell_ttl;
   bool and_cells =  cfg->c_versions != schema.cell_versions ||
                     cfg->c_ttl != schema.cell_ttl ||
                     cfg->col_type != schema.col_type;
