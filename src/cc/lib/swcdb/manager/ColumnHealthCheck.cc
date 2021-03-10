@@ -385,7 +385,7 @@ void ColumnHealthCheck::ColumnMerger::RangesMerger::handle(
       if(!m_err)
         m_err = err;
       m_ready.push_back(nullptr);
-    } else if(!empty) {
+    } else if(!empty && m_ranges.front() != range) {
       SWC_LOGF(LOG_WARN, "Column-Health MERGE-UNLOAD range(%lu/%lu)"
                          " NOT-EMPTY cancelling-merge",
                           range->cfg->cid, range->rid);
@@ -407,17 +407,17 @@ void ColumnHealthCheck::ColumnMerger::RangesMerger::handle(
     col_merger->col_checker->col->state(m_err=Error::OK);
     if(m_err != Error::COLUMN_MARKED_REMOVED) {
       for(auto& range : m_ready) {
-        if(range)
+        if(range) // reset merge state
           col_merger->col_checker->col->set_unloaded(range);
       }
       Env::Mngr::rangers()->schedule_check(2000);
     }
     return col_merger->completion();
   }
+  m_ready.clear();
 
-
-  Range::Ptr main_range = m_ready.front(); //group-merge-to-this-range
-  m_ready.erase(m_ready.begin());
+  Range::Ptr main_range = m_ranges.front(); //group-merge-to-this-range
+  m_ranges.erase(m_ranges.begin());
 
   const std::string main_range_path =
     DB::RangeBase::get_path(
@@ -454,7 +454,7 @@ void ColumnHealthCheck::ColumnMerger::RangesMerger::handle(
     last_cs_id = entries.back();
   }
 
-  for(auto& range : m_ready) {
+  for(auto& range : m_ranges) {
     // sanity check if no-logs exist
     const std::string range_path = DB::RangeBase::get_path(
       range->cfg->cid, range->rid);
@@ -526,7 +526,7 @@ void ColumnHealthCheck::ColumnMerger::RangesMerger::handle(
   }
 
 
-  for(auto& range : m_ready) {
+  for(auto& range : m_ranges) {
     if(range) // reset unmerged state
       col_merger->col_checker->col->set_unloaded(range);
   }
@@ -539,7 +539,7 @@ void ColumnHealthCheck::ColumnMerger::RangesMerger::handle(
 
   SWC_LOGF(LOG_INFO,
     "Column-Health MERGE GROUP cid(%lu) ranges(%lu/%lu) to range(%lu)",
-    main_range->cfg->cid, merged.size(), m_ready.size(), main_range->rid);
+    main_range->cfg->cid, merged.size(), m_ranges.size(), main_range->rid);
   return col_merger->completion();
 }
 
