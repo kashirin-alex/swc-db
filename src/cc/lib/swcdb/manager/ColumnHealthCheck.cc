@@ -7,6 +7,8 @@
 
 #include "swcdb/manager/ColumnHealthCheck.h"
 #include "swcdb/manager/Protocol/Rgr/req/RangeIsLoaded.h"
+#include "swcdb/manager/Protocol/Rgr/req/RangeUnoadForMerge.h"
+#include "swcdb/db/Cells/CellValueSerialFields.h"
 
 
 namespace SWC { namespace Manager {
@@ -173,6 +175,8 @@ void ColumnHealthCheck::finishing(bool finished_range) {
                         col->cfg->cid, completion.count());
   if(!completion.is_last())
     return;
+
+  if(m_mergeable_ranges.empty()) {
     /*
     if(col->state() == Error::OK) {
       // match ranger's rids to mngr assignments (dup. unload from all Rangers)
@@ -180,10 +184,367 @@ void ColumnHealthCheck::finishing(bool finished_range) {
       Env::Mngr::rangers()->rgr_get(0, rangers);
     }
     */
-  SWC_LOGF(LOG_DEBUG, "Column-Health FINISH cid(%lu)", col->cfg->cid);
-  Env::Mngr::rangers()->health_check_finished(shared_from_this());
+    SWC_LOGF(LOG_DEBUG, "Column-Health FINISH cid(%lu)", col->cfg->cid);
+    Env::Mngr::rangers()->health_check_finished(shared_from_this());
+    return;
+  }
+
+  auto merger = std::make_shared<ColumnMerger>(
+    shared_from_this(), std::move(m_mergeable_ranges));
+  if(DB::Types::MetaColumn::is_master(col->cfg->cid)) {
+    return merger->run_master();
+  }
+
+  cid_t meta_cid = DB::Types::MetaColumn::get_sys_cid(
+    col->cfg->key_seq, DB::Types::MetaColumn::get_range_type(col->cfg->cid));
+  auto col_spec = DB::Specs::Column::make_ptr(
+    meta_cid, {DB::Specs::Interval::make_ptr(DB::Types::Column::SERIAL)});
+  auto& intval = col_spec->intervals.front();
+  auto& key_intval = intval->key_intervals.add();
+  key_intval->start.add(std::to_string(col->cfg->cid), Condition::EQ);
+  key_intval->start.add("", Condition::GE);
+
+  auto selector = std::make_shared<client::Query::Select>(
+    [merger, meta_cid]
+    (const client::Query::Select::Result::Ptr& result) {
+      int err = result->err;
+      if(!err) {
+        auto col = result->get_columnn(meta_cid);
+        if(!(err = col->error()) && !col->empty())
+          col->get_cells(merger->cells);
+      }
+      (err || merger->cells.empty())
+        ? merger->completion()
+        : merger->run();
+    },
+    false,
+    Env::Mngr::io()
+  );
+  selector->specs.columns.push_back(col_spec);
+  int err = Error::OK;
+  selector->scan(err);
+  if(err)
+    merger->completion();
 }
 
 
 
+ColumnHealthCheck::ColumnMerger::ColumnMerger(
+            const ColumnHealthCheck::Ptr& col_checker,
+            std::vector<Range::Ptr>&& ranges) noexcept
+            : col_checker(col_checker), m_ranges(std::move(ranges)) {
+}
+
+void ColumnHealthCheck::ColumnMerger::run_master() {
+  std::vector<Range::Ptr> sorted;
+  for(auto& range : m_ranges) {
+    bool added = false;
+    for(auto it=sorted.begin(); it != sorted.end(); ++it) {
+      if((*it)->after(range)) {
+        sorted.insert(it, range);
+        added = true;
+        break;
+      }
+    }
+    if(!added)
+      sorted.push_back(range);
+  }
+
+  std::vector<Range::Ptr> group;
+  for(auto& range : sorted) {
+    auto left = col_checker->col->left_sibling(range);
+    if(!left) {
+      group.push_back(range);
+    } else if(group.empty()) {
+      group.push_back(left); // group-merge-to-this-range
+      group.push_back(range);
+    } else if(left->rid == group.back()->rid) {
+      group.push_back(range);
+    } else {
+      if(group.size() > 1)
+        m_mergers.emplace_back(
+          new RangesMerger(shared_from_this(), std::move(group)));
+      group.push_back(left); // group-merge-to-this-range
+      group.push_back(range);
+    }
+  }
+  if(group.size() > 1)
+    m_mergers.emplace_back(
+      new RangesMerger(shared_from_this(), std::move(group)));
+
+  if(m_mergers.empty()) {
+    SWC_LOGF(LOG_WARN, "Column-Health FINISH cid(%lu) not-mergeable=%lu",
+             col_checker->col->cfg->cid, m_ranges.size());
+    Env::Mngr::rangers()->health_check_finished(col_checker);
+  } else {
+    SWC_LOGF(LOG_DEBUG, "Column-Health MERGE cid(%lu) merger-groups=%lu",
+             col_checker->col->cfg->cid, m_mergers.size());
+    completion();
+  }
+}
+
+void ColumnHealthCheck::ColumnMerger::run() {
+  std::vector<Range::Ptr> group;
+  Range::Ptr left = nullptr;
+  for(auto& cell : cells) {
+    //SWC_LOG_OUT(LOG_DEBUG,
+    //    cell->print(SWC_LOG_OSTREAM, DB::Types::Column::SERIAL); );
+
+    StaticBuffer v;
+    cell->get_value(v);
+    const uint8_t* ptr = v.base;
+    size_t remain = v.size;
+    DB::Cell::Serial::Value::skip_type_and_id(&ptr, &remain);
+    DB::Cell::Key key_end; // skip-through
+    key_end.decode(&ptr, &remain, false);
+    DB::Cell::Serial::Value::skip_type_and_id(&ptr, &remain);
+    rid_t rid = Serialization::decode_vi64(&ptr, &remain);
+
+    Range::Ptr range = col_checker->col->get_range(rid, false);
+    if(!range) {
+      m_mergers.clear();
+      break;
+    }
+    if(!left) {
+      group.push_back(range);
+    } else if(group.empty()) {
+      group.push_back(left); // group-merge-to-this-range
+      group.push_back(range);
+    } else if(left->rid == group.back()->rid) {
+      group.push_back(range);
+    } else {
+      if(group.size() > 1)
+        m_mergers.emplace_back(
+          new RangesMerger(shared_from_this(), std::move(group)));
+      group.push_back(left); // group-merge-to-this-range
+      group.push_back(range);
+    }
+    left = range;
+  }
+  if(group.size() > 1)
+    m_mergers.emplace_back(
+      new RangesMerger(shared_from_this(), std::move(group)));
+
+  if(m_mergers.empty()) {
+    SWC_LOGF(LOG_WARN, "Column-Health FINISH cid(%lu) not-mergeable=%lu",
+             col_checker->col->cfg->cid, m_ranges.size());
+    Env::Mngr::rangers()->health_check_finished(col_checker);
+  } else {
+    SWC_LOGF(LOG_DEBUG, "Column-Health MERGE cid(%lu) merger-groups=%lu",
+             col_checker->col->cfg->cid, m_mergers.size());
+    completion();
+  }
+}
+
+void ColumnHealthCheck::ColumnMerger::completion() {
+  if(m_mergers.empty()) {
+    SWC_LOGF(LOG_DEBUG, "Column-Health FINISH cid(%lu) MERGE",
+             col_checker->col->cfg->cid);
+    Env::Mngr::rangers()->health_check_finished(col_checker);
+    return;
+  }
+  auto merger = m_mergers.back();
+  m_mergers.erase(m_mergers.end() - 1);
+  merger->run();
+}
+
+
+
+ColumnHealthCheck::ColumnMerger::RangesMerger::RangesMerger(
+                const ColumnMerger::Ptr& col_merger,
+                std::vector<Range::Ptr>&& ranges) noexcept
+      : col_merger(col_merger), m_err(Error::OK),
+        m_ranges(std::move(ranges)) {
+}
+
+void ColumnHealthCheck::ColumnMerger::RangesMerger::run() {
+  for(auto& range : m_ranges) {
+    auto rgrid = range->get_rgr_id();
+    if(rgrid) {
+      auto rgr = Env::Mngr::rangers()->rgr_get(rgrid);
+      if(rgr) {
+        rgr->put(
+          std::make_shared<Comm::Protocol::Rgr::Req::RangeUnoadForMerge>(
+             rgr, shared_from_this(), range));
+          SWC_LOGF(LOG_DEBUG,
+            "Column-Health MERGE-UNLOAD range(%lu/%lu) rgr=%lu",
+            range->cfg->cid, range->rid, rgr->rgrid.load());
+        continue;
+      }
+    }
+    handle(range, Error::OK, false);
+  }
+}
+
+void ColumnHealthCheck::ColumnMerger::RangesMerger::handle(
+                                const Range::Ptr& range, int err,
+                                bool empty) {
+  {
+    Core::MutexSptd::scope lock(m_mutex);
+    if(err) {
+      if(!m_err)
+        m_err = err;
+      m_ready.push_back(nullptr);
+    } else if(!empty) {
+      SWC_LOGF(LOG_WARN, "Column-Health MERGE-UNLOAD range(%lu/%lu)"
+                         " NOT-EMPTY cancelling-merge",
+                          range->cfg->cid, range->rid);
+      m_ready.push_back(range);
+      if(!m_err)
+        m_err = Error::CANCELLED;
+    } else if(col_merger->col_checker->col->set_merging(range)) {
+      m_ready.push_back(range);
+    } else {
+      m_ready.push_back(nullptr);
+      if(!m_err)
+        m_err = Error::COLUMN_MARKED_REMOVED;
+    }
+    if(m_ranges.size() > m_ready.size())
+      return;
+  }
+
+  if(m_err) { // CANCEL-MERGE
+    col_merger->col_checker->col->state(m_err=Error::OK);
+    if(m_err != Error::COLUMN_MARKED_REMOVED) {
+      for(auto& range : m_ready) {
+        if(range)
+          col_merger->col_checker->col->set_unloaded(range);
+      }
+      Env::Mngr::rangers()->schedule_check(2000);
+    }
+    return col_merger->completion();
+  }
+
+
+  Range::Ptr main_range = m_ready.front(); //group-merge-to-this-range
+  m_ready.erase(m_ready.begin());
+
+  const std::string main_range_path =
+    DB::RangeBase::get_path(
+      main_range->cfg->cid, main_range->rid);
+  const std::string main_cs_path =
+    DB::RangeBase::get_path_on_range(
+      main_range_path, DB::RangeBase::CELLSTORES_DIR);
+
+  std::vector<Range::Ptr> merged;
+  csid_t last_cs_id;
+
+  const auto& fs = Env::FsInterface::interface();
+  FS::DirentList files;
+
+  // get last used cs-id
+  fs->readdir(err, main_cs_path, files);
+  if(err)
+    goto finalize;
+
+  {
+    FS::IdEntries_t entries;
+    entries.reserve(files.size());
+    for(auto& entry : files) {
+      if(entry.name.find(".cs", entry.name.length()-3) != std::string::npos) {
+        auto idn = entry.name.substr(0, entry.name.length()-3);
+        entries.push_back(strtoll(idn.c_str(), nullptr, 0));
+      }
+    }
+    std::sort(entries.begin(), entries.end());
+    if(entries.empty()) {
+      err = Error::CANCELLED;
+      goto finalize;
+    }
+    last_cs_id = entries.back();
+  }
+
+  for(auto& range : m_ready) {
+    // sanity check if no-logs exist
+    const std::string range_path = DB::RangeBase::get_path(
+      range->cfg->cid, range->rid);
+    files.clear();
+    fs->readdir(
+      err,
+      DB::RangeBase::get_path_on_range(range_path, DB::RangeBase::LOG_DIR),
+      files);
+    if(err || !files.empty()) // sanity-check
+      goto finalize;
+
+    // read cs files to move/rename (expect one)
+    const std::string cs_path = DB::RangeBase::get_path_on_range(
+      range_path, DB::RangeBase::CELLSTORES_DIR);
+    fs->readdir(err, cs_path, files);
+    if(err || files.size() != 1 || !files.front().name.ends_with(".cs"))
+      goto finalize;
+
+    // rename to main-range cs-path
+    const std::string to_cs = DB::RangeBase::get_path_cs(
+      main_range_path, DB::RangeBase::CELLSTORES_DIR, ++last_cs_id);
+    fs->rename(err, cs_path + files.front().name, to_cs);
+    if(err)
+      goto finalize;
+
+    // delete the R/rid folder
+    fs->rmdir(err, range_path);
+    merged.push_back(range);
+    range = nullptr;
+  }
+
+
+  finalize:
+
+  for(auto& range : merged)
+    col_merger->col_checker->col->remove_range(range->rid);
+
+  if(!merged.empty() &&
+     !DB::Types::MetaColumn::is_master(main_range->cfg->cid)) {
+    auto updater = std::make_shared<client::Query::Update>();
+    cid_t meta_cid = DB::Types::MetaColumn::get_sys_cid(
+      main_range->cfg->key_seq,
+      DB::Types::MetaColumn::get_range_type(main_range->cfg->cid));
+    updater->columns->create(
+        meta_cid, main_range->cfg->key_seq, 1, 0, DB::Types::Column::SERIAL);
+    auto col = updater->columns->get_col(meta_cid);
+    for(auto& cell : col_merger->cells) {
+      StaticBuffer v;
+      cell->get_value(v);
+      const uint8_t* ptr = v.base;
+      size_t remain = v.size;
+      DB::Cell::Serial::Value::skip_type_and_id(&ptr, &remain);
+      DB::Cell::Key key_end; // skip-through
+      key_end.decode(&ptr, &remain, false);
+      DB::Cell::Serial::Value::skip_type_and_id(&ptr, &remain);
+      rid_t rid = Serialization::decode_vi64(&ptr, &remain);
+
+      for(auto& range : merged) {
+        if(rid == range->rid) {
+          cell->flag = DB::Cells::DELETE;
+          cell->free(); // no-need-value-data
+          col->add(*cell);
+          break;
+        }
+      }
+    }
+    updater->commit_if_need();
+    updater->wait();
+  }
+
+
+  for(auto& range : m_ready) {
+    if(range) // reset unmerged state
+      col_merger->col_checker->col->set_unloaded(range);
+  }
+
+  if(!merged.empty()) // delete expired/outdated range.data file
+    fs->remove(err, DB::RangeBase::get_path_range_data(main_range_path));
+
+  col_merger->col_checker->col->set_unloaded(main_range);
+  Env::Mngr::rangers()->schedule_check(2000);
+
+  SWC_LOGF(LOG_INFO,
+    "Column-Health MERGE GROUP cid(%lu) ranges(%lu/%lu) to range(%lu)",
+    main_range->cfg->cid, merged.size(), m_ready.size(), main_range->rid);
+  return col_merger->completion();
+}
+
+
 }}
+
+
+#include "swcdb/manager/Protocol/Rgr/req/RangeUnoadForMerge.cc"

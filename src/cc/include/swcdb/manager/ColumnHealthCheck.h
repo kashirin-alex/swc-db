@@ -10,6 +10,8 @@
 
 
 #include "swcdb/core/CompletionCounter.h"
+#include "swcdb/db/client/Query/Select.h"
+#include "swcdb/db/client/Query/Update.h"
 
 
 namespace SWC { namespace Manager {
@@ -57,6 +59,55 @@ class ColumnHealthCheck final
     Core::Atomic<size_t>      m_failures;
   };
 
+
+
+  class ColumnMerger final
+      : public std::enable_shared_from_this<ColumnMerger> {
+    public:
+
+    typedef std::shared_ptr<ColumnMerger>   Ptr;
+    const ColumnHealthCheck::Ptr            col_checker;
+    std::vector<Range::Ptr>                 m_ranges;
+    DB::Cells::Result                       cells;
+
+    ColumnMerger(const ColumnHealthCheck::Ptr& col_checker,
+                 std::vector<Range::Ptr>&& ranges) noexcept;
+
+    virtual ~ColumnMerger() { }
+
+    void run_master();
+
+    void run();
+
+    void completion();
+
+    class RangesMerger final
+        : public std::enable_shared_from_this<RangesMerger> {
+      public:
+
+      typedef std::shared_ptr<RangesMerger>   Ptr;
+      const ColumnMerger::Ptr                 col_merger;
+
+      RangesMerger(const ColumnMerger::Ptr& col_merger,
+                   std::vector<Range::Ptr>&& ranges) noexcept;
+
+      virtual ~RangesMerger() { }
+
+      void run();
+
+      void handle(const Range::Ptr& range, int err, bool empty);
+
+      private:
+      Core::MutexSptd           m_mutex;
+      int                       m_err;
+      std::vector<Range::Ptr>   m_ranges;
+      std::vector<Range::Ptr>   m_ready;
+    };
+
+    private:
+    Core::MutexSptd                 m_mutex;
+    std::vector<RangesMerger::Ptr>  m_mergers;
+  };
 
 
 
