@@ -449,6 +449,12 @@ size_t Fragments::cells_count(bool only_current) {
   return count;
 }
 
+bool Fragments::empty() {
+  std::shared_lock lock1(m_mutex);
+  std::shared_lock lock2(m_mutex_cells);
+  return Vec::empty() && m_cells.empty();
+}
+
 size_t Fragments::size() {
   std::shared_lock lock(m_mutex);
   return Vec::size();

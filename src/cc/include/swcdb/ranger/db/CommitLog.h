@@ -92,6 +92,8 @@ class Fragments final : private std::vector<Fragment::Ptr> {
 
   size_t cells_count(bool only_current = false);
 
+  bool empty();
+
   size_t size();
 
   size_t size_bytes(bool only_loaded=false);
