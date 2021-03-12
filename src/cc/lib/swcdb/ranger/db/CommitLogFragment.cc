@@ -270,7 +270,9 @@ void Fragment::write(int err, uint8_t blk_replicas, int64_t blksz,
     Env::FsInterface::fs()->write(
       [frag=ptr(), blk_replicas, blksz, buff_write, sem]
       (int err, const FS::SmartFd::Ptr&) {
-        frag->write(err, blk_replicas, blksz, buff_write, sem);
+        Env::Rgr::post([=](){
+          frag->write(err, blk_replicas, blksz, buff_write, sem);
+        });
       },
       m_smartfd, blk_replicas, blksz, *buff_write.get()
     );
