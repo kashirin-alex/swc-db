@@ -154,8 +154,14 @@ CompactRange::Ptr CompactRange::shared() {
 }
 
 void CompactRange::initialize() {
+  // sync processing state
   range->compacting(Range::COMPACT_APPLYING);
-  range->blocks.wait_processing(); // sync processing state
+  if(!range->blocks.wait_processing(Time::now_ns() + 60000000000)) {
+    SWC_LOGF(LOG_WARN,
+      "COMPACT-ERROR cancelled %lu/%lu waited 1-minute for processing",
+      range->cfg->cid, range->rid);
+    return compactor->compacted(shared(), range);
+  }
 
   if(range->blocks.commitlog.cells_count(true))
     range->blocks.commitlog.commit_new_fragment(true);

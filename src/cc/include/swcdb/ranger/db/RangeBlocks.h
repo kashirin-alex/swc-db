@@ -15,14 +15,14 @@ typedef Fragments*  FragmentsPtr;
 #include "swcdb/ranger/db/RangeBlockLoader.h"
 #include "swcdb/ranger/db/RangeData.h"
 
-namespace SWC { namespace Ranger { 
+namespace SWC { namespace Ranger {
 
 
 class Blocks final {
   public:
   typedef Blocks* Ptr;
 
-  // scan >> blk match >> load-cs + load+logs 
+  // scan >> blk match >> load-cs + load+logs
 
   RangePtr              range;
   CommitLog::Fragments  commitlog;
@@ -41,7 +41,7 @@ class Blocks final {
   Ptr ptr();
 
   ~Blocks();
-  
+
   void schema_update();
 
   void processing_increment();
@@ -51,15 +51,15 @@ class Blocks final {
   void load(int& err);
 
   void unload();
-  
+
   void remove(int& err);
-  
+
   void expand(DB::Cells::Interval& intval);
 
   void expand_and_align(DB::Cells::Interval& intval);
 
   void apply_new(int &err,
-                CellStore::Writers& w_cellstores, 
+                CellStore::Writers& w_cellstores,
                 CommitLog::Fragments::Vec& fragments_old);
 
   void add_logged(const DB::Cells::Cell& cell);
@@ -82,7 +82,7 @@ class Blocks final {
 
   bool processing() noexcept;
 
-  void wait_processing();
+  bool wait_processing(int64_t quit_time=0);
 
   void print(std::ostream& out, bool minimal);
 
@@ -91,7 +91,7 @@ class Blocks final {
   size_t _size();
 
   size_t _size_bytes();
-  
+
   bool _processing() const noexcept;
 
   void _clear();
@@ -108,7 +108,7 @@ class Blocks final {
   Block::Ptr                m_block;
   std::vector<Block::Ptr>   m_blocks_idx;
   Core::Atomic<size_t>      m_processing;
-  
+
 
 };
 

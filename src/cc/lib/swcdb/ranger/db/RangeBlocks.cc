@@ -314,12 +314,26 @@ bool Blocks::processing() noexcept {
   return busy;
 }
 
-void Blocks::wait_processing() {
+bool Blocks::wait_processing(int64_t quit_time) {
   do {
-    while(processing() || commitlog.processing() || cellstores.processing())
+    while(processing() || commitlog.processing() || cellstores.processing()) {
+      if(quit_time && quit_time < Time::now_ns()) {
+        SWC_LOG_OUT(LOG_WARN,
+          SWC_LOG_PRINTF(
+            "Blocks wait-processing quit %lu/%lu "
+            "blocks=%d commitlog=%d cellstores=%d",
+            range->cfg->cid, range->rid,
+            processing(), commitlog.processing(), cellstores.processing()
+          );
+          range->print(SWC_LOG_OSTREAM << '\n', false);
+        );
+        return false;
+      }
       std::this_thread::sleep_for(std::chrono::microseconds(50));
+    }
     std::this_thread::yield();
   } while(processing() || commitlog.processing() || cellstores.processing());
+  return true;
 }
 
 void Blocks::print(std::ostream& out, bool minimal) {
