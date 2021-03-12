@@ -1,0 +1,43 @@
+{
+  "name": "SWC-DB© (Super Wide Column Database)",
+  "short_name": "www.swcdb.org",
+  "theme_color": "#2980b9",
+  "background_color": "#fcfcfc",
+  "display": "fullscreen",
+  "orientation": "portrait",
+  "Scope": "/",
+  "start_url": "https://www.swcdb.org",
+  "icons": [
+    {
+      "src": "https://www.swcdb.org/favicon.ico",
+      "sizes": "48x48",
+      "type": "image/x-icon"
+    },
+    {
+        "src": "https://www.swcdb.org/android-chrome-192x192.png",
+        "type": "image/png",
+        "sizes": "192x192"
+    },
+    {
+        "src": "https://www.swcdb.org/apple-touch-icon.png",
+        "type": "image/png",
+        "sizes": "180x180"
+    },
+    {
+        "src": "https://www.swcdb.org/android-chrome-384x384.png",
+        "type": "image/png",
+        "sizes": "384x384"
+    },
+    {
+        "src": "https://www.swcdb.org/safari-pinned-tab.svg",
+        "type": "image/svg+xml",
+        "sizes": "500x500"
+    },
+    {
+        "src": "https://www.swcdb.org/favicon.svg",
+        "type": "image/svg+xml",
+        "sizes": "16x16 24x24 32x32 64x64"
+    }
+],
+  "splash_pages": null
+}

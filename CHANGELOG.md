@@ -9,7 +9,24 @@
 
 ### [SWC-DB master](https://github.com/kashirin-alex/swc-db/tree/master) (upcoming-release)
 
-
+    added Comm::Protocol::Rgr::Params::RangeUnoad.h
+    changed RANGE_UNLOAD command's req/rsp with RangeUnoad params
+    added DB::Types::MngrRange::State::MERGE
+    added class Comm::Protocol::Rgr::Params::RangeIsLoadedRsp
+    changed RANGE_IS_LOADED command's rsp with RangeIsLoadedRsp params
+    added Manager Request Comm::Protocol::Rgr::Req::RangeUnoadForMerge
+    moved Ranger::Range::{CELLSTORES_DIR,LOG_DIR,RANGE_FILE} to DB::RangeBase
+    added Ranger CompactRange cond. split immediate if size_bytes > cfg-cs-size
+    added Manager ColumnHealthCheck sub-classes ColumnMerger & RangesMerger
+    added void Manager::Rangers::wait_health_check(cid_t cid)
+    added Ranger Range at update-schema cond. compact if TTL changed from None
+    added bool Ranger::CommitLog::Fragments::empty()
+    added Ranger::Blocks::reset_blocks()
+    removed 0-bytes case handling from Ranger::Blocks::release(size_t bytes)
+    added quit-time option for Ranger::Blocks::wait_processing(int64_t ns=0)
+    fixed FS IO handlers exhaustion in Ranger::CommitLog::Fragment::write
+    fixed libswcdb_core queue test, front access failure at one-thread run
+    resolved issue #3 Merge of empty Range
 
 [_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.4.18...master)
 ******
@@ -73,10 +90,10 @@
 
 ### [SWC-DB v0.4.16](https://github.com/kashirin-alex/swc-db/releases/tag/v0.4.16) (2021-02-05)
 
-    added CXX compiler Warning flags: 
+    added CXX compiler Warning flags:
         -Wpedantic -Wnon-virtual-dtor -Wcast-align
     added CXX compiler Warning flags with relaxed case of -Wno-error=*:
-        -Wnoexcept -Wsuggest-override -Wuseless-cast -Wold-style-cast 
+        -Wnoexcept -Wsuggest-override -Wuseless-cast -Wold-style-cast
         -Wnull-dereference -Wstrict-null-sentinel -Wzero-as-null-pointer-constant
         -Wduplicated-cond -Wduplicated-branches -Wlogical-op
     changed to comply with added warning flags by adjustments and fixes
@@ -120,7 +137,7 @@
     updated for ASIO 1.18.1 version
     removed BitFieldInt<T, SZ> destructor
     added Serialization::fixed_vi_i{24,32,64} consumes length-byte + actual
-    added Serial Field LIST_BYTES in DB::(Specs,Cell}::Serial::Value 
+    added Serial Field LIST_BYTES in DB::(Specs,Cell}::Serial::Value
     added constructor DB::Specs::Interval(Types::Column col_type)
     added support for multiple DB::Specs::Value & added class Specs::Values
     added specialized Specs::Value::is_matching_{plain, serial, counter}
@@ -214,7 +231,7 @@
     changed Query::Select into Single Scanner better failure-tolerance handling
         fixes Query::Select scan at offset over shutdowns
     added support for DB::Specs::Interval to work with several keys-intervals
-        added file & calss DB::Specs::KeyIntervals 
+        added file & calss DB::Specs::KeyIntervals
         changed DB::Specs::Interval key_{start,finish} to KeyIntervals
         extended client::SQL::QuerySelect parser
         added struct SpecKeyInterval to Thrift Service
@@ -257,7 +274,7 @@
     added Ranger CommitLog configurable properties:
         g_i8 swc.rgr.Range.CommitLog.Compact.cointervaling
         g_i8 swc.rgr.Range.CommitLog.Fragment.preload
-    added log_compact_cointervaling & log_fragment_preload to: 
+    added log_compact_cointervaling & log_fragment_preload to:
         DB::Schema, Thrift::Service::Schema
     changed CommitLog::Compact & BlockLoader to work with Ranger cfg values
     added SQL Schema Syntax support for log_compact & log_preload
@@ -360,8 +377,8 @@
     added Build-Config definer SWC_DEFAULT_ENCODER=PLAIN|ZLIB|SNAPPY|ZSTD
     added Error::RANGE_BAD_CELLS_INPUT
     added uint32_t cells_added to Protocol::Rgr::Params::RangeQueryUpdateRsp
-    added try block for cell.read in Ranger::Range::run_add_queue 
-    added args uint32_t skip and bool malformed to 
+    added try block for cell.read in Ranger::Range::run_add_queue
+    added args uint32_t skip and bool malformed to
         Mutable::add_raw(const DynamicBuffer&, const Key&, const Key&, ..)
         ColCells::add(const DynamicBuffer&, const Key&, const Key&, ..)
     added case for Error::RANGE_BAD_CELLS_INPUT in client::Query::Update
@@ -462,7 +479,7 @@
 ### [SWC-DB v0.4.7](https://github.com/kashirin-alex/swc-db/releases/tag/v0.4.7) (2020-09-14)
 
     added support for Ceph File System (libswcdb_fs_ceph)
-    changed install only required headers 
+    changed install only required headers
     moved src/cc/etc to src/etc
     added MutableVec source Cells/MutableVec.cc
     renamed MapMutable to MutableMap
@@ -472,7 +489,7 @@
     moved core/sys to common/ & removed target swcdb_core_sys
     added Thrift::SpecSchemas::patterns
     added examples/geospatial_analysis-xyz_and_props
-    added flag DISPLAY_COLUMN to select SQL in shell SWC-DB(client) 
+    added flag DISPLAY_COLUMN to select SQL in shell SWC-DB(client)
     added Shell_DbClient.cc source file
     added Java package org.swcdb.thrift
     added Thrift Service sources for .NET Standard
@@ -481,7 +498,7 @@
     added size_t size_bytes_enc(bool) Ranger::{CellStore::{Read,Block::Read}}
     fixed chk_align instructions in Mutable::scan_version_multi
     improved Mutable::_narrow with consideration on max_revs
-    added config option swc.rgr.ram.reserved.percent 
+    added config option swc.rgr.ram.reserved.percent
     added function with registered mem usage to Resources class
     added LOG_WARN at Low-Memory state to class Resources
     changed set_option tcp::no_delay at ConnHandler constructor
@@ -489,11 +506,11 @@
     switched ConfigSSL::verify to asio::ssl::host_name_verification
     changed ConnHandlerSSL::handshake_{clt,srv} to handshake(handshake_type,.)
     added to configuration files default specialization of 'swc.logging.level'
-    added Serialization::{encode,decode,length}_bytes 
+    added Serialization::{encode,decode,length}_bytes
     removed Serialization::{encode,decode,length}_{str,vstr}
     optimized/fixed fletcher32 checksum 8-bit by 16-bit
     added fs-TYPE initial shell CLI & added 'ls'/'list' command
-    added size_of_internal() to 
+    added size_of_internal() to
       DB::Specs::{Interval,Key,Interval}
       DB::Cells::{MutableVec,Mutable,Interval,KeyVec}
       Ranger::Range::Block
@@ -504,18 +521,18 @@
     removed DynamicBuffer and StaticBuffer classes and files
     changed Buffer::ensure by actual size expected to be required
     changed client::Query::Select response_partial call via client::default_io
-    added test integration/utils/utils_shell_dbclient 
+    added test integration/utils/utils_shell_dbclient
     added mandatory __attribute__((optimize("-O3")) in DB::KeySeq
     changed Ranger Log::Compact max workers by half of hw_concurrency
     added separate Mutex for Ranger::Block::m_key_end
-    added bool Ranger::Column/s::m_releasing checking 
+    added bool Ranger::Column/s::m_releasing checking
     added Ranger request profiling with block locate time
-    added Ranger Block::ScanState 
+    added Ranger Block::ScanState
     change Ranger Blocks::scan preload Block only at prior Block QUEUED
     fixed remain buffer in DB::Cell::KeyVec::decode
     fixed SQL list-columns parse by combo CID/NAME/PATTERN
     added function Resources::available_{cpu_mhz, mem_mb}()
-    added Protocol::Rgr::Params::ReportResRsp 
+    added Protocol::Rgr::Params::ReportResRsp
     added Ranger report handler case for function RESOURCES
     added Manager get next-Ranger for range-assignment by Resources load_scale
     added Ranger shell CLI command "report-resources" & extended "report"
@@ -527,15 +544,15 @@
     added Manager::MngrRole methods get_states & get_inchain_endpoint
     added Protocol::Params::Report::RspManagersStatus
     added request Protocol::Mngr::Req::ManagersStatus
-    added Manager report handler case for function MANAGERS_STATUS 
+    added Manager report handler case for function MANAGERS_STATUS
     added Manager shell CLI command 'status' for managers reporting
-    fixed Manager standalone RANGERS role 
+    fixed Manager standalone RANGERS role
     improved Managers roles executions & role changes
     fixed Ranger CommitLogCompact call 'finished_write' on error
     changed cases of asio::post on Env::IoCtx via Env::IoCtx::post
-    changed Ranger asio::post to use RangerEnv via maintenance_post  
-    added Manager report handler case for function CLUSTER_STATUS 
-    added Manager shell CLI command "cluster_status" 
+    changed Ranger asio::post to use RangerEnv via maintenance_post
+    added Manager report handler case for function CLUSTER_STATUS
+    added Manager shell CLI command "cluster_status"
     added swcdb_cluster task wait-ready
     added config options:
       swc.mngr.column.health.interval.check
@@ -570,12 +587,12 @@
     changed serialization to vi32/64 in FS::Protocol::Params
     added necessary try blocks in FS::Protocol::Req for Params::decode
     added BlockLoader fragment loaded state cond
-    added uint8_t CellStore::Block::Header::is_any (ANY_BEGIN,ANY_END) 
+    added uint8_t CellStore::Block::Header::is_any (ANY_BEGIN,ANY_END)
     added possible early-split in CompactRange
     fixed SWC_LOG_OUT & reduced inlined-inst in MACROs (binaries less ~%1)
     deprecated most of to_string functions & added print(std::ostream&)
     added class Ranger::RangeSplit
-    added immediate-split in CompactRange 
+    added immediate-split in CompactRange
     added cpu MHz in sys/Rsources.h fallback by /proc/cpuinfo
     added Compaction::m_compacting keep shared use-count +1 positive
     added cmake MACRO INSTALL_LIBS & cmake opt. SWC_INSTALL_DEP_LIBS=OFF/ON
