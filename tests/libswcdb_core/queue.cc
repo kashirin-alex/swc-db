@@ -114,7 +114,7 @@ struct Test {
     sem_consumer.release();
     sem_consumer.wait_all();
 
-    auto v = queue.front();
+    typename QueueT::value_type v;
     for(;;) {
       auto ts = Time::now_ns();
       if(!queue.pop(&v))

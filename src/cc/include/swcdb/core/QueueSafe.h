@@ -20,6 +20,8 @@ class QueueSafe : private std::queue<ItemT> {
 
   public:
 
+  typedef ItemT  value_type;
+
   explicit QueueSafe() noexcept { }
 
   ~QueueSafe() { }

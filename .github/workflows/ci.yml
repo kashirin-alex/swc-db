@@ -25,7 +25,7 @@ jobs:
         O_LEVEL:      ['0', '1', '2', '3', '4', '5', '6']
         IMPL_SOURCE:  ['OFF', 'ON']
         THRIFT:       ['0.14.0']
-        TEST:         ['OFF']
+        TEST:         [1]
         exclude:
           - compiler: clang++-10
             O_LEVEL:  5
@@ -33,9 +33,9 @@ jobs:
             O_LEVEL:  6
 
     runs-on: ${{ matrix.runs-on }}
-    
+
     name: ${{ matrix.runs-on }} ${{ matrix.compiler }} O=${{ matrix.O_LEVEL }} IMPL=${{ matrix.IMPL_SOURCE }} ${{ matrix.build_type }}
-    
+
     env:
       CXX: ${{ matrix.compiler }}
       CXXFLAGS: ''
@@ -58,7 +58,7 @@ jobs:
     - name: Install Dependencies
       run: |
         git clone --branch asio-1-18-1 https://github.com/chriskohlhoff/asio.git
-        if [[ ${{ matrix.runs-on }} =~ ^ubuntu-* ]]; then 
+        if [[ ${{ matrix.runs-on }} =~ ^ubuntu-* ]]; then
           # sudo apt-get update -y
           # sudo apt-get upgrade -y
           # CORE-PREREQUISITES
@@ -72,8 +72,8 @@ jobs:
             libssl-dev \
             libreadline-dev
           #
-        fi        
-        if [ ${{ matrix.runs-on }} == 'ubuntu-20.04' ]; then 
+        fi
+        if [ ${{ matrix.runs-on }} == 'ubuntu-20.04' ]; then
           # THRIFT-PREREQUISITES
           sudo apt-get install -y \
             libboost-math-dev \
@@ -86,13 +86,13 @@ jobs:
             libpam-dev
           #
         fi
-        
+
         # SWCDB_CLUSTER-PREREQUISITES
         sudo apt-get install -y \
           python3-pip
         sudo pip3 install fabric
         #
-        
+
         cmake -E make_directory ${{github.workspace}}/build
 
     - name: Configure
@@ -130,7 +130,7 @@ jobs:
 
 
     - name: Test - libswcdb_core
-      if: ${{ matrix.TEST == 'ON' &&
+      if: ${{ (matrix.TEST == '1' || matrix.TEST == '2') &&
               ((matrix.O_LEVEL == '3' && matrix.IMPL_SOURCE == 'OFF') ||
                (matrix.O_LEVEL == '6' && matrix.IMPL_SOURCE == 'ON'))}}
       working-directory: ${{github.workspace}}/build/tests/libswcdb_core/
@@ -139,7 +139,7 @@ jobs:
 
 
     - name: Test - libswcdb
-      if: ${{ matrix.TEST == 'ON' &&
+      if: ${{ (matrix.TEST == '1' || matrix.TEST == '2') &&
               ((matrix.O_LEVEL == '3' && matrix.IMPL_SOURCE == 'OFF') ||
                (matrix.O_LEVEL == '6' && matrix.IMPL_SOURCE == 'ON'))}}
       working-directory: ${{github.workspace}}/build/tests/libswcdb/
@@ -149,16 +149,16 @@ jobs:
 
     # do as separate tasks
     #- name: Test - integration
-    #  if: ${{ matrix.TEST == 'ON' &&
+    #  if: ${{ matrix.TEST == '2' &&
     #          ((matrix.O_LEVEL == '3' && matrix.IMPL_SOURCE == 'OFF') ||
     #           (matrix.O_LEVEL == '6' && matrix.IMPL_SOURCE == 'ON'))}}
     #  working-directory: ${{github.workspace}}/build/tests/integration/
     #  shell: bash
     #  run: ctest --output-on-failure -C ${{ matrix.build_type }}
-    
+
 
     - name: Test - integration - swcdb_cluster
-      if: ${{ matrix.TEST == 'ON' &&
+      if: ${{ matrix.TEST == '2' &&
               ((matrix.O_LEVEL == '3' && matrix.IMPL_SOURCE == 'OFF') ||
                (matrix.O_LEVEL == '6' && matrix.IMPL_SOURCE == 'ON'))}}
       shell: bash
@@ -168,7 +168,7 @@ jobs:
         /opt/swcdb/sbin/swcdb_cluster stop
 
     - name: Test - integration - comm
-      if: ${{ matrix.TEST == 'ON' &&
+      if: ${{ matrix.TEST == '2' &&
               ((matrix.O_LEVEL == '3' && matrix.IMPL_SOURCE == 'OFF') ||
                (matrix.O_LEVEL == '6' && matrix.IMPL_SOURCE == 'ON'))}}
       working-directory: ${{github.workspace}}/build/tests/integration/comm/
@@ -176,7 +176,7 @@ jobs:
       run: ctest --output-on-failure -C ${{ matrix.build_type }}
 
     - name: Test - integration - fs
-      if: ${{ matrix.TEST == 'ON' &&
+      if: ${{ matrix.TEST == '2' &&
               ((matrix.O_LEVEL == '3' && matrix.IMPL_SOURCE == 'OFF') ||
                (matrix.O_LEVEL == '6' && matrix.IMPL_SOURCE == 'ON'))}}
       working-directory: ${{github.workspace}}/build/tests/integration/fs/
@@ -184,15 +184,15 @@ jobs:
       run: ctest --output-on-failure -C ${{ matrix.build_type }}
 
     - name: Test - integration - manager
-      if: ${{ matrix.TEST == 'ON' &&
+      if: ${{ matrix.TEST == '2' &&
               ((matrix.O_LEVEL == '3' && matrix.IMPL_SOURCE == 'OFF') ||
                (matrix.O_LEVEL == '6' && matrix.IMPL_SOURCE == 'ON'))}}
       working-directory: ${{github.workspace}}/build/tests/integration/manager/
       shell: bash
       run: ctest --output-on-failure -C ${{ matrix.build_type }}
-  
+
     - name: Test - integration - ranger
-      if: ${{ matrix.TEST == 'ON' &&
+      if: ${{ matrix.TEST == '2' &&
               ((matrix.O_LEVEL == '3' && matrix.IMPL_SOURCE == 'OFF') ||
                (matrix.O_LEVEL == '6' && matrix.IMPL_SOURCE == 'ON'))}}
       working-directory: ${{github.workspace}}/build/tests/integration/ranger/
@@ -200,7 +200,7 @@ jobs:
       run: ctest --output-on-failure -C ${{ matrix.build_type }}
 
     - name: Test - integration - client
-      if: ${{ matrix.TEST == 'ON' &&
+      if: ${{ matrix.TEST == '2' &&
               ((matrix.O_LEVEL == '3' && matrix.IMPL_SOURCE == 'OFF') ||
                (matrix.O_LEVEL == '6' && matrix.IMPL_SOURCE == 'ON'))}}
       working-directory: ${{github.workspace}}/build/tests/integration/client/
@@ -208,7 +208,7 @@ jobs:
       run: ctest --output-on-failure -C ${{ matrix.build_type }}
 
     - name: Test - integration - utils
-      if: ${{ matrix.TEST == 'ON' &&
+      if: ${{ matrix.TEST == '2' &&
               ((matrix.O_LEVEL == '3' && matrix.IMPL_SOURCE == 'OFF') ||
                (matrix.O_LEVEL == '6' && matrix.IMPL_SOURCE == 'ON'))}}
       working-directory: ${{github.workspace}}/build/tests/integration/utils/
@@ -216,7 +216,7 @@ jobs:
       run: ctest --output-on-failure -C ${{ matrix.build_type }}
 
     - name: Test - integration - thrift
-      if: ${{ matrix.TEST == 'ON' &&
+      if: ${{ matrix.TEST == '2' &&
               ((matrix.O_LEVEL == '3' && matrix.IMPL_SOURCE == 'OFF') ||
                (matrix.O_LEVEL == '6' && matrix.IMPL_SOURCE == 'ON'))}}
       working-directory: ${{github.workspace}}/build/tests/integration/thrift/

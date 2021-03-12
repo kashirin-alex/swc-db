@@ -15,6 +15,8 @@ template <typename PtrT>
 class QueuePointer : private MutexAtomic {
   public:
 
+  typedef PtrT  value_type;
+
   struct Pointer {
     Pointer() noexcept : _other(nullptr) { }
     PtrT _other;
