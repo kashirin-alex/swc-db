@@ -284,37 +284,24 @@ size_t Blocks::size_bytes_total(bool only_loaded) {
 
 size_t Blocks::release(size_t bytes) {
   size_t released = cellstores.release(bytes);
-  if(!bytes || released < bytes) {
-
-    released += commitlog.release(bytes ? bytes-released : bytes);
-    if(!bytes || released < bytes) {
-      bool support;
-      bool ok;
-      if(bytes) {
-        ok = m_mutex.try_full_lock(support);
-      } else {
-        support = m_mutex.lock();
-        ok = true;
+  if(released < bytes) {
+    released += commitlog.release(bytes - released);
+    bool support;
+    if(released < bytes && m_mutex.try_full_lock(support)) {
+      for(Block::Ptr blk=m_block; blk; blk=blk->next) {
+        released += blk->release();
+        if(released >= bytes)
+          break;
       }
-      if(ok) {
-        for(Block::Ptr blk=m_block; blk; blk=blk->next) {
-          released += blk->release();
-          if(bytes && released >= bytes)
-            break;
-        }
-        m_mutex.unlock(support);
-      }
+      m_mutex.unlock(support);
     }
   }
-  if(!bytes && !processing()) {
-    Core::MutexSptd::scope lock(m_mutex);
-    _clear();
-    bytes = 0;
-  }
-  //else if(_size() > 1000)
-  // merge in pairs down to 1000 blks
-
   return released;
+}
+
+void Blocks::reset_blocks() {
+  Core::MutexSptd::scope lock(m_mutex);
+  _clear();
 }
 
 bool Blocks::processing() noexcept {

@@ -18,9 +18,9 @@ ColumnPtr Columns::get_column(const cid_t cid) {
 
 RangePtr Columns::get_range(int &err, const cid_t cid, const rid_t rid) {
   ColumnPtr col = get_column(cid);
-  if(!col) 
+  if(!col)
     return nullptr;
-  if(col->removing()) 
+  if(col->removing())
     err = Error::COLUMN_MARKED_REMOVED;
   return err ? nullptr : col->get_range(rid);
 }
@@ -42,12 +42,12 @@ void Columns::get_cids(std::vector<cid_t>& cids) {
     cids.push_back(it->first);
 }
 
-void Columns::load_range(const DB::Schema& schema, 
+void Columns::load_range(const DB::Schema& schema,
                          const Callback::RangeLoad::Ptr& req) {
   int err = Error::OK;
   ColumnPtr col;
-  if(Env::Rgr::is_shuttingdown() || 
-     (Env::Rgr::is_not_accepting() && 
+  if(Env::Rgr::is_shuttingdown() ||
+     (Env::Rgr::is_not_accepting() &&
       DB::Types::MetaColumn::is_data(req->cid))) {
     err = Error::SERVER_SHUTTING_DOWN;
 
@@ -59,7 +59,7 @@ void Columns::load_range(const DB::Schema& schema,
         res.first->second.reset(new Column(req->cid, schema));
       } else if(!res.first->second->ranges_count()) {
         if(res.first->second->cfg->use_count() > 1)
-          SWC_LOGF(LOG_WARN, 
+          SWC_LOGF(LOG_WARN,
                   "Column cid=%lu remained with use-count=%lu, resetting",
                   req->cid, res.first->second->cfg->use_count());
         res.first->second.reset(new Column(req->cid, schema));
@@ -141,8 +141,8 @@ size_t Columns::release(size_t bytes) {
         continue;
       col = it->second;
     }
-    released += col->release(bytes ? bytes-released : bytes);
-    if(bytes && released >= bytes)
+    released += col->release(bytes - released);
+    if(released >= bytes)
       break;
   }
   m_release.stop();
@@ -156,7 +156,7 @@ void Columns::print(std::ostream& out, bool minimal) {
     it->second->print(out, minimal);
     out << ", ";
   }
-  out << "]"; 
+  out << "]";
 }
 
 

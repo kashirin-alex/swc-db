@@ -78,6 +78,8 @@ class Blocks final {
 
   size_t release(size_t bytes=0);
 
+  void reset_blocks();
+
   bool processing() noexcept;
 
   void wait_processing();

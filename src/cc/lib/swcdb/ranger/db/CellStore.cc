@@ -314,7 +314,7 @@ size_t Read::release(size_t bytes) {
   size_t released = 0;
   for(auto blk : blocks) {
     released += blk->release();
-    if(bytes && released >= bytes)
+    if(released >= bytes)
       break;
   }
 

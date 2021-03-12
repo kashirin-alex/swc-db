@@ -175,10 +175,7 @@ uint8_t Compaction::compact(const RangePtr& range) {
 void Compaction::compacted(const CompactRange::Ptr req,
                            const RangePtr& range, bool all) {
   if(all) {
-    range->blocks.release(0);
-    if(range->blocks.size())
-      SWC_LOG_OUT(LOG_ERROR, range->print(SWC_LOG_OSTREAM, false); );
-    SWC_ASSERT(!range->blocks.size());
+    range->blocks.reset_blocks();
 
   } else if(size_t bytes = Env::Rgr::res().need_ram()) {
     range->blocks.release(bytes);

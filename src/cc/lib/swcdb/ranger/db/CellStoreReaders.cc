@@ -73,8 +73,8 @@ size_t Readers::blocks_count() const {
 size_t Readers::release(size_t bytes) {
   size_t released = 0;
   for(auto cs : *this) {
-    released += cs->release(bytes ? bytes-released : bytes);
-    if(bytes && released >= bytes)
+    released += cs->release(bytes - released);
+    if(released >= bytes)
       break;
   }
   return released;

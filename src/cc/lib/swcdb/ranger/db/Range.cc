@@ -77,12 +77,17 @@ void Range::get_interval(DB::Cells::Interval& interval) {
 }
 
 bool Range::can_be_merged() {
-  bool ok;
   {
     Core::MutexAtomic::scope lock(m_mutex_intval);
-    ok = !_is_any_begin();
+    if(_is_any_begin())
+      return false;
   }
-  return ok && !blocks.size_bytes_total(false);
+  if(!blocks.commitlog.empty())
+    return false;
+  std::shared_lock lock(m_mutex);
+  return m_state == State::LOADED &&
+         m_compacting == COMPACT_NONE &&
+        !blocks.cellstores.size_bytes(false);
 }
 
 void Range::_get_interval(DB::Cells::Interval& interval) const {
@@ -877,7 +882,7 @@ void Range::_run_add_queue() {
   DB::Cell::KeyVec align_min;
   DB::Cell::KeyVec align_max;
 
-  _do: while(!m_q_add.empty()) {
+  while(!m_q_add.empty()) {
     {
       std::scoped_lock lock(m_mutex);
       if(m_compacting >= COMPACT_PREPARING) {
@@ -1005,10 +1010,8 @@ void Range::_run_add_queue() {
       blocks.processing_decrement();
   }
 
-  if(m_adding.fetch_sub(1) == 1 && !m_q_add.empty()) {
-    m_adding.fetch_add(1);
-    goto _do;
-  }
+  if(m_adding.fetch_sub(1) == 1 && !m_q_add.empty())
+    run_add_queue();
 }
 
 

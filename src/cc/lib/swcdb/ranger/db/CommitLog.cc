@@ -313,7 +313,7 @@ size_t Fragments::release(size_t bytes) {
 
   for(auto& frag : *this) {
     released += frag->release();
-    if(bytes && released >= bytes)
+    if(released >= bytes)
       break;
   }
   return released;

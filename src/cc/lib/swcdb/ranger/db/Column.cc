@@ -64,9 +64,9 @@ void Column::get_rids(std::vector<rid_t>& rids) {
 }
 
 void Column::schema_update(const DB::Schema& schema) {
-  bool compact = 
+  bool compact =
     cfg->c_versions > schema.cell_versions ||
-    (!cfg->c_ttl && schema.cell_ttl) || 
+    (!cfg->c_ttl && schema.cell_ttl) ||
     cfg->c_ttl > schema.cell_ttl;
   bool and_cells =  cfg->c_versions != schema.cell_versions ||
                     cfg->c_ttl != schema.cell_ttl ||
@@ -125,8 +125,8 @@ size_t Column::release(size_t bytes) {
     }
     if(!range->is_loaded() || range->compacting())
       continue;
-    released += range->blocks.release(bytes ? bytes-released : bytes);
-    if(bytes && released >= bytes)
+    released += range->blocks.release(bytes - released);
+    if(released >= bytes)
       break;
   }
   m_release.stop();
