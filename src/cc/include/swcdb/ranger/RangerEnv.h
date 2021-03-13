@@ -60,6 +60,14 @@ class Rgr final {
     m_env->m_in_process.fetch_add(count);
   }
 
+  static size_t scan_reserved_bytes() {
+    return m_env->m_scan_reserved_bytes;
+  }
+
+  static void scan_reserved_bytes(int64_t bytes) {
+    m_env->m_scan_reserved_bytes.fetch_add(bytes);
+  }
+
   static Rgr* get() {
     return m_env.get();
   }
@@ -135,6 +143,7 @@ class Rgr final {
   Core::AtomicBool                    m_shuttingdown;
   Core::AtomicBool                    m_not_accepting;
   Core::Atomic<int64_t>               m_in_process;
+  Core::Atomic<size_t>                m_scan_reserved_bytes;
 
 };
 

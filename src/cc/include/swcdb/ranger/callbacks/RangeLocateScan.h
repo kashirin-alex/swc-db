@@ -23,7 +23,11 @@ class RangeLocateScan : public ReqScan {
                   const DB::Cell::Key& range_end,
                   const RangePtr& range,
                   uint8_t flags)
-                  : ReqScan(conn, ev, range_begin, range_end),
+                  : ReqScan(
+                      conn, ev,
+                      range_begin, range_end,
+                      range->cfg->block_size()
+                    ),
                     range(range), flags(flags),
                     any_is(range->cfg->range_type != DB::Types::Range::DATA),
                     range_begin(range_begin, false) {

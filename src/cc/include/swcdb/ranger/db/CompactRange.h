@@ -90,7 +90,6 @@ class CompactRange final : public ReqScan {
   Compaction*                     compactor;
   RangePtr                        range;
   const uint32_t                  cs_size;
-  const uint32_t                  blk_size;
   const uint32_t                  blk_cells;
   const DB::Types::Encoder        blk_encoding;
   DB::Cell::Key                   m_required_key_last;

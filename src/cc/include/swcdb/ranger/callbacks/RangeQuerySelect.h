@@ -18,15 +18,14 @@ class RangeQuerySelect : public ReqScan {
                    const Comm::Event::Ptr& ev,
                    const DB::Specs::Interval& req_spec,
                    const RangePtr& range)
-                  : ReqScan(conn, ev, req_spec),
+                  : ReqScan(conn, ev, req_spec, range->cfg->block_size()),
                     range(range) {
     if(!spec.values.empty())
       spec.values.col_type = range->cfg->column_type();
     if(!spec.flags.max_versions)
       spec.flags.max_versions = range->cfg->cell_versions();
-    if(!spec.flags.max_buffer ||
-        spec.flags.max_buffer > range->cfg->block_size())
-      spec.flags.max_buffer = range->cfg->block_size();
+    if(!spec.flags.max_buffer || spec.flags.max_buffer > blk_size)
+      spec.flags.max_buffer = blk_size;
 
     spec.apply_possible_range_pure();
     /** options not-useful for block-locator or a mid-stop

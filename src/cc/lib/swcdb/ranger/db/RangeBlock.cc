@@ -130,7 +130,10 @@ bool Block::includes_end(const DB::Specs::Interval& spec) const {
 }
 
 void Block::preload() {
-  Env::Rgr::post([this](){ scan(std::make_shared<ReqScanBlockLoader>());} );
+  Env::Rgr::post([this](){
+    scan(std::make_shared<ReqScanBlockLoader>(
+      blocks->range->cfg->block_size()));
+  });
 }
 
 bool Block::add_logged(const DB::Cells::Cell& cell) {

@@ -139,7 +139,7 @@ void Blocks::scan(ReqScan::Ptr req, Block::Ptr blk_ptr) {
     return;
   }
 
-  const size_t need = range->cfg->block_size() * 4;
+  const size_t need = Env::Rgr::scan_reserved_bytes();
 
   for(Block::Ptr blk = nullptr; ; blk = nullptr) {
     int64_t ts = Time::now_ns();
@@ -242,7 +242,8 @@ bool Blocks::_split(Block::Ptr blk, bool loaded) {
       if(!blk->loaded()) {
         if((preload = !commitlog.is_compacting() &&
                   range->is_loaded() && range->compacting() &&
-                  !Env::Rgr::res().need_ram(range->cfg->block_size() * 10)))
+                  !Env::Rgr::res().need_ram(
+                    Env::Rgr::scan_reserved_bytes() * 3)))
           blk->processing_increment();
         break;
       }

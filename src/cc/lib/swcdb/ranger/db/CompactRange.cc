@@ -117,10 +117,11 @@ struct CompactRange::InBlock final : Core::QueuePointer<InBlock*>::Pointer {
 
 CompactRange::CompactRange(Compaction* compactor, const RangePtr& range,
                            const uint32_t cs_size, const uint32_t blk_size)
-            : ReqScan(ReqScan::Type::COMPACTION, true,
-                      compactor->cfg_read_ahead->get()/2),
+            : ReqScan(
+                ReqScan::Type::COMPACTION, true,
+                compactor->cfg_read_ahead->get()/2, blk_size),
               compactor(compactor), range(range),
-              cs_size(cs_size), blk_size(blk_size),
+              cs_size(cs_size),
               blk_cells(range->cfg->block_cells()),
               blk_encoding(range->cfg->block_enc()),
               m_inblock(new InBlock(range->cfg->key_seq, blk_size)),

@@ -12,7 +12,7 @@
 
 
 namespace SWC { namespace Ranger {
-  
+
 class ReqScan  : public DB::Cells::ReqScan {
   public:
 
@@ -24,32 +24,41 @@ class ReqScan  : public DB::Cells::ReqScan {
 
   typedef std::shared_ptr<ReqScan>  Ptr;
 
-  ReqScan(Type type=Type::QUERY, bool release_block=false, uint8_t readahead=1)
+  ReqScan(Type type=Type::QUERY, bool release_block=false,
+          uint8_t readahead=1, uint32_t blk_size=0)
           noexcept
           : type(type),
             release_block(release_block), readahead(readahead),
+            blk_size(blk_size),
             block(nullptr) {
   }
 
   ReqScan(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev,
-          const DB::Cell::Key& range_begin, const DB::Cell::Key& range_end)
+          const DB::Cell::Key& range_begin, const DB::Cell::Key& range_end,
+          uint32_t blk_size)
           : DB::Cells::ReqScan(conn, ev, range_begin, range_end),
             type(Type::QUERY),
             release_block(false), readahead(0),
+            blk_size(blk_size),
             block(nullptr) {
   }
 
   ReqScan(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev,
-          const DB::Specs::Interval& spec)
+          const DB::Specs::Interval& spec, uint32_t blk_size)
           : DB::Cells::ReqScan(conn, ev, spec),
             type(Type::QUERY),
             release_block(false),
             readahead((!spec.flags.limit || spec.flags.offset)//?>block_cells
                         ? 2 : spec.flags.limit > 1),
+            blk_size(blk_size),
             block(nullptr) {
+    Env::Rgr::scan_reserved_bytes(blk_size * 4);
+    // 4 == (blk + cs-blk + fragments) + intermediate-buffers
   }
 
-  virtual ~ReqScan() { }
+  virtual ~ReqScan() {
+    Env::Rgr::scan_reserved_bytes(-blk_size * 4);
+  }
 
   Ptr get_req_scan() noexcept {
     return std::dynamic_pointer_cast<ReqScan>(shared_from_this());
@@ -59,10 +68,11 @@ class ReqScan  : public DB::Cells::ReqScan {
     return false;
   }
 
-  Type    type;
-  bool    release_block;
-  uint8_t readahead;
-  void*   block;
+  Type            type;
+  bool            release_block;
+  uint8_t         readahead;
+  const uint32_t  blk_size;
+  void*           block;
 };
 
 
@@ -70,7 +80,8 @@ class ReqScan  : public DB::Cells::ReqScan {
 class ReqScanBlockLoader : public ReqScan {
   public:
 
-  ReqScanBlockLoader() noexcept : ReqScan(ReqScan::Type::BLK_PRELOAD) {
+  ReqScanBlockLoader(uint32_t blk_size) noexcept
+      : ReqScan(ReqScan::Type::BLK_PRELOAD, false, 1, blk_size) {
   }
 
   virtual ~ReqScanBlockLoader() { }
