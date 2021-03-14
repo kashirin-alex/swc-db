@@ -18,30 +18,29 @@ namespace SWC { namespace Core {
 
 // Fletcher 8-bit by 16-bit implementation (32-bit checksum)
 static
-uint32_t fletcher32(const void *data8, size_t len) noexcept
+uint32_t fletcher32(const uint8_t* data, size_t len) noexcept
   SWC_ATTRIBS((SWC_ATTRIB_O3));
 
 SWC_SHOULD_NOT_INLINE
 static
-uint32_t fletcher32(const void *data8, size_t len) noexcept {
+uint32_t fletcher32(const uint8_t* data, size_t len) noexcept {
   uint32_t c0 = 0, c1 = 0;
-
-  const uint16_t* data = static_cast<const uint16_t*>(data8);
-  bool align = len & 0x01;
-  len >>= 1;
-
-  for(uint16_t i; len >= 360; len -= 360) {
-    for(i = 360; i; --i, ++data)
-      c1 += (c0 += *data);
+  for(uint16_t i; len >= 720; len -= 720) {
+    for(i = 360; i; --i, ++data) {
+      c0 += uint16_t(*data) << 8;
+      c1 += (c0 += *++data);
+    }
     c0 %= 65535;
     c1 %= 65535;
   }
 
-  if(align || len) {
-    for(;len; ++data, --len)
+  if(len) {
+    for(;len > 1; ++data, len-=2) {
+      c0 += uint16_t(*data) << 8;
+      c1 += (c0 += *++data);
+    }
+    if(len)
       c1 += (c0 += *data);
-    if(align)
-      c1 += (c0 += *reinterpret_cast<const uint8_t*>(data));
     c0 %= 65535;
     c1 %= 65535;
   }
