@@ -179,10 +179,10 @@ EndPoints Resolver::get_endpoints(uint16_t defaul_port,
     hints.ai_flags = 0; //AI_CANONNAME | AI_ALL | AI_ADDRCONFIG;
 
     errno = 0;
-    int x =  getaddrinfo(hostname.c_str(), nullptr, &hints, &result);
-    if(x) {
-      x = x == EAI_SYSTEM ? errno : (SWC_ERRNO_EAI_BEGIN + (-x));
-      SWC_THROWF(x, "Bad addr-info for host: %s", hostname.c_str());
+    int err =  getaddrinfo(hostname.c_str(), nullptr, &hints, &result);
+    if(err) {
+      err = err == EAI_SYSTEM ? errno : (SWC_ERRNO_EAI_BEGIN + (-err));
+      SWC_THROWF(err, "Bad addr-info for host: %s", hostname.c_str());
     }
 
     for (rp = result; rp != nullptr; rp = rp->ai_next) {
@@ -205,12 +205,15 @@ EndPoints Resolver::get_endpoints(uint16_t defaul_port,
          break;
       }
       if(!s) {
-        x = SWC_ERRNO_EAI_BEGIN + (-EAFNOSUPPORT);
-        SWC_THROWF(x, "Bad IP for host: %s", hostname.c_str());
+        err = SWC_ERRNO_EAI_BEGIN + (-EAFNOSUPPORT);
+        break;
       }
 
       endpoints.emplace_back(asio::ip::make_address(c_addr), port);
     }
+    freeaddrinfo(result);
+    if(err)
+      SWC_THROWF(err, "Bad IP for host: %s", hostname.c_str());
   }
 
   if(srv && endpoints.empty()) {
@@ -326,17 +329,18 @@ void Resolver::get_local_networks(int& err,
     }
     if(!s) {
       err = SWC_ERRNO_EAI_BEGIN + (-EAFNOSUPPORT);
-      return;
+      break;
     }
     if(ec) {
       err = ec.value();
-      return;
+      break;
     }
     if(errno) {
       err = errno;
-      return;
+      break;
     }
   }
+  freeaddrinfo(result);
 }
 
 bool Resolver::is_network(const EndPoint& endpoint,
