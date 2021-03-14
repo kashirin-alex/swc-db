@@ -164,7 +164,7 @@ void Interface::get_structured_ids(int& err, const std::string& base_path,
     if(!entry.is_dir) continue;
 
     std::string id_name = base_id;
-    if(entry.name.back() == id_split_last){
+    if(entry.name.back() == ID_SPLIT_LAST) {
       id_name.append(entry.name.substr(0, entry.name.length()-1));
       try {
         entries.push_back(strtoll(id_name.c_str(), nullptr, 0));
@@ -176,7 +176,7 @@ void Interface::get_structured_ids(int& err, const std::string& base_path,
     }
 
     std::string new_base_path = base_path;
-    new_base_path.append("/");
+    new_base_path += '/';
     new_base_path.append(entry.name);
     id_name.append(entry.name);
     get_structured_ids(err, new_base_path, entries, id_name);
@@ -500,20 +500,15 @@ void Interface::close(const Callback::CloseCb_t& cb,
 
 
 void set_structured_id(const std::string& number, std::string& s) {
-  if(number.length() <= id_split_len) {
-    s.append(number);
-    s.append({id_split_last});
-  } else {
-    int len = number.length()-id_split_len;
-    int n=0;
-    for(; n<len;){
-      s.append(std::string(number, n, id_split_len));
-      s.append("/");
-      n += id_split_len;
-    }
-    s.append(std::string(number, n, id_split_len));
-    s.append({id_split_last});
+  auto it = number.cbegin();
+  for(size_t n = 0;
+      n + ID_SPLIT_LEN < number.length();
+      n += ID_SPLIT_LEN, it += ID_SPLIT_LEN) {
+    s.append(it, it + ID_SPLIT_LEN);
+    s += '/';
   }
+  s.append(it, number.cend());
+  s += ID_SPLIT_LAST;
 }
 
 } // namespace FS

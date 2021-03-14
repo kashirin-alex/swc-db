@@ -37,8 +37,8 @@
 namespace SWC { namespace FS {
 
 typedef std::vector<int64_t> IdEntries_t;
-const int   id_split_len = 3;
-const char  id_split_last = 'g';
+const int   ID_SPLIT_LEN  = 3;
+const char  ID_SPLIT_LAST = 'g';
 
 /// Interface to FileSystems
 
