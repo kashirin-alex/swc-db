@@ -57,7 +57,11 @@ void Mutable::take_sorted(Mutable& other) {
 }
 
 Mutable::~Mutable() {
-  free();
+  for(auto bucket : buckets) {
+    for(auto cell : *bucket)
+      delete cell;
+    delete bucket;
+  }
 }
 
 void Mutable::free() {
