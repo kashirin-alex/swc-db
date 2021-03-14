@@ -66,7 +66,8 @@ void Key::copy(uint24_t after_idx, const Key& other) {
 }
 
 Key::~Key() {
-  _free();
+  if(own && data)
+    delete [] data;
 }
 
 SWC_SHOULD_INLINE
@@ -251,7 +252,7 @@ void Key::remove(uint32_t idx, bool recursive) {
       data = nullptr;
       size = 0;
     }
-    delete ptr_tmp;
+    delete [] ptr_tmp;
     break;
   }
 }
