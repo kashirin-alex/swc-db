@@ -155,7 +155,7 @@ int run() {
   threads.clear();
 
   SWC_LOG(LOG_INFO, "Exit");
-  //quick_exit(0);
+  std::quick_exit(EXIT_SUCCESS);
 
 
   return 0);

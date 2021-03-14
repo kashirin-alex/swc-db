@@ -80,6 +80,10 @@ const Clients& Clients::ref() noexcept {
   return *m_env.get();
 }
 
+void Clients::reset() noexcept {
+  m_env = nullptr;
+}
+
 Clients::Clients(const client::Clients::Ptr& clients)
           : cfg_send_buff_sz(
               Env::Config::settings()->get<SWC::Config::Property::V_GINT32>(

@@ -21,14 +21,14 @@ namespace Manager {
 
 
 int run() {
-  SWC_TRY_OR_LOG("", 
-  
+  SWC_TRY_OR_LOG("",
+
   auto app_ctx  = std::make_shared<AppContext>();
 
   auto srv = std::make_shared<Comm::server::SerializedServer>(
-    "MANAGER", 
-    Env::Config::settings()->get_i32("swc.mngr.reactors"), 
-    Env::Config::settings()->get_i32("swc.mngr.workers"), 
+    "MANAGER",
+    Env::Config::settings()->get_i32("swc.mngr.reactors"),
+    Env::Config::settings()->get_i32("swc.mngr.workers"),
     "swc.mngr.port",
     app_ctx
   );
@@ -36,7 +36,7 @@ int run() {
   srv->run();
 
   SWC_LOG(LOG_INFO, "Exit");
-  std::quick_exit(0);
+  std::quick_exit(EXIT_SUCCESS);
 
   return 0);
   return 1;

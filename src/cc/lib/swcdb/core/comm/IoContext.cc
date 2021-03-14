@@ -93,6 +93,10 @@ bool IoCtx::stopping() noexcept {
   return !m_env->m_io->running;
 }
 
+void IoCtx::reset() noexcept {
+  m_env = nullptr;
+}
+
 IoCtx::IoCtx(int32_t size)
             : m_io(std::make_shared<Comm::IoContext>("Env", size)) {
 }

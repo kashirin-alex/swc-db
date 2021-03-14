@@ -83,8 +83,12 @@ class FsBroker final {
     m_env = std::make_shared<FsBroker>();
   }
 
-  static SWC::FsBroker::Fds& fds() {
+  static SWC::FsBroker::Fds& fds() noexcept {
     return m_env->m_fds;
+  }
+
+  static void reset() noexcept {
+    m_env = nullptr;
   }
 
   FsBroker() noexcept {}

@@ -54,7 +54,11 @@ class AppContext final : virtual public BrokerIfFactory {
     }
   }
 
-  virtual ~AppContext() { }
+  virtual ~AppContext() {
+    Env::Clients::reset();
+    Env::IoCtx::reset();
+    Env::Config::reset();
+  }
 
   void wait_while_run() {
     std::unique_lock lock_wait(m_mutex);

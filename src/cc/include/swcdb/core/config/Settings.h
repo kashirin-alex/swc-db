@@ -94,11 +94,11 @@ class Config final {
     get()->m_settings->init(argc, argv);
   }
 
-  static void set(Ptr env){
+  static void set(Ptr env) noexcept {
     m_env = env;
   }
 
-  static Ptr get(){
+  static Ptr get() {
     if(!m_env)
       m_env = std::make_shared<Config>();
     return m_env;
@@ -109,7 +109,11 @@ class Config final {
     return m_env->m_settings;
   }
 
-  Config() : m_settings(new SWC::Config::Settings()){}
+  static void reset() noexcept {
+    m_env = nullptr;
+  }
+
+  Config() : m_settings(new SWC::Config::Settings()) { }
 
   ~Config() {
     if(m_settings)

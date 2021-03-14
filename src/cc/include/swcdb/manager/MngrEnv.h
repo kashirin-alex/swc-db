@@ -24,7 +24,7 @@ class Mngr final {
     m_env = std::make_shared<Mngr>(endpoints);
   }
 
-  static Comm::IoContextPtr io() {
+  static Comm::IoContextPtr io() noexcept {
     return m_env->app_io;
   }
 
@@ -34,24 +34,28 @@ class Mngr final {
     m_env->app_io->post(handler);
   }
 
-  static DB::Schemas* schemas() {
+  static DB::Schemas* schemas() noexcept {
     return &m_env->m_schemas;
   }
 
-  static Manager::Columns* columns() {
+  static Manager::Columns* columns() noexcept {
     return &m_env->m_columns;
   }
 
-  static Manager::MngrRole* role() {
+  static Manager::MngrRole* role() noexcept {
     return &m_env->m_role;
   }
 
-  static Manager::Rangers* rangers() {
+  static Manager::Rangers* rangers() noexcept {
     return &m_env->m_rangers;
   }
 
-  static Manager::MngdColumns* mngd_columns() {
+  static Manager::MngdColumns* mngd_columns() noexcept {
     return &m_env->m_mngd_columns;
+  }
+
+  static void reset() noexcept {
+    m_env = nullptr;
   }
 
   static void stop();

@@ -142,7 +142,7 @@ class FsInterface final {
 
   static FS::FileSystem::Ptr fs();
 
-  static void reset();
+  static void reset() noexcept;
 
   FsInterface(FS::Type typ);
 

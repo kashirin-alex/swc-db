@@ -65,6 +65,8 @@ class Clients final {
 
   static const Clients& ref() noexcept;
 
+  static void reset() noexcept;
+
   const SWC::Config::Property::V_GINT32::Ptr      cfg_send_buff_sz;
   const SWC::Config::Property::V_GUINT8::Ptr      cfg_send_ahead;
   const SWC::Config::Property::V_GINT32::Ptr      cfg_send_timeout;

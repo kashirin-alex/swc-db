@@ -107,7 +107,12 @@ class AppContext final : public Comm::AppContext {
     m_srv = srv;
   }
 
-  virtual ~AppContext() { }
+  virtual ~AppContext() {
+    Env::FsBroker::reset();
+    Env::FsInterface::reset();
+    Env::IoCtx::reset();
+    Env::Config::reset();
+  }
 
   void handle(Comm::ConnHandlerPtr conn, const Comm::Event::Ptr& ev) override {
     // SWC_LOG_OUT(LOG_DEBUG, ev->print(SWC_LOG_OSTREAM << "handle: "); );

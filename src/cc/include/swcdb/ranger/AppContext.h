@@ -104,7 +104,13 @@ class AppContext final : public Comm::AppContext {
     m_srv = srv;
   }
 
-  virtual ~AppContext() { }
+  virtual ~AppContext() {
+    Env::Rgr::reset();
+    Env::FsInterface::reset();
+    Env::Clients::reset();
+    Env::IoCtx::reset();
+    Env::Config::reset();
+  }
 
 
   void handle(Comm::ConnHandlerPtr conn, const Comm::Event::Ptr& ev) override {
@@ -227,7 +233,7 @@ class AppContext final : public Comm::AppContext {
 
     if(!m_srv) {
       SWC_LOG(LOG_INFO, "Exit");
-      std::quick_exit(0);
+      std::quick_exit(EXIT_SUCCESS);
     }
 
 

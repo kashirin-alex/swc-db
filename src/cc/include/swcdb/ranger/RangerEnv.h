@@ -40,43 +40,43 @@ class Rgr final {
 
   static void wait_if_in_process();
 
-  static Common::Files::RgrData* rgr_data() {
+  static Common::Files::RgrData* rgr_data() noexcept {
     return &m_env->m_rgr_data;
   }
 
-  static bool is_not_accepting() {
+  static bool is_not_accepting() noexcept {
     return m_env->m_not_accepting;
   }
 
-  static bool is_shuttingdown() {
+  static bool is_shuttingdown() noexcept {
     return m_env->m_shuttingdown;
   }
 
-  static int64_t in_process() {
+  static int64_t in_process() noexcept {
     return m_env->m_in_process;
   }
 
-  static void in_process(int64_t count) {
+  static void in_process(int64_t count) noexcept {
     m_env->m_in_process.fetch_add(count);
   }
 
-  static size_t scan_reserved_bytes() {
+  static size_t scan_reserved_bytes() noexcept {
     return m_env->m_scan_reserved_bytes;
   }
 
-  static void scan_reserved_bytes(int64_t bytes) {
+  static void scan_reserved_bytes(int64_t bytes) noexcept {
     m_env->m_scan_reserved_bytes.fetch_add(bytes);
   }
 
-  static Rgr* get() {
+  static Rgr* get() noexcept {
     return m_env.get();
   }
 
-  static Comm::IoContextPtr maintenance_io() {
+  static Comm::IoContextPtr maintenance_io() noexcept {
     return m_env->mnt_io;
   }
 
-  static Comm::IoContextPtr io() {
+  static Comm::IoContextPtr io() noexcept {
     return m_env->app_io;
   }
 
@@ -93,7 +93,7 @@ class Rgr final {
   }
 
   SWC_CAN_INLINE
-  static Common::Resources& res() {
+  static Common::Resources& res() noexcept {
     return m_env->_resources;
   }
 
@@ -101,12 +101,16 @@ class Rgr final {
 
   static void compaction_schedule(uint32_t ms);
 
-  static Ranger::Columns* columns() {
+  static Ranger::Columns* columns() noexcept {
     return m_env->_columns;
   }
 
-  static client::Query::Update* updater() {
+  static client::Query::Update* updater() noexcept {
     return m_env->_updater.get();
+  }
+
+  static void reset() noexcept {
+    m_env = nullptr;
   }
 
   const SWC::Config::Property::V_GUINT8::Ptr  cfg_req_add_concurrency;

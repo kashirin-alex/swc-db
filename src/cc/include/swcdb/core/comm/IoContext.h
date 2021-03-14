@@ -102,6 +102,8 @@ class IoCtx final {
 
   static bool stopping() noexcept;
 
+  static void reset() noexcept;
+
   IoCtx(int32_t size);
 
   ~IoCtx();

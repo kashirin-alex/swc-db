@@ -534,12 +534,12 @@ FS::Interface::Ptr& FsInterface::interface() {
   return m_env->m_interface;
 }
 
-FS::FileSystem::Ptr FsInterface::fs(){
+FS::FileSystem::Ptr FsInterface::fs() {
   SWC_ASSERT(m_env);
   return m_env->m_interface->get_fs();
 }
 
-void FsInterface::reset() {
+void FsInterface::reset() noexcept {
   m_env = nullptr;
 }
 
