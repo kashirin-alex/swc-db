@@ -135,7 +135,7 @@ class RangersResources final : private std::vector<RangerResources> {
           max_scale = res.load_scale;
       }
       for(auto& res : *this) {
-        res.load_scale = size_t(res.load_scale * UINT16_MAX) / max_scale;
+        res.load_scale = (size_t(res.load_scale) * UINT16_MAX) / max_scale;
         if(max_load_scale < res.load_scale)
           max_load_scale = res.load_scale;
       }
