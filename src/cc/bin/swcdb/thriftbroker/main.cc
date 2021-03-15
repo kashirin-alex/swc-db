@@ -36,7 +36,7 @@ int run() {
   uint32_t reactors = 1; // settings->get_i32("swc.ThriftBroker.reactors");
   int workers = settings->get_i32("swc.ThriftBroker.workers");
   uint64_t conns_max = settings->get_i64("swc.ThriftBroker.connections.max");
-  uint32_t timeout_ms = settings->get_i16("swc.ThriftBroker.timeout");
+  uint32_t timeout_ms = settings->get_i32("swc.ThriftBroker.timeout");
   std::string transport = settings->get_str("swc.ThriftBroker.transport");
 
   std::shared_ptr<thrift::transport::TTransportFactory> transportFactory;
