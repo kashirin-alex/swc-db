@@ -210,10 +210,8 @@ void Settings::load_files_by(const std::string& fileprop,
 void Settings::init_process(bool with_pid_file, const std::string& port_cfg) {
   bool daemon = has("daemon");
 
-  if(daemon) {
-    if(fork())
-      exit(0);
-  }
+  if(daemon && fork())
+    quick_exit(EXIT_SUCCESS);
 
   std::string pid_file;
   if(with_pid_file) {

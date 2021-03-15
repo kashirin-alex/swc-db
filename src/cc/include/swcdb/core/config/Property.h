@@ -58,6 +58,7 @@ class Value {
     G_ENUM,
     G_STRINGS
   };
+  static const char* to_string(Type type) noexcept;
 
   static const uint8_t SKIPPABLE   = 0x01;
   static const uint8_t GUARDED     = 0x02;
@@ -68,9 +69,12 @@ class Value {
 
   template <typename T>
   SWC_CAN_INLINE
-  static T* get_pointer(Ptr ptr) noexcept {
+  static T* get_pointer(Ptr ptr) {
+    assure_match(ptr->type(), T::value_type);
     return static_cast<T*>(ptr);
   }
+
+  static void assure_match(Type t1, Type t2);
 
   Value(uint8_t flags=0) noexcept;
 

@@ -10,6 +10,53 @@
 
 namespace SWC { namespace Config { namespace Property {
 
+const char* Value::to_string(Type type) noexcept {
+  switch(type) {
+    case BOOL:
+      return "BOOL";
+    case UINT8:
+      return "UINT8";
+    case UINT16:
+      return "UINT16";
+    case INT32:
+      return "INT32";
+    case INT64:
+      return "INT64";
+    case DOUBLE:
+      return "DOUBLE";
+    case STRING:
+      return "STRING";
+    case ENUM:
+      return "ENUM";
+    case STRINGS:
+      return "STRINGS";
+    case INT64S:
+      return "INT64S";
+    case DOUBLES:
+      return "DOUBLES";
+    case G_BOOL:
+      return "G_BOOL";
+    case G_UINT8:
+      return "G_UINT8";
+    case G_INT32:
+      return "G_INT32";
+    case G_ENUM:
+      return "G_ENUM";
+    case G_STRINGS:
+      return "G_STRINGS";
+    default:
+      return "unknown";
+  }
+}
+
+
+void Value::assure_match(Type t1, Type t2) {
+  SWC_ASSERTF(
+    t1 == t2,
+    "Value-Type mismatch expectation t1=%s == t2=%s",
+    to_string(t1), to_string(t2)
+  );
+}
 
 Value::Value(uint8_t flags) noexcept : flags(flags) { }
 

@@ -161,6 +161,17 @@ try {
 #define SWC_ASSERT(_e_) SWC_EXPECT(_e_, ::SWC::Error::FAILED_EXPECTATION)
 
 
+#define SWC_EXPECTF(_e_, _code_, _fmt_, ...) \
+  if (!(_e_)) { \
+    if (_code_ == ::SWC::Error::FAILED_EXPECTATION) \
+      SWC_LOG_FATALF(_fmt_, __VA_ARGS__); \
+    SWC_THROWF(_code_, _fmt_, __VA_ARGS__); \
+  }
+
+#define SWC_ASSERTF(_e_, _fmt_, ...) \
+  SWC_EXPECTF(_e_, ::SWC::Error::FAILED_EXPECTATION, _fmt_, __VA_ARGS__)
+
+
 
 
 #ifdef SWC_IMPL_SOURCE
