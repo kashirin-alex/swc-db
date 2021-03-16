@@ -91,7 +91,7 @@ namespace Core { }
 #endif
 
 
-#ifndef SWC_MALLOC_NOT_INSISTENT
+#if !defined(SWC_MALLOC_NOT_INSISTENT) && !defined(__clang__)
 #include "swcdb/core/Malloc.h"
 
 #elif defined MIMALLOC

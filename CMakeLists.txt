@@ -88,6 +88,10 @@ if (NOT CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   if (NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS 11.0.0)
     SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wmismatched-new-delete -Wmismatched-dealloc")
   endif()
+
+else()
+  SET (SWC_MALLOC_NOT_INSISTENT ON)
+
 endif()
 
 
