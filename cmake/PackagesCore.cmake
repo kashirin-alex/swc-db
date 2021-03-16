@@ -16,9 +16,15 @@ string(SUBSTRING ${CMAKE_THREAD_LIBS_INIT} 2 -1 thread_LIB_NAME)
 
 if(BUILD_LINKING_CORE STREQUAL "STATIC")
 
-  SET(CORE_LIBS_STATIC_FLAGS ${CORE_LIBS_STATIC_FLAGS} "-s -static-libgcc -static-libstdc++") 
+  SET(CORE_LIBS_STATIC_FLAGS ${CORE_LIBS_STATIC_FLAGS} "-s -static-libgcc -static-libstdc++")
   # not possible -static-pie -static as long as dl is involved
-  
+
+  if(SWC_ENABLE_SANITIZER STREQUAL "address")
+    SET(CORE_LIBS_STATIC_FLAGS ${CORE_LIBS_STATIC_FLAGS} "-static-libasan -static-liblsan -static-libubsan")
+  elseif(SWC_ENABLE_SANITIZER STREQUAL "thread")
+    SET(CORE_LIBS_STATIC_FLAGS ${CORE_LIBS_STATIC_FLAGS} "-static-libtsan")
+  endif()
+
 endif()
 
 
@@ -34,12 +40,20 @@ endif()
 
 SET(CORE_LIBS ${CORE_LIBS} dl pthread) # stdc++fs
 
+
+if(SWC_ENABLE_SANITIZER STREQUAL "address")
+  SET(CORE_LIBS ${CORE_LIBS} rt asan lsan ubsan)
+elseif(SWC_ENABLE_SANITIZER STREQUAL "thread")
+  SET(CORE_LIBS ${CORE_LIBS} rt tsan)
+endif()
+
+
 #message(STATUS ${CMAKE_LIBCXX_LIBRARIES})
 
 if(SWC_INSTALL_DEP_LIBS)
   SET_DEPS(
     NAME      "CXX"
-    REQUIRED  TRUE 
+    REQUIRED  TRUE
     LIB_PATHS "" INC_PATHS ""
     STATIC    libstdc++.a
     SHARED    stdc++ gcc_s

@@ -23,9 +23,10 @@ sort: 3
 |WITHOUT_PAM| Not to build the libpam_swcdb_max_retries | ON/OFF | OFF |
 |HADOOP_INSTALL_PATH| HADOOP_HOME to use, suggested [as by instructions]({{ site.baseurl }}/build/prerequisites/specific/#hadoop-version) | posix-dir-path| ENV{HADOOP_HOME} |
 |SWC_DOCUMENTATION|  configure for generating documentations | ON/OFF | OFF |
-|SWC_MALLOC_NOT_INSISTENT|  Not to use SWC-DB insistent malloc | ON/OFF | OFF |
+|SWC_MALLOC_NOT_INSISTENT|  Not to use SWC-DB insistent malloc | ON/OFF | OFF(clang-ON) |
 |SWC_INSTALL_DEP_LIBS|  Install the 3rd-party dependencies libaries used for linking | ON/OFF | OFF |
 |SWC_WITHOUT_JAVA| skip java/maven builds | ON/OFF | OFF |
+|SWC_ENABLE_SANITIZER| Enable build-wide the specified sanitizer (slower perf. by x3-x10) | address/thread | OFF |
 |USE_GLIBC_MALLOC| use compiler malloc | ON/OFF | OFF |
 |USE_JEMALLOC| use libjemalloc | ON/OFF | OFF |
 |USE_HOARD| use libhoard | ON/OFF | OFF |

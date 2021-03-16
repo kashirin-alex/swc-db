@@ -84,7 +84,21 @@ if (NOT CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wduplicated-cond -Wno-error=duplicated-cond")
   SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wduplicated-branches -Wno-error=duplicated-branches")
   SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wlogical-op -Wno-error=logical-op")
+
+  if (NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS 11.0.0)
+    SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wmismatched-new-delete -Wmismatched-dealloc")
+  endif()
 endif()
+
+
+if(SWC_ENABLE_SANITIZER STREQUAL "address")
+  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -fsanitize=leak -fsanitize=undefined")
+  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=pointer-subtract -fsanitize=pointer-compare -fsanitize-address-use-after-scope")
+elseif(SWC_ENABLE_SANITIZER STREQUAL "thread")
+  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=thread")
+endif()
+
+
 
 
 ## additional considerations
