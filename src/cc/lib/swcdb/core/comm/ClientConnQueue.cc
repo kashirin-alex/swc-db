@@ -86,8 +86,10 @@ bool ConnQueue::connect() {
 void ConnQueue::close_issued() { }
 
 void ConnQueue::stop() {
-  if(m_timer)
+  if(m_timer) {
+    Core::MutexSptd::scope lock(m_mutex);
     m_timer->cancel();
+  }
   for(;;) {
     Core::MutexSptd::scope lock(m_mutex);
     auto it = m_delayed.begin();
@@ -206,8 +208,10 @@ void ConnQueue::exec_queue() {
 }
 
 void ConnQueue::run_queue() {
-  if(m_timer)
+  if(m_timer) {
+    Core::MutexSptd::scope lock(m_mutex);
     m_timer->cancel();
+  }
 
   ConnHandlerPtr conn;
   for(ReqBase::Ptr req;;) {
@@ -240,7 +244,10 @@ void ConnQueue::run_queue() {
 }
 
 void ConnQueue::schedule_close() {
-  m_timer->cancel();
+  {
+    Core::MutexSptd::scope lock(m_mutex);
+    m_timer->cancel();
+  }
 
   bool closing;
   ConnHandlerPtr conn;
@@ -258,6 +265,7 @@ void ConnQueue::schedule_close() {
     return close_issued();
   }
 
+  Core::MutexSptd::scope lock(m_mutex);
   m_timer->expires_after(std::chrono::milliseconds(cfg_keepalive_ms->get()));
   m_timer->async_wait(
     [ptr=shared_from_this()](const asio::error_code& ec) {
