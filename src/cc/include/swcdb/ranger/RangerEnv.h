@@ -64,8 +64,12 @@ class Rgr final {
     return m_env->m_scan_reserved_bytes;
   }
 
-  static void scan_reserved_bytes(int64_t bytes) noexcept {
+  static void scan_reserved_bytes_add(uint32_t bytes) noexcept {
     m_env->m_scan_reserved_bytes.fetch_add(bytes);
+  }
+
+  static void scan_reserved_bytes_sub(uint32_t bytes) noexcept {
+    m_env->m_scan_reserved_bytes.fetch_sub(bytes);
   }
 
   static Rgr* get() noexcept {
@@ -221,7 +225,8 @@ Rgr::Rgr()
           "swc.rgr.ram.release.rate"),
         [this](size_t bytes) { return _columns->release(bytes); }
       ),
-      m_shuttingdown(false), m_not_accepting(false), m_in_process(0) {
+      m_shuttingdown(false), m_not_accepting(false),
+      m_in_process(0), m_scan_reserved_bytes(0) {
 }
 
 Rgr::~Rgr() {

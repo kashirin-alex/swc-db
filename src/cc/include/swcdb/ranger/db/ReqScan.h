@@ -31,6 +31,7 @@ class ReqScan  : public DB::Cells::ReqScan {
             release_block(release_block), readahead(readahead),
             blk_size(blk_size),
             block(nullptr) {
+    Env::Rgr::scan_reserved_bytes_add(blk_size * 4);
   }
 
   ReqScan(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev,
@@ -41,6 +42,7 @@ class ReqScan  : public DB::Cells::ReqScan {
             release_block(false), readahead(0),
             blk_size(blk_size),
             block(nullptr) {
+    Env::Rgr::scan_reserved_bytes_add(blk_size * 4);
   }
 
   ReqScan(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev,
@@ -52,12 +54,12 @@ class ReqScan  : public DB::Cells::ReqScan {
                         ? 2 : spec.flags.limit > 1),
             blk_size(blk_size),
             block(nullptr) {
-    Env::Rgr::scan_reserved_bytes(blk_size * 4);
+    Env::Rgr::scan_reserved_bytes_add(blk_size * 4);
     // 4 == (blk + cs-blk + fragments) + intermediate-buffers
   }
 
   virtual ~ReqScan() {
-    Env::Rgr::scan_reserved_bytes(-blk_size * 4);
+    Env::Rgr::scan_reserved_bytes_sub(blk_size * 4);
   }
 
   Ptr get_req_scan() noexcept {
