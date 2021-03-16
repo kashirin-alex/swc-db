@@ -267,7 +267,7 @@ void Fragment::write(int err, uint8_t blk_replicas, int64_t blksz,
         print(SWC_LOG_OSTREAM << ' ');
       );
 
-    Env::FsInterface::fs()->write(
+    Env::FsInterface::fs()->write( // + validate-length
       [frag=ptr(), blk_replicas, blksz, buff_write, sem]
       (int err, const FS::SmartFd::Ptr&) {
         Env::Rgr::post([=](){
@@ -369,9 +369,8 @@ void Fragment::load_cells(int&, DB::Cells::MutableVec& cells) {
       size_t offset_it_hint = 0;
       const uint8_t* buf = m_buffer.base;
       size_t remain = m_buffer.size;
-      try { while(remain) {
-        ++count;
-        DB::Cells::Cell cell(&buf, &remain);
+      try { for(DB::Cells::Cell cell; remain; ++count) {
+        cell.read(&buf, &remain);
         synced
           ? cells.add_sorted(cell)
           : cells.add_raw(cell, &offset_it_hint, &offset_hint);
@@ -402,10 +401,8 @@ void Fragment::split(int&, const DB::Cell::Key& key,
       const uint8_t* buf = m_buffer.base;
       size_t remain = m_buffer.size;
 
-      try { while(remain) {
-        ++count;
-
-        DB::Cells::Cell cell(&buf, &remain);
+      try { for(DB::Cells::Cell cell; remain; ++count) {
+        cell.read(&buf, &remain);
         DB::KeySeq::compare(interval.key_seq, key, cell.key) == Condition::GT
           ? log_right->add(cell)
           : log_left->add(cell);

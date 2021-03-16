@@ -111,7 +111,7 @@ void check_load(bool encode) {
   SWC_ASSERT(!memcmp(v.base, value.data(), v.size));
 }
 
-int main() {
+int run() {
 
    size_t num_cells = 10000;
 
@@ -121,9 +121,6 @@ int main() {
 
    std::cout << "\n--------Init Cells-------------\n";
    for(i=0;i<num_cells;++i){
-      std::string n = std::to_string(i);
-      char* cell_num = new char[n.length()];
-      strcpy(cell_num, n.c_str());
 
       Cells::Cell* cell = new Cells::Cell();
 
@@ -134,17 +131,13 @@ int main() {
 
       cell->key.add("aKey1");
       cell->key.add("aKey2|");
-      cell->key.add(cell_num);
+      cell->key.add(std::to_string(i));
       cell->key.add("|aKey3");
       cell->key.add("aKey4");
       cell->key.add("aKey5");
 
-      char* v_tmp = new char[n.length()+24];
-      char* v1 = v_tmp;
-      strcpy(v_tmp, "A-Data-Value-1234567890-");
-      v_tmp+=24;
-      strcpy(v_tmp, n.c_str());
-      cell->set_value(v1, strlen(v1));
+      std::string v1 = "A-Data-Value-1234567890-" + std::to_string(i);
+      cell->set_value(v1);
 
       cells.push_back(cell);
 
@@ -154,7 +147,7 @@ int main() {
    std::cout << "\n-------------------------------\n";
 
 
-/**/
+  /**/
    std::cout << "\n--------Copy Cells-------------\n";
 
    i=0;
@@ -244,26 +237,12 @@ int main() {
 
    std::cout << "\n----Destruction Cells----------\n";
 
-   size_t k_len = cells_copied.back()->key.size;
-   uint8_t* last_skey = new uint8_t[k_len];
-   uint8_t* last_skey_ptr = cells_copied.back()->key.data;
-   memcpy(last_skey, last_skey_ptr, k_len);
-
+  for(auto c : cells)
+    delete c;
+   cells.clear();
   for(auto c : cells_copied)
     delete c;
    cells_copied.clear();
-   //cells_copied.clear();
-   if (*last_skey_ptr && !memcmp(last_skey, last_skey_ptr, k_len)) {
-         std::cout << "DESTRUCTION DID NOT HAPPEN:\n";
-         std::cout << size_t(last_skey_ptr) << ":"
-            << std::string(reinterpret_cast<const char*>(last_skey_ptr), k_len)
-            << "=="
-            << std::string(reinterpret_cast<const char*>(last_skey), k_len)
-            << "\n\n";
-         exit(1);
-   }
-   delete []last_skey;
-
 
    std::cout << " sizeof(SWC::DB::Cells::Cell)=" << sizeof(SWC::DB::Cells::Cell) << "\n";
    std::cout << " sizeof(SWC::DB::Cell::Key)=" << sizeof(SWC::DB::Cell::Key) << "\n";
@@ -272,4 +251,10 @@ int main() {
    check_load(true);
    std::cout << "\n-------------------------------\n";
 
+  return 0;
+}
+
+
+int main() {
+  return run();
 }

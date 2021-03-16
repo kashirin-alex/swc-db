@@ -67,8 +67,31 @@ Cell::Cell(const Cell& other, bool no_value)
 
 SWC_SHOULD_INLINE
 Cell::Cell(const uint8_t** bufp, size_t* remainp, bool own)
-           : value(nullptr) {
-  read(bufp, remainp, own);
+          : own(own),
+            flag(Serialization::decode_i8(bufp, remainp)) {
+  key.decode(bufp, remainp, own);
+  control = Serialization::decode_i8(bufp, remainp);
+
+  if(control & HAVE_TIMESTAMP)
+    timestamp = Serialization::decode_i64(bufp, remainp);
+  else if(control & AUTO_TIMESTAMP)
+    timestamp = AUTO_ASSIGN;
+
+  if(control & HAVE_REVISION)
+    revision = Serialization::decode_i64(bufp, remainp);
+  else if(control & REV_IS_TS)
+    revision = timestamp;
+
+  if((vlen = Serialization::decode_vi32(bufp, remainp))) {
+    if(*remainp < vlen)
+      SWC_THROWF(Error::SERIALIZATION_INPUT_OVERRUN,
+        "Read Cell(key=%s) value", key.to_string().c_str());
+    value = own ? _value(*bufp) : const_cast<uint8_t*>(*bufp);
+    *bufp += vlen;
+    *remainp -= vlen;
+  } else {
+    value = nullptr;
+  }
 }
 
 SWC_SHOULD_INLINE
@@ -293,15 +316,15 @@ void Cell::read(const uint8_t** bufp, size_t* remainp, bool owner) {
     revision = timestamp;
 
   _free();
+  own = owner;
   if((vlen = Serialization::decode_vi32(bufp, remainp))) {
     if(*remainp < vlen)
       SWC_THROWF(Error::SERIALIZATION_INPUT_OVERRUN,
         "Read Cell(key=%s) value", key.to_string().c_str());
-    value = (own = owner) ? _value(*bufp) : const_cast<uint8_t*>(*bufp);
+    value = own ? _value(*bufp) : const_cast<uint8_t*>(*bufp);
     *bufp += vlen;
     *remainp -= vlen;
   } else {
-    own = owner;
     value = nullptr;
   }
 }
@@ -387,14 +410,14 @@ void Cell::display(std::ostream& out,
     if(bin) {
       uint8_t op;
       int64_t eq_rev = TIMESTAMP_NULL;
-      int64_t value = get_counter(op, eq_rev);
+      out << get_counter(op, eq_rev);
       if(op & OP_EQUAL && !(op & HAVE_REVISION))
         eq_rev = get_timestamp();
-      out << value;
       if(eq_rev != TIMESTAMP_NULL)
         out << " EQ-SINCE(" << Time::fmt_ns(eq_rev) << ")";
-    } else
-        out << get_counter();
+    } else {
+      out << get_counter();
+    }
 
   } else if(meta && !bin) {
     StaticBuffer v;

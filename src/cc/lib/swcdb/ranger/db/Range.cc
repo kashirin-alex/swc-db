@@ -914,13 +914,13 @@ void Range::_run_add_queue() {
 
     {
 
-    const uint8_t* ptr = req->input.base;
+    const uint8_t* buf = req->input.base;
     size_t remain = req->input.size;
     bool aligned_chg = false;
 
-    try { while(remain) {
+    try { for(DB::Cells::Cell cell; remain; ) {
 
-      DB::Cells::Cell cell(&ptr, &remain);
+      cell.read(&buf, &remain);
 
       if(!m_interval.key_end.empty() &&
           DB::KeySeq::compare(cfg->key_seq, m_interval.key_end, cell.key)

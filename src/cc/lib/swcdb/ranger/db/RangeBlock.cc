@@ -190,9 +190,9 @@ size_t Block::load_cells(const uint8_t* buf, size_t remain,
     synced = true;
   ssize_t sz = m_cells.size_of_internal();
 
-  try { while(remain) {
-    ++count;
-    DB::Cells::Cell cell(&buf, &remain);
+  try { for(DB::Cells::Cell cell; remain; ++count) {
+
+    cell.read(&buf, &remain);
 
     if(!m_prev_key_end.empty() &&
         DB::KeySeq::compare(m_cells.key_seq, m_prev_key_end, cell.key)
