@@ -139,8 +139,6 @@ void Blocks::scan(ReqScan::Ptr req, Block::Ptr blk_ptr) {
     return;
   }
 
-  const size_t need = Env::Rgr::scan_reserved_bytes();
-
   for(Block::Ptr blk = nullptr; ; blk = nullptr) {
     int64_t ts = Time::now_ns();
 
@@ -150,6 +148,7 @@ void Blocks::scan(ReqScan::Ptr req, Block::Ptr blk_ptr) {
       req->block = nullptr;
 
     } else {
+      const size_t need = Env::Rgr::scan_reserved_bytes();
       if(blk_ptr && Env::Rgr::res().need_ram(need * (req->readahead + 1)))
         blk_ptr->release();
 
@@ -198,8 +197,8 @@ void Blocks::scan(ReqScan::Ptr req, Block::Ptr blk_ptr) {
         bool support;
         for(size_t n=0;
             n < req->readahead &&
-            !Env::Rgr::res().need_ram(need * (++n))
-            && m_mutex.try_full_lock(support); ) {
+            !Env::Rgr::res().need_ram(Env::Rgr::scan_reserved_bytes())
+            && m_mutex.try_full_lock(support); ++n) {
           blk = blk->next;
           m_mutex.unlock(support);
           if(!blk || commitlog.is_compacting())
