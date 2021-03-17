@@ -188,16 +188,18 @@ void FileSystem::default_write(int& err, SmartFd::Ptr& smartfd,
     goto finish;
   }
 
-  if(buffer.size) {
+  if(buffer.size)
     append(err, smartfd, buffer, Flags::FLUSH);
-    if(err)
-      goto finish;
-  }
 
   finish:
     int errtmp;
     if(smartfd->valid())
       close(err ? errtmp : err, smartfd);
+
+  if(!err && smartfd->flags() & OpenFlags::WRITE_VALIDATE_LENGTH &&
+     length(err, smartfd->filepath()) != buffer.size && !err) {
+    err = Error::FS_EOF;
+  }
 
   if(err)
     SWC_LOG_OUT(LOG_ERROR,

@@ -134,7 +134,9 @@ Fragment::Ptr Fragment::make_write(int& err, const std::string& filepath,
                                    DynamicBuffer& cells,
                                    StaticBuffer::Ptr& buffer) {
   auto smartfd = FS::SmartFd::make_ptr(
-    filepath, FS::OpenFlags::OPEN_FLAG_OVERWRITE);
+    filepath,
+    FS::OpenFlags::OPEN_FLAG_OVERWRITE | FS::OpenFlags::WRITE_VALIDATE_LENGTH
+  );
 
   const uint8_t version = VERSION;
   const size_t  size_plain = cells.fill();
@@ -255,11 +257,6 @@ const std::string& Fragment::get_filepath() const noexcept {
 void Fragment::write(int err, uint8_t blk_replicas, int64_t blksz,
                      const StaticBuffer::Ptr& buff_write,
                      Core::Semaphore* sem) {
-  if(!err && (Env::FsInterface::interface()->length(err, m_smartfd->filepath())
-              != buff_write->size || err))
-    if(err != Error::SERVER_SHUTTING_DOWN)
-      err = Error::FS_EOF;
-
   if(err && err != Error::SERVER_SHUTTING_DOWN) {
     if(err != Error::UNPOSSIBLE)
       SWC_LOG_OUT(LOG_WARN,
@@ -267,7 +264,7 @@ void Fragment::write(int err, uint8_t blk_replicas, int64_t blksz,
         print(SWC_LOG_OSTREAM << ' ');
       );
 
-    Env::FsInterface::fs()->write( // + validate-length
+    Env::FsInterface::fs()->write(
       [frag=ptr(), blk_replicas, blksz, buff_write, sem]
       (int err, const FS::SmartFd::Ptr&) {
         Env::Rgr::post([=](){

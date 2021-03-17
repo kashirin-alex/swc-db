@@ -31,14 +31,15 @@ enum Type : uint8_t {
 enum OpenFlags {
   OPEN_FLAG_DIRECTIO        = 0x00000001,
   OPEN_FLAG_OVERWRITE       = 0x00000002,
-  OPEN_FLAG_VERIFY_CHECKSUM = 0x00000004
+  OPEN_FLAG_VERIFY_CHECKSUM = 0x00000004,
+  WRITE_VALIDATE_LENGTH     = 0x00000008
 };
 
 
 enum Flags : uint8_t {
-  NONE  = 0x00,
-  FLUSH = 0x01,
-  SYNC  = 0x02
+  NONE          = 0x00,
+  FLUSH         = 0x01,
+  SYNC          = 0x02
 };
 
 

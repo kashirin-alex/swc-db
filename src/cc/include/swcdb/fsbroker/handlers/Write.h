@@ -46,6 +46,11 @@ void write(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
         if(!err && errtmp)
           err = errtmp;
       }
+
+      if(!err && smartfd->flags() & FS::OpenFlags::WRITE_VALIDATE_LENGTH &&
+         fs->length(err, smartfd->filepath()) != ev->data_ext.size && !err) {
+        err = Error::FS_EOF;
+      }
     } else if(!err) {
       err = Error::FS_BAD_FILE_HANDLE;
     }
