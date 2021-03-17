@@ -25,6 +25,13 @@ if(BUILD_LINKING_CORE STREQUAL "STATIC")
     SET(CORE_LIBS_STATIC_FLAGS ${CORE_LIBS_STATIC_FLAGS} "-static-libtsan")
   endif()
 
+else()
+  if(SWC_ENABLE_SANITIZER STREQUAL "address")
+    SET(CORE_LIBS ${CORE_LIBS} rt asan lsan ubsan)
+  elseif(SWC_ENABLE_SANITIZER STREQUAL "thread")
+    SET(CORE_LIBS ${CORE_LIBS} rt tsan)
+  endif()
+
 endif()
 
 
@@ -40,12 +47,6 @@ endif()
 
 SET(CORE_LIBS ${CORE_LIBS} dl pthread) # stdc++fs
 
-
-if(SWC_ENABLE_SANITIZER STREQUAL "address")
-  SET(CORE_LIBS ${CORE_LIBS} rt asan lsan ubsan)
-elseif(SWC_ENABLE_SANITIZER STREQUAL "thread")
-  SET(CORE_LIBS ${CORE_LIBS} rt tsan)
-endif()
 
 
 #message(STATUS ${CMAKE_LIBCXX_LIBRARIES})
