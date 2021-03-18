@@ -35,8 +35,10 @@ void Acceptor::stop() {
       << " fd=" << native_handle();
   );
 
-  if(is_open())
-    close();
+  if(is_open()) {
+    std::error_code ec;
+    close(ec);
+  }
 }
 
 Acceptor::~Acceptor() { }
@@ -47,7 +49,7 @@ asio::ip::tcp::acceptor* Acceptor::sock() noexcept {
 
 void Acceptor::do_accept_mixed() noexcept {
   async_accept(
-    [this](const std::error_code& ec, asio::ip::tcp::socket new_sock) {
+    [this](std::error_code ec, asio::ip::tcp::socket new_sock) {
       if(ec) {
         if(ec.value() != ECANCELED)
           SWC_LOGF(LOG_DEBUG, "SRV-accept error=%d(%s)",
@@ -55,19 +57,23 @@ void Acceptor::do_accept_mixed() noexcept {
         return;
       }
 
-      try {
-        if(!m_ssl_cfg ||
-           new_sock.remote_endpoint().address()
-            == new_sock.local_endpoint().address()) {
-          auto conn = std::make_shared<ConnHandlerPlain>(m_app_ctx, new_sock);
-          conn->new_connection();
-          conn->accept_requests();
-        } else {
-          m_ssl_cfg->make_server(m_app_ctx, new_sock);
+      if(new_sock.is_open()) try {
+        // OR m_ssl_cfg->need_ssl(new_sock.remote_endpoint(ec))
+        bool need_ssl = new_sock.remote_endpoint(ec).address() != 
+                        new_sock.local_endpoint(ec).address();
+        if(!ec) {
+          if(need_ssl) {
+            m_ssl_cfg->make_server(m_app_ctx, new_sock);
+          } else {
+            auto conn = std::make_shared<ConnHandlerPlain>(m_app_ctx, new_sock);
+            conn->new_connection();
+            conn->accept_requests();
+          }
+        } else if(new_sock.is_open()) {
+          new_sock.close(ec);
         }
       } catch(...) {
         SWC_LOG_CURRENT_EXCEPTION("");
-        std::error_code ec;
         new_sock.close(ec);
       }
 
@@ -86,7 +92,7 @@ void Acceptor::do_accept_plain() noexcept {
         return;
       }
 
-      try {
+      if(new_sock.is_open()) try {
         auto conn = std::make_shared<ConnHandlerPlain>(m_app_ctx, new_sock);
         conn->new_connection();
         conn->accept_requests();

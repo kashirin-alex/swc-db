@@ -92,7 +92,7 @@ bool ConnHandler::due() {
 
 SWC_SHOULD_INLINE
 void ConnHandler::run(const Event::Ptr& ev) {
-  //if(ev->header.flags & Header::FLAGS_BIT_REQUEST)
+  //if(ev->header.flags & Header::FLAG_REQUEST_BIT)
   app_ctx->handle(ptr(), ev);
 }
 
@@ -119,7 +119,7 @@ bool ConnHandler::send_response(const Buffers::Ptr& cbuf,
                                 DispatchHandler::Ptr hdlr) noexcept {
   if(!connected || cbuf->expired())
     return false;
-  cbuf->header.flags &= Header::FLAGS_MASK_REQUEST;
+  cbuf->header.flags &= Header::FLAG_REQUEST_MASK;
   write_or_queue(new Pending(cbuf, hdlr));
   return true;
 }
@@ -128,7 +128,7 @@ bool ConnHandler::send_request(Buffers::Ptr& cbuf,
                                DispatchHandler::Ptr hdlr) {
   if(!connected)
     return false;
-  cbuf->header.flags |= Header::FLAGS_BIT_REQUEST;
+  cbuf->header.flags |= Header::FLAG_REQUEST_BIT;
   write_or_queue(new Pending(cbuf, hdlr));
   return true;
 }
@@ -176,7 +176,7 @@ void ConnHandler::write(ConnHandler::Pending* pending) {
   auto cbuf = std::move(pending->cbuf);
   auto& header = cbuf->header;
 
-  if(!pending->hdlr || header.flags & Header::FLAGS_BIT_IGNORE_RESPONSE) {
+  if(!pending->hdlr || header.flags & Header::FLAG_RESPONSE_IGNORE_BIT) {
     // send request/response without sent/rsp-ack
     delete pending;
     if(cbuf->expired())
@@ -184,7 +184,7 @@ void ConnHandler::write(ConnHandler::Pending* pending) {
     goto write_commbuf;
   }
 
-  if(!(header.flags & Header::FLAGS_BIT_REQUEST)) {
+  if(!(header.flags & Header::FLAG_REQUEST_BIT)) {
     //if(!header.timeout_ms) {
       // send_response with sent-ack
       auto hdlr = std::move(pending->hdlr);
@@ -237,6 +237,7 @@ void ConnHandler::write(ConnHandler::Pending* pending) {
             return;
           auto ev = Event::make(Event::Type::ERROR, Error::REQUEST_TIMEOUT);
           ev->header.initialize_from_request(cbuf->header);
+          ev->header.flags &= Header::FLAG_REQUEST_MASK;
           conn->run_pending(ev);
         }
       );
@@ -386,7 +387,7 @@ void ConnHandler::recved_buffer(const Event::Ptr& ev, asio::error_code ec,
 }
 
 void ConnHandler::received(const Event::Ptr& ev) {
-  if(ev->header.flags & Header::FLAGS_BIT_REQUEST)
+  if(ev->header.flags & Header::FLAG_REQUEST_BIT)
     ev->received();
 
   bool more = m_accepting.load();
@@ -426,7 +427,7 @@ void ConnHandler::disconnected() {
 
 void ConnHandler::run_pending(const Event::Ptr& ev) {
   Pending* pending = nullptr;
-  if(ev->header.id) {
+  if(ev->header.id && !(ev->header.flags & Header::FLAG_REQUEST_BIT)) {
     {
       Core::MutexSptd::scope lock(m_mutex);
       auto it = m_pending.find(ev->header.id);

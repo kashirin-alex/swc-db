@@ -88,21 +88,28 @@ ConfigSSL::~ConfigSSL() { }
 
 void ConfigSSL::set_networks(const Config::Strings& networks,
                              bool with_local) {
+  // option. tmp nets-config
   asio::error_code ec;
   Resolver::get_networks(networks, nets_v4, nets_v6, ec);
   if(ec)
     SWC_THROWF(Error::CONFIG_BAD_VALUE,
               "Bad Network in swc.comm.ssl.secure.network error(%s)",
               ec.message().c_str());
-  if(!with_local)
+  if(!with_local) // option pass
     return;
-
+  
+  // option tmp nets-local for srv by the binded endpoints 
   int err = Error::OK;
   Resolver::get_local_networks(err, nets_v4, nets_v6);
   if(err)
     SWC_THROWF(Error::CONFIG_BAD_VALUE,
               "Bad Network in swc.comm.ssl.secure.network error(%s)",
               Error::get_text(err));
+  /* option
+    includes and excludes subnets/racks in secure-networks
+    clear nets-wide not in nets-local
+    mv nets-wide to nets_v4, nets_v6
+  */
 }
 
 

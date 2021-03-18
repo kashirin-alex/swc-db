@@ -20,18 +20,9 @@ struct Header final {
   static const uint8_t FIXED_LENGTH     = PREFIX_LENGTH + 16;
   static const uint8_t MAX_LENGTH       = FIXED_LENGTH + 15 * 2;
 
-  enum Flags : uint8_t {
-    FLAGS_BIT_REQUEST          = 0x1, //!< Request message
-    FLAGS_BIT_IGNORE_RESPONSE  = 0x2, //!< Response should be ignored
-    FLAGS_BIT_URGENT           = 0x4, //!< Request is urgent
-  };
-
-  enum FlagMask : uint8_t {
-    FLAGS_MASK_REQUEST          = 0xE, //!< Request message bit
-    FLAGS_MASK_IGNORE_RESPONSE  = 0xD, //!< Response should be ignored bit
-    FLAGS_MASK_URGENT           = 0xB, //!< Request is urgent bit
-  };
-
+  static const uint8_t FLAG_REQUEST_BIT         = 0x1;
+  static const uint8_t FLAG_REQUEST_MASK        = 0xE;
+  static const uint8_t FLAG_RESPONSE_IGNORE_BIT = 0x2;
 
   Header(uint64_t cmd=0, uint32_t timeout=0) noexcept;
 
