@@ -64,6 +64,7 @@ std::map<const int, const char *> text_map {
 
   { Error::SERVER_NOT_READY,                "server not ready" },
   { Error::SERVER_SHUTTING_DOWN,            "server shutting down" },
+  { Error::SERVER_MEMORY_LOW,               "server low on memory" },
 
   { Error::MNGR_NOT_ACTIVE,                 "Manager not active for the duty" },
   { Error::MNGR_NOT_INITIALIZED,            "Manager is initializing" },
