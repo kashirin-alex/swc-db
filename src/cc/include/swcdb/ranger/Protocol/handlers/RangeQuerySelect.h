@@ -26,14 +26,22 @@ void range_query_select(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     params.decode(&ptr, &remain);
 
     range = Env::Rgr::columns()->get_range(err, params.cid, params.rid);
- 
-    if(!err && (!range || !range->is_loaded()))
-      err = Error::RGR_NOT_LOADED_RANGE;
+
+    if(!err) {
+      if(!range || !range->is_loaded()) {
+        err = Error::RGR_NOT_LOADED_RANGE;
+
+      } else if(range->cfg->range_type == DB::Types::Range::DATA &&
+                Env::Rgr::res().is_low_mem_state() &&
+                Env::Rgr::scan_reserved_bytes()) {
+        err = Error::SERVER_MEMORY_LOW;
+      }
+    }
 
   } catch(...) {
     const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
-    SWC_LOG_OUT(LOG_ERROR, 
-      SWC_LOG_OSTREAM << e; 
+    SWC_LOG_OUT(LOG_ERROR,
+      SWC_LOG_OSTREAM << e;
       ev->print(SWC_LOG_OSTREAM << "\n\t");
     );
     err = e.code();
@@ -44,11 +52,11 @@ void range_query_select(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
   } else {
     range->scan(
       std::make_shared<Ranger::Callback::RangeQuerySelect>(
-        conn, ev, params.interval, range) 
+        conn, ev, params.interval, range)
     );
   }
 }
-  
+
 
 }}}}}
 
