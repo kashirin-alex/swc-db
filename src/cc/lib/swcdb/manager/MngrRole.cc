@@ -376,12 +376,15 @@ void MngrRole::managers_checkin() {
     return;
 
   //SWC_LOG(LOG_DEBUG, "managers_checkin");
-  size_t sz;
+  size_t sz = 0;
   bool has_role;
   {
     std::scoped_lock lock(m_mutex);
     _apply_cfg();
-    sz = m_states.size();
+    for(auto& h : m_states) {
+      if(h->state != DB::Types::MngrState::OFF)
+        ++sz;
+    }
     has_role = !m_local_groups.empty();
   }
   if(has_role)
