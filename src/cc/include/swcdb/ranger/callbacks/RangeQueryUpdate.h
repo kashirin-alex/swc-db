@@ -18,13 +18,11 @@ struct RangeQueryUpdate : Core::QueuePointer<RangeQueryUpdate*>::Pointer {
 
   Comm::ConnHandlerPtr  conn;
   Comm::Event::Ptr      ev;
-  StaticBuffer          input;
   Comm::Protocol::Rgr::Params::RangeQueryUpdateRsp  rsp;
 
   RangeQueryUpdate(const Comm::ConnHandlerPtr& conn,
-                   const Comm::Event::Ptr& ev,
-                   StaticBuffer& input)
-                  : conn(conn), ev(ev), input(input), rsp(Error::OK) {
+                   const Comm::Event::Ptr& ev)
+                  : conn(conn), ev(ev), rsp(Error::OK) {
     Env::Rgr::res().more_mem_usage(size_of());
   }
 
@@ -33,12 +31,13 @@ struct RangeQueryUpdate : Core::QueuePointer<RangeQueryUpdate*>::Pointer {
   }
 
   size_t size_of() const {
-    return sizeof(this) + sizeof(*this) + input.size;
+    return sizeof(this) + sizeof(*this) +
+           sizeof(*conn.get()) + sizeof(*ev.get()) +
+           ev->data_ext.size;
   }
 
   bool expired() const {
-    return  (ev && ev->expired(input.size/100000)) ||
-            (conn && !conn->is_open());
+    return ev->expired(ev->data_ext.size/100000) || !conn->is_open();
   }
 
   void response() {

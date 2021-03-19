@@ -914,8 +914,8 @@ void Range::_run_add_queue() {
 
     {
 
-    const uint8_t* buf = req->input.base;
-    size_t remain = req->input.size;
+    const uint8_t* buf = req->ev->data_ext.base;
+    size_t remain = req->ev->data_ext.size;
     bool aligned_chg = false;
 
     try { for(DB::Cells::Cell cell; remain; ) {

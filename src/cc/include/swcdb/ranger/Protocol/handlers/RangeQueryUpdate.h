@@ -20,18 +20,20 @@ void range_query_update(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
   Params::RangeQueryUpdateReq params;
   Ranger::RangePtr range;
 
-  try {      
+  try {
     const uint8_t *ptr = ev->data.base;
     size_t remain = ev->data.size;
     params.decode(&ptr, &remain);
 
     range = Env::Rgr::columns()->get_range(err, params.cid, params.rid);
-      
-    if(!err && (!range || !range->is_loaded()))
-      err = Error::RGR_NOT_LOADED_RANGE;
 
-    if(!err && !ev->data_ext.size)
-      err = Error::INVALID_ARGUMENT;
+    if(!err) {
+      if(!range || !range->is_loaded()) {
+        err = Error::RGR_NOT_LOADED_RANGE;
+      } else if(!ev->data_ext.size) {
+        err = Error::INVALID_ARGUMENT;
+      }
+    }
 
   } catch(...) {
     const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
@@ -39,21 +41,20 @@ void range_query_update(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     err = e.code();
   }
 
-  try{
+  try {
 
     if(err) {
       conn->send_response(
         Buffers::make(ev, Params::RangeQueryUpdateRsp(err)));
-  
+
     } else {
-      range->add(
-        new Ranger::Callback::RangeQueryUpdate(conn, ev, ev->data_ext));
+      range->add(new Ranger::Callback::RangeQueryUpdate(conn, ev));
     }
 
   } catch(...) {
     SWC_LOG_CURRENT_EXCEPTION("");
   }
-  
+
 }
 
 
