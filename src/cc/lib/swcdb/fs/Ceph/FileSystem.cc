@@ -651,12 +651,11 @@ void FileSystemCeph::sync(int& err, SmartFd::Ptr& smartfd) {
 }
 
 void FileSystemCeph::close(int& err, SmartFd::Ptr& smartfd) {
-
   SWC_LOGF(LOG_DEBUG, "close %s", smartfd->to_string().c_str());
-
-  if(smartfd->valid()) {
+  int32_t fd = smartfd->invalidate();
+  if(fd != -1) {
     errno = 0;
-    err = ceph_close(m_filesystem, smartfd->fd());
+    err = ceph_close(m_filesystem, fd);
     if(err < 0)
       err = -err;
     else if(errno)
@@ -669,8 +668,6 @@ void FileSystemCeph::close(int& err, SmartFd::Ptr& smartfd) {
   } else {
     err = EBADR;
   }
-  smartfd->fd(-1);
-  smartfd->pos(0);
 }
 
 

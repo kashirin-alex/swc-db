@@ -56,6 +56,8 @@ struct SmartFd {
 
   bool valid() const noexcept;
 
+  int32_t invalidate() noexcept;
+
   void pos(uint64_t pos) noexcept;
 
   uint64_t pos() const noexcept;

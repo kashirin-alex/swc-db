@@ -324,7 +324,9 @@ size_t Read::release(size_t bytes) {
 }
 
 void Read::_release_fd() {
-  if(smartfd->valid() && Env::FsInterface::interface()->need_fds()) {
+  if(smartfd->valid() &&
+     Env::FsInterface::interface()->need_fds() &&
+     !processing()) {
     int err = Error::OK;
     close(err);
   }
@@ -332,7 +334,11 @@ void Read::_release_fd() {
 
 SWC_SHOULD_INLINE
 void Read::close(int &err) {
-  Env::FsInterface::interface()->close(err, smartfd);
+  int32_t fd = smartfd->invalidate();
+  if(fd != -1) {
+    auto r = FS::SmartFd::make_ptr(smartfd->filepath(), smartfd->flags(), fd);
+    Env::FsInterface::interface()->close(err, r);
+  }
 }
 
 SWC_SHOULD_INLINE

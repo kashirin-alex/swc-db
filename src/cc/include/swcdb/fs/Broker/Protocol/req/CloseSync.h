@@ -27,7 +27,7 @@ class CloseSync final : public BaseSync, public Base {
                 )
               ),
               fs(fs), smartfd(smartfd) {
-}
+  }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
     Base::handle_close(fs, ev, smartfd);

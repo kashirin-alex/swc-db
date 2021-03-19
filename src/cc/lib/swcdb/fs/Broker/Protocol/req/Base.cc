@@ -435,11 +435,8 @@ void Base::handle_close(const FS::FileSystem::Ptr& fs, const Event::Ptr& ev,
     case EBADR:
     case EBADF:
     case Error::FS_BAD_FILE_HANDLE:
-      if(smartfd->valid()) {
-        smartfd->fd(-1);
+      if(smartfd->invalidate() != -1)
         fs->fd_open_decr();
-      }
-      smartfd->pos(0);
       break;
     default:
       break;

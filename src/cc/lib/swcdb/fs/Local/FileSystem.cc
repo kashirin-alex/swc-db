@@ -405,16 +405,15 @@ void FileSystemLocal::sync(int& err, SmartFd::Ptr& smartfd) {
 
 void FileSystemLocal::close(int& err, SmartFd::Ptr& smartfd) {
   SWC_LOGF(LOG_DEBUG, "close %s", smartfd->to_string().c_str());
-  errno = 0;
-  if(smartfd->valid()) {
-    ::close(smartfd->fd());
+  int32_t fd = smartfd->invalidate();
+  if(fd != -1) {
+    errno = 0;
+    ::close(fd);
     fd_open_decr();
     err = errno;
-  } else
+  } else {
     err = EBADR;
-
-  smartfd->fd(-1);
-  smartfd->pos(0);
+  }
 }
 
 

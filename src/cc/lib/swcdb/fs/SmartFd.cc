@@ -46,6 +46,11 @@ bool SmartFd::valid() const noexcept {
   return m_fd != -1;
 }
 
+int32_t SmartFd::invalidate() noexcept {
+  m_pos.store(0);
+  return m_fd.exchange(-1);
+}
+
 void SmartFd::pos(uint64_t pos) noexcept {
   m_pos.store(pos);
 }
