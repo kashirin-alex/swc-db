@@ -78,11 +78,33 @@ class AppHandler final : virtual public BrokerIf {
   void sql_list_columns(Schemas& _return, const std::string& sql) override {
     int err = Error::OK;
     std::vector<DB::Schema::Ptr> dbschemas;
+    Comm::Protocol::Mngr::Params::ColumnListReq params;
     std::string message;
-    client::SQL::parse_list_columns(err, sql, dbschemas, message, "list");
+    client::SQL::parse_list_columns(
+      err, sql, dbschemas, params, message, "list");
     if(err)
       Converter::exception(err, message);
 
+    if(!params.patterns.empty() || dbschemas.empty()) {
+      // get all schemas or on patterns
+      std::promise<int> res;
+      Comm::Protocol::Mngr::Req::ColumnList::request(
+        params,
+        [&dbschemas, await=&res]
+        (const Comm::client::ConnQueue::ReqBase::Ptr&, int error,
+         const Comm::Protocol::Mngr::Params::ColumnListRsp& rsp) {
+          if(!error)
+            dbschemas.insert(
+              dbschemas.end(), rsp.schemas.begin(), rsp.schemas.end());
+          await->set_value(error);
+        },
+        300000
+      );
+      if((err = res.get_future().get())) {
+        message.append(Error::get_text(err));
+        Converter::exception(err, message);
+      }
+    }
     process_results(err, dbschemas, _return);
   }
 
@@ -229,6 +251,21 @@ class AppHandler final : virtual public BrokerIf {
     int err = Error::OK;
     std::vector<DB::Schema::Ptr> dbschemas;
     get_schemas(err, spec, dbschemas);
+    if(dbschemas.empty()) { // get all schemas
+      std::promise<int> res;
+      Comm::Protocol::Mngr::Req::ColumnList::request(
+        [&dbschemas, await=&res]
+        (const Comm::client::ConnQueue::ReqBase::Ptr&, int error,
+         const Comm::Protocol::Mngr::Params::ColumnListRsp& rsp) {
+          if(!error)
+            dbschemas = rsp.schemas;
+          await->set_value(error);
+        },
+        300000
+      );
+      if((err = res.get_future().get()))
+        Converter::exception(err);
+    }
     process_results(err, dbschemas, _return);
   }
 
@@ -626,23 +663,8 @@ class AppHandler final : virtual public BrokerIf {
   }
 
   static void process_results(
-          int& err, std::vector<DB::Schema::Ptr>& dbschemas,
+          int&, std::vector<DB::Schema::Ptr>& dbschemas,
           Schemas& _return) {
-    if(dbschemas.empty()) { // get all schema
-      std::promise<int> res;
-      Comm::Protocol::Mngr::Req::ColumnList::request(
-        [&dbschemas, await=&res]
-        (const Comm::client::ConnQueue::ReqBase::Ptr&, int error,
-         const Comm::Protocol::Mngr::Params::ColumnListRsp& rsp) {
-          if(!error)
-            dbschemas = rsp.schemas;
-          await->set_value(error);
-        },
-        300000
-      );
-      if((err = res.get_future().get()))
-        Converter::exception(err);
-    }
 
     _return.resize(dbschemas.size());
     uint32_t c = 0;
