@@ -215,14 +215,14 @@ get columns 1,SYS_MASTER_VOLUME, =^test
 > The command has aliases for Noun:
 > * ```columns``` == ```schemas```
 
-The Syntax of the **Compact Columns** command [```The Command```] and, optionally in round-brackes ```()``` [```Column Selector Syntax```](#the-column-selector-syntax) exclusing the Comparator-Expression.
+The Syntax of the **Compact Columns** command [```The Command```] and, optionally in round-brackes ```()``` [```Column Selector Syntax```](#the-column-selector-syntax).
 > If the _Column Selector_ is not applied, the request is to compact all columns.
 
 #### _a ```compact columns``` example:_
 ```
 get compact 1,SYS_MASTER_VOLUME
 ```
-> The expected response will be a list of Compact-Results (cid=1 err=CODE) and (cid=2 err=CODE)
+> The expected response will be a list of Compact-Result [(cid=1 err=CODE), (cid=2 err=CODE)]
 
 
 

@@ -197,19 +197,24 @@ bool DbClient::mng_column(Comm::Protocol::Mngr::Req::ColumnMng::Func func,
 // COMPACT COLUMN
 bool DbClient::compact_column(std::string& cmd) {
   std::vector<DB::Schema::Ptr> schemas;
+  Comm::Protocol::Mngr::Params::ColumnListReq params;
   std::string message;
-  client::SQL::parse_list_columns(err, cmd, schemas, message, "compact");
+  client::SQL::parse_list_columns(
+    err, cmd, schemas, params, message, "compact");
   if(err)
     return error(message);
 
-  if(schemas.empty()) {
+  if(!params.patterns.empty() || schemas.empty()) {
+    // get all schemas or on patterns
     std::promise<int> res;
     Comm::Protocol::Mngr::Req::ColumnList::request(
+      params,
       [&schemas, await=&res]
       (const Comm::client::ConnQueue::ReqBase::Ptr&, int error,
        const Comm::Protocol::Mngr::Params::ColumnListRsp& rsp) {
         if(!error)
-          schemas = rsp.schemas;
+          schemas.insert(
+            schemas.end(), rsp.schemas.begin(), rsp.schemas.end());
         await->set_value(error);
       },
       300000
@@ -220,7 +225,8 @@ bool DbClient::compact_column(std::string& cmd) {
       return error(message);
     }
   }
-
+  if(schemas.empty())
+    return true;
   std::promise<void> res;
   Core::Atomic<size_t> proccessing(schemas.size());
   for(auto& schema : schemas) {

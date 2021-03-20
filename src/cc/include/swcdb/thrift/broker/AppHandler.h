@@ -78,33 +78,7 @@ class AppHandler final : virtual public BrokerIf {
   void sql_list_columns(Schemas& _return, const std::string& sql) override {
     int err = Error::OK;
     std::vector<DB::Schema::Ptr> dbschemas;
-    Comm::Protocol::Mngr::Params::ColumnListReq params;
-    std::string message;
-    client::SQL::parse_list_columns(
-      err, sql, dbschemas, params, message, "list");
-    if(err)
-      Converter::exception(err, message);
-
-    if(!params.patterns.empty() || dbschemas.empty()) {
-      // get all schemas or on patterns
-      std::promise<int> res;
-      Comm::Protocol::Mngr::Req::ColumnList::request(
-        params,
-        [&dbschemas, await=&res]
-        (const Comm::client::ConnQueue::ReqBase::Ptr&, int error,
-         const Comm::Protocol::Mngr::Params::ColumnListRsp& rsp) {
-          if(!error)
-            dbschemas.insert(
-              dbschemas.end(), rsp.schemas.begin(), rsp.schemas.end());
-          await->set_value(error);
-        },
-        300000
-      );
-      if((err = res.get_future().get())) {
-        message.append(Error::get_text(err));
-        Converter::exception(err, message);
-      }
-    }
+    get_schemas(err, "list", sql, dbschemas);
     process_results(err, dbschemas, _return);
   }
 
@@ -127,11 +101,7 @@ class AppHandler final : virtual public BrokerIf {
                            const std::string& sql) override {
     int err = Error::OK;
     std::vector<DB::Schema::Ptr> dbschemas;
-    std::string message;
-    client::SQL::parse_list_columns(err, sql, dbschemas, message, "compact");
-    if(err)
-      Converter::exception(err, message);
-
+    get_schemas(err, "compact", sql, dbschemas);
     process_results(err, dbschemas, _return);
   }
 
@@ -251,21 +221,6 @@ class AppHandler final : virtual public BrokerIf {
     int err = Error::OK;
     std::vector<DB::Schema::Ptr> dbschemas;
     get_schemas(err, spec, dbschemas);
-    if(dbschemas.empty()) { // get all schemas
-      std::promise<int> res;
-      Comm::Protocol::Mngr::Req::ColumnList::request(
-        [&dbschemas, await=&res]
-        (const Comm::client::ConnQueue::ReqBase::Ptr&, int error,
-         const Comm::Protocol::Mngr::Params::ColumnListRsp& rsp) {
-          if(!error)
-            dbschemas = rsp.schemas;
-          await->set_value(error);
-        },
-        300000
-      );
-      if((err = res.get_future().get()))
-        Converter::exception(err);
-    }
     process_results(err, dbschemas, _return);
   }
 
@@ -603,6 +558,41 @@ class AppHandler final : virtual public BrokerIf {
       Converter::exception(err);
   }
 
+  void get_schemas(int& err, const char* cmd, const std::string& sql,
+                   std::vector<DB::Schema::Ptr>& dbschemas) {
+    Comm::Protocol::Mngr::Params::ColumnListReq params;
+    std::string message;
+    client::SQL::parse_list_columns(
+      err, sql, dbschemas, params, message, cmd);
+    if(err)
+      Converter::exception(err, message);
+
+    if(!params.patterns.empty()) {
+      std::vector<DB::Schema::Ptr> schemas;
+      Env::Clients::get()->schemas->get(err, params.patterns, schemas);
+      if(err && err != Error::COLUMN_SCHEMA_MISSING)
+        Converter::exception(
+          err, "problem getting columns schemas on patterns");
+      err = Error::OK;
+      dbschemas.insert(dbschemas.end(), schemas.begin(), schemas.end());
+
+    } else if(dbschemas.empty()) { // get all schemas
+      std::promise<int> res;
+      Comm::Protocol::Mngr::Req::ColumnList::request(
+        [&dbschemas, await=&res]
+        (const Comm::client::ConnQueue::ReqBase::Ptr&, int error,
+         const Comm::Protocol::Mngr::Params::ColumnListRsp& rsp) {
+          if(!error)
+            dbschemas = rsp.schemas;
+          await->set_value(error);
+        },
+        300000
+      );
+      if((err = res.get_future().get()))
+        Converter::exception(err);
+    }
+  }
+
   void get_schemas(int& err, const SpecSchemas& spec,
                    std::vector<DB::Schema::Ptr>& dbschemas) {
     if(!spec.patterns.empty()) {
@@ -615,9 +605,10 @@ class AppHandler final : virtual public BrokerIf {
         ++i;
       }
       Env::Clients::get()->schemas->get(err, dbpatterns, dbschemas);
-      if(err)
+      if(err && err != Error::COLUMN_SCHEMA_MISSING)
         Converter::exception(
           err, "problem getting columns schemas on patterns");
+      err = Error::OK;
     }
 
     DB::Schema::Ptr schema;
@@ -639,6 +630,22 @@ class AppHandler final : virtual public BrokerIf {
         Converter::exception(
           err, "problem getting column name='"+name+"' schema");
       dbschemas.push_back(schema);
+    }
+
+    if(spec.patterns.empty() && dbschemas.empty()) { // get all schemas
+      std::promise<int> res;
+      Comm::Protocol::Mngr::Req::ColumnList::request(
+        [&dbschemas, await=&res]
+        (const Comm::client::ConnQueue::ReqBase::Ptr&, int error,
+         const Comm::Protocol::Mngr::Params::ColumnListRsp& rsp) {
+          if(!error)
+            dbschemas = rsp.schemas;
+          await->set_value(error);
+        },
+        300000
+      );
+      if((err = res.get_future().get()))
+        Converter::exception(err);
     }
   }
 
@@ -665,7 +672,6 @@ class AppHandler final : virtual public BrokerIf {
   static void process_results(
           int&, std::vector<DB::Schema::Ptr>& dbschemas,
           Schemas& _return) {
-
     _return.resize(dbschemas.size());
     uint32_t c = 0;
     for(auto& dbschema : dbschemas) {
@@ -675,24 +681,8 @@ class AppHandler final : virtual public BrokerIf {
   }
 
   static void process_results(
-          int& err, std::vector<DB::Schema::Ptr>& dbschemas,
+          int&, std::vector<DB::Schema::Ptr>& dbschemas,
           CompactResults& _return) {
-    if(dbschemas.empty()) { // get all schema
-      std::promise<int> res;
-      Comm::Protocol::Mngr::Req::ColumnList::request(
-        [&dbschemas, await=&res]
-        (const Comm::client::ConnQueue::ReqBase::Ptr&, int error,
-         const Comm::Protocol::Mngr::Params::ColumnListRsp& rsp) {
-          if(!error)
-            dbschemas = rsp.schemas;
-          await->set_value(error);
-        },
-        300000
-      );
-      if((err = res.get_future().get()))
-        Converter::exception(err);
-    }
-
     size_t sz = dbschemas.size();
     Core::Semaphore sem(sz, sz);
     _return.resize(sz);
