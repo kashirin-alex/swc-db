@@ -24,7 +24,26 @@ namespace SWC {
  *
  * \ingroup Core
  */
-namespace Core { }
+namespace Core {
+
+
+static_assert(
+  0xff >> 1 == 0x7f,
+  "SWC-DB supports only Little-Endian Architecture!"
+);
+
+static_assert(
+  0x01lu << 32 > 0xffffffff,
+  "SWC-DB supports only 64+ bits Architecture!"
+);
+
+static_assert(
+  sizeof(long double) == 16,
+  "SWC-DB supports only long double of 128 bits Architecture!"
+);
+
+
+}
 
 }
 

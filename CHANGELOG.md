@@ -56,6 +56,7 @@
     added int32_t FS::SmartFd::invalidate() & pre-invalidations at closing Fd
     fixed a missing case of sql_list_columns on patterns in ThriftBroker
     added Column-Selector with pattern syntax to sql_compact_columns
+    added static_asset on Arch not Little-Endian/64+ bits/128 bits long double
 
 [_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.4.18...master)
 ******

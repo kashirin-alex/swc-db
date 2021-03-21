@@ -602,16 +602,16 @@ void Rangers::next_rgr(const Range::Ptr& range, Ranger::Ptr& rs_set) {
 
 void Rangers::health_check_columns() {
   bool support;
-  if(!m_mutex_columns_check.try_full_lock(support))
+  if(!m_run || !m_mutex_columns_check.try_full_lock(support))
     return;
   int64_t ts = Time::now_ms();
   uint32_t intval = cfg_column_health_chk->get();
   for(Column::Ptr col;
       m_columns_check.size() < size_t(cfg_column_health_chkers->get()) &&
       (col = Env::Mngr::columns()->get_need_health_check(ts, intval)); ) {
-    m_columns_check.emplace_back(
-      new ColumnHealthCheck(col, ts, intval));
-    Env::Mngr::post([chk=m_columns_check.back()]() { chk->run(); });
+    Env::Mngr::post(
+      [chk=m_columns_check.emplace_back(
+        new ColumnHealthCheck(col, ts, intval))]() { chk->run(); });
   }
   m_mutex_columns_check.unlock(support);
 }
