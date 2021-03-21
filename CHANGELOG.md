@@ -27,6 +27,35 @@
     fixed FS IO handlers exhaustion in Ranger::CommitLog::Fragment::write
     fixed libswcdb_core queue test, front access failure at one-thread run
     resolved issue #3 Merge of empty Range
+    added Env::Rgr::scan_reserved_bytes()/_sub/_add(uint32t bytes)
+    added void Env::**-majority-of-classes**::reset()
+    fixed mem-leak in class DB::Cells::Mutable dtor, an init. bucket was left
+    fixed mem-leak in Comm::Resolver, cases of missing freeaddrinfo(result)
+    fixed mismatched delete in DB::Cell::Key::remove for new[] array
+    fixed misaligned i8 pointer in Core::fletcher32 for i16 cast usage
+    fixed overflow on uint16_t x uint16_t in Manager::RangersResources
+    changed to capital letter case FS::{ID_SPLIT_LEN,ID_SPLIT_LAST}
+    changed FS::Interface::set_structured_id structure sizing by iterator
+    added Config::Property::Value::assure_match(Type t1, Type t2)
+    added macro SWC_ASSERTF(_e_, _fmt_, ...) to core/Exception.h
+    fixed mismatched swc.ThriftBroker.timeout cfg type in init of ThriftBroker
+    fixed ctor Cell::Cell(const uint8_t**, size_t*, bool) bad 'own' ARG usage
+    added build-wide Cmake definer -DSWC_ENABLE_SANITIZER=address/thread
+    removed Clang support for insistent-malloc at SWC_MALLOC_NOT_INSISTENT=OFF
+    fixed missing mutex over actions on timer in class Comm::ConnQueue
+    changed Ranger::Blocks 'need_ram' for preload by Rgr::scan_reserved_bytes
+    added flag FS::OpenFlags::WRITE_VALIDATE_LENGTH
+    added LENGTH check to FsBroker write handler & FileSystem::default_write
+    added WRITE_VALIDATE_LENGTH Fd flag to Ranger Fragment::make_write/write
+    added option WITH_MALLOC to GET_TARGET_LINKS macro in cmake/Utils.cmake
+    removed unused Flags from Comm::Header & removed Flags enum
+    added Error::SERVER_MEMORY_LOW
+    changed Manager evaluate total-count of mngr-hosts excluding at OFF-state
+    added Error::SERVER_MEMORY_LOW cond. in Ranger RANGE_QUERY_SELECT handler
+    removed StaticBuffer 'input' from Ranger::Callback::RangeQueryUpdate
+    added int32_t FS::SmartFd::invalidate() & pre-invalidations at closing Fd
+    fixed a missing case of sql_list_columns on patterns in ThriftBroker
+    added Column-Selector with pattern syntax to sql_compact_columns
 
 [_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.4.18...master)
 ******
