@@ -141,7 +141,7 @@ void quit_error(int err) {
     return;
   SWC_PRINT << "Error " << err << "(" << Error::get_text(err) << ")"
             << SWC_PRINT_CLOSE;
-  exit(1);
+  std::quick_exit(EXIT_FAILURE);
 }
 
 
@@ -612,7 +612,15 @@ int main(int argc, char** argv) {
 
   SWC::Utils::LoadGenerator::generate();
 
+  std::quick_exit(EXIT_SUCCESS);
+  //..
+  SWC::Env::Clients::get()->rgr->stop();
+  SWC::Env::Clients::get()->mngr->stop();
   SWC::Env::IoCtx::io()->stop();
+
+  SWC::Env::Clients::reset();
+  SWC::Env::IoCtx::reset();
+  SWC::Env::Config::reset();
 
   return 0;
 }

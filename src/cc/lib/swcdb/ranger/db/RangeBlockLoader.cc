@@ -114,25 +114,23 @@ void BlockLoader::load_log(bool is_final, bool is_more) {
     }
   }
   bool more;
-  bool wait;
   {
     Core::MutexSptd::scope lock(m_mutex);
-    m_check_log.stop();
-    if((!is_more && m_processing) || !m_cs_blocks.empty())
+    if(((!is_more && m_processing) || !m_cs_blocks.empty()) ||
+        (!(more = is_more || (m_logs && !m_fragments.empty())) &&
+         (m_processing || m_logs || !m_fragments.empty())))  {
+      m_check_log.stop();
       return;
-    more = is_more || (m_logs && !m_fragments.empty());
-    wait = m_processing || m_logs || !m_fragments.empty();
+    }
   }
-  if(more)
+  if(more) {
+    m_check_log.stop();
     return loaded_frag(nullptr);
-  if(wait)
-    return;
+  }
   if(is_final)
     return completion();
-  if(!m_check_log.running()) {
-    is_final = true;
-    goto check_more;
-  }
+  is_final = true;
+  goto check_more;
 }
 
 void BlockLoader::loaded_frag(const CommitLog::Fragment::Ptr& frag) {
