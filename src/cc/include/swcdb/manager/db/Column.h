@@ -189,7 +189,7 @@ class Column final : private std::vector<Range::Ptr> {
   Range::Ptr left_sibling(const Range::Ptr& right) {
     std::shared_lock lock(m_mutex);
 
-    if(!empty()) for(auto it = begin() + 1; it < end(); ++it) {
+    if(!empty()) for(auto it = begin() + 1; it != end(); ++it) {
       if((*it)->rid == right->rid)
         return *--it;
     }
