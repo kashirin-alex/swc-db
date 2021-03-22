@@ -57,6 +57,11 @@
     fixed a missing case of sql_list_columns on patterns in ThriftBroker
     added Column-Selector with pattern syntax to sql_compact_columns
     added static_asset on Arch not Little-Endian/64+ bits/128 bits long double
+    changed Comm::client::ConnQueue evaluate for closure after keep-alive reach
+    changed Comm::ConnHandler always awaits for a read event
+    removed Comm::ConnHandler::{accept_requests(),close(),m_accepting,m_read}
+    changed Comm::ConnHandler::disconnected() to callable multiple-times
+    fixed unsynchronized state of m_check_log in Ranger::BlockLoader::load_log
 
 [_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.4.18...master)
 ******
