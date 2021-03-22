@@ -93,7 +93,7 @@ class ConnQueue :
 
   void run_queue();
 
-  void schedule_close();
+  void schedule_close(bool closing);
 
   Core::MutexSptd                                   m_mutex;
   IoContextPtr                                      m_ioctx;

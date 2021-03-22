@@ -239,38 +239,38 @@ void ConnQueue::run_queue() {
   }
 
   if(m_timer) // nullptr -eq persistent
-    schedule_close();
+    schedule_close(false);
     // ~ on timer after ms+ OR socket_opt ka(0)+interval(ms+)
 }
 
-void ConnQueue::schedule_close() {
-  {
-    Core::MutexSptd::scope lock(m_mutex);
-    m_timer->cancel();
-  }
-
-  bool closing;
-  ConnHandlerPtr conn;
-  {
-    Core::MutexSptd::scope lock(m_mutex);
-    if((closing = empty() && m_delayed.empty() &&
-                 (!m_conn || !m_conn->due()))) {
-      conn = m_conn;
-      m_conn = nullptr;
-    }
-  }
+void ConnQueue::schedule_close(bool closing) {
   if(closing) {
-    if(conn)
-      conn->do_close();
-    return close_issued();
+    ConnHandlerPtr conn;
+    {
+      Core::MutexSptd::scope lock(m_mutex);
+      if((closing = empty() && m_delayed.empty() &&
+                   (!m_conn || !m_conn->due()))) {
+        conn = m_conn;
+        m_conn = nullptr;
+        m_timer->cancel();
+      }
+    }
+    if(closing) {
+      if(conn)
+        conn->do_close();
+      return close_issued();
+    }
   }
 
   Core::MutexSptd::scope lock(m_mutex);
+  if(!m_conn)
+    return;
+  m_timer->cancel();
   m_timer->expires_after(std::chrono::milliseconds(cfg_keepalive_ms->get()));
   m_timer->async_wait(
     [ptr=shared_from_this()](const asio::error_code& ec) {
       if(ec != asio::error::operation_aborted){
-        ptr->schedule_close();
+        ptr->schedule_close(true);
       }
     }
   );
