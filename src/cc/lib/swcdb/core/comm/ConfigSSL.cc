@@ -10,7 +10,7 @@
 
 namespace SWC { namespace Comm {
 
-  
+
 ConfigSSL::ConfigSSL(bool is_client)
                     : ctx(is_client
                             ? asio::ssl::context::tlsv13_client
@@ -97,8 +97,8 @@ void ConfigSSL::set_networks(const Config::Strings& networks,
               ec.message().c_str());
   if(!with_local) // option pass
     return;
-  
-  // option tmp nets-local for srv by the binded endpoints 
+
+  // option tmp nets-local for srv by the binded endpoints
   int err = Error::OK;
   Resolver::get_local_networks(err, nets_v4, nets_v6);
   if(err)
@@ -127,7 +127,6 @@ void ConfigSSL::make_server(AppContext::Ptr& app_ctx,
     [conn] (const asio::error_code& ec) {
       if(!ec) {
         conn->new_connection();
-        conn->accept_requests();
       } else {
         SWC_LOGF(LOG_DEBUG, "handshake error=%d(%s)",
                   ec.value(), ec.message().c_str());
@@ -138,7 +137,7 @@ void ConfigSSL::make_server(AppContext::Ptr& app_ctx,
 }
 
 
-std::shared_ptr<ConnHandlerSSL>  
+std::shared_ptr<ConnHandlerSSL>
 ConfigSSL::make_client(AppContext::Ptr& app_ctx,
                        SocketPlain& socket) const {
   auto conn = std::make_shared<ConnHandlerSSL>(app_ctx, ctx, socket);
@@ -156,7 +155,7 @@ ConfigSSL::make_client(AppContext::Ptr& app_ctx,
   return conn;
 }
 
-void 
+void
 ConfigSSL::make_client(AppContext::Ptr& app_ctx,
                        SocketPlain& socket,
                        const HandshakeCb_t& cb) const {

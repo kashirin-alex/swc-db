@@ -71,8 +71,6 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
   virtual bool is_open() const noexcept = 0;
 
-  virtual void close() = 0;
-
   size_t pending_read() noexcept;
 
   size_t pending_write();
@@ -94,12 +92,6 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
                      DispatchHandler::Ptr hdlr=nullptr) noexcept;
 
   bool send_request(Buffers::Ptr& cbuf, DispatchHandler::Ptr hdlr);
-
-  void accept_requests();
-
-  /*
-  void accept_requests(DispatchHandler::Ptr hdlr, uint32_t timeout_ms=0);
-  */
 
   void print(std::ostream& out) const;
 
@@ -131,7 +123,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
   void write(Pending* pending);
 
-  void read_pending();
+  void read();
 
   void recved_header_pre(const asio::error_code& ec,
                          const uint8_t* data, size_t filled);
@@ -150,13 +142,11 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
   struct PendingHash {
     size_t operator()(const uint32_t id) const {
-      return id / 4096;
+      return id >> 12;
     }
   };
 
   uint32_t                          m_next_req_id;
-  Core::AtomicBool                  m_accepting;
-  Core::StateRunning                m_read;
   Core::QueueSafeStated<Pending*>   m_outgoing;
   std::unordered_map<uint32_t,
                     Pending*,
@@ -174,8 +164,6 @@ class ConnHandlerPlain final : public ConnHandler {
   virtual ~ConnHandlerPlain();
 
   void do_close() override;
-
-  void close() override;
 
   bool is_open() const noexcept override;
 
@@ -212,8 +200,6 @@ class ConnHandlerSSL final : public ConnHandler {
   bool is_secure() const noexcept override { return true; }
 
   void do_close() override;
-
-  void close() override;
 
   bool is_open() const noexcept override;
 

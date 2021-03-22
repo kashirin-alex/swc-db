@@ -28,8 +28,7 @@ ConnHandler::Pending::~Pending() {
 SWC_SHOULD_INLINE
 ConnHandler::ConnHandler(AppContext::Ptr& app_ctx) noexcept
                         : connected(true),
-                          app_ctx(app_ctx), m_next_req_id(0),
-                          m_accepting(false) {
+                          app_ctx(app_ctx), m_next_req_id(0) {
 }
 
 SWC_SHOULD_INLINE
@@ -73,6 +72,8 @@ void ConnHandler::new_connection() {
   }
   SWC_LOG_OUT(LOG_DEBUG, print(SWC_LOG_OSTREAM << "New-"); );
   run(Event::make(Event::Type::ESTABLISHED, Error::OK));
+
+  read();
 }
 
 size_t ConnHandler::pending_read() noexcept {
@@ -97,6 +98,7 @@ void ConnHandler::run(const Event::Ptr& ev) {
 }
 
 void ConnHandler::do_close_run() {
+  //SWC_LOG_OUT(LOG_DEBUG, print(SWC_LOG_OSTREAM << "Closed-"); );
   run(Event::make(Event::Type::DISCONNECT, Error::OK));
 }
 
@@ -133,28 +135,13 @@ bool ConnHandler::send_request(Buffers::Ptr& cbuf,
   return true;
 }
 
-void ConnHandler::accept_requests() {
-  m_accepting.store(true);
-  read_pending();
-}
-
-/*
-void ConnHandler::accept_requests(DispatchHandler::Ptr hdlr,
-                                  uint32_t timeout_ms) {
-  add_pending(new ConnHandler::Pending(hdlr, get_timer(timeout_ms)));
-  read_pending();
-}
-*/
-
 void ConnHandler::print(std::ostream& out) const {
-  out << "Connection(encoder=" << Core::Encoder::to_string(get_encoder());
-  if(is_open()) {
-    out << " remote=" << endpoint_remote
-        << " local=" << endpoint_local
-        << ' ' << (is_secure() ? "SECURE" : "PLAIN");
-  } else {
+  out << "Connection(encoder=" << Core::Encoder::to_string(get_encoder())
+      << " remote=" << endpoint_remote
+      << " local=" << endpoint_local
+      << ' ' << (is_secure() ? "SECURE" : "PLAIN");
+  if(!is_open())
     out << " CLOSED";
-  }
   out << ')';
 }
 
@@ -169,7 +156,6 @@ void ConnHandler::write_next() {
   Pending* pending;
   if(!m_outgoing.deactivating(&pending))
     write(pending);
-  read_pending();
 }
 
 void ConnHandler::write(ConnHandler::Pending* pending) {
@@ -257,8 +243,8 @@ void ConnHandler::write(ConnHandler::Pending* pending) {
     );
 }
 
-void ConnHandler::read_pending() {
-  if(!connected || m_read.running())
+void ConnHandler::read() {
+  if(!connected)
     return;
 
   uint8_t* data = new uint8_t[Header::PREFIX_LENGTH];
@@ -390,14 +376,7 @@ void ConnHandler::received(const Event::Ptr& ev) {
   if(ev->header.flags & Header::FLAG_REQUEST_BIT)
     ev->received();
 
-  bool more = m_accepting.load();
-  if(!more) {
-    Core::MutexSptd::scope lock(m_mutex);
-    more = !m_pending.empty();
-  }
-  m_read.stop();
-  if(more)
-    read_pending();
+  read();
 
   run_pending(ev);
 }
@@ -470,21 +449,16 @@ ConnHandlerPlain::~ConnHandlerPlain() {
 }
 
 void ConnHandlerPlain::do_close() {
-  if(connected)
-    close();
-}
-
-void ConnHandlerPlain::close() {
   bool at = true;
-  if(!connected.compare_exchange_weak(at, false))
-    return;
-  if(m_sock.is_open()) {
-    asio::error_code ec;
-    m_sock.cancel(ec);
-    m_sock.close(ec);
+  if(connected.compare_exchange_weak(at, false)) {
+    if(m_sock.is_open()) {
+      asio::error_code ec;
+      m_sock.cancel(ec);
+      m_sock.close(ec);
+    }
+    do_close_run();
   }
   disconnected();
-  do_close_run();
 }
 
 bool ConnHandlerPlain::is_open() const noexcept {
@@ -541,22 +515,17 @@ ConnHandlerSSL::~ConnHandlerSSL() {
 }
 
 void ConnHandlerSSL::do_close() {
-  if(connected)
-    close();
-}
-
-void ConnHandlerSSL::close() {
   bool at = true;
-  if(!connected.compare_exchange_weak(at, false))
-    return;
-  if(m_sock.lowest_layer().is_open()) {
-    asio::error_code ec;
-    m_sock.lowest_layer().cancel(ec);
-    //m_sock.shutdown(ec);
-    m_sock.lowest_layer().close(ec);
+  if(connected.compare_exchange_weak(at, false)) {
+    if(m_sock.lowest_layer().is_open()) {
+      asio::error_code ec;
+      m_sock.lowest_layer().cancel(ec);
+      //m_sock.shutdown(ec);
+      m_sock.lowest_layer().close(ec);
+    }
+    do_close_run();
   }
   disconnected();
-  do_close_run();
 
   /* ssl-segment (if protocol is shutdown)
   if(m_sock.lowest_layer().is_open()) {
@@ -565,11 +534,9 @@ void ConnHandlerSSL::close() {
         m_sock.lowest_layer().cancel(ec);
         m_sock.lowest_layer().close(ec);
       }
-      disconnected();
       do_close_run();
     });
   } else {
-    disconnected();
     do_close_run();
   } */
 }

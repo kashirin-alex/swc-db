@@ -129,7 +129,7 @@ void ServerConnections::connection(const std::chrono::milliseconds&,
 
 void ServerConnections::close_all() {
   ConnHandlerPtr conn;
-  while(pop(&conn)) conn->close();
+  while(pop(&conn)) conn->do_close();
 }
 
 

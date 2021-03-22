@@ -478,7 +478,6 @@ void MngrRole::manager_checker(MngrStatus::Ptr host,
   }
   host->conn = conn;
   host->failures = 0;
-  //conn->accept_requests();
   m_major_updates = true;
   set_mngr_inchain(host->conn);
 }

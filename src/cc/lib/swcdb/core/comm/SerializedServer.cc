@@ -59,7 +59,7 @@ void Acceptor::do_accept_mixed() noexcept {
 
       if(new_sock.is_open()) try {
         // OR m_ssl_cfg->need_ssl(new_sock.remote_endpoint(ec))
-        bool need_ssl = new_sock.remote_endpoint(ec).address() != 
+        bool need_ssl = new_sock.remote_endpoint(ec).address() !=
                         new_sock.local_endpoint(ec).address();
         if(!ec) {
           if(need_ssl) {
@@ -67,7 +67,6 @@ void Acceptor::do_accept_mixed() noexcept {
           } else {
             auto conn = std::make_shared<ConnHandlerPlain>(m_app_ctx, new_sock);
             conn->new_connection();
-            conn->accept_requests();
           }
         } else if(new_sock.is_open()) {
           new_sock.close(ec);
@@ -95,7 +94,6 @@ void Acceptor::do_accept_plain() noexcept {
       if(new_sock.is_open()) try {
         auto conn = std::make_shared<ConnHandlerPlain>(m_app_ctx, new_sock);
         conn->new_connection();
-        conn->accept_requests();
       } catch(...) {
         SWC_LOG_CURRENT_EXCEPTION("");
         std::error_code ec;
@@ -235,7 +233,7 @@ void SerializedServer::shutdown() {
       conn = *it;
       m_conns.erase(it);
     }
-    conn->close();
+    conn->do_close();
   }
   //for(auto& io : m_io_contexts)
   //  io->stop();
