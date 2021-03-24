@@ -9,6 +9,16 @@
 
 ### [SWC-DB master](https://github.com/kashirin-alex/swc-db/tree/master) (upcoming-release)
 
+
+
+[_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.4.19...master)
+******
+
+
+
+
+### [SWC-DB v0.4.19](https://github.com/kashirin-alex/swc-db/releases/tag/v0.4.19) (2021-03-23)
+
     added Comm::Protocol::Rgr::Params::RangeUnoad.h
     changed RANGE_UNLOAD command's req/rsp with RangeUnoad params
     added DB::Types::MngrRange::State::MERGE
@@ -63,7 +73,7 @@
     changed Comm::ConnHandler::disconnected() to callable multiple-times
     fixed unsynchronized state of m_check_log in Ranger::BlockLoader::load_log
 
-[_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.4.18...master)
+[_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.4.18...v0.4.19)
 ******
 
 
