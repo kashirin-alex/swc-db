@@ -247,28 +247,24 @@ void ConnHandler::read() {
   if(!connected)
     return;
 
-  uint8_t* data = new uint8_t[Header::PREFIX_LENGTH];
-
   do_async_read(
-    data,
+    _buf_header,
     Header::PREFIX_LENGTH,
-    [data, ptr=ptr()] (const asio::error_code& ec, size_t filled) {
-      ptr->recved_header_pre(ec, data, filled);
-      delete [] data;
+    [ptr=ptr()] (const asio::error_code& ec, size_t filled) {
+      ptr->recved_header_pre(ec, filled);
     }
   );
 }
 
 SWC_SHOULD_INLINE
-void ConnHandler::recved_header_pre(const asio::error_code& ec,
-                                    const uint8_t* data, size_t filled) {
+void ConnHandler::recved_header_pre(const asio::error_code& ec, size_t filled) {
   if(ec || filled != Header::PREFIX_LENGTH)
     return do_close();
 
   auto ev = Event::make(Event::Type::MESSAGE, Error::OK);
   try {
-    const uint8_t* pre_bufp = data;
-    ev->header.decode_prefix(&pre_bufp, &filled);
+    const uint8_t* buf = _buf_header;
+    ev->header.decode_prefix(&buf, &filled);
   } catch(...) {
     ev->header.header_len = 0;
   }
@@ -279,28 +275,26 @@ void ConnHandler::recved_header_pre(const asio::error_code& ec,
     return do_close();
   }
 
-  uint8_t* buf_header = new uint8_t[ev->header.header_len];
-  memcpy(buf_header, data, Header::PREFIX_LENGTH);
   do_async_read(
-    buf_header + Header::PREFIX_LENGTH,
+    _buf_header + Header::PREFIX_LENGTH,
     ev->header.header_len - Header::PREFIX_LENGTH,
-    [ev, buf_header, ptr=ptr()](const asio::error_code& ec, size_t filled) {
-      ptr->recved_header(ev, ec, buf_header, filled);
-      delete [] buf_header;
+    [ev, ptr=ptr()](const asio::error_code& ec, size_t filled) {
+      ptr->recved_header(ev, ec, filled);
     }
   );
 }
 
 SWC_SHOULD_INLINE
-void ConnHandler::recved_header(const Event::Ptr& ev, asio::error_code ec,
-                                const uint8_t* data, size_t filled) {
+void ConnHandler::recved_header(const Event::Ptr& ev, asio::error_code ec, 
+                                size_t filled) {
   if(!ec) {
     if(filled + Header::PREFIX_LENGTH != ev->header.header_len) {
       ec = asio::error::eof;
     } else {
       filled = ev->header.header_len;
       try {
-        ev->header.decode(&data, &filled);
+        const uint8_t* buf = _buf_header;
+        ev->header.decode(&buf, &filled);
       } catch(...) {
         ec = asio::error::eof;
       }
