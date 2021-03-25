@@ -303,9 +303,10 @@ bool Mutable::write_and_free(const DB::Cell::Key& key_start,
 
   cells.ensure(_bytes < threshold? _bytes: threshold);
 
-  auto it = Iterator(&buckets, _narrow(key_start));
   size_t count = 0;
   Iterator it_start;
+  {
+  auto it = Iterator(&buckets, _narrow(key_start));
   for(Cell* cell; it && (!threshold || threshold > cells.fill()); ++it) {
     cell = *it.item;
 
@@ -325,13 +326,14 @@ bool Mutable::write_and_free(const DB::Cell::Key& key_start,
     if(!cell->has_expired(ttl))
       cell->write(cells);
   }
+  }
 
   if(count) {
     if(count == _size) {
       free();
     } else {
       _remove(it_start, count);
-      return more && it;
+      return more && it_start;
     }
   }
   return false;

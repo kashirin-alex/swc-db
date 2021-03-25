@@ -174,13 +174,13 @@ class Mutable final {
           bucket = buckets->erase(bucket);
 
         } else {
-          size_t avail;
-          if((avail = (*bucket)->end() - item) > number) {
+          size_t avail = (*bucket)->end() - item;
+          if(avail > number) {
             item = (*bucket)->erase(item, item + number);
             return;
           }
           number -= avail;
-          (*bucket)->erase(item, item + avail);
+          (*bucket)->erase(item, (*bucket)->end());
           ++bucket;
         }
 
