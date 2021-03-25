@@ -11,6 +11,10 @@
 
 namespace SWC { namespace DB { namespace Specs {
 
+Fraction& Fraction::operator=(std::string&& other) noexcept {
+  *this = std::move(other);
+  return *this;
+}
 
 Fraction::~Fraction() {
   if(compiled) switch(comp) {

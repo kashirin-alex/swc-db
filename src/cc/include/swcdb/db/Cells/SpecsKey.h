@@ -19,10 +19,12 @@ struct Fraction final : public std::string {
   Condition::Comp comp;
   void*           compiled = nullptr;
 
+  Fraction& operator=(std::string&& other) noexcept;
+
   ~Fraction();
 
   bool operator==(const Fraction &other) const;
-
+  
   uint32_t encoded_length() const noexcept;
 
   void encode(uint8_t** bufp) const;
