@@ -144,85 +144,141 @@ void quit_error(int err) {
   std::quick_exit(EXIT_FAILURE);
 }
 
-
-class CountIt {
+class KeyGenerator {
   public:
+  const size_t    ncells;
+  const bool      tree;
+  const bool      reverse;
+  const uint24_t  nfractions;
+  const uint24_t  fraction_size;
+  const bool      is_fc_type;
 
-  enum SEQ : uint8_t {
-    REGULAR,
-    REVERSE
-  };
+  KeyGenerator(size_t ncells, bool tree, bool reverse,
+                uint24_t fraction_size, uint24_t nfractions,
+                bool is_fc_type)
+              : ncells(ncells),
+                tree(tree), reverse(reverse),
+                nfractions(nfractions),
+                fraction_size(fraction_size),
+                is_fc_type(is_fc_type && tree),
+                _ncells(0), _nfractions(0) {
+    _fractions_state.resize(nfractions);
 
-  CountIt(SEQ seq, ssize_t min, ssize_t max)
-          : seq(seq), min(min), max(max) {
-    reset();
+    _fractions_state[0] = reverse ? (ncells + 1) : 0;
+    for(size_t n = 1; n < nfractions; ++n)
+      _fractions_state[n] = n;
   }
 
-  bool next(ssize_t* nxt) {
-    switch(seq) {
-      case REVERSE: {
-        if(pos == min)
-          return false;
-        *nxt = --pos;
-        return true;
+  bool next_n_fraction() {
+    if(!tree) {
+      _nfractions = nfractions;
+      reverse ? --_fractions_state[0] : ++_fractions_state[0];
+      return ++_ncells <= ncells;
+    }
+
+    if(is_fc_type) {
+      if(reverse) {
+        if(!_nfractions)
+          _nfractions = nfractions;
+        if(!--_fractions_state[0]) {
+          if(!--_nfractions)
+            return false;
+          _fractions_state[0] = ncells;
+        }
+      } else {
+        if(++_fractions_state[0] > ncells || !_nfractions) {
+          ++_nfractions;
+          _fractions_state[0] = 1;
+        }
       }
-      default: {
-        if(pos == max)
-          return false;
-        *nxt = pos;
-        ++pos;
-        return true;
+      return _nfractions <= nfractions;
+    }
+
+    if(reverse) {
+      if(!_nfractions || !--_nfractions) {
+        _nfractions = nfractions;
+        --_fractions_state[0];
+        ++_ncells;
+      }
+    } else {
+      if(!_nfractions || ++_nfractions > nfractions) {
+        _nfractions = 1;
+        ++_fractions_state[0];
+        ++_ncells;
       }
     }
+    return _ncells <= ncells;
   }
 
-  void reset() {
-    switch(seq) {
-      case REVERSE: {
-        pos = max;
-        break;
-      }
-      default: {
-        pos = min;
-        break;
-      }
-    }
-  }
-
-  SEQ     seq;
-  ssize_t min;
-  ssize_t max;
-  ssize_t pos;
+  protected:
+  size_t                    _ncells;
+  uint24_t                  _nfractions;
+  std::vector<size_t>       _fractions_state;
 };
 
 
-
-void apply_key(ssize_t i, ssize_t f, uint32_t fraction_size,
-               DB::Cell::Key& key) {
-  std::vector<std::string> fractions;
-  fractions.resize(f);
-
-  for(ssize_t fn=0; fn<f; ++fn) {
-    std::string& fraction = fractions[fn];
-    fraction.append(std::to_string(fn ? fn : i));
-    for(; fraction.length() < fraction_size; fraction.insert(0, "0"));
+class KeyGeneratorUpdate : public KeyGenerator {
+  public:
+  KeyGeneratorUpdate(size_t ncells, bool tree, bool reverse,
+                     uint24_t fraction_size, uint24_t nfractions,
+                     bool is_fc_type)
+          : KeyGenerator(
+              ncells, tree, reverse, nfractions, fraction_size, is_fc_type) {
+    _fractions.reserve(nfractions);
   }
-  key.free();
-  key.add(fractions);
-}
 
-void apply_key(ssize_t i, ssize_t f, uint32_t fraction_size,
-               DB::Specs::Key& key, Condition::Comp comp) {
-  key.free();
-  key.resize(f);
+  bool next(DB::Cell::Key& key) {
+    if(!next_n_fraction())
+      return false;
 
-  for(ssize_t fn=0; fn<f; ++fn) {
-    DB::Specs::Fraction& fraction = key[fn];
-    fraction.comp = comp;
-    fraction.append(std::to_string(fn ? fn : i));
-    for(; fraction.length() < fraction_size; fraction.insert(0, "0"));
+    _fractions.resize(_nfractions);
+    size_t fn = 0;
+    for(auto& fraction : _fractions) {
+      fraction = std::move(std::to_string(_fractions_state[fn]));
+      if(fraction_size > fraction.length())
+        fraction.insert(0, fraction_size - fraction.length(), '0');
+      ++fn;
+    }
+    key.free();
+    key.add(_fractions);
+    _fractions.clear();
+    return true;
   }
-}
+
+  private:
+  std::vector<std::string>    _fractions;
+};
+
+
+class KeyGeneratorSelect : public KeyGenerator {
+  public:
+  KeyGeneratorSelect(size_t ncells, bool tree, bool reverse,
+                     uint24_t fraction_size, uint24_t nfractions,
+                     bool is_fc_type)
+          : KeyGenerator(
+              ncells, tree, reverse, nfractions, fraction_size, is_fc_type) {
+  }
+
+  bool next(DB::Specs::Key& key) {
+    if(!next_n_fraction())
+      return false;
+
+    key.free();
+    key.resize(_nfractions);
+    size_t fn = 0;
+    for(auto& fraction : key) {
+      fraction.comp = Condition::EQ;
+      fraction = std::move(std::to_string(_fractions_state[fn]));
+      if(fraction_size > fraction.length())
+        fraction.insert(0, fraction_size - fraction.length(), '0');
+      ++fn;
+    }
+    return true;
+  }
+
+};
+
+
 
 
 void update_data(const std::vector<DB::Schema::Ptr>& schemas, uint8_t flag) {
@@ -232,13 +288,12 @@ void update_data(const std::vector<DB::Schema::Ptr>& schemas, uint8_t flag) {
     ? settings->get_i32("gen-cell-versions")
     : 1;
 
-  uint32_t fractions = settings->get_i32("gen-key-fractions");
+  uint32_t nfractions = settings->get_i32("gen-key-fractions");
   uint32_t fraction_size = settings->get_i32("gen-fraction-size");
 
   bool tree = settings->get_bool("gen-key-tree");
-  uint64_t cells = settings->get_i64("gen-cells");
+  uint64_t ncells = settings->get_i64("gen-cells");
   bool reverse = settings->get_bool("gen-reverse");
-  auto seq = reverse ? CountIt::REVERSE : CountIt::REGULAR;
 
   uint32_t value = flag == DB::Cells::INSERT
     ? settings->get_i32("gen-value-size")
@@ -276,87 +331,80 @@ void update_data(const std::vector<DB::Schema::Ptr>& schemas, uint8_t flag) {
 
   uint64_t ts = Time::now_ns();
   uint64_t ts_progress = ts;
-  //uint64_t key_count = 0;
-  CountIt cell_num(seq, 0, cells);
-  CountIt f_num(seq, (tree ? 1 : fractions), fractions+1);
-  ssize_t i;
-  ssize_t f;
 
   for(uint32_t v=0; v<versions; ++v) {
     for(uint32_t count=is_counter ? value : 1; count > 0; --count) {
-      cell_num.reset();
-      while(cell_num.next(&i)) {
-        f_num.reset();
-        while(f_num.next(&f)) {
 
-          apply_key(i, f, fraction_size, cell.key);
+      KeyGeneratorUpdate key_gen(
+        ncells, tree, reverse, fraction_size, nfractions,
+        DB::Types::is_fc(schemas.front()->col_seq)
+      );
+      while(key_gen.next(cell.key)) {
+        if(flag == DB::Cells::INSERT) {
+          if(is_counter) {
+            cell.set_counter(0, 1, schemas.front()->col_type);
 
-          if(flag == DB::Cells::INSERT) {
-            if(is_counter) {
-              cell.set_counter(0, 1, schemas.front()->col_type);
+          } else if(is_serial) {
 
-            } else if(is_serial) {
-
-              DB::Cell::Serial::Value::FieldsWriter wfields;
-              wfields.ensure(value_data.size() * 10);
-              auto t = DB::Cell::Serial::Value::Type::INT64;
-              for(auto it = value_data.begin(); it != value_data.end(); ++it) {
-                if(t == DB::Cell::Serial::Value::Type::INT64) {
-                  wfields.add(int64_t(*it));
-                  t = DB::Cell::Serial::Value::Type::DOUBLE;
-                } else if(t == DB::Cell::Serial::Value::Type::DOUBLE) {
-                  long double v(*it);
-                  wfields.add(v);
-                  t = DB::Cell::Serial::Value::Type::BYTES;
-                } else if(t == DB::Cell::Serial::Value::Type::BYTES) {
-                  const uint8_t c = *it;
-                  wfields.add(&c, 1);
-                  t = DB::Cell::Serial::Value::Type::INT64;
-                }
+            DB::Cell::Serial::Value::FieldsWriter wfields;
+            wfields.ensure(value_data.size() * 10);
+            auto t = DB::Cell::Serial::Value::Type::INT64;
+            for(auto it = value_data.begin(); it != value_data.end(); ++it) {
+              if(t == DB::Cell::Serial::Value::Type::INT64) {
+                wfields.add(int64_t(*it));
+                t = DB::Cell::Serial::Value::Type::DOUBLE;
+              } else if(t == DB::Cell::Serial::Value::Type::DOUBLE) {
+                long double v(*it);
+                wfields.add(v);
+                t = DB::Cell::Serial::Value::Type::BYTES;
+              } else if(t == DB::Cell::Serial::Value::Type::BYTES) {
+                const uint8_t c = *it;
+                wfields.add(&c, 1);
+                t = DB::Cell::Serial::Value::Type::INT64;
               }
-
-              if(cell_encoder != DB::Types::Encoder::PLAIN) {
-                cell.set_value(cell_encoder, wfields.base, wfields.fill());
-              } else {
-                cell.set_value(wfields.base, wfields.fill(), true);
-              }
-
-            } else if(cell_encoder != DB::Types::Encoder::PLAIN) {
-              cell.set_value(cell_encoder, value_data);
-            } else {
-              cell.set_value(value_data);
             }
-          }
 
-          for(auto& col : colms) {
-            col->add(cell);
-
-            ++added_count;
-            added_bytes += cell.encoded_length();
-            if(cellatime) {
-              req->commit();
-              req->wait();
+            if(cell_encoder != DB::Types::Encoder::PLAIN) {
+              cell.set_value(cell_encoder, wfields.base, wfields.fill());
             } else {
-              req->commit_or_wait();
+              cell.set_value(wfields.base, wfields.fill(), true);
             }
-          }
 
-          if(progress && !(added_count % progress)) {
-            ts_progress = Time::now_ns() - ts_progress;
-            SWC_PRINT
-              << "update-progress(time_ns=" <<  Time::now_ns()
-              << " cells=" << added_count
-              << " bytes=" << added_bytes
-              << " avg=" << ts_progress/progress << "ns/cell) ";
-            req->result->profile.finished();
-            req->result->profile.print(SWC_LOG_OSTREAM);
-            SWC_LOG_OSTREAM << SWC_PRINT_CLOSE;
-
-            ts_progress = Time::now_ns();
+          } else if(cell_encoder != DB::Types::Encoder::PLAIN) {
+            cell.set_value(cell_encoder, value_data);
+          } else {
+            cell.set_value(value_data);
           }
         }
-        resend_cells += req->result->get_resend_count();
+
+        for(auto& col : colms) {
+          col->add(cell);
+
+          ++added_count;
+          added_bytes += cell.encoded_length();
+          if(cellatime) {
+            req->commit();
+            req->wait();
+          } else {
+            req->commit_or_wait();
+          }
+        }
+
+        if(progress && !(added_count % progress)) {
+          ts_progress = Time::now_ns() - ts_progress;
+          SWC_PRINT
+            << "update-progress(time_ns=" <<  Time::now_ns()
+            << " cells=" << added_count
+            << " bytes=" << added_bytes
+            << " avg=" << ts_progress/progress << "ns/cell) ";
+          req->result->profile.finished();
+          req->result->profile.print(SWC_LOG_OSTREAM);
+          SWC_LOG_OSTREAM << SWC_PRINT_CLOSE;
+
+          ts_progress = Time::now_ns();
+        }
       }
+      resend_cells += req->result->get_resend_count();
     }
   }
 
@@ -380,13 +428,12 @@ void select_data(const std::vector<DB::Schema::Ptr>& schemas) {
   bool expect_empty = settings->get_bool("gen-select-empty");
 
   uint32_t versions = settings->get_i32("gen-cell-versions");
-  uint32_t fractions = settings->get_i32("gen-key-fractions");
+  uint32_t nfractions = settings->get_i32("gen-key-fractions");
   uint32_t fraction_size = settings->get_i32("gen-fraction-size");
 
   bool tree = settings->get_bool("gen-key-tree");
   uint64_t ncells = settings->get_i64("gen-cells");
   bool reverse = settings->get_bool("gen-reverse");
-  auto seq = reverse ? CountIt::REVERSE : CountIt::REGULAR;
 
   uint32_t progress = settings->get_i32("gen-progress");
   bool cellatime = settings->get_bool("gen-cell-a-time");
@@ -419,52 +466,47 @@ void select_data(const std::vector<DB::Schema::Ptr>& schemas) {
   uint64_t ts_progress = ts;
 
   if(cellatime) {
-    CountIt cell_num(seq, 0, ncells);
-    CountIt f_num(seq, (tree ? 1 : fractions), fractions+1);
-    ssize_t i;
-    ssize_t f;
-    while(cell_num.next(&i)) {
-      f_num.reset();
-      while(f_num.next(&f)) {
+    KeyGeneratorSelect key_gen(
+      ncells, tree, reverse, fraction_size, nfractions,
+      DB::Types::is_fc(schemas.front()->col_seq)
+    );
 
-        auto intval = DB::Specs::Interval::make_ptr();
-        intval->set_opt__key_equal();
-        auto& key_intval = intval->key_intervals.add();
-        apply_key(i, f, fraction_size, key_intval->start, Condition::EQ);
-        intval->flags.limit = versions;
-        for(auto& schema : schemas) {
-          req->specs.columns.push_back(
-            DB::Specs::Column::make_ptr(schema->cid, {intval}));
-        }
+    auto intval = DB::Specs::Interval::make_ptr();
+    while(key_gen.next(intval->key_intervals.add()->start)) {
+      intval->set_opt__key_equal();
+      intval->flags.limit = versions;
+      for(auto& schema : schemas) {
+        req->specs.columns.push_back(
+          DB::Specs::Column::make_ptr(schema->cid, {intval}));
+      }
 
-        req->scan(err = Error::OK);
-        SWC_ASSERT(!err);
+      req->scan(err = Error::OK);
+      SWC_ASSERT(!err);
 
-        req->wait();
-        if(expect_empty) {
-          SWC_ASSERT(req->result->empty());
-        } else {
-          for(auto& schema : schemas)
-            SWC_ASSERT(req->result->get_size(schema->cid) == versions);
-        }
-
-        select_bytes += req->result->get_size_bytes();
-        ++select_count;
-
+      req->wait();
+      if(expect_empty) {
+        SWC_ASSERT(req->result->empty());
+      } else {
         for(auto& schema : schemas)
-          req->result->free(schema->cid);
+          SWC_ASSERT(req->result->get_size(schema->cid) == versions);
+      }
 
-        if(progress && !(select_count % progress)) {
-          ts_progress = Time::now_ns() - ts_progress;
-          SWC_PRINT
-            << "select-progress(time_ns=" << Time::now_ns()
-            << " cells=" << select_count
-            << " avg=" << ts_progress/progress << "ns/cell) ";
-          req->result->profile.print(SWC_LOG_OSTREAM);
-          SWC_LOG_OSTREAM << SWC_PRINT_CLOSE;
+      select_bytes += req->result->get_size_bytes();
+      ++select_count;
 
-          ts_progress = Time::now_ns();
-        }
+      for(auto& schema : schemas)
+        req->result->free(schema->cid);
+
+      if(progress && !(select_count % progress)) {
+        ts_progress = Time::now_ns() - ts_progress;
+        SWC_PRINT
+          << "select-progress(time_ns=" << Time::now_ns()
+          << " cells=" << select_count
+          << " avg=" << ts_progress/progress << "ns/cell) ";
+        req->result->profile.print(SWC_LOG_OSTREAM);
+        SWC_LOG_OSTREAM << SWC_PRINT_CLOSE;
+
+        ts_progress = Time::now_ns();
       }
     }
     if(expect_empty)
@@ -485,7 +527,7 @@ void select_data(const std::vector<DB::Schema::Ptr>& schemas) {
     SWC_ASSERT(
       expect_empty
       ? req->result->empty()
-      : select_count == versions * (tree ? fractions : 1)
+      : select_count == versions * (tree ? nfractions : 1)
                           * ncells * schemas.size()
     );
   }
