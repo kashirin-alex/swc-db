@@ -11,6 +11,36 @@
 
 namespace SWC { namespace DB { namespace Specs {
 
+
+
+Fraction::Fraction(const char* buf, uint32_t len, Condition::Comp comp)
+                  : std::string(buf, len), comp(comp) {
+}
+
+Fraction::Fraction(std::string&& fraction, Condition::Comp comp) noexcept
+                  : std::string(std::move(fraction)), comp(comp) {
+}
+
+Fraction::Fraction(const Fraction& other)
+                  : std::string(other), comp(other.comp) {
+}
+
+Fraction::Fraction(Fraction&& other) noexcept
+                  : std::string(std::move(other)), comp(other.comp) {
+}
+
+Fraction& Fraction::operator=(const Fraction& other) {
+  std::string::operator=(other);
+  comp = other.comp;
+  return *this;
+}
+
+Fraction& Fraction::operator=(Fraction&& other) noexcept {
+  std::string::operator=(std::move(other));
+  comp = other.comp;
+  return *this;
+}
+
 Fraction& Fraction::operator=(std::string&& other) noexcept {
   std::string::operator=(std::move(other));
   return *this;
@@ -53,6 +83,25 @@ void Fraction::decode(const uint8_t** bufp, size_t* remainp) {
   }
 }
 
+void Fraction::print(std::ostream& out, bool pretty) const {
+  out << Condition::to_string(comp) << '"';
+  char hex[5];
+  hex[4] = 0;
+  uint8_t byte;
+  for(auto chrp = cbegin(); chrp != cend(); ++chrp) {
+    byte = *chrp;
+    if(byte == '"')
+      out << '\\';
+    if(!pretty || (31 < byte && byte < 127)) {
+      out << *chrp;
+    } else {
+      sprintf(hex, "0x%X", byte);
+      out << hex;
+    }
+  }
+  out << '"';
+}
+
 template<Types::KeySeq T_seq>
 SWC_CAN_INLINE
 bool
@@ -78,7 +127,9 @@ Fraction::_is_matching(const uint8_t* ptr, uint32_t len) {
 
 Key::Key() noexcept { }
 
-Key::Key(const Key &other) : std::vector<Fraction>(other) { }
+Key::Key(const Key& other) : std::vector<Fraction>(other) { }
+
+Key::Key(Key&& other) noexcept : std::vector<Fraction>(std::move(other)) { }
 
 Key::~Key() { }
 
@@ -129,55 +180,73 @@ void Key::set(int32_t idx, Condition::Comp comp) {
   (begin()+idx)->comp = comp;
 }
 
-void Key::add(const char* buf, uint32_t len, Condition::Comp comp) {
-  Fraction& f = emplace_back();
-  f.comp = comp;
-  if(len)
-    f.append(buf, len);
+
+Fraction& Key::add(Fraction&& other) {
+  return emplace_back(std::move(other));
 }
 
-void Key::add(const std::string& fraction, Condition::Comp comp) {
-  add(fraction.c_str(), fraction.length(), comp);
+Fraction& Key::add(std::string&& fraction, Condition::Comp comp) {
+  return emplace_back(std::move(fraction), comp);
 }
 
-void Key::add(const std::string_view& fraction, Condition::Comp comp) {
-  add(fraction.data(), fraction.length(), comp);
+Fraction& Key::add(const char* buf, uint32_t len,
+                   Condition::Comp comp) {
+  return emplace_back(buf, len, comp);
 }
 
-void Key::add(const char* fraction, Condition::Comp comp) {
-  add(fraction, strlen(fraction), comp);
+Fraction& Key::add(const std::string& fraction,
+                   Condition::Comp comp) {
+  return add(fraction.c_str(), fraction.length(), comp);
 }
 
-void Key::add(const uint8_t* fraction, uint32_t len, Condition::Comp comp) {
-  add(reinterpret_cast<const char*>(fraction), len, comp);
+Fraction& Key::add(const std::string_view& fraction,
+                   Condition::Comp comp) {
+  return add(fraction.data(), fraction.length(), comp);
+}
+
+Fraction& Key::add(const char* fraction,
+                   Condition::Comp comp) {
+  return add(fraction, strlen(fraction), comp);
+}
+
+Fraction& Key::add(const uint8_t* fraction, uint32_t len,
+                   Condition::Comp comp) {
+  return add(reinterpret_cast<const char*>(fraction), len, comp);
 }
 
 
-void Key::insert(uint32_t idx, const char* buf, uint32_t len,
-                 Condition::Comp comp) {
-  auto it = emplace(begin() + idx);
-  it->comp = comp;
-  if(len)
-    it->append(buf, len);
+Fraction& Key::insert(uint32_t idx, Fraction&& other) {
+  return *emplace(begin() + idx, std::move(other));
 }
 
-void Key::insert(uint32_t idx, const std::string& fraction,
-                 Condition::Comp comp) {
-  insert(idx, fraction.c_str(), fraction.length(), comp);
+Fraction& Key::insert(uint32_t idx, std::string&& fraction,
+                      Condition::Comp comp) {
+  return *emplace(begin() + idx, std::move(fraction), comp);
 }
 
-void Key::insert(uint32_t idx, const std::string_view& fraction,
-                 Condition::Comp comp) {
-  insert(idx, fraction.data(), fraction.length(), comp);
+Fraction& Key::insert(uint32_t idx, const char* buf, uint32_t len,
+                      Condition::Comp comp) {
+  return *emplace(begin() + idx, buf, len, comp);
 }
 
-void Key::insert(uint32_t idx, const uint8_t* fraction, uint32_t len,
-                 Condition::Comp comp) {
-  insert(idx, reinterpret_cast<const char*>(fraction), len, comp);
+Fraction& Key::insert(uint32_t idx, const std::string& fraction,
+                      Condition::Comp comp) {
+  return insert(idx, fraction.c_str(), fraction.length(), comp);
 }
 
-void Key::insert(uint32_t idx, const char* fraction, Condition::Comp comp) {
-  insert(idx, fraction, strlen(fraction), comp);
+Fraction& Key::insert(uint32_t idx, const std::string_view& fraction,
+                      Condition::Comp comp) {
+  return insert(idx, fraction.data(), fraction.length(), comp);
+}
+
+Fraction& Key::insert(uint32_t idx, const uint8_t* fraction, uint32_t len,
+                      Condition::Comp comp) {
+  return insert(idx, reinterpret_cast<const char*>(fraction), len, comp);
+}
+
+Fraction& Key::insert(uint32_t idx, const char* fraction,
+                      Condition::Comp comp) {
+  return insert(idx, fraction, strlen(fraction), comp);
 }
 
 
@@ -303,24 +372,8 @@ void Key::print(std::ostream& out) const {
 
 void Key::display(std::ostream& out, bool pretty) const {
   out << '[';
-  char hex[5];
-  hex[4] = 0;
-  uint8_t byte;
   for(auto it = cbegin(); it != cend(); ) {
-    out << Condition::to_string(it->comp)
-        << '"';
-    for(auto chrp = it->cbegin(); chrp != it->cend(); ++chrp) {
-      byte = *chrp;
-      if(byte == '"')
-        out << '\\';
-      if(!pretty || (31 < byte && byte < 127)) {
-        out << *chrp;
-      } else {
-        sprintf(hex, "0x%X", byte);
-        out << hex;
-      }
-    }
-    out << '"';
+    it->print(out, pretty);
     if(++it != cend())
       out << ", ";
   }

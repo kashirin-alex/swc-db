@@ -19,17 +19,33 @@ struct Fraction final : public std::string {
   Condition::Comp comp;
   void*           compiled = nullptr;
 
+  Fraction() { }
+
+  Fraction(const char* buf, uint32_t len, Condition::Comp comp);
+
+  Fraction(std::string&& fraction, Condition::Comp comp) noexcept;
+
+  Fraction(const Fraction& other);
+
+  Fraction(Fraction&& other) noexcept;
+
+  Fraction& operator=(const Fraction& other);
+
+  Fraction& operator=(Fraction&& other) noexcept;
+
   Fraction& operator=(std::string&& other) noexcept;
 
   ~Fraction();
 
   bool operator==(const Fraction &other) const;
-  
+
   uint32_t encoded_length() const noexcept;
 
   void encode(uint8_t** bufp) const;
 
   void decode(const uint8_t** bufp, size_t* remainp);
+
+  void print(std::ostream& out, bool pretty) const;
 
   template<Types::KeySeq T_seq> // internal use
   bool _is_matching(const uint8_t* ptr, uint32_t len);
@@ -46,7 +62,9 @@ class Key final : public std::vector<Fraction> {
 
   explicit Key() noexcept;
 
-  explicit Key(const Key &other);
+  explicit Key(const Key& other);
+
+  explicit Key(Key&& other) noexcept;
 
   explicit Key(const DB::Cell::Key &cell_key, Condition::Comp comp);
 
@@ -60,34 +78,46 @@ class Key final : public std::vector<Fraction> {
 
   bool equal(const Key &other) const noexcept;
 
+
   void set(const DB::Cell::Key &cell_key, Condition::Comp comp);
 
   void set(int32_t idx, Condition::Comp comp);
 
-  void add(const char* buf, uint32_t len, Condition::Comp comp);
 
-  void add(const std::string& fraction, Condition::Comp comp);
+  Fraction& add(Fraction&& other);
 
-  void add(const std::string_view& fraction, Condition::Comp comp);
+  Fraction& add(std::string&& fraction, Condition::Comp comp);
 
-  void add(const char* fraction, Condition::Comp comp);
+  Fraction& add(const char* buf, uint32_t len, Condition::Comp comp);
 
-  void add(const uint8_t* fraction, uint32_t len, Condition::Comp comp);
+  Fraction& add(const std::string& fraction, Condition::Comp comp);
+
+  Fraction& add(const std::string_view& fraction, Condition::Comp comp);
+
+  Fraction& add(const char* fraction, Condition::Comp comp);
+
+  Fraction& add(const uint8_t* fraction, uint32_t len, Condition::Comp comp);
 
 
-  void insert(uint32_t idx, const char* buf, uint32_t len,
-              Condition::Comp comp);
+  Fraction& insert(uint32_t idx, Fraction&& other);
 
-  void insert(uint32_t idx, const std::string& fraction,
-              Condition::Comp comp);
+  Fraction& insert(uint32_t idx, std::string&& fraction,
+                   Condition::Comp comp);
 
-  void insert(uint32_t idx, const std::string_view& fraction,
-              Condition::Comp comp);
+  Fraction& insert(uint32_t idx, const char* buf, uint32_t len,
+                   Condition::Comp comp);
 
-  void insert(uint32_t idx, const uint8_t* fraction, uint32_t len,
-              Condition::Comp comp);
+  Fraction& insert(uint32_t idx, const std::string& fraction,
+                   Condition::Comp comp);
 
-  void insert(uint32_t idx, const char* fraction, Condition::Comp comp);
+  Fraction& insert(uint32_t idx, const std::string_view& fraction,
+                   Condition::Comp comp);
+
+  Fraction& insert(uint32_t idx, const uint8_t* fraction, uint32_t len,
+                   Condition::Comp comp);
+
+  Fraction& insert(uint32_t idx, const char* fraction, Condition::Comp comp);
+
 
   std::string_view get(const uint32_t idx, Condition::Comp& comp) const;
 
@@ -95,7 +125,9 @@ class Key final : public std::vector<Fraction> {
 
   void get(DB::Cell::Key& key) const;
 
+
   void remove(uint32_t idx, bool recursive=false);
+
 
   uint32_t encoded_length() const noexcept;
 
@@ -103,11 +135,13 @@ class Key final : public std::vector<Fraction> {
 
   void decode(const uint8_t** bufp, size_t* remainp);
 
+
   bool is_matching(const Types::KeySeq seq, const Cell::Key &key);
 
   bool is_matching_lexic(const Cell::Key &key);
 
   bool is_matching_volume(const Cell::Key &key);
+
 
   std::string to_string() const;
 
