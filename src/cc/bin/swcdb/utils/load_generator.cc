@@ -234,7 +234,7 @@ class KeyGeneratorUpdate : public KeyGenerator {
     _fractions.resize(_nfractions);
     size_t fn = 0;
     for(auto& fraction : _fractions) {
-      fraction = std::move(std::to_string(_fractions_state[fn]));
+      fraction = std::to_string(_fractions_state[fn]);
       if(fraction_size > fraction.length())
         fraction.insert(0, fraction_size - fraction.length(), '0');
       ++fn;
@@ -268,7 +268,7 @@ class KeyGeneratorSelect : public KeyGenerator {
     size_t fn = 0;
     for(auto& fraction : key) {
       fraction.comp = Condition::EQ;
-      fraction = std::move(std::to_string(_fractions_state[fn]));
+      fraction = std::to_string(_fractions_state[fn]);
       if(fraction_size > fraction.length())
         fraction.insert(0, fraction_size - fraction.length(), '0');
       ++fn;
