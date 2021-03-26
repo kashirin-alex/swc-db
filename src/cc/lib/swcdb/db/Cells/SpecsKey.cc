@@ -12,7 +12,7 @@
 namespace SWC { namespace DB { namespace Specs {
 
 Fraction& Fraction::operator=(std::string&& other) noexcept {
-  *this = std::move(other);
+  std::string::operator=(std::move(other));
   return *this;
 }
 

@@ -285,7 +285,7 @@ void ConnHandler::recved_header_pre(const asio::error_code& ec, size_t filled) {
 }
 
 SWC_SHOULD_INLINE
-void ConnHandler::recved_header(const Event::Ptr& ev, asio::error_code ec, 
+void ConnHandler::recved_header(const Event::Ptr& ev, asio::error_code ec,
                                 size_t filled) {
   if(!ec) {
     if(filled + Header::PREFIX_LENGTH != ev->header.header_len) {
