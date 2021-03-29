@@ -76,6 +76,10 @@ class Key final : public std::vector<Fraction> {
 
   void copy(const Key &other);
 
+  Key& operator=(Key&& other) noexcept;
+
+  void move(Key& other) noexcept;
+
   bool equal(const Key &other) const noexcept;
 
 

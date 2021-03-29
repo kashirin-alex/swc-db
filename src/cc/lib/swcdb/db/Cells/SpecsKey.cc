@@ -155,6 +155,15 @@ void Key::copy(const Key &other) {
   assign(other.begin(), other.end());
 }
 
+Key& Key::operator=(Key&& other) noexcept {
+  move(other);
+  return *this;
+}
+
+void Key::move(Key& other) noexcept {
+  std::vector<Fraction>::operator=(std::move(other));
+}
+
 bool Key::equal(const Key &other) const noexcept {
   return *this == other;
 }
