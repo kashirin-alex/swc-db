@@ -1,10 +1,10 @@
 ---
-title: Load Generator 
+title: Load Generator
 sort: 11
 ---
 
 
-# Using SWC-DB load generator 
+# Using SWC-DB load generator
 
 ```bash
 cd /opt/swcdb;          # if SWCDB_INSTALL_PATH not on PATH
@@ -31,36 +31,39 @@ cd /opt/swcdb;          # if SWCDB_INSTALL_PATH not on PATH
 # along with this program.
 # If not, see <https://github.com/kashirin-alex/swc-db/blob/master/LICENSE>.
 
+SWC-DB(load_generator) Usage: swcdb_load_generator [options]
 
 Options:
   --daemon                                Start process in background mode                                             true
   --debug                                 Shortcut to --swc.logging.level debug                                        false
   --gen-blk-cells                         Schema blk-cells                                                             0
-  --gen-blk-encoding                      Schema blk-encoding NONE/ZSTD/SNAPPY/ZLIB                                    DEFAULT  # (0)
+  --gen-blk-encoding                      Schema blk-encoding NONE|ZSTD|SNAPPY|ZLIB                                    DEFAULT  # (0)
   --gen-blk-size                          Schema blk-size                                                              0
   --gen-cell-a-time                       Write one cell at a time                                                     false
-  --gen-cell-encoding                     Cell's Value encoding ZSTD/SNAPPY/ZLIB                                       PLAIN  # (1)
+  --gen-cell-encoding                     Cell's Value encoding ZSTD|SNAPPY|ZLIB                                       PLAIN  # (1)
   --gen-cell-versions                     cell key versions                                                            1
-  --gen-cells                             number of cells, total=cells*versions*(key-tree? key-fractions : 1)          1000
+  --gen-cells                             number of cells, total=cells*versions*(is SINGLE?1:fractions*onLevel)        1000
+  --gen-cells-on-level                    number of cells, on fraction level                                           1
   --gen-col-name                          Gen. load column name, joins with colm-number                                load_generator-
   --gen-col-number                        Number of columns to generate                                                1
-  --gen-col-seq                           Schema col-seq FC_+/LEXIC/VOLUME                                             LEXIC  # (1)
-  --gen-col-type                          Schema col-type PLAIN/COUNTER_I{64,32,16,8}/SERIAL                           PLAIN  # (1)
+  --gen-col-seq                           Schema col-seq FC_+|LEXIC|VOLUME                                             LEXIC  # (1)
+  --gen-col-type                          Schema col-type PLAIN|COUNTER_I{64,32,16,8}|SERIAL                           PLAIN  # (1)
   --gen-compaction-percent                Compaction threshold in % applied over size of either by cellstore or block  0
   --gen-cs-count                          Schema cs-count                                                              0
   --gen-cs-replication                    Schema cs-replication                                                        0
   --gen-cs-size                           Schema cs-size                                                               0
   --gen-delete                            Delete generated data                                                        false
   --gen-delete-column                     Delete Column after                                                          false
+  --gen-distrib                           Distribution SEQUENTIAL|STEPPING|UNIFORM                                     SEQUENTIAL  # (0)
+  --gen-distrib-course                    Fractions distrib Course STEP|R_STEP|SINGLE|R_SINGLE|LEVELS|R_LEVELS         STEP  # (0)
+  --gen-distrib-seed                      Use this seed/step for Distribution injection                                1
   --gen-fraction-size                     fraction size in bytes at least                                              10
+  --gen-fractions                         Number of Fractions per cell key                                             10
   --gen-insert                            Generate new data                                                            true
-  --gen-key-fractions                     Number of Fractions per cell key                                             10
-  --gen-key-tree                          Key Fractions in a tree form [1], [1, 2]                                     true
   --gen-log-compact-cointervaling         CommitLog minimal cointervaling Fragments for compaction                     0
   --gen-log-preload                       Number of CommitLog Fragments to preload                                     0
   --gen-log-rollout                       CommitLog rollout block ratio                                                0
   --gen-progress                          display progress every N cells or 0 for quiet                                100000
-  --gen-reverse                           Generate in reverse, always writes to 1st range                              false
   --gen-select                            Select generated data                                                        false
   --gen-select-empty                      Expect empty select results                                                  false
   --gen-value-size                        cell value in bytes or counts for a col-counter                              256
@@ -141,15 +144,15 @@ Statistics:
 ```text
 SWC-DB(client)> select where col(load_generator-1)=(cells=([0000099999, >=""]<=key<=[0000099999, >=""] ONLY_KEYS)) DISPLAY_STATS;
 ["0000099999"]
-["0000099999","0000000001"]
-["0000099999","0000000001","0000000002"]
-["0000099999","0000000001","0000000002","0000000003"]
-["0000099999","0000000001","0000000002","0000000003","0000000004"]
-["0000099999","0000000001","0000000002","0000000003","0000000004","0000000005"]
-["0000099999","0000000001","0000000002","0000000003","0000000004","0000000005","0000000006"]
-["0000099999","0000000001","0000000002","0000000003","0000000004","0000000005","0000000006","0000000007"]
-["0000099999","0000000001","0000000002","0000000003","0000000004","0000000005","0000000006","0000000007","0000000008"]
-["0000099999","0000000001","0000000002","0000000003","0000000004","0000000005","0000000006","0000000007","0000000008","0000000009"]
+["0000099999","0000099999"]
+["0000099999","0000099999","0000099999"]
+["0000099999","0000099999","0000099999","0000099999"]
+["0000099999","0000099999","0000099999","0000099999","0000099999"]
+["0000099999","0000099999","0000099999","0000099999","0000099999","0000099999"]
+["0000099999","0000099999","0000099999","0000099999","0000099999","0000099999","0000099999"]
+["0000099999","0000099999","0000099999","0000099999","0000099999","0000099999","0000099999","0000099999"]
+["0000099999","0000099999","0000099999","0000099999","0000099999","0000099999","0000099999","0000099999","0000099999"]
+["0000099999","0000099999","0000099999","0000099999","0000099999","0000099999","0000099999","0000099999","0000099999","0000099999"]
 
 
 Statistics:
@@ -169,7 +172,7 @@ SWC-DB(client)>
 
 ```text
 SWC-DB(client)> select where col(load_generator-1)=(cells=(offset=999999 ONLY_KEYS)) DISPLAY_STATS;
-["0000099999","0000000001","0000000002","0000000003","0000000004","0000000005","0000000006","0000000007","0000000008","0000000009"]
+["0000100000","0000100000","0000100000","0000100000","0000100000","0000100000","0000100000","0000100000","0000100000","0000100000"]
 
 
 Statistics:

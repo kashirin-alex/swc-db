@@ -38,9 +38,8 @@ generate_data() {
    --gen-col-name="${column_name}" \
    --gen-blk-encoding=${blk_encoding} \
    --gen-cells=${ncells} \
-   --gen-key-tree=false \
    --gen-cell-a-time=${cellatime} \
-   --gen-key-fractions=${nfractions} \
+   --gen-fractions=${nfractions} \
    --gen-value-size=${VALUE_SIZE} | \
    grep "Total Time Took:" -A20 | tr "\n" ",");
 

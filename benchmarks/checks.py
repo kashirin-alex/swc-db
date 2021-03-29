@@ -4,7 +4,7 @@
 # License details at <https://github.com/kashirin-alex/swc-db/#license>
 
 
-# the script creates a benchmarks.csv 
+# the script creates a benchmarks.csv
 
 # benchmarks/checks.py [options multiple-kwarg]
 #   --n_cells_relative=100000
@@ -123,7 +123,7 @@ class BenchMark:
     def load_generator(self, args):
         insert, select, delete, select_empty = args
         cmd = [
-            swcdb_cfg['install_path'][0], '/bin/swcdb_load_generator --gen-progress=0 --gen-key-tree=false',
+            swcdb_cfg['install_path'][0], '/bin/swcdb_load_generator --gen-progress=0',
             ' --gen-select=', str(select),
             ' --gen-insert=', str(insert),
             ' --gen-delete=', str(delete),
@@ -136,7 +136,7 @@ class BenchMark:
             ' --gen-blk-encoding=', self.blk_encoding,
             ' --gen-cells=', self.n_cells,
             ' --gen-cell-a-time=', self.cell_a_time,
-            ' --gen-key-fractions=', self.n_fractions,
+            ' --gen-fractions=', self.n_fractions,
             ' --gen-value-size=', swcdb_cfg['value_size'][0],
             ' | grep "Total Time Took:" -A20 | tr "\\n" ",";'
         ]
