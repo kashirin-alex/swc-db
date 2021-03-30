@@ -88,6 +88,11 @@ _default_ **```swc.rgr.compaction.read.ahead=5```**
 The Max Allowed Ranges at a time for compaction. \
 _default_ **```swc.rgr.compaction.range.max=2```**
 
+* ### swc.rgr.compaction.commitlog.max
+```G_INT8```
+The Max Allowed Commitlog compactions, The compactions count evaluated against total Ranges-Compactions plus the current Commitlog-Compactions. In a case when two Ranges are at compaction for the value of `swc.rgr.compaction.commitlog.max=3`, the allowed commitlog compactions is evaluated to one. \
+_default_ **```swc.rgr.compaction.commitlog.max=3```**
+
 * ### swc.rgr.Range.req.update.concurrency
 ```G_INT8```
 The Max Allowed Concurrency a Range for Update Requests processing . \

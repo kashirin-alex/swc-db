@@ -18,10 +18,13 @@ Compaction::Compaction()
             cfg_max_range(
               Env::Config::settings()->get<Config::Property::V_GUINT8>(
                 "swc.rgr.compaction.range.max")),
+            cfg_max_log(
+              Env::Config::settings()->get<Config::Property::V_GUINT8>(
+                "swc.rgr.compaction.commitlog.max")),
             cfg_check_interval(
               Env::Config::settings()->get<Config::Property::V_GINT32>(
                 "swc.rgr.compaction.check.interval")),
-            m_run(true), m_running(0),
+            m_run(true), m_running(0), m_log_compactions(0),
             m_check_timer(
               asio::high_resolution_timer(
                 Env::Rgr::maintenance_io()->executor())),
@@ -30,7 +33,22 @@ Compaction::Compaction()
 
 Compaction::~Compaction() { }
 
-bool Compaction::available() {
+bool Compaction::log_compact_possible() noexcept {
+  if(m_log_chk.running())
+    return false;
+  bool ok = uint16_t(m_log_compactions) + m_running
+            < uint16_t(cfg_max_log->get());
+  if(ok)
+    m_log_compactions.fetch_add(1);
+  m_log_chk.stop();
+  return ok;
+}
+
+void Compaction::log_compact_finished() noexcept {
+  m_log_compactions.fetch_sub(1);
+}
+
+bool Compaction::available() noexcept {
   return m_running < cfg_max_range->get();
 }
 

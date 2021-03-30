@@ -179,7 +179,8 @@ size_t Fragments::need_compact(std::vector<Fragments::Vec>& groups,
 bool Fragments::try_compact(int tnum) {
   if(stopping ||
      Env::Rgr::res().is_low_mem_state() ||
-     !range->compact_possible(true))
+     !range->compact_possible(true) ||
+     !Env::Rgr::log_compact_possible())
     return false;
 
   std::vector<Fragments::Vec> groups;
@@ -189,6 +190,7 @@ bool Fragments::try_compact(int tnum) {
     std::scoped_lock lock(m_mutex);
     if(_need_compact_major() && Env::Rgr::compaction_available()) {
       range->compacting(Range::COMPACT_NONE);
+      Env::Rgr::log_compact_finished();
       return false;
     }
     need = _need_compact(groups, {}, cointervaling);
@@ -214,6 +216,7 @@ void Fragments::finish_compact(const Compact* compact) {
     m_cv.notify_all();
   }
   range->compacting(Range::COMPACT_NONE);
+  Env::Rgr::log_compact_finished();
 
   if(compact) {
     if(!stopping)

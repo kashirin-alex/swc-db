@@ -59,6 +59,8 @@ void Settings::init_app_options(){
      "Allowed read-ahead scans per Range compaction")
     ("swc.rgr.compaction.range.max", g_i8(2),
      "Max Allowed Ranges at a time for compaction")
+    ("swc.rgr.compaction.commitlog.max", g_i8(3),
+     "Max Allowed Commitlog including Total-Range compactions")
 
     ("swc.rgr.Range.CellStore.count.max", g_i8(10),
      "Schema default cellstore-max in range before range-split")

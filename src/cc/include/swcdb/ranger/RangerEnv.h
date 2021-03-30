@@ -101,7 +101,11 @@ class Rgr final {
     return m_env->_resources;
   }
 
-  static bool compaction_available();
+  static bool log_compact_possible() noexcept;
+
+  static void log_compact_finished() noexcept;
+
+  static bool compaction_available() noexcept;
 
   static void compaction_schedule(uint32_t ms);
 
@@ -268,7 +272,15 @@ void Rgr::wait_if_in_process() {
   }
 }
 
-bool Rgr::compaction_available() {
+bool Rgr::log_compact_possible() noexcept {
+  return m_env->_compaction->log_compact_possible();
+}
+
+void Rgr::log_compact_finished() noexcept {
+  return m_env->_compaction->log_compact_finished();
+}
+
+bool Rgr::compaction_available() noexcept {
   return m_env->_compaction->available();
 }
 
