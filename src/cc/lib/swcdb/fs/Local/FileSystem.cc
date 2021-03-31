@@ -8,6 +8,7 @@
 #include "swcdb/fs/Local/FileSystem.h"
 #include <filesystem>
 #include <fcntl.h>
+#include <dirent.h>
 
 
 namespace SWC { namespace FS {
@@ -116,46 +117,44 @@ void FileSystemLocal::readdir(int& err, const std::string& name,
   get_abspath(name, abspath);
   SWC_LOGF(LOG_DEBUG, "Readdir dir='%s'", abspath.c_str());
 
-  std::vector<struct dirent> listing;
-  errno = 0;
-  FileUtils::readdir(abspath, "", listing);
-  if (errno) {
-    err = errno;
-    SWC_LOGF(LOG_ERROR, "FileUtils::readdir('%s') failed - %s",
-              abspath.c_str(), Error::get_text(errno));
-    return;
-  }
-
+  DIR* dirp;
   std::string full_entry_path;
   struct stat statbuf;
-  results.reserve(listing.size());
-  for(auto& result : listing) {
-    if (result.d_name[0] == '.' || !result.d_name[0])
+
+  _do:
+  errno = 0;
+  dirp = ::opendir(abspath.c_str());
+  if(!dirp || errno) {
+    err = errno;
+    goto _finish;
+  }
+
+  for(struct dirent* dep; (dep = ::readdir(dirp)); ) {
+    if(!dep->d_name[0] || dep->d_name[0] == '.')
       continue;
-
-    auto& entry = results.emplace_back();
-    entry.name = result.d_name;
-    entry.is_dir = result.d_type == DT_DIR;
-
     full_entry_path.clear();
     full_entry_path.append(abspath);
-    full_entry_path.append("/");
-    full_entry_path.append(entry.name);
-    if (stat(full_entry_path.c_str(), &statbuf) == -1) {
+    full_entry_path += '/';
+    full_entry_path.append(dep->d_name);
+    if(::stat(full_entry_path.c_str(), &statbuf) == -1) {
       if(errno == ENOENT) {
-        // and do all again directory changed
         results.clear();
-        readdir(err, name, results);
-        return;
+        goto _do; // and do all again directory changed
       }
       err = errno;
-      SWC_LOGF(LOG_ERROR, "readdir('%s') stat failed - %d(%s)",
-                full_entry_path.c_str(), errno, Error::get_text(errno));
-      return;
+      goto _finish;
     }
-    entry.length = statbuf.st_size;
-    entry.last_modification_time = statbuf.st_mtime;
+    results.emplace_back(
+      dep->d_name, statbuf.st_mtime, dep->d_type == DT_DIR, statbuf.st_size);
   }
+  err = errno;
+
+  _finish:
+  if(err)
+    SWC_LOGF(LOG_ERROR, "Readdir failed: %d(%s), %s",
+              err, Error::get_text(err), abspath.c_str());
+  if(dirp)
+    closedir(dirp);
 }
 
 void FileSystemLocal::rmdir(int& err, const std::string& name) {

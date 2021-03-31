@@ -29,7 +29,6 @@
 #include <vector>
 
 extern "C" {
-#include <dirent.h>
 //#include <sys/socket.h>
 //#include <sys/types.h>
 #include <sys/stat.h>
@@ -157,15 +156,6 @@ namespace SWC { namespace FileUtils {
    */
   time_t modification(const std::string& fname) noexcept;
 
-  /** Reads all directory entries, applies a regular expression and returns
-   * those which match.
-   *
-   * @param dirname The directory name
-   * @param fname_regex The regular expression; can be empty
-   * @param listing Vector with the results
-   */
-  void readdir(const std::string& dirname, const std::string& fname_regex,
-               std::vector<struct dirent>& listing);
 }
 
 }

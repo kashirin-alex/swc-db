@@ -16,14 +16,18 @@ namespace SWC { namespace FS {
 /// Directory entry
 struct Dirent final  {
 
-  /// File or directory name
+  Dirent() noexcept { }
+
+  Dirent(const char* s, int64_t mod_time, bool is_dir, uint64_t length);
+
+  /// File or Directory name
   std::string   name;
+  /// Last modification time
+  int64_t       last_modification_time;
+  /// Whether a directory
+  bool          is_dir;
   /// Length of file
   uint64_t      length;
-  /// Last modification time
-  time_t        last_modification_time;
-  /// Flag indicating if entry is a directory
-  bool          is_dir;
 
   std::string to_string() const;
 

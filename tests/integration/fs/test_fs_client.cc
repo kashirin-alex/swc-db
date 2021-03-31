@@ -273,7 +273,7 @@ void run(size_t thread_id){
      exit(1);
     }
     std::cout << "read(suff)-data='"
-              << std::string(reinterpret_cast<char*> (bufsuf), data_start.length()) << "'\n";
+              << std::string(reinterpret_cast<char*> (bufsuf), data_end.length()) << "'\n";
 
     // seek(for EOF) >>
     err = Error::OK;
@@ -416,7 +416,8 @@ int main(int argc, char** argv) {
 
   //for(size_t chk=1;chk<=100;++chk)
   //  std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-
+  
+  std::this_thread::sleep_for(std::chrono::milliseconds(100));
   std::cout << " ## OK! ##\n" << std::endl;
   exit(0);
 }

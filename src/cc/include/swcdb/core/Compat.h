@@ -140,11 +140,6 @@ static_assert(
  */
 
 
-#if defined (__GLIBC__) && (__GLIBC__ >= 2) && (__GLIBC_MINOR__ >= 23)
-#define USE_READDIR_R 0
-#else
-#define USE_READDIR_R 1
-#endif
 
 #ifdef SWC_USE_ABORT
 #define SWC_ABORT abort()

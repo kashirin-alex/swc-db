@@ -210,52 +210,6 @@ time_t modification(const std::string& fname) noexcept {
   return stat(fname.c_str(), &statbuf) ? 0 : statbuf.st_mtime;
 }
 
-void readdir(const std::string& dirname,
-             const std::string& fname_regex,
-             std::vector<struct dirent>& listing) {
-
-  errno = 0;
-  DIR* dirp = opendir(dirname.c_str());
-  if(!dirp || errno) {
-    SWC_LOGF(LOG_ERROR, "Problem reading directory '%s' - %s", dirname.c_str(),
-              Error::get_text(errno));
-    return;
-  }
-  re2::RE2* regex = fname_regex.length()
-                    ? new re2::RE2(fname_regex)
-                    : nullptr;
-
-  struct dirent* dep;
-
-#if defined(USE_READDIR_R) && USE_READDIR_R
-
-  struct dirent de;
-  for(;;) {
-    if(::readdir_r(dirp, &de, &dep) || !dep)
-      break;
-    if(!regex || re2::RE2::FullMatch(de.d_name, *regex))
-      listing.push_back(de);
-  };
-
-#else
-
-  for(;;) {
-    if(!(dep = ::readdir(dirp)))
-      break;
-    if (!regex || re2::RE2::FullMatch(dep->d_name, *regex))
-      listing.push_back(*dep);
-  }
-
-#endif
-
-  if(errno)
-    SWC_LOGF(LOG_ERROR, "Problem reading directory '%s' - %s", dirname.c_str(),
-              Error::get_text(errno));
-  (void)closedir(dirp);
-  if(regex)
-    delete regex;
-}
-
 char* file_to_buffer(const std::string& fname, off_t *lenp) {
   struct stat statbuf;
   int fd;
