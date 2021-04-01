@@ -205,11 +205,12 @@ void CompactRange::initialize() {
 void CompactRange::initial_commitlog(int tnum) {
   m_log_sz = range->blocks.commitlog.size();
   uint8_t cointervaling = range->cfg->log_compact_cointervaling();
-  if(m_log_sz < cointervaling)
+  if(m_log_sz < cointervaling || m_stopped)
     return initial_commitlog_done(nullptr);
 
   std::vector<CommitLog::Fragments::Vec> groups;
-  if(range->blocks.commitlog.need_compact(groups, {}, cointervaling)) {
+  if(range->blocks.commitlog.need_compact(groups, {}, cointervaling) &&
+     !m_stopped) {
     new CommitLog::Compact(
       &range->blocks.commitlog, tnum, groups, cointervaling,
       [ptr=shared()] (const CommitLog::Compact* compact) {
@@ -225,7 +226,7 @@ void CompactRange::initial_commitlog_done(const CommitLog::Compact* compact) {
   if(m_stopped) {
     if(compact)
       delete compact;
-    return quit();
+    return;
   }
   if(compact) {
     int tnum = 0;
@@ -377,12 +378,12 @@ void CompactRange::commitlog(int tnum) {
   size_t log_sz = range->blocks.commitlog.size();
   uint8_t cointervaling = range->cfg->log_compact_cointervaling();
   if((log_sz > m_log_sz ? log_sz - m_log_sz : m_log_sz - log_sz)
-      < cointervaling)
+      < cointervaling || m_stopped)
     return commitlog_done(nullptr);
 
   std::vector<CommitLog::Fragments::Vec> groups;
   if(range->blocks.commitlog.need_compact(
-      groups, fragments_old, cointervaling)) {
+      groups, fragments_old, cointervaling) && !m_stopped) {
     new CommitLog::Compact(
       &range->blocks.commitlog, tnum, groups, cointervaling,
       [ptr=shared()] (const CommitLog::Compact* compact) {

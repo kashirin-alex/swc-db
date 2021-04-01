@@ -54,6 +54,24 @@ bool Compaction::available() noexcept {
 
 void Compaction::stop() {
   m_run.store(false);
+  uint8_t sz = 0;
+  for(uint8_t n=0; m_running; ++n) {
+    CompactRange::Ptr req;
+    {
+      std::scoped_lock lock(m_mutex);
+      if(m_compacting.empty())
+        break;
+      if(sz && sz == m_compacting.size()) {
+        if(n >= m_compacting.size())
+          break;
+      } else {
+        sz = m_compacting.size();
+        n = 0;
+      }
+      req = m_compacting[n];
+    }
+    req->quit();
+  }
   std::unique_lock lock_wait(m_mutex);
   m_check_timer.cancel();
   if(m_running || m_schedule.running())

@@ -167,7 +167,7 @@ class Range final : public std::enable_shared_from_this<Range> {
 
   Core::Atomic<State>           m_state;
   uint8_t                       m_compacting;
-  bool                          m_require_compact;
+  Core::AtomicBool              m_require_compact;
 
   bool                          m_q_run_add;
   bool                          m_q_run_scan;

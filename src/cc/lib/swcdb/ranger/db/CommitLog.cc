@@ -541,7 +541,7 @@ size_t Fragments::_need_compact(std::vector<Fragments::Vec>& groups,
                                 const Fragments::Vec& without,
                                 size_t vol) {
   size_t need = 0;
-  if(Vec::size() < vol)
+  if(stopping || Vec::size() < vol)
     return need;
 
   Fragments::Vec fragments;

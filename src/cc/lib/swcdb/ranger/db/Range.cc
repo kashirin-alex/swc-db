@@ -368,12 +368,10 @@ bool Range::compact_possible(bool minor) {
 }
 
 void Range::compact_require(bool require) {
-  std::scoped_lock lock(m_mutex);
-  m_require_compact = require;
+  m_require_compact.store(require);
 }
 
 bool Range::compact_required() {
-  std::shared_lock lock(m_mutex);
   return m_require_compact;
 }
 

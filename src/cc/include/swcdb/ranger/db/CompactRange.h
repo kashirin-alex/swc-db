@@ -38,6 +38,8 @@ class CompactRange final : public ReqScan {
 
   void response(int &err) override;
 
+  void quit();
+
   private:
 
   void initial_commitlog(int tnum);
@@ -83,8 +85,6 @@ class CompactRange final : public ReqScan {
   bool completion();
 
   void finished(bool clear);
-
-  void quit();
 
 
   Compaction*                     compactor;
