@@ -1,0 +1,143 @@
+/*
+ * SWC-DB© Copyright since 2019 Alex Kashirin <kashirin.alex@gmail.com>
+ * License details at <https://github.com/kashirin-alex/swc-db/#license>
+ */
+
+#include "swcdb/db/Types/MetaColumn.h"
+#include "swcdb/db/client/Clients.h"
+#include "swcdb/db/client/Query/SelectHandlerCommon.h"
+
+
+
+namespace SWC { namespace client { namespace Query { namespace Select {
+
+namespace Handlers {
+
+
+Common::Common(const Cb_t& cb, bool rsp_partials,
+               const Comm::IoContextPtr& io)
+        : valid_state(true), m_cb(cb), m_dispatcher_io(io),
+          m_notify(m_cb && rsp_partials),
+          m_rsp_partial_runs(false) {
+  buff_sz.store(Env::Clients::ref().cfg_recv_buff_sz->get());
+  buff_ahead.store(Env::Clients::ref().cfg_recv_ahead->get());
+  timeout.store(Env::Clients::ref().cfg_recv_timeout->get());
+}
+
+bool Common::add_cells(const cid_t cid, const StaticBuffer& buffer,
+                       bool reached_limit, DB::Specs::Interval& interval) {
+  bool more = BaseUnorderedMap::add_cells(
+    cid, buffer, reached_limit, interval);
+  response_partials();
+  return more;
+}
+
+void Common::get_cells(const cid_t cid, DB::Cells::Result& cells) {
+  BaseUnorderedMap::get_cells(cid, cells);
+  if(m_notify) {
+    std::scoped_lock lock(m_mutex);
+    m_cv.notify_all();
+  }
+}
+
+void Common::free(const cid_t cid) {
+  BaseUnorderedMap::free(cid);
+  if(m_notify) {
+    std::scoped_lock lock(m_mutex);
+    m_cv.notify_all();
+  }
+}
+
+void Common::response(int err) {
+  if(err) {
+    int at = Error::OK;
+    state_error.compare_exchange_weak(at, err);
+  }
+
+  profile.finished();
+
+  if(m_notify) {
+    bool call;
+    {
+      std::scoped_lock lock(m_mutex);
+      if((call = !m_rsp_partial_runs))
+        m_rsp_partial_runs = true;
+    }
+    if(call)
+      response_partial();
+  } else if(m_cb) {
+    send_result();
+  }
+
+  std::scoped_lock lock(m_mutex);
+  m_cv.notify_all();
+}
+
+bool Common::valid(const ReqBase::Ptr& req) noexcept {
+  if(!valid_state)
+    return false;
+  req->request_again();
+  return true;
+}
+
+void Common::response_partials() {
+  if(!m_notify)
+    return;
+
+  {
+    std::unique_lock lock_wait(m_mutex);
+    if(m_rsp_partial_runs) {
+      if(wait_on_partials()) {
+        m_cv.wait(
+          lock_wait,
+          [this, hdlr=shared_from_this()] () {
+            return !m_rsp_partial_runs || !wait_on_partials();
+          }
+        );
+      }
+      return;
+    }
+    m_rsp_partial_runs = true;
+  }
+  Env::IoCtx::post([this, hdlr=shared_from_this()](){ response_partial(); });
+}
+
+bool Common::wait_on_partials() {
+  return get_size_bytes() > buff_sz * buff_ahead;
+}
+
+void Common::response_partial() {
+  send_result();
+
+  std::scoped_lock lock(m_mutex);
+  m_rsp_partial_runs = false;
+  m_cv.notify_all();
+}
+
+void Common::wait() {
+  {
+    std::unique_lock lock_wait(m_mutex);
+    m_cv.wait(
+      lock_wait,
+      [this, hdlr=shared_from_this()] () {
+        return !m_rsp_partial_runs && !completion.count();
+      }
+    );
+  }
+  if(m_notify && !empty())
+    send_result();
+}
+
+void Common::send_result() {
+  auto hdlr = std::dynamic_pointer_cast<Common>(shared_from_this());
+  m_dispatcher_io
+    ? m_dispatcher_io->post([hdlr](){ hdlr->m_cb(hdlr); })
+    : m_cb(hdlr);
+}
+
+
+
+
+
+
+}}}}}

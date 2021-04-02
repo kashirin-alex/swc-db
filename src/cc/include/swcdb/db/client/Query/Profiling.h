@@ -1,4 +1,3 @@
-
 /*
  * SWC-DB© Copyright since 2019 Alex Kashirin <kashirin.alex@gmail.com>
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
@@ -7,6 +6,9 @@
 #ifndef swcdb_db_client_Query_Profiling_h
 #define swcdb_db_client_Query_Profiling_h
 
+
+#include "swcdb/core/comm/ClientConnQueue.h"
+#include "swcdb/db/Types/Range.h"
 
 
 namespace SWC { namespace client {
