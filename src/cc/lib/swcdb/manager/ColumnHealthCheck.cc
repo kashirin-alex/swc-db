@@ -8,6 +8,7 @@
 #include "swcdb/manager/ColumnHealthCheck.h"
 #include "swcdb/manager/Protocol/Rgr/req/RangeIsLoaded.h"
 #include "swcdb/manager/Protocol/Rgr/req/RangeUnoadForMerge.h"
+#include "swcdb/db/client/Query/SelectHandlerCommon.h"
 #include "swcdb/db/Cells/CellValueSerialFields.h"
 
 
@@ -197,19 +198,17 @@ void ColumnHealthCheck::finishing(bool finished_range) {
 
   cid_t meta_cid = DB::Types::MetaColumn::get_sys_cid(
     col->cfg->key_seq, DB::Types::MetaColumn::get_range_type(col->cfg->cid));
-  auto col_spec = DB::Specs::Column::make_ptr(
-    meta_cid, {DB::Specs::Interval::make_ptr(DB::Types::Column::SERIAL)});
-  auto& intval = col_spec->intervals.front();
-  auto& key_intval = intval->key_intervals.add();
+  DB::Specs::Interval spec(DB::Types::Column::SERIAL);
+  auto& key_intval = spec.key_intervals.add();
   key_intval->start.add(std::to_string(col->cfg->cid), Condition::EQ);
   key_intval->start.add("", Condition::GE);
 
-  auto selector = std::make_shared<client::Query::Select>(
+  auto hdlr = client::Query::Select::Handlers::Common::make(
     [merger, meta_cid]
-    (const client::Query::Select::Result::Ptr& result) {
-      int err = result->err;
+    (const client::Query::Select::Handlers::Common::Ptr& hdlr) {
+      int err = hdlr->state_error;
       if(!err) {
-        auto col = result->get_columnn(meta_cid);
+        auto col = hdlr->get_columnn(meta_cid);
         if(!(err = col->error()) && !col->empty())
           col->get_cells(merger->cells);
       }
@@ -220,11 +219,7 @@ void ColumnHealthCheck::finishing(bool finished_range) {
     false,
     Env::Mngr::io()
   );
-  selector->specs.columns.push_back(col_spec);
-  int err = Error::OK;
-  selector->scan(err);
-  if(err)
-    merger->completion();
+  client::Query::Select::scan(hdlr, col->cfg->key_seq, meta_cid, spec);
 }
 
 

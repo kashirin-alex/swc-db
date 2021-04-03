@@ -12,6 +12,7 @@
 #include "swcdb/db/client/Query/Select.h"
 #include "swcdb/db/client/Query/Update.h"
 #include "swcdb/db/Cells/CellValueSerialFields.h"
+#include "swcdb/db/client/Query/SelectHandlerCommon.h"
 
 
 namespace SWC {
@@ -163,17 +164,17 @@ class Test {
   void expect_empty_column() {
     SWC_LOG(LOG_DEBUG, "expect_empty_column");
 
-    auto req = std::make_shared<client::Query::Select>();
+    auto hdlr = client::Query::Select::Handlers::Common::make();
 
     auto intval = DB::Specs::Interval::make_ptr();
     intval->flags.offset = 0;
     intval->flags.limit = 1;
-    req->specs.columns = {
-      DB::Specs::Column::make_ptr(schema->cid, {intval})
-    };
+    DB::Specs::Scan specs;
+    specs.columns.push_back(
+      DB::Specs::Column::make_ptr(schema->cid, {intval}));
 
     int err = Error::OK;
-    req->scan(err);
+    client::Query::Select::scan(err, hdlr, specs);
     if(err) {
       SWC_PRINT << "expect_empty_column err="
                 << err << "(" << Error::get_text(err) << ")"
@@ -181,38 +182,38 @@ class Test {
     }
     SWC_ASSERT(!err);
 
-    req->wait();
-    SWC_ASSERT(!req->result->get_size(schema->cid));
+    hdlr->wait();
+    SWC_ASSERT(!hdlr->get_size(schema->cid));
 
     SWC_PRINT << "expect_empty_column:  \n";
-    req->result->profile.print(SWC_LOG_OSTREAM);
+    hdlr->profile.print(SWC_LOG_OSTREAM);
     SWC_LOG_OSTREAM << SWC_PRINT_CLOSE;
   }
 
   void expect_one_at_offset() {
     SWC_LOG(LOG_DEBUG, "expect_one_at_offset");
 
-    auto req = std::make_shared<client::Query::Select>();
+    auto hdlr = client::Query::Select::Handlers::Common::make();
 
     auto intval = DB::Specs::Interval::make_ptr();
     intval->flags.offset = ncells * nfractions - 1;
     intval->flags.max_versions = 1;
-    req->specs.columns = {
-      DB::Specs::Column::make_ptr(schema->cid, {intval})
-    };
+    DB::Specs::Scan specs;
+    specs.columns.push_back(
+      DB::Specs::Column::make_ptr(schema->cid, {intval}));
 
     int err = Error::OK;
-    req->scan(err);
+    client::Query::Select::scan(err, hdlr, specs);
     SWC_ASSERT(!err);
 
-    req->wait();
-    if(req->result->get_size(schema->cid) != 1) {
-      SWC_PRINT << "get_size: " << req->result->get_size(schema->cid) << SWC_PRINT_CLOSE;
-      SWC_ASSERT(req->result->get_size(schema->cid) == 1);
+    hdlr->wait();
+    if(hdlr->get_size(schema->cid) != 1) {
+      SWC_PRINT << "get_size: " << hdlr->get_size(schema->cid) << SWC_PRINT_CLOSE;
+      SWC_ASSERT(hdlr->get_size(schema->cid) == 1);
     }
 
     SWC_PRINT << "expect_one_at_offset:  \n";
-    req->result->profile.print(SWC_LOG_OSTREAM);
+    hdlr->profile.print(SWC_LOG_OSTREAM);
     SWC_LOG_OSTREAM << SWC_PRINT_CLOSE;
   }
 
@@ -343,21 +344,21 @@ class Test {
     DB::Cell::Key key;
     apply_cell_key(key, i, f);
 
-    auto req = std::make_shared<client::Query::Select>(
+    auto hdlr = client::Query::Select::Handlers::Common::make(
       [this, ts=Time::now_ns(), key=DB::Cell::Key(key, true), i, f]
-      (const client::Query::Select::Result::Ptr& result) {
+      (const client::Query::Select::Handlers::Common::Ptr& hdlr) {
         time_select += Time::now_ns() - ts;
 
         SWC_LOG_OUT(LOG_DEBUG,
           SWC_LOG_OSTREAM << "query_select:  \n";
-          result->profile.print(SWC_LOG_OSTREAM);
+          hdlr->profile.print(SWC_LOG_OSTREAM);
         );
 
-        SWC_ASSERT(!result->err);
-        SWC_ASSERT(result->get_size(schema->cid) == counter?1:cell_versions);
+        SWC_ASSERT(!hdlr->state_error);
+        SWC_ASSERT(hdlr->get_size(schema->cid) == counter?1:cell_versions);
 
         DB::Cells::Result cells;
-        result->get_cells(schema->cid, cells);
+        hdlr->get_cells(schema->cid, cells);
 
         for(auto cell : cells) {
           SWC_ASSERT(key.equal(cell->key));
@@ -369,19 +370,14 @@ class Test {
       }
     );
 
-    auto intval = DB::Specs::Interval::make_ptr();
-    auto& key_intval = intval->key_intervals.add();
+    DB::Specs::Interval intval;
+    auto& key_intval = intval.key_intervals.add();
     key_intval->start.set(key, Condition::EQ);
-    intval->flags.offset = 0;
-    intval->flags.limit = counter ? 1 : cell_versions;
-    req->specs.columns = {
-      DB::Specs::Column::make_ptr(schema->cid, {intval})
-    };
-    SWC_LOG(LOG_DEBUG, intval->to_string());
+    intval.flags.offset = 0;
+    intval.flags.limit = counter ? 1 : cell_versions;
+    SWC_LOG(LOG_DEBUG, intval.to_string());
 
-    int err = Error::OK;
-    req->scan(err);
-    SWC_ASSERT(!err);
+    client::Query::Select::scan(hdlr, schema, intval);
   }
 
 

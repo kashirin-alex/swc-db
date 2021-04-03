@@ -18,18 +18,18 @@ class DbClient : public Interface {
 
   DbClient();
 
-  bool mng_column(Comm::Protocol::Mngr::Req::ColumnMng::Func func, 
+  bool mng_column(Comm::Protocol::Mngr::Req::ColumnMng::Func func,
                   std::string& cmd);
-  
+
   bool compact_column(std::string& cmd);
-  
+
   bool list_columns(std::string& cmd);
 
   bool select(std::string& cmd);
 
-  void display(const client::Query::Select::Result::Ptr& result,
-               uint8_t display_flags, 
-               size_t& cells_count, size_t& cells_bytes) const;
+  void display(
+      const client::Query::Select::Handlers::BaseUnorderedMap::Ptr& hdlr,
+      uint8_t display_flags, size_t& cells_count, size_t& cells_bytes) const;
 
   bool update(std::string& cmd);
 
@@ -37,10 +37,10 @@ class DbClient : public Interface {
 
   bool dump(std::string& cmd);
 
-  void display_stats(const client::Query::Profiling& profile, 
+  void display_stats(const client::Query::Profiling& profile,
                      size_t took, size_t bytes,
                      size_t cells_count, size_t resend_cells = 0) const;
-  
+
 };
 
 

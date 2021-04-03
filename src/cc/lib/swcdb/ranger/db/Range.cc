@@ -654,49 +654,48 @@ void Range::load(int &err, const Callback::RangeLoad::Ptr& req) {
   auto col_spec = DB::Specs::Column::make_ptr(
     cfg->meta_cid,
     {DB::Specs::Interval::make_ptr(DB::Types::Column::SERIAL)});
-  auto& intval = col_spec->intervals.front();
-  auto& key_intval = intval->key_intervals.add();
-  // key_intval->start.set(m_interval.key_begin, Condition::EQ);
-  // key_intval->start.insert(0, std::to_string(cfg->cid), Condition::EQ);
-  // intval->set_opt__key_equal();
-  // intval->flags.limit = 1;
+  auto& spec = *col_spec->intervals.front().get();
+
+  DB::Specs::Interval spec2(DB::Types::Column::SERIAL);
+  auto& key_intval = spec.key_intervals.add();
   key_intval->start.add(std::to_string(cfg->cid), Condition::EQ);
   key_intval->start.add("", Condition::GE);
+  // key_intval->start.set(m_interval.key_begin, Condition::EQ);
+  // key_intval->start.insert(0, std::to_string(cfg->cid), Condition::EQ);
+  // spec.set_opt__key_equal();
+  // spec.flags.limit = 1;
 
   DB::Specs::Serial::Value::Fields fields;
   fields.add(
     DB::Specs::Serial::Value::Field_INT64::make(0, Condition::EQ, rid));
-  fields.encode(intval->values.add());
+  fields.encode(spec.values.add());
 
-  auto selector = std::make_shared<client::Query::Select>(
+  auto hdlr = client::Query::Select::Handlers::Common::make(
     [req, col_spec, range=shared_from_this()]
-    (const client::Query::Select::Result::Ptr& res) {
-      range->check_meta(req, col_spec, res);
+    (const client::Query::Select::Handlers::Common::Ptr& hdlr) {
+      range->check_meta(req, col_spec, hdlr);
     },
     false,
     Env::Rgr::io()
   );
-  selector->specs.columns.push_back(col_spec);
 
   if(Env::Rgr::is_shuttingdown() ||
      (Env::Rgr::is_not_accepting() &&
       DB::Types::MetaColumn::is_data(cfg->cid)))
     return loaded(Error::SERVER_SHUTTING_DOWN, req);
 
-  selector->scan(err);
-  SWC_LOGF(LOG_DEBUG, "LOADING RANGE(%lu/%lu)-SELECTOR err=%d(%s)",
-                      cfg->cid, rid, err, Error::get_text(err));
-  if(err)
-    return loaded(Error::RGR_NOT_LOADED_RANGE, req);
+  client::Query::Select::scan(hdlr, cfg->key_seq, cfg->meta_cid, spec);
+  SWC_LOGF(LOG_DEBUG, "LOADING RANGE(%lu/%lu)-SELECTOR", cfg->cid, rid);
 }
 
-void Range::check_meta(const Callback::RangeLoad::Ptr& req,
-                       const DB::Specs::Column::Ptr& col_spec,
-                       const client::Query::Select::Result::Ptr& result) {
+void Range::check_meta(
+              const Callback::RangeLoad::Ptr& req,
+              const DB::Specs::Column::Ptr& col_spec,
+              const client::Query::Select::Handlers::Common::Ptr& hdlr) {
   DB::Cells::Result cells;
-  int err = result->err;
+  int err = hdlr->state_error;
   if(!err) {
-    auto col = result->get_columnn(cfg->meta_cid);
+    auto col = hdlr->get_columnn(cfg->meta_cid);
     if(!(err = col->error()) && !col->empty())
       col->get_cells(cells);
   }

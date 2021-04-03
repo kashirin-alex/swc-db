@@ -12,6 +12,7 @@
 #include "swcdb/db/client/Query/Select.h"
 #include "swcdb/db/client/Query/Update.h"
 #include "swcdb/db/Cells/CellValueSerialFields.h"
+#include "swcdb/db/client/Query/SelectHandlerCommon.h"
 
 #include "swcdb/common/Stats/FlowRate.h"
 
@@ -748,7 +749,6 @@ void select_data(const std::vector<DB::Schema::Ptr>& schemas, size_t seed) {
   if(DB::Types::is_counter(schemas.front()->col_type))
     versions = 1;
 
-  int err;
   uint64_t ts = Time::now_ns();
   uint64_t ts_progress = ts;
 
@@ -762,29 +762,24 @@ void select_data(const std::vector<DB::Schema::Ptr>& schemas, size_t seed) {
     DB::Specs::Key key_spec;
     while(key_gen.next(key_spec)) {
 
-      auto intval = DB::Specs::Interval::make_ptr();
-      intval->key_intervals.add()->start.move(key_spec);
-      intval->set_opt__key_equal();
-      intval->flags.limit = versions;
+      DB::Specs::Interval intval;
+      intval.key_intervals.add()->start.move(key_spec);
+      intval.set_opt__key_equal();
+      intval.flags.limit = versions;
 
-      auto req = std::make_shared<client::Query::Select>();
-      for(auto& schema : schemas) {
-        req->specs.columns.push_back(
-          DB::Specs::Column::make_ptr(schema->cid, {intval}));
-      }
+      auto hdlr = client::Query::Select::Handlers::Common::make();
+      for(auto& schema : schemas)
+        client::Query::Select::scan(hdlr, schema, intval);
 
-      req->scan(err = Error::OK);
-      SWC_ASSERT(!err);
-
-      req->wait();
+      hdlr->wait();
       if(expect_empty) {
-        SWC_ASSERT(req->result->empty());
+        SWC_ASSERT(hdlr->empty());
       } else {
         for(auto& schema : schemas)
-          SWC_ASSERT(req->result->get_size(schema->cid) == versions);
+          SWC_ASSERT(hdlr->get_size(schema->cid) == versions);
       }
 
-      select_bytes += req->result->get_size_bytes();
+      select_bytes += hdlr->get_size_bytes();
       ++select_count;
 
       if(progress && !(select_count % progress)) {
@@ -793,7 +788,7 @@ void select_data(const std::vector<DB::Schema::Ptr>& schemas, size_t seed) {
           << "select-progress(time_ns=" << Time::now_ns()
           << " cells=" << select_count
           << " avg=" << ts_progress/progress << "ns/cell) ";
-        req->result->profile.print(SWC_LOG_OSTREAM);
+        hdlr->profile.print(SWC_LOG_OSTREAM);
         SWC_LOG_OSTREAM << SWC_PRINT_CLOSE;
 
         ts_progress = Time::now_ns();
@@ -803,32 +798,34 @@ void select_data(const std::vector<DB::Schema::Ptr>& schemas, size_t seed) {
       select_count = 0;
 
   } else {
-    auto req = std::make_shared<client::Query::Select>(
+    DB::Specs::Scan specs;
+    for(auto& schema : schemas) {
+      specs.columns.push_back(
+        DB::Specs::Column::make_ptr(
+          schema->cid, { DB::Specs::Interval::make_ptr() }
+        )
+      );
+    }
+    auto hdlr = client::Query::Select::Handlers::Common::make(
       [&select_bytes, &select_count, &schemas]
-      (const client::Query::Select::Result::Ptr& result) {
+      (const client::Query::Select::Handlers::Common::Ptr& hdlr) {
         for(auto& schema : schemas) {
           DB::Cells::Result cells;
-          result->get_cells(schema->cid, cells);
+          hdlr->get_cells(schema->cid, cells);
           select_count += cells.size();
           select_bytes += cells.size_bytes();
         }
       },
       true
     );
-    for(auto& schema : schemas) {
-      req->specs.columns.push_back(
-        DB::Specs::Column::make_ptr(
-          schema->cid, { DB::Specs::Interval::make_ptr() }
-        )
-      );
-    }
-    req->scan(err = Error::OK);
+    int err = Error::OK;
+    client::Query::Select::scan(err, hdlr, specs);
     SWC_ASSERT(!err);
 
-    req->wait();
+    hdlr->wait();
     SWC_ASSERT(
       expect_empty
-      ? req->result->empty()
+      ? hdlr->empty()
       : select_count == versions * ncells * ncells_onlevel * schemas.size() * (
           course == DistribCourse::SINGLE || course == DistribCourse::R_SINGLE
             ? 1 : nfractions)

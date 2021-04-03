@@ -10,6 +10,7 @@
 
 #include "swcdb/db/client/Query/Select.h"
 #include "swcdb/db/client/Query/Update.h"
+#include "swcdb/db/client/Query/SelectHandlerCommon.h"
 
 
 namespace SWC { namespace Manager {
@@ -334,21 +335,19 @@ void MngdColumns::remove(const DB::Schema::Ptr& schema,
 
   cid_t meta_cid = DB::Types::MetaColumn::get_sys_cid(
     schema->col_seq, DB::Types::MetaColumn::get_range_type(schema->cid));
-  auto col_spec = DB::Specs::Column::make_ptr(
-    meta_cid, {DB::Specs::Interval::make_ptr(DB::Types::Column::SERIAL)});
-  auto& intval = col_spec->intervals.front();
-  auto& key_intval = intval->key_intervals.add();
+  DB::Specs::Interval spec(DB::Types::Column::SERIAL);
+  spec.flags.set_only_keys();
+  auto& key_intval = spec.key_intervals.add();
   key_intval->start.add(std::to_string(schema->cid), Condition::EQ);
   key_intval->start.add("", Condition::GE);
-  intval->flags.set_only_keys();
 
-  auto selector = std::make_shared<client::Query::Select>(
+  auto hdlr = client::Query::Select::Handlers::Common::make(
     [this, req_id, schema, meta_cid]
-    (const client::Query::Select::Result::Ptr& result) {
+    (const client::Query::Select::Handlers::Common::Ptr& hdlr) {
       DB::Cells::Result cells;
-      int err = result->err;
+      int err = hdlr->state_error;
       if(!err) {
-        auto col = result->get_columnn(meta_cid);
+        auto col = hdlr->get_columnn(meta_cid);
         if(!(err = col->error()) && !col->empty())
           col->get_cells(cells);
       }
@@ -401,18 +400,7 @@ void MngdColumns::remove(const DB::Schema::Ptr& schema,
     false,
     Env::Mngr::io()
   );
-
-  selector->specs.columns.push_back(col_spec);
-  selector->scan(err);
-
-  if(err) {
-    SWC_LOGF(LOG_WARN,
-      "Column(cid=%lu meta_cid=%lu) "
-      "Range MetaData might remained, scan-err=%d(%s)",
-      schema->cid, meta_cid, err, Error::get_text(err));
-    return update(
-      ColumnMngFunc::INTERNAL_ACK_DELETE, schema, Error::OK, req_id);
-  }
+  client::Query::Select::scan(hdlr, schema->col_seq, meta_cid, spec);
 }
 
 

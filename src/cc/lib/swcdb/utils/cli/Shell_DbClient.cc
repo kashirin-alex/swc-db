@@ -5,6 +5,7 @@
 
 
 #include "swcdb/utils/cli/Shell_DbClient.h"
+#include "swcdb/db/client/Query/SelectHandlerCommon.h"
 
 #include "swcdb/common/Stats/FlowRate.h"
 
@@ -308,35 +309,37 @@ bool DbClient::select(std::string& cmd) {
   uint8_t display_flags = 0;
   size_t cells_count = 0;
   size_t cells_bytes = 0;
-  auto req = std::make_shared<client::Query::Select>(
-    [this, &display_flags, &cells_count, &cells_bytes]
-    (const client::Query::Select::Result::Ptr& result) {
-      display(result, display_flags, cells_count, cells_bytes);
-    },
-    true // cb on partial rsp
-  );
+
   std::string message;
-  client::SQL::parse_select(err, cmd, req->specs, display_flags, message);
+  DB::Specs::Scan specs;
+  client::SQL::parse_select(err, cmd, specs, display_flags, message);
   if(err)
     return error(message);
 
   if(display_flags & DB::DisplayFlag::SPECS) {
     SWC_PRINT << "\n\n";
-    req->specs.display(
+    specs.display(
       SWC_LOG_OSTREAM, !(display_flags & DB::DisplayFlag::BINARY));
     SWC_LOG_OSTREAM << SWC_PRINT_CLOSE;
   }
 
-  req->scan(err);
+  auto hdlr = client::Query::Select::Handlers::Common::make(
+    [this, &display_flags, &cells_count, &cells_bytes]
+    (const client::Query::Select::Handlers::Common::Ptr& hdlr) {
+      display(hdlr, display_flags, cells_count, cells_bytes);
+    },
+    true // cb on partial rsp
+  );
+  client::Query::Select::scan(err, hdlr, specs);
   if(!err)
-    req->wait();
+    hdlr->wait();
 
   if(err)
     return error(message);
 
   if(display_flags & DB::DisplayFlag::STATS)
     display_stats(
-      req->result->profile,
+      hdlr->profile,
       SWC::Time::now_ns() - ts,
       cells_bytes,
       cells_count
@@ -345,20 +348,20 @@ bool DbClient::select(std::string& cmd) {
   return true;
 }
 
-void DbClient::display(const client::Query::Select::Result::Ptr& result,
-                       uint8_t display_flags,
-                       size_t& cells_count, size_t& cells_bytes) const {
+void DbClient::display(
+      const client::Query::Select::Handlers::BaseUnorderedMap::Ptr& hdlr,
+      uint8_t display_flags, size_t& cells_count, size_t& cells_bytes) const {
   DB::Schema::Ptr schema;
   DB::Cells::Result cells;
   bool meta;
   size_t count_state;
   do {
     count_state = cells_count;
-    for(cid_t cid : result->get_cids()) {
+    for(cid_t cid : hdlr->get_cids()) {
       meta = !DB::Types::MetaColumn::is_data(cid);;
       schema = Env::Clients::get()->schemas->get(err, cid);
       cells.free();
-      result->get_cells(cid, cells);
+      hdlr->get_cells(cid, cells);
 
       Core::MutexSptd::scope lock(Core::logger.mutex);
       for(auto cell : cells) {
@@ -471,23 +474,17 @@ bool DbClient::load(std::string& cmd) {
 bool DbClient::dump(std::string& cmd) {
   int64_t ts = Time::now_ns();
   DB::Cells::TSV::FileWriter writer;
-  auto req = std::make_shared<client::Query::Select>(
-    [&writer] (const client::Query::Select::Result::Ptr& result) {
-      writer.write(result);
-      // writer.err ? req->stop();
-    },
-    true // cb on partial rsp
-  );
 
   std::string fs;
   std::string ext;
   int level = 0;
+  DB::Specs::Scan specs;
   uint8_t display_flags = 0;
   std::string message;
   client::SQL::parse_dump(
     err, cmd,
     fs, writer.base_path, writer.split_size, ext, level,
-    req->specs,
+    specs,
     writer.output_flags, display_flags,
     message
   );
@@ -511,14 +508,23 @@ bool DbClient::dump(std::string& cmd) {
 
   if(display_flags & DB::DisplayFlag::SPECS) {
     SWC_PRINT << "\n\n";
-    req->specs.display(
+    specs.display(
       SWC_LOG_OSTREAM, !(display_flags & DB::DisplayFlag::BINARY));
     SWC_LOG_OSTREAM << SWC_PRINT_CLOSE;
   }
 
-  req->scan(err);
+  auto hdlr = client::Query::Select::Handlers::Common::make(
+    [&writer]
+    (const client::Query::Select::Handlers::Common::Ptr& hdlr) {
+      writer.write(hdlr);
+      if(writer.err)
+        hdlr->valid_state.store(false);
+    },
+    true // cb on partial rsp
+  );
+  client::Query::Select::scan(err, hdlr, specs);
   if(!err)
-    req->wait();
+    hdlr->wait();
 
   writer.finalize();
   if(writer.err && !err)
@@ -526,7 +532,7 @@ bool DbClient::dump(std::string& cmd) {
 
   if(display_flags & DB::DisplayFlag::STATS) {
     display_stats(
-      req->result->profile,
+      hdlr->profile,
       SWC::Time::now_ns() - ts,
       writer.cells_bytes,
       writer.cells_count

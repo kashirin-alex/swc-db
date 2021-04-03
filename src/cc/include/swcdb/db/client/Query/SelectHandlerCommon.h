@@ -59,15 +59,13 @@ class Common : public BaseUnorderedMap {
 
   bool wait_on_partials();
 
-  void response_partial();
-
   void send_result();
 
   const Cb_t                           m_cb;
   Comm::IoContextPtr                   m_dispatcher_io;
   const bool                           m_notify;
   std::condition_variable              m_cv;
-  bool                                 m_rsp_partial_runs;
+  Core::StateRunning                   m_sending_result;
 
 };
 

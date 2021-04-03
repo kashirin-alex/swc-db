@@ -1,4 +1,3 @@
-
 /*
  * SWC-DB© Copyright since 2019 Alex Kashirin <kashirin.alex@gmail.com>
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
@@ -9,279 +8,58 @@
 #include "swcdb/db/client/Query/Select.h"
 
 
-namespace SWC { namespace client { namespace Query {
-
-namespace Result {
+namespace SWC { namespace client { namespace Query { namespace Select {
 
 
-Select::Rsp::Rsp() noexcept : m_err(Error::OK) {
+
+void scan(const Handlers::Base::Ptr& hdlr,
+          DB::Types::KeySeq key_seq,
+          cid_t cid,
+          const DB::Specs::Interval& intval) {
+  hdlr->completion.increment();
+  std::make_shared<Scanner>(
+    hdlr, key_seq, intval, cid
+  )->mngr_locate_master();
 }
 
-Select::Rsp::~Rsp() { }
-
-bool Select::Rsp::add_cells(const StaticBuffer& buffer, bool reached_limit,
-                            DB::Specs::Interval& interval) {
-  Core::MutexSptd::scope lock(m_mutex);
-  size_t recved = m_cells.add(buffer.base, buffer.size);
-
-  if(interval.flags.limit) {
-    if(interval.flags.limit <= recved) {
-      interval.flags.limit = 0;
-      return false;
-    }
-    interval.flags.limit -= recved;
-  }
-
-  if(reached_limit) {
-    auto last = m_cells.back();
-    interval.offset_key.copy(last->key);
-    interval.offset_rev = last->get_timestamp();
-  }
-  return true;
+void scan(const Handlers::Base::Ptr& hdlr,
+          const DB::Schema::Ptr& schema,
+          const DB::Specs::Interval& intval) {
+  scan(hdlr, schema->col_seq, schema->cid, intval);
 }
 
-void Select::Rsp::get_cells(DB::Cells::Result& cells) {
-  Core::MutexSptd::scope lock(m_mutex);
-  cells.take(m_cells);
-}
-
-size_t Select::Rsp::get_size() noexcept {
-  Core::MutexSptd::scope lock(m_mutex);
-  return m_cells.size();
-}
-
-size_t Select::Rsp::get_size_bytes() noexcept {
-  Core::MutexSptd::scope lock(m_mutex);
-  return m_cells.size_bytes();
-}
-
-bool Select::Rsp::empty() noexcept {
-  Core::MutexSptd::scope lock(m_mutex);
-  return m_cells.empty();
-}
-
-void Select::Rsp::free() {
-  Core::MutexSptd::scope lock(m_mutex);
-  m_cells.free();
-}
-
-
-void Select::Rsp::error(int err) noexcept {
-  Core::MutexSptd::scope lock(m_mutex);
-  m_err = err;
-}
-
-int Select::Rsp::error() noexcept {
-  Core::MutexSptd::scope lock(m_mutex);
-  return m_err;
-}
-
-
-Select::Select(bool notify) noexcept
-              : notify(notify), err(Error::OK),
-                completion(0) {
-}
-
-Select::~Select() { }
-
-void Select::error(const cid_t cid, int err) {
-  m_columns[cid]->error(err);
-}
-
-void Select::add_column(const cid_t cid) {
-  m_columns.emplace(cid, std::make_shared<Rsp>());
-}
-
-Select::Rsp::Ptr Select::get_columnn(const cid_t cid) {
-  return m_columns[cid];
-}
-
-bool Select::add_cells(const cid_t cid, const StaticBuffer& buffer,
-                       bool reached_limit, DB::Specs::Interval& interval) {
-  return m_columns[cid]->add_cells(buffer, reached_limit, interval);
-}
-
-void Select::get_cells(const cid_t cid, DB::Cells::Result& cells) {
-  m_columns[cid]->get_cells(cells);
-  if(notify) {
-    std::scoped_lock lock(mutex);
-    cv.notify_all();
-  }
-}
-
-size_t Select::get_size(const cid_t cid) {
-  return m_columns[cid]->get_size();
-}
-
-size_t Select::get_size_bytes() const noexcept {
-  size_t sz = 0;
-  for(const auto& col : m_columns)
-    sz += col.second->get_size_bytes();
-  return sz;
-}
-
-bool Select::empty() const noexcept {
-  for(const auto& col : m_columns)
-    if(!col.second->empty())
-      return false;
-  return true;
-}
-
-std::vector<cid_t> Select::get_cids() const {
-  std::vector<cid_t> list(m_columns.size());
-  int i = 0;
-  for(const auto& col : m_columns)
-    list[i++] = col.first;
-  return list;
-}
-
-void Select::free(const cid_t cid) {
-  m_columns[cid]->free();
-  if(notify) {
-    std::scoped_lock lock(mutex);
-    cv.notify_all();
-  }
-}
-
-void Select::remove(const cid_t cid) {
-  // unused
-  m_columns.erase(cid);
-}
-
-} // namespace Result
-
-
-
-Select::Select(const Cb_t& cb, bool rsp_partials,
-               const Comm::IoContextPtr& io)
-        : buff_sz(Env::Clients::ref().cfg_recv_buff_sz->get()),
-          buff_ahead(Env::Clients::ref().cfg_recv_ahead->get()),
-          timeout(Env::Clients::ref().cfg_recv_timeout->get()),
-          cb(cb), dispatcher_io(io),
-          result(std::make_shared<Result>(cb && rsp_partials)),
-          m_rsp_partial_runs(false) {
-}
-
-Select::Select(const DB::Specs::Scan& specs,
-               const Cb_t& cb, bool rsp_partials,
-               const Comm::IoContextPtr& io)
-        : buff_sz(Env::Clients::ref().cfg_recv_buff_sz->get()),
-          buff_ahead(Env::Clients::ref().cfg_recv_ahead->get()),
-          timeout(Env::Clients::ref().cfg_recv_timeout->get()),
-          cb(cb), dispatcher_io(io), specs(specs),
-          result(std::make_shared<Result>(cb && rsp_partials)),
-          m_rsp_partial_runs(false) {
-}
-
-Select::~Select() { }
-
-void Select::response(int err) {
-  if(err)
-    result->err.store(err);
-
-  result->profile.finished();
-
-  if(result->notify) {
-    bool call;
-    {
-      std::scoped_lock lock(result->mutex);
-      if((call = !m_rsp_partial_runs))
-        m_rsp_partial_runs = true;
-    }
-    if(call)
-      response_partial();
-  } else if(cb) {
-    send_result();
-  }
-
-  std::scoped_lock lock(result->mutex);
-  result->cv.notify_all();
-}
-
-void Select::response_partials() {
-  if(!result->notify)
-    return;
-
-  {
-    std::unique_lock lock_wait(result->mutex);
-    if(m_rsp_partial_runs) {
-      if(wait_on_partials()) {
-        result->cv.wait(
-          lock_wait,
-          [selector=shared_from_this()] () {
-            return !selector->m_rsp_partial_runs ||
-                   !selector->wait_on_partials();
-          }
-        );
-      }
-      return;
-    }
-    m_rsp_partial_runs = true;
-  }
-  Env::IoCtx::post(
-    [selector=shared_from_this()] () { selector->response_partial(); });
-}
-
-bool Select::wait_on_partials() const {
-  return result->get_size_bytes() > buff_sz * buff_ahead;
-}
-
-void Select::response_partial() {
-
-  send_result();
-
-  std::scoped_lock lock(result->mutex);
-  m_rsp_partial_runs = false;
-  result->cv.notify_all();
-}
-
-void Select::wait() {
-  std::unique_lock lock_wait(result->mutex);
-  result->cv.wait(
-    lock_wait,
-    [selector=shared_from_this()] () {
-      return !selector->m_rsp_partial_runs &&
-             !selector->result->completion.count();
-    }
-  );
-  if(result->notify && !result->empty())
-    send_result();
-}
-
-void Select::send_result() {
-  dispatcher_io
-    ? dispatcher_io->post(
-        [selector=shared_from_this()](){ selector->cb(selector->result); })
-    : cb(result);
-}
-
-void Select::scan(int& err) {
+void scan(int& err,
+          const Handlers::BaseUnorderedMap::Ptr& hdlr,
+          const DB::Specs::Scan& specs) {
   std::vector<DB::Schema::Ptr> schemas(specs.columns.size());
   auto it_seq = schemas.begin();
   for(auto& col : specs.columns) {
     auto schema = Env::Clients::get()->schemas->get(err, col->cid);
     if(err)
       return;
-    result->add_column(col->cid);
     *it_seq++ = schema;
-    result->completion.increment();
+    hdlr->completion.increment();
   }
 
   it_seq = schemas.begin();
   for(auto& col : specs.columns) {
     for(auto& intval : col->intervals) {
       if(!intval->flags.max_buffer)
-        intval->flags.max_buffer = buff_sz;
+        intval->flags.max_buffer = hdlr->buff_sz;
       if(!intval->values.empty())
         intval->values.col_type = (*it_seq)->col_type;
       std::make_shared<Scanner>(
-        shared_from_this(),
-        (*it_seq)->col_seq, *intval.get(), col->cid
+        hdlr, (*it_seq)->col_seq, *intval.get(), col->cid
       )->mngr_locate_master();
     }
     ++it_seq;
   }
 }
+
+
+
+
+
 
 #define SWC_SCANNER_REQ_DEBUG(msg) \
   SWC_LOG_OUT(LOG_DEBUG, params.print(SWC_LOG_OSTREAM << msg << ' '); );
@@ -293,12 +71,12 @@ void Select::scan(int& err) {
   );
 
 
-Select::Scanner::Scanner(const Select::Ptr& selector,
-                         const DB::Types::KeySeq col_seq,
-                         DB::Specs::Interval& interval,
-                         const cid_t cid)
+Scanner::Scanner(const Handlers::Base::Ptr& hdlr,
+                 const DB::Types::KeySeq col_seq,
+                 const DB::Specs::Interval& interval,
+                 const cid_t cid)
             : completion(0),
-              selector(selector),
+              selector(hdlr),
               col_seq(col_seq),
               interval(interval),
               master_cid(DB::Types::MetaColumn::get_master_cid(col_seq)),
@@ -312,9 +90,7 @@ Select::Scanner::Scanner(const Select::Ptr& selector,
               meta_next(false) {
 }
 
-Select::Scanner::~Scanner() { }
-
-void Select::Scanner::print(std::ostream& out) {
+void Scanner::print(std::ostream& out) {
   out << "Scanner(" << DB::Types::to_string(col_seq)
       << " master(" << master_cid << '/' << master_rid
         << " mngr-next=" << master_mngr_next
@@ -326,22 +102,21 @@ void Select::Scanner::print(std::ostream& out) {
   out << " completion=" << completion.count() << ')';
 }
 
-bool Select::Scanner::add_cells(const StaticBuffer& buffer,
-                                bool reached_limit) {
-  return selector->result->add_cells(data_cid, buffer, reached_limit, interval);
+bool Scanner::add_cells(const StaticBuffer& buffer, bool reached_limit) {
+  return selector->add_cells(data_cid, buffer, reached_limit, interval);
 }
 
-void Select::Scanner::response_if_last() {
+void Scanner::response_if_last() {
   if(completion.is_last()) {
     master_rgr_req_base = nullptr;
     meta_req_base = nullptr;
     data_req_base = nullptr;
-    if(selector->result->completion.is_last())
+    if(selector->completion.is_last())
       selector->response(Error::OK);
   }
 }
 
-void Select::Scanner::next_call() {
+void Scanner::next_call() {
   if(meta_next) {
     if(!interval.offset_key.empty() && !meta_end.empty()) {
       if(DB::KeySeq::compare(col_seq, interval.offset_key, meta_end)
@@ -362,7 +137,7 @@ void Select::Scanner::next_call() {
 
 
 //
-void Select::Scanner::mngr_locate_master() {
+void Scanner::mngr_locate_master() {
   completion.increment();
 
   Comm::Protocol::Mngr::Params::RgrGetReq params(
@@ -395,7 +170,7 @@ void Select::Scanner::mngr_locate_master() {
   SWC_SCANNER_REQ_DEBUG("mngr_locate_master");
   Comm::Protocol::Mngr::Req::RgrGet::request(
     params,
-    [profile=selector->result->profile.mngr_locate(),
+    [profile=selector->profile.mngr_locate(),
      scanner=shared_from_this()]
     (const ReqBase::Ptr& req,
      const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
@@ -406,7 +181,7 @@ void Select::Scanner::mngr_locate_master() {
   );
 }
 
-bool Select::Scanner::mngr_located_master(
+bool Scanner::mngr_located_master(
         const ReqBase::Ptr& req,
         const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
 
@@ -417,24 +192,21 @@ bool Select::Scanner::mngr_located_master(
       return true;
     }
     SWC_SCANNER_RSP_DEBUG("mngr_located_master RETRYING");
-    req->request_again();
-    return false;
+    return !selector->valid(req);
   }
   if(!rsp.rid) {
     SWC_SCANNER_RSP_DEBUG("mngr_located_master RETRYING(no rid)");
-    req->request_again();
-    return false;
+    return !selector->valid(req);
   }
   if(master_cid != rsp.cid) {
     SWC_SCANNER_RSP_DEBUG("mngr_located_master RETRYING(cid no match)");
-    req->request_again();
-    return false;
+    return !selector->valid(req);
   }
 
   SWC_SCANNER_RSP_DEBUG("mngr_located_master");
   Env::Clients::get()->rangers.set(rsp.cid, rsp.rid, rsp.endpoints);
   master_mngr_next = true;
-  master_mngr_offset.copy(rsp.range_begin);
+  master_mngr_offset.copy(rsp.range_begin); // if above/any-end
   if(DB::Types::MetaColumn::is_master(data_cid)) {
     data_rid = rsp.rid;
     data_req_base = req;
@@ -451,7 +223,7 @@ bool Select::Scanner::mngr_located_master(
 
 
 //
-void Select::Scanner::rgr_locate_master() {
+void Scanner::rgr_locate_master() {
   completion.increment();
 
   Comm::Protocol::Rgr::Params::RangeLocateReq params(master_cid, master_rid);
@@ -487,7 +259,7 @@ void Select::Scanner::rgr_locate_master() {
   SWC_SCANNER_REQ_DEBUG("rgr_locate_master");
   Comm::Protocol::Rgr::Req::RangeLocate::request(
     params, master_rgr_endpoints,
-    [profile=selector->result->profile.rgr_locate(DB::Types::Range::MASTER),
+    [profile=selector->profile.rgr_locate(DB::Types::Range::MASTER),
      scanner=shared_from_this()]
     (const ReqBase::Ptr& req,
      const Comm::Protocol::Rgr::Params::RangeLocateRsp& rsp) {
@@ -497,59 +269,72 @@ void Select::Scanner::rgr_locate_master() {
   );
 }
 
-void Select::Scanner::rgr_located_master(
+void Scanner::rgr_located_master(
           const ReqBase::Ptr& req,
           const Comm::Protocol::Rgr::Params::RangeLocateRsp& rsp) {
-  if(rsp.err) {
-    if(master_rgr_next && rsp.err == Error::RANGE_NOT_FOUND) {
-      master_rgr_next = false;
-      SWC_SCANNER_RSP_DEBUG("rgr_located_master master_rgr_next");
-      next_call();
-      return response_if_last();
+  switch(rsp.err) {
+    case Error::OK: {
+      if(!rsp.rid) { // sake check (must be an err rsp)
+        SWC_SCANNER_RSP_DEBUG("rgr_located_master RETRYING(no rid)");
+        Env::Clients::get()->rangers.remove(master_cid, master_rid);
+        if(selector->valid(master_rgr_req_base))
+          return;
+        break;
+      }
+      if(meta_cid != rsp.cid) { // sake check (must be an err rsp)
+        SWC_SCANNER_RSP_DEBUG("rgr_located_master RETRYING(cid no match)");
+        Env::Clients::get()->rangers.remove(master_cid, master_rid);
+        if(selector->valid(master_rgr_req_base))
+          return;
+        break;
+      }
+      SWC_SCANNER_RSP_DEBUG("rgr_located_master");
+      master_rgr_next = true;
+      master_rgr_offset.copy(rsp.range_begin); // if above/any-end
+      if(DB::Types::MetaColumn::is_meta(data_cid)) {
+        data_rid = rsp.rid;
+        data_req_base = req;
+        mngr_resolve_rgr_select();
+      } else {
+        meta_rid = rsp.rid;
+        meta_req_base = req;
+        mngr_resolve_rgr_meta();
+      }
+      break;
     }
-    SWC_SCANNER_RSP_DEBUG("rgr_located_master RETRYING");
-    if(rsp.err == Error::RGR_NOT_LOADED_RANGE ||
-       rsp.err == Error::RANGE_NOT_FOUND  ||
-       rsp.err == Error::SERVER_SHUTTING_DOWN ||
-       rsp.err == Error::COMM_NOT_CONNECTED) {
+    case Error::RANGE_NOT_FOUND: {
+      if(master_rgr_next) {
+        master_rgr_next = false;
+        SWC_SCANNER_RSP_DEBUG("rgr_located_master master_rgr_next");
+        next_call();
+        break;
+      }
+      [[fallthrough]];
+    }
+    case Error::RGR_NOT_LOADED_RANGE:
+    case Error::SERVER_SHUTTING_DOWN:
+    case Error::COMM_NOT_CONNECTED: {
+      SWC_SCANNER_RSP_DEBUG("rgr_located_master RETRYING");
       Env::Clients::get()->rangers.remove(master_cid, master_rid);
-      return master_rgr_req_base->request_again();
-    } else {
-      return req->request_again();
+      if(selector->valid(master_rgr_req_base))
+        return;
+      break;
     }
-  }
-  if(!rsp.rid) {
-    SWC_SCANNER_RSP_DEBUG("rgr_located_master RETRYING(no rid)");
-    Env::Clients::get()->rangers.remove(master_cid, master_rid);
-    return master_rgr_req_base->request_again();
-  }
-  if(meta_cid != rsp.cid) {
-    SWC_SCANNER_RSP_DEBUG("rgr_located_master RETRYING(cid no match)");
-    Env::Clients::get()->rangers.remove(master_cid, master_rid);
-    return master_rgr_req_base->request_again();
-  }
-
-  SWC_SCANNER_RSP_DEBUG("rgr_located_master");
-  master_rgr_next = true;
-  master_rgr_offset.copy(rsp.range_begin);
-  if(DB::Types::MetaColumn::is_meta(data_cid)) {
-    data_rid = rsp.rid;
-    data_req_base = req;
-    mngr_resolve_rgr_select();
-  } else {
-    meta_rid = rsp.rid;
-    meta_req_base = req;
-    mngr_resolve_rgr_meta();
+    default: {
+      if(selector->valid(req))
+        return;
+      break;
+    }
   }
   response_if_last();
 }
 
 
 //
-void Select::Scanner::mngr_resolve_rgr_meta() {
+void Scanner::mngr_resolve_rgr_meta() {
   completion.increment();
 
-  auto profile = selector->result->profile.mngr_res();
+  auto profile = selector->profile.mngr_res();
   auto params = Comm::Protocol::Mngr::Params::RgrGetReq(meta_cid, meta_rid);
   auto req = Comm::Protocol::Mngr::Req::RgrGet::make(
     params,
@@ -575,13 +360,13 @@ void Select::Scanner::mngr_resolve_rgr_meta() {
   req->run();
 }
 
-bool Select::Scanner::mngr_resolved_rgr_meta(
+bool Scanner::mngr_resolved_rgr_meta(
         const ReqBase::Ptr& req,
         const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
   if(rsp.err) {
     SWC_SCANNER_RSP_DEBUG("mngr_resolved_rgr_meta RETRYING");
-    (rsp.err == Error::RANGE_NOT_FOUND? meta_req_base : req)->request_again();
-    return false;
+    return !selector->valid(
+      rsp.err == Error::RANGE_NOT_FOUND? meta_req_base : req);
   }
   SWC_SCANNER_RSP_DEBUG("mngr_resolved_rgr_meta");
   meta_endpoints = rsp.endpoints;
@@ -592,7 +377,7 @@ bool Select::Scanner::mngr_resolved_rgr_meta(
 
 
 //
-void Select::Scanner::rgr_locate_meta() {
+void Scanner::rgr_locate_meta() {
   completion.increment();
 
   Comm::Protocol::Rgr::Params::RangeLocateReq params(meta_cid, meta_rid);
@@ -620,7 +405,7 @@ void Select::Scanner::rgr_locate_meta() {
   SWC_SCANNER_REQ_DEBUG("rgr_locate_meta");
   Comm::Protocol::Rgr::Req::RangeLocate::request(
     params, meta_endpoints,
-    [profile=selector->result->profile.rgr_locate(DB::Types::Range::META),
+    [profile=selector->profile.rgr_locate(DB::Types::Range::META),
      scanner=shared_from_this()]
     (const ReqBase::Ptr& req,
      const Comm::Protocol::Rgr::Params::RangeLocateRsp& rsp) {
@@ -630,57 +415,65 @@ void Select::Scanner::rgr_locate_meta() {
   );
 }
 
-void Select::Scanner::rgr_located_meta(
+void Scanner::rgr_located_meta(
           const ReqBase::Ptr& req,
           const Comm::Protocol::Rgr::Params::RangeLocateRsp& rsp) {
   switch(rsp.err) {
-    case Error::OK:
+    case Error::OK: {
+      if(!rsp.rid) { // sake check (must be an err rsp)
+        SWC_SCANNER_RSP_DEBUG("rgr_located_meta RETRYING(no rid)");
+        Env::Clients::get()->rangers.remove(meta_cid, meta_rid);
+        if(selector->valid(meta_req_base))
+          return;
+        break;
+      }
+      if(data_cid != rsp.cid) { // sake check (must be an err rsp)
+        SWC_SCANNER_RSP_DEBUG("rgr_located_meta RETRYING(cid no match)");
+        Env::Clients::get()->rangers.remove(meta_cid, meta_rid);
+        if(selector->valid(meta_req_base))
+          return;
+        break;
+      }
+      SWC_SCANNER_RSP_DEBUG("rgr_located_meta)");
+      meta_next = true;
+      meta_offset.copy(rsp.range_begin); // if above/any-end
+      meta_end.copy(rsp.range_end); // if above
+      data_rid = rsp.rid;
+      data_req_base = req;
+      mngr_resolve_rgr_select();
       break;
+    }
     case Error::RANGE_NOT_FOUND: {
       meta_next = false;
       SWC_SCANNER_RSP_DEBUG("rgr_located_meta meta_next");
       next_call();
-      return response_if_last();
+      break;
     }
     case Error::RGR_NOT_LOADED_RANGE:
     case Error::COMM_NOT_CONNECTED:
     case Error::SERVER_SHUTTING_DOWN: {
       SWC_SCANNER_RSP_DEBUG("rgr_located_meta RETRYING");
       Env::Clients::get()->rangers.remove(meta_cid, meta_rid);
-      return meta_req_base->request_again();
+      if(selector->valid(meta_req_base))
+        return;
+      break;
     }
     default: {
       SWC_SCANNER_RSP_DEBUG("rgr_located_meta RETRYING-locate");
-      return req->request_again();
+      if(selector->valid(req))
+        return;
+      break;
     }
   }
-  if(!rsp.rid) {
-    SWC_SCANNER_RSP_DEBUG("rgr_located_meta RETRYING(no rid)");
-    Env::Clients::get()->rangers.remove(meta_cid, meta_rid);
-    return meta_req_base->request_again();
-  }
-  if(data_cid != rsp.cid) {
-    SWC_SCANNER_RSP_DEBUG("rgr_located_meta RETRYING(cid no match)");
-    Env::Clients::get()->rangers.remove(meta_cid, meta_rid);
-    return meta_req_base->request_again();
-  }
-
-  SWC_SCANNER_RSP_DEBUG("rgr_located_meta)");
-  meta_next = true;
-  meta_offset.copy(rsp.range_begin);
-  meta_end.copy(rsp.range_end);
-  data_rid = rsp.rid;
-  data_req_base = req;
-  mngr_resolve_rgr_select();
   response_if_last();
 }
 
 
 //
-void Select::Scanner::mngr_resolve_rgr_select() {
+void Scanner::mngr_resolve_rgr_select() {
   completion.increment();
 
-  auto profile = selector->result->profile.mngr_res();
+  auto profile = selector->profile.mngr_res();
   Comm::Protocol::Mngr::Params::RgrGetReq params(data_cid, data_rid);
   auto req = Comm::Protocol::Mngr::Req::RgrGet::make(
     params,
@@ -706,19 +499,20 @@ void Select::Scanner::mngr_resolve_rgr_select() {
   req->run();
 }
 
-bool Select::Scanner::mngr_resolved_rgr_select(
+bool Scanner::mngr_resolved_rgr_select(
         const ReqBase::Ptr& req,
         const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
   if(rsp.err) {
     if(rsp.err == Error::COLUMN_NOT_EXISTS) {
       SWC_SCANNER_RSP_DEBUG("mngr_resolved_rgr_select QUIT");
-      selector->result->err.store(rsp.err); // Error::CONSIST_ERRORS;
-      selector->result->error(data_cid, rsp.err);
+      int at = Error::OK; // rsp.err = Error::CONSIST_ERRORS;
+      selector->state_error.compare_exchange_weak(at, rsp.err);
+      selector->error(data_cid, rsp.err);
       return true;
     }
     SWC_SCANNER_RSP_DEBUG("mngr_resolved_rgr_select RETRYING");
-    (rsp.err == Error::RANGE_NOT_FOUND? data_req_base : req)->request_again();
-    return false;
+    return !selector->valid(
+      rsp.err == Error::RANGE_NOT_FOUND? data_req_base : req);
   }
 
   SWC_SCANNER_RSP_DEBUG("mngr_resolved_rgr_select");
@@ -730,7 +524,7 @@ bool Select::Scanner::mngr_resolved_rgr_select(
 
 
 //
-void Select::Scanner::rgr_select() {
+void Scanner::rgr_select() {
   completion.increment();
 
   Comm::Protocol::Rgr::Params::RangeQuerySelectReq params(
@@ -739,7 +533,7 @@ void Select::Scanner::rgr_select() {
   SWC_SCANNER_REQ_DEBUG("rgr_select");
   Comm::Protocol::Rgr::Req::RangeQuerySelect::request(
     params, data_endpoints,
-    [profile=selector->result->profile.rgr_data(), scanner=shared_from_this()]
+    [profile=selector->profile.rgr_data(), scanner=shared_from_this()]
     (const ReqBase::Ptr& req,
      const Comm::Protocol::Rgr::Params::RangeQuerySelectRsp& rsp) {
       profile.add(rsp.err);
@@ -749,29 +543,32 @@ void Select::Scanner::rgr_select() {
   );
 }
 
-void Select::Scanner::rgr_selected(
+void Scanner::rgr_selected(
                 const ReqBase::Ptr& req,
                 const Comm::Protocol::Rgr::Params::RangeQuerySelectRsp& rsp) {
-  if(rsp.err) {
-    SWC_SCANNER_RSP_DEBUG("rgr_selected RETRYING");
-    if(rsp.err == Error::RGR_NOT_LOADED_RANGE ||
-       rsp.err == Error::SERVER_SHUTTING_DOWN ||
-       rsp.err == Error::COMM_NOT_CONNECTED) {
-      Env::Clients::get()->rangers.remove(data_cid, data_rid);
-      return data_req_base->request_again();
-    } else {
-      return req->request_again();
+  switch(rsp.err) {
+    case Error::OK: {
+      SWC_SCANNER_RSP_DEBUG("rgr_selected");
+      if(interval.flags.offset)
+        interval.flags.offset = rsp.offset;
+
+      if(!rsp.data.size || add_cells(rsp.data, rsp.reached_limit))
+        rsp.reached_limit ? rgr_select() : next_call();
+      break;
     }
-  }
-
-  SWC_SCANNER_RSP_DEBUG("rgr_selected");
-  if(interval.flags.offset)
-    interval.flags.offset = rsp.offset;
-
-  if(!rsp.data.size || add_cells(rsp.data, rsp.reached_limit)) {
-    if(rsp.data.size)
-      selector->response_partials();
-    rsp.reached_limit ? rgr_select() : next_call();
+    case Error::RGR_NOT_LOADED_RANGE:
+    case Error::SERVER_SHUTTING_DOWN:
+    case Error::COMM_NOT_CONNECTED: {
+      SWC_SCANNER_RSP_DEBUG("rgr_selected RETRYING");
+      Env::Clients::get()->rangers.remove(data_cid, data_rid);
+      if(selector->valid(data_req_base))
+        return;
+      break;
+    }
+    default: {
+      if(selector->valid(req))
+        return;
+    }
   }
   response_if_last();
 }
@@ -780,4 +577,4 @@ void Select::Scanner::rgr_selected(
 #undef SWC_SCANNER_REQ_DEBUG
 #undef SWC_SCANNER_RSP_DEBUG
 
-}}}
+}}}}

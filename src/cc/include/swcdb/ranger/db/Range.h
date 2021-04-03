@@ -17,6 +17,7 @@
 #include "swcdb/ranger/db/ReqScan.h"
 #include "swcdb/ranger/db/RangeBlocks.h"
 #include "swcdb/ranger/callbacks/RangeQueryUpdate.h"
+#include "swcdb/db/client/Query/SelectHandlerCommon.h"
 
 
 namespace SWC { namespace Ranger {
@@ -144,7 +145,7 @@ class Range final : public std::enable_shared_from_this<Range> {
 
   void check_meta(const Callback::RangeLoad::Ptr& req,
                   const DB::Specs::Column::Ptr& col_spec,
-                  const client::Query::Select::Result::Ptr& result);
+                  const client::Query::Select::Handlers::Common::Ptr& hdlr);
 
   void loaded(int err, const Callback::RangeLoad::Ptr& req);
 

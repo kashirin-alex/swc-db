@@ -14,6 +14,7 @@
 
 #include <thrift/transport/TSocket.h>
 
+#include "swcdb/db/client/Query/SelectHandlerCommon.h"
 
 namespace SWC {
 namespace thrift = apache::thrift;
@@ -106,20 +107,21 @@ class AppHandler final : virtual public BrokerIf {
   }
 
   /* SQL QUERY */
-  client::Query::Select::Ptr sync_select(const std::string& sql) {
-    auto req = std::make_shared<client::Query::Select>();
+  client::Query::Select::Handlers::Common::Ptr sync_select(const std::string& sql) {
+    auto hdlr = client::Query::Select::Handlers::Common::make();
     int err = Error::OK;
+    DB::Specs::Scan specs;
     std::string message;
     uint8_t display_flags = 0;
-    client::SQL::parse_select(err, sql, req->specs, display_flags, message);
+    client::SQL::parse_select(err, sql, specs, display_flags, message);
     if(!err) {
-      req->scan(err);
+      client::Query::Select::scan(err, hdlr, specs);
       if(!err)
-        req->wait();
+        hdlr->wait();
     }
     if(err)
       Converter::exception(err, message);
-    return req;
+    return hdlr;
   }
 
   void sql_query(CellsGroup& _return, const std::string& sql,
@@ -145,40 +147,40 @@ class AppHandler final : virtual public BrokerIf {
   }
 
   void sql_select(Cells& _return, const std::string& sql) override {
-    auto req = sync_select(sql);
+    auto hdlr = sync_select(sql);
 
     int err = Error::OK;
-    process_results(err, req->result, _return);
+    process_results(err, hdlr, _return);
     if(err)
       Converter::exception(err);
   }
 
   void sql_select_rslt_on_column(CCells& _return,
                                  const std::string& sql) override {
-    auto req = sync_select(sql);
+    auto hdlr = sync_select(sql);
 
     int err = Error::OK;
-    process_results(err, req->result, _return);
+    process_results(err, hdlr, _return);
     if(err)
       Converter::exception(err);
   }
 
   void sql_select_rslt_on_key(KCells& _return,
                               const std::string& sql) override {
-    auto req = sync_select(sql);
+    auto hdlr = sync_select(sql);
 
     int err = Error::OK;
-    process_results(err, req->result, _return);
+    process_results(err, hdlr, _return);
     if(err)
       Converter::exception(err);
   }
 
   void sql_select_rslt_on_fraction(FCells& _return,
                                    const std::string& sql) override {
-    auto req = sync_select(sql);
+    auto hdlr = sync_select(sql);
 
     int err = Error::OK;
-    process_results(err, req->result, _return);
+    process_results(err, hdlr, _return);
     if(err)
       Converter::exception(err);
   }
@@ -243,12 +245,13 @@ class AppHandler final : virtual public BrokerIf {
   }
 
   /* SPECS SCAN QUERY */
-  client::Query::Select::Ptr sync_select(const SpecScan& spec) {
-    auto req = std::make_shared<client::Query::Select>();
+  client::Query::Select::Handlers::Common::Ptr sync_select(const SpecScan& spec) {
+    auto hdlr = client::Query::Select::Handlers::Common::make();
     int err = Error::OK;
+    DB::Specs::Scan specs;
 
     if(spec.__isset.flags)
-      Converter::set(spec.flags, req->specs.flags);
+      Converter::set(spec.flags, specs.flags);
 
     DB::Schema::Ptr schema;
     DB::Specs::Interval::Ptr dbintval;
@@ -258,8 +261,8 @@ class AppHandler final : virtual public BrokerIf {
       if(!schema)
         Converter::exception(err, "cid=" + std::to_string(col.cid));
 
-      req->specs.columns.push_back(DB::Specs::Column::make_ptr(col.cid));
-      auto& dbcol = req->specs.columns.back();
+      specs.columns.push_back(DB::Specs::Column::make_ptr(col.cid));
+      auto& dbcol = specs.columns.back();
 
       for(auto& intval : col.intervals) {
         dbintval = DB::Specs::Interval::make_ptr(schema->col_type);
@@ -273,8 +276,8 @@ class AppHandler final : virtual public BrokerIf {
       if(!schema)
         Converter::exception(err, "cid=" + std::to_string(col.cid));
 
-      req->specs.columns.push_back(DB::Specs::Column::make_ptr(col.cid));
-      auto& dbcol = req->specs.columns.back();
+      specs.columns.push_back(DB::Specs::Column::make_ptr(col.cid));
+      auto& dbcol = specs.columns.back();
 
       for(auto& intval : col.intervals) {
         dbintval = DB::Specs::Interval::make_ptr(schema->col_type);
@@ -284,13 +287,13 @@ class AppHandler final : virtual public BrokerIf {
     }
 
     if(!err) {
-      req->scan(err);
+      client::Query::Select::scan(err, hdlr, specs);
       if(!err)
-        req->wait();
+        hdlr->wait();
     }
     if(err)
       Converter::exception(err);
-    return req;
+    return hdlr;
   }
 
   void scan_rslt_on(CellsGroup& _return, const SpecScan& specs,
@@ -316,37 +319,37 @@ class AppHandler final : virtual public BrokerIf {
   }
 
   void scan(Cells& _return, const SpecScan& specs) override {
-    auto req = sync_select(specs);
+    auto hdlr = sync_select(specs);
 
     int err = Error::OK;
-    process_results(err, req->result, _return);
+    process_results(err, hdlr, _return);
     if(err)
       Converter::exception(err);
   }
 
   void scan_rslt_on_column(CCells& _return, const SpecScan& specs) override {
-    auto req = sync_select(specs);
+    auto hdlr = sync_select(specs);
 
     int err = Error::OK;
-    process_results(err, req->result, _return);
+    process_results(err, hdlr, _return);
     if(err)
       Converter::exception(err);
   }
 
   void scan_rslt_on_key(KCells& _return, const SpecScan& specs) override {
-    auto req = sync_select(specs);
+    auto hdlr = sync_select(specs);
 
     int err = Error::OK;
-    process_results(err, req->result, _return);
+    process_results(err, hdlr, _return);
     if(err)
       Converter::exception(err);
   }
 
   void scan_rslt_on_fraction(FCells& _return, const SpecScan& specs) override {
-    auto req = sync_select(specs);
+    auto hdlr = sync_select(specs);
 
     int err = Error::OK;
-    process_results(err, req->result, _return);
+    process_results(err, hdlr, _return);
     if(err)
       Converter::exception(err);
   }
@@ -703,14 +706,14 @@ class AppHandler final : virtual public BrokerIf {
   }
 
   static void process_results(
-          int& err, const client::Query::Select::Result::Ptr& result,
+          int& err, const client::Query::Select::Handlers::Common::Ptr& hdlr,
           Cells& _return) {
     DB::Schema::Ptr schema;
     DB::Cells::Result cells;
 
-    for(cid_t cid : result->get_cids()) {
+    for(cid_t cid : hdlr->get_cids()) {
       cells.free();
-      result->get_cells(cid, cells);
+      hdlr->get_cells(cid, cells);
 
       schema = Env::Clients::get()->schemas->get(err, cid);
       if(err)
@@ -747,14 +750,14 @@ class AppHandler final : virtual public BrokerIf {
   }
 
   static void process_results(
-          int& err, const client::Query::Select::Result::Ptr& result,
+          int& err, const client::Query::Select::Handlers::Common::Ptr& hdlr,
           CCells& _return) {
     DB::Schema::Ptr schema;
     DB::Cells::Result cells;
 
-    for(cid_t cid : result->get_cids()) {
+    for(cid_t cid : hdlr->get_cids()) {
       cells.free();
-      result->get_cells(cid, cells);
+      hdlr->get_cells(cid, cells);
 
       schema = Env::Clients::get()->schemas->get(err, cid);
       if(err)
@@ -791,14 +794,14 @@ class AppHandler final : virtual public BrokerIf {
   }
 
   static void process_results(
-          int& err, const client::Query::Select::Result::Ptr& result,
+          int& err, const client::Query::Select::Handlers::Common::Ptr& hdlr,
           KCells& _return) {
     DB::Schema::Ptr schema;
     DB::Cells::Result cells;
 
-    for(cid_t cid : result->get_cids()) {
+    for(cid_t cid : hdlr->get_cids()) {
       cells.free();
-      result->get_cells(cid, cells);
+      hdlr->get_cells(cid, cells);
 
       schema = Env::Clients::get()->schemas->get(err, cid);
       if(err)
@@ -845,16 +848,16 @@ class AppHandler final : virtual public BrokerIf {
   }
 
   static void process_results(
-          int& err, const client::Query::Select::Result::Ptr& result,
+          int& err, const client::Query::Select::Handlers::Common::Ptr& hdlr,
           FCells& _return) {
     DB::Schema::Ptr schema;
     DB::Cells::Result cells;
 
     std::vector<std::string> key;
 
-    for(cid_t cid : result->get_cids()) {
+    for(cid_t cid : hdlr->get_cids()) {
       cells.free();
-      result->get_cells(cid, cells);
+      hdlr->get_cells(cid, cells);
 
       schema = Env::Clients::get()->schemas->get(err, cid);
       if(err)

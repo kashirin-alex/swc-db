@@ -18,7 +18,7 @@ Common::Common(const Cb_t& cb, bool rsp_partials,
                const Comm::IoContextPtr& io)
         : valid_state(true), m_cb(cb), m_dispatcher_io(io),
           m_notify(m_cb && rsp_partials),
-          m_rsp_partial_runs(false) {
+          m_sending_result(false) {
   buff_sz.store(Env::Clients::ref().cfg_recv_buff_sz->get());
   buff_ahead.store(Env::Clients::ref().cfg_recv_ahead->get());
   timeout.store(Env::Clients::ref().cfg_recv_timeout->get());
@@ -56,21 +56,13 @@ void Common::response(int err) {
 
   profile.finished();
 
-  if(m_notify) {
-    bool call;
-    {
-      std::scoped_lock lock(m_mutex);
-      if((call = !m_rsp_partial_runs))
-        m_rsp_partial_runs = true;
-    }
-    if(call)
-      response_partial();
-  } else if(m_cb) {
-    send_result();
+  if(m_cb) {
+    if(!m_sending_result.running())
+      send_result();
+  } else {
+    std::scoped_lock lock(m_mutex);
+    m_cv.notify_all();
   }
-
-  std::scoped_lock lock(m_mutex);
-  m_cv.notify_all();
 }
 
 bool Common::valid(const ReqBase::Ptr& req) noexcept {
@@ -84,55 +76,67 @@ void Common::response_partials() {
   if(!m_notify)
     return;
 
-  {
+  if(m_sending_result.running()) {
     std::unique_lock lock_wait(m_mutex);
-    if(m_rsp_partial_runs) {
+    if(m_sending_result.running()) {
       if(wait_on_partials()) {
         m_cv.wait(
           lock_wait,
           [this, hdlr=shared_from_this()] () {
-            return !m_rsp_partial_runs || !wait_on_partials();
+            return !m_sending_result || !wait_on_partials();
           }
         );
       }
       return;
     }
-    m_rsp_partial_runs = true;
   }
-  Env::IoCtx::post([this, hdlr=shared_from_this()](){ response_partial(); });
+  send_result();
 }
 
 bool Common::wait_on_partials() {
   return get_size_bytes() > buff_sz * buff_ahead;
 }
 
-void Common::response_partial() {
-  send_result();
-
-  std::scoped_lock lock(m_mutex);
-  m_rsp_partial_runs = false;
-  m_cv.notify_all();
-}
-
 void Common::wait() {
-  {
-    std::unique_lock lock_wait(m_mutex);
-    m_cv.wait(
-      lock_wait,
-      [this, hdlr=shared_from_this()] () {
-        return !m_rsp_partial_runs && !completion.count();
+  _wait: {
+    {
+      std::unique_lock lock_wait(m_mutex);
+      if(m_sending_result || completion.count()) {
+        m_cv.wait(
+          lock_wait,
+          [this, hdlr=shared_from_this()] () {
+            return !m_sending_result && !completion.count();
+          }
+        );
       }
-    );
+    }
+    if(m_notify && !empty()) {
+      if(!m_sending_result.running())
+        send_result();
+      goto _wait;
+    }
   }
-  if(m_notify && !empty())
-    send_result();
 }
 
 void Common::send_result() {
   auto hdlr = std::dynamic_pointer_cast<Common>(shared_from_this());
-  m_dispatcher_io
-    ? m_dispatcher_io->post([hdlr](){ hdlr->m_cb(hdlr); })
-    : m_cb(hdlr);
+  if(m_dispatcher_io) {
+    m_dispatcher_io->post([this, hdlr](){
+      m_cb(hdlr);
+
+      std::scoped_lock lock(m_mutex);
+      m_sending_result.stop();
+      m_cv.notify_all();
+    });
+  } else {
+    Env::IoCtx::post([this, hdlr](){
+      m_cb(hdlr);
+
+      std::scoped_lock lock(m_mutex);
+      m_sending_result.stop();
+      m_cv.notify_all();
+    });
+  }
 }
 
 

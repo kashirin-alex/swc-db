@@ -78,8 +78,9 @@ class FileWriter {
     close();
   }
 
-  void write(const client::Query::Select::Result::Ptr& result) {
-    for(cid_t cid : result->get_cids()) {
+  void write(
+        const client::Query::Select::Handlers::BaseUnorderedMap::Ptr& hdlr) {
+    for(cid_t cid : hdlr->get_cids()) {
       schemas.emplace(cid, Env::Clients::get()->schemas->get(err, cid));
       if(err)
         break;
@@ -87,11 +88,11 @@ class FileWriter {
 
     Types::Column col_type;
     do {
-      for(cid_t cid : result->get_cids()) {
+      for(cid_t cid : hdlr->get_cids()) {
         col_type = schemas[cid]->col_type;
 
         cells.free();
-        result->get_cells(cid, cells);
+        hdlr->get_cells(cid, cells);
 
         cells_count += cells.size();
         cells_bytes += cells.size_bytes();
