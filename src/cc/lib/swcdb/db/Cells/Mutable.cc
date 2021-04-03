@@ -407,11 +407,9 @@ void Mutable::scan(ReqScan* req) const {
 void Mutable::scan_version_single(ReqScan* req) const {
   bool stop = false;
   bool only_deletes = req->spec.flags.is_only_deletes();
-
-  size_t offset = req->spec.offset_key.empty()
-                  ? 0 : _narrow(req->spec.offset_key); // ?specs.key_start
   const Cell* cell;
-  for(auto it = ConstIterator(&buckets, offset); !stop && it; ++it) {
+  for(auto it = ConstIterator(&buckets, _narrow(req->spec));
+      !stop && it; ++it) {
     if((cell=*it.item)->has_expired(ttl) ||
        (only_deletes ? cell->flag == INSERT : cell->flag != INSERT) ||
        !req->selector(key_seq, *cell, stop) ||
@@ -428,19 +426,12 @@ void Mutable::scan_version_multi(ReqScan* req) const {
   bool stop = false;
   bool only_deletes = req->spec.flags.is_only_deletes();
 
-  bool chk_align;
-  uint32_t rev;
-  size_t offset;
-  if((chk_align = !req->spec.offset_key.empty())) {
-    rev = req->spec.flags.max_versions;
-    offset = _narrow(req->spec.offset_key);// ?req->spec.key_start
-   } else {
-    rev = 0;
-    offset = 0;
-  }
+  bool chk_align = !req->spec.offset_key.empty();
+  uint32_t rev = chk_align ? req->spec.flags.max_versions : 0;
   const DB::Cell::Key* last_key = nullptr;
   const Cell* cell;
-  for(auto it = ConstIterator(&buckets, offset); !stop && it; ++it) {
+  for(auto it = ConstIterator(&buckets, _narrow(req->spec));
+      !stop && it; ++it) {
     cell = *it.item;
 
     if((only_deletes ? cell->flag == INSERT : cell->flag != INSERT) ||
@@ -830,6 +821,11 @@ size_t Mutable::_narrow(const DB::Cell::Key& key, size_t offset) const {
   goto try_narrow;
 }
 
+size_t Mutable::_narrow(const Specs::Interval& specs) const {
+  return specs.offset_key.empty()
+    ? (specs.range_begin.empty() ? 0 : _narrow(specs.range_begin))
+    : _narrow(specs.offset_key);
+}
 
 void Mutable::_add(Cell* cell) noexcept {
   _bytes += cell->encoded_length();

@@ -325,6 +325,9 @@ class Mutable final {
 
   size_t _narrow(const DB::Cell::Key& key, size_t offset_hint = 0) const;
 
+  size_t _narrow(const Specs::Interval& specs) const;
+
+
   void _add(Cell* cell) noexcept;
 
   void _remove(Cell* cell) noexcept;
