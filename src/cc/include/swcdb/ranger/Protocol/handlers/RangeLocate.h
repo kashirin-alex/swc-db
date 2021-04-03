@@ -63,14 +63,14 @@ void range_locate(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
         params.flags
       );
       if(params.flags & Params::RangeLocateReq::NEXT_RANGE)
-        req->spec.range_offset.copy(params.range_offset);
+        req->spec.offset_key.copy(params.range_offset);
     }
 
     range->scan(req);
   }
 
 }
-  
+
 
 }}}}}
 

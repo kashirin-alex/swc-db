@@ -83,18 +83,18 @@ public partial class SpecColumn : TBase
 
   public SpecColumn DeepCopy()
   {
-    var tmp64 = new SpecColumn();
+    var tmp60 = new SpecColumn();
     if(__isset.cid)
     {
-      tmp64.Cid = this.Cid;
+      tmp60.Cid = this.Cid;
     }
-    tmp64.__isset.cid = this.__isset.cid;
+    tmp60.__isset.cid = this.__isset.cid;
     if((Intervals != null) && __isset.intervals)
     {
-      tmp64.Intervals = this.Intervals.DeepCopy();
+      tmp60.Intervals = this.Intervals.DeepCopy();
     }
-    tmp64.__isset.intervals = this.__isset.intervals;
-    return tmp64;
+    tmp60.__isset.intervals = this.__isset.intervals;
+    return tmp60;
   }
 
   public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -128,14 +128,14 @@ public partial class SpecColumn : TBase
             if (field.Type == TType.List)
             {
               {
-                TList _list65 = await iprot.ReadListBeginAsync(cancellationToken);
-                Intervals = new List<SpecInterval>(_list65.Count);
-                for(int _i66 = 0; _i66 < _list65.Count; ++_i66)
+                TList _list61 = await iprot.ReadListBeginAsync(cancellationToken);
+                Intervals = new List<SpecInterval>(_list61.Count);
+                for(int _i62 = 0; _i62 < _list61.Count; ++_i62)
                 {
-                  SpecInterval _elem67;
-                  _elem67 = new SpecInterval();
-                  await _elem67.ReadAsync(iprot, cancellationToken);
-                  Intervals.Add(_elem67);
+                  SpecInterval _elem63;
+                  _elem63 = new SpecInterval();
+                  await _elem63.ReadAsync(iprot, cancellationToken);
+                  Intervals.Add(_elem63);
                 }
                 await iprot.ReadListEndAsync(cancellationToken);
               }
@@ -186,9 +186,9 @@ public partial class SpecColumn : TBase
         await oprot.WriteFieldBeginAsync(field, cancellationToken);
         {
           await oprot.WriteListBeginAsync(new TList(TType.Struct, Intervals.Count), cancellationToken);
-          foreach (SpecInterval _iter68 in Intervals)
+          foreach (SpecInterval _iter64 in Intervals)
           {
-            await _iter68.WriteAsync(oprot, cancellationToken);
+            await _iter64.WriteAsync(oprot, cancellationToken);
           }
           await oprot.WriteListEndAsync(cancellationToken);
         }
@@ -229,16 +229,16 @@ public partial class SpecColumn : TBase
   public override string ToString()
   {
     var sb = new StringBuilder("SpecColumn(");
-    int tmp69 = 0;
+    int tmp65 = 0;
     if(__isset.cid)
     {
-      if(0 < tmp69++) { sb.Append(", "); }
+      if(0 < tmp65++) { sb.Append(", "); }
       sb.Append("Cid: ");
       Cid.ToString(sb);
     }
     if((Intervals != null) && __isset.intervals)
     {
-      if(0 < tmp69++) { sb.Append(", "); }
+      if(0 < tmp65++) { sb.Append(", "); }
       sb.Append("Intervals: ");
       Intervals.ToString(sb);
     }

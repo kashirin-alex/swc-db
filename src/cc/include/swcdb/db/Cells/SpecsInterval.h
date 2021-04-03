@@ -115,7 +115,7 @@ class Interval {
   void display(std::ostream& out, bool pretty=false,
                const std::string& offset = "") const;
 
-  Cell::Key     range_begin, range_end, range_offset;
+  Cell::Key     range_begin, range_end;
   KeyIntervals  key_intervals;
   Values        values;
   Timestamp     ts_start, ts_finish;

@@ -101,23 +101,23 @@ public partial class KCell : TBase
 
   public KCell DeepCopy()
   {
-    var tmp226 = new KCell();
+    var tmp218 = new KCell();
     if((C != null) && __isset.c)
     {
-      tmp226.C = this.C;
+      tmp218.C = this.C;
     }
-    tmp226.__isset.c = this.__isset.c;
+    tmp218.__isset.c = this.__isset.c;
     if(__isset.ts)
     {
-      tmp226.Ts = this.Ts;
+      tmp218.Ts = this.Ts;
     }
-    tmp226.__isset.ts = this.__isset.ts;
+    tmp218.__isset.ts = this.__isset.ts;
     if((V != null) && __isset.v)
     {
-      tmp226.V = this.V.ToArray();
+      tmp218.V = this.V.ToArray();
     }
-    tmp226.__isset.v = this.__isset.v;
-    return tmp226;
+    tmp218.__isset.v = this.__isset.v;
+    return tmp218;
   }
 
   public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -258,22 +258,22 @@ public partial class KCell : TBase
   public override string ToString()
   {
     var sb = new StringBuilder("KCell(");
-    int tmp227 = 0;
+    int tmp219 = 0;
     if((C != null) && __isset.c)
     {
-      if(0 < tmp227++) { sb.Append(", "); }
+      if(0 < tmp219++) { sb.Append(", "); }
       sb.Append("C: ");
       C.ToString(sb);
     }
     if(__isset.ts)
     {
-      if(0 < tmp227++) { sb.Append(", "); }
+      if(0 < tmp219++) { sb.Append(", "); }
       sb.Append("Ts: ");
       Ts.ToString(sb);
     }
     if((V != null) && __isset.v)
     {
-      if(0 < tmp227++) { sb.Append(", "); }
+      if(0 < tmp219++) { sb.Append(", "); }
       sb.Append("V: ");
       V.ToString(sb);
     }

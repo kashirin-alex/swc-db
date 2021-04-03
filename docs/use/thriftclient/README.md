@@ -401,14 +401,13 @@ The Cells Interval Specifications with interval-scope Flags
 | --- | --- | --- | --- | --- | --- |
 |1|range_begin|[```Key```](#typedef-key)|Begin of Ranges evaluation with this Key inclusive |default||
 |2|range_end|[```Key```](#typedef-key)|End of Ranges evaluation with this Key inclusive |default||
-|3|range_offset|[```Key```](#typedef-key)|Offset of Ranges evaluation with this Key inclusive |default||
-|4|offset_key|[```Key```](#typedef-key)|Offset Cell Key of a Scan, select cells from this key inclusive |default||
-|5|offset_rev|```i64```|Offset Cell Timestamp of a Scan, select cells after this timestamp |optional||
-|6|key_intervals|[```SpecKeyIntervals```](#typedef-speckeyintervals)|The Key Intervals |default||
-|7|values|[```SpecValues```](#typedef-specvalues)|The Cell Value Specifications, cell-value match |default||
-|8|ts_start|[```SpecTimestamp```](#struct-spectimestamp)|The Timestamp Start Spec, the start of cells-interval timestamp match |optional||
-|9|ts_finish|[```SpecTimestamp```](#struct-spectimestamp)|The Timestamp Finish Spec, the finish of cells-interval timestamp match |optional||
-|10|flags|[```SpecFlags```](#struct-specflags)|The Interval Flags Specification |optional||
+|3|offset_key|[```Key```](#typedef-key)|Offset Cell Key of a Scan, select cells from this key inclusive |default||
+|4|offset_rev|```i64```|Offset Cell Timestamp of a Scan, select cells after this timestamp |optional||
+|5|key_intervals|[```SpecKeyIntervals```](#typedef-speckeyintervals)|The Key Intervals |default||
+|6|values|[```SpecValues```](#typedef-specvalues)|The Cell Value Specifications, cell-value match |default||
+|7|ts_start|[```SpecTimestamp```](#struct-spectimestamp)|The Timestamp Start Spec, the start of cells-interval timestamp match |optional||
+|8|ts_finish|[```SpecTimestamp```](#struct-spectimestamp)|The Timestamp Finish Spec, the finish of cells-interval timestamp match |optional||
+|9|flags|[```SpecFlags```](#struct-specflags)|The Interval Flags Specification |optional||
 
 ### Struct: SpecColumn
 The Column Specifications, the Cells-Intervals(SpecInterval/s) specification for a column 
@@ -494,14 +493,13 @@ The Serial Value Cells Interval Specifications with interval-scope Flags
 | --- | --- | --- | --- | --- | --- |
 |1|range_begin|[```Key```](#typedef-key)|Begin of Ranges evaluation with this Key inclusive |default||
 |2|range_end|[```Key```](#typedef-key)|End of Ranges evaluation with this Key inclusive |default||
-|3|range_offset|[```Key```](#typedef-key)|Offset of Ranges evaluation with this Key inclusive |default||
-|4|offset_key|[```Key```](#typedef-key)|Offset Cell Key of a Scan, select cells from this key inclusive |default||
-|5|offset_rev|```i64```|Offset Cell Timestamp of a Scan, select cells after this timestamp |optional||
-|6|key_intervals|[```SpecKeyIntervals```](#typedef-speckeyintervals)|The Key Intervals |default||
-|7|values|[```SpecValuesSerial```](#typedef-specvaluesserial)|The Serial Cell Value Specifications, cell-value fields match |default||
-|8|ts_start|[```SpecTimestamp```](#struct-spectimestamp)|The Timestamp Start Spec, the start of cells-interval timestamp match |optional||
-|9|ts_finish|[```SpecTimestamp```](#struct-spectimestamp)|The Timestamp Finish Spec, the finish of cells-interval timestamp match |optional||
-|10|flags|[```SpecFlags```](#struct-specflags)|The Interval Flags Specification |optional||
+|3|offset_key|[```Key```](#typedef-key)|Offset Cell Key of a Scan, select cells from this key inclusive |default||
+|4|offset_rev|```i64```|Offset Cell Timestamp of a Scan, select cells after this timestamp |optional||
+|5|key_intervals|[```SpecKeyIntervals```](#typedef-speckeyintervals)|The Key Intervals |default||
+|6|values|[```SpecValuesSerial```](#typedef-specvaluesserial)|The Serial Cell Value Specifications, cell-value fields match |default||
+|7|ts_start|[```SpecTimestamp```](#struct-spectimestamp)|The Timestamp Start Spec, the start of cells-interval timestamp match |optional||
+|8|ts_finish|[```SpecTimestamp```](#struct-spectimestamp)|The Timestamp Finish Spec, the finish of cells-interval timestamp match |optional||
+|9|flags|[```SpecFlags```](#struct-specflags)|The Interval Flags Specification |optional||
 
 ### Struct: SpecColumnSerial
 The Column Specifications, the Cells-Intervals(SpecInterval/s) specification for a SERIAL Type Column 

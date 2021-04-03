@@ -1300,10 +1300,9 @@ void swap(SpecValue &a, SpecValue &b);
 std::ostream& operator<<(std::ostream& out, const SpecValue& obj);
 
 typedef struct _SpecInterval__isset {
-  _SpecInterval__isset() : range_begin(false), range_end(false), range_offset(false), offset_key(false), offset_rev(false), key_intervals(false), values(false), ts_start(false), ts_finish(false), flags(false) {}
+  _SpecInterval__isset() : range_begin(false), range_end(false), offset_key(false), offset_rev(false), key_intervals(false), values(false), ts_start(false), ts_finish(false), flags(false) {}
   bool range_begin :1;
   bool range_end :1;
-  bool range_offset :1;
   bool offset_key :1;
   bool offset_rev :1;
   bool key_intervals :1;
@@ -1336,10 +1335,6 @@ class SpecInterval : public virtual ::apache::thrift::TBase {
    * End of Ranges evaluation with this Key inclusive
    */
   Key range_end;
-  /**
-   * Offset of Ranges evaluation with this Key inclusive
-   */
-  Key range_offset;
   /**
    * Offset Cell Key of a Scan, select cells from this key inclusive
    */
@@ -1375,8 +1370,6 @@ class SpecInterval : public virtual ::apache::thrift::TBase {
 
   void __set_range_end(const Key& val);
 
-  void __set_range_offset(const Key& val);
-
   void __set_offset_key(const Key& val);
 
   void __set_offset_rev(const int64_t val);
@@ -1396,8 +1389,6 @@ class SpecInterval : public virtual ::apache::thrift::TBase {
     if (!(range_begin == rhs.range_begin))
       return false;
     if (!(range_end == rhs.range_end))
-      return false;
-    if (!(range_offset == rhs.range_offset))
       return false;
     if (!(offset_key == rhs.offset_key))
       return false;
@@ -2043,10 +2034,9 @@ void swap(SpecValueSerial &a, SpecValueSerial &b);
 std::ostream& operator<<(std::ostream& out, const SpecValueSerial& obj);
 
 typedef struct _SpecIntervalSerial__isset {
-  _SpecIntervalSerial__isset() : range_begin(false), range_end(false), range_offset(false), offset_key(false), offset_rev(false), key_intervals(false), values(false), ts_start(false), ts_finish(false), flags(false) {}
+  _SpecIntervalSerial__isset() : range_begin(false), range_end(false), offset_key(false), offset_rev(false), key_intervals(false), values(false), ts_start(false), ts_finish(false), flags(false) {}
   bool range_begin :1;
   bool range_end :1;
-  bool range_offset :1;
   bool offset_key :1;
   bool offset_rev :1;
   bool key_intervals :1;
@@ -2079,10 +2069,6 @@ class SpecIntervalSerial : public virtual ::apache::thrift::TBase {
    * End of Ranges evaluation with this Key inclusive
    */
   Key range_end;
-  /**
-   * Offset of Ranges evaluation with this Key inclusive
-   */
-  Key range_offset;
   /**
    * Offset Cell Key of a Scan, select cells from this key inclusive
    */
@@ -2118,8 +2104,6 @@ class SpecIntervalSerial : public virtual ::apache::thrift::TBase {
 
   void __set_range_end(const Key& val);
 
-  void __set_range_offset(const Key& val);
-
   void __set_offset_key(const Key& val);
 
   void __set_offset_rev(const int64_t val);
@@ -2139,8 +2123,6 @@ class SpecIntervalSerial : public virtual ::apache::thrift::TBase {
     if (!(range_begin == rhs.range_begin))
       return false;
     if (!(range_end == rhs.range_end))
-      return false;
-    if (!(range_offset == rhs.range_offset))
       return false;
     if (!(offset_key == rhs.offset_key))
       return false;

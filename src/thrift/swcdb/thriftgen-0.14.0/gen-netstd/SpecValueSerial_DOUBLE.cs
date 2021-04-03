@@ -85,18 +85,18 @@ public partial class SpecValueSerial_DOUBLE : TBase
 
   public SpecValueSerial_DOUBLE DeepCopy()
   {
-    var tmp72 = new SpecValueSerial_DOUBLE();
+    var tmp68 = new SpecValueSerial_DOUBLE();
     if(__isset.comp)
     {
-      tmp72.Comp = this.Comp;
+      tmp68.Comp = this.Comp;
     }
-    tmp72.__isset.comp = this.__isset.comp;
+    tmp68.__isset.comp = this.__isset.comp;
     if(__isset.v)
     {
-      tmp72.V = this.V;
+      tmp68.V = this.V;
     }
-    tmp72.__isset.v = this.__isset.v;
-    return tmp72;
+    tmp68.__isset.v = this.__isset.v;
+    return tmp68;
   }
 
   public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -213,16 +213,16 @@ public partial class SpecValueSerial_DOUBLE : TBase
   public override string ToString()
   {
     var sb = new StringBuilder("SpecValueSerial_DOUBLE(");
-    int tmp73 = 0;
+    int tmp69 = 0;
     if(__isset.comp)
     {
-      if(0 < tmp73++) { sb.Append(", "); }
+      if(0 < tmp69++) { sb.Append(", "); }
       sb.Append("Comp: ");
       Comp.ToString(sb);
     }
     if(__isset.v)
     {
-      if(0 < tmp73++) { sb.Append(", "); }
+      if(0 < tmp69++) { sb.Append(", "); }
       sb.Append("V: ");
       V.ToString(sb);
     }

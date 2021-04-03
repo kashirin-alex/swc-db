@@ -159,38 +159,38 @@ public partial class UCell : TBase
 
   public UCell DeepCopy()
   {
-    var tmp144 = new UCell();
+    var tmp136 = new UCell();
     if(__isset.f)
     {
-      tmp144.F = this.F;
+      tmp136.F = this.F;
     }
-    tmp144.__isset.f = this.__isset.f;
+    tmp136.__isset.f = this.__isset.f;
     if((K != null) && __isset.k)
     {
-      tmp144.K = this.K.DeepCopy();
+      tmp136.K = this.K.DeepCopy();
     }
-    tmp144.__isset.k = this.__isset.k;
+    tmp136.__isset.k = this.__isset.k;
     if(__isset.ts)
     {
-      tmp144.Ts = this.Ts;
+      tmp136.Ts = this.Ts;
     }
-    tmp144.__isset.ts = this.__isset.ts;
+    tmp136.__isset.ts = this.__isset.ts;
     if(__isset.ts_desc)
     {
-      tmp144.Ts_desc = this.Ts_desc;
+      tmp136.Ts_desc = this.Ts_desc;
     }
-    tmp144.__isset.ts_desc = this.__isset.ts_desc;
+    tmp136.__isset.ts_desc = this.__isset.ts_desc;
     if((V != null) && __isset.v)
     {
-      tmp144.V = this.V.ToArray();
+      tmp136.V = this.V.ToArray();
     }
-    tmp144.__isset.v = this.__isset.v;
+    tmp136.__isset.v = this.__isset.v;
     if(__isset.encoder)
     {
-      tmp144.Encoder = this.Encoder;
+      tmp136.Encoder = this.Encoder;
     }
-    tmp144.__isset.encoder = this.__isset.encoder;
-    return tmp144;
+    tmp136.__isset.encoder = this.__isset.encoder;
+    return tmp136;
   }
 
   public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -224,13 +224,13 @@ public partial class UCell : TBase
             if (field.Type == TType.List)
             {
               {
-                TList _list145 = await iprot.ReadListBeginAsync(cancellationToken);
-                K = new List<byte[]>(_list145.Count);
-                for(int _i146 = 0; _i146 < _list145.Count; ++_i146)
+                TList _list137 = await iprot.ReadListBeginAsync(cancellationToken);
+                K = new List<byte[]>(_list137.Count);
+                for(int _i138 = 0; _i138 < _list137.Count; ++_i138)
                 {
-                  byte[] _elem147;
-                  _elem147 = await iprot.ReadBinaryAsync(cancellationToken);
-                  K.Add(_elem147);
+                  byte[] _elem139;
+                  _elem139 = await iprot.ReadBinaryAsync(cancellationToken);
+                  K.Add(_elem139);
                 }
                 await iprot.ReadListEndAsync(cancellationToken);
               }
@@ -321,9 +321,9 @@ public partial class UCell : TBase
         await oprot.WriteFieldBeginAsync(field, cancellationToken);
         {
           await oprot.WriteListBeginAsync(new TList(TType.String, K.Count), cancellationToken);
-          foreach (byte[] _iter148 in K)
+          foreach (byte[] _iter140 in K)
           {
-            await oprot.WriteBinaryAsync(_iter148, cancellationToken);
+            await oprot.WriteBinaryAsync(_iter140, cancellationToken);
           }
           await oprot.WriteListEndAsync(cancellationToken);
         }
@@ -420,40 +420,40 @@ public partial class UCell : TBase
   public override string ToString()
   {
     var sb = new StringBuilder("UCell(");
-    int tmp149 = 0;
+    int tmp141 = 0;
     if(__isset.f)
     {
-      if(0 < tmp149++) { sb.Append(", "); }
+      if(0 < tmp141++) { sb.Append(", "); }
       sb.Append("F: ");
       F.ToString(sb);
     }
     if((K != null) && __isset.k)
     {
-      if(0 < tmp149++) { sb.Append(", "); }
+      if(0 < tmp141++) { sb.Append(", "); }
       sb.Append("K: ");
       K.ToString(sb);
     }
     if(__isset.ts)
     {
-      if(0 < tmp149++) { sb.Append(", "); }
+      if(0 < tmp141++) { sb.Append(", "); }
       sb.Append("Ts: ");
       Ts.ToString(sb);
     }
     if(__isset.ts_desc)
     {
-      if(0 < tmp149++) { sb.Append(", "); }
+      if(0 < tmp141++) { sb.Append(", "); }
       sb.Append("Ts_desc: ");
       Ts_desc.ToString(sb);
     }
     if((V != null) && __isset.v)
     {
-      if(0 < tmp149++) { sb.Append(", "); }
+      if(0 < tmp141++) { sb.Append(", "); }
       sb.Append("V: ");
       V.ToString(sb);
     }
     if(__isset.encoder)
     {
-      if(0 < tmp149++) { sb.Append(", "); }
+      if(0 < tmp141++) { sb.Append(", "); }
       sb.Append("Encoder: ");
       Encoder.ToString(sb);
     }

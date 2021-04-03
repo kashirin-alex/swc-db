@@ -170,43 +170,43 @@ public partial class SpecValueSerialField : TBase
 
   public SpecValueSerialField DeepCopy()
   {
-    var tmp94 = new SpecValueSerialField();
+    var tmp90 = new SpecValueSerialField();
     if(__isset.field_id)
     {
-      tmp94.Field_id = this.Field_id;
+      tmp90.Field_id = this.Field_id;
     }
-    tmp94.__isset.field_id = this.__isset.field_id;
+    tmp90.__isset.field_id = this.__isset.field_id;
     if((Spec_int64 != null) && __isset.spec_int64)
     {
-      tmp94.Spec_int64 = (SpecValueSerial_INT64)this.Spec_int64.DeepCopy();
+      tmp90.Spec_int64 = (SpecValueSerial_INT64)this.Spec_int64.DeepCopy();
     }
-    tmp94.__isset.spec_int64 = this.__isset.spec_int64;
+    tmp90.__isset.spec_int64 = this.__isset.spec_int64;
     if((Spec_double != null) && __isset.spec_double)
     {
-      tmp94.Spec_double = (SpecValueSerial_DOUBLE)this.Spec_double.DeepCopy();
+      tmp90.Spec_double = (SpecValueSerial_DOUBLE)this.Spec_double.DeepCopy();
     }
-    tmp94.__isset.spec_double = this.__isset.spec_double;
+    tmp90.__isset.spec_double = this.__isset.spec_double;
     if((Spec_bytes != null) && __isset.spec_bytes)
     {
-      tmp94.Spec_bytes = (SpecValueSerial_BYTES)this.Spec_bytes.DeepCopy();
+      tmp90.Spec_bytes = (SpecValueSerial_BYTES)this.Spec_bytes.DeepCopy();
     }
-    tmp94.__isset.spec_bytes = this.__isset.spec_bytes;
+    tmp90.__isset.spec_bytes = this.__isset.spec_bytes;
     if((Spec_key != null) && __isset.spec_key)
     {
-      tmp94.Spec_key = (SpecValueSerial_KEY)this.Spec_key.DeepCopy();
+      tmp90.Spec_key = (SpecValueSerial_KEY)this.Spec_key.DeepCopy();
     }
-    tmp94.__isset.spec_key = this.__isset.spec_key;
+    tmp90.__isset.spec_key = this.__isset.spec_key;
     if((Spec_li != null) && __isset.spec_li)
     {
-      tmp94.Spec_li = (SpecValueSerial_LI)this.Spec_li.DeepCopy();
+      tmp90.Spec_li = (SpecValueSerial_LI)this.Spec_li.DeepCopy();
     }
-    tmp94.__isset.spec_li = this.__isset.spec_li;
+    tmp90.__isset.spec_li = this.__isset.spec_li;
     if((Spec_lb != null) && __isset.spec_lb)
     {
-      tmp94.Spec_lb = (SpecValueSerial_LB)this.Spec_lb.DeepCopy();
+      tmp90.Spec_lb = (SpecValueSerial_LB)this.Spec_lb.DeepCopy();
     }
-    tmp94.__isset.spec_lb = this.__isset.spec_lb;
-    return tmp94;
+    tmp90.__isset.spec_lb = this.__isset.spec_lb;
+    return tmp90;
   }
 
   public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -449,46 +449,46 @@ public partial class SpecValueSerialField : TBase
   public override string ToString()
   {
     var sb = new StringBuilder("SpecValueSerialField(");
-    int tmp95 = 0;
+    int tmp91 = 0;
     if(__isset.field_id)
     {
-      if(0 < tmp95++) { sb.Append(", "); }
+      if(0 < tmp91++) { sb.Append(", "); }
       sb.Append("Field_id: ");
       Field_id.ToString(sb);
     }
     if((Spec_int64 != null) && __isset.spec_int64)
     {
-      if(0 < tmp95++) { sb.Append(", "); }
+      if(0 < tmp91++) { sb.Append(", "); }
       sb.Append("Spec_int64: ");
       Spec_int64.ToString(sb);
     }
     if((Spec_double != null) && __isset.spec_double)
     {
-      if(0 < tmp95++) { sb.Append(", "); }
+      if(0 < tmp91++) { sb.Append(", "); }
       sb.Append("Spec_double: ");
       Spec_double.ToString(sb);
     }
     if((Spec_bytes != null) && __isset.spec_bytes)
     {
-      if(0 < tmp95++) { sb.Append(", "); }
+      if(0 < tmp91++) { sb.Append(", "); }
       sb.Append("Spec_bytes: ");
       Spec_bytes.ToString(sb);
     }
     if((Spec_key != null) && __isset.spec_key)
     {
-      if(0 < tmp95++) { sb.Append(", "); }
+      if(0 < tmp91++) { sb.Append(", "); }
       sb.Append("Spec_key: ");
       Spec_key.ToString(sb);
     }
     if((Spec_li != null) && __isset.spec_li)
     {
-      if(0 < tmp95++) { sb.Append(", "); }
+      if(0 < tmp91++) { sb.Append(", "); }
       sb.Append("Spec_li: ");
       Spec_li.ToString(sb);
     }
     if((Spec_lb != null) && __isset.spec_lb)
     {
-      if(0 < tmp95++) { sb.Append(", "); }
+      if(0 < tmp91++) { sb.Append(", "); }
       sb.Append("Spec_lb: ");
       Spec_lb.ToString(sb);
     }

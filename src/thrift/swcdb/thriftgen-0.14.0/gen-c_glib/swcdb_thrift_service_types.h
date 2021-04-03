@@ -463,8 +463,6 @@ struct _swcdb_thriftSpecInterval
   gboolean __isset_range_begin;
   GPtrArray * range_end;
   gboolean __isset_range_end;
-  GPtrArray * range_offset;
-  gboolean __isset_range_offset;
   GPtrArray * offset_key;
   gboolean __isset_offset_key;
   gint64 offset_rev;
@@ -759,8 +757,6 @@ struct _swcdb_thriftSpecIntervalSerial
   gboolean __isset_range_begin;
   GPtrArray * range_end;
   gboolean __isset_range_end;
-  GPtrArray * range_offset;
-  gboolean __isset_range_offset;
   GPtrArray * offset_key;
   gboolean __isset_offset_key;
   gint64 offset_rev;

@@ -76,6 +76,9 @@ public class Client extends Service.Client {
     } catch (java.lang.Exception e) { }
   }
 
+  public TFramedTransport getTransport() {
+    return transport;
+  }
 
   private TFramedTransport transport;
 

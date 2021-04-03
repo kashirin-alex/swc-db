@@ -79,9 +79,6 @@ void set(const SpecInterval& intval, DB::Specs::Interval& dbintval) {
   if(!intval.range_end.empty())
     set(intval.range_end, dbintval.range_end);
 
-  if(!intval.range_offset.empty())
-    set(intval.range_offset, dbintval.range_offset);
-
   if(!intval.offset_key.empty())
     set(intval.offset_key, dbintval.offset_key);
 
@@ -184,9 +181,6 @@ void set(const SpecIntervalSerial& intval, DB::Specs::Interval& dbintval) {
 
   if(!intval.range_end.empty())
     set(intval.range_end, dbintval.range_end);
-
-  if(!intval.range_offset.empty())
-    set(intval.range_offset, dbintval.range_offset);
 
   if(!intval.offset_key.empty())
     set(intval.offset_key, dbintval.offset_key);

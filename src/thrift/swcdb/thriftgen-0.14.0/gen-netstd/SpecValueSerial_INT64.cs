@@ -85,18 +85,18 @@ public partial class SpecValueSerial_INT64 : TBase
 
   public SpecValueSerial_INT64 DeepCopy()
   {
-    var tmp70 = new SpecValueSerial_INT64();
+    var tmp66 = new SpecValueSerial_INT64();
     if(__isset.comp)
     {
-      tmp70.Comp = this.Comp;
+      tmp66.Comp = this.Comp;
     }
-    tmp70.__isset.comp = this.__isset.comp;
+    tmp66.__isset.comp = this.__isset.comp;
     if(__isset.v)
     {
-      tmp70.V = this.V;
+      tmp66.V = this.V;
     }
-    tmp70.__isset.v = this.__isset.v;
-    return tmp70;
+    tmp66.__isset.v = this.__isset.v;
+    return tmp66;
   }
 
   public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -213,16 +213,16 @@ public partial class SpecValueSerial_INT64 : TBase
   public override string ToString()
   {
     var sb = new StringBuilder("SpecValueSerial_INT64(");
-    int tmp71 = 0;
+    int tmp67 = 0;
     if(__isset.comp)
     {
-      if(0 < tmp71++) { sb.Append(", "); }
+      if(0 < tmp67++) { sb.Append(", "); }
       sb.Append("Comp: ");
       Comp.ToString(sb);
     }
     if(__isset.v)
     {
-      if(0 < tmp71++) { sb.Append(", "); }
+      if(0 < tmp67++) { sb.Append(", "); }
       sb.Append("V: ");
       V.ToString(sb);
     }

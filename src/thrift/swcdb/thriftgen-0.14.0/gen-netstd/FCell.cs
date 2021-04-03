@@ -101,23 +101,23 @@ public partial class FCell : TBase
 
   public FCell DeepCopy()
   {
-    var tmp248 = new FCell();
+    var tmp240 = new FCell();
     if((C != null) && __isset.c)
     {
-      tmp248.C = this.C;
+      tmp240.C = this.C;
     }
-    tmp248.__isset.c = this.__isset.c;
+    tmp240.__isset.c = this.__isset.c;
     if(__isset.ts)
     {
-      tmp248.Ts = this.Ts;
+      tmp240.Ts = this.Ts;
     }
-    tmp248.__isset.ts = this.__isset.ts;
+    tmp240.__isset.ts = this.__isset.ts;
     if((V != null) && __isset.v)
     {
-      tmp248.V = this.V.ToArray();
+      tmp240.V = this.V.ToArray();
     }
-    tmp248.__isset.v = this.__isset.v;
-    return tmp248;
+    tmp240.__isset.v = this.__isset.v;
+    return tmp240;
   }
 
   public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -258,22 +258,22 @@ public partial class FCell : TBase
   public override string ToString()
   {
     var sb = new StringBuilder("FCell(");
-    int tmp249 = 0;
+    int tmp241 = 0;
     if((C != null) && __isset.c)
     {
-      if(0 < tmp249++) { sb.Append(", "); }
+      if(0 < tmp241++) { sb.Append(", "); }
       sb.Append("C: ");
       C.ToString(sb);
     }
     if(__isset.ts)
     {
-      if(0 < tmp249++) { sb.Append(", "); }
+      if(0 < tmp241++) { sb.Append(", "); }
       sb.Append("Ts: ");
       Ts.ToString(sb);
     }
     if((V != null) && __isset.v)
     {
-      if(0 < tmp249++) { sb.Append(", "); }
+      if(0 < tmp241++) { sb.Append(", "); }
       sb.Append("V: ");
       V.ToString(sb);
     }

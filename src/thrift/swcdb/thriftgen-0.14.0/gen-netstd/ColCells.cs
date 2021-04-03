@@ -83,18 +83,18 @@ public partial class ColCells : TBase
 
   public ColCells DeepCopy()
   {
-    var tmp216 = new ColCells();
+    var tmp208 = new ColCells();
     if((Cells != null) && __isset.cells)
     {
-      tmp216.Cells = this.Cells.DeepCopy();
+      tmp208.Cells = this.Cells.DeepCopy();
     }
-    tmp216.__isset.cells = this.__isset.cells;
+    tmp208.__isset.cells = this.__isset.cells;
     if((Serial_cells != null) && __isset.serial_cells)
     {
-      tmp216.Serial_cells = this.Serial_cells.DeepCopy();
+      tmp208.Serial_cells = this.Serial_cells.DeepCopy();
     }
-    tmp216.__isset.serial_cells = this.__isset.serial_cells;
-    return tmp216;
+    tmp208.__isset.serial_cells = this.__isset.serial_cells;
+    return tmp208;
   }
 
   public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -118,14 +118,14 @@ public partial class ColCells : TBase
             if (field.Type == TType.List)
             {
               {
-                TList _list217 = await iprot.ReadListBeginAsync(cancellationToken);
-                Cells = new List<CCell>(_list217.Count);
-                for(int _i218 = 0; _i218 < _list217.Count; ++_i218)
+                TList _list209 = await iprot.ReadListBeginAsync(cancellationToken);
+                Cells = new List<CCell>(_list209.Count);
+                for(int _i210 = 0; _i210 < _list209.Count; ++_i210)
                 {
-                  CCell _elem219;
-                  _elem219 = new CCell();
-                  await _elem219.ReadAsync(iprot, cancellationToken);
-                  Cells.Add(_elem219);
+                  CCell _elem211;
+                  _elem211 = new CCell();
+                  await _elem211.ReadAsync(iprot, cancellationToken);
+                  Cells.Add(_elem211);
                 }
                 await iprot.ReadListEndAsync(cancellationToken);
               }
@@ -139,14 +139,14 @@ public partial class ColCells : TBase
             if (field.Type == TType.List)
             {
               {
-                TList _list220 = await iprot.ReadListBeginAsync(cancellationToken);
-                Serial_cells = new List<CCellSerial>(_list220.Count);
-                for(int _i221 = 0; _i221 < _list220.Count; ++_i221)
+                TList _list212 = await iprot.ReadListBeginAsync(cancellationToken);
+                Serial_cells = new List<CCellSerial>(_list212.Count);
+                for(int _i213 = 0; _i213 < _list212.Count; ++_i213)
                 {
-                  CCellSerial _elem222;
-                  _elem222 = new CCellSerial();
-                  await _elem222.ReadAsync(iprot, cancellationToken);
-                  Serial_cells.Add(_elem222);
+                  CCellSerial _elem214;
+                  _elem214 = new CCellSerial();
+                  await _elem214.ReadAsync(iprot, cancellationToken);
+                  Serial_cells.Add(_elem214);
                 }
                 await iprot.ReadListEndAsync(cancellationToken);
               }
@@ -188,9 +188,9 @@ public partial class ColCells : TBase
         await oprot.WriteFieldBeginAsync(field, cancellationToken);
         {
           await oprot.WriteListBeginAsync(new TList(TType.Struct, Cells.Count), cancellationToken);
-          foreach (CCell _iter223 in Cells)
+          foreach (CCell _iter215 in Cells)
           {
-            await _iter223.WriteAsync(oprot, cancellationToken);
+            await _iter215.WriteAsync(oprot, cancellationToken);
           }
           await oprot.WriteListEndAsync(cancellationToken);
         }
@@ -204,9 +204,9 @@ public partial class ColCells : TBase
         await oprot.WriteFieldBeginAsync(field, cancellationToken);
         {
           await oprot.WriteListBeginAsync(new TList(TType.Struct, Serial_cells.Count), cancellationToken);
-          foreach (CCellSerial _iter224 in Serial_cells)
+          foreach (CCellSerial _iter216 in Serial_cells)
           {
-            await _iter224.WriteAsync(oprot, cancellationToken);
+            await _iter216.WriteAsync(oprot, cancellationToken);
           }
           await oprot.WriteListEndAsync(cancellationToken);
         }
@@ -247,16 +247,16 @@ public partial class ColCells : TBase
   public override string ToString()
   {
     var sb = new StringBuilder("ColCells(");
-    int tmp225 = 0;
+    int tmp217 = 0;
     if((Cells != null) && __isset.cells)
     {
-      if(0 < tmp225++) { sb.Append(", "); }
+      if(0 < tmp217++) { sb.Append(", "); }
       sb.Append("Cells: ");
       Cells.ToString(sb);
     }
     if((Serial_cells != null) && __isset.serial_cells)
     {
-      if(0 < tmp225++) { sb.Append(", "); }
+      if(0 < tmp217++) { sb.Append(", "); }
       sb.Append("Serial_cells: ");
       Serial_cells.ToString(sb);
     }

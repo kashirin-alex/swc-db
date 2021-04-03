@@ -85,18 +85,18 @@ public partial class SpecValueSerial_BYTES : TBase
 
   public SpecValueSerial_BYTES DeepCopy()
   {
-    var tmp74 = new SpecValueSerial_BYTES();
+    var tmp70 = new SpecValueSerial_BYTES();
     if(__isset.comp)
     {
-      tmp74.Comp = this.Comp;
+      tmp70.Comp = this.Comp;
     }
-    tmp74.__isset.comp = this.__isset.comp;
+    tmp70.__isset.comp = this.__isset.comp;
     if((V != null) && __isset.v)
     {
-      tmp74.V = this.V.ToArray();
+      tmp70.V = this.V.ToArray();
     }
-    tmp74.__isset.v = this.__isset.v;
-    return tmp74;
+    tmp70.__isset.v = this.__isset.v;
+    return tmp70;
   }
 
   public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -213,16 +213,16 @@ public partial class SpecValueSerial_BYTES : TBase
   public override string ToString()
   {
     var sb = new StringBuilder("SpecValueSerial_BYTES(");
-    int tmp75 = 0;
+    int tmp71 = 0;
     if(__isset.comp)
     {
-      if(0 < tmp75++) { sb.Append(", "); }
+      if(0 < tmp71++) { sb.Append(", "); }
       sb.Append("Comp: ");
       Comp.ToString(sb);
     }
     if((V != null) && __isset.v)
     {
-      if(0 < tmp75++) { sb.Append(", "); }
+      if(0 < tmp71++) { sb.Append(", "); }
       sb.Append("V: ");
       V.ToString(sb);
     }
