@@ -17,7 +17,7 @@ namespace SWC { namespace DB { namespace Specs {
 struct Fraction final : public std::string {
 
   Condition::Comp comp;
-  void*           compiled = nullptr;
+  mutable void*   compiled = nullptr;
 
   Fraction() { }
 
@@ -48,7 +48,7 @@ struct Fraction final : public std::string {
   void print(std::ostream& out, bool pretty) const;
 
   template<Types::KeySeq T_seq> // internal use
-  bool _is_matching(const uint8_t* ptr, uint32_t len);
+  bool _is_matching(const uint8_t* ptr, uint32_t len) const;
 
 };
 
@@ -140,11 +140,11 @@ class Key final : public std::vector<Fraction> {
   void decode(const uint8_t** bufp, size_t* remainp);
 
 
-  bool is_matching(const Types::KeySeq seq, const Cell::Key &key);
+  bool is_matching(const Types::KeySeq seq, const Cell::Key &key) const;
 
-  bool is_matching_lexic(const Cell::Key &key);
+  bool is_matching_lexic(const Cell::Key &key) const;
 
-  bool is_matching_volume(const Cell::Key &key);
+  bool is_matching_volume(const Cell::Key &key) const;
 
 
   std::string to_string() const;
@@ -156,7 +156,7 @@ class Key final : public std::vector<Fraction> {
   private:
 
   template<Types::KeySeq T_seq> // internal use
-  bool _is_matching(const Cell::Key &key);
+  bool _is_matching(const Cell::Key &key) const;
 
 };
 

@@ -105,7 +105,7 @@ void Fraction::print(std::ostream& out, bool pretty) const {
 template<Types::KeySeq T_seq>
 SWC_CAN_INLINE
 bool
-Fraction::_is_matching(const uint8_t* ptr, uint32_t len) {
+Fraction::_is_matching(const uint8_t* ptr, uint32_t len) const {
   switch(comp) {
     case Condition::RE: {
       if(empty())
@@ -304,7 +304,7 @@ void Key::decode(const uint8_t** bufp, size_t* remainp) {
 }
 
 
-bool Key::is_matching(const Types::KeySeq seq, const Cell::Key &key) {
+bool Key::is_matching(const Types::KeySeq seq, const Cell::Key &key) const {
   switch(seq) {
     case Types::KeySeq::LEXIC:
     case Types::KeySeq::FC_LEXIC:
@@ -317,18 +317,18 @@ bool Key::is_matching(const Types::KeySeq seq, const Cell::Key &key) {
   }
 }
 
-bool Key::is_matching_lexic(const Cell::Key &key) {
+bool Key::is_matching_lexic(const Cell::Key &key) const {
   return _is_matching<Types::KeySeq::LEXIC>(key);
 }
 
-bool Key::is_matching_volume(const Cell::Key &key) {
+bool Key::is_matching_volume(const Cell::Key &key) const {
   return _is_matching<Types::KeySeq::VOLUME>(key);
 }
 
 template<Types::KeySeq T_seq>
 SWC_CAN_INLINE
 bool
-Key::_is_matching(const Cell::Key &key) {
+Key::_is_matching(const Cell::Key &key) const {
   if(empty())
     return true;
   Condition::Comp comp = Condition::NONE;
