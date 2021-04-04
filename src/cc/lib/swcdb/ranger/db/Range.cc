@@ -651,84 +651,39 @@ void Range::load(int &err, const Callback::RangeLoad::Ptr& req) {
   if(cfg->range_type == DB::Types::Range::MASTER)
     return loaded(err, req);
 
-  auto col_spec = DB::Specs::Column::make_ptr(
-    cfg->meta_cid,
-    {DB::Specs::Interval::make_ptr(DB::Types::Column::SERIAL)});
-  auto& spec = *col_spec->intervals.front().get();
-
-  DB::Specs::Interval spec2(DB::Types::Column::SERIAL);
-  auto& key_intval = spec.key_intervals.add();
-  key_intval->start.add(std::to_string(cfg->cid), Condition::EQ);
-  key_intval->start.add("", Condition::GE);
-  // key_intval->start.set(m_interval.key_begin, Condition::EQ);
-  // key_intval->start.insert(0, std::to_string(cfg->cid), Condition::EQ);
-  // spec.set_opt__key_equal();
-  // spec.flags.limit = 1;
-
-  DB::Specs::Serial::Value::Fields fields;
-  fields.add(
-    DB::Specs::Serial::Value::Field_INT64::make(0, Condition::EQ, rid));
-  fields.encode(spec.values.add());
-
-  auto hdlr = client::Query::Select::Handlers::Common::make(
-    [req, col_spec, range=shared_from_this()]
-    (const client::Query::Select::Handlers::Common::Ptr& hdlr) {
-      range->check_meta(req, col_spec, hdlr);
-    },
-    false,
-    Env::Rgr::io()
-  );
-
-  if(Env::Rgr::is_shuttingdown() ||
-     (Env::Rgr::is_not_accepting() &&
-      DB::Types::MetaColumn::is_data(cfg->cid)))
-    return loaded(Error::SERVER_SHUTTING_DOWN, req);
-
-  client::Query::Select::scan(hdlr, cfg->key_seq, cfg->meta_cid, spec);
-  SWC_LOGF(LOG_DEBUG, "LOADING RANGE(%lu/%lu)-SELECTOR", cfg->cid, rid);
+  SWC_LOGF(LOG_DEBUG, "LOADING RANGE(%lu/%lu)-CHECK META", cfg->cid, rid);
+  Query::Select::CheckMeta::run(shared_from_this(), req);
 }
 
-void Range::check_meta(
-              const Callback::RangeLoad::Ptr& req,
-              const DB::Specs::Column::Ptr& col_spec,
-              const client::Query::Select::Handlers::Common::Ptr& hdlr) {
-  DB::Cells::Result cells;
+void Range::check_meta(const Query::Select::CheckMeta::Ptr& hdlr) {
   int err = hdlr->state_error;
-  if(!err) {
-    auto col = hdlr->get_columnn(cfg->meta_cid);
-    if(!(err = col->error()) && !col->empty())
-      col->get_cells(cells);
-  }
   SWC_LOGF(LOG_DEBUG, "LOADING RANGE(%lu/%lu)-CHECK META err=%d(%s)",
                       cfg->cid, rid, err, Error::get_text(err));
   if(err)
-    return loaded(Error::RGR_NOT_LOADED_RANGE, req);
-
+    return loaded(err, hdlr->req);
   if(Env::Rgr::is_shuttingdown() ||
       (Env::Rgr::is_not_accepting() &&
        DB::Types::MetaColumn::is_data(cfg->cid)))
-    return loaded(Error::SERVER_SHUTTING_DOWN, req);
+    return loaded(Error::SERVER_SHUTTING_DOWN, hdlr->req);
 
-  if(cells.empty()) {
+  if(hdlr->empty()) {
     SWC_LOG_OUT(LOG_ERROR,
       SWC_LOG_OSTREAM
         << "Range MetaData missing cid=" << cfg->cid << " rid=" << rid;
-      m_interval.print(SWC_LOG_OSTREAM << "\n\t auto-registering=");
-      col_spec->print(SWC_LOG_OSTREAM << "\n\t");
+      m_interval.print(
+        SWC_LOG_OSTREAM << "\n\tauto-registering=");
+      hdlr->spec.print(
+        SWC_LOG_OSTREAM << "\n\tmeta-cid(" << hdlr->cid << ")=");
     );
-    return on_change(false, [req, range=shared_from_this()]
+    return on_change(false, [req=hdlr->req, range=shared_from_this()]
       (const client::Query::Update::Result::Ptr& res) {
         range->loaded(res ? res->error() : Error::OK, req);
       }
     );
   }
 
-  DB::Cells::Interval interval(cfg->key_seq);
-  interval.was_set = true;
-  /* Range MetaData does not include timestamp
-      for the comparison use current interval ts */
-  interval.ts_earliest.copy(m_interval.ts_earliest);
-  interval.ts_latest.copy(m_interval.ts_latest);
+  DB::Cells::Result cells;
+  hdlr->get_cells(cells);
 
   rid_t _rid = 0;
   bool synced = cells.size() == 1;
@@ -736,12 +691,22 @@ void Range::check_meta(
     SWC_LOG_OUT(LOG_ERROR,
       SWC_LOG_OSTREAM
         << "Range MetaData DUPLICATE-RID cid=" << cfg->cid << " rid=" << rid;
-      m_interval.print(SWC_LOG_OSTREAM << "\n\t auto-del-registering=");
-      col_spec->print(SWC_LOG_OSTREAM << "\n\t");
+      m_interval.print(SWC_LOG_OSTREAM << "\n\tauto-del-registering=");
+      hdlr->spec.print(
+        SWC_LOG_OSTREAM << "\n\tmeta-cid(" << hdlr->cid << ")=");
       cells.print(SWC_LOG_OSTREAM << "\n\t", DB::Types::Column::SERIAL, true);
     );
   } else { try {
+
     auto& cell = *cells[0];
+
+    DB::Cells::Interval interval(cfg->key_seq);
+    interval.was_set = true;
+    /* Range MetaData does not include timestamp
+        for the comparison use current interval ts */
+    interval.ts_earliest.copy(m_interval.ts_earliest);
+    interval.ts_latest.copy(m_interval.ts_latest);
+
     interval.key_begin.copy(cell.key);
     interval.key_begin.remove(0);
 
@@ -769,9 +734,9 @@ void Range::check_meta(
     if(!synced) {
       SWC_LOG_OUT(LOG_ERROR,
         SWC_LOG_OSTREAM << "Range MetaData NOT-SYNCED cid=" << cfg->cid;
-        SWC_LOG_OSTREAM << "\n\t     loaded-rid=" << rid;
+        SWC_LOG_OSTREAM << "\n\t    loaded-rid=" << rid;
         m_interval.print(SWC_LOG_OSTREAM << ' ');
-        SWC_LOG_OSTREAM << "\n\t registered-rid=" << _rid;
+        SWC_LOG_OSTREAM << "\n\tregistered-rid=" << _rid;
         interval.print(SWC_LOG_OSTREAM << ' ');
       );
     }
@@ -783,13 +748,13 @@ void Range::check_meta(
   if(Env::Rgr::is_shuttingdown() ||
       (Env::Rgr::is_not_accepting() &&
        DB::Types::MetaColumn::is_data(cfg->cid)))
-    return loaded(Error::SERVER_SHUTTING_DOWN, req);
+    return loaded(Error::SERVER_SHUTTING_DOWN, hdlr->req);
 
   if(synced)
-    return loaded(err, req);
+    return loaded(err, hdlr->req);
 
   auto updater = std::make_shared<client::Query::Update>(
-    [this, req]
+    [this, req=hdlr->req]
     (const client::Query::Update::Result::Ptr& res) {
       if(Env::Rgr::is_shuttingdown() ||
           (Env::Rgr::is_not_accepting() &&
@@ -1016,3 +981,4 @@ void Range::_run_add_queue() {
 
 
 #include "swcdb/ranger/Protocol/Rgr/req/RangeUnload.cc"
+#include "swcdb/ranger/queries/select/CheckMeta.cc"
