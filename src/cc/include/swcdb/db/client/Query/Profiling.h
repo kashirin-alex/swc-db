@@ -42,6 +42,14 @@ struct Profiling {
 
     Component() noexcept : time(0), count(0), cache(0), error(0) { }
 
+    Component& operator+=(const Component& other) noexcept {
+      time.fetch_add(other.time);
+      count.fetch_add(other.count);
+      cache.fetch_add(other.cache);
+      error.fetch_add(other.error);
+      return *this;
+    }
+
     struct Start {
       Component&    _m;
       const int64_t ts;
@@ -121,6 +129,15 @@ struct Profiling {
 
   Component::Start rgr_data() noexcept {
     return Component::Start(_rgr_data);
+  }
+
+  Profiling& operator+=(const Profiling& other) noexcept {
+    _mngr_locate += other._mngr_locate;
+    _mngr_res += other._mngr_res;
+    _rgr_locate_master += other._rgr_locate_master;
+    _rgr_locate_meta += other._rgr_locate_meta;
+    _rgr_data += other._rgr_data;
+    return *this;
   }
 
   void display(std::ostream& out) const {

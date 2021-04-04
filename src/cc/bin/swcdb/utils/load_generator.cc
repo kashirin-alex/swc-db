@@ -753,6 +753,7 @@ void select_data(const std::vector<DB::Schema::Ptr>& schemas, size_t seed) {
   uint64_t ts_progress = ts;
 
   if(cellatime) {
+    client::Query::Profiling profiling;
     KeyGeneratorSelect key_gen(
       ncells, ncells_onlevel,
       fraction_size, nfractions,
@@ -782,6 +783,7 @@ void select_data(const std::vector<DB::Schema::Ptr>& schemas, size_t seed) {
       select_bytes += hdlr->get_size_bytes();
       ++select_count;
 
+      profiling += hdlr->profile;
       if(progress && !(select_count % progress)) {
         ts_progress = Time::now_ns() - ts_progress;
         SWC_PRINT
@@ -796,6 +798,13 @@ void select_data(const std::vector<DB::Schema::Ptr>& schemas, size_t seed) {
     }
     if(expect_empty)
       select_count = 0;
+    profiling.finished();
+
+    Common::Stats::FlowRate::Data rate(select_bytes, Time::now_ns() - ts);
+    SWC_PRINT << std::endl << std::endl;
+    rate.print_cells_statistics(SWC_LOG_OSTREAM, select_count, 0);
+    profiling.display(SWC_LOG_OSTREAM);
+    SWC_LOG_OSTREAM << SWC_PRINT_CLOSE;
 
   } else {
     DB::Specs::Scan specs;
@@ -830,13 +839,13 @@ void select_data(const std::vector<DB::Schema::Ptr>& schemas, size_t seed) {
           course == DistribCourse::SINGLE || course == DistribCourse::R_SINGLE
             ? 1 : nfractions)
     );
-  }
 
-  Common::Stats::FlowRate::Data rate(select_bytes, Time::now_ns() - ts);
-  SWC_PRINT << std::endl << std::endl;
-  rate.print_cells_statistics(SWC_LOG_OSTREAM, select_count, 0);
-  //req->result->profile.display(SWC_LOG_OSTREAM);
-  SWC_LOG_OSTREAM << SWC_PRINT_CLOSE;
+    Common::Stats::FlowRate::Data rate(select_bytes, Time::now_ns() - ts);
+    SWC_PRINT << std::endl << std::endl;
+    rate.print_cells_statistics(SWC_LOG_OSTREAM, select_count, 0);
+    hdlr->profile.display(SWC_LOG_OSTREAM);
+    SWC_LOG_OSTREAM << SWC_PRINT_CLOSE;
+  }
 }
 
 
