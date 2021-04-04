@@ -82,6 +82,7 @@ set(swcdb_sources
   client/mngr/Groups.cc
   client/Query/Update.cc
   client/Query/SelectHandlerBaseUnorderedMap.cc
+  client/Query/SelectHandlerBaseSingleColumn.cc
   client/Query/SelectHandlerCommon.cc
   client/Query/Select.cc
   client/sql/SQL.cc

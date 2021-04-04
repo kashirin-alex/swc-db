@@ -123,6 +123,7 @@ enum Code : int32_t {
   SQL_BAD_LOAD_FILE_FORMAT                     = SWC_ERRNO_APP_BEGIN + 63,
 
   CLIENT_DATA_REMAINED                         = SWC_ERRNO_APP_BEGIN + 64,
+  CLIENT_MISMATCHED_CID                        = SWC_ERRNO_APP_BEGIN + 65,
 
 
 };

@@ -106,6 +106,7 @@ std::map<const int, const char *> text_map {
   { Error::SQL_BAD_LOAD_FILE_FORMAT,        "SQL bad load file format" },
 
   { Error::CLIENT_DATA_REMAINED,            "Data remained on client input" },
+  { Error::CLIENT_MISMATCHED_CID,           "cid of response mismatching the cid of request"},
 
 };
 
