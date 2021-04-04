@@ -90,6 +90,18 @@ Scanner::Scanner(const Handlers::Base::Ptr& hdlr,
               meta_next(false) {
 }
 
+void Scanner::debug_res_cache(const char* msg, cid_t cid, rid_t rid,
+                              const Comm::EndPoints& endpoints) {
+  SWC_LOG_OUT(LOG_DEBUG,
+    print(SWC_LOG_OSTREAM << msg << ' ');
+    SWC_LOG_OSTREAM
+      << "Ranger(cid=" << cid << " rid=" << rid << " endpoints=[";
+    for(auto& endpoint : endpoints)
+      SWC_LOG_OSTREAM << endpoint << ',';
+    SWC_LOG_OSTREAM << "])";
+  );
+}
+
 void Scanner::print(std::ostream& out) {
   out << "Scanner(" << DB::Types::to_string(col_seq)
       << " master(" << master_cid << '/' << master_rid
@@ -335,8 +347,18 @@ void Scanner::mngr_resolve_rgr_meta() {
   completion.increment();
 
   auto profile = selector->profile.mngr_res();
-  auto params = Comm::Protocol::Mngr::Params::RgrGetReq(meta_cid, meta_rid);
-  auto req = Comm::Protocol::Mngr::Req::RgrGet::make(
+
+  if(Env::Clients::get()->rangers.get(meta_cid, meta_rid, meta_endpoints)) {
+    profile.add_cached(Error::OK);
+    debug_res_cache("mngr_resolved_rgr_meta Cache hit",
+                    meta_cid, meta_rid, meta_endpoints);
+    rgr_locate_meta();
+    return response_if_last();
+  }
+
+  Comm::Protocol::Mngr::Params::RgrGetReq params(meta_cid, meta_rid);
+  SWC_SCANNER_REQ_DEBUG("mngr_resolve_rgr_meta");
+  Comm::Protocol::Mngr::Req::RgrGet::request(
     params,
     [profile, scanner=shared_from_this()]
     (const ReqBase::Ptr& req,
@@ -346,18 +368,6 @@ void Scanner::mngr_resolve_rgr_meta() {
         scanner->response_if_last();
     }
   );
-
-  Comm::Protocol::Mngr::Params::RgrGetRsp rsp(meta_cid, meta_rid);
-  if(Env::Clients::get()->rangers.get(meta_cid, meta_rid, rsp.endpoints)) {
-    SWC_SCANNER_RSP_DEBUG("mngr_resolve_rgr_meta Cache hit");
-    if(mngr_resolved_rgr_meta(req, rsp)) {
-      profile.add(Error::OK);
-      return response_if_last();
-    }
-    Env::Clients::get()->rangers.remove(meta_cid, meta_rid);
-  }
-  SWC_SCANNER_REQ_DEBUG("mngr_resolve_rgr_meta");
-  req->run();
 }
 
 bool Scanner::mngr_resolved_rgr_meta(
@@ -474,8 +484,18 @@ void Scanner::mngr_resolve_rgr_select() {
   completion.increment();
 
   auto profile = selector->profile.mngr_res();
+
+  if(Env::Clients::get()->rangers.get(data_cid, data_rid, data_endpoints)) {
+    profile.add_cached(Error::OK);
+    debug_res_cache("mngr_resolved_rgr_select Cache hit",
+                    data_cid, data_rid, data_endpoints);
+    rgr_select();
+    return response_if_last();
+  }
+
   Comm::Protocol::Mngr::Params::RgrGetReq params(data_cid, data_rid);
-  auto req = Comm::Protocol::Mngr::Req::RgrGet::make(
+  SWC_SCANNER_REQ_DEBUG("mngr_resolve_rgr_select");
+  Comm::Protocol::Mngr::Req::RgrGet::request(
     params,
     [profile, scanner=shared_from_this()]
     (const ReqBase::Ptr& req,
@@ -485,18 +505,6 @@ void Scanner::mngr_resolve_rgr_select() {
         scanner->response_if_last();
     }
   );
-
-  Comm::Protocol::Mngr::Params::RgrGetRsp rsp(data_cid, data_rid);
-  if(Env::Clients::get()->rangers.get(data_cid, data_rid, rsp.endpoints)) {
-    SWC_SCANNER_RSP_DEBUG("mngr_resolve_rgr_select Cache hit");
-    if(mngr_resolved_rgr_select(req, rsp)) {
-      profile.add(Error::OK);
-      return response_if_last();
-    }
-    Env::Clients::get()->rangers.remove(data_cid, data_rid);
-  }
-  SWC_SCANNER_REQ_DEBUG("mngr_resolve_rgr_select");
-  req->run();
 }
 
 bool Scanner::mngr_resolved_rgr_select(

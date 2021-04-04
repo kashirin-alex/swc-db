@@ -35,11 +35,12 @@ struct Profiling {
 
   struct Component {
 
-    Core::Atomic<uint64_t> count;
     Core::Atomic<uint64_t> time;
+    Core::Atomic<uint64_t> count;
+    Core::Atomic<uint64_t> cache;
     Core::Atomic<uint64_t> error;
 
-    Component() noexcept : count(0), time(0), error(0) { }
+    Component() noexcept : time(0), count(0), cache(0), error(0) { }
 
     struct Start {
       Component&    _m;
@@ -52,6 +53,10 @@ struct Profiling {
       void add(bool err) const noexcept {
         _m.add(ts, err);
       }
+
+      void add_cached(bool err) const noexcept {
+        _m.add_cached(ts, err);
+      }
     };
 
     Start start() noexcept {
@@ -59,20 +64,31 @@ struct Profiling {
     }
 
     void add(uint64_t ts, bool err) noexcept {
-      count.fetch_add(1);
       time.fetch_add(Time::now_ns() - ts);
+      count.fetch_add(1);
       if(err)
         error.fetch_add(1);
     }
 
+    void add_cached(uint64_t ts, bool err) noexcept {
+      add(ts, err);
+      cache.fetch_add(1);
+    }
+
     void print(std::ostream& out) const {
-      out << "(count=" << count.load()
-          << " time=" << time.load() << "ns errors=" << error.load() << ')';
+      out << "(time=" << time.load() << "ns"
+          << " count=" << count.load()
+          << " cached=" << cache.load()
+          << " errors=" << error.load()
+          << ')';
     }
 
     void display(std::ostream& out) const {
-      out << time.load() << "ns" << '/'
-          << count.load() << '(' << error.load() << ")\n";
+      out << time.load() << "ns"
+          << ' ' << count.load()
+          << '/' << cache.load()
+          << '/' << error.load()
+          << '\n';
     }
   };
 

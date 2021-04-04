@@ -78,6 +78,9 @@ class Scanner final : public std::enable_shared_from_this<Scanner> {
 
   virtual ~Scanner() { }
 
+ void debug_res_cache(const char* msg, cid_t cid, rid_t rid,
+                      const Comm::EndPoints& endpoints);
+
   void print(std::ostream& out);
 
   bool add_cells(const StaticBuffer& buffer, bool reached_limit);

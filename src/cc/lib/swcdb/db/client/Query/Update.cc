@@ -397,8 +397,10 @@ void Update::Locator::resolve_on_manager() {
     }
   );
   if(!DB::Types::MetaColumn::is_master(cid)) {
+    auto profile = updater->result->profile.mngr_res();
     Comm::Protocol::Mngr::Params::RgrGetRsp rsp(cid, rid);
     if(Env::Clients::get()->rangers.get(cid, rid, rsp.endpoints)) {
+      profile.add_cached(Error::OK);
       SWC_LOCATOR_RSP_DEBUG("mngr_resolve_rgr Cache hit");
       return proceed_on_ranger(req, rsp);
     }
