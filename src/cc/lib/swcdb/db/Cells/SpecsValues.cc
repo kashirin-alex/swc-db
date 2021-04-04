@@ -11,6 +11,25 @@
 namespace SWC { namespace DB { namespace Specs {
 
 
+
+Values::Values(const Values& other)
+              : Vec(other) {
+}
+
+Values::Values(Values&& other) noexcept
+               : Vec(std::move(other)) {
+}
+
+Values& Values::operator=(const Values& other) {
+  copy(other);
+  return *this;
+}
+
+Values& Values::operator=(Values&& other) noexcept {
+  move(other);
+  return *this;
+}
+
 void Values::copy(const Values& other) {
   free();
   resize(other.size());
@@ -18,6 +37,10 @@ void Values::copy(const Values& other) {
   for(auto it2 = other.begin(); it != end(); ++it, ++it2)
     it->copy(*it2);
   col_type = other.col_type;
+}
+
+void Values::move(Values& other) noexcept {
+  Vec::operator=(std::move(other));
 }
 
 void Values::free() {

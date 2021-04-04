@@ -821,6 +821,7 @@ size_t Mutable::_narrow(const DB::Cell::Key& key, size_t offset) const {
   goto try_narrow;
 }
 
+SWC_SHOULD_INLINE
 size_t Mutable::_narrow(const Specs::Interval& specs) const {
   return specs.offset_key.empty()
     ? (specs.range_begin.empty() ? 0 : _narrow(specs.range_begin))

@@ -19,11 +19,6 @@ Timestamp::Timestamp(int64_t timestamp, Condition::Comp comp) noexcept
                       was_set(true) {
 }
 
-Timestamp::Timestamp(const Timestamp &other) noexcept
-                    : value(other.value), comp(other.comp),
-                      was_set(other.was_set) {
-}
-
 void Timestamp::copy(const Timestamp &other) noexcept {
   set(other.value, other.comp);
 }

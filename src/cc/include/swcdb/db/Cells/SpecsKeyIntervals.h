@@ -52,11 +52,17 @@ class KeyIntervals : private std::vector<KeyInterval::Ptr> {
 
   KeyIntervals() noexcept { }
 
-  KeyIntervals(const KeyIntervals& other) = delete;
+  KeyIntervals(const KeyIntervals& other);
 
-  KeyIntervals(KeyIntervals&& other) = delete;
+  KeyIntervals(KeyIntervals&& other) noexcept;
+
+  KeyIntervals& operator=(const KeyIntervals& other);
+
+  KeyIntervals& operator=(KeyIntervals&& other) noexcept;
 
   void copy(const KeyIntervals& other);
+
+  void move(KeyIntervals& other) noexcept;
 
   void free();
 

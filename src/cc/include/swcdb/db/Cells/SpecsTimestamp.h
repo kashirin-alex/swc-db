@@ -21,8 +21,6 @@ class Timestamp {
 
   explicit Timestamp(int64_t timestamp, Condition::Comp comp) noexcept;
 
-  explicit Timestamp(const Timestamp &other) noexcept;
-
   void copy(const Timestamp &other) noexcept;
 
   void set(int64_t timestamp, Condition::Comp comperator) noexcept;

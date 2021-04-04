@@ -23,12 +23,43 @@ Interval::Interval(const uint8_t** bufp, size_t* remainp) {
   decode(bufp, remainp);
 }
 
-Interval::Interval(const Interval& other) {
+Interval::Interval(const Interval& other)
+                  : range_begin(other.range_begin),
+                    range_end(other.range_end),
+                    key_intervals(other.key_intervals),
+                    values(other.values),
+                    ts_start(other.ts_start),
+                    ts_finish(other.ts_finish),
+                    flags(other.flags),
+                    offset_key(other.offset_key),
+                    offset_rev(other.offset_rev),
+                    options(other.options) {
+}
+
+Interval::Interval(Interval&& other) noexcept
+                  : range_begin(std::move(other.range_begin)),
+                    range_end(std::move(other.range_end)),
+                    key_intervals(std::move(other.key_intervals)),
+                    values(std::move(other.values)),
+                    ts_start(std::move(other.ts_start)),
+                    ts_finish(std::move(other.ts_finish)),
+                    flags(std::move(other.flags)),
+                    offset_key(std::move(other.offset_key)),
+                    offset_rev(other.offset_rev),
+                    options(other.options) {
+}
+
+Interval& Interval::operator=(const Interval& other) {
   copy(other);
+  return *this;
+}
+
+Interval& Interval::operator=(Interval&& other) noexcept {
+  move(other);
+  return *this;
 }
 
 void Interval::copy(const Interval& other) {
-
   range_begin.copy(other.range_begin);
   range_end.copy(other.range_end);
 
@@ -42,6 +73,25 @@ void Interval::copy(const Interval& other) {
   flags.copy(other.flags);
 
   offset_key.copy(other.offset_key);
+  offset_rev = other.offset_rev;
+
+  options = other.options;
+}
+
+void Interval::move(Interval& other) noexcept {
+  range_begin.move(other.range_begin);
+  range_end.move(other.range_end);
+
+  key_intervals.move(other.key_intervals);
+
+  values.move(other.values);
+
+  ts_start.copy(other.ts_start);
+  ts_finish.copy(other.ts_finish);
+
+  flags.copy(other.flags);
+
+  offset_key.move(other.offset_key);
   offset_rev = other.offset_rev;
 
   options = other.options;

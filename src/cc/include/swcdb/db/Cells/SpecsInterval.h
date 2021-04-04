@@ -44,6 +44,11 @@ class Interval {
     return std::make_shared<Interval>(other);
   }
 
+  SWC_CAN_INLINE
+  static Ptr make_ptr(Interval&& other) {
+    return std::make_shared<Interval>(std::move(other));
+  }
+
 
   explicit Interval(Types::Column col_type = Types::Column::UNKNOWN) noexcept;
 
@@ -53,7 +58,15 @@ class Interval {
 
   explicit Interval(const Interval& other);
 
+  explicit Interval(Interval&& other) noexcept;
+
+  Interval& operator=(const Interval& other);
+
+  Interval& operator=(Interval&& other) noexcept;
+
   void copy(const Interval& other);
+
+  void move(Interval& other) noexcept;
 
   ~Interval();
 

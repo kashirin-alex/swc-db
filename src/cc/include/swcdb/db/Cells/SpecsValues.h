@@ -33,11 +33,17 @@ class Values : private std::vector<Value> {
         : col_type(col_type) {
   }
 
-  Values(const Values& other) = delete;
+  Values(const Values& other);
 
-  Values(Values&& other) = delete;
+  Values(Values&& other) noexcept;
+
+  Values& operator=(const Values& other);
+
+  Values& operator=(Values&& other) noexcept;
 
   void copy(const Values& other);
+
+  void move(Values& other) noexcept;
 
   void free();
 

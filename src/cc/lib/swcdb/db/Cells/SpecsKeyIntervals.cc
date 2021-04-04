@@ -28,9 +28,23 @@ KeyInterval::KeyInterval(const KeyInterval& other)
 
 
 
-//KeyIntervals::KeyIntervals(const KeyIntervals& other) {
-//  copy(other);
-//}
+KeyIntervals::KeyIntervals(const KeyIntervals& other) : Vec() {
+  copy(other);
+}
+
+KeyIntervals::KeyIntervals(KeyIntervals&& other) noexcept
+                           : Vec(std::move(other)) {
+}
+
+KeyIntervals& KeyIntervals::operator=(const KeyIntervals& other) {
+  copy(other);
+  return *this;
+}
+
+KeyIntervals& KeyIntervals::operator=(KeyIntervals&& other) noexcept {
+  move(other);
+  return *this;
+}
 
 void KeyIntervals::copy(const KeyIntervals& other) {
   free();
@@ -39,6 +53,10 @@ void KeyIntervals::copy(const KeyIntervals& other) {
   for(auto it2 = other.begin(); it != end(); ++it, ++it2) {
     it->reset(new KeyInterval(*(it2->get())));
   }
+}
+
+void KeyIntervals::move(KeyIntervals& other) noexcept {
+  Vec::operator=(std::move(other));
 }
 
 void KeyIntervals::free() {

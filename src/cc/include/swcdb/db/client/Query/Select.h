@@ -25,13 +25,25 @@ extern void scan(const Handlers::Base::Ptr& hdlr,
                  const DB::Specs::Interval& intval);
 
 extern void scan(const Handlers::Base::Ptr& hdlr,
+                 DB::Types::KeySeq key_seq,
+                 cid_t cid,
+                 DB::Specs::Interval&& intval);
+
+extern void scan(const Handlers::Base::Ptr& hdlr,
                  const DB::Schema::Ptr& schema,
                  const DB::Specs::Interval& intval);
+
+extern void scan(const Handlers::Base::Ptr& hdlr,
+                 const DB::Schema::Ptr& schema,
+                 DB::Specs::Interval&& intval);
 
 extern void scan(int& err,
                  const Handlers::BaseUnorderedMap::Ptr& hdlr,
                  const DB::Specs::Scan& specs);
 
+extern void scan(int& err,
+                 const Handlers::BaseUnorderedMap::Ptr& hdlr,
+                 DB::Specs::Scan&& specs);
 
 
 class Scanner final : public std::enable_shared_from_this<Scanner> {
@@ -75,6 +87,11 @@ class Scanner final : public std::enable_shared_from_this<Scanner> {
           const DB::Types::KeySeq col_seq,
           const DB::Specs::Interval& interval,
           const cid_t cid);
+
+  Scanner(const Handlers::Base::Ptr& hdlr,
+          const DB::Types::KeySeq col_seq,
+          DB::Specs::Interval&& interval,
+          const cid_t cid) noexcept;
 
   virtual ~Scanner() { }
 

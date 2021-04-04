@@ -23,9 +23,25 @@ void scan(const Handlers::Base::Ptr& hdlr,
 }
 
 void scan(const Handlers::Base::Ptr& hdlr,
+          DB::Types::KeySeq key_seq,
+          cid_t cid,
+          DB::Specs::Interval&& intval) {
+  hdlr->completion.increment();
+  std::make_shared<Scanner>(
+    hdlr, key_seq, std::move(intval), cid
+  )->mngr_locate_master();
+}
+
+void scan(const Handlers::Base::Ptr& hdlr,
           const DB::Schema::Ptr& schema,
           const DB::Specs::Interval& intval) {
   scan(hdlr, schema->col_seq, schema->cid, intval);
+}
+
+void scan(const Handlers::Base::Ptr& hdlr,
+          const DB::Schema::Ptr& schema,
+          DB::Specs::Interval&& intval) {
+  scan(hdlr, schema->col_seq, schema->cid, std::move(intval));
 }
 
 void scan(int& err,
@@ -56,6 +72,34 @@ void scan(int& err,
   }
 }
 
+void scan(int& err,
+          const Handlers::BaseUnorderedMap::Ptr& hdlr,
+          DB::Specs::Scan&& specs) {
+  std::vector<DB::Schema::Ptr> schemas(specs.columns.size());
+  auto it_seq = schemas.begin();
+  for(auto& col : specs.columns) {
+    auto schema = Env::Clients::get()->schemas->get(err, col->cid);
+    if(err)
+      return;
+    *it_seq++ = schema;
+    hdlr->completion.increment();
+  }
+
+  it_seq = schemas.begin();
+  for(auto& col : specs.columns) {
+    for(auto& intval : col->intervals) {
+      if(!intval->flags.max_buffer)
+        intval->flags.max_buffer = hdlr->buff_sz;
+      if(!intval->values.empty())
+        intval->values.col_type = (*it_seq)->col_type;
+      std::make_shared<Scanner>(
+        hdlr, (*it_seq)->col_seq, std::move(*intval.get()), col->cid
+      )->mngr_locate_master();
+    }
+    ++it_seq;
+  }
+}
+
 
 
 
@@ -79,6 +123,25 @@ Scanner::Scanner(const Handlers::Base::Ptr& hdlr,
               selector(hdlr),
               col_seq(col_seq),
               interval(interval),
+              master_cid(DB::Types::MetaColumn::get_master_cid(col_seq)),
+              meta_cid(DB::Types::MetaColumn::get_meta_cid(col_seq)),
+              data_cid(cid),
+              master_rid(0),
+              meta_rid(0),
+              data_rid(0),
+              master_mngr_next(false),
+              master_rgr_next(false),
+              meta_next(false) {
+}
+
+Scanner::Scanner(const Handlers::Base::Ptr& hdlr,
+                 const DB::Types::KeySeq col_seq,
+                 DB::Specs::Interval&& interval,
+                 const cid_t cid) noexcept
+            : completion(0),
+              selector(hdlr),
+              col_seq(col_seq),
+              interval(std::move(interval)),
               master_cid(DB::Types::MetaColumn::get_master_cid(col_seq)),
               meta_cid(DB::Types::MetaColumn::get_meta_cid(col_seq)),
               data_cid(cid),
