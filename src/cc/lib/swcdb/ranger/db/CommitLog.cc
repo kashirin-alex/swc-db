@@ -177,26 +177,35 @@ size_t Fragments::need_compact(std::vector<Fragments::Vec>& groups,
 }
 
 bool Fragments::try_compact(int tnum) {
-  if(stopping ||
-     Env::Rgr::res().is_low_mem_state() ||
-     !range->compact_possible(true) ||
-     !Env::Rgr::log_compact_possible())
+  if(stopping || Env::Rgr::res().is_low_mem_state())
     return false;
 
-  std::vector<Fragments::Vec> groups;
-  size_t need;
-  uint8_t cointervaling = range->cfg->log_compact_cointervaling();
-  {
-    std::scoped_lock lock(m_mutex);
-    if(_need_compact_major() && Env::Rgr::compaction_available()) {
-      range->compacting(Range::COMPACT_NONE);
-      Env::Rgr::log_compact_finished();
-      return false;
+  bool at = false;
+  if(!m_compacting.compare_exchange_weak(at, true))
+    return false;
+
+  at = Env::Rgr::log_compact_possible();
+  if(at && !(at=range->compact_possible(true)))
+    Env::Rgr::log_compact_finished();
+  if(!at) {
+    m_compacting.store(false);
+    {
+      std::scoped_lock lock(m_mutex);
+      m_cv.notify_all();
     }
-    need = _need_compact(groups, {}, cointervaling);
-    m_compacting.store(true);
+    return false;
   }
 
+  std::vector<Fragments::Vec> groups;
+  uint8_t cointervaling = range->cfg->log_compact_cointervaling();
+  size_t need = 0;
+  bool need_major;
+  {
+    std::scoped_lock lock(m_mutex);
+    if(!(need_major = _need_compact_major())) {
+      need = _need_compact(groups, {}, cointervaling);
+    }
+  }
   if(need) {
     range->compacting(need / groups.size() > range->cfg->log_rollout_ratio()
       ? Range::COMPACT_PREPARING  // mitigate add
@@ -205,7 +214,12 @@ bool Fragments::try_compact(int tnum) {
     new Compact(this, tnum, groups, cointervaling);
     return true;
   }
+
   finish_compact(nullptr);
+  if(need_major) {
+    range->compact_require(true);
+    Env::Rgr::compaction_schedule(1000);
+  }
   return false;
 }
 
@@ -603,10 +617,6 @@ bool Fragments::_need_compact_major() {
       if((need = (sz_bytes += frag->size_bytes_encoded()) > ok))
         break;
     }
-  }
-  if(need) {
-    range->compact_require(true);
-    Env::Rgr::compaction_schedule(1000);
   }
   return need;
 }
