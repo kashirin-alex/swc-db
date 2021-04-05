@@ -9,7 +9,31 @@
 
 ### [SWC-DB master](https://github.com/kashirin-alex/swc-db/tree/master) (upcoming-release)
 
-
+    changed Comm::ConnHandler use _buff_header[MAX_LENGTH] instead temp allocs
+    fixed use of invalid Iterator in Mutable::write_and_free
+    added move ctor/operator Specs::{Interval,KeyIntervals,Key,Fraction,Values}
+    added class KeyGenerator to swcdb_load_generator
+    changed workload by Distribution and Course in swcdb_load_generator
+    added Ranger call CompactRange::quit() at Compaction::stop()
+    added Ranger {Compaction,Env::Rgr}::log_compact_{possible,finished}()
+    added Ranger configuration property 'swc.rgr.compaction.commitlog.max'
+    added compact-possible cond. in Ranger::CommitLog::Fragments::try_compact
+    changed FS::Dirent structure - skip dir length encoding & time_t to int64
+    added direct POSIX ::readdir handling in FS::FileSystemLocal::readdir
+    removed FileUtils::readdir & fixed bad-vector of POSIX dirent
+    changed API of SWC::DB::client::Query::Select :
+      added Handlers namespace to SWC::DB::client::Query::Select
+      added Handler classes Base{UnorderedMap,SingleColumn},Common
+      changed Query::Select::Scanner class ctor takes Handlers::Base::Ptr
+      added Query::Select::scan(..) default impl./overloaders of executions
+    changed bool Specs::Key::is_matching(KeySeq,Cell::Key&) to const scope
+    removed Cell::Key 'range_offset' specification from DB::Specs::Interval
+    added DB::Mutable::_narrow(const Specs::Interval&) improved narrow options
+    added atomic uint64_t 'cache' to SWC::client::Query::Profiling::Component
+    added profile aggregation with operator+= to SWC::client::Query::Profiling
+    added cached rsp-type profiling support for DB::client::Query
+    added specialized select-handler class Ranger::Query::Select::CheckMeta
+    fixed single-Ranger-runtime shutdown-seq - halt Meta-Check if shuttingdown
 
 [_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.4.19...master)
 ******
