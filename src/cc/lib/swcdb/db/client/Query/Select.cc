@@ -115,6 +115,12 @@ void scan(int& err,
   );
 
 
+static const uint8_t RETRY_POINT_NONE   = 0;
+static const uint8_t RETRY_POINT_MASTER = 1;
+static const uint8_t RETRY_POINT_META   = 2;
+static const uint8_t RETRY_POINT_DATA   = 3;
+
+
 Scanner::Scanner(const Handlers::Base::Ptr& hdlr,
                  const DB::Types::KeySeq col_seq,
                  const DB::Specs::Interval& interval,
@@ -131,7 +137,8 @@ Scanner::Scanner(const Handlers::Base::Ptr& hdlr,
               data_rid(0),
               master_mngr_next(false),
               master_rgr_next(false),
-              meta_next(false) {
+              meta_next(false),
+              retry_point(RETRY_POINT_NONE) {
 }
 
 Scanner::Scanner(const Handlers::Base::Ptr& hdlr,
@@ -150,7 +157,8 @@ Scanner::Scanner(const Handlers::Base::Ptr& hdlr,
               data_rid(0),
               master_mngr_next(false),
               master_rgr_next(false),
-              meta_next(false) {
+              meta_next(false),
+              retry_point(RETRY_POINT_NONE) {
 }
 
 void Scanner::debug_res_cache(const char* msg, cid_t cid, rid_t rid,
@@ -174,7 +182,31 @@ void Scanner::print(std::ostream& out) {
         << " next=" << meta_next << ')'
       << " data(" << data_cid << '/' << data_rid  << ") ";
   interval.print(out);
-  out << " completion=" << completion.count() << ')';
+  out << " completion=" << completion.count()
+      << " retry-point=";
+  switch(retry_point) {
+    case RETRY_POINT_NONE: {
+      out << "NONE";
+      break;
+    }
+    case RETRY_POINT_MASTER: {
+      out << "MASTER";
+      break;
+    }
+    case RETRY_POINT_META: {
+      out << "META";
+      break;
+    }
+    case RETRY_POINT_DATA: {
+      out << "DATA";
+      break;
+    }
+    default: {
+      out << "UNKNOWN";
+      break;
+    }
+  }
+  out << ')';
 }
 
 bool Scanner::add_cells(const StaticBuffer& buffer, bool reached_limit) {
@@ -216,7 +248,7 @@ void Scanner::mngr_locate_master() {
   completion.increment();
 
   Comm::Protocol::Mngr::Params::RgrGetReq params(
-    master_cid, 0, master_mngr_next);
+    master_cid, 0, master_mngr_next && !retry_point);
 
   if(master_mngr_next) {
     params.range_begin.copy(master_mngr_offset);
@@ -310,7 +342,8 @@ void Scanner::rgr_locate_master() {
   Comm::Protocol::Rgr::Params::RangeLocateReq params(master_cid, master_rid);
   auto data_cid_str = std::to_string(data_cid);
   if(master_rgr_next) {
-    params.flags |= Comm::Protocol::Rgr::Params::RangeLocateReq::NEXT_RANGE;
+    if(!retry_point)
+      params.flags |= Comm::Protocol::Rgr::Params::RangeLocateReq::NEXT_RANGE;
     params.range_offset.copy(master_rgr_offset);
     params.range_offset.insert(0, data_cid_str);
   }
@@ -353,20 +386,28 @@ void Scanner::rgr_locate_master() {
 void Scanner::rgr_located_master(
           const ReqBase::Ptr& req,
           const Comm::Protocol::Rgr::Params::RangeLocateRsp& rsp) {
+  if(retry_point == RETRY_POINT_MASTER)
+    retry_point = RETRY_POINT_NONE;
   switch(rsp.err) {
     case Error::OK: {
       if(!rsp.rid) { // sake check (must be an err rsp)
         SWC_SCANNER_RSP_DEBUG("rgr_located_master RETRYING(no rid)");
         Env::Clients::get()->rangers.remove(master_cid, master_rid);
-        if(selector->valid(master_rgr_req_base))
+        if(selector->valid(master_rgr_req_base)) {
+          if(!retry_point)
+            retry_point = RETRY_POINT_MASTER;
           return;
+        }
         break;
       }
       if(meta_cid != rsp.cid) { // sake check (must be an err rsp)
         SWC_SCANNER_RSP_DEBUG("rgr_located_master RETRYING(cid no match)");
         Env::Clients::get()->rangers.remove(master_cid, master_rid);
-        if(selector->valid(master_rgr_req_base))
+        if(selector->valid(master_rgr_req_base)) {
+          if(!retry_point)
+            retry_point = RETRY_POINT_MASTER;
           return;
+        }
         break;
       }
       SWC_SCANNER_RSP_DEBUG("rgr_located_master");
@@ -397,8 +438,11 @@ void Scanner::rgr_located_master(
     case Error::COMM_NOT_CONNECTED: {
       SWC_SCANNER_RSP_DEBUG("rgr_located_master RETRYING");
       Env::Clients::get()->rangers.remove(master_cid, master_rid);
-      if(selector->valid(master_rgr_req_base))
+      if(selector->valid(master_rgr_req_base)) {
+        if(!retry_point)
+          retry_point = RETRY_POINT_MASTER;
         return;
+      }
       break;
     }
     default: {
@@ -452,7 +496,12 @@ bool Scanner::mngr_resolved_rgr_meta(
     }
     case Error::RANGE_NOT_FOUND: {
       SWC_SCANNER_RSP_DEBUG("mngr_resolved_rgr_meta RETRYING");
-      return !selector->valid(meta_req_base);
+      if(selector->valid(meta_req_base)) {
+        if(!retry_point)
+          retry_point = RETRY_POINT_META;
+        return false;
+      }
+      return true;
     }
     default: {
       SWC_SCANNER_RSP_DEBUG("mngr_resolved_rgr_meta RETRYING");
@@ -469,7 +518,8 @@ void Scanner::rgr_locate_meta() {
   Comm::Protocol::Rgr::Params::RangeLocateReq params(meta_cid, meta_rid);
   auto data_cid_str = std::to_string(data_cid);
   if(meta_next) {
-    params.flags |= Comm::Protocol::Rgr::Params::RangeLocateReq::NEXT_RANGE;
+    if(!retry_point)
+      params.flags |= Comm::Protocol::Rgr::Params::RangeLocateReq::NEXT_RANGE;
     params.range_offset.copy(meta_offset);
     params.range_offset.insert(0, data_cid_str);
   }
@@ -504,20 +554,28 @@ void Scanner::rgr_locate_meta() {
 void Scanner::rgr_located_meta(
           const ReqBase::Ptr& req,
           const Comm::Protocol::Rgr::Params::RangeLocateRsp& rsp) {
+  if(retry_point == RETRY_POINT_META)
+    retry_point = RETRY_POINT_NONE;
   switch(rsp.err) {
     case Error::OK: {
       if(!rsp.rid) { // sake check (must be an err rsp)
         SWC_SCANNER_RSP_DEBUG("rgr_located_meta RETRYING(no rid)");
         Env::Clients::get()->rangers.remove(meta_cid, meta_rid);
-        if(selector->valid(meta_req_base))
+        if(selector->valid(meta_req_base)) {
+          if(!retry_point)
+            retry_point = RETRY_POINT_META;
           return;
+        }
         break;
       }
       if(data_cid != rsp.cid) { // sake check (must be an err rsp)
         SWC_SCANNER_RSP_DEBUG("rgr_located_meta RETRYING(cid no match)");
         Env::Clients::get()->rangers.remove(meta_cid, meta_rid);
-        if(selector->valid(meta_req_base))
+        if(selector->valid(meta_req_base)) {
+          if(!retry_point)
+            retry_point = RETRY_POINT_META;
           return;
+        }
         break;
       }
       SWC_SCANNER_RSP_DEBUG("rgr_located_meta");
@@ -540,8 +598,11 @@ void Scanner::rgr_located_meta(
     case Error::SERVER_SHUTTING_DOWN: {
       SWC_SCANNER_RSP_DEBUG("rgr_located_meta RETRYING");
       Env::Clients::get()->rangers.remove(meta_cid, meta_rid);
-      if(selector->valid(meta_req_base))
+      if(selector->valid(meta_req_base)) {
+        if(!retry_point)
+          retry_point = RETRY_POINT_META;
         return;
+      }
       break;
     }
     default: {
@@ -603,7 +664,11 @@ bool Scanner::mngr_resolved_rgr_select(
     }
     case Error::RANGE_NOT_FOUND: {
       SWC_SCANNER_RSP_DEBUG("mngr_resolved_rgr_select RETRYING");
-      return !selector->valid(data_req_base);
+      if(selector->valid(data_req_base)) {
+        retry_point = RETRY_POINT_DATA;
+        return false;
+      }
+      return true;
     }
     default: {
       SWC_SCANNER_RSP_DEBUG("mngr_resolved_rgr_select RETRYING");
@@ -636,6 +701,7 @@ void Scanner::rgr_select() {
 void Scanner::rgr_selected(
                 const ReqBase::Ptr& req,
                 const Comm::Protocol::Rgr::Params::RangeQuerySelectRsp& rsp) {
+  retry_point = RETRY_POINT_NONE;
   switch(rsp.err) {
     case Error::OK: {
       SWC_SCANNER_RSP_DEBUG("rgr_selected");
@@ -651,8 +717,10 @@ void Scanner::rgr_selected(
     case Error::COMM_NOT_CONNECTED: {
       SWC_SCANNER_RSP_DEBUG("rgr_selected RETRYING");
       Env::Clients::get()->rangers.remove(data_cid, data_rid);
-      if(selector->valid(data_req_base))
+      if(selector->valid(data_req_base)) {
+        retry_point = RETRY_POINT_DATA;
         return;
+      }
       break;
     }
     default: {

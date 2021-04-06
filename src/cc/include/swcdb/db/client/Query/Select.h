@@ -68,6 +68,7 @@ class Scanner final : public std::enable_shared_from_this<Scanner> {
   bool                                    master_mngr_next;
   bool                                    master_rgr_next;
   bool                                    meta_next;
+  uint8_t                                 retry_point;
 
   ReqBase::Ptr                            master_rgr_req_base;
   ReqBase::Ptr                            meta_req_base;
@@ -77,7 +78,6 @@ class Scanner final : public std::enable_shared_from_this<Scanner> {
   DB::Cell::Key                           master_rgr_offset;
   DB::Cell::Key                           meta_offset;
   DB::Cell::Key                           meta_end;
-  // DB::Cell::Key                        data_offset;
 
   Comm::EndPoints                         master_rgr_endpoints;
   Comm::EndPoints                         meta_endpoints;
