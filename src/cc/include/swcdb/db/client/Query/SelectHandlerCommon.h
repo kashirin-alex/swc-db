@@ -36,6 +36,8 @@ class Common : public BaseUnorderedMap {
 
   virtual ~Common() { }
 
+  virtual bool valid() noexcept override;
+
   virtual bool add_cells(const cid_t cid, const StaticBuffer& buffer,
                          bool reached_limit,
                          DB::Specs::Interval& interval) override;
@@ -45,8 +47,6 @@ class Common : public BaseUnorderedMap {
   virtual void free(const cid_t cid) override;
 
   virtual void response(int err) override;
-
-  virtual bool valid(const ReqBase::Ptr& req) noexcept override;
 
   void wait();
 

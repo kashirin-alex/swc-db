@@ -37,7 +37,7 @@ class Base : public std::enable_shared_from_this<Base>{
 
   virtual ~Base() { }
 
-  virtual bool valid(const ReqBase::Ptr& req) noexcept = 0;
+  virtual bool valid() noexcept = 0;
 
   virtual void error(const cid_t cid, int err) = 0;
 

@@ -246,6 +246,8 @@ void Scanner::next_call() {
 //
 void Scanner::mngr_locate_master() {
   completion.increment();
+  if(!selector->valid())
+    return response_if_last();
 
   Comm::Protocol::Mngr::Params::RgrGetReq params(
     master_cid, 0, master_mngr_next && !retry_point);
@@ -295,11 +297,19 @@ bool Scanner::mngr_located_master(
     case Error::OK: {
       if(!rsp.rid) {
         SWC_SCANNER_RSP_DEBUG("mngr_located_master RETRYING(no rid)");
-        return !selector->valid(req);
+        if(selector->valid()) {
+          req->request_again();
+          return false;
+        }
+        return true;
       }
       if(master_cid != rsp.cid) {
         SWC_SCANNER_RSP_DEBUG("mngr_located_master RETRYING(cid no match)");
-        return !selector->valid(req);
+        if(selector->valid()) {
+          req->request_again();
+          return false;
+        }
+        return true;
       }
 
       SWC_SCANNER_RSP_DEBUG("mngr_located_master");
@@ -329,7 +339,11 @@ bool Scanner::mngr_located_master(
     }
     default: {
       SWC_SCANNER_RSP_DEBUG("mngr_located_master RETRYING");
-      return !selector->valid(req);
+      if(selector->valid()) {
+        req->request_again();
+        return false;
+      }
+      return true;
     }
   }
 }
@@ -338,6 +352,8 @@ bool Scanner::mngr_located_master(
 //
 void Scanner::rgr_locate_master() {
   completion.increment();
+  if(!selector->valid())
+    return response_if_last();
 
   Comm::Protocol::Rgr::Params::RangeLocateReq params(master_cid, master_rid);
   auto data_cid_str = std::to_string(data_cid);
@@ -393,20 +409,20 @@ void Scanner::rgr_located_master(
       if(!rsp.rid) { // sake check (must be an err rsp)
         SWC_SCANNER_RSP_DEBUG("rgr_located_master RETRYING(no rid)");
         Env::Clients::get()->rangers.remove(master_cid, master_rid);
-        if(selector->valid(master_rgr_req_base)) {
+        if(selector->valid()) {
           if(!retry_point)
             retry_point = RETRY_POINT_MASTER;
-          return;
+          return master_rgr_req_base->request_again();
         }
         break;
       }
       if(meta_cid != rsp.cid) { // sake check (must be an err rsp)
         SWC_SCANNER_RSP_DEBUG("rgr_located_master RETRYING(cid no match)");
         Env::Clients::get()->rangers.remove(master_cid, master_rid);
-        if(selector->valid(master_rgr_req_base)) {
+        if(selector->valid()) {
           if(!retry_point)
             retry_point = RETRY_POINT_MASTER;
-          return;
+          return master_rgr_req_base->request_again();
         }
         break;
       }
@@ -438,16 +454,16 @@ void Scanner::rgr_located_master(
     case Error::COMM_NOT_CONNECTED: {
       SWC_SCANNER_RSP_DEBUG("rgr_located_master RETRYING");
       Env::Clients::get()->rangers.remove(master_cid, master_rid);
-      if(selector->valid(master_rgr_req_base)) {
+      if(selector->valid()) {
         if(!retry_point)
           retry_point = RETRY_POINT_MASTER;
-        return;
+        return master_rgr_req_base->request_again();
       }
       break;
     }
     default: {
-      if(selector->valid(req))
-        return;
+      if(selector->valid())
+        return req->request_again();
       break;
     }
   }
@@ -458,6 +474,8 @@ void Scanner::rgr_located_master(
 //
 void Scanner::mngr_resolve_rgr_meta() {
   completion.increment();
+  if(!selector->valid())
+    return response_if_last();
 
   auto profile = selector->profile.mngr_res();
 
@@ -496,16 +514,21 @@ bool Scanner::mngr_resolved_rgr_meta(
     }
     case Error::RANGE_NOT_FOUND: {
       SWC_SCANNER_RSP_DEBUG("mngr_resolved_rgr_meta RETRYING");
-      if(selector->valid(meta_req_base)) {
+      if(selector->valid()) {
         if(!retry_point)
           retry_point = RETRY_POINT_META;
+        meta_req_base->request_again();
         return false;
       }
       return true;
     }
     default: {
       SWC_SCANNER_RSP_DEBUG("mngr_resolved_rgr_meta RETRYING");
-      return !selector->valid(req);
+      if(selector->valid()) {
+        req->request_again();
+        return false;
+      }
+      return true;
     }
   }
 }
@@ -514,6 +537,8 @@ bool Scanner::mngr_resolved_rgr_meta(
 //
 void Scanner::rgr_locate_meta() {
   completion.increment();
+  if(!selector->valid())
+    return response_if_last();
 
   Comm::Protocol::Rgr::Params::RangeLocateReq params(meta_cid, meta_rid);
   auto data_cid_str = std::to_string(data_cid);
@@ -561,20 +586,20 @@ void Scanner::rgr_located_meta(
       if(!rsp.rid) { // sake check (must be an err rsp)
         SWC_SCANNER_RSP_DEBUG("rgr_located_meta RETRYING(no rid)");
         Env::Clients::get()->rangers.remove(meta_cid, meta_rid);
-        if(selector->valid(meta_req_base)) {
+        if(selector->valid()) {
           if(!retry_point)
             retry_point = RETRY_POINT_META;
-          return;
+          return meta_req_base->request_again();
         }
         break;
       }
       if(data_cid != rsp.cid) { // sake check (must be an err rsp)
         SWC_SCANNER_RSP_DEBUG("rgr_located_meta RETRYING(cid no match)");
         Env::Clients::get()->rangers.remove(meta_cid, meta_rid);
-        if(selector->valid(meta_req_base)) {
+        if(selector->valid()) {
           if(!retry_point)
             retry_point = RETRY_POINT_META;
-          return;
+          return meta_req_base->request_again();
         }
         break;
       }
@@ -598,17 +623,17 @@ void Scanner::rgr_located_meta(
     case Error::SERVER_SHUTTING_DOWN: {
       SWC_SCANNER_RSP_DEBUG("rgr_located_meta RETRYING");
       Env::Clients::get()->rangers.remove(meta_cid, meta_rid);
-      if(selector->valid(meta_req_base)) {
+      if(selector->valid()) {
         if(!retry_point)
           retry_point = RETRY_POINT_META;
-        return;
+        return meta_req_base->request_again();
       }
       break;
     }
     default: {
       SWC_SCANNER_RSP_DEBUG("rgr_located_meta RETRYING-locate");
-      if(selector->valid(req))
-        return;
+      if(selector->valid())
+        return req->request_again();
       break;
     }
   }
@@ -619,6 +644,8 @@ void Scanner::rgr_located_meta(
 //
 void Scanner::mngr_resolve_rgr_select() {
   completion.increment();
+  if(!selector->valid())
+    return response_if_last();
 
   auto profile = selector->profile.mngr_res();
 
@@ -664,15 +691,20 @@ bool Scanner::mngr_resolved_rgr_select(
     }
     case Error::RANGE_NOT_FOUND: {
       SWC_SCANNER_RSP_DEBUG("mngr_resolved_rgr_select RETRYING");
-      if(selector->valid(data_req_base)) {
+      if(selector->valid()) {
         retry_point = RETRY_POINT_DATA;
+        data_req_base->request_again();
         return false;
       }
       return true;
     }
     default: {
       SWC_SCANNER_RSP_DEBUG("mngr_resolved_rgr_select RETRYING");
-      return !selector->valid(req);
+      if(selector->valid()) {
+        req->request_again();
+        return false;
+      }
+      return true;
     }
   }
 }
@@ -681,6 +713,8 @@ bool Scanner::mngr_resolved_rgr_select(
 //
 void Scanner::rgr_select() {
   completion.increment();
+  if(!selector->valid())
+    return response_if_last();
 
   Comm::Protocol::Rgr::Params::RangeQuerySelectReq params(
     data_cid, data_rid, interval);
@@ -717,15 +751,15 @@ void Scanner::rgr_selected(
     case Error::COMM_NOT_CONNECTED: {
       SWC_SCANNER_RSP_DEBUG("rgr_selected RETRYING");
       Env::Clients::get()->rangers.remove(data_cid, data_rid);
-      if(selector->valid(data_req_base)) {
+      if(selector->valid()) {
         retry_point = RETRY_POINT_DATA;
-        return;
+        return data_req_base->request_again();
       }
       break;
     }
     default: {
-      if(selector->valid(req))
-        return;
+      if(selector->valid())
+        return req->request_again();
     }
   }
   response_if_last();

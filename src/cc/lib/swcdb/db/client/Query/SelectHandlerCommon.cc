@@ -65,11 +65,8 @@ void Common::response(int err) {
   }
 }
 
-bool Common::valid(const ReqBase::Ptr& req) noexcept {
-  if(!valid_state)
-    return false;
-  req->request_again();
-  return true;
+bool Common::valid() noexcept {
+  return valid_state;
 }
 
 void Common::response_partials() {

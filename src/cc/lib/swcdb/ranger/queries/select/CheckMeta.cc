@@ -38,14 +38,13 @@ CheckMeta::CheckMeta(const RangePtr& range,
     fields.encode(spec.values.add());
 }
 
-bool CheckMeta::valid(const client::Query::ReqBase::Ptr& _req) noexcept {
+bool CheckMeta::valid() noexcept {
   if(state_error ||
      Env::Rgr::is_shuttingdown() ||
      (Env::Rgr::is_not_accepting() &&
       DB::Types::MetaColumn::is_data(range->cfg->cid))) { // ? any-false
     return false;
   }
-  _req->request_again();
   return true;
 }
 

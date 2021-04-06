@@ -34,6 +34,7 @@
     added cached rsp-type profiling support for DB::client::Query
     added specialized select-handler class Ranger::Query::Select::CheckMeta
     fixed single-Ranger-runtime shutdown-seq - halt Meta-Check if shuttingdown
+    fixed Query::Select::Scanner error-handling over a retry on req-base(fb)
 
 [_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.4.19...master)
 ******

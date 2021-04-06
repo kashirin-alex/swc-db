@@ -29,7 +29,7 @@ class CheckMeta final :
 
   virtual ~CheckMeta() { }
 
-  bool valid(const client::Query::ReqBase::Ptr& _req) noexcept override;
+  bool valid() noexcept override;
 
   void response(int err) override;
 
