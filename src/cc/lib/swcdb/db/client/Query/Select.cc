@@ -259,41 +259,47 @@ void Scanner::mngr_locate_master() {
 bool Scanner::mngr_located_master(
         const ReqBase::Ptr& req,
         const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
+  switch(rsp.err) {
+    case Error::OK: {
+      if(!rsp.rid) {
+        SWC_SCANNER_RSP_DEBUG("mngr_located_master RETRYING(no rid)");
+        return !selector->valid(req);
+      }
+      if(master_cid != rsp.cid) {
+        SWC_SCANNER_RSP_DEBUG("mngr_located_master RETRYING(cid no match)");
+        return !selector->valid(req);
+      }
 
-  if(rsp.err) {
-    if(master_mngr_next && rsp.err == Error::RANGE_NOT_FOUND) {
-      master_mngr_next = false;
-      SWC_SCANNER_RSP_DEBUG("mngr_located_master finished");
+      SWC_SCANNER_RSP_DEBUG("mngr_located_master");
+      Env::Clients::get()->rangers.set(rsp.cid, rsp.rid, rsp.endpoints);
+      master_mngr_next = true;
+      master_mngr_offset.copy(rsp.range_begin);
+      if(DB::Types::MetaColumn::is_master(data_cid)) {
+        data_rid = rsp.rid;
+        data_req_base = req;
+        data_endpoints = rsp.endpoints;
+        rgr_select();
+      } else {
+        master_rid = rsp.rid;
+        master_rgr_req_base = req;
+        master_rgr_endpoints = rsp.endpoints;
+        rgr_locate_master();
+      }
       return true;
     }
-    SWC_SCANNER_RSP_DEBUG("mngr_located_master RETRYING");
-    return !selector->valid(req);
+    case Error::RANGE_NOT_FOUND: {
+      if(master_mngr_next) {
+        master_mngr_next = false;
+        SWC_SCANNER_RSP_DEBUG("mngr_located_master finished");
+        return true;
+      }
+      [[fallthrough]];
+    }
+    default: {
+      SWC_SCANNER_RSP_DEBUG("mngr_located_master RETRYING");
+      return !selector->valid(req);
+    }
   }
-  if(!rsp.rid) {
-    SWC_SCANNER_RSP_DEBUG("mngr_located_master RETRYING(no rid)");
-    return !selector->valid(req);
-  }
-  if(master_cid != rsp.cid) {
-    SWC_SCANNER_RSP_DEBUG("mngr_located_master RETRYING(cid no match)");
-    return !selector->valid(req);
-  }
-
-  SWC_SCANNER_RSP_DEBUG("mngr_located_master");
-  Env::Clients::get()->rangers.set(rsp.cid, rsp.rid, rsp.endpoints);
-  master_mngr_next = true;
-  master_mngr_offset.copy(rsp.range_begin); // if above/any-end
-  if(DB::Types::MetaColumn::is_master(data_cid)) {
-    data_rid = rsp.rid;
-    data_req_base = req;
-    data_endpoints = rsp.endpoints;
-    rgr_select();
-  } else {
-    master_rid = rsp.rid;
-    master_rgr_req_base = req;
-    master_rgr_endpoints = rsp.endpoints;
-    rgr_locate_master();
-  }
-  return true;
 }
 
 
@@ -365,7 +371,7 @@ void Scanner::rgr_located_master(
       }
       SWC_SCANNER_RSP_DEBUG("rgr_located_master");
       master_rgr_next = true;
-      master_rgr_offset.copy(rsp.range_begin); // if above/any-end
+      master_rgr_offset.copy(rsp.range_begin);
       if(DB::Types::MetaColumn::is_meta(data_cid)) {
         data_rid = rsp.rid;
         data_req_base = req;
@@ -436,16 +442,23 @@ void Scanner::mngr_resolve_rgr_meta() {
 bool Scanner::mngr_resolved_rgr_meta(
         const ReqBase::Ptr& req,
         const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
-  if(rsp.err) {
-    SWC_SCANNER_RSP_DEBUG("mngr_resolved_rgr_meta RETRYING");
-    return !selector->valid(
-      rsp.err == Error::RANGE_NOT_FOUND? meta_req_base : req);
+  switch(rsp.err) {
+    case Error::OK: {
+      SWC_SCANNER_RSP_DEBUG("mngr_resolved_rgr_meta");
+      meta_endpoints = rsp.endpoints;
+      Env::Clients::get()->rangers.set(meta_cid, meta_rid, rsp.endpoints);
+      rgr_locate_meta();
+      return true;
+    }
+    case Error::RANGE_NOT_FOUND: {
+      SWC_SCANNER_RSP_DEBUG("mngr_resolved_rgr_meta RETRYING");
+      return !selector->valid(meta_req_base);
+    }
+    default: {
+      SWC_SCANNER_RSP_DEBUG("mngr_resolved_rgr_meta RETRYING");
+      return !selector->valid(req);
+    }
   }
-  SWC_SCANNER_RSP_DEBUG("mngr_resolved_rgr_meta");
-  meta_endpoints = rsp.endpoints;
-  Env::Clients::get()->rangers.set(meta_cid, meta_rid, rsp.endpoints);
-  rgr_locate_meta();
-  return true;
 }
 
 
@@ -507,10 +520,10 @@ void Scanner::rgr_located_meta(
           return;
         break;
       }
-      SWC_SCANNER_RSP_DEBUG("rgr_located_meta)");
+      SWC_SCANNER_RSP_DEBUG("rgr_located_meta");
       meta_next = true;
-      meta_offset.copy(rsp.range_begin); // if above/any-end
-      meta_end.copy(rsp.range_end); // if above
+      meta_offset.copy(rsp.range_begin);
+      meta_end.copy(rsp.range_end);
       data_rid = rsp.rid;
       data_req_base = req;
       mngr_resolve_rgr_select();
@@ -573,24 +586,30 @@ void Scanner::mngr_resolve_rgr_select() {
 bool Scanner::mngr_resolved_rgr_select(
         const ReqBase::Ptr& req,
         const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
-  if(rsp.err) {
-    if(rsp.err == Error::COLUMN_NOT_EXISTS) {
+  switch(rsp.err) {
+    case Error::OK: {
+      SWC_SCANNER_RSP_DEBUG("mngr_resolved_rgr_select");
+      data_endpoints = rsp.endpoints;
+      Env::Clients::get()->rangers.set(data_cid, data_rid, rsp.endpoints);
+      rgr_select();
+      return true;
+    }
+    case Error::COLUMN_NOT_EXISTS: {
       SWC_SCANNER_RSP_DEBUG("mngr_resolved_rgr_select QUIT");
       int at = Error::OK; // rsp.err = Error::CONSIST_ERRORS;
       selector->state_error.compare_exchange_weak(at, rsp.err);
       selector->error(data_cid, rsp.err);
       return true;
     }
-    SWC_SCANNER_RSP_DEBUG("mngr_resolved_rgr_select RETRYING");
-    return !selector->valid(
-      rsp.err == Error::RANGE_NOT_FOUND? data_req_base : req);
+    case Error::RANGE_NOT_FOUND: {
+      SWC_SCANNER_RSP_DEBUG("mngr_resolved_rgr_select RETRYING");
+      return !selector->valid(data_req_base);
+    }
+    default: {
+      SWC_SCANNER_RSP_DEBUG("mngr_resolved_rgr_select RETRYING");
+      return !selector->valid(req);
+    }
   }
-
-  SWC_SCANNER_RSP_DEBUG("mngr_resolved_rgr_select");
-  data_endpoints = rsp.endpoints;
-  Env::Clients::get()->rangers.set(data_cid, data_rid, rsp.endpoints);
-  rgr_select();
-  return true;
 }
 
 
