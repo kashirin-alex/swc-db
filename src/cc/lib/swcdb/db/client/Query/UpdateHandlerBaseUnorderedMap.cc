@@ -12,6 +12,14 @@ namespace SWC { namespace client { namespace Query { namespace Update {
 namespace Handlers {
 
 
+bool BaseUnorderedMap::requires_commit() noexcept {
+  Core::MutexSptd::scope lock(m_mutex);
+  for(auto it = cbegin(); it != cend(); ++it)
+    if(!it->second->error() && !it->second->empty())
+      return true;
+  return false;
+}
+
 bool BaseUnorderedMap::empty() noexcept {
   Core::MutexSptd::scope lock(m_mutex);
   for(auto it = cbegin(); it != cend(); ++it)

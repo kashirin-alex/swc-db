@@ -33,6 +33,8 @@ class BaseUnorderedMap
   virtual ~BaseUnorderedMap() { }
 
 
+  virtual bool requires_commit() noexcept override;
+
   virtual bool empty() noexcept override;
 
   virtual size_t size_bytes() noexcept override;

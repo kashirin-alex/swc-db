@@ -23,6 +23,10 @@ Common::Common(const Cb_t& cb, const Comm::IoContextPtr& io)
   buff_ahead.store(Env::Clients::ref().cfg_send_ahead->get());
 }
 
+bool Common::requires_commit() noexcept {
+  return valid() && BaseUnorderedMap::requires_commit();
+}
+
 bool Common::valid() noexcept {
   return valid_state;
 }
@@ -33,7 +37,7 @@ void Common::response(int err) {
     return m_cv.notify_all();
   }
 
-  if(!err && valid() && !empty()) {
+  if(!err && requires_commit()) {
     commit(shared_from_this());
     std::scoped_lock lock(m_mutex);
     return m_cv.notify_all();

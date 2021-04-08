@@ -26,13 +26,14 @@ class Common : public BaseUnorderedMap {
   }
 
   using Base::error;
-  
+
   Core::AtomicBool valid_state;
 
   Common(const Cb_t& cb=nullptr, const Comm::IoContextPtr& io=nullptr);
 
   virtual ~Common() { }
 
+  virtual bool requires_commit() noexcept override;
 
   virtual bool valid() noexcept override;
 

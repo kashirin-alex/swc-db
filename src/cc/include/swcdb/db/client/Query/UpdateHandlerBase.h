@@ -88,6 +88,8 @@ class Base : public std::enable_shared_from_this<Base> {
 
   virtual void response(int err=Error::OK) = 0;
 
+  virtual bool requires_commit() noexcept = 0;
+
   virtual bool empty() noexcept = 0;
 
   virtual size_t size_bytes() noexcept = 0;
