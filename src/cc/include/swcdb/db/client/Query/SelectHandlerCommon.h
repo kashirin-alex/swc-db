@@ -22,17 +22,15 @@ class Common : public BaseUnorderedMap {
   typedef std::shared_ptr<Common>   Ptr;
   typedef std::function<void(Ptr)>  Cb_t;
 
-  static Ptr make(
-         const Cb_t& cb=nullptr, bool rsp_partials=false,
-         const Comm::IoContextPtr& io=nullptr) {
-    return std::make_shared<client::Query::Select::Handlers::Common>(
-      cb, rsp_partials, io);
+  static Ptr make(Cb_t cb=nullptr, bool rsp_partials=false,
+                  const Comm::IoContextPtr& io=nullptr) {
+    return std::make_shared<Common>(std::move(cb), rsp_partials, io);
   }
 
   Core::AtomicBool valid_state;
 
-  Common(const Cb_t& cb=nullptr, bool rsp_partials=false,
-         const Comm::IoContextPtr& io=nullptr);
+  Common(Cb_t&& cb, bool rsp_partials=false,
+         const Comm::IoContextPtr& io=nullptr) noexcept;
 
   virtual ~Common() { }
 

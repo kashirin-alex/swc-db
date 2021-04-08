@@ -14,11 +14,12 @@ namespace SWC { namespace client { namespace Query { namespace Select {
 namespace Handlers {
 
 
-Common::Common(const Cb_t& cb, bool rsp_partials,
-               const Comm::IoContextPtr& io)
-        : valid_state(true), m_cb(cb), m_dispatcher_io(io),
-          m_notify(m_cb && rsp_partials),
-          m_sending_result(false) {
+Common::Common(Cb_t&& cb, bool rsp_partials,
+               const Comm::IoContextPtr& io) noexcept
+              : valid_state(true), 
+                m_cb(std::move(cb)), m_dispatcher_io(io),
+                m_notify(m_cb && rsp_partials),
+                m_sending_result(false) {
   buff_sz.store(Env::Clients::ref().cfg_recv_buff_sz->get());
   buff_ahead.store(Env::Clients::ref().cfg_recv_ahead->get());
   timeout.store(Env::Clients::ref().cfg_recv_timeout->get());

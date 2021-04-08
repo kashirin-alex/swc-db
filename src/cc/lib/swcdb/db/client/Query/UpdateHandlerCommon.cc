@@ -15,8 +15,9 @@ namespace SWC { namespace client { namespace Query { namespace Update {
 namespace Handlers {
 
 
-Common::Common(const Cb_t& cb, const Comm::IoContextPtr& io)
-                : valid_state(true), m_cb(cb), m_dispatcher_io(io) {
+Common::Common(Cb_t&& cb, const Comm::IoContextPtr& io) noexcept
+              : valid_state(true), 
+                m_cb(std::move(cb)), m_dispatcher_io(io) {
   timeout.store(Env::Clients::ref().cfg_send_timeout->get());
   timeout_ratio.store(Env::Clients::ref().cfg_send_timeout_ratio->get());
   buff_sz.store(Env::Clients::ref().cfg_send_buff_sz->get());

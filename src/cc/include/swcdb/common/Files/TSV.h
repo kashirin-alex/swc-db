@@ -337,7 +337,7 @@ class FileReader {
     if(err)
       return nullptr;
 
-    auto hdlr = std::make_shared<client::Query::Update::Handlers::Common>();
+    auto hdlr = client::Query::Update::Handlers::Common::make();
     hdlr->create(schema);
 
     for(auto& fd : fds) {
