@@ -10,7 +10,7 @@
 
 #include "swcdb/db/client/sql/Reader.h"
 #include "swcdb/db/Cells/SpecsScan.h"
-#include "swcdb/db/Cells/MutableMap.h"
+#include "swcdb/db/client/Query/UpdateHandlerBaseUnorderedMap.h"
 
 namespace SWC { namespace client { namespace SQL {
 
@@ -18,8 +18,7 @@ class QueryUpdate final : public Reader {
 
   public:
   QueryUpdate(const std::string& sql,
-              DB::Cells::MutableMap& columns,
-              DB::Cells::MutableMap& columns_onfractions,
+              const Query::Update::Handlers::BaseUnorderedMap::Ptr& hdlr,
               std::string& message);
 
   ~QueryUpdate();
@@ -41,8 +40,7 @@ class QueryUpdate final : public Reader {
 
   void read_flag(uint8_t& flag, bool& on_fraction);
 
-  DB::Cells::MutableMap& columns;
-  DB::Cells::MutableMap& columns_onfractions;
+  Query::Update::Handlers::BaseUnorderedMap::Ptr hdlr;
 };
 
 

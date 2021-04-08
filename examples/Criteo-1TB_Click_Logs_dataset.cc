@@ -20,7 +20,7 @@ THE DATA INPUT IS WITH DATA-SAMPLES AVAILABLE AT:
 
 
 #include "swcdb/db/client/Clients.h"
-#include "swcdb/db/client/Query/Update.h"
+#include "swcdb/db/client/Query/UpdateHandlerCommon.h"
 #include "swcdb/db/Protocol/Mngr/req/ColumnMng.h"
 #include "swcdb/common/Stats/FlowRate.h"
 #include <fstream>
@@ -71,11 +71,9 @@ void generate_criteo_logs() {
   fractions.resize(39 + separate_days);
   // value (clicks)
 
-
-  auto req = std::make_shared<SWC::client::Query::Update>();
+  auto hdlr = SWC::client::Query::Update::Handlers::Common::make();
   auto schema = create_column();
-  req->columns->create(schema);
-  auto col = req->columns->get_col(schema->cid);
+  auto& col = hdlr->create(schema);
 
 
   // day_1 == cells(199,563,535) unique(199,555,996)
@@ -117,7 +115,7 @@ void generate_criteo_logs() {
     cell.set_revision(SWC::Time::now_ns()); // accumulate duplicates & days
     col->add(cell);
 
-    req->commit_or_wait(col);
+    hdlr->commit_or_wait(col.get());
 
     /*
       on classifications groupings count
@@ -129,12 +127,12 @@ void generate_criteo_logs() {
         cell.key.free();
         cell.key.add(it, fractions.begin() + (++n2));
         col->add(cell);
-        req->commit_or_wait(col);
+        hdlr->commit_or_wait(col.get());
       }
     }
     */
 
-    resend_cells += req->result->get_resend_count();
+    resend_cells += hdlr->get_resend_count();
 
     added_bytes += cell.encoded_length();
     if(!(++added_cells % 100000)) {
@@ -143,7 +141,7 @@ void generate_criteo_logs() {
         << " cells=" << added_cells
         << " avg=" << ((SWC::Time::now_ns() - ts_progress) / 100000)
         << "ns/cell) ";
-      req->result->profile.print(SWC_LOG_OSTREAM << ' ');
+      hdlr->profile.print(SWC_LOG_OSTREAM << ' ');
       // SWC_LOG_OSTREAM << cell.to_string()
       SWC_LOG_OSTREAM << SWC_PRINT_CLOSE;
       ts_progress = SWC::Time::now_ns();
@@ -153,17 +151,17 @@ void generate_criteo_logs() {
 
   } // for days
 
-  req->commit_if_need();
-  req->wait();
+  hdlr->commit_if_need();
+  hdlr->wait();
 
-  resend_cells += req->result->get_resend_count();
+  resend_cells += hdlr->get_resend_count();
   SWC_ASSERT(added_cells && added_bytes);
 
   SWC::Common::Stats::FlowRate::Data rate(
     added_bytes, SWC::Time::now_ns() - ts);
   SWC_PRINT << std::endl << std::endl;
   rate.print_cells_statistics(SWC_LOG_OSTREAM, added_cells, resend_cells);
-  req->result->profile.display(SWC_LOG_OSTREAM);
+  hdlr->profile.display(SWC_LOG_OSTREAM);
   SWC_LOG_OSTREAM << SWC_PRINT_CLOSE;
 }
 

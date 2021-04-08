@@ -490,13 +490,12 @@ void ColumnHealthCheck::ColumnMerger::RangesMerger::handle(
 
   if(!merged.empty() &&
      !DB::Types::MetaColumn::is_master(main_range->cfg->cid)) {
-    auto updater = std::make_shared<client::Query::Update>();
+    auto hdlr = client::Query::Update::Handlers::Common::make();
     cid_t meta_cid = DB::Types::MetaColumn::get_sys_cid(
       main_range->cfg->key_seq,
       DB::Types::MetaColumn::get_range_type(main_range->cfg->cid));
-    updater->columns->create(
-        meta_cid, main_range->cfg->key_seq, 1, 0, DB::Types::Column::SERIAL);
-    auto col = updater->columns->get_col(meta_cid);
+    auto& col = hdlr->create(
+      meta_cid, main_range->cfg->key_seq, 1, 0, DB::Types::Column::SERIAL);
     for(auto& cell : col_merger->cells) {
       StaticBuffer v;
       cell->get_value(v);
@@ -517,8 +516,8 @@ void ColumnHealthCheck::ColumnMerger::RangesMerger::handle(
         }
       }
     }
-    updater->commit_if_need();
-    updater->wait();
+    hdlr->commit_if_need();
+    hdlr->wait();
   }
 
 

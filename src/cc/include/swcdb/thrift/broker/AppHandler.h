@@ -15,6 +15,8 @@
 #include <thrift/transport/TSocket.h>
 
 #include "swcdb/db/client/Query/SelectHandlerCommon.h"
+#include "swcdb/db/client/Query/UpdateHandlerCommon.h"
+
 
 namespace SWC {
 namespace thrift = apache::thrift;
@@ -188,30 +190,26 @@ class AppHandler final : virtual public BrokerIf {
   /* SQL UPDATE */
   void sql_update(const std::string& sql, const int64_t updater_id) override {
 
-    client::Query::Update::Ptr req = nullptr;
+    client::Query::Update::Handlers::Common::Ptr hdlr = nullptr;
     if(updater_id)
-      updater(updater_id, req);
+      updater(updater_id, hdlr);
     else
-      req = std::make_shared<client::Query::Update>();
+      hdlr = client::Query::Update::Handlers::Common::make();
 
     std::string message;
     uint8_t display_flags = 0;
     int err = Error::OK;
-    client::SQL::parse_update(
-      err, sql,
-      *req->columns.get(), *req->columns_onfractions.get(),
-      display_flags, message
-    );
+    client::SQL::parse_update(err, sql, hdlr, display_flags, message);
     if(err)
       Converter::exception(err, message);
 
     if(updater_id) {
-      req->commit_or_wait();
+      hdlr->commit_or_wait();
     } else {
-      req->commit();
-      req->wait();
+      client::Query::Update::commit(hdlr);
+      hdlr->wait();
     }
-    if((err = req->result->error()))
+    if((err = hdlr->error()))
       Converter::exception(err);
   }
 
@@ -364,45 +362,44 @@ class AppHandler final : virtual public BrokerIf {
         it != m_updaters.end();
         it = m_updaters.find(++id)
     );
-    m_updaters[id] = std::make_shared<client::Query::Update>();
+    m_updaters[id] = client::Query::Update::Handlers::Common::make();
     if(buffer_size)
-      m_updaters[id]->buff_sz = buffer_size;
+      m_updaters[id]->buff_sz.store(buffer_size);
     return id;
   }
 
   void updater_close(const int64_t id) override {
-    client::Query::Update:: Ptr req;
+    client::Query::Update::Handlers::Common::Ptr hdlr;
     {
       Core::MutexSptd::scope lock(m_mutex);
 
       auto it = m_updaters.find(id);
       if(it == m_updaters.end())
         Converter::exception(ERANGE, "Updater ID not found");
-      req = it->second;
+      hdlr = it->second;
       m_updaters.erase(it);
     }
-    updater_close(req);
+    updater_close(hdlr);
   }
 
   /* UPDATE */
   void update(const UCCells& cells, const int64_t updater_id) override  {
-    client::Query::Update::Ptr req = nullptr;
+    client::Query::Update::Handlers::Common::Ptr hdlr = nullptr;
     if(updater_id)
-      updater(updater_id, req);
+      updater(updater_id, hdlr);
     else
-      req = std::make_shared<client::Query::Update>();
+      hdlr = client::Query::Update::Handlers::Common::make();
 
     int err = Error::OK;
     DB::Cells::Cell dbcell;
     cid_t cid;
     for(auto& col_cells : cells) {
-      auto col = req->columns->get_col(cid = col_cells.first);
+      auto col = hdlr->get(cid = col_cells.first);
       if(!col) {
         auto schema = Env::Clients::get()->schemas->get(err, cid);
         if(err)
           Converter::exception(err);
-        req->columns->create(schema);
-        col = req->columns->get_col(cid);
+        col = hdlr->create(schema);
       }
       for(auto& cell : col_cells.second) {
         dbcell.flag = uint8_t(cell.f);
@@ -419,40 +416,39 @@ class AppHandler final : virtual public BrokerIf {
           : dbcell.set_value(cell.v);
 
         col->add(dbcell);
-        req->commit_or_wait(col);
+        hdlr->commit_or_wait(col.get());
       }
     }
 
     if(updater_id) {
-      req->commit_or_wait();
+      hdlr->commit_or_wait();
     } else {
-      req->commit();
-      req->wait();
+      client::Query::Update::commit(hdlr);
+      hdlr->wait();
     }
-    if((err = req->result->error()))
+    if((err = hdlr->error()))
       Converter::exception(err);
   }
 
   /* UPDATE-SERIAL */
   void update_serial(const UCCellsSerial& cells,
                      const int64_t updater_id) override {
-    client::Query::Update::Ptr req = nullptr;
+    client::Query::Update::Handlers::Common::Ptr hdlr = nullptr;
     if(updater_id)
-      updater(updater_id, req);
+      updater(updater_id, hdlr);
     else
-      req = std::make_shared<client::Query::Update>();
+      hdlr = client::Query::Update::Handlers::Common::make();
 
     int err = Error::OK;
     DB::Cells::Cell dbcell;
     cid_t cid;
     for(auto& col_cells : cells) {
-      auto col = req->columns->get_col(cid = col_cells.first);
+      auto col = hdlr->get(cid = col_cells.first);
       if(!col) {
         auto schema = Env::Clients::get()->schemas->get(err, cid);
         if(err)
           Converter::exception(err);
-        req->columns->create(schema);
-        col = req->columns->get_col(cid);
+        col = hdlr->create(schema);
       }
       for(auto& cell : col_cells.second) {
         dbcell.flag = uint8_t(cell.f);
@@ -508,17 +504,17 @@ class AppHandler final : virtual public BrokerIf {
           : dbcell.set_value(wfields.base, wfields.fill(), false);
 
         col->add(dbcell);
-        req->commit_or_wait(col);
+        hdlr->commit_or_wait(col.get());
       }
     }
 
     if(updater_id) {
-      req->commit_or_wait();
+      hdlr->commit_or_wait();
     } else {
-      req->commit();
-      req->wait();
+      client::Query::Update::commit(hdlr);
+      hdlr->wait();
     }
-    if((err = req->result->error()))
+    if((err = hdlr->error()))
       Converter::exception(err);
   }
 
@@ -530,7 +526,7 @@ class AppHandler final : virtual public BrokerIf {
   private:
 
   void updater_close() {
-    client::Query::Update:: Ptr req;
+    client::Query::Update::Handlers::Common::Ptr hdlr;
     for(;;) {
       {
         Core::MutexSptd::scope lock(m_mutex);
@@ -538,25 +534,27 @@ class AppHandler final : virtual public BrokerIf {
         if(it == m_updaters.end())
           break;
         m_updaters.erase(it);
-        req = it->second;
+        hdlr = it->second;
       }
-      try { updater_close(req); } catch(...) {}
+      try { updater_close(hdlr); } catch(...) {}
     }
   }
 
-  void updater(const int64_t id, client::Query::Update::Ptr& req) {
+  void updater(const int64_t id,
+               client::Query::Update::Handlers::Common::Ptr& hdlr) {
     Core::MutexSptd::scope lock(m_mutex);
 
     auto it = m_updaters.find(id);
     if(it == m_updaters.end())
       Converter::exception(ERANGE, "Updater ID not found");
-    req = it->second;
+    hdlr = it->second;
   }
 
-  void updater_close(const client::Query::Update::Ptr& req) {
-    req->commit_if_need();
-    req->wait();
-    int err = req->result->error();
+  void updater_close(
+              const client::Query::Update::Handlers::Common::Ptr& hdlr) {
+    hdlr->commit_if_need();
+    hdlr->wait();
+    int err = hdlr->error();
     if(err)
       Converter::exception(err);
   }
@@ -899,7 +897,7 @@ class AppHandler final : virtual public BrokerIf {
 
   Core::MutexSptd m_mutex;
   std::unordered_map<
-    int64_t, client::Query::Update::Ptr> m_updaters;
+    int64_t, client::Query::Update::Handlers::Common::Ptr> m_updaters;
 };
 
 

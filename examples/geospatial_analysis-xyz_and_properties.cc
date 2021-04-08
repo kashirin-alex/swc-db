@@ -9,7 +9,7 @@
 
 
 #include "swcdb/db/client/Clients.h"
-#include "swcdb/db/client/Query/Update.h"
+#include "swcdb/db/client/Query/UpdateHandlerCommon.h"
 #include "swcdb/db/Protocol/Mngr/req/ColumnMng.h"
 #include "swcdb/common/Stats/FlowRate.h"
 
@@ -29,16 +29,16 @@ void Settings::init_post_cmd_args() { }
 
 
 /*
-### [height, degC, Density, Electronegativity, Thermal Conductivity, latitude, longitude ] 
+### [height, degC, Density, Electronegativity, Thermal Conductivity, latitude, longitude ]
 
 # SQL - for execution with bin/swcdb shell #
 #-------------------------------------------
-select where col("geospatial_analysis-xyz_of_properties") = (
+select where col("geospatial_analysis-xyz_and_properties") = (
   cells=(
     [>="67000", >"5020", >="100",   >="",  >="",  >="20",   >=""]
       <=key<=
     [<="69000", >="",    <="1000",  >="",  >="",  <="160",  >=""]
-    limit=10 
+    limit=10
   )
 ) DISPLAY_STATS;
 #-------------------------------------------
@@ -102,16 +102,16 @@ const uint32_t deg_precision_base  = 1;      // ( 180*1 * 360*1 ) = 64800
 const uint32_t distance_precision_base = 10;  // ( 2000*10 )      = 20000
 /// total cells = 64800 * (20000 + 1)
 
-const uint32_t density_precision_base = 1000; 
+const uint32_t density_precision_base = 1000;
 
-const uint32_t degree_c_precision_base = 1000; 
+const uint32_t degree_c_precision_base = 1000;
 
-const uint32_t enegativity_precision_base = 1000; 
+const uint32_t enegativity_precision_base = 1000;
 
 const uint32_t tc_precision_base = 1000;  // Thermal Conductivity
 
 
-// [height, degC, Density, Electronegativity, Thermal Conductivity, latitude, longitude ] 
+// [height, degC, Density, Electronegativity, Thermal Conductivity, latitude, longitude ]
 // (value => image-id)
 
 void generate_sample_data() {
@@ -128,23 +128,23 @@ void generate_sample_data() {
 
   size_t lat_max = deg_precision_base * 179;
   size_t lng_max = deg_precision_base * 359 + deg_precision_base - 1;
-  
+
   size_t height_start = distance_precision_base * (6371-1371); // from center of the earth
   size_t height_end   = height_start + distance_precision_base * 2000;
-  
+
   std::random_device rd;
   std::mt19937 gen(rd());
 
   // random Density range
-  std::uniform_int_distribution<> density_rand(0, 40 * density_precision_base);     
-  // random Electronegativity range 
-  std::uniform_int_distribution<> enegativity_rand(0, 5 * enegativity_precision_base);    
+  std::uniform_int_distribution<> density_rand(0, 40 * density_precision_base);
+  // random Electronegativity range
+  std::uniform_int_distribution<> enegativity_rand(0, 5 * enegativity_precision_base);
   // random DegreeC range
-  std::uniform_int_distribution<> degree_c_rand(0, 1000 * degree_c_precision_base);  
-  // 5000 => zero level 
+  std::uniform_int_distribution<> degree_c_rand(0, 1000 * degree_c_precision_base);
+  // 5000 => zero level
   // random Thermal Conductivity range
-  std::uniform_int_distribution<> tc_rand(0, 2000 * tc_precision_base);             
-  // 1000 => zero level 
+  std::uniform_int_distribution<> tc_rand(0, 2000 * tc_precision_base);
+  // 1000 => zero level
 
   size_t img_id = 0;
   size_t density;
@@ -156,11 +156,10 @@ void generate_sample_data() {
   std::vector<std::string> fractions;
   fractions.resize(7);
 
-  
-  auto req = std::make_shared<SWC::client::Query::Update>();
+
+  auto hdlr = SWC::client::Query::Update::Handlers::Common::make();
   auto schema = create_column();
-  req->columns->create(schema);
-  auto col = req->columns->get_col(schema->cid);
+  auto& col = hdlr->create(schema);
 
   for(size_t height=height_start; height<=height_end; ++height) {
 
@@ -174,8 +173,8 @@ void generate_sample_data() {
         tc = tc_rand(gen);
 
         cell.key.free();
-        // [height, degC, Density, Electronegativity, Thermal Conductivity, latitude, longitude ] 
-        
+        // [height, degC, Density, Electronegativity, Thermal Conductivity, latitude, longitude ]
+
         fractions[0] = std::to_string(height);
         fractions[1] = std::to_string(deg_c);
         fractions[2] = std::to_string(density);
@@ -184,42 +183,42 @@ void generate_sample_data() {
         fractions[5] = std::to_string(lat);
         fractions[6] = std::to_string(lng);
         cell.key.add(fractions);
-        
+
         // value => image-id
         cell.set_value(std::to_string(++img_id));
         col->add(cell);
 
-        req->commit_or_wait(col);
+        hdlr->commit_or_wait(col.get());
 
         added_bytes += cell.encoded_length();
         if(!(++added_cells % 100000)) {
-          SWC_PRINT 
-            << "progress cells=" << added_cells 
+          SWC_PRINT
+            << "progress cells=" << added_cells
             << " avg=" << ((SWC::Time::now_ns() - ts_progress) / 100000)
             << "ns/cell";
-          req->result->profile.print(SWC_LOG_OSTREAM << ' ');
+          hdlr->profile.print(SWC_LOG_OSTREAM << ' ');
           SWC_LOG_OSTREAM << SWC_PRINT_CLOSE;
           SWC_PRINT << cell.to_string() << SWC_PRINT_CLOSE;
           ts_progress = SWC::Time::now_ns();
         }
       }
-      resend_cells += req->result->get_resend_count();
+      resend_cells += hdlr->get_resend_count();
 
     }
 
   }
 
-  req->commit_if_need();
-  req->wait();
+  hdlr->commit_if_need();
+  hdlr->wait();
 
-  resend_cells += req->result->get_resend_count();
+  resend_cells += hdlr->get_resend_count();
   SWC_ASSERT(added_cells && added_bytes);
-  
+
   SWC::Common::Stats::FlowRate::Data rate(
     added_bytes, SWC::Time::now_ns() - ts);
   SWC_PRINT << std::endl << std::endl;
   rate.print_cells_statistics(SWC_LOG_OSTREAM, added_cells, resend_cells);
-  req->result->profile.display(SWC_LOG_OSTREAM);
+  hdlr->profile.display(SWC_LOG_OSTREAM);
   SWC_LOG_OSTREAM << SWC_PRINT_CLOSE;
 }
 
@@ -271,7 +270,7 @@ SWC::DB::Schema::Ptr create_column() {
 
 
 int main(int argc, char** argv) {
-    
+
   SWC::Env::Config::init(argc, argv);
 
   SWC::Env::Clients::init(

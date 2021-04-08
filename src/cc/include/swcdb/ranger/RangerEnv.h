@@ -13,6 +13,7 @@
 
 #include "swcdb/db/client/Query/Select.h"
 #include "swcdb/db/client/Query/Update.h"
+#include "swcdb/db/client/Query/UpdateHandlerCommon.h"
 
 
 namespace SWC {
@@ -113,8 +114,8 @@ class Rgr final {
     return m_env->_columns;
   }
 
-  static client::Query::Update* updater() noexcept {
-    return m_env->_updater.get();
+  static client::Query::Update::Handlers::Common* updater() noexcept {
+    return m_env->_update_hdlr.get();
   }
 
   static void reset() noexcept {
@@ -137,12 +138,12 @@ class Rgr final {
   const SWC::Config::Property::V_GINT32::Ptr  cfg_blk_cells;
   const SWC::Config::Property::V_GENUM::Ptr   cfg_blk_enc;
 
-  Comm::IoContextPtr          app_io;
-  Comm::IoContextPtr          mnt_io;
-  Ranger::Compaction*         _compaction;
-  Ranger::Columns*            _columns;
-  client::Query::Update::Ptr  _updater;
-  Common::Resources           _resources;
+  Comm::IoContextPtr                            app_io;
+  Comm::IoContextPtr                            mnt_io;
+  Ranger::Compaction*                           _compaction;
+  Ranger::Columns*                              _columns;
+  client::Query::Update::Handlers::Common::Ptr  _update_hdlr;
+  Common::Resources                             _resources;
 
   explicit Rgr();
 
@@ -209,16 +210,19 @@ Rgr::Rgr()
       app_io(
         Comm::IoContext::make(
           "Ranger",
-          SWC::Env::Config::settings()->get_i32("swc.rgr.handlers"))
+          SWC::Env::Config::settings()->get_i32(
+            "swc.rgr.handlers"))
       ),
       mnt_io(
         Comm::IoContext::make(
           "Maintenance",
-          SWC::Env::Config::settings()->get_i32("swc.rgr.maintenance.handlers"))
+          SWC::Env::Config::settings()->get_i32(
+            "swc.rgr.maintenance.handlers"))
       ),
       _compaction(nullptr),
       _columns(new Ranger::Columns()),
-      _updater(std::make_shared<client::Query::Update>()),
+      _update_hdlr(
+        client::Query::Update::Handlers::Common::make(nullptr, app_io)),
       _resources(
         app_io,
         SWC::Env::Config::settings()->get<SWC::Config::Property::V_GINT32>(
@@ -250,8 +254,8 @@ void Rgr::shuttingdown() {
   m_env->_compaction->stop();
   m_env->mnt_io->stop();
 
-  m_env->_updater->commit();
-  m_env->_updater->wait();
+  m_env->_update_hdlr->commit_if_need();
+  m_env->_update_hdlr->wait();
 
   m_env->_columns->unload_all(false);
 

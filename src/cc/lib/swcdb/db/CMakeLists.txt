@@ -10,7 +10,6 @@ set(swcdb_sources
   Cells/Mutable.cc
   Cells/Result.cc
   Cells/MutableVec.cc
-  Cells/MutableMap.cc
 
   Cells/Interval.cc
   Cells/CellKeyVec.cc
@@ -80,6 +79,9 @@ set(swcdb_sources
   client/ContextRanger.cc
   client/rgr/Rangers.cc
   client/mngr/Groups.cc
+  client/Query/UpdateHandlerBaseColumnMutable.cc
+  client/Query/UpdateHandlerBaseUnorderedMap.cc
+  client/Query/UpdateHandlerCommon.cc
   client/Query/Update.cc
   client/Query/SelectHandlerBaseUnorderedMap.cc
   client/Query/SelectHandlerBaseSingleColumn.cc

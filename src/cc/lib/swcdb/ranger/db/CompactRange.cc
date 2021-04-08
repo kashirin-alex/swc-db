@@ -853,7 +853,7 @@ void CompactRange::split(rid_t new_rid, uint32_t split_at) {
 
   new_range->expand_and_align(false,
     [col, new_range, ptr=shared()]
-    (const client::Query::Update::Result::Ptr&) {
+    (const client::Query::Update::Handlers::Common::Ptr&) {
       SWC_LOGF(LOG_INFO,
         "COMPACT-SPLIT %lu/%lu unloading new-rid=%lu",
         col->cfg->cid, ptr->range->rid, new_range->rid);
@@ -878,7 +878,7 @@ void CompactRange::split(rid_t new_rid, uint32_t split_at) {
   });
 
   range->expand_and_align(true,
-    [ts, ptr=shared()] (const client::Query::Update::Result::Ptr&) {
+    [ts, ptr=shared()] (const client::Query::Update::Handlers::Common::Ptr&) {
       SWC_LOG_OUT(LOG_INFO,
         SWC_LOG_PRINTF("COMPACT-SPLITTED %lu/%lu took=%ldns new-end=",
           ptr->range->cfg->cid, ptr->range->rid, Time::now_ns() - ts);
@@ -892,7 +892,7 @@ void CompactRange::apply_new(bool clear) {
   int err = Error::OK;
   range->apply_new(err, cellstores, fragments_old,
     [clear, ptr=shared()]
-    (const client::Query::Update::Result::Ptr&) {
+    (const client::Query::Update::Handlers::Common::Ptr&) {
       Env::Rgr::maintenance_post([clear, ptr](){ ptr->finished(clear); });
   });
   if(err)

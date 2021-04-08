@@ -6,6 +6,7 @@
 
 #include "swcdb/utils/cli/Shell_DbClient.h"
 #include "swcdb/db/client/Query/SelectHandlerCommon.h"
+#include "swcdb/db/client/Query/UpdateHandlerCommon.h"
 
 #include "swcdb/common/Stats/FlowRate.h"
 
@@ -387,33 +388,26 @@ bool DbClient::update(std::string& cmd) {
   int64_t ts = Time::now_ns();
   uint8_t display_flags = 0;
 
-  auto req = std::make_shared<client::Query::Update>();
+  auto hdlr = client::Query::Update::Handlers::Common::make();
   std::string message;
-  client::SQL::parse_update(
-    err, cmd,
-    *req->columns.get(), *req->columns_onfractions.get(),
-    display_flags, message
-  );
+  client::SQL::parse_update(err, cmd, hdlr, display_flags, message);
   if(err)
     return error(message);
 
-  size_t cells_count = req->columns->size()
-                     + req->columns_onfractions->size();
-  size_t cells_bytes = req->columns->size_bytes()
-                     + req->columns_onfractions->size_bytes();
+  size_t cells_count = hdlr->size();
+  size_t cells_bytes = hdlr->size_bytes();
 
-  req->commit();
-  req->wait();
+  client::Query::Update::commit(hdlr);
+  hdlr->wait();
 
-  // req->result->errored
   if(display_flags & DB::DisplayFlag::STATS)
     display_stats(
-      req->result->profile,
+      hdlr->profile,
       SWC::Time::now_ns() - ts,
       cells_bytes,
       cells_count
     );
-  if(err)
+  if((err=hdlr->error()))
     return error(message);
   return true;
 }
@@ -446,19 +440,19 @@ bool DbClient::load(std::string& cmd) {
   if(err)
     return error(reader.message);
 
-  auto res = reader.read_and_load();
+  auto hdlr = reader.read_and_load();
 
   if(display_flags & DB::DisplayFlag::STATS) {
     client::Query::Profiling tmp;
     display_stats(
-      res ? res->profile : tmp,
+      hdlr ? hdlr->profile : tmp,
       SWC::Time::now_ns() - ts,
       reader.cells_bytes,
       reader.cells_count,
       reader.resend_cells
     );
   }
-  if(err || (err = reader.err)) {
+  if(err || (err = reader.err) || (err = hdlr->error())) {
     if(reader.message.empty()) {
       reader.message.append(Error::get_text(err));
       reader.message.append("\n");

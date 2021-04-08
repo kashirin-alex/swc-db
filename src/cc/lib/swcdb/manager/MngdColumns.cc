@@ -11,6 +11,7 @@
 #include "swcdb/db/client/Query/Select.h"
 #include "swcdb/db/client/Query/Update.h"
 #include "swcdb/db/client/Query/SelectHandlerCommon.h"
+#include "swcdb/db/client/Query/UpdateHandlerCommon.h"
 
 
 namespace SWC { namespace Manager {
@@ -371,10 +372,10 @@ void MngdColumns::remove(const DB::Schema::Ptr& schema,
         SWC_LOG_OSTREAM << "\n]";
       );
 
-      auto updater = std::make_shared<client::Query::Update>(
+      auto updater = client::Query::Update::Handlers::Common::make(
         [this, req_id, schema, meta_cid]
-        (const client::Query::Update::Result::Ptr& res) {
-          int err = res->error();
+        (const client::Query::Update::Handlers::Common::Ptr& hdlr) {
+          int err = hdlr->error();
           if(err) {
             SWC_LOGF(LOG_WARN,
               "Column(cid=%lu meta_cid=%lu) "
@@ -386,14 +387,13 @@ void MngdColumns::remove(const DB::Schema::Ptr& schema,
         },
         Env::Mngr::io()
       );
-      updater->result->completion.increment();
-      updater->columns->create(
+      updater->completion.increment();
+      auto& col = updater->create(
         meta_cid, schema->col_seq, 1, 0, DB::Types::Column::SERIAL);
-      auto col = updater->columns->get_col(meta_cid);
       for(auto cell : cells) {
         cell->flag = DB::Cells::DELETE;
         col->add(*cell);
-        updater->commit_or_wait(col, 1);
+        updater->commit_or_wait(col.get(), 1);
       }
       updater->response(Error::OK);
     },

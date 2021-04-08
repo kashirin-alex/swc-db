@@ -50,8 +50,7 @@ void parse_select(int& err, const std::string& sql,
                   uint8_t& display_flags, std::string& message);
 
 void parse_update(int& err, const std::string& sql,
-                  DB::Cells::MutableMap& columns,
-                  DB::Cells::MutableMap& columns_onfractions,
+                  const Query::Update::Handlers::BaseUnorderedMap::Ptr& hdlr,
                   uint8_t& display_flags, std::string& message);
 
 void parse_list_columns(int& err, const std::string& sql,

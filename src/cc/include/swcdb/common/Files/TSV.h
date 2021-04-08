@@ -333,32 +333,32 @@ class FileReader {
     }
   }
 
-  client::Query::Update::Result::Ptr read_and_load() {
+  client::Query::Update::Handlers::Common::Ptr read_and_load() {
     if(err)
       return nullptr;
 
-    auto updater = std::make_shared<client::Query::Update>();
-    updater->columns->create(schema);
+    auto hdlr = std::make_shared<client::Query::Update::Handlers::Common>();
+    hdlr->create(schema);
 
     for(auto& fd : fds) {
-      read(updater, fd);
+      read(hdlr, fd);
       if(err)
         break;
     }
 
-    updater->commit_if_need();
-    updater->wait();
-    resend_cells += updater->result->get_resend_count();
-    return updater->result;
+    hdlr->commit_if_need();
+    hdlr->wait();
+    resend_cells += hdlr->get_resend_count();
+    return hdlr;
   }
 
-  void read(const client::Query::Update::Ptr& updater,
+  void read(const client::Query::Update::Handlers::Common::Ptr& hdlr,
             FS::SmartFd::Ptr smartfd) {
     size_t length = interface->get_fs()->length(err, smartfd->filepath());
     if(err)
       return;
 
-    auto col = updater->columns->get_col(cid);
+    auto colp = hdlr->get_base_ptr(cid);
 
     std::unique_ptr<Core::BufferStreamIn> instream;
     const std::string& path = smartfd->filepath();
@@ -439,11 +439,11 @@ class FileReader {
           ok = read(&ptr, &remain, has_ts, schema->col_type, cell);
           cell_pos += cell_mark-remain;
           if(ok) {
-            col->add(cell);
+            colp->add(cell);
             ++cells_count;
             cells_bytes += cell.encoded_length();
-            if(cells_bytes - current_bytes >= updater->buff_sz) {
-              updater->commit_or_wait(col);
+            if(cells_bytes - current_bytes >= hdlr->buff_sz) {
+              hdlr->commit_or_wait(colp);
               current_bytes = cells_bytes;
             }
           } else {
@@ -465,7 +465,7 @@ class FileReader {
         break;
       }
       buffer_read.free();
-      resend_cells += updater->result->get_resend_count();
+      resend_cells += hdlr->get_resend_count();
     } while(offset < length);
 
     if(smartfd->valid())

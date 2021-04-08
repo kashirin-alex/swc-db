@@ -273,7 +273,7 @@ void Range::remove(const Callback::ColumnDelete::Ptr& req) {
   blocks.commitlog.stopping.store(true);
 
   on_change(true, [req, range=shared_from_this()]
-    (const client::Query::Update::Result::Ptr&) {
+    (const client::Query::Update::Handlers::Common::Ptr&) {
       int err = Error::OK;
 
       range->wait();
@@ -375,9 +375,10 @@ bool Range::compact_required() {
   return m_require_compact;
 }
 
-void Range::on_change(bool removal,
-                      const client::Query::Update::Cb_t& cb,
-                      const DB::Cell::Key* old_key_begin) {
+void Range::on_change(
+        bool removal,
+        const client::Query::Update::Handlers::Common::Cb_t& cb,
+        const DB::Cell::Key* old_key_begin) {
   if(cfg->range_type == DB::Types::Range::MASTER) {
     // update manager-root
     // Mngr::RangeUpdated
@@ -385,12 +386,13 @@ void Range::on_change(bool removal,
     return;
   }
 
-  auto updater = std::make_shared<client::Query::Update>(cb, Env::Rgr::io());
+  // singleColumn-base
+  auto hdlr = client::Query::Update::Handlers::Common::make(
+    cb, Env::Rgr::io());
   // Env::Rgr::updater(); require an updater with cb on cell-base
 
-  updater->columns->create(
+  auto& col = hdlr->create(
     cfg->meta_cid, cfg->key_seq, 1, 0, DB::Types::Column::SERIAL);
-  auto col = updater->columns->get_col(cfg->meta_cid);
 
   DB::Cells::Cell cell;
   auto cid_f(std::to_string(cfg->cid));
@@ -449,16 +451,20 @@ void Range::on_change(bool removal,
       col->add(cell);
     }
   }
-  updater->commit(col);
 
-  // INSERT master-range(col-{1,4}), key[cid+m_interval(data(cid)+key)], value[rid]
-  // INSERT meta-range(col-{5,8}), key[cid+m_interval(key)], value[rid]
+  client::Query::Update::commit(hdlr, col.get());
+  /* INSERT master-range(
+      col-{1,4}), key[cid+m_interval(data(cid)+key)], value[rid]
+     INSERT meta-range(
+       col-{5,8}), key[cid+m_interval(key)], value[rid]
+  */
 }
 
-void Range::apply_new(int &err,
-                      CellStore::Writers& w_cellstores,
-                      CommitLog::Fragments::Vec& fragments_old,
-                      const client::Query::Update::Cb_t& cb) {
+void Range::apply_new(
+      int &err,
+      CellStore::Writers& w_cellstores,
+      CommitLog::Fragments::Vec& fragments_old,
+      const client::Query::Update::Handlers::Common::Cb_t& cb) {
   {
     std::scoped_lock lock(m_mutex);
     blocks.apply_new(err, w_cellstores, fragments_old);
@@ -469,8 +475,9 @@ void Range::apply_new(int &err,
     expand_and_align(true, cb);
 }
 
-void Range::expand_and_align(bool w_chg_chk,
-                             const client::Query::Update::Cb_t& cb) {
+void Range::expand_and_align(
+      bool w_chg_chk,
+      const client::Query::Update::Handlers::Common::Cb_t& cb) {
   DB::Cell::Key     old_key_begin;
   DB::Cell::Key     key_end;
   DB::Cell::KeyVec  aligned_min;
@@ -642,8 +649,8 @@ void Range::load(int &err, const Callback::RangeLoad::Ptr& req) {
   if(is_initial_column_range) {
     RangeData::save(err, blocks.cellstores);
     return on_change(false, [req, range=shared_from_this()]
-      (const client::Query::Update::Result::Ptr& res) {
-        range->loaded(res ? res->error() : Error::OK, req);
+      (const client::Query::Update::Handlers::Common::Ptr& hdlr) {
+        range->loaded(hdlr->error(), req);
       }
     );
   }
@@ -676,8 +683,8 @@ void Range::check_meta(const Query::Select::CheckMeta::Ptr& hdlr) {
         SWC_LOG_OSTREAM << "\n\tmeta-cid(" << hdlr->cid << ")=");
     );
     return on_change(false, [req=hdlr->req, range=shared_from_this()]
-      (const client::Query::Update::Result::Ptr& res) {
-        range->loaded(res ? res->error() : Error::OK, req);
+      (const client::Query::Update::Handlers::Common::Ptr& hdlr) {
+        range->loaded(hdlr->error(), req);
       }
     );
   }
@@ -753,38 +760,38 @@ void Range::check_meta(const Query::Select::CheckMeta::Ptr& hdlr) {
   if(synced)
     return loaded(err, hdlr->req);
 
-  auto updater = std::make_shared<client::Query::Update>(
-    [this, req=hdlr->req]
-    (const client::Query::Update::Result::Ptr& res) {
+  //singleColumn-base
+  auto updater = client::Query::Update::Handlers::Common::make(
+    [req=hdlr->req, range=shared_from_this()]
+    (const client::Query::Update::Handlers::Common::Ptr& hdlr) {
       if(Env::Rgr::is_shuttingdown() ||
           (Env::Rgr::is_not_accepting() &&
-           DB::Types::MetaColumn::is_data(cfg->cid))) {
-        return loaded(Error::SERVER_SHUTTING_DOWN, req);
+           DB::Types::MetaColumn::is_data(range->cfg->cid))) {
+        return range->loaded(Error::SERVER_SHUTTING_DOWN, req);
       }
-      int err = res->error();
+      int err = hdlr->error();
       if(err) {
         SWC_LOGF(LOG_WARN,
           "Range MetaData FIX auto-del range-%lu/%lu err=%d(%s)",
-          cfg->cid, rid, err, Error::get_text(err));
-        return loaded(Error::RGR_NOT_LOADED_RANGE, req);
+          range->cfg->cid, range->rid, err, Error::get_text(err));
+        return range->loaded(Error::RGR_NOT_LOADED_RANGE, req);
       }
-      return on_change(false, [req, range=shared_from_this()]
-        (const client::Query::Update::Result::Ptr& res) {
-          range->loaded(res ? res->error() : Error::OK, req);
+      return range->on_change(false, [req, range]
+        (const client::Query::Update::Handlers::Common::Ptr& hdlr) {
+          range->loaded(hdlr->error(), req);
         }
       );
     },
     Env::Rgr::io()
   );
-  updater->result->completion.increment();
-  updater->columns->create(
+  updater->completion.increment();
+  auto& col = updater->create(
     cfg->meta_cid, cfg->key_seq, 1, 0, DB::Types::Column::SERIAL);
-  auto col = updater->columns->get_col(cfg->meta_cid);
   for(auto cell : cells) {
     cell->flag = DB::Cells::DELETE;
     cell->free();
     col->add(*cell);
-    updater->commit_or_wait(col, 1);
+    updater->commit_or_wait(col.get(), 1);
   }
   updater->response(Error::OK);
 }
@@ -954,9 +961,9 @@ void Range::_run_add_queue() {
     if(aligned_chg) {
       return on_change(false,
         [req, range=shared_from_this()]
-        (const client::Query::Update::Result::Ptr& res) {
+        (const client::Query::Update::Handlers::Common::Ptr& hdlr) {
           if(!req->rsp.err)
-            req->rsp.err = res->error();
+            req->rsp.err = hdlr->error();
           req->response();
           delete req;
           range->blocks.processing_decrement();

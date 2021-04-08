@@ -13,6 +13,7 @@
 #include "swcdb/db/client/Query/Update.h"
 #include "swcdb/db/Cells/CellValueSerialFields.h"
 #include "swcdb/db/client/Query/SelectHandlerCommon.h"
+#include "swcdb/db/client/Query/UpdateHandlerCommon.h"
 
 #include "swcdb/common/Stats/FlowRate.h"
 
@@ -607,12 +608,11 @@ void update_data(const std::vector<DB::Schema::Ptr>& schemas, uint8_t flag,
   auto cell_encoder = DB::Types::Encoder(settings->get_genum(
     "gen-cell-encoding"));
 
-  std::vector<DB::Cells::ColCells::Ptr> colms;
-  auto req = std::make_shared<client::Query::Update>();
-  for(auto& schema : schemas) {
-    req->columns->create(schema);
-    colms.push_back(req->columns->get_col(schema->cid));
-  }
+  std::vector<client::Query::Update::Handlers::Base::Column*> colms;
+
+  auto hdlr = client::Query::Update::Handlers::Common::make();
+  for(auto& schema : schemas)
+    colms.push_back(hdlr->create(schema).get());
 
   size_t added_count = 0;
   size_t resend_cells = 0;
@@ -686,10 +686,10 @@ void update_data(const std::vector<DB::Schema::Ptr>& schemas, uint8_t flag,
           ++added_count;
           added_bytes += cell.encoded_length();
           if(cellatime) {
-            req->commit();
-            req->wait();
+            client::Query::Update::commit(hdlr, col);
+            hdlr->wait();
           } else {
-            req->commit_or_wait();
+            hdlr->commit_or_wait();
           }
         }
 
@@ -700,27 +700,27 @@ void update_data(const std::vector<DB::Schema::Ptr>& schemas, uint8_t flag,
             << " cells=" << added_count
             << " bytes=" << added_bytes
             << " avg=" << ts_progress/progress << "ns/cell) ";
-          req->result->profile.finished();
-          req->result->profile.print(SWC_LOG_OSTREAM);
+          hdlr->profile.finished();
+          hdlr->profile.print(SWC_LOG_OSTREAM);
           SWC_LOG_OSTREAM << SWC_PRINT_CLOSE;
 
           ts_progress = Time::now_ns();
         }
       }
-      resend_cells += req->result->get_resend_count();
+      resend_cells += hdlr->get_resend_count();
     }
   }
 
-  req->commit_if_need();
-  req->wait();
+  hdlr->commit_if_need();
+  hdlr->wait();
 
-  resend_cells += req->result->get_resend_count();
+  resend_cells += hdlr->get_resend_count();
   SWC_ASSERT(added_count && added_bytes);
 
   Common::Stats::FlowRate::Data rate(added_bytes, Time::now_ns() - ts);
   SWC_PRINT << std::endl << std::endl;
   rate.print_cells_statistics(SWC_LOG_OSTREAM, added_count, resend_cells);
-  req->result->profile.display(SWC_LOG_OSTREAM);
+  hdlr->profile.display(SWC_LOG_OSTREAM);
   SWC_LOG_OSTREAM << SWC_PRINT_CLOSE;
 }
 

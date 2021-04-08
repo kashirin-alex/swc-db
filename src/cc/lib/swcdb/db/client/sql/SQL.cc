@@ -80,10 +80,9 @@ void parse_select(int& err, const std::string& sql,
 }
 
 void parse_update(int& err, const std::string& sql,
-                  DB::Cells::MutableMap& columns,
-                  DB::Cells::MutableMap& columns_onfractions,
+                  const Query::Update::Handlers::BaseUnorderedMap::Ptr& hdlr,
                   uint8_t& display_flags, std::string& message) {
-  QueryUpdate parser(sql, columns, columns_onfractions, message);
+  QueryUpdate parser(sql, hdlr, message);
   err = parser.parse_update();
   if(!err)
     parser.parse_display_flags(display_flags);
@@ -149,9 +148,7 @@ void parse_dump(int& err, const std::string& sql,
 void parse_load(int& err, const std::string& sql,
                 std::string& fs, std::string& filepath, cid_t& cid,
                 uint8_t& display_flags, std::string& message) {
-  DB::Cells::MutableMap columns;
-  DB::Cells::MutableMap columns_onfractions;
-  QueryUpdate parser(sql, columns, columns_onfractions, message);
+  QueryUpdate parser(sql, nullptr, message);
   err = parser.parse_load(fs, filepath, cid);
   if(!err)
     parser.parse_display_flags(display_flags);

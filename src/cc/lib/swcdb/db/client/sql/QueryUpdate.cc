@@ -20,13 +20,11 @@ namespace {
   static const uint8_t  LEN_LOAD = 4;
 }
 
-QueryUpdate::QueryUpdate(const std::string& sql,
-                         DB::Cells::MutableMap& columns,
-                         DB::Cells::MutableMap& columns_onfractions,
-                         std::string& message)
-                        : Reader(sql, message),
-                          columns(columns),
-                          columns_onfractions(columns_onfractions) {
+QueryUpdate::QueryUpdate(
+        const std::string& sql,
+        const Query::Update::Handlers::BaseUnorderedMap::Ptr& hdlr,
+        std::string& message)
+        : Reader(sql, message), hdlr(hdlr) {
 }
 
 QueryUpdate::~QueryUpdate() {}
@@ -48,7 +46,7 @@ int QueryUpdate::parse_update() {
 }
 
 int QueryUpdate::parse_load(std::string& fs, std::string& filepath,
-                          cid_t& cid) {
+                            cid_t& cid) {
   bool token = false;
 
   seek_space();
@@ -169,10 +167,10 @@ void QueryUpdate::read_cells() {
       expect_token(")", 1, bracket);
       if(err)
         return;
-      if(on_fraction)
-        columns_onfractions.add(cid, cell);
-      else
-        columns.add(cid, cell);
+      //if(on_fraction) // not impl.
+      //  hdlr->add(cid, cell);
+      //else
+      hdlr->add(cid, cell);
     }
   }
 }
@@ -198,7 +196,7 @@ void QueryUpdate::read_cell(cid_t& cid, DB::Cells::Cell& cell,
   if(err)
     return;
   cid = schema->cid;
-  columns.create(schema);
+  hdlr->create(schema);
 
 
   read_key(cell.key);

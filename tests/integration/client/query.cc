@@ -13,6 +13,7 @@
 #include "swcdb/db/client/Query/Update.h"
 #include "swcdb/db/Cells/CellValueSerialFields.h"
 #include "swcdb/db/client/Query/SelectHandlerCommon.h"
+#include "swcdb/db/client/Query/UpdateHandlerCommon.h"
 
 
 namespace SWC {
@@ -285,22 +286,22 @@ class Test {
 
     expect_empty_column();
 
-    auto req = std::make_shared<client::Query::Update>(
-      [this](const client::Query::Update::Result::Ptr& result) {
+    auto hdlr = client::Query::Update::Handlers::Common::make(
+      [this](const client::Query::Update::Handlers::Common::Ptr& _hdlr) {
         SWC_PRINT << "query_insert: \n";
-        result->profile.print(SWC_LOG_OSTREAM);
+        _hdlr->profile.print(SWC_LOG_OSTREAM);
         SWC_LOG_OSTREAM << SWC_PRINT_CLOSE;
 
-        SWC_ASSERT(!result->error());
+        SWC_ASSERT(!_hdlr->error());
         expect_one_at_offset();
         query_select(0, 0);
       }
     );
 
-    req->result->completion.increment();
+    hdlr->completion.increment();
 
-    req->columns->create(schema);
-    auto col = req->columns->get_col(schema->cid);
+
+    auto& col = hdlr->create(schema);
 
     DB::Cells::Cell cell;
     cell.flag = DB::Cells::INSERT;
@@ -317,11 +318,11 @@ class Test {
             apply_cell_value(cell);
           }
           col->add(cell);
-          req->commit_or_wait(col, 1);
+          hdlr->commit_or_wait(col.get(), 1);
         }
       }
     }
-    req->response(Error::OK);
+    hdlr->response(Error::OK);
   }
 
 
@@ -384,13 +385,13 @@ class Test {
   void query_delete() {
     SWC_LOG(LOG_DEBUG, "query_delete");
 
-    auto req = std::make_shared<client::Query::Update>(
-      [this](const client::Query::Update::Result::Ptr& result) {
+    auto hdlr = client::Query::Update::Handlers::Common::make(
+      [this](const client::Query::Update::Handlers::Common::Ptr& hdlr) {
         SWC_PRINT << "query_delete: \n";
-        result->profile.print(SWC_LOG_OSTREAM);
+        hdlr->profile.print(SWC_LOG_OSTREAM);
         SWC_LOG_OSTREAM << SWC_PRINT_CLOSE;
 
-        SWC_ASSERT(!result->error());
+        SWC_ASSERT(!hdlr->error());
         expect_empty_column();
 
         delete_column([this]() {
@@ -402,8 +403,8 @@ class Test {
         });
       }
     );
-    req->columns->create(schema);
-    auto col = req->columns->get_col(schema->cid);
+
+    auto& col = hdlr->create(schema);
 
     DB::Cells::Cell cell;
     cell.flag = DB::Cells::DELETE;
@@ -413,10 +414,10 @@ class Test {
       for(uint32_t f=0; f<nfractions; ++f) {
         apply_cell_key(cell.key, i, f);
         col->add(cell);
-        req->commit_or_wait(col);
+        hdlr->commit_or_wait(col.get());
       }
     }
-    req->commit_if_need();
+    hdlr->commit_if_need();
   }
 };
 

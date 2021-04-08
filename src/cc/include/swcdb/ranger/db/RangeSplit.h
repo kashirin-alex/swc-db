@@ -99,7 +99,7 @@ class RangeSplit final {
     std::promise<void>  r_promise;
     new_range->expand_and_align(false,
       [this, col, new_range, await=&r_promise]
-      (const client::Query::Update::Result::Ptr&) {
+      (const client::Query::Update::Handlers::Common::Ptr&) {
         SWC_LOGF(LOG_INFO,
           "COMPACT-SPLIT RANGE %lu/%lu unloading new-rid=%lu",
           col->cfg->cid, range->rid, new_range->rid);
@@ -122,7 +122,7 @@ class RangeSplit final {
         });
 
         range->expand_and_align(true,
-        [await] (const client::Query::Update::Result::Ptr&) {
+        [await] (const client::Query::Update::Handlers::Common::Ptr&) {
           await->set_value();
         });
     });
