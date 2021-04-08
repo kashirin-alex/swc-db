@@ -79,7 +79,7 @@ class Base : public std::enable_shared_from_this<Base> {
 
   Base() noexcept
       : state_error(Error::OK), completion(0),
-        timeout(0), timeout_ratio(0), buff_sz(0), buff_ahead(0) {
+        timeout(0), timeout_ratio(1000), buff_sz(0), buff_ahead(0) {
   }
 
   virtual ~Base() { }
