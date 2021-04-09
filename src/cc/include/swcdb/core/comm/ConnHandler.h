@@ -102,13 +102,13 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   virtual void read(uint8_t** bufp, size_t* remainp, asio::error_code& ec) = 0;
 
   virtual void do_async_write(
-      const std::vector<asio::const_buffer>& buffers,
-      const std::function<void(const asio::error_code&, uint32_t)>&)
+      std::vector<asio::const_buffer>&& buffers,
+      std::function<void(const asio::error_code&, uint32_t)>&& hdlr)
       noexcept = 0;
 
   virtual void do_async_read(
       uint8_t* data, uint32_t sz,
-      const std::function<void(const asio::error_code&, size_t)>& hdlr)
+      std::function<void(const asio::error_code&, size_t)>&& hdlr)
       noexcept = 0;
 
   void disconnected();
@@ -174,13 +174,13 @@ class ConnHandlerPlain final : public ConnHandler {
   void read(uint8_t** bufp, size_t* remainp, asio::error_code& ec) override;
 
   void do_async_write(
-    const std::vector<asio::const_buffer>& buffers,
-    const std::function<void(const asio::error_code&, uint32_t)>& hdlr)
+    std::vector<asio::const_buffer>&& buffers,
+    std::function<void(const asio::error_code&, uint32_t)>&& hdlr)
     noexcept override;
 
   void do_async_read(
     uint8_t* data, uint32_t sz,
-    const std::function<void(const asio::error_code&, size_t)>& hdlr)
+    std::function<void(const asio::error_code&, size_t)>&& hdlr)
     noexcept override;
 
   private:
@@ -204,14 +204,14 @@ class ConnHandlerSSL final : public ConnHandler {
   bool is_open() const noexcept override;
 
   void handshake(SocketSSL::handshake_type typ,
-                 const std::function<void(const asio::error_code&)>& cb)
+                 std::function<void(const asio::error_code&)>&& cb)
                  noexcept;
 
   void handshake(SocketSSL::handshake_type typ,
                  asio::error_code& ec) noexcept;
 
   void set_verify(
-    const std::function<bool(bool, asio::ssl::verify_context&)>& cb)
+    std::function<bool(bool, asio::ssl::verify_context&)>&& cb)
     noexcept;
 
   protected:
@@ -221,13 +221,13 @@ class ConnHandlerSSL final : public ConnHandler {
   void read(uint8_t** bufp, size_t* remainp, asio::error_code& ec) override;
 
   void do_async_write(
-    const std::vector<asio::const_buffer>& buffers,
-    const std::function<void(const asio::error_code&, uint32_t)>& hdlr)
+    std::vector<asio::const_buffer>&& buffers,
+    std::function<void(const asio::error_code&, uint32_t)>&& hdlr)
     noexcept override;
 
   void do_async_read(
     uint8_t* data, uint32_t sz,
-    const std::function<void(const asio::error_code&, size_t)>& hdlr)
+    std::function<void(const asio::error_code&, size_t)>&& hdlr)
     noexcept override;
 
   private:

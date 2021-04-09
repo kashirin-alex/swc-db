@@ -49,7 +49,7 @@ class ServerConnections final :
                   bool preserve);
 
   void connection(const std::chrono::milliseconds& timeout,
-                  const NewCb_t& cb, bool preserve);
+                  NewCb_t&& cb, bool preserve);
 
   void close_all();
 
@@ -86,7 +86,7 @@ class Serialized final :
 
   void get_connection(
         const EndPoints& endpoints,
-        const ServerConnections::NewCb_t& cb,
+        ServerConnections::NewCb_t&& cb,
         const std::chrono::milliseconds& timeout=std::chrono::milliseconds(0),
         uint32_t probes=0,
         bool preserve=false
@@ -115,7 +115,7 @@ class Serialized final :
 
   void _get_connection(
         const EndPoints& endpoints,
-        const ServerConnections::NewCb_t& cb,
+        ServerConnections::NewCb_t&& cb,
         const std::chrono::milliseconds& timeout,
         uint32_t probes, uint32_t tries,
         size_t next,

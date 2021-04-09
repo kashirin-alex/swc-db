@@ -15,7 +15,7 @@ class CommonMeta : public BaseMeta {
   typedef std::shared_ptr<CommonMeta>     Ptr;
   typedef std::function<void(const Ptr&)> Cb_t;
 
-  static Ptr make(const RangePtr& range, Cb_t cb) {
+  static Ptr make(const RangePtr& range, Cb_t&& cb) {
     return std::make_shared<CommonMeta>(range, std::move(cb));
   }
 

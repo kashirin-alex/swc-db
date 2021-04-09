@@ -21,13 +21,13 @@ class ColumnCompact: public client::ConnQueue::ReqBase {
   typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&, 
                              const Params::ColumnCompactRsp&)> Cb_t;
  
-  static void request(cid_t cid, const Cb_t& cb, 
+  static void request(cid_t cid, Cb_t&& cb, 
                       const uint32_t timeout = 10000);
 
   static void request(const Params::ColumnCompactReq& params,
-                             const Cb_t& cb, const uint32_t timeout = 10000);
+                      Cb_t&& cb, const uint32_t timeout = 10000);
 
-  ColumnCompact(const Params::ColumnCompactReq& params, const Cb_t& cb, 
+  ColumnCompact(const Params::ColumnCompactReq& params, Cb_t&& cb, 
                 const uint32_t timeout);
 
   virtual ~ColumnCompact();

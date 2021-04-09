@@ -37,9 +37,9 @@ Property::V_GUINT8::Ptr g_i8(const uint8_t& v);
 Property::V_GINT32::Ptr g_i32(const int32_t& v);
 Property::V_GSTRINGS::Ptr g_strs(const Strings& v);
 Property::V_GENUM::Ptr g_enum(const int32_t& v,
-                              const Property::V_GENUM::OnChg_t& cb,
-                              const Property::V_GENUM::FromString_t& from_string,
-                              const Property::V_GENUM::Repr_t& repr);
+                              Property::V_GENUM::OnChg_t&& cb,
+                              Property::V_GENUM::FromString_t&& from_string,
+                              Property::V_GENUM::Repr_t&& repr);
 
 /* cfg methods for types, a skippable option
 *  if no option parsed it is skipped

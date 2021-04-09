@@ -21,13 +21,12 @@ class ColumnList: public client::ConnQueue::ReqBase {
   typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&, 
                              int, const Params::ColumnListRsp&)> Cb_t;
 
-  static void request(const Cb_t& cb, const uint32_t timeout = 10000);
+  static void request(Cb_t&& cb, const uint32_t timeout = 10000);
 
   static void request(const Params::ColumnListReq& params,
-                      const ColumnList::Cb_t& cb, 
-                      const uint32_t timeout = 10000);
+                      Cb_t&& cb, const uint32_t timeout = 10000);
 
-  ColumnList(const Params::ColumnListReq& params, const Cb_t& cb, 
+  ColumnList(const Params::ColumnListReq& params, Cb_t&& cb,
              const uint32_t timeout);
 
   virtual ~ColumnList();

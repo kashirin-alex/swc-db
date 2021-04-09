@@ -22,21 +22,21 @@ class ColumnMng: public client::ConnQueue::ReqBase {
   typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&,
                              int)> Cb_t;
 
-  static void create(const DB::Schema::Ptr& schema, const Cb_t& cb, 
+  static void create(const DB::Schema::Ptr& schema, Cb_t&& cb, 
                      const uint32_t timeout = 10000);
 
-  static void modify(const DB::Schema::Ptr& schema, const Cb_t& cb, 
+  static void modify(const DB::Schema::Ptr& schema, Cb_t&& cb, 
                      const uint32_t timeout = 10000);
 
-  static void remove(const DB::Schema::Ptr& schema, const Cb_t& cb, 
+  static void remove(const DB::Schema::Ptr& schema, Cb_t&& cb, 
                      const uint32_t timeout = 10000);
 
   static void request(Func func, 
-                      const DB::Schema::Ptr& schema, const Cb_t& cb, 
+                      const DB::Schema::Ptr& schema, Cb_t&& cb, 
                       const uint32_t timeout = 10000);
 
 
-  ColumnMng(const Params::ColumnMng& params, const Cb_t& cb, 
+  ColumnMng(const Params::ColumnMng& params, Cb_t&& cb, 
             const uint32_t timeout);
 
   virtual ~ColumnMng();

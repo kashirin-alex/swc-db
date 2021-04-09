@@ -31,7 +31,7 @@ class Mngr final {
   template <typename T_Handler>
   SWC_CAN_INLINE
   static void post(T_Handler&& handler)  {
-    m_env->app_io->post(handler);
+    m_env->app_io->post(std::move(handler));
   }
 
   static DB::Schemas* schemas() noexcept {

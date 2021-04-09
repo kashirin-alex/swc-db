@@ -8,7 +8,6 @@
 
 
 #include "swcdb/core/Buffer.h"
-#include <functional>
 
 
 namespace SWC { namespace FS {

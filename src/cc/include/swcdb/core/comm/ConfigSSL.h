@@ -42,7 +42,7 @@ class ConfigSSL final {
 
   void
   make_client(AppContext::Ptr& app_ctx, SocketPlain& socket,
-              const HandshakeCb_t& cb) const;
+              HandshakeCb_t&& cb) const;
 
   private:
 

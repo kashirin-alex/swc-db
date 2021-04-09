@@ -301,14 +301,14 @@ void Fragment::write(int err, uint8_t blk_replicas, int64_t blksz,
     release();
 }
 
-void Fragment::load(const Fragment::LoadCb_t& cb) {
+void Fragment::load(Fragment::LoadCb_t&& cb) {
   m_processing.fetch_add(1);
   auto at(State::NONE);
   {
     Core::MutexSptd::scope lock(m_mutex);
     m_state.compare_exchange_weak(at, State::LOADING);
     if(at != State::LOADED)
-      m_queue.push(cb);
+      m_queue.push(std::move(cb));
   }
   switch(at) {
     case State::NONE: {

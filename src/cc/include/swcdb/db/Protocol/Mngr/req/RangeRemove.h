@@ -24,24 +24,23 @@ class RangeRemove: public client::ConnQueue::ReqBase {
                              const Params::RangeRemoveRsp&)> Cb_t;
  
   static void request(cid_t cid, rid_t rid, 
-                      const Cb_t& cb, const uint32_t timeout = 10000) {
-    request(Params::RangeRemoveReq(cid, rid), cb, timeout);
+                      Cb_t&& cb, const uint32_t timeout = 10000) {
+    request(Params::RangeRemoveReq(cid, rid), std::move(cb), timeout);
   }
 
   static inline void request(const Params::RangeRemoveReq& params,
-                             const Cb_t& cb, 
-                             const uint32_t timeout = 10000) {
-    std::make_shared<RangeRemove>(params, cb, timeout)->run();
+                             Cb_t&& cb, const uint32_t timeout = 10000) {
+    std::make_shared<RangeRemove>(params, std::move(cb), timeout)->run();
   }
 
 
-  RangeRemove(const Params::RangeRemoveReq& params, const Cb_t& cb, 
+  RangeRemove(const Params::RangeRemoveReq& params, Cb_t&& cb,
               const uint32_t timeout) 
               : client::ConnQueue::ReqBase(
                   false,
                   Buffers::make(params, 0, RANGE_REMOVE, timeout)
                 ), 
-                cb(cb), cid(params.cid) {
+                cb(std::move(cb)), cid(params.cid) {
   }
 
   virtual ~RangeRemove(){}

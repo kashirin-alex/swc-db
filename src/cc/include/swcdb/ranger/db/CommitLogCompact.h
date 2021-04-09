@@ -66,7 +66,8 @@ class Compact final {
 
   Compact(Fragments* log, int repetition,
           const std::vector<Fragments::Vec>& groups,
-          uint8_t cointervaling, Cb_t& cb = nullptr);
+          uint8_t cointervaling,
+          Compact::Cb_t&& cb = nullptr);
 
   Compact(const Compact&) = delete;
 

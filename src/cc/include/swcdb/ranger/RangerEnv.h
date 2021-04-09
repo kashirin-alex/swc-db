@@ -88,13 +88,13 @@ class Rgr final {
   template <typename T_Handler>
   SWC_CAN_INLINE
   static void post(T_Handler&& handler)  {
-    m_env->app_io->post(handler);
+    m_env->app_io->post(std::move(handler));
   }
 
   template <typename T_Handler>
   SWC_CAN_INLINE
   static void maintenance_post(T_Handler&& handler)  {
-    m_env->mnt_io->post(handler);
+    m_env->mnt_io->post(std::move(handler));
   }
 
   SWC_CAN_INLINE

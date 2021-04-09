@@ -47,13 +47,13 @@ class ClusterStatus: public Report {
                              const int&)> Cb_t;
  
   static void request(const EndPoints& endpoints, 
-                      const Cb_t& cb, const uint32_t timeout = 10000);
+                      Cb_t&& cb, const uint32_t timeout = 10000);
 
   static Ptr make(const EndPoints& endpoints, 
-                  const Cb_t& cb, const uint32_t timeout = 10000);
+                  Cb_t&& cb, const uint32_t timeout = 10000);
 
   ClusterStatus(const EndPoints& endpoints, 
-                const Cb_t& cb, const uint32_t timeout);
+                Cb_t&& cb, const uint32_t timeout);
 
   virtual ~ClusterStatus();
 
@@ -79,17 +79,17 @@ class ColumnStatus: public Report {
                              const int&, 
                              const Params::Report::RspColumnStatus&)> Cb_t;
  
-  static void request(cid_t cid, const Cb_t& cb, 
+  static void request(cid_t cid, Cb_t&& cb, 
                       const uint32_t timeout = 10000);
 
   static void request(const Params::Report::ReqColumnStatus& params,
-                      const Cb_t& cb, const uint32_t timeout = 10000);
+                      Cb_t&& cb, const uint32_t timeout = 10000);
 
   static Ptr make(const Params::Report::ReqColumnStatus& params,
-                  const Cb_t& cb, const uint32_t timeout = 10000);
+                  Cb_t&& cb, const uint32_t timeout = 10000);
 
-  ColumnStatus(const Params::Report::ReqColumnStatus& params, const Cb_t& cb, 
-               const uint32_t timeout);
+  ColumnStatus(const Params::Report::ReqColumnStatus& params,
+               Cb_t&& cb, const uint32_t timeout);
 
   virtual ~ColumnStatus();
 
@@ -114,13 +114,13 @@ class RangersStatus: public Report {
                              const int&, 
                              const Params::Report::RspRangersStatus&)> Cb_t;
  
-  static void request(cid_t cid, const Cb_t& cb, 
+  static void request(cid_t cid, Cb_t&& cb, 
                       const uint32_t timeout = 10000);
 
-  static Ptr make(cid_t cid, const Cb_t& cb, 
+  static Ptr make(cid_t cid, Cb_t&& cb, 
                   const uint32_t timeout = 10000);
 
-  RangersStatus(cid_t cid, const Cb_t& cb, 
+  RangersStatus(cid_t cid, Cb_t&& cb, 
                 const uint32_t timeout);
 
   virtual ~RangersStatus();
@@ -146,13 +146,13 @@ class ManagersStatus: public Report {
                              const int&, 
                              const Params::Report::RspManagersStatus&)> Cb_t;
  
-  static void request(const EndPoints& endpoints, const Cb_t& cb, 
+  static void request(const EndPoints& endpoints, Cb_t&& cb, 
                       const uint32_t timeout = 10000);
 
-  static Ptr make(const EndPoints& endpoints, const Cb_t& cb, 
+  static Ptr make(const EndPoints& endpoints, Cb_t&& cb, 
                   const uint32_t timeout = 10000);
 
-  ManagersStatus(const EndPoints& endpoints, const Cb_t& cb, 
+  ManagersStatus(const EndPoints& endpoints, Cb_t&& cb, 
                  const uint32_t timeout);
 
   virtual ~ManagersStatus();

@@ -24,24 +24,23 @@ class RangeUnloaded: public client::ConnQueue::ReqBase {
                              const Params::RangeUnloadedRsp&)> Cb_t;
  
   static void request(cid_t cid, rid_t rid, 
-                      const Cb_t& cb, const uint32_t timeout = 10000){
-    request(Params::RangeUnloadedReq(cid, rid), cb, timeout);
+                      Cb_t&& cb, const uint32_t timeout = 10000){
+    request(Params::RangeUnloadedReq(cid, rid), std::move(cb), timeout);
   }
 
   static inline void request(const Params::RangeUnloadedReq& params,
-                             const Cb_t& cb, 
-                             const uint32_t timeout = 10000) {
-    std::make_shared<RangeUnloaded>(params, cb, timeout)->run();
+                             Cb_t&& cb, const uint32_t timeout = 10000) {
+    std::make_shared<RangeUnloaded>(params, std::move(cb), timeout)->run();
   }
 
 
-  RangeUnloaded(const Params::RangeUnloadedReq& params, const Cb_t& cb, 
+  RangeUnloaded(const Params::RangeUnloadedReq& params, Cb_t&& cb, 
                 const uint32_t timeout)
                 : client::ConnQueue::ReqBase(
                     false,
                     Buffers::make(params, 0, RANGE_UNLOADED, timeout)
                   ),
-                  cb(cb), cid(params.cid) {
+                  cb(std::move(cb)), cid(params.cid) {
   }
 
   virtual ~RangeUnloaded(){}

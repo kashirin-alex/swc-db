@@ -6,14 +6,15 @@
 #include "swcdb/core/comm/IoContext.h"
 
 namespace SWC { namespace Comm {
-  
+
 PeriodicTimer::PeriodicTimer(const Config::Property::V_GINT32::Ptr cfg_ms,
-                             const Call_t& call, const IoContextPtr& ioctx)
+                             PeriodicTimer::Call_t&& call,
+                             const IoContextPtr& ioctx)
                             : asio::high_resolution_timer(ioctx->executor()),
-                              m_ms(cfg_ms), m_call(call) {
+                              m_ms(cfg_ms), m_call(std::move(call)) {
   schedule();
 }
-  
+
 PeriodicTimer::~PeriodicTimer() { }
 
 void PeriodicTimer::schedule() {
@@ -37,11 +38,11 @@ void PeriodicTimers::stop() {
     ptr->cancel();
 }
 
-void PeriodicTimers::set(const Config::Property::V_GINT32::Ptr ms, 
-                         const PeriodicTimer::Call_t& call,
+void PeriodicTimers::set(const Config::Property::V_GINT32::Ptr ms,
+                         PeriodicTimer::Call_t&& call,
                          const IoContextPtr& ioctx) {
   Core::MutexSptd::scope lock(m_mutex);
-  emplace_back(new PeriodicTimer(ms, call, ioctx));
+  emplace_back(new PeriodicTimer(ms, std::move(call), ioctx));
 }
 
 

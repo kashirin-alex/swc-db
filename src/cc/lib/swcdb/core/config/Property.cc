@@ -441,12 +441,12 @@ std::string V_STRING::get() const {
 
 
 V_ENUM::V_ENUM(const int32_t& v,
-               const FromString_t& from_string,
-               const Repr_t& repr,
+               FromString_t&& from_string,
+               Repr_t&& repr,
                uint8_t flags)
               : Value(flags), value(v),
-                call_from_string(from_string),
-                call_repr(repr) {
+                call_from_string(std::move(from_string)),
+                call_repr(std::move(repr)) {
 }
 
 V_ENUM::V_ENUM(V_ENUM* ptr)
@@ -621,8 +621,9 @@ Doubles V_DOUBLES::get() const {
 
 
 // Guarded Atomic
-V_GBOOL::V_GBOOL(const bool& v, const V_GBOOL::OnChg_t& cb, uint8_t flags)
-                : Value(flags | Value::GUARDED), value(v), on_chg_cb(cb) {
+V_GBOOL::V_GBOOL(const bool& v, V_GBOOL::OnChg_t&& cb, uint8_t flags)
+                : Value(flags | Value::GUARDED), 
+                  value(v), on_chg_cb(std::move(cb)) {
 }
 
 V_GBOOL::V_GBOOL(V_GBOOL* ptr)
@@ -678,14 +679,15 @@ void V_GBOOL::on_change() const {
     on_chg_cb(get());
 }
 
-void V_GBOOL::set_cb_on_chg(const V_GBOOL::OnChg_t& cb) {
-  on_chg_cb = cb;
+void V_GBOOL::set_cb_on_chg(V_GBOOL::OnChg_t&& cb) {
+  on_chg_cb = std::move(cb);
 }
 
 
 
-V_GUINT8::V_GUINT8(const uint8_t& v, const V_GUINT8::OnChg_t& cb, uint8_t flags)
-                  : Value(flags | Value::GUARDED), value(v), on_chg_cb(cb) {
+V_GUINT8::V_GUINT8(const uint8_t& v, V_GUINT8::OnChg_t&& cb, uint8_t flags)
+                  : Value(flags | Value::GUARDED),
+                    value(v), on_chg_cb(std::move(cb)) {
 }
 
 V_GUINT8::V_GUINT8(V_GUINT8* ptr)
@@ -734,14 +736,15 @@ void V_GUINT8::on_change() const {
     on_chg_cb(get());
 }
 
-void V_GUINT8::set_cb_on_chg(const V_GUINT8::OnChg_t& cb) {
-  on_chg_cb = cb;
+void V_GUINT8::set_cb_on_chg(V_GUINT8::OnChg_t&& cb) {
+  on_chg_cb = std::move(cb);
 }
 
 
 
-V_GINT32::V_GINT32(const int32_t& v, const V_GINT32::OnChg_t& cb, uint8_t flags)
-                  : Value(flags | Value::GUARDED), value(v), on_chg_cb(cb) {
+V_GINT32::V_GINT32(const int32_t& v, V_GINT32::OnChg_t&& cb, uint8_t flags)
+                  : Value(flags | Value::GUARDED),
+                    value(v), on_chg_cb(std::move(cb)) {
 }
 
 V_GINT32::V_GINT32(V_GINT32* ptr)
@@ -790,21 +793,21 @@ void V_GINT32::on_change() const {
     on_chg_cb(get());
 }
 
-void V_GINT32::set_cb_on_chg(const V_GINT32::OnChg_t& cb) {
-  on_chg_cb = cb;
+void V_GINT32::set_cb_on_chg(V_GINT32::OnChg_t&& cb) {
+  on_chg_cb = std::move(cb);
 }
 
 
 
 V_GENUM::V_GENUM(const int32_t& v,
-                 const V_GENUM::OnChg_t& cb,
-                 const V_GENUM::FromString_t& from_string,
-                 const V_GENUM::Repr_t& repr,
+                 V_GENUM::OnChg_t&& cb,
+                 V_GENUM::FromString_t&& from_string,
+                 V_GENUM::Repr_t&& repr,
                  uint8_t flags)
                 : Value(flags | Value::GUARDED), value(v),
-                  on_chg_cb(cb),
-                  call_from_string(from_string),
-                  call_repr(repr) {
+                  on_chg_cb(std::move(cb)),
+                  call_from_string(std::move(from_string)),
+                  call_repr(std::move(repr)) {
 }
 
 V_GENUM::V_GENUM(V_GENUM* ptr)
@@ -872,16 +875,17 @@ void V_GENUM::on_change() const {
     on_chg_cb(get());
 }
 
-void V_GENUM::set_cb_on_chg(const V_GENUM::OnChg_t& cb) {
-  on_chg_cb = cb;
+void V_GENUM::set_cb_on_chg(V_GENUM::OnChg_t&& cb) {
+  on_chg_cb = std::move(cb);
 }
 
 
 
 // Guarded Mutex
-V_GSTRINGS::V_GSTRINGS(const Strings& v, const V_GSTRINGS::OnChg_t& cb,
+V_GSTRINGS::V_GSTRINGS(const Strings& v, V_GSTRINGS::OnChg_t&& cb,
                        uint8_t flags)
-                      : Value(flags | Value::GUARDED), value(v), on_chg_cb(cb) {
+                      : Value(flags | Value::GUARDED),
+                        value(v), on_chg_cb(std::move(cb)) {
 }
 
 V_GSTRINGS::V_GSTRINGS(V_GSTRINGS* ptr)
@@ -945,9 +949,9 @@ void V_GSTRINGS::on_change() const {
     on_chg_cb();
 }
 
-void V_GSTRINGS::set_cb_on_chg(const V_GSTRINGS::OnChg_t& cb) {
+void V_GSTRINGS::set_cb_on_chg(V_GSTRINGS::OnChg_t&& cb) {
   Core::MutexAtomic::scope lock(mutex);
-  on_chg_cb = cb;
+  on_chg_cb = std::move(cb);
 }
 
 

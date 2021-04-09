@@ -24,14 +24,14 @@ class RangeQuerySelect: public client::ConnQueue::ReqBase {
   static void 
   request(const Params::RangeQuerySelectReq& params,
           const EndPoints& endpoints, 
-          const Cb_t& cb,
+          Cb_t&& cb,
           const uint32_t timeout = 10000);
   
   EndPoints     endpoints;
 
   RangeQuerySelect(const Params::RangeQuerySelectReq& params,
                    const EndPoints& endpoints, 
-                   const Cb_t& cb, 
+                   Cb_t&& cb, 
                    const uint32_t timeout);
 
   virtual ~RangeQuerySelect();

@@ -36,8 +36,8 @@ void IoContext::set_signals() {
 }
 
 void IoContext::set_periodic_timer(const Config::Property::V_GINT32::Ptr ms,
-                                   const PeriodicTimer::Call_t& call) {
-  m_periodic_timers.set(ms, call, shared_from_this());
+                                   PeriodicTimer::Call_t&& call) {
+  m_periodic_timers.set(ms, std::move(call), shared_from_this());
 }
 
 void IoContext::stop() {

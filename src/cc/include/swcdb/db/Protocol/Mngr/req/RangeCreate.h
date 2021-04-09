@@ -24,24 +24,23 @@ class RangeCreate: public client::ConnQueue::ReqBase {
                              const Params::RangeCreateRsp&)> Cb_t;
  
   static void request(cid_t cid, rgrid_t rgrid, 
-                      const Cb_t& cb, const uint32_t timeout = 10000) {
-    request(Params::RangeCreateReq(cid, rgrid), cb, timeout);
+                      Cb_t&& cb, const uint32_t timeout = 10000) {
+    request(Params::RangeCreateReq(cid, rgrid), std::move(cb), timeout);
   }
 
   static inline void request(const Params::RangeCreateReq& params,
-                             const Cb_t& cb, 
-                             const uint32_t timeout = 10000) {
-    std::make_shared<RangeCreate>(params, cb, timeout)->run();
+                             Cb_t&& cb, const uint32_t timeout = 10000) {
+    std::make_shared<RangeCreate>(params, std::move(cb), timeout)->run();
   }
 
 
-  RangeCreate(const Params::RangeCreateReq& params, const Cb_t& cb, 
+  RangeCreate(const Params::RangeCreateReq& params, Cb_t&& cb, 
               const uint32_t timeout) 
               : client::ConnQueue::ReqBase(
                   false,
                   Buffers::make(params, 0, RANGE_CREATE, timeout)
                 ),
-                cb(cb), cid(params.cid) {
+                cb(std::move(cb)), cid(params.cid) {
   }
 
   virtual ~RangeCreate() { }

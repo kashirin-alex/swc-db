@@ -77,7 +77,7 @@ void ServerConnections::connection(ConnHandlerPtr& conn,
 }
 
 void ServerConnections::connection(const std::chrono::milliseconds&,
-                                   const NewCb_t& cb, bool preserve) {
+                                   NewCb_t&& cb, bool preserve) {
 
   SWC_LOG_OUT(LOG_DEBUG,
     SWC_LOG_OSTREAM << "Connecting Async: " << m_srv_name << ' '
@@ -86,7 +86,7 @@ void ServerConnections::connection(const std::chrono::milliseconds&,
   auto sock = std::make_shared<asio::ip::tcp::socket>(m_ioctx->executor());
   sock->async_connect(
     m_endpoint,
-    [sock, cb, preserve, ptr=shared_from_this()]
+    [sock, preserve, cb=std::move(cb), ptr=shared_from_this()]
     (const std::error_code& ec) {
       if(ec || !sock->is_open()) {
         cb(nullptr);
@@ -96,7 +96,7 @@ void ServerConnections::connection(const std::chrono::milliseconds&,
         if(ptr->m_ssl_cfg) {
           ptr->m_ssl_cfg->make_client(
             ptr->m_ctx, *sock.get(),
-            [cb, preserve, ptr]
+            [preserve, ptr, cb=std::move(cb)]
             (const ConnHandlerPtr& conn, const std::error_code& ec) {
               if(ec || !conn->is_open()) {
                 cb(nullptr);
@@ -207,7 +207,7 @@ ConnHandlerPtr Serialized::_get_connection(
 
 void Serialized::get_connection(
       const EndPoints& endpoints,
-      const ServerConnections::NewCb_t& cb,
+      ServerConnections::NewCb_t&& cb,
       const std::chrono::milliseconds& timeout,
       uint32_t probes, bool preserve) noexcept {
   try {
@@ -215,7 +215,8 @@ void Serialized::get_connection(
       SWC_LOGF(LOG_WARN, "get_connection: %s, Empty-Endpoints",
                           m_srv_name.c_str());
     } else {
-      _get_connection(endpoints, cb, timeout, probes, probes, 0, preserve);
+      _get_connection(
+        endpoints, std::move(cb), timeout, probes, probes, 0, preserve);
       return;
     }
   } catch (...) {
@@ -226,7 +227,7 @@ void Serialized::get_connection(
   
 void Serialized::_get_connection(
       const EndPoints& endpoints,
-      const ServerConnections::NewCb_t& cb,
+      ServerConnections::NewCb_t&& cb,
       const std::chrono::milliseconds& timeout,
       uint32_t probes, uint32_t tries,
       size_t next, bool preserve) {
@@ -245,8 +246,9 @@ void Serialized::_get_connection(
   ++next;
   SWC_LOGF(LOG_DEBUG, "get_connection: %s, tries=%d", m_srv_name.c_str(), tries);
   srv->connection(timeout,
-    [endpoints, cb, timeout, probes, tries, next, preserve, ptr=shared_from_this()]
-    (const ConnHandlerPtr& conn) {
+    [endpoints, timeout, probes, tries, next, preserve, 
+     cb=std::move(cb), ptr=shared_from_this()]
+    (const ConnHandlerPtr& conn) mutable {
       if(!ptr->m_run.load() || (conn && conn->is_open())) {
         cb(conn);
         return;
@@ -255,7 +257,7 @@ void Serialized::_get_connection(
       std::this_thread::sleep_for(std::chrono::milliseconds(3000)); // ? cfg-setting
       try {
         ptr->_get_connection(
-          endpoints, cb, timeout,
+          endpoints, std::move(cb), timeout,
           probes, next == endpoints.size() ? tries-1 : tries,
           next,
           preserve

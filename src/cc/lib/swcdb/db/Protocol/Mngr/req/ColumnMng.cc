@@ -17,37 +17,37 @@ namespace Mngr { namespace Req {
 
 SWC_SHOULD_INLINE
 void ColumnMng::create(const DB::Schema::Ptr& schema, 
-                       const ColumnMng::Cb_t& cb, const uint32_t timeout) {
-  request(Func::CREATE, schema, cb, timeout);
+                       ColumnMng::Cb_t&& cb, const uint32_t timeout) {
+  request(Func::CREATE, schema, std::move(cb), timeout);
 }
 
 SWC_SHOULD_INLINE
 void ColumnMng::modify(const DB::Schema::Ptr& schema, 
-                       const ColumnMng::Cb_t& cb, const uint32_t timeout) {
-  request(Func::MODIFY, schema, cb, timeout);
+                       ColumnMng::Cb_t&& cb, const uint32_t timeout) {
+  request(Func::MODIFY, schema, std::move(cb), timeout);
 }
 
 SWC_SHOULD_INLINE
 void ColumnMng::remove(const DB::Schema::Ptr& schema, 
-                       const ColumnMng::Cb_t& cb, const uint32_t timeout) {
-  request(Func::DELETE, schema, cb, timeout);
+                       ColumnMng::Cb_t&& cb, const uint32_t timeout) {
+  request(Func::DELETE, schema, std::move(cb), timeout);
 }
 
 SWC_SHOULD_INLINE
 void ColumnMng::request(ColumnMng::Func func, const DB::Schema::Ptr& schema,
-                        const ColumnMng::Cb_t& cb, const uint32_t timeout) {
-  std::make_shared<ColumnMng>(Params::ColumnMng(func, schema), cb, timeout)
-    ->run();
+                        ColumnMng::Cb_t&& cb, const uint32_t timeout) {
+  std::make_shared<ColumnMng>(
+    Params::ColumnMng(func, schema), std::move(cb), timeout)->run();
 }
 
 
 ColumnMng::ColumnMng(const Params::ColumnMng& params, 
-                     const ColumnMng::Cb_t& cb, const uint32_t timeout)
+                     ColumnMng::Cb_t&& cb, const uint32_t timeout)
                     : client::ConnQueue::ReqBase(
                         false,
                         Buffers::make(params, 0, COLUMN_MNG, timeout)
                       ),
-                      cb(cb) {
+                      cb(std::move(cb)) {
 }
 
 ColumnMng::~ColumnMng() { }

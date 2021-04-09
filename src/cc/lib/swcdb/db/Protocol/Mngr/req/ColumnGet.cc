@@ -15,47 +15,47 @@ namespace Mngr { namespace Req {
 
  
 SWC_SHOULD_INLINE
-void ColumnGet::schema(const std::string& name, const ColumnGet::Cb_t& cb, 
+void ColumnGet::schema(const std::string& name, ColumnGet::Cb_t&& cb, 
                         const uint32_t timeout) {
-  request(Flag::SCHEMA_BY_NAME, name, cb, timeout);
+  request(Flag::SCHEMA_BY_NAME, name, std::move(cb), timeout);
 }
 
 SWC_SHOULD_INLINE
-void ColumnGet::schema(cid_t cid, const ColumnGet::Cb_t& cb,
+void ColumnGet::schema(cid_t cid, ColumnGet::Cb_t&& cb,
                        const uint32_t timeout) {
-  request(Flag::SCHEMA_BY_ID, cid, cb, timeout);
+  request(Flag::SCHEMA_BY_ID, cid, std::move(cb), timeout);
 }
 
 SWC_SHOULD_INLINE
-void ColumnGet::cid(const std::string& name, const ColumnGet::Cb_t& cb,
+void ColumnGet::cid(const std::string& name, ColumnGet::Cb_t&& cb,
                     const uint32_t timeout) {
-  request(Flag::ID_BY_NAME, name, cb, timeout);
+  request(Flag::ID_BY_NAME, name, std::move(cb), timeout);
 }
 
 SWC_SHOULD_INLINE
 void ColumnGet::request(ColumnGet::Flag flag, const std::string& name, 
-                        const ColumnGet::Cb_t& cb,
+                        ColumnGet::Cb_t&& cb,
                         const uint32_t timeout) {
-  std::make_shared<ColumnGet>(Params::ColumnGetReq(flag, name), cb, timeout)
-    ->run();
+  std::make_shared<ColumnGet>(
+    Params::ColumnGetReq(flag, name), std::move(cb), timeout)->run();
 }
 
 SWC_SHOULD_INLINE
 void ColumnGet::request(ColumnGet::Flag flag, cid_t cid, 
-                        const ColumnGet::Cb_t& cb, const uint32_t timeout) {
-  std::make_shared<ColumnGet>(Params::ColumnGetReq(flag, cid), cb, timeout)
-    ->run();
+                        ColumnGet::Cb_t&& cb, const uint32_t timeout) {
+  std::make_shared<ColumnGet>(
+    Params::ColumnGetReq(flag, cid), std::move(cb), timeout)->run();
 }
 
 
 ColumnGet::ColumnGet(const Params::ColumnGetReq& params, 
-                     const ColumnGet::Cb_t& cb, 
+                     ColumnGet::Cb_t&& cb, 
                      const uint32_t timeout) 
                     : client::ConnQueue::ReqBase(
                         false,
                         Buffers::make(params, 0, COLUMN_GET, timeout)
                       ),
-                      cb(cb) {
+                      cb(std::move(cb)) {
 }
 
 ColumnGet::~ColumnGet() { }

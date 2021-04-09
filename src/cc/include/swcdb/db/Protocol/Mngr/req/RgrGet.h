@@ -22,15 +22,15 @@ class RgrGet: public client::ConnQueue::ReqBase {
                              const Params::RgrGetRsp&)> Cb_t;
  
   static void request(cid_t cid, rid_t rid, bool next_range,
-                      const Cb_t& cb, const uint32_t timeout = 10000);
+                      Cb_t&& cb, const uint32_t timeout = 10000);
 
   static void request(const Params::RgrGetReq& params,
-                      const Cb_t& cb, const uint32_t timeout = 10000);
+                      Cb_t&& cb, const uint32_t timeout = 10000);
 
   static Ptr make(const Params::RgrGetReq& params,
-                  const Cb_t& cb, const uint32_t timeout = 10000);
+                  Cb_t&& cb, const uint32_t timeout = 10000);
 
-  RgrGet(const Params::RgrGetReq& params, const Cb_t& cb, 
+  RgrGet(const Params::RgrGetReq& params, Cb_t&& cb, 
          const uint32_t timeout);
 
   virtual ~RgrGet();

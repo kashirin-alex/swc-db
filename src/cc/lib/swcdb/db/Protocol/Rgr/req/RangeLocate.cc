@@ -16,20 +16,21 @@ namespace Rgr { namespace Req {
 SWC_SHOULD_INLINE
 void RangeLocate::request(const Params::RangeLocateReq& params,
                           const EndPoints& endpoints, 
-                          const RangeLocate::Cb_t& cb, 
+                          RangeLocate::Cb_t&& cb, 
                           const uint32_t timeout) {
-  std::make_shared<RangeLocate>(params, endpoints, cb, timeout)->run();
+  std::make_shared<RangeLocate>(
+    params, endpoints, std::move(cb), timeout)->run();
 }
 
 RangeLocate::RangeLocate(const Params::RangeLocateReq& params, 
                          const EndPoints& endpoints,
-                         const RangeLocate::Cb_t& cb, 
+                         RangeLocate::Cb_t&& cb, 
                          const uint32_t timeout)
                         : client::ConnQueue::ReqBase(
                             false,
                             Buffers::make(params, 0, RANGE_LOCATE, timeout)
                           ),
-                          endpoints(endpoints), cb(cb) {
+                          endpoints(endpoints), cb(std::move(cb)) {
 }
 
 RangeLocate::~RangeLocate() { }

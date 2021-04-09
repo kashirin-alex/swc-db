@@ -79,10 +79,11 @@ Config::g_strs(const Strings& v) {
 }
 Config::Property::V_GENUM::Ptr
 Config::g_enum(const int32_t& v,
-               const Config::Property::V_GENUM::OnChg_t& cb,
-               const Config::Property::V_GENUM::FromString_t& from_string,
-               const Config::Property::V_GENUM::Repr_t& repr) {
-  return new Config::Property::V_GENUM(v, cb, from_string, repr);
+               Config::Property::V_GENUM::OnChg_t&& cb,
+               Config::Property::V_GENUM::FromString_t&& from_string,
+               Config::Property::V_GENUM::Repr_t&& repr) {
+  return new Config::Property::V_GENUM(
+    v, std::move(cb), std::move(from_string), std::move(repr));
 }
 
 /* cfg methods for types, a skippable option

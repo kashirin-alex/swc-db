@@ -19,12 +19,12 @@ class RgrMngId: public client::ConnQueue::ReqBase {
   typedef std::shared_ptr<RgrMngId> Ptr;
 
   RgrMngId(const IoContextPtr& ioctx,
-           const std::function<void()>& cb = nullptr)
+           std::function<void()>&& cb = nullptr)
           : client::ConnQueue::ReqBase(false, nullptr),
             cfg_check_interval(
               Env::Config::settings()->get<Config::Property::V_GINT32>(
                 "swc.rgr.id.validation.interval")),
-            cb_shutdown(cb),
+            cb_shutdown(std::move(cb)),
             m_timer(asio::high_resolution_timer(ioctx->executor())),
             m_run(true), m_failures(0) {
   }

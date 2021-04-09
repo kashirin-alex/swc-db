@@ -47,11 +47,11 @@ class ReportRes: public Report {
                              const Params::Report::RspRes&)> Cb_t;
 
   static void request(const EndPoints& endpoints, 
-                      const Cb_t& cb, 
+                      Cb_t&& cb, 
                       const uint32_t timeout = 10000);
 
   ReportRes(const EndPoints& endpoints, 
-            const Cb_t& cb, 
+            Cb_t&& cb, 
             const uint32_t timeout);
 
   virtual ~ReportRes();
@@ -76,11 +76,11 @@ class ReportCids: public Report {
                              const Params::Report::RspCids&)> Cb_t;
  
   static void request(const EndPoints& endpoints, 
-                      const Cb_t& cb, 
+                      Cb_t&& cb, 
                       const uint32_t timeout = 10000);
 
   ReportCids(const EndPoints& endpoints, 
-             const Cb_t& cb, 
+             Cb_t&& cb, 
              const uint32_t timeout);
 
   virtual ~ReportCids();
@@ -106,12 +106,12 @@ class ReportColumnRids: public Report {
  
   static void request(const EndPoints& endpoints, 
                       cid_t cid, 
-                      const Cb_t& cb,
+                      Cb_t&& cb,
                       const uint32_t timeout = 10000);
 
   ReportColumnRids(const EndPoints& endpoints, 
                    cid_t cid, 
-                   const Cb_t& cb,
+                   Cb_t&& cb,
                    const uint32_t timeout);
 
   virtual ~ReportColumnRids();
@@ -136,21 +136,21 @@ class ReportColumnsRanges: public Report {
                              const Params::Report::RspColumnsRanges&)> Cb_t;
  
   static void request(const EndPoints& endpoints, 
-                      const Cb_t& cb,
+                      Cb_t&& cb,
                       const uint32_t timeout = 10000);
 
   static void request(const EndPoints& endpoints, 
                       cid_t cid, 
-                      const Cb_t& cb,
+                      Cb_t&& cb,
                       const uint32_t timeout = 10000);
 
   ReportColumnsRanges(const EndPoints& endpoints, 
-                      const Cb_t& cb, 
+                      Cb_t&& cb, 
                       const uint32_t timeout);
 
   ReportColumnsRanges(const EndPoints& endpoints, 
                       cid_t cid,
-                      const Cb_t& cb, 
+                      Cb_t&& cb, 
                       const uint32_t timeout);
 
   virtual ~ReportColumnsRanges();

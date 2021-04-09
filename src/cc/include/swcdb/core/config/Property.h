@@ -10,7 +10,6 @@
 
 #include "swcdb/core/Compat.h"
 #include "swcdb/core/MutexAtomic.h"
-#include <functional>
 #include <vector>
 
 
@@ -302,8 +301,8 @@ class V_ENUM final : public Value {
   typedef std::function<std::string(int)>         Repr_t;
 
   V_ENUM(const int32_t& v,
-         const FromString_t& from_string,
-         const Repr_t& repr,
+         FromString_t&& from_string,
+         Repr_t&& repr,
          uint8_t flags=0);
 
   V_ENUM(V_ENUM* ptr);
@@ -407,7 +406,7 @@ class V_GBOOL final : public Value {
   typedef V_GBOOL*                   Ptr;
   typedef std::function<void(bool)>  OnChg_t;
 
-  V_GBOOL(const bool& v, const OnChg_t& cb, uint8_t flags=0);
+  V_GBOOL(const bool& v, OnChg_t&& cb, uint8_t flags=0);
 
   V_GBOOL(V_GBOOL* ptr);
 
@@ -427,7 +426,7 @@ class V_GBOOL final : public Value {
 
   void on_change() const;
 
-  void set_cb_on_chg(const OnChg_t& cb);
+  void set_cb_on_chg(OnChg_t&& cb);
 
   Core::AtomicBool  value;
   OnChg_t           on_chg_cb;
@@ -441,7 +440,7 @@ class V_GUINT8 final : public Value {
   typedef V_GUINT8*                     Ptr;
   typedef std::function<void(uint8_t)>  OnChg_t;
 
-  V_GUINT8(const uint8_t& v, const OnChg_t& cb, uint8_t flags=0);
+  V_GUINT8(const uint8_t& v, OnChg_t&& cb, uint8_t flags=0);
 
   V_GUINT8(V_GUINT8* ptr);
 
@@ -459,7 +458,7 @@ class V_GUINT8 final : public Value {
 
   void on_change() const;
 
-  void set_cb_on_chg(const OnChg_t& cb);
+  void set_cb_on_chg(OnChg_t&& cb);
 
   Core::Atomic<uint8_t> value;
   OnChg_t               on_chg_cb;
@@ -473,7 +472,7 @@ class V_GINT32 final : public Value {
   typedef V_GINT32*                     Ptr;
   typedef std::function<void(int32_t)>  OnChg_t;
 
-  V_GINT32(const int32_t& v, const OnChg_t& cb, uint8_t flags=0);
+  V_GINT32(const int32_t& v, OnChg_t&& cb, uint8_t flags=0);
 
   V_GINT32(V_GINT32* ptr);
 
@@ -492,7 +491,7 @@ class V_GINT32 final : public Value {
 
   void on_change() const;
 
-  void set_cb_on_chg(const OnChg_t& cb);
+  void set_cb_on_chg(OnChg_t&& cb);
 
   Core::Atomic<int32_t> value;
   OnChg_t               on_chg_cb;
@@ -510,9 +509,9 @@ class V_GENUM final : public Value {
   typedef V_ENUM::Repr_t                Repr_t;
 
   V_GENUM(const int32_t& v,
-          const OnChg_t& cb,
-          const FromString_t& from_string,
-          const Repr_t& repr,
+          OnChg_t&& cb,
+          FromString_t&& from_string,
+          Repr_t&& repr,
           uint8_t flags=0);
 
   V_GENUM(V_GENUM* ptr);
@@ -533,7 +532,7 @@ class V_GENUM final : public Value {
 
   void on_change() const;
 
-  void set_cb_on_chg(const OnChg_t& cb);
+  void set_cb_on_chg(OnChg_t&& cb);
 
   Core::Atomic<int32_t> value;
   OnChg_t               on_chg_cb;
@@ -551,7 +550,7 @@ class V_GSTRINGS final : public Value {
   typedef V_GSTRINGS*            Ptr;
   typedef std::function<void()>  OnChg_t;
 
-  V_GSTRINGS(const Strings& v, const OnChg_t& cb, uint8_t flags=0);
+  V_GSTRINGS(const Strings& v, OnChg_t&& cb, uint8_t flags=0);
 
   V_GSTRINGS(V_GSTRINGS* ptr);
 
@@ -573,7 +572,7 @@ class V_GSTRINGS final : public Value {
 
   void on_change() const;
 
-  void set_cb_on_chg(const OnChg_t& cb);
+  void set_cb_on_chg(OnChg_t&& cb);
 
   mutable Core::MutexAtomic   mutex;
   Strings                     value;

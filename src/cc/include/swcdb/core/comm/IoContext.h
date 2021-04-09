@@ -60,14 +60,14 @@ class IoContext final : public std::enable_shared_from_this<IoContext> {
   template <typename T_Handler>
   SWC_CAN_INLINE
   void post(T_Handler&& handler) {
-    asio::post(pool, handler);
+    asio::post(pool, std::move(handler));
   }
 #pragma GCC diagnostic pop
 
   void set_signals();
 
   void set_periodic_timer(const Config::Property::V_GINT32::Ptr ms,
-                          const PeriodicTimer::Call_t& call);
+                          PeriodicTimer::Call_t&& call);
 
   void stop();
 
@@ -96,7 +96,7 @@ class IoCtx final {
   template <typename T_Handler>
   SWC_CAN_INLINE
   static void post(T_Handler&& handler)  {
-    m_env->m_io->post(handler);
+    m_env->m_io->post(std::move(handler));
   }
 
   static bool stopping() noexcept;

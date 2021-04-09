@@ -15,26 +15,26 @@ namespace Mngr { namespace Req {
 
 
 SWC_SHOULD_INLINE
-void ColumnList::request(const ColumnList::Cb_t& cb, 
+void ColumnList::request(ColumnList::Cb_t&& cb, 
                          const uint32_t timeout) {
-  request(Params::ColumnListReq(), cb, timeout);
+  request(Params::ColumnListReq(), std::move(cb), timeout);
 }
 
 SWC_SHOULD_INLINE
 void ColumnList::request(const Params::ColumnListReq& params,
-                         const ColumnList::Cb_t& cb, 
+                         ColumnList::Cb_t&& cb, 
                          const uint32_t timeout) {
-  std::make_shared<ColumnList>(params, cb, timeout)->run();
+  std::make_shared<ColumnList>(params, std::move(cb), timeout)->run();
 }
 
 ColumnList::ColumnList(const Params::ColumnListReq& params, 
-                       const ColumnList::Cb_t& cb, 
+                       ColumnList::Cb_t&& cb, 
                        const uint32_t timeout) 
                       : client::ConnQueue::ReqBase(
                           false,
                           Buffers::make(params, 0, COLUMN_LIST, timeout)
                         ),
-                        cb(cb) {
+                        cb(std::move(cb)) {
 }
 
 ColumnList::~ColumnList() { }

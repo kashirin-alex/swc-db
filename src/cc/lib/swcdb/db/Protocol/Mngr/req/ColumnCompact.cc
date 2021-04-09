@@ -16,21 +16,21 @@ namespace Mngr { namespace Req {
 
 
 SWC_SHOULD_INLINE
-void ColumnCompact::request(cid_t cid, const ColumnCompact::Cb_t& cb, 
+void ColumnCompact::request(cid_t cid, ColumnCompact::Cb_t&& cb, 
                             const uint32_t timeout) {
-  request(Params::ColumnCompactReq(cid), cb, timeout);
+  request(Params::ColumnCompactReq(cid), std::move(cb), timeout);
 }
 
 SWC_SHOULD_INLINE
 void ColumnCompact::request(const Params::ColumnCompactReq& params,
-                            const ColumnCompact::Cb_t& cb, 
+                            ColumnCompact::Cb_t&& cb, 
                             const uint32_t timeout) {
-  std::make_shared<ColumnCompact>(params, cb, timeout)->run();
+  std::make_shared<ColumnCompact>(params, std::move(cb), timeout)->run();
 }
 
 
 ColumnCompact::ColumnCompact(const Params::ColumnCompactReq& params, 
-                             const ColumnCompact::Cb_t& cb, 
+                             ColumnCompact::Cb_t&& cb, 
                              const uint32_t timeout) 
                             : client::ConnQueue::ReqBase(
                                 false,
@@ -39,7 +39,7 @@ ColumnCompact::ColumnCompact(const Params::ColumnCompactReq& params,
                                   COLUMN_COMPACT, timeout
                                 )
                               ), 
-                              cb(cb), cid(params.cid) {
+                              cb(std::move(cb)), cid(params.cid) {
 }
 
 ColumnCompact::~ColumnCompact() { }

@@ -46,19 +46,19 @@ bool Report::run() {
 
 SWC_SHOULD_INLINE
 void ReportRes::request(const EndPoints& endpoints,
-                        const ReportRes::Cb_t& cb,
+                        ReportRes::Cb_t&& cb,
                         const uint32_t timeout) {
-  std::make_shared<ReportRes>(endpoints, cb, timeout)->run();
+  std::make_shared<ReportRes>(endpoints, std::move(cb), timeout)->run();
 }
 
 ReportRes::ReportRes(const EndPoints& endpoints,
-                     const Cb_t& cb,
+                     ReportRes::Cb_t&& cb,
                      const uint32_t timeout)
                      : Report(
                         endpoints,
                         Params::Report::Function::RESOURCES,
                         timeout
-                      ), cb(cb) {
+                      ), cb(std::move(cb)) {
 }
 
 ReportRes::~ReportRes() { }
@@ -96,19 +96,19 @@ void ReportRes::handle(ConnHandlerPtr, const Event::Ptr& ev) {
 
 SWC_SHOULD_INLINE
 void ReportCids::request(const EndPoints& endpoints,
-                         const ReportCids::Cb_t& cb,
+                         ReportCids::Cb_t&& cb,
                          const uint32_t timeout) {
-  std::make_shared<ReportCids>(endpoints, cb, timeout)->run();
+  std::make_shared<ReportCids>(endpoints, std::move(cb), timeout)->run();
 }
 
 ReportCids::ReportCids(const EndPoints& endpoints,
-                       const Cb_t& cb,
+                       ReportCids::Cb_t&& cb,
                        const uint32_t timeout)
                       : Report(
                           endpoints,
                           Params::Report::Function::CIDS,
                           timeout
-                        ), cb(cb) {
+                        ), cb(std::move(cb)) {
 }
 
 ReportCids::~ReportCids() { }
@@ -147,21 +147,22 @@ void ReportCids::handle(ConnHandlerPtr, const Event::Ptr& ev) {
 SWC_SHOULD_INLINE
 void ReportColumnRids::request(const EndPoints& endpoints,
                                cid_t cid,
-                               const ReportColumnRids::Cb_t& cb,
+                               ReportColumnRids::Cb_t&& cb,
                                const uint32_t timeout) {
-  std::make_shared<ReportColumnRids>(endpoints, cid, cb, timeout)->run();
+  std::make_shared<ReportColumnRids>(
+    endpoints, cid, std::move(cb), timeout)->run();
 }
 
 ReportColumnRids::ReportColumnRids(const EndPoints& endpoints,
                                    cid_t cid,
-                                   const Cb_t& cb,
+                                   ReportColumnRids::Cb_t&& cb,
                                    const uint32_t timeout)
                                   : Report(
                                       endpoints,
                                       Params::Report::Function::COLUMN_RIDS,
                                       Params::Report::ReqColumn(cid),
                                       timeout
-                                    ), cb(cb) {
+                                    ), cb(std::move(cb)) {
 }
 
 ReportColumnRids::~ReportColumnRids() { }
@@ -199,41 +200,43 @@ void ReportColumnRids::handle(ConnHandlerPtr, const Event::Ptr& ev) {
 
 SWC_SHOULD_INLINE
 void ReportColumnsRanges::request(const EndPoints& endpoints,
-                                  const ReportColumnsRanges::Cb_t& cb,
+                                  ReportColumnsRanges::Cb_t&& cb,
                                   const uint32_t timeout) {
-  std::make_shared<ReportColumnsRanges>(endpoints, cb, timeout)->run();
+  std::make_shared<ReportColumnsRanges>(
+    endpoints, std::move(cb), timeout)->run();
 }
 
 SWC_SHOULD_INLINE
 void ReportColumnsRanges::request(const EndPoints& endpoints,
                                   cid_t cid,
-                                  const ReportColumnsRanges::Cb_t& cb,
+                                  ReportColumnsRanges::Cb_t&& cb,
                                   const uint32_t timeout) {
-  std::make_shared<ReportColumnsRanges>(endpoints, cid, cb, timeout)->run();
+  std::make_shared<ReportColumnsRanges>(
+    endpoints, cid, std::move(cb), timeout)->run();
 }
 
 ReportColumnsRanges::ReportColumnsRanges(
             const EndPoints& endpoints,
-            const Cb_t& cb,
+            ReportColumnsRanges::Cb_t&& cb,
             const uint32_t timeout)
             : Report(
                 endpoints,
                 Params::Report::Function::COLUMNS_RANGES,
                 timeout
-              ), cb(cb) {
+              ), cb(std::move(cb)) {
 }
 
 ReportColumnsRanges::ReportColumnsRanges(
           const EndPoints& endpoints,
           cid_t cid,
-          const Cb_t& cb,
+          ReportColumnsRanges::Cb_t&& cb,
           const uint32_t timeout)
           : Report(
               endpoints,
               Params::Report::Function::COLUMN_RANGES,
               Params::Report::ReqColumn(cid),
               timeout
-            ), cb(cb) {
+            ), cb(std::move(cb)) {
 }
 
 ReportColumnsRanges::~ReportColumnsRanges() { }

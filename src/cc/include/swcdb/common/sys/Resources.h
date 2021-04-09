@@ -35,12 +35,12 @@ class Resources final {
             Config::Property::V_GINT32::Ptr ram_percent_allowed,
             Config::Property::V_GINT32::Ptr ram_percent_reserved,
             Config::Property::V_GINT32::Ptr ram_release_rate,
-            const std::function<size_t(size_t)>& release_call=nullptr)
+            std::function<size_t(size_t)>&& release_call=nullptr)
             : cfg_ram_percent_allowed(ram_percent_allowed),
               cfg_ram_percent_reserved(ram_percent_reserved),
               cfg_ram_release_rate(ram_release_rate),
               m_timer(ioctx->executor()),
-              m_release_call(release_call),
+              m_release_call(std::move(release_call)),
               next_major_chk(99),
               ram(MAX_RAM_CHK_INTVAL_MS),
               m_concurrency(0), m_cpu_mhz(0) {

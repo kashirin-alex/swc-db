@@ -26,14 +26,14 @@ class RangeQueryUpdate: public client::ConnQueue::ReqBase {
   request(const Params::RangeQueryUpdateReq& params, 
           const DynamicBuffer::Ptr& buffer,
           const EndPoints& endpoints, 
-          const Cb_t& cb, 
+          Cb_t&& cb, 
           const uint32_t timeout = 10000);
 
 
   RangeQueryUpdate(const Params::RangeQueryUpdateReq& params,
                    const DynamicBuffer::Ptr& buffer, 
                    const EndPoints& endpoints, 
-                   const Cb_t& cb, 
+                   Cb_t&& cb, 
                    const uint32_t timeout);
 
   virtual ~RangeQueryUpdate();

@@ -23,23 +23,23 @@ class ColumnGet: public client::ConnQueue::ReqBase {
                              int, const Params::ColumnGetRsp&)> Cb_t;
 
 
-  static void schema(const std::string& name, const Cb_t& cb, 
+  static void schema(const std::string& name, Cb_t&& cb, 
                      const uint32_t timeout = 10000);
   
-  static void schema(cid_t cid, const Cb_t& cb, 
+  static void schema(cid_t cid, Cb_t&& cb, 
                      const uint32_t timeout = 10000);
 
-  static void cid(const std::string& name, const Cb_t& cb, 
+  static void cid(const std::string& name, Cb_t&& cb, 
                   const uint32_t timeout = 10000);
 
-  static void request(Flag flag, const std::string& name, const Cb_t& cb,
+  static void request(Flag flag, const std::string& name, Cb_t&& cb,
                       const uint32_t timeout = 10000);
 
-  static void request(Flag flag, cid_t cid, const Cb_t& cb, 
+  static void request(Flag flag, cid_t cid, Cb_t&& cb, 
                       const uint32_t timeout = 10000);
 
 
-  ColumnGet(const Params::ColumnGetReq& params, const Cb_t& cb, 
+  ColumnGet(const Params::ColumnGetReq& params, Cb_t&& cb, 
             const uint32_t timeout);
 
   virtual ~ColumnGet();

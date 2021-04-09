@@ -163,11 +163,11 @@ void Compact::Group::finalize() {
 Compact::Compact(Fragments* log, int repetition,
                  const std::vector<Fragments::Vec>& groups,
                  uint8_t cointervaling,
-                 Cb_t& cb)
+                 Compact::Cb_t&& cb)
                 : log(log), ts(Time::now_ns()),
                   preload(log->range->cfg->log_fragment_preload()),
                   repetition(repetition), ngroups(groups.size()), nfrags(0),
-                  m_cb(cb) {
+                  m_cb(std::move(cb)) {
   for(auto frags : groups)
     nfrags += frags.size();
 

@@ -110,7 +110,7 @@ class Fragment final : public std::enable_shared_from_this<Fragment> {
   void write(int err, uint8_t blk_replicas, int64_t blksz, 
              const StaticBuffer::Ptr& buff_write, Core::Semaphore* sem);
 
-  void load(const LoadCb_t& cb);
+  void load(LoadCb_t&& cb);
   
   void load_cells(int& err, Ranger::Block::Ptr cells_block);
   

@@ -158,11 +158,11 @@ ConfigSSL::make_client(AppContext::Ptr& app_ctx,
 void
 ConfigSSL::make_client(AppContext::Ptr& app_ctx,
                        SocketPlain& socket,
-                       const HandshakeCb_t& cb) const {
+                       HandshakeCb_t&& cb) const {
   auto conn = make_client(app_ctx, socket);
   conn->handshake(
     SocketSSL::client,
-    [conn, cb](const asio::error_code& ec) { cb(conn, ec); }
+    [conn, cb=std::move(cb)](const asio::error_code& ec) { cb(conn, ec); }
   );
 }
 

@@ -22,7 +22,7 @@ class Common : public BaseUnorderedMap {
   typedef std::shared_ptr<Common>   Ptr;
   typedef std::function<void(Ptr)>  Cb_t;
 
-  static Ptr make(Cb_t cb=nullptr, bool rsp_partials=false,
+  static Ptr make(Cb_t&& cb=nullptr, bool rsp_partials=false,
                   const Comm::IoContextPtr& io=nullptr) {
     return std::make_shared<Common>(std::move(cb), rsp_partials, io);
   }

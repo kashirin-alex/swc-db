@@ -55,27 +55,27 @@ void Report::clear_endpoints() {
 
 SWC_SHOULD_INLINE
 void ClusterStatus::request(const EndPoints& endpoints,
-                            const ClusterStatus::Cb_t& cb,
+                            ClusterStatus::Cb_t&& cb,
                             const uint32_t timeout) {
-  std::make_shared<ClusterStatus>(endpoints, cb, timeout)->run();
+  std::make_shared<ClusterStatus>(endpoints, std::move(cb), timeout)->run();
 }
 
 SWC_SHOULD_INLINE
 ClusterStatus::Ptr
 ClusterStatus::make(const EndPoints& endpoints,
-                    const ClusterStatus::Cb_t& cb,
+                    ClusterStatus::Cb_t&& cb,
                     const uint32_t timeout) {
-  return std::make_shared<ClusterStatus>(endpoints, cb, timeout);
+  return std::make_shared<ClusterStatus>(endpoints, std::move(cb), timeout);
 }
 
 ClusterStatus::ClusterStatus(const EndPoints& endpoints,
-                             const Cb_t& cb,
+                             ClusterStatus::Cb_t&& cb,
                              const uint32_t timeout)
                             : Report(
                                 endpoints,
                                 Params::Report::Function::CLUSTER_STATUS,
                                 timeout
-                              ), cb(cb) {
+                              ), cb(std::move(cb)) {
 }
 
 ClusterStatus::~ClusterStatus() { }
@@ -115,34 +115,34 @@ void ClusterStatus::handle(ConnHandlerPtr, const Event::Ptr& ev) {
 
 
 SWC_SHOULD_INLINE
-void ColumnStatus::request(cid_t cid, const ColumnStatus::Cb_t& cb,
+void ColumnStatus::request(cid_t cid, ColumnStatus::Cb_t&& cb,
                            const uint32_t timeout) {
-  request(Params::Report::ReqColumnStatus(cid), cb, timeout);
+  request(Params::Report::ReqColumnStatus(cid), std::move(cb), timeout);
 }
 
 SWC_SHOULD_INLINE
 void ColumnStatus::request(const Params::Report::ReqColumnStatus& params,
-                           const ColumnStatus::Cb_t& cb,
+                           ColumnStatus::Cb_t&& cb,
                            const uint32_t timeout) {
-  std::make_shared<ColumnStatus>(params, cb, timeout)->run();
+  std::make_shared<ColumnStatus>(params, std::move(cb), timeout)->run();
 }
 
 SWC_SHOULD_INLINE
 ColumnStatus::Ptr
 ColumnStatus::make(const Params::Report::ReqColumnStatus& params,
-                   const ColumnStatus::Cb_t& cb, const uint32_t timeout) {
-  return std::make_shared<ColumnStatus>(params, cb, timeout);
+                   ColumnStatus::Cb_t&& cb, const uint32_t timeout) {
+  return std::make_shared<ColumnStatus>(params, std::move(cb), timeout);
 }
 
 ColumnStatus::ColumnStatus(const Params::Report::ReqColumnStatus& params,
-                           const Cb_t& cb,
+                           ColumnStatus::Cb_t&& cb,
                            const uint32_t timeout)
                           : Report(
                               params,
                               Params::Report::Function::COLUMN_STATUS,
                               timeout
                             ),
-                            cb(cb), cid(params.cid) {
+                            cb(std::move(cb)), cid(params.cid) {
 }
 
 ColumnStatus::~ColumnStatus() { }
@@ -187,23 +187,24 @@ void ColumnStatus::handle(ConnHandlerPtr, const Event::Ptr& ev) {
 
 
 SWC_SHOULD_INLINE
-void RangersStatus::request(cid_t cid, const RangersStatus::Cb_t& cb,
+void RangersStatus::request(cid_t cid, RangersStatus::Cb_t&& cb,
                             const uint32_t timeout) {
-  std::make_shared<RangersStatus>(cid, cb, timeout)->run();
+  std::make_shared<RangersStatus>(cid, std::move(cb), timeout)->run();
 }
 
 SWC_SHOULD_INLINE
 RangersStatus::Ptr
-RangersStatus::make(cid_t cid, const RangersStatus::Cb_t& cb,
+RangersStatus::make(cid_t cid, RangersStatus::Cb_t&& cb,
                     const uint32_t timeout) {
-  return std::make_shared<RangersStatus>(cid, cb, timeout);
+  return std::make_shared<RangersStatus>(cid, std::move(cb), timeout);
 }
 
-RangersStatus::RangersStatus(cid_t cid, const Cb_t& cb, const uint32_t timeout)
+RangersStatus::RangersStatus(cid_t cid, RangersStatus::Cb_t&& cb,
+                             const uint32_t timeout)
                             : Report(
                                 Params::Report::Function::RANGERS_STATUS,
                                 timeout
-                              ), cb(cb), cid(cid) {
+                              ), cb(std::move(cb)), cid(cid) {
 }
 
 RangersStatus::~RangersStatus() { }
@@ -259,27 +260,27 @@ void RangersStatus::handle(ConnHandlerPtr, const Event::Ptr& ev) {
 
 SWC_SHOULD_INLINE
 void ManagersStatus::request(const EndPoints& endpoints,
-                             const ManagersStatus::Cb_t& cb,
+                             ManagersStatus::Cb_t&& cb,
                              const uint32_t timeout) {
-  std::make_shared<ManagersStatus>(endpoints, cb, timeout)->run();
+  std::make_shared<ManagersStatus>(endpoints, std::move(cb), timeout)->run();
 }
 
 SWC_SHOULD_INLINE
 ManagersStatus::Ptr
 ManagersStatus::make(const EndPoints& endpoints,
-                     const ManagersStatus::Cb_t& cb,
+                     ManagersStatus::Cb_t&& cb,
                      const uint32_t timeout) {
-  return std::make_shared<ManagersStatus>(endpoints, cb, timeout);
+  return std::make_shared<ManagersStatus>(endpoints, std::move(cb), timeout);
 }
 
 ManagersStatus::ManagersStatus(const EndPoints& endpoints,
-                               const Cb_t& cb,
+                               ManagersStatus::Cb_t&& cb,
                                const uint32_t timeout)
                               : Report(
                                   endpoints,
                                   Params::Report::Function::MANAGERS_STATUS,
                                   timeout
-                                ), cb(cb) {
+                                ), cb(std::move(cb)) {
 }
 
 ManagersStatus::~ManagersStatus() { }

@@ -466,17 +466,17 @@ SocketLayer* ConnHandlerPlain::socket_layer() noexcept {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
 void ConnHandlerPlain::do_async_write(
-        const std::vector<asio::const_buffer>& buffers,
-        const std::function<void(const asio::error_code&, uint32_t)>& hdlr)
+        std::vector<asio::const_buffer>&& buffers,
+        std::function<void(const asio::error_code&, uint32_t)>&& hdlr)
         noexcept {
-  asio::async_write(m_sock, buffers, hdlr);
+  asio::async_write(m_sock, std::move(buffers), std::move(hdlr));
 }
 
 void ConnHandlerPlain::do_async_read(
         uint8_t* data, uint32_t sz,
-        const std::function<void(const asio::error_code&, size_t)>& hdlr)
+        std::function<void(const asio::error_code&, size_t)>&& hdlr)
         noexcept {
-  asio::async_read(m_sock, asio::mutable_buffer(data, sz), hdlr);
+  asio::async_read(m_sock, asio::mutable_buffer(data, sz), std::move(hdlr));
 }
 #pragma GCC diagnostic pop
 
@@ -541,7 +541,7 @@ bool ConnHandlerSSL::is_open() const noexcept {
 
 void ConnHandlerSSL::handshake(
                   SocketSSL::handshake_type typ,
-                  const std::function<void(const asio::error_code&)>& cb)
+                  std::function<void(const asio::error_code&)>&& cb)
                   noexcept {
   /* any options ?
   asio::error_code ec;
@@ -550,7 +550,7 @@ void ConnHandlerSSL::handshake(
     cb(ec);
   else
   */
-  m_sock.async_handshake(typ, cb);
+  m_sock.async_handshake(typ, std::move(cb));
 }
 
 void ConnHandlerSSL::handshake(
@@ -565,9 +565,9 @@ void ConnHandlerSSL::handshake(
 }
 
 void ConnHandlerSSL::set_verify(
-        const std::function<bool(bool, asio::ssl::verify_context&)>& cb)
+        std::function<bool(bool, asio::ssl::verify_context&)>&& cb)
         noexcept {
-  m_sock.set_verify_callback(cb);
+  m_sock.set_verify_callback(std::move(cb));
 }
 
 
@@ -578,22 +578,22 @@ SocketLayer* ConnHandlerSSL::socket_layer() noexcept {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
 void ConnHandlerSSL::do_async_write(
-        const std::vector<asio::const_buffer>& buffers,
-        const std::function<void(const asio::error_code&, uint32_t)>& hdlr)
+        std::vector<asio::const_buffer>&& buffers,
+        std::function<void(const asio::error_code&, uint32_t)>&& hdlr)
         noexcept {
   asio::async_write(
-    m_sock, buffers,
-    asio::bind_executor(m_strand, hdlr)
+    m_sock, std::move(buffers),
+    asio::bind_executor(m_strand, std::move(hdlr))
   );
 }
 
 void ConnHandlerSSL::do_async_read(
         uint8_t* data, uint32_t sz,
-        const std::function<void(const asio::error_code&, size_t)>& hdlr)
+        std::function<void(const asio::error_code&, size_t)>&& hdlr)
         noexcept {
   asio::async_read(
     m_sock, asio::mutable_buffer(data, sz),
-    asio::bind_executor(m_strand, hdlr)
+    asio::bind_executor(m_strand, std::move(hdlr))
   );
 }
 #pragma GCC diagnostic pop
