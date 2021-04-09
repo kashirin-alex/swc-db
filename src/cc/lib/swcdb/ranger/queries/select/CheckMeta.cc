@@ -39,13 +39,7 @@ CheckMeta::CheckMeta(const RangePtr& range,
 }
 
 bool CheckMeta::valid() noexcept {
-  if(state_error ||
-     Env::Rgr::is_shuttingdown() ||
-     (Env::Rgr::is_not_accepting() &&
-      DB::Types::MetaColumn::is_data(range->cfg->cid))) { // ? any-false
-    return false;
-  }
-  return true;
+  return !state_error && !range->state_unloading();
 }
 
 void CheckMeta::response(int err) {

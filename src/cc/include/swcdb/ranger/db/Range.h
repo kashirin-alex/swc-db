@@ -18,13 +18,17 @@
 #include "swcdb/ranger/db/RangeBlocks.h"
 #include "swcdb/ranger/callbacks/RangeQueryUpdate.h"
 #include "swcdb/ranger/queries/select/CheckMeta.h"
-#include "swcdb/db/client/Query/UpdateHandlerCommon.h"
+#include "swcdb/ranger/queries/update/BaseMeta.h"
 
 
 namespace SWC { namespace Ranger {
 
 
 class Range final : public std::enable_shared_from_this<Range> {
+
+  class MetaRegOnLoadReq;
+  class MetaRegOnAddReq;
+
   public:
 
   static constexpr const char CELLSTORES_BAK_DIR[]  = "cs_bak";
@@ -92,6 +96,8 @@ class Range final : public std::enable_shared_from_this<Range> {
 
   void state(int& err) const;
 
+  bool state_unloading() const noexcept;
+
   void add(Callback::RangeQueryUpdate* req);
 
   void scan(const ReqScan::Ptr& req);
@@ -122,15 +128,13 @@ class Range final : public std::enable_shared_from_this<Range> {
 
   bool compact_required();
 
-  void apply_new(
-        int &err,
-        CellStore::Writers& w_cellstores,
-        CommitLog::Fragments::Vec& fragments_old,
-        const client::Query::Update::Handlers::Common::Cb_t& cb=nullptr);
+  void apply_new(int &err,
+                 CellStore::Writers& w_cellstores,
+                 CommitLog::Fragments::Vec& fragments_old,
+                 const Query::Update::BaseMeta::Ptr& hdlr=nullptr);
 
-  void expand_and_align(
-        bool w_chg_chk,
-        const client::Query::Update::Handlers::Common::Cb_t& cb);
+  void expand_and_align(bool w_chg_chk,
+                        const Query::Update::BaseMeta::Ptr& hdlr);
 
   void internal_create_folders(int& err);
 
@@ -150,10 +154,9 @@ class Range final : public std::enable_shared_from_this<Range> {
 
   void loaded(int err, const Callback::RangeLoad::Ptr& req);
 
-  void on_change(
-        bool removal,
-        const client::Query::Update::Handlers::Common::Cb_t& cb=nullptr,
-        const DB::Cell::Key* old_key_begin=nullptr);
+  void on_change(bool removal,
+                 const Query::Update::BaseMeta::Ptr& hdlr,
+                 const DB::Cell::Key* old_key_begin=nullptr);
 
   bool wait(uint8_t from_state=COMPACT_CHECKING, bool incr=false);
 

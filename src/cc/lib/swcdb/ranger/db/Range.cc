@@ -11,10 +11,45 @@
 #include "swcdb/ranger/callbacks/RangeQueryUpdate.h"
 #include "swcdb/db/Cells/CellValueSerialFields.h"
 #include "swcdb/db/Cells/SpecsValueSerialFields.h"
-
+#include "swcdb/ranger/queries/update/CommonMeta.h"
 
 
 namespace SWC { namespace Ranger {
+
+
+
+class Range::MetaRegOnLoadReq : public Query::Update::BaseMeta {
+  public:
+  typedef std::shared_ptr<MetaRegOnLoadReq>     Ptr;
+
+  static Ptr make(const RangePtr& range,
+                  const Callback::RangeLoad::Ptr& req) {
+    return std::make_shared<MetaRegOnLoadReq>(range, req);
+  }
+
+  Callback::RangeLoad::Ptr req;
+
+  MetaRegOnLoadReq(const RangePtr& range, const Callback::RangeLoad::Ptr& req)
+                  : Query::Update::BaseMeta(range), req(req) {
+  }
+
+  virtual ~MetaRegOnLoadReq() { }
+
+  virtual void response(int err=Error::OK) override {
+    if(is_last_rsp(err)) {
+      Env::Rgr::post(
+        [h=std::dynamic_pointer_cast<MetaRegOnLoadReq>(shared_from_this())]
+        (){ h->callback(); });
+    }
+  }
+
+  virtual void callback() override {
+    range->loaded(error(), req);
+  }
+
+};
+
+
 
 Range::Range(const ColumnCfg::Ptr& cfg, const rid_t rid)
             : cfg(cfg), rid(rid),
@@ -137,6 +172,12 @@ void Range::state(int& err) const {
   }
 }
 
+bool Range::state_unloading() const noexcept {
+  return Env::Rgr::is_shuttingdown() ||
+         (Env::Rgr::is_not_accepting() &&
+          DB::Types::MetaColumn::is_data(cfg->cid));
+}
+
 void Range::add(Callback::RangeQueryUpdate* req) {
   m_q_add.push(req);
   run_add_queue();
@@ -194,10 +235,7 @@ void Range::load(const Callback::RangeLoad::Ptr& req) {
     need = m_state.compare_exchange_weak(at, State::LOADING);
   }
 
-  int err = Env::Rgr::is_shuttingdown() ||
-            (Env::Rgr::is_not_accepting() &&
-             DB::Types::MetaColumn::is_data(cfg->cid))
-          ? Error::SERVER_SHUTTING_DOWN : Error::OK;
+  int err = state_unloading() ? Error::SERVER_SHUTTING_DOWN : Error::OK;
   if(!need || err)
     return loaded(err, req);
 
@@ -219,11 +257,8 @@ void Range::load(const Callback::RangeLoad::Ptr& req) {
 void Range::internal_take_ownership(int &err, const Callback::RangeLoad::Ptr& req) {
   SWC_LOGF(LOG_DEBUG, "LOADING RANGE(%lu/%lu)-TAKE OWNERSHIP", cfg->cid, rid);
 
-  if(Env::Rgr::is_shuttingdown() ||
-     (Env::Rgr::is_not_accepting() &&
-      DB::Types::MetaColumn::is_data(cfg->cid))) {
+  if(state_unloading())
     return loaded(Error::SERVER_SHUTTING_DOWN, req);
-  }
 
   Env::Rgr::rgr_data()->set_rgr(
     err, DB::RangeBase::get_path_ranger(m_path), cfg->file_replication());
@@ -272,17 +307,21 @@ void Range::remove(const Callback::ColumnDelete::Ptr& req) {
 
   blocks.commitlog.stopping.store(true);
 
-  on_change(true, [req, range=shared_from_this()]
-    (const client::Query::Update::Handlers::Common::Ptr&) {
-      int err = Error::OK;
+  on_change(
+    true,
+    Query::Update::CommonMeta::make(
+      shared_from_this(),
+      [req] (const Query::Update::CommonMeta::Ptr& hdlr) {
+        int err = Error::OK;
 
-      range->wait();
-      range->wait_queue();
-      range->blocks.remove(err);
+        hdlr->range->wait();
+        hdlr->range->wait_queue();
+        hdlr->range->blocks.remove(err);
 
-      Env::FsInterface::interface()->rmdir(err, range->get_path(""));
-      req->removed(range);
-    }
+        Env::FsInterface::interface()->rmdir(err, hdlr->range->get_path(""));
+        req->removed(hdlr->range);
+      }
+    )
   );
 }
 
@@ -375,24 +414,15 @@ bool Range::compact_required() {
   return m_require_compact;
 }
 
-void Range::on_change(
-        bool removal,
-        const client::Query::Update::Handlers::Common::Cb_t& cb,
-        const DB::Cell::Key* old_key_begin) {
+void Range::on_change(bool removal,
+                      const Query::Update::BaseMeta::Ptr& hdlr,
+                      const DB::Cell::Key* old_key_begin) {
   if(cfg->range_type == DB::Types::Range::MASTER) {
     // update manager-root
     // Mngr::RangeUpdated
-    cb(nullptr);
+    hdlr->callback();
     return;
   }
-
-  // singleColumn-base
-  auto hdlr = client::Query::Update::Handlers::Common::make(
-    cb, Env::Rgr::io());
-  // Env::Rgr::updater(); require an updater with cb on cell-base
-
-  auto& col = hdlr->create(
-    cfg->meta_cid, cfg->key_seq, 1, 0, DB::Types::Column::SERIAL);
 
   DB::Cells::Cell cell;
   auto cid_f(std::to_string(cfg->cid));
@@ -401,7 +431,7 @@ void Range::on_change(
     cell.flag = DB::Cells::DELETE;
     cell.key.copy(m_interval.key_begin);
     cell.key.insert(0, cid_f);
-    col->add(cell);
+    hdlr->column.add(cell);
 
   } else {
     cell.flag = DB::Cells::INSERT;
@@ -438,7 +468,7 @@ void Range::on_change(
     cell.set_value(wfields.base, wfields.fill(), false);
 
     cell.set_time_order_desc(true);
-    col->add(cell);
+    hdlr->column.add(cell);
 
     if(old_key_begin && !old_key_begin->equal(m_interval.key_begin)) {
       SWC_ASSERT(!old_key_begin->empty());
@@ -448,36 +478,34 @@ void Range::on_change(
       cell.flag = DB::Cells::DELETE;
       cell.key.copy(*old_key_begin);
       cell.key.insert(0, std::to_string(cfg->cid));
-      col->add(cell);
+      hdlr->column.add(cell);
     }
   }
 
-  client::Query::Update::commit(hdlr, col.get());
+  client::Query::Update::commit(hdlr, &hdlr->column);
   /* INSERT master-range(
-      col-{1,4}), key[cid+m_interval(data(cid)+key)], value[rid]
+      col-{1,4}), key[cid+m_interval(data(cid)+key)], value[end, rid, min, max]
      INSERT meta-range(
-       col-{5,8}), key[cid+m_interval(key)], value[rid]
+       col-{5,8}), key[cid+m_interval(key)], value[end, rid, min, max]
   */
 }
 
-void Range::apply_new(
-      int &err,
-      CellStore::Writers& w_cellstores,
-      CommitLog::Fragments::Vec& fragments_old,
-      const client::Query::Update::Handlers::Common::Cb_t& cb) {
+void Range::apply_new(int &err,
+                      CellStore::Writers& w_cellstores,
+                      CommitLog::Fragments::Vec& fragments_old,
+                      const Query::Update::BaseMeta::Ptr& hdlr) {
   {
     std::scoped_lock lock(m_mutex);
     blocks.apply_new(err, w_cellstores, fragments_old);
     if(err)
       return;
   }
-  if(cb)
-    expand_and_align(true, cb);
+  if(hdlr)
+    expand_and_align(true, hdlr);
 }
 
-void Range::expand_and_align(
-      bool w_chg_chk,
-      const client::Query::Update::Handlers::Common::Cb_t& cb) {
+void Range::expand_and_align(bool w_chg_chk,
+                             const Query::Update::BaseMeta::Ptr& hdlr) {
   DB::Cell::Key     old_key_begin;
   DB::Cell::Key     key_end;
   DB::Cell::KeyVec  aligned_min;
@@ -506,8 +534,8 @@ void Range::expand_and_align(
                     !m_interval.aligned_min.equal(aligned_min) ||
                     !m_interval.aligned_max.equal(aligned_max);
   intval_chg
-    ? on_change(false, cb, w_chg_chk ? &old_key_begin : nullptr)
-    : cb(nullptr);
+    ? on_change(false, hdlr, w_chg_chk ? &old_key_begin : nullptr)
+    : hdlr->callback();
 }
 
 void Range::internal_create_folders(int& err) {
@@ -609,9 +637,7 @@ void Range::last_rgr_chk(int &err, const Callback::RangeLoad::Ptr& req) {
 void Range::load(int &err, const Callback::RangeLoad::Ptr& req) {
   SWC_LOGF(LOG_DEBUG, "LOADING RANGE(%lu/%lu)-DATA", cfg->cid, rid);
 
-  if(Env::Rgr::is_shuttingdown() ||
-     (Env::Rgr::is_not_accepting() &&
-      DB::Types::MetaColumn::is_data(cfg->cid)))
+  if(state_unloading())
     return loaded(Error::SERVER_SHUTTING_DOWN, req);
 
   bool is_initial_column_range = false;
@@ -648,11 +674,7 @@ void Range::load(int &err, const Callback::RangeLoad::Ptr& req) {
 
   if(is_initial_column_range) {
     RangeData::save(err, blocks.cellstores);
-    return on_change(false, [req, range=shared_from_this()]
-      (const client::Query::Update::Handlers::Common::Ptr& hdlr) {
-        range->loaded(hdlr->error(), req);
-      }
-    );
+    return on_change(false, MetaRegOnLoadReq::make(shared_from_this(), req));
   }
 
   if(cfg->range_type == DB::Types::Range::MASTER)
@@ -668,9 +690,7 @@ void Range::check_meta(const Query::Select::CheckMeta::Ptr& hdlr) {
                       cfg->cid, rid, err, Error::get_text(err));
   if(err)
     return loaded(err, hdlr->req);
-  if(Env::Rgr::is_shuttingdown() ||
-      (Env::Rgr::is_not_accepting() &&
-       DB::Types::MetaColumn::is_data(cfg->cid)))
+  if(state_unloading())
     return loaded(Error::SERVER_SHUTTING_DOWN, hdlr->req);
 
   if(hdlr->empty()) {
@@ -682,11 +702,8 @@ void Range::check_meta(const Query::Select::CheckMeta::Ptr& hdlr) {
       hdlr->spec.print(
         SWC_LOG_OSTREAM << "\n\tmeta-cid(" << hdlr->cid << ")=");
     );
-    return on_change(false, [req=hdlr->req, range=shared_from_this()]
-      (const client::Query::Update::Handlers::Common::Ptr& hdlr) {
-        range->loaded(hdlr->error(), req);
-      }
-    );
+    return on_change(
+      false, MetaRegOnLoadReq::make(shared_from_this(), hdlr->req));
   }
 
   DB::Cells::Result cells;
@@ -752,51 +769,21 @@ void Range::check_meta(const Query::Select::CheckMeta::Ptr& hdlr) {
     synced = false;
   } }
 
-  if(Env::Rgr::is_shuttingdown() ||
-      (Env::Rgr::is_not_accepting() &&
-       DB::Types::MetaColumn::is_data(cfg->cid)))
-    return loaded(Error::SERVER_SHUTTING_DOWN, hdlr->req);
-
   if(synced)
     return loaded(err, hdlr->req);
 
-  //singleColumn-base
-  auto updater = client::Query::Update::Handlers::Common::make(
-    [req=hdlr->req, range=shared_from_this()]
-    (const client::Query::Update::Handlers::Common::Ptr& hdlr) {
-      if(Env::Rgr::is_shuttingdown() ||
-          (Env::Rgr::is_not_accepting() &&
-           DB::Types::MetaColumn::is_data(range->cfg->cid))) {
-        return range->loaded(Error::SERVER_SHUTTING_DOWN, req);
-      }
-      int err = hdlr->error();
-      if(err) {
-        SWC_LOGF(LOG_WARN,
-          "Range MetaData FIX auto-del range-%lu/%lu err=%d(%s)",
-          range->cfg->cid, range->rid, err, Error::get_text(err));
-        return range->loaded(Error::RGR_NOT_LOADED_RANGE, req);
-      }
-      return range->on_change(false, [req, range]
-        (const client::Query::Update::Handlers::Common::Ptr& hdlr) {
-          range->loaded(hdlr->error(), req);
-        }
-      );
-    },
-    Env::Rgr::io()
-  );
-  updater->completion.increment();
-  auto& col = updater->create(
-    cfg->meta_cid, cfg->key_seq, 1, 0, DB::Types::Column::SERIAL);
+  auto updater = MetaRegOnLoadReq::make(shared_from_this(), hdlr->req);
   for(auto cell : cells) {
     cell->flag = DB::Cells::DELETE;
     cell->free();
-    col->add(*cell);
-    updater->commit_or_wait(col.get(), 1);
+    updater->column.add(*cell);
   }
-  updater->response(Error::OK);
+  on_change(false, updater);
 }
 
 void Range::loaded(int err, const Callback::RangeLoad::Ptr& req) {
+  if(!err && state_unloading())
+    err = Error::SERVER_SHUTTING_DOWN;
   bool tried;
   {
     std::scoped_lock lock(m_mutex);
@@ -845,6 +832,42 @@ void Range::run_add_queue() {
     m_adding.fetch_sub(1);
 }
 
+
+
+class Range::MetaRegOnAddReq : public Query::Update::BaseMeta {
+  public:
+  typedef std::shared_ptr<MetaRegOnAddReq>     Ptr;
+
+  static Ptr make(const RangePtr& range, Callback::RangeQueryUpdate* req) {
+    return std::make_shared<MetaRegOnAddReq>(range, req);
+  }
+
+  Callback::RangeQueryUpdate* req;
+
+  MetaRegOnAddReq(const RangePtr& range, Callback::RangeQueryUpdate* req)
+                : Query::Update::BaseMeta(range), req(req) {
+  }
+
+  virtual ~MetaRegOnAddReq() {
+    delete req;
+  }
+
+  virtual void response(int err=Error::OK) override {
+    if(is_last_rsp(err))
+      callback();
+  }
+
+  virtual void callback() override {
+    range->blocks.processing_decrement();
+    Env::Rgr::post([r=range](){ r->_run_add_queue(); });
+    if(!req->rsp.err)
+      req->rsp.err = error();
+    req->response();
+  }
+
+};
+
+
 void Range::_run_add_queue() {
   const uint64_t ttl = cfg->cell_ttl();
 
@@ -882,7 +905,6 @@ void Range::_run_add_queue() {
     }
 
     {
-
     const uint8_t* buf = req->ev->data_ext.base;
     size_t remain = req->ev->data_ext.size;
     bool aligned_chg = false;
@@ -957,20 +979,9 @@ void Range::_run_add_queue() {
       Core::MutexAtomic::scope lock(m_mutex_intval_alignment);
       aligned_chg = m_interval.align(align_min, align_max);
     }
+    if(aligned_chg)
+      return on_change(false, MetaRegOnAddReq::make(shared_from_this(), req));
 
-    if(aligned_chg) {
-      return on_change(false,
-        [req, range=shared_from_this()]
-        (const client::Query::Update::Handlers::Common::Ptr& hdlr) {
-          if(!req->rsp.err)
-            req->rsp.err = hdlr->error();
-          req->response();
-          delete req;
-          range->blocks.processing_decrement();
-          range->_run_add_queue();
-        }
-      );
-    }
     }
 
     _response:
@@ -989,3 +1000,4 @@ void Range::_run_add_queue() {
 
 #include "swcdb/ranger/Protocol/Rgr/req/RangeUnload.cc"
 #include "swcdb/ranger/queries/select/CheckMeta.cc"
+#include "swcdb/ranger/queries/update/BaseMeta.cc"

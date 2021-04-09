@@ -851,18 +851,19 @@ void CompactRange::split(rid_t new_rid, uint32_t split_at) {
     new_range->blocks.commitlog.commit_new_fragment(true);
   }
 
-  new_range->expand_and_align(false,
-    [col, new_range, ptr=shared()]
-    (const client::Query::Update::Handlers::Common::Ptr&) {
+  new_range->expand_and_align(false, Query::Update::CommonMeta::make(
+    new_range,
+    [col, ptr=shared()] (const Query::Update::CommonMeta::Ptr& hdlr) {
       SWC_LOGF(LOG_INFO,
-        "COMPACT-SPLIT %lu/%lu unloading new-rid=%lu",
-        col->cfg->cid, ptr->range->rid, new_range->rid);
-      new_range->compacting(Range::COMPACT_NONE);
-      col->internal_unload(new_range->rid);
+        "COMPACT-SPLIT %lu/%lu unloading new-rid=%lu reg-err=%d(%s)",
+          col->cfg->cid, ptr->range->rid, hdlr->range->rid,
+          hdlr->error(), Error::get_text(hdlr->error()));
+      hdlr->range->compacting(Range::COMPACT_NONE);
+      col->internal_unload(hdlr->range->rid);
 
       Comm::Protocol::Mngr::Req::RangeUnloaded::request(
-        new_range->cfg->cid, new_range->rid,
-        [ptr, cid=col->cfg->cid, new_rid=new_range->rid]
+        hdlr->range->cfg->cid, hdlr->range->rid,
+        [ptr, cid=col->cfg->cid, new_rid=hdlr->range->rid]
         (const Comm::client::ConnQueue::ReqBase::Ptr& req,
          const Comm::Protocol::Mngr::Params::RangeUnloadedRsp& rsp) {
           SWC_LOGF(LOG_DEBUG,
@@ -875,26 +876,30 @@ void CompactRange::split(rid_t new_rid, uint32_t split_at) {
             req->request_again();
           }
       });
-  });
+  }));
 
-  range->expand_and_align(true,
-    [ts, ptr=shared()] (const client::Query::Update::Handlers::Common::Ptr&) {
+  range->expand_and_align(true, Query::Update::CommonMeta::make(
+    range,
+    [ts, ptr=shared()] (const Query::Update::CommonMeta::Ptr&) {
       SWC_LOG_OUT(LOG_INFO,
         SWC_LOG_PRINTF("COMPACT-SPLITTED %lu/%lu took=%ldns new-end=",
           ptr->range->cfg->cid, ptr->range->rid, Time::now_ns() - ts);
           ptr->cellstores.back()->interval.key_end.print(SWC_LOG_OSTREAM);
       );
       Env::Rgr::maintenance_post([ptr](){ ptr->finished(true); });
-  });
+    }
+  ));
 }
 
 void CompactRange::apply_new(bool clear) {
   int err = Error::OK;
   range->apply_new(err, cellstores, fragments_old,
-    [clear, ptr=shared()]
-    (const client::Query::Update::Handlers::Common::Ptr&) {
-      Env::Rgr::maintenance_post([clear, ptr](){ ptr->finished(clear); });
-  });
+    Query::Update::CommonMeta::make(
+      range,
+      [clear, ptr=shared()] (const Query::Update::CommonMeta::Ptr&) {
+        Env::Rgr::maintenance_post([clear, ptr](){ ptr->finished(clear); });
+    })
+  );
   if(err)
     return quit();
 }

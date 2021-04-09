@@ -97,17 +97,19 @@ class RangeSplit final {
     }
 
     std::promise<void>  r_promise;
-    new_range->expand_and_align(false,
-      [this, col, new_range, await=&r_promise]
-      (const client::Query::Update::Handlers::Common::Ptr&) {
+    new_range->expand_and_align(false, Query::Update::CommonMeta::make(
+      new_range,
+      [this, col, await=&r_promise]
+      (const Query::Update::CommonMeta::Ptr& hdlr) {
         SWC_LOGF(LOG_INFO,
-          "COMPACT-SPLIT RANGE %lu/%lu unloading new-rid=%lu",
-          col->cfg->cid, range->rid, new_range->rid);
-        new_range->compacting(Range::COMPACT_NONE);
-        col->internal_unload(new_range->rid);
+          "COMPACT-SPLIT RANGE %lu/%lu unloading new-rid=%lu reg-err=%d(%s)",
+            col->cfg->cid, range->rid, hdlr->range->rid,
+            hdlr->error(), Error::get_text(hdlr->error()));
+        hdlr->range->compacting(Range::COMPACT_NONE);
+        col->internal_unload(hdlr->range->rid);
         Comm::Protocol::Mngr::Req::RangeUnloaded::request(
-          col->cfg->cid, new_range->rid,
-          [cid=col->cfg->cid, new_rid=new_range->rid]
+          col->cfg->cid, hdlr->range->rid,
+          [cid=col->cfg->cid, new_rid=hdlr->range->rid]
           (const Comm::client::ConnQueue::ReqBase::Ptr& req,
            const Comm::Protocol::Mngr::Params::RangeUnloadedRsp& rsp) {
             SWC_LOGF(LOG_DEBUG,
@@ -121,11 +123,13 @@ class RangeSplit final {
             }
         });
 
-        range->expand_and_align(true,
-        [await] (const client::Query::Update::Handlers::Common::Ptr&) {
-          await->set_value();
-        });
-    });
+        range->expand_and_align(true, Query::Update::CommonMeta::make(
+          range,
+          [await] (const Query::Update::CommonMeta::Ptr&) {
+            await->set_value();
+          })
+        );
+    }));
     new_range = nullptr;
     r_promise.get_future().wait();
 
