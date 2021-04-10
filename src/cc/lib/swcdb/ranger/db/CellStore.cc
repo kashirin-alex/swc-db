@@ -40,8 +40,9 @@ Read::Ptr Read::make(int& err, const csid_t csid,
     csid,
     std::move(prev_key_end),
     std::move(key_end),
-    std::move(interval_by_blks.was_set
-                ? interval_by_blks : DB::Cells::Interval(interval)),
+    (interval_by_blks.was_set
+      ? std::move(interval_by_blks)
+      : std::move(DB::Cells::Interval(interval))),
     std::move(blocks),
     cell_revs,
     smartfd
