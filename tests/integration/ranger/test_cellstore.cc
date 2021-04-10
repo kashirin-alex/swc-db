@@ -162,6 +162,7 @@ void read_cs(SWC::csid_t csid, SWC::Ranger::RangePtr range,
     std::cerr << "ERROR: .cellstores.blocks_count() != expected_blocks \n"
               << " expected=" << expected_blocks << "\n"
               << " counted=" << blocks.cellstores.blocks_count() << "\n";
+    blocks.cellstores.print(std::cerr, true);
     exit(1);
   }
 
@@ -233,8 +234,8 @@ int main(int argc, char** argv) {
   schema.cid = cid;
   schema.col_name = "col-test-cs";
   schema.cell_versions = 1;
-  schema.blk_size = 64000000;
-  schema.blk_cells = 100000;
+  schema.blk_size = 640000;
+  schema.blk_cells = 1000;
   schema.blk_encoding = SWC::DB::Types::Encoder::SNAPPY;
   SWC::Ranger::ColumnCfg::Ptr col_cfg(
     new SWC::Ranger::ColumnCfg(cid, schema));
@@ -248,6 +249,7 @@ int main(int argc, char** argv) {
   SWC::Env::FsInterface::interface()->rmdir(err, range->get_path(""));
   SWC::Env::FsInterface::interface()->mkdirs(
     err, range->get_path(SWC::DB::RangeBase::CELLSTORES_DIR));
+  SWC_ASSERT(!err);
 
   size_t expected_blocks = 0;
   for(size_t i=1; i<=num_cellstores; ++i) {
@@ -348,13 +350,26 @@ int main(int argc, char** argv) {
     threads.erase(threads.begin());
   }
 
-  blocks.remove(err);
+  blocks.remove(err); // waiting-completion-here
+  hdlr_err(err);
 
+  range->compacting(SWC::Ranger::Range::COMPACT_NONE);
+  range->internal_remove(err);
   hdlr_err(err);
 
   SWC::Env::FsInterface::interface()->rmdir(
     err, SWC::DB::RangeBase::get_column_path(range->cfg->cid));
 
+  range = nullptr;
+
+  SWC::Env::Rgr::shuttingdown();
+  SWC::Env::Rgr::reset();
+  SWC::Env::Clients::reset();
+  SWC::Env::IoCtx::reset();
+  SWC::Env::FsInterface::reset();
+  SWC::Env::Config::reset();
+  std::this_thread::sleep_for(std::chrono::milliseconds(50));
+
   std::cout << "\n-   OK   -\n\n";
-  exit(0);
+  return 0;
 }

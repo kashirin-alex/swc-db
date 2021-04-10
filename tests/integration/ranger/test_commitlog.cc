@@ -15,8 +15,7 @@
 using namespace SWC;
 
 
-void count_all_cells(size_t num_cells,
-                     SWC::Ranger::Blocks& blocks) {
+void count_all_cells(size_t num_cells, Ranger::Blocks& blocks) {
   std::cout << " count_all_cells: \n";
   Core::Semaphore sem(1, 1);
 
@@ -24,9 +23,9 @@ void count_all_cells(size_t num_cells,
   req->spec.flags.max_versions = blocks.range->cfg->cell_versions();
   req->spec.flags.limit = num_cells * blocks.range->cfg->cell_versions();
 
-  req->cb = [req, &sem](int err) { // , blocks=&blocks
+  req->cb = [&req, &sem](int err) { // , blocks=&blocks
     std::cout << " err=" <<  err
-              << "(" << SWC::Error::get_text(err) << ") \n" ;
+              << "(" << Error::get_text(err) << ") \n" ;
     if(req->cells.size() != req->spec.flags.limit) {
       std::cerr << "all-ver, req->cells.size() != req->spec.flags.limit  \n"
                 << " " << req->cells.size()
@@ -49,16 +48,17 @@ int main(int argc, char** argv) {
   Env::FsInterface::init(FS::fs_type(
     Env::Config::settings()->get_str("swc.fs")));
 
-  SWC::Env::IoCtx::init(8);
-  SWC::Env::Clients::init(
-    std::make_shared<SWC::client::Clients>(
-      SWC::Env::IoCtx::io(),
-      nullptr, // std::make_shared<SWC::client::ManagerContext>()
-      nullptr  // std::make_shared<SWC::client::RangerContext>()
+  Env::IoCtx::init(8);
+  Env::Clients::init(
+    std::make_shared<client::Clients>(
+      Env::IoCtx::io(),
+      nullptr, // std::make_shared<client::ManagerContext>()
+      nullptr  // std::make_shared<client::RangerContext>()
     )
   );
 
   Env::Rgr::init();
+  Env::Rgr::start();
 
   cid_t cid = 11;
   DB::Schema schema;
@@ -74,17 +74,18 @@ int main(int argc, char** argv) {
   uint32_t versions = 3;
 
   auto range = std::make_shared<Ranger::Range>(col_cfg, 1);
-  range->set_state(SWC::Ranger::Range::State::LOADED);
-  range->compacting(SWC::Ranger::Range::COMPACT_CHECKING);
+  Env::FsInterface::interface()->rmdir(err, range->get_path(""));
+  SWC_ASSERT(!err);
+  range->internal_create_folders(err);
+  SWC_ASSERT(!err);
 
+  range->set_state(Ranger::Range::State::LOADED);
+  //range->compacting(Ranger::Range::COMPACT_CHECKING);
+
+  { // create logs with temp commitlog
   Ranger::CommitLog::Fragments commitlog(col_cfg->key_seq);
   commitlog.init(range);
 
-  Env::FsInterface::interface()->rmdir(err, range->get_path(""));
-  Env::FsInterface::interface()->mkdirs(
-    err, range->get_path(SWC::DB::RangeBase::LOG_DIR));
-  Env::FsInterface::interface()->mkdirs(
-    err, range->get_path(SWC::DB::RangeBase::CELLSTORES_DIR));
 
   commitlog.print(std::cout << " init:\n", true);
   std::cout << "\n";
@@ -106,7 +107,7 @@ int main(int argc, char** argv) {
 
         std::string n = std::to_string(i);
 
-        rev = SWC::Time::now_ns();
+        rev = Time::now_ns();
         cell.flag = DB::Cells::INSERT;
         cell.set_timestamp(rev-1);
         //cell.set_revision(rev);
@@ -150,15 +151,15 @@ int main(int argc, char** argv) {
   }
   commitlog.unload();
   std::cout << "\n FINISH CREATE LOG\n\n ";
-
+  }
   std::this_thread::sleep_for(std::chrono::milliseconds(5000));
 
 
   ///
+  
 
-
-  SWC::Ranger::Blocks blocks(col_cfg->key_seq);
-  blocks.init(range);
+  range->init();
+  auto& blocks = range->blocks;
   blocks.print(std::cout << "new loading: \n", true);
   std::cout << '\n';
   blocks.cellstores.add(Ranger::CellStore::create_initial(err, range));
@@ -168,15 +169,15 @@ int main(int argc, char** argv) {
 
   int num_chks = 10;
   Core::Semaphore sem2(num_chks, num_chks);
-  for(int i = 1;i<=num_chks; ++i){
+  std::vector<Ranger::ReqScanTest::Ptr> requests(num_chks);
+  for(int i = 0;i<num_chks; ++i){
 
-    auto req = Ranger::ReqScanTest::make();
+    auto& req = requests[i] = Ranger::ReqScanTest::make();
     req->spec.flags.limit = num_cells;
 
-    req->cb = [req, &sem2, i](int err) { // , blocks=&blocks
+    req->cb = [&req, &sem2, i](int err) { // , blocks=&blocks
       std::cout << " chk=" << i
-                << " err=" <<  err
-                << "(" << SWC::Error::get_text(err) << ") \n" ;
+                << " err=" <<  err << "(" << Error::get_text(err) << ") \n" ;
       if(req->cells.size() != req->spec.flags.limit) {
         std::cerr << "one-ver, req->cells.size() != req->spec.flags.limit  \n"
                   << " " << req->cells.size()
@@ -192,6 +193,7 @@ int main(int argc, char** argv) {
   std::cout << '\n';
 
   sem2.wait_all();
+  requests.clear();
 
   count_all_cells(num_cells, blocks);
 
@@ -212,7 +214,7 @@ int main(int argc, char** argv) {
 
         std::string n = std::to_string(i)+"-added";
 
-        rev = SWC::Time::now_ns();
+        rev = Time::now_ns();
         cell.flag = DB::Cells::INSERT;
         cell.set_timestamp(rev-1);
         //cell.set_revision(rev);
@@ -245,10 +247,23 @@ int main(int argc, char** argv) {
   std::cout << '\n';
   std::cerr << " scanned blocks (add_logged), OK\n";
 
+  range->internal_remove(err);
+  SWC_ASSERT(!err);
+
   Env::FsInterface::interface()->rmdir(
     err, DB::RangeBase::get_column_path(range->cfg->cid));
+  
+  std::cerr << " range use-count=" << range.use_count() << '\n';
+  range = nullptr;
+
+  Env::Rgr::shuttingdown();
+  Env::Rgr::reset();
+  Env::Clients::reset();
+  Env::IoCtx::reset();
+  Env::FsInterface::reset();
+  Env::Config::reset();
+  std::this_thread::sleep_for(std::chrono::milliseconds(50));
 
   std::cout << "\n-   OK   -\n\n";
-
-  exit(0);
+  return 0;
 }

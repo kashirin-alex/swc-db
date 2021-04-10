@@ -251,7 +251,8 @@ void Rgr::start() {
 void Rgr::shuttingdown() {
   m_env->m_not_accepting.store(true);
 
-  m_env->_compaction->stop();
+  if(m_env->_compaction)
+    m_env->_compaction->stop();
   m_env->mnt_io->stop();
 
   m_env->_update_hdlr->commit_if_need();
