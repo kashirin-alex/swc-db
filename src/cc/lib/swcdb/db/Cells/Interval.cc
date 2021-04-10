@@ -26,6 +26,17 @@ Interval::Interval(const Interval& other)
   copy(other);
 }
 
+Interval::Interval(Interval&& other) noexcept
+                  : key_seq(other.key_seq),
+                    key_begin(std::move(other.key_begin)),
+                    key_end(std::move(other.key_end)),
+                    ts_earliest(std::move(other.ts_earliest)),
+                    ts_latest(std::move(other.ts_latest)),
+                    aligned_min(std::move(other.aligned_min)),
+                    aligned_max(std::move(other.aligned_max)),
+                    was_set(other.was_set) {
+}
+
 Interval::~Interval() {
   free();
 }

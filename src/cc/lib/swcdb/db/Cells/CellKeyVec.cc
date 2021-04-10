@@ -11,6 +11,10 @@ namespace SWC { namespace DB { namespace Cell {
 
 KeyVec::KeyVec() noexcept { }
 
+KeyVec::KeyVec(KeyVec&& other) noexcept
+               : VecFraction(std::move(other)) {
+}
+
 KeyVec::~KeyVec() { }
 
 void KeyVec::free() {

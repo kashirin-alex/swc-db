@@ -24,6 +24,8 @@ class KeyVec final : public VecFraction {
 
   explicit KeyVec() noexcept;
 
+  explicit KeyVec(KeyVec&& other) noexcept;
+
   ~KeyVec();
 
   void free();
@@ -31,8 +33,6 @@ class KeyVec final : public VecFraction {
   size_t size_of_internal() const noexcept;
 
   KeyVec(const KeyVec&) = delete;
-
-  KeyVec(const KeyVec&&) = delete;
 
   KeyVec& operator=(const KeyVec&) = delete;
 

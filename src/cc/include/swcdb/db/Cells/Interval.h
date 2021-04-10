@@ -31,7 +31,7 @@ class Interval final {
 
   explicit Interval(const Interval& other);
 
-  Interval(const Interval&&) = delete;
+  explicit Interval(Interval&& other) noexcept;
 
   Interval& operator=(const Interval&) = delete;
 
