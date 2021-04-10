@@ -38,10 +38,11 @@ Read::Ptr Read::make(int& err, const csid_t csid,
 
   return new Read(
     csid,
-    prev_key_end,
-    key_end,
-    interval_by_blks.was_set ? interval_by_blks : interval,
-    blocks,
+    std::move(prev_key_end),
+    std::move(key_end),
+    std::move(interval_by_blks.was_set
+                ? interval_by_blks : DB::Cells::Interval(interval)),
+    std::move(blocks),
     cell_revs,
     smartfd
   );
@@ -165,12 +166,11 @@ void Read::load_blocks_index(int& err, FS::SmartFd::Ptr& smartfd,
     if(err)
       continue;
 
+    for(auto blk : blocks)
+      delete blk;
+    blocks.clear();
+
     for(uint32_t i=0; i < blks_idx_count; ++i) {
-
-      for(auto blk : blocks)
-        delete blk;
-      blocks.clear();
-
       read_buf.free();
       if(fs->pread(err, smartfd, offset, &read_buf,
                    IDX_BLKS_HEADER_SIZE) != IDX_BLKS_HEADER_SIZE)  {
@@ -250,17 +250,17 @@ void Read::load_blocks_index(int& err, FS::SmartFd::Ptr& smartfd,
 //
 
 Read::Read(const csid_t csid,
-           const DB::Cell::Key& prev_key_end,
-           const DB::Cell::Key& key_end,
-           const DB::Cells::Interval& interval,
-           const std::vector<Block::Read::Ptr>& blocks,
+           DB::Cell::Key&& prev_key_end,
+           DB::Cell::Key&& key_end,
+           DB::Cells::Interval&& interval,
+           std::vector<Block::Read::Ptr>&& blks,
            const uint32_t cell_revs,
            const FS::SmartFd::Ptr& smartfd)
           : csid(csid),
-            prev_key_end(prev_key_end),
-            key_end(key_end),
-            interval(interval),
-            blocks(blocks),
+            prev_key_end(std::move(prev_key_end)),
+            key_end(std::move(key_end)),
+            interval(std::move(interval)),
+            blocks(std::move(blks)),
             cell_revs(cell_revs),
             smartfd(smartfd) {
   Env::Rgr::res().more_mem_usage(size_of());

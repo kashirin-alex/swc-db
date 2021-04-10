@@ -14,20 +14,20 @@ namespace SWC { namespace Ranger {
 
 namespace CellStore {
 
-/* file-format: 
-    [blocks]: 
-      header: i8(encoder), i32(enc-len), i32(len), i32(cells), 
+/* file-format:
+    [blocks]:
+      header: i8(encoder), i32(enc-len), i32(len), i32(cells),
               i32(checksum-data), i32(checksum)
       data:   [cell]
     [idx-blocks]:
-      header:   i8(encoder), i32(enc-len), i32(len), 
-                i32(checksum-data), i32(checksum) 
+      header:   i8(encoder), i32(enc-len), i32(len),
+                i32(checksum-data), i32(checksum)
       idx-data: (1st ? prev_key_end,), vi32(blocks)
                 [blocks]:
-                  vi64(offset), interval, 
-                  i8(encoder), vi32(enc-len), vi32(len), 
+                  vi64(offset), interval,
+                  i8(encoder), vi32(enc-len), vi32(len),
                   vi32(cells), vi32(checksum-data)
-    trailer : i8(version), i32(cell-revs), i32(idx-blocks), i64(idx-offset), 
+    trailer : i8(version), i32(cell-revs), i32(idx-blocks), i64(idx-offset),
               i32(checksum)
       (trailer-offset) = fileLength - TRAILER_SIZE
 */
@@ -61,8 +61,8 @@ class Read final {
                                 uint32_t& cell_revs,
                                 bool chk_base=false);
 
-  // 
-  
+  //
+
   const csid_t                        csid;
   const DB::Cell::Key                 prev_key_end;
   const DB::Cell::Key                 key_end;
@@ -72,17 +72,17 @@ class Read final {
   FS::SmartFd::Ptr                    smartfd;
 
   explicit Read(const csid_t csid,
-                const DB::Cell::Key& prev_key_end,
-                const DB::Cell::Key& key_end,
-                const DB::Cells::Interval& interval, 
-                const std::vector<Block::Read::Ptr>& blocks,
+                DB::Cell::Key&& prev_key_end,
+                DB::Cell::Key&& key_end,
+                DB::Cells::Interval&& interval,
+                std::vector<Block::Read::Ptr>&& blocks,
                 const uint32_t cell_revs,
                 const FS::SmartFd::Ptr& smartfd);
 
   Read(const Read&) = delete;
 
   Read(const Read&&) = delete;
-  
+
   Read& operator=(const Read&) = delete;
 
   ~Read();
@@ -135,21 +135,21 @@ class Write final {
   size_t                    size;
   DB::Cells::Interval       interval;
   DB::Cell::Key             prev_key_end;
-  
+
   //Core::Atomic<uint32_t>    completion;
- 
-  Write(const csid_t csid, const std::string& filepath, 
+
+  Write(const csid_t csid, const std::string& filepath,
         const RangePtr& range, uint32_t cell_revs);
 
   ~Write();
 
-  void create(int& err, 
+  void create(int& err,
               int32_t bufsz=-1, uint8_t blk_replicas=0, int64_t blksz=-1);
 
-  void block_encode(int& err, DynamicBuffer& cells_buff, 
+  void block_encode(int& err, DynamicBuffer& cells_buff,
                     Block::Header& header);
 
-  void block_write(int& err, DynamicBuffer& blk_buff, 
+  void block_write(int& err, DynamicBuffer& blk_buff,
                    Block::Header& header);
 
   void finalize(int& err);
@@ -159,7 +159,7 @@ class Write final {
   void print(std::ostream& out) const;
 
   private:
-  
+
   void block(int& err, DynamicBuffer& blk_buff);
 
   void write_blocks_index(int& err, uint32_t& blks_idx_count);
