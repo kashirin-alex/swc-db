@@ -220,14 +220,14 @@ bool Interface::exists(int& err, const std::string& name) {
   }
 }
 
-void Interface::exists(const Callback::ExistsCb_t& cb,
+void Interface::exists(Callback::ExistsCb_t&& cb,
                        const std::string& name) {
-  m_fs->exists([cb, name, ptr=ptr()]
-    (int err, bool state) {
+  m_fs->exists([name, cb=std::move(cb), ptr=ptr()]
+    (int err, bool state) mutable {
       if(!err || err == Error::SERVER_SHUTTING_DOWN)
         cb(err, state);
       else
-        ptr->exists(cb, name);
+        ptr->exists(std::move(cb), name);
     },
     name
   );
@@ -309,10 +309,10 @@ void Interface::remove(int& err, const std::string& name) {
   }
 }
 
-void Interface::remove(const Callback::RemoveCb_t& cb,
+void Interface::remove(Callback::RemoveCb_t&& cb,
                        const std::string& name) {
-  m_fs->remove([cb, name, ptr=ptr()]
-    (int err) {
+  m_fs->remove([name, cb=std::move(cb), ptr=ptr()]
+    (int err) mutable {
       switch(err) {
         case Error::OK:
         case ENOENT:
@@ -322,7 +322,7 @@ void Interface::remove(const Callback::RemoveCb_t& cb,
           hold_delay();
           SWC_LOGF(LOG_WARN, "remove, retrying to err=%d(%s) file(%s)",
                    err, Error::get_text(err), name.c_str());
-          ptr->remove(cb, name);
+          ptr->remove(std::move(cb), name);
         }
       }
     },
@@ -471,10 +471,10 @@ void Interface::close(int& err, SmartFd::Ptr& smartfd) {
   }
 }
 
-void Interface::close(const Callback::CloseCb_t& cb,
+void Interface::close(Callback::CloseCb_t&& cb,
                       SmartFd::Ptr& smartfd) {
-  m_fs->close([cb, ptr=ptr()]
-    (int err, SmartFd::Ptr smartfd) {
+  m_fs->close([cb=std::move(cb), ptr=ptr()]
+    (int err, SmartFd::Ptr smartfd) mutable {
       switch(err) {
         case Error::OK:
         case EACCES:
@@ -490,7 +490,7 @@ void Interface::close(const Callback::CloseCb_t& cb,
           hold_delay();
           SWC_LOGF(LOG_WARN, "close, retrying to err=%d(%s) file(%s)",
                    err, Error::get_text(err), smartfd->filepath().c_str());
-          ptr->close(cb, smartfd);
+          ptr->close(std::move(cb), smartfd);
         }
       }
     },

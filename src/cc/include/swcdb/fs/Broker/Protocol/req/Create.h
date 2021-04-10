@@ -21,7 +21,7 @@ class Create final : public Base {
   Create(const FS::FileSystem::Ptr& fs,
          uint32_t timeout, FS::SmartFd::Ptr& smartfd,
          int32_t bufsz, uint8_t replication, int64_t blksz,
-         const FS::Callback::CreateCb_t& cb)
+         FS::Callback::CreateCb_t&& cb)
          : Base(
             Buffers::make(
               Params::CreateReq(
@@ -32,7 +32,7 @@ class Create final : public Base {
               FUNCTION_CREATE, timeout
             )
           ),
-          fs(fs), smartfd(smartfd), cb(cb) {
+          fs(fs), smartfd(smartfd), cb(std::move(cb)) {
   }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {

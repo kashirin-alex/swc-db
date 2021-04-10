@@ -18,7 +18,7 @@ class Mkdirs final : public Base {
   public:
 
   Mkdirs(uint32_t timeout, const std::string& name,
-         const FS::Callback::MkdirsCb_t& cb)
+         FS::Callback::MkdirsCb_t&& cb)
         : Base(
             Buffers::make(
               Params::MkdirsReq(name),
@@ -26,7 +26,7 @@ class Mkdirs final : public Base {
               FUNCTION_MKDIRS, timeout
             )
           ),
-          name(name), cb(cb) {
+          name(name), cb(std::move(cb)) {
   }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {

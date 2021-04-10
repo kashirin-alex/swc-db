@@ -19,7 +19,7 @@ class Close final : public Base {
 
   Close(const FS::FileSystem::Ptr& fs, uint32_t timeout,
         FS::SmartFd::Ptr& smartfd,
-        const FS::Callback::CloseCb_t& cb)
+        FS::Callback::CloseCb_t&& cb)
         : Base(
             Buffers::make(
               Params::CloseReq(smartfd->fd()),
@@ -27,7 +27,7 @@ class Close final : public Base {
               FUNCTION_CLOSE, timeout
             )
           ),
-          fs(fs), smartfd(smartfd), cb(cb) {
+          fs(fs), smartfd(smartfd), cb(std::move(cb)) {
   }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {

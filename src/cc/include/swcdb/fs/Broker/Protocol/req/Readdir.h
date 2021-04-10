@@ -18,7 +18,7 @@ class Readdir final : public Base {
   public:
 
   Readdir(uint32_t timeout, const std::string& name,
-          const FS::Callback::ReaddirCb_t& cb)
+          FS::Callback::ReaddirCb_t&& cb)
           : Base(
               Buffers::make(
                 Params::ReaddirReq(name),
@@ -26,7 +26,7 @@ class Readdir final : public Base {
                 FUNCTION_READDIR, timeout
               )
             ),
-            name(name), cb(cb) {
+            name(name), cb(std::move(cb)) {
   }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {

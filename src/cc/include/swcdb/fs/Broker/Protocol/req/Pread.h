@@ -19,7 +19,7 @@ class Pread final : public Base {
 
   Pread(uint32_t timeout, FS::SmartFd::Ptr& smartfd,
         uint64_t offset, size_t len,
-        const FS::Callback::PreadCb_t& cb)
+        FS::Callback::PreadCb_t&& cb)
         : Base(
             Buffers::make(
               Params::PreadReq(smartfd->fd(), offset, len),
@@ -27,7 +27,7 @@ class Pread final : public Base {
               FUNCTION_PREAD, timeout
             )
           ),
-          smartfd(smartfd), cb(cb) {
+          smartfd(smartfd), cb(std::move(cb)) {
   }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {

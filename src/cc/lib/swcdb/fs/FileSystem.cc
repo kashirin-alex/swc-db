@@ -126,35 +126,35 @@ size_t FileSystem::fds_open() const noexcept {
  * used if a FileSystem(typ) does not implement
 */
 
-void FileSystem::exists(const Callback::ExistsCb_t& cb,
+void FileSystem::exists(Callback::ExistsCb_t&& cb,
                         const std::string& name) {
   int err = Error::OK;
   bool state = exists(err, name);
   cb(err, state);
 }
 
-void FileSystem::remove(const Callback::RemoveCb_t& cb,
+void FileSystem::remove(Callback::RemoveCb_t&& cb,
                         const std::string& name) {
   int err = Error::OK;
   remove(err, name);
   cb(err);
 }
 
-void FileSystem::length(const Callback::LengthCb_t& cb,
+void FileSystem::length(Callback::LengthCb_t&& cb,
                         const std::string& name) {
   int err = Error::OK;
   size_t len = length(err, name);
   cb(err, len);
 }
 
-void FileSystem::mkdirs(const Callback::MkdirsCb_t& cb,
+void FileSystem::mkdirs(Callback::MkdirsCb_t&& cb,
                         const std::string& name) {
   int err = Error::OK;
   mkdirs(err, name);
   cb(err);
 }
 
-void FileSystem::readdir(const Callback::ReaddirCb_t& cb,
+void FileSystem::readdir(Callback::ReaddirCb_t&& cb,
                          const std::string& name) {
   int err = Error::OK;
   DirentList listing;
@@ -162,14 +162,14 @@ void FileSystem::readdir(const Callback::ReaddirCb_t& cb,
   cb(err, listing);
 }
 
-void FileSystem::rmdir(const Callback::RmdirCb_t& cb,
+void FileSystem::rmdir(Callback::RmdirCb_t&& cb,
                        const std::string& name) {
   int err = Error::OK;
   rmdir(err, name);
   cb(err);
 }
 
-void FileSystem::rename(const Callback::RmdirCb_t& cb,
+void FileSystem::rename(Callback::RmdirCb_t&& cb,
                         const std::string& from, const std::string& to) {
   int err = Error::OK;
   rename(err, from, to);
@@ -208,7 +208,7 @@ void FileSystem::default_write(int& err, SmartFd::Ptr& smartfd,
     );
 }
 
-void FileSystem::write(const Callback::WriteCb_t& cb, SmartFd::Ptr& smartfd,
+void FileSystem::write(Callback::WriteCb_t&& cb, SmartFd::Ptr& smartfd,
                        uint8_t replication, int64_t blksz,
                        StaticBuffer& buffer) {
   int err = Error::OK;
@@ -253,7 +253,7 @@ void FileSystem::default_read(int& err, const std::string& name,
               err, Error::get_text(err), name.c_str());
 }
 
-void FileSystem::read(const Callback::ReadAllCb_t& cb,
+void FileSystem::read(Callback::ReadAllCb_t&& cb,
                       const std::string& name) {
   int err = Error::OK;
   auto dst = std::make_shared<StaticBuffer>();
@@ -289,7 +289,7 @@ void FileSystem::default_combi_pread(int& err, SmartFd::Ptr& smartfd,
               err, Error::get_text(err), smartfd->filepath().c_str());
 }
 
-void FileSystem::combi_pread(const Callback::CombiPreadCb_t& cb,
+void FileSystem::combi_pread(Callback::CombiPreadCb_t&& cb,
                              SmartFd::Ptr& smartfd,
                              uint64_t offset, uint32_t amount) {
   int err = Error::OK;
@@ -298,14 +298,14 @@ void FileSystem::combi_pread(const Callback::CombiPreadCb_t& cb,
   cb(err, smartfd, dst);
 }
 
-void FileSystem::create(const Callback::CreateCb_t& cb, SmartFd::Ptr& smartfd,
+void FileSystem::create(Callback::CreateCb_t&& cb, SmartFd::Ptr& smartfd,
                         int32_t bufsz, uint8_t replication, int64_t blksz) {
   int err = Error::OK;
   create(err, smartfd, bufsz, replication, blksz);
   cb(err, smartfd);
 }
 
-void FileSystem::open(const Callback::OpenCb_t& cb, SmartFd::Ptr& smartfd,
+void FileSystem::open(Callback::OpenCb_t&& cb, SmartFd::Ptr& smartfd,
                       int32_t bufsz) {
   int err = Error::OK;
   open(err, smartfd, bufsz);
@@ -319,7 +319,7 @@ size_t FileSystem::default_read(int& err, SmartFd::Ptr& smartfd,
   return read(err, smartfd, dst->base, amount);
 }
 
-void FileSystem::read(const Callback::ReadCb_t& cb, SmartFd::Ptr& smartfd,
+void FileSystem::read(Callback::ReadCb_t&& cb, SmartFd::Ptr& smartfd,
                       size_t amount) {
   int err = Error::OK;
   auto dst = std::make_shared<StaticBuffer>();
@@ -335,7 +335,7 @@ size_t FileSystem::default_pread(int& err, SmartFd::Ptr& smartfd,
   return pread(err, smartfd, offset, dst->base, amount);
 }
 
-void FileSystem::pread(const Callback::PreadCb_t& cb, SmartFd::Ptr& smartfd,
+void FileSystem::pread(Callback::PreadCb_t&& cb, SmartFd::Ptr& smartfd,
                        uint64_t offset, size_t amount) {
   int err = Error::OK;
   auto dst = std::make_shared<StaticBuffer>();
@@ -343,33 +343,33 @@ void FileSystem::pread(const Callback::PreadCb_t& cb, SmartFd::Ptr& smartfd,
   cb(err, smartfd, dst);
 }
 
-void FileSystem::append(const Callback::AppendCb_t& cb, SmartFd::Ptr& smartfd,
+void FileSystem::append(Callback::AppendCb_t&& cb, SmartFd::Ptr& smartfd,
                         StaticBuffer& buffer, Flags flags) {
   int err = Error::OK;
   size_t len = append(err, smartfd, buffer, flags);
   cb(err, smartfd, len);
 }
 
-void FileSystem::seek(const Callback::CloseCb_t& cb, SmartFd::Ptr& smartfd,
+void FileSystem::seek(Callback::CloseCb_t&& cb, SmartFd::Ptr& smartfd,
                       size_t offset) {
   int err = Error::OK;
   seek(err, smartfd, offset);
   cb(err, smartfd);
 }
 
-void FileSystem::flush(const Callback::FlushCb_t& cb, SmartFd::Ptr& smartfd) {
+void FileSystem::flush(Callback::FlushCb_t&& cb, SmartFd::Ptr& smartfd) {
   int err = Error::OK;
   flush(err, smartfd);
   cb(err, smartfd);
 }
 
-void FileSystem::sync(const Callback::SyncCb_t& cb, SmartFd::Ptr& smartfd) {
+void FileSystem::sync(Callback::SyncCb_t&& cb, SmartFd::Ptr& smartfd) {
   int err = Error::OK;
   sync(err, smartfd);
   cb(err, smartfd);
 }
 
-void FileSystem::close(const Callback::CloseCb_t& cb, SmartFd::Ptr& smartfd) {
+void FileSystem::close(Callback::CloseCb_t&& cb, SmartFd::Ptr& smartfd) {
   int err = Error::OK;
   close(err, smartfd);
   cb(err, smartfd);

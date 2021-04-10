@@ -18,7 +18,7 @@ class Read final : public Base {
   public:
 
   Read(uint32_t timeout, FS::SmartFd::Ptr& smartfd, size_t len,
-       const FS::Callback::ReadCb_t& cb)
+       FS::Callback::ReadCb_t&& cb)
       : Base(
           Buffers::make(
             Params::ReadReq(smartfd->fd(), len),
@@ -26,7 +26,7 @@ class Read final : public Base {
             FUNCTION_READ, timeout
           )
         ),
-        smartfd(smartfd), cb(cb) {
+        smartfd(smartfd), cb(std::move(cb)) {
   }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {

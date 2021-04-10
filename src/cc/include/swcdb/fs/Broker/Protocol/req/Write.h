@@ -19,7 +19,7 @@ class Write final : public Base {
 
   Write(uint32_t timeout, FS::SmartFd::Ptr& smartfd,
         uint8_t replication, int64_t blksz, StaticBuffer& buffer,
-        const FS::Callback::WriteCb_t& cb)
+        FS::Callback::WriteCb_t&& cb)
         : Base(
             Buffers::make(
               Params::WriteReq(
@@ -31,7 +31,7 @@ class Write final : public Base {
               FUNCTION_WRITE, timeout
             )
           ),
-          smartfd(smartfd), cb(cb) {
+          smartfd(smartfd), cb(std::move(cb)) {
   }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {

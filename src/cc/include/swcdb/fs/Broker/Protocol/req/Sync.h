@@ -18,7 +18,7 @@ class Sync final : public Base {
   public:
 
   Sync(uint32_t timeout, FS::SmartFd::Ptr& smartfd,
-       const FS::Callback::SyncCb_t& cb)
+       FS::Callback::SyncCb_t&& cb)
        : Base(
           Buffers::make(
             Params::SyncReq(smartfd->fd()),
@@ -26,7 +26,7 @@ class Sync final : public Base {
             FUNCTION_SYNC, timeout
           )
         ),
-        smartfd(smartfd), cb(cb) {
+        smartfd(smartfd), cb(std::move(cb)) {
   }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {

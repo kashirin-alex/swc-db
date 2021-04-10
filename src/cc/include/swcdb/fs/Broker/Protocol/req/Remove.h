@@ -18,7 +18,7 @@ class Remove final : public Base {
   public:
 
   Remove(uint32_t timeout, const std::string& name,
-         const FS::Callback::RemoveCb_t& cb)
+         FS::Callback::RemoveCb_t&& cb)
         : Base(
             Buffers::make(
               Params::RemoveReq(name),
@@ -26,7 +26,7 @@ class Remove final : public Base {
               FUNCTION_REMOVE, timeout
             )
           ),
-          name(name), cb(cb) {
+          name(name), cb(std::move(cb)) {
   }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {

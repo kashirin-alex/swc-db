@@ -75,7 +75,7 @@ class Interface final : public std::enable_shared_from_this<Interface> {
 
   bool exists(int& err, const std::string& name);
 
-  void exists(const Callback::ExistsCb_t& cb, const std::string& name);
+  void exists(Callback::ExistsCb_t&& cb, const std::string& name);
 
   void mkdirs(int& err, const std::string& name);
 
@@ -86,7 +86,7 @@ class Interface final : public std::enable_shared_from_this<Interface> {
 
   void remove(int& err, const std::string& name);
 
-  void remove(const Callback::RemoveCb_t& cb, const std::string& name);
+  void remove(Callback::RemoveCb_t&& cb, const std::string& name);
 
   void rename(int& err, const std::string& from , const std::string& to);
 
@@ -105,7 +105,7 @@ class Interface final : public std::enable_shared_from_this<Interface> {
 
   void close(int& err, SmartFd::Ptr& smartfd);
 
-  void close(const Callback::CloseCb_t& cb, SmartFd::Ptr& smartfd);
+  void close(Callback::CloseCb_t&& cb, SmartFd::Ptr& smartfd);
 
   private:
   Type            m_type;

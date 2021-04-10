@@ -19,7 +19,7 @@ class Open final : public Base {
 
   Open(const FS::FileSystem::Ptr& fs,
        uint32_t timeout, FS::SmartFd::Ptr& smartfd, int32_t bufsz,
-       const FS::Callback::OpenCb_t& cb)
+       FS::Callback::OpenCb_t&& cb)
       : Base(
           Buffers::make(
             Params::OpenReq(smartfd->filepath(), smartfd->flags(), bufsz),
@@ -27,7 +27,7 @@ class Open final : public Base {
             FUNCTION_OPEN, timeout
           )
         ),
-        fs(fs), smartfd(smartfd), cb(cb) {
+        fs(fs), smartfd(smartfd), cb(std::move(cb)) {
   }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {

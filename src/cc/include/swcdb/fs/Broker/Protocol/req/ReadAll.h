@@ -18,7 +18,7 @@ class ReadAll final : public Base {
   public:
 
   ReadAll(uint32_t timeout, const std::string& name,
-          const FS::Callback::ReadAllCb_t& cb)
+          FS::Callback::ReadAllCb_t&& cb)
           : Base(
               Buffers::make(
                 Params::ReadAllReq(name),
@@ -26,7 +26,7 @@ class ReadAll final : public Base {
                 FUNCTION_READ_ALL, timeout
               )
             ),
-            name(name), cb(cb) {
+            name(name), cb(std::move(cb)) {
   }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {

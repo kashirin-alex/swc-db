@@ -18,7 +18,7 @@ class Rmdir final : public Base {
   public:
 
   Rmdir(uint32_t timeout, const std::string& name,
-        const FS::Callback::RmdirCb_t& cb)
+        FS::Callback::RmdirCb_t&& cb)
         : Base(
             Buffers::make(
               Params::RmdirReq(name),
@@ -26,7 +26,7 @@ class Rmdir final : public Base {
               FUNCTION_RMDIR, timeout
             )
           ),
-          name(name), cb(cb) {
+          name(name), cb(std::move(cb)) {
 }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {

@@ -18,7 +18,7 @@ class Length final : public Base {
   public:
 
   Length(uint32_t timeout, const std::string& name,
-         const FS::Callback::LengthCb_t& cb)
+         FS::Callback::LengthCb_t&& cb)
         : Base(
             Buffers::make(
               Params::LengthReq(name),
@@ -26,7 +26,7 @@ class Length final : public Base {
               FUNCTION_LENGTH, timeout
             )
           ),
-          name(name), cb(cb) {
+          name(name), cb(std::move(cb)) {
   }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {

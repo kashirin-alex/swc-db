@@ -18,7 +18,7 @@ class Exists final : public Base {
   public:
 
   Exists(uint32_t timeout, const std::string& name,
-         const FS::Callback::ExistsCb_t& cb)
+         FS::Callback::ExistsCb_t&& cb)
         : Base(
             Buffers::make(
               Params::ExistsReq(name),
@@ -26,7 +26,7 @@ class Exists final : public Base {
               FUNCTION_EXISTS, timeout
             )
           ),
-          name(name), cb(cb) {
+          name(name), cb(std::move(cb)) {
   }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {

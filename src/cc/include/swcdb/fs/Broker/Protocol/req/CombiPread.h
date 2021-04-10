@@ -19,7 +19,7 @@ class CombiPread final : public Base {
 
   CombiPread(uint32_t timeout, const FS::SmartFd::Ptr& smartfd,
              uint64_t offset, uint32_t amount,
-             const FS::Callback::CombiPreadCb_t& cb)
+             FS::Callback::CombiPreadCb_t&& cb)
             : Base(
                 Buffers::make(
                   Params::CombiPreadReq(smartfd, offset, amount),
@@ -27,7 +27,7 @@ class CombiPread final : public Base {
                   FUNCTION_COMBI_PREAD, timeout
                 )
               ),
-              smartfd(smartfd), cb(cb) {
+              smartfd(smartfd), cb(std::move(cb)) {
   }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {

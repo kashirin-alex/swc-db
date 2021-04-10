@@ -18,7 +18,7 @@ class Flush final : public Base {
   public:
 
   Flush(uint32_t timeout, FS::SmartFd::Ptr& smartfd,
-        const FS::Callback::FlushCb_t& cb)
+        FS::Callback::FlushCb_t&& cb)
         : Base(
             Buffers::make(
               Params::FlushReq(smartfd->fd()),
@@ -26,7 +26,7 @@ class Flush final : public Base {
               FUNCTION_FLUSH, timeout
             )
           ),
-          smartfd(smartfd), cb(cb) {
+          smartfd(smartfd), cb(std::move(cb)) {
   }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {

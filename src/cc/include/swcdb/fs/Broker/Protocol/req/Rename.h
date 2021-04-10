@@ -18,7 +18,7 @@ class Rename final : public Base {
   public:
 
   Rename(uint32_t timeout, const std::string& from, const std::string& to,
-         const FS::Callback::RenameCb_t& cb)
+         FS::Callback::RenameCb_t&& cb)
         : Base(
             Buffers::make(
               Params::RenameReq(from, to),
@@ -26,7 +26,7 @@ class Rename final : public Base {
               FUNCTION_RENAME, timeout
             )
           ),
-          from(from), to(to), cb(cb) {
+          from(from), to(to), cb(std::move(cb)) {
   }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {

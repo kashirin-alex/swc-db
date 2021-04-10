@@ -18,7 +18,7 @@ class Seek final : public Base {
   public:
 
   Seek(uint32_t timeout, FS::SmartFd::Ptr& smartfd, size_t offset,
-       const FS::Callback::SeekCb_t& cb)
+       FS::Callback::SeekCb_t&& cb)
       : Base(
           Buffers::make(
             Params::SeekReq(smartfd->fd(), offset),
@@ -26,7 +26,7 @@ class Seek final : public Base {
             FUNCTION_SEEK, timeout
           )
         ),
-        smartfd(smartfd), cb(cb) {
+        smartfd(smartfd), cb(std::move(cb)) {
   }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {

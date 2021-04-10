@@ -19,7 +19,7 @@ class Append final : public Base {
 
   Append(uint32_t timeout, FS::SmartFd::Ptr& smartfd,
          StaticBuffer& buffer, FS::Flags flags,
-         const FS::Callback::AppendCb_t& cb)
+         FS::Callback::AppendCb_t&& cb)
         : Base(
             Buffers::make(
               Params::AppendReq(smartfd->fd(), flags),
@@ -28,7 +28,7 @@ class Append final : public Base {
               FUNCTION_APPEND, timeout
             )
           ),
-          smartfd(smartfd), cb(cb) {
+          smartfd(smartfd), cb(std::move(cb)) {
   }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
