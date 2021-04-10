@@ -39,7 +39,7 @@ class BaseSingleColumn : public Base {
 
 
   virtual bool requires_commit() noexcept override {
-    return !column.error() && !column.empty();
+    return !error() && !column.error() && !column.empty();
   }
 
   virtual bool empty() noexcept override {

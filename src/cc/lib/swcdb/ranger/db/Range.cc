@@ -860,7 +860,7 @@ class Range::MetaRegOnAddReq : public Query::Update::BaseMeta {
   virtual void callback() override {
     range->blocks.processing_decrement();
     Env::Rgr::post([r=range](){ r->_run_add_queue(); });
-    if(!req->rsp.err)
+    if(!req->rsp.err && error() != Error::SERVER_SHUTTING_DOWN)
       req->rsp.err = error();
     req->response();
   }
