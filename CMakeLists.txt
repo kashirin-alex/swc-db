@@ -67,10 +67,10 @@ set (CMAKE_CXX_STANDARD 20)
 set (CMAKE_CXX_STANDARD_REQUIRED ON)
 SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_LARGEFILE_SOURCE -m64 -D_FILE_OFFSET_BITS=64")
 SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DASIO_STANDALONE -DASIO_NO_DEPRECATED") # -DASIO_USE_TS_EXECUTOR_AS_DEFAULT")
-# SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -fpack-struct=1 -fshort-enums")
+# SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpack-struct=1 -fshort-enums")
 
 SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror -Wextra -Wpedantic") # -Weffc++
-SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wformat-signedness -Wformat-security") # -Wformat-nonliteral
+SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wformat-security") # -Wformat-nonliteral
 SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wcast-align -Wnon-virtual-dtor")
 
 SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wzero-as-null-pointer-constant -Wno-error=zero-as-null-pointer-constant")
@@ -78,6 +78,7 @@ SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wold-style-cast -Wno-error=old-style-c
 SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wnull-dereference -Wno-error=null-dereference") # -Walloc-zero
 
 if (NOT CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+  SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wformat-signedness")
   SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wnoexcept -Wno-error=noexcept")
   SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wsuggest-override -Wno-error=suggest-override")
   SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wuseless-cast -Wno-error=useless-cast")
