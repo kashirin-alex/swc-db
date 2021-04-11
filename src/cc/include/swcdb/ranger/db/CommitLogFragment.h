@@ -18,10 +18,10 @@ namespace CommitLog {
   
 class Fragment final : public std::enable_shared_from_this<Fragment> {
 
-  /* file-format: 
+  /* file-format:
         header:      i8(version), i32(header_ext-len), i32(checksum)
-        header_ext:  interval, i8(encoder), i32(enc-len), i32(len), 
-                     i32(cell_revs), i32(cells), 
+        header_ext:  interval, i8(encoder), i32(enc-len), i32(len),
+                     i32(cell_revs), i32(cells),
                      i32(data-checksum), i32(checksum)
         data:        [cell]
   */
@@ -34,7 +34,7 @@ class Fragment final : public std::enable_shared_from_this<Fragment> {
   static const uint8_t     HEADER_SIZE = 9;
   static const uint8_t     VERSION = 1;
   static const uint8_t     HEADER_EXT_FIXED_SIZE = 25;
-  
+
   enum State : uint8_t {
     NONE,
     LOADING,
@@ -45,29 +45,29 @@ class Fragment final : public std::enable_shared_from_this<Fragment> {
   static const char* to_string(State state) noexcept;
 
 
-  static Ptr make_read(int& err, const std::string& filepath, 
+  static Ptr make_read(int& err, const std::string& filepath,
                        const DB::Types::KeySeq key_seq);
 
-  static void load_header(int& err, FS::SmartFd::Ptr& smartfd, 
+  static void load_header(int& err, FS::SmartFd::Ptr& smartfd,
                           uint8_t& version,
-                          DB::Cells::Interval& interval, 
+                          DB::Cells::Interval& interval,
                           DB::Types::Encoder& encoder,
                           size_t& size_plain, size_t& size_enc,
                           uint32_t& cell_revs, uint32_t& cells_count,
                           uint32_t& data_checksum, uint32_t& offset_data);
 
 
-  static Ptr make_write(int& err, const std::string& filepath, 
-                        const DB::Cells::Interval& interval,
+  static Ptr make_write(int& err, const std::string& filepath,
+                        DB::Cells::Interval&& interval,
                         DB::Types::Encoder encoder,
-                        const uint32_t cell_revs, 
+                        const uint32_t cell_revs,
                         const uint32_t cells_count,
-                        DynamicBuffer& cells, 
+                        DynamicBuffer& cells,
                         StaticBuffer::Ptr& buffer);
 
-  static void write(int& err, 
+  static void write(int& err,
                     const uint8_t version,
-                    const DB::Cells::Interval& interval, 
+                    const DB::Cells::Interval& interval,
                     DB::Types::Encoder& encoder,
                     const size_t size_plain, size_t& size_enc,
                     const uint32_t cell_revs, const uint32_t cells_count,
@@ -86,17 +86,17 @@ class Fragment final : public std::enable_shared_from_this<Fragment> {
   const uint32_t                    offset_data;
 
   explicit Fragment(const FS::SmartFd::Ptr& smartfd, const uint8_t version,
-                    const DB::Cells::Interval& interval, 
+                    DB::Cells::Interval&& interval,
                     const DB::Types::Encoder encoder,
                     const size_t size_plain, const size_t size_enc,
                     const uint32_t cell_revs, const uint32_t cells_count,
                     const uint32_t data_checksum, const uint32_t offset_data,
-                    Fragment::State state);
-  
+                    Fragment::State state) noexcept;
+
   Fragment(const Fragment&) = delete;
 
   Fragment(const Fragment&&) = delete;
-  
+
   Fragment& operator=(const Fragment&) = delete;
 
   ~Fragment();
@@ -107,22 +107,22 @@ class Fragment final : public std::enable_shared_from_this<Fragment> {
 
   const std::string& get_filepath() const noexcept;
 
-  void write(int err, uint8_t blk_replicas, int64_t blksz, 
+  void write(int err, uint8_t blk_replicas, int64_t blksz,
              const StaticBuffer::Ptr& buff_write, Core::Semaphore* sem);
 
   void load(LoadCb_t&& cb);
-  
+
   void load_cells(int& err, Ranger::Block::Ptr cells_block);
-  
+
   void load_cells(int& err, DB::Cells::MutableVec& cells);
 
-  void split(int& err, const DB::Cell::Key& key, 
+  void split(int& err, const DB::Cell::Key& key,
              FragmentsPtr log_left, FragmentsPtr log_right);
 
   void processing_increment() noexcept;
 
   void processing_decrement() noexcept;
-  
+
   size_t release();
 
   bool loaded() const noexcept;

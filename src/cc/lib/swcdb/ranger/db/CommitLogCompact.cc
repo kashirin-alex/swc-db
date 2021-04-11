@@ -111,7 +111,7 @@ void Compact::Group::write() {
     auto frag = Fragment::make_write(
       err = Error::OK,
       compact->get_filepath(compact->log->next_id()),
-      interval,
+      std::move(interval),
       compact->log->range->cfg->block_enc(),
       compact->log->range->cfg->cell_versions(),
       cells_count, cells,

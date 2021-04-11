@@ -48,7 +48,7 @@ Fragment::Ptr Fragment::make_read(int& err, const std::string& filepath,
 
   return Fragment::Ptr(err ? nullptr : new Fragment(
     smartfd,
-    version, interval,
+    version, std::move(interval),
     encoder, size_plain, size_enc,
     cell_revs, cells_count, data_checksum, offset_data,
     State::NONE
@@ -127,7 +127,7 @@ void Fragment::load_header(int& err, FS::SmartFd::Ptr& smartfd,
 
 
 Fragment::Ptr Fragment::make_write(int& err, const std::string& filepath,
-                                   const DB::Cells::Interval& interval,
+                                   DB::Cells::Interval&& interval,
                                    DB::Types::Encoder encoder,
                                    const uint32_t cell_revs,
                                    const uint32_t cells_count,
@@ -157,7 +157,7 @@ Fragment::Ptr Fragment::make_write(int& err, const std::string& filepath,
   Env::Rgr::res().more_mem_usage(size_plain);
   auto frag = new Fragment(
     smartfd,
-    version, interval,
+    version, std::move(interval),
     encoder, size_plain, size_enc,
     cell_revs, cells_count, data_checksum, offset_data,
     State::WRITING
@@ -213,13 +213,14 @@ void Fragment::write(int& err,
 
 Fragment::Fragment(const FS::SmartFd::Ptr& smartfd,
                    const uint8_t version,
-                   const DB::Cells::Interval& interval,
+                  DB::Cells::Interval&& interval,
                    const DB::Types::Encoder encoder,
                    const size_t size_plain, const size_t size_enc,
                    const uint32_t cell_revs, const uint32_t cells_count,
                    const uint32_t data_checksum, const uint32_t offset_data,
-                   Fragment::State state)
-                  : version(version), interval(interval), encoder(encoder),
+                   Fragment::State state) noexcept
+                  : version(version), interval(std::move(interval)),
+                    encoder(encoder),
                     size_plain(size_plain), size_enc(size_enc),
                     cell_revs(cell_revs), cells_count(cells_count),
                     data_checksum(data_checksum), offset_data(offset_data),

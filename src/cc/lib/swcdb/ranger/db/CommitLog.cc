@@ -81,17 +81,16 @@ void Fragments::commit_new_fragment(bool finalize) {
         break;
     }
 
-    DynamicBuffer cells;
-    uint32_t cells_count = 0;
-    DB::Cells::Interval interval(range->cfg->key_seq);
     auto buff_write = std::make_shared<StaticBuffer>();
-    ssize_t sz;
     {
+      DynamicBuffer cells;
+      uint32_t cells_count = 0;
+      DB::Cells::Interval interval(range->cfg->key_seq);
       std::scoped_lock lock(m_mutex);
       size_t nxt_id = _next_id();
       {
         std::scoped_lock lock2(m_mutex_cells);
-        sz = m_cells.size_of_internal();
+        ssize_t sz = m_cells.size_of_internal();
         m_cells.write_and_free(
           cells, cells_count, interval,
           range->cfg->block_size(), range->cfg->block_cells());
@@ -102,7 +101,7 @@ void Fragments::commit_new_fragment(bool finalize) {
         frag = Fragment::make_write(
           err = Error::OK,
           get_log_fragment(nxt_id),
-          interval,
+          std::move(interval),
           range->cfg->block_enc(), range->cfg->cell_versions(),
           cells_count, cells,
           buff_write
