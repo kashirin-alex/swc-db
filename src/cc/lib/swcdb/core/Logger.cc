@@ -83,7 +83,7 @@ void LogWriter::daemon(const std::string& logs_path) {
   Core::MutexSptd::scope lock(mutex);
   m_logs_path = logs_path;
   if(m_logs_path.back() != '/')
-    m_logs_path.append("/");
+    m_logs_path += '/';
   m_daemon = true;
 
   renew_files();
@@ -94,7 +94,6 @@ void LogWriter::daemon(const std::string& logs_path) {
       + std::to_string(errno)+"("+Error::get_text(errno)+")"
     );
   std::fclose(stderr);
-  std::cerr << " AFTER(std::fclose(stderr);) \n";
 }
 
 
@@ -116,23 +115,24 @@ void LogWriter::renew_files() {
   ::mkdir(filepath.c_str(), 0755);
   filepath.append(std::to_string(1900+ltm->tm_year));
   ::mkdir(filepath.c_str(), 0755);
-  filepath.append("/");
+  filepath += '/';
   filepath.append(std::to_string(1+ltm->tm_mon));
   ::mkdir(filepath.c_str(), 0755);
-  filepath.append("/");
+  filepath += '/';
   filepath.append(std::to_string(ltm->tm_mday));
   ::mkdir(filepath.c_str(), 0755);
   if(errno == EEXIST)
     errno = 0;
 
-  filepath.append("/");
+  filepath += '/';
   filepath.append(m_name);
 
   std::string filepath_out(filepath+".log");
   //std::string filepath_err(filepath+".err");
 
   if(!errno) {
-    std::cout << "Changing Standard Output File to=" << filepath_out << "\n";
+    std::cout << "Changing Standard Output File to="
+              << filepath_out << std::endl;
     m_file_out = std::freopen(filepath_out.c_str(), "w", m_file_out);
 
     std::cerr.rdbuf(std::cout.rdbuf());

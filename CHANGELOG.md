@@ -35,6 +35,22 @@
     added specialized select-handler class Ranger::Query::Select::CheckMeta
     fixed single-Ranger-runtime shutdown-seq - halt Meta-Check if shuttingdown
     fixed Query::Select::Scanner error-handling over a retry on req-base(fb)
+    changed API of SWC::DB::client::Query::Update :
+      added Handlers namespace to SWC::DB::client::Query::Update
+      added Handler class Base{ColumnMutable,UnorderedMap,SingleColumn},Common
+      changed Query::Update::Updater cls to Committer takes Handlers::Base::Ptr
+      added Query::Update::commit(..) default impl./overloaders of executions
+    added Ranger bool Range::state_unloading() const
+    added Ranger handler specializations of client update query:
+      added folder ranger/queries/update
+      added classes/files Ranger::Query::Update::{BaseMeta,CommonMeta}
+      added Ranger::Range sub-classes MetaRegOn{LoadReq,AddReq}
+    changed possible cases of std::function<..> to pass by move
+    changed FS::FileSystem pass FS::Callback::*Cb_t by move
+    fixed Ranger case of CellStore Read with many index-blocks (was only last)
+    added -Wformat-signedness compiler Flag & fixed bad cases
+    changed Ranger CommitLog::Fragment Constructor move DB::Cells::Interval
+    changed Ranger pass CellStore::Block::Header with move
 
 [_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.4.19...master)
 ******
