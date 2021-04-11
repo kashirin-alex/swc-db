@@ -75,15 +75,15 @@ void Read::load_header(int& err, FS::SmartFd::Ptr& smartfd,
   }
 }
 
-Read::Read(const Header& header)
-          : header(header), cellstore(nullptr),
+Read::Read(Header&& header) noexcept
+          : header(std::move(header)), cellstore(nullptr),
             m_state(header.size_plain ? State::NONE : State::LOADED),
             m_err(Error::OK), m_cells_remain(header.cells_count),
             m_processing(0) {
   Env::Rgr::res().more_mem_usage(size_of());
 }
 
-void Read::init(CellStore::Read* _cellstore) {
+void Read::init(CellStore::Read* _cellstore) noexcept {
   cellstore = _cellstore;
 }
 
@@ -318,8 +318,8 @@ void Read::load_finish(int err) {
 
 
 
-Write::Write(const Header& header)
-            : header(header), released(false) {
+Write::Write(Header&& header) noexcept
+            : header(std::move(header)), released(false) {
   Env::Rgr::res().more_mem_usage(
     sizeof(Write::Ptr) + sizeof(Write)
     + header.interval.size_of_internal()

@@ -117,16 +117,16 @@ size_t write_cs(SWC::csid_t csid, SWC::Ranger::RangePtr range, int any) {
         else if(any == 1 && i == num_cells && group_fractions == g)
           header.interval.key_end.free();
 
-        cs_writer.block_encode(err, buff, header);
-        SWC_PRINT << " cs-size=" << cs_writer.size << "\n"
-                  << "Write::block_encode header(";
+        cs_writer.block_encode(err, buff, std::move(header));
+        SWC_PRINT << " cs-size=" << cs_writer.size << SWC_PRINT_CLOSE;
+        /*        << "Write::block_encode header(";
         header.print(SWC_LOG_OSTREAM);
-        SWC_LOG_OSTREAM << ')' << SWC_PRINT_CLOSE;
+        SWC_LOG_OSTREAM << ')' << SWC_PRINT_CLOSE; */
 
         buff.clear();
         hdlr_err(err);
 
-        header.interval.free();
+        //header.interval.free();
         header.cells_count = 0;
       }
     }

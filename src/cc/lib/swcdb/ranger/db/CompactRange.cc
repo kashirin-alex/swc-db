@@ -18,7 +18,7 @@ struct CompactRange::InBlock final : Core::QueuePointer<InBlock*>::Pointer {
 
   const bool is_last;
 
-  InBlock(const DB::Types::KeySeq key_seq)
+  InBlock(const DB::Types::KeySeq key_seq) noexcept
           : is_last(true),
             header(key_seq), err(Error::OK), last_cell(nullptr) {
   }
@@ -606,7 +606,7 @@ void CompactRange::write_cells(int& err, InBlock* in_block) {
       return;
   }
 
-  cs_writer->block_write(err, in_block->cells, in_block->header);
+  cs_writer->block_write(err, in_block->cells, std::move(in_block->header));
   if(err)
     return;
 
@@ -685,7 +685,8 @@ void CompactRange::finalize() {
         return quit();
     }
     m_inblock->finalize_interval(any_begin, range->_is_any_end());
-    cs_writer->block_encode(err, m_inblock->cells, m_inblock->header);
+    cs_writer->block_encode(
+      err, m_inblock->cells, std::move(m_inblock->header));
 
   } else if(!cellstores.size() && !cs_writer) {
     // as an initial empty range cs with range intervals
@@ -701,7 +702,8 @@ void CompactRange::finalize() {
       m_inblock->header.is_any |= CellStore::Block::Header::ANY_BEGIN;
     if(m_inblock->header.interval.key_end.empty())
       m_inblock->header.is_any |= CellStore::Block::Header::ANY_END;
-    cs_writer->block_encode(err, m_inblock->cells, m_inblock->header);
+    cs_writer->block_encode(
+      err, m_inblock->cells, std::move(m_inblock->header));
   }
   if(err)
     return quit();

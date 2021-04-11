@@ -18,14 +18,14 @@ class Read;
 
 namespace Block {
 
-/* file-format: 
-      header: i8(encoder), i32(enc-len), i32(len), 
+/* file-format:
+      header: i8(encoder), i32(enc-len), i32(len),
               i32(cells), i32(checksum-data), i32(checksum)
       data:   [cell]
 */
 
 
-class Read final {  
+class Read final {
   public:
   typedef Read* Ptr;
 
@@ -36,33 +36,33 @@ class Read final {
   };
 
   static const char* to_string(const State state) noexcept;
-  
+
   /*
   static Ptr make(int& err, CellStore::Read* cellstore,
                   const DB::Cells::Interval& interval,
                   const uint64_t offset);
   */
 
-  static void load_header(int& err, FS::SmartFd::Ptr& smartfd, 
+  static void load_header(int& err, FS::SmartFd::Ptr& smartfd,
                           Header& header);
 
   const Header         header;
   CellStore::Read*     cellstore;
 
-  explicit Read(const Header& header);
+  explicit Read(Header&& header) noexcept;
 
-  void init(CellStore::Read* cellstore);
+  void init(CellStore::Read* cellstore) noexcept;
 
   Read(const Read&) = delete;
 
   Read(const Read&&) = delete;
-  
+
   Read& operator=(const Read&) = delete;
 
   ~Read();
-  
+
   size_t size_of() const noexcept;
-  
+
   bool load(BlockLoader* loader);
 
   void load();
@@ -76,7 +76,7 @@ class Read final {
   bool processing() noexcept;
 
   bool loaded() const noexcept;
-  
+
   bool loaded(int& err) noexcept;
 
   size_t size_bytes(bool only_loaded=false) const noexcept;
@@ -84,9 +84,9 @@ class Read final {
   size_t size_bytes_enc(bool only_loaded=false) const noexcept;
 
   void print(std::ostream& out);
-  
+
   private:
-  
+
   void load_open(int err);
 
   void load_read(int err, const StaticBuffer::Ptr& buffer);
@@ -110,11 +110,11 @@ class Write final {
   public:
   typedef std::shared_ptr<Write> Ptr;
 
-  Write(const Header& header);
+  Write(Header&& header) noexcept;
 
   ~Write();
 
-  static void encode(int& err, DynamicBuffer& cells, DynamicBuffer& output, 
+  static void encode(int& err, DynamicBuffer& cells, DynamicBuffer& output,
                      Header& header);
 
   void print(std::ostream& out) const;

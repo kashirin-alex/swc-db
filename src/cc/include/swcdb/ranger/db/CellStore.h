@@ -77,7 +77,7 @@ class Read final {
                 DB::Cells::Interval&& interval,
                 std::vector<Block::Read::Ptr>&& blocks,
                 const uint32_t cell_revs,
-                const FS::SmartFd::Ptr& smartfd);
+                const FS::SmartFd::Ptr& smartfd) noexcept;
 
   Read(const Read&) = delete;
 
@@ -147,10 +147,10 @@ class Write final {
               int32_t bufsz=-1, uint8_t blk_replicas=0, int64_t blksz=-1);
 
   void block_encode(int& err, DynamicBuffer& cells_buff,
-                    Block::Header& header);
+                    Block::Header&& header);
 
   void block_write(int& err, DynamicBuffer& blk_buff,
-                   Block::Header& header);
+                   Block::Header&& header);
 
   void finalize(int& err);
 

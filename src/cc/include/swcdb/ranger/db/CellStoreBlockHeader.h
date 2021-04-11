@@ -35,17 +35,19 @@ struct Header final {
   uint32_t                  size_enc;
   uint32_t                  cells_count;
   uint32_t                  checksum_data;
-  
-  Header(DB::Types::KeySeq key_seq);
-  
+
+  Header(DB::Types::KeySeq key_seq) noexcept;
+
   Header(const Header& other);
+
+  Header(Header&& other) noexcept;
 
   ~Header();
 
   void encode(uint8_t** bufp);
 
   void decode(const uint8_t** bufp, size_t* remainp);
-  
+
   size_t encoded_length_idx() const;
 
   void encode_idx(uint8_t** bufp) const;

@@ -233,7 +233,7 @@ void Read::load_blocks_index(int& err, FS::SmartFd::Ptr& smartfd,
         if(header.is_any & Block::Header::ANY_END)
           header.interval.key_end.free();
         interval.expand(header.interval);
-        blocks.push_back(new Block::Read(header));
+        blocks.push_back(new Block::Read(std::move(header)));
       }
 
     }
@@ -256,7 +256,7 @@ Read::Read(const csid_t csid,
            DB::Cells::Interval&& interval,
            std::vector<Block::Read::Ptr>&& blks,
            const uint32_t cell_revs,
-           const FS::SmartFd::Ptr& smartfd)
+           const FS::SmartFd::Ptr& smartfd) noexcept
           : csid(csid),
             prev_key_end(std::move(prev_key_end)),
             key_end(std::move(key_end)),
@@ -427,20 +427,20 @@ void Write::create(int& err, int32_t bufsz, uint8_t blk_replicas,
 }
 
 void Write::block_encode(int& err, DynamicBuffer& cells_buff,
-                         Block::Header& header) {
+                         Block::Header&& header) {
   header.encoder = encoder;
   DynamicBuffer output;
   Block::Write::encode(err, cells_buff, output, header);
   if(err)
     return;
 
-  block_write(err, output, header);
+  block_write(err, output, std::move(header));
 }
 
 void Write::block_write(int& err, DynamicBuffer& blk_buff,
-                        Block::Header& header) {
+                        Block::Header&& header) {
   header.offset_data = size + Block::Header::SIZE;
-  auto& blk = m_blocks.emplace_back(new Block::Write(header));
+  auto& blk = m_blocks.emplace_back(new Block::Write(std::move(header)));
   block(err, blk_buff);
 
   blk->released = true;
@@ -616,11 +616,12 @@ Read::Ptr create_initial(int& err, const RangePtr& range) {
     header.is_any |= Block::Header::ANY_END;
 
   DynamicBuffer cells_buff;
-  writer.block_encode(err, cells_buff, header);
+  DB::Cells::Interval cs_intval(header.interval);
+  writer.block_encode(err, cells_buff, std::move(header));
   if(!err) {
     writer.finalize(err);
     if(!err) {
-      auto cs = Read::make(err, 1, range, header.interval, true);
+      auto cs = Read::make(err, 1, range, cs_intval, true);
       if(!err)
         return cs;
       delete cs;

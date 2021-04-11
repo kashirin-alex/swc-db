@@ -11,7 +11,7 @@ namespace SWC { namespace Ranger { namespace CellStore { namespace Block {
 
 
 
-Header::Header(DB::Types::KeySeq key_seq)
+Header::Header(DB::Types::KeySeq key_seq) noexcept
               : offset_data(0),
                 interval(key_seq),
                 is_any(0),
@@ -25,6 +25,17 @@ Header::Header(DB::Types::KeySeq key_seq)
 Header::Header(const Header& other)
               : offset_data(other.offset_data),
                 interval(other.interval),
+                is_any(other.is_any),
+                encoder(other.encoder),
+                size_plain(other.size_plain),
+                size_enc(other.size_enc),
+                cells_count(other.cells_count),
+                checksum_data(other.checksum_data) {
+}
+
+Header::Header(Header&& other) noexcept
+              : offset_data(other.offset_data),
+                interval(std::move(other.interval)),
                 is_any(other.is_any),
                 encoder(other.encoder),
                 size_plain(other.size_plain),
@@ -80,7 +91,7 @@ void Header::encode_idx(uint8_t** bufp) const {
 
 void Header::decode_idx(const uint8_t** bufp, size_t* remainp) {
   offset_data = Serialization::decode_vi64(bufp, remainp);
-  interval.decode(bufp, remainp, false);
+  interval.decode(bufp, remainp, true);
   is_any = Serialization::decode_i8(bufp, remainp);
   encoder = DB::Types::Encoder(Serialization::decode_i8(bufp, remainp));
   size_enc = Serialization::decode_vi32(bufp, remainp);
