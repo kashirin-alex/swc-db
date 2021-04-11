@@ -160,7 +160,7 @@ void Compact::Group::finalize() {
 
 
 
-Compact::Compact(Fragments* log, int repetition,
+Compact::Compact(Fragments* log, uint32_t repetition,
                  const std::vector<Fragments::Vec>& groups,
                  uint8_t cointervaling,
                  Compact::Cb_t&& cb)
@@ -204,7 +204,7 @@ Compact::Compact(Fragments* log, int repetition,
   }
 
   SWC_LOGF(LOG_INFO,
-    "COMPACT-LOG-START %lu/%lu w=%lu frags=%lu(%lu)/%lu repetition=%d",
+    "COMPACT-LOG-START %lu/%lu w=%lu frags=%lu(%lu)/%lu repetition=%u",
     log->range->cfg->cid, log->range->rid,
     m_groups.size(), nfrags, ngroups, log->size(), repetition
   );
@@ -226,7 +226,7 @@ void Compact::finished(Group* group, size_t cells_count) {
 
   SWC_LOGF(LOG_INFO,
     "COMPACT-LOG-PROGRESS %lu/%lu running=%lu "
-    "worker=%u %ldus cells=%lu(%ldns)",
+    "worker=%u %luus cells=%lu(%luns)",
     log->range->cfg->cid, log->range->rid, running,
     group->worker, (Time::now_ns() - group->ts)/1000,
     cells_count, cells_count ? (Time::now_ns() - group->ts)/cells_count: 0
@@ -234,7 +234,7 @@ void Compact::finished(Group* group, size_t cells_count) {
   if(running)
     return;
 
-  SWC_LOGF(LOG_INFO, "COMPACT-LOG-FINISHING %lu/%lu w=%ld",
+  SWC_LOGF(LOG_INFO, "COMPACT-LOG-FINISHING %lu/%lu w=%lu",
                       log->range->cfg->cid, log->range->rid, m_groups.size());
 
   log->range->compacting(Range::COMPACT_APPLYING);
@@ -254,8 +254,8 @@ void Compact::finalized() {
 
   auto took = Time::now_ns() - ts;
   SWC_LOGF(LOG_INFO,
-    "COMPACT-LOG-FINISH %lu/%lu w=%ld frags=%ld(%ld)/%ld"
-    " repetition=%ld %ldns",
+    "COMPACT-LOG-FINISH %lu/%lu w=%lu frags=%lu(%lu)/%lu"
+    " repetition=%u %ldns",
     log->range->cfg->cid, log->range->rid,
     m_groups.size(), nfrags, ngroups, log->size(), repetition, took
   );

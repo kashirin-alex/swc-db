@@ -85,7 +85,7 @@ void Rangers::schedule_check(uint32_t t_ms) {
   });
 
   if(t_ms > 10000)
-    SWC_LOGF(LOG_DEBUG, "Rangers scheduled in ms=%d", t_ms);
+    SWC_LOGF(LOG_DEBUG, "Rangers scheduled in ms=%u", t_ms);
 }
 
 void Rangers::schedule_run() {

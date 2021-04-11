@@ -297,9 +297,9 @@ size_t FileSystemLocal::read(int& err, SmartFd::Ptr& smartfd,
   } else {
     if((ret = nread) != amount)
       err = Error::FS_EOF;
-    smartfd->forward(nread);
+    smartfd->forward(ret);
     SWC_LOGF(LOG_DEBUG, "read(ed) %s amount=%lu eof=%d",
-              smartfd->to_string().c_str(), nread, err == Error::FS_EOF);
+              smartfd->to_string().c_str(), ret, err == Error::FS_EOF);
   }
   return ret;
 }
@@ -322,9 +322,9 @@ size_t FileSystemLocal::pread(int& err, SmartFd::Ptr& smartfd,
   } else {
     if((ret = nread) != amount)
       err = Error::FS_EOF;
-    smartfd->pos(offset+nread);
+    smartfd->pos(offset + ret);
     SWC_LOGF(LOG_DEBUG, "pread(ed) %s amount=%lu  eof=%d",
-              smartfd->to_string().c_str(), nread, err == Error::FS_EOF);
+              smartfd->to_string().c_str(), ret, err == Error::FS_EOF);
   }
   return ret;
 }

@@ -380,7 +380,7 @@ void FileSystemBroker::read(Callback::ReadAllCb_t&& cb,
 void FileSystemBroker::combi_pread(int& err, SmartFd::Ptr& smartfd,
                                    uint64_t offset, uint32_t amount,
                                    StaticBuffer* dst) {
-  uint32_t timeout = cfg_timeout->get() + amount/cfg_timeout_ratio->get();
+  int32_t timeout = cfg_timeout->get() + amount/cfg_timeout_ratio->get();
   SWC_LOGF(LOG_DEBUG, "combi-pread timeout=%d %s offset=%lu amount=%u ",
            timeout, smartfd->filepath().c_str(), offset, amount);
 
@@ -394,7 +394,7 @@ void FileSystemBroker::combi_pread(int& err, SmartFd::Ptr& smartfd,
 void FileSystemBroker::combi_pread(Callback::CombiPreadCb_t&& cb,
                                    SmartFd::Ptr& smartfd,
                                    uint64_t offset, uint32_t amount) {
-  uint32_t timeout = cfg_timeout->get() + amount/cfg_timeout_ratio->get();
+  int32_t timeout = cfg_timeout->get() + amount/cfg_timeout_ratio->get();
   SWC_LOGF(LOG_DEBUG, "combi-pread timeout=%d %s offset=%lu amount=%u ",
            timeout, smartfd->filepath().c_str(), offset, amount);
 
@@ -438,7 +438,7 @@ void FileSystemBroker::create(Callback::CreateCb_t&& cb,
 
 size_t FileSystemBroker::append(int& err, SmartFd::Ptr& smartfd,
                                 StaticBuffer& buffer, Flags flags) {
-  uint32_t timeout = cfg_timeout->get()+buffer.size/cfg_timeout_ratio->get();
+  int32_t timeout = cfg_timeout->get()+buffer.size/cfg_timeout_ratio->get();
   SWC_LOG_OUT(LOG_DEBUG,
     SWC_LOG_PRINTF("append flags=%d amount=%lu timeout=%d ",
                     flags, buffer.size, timeout);
@@ -456,7 +456,7 @@ size_t FileSystemBroker::append(int& err, SmartFd::Ptr& smartfd,
 void FileSystemBroker::append(Callback::AppendCb_t&& cb,
                               SmartFd::Ptr& smartfd,
                               StaticBuffer& buffer, Flags flags) {
-  uint32_t timeout = cfg_timeout->get()+buffer.size/cfg_timeout_ratio->get();
+  int32_t timeout = cfg_timeout->get()+buffer.size/cfg_timeout_ratio->get();
   SWC_LOG_OUT(LOG_DEBUG,
     SWC_LOG_PRINTF("append flags=%d amount=%lu timeout=%d ",
                     flags, buffer.size, timeout);
@@ -495,7 +495,7 @@ void FileSystemBroker::open(Callback::OpenCb_t&& cb,
 
 size_t FileSystemBroker::read(int& err, SmartFd::Ptr& smartfd,
                               void* dst, size_t amount) {
-  uint32_t timeout = cfg_timeout->get() + amount/cfg_timeout_ratio->get();
+  int32_t timeout = cfg_timeout->get() + amount/cfg_timeout_ratio->get();
   SWC_LOG_OUT(LOG_DEBUG,
     SWC_LOG_PRINTF("read len=%lu timeout=%d ", amount, timeout);
     smartfd->print(SWC_LOG_OSTREAM);
@@ -511,7 +511,7 @@ size_t FileSystemBroker::read(int& err, SmartFd::Ptr& smartfd,
 
 size_t FileSystemBroker::read(int& err, SmartFd::Ptr& smartfd,
                               StaticBuffer* dst, size_t amount) {
-  uint32_t timeout = cfg_timeout->get() + amount/cfg_timeout_ratio->get();
+  int32_t timeout = cfg_timeout->get() + amount/cfg_timeout_ratio->get();
   SWC_LOG_OUT(LOG_DEBUG,
     SWC_LOG_PRINTF("read len=%lu timeout=%d ", amount, timeout);
     smartfd->print(SWC_LOG_OSTREAM);
@@ -527,7 +527,7 @@ size_t FileSystemBroker::read(int& err, SmartFd::Ptr& smartfd,
 
 void FileSystemBroker::read(Callback::ReadCb_t&& cb,
                             SmartFd::Ptr& smartfd, size_t amount) {
-  uint32_t timeout = cfg_timeout->get() + amount/cfg_timeout_ratio->get();
+  int32_t timeout = cfg_timeout->get() + amount/cfg_timeout_ratio->get();
   SWC_LOG_OUT(LOG_DEBUG,
     SWC_LOG_PRINTF("read len=%lu timeout=%d ", amount, timeout);
     smartfd->print(SWC_LOG_OSTREAM);
@@ -541,7 +541,7 @@ void FileSystemBroker::read(Callback::ReadCb_t&& cb,
 size_t FileSystemBroker::pread(int& err, SmartFd::Ptr& smartfd,
                                uint64_t offset, void* dst,
                                size_t amount) {
-  uint32_t timeout = cfg_timeout->get() + amount/cfg_timeout_ratio->get();
+  int32_t timeout = cfg_timeout->get() + amount/cfg_timeout_ratio->get();
   SWC_LOG_OUT(LOG_DEBUG,
     SWC_LOG_PRINTF("pread offset=%lu len=%lu timeout=%d ",
                     offset, amount, timeout);
@@ -559,7 +559,7 @@ size_t FileSystemBroker::pread(int& err, SmartFd::Ptr& smartfd,
 size_t FileSystemBroker::pread(int& err, SmartFd::Ptr& smartfd,
                                uint64_t offset, StaticBuffer* dst,
                                size_t amount) {
-  uint32_t timeout = cfg_timeout->get() + amount/cfg_timeout_ratio->get();
+  int32_t timeout = cfg_timeout->get() + amount/cfg_timeout_ratio->get();
   SWC_LOG_OUT(LOG_DEBUG,
     SWC_LOG_PRINTF("pread offset=%lu len=%lu timeout=%d ",
                     offset, amount, timeout);
@@ -577,7 +577,7 @@ size_t FileSystemBroker::pread(int& err, SmartFd::Ptr& smartfd,
 void FileSystemBroker::pread(Callback::ReadCb_t&& cb,
                              SmartFd::Ptr& smartfd,
                              uint64_t offset, size_t amount) {
-  uint32_t timeout = cfg_timeout->get() + amount/cfg_timeout_ratio->get();
+  int32_t timeout = cfg_timeout->get() + amount/cfg_timeout_ratio->get();
   SWC_LOG_OUT(LOG_DEBUG,
     SWC_LOG_PRINTF("pread offset=%lu len=%lu timeout=%d ",
                     offset, amount, timeout);

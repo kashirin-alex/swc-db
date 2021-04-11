@@ -60,7 +60,7 @@ void Columns::load_range(const DB::Schema& schema,
       } else if(!res.first->second->ranges_count()) {
         if(res.first->second->cfg->use_count() > 1)
           SWC_LOGF(LOG_WARN,
-                  "Column cid=%lu remained with use-count=%lu, resetting",
+                  "Column cid=%lu remained with use-count=%ld, resetting",
                   req->cid, res.first->second->cfg->use_count());
         res.first->second.reset(new Column(req->cid, schema));
       } else {

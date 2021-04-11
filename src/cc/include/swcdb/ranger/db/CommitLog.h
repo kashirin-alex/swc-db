@@ -17,8 +17,8 @@ namespace SWC { namespace Ranger { namespace CommitLog {
 class Compact;
 
 class Fragments final : private std::vector<Fragment::Ptr> {
-  
-  /* file-format(dir-structure): 
+
+  /* file-format(dir-structure):
     ../log/{N}.frag
   */
 
@@ -37,7 +37,7 @@ class Fragments final : private std::vector<Fragment::Ptr> {
   Fragments(const Fragments&) = delete;
 
   Fragments(const Fragments&&) = delete;
-  
+
   Fragments& operator=(const Fragments&) = delete;
 
   ~Fragments();
@@ -54,8 +54,8 @@ class Fragments final : private std::vector<Fragment::Ptr> {
 
   size_t need_compact(std::vector<Vec>& groups, const Vec& without,
                       size_t vol);
-  
-  bool try_compact(int tnum = 1);
+
+  bool try_compact(uint32_t tnum = 1);
 
   void finish_compact(const Compact* compact);
 
@@ -64,12 +64,12 @@ class Fragments final : private std::vector<Fragment::Ptr> {
   const std::string get_log_fragment(const std::string& frag) const;
 
   void load(int &err);
-  
+
   void expand(DB::Cells::Interval& intval);
-  
+
   void expand_and_align(DB::Cells::Interval& intval);
 
-  void load_cells(BlockLoader* loader, bool& is_final, 
+  void load_cells(BlockLoader* loader, bool& is_final,
                   Vec& frags, uint8_t vol);
 
   void get(Vec& fragments);
@@ -114,7 +114,7 @@ class Fragments final : private std::vector<Fragment::Ptr> {
 
   bool _need_roll() const;
 
-  size_t _need_compact(std::vector<Vec>& groups,const Vec& without, 
+  size_t _need_compact(std::vector<Vec>& groups,const Vec& without,
                        size_t vol);
 
   bool _need_compact_major();
@@ -126,7 +126,7 @@ class Fragments final : private std::vector<Fragment::Ptr> {
   size_t _size_bytes(bool only_loaded=false);
 
   size_t _narrow(const DB::Cell::Key& key) const;
-  
+
   std::shared_mutex           m_mutex_cells;
   DB::Cells::MutableVec       m_cells;
   uint8_t                     m_roll_chk;

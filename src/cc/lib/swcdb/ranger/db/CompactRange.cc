@@ -202,7 +202,7 @@ void CompactRange::initialize() {
   initial_commitlog(1);
 }
 
-void CompactRange::initial_commitlog(int tnum) {
+void CompactRange::initial_commitlog(uint32_t tnum) {
   m_log_sz = range->blocks.commitlog.size();
   uint8_t cointervaling = range->cfg->log_compact_cointervaling();
   if(m_log_sz < cointervaling || m_stopped)
@@ -229,7 +229,7 @@ void CompactRange::initial_commitlog_done(const CommitLog::Compact* compact) {
     return;
   }
   if(compact) {
-    int tnum = 0;
+    uint32_t tnum = 0;
     uint8_t cointervaling = range->cfg->log_compact_cointervaling();
     if(compact->nfrags > 100 ||
        compact->ngroups > cointervaling ||
@@ -302,7 +302,7 @@ void CompactRange::response(int& err) {
   profile.finished();
   SWC_LOG_OUT(LOG_INFO,
     SWC_LOG_PRINTF(
-      "COMPACT-PROGRESS %lu/%lu blocks=%lu avg(i=%ld e=%ld w=%ld)us ",
+      "COMPACT-PROGRESS %lu/%lu blocks=%lu avg(i=%lu e=%lu w=%lu)us ",
       range->cfg->cid, range->rid,
       total_blocks.load(),
       (time_intval / total_blocks)/1000,
@@ -374,7 +374,7 @@ bool CompactRange::is_slow_req(int64_t& median) const {
   return req_last_time > median || Time::now_ns() - req_ts > median;
 }
 
-void CompactRange::commitlog(int tnum) {
+void CompactRange::commitlog(uint32_t tnum) {
   size_t log_sz = range->blocks.commitlog.size();
   uint8_t cointervaling = range->cfg->log_compact_cointervaling();
   if((log_sz > m_log_sz ? log_sz - m_log_sz : m_log_sz - log_sz)
@@ -403,7 +403,7 @@ void CompactRange::commitlog_done(const CommitLog::Compact* compact) {
     return;
   }
   if(compact) {
-    int tnum = 0;
+    uint32_t tnum = 0;
     if(compact->nfrags > 100 ||
        compact->ngroups > range->cfg->log_rollout_ratio() ||
        compact->nfrags / compact->ngroups > range->cfg->log_rollout_ratio())
@@ -932,7 +932,7 @@ void CompactRange::finished(bool clear) {
   SWC_LOG_OUT(LOG_INFO,
     SWC_LOG_PRINTF(
       "COMPACT-FINISHED %lu/%lu cells=%lu blocks=%lu "
-      "(total=%ld intval=%ld encode=%ld write=%ld)ms ",
+      "(total=%ld intval=%lu encode=%lu write=%lu)ms ",
       range->cfg->cid, range->rid, total_cells.load(), total_blocks.load(),
       (Time::now_ns() - profile.ts_start)/1000000,
       time_intval/1000000, time_encode/1000000, time_write/1000000

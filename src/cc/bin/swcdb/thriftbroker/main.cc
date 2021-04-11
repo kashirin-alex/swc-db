@@ -75,7 +75,7 @@ int run() {
   );
 
   SWC_LOGF(LOG_INFO,
-    "STARTING SERVER: THRIFT-BROKER, reactors=%d workers=%d transport=%s",
+    "STARTING SERVER: THRIFT-BROKER, reactors=%u workers=%d transport=%s",
     reactors, workers, transport.c_str());
 
 

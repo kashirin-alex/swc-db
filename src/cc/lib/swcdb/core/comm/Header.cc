@@ -111,7 +111,7 @@ void Header::decode(const uint8_t** bufp, size_t* remainp) {
   checksum = Serialization::decode_i32(bufp, remainp);
   if(!Core::checksum_i32_chk(checksum, base, header_len-4))
     SWC_THROWF(Error::COMM_HEADER_CHECKSUM_MISMATCH,
-              "header-checksum decoded-len=%lu", *bufp-base);
+              "header-checksum decoded-len=%ld", *bufp-base);
 }
 
 void Header::initialize_from_response(const Header& header) {

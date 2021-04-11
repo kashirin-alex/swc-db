@@ -175,7 +175,7 @@ size_t Fragments::need_compact(std::vector<Fragments::Vec>& groups,
   return _need_compact(groups, without, vol);
 }
 
-bool Fragments::try_compact(int tnum) {
+bool Fragments::try_compact(uint32_t tnum) {
   if(stopping || Env::Rgr::res().is_low_mem_state())
     return false;
 

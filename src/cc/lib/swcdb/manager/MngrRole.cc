@@ -62,7 +62,7 @@ void MngrRole::schedule_checkin(uint32_t t_ms) {
         managers_checkin();
       }
   });
-  SWC_LOGF(LOG_DEBUG, "MngrRole managers_checkin scheduled in ms=%d", t_ms);
+  SWC_LOGF(LOG_DEBUG, "MngrRole managers_checkin scheduled in ms=%u", t_ms);
 }
 
 bool MngrRole::is_active(cid_t cid) {

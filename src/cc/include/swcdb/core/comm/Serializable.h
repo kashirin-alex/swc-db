@@ -71,7 +71,7 @@ void Serializable::decode(const uint8_t** bufp, size_t* remainp) {
                 "Bad Decode missing=%lu in buffer", len);
   if(*bufp > end)
     SWC_THROWF(Error::PROTOCOL_ERROR,
-               "Bad Decode buffer overrun by=%lu", *bufp - end);
+               "Bad Decode buffer overrun by=%ld", *bufp - end);
 }
 
 

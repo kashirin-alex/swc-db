@@ -194,7 +194,7 @@ ConnHandlerPtr Serialized::_get_connection(
       if(conn)
         return conn;
     }
-    SWC_LOGF(LOG_DEBUG, "get_connection: %s, tries=%d",
+    SWC_LOGF(LOG_DEBUG, "get_connection: %s, tries=%u",
                          m_srv_name.c_str(), tries);
 
     std::this_thread::sleep_for(
@@ -244,9 +244,10 @@ void Serialized::_get_connection(
   }
 
   ++next;
-  SWC_LOGF(LOG_DEBUG, "get_connection: %s, tries=%d", m_srv_name.c_str(), tries);
+  SWC_LOGF(LOG_DEBUG, "get_connection: %s, tries=%u",
+           m_srv_name.c_str(), tries);
   srv->connection(timeout,
-    [endpoints, timeout, probes, tries, next, preserve, 
+    [endpoints, timeout, probes, tries, next, preserve,
      cb=std::move(cb), ptr=shared_from_this()]
     (const ConnHandlerPtr& conn) mutable {
       if(!ptr->m_run.load() || (conn && conn->is_open())) {

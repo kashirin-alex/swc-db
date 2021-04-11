@@ -116,7 +116,7 @@ SerializedServer::SerializedServer(
       m_ssl_cfg(Env::Config::settings()->get_bool("swc.comm.ssl")
                 ? new ConfigSSL(false) : nullptr) {
 
-  SWC_LOGF(LOG_INFO, "STARTING SERVER: %s, reactors=%d, workers=%d",
+  SWC_LOGF(LOG_INFO, "STARTING SERVER: %s, reactors=%u, workers=%u",
            m_appname.c_str(), reactors, workers);
 
   auto settings = Env::Config::settings();

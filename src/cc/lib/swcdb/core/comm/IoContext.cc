@@ -16,7 +16,7 @@ IoContextPtr IoContext::make(const std::string& name, int32_t size) {
 
 IoContext::IoContext(const std::string& name, int32_t size)
                     : running(true), name(name), pool(size), m_size(size) {
-  SWC_LOGF(LOG_DEBUG, "Starting IO-ctx(%s) size=%u", name.c_str(), m_size);
+  SWC_LOGF(LOG_DEBUG, "Starting IO-ctx(%s) size=%d", name.c_str(), m_size);
   SWC_ASSERT(m_size > 0);
 }
 

@@ -152,7 +152,7 @@ FileSystemHadoopJVM::setup_connection() {
   uint32_t tries=0;
   while(m_run && !initialize(fs)) {
     SWC_LOGF(LOG_ERROR,
-      "FS-HadoopJVM, unable to initialize connection to hadoop_jvm, try=%d",
+      "FS-HadoopJVM, unable to initialize connection to hadoop_jvm, try=%u",
       ++tries);
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
   }

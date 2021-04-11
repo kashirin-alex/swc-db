@@ -527,7 +527,7 @@ bool MngdColumns::columns_load() {
       continue;
 
     SWC_LOGF(LOG_DEBUG,
-      "Set Expected Columns Load cid(begin=%lu end=%lu) batch=%lu size=%lu",
+      "Set Expected Columns Load cid(begin=%lu end=%lu) batch=%lu size=%ld",
       g->cid_begin, g->cid_end, g_batches, it - it_batch);
     set_expect(g->cid_begin, g->cid_end, columns, true);
 

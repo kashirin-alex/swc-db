@@ -58,13 +58,13 @@ class Compact final {
   typedef const std::function<void(const Compact*)> Cb_t;
 
   Fragments*            log;
-  const uint64_t        ts;
+  const int64_t         ts;
   const uint8_t         preload;
-  const size_t          repetition;
+  const uint32_t        repetition;
   size_t                ngroups;
   size_t                nfrags;
 
-  Compact(Fragments* log, int repetition,
+  Compact(Fragments* log, uint32_t repetition,
           const std::vector<Fragments::Vec>& groups,
           uint8_t cointervaling,
           Compact::Cb_t&& cb = nullptr);

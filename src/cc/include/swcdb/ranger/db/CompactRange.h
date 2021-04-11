@@ -42,13 +42,13 @@ class CompactRange final : public ReqScan {
 
   private:
 
-  void initial_commitlog(int tnum);
+  void initial_commitlog(uint32_t tnum);
 
   void initial_commitlog_done(const CommitLog::Compact* compact);
 
   bool is_slow_req(int64_t& median) const;
 
-  void commitlog(int tnum);
+  void commitlog(uint32_t tnum);
 
   void commitlog_done(const CommitLog::Compact* compact);
 
