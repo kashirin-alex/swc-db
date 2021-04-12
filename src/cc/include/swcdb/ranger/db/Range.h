@@ -65,10 +65,10 @@ class Range final : public std::enable_shared_from_this<Range> {
 
   const std::string get_path(const std::string suff) const;
 
-  const std::string get_path_cs(const csid_t csid) const;
+  std::string get_path_cs(const csid_t csid) const;
 
-  const std::string get_path_cs_on(const std::string folder,
-                                   const csid_t csid) const;
+  std::string get_path_cs_on(const std::string folder,
+                             const csid_t csid) const;
 
   Common::Files::RgrData::Ptr get_last_rgr(int &err);
 

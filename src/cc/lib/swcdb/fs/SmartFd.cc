@@ -16,9 +16,22 @@ SmartFd::Ptr SmartFd::make_ptr(const std::string& filepath, uint32_t flags,
   return std::make_shared<SmartFd>(filepath, flags, fd, pos);
 }
 
+SWC_SHOULD_INLINE
+SmartFd::Ptr SmartFd::make_ptr(std::string&& filepath, uint32_t flags,
+                              int32_t fd, uint64_t pos){
+  return std::make_shared<SmartFd>(std::move(filepath), flags, fd, pos);
+}
+
 SmartFd::SmartFd(const std::string& filepath, uint32_t flags,
                  int32_t fd, uint64_t pos)
-                : m_filepath(filepath), m_flags(flags), m_fd(fd), m_pos(pos) {
+                : m_filepath(filepath),
+                  m_flags(flags), m_fd(fd), m_pos(pos) {
+}
+
+SmartFd::SmartFd(std::string&& filepath, uint32_t flags,
+                 int32_t fd, uint64_t pos) noexcept
+                : m_filepath(std::move(filepath)),
+                  m_flags(flags), m_fd(fd), m_pos(pos) {
 }
 
 SWC_SHOULD_INLINE

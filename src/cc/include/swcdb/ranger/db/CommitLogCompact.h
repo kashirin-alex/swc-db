@@ -83,7 +83,7 @@ class Compact final {
 
   void finalized();
 
-  const std::string get_filepath(const int64_t frag) const;
+  std::string get_filepath(const int64_t frag) const;
 
   Core::Atomic<size_t>  m_workers;
   std::vector<Group*>   m_groups;

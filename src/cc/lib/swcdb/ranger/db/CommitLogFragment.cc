@@ -25,10 +25,14 @@ const char* Fragment::to_string(Fragment::State state) noexcept {
 }
 
 
-Fragment::Ptr Fragment::make_read(int& err, const std::string& filepath,
+Fragment::Ptr Fragment::make_read(int& err, std::string&& filepath,
                                   const DB::Types::KeySeq key_seq) {
-  auto smartfd = FS::SmartFd::make_ptr(filepath, 0);
+  auto smartfd = FS::SmartFd::make_ptr(std::move(filepath), 0);
+  return make_read(err, smartfd, key_seq);
+}
 
+Fragment::Ptr Fragment::make_read(int& err, FS::SmartFd::Ptr& smartfd,
+                                  const DB::Types::KeySeq key_seq) {
   uint8_t                     version = 0;
   DB::Cells::Interval         interval(key_seq);
   DB::Types::Encoder          encoder = DB::Types::Encoder::UNKNOWN;
@@ -126,7 +130,7 @@ void Fragment::load_header(int& err, FS::SmartFd::Ptr& smartfd,
 }
 
 
-Fragment::Ptr Fragment::make_write(int& err, const std::string& filepath,
+Fragment::Ptr Fragment::make_write(int& err, std::string&& filepath,
                                    DB::Cells::Interval&& interval,
                                    DB::Types::Encoder encoder,
                                    const uint32_t cell_revs,
@@ -134,7 +138,7 @@ Fragment::Ptr Fragment::make_write(int& err, const std::string& filepath,
                                    DynamicBuffer& cells,
                                    StaticBuffer::Ptr& buffer) {
   auto smartfd = FS::SmartFd::make_ptr(
-    filepath,
+    std::move(filepath),
     FS::OpenFlags::OPEN_FLAG_OVERWRITE | FS::OpenFlags::WRITE_VALIDATE_LENGTH
   );
 

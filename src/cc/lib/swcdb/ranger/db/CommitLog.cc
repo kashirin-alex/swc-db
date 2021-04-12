@@ -238,7 +238,7 @@ void Fragments::finish_compact(const Compact* compact) {
   }
 }
 
-const std::string Fragments::get_log_fragment(const int64_t frag) const {
+std::string Fragments::get_log_fragment(const int64_t frag) const {
   std::string s(range->get_path(DB::RangeBase::LOG_DIR));
   s.append("/");
   s.append(std::to_string(frag));
@@ -246,7 +246,7 @@ const std::string Fragments::get_log_fragment(const int64_t frag) const {
   return s;
 }
 
-const std::string Fragments::get_log_fragment(const std::string& frag) const {
+std::string Fragments::get_log_fragment(const std::string& frag) const {
   std::string s(range->get_path(DB::RangeBase::LOG_DIR));
   s.append("/");
   s.append(frag);
@@ -392,18 +392,19 @@ void Fragments::unload() {
 }
 
 Fragment::Ptr Fragments::take_ownership(int &err, Fragment::Ptr& take_frag) {
-  const std::string filepath(get_log_fragment(next_id()));
+  auto smartfd = FS::SmartFd::make_ptr(
+    std::move(get_log_fragment(next_id())), 0);
   Env::FsInterface::interface()->rename(
-    err, take_frag->get_filepath(), filepath);
+    err, take_frag->get_filepath(), smartfd->filepath());
 
   if(!err) {
-    auto frag = Fragment::make_read(err, filepath, range->cfg->key_seq);
+    auto frag = Fragment::make_read(err, smartfd, range->cfg->key_seq);
     if(frag) {
       add(frag);
       return frag;
     }
     Env::FsInterface::interface()->rename(
-      err = Error::OK, filepath, take_frag->get_filepath());
+      err = Error::OK, smartfd->filepath(), take_frag->get_filepath());
   }
   return nullptr;
 }
@@ -413,17 +414,18 @@ void Fragments::take_ownership(int& err, Fragments::Vec& frags,
   const auto& fs_if = Env::FsInterface::interface();
   Fragments::Vec tmp_frags;
   for(auto it = frags.begin(); !stopping && it != frags.end(); ) {
-    const std::string filepath(get_log_fragment(next_id()));
-    fs_if->rename(err, (*it)->get_filepath(), filepath);
+    auto smartfd = FS::SmartFd::make_ptr(
+      std::move(get_log_fragment(next_id())), 0);
+    fs_if->rename(err, (*it)->get_filepath(), smartfd->filepath());
     if(err)
       break;
     frags.erase(it);
 
-    auto frag = Fragment::make_read(err, filepath, range->cfg->key_seq);
+    auto frag = Fragment::make_read(err, smartfd, range->cfg->key_seq);
     if(frag) {
       tmp_frags.push_back(frag);
     } else {
-      fs_if->remove(err, filepath);
+      fs_if->remove(err, smartfd->filepath());
       break;
     }
   }

@@ -58,7 +58,7 @@ class RangeBase final {
     return s;
   }
 
-  static const std::string get_path_ranger(const std::string& range_path) {
+  static std::string get_path_ranger(const std::string& range_path) {
     std::string s(range_path);
     s.append(RANGER_FILE);
     return s;

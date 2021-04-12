@@ -27,7 +27,8 @@ void create(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     Params::CreateReq params;
     params.decode(&ptr, &remain);
 
-    auto smartfd = FS::SmartFd::make_ptr(params.fname, params.flags);
+    auto smartfd = FS::SmartFd::make_ptr(
+      std::move(params.fname), params.flags);
 
     Env::FsInterface::fs()->create(
       err, smartfd, params.bufsz, params.replication, params.blksz

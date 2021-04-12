@@ -75,7 +75,7 @@ class RgrData final {
   }
 
   // SET
-  void set_rgr(int &err, std::string filepath, uint8_t replication,
+  void set_rgr(int &err, std::string&& filepath, uint8_t replication,
                int64_t ts = 0) {
 
     DynamicBuffer input;
@@ -84,7 +84,8 @@ class RgrData final {
 
     Env::FsInterface::interface()->write(
       err,
-      FS::SmartFd::make_ptr(filepath, FS::OpenFlags::OPEN_FLAG_OVERWRITE),
+      FS::SmartFd::make_ptr(
+        std::move(filepath), FS::OpenFlags::OPEN_FLAG_OVERWRITE),
       replication,
       -1,
       send_buf

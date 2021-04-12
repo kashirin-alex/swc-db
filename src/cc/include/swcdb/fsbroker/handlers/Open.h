@@ -26,7 +26,8 @@ void open(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     Params::OpenReq params;
     params.decode(&ptr, &remain);
 
-    auto smartfd = FS::SmartFd::make_ptr(params.fname, params.flags);
+    auto smartfd = FS::SmartFd::make_ptr(
+      std::move(params.fname), params.flags);
 
     Env::FsInterface::fs()->open(err, smartfd, params.bufsz);
 

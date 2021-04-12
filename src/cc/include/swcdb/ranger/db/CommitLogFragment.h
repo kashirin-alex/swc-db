@@ -45,7 +45,10 @@ class Fragment final : public std::enable_shared_from_this<Fragment> {
   static const char* to_string(State state) noexcept;
 
 
-  static Ptr make_read(int& err, const std::string& filepath,
+  static Ptr make_read(int& err, std::string&& filepath,
+                       const DB::Types::KeySeq key_seq);
+
+  static Ptr make_read(int& err, FS::SmartFd::Ptr& smartfd,
                        const DB::Types::KeySeq key_seq);
 
   static void load_header(int& err, FS::SmartFd::Ptr& smartfd,
@@ -57,7 +60,7 @@ class Fragment final : public std::enable_shared_from_this<Fragment> {
                           uint32_t& data_checksum, uint32_t& offset_data);
 
 
-  static Ptr make_write(int& err, const std::string& filepath,
+  static Ptr make_write(int& err, std::string&& filepath,
                         DB::Cells::Interval&& interval,
                         DB::Types::Encoder encoder,
                         const uint32_t cell_revs,

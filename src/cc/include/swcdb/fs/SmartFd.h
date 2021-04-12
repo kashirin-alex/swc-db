@@ -39,8 +39,14 @@ struct SmartFd {
   static Ptr make_ptr(const std::string& filepath, uint32_t flags,
                       int32_t fd=-1, uint64_t pos=0);
 
+  static Ptr make_ptr(std::string&& filepath, uint32_t flags,
+                      int32_t fd=-1, uint64_t pos=0);
+
   SmartFd(const std::string& filepath, uint32_t flags,
           int32_t fd=-1, uint64_t pos=0);
+
+  SmartFd(std::string&& filepath, uint32_t flags,
+          int32_t fd=-1, uint64_t pos=0) noexcept;
 
   virtual ~SmartFd() { }
 

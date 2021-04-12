@@ -59,9 +59,9 @@ class Fragments final : private std::vector<Fragment::Ptr> {
 
   void finish_compact(const Compact* compact);
 
-  const std::string get_log_fragment(const int64_t frag) const;
+  std::string get_log_fragment(const int64_t frag) const;
 
-  const std::string get_log_fragment(const std::string& frag) const;
+  std::string get_log_fragment(const std::string& frag) const;
 
   void load(int &err);
 

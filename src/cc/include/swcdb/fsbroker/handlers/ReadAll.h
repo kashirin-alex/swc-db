@@ -42,7 +42,7 @@ void read_all(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     if(err)
       goto finish;
 
-    fs->open(err, smartfd = FS::SmartFd::make_ptr(params.name, 0));
+    fs->open(err, smartfd = FS::SmartFd::make_ptr(std::move(params.name), 0));
     if(!err && !smartfd->valid())
       err = EBADR;
     if(err)

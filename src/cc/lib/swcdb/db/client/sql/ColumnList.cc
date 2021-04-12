@@ -10,7 +10,8 @@
 
 namespace SWC { namespace client { namespace SQL {
 
-ColumnList::ColumnList(const std::string& sql, std::vector<DB::Schema::Ptr>& schemas,
+ColumnList::ColumnList(const std::string& sql,
+                       std::vector<DB::Schema::Ptr>& schemas,
                        std::string& message)
                       : Reader(sql, message), schemas(schemas) {
 }

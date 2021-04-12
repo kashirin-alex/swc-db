@@ -13,7 +13,8 @@ namespace SWC { namespace Ranger { namespace CellStore {
 Read::Ptr Read::make(int& err, const csid_t csid,
                      const RangePtr& range,
                      const DB::Cells::Interval& interval, bool chk_base) {
-  auto smartfd = FS::SmartFd::make_ptr(range->get_path_cs(csid), 0);
+  auto smartfd = FS::SmartFd::make_ptr(
+    std::move(range->get_path_cs(csid)), 0);
   DB::Cell::Key prev_key_end;
   DB::Cell::Key key_end;
   DB::Cells::Interval interval_by_blks(range->cfg->key_seq);
@@ -403,12 +404,12 @@ void Read::print(std::ostream& out, bool minimal) const {
 
 
 
-Write::Write(const csid_t csid, const std::string& filepath,
+Write::Write(const csid_t csid, std::string&& filepath,
              const RangePtr& range, uint32_t cell_revs)
             : csid(csid),
               smartfd(
                 FS::SmartFd::make_ptr(
-                  filepath, FS::OpenFlags::OPEN_FLAG_OVERWRITE)
+                  std::move(filepath), FS::OpenFlags::OPEN_FLAG_OVERWRITE)
               ),
               encoder(range->cfg->block_enc()),
               block_size(range->cfg->block_size()),

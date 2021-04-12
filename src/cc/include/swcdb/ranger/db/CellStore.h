@@ -138,7 +138,7 @@ class Write final {
 
   //Core::Atomic<uint32_t>    completion;
 
-  Write(const csid_t csid, const std::string& filepath,
+  Write(const csid_t csid, std::string&& filepath,
         const RangePtr& range, uint32_t cell_revs);
 
   ~Write();

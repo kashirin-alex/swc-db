@@ -265,7 +265,7 @@ void Compact::finalized() {
     log->finish_compact(this);
 }
 
-const std::string Compact::get_filepath(const int64_t frag) const {
+std::string Compact::get_filepath(const int64_t frag) const {
   std::string s(log->range->get_path(Range::LOG_TMP_DIR));
   s.append("/");
   s.append(std::to_string(frag));

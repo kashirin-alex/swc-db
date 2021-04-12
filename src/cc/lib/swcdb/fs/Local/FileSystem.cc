@@ -134,7 +134,7 @@ void FileSystemLocal::readdir(int& err, const std::string& name,
       continue;
     full_entry_path.clear();
     full_entry_path.append(abspath);
-    full_entry_path += '/';
+    full_entry_path.append("/");
     full_entry_path.append(dep->d_name);
     if(::stat(full_entry_path.c_str(), &statbuf) == -1) {
       if(errno == ENOENT) {

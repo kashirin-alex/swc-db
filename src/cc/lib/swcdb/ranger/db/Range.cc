@@ -83,12 +83,12 @@ const std::string Range::get_path(const std::string suff) const {
   return s;
 }
 
-const std::string Range::get_path_cs(const csid_t csid) const {
+std::string Range::get_path_cs(const csid_t csid) const {
   return get_path_cs_on(DB::RangeBase::CELLSTORES_DIR, csid);
 }
 
-const std::string Range::get_path_cs_on(const std::string folder,
-                                        const csid_t csid) const {
+std::string Range::get_path_cs_on(const std::string folder,
+                                  const csid_t csid) const {
   return DB::RangeBase::get_path_cs(m_path, folder, csid);
 }
 
