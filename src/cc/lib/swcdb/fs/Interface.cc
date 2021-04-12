@@ -176,7 +176,7 @@ void Interface::get_structured_ids(int& err, const std::string& base_path,
     }
 
     std::string new_base_path = base_path;
-    new_base_path += '/';
+    new_base_path.append("/");
     new_base_path.append(entry.name);
     id_name.append(entry.name);
     get_structured_ids(err, new_base_path, entries, id_name);
@@ -505,7 +505,7 @@ void set_structured_id(const std::string& number, std::string& s) {
       n + ID_SPLIT_LEN < number.length();
       n += ID_SPLIT_LEN, it += ID_SPLIT_LEN) {
     s.append(it, it + ID_SPLIT_LEN);
-    s += '/';
+    s.append("/");
   }
   s.append(it, number.cend());
   s += ID_SPLIT_LAST;

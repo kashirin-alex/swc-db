@@ -392,8 +392,7 @@ void Fragments::unload() {
 }
 
 Fragment::Ptr Fragments::take_ownership(int &err, Fragment::Ptr& take_frag) {
-  auto smartfd = FS::SmartFd::make_ptr(
-    std::move(get_log_fragment(next_id())), 0);
+  auto smartfd = FS::SmartFd::make_ptr(get_log_fragment(next_id()), 0);
   Env::FsInterface::interface()->rename(
     err, take_frag->get_filepath(), smartfd->filepath());
 
@@ -414,8 +413,7 @@ void Fragments::take_ownership(int& err, Fragments::Vec& frags,
   const auto& fs_if = Env::FsInterface::interface();
   Fragments::Vec tmp_frags;
   for(auto it = frags.begin(); !stopping && it != frags.end(); ) {
-    auto smartfd = FS::SmartFd::make_ptr(
-      std::move(get_log_fragment(next_id())), 0);
+    auto smartfd = FS::SmartFd::make_ptr(get_log_fragment(next_id()), 0);
     fs_if->rename(err, (*it)->get_filepath(), smartfd->filepath());
     if(err)
       break;

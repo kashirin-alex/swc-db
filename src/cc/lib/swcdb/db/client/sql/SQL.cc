@@ -22,7 +22,7 @@ Cmd recognize_cmd(int& err, const std::string& sql, std::string& message) {
           break;
         if(!cmd.empty()) {
           ++words;
-          cmd += ' ';
+          cmd.append(" ");
         }
         word = false;
       }

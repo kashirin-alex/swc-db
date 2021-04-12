@@ -21,9 +21,9 @@ WriteReq::WriteReq(const std::string& fname, uint32_t flags,
 }
 
 size_t WriteReq::internal_encoded_length() const {
-  return Serialization::encoded_length_vi32(flags) 
+  return Serialization::encoded_length_vi32(flags)
        + 1
-       + Serialization::encoded_length_vi64(blksz) 
+       + Serialization::encoded_length_vi64(blksz)
        + Serialization::encoded_length_bytes(fname.size());
 }
 
@@ -38,8 +38,7 @@ void WriteReq::internal_decode(const uint8_t** bufp, size_t* remainp) {
   flags = Serialization::decode_vi32(bufp, remainp);
   replication = Serialization::decode_i8(bufp, remainp);
   blksz = Serialization::decode_vi64(bufp, remainp);
-  fname.clear();
-  fname.append(Serialization::decode_bytes_string(bufp, remainp));
+  fname = Serialization::decode_bytes_string(bufp, remainp);
 }
 
 

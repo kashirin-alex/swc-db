@@ -83,7 +83,7 @@ void LogWriter::daemon(const std::string& logs_path) {
   Core::MutexSptd::scope lock(mutex);
   m_logs_path = logs_path;
   if(m_logs_path.back() != '/')
-    m_logs_path += '/';
+    m_logs_path.append("/");
   m_daemon = true;
 
   renew_files();
@@ -118,15 +118,15 @@ void LogWriter::renew_files() {
   ::mkdir(filepath.c_str(), 0755);
   filepath.append(std::to_string(1900+ltm->tm_year));
   ::mkdir(filepath.c_str(), 0755);
-  filepath += '/';
+  filepath.append("/");
   filepath.append(std::to_string(1+ltm->tm_mon));
   ::mkdir(filepath.c_str(), 0755);
-  filepath += '/';
+  filepath.append("/");
   filepath.append(std::to_string(ltm->tm_mday));
   ::mkdir(filepath.c_str(), 0755);
   if(errno == EEXIST)
     errno = 0;
-  filepath += '/';
+  filepath.append("/");
   filepath.append(m_name);
   filepath.append(".log");
 

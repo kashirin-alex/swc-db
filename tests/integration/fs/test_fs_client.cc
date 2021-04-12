@@ -111,7 +111,7 @@ void run(size_t thread_id){
 
     err = Error::OK;
     FS::SmartFd::Ptr smartfd = FS::SmartFd::make_ptr(
-      std::move("testfile_"+std::to_string(thread_id)),
+      "testfile_"+std::to_string(thread_id),
       FS::OpenFlags::OPEN_FLAG_OVERWRITE);
     Env::FsInterface::fs()->create(err, smartfd, -1, 0, -1);
     if(err != Error::OK || !smartfd->valid()) {

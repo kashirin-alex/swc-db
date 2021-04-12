@@ -46,7 +46,7 @@ void RangeData::save(int& err, CellStore::Readers& cellstores) {
   Env::FsInterface::interface()->write(
     err,
     FS::SmartFd::make_ptr(
-      std::move(cellstores.range->get_path(DB::RangeBase::RANGE_FILE)),
+      cellstores.range->get_path(DB::RangeBase::RANGE_FILE),
       FS::OpenFlags::OPEN_FLAG_OVERWRITE
     ),
     cellstores.range->cfg->file_replication(),

@@ -304,7 +304,7 @@ void Settings::init_process(bool with_pid_file, const std::string& port_cfg) {
 
 std::string Settings::usage_str(const char *usage) {
   std::string tmp(swcdb_copyrights());
-  tmp += '\n';
+  tmp.append("\n");
   if(!usage)
     tmp.append(format("Usage: %s [options]\n\nOptions:", executable.c_str()));
   else if(strstr(usage, "%s"))

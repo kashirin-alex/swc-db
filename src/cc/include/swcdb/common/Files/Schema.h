@@ -76,7 +76,7 @@ void save(int &err, const DB::Schema::Ptr& schema, uint8_t replication=0) {
   Env::FsInterface::interface()->write(
     err,
     FS::SmartFd::make_ptr(
-      std::move(filepath(schema->cid)), FS::OpenFlags::OPEN_FLAG_OVERWRITE),
+      filepath(schema->cid), FS::OpenFlags::OPEN_FLAG_OVERWRITE),
     replication,
     -1,
     send_buf

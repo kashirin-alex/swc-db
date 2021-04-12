@@ -24,8 +24,7 @@ void RmdirReq::internal_encode(uint8_t** bufp) const {
 }
 
 void RmdirReq::internal_decode(const uint8_t** bufp, size_t* remainp) {
-  dname.clear();
-  dname.append(Serialization::decode_bytes_string(bufp, remainp));
+  dname = Serialization::decode_bytes_string(bufp, remainp);
 }
 
 

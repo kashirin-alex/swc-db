@@ -51,7 +51,7 @@ void set(const SpecKey& spec, DB::Specs::Key& dbspec) {
     if(uint8_t(fraction.comp) > 0x8) {
       std::string msg("Key ext-fraction-comp(");
       msg.append(Condition::to_string(Condition::Comp(fraction.comp), true));
-      msg += ')';
+      msg.append(")");
       exception(Error::INCOMPATIBLE_OPTIONS, msg);
     }
     dbspec.add(fraction.f, Condition::Comp(fraction.comp));

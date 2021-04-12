@@ -33,7 +33,7 @@ void CombiPreadReq::internal_encode(uint8_t** bufp) const {
 
 void CombiPreadReq::internal_decode(const uint8_t** bufp, size_t* remainp) {
   smartfd = FS::SmartFd::make_ptr(
-    std::move(Serialization::decode_bytes_string(bufp, remainp)), 0);
+    Serialization::decode_bytes_string(bufp, remainp), 0);
   offset = Serialization::decode_vi64(bufp, remainp);
   amount = Serialization::decode_vi32(bufp, remainp);
 }

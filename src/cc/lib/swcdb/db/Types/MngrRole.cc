@@ -25,22 +25,22 @@ std::string to_string(uint8_t role) {
 
   if(role & RANGERS) {
     if(!s.empty())
-      s += ',';
+      s.append(",");
     s.append(MngrRole_RANGERS);
   }
 
   if(role & COLUMNS) {
     if(!s.empty())
-      s += ',';
+      s.append(",");
     s.append(MngrRole_COLUMNS);
   }
 
   if(role & NO_COLUMNS) {
     if(!s.empty())
-      s += ',';
+      s.append(",");
     s.append(MngrRole_NO_COLUMNS);
   }
-  
+
   return s;
 }
 

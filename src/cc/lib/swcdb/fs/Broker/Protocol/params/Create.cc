@@ -19,10 +19,10 @@ CreateReq::CreateReq(const std::string& fname, uint32_t flags, int32_t bufsz,
                       replication(replication), blksz(blksz) {}
 
 size_t CreateReq::internal_encoded_length() const {
-  return Serialization::encoded_length_vi32(flags) 
-       + Serialization::encoded_length_vi32(bufsz) 
+  return Serialization::encoded_length_vi32(flags)
+       + Serialization::encoded_length_vi32(bufsz)
        + 1
-       + Serialization::encoded_length_vi64(blksz) 
+       + Serialization::encoded_length_vi64(blksz)
        + Serialization::encoded_length_bytes(fname.size());
 }
 
@@ -39,8 +39,7 @@ void CreateReq::internal_decode(const uint8_t** bufp, size_t* remainp) {
   bufsz = Serialization::decode_vi32(bufp, remainp);
   replication = Serialization::decode_i8(bufp, remainp);
   blksz = Serialization::decode_vi64(bufp, remainp);
-  fname.clear();
-  fname.append(Serialization::decode_bytes_string(bufp, remainp));
+  fname = Serialization::decode_bytes_string(bufp, remainp);
 }
 
 

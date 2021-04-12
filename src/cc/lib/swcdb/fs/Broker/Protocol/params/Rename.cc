@@ -13,7 +13,7 @@ namespace FsBroker {  namespace Params {
 
 RenameReq::RenameReq() {}
 
-RenameReq::RenameReq(const std::string& from, const std::string& to) 
+RenameReq::RenameReq(const std::string& from, const std::string& to)
                     : from(from), to(to) {}
 
 size_t RenameReq::internal_encoded_length() const {
@@ -27,10 +27,8 @@ void RenameReq::internal_encode(uint8_t** bufp) const {
 }
 
 void RenameReq::internal_decode(const uint8_t** bufp, size_t* remainp) {
-  from.clear();
-  from.append(Serialization::decode_bytes_string(bufp, remainp));
-  to.clear();
-  to.append(Serialization::decode_bytes_string(bufp, remainp));
+  from = Serialization::decode_bytes_string(bufp, remainp);
+  to = Serialization::decode_bytes_string(bufp, remainp);
 }
 
 }}}}}
