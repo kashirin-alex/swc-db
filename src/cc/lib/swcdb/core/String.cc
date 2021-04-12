@@ -33,11 +33,14 @@ std::string format(const char* fmt, ...) {
   return format(fmt, va);;
 }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-nonliteral"
 std::string format_unsafe(const char *fmt, ...) {
   std::va_list va;
   va_start(va, fmt);
   return format(fmt, va);;
 }
+#pragma GCC diagnostic pop
 
 
 } // namespace SWC
