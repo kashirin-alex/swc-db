@@ -10,6 +10,7 @@
 
 #include <string>
 #include <sstream>
+#include <cstdarg>
 
 
 namespace SWC {
@@ -20,9 +21,13 @@ namespace SWC {
  *  @{
  */
 
+ 
+  std::string format(const char* fmt, std::va_list& va);
 
-  std::string format(const char *fmt, ...)
-              __attribute__((format(printf, 1, 2)));
+  std::string format(const char* fmt, ...)
+                    __attribute__((format(printf, 1, 2)));
+
+  std::string format_unsafe(const char *fmt, ...);
 
 
   template <class SequenceT>

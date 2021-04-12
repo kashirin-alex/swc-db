@@ -156,8 +156,8 @@ void ParserConfig::free() {
   }
 }
 
-ParserConfig& ParserConfig::definition(const std::string& u) {
-  usage = u;
+ParserConfig& ParserConfig::definition(std::string&& u) {
+  usage = std::move(u);
   return *this;
 }
 
@@ -177,7 +177,7 @@ ParserConfig& ParserConfig::add(const ParserConfig& other_cfg) {
 /* Method to add option */
 ParserConfig& ParserConfig::add(const std::string& names,
                                 Property::Value::Ptr vptr,
-                                const std::string& description) {
+                                std::string&& description) {
   Strings aliases;
   std::istringstream f(names);
   std::string s;
@@ -188,15 +188,15 @@ ParserConfig& ParserConfig::add(const std::string& names,
   }
   ParserOpt& opt = options[aliases.front()];
   opt.value = vptr;
-  opt.desc = description;
+  opt.desc = std::move(description);
   opt.aliases.assign(aliases.begin()+1, aliases.end());
   return *this;
 }
 
 ParserConfig& ParserConfig::operator()(const std::string& name,
                                        Property::Value::Ptr vptr,
-                                       const std::string& description) {
-  return add(name, vptr, description);
+                                       std::string&& description) {
+  return add(name, vptr, std::move(description));
 }
 
 ParserConfig& ParserConfig::add_options(){
@@ -205,18 +205,18 @@ ParserConfig& ParserConfig::add_options(){
 
 ParserConfig& ParserConfig::add_options(const std::string& name,
                                         Property::Value::Ptr vptr,
-                                        const std::string& description) {
-  return add(name, vptr, description);
+                                        std::string&& description) {
+  return add(name, vptr, std::move(description));
 }
 
 ParserConfig& ParserConfig::add(const std::string& name,
-                                const std::string& description) {
-   return add(name, boo()->zero_token(), description);
+                                std::string&& description) {
+   return add(name, boo()->zero_token(), std::move(description));
 }
 
 ParserConfig& ParserConfig::operator()(const std::string& name,
-                                       const std::string& description) {
-  return add(name, description);
+                                       std::string&& description) {
+  return add(name, std::move(description));
 }
 
 /* Method to add_pos option */
@@ -262,7 +262,7 @@ bool ParserConfig::has(const std::string& name,
   return false;
 }
 
-Property::Value::Ptr ParserConfig::get_default(const std::string& name){
+Property::Value::Ptr ParserConfig::get_default(const std::string& name) {
   for(const auto& info : options) {
     if(!name.compare(info.first))
       return info.second.value;

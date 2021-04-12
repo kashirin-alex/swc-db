@@ -88,27 +88,27 @@ class ParserConfig final {
 
   void free();
 
-  ParserConfig& definition(const std::string& u);
+  ParserConfig& definition(std::string&& u);
 
   /* populate from other Parser Config */
   ParserConfig& add(const ParserConfig& other_cfg);
 
   /* Method to add option */
   ParserConfig& add(const std::string& names, Property::Value::Ptr vptr,
-                    const std::string& description);
+                    std::string&& description);
 
   ParserConfig& operator()(const std::string& name, Property::Value::Ptr vptr,
-                           const std::string& description);
+                           std::string&& description);
 
   ParserConfig& add_options();
 
   ParserConfig& add_options(const std::string& name, Property::Value::Ptr vptr,
-                            const std::string& description);
+                            std::string&& description);
 
-  ParserConfig& add(const std::string& name, const std::string& description);
+  ParserConfig& add(const std::string& name, std::string&& description);
 
   ParserConfig& operator()(const std::string& name,
-                           const std::string& description);
+                           std::string&& description);
 
   /* Method to add_pos option */
   ParserConfig& add_pos(const std::string& s, int pos);

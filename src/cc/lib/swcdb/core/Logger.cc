@@ -111,7 +111,10 @@ void LogWriter::renew_files() {
   m_last_time = (::time(nullptr)/86400)*86400;
   auto ltm = localtime(&m_last_time);
 
-  std::string filepath(m_logs_path);
+  std::string filepath;
+  filepath.reserve(m_logs_path.size() + m_name.size() + 16);
+  filepath.append(m_logs_path);
+
   ::mkdir(filepath.c_str(), 0755);
   filepath.append(std::to_string(1900+ltm->tm_year));
   ::mkdir(filepath.c_str(), 0755);
@@ -123,19 +126,17 @@ void LogWriter::renew_files() {
   ::mkdir(filepath.c_str(), 0755);
   if(errno == EEXIST)
     errno = 0;
-
   filepath += '/';
   filepath.append(m_name);
-
-  std::string filepath_out(filepath+".log");
-  //std::string filepath_err(filepath+".err");
+  filepath.append(".log");
 
   if(!errno) {
     std::cout << "Changing Standard Output File to="
-              << filepath_out << std::endl;
-    m_file_out = std::freopen(filepath_out.c_str(), "w", m_file_out);
+              << filepath << std::endl;
+    m_file_out = std::freopen(filepath.c_str(), "w", m_file_out);
 
     std::cerr.rdbuf(std::cout.rdbuf());
+    //std::string filepath_err(filepath+".err");
     //std::cerr << "Changing Error Output File to=" << filepath_err << "\n";
     //m_file_err = std::freopen(filepath_err.c_str(), "w", m_file_err);
   }
