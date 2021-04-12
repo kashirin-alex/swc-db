@@ -10,46 +10,46 @@
 
 #include <string>
 #include <sstream>
-#include <cstdarg>
 
 
 namespace SWC {
 
 
 /*!
- *  \addtogroup Core
- *  @{
- */
-
- 
-  std::string format(const char* fmt, std::va_list& va);
-
-  std::string format(const char* fmt, ...)
-                    __attribute__((format(printf, 1, 2)));
-
-  std::string format_unsafe(const char *fmt, ...);
+*  \addtogroup Core
+*  @{
+*/
 
 
-  template <class SequenceT>
-  std::string format_list(const SequenceT &seq, const char *sep = ", ") {
-    if(seq.empty())
-      return "[]";
+std::string format(const char* fmt, ...)
+                  __attribute__((format(printf, 1, 2)));
 
-    auto it = seq.begin();
-    auto end = seq.end();
+SWC_PRAGMA_DIAGNOSTIC_PUSH
+SWC_PRAGMA_DIAGNOSTIC_IGNORED("-Wformat-nonliteral")
+std::string format_unsafe(const char* fmt, ...);
+SWC_PRAGMA_DIAGNOSTIC_POP
 
-    std::ostringstream out;
-    out << '[';
-    more:
-      out << *it;
-      if(++it != end) {
-        out << sep;
-        goto more;
-      }
-    out << ']';
 
-    return out.str();
-  }
+template <class SequenceT>
+std::string format_list(const SequenceT &seq, const char *sep = ", ") {
+  if(seq.empty())
+    return "[]";
+
+  auto it = seq.begin();
+  auto end = seq.end();
+
+  std::ostringstream out;
+  out << '[';
+  more:
+    out << *it;
+    if(++it != end) {
+      out << sep;
+      goto more;
+    }
+  out << ']';
+
+  return out.str();
+}
 
 
 /*! @} End of Core Group*/
@@ -59,6 +59,6 @@ namespace SWC {
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/core/String.cc"
-#endif 
+#endif
 
 #endif // swcdb_core_String_h

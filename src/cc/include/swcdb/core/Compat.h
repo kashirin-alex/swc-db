@@ -53,6 +53,7 @@ static_assert(
  *  @{
  */
 
+#define SWC_STRINGIFY(s) #s
 
 #define SWC_ATTRIBS(attrs) __attribute__(attrs)
 #define SWC_ATTR_NOTHROW __nothrow__
@@ -70,21 +71,32 @@ static_assert(
 #endif
 
 
+
 #if defined(__clang__) // CLANG specific
 
-# define SWC_SHOULD_NOT_INLINE  \
-  SWC_ATTRIBS((__noinline__))
+  #define SWC_SHOULD_NOT_INLINE  \
+    SWC_ATTRIBS((__noinline__))
 
-# define SWC_ATTRIB_O3
+  #define SWC_ATTRIB_O3
+
+  #define SWC_PRAGMA_DIAGNOSTIC_PUSH _Pragma("clang diagnostic push")
+  #define SWC_PRAGMA_DIAGNOSTIC_IGNORED(_flags_) \
+    _Pragma(SWC_STRINGIFY(clang diagnostic ignored _flags_))
+  #define SWC_PRAGMA_DIAGNOSTIC_POP  _Pragma("clang diagnostic pop")
 
 
 #elif defined(__GNUC__) // GCC specific
 
-# define SWC_SHOULD_NOT_INLINE  \
-  SWC_ATTRIBS((__noinline__, __noclone__))
+  #define SWC_SHOULD_NOT_INLINE  \
+    SWC_ATTRIBS((__noinline__, __noclone__))
 
-# define SWC_ATTRIB_O3  \
-  optimize("-O3")
+  #define SWC_ATTRIB_O3  \
+    optimize("-O3")
+
+  #define SWC_PRAGMA_DIAGNOSTIC_PUSH _Pragma("GCC diagnostic push")
+  #define SWC_PRAGMA_DIAGNOSTIC_IGNORED(_flags_) \
+    _Pragma(SWC_STRINGIFY(GCC diagnostic ignored _flags_))
+  #define SWC_PRAGMA_DIAGNOSTIC_POP  _Pragma("GCC diagnostic pop")
 
 #endif
 
