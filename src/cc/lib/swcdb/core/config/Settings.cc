@@ -294,10 +294,10 @@ void Settings::init_process(bool with_pid_file, const std::string& port_cfg) {
     Core::logger.daemon(get_str("swc.logging.path"));
 
   if(daemon || get_gbool("verbose")) {
-    SWC_LOG_OUT(LOG_NOTICE, SWC_LOG_OSTREAM
+    SWC_LOG_OUT(LOG_NOTICE, print(SWC_LOG_OSTREAM
       << "Initialized " << executable << " "
       << swcdb_version() << "\n" << swcdb_copyrights() << '\n'
-      << "Process Settings: \n" << to_string_all();
+      << "Process Settings: \n");
     );
   }
 }

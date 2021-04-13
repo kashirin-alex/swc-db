@@ -128,23 +128,16 @@ namespace SWC { namespace Config {
   }
 
   void Properties::print(std::ostream& out, bool include_default) const {
-    out << to_string_all(include_default);
-  }
-
-  std::string Properties::to_string_all(bool include_default) const {
-    std::string out;
     bool isdefault;
     for(const auto& kv : m_map) {
       isdefault = kv.second->is_default();
       if(include_default || !isdefault) {
-        out.append(
-          format("%s=%s", kv.first.c_str(), kv.second->to_string().c_str()));
+        out << kv.first << '=' << kv.second->to_string();
         if(isdefault)
-          out.append(" (default)");
-        out.append("\n");
+          out << " (default)";
+        out << '\n';
       }
     }
-    return out;
   }
 
 

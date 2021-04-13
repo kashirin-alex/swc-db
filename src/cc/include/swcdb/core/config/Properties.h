@@ -127,8 +127,6 @@ class Properties {
 
   void print(std::ostream& out, bool include_default = false) const;
 
-  std::string to_string_all(bool include_default = false) const;
-
   private:
 
   Map       m_map;
