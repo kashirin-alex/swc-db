@@ -133,9 +133,9 @@ void ServerConnections::close_all() {
 }
 
 
-Serialized::Serialized(const std::string& srv_name, const IoContextPtr& ioctx,
+Serialized::Serialized(std::string&& srv_name, const IoContextPtr& ioctx,
                        const AppContext::Ptr& ctx)
-            : m_srv_name(srv_name), m_ioctx(ioctx), m_ctx(ctx),
+            : m_srv_name(std::move(srv_name)), m_ioctx(ioctx), m_ctx(ctx),
               m_use_ssl(Env::Config::settings()->get_bool("swc.comm.ssl")),
               m_ssl_cfg(m_use_ssl ? new ConfigSSL() : nullptr),
               m_run(true) {

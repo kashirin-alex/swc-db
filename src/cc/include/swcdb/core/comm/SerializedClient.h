@@ -71,7 +71,7 @@ class Serialized final :
 
   typedef std::shared_ptr<Serialized>                        Ptr;
 
-  Serialized(const std::string& srv_name,
+  Serialized(std::string&& srv_name,
              const IoContextPtr& ioctx,
              const AppContext::Ptr& ctx);
 

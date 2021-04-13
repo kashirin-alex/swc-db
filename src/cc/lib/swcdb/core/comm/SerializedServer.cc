@@ -108,11 +108,11 @@ void Acceptor::do_accept_plain() noexcept {
 
 
 SerializedServer::SerializedServer(
-    const std::string& name,
+    std::string&& name,
     uint32_t reactors, uint32_t workers,
     const std::string& port_cfg_name,
     AppContext::Ptr app_ctx
-  ) : m_appname(name), m_run(true),
+  ) : m_appname(std::move(name)), m_run(true),
       m_ssl_cfg(Env::Config::settings()->get_bool("swc.comm.ssl")
                 ? new ConfigSSL(false) : nullptr) {
 
@@ -154,7 +154,7 @@ SerializedServer::SerializedServer(
 
   for(uint32_t reactor=0; reactor<reactors; ++reactor) {
     m_io_contexts.push_back(
-      IoContext::make(name + "-reactor-" + std::to_string(reactor+1),
+      IoContext::make(m_appname + "-reactor-" + std::to_string(reactor+1),
       workers
     ));
 

@@ -47,8 +47,9 @@ int run() {
   return 1;
 }
 
-Interface::Interface(const std::string& prompt, const std::string& history)
-                    : err(Error::OK), prompt(prompt), history(history) {
+Interface::Interface(std::string&& prompt, std::string&& history)
+                    : err(Error::OK),
+                      prompt(std::move(prompt)), history(std::move(history)) {
   init();
 }
 

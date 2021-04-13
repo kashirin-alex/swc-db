@@ -38,7 +38,7 @@ class IoContext final : public std::enable_shared_from_this<IoContext> {
   typedef asio::thread_pool::executor_type    Executor;
   typedef asio::executor_work_guard<Executor> ExecutorWorkGuard;
 
-  static IoContextPtr make(const std::string& name, int32_t size);
+  static IoContextPtr make(std::string&& _name, int32_t size);
 
 
   Core::AtomicBool                     running;
@@ -47,7 +47,7 @@ class IoContext final : public std::enable_shared_from_this<IoContext> {
   std::unique_ptr<asio::signal_set>    signals;
 
 
-  IoContext(const std::string& name, int32_t size);
+  IoContext(std::string&& _name, int32_t size);
 
   ~IoContext();
 

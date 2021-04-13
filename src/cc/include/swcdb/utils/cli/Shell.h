@@ -31,23 +31,23 @@ int run();
 class Interface {
 
   public:
-  Interface(const std::string& prompt="CLI>", 
-            const std::string& history="/tmp/.swc-cli-history");
-  
+  Interface(std::string&& prompt="CLI>",
+            std::string&& history="/tmp/.swc-cli-history");
+
   virtual ~Interface();
 
   int run();
-  
+
   protected:
 
   struct Option final {
     typedef std::function<bool(std::string&)> Call_t;
 
-    Option(std::string&& name, std::vector<std::string>&& desc, 
+    Option(std::string&& name, std::vector<std::string>&& desc,
            Call_t&& call, const re2::RE2* re) noexcept
-          : name(std::move(name)), 
-            desc(std::move(desc)), 
-            call(std::move(call)), re(re) { 
+          : name(std::move(name)),
+            desc(std::move(desc)),
+            call(std::move(call)), re(re) {
     }
 
     ~Option() {
@@ -63,7 +63,7 @@ class Interface {
 
   mutable int          err;
   std::vector<Option*> options;
-  
+
   bool error(const std::string& message);
 
   virtual bool quit(std::string& cmd) const;
@@ -78,7 +78,7 @@ class Interface {
 
   const std::string   prompt;
   const std::string   history;
-}; 
+};
 
 
 }}} // namespace Utils::shell

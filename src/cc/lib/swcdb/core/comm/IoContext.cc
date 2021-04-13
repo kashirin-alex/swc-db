@@ -10,12 +10,13 @@ namespace SWC {
 
 namespace Comm {
 
-IoContextPtr IoContext::make(const std::string& name, int32_t size) {
-  return std::make_shared<IoContext>(name, size);
+IoContextPtr IoContext::make(std::string&& _name, int32_t size) {
+  return std::make_shared<IoContext>(std::move(_name), size);
 }
 
-IoContext::IoContext(const std::string& name, int32_t size)
-                    : running(true), name(name), pool(size), m_size(size) {
+IoContext::IoContext(std::string&& _name, int32_t size)
+                    : running(true), name(std::move(_name)),
+                      pool(size), m_size(size) {
   SWC_LOGF(LOG_DEBUG, "Starting IO-ctx(%s) size=%d", name.c_str(), m_size);
   SWC_ASSERT(m_size > 0);
 }

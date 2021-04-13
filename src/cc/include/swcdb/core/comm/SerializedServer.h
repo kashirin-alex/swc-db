@@ -25,7 +25,7 @@ class Acceptor final : protected asio::ip::tcp::acceptor {
   public:
   typedef std::shared_ptr<Acceptor> Ptr;
 
-  Acceptor(asio::ip::tcp::acceptor& acceptor, 
+  Acceptor(asio::ip::tcp::acceptor& acceptor,
            AppContext::Ptr& app_ctx,
            ConfigSSL* ssl_cfg);
 
@@ -57,7 +57,7 @@ class SerializedServer final {
   typedef std::shared_ptr<SerializedServer> Ptr;
 
   SerializedServer(
-    const std::string& name,
+    std::string&& name,
     uint32_t reactors, uint32_t workers,
     const std::string& port_cfg_name,
     AppContext::Ptr app_ctx
@@ -76,8 +76,8 @@ class SerializedServer final {
   ~SerializedServer();
 
   private:
-  
-  std::string                     m_appname;
+
+  const std::string               m_appname;
   Core::AtomicBool                m_run;
   std::vector<IoContextPtr>       m_io_contexts;
   std::vector<Acceptor::Ptr>      m_acceptors;
@@ -94,6 +94,6 @@ class SerializedServer final {
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/core/comm/SerializedServer.cc"
-#endif 
+#endif
 
 #endif // swcdb_core_comm_SerializedServer_h
