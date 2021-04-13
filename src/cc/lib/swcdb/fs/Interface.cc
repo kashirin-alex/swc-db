@@ -77,10 +77,10 @@ FileSystem::Ptr Interface::use_filesystem() {
         fs_name.c_str(), int(m_type));
   }
 
+  std::string cfg_lib("swc.fs.lib." + fs_name);
   std::string fs_lib;
-  if(Env::Config::settings()->has("swc.fs.lib."+fs_name)) {
-    fs_lib.append(
-      Env::Config::settings()->get_str("swc.fs.lib."+fs_name));
+  if(Env::Config::settings()->has(cfg_lib.c_str())) {
+    fs_lib = Env::Config::settings()->get_str(cfg_lib.c_str());
   } else {
     fs_lib.append(Env::Config::settings()->install_path);
     fs_lib.append("/lib/libswcdb_fs_"); // (./lib/libswcdb_fs_local.so)

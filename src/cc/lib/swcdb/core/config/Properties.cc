@@ -25,10 +25,11 @@ namespace SWC { namespace Config {
   void Properties::load_from(const Config::Parser::Options& opts,
                              bool only_guarded) {
     for(const auto& kv : opts.map) {
-      if(has(kv.first) && (kv.second->is_default() ||
-                           (only_guarded && !kv.second->is_guarded())))
+      if(has(kv.first.c_str()) &&
+         (kv.second->is_default() ||
+          (only_guarded && !kv.second->is_guarded())))
       continue;
-      set(kv.first, kv.second);
+      set(kv.first.c_str(), kv.second);
     }
   }
 
@@ -62,13 +63,12 @@ namespace SWC { namespace Config {
     }
   }
 
-  void Properties::alias(const std::string& primary,
-                         const std::string& secondary) {
+  void Properties::alias(const char* primary, const char* secondary) {
     m_alias_map[primary] = secondary;
     m_alias_map[secondary] = primary;
   }
 
-  void Properties::set(const std::string& name, Property::Value::Ptr p) {
+  void Properties::set(const char* name, Property::Value::Ptr p) {
     auto ptr = get_ptr(name, true);
     if(!ptr) {
       m_map.emplace(name, p->make_new());
@@ -78,18 +78,24 @@ namespace SWC { namespace Config {
       ptr->default_value(false);
     }
   }
-  bool Properties::has(const std::string& name) const noexcept {
-    if(m_map.count(name))
-      return true;
-    auto alias = m_alias_map.find(name);
-    return alias != m_alias_map.end() && m_map.count(alias->second);
+
+  bool Properties::has(const char* name) const noexcept {
+    for(auto it=m_map.begin(); it!=m_map.end(); ++it) {
+      if(!strcmp(it->first.c_str(), name))
+        return true;
+    }
+    for(auto it=m_alias_map.begin(); it!=m_alias_map.end(); ++it) {
+      if(!strcmp(it->first.c_str(), name))
+        return m_map.find(it->second) != m_map.end();
+    }
+    return false;
   }
 
-  bool Properties::defaulted(const std::string& name) {
+  bool Properties::defaulted(const char* name) {
     return get_ptr(name)->is_default();
   }
 
-  std::string Properties::to_string(const std::string& name) {
+  std::string Properties::to_string(const char* name) {
     return get_ptr(name)->to_string();
   }
 
@@ -98,33 +104,35 @@ namespace SWC { namespace Config {
       names.push_back(it->first);
   }
 
-  void Properties::remove(const std::string& name) {
-    auto it = m_map.find(name);
-    if(it != m_map.end()) {
-      delete it->second;
-      m_map.erase(it);
+  void Properties::remove(const char* name) {
+    for(auto it=m_map.begin(); it!=m_map.end(); ++it) {
+      if(!strcmp(it->first.c_str(), name)) {
+        delete it->second;
+        m_map.erase(it);
+        return;
+      }
     }
   }
 
 
-  Property::Value::Ptr Properties::get_ptr(const std::string& name,
-                                           bool null_ok) {
-    auto it = m_map.find(name);
-    if (it != m_map.end())
-      return it->second;
-
-    auto alias = m_alias_map.find(name);
-    if(alias != m_alias_map.end()) {
-      it = m_map.find(alias->second);
-      if (it != m_map.end())
+  Property::Value::Ptr Properties::get_ptr(const char* name, bool null_ok) {
+    for(auto it=m_map.begin(); it!=m_map.end(); ++it) {
+      if(!strcmp(it->first.c_str(), name))
         return it->second;
+    }
+    for(auto it=m_alias_map.begin(); it!=m_alias_map.end(); ++it) {
+      if(!strcmp(it->first.c_str(), name)) {
+        auto prop = m_map.find(it->second);
+        if(prop != m_map.end())
+          return prop->second;
+        break;
+      }
     }
     if(null_ok)
       return nullptr;
 
     SWC_THROWF(Error::CONFIG_GET_ERROR,
-              "getting value of '%s' - missing",
-              name.c_str());
+                "getting value of '%s' - missing", name);
   }
 
   void Properties::print(std::ostream& out, bool include_default) const {

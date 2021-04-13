@@ -51,13 +51,11 @@ class Settings final : public Properties {
 
   void parse_args(int argc, char *argv[]);
 
-  void load_files_by(const std::string& fileprop,
-                     bool allow_unregistered);
+  void load_files_by(const char* fileprop, bool allow_unregistered);
 
-  void parse_file(const std::string& fname, const std::string& onchg);
+  void parse_file(const std::string& fname, const char* onchg);
 
-  void init_process(bool with_pid_file,
-                    const std::string& port_cfg = nullptr);
+  void init_process(bool with_pid_file, const char* port_cfg = nullptr);
 
   std::string usage_str(const char *usage = nullptr);
 

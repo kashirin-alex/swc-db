@@ -159,7 +159,7 @@ void Settings::parse_args(int argc, char *argv[]) {
     parse_file(get_str("swc.cfg"), "swc.cfg.dyn");
 }
 
-void Settings::parse_file(const std::string& name, const std::string& onchg) {
+void Settings::parse_file(const std::string& name, const char* onchg) {
   if(name.empty())
     return;
 
@@ -176,9 +176,8 @@ void Settings::parse_file(const std::string& name, const std::string& onchg) {
   load_from(m_cmd_args);  // Inforce cmdline properties
 }
 
-void Settings::load_files_by(const std::string& fileprop,
-                             bool allow_unregistered) {
-  if(fileprop.empty() || !has(fileprop))
+void Settings::load_files_by(const char* fileprop, bool allow_unregistered) {
+  if(!fileprop || !has(fileprop))
     return;
   auto ptr = get<Property::V_STRINGS>(fileprop);
   if(!ptr)
@@ -207,7 +206,7 @@ void Settings::load_files_by(const std::string& fileprop,
   }
 }
 
-void Settings::init_process(bool with_pid_file, const std::string& port_cfg) {
+void Settings::init_process(bool with_pid_file, const char* port_cfg) {
   bool daemon = has("daemon");
 
   if(daemon && fork())
@@ -216,7 +215,7 @@ void Settings::init_process(bool with_pid_file, const std::string& port_cfg) {
   std::string pid_file;
   if(with_pid_file) {
     pid_file = USE_SWC_PATH_RUN(install_path + "/run/") + executable;
-    if(!port_cfg.empty() && !defaulted(port_cfg)) {
+    if(!port_cfg && !defaulted(port_cfg)) {
       pid_file.append(".");
       pid_file.append(std::to_string(get_i16(port_cfg)));
     }

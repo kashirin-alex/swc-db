@@ -20,9 +20,8 @@ namespace SWC { namespace Config {
 
 class Properties {
 
-  typedef std::map<std::string, Property::Value::Ptr>   Map;
-  typedef std::map<std::string, std::string>  AliasMap;
-  typedef std::pair<Map::iterator, bool>      InsRet;
+  typedef std::map<std::string, Property::Value::Ptr> Map;
+  typedef std::map<std::string, std::string>          AliasMap;
 
   public:
 
@@ -46,81 +45,80 @@ class Properties {
               const Config::ParserConfig& filedesc,
               const Config::ParserConfig& cmddesc);
 
-  void alias(const std::string& primary, const std::string& secondary);
+  void alias(const char* primary, const char* secondary);
 
-  void set(const std::string& name, Property::Value::Ptr p);
+  void set(const char* name, Property::Value::Ptr p);
 
-  bool has(const std::string& name) const noexcept;
+  bool has(const char* name) const noexcept;
 
-  bool defaulted(const std::string& name);
+  bool defaulted(const char* name);
 
-  std::string to_string(const std::string& name);
+  std::string to_string(const char* name);
 
   void get_names(std::vector<std::string>& names) const;
 
-  void remove(const std::string& name);
+  void remove(const char* name);
 
-  Property::Value::Ptr get_ptr(const std::string& name, bool null_ok=false);
+  Property::Value::Ptr get_ptr(const char* name, bool null_ok=false);
 
   template <typename T>
-  T* get(const std::string& name) {
+  T* get(const char* name) {
     return Property::Value::get_pointer<T>(get_ptr(name));
   }
 
-
-  std::string get_str(const std::string& name) {
+  std::string get_str(const char* name) {
     return get<Property::V_STRING>(name)->get();
   }
 
-  std::string get_str(const std::string& name, const std::string& v) {
+  std::string get_str(const char* name, const std::string& v) {
     return has(name) ? get_str(name) : v;
   }
 
-  Strings get_strs(const std::string& name) {
+  Strings get_strs(const char* name) {
     return get<Property::V_STRINGS>(name)->get();
   }
 
-  bool get_bool(const std::string& name) {
+  bool get_bool(const char* name) {
     return get<Property::V_BOOL>(name)->get();
   }
 
-  bool get_bool(const std::string& name, bool v) {
+  bool get_bool(const char* name, bool v) {
     return has(name) ? get_bool(name) : v;
   }
 
-  bool get_gbool(const std::string& name) {
+  bool get_gbool(const char* name) {
     return get<Property::V_GBOOL>(name)->get();
   }
 
-  int32_t get_enum(const std::string& name) {
+  int32_t get_enum(const char* name) {
     return get<Property::V_ENUM>(name)->get();
   }
 
-  int32_t get_genum(const std::string& name) {
+  int32_t get_genum(const char* name) {
     return get<Property::V_GENUM>(name)->get();
   }
 
-  uint8_t get_i8(const std::string& name) {
+  uint8_t get_i8(const char* name) {
     return get<Property::V_UINT8>(name)->get();
   }
 
-  uint16_t get_i16(const std::string& name) {
+  uint16_t get_i16(const char* name) {
     return get<Property::V_UINT16>(name)->get();
   }
 
-  uint16_t get_i16(const std::string& name, uint16_t v) {
+  uint16_t get_i16(const char* name, uint16_t v) {
     return has(name) ? get_i16(name) : v;
   }
 
-  int32_t get_i32(const std::string& name) {
+  int32_t get_i32(const char* name) {
     return get<Property::V_INT32>(name)->get();
   }
 
-  int32_t get_i32(const std::string& name, int32_t v) {
+  int32_t get_i32(const char* name, int32_t v) {
     return has(name) ? get_i32(name) : v;
   }
 
-  int64_t get_i64(const std::string& name) {
+  int64_t get_i64(const char* name) {
     return get<Property::V_INT64>(name)->get();
   }
 

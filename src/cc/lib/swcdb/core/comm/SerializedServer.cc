@@ -110,7 +110,7 @@ void Acceptor::do_accept_plain() noexcept {
 SerializedServer::SerializedServer(
     std::string&& name,
     uint32_t reactors, uint32_t workers,
-    const std::string& port_cfg_name,
+    const char* port_cfg_name,
     AppContext::Ptr app_ctx
   ) : m_appname(std::move(name)), m_run(true),
       m_ssl_cfg(Env::Config::settings()->get_bool("swc.comm.ssl")

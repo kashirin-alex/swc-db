@@ -59,7 +59,7 @@ class SerializedServer final {
   SerializedServer(
     std::string&& name,
     uint32_t reactors, uint32_t workers,
-    const std::string& port_cfg_name,
+    const char* port_cfg_name,
     AppContext::Ptr app_ctx
   );
 
