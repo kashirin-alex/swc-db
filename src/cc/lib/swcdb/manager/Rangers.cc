@@ -211,9 +211,8 @@ void Rangers::rgr_shutdown(rgrid_t, const Comm::EndPoints& endpoints) {
   {
     Core::MutexSptd::scope lock(m_mutex);
     for(auto it=m_rangers.begin(); it != m_rangers.end(); ++it) {
-      auto h = *it;
-      if(Comm::has_endpoint(h->endpoints, endpoints)) {
-        removed = h;
+      if(Comm::has_endpoint((*it)->endpoints, endpoints)) {
+        removed = std::move(*it);
         m_rangers.erase(it);
         removed->state.store(RangerState::REMOVED);
         Env::Mngr::columns()->set_rgr_unassigned(removed->rgrid);
@@ -232,7 +231,7 @@ void Rangers::sync() {
   changes(m_rangers, true);
 }
 
-void Rangers::update_status(RangerList new_rgr_status, bool sync_all) {
+void Rangers::update_status(const RangerList& new_rgr_status, bool sync_all) {
   bool rangers_mngr = Env::Mngr::role()->is_active_role(
     DB::Types::MngrRole::RANGERS);
 

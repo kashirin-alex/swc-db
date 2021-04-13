@@ -177,7 +177,7 @@ void MngdColumns::action(const ColumnReq::Ptr& req) {
 }
 
 void MngdColumns::set_expect(cid_t cid_begin, cid_t cid_end,
-                             const std::vector<cid_t>& columns,
+                             std::vector<cid_t>&& columns,
                              bool initial) {
   if(!initial &&
      Env::Mngr::role()->is_active_role(DB::Types::MngrRole::SCHEMAS))
@@ -191,7 +191,7 @@ void MngdColumns::set_expect(cid_t cid_begin, cid_t cid_end,
   if(!active)
     return Env::Mngr::role()->req_mngr_inchain(
       std::make_shared<Comm::Protocol::Mngr::Req::ColumnUpdate>(
-        cid_begin, cid_end, columns));
+        cid_begin, cid_end, std::move(columns)));
 
   size_t need;
   {
@@ -526,19 +526,18 @@ bool MngdColumns::columns_load() {
     if(++g_batches > 1 && columns.empty())
       continue;
 
+    auto sz = columns.size();
     SWC_LOGF(LOG_DEBUG,
-      "Set Expected Columns Load cid(begin=%lu end=%lu) batch=%lu size=%ld",
-      g->cid_begin, g->cid_end, g_batches, it - it_batch);
-    set_expect(g->cid_begin, g->cid_end, columns, true);
+      "Set Expected Columns Load cid(begin=%lu end=%lu) batch=%lu size=%lu",
+      g->cid_begin, g->cid_end, g_batches, sz);
+    set_expect(g->cid_begin, g->cid_end, std::move(columns), true);
 
     for(; it_batch != it; ++it_batch) {
       update_status(
         ColumnMngFunc::INTERNAL_LOAD, *it_batch, Error::OK, 0, true);
     }
-    if(it != entries.end() && columns.size() == 1000) {
-      columns.clear();
+    if(it != entries.end() && sz == 1000)
       goto make_batch;
-    }
   }
 
   m_columns_load.stop();
@@ -696,7 +695,7 @@ void MngdColumns::update_status_ack(ColumnMngFunc func,
     Core::MutexSptd::scope lock(m_mutex_actions);
     auto it = m_actions_pending.find(req_id);
     if(it != m_actions_pending.end()) {
-      pending = it->second;
+      pending = std::move(it->second);
       m_actions_pending.erase(it);
     }
   }
@@ -717,7 +716,7 @@ void MngdColumns::run_actions() {
   ColumnReq::Ptr req;
   do {
     err = Error::OK;
-    req = m_actions.front();
+    req = std::move(m_actions.front());
 
     if(!m_run) {
       err = Error::SERVER_SHUTTING_DOWN;

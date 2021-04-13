@@ -1,7 +1,7 @@
 /*
  * SWC-DB© Copyright since 2019 Alex Kashirin <kashirin.alex@gmail.com>
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
- */ 
+ */
 
 #ifndef swcdb_manager_Protocol_mngr_req_ColumnUpdate_h
 #define swcdb_manager_Protocol_mngr_req_ColumnUpdate_h
@@ -15,8 +15,9 @@ namespace Mngr { namespace Req {
 class ColumnUpdate : public client::ConnQueue::ReqBase {
   public:
 
-  ColumnUpdate(Params::ColumnMng::Function function, DB::Schema::Ptr schema, 
-               int err, uint64_t id) 
+  ColumnUpdate(Params::ColumnMng::Function function,
+               const DB::Schema::Ptr& schema,
+               int err, uint64_t id)
               : client::ConnQueue::ReqBase(
                   true,
                   Buffers::make(
@@ -24,25 +25,25 @@ class ColumnUpdate : public client::ConnQueue::ReqBase {
                     0,
                     COLUMN_UPDATE, 60000
                   )) {
-  } 
+  }
 
   ColumnUpdate(cid_t cid_begin, cid_t cid_end,
-               const std::vector<cid_t>& columns) 
+               std::vector<cid_t>&& columns)
               : client::ConnQueue::ReqBase(
                   true,
                   Buffers::make(
                     Params::ColumnUpdate(
-                      Params::ColumnMng::Function::INTERNAL_EXPECT, 
-                      cid_begin, cid_end, columns
+                      Params::ColumnMng::Function::INTERNAL_EXPECT,
+                      cid_begin, cid_end, std::move(columns)
                     ),
                     0,
                     COLUMN_UPDATE, 60000
                   )
                 ) {
   }
-  
+
   virtual ~ColumnUpdate() { }
-  
+
   void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override {
     if(!is_rsp(ev))
       return;
@@ -50,7 +51,7 @@ class ColumnUpdate : public client::ConnQueue::ReqBase {
     if(ev->response_code() != Error::OK)
       conn->do_close();
   }
-  
+
 };
 
 }}}}}

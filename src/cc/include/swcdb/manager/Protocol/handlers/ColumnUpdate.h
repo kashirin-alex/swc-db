@@ -21,12 +21,12 @@ void column_update(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
 
     Params::ColumnUpdate params;
     params.decode(&ptr, &remain);
-      
+
     conn->response_ok(ev);
-    
+
     params.function == Params::ColumnMng::Function::INTERNAL_EXPECT
       ? Env::Mngr::mngd_columns()->set_expect(
-          params.cid_begin, params.cid_end, params.columns, false)
+          params.cid_begin, params.cid_end, std::move(params.columns), false)
       : Env::Mngr::mngd_columns()->update_status(
           params.function, params.schema, params.err, params.id); // +?timeout
   } catch(...) {
@@ -36,7 +36,7 @@ void column_update(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
   }
 }
 
-  
+
 
 }}}}}
 

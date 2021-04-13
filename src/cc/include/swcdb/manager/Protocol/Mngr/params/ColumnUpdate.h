@@ -24,9 +24,10 @@ class ColumnUpdate : public Serializable {
 
   ColumnUpdate(ColumnMng::Function function,
                cid_t cid_begin, cid_t cid_end,
-               const std::vector<cid_t>& columns)
+               std::vector<cid_t>&& columns)
               : function(function), id(0),
-                columns(columns), cid_begin(cid_begin), cid_end(cid_end),
+                columns(std::move(columns)),
+                cid_begin(cid_begin), cid_end(cid_end),
                 err(Error::OK) {
   }
 

@@ -21,7 +21,7 @@ void rgr_update(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
 
     Params::RgrUpdate params;
     params.decode(&ptr, &remain);
-      
+
     conn->response_ok(ev);
     Env::Mngr::rangers()->update_status(params.hosts, params.sync_all);
 
@@ -31,7 +31,7 @@ void rgr_update(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     conn->send_error(e.code(), "", ev);
   }
 }
-  
+
 
 }}}}}
 
