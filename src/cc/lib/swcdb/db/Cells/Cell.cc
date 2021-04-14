@@ -373,7 +373,7 @@ bool Cell::equal(const Cell& other) const noexcept {
           (!(control & HAVE_REVISION) || revision == other.revision) &&
           vlen == other.vlen &&
           key.equal(other.key) &&
-          !memcmp(value, other.value, vlen);
+          Condition::memequal(value, other.value, vlen);
 }
 
 bool Cell::is_removing(const int64_t& rev) const noexcept {

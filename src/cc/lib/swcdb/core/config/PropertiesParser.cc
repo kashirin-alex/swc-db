@@ -42,20 +42,20 @@ Config::f64(const double& v) {
   return new Config::Property::V_DOUBLE(v);
 }
 Config::Property::V_STRING::Ptr
-Config::str(const std::string& v) {
-  return new Config::Property::V_STRING(v);
+Config::str(std::string&& v) {
+  return new Config::Property::V_STRING(std::move(v));
 }
 Config::Property::V_STRINGS::Ptr
-Config::strs(const Strings& v) {
-  return new Config::Property::V_STRINGS(v);
+Config::strs(Strings&& v) {
+  return new Config::Property::V_STRINGS(std::move(v));
 }
 Config::Property::V_INT64S::Ptr
-Config::i64s(const Int64s& v) {
-  return new Config::Property::V_INT64S(v);
+Config::i64s(Int64s&& v) {
+  return new Config::Property::V_INT64S(std::move(v));
 }
 Config::Property::V_DOUBLES::Ptr
-Config::f64s(const Doubles& v) {
-  return new Config::Property::V_DOUBLES(v);
+Config::f64s(Doubles&& v) {
+  return new Config::Property::V_DOUBLES(std::move(v));
 }
 
 /* cfg methods for guarded types
@@ -74,8 +74,8 @@ Config::g_i32(const int32_t& v) {
   return new Config::Property::V_GINT32(v, nullptr);
 }
 Config::Property::V_GSTRINGS::Ptr
-Config::g_strs(const Strings& v) {
-  return new Config::Property::V_GSTRINGS(v, nullptr);
+Config::g_strs(Strings&& v) {
+  return new Config::Property::V_GSTRINGS(std::move(v), nullptr);
 }
 Config::Property::V_GENUM::Ptr
 Config::g_enum(const int32_t& v,
@@ -187,17 +187,26 @@ ParserConfig& ParserConfig::add(const char* names,
                                 Property::Value::Ptr vptr,
                                 const char* description) {
   Strings aliases;
-  std::istringstream f(names);
   std::string s;
-  while (std::getline(f, s, ',')) {
-    s.erase(std::remove_if(s.begin(), s.end(),
-    [](unsigned char x){return std::isspace(x);}), s.end());
-    aliases.push_back(s);
+  for(; *names; ++names) {
+    if(std::isspace(*names))
+      continue;
+    if(*names == ',') {
+      if(!s.empty())
+        aliases.emplace_back(std::move(s));
+    } else {
+      s += *names;
+    }
   }
+  if(aliases.empty() || !s.empty())
+    aliases.emplace_back(std::move(s));
+
   ParserOpt& opt = options[aliases.front()];
   opt.value = vptr;
   opt.desc = description;
-  opt.aliases.assign(aliases.begin()+1, aliases.end());
+  opt.aliases.resize(aliases.size() - 1);
+  for(size_t n=0; n<opt.aliases.size(); ++n)
+    opt.aliases[n] = std::move(aliases[n + 1]);
   return *this;
 }
 
@@ -283,8 +292,11 @@ Property::Value::Ptr ParserConfig::get_default(const std::string& name) {
 
 void ParserConfig::remove(const std::string& name) {
   auto it = options.find(name);
-  if(it != options.end())
+  if(it != options.end()) {
+    if(own)
+      delete it->second.value;
     options.erase(it);
+  }
 }
 
 void ParserConfig::print(std::ostream& os) const {

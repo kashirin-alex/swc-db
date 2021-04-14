@@ -24,10 +24,10 @@ Property::V_UINT16::Ptr i16(const uint16_t& v);
 Property::V_INT32::Ptr i32(const int32_t& v);
 Property::V_INT64::Ptr i64(const int64_t& v);
 Property::V_DOUBLE::Ptr f64(const double& v);
-Property::V_STRING::Ptr str(const std::string& v);
-Property::V_STRINGS::Ptr strs(const Strings& v);
-Property::V_INT64S::Ptr i64s(const Int64s& v);
-Property::V_DOUBLES::Ptr f64s(const Doubles& v);
+Property::V_STRING::Ptr str(std::string&& v);
+Property::V_STRINGS::Ptr strs(Strings&& v);
+Property::V_INT64S::Ptr i64s(Int64s&& v);
+Property::V_DOUBLES::Ptr f64s(Doubles&& v);
 
 /* cfg methods for guarded types
 *  @param v The default Value and a Type
@@ -35,7 +35,7 @@ Property::V_DOUBLES::Ptr f64s(const Doubles& v);
 Property::V_GBOOL::Ptr g_boo(const bool& v);
 Property::V_GUINT8::Ptr g_i8(const uint8_t& v);
 Property::V_GINT32::Ptr g_i32(const int32_t& v);
-Property::V_GSTRINGS::Ptr g_strs(const Strings& v);
+Property::V_GSTRINGS::Ptr g_strs(Strings&& v);
 Property::V_GENUM::Ptr g_enum(const int32_t& v,
                               Property::V_GENUM::OnChg_t&& cb,
                               Property::V_GENUM::FromString_t&& from_string,

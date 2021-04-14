@@ -10,6 +10,7 @@
 
 #include "swcdb/core/config/Property.h"
 #include "swcdb/core/comm/IoContext.h"
+#include "swcdb/core/Comparators.h"
 
 #include <sys/sysinfo.h>
 #include <fstream>
@@ -199,11 +200,11 @@ class Resources final {
         do {
           buffer >> tmp;
           if(tmp.length() == 9 &&
-             !memcmp(tmp.c_str(), "MemTotal:", 9)) {
+             Condition::strnequal(tmp.c_str(), "MemTotal:", 9)) {
             metric = &ram.total;
           } else
           if(tmp.length() == 13 &&
-             !memcmp(tmp.c_str(), "MemAvailable:", 13)) {
+             Condition::strnequal(tmp.c_str(), "MemAvailable:", 13)) {
             metric = &ram.free;
           }
           if(metric) {
@@ -254,9 +255,9 @@ class Resources final {
             size_t tmp_speed = 0;
             do {
               buffer >> tmp;
-              if(!memcmp(tmp.c_str(), "cpu", 3)) {
+              if(Condition::strnequal(tmp.c_str(), "cpu", 3)) {
                 buffer >> tmp;
-                if(!memcmp(tmp.c_str(), "MHz", 3)) {
+                if(Condition::strnequal(tmp.c_str(), "MHz", 3)) {
                   buffer >> tmp >> tmp_speed;
                   mhz += tmp_speed;
                 }

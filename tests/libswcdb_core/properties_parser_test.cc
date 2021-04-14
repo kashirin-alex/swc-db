@@ -35,8 +35,8 @@ void Settings::init_app_options() {
    ("args",   strs(), "rest of arguments")
    ("arg-1",  str(),  "argument one")
    ("arg-1",  1)
-   ;   
-   //("a.cmd.arg.qouted", str(), "a qouted string arg with spaces") require cmake escaping to testdiff  
+   ;
+   //("a.cmd.arg.qouted", str(), "a qouted string arg with spaces") require cmake escaping to testdiff
 }
 
 void Settings::init_post_cmd_args(){ }
@@ -44,20 +44,19 @@ void Settings::init_post_cmd_args(){ }
 
 using namespace SWC;
 
-int main(int argc, char *argv[]) {
-  Env::Config::init(argc, argv);
+void run() {
   auto settings = Env::Config::settings();
-  
+
   // remove env-dynamic configs
   settings->cmdline_desc.remove("swc.logging.path");
   settings->cmdline_desc.remove("swc.cfg.path");
-  
+
 
   std::cout << std::string("\nConfig::cmdline_desc");
   std::cout << settings->cmdline_desc;
   settings->print(std::cout);
 
-  
+
   // cfg file parse test definitions
   settings->file_desc.add_options()
    ("is_true_bool", Config::boo(false), "a boolean arg")
@@ -83,7 +82,7 @@ int main(int argc, char *argv[]) {
    ("aGroupOne.arg.4", Config::i16(0), "a group arg")
    ("aGroupOne.arg.5", Config::i16(0), "a group arg")
     ;
-    
+
   std::cout << std::string("\nConfig::file_desc");
   std::cout << settings->file_desc;
 
@@ -92,21 +91,28 @@ int main(int argc, char *argv[]) {
   prs_file.config.add(settings->file_desc);
   prs_file.config.add(settings->cmdline_desc);
   prs_file.parse_filedata(in);
-  
+
   std::cout << std::string("\nConfig::file_desc");
   std::cout << settings->file_desc; // original configuration (left untouched)
 
   std::cout << prs_file.config;  // configurations options with values
   std::cout << prs_file; // Raw(std::strings) Parsed
   prs_file.print_options(std::cout);
-  
+
   Config::Properties props;
-  props.set("dummy", Config::boo(true));
+  Config::Property::V_BOOL dummy(true);
+  props.set("dummy", &dummy);
   std::cout << props.to_string("dummy") << "\n";
 
   props.load_from(prs_file.get_options());
 
   props.print(std::cout, true);
+}
 
+
+int main(int argc, char *argv[]) {
+  Env::Config::init(argc, argv);
+  run();
+  Env::Config::reset();
   return 0;
 }

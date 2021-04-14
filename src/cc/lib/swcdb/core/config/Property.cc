@@ -405,7 +405,9 @@ double V_DOUBLE::get() const noexcept {
 
 
 
-V_STRING::V_STRING(const std::string& v, uint8_t flags) : Value(flags), value(v) { }
+V_STRING::V_STRING(std::string&& v, uint8_t flags) noexcept
+                  : Value(flags), value(std::move(v)) {
+}
 
 V_STRING::V_STRING(V_STRING* ptr) : Value(ptr), value(ptr->get()) { }
 
@@ -500,8 +502,9 @@ int32_t V_ENUM::get() const noexcept {
 
 
 // lists
-V_STRINGS::V_STRINGS(const Strings& v, uint8_t flags)
-                    : Value(flags), value(v) { }
+V_STRINGS::V_STRINGS(Strings&& v, uint8_t flags) noexcept
+                    : Value(flags), value(std::move(v)) { 
+}
 
 V_STRINGS::V_STRINGS(V_STRINGS* ptr) : Value(ptr), value(ptr->get()) { }
 
@@ -536,8 +539,8 @@ Strings V_STRINGS::get() const {
 
 
 
-V_INT64S::V_INT64S(const Int64s& v, uint8_t flags)
-                  : Value(flags), value(v) {
+V_INT64S::V_INT64S(Int64s&& v, uint8_t flags) noexcept
+                  : Value(flags), value(std::move(v)) {
 }
 
 V_INT64S::V_INT64S(V_INT64S* ptr) : Value(ptr), value(ptr->get()) { }
@@ -578,8 +581,8 @@ Int64s V_INT64S::get() const {
 
 
 
-V_DOUBLES::V_DOUBLES(const Doubles& v, uint8_t flags)
-                     : Value(flags), value(v) {
+V_DOUBLES::V_DOUBLES(Doubles&& v, uint8_t flags) noexcept
+                     : Value(flags), value(std::move(v)) {
 }
 
 V_DOUBLES::V_DOUBLES(V_DOUBLES* ptr) : Value(ptr), value(ptr->get()) { }
@@ -882,10 +885,10 @@ void V_GENUM::set_cb_on_chg(V_GENUM::OnChg_t&& cb) {
 
 
 // Guarded Mutex
-V_GSTRINGS::V_GSTRINGS(const Strings& v, V_GSTRINGS::OnChg_t&& cb,
-                       uint8_t flags)
+V_GSTRINGS::V_GSTRINGS(Strings&& v, V_GSTRINGS::OnChg_t&& cb,
+                       uint8_t flags) noexcept
                       : Value(flags | Value::GUARDED),
-                        value(v), on_chg_cb(std::move(cb)) {
+                        value(std::move(v)), on_chg_cb(std::move(cb)) {
 }
 
 V_GSTRINGS::V_GSTRINGS(V_GSTRINGS* ptr)

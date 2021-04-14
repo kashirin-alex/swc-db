@@ -273,7 +273,7 @@ class V_STRING final : public Value {
   public:
   static const Type value_type = STRING;
 
-  V_STRING(const std::string& v, uint8_t flags=0);
+  V_STRING(std::string&& v, uint8_t flags=0) noexcept;
 
   V_STRING(V_STRING* ptr);
 
@@ -329,7 +329,7 @@ class V_STRINGS final : public Value {
   public:
   static const Type value_type = STRINGS;
 
-  V_STRINGS(const Strings& v, uint8_t flags=0);
+  V_STRINGS(Strings&& v, uint8_t flags=0) noexcept;
 
   V_STRINGS(V_STRINGS* ptr);
 
@@ -353,7 +353,7 @@ class V_INT64S final : public Value {
   public:
   static const Type value_type = INT64S;
 
-  V_INT64S(const Int64s& v, uint8_t flags=0);
+  V_INT64S(Int64s&& v, uint8_t flags=0) noexcept;
 
   V_INT64S(V_INT64S* ptr);
 
@@ -377,7 +377,7 @@ class V_DOUBLES final : public Value {
   public:
   static const Type value_type = DOUBLES;
 
-  V_DOUBLES(const Doubles& v, uint8_t flags=0);
+  V_DOUBLES(Doubles&& v, uint8_t flags=0) noexcept;
 
   V_DOUBLES(V_DOUBLES* ptr);
 
@@ -550,7 +550,7 @@ class V_GSTRINGS final : public Value {
   typedef V_GSTRINGS*            Ptr;
   typedef std::function<void()>  OnChg_t;
 
-  V_GSTRINGS(const Strings& v, OnChg_t&& cb, uint8_t flags=0);
+  V_GSTRINGS(Strings&& v, OnChg_t&& cb, uint8_t flags=0) noexcept;
 
   V_GSTRINGS(V_GSTRINGS* ptr);
 

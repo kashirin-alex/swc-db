@@ -114,9 +114,10 @@ bool Value::empty() const noexcept {
 }
 
 bool Value::equal(const Value &other) const noexcept {
-  return size == other.size &&
-         ((!data && !other.data) ||
-          (data && other.data && !memcmp(data, other.data, size)));
+  return
+    size == other.size &&
+    ((!data && !other.data) ||
+     (data && other.data && Condition::memequal(data, other.data, size)));
 }
 
 size_t Value::encoded_length() const noexcept {

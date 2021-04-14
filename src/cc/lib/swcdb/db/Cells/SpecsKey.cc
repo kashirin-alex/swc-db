@@ -57,7 +57,10 @@ Fraction::~Fraction() {
 
 bool Fraction::operator==(const Fraction &other) const {
   return other.comp == comp && length() == other.length() &&
-         !memcmp(data(), other.data(), length());
+         Condition::memequal(
+          reinterpret_cast<const uint8_t*>(data()),
+          reinterpret_cast<const uint8_t*>(other.data()),
+          length());
 }
 
 uint32_t Fraction::encoded_length() const noexcept {
