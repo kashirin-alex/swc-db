@@ -135,8 +135,11 @@ Config::Property::V_DOUBLES::Ptr Config::f64s() {
 namespace Config {
 
 
-ParserConfig::ParserConfig(const std::string& usage,
-                           int line_len, bool own)
+ParserConfig::ParserConfig(int line_len, bool own) noexcept
+                          : line_length(line_len), own(own) {
+}
+
+ParserConfig::ParserConfig(const char* usage, int line_len, bool own)
                           : usage(usage), line_length(line_len), own(own) {
 }
 
@@ -156,6 +159,11 @@ void ParserConfig::free() {
   }
 }
 
+ParserConfig& ParserConfig::definition(const char* u) {
+  usage = u;
+  return *this;
+}
+
 ParserConfig& ParserConfig::definition(std::string&& u) {
   usage = std::move(u);
   return *this;
@@ -166,7 +174,7 @@ ParserConfig& ParserConfig::add(const ParserConfig& other_cfg) {
   usage.append(other_cfg.usage);
 
   for (auto& pos : other_cfg.positions)
-    add_pos(pos.second, pos.first);
+    add_pos(pos.second.c_str(), pos.first);
 
   for(const auto& kv : other_cfg.options)
     options.emplace(kv.first, kv.second);
@@ -175,9 +183,9 @@ ParserConfig& ParserConfig::add(const ParserConfig& other_cfg) {
 }
 
 /* Method to add option */
-ParserConfig& ParserConfig::add(const std::string& names,
+ParserConfig& ParserConfig::add(const char* names,
                                 Property::Value::Ptr vptr,
-                                std::string&& description) {
+                                const char* description) {
   Strings aliases;
   std::istringstream f(names);
   std::string s;
@@ -188,44 +196,43 @@ ParserConfig& ParserConfig::add(const std::string& names,
   }
   ParserOpt& opt = options[aliases.front()];
   opt.value = vptr;
-  opt.desc = std::move(description);
+  opt.desc = description;
   opt.aliases.assign(aliases.begin()+1, aliases.end());
   return *this;
 }
 
-ParserConfig& ParserConfig::operator()(const std::string& name,
+ParserConfig& ParserConfig::operator()(const char* name,
                                        Property::Value::Ptr vptr,
-                                       std::string&& description) {
-  return add(name, vptr, std::move(description));
+                                       const char* description) {
+  return add(name, vptr, description);
 }
 
-ParserConfig& ParserConfig::add_options(){
+ParserConfig& ParserConfig::add_options() {
   return *this;
 }
 
-ParserConfig& ParserConfig::add_options(const std::string& name,
+ParserConfig& ParserConfig::add_options(const char* name,
                                         Property::Value::Ptr vptr,
-                                        std::string&& description) {
-  return add(name, vptr, std::move(description));
+                                        const char* description) {
+  return add(name, vptr, description);
 }
 
-ParserConfig& ParserConfig::add(const std::string& name,
-                                std::string&& description) {
-   return add(name, boo()->zero_token(), std::move(description));
+ParserConfig& ParserConfig::add(const char* name, const char* description) {
+   return add(name, boo()->zero_token(), description);
 }
 
-ParserConfig& ParserConfig::operator()(const std::string& name,
-                                       std::string&& description) {
-  return add(name, std::move(description));
+ParserConfig& ParserConfig::operator()(const char* name,
+                                       const char* description) {
+  return add(name, description);
 }
 
 /* Method to add_pos option */
-ParserConfig& ParserConfig::add_pos(const std::string& s, int pos) {
+ParserConfig& ParserConfig::add_pos(const char* s, int pos) {
   positions.emplace_back(pos, s);
   return *this;
 }
 
-ParserConfig& ParserConfig::operator()(const std::string& s, int pos) {
+ParserConfig& ParserConfig::operator()(const char* s, int pos) {
   return add_pos(s, pos);
 }
 
@@ -321,8 +328,9 @@ std::ostream& operator<<(std::ostream& os, const ParserConfig& cfg) {
 
 Strings Parser::args_to_strings(int argc, char *argv[]) {
   Strings raw_strings;
-  for(int n=1; n<argc; ++n)
-    raw_strings.emplace_back(argv[n]);
+  raw_strings.resize(--argc);
+  for(int n=0; n<argc; ++n)
+    raw_strings[n] = argv[n + 1];
   return raw_strings;
 }
 
@@ -341,9 +349,8 @@ void Parser::Options::free() {
   }
 
 
-Parser::Parser(bool unregistered)
-              : config("", 0, false),
-                m_unregistered(unregistered) {
+Parser::Parser(bool unregistered) noexcept
+              : config(0, false), m_unregistered(unregistered) {
 }
 
 Parser::~Parser() {

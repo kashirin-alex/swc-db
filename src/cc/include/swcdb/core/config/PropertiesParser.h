@@ -79,8 +79,9 @@ class ParserConfig final {
   bool          own;
 
 
-  explicit ParserConfig(const std::string& usage = "",
-                        int line_len=0, bool own=true);
+  explicit ParserConfig(int line_len=0, bool own=true) noexcept;
+
+  explicit ParserConfig(const char* usage, int line_len=0, bool own=true);
 
   explicit ParserConfig(const ParserConfig& other);
 
@@ -88,32 +89,33 @@ class ParserConfig final {
 
   void free();
 
+  ParserConfig& definition(const char* u);
+
   ParserConfig& definition(std::string&& u);
 
   /* populate from other Parser Config */
   ParserConfig& add(const ParserConfig& other_cfg);
 
   /* Method to add option */
-  ParserConfig& add(const std::string& names, Property::Value::Ptr vptr,
-                    std::string&& description);
+  ParserConfig& add(const char* names, Property::Value::Ptr vptr,
+                    const char* description);
 
-  ParserConfig& operator()(const std::string& name, Property::Value::Ptr vptr,
-                           std::string&& description);
+  ParserConfig& operator()(const char* name, Property::Value::Ptr vptr,
+                           const char*description);
 
   ParserConfig& add_options();
 
-  ParserConfig& add_options(const std::string& name, Property::Value::Ptr vptr,
-                            std::string&& description);
+  ParserConfig& add_options(const char* name, Property::Value::Ptr vptr,
+                            const char* description);
 
-  ParserConfig& add(const std::string& name, std::string&& description);
+  ParserConfig& add(const char* name, const char* description);
 
-  ParserConfig& operator()(const std::string& name,
-                           std::string&& description);
+  ParserConfig& operator()(const char* name, const char* description);
 
   /* Method to add_pos option */
-  ParserConfig& add_pos(const std::string& s, int pos);
+  ParserConfig& add_pos(const char* s, int pos);
 
-  ParserConfig& operator()(const std::string& s, int pos);
+  ParserConfig& operator()(const char* s, int pos);
 
   std::string position_name(int n);
 
@@ -153,7 +155,7 @@ class Parser final {
     void free();
   };
 
-  explicit Parser(bool unregistered=false);
+  explicit Parser(bool unregistered=false) noexcept;
 
   ~Parser();
 
