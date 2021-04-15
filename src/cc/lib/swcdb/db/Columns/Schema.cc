@@ -6,7 +6,6 @@
 
 #include "swcdb/db/Columns/Schema.h"
 #include "swcdb/core/Serialization.h"
-#include "swcdb/core/Comparators.h"
 
 
 namespace SWC { namespace DB {

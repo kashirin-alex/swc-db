@@ -8,7 +8,7 @@
 #define swcdb_db_cells_CellKeyVec_h
 
 
-#include "swcdb/core/Comparators.h"
+#include "swcdb/core/Compat.h"
 
 
 namespace SWC { namespace DB { namespace Cell {

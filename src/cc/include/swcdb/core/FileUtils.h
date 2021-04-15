@@ -26,7 +26,6 @@
 
 #include "swcdb/core/Exception.h"
 
-#include <vector>
 
 extern "C" {
 //#include <sys/socket.h>

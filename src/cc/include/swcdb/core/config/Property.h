@@ -10,7 +10,6 @@
 
 #include "swcdb/core/Compat.h"
 #include "swcdb/core/MutexAtomic.h"
-#include <vector>
 
 
 namespace SWC { namespace Config {

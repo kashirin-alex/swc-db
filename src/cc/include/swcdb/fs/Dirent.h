@@ -7,8 +7,7 @@
 #define swcdb_fs_Dirent_h
 
 
-#include <vector>
-#include <string>
+#include "swcdb/core/Compat.h"
 
 
 namespace SWC { namespace FS {

@@ -10,7 +10,6 @@
 
 #include "swcdb/core/config/Property.h"
 #include "swcdb/core/comm/IoContext.h"
-#include "swcdb/core/Comparators.h"
 
 #include <sys/sysinfo.h>
 #include <fstream>

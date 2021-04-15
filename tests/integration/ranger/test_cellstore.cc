@@ -12,7 +12,7 @@
 
 
 size_t num_cellstores = 9;
-size_t num_cells = 1000000;
+size_t num_cells = 100000;
 size_t num_len = 7;
 size_t group_fractions = 9; // Xnum_cells = total in a cs
 
@@ -235,7 +235,7 @@ int main(int argc, char** argv) {
   schema.col_name = "col-test-cs";
   schema.cell_versions = 1;
   schema.blk_size = 640000;
-  schema.blk_cells = 1000;
+  schema.blk_cells = 10000;
   schema.blk_encoding = SWC::DB::Types::Encoder::SNAPPY;
   SWC::Ranger::ColumnCfg::Ptr col_cfg(
     new SWC::Ranger::ColumnCfg(cid, schema));

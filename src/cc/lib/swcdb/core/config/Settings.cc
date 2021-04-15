@@ -6,7 +6,6 @@
 
 #include "swcdb/Version.h"
 #include "swcdb/core/config/Settings.h"
-#include "swcdb/core/Comparators.h"
 
 #include "swcdb/core/FileUtils.h"
 #include <fstream>

@@ -11,7 +11,6 @@
 #include "swcdb/core/comm/Serializable.h"
 #include "swcdb/core/comm/Header.h"
 #include "swcdb/core/comm/Event.h"
-#include <vector>
 
 
 namespace SWC { namespace Comm {

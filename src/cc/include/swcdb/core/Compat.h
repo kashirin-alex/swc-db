@@ -140,6 +140,7 @@ static_assert(
 #include <memory>
 #include <cstring>
 #include <string>
+#include <vector>
 #include <functional>
 
 
@@ -166,6 +167,6 @@ static_assert(
 
 #include "swcdb/core/Atomic.h"
 #include "swcdb/core/BitFieldInt.h" // for u/int24/40/48/56_t
-
+#include "swcdb/core/Comparators_basic.h"
 
 #endif // swcdb_core_Compact_h

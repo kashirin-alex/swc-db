@@ -5,7 +5,6 @@
 
 
 #include "swcdb/core/config/Properties.h"
-#include "swcdb/core/Comparators.h"
 #include <fstream>
 
 
