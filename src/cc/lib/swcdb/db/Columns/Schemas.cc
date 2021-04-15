@@ -69,7 +69,7 @@ Schema::Ptr Schemas::get(const std::string& name) noexcept {
 
 Schema::Ptr Schemas::_get(const std::string& name) const noexcept {
   for(const auto& it : *this ) {
-    if(!name.compare(it.second->col_name))
+    if(Condition::eq(name, it.second->col_name))
       return it.second;
   }
   return nullptr;

@@ -5,6 +5,7 @@
 
 
 #include "swcdb/fs/Interface.h"
+#include "swcdb/core/Comparators.h"
 #include <dlfcn.h>
 
 
@@ -277,7 +278,7 @@ void Interface::rmdir_incl_opt_subs(int& err, const std::string& name,
     if(*c != '/')
       continue;
     base_path = std::string(p, c-p);
-    if(!up_to.compare(base_path))
+    if(Condition::eq(up_to, base_path))
       break;
 
     DirentList entrs;

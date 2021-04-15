@@ -6,6 +6,7 @@
 
 #include "swcdb/Version.h"
 #include "swcdb/core/config/Settings.h"
+#include "swcdb/core/Comparators.h"
 
 #include "swcdb/core/FileUtils.h"
 #include <fstream>
@@ -341,7 +342,7 @@ bool Settings::DynFile::operator==(const DynFile& other) const noexcept {
   return other == filename;
 }
 bool Settings::DynFile::operator==(const std::string& other) const noexcept {
-  return !filename.compare(other);
+  return Condition::eq(filename, other);
 }
 
 

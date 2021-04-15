@@ -6,6 +6,7 @@
 
 #include "swcdb/db/Columns/Schema.h"
 #include "swcdb/core/Serialization.h"
+#include "swcdb/core/Comparators.h"
 
 
 namespace SWC { namespace DB {
@@ -94,8 +95,8 @@ bool Schema::equal(const Ptr& other, bool with_rev) noexcept {
           && log_compact_cointervaling == other->log_compact_cointervaling
           && log_fragment_preload == other->log_fragment_preload
           && compact_percent == other->compact_percent
-          && !col_name.compare(other->col_name)
           && (!with_rev || revision == other->revision)
+          && Condition::eq(col_name, other->col_name)
           ;
 }
 

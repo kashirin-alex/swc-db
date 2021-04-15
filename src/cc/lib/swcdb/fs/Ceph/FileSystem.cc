@@ -83,7 +83,7 @@ void FileSystemCeph::setup_connection() {
   // status check
   int err;
   const char* cwd = ceph_getcwd(m_filesystem);
-  if(path_root.compare(cwd)) {
+  if(!Condition::eq(path_root, cwd)) {
       SWC_LOGF(LOG_WARN,
         "FS-Ceph, ceph_cwd='%s' != path_root='%s' changing",
         cwd, path_root.c_str());

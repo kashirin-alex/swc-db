@@ -469,6 +469,18 @@ strnequal(const char* s1, const char* s2, size_t count) noexcept {
 }
 
 
+extern bool
+eq(const std::string& s1, const std::string& s2) noexcept
+  SWC_ATTRIBS((SWC_ATTRIB_O3));
+
+extern SWC_CAN_INLINE
+bool
+eq(const std::string& s1, const std::string& s2) noexcept {
+  // s1.length() == s2.length() &&
+  return _strequal(s1.c_str(), s2.c_str());
+}
+
+
 
 extern SWC_CAN_INLINE
 Comp condition_lexic(const uint8_t *p1, uint32_t p1_len,

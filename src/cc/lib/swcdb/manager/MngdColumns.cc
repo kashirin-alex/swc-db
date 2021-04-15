@@ -598,7 +598,7 @@ void MngdColumns::update(int &err, DB::Schema::Ptr& schema,
      DB::Types::is_counter(old->col_type)
       != DB::Types::is_counter(schema->col_type) ||
      (schema->cid <= Common::Files::Schema::SYS_CID_END &&
-      schema->col_name.compare(old->col_name))) {
+      !Condition::eq(schema->col_name, old->col_name) )) {
     err = Error::COLUMN_CHANGE_INCOMPATIBLE;
     return;
   }
@@ -765,7 +765,7 @@ void MngdColumns::run_actions() {
           if(!schema)
             err = Error::COLUMN_SCHEMA_NAME_NOT_EXISTS;
           else if(schema->cid != req->schema->cid ||
-                  req->schema->col_name.compare(schema->col_name))
+                  !Condition::eq(req->schema->col_name, schema->col_name))
             err = Error::COLUMN_SCHEMA_NAME_NOT_CORRES;
           else if(schema->cid <= Common::Files::Schema::SYS_CID_END)
             err = Error::COLUMN_SCHEMA_IS_SYSTEM;
