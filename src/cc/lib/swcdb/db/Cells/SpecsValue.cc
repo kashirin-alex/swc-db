@@ -134,14 +134,19 @@ void Value::encode(uint8_t** bufp) const {
   }
 }
 
-void Value::decode(const uint8_t** bufp, size_t* remainp) {
-  own = false;
+void Value::decode(const uint8_t** bufp, size_t* remainp, bool owner) {
+  own = owner;
   comp = Condition::Comp(Serialization::decode_i8(bufp, remainp));
   if(comp != Condition::NONE) {
-    size = Serialization::decode_vi32(bufp, remainp);
-    data = const_cast<uint8_t*>(*bufp);
-    *remainp -= size;
-    *bufp += size;
+    if((size = Serialization::decode_vi32(bufp, remainp))) {
+      data = own
+        ? static_cast<uint8_t*>(memcpy(new uint8_t[size], *bufp, size))
+        : const_cast<uint8_t*>(*bufp);
+      *remainp -= size;
+      *bufp += size;
+    } else {
+      data = nullptr;
+    }
   }
 }
 

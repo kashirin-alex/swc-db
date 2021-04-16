@@ -16,9 +16,12 @@ class RangeQuerySelect : public ReqScan {
 
   RangeQuerySelect(const Comm::ConnHandlerPtr& conn,
                    const Comm::Event::Ptr& ev,
-                   const DB::Specs::Interval& req_spec,
+                   DB::Specs::Interval&& req_spec,
                    const RangePtr& range)
-                  : ReqScan(conn, ev, req_spec, range->cfg->block_size()),
+                  : ReqScan(
+                      conn, ev,
+                      std::move(req_spec), range->cfg->block_size()
+                    ),
                     range(range) {
     if(!spec.values.empty())
       spec.values.col_type = range->cfg->column_type();

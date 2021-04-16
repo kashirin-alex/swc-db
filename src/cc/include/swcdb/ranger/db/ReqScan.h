@@ -46,8 +46,8 @@ class ReqScan  : public DB::Cells::ReqScan {
   }
 
   ReqScan(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev,
-          const DB::Specs::Interval& spec, uint32_t blk_size)
-          : DB::Cells::ReqScan(conn, ev, spec),
+          DB::Specs::Interval&& spec, uint32_t blk_size)
+          : DB::Cells::ReqScan(conn, ev, std::move(spec)),
             type(Type::QUERY),
             release_block(false),
             readahead((!spec.flags.limit || spec.flags.offset)//?>block_cells

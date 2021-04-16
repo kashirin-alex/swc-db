@@ -43,7 +43,7 @@ void RangeQuerySelectReq::internal_decode(const uint8_t** bufp,
                                           size_t* remainp) {
   cid = Serialization::decode_vi64(bufp, remainp);
   rid = Serialization::decode_vi64(bufp, remainp);
-  interval.decode(bufp, remainp);
+  interval.decode(bufp, remainp, true);
 }
 
 

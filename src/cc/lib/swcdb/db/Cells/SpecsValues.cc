@@ -131,11 +131,11 @@ void Values::encode(uint8_t** bufp) const {
   }
 }
 
-void Values::decode(const uint8_t** bufp, size_t* remainp) {
+void Values::decode(const uint8_t** bufp, size_t* remainp, bool owner) {
   clear();
   resize(Serialization::decode_vi64(bufp, remainp));
   for(auto& value : *this)
-    value.decode(bufp, remainp);
+    value.decode(bufp, remainp, owner);
 }
 
 void Values::print(std::ostream& out) const {

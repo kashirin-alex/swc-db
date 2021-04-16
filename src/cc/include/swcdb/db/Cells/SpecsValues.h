@@ -61,7 +61,7 @@ class Values : private std::vector<Value> {
 
   void encode(uint8_t** bufp) const;
 
-  void decode(const uint8_t** bufp, size_t* remainp);
+  void decode(const uint8_t** bufp, size_t* remainp, bool owner=false);
 
   void print(std::ostream& out) const;
 

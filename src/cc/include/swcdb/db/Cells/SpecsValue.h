@@ -17,7 +17,7 @@ namespace SWC { namespace DB { namespace Specs {
 class Value {
   public:
 
-  explicit Value(bool own=true, 
+  explicit Value(bool own=true,
                  Condition::Comp comp=Condition::NONE) noexcept;
 
   explicit Value(const char* data_n, Condition::Comp comp_n,
@@ -63,7 +63,7 @@ class Value {
 
   void encode(uint8_t** bufp) const;
 
-  void decode(const uint8_t** bufp, size_t* remainp);
+  void decode(const uint8_t** bufp, size_t* remainp, bool owner=false);
 
   bool is_matching(Types::Column col_type, const Cells::Cell& cell) const;
 

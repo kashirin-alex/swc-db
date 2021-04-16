@@ -342,20 +342,20 @@ void Interval::encode(uint8_t** bufp) const {
   Serialization::encode_i8(bufp, options);
 }
 
-void Interval::decode(const uint8_t** bufp, size_t* remainp) {
-  range_begin.decode(bufp, remainp, false);
-  range_end.decode(bufp, remainp, false);
+void Interval::decode(const uint8_t** bufp, size_t* remainp, bool owner) {
+  range_begin.decode(bufp, remainp, owner);
+  range_end.decode(bufp, remainp, owner);
 
   key_intervals.decode(bufp, remainp);
 
-  values.decode(bufp, remainp);
+  values.decode(bufp, remainp, owner);
 
   ts_start.decode(bufp, remainp);
   ts_finish.decode(bufp, remainp);
 
   flags.decode(bufp, remainp);
 
-  offset_key.decode(bufp, remainp, false);
+  offset_key.decode(bufp, remainp, owner);
   offset_rev = Serialization::decode_vi64(bufp, remainp);
   options = Serialization::decode_i8(bufp, remainp);
 }

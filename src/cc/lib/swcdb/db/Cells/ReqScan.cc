@@ -23,6 +23,14 @@ ReqScan::ReqScan(const DB::Specs::Interval& spec)
 }
 
 ReqScan::ReqScan(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev,
+                 DB::Specs::Interval&& spec)
+                : Comm::ResponseCallback(conn, ev),
+                  spec(std::move(spec)),
+                  only_keys(spec.flags.is_only_keys()),
+                  offset(spec.flags.offset) {
+}
+
+ReqScan::ReqScan(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev,
                  const DB::Specs::Interval& spec)
                 : Comm::ResponseCallback(conn, ev),
                   spec(spec),

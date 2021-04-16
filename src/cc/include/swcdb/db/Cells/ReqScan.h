@@ -24,6 +24,9 @@ class ReqScan : public Comm::ResponseCallback {
   ReqScan(const DB::Specs::Interval& spec);
 
   ReqScan(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev,
+          DB::Specs::Interval&& spec);
+
+  ReqScan(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev,
           const DB::Specs::Interval& spec);
 
   ReqScan(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev,

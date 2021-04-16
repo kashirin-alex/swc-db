@@ -52,7 +52,7 @@ void range_query_select(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
   } else {
     range->scan(
       std::make_shared<Ranger::Callback::RangeQuerySelect>(
-        conn, ev, params.interval, range)
+        conn, ev, std::move(params.interval), range)
     );
   }
 }
