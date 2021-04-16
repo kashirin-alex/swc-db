@@ -95,7 +95,7 @@ bool Schema::equal(const Ptr& other, bool with_rev) noexcept {
           && log_fragment_preload == other->log_fragment_preload
           && compact_percent == other->compact_percent
           && (!with_rev || revision == other->revision)
-          && Condition::eq(col_name, other->col_name)
+          && Condition::str_eq(col_name, other->col_name)
           ;
 }
 

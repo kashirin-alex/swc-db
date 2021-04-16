@@ -122,6 +122,8 @@ void load_check() {
   uint64_t checks = UINT64_MAX;
   const char* buf1 = "abcdefghijk12343455";
   const char* buf2 = "abcdefghijk12343451";
+  std::string s1 = buf1;
+  std::string s2 = buf2;
   uint32_t len = 19;
   const uint8_t* ptr1 = reinterpret_cast<const uint8_t*>(buf1);
   const uint8_t* ptr2 = reinterpret_cast<const uint8_t*>(buf2);
@@ -131,11 +133,45 @@ void load_check() {
       "memcmp",
       !memcmp(ptr1, ptr2, 18)
     );
-    /* ok, from -O2 */
+
     LOAD_TEST(
-      "SWC::Condition::memcomp",
-      !SWC::Condition::memcomp(ptr1, ptr2, 18)
+      "SWC::Condition::mem_cmp",
+      !SWC::Condition::mem_cmp(ptr1, ptr2, 18)
     );
+    LOAD_TEST(
+      "SWC::Condition::mem_eq",
+      SWC::Condition::mem_eq(ptr1, ptr2, 18)
+    );
+
+    LOAD_TEST(
+      "SWC::Condition::str_cmp",
+      SWC::Condition::str_cmp(buf1, buf2)
+    );
+    LOAD_TEST(
+      "SWC::Condition::str_cmp n",
+      !SWC::Condition::str_cmp(buf1, buf2, 18)
+    );
+
+    LOAD_TEST(
+      "SWC::Condition::str_eq",
+      !SWC::Condition::str_eq(buf1, buf2)
+    );
+    LOAD_TEST(
+      "SWC::Condition::str_eq n",
+      SWC::Condition::str_eq(buf1, buf2, 18)
+    );
+
+    LOAD_TEST(
+      "SWC::Condition::str_case_eq",
+      SWC::Condition::str_case_eq(buf1, buf2, 18)
+    );
+
+    #if defined(SWC_IMPL_COMPARATORS_BASIC)
+    LOAD_TEST(
+      "SWC::Condition::eq std::string",
+      !SWC::Condition::str_eq(s1, s2)
+    );
+    #endif
 
     LOAD_TEST(
       "SWC::Condition::is_matching vol=false",

@@ -59,11 +59,11 @@ int from_string_distrib(const std::string& typ) {
       break;
     }
     default: {
-      if(!strncasecmp(typ.data(), "SEQUENTIAL", 10))
+      if(Condition::str_case_eq(typ.data(), "SEQUENTIAL", 10))
         return Distrib::SEQUENTIAL;
-      if(!strncasecmp(typ.data(),"UNIFORM", 7))
+      if(Condition::str_case_eq(typ.data(),"UNIFORM", 7))
         return Distrib::UNIFORM;
-      if(!strncasecmp(typ.data(),"STEPPING", 8))
+      if(Condition::str_case_eq(typ.data(),"STEPPING", 8))
         return Distrib::STEPPING;
       break;
     }
@@ -116,17 +116,17 @@ int from_string_distrib_course(const std::string& typ) {
       break;
     }
     default: {
-      if(!strncasecmp(typ.data(), "STEP", 4))
+      if(Condition::str_case_eq(typ.data(), "STEP", 4))
         return DistribCourse::STEP;
-      if(!strncasecmp(typ.data(),"R_STEP", 6))
+      if(Condition::str_case_eq(typ.data(),"R_STEP", 6))
         return DistribCourse::R_STEP;
-      if(!strncasecmp(typ.data(),"SINGLE", 6))
+      if(Condition::str_case_eq(typ.data(),"SINGLE", 6))
         return DistribCourse::SINGLE;
-      if(!strncasecmp(typ.data(),"R_SINGLE", 8))
+      if(Condition::str_case_eq(typ.data(),"R_SINGLE", 8))
         return DistribCourse::R_SINGLE;
-      if(!strncasecmp(typ.data(),"LEVELS", 6))
+      if(Condition::str_case_eq(typ.data(),"LEVELS", 6))
         return DistribCourse::LEVELS;
-      if(!strncasecmp(typ.data(),"R_LEVELS", 8))
+      if(Condition::str_case_eq(typ.data(),"R_LEVELS", 8))
         return DistribCourse::R_LEVELS;
       break;
     }

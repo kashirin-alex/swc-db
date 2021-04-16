@@ -79,31 +79,31 @@ Column column_type_from(const std::string& typ) noexcept {
       break;
     }
     case 5: {
-      if(!strncasecmp(typ.data(), Column_PLAIN, 5))
+      if(Condition::str_case_eq(typ.data(), Column_PLAIN, 5))
         return Column::PLAIN;
       break;
     }
     case 6: {
-      if(!strncasecmp(typ.data(), Column_SERIAL, 6))
+      if(Condition::str_case_eq(typ.data(), Column_SERIAL, 6))
         return Column::SERIAL;
       break;
     }
     case 7: {
-      if(!strncasecmp(typ.data(), Column_COUNTER_I64, 7))
+      if(Condition::str_case_eq(typ.data(), Column_COUNTER_I64, 7))
         return Column::COUNTER_I64;
       break;
     }
     case 10: {
-      if(!strncasecmp(typ.data(), Column_COUNTER_I8, 10))
+      if(Condition::str_case_eq(typ.data(), Column_COUNTER_I8, 10))
         return Column::COUNTER_I8;
       break;
     }
     case 11: {
-      if(!strncasecmp(typ.data(), Column_COUNTER_I64, 11))
+      if(Condition::str_case_eq(typ.data(), Column_COUNTER_I64, 11))
         return Column::COUNTER_I64;
-      if(!strncasecmp(typ.data(), Column_COUNTER_I32, 11))
+      if(Condition::str_case_eq(typ.data(), Column_COUNTER_I32, 11))
         return Column::COUNTER_I32;
-      if(!strncasecmp(typ.data(), Column_COUNTER_I16, 11))
+      if(Condition::str_case_eq(typ.data(), Column_COUNTER_I16, 11))
         return Column::COUNTER_I16;
       break;
     }

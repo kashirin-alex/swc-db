@@ -117,7 +117,7 @@ bool Value::equal(const Value &other) const noexcept {
   return
     size == other.size &&
     ((!data && !other.data) ||
-     (data && other.data && Condition::memequal(data, other.data, size)));
+     (data && other.data && Condition::mem_eq(data, other.data, size)));
 }
 
 size_t Value::encoded_length() const noexcept {

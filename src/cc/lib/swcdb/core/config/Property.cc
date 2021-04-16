@@ -206,8 +206,8 @@ void V_BOOL::set_from(Value::Ptr ptr) {
 void V_BOOL::set_from(const Strings& values) {
   auto& str = values.back();
   value = (str.length() == 1 && *str.data() == '1') ||
-          !strncasecmp(str.data(), "true", 4) ||
-          !strncasecmp(str.data(), "yes", 3);
+          Condition::str_case_eq(str.data(), "true", 4) ||
+          Condition::str_case_eq(str.data(), "yes", 3);
 }
 
 Value::Type V_BOOL::type() const noexcept {
@@ -503,7 +503,7 @@ int32_t V_ENUM::get() const noexcept {
 
 // lists
 V_STRINGS::V_STRINGS(Strings&& v, uint8_t flags) noexcept
-                    : Value(flags), value(std::move(v)) { 
+                    : Value(flags), value(std::move(v)) {
 }
 
 V_STRINGS::V_STRINGS(V_STRINGS* ptr) : Value(ptr), value(ptr->get()) { }
@@ -625,7 +625,7 @@ Doubles V_DOUBLES::get() const {
 
 // Guarded Atomic
 V_GBOOL::V_GBOOL(const bool& v, V_GBOOL::OnChg_t&& cb, uint8_t flags)
-                : Value(flags | Value::GUARDED), 
+                : Value(flags | Value::GUARDED),
                   value(v), on_chg_cb(std::move(cb)) {
 }
 
@@ -656,8 +656,8 @@ void V_GBOOL::set_from(Value::Ptr ptr) {
 void V_GBOOL::set_from(const Strings& values) {
   auto& str = values.back();
   value.store((str.length() == 1 && *str.data() == '1') ||
-              !strncasecmp(str.data(), "true", 4) ||
-              !strncasecmp(str.data(), "yes", 3));
+              Condition::str_case_eq(str.data(), "true", 4) ||
+              Condition::str_case_eq(str.data(), "yes", 3));
 }
 
 Value::Type V_GBOOL::type() const noexcept {

@@ -64,22 +64,22 @@ KeySeq range_seq_from(const std::string& typ) noexcept {
       break;
     }
     case 5: {
-      if(!strncasecmp(typ.data(), KeySeq_LEXIC, 5))
+      if(Condition::str_case_eq(typ.data(), KeySeq_LEXIC, 5))
         return KeySeq::LEXIC;
       break;
     }
     case 6: {
-      if(!strncasecmp(typ.data(), KeySeq_VOLUME, 6))
+      if(Condition::str_case_eq(typ.data(), KeySeq_VOLUME, 6))
         return KeySeq::VOLUME;
       break;
     }
     case 8: {
-      if(!strncasecmp(typ.data(), KeySeq_FC_LEXIC, 8))
+      if(Condition::str_case_eq(typ.data(), KeySeq_FC_LEXIC, 8))
         return KeySeq::FC_LEXIC;
       break;
     }
     case 9: {
-      if(!strncasecmp(typ.data(), KeySeq_FC_VOLUME, 9))
+      if(Condition::str_case_eq(typ.data(), KeySeq_FC_VOLUME, 9))
         return KeySeq::FC_VOLUME;
       break;
     }

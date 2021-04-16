@@ -255,10 +255,10 @@ std::string ParserConfig::position_name(int n) {
 
 bool ParserConfig::has(const std::string& name) const noexcept {
   for(const auto& info : options) {
-    if(Condition::eq(name, info.first))
+    if(Condition::str_eq(name, info.first))
       return true;
     for(const std::string& alias : info.second.aliases)
-      if(Condition::eq(name, alias))
+      if(Condition::str_eq(name, alias))
         return true;
     }
   return false;
@@ -267,10 +267,10 @@ bool ParserConfig::has(const std::string& name) const noexcept {
 bool ParserConfig::has(const std::string& name,
                        std::string& alias_to) const noexcept {
   for(const auto& info : options) {
-    if(Condition::eq(name, info.first))
+    if(Condition::str_eq(name, info.first))
       return true;
     for(const std::string& alias : info.second.aliases)
-      if(Condition::eq(name, alias)) {
+      if(Condition::str_eq(name, alias)) {
         alias_to = info.first;
         return true;
       }
@@ -280,10 +280,10 @@ bool ParserConfig::has(const std::string& name,
 
 Property::Value::Ptr ParserConfig::get_default(const std::string& name) {
   for(const auto& info : options) {
-    if(Condition::eq(name, info.first))
+    if(Condition::str_eq(name, info.first))
       return info.second.value;
     for(const std::string& alias : info.second.aliases)
-      if(Condition::eq(name, alias))
+      if(Condition::str_eq(name, alias))
         return info.second.value;
   }
   SWC_THROWF(Error::CONFIG_GET_ERROR, "ParserConfig, getting value of '%s'",
@@ -387,7 +387,7 @@ void Parser::parse_filedata(std::ifstream& in) {
         g_tmp = line.substr(1, at-1);
         if(!group.empty()){
           group.pop_back(); // remove a dot
-          if(Condition::eq(g_tmp, group+"=end")) {
+          if(Condition::str_eq(g_tmp, group+"=end")) {
             // an end of group  "[groupname=end]"
             group.clear();
             line.clear();

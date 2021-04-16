@@ -277,7 +277,7 @@ void Interface::rmdir_incl_opt_subs(int& err, const std::string& name,
     if(*c != '/')
       continue;
     base_path = std::string(p, c-p);
-    if(Condition::eq(up_to, base_path))
+    if(Condition::str_eq(up_to, base_path))
       break;
 
     DirentList entrs;

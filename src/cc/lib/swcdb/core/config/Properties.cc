@@ -81,11 +81,11 @@ namespace SWC { namespace Config {
 
   bool Properties::has(const char* name) const noexcept {
     for(auto it=m_map.begin(); it!=m_map.end(); ++it) {
-      if(Condition::strequal(it->first.c_str(), name))
+      if(Condition::str_eq(it->first.c_str(), name))
         return true;
     }
     for(auto it=m_alias_map.begin(); it!=m_alias_map.end(); ++it) {
-      if(Condition::strequal(it->first.c_str(), name))
+      if(Condition::str_eq(it->first.c_str(), name))
         return m_map.find(it->second) != m_map.end();
     }
     return false;
@@ -106,7 +106,7 @@ namespace SWC { namespace Config {
 
   void Properties::remove(const char* name) {
     for(auto it=m_map.begin(); it!=m_map.end(); ++it) {
-      if(Condition::strequal(it->first.c_str(), name)) {
+      if(Condition::str_eq(it->first.c_str(), name)) {
         delete it->second;
         m_map.erase(it);
         return;
@@ -117,11 +117,11 @@ namespace SWC { namespace Config {
 
   Property::Value::Ptr Properties::get_ptr(const char* name, bool null_ok) {
     for(auto it=m_map.begin(); it!=m_map.end(); ++it) {
-      if(Condition::strequal(it->first.c_str(), name))
+      if(Condition::str_eq(it->first.c_str(), name))
         return it->second;
     }
     for(auto it=m_alias_map.begin(); it!=m_alias_map.end(); ++it) {
-      if(Condition::strequal(it->first.c_str(), name)) {
+      if(Condition::str_eq(it->first.c_str(), name)) {
         auto prop = m_map.find(it->second);
         if(prop != m_map.end())
           return prop->second;

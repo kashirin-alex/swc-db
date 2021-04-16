@@ -19,23 +19,23 @@ std::string normalize_pathname(std::string s) {
 Type fs_type(const std::string& fs_name) {
 
 #if !defined (FS_BROKER_APP)
-  if(!strncasecmp(fs_name.data(), "broker", fs_name.size()))
+  if(Condition::str_case_eq(fs_name.data(), "broker", fs_name.size()))
     return Type::BROKER;
 #endif
 
-  if(!strncasecmp(fs_name.data(), "local", fs_name.size()))
+  if(Condition::str_case_eq(fs_name.data(), "local", fs_name.size()))
     return Type::LOCAL;
 
-  if(!strncasecmp(fs_name.data(), "hadoop", fs_name.size()))
+  if(Condition::str_case_eq(fs_name.data(), "hadoop", fs_name.size()))
     return Type::HADOOP;
 
-  if(!strncasecmp(fs_name.data(), "hadoop_jvm", fs_name.size()))
+  if(Condition::str_case_eq(fs_name.data(), "hadoop_jvm", fs_name.size()))
     return Type::HADOOP_JVM;
 
-  if(!strncasecmp(fs_name.data(), "ceph", fs_name.size()))
+  if(Condition::str_case_eq(fs_name.data(), "ceph", fs_name.size()))
     return Type::CEPH;
 
-  if(!strncasecmp(fs_name.data(), "custom", fs_name.size()))
+  if(Condition::str_case_eq(fs_name.data(), "custom", fs_name.size()))
     return Type::CUSTOM;
 
   else

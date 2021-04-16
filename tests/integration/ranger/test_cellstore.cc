@@ -40,7 +40,7 @@ void apply_key(const std::string& idn,
   key.add("F6");
   key.add(gn);
 
-  if(!key.get_string(0).compare("")) {
+  if(key.get_string(0).empty()) {
     std::cout << "BAD: " << key.to_string() << "\n";
     exit(1);
   }
@@ -90,7 +90,7 @@ size_t write_cs(SWC::csid_t csid, SWC::Ranger::RangePtr range, int any) {
       cell.write(buff);
       ++header.cells_count;
       header.interval.expand(cell);
-      if(!header.interval.key_begin.get_string(0).compare("")) {
+      if(header.interval.key_begin.get_string(0).empty()) {
         std::cout << cell.to_string() << "\n";
         std::cout << "expand: " << header.interval.to_string() << "\n";
         exit(1);

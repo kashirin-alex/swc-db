@@ -108,7 +108,8 @@ void check_load(bool encode) {
   std::cout << "      v.size=" << v.size        << "\n";
   std::cout << "   cell.vlen=" << cell.vlen     << "\n";
   SWC_ASSERT(value.size() == v.size);
-  SWC_ASSERT(!memcmp(v.base, value.data(), v.size));
+  SWC_ASSERT(SWC::Condition::mem_eq(
+    v.base, reinterpret_cast<const uint8_t*>(value.c_str()), v.size));
 }
 
 int run() {

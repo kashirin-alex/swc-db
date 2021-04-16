@@ -35,31 +35,31 @@ Cmd recognize_cmd(int& err, const std::string& sql, std::string& message) {
   if(cmd.empty())
     return Cmd::UNKNOWN;
 
-  if(!strncmp(cmd.data(), "add", 3) ||
-     !strncmp(cmd.data(), "create", 6)) {
+  if(Condition::str_eq(cmd.data(), "add", 3) ||
+     Condition::str_eq(cmd.data(), "create", 6)) {
     return Cmd::CREATE_COLUMN;
   }
-  if(!strncmp(cmd.data(), "modify", 6) ||
-     !strncmp(cmd.data(), "change", 6) ||
-     !strncmp(cmd.data(), "update column", 13) ||
-     !strncmp(cmd.data(), "update schema", 13)) {
+  if(Condition::str_eq(cmd.data(), "modify", 6) ||
+     Condition::str_eq(cmd.data(), "change", 6) ||
+     Condition::str_eq(cmd.data(), "update column", 13) ||
+     Condition::str_eq(cmd.data(), "update schema", 13)) {
     return Cmd::MODIFY_COLUMN;
   }
-  if(!strncmp(cmd.data(), "delete", 6) ||
-     !strncmp(cmd.data(), "remove", 6)) {
+  if(Condition::str_eq(cmd.data(), "delete", 6) ||
+     Condition::str_eq(cmd.data(), "remove", 6)) {
     return Cmd::REMOVE_COLUMN;
   }
-  if(!strncmp(cmd.data(), "get", 3) ||
-     !strncmp(cmd.data(), "list", 4)) {
+  if(Condition::str_eq(cmd.data(), "get", 3) ||
+     Condition::str_eq(cmd.data(), "list", 4)) {
     return Cmd::GET_COLUMNS;
   }
-  if(!strncmp(cmd.data(), "compact", 7)) {
+  if(Condition::str_eq(cmd.data(), "compact", 7)) {
     return Cmd::COMPACT_COLUMNS;
   }
-  if(!strncmp(cmd.data(), "select", 6)) {
+  if(Condition::str_eq(cmd.data(), "select", 6)) {
     return Cmd::SELECT;
   }
-  if(!strncmp(cmd.data(), "update", 6)) {
+  if(Condition::str_eq(cmd.data(), "update", 6)) {
     return Cmd::UPDATE;
   }
 

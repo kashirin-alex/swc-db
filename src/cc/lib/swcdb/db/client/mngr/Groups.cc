@@ -164,9 +164,9 @@ void Groups::on_cfg_update() {
     if((at_chk = cfg_chk.find_first_of('{')) != std::string::npos) {
       cfg_chk = cfg_chk.substr(++at_chk, cfg_chk.find_first_of('}')-1);
       for(;;) {
-        if(!strncasecmp(cfg_chk.data(), "schemas", 7))
+        if(Condition::str_case_eq(cfg_chk.data(), "schemas", 7))
           role |= DB::Types::MngrRole::SCHEMAS;
-        else if(!strncasecmp(cfg_chk.data(), "rangers", 7))
+        else if(Condition::str_case_eq(cfg_chk.data(), "rangers", 7))
           role |= DB::Types::MngrRole::RANGERS;
         if((at_chk = cfg_chk.find_first_of(',')) == std::string::npos)
           break;

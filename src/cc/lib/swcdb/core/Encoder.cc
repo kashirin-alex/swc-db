@@ -67,24 +67,24 @@ Encoder::Type Encoder::encoding_from(const std::string& typ) noexcept {
       break;
     }
     case 4: {
-      if(!strncasecmp(typ.data(), Encoder_ZLIB, 4))
+      if(Condition::str_case_eq(typ.data(), Encoder_ZLIB, 4))
         return Encoder::Type::ZLIB;
-      if(!strncasecmp(typ.data(), Encoder_ZSTD, 4))
+      if(Condition::str_case_eq(typ.data(), Encoder_ZSTD, 4))
         return Encoder::Type::ZSTD;
       break;
     }
     case 5: {
-      if(!strncasecmp(typ.data(), Encoder_PLAIN, 5))
+      if(Condition::str_case_eq(typ.data(), Encoder_PLAIN, 5))
         return Encoder::Type::PLAIN;
       break;
     }
     case 6: {
-      if(!strncasecmp(typ.data(), Encoder_SNAPPY, 6))
+      if(Condition::str_case_eq(typ.data(), Encoder_SNAPPY, 6))
         return Encoder::Type::SNAPPY;
       break;
     }
     case 7: {
-      if(!strncasecmp(typ.data(), Encoder_DEFAULT, 7))
+      if(Condition::str_case_eq(typ.data(), Encoder_DEFAULT, 7))
         return Encoder::Type::DEFAULT;
       break;
     }

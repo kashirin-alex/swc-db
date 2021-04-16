@@ -33,13 +33,13 @@ const char* to_string(Flag flag) noexcept {
 Flag flag_from(const uint8_t* rptr, uint32_t len) noexcept {
   const char* ptr = reinterpret_cast<const char*>(rptr);
   if(len >= 14) {
-    if(!strncasecmp(ptr, "delete_version", 14))
+    if(Condition::str_case_eq(ptr, "delete_version", 14))
       return Flag::DELETE_VERSION;
   }
   if(len >= 6) {
-    if(!strncasecmp(ptr, "insert", 6))
+    if(Condition::str_case_eq(ptr, "insert", 6))
       return Flag::INSERT;
-    if(!strncasecmp(ptr, "delete", 6))
+    if(Condition::str_case_eq(ptr, "delete", 6))
       return Flag::DELETE;
   }
   return Flag::NONE;
@@ -373,7 +373,7 @@ bool Cell::equal(const Cell& other) const noexcept {
           (!(control & HAVE_REVISION) || revision == other.revision) &&
           vlen == other.vlen &&
           key.equal(other.key) &&
-          Condition::memequal(value, other.value, vlen);
+          Condition::mem_eq(value, other.value, vlen);
 }
 
 bool Cell::is_removing(const int64_t& rev) const noexcept {

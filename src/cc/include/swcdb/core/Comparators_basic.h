@@ -8,6 +8,13 @@
 #define swcdb_core_Comparators_basic_h
 
 
+/*
+#if defined(__GNUC__ ) && __GNUC__ >= 10
+#define SWC_IMPL_COMPARATORS_BASIC ON
+#endif
+*/
+
+
 namespace SWC {
 
 /**
@@ -19,80 +26,131 @@ namespace SWC {
 
 namespace Condition {
 
+
+extern int
+mem_cmp(const uint8_t* b1, const uint8_t* b2, size_t count) noexcept
+  SWC_ATTRIBS((SWC_ATTRIB_O3));
+
+extern bool
+mem_eq(const uint8_t* b1, const uint8_t* b2, size_t count) noexcept
+  SWC_ATTRIBS((SWC_ATTRIB_O3));
+
+
+extern int
+str_cmp(const char* s1, const char* s2) noexcept
+  SWC_ATTRIBS((SWC_ATTRIB_O3));
+
+extern int
+str_cmp(const char* s1, const char* s2, size_t count) noexcept
+  SWC_ATTRIBS((SWC_ATTRIB_O3));
+
+
+extern bool
+str_eq(const char* s1, const char* s2) noexcept
+  SWC_ATTRIBS((SWC_ATTRIB_O3));
+
+extern bool
+str_eq(const char* s1, const char* s2, size_t count) noexcept
+  SWC_ATTRIBS((SWC_ATTRIB_O3));
+
+extern bool
+str_case_eq(const char* s1, const char* s2, size_t count) noexcept
+  SWC_ATTRIBS((SWC_ATTRIB_O3));
+
+
+extern bool
+str_eq(const std::string& s1, const std::string& s2) noexcept
+  SWC_ATTRIBS((SWC_ATTRIB_O3));
+
+extern bool
+mem_eq(const std::string& s1, const std::string& s2) noexcept
+  SWC_ATTRIBS((SWC_ATTRIB_O3));
+
+
+
 namespace { // local namespace
 
 
+#if defined(SWC_IMPL_COMPARATORS_BASIC)
+
 static int
-_memcomp(const uint8_t* s1, const uint8_t* s2, size_t count) noexcept
+_mem_cmp(const uint8_t* b1, const uint8_t* b2, size_t count) noexcept
   SWC_ATTRIBS((SWC_ATTRIB_O3));
+
+static bool
+_mem_eq(const uint8_t* b1, const uint8_t* b2, size_t count) noexcept
+  SWC_ATTRIBS((SWC_ATTRIB_O3));
+
+
 
 SWC_SHOULD_NOT_INLINE
 static int
-_memcomp(const uint8_t* s1, const uint8_t* s2, size_t count) noexcept {
-  for(; count; --count, ++s1, ++s2)
-    if(*s1 != *s2)
-      return *s1 < *s2 ? -1 : 1;
+_mem_cmp(const uint8_t* b1, const uint8_t* b2, size_t count) noexcept {
+  for(; count; --count, ++b1, ++b2)
+    if(*b1 != *b2)
+      return *b1 < *b2 ? -1 : 1;
   return 0;
 }
 
-
-static bool
-_memequal(const uint8_t* s1, const uint8_t* s2, size_t count) noexcept
-  SWC_ATTRIBS((SWC_ATTRIB_O3));
-
 SWC_SHOULD_NOT_INLINE
 static bool
-_memequal(const uint8_t* s1, const uint8_t* s2, size_t count) noexcept {
-  for(; count; --count, ++s1, ++s2) {
-    if(*s1 != *s2)
+_mem_eq(const uint8_t* b1, const uint8_t* b2, size_t count) noexcept {
+  for(; count; --count, ++b1, ++b2) {
+    if(*b1 != *b2)
       return false;
   }
   return true;
 }
 
-
+static int
+_str_cmp(const char* s1, const char* s2) noexcept
+  SWC_ATTRIBS((SWC_ATTRIB_O3));
 
 static int
-_strncomp(const char* s1, const char* s2, size_t count) noexcept
+_str_cmp(const char* s1, const char* s2, size_t count) noexcept
   SWC_ATTRIBS((SWC_ATTRIB_O3));
+
+static bool
+_str_eq(const char* s1, const char* s2) noexcept
+  SWC_ATTRIBS((SWC_ATTRIB_O3));
+
+static bool
+_str_eq(const char* s1, const char* s2, size_t count) noexcept
+  SWC_ATTRIBS((SWC_ATTRIB_O3));
+
+static bool
+_str_case_eq(const char* s1, const char* s2, size_t count) noexcept
+  SWC_ATTRIBS((SWC_ATTRIB_O3));
+
+
 
 SWC_SHOULD_NOT_INLINE
 static int
-_strncomp(const char* s1, const char* s2, size_t count) noexcept {
-  for(uint8_t b1, b2; count; --count, ++s1, ++s2) {
-    if((b1 = *s1) != (b2 = *s2))
-      return b1 < b2 ? -1 : 1;
-    if(!b1)
+_str_cmp(const char* s1, const char* s2) noexcept {
+  for(; ; ++s1, ++s2) {
+    if(*s1 != *s2)
+      return *s1 < *s2 ? -1 : 1;
+    if(!*s1)
       break;
   }
   return 0;
 }
 
-
-static int
-_strcomp(const char* s1, const char* s2) noexcept
-  SWC_ATTRIBS((SWC_ATTRIB_O3));
-
 SWC_SHOULD_NOT_INLINE
 static int
-_strcomp(const char* s1, const char* s2) noexcept {
-  for(uint8_t b1, b2; ; ++s1, ++s2) {
-    if((b1 = *s1) != (b2 = *s2))
-      return b1 < b2 ? -1 : 1;
-    if(!b1)
+_str_cmp(const char* s1, const char* s2, size_t count) noexcept {
+  for(; count; --count, ++s1, ++s2) {
+    if(*s1 != *s2)
+      return *s1 < *s2 ? -1 : 1;
+    if(!*s1)
       break;
   }
   return 0;
 }
 
-
-static bool
-_strequal(const char* s1, const char* s2) noexcept
-  SWC_ATTRIBS((SWC_ATTRIB_O3));
-
 SWC_SHOULD_NOT_INLINE
 static bool
-_strequal(const char* s1, const char* s2) noexcept {
+_str_eq(const char* s1, const char* s2) noexcept {
   for(; ; ++s1, ++s2) {
     if(*s1 != *s2)
       return false;
@@ -101,14 +159,9 @@ _strequal(const char* s1, const char* s2) noexcept {
   }
 }
 
-
-static bool
-_strnequal(const char* s1, const char* s2, size_t count) noexcept
-  SWC_ATTRIBS((SWC_ATTRIB_O3));
-
 SWC_SHOULD_NOT_INLINE
 static bool
-_strnequal(const char* s1, const char* s2, size_t count) noexcept {
+_str_eq(const char* s1, const char* s2, size_t count) noexcept {
   for(; count; --count, ++s1, ++s2) {
     if(*s1 != *s2)
       return false;
@@ -118,14 +171,9 @@ _strnequal(const char* s1, const char* s2, size_t count) noexcept {
   return true;
 }
 
-
-static bool
-_strncaseequal(const char* s1, const char* s2, size_t count) noexcept
-  SWC_ATTRIBS((SWC_ATTRIB_O3));
-
 SWC_SHOULD_NOT_INLINE
 static bool
-_strncaseequal(const char* s1, const char* s2, size_t count) noexcept {
+_str_case_eq(const char* s1, const char* s2, size_t count) noexcept {
   for(; count; --count, ++s1, ++s2) {
     if(*s1 - (*s1 > 96 && *s1 < 123 ? 32 : 0) !=
        *s2 - (*s2 > 96 && *s2 < 123 ? 32 : 0))
@@ -136,98 +184,98 @@ _strncaseequal(const char* s1, const char* s2, size_t count) noexcept {
   return true;
 }
 
+#endif // defined(SWC_IMPL_COMPARATORS_BASIC)
+
 } // local namespace
 
 
 
 
-// performance equal to builtins
-extern int
-memcomp(const uint8_t* s1, const uint8_t* s2, size_t count) noexcept
-  SWC_ATTRIBS((SWC_ATTRIB_O3));
 
 extern SWC_CAN_INLINE
 int
-memcomp(const uint8_t* s1, const uint8_t* s2, size_t count) noexcept {
-  return _memcomp(s1, s2, count);
+mem_cmp(const uint8_t* b1, const uint8_t* b2, size_t count) noexcept {
+  #if defined(SWC_IMPL_COMPARATORS_BASIC)
+    return _mem_cmp(b1, b2, count);
+  #else
+    return memcmp(b1, b2, count);
+  #endif
 }
-
-
-extern bool
-memequal(const uint8_t* s1, const uint8_t* s2, size_t count) noexcept
-  SWC_ATTRIBS((SWC_ATTRIB_O3));
 
 extern SWC_CAN_INLINE
 bool
-memequal(const uint8_t* s1, const uint8_t* s2, size_t count) noexcept {
-  return _memequal(s1, s2, count);
+mem_eq(const uint8_t* b1, const uint8_t* b2, size_t count) noexcept {
+  #if defined(SWC_IMPL_COMPARATORS_BASIC)
+    return _mem_eq(b1, b2, count);
+  #else
+    return !memcmp(b1, b2, count);
+  #endif
 }
-
-
-extern int
-strncomp(const char* s1, const char* s2, size_t count) noexcept
-  SWC_ATTRIBS((SWC_ATTRIB_O3));
 
 extern SWC_CAN_INLINE
 int
-strncomp(const char* s1, const char* s2, size_t count) noexcept {
-  return _strncomp(s1, s2, count);
+str_cmp(const char* s1, const char* s2) noexcept {
+  #if defined(SWC_IMPL_COMPARATORS_BASIC)
+    return _str_cmp(s1, s2);
+  #else
+    return strcmp(s1, s2);
+  #endif
 }
-
-
-extern int
-strcomp(const char* s1, const char* s2) noexcept
-  SWC_ATTRIBS((SWC_ATTRIB_O3));
 
 extern SWC_CAN_INLINE
 int
-strcomp(const char* s1, const char* s2) noexcept {
-  return _strcomp(s1, s2);
+str_cmp(const char* s1, const char* s2, size_t count) noexcept {
+  #if defined(SWC_IMPL_COMPARATORS_BASIC)
+    return _str_cmp(s1, s2, count);
+  #else
+    return strncmp(s1, s2, count);
+  #endif
 }
-
-
-extern bool
-strequal(const char* s1, const char* s2) noexcept
-  SWC_ATTRIBS((SWC_ATTRIB_O3));
 
 extern SWC_CAN_INLINE
 bool
-strequal(const char* s1, const char* s2) noexcept {
-  return _strequal(s1, s2);
+str_eq(const char* s1, const char* s2) noexcept {
+  #if defined(SWC_IMPL_COMPARATORS_BASIC)
+    return _str_eq(s1, s2);
+  #else
+    return !strcmp(s1, s2);
+  #endif
 }
-
-
-extern bool
-strnequal(const char* s1, const char* s2, size_t count) noexcept
-  SWC_ATTRIBS((SWC_ATTRIB_O3));
 
 extern SWC_CAN_INLINE
 bool
-strnequal(const char* s1, const char* s2, size_t count) noexcept {
-  return _strnequal(s1, s2, count);
+str_eq(const char* s1, const char* s2, size_t count) noexcept {
+  #if defined(SWC_IMPL_COMPARATORS_BASIC)
+    return _str_eq(s1, s2, count);
+  #else
+    return !strncmp(s1, s2, count);
+  #endif
 }
-
-
-extern bool
-strncaseequal(const char* s1, const char* s2, size_t count) noexcept
-  SWC_ATTRIBS((SWC_ATTRIB_O3));
 
 extern SWC_CAN_INLINE
 bool
-strncaseequal(const char* s1, const char* s2, size_t count) noexcept {
-  return _strncaseequal(s1, s2, count);
+str_case_eq(const char* s1, const char* s2, size_t count) noexcept {
+  #if defined(SWC_IMPL_COMPARATORS_BASIC)
+    return _str_case_eq(s1, s2, count);
+  #else
+    return !strncasecmp(s1, s2, count);
+  #endif
 }
 
 
-extern bool
-eq(const std::string& s1, const std::string& s2) noexcept
-  SWC_ATTRIBS((SWC_ATTRIB_O3));
+extern SWC_CAN_INLINE
+bool
+str_eq(const std::string& s1, const std::string& s2) noexcept {
+  return str_eq(s1.c_str(), s2.c_str());
+}
 
 extern SWC_CAN_INLINE
 bool
-eq(const std::string& s1, const std::string& s2) noexcept {
-  // s1.length() == s2.length() &&
-  return _strequal(s1.c_str(), s2.c_str());
+mem_eq(const std::string& s1, const std::string& s2) noexcept {
+  return s1.length() == s2.length() &&
+         mem_eq(reinterpret_cast<const uint8_t*>(s1.c_str()),
+                reinterpret_cast<const uint8_t*>(s2.c_str()),
+                s1.length());
 }
 
 

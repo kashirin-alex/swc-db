@@ -45,7 +45,7 @@ class FileWriter {
     file_ext.append(ext);
 
     if(ext.length() == 3) {
-      if(!strncmp("zst", ext.c_str(), ext.length())) {
+      if(Condition::str_eq("zst", ext.c_str(), ext.length())) {
         _stream.reset(new Core::BufferStreamOut_ZSTD(level));
         return _stream->error;
       }
@@ -362,7 +362,8 @@ class FileReader {
 
     std::unique_ptr<Core::BufferStreamIn> instream;
     const std::string& path = smartfd->filepath();
-    if(!strncmp("zst", path.c_str()+(path.length()-3), path.length()-3)) {
+    if(Condition::str_eq(
+        "zst", path.c_str()+(path.length()-3), path.length()-3)) {
       instream.reset(new Core::BufferStreamIn_ZSTD());
     } else {
       instream.reset(new Core::BufferStreamIn());
@@ -501,8 +502,10 @@ class FileReader {
     if(header.empty() || !remain || *ptr != '\n')
       return false;
 
-    has_ts = !strncasecmp(header.front().data(), "timestamp", 9);
-    bool has_encoder = !strncasecmp(header.back().data(), "encoder", 7);
+    has_ts = Condition::str_case_eq(
+      header.front().c_str(), "timestamp", 9);
+    bool has_encoder = Condition::str_case_eq(
+      header.back().c_str(), "encoder", 7);
     if(header.size() < size_t(6 + has_ts + has_encoder))
       return false;
 

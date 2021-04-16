@@ -62,10 +62,10 @@ int main(int argc, char** argv) {
 
   const auto& command = SWC::Env::Config::settings()->get_str("command");
 
-  if(!strncasecmp(command.data(), "shell", command.size()))
+  if(SWC::Condition::str_case_eq(command.data(), "shell", command.size()))
     return SWC::Utils::run(command);
 
-  if(!strncasecmp(command.data(), "custom", command.size()))
+  if(SWC::Condition::str_case_eq(command.data(), "custom", command.size()))
     return SWC::Utils::run("command", true);
 
   return SWC::Utils::not_implemented(command);

@@ -486,12 +486,12 @@ void QueryUpdate::read_flag(uint8_t& flag, bool& on_fraction) {
     break;
   }
   case 6: {
-    if(!strncasecmp(buf.data(), "INSERT", 6)) {
+    if(Condition::str_case_eq(buf.data(), "INSERT", 6)) {
       flag = DB::Cells::INSERT;
       on_fraction = false;
       return;
     }
-    if(!strncasecmp(buf.data(), "DELETE", 6)) {
+    if(Condition::str_case_eq(buf.data(), "DELETE", 6)) {
       flag = DB::Cells::DELETE;
       on_fraction = false;
       return;
@@ -499,7 +499,7 @@ void QueryUpdate::read_flag(uint8_t& flag, bool& on_fraction) {
     break;
   }
   case 14: {
-    if(!strncasecmp(buf.data(), "DELETE_VERSION", 14)) {
+    if(Condition::str_case_eq(buf.data(), "DELETE_VERSION", 14)) {
       flag = DB::Cells::DELETE_VERSION;
       on_fraction = false;
       return;
@@ -507,12 +507,12 @@ void QueryUpdate::read_flag(uint8_t& flag, bool& on_fraction) {
     break;
   }
   case 15: {
-    if(!strncasecmp(buf.data(), "INSERT_FRACTION", 15)) {
+    if(Condition::str_case_eq(buf.data(), "INSERT_FRACTION", 15)) {
       flag = DB::Cells::INSERT;
       on_fraction = true;
       return;
     }
-    if(!strncasecmp(buf.data(), "DELETE_FRACTION", 15)) {
+    if(Condition::str_case_eq(buf.data(), "DELETE_FRACTION", 15)) {
       flag = DB::Cells::DELETE;
       on_fraction = true;
       return;
@@ -520,7 +520,7 @@ void QueryUpdate::read_flag(uint8_t& flag, bool& on_fraction) {
     break;
   }
   case 23: {
-    if(!strncasecmp(buf.data(), "DELETE_FRACTION_VERSION", 23)) {
+    if(Condition::str_case_eq(buf.data(), "DELETE_FRACTION_VERSION", 23)) {
       flag = DB::Cells::DELETE_VERSION;
       on_fraction = true;
       return;

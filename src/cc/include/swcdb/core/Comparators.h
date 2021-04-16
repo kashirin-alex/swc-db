@@ -103,13 +103,13 @@ Comp from(const char** buf, uint32_t* remainp,
   Comp comp = Comp::NONE;
 
   if(*remainp > 7) {
-    if(!strncasecmp(*buf, "posubset", 8))
+    if(str_case_eq(*buf, "posubset", 8))
       comp = Comp::POSBS;
-    else if(!strncasecmp(*buf, "posupset", 8))
+    else if(str_case_eq(*buf, "posupset", 8))
       comp = Comp::POSPS;
-    else if(!strncasecmp(*buf, "fosubset", 8))
+    else if(str_case_eq(*buf, "fosubset", 8))
       comp = Comp::FOSBS;
-    else if(!strncasecmp(*buf, "fosupset", 8))
+    else if(str_case_eq(*buf, "fosupset", 8))
       comp = Comp::FOSPS;
 
     if(comp != Comp::NONE) {
@@ -120,9 +120,9 @@ Comp from(const char** buf, uint32_t* remainp,
   }
 
   if(*remainp > 5) {
-    if(!strncasecmp(*buf, "subset", 6))
+    if(str_case_eq(*buf, "subset", 6))
       comp = Comp::SBS;
-    else if(!strncasecmp(*buf, "supset", 6))
+    else if(str_case_eq(*buf, "supset", 6))
       comp = Comp::SPS;
 
     if(comp != Comp::NONE) {
@@ -133,13 +133,13 @@ Comp from(const char** buf, uint32_t* remainp,
   }
 
   if(*remainp > 4) {
-    if(!strncasecmp(*buf, "posbs", 5))
+    if(str_case_eq(*buf, "posbs", 5))
       comp = Comp::POSBS;
-    else if(!strncasecmp(*buf, "posps", 5))
+    else if(str_case_eq(*buf, "posps", 5))
       comp = Comp::POSPS;
-    else if(!strncasecmp(*buf, "fosbs", 5))
+    else if(str_case_eq(*buf, "fosbs", 5))
       comp = Comp::FOSBS;
-    else if(!strncasecmp(*buf, "fosps", 5))
+    else if(str_case_eq(*buf, "fosps", 5))
       comp = Comp::FOSPS;
 
     if(comp != Comp::NONE) {
@@ -150,20 +150,20 @@ Comp from(const char** buf, uint32_t* remainp,
   }
 
   if(*remainp > 2) {
-    if(!strncasecmp(*buf, "sbs", 3)) {
+    if(str_case_eq(*buf, "sbs", 3)) {
       comp = Comp::SBS;
-    } else if(!strncasecmp(*buf, "sps", 3)) {
+    } else if(str_case_eq(*buf, "sps", 3)) {
       comp = Comp::SPS;
     } else if(extended) {
-      if(!strncasecmp(*buf, COMP_VGE, 3) ||
-         !strncasecmp(*buf, "vge", 3))
+      if(str_case_eq(*buf, COMP_VGE, 3) ||
+         str_case_eq(*buf, "vge", 3))
         comp = Comp::VGE;
-      else if(!strncasecmp(*buf, COMP_VLE, 3) ||
-              !strncasecmp(*buf, "vle", 3))
+      else if(str_case_eq(*buf, COMP_VLE, 3) ||
+              str_case_eq(*buf, "vle", 3))
         comp = Comp::VLE;
-      else if(!strncasecmp(*buf, "vgt", 3))
+      else if(str_case_eq(*buf, "vgt", 3))
         comp = Comp::VGT;
-      else if(!strncasecmp(*buf, "vlt", 3))
+      else if(str_case_eq(*buf, "vlt", 3))
         comp = Comp::VLT;
     }
     if(comp != Comp::NONE) {
@@ -174,44 +174,44 @@ Comp from(const char** buf, uint32_t* remainp,
   }
 
   if(*remainp > 1) {
-    if(!strncasecmp(*buf, COMP_PF, 2) ||
-       !strncasecmp(*buf, "pf", 2))
+    if(str_case_eq(*buf, COMP_PF, 2) ||
+       str_case_eq(*buf, "pf", 2))
       comp = Comp::PF;
-    else if(!strncasecmp(*buf, COMP_GE, 2) ||
-            !strncasecmp(*buf, "ge", 2))
+    else if(str_case_eq(*buf, COMP_GE, 2) ||
+            str_case_eq(*buf, "ge", 2))
       comp = Comp::GE;
-    else if(!strncasecmp(*buf, COMP_LE, 2) ||
-            !strncasecmp(*buf, "le", 2))
+    else if(str_case_eq(*buf, COMP_LE, 2) ||
+            str_case_eq(*buf, "le", 2))
       comp = Comp::LE;
-    else if(!strncasecmp(*buf, COMP_NE, 2) ||
-            !strncasecmp(*buf, "ne", 2))
+    else if(str_case_eq(*buf, COMP_NE, 2) ||
+            str_case_eq(*buf, "ne", 2))
       comp = Comp::NE;
-    else if(!strncasecmp(*buf, COMP_RE, 2))
+    else if(str_case_eq(*buf, COMP_RE, 2))
       comp = Comp::RE;
-    else if(!strncasecmp(*buf, COMP_EQ, 2) ||
-            !strncasecmp(*buf, "eq", 2))
+    else if(str_case_eq(*buf, COMP_EQ, 2) ||
+            str_case_eq(*buf, "eq", 2))
       comp = Comp::EQ;
-    else if(!strncasecmp(*buf, "gt", 2))
+    else if(str_case_eq(*buf, "gt", 2))
       comp = Comp::GT;
-    else if(!strncasecmp(*buf, "lt", 2))
+    else if(str_case_eq(*buf, "lt", 2))
       comp = Comp::LT;
-    else if(!strncasecmp(*buf, COMP_SBS, 2))
+    else if(str_case_eq(*buf, COMP_SBS, 2))
       comp = Comp::SBS;
-    else if(!strncasecmp(*buf, COMP_SPS, 2))
+    else if(str_case_eq(*buf, COMP_SPS, 2))
       comp = Comp::SPS;
-    else if(!strncasecmp(*buf, COMP_POSBS, 2))
+    else if(str_case_eq(*buf, COMP_POSBS, 2))
       comp = Comp::POSBS;
-    else if(!strncasecmp(*buf, COMP_POSPS, 2))
+    else if(str_case_eq(*buf, COMP_POSPS, 2))
       comp = Comp::POSPS;
-    else if(!strncasecmp(*buf, COMP_FOSBS, 2))
+    else if(str_case_eq(*buf, COMP_FOSBS, 2))
       comp = Comp::FOSBS;
-    else if(!strncasecmp(*buf, COMP_FOSPS, 2))
+    else if(str_case_eq(*buf, COMP_FOSPS, 2))
       comp = Comp::FOSPS;
 
     if(extended) {
-      if(!strncasecmp(*buf, COMP_VGT, 2))
+      if(str_case_eq(*buf, COMP_VGT, 2))
         comp = Comp::VGT;
-      else if(!strncasecmp(*buf, COMP_VLT, 2))
+      else if(str_case_eq(*buf, COMP_VLT, 2))
         comp = Comp::VLT;
     }
 
@@ -303,7 +303,7 @@ const char* to_string(uint8_t comp) {
 extern SWC_CAN_INLINE
 Comp condition_lexic(const uint8_t *p1, uint32_t p1_len,
                      const uint8_t *p2, uint32_t p2_len) noexcept {
-  int diff = memcmp(p1, p2, p1_len < p2_len ? p1_len: p2_len);
+  int diff = mem_cmp(p1, p2, p1_len < p2_len ? p1_len: p2_len);
   return !diff
           ? (p1_len == p2_len
             ? Comp::EQ
@@ -322,7 +322,7 @@ Comp condition_volume(const uint8_t *p1, uint32_t p1_len,
     ? Comp::GT
     : (p1_len > p2_len
       ? Comp::LT
-      : (!(diff = memcmp(p1, p2, p1_len))
+      : (!(diff = mem_cmp(p1, p2, p1_len))
         ? Comp::EQ
         : (diff < 0
           ? Comp::GT
@@ -345,65 +345,69 @@ Comp condition(bool vol, const uint8_t *p1, uint32_t p1_len,
 extern SWC_CAN_INLINE
 bool pf(const uint8_t *p1, uint32_t p1_len,
         const uint8_t *p2, uint32_t p2_len) noexcept {
-  return p1_len <= p2_len && memequal(p1, p2, p1_len);
+  return p1_len <= p2_len && mem_eq(p1, p2, p1_len);
 }
 
 extern SWC_CAN_INLINE
 bool gt_lexic(const uint8_t *p1, uint32_t p1_len,
               const uint8_t *p2, uint32_t p2_len) noexcept {
-  int diff = memcmp(p1, p2, p1_len < p2_len? p1_len: p2_len);
+  int diff = mem_cmp(p1, p2, p1_len < p2_len? p1_len: p2_len);
   return diff < 0 || (!diff && p1_len < p2_len);
 }
 
 extern SWC_CAN_INLINE
 bool gt_volume(const uint8_t *p1, uint32_t p1_len,
                const uint8_t *p2, uint32_t p2_len) noexcept{
-  return p1_len < p2_len || (p1_len == p2_len && memcmp(p1, p2, p2_len) < 0);
+  return p1_len < p2_len ||
+        (p1_len == p2_len && mem_cmp(p1, p2, p2_len) < 0);
 }
 
 extern SWC_CAN_INLINE
 bool ge_lexic(const uint8_t *p1, uint32_t p1_len,
               const uint8_t *p2, uint32_t p2_len) noexcept {
-  int diff = memcmp(p1, p2, p1_len < p2_len? p1_len: p2_len);
+  int diff = mem_cmp(p1, p2, p1_len < p2_len? p1_len: p2_len);
   return diff < 0 || (!diff && p1_len <= p2_len);
 }
 
 extern SWC_CAN_INLINE
 bool ge_volume(const uint8_t *p1, uint32_t p1_len,
                const uint8_t *p2, uint32_t p2_len) noexcept {
-  return p1_len < p2_len || (p1_len == p2_len && memcmp(p1, p2, p2_len) <= 0);
+  return p1_len < p2_len ||
+        (p1_len == p2_len && mem_cmp(p1, p2, p2_len) <= 0);
 }
 
 extern SWC_CAN_INLINE
 bool eq(const uint8_t *p1, uint32_t p1_len,
         const uint8_t *p2, uint32_t p2_len) noexcept {
-  return p1_len == p2_len && memequal(p1, p2, p1_len);
+  return p1_len == p2_len && mem_eq(p1, p2, p1_len);
 }
 
 extern SWC_CAN_INLINE
 bool le_lexic(const uint8_t *p1, uint32_t p1_len,
               const uint8_t *p2, uint32_t p2_len) noexcept {
-  int diff = memcmp(p1, p2, p1_len < p2_len? p1_len: p2_len);
+  int diff = mem_cmp(p1, p2, p1_len < p2_len? p1_len: p2_len);
   return diff > 0 || (!diff && p1_len >= p2_len);
 }
 
 extern SWC_CAN_INLINE
 bool le_volume(const uint8_t *p1, uint32_t p1_len,
                const uint8_t *p2, uint32_t p2_len) noexcept {
-  return p1_len > p2_len || (p1_len == p2_len && memcmp(p1, p2, p1_len) >= 0);
+  return p1_len > p2_len ||
+        (p1_len == p2_len && mem_cmp(p1, p2, p1_len) >= 0);
 }
 
 extern SWC_CAN_INLINE
 bool lt_lexic(const uint8_t *p1, uint32_t p1_len,
               const uint8_t *p2, uint32_t p2_len) noexcept {
-  int diff = memcmp(p1, p2, p1_len < p2_len? p1_len: p2_len);
+  int diff = mem_cmp(p1, p2, p1_len < p2_len? p1_len: p2_len);
   return diff > 0 || (!diff && p1_len > p2_len);
 }
 
 extern SWC_CAN_INLINE
 bool lt_volume(const uint8_t *p1, uint32_t p1_len,
                const uint8_t *p2, uint32_t p2_len) noexcept {
-  return p1_len > p2_len || (p1_len == p2_len && memcmp(p1, p2, p1_len) > 0);
+  return p1_len > p2_len ||
+        (p1_len == p2_len && mem_cmp(p1, p2, p1_len) > 0);
 }
 
 extern SWC_CAN_INLINE

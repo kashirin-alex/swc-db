@@ -87,7 +87,8 @@ struct Item final {
 
   bool less(const Item& other) const {
     return size_ < other.size_ ||
-           (size_ == other.size() && memcmp(data_, other.data(), size_) < 0);
+           (size_ == other.size() &&
+            Condition::mem_cmp(data_, other.data(), size_) < 0);
   }
 
   bool equal(const Item& other) const {

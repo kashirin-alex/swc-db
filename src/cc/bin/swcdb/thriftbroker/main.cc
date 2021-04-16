@@ -41,10 +41,10 @@ int run() {
 
   std::shared_ptr<thrift::transport::TTransportFactory> transportFactory;
 
-  if(!strncasecmp(transport.data(), "framed", 6)) {
+  if(Condition::str_case_eq(transport.data(), "framed", 6)) {
     transportFactory.reset(new thrift::transport::TFramedTransportFactory());
 
-  } else if(!strncasecmp(transport.data(), "zlib", 4)) {
+  } else if(Condition::str_case_eq(transport.data(), "zlib", 4)) {
     transportFactory.reset(new thrift::transport::TZlibTransportFactory());
 
   } else {

@@ -419,7 +419,7 @@ void test_bytes_string() {
   size_t len = sizeof(buf);
   auto s = decode_bytes_string(&p2, &len);
   SWC_TRY("testing bytes_string",
-    SWC_ASSERT(!strcmp(s.c_str(), input));
+    SWC_ASSERT(Condition::str_eq(s.c_str(), input));
     SWC_ASSERT(p2 - buf == int(encoded_length_bytes(strlen(input))));
     SWC_ASSERT(len == sizeof(buf) - (p2 - buf)));
 }
