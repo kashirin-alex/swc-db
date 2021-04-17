@@ -47,7 +47,8 @@ void set(const Key& key, DB::Cell::Key& dbkey) {
 }
 
 void set(const SpecKey& spec, DB::Specs::Key& dbspec) {
-  for(auto& fraction : spec) {
+  dbspec.reserve(spec.size());
+  for(const auto& fraction : spec) {
     if(uint8_t(fraction.comp) > 0x8) {
       std::string msg("Key ext-fraction-comp(");
       msg.append(Condition::to_string(Condition::Comp(fraction.comp), true));
@@ -68,7 +69,7 @@ void set(const SpecValue& spec, DB::Specs::Value& dbspec) {
 }
 
 void set(const SpecValues& spec, DB::Specs::Values& dbspec) {
-  for(auto& value : spec)
+  for(const auto& value : spec)
     set(value, dbspec.add());
 }
 
@@ -85,12 +86,14 @@ void set(const SpecInterval& intval, DB::Specs::Interval& dbintval) {
   if(intval.__isset.offset_rev)
     dbintval.offset_rev = intval.offset_rev;
 
-  for(auto& key_intval : intval.key_intervals) {
-    auto& dbkey_intval = dbintval.key_intervals.add();
+  dbintval.key_intervals.resize(intval.key_intervals.size());
+  size_t n = 0;
+  for(const auto& key_intval : intval.key_intervals) {
     if(!key_intval.start.empty())
-      set(key_intval.start, dbkey_intval->start);
+      set(key_intval.start, dbintval.key_intervals[n].start);
     if(!key_intval.finish.empty())
-      set(key_intval.finish, dbkey_intval->finish);
+      set(key_intval.finish, dbintval.key_intervals[n].finish);
+    ++n;
   }
 
   if(intval.__isset.ts_start)
@@ -110,7 +113,7 @@ void set(const SpecInterval& intval, DB::Specs::Interval& dbintval) {
 void set(const SpecValueSerial& spec, DB::Specs::Value& dbspec) {
   DB::Specs::Serial::Value::Fields dbfields;
 
-  for(auto& fields : spec.fields) {
+  for(const auto& fields : spec.fields) {
     if(fields.__isset.spec_int64) {
       dbfields.add(
         DB::Specs::Serial::Value::Field_INT64::make(
@@ -143,7 +146,7 @@ void set(const SpecValueSerial& spec, DB::Specs::Value& dbspec) {
         fields.field_id, Condition::Comp(uint8_t(fields.spec_li.comp)));
       field->items.resize(fields.spec_li.v.size());
       size_t i = 0;
-      for(auto& data : fields.spec_li.v) {
+      for(const auto& data : fields.spec_li.v) {
         auto& f = field->items[i];
         f.comp = Condition::Comp(uint8_t(data.comp));
         f.value = data.v;
@@ -156,7 +159,7 @@ void set(const SpecValueSerial& spec, DB::Specs::Value& dbspec) {
         fields.field_id, Condition::Comp(uint8_t(fields.spec_lb.comp)));
       field->items.resize(fields.spec_lb.v.size());
       size_t i = 0;
-      for(auto& data : fields.spec_lb.v) {
+      for(const auto& data : fields.spec_lb.v) {
         auto& f = field->items[i];
         f.comp = Condition::Comp(uint8_t(data.comp));
         f.value = data.v;
@@ -171,7 +174,7 @@ void set(const SpecValueSerial& spec, DB::Specs::Value& dbspec) {
 }
 
 void set(const SpecValuesSerial& spec, DB::Specs::Values& dbspec) {
-  for(auto& value : spec)
+  for(const auto& value : spec)
     set(value, dbspec.add());
 }
 
@@ -188,12 +191,14 @@ void set(const SpecIntervalSerial& intval, DB::Specs::Interval& dbintval) {
   if(intval.__isset.offset_rev)
     dbintval.offset_rev = intval.offset_rev;
 
-  for(auto& key_intval : intval.key_intervals) {
-    auto& dbkey_intval = dbintval.key_intervals.add();
+  dbintval.key_intervals.resize(intval.key_intervals.size());
+  size_t n = 0;
+  for(const auto& key_intval : intval.key_intervals) {
     if(!key_intval.start.empty())
-      set(key_intval.start, dbkey_intval->start);
+      set(key_intval.start, dbintval.key_intervals[n].start);
     if(!key_intval.finish.empty())
-      set(key_intval.finish, dbkey_intval->finish);
+      set(key_intval.finish, dbintval.key_intervals[n].finish);
+    ++n;
   }
 
   if(intval.__isset.ts_start)

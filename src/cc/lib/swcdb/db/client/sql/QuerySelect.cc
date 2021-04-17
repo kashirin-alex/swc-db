@@ -556,8 +556,7 @@ void QuerySelect::read_cells_interval(DB::Specs::Interval& spec,
     if(!found_token(TOKEN_ONLY_KEYS, LEN_ONLY_KEYS) &&
         found_token(TOKEN_KEY, LEN_KEY)) {
       auto& key_intval = spec.key_intervals.add();
-      read_key(
-        key_intval->start, key_intval->finish, flw_and, spec.options);
+      read_key(key_intval.start, key_intval.finish, flw_and, spec.options);
       possible_and = true;
       continue;
     }
@@ -777,8 +776,7 @@ void QuerySelect::read_key(DB::Specs::Key& key) {
     if(comp == Condition::NONE)
       comp = Condition::EQ;
     read(fraction, ",]");
-    key.add(fraction, comp);
-    fraction.clear();
+    key.add(std::move(fraction), comp);
 
     seek_space();
     if(found_char(','))

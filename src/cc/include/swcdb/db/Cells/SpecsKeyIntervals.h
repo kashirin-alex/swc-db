@@ -16,39 +16,41 @@ namespace SWC { namespace DB { namespace Specs {
 
 
 struct KeyInterval {
-  typedef std::unique_ptr<KeyInterval> Ptr;
   Key  start, finish;
-
-  static Ptr make_ptr(const Key& start, const Key& finish) {
-    return std::make_unique<KeyInterval>(start, finish);
-  }
 
   KeyInterval() noexcept { }
 
   KeyInterval(const KeyInterval& other);
 
+  KeyInterval(KeyInterval&& other) noexcept;
+
   KeyInterval(const Key& start, const Key& finish);
+
+  KeyInterval(Key&& start, Key&& finish) noexcept;
 
   KeyInterval(const uint8_t** bufp, size_t* remainp);
 
-  KeyInterval(KeyInterval&& other) = delete;
+  KeyInterval& operator=(const KeyInterval& other);
+
+  KeyInterval& operator=(KeyInterval&& other) noexcept;
+
+  size_t encoded_length() const noexcept;
+
+  void encode(uint8_t** bufp) const;
+
+  void decode(const uint8_t** bufp, size_t* remainp);
 
 };
 
 
 
-class KeyIntervals : private std::vector<KeyInterval::Ptr> {
+class KeyIntervals : public std::vector<KeyInterval> {
   public:
 
-  typedef std::vector<KeyInterval::Ptr> Vec;
+  typedef std::vector<KeyInterval> Vec;
+  using Vec::insert;
+  using Vec::emplace_back;
 
-  using Vec::empty;
-  using Vec::size;
-  using Vec::begin;
-  using Vec::end;
-  using Vec::front;
-  using Vec::back;
-  using Vec::operator[];
 
   KeyIntervals() noexcept { }
 
@@ -64,13 +66,15 @@ class KeyIntervals : private std::vector<KeyInterval::Ptr> {
 
   void move(KeyIntervals& other) noexcept;
 
-  void free();
+  KeyInterval& add();
 
-  KeyInterval::Ptr& add();
+  KeyInterval& add(const KeyInterval& other);
 
-  KeyInterval::Ptr& add(const KeyInterval& other);
+  KeyInterval& add(KeyInterval&& other);
 
-  KeyInterval::Ptr& add(const Key& start, const Key& finish);
+  KeyInterval& add(const Key& start, const Key& finish);
+
+  KeyInterval& add(Key&& start, Key&& finish);
 
   size_t size_of_internal() const noexcept;
 

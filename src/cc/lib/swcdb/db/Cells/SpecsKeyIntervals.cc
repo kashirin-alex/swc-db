@@ -13,23 +13,58 @@ namespace SWC { namespace DB { namespace Specs {
 
 
 
-KeyInterval::KeyInterval(const Key& start, const Key& finish)
-                        : start(start), finish(finish) {
-}
-
-KeyInterval::KeyInterval(const uint8_t** bufp, size_t* remainp) {
-  start.decode(bufp, remainp);
-  finish.decode(bufp, remainp);
-}
-
 KeyInterval::KeyInterval(const KeyInterval& other)
                         : start(other.start), finish(other.finish) {
 }
 
+KeyInterval::KeyInterval(KeyInterval&& other) noexcept
+                        : start(std::move(other.start)),
+                          finish(std::move(other.finish)) {
+}
+
+KeyInterval::KeyInterval(const Key& start, const Key& finish)
+                        : start(start), finish(finish) {
+}
+
+KeyInterval::KeyInterval(Key&& start, Key&& finish) noexcept
+                        : start(std::move(start)),
+                          finish(std::move(finish)) {
+}
+
+KeyInterval::KeyInterval(const uint8_t** bufp, size_t* remainp) {
+  decode(bufp, remainp);
+}
+
+KeyInterval& KeyInterval::operator=(const KeyInterval& other) {
+  start.copy(other.start);
+  finish.copy(other.finish);
+  return *this;
+}
+
+KeyInterval& KeyInterval::operator=(KeyInterval&& other) noexcept {
+  start.move(other.start);
+  finish.move(other.finish);
+  return *this;
+}
+
+size_t KeyInterval::encoded_length() const noexcept {
+  return start.encoded_length() + finish.encoded_length();
+}
+
+void KeyInterval::encode(uint8_t** bufp) const {
+  start.encode(bufp);
+  finish.encode(bufp);
+}
+
+void KeyInterval::decode(const uint8_t** bufp, size_t* remainp) {
+  start.decode(bufp, remainp);
+  finish.decode(bufp, remainp);
+}
 
 
-KeyIntervals::KeyIntervals(const KeyIntervals& other) : Vec() {
-  copy(other);
+
+KeyIntervals::KeyIntervals(const KeyIntervals& other)
+                           : Vec(other) {
 }
 
 KeyIntervals::KeyIntervals(KeyIntervals&& other) noexcept
@@ -47,50 +82,49 @@ KeyIntervals& KeyIntervals::operator=(KeyIntervals&& other) noexcept {
 }
 
 void KeyIntervals::copy(const KeyIntervals& other) {
-  free();
-  resize(other.size());
-  auto it = begin();
-  for(auto it2 = other.begin(); it != end(); ++it, ++it2) {
-    it->reset(new KeyInterval(*(it2->get())));
-  }
+  Vec::operator=(other);
 }
 
 void KeyIntervals::move(KeyIntervals& other) noexcept {
   Vec::operator=(std::move(other));
 }
 
-void KeyIntervals::free() {
-  clear();
+KeyInterval& KeyIntervals::add() {
+  return emplace_back();
 }
 
-KeyInterval::Ptr& KeyIntervals::add() {
-  return emplace_back(new KeyInterval());
+KeyInterval& KeyIntervals::add(const KeyInterval& other) {
+  return emplace_back(other);
 }
 
-KeyInterval::Ptr& KeyIntervals::add(const KeyInterval& other) {
-  return emplace_back(new KeyInterval(other));
+KeyInterval& KeyIntervals::add(KeyInterval&& other) {
+  return emplace_back(std::move(other));
 }
 
-KeyInterval::Ptr& KeyIntervals::add(const Key& start, const Key& finish) {
-  return emplace_back(new KeyInterval(start, finish));
+KeyInterval& KeyIntervals::add(const Key& start, const Key& finish) {
+  return emplace_back(start, finish);
+}
+
+KeyInterval& KeyIntervals::add(Key&& start, Key&& finish) {
+  return emplace_back(std::move(start), std::move(finish));
 }
 
 size_t KeyIntervals::size_of_internal() const noexcept {
   size_t sz = 0;
-  for(auto& key : *this) {
+  for(const auto& key : *this) {
     sz += sizeof(key);
-    sz += key->start.size_of_internal();
-    sz += key->finish.size_of_internal();
+    sz += key.start.size_of_internal();
+    sz += key.finish.size_of_internal();
   }
   return sz;
 }
 
 bool KeyIntervals::equal(const KeyIntervals& other) const noexcept {
   if(size() == other.size()) {
-    auto it = begin();
-    for(auto it2 = other.begin(); it != end(); ++it, ++it2)
-      if(!(*it)->start.equal((*it2)->start) ||
-         !(*it)->finish.equal((*it2)->finish))
+    auto it = cbegin();
+    for(auto it2 = other.cbegin(); it != cend(); ++it, ++it2)
+      if(!it->start.equal(it2->start) ||
+         !it->finish.equal(it2->finish))
         return false;
   }
   return true;
@@ -101,17 +135,17 @@ bool KeyIntervals::is_matching(const Types::KeySeq key_seq,
   switch(key_seq) {
     case Types::KeySeq::LEXIC:
     case Types::KeySeq::FC_LEXIC:
-      for(auto& key : *this) {
-        if(!key->start.is_matching_lexic(cellkey) ||
-           !key->finish.is_matching_lexic(cellkey))
+      for(const auto& key : *this) {
+        if(!key.start.is_matching_lexic(cellkey) ||
+           !key.finish.is_matching_lexic(cellkey))
           return false;
       }
       return true;
     case Types::KeySeq::VOLUME:
     case Types::KeySeq::FC_VOLUME:
-      for(auto& key : *this) {
-        if(!key->start.is_matching_volume(cellkey) ||
-           !key->finish.is_matching_volume(cellkey))
+      for(const auto& key : *this) {
+        if(!key.start.is_matching_volume(cellkey) ||
+           !key.finish.is_matching_volume(cellkey))
           return false;
       }
       return true;
@@ -125,15 +159,15 @@ bool KeyIntervals::is_matching_start(const Types::KeySeq key_seq,
   switch(key_seq) {
     case Types::KeySeq::LEXIC:
     case Types::KeySeq::FC_LEXIC:
-      for(auto& key : *this) {
-        if(!key->start.is_matching_lexic(cellkey))
+      for(const auto& key : *this) {
+        if(!key.start.is_matching_lexic(cellkey))
           return false;
       }
       return true;
     case Types::KeySeq::VOLUME:
     case Types::KeySeq::FC_VOLUME:
-      for(auto& key : *this) {
-        if(!key->start.is_matching_volume(cellkey))
+      for(const auto& key : *this) {
+        if(!key.start.is_matching_volume(cellkey))
           return false;
       }
       return true;
@@ -144,36 +178,31 @@ bool KeyIntervals::is_matching_start(const Types::KeySeq key_seq,
 
 size_t KeyIntervals::encoded_length() const noexcept {
   size_t sz = Serialization::encoded_length_vi64(size());
-  for(auto& key : *this) {
-    sz += key->start.encoded_length();
-    sz += key->finish.encoded_length();
-  }
+  for(const auto& key : *this)
+    sz += key.encoded_length();
   return sz;
 }
 
 void KeyIntervals::encode(uint8_t** bufp) const {
   Serialization::encode_vi64(bufp, size());
-  for(auto& key : *this) {
-    key->start.encode(bufp);
-    key->finish.encode(bufp);
-  }
+  for(const auto& key : *this)
+    key.encode(bufp);
 }
 
 void KeyIntervals::decode(const uint8_t** bufp, size_t* remainp) {
   clear();
   resize(Serialization::decode_vi64(bufp, remainp));
-  for(auto& key : *this) {
-    key.reset(new KeyInterval(bufp, remainp));
-  }
+  for(auto& key : *this)
+    key.decode(bufp, remainp);
 }
 
 void KeyIntervals::print(std::ostream& out) const {
   out << "KeyIntervals(";
   if(!empty()) {
     out << "size=" << size();
-    for(auto& key : *this) {
-      key->start.print(out << " [Start");
-      key->finish.print(out << " Finish");
+    for(const auto& key : *this) {
+      key.start.print(out << " [Start");
+      key.finish.print(out << " Finish");
       out << ']';
     }
   }
@@ -183,13 +212,13 @@ void KeyIntervals::print(std::ostream& out) const {
 void KeyIntervals::display(std::ostream& out, bool pretty,
                             const std::string& offset) const {
   out << offset << "KeyIntervals([\n";
-  for(auto& key : *this) {
+  for(const auto& key : *this) {
     out << offset << " Key(\n"
         << offset << "   start(";
-    key->start.display(out, pretty);
+    key.start.display(out, pretty);
     out << ")\n"
         << offset << "  finish(";
-    key->finish.display(out, pretty);
+    key.finish.display(out, pretty);
     out << ")\n";
     out << offset << " )\n";
   }

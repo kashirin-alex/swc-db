@@ -28,8 +28,9 @@ CheckMeta::CheckMeta(const RangePtr& range,
     timeout.store(Env::Clients::ref().cfg_recv_timeout->get());
 
     auto& key_intval = spec.key_intervals.add();
-    key_intval->start.add(std::to_string(range->cfg->cid), Condition::EQ);
-    key_intval->start.add("", Condition::GE);
+    key_intval.start.reserve(2);
+    key_intval.start.add(std::to_string(range->cfg->cid), Condition::EQ);
+    key_intval.start.add("", Condition::GE);
 
     DB::Specs::Serial::Value::Fields fields;
     fields.add(

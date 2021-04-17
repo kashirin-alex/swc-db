@@ -140,10 +140,6 @@ Key::Key(const DB::Cell::Key &cell_key, Condition::Comp comp) {
   set(cell_key, comp);
 }
 
-void Key::free() {
-  clear();
-}
-
 size_t Key::size_of_internal() const noexcept {
   size_t sz = 0;
   for(auto& f : *this) {

@@ -13,11 +13,11 @@ namespace SWC { namespace DB { namespace Specs {
 
 
 Values::Values(const Values& other)
-              : Vec(other) {
+              : Vec(other), col_type(other.col_type) {
 }
 
 Values::Values(Values&& other) noexcept
-               : Vec(std::move(other)) {
+               : Vec(std::move(other)), col_type(other.col_type) {
 }
 
 Values& Values::operator=(const Values& other) {
@@ -31,20 +31,13 @@ Values& Values::operator=(Values&& other) noexcept {
 }
 
 void Values::copy(const Values& other) {
-  free();
-  resize(other.size());
-  auto it = begin();
-  for(auto it2 = other.begin(); it != end(); ++it, ++it2)
-    it->copy(*it2);
+  Vec::operator=(other);
   col_type = other.col_type;
 }
 
 void Values::move(Values& other) noexcept {
   Vec::operator=(std::move(other));
-}
-
-void Values::free() {
-  clear();
+  col_type = other.col_type;
 }
 
 Value& Values::add(Condition::Comp comp) {
@@ -57,15 +50,15 @@ Value& Values::add(Value&& other) {
 
 size_t Values::size_of_internal() const noexcept {
   size_t sz = sizeof(*this);
-  for(auto& value : *this)
+  for(const auto& value : *this)
     sz += sizeof(value) + value.size;
   return sz;
 }
 
 bool Values::equal(const Values& other) const noexcept {
   if(col_type == other.col_type && size() == other.size()) {
-    auto it = begin();
-    for(auto it2 = other.begin(); it != end(); ++it, ++it2)
+    auto it = cbegin();
+    for(auto it2 = other.cbegin(); it != cend(); ++it, ++it2)
       if(!it->equal(*it2))
         return false;
   }
@@ -78,14 +71,14 @@ bool Values::is_matching(const Cells::Cell& cell) const {
 
   switch(col_type) {
     case Types::Column::PLAIN: {
-      for(auto& value : *this) {
+      for(const auto& value : *this) {
         if(!value.is_matching_plain(cell))
           return false;
       }
       return true;
     }
     case Types::Column::SERIAL: {
-      for(auto& value : *this) {
+      for(const auto& value : *this) {
         if(!value.is_matching_serial(cell))
           return false;
       }
@@ -95,7 +88,7 @@ bool Values::is_matching(const Cells::Cell& cell) const {
     case Types::Column::COUNTER_I32:
     case Types::Column::COUNTER_I16:
     case Types::Column::COUNTER_I8: {
-      for(auto& value : *this) {
+      for(const auto& value : *this) {
         if(!value.is_matching_counter(cell))
           return false;
       }
@@ -109,7 +102,7 @@ bool Values::is_matching(const Cells::Cell& cell) const {
 size_t Values::encoded_length() const noexcept {
   size_t sz = 0;
   size_t c = 0;
-  for(auto& value : *this) {
+  for(const auto& value : *this) {
     if(value.comp != Condition::NONE) {
       ++c;
       sz += value.encoded_length();
@@ -120,12 +113,12 @@ size_t Values::encoded_length() const noexcept {
 
 void Values::encode(uint8_t** bufp) const {
   size_t c = 0;
-  for(auto& value : *this) {
+  for(const auto& value : *this) {
     if(value.comp != Condition::NONE)
       ++c;
   }
   Serialization::encode_vi64(bufp, c);
-  for(auto& value : *this) {
+  for(const auto& value : *this) {
     if(value.comp != Condition::NONE)
       value.encode(bufp);
   }
@@ -142,7 +135,7 @@ void Values::print(std::ostream& out) const {
   out << "Values(";
   if(!empty()) {
     out << "size=" << size() << " [";
-    for(auto& value : *this) {
+    for(const auto& value : *this) {
       value.print(col_type, out);
       out << ", ";
     }
@@ -154,7 +147,7 @@ void Values::print(std::ostream& out) const {
 void Values::display(std::ostream& out, bool pretty,
                      const std::string& offset) const {
   out << offset << "Values([\n";
-  for(auto& value : *this) {
+  for(const auto& value : *this) {
     value.display(col_type, out << offset << " Value(", pretty);
     out << ")\n";
   }

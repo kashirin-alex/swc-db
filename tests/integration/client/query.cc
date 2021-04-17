@@ -373,7 +373,7 @@ class Test {
 
     DB::Specs::Interval intval;
     auto& key_intval = intval.key_intervals.add();
-    key_intval->start.set(key, Condition::EQ);
+    key_intval.start.set(key, Condition::EQ);
     intval.flags.offset = 0;
     intval.flags.limit = counter ? 1 : cell_versions;
     SWC_LOG(LOG_DEBUG, intval.to_string());

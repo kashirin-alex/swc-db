@@ -70,8 +70,6 @@ class Key final : public std::vector<Fraction> {
 
   ~Key();
 
-  void free();
-
   size_t size_of_internal() const noexcept;
 
   void copy(const Key &other);

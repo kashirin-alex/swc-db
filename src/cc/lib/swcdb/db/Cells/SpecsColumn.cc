@@ -64,6 +64,10 @@ void Column::free() {
   intervals.clear();
 }
 
+Interval::Ptr& Column::add(Types::Column col_type) {
+  return intervals.emplace_back(new Interval(col_type));
+}
+
 bool Column::equal(const Column &other) const noexcept {
   if(cid != other.cid || intervals.size() != other.intervals.size())
     return false;

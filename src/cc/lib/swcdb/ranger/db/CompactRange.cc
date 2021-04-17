@@ -339,7 +339,7 @@ void CompactRange::response(int& err) {
         m_required_key_last, spec.offset_key) == Condition::GT) {
       if(spec.key_intervals.empty())
         spec.key_intervals.add();
-      spec.key_intervals[0]->start.set(spec.offset_key, Condition::EQ);
+      spec.key_intervals[0].start.set(spec.offset_key, Condition::EQ);
       spec.range_end.copy(spec.offset_key);
       spec.set_opt__key_equal();
 

@@ -35,13 +35,19 @@ class Value {
 
   explicit Value(Value&& other) noexcept;
 
+  Value& operator=(const Value& other);
+
+  Value& operator=(Value&& other) noexcept;
+
+  void copy(const Value &other);
+
+  void move(Value &other) noexcept;
+
   void set_counter(int64_t count, Condition::Comp comp_n);
 
   void set(const char* data_n, Condition::Comp comp_n, bool owner=true);
 
   void set(const std::string& data_n, Condition::Comp comp_n);
-
-  void copy(const Value &other);
 
   void set(const char* data_n, uint32_t size_n,
            Condition::Comp comp_n, bool owner=true);

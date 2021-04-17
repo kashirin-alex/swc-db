@@ -53,6 +53,32 @@ Value::Value(Value&& other) noexcept
   other.size = 0;
 }
 
+Value& Value::operator=(const Value& other) {
+  copy(other);
+  return *this;
+}
+
+Value& Value::operator=(Value&& other) noexcept {
+  move(other);
+  return *this;
+}
+
+void Value::copy(const Value &other) {
+  set(other.data, other.size, other.comp, true);
+}
+
+void Value::move(Value &other) noexcept {
+  own = other.own;
+  comp = other.comp;
+  data = other.data;
+  size = other.size;
+  matcher = other.matcher;
+  other.comp = Condition::NONE;
+  other.data = nullptr;
+  other.matcher = nullptr;
+  other.size = 0;
+}
+
 void Value::set_counter(int64_t count, Condition::Comp comp_n) {
   uint32_t len = Serialization::encoded_length_vi64(count);
   uint8_t data_n[10];
@@ -67,10 +93,6 @@ void Value::set(const char* data_n, Condition::Comp comp_n, bool owner) {
 
 void Value::set(const std::string& data_n, Condition::Comp comp_n) {
   set(data_n.c_str(), data_n.length(), comp_n, true);
-}
-
-void Value::copy(const Value &other) {
-  set(other.data, other.size, other.comp, true);
 }
 
 void Value::set(const char* data_n, uint32_t size_n,

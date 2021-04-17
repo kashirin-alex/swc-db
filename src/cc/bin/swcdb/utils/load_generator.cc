@@ -563,7 +563,7 @@ class KeyGeneratorSelect : public KeyGenerator {
     if(!next_n_fraction())
       return false;
 
-    key.free();
+    key.clear();
     key.resize(_nfractions);
     size_t fn = 0;
     for(auto& fraction : key) {
@@ -764,7 +764,7 @@ void select_data(const std::vector<DB::Schema::Ptr>& schemas, size_t seed) {
     while(key_gen.next(key_spec)) {
 
       DB::Specs::Interval intval;
-      intval.key_intervals.add()->start.move(key_spec);
+      intval.key_intervals.add().start.move(key_spec);
       intval.set_opt__key_equal();
       intval.flags.limit = versions;
 

@@ -104,8 +104,8 @@ Interval::~Interval() {
 void Interval::free() {
   range_begin.free();
   range_end.free();
-  key_intervals.free();
-  values.free();
+  key_intervals.clear();
+  values.clear();
   offset_key.free();
 }
 
@@ -430,19 +430,19 @@ void Interval::apply_possible_range(DB::Cell::Key& key, bool ending,
                                     bool rest, bool no_stepping) const {
   size_t sz = 0;
   for(const auto& intval : key_intervals) {
-    if(sz < intval->start.size())
-      sz = intval->start.size();
-    if(sz < intval->finish.size())
-      sz = intval->finish.size();
+    if(sz < intval.start.size())
+      sz = intval.start.size();
+    if(sz < intval.finish.size())
+      sz = intval.finish.size();
   }
   std::vector<std::string> key_range(sz + (ending && !rest));
   bool initial = true;
   bool found = false;
   do_:
-    for(auto& intval : key_intervals) {
-      auto* keyp = ending
-        ? (initial ? &intval->finish : &intval->start )
-        : (initial ? &intval->start  : &intval->finish);
+    for(const auto& intval : key_intervals) {
+      const auto* keyp = ending
+        ? (initial ? &intval.finish : &intval.start )
+        : (initial ? &intval.start  : &intval.finish);
       for(size_t idx=0; idx < keyp->size(); ++idx) {
         auto& key_f = key_range[idx];
         if(!key_f.empty())

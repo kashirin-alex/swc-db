@@ -14,18 +14,14 @@
 namespace SWC { namespace DB { namespace Specs {
 
 
-class Values : private std::vector<Value> {
+class Values : public std::vector<Value> {
   public:
 
   typedef std::vector<Value> Vec;
 
-  using Vec::empty;
-  using Vec::size;
-  using Vec::begin;
-  using Vec::end;
-  using Vec::front;
-  using Vec::back;
-  using Vec::operator[];
+  using Vec::insert;
+  using Vec::emplace_back;
+
 
   Types::Column col_type;
 
@@ -44,8 +40,6 @@ class Values : private std::vector<Value> {
   void copy(const Values& other);
 
   void move(Values& other) noexcept;
-
-  void free();
 
   Value& add(Condition::Comp comp=Condition::EQ);
 

@@ -200,8 +200,9 @@ void ColumnHealthCheck::finishing(bool finished_range) {
     col->cfg->key_seq, DB::Types::MetaColumn::get_range_type(col->cfg->cid));
   DB::Specs::Interval spec(DB::Types::Column::SERIAL);
   auto& key_intval = spec.key_intervals.add();
-  key_intval->start.add(std::to_string(col->cfg->cid), Condition::EQ);
-  key_intval->start.add("", Condition::GE);
+  key_intval.start.reserve(2);
+  key_intval.start.add(std::to_string(col->cfg->cid), Condition::EQ);
+  key_intval.start.add("", Condition::GE);
 
   auto hdlr = client::Query::Select::Handlers::Common::make(
     [merger, meta_cid]

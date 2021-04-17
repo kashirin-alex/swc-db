@@ -44,6 +44,8 @@ class Column final {
 
   void free();
 
+  Interval::Ptr& add(Types::Column col_type);
+
   bool equal(const Column &other) const noexcept;
 
   size_t encoded_length() const noexcept;
