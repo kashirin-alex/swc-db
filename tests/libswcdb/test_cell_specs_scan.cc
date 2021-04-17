@@ -116,7 +116,7 @@ void test(int chk) {
 
     Specs::Column::Ptr cs_is_1 = Specs::Column::make_ptr(5555, 1);
 
-    auto& intval = cs_is_1->add(SWC::DB::Types::Column::PLAIN);
+    auto intval = cs_is_1->add(SWC::DB::Types::Column::PLAIN);
     intval->key_intervals.add(key_start, key_finish);
     intval->ts_start.set(ts1, Condition::EQ);
     intval->ts_finish.set(ts2, Condition::EQ);
