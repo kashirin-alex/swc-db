@@ -30,16 +30,16 @@ class Range final {
   const rid_t           rid;
 
   Range(const ColumnCfg::Ptr& cfg, const rid_t rid)
-        : cfg(cfg), rid(rid), 
+        : cfg(cfg), rid(rid),
           m_path(DB::RangeBase::get_path(cfg->cid, rid)),
           m_state(State::NOTSET), m_check_ts(0),
-          m_rgrid(0), m_last_rgr(nullptr) { 
+          m_rgrid(0), m_last_rgr(nullptr) {
   }
 
   void init(int&) { }
 
   ~Range() { }
-  
+
   State state() {
     std::shared_lock lock(m_mutex);
     return m_state;
@@ -87,7 +87,7 @@ class Range final {
     m_check_ts = m_state == State::ASSIGNED || m_state == State::QUEUED
                   ? Time::now_ms() : 0;
   }
-  
+
   void set_deleted() {
     std::scoped_lock lock(m_mutex);
     m_state = State::DELETED;
@@ -134,20 +134,20 @@ class Range final {
            m_key_end.equal(intval.key_end);
   }
 
-  bool includes(const DB::Cell::Key& range_begin, 
+  bool includes(const DB::Cell::Key& range_begin,
                 const DB::Cell::Key& range_end, uint32_t any_is=0) {
     std::shared_lock lock(m_mutex);
     return (
-        m_key_begin.empty() || 
+        m_key_begin.empty() ||
         m_key_begin.count == any_is ||
-        range_end.empty() || 
-        DB::KeySeq::compare(cfg->key_seq, range_end, m_key_begin) 
+        range_end.empty() ||
+        DB::KeySeq::compare(cfg->key_seq, range_end, m_key_begin)
           != Condition::GT
       ) && (
-        m_key_end.empty() || 
+        m_key_end.empty() ||
         m_key_end.count == any_is ||
-        range_begin.empty() || 
-        DB::KeySeq::compare(cfg->key_seq, range_begin, m_key_end) 
+        range_begin.empty() ||
+        DB::KeySeq::compare(cfg->key_seq, range_begin, m_key_end)
           != Condition::LT
       );
   }
@@ -159,8 +159,8 @@ class Range final {
 
   bool before(const DB::Cell::Key& key) {
     std::shared_lock lock(m_mutex);
-    return m_key_end.empty() || 
-      (!key.empty() &&  
+    return m_key_end.empty() ||
+      (!key.empty() &&
         DB::KeySeq::compare(cfg->key_seq, key, m_key_end) != Condition::GT);
   }
 
@@ -168,7 +168,7 @@ class Range final {
     std::shared_lock lock(m_mutex);
     cfg->print(out << '(');
     out << " rid="    << rid
-        << " state="  << m_state
+        << " state="  << DB::Types::to_string(m_state)
         << " rgr="    << m_rgrid
         << ')';
   }

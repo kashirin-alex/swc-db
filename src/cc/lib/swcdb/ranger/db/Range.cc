@@ -51,6 +51,25 @@ class Range::MetaRegOnLoadReq : public Query::Update::BaseMeta {
 
 
 
+const char* to_string(Range::State state) noexcept {
+  switch(state) {
+    case Range::State::NOTLOADED:
+      return "NOTLOADED";
+    case Range::State::LOADING:
+      return "LOADING";
+    case Range::State::LOADED:
+      return "LOADED";
+    case Range::State::UNLOADING:
+      return "UNLOADING";
+    case Range::State::DELETED:
+      return "DELETED";
+    default:
+      return "UNKNOWN";
+  }
+}
+
+
+
 Range::Range(const ColumnCfg::Ptr& cfg, const rid_t rid)
             : cfg(cfg), rid(rid),
               blocks(cfg->key_seq),
@@ -595,11 +614,7 @@ void Range::internal_create(int &err, CellStore::Readers::Vec& mv_css) {
 
 void Range::print(std::ostream& out, bool minimal) {
   cfg->print(out << '(');
-  out << " rid=" << rid << " state=";
-  {
-    std::shared_lock lock(m_mutex);
-    out << m_state;
-  }
+  out << " rid=" << rid << " state=" << to_string(m_state);
   blocks.print(out << ' ', minimal);
   prev_range_end.print(out << " prev=");
   {
