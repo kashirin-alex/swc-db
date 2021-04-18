@@ -22,7 +22,7 @@ void RangeLocateReq::print(std::ostream& out) const {
       << " flags=" << int(flags);
   range_begin.print(out << " RangeBegin");
   range_end.print(out << " RangeEnd");
-  if(flags & NEXT_RANGE)
+  if(flags & NEXT_RANGE || flags & CURRENT_RANGE)
     range_offset.print(out << " RangeOffset");
   out << ')';
 }
@@ -32,8 +32,8 @@ size_t RangeLocateReq::internal_encoded_length() const {
         + Serialization::encoded_length_vi64(rid)
         + range_begin.encoded_length()
         + range_end.encoded_length()
-        + 1
-          + (flags & NEXT_RANGE ? range_offset.encoded_length() : 0);
+        + 1 + (flags & NEXT_RANGE || flags & CURRENT_RANGE
+                ? range_offset.encoded_length() : 0);
 }
 
 void RangeLocateReq::internal_encode(uint8_t** bufp) const {
@@ -42,7 +42,7 @@ void RangeLocateReq::internal_encode(uint8_t** bufp) const {
   range_begin.encode(bufp);
   range_end.encode(bufp);
   Serialization::encode_i8(bufp, flags);
-  if(flags & NEXT_RANGE)
+  if(flags & NEXT_RANGE || flags & CURRENT_RANGE)
     range_offset.encode(bufp);
 }
 
@@ -52,7 +52,7 @@ void RangeLocateReq::internal_decode(const uint8_t** bufp, size_t* remainp) {
   range_begin.decode(bufp, remainp, false);
   range_end.decode(bufp, remainp, false);
   flags = Serialization::decode_i8(bufp, remainp);
-  if(flags & NEXT_RANGE)
+  if(flags & NEXT_RANGE || flags & CURRENT_RANGE)
     range_offset.decode(bufp, remainp, false);
 }
 

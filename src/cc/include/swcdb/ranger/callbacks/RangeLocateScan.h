@@ -61,6 +61,11 @@ class RangeLocateScan : public ReqScan {
           != Condition::GT)
       return false;
 
+    if(flags & Comm::Protocol::Rgr::Params::RangeLocateReq::CURRENT_RANGE &&
+        DB::KeySeq::compare(key_seq, spec.offset_key, cell.key)
+          == Condition::LT)
+      return false;
+
     if(cell.key.count > any_is && spec.range_end.count > any_is &&
        !spec.is_matching_end(key_seq, cell.key)) {
       stop = true;

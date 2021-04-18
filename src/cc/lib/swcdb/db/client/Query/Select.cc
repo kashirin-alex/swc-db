@@ -358,8 +358,9 @@ void Scanner::rgr_locate_master() {
   Comm::Protocol::Rgr::Params::RangeLocateReq params(master_cid, master_rid);
   auto data_cid_str = std::to_string(data_cid);
   if(master_rgr_next) {
-    if(!retry_point)
-      params.flags |= Comm::Protocol::Rgr::Params::RangeLocateReq::NEXT_RANGE;
+    params.flags |= retry_point
+      ? Comm::Protocol::Rgr::Params::RangeLocateReq::CURRENT_RANGE
+      : Comm::Protocol::Rgr::Params::RangeLocateReq::NEXT_RANGE;
     params.range_offset.copy(master_rgr_offset);
     params.range_offset.insert(0, data_cid_str);
   }
@@ -543,8 +544,9 @@ void Scanner::rgr_locate_meta() {
   Comm::Protocol::Rgr::Params::RangeLocateReq params(meta_cid, meta_rid);
   auto data_cid_str = std::to_string(data_cid);
   if(meta_next) {
-    if(!retry_point)
-      params.flags |= Comm::Protocol::Rgr::Params::RangeLocateReq::NEXT_RANGE;
+    params.flags |= retry_point
+      ? Comm::Protocol::Rgr::Params::RangeLocateReq::CURRENT_RANGE
+      : Comm::Protocol::Rgr::Params::RangeLocateReq::NEXT_RANGE;
     params.range_offset.copy(meta_offset);
     params.range_offset.insert(0, data_cid_str);
   }

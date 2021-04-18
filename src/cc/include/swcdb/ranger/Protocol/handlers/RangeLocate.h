@@ -62,7 +62,8 @@ void range_locate(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
         range,
         params.flags
       );
-      if(params.flags & Params::RangeLocateReq::NEXT_RANGE)
+      if(params.flags & Params::RangeLocateReq::NEXT_RANGE ||
+         params.flags & Params::RangeLocateReq::CURRENT_RANGE)
         req->spec.offset_key.copy(params.range_offset);
     }
 
