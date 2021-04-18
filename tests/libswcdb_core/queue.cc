@@ -9,7 +9,6 @@
 #include "swcdb/core/Semaphore.h"
 #include "swcdb/core/QueueSafe.h"
 #include "swcdb/core/QueuePointer.h"
-#include <thread>
 
   const size_t num_threads = 2;
   const size_t WORK_LOAD = 10000000; // X producers

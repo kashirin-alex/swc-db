@@ -23,6 +23,7 @@ namespace Manager {
 int run() {
   SWC_TRY_OR_LOG("",
 
+  {
   auto app_ctx  = std::make_shared<AppContext>();
 
   auto srv = std::make_shared<Comm::server::SerializedServer>(
@@ -36,9 +37,15 @@ int run() {
   srv->run();
 
   SWC_LOG(LOG_INFO, "Exit");
-  std::quick_exit(EXIT_SUCCESS);
+  SWC_CAN_QUICK_EXIT(EXIT_SUCCESS);
 
-  return 0);
+  Env::Config::reset();
+  }
+
+  std::this_thread::sleep_for(std::chrono::seconds(1));
+  return 0;
+  );
+
   return 1;
 }
 

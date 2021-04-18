@@ -965,15 +965,16 @@ int main(int argc, char** argv) {
 
   SWC::Utils::LoadGenerator::generate();
 
-  std::quick_exit(EXIT_SUCCESS);
-  //..
+  SWC_CAN_QUICK_EXIT(EXIT_SUCCESS);
   SWC::Env::Clients::get()->rgr->stop();
   SWC::Env::Clients::get()->mngr->stop();
   SWC::Env::IoCtx::io()->stop();
 
+  std::this_thread::sleep_for(std::chrono::seconds(2));
   SWC::Env::Clients::reset();
   SWC::Env::IoCtx::reset();
   SWC::Env::Config::reset();
+  std::this_thread::sleep_for(std::chrono::seconds(1));
 
   return 0;
 }

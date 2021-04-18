@@ -49,16 +49,24 @@ Rangers::Rangers(const Comm::IoContextPtr& app_io)
 Rangers::~Rangers() { }
 
 void Rangers::stop(bool shuttingdown) {
-  if(shuttingdown) {
+   if(shuttingdown)
     m_run.store(false);
-    wait_health_check();
-  }
   {
     Core::MutexSptd::scope lock(m_mutex);
     m_timer.cancel();
-    for(auto& h : m_rangers)
-      Env::Mngr::post([h]() { h->stop(); });
   }
+  for(Ranger::Ptr h;;) {
+    {
+      Core::MutexSptd::scope lock(m_mutex);
+      if(m_rangers.empty())
+        break;
+      h = m_rangers.front();
+      m_rangers.erase(m_rangers.begin());
+    }
+    h->stop();
+  }
+  if(shuttingdown)
+    wait_health_check();
 }
 
 bool Rangers::empty() noexcept {

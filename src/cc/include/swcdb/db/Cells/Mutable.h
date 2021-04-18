@@ -150,8 +150,8 @@ class Mutable final {
       }
     }
 
-    void remove() {
-      (*bucket)->erase(item);
+    void remove() noexcept {
+      item = (*bucket)->erase(item);
       if((*bucket)->empty() && buckets->size() > 1) {
         delete *bucket;
         if((bucket = buckets->erase(bucket)) != buckets->end())
@@ -161,7 +161,7 @@ class Mutable final {
       }
     }
 
-    void remove(size_t number) {
+    void remove(size_t number) noexcept {
       while(number) {
         if(item == (*bucket)->begin() && number >= (*bucket)->size()) {
           if(buckets->size() == 1) {

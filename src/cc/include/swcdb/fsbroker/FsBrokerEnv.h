@@ -91,11 +91,62 @@ class FsBroker final {
     m_env = nullptr;
   }
 
-  FsBroker() noexcept {}
+  static int64_t in_process() noexcept {
+    return m_env->m_in_process;
+  }
+
+  static void in_process(int64_t count) noexcept {
+    m_env->m_in_process.fetch_add(count);
+  }
+
+  static bool can_process() noexcept {
+    return m_env->_can_process();
+  }
+
+  static void shuttingdown() {
+    return m_env->_shuttingdown();
+  }
+
+  FsBroker() noexcept
+          : m_shuttingdown(false), m_in_process(0) {
+  }
 
   ~FsBroker() { }
 
+  bool _can_process() noexcept {
+    if(m_shuttingdown)
+      return false;
+    m_in_process.fetch_add(1);
+    return true;
+  }
+
+  void _shuttingdown() {
+    m_shuttingdown.store(true);
+
+    auto fs = Env::FsInterface::fs();
+    size_t n = 0;
+    do {
+      std::this_thread::sleep_for(std::chrono::milliseconds(200));
+      if(!(++n % 10))
+        SWC_LOGF(LOG_WARN,
+          "In-process=%ld fs-use-count=%ld check=%lu",
+          m_in_process.load(), fs.use_count(), n);
+    } while(m_in_process || fs.use_count() > 2);
+
+    int err;
+    for(FS::SmartFd::Ptr fd; (fd = m_fds.pop_next()); ) {
+      if(fd->valid()) {
+        err = Error::OK;
+        if(fd->flags() & O_WRONLY)
+          Env::FsInterface::fs()->sync(err, fd);
+        Env::FsInterface::fs()->close(err, fd);
+      }
+    }
+  }
+
   private:
+  Core::AtomicBool                        m_shuttingdown;
+  Core::Atomic<int64_t>                   m_in_process;
   SWC::FsBroker::Fds                      m_fds;
   inline static std::shared_ptr<FsBroker> m_env = nullptr;
 };

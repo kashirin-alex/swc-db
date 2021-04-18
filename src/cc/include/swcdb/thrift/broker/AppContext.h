@@ -23,7 +23,8 @@ namespace ThriftBroker { }
 namespace ThriftBroker {
 
 
-class AppContext final : virtual public BrokerIfFactory {
+class AppContext final : virtual public BrokerIfFactory,
+                         public std::enable_shared_from_this<AppContext> {
  public:
 
   AppContext() : m_run(true) {
@@ -54,11 +55,7 @@ class AppContext final : virtual public BrokerIfFactory {
     }
   }
 
-  virtual ~AppContext() {
-    Env::Clients::reset();
-    Env::IoCtx::reset();
-    Env::Config::reset();
-  }
+  virtual ~AppContext() { }
 
   void wait_while_run() {
     std::unique_lock lock_wait(m_mutex);
@@ -130,8 +127,9 @@ class AppContext final : virtual public BrokerIfFactory {
     }
 
     SWC_LOGF(LOG_INFO, "Shutdown signal, sig=%d ec=%s", sig, ec.message().c_str());
-
-    stop();
+    std::shared_ptr<std::thread> d(new std::thread);
+    *d.get() = std::thread([d, ptr=shared_from_this()]{ ptr->stop(); });
+    d->detach();
   }
 
   private:
@@ -144,8 +142,16 @@ class AppContext final : virtual public BrokerIfFactory {
 
     //Env::FsInterface::interface()->stop();
 
-    std::scoped_lock lock(m_mutex);
-    m_cv.notify_all();
+    {
+      std::scoped_lock lock(m_mutex);
+      m_cv.notify_all();
+    }
+
+    #if defined(SWC_ENABLE_SANITIZER)
+      std::this_thread::sleep_for(std::chrono::seconds(2));
+      Env::Clients::reset();
+      Env::IoCtx::reset();
+    #endif
   }
 
   std::mutex                                    m_mutex;

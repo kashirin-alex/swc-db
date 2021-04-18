@@ -55,6 +55,10 @@ endif()
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${BUILTIN_FS_FLAGS}")
 
 
+if(SWC_ENABLE_SANITIZER)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DSWC_ENABLE_SANITIZER")
+endif()
+
 
 #add_subdirectory(manager)
 #add_subdirectory(ranger)

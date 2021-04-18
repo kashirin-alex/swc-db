@@ -177,6 +177,8 @@ void ColumnHealthCheck::finishing(bool finished_range) {
   if(!completion.is_last())
     return;
 
+  m_checkers.clear();
+
   if(m_mergeable_ranges.empty()) {
     /*
     if(col->state() == Error::OK) {

@@ -87,13 +87,7 @@ class AppContext final : public Comm::AppContext {
     m_srv = srv;
   }
 
-  virtual ~AppContext() {
-    Env::Mngr::reset();
-    Env::FsInterface::reset();
-    Env::Clients::reset();
-    Env::IoCtx::reset();
-    Env::Config::reset();
-  }
+  virtual ~AppContext() { }
 
 
   void handle(Comm::ConnHandlerPtr conn, const Comm::Event::Ptr& ev) override {
@@ -256,6 +250,15 @@ class AppContext final : public Comm::AppContext {
     Env::Mngr::io()->stop();
 
     m_srv->shutdown();
+
+    #if defined(SWC_ENABLE_SANITIZER)
+      std::this_thread::sleep_for(std::chrono::seconds(2));
+      m_srv = nullptr;
+      Env::Mngr::reset();
+      Env::Clients::reset();
+      Env::FsInterface::reset();
+      Env::IoCtx::reset();
+    #endif
 
     guard = nullptr;
   }

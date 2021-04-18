@@ -142,6 +142,7 @@ static_assert(
 #include <string>
 #include <vector>
 #include <functional>
+#include <thread>
 
 
 
@@ -154,9 +155,16 @@ static_assert(
 
 
 #ifdef SWC_USE_ABORT
-#define SWC_ABORT abort()
+  #define SWC_ABORT abort()
 #else
-#define SWC_ABORT raise(SIGABRT)
+  #define SWC_ABORT raise(SIGABRT)
+#endif
+
+
+#if defined(SWC_ENABLE_SANITIZER)
+  #define SWC_CAN_QUICK_EXIT(_CODE_)
+#else
+  #define SWC_CAN_QUICK_EXIT(_CODE_) std::quick_exit(_CODE_)
 #endif
 
 

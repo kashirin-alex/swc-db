@@ -8,8 +8,6 @@
 #include "swcdb/fs/Settings.h"
 #include "swcdb/fs/Interface.h"
 
-#include <thread>
-
 
 void SWC::Config::Settings::init_app_options() {
   init_comm_options();

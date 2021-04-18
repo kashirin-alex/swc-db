@@ -36,6 +36,7 @@ void PeriodicTimers::stop() {
   Core::MutexSptd::scope lock(m_mutex);
   for(auto& ptr : *this)
     ptr->cancel();
+  clear();
 }
 
 void PeriodicTimers::set(const Config::Property::V_GINT32::Ptr ms,

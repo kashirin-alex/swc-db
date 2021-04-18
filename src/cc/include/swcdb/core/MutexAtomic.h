@@ -9,7 +9,6 @@
 
 #include "swcdb/core/Compat.h"
 #include <atomic>
-#include <thread>
 
 
 namespace SWC { namespace Core {

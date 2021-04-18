@@ -31,6 +31,7 @@ namespace ThriftBroker {
 int run() {
   SWC_TRY_OR_LOG("",
 
+  {
   auto settings = Env::Config::settings();
 
   uint32_t reactors = 1; // settings->get_i32("swc.ThriftBroker.reactors");
@@ -155,10 +156,14 @@ int run() {
   threads.clear();
 
   SWC_LOG(LOG_INFO, "Exit");
-  std::quick_exit(EXIT_SUCCESS);
+  SWC_CAN_QUICK_EXIT(EXIT_SUCCESS);
 
+  Env::Config::reset();
+  }
 
-  return 0);
+  std::this_thread::sleep_for(std::chrono::seconds(1));
+  return 0;
+  );
 
   return 1;
 }

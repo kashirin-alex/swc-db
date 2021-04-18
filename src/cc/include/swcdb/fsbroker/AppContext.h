@@ -107,25 +107,22 @@ class AppContext final : public Comm::AppContext {
     m_srv = srv;
   }
 
-  virtual ~AppContext() {
-    Env::FsBroker::reset();
-    Env::FsInterface::reset();
-    Env::IoCtx::reset();
-    Env::Config::reset();
-  }
+  virtual ~AppContext() { }
 
   void handle(Comm::ConnHandlerPtr conn, const Comm::Event::Ptr& ev) override {
     // SWC_LOG_OUT(LOG_DEBUG, ev->print(SWC_LOG_OSTREAM << "handle: "); );
+    if(!Env::FsBroker::can_process())
+      return conn->do_close();
 
     switch (ev->type) {
 
       case Comm::Event::Type::ESTABLISHED:
         m_srv->connection_add(conn);
-        return;
+        break;
 
       case Comm::Event::Type::DISCONNECT:
         m_srv->connection_del(conn);
-        return;
+        break;
 
       case Comm::Event::Type::ERROR:
         break;
@@ -137,7 +134,8 @@ class AppContext final : public Comm::AppContext {
         Env::IoCtx::post([cmd, conn, ev]() {
           if(!ev->expired())
             handlers[cmd](conn, ev);
-          });
+          Env::FsBroker::in_process(-1);
+        });
         return;
       }
 
@@ -146,6 +144,7 @@ class AppContext final : public Comm::AppContext {
         break;
 
     }
+    Env::FsBroker::in_process(-1);
   }
 
   void shutting_down(const std::error_code &ec, const int &sig) {
@@ -171,21 +170,21 @@ class AppContext final : public Comm::AppContext {
 
     auto guard = m_srv->stop_accepting(); // no further requests accepted
 
-    int err;
-    for(FS::SmartFd::Ptr fd; (fd = Env::FsBroker::fds().pop_next()); ) {
-      if(fd->valid()) {
-        err = Error::OK;
-        if(fd->flags() & O_WRONLY)
-          Env::FsInterface::fs()->sync(err, fd);
-        Env::FsInterface::fs()->close(err, fd);
-      }
-    }
-
-    Env::FsInterface::interface()->stop();
+    Env::FsBroker::shuttingdown();
 
     Env::IoCtx::io()->stop();
 
+    Env::FsInterface::interface()->stop();
+
     m_srv->shutdown();
+
+    #if defined(SWC_ENABLE_SANITIZER)
+      std::this_thread::sleep_for(std::chrono::seconds(2));
+      m_srv = nullptr;
+      Env::FsBroker::reset();
+      Env::FsInterface::reset();
+      Env::IoCtx::reset();
+    #endif
 
     guard = nullptr;
   }

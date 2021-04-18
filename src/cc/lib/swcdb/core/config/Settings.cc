@@ -215,7 +215,7 @@ void Settings::init_process(bool with_pid_file, const char* port_cfg) {
   std::string pid_file;
   if(with_pid_file) {
     pid_file = USE_SWC_PATH_RUN(install_path + "/run/") + executable;
-    if(!port_cfg && !defaulted(port_cfg)) {
+    if(port_cfg && !defaulted(port_cfg)) {
       pid_file.append(".");
       pid_file.append(std::to_string(get_i16(port_cfg)));
     }

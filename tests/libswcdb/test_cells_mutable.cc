@@ -9,8 +9,6 @@
 #include "swcdb/common/Stats/Stat.h"
 #include "swcdb/db/Cells/Mutable.h"
 
-#include <thread>
-
 
 namespace SWC { namespace Config {
 void Settings::init_app_options() {}

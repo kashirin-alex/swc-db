@@ -314,12 +314,16 @@ void MngrRole::stop() {
 
   m_mngr_inchain->stop();
 
-  {
-    std::shared_lock lock(m_mutex);
-    for(auto& host : m_states) {
-      if(host->conn && host->conn->is_open())
-        Env::Mngr::post([conn=host->conn]() {conn->do_close();});
+  for(MngrStatus::Ptr h;;) {
+    {
+      std::scoped_lock lock(m_mutex);
+      if(m_states.empty())
+        break;
+      h = m_states.front();
+      m_states.erase(m_states.begin());
     }
+    if(h->conn && h->conn->is_open())
+      h->conn->do_close();
   }
 }
 

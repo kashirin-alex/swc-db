@@ -144,10 +144,10 @@ try {
 
 // TRY HELPERS
 #define SWC_TRY(_s_, _code_) \
-  try { _code_; } catch(...) { throw SWC_CURRENT_EXCEPTION(_s_); }
+  try { _code_ } catch(...) { throw SWC_CURRENT_EXCEPTION(_s_); }
 
 #define SWC_TRY_OR_LOG(_s_, _code_) \
-  try { _code_; } catch(...) { SWC_LOG_CURRENT_EXCEPTION(_s_); }
+  try { _code_ } catch(...) { SWC_LOG_CURRENT_EXCEPTION(_s_); }
 
 
 // CONDITION HELPERS
