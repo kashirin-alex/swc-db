@@ -12,6 +12,7 @@
     changed Comm::ConnHandler use _buff_header[MAX_LENGTH] instead temp allocs
     fixed use of invalid Iterator in Mutable::write_and_free
     added move ctor/operator Specs::{Interval,KeyIntervals,Key,Fraction,Values}
+    changed DB::Specs::KeyIntervals Vector to non-Ptr Specs::KeyInterval
     added class KeyGenerator to swcdb_load_generator
     changed workload by Distribution and Course in swcdb_load_generator
     added Ranger call CompactRange::quit() at Compaction::stop()
@@ -48,9 +49,18 @@
     changed possible cases of std::function<..> to pass by move
     changed FS::FileSystem pass FS::Callback::*Cb_t by move
     fixed Ranger case of CellStore Read with many index-blocks (was only last)
-    added -Wformat-signedness compiler Flag & fixed bad cases
+    added std::string format_unsafe(const char *fmt, ...)
+    added -Wformat-{signedness,nonliteral} compiler Flags & fixed bad cases
     changed Ranger CommitLog::Fragment Constructor move DB::Cells::Interval
     changed Ranger pass CellStore::Block::Header with move
+    added FS::SmartFd constructor for a moveable filepath
+    removed Config::Properties::to_string_all
+    changed use const char* as input where reasonable in Config:: namespace
+    added core/Comparators_basic.h with supporting {str,mem}_{cmp,eq}
+    changed ::memcmp,str{n,ncase}cmp via specialized functions in Condition::
+    added FsBroker shuttingdown and processing state
+    added bin/swcdb/ targets with -DSWC_ENABLE_SANITIZER definer
+    fixed full-shutdown sequences at Sanitizer Enabled (without quick_exit)
 
 [_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.4.19...master)
 ******
