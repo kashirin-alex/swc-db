@@ -406,12 +406,14 @@ void Mutable::scan(ReqScan* req) const {
 
 void Mutable::scan_version_single(ReqScan* req) const {
   bool stop = false;
-  bool only_deletes = req->spec.flags.is_only_deletes();
+  const bool only_deletes = req->spec.flags.is_only_deletes();
   const Cell* cell;
   for(auto it = ConstIterator(&buckets, _narrow(req->spec));
       !stop && it; ++it) {
-    if((cell=*it.item)->has_expired(ttl) ||
-       (only_deletes ? cell->flag == INSERT : cell->flag != INSERT) ||
+    cell = *it.item;
+
+    if((only_deletes ? cell->flag == INSERT : cell->flag != INSERT) ||
+       cell->has_expired(ttl) ||
        !req->selector(key_seq, *cell, stop) ||
        req->offset_adjusted()) {
       req->profile.skip_cell();
@@ -424,7 +426,7 @@ void Mutable::scan_version_single(ReqScan* req) const {
 
 void Mutable::scan_version_multi(ReqScan* req) const {
   bool stop = false;
-  bool only_deletes = req->spec.flags.is_only_deletes();
+  const bool only_deletes = req->spec.flags.is_only_deletes();
 
   bool chk_align = !req->spec.offset_key.empty();
   uint32_t rev = chk_align ? req->spec.flags.max_versions : 0;
@@ -489,12 +491,13 @@ void Mutable::scan_test_use(const Specs::Interval& specs,
                             size_t& count, size_t& skips) const {
   bool stop = false;
   uint32_t cell_offset = specs.flags.offset;
-  bool only_deletes = specs.flags.is_only_deletes();
+  const bool only_deletes = specs.flags.is_only_deletes();
   const Cell* cell;
   for(auto it = ConstIterator(&buckets); !stop && it; ++it) {
+    cell = *it.item;
 
-    if(!(cell=*it.item)->has_expired(ttl) &&
-       (only_deletes ? cell->flag != INSERT : cell->flag == INSERT) &&
+    if((only_deletes ? cell->flag != INSERT : cell->flag == INSERT) &&
+       !cell->has_expired(ttl) &&
        specs.is_matching(key_seq, *cell, stop)) {
 
       if(cell_offset) {
@@ -507,8 +510,9 @@ void Mutable::scan_test_use(const Specs::Interval& specs,
       if(++count == specs.flags.limit)
         // specs.flags.limit_by && specs.flags.max_versions
         break;
-    } else
+    } else {
       ++skips;
+    }
   }
 }
 
