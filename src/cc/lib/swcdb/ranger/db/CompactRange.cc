@@ -38,7 +38,7 @@ struct CompactRange::InBlock final : Core::QueuePointer<InBlock*>::Pointer {
 
   InBlock& operator=(const InBlock&) = delete;
 
-  ~InBlock() { }
+  //~InBlock() { }
 
   size_t cell_avg_size() const {
     return cells.fill()/header.cells_count;

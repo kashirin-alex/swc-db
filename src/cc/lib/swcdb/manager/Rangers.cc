@@ -46,8 +46,6 @@ Rangers::Rangers(const Comm::IoContextPtr& app_io)
       m_assignments(0) {
 }
 
-Rangers::~Rangers() { }
-
 void Rangers::stop(bool shuttingdown) {
    if(shuttingdown)
     m_run.store(false);

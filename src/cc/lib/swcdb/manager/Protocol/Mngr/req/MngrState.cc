@@ -26,8 +26,6 @@ MngrState::MngrState(const ResponseCallback::Ptr& cb,
               cb(cb) {
 }
 
-MngrState::~MngrState() { }
-
 void MngrState::disconnected(const ConnHandlerPtr&) {
   //Env::Mngr::role()->disconnection(
   //  conn->endpoint_remote, conn->endpoint_local);

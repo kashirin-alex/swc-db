@@ -15,12 +15,12 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace Mngr { namespace Params {
 
 
-class ColumnListReq  : public Serializable {
+class ColumnListReq final : public Serializable {
   public:
 
-  ColumnListReq();
+  ColumnListReq() noexcept { }
 
-  virtual ~ColumnListReq();
+  //~ColumnListReq() { }
 
   std::vector<DB::Schemas::Pattern> patterns;
 
@@ -36,12 +36,12 @@ class ColumnListReq  : public Serializable {
 
 
 
-class ColumnListRsp  : public Serializable {
+class ColumnListRsp final : public Serializable {
   public:
 
-  ColumnListRsp();
+  ColumnListRsp() noexcept { }
 
-  virtual ~ColumnListRsp();
+  //~ColumnListRsp() { }
 
   std::vector<DB::Schema::Ptr> schemas;
 

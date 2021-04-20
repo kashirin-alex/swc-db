@@ -27,8 +27,6 @@ RangeUnoadForMerge::RangeUnoadForMerge(
           rgr(rgr), merger(merger), range(range) {
 }
 
-RangeUnoadForMerge::~RangeUnoadForMerge() { }
-
 bool RangeUnoadForMerge::valid() {
   return merger->col_merger->col_checker->col->state()
           != DB::Types::MngrColumn::State::DELETED &&

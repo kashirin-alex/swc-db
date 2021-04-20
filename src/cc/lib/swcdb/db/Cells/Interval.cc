@@ -37,10 +37,6 @@ Interval::Interval(Interval&& other) noexcept
                     was_set(other.was_set) {
 }
 
-Interval::~Interval() {
-  free();
-}
-
 void Interval::copy(const Interval& other) {
   set_key_begin(other.key_begin);
   set_key_end(other.key_end);
@@ -59,8 +55,8 @@ void Interval::free() {
   ts_earliest.free();
   ts_latest.free();
   was_set = false;
-  aligned_min.free();
-  aligned_max.free();
+  aligned_min.clear();
+  aligned_max.clear();
 }
 
 size_t Interval::size_of_internal() const noexcept {
@@ -146,10 +142,6 @@ void Interval::expand(const int64_t& ts) {
   if(ts_latest.empty() || !ts_latest.is_matching(ts))
     ts_latest.set(ts, Condition::LE);
   was_set = true;
-}
-
-bool Interval::align(const Interval &other) {
-  return align(other.aligned_min, other.aligned_max);
 }
 
 bool Interval::align(const DB::Cell::KeyVec& _min,

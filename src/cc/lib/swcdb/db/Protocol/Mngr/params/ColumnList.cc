@@ -11,9 +11,8 @@
 namespace SWC { namespace Comm { namespace Protocol {
 namespace Mngr { namespace Params {
 
-ColumnListReq::ColumnListReq() { }
 
-ColumnListReq::~ColumnListReq() { }
+
 
 size_t ColumnListReq::internal_encoded_length() const {
   size_t sz = Serialization::encoded_length_vi32(patterns.size());
@@ -44,9 +43,7 @@ void ColumnListReq::internal_decode(const uint8_t** bufp, size_t* remainp) {
 }
 
 
-ColumnListRsp::ColumnListRsp() { }
 
-ColumnListRsp::~ColumnListRsp() { }
 
 
 size_t ColumnListRsp::internal_encoded_length() const {

@@ -19,12 +19,12 @@ Rangers::~Rangers() {
       delete r.second;
   }
 }
-  
+
 void Rangers::clear() {
   Core::MutexSptd::scope lock(m_mutex);
   Map::clear();
 }
-  
+
 void Rangers::clear_expired() {
   auto ms = Time::now_ms();
 

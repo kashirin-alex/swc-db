@@ -33,7 +33,7 @@ class Settings final : public Properties {
 
   Settings();
 
-  ~Settings();
+  //~Settings() { }
 
   void init(int argc, char *argv[]);
 

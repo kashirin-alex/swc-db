@@ -14,35 +14,48 @@
 namespace SWC { namespace DB { namespace Specs {
 
 
-class Column final {
+class Column final : public std::vector<Interval::Ptr> {
   public:
 
   typedef std::vector<Interval::Ptr> Intervals;
-  typedef std::shared_ptr<Column> Ptr;
+  typedef std::shared_ptr<Column>    Ptr;
 
-  static Ptr make_ptr(cid_t cid=0, uint32_t reserve=0);
+  static Ptr make_ptr(cid_t cid=0, uint32_t reserve=0) {
+    return std::make_shared<Column>(cid, reserve);
+  }
 
-  static Ptr make_ptr(cid_t cid, const Intervals& intervals);
+  static Ptr make_ptr(cid_t cid, const Intervals& intervals) {
+    return std::make_shared<Column>(cid, intervals);
+  }
 
-  static Ptr make_ptr(const uint8_t** bufp, size_t* remainp);
+  static Ptr make_ptr(const uint8_t** bufp, size_t* remainp) {
+    return std::make_shared<Column>(bufp, remainp);
+  }
 
-  static Ptr make_ptr(const Column& other);
+  static Ptr make_ptr(const Column& other) {
+    return std::make_shared<Column>(other);
+  }
 
-  static Ptr make_ptr(Ptr other);
+  static Ptr make_ptr(Ptr other) {
+    return std::make_shared<Column>(*other.get());
+  }
+
 
   explicit Column(cid_t cid=0, uint32_t reserve=0);
 
   explicit Column(cid_t cid, const Intervals& intervals);
 
-  explicit Column(const uint8_t** bufp, size_t* remainp);
+  explicit Column(const uint8_t** bufp, size_t* remainp) {
+    decode(bufp, remainp);
+  }
 
-  explicit Column(const Column& other);
+  explicit Column(const Column& other) : Intervals() {
+    copy(other);
+  }
 
   void copy(const Column &other);
 
-  ~Column();
-
-  void free();
+  //~Column() { }
 
   Interval::Ptr& add(Types::Column col_type);
 
@@ -62,7 +75,6 @@ class Column final {
                std::string offset = "") const;
 
   cid_t     cid;
-  Intervals intervals;
 };
 
 }}}

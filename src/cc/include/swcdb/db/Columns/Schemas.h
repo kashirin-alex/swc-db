@@ -29,9 +29,9 @@ class Schemas : private std::unordered_map<cid_t, Schema::Ptr> {
     std::string     value;
   };
 
-  Schemas() noexcept;
+  Schemas() noexcept { }
 
-  ~Schemas();
+  //~Schemas() { }
 
   void add(int& err, const Schema::Ptr& schema);
 

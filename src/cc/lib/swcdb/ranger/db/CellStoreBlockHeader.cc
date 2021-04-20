@@ -44,8 +44,6 @@ Header::Header(Header&& other) noexcept
                 checksum_data(other.checksum_data) {
 }
 
-Header::~Header() { }
-
 void Header::encode(uint8_t** bufp) {
   const uint8_t* base = *bufp;
   Serialization::encode_i8(bufp, uint8_t(encoder));

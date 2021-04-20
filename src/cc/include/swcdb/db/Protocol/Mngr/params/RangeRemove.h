@@ -13,14 +13,14 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace Mngr { namespace Params {
 
 
-class RangeRemoveReq : public Serializable {
+class RangeRemoveReq final : public Serializable {
   public:
 
-  RangeRemoveReq(cid_t cid=0, rid_t rid=0)
+  RangeRemoveReq(cid_t cid=0, rid_t rid=0) noexcept
                 : cid(cid), rid(rid) {
   }
 
-  virtual ~RangeRemoveReq(){ }
+  //~RangeRemoveReq() { }
 
   cid_t        cid;
   rid_t        rid;
@@ -55,12 +55,12 @@ class RangeRemoveReq : public Serializable {
 
 
 
-class RangeRemoveRsp : public Serializable {
+class RangeRemoveRsp final : public Serializable {
   public:
 
-  RangeRemoveRsp(int err = Error::OK): err(err) { }
+  RangeRemoveRsp(int err = Error::OK) noexcept : err(err) { }
 
-  virtual ~RangeRemoveRsp() {}
+  //~RangeRemoveRsp() { }
 
   int             err;
 

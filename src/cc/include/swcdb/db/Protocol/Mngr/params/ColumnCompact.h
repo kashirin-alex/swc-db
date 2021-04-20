@@ -15,12 +15,12 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace Mngr { namespace Params {
 
 
-class ColumnCompactReq : public Serializable {
+class ColumnCompactReq final : public Serializable {
   public:
 
-  ColumnCompactReq(cid_t cid=0);
+  ColumnCompactReq(cid_t cid=0) noexcept : cid(cid) { }
 
-  virtual ~ColumnCompactReq();
+  //~ColumnCompactReq() { }
 
   cid_t cid;
 
@@ -38,12 +38,12 @@ class ColumnCompactReq : public Serializable {
 
 
 
-class ColumnCompactRsp : public Serializable {
+class ColumnCompactRsp final : public Serializable {
   public:
 
-  ColumnCompactRsp(int err = Error::OK);
+  ColumnCompactRsp(int err = Error::OK) noexcept : err(err) { }
 
-  virtual ~ColumnCompactRsp();
+  //~ColumnCompactRsp() { }
 
   int err;
 

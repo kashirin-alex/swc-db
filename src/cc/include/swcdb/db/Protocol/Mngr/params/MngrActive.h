@@ -15,12 +15,14 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace Mngr { namespace Params {
 
 
-class MngrActiveReq : public Serializable {
+class MngrActiveReq final : public Serializable {
   public:
 
-  MngrActiveReq(uint8_t role=DB::Types::MngrRole::COLUMNS, cid_t cid=0);
+  MngrActiveReq(uint8_t role=DB::Types::MngrRole::COLUMNS, cid_t cid=0)
+                noexcept : role(role), cid(cid) {
+  }
 
-  virtual ~MngrActiveReq();
+  //~MngrActiveReq() { }
 
   uint8_t   role;
   cid_t     cid;
@@ -37,14 +39,14 @@ class MngrActiveReq : public Serializable {
 
 
 
-class MngrActiveRsp : public Common::Params::HostEndPoints {
+class MngrActiveRsp final : public Common::Params::HostEndPoints {
   public:
 
-  MngrActiveRsp();
+  MngrActiveRsp() noexcept { }
 
   MngrActiveRsp(const EndPoints& endpoints);
 
-  virtual ~MngrActiveRsp();
+  //~MngrActiveRsp() { }
 
   bool available;
 

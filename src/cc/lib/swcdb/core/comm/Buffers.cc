@@ -15,72 +15,8 @@ static const uint16_t BUFFER_CHUNK_SZ = 4096;
 }
 
 
-/* Make Common */
 SWC_SHOULD_INLINE
-Buffers::Ptr Buffers::make(uint32_t reserve) {
-  return std::make_shared<Buffers>(reserve);
-}
-
-SWC_SHOULD_INLINE
-Buffers::Ptr Buffers::make(const Serializable& params, uint32_t reserve) {
-  return std::make_shared<Buffers>(params, reserve);
-}
-
-SWC_SHOULD_INLINE
-Buffers::Ptr Buffers::make(const Serializable& params, StaticBuffer& buffer,
-                           uint32_t reserve) {
-  return std::make_shared<Buffers>(params, buffer, reserve);
-}
-
-SWC_SHOULD_INLINE
-Buffers::Ptr Buffers::make(StaticBuffer& buffer, uint32_t reserve) {
-  return std::make_shared<Buffers>(buffer, reserve);
-}
-
-
-/* Make Request */
-SWC_SHOULD_INLINE
-Buffers::Ptr Buffers::make(const Serializable& params, uint32_t reserve,
-                           uint64_t cmd, uint32_t timeout) {
-  return std::make_shared<Buffers>(params, reserve, cmd, timeout);
-}
-
-SWC_SHOULD_INLINE
-Buffers::Ptr Buffers::make(const Serializable& params, StaticBuffer& buffer,
-                           uint32_t reserve,
-                           uint64_t cmd, uint32_t timeout) {
-  return std::make_shared<Buffers>(params, buffer, reserve, cmd, timeout);
-}
-
-
-/* Make Response */
-SWC_SHOULD_INLINE
-Buffers::Ptr Buffers::make(const Event::Ptr& ev, uint32_t reserve) {
-  return std::make_shared<Buffers>(ev, reserve);
-}
-
-SWC_SHOULD_INLINE
-Buffers::Ptr Buffers::make(const Event::Ptr& ev,
-                           const Serializable& params, uint32_t reserve) {
-  return std::make_shared<Buffers>(ev, params, reserve);
-}
-
-SWC_SHOULD_INLINE
-Buffers::Ptr Buffers::make(const Event::Ptr& ev,
-                           const Serializable& params, StaticBuffer& buffer,
-                           uint32_t reserve) {
-  return std::make_shared<Buffers>(ev, params, buffer, reserve);
-}
-
-SWC_SHOULD_INLINE
-Buffers::Ptr Buffers::make(const Event::Ptr& ev,
-                           StaticBuffer& buffer, uint32_t reserve) {
-  return std::make_shared<Buffers>(ev, buffer, reserve);
-}
-
-
-SWC_SHOULD_INLINE
-Buffers::Ptr 
+Buffers::Ptr
 Buffers::create_error_message(const Event::Ptr& ev,
                               int error, const char *msg, uint16_t len) {
   auto cbp = Buffers::make(ev, 4 + Serialization::encoded_length_bytes(len));
@@ -159,9 +95,6 @@ Buffers::Buffers(const Event::Ptr& ev,
   if(reserve)
     set_data(reserve);
 }
-
-
-Buffers::~Buffers() { }
 
 void Buffers::set_data(uint32_t sz) {
   if(buf_data.size)

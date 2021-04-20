@@ -22,7 +22,7 @@ class ConfigSSL final {
 
   ConfigSSL(bool is_client=true);
 
-  ~ConfigSSL();
+  //~ConfigSSL() { }
 
   void set_networks(const Config::Strings& networks, bool with_local);
 

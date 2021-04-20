@@ -16,14 +16,14 @@
 namespace SWC { namespace Comm { namespace Protocol {
 namespace Mngr { namespace Req {
 
-  
+
 class RangeUnloaded: public client::ConnQueue::ReqBase {
   public:
-  
-  typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&, 
+
+  typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&,
                              const Params::RangeUnloadedRsp&)> Cb_t;
- 
-  static void request(cid_t cid, rid_t rid, 
+
+  static void request(cid_t cid, rid_t rid,
                       Cb_t&& cb, const uint32_t timeout = 10000){
     request(Params::RangeUnloadedReq(cid, rid), std::move(cb), timeout);
   }
@@ -34,7 +34,7 @@ class RangeUnloaded: public client::ConnQueue::ReqBase {
   }
 
 
-  RangeUnloaded(const Params::RangeUnloadedReq& params, Cb_t&& cb, 
+  RangeUnloaded(const Params::RangeUnloadedReq& params, Cb_t&& cb,
                 const uint32_t timeout)
                 : client::ConnQueue::ReqBase(
                     false,
@@ -43,7 +43,7 @@ class RangeUnloaded: public client::ConnQueue::ReqBase {
                   cb(std::move(cb)), cid(params.cid) {
   }
 
-  virtual ~RangeUnloaded(){}
+  virtual ~RangeUnloaded() { }
 
   void handle_no_conn() override {
     clear_endpoints();
@@ -52,12 +52,12 @@ class RangeUnloaded: public client::ConnQueue::ReqBase {
 
   bool run() override {
     if(endpoints.empty()) {
-      Env::Clients::get()->mngrs_groups->select(cid, endpoints); 
+      Env::Clients::get()->mngrs_groups->select(cid, endpoints);
       if(endpoints.empty()) {
         MngrActive::make(cid, shared_from_this())->run();
         return false;
       }
-    } 
+    }
     Env::Clients::get()->mngr->get(endpoints)->put(req());
     return true;
   }
@@ -84,7 +84,7 @@ class RangeUnloaded: public client::ConnQueue::ReqBase {
   }
 
   private:
-  
+
   void clear_endpoints() {
     Env::Clients::get()->mngrs_groups->remove(endpoints);
     endpoints.clear();

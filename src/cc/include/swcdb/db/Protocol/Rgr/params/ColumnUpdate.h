@@ -11,16 +11,16 @@
 namespace SWC { namespace Comm { namespace Protocol {
 namespace Rgr { namespace Params {
 
-class ColumnUpdate : public Serializable {
+class ColumnUpdate final : public Serializable {
   public:
 
-  ColumnUpdate() {}
+  ColumnUpdate() noexcept { }
 
-  ColumnUpdate(const DB::Schema::Ptr& schema)
+  ColumnUpdate(const DB::Schema::Ptr& schema) noexcept
               : schema(schema) {
   }
 
-  virtual ~ColumnUpdate() {}
+  //~ColumnUpdate() { }
 
   DB::Schema::Ptr schema;
 

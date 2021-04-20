@@ -41,8 +41,6 @@ void Acceptor::stop() {
   }
 }
 
-Acceptor::~Acceptor() { }
-
 asio::ip::tcp::acceptor* Acceptor::sock() noexcept {
   return this;
 }

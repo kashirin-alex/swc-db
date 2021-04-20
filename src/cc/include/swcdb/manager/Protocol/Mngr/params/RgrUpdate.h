@@ -12,10 +12,10 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace Mngr { namespace Params {
 
 
-class RgrUpdate : public Serializable {
+class RgrUpdate final : public Serializable {
   public:
 
-  RgrUpdate() {}
+  RgrUpdate() noexcept { }
 
   RgrUpdate(const Manager::RangerList& hosts, bool sync_all)
             : hosts(hosts), sync_all(sync_all) {

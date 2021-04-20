@@ -62,8 +62,6 @@ Value::Value(uint8_t flags) noexcept : flags(flags) { }
 
 Value::Value(Value::Ptr ptr) noexcept : flags(ptr->flags.load()) { }
 
-Value::~Value() { }
-
 std::ostream& Value::operator<<(std::ostream& ostream) {
   return ostream << to_string();
 }

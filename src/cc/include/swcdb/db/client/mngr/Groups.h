@@ -31,7 +31,7 @@ class Group final : private Hosts {
   Group(uint8_t role, cid_t cid_begin, cid_t cid_end,
         const Hosts& hosts);
 
-  ~Group();
+  //~Group() { }
 
   Ptr copy();
 
@@ -74,7 +74,7 @@ class Groups final : private std::vector<Group::Ptr>,
 
   Groups(const Vec& groups, const std::vector<Comm::Network>& nets);
 
-  ~Groups();
+  //~Groups() { }
 
   Ptr init();
 

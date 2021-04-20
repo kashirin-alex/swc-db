@@ -17,7 +17,7 @@ class ContextRanger : public Comm::AppContext {
 
   ContextRanger();
 
-  virtual ~ContextRanger();
+  virtual ~ContextRanger() { }
 
   void handle(Comm::ConnHandlerPtr conn, const Comm::Event::Ptr& ev) override;
 

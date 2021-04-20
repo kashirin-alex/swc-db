@@ -14,7 +14,7 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Params {
 
 
-class FlushReq : public Serializable {
+class FlushReq final : public Serializable {
   public:
 
   FlushReq();

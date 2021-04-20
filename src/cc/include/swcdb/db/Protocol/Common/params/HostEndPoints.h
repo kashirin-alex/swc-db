@@ -29,14 +29,14 @@ namespace Common {
 namespace Params {
 
 
-class HostEndPoints: public Serializable {
+class HostEndPoints : public Serializable {
   public:
 
-  HostEndPoints();
+  HostEndPoints() noexcept { }
 
   HostEndPoints(const EndPoints& points);
 
-  virtual ~HostEndPoints();
+  //~HostEndPoints() { }
 
   void set(const EndPoints& points);
 

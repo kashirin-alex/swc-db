@@ -15,15 +15,15 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace Rgr { namespace Params {
 
 
-class RangeQuerySelectReq : public Serializable {
+class RangeQuerySelectReq final : public Serializable {
   public:
 
-  RangeQuerySelectReq();
+  RangeQuerySelectReq() noexcept { }
 
   RangeQuerySelectReq(cid_t cid, rid_t rid,
                       const DB::Specs::Interval& interval);
 
-  virtual ~RangeQuerySelectReq();
+  //~RangeQuerySelectReq() { }
 
   void print(std::ostream& out) const;
 
@@ -43,15 +43,21 @@ class RangeQuerySelectReq : public Serializable {
 
 
 
-class RangeQuerySelectRsp  : public Serializable {
+class RangeQuerySelectRsp final : public Serializable {
   public:
 
   RangeQuerySelectRsp(int err = Error::OK, bool reached_limit=false,
-                      uint64_t offset=0);
+                      uint64_t offset=0) noexcept
+                      : err(err), reached_limit(reached_limit),
+                        offset(offset) {
+  }
 
-  RangeQuerySelectRsp(int err, StaticBuffer& data);
+  RangeQuerySelectRsp(int err, StaticBuffer& data) noexcept
+                      : err(err), reached_limit(false),
+                        offset(0), data(data) {
+  }
 
-  virtual ~RangeQuerySelectRsp();
+  //~RangeQuerySelectRsp() { }
 
   void print(std::ostream& out) const;
 

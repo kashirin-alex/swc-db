@@ -29,10 +29,10 @@ class MngrActive : public client::ConnQueue::ReqBase {
   static Ptr make(const uint8_t& role, const DispatchHandler::Ptr& hdlr,
                   uint32_t timeout_ms=60000);
 
-  MngrActive(const uint8_t& role, const cid_t& cid, 
+  MngrActive(const uint8_t& role, const cid_t& cid,
              const DispatchHandler::Ptr& hdlr, uint32_t timeout_ms);
 
-  virtual ~MngrActive();
+  virtual ~MngrActive() { }
 
   void run_within(uint32_t t_ms = 1000);
 
@@ -58,6 +58,6 @@ class MngrActive : public client::ConnQueue::ReqBase {
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/db/Protocol/Mngr/req/MngrActive.cc"
-#endif 
+#endif
 
 #endif // swcdb_db_protocol_mngr_req_MngrActive_h

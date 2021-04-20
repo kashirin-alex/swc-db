@@ -417,8 +417,6 @@ Write::Write(const csid_t csid, std::string&& filepath,
               interval(range->cfg->key_seq) {
 }
 
-Write::~Write() { }
-
 void Write::create(int& err, int32_t bufsz, uint8_t blk_replicas,
                    int64_t blksz) {
   while(

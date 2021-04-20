@@ -22,9 +22,7 @@ Group::Group(uint8_t role, cid_t cid_begin, cid_t cid_end,
             : Hosts(hosts),
               role(role), cid_begin(cid_begin), cid_end(cid_end) {
 }
-  
-Group::~Group() { }
-  
+
 Group::Ptr Group::copy() {
   return std::make_shared<Group>(role, cid_begin, cid_end, get_hosts());
 }
@@ -107,8 +105,6 @@ Groups::Groups(const Groups::Vec& groups,
                const std::vector<Comm::Network>& nets)
                : Vec(groups), m_nets(nets) {
 }
-
-Groups::~Groups() { }
 
 Groups::Ptr Groups::init() {
   Env::Config::settings()->get<Config::Property::V_GSTRINGS>("swc.mngr.host")

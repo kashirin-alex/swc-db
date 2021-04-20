@@ -13,7 +13,7 @@
 #include "swcdb/ranger/db/CommitLog.h"
 
 
-namespace SWC { namespace Ranger { 
+namespace SWC { namespace Ranger {
 
 
 class BlockLoader final {
@@ -40,7 +40,7 @@ class BlockLoader final {
 
   BlockLoader& operator=(const BlockLoader&) = delete;
 
-  ~BlockLoader();
+  //~BlockLoader() { }
 
   void add(const ReqScan::Ptr& req);
 
@@ -57,7 +57,7 @@ class BlockLoader final {
   void load_log(bool is_final, bool is_more=false);
 
   void loaded_frag(const CommitLog::Fragment::Ptr& frag);
-  
+
   void load_log_cells();
 
   void completion();

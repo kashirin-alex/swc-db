@@ -16,7 +16,7 @@
 namespace SWC { namespace Comm { namespace Protocol {
 namespace Rgr { namespace Params {
 
-class RangeLocateReq : public Serializable {
+class RangeLocateReq final : public Serializable {
   public:
 
   static const uint8_t CURRENT_RANGE  = 0x01;
@@ -25,9 +25,11 @@ class RangeLocateReq : public Serializable {
   static const uint8_t RANGE_END_REST = 0x08;
   static const uint8_t KEY_EQUAL      = 0x10;
 
-  RangeLocateReq(cid_t cid=0, rid_t rid=0);
+  RangeLocateReq(cid_t cid=0, rid_t rid=0) noexcept
+                : cid(cid), rid(rid), flags(0) {
+  }
 
-  virtual ~RangeLocateReq();
+  //~RangeLocateReq() { }
 
   void print(std::ostream& out) const;
 
@@ -48,12 +50,14 @@ class RangeLocateReq : public Serializable {
 
 
 
-class RangeLocateRsp  : public Serializable {
+class RangeLocateRsp final : public Serializable {
   public:
 
-  RangeLocateRsp(int err = Error::OK);
+  RangeLocateRsp(int err = Error::OK) noexcept
+                : err(err), cid(0), rid(0) {
+  }
 
-  virtual ~RangeLocateRsp();
+  //~RangeLocateRsp() { }
 
   void print(std::ostream& out) const;
 

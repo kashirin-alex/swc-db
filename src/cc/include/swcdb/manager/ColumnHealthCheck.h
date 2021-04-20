@@ -38,7 +38,7 @@ class ColumnHealthCheck final
     RangerCheck(const ColumnHealthCheck::Ptr& col_checker,
                 const Ranger::Ptr& rgr);
 
-    virtual ~RangerCheck();
+    ~RangerCheck();
 
     void add_range(const Range::Ptr& range);
 
@@ -72,7 +72,7 @@ class ColumnHealthCheck final
     ColumnMerger(const ColumnHealthCheck::Ptr& col_checker,
                  std::vector<Range::Ptr>&& ranges) noexcept;
 
-    virtual ~ColumnMerger() { }
+    //~ColumnMerger() { }
 
     void run_master();
 
@@ -90,7 +90,7 @@ class ColumnHealthCheck final
       RangesMerger(const ColumnMerger::Ptr& col_merger,
                    std::vector<Range::Ptr>&& ranges) noexcept;
 
-      virtual ~RangesMerger() { }
+      //~RangesMerger() { }
 
       void run();
 
@@ -113,7 +113,7 @@ class ColumnHealthCheck final
   ColumnHealthCheck(const Column::Ptr& col,
                     int64_t check_ts, uint32_t check_intval);
 
-  virtual ~ColumnHealthCheck();
+  //~ColumnHealthCheck() { }
 
   void run(bool initial=true);
 

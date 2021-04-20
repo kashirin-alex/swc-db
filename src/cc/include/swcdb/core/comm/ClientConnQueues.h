@@ -54,7 +54,7 @@ class ConnQueues final :
              const Config::Property::V_GINT32::Ptr keepalive_ms,
              const Config::Property::V_GINT32::Ptr again_delay_ms) noexcept;
 
-  ~ConnQueues();
+  //~ConnQueues() { }
 
   void print(std::ostream& out);
 

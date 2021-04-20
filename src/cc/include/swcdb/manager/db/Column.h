@@ -47,7 +47,7 @@ class Column final : private std::vector<Range::Ptr> {
           m_state(State::LOADING), m_check_ts(0) {
   }
 
-  ~Column() { }
+  //~Column() { }
 
   void init(int &err) {
     FS::IdEntries_t entries;

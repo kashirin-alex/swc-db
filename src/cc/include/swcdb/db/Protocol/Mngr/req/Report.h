@@ -14,24 +14,24 @@
 namespace SWC { namespace Comm { namespace Protocol {
 namespace Mngr { namespace Req {
 
-  
+
 class Report: public client::ConnQueue::ReqBase {
   public:
-  
+
   Report(Params::Report::Function func, const uint32_t timeout);
 
-  Report(const EndPoints& endpoints, Params::Report::Function func, 
+  Report(const EndPoints& endpoints, Params::Report::Function func,
          const uint32_t timeout);
 
-  Report(const Serializable& params, Params::Report::Function func, 
+  Report(const Serializable& params, Params::Report::Function func,
          const uint32_t timeout);
 
-  virtual ~Report();
+  virtual ~Report() { }
 
   void handle_no_conn() override;
 
   protected:
-  
+
   void clear_endpoints();
 
   EndPoints   endpoints;
@@ -42,20 +42,20 @@ class Report: public client::ConnQueue::ReqBase {
 
 class ClusterStatus: public Report {
   public:
-  
-  typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&, 
+
+  typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&,
                              const int&)> Cb_t;
- 
-  static void request(const EndPoints& endpoints, 
+
+  static void request(const EndPoints& endpoints,
                       Cb_t&& cb, const uint32_t timeout = 10000);
 
-  static Ptr make(const EndPoints& endpoints, 
+  static Ptr make(const EndPoints& endpoints,
                   Cb_t&& cb, const uint32_t timeout = 10000);
 
-  ClusterStatus(const EndPoints& endpoints, 
+  ClusterStatus(const EndPoints& endpoints,
                 Cb_t&& cb, const uint32_t timeout);
 
-  virtual ~ClusterStatus();
+  virtual ~ClusterStatus() { }
 
   bool run() override;
 
@@ -71,15 +71,15 @@ class ClusterStatus: public Report {
 
 
 
-  
+
 class ColumnStatus: public Report {
   public:
-  
-  typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&, 
-                             const int&, 
+
+  typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&,
+                             const int&,
                              const Params::Report::RspColumnStatus&)> Cb_t;
- 
-  static void request(cid_t cid, Cb_t&& cb, 
+
+  static void request(cid_t cid, Cb_t&& cb,
                       const uint32_t timeout = 10000);
 
   static void request(const Params::Report::ReqColumnStatus& params,
@@ -91,7 +91,7 @@ class ColumnStatus: public Report {
   ColumnStatus(const Params::Report::ReqColumnStatus& params,
                Cb_t&& cb, const uint32_t timeout);
 
-  virtual ~ColumnStatus();
+  virtual ~ColumnStatus() { }
 
   bool run() override;
 
@@ -109,21 +109,21 @@ class ColumnStatus: public Report {
 
 class RangersStatus: public Report {
   public:
-  
-  typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&, 
-                             const int&, 
+
+  typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&,
+                             const int&,
                              const Params::Report::RspRangersStatus&)> Cb_t;
- 
-  static void request(cid_t cid, Cb_t&& cb, 
+
+  static void request(cid_t cid, Cb_t&& cb,
                       const uint32_t timeout = 10000);
 
-  static Ptr make(cid_t cid, Cb_t&& cb, 
+  static Ptr make(cid_t cid, Cb_t&& cb,
                   const uint32_t timeout = 10000);
 
-  RangersStatus(cid_t cid, Cb_t&& cb, 
+  RangersStatus(cid_t cid, Cb_t&& cb,
                 const uint32_t timeout);
 
-  virtual ~RangersStatus();
+  virtual ~RangersStatus() { }
 
   bool run() override;
 
@@ -141,21 +141,21 @@ class RangersStatus: public Report {
 
 class ManagersStatus: public Report {
   public:
-  
-  typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&, 
-                             const int&, 
+
+  typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&,
+                             const int&,
                              const Params::Report::RspManagersStatus&)> Cb_t;
- 
-  static void request(const EndPoints& endpoints, Cb_t&& cb, 
+
+  static void request(const EndPoints& endpoints, Cb_t&& cb,
                       const uint32_t timeout = 10000);
 
-  static Ptr make(const EndPoints& endpoints, Cb_t&& cb, 
+  static Ptr make(const EndPoints& endpoints, Cb_t&& cb,
                   const uint32_t timeout = 10000);
 
-  ManagersStatus(const EndPoints& endpoints, Cb_t&& cb, 
+  ManagersStatus(const EndPoints& endpoints, Cb_t&& cb,
                  const uint32_t timeout);
 
-  virtual ~ManagersStatus();
+  virtual ~ManagersStatus() { }
 
   bool run() override;
 
@@ -177,6 +177,6 @@ class ManagersStatus: public Report {
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/db/Protocol/Mngr/req/Report.cc"
-#endif 
+#endif
 
 #endif // swcdb_db_protocol_req_Report_h

@@ -16,8 +16,6 @@ RangeLoad::RangeLoad(const Comm::ConnHandlerPtr& conn,
                       cid(cid), rid(rid) {
 }
 
-RangeLoad::~RangeLoad() { }
-
 void RangeLoad::loaded(int& err) {
   if(!err && (Env::Rgr::is_shuttingdown() ||
               (Env::Rgr::is_not_accepting() &&

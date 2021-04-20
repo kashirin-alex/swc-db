@@ -93,10 +93,10 @@ class Scanner final : public std::enable_shared_from_this<Scanner> {
           DB::Specs::Interval&& interval,
           const cid_t cid) noexcept;
 
-  virtual ~Scanner() { }
+  //~Scanner() { }
 
- void debug_res_cache(const char* msg, cid_t cid, rid_t rid,
-                      const Comm::EndPoints& endpoints);
+  void debug_res_cache(const char* msg, cid_t cid, rid_t rid,
+                       const Comm::EndPoints& endpoints);
 
   void print(std::ostream& out);
 

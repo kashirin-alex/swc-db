@@ -31,7 +31,7 @@ class Acceptor final : protected asio::ip::tcp::acceptor {
 
   void stop();
 
-  ~Acceptor();
+  //~Acceptor() { }
 
   asio::ip::tcp::acceptor* sock() noexcept;
 

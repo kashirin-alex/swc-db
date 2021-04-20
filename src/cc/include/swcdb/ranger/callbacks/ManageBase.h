@@ -10,7 +10,7 @@
 #include "swcdb/core/comm/ResponseCallback.h"
 
 
-namespace SWC { namespace Ranger { 
+namespace SWC { namespace Ranger {
 
 
 //! The SWC-DB Callback C++ namespace 'SWC::Ranger::Callback'
@@ -19,7 +19,7 @@ namespace Callback {
 
 class ManageBase : public Comm::ResponseCallback {
   public:
-  
+
   typedef std::shared_ptr<ManageBase> Ptr;
 
   enum Action {
@@ -28,13 +28,13 @@ class ManageBase : public Comm::ResponseCallback {
     COLUMNS_UNLOAD,
     COLUMN_DELETE
   };
-  
+
   Action action;
 
-  ManageBase(const Comm::ConnHandlerPtr& conn, 
-             const Comm::Event::Ptr& ev, 
+  ManageBase(const Comm::ConnHandlerPtr& conn,
+             const Comm::Event::Ptr& ev,
              Action action)
-            : Comm::ResponseCallback(conn, ev), 
+            : Comm::ResponseCallback(conn, ev),
               action(action) {
     Env::Rgr::in_process(1);
   }
@@ -42,7 +42,7 @@ class ManageBase : public Comm::ResponseCallback {
   virtual ~ManageBase() {
     Env::Rgr::in_process(-1);
   }
-  
+
 };
 
 

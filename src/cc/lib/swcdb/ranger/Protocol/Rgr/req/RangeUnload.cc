@@ -26,8 +26,6 @@ RangeUnload::RangeUnload(const Ranger::RangePtr& range,
           req(req), range(range) {
 }
 
-RangeUnload::~RangeUnload() { }
-
 void RangeUnload::handle(ConnHandlerPtr, const Event::Ptr& ev) {
   Params::RangeUnloadRsp rsp_params(valid() ? Error::OK : Error::RGR_DELETED_RANGE);
   if(!rsp_params.err) {

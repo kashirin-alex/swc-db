@@ -37,10 +37,10 @@ class Columns final : private std::unordered_map<cid_t, ColumnPtr> {
 
   typedef Columns* Ptr;
 
-  Columns() { }
+  Columns() noexcept { }
 
-  ~Columns() { }
-  
+  //~Columns() { }
+
   ColumnPtr get_column(const cid_t cid);
 
   RangePtr get_range(int &err, const cid_t cid, const rid_t rid);
@@ -48,8 +48,8 @@ class Columns final : private std::unordered_map<cid_t, ColumnPtr> {
   ColumnPtr get_next(size_t& idx);
 
   void get_cids(std::vector<cid_t>& cids);
- 
-  void load_range(const DB::Schema& schema, 
+
+  void load_range(const DB::Schema& schema,
                   const Callback::RangeLoad::Ptr& req);
 
   void unload(cid_t cid_begin, cid_t cid_end,

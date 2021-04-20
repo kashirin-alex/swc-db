@@ -17,13 +17,6 @@ Mutable::Bucket* Mutable::make_bucket(uint16_t reserve) {
   return bucket;
 }
 
-SWC_SHOULD_INLINE
-Mutable::Ptr Mutable::make(const Types::KeySeq key_seq,
-                           const uint32_t max_revs, const uint64_t ttl_ns,
-                           const Types::Column type) {
-  return std::make_shared<Mutable>(key_seq, max_revs, ttl_ns, type);
-}
-
 Mutable::Mutable(const Types::KeySeq key_seq,
                  const uint32_t max_revs, const uint64_t ttl_ns,
                  const Types::Column type)
@@ -77,12 +70,6 @@ void Mutable::free() {
   buckets.emplace_back(make_bucket(0));
 }
 
-void Mutable::reset(const uint32_t revs, const uint64_t ttl_ns,
-                    const Types::Column typ) {
-  free();
-  configure(revs, ttl_ns, typ);
-}
-
 void Mutable::configure(const uint32_t revs, const uint64_t ttl_ns,
                         const Types::Column typ) noexcept {
   type = typ;
@@ -100,26 +87,10 @@ Mutable::Iterator Mutable::It(size_t offset) noexcept {
   return Iterator(&buckets, offset);
 }
 
-SWC_SHOULD_INLINE
-size_t Mutable::size() const noexcept {
-  return _size;
-}
-
-SWC_SHOULD_INLINE
-size_t Mutable::size_bytes() const noexcept {
-  return _bytes;
-}
-
 size_t Mutable::size_of_internal() const noexcept {
   return  _bytes
         + _size * (sizeof(Cell*) + sizeof(Cell))
         + buckets.size() * (sizeof(Bucket*) + sizeof(Bucket));
-}
-
-SWC_SHOULD_INLINE
-bool Mutable::empty() const noexcept {
-  return !_size;
-  //return buckets.empty() || buckets.front()->empty();
 }
 
 SWC_SHOULD_INLINE
@@ -159,12 +130,6 @@ void Mutable::add_sorted(const Cell& cell, bool no_value) {
   Cell* add = new Cell(cell, no_value);
   _add(add);
   _push_back(add);
-}
-
-SWC_SHOULD_INLINE
-void Mutable::add_sorted_no_cpy(Cell* cell) {
-  _add(cell);
-  _push_back(cell);
 }
 
 size_t Mutable::add_sorted(const uint8_t* ptr, size_t remain) {
@@ -234,17 +199,6 @@ void Mutable::add_raw(const Cell& e_cell, size_t* offsetp) {
 
   else
     _add_plain(e_cell, offsetp);
-}
-
-
-SWC_SHOULD_INLINE
-Cell* Mutable::takeout_begin(size_t idx) {
-  return takeout(idx);
-}
-
-SWC_SHOULD_INLINE
-Cell* Mutable::takeout_end(size_t idx) {
-  return takeout(size() - idx);
 }
 
 Cell* Mutable::takeout(size_t idx) {
@@ -588,11 +542,6 @@ bool Mutable::split(Mutable& cells, bool loaded) {
 
   _remove(it_start, count, !loaded);
   return true;
-}
-
-SWC_SHOULD_INLINE
-bool Mutable::can_split() const noexcept {
-  return buckets.size() > 1;
 }
 
 void Mutable::split(Mutable& cells) {

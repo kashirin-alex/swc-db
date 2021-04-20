@@ -35,8 +35,6 @@ class Base : public std::enable_shared_from_this<Base>{
         timeout(0), buff_sz(0), buff_ahead(0) {
   }
 
-  virtual ~Base() { }
-
   virtual bool valid() noexcept = 0;
 
   virtual void error(const cid_t cid, int err) = 0;
@@ -48,6 +46,10 @@ class Base : public std::enable_shared_from_this<Base>{
   virtual size_t get_size_bytes() noexcept = 0;
 
   virtual void response(int err=Error::OK) = 0;
+
+  protected:
+
+  virtual ~Base() { }
 
 };
 

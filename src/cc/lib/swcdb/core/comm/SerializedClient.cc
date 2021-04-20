@@ -25,8 +25,6 @@ ServerConnections::ServerConnections(const std::string& srv_name,
                                       m_ssl_cfg(ssl_cfg) {
 }
 
-ServerConnections::~ServerConnections() { }
-
 void ServerConnections::reusable(ConnHandlerPtr& conn, bool preserve) {
   while(pop(&(conn = nullptr)) && !conn->is_open());
   if(preserve && conn)
@@ -224,7 +222,7 @@ void Serialized::get_connection(
   }
   cb(nullptr);
 }
-  
+
 void Serialized::_get_connection(
       const EndPoints& endpoints,
       ServerConnections::NewCb_t&& cb,
@@ -292,11 +290,11 @@ void Serialized::close(ConnHandlerPtr& conn) {
 IoContextPtr Serialized::io() noexcept {
   return m_ioctx;
 }
-  
+
 void Serialized::print(std::ostream& out, ConnHandlerPtr& conn) {
   conn->print(out << m_srv_name << ' ');
 }
-  
+
 void Serialized::stop() {
   m_run.store(false);
 

@@ -12,12 +12,6 @@
 namespace SWC { namespace DB { namespace Specs {
 
 
-Flags::Flags() noexcept
-            : limit(0), offset(0),
-              max_versions(0), max_buffer(0),
-              options(0), was_set(false) {
-}
-
 void Flags::copy(const Flags &other) noexcept {
   limit           = other.limit;
   offset          = other.offset;
@@ -25,24 +19,6 @@ void Flags::copy(const Flags &other) noexcept {
   max_buffer      = other.max_buffer;
   options         = other.options;
   was_set         = other.was_set;
-}
-
-Flags::~Flags() { }
-
-bool Flags::is_only_keys() const noexcept {
-  return options & ONLY_KEYS;
-}
-
-bool Flags::is_only_deletes() const noexcept {
-  return options & ONLY_DELETES;
-}
-
-void Flags::set_only_keys() noexcept {
-  options |= ONLY_KEYS;
-}
-
-void Flags::set_only_deletes() noexcept {
-  options |= ONLY_DELETES;
 }
 
 bool Flags::equal(const Flags &other) const noexcept {

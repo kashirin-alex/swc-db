@@ -72,7 +72,7 @@ class Mngr final {
         m_rangers(app_io) {
   }
 
-  ~Mngr() { }
+  //~Mngr() { }
 
   Comm::IoContextPtr                  app_io;
 

@@ -87,7 +87,7 @@ int QuerySelect::parse_select() {
     if(specs.flags.was_set) {
       // apply global-scope flags to cells_intervals
       for(auto& col : specs.columns) {
-        for(auto& intval : col->intervals) {
+        for(auto& intval : *col.get()) {
           if(!intval->flags.was_set)
             intval->flags.copy(specs.flags);
         }
@@ -209,14 +209,14 @@ int QuerySelect::parse_dump(std::string& fs, std::string& filepath,
     read_cells_intervals(cols);
 
     for(auto& col : specs.columns)
-      if(!col->intervals.size()) {
+      if(!col->size()) {
         error_msg(Error::SQL_PARSE_ERROR, "missing cells-intervals");
         return err;
       }
 
   } else {
     for(auto& col : specs.columns)
-      col->intervals.push_back(DB::Specs::Interval::make_ptr());
+      col->push_back(DB::Specs::Interval::make_ptr());
   }
 
   return err;
@@ -276,8 +276,6 @@ void QuerySelect::parse_display_flags(uint8_t& display_flags) {
     }
   }
 }
-
-QuerySelect::~QuerySelect() {}
 
 void QuerySelect::read_columns_intervals() {
   bool token_col = false;
@@ -473,7 +471,7 @@ void QuerySelect::read_cells_intervals(
       for(auto& col : specs.columns) {
         for(auto& schema : cols) {
           if(col->cid == schema->cid)
-            col->intervals.push_back(
+            col->push_back(
               DB::Specs::Interval::make_ptr(*spec.get()));
         }
       }

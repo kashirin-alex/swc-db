@@ -29,22 +29,18 @@ class Interval {
 
   typedef std::shared_ptr<Interval> Ptr;
 
-  SWC_CAN_INLINE
   static Ptr make_ptr(Types::Column col_type = Types::Column::UNKNOWN) {
     return std::make_shared<Interval>(col_type);
   }
 
-  SWC_CAN_INLINE
   static Ptr make_ptr(const uint8_t** bufp, size_t* remainp) {
     return std::make_shared<Interval>(bufp, remainp);
   }
 
-  SWC_CAN_INLINE
   static Ptr make_ptr(const Interval& other) {
     return std::make_shared<Interval>(other);
   }
 
-  SWC_CAN_INLINE
   static Ptr make_ptr(Interval&& other) {
     return std::make_shared<Interval>(std::move(other));
   }
@@ -60,17 +56,25 @@ class Interval {
 
   explicit Interval(Interval&& other) noexcept;
 
-  Interval& operator=(const Interval& other);
+  SWC_CAN_INLINE
+  Interval& operator=(const Interval& other) {
+    copy(other);
+    return *this;
+  }
 
-  Interval& operator=(Interval&& other) noexcept;
+  SWC_CAN_INLINE
+  Interval& operator=(Interval&& other) noexcept {
+    move(other);
+    return *this;
+  }
 
   void copy(const Interval& other);
 
   void move(Interval& other) noexcept;
 
-  ~Interval();
+  //~Interval() { }
 
-  void free() ;
+  void free();
 
   size_t size_of_internal() const noexcept;
 
@@ -78,12 +82,42 @@ class Interval {
 
   bool is_matching(const Types::KeySeq key_seq,
                    const Cell::Key& key,
-                   int64_t timestamp, bool desc) const;
+                   int64_t timestamp, bool desc) const {
+    if(offset_key.empty())
+      return true;
 
-  bool is_matching(int64_t timestamp, bool desc) const noexcept;
+    switch(DB::KeySeq::compare(key_seq, offset_key, key)) {
+      case Condition::LT:
+        return false;
+      case Condition::EQ:
+        return is_matching(timestamp, desc);
+      default:
+        return true;
+    }
+  }
+
+  bool is_matching(int64_t timestamp, bool desc) const noexcept {
+    return desc ? offset_rev > timestamp : offset_rev < timestamp;
+  }
 
   bool is_matching(const Types::KeySeq key_seq,
-                   const Cells::Cell& cell, bool& stop) const;
+                   const Cells::Cell& cell, bool& stop) const {
+    return
+      is_matching(
+        key_seq, cell.key, cell.timestamp, cell.control & Cells::TS_DESC)
+      &&
+      ts_start.is_matching(cell.timestamp)
+      &&
+      ts_finish.is_matching(cell.timestamp)
+      &&
+      is_matching_begin(key_seq, cell.key)
+      &&
+      !(stop = !is_matching_end(key_seq, cell.key))
+      &&
+      key_intervals.is_matching(key_seq, cell.key)
+      &&
+      values.is_matching(cell);
+  }
 
   bool is_matching_begin(const Types::KeySeq key_seq,
                          const DB::Cell::Key& key) const;
@@ -100,18 +134,29 @@ class Interval {
 
   void decode(const uint8_t** bufp, size_t* remainp, bool owner=false);
 
-  void set_opt__key_equal() noexcept;
+  void set_opt__key_equal() noexcept {
+    options |= OPT_KEY_EQUAL;
+  }
 
-  void set_opt__range_end_rest() noexcept;
+  void set_opt__range_end_rest() noexcept {
+    options |= OPT_RANGE_END_REST;
+  }
 
-  bool has_opt__key_equal() const noexcept;
+  bool has_opt__key_equal() const noexcept {
+    return options & OPT_KEY_EQUAL;
+  }
 
-  bool has_opt__range_end_rest() const noexcept;
+  bool has_opt__range_end_rest() const noexcept {
+    return options & OPT_RANGE_END_REST;
+  }
 
   void apply_possible_range_pure();
 
   void apply_possible_range(DB::Cell::Key& begin, DB::Cell::Key& end,
-                             bool* end_restp = nullptr) const;
+                            bool* end_restp = nullptr) const {
+    apply_possible_range_begin(begin);
+    apply_possible_range_end(end, end_restp);
+  }
 
   void apply_possible_range_begin(DB::Cell::Key& begin) const;
 

@@ -1,7 +1,7 @@
 /*
  * SWC-DB© Copyright since 2019 Alex Kashirin <kashirin.alex@gmail.com>
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
- */ 
+ */
 
 #ifndef swcdb_manager_Protocol_mngr_req_MngrColumnGet_h
 #define swcdb_manager_Protocol_mngr_req_MngrColumnGet_h
@@ -13,18 +13,18 @@ namespace Mngr { namespace Req {
 
 class MngrColumnGet : public client::ConnQueue::ReqBase {
   public:
-  
+
   typedef std::function<void(int, const Params::ColumnGetRsp&)> Cb_t;
 
-  MngrColumnGet(const Params::ColumnGetReq& params, Cb_t&& cb) 
+  MngrColumnGet(const Params::ColumnGetReq& params, Cb_t&& cb)
                 : client::ConnQueue::ReqBase(
                     true,
                     Buffers::make(params, 0, COLUMN_GET, 60000)
                   ), cb(std::move(cb)) {
   }
-  
+
   virtual ~MngrColumnGet() { }
-  
+
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
     if(!is_rsp(ev))
       return;
@@ -49,7 +49,7 @@ class MngrColumnGet : public client::ConnQueue::ReqBase {
 
   private:
   Cb_t   cb;
-  
+
 };
 
 }}}}}

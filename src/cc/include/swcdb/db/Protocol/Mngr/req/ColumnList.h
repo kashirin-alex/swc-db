@@ -14,11 +14,11 @@
 namespace SWC { namespace Comm { namespace Protocol {
 namespace Mngr { namespace Req {
 
-  
+
 class ColumnList: public client::ConnQueue::ReqBase {
   public:
-  
-  typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&, 
+
+  typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&,
                              int, const Params::ColumnListRsp&)> Cb_t;
 
   static void request(Cb_t&& cb, const uint32_t timeout = 10000);
@@ -29,7 +29,7 @@ class ColumnList: public client::ConnQueue::ReqBase {
   ColumnList(const Params::ColumnListReq& params, Cb_t&& cb,
              const uint32_t timeout);
 
-  virtual ~ColumnList();
+  virtual ~ColumnList() { }
 
   void handle_no_conn() override;
 
@@ -38,7 +38,7 @@ class ColumnList: public client::ConnQueue::ReqBase {
   void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
 
   private:
-  
+
   void clear_endpoints();
 
   const Cb_t  cb;
@@ -52,6 +52,6 @@ class ColumnList: public client::ConnQueue::ReqBase {
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/db/Protocol/Mngr/req/ColumnList.cc"
-#endif 
+#endif
 
 #endif // swcdb_db_protocol_mngr_req_ColumnList_h

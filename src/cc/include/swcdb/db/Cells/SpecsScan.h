@@ -39,7 +39,7 @@ class Scan final {
 
   Scan& operator=(Scan&& specs) noexcept;
 
-  ~Scan();
+  //~Scan() { }
 
   void free();
 

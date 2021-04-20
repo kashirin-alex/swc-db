@@ -12,19 +12,19 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace Mngr { namespace Params {
 
 
-class ColumnUpdate : public Serializable {
+class ColumnUpdate final : public Serializable {
   public:
 
-  ColumnUpdate() {}
+  ColumnUpdate() noexcept { }
 
   ColumnUpdate(ColumnMng::Function function,
-               const DB::Schema::Ptr& schema, int err, uint64_t id)
+               const DB::Schema::Ptr& schema, int err, uint64_t id) noexcept
               : function(function), id(id), schema(schema), err(err) {
   }
 
   ColumnUpdate(ColumnMng::Function function,
                cid_t cid_begin, cid_t cid_end,
-               std::vector<cid_t>&& columns)
+               std::vector<cid_t>&& columns) noexcept
               : function(function), id(0),
                 columns(std::move(columns)),
                 cid_begin(cid_begin), cid_end(cid_end),

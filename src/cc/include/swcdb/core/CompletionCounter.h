@@ -11,7 +11,7 @@
 
 
 namespace SWC { namespace Core {
-  
+
 template<class CountT=uint32_t>
 struct CompletionCounter final: private Core::Atomic<CountT> {
 
@@ -23,11 +23,11 @@ struct CompletionCounter final: private Core::Atomic<CountT> {
   CompletionCounter(const CompletionCounter&) = delete;
 
   CompletionCounter(const CompletionCounter&&) = delete;
-    
+
   CompletionCounter& operator=(const CompletionCounter&) = delete;
-  
-  SWC_CAN_INLINE
-  ~CompletionCounter() noexcept { }
+
+  //SWC_CAN_INLINE
+  //~CompletionCounter() noexcept { }
 
   SWC_CAN_INLINE
   void increment() noexcept {

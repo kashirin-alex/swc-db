@@ -16,8 +16,6 @@ ContextManager::ContextManager()
           "swc.client.Mngr.comm.encoder")) {
 }
 
-ContextManager::~ContextManager() { }
-
 void ContextManager::handle(Comm::ConnHandlerPtr, //conn
                             const Comm::Event::Ptr& ev) {
   switch (ev->type) {

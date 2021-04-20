@@ -13,7 +13,7 @@
 namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Params {
 
-class SyncReq : public Serializable {
+class SyncReq final : public Serializable {
   public:
 
   SyncReq();

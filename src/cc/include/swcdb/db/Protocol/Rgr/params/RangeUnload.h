@@ -14,7 +14,7 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace Rgr { namespace Params {
 
 
-class RangeUnload : public Common::Params::ColRangeId {
+class RangeUnload final : public Common::Params::ColRangeId {
   public:
 
   enum Flag : uint8_t {
@@ -22,12 +22,12 @@ class RangeUnload : public Common::Params::ColRangeId {
     CHECK_EMPTY  = 0x01
   };
 
-  RangeUnload() : flags(NONE) { }
-  RangeUnload(cid_t cid, rid_t rid, uint8_t flags=NONE)
+  RangeUnload() noexcept : flags(NONE) { }
+  RangeUnload(cid_t cid, rid_t rid, uint8_t flags=NONE) noexcept
              : Common::Params::ColRangeId(cid, rid), flags(flags) {
   }
 
-  virtual ~RangeUnload() {}
+  //~RangeUnload() { }
 
   uint8_t  flags;
 
@@ -50,7 +50,7 @@ class RangeUnload : public Common::Params::ColRangeId {
 };
 
 
-class RangeUnloadRsp : public Serializable {
+class RangeUnloadRsp final : public Serializable {
   public:
 
   enum Flag : uint8_t {
@@ -58,9 +58,9 @@ class RangeUnloadRsp : public Serializable {
     EMPTY        = 0x01
   };
 
-  RangeUnloadRsp(int err) : err(err), flags(NONE) { }
+  RangeUnloadRsp(int err) noexcept : err(err), flags(NONE) { }
 
-  virtual ~RangeUnloadRsp() {}
+  //~RangeUnloadRsp() { }
 
   void set_empty() {
     flags |= EMPTY;

@@ -365,10 +365,6 @@ Parser::Parser(bool unregistered) noexcept
               : config(0, false), m_unregistered(unregistered) {
 }
 
-Parser::~Parser() {
-  free();
-}
-
 void Parser::free() {
   m_opts.free();
   config.free();

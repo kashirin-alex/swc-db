@@ -14,7 +14,7 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Params {
 
 
-class RemoveReq : public Serializable {
+class RemoveReq final : public Serializable {
   public:
 
   RemoveReq();

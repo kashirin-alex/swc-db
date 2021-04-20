@@ -49,7 +49,7 @@ class IoContext final : public std::enable_shared_from_this<IoContext> {
 
   IoContext(std::string&& _name, int32_t size);
 
-  ~IoContext();
+  //~IoContext() { }
 
   int32_t get_size() const noexcept;
 
@@ -105,7 +105,7 @@ class IoCtx final {
 
   IoCtx(int32_t size);
 
-  ~IoCtx();
+  //~IoCtx() { }
 
   private:
   Comm::IoContextPtr                    m_io;

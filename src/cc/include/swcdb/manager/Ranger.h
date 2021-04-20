@@ -14,7 +14,7 @@ namespace SWC { namespace Manager {
 
 namespace RangerState = DB::Types::MngrRangerState;
 
-class Ranger : public Comm::Protocol::Common::Params::HostEndPoints {
+class Ranger final : public Comm::Protocol::Common::Params::HostEndPoints {
 
   public:
 
@@ -31,7 +31,7 @@ class Ranger : public Comm::Protocol::Common::Params::HostEndPoints {
           failures(0), interm_ranges(0), load_scale(0), m_rebalance(0) {
   }
 
-  virtual ~Ranger() { }
+  //~Ranger() { }
 
   void print(std::ostream& out) const {
     out << "[rgrid="          << rgrid.load()

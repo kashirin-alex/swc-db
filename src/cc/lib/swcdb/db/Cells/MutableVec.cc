@@ -11,14 +11,6 @@
 namespace SWC { namespace DB { namespace Cells {
 
 
-SWC_SHOULD_INLINE
-MutableVec::MutableVec(const Types::KeySeq key_seq, uint32_t split_size,
-                       const uint32_t max_revs, const uint64_t ttl_ns,
-                       const Types::Column type) noexcept
-                      : key_seq(key_seq), split_size(split_size),
-                        max_revs(max_revs), ttl(ttl_ns), type(type) {
-}
-
 MutableVec::~MutableVec() {
   for(auto cells : *this)
     delete cells;
@@ -40,11 +32,6 @@ void MutableVec::configure(uint32_t split,
   type = typ;
   for(auto cells : *this)
     cells->configure(max_revs, ttl, type);
-}
-
-SWC_SHOULD_INLINE
-bool MutableVec::empty() const noexcept {
-  return Vec::empty();
 }
 
 size_t MutableVec::size() const noexcept {

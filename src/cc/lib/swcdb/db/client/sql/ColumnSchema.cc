@@ -17,8 +17,6 @@ ColumnSchema::ColumnSchema(const std::string& sql, DB::Schema::Ptr& schema,
                           : Reader(sql, message), schema(schema) {
 }
 
-ColumnSchema::~ColumnSchema() {}
-
 int ColumnSchema::parse(ColumnSchema::Func* func) {
 
   while(remain && !err) {

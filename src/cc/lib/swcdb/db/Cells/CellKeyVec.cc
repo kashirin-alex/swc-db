@@ -9,16 +9,9 @@
 
 namespace SWC { namespace DB { namespace Cell {
 
-KeyVec::KeyVec() noexcept { }
 
 KeyVec::KeyVec(KeyVec&& other) noexcept
                : VecFraction(std::move(other)) {
-}
-
-KeyVec::~KeyVec() { }
-
-void KeyVec::free() {
-  clear();
 }
 
 size_t KeyVec::size_of_internal() const noexcept {
@@ -31,7 +24,7 @@ size_t KeyVec::size_of_internal() const noexcept {
 }
 
 void KeyVec::copy(const KeyVec &other) {
-  free();
+  clear();
   assign(other.cbegin(), other.cend());
 }
 

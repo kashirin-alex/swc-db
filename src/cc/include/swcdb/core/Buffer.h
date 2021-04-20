@@ -147,7 +147,7 @@ struct BufferDyn : BufferT {
             : BufferT(sz), ptr(BufferT::base), mark(BufferT::base) {
   }
 
-  ~BufferDyn() { }
+  //~BufferDyn() { }
 
   void free() {
     BufferT::free();

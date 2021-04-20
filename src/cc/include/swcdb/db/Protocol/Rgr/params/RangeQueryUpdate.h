@@ -15,14 +15,15 @@
 namespace SWC { namespace Comm { namespace Protocol {
 namespace Rgr { namespace Params {
 
-class RangeQueryUpdateReq : public Serializable {
+class RangeQueryUpdateReq final : public Serializable {
   public:
 
-  RangeQueryUpdateReq();
+  RangeQueryUpdateReq() noexcept { }
 
-  RangeQueryUpdateReq(cid_t cid, rid_t rid);
+  RangeQueryUpdateReq(cid_t cid, rid_t rid) noexcept
+                      : cid(cid), rid(rid) { }
 
-  virtual ~RangeQueryUpdateReq();
+  //~RangeQueryUpdateReq() { }
 
   void print(std::ostream& out) const;
 
@@ -41,12 +42,14 @@ class RangeQueryUpdateReq : public Serializable {
 
 
 
-class RangeQueryUpdateRsp  : public Serializable {
+class RangeQueryUpdateRsp final : public Serializable {
   public:
 
-  RangeQueryUpdateRsp(int err = Error::OK);
+  RangeQueryUpdateRsp(int err = Error::OK) noexcept
+                      : err(err), cells_added(0) {
+  }
 
-  virtual ~RangeQueryUpdateRsp();
+  //~RangeQueryUpdateRsp() { }
 
   void print(std::ostream& out) const;
 

@@ -14,7 +14,7 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Params {
 
 
-class CreateReq : public Serializable {
+class CreateReq final : public Serializable {
   public:
 
   CreateReq();

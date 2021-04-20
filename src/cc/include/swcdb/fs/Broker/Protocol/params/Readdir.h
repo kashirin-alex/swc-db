@@ -15,7 +15,7 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Params {
 
 
-class ReaddirReq : public Serializable {
+class ReaddirReq final : public Serializable {
   public:
 
   ReaddirReq();
@@ -35,7 +35,7 @@ class ReaddirReq : public Serializable {
 };
 
 
-class ReaddirRsp : public Serializable {
+class ReaddirRsp final : public Serializable {
   public:
 
   FS::DirentList listing;

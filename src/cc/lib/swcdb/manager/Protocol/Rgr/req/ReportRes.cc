@@ -17,8 +17,6 @@ ReportRes::ReportRes(const Manager::Ranger::Ptr& rgr)
   cbp->header.set(REPORT, 60000);
 }
 
-ReportRes::~ReportRes() { }
-
 void ReportRes::handle_no_conn() {
   Env::Mngr::rangers()->rgr_report(
     rgr->rgrid,

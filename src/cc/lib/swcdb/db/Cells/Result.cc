@@ -10,18 +10,10 @@
 namespace SWC { namespace DB { namespace Cells {
 
 
-Result::Result(const uint64_t ttl_ns) noexcept
-              : bytes(0), ttl(ttl_ns) {
-}
-
 Result::Result(Result&& other) noexcept
               : std::vector<Cell*>(std::move(other)),
                 bytes(other.bytes), ttl(other.ttl) {
   other.bytes = 0;
-}
-
-Result::~Result() {
-  free();
 }
 
 void Result::free() {
@@ -30,10 +22,6 @@ void Result::free() {
       delete cell;
   clear();
   bytes = 0;
-}
-
-size_t Result::size_bytes() const noexcept {
-  return bytes;
 }
 
 void Result::take(Result& other) {

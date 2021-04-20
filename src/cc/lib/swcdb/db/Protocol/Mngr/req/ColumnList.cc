@@ -15,29 +15,27 @@ namespace Mngr { namespace Req {
 
 
 SWC_SHOULD_INLINE
-void ColumnList::request(ColumnList::Cb_t&& cb, 
+void ColumnList::request(ColumnList::Cb_t&& cb,
                          const uint32_t timeout) {
   request(Params::ColumnListReq(), std::move(cb), timeout);
 }
 
 SWC_SHOULD_INLINE
 void ColumnList::request(const Params::ColumnListReq& params,
-                         ColumnList::Cb_t&& cb, 
+                         ColumnList::Cb_t&& cb,
                          const uint32_t timeout) {
   std::make_shared<ColumnList>(params, std::move(cb), timeout)->run();
 }
 
-ColumnList::ColumnList(const Params::ColumnListReq& params, 
-                       ColumnList::Cb_t&& cb, 
-                       const uint32_t timeout) 
+ColumnList::ColumnList(const Params::ColumnListReq& params,
+                       ColumnList::Cb_t&& cb,
+                       const uint32_t timeout)
                       : client::ConnQueue::ReqBase(
                           false,
                           Buffers::make(params, 0, COLUMN_LIST, timeout)
                         ),
                         cb(std::move(cb)) {
 }
-
-ColumnList::~ColumnList() { }
 
 void ColumnList::handle_no_conn() {
   clear_endpoints();
@@ -47,7 +45,7 @@ void ColumnList::handle_no_conn() {
 bool ColumnList::run() {
   if(endpoints.empty()) {
     Env::Clients::get()->mngrs_groups->select(
-      DB::Types::MngrRole::SCHEMAS, endpoints); 
+      DB::Types::MngrRole::SCHEMAS, endpoints);
     if(endpoints.empty()) {
       MngrActive::make(
         DB::Types::MngrRole::SCHEMAS, shared_from_this())->run();

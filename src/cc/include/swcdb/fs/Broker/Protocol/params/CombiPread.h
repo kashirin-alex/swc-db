@@ -14,7 +14,7 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Params {
 
 
-class CombiPreadReq : public Serializable {
+class CombiPreadReq final : public Serializable {
   public:
 
   CombiPreadReq();

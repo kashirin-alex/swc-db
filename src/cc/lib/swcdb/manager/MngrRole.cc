@@ -41,9 +41,6 @@ MngrRole::MngrRole(const Comm::IoContextPtr& app_io,
   schedule_checkin(3000);
 }
 
-MngrRole::~MngrRole() { }
-
-
 void MngrRole::schedule_checkin(uint32_t t_ms) {
   Core::MutexAtomic::scope lock(m_mutex_timer);
   if(!m_run)

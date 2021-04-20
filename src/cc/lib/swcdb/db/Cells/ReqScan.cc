@@ -10,11 +10,6 @@
 namespace SWC { namespace DB { namespace Cells {
 
 
-ReqScan::ReqScan() noexcept
-                : Comm::ResponseCallback(nullptr, nullptr),
-                  only_keys(false), offset(0) {
-}
-
 ReqScan::ReqScan(const DB::Specs::Interval& spec)
                 : Comm::ResponseCallback(nullptr, nullptr),
                   spec(spec),
@@ -44,20 +39,6 @@ ReqScan::ReqScan(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev,
                 : Comm::ResponseCallback(conn, ev),
                   spec(range_begin, range_end),
                   only_keys(false), offset(0) {
-}
-
-ReqScan::~ReqScan() { }
-
-ReqScan::Ptr ReqScan::get_req_scan() noexcept {
-  return std::dynamic_pointer_cast<ReqScan>(shared_from_this());
-}
-
-bool ReqScan::offset_adjusted() noexcept {
-  if(offset) {
-    --offset;
-    return true;
-  }
-  return false;
 }
 
 bool ReqScan::selector(const Types::KeySeq key_seq,

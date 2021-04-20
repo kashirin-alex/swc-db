@@ -20,7 +20,7 @@ class ColumnsInterval : public Serializable {
                  : cid_begin(cid_begin), cid_end(cid_end) {
   }
 
-  virtual ~ColumnsInterval() { }
+  //~ColumnsInterval() { }
 
   cid_t cid_begin;
   cid_t cid_end;

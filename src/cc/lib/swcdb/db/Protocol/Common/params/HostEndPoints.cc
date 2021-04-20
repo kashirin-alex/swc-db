@@ -11,12 +11,9 @@
 namespace SWC { namespace Comm { namespace Protocol {
 namespace Common { namespace Params {
 
-HostEndPoints::HostEndPoints() {}
 
 HostEndPoints::HostEndPoints(const EndPoints& points)
                             : endpoints(points) { }
-
-HostEndPoints::~HostEndPoints() { }
 
 void HostEndPoints::set(const EndPoints& points) {
   endpoints.clear();

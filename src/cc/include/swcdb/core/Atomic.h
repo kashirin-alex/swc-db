@@ -27,11 +27,11 @@ struct AtomicBase : protected std::atomic<T> {
   AtomicBase(const AtomicBase<T>&) = delete;
 
   AtomicBase(const AtomicBase<T>&&) = delete;
-  
+
   template<typename ValueT> AtomicBase<T>& operator=(ValueT v) = delete;
 
-  SWC_CAN_INLINE
-  ~AtomicBase() noexcept { }
+  // SWC_CAN_INLINE
+  //~AtomicBase() noexcept { }
 
 
   SWC_CAN_INLINE
@@ -82,8 +82,8 @@ struct Atomic : public AtomicBase<T> {
 
   template<typename ValueT> Atomic<T>& operator=(ValueT v) = delete;
 
-  SWC_CAN_INLINE
-  ~Atomic() noexcept {}
+  //SWC_CAN_INLINE
+  //~Atomic() noexcept {}
 
 
   SWC_CAN_INLINE
@@ -105,7 +105,7 @@ struct Atomic : public AtomicBase<T> {
   T fetch_and(T v) noexcept {
     return AtomicBase<T>::fetch_and(v, OrderT);
   }
-  
+
   SWC_CAN_INLINE
   T fetch_or(T v) noexcept {
     return AtomicBase<T>::fetch_or(v, OrderT);
@@ -132,7 +132,7 @@ struct Atomic : public AtomicBase<T> {
   T and_rslt(T v) noexcept {
     return fetch_and(v) & v;
   }
-  
+
   SWC_CAN_INLINE
   T or_rslt(T v) noexcept {
     return fetch_or(v) | v;
@@ -193,7 +193,7 @@ struct Atomic : public AtomicBase<T> {
 
 
 template<typename T, std::memory_order OrderT=std::memory_order_relaxed>
-extern SWC_CAN_INLINE 
+extern SWC_CAN_INLINE
 std::ostream& operator<<(std::ostream& out, const AtomicBase<T, OrderT>& v) {
   return out << v.load();
 }

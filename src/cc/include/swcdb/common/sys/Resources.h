@@ -60,7 +60,7 @@ class Resources final {
 
   Resources operator=(const Resources& other) = delete;
 
-  ~Resources() { }
+  //~Resources() { }
 
   SWC_CAN_INLINE
   bool is_low_mem_state() const noexcept {

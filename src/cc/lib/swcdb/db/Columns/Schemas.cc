@@ -10,11 +10,6 @@
 
 namespace SWC { namespace DB {
 
-
-Schemas::Schemas() noexcept {}
-
-Schemas::~Schemas() {}
-
 void Schemas::add(int& err, const Schema::Ptr& schema) {
   Core::MutexSptd::scope lock(m_mutex);
   _add(err, schema);

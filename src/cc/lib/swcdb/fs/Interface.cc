@@ -541,8 +541,6 @@ void FsInterface::reset() noexcept {
 FsInterface::FsInterface(FS::Type typ)
                         : m_interface(new FS::Interface(typ)) {}
 
-FsInterface::~FsInterface() { }
-
 }
 
 } // namespace SWC

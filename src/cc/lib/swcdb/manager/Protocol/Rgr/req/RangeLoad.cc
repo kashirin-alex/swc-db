@@ -1,7 +1,7 @@
 /*
  * SWC-DB© Copyright since 2019 Alex Kashirin <kashirin.alex@gmail.com>
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
- */ 
+ */
 
 #include "swcdb/manager/Protocol/Rgr/req/RangeLoad.h"
 #include "swcdb/db/Protocol/Rgr/params/RangeLoad.h"
@@ -10,10 +10,10 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace Rgr { namespace Req {
 
 
-RangeLoad::RangeLoad(const Manager::Ranger::Ptr& rgr, 
-                     const Manager::Column::Ptr& col, 
+RangeLoad::RangeLoad(const Manager::Ranger::Ptr& rgr,
+                     const Manager::Column::Ptr& col,
                      const Manager::Range::Ptr& range,
-                     const DB::Schema::Ptr& schema) 
+                     const DB::Schema::Ptr& schema)
         : client::ConnQueue::ReqBase(
             false,
             Buffers::make(
@@ -22,12 +22,10 @@ RangeLoad::RangeLoad(const Manager::Ranger::Ptr& rgr,
               RANGE_LOAD, 3600000
             )
           ),
-          rgr(rgr), col(col), range(range), 
+          rgr(rgr), col(col), range(range),
           schema_revision(schema->revision) {
   SWC_LOG_OUT(LOG_INFO, range->print(SWC_LOG_OSTREAM  << "RANGE-LOAD "); );
 }
-  
-RangeLoad::~RangeLoad() { }
 
 void RangeLoad::handle(ConnHandlerPtr, const Event::Ptr& ev) {
   if(!valid() || ev->type == Event::Type::DISCONNECT)
@@ -53,22 +51,22 @@ void RangeLoad::handle(ConnHandlerPtr, const Event::Ptr& ev) {
 bool RangeLoad::valid() {
   return !range->deleted();
 }
-  
+
 void RangeLoad::handle_no_conn() {
-  loaded(Error::COMM_NOT_CONNECTED, true, 
+  loaded(Error::COMM_NOT_CONNECTED, true,
          DB::Cells::Interval(range->cfg->key_seq));
 }
 
-  
-void RangeLoad::loaded(int err, bool failure, 
+
+void RangeLoad::loaded(int err, bool failure,
                        const DB::Cells::Interval& intval) {
   if(!err)
     col->change_rgr_schema(rgr->rgrid, schema_revision);
 
   Env::Mngr::rangers()->range_loaded(rgr, range, err, failure, false);
   col->sort(range, intval);
-  
-  SWC_LOG_OUT(LOG_INFO, 
+
+  SWC_LOG_OUT(LOG_INFO,
     Error::print(SWC_LOG_OSTREAM << "RANGE-STATUS ", err);
     range->print(SWC_LOG_OSTREAM << ", ");
   );

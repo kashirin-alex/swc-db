@@ -2,7 +2,7 @@
  * SWC-DB© Copyright since 2019 Alex Kashirin <kashirin.alex@gmail.com>
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
- 
+
 #include "swcdb/core/config/Settings.h"
 #include "swcdb/core/comm/Settings.h"
 
@@ -18,14 +18,14 @@ void Settings::init_app_options(){
   init_comm_options();
   init_client_options();
   cmdline_desc.add_options()
-    ("requests", i32(1), "number of requests") 
+    ("requests", i32(1), "number of requests")
     ("batch", i32(1), "batch size of each request")
     ("threads", i32(1), "number of threads x (requests x batch)")
-    ("threads_conn", i32(1), "threads a connection") 
+    ("threads_conn", i32(1), "threads a connection")
     ("buffer", i64(0), "buffer size to send and receive")
   ;
 }
-void Settings::init_post_cmd_args(){ }
+void Settings::init_post_cmd_args() { }
 }}
 
 using namespace SWC;
@@ -49,7 +49,7 @@ class Checker {
 
     for(int i=1; i<=batch_sz; ++i) {
       std::make_shared<Comm::Protocol::Mngr::Req::Echo>(
-        conn, 
+        conn,
         [this, req_n, conn, last=i==batch_sz, start_ts=std::chrono::system_clock::now()]
         (bool state){
           if(!state)
@@ -58,8 +58,8 @@ class Checker {
 
           latency.add(
             std::chrono::duration_cast<std::chrono::nanoseconds>(
-              std::chrono::system_clock::now() - start_ts).count());   
-      
+              std::chrono::system_clock::now() - start_ts).count());
+
           if(!(sz % 100000))
             print_stats();
 
@@ -71,7 +71,7 @@ class Checker {
 
           if(!last)
             return;
-            
+
           run(conn, req_n);
         },
         buffer_sz
@@ -82,18 +82,18 @@ class Checker {
   void get_conn(){
     Env::Clients::get()->mngr->service->get_connection(
       Env::Clients::get()->mngrs_groups->get_endpoints(
-        DB::Types::MngrRole::SCHEMAS, 0, 0), 
+        DB::Types::MngrRole::SCHEMAS, 0, 0),
       [this](Comm::ConnHandlerPtr conn){
         if(!conn || !conn->is_open()){
           get_conn();
           return;
         }
-        
+
         std::vector<std::thread*> threads;
         for(int t=1; t<=threads_conn; ++t)
           std::thread([this, conn](){run(conn);}).detach();
       },
-      std::chrono::milliseconds(1000), 
+      std::chrono::milliseconds(1000),
       1
     );
   }
@@ -140,13 +140,13 @@ class Checker {
   std::mutex lock;
   std::condition_variable cv;
   Common::Stats::Stat latency;
-  
+
 };
 
 
 int main(int argc, char** argv) {
   Env::Config::init(argc, argv);
-  
+
   Env::Clients::init(
     std::make_shared<client::Clients>(
       nullptr,
@@ -158,7 +158,7 @@ int main(int argc, char** argv) {
   buffer_sz = Env::Config::settings()->get_i64("buffer");
 
   Checker(
-    Env::Config::settings()->get_i32("requests"), 
+    Env::Config::settings()->get_i32("requests"),
     Env::Config::settings()->get_i32("batch"),
     Env::Config::settings()->get_i32("threads_conn")
   ).run(

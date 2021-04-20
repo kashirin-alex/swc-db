@@ -21,7 +21,7 @@ class Fds final : private std::unordered_map<int32_t, FS::SmartFd::Ptr> {
 
   Fds() : m_next_fd(0) {}
 
-  ~Fds() { }
+  //~Fds() { }
 
   int32_t add(const FS::SmartFd::Ptr& smartfd) {
     assign_fd:
@@ -111,7 +111,7 @@ class FsBroker final {
           : m_shuttingdown(false), m_in_process(0) {
   }
 
-  ~FsBroker() { }
+  //~FsBroker() { }
 
   bool _can_process() noexcept {
     if(m_shuttingdown)

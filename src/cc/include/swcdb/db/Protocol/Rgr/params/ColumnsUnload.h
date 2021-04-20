@@ -12,13 +12,13 @@
 namespace SWC { namespace Comm { namespace Protocol {
 namespace Rgr { namespace Params {
 
-class ColumnsUnloadRsp : public Serializable {
+class ColumnsUnloadRsp final : public Serializable {
   public:
 
-  ColumnsUnloadRsp(int err = Error::OK) : err(err) { }
+  ColumnsUnloadRsp(int err = Error::OK) noexcept : err(err) { }
 
 
-  virtual ~ColumnsUnloadRsp() {}
+  //~ColumnsUnloadRsp() { }
 
   int err;
   std::unordered_map<cid_t, std::vector<rid_t>> columns;

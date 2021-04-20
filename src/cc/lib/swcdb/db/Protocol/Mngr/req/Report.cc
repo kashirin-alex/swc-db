@@ -39,8 +39,6 @@ Report::Report(const Serializable& params,
   cbp->append_i8(func);
 }
 
-Report::~Report() { }
-
 void Report::handle_no_conn() {
   clear_endpoints();
   run();
@@ -77,8 +75,6 @@ ClusterStatus::ClusterStatus(const EndPoints& endpoints,
                                 timeout
                               ), cb(std::move(cb)) {
 }
-
-ClusterStatus::~ClusterStatus() { }
 
 bool ClusterStatus::run() {
   Env::Clients::get()->mngr->get(endpoints)->put(req());
@@ -145,8 +141,6 @@ ColumnStatus::ColumnStatus(const Params::Report::ReqColumnStatus& params,
                             cb(std::move(cb)), cid(params.cid) {
 }
 
-ColumnStatus::~ColumnStatus() { }
-
 bool ColumnStatus::run() {
   if(endpoints.empty()) {
     Env::Clients::get()->mngrs_groups->select(cid, endpoints);
@@ -206,8 +200,6 @@ RangersStatus::RangersStatus(cid_t cid, RangersStatus::Cb_t&& cb,
                                 timeout
                               ), cb(std::move(cb)), cid(cid) {
 }
-
-RangersStatus::~RangersStatus() { }
 
 bool RangersStatus::run() {
   if(endpoints.empty()) {
@@ -282,8 +274,6 @@ ManagersStatus::ManagersStatus(const EndPoints& endpoints,
                                   timeout
                                 ), cb(std::move(cb)) {
 }
-
-ManagersStatus::~ManagersStatus() { }
 
 bool ManagersStatus::run() {
   if(endpoints.empty()) {

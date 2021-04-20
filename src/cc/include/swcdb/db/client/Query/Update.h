@@ -54,7 +54,7 @@ class Committer final : public std::enable_shared_from_this<Committer> {
             const rid_t rid,
             const DB::Cell::Key& key_finish);
 
-  virtual ~Committer() { }
+  //~Committer() { }
 
   void print(std::ostream& out);
 

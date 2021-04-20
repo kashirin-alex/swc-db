@@ -57,8 +57,6 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
   ConnHandlerPtr ptr() noexcept;
 
-  virtual ~ConnHandler();
-
   size_t endpoint_remote_hash() const;
 
   size_t endpoint_local_hash() const;
@@ -96,6 +94,8 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   void print(std::ostream& out) const;
 
   protected:
+
+  virtual ~ConnHandler();
 
   virtual SocketLayer* socket_layer() noexcept = 0;
 

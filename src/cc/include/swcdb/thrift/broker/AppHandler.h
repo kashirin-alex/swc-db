@@ -265,7 +265,7 @@ class AppHandler final : virtual public BrokerIf {
       for(auto& intval : col.intervals) {
         dbintval = DB::Specs::Interval::make_ptr(schema->col_type);
         Converter::set(intval, *dbintval.get());
-        dbcol->intervals.push_back(dbintval);
+        dbcol->push_back(dbintval);
       }
     }
 
@@ -280,7 +280,7 @@ class AppHandler final : virtual public BrokerIf {
       for(auto& intval : col.intervals) {
         dbintval = DB::Specs::Interval::make_ptr(schema->col_type);
         Converter::set(intval, *dbintval.get());
-        dbcol->intervals.push_back(dbintval);
+        dbcol->push_back(dbintval);
       }
     }
 

@@ -39,7 +39,7 @@ class Clients final {
           const ContextManager::Ptr& mngr_ctx,
           const ContextRanger::Ptr& rgr_ctx);
 
-  ~Clients();
+  //~Clients() { }
 
   const Mngr::Groups::Ptr         mngrs_groups;
   Comm::client::ConnQueuesPtr     mngr;
@@ -78,7 +78,7 @@ class Clients final {
 
   Clients(const client::Clients::Ptr& clients);
 
-  ~Clients();
+  //~Clients() { }
 
   private:
   client::Clients::Ptr                    m_clients = nullptr;

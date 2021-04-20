@@ -14,21 +14,21 @@ namespace Mngr { namespace Req {
 
 
 
-MngrActive::Ptr MngrActive::make(const cid_t& cid, 
+MngrActive::Ptr MngrActive::make(const cid_t& cid,
                                  const DispatchHandler::Ptr& hdlr,
                                  uint32_t timeout_ms) {
   return std::make_shared<MngrActive>(
     DB::Types::MngrRole::COLUMNS, cid, hdlr, timeout_ms);
 }
 
-MngrActive::Ptr MngrActive::make(const uint8_t& role, 
+MngrActive::Ptr MngrActive::make(const uint8_t& role,
                                  const DispatchHandler::Ptr& hdlr,
                                  uint32_t timeout_ms) {
   return std::make_shared<MngrActive>(
     role, DB::Schema::NO_CID, hdlr, timeout_ms);
 }
 
-MngrActive::MngrActive(const uint8_t& role, const cid_t& cid, 
+MngrActive::MngrActive(const uint8_t& role, const cid_t& cid,
                        const DispatchHandler::Ptr& hdlr, uint32_t timeout_ms)
                       : client::ConnQueue::ReqBase(
                           false,
@@ -43,8 +43,6 @@ MngrActive::MngrActive(const uint8_t& role, const cid_t& cid,
                           Env::Clients::get()->mngr->service->io()->executor())),
                         timeout_ms(timeout_ms) {
 }
-
-MngrActive::~MngrActive() { }
 
 void MngrActive::run_within(uint32_t t_ms) {
   timer.cancel();
@@ -75,13 +73,13 @@ bool MngrActive::run() {
   if(hosts.empty()) {
     Env::Clients::get()->mngrs_groups->hosts(role, cid, hosts, group_host);
     if(hosts.empty()) {
-      SWC_LOGF(LOG_WARN, "Empty cfg of mngr.host for role=%d cid=%lu", 
+      SWC_LOGF(LOG_WARN, "Empty cfg of mngr.host for role=%d cid=%lu",
                role, cid);
       run_within(5000);
       return false;
     }
   }
-  
+
   Env::Clients::get()->mngr->get(hosts.at(nxt))->put(req());
   return true;
 }
@@ -96,9 +94,9 @@ void MngrActive::handle(ConnHandlerPtr, const Event::Ptr& ev) {
 
       Params::MngrActiveRsp params;
       params.decode(&ptr, &remain);
-      
+
       if(params.available && params.endpoints.size()) {
-        group_host.endpoints = params.endpoints; 
+        group_host.endpoints = params.endpoints;
         Env::Clients::get()->mngrs_groups->add(group_host);
         hdlr->run();
         return;

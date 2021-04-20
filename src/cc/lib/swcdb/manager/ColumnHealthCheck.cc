@@ -114,8 +114,6 @@ ColumnHealthCheck::ColumnHealthCheck(const Column::Ptr& col,
   SWC_LOGF(LOG_DEBUG, "Column-Health START cid(%lu)", col->cfg->cid);
 }
 
-ColumnHealthCheck::~ColumnHealthCheck() { }
-
 void ColumnHealthCheck::run(bool initial) {
   if(m_check.running())
     return;

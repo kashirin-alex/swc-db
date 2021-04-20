@@ -14,7 +14,7 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Params {
 
 
-class MkdirsReq : public Serializable {
+class MkdirsReq final : public Serializable {
   public:
 
   MkdirsReq();

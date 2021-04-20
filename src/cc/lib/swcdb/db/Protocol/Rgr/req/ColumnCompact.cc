@@ -1,7 +1,7 @@
 /*
  * SWC-DB© Copyright since 2019 Alex Kashirin <kashirin.alex@gmail.com>
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
- */ 
+ */
 
 
 #include "swcdb/db/client/Clients.h"
@@ -11,17 +11,15 @@
 
 namespace SWC { namespace Comm { namespace Protocol {
 namespace Rgr { namespace Req {
-  
 
-ColumnCompact::ColumnCompact(cid_t cid) 
+
+ColumnCompact::ColumnCompact(cid_t cid)
               : client::ConnQueue::ReqBase(
                   false,
                   Buffers::make(
                     Params::ColumnCompactReq(cid), 0, COLUMN_COMPACT, 60000)
                 ) {
 }
-
-ColumnCompact::~ColumnCompact() { }
 
 void ColumnCompact::handle(ConnHandlerPtr, const Event::Ptr& ev) {
   if(ev->type == Event::Type::DISCONNECT)
@@ -45,7 +43,7 @@ void ColumnCompact::handle(ConnHandlerPtr, const Event::Ptr& ev) {
     request_again();
 }
 
-void ColumnCompact::handle_no_conn() { 
+void ColumnCompact::handle_no_conn() {
 }
 
 

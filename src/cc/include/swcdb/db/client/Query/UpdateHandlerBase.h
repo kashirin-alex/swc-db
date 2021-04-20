@@ -29,8 +29,6 @@ class Base : public std::enable_shared_from_this<Base> {
 
     Column() noexcept { }
 
-    virtual ~Column() { }
-
     virtual void print(std::ostream& out) = 0;
 
     virtual cid_t get_cid() const noexcept = 0;
@@ -65,6 +63,10 @@ class Base : public std::enable_shared_from_this<Base> {
 
     virtual bool error() noexcept  = 0;
 
+    protected:
+
+    virtual ~Column() { }
+
   };
 
 
@@ -81,8 +83,6 @@ class Base : public std::enable_shared_from_this<Base> {
       : state_error(Error::OK), completion(0),
         timeout(0), timeout_ratio(1000), buff_sz(0), buff_ahead(0) {
   }
-
-  virtual ~Base() { }
 
   virtual bool valid() noexcept = 0;
 
@@ -119,6 +119,9 @@ class Base : public std::enable_shared_from_this<Base> {
     return reset ? m_resend_cells.exchange(0) : m_resend_cells.load();
   }
 
+  protected:
+
+  virtual ~Base() { }
 
   private:
   Core::Atomic<size_t>              m_resend_cells;

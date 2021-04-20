@@ -16,19 +16,19 @@ namespace Mngr { namespace Req {
 
 
 SWC_SHOULD_INLINE
-void ColumnMng::create(const DB::Schema::Ptr& schema, 
+void ColumnMng::create(const DB::Schema::Ptr& schema,
                        ColumnMng::Cb_t&& cb, const uint32_t timeout) {
   request(Func::CREATE, schema, std::move(cb), timeout);
 }
 
 SWC_SHOULD_INLINE
-void ColumnMng::modify(const DB::Schema::Ptr& schema, 
+void ColumnMng::modify(const DB::Schema::Ptr& schema,
                        ColumnMng::Cb_t&& cb, const uint32_t timeout) {
   request(Func::MODIFY, schema, std::move(cb), timeout);
 }
 
 SWC_SHOULD_INLINE
-void ColumnMng::remove(const DB::Schema::Ptr& schema, 
+void ColumnMng::remove(const DB::Schema::Ptr& schema,
                        ColumnMng::Cb_t&& cb, const uint32_t timeout) {
   request(Func::DELETE, schema, std::move(cb), timeout);
 }
@@ -41,7 +41,7 @@ void ColumnMng::request(ColumnMng::Func func, const DB::Schema::Ptr& schema,
 }
 
 
-ColumnMng::ColumnMng(const Params::ColumnMng& params, 
+ColumnMng::ColumnMng(const Params::ColumnMng& params,
                      ColumnMng::Cb_t&& cb, const uint32_t timeout)
                     : client::ConnQueue::ReqBase(
                         false,
@@ -49,8 +49,6 @@ ColumnMng::ColumnMng(const Params::ColumnMng& params,
                       ),
                       cb(std::move(cb)) {
 }
-
-ColumnMng::~ColumnMng() { }
 
 void ColumnMng::handle_no_conn() {
   clear_endpoints();

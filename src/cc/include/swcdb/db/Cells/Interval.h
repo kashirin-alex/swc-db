@@ -35,7 +35,7 @@ class Interval final {
 
   Interval& operator=(const Interval&) = delete;
 
-  ~Interval();
+  //~Interval() { }
 
   void copy(const Interval& other);
 
@@ -65,7 +65,9 @@ class Interval final {
 
   void expand(const int64_t& ts);
 
-  bool align(const Interval &other);
+  bool align(const Interval &other) {
+    return align(other.aligned_min, other.aligned_max);
+  }
 
   bool align(const DB::Cell::KeyVec& _min, const DB::Cell::KeyVec& _max);
 

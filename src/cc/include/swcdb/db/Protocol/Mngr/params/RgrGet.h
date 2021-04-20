@@ -16,12 +16,14 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace Mngr { namespace Params {
 
 
-class RgrGetReq : public Serializable {
+class RgrGetReq final : public Serializable {
   public:
 
-  RgrGetReq(cid_t cid=0, rid_t rid=0, bool next_range=false);
+  RgrGetReq(cid_t cid=0, rid_t rid=0, bool next_range=false) noexcept
+            : cid(cid), rid(rid), next_range(next_range) {
+  }
 
-  virtual ~RgrGetReq();
+  //~RgrGetReq() { }
 
   void print(std::ostream& out) const;
 
@@ -43,14 +45,18 @@ class RgrGetReq : public Serializable {
 
 
 
-class RgrGetRsp : public Common::Params::HostEndPoints {
+class RgrGetRsp final : public Common::Params::HostEndPoints {
   public:
 
-  RgrGetRsp(int err = Error::OK);
+  RgrGetRsp(int err = Error::OK) noexcept
+            : err(err), cid(0), rid(0) {
+  }
 
-  RgrGetRsp(cid_t cid, rid_t rid);
+  RgrGetRsp(cid_t cid, rid_t rid) noexcept
+            : err(Error::OK), cid(cid), rid(rid) {
+  }
 
-  virtual ~RgrGetRsp();
+  //~RgrGetRsp() { }
 
   int             err;
   cid_t           cid;

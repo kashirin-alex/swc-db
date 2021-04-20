@@ -27,7 +27,7 @@ class RangeSplit final {
 
   RangeSplit& operator=(const RangeSplit&) = delete;
 
-  ~RangeSplit() { }
+  //~RangeSplit() { }
 
   int run() {
     int64_t ts = Time::now_ns();

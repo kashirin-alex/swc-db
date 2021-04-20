@@ -27,8 +27,6 @@ QueryUpdate::QueryUpdate(
         : Reader(sql, message), hdlr(hdlr) {
 }
 
-QueryUpdate::~QueryUpdate() {}
-
 int QueryUpdate::parse_update() {
 
   bool token_cmd = false;

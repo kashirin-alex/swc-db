@@ -14,7 +14,7 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Params {
 
 
-class SeekReq : public Serializable {
+class SeekReq final : public Serializable {
   public:
 
   SeekReq();
@@ -37,7 +37,7 @@ class SeekReq : public Serializable {
 
 
 
-class SeekRsp : public Serializable {
+class SeekRsp final : public Serializable {
   public:
 
   SeekRsp();

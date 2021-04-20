@@ -35,7 +35,7 @@ class Rangers final
 
   Rangers(const Config::Property::V_GINT32::Ptr expiry_ms) noexcept;
 
-  virtual ~Rangers();
+  ~Rangers();
 
   void clear();
 

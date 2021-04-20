@@ -19,8 +19,6 @@ class Serializable {
 
   public:
 
-  virtual ~Serializable() { }
-
   size_t encoded_length() const;
 
   void encode(uint8_t** bufp) const;
@@ -29,6 +27,8 @@ class Serializable {
 
 
   protected:
+
+  virtual ~Serializable() { };
 
   virtual size_t internal_encoded_length() const = 0;
 

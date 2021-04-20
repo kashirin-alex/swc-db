@@ -146,7 +146,7 @@ class FsInterface final {
 
   FsInterface(FS::Type typ);
 
-  ~FsInterface();
+  //~FsInterface() { }
 
   private:
   FS::Interface::Ptr  m_interface = nullptr;

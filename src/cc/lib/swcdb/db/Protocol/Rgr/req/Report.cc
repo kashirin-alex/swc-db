@@ -35,8 +35,6 @@ Report::Report(const EndPoints& endpoints,
   cbp->append_i8(func);
 }
 
-Report::~Report() { }
-
 bool Report::run() {
   Env::Clients::get()->rgr->get(endpoints)->put(req());
   return true;
@@ -60,8 +58,6 @@ ReportRes::ReportRes(const EndPoints& endpoints,
                         timeout
                       ), cb(std::move(cb)) {
 }
-
-ReportRes::~ReportRes() { }
 
 void ReportRes::handle_no_conn() {
   cb(req(), Error::COMM_CONNECT_ERROR, Params::Report::RspRes());
@@ -110,8 +106,6 @@ ReportCids::ReportCids(const EndPoints& endpoints,
                           timeout
                         ), cb(std::move(cb)) {
 }
-
-ReportCids::~ReportCids() { }
 
 void ReportCids::handle_no_conn() {
   cb(req(), Error::COMM_CONNECT_ERROR, Params::Report::RspCids());
@@ -164,8 +158,6 @@ ReportColumnRids::ReportColumnRids(const EndPoints& endpoints,
                                       timeout
                                     ), cb(std::move(cb)) {
 }
-
-ReportColumnRids::~ReportColumnRids() { }
 
 void ReportColumnRids::handle_no_conn() {
   cb(req(), Error::COMM_CONNECT_ERROR, Params::Report::RspColumnRids());
@@ -238,8 +230,6 @@ ReportColumnsRanges::ReportColumnsRanges(
               timeout
             ), cb(std::move(cb)) {
 }
-
-ReportColumnsRanges::~ReportColumnsRanges() { }
 
 void ReportColumnsRanges::handle_no_conn() {
   cb(req(), Error::COMM_CONNECT_ERROR, Params::Report::RspColumnsRanges());

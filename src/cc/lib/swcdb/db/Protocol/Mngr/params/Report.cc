@@ -15,11 +15,6 @@ namespace Report {
 
 
 
-ReqColumnStatus::ReqColumnStatus(cid_t cid)
-                                : cid(cid) { }
-
-ReqColumnStatus::~ReqColumnStatus() { }
-
 size_t ReqColumnStatus::internal_encoded_length() const {
   return Serialization::encoded_length_vi64(cid);
 }
@@ -64,11 +59,6 @@ void RspColumnStatus::RangeStatus::display(std::ostream& out,
 
 
 
-RspColumnStatus::RspColumnStatus()
-                  : state(DB::Types::MngrColumn::State::NOTSET) {
-}
-
-RspColumnStatus::~RspColumnStatus() { }
 
 size_t RspColumnStatus::internal_encoded_length() const {
   size_t sz = 1;
@@ -150,9 +140,7 @@ void RspRangersStatus::Ranger::display(std::ostream& out,
 }
 
 
-RspRangersStatus::RspRangersStatus() { }
 
-RspRangersStatus::~RspRangersStatus() { }
 
 size_t RspRangersStatus::internal_encoded_length() const {
   size_t sz = Serialization::encoded_length_vi64(rangers.size());
@@ -231,9 +219,7 @@ void RspManagersStatus::Manager::display(std::ostream& out,
 }
 
 
-RspManagersStatus::RspManagersStatus() { }
 
-RspManagersStatus::~RspManagersStatus() { }
 
 size_t RspManagersStatus::internal_encoded_length() const {
   size_t sz = Serialization::encoded_length_vi64(managers.size());

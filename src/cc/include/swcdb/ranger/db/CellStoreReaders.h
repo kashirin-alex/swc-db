@@ -17,7 +17,7 @@ class Readers final : private std::vector<Read::Ptr> {
 
   typedef std::vector<Read::Ptr>  Vec;
   typedef Readers*                Ptr;
-  
+
   using Vec::empty;
   using Vec::size;
   using Vec::begin;
@@ -28,19 +28,23 @@ class Readers final : private std::vector<Read::Ptr> {
 
   RangePtr range;
 
-  explicit Readers();
+  explicit Readers() noexcept { }
 
   Readers(const Readers&) = delete;
 
   Readers(const Readers&&) = delete;
-  
+
   Readers& operator=(const Readers&) = delete;
 
-  void init(const RangePtr& for_range);
+  void init(const RangePtr& for_range) {
+    range = for_range;
+  }
 
-  ~Readers();
+  //~Readers() { }
 
-  void add(Read::Ptr cs);
+  void add(Read::Ptr cs) {
+    push_back(cs);
+  }
 
   void load(int& err);
 
@@ -51,7 +55,7 @@ class Readers final : private std::vector<Read::Ptr> {
   size_t size_bytes(bool only_loaded=false) const;
 
   uint32_t get_cell_revs() const;
-  
+
   int64_t get_ts_earliest() const;
 
   size_t blocks_count() const;
@@ -59,15 +63,15 @@ class Readers final : private std::vector<Read::Ptr> {
   size_t release(size_t bytes);
 
   bool processing() const noexcept;
-  
+
   void remove(int &err);
 
   void unload();
 
   void clear();
-  
+
   void load_cells(BlockLoader* loader);
-  
+
   void get_blocks(int& err, std::vector<Block::Read::Ptr>& to) const;
 
   void get_prev_key_end(uint32_t idx, DB::Cell::Key& key) const;
@@ -79,9 +83,9 @@ class Readers final : private std::vector<Read::Ptr> {
   uint32_t encoded_length() const;
 
   void encode(uint8_t** ptr) const;
-  
+
   void decode(int &err, const uint8_t** ptr, size_t* remain);
-  
+
   void load_from_path(int &err);
 
   void replace(int &err, Writers& w_cellstores);
@@ -91,7 +95,7 @@ class Readers final : private std::vector<Read::Ptr> {
   void print(std::ostream& out, bool minimal=true) const;
 
   private:
-  
+
   void _free();
 
   void _close();

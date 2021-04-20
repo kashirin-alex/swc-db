@@ -9,11 +9,6 @@
 
 namespace SWC { namespace client {
 
-Schemas::Schemas(const Config::Property::V_GINT32::Ptr expiry_ms) noexcept
-                : m_expiry_ms(expiry_ms) {
-}
-
-Schemas::~Schemas() { }
 
 void Schemas::remove(cid_t cid) {
   Core::MutexSptd::scope lock(m_mutex);

@@ -119,7 +119,11 @@ class Cell final {
 
   Cell& operator=(const Cell&) = delete;
 
-  Cell& operator=(Cell&&) noexcept;
+  SWC_CAN_INLINE
+  Cell& operator=(Cell&& other) noexcept {
+    move(other);
+    return *this;
+  }
 
   void move(Cell& other) noexcept;
 

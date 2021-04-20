@@ -9,19 +9,6 @@
 
 namespace SWC { namespace Ranger { namespace CellStore {
 
-Readers::Readers() { }
-
-void Readers::init(const RangePtr& for_range) {
-  range = for_range;
-}
-
-Readers::~Readers() { }
-
-
-SWC_SHOULD_INLINE
-void Readers::add(Read::Ptr cs) {
-  push_back(cs);
-}
 
 void Readers::load(int& err) {
   if(empty()) {

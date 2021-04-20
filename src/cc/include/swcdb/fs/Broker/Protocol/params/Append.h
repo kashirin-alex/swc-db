@@ -15,7 +15,7 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Params {
 
 
-class AppendReq : public Serializable {
+class AppendReq final : public Serializable {
   public:
 
   AppendReq();
@@ -38,7 +38,7 @@ class AppendReq : public Serializable {
 
 
 
-class AppendRsp : public Serializable {
+class AppendRsp final : public Serializable {
   public:
 
   AppendRsp();
@@ -64,7 +64,7 @@ class AppendRsp : public Serializable {
 #if defined(SWC_IMPL_SOURCE) or \
     (defined(FS_BROKER_APP) and !defined(BUILTIN_FS_BROKER))
 #include "swcdb/fs/Broker/Protocol/params/Append.cc"
-#endif 
+#endif
 
 
 #endif // swcdb_fs_Broker_Protocol_params_Append_h

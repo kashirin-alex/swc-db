@@ -78,7 +78,7 @@ class Value {
 
   Value(Ptr ptr) noexcept;
 
-  virtual ~Value();
+  virtual ~Value() { }
 
   virtual Ptr make_new(const Strings& values = Strings()) = 0;
 
@@ -105,6 +105,7 @@ class Value {
   bool is_zero_token() const noexcept;
 
   Core::Atomic<uint8_t> flags;
+
 };
 
 

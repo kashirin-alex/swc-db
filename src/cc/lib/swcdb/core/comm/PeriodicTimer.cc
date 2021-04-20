@@ -15,8 +15,6 @@ PeriodicTimer::PeriodicTimer(const Config::Property::V_GINT32::Ptr cfg_ms,
   schedule();
 }
 
-PeriodicTimer::~PeriodicTimer() { }
-
 void PeriodicTimer::schedule() {
   expires_after(std::chrono::milliseconds(m_ms->get()));
   async_wait(
@@ -28,9 +26,6 @@ void PeriodicTimer::schedule() {
     }
   );
 }
-
-
-PeriodicTimers::~PeriodicTimers() { }
 
 void PeriodicTimers::stop() {
   Core::MutexSptd::scope lock(m_mutex);

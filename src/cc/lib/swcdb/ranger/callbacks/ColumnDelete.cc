@@ -14,8 +14,6 @@ ColumnDelete::ColumnDelete(const Comm::ConnHandlerPtr& conn,
                             cid(cid) {
 }
 
-ColumnDelete::~ColumnDelete() { }
-
 void ColumnDelete::add(const RangePtr& range) {
   Core::MutexSptd::scope lock(m_mutex);
   m_ranges.push_back(range);

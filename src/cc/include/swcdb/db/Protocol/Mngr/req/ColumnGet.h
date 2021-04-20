@@ -14,35 +14,35 @@
 namespace SWC { namespace Comm { namespace Protocol {
 namespace Mngr { namespace Req {
 
-  
+
 class ColumnGet: public client::ConnQueue::ReqBase {
   public:
-  
+
   using Flag = Params::ColumnGetReq::Flag;
-  typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&, 
+  typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&,
                              int, const Params::ColumnGetRsp&)> Cb_t;
 
 
-  static void schema(const std::string& name, Cb_t&& cb, 
-                     const uint32_t timeout = 10000);
-  
-  static void schema(cid_t cid, Cb_t&& cb, 
+  static void schema(const std::string& name, Cb_t&& cb,
                      const uint32_t timeout = 10000);
 
-  static void cid(const std::string& name, Cb_t&& cb, 
+  static void schema(cid_t cid, Cb_t&& cb,
+                     const uint32_t timeout = 10000);
+
+  static void cid(const std::string& name, Cb_t&& cb,
                   const uint32_t timeout = 10000);
 
   static void request(Flag flag, const std::string& name, Cb_t&& cb,
                       const uint32_t timeout = 10000);
 
-  static void request(Flag flag, cid_t cid, Cb_t&& cb, 
+  static void request(Flag flag, cid_t cid, Cb_t&& cb,
                       const uint32_t timeout = 10000);
 
 
-  ColumnGet(const Params::ColumnGetReq& params, Cb_t&& cb, 
+  ColumnGet(const Params::ColumnGetReq& params, Cb_t&& cb,
             const uint32_t timeout);
 
-  virtual ~ColumnGet();
+  virtual ~ColumnGet() { }
 
   void handle_no_conn() override;
 
@@ -51,7 +51,7 @@ class ColumnGet: public client::ConnQueue::ReqBase {
   void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
 
   private:
-  
+
   void clear_endpoints();
 
   const Cb_t  cb;
@@ -65,6 +65,6 @@ class ColumnGet: public client::ConnQueue::ReqBase {
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/db/Protocol/Mngr/req/ColumnGet.cc"
-#endif 
+#endif
 
 #endif // swcdb_db_protocol_mngr_req_ColumnGet_h

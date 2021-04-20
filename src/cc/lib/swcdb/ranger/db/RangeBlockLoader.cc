@@ -21,8 +21,6 @@ BlockLoader::BlockLoader(Block::Ptr block)
                           m_logs(0) {
 }
 
-BlockLoader::~BlockLoader() { }
-
 SWC_SHOULD_INLINE
 void BlockLoader::add(const ReqScan::Ptr& req) {
   q_req.push({.req=req, .ts=Time::now_ns()});

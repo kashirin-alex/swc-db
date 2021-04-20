@@ -12,16 +12,16 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace Rgr { namespace Params {
 
 
-class RangeLoad : public Common::Params::ColRangeId {
+class RangeLoad final : public Common::Params::ColRangeId {
   public:
 
-  RangeLoad() {}
+  RangeLoad() noexcept {}
 
-  RangeLoad(cid_t cid, rid_t rid, const DB::Schema::Ptr& schema)
+  RangeLoad(cid_t cid, rid_t rid, const DB::Schema::Ptr& schema) noexcept
             : Common::Params::ColRangeId(cid, rid), schema(schema) {
   }
 
-  virtual ~RangeLoad() {}
+  //~RangeLoad() { }
 
   DB::Schema::Ptr schema;
 
@@ -43,14 +43,14 @@ class RangeLoad : public Common::Params::ColRangeId {
 
 };
 
-class RangeLoaded : public Serializable {
+class RangeLoaded final : public Serializable {
   public:
 
-  RangeLoaded(const DB::Types::KeySeq key_seq)
+  RangeLoaded(const DB::Types::KeySeq key_seq) noexcept
               : intval(false), interval(key_seq) {
   }
 
-  virtual ~RangeLoaded() {}
+  //~RangeLoaded() { }
 
   bool                intval;
   DB::Cells::Interval interval;

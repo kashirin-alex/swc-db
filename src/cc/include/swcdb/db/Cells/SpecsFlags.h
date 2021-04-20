@@ -8,7 +8,7 @@
 #define swcdb_db_cells_SpecsFlags_h
 
 
-#include <string>
+#include "swcdb/core/Compat.h"
 
 
 namespace SWC { namespace DB { namespace Specs {
@@ -24,19 +24,31 @@ class Flags {
   static const uint8_t ONLY_DELETES       = 0x10;
 
 
-  explicit Flags() noexcept;
+  explicit Flags() noexcept
+                : limit(0), offset(0),
+                  max_versions(0), max_buffer(0),
+                  options(0), was_set(false) {
+  }
 
   void copy(const Flags &other) noexcept;
 
-  ~Flags();
+  //~Flags() { }
 
-  bool is_only_keys() const noexcept;
+  bool is_only_keys() const noexcept {
+    return options & ONLY_KEYS;
+  }
 
-  bool is_only_deletes() const noexcept;
+  bool is_only_deletes() const noexcept {
+    return options & ONLY_DELETES;
+  }
 
-  void set_only_keys() noexcept;
+  void set_only_keys() noexcept {
+    options |= ONLY_KEYS;
+  }
 
-  void set_only_deletes() noexcept;
+  void set_only_deletes() noexcept {
+    options |= ONLY_DELETES;
+  }
 
   bool equal(const Flags &other) const noexcept;
 

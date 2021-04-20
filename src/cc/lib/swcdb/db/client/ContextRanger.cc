@@ -16,8 +16,6 @@ ContextRanger::ContextRanger()
           "swc.client.Rgr.comm.encoder")) {
 }
 
-ContextRanger::~ContextRanger() { }
-
 void ContextRanger::handle(Comm::ConnHandlerPtr, //conn
                            const Comm::Event::Ptr& ev) {
   switch (ev->type) {

@@ -13,23 +13,39 @@
 
 namespace SWC { namespace DB { namespace Specs {
 
-     
+
 class Timestamp {
   public:
 
-  explicit Timestamp() noexcept;
+  explicit Timestamp() noexcept
+                    : value(0), comp(Condition::NONE), was_set(false) {
+  }
 
-  explicit Timestamp(int64_t timestamp, Condition::Comp comp) noexcept;
+  explicit Timestamp(int64_t timestamp, Condition::Comp comp) noexcept
+                    : value(timestamp), comp(comp), was_set(true) {
+  }
 
-  void copy(const Timestamp &other) noexcept;
+  //~Timestamp() { }
 
-  void set(int64_t timestamp, Condition::Comp comperator) noexcept;
+  void copy(const Timestamp &other) noexcept {
+    set(other.value, other.comp);
+  }
 
-  void free() noexcept;
+  void set(int64_t timestamp, Condition::Comp comperator) noexcept {
+    value = timestamp;
+    comp  = comperator;
+    was_set = true;
+  }
 
-  ~Timestamp();
+  void free() noexcept {
+    value  = 0;
+    comp  = Condition::NONE;
+    was_set = false;
+  }
 
-  bool empty() const noexcept;
+  bool empty() const noexcept {
+    return !was_set;
+  }
 
   bool equal(const Timestamp &other) const noexcept;
 
@@ -39,7 +55,9 @@ class Timestamp {
 
   void decode(const uint8_t** bufp, size_t* remainp);
 
-  bool is_matching(int64_t other) const noexcept;
+  bool is_matching(int64_t other) const noexcept {
+    return Condition::is_matching(comp, value, other);
+  }
 
   std::string to_string() const;
 

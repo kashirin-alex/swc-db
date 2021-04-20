@@ -24,15 +24,28 @@ struct Header final {
   static const uint8_t FLAG_REQUEST_MASK        = 0xE;
   static const uint8_t FLAG_RESPONSE_IGNORE_BIT = 0x2;
 
-  Header(uint64_t cmd=0, uint32_t timeout=0) noexcept;
 
-  explicit Header(const Header& init_from_req_header) noexcept;
+  Header(uint64_t cmd=0, uint32_t timeout=0) noexcept
+        : version(1), header_len(0), flags(0), buffers(0),
+          id(0), timeout_ms(timeout), checksum(0), command(cmd) {
+  }
 
-  // ~Header() { }
+  explicit Header(const Header& init_from_req_header) noexcept
+                  : version(1), header_len(0),
+                    flags(init_from_req_header.flags), buffers(0),
+                    id(init_from_req_header.id),
+                    timeout_ms(0), checksum(0),
+                    command(init_from_req_header.command) {
+  }
+
+  //~Header() { }
 
   void reset() noexcept;
 
-  void set(uint64_t cmd=0, uint32_t timeout=0) noexcept;
+  void set(uint64_t cmd=0, uint32_t timeout=0) noexcept {
+    command     = cmd;
+    timeout_ms  = timeout;
+  }
 
   uint8_t encoded_length() noexcept;
 

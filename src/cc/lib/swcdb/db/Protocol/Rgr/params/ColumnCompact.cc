@@ -12,10 +12,6 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace Rgr { namespace Params {
 
 
-ColumnCompactReq::ColumnCompactReq(cid_t cid) : cid(cid) {}
-
-ColumnCompactReq::~ColumnCompactReq() { }
-
 std::string ColumnCompactReq::to_string() const {
   std::string s("ColumnCompactReq(");
   s.append("cid=");
@@ -27,20 +23,16 @@ std::string ColumnCompactReq::to_string() const {
 size_t ColumnCompactReq::internal_encoded_length() const {
   return Serialization::encoded_length_vi64(cid);
 }
-  
+
 void ColumnCompactReq::internal_encode(uint8_t** bufp) const {
   Serialization::encode_vi64(bufp, cid);
 }
-  
+
 void ColumnCompactReq::internal_decode(const uint8_t** bufp, size_t* remainp) {
   cid = Serialization::decode_vi64(bufp, remainp);
 }
 
 
-
-ColumnCompactRsp::ColumnCompactRsp(int err): err(err) {}
-
-ColumnCompactRsp::~ColumnCompactRsp() { }
 
 std::string ColumnCompactRsp::to_string() const {
   std::string s("ColumnCompactRsp(");
@@ -58,11 +50,11 @@ std::string ColumnCompactRsp::to_string() const {
 size_t ColumnCompactRsp::internal_encoded_length() const {
   return Serialization::encoded_length_vi32(err);
 }
-  
+
 void ColumnCompactRsp::internal_encode(uint8_t** bufp) const {
   Serialization::encode_vi32(bufp, err);
 }
-  
+
 void ColumnCompactRsp::internal_decode(const uint8_t** bufp, size_t* remainp) {
   err = Serialization::decode_vi32(bufp, remainp);
 }

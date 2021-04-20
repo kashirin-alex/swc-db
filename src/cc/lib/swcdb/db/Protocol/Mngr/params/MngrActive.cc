@@ -12,11 +12,6 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace Mngr { namespace Params {
 
 
-MngrActiveReq::MngrActiveReq(uint8_t role, cid_t cid) 
-                            : role(role), cid(cid) {
-}
-
-MngrActiveReq::~MngrActiveReq() { }
 
 size_t MngrActiveReq::internal_encoded_length() const {
   return 1 + Serialization::encoded_length_vi64(cid);
@@ -34,14 +29,10 @@ void MngrActiveReq::internal_decode(const uint8_t** bufp, size_t* remainp) {
 
 
 
-MngrActiveRsp::MngrActiveRsp() {}
-
-MngrActiveRsp::MngrActiveRsp(const EndPoints& endpoints) 
-                            : Common::Params::HostEndPoints(endpoints), 
-                              available(endpoints.size()>0) { 
+MngrActiveRsp::MngrActiveRsp(const EndPoints& endpoints)
+                            : Common::Params::HostEndPoints(endpoints),
+                              available(endpoints.size()>0) {
 }
-
-MngrActiveRsp::~MngrActiveRsp() { }
 
 size_t MngrActiveRsp::internal_encoded_length() const {
   size_t len = 1;

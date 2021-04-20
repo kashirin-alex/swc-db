@@ -24,6 +24,8 @@ class DispatchHandler : public std::enable_shared_from_this<DispatchHandler> {
 
   virtual bool run();
 
+  protected:
+
   virtual ~DispatchHandler() { };
 
 };

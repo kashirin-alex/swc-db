@@ -30,7 +30,7 @@ class Reader {
 
   Reader(const std::string& sql, std::string& message);
 
-  ~Reader();
+  //~Reader() { }
 
   bool is_char(const char* stop) const;
 
@@ -74,7 +74,7 @@ class Reader {
 
   void read_uint32_t(uint32_t& value, bool& was_set,
                      const char* stop=nullptr);
- 
+
   void read_int64_t(int64_t& value, bool& was_set,
                     const char* stop=nullptr);
 

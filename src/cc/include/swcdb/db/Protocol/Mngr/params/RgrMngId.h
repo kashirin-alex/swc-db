@@ -13,7 +13,7 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace Mngr { namespace Params {
 
 
-class RgrMngId  : public Common::Params::HostEndPoints {
+class RgrMngId final : public Common::Params::HostEndPoints {
   public:
 
     enum Flag : uint8_t {
@@ -28,14 +28,14 @@ class RgrMngId  : public Common::Params::HostEndPoints {
       RS_SHUTTINGDOWN = 9
     };
 
-    RgrMngId() {}
+    RgrMngId() noexcept {}
 
     RgrMngId(rgrid_t rgrid, Flag flag, const EndPoints& endpoints)
             : Common::Params::HostEndPoints(endpoints),
               rgrid(rgrid), flag(flag) {
     }
 
-    virtual ~RgrMngId() {}
+    //~RgrMngId() {}
 
     rgrid_t         rgrid;
     Flag            flag;

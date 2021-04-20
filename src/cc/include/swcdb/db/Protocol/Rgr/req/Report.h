@@ -14,20 +14,20 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace Rgr { namespace Req {
 
 
-  
+
 class Report: public client::ConnQueue::ReqBase {
   public:
 
-  Report(const EndPoints& endpoints, 
-         Params::Report::Function func, 
+  Report(const EndPoints& endpoints,
+         Params::Report::Function func,
          const uint32_t timeout);
 
-  Report(const EndPoints& endpoints, 
-         Params::Report::Function func, 
-         const Serializable& params, 
+  Report(const EndPoints& endpoints,
+         Params::Report::Function func,
+         const Serializable& params,
          const uint32_t timeout);
 
-  virtual ~Report();
+  virtual ~Report() { }
 
   bool run() override;
 
@@ -38,23 +38,23 @@ class Report: public client::ConnQueue::ReqBase {
 };
 
 
-  
+
 class ReportRes: public Report {
   public:
-  
-  typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&, 
-                             const int&, 
+
+  typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&,
+                             const int&,
                              const Params::Report::RspRes&)> Cb_t;
 
-  static void request(const EndPoints& endpoints, 
-                      Cb_t&& cb, 
+  static void request(const EndPoints& endpoints,
+                      Cb_t&& cb,
                       const uint32_t timeout = 10000);
 
-  ReportRes(const EndPoints& endpoints, 
-            Cb_t&& cb, 
+  ReportRes(const EndPoints& endpoints,
+            Cb_t&& cb,
             const uint32_t timeout);
 
-  virtual ~ReportRes();
+  virtual ~ReportRes() { }
 
   void handle_no_conn() override;
 
@@ -70,20 +70,20 @@ class ReportRes: public Report {
 
 class ReportCids: public Report {
   public:
-  
-  typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&, 
+
+  typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&,
                              const int&,
                              const Params::Report::RspCids&)> Cb_t;
- 
-  static void request(const EndPoints& endpoints, 
-                      Cb_t&& cb, 
+
+  static void request(const EndPoints& endpoints,
+                      Cb_t&& cb,
                       const uint32_t timeout = 10000);
 
-  ReportCids(const EndPoints& endpoints, 
-             Cb_t&& cb, 
+  ReportCids(const EndPoints& endpoints,
+             Cb_t&& cb,
              const uint32_t timeout);
 
-  virtual ~ReportCids();
+  virtual ~ReportCids() { }
 
   void handle_no_conn() override;
 
@@ -99,22 +99,22 @@ class ReportCids: public Report {
 
 class ReportColumnRids: public Report {
   public:
-  
-  typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&, 
-                             const int&, 
+
+  typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&,
+                             const int&,
                              const Params::Report::RspColumnRids&)> Cb_t;
- 
-  static void request(const EndPoints& endpoints, 
-                      cid_t cid, 
+
+  static void request(const EndPoints& endpoints,
+                      cid_t cid,
                       Cb_t&& cb,
                       const uint32_t timeout = 10000);
 
-  ReportColumnRids(const EndPoints& endpoints, 
-                   cid_t cid, 
+  ReportColumnRids(const EndPoints& endpoints,
+                   cid_t cid,
                    Cb_t&& cb,
                    const uint32_t timeout);
 
-  virtual ~ReportColumnRids();
+  virtual ~ReportColumnRids() { }
 
   void handle_no_conn() override;
 
@@ -130,30 +130,30 @@ class ReportColumnRids: public Report {
 
 class ReportColumnsRanges: public Report {
   public:
-  
-  typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&, 
-                             const int&, 
+
+  typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&,
+                             const int&,
                              const Params::Report::RspColumnsRanges&)> Cb_t;
- 
-  static void request(const EndPoints& endpoints, 
+
+  static void request(const EndPoints& endpoints,
                       Cb_t&& cb,
                       const uint32_t timeout = 10000);
 
-  static void request(const EndPoints& endpoints, 
-                      cid_t cid, 
-                      Cb_t&& cb,
-                      const uint32_t timeout = 10000);
-
-  ReportColumnsRanges(const EndPoints& endpoints, 
-                      Cb_t&& cb, 
-                      const uint32_t timeout);
-
-  ReportColumnsRanges(const EndPoints& endpoints, 
+  static void request(const EndPoints& endpoints,
                       cid_t cid,
-                      Cb_t&& cb, 
+                      Cb_t&& cb,
+                      const uint32_t timeout = 10000);
+
+  ReportColumnsRanges(const EndPoints& endpoints,
+                      Cb_t&& cb,
                       const uint32_t timeout);
 
-  virtual ~ReportColumnsRanges();
+  ReportColumnsRanges(const EndPoints& endpoints,
+                      cid_t cid,
+                      Cb_t&& cb,
+                      const uint32_t timeout);
+
+  virtual ~ReportColumnsRanges() { }
 
   void handle_no_conn() override;
 
@@ -173,6 +173,6 @@ class ReportColumnsRanges: public Report {
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/db/Protocol/Rgr/req/Report.cc"
-#endif 
+#endif
 
 #endif // swcdb_db_protocol_rgr_req_Report_h

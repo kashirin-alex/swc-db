@@ -40,7 +40,7 @@ class ServerConnections final :
                     const IoContextPtr& ioctx, const AppContext::Ptr& ctx,
                     ConfigSSL* ssl_cfg);
 
- ~ServerConnections();
+  //~ServerConnections() { }
 
   void reusable(ConnHandlerPtr& conn, bool preserve);
 

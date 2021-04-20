@@ -14,24 +14,24 @@
 namespace SWC { namespace Comm { namespace Protocol {
 namespace Rgr { namespace Req {
 
-  
+
 class RangeLocate: public client::ConnQueue::ReqBase {
   public:
-  
-  typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&, 
+
+  typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&,
                              const Params::RangeLocateRsp&)> Cb_t;
 
   static void request(const Params::RangeLocateReq& params,
-                      const EndPoints& endpoints, 
-                      Cb_t&& cb, 
+                      const EndPoints& endpoints,
+                      Cb_t&& cb,
                       const uint32_t timeout = 10000);
 
-  RangeLocate(const Params::RangeLocateReq& params, 
+  RangeLocate(const Params::RangeLocateReq& params,
               const EndPoints& endpoints,
-              Cb_t&& cb, 
+              Cb_t&& cb,
               const uint32_t timeout);
 
-  virtual ~RangeLocate();
+  virtual ~RangeLocate() { }
 
   void handle_no_conn() override;
 
@@ -50,6 +50,6 @@ class RangeLocate: public client::ConnQueue::ReqBase {
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/db/Protocol/Rgr/req/RangeLocate.cc"
-#endif 
+#endif
 
 #endif // swcdb_db_protocol_rgr_req_RangeLocate_h

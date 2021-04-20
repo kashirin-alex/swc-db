@@ -141,7 +141,7 @@ class Write final {
   Write(const csid_t csid, std::string&& filepath,
         const RangePtr& range, uint32_t cell_revs);
 
-  ~Write();
+  //~Write() { }
 
   void create(int& err,
               int32_t bufsz=-1, uint8_t blk_replicas=0, int64_t blksz=-1);

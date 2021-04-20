@@ -11,8 +11,8 @@
 
 
 namespace SWC { namespace Core {
-  
-  
+
+
 struct StateRunning final : private AtomicBool {
 
   SWC_CAN_INLINE
@@ -23,11 +23,11 @@ struct StateRunning final : private AtomicBool {
   StateRunning(const StateRunning&) = delete;
 
   StateRunning(const StateRunning&&) = delete;
-    
+
   StateRunning& operator=(const StateRunning&) = delete;
-  
-  SWC_CAN_INLINE
-  ~StateRunning() noexcept { }
+
+  //SWC_CAN_INLINE
+  //~StateRunning() noexcept { }
 
   SWC_CAN_INLINE
   void stop() noexcept {

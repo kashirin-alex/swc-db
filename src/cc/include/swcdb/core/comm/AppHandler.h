@@ -22,11 +22,12 @@ class AppHandler {
             : m_conn(conn), m_ev(ev) {
   }
 
-  virtual ~AppHandler() { }
-
   virtual void run() = 0;
 
   protected:
+
+  virtual ~AppHandler() { }
+
   ConnHandlerPtr  m_conn;
   Event::Ptr      m_ev;
 };

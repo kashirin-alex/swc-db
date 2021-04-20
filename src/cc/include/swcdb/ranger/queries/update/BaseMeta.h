@@ -21,13 +21,15 @@ class BaseMeta : public client::Query::Update::Handlers::BaseSingleColumn {
 
   BaseMeta(const RangePtr& range);
 
-  virtual ~BaseMeta() { }
-
   virtual bool valid() noexcept override;
 
   virtual void callback() = 0;
 
   bool is_last_rsp(int err);
+
+  protected:
+
+  virtual ~BaseMeta() { }
 
 };
 

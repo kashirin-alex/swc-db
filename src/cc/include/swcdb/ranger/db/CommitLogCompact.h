@@ -75,7 +75,7 @@ class Compact final {
 
   Compact& operator=(const Compact&) = delete;
 
-  ~Compact();
+  //~Compact() { }
 
   private:
 

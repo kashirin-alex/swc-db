@@ -196,7 +196,10 @@ class Mutable final {
   static Ptr make(const Types::KeySeq key_seq,
                   const uint32_t max_revs=1,
                   const uint64_t ttl_ns=0,
-                  const Types::Column type=Types::Column::PLAIN);
+                  const Types::Column type=Types::Column::PLAIN) {
+    return std::make_shared<Mutable>(key_seq, max_revs, ttl_ns, type);
+  }
+
 
   explicit Mutable(const Types::KeySeq key_seq,
                    const uint32_t max_revs=1, const uint64_t ttl_ns=0,
@@ -215,7 +218,10 @@ class Mutable final {
   void free();
 
   void reset(const uint32_t revs=1, const uint64_t ttl_ns=0,
-             const Types::Column typ=Types::Column::PLAIN);
+             const Types::Column typ=Types::Column::PLAIN) {
+    free();
+    configure(revs, ttl_ns, typ);
+  }
 
   void configure(const uint32_t revs=1, const uint64_t ttl_ns=0,
                  const Types::Column typ=Types::Column::PLAIN) noexcept;
@@ -224,13 +230,19 @@ class Mutable final {
 
   Iterator It(size_t offset = 0) noexcept;
 
-  size_t size() const noexcept;
+  size_t size() const noexcept {
+    return _size;
+  }
 
-  size_t size_bytes() const noexcept;
+  size_t size_bytes() const noexcept {
+    return _bytes;
+  }
+
+  bool empty() const noexcept {
+    return !_size; //return buckets.empty() || buckets.front()->empty();
+  }
 
   size_t size_of_internal() const noexcept;
-
-  bool empty() const noexcept;
 
   Cell& front() noexcept;
 
@@ -247,7 +259,10 @@ class Mutable final {
 
   void add_sorted(const Cell& cell, bool no_value=false);
 
-  void add_sorted_no_cpy(Cell* cell);
+  void add_sorted_no_cpy(Cell* cell) {
+    _add(cell);
+    _push_back(cell);
+  }
 
   size_t add_sorted(const uint8_t* ptr, size_t remain);
 
@@ -264,10 +279,13 @@ class Mutable final {
 
   Cell* takeout(size_t idx);
 
-  Cell* takeout_begin(size_t idx);
+  Cell* takeout_begin(size_t idx) {
+    return takeout(idx);
+  }
 
-  Cell* takeout_end(size_t idx);
-
+  Cell* takeout_end(size_t idx) {
+    return takeout(size() - idx);
+  }
 
   void write_and_free(DynamicBuffer& cells, uint32_t& cell_count,
                       Interval& intval, uint32_t threshold,
@@ -310,7 +328,9 @@ class Mutable final {
 
   bool split(Mutable& cells, bool loaded);
 
-  bool can_split() const noexcept;
+  bool can_split() const noexcept {
+    return buckets.size() > 1;
+  }
 
   void split(Mutable& cells);
 

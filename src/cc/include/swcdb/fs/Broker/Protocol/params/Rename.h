@@ -14,7 +14,7 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Params {
 
 
-class RenameReq : public Serializable {
+class RenameReq final : public Serializable {
   public:
 
   RenameReq();

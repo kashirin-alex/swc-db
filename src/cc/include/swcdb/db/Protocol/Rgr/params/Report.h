@@ -28,12 +28,12 @@ enum Function : uint8_t {
 
 
 
-class ReqColumn : public Serializable {
+class ReqColumn final : public Serializable {
   public:
 
-  ReqColumn(cid_t cid = 0);
+  ReqColumn(cid_t cid = 0) noexcept : cid(cid) { }
 
-  virtual ~ReqColumn();
+  //~ReqColumn() { }
 
   cid_t   cid;
 
@@ -49,12 +49,12 @@ class ReqColumn : public Serializable {
 
 
 
-class RspRes  : public Serializable {
+class RspRes final : public Serializable {
   public:
 
-  RspRes();
+  RspRes() noexcept { }
 
-  virtual ~RspRes();
+  //~RspRes() { }
 
   uint32_t    mem;
   uint32_t    cpu;
@@ -74,12 +74,12 @@ class RspRes  : public Serializable {
 
 
 
-class RspCids  : public Serializable {
+class RspCids final : public Serializable {
   public:
 
-  RspCids();
+  RspCids() noexcept { }
 
-  virtual ~RspCids();
+  //~RspCids() { }
 
   mutable std::vector<cid_t> cids;
 
@@ -97,12 +97,12 @@ class RspCids  : public Serializable {
 
 
 
-class RspColumnRids  : public Serializable {
+class RspColumnRids final : public Serializable {
   public:
 
-  RspColumnRids();
+  RspColumnRids() noexcept { }
 
-  virtual ~RspColumnRids();
+  //~RspColumnRids() { }
 
   mutable std::vector<rid_t> rids;
 
@@ -120,19 +120,19 @@ class RspColumnRids  : public Serializable {
 
 
 
-class RspColumnsRanges  : public Serializable {
+class RspColumnsRanges final : public Serializable {
   public:
 
   struct Range {
 
-    Range(DB::Types::KeySeq seq);
+    Range(DB::Types::KeySeq seq) noexcept : interval(seq) { }
 
     static bool before(Range* r1, Range* r2);
 
     rid_t               rid;
     DB::Cells::Interval interval;
 
-    ~Range();
+    //~Range() { }
 
     size_t encoded_length () const;
 
@@ -166,13 +166,13 @@ class RspColumnsRanges  : public Serializable {
   };
 
 
-  explicit RspColumnsRanges();
+  explicit RspColumnsRanges() noexcept : rgrid(0) { }
 
   RspColumnsRanges(rgrid_t rgrid, const EndPoints& endpoints);
 
   RspColumnsRanges& operator=(const RspColumnsRanges& other) = delete;
 
-  virtual ~RspColumnsRanges();
+  ~RspColumnsRanges();
 
   rgrid_t               rgrid;
   EndPoints             endpoints;

@@ -12,11 +12,7 @@
 namespace SWC { namespace Comm { namespace Protocol {
 namespace Mngr { namespace Params {
 
-RgrGetReq::RgrGetReq(cid_t cid, rid_t rid, bool next_range) 
-                    : cid(cid), rid(rid), next_range(next_range) {
-}
 
-RgrGetReq::~RgrGetReq() { }
 
 void RgrGetReq::print(std::ostream& out) const {
   out << "Ranger(cid=" << cid << " rid=" << rid;
@@ -32,12 +28,12 @@ size_t RgrGetReq::internal_encoded_length() const {
   return  Serialization::encoded_length_vi64(cid)
         + Serialization::encoded_length_vi64(rid)
         + (rid ? 0 :
-           (range_begin.encoded_length() 
-            + range_end.encoded_length() 
+           (range_begin.encoded_length()
+            + range_end.encoded_length()
             + 1)
           );
 }
-  
+
 void RgrGetReq::internal_encode(uint8_t** bufp) const {
   Serialization::encode_vi64(bufp, cid);
   Serialization::encode_vi64(bufp, rid);
@@ -47,7 +43,7 @@ void RgrGetReq::internal_encode(uint8_t** bufp) const {
     Serialization::encode_bool(bufp, next_range);
   }
 }
-  
+
 void RgrGetReq::internal_decode(const uint8_t** bufp, size_t* remainp) {
   cid = Serialization::decode_vi64(bufp, remainp);
   rid = Serialization::decode_vi64(bufp, remainp);
@@ -59,13 +55,6 @@ void RgrGetReq::internal_decode(const uint8_t** bufp, size_t* remainp) {
 }
 
 
-RgrGetRsp::RgrGetRsp(int err)
-                    : err(err), cid(0), rid(0) { }
-
-RgrGetRsp::RgrGetRsp(cid_t cid, rid_t rid)
-                    : err(Error::OK), cid(cid), rid(rid) { }
-
-RgrGetRsp::~RgrGetRsp() { }
 
 void RgrGetRsp::print(std::ostream& out) const {
   out << "Ranger(";
@@ -74,7 +63,7 @@ void RgrGetRsp::print(std::ostream& out) const {
     out << " cid=" << cid << " rid=" << rid;
     Common::Params::HostEndPoints::print(out << ' ');
     if(cid == 1) {
-      range_begin.print(out << " RangeBegin"); 
+      range_begin.print(out << " RangeBegin");
       range_end.print(out << " RangeEnd");
     }
   }
@@ -82,18 +71,18 @@ void RgrGetRsp::print(std::ostream& out) const {
 }
 
 size_t RgrGetRsp::internal_encoded_length() const {
-  return  Serialization::encoded_length_vi32(err) 
+  return  Serialization::encoded_length_vi32(err)
   + (err ? 0 :
       (Serialization::encoded_length_vi64(cid)
       + Serialization::encoded_length_vi64(rid)
       + Common::Params::HostEndPoints::internal_encoded_length()
-      + (cid == 1 
+      + (cid == 1
         ? (range_end.encoded_length() + range_begin.encoded_length())
         : 0)
       )
     );
 }
-  
+
 void RgrGetRsp::internal_encode(uint8_t** bufp) const {
   Serialization::encode_vi32(bufp, err);
   if(!err) {
@@ -106,7 +95,7 @@ void RgrGetRsp::internal_encode(uint8_t** bufp) const {
     }
   }
 }
-  
+
 void RgrGetRsp::internal_decode(const uint8_t** bufp, size_t* remainp) {
   err = Serialization::decode_vi32(bufp, remainp);
   if(!err) {

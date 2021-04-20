@@ -61,7 +61,7 @@ class ColumnCfg final : public Core::NotMovableSharedPtr<ColumnCfg> {
 
   ColumnCfg& operator=(const ColumnCfg&) = delete;
 
-  ~ColumnCfg() { }
+  //~ColumnCfg() { }
 
   void update(const DB::Schema& schema) const {
     col_type.store(schema.col_type);

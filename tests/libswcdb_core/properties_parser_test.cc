@@ -39,7 +39,7 @@ void Settings::init_app_options() {
    //("a.cmd.arg.qouted", str(), "a qouted string arg with spaces") require cmake escaping to testdiff
 }
 
-void Settings::init_post_cmd_args(){ }
+void Settings::init_post_cmd_args() { }
 } }
 
 using namespace SWC;

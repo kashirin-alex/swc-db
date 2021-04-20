@@ -11,18 +11,18 @@
 namespace SWC { namespace Comm { namespace Protocol {
 namespace Rgr { namespace Params {
 
-class RangeIsLoaded : public Common::Params::ColRangeId {
+class RangeIsLoaded final : public Common::Params::ColRangeId {
   public:
 
-  RangeIsLoaded() {}
-  RangeIsLoaded(cid_t cid, rid_t rid)
+  RangeIsLoaded() noexcept { }
+  RangeIsLoaded(cid_t cid, rid_t rid) noexcept
                 : Common::Params::ColRangeId(cid, rid) { }
-  virtual ~RangeIsLoaded() {}
+  //~RangeIsLoaded() { }
 
 };
 
 
-class RangeIsLoadedRsp : public Serializable {
+class RangeIsLoadedRsp final : public Serializable {
   public:
 
   enum Flags : uint8_t {
@@ -30,9 +30,11 @@ class RangeIsLoadedRsp : public Serializable {
     CAN_MERGE = 0x01
   };
 
-  RangeIsLoadedRsp(int err) : err(err), flags(NONE) { }
+  RangeIsLoadedRsp(int err) noexcept
+                   : err(err), flags(NONE) {
+  }
 
-  virtual ~RangeIsLoadedRsp() {}
+  //~RangeIsLoadedRsp() { }
 
   void can_be_merged() {
     flags |= CAN_MERGE;

@@ -13,14 +13,14 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace Mngr { namespace Params {
 
 
-class RangeUnloadedReq : public Serializable {
+class RangeUnloadedReq final : public Serializable {
   public:
 
-  RangeUnloadedReq(cid_t cid=0, rid_t rid=0)
+  RangeUnloadedReq(cid_t cid=0, rid_t rid=0) noexcept
                   : cid(cid), rid(rid) {
   }
 
-  virtual ~RangeUnloadedReq(){ }
+  //~RangeUnloadedReq() { }
 
   cid_t        cid;
   rid_t        rid;
@@ -55,12 +55,12 @@ class RangeUnloadedReq : public Serializable {
 
 
 
-class RangeUnloadedRsp : public Serializable {
+class RangeUnloadedRsp final : public Serializable {
   public:
 
-  RangeUnloadedRsp(int err = Error::OK): err(err) {}
+  RangeUnloadedRsp(int err = Error::OK) noexcept : err(err) {}
 
-  virtual ~RangeUnloadedRsp() {}
+  //~RangeUnloadedRsp() { }
 
   int  err;
 

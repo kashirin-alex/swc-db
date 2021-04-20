@@ -60,8 +60,6 @@ Clients::Clients(Comm::IoContextPtr ioctx,
           "swc.client.Rgr.range.res.expiry")) {
 }
 
-Clients::~Clients() { }
-
 } // namespace client
 
 
@@ -110,8 +108,6 @@ Clients::Clients(const client::Clients::Ptr& clients)
 
             m_clients(clients) {
 }
-
-Clients::~Clients() { }
 
 }
 

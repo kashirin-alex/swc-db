@@ -33,9 +33,9 @@ class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
 
   typedef Columns* Ptr;
 
-  Columns()  {}
+  Columns() noexcept {}
 
-  ~Columns() { }
+  //~Columns() { }
 
   void reset() {
     Core::MutexSptd::scope lock(m_mutex);
@@ -77,7 +77,7 @@ class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
     Range::Ptr range = nullptr;
     iterator it;
     Core::MutexSptd::scope lock(m_mutex);
-    for(cid_t cid = DB::Types::MetaColumn::CID_MASTER_BEGIN; 
+    for(cid_t cid = DB::Types::MetaColumn::CID_MASTER_BEGIN;
         cid <= DB::Types::MetaColumn::CID_META_END; ++cid) {
       if((it = find(cid)) != end()) {
         if((range = it->second->get_next_unassigned())) {
@@ -130,7 +130,7 @@ class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
           }
         }
       }
-      if(!chk) 
+      if(!chk)
         return;
       chk->assigned(rgrid, num, ranges);
     } while(num);

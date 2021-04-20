@@ -68,7 +68,7 @@ class Key final : public std::vector<Fraction> {
 
   explicit Key(const DB::Cell::Key &cell_key, Condition::Comp comp);
 
-  ~Key();
+  //~Key() { }
 
   size_t size_of_internal() const noexcept;
 

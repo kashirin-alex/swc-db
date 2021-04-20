@@ -22,38 +22,60 @@ class Buffers final {
   typedef std::shared_ptr<Buffers> Ptr;
 
   /* Make Common */
-  static Ptr make(uint32_t reserve=0);
+  static Ptr make(uint32_t reserve=0) {
+    return std::make_shared<Buffers>(reserve);
+  }
 
-  static Ptr make(const Serializable& params, uint32_t reserve=0);
+  static Ptr make(const Serializable& params, uint32_t reserve=0) {
+    return std::make_shared<Buffers>(params, reserve);
+  }
 
   static Ptr make(const Serializable& params, StaticBuffer& buffer,
-                  uint32_t reserve=0);
+                  uint32_t reserve=0) {
+    return std::make_shared<Buffers>(params, buffer, reserve);
+  }
 
-  static Ptr make(StaticBuffer& buffer, uint32_t reserve=0);
+  static Ptr make(StaticBuffer& buffer, uint32_t reserve=0) {
+    return std::make_shared<Buffers>(buffer, reserve);
+  }
+
 
   /* Make Request */
   static Ptr make(const Serializable& params, uint32_t reserve,
-                  uint64_t cmd, uint32_t timeout);
+                  uint64_t cmd, uint32_t timeout) {
+    return std::make_shared<Buffers>(params, reserve, cmd, timeout);
+  }
 
   static Ptr make(const Serializable& params, StaticBuffer& buffer,
-                  uint32_t reserve,
-                  uint64_t cmd, uint32_t timeout);
+                  uint32_t reserve, uint64_t cmd, uint32_t timeout) {
+    return std::make_shared<Buffers>(params, buffer, reserve, cmd, timeout);
+  }
+
 
   /* Make Response */
-  static Ptr make(const Event::Ptr& ev, uint32_t reserve=0);
+  static Ptr make(const Event::Ptr& ev, uint32_t reserve=0) {
+    return std::make_shared<Buffers>(ev, reserve);
+  }
 
   static Ptr make(const Event::Ptr& ev,
-                  const Serializable& params, uint32_t reserve=0);
+                  const Serializable& params, uint32_t reserve=0) {
+    return std::make_shared<Buffers>(ev, params, reserve);
+  }
 
   static Ptr make(const Event::Ptr& ev,
                   const Serializable& params, StaticBuffer& buffer,
-                  uint32_t reserve=0);
+                  uint32_t reserve=0) {
+    return std::make_shared<Buffers>(ev, params, buffer, reserve);
+  }
 
   static Ptr make(const Event::Ptr& ev,
-                  StaticBuffer& buffer, uint32_t reserve=0);
+                  StaticBuffer& buffer, uint32_t reserve=0) {
+    return std::make_shared<Buffers>(ev, buffer, reserve);
+  }
 
   static Ptr create_error_message(const Event::Ptr& ev,
                                   int error, const char *msg, uint16_t len);
+
 
   /* Init Common */
   Buffers(uint32_t reserve=0);
@@ -86,7 +108,7 @@ class Buffers final {
           const Serializable& params, StaticBuffer& buffer,
           uint32_t reserve=0);
 
-  ~Buffers();
+  //~Buffers() { }
 
   void set_data(uint32_t sz);
 

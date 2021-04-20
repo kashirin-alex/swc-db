@@ -134,8 +134,6 @@ Key::Key(const Key& other) : std::vector<Fraction>(other) { }
 
 Key::Key(Key&& other) noexcept : std::vector<Fraction>(std::move(other)) { }
 
-Key::~Key() { }
-
 Key::Key(const DB::Cell::Key &cell_key, Condition::Comp comp) {
   set(cell_key, comp);
 }

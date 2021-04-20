@@ -19,7 +19,7 @@ class ColumnId : public Serializable {
           : cid(cid){
   }
 
-  virtual ~ColumnId() {}
+  //~ColumnId() { }
 
   cid_t  cid;
 

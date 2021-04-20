@@ -32,8 +32,6 @@ MngdColumns::MngdColumns()
           "swc.mngr.ranges.assign.delay.afterColumnsInit")) {
 }
 
-MngdColumns::~MngdColumns() {}
-
 void MngdColumns::stop() {
   m_run.store(false);
 }

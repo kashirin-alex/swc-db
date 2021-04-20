@@ -47,7 +47,7 @@ class BaseUnorderedMap : public Base {
 
     Rsp() noexcept : m_err(Error::OK) { }
 
-    ~Rsp() { }
+    //~Rsp() { }
 
     bool add_cells(const StaticBuffer& buffer, bool reached_limit,
                    DB::Specs::Interval& interval);

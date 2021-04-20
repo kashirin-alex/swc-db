@@ -1,7 +1,7 @@
 /*
  * SWC-DB© Copyright since 2019 Alex Kashirin <kashirin.alex@gmail.com>
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
- */ 
+ */
 
 #ifndef swcdb_manager_Protocol_mngr_req_RgrUpdate_h
 #define swcdb_manager_Protocol_mngr_req_RgrUpdate_h
@@ -22,7 +22,7 @@ class RgrUpdate : public client::ConnQueue::ReqBase {
                   Params::RgrUpdate(hosts, sync_all), 0, RGR_UPDATE, 60000)
               ) {
   }
-  
+
   virtual ~RgrUpdate() { }
 
   void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override {

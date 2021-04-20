@@ -14,7 +14,7 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Params {
 
 
-class ExistsReq : public Serializable {
+class ExistsReq final : public Serializable {
   public:
 
   ExistsReq();
@@ -36,7 +36,7 @@ class ExistsReq : public Serializable {
 
 
 
-class ExistsRsp : public Serializable {
+class ExistsRsp final : public Serializable {
   public:
 
   ExistsRsp();

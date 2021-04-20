@@ -21,7 +21,7 @@ class ColumnDelete : public ManageBase {
   ColumnDelete(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev,
                const cid_t cid) noexcept;
 
-  virtual ~ColumnDelete();
+  virtual ~ColumnDelete() { }
 
   void add(const RangePtr& range);
 

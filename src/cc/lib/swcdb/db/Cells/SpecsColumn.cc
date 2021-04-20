@@ -11,69 +11,34 @@
 namespace SWC { namespace DB { namespace Specs {
 
 
-Column::Ptr Column::make_ptr(cid_t cid, uint32_t reserve){
-  return std::make_shared<Column>(cid, reserve);
-}
-
-Column::Ptr Column::make_ptr(cid_t cid, const Intervals& intervals){
-  return std::make_shared<Column>(cid, intervals);
-}
-
-Column::Ptr Column::make_ptr(const uint8_t** bufp, size_t* remainp){
-  return std::make_shared<Column>(bufp, remainp);
-}
-
-Column::Ptr Column::make_ptr(const Column& other){
-  return std::make_shared<Column>(other);
-}
-
-Column::Ptr Column::make_ptr(Column::Ptr other){
-  return std::make_shared<Column>(*other.get());
-}
-
-Column::Column(cid_t cid, uint32_t reserve)
-                : cid(cid), intervals(0) {
-  intervals.reserve(reserve);
+Column::Column(cid_t cid, uint32_t _reserve)
+               : cid(cid) {
+  reserve(_reserve);
 }
 
 Column::Column(cid_t cid, const Intervals& intervals)
-                : cid(cid), intervals(intervals) {}
-
-Column::Column(const uint8_t** bufp, size_t* remainp) {
-  decode(bufp, remainp);
-}
-
-Column::Column(const Column& other) {
-  copy(other);
+                : Intervals(intervals), cid(cid) {
 }
 
 void Column::copy(const Column &other) {
   cid = other.cid;
-  free();
-  intervals.resize(other.intervals.size());
+  clear();
+  resize(other.size());
   int i = 0;
-  for(const auto& intval : other.intervals)
-    intervals[i++] = Interval::make_ptr(*intval.get());
-}
-
-Column::~Column() {
-  free();
-}
-
-void Column::free() {
-  intervals.clear();
+  for(const auto& intval : other)
+    (*this)[i++] = Interval::make_ptr(*intval.get());
 }
 
 Interval::Ptr& Column::add(Types::Column col_type) {
-  return intervals.emplace_back(new Interval(col_type));
+  return emplace_back(new Interval(col_type));
 }
 
 bool Column::equal(const Column &other) const noexcept {
-  if(cid != other.cid || intervals.size() != other.intervals.size())
+  if(cid != other.cid || size() != other.size())
     return false;
 
-  auto it2=other.intervals.begin();
-  for(auto it1=intervals.begin(); it1 != intervals.end(); ++it1, ++it2)
+  auto it2=other.cbegin();
+  for(auto it1=cbegin(); it1 != cend(); ++it1, ++it2)
     if(!(*it1)->equal(*(*it2)))
       return false;
   return true;
@@ -81,24 +46,24 @@ bool Column::equal(const Column &other) const noexcept {
 
 size_t Column::encoded_length() const noexcept {
   size_t len = Serialization::encoded_length_vi64(cid)
-              + Serialization::encoded_length_vi32(intervals.size());
-  for(auto& intval : intervals)
+              + Serialization::encoded_length_vi32(size());
+  for(auto& intval : *this)
     len += intval->encoded_length();
   return len;
 }
 
 void Column::encode(uint8_t** bufp) const {
   Serialization::encode_vi64(bufp, cid);
-  Serialization::encode_vi32(bufp, intervals.size());
-  for(auto& intval : intervals)
+  Serialization::encode_vi32(bufp, size());
+  for(auto& intval : *this)
     intval->encode(bufp);
 }
 
 void Column::decode(const uint8_t** bufp, size_t* remainp) {
-  free();
+  clear();
   cid = Serialization::decode_vi64(bufp, remainp);
-  intervals.resize(Serialization::decode_vi32(bufp, remainp));
-  for(auto& intval : intervals)
+  resize(Serialization::decode_vi32(bufp, remainp));
+  for(auto& intval : *this)
     intval = Interval::make_ptr(bufp, remainp);
 }
 
@@ -111,7 +76,7 @@ std::string Column::to_string() const {
 void Column::print(std::ostream& out) const {
   out << "Column(cid=" << cid
       << " intervals=[";
-  for(auto& intval : intervals){
+  for(auto& intval : *this) {
     intval->print(out);
     out << ", ";
   }
@@ -121,9 +86,9 @@ void Column::print(std::ostream& out) const {
 void Column::display(std::ostream& out, bool pretty,
                      std::string offset) const {
   out << offset << "Column(\n"
-      << offset << " cid=" << cid << " size=" << intervals.size() << "\n"
+      << offset << " cid=" << cid << " size=" << size() << "\n"
       << offset << " intervals=[\n";
-  for(auto& intval : intervals)
+  for(auto& intval : *this)
     intval->display(out, pretty, offset+"  ");
   out << offset << " ]\n"
       << offset << ")\n";

@@ -13,13 +13,17 @@
 
 
 namespace SWC { namespace DB { namespace Cells {
-  
+
+
 class ReqScan : public Comm::ResponseCallback {
   public:
 
   typedef std::shared_ptr<ReqScan>  Ptr;
 
-  ReqScan() noexcept;
+  ReqScan() noexcept
+          : Comm::ResponseCallback(nullptr, nullptr),
+            only_keys(false), offset(0) {
+  }
 
   ReqScan(const DB::Specs::Interval& spec);
 
@@ -38,11 +42,19 @@ class ReqScan : public Comm::ResponseCallback {
 
   ReqScan& operator=(const ReqScan&) = delete;
 
-  virtual ~ReqScan();
+  SWC_CAN_INLINE
+  Ptr get_req_scan() noexcept {
+    return std::dynamic_pointer_cast<ReqScan>(shared_from_this());
+  }
 
-  Ptr get_req_scan() noexcept;
-
-  bool offset_adjusted() noexcept;
+  SWC_CAN_INLINE
+  bool offset_adjusted() noexcept {
+    if(offset) {
+      --offset;
+      return true;
+    }
+    return false;
+  }
 
   virtual bool selector(const Types::KeySeq key_seq, const Cell& cell,
                         bool& stop);
@@ -80,11 +92,13 @@ class ReqScan : public Comm::ResponseCallback {
       ts_finish = Time::now_ns();
     }
 
+    SWC_CAN_INLINE
     void add_cell(uint32_t bytes) noexcept {
       ++cells_count;
       cells_bytes += bytes;
     }
 
+    SWC_CAN_INLINE
     void skip_cell() noexcept {
       ++cells_skipped;
     }
@@ -131,6 +145,11 @@ class ReqScan : public Comm::ResponseCallback {
     }
   };
   Profile profile;
+
+  protected:
+
+  virtual ~ReqScan() { }
+
 };
 
 

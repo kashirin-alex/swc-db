@@ -16,14 +16,14 @@
 namespace SWC { namespace Comm { namespace Protocol {
 namespace Mngr { namespace Req {
 
-  
+
 class RangeCreate: public client::ConnQueue::ReqBase {
   public:
-  
-  typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&, 
+
+  typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&,
                              const Params::RangeCreateRsp&)> Cb_t;
- 
-  static void request(cid_t cid, rgrid_t rgrid, 
+
+  static void request(cid_t cid, rgrid_t rgrid,
                       Cb_t&& cb, const uint32_t timeout = 10000) {
     request(Params::RangeCreateReq(cid, rgrid), std::move(cb), timeout);
   }
@@ -34,8 +34,8 @@ class RangeCreate: public client::ConnQueue::ReqBase {
   }
 
 
-  RangeCreate(const Params::RangeCreateReq& params, Cb_t&& cb, 
-              const uint32_t timeout) 
+  RangeCreate(const Params::RangeCreateReq& params, Cb_t&& cb,
+              const uint32_t timeout)
               : client::ConnQueue::ReqBase(
                   false,
                   Buffers::make(params, 0, RANGE_CREATE, timeout)
@@ -57,7 +57,7 @@ class RangeCreate: public client::ConnQueue::ReqBase {
         MngrActive::make(cid, shared_from_this())->run();
         return false;
       }
-    } 
+    }
     Env::Clients::get()->mngr->get(endpoints)->put(req());
     return true;
   }
@@ -84,7 +84,7 @@ class RangeCreate: public client::ConnQueue::ReqBase {
   }
 
   private:
-  
+
   void clear_endpoints() {
     Env::Clients::get()->mngrs_groups->remove(endpoints);
     endpoints.clear();

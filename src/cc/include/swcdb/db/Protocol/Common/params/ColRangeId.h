@@ -19,7 +19,7 @@ class ColRangeId : public Serializable {
             : cid(cid), rid(rid){
   }
 
-  virtual ~ColRangeId() {}
+  //~ColRangeId() { }
 
   cid_t  cid;
   rid_t  rid;

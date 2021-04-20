@@ -95,12 +95,6 @@ Cell::Cell(const uint8_t** bufp, size_t* remainp, bool own)
 }
 
 SWC_SHOULD_INLINE
-Cell& Cell::operator=(Cell&& other) noexcept {
-  move(other);
-  return *this;
-}
-
-SWC_SHOULD_INLINE
 void Cell::move(Cell& other) noexcept {
   _free();
   own       = other.own;

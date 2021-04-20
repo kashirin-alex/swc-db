@@ -11,14 +11,6 @@
 namespace SWC { namespace Comm { namespace Protocol {
 namespace Mngr { namespace Params {
 
-ColumnMng::ColumnMng() {}
-
-ColumnMng::ColumnMng(ColumnMng::Function function,
-                     const DB::Schema::Ptr& schema)
-                    : function(function), schema(schema) {
-}
-
-ColumnMng::~ColumnMng() { }
 
 size_t ColumnMng::internal_encoded_length() const {
   return 1 + schema->encoded_length();

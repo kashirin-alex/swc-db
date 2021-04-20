@@ -11,36 +11,6 @@
 namespace SWC { namespace DB { namespace Specs {
 
 
-Timestamp::Timestamp() noexcept
-    : value(0), comp(Condition::NONE), was_set(false) {}
-
-Timestamp::Timestamp(int64_t timestamp, Condition::Comp comp) noexcept
-                    : value(timestamp), comp(comp),
-                      was_set(true) {
-}
-
-void Timestamp::copy(const Timestamp &other) noexcept {
-  set(other.value, other.comp);
-}
-
-void Timestamp::set(int64_t timestamp, Condition::Comp comperator) noexcept {
-  value = timestamp;
-  comp  = comperator;
-  was_set = true;
-}
-
-void Timestamp::free() noexcept {
-  value  = 0;
-  comp  = Condition::NONE;
-  was_set = false;
-}
-
-Timestamp::~Timestamp() { }
-
-bool Timestamp::empty() const noexcept {
-  return !was_set;
-}
-
 bool Timestamp::equal(const Timestamp &other) const noexcept {
   return value == other.value && comp == other.comp;
 }
@@ -59,10 +29,6 @@ void Timestamp::decode(const uint8_t** bufp, size_t* remainp){
   comp = Condition::Comp(Serialization::decode_i8(bufp, remainp));
   if(comp != Condition::NONE)
     value = Serialization::decode_i64(bufp, remainp);
-}
-
-bool Timestamp::is_matching(int64_t other) const noexcept {
-  return Condition::is_matching(comp, value, other);
 }
 
 void Timestamp::display(std::ostream& out) const {

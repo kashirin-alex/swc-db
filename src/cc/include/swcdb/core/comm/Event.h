@@ -29,13 +29,21 @@ class Event final {
 
   typedef std::shared_ptr<Event> Ptr;
 
-  static Ptr make(Type type, int error);
+  static Ptr make(Type type, int error) {
+    return std::make_shared<Event>(type, error);
+  }
 
-  explicit Event(Type type_, int error_) noexcept;
+  explicit Event(Type type_, int error_) noexcept
+                : type(type_), error(error_), expiry_ms(0) {
+  }
 
-  ~Event();
+  //~Event() { }
 
-  void received() noexcept;
+  SWC_CAN_INLINE
+  void received() noexcept {
+    if(header.timeout_ms)
+      expiry_ms = Time::now_ms() + header.timeout_ms - 1;
+  }
 
   void decode_buffers();
 

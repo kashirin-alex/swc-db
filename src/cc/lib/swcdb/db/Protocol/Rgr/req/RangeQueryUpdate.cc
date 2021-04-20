@@ -14,11 +14,11 @@ namespace Rgr { namespace Req {
 
 
 SWC_SHOULD_INLINE
-void 
+void
 RangeQueryUpdate::request(
-        const Params::RangeQueryUpdateReq& params, 
+        const Params::RangeQueryUpdateReq& params,
         const DynamicBuffer::Ptr& buffer,
-        const EndPoints& endpoints, 
+        const EndPoints& endpoints,
         RangeQueryUpdate::Cb_t&& cb,
         const uint32_t timeout) {
   std::make_shared<RangeQueryUpdate>(
@@ -28,18 +28,16 @@ RangeQueryUpdate::request(
 
 RangeQueryUpdate::RangeQueryUpdate(
                 const Params::RangeQueryUpdateReq& params,
-                const DynamicBuffer::Ptr& buffer, 
+                const DynamicBuffer::Ptr& buffer,
                 const EndPoints& endpoints,
-                RangeQueryUpdate::Cb_t&& cb, 
-                const uint32_t timeout) 
-                : client::ConnQueue::ReqBase(false), 
+                RangeQueryUpdate::Cb_t&& cb,
+                const uint32_t timeout)
+                : client::ConnQueue::ReqBase(false),
                   endpoints(endpoints), cb(std::move(cb)) {
   // timeout by buffer->fill() bytes ratio
   StaticBuffer snd_buf(buffer->base, buffer->fill(), false);
   cbp = Buffers::make(params, snd_buf, 0, RANGE_QUERY_UPDATE, timeout);
 }
-
-RangeQueryUpdate::~RangeQueryUpdate() { }
 
 void RangeQueryUpdate::handle_no_conn() {
   cb(req(), Params::RangeQueryUpdateRsp(Error::COMM_NOT_CONNECTED));

@@ -17,8 +17,6 @@ Reader::Reader(const std::string& sql, std::string& message)
                 err(Error::OK) {
 }
 
-Reader::~Reader() {}
-
 bool Reader::is_char(const char* stop) const {
   if(stop) do {
     if(*stop++ == *ptr)
@@ -233,7 +231,7 @@ void Reader::read_uint32_t(uint32_t& value, bool& was_set, const char* stop) {
   else
     value = v;
 }
- 
+
 void Reader::read_int64_t(int64_t& value, bool& was_set, const char* stop) {
   std::string buf;
   read(buf, stop ? stop : "),]");

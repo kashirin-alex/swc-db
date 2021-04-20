@@ -22,13 +22,11 @@ class KeyVec final : public VecFraction {
 
   typedef VecFraction::value_type Fraction;
 
-  explicit KeyVec() noexcept;
+  explicit KeyVec() noexcept { }
 
   explicit KeyVec(KeyVec&& other) noexcept;
 
-  ~KeyVec();
-
-  void free();
+  //~KeyVec() { }
 
   size_t size_of_internal() const noexcept;
 

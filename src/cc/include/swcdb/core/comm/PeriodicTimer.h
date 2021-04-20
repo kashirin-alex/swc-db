@@ -22,7 +22,7 @@ class PeriodicTimer final : private asio::high_resolution_timer {
   PeriodicTimer(const Config::Property::V_GINT32::Ptr cfg_ms,
                 Call_t&& call, const IoContextPtr& ioctx);
 
-  ~PeriodicTimer();
+  //~PeriodicTimer() { }
 
   private:
 
@@ -37,7 +37,7 @@ class PeriodicTimers final
     : private std::vector<std::unique_ptr<PeriodicTimer>> {
   public:
 
-  ~PeriodicTimers();
+  //~PeriodicTimers() { }
 
   void stop();
 

@@ -252,7 +252,7 @@ struct FieldsWriter final : DynamicBuffer {
 
   FieldsWriter() noexcept : index_count(0) { }
 
-  ~FieldsWriter() { }
+  //~FieldsWriter() { }
 
   void add(Field* field);
 

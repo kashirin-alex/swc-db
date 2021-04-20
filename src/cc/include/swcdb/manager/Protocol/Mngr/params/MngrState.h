@@ -12,7 +12,7 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace Mngr { namespace Params {
 
 
-class MngrState : public Serializable {
+class MngrState final : public Serializable {
   public:
 
   MngrState();

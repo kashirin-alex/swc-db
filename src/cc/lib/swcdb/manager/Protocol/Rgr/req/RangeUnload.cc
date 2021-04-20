@@ -4,7 +4,6 @@
  */
 
 
-#include "swcdb/db/Protocol/Common/params/ColRangeId.h"
 #include "swcdb/db/Protocol/Rgr/params/RangeUnload.h"
 #include "swcdb/manager/Protocol/Rgr/req/RangeUnload.h"
 
@@ -27,8 +26,6 @@ RangeUnload::RangeUnload(const Manager::Ranger::Ptr& rgr,
           ),
           rgr(rgr), col(col), range(range), ignore_error(ignore_error) {
 }
-
-RangeUnload::~RangeUnload() { }
 
 bool RangeUnload::valid() {
   return col->state() != DB::Types::MngrColumn::State::DELETED &&

@@ -14,7 +14,7 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Params {
 
 
-class OpenReq : public Serializable {
+class OpenReq final : public Serializable {
   public:
 
   OpenReq();
@@ -38,7 +38,7 @@ class OpenReq : public Serializable {
 
 
 
-class OpenRsp : public Serializable {
+class OpenRsp final : public Serializable {
   public:
 
   OpenRsp();

@@ -58,7 +58,7 @@ Property::V_DOUBLES::Ptr f64s();
 
 
 
-  
+
 class ParserConfig final {
 
   struct ParserOpt final {
@@ -157,7 +157,7 @@ class Parser final {
 
   explicit Parser(bool unregistered=false) noexcept;
 
-  ~Parser();
+  //~Parser() { }
 
   void free();
 

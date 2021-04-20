@@ -45,7 +45,11 @@ class Key final {
 
   Key& operator=(const Key&) = delete;
 
-  Key& operator=(Key&&) noexcept;
+  SWC_CAN_INLINE
+  Key& operator=(Key&& other) noexcept {
+    move(other);
+    return *this;
+  }
 
   void move(Key& other) noexcept;
 
@@ -109,7 +113,10 @@ class Key final {
 
   void convert_to(std::vector<KeyVec::Fraction>& key) const;
 
-  void read(const std::vector<std::string>& key);
+  void read(const std::vector<std::string>& key) {
+    free();
+    add(key.cbegin(), key.cend());
+  }
 
   bool equal(const std::vector<std::string>& key) const;
 

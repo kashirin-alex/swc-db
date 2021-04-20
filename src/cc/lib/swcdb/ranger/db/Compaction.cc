@@ -31,8 +31,6 @@ Compaction::Compaction()
             m_idx_cid(0), m_idx_rid(0)  {
 }
 
-Compaction::~Compaction() { }
-
 bool Compaction::log_compact_possible() noexcept {
   if(m_log_chk.running())
     return false;

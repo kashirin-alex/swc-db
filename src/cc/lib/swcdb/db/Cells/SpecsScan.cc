@@ -50,10 +50,6 @@ Scan& Scan::operator=(const Scan& specs) {
   return *this;
 }
 
-Scan::~Scan() {
-  free();
-}
-
 void Scan::free() {
   columns.clear();
 }

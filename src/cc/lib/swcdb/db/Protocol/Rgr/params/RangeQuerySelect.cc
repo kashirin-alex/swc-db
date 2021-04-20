@@ -11,15 +11,12 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace Rgr { namespace Params {
 
 
-RangeQuerySelectReq::RangeQuerySelectReq() {}
 
 RangeQuerySelectReq::RangeQuerySelectReq(cid_t cid, rid_t rid,
                                          const DB::Specs::Interval& interval)
                                         : cid(cid), rid(rid),
                                           interval(interval) {
 }
-
-RangeQuerySelectReq::~RangeQuerySelectReq() { }
 
 void RangeQuerySelectReq::print(std::ostream& out) const {
   out << "RangeQuerySelectReq(cid=" << cid << " rid=" << rid;
@@ -48,16 +45,6 @@ void RangeQuerySelectReq::internal_decode(const uint8_t** bufp,
 
 
 
-RangeQuerySelectRsp::RangeQuerySelectRsp(
-                int err, bool reached_limit, uint64_t offset)
-              : err(err), reached_limit(reached_limit), offset(offset) {
-}
-
-RangeQuerySelectRsp::RangeQuerySelectRsp(int err, StaticBuffer& data)
-              : err(err), reached_limit(false), offset(0), data(data) {
-}
-
-RangeQuerySelectRsp::~RangeQuerySelectRsp() { }
 
 void RangeQuerySelectRsp::print(std::ostream& out) const {
   Error::print(out << "RangeQuerySelectRsp(", err);

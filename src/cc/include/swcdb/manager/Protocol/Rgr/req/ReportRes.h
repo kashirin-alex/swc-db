@@ -1,7 +1,7 @@
 /*
  * SWC-DB© Copyright since 2019 Alex Kashirin <kashirin.alex@gmail.com>
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
- */ 
+ */
 
 #ifndef swcdb_manager_Protocol_rgr_req_ReportRes_h
 #define swcdb_manager_Protocol_rgr_req_ReportRes_h
@@ -15,8 +15,8 @@ class ReportRes : public client::ConnQueue::ReqBase {
   public:
 
   ReportRes(const Manager::Ranger::Ptr& rgr);
-  
-  virtual ~ReportRes();
+
+  virtual ~ReportRes() { }
 
   void handle_no_conn() override;
 
@@ -25,7 +25,7 @@ class ReportRes : public client::ConnQueue::ReqBase {
   private:
 
   Manager::Ranger::Ptr   rgr;
-   
+
 };
 
 }}}}}

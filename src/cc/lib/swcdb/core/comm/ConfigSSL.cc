@@ -83,8 +83,6 @@ ConfigSSL::ConfigSSL(bool is_client)
   */
 }
 
-ConfigSSL::~ConfigSSL() { }
-
 
 void ConfigSSL::set_networks(const Config::Strings& networks,
                              bool with_local) {

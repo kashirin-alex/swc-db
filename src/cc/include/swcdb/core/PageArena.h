@@ -124,7 +124,7 @@ class Page final : public PageBase {
   public:
   Page() : PageBase(8) { }
 
-  ~Page() { }
+  //~Page() { }
 
   Item::Ptr use(const uint8_t* buf, uint32_t size) {
     std::scoped_lock lock(m_mutex);

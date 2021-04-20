@@ -73,8 +73,7 @@ FileSystem::FileSystem(const Configurables& config)
       cfg_fds_max(config.cfg_fds_max), fds_count(0), m_run(true) {
 }
 
-FileSystem::~FileSystem() {
-}
+FileSystem::~FileSystem() { }
 
 void FileSystem::stop() {
   m_run.store(false);

@@ -219,8 +219,6 @@ Compact::Compact(Fragments* log, uint32_t repetition,
     g->run(true);
 }
 
-Compact::~Compact() { }
-
 void Compact::finished(Group* group, size_t cells_count) {
   size_t running(m_workers.sub_rslt(1));
 

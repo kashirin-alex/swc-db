@@ -25,7 +25,7 @@ class MngdColumns final {
 
   MngdColumns();
 
-  ~MngdColumns();
+  //~MngdColumns() { }
 
   void stop();
 

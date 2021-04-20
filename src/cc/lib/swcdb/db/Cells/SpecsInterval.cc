@@ -12,7 +12,8 @@ namespace SWC { namespace DB { namespace Specs {
 
 
 Interval::Interval(Types::Column col_type) noexcept
-                  : values(col_type), offset_rev(0), options(0) { }
+                  : values(col_type), offset_rev(0), options(0) {
+}
 
 Interval::Interval(const Cell::Key& range_begin, const Cell::Key& range_end)
                   : range_begin(range_begin), range_end(range_end),
@@ -47,16 +48,6 @@ Interval::Interval(Interval&& other) noexcept
                     offset_key(std::move(other.offset_key)),
                     offset_rev(other.offset_rev),
                     options(other.options) {
-}
-
-Interval& Interval::operator=(const Interval& other) {
-  copy(other);
-  return *this;
-}
-
-Interval& Interval::operator=(Interval&& other) noexcept {
-  move(other);
-  return *this;
 }
 
 void Interval::copy(const Interval& other) {
@@ -97,10 +88,6 @@ void Interval::move(Interval& other) noexcept {
   options = other.options;
 }
 
-Interval::~Interval() {
-  free();
-}
-
 void Interval::free() {
   range_begin.free();
   range_end.free();
@@ -128,46 +115,6 @@ bool Interval::equal(const Interval& other) const noexcept {
           offset_key.equal(other.offset_key) &&
           offset_rev == other.offset_rev ;
 }
-
-bool Interval::is_matching(const Types::KeySeq key_seq,
-                           const Cell::Key& key, int64_t timestamp,
-                           bool desc) const {
-  if(offset_key.empty())
-    return true;
-
-  switch(DB::KeySeq::compare(key_seq, offset_key, key)) {
-    case Condition::LT:
-      return false;
-    case Condition::EQ:
-      return is_matching(timestamp, desc);
-    default:
-      return true;
-  }
-}
-
-bool Interval::is_matching(int64_t timestamp, bool desc) const noexcept {
-  return desc ? offset_rev > timestamp : offset_rev < timestamp;
-}
-
-bool Interval::is_matching(const Types::KeySeq key_seq,
-                           const Cells::Cell& cell, bool& stop) const {
-  return
-    is_matching(
-      key_seq, cell.key, cell.timestamp, cell.control & Cells::TS_DESC)
-    &&
-    ts_start.is_matching(cell.timestamp)
-    &&
-    ts_finish.is_matching(cell.timestamp)
-    &&
-    is_matching_begin(key_seq, cell.key)
-    &&
-    !(stop = !is_matching_end(key_seq, cell.key))
-    &&
-    key_intervals.is_matching(key_seq, cell.key)
-    &&
-    values.is_matching(cell);
-}
-
 
 bool Interval::is_matching_begin(const Types::KeySeq key_seq,
                                  const DB::Cell::Key& key) const {
@@ -254,6 +201,7 @@ bool Interval::is_matching_end(const Types::KeySeq key_seq,
   return true;
 }
 
+SWC_SHOULD_INLINE
 bool Interval::is_in_previous(const Types::KeySeq key_seq,
                               const DB::Cell::Key& prev) const {
   if(!range_end.empty()) switch(key_seq) {
@@ -360,24 +308,6 @@ void Interval::decode(const uint8_t** bufp, size_t* remainp, bool owner) {
   options = Serialization::decode_i8(bufp, remainp);
 }
 
-
-void Interval::set_opt__key_equal() noexcept {
-  options |= OPT_KEY_EQUAL;
-}
-
-void Interval::set_opt__range_end_rest() noexcept {
-  options |= OPT_RANGE_END_REST;
-}
-
-bool Interval::has_opt__key_equal() const noexcept {
-  return options & OPT_KEY_EQUAL;
-}
-
-bool Interval::has_opt__range_end_rest() const noexcept {
-  return options & OPT_RANGE_END_REST;
-}
-
-
 void Interval::apply_possible_range_pure() {
   if(key_intervals.empty())
     return;
@@ -390,12 +320,6 @@ void Interval::apply_possible_range_pure() {
     if(!range_end.empty() && !has_opt__key_equal())
       set_opt__range_end_rest();
   }
-}
-
-void Interval::apply_possible_range(DB::Cell::Key& begin, DB::Cell::Key& end,
-                                    bool* end_restp) const {
-  apply_possible_range_begin(begin);
-  apply_possible_range_end(end, end_restp);
 }
 
 void Interval::apply_possible_range_begin(DB::Cell::Key& begin) const {

@@ -13,11 +13,11 @@
 namespace SWC { namespace Comm { namespace Protocol {
 namespace Rgr { namespace Req {
 
-  
+
 SWC_SHOULD_INLINE
-void 
+void
 RangeQuerySelect::request(const Params::RangeQuerySelectReq& params,
-                          const EndPoints& endpoints, 
+                          const EndPoints& endpoints,
                           RangeQuerySelect::Cb_t&& cb,
                           const uint32_t timeout) {
   std::make_shared<RangeQuerySelect>(
@@ -25,17 +25,15 @@ RangeQuerySelect::request(const Params::RangeQuerySelectReq& params,
 }
 
 RangeQuerySelect::RangeQuerySelect(const Params::RangeQuerySelectReq& params,
-                                   const EndPoints& endpoints, 
-                                   RangeQuerySelect::Cb_t&& cb, 
-                                   const uint32_t timeout) 
+                                   const EndPoints& endpoints,
+                                   RangeQuerySelect::Cb_t&& cb,
+                                   const uint32_t timeout)
                   : client::ConnQueue::ReqBase(
                       false,
                       Buffers::make(params, 0, RANGE_QUERY_SELECT, timeout)
                     ),
                     endpoints(endpoints), cb(std::move(cb)) {
 }
-
-RangeQuerySelect::~RangeQuerySelect() { }
 
 void RangeQuerySelect::handle_no_conn() {
   cb(req(), Params::RangeQuerySelectRsp(Error::COMM_NOT_CONNECTED));

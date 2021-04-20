@@ -4,18 +4,15 @@
  */
 
 
-namespace SWC { namespace client { namespace Mngr { 
+namespace SWC { namespace client { namespace Mngr {
 
-ContextManager::ContextManager() { }
-
-ContextManager::~ContextManager() { }
 
 void ContextManager::disconnected(const Comm::ConnHandlerPtr& conn) {
   Env::Mngr::role()->disconnection(
     conn->endpoint_remote, conn->endpoint_local);
 }
 
-void ContextManager::handle(Comm::ConnHandlerPtr conn, 
+void ContextManager::handle(Comm::ConnHandlerPtr conn,
                             const Comm::Event::Ptr& ev) {
 
   switch (ev->type) {
@@ -37,8 +34,8 @@ void ContextManager::handle(Comm::ConnHandlerPtr conn,
     }
 
   }
-    
+
 }
-  
+
 
 }}}

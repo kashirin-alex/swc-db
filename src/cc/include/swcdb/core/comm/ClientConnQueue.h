@@ -28,8 +28,6 @@ class ConnQueueReqBase : public DispatchHandler {
 
   Ptr req() noexcept;
 
-  virtual ~ConnQueueReqBase();
-
   void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
 
   bool is_timeout(const Event::Ptr& ev);
@@ -47,6 +45,11 @@ class ConnQueueReqBase : public DispatchHandler {
   const bool            insistent;
   Buffers::Ptr          cbp;
   ConnQueuePtr          queue;
+
+  protected:
+
+  virtual ~ConnQueueReqBase() { }
+
 };
 
 

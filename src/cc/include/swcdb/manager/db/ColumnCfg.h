@@ -10,7 +10,7 @@
 #include "swcdb/core/NotMovableSharedPtr.h"
 #include "swcdb/db/Cells/KeyComparator.h"
 
-namespace SWC { namespace Manager { 
+namespace SWC { namespace Manager {
 
 class ColumnCfg final : public Core::NotMovableSharedPtr<ColumnCfg> {
   public:
@@ -20,11 +20,11 @@ class ColumnCfg final : public Core::NotMovableSharedPtr<ColumnCfg> {
   const cid_t             cid;
   const DB::Types::KeySeq key_seq;
 
-  ColumnCfg(const DB::Schema::Ptr& schema) 
-            : cid(schema->cid), key_seq(schema->col_seq) { 
+  ColumnCfg(const DB::Schema::Ptr& schema) noexcept
+            : cid(schema->cid), key_seq(schema->col_seq) {
   }
 
-  ~ColumnCfg() { }
+  //~ColumnCfg() { }
 
   void print(std::ostream& out) const {
     out << "cid=" << cid << " seq=" << DB::Types::to_string(key_seq);

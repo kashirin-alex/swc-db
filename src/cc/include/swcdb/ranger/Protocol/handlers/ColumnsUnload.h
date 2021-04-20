@@ -21,9 +21,9 @@ void columns_unload(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
 
     Common::Params::ColumnsInterval params;
     params.decode(&ptr, &remain);
-  
+
     Env::Rgr::columns()->unload(
-      params.cid_begin, params.cid_end, 
+      params.cid_begin, params.cid_end,
       std::make_shared<Ranger::Callback::ColumnsUnload>(conn, ev, true)
     );
 
@@ -33,7 +33,7 @@ void columns_unload(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     conn->send_error(e.code(), "", ev);
   }
 }
-  
+
 
 }}}}}
 

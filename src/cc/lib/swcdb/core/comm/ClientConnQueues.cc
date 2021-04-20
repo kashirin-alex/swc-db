@@ -46,8 +46,6 @@ ConnQueues::ConnQueues(const Serialized::Ptr service,
                         cfg_again_delay_ms(again_delay_ms) {
 }
 
-ConnQueues::~ConnQueues() { }
-
 void ConnQueues::print(std::ostream& out) {
   out << "ConnQueues: ";
   Core::MutexSptd::scope lock(m_mutex);

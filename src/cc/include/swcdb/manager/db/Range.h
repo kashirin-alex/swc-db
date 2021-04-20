@@ -38,7 +38,7 @@ class Range final {
 
   void init(int&) { }
 
-  ~Range() { }
+  //~Range() { }
 
   State state() {
     std::shared_lock lock(m_mutex);

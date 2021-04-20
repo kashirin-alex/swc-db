@@ -128,7 +128,7 @@ class RgrData final {
         << ')';
   }
 
-  ~RgrData(){ }
+  //~RgrData() { }
 
   uint8_t               version;
   Core::Atomic<rgrid_t> rgrid;

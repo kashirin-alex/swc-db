@@ -15,7 +15,7 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace Mngr { namespace Params {
 
 
-class ColumnGetReq  : public Serializable {
+class ColumnGetReq final : public Serializable {
   public:
 
   enum Flag : uint8_t {
@@ -24,13 +24,15 @@ class ColumnGetReq  : public Serializable {
     ID_BY_NAME      = 0x2
   };
 
-  ColumnGetReq();
+  ColumnGetReq() noexcept { }
 
   ColumnGetReq(Flag flag, const std::string& name);
 
-  ColumnGetReq(Flag flag, cid_t cid);
+  ColumnGetReq(Flag flag, cid_t cid)
+               noexcept : flag(flag), cid(cid) {
+  }
 
-  virtual ~ColumnGetReq();
+  //~ColumnGetReq() { }
 
   Flag        flag;
   std::string name;
@@ -48,14 +50,16 @@ class ColumnGetReq  : public Serializable {
 
 
 
-class ColumnGetRsp  : public Serializable {
+class ColumnGetRsp final : public Serializable {
   public:
 
-  ColumnGetRsp();
+  ColumnGetRsp() noexcept { }
 
-  ColumnGetRsp(ColumnGetReq::Flag flag, const DB::Schema::Ptr& schema);
+  ColumnGetRsp(ColumnGetReq::Flag flag, const DB::Schema::Ptr& schema)
+               noexcept : flag(flag), schema(schema) {
+  }
 
-  virtual ~ColumnGetRsp();
+  //~ColumnGetRsp() { }
 
   ColumnGetReq::Flag  flag;
   DB::Schema::Ptr     schema = nullptr;

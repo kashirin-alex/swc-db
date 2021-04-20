@@ -27,7 +27,7 @@ class Splitter final {
 
   Splitter& operator=(const Splitter&) = delete;
 
-  ~Splitter() { }
+  //~Splitter() { }
 
   void run () {
     SWC_LOGF(LOG_DEBUG,

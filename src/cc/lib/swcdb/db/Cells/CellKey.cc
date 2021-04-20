@@ -23,12 +23,6 @@ Key::Key(const Key& other, bool own)
           data(own ? _data(other.data): other.data) {
 }
 
-SWC_SHOULD_INLINE
-Key& Key::operator=(Key&& other) noexcept {
-  move(other);
-  return *this;
-}
-
 void Key::move(Key& other) noexcept {
   _free();
   own =  other.own;
@@ -332,11 +326,6 @@ void Key::convert_to(std::vector<KeyVec::Fraction>& key) const {
     len = Serialization::decode_vi24(&ptr);
     it->assign(ptr, len);
   }
-}
-
-void Key::read(const std::vector<std::string>& key)  {
-  free();
-  add(key.cbegin(), key.cend());
 }
 
 bool Key::equal(const std::vector<std::string>& key) const {

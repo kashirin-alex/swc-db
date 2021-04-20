@@ -34,7 +34,10 @@ class MutableVec final : private std::vector<Mutable*> {
 
   explicit MutableVec(const Types::KeySeq key_seq, uint32_t split_size=100000,
                       const uint32_t max_revs=1, const uint64_t ttl_ns=0,
-                      const Types::Column type=Types::Column::PLAIN) noexcept;
+                      const Types::Column type=Types::Column::PLAIN) noexcept
+                      : key_seq(key_seq), split_size(split_size),
+                        max_revs(max_revs), ttl(ttl_ns), type(type) {
+  }
 
   MutableVec(const MutableVec&) = delete;
 
@@ -50,7 +53,9 @@ class MutableVec final : private std::vector<Mutable*> {
                  const uint32_t revs=1, const uint64_t ttl_ns=0,
                  const Types::Column typ=Types::Column::PLAIN) noexcept;
 
-  bool empty() const noexcept;
+  bool empty() const noexcept {
+    return Vec::empty();
+  }
 
   size_t size() const noexcept;
 

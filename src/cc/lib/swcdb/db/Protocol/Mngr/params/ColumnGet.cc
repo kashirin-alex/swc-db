@@ -12,15 +12,8 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace Mngr { namespace Params {
 
 
-ColumnGetReq::ColumnGetReq() {}
-
 ColumnGetReq::ColumnGetReq(ColumnGetReq::Flag flag, const std::string& name)
                           : flag(flag), name(name) {}
-
-ColumnGetReq::ColumnGetReq(ColumnGetReq::Flag flag, cid_t cid)
-                          : flag(flag), cid(cid) {}
-
-ColumnGetReq::~ColumnGetReq() { }
 
 size_t ColumnGetReq::internal_encoded_length() const {
   return 1 +
@@ -49,14 +42,6 @@ void ColumnGetReq::internal_decode(const uint8_t** bufp, size_t* remainp) {
 
 
 
-ColumnGetRsp::ColumnGetRsp() {}
-
-ColumnGetRsp::ColumnGetRsp(ColumnGetReq::Flag flag,
-                           const DB::Schema::Ptr& schema)
-                          : flag(flag), schema(schema) {
-}
-
-ColumnGetRsp::~ColumnGetRsp() { }
 
 
 size_t ColumnGetRsp::internal_encoded_length() const {

@@ -15,10 +15,6 @@ namespace Report {
 
 
 
-ReqColumn::ReqColumn(cid_t cid) : cid(cid) { }
-
-ReqColumn::~ReqColumn(){ }
-
 size_t ReqColumn::internal_encoded_length() const {
   return Serialization::encoded_length_vi64(cid);
 }
@@ -33,9 +29,6 @@ void ReqColumn::internal_decode(const uint8_t** bufp, size_t* remainp) {
 
 
 
-RspRes::RspRes() { }
-
-RspRes::~RspRes() { }
 
 void RspRes::display(std::ostream& out, const std::string& offset) const {
   out << offset
@@ -65,9 +58,6 @@ void RspRes::internal_decode(const uint8_t** bufp, size_t* remainp) {
 
 
 
-RspCids::RspCids() { }
-
-RspCids::~RspCids() { }
 
 void RspCids::display(std::ostream& out, const std::string& offset) const {
   std::sort(cids.begin(), cids.end());
@@ -98,9 +88,6 @@ void RspCids::internal_decode(const uint8_t** bufp, size_t* remainp) {
 
 
 
-RspColumnRids::RspColumnRids() { }
-
-RspColumnRids::~RspColumnRids() { }
 
 void RspColumnRids::display(std::ostream& out, const std::string& offset) const {
   std::sort(rids.begin(), rids.end());
@@ -131,11 +118,6 @@ void RspColumnRids::internal_decode(const uint8_t** bufp, size_t* remainp) {
 
 
 
-RspColumnsRanges::Range::Range(DB::Types::KeySeq seq)
-                              : interval(seq) {
-}
-
-RspColumnsRanges::Range::~Range() { }
 
 bool RspColumnsRanges::Range::before(RspColumnsRanges::Range* r1,
                                      RspColumnsRanges::Range* r2) {
@@ -229,7 +211,7 @@ void RspColumnsRanges::Column::display(std::ostream& out, bool pretty,
 }
 
 
-RspColumnsRanges::RspColumnsRanges() : rgrid(0) { }
+
 
 RspColumnsRanges::RspColumnsRanges(rgrid_t rgrid,
                                    const EndPoints& endpoints)

@@ -14,13 +14,13 @@ namespace SWC { namespace Manager {
 
 
 class MngrRole final {
-  
+
   public:
-  
+
   MngrRole(const Comm::IoContextPtr& app_io,
            const Comm::EndPoints& endpoints);
 
-  ~MngrRole();
+  //~MngrRole() { }
 
   void schedule_checkin(uint32_t t_ms = 10000);
 
@@ -35,18 +35,18 @@ class MngrRole final {
   bool are_all_active(const client::Mngr::Groups::Vec& groups);
 
   void get_states(MngrsStatus& states);
-  
+
   Comm::EndPoint get_inchain_endpoint() const;
 
   void req_mngr_inchain(const Comm::client::ConnQueue::ReqBase::Ptr& req);
 
-  void fill_states(const MngrsStatus& states, uint64_t token, 
+  void fill_states(const MngrsStatus& states, uint64_t token,
                    const Comm::ResponseCallback::Ptr& cb);
 
   void update_manager_addr(uint64_t hash, const Comm::EndPoint& mngr_host);
-  
-  void disconnection(const Comm::EndPoint& endpoint_server, 
-                     const Comm::EndPoint& endpoint_client, 
+
+  void disconnection(const Comm::EndPoint& endpoint_server,
+                     const Comm::EndPoint& endpoint_client,
                      bool srv=false);
 
   void stop();
@@ -55,7 +55,7 @@ class MngrRole final {
 
 
   private:
-  
+
   void _apply_cfg();
 
   void managers_checkin();
@@ -64,24 +64,24 @@ class MngrRole final {
 
   void managers_checker(size_t next, size_t total, bool flw);
 
-  void manager_checker(MngrStatus::Ptr host, 
-                       size_t next, size_t total, bool flw, 
+  void manager_checker(MngrStatus::Ptr host,
+                       size_t next, size_t total, bool flw,
                        const Comm::ConnHandlerPtr& conn);
-  
-  void update_state(const Comm::EndPoint& endpoint, 
+
+  void update_state(const Comm::EndPoint& endpoint,
                     DB::Types::MngrState state);
 
-  void update_state(const Comm::EndPoints& endpoints, 
+  void update_state(const Comm::EndPoints& endpoints,
                     DB::Types::MngrState state);
-  
+
   MngrStatus::Ptr get_host(const Comm::EndPoints& endpoints);
 
   MngrStatus::Ptr get_highest_state_host(const MngrStatus::Ptr& other);
-  
+
   bool is_group_off(const MngrStatus::Ptr& other);
 
   void apply_role_changes();
-  
+
   void set_mngr_inchain(const Comm::ConnHandlerPtr& mngr);
 
 
@@ -95,18 +95,18 @@ class MngrRole final {
   Core::Atomic<uint8_t>           m_local_active_role;
   bool                            m_major_updates = false;
   std::unordered_map<uint64_t,  Comm::EndPoint> m_mngrs_client_srv;
-  
+
   Core::MutexAtomic               m_mutex_timer;
-  asio::high_resolution_timer     m_check_timer; 
-  Core::AtomicBool                m_run; 
-  
+  asio::high_resolution_timer     m_check_timer;
+  Core::AtomicBool                m_run;
+
   Comm::client::ConnQueuePtr      m_mngr_inchain;
 
 
   const Config::Property::V_GINT32::Ptr cfg_conn_probes;
   const Config::Property::V_GINT32::Ptr cfg_conn_timeout;
   const Config::Property::V_GINT32::Ptr cfg_conn_fb_failures;
-  
+
   const Config::Property::V_GINT32::Ptr cfg_req_timeout;
   const Config::Property::V_GINT32::Ptr cfg_delay_updated;
   const Config::Property::V_GINT32::Ptr cfg_check_interval;

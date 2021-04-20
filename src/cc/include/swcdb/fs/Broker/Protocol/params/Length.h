@@ -14,7 +14,7 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Params {
 
 
-class LengthReq : public Serializable {
+class LengthReq final : public Serializable {
   public:
 
   LengthReq();
@@ -35,7 +35,7 @@ class LengthReq : public Serializable {
 
 
 
-class LengthRsp : public Serializable {
+class LengthRsp final : public Serializable {
   public:
 
   LengthRsp();

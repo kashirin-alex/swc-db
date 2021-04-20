@@ -29,7 +29,9 @@ class Result final : private std::vector<Cell*> {
   size_t            bytes;
   uint64_t          ttl;
 
-  explicit Result(const uint64_t ttl_ns=0) noexcept;
+  explicit Result(const uint64_t ttl_ns=0) noexcept
+                  : bytes(0), ttl(ttl_ns) {
+  }
 
   explicit Result(Result&& other) noexcept;
 
@@ -37,12 +39,15 @@ class Result final : private std::vector<Cell*> {
 
   Result& operator=(const Result& other) = delete;
 
-  ~Result();
+  ~Result() {
+    free();
+  }
 
   void free();
 
-  size_t size_bytes() const noexcept;
-
+  size_t size_bytes() const noexcept {
+    return bytes;
+  }
 
   void take(Result& other);
 

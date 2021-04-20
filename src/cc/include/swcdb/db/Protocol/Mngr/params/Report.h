@@ -33,12 +33,14 @@ enum Function : uint8_t {
 
 
 
-class ReqColumnStatus : public Serializable {
+class ReqColumnStatus final : public Serializable {
   public:
 
-  ReqColumnStatus(cid_t cid = DB::Schema::NO_CID);
+  ReqColumnStatus(cid_t cid = DB::Schema::NO_CID)
+                  noexcept : cid(cid) {
+  }
 
-  virtual ~ReqColumnStatus();
+  //~ReqColumnStatus() { }
 
   cid_t cid;
 
@@ -53,12 +55,14 @@ class ReqColumnStatus : public Serializable {
 };
 
 
-class RspColumnStatus : public Serializable {
+class RspColumnStatus final : public Serializable {
   public:
 
-  RspColumnStatus();
+  RspColumnStatus() noexcept
+                  : state(DB::Types::MngrColumn::State::NOTSET) {
+  }
 
-  virtual ~RspColumnStatus();
+  //~RspColumnStatus() { }
 
   struct RangeStatus {
 
@@ -93,12 +97,12 @@ class RspColumnStatus : public Serializable {
 
 
 
-class RspRangersStatus : public Serializable {
+class RspRangersStatus final : public Serializable {
   public:
 
-  RspRangersStatus();
+  RspRangersStatus() noexcept { }
 
-  virtual ~RspRangersStatus();
+  //~RspRangersStatus() { }
 
   struct Ranger final : public Common::Params::HostEndPoints {
 
@@ -135,12 +139,12 @@ class RspRangersStatus : public Serializable {
 
 
 
-class RspManagersStatus : public Serializable {
+class RspManagersStatus final : public Serializable {
   public:
 
-  RspManagersStatus();
+  RspManagersStatus() noexcept { }
 
-  virtual ~RspManagersStatus();
+  //~RspManagersStatus() { }
 
   struct Manager final : public Common::Params::HostEndPoints {
 

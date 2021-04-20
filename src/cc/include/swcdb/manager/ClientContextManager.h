@@ -6,19 +6,19 @@
 #ifndef swcdb_manager_ClientContextManager_h
 #define swcdb_manager_ClientContextManager_h
 
-namespace SWC { namespace client { 
+namespace SWC { namespace client {
 
 
 //! The SWC-DB Manager's Client to Database C++ namespace 'SWC::client::Mngr'
-namespace Mngr { 
+namespace Mngr {
 
 
 class ContextManager final : public client::ContextManager {
   public:
 
-  ContextManager();
+  ContextManager() { }
 
-  virtual ~ContextManager();
+  virtual ~ContextManager() { }
 
   void disconnected(const Comm::ConnHandlerPtr& conn);
 

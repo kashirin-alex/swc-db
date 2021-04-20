@@ -20,20 +20,21 @@ typedef std::shared_ptr<ConnHandler> ConnHandlerPtr;
 
 class AppContext : public std::enable_shared_from_this<AppContext> {
   public:
-
   typedef std::shared_ptr<AppContext> Ptr;
 
+  const Config::Property::V_GENUM::Ptr cfg_encoder;
+
   AppContext(Config::Property::V_GENUM::Ptr cfg_encoder) noexcept;
-
-  virtual ~AppContext() { };
-
-  virtual void handle(ConnHandlerPtr conn, const Event::Ptr& ev) = 0;
 
   virtual void init(const Comm::EndPoints&) { }
 
   virtual void stop();
 
-  const Config::Property::V_GENUM::Ptr cfg_encoder;
+  virtual void handle(ConnHandlerPtr conn, const Event::Ptr& ev) = 0;
+
+  protected:
+
+  virtual ~AppContext() { };
 
 };
 

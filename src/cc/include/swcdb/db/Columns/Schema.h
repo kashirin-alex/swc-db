@@ -26,9 +26,13 @@ class Schema final {
 
   static constexpr const cid_t     NO_CID = 0;
 
-  static Ptr make();
+  static Ptr make() {
+    return std::make_shared<Schema>();
+  }
 
-  static Ptr make(const Ptr& other);
+  static Ptr make(const Ptr& other) {
+    return std::make_shared<Schema>(*other.get());
+  }
 
   Schema() noexcept;
 
@@ -36,7 +40,7 @@ class Schema final {
 
   Schema(const uint8_t** bufp, size_t* remainp);
 
-  ~Schema();
+  //~Schema() { }
 
   bool equal(const Ptr& other, bool with_rev=true) noexcept;
 

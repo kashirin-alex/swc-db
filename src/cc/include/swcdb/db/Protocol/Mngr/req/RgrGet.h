@@ -14,13 +14,13 @@
 namespace SWC { namespace Comm { namespace Protocol {
 namespace Mngr { namespace Req {
 
-  
+
 class RgrGet: public client::ConnQueue::ReqBase {
   public:
-  
-  typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&, 
+
+  typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&,
                              const Params::RgrGetRsp&)> Cb_t;
- 
+
   static void request(cid_t cid, rid_t rid, bool next_range,
                       Cb_t&& cb, const uint32_t timeout = 10000);
 
@@ -30,10 +30,10 @@ class RgrGet: public client::ConnQueue::ReqBase {
   static Ptr make(const Params::RgrGetReq& params,
                   Cb_t&& cb, const uint32_t timeout = 10000);
 
-  RgrGet(const Params::RgrGetReq& params, Cb_t&& cb, 
+  RgrGet(const Params::RgrGetReq& params, Cb_t&& cb,
          const uint32_t timeout);
 
-  virtual ~RgrGet();
+  virtual ~RgrGet() { }
 
   void handle_no_conn() override;
 
@@ -42,7 +42,7 @@ class RgrGet: public client::ConnQueue::ReqBase {
   void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
 
   private:
-  
+
   void clear_endpoints();
 
   const Cb_t        cb;
@@ -56,6 +56,6 @@ class RgrGet: public client::ConnQueue::ReqBase {
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/db/Protocol/Mngr/req/RgrGet.cc"
-#endif 
+#endif
 
 #endif // swcdb_db_protocol_req_RgrGet_h

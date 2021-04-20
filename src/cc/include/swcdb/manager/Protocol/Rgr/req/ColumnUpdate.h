@@ -1,7 +1,7 @@
 /*
  * SWC-DB© Copyright since 2019 Alex Kashirin <kashirin.alex@gmail.com>
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
- */ 
+ */
 
 #ifndef swcdb_manager_Protocol_rgr_req_ColumnUpdate_h
 #define swcdb_manager_Protocol_rgr_req_ColumnUpdate_h
@@ -18,11 +18,11 @@ class ColumnUpdate : public client::ConnQueue::ReqBase {
                const Manager::Column::Ptr& col,
                const DB::Schema::Ptr& schema,
                uint64_t req_id);
-  
-  virtual ~ColumnUpdate();
+
+  virtual ~ColumnUpdate() { }
 
   void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
-  
+
   void handle_no_conn() override;
 
   void updated();
@@ -30,7 +30,7 @@ class ColumnUpdate : public client::ConnQueue::ReqBase {
   private:
   Manager::Ranger::Ptr   rgr;
   Manager::Column::Ptr   col;
-  DB::Schema::Ptr        schema; 
+  DB::Schema::Ptr        schema;
   uint64_t               req_id;
 
 };

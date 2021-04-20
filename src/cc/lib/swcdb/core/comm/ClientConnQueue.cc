@@ -20,8 +20,6 @@ ConnQueueReqBase::Ptr ConnQueueReqBase::req() noexcept {
   return std::dynamic_pointer_cast<ConnQueueReqBase>(shared_from_this());
 }
 
-ConnQueueReqBase::~ConnQueueReqBase() {}
-
 void ConnQueueReqBase::handle(ConnHandlerPtr, const Event::Ptr& ev) {
   if(!is_rsp(ev))
     return;
@@ -240,7 +238,7 @@ void ConnQueue::run_queue() {
 
   if(m_timer) // nullptr -eq persistent
     schedule_close(false);
-    // ~ on timer after ms+ OR socket_opt ka(0)+interval(ms+)
+    //~ on timer after ms+ OR socket_opt ka(0)+interval(ms+)
 }
 
 void ConnQueue::schedule_close(bool closing) {

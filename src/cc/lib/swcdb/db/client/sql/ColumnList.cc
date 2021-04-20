@@ -16,8 +16,6 @@ ColumnList::ColumnList(const std::string& sql,
                       : Reader(sql, message), schemas(schemas) {
 }
 
-ColumnList::~ColumnList() {}
-
 int ColumnList::parse_list_columns(const char* expect_cmd,
                                    uint8_t& output_flags) {
   _parse_list_columns(expect_cmd);

@@ -59,7 +59,7 @@ void scan(int& err,
 
   it_seq = schemas.begin();
   for(auto& col : specs.columns) {
-    for(auto& intval : col->intervals) {
+    for(auto& intval : *col.get()) {
       if(!intval->flags.max_buffer)
         intval->flags.max_buffer = hdlr->buff_sz;
       if(!intval->values.empty())
@@ -87,7 +87,7 @@ void scan(int& err,
 
   it_seq = schemas.begin();
   for(auto& col : specs.columns) {
-    for(auto& intval : col->intervals) {
+    for(auto& intval : *col.get()) {
       if(!intval->flags.max_buffer)
         intval->flags.max_buffer = hdlr->buff_sz;
       if(!intval->values.empty())

@@ -12,10 +12,6 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace Rgr { namespace Params {
 
 
-RangeLocateReq::RangeLocateReq(cid_t cid, rid_t rid)
-                              : cid(cid), rid(rid), flags(0) {}
-
-RangeLocateReq::~RangeLocateReq() { }
 
 void RangeLocateReq::print(std::ostream& out) const {
   out << "RangeLocateReq(cid=" << cid << " rid=" << rid
@@ -58,10 +54,7 @@ void RangeLocateReq::internal_decode(const uint8_t** bufp, size_t* remainp) {
 
 
 
-RangeLocateRsp::RangeLocateRsp(int err)
-                              : err(err), cid(0), rid(0) { }
 
-RangeLocateRsp::~RangeLocateRsp() { }
 
 void RangeLocateRsp::print(std::ostream& out) const {
   out << "RangeLocated(";

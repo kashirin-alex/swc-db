@@ -28,7 +28,7 @@ class Rangers final {
 
   Rangers(const Comm::IoContextPtr& app_io);
 
-  ~Rangers();
+  //~Rangers() { }
 
   void stop(bool shuttingdown=true);
 

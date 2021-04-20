@@ -13,14 +13,14 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace Mngr { namespace Params {
 
 
-class RangeCreateReq : public Serializable {
+class RangeCreateReq final : public Serializable {
   public:
 
-  RangeCreateReq(cid_t cid=0, rgrid_t rgrid=0)
+  RangeCreateReq(cid_t cid=0, rgrid_t rgrid=0) noexcept
                  : cid(cid), rgrid(rgrid) {
   }
 
-  virtual ~RangeCreateReq(){ }
+  //~RangeCreateReq() { }
 
   cid_t       cid;
   rgrid_t     rgrid;
@@ -55,12 +55,12 @@ class RangeCreateReq : public Serializable {
 
 
 
-class RangeCreateRsp : public Serializable {
+class RangeCreateRsp final : public Serializable {
   public:
 
-  RangeCreateRsp(int err = Error::OK): err(err), rid(0) { }
+  RangeCreateRsp(int err = Error::OK) noexcept : err(err), rid(0) { }
 
-  virtual ~RangeCreateRsp() {}
+  //~RangeCreateRsp() { }
 
   int           err;
   rid_t         rid;

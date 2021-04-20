@@ -12,7 +12,7 @@
 namespace SWC { namespace Manager {
 
 
-class MngrStatus : public Comm::Protocol::Common::Params::HostEndPoints {
+class MngrStatus final : public Comm::Protocol::Common::Params::HostEndPoints {
   public:
 
   typedef std::shared_ptr<MngrStatus> Ptr;
@@ -28,7 +28,7 @@ class MngrStatus : public Comm::Protocol::Common::Params::HostEndPoints {
                conn(c), failures(0) {
   }
 
-  virtual ~MngrStatus(){ }
+  //~MngrStatus() { }
 
   bool eq_grouping(const MngrStatus& other) const {
     return role == other.role &&

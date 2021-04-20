@@ -11,16 +11,6 @@
 namespace SWC { namespace DB {
 
 
-SWC_SHOULD_INLINE
-Schema::Ptr Schema::make() {
-  return std::make_shared<Schema>();
-}
-
-SWC_SHOULD_INLINE
-Schema::Ptr Schema::make(const Schema::Ptr& other) {
-  return std::make_shared<Schema>(*other.get());
-}
-
 Schema::Schema() noexcept
       : cid(NO_CID),
         col_seq(Types::KeySeq::LEXIC), col_type(Types::Column::PLAIN),
@@ -75,8 +65,6 @@ Schema::Schema(const uint8_t** bufp, size_t* remainp)
 
     revision(Serialization::decode_vi64(bufp, remainp)) {
 }
-
-Schema::~Schema() {}
 
 bool Schema::equal(const Ptr& other, bool with_rev) noexcept {
   return     cid == other->cid

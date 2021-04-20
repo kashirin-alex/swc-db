@@ -17,7 +17,7 @@ class ContextManager : public Comm::AppContext {
 
   ContextManager();
 
-  virtual ~ContextManager();
+  virtual ~ContextManager() { }
 
   void handle(Comm::ConnHandlerPtr conn, const Comm::Event::Ptr& ev) override;
 

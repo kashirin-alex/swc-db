@@ -20,10 +20,10 @@ class ColumnsUnloadAll : public ColumnsUnload {
 
   ColumnsUnloadAll(bool validation);
 
-  virtual ~ColumnsUnloadAll();
+  virtual ~ColumnsUnloadAll() { }
 
   void unloaded(RangePtr range) override;
-  
+
   void unloaded(const ColumnPtr& col) override;
 
   void complete() override {

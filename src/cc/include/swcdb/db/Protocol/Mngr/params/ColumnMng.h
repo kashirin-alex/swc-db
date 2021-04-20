@@ -36,11 +36,13 @@ class ColumnMng : public Serializable {
     INTERNAL_EXPECT       = 9,
   };
 
-  ColumnMng();
+  ColumnMng() noexcept { }
 
-  ColumnMng(Function function, const DB::Schema::Ptr& schema);
+  ColumnMng(Function function, const DB::Schema::Ptr& schema) noexcept
+            : function(function), schema(schema) {
+  }
 
-  virtual ~ColumnMng();
+  //~ColumnMng() { }
 
   Function        function;
   DB::Schema::Ptr schema;

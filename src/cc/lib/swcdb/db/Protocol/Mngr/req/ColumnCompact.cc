@@ -16,33 +16,31 @@ namespace Mngr { namespace Req {
 
 
 SWC_SHOULD_INLINE
-void ColumnCompact::request(cid_t cid, ColumnCompact::Cb_t&& cb, 
+void ColumnCompact::request(cid_t cid, ColumnCompact::Cb_t&& cb,
                             const uint32_t timeout) {
   request(Params::ColumnCompactReq(cid), std::move(cb), timeout);
 }
 
 SWC_SHOULD_INLINE
 void ColumnCompact::request(const Params::ColumnCompactReq& params,
-                            ColumnCompact::Cb_t&& cb, 
+                            ColumnCompact::Cb_t&& cb,
                             const uint32_t timeout) {
   std::make_shared<ColumnCompact>(params, std::move(cb), timeout)->run();
 }
 
 
-ColumnCompact::ColumnCompact(const Params::ColumnCompactReq& params, 
-                             ColumnCompact::Cb_t&& cb, 
-                             const uint32_t timeout) 
+ColumnCompact::ColumnCompact(const Params::ColumnCompactReq& params,
+                             ColumnCompact::Cb_t&& cb,
+                             const uint32_t timeout)
                             : client::ConnQueue::ReqBase(
                                 false,
                                 Buffers::make(
                                   params, 0,
                                   COLUMN_COMPACT, timeout
                                 )
-                              ), 
+                              ),
                               cb(std::move(cb)), cid(params.cid) {
 }
-
-ColumnCompact::~ColumnCompact() { }
 
 void ColumnCompact::handle_no_conn() {
   clear_endpoints();
@@ -51,12 +49,12 @@ void ColumnCompact::handle_no_conn() {
 
 bool ColumnCompact::run() {
   if(endpoints.empty()) {
-    Env::Clients::get()->mngrs_groups->select(cid, endpoints); 
+    Env::Clients::get()->mngrs_groups->select(cid, endpoints);
     if(endpoints.empty()) {
       MngrActive::make(cid, shared_from_this())->run();
       return false;
     }
-  } 
+  }
   Env::Clients::get()->mngr->get(endpoints)->put(req());
   return true;
 }

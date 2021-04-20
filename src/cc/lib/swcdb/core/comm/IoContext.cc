@@ -21,8 +21,6 @@ IoContext::IoContext(std::string&& _name, int32_t size)
   SWC_ASSERT(m_size > 0);
 }
 
-IoContext::~IoContext() { }
-
 int32_t IoContext::get_size() const noexcept {
   return m_size; // asio::query(executor(), asio::execution::occupancy);
 }
@@ -101,7 +99,6 @@ IoCtx::IoCtx(int32_t size)
             : m_io(std::make_shared<Comm::IoContext>("Env", size)) {
 }
 
-IoCtx::~IoCtx() { }
 
 } // namespace Env
 

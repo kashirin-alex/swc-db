@@ -14,8 +14,6 @@ ColumnsUnload::ColumnsUnload(const Comm::ConnHandlerPtr& conn,
                           completely(completely) {
 }
 
-ColumnsUnload::~ColumnsUnload() { }
-
 void ColumnsUnload::add(const ColumnPtr& col) {
   Core::MutexSptd::scope lock(m_mutex);
   m_cols.push_back(col);

@@ -1,7 +1,7 @@
 /*
  * SWC-DB© Copyright since 2019 Alex Kashirin <kashirin.alex@gmail.com>
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
- */ 
+ */
 
 #ifndef swcdb_manager_Protocol_rgr_req_RangeUnload_h
 #define swcdb_manager_Protocol_rgr_req_RangeUnload_h
@@ -16,12 +16,12 @@ class RangeUnload : public client::ConnQueue::ReqBase {
   public:
 
   RangeUnload(const Manager::Ranger::Ptr& rgr,
-              const Manager::Column::Ptr& col, 
+              const Manager::Column::Ptr& col,
               const Manager::Range::Ptr& range,
               bool ignore_error=false,
               uint32_t timeout=60000);
 
-  virtual ~RangeUnload();
+  virtual ~RangeUnload() { }
 
   bool valid() override;
 
@@ -32,12 +32,12 @@ class RangeUnload : public client::ConnQueue::ReqBase {
   void unloaded(int err);
 
   private:
-  
+
   const Manager::Ranger::Ptr rgr;
   const Manager::Column::Ptr col;
   const Manager::Range::Ptr  range;
   bool                       ignore_error;
-   
+
 };
 
 }}}}}

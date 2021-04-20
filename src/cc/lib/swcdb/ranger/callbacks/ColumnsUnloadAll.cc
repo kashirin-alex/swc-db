@@ -12,16 +12,13 @@ ColumnsUnloadAll::ColumnsUnloadAll(bool validation)
                                     validation(validation)  {
 }
 
-ColumnsUnloadAll::~ColumnsUnloadAll() { }
-
-
 void ColumnsUnloadAll::unloaded(RangePtr range) {
   if(validation)
     SWC_LOGF(LOG_WARN,
               "Unload-Validation Range(cid=%lu rid=%lu) remained",
               range->cfg->cid, range->rid);
 }
-  
+
 void ColumnsUnloadAll::unloaded(const ColumnPtr& col) {
   if(validation)
     SWC_LOGF(LOG_WARN,
