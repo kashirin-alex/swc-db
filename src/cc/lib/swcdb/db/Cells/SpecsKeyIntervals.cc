@@ -132,6 +132,9 @@ bool KeyIntervals::equal(const KeyIntervals& other) const noexcept {
 
 bool KeyIntervals::is_matching(const Types::KeySeq key_seq,
                                const DB::Cell::Key& cellkey) const {
+  if(empty())
+    return true;
+
   switch(key_seq) {
     case Types::KeySeq::LEXIC:
     case Types::KeySeq::FC_LEXIC:

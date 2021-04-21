@@ -25,8 +25,6 @@ Blocks::Ptr Blocks::ptr() {
   return this;
 }
 
-Blocks::~Blocks() {  }
-
 void Blocks::schema_update() {
   commitlog.schema_update();
 
@@ -148,16 +146,15 @@ void Blocks::scan(ReqScan::Ptr req, Block::Ptr blk_ptr) {
       req->block = nullptr;
 
     } else {
-      const size_t need = Env::Rgr::scan_reserved_bytes();
-      if(blk_ptr && Env::Rgr::res().need_ram(need * (req->readahead + 1)))
-        blk_ptr->release();
-
       bool support = m_mutex.lock();
       blk_ptr = blk_ptr
         ? blk_ptr->next
-        : (req->spec.offset_key.empty()
-            ? m_block
-            : *(m_blocks_idx.begin() + _narrow(req->spec.offset_key)));
+        : (*(m_blocks_idx.begin() + (
+            req->spec.offset_key.empty()
+              ? (req->spec.range_begin.empty()
+                ? 0 : _narrow(req->spec.range_begin))
+              : _narrow(req->spec.offset_key)
+          )));
       m_mutex.unlock(support);
 
       while(blk_ptr && !blk_ptr->is_next(req->spec)) {
@@ -166,21 +163,8 @@ void Blocks::scan(ReqScan::Ptr req, Block::Ptr blk_ptr) {
         m_mutex.unlock(support);
       }
 
-      if(blk_ptr) {
+      if(blk_ptr)
         (blk = blk_ptr)->processing_increment();
-
-        if(Env::Rgr::res().need_ram(need * (req->readahead + 1))) {
-          size_t sz;
-          size_t _need = need * (req->readahead + 1);
-          for(Block::Ptr prev = blk; ; _need -= sz ) {
-            support = m_mutex.lock();
-            prev = prev->prev;
-            m_mutex.unlock(support);
-            if(!prev || (sz = prev->release()) > _need)
-              break;
-          }
-        }
-      }
     }
 
     req->profile.add_block_locate(ts);
@@ -195,6 +179,7 @@ void Blocks::scan(ReqScan::Ptr req, Block::Ptr blk_ptr) {
       case Block::ScanState::QUEUED: {
         processing_increment();
         bool support;
+        Block::Ptr prev = blk;
         for(size_t n=0;
             n < req->readahead &&
             !Env::Rgr::res().need_ram(Env::Rgr::scan_reserved_bytes())
@@ -206,6 +191,18 @@ void Blocks::scan(ReqScan::Ptr req, Block::Ptr blk_ptr) {
           if(blk->need_load() && blk->includes(req->spec)) {
             blk->processing_increment();
             blk->preload();
+          }
+        }
+        if(!req->with_block()) {
+          size_t need = Env::Rgr::scan_reserved_bytes() * (req->readahead+1);
+          if(Env::Rgr::res().need_ram(need)) {
+            for(size_t sz; ; need -= sz) {
+              support = m_mutex.lock();
+              prev = prev->prev;
+              m_mutex.unlock(support);
+              if(!prev || (sz = prev->release()) > need)
+                break;
+            }
           }
         }
         processing_decrement();
