@@ -28,11 +28,19 @@ class QueueSafeStated final : private std::queue<ItemT> {
 
   QueueSafeStated& operator=(const QueueSafeStated&) = delete;
 
+
   void push(const ItemT& item) {
     auto support(m_mutex.lock());
     QBase::push(item);
     m_mutex.unlock(support);
   }
+
+  void push(ItemT&& item) {
+    auto support(m_mutex.lock());
+    QBase::push(std::move(item));
+    m_mutex.unlock(support);
+  }
+
 
   ItemT& front() noexcept {
     MutexSptd::scope lock(m_mutex);
@@ -72,6 +80,7 @@ class QueueSafeStated final : private std::queue<ItemT> {
     m_state = false;
   }
 
+
   bool activating(const ItemT& item) {
     MutexSptd::scope lock(m_mutex);
     if(m_state) {
@@ -91,6 +100,28 @@ class QueueSafeStated final : private std::queue<ItemT> {
     }
     return !m_state;
   }
+
+
+  bool activating(ItemT& item) {
+    MutexSptd::scope lock(m_mutex);
+    if(m_state) {
+      QBase::push(std::move(item));
+      return false;
+    }
+    return m_state = true;
+  }
+
+  bool deactivating(ItemT& item) {
+    MutexSptd::scope lock(m_mutex);
+    if(QBase::empty()) {
+      m_state = false;
+    } else {
+      item = std::move(QBase::front());
+      QBase::pop();
+    }
+    return !m_state;
+  }
+
 
   private:
   MutexSptd                 m_mutex;
