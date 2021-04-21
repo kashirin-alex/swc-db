@@ -18,12 +18,6 @@ namespace SWC { namespace client {
 namespace Query {
 
 
-
-//! The SWC-DB Result C++ namespace 'SWC::client::Query::Result'
-namespace Result { }
-
-
-
 using ReqBase = Comm::client::ConnQueue::ReqBase;
 
 

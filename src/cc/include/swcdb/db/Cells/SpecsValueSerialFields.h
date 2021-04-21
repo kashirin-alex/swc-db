@@ -14,7 +14,18 @@
 
 
 namespace SWC { namespace DB { namespace Specs {
-namespace Serial { namespace Value {
+
+
+
+//! The SWC-DB Serial Specifications C++ namespace 'SWC::DB::Specs::Serial'
+namespace Serial {
+
+
+
+//! The SWC-DB Serial Value Specifications C++ namespace 'SWC::DB::Specs::Serial::Value'
+namespace Value {
+
+
 
 /* SERIALIZATION:
     [(type, fid, FieldEnc)]

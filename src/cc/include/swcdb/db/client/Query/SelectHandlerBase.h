@@ -14,6 +14,9 @@
 
 namespace SWC { namespace client { namespace Query { namespace Select {
 
+
+
+//! The SWC-DB Select Handlers C++ namespace 'SWC::client::Query::Select::Handlers'
 namespace Handlers {
 
 

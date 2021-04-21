@@ -15,7 +15,12 @@
 #include "swcdb/db/Protocol/Rgr/req/RangeQuerySelect.h"
 
 
-namespace SWC { namespace client { namespace Query { namespace Select {
+namespace SWC { namespace client { namespace Query {
+
+
+
+//! The SWC-DB Query Select C++ namespace 'SWC::client::Query::Select'
+namespace Select {
 
 
 

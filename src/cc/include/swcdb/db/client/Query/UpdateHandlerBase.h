@@ -15,7 +15,11 @@
 
 namespace SWC { namespace client { namespace Query { namespace Update {
 
+
+
+//! The SWC-DB Update Handlers C++ namespace 'SWC::client::Query::Update::Handlers'
 namespace Handlers {
+
 
 
 class Base : public std::enable_shared_from_this<Base> {

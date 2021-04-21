@@ -10,7 +10,18 @@
 #include "swcdb/db/client/Query/UpdateHandlerBaseSingleColumn.h"
 
 
-namespace SWC { namespace Ranger { namespace Query { namespace Update {
+namespace SWC { namespace Ranger {
+
+
+
+//! The SWC-DB Ranger Query C++ namespace 'SWC::Ranger::Query'
+namespace Query {
+
+
+
+//! The SWC-DB Ranger Update Query C++ namespace 'SWC::Ranger::Query::Update'
+namespace Update {
+
 
 
 class BaseMeta : public client::Query::Update::Handlers::BaseSingleColumn {

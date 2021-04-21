@@ -14,7 +14,12 @@
 #include "swcdb/db/Protocol/Rgr/req/RangeLocate.h"
 
 
-namespace SWC { namespace client { namespace Query { namespace Update {
+namespace SWC { namespace client { namespace Query {
+
+
+
+//! The SWC-DB Query Update C++ namespace 'SWC::client::Query::Update'
+namespace Update {
 
 
 

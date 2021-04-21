@@ -13,7 +13,18 @@
 
 
 namespace SWC { namespace DB { namespace Cell {
-namespace Serial { namespace Value {
+
+
+
+//! The SWC-DB Serial Cell C++ namespace 'SWC::DB::Cell::Serial'
+namespace Serial {
+
+
+
+//! The SWC-DB Serial Value Cell C++ namespace 'SWC::DB::Cell::Serial::Value'
+namespace Value {
+
+
 
 /* SERIALIZATION:
     Field[(i8 type, vi24 fid, FieldEnc(dep.type)), .. ]

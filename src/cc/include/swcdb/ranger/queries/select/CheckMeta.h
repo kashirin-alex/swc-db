@@ -10,7 +10,18 @@
 #include "swcdb/db/client/Query/SelectHandlerBaseSingleColumn.h"
 
 
-namespace SWC { namespace Ranger { namespace Query { namespace Select {
+namespace SWC { namespace Ranger {
+
+
+
+//! The SWC-DB Ranger Query C++ namespace 'SWC::Ranger::Query'
+namespace Query {
+
+
+
+//! The SWC-DB Ranger Select Query C++ namespace 'SWC::Ranger::Query::Select'
+namespace Select {
+
 
 
 class CheckMeta final :
