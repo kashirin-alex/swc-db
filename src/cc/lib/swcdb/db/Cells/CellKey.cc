@@ -328,6 +328,11 @@ void Key::convert_to(std::vector<KeyVec::Fraction>& key) const {
   }
 }
 
+void Key::read(const std::vector<std::string>& key) {
+  free();
+  add(key.cbegin(), key.cend());
+}
+
 bool Key::equal(const std::vector<std::string>& key) const {
   if(key.size() != count)
     return false;

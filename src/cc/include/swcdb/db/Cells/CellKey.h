@@ -113,10 +113,7 @@ class Key final {
 
   void convert_to(std::vector<KeyVec::Fraction>& key) const;
 
-  void read(const std::vector<std::string>& key) {
-    free();
-    add(key.cbegin(), key.cend());
-  }
+  void read(const std::vector<std::string>& key);
 
   bool equal(const std::vector<std::string>& key) const;
 
