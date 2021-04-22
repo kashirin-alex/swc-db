@@ -5,7 +5,7 @@ sort: 1
 
 
 # Backup & Restore data on SWC-DB
-On of the ways backup and restore can be done is with `SWC-DB(client)>` CLI and the available commands.
+One of the ways backup and restore can be done is with `SWC-DB(client)>` CLI and the available commands.
 
 * Dump & Load can use additional FileSystem configurations and write/read to other storage space.
 

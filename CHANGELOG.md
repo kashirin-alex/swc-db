@@ -61,6 +61,10 @@
     added FsBroker shuttingdown and processing state
     added bin/swcdb/ targets with -DSWC_ENABLE_SANITIZER definer
     fixed full-shutdown sequences at Sanitizer Enabled (without quick_exit)
+    changed some simple functions moved to header files
+    changed Ranger release previous Blocks at/after Blocks::ScanState::QUEUED
+    added QueueSafeStated<T>::{push,activating,deactivating} for moveable item
+    changed ConnHandler::Pending to nonHeap separate struct Outgoing & Pending
 
 [_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.4.19...master)
 ******

@@ -75,12 +75,11 @@ cells with key ```[>F(), F(2nd)]``` returning the cells with second fraction equ
 
 
 #### The Comparators in SWC-DB
-The [Comparators]({{ site.baseurl }}/use/sql/#comparators-syntax) available in SWC-DB are NONE, PF ,GT, GE, EQ, LE, LT, NE, RE while some have limitations for range-locator as regexp is evaluated as
+The [Comparators]({{ site.baseurl }}/use/sql/#comparators-syntax) available in SWC-DB are NONE, PF ,GT, GE, EQ, LE, LT, NE, RE and domain-object(Fully/Partially sub/sup set) SBS, SPS, POSBS, POSPS, FOSBS and FOSPS, while some Comparators have limitations for range-locator as regexp is evaluated as
 NONE being anything-match. Additionally the conditions of comparators applied on the corresponding [“ key-sequence ”]({{ site.baseurl }}/use/thriftclient/#enumeration-keyseq) by column's schema that include
 LEXIC, VOLUME, FC_LEXIC, FC_VOLUME that define the sequence of cells in a range. If a prefix (PF) is desired than the choice will be the LEXIC or with
 FC_LEXIC as VOLUME (volumetric) will not correspond to the char-byte sequence while if desired to have for example a decimal sequence of 0, 1, 2 .. 11
-the VOLUME is the right choice whereas the FC_VOLUME unlike tree-wise on fraction keeps the sequence of smaller key fractions-count at the beginning
-in the range.
+the VOLUME is the right choice whereas the FC_VOLUME unlike tree-wise on fraction keeps the sequence of smaller key fractions-count at the beginning in the range.
 
 
 #### The Master Ranges and Meta Ranges in SWC-DB
@@ -105,12 +104,12 @@ compaction whereas Commit-Log is Fragments of current added data, one fragment i
 
 
 #### The limitations that can be overseen with SWC-DB
-  ✗ Maximum number of columns, it is store-size of int64(264) – 10(reserved cols) which can be improved by CID to be a string-type. \
+  ✗ Maximum number of columns, it is store-size of uint64(2^64) – 10(reserved cols) which can be improved by CID to be a string-type. \
   ✗ Maximum size of Value or Key-Fraction(after serialization), it is 4GB, while for such data size other limitations apply.
 
 
 #### The capabilities to expect from SWC-DB
-  ✔ A Manager-Root with definitions of 1K2 ranges (a use of 1 GB RAM) is a definition of 1K4 Meta-Ranges that sums-down to 1K8 Data-Ranges, with
+  ✔ A Manager-Root with definitions of 1K^2 ranges (a use of 1 GB RAM) is a definition of 1K^4 Meta-Ranges that sums-down to 1K^8 Data-Ranges, with
 range-size configuration to 10GB that makes a total storage volume for a cell size average of 256KB to be a quarter of Yotta Byte. \
   ✔ A client can read at 100%(while Client's and Ranger's are equivalent) bandwidth, considering a perfect scan case of each client is requesting on
 different ranges, number of clients at a given time can be by the number of data Rangers using 100% bandwidth each. \
