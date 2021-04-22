@@ -29,20 +29,61 @@ using SocketSSL = asio::ssl::stream<asio::ip::tcp::socket>;
 class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
 
-  struct Pending {
+  struct Outgoing final {
     Buffers::Ptr                  cbuf;
+    DispatchHandler::Ptr          hdlr;
+    
+    Outgoing() noexcept : cbuf(nullptr), hdlr(nullptr) { }
+    
+    Outgoing(Buffers::Ptr&& cbuf, DispatchHandler::Ptr&& hdlr) noexcept
+            : cbuf(std::move(cbuf)), hdlr(std::move(hdlr)) {
+    }
+    
+    Outgoing(Outgoing&& other) noexcept
+           : cbuf(std::move(other.cbuf)), hdlr(std::move(other.hdlr)) {
+    }
+    
+    Outgoing& operator=(Outgoing&& other) noexcept {
+      cbuf = std::move(other.cbuf);
+      hdlr = std::move(other.hdlr);
+      return *this;
+    }
+    
+    Outgoing(const Outgoing&)             = delete;
+    
+    Outgoing& operator=(const Outgoing&)  = delete;
+  };
+
+  struct Pending final {
     DispatchHandler::Ptr          hdlr;
     asio::high_resolution_timer*  timer;
 
-    Pending(const Buffers::Ptr& cbuf, DispatchHandler::Ptr& hdlr) noexcept;
+    Pending() noexcept : hdlr(nullptr), timer(nullptr) { }
 
-    Pending(const Pending&) = delete;
+    Pending(DispatchHandler::Ptr&& hdlr) noexcept
+           : hdlr(std::move(hdlr)), timer(nullptr) {
+    }
 
-    Pending(const Pending&&) = delete;
+    Pending(Pending&& other) noexcept
+           : hdlr(std::move(other.hdlr)), timer(other.timer) {
+      other.timer = nullptr;
+    }
 
-    Pending& operator=(const Pending&) = delete;
+    Pending& operator=(Pending&& other) noexcept {
+      hdlr = std::move(other.hdlr);
+      timer = other.timer;
+      other.timer = nullptr;
+      return *this;
+    }
 
-    ~Pending();
+    Pending(const Pending&)             = delete;
+
+    Pending& operator=(const Pending&)  = delete;
+
+    ~Pending() {
+      if(timer)
+        delete timer;
+    }
   };
 
 
@@ -53,9 +94,13 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   EndPoint              endpoint_remote;
   EndPoint              endpoint_local;
 
-  ConnHandler(AppContext::Ptr& app_ctx) noexcept;
+  ConnHandler(AppContext::Ptr& app_ctx) noexcept
+              : connected(true), app_ctx(app_ctx), m_next_req_id(0) {
+  }
 
-  ConnHandlerPtr ptr() noexcept;
+  ConnHandlerPtr ptr() noexcept {
+    return shared_from_this();
+  }
 
   size_t endpoint_remote_hash() const;
 
@@ -86,16 +131,16 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
   bool response_ok(const Event::Ptr& ev) noexcept;
 
-  bool send_response(const Buffers::Ptr& cbuf,
+  bool send_response(Buffers::Ptr cbuf,
                      DispatchHandler::Ptr hdlr=nullptr) noexcept;
 
-  bool send_request(Buffers::Ptr& cbuf, DispatchHandler::Ptr hdlr);
+  bool send_request(Buffers::Ptr cbuf, DispatchHandler::Ptr hdlr);
 
   void print(std::ostream& out) const;
 
   protected:
 
-  virtual ~ConnHandler();
+  virtual ~ConnHandler() { }
 
   virtual SocketLayer* socket_layer() noexcept = 0;
 
@@ -117,11 +162,11 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
   private:
 
-  void write_or_queue(Pending* pending);
+  void write_or_queue(Outgoing&& outgoing);
 
   void write_next();
 
-  void write(Pending* pending);
+  void write(Outgoing& outgoing);
 
   void read();
 
@@ -146,10 +191,10 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   };
 
   uint32_t                          m_next_req_id;
-  Core::QueueSafeStated<Pending*>   m_outgoing;
+  Core::QueueSafeStated<Outgoing>   m_outgoing;
   std::unordered_map<uint32_t,
-                    Pending*,
-                    PendingHash>    m_pending;
+                     Pending,
+                     PendingHash>   m_pending;
   uint8_t _buf_header[Header::MAX_LENGTH];
 };
 
