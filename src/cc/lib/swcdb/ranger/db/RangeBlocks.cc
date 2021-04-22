@@ -123,12 +123,14 @@ void Blocks::scan(ReqScan::Ptr req, Block::Ptr blk_ptr) {
     return;
   }
 
+  bool support;
   int err = Error::OK;
   range->state(err);
   if(!err) {
-    Core::MutexSptd::scope lock(m_mutex);
+    support = m_mutex.lock();
     if(!m_block)
       init_blocks(err);
+    m_mutex.unlock(support);
   }
 
   if(err) {
@@ -146,15 +148,21 @@ void Blocks::scan(ReqScan::Ptr req, Block::Ptr blk_ptr) {
       req->block = nullptr;
 
     } else {
-      bool support = m_mutex.lock();
-      blk_ptr = blk_ptr
-        ? blk_ptr->next
-        : (*(m_blocks_idx.begin() + (
-            req->spec.offset_key.empty()
-              ? (req->spec.range_begin.empty()
-                ? 0 : _narrow(req->spec.range_begin))
-              : _narrow(req->spec.offset_key)
-          )));
+      if(blk_ptr) {
+        if(Env::Rgr::res().need_ram(Env::Rgr::scan_reserved_bytes() * 2))
+          blk_ptr->release();
+        support = m_mutex.lock();
+        blk_ptr = blk_ptr->next;
+
+      } else {
+        support = m_mutex.lock();
+        blk_ptr = (*(m_blocks_idx.begin() + (
+          req->spec.offset_key.empty()
+            ? (req->spec.range_begin.empty()
+              ? 0 : _narrow(req->spec.range_begin))
+            : _narrow(req->spec.offset_key)
+        )));
+      }
       m_mutex.unlock(support);
 
       while(blk_ptr && !blk_ptr->is_next(req->spec)) {
@@ -178,7 +186,6 @@ void Blocks::scan(ReqScan::Ptr req, Block::Ptr blk_ptr) {
 
       case Block::ScanState::QUEUED: {
         processing_increment();
-        bool support;
         Block::Ptr prev = blk;
         for(size_t n=0;
             n < req->readahead &&
