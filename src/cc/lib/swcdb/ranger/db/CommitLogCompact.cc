@@ -155,7 +155,7 @@ void Compact::Group::finalize() {
     sem.wait_all();
   }
 
-  compact->finalized();
+  Env::Rgr::post([compact=compact]() { compact->finalized(); });
 }
 
 
@@ -196,10 +196,7 @@ Compact::Compact(Fragments* log, uint32_t repetition,
   }
 
   if(m_groups.empty()) {
-    if(m_cb)
-      m_cb(this);
-    else
-      log->finish_compact(this);
+    m_cb ? m_cb(this) : log->finish_compact(this);
     return;
   }
 
@@ -239,16 +236,17 @@ void Compact::finished(Group* group, size_t cells_count) {
   log->range->blocks.wait_processing(); // sync processing state
 
   m_workers.store(m_groups.size());
-  for(auto g : m_groups)
-    Env::Rgr::post([g]() { g->finalize(); });
+  for(auto g : m_groups) {
+    Env::Rgr::post([g]() { 
+      g->finalize(); 
+      delete g;
+    });
+  }
 }
 
 void Compact::finalized() {
-  if(m_workers.fetch_sub(1) > 1)
+  if(m_workers.fetch_sub(1) != 1)
     return;
-
-  for(auto g : m_groups)
-    delete g;
 
   auto took = Time::now_ns() - ts;
   SWC_LOGF(LOG_INFO,
@@ -257,10 +255,8 @@ void Compact::finalized() {
     log->range->cfg->cid, log->range->rid,
     m_groups.size(), nfrags, ngroups, log->size(), repetition, took
   );
-  if(m_cb)
-    m_cb(this);
-  else
-    log->finish_compact(this);
+
+  m_cb ? m_cb(this) : log->finish_compact(this);
 }
 
 std::string Compact::get_filepath(const int64_t frag) const {
