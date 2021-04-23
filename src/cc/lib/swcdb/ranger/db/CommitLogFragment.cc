@@ -292,11 +292,10 @@ void Fragment::write(int err, uint8_t blk_replicas, int64_t blksz,
     Env::Rgr::res().less_mem_usage(size_plain);
   }
 
-  bool keep = m_processing.fetch_sub(1) > 1;
+  bool keep;
   {
     Core::MutexSptd::scope lock(m_mutex);
-    if(!keep)
-      keep = !m_queue.empty();
+    keep = m_processing.fetch_sub(1) > 1 || !m_queue.empty();
     m_state.store(err ? State::NONE : State::LOADED);
     m_err = err;
   }
@@ -430,6 +429,7 @@ void Fragment::split(int&, const DB::Cell::Key& key,
 
 SWC_SHOULD_INLINE
 void Fragment::processing_increment() noexcept {
+  Core::MutexSptd::scope lock(m_mutex);
   m_processing.fetch_add(1);
 }
 
