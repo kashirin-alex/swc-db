@@ -269,6 +269,8 @@ void MngrRole::update_manager_addr(uint64_t hash,
 void MngrRole::disconnection(const Comm::EndPoint& endpoint_server,
                              const Comm::EndPoint& endpoint_client,
                              bool srv) {
+  if(!m_run)
+    return;
   Comm::EndPoints endpoints;
   {
     std::scoped_lock lock(m_mutex);
@@ -296,7 +298,6 @@ void MngrRole::disconnection(const Comm::EndPoint& endpoint_server,
   if(host_set->state != DB::Types::MngrState::ACTIVE)
     update_state(endpoint_server, DB::Types::MngrState::OFF);
     // m_major_updates = true;
-  return;
 }
 
 void MngrRole::stop() {
@@ -421,6 +422,8 @@ void MngrRole::fill_states() {
 
 void MngrRole::managers_checker(size_t next, size_t total, bool flw) {
     // set manager followed(in-chain) local manager, incl. last's is first
+  if(!m_run)
+    return;
   if(!total) {
     m_checkin.stop();
     return schedule_checkin(cfg_check_interval->get());
@@ -429,8 +432,6 @@ void MngrRole::managers_checker(size_t next, size_t total, bool flw) {
   MngrStatus::Ptr host_chk;
   {
     std::shared_lock lock(m_mutex);
-    if(!m_run)
-      return;
     if(next == m_states.size())
       next = 0;
     host_chk = m_states.at(next);

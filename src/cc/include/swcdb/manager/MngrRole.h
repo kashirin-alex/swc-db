@@ -22,6 +22,10 @@ class MngrRole final {
 
   //~MngrRole() { }
 
+  bool running() const noexcept {
+    return m_run;
+  }
+
   void schedule_checkin(uint32_t t_ms = 10000);
 
   bool is_active(cid_t cid);

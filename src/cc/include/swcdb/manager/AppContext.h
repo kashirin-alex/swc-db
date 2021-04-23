@@ -93,6 +93,11 @@ class AppContext final : public Comm::AppContext {
   void handle(Comm::ConnHandlerPtr conn, const Comm::Event::Ptr& ev) override {
     // SWC_LOG_OUT(LOG_DEBUG, ev->print(SWC_LOG_OSTREAM << "handle: "); );
 
+    #if defined(SWC_ENABLE_SANITIZER)
+      if(!Env::Mngr::role()->running())
+        return conn->do_close();
+    #endif
+
     switch (ev->type) {
 
       case Comm::Event::Type::ESTABLISHED:
