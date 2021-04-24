@@ -75,7 +75,7 @@ void FileSystemCeph::setup_connection() {
   uint32_t tries=0;
   while(m_run && !initialize()) {
     SWC_LOGF(LOG_ERROR,
-      "FS-Ceph, unable to initialize connection to Ceph, try=%d",
+      "FS-Ceph, unable to initialize connection to Ceph, try=%u",
       ++tries);
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
   }

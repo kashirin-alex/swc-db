@@ -70,7 +70,8 @@ jobs:
             libsnappy-dev \
             libzstd-dev \
             libssl-dev \
-            libreadline-dev
+            libreadline-dev \
+            libcephfs-dev
           #
         fi
         if [ ${{ matrix.runs-on }} == 'ubuntu-20.04' ]; then
