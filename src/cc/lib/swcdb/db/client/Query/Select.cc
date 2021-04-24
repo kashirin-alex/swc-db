@@ -166,7 +166,7 @@ void Scanner::debug_res_cache(const char* msg, cid_t cid, rid_t rid,
   SWC_LOG_OUT(LOG_DEBUG,
     print(SWC_LOG_OSTREAM << msg << ' ');
     SWC_LOG_OSTREAM
-      << "Ranger(cid=" << cid << " rid=" << rid << " endpoints=[";
+      << " Ranger(cid=" << cid << " rid=" << rid << " endpoints=[";
     for(auto& endpoint : endpoints)
       SWC_LOG_OSTREAM << endpoint << ',';
     SWC_LOG_OSTREAM << "])";

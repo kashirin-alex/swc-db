@@ -11,7 +11,7 @@ Fill the details:
 * PKG_RECOMMENDS="";
 * PKG_SUGGESTS="";
 
-**_The Described details are of the SWC-DB package [`swcdb-0.4.19.Ubuntu_20_04_2_LTS.amd64.deb`](https://github.com/kashirin-alex/swc-db/releases/download/v0.4.19/swcdb-0.4.19.Ubuntu_20_04_2_LTS.amd64.deb)._**
+**_The Described details are of the SWC-DB package [`swcdb-0.5.0.Ubuntu_20_04_2_LTS.amd64.deb`](https://github.com/kashirin-alex/swc-db/releases/download/v0.5.0/swcdb-0.5.0.Ubuntu_20_04_2_LTS.amd64.deb)._**
 
 
 ```bash
@@ -19,7 +19,7 @@ Fill the details:
 apt-get install -y checkinstall;
 
 SWCDB_MAINTAINER="kashirin.alex@gmail.com";
-SWCDB_VERSION=0.4.19;
+SWCDB_VERSION=0.5.0;
 PKG_REQUIRES="libtcmalloc-minimal4, libre2-5, libsnappy1v5, libthrift-0.13.0, libzstd1, libreadline8, libssl1.1";
 PKG_RECOMMENDS="python3-fabric";
 PKG_SUGGESTS="libthrift-c-glib0, libcephfs2, default-jre";
@@ -44,4 +44,4 @@ mv packages/swcdb_1-${SWCDB_VERSION}_amd64.deb packages/swcdb-${SWCDB_VERSION}.$
 ```
 > The package will be ready at `packages` folder.
 * Remove with `dpkg -r swcdb;`
-* Install with `dpkg -i swcdb-0.4.19.Ubuntu_20_04_2_LTS.amd64.deb;`
+* Install with `dpkg -i swcdb-0.5.0.Ubuntu_20_04_2_LTS.amd64.deb;`

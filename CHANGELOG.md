@@ -7,7 +7,18 @@
 
 
 
+
 ### [SWC-DB master](https://github.com/kashirin-alex/swc-db/tree/master) (upcoming-release)
+
+
+
+[_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.5.0...master)
+******
+
+
+
+
+### [SWC-DB v0.5.0](https://github.com/kashirin-alex/swc-db/tree/master) (2021-04-25)
 
     changed Comm::ConnHandler use _buff_header[MAX_LENGTH] instead temp allocs
     fixed use of invalid Iterator in Mutable::write_and_free
@@ -65,8 +76,9 @@
     changed Ranger release previous Blocks at/after Blocks::ScanState::QUEUED
     added QueueSafeStated<T>::{push,activating,deactivating} for moveable item
     changed ConnHandler::Pending to nonHeap separate struct Outgoing & Pending
+    fixed Ranger CommitLog::Fragment::m_processing synchronization
 
-[_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.4.19...master)
+[_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.4.19...v0.5.0)
 ******
 
 
