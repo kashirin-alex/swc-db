@@ -693,7 +693,7 @@ class AppHandler final : virtual public BrokerIf {
         (r.cid = dbschemas[idx]->cid),
         [&sem, err=&r.err]
         (const Comm::client::ConnQueue::ReqBase::Ptr&,
-         const Comm::Protocol::Mngr::Params::ColumnCompactRsp& rsp) {
+         const Comm::Protocol::Mngr::Params::ColumnCompactRsp& rsp) noexcept {
           *err = rsp.err;
           sem.release();
         },

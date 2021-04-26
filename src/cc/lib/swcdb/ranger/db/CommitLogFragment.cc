@@ -531,7 +531,7 @@ void Fragment::remove(int&, Core::Semaphore* sem) {
     );
   } else if(mark_removed()) {
     Env::FsInterface::interface()->remove(
-      [frag=ptr(), sem](int) { sem->release(); },
+      [frag=ptr(), sem](int) noexcept { sem->release(); },
       m_smartfd->filepath()
     );
   }
