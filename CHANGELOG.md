@@ -18,7 +18,7 @@
 
 
 
-### [SWC-DB v0.5.0](https://github.com/kashirin-alex/swc-db/tree/master) (2021-04-25)
+### [SWC-DB v0.5.0](https://github.com/kashirin-alex/swc-db/tree/master) (2021-04-26)
 
     changed Comm::ConnHandler use _buff_header[MAX_LENGTH] instead temp allocs
     fixed use of invalid Iterator in Mutable::write_and_free
@@ -77,6 +77,9 @@
     added QueueSafeStated<T>::{push,activating,deactivating} for moveable item
     changed ConnHandler::Pending to nonHeap separate struct Outgoing & Pending
     fixed Ranger CommitLog::Fragment::m_processing synchronization
+    added core/MutexLock.h (shared,unique,scoped lock scopes with noexcept)
+    changed std::{shared,unique,scoped}_lock to corresponding Core::*Lock
+    added Ranger Fragments::_remove(int&, Fragments::Vec&, Core::Semaphore*)
 
 [_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.4.19...v0.5.0)
 ******
