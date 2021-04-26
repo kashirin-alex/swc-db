@@ -7,12 +7,12 @@
 #define swcdb_core_Semaphore_h
 
 
-#include <mutex>
+#include "swcdb/core/Compat.h"
 #include <condition_variable>
 
 
 namespace SWC { namespace Core {
-  
+
 class Semaphore final {
   public:
 

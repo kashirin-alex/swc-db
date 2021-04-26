@@ -11,10 +11,9 @@
 #include "swcdb/fs/Interface.h"
 #include "swcdb/db/Cells/Mutable.h"
 #include "swcdb/db/Cells/MutableVec.h"
-#include <shared_mutex>
 
 
-namespace SWC { namespace Ranger { 
+namespace SWC { namespace Ranger {
 
  //Forawrd Declaration
 class Blocks;
@@ -23,9 +22,9 @@ class BlockLoader;
 
 class Block final {
   public:
-  
+
   typedef Block* Ptr;
-  
+
   enum State : uint8_t {
     NONE    = 0x00,
     LOADING = 0x01,
@@ -38,17 +37,17 @@ class Block final {
     RESPONDED = 0x02,
     SYNCED    = 0x03
   };
-    
+
   Blocks*     blocks;
   Block::Ptr  next;
   Block::Ptr  prev;
 
 
   static Ptr make(const DB::Cells::Interval& interval,
-                  Blocks* blocks, 
+                  Blocks* blocks,
                   State state=State::NONE);
-                  
-  explicit Block(const DB::Cells::Interval& interval, 
+
+  explicit Block(const DB::Cells::Interval& interval,
                  Blocks* blocks, State state=State::NONE);
 
   Block(const Block&) = delete;
@@ -70,13 +69,13 @@ class Block final {
   Condition::Comp cond_key_end(const DB::Cell::Key& key) const;
 
   void set_key_end(const DB::Cell::Key& key);
-  
+
   void free_key_end();
-  
+
   void get_key_end(DB::Cell::Key& key) const;
 
   bool is_consist(const DB::Cells::Interval& intval) const;
-  
+
   bool is_in_end(const DB::Cell::Key& key) const;
 
   bool _is_in_end(const DB::Cell::Key& key) const;
@@ -95,18 +94,18 @@ class Block final {
 
   void load_final(const DB::Cells::MutableVec& cells);
 
-  size_t load_cells(const uint8_t* buf, size_t remain, 
-                    uint32_t revs, size_t avail, 
+  size_t load_cells(const uint8_t* buf, size_t remain,
+                    uint32_t revs, size_t avail,
                     bool& was_splitted, bool synced=false);
 
   bool splitter();
 
   ScanState scan(const ReqScan::Ptr& req);
-  
+
   void loader_loaded();
-  
+
   Ptr split(bool loaded);
-    
+
   Ptr _split(bool loaded);
 
   void _add(Ptr blk);
@@ -126,7 +125,7 @@ class Block final {
   size_t size();
 
   size_t _size() const noexcept;
-  
+
   size_t size_bytes();
 
   size_t size_of_internal();

@@ -56,7 +56,7 @@ void Compaction::stop() {
   for(uint8_t n=0; m_running; ++n) {
     CompactRange::Ptr req;
     {
-      std::scoped_lock lock(m_mutex);
+      Core::ScopedLock lock(m_mutex);
       if(m_compacting.empty())
         break;
       if(sz && sz == m_compacting.size()) {
@@ -70,7 +70,7 @@ void Compaction::stop() {
     }
     req->quit();
   }
-  std::unique_lock lock_wait(m_mutex);
+  Core::UniqueLock lock_wait(m_mutex);
   m_check_timer.cancel();
   if(m_running || m_schedule.running())
     m_cv.wait(lock_wait, [this](){
@@ -83,7 +83,7 @@ void Compaction::schedule() {
 }
 
 void Compaction::schedule(uint32_t t_ms) {
-  std::scoped_lock lock(m_mutex);
+  Core::ScopedLock lock(m_mutex);
   _schedule(t_ms);
 }
 
@@ -197,7 +197,7 @@ uint8_t Compaction::compact(const RangePtr& range) {
     blk_size
   );
   {
-    std::scoped_lock lock(m_mutex);
+    Core::ScopedLock lock(m_mutex);
     m_compacting.push_back(req);
   }
   uint8_t running = m_running.add_rslt(1);
@@ -218,7 +218,7 @@ void Compaction::compacted(const CompactRange::Ptr req,
   range->compacting(Range::COMPACT_NONE);
   compacted();
 
-  std::scoped_lock lock(m_mutex);
+  Core::ScopedLock lock(m_mutex);
   auto it = std::find(m_compacting.begin(), m_compacting.end(), req);
   if(it != m_compacting.end())
     m_compacting.erase(it);
@@ -231,7 +231,7 @@ void Compaction::compacted() {
 
   } else if(ran == 1) {
     if(stopped()) {
-      std::scoped_lock lock(m_mutex);
+      Core::ScopedLock lock(m_mutex);
       m_cv.notify_all();
     } else {
       schedule();

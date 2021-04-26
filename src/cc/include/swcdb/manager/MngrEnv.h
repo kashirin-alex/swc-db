@@ -6,6 +6,7 @@
 #ifndef swcdb_manager_MngrEnv_h
 #define swcdb_manager_MngrEnv_h
 
+
 #include "swcdb/db/Columns/Schemas.h"
 #include "swcdb/manager/db/Columns.h"
 

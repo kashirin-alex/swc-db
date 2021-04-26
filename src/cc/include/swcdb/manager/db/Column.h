@@ -53,7 +53,7 @@ class Column final : private std::vector<Range::Ptr> {
     FS::IdEntries_t entries;
 
     {
-      std::scoped_lock lock(m_mutex);
+      Core::ScopedLock lock(m_mutex);
 
       if(!exists_range_path(err))
         create_range_path(err);
@@ -69,18 +69,18 @@ class Column final : private std::vector<Range::Ptr> {
   }
 
   void set_loading() {
-    std::scoped_lock lock(m_mutex);
+    Core::ScopedLock lock(m_mutex);
     _set_loading();
   }
 
   void set_unloaded(const Range::Ptr& range) {
-    std::scoped_lock lock(m_mutex);
+    Core::ScopedLock lock(m_mutex);
     range->set_state(Range::State::NOTSET, 0);
     _set_loading();
   }
 
   bool set_merging(const Range::Ptr& range) {
-    std::scoped_lock lock(m_mutex);
+    Core::ScopedLock lock(m_mutex);
     if(m_state == State::DELETED)
       return false;
     range->set_state(Range::State::MERGE, 0);
@@ -89,12 +89,12 @@ class Column final : private std::vector<Range::Ptr> {
   }
 
   State state() {
-    std::shared_lock lock(m_mutex);
+    Core::SharedLock lock(m_mutex);
     return m_state;
   }
 
   void state(int& err) {
-    std::shared_lock lock(m_mutex);
+    Core::SharedLock lock(m_mutex);
     if(m_state == State::OK)
       return;
     if(m_state == State::DELETED)
@@ -104,12 +104,12 @@ class Column final : private std::vector<Range::Ptr> {
   }
 
   size_t ranges() {
-    std::shared_lock lock(m_mutex);
+    Core::SharedLock lock(m_mutex);
     return size();
   }
 
   void assigned(rgrid_t rgrid, size_t& num, std::vector<Range::Ptr>& ranges) {
-    std::shared_lock lock(m_mutex);
+    Core::SharedLock lock(m_mutex);
     for(auto& range : *this) {
       if(range->assigned(rgrid)) {
         ranges.push_back(range);
@@ -120,12 +120,12 @@ class Column final : private std::vector<Range::Ptr> {
   }
 
   void get_ranges(std::vector<Range::Ptr>& ranges) {
-    std::shared_lock lock(m_mutex);
+    Core::SharedLock lock(m_mutex);
     ranges.assign(begin(), end());
   }
 
   Range::Ptr get_range(const rid_t rid, bool initialize=false) {
-    std::scoped_lock lock(m_mutex);
+    Core::ScopedLock lock(m_mutex);
 
     for(auto& range : *this) {
       if(range->rid == rid)
@@ -142,7 +142,7 @@ class Column final : private std::vector<Range::Ptr> {
     uint32_t any_is = DB::Types::MetaColumn::is_master(cfg->cid)
       ? 2 : (DB::Types::MetaColumn::is_meta(cfg->cid) ? 1 : 0);
 
-    std::shared_lock lock(m_mutex);
+    Core::SharedLock lock(m_mutex);
     for(auto& range : *this) {
       if(!range->includes(range_begin, range_end, any_is))
         continue;
@@ -158,7 +158,7 @@ class Column final : private std::vector<Range::Ptr> {
   }
 
   void sort(Range::Ptr& range, const DB::Cells::Interval& interval) {
-    std::scoped_lock lock(m_mutex);
+    Core::ScopedLock lock(m_mutex);
 
     // std::sort(begin(), end(), Range);
     if(!range->equal(interval)) {
@@ -187,7 +187,7 @@ class Column final : private std::vector<Range::Ptr> {
   }
 
   Range::Ptr left_sibling(const Range::Ptr& right) {
-    std::shared_lock lock(m_mutex);
+    Core::SharedLock lock(m_mutex);
 
     if(!empty()) for(auto it = begin() + 1; it != end(); ++it) {
       if((*it)->rid == right->rid)
@@ -197,7 +197,7 @@ class Column final : private std::vector<Range::Ptr> {
   }
 
   Range::Ptr create_new_range(rgrid_t rgrid) {
-    std::scoped_lock lock(m_mutex);
+    Core::ScopedLock lock(m_mutex);
 
     auto& range = emplace_back(new Range(cfg, _get_next_rid()));
     // if !rid - err reached id limit
@@ -206,12 +206,12 @@ class Column final : private std::vector<Range::Ptr> {
   }
 
   rid_t get_next_rid() {
-    std::shared_lock lock(m_mutex);
+    Core::SharedLock lock(m_mutex);
     return _get_next_rid();
   }
 
   Range::Ptr get_next_unassigned() {
-    std::scoped_lock lock(m_mutex);
+    Core::ScopedLock lock(m_mutex);
 
     for(auto& range : *this) {
       if(range->need_assign()) {
@@ -223,7 +223,7 @@ class Column final : private std::vector<Range::Ptr> {
   }
 
   void set_rgr_unassigned(rgrid_t rgrid) {
-    std::scoped_lock lock(m_mutex);
+    Core::ScopedLock lock(m_mutex);
 
     for(auto& range : *this) {
       if(range->get_rgr_id() == rgrid) {
@@ -235,7 +235,7 @@ class Column final : private std::vector<Range::Ptr> {
   }
 
   void change_rgr(rgrid_t rgrid_old, rgrid_t rgrid) {
-    std::scoped_lock lock(m_mutex);
+    Core::ScopedLock lock(m_mutex);
 
     for(auto& range : *this) {
       if(range->get_rgr_id() == rgrid_old)
@@ -253,17 +253,17 @@ class Column final : private std::vector<Range::Ptr> {
   }
 
   void change_rgr_schema(const rgrid_t rgrid, int64_t rev=0) {
-    std::scoped_lock lock(m_mutex);
+    Core::ScopedLock lock(m_mutex);
     m_schemas_rev[rgrid] = rev;
   }
 
   void remove_rgr_schema(const rgrid_t rgrid) {
-    std::scoped_lock lock(m_mutex);
+    Core::ScopedLock lock(m_mutex);
     _remove_rgr_schema(rgrid);
   }
 
   void need_schema_sync(int64_t rev, std::vector<rgrid_t> &rgrids) {
-    std::shared_lock lock(m_mutex);
+    Core::SharedLock lock(m_mutex);
 
     for(auto it = m_schemas_rev.begin(); it != m_schemas_rev.end(); ++it) {
       if(it->second != rev)
@@ -272,7 +272,7 @@ class Column final : private std::vector<Range::Ptr> {
   }
 
   bool need_schema_sync(const rgrid_t rgrid, int64_t rev) {
-    std::shared_lock lock(m_mutex);
+    Core::SharedLock lock(m_mutex);
 
     auto it = m_schemas_rev.find(rgrid);
     if(it != m_schemas_rev.end())
@@ -281,7 +281,7 @@ class Column final : private std::vector<Range::Ptr> {
   }
 
   void assigned(std::vector<rgrid_t> &rgrids) {
-    std::shared_lock lock(m_mutex);
+    Core::SharedLock lock(m_mutex);
 
     rgrid_t rgrid;
     for(auto& range : *this) {
@@ -293,12 +293,12 @@ class Column final : private std::vector<Range::Ptr> {
   }
 
   void reset_health_check() {
-    std::shared_lock lock(m_mutex);
+    Core::SharedLock lock(m_mutex);
     m_check_ts = 0;
   }
 
   bool need_health_check(int64_t ts, uint32_t ms) {
-    std::shared_lock lock(m_mutex);
+    Core::SharedLock lock(m_mutex);
     if(m_state == State::OK && m_check_ts + ms < ts) {
       m_check_ts = ts;
       return true;
@@ -309,7 +309,7 @@ class Column final : private std::vector<Range::Ptr> {
   void need_health_check(int64_t ts, uint32_t ms,
                          std::vector<Range::Ptr> &ranges,
                          rgrid_t rgrid = 0, size_t max = 0) {
-    std::shared_lock lock(m_mutex);
+    Core::SharedLock lock(m_mutex);
     for(auto& range : *this) {
       if(range->need_health_check(ts, ms, rgrid)) {
         ranges.push_back(range);
@@ -320,7 +320,7 @@ class Column final : private std::vector<Range::Ptr> {
   }
 
   void remove_range(rid_t rid) {
-    std::scoped_lock lock(m_mutex);
+    Core::ScopedLock lock(m_mutex);
 
     if(!size())
       return;
@@ -334,7 +334,7 @@ class Column final : private std::vector<Range::Ptr> {
   }
 
   bool do_remove() {
-    std::scoped_lock lock(m_mutex);
+    Core::ScopedLock lock(m_mutex);
 
     bool was = m_state.exchange(State::DELETED) == State::DELETED;
     m_schemas_rev.clear();
@@ -347,7 +347,7 @@ class Column final : private std::vector<Range::Ptr> {
   }
 
   bool finalize_remove(int &err, rgrid_t rgrid=0) {
-    std::scoped_lock lock(m_mutex);
+    Core::ScopedLock lock(m_mutex);
 
     if(!rgrid) {
       clear();
@@ -370,7 +370,7 @@ class Column final : private std::vector<Range::Ptr> {
   }
 
   void print(std::ostream& out) {
-    std::shared_lock lock(m_mutex);
+    Core::SharedLock lock(m_mutex);
     _print(out);
   }
 

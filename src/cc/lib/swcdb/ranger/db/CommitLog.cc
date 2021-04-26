@@ -38,7 +38,7 @@ Fragments::~Fragments() {
 }
 
 void Fragments::schema_update() {
-  std::scoped_lock lock(m_mutex_cells);
+  Core::ScopedLock lock(m_mutex_cells);
   m_cells.configure(
     range->cfg->block_cells()*2,
     range->cfg->cell_versions(),
@@ -49,7 +49,7 @@ void Fragments::schema_update() {
 
 void Fragments::add(const DB::Cells::Cell& cell) {
   {
-    std::scoped_lock lock(m_mutex_cells);
+    Core::ScopedLock lock(m_mutex_cells);
     ssize_t sz = m_cells.size_of_internal();
     m_cells.add_raw(cell);
     Env::Rgr::res().adj_mem_usage(ssize_t(m_cells.size_of_internal()) - sz);
@@ -62,7 +62,7 @@ void Fragments::add(const DB::Cells::Cell& cell) {
 
 void Fragments::commit_new_fragment(bool finalize) {
   if(finalize) {
-    std::unique_lock lock_wait(m_mutex);
+    Core::UniqueLock lock_wait(m_mutex);
     if(m_compacting || m_commit.running())
       m_cv.wait(lock_wait, [this] {
         return !m_compacting && !m_commit.running(); });
@@ -71,12 +71,12 @@ void Fragments::commit_new_fragment(bool finalize) {
   Fragment::Ptr frag;
   for(int err; ;) {
     if(finalize) {
-      std::shared_lock lock2(m_mutex_cells);
+      Core::SharedLock lock2(m_mutex_cells);
       if(m_cells.empty())
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
     {
-      std::shared_lock lock2(m_mutex_cells);
+      Core::SharedLock lock2(m_mutex_cells);
       if(m_cells.empty() || (!finalize && !_need_roll()))
         break;
     }
@@ -86,10 +86,10 @@ void Fragments::commit_new_fragment(bool finalize) {
       DynamicBuffer cells;
       uint32_t cells_count = 0;
       DB::Cells::Interval interval(range->cfg->key_seq);
-      std::scoped_lock lock(m_mutex);
+      Core::ScopedLock lock(m_mutex);
       size_t nxt_id = _next_id();
       {
-        std::scoped_lock lock2(m_mutex_cells);
+        Core::ScopedLock lock2(m_mutex_cells);
         ssize_t sz = m_cells.size_of_internal();
         m_cells.write_and_free(
           cells, cells_count, interval,
@@ -137,7 +137,7 @@ void Fragments::commit_new_fragment(bool finalize) {
 
   m_commit.stop();
   {
-    std::scoped_lock lock(m_mutex);
+    Core::ScopedLock lock(m_mutex);
     m_cv.notify_all();
   }
 
@@ -146,7 +146,7 @@ void Fragments::commit_new_fragment(bool finalize) {
 }
 
 void Fragments::add(Fragment::Ptr& frag) {
-  std::scoped_lock lock(m_mutex);
+  Core::ScopedLock lock(m_mutex);
   _add(frag);
 }
 
@@ -171,7 +171,7 @@ bool Fragments::is_compacting() const {
 size_t Fragments::need_compact(std::vector<Fragments::Vec>& groups,
                                const Fragments::Vec& without,
                                size_t vol) {
-  std::shared_lock lock(m_mutex);
+  Core::SharedLock lock(m_mutex);
   return _need_compact(groups, without, vol);
 }
 
@@ -189,7 +189,7 @@ bool Fragments::try_compact(uint32_t tnum) {
   if(!at) {
     m_compacting.store(false);
     {
-      std::scoped_lock lock(m_mutex);
+      Core::ScopedLock lock(m_mutex);
       m_cv.notify_all();
     }
     return false;
@@ -200,7 +200,7 @@ bool Fragments::try_compact(uint32_t tnum) {
   size_t need = 0;
   bool need_major;
   {
-    std::scoped_lock lock(m_mutex);
+    Core::ScopedLock lock(m_mutex);
     if(!(need_major = _need_compact_major())) {
       need = _need_compact(groups, {}, cointervaling);
     }
@@ -225,7 +225,7 @@ bool Fragments::try_compact(uint32_t tnum) {
 void Fragments::finish_compact(const Compact* compact) {
   m_compacting.store(false);
   {
-    std::scoped_lock lock(m_mutex);
+    Core::ScopedLock lock(m_mutex);
     m_cv.notify_all();
   }
   range->compacting(Range::COMPACT_NONE);
@@ -254,7 +254,7 @@ std::string Fragments::get_log_fragment(const std::string& frag) const {
 }
 
 void Fragments::load(int &err) {
-  //std::scoped_lock lock(m_mutex);
+  //Core::ScopedLock lock(m_mutex);
   // fragments header OR log.data >> file.frag(intervals)
 
   err = Error::OK;
@@ -279,13 +279,13 @@ void Fragments::load(int &err) {
 }
 
 void Fragments::expand(DB::Cells::Interval& intval) {
-  std::shared_lock lock(m_mutex);
+  Core::SharedLock lock(m_mutex);
   for(auto& frag : *this)
     intval.expand(frag->interval);
 }
 
 void Fragments::expand_and_align(DB::Cells::Interval& intval) {
-  std::shared_lock lock(m_mutex);
+  Core::SharedLock lock(m_mutex);
   for(auto& frag : *this) {
     intval.expand(frag->interval);
     intval.align(frag->interval);
@@ -295,10 +295,10 @@ void Fragments::expand_and_align(DB::Cells::Interval& intval) {
 void Fragments::load_cells(BlockLoader* loader, bool& is_final,
                            Fragments::Vec& frags, uint8_t vol) {
   uint8_t base = vol;
-  std::shared_lock lock(m_mutex);
+  Core::SharedLock lock(m_mutex);
   _load_cells(loader, frags, vol);
   if(is_final && (is_final = base == vol)) {
-    std::shared_lock lock(m_mutex_cells);
+    Core::SharedLock lock(m_mutex_cells);
     loader->block->load_final(m_cells);
   }
 }
@@ -319,13 +319,13 @@ void Fragments::_load_cells(BlockLoader* loader, Fragments::Vec& frags,
 void Fragments::get(Fragments::Vec& fragments) {
   fragments.clear();
 
-  std::shared_lock lock(m_mutex);
+  Core::SharedLock lock(m_mutex);
   fragments.assign(begin(), end());
 }
 
 size_t Fragments::release(size_t bytes) {
   size_t released = 0;
-  std::shared_lock lock(m_mutex);
+  Core::SharedLock lock(m_mutex);
 
   for(auto& frag : *this) {
     released += frag->release();
@@ -335,24 +335,28 @@ size_t Fragments::release(size_t bytes) {
   return released;
 }
 
-void Fragments::remove(int &err, Fragments::Vec& fragments_old, bool safe) {
+void Fragments::remove(int &err, Fragments::Vec& fragments_old) {
   Core::Semaphore sem(10);
-  if(!safe)
-    m_mutex.lock();
+  {
+    Core::ScopedLock lock(m_mutex);
+    _remove(err, fragments_old, &sem);
+  }
+  sem.wait_all();
+}
+
+void Fragments::_remove(int &err, Fragments::Vec& fragments_old,
+                        Core::Semaphore* semp) {
   for(auto& frag : fragments_old) {
-    sem.acquire();
-    frag->remove(err, &sem);
+    semp->acquire();
+    frag->remove(err, semp);
     auto it = std::find(begin(), end(), frag);
     if(it != end())
       erase(it);
   }
-  if(!safe)
-    m_mutex.unlock();
-  sem.wait_all();
 }
 
 void Fragments::remove(int &err, Fragment::Ptr& frag, bool remove_file) {
-  std::scoped_lock lock(m_mutex);
+  Core::ScopedLock lock(m_mutex);
   if(remove_file)
     frag->remove(err);
   auto it = std::find(begin(), end(), frag);
@@ -363,13 +367,13 @@ void Fragments::remove(int &err, Fragment::Ptr& frag, bool remove_file) {
 void Fragments::remove() {
   stopping.store(true);
   {
-    std::unique_lock lock_wait(m_mutex);
+    Core::UniqueLock lock_wait(m_mutex);
     m_deleting = true;
     if(m_compacting || m_commit.running())
       m_cv.wait(lock_wait, [this] {
         return !m_compacting && !m_commit.running(); });
   }
-  std::scoped_lock lock(m_mutex);
+  Core::ScopedLock lock(m_mutex);
   for(auto& frag : *this)
     frag->mark_removed();
   clear();
@@ -380,12 +384,12 @@ void Fragments::remove() {
 void Fragments::unload() {
   stopping.store(true);
   {
-    std::unique_lock lock_wait(m_mutex);
+    Core::UniqueLock lock_wait(m_mutex);
     if(m_compacting || m_commit.running())
       m_cv.wait(lock_wait, [this] {
         return !m_compacting && !m_commit.running(); });
   }
-  std::scoped_lock lock(m_mutex);
+  Core::ScopedLock lock(m_mutex);
   clear();
   range = nullptr;
   m_commit.stop();
@@ -428,37 +432,35 @@ void Fragments::take_ownership(int& err, Fragments::Vec& frags,
     }
   }
 
+  Core::Semaphore sem(10);
   if(stopping || !frags.empty()) {
-    if(!tmp_frags.empty()) {
-      Core::Semaphore sem(10);
-      for(auto& frag : tmp_frags) {
-        sem.acquire();
-        frag->remove(err = Error::OK, &sem);
-      }
-      sem.wait_all();
+    for(auto& frag : tmp_frags) {
+      sem.acquire();
+      frag->remove(err = Error::OK, &sem);
     }
   } else {
-    std::scoped_lock lock(m_mutex);
+    Core::ScopedLock lock(m_mutex);
     for(auto& frag : tmp_frags)
       _add(frag);
-    remove(err = Error::OK, removing, true);
+    _remove(err = Error::OK, removing, &sem);
   }
   removing.clear();
+  sem.wait_all();
 }
 
 bool Fragments::deleting() {
-  std::shared_lock lock(m_mutex);
+  Core::SharedLock lock(m_mutex);
   return m_deleting;
 }
 
 size_t Fragments::cells_count(bool only_current) {
   size_t count = 0;
   {
-    std::shared_lock lock(m_mutex_cells);
+    Core::SharedLock lock(m_mutex_cells);
     count += m_cells.size();
   }
   if(!only_current) {
-    std::shared_lock lock(m_mutex);
+    Core::SharedLock lock(m_mutex);
     for(auto& frag : *this)
       count += frag->cells_count;
   }
@@ -466,13 +468,13 @@ size_t Fragments::cells_count(bool only_current) {
 }
 
 bool Fragments::empty() {
-  std::shared_lock lock1(m_mutex);
-  std::shared_lock lock2(m_mutex_cells);
+  Core::SharedLock lock1(m_mutex);
+  Core::SharedLock lock2(m_mutex_cells);
   return Vec::empty() && m_cells.empty();
 }
 
-size_t Fragments::size() {
-  std::shared_lock lock(m_mutex);
+size_t Fragments::size() noexcept {
+  Core::SharedLock lock(m_mutex);
   return Vec::size();
 }
 
@@ -481,7 +483,7 @@ size_t Fragments::size_bytes(bool only_loaded) {
 }
 
 size_t Fragments::size_bytes_encoded() {
-  std::shared_lock lock(m_mutex);
+  Core::SharedLock lock(m_mutex);
   size_t size = 0;
   for(auto& frag : *this)
     size += frag->size_bytes_encoded();
@@ -498,7 +500,7 @@ bool Fragments::processing() noexcept {
 }
 
 uint64_t Fragments::next_id() {
-  std::scoped_lock lock(m_mutex);
+  Core::ScopedLock lock(m_mutex);
   return _next_id();
 }
 
@@ -515,12 +517,12 @@ uint64_t Fragments::_next_id() {
 
 void Fragments::print(std::ostream& out, bool minimal) {
   size_t count = cells_count();
-  std::shared_lock lock(m_mutex);
+  Core::SharedLock lock(m_mutex);
 
   out << "CommitLog(count=" << count
       << " cells=";
   {
-    std::shared_lock lock(m_mutex_cells);
+    Core::SharedLock lock(m_mutex_cells);
     out << m_cells.size();
   }
 
@@ -632,7 +634,7 @@ bool Fragments::_processing() const noexcept {
 size_t Fragments::_size_bytes(bool only_loaded) {
   size_t size = 0;
   {
-    std::shared_lock lock(m_mutex_cells);
+    Core::SharedLock lock(m_mutex_cells);
     size += m_cells.size_bytes();
   }
   for(auto& frag : *this)

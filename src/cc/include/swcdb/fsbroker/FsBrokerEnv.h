@@ -8,7 +8,6 @@
 
 
 #include <unordered_map>
-#include <shared_mutex>
 
 
 namespace SWC { namespace FsBroker {

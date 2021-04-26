@@ -13,7 +13,6 @@
 #include "swcdb/db/Columns/Schema.h"
 
 #include <unordered_map>
-#include <shared_mutex>
 
 
 namespace SWC { namespace DB {

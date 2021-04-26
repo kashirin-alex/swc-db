@@ -72,7 +72,7 @@ bool MngrRole::is_active_role(uint8_t role) {
 }
 
 MngrStatus::Ptr MngrRole::active_mngr(cid_t cid) {
-  std::shared_lock lock(m_mutex);
+  Core::SharedLock lock(m_mutex);
   for(auto& host : m_states) {
     if(host->state == DB::Types::MngrState::ACTIVE &&
        host->role & DB::Types::MngrRole::COLUMNS &&
@@ -84,7 +84,7 @@ MngrStatus::Ptr MngrRole::active_mngr(cid_t cid) {
 }
 
 MngrStatus::Ptr MngrRole::active_mngr_role(uint8_t role) {
-  std::shared_lock lock(m_mutex);
+  Core::SharedLock lock(m_mutex);
   for(auto& host : m_states) {
     if(host->state == DB::Types::MngrState::ACTIVE &&
        host->role & role)
@@ -96,7 +96,7 @@ MngrStatus::Ptr MngrRole::active_mngr_role(uint8_t role) {
 bool MngrRole::are_all_active(const client::Mngr::Groups::Vec& groups) {
   for(auto& g : groups) {
     bool found = false;
-    std::shared_lock lock(m_mutex);
+    Core::SharedLock lock(m_mutex);
     for(auto& host : m_states) {
       if(host->state == DB::Types::MngrState::ACTIVE &&
          g->role == host->role &&
@@ -112,7 +112,7 @@ bool MngrRole::are_all_active(const client::Mngr::Groups::Vec& groups) {
 }
 
 void MngrRole::get_states(MngrsStatus& states) {
-  std::shared_lock lock(m_mutex);
+  Core::SharedLock lock(m_mutex);
   states.assign(m_states.begin(), m_states.end());
 }
 
@@ -223,7 +223,7 @@ void MngrRole::fill_states(const MngrsStatus& states, uint64_t token,
   }
 
   {
-    std::shared_lock lock(m_mutex);
+    Core::SharedLock lock(m_mutex);
     if(!token || !turn_around) {
       if(!token)
         token = m_local_token;
@@ -252,7 +252,7 @@ void MngrRole::update_manager_addr(uint64_t hash,
                                    const Comm::EndPoint& mngr_host) {
   bool major_updates;
   {
-    std::scoped_lock lock(m_mutex);
+    Core::ScopedLock lock(m_mutex);
 
     bool new_srv = m_mngrs_client_srv.emplace(hash, mngr_host).second;
     if(new_srv) {
@@ -273,7 +273,7 @@ void MngrRole::disconnection(const Comm::EndPoint& endpoint_server,
     return;
   Comm::EndPoints endpoints;
   {
-    std::scoped_lock lock(m_mutex);
+    Core::ScopedLock lock(m_mutex);
 
     auto it = m_mngrs_client_srv.find(Comm::endpoint_hash(endpoint_server));
     if(it != m_mngrs_client_srv.end()) {
@@ -314,7 +314,7 @@ void MngrRole::stop() {
 
   for(MngrStatus::Ptr h;;) {
     {
-      std::scoped_lock lock(m_mutex);
+      Core::ScopedLock lock(m_mutex);
       if(m_states.empty())
         break;
       h = m_states.front();
@@ -381,7 +381,7 @@ void MngrRole::managers_checkin() {
   size_t sz = 0;
   bool has_role;
   {
-    std::scoped_lock lock(m_mutex);
+    Core::ScopedLock lock(m_mutex);
     _apply_cfg();
     for(auto& h : m_states) {
       if(h->state != DB::Types::MngrState::OFF)
@@ -392,7 +392,7 @@ void MngrRole::managers_checkin() {
   if(has_role)
     return managers_checker(0, sz, false);
 
-  std::shared_lock lock(m_mutex);
+  Core::SharedLock lock(m_mutex);
   std::string s;
   for(auto& endpoint : m_local_endpoints) {
     s.append(
@@ -414,7 +414,7 @@ void MngrRole::managers_checkin() {
 void MngrRole::fill_states() {
   MngrsStatus states;
   {
-    std::shared_lock lock(m_mutex);
+    Core::SharedLock lock(m_mutex);
     states.assign(m_states.begin(), m_states.end());
   }
   fill_states(states, 0, nullptr);
@@ -431,7 +431,7 @@ void MngrRole::managers_checker(size_t next, size_t total, bool flw) {
 
   MngrStatus::Ptr host_chk;
   {
-    std::shared_lock lock(m_mutex);
+    Core::SharedLock lock(m_mutex);
     if(next == m_states.size())
       next = 0;
     host_chk = m_states.at(next);
@@ -486,7 +486,7 @@ void MngrRole::manager_checker(MngrStatus::Ptr host,
 
 void MngrRole::update_state(const Comm::EndPoint& endpoint,
                             DB::Types::MngrState state) {
-  std::scoped_lock lock(m_mutex);
+  Core::ScopedLock lock(m_mutex);
 
   for(auto& host : m_states) {
     if(Comm::has_endpoint(endpoint, host->endpoints)) {
@@ -497,7 +497,7 @@ void MngrRole::update_state(const Comm::EndPoint& endpoint,
 
 void MngrRole::update_state(const Comm::EndPoints& endpoints,
                             DB::Types::MngrState state) {
-  std::scoped_lock lock(m_mutex);
+  Core::ScopedLock lock(m_mutex);
 
   for(auto& host : m_states) {
     if(Comm::has_endpoint(endpoints, host->endpoints)) {
@@ -507,7 +507,7 @@ void MngrRole::update_state(const Comm::EndPoints& endpoints,
 }
 
 MngrStatus::Ptr MngrRole::get_host(const Comm::EndPoints& endpoints) {
-  std::shared_lock lock(m_mutex);
+  Core::SharedLock lock(m_mutex);
 
   for(auto& host : m_states) {
     if(Comm::has_endpoint(endpoints, host->endpoints))
@@ -517,7 +517,7 @@ MngrStatus::Ptr MngrRole::get_host(const Comm::EndPoints& endpoints) {
 }
 
 MngrStatus::Ptr MngrRole::get_highest_state_host(const MngrStatus::Ptr& other) {
-  std::shared_lock lock(m_mutex);
+  Core::SharedLock lock(m_mutex);
 
   MngrStatus::Ptr h = nullptr;
   for(auto& host : m_states) {
@@ -529,7 +529,7 @@ MngrStatus::Ptr MngrRole::get_highest_state_host(const MngrStatus::Ptr& other) {
 }
 
 bool MngrRole::is_group_off(const MngrStatus::Ptr& other) {
-  std::shared_lock lock(m_mutex);
+  Core::SharedLock lock(m_mutex);
 
   bool offline = true;
   for(auto& host : m_states) {
@@ -547,7 +547,7 @@ void MngrRole::apply_role_changes() {
   cid_t cid_begin = DB::Schema::NO_CID;
   cid_t cid_end = DB::Schema::NO_CID;
   {
-    std::shared_lock lock(m_mutex);
+    Core::SharedLock lock(m_mutex);
     role_old = m_local_active_role;
 
     for(auto& host : m_states) {

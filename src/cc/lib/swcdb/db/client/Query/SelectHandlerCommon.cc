@@ -36,7 +36,7 @@ bool Common::add_cells(const cid_t cid, const StaticBuffer& buffer,
 void Common::get_cells(const cid_t cid, DB::Cells::Result& cells) {
   BaseUnorderedMap::get_cells(cid, cells);
   if(m_notify) {
-    std::scoped_lock lock(m_mutex);
+    Core::ScopedLock lock(m_mutex);
     m_cv.notify_all();
   }
 }
@@ -44,7 +44,7 @@ void Common::get_cells(const cid_t cid, DB::Cells::Result& cells) {
 void Common::free(const cid_t cid) {
   BaseUnorderedMap::free(cid);
   if(m_notify) {
-    std::scoped_lock lock(m_mutex);
+    Core::ScopedLock lock(m_mutex);
     m_cv.notify_all();
   }
 }
@@ -61,7 +61,7 @@ void Common::response(int err) {
     if(!m_sending_result.running())
       send_result();
   } else {
-    std::scoped_lock lock(m_mutex);
+    Core::ScopedLock lock(m_mutex);
     m_cv.notify_all();
   }
 }
@@ -75,7 +75,7 @@ void Common::response_partials() {
     return;
 
   if(m_sending_result.running()) {
-    std::unique_lock lock_wait(m_mutex);
+    Core::UniqueLock lock_wait(m_mutex);
     if(m_sending_result.running()) {
       if(wait_on_partials()) {
         m_cv.wait(
@@ -98,7 +98,7 @@ bool Common::wait_on_partials() {
 void Common::wait() {
   _wait: {
     {
-      std::unique_lock lock_wait(m_mutex);
+      Core::UniqueLock lock_wait(m_mutex);
       if(m_sending_result || completion.count()) {
         m_cv.wait(
           lock_wait,
@@ -122,7 +122,7 @@ void Common::send_result() {
     m_dispatcher_io->post([this, hdlr](){
       m_cb(hdlr);
 
-      std::scoped_lock lock(m_mutex);
+      Core::ScopedLock lock(m_mutex);
       m_sending_result.stop();
       m_cv.notify_all();
     });
@@ -130,7 +130,7 @@ void Common::send_result() {
     Env::IoCtx::post([this, hdlr](){
       m_cb(hdlr);
 
-      std::scoped_lock lock(m_mutex);
+      Core::ScopedLock lock(m_mutex);
       m_sending_result.stop();
       m_cv.notify_all();
     });

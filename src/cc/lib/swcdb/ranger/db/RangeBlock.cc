@@ -49,7 +49,7 @@ Block::Ptr Block::ptr() {
 }
 
 void Block::schema_update() noexcept {
-  std::scoped_lock lock(m_mutex);
+  Core::ScopedLock lock(m_mutex);
   m_cells.configure(
     blocks->range->cfg->cell_versions(),
     blocks->range->cfg->cell_ttl(),
@@ -141,7 +141,7 @@ bool Block::add_logged(const DB::Cells::Cell& cell) {
     return false;
 
   if(loaded()) {
-    std::scoped_lock lock(m_mutex);
+    Core::ScopedLock lock(m_mutex);
     ssize_t sz = m_cells.size_of_internal();
     m_cells.add_raw(cell);
     Env::Rgr::res().adj_mem_usage(ssize_t(m_cells.size_of_internal()) - sz);
@@ -158,7 +158,7 @@ void Block::load_final(const DB::Cells::MutableVec& vec_cells) {
   } else {
     ssize_t sz;
     {
-      std::scoped_lock lock(m_mutex);
+      Core::ScopedLock lock(m_mutex);
       sz = m_cells.size_of_internal();
       for(auto cells : vec_cells) {
         if(!cells->scan_after(m_prev_key_end, m_key_end, m_cells))
@@ -182,7 +182,7 @@ size_t Block::load_cells(const uint8_t* buf, size_t remain,
   size_t added = 0;
   size_t offset_hint = 0;
 
-  std::scoped_lock lock(m_mutex);
+  Core::ScopedLock lock(m_mutex);
   if(revs > blocks->range->cfg->cell_versions())
     // schema change from more to less results in dups
     synced = false;
@@ -405,7 +405,7 @@ bool Block::processing() noexcept {
 }
 
 size_t Block::size() {
-  std::shared_lock lock(m_mutex);
+  Core::SharedLock lock(m_mutex);
   return _size();
 }
 
@@ -415,12 +415,12 @@ size_t Block::_size() const noexcept {
 }
 
 size_t Block::size_bytes() {
-  std::shared_lock lock(m_mutex);
+  Core::SharedLock lock(m_mutex);
   return m_cells.size_bytes();
 }
 
 size_t Block::size_of_internal() {
-  std::shared_lock lock(m_mutex);
+  Core::SharedLock lock(m_mutex);
   return m_cells.size_of_internal();
 }
 
@@ -456,7 +456,7 @@ Block::ScanState Block::_scan(const ReqScan::Ptr& req, bool synced) {
   int err = Error::OK;
   uint64_t ts = Time::now_ns();
   try {
-    std::shared_lock lock(m_mutex);
+    Core::SharedLock lock(m_mutex);
     m_cells.scan(req.get());
 
   } catch (...) {

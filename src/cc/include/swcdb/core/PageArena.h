@@ -8,7 +8,6 @@
 
 
 #include "swcdb/core/Comparators.h"
-#include <mutex>
 #include <unordered_set>
 
 
@@ -127,7 +126,7 @@ class Page final : public PageBase {
   //~Page() { }
 
   Item::Ptr use(const uint8_t* buf, uint32_t size) {
-    std::scoped_lock lock(m_mutex);
+    Core::ScopedLock lock(m_mutex);
 
     auto tmp = new Item(buf, size);
     auto r = insert(tmp);
@@ -141,7 +140,7 @@ class Page final : public PageBase {
   }
 
   void free(Item::Ptr ptr) {
-    std::scoped_lock lock(m_mutex);
+    Core::ScopedLock lock(m_mutex);
 
     auto it = find(ptr);
     if(it != end() && !ptr->count) {
@@ -151,7 +150,7 @@ class Page final : public PageBase {
   }
 
   size_t count() const {
-    std::scoped_lock lock(m_mutex);
+    Core::ScopedLock lock(m_mutex);
 
     size_t sz = size();
     //for(Page* nxt = m_page; nxt ; nxt->next_page(nxt))
@@ -160,7 +159,7 @@ class Page final : public PageBase {
   }
   /*
   void next_page(Page*& page) const {
-    std::scoped_lock lock(m_mutex);
+    Core::ScopedLock lock(m_mutex);
     page = m_page;
   }
   */
@@ -178,7 +177,7 @@ class Page final : public PageBase {
 
 
   Item::Ptr use(const uint8_t* buf, uint32_t sz) {
-    std::scoped_lock lock(m_mutex);
+    Core::ScopedLock lock(m_mutex);
 
     auto ptr = new Item(buf, sz);
 
@@ -196,7 +195,7 @@ class Page final : public PageBase {
   }
 
   void free(Item::Ptr ptr) {
-    std::scoped_lock lock(m_mutex);
+    Core::ScopedLock lock(m_mutex);
 
     for(auto it = begin() + _narrow(*ptr);
         it != end() && (*it)->hash() <= ptr->hash(); ++it) {
@@ -210,7 +209,7 @@ class Page final : public PageBase {
   }
 
   size_t count() const {
-    std::scoped_lock lock(m_mutex);
+    Core::ScopedLock lock(m_mutex);
     return size();
   }
 

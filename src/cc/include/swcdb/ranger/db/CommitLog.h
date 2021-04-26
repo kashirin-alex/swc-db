@@ -76,7 +76,7 @@ class Fragments final : private std::vector<Fragment::Ptr> {
 
   size_t release(size_t bytes);
 
-  void remove(int &err, Vec& fragments_old, bool safe=false);
+  void remove(int &err, Vec& fragments_old);
 
   void remove(int &err, Fragment::Ptr& frag, bool remove_file);
 
@@ -94,7 +94,7 @@ class Fragments final : private std::vector<Fragment::Ptr> {
 
   bool empty();
 
-  size_t size();
+  size_t size() noexcept;
 
   size_t size_bytes(bool only_loaded=false);
 
@@ -111,6 +111,8 @@ class Fragments final : private std::vector<Fragment::Ptr> {
   void _add(Fragment::Ptr& frag);
 
   uint64_t _next_id();
+
+  void _remove(int &err, Vec& fragments_old, Core::Semaphore* semp);
 
   bool _need_roll() const;
 

@@ -16,7 +16,7 @@ namespace Handlers {
 
 
 Common::Common(Cb_t&& cb, const Comm::IoContextPtr& io) noexcept
-              : valid_state(true), 
+              : valid_state(true),
                 m_cb(std::move(cb)), m_dispatcher_io(io) {
   timeout.store(Env::Clients::ref().cfg_send_timeout->get());
   timeout_ratio.store(Env::Clients::ref().cfg_send_timeout_ratio->get());
@@ -34,13 +34,13 @@ bool Common::valid() noexcept {
 
 void Common::response(int err) {
   if(!completion.is_last()) {
-    std::scoped_lock lock(m_mutex);
+    Core::ScopedLock lock(m_mutex);
     return m_cv.notify_all();
   }
 
   if(!err && requires_commit()) {
     commit(shared_from_this());
-    std::scoped_lock lock(m_mutex);
+    Core::ScopedLock lock(m_mutex);
     return m_cv.notify_all();
   }
 
@@ -56,24 +56,24 @@ void Common::response(int err) {
       ? m_dispatcher_io->post([this, hdlr](){
           hdlr->m_cb(hdlr);
 
-          std::scoped_lock lock(m_mutex);
+          Core::ScopedLock lock(m_mutex);
           m_cv.notify_all();
         })
       : Env::IoCtx::post([this, hdlr](){
           hdlr->m_cb(hdlr);
 
-          std::scoped_lock lock(m_mutex);
+          Core::ScopedLock lock(m_mutex);
           m_cv.notify_all();
         });
   } else {
-    std::scoped_lock lock(m_mutex);
+    Core::ScopedLock lock(m_mutex);
     m_cv.notify_all();
   }
 }
 
 
 void Common::wait() {
-  std::unique_lock lock_wait(m_mutex);
+  Core::UniqueLock lock_wait(m_mutex);
   if(completion.count()) {
     m_cv.wait(
       lock_wait,
@@ -85,7 +85,7 @@ void Common::wait() {
 bool Common::wait_ahead_buffers(uint64_t from) {
   size_t bytes = size_bytes();
 
-  std::unique_lock lock_wait(m_mutex);
+  Core::UniqueLock lock_wait(m_mutex);
   if(from == completion.count())
     return bytes >= buff_sz;
 

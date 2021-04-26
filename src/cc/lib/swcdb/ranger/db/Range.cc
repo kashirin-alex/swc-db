@@ -138,7 +138,7 @@ bool Range::can_be_merged() {
   }
   if(!blocks.commitlog.empty())
     return false;
-  std::shared_lock lock(m_mutex);
+  Core::SharedLock lock(m_mutex);
   return m_state == State::LOADED &&
          m_compacting == COMPACT_NONE &&
         !blocks.cellstores.size_bytes(false);
@@ -169,17 +169,17 @@ void Range::schema_update(bool compact) {
 }
 
 void Range::set_state(Range::State new_state) {
-  std::scoped_lock lock(m_mutex);
+  Core::ScopedLock lock(m_mutex);
   m_state.store(new_state);
 }
 
 bool Range::is_loaded() {
-  std::shared_lock lock(m_mutex);
+  Core::SharedLock lock(m_mutex);
   return m_state == State::LOADED;
 }
 
 bool Range::deleted() {
-  std::shared_lock lock(m_mutex);
+  Core::SharedLock lock(m_mutex);
   return m_state == State::DELETED;
 }
 
@@ -204,7 +204,7 @@ void Range::add(Callback::RangeQueryUpdate* req) {
 
 void Range::scan(const ReqScan::Ptr& req) {
   {
-    std::scoped_lock lock(m_mutex);
+    Core::ScopedLock lock(m_mutex);
     if(m_compacting == COMPACT_APPLYING) {
       m_q_run_scan = true;
       if(req)
@@ -250,7 +250,7 @@ void Range::load(const Callback::RangeLoad::Ptr& req) {
   bool need;
   {
     auto at(State::NOTLOADED);
-    std::scoped_lock lock(m_mutex);
+    Core::ScopedLock lock(m_mutex);
     need = m_state.compare_exchange_weak(at, State::LOADING);
   }
 
@@ -287,7 +287,7 @@ void Range::internal_take_ownership(int &err, const Callback::RangeLoad::Ptr& re
 
 void Range::internal_unload(bool completely, bool& chk_empty) {
   {
-    std::scoped_lock lock(m_mutex);
+    Core::ScopedLock lock(m_mutex);
     if(m_state != State::LOADED && !blocks.range)
       return;
     m_state.store(State::UNLOADING);
@@ -309,7 +309,7 @@ void Range::internal_unload(bool completely, bool& chk_empty) {
       err, DB::RangeBase::get_path_ranger(m_path));
 
   {
-    std::scoped_lock lock(m_mutex);
+    Core::ScopedLock lock(m_mutex);
     m_state.store(State::NOTLOADED);
   }
   SWC_LOGF(LOG_INFO, "UNLOADED RANGE(%lu/%lu) error=%d(%s)",
@@ -318,7 +318,7 @@ void Range::internal_unload(bool completely, bool& chk_empty) {
 
 void Range::remove(const Callback::ColumnDelete::Ptr& req) {
   {
-    std::scoped_lock lock(m_mutex);
+    Core::ScopedLock lock(m_mutex);
     if(m_state.exchange(State::DELETED) == State::DELETED)
       return req->removed(shared_from_this());
   }
@@ -346,7 +346,7 @@ void Range::remove(const Callback::ColumnDelete::Ptr& req) {
 
 void Range::internal_remove(int& err) {
   {
-    std::scoped_lock lock(m_mutex);
+    Core::ScopedLock lock(m_mutex);
     if(m_state.exchange(State::DELETED) == State::DELETED)
       return;
   }
@@ -369,7 +369,7 @@ void Range::wait_queue() {
 }
 
 bool Range::compacting() {
-  std::shared_lock lock(m_mutex);
+  Core::SharedLock lock(m_mutex);
   return m_compacting != COMPACT_NONE;
 }
 
@@ -377,7 +377,7 @@ void Range::compacting(uint8_t state) {
   bool do_q_run_add;
   bool do_q_run_scan;
   {
-    std::scoped_lock lock(m_mutex);
+    Core::ScopedLock lock(m_mutex);
     m_compacting = state;
     m_cv.notify_all();
     if(m_compacting == COMPACT_APPLYING)
@@ -398,7 +398,7 @@ bool Range::compacting_ifnot_applying(uint8_t state) {
   bool do_q_run_add;
   bool do_q_run_scan;
   {
-    std::scoped_lock lock(m_mutex);
+    Core::ScopedLock lock(m_mutex);
     if(m_compacting == COMPACT_APPLYING)
       return false;
     m_compacting = state;
@@ -417,7 +417,7 @@ bool Range::compacting_ifnot_applying(uint8_t state) {
 }
 
 bool Range::compact_possible(bool minor) {
-  std::scoped_lock lock(m_mutex);
+  Core::ScopedLock lock(m_mutex);
   if(m_state != State::LOADED || m_compacting != COMPACT_NONE ||
      (!minor && !m_require_compact && blocks.processing()))
     return false;
@@ -514,7 +514,7 @@ void Range::apply_new(int &err,
                       CommitLog::Fragments::Vec& fragments_old,
                       const Query::Update::BaseMeta::Ptr& hdlr) {
   {
-    std::scoped_lock lock(m_mutex);
+    Core::ScopedLock lock(m_mutex);
     blocks.apply_new(err, w_cellstores, fragments_old);
     if(err)
       return;
@@ -801,7 +801,7 @@ void Range::loaded(int err, const Callback::RangeLoad::Ptr& req) {
     err = Error::SERVER_SHUTTING_DOWN;
   bool tried;
   {
-    std::scoped_lock lock(m_mutex);
+    Core::ScopedLock lock(m_mutex);
     tried = m_state == State::LOADING;
     if(tried)
       m_state.store(err ? State::NOTLOADED : State::LOADED);
@@ -826,7 +826,7 @@ void Range::loaded(int err, const Callback::RangeLoad::Ptr& req) {
 
 bool Range::wait(uint8_t from_state, bool incr) {
   bool waited;
-  std::unique_lock lock_wait(m_mutex);
+  Core::UniqueLock lock_wait(m_mutex);
   if((waited = (m_compacting >= from_state))) {
     m_cv.wait(
       lock_wait,
@@ -891,7 +891,7 @@ void Range::_run_add_queue() {
 
   while(!m_q_add.empty()) {
     {
-      std::scoped_lock lock(m_mutex);
+      Core::ScopedLock lock(m_mutex);
       if(m_compacting >= COMPACT_PREPARING) {
         m_q_run_add = true;
         m_adding.fetch_sub(1);

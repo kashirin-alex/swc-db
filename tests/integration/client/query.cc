@@ -105,7 +105,7 @@ class Test {
     runs = true;
     create_column();
 
-    std::unique_lock lock_wait(mutex);
+    Core::UniqueLock lock_wait(mutex);
     cv.wait(lock_wait, [this]{ return !runs; });
   }
 
@@ -394,9 +394,9 @@ class Test {
         SWC_ASSERT(!hdlr->error());
         expect_empty_column();
 
-        delete_column([this]() {
+        delete_column([this]() noexcept {
           {
-            std::scoped_lock lock(mutex);
+            Core::ScopedLock lock(mutex);
             runs = false;
           }
           cv.notify_all();
