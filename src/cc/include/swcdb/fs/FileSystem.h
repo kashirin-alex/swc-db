@@ -79,7 +79,8 @@ class FileSystem : public std::enable_shared_from_this<FileSystem> {
 
   virtual std::string to_string() const = 0;
 
-  virtual void get_abspath(const std::string& name, std::string& abspath);
+  virtual void get_abspath(const std::string& name, std::string& abspath,
+                           size_t reserve=0);
 
   void fd_open_incr() noexcept;
 

@@ -94,13 +94,20 @@ std::string FileSystem::to_string() const {
   );
 }
 
-void FileSystem::get_abspath(const std::string& name, std::string& abspath) {
+void FileSystem::get_abspath(const std::string& name, std::string& abspath,
+                             size_t reserve) {
+  abspath.reserve(
+    path_root.length() +
+    path_data.length() +
+    (name.empty() ? -1 : name.length()) +
+    reserve
+  );
   abspath.append(path_root);
-  if(!name.empty()){
+  if(name.empty()) {
+    abspath.append(path_data.substr(0, path_data.length() - 1));
+  } else {
     abspath.append(path_data);
     abspath.append(name);
-  } else {
-    abspath.append(path_data.substr(0, path_data.length()-1));
   }
 }
 
