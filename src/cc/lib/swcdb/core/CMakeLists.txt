@@ -17,6 +17,7 @@ set(swcdb_core_sources
   BufferStream.cc
   FileUtils.cc
   Semaphore.cc
+  Comparators.cc
 )
 ADD_LIB_TARGET(
   NAME      swcdb_core
