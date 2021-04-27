@@ -29,8 +29,6 @@ extern "C" {
 #include <errno.h>
 }
 
-#include <re2/re2.h>
-
 
 namespace SWC { namespace FileUtils {
 
@@ -68,146 +66,6 @@ ssize_t read(int fd, void *vptr, size_t n) noexcept {
     ptr   += nread;
   }
   return n - nleft;
-}
-
-
-ssize_t pread(int fd, off_t offset, void* vptr, size_t n) noexcept {
-  char* ptr = static_cast<char*>(vptr);
-  ssize_t nleft = n;
-  ssize_t nread;
-  while (nleft) {
-    if ((nread = ::pread(fd, ptr, nleft, offset)) < 0) {
-      if (errno == EINTR)
-        nread = 0;/* and call read() again */
-      else if (errno == EAGAIN)
-        break;
-      else
-        return -1;
-    }
-    else if (!nread)
-      break; /* EOF */
-
-    nleft -= nread;
-    ptr   += nread;
-    offset += nread;
-  }
-  return n - nleft;
-}
-
-
-ssize_t write(const std::string& fname, const std::string& contents) {
-  int fd = open(fname.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
-  if (fd < 0) {
-    int saved_errno = errno;
-    SWC_LOGF(LOG_ERROR, "Unable to open file \"%s\" for writing - %s", fname.c_str(),
-              Error::get_text(saved_errno));
-    errno = saved_errno;
-    return -1;
-  }
-  ssize_t rval = write(fd, contents);
-  ::close(fd);
-  return rval;
-}
-
-
-ssize_t write(int fd, const void* vptr, size_t n) noexcept {
-  const char* ptr = static_cast<const char*>(vptr);
-  size_t nleft = n;
-  ssize_t nwritten;
-  while (nleft) {
-    if ((nwritten = ::write(fd, ptr, nleft)) <= 0) {
-      if (errno == EINTR)
-        nwritten = 0; /* and call write() again */
-      else if (errno == EAGAIN)
-        break;
-      else
-        return -1; /* error */
-    }
-
-    nleft -= nwritten;
-    ptr   += nwritten;
-  }
-  return n - nleft;
-}
-
-bool mkdirs(const std::string& dirname) {
-  struct stat statbuf;
-
-  char *tmpdir = new char [dirname.length() + 1];
-  strcpy(tmpdir, dirname.c_str());
-  *(tmpdir+dirname.length()) = '/';
-
-  int saved_errno = 0;
-  for(size_t n=1; n < dirname.length()+1; ++n){
-    if(*(tmpdir+n) != '/')
-      continue;
-    *(tmpdir+n) = 0;
-
-    errno = 0;
-    if(stat(tmpdir, &statbuf)) {
-      if (errno != ENOENT) {
-        saved_errno = errno;
-        SWC_LOGF(LOG_ERROR, "Problem stat'ing directory '%s' - %d(%s)", tmpdir,
-                  saved_errno, Error::get_text(saved_errno));
-        break;
-      }
-      errno = 0;
-      if(mkdir(tmpdir, 0755) && errno != EEXIST) {
-        saved_errno = errno;
-        SWC_LOGF(LOG_ERROR, "Problem creating directory '%s' - %d(%s)", tmpdir,
-                   saved_errno, Error::get_text(saved_errno));
-        break;
-      }
-    }
-    *(tmpdir+n) = '/';
-  }
-
-  delete [] tmpdir;
-  errno = saved_errno;
-  return !saved_errno;
-}
-
-bool exists(const std::string& fname) noexcept {
-  struct stat statbuf;
-  return !stat(fname.c_str(), &statbuf);
-}
-
-bool unlink(const std::string& fname) {
-  if (::unlink(fname.c_str()) == -1 && errno != 2) {
-    int saved_errno = errno;
-    SWC_LOGF(LOG_ERROR, "unlink(\"%s\") failed - %s", fname.c_str(),
-              Error::get_text(saved_errno));
-    errno = saved_errno;
-    return false;
-  }
-  return true;
-}
-
-bool rename(const std::string& oldpath, const std::string& newpath) {
-  if (::rename(oldpath.c_str(), newpath.c_str()) == -1) {
-    int saved_errno = errno;
-    SWC_LOGF(LOG_ERROR, "rename(\"%s\", \"%s\") failed - %s",
-              oldpath.c_str(), newpath.c_str(), Error::get_text(saved_errno));
-    errno = saved_errno;
-    return false;
-  }
-  return true;
-}
-
-uint64_t size(const std::string& fname) noexcept {
-  struct stat statbuf;
-  return stat(fname.c_str(), &statbuf) ? 0 : statbuf.st_size;
-}
-
-
-off_t length(const std::string& fname) noexcept {
-  struct stat statbuf;
-  return stat(fname.c_str(), &statbuf) ? -1 : statbuf.st_size;
-}
-
-time_t modification(const std::string& fname) noexcept {
-  struct stat statbuf;
-  return stat(fname.c_str(), &statbuf) ? 0 : statbuf.st_mtime;
 }
 
 char* file_to_buffer(const std::string& fname, off_t *lenp) {
@@ -260,14 +118,9 @@ char* file_to_buffer(const std::string& fname, off_t *lenp) {
   return rbuf;
 }
 
-std::string file_to_string(const std::string& fname) {
-  off_t len;
-  char* contents = file_to_buffer(fname, &len);
-  if(!contents)
-    return "";
-  std::string str(contents);
-  delete [] contents;
-  return str;
+bool exists(const std::string& fname) noexcept {
+  struct stat statbuf;
+  return !stat(fname.c_str(), &statbuf);
 }
 
 }}

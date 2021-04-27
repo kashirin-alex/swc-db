@@ -62,8 +62,9 @@ std::string FileSystemLocal::to_string() const {
 bool FileSystemLocal::exists(int& err, const std::string& name) {
   std::string abspath;
   get_abspath(name, abspath);
+  struct stat statbuf;
   errno = 0;
-  bool state = FileUtils::exists(abspath);
+  bool state = !::stat(abspath.c_str(), &statbuf);
   err = errno == ENOENT ? Error::OK : errno;
   SWC_LOGF(LOG_DEBUG, "exists state='%d' path='%s'", state, abspath.c_str());
   return state;
@@ -73,7 +74,7 @@ void FileSystemLocal::remove(int& err, const std::string& name) {
   std::string abspath;
   get_abspath(name, abspath);
   errno = 0;
-  if(!FileUtils::unlink(abspath)) {
+  if(::unlink(abspath.c_str()) == -1) {
     if(errno != ENOENT) {
       err = errno;
       SWC_LOGF(LOG_ERROR, "remove('%s') failed - %d(%s)",
@@ -90,25 +91,54 @@ size_t FileSystemLocal::length(int& err, const std::string& name) {
   errno = 0;
 
   size_t len = 0;
-  if ((len = FileUtils::length(abspath)) == size_t(-1)) {
+  struct stat statbuf;
+  if(stat(abspath.c_str(), &statbuf)) {
     err = errno;
     SWC_LOGF(LOG_ERROR, "length('%s') failed - %d(%s)",
               abspath.c_str(), errno, Error::get_text(errno));
-    len = 0;
     return len;
   }
+  len = statbuf.st_size;
   SWC_LOGF(LOG_DEBUG, "length len='%lu' path='%s'", len, abspath.c_str());
   return len;
 }
 
+
+namespace {
+SWC_CAN_INLINE
+int _mkdirs(std::string& dirname) {
+  dirname.append("/");
+  struct stat statbuf;
+  errno = 0;
+  for(auto it = dirname.begin(); ++it != dirname.end(); ) {
+    if(*it != '/')
+      continue;
+    *it = 0;
+    if(stat(dirname.c_str(), &statbuf)) {
+      if(errno != ENOENT)
+        break;
+      errno = 0;
+      if(mkdir(dirname.c_str(), 0755)) {
+        if(errno != EEXIST)
+          break;
+      }
+      errno = 0;
+    }
+    *it = '/';
+  }
+  return errno;
+}
+}
+
 void FileSystemLocal::mkdirs(int& err, const std::string& name) {
   std::string abspath;
-  get_abspath(name, abspath);
+  get_abspath(name, abspath, 1);
   SWC_LOGF(LOG_DEBUG, "mkdirs path='%s'", abspath.c_str());
 
-  errno = 0;
-  FileUtils::mkdirs(abspath);
-  err = errno;
+  if((err = _mkdirs(abspath)))
+    SWC_LOGF(LOG_ERROR, "mkdirs failed: %d(%s) at path='%s'",
+              err, Error::get_text(err), abspath.c_str());
+
 }
 
 void FileSystemLocal::readdir(int& err, const std::string& name,
@@ -271,6 +301,27 @@ void FileSystemLocal::open(int& err, SmartFd::Ptr& smartfd, int32_t bufsz) {
 
 }
 
+
+namespace {
+SWC_CAN_INLINE
+ssize_t _read(int fd, uint8_t* ptr, size_t n) noexcept {
+  size_t nleft = n;
+  for(ssize_t nread; nleft; nleft -= nread, ptr += nread) {
+    if ((nread = ::read(fd, ptr, nleft)) < 0) {
+      if (errno == EINTR)
+        nread = 0;/* and call read() again */
+      else if (errno == EAGAIN)
+        break;
+      else
+        return -1;
+    } else if (!nread) {
+      break; /* EOF */
+    }
+  }
+  return n - nleft;
+}
+}
+
 size_t FileSystemLocal::read(int& err, SmartFd::Ptr& smartfd,
                              void *dst, size_t amount) {
   SWC_LOGF(LOG_DEBUG, "read %s amount=%lu",
@@ -287,7 +338,7 @@ size_t FileSystemLocal::read(int& err, SmartFd::Ptr& smartfd,
 
   size_t ret;
   errno = 0;
-  ssize_t nread = FileUtils::read(smartfd->fd(), dst, amount);
+  ssize_t nread = _read(smartfd->fd(), static_cast<uint8_t*>(dst), amount);
   if (nread == -1) {
     ret = 0;
     nread = 0;
@@ -304,15 +355,37 @@ size_t FileSystemLocal::read(int& err, SmartFd::Ptr& smartfd,
   return ret;
 }
 
+
+namespace {
+SWC_CAN_INLINE
+ssize_t _pread(int fd, off_t offset, uint8_t* ptr, size_t n) noexcept {
+  ssize_t nleft = n;
+  for(ssize_t nread; nleft; nleft -= nread, ptr += nread, offset += nread) {
+    if((nread = ::pread(fd, ptr, nleft, offset)) < 0) {
+      if(errno == EINTR)
+        nread = 0;/* and call read() again */
+      else if(errno == EAGAIN)
+        break;
+      else
+        return -1;
+    } else if (!nread) {
+      break; /* EOF */
+    }
+  }
+  return n - nleft;
+}
+}
+
 size_t FileSystemLocal::pread(int& err, SmartFd::Ptr& smartfd,
-                              uint64_t offset, void *dst,
+                              uint64_t offset, void* dst,
                               size_t amount) {
   SWC_LOGF(LOG_DEBUG, "pread %s offset=%lu amount=%lu",
             smartfd->to_string().c_str(), offset, amount);
 
   size_t ret;
   errno = 0;
-  ssize_t nread = FileUtils::pread(smartfd->fd(), off_t(offset), dst, amount);
+  ssize_t nread = _pread(
+    smartfd->fd(), off_t(offset), static_cast<uint8_t*>(dst), amount);
   if (nread == -1) {
     ret = 0;
     nread = 0;
@@ -329,13 +402,25 @@ size_t FileSystemLocal::pread(int& err, SmartFd::Ptr& smartfd,
   return ret;
 }
 
+
+namespace {
+SWC_CAN_INLINE
+bool _write(int fd, const uint8_t* ptr, size_t nleft) noexcept {
+  for(ssize_t nwritten; nleft; nleft -= nwritten, ptr += nwritten) {
+    if((nwritten = ::write(fd, ptr, nleft)) <= 0) {
+      if(errno != EINTR)
+        return false; /* error */
+      nwritten = 0; /* again */
+    }
+  }
+  return true;
+}
+}
+
 size_t FileSystemLocal::append(int& err, SmartFd::Ptr& smartfd,
                                StaticBuffer& buffer, Flags flags) {
   SWC_LOGF(LOG_DEBUG, "append %s amount=%lu flags=%d",
             smartfd->to_string().c_str(), buffer.size, flags);
-
-  ssize_t nwritten = 0;
-  errno = 0;
 
   /*
   if(smartfd->pos()
@@ -343,19 +428,20 @@ size_t FileSystemLocal::append(int& err, SmartFd::Ptr& smartfd,
     err = errno;
     SWC_LOGF(LOG_ERROR, "append, lseek failed: %d(%s), %s",
               errno, Error::get_text(errno), smartfd->to_string().c_str());
-    return nwritten;
+    return 0;
   }
   */
 
-  if ((nwritten = FileUtils::write(
-                  smartfd->fd(), buffer.base, buffer.size)) == -1) {
-    nwritten = 0;
+  errno = 0;
+  if(!_write(smartfd->fd(), buffer.base, buffer.size)) {
     err = errno;
+    if(!err)
+      err = ECANCELED;
     SWC_LOGF(LOG_ERROR, "write failed: %d(%s), %s",
-              errno, Error::get_text(errno), smartfd->to_string().c_str());
-    return nwritten;
+              err, Error::get_text(err), smartfd->to_string().c_str());
+    return 0;
   }
-  smartfd->forward(nwritten);
+  smartfd->forward(buffer.size);
 
   if(flags == Flags::FLUSH || flags == Flags::SYNC) {
     if(fsync(smartfd->fd())) {
@@ -365,9 +451,9 @@ size_t FileSystemLocal::append(int& err, SmartFd::Ptr& smartfd,
     }
   }
 
-  SWC_LOGF(LOG_DEBUG, "appended %s written=%ld",
-            smartfd->to_string().c_str(), nwritten);
-  return nwritten;
+  SWC_LOGF(LOG_DEBUG, "appended %s written=%lu",
+            smartfd->to_string().c_str(), buffer.size);
+  return buffer.size;
 }
 
 void FileSystemLocal::seek(int& err, SmartFd::Ptr& smartfd, size_t offset) {

@@ -257,8 +257,7 @@ void Settings::init_process(bool with_pid_file, const char* port_cfg) {
           quick_exit(EXIT_FAILURE);
         }
       }
-
-      FileUtils::unlink(pid_file);
+      ::unlink(pid_file.c_str());
     }
   }
 
@@ -311,19 +310,18 @@ std::string Settings::usage_str(const char *usage) {
 
 
 void Settings::check_dynamic_files() {
-  time_t ts;
   Core::MutexSptd::scope lock(mutex);
   for(auto& dyn : m_dyn_files) {
     errno = 0;
-    ts = FileUtils::modification(dyn.filename);
-    if(errno > 0) {
+    struct stat statbuf;
+    if(::stat(dyn.filename.c_str(), &statbuf)) {
       SWC_LOGF(LOG_WARN, "cfg-file '%s' err(%s)",
                dyn.filename.c_str(), Error::get_text(errno));
       continue;
     }
-    if(ts == dyn.modified)
+    if(statbuf.st_mtime == dyn.modified)
       continue;
-    dyn.modified = ts;
+    dyn.modified = statbuf.st_mtime;
     reload(dyn.filename, file_desc, cmdline_desc);
     SWC_LOGF(LOG_DEBUG, "dyn-cfg-file '%s' checked", dyn.filename.c_str());
   }

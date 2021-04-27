@@ -583,8 +583,10 @@ size_t FileSystemCeph::append(int& err, SmartFd::Ptr& smartfd,
     err = -nwritten;
   else if(errno)
     err = errno;
+  else if(nwritten != ssize_t(buffer.size))
+    err = ECANCELED;
 
-  if (err) {
+  if(err) {
     SWC_LOGF(LOG_ERROR, "write failed: %d(%s), %s",
               err, Error::get_text(err), smartfd->to_string().c_str());
     return 0;

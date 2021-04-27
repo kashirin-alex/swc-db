@@ -586,10 +586,12 @@ size_t FileSystemHadoopJVM::append(int& err, SmartFd::Ptr& smartfd,
     if(hfile) {
       errno = 0;
       nwritten = hdfsWrite(fs->srv, hfile, buffer.base, tSize(buffer.size));
-      if(nwritten == -1) {
+      if(nwritten == -1 || nwritten != ssize_t(buffer.size)) {
         hadoop_fd->use_release();
         nwritten = 0;
         need_reconnect(err = errno, fs);
+        if(!err)
+          err = ECANCELED;
       } else {
         hadoop_fd->forward(nwritten);
 
