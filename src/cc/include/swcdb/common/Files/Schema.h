@@ -33,8 +33,9 @@ static const char schema_file[] = "schema.data";
     data:   schema-encoded
 */
 
-std::string filepath(cid_t cid){
-  std::string path = DB::RangeBase::get_column_path(cid);
+std::string filepath(cid_t cid) {
+  std::string path(DB::RangeBase::get_column_path(cid));
+  path.reserve(path.length() + 1 + strlen(schema_file));
   path.append("/");
   path.append(schema_file);
   return path;
@@ -42,7 +43,7 @@ std::string filepath(cid_t cid){
 
 // REMOVE
 
-void remove(int &err, cid_t cid){
+void remove(int &err, cid_t cid) {
   Env::FsInterface::interface()->remove(err, filepath(cid));
 }
 

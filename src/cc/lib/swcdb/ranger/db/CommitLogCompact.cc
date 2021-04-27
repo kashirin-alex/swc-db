@@ -237,8 +237,8 @@ void Compact::finished(Group* group, size_t cells_count) {
 
   m_workers.store(m_groups.size());
   for(auto g : m_groups) {
-    Env::Rgr::post([g]() { 
-      g->finalize(); 
+    Env::Rgr::post([g]() {
+      g->finalize();
       delete g;
     });
   }
@@ -261,8 +261,10 @@ void Compact::finalized() {
 
 std::string Compact::get_filepath(const int64_t frag) const {
   std::string s(log->range->get_path(Range::LOG_TMP_DIR));
+  std::string tmp(std::to_string(frag));
+  s.reserve(s.length() + 6 + tmp.length());
   s.append("/");
-  s.append(std::to_string(frag));
+  s.append(tmp);
   s.append(".frag");
   return s;
 }

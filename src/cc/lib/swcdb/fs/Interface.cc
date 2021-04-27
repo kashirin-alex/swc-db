@@ -82,6 +82,8 @@ FileSystem::Ptr Interface::use_filesystem() {
   if(Env::Config::settings()->has(cfg_lib.c_str())) {
     fs_lib = Env::Config::settings()->get_str(cfg_lib.c_str());
   } else {
+    fs_lib.reserve(
+      Env::Config::settings()->install_path.length() + 20 + fs_name.length());
     fs_lib.append(Env::Config::settings()->install_path);
     fs_lib.append("/lib/libswcdb_fs_"); // (./lib/libswcdb_fs_local.so)
     fs_lib.append(fs_name);
@@ -163,7 +165,9 @@ void Interface::get_structured_ids(int& err, const std::string& base_path,
   for(auto& entry : dirs) {
     if(!entry.is_dir) continue;
 
-    std::string id_name = base_id;
+    std::string id_name;
+    id_name.reserve(base_id.length() + entry.name.length());
+    id_name.append(base_id);
     if(entry.name.back() == ID_SPLIT_LAST) {
       id_name.append(entry.name.substr(0, entry.name.length()-1));
       try {
@@ -175,7 +179,9 @@ void Interface::get_structured_ids(int& err, const std::string& base_path,
       continue;
     }
 
-    std::string new_base_path = base_path;
+    std::string new_base_path;
+    new_base_path.reserve(base_path.length() + 1 + entry.name.length());
+    new_base_path.append(base_path);
     new_base_path.append("/");
     new_base_path.append(entry.name);
     id_name.append(entry.name);
@@ -504,6 +510,7 @@ void set_structured_id(const std::string& number, std::string& s) {
   for(size_t n = 0;
       n + ID_SPLIT_LEN < number.length();
       n += ID_SPLIT_LEN, it += ID_SPLIT_LEN) {
+    s.reserve(s.length() + ID_SPLIT_LEN + 1);
     s.append(it, it + ID_SPLIT_LEN);
     s.append("/");
   }

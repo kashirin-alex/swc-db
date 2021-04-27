@@ -52,20 +52,26 @@ class RangeBase final {
 
   static const std::string get_path_on_range(const std::string& range_path,
                                              const std::string& path) {
-    std::string s(range_path);
+    std::string s;
+    s.reserve(range_path.length() + path.length() + 1);
+    s.append(range_path);
     s.append(path);
     s.append("/");
     return s;
   }
 
   static std::string get_path_ranger(const std::string& range_path) {
-    std::string s(range_path);
+    std::string s;
+    s.reserve(range_path.length() + strlen(RANGER_FILE));
+    s.append(range_path);
     s.append(RANGER_FILE);
     return s;
   }
 
   static const std::string get_path_range_data(const std::string& range_path) {
-    std::string s(range_path);
+    std::string s;
+    s.reserve(range_path.length() + strlen(RANGE_FILE));
+    s.append(range_path);
     s.append(RANGE_FILE);
     return s;
   }
@@ -73,10 +79,13 @@ class RangeBase final {
   static const std::string get_path_cs(const std::string& range_path,
                                        const std::string& folder,
                                        const csid_t csid) {
-    std::string s(range_path);
+    std::string cs(std::to_string(csid));
+    std::string s;
+    s.reserve(range_path.length() + folder.length() + 4 + cs.length());
+    s.append(range_path);
     s.append(folder);
     s.append("/");
-    s.append(std::to_string(csid));
+    s.append(cs);
     s.append(".cs");
     return s;
   }

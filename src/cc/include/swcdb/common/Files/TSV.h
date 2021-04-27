@@ -40,7 +40,7 @@ class FileWriter {
       _stream.reset(new Core::BufferStreamOut());
       return _stream->error;
     }
-
+    file_ext.reserve(1 + ext.length());
     file_ext.append(".");
     file_ext.append(ext);
 
@@ -224,11 +224,15 @@ class FileWriter {
   void roll_file() {
     close();
 
-    std::string filepath(base_path);
-    filepath.append(std::to_string(++file_num));
+    std::string filepath;
+    auto n_str = std::to_string(++file_num);
+    filepath.reserve(base_path.length() + n_str.length() + file_ext.length());
+    filepath.append(base_path);
+    filepath.append(n_str);
     filepath.append(file_ext);
     smartfd = fds.emplace_back(
-      new FS::SmartFd(filepath, FS::OpenFlags::OPEN_FLAG_OVERWRITE));
+      new FS::SmartFd(
+        std::move(filepath), FS::OpenFlags::OPEN_FLAG_OVERWRITE));
     while(interface->create(err, smartfd, 0, 0, 0));
     if(!err)
       flush_vol = 0;

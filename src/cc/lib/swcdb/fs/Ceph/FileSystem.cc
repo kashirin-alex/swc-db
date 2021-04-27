@@ -333,6 +333,7 @@ void FileSystemCeph::readdir(int& err, const std::string& name,
       continue;
 
     auto& entry = results.emplace_back();
+    entry.name.reserve(abspath.length() + 1 + strlen(de.d_name));
     entry.name.append(abspath);
     entry.name.append("/");
     entry.name.append(de.d_name);

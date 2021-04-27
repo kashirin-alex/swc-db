@@ -63,7 +63,7 @@ class Range final : public std::enable_shared_from_this<Range> {
 
   size_t size_of() const;
 
-  const std::string get_path(const std::string suff) const;
+  std::string get_path(const std::string suff) const;
 
   std::string get_path_cs(const csid_t csid) const;
 

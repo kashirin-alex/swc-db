@@ -163,6 +163,7 @@ void FileSystemLocal::readdir(int& err, const std::string& name,
     if(!dep->d_name[0] || dep->d_name[0] == '.')
       continue;
     full_entry_path.clear();
+    full_entry_path.reserve(abspath.length() + 1 + strlen(dep->d_name));
     full_entry_path.append(abspath);
     full_entry_path.append("/");
     full_entry_path.append(dep->d_name);
@@ -434,9 +435,7 @@ size_t FileSystemLocal::append(int& err, SmartFd::Ptr& smartfd,
 
   errno = 0;
   if(!_write(smartfd->fd(), buffer.base, buffer.size)) {
-    err = errno;
-    if(!err)
-      err = ECANCELED;
+    err = errno ? errno : ECANCELED;
     SWC_LOGF(LOG_ERROR, "write failed: %d(%s), %s",
               err, Error::get_text(err), smartfd->to_string().c_str());
     return 0;

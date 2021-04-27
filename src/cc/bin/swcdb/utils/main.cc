@@ -16,6 +16,7 @@ int run(const std::string& cmd, bool custom=false) {
   if(custom) {
     lib_path.append(Env::Config::settings()->get_str("lib"));
   } else {
+    lib_path.reserve(lib_path.length() + 18 + cmd.length());
     lib_path.append("libswcdb_utils_");
     lib_path.append(cmd);
     lib_path.append(".so");// {lib-path}/libswcdb_utils_shell.so

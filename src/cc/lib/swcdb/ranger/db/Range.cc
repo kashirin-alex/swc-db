@@ -96,8 +96,10 @@ size_t Range::size_of() const {
   return sizeof(*this) + sizeof(RangePtr);
 }
 
-const std::string Range::get_path(const std::string suff) const {
-  std::string s(m_path);
+std::string Range::get_path(const std::string suff) const {
+  std::string s;
+  s.reserve(m_path.length() + suff.length());
+  s.append(m_path);
   s.append(suff);
   return s;
 }

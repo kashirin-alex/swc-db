@@ -240,14 +240,17 @@ void Fragments::finish_compact(const Compact* compact) {
 
 std::string Fragments::get_log_fragment(const int64_t frag) const {
   std::string s(range->get_path(DB::RangeBase::LOG_DIR));
+  std::string tmp(std::to_string(frag));
+  s.reserve(s.length() + 6 + tmp.length());
   s.append("/");
-  s.append(std::to_string(frag));
+  s.append(tmp);
   s.append(".frag");
   return s;
 }
 
 std::string Fragments::get_log_fragment(const std::string& frag) const {
   std::string s(range->get_path(DB::RangeBase::LOG_DIR));
+  s.reserve(s.length() + 1 + frag.length());
   s.append("/");
   s.append(frag);
   return s;
