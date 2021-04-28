@@ -39,6 +39,7 @@ sort: 3
 |SWC_PATH_ETC| Build with specific `/etc/` path | posix-dir-path, finish with slash `/` | application-base/../etc/swcdb/ |
 |SWC_PATH_LOG| Build with specific `/log/` path | posix-dir-path, finish with slash `/` | application-base/../var/log/swcdb/ |
 |SWC_PATH_RUN| Build with specific `/run/` path | posix-dir-path, finish with slash `/` | application-base/../run/ |
+|SWC_WITHOUT_THRIFT| skip Thrift builds |  ON/OFF | OFF |
 
 
 

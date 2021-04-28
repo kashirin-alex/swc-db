@@ -32,7 +32,7 @@ if(NOT SWC_BUILD_PKG)
 endif()
 
 
-if(NOT SWC_BUILD_PKG OR SWC_BUILD_PKG STREQUAL "lib-thrift")
+if((NOT SWC_BUILD_PKG AND NOT SWC_WITHOUT_THRIFT) OR SWC_BUILD_PKG STREQUAL "lib-thrift")
   add_subdirectory(thrift)        #ifndef swcdb_thrift_FileName_h
 endif()
 

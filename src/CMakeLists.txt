@@ -3,7 +3,7 @@
 # License details at <https://github.com/kashirin-alex/swc-db/#license>
 
 
-if(NOT SWC_BUILD_PKG OR SWC_BUILD_PKG MATCHES "^lib-thrift")
+if((NOT SWC_BUILD_PKG AND NOT SWC_WITHOUT_THRIFT) OR SWC_BUILD_PKG MATCHES "^lib-thrift")
   add_subdirectory(thrift/swcdb)
 endif()
 

@@ -45,14 +45,14 @@ if(THRIFT_CPP_FOUND)
 
   if(NOT THRIFT_VERSION)
     list(GET THRIFT_CPP_LIBRARIES_SHARED 0 libthrift)
-    exec_program(env ARGS strings ${libthrift} | grep 'User-Agent: Thrift' -A1 | tr '\n' ' ' | cut -f3 -d' '
+    exec_program(env ARGS objdump -p ${libthrift} | grep SONAME | cut -f 2 -d'-' | cut -f 1-3 -d'.'
       OUTPUT_VARIABLE THRIFT_VERSION
       RETURN_VALUE Thrift_RETURN)
   endif()
 
   if(THRIFT_VERSION AND NOT SWC_BUILD_PKG)
     SET_DEPS(NAME "EVENT" REQUIRED TRUE LIB_PATHS "" INC_PATHS "" STATIC libevent.a SHARED event INCLUDE event.h INSTALL TRUE)
-    
+
     set(THRIFT_CPP_LIBRARIES_SHARED ${THRIFT_CPP_LIBRARIES_SHARED} ${EVENT_LIBRARIES_SHARED}
                                     ${SSL_LIBRARIES_SHARED})
     set(THRIFT_CPP_LIBRARIES_STATIC ${THRIFT_CPP_LIBRARIES_STATIC} ${EVENT_LIBRARIES_STATIC}

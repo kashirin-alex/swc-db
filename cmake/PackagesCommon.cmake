@@ -3,10 +3,10 @@
 # License details at <https://github.com/kashirin-alex/swc-db/#license>
 
 
-if(NOT SWC_BUILD_PKG OR 
+if(NOT SWC_BUILD_PKG OR
     SWC_BUILD_PKG STREQUAL "lib-fs-broker" OR
     NOT SWC_BUILD_PKG MATCHES "^(lib-fs|pam|lib-thrift)")
-  
+
   SET_DEPS(NAME "ASIO"  REQUIRED TRUE LIB_PATHS "" INC_PATHS ${ASIO_INCLUDE_PATH} STATIC  SHARED  INCLUDE asio.hpp)
 
   SET_DEPS(NAME "RE2" REQUIRED TRUE LIB_PATHS "" INC_PATHS "" STATIC libre2.a SHARED re2 INCLUDE re2/re2.h INSTALL TRUE)
@@ -25,8 +25,8 @@ if(NOT SWC_BUILD_PKG OR
     endif()
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DSWC_DEFAULT_ENCODER=${SWC_DEFAULT_ENCODER}")
   endif()
-  
-  
+
+
   SET_DEPS(NAME "ZLIB"  REQUIRED TRUE LIB_PATHS "" INC_PATHS "" STATIC libz.a SHARED z INCLUDE zlib.h INSTALL TRUE)
 
   SET_DEPS(
@@ -85,7 +85,7 @@ if(NOT SWC_BUILD_PKG OR SWC_BUILD_PKG MATCHES "^lib-fs")
 endif()
 
 
-if(NOT SWC_BUILD_PKG OR
+if((NOT SWC_BUILD_PKG AND NOT SWC_WITHOUT_THRIFT) OR
    SWC_BUILD_PKG MATCHES "^(lib-thrift|pam)" OR
    SWC_BUILD_PKG STREQUAL "thriftbroker")
   find_package(Thrift REQUIRED)

@@ -33,6 +33,8 @@ add_subdirectory("ranger")
 
 add_subdirectory("client")
 
-add_subdirectory("thrift")
+if(NOT SWC_WITHOUT_THRIFT)
+  add_subdirectory("thrift")
+endif()
 
 add_subdirectory("utils")
