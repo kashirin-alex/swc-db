@@ -29,7 +29,7 @@ foreach(py ${PYTHON_EXECUTABLES})
   #add_test(Thrift-${py}-scw env ${py} ${CMAKE_CURRENT_SOURCE_DIR}/tests/thrift_client_test_scw.py)
   #add_test(Thrift-${py}-scr env ${py} ${CMAKE_CURRENT_SOURCE_DIR}/tests/thrift_client_test_scr.py)
   #add_test(Thrift-${py}
-  #          env LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${INSTALL_DIR}/lib
+  #          env LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${CMAKE_INSTALL_PREFIX}/lib
   #          ${py} ${CMAKE_CURRENT_SOURCE_DIR}/tests/thrift_client_test.py)
 
   install( CODE "execute_process(COMMAND  cmake -E chdir ${PY_PKG_PATH}/dist ${py} -m pip install --verbose --upgrade swcdb-${SWCDB_VERSION_PYTHON}.tar.gz;)")

@@ -15,7 +15,6 @@ set(swcdb_core_sources
   Checksum.cc
   Encoder.cc
   BufferStream.cc
-  FileUtils.cc
   Semaphore.cc
   Comparators.cc
 )

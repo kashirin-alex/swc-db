@@ -4,9 +4,10 @@
  */
 
 
-#include "swcdb/core/FileUtils.h"
 #include "swcdb/core/comm/ConfigSSL.h"
 #include "swcdb/core/comm/Settings.h"
+#include <fstream>
+
 
 namespace SWC { namespace Comm {
 
@@ -165,15 +166,28 @@ ConfigSSL::make_client(AppContext::Ptr& app_ctx,
 }
 
 void ConfigSSL::load_file(std::string filepath, std::string& to) const {
-  if(filepath.front() != '.' && filepath.front() != '/')
-    filepath = Env::Config::settings()->get_str("swc.cfg.path") + filepath;
-
   to.clear();
-  errno = 0;
-  FileUtils::read(filepath, to);
-  if(errno) {
+  int err = Error::OK;
+  try {
+    if(filepath.front() != '.' && filepath.front() != '/')
+      filepath = Env::Config::settings()->get_str("swc.cfg.path") + filepath;
+
+    std::ifstream istrm(filepath, std::ios::binary | std::ios::ate);
+    if(istrm.is_open()) {
+      to.resize(istrm.tellg());
+      istrm.seekg(0);
+      istrm.read(to.data(), to.length());
+      istrm.close();
+    } else {
+      err = Error::CONFIG_BAD_CFG_FILE;
+    }
+  } catch(...) {
+    const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
+    err = e.code();
+  }
+  if(err) {
     SWC_THROWF(Error::CONFIG_BAD_VALUE, "Bad File '%s' error=%d(%s)",
-              filepath.c_str(), errno, Error::get_text(errno));
+              filepath.c_str(), err, Error::get_text(err));
   }
 }
 

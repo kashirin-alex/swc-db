@@ -7,8 +7,8 @@
 #include "swcdb/Version.h"
 #include "swcdb/core/config/Settings.h"
 
-#include "swcdb/core/FileUtils.h"
 #include <fstream>
+#include <filesystem>
 
 
 #if defined(SWC_PATH_ETC)
@@ -161,15 +161,16 @@ void Settings::parse_file(const std::string& name, const char* onchg) {
   if(name.empty())
     return;
 
-  std::string fname;
+  std::filesystem::path fname;
   if(name.front() != '/' && name.front() != '.')
     fname = get_str("swc.cfg.path");
-  fname.append(name);
+  fname.concat(name);
 
-  if(!FileUtils::exists(fname))
+  std::error_code ec;
+  if(!std::filesystem::exists(fname, ec))
     SWC_THROWF(ENOENT, "cfg file=%s not found", fname.c_str());
 
-  load(fname, file_desc, cmdline_desc, false);
+  load(fname.native(), file_desc, cmdline_desc, false);
   load_files_by(onchg, false);
   load_from(m_cmd_args);  // Inforce cmdline properties
 }
@@ -210,16 +211,17 @@ void Settings::init_process(bool with_pid_file, const char* port_cfg) {
   if(daemon && fork())
     quick_exit(EXIT_SUCCESS);
 
-  std::string pid_file;
+  std::filesystem::path pid_file;
   if(with_pid_file) {
     pid_file = USE_SWC_PATH_RUN(install_path + "/run/") + executable;
     if(port_cfg && !defaulted(port_cfg)) {
-      pid_file.append(".");
-      pid_file.append(std::to_string(get_i16(port_cfg)));
+      pid_file.concat(".");
+      pid_file.concat(std::to_string(get_i16(port_cfg)));
     }
-    pid_file.append(".pid");
+    pid_file.concat(".pid");
 
-    if(FileUtils::exists(pid_file)) {
+    std::error_code ec;
+    if(std::filesystem::exists(pid_file, ec)) {
       errno = 0;
       std::string old_pid;
       std::ifstream buffer(pid_file);

@@ -40,7 +40,7 @@ message(" ------------------------ BUILD CONFIGURATIONS ----------------------- 
 
 message(STATUS "Project Name: ${PROJECT_NAME}")
 message(STATUS "Version: ${VERSION_STRING}")
-message(STATUS "Install Prefix: ${INSTALL_DIR}")
+message(STATUS "Install Prefix: ${CMAKE_INSTALL_PREFIX}")
 
 
 
