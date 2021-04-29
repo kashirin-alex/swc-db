@@ -49,6 +49,8 @@ class Resources final {
     release_rate_default = MallocExtension::instance()->GetMemoryReleaseRate();
     if(release_rate_default < 0)
       release_rate_default = 0;
+#else
+    (void)cfg_ram_release_rate->get(); // in-case unused
 #endif
 
     checker();

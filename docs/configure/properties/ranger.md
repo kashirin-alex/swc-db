@@ -159,9 +159,9 @@ _default_ **```swc.rgr.Range.compaction.percent=33```**
  > _**extended/updated/version information available with '--help' and '--help-config' arg**_
 
 ```
-./Ranger --help;
+./swcdbRanger --help;
 ```
 
 ```
-./Ranger --help-config;
+./swcdbRanger --help-config;
 ```

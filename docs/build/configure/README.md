@@ -77,32 +77,47 @@ cmake ../swc-db [SWC-DB Configuration Options] [Cmake Configuration Options];
 
 
 #### Configuration Examples
-##### a Release
+##### an Optimized Release build
 ```bash
     cmake ../swc-db \
       -DO_LEVEL=6 -DSWC_IMPL_SOURCE=ON \
-      -DSWC_BUILTIN_FS=local,broker -DSWC_LANGUAGES=ALL \
+      -DSWC_BUILTIN_FS=local,broker \
+      -DSWC_LANGUAGES=ALL \
       -DASIO_INCLUDE_PATH=${ASIO_INCLUDE_PATH} \
       -DWITHOUT_THRIFT_C=OFF \
       -DGLIB_INCLUDE_PATH="$(pkg-config --cflags glib-2.0 | tr ' ' ';' | sed 's/-I//g' )" \
       -DWITHOUT_PAM=ON \
       -DCMAKE_SKIP_RPATH=OFF -DCMAKE_INSTALL_PREFIX=/opt/swcdb \
       -DSWC_DOCUMENTATION=OFF \
-      -DSWC_INSTALL_DEP_LIBS=ON \
       -DCMAKE_BUILD_TYPE=Release;
 ```
 
-##### a Debug
+##### a Standard Release build
 ```bash
     cmake ../swc-db \
-      -DO_LEVEL=1 -DSWC_IMPL_SOURCE=OFF \
-      -DSWC_BUILTIN_FS=local,broker -DSWC_LANGUAGES=ALL \
+      -DO_LEVEL=3 -DSWC_IMPL_SOURCE=OFF \
+      -DSWC_LANGUAGES=ALL \
       -DASIO_INCLUDE_PATH=${ASIO_INCLUDE_PATH} \
       -DWITHOUT_THRIFT_C=OFF \
       -DGLIB_INCLUDE_PATH="$(pkg-config --cflags glib-2.0 | tr ' ' ';' | sed 's/-I//g' )" \
       -DWITHOUT_PAM=ON \
-      -DCMAKE_SKIP_RPATH=OFF -DCMAKE_INSTALL_PREFIX=/opt/swcdb \
+      -DCMAKE_SKIP_RPATH=OFF \
+      -DCMAKE_INSTALL_PREFIX=/opt/swcdb \
       -DSWC_DOCUMENTATION=OFF \
-      -DSWC_INSTALL_DEP_LIBS=ON \
+      -DCMAKE_BUILD_TYPE=Release;
+```
+
+##### a Debug Release build
+```bash
+    cmake ../swc-db \
+      -DO_LEVEL=1 -DSWC_IMPL_SOURCE=OFF \
+      -DSWC_LANGUAGES=ALL \
+      -DASIO_INCLUDE_PATH=${ASIO_INCLUDE_PATH} \
+      -DWITHOUT_THRIFT_C=OFF \
+      -DGLIB_INCLUDE_PATH="$(pkg-config --cflags glib-2.0 | tr ' ' ';' | sed 's/-I//g' )" \
+      -DWITHOUT_PAM=ON \
+      -DCMAKE_SKIP_RPATH=OFF \
+      -DCMAKE_INSTALL_PREFIX=/opt/swcdb \
+      -DSWC_DOCUMENTATION=OFF \
       -DCMAKE_BUILD_TYPE=Debug;
 ```

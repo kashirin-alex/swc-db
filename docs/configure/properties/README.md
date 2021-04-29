@@ -147,7 +147,7 @@ _default_ **```swc.comm.ssl=false```**
 
 * ### swc.comm.ssl.secure.network
 ```STRINGS```
-The Networks that do not require SSL.
+The Networks that do not require SSL. To the extend, any network in the local-loop by default is considered a secure network, in a case of Server-IP is equal Client-IP the connection is not upgraded to a secure connection.
 > _recommended:_ \
   ```swc.comm.ssl.secure.network = 127.0.0.0/8``` \
   ```swc.comm.ssl.secure.network = ::1/128```
