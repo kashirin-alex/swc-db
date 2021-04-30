@@ -68,6 +68,11 @@ _default_ **```swc.rgr.ram.reserved.percent=33```**
 The Memory release-rate (malloc dependable). \
 _default_ **```swc.rgr.ram.release.rate=100```**
 
+* ### swc.rgr.metrics.report.interval
+```G_INT32```
+The Metrics Reporting Interval in milliseconds. Zero(=0) skips metrics update.\
+_default_ **```swc.rgr.metrics.report.interval=300000```**
+
 * ### swc.rgr.id.validation.interval
 ```G_INT32```
 The Validation of Ranger-ID against Manager(RAGERS ROLE). \
