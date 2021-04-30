@@ -31,16 +31,23 @@ class Resources final {
 
   public:
 
+  struct Notifiers {
+    virtual ~Notifiers() { }
+    virtual void rss(uint64_t bytes) = 0;
+  };
+
   Resources(const Comm::IoContextPtr& ioctx,
             Config::Property::V_GINT32::Ptr ram_percent_allowed,
             Config::Property::V_GINT32::Ptr ram_percent_reserved,
             Config::Property::V_GINT32::Ptr ram_release_rate,
-            std::function<size_t(size_t)>&& release_call=nullptr)
+            std::function<size_t(size_t)>&& release_call=nullptr,
+            Notifiers* m_notifiers=nullptr)
             : cfg_ram_percent_allowed(ram_percent_allowed),
               cfg_ram_percent_reserved(ram_percent_reserved),
               cfg_ram_release_rate(ram_release_rate),
               m_timer(ioctx->executor()),
               m_release_call(std::move(release_call)),
+              m_notifiers(m_notifiers),
               next_major_chk(99),
               ram(MAX_RAM_CHK_INTVAL_MS),
               m_concurrency(0), m_cpu_mhz(0) {
@@ -282,7 +289,13 @@ class Resources final {
       rss *= page_size;
       ram.used.store(ram.used > ram.allowed || ram.used > rss
                       ? (ram.used + rss) / 2 : rss);
+      if(m_notifiers)
+        m_notifiers->rss(rss);
     }
+    /* + +
+      std::ifstream buffer("/proc/self/stats");
+      n-thread + cpu time + virtual-mem
+    */
   }
 
   void schedule() {
@@ -336,6 +349,7 @@ class Resources final {
   asio::high_resolution_timer         m_timer;
 
   const std::function<size_t(size_t)> m_release_call;
+  Notifiers*                          m_notifiers;
   int8_t                              next_major_chk;
 
   Core::MutexAtomic                   m_mutex;
