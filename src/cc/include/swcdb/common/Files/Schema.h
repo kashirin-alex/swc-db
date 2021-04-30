@@ -134,10 +134,9 @@ DB::Schema::Ptr load(int &err, cid_t cid,
       schema->col_name.append("SYS_");
       if(cid == 9) {
         schema->col_name.append("STATS");
-        schema->col_type = DB::Types::Column::COUNTER_I64;
+        schema->col_type = DB::Types::Column::SERIAL;
         schema->col_seq = DB::Types::KeySeq::LEXIC;
-        schema->cell_ttl = Env::Config::settings()->get_i32(
-          "swc.stats.ttl", 1036800);
+        schema->cell_ttl = 2419200000; // default 4-weeks
       } else {
         schema->col_type = DB::Types::Column::SERIAL;
         schema->col_seq = DB::Types::MetaColumn::get_seq_type(cid);

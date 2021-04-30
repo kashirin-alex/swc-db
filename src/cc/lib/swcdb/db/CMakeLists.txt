@@ -83,6 +83,7 @@ set(swcdb_sources
   client/Query/UpdateHandlerBaseUnorderedMap.cc
   client/Query/UpdateHandlerCommon.cc
   client/Query/Update.cc
+  client/Query/Update/Handlers/Metrics.cc
   client/Query/SelectHandlerBaseUnorderedMap.cc
   client/Query/SelectHandlerBaseSingleColumn.cc
   client/Query/SelectHandlerCommon.cc
