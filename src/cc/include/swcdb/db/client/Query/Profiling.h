@@ -22,10 +22,13 @@ using ReqBase = Comm::client::ConnQueue::ReqBase;
 
 
 struct Profiling {
-  const int64_t          ts_start;
+  Core::Atomic<int64_t>  ts_start;
   Core::Atomic<int64_t>  ts_finish;
 
-  Profiling() noexcept : ts_start(Time::now_ns()), ts_finish(ts_start) { }
+  Profiling() noexcept
+            : ts_start(Time::now_ns()),
+              ts_finish(ts_start.load()) {
+  }
 
   struct Component {
 
@@ -75,6 +78,13 @@ struct Profiling {
     void add_cached(uint64_t ts, bool err) noexcept {
       add(ts, err);
       cache.fetch_add(1);
+    }
+
+    void reset() {
+      time.store(0);
+      count.store(0);
+      cache.store(0);
+      error.store(0);
     }
 
     void print(std::ostream& out) const {
@@ -132,6 +142,16 @@ struct Profiling {
     _rgr_locate_meta += other._rgr_locate_meta;
     _rgr_data += other._rgr_data;
     return *this;
+  }
+
+  void reset() {
+    _mngr_locate.reset();
+    _mngr_res.reset();
+    _rgr_locate_master.reset();
+    _rgr_locate_meta.reset();
+    _rgr_data.reset();
+    ts_start.store(Time::now_ns());
+    ts_finish.store(ts_start);
   }
 
   void display(std::ostream& out) const {
