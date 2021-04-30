@@ -14,6 +14,10 @@ KeyVec::KeyVec(KeyVec&& other) noexcept
                : VecFraction(std::move(other)) {
 }
 
+KeyVec::KeyVec(const KeyVec& other)
+               : VecFraction(other) {
+}
+
 size_t KeyVec::size_of_internal() const noexcept {
   size_t sz = 0;
   for(auto& f : *this) {
