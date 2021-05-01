@@ -66,7 +66,8 @@ class AppContext final : public Comm::AppContext {
     Env::FsInterface::init(FS::fs_type(settings->get_str("swc.fs")));
   }
 
-  void init(const Comm::EndPoints& endpoints) override {
+  void init(const std::string&,
+            const Comm::EndPoints& endpoints) override {
     Env::Mngr::init(endpoints);
 
     auto period = Env::Config::settings()->get<Config::Property::V_GINT32>(

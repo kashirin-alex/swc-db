@@ -89,7 +89,8 @@ class AppContext final : public Comm::AppContext {
             "swc.rgr.comm.encoder")) {
   }
 
-  void init(const Comm::EndPoints& endpoints) override {
+  void init(const std::string& host,
+            const Comm::EndPoints& endpoints) override {
     Env::Rgr::rgr_data()->endpoints = endpoints;
 
     int sig = 0;
@@ -98,6 +99,9 @@ class AppContext final : public Comm::AppContext {
 
     Env::Rgr::start();
     id_mngr->request();
+    (void)host;
+    //Env::Rgr::metrics_track()->configure(host.c_str(), endpoints);
+    //Env::Rgr::metrics_track()->start();
   }
 
   void set_srv(Comm::server::SerializedServer::Ptr srv){

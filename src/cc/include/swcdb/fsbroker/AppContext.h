@@ -97,7 +97,7 @@ class AppContext final : public Comm::AppContext {
     }
   }
 
-  void init(const Comm::EndPoints&) override {
+  void init(const std::string&, const Comm::EndPoints&) override {
     int sig = 0;
     Env::IoCtx::io()->set_signals();
     shutting_down(std::error_code(), sig);

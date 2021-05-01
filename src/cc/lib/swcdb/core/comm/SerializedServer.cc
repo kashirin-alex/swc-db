@@ -186,11 +186,11 @@ SerializedServer::SerializedServer(
 
     if(!reactor) {
       if(nets.empty()) {
-        app_ctx->init(endpoints_final);
+        app_ctx->init(host, endpoints_final);
       } else {
         EndPoints sorted;
         Resolver::sort(nets, endpoints_final, sorted);
-        app_ctx->init(sorted);
+        app_ctx->init(host, sorted);
       }
     }
   }

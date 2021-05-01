@@ -26,7 +26,7 @@ class AppContext : public std::enable_shared_from_this<AppContext> {
 
   AppContext(Config::Property::V_GENUM::Ptr cfg_encoder) noexcept;
 
-  virtual void init(const Comm::EndPoints&) { }
+  virtual void init(const std::string&, const Comm::EndPoints&) { }
 
   virtual void stop();
 
