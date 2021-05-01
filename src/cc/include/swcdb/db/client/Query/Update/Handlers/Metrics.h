@@ -23,10 +23,11 @@ namespace Metric {
 
 
 
-static const uint24_t FIELD_ID_MIN   = uint24_t(0);
-static const uint24_t FIELD_ID_MAX   = uint24_t(1);
-static const uint24_t FIELD_ID_AVG   = uint24_t(2);
-static const uint24_t FIELD_ID_COUNT = uint24_t(3);
+static const uint24_t FIELD_ID_MIN    = uint24_t(0);
+static const uint24_t FIELD_ID_MAX    = uint24_t(1);
+static const uint24_t FIELD_ID_AVG    = uint24_t(2);
+static const uint24_t FIELD_ID_COUNT  = uint24_t(3);
+static const uint24_t FIELD_ID_VOLUME = uint24_t(4);
 
 
 
@@ -91,12 +92,107 @@ class Item_MinMaxAvgCount : public Base {
   virtual void reset() override;
 
   protected:
-
   Core::MutexAtomic m_mutex;
   uint64_t          m_min;
   uint64_t          m_max;
   uint64_t          m_total;
   uint64_t          m_count;
+
+};
+
+
+
+class Item_Count : public Base {
+  public:
+  typedef std::unique_ptr<Item_Count> Ptr;
+
+  const std::string name;
+
+  Item_Count(const char* name) : name(name), m_count(0) { }
+
+  virtual ~Item_Count() { }
+
+  void increment() {
+    m_count.fetch_add(1);
+  }
+
+  virtual void report(Handlers::Base::Column* colp,
+                      const DB::Cell::KeyVec& parent_key) override;
+
+  virtual void reset() override {
+    m_count.store(0);
+  }
+
+  protected:
+  Core::Atomic<uint64_t> m_count;
+
+};
+
+
+
+class Item_Volume : public Base {
+  public:
+  typedef std::unique_ptr<Item_Volume> Ptr;
+
+  const std::string name;
+
+  Item_Volume(const char* name) : name(name), m_volume(0) { }
+
+  virtual ~Item_Volume() { }
+
+  void increment() {
+    m_volume.fetch_add(1);
+  }
+
+  void decrement() {
+    m_volume.fetch_sub(1);
+  }
+
+  virtual void report(Handlers::Base::Column* colp,
+                      const DB::Cell::KeyVec& parent_key) override;
+
+  virtual void reset() override {
+    m_volume.store(0);
+  }
+
+  protected:
+  Core::Atomic<uint64_t> m_volume;
+
+};
+
+
+
+class Item_CountVolume : public Base {
+  public:
+  typedef std::unique_ptr<Item_CountVolume> Ptr;
+
+  const std::string name;
+
+  Item_CountVolume(const char* name)
+                    : name(name), m_count(0), m_volume(0) { }
+
+  virtual ~Item_CountVolume() { }
+
+  void increment() {
+    m_count.fetch_add(1);
+    m_volume.fetch_add(1);
+  }
+
+  void decrement() {
+    m_volume.fetch_sub(1);
+  }
+
+  virtual void report(Handlers::Base::Column* colp,
+                      const DB::Cell::KeyVec& parent_key) override;
+
+  virtual void reset() override {
+    m_count.store(0);
+    m_volume.store(0);
+  }
+
+  protected:
+  Core::Atomic<uint64_t> m_count;
+  Core::Atomic<uint64_t> m_volume;
 
 };
 

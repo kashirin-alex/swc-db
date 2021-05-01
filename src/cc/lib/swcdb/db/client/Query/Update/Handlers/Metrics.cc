@@ -110,6 +110,82 @@ void Item_MinMaxAvgCount::reset() {
 
 
 
+void Item_Count::report(Handlers::Base::Column* colp,
+                        const DB::Cell::KeyVec& parent_key) {
+  int64_t _count = m_count.exchange(0);
+
+  DB::Cell::KeyVec key;
+  key.reserve(parent_key.size() + 1);
+  key.copy(parent_key);
+  key.add(name);
+
+  DB::Cells::Cell cell;
+  cell.flag = DB::Cells::INSERT;
+  cell.set_time_order_desc(true);
+  cell.key.add(key);
+
+  DB::Cell::Serial::Value::FieldsWriter wfields;
+  wfields.add(FIELD_ID_COUNT, _count);
+
+  cell.set_value(wfields.base, wfields.fill(), false);
+  colp->add(cell);
+}
+
+
+
+void Item_Volume::report(Handlers::Base::Column* colp,
+                         const DB::Cell::KeyVec& parent_key) {
+  int64_t _volume = m_volume.load();
+
+  DB::Cell::KeyVec key;
+  key.reserve(parent_key.size() + 1);
+  key.copy(parent_key);
+  key.add(name);
+
+  DB::Cells::Cell cell;
+  cell.flag = DB::Cells::INSERT;
+  cell.set_time_order_desc(true);
+  cell.key.add(key);
+
+  DB::Cell::Serial::Value::FieldsWriter wfields;
+  wfields.add(FIELD_ID_VOLUME, _volume);
+
+  cell.set_value(wfields.base, wfields.fill(), false);
+  colp->add(cell);
+}
+
+
+
+void Item_CountVolume::report(Handlers::Base::Column* colp,
+                              const DB::Cell::KeyVec& parent_key) {
+  int64_t _count = m_count.exchange(0);
+  int64_t _volume = m_volume.load();
+
+  DB::Cell::KeyVec key;
+  key.reserve(parent_key.size() + 1);
+  key.copy(parent_key);
+  key.add(name);
+
+  DB::Cells::Cell cell;
+  cell.flag = DB::Cells::INSERT;
+  cell.set_time_order_desc(true);
+  cell.key.add(key);
+
+  DB::Cell::Serial::Value::FieldsWriter wfields;
+  wfields.ensure(
+    + Serialization::encoded_length_vi64(_count)
+    + Serialization::encoded_length_vi64(_volume)
+    + 4
+  );
+  wfields.add(FIELD_ID_COUNT,   _count);
+  wfields.add(FIELD_ID_VOLUME,  _volume);
+
+  cell.set_value(wfields.base, wfields.fill(), false);
+  colp->add(cell);
+}
+
+
+
 
 
 Reporting::Reporting(const Comm::IoContextPtr& io,
