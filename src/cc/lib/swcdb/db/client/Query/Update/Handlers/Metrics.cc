@@ -29,6 +29,19 @@ void Level::reset() {
     m->reset();
 }
 
+Level* Level::get_level(const char* _name, bool inner) {
+  if(!inner)
+    return Condition::str_eq(name.c_str(), _name) ? this : nullptr;
+
+  Level* level;
+  for(auto& m : metrics) {
+    if((level = m->get_level(_name, false)))
+      return level;
+  }
+  metrics.emplace_back((level = new Level(_name)));
+  return level;
+}
+
 
 
 void Item_MinMaxAvgCount::add(uint64_t v) {
@@ -123,6 +136,16 @@ void Reporting::stop() {
     std::this_thread::sleep_for(std::chrono::microseconds(100));
 }
 
+Level* Reporting::get_level(const char* _name) {
+  Level* level;
+  for(auto& m : metrics) {
+    if((level = m->get_level(_name, false)))
+      return level;
+  }
+  metrics.emplace_back((level = new Level(_name)));
+  return level;
+}
+
 void Reporting::response(int err) {
   if(!completion.is_last())
     return;
@@ -157,7 +180,7 @@ void Reporting::report() {
   }
 
   DB::Cell::KeyVec key;
-  key.add(std::to_string(Time::now_ms()));
+  key.add(std::to_string(Time::now_ms())); // format-cfg
   for(auto& m : metrics)
     m->report(&column, key);
 

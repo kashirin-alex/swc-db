@@ -30,6 +30,8 @@ static const uint24_t FIELD_ID_COUNT = uint24_t(3);
 
 
 
+class Level;
+
 struct Base {
   typedef std::unique_ptr<Base> Ptr;
 
@@ -39,6 +41,10 @@ struct Base {
                       const DB::Cell::KeyVec& parent_key) = 0;
 
   virtual void reset() = 0;
+
+  virtual Level* get_level(const char*, bool) {
+    return nullptr;
+  }
 
 };
 
@@ -59,6 +65,8 @@ class Level : public Base {
                       const DB::Cell::KeyVec& parent_key) override;
 
   virtual void reset() override;
+
+  Level* get_level(const char* _name, bool inner=true) override;
 
 };
 
@@ -119,6 +127,7 @@ class Reporting : public BaseSingleColumn {
 
   virtual void stop();
 
+  Level* get_level(const char* name);
 
   protected:
 
