@@ -136,12 +136,14 @@ void ConnHandler::write(ConnHandler::Outgoing& outgoing) {
       return write_next();
     do_async_write(
       cbuf->get_buffers(),
-      [cbuf, conn=ptr()] (const asio::error_code& ec, uint32_t) {
+      [cbuf, conn=ptr()] (const asio::error_code& ec, uint32_t bytes) {
         if(ec) {
           conn->do_close();
         } else {
           conn->write_next();
         }
+        if(bytes)
+          conn->app_ctx->net_bytes_sent(conn, bytes);
       }
     );
     return;
@@ -156,7 +158,7 @@ void ConnHandler::write(ConnHandler::Outgoing& outgoing) {
       do_async_write(
         cbuf->get_buffers(),
         [cbuf, hdlr=std::move(outgoing.hdlr), conn=ptr()]
-        (const asio::error_code& ec, uint32_t) {
+        (const asio::error_code& ec, uint32_t bytes) {
           if(!ec)
             conn->write_next();
 
@@ -165,7 +167,9 @@ void ConnHandler::write(ConnHandler::Outgoing& outgoing) {
           ev->header.initialize_from_response(cbuf->header);
           hdlr->handle(conn, ev);
           if(ec)
-            return conn->do_close();
+            conn->do_close();
+          if(bytes)
+            conn->app_ctx->net_bytes_sent(conn, bytes);
         }
       );
     //} else {
@@ -211,12 +215,14 @@ void ConnHandler::write(ConnHandler::Outgoing& outgoing) {
 
   do_async_write(
     cbuf->get_buffers(),
-    [cbuf, conn=ptr()] (const asio::error_code& ec, uint32_t) {
+    [cbuf, conn=ptr()] (const asio::error_code& ec, uint32_t bytes) {
       if(ec) {
         conn->do_close();
       } else {
         conn->write_next();
       }
+      if(bytes)
+        conn->app_ctx->net_bytes_sent(conn, bytes);
     }
   );
 }
@@ -236,8 +242,9 @@ void ConnHandler::read() {
 
 SWC_SHOULD_INLINE
 void ConnHandler::recved_header_pre(const asio::error_code& ec, size_t filled) {
+  m_recv_bytes += filled;
   if(ec || filled != Header::PREFIX_LENGTH)
-    return do_close();
+    return do_close_recv();
 
   auto ev = Event::make(Event::Type::MESSAGE, Error::OK);
   try {
@@ -250,7 +257,7 @@ void ConnHandler::recved_header_pre(const asio::error_code& ec, size_t filled) {
   if(!ev->header.header_len) {
     SWC_LOGF(LOG_WARN, "read, REQUEST HEADER_PREFIX_TRUNCATED: remain=%lu",
              filled);
-    return do_close();
+    return do_close_recv();
   }
 
   do_async_read(
@@ -265,6 +272,7 @@ void ConnHandler::recved_header_pre(const asio::error_code& ec, size_t filled) {
 SWC_SHOULD_INLINE
 void ConnHandler::recved_header(const Event::Ptr& ev, asio::error_code ec,
                                 size_t filled) {
+  m_recv_bytes += filled;
   if(!ec) {
     if(filled + Header::PREFIX_LENGTH != ev->header.header_len) {
       ec = asio::error::eof;
@@ -281,7 +289,7 @@ void ConnHandler::recved_header(const Event::Ptr& ev, asio::error_code ec,
   if(ec) {
     SWC_LOGF(LOG_WARN, "read, REQUEST HEADER_TRUNCATED: len=%d",
              ev->header.header_len);
-    do_close();
+    do_close_recv();
   } else if(ev->header.buffers) {
     recv_buffers(ev, 0);
   } else {
@@ -314,6 +322,7 @@ void ConnHandler::recv_buffers(const Event::Ptr& ev, uint8_t n) {
 SWC_SHOULD_INLINE
 void ConnHandler::recved_buffer(const Event::Ptr& ev, asio::error_code ec,
                                 uint8_t n, size_t filled) {
+  m_recv_bytes += filled;
   if(!ec) {
     StaticBuffer* buffer;
     uint32_t checksum;
@@ -336,7 +345,7 @@ void ConnHandler::recved_buffer(const Event::Ptr& ev, asio::error_code ec,
         << "read, REQUEST PAYLOAD_TRUNCATED: n(" << int(n) << ") ";
       ev->print(SWC_LOG_OSTREAM);
     );
-    do_close();
+    do_close_recv();
   } else if(ev->header.buffers == ++n) {
     received(ev);
   } else {
@@ -347,6 +356,9 @@ void ConnHandler::recved_buffer(const Event::Ptr& ev, asio::error_code ec,
 void ConnHandler::received(const Event::Ptr& ev) {
   if(ev->header.flags & Header::FLAG_REQUEST_BIT)
     ev->received();
+
+  app_ctx->net_bytes_received(ptr(), m_recv_bytes);
+  m_recv_bytes = 0;
 
   read();
 

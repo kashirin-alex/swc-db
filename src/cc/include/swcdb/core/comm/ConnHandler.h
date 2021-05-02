@@ -32,25 +32,25 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   struct Outgoing final {
     Buffers::Ptr                  cbuf;
     DispatchHandler::Ptr          hdlr;
-    
+
     Outgoing() noexcept : cbuf(nullptr), hdlr(nullptr) { }
-    
+
     Outgoing(Buffers::Ptr&& cbuf, DispatchHandler::Ptr&& hdlr) noexcept
             : cbuf(std::move(cbuf)), hdlr(std::move(hdlr)) {
     }
-    
+
     Outgoing(Outgoing&& other) noexcept
            : cbuf(std::move(other.cbuf)), hdlr(std::move(other.hdlr)) {
     }
-    
+
     Outgoing& operator=(Outgoing&& other) noexcept {
       cbuf = std::move(other.cbuf);
       hdlr = std::move(other.hdlr);
       return *this;
     }
-    
+
     Outgoing(const Outgoing&)             = delete;
-    
+
     Outgoing& operator=(const Outgoing&)  = delete;
   };
 
@@ -95,7 +95,8 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   EndPoint              endpoint_local;
 
   ConnHandler(AppContext::Ptr& app_ctx) noexcept
-              : connected(true), app_ctx(app_ctx), m_next_req_id(0) {
+              : connected(true), app_ctx(app_ctx), m_next_req_id(0),
+                m_recv_bytes(0) {
   }
 
   ConnHandlerPtr ptr() noexcept {
@@ -123,6 +124,14 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   void run(const Event::Ptr& ev);
 
   virtual void do_close() = 0;
+
+  void do_close_recv() {
+    if(m_recv_bytes) {
+      app_ctx->net_bytes_received(ptr(), m_recv_bytes);
+      m_recv_bytes = 0;
+    }
+    do_close();
+  }
 
   void do_close_run();
 
@@ -195,6 +204,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   std::unordered_map<uint32_t,
                      Pending,
                      PendingHash>   m_pending;
+  size_t                            m_recv_bytes;
   uint8_t _buf_header[Header::MAX_LENGTH];
 };
 
