@@ -94,7 +94,8 @@ struct MinMaxAvgCount {
       m_max = v;
   }
 
-  void exchange_reset(int64_t& min, int64_t& max, int64_t& avg, int64_t& count) {
+  void exchange_reset(uint64_t& min, uint64_t& max,
+                      uint64_t& avg, uint64_t& count) {
     Core::MutexAtomic::scope lock(m_mutex);
     if((count = m_count)) {
       min = m_min;
