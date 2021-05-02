@@ -44,18 +44,6 @@ Level* Level::get_level(const char* _name, bool inner) {
 
 
 
-void Item_MinMaxAvgCount::add(uint64_t v) {
-  Core::MutexAtomic::scope lock(m_mutex);
-  if(UINT64_MAX - m_total >= v) {
-    m_total += v;
-    ++m_count;
-  }
-  if(!m_min || v < m_min)
-    m_min = v;
-  if(v > m_max)
-    m_max = v;
-}
-
 void Item_MinMaxAvgCount::report(Handlers::Base::Column* colp,
                                  const DB::Cell::KeyVec& parent_key) {
   m_mutex.lock();
@@ -99,15 +87,6 @@ void Item_MinMaxAvgCount::report(Handlers::Base::Column* colp,
 
   colp->add(cell);
 }
-
-void Item_MinMaxAvgCount::reset() {
-  Core::MutexAtomic::scope lock(m_mutex);
-  m_min = 0;
-  m_max = 0;
-  m_total = 0;
-  m_count = 0;
-}
-
 
 
 void Item_Count::report(Handlers::Base::Column* colp,

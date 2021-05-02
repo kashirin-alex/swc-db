@@ -73,30 +73,53 @@ class Level : public Base {
 
 
 
-class Item_MinMaxAvgCount : public Base {
-  public:
-  typedef std::unique_ptr<Item_MinMaxAvgCount> Ptr;
-
-  const std::string name;
-
-  Item_MinMaxAvgCount(const char* name)
-      : name(name), m_min(0), m_max(0), m_total(0), m_count(0) { }
-
-  virtual ~Item_MinMaxAvgCount() { }
-
-  void add(uint64_t v);
-
-  virtual void report(Handlers::Base::Column* colp,
-                      const DB::Cell::KeyVec& parent_key) override;
-
-  virtual void reset() override;
-
-  protected:
+struct MinMaxAvgCount {
   Core::MutexAtomic m_mutex;
   uint64_t          m_min;
   uint64_t          m_max;
   uint64_t          m_total;
   uint64_t          m_count;
+
+  MinMaxAvgCount() noexcept : m_min(0), m_max(0), m_total(0), m_count(0) { }
+
+  void add(uint64_t v) noexcept {
+    Core::MutexAtomic::scope lock(m_mutex);
+    if(UINT64_MAX - m_total >= v) {
+      m_total += v;
+      ++m_count;
+    }
+    if(!m_min || v < m_min)
+      m_min = v;
+    if(v > m_max)
+      m_max = v;
+  }
+  void reset() noexcept {
+    Core::MutexAtomic::scope lock(m_mutex);
+    m_min = 0;
+    m_max = 0;
+    m_total = 0;
+    m_count = 0;
+  }
+};
+
+class Item_MinMaxAvgCount : protected MinMaxAvgCount, public Base {
+  public:
+  typedef std::unique_ptr<Item_MinMaxAvgCount> Ptr;
+
+  using MinMaxAvgCount::add;
+
+  const std::string name;
+
+  Item_MinMaxAvgCount(const char* name) : name(name) { }
+
+  virtual ~Item_MinMaxAvgCount() { }
+
+  virtual void report(Handlers::Base::Column* colp,
+                      const DB::Cell::KeyVec& parent_key) override;
+
+  virtual void reset() override {
+    MinMaxAvgCount::reset();
+  }
 
 };
 
