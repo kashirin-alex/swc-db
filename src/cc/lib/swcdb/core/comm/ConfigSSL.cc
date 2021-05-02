@@ -129,7 +129,6 @@ void ConfigSSL::make_server(AppContext::Ptr& app_ctx,
       } else {
         SWC_LOGF(LOG_DEBUG, "handshake error=%d(%s)",
                   ec.value(), ec.message().c_str());
-        conn->do_close();
       }
     }
   );

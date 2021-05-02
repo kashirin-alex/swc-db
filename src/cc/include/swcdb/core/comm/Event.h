@@ -21,10 +21,10 @@ class Event final {
 
   /** Enumeration for event types.*/
   enum Type : uint8_t {
-    ESTABLISHED,  ///< Connection established event
-    DISCONNECT,   ///< Connection disconnected event
-    MESSAGE,      ///< Request/response message event
-    ERROR,        ///< %Error event
+    ESTABLISHED = 0x00,  ///< Connection established event
+    DISCONNECT  = 0x01,  ///< Connection disconnected event
+    MESSAGE     = 0x02,  ///< Request/response message event
+    ERROR       = 0x03,  ///< %Error event
   };
 
   typedef std::shared_ptr<Event> Ptr;
