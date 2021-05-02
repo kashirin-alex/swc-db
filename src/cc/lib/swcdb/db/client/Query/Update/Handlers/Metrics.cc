@@ -46,9 +46,9 @@ Level* Level::get_level(const char* _name, bool inner) {
 
 void Item_MinMaxAvgCount::report(Handlers::Base::Column* colp,
                                  const DB::Cell::KeyVec& parent_key) {
-  uint64_t _min;
-  uint64_t _max;
-  uint64_t _avg;
+  uint64_t _min = 0;
+  uint64_t _max = 0;
+  uint64_t _avg = 0;
   uint64_t _count = 0;
   exchange_reset(_min, _max, _avg, _count);
   if(!_count)
