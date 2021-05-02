@@ -46,20 +46,13 @@ Level* Level::get_level(const char* _name, bool inner) {
 
 void Item_MinMaxAvgCount::report(Handlers::Base::Column* colp,
                                  const DB::Cell::KeyVec& parent_key) {
-  m_mutex.lock();
-  if(!m_count) {
-    m_mutex.unlock();
+  int64_t _min;
+  int64_t _max;
+  int64_t _avg;
+  int64_t _count;
+  exchange_reset(_min, _max, _avg, _count);
+  if(!_count)
     return;
-  }
-  auto _min = m_min;
-  auto _max = m_max;
-  auto _avg = m_total / m_count;
-  auto _count = m_count;
-  m_min = 0;
-  m_max = 0;
-  m_total = 0;
-  m_count = 0;
-  m_mutex.unlock();
 
   DB::Cell::KeyVec key;
   key.reserve(parent_key.size() + 1);
