@@ -38,7 +38,7 @@ struct Base {
 
   virtual ~Base() { }
 
-  virtual void report(Handlers::Base::Column* colp,
+  virtual void report(uint64_t for_ns, Handlers::Base::Column* colp,
                       const DB::Cell::KeyVec& parent_key) = 0;
 
   virtual void reset() = 0;
@@ -62,7 +62,7 @@ class Level : public Base {
 
   virtual ~Level() { }
 
-  virtual void report(Handlers::Base::Column* colp,
+  virtual void report(uint64_t for_ns, Handlers::Base::Column* colp,
                       const DB::Cell::KeyVec& parent_key) override;
 
   virtual void reset() override;
@@ -123,7 +123,7 @@ class Item_MinMaxAvgCount : protected MinMaxAvgCount, public Base {
 
   virtual ~Item_MinMaxAvgCount() { }
 
-  virtual void report(Handlers::Base::Column* colp,
+  virtual void report(uint64_t for_ns, Handlers::Base::Column* colp,
                       const DB::Cell::KeyVec& parent_key) override;
 
   virtual void reset() override {
@@ -148,7 +148,7 @@ class Item_Count : public Base {
     m_count.fetch_add(1);
   }
 
-  virtual void report(Handlers::Base::Column* colp,
+  virtual void report(uint64_t for_ns, Handlers::Base::Column* colp,
                       const DB::Cell::KeyVec& parent_key) override;
 
   virtual void reset() override {
@@ -180,7 +180,7 @@ class Item_Volume : public Base {
     m_volume.fetch_sub(1);
   }
 
-  virtual void report(Handlers::Base::Column* colp,
+  virtual void report(uint64_t for_ns, Handlers::Base::Column* colp,
                       const DB::Cell::KeyVec& parent_key) override;
 
   virtual void reset() override {
@@ -214,7 +214,7 @@ class Item_CountVolume : public Base {
     m_volume.fetch_sub(1);
   }
 
-  virtual void report(Handlers::Base::Column* colp,
+  virtual void report(uint64_t for_ns, Handlers::Base::Column* colp,
                       const DB::Cell::KeyVec& parent_key) override;
 
   virtual void reset() override {
@@ -238,12 +238,12 @@ class Reporting : public BaseSingleColumn {
   typedef std::shared_ptr<Reporting> Ptr;
 
   const Comm::IoContextPtr           io;
-  Config::Property::V_GINT32::Ptr    cfg_intval_ms;
+  Config::Property::V_GINT32::Ptr    cfg_intval;
   std::vector<Metric::Base::Ptr>     metrics;
   Core::AtomicBool                   running;
 
   Reporting(const Comm::IoContextPtr& io,
-            Config::Property::V_GINT32::Ptr cfg_intval_ms);
+            Config::Property::V_GINT32::Ptr cfg_intval);
 
   virtual ~Reporting() { }
 
@@ -256,6 +256,8 @@ class Reporting : public BaseSingleColumn {
   virtual void stop();
 
   Level* get_level(const char* name);
+
+  virtual uint64_t apply_time(uint32_t intval, DB::Cell::KeyVec& key);
 
   protected:
 

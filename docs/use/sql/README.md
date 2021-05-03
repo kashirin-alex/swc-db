@@ -62,8 +62,8 @@ The key fields:
 |seq            |```string```       | VOLUME                              | The Column Key Sequence, options LEXIC / VOLUME / FC_LEXIC / FC_VOLUME  |
 |type           |```string```       | PLAIN                               | The Column Value Type, options PLAIN / COUNTER_I{64,32,16,8} / SERIAL     |
 |cell_versions  |```i32```          | 0 == 1                              | The Cell Versions                                                 |
-|cell_ttl       |```i32```          | 0 == without                        | The Time to Live in milliseconds                                  |
-|blk_encoding   |```string```       | DEFAULT = Rangers' default cfg      | The Block Encoding, options PLAIN / ZSTD / ZLIB / SNAPPY                |
+|cell_ttl       |```i32```          | 0 == without                        | The Time to Live in seconds                                       |
+|blk_encoding   |```string```       | DEFAULT = Rangers' default cfg      | The Block Encoding, options PLAIN / ZSTD / ZLIB / SNAPPY          |
 |blk_size       |```i32```          | 0 == Rangers' default cfg           | The Block Size in Bytes                                           |
 |blk_cells      |```i32```          | 0 == Rangers' default cfg           | The Number of Cells in a Block                                    |
 |cs_replication |```i8```           | 0 == Rangers' default cfg           | The CellStore file Replication                                    |

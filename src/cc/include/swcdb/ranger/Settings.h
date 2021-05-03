@@ -47,8 +47,8 @@ void Settings::init_app_options(){
     ("swc.rgr.ram.release.rate", g_i32(100),
      "Memory release-rate (malloc dependable)")
 
-    ("swc.rgr.metrics.report.interval", g_i32(300000),
-     "Metrics Reporting Interval in milliseconds")
+    ("swc.rgr.metrics.report.interval", g_i32(300),
+     "Metrics Reporting Interval in Seconds")
 
     ("swc.rgr.id.validation.interval", g_i32(120000),
      "Validation of Ranger-ID against Mngr(root)")

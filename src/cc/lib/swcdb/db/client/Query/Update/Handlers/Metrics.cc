@@ -14,14 +14,14 @@ namespace Handlers { namespace Metric {
 
 
 
-void Level::report(Handlers::Base::Column* colp,
+void Level::report(uint64_t for_ns, Handlers::Base::Column* colp,
                    const DB::Cell::KeyVec& parent_key) {
   DB::Cell::KeyVec key;
   key.reserve(parent_key.size() + 1);
   key.copy(parent_key);
   key.add(name);
   for(auto& m : metrics)
-    m->report(colp, key);
+    m->report(for_ns, colp, key);
 }
 
 void Level::reset() {
@@ -44,7 +44,8 @@ Level* Level::get_level(const char* _name, bool inner) {
 
 
 
-void Item_MinMaxAvgCount::report(Handlers::Base::Column* colp,
+void Item_MinMaxAvgCount::report(uint64_t for_ns,
+                                 Handlers::Base::Column* colp,
                                  const DB::Cell::KeyVec& parent_key) {
   uint64_t _min = 0;
   uint64_t _max = 0;
@@ -62,6 +63,7 @@ void Item_MinMaxAvgCount::report(Handlers::Base::Column* colp,
   DB::Cells::Cell cell;
   cell.flag = DB::Cells::INSERT;
   cell.set_time_order_desc(true);
+  cell.set_timestamp(for_ns);
   cell.key.add(key);
 
   DB::Cell::Serial::Value::FieldsWriter wfields;
@@ -82,7 +84,7 @@ void Item_MinMaxAvgCount::report(Handlers::Base::Column* colp,
 }
 
 
-void Item_Count::report(Handlers::Base::Column* colp,
+void Item_Count::report(uint64_t for_ns, Handlers::Base::Column* colp,
                         const DB::Cell::KeyVec& parent_key) {
   int64_t _count = m_count.exchange(0);
 
@@ -94,6 +96,7 @@ void Item_Count::report(Handlers::Base::Column* colp,
   DB::Cells::Cell cell;
   cell.flag = DB::Cells::INSERT;
   cell.set_time_order_desc(true);
+  cell.set_timestamp(for_ns);
   cell.key.add(key);
 
   DB::Cell::Serial::Value::FieldsWriter wfields;
@@ -105,7 +108,7 @@ void Item_Count::report(Handlers::Base::Column* colp,
 
 
 
-void Item_Volume::report(Handlers::Base::Column* colp,
+void Item_Volume::report(uint64_t for_ns, Handlers::Base::Column* colp,
                          const DB::Cell::KeyVec& parent_key) {
   int64_t _volume = m_volume.load();
 
@@ -117,6 +120,7 @@ void Item_Volume::report(Handlers::Base::Column* colp,
   DB::Cells::Cell cell;
   cell.flag = DB::Cells::INSERT;
   cell.set_time_order_desc(true);
+  cell.set_timestamp(for_ns);
   cell.key.add(key);
 
   DB::Cell::Serial::Value::FieldsWriter wfields;
@@ -128,7 +132,7 @@ void Item_Volume::report(Handlers::Base::Column* colp,
 
 
 
-void Item_CountVolume::report(Handlers::Base::Column* colp,
+void Item_CountVolume::report(uint64_t for_ns, Handlers::Base::Column* colp,
                               const DB::Cell::KeyVec& parent_key) {
   int64_t _count = m_count.exchange(0);
   int64_t _volume = m_volume.load();
@@ -141,6 +145,7 @@ void Item_CountVolume::report(Handlers::Base::Column* colp,
   DB::Cells::Cell cell;
   cell.flag = DB::Cells::INSERT;
   cell.set_time_order_desc(true);
+  cell.set_timestamp(for_ns);
   cell.key.add(key);
 
   DB::Cell::Serial::Value::FieldsWriter wfields;
@@ -161,11 +166,11 @@ void Item_CountVolume::report(Handlers::Base::Column* colp,
 
 
 Reporting::Reporting(const Comm::IoContextPtr& io,
-                     Config::Property::V_GINT32::Ptr cfg_intval_ms)
+                     Config::Property::V_GINT32::Ptr cfg_intval)
             : BaseSingleColumn(
                 9, DB::Types::KeySeq::LEXIC, 1, 0, DB::Types::Column::SERIAL),
               io(io),
-              cfg_intval_ms(cfg_intval_ms),
+              cfg_intval(cfg_intval),
               running(false),
               m_timer(io->executor()) {
   timeout.store(Env::Clients::ref().cfg_send_timeout->get());
@@ -192,6 +197,12 @@ Level* Reporting::get_level(const char* _name) {
   }
   metrics.emplace_back((level = new Level(_name)));
   return level;
+}
+
+uint64_t Reporting::apply_time(uint32_t intval, DB::Cell::KeyVec& key) {
+  uint64_t for_ns = (::time(nullptr) / intval) * intval;
+  key.add(std::to_string(for_ns));
+  return for_ns * 1000000000;
 }
 
 void Reporting::response(int err) {
@@ -221,16 +232,17 @@ void Reporting::response(int err) {
 }
 
 void Reporting::report() {
-  if(!cfg_intval_ms->get()) {
+  auto intval = cfg_intval->get();
+  if(!intval) {
     for(auto& m : metrics)
       m->reset();
     return schedule();
   }
 
   DB::Cell::KeyVec key;
-  key.add(std::to_string(Time::now_ms())); // format-cfg
+  uint64_t for_ns = apply_time(intval, key);
   for(auto& m : metrics)
-    m->report(&column, key);
+    m->report(for_ns, &column, key);
 
   profile.reset();
 
@@ -240,13 +252,15 @@ void Reporting::report() {
 }
 
 void Reporting::schedule() {
-  auto ms = cfg_intval_ms->get();
-  auto in = std::chrono::milliseconds(ms ? ms : 300000);
-  // OR at on cfg_intval_ms rounding
+  auto intval = cfg_intval->get();
+  if(!intval)
+    intval = 300;
+  uint32_t secs = ::time(nullptr);
+  secs = ((secs/intval) * intval + intval) - secs;
   Core::MutexSptd::scope lock(m_mutex);
   if(!running)
     return;
-  m_timer.expires_after(in);
+  m_timer.expires_after(std::chrono::seconds(secs));
   m_timer.async_wait([this](const asio::error_code& ec) {
     if(ec != asio::error::operation_aborted)
       report();
