@@ -34,6 +34,9 @@ class Resources final {
   struct Notifiers {
     virtual ~Notifiers() { }
     virtual void rss(uint64_t bytes) = 0;
+    virtual void threads(uint64_t num) = 0;
+    virtual void cpu_user(uint64_t perc) = 0;
+    virtual void cpu_sys(uint64_t perc) = 0;
   };
 
   Resources(const Comm::IoContextPtr& ioctx,
@@ -50,7 +53,8 @@ class Resources final {
               m_notifiers(m_notifiers),
               next_major_chk(99),
               ram(MAX_RAM_CHK_INTVAL_MS),
-              m_concurrency(0), m_cpu_mhz(0) {
+              m_concurrency(0), m_cpu_mhz(0), m_cpu_percentage(0),
+              stat_chk(0), stat_utime(0), stat_stime(0) {
 
 #if defined TCMALLOC_MINIMAL || defined TCMALLOC
     release_rate_default = MallocExtension::instance()->GetMemoryReleaseRate();
@@ -143,6 +147,11 @@ class Resources final {
   }
 
   SWC_CAN_INLINE
+  uint32_t cpu_usage() const noexcept {
+    return m_cpu_percentage;
+  }
+  
+  SWC_CAN_INLINE
   uint32_t available_mem_mb() const noexcept {
     return (ram.total - ram.reserved) / 1024 / 1024;
   }
@@ -196,6 +205,7 @@ class Resources final {
   }
 
   void refresh_stats() {
+
     if(!(++next_major_chk % (is_low_mem_state() ? 10 : 100))) {
       page_size = sysconf(_SC_PAGE_SIZE);
 
@@ -280,22 +290,61 @@ class Resources final {
         }
       }
     }
+    
 
-    std::ifstream buffer("/proc/self/statm");
-    if(buffer.is_open()) {
-      size_t sz = 0, rss = 0;
-      buffer >> sz >> rss;
-      buffer.close();
-      rss *= page_size;
-      ram.used.store(ram.used > ram.allowed || ram.used > rss
-                      ? (ram.used + rss) / 2 : rss);
-      if(m_notifiers)
-        m_notifiers->rss(rss);
+    if(!(next_major_chk % 2)) {
+      std::ifstream buffer("/proc/self/stat");
+      if(buffer.is_open()) {
+        std::string str_tmp;
+        uint64_t tmp = 0, utime = 0, stime = 0, nthreads = 0;
+        buffer >> tmp >> str_tmp >> str_tmp
+               >> tmp >> tmp >> tmp
+               >> tmp >> tmp >> tmp
+               >> tmp >> tmp >> tmp
+               >> tmp >> utime >> stime
+               >> tmp >> tmp >> tmp
+               >> tmp >> nthreads;
+        buffer.close();
+
+        if(m_notifiers) {
+          m_notifiers->threads(nthreads);
+        }
+
+        uint64_t chk = ::time(nullptr);
+        if(!stat_chk) {
+          stat_chk = chk;
+          stat_utime = utime;
+          stat_stime = stime;
+        } else if(m_concurrency && chk > stat_chk) {
+          std::swap(stat_chk, chk);
+          std::swap(stat_utime, utime);
+          std::swap(stat_stime, stime);
+          chk = ((stat_chk - chk) * sysconf(_SC_CLK_TCK) * m_concurrency.load()) / 100;
+          utime = (stat_utime - utime) / chk;
+          stime = (stat_stime - stime) / chk;
+          m_cpu_percentage.store((m_cpu_percentage.load() + utime + stime) / 2);
+          if(m_notifiers) {
+            m_notifiers->cpu_user(utime);
+            m_notifiers->cpu_sys(stime);
+          }
+        }
+      }
     }
-    /* + +
-      std::ifstream buffer("/proc/self/stats");
-      n-thread + cpu time + virtual-mem
-    */
+
+
+    {
+      std::ifstream buffer("/proc/self/statm");
+      if(buffer.is_open()) {
+        size_t sz = 0, rss = 0;
+        buffer >> sz >> rss;
+        buffer.close();
+        rss *= page_size;
+        ram.used.store(ram.used > ram.allowed || ram.used > rss
+                        ? (ram.used + rss) / 2 : rss);
+        if(m_notifiers)
+          m_notifiers->rss(rss);
+      }
+    }
   }
 
   void schedule() {
@@ -359,6 +408,11 @@ class Resources final {
 
   Core::Atomic<uint32_t>              m_concurrency;
   Core::Atomic<uint32_t>              m_cpu_mhz;
+  Core::Atomic<uint32_t>              m_cpu_percentage;
+
+  uint64_t                            stat_chk;
+  uint64_t                            stat_utime;
+  uint64_t                            stat_stime;
 
 #if defined TCMALLOC_MINIMAL || defined TCMALLOC
   double release_rate_default;
