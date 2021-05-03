@@ -126,10 +126,8 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   virtual void do_close() = 0;
 
   void do_close_recv() {
-    if(m_recv_bytes) {
+    if(m_recv_bytes)
       app_ctx->net_bytes_received(ptr(), m_recv_bytes);
-      m_recv_bytes = 0;
-    }
     do_close();
   }
 

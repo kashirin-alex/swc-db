@@ -231,6 +231,7 @@ void ConnHandler::read() {
   if(!connected)
     return;
 
+  m_recv_bytes = 0;
   do_async_read(
     _buf_header,
     Header::PREFIX_LENGTH,
@@ -358,7 +359,6 @@ void ConnHandler::received(const Event::Ptr& ev) {
     ev->received();
 
   app_ctx->net_bytes_received(ptr(), m_recv_bytes);
-  m_recv_bytes = 0;
 
   read();
 

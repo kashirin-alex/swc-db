@@ -26,7 +26,9 @@ class ConfigSSL final {
 
   void set_networks(const Config::Strings& networks, bool with_local);
 
-  bool need_ssl(const EndPoint& endpoint) const noexcept;
+  bool need_ssl(const EndPoint& remote) const noexcept;
+
+  bool need_ssl(const EndPoint& local, const EndPoint& remote) const noexcept;
 
 
   void make_server(AppContext::Ptr& app_ctx,

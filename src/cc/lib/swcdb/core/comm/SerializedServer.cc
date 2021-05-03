@@ -54,12 +54,11 @@ void Acceptor::do_accept_mixed() noexcept {
                     ec.value(), ec.message().c_str());
         return;
       }
-
+      bool need_ssl = false;
       if(new_sock.is_open()) try {
-        // OR m_ssl_cfg->need_ssl(new_sock.remote_endpoint(ec))
-        bool need_ssl = new_sock.remote_endpoint(ec).address() !=
-                        new_sock.local_endpoint(ec).address();
-        if(!ec) {
+        need_ssl = m_ssl_cfg->need_ssl(
+          new_sock.local_endpoint(ec), new_sock.remote_endpoint(ec));
+       if(!ec) {
           if(need_ssl) {
             m_ssl_cfg->make_server(m_app_ctx, new_sock);
           } else {
@@ -73,7 +72,7 @@ void Acceptor::do_accept_mixed() noexcept {
         SWC_LOG_CURRENT_EXCEPTION("");
         new_sock.close(ec);
       }
-      m_app_ctx->accepted(local_endpoint());
+      m_app_ctx->accepted(local_endpoint(), need_ssl);
 
       do_accept_mixed();
     }
@@ -98,7 +97,7 @@ void Acceptor::do_accept_plain() noexcept {
         std::error_code ec;
         new_sock.close(ec);
       }
-      m_app_ctx->accepted(local_endpoint());
+      m_app_ctx->accepted(local_endpoint(), false);
 
       do_accept_plain();
     }

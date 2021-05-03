@@ -55,8 +55,10 @@ void ServerConnections::connection(ConnHandlerPtr& conn,
     return;
 
   try {
-    conn = m_ssl_cfg  ? m_ssl_cfg->make_client(m_ctx, sock, ec)
-                      : std::make_shared<ConnHandlerPlain>(m_ctx, sock);
+    conn = m_ssl_cfg && sock.remote_endpoint().address()
+                         != sock.local_endpoint().address()
+      ? m_ssl_cfg->make_client(m_ctx, sock, ec)
+      : std::make_shared<ConnHandlerPlain>(m_ctx, sock);
   } catch(...) {
     SWC_LOG_CURRENT_EXCEPTION("");
     conn = nullptr;
@@ -91,7 +93,8 @@ void ServerConnections::connection(const std::chrono::milliseconds&,
         return;
       }
       try {
-        if(ptr->m_ssl_cfg) {
+        if(ptr->m_ssl_cfg && sock->remote_endpoint().address()
+                              != sock->local_endpoint().address()) {
           ptr->m_ssl_cfg->make_client(
             ptr->m_ctx, *sock.get(),
             [preserve, ptr, cb=std::move(cb)]

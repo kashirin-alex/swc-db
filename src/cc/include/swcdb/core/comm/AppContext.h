@@ -36,7 +36,7 @@ class AppContext : public std::enable_shared_from_this<AppContext> {
 
   virtual void net_bytes_received(const ConnHandlerPtr&, size_t) { }
 
-  virtual void accepted(const EndPoint&) { }
+  virtual void accepted(const EndPoint&, bool) { }
 
   protected:
 
