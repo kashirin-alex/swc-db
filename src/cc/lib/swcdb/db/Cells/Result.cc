@@ -25,10 +25,14 @@ void Result::free() {
 }
 
 void Result::take(Result& other) {
-  bytes += other.bytes;
-  insert(end(), other.begin(), other.end());
-
-  other.clear();
+  if(empty()) {
+    std::vector<Cell*>::operator=(std::move(other));
+    bytes = other.bytes;
+  } else {
+    insert(end(), other.begin(), other.end());
+    other.clear();
+    bytes += other.bytes;
+  }
   other.bytes = 0;
 }
 

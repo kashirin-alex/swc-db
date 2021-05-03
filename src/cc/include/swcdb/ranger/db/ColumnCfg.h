@@ -67,7 +67,7 @@ class ColumnCfg final : public Core::NotMovableSharedPtr<ColumnCfg> {
     col_type.store(schema.col_type);
 
     c_versions.store(schema.cell_versions);
-    c_ttl.store(schema.cell_ttl*1000000000);
+    c_ttl.store(uint64_t(schema.cell_ttl) * 1000000000);
 
     blk_enc.store(schema.blk_encoding);
     blk_size.store(schema.blk_size);

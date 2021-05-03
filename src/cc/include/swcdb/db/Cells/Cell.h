@@ -129,29 +129,62 @@ class Cell final {
 
   void copy(const Cell& other, bool no_value=false);
 
-  ~Cell();
+  ~Cell() {
+    _free();
+  }
 
-  void _free();
+  void _free() noexcept {
+    if(own && value)
+      delete [] value;
+  }
 
-  void free();
+  void free() noexcept {
+    _free();
+    vlen = 0;
+    value = nullptr;
+  }
 
-  void set_time_order_desc(bool desc) noexcept;
+  void set_time_order_desc(bool desc) noexcept {
+    if(desc)
+      control |= TS_DESC;
+    else if(control & TS_DESC)
+      control -= TS_DESC;
+  }
 
-  void set_timestamp(int64_t ts) noexcept;
+  SWC_CAN_INLINE
+  void set_timestamp(int64_t ts) noexcept {
+    timestamp = ts;
+    control |= HAVE_TIMESTAMP;
+  }
 
-  void set_revision(int64_t ts) noexcept;
+  SWC_CAN_INLINE
+  void set_revision(int64_t ts) noexcept {
+    revision = ts;
+    control |= HAVE_REVISION;
+  }
 
   void set_value(uint8_t* v, uint32_t len, bool owner);
 
-  void set_value(const char* v, uint32_t len, bool owner);
+  SWC_CAN_INLINE
+  void set_value(const char* v, uint32_t len, bool owner) {
+    set_value(reinterpret_cast<uint8_t*>(const_cast<char*>(v)), len, owner);
+  }
 
-  void set_value(const char* v, bool owner=true);
+  void set_value(const char* v, bool owner=true) {
+    set_value(v, strlen(v), owner);
+  }
 
-  void set_value(const std::string& v, bool owner=true);
+  SWC_CAN_INLINE
+  void set_value(const std::string& v, bool owner=true) {
+    set_value(v.c_str(), v.length(), owner);
+  }
 
   void set_value(Types::Encoder encoder, const uint8_t* v, uint32_t len);
 
-  void set_value(Types::Encoder encoder, const std::string& v);
+  SWC_CAN_INLINE
+  void set_value(Types::Encoder encoder, const std::string& v) {
+    set_value(encoder, reinterpret_cast<const uint8_t*>(v.c_str()), v.size());
+  }
 
   void get_value(StaticBuffer& v, bool owner=false) const;
 
@@ -196,8 +229,8 @@ class Cell final {
   SWC_CAN_INLINE
   bool has_expired(const int64_t ttl) const noexcept {
     return ttl &&
-           control & HAVE_TIMESTAMP &&
-           Time::now_ns() >= timestamp + ttl;
+           (control & HAVE_TIMESTAMP) &&
+           (Time::now_ns() > timestamp + ttl);
   }
 
   SWC_CAN_INLINE

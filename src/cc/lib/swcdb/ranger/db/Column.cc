@@ -67,10 +67,10 @@ void Column::schema_update(const DB::Schema& schema) {
   bool compact =
     cfg->c_versions > schema.cell_versions ||
     (!cfg->c_ttl && schema.cell_ttl) ||
-    cfg->c_ttl > schema.cell_ttl;
+    cfg->c_ttl > uint64_t(schema.cell_ttl) * 1000000000;
   bool and_cells =  cfg->c_versions != schema.cell_versions ||
-                    cfg->c_ttl != schema.cell_ttl ||
-                    cfg->col_type != schema.col_type;
+                    cfg->col_type != schema.col_type ||
+                    cfg->c_ttl != uint64_t(schema.cell_ttl) * 1000000000;
   cfg->update(schema);
   if(and_cells) {
     Core::MutexSptd::scope lock(m_mutex);

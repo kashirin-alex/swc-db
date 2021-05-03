@@ -124,60 +124,10 @@ void Cell::copy(const Cell& other, bool no_value) {
   }
 }
 
-Cell::~Cell() {
-  if(own && value)
-    delete [] value;
-}
-
-SWC_SHOULD_INLINE
-void Cell::_free() {
-  if(own && value)
-    delete [] value;
-}
-
-SWC_SHOULD_INLINE
-void Cell::free() {
-  _free();
-  vlen = 0;
-  value = nullptr;
-}
-
-void Cell::set_time_order_desc(bool desc) noexcept {
-  if(desc)
-    control |= TS_DESC;
-  else if(control & TS_DESC)
-    control -= TS_DESC;
-}
-
-void Cell::set_timestamp(int64_t ts) noexcept {
-  timestamp = ts;
-  control |= HAVE_TIMESTAMP;
-}
-
-void Cell::set_revision(int64_t ts) noexcept {
-  revision = ts;
-  control |= HAVE_REVISION;
-}
-
 void Cell::set_value(uint8_t* v, uint32_t len, bool owner) {
   _free();
   vlen = len;
   value = (own = owner) ? _value(v) : v;
-}
-
-SWC_SHOULD_INLINE
-void Cell::set_value(const char* v, uint32_t len, bool owner) {
-  set_value(reinterpret_cast<uint8_t*>(const_cast<char*>(v)), len, owner);
-}
-
-SWC_SHOULD_INLINE
-void Cell::set_value(const char* v, bool owner) {
-  set_value(v, strlen(v), owner);
-}
-
-SWC_SHOULD_INLINE
-void Cell::set_value(const std::string& v, bool owner) {
-  set_value(v.c_str(), v.length(), owner);
 }
 
 void Cell::set_value(Types::Encoder encoder, const uint8_t* v, uint32_t len) {
@@ -207,11 +157,6 @@ void Cell::set_value(Types::Encoder encoder, const uint8_t* v, uint32_t len) {
     value = _value(v);
   }
   own = true;
-}
-
-SWC_SHOULD_INLINE
-void Cell::set_value(Types::Encoder encoder, const std::string& v) {
-  set_value(encoder, reinterpret_cast<const uint8_t*>(v.c_str()), v.size());
 }
 
 void Cell::get_value(StaticBuffer& v, bool owner) const {
