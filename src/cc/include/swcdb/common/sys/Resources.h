@@ -161,7 +161,7 @@ class Resources final {
   }
 
   void print(std::ostream& out) const {
-    out << "Resources(CPU=" << int(m_cpu_percentage) << '%'
+    out << "Resources(CPU=" << int(m_cpu_percentage) << '%';
     ram.print(out << " Mem-MB-", 1048576);
     out << ')';
   }

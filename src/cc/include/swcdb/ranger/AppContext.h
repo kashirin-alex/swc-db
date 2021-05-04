@@ -15,8 +15,6 @@
 #include "swcdb/db/client/Clients.h"
 #include "swcdb/ranger/RangerEnv.h"
 
-#include "swcdb/db/Protocol/Commands.h"
-
 #include "swcdb/common/Protocol/handlers/NotImplemented.h"
 #include "swcdb/ranger/Protocol/Mngr/req/RgrMngId.h"
 
@@ -86,7 +84,8 @@ class AppContext final : public Comm::AppContext {
   AppContext()
       : Comm::AppContext(
           Env::Config::settings()->get<Config::Property::V_GENUM>(
-            "swc.rgr.comm.encoder")) {
+            "swc.rgr.comm.encoder")),
+        m_metrics(Env::Rgr::metrics_track()) {
   }
 
   void init(const std::string& host,
@@ -99,9 +98,11 @@ class AppContext final : public Comm::AppContext {
 
     Env::Rgr::start();
     id_mngr->request();
-    (void)host;
-    //Env::Rgr::metrics_track()->configure(host.c_str(), endpoints);
-    //Env::Rgr::metrics_track()->start();
+
+    if(m_metrics) {
+      m_metrics->configure(host.c_str(), endpoints);
+      m_metrics->start();
+    }
   }
 
   void set_srv(Comm::server::SerializedServer::Ptr srv){
@@ -123,13 +124,19 @@ class AppContext final : public Comm::AppContext {
 
       case Comm::Event::Type::ESTABLISHED:
         m_srv->connection_add(conn);
+        if(m_metrics)
+          m_metrics->net->connected(conn);
         break;
 
       case Comm::Event::Type::DISCONNECT:
         m_srv->connection_del(conn);
+        if(m_metrics)
+          m_metrics->net->disconnected(conn);
         break;
 
       case Comm::Event::Type::ERROR:
+        if(m_metrics)
+          m_metrics->net->error(conn);
         break;
 
       case Comm::Event::Type::MESSAGE: {
@@ -203,19 +210,41 @@ class AppContext final : public Comm::AppContext {
 
           default:
             Comm::Protocol::Common::Handler::not_implemented(conn, ev);
-            break;
+            if(m_metrics)
+              m_metrics->net->error(conn);
+            return;
+
           //&Comm::Protocol::Rgr::Handler::debug,
           //&Comm::Protocol::Rgr::Handler::status,
           //&Comm::Protocol::Rgr::Handler::shutdown
         }
+        if(m_metrics)
+          m_metrics->net->command(conn, ev->header.command);
         break;
       }
 
-      default:
+      default: {
         SWC_LOGF(LOG_WARN, "Unimplemented event-type (%d)", int(ev->type));
+        if(m_metrics)
+          m_metrics->net->error(conn);
         break;
+      }
     }
+  }
 
+  void net_bytes_sent(const Comm::ConnHandlerPtr& conn, size_t b) override {
+    if(m_metrics)
+      m_metrics->net->sent(conn, b);
+  }
+
+  void net_bytes_received(const Comm::ConnHandlerPtr& conn, size_t b) override {
+    if(m_metrics)
+      m_metrics->net->received(conn, b);
+  }
+
+  void accepted(const Comm::EndPoint& endpoint, bool secure) override {
+    if(m_metrics)
+      m_metrics->net->accepted(endpoint, secure);
   }
 
   void shutting_down(const std::error_code &ec, const int &sig) {
@@ -262,6 +291,7 @@ class AppContext final : public Comm::AppContext {
 
     #if defined(SWC_ENABLE_SANITIZER)
       std::this_thread::sleep_for(std::chrono::seconds(2));
+      m_metrics = nullptr;
       id_mngr = nullptr;
       m_srv = nullptr;
       Env::Rgr::reset();
@@ -277,6 +307,7 @@ class AppContext final : public Comm::AppContext {
 
   Comm::Protocol::Mngr::Req::RgrMngId::Ptr  id_mngr = nullptr;
   Comm::server::SerializedServer::Ptr       m_srv = nullptr;
+  Ranger::Metric::Reporting::Ptr            m_metrics = nullptr;
   std::shared_ptr<Comm::IoContext::ExecutorWorkGuard> m_guard;
 
 };

@@ -12,9 +12,11 @@
 #include "swcdb/fs/Interface.h"
 #include "swcdb/common/Files/RgrData.h"
 
+#include "swcdb/db/Protocol/Commands.h"
 #include "swcdb/db/client/Query/Select.h"
 #include "swcdb/db/client/Query/Update.h"
 #include "swcdb/db/client/Query/UpdateHandlerCommon.h"
+#include "swcdb/ranger/queries/update/MetricsReporting.h"
 
 
 namespace SWC {
@@ -119,6 +121,10 @@ class Rgr final {
     return m_env->_update_hdlr.get();
   }
 
+  static Ranger::Metric::Reporting::Ptr& metrics_track() noexcept {
+    return m_env->_reporting;
+  }
+
   static void reset() noexcept {
     m_env = nullptr;
   }
@@ -144,6 +150,7 @@ class Rgr final {
   Ranger::Compaction*                           _compaction;
   Ranger::Columns*                              _columns;
   client::Query::Update::Handlers::Common::Ptr  _update_hdlr;
+  Ranger::Metric::Reporting::Ptr                _reporting;
   Common::Resources                             _resources;
 
   explicit Rgr();
@@ -224,6 +231,15 @@ Rgr::Rgr()
       _columns(new Ranger::Columns()),
       _update_hdlr(
         client::Query::Update::Handlers::Common::make(nullptr, app_io)),
+      _reporting(
+        SWC::Env::Config::settings()->get_bool("swc.rgr.metrics.enabled")
+          ? std::make_shared<Ranger::Metric::Reporting>(
+              app_io,
+              SWC::Env::Config::settings()
+                ->get<SWC::Config::Property::V_GINT32>(
+                  "swc.rgr.metrics.report.interval"))
+          : nullptr
+      ),
       _resources(
         app_io,
         SWC::Env::Config::settings()->get<SWC::Config::Property::V_GINT32>(
@@ -232,7 +248,8 @@ Rgr::Rgr()
           "swc.rgr.ram.reserved.percent"),
         SWC::Env::Config::settings()->get<SWC::Config::Property::V_GINT32>(
           "swc.rgr.ram.release.rate"),
-        [this](size_t bytes) { return _columns->release(bytes); }
+        [this](size_t bytes) { return _columns->release(bytes); },
+        _reporting ? &_reporting->hardware : nullptr
       ),
       m_shuttingdown(false), m_not_accepting(false),
       m_in_process(0), m_scan_reserved_bytes(0) {
@@ -251,6 +268,9 @@ void Rgr::start() {
 
 void Rgr::shuttingdown() {
   m_env->m_not_accepting.store(true);
+
+  if(m_env->_reporting)
+    m_env->_reporting->stop();
 
   if(m_env->_compaction)
     m_env->_compaction->stop();

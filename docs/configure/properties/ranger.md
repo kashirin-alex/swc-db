@@ -40,6 +40,10 @@ _default_ **```swc.rgr.maintenance.handlers=2```**
 The number of DB-Clients handlers. \
 _default_ **```swc.rgr.clients.handlers=8```**
 
+* ### swc.rgr.metrics.enabled
+```BOOL```
+Enable or Disable Ranger Metrics Monitoring. \
+_default_ **```swc.rgr.metrics.enabled=true```**
 
 
 ***
