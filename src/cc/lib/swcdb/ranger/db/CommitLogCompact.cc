@@ -8,7 +8,7 @@
 namespace SWC { namespace Ranger { namespace CommitLog {
 
 Compact::Group::Group(Compact* compact, uint8_t worker)
-                      : ts(Time::now_ns()), worker(worker), error(Error::OK),
+                      : worker(worker), error(Error::OK),
                         compact(compact),
                         m_idx(0), m_running(0), m_finishing(0),
                         m_cells(
@@ -164,7 +164,7 @@ Compact::Compact(Fragments* log, uint32_t repetition,
                  const std::vector<Fragments::Vec>& groups,
                  uint8_t cointervaling,
                  Compact::Cb_t&& cb)
-                : log(log), ts(Time::now_ns()),
+                : log(log),
                   preload(log->range->cfg->log_fragment_preload()),
                   repetition(repetition), ngroups(groups.size()), nfrags(0),
                   m_cb(std::move(cb)) {
@@ -219,12 +219,13 @@ Compact::Compact(Fragments* log, uint32_t repetition,
 void Compact::finished(Group* group, size_t cells_count) {
   size_t running(m_workers.sub_rslt(1));
 
+  auto took = group->ts.elapsed();
   SWC_LOGF(LOG_INFO,
     "COMPACT-LOG-PROGRESS %lu/%lu running=%lu "
     "worker=%u %luus cells=%lu(%luns)",
     log->range->cfg->cid, log->range->rid, running,
-    group->worker, (Time::now_ns() - group->ts)/1000,
-    cells_count, cells_count ? (Time::now_ns() - group->ts)/cells_count: 0
+    group->worker, took/1000,
+    cells_count, cells_count ? took/cells_count: 0
   );
   if(running)
     return;
@@ -248,12 +249,11 @@ void Compact::finalized() {
   if(m_workers.fetch_sub(1) != 1)
     return;
 
-  auto took = Time::now_ns() - ts;
   SWC_LOGF(LOG_INFO,
     "COMPACT-LOG-FINISH %lu/%lu w=%lu frags=%lu(%lu)/%lu"
-    " repetition=%u %ldns",
+    " repetition=%u %luns",
     log->range->cfg->cid, log->range->rid,
-    m_groups.size(), nfrags, ngroups, log->size(), repetition, took
+    m_groups.size(), nfrags, ngroups, log->size(), repetition, ts.elapsed()
   );
 
   m_cb ? m_cb(this) : log->finish_compact(this);

@@ -30,7 +30,7 @@ class RangeSplit final {
   //~RangeSplit() { }
 
   int run() {
-    int64_t ts = Time::now_ns();
+    Time::Measure_ns t_measure;
     int err = Error::OK;
 
     rid_t new_rid = 0;
@@ -134,8 +134,8 @@ class RangeSplit final {
     r_promise.get_future().wait();
 
     SWC_LOG_OUT(LOG_INFO,
-      SWC_LOG_PRINTF("COMPACT-SPLITTED RANGE %lu/%lu took=%ldns new-end=",
-                      range->cfg->cid, range->rid, Time::now_ns() - ts);
+      SWC_LOG_PRINTF("COMPACT-SPLITTED RANGE %lu/%lu took=%luns new-end=",
+                      range->cfg->cid, range->rid, t_measure.elapsed());
       range->blocks.cellstores.back()->interval.key_end.print(SWC_LOG_OSTREAM);
     );
     return Error::OK;

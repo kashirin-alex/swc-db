@@ -52,7 +52,38 @@ std::string fmt_ns(int64_t ns);
 std::ostream &hires_now_ns(std::ostream &out);
 
 
+
+template<typename ClockT, typename DurationT>
+struct Measure : std::chrono::time_point<ClockT> {
+
+  SWC_CAN_INLINE
+  Measure() : std::chrono::time_point<ClockT>(ClockT::now()) { }
+
+  SWC_CAN_INLINE
+  void restart() noexcept {
+    std::chrono::time_point<ClockT>::operator=(ClockT::now());
+  }
+
+  template<typename T = DurationT>
+  SWC_CAN_INLINE
+  uint64_t elapsed() const noexcept {
+    return std::chrono::duration_cast<T>(ClockT::now() - *this).count();
+  }
+
+};
+
+typedef Measure<std::chrono::steady_clock, std::chrono::nanoseconds>  
+  Measure_ns;
+typedef Measure<std::chrono::steady_clock, std::chrono::microseconds>
+  Measure_us;
+typedef Measure<std::chrono::steady_clock, std::chrono::milliseconds>
+  Measure_ms;
+typedef Measure<std::chrono::steady_clock, std::chrono::seconds> 
+  Measure_sec;
+
+
 }}
+
 
 
 #ifdef SWC_IMPL_SOURCE

@@ -488,7 +488,7 @@ void CompactRange::request_more() {
 }
 
 void CompactRange::process_interval() {
-  auto start = Time::now_ns();
+  Time::Measure_ns t_measure;
   _do: {
     auto in_block(m_q_intval.front());
     if(!in_block->is_last) {
@@ -502,12 +502,12 @@ void CompactRange::process_interval() {
     if(more)
       goto _do;
   }
-  time_intval.fetch_add(Time::now_ns() - start);
+  time_intval.fetch_add(t_measure.elapsed());
   request_more();
 }
 
 void CompactRange::process_encode() {
-  auto start = Time::now_ns();
+  Time::Measure_ns t_measure;
   _do: {
     auto in_block(m_q_encode.front());
     if(!in_block->is_last) {
@@ -521,17 +521,17 @@ void CompactRange::process_encode() {
     if(more)
       goto _do;
   }
-  time_encode.fetch_add(Time::now_ns() - start);
+  time_encode.fetch_add(t_measure.elapsed());
   request_more();
 }
 
 void CompactRange::process_write() {
-  auto start = Time::now_ns();
+  Time::Measure_ns t_measure;
   int err = Error::OK;
   _do: {
     auto in_block(m_q_write.front());
     if(in_block->is_last) {
-      time_write.fetch_add(Time::now_ns() - start);
+      time_write.fetch_add(t_measure.elapsed());
       return finalize();
     }
 
@@ -552,7 +552,7 @@ void CompactRange::process_write() {
       goto _do;
   }
 
-  time_write.fetch_add(Time::now_ns() - start);
+  time_write.fetch_add(t_measure.elapsed());
   request_more();
 }
 
@@ -672,7 +672,7 @@ void CompactRange::finalize() {
   if(!range->is_loaded())
     return quit();
 
-  auto start = Time::now_ns();
+  Time::Measure_ns t_measure;
   int err = Error::OK;
   bool empty_cs = false;
 
@@ -715,7 +715,7 @@ void CompactRange::finalize() {
     if(err)
       return quit();
   }
-  time_write.fetch_add(Time::now_ns() - start);
+  time_write.fetch_add(t_measure.elapsed());
 
   range->compacting(Range::COMPACT_APPLYING);
   range->blocks.wait_processing();
@@ -797,7 +797,7 @@ void CompactRange::split(rid_t new_rid, uint32_t split_at) {
   if(!col || col->removing())
     return quit();
 
-  int64_t ts = Time::now_ns();
+  Time::Measure_ns t_measure;
   SWC_LOGF(LOG_INFO, "COMPACT-SPLIT %lu/%lu new-rid=%lu",
            range->cfg->cid, range->rid, new_rid);
 
@@ -882,10 +882,11 @@ void CompactRange::split(rid_t new_rid, uint32_t split_at) {
 
   range->expand_and_align(true, Query::Update::CommonMeta::make(
     range,
-    [ts, ptr=shared()] (const Query::Update::CommonMeta::Ptr&) {
+    [t_measure, ptr=shared()]
+    (const Query::Update::CommonMeta::Ptr&) {
       SWC_LOG_OUT(LOG_INFO,
-        SWC_LOG_PRINTF("COMPACT-SPLITTED %lu/%lu took=%ldns new-end=",
-          ptr->range->cfg->cid, ptr->range->rid, Time::now_ns() - ts);
+        SWC_LOG_PRINTF("COMPACT-SPLITTED %lu/%lu took=%luns new-end=",
+          ptr->range->cfg->cid, ptr->range->rid, t_measure.elapsed());
           ptr->cellstores.back()->interval.key_end.print(SWC_LOG_OSTREAM);
       );
       Env::Rgr::maintenance_post([ptr](){ ptr->finished(true); });

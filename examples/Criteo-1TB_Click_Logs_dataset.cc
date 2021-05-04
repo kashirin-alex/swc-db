@@ -55,8 +55,8 @@ SWC::DB::Schema::Ptr create_column();
 void generate_criteo_logs() {
   bool separate_days = SWC::Env::Config::settings()->get_bool("criteo-separated-days");
 
-  uint64_t ts = SWC::Time::now_ns();
-  uint64_t ts_progress = ts;
+  SWC::Time::Measure_ns t_measure;
+  SWC::Time::Measure_ns t_progress;
 
   size_t added_cells = 0;
   size_t added_bytes = 0;
@@ -139,12 +139,12 @@ void generate_criteo_logs() {
       SWC_PRINT
         << "progress day="<< day
         << " cells=" << added_cells
-        << " avg=" << ((SWC::Time::now_ns() - ts_progress) / 100000)
+        << " avg=" << (t_progress.elapsed() / 100000)
         << "ns/cell) ";
       hdlr->profile.print(SWC_LOG_OSTREAM << ' ');
       // SWC_LOG_OSTREAM << cell.to_string()
       SWC_LOG_OSTREAM << SWC_PRINT_CLOSE;
-      ts_progress = SWC::Time::now_ns();
+      t_progress.restart();
     }
   }
   buffer.close();
@@ -157,8 +157,7 @@ void generate_criteo_logs() {
   resend_cells += hdlr->get_resend_count();
   SWC_ASSERT(added_cells && added_bytes);
 
-  SWC::Common::Stats::FlowRate::Data rate(
-    added_bytes, SWC::Time::now_ns() - ts);
+  SWC::Common::Stats::FlowRate::Data rate(added_bytes, t_measure.elapsed());
   SWC_PRINT << std::endl << std::endl;
   rate.print_cells_statistics(SWC_LOG_OSTREAM, added_cells, resend_cells);
   hdlr->profile.display(SWC_LOG_OSTREAM);

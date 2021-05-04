@@ -306,7 +306,7 @@ bool DbClient::list_columns(std::string& cmd) {
 
 // SELECT
 bool DbClient::select(std::string& cmd) {
-  int64_t ts = Time::now_ns();
+  Time::Measure_ns t_measure;
   uint8_t display_flags = 0;
   size_t cells_count = 0;
   size_t cells_bytes = 0;
@@ -341,7 +341,7 @@ bool DbClient::select(std::string& cmd) {
   if(display_flags & DB::DisplayFlag::STATS)
     display_stats(
       hdlr->profile,
-      SWC::Time::now_ns() - ts,
+      t_measure.elapsed(),
       cells_bytes,
       cells_count
     );
@@ -385,7 +385,7 @@ void DbClient::display(
 
 // UPDATE
 bool DbClient::update(std::string& cmd) {
-  int64_t ts = Time::now_ns();
+  Time::Measure_ns t_measure;
   uint8_t display_flags = 0;
 
   auto hdlr = client::Query::Update::Handlers::Common::make();
@@ -403,7 +403,7 @@ bool DbClient::update(std::string& cmd) {
   if(display_flags & DB::DisplayFlag::STATS)
     display_stats(
       hdlr->profile,
-      SWC::Time::now_ns() - ts,
+      t_measure.elapsed(),
       cells_bytes,
       cells_count
     );
@@ -414,7 +414,7 @@ bool DbClient::update(std::string& cmd) {
 
 // LOAD
 bool DbClient::load(std::string& cmd) {
-  int64_t ts = Time::now_ns();
+  Time::Measure_ns t_measure;
   DB::Cells::TSV::FileReader reader;
 
   std::string fs;
@@ -446,7 +446,7 @@ bool DbClient::load(std::string& cmd) {
     client::Query::Profiling tmp;
     display_stats(
       hdlr ? hdlr->profile : tmp,
-      SWC::Time::now_ns() - ts,
+      t_measure.elapsed(),
       reader.cells_bytes,
       reader.cells_count,
       reader.resend_cells
@@ -466,7 +466,7 @@ bool DbClient::load(std::string& cmd) {
 
 // DUMP
 bool DbClient::dump(std::string& cmd) {
-  int64_t ts = Time::now_ns();
+  Time::Measure_ns t_measure;
   DB::Cells::TSV::FileWriter writer;
 
   std::string fs;
@@ -527,7 +527,7 @@ bool DbClient::dump(std::string& cmd) {
   if(display_flags & DB::DisplayFlag::STATS) {
     display_stats(
       hdlr->profile,
-      SWC::Time::now_ns() - ts,
+      t_measure.elapsed(),
       writer.cells_bytes,
       writer.cells_count
     );

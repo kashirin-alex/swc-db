@@ -16,9 +16,9 @@ class Compact final {
   class Group final {
     public:
 
-    const uint64_t              ts;
-    const uint8_t               worker;
-    Fragments::Vec              read_frags;
+    const Time::Measure_ns  ts;
+    const uint8_t           worker;
+    Fragments::Vec          read_frags;
 
     Group(Compact* compact, uint8_t worker);
 
@@ -57,12 +57,12 @@ class Compact final {
 
   typedef const std::function<void(const Compact*)> Cb_t;
 
-  Fragments*            log;
-  const int64_t         ts;
-  const uint8_t         preload;
-  const uint32_t        repetition;
-  size_t                ngroups;
-  size_t                nfrags;
+  Fragments*              log;
+  const Time::Measure_ns  ts;
+  const uint8_t           preload;
+  const uint32_t          repetition;
+  size_t                  ngroups;
+  size_t                  nfrags;
 
   Compact(Fragments* log, uint32_t repetition,
           const std::vector<Fragments::Vec>& groups,

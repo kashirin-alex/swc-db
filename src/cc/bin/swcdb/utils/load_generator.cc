@@ -631,8 +631,8 @@ void update_data(const std::vector<DB::Schema::Ptr>& schemas, uint8_t flag,
       value_data += char(c == 122 ? c = 97 : ++c);
   }
 
-  uint64_t ts = Time::now_ns();
-  uint64_t ts_progress = ts;
+  Time::Measure_ns t_measure;
+  Time::Measure_ns t_progress;
 
   for(uint32_t v=0; v<versions; ++v) {
     for(uint32_t count=is_counter ? value : 1; count > 0; --count) {
@@ -694,17 +694,15 @@ void update_data(const std::vector<DB::Schema::Ptr>& schemas, uint8_t flag,
         }
 
         if(progress && !(added_count % progress)) {
-          ts_progress = Time::now_ns() - ts_progress;
           SWC_PRINT
             << "update-progress(time_ns=" <<  Time::now_ns()
             << " cells=" << added_count
             << " bytes=" << added_bytes
-            << " avg=" << ts_progress/progress << "ns/cell) ";
+            << " avg=" << t_progress.elapsed()/progress << "ns/cell) ";
           hdlr->profile.finished();
           hdlr->profile.print(SWC_LOG_OSTREAM);
           SWC_LOG_OSTREAM << SWC_PRINT_CLOSE;
-
-          ts_progress = Time::now_ns();
+          t_progress.restart();
         }
       }
       resend_cells += hdlr->get_resend_count();
@@ -717,7 +715,7 @@ void update_data(const std::vector<DB::Schema::Ptr>& schemas, uint8_t flag,
   resend_cells += hdlr->get_resend_count();
   SWC_ASSERT(added_count && added_bytes);
 
-  Common::Stats::FlowRate::Data rate(added_bytes, Time::now_ns() - ts);
+  Common::Stats::FlowRate::Data rate(added_bytes, t_measure.elapsed());
   SWC_PRINT << std::endl << std::endl;
   rate.print_cells_statistics(SWC_LOG_OSTREAM, added_count, resend_cells);
   hdlr->profile.display(SWC_LOG_OSTREAM);
@@ -749,8 +747,8 @@ void select_data(const std::vector<DB::Schema::Ptr>& schemas, size_t seed) {
   if(DB::Types::is_counter(schemas.front()->col_type))
     versions = 1;
 
-  uint64_t ts = Time::now_ns();
-  uint64_t ts_progress = ts;
+  Time::Measure_ns t_measure;
+  Time::Measure_ns t_progress;
 
   if(cellatime) {
     client::Query::Profiling profiling;
@@ -785,22 +783,20 @@ void select_data(const std::vector<DB::Schema::Ptr>& schemas, size_t seed) {
 
       profiling += hdlr->profile;
       if(progress && !(select_count % progress)) {
-        ts_progress = Time::now_ns() - ts_progress;
         SWC_PRINT
           << "select-progress(time_ns=" << Time::now_ns()
           << " cells=" << select_count
-          << " avg=" << ts_progress/progress << "ns/cell) ";
+          << " avg=" << t_progress.elapsed()/progress << "ns/cell) ";
         hdlr->profile.print(SWC_LOG_OSTREAM);
         SWC_LOG_OSTREAM << SWC_PRINT_CLOSE;
-
-        ts_progress = Time::now_ns();
+        t_progress.restart();
       }
     }
     if(expect_empty)
       select_count = 0;
     profiling.finished();
 
-    Common::Stats::FlowRate::Data rate(select_bytes, Time::now_ns() - ts);
+    Common::Stats::FlowRate::Data rate(select_bytes, t_measure.elapsed());
     SWC_PRINT << std::endl << std::endl;
     rate.print_cells_statistics(SWC_LOG_OSTREAM, select_count, 0);
     profiling.display(SWC_LOG_OSTREAM);
@@ -840,7 +836,7 @@ void select_data(const std::vector<DB::Schema::Ptr>& schemas, size_t seed) {
             ? 1 : nfractions)
     );
 
-    Common::Stats::FlowRate::Data rate(select_bytes, Time::now_ns() - ts);
+    Common::Stats::FlowRate::Data rate(select_bytes, t_measure.elapsed());
     SWC_PRINT << std::endl << std::endl;
     rate.print_cells_statistics(SWC_LOG_OSTREAM, select_count, 0);
     hdlr->profile.display(SWC_LOG_OSTREAM);
