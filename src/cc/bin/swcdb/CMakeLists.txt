@@ -142,14 +142,12 @@ ADD_EXEC_TARGET(
   NAME    swcdbFsBroker
   SRCS    fsbroker/main.cc
           ${SWC_VERSION_SRC}
-  TARGETS ${TARGETS_WITH_FS}
-
-  ## without libswcdb
-  #TARGETS ${SWC_LIB_CORE_TARGET}
-  #        ${SWC_LIB_CORE_CONFIG_TARGET}
-  #        ${SWC_LIB_CORE_COMM_TARGET}
-  #        ${SWC_LIB_FS_TARGET}
-  #        ${BUILTIN_FS_TARGETS}
+  TARGETS ${SWC_LIB_CORE_TARGET}
+          ${SWC_LIB_CORE_CONFIG_TARGET}
+          ${SWC_LIB_CORE_COMM_TARGET}
+          ${SWC_LIB_FS_TARGET}
+          ${BUILTIN_FS_TARGETS}
+          ${SWC_LIB_TARGET} # with libswcdb
 
   SHARED  ${SHARED}
           ${SWC_LIB_FS_LIBRARIES_SHARED}
