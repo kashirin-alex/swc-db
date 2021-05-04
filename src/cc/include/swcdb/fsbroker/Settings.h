@@ -10,15 +10,16 @@
 #include "swcdb/core/config/Settings.h"
 #include "swcdb/core/comm/Settings.h"
 #include "swcdb/fs/Settings.h"
+#include "swcdb/db/client/Settings.h"
 
 namespace SWC { namespace Config {
 
 
-void Settings::init_client_options() { }
 
 void Settings::init_app_options() {
   init_comm_options();
   init_fs_options();
+  init_client_options();
 
   file_desc.add_options()
     ("swc.fs.broker.host", str(),
@@ -36,6 +37,11 @@ void Settings::init_app_options() {
     ("swc.FsBroker.reactors", i32(8), "Number of Communication Reactors")
     ("swc.FsBroker.workers", i32(32), "Number of Workers a Reactor")
     ("swc.FsBroker.handlers", i32(8), "Number of App Handlers")
+
+    ("swc.FsBroker.metrics.enabled", boo(true),
+     "Enable or Disable Metrics Monitoring")
+    ("swc.FsBroker.metrics.report.interval", g_i32(300),
+     "Metrics Reporting Interval in Seconds")
 
     ("swc.FsBroker.comm.encoder",
       g_enum(

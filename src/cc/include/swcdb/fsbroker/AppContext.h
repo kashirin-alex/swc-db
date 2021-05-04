@@ -11,8 +11,8 @@
 #include "swcdb/core/comm/AppContext.h"
 #include "swcdb/core/comm/AppHandler.h"
 
+#include "swcdb/db/client/Clients.h"
 #include "swcdb/fs/Interface.h"
-#include "swcdb/fs/Broker/Protocol/Commands.h"
 #include "swcdb/fsbroker/FsBrokerEnv.h"
 
 #include "swcdb/common/Protocol/handlers/NotImplemented.h"
@@ -85,6 +85,15 @@ class AppContext final : public Comm::AppContext {
     SWC_ASSERT(fs_type != FS::Type::BROKER);
     Env::FsInterface::init(fs_type);
 
+    if(settings->get_bool("swc.FsBroker.metrics.enabled")) {
+      Env::Clients::init(
+        std::make_shared<client::Clients>(
+          Env::IoCtx::io(),
+          std::make_shared<client::ContextManager>(),
+          std::make_shared<client::ContextRanger>()
+        )
+      );
+    }
     Env::FsBroker::init();
 
     auto period = settings->get<Config::Property::V_GINT32>(
@@ -97,10 +106,16 @@ class AppContext final : public Comm::AppContext {
     }
   }
 
-  void init(const std::string&, const Comm::EndPoints&) override {
+  void init(const std::string& host,
+            const Comm::EndPoints& endpoints) override {
     int sig = 0;
     Env::IoCtx::io()->set_signals();
     shutting_down(std::error_code(), sig);
+
+    if((m_metrics = Env::FsBroker::metrics_track())) {
+      m_metrics->configure_fsbroker(host.c_str(), endpoints);
+      m_metrics->start();
+    }
   }
 
   void set_srv(Comm::server::SerializedServer::Ptr srv){
@@ -118,13 +133,19 @@ class AppContext final : public Comm::AppContext {
 
       case Comm::Event::Type::ESTABLISHED:
         m_srv->connection_add(conn);
+        if(m_metrics)
+          m_metrics->net->connected(conn);
         break;
 
       case Comm::Event::Type::DISCONNECT:
         m_srv->connection_del(conn);
+        if(m_metrics)
+          m_metrics->net->disconnected(conn);
         break;
 
       case Comm::Event::Type::ERROR:
+        if(m_metrics)
+          m_metrics->net->error(conn);
         break;
 
       case Comm::Event::Type::MESSAGE: {
@@ -136,15 +157,34 @@ class AppContext final : public Comm::AppContext {
             handlers[cmd](conn, ev);
           Env::FsBroker::in_process(-1);
         });
+        if(m_metrics)
+          m_metrics->net->command(conn, cmd);
         return;
       }
 
       default:
         SWC_LOGF(LOG_WARN, "Unimplemented event-type (%d)", int(ev->type));
+        if(m_metrics)
+          m_metrics->net->error(conn);
         break;
 
     }
     Env::FsBroker::in_process(-1);
+  }
+
+  void net_bytes_sent(const Comm::ConnHandlerPtr& conn, size_t b) override {
+    if(m_metrics)
+      m_metrics->net->sent(conn, b);
+  }
+
+  void net_bytes_received(const Comm::ConnHandlerPtr& conn, size_t b) override {
+    if(m_metrics)
+      m_metrics->net->received(conn, b);
+  }
+
+  void accepted(const Comm::EndPoint& endpoint, bool secure) override {
+    if(m_metrics)
+      m_metrics->net->accepted(endpoint, secure);
   }
 
   void shutting_down(const std::error_code &ec, const int &sig) {
@@ -172,6 +212,11 @@ class AppContext final : public Comm::AppContext {
 
     Env::FsBroker::shuttingdown();
 
+    if(m_metrics) {
+      Env::Clients::get()->rgr->stop();
+      Env::Clients::get()->mngr->stop();
+    }
+
     Env::IoCtx::io()->stop();
 
     Env::FsInterface::interface()->stop();
@@ -181,7 +226,9 @@ class AppContext final : public Comm::AppContext {
     #if defined(SWC_ENABLE_SANITIZER)
       std::this_thread::sleep_for(std::chrono::seconds(2));
       m_srv = nullptr;
+      m_metrics = nullptr;
       Env::FsBroker::reset();
+      Env::Clients::reset();
       Env::FsInterface::reset();
       Env::IoCtx::reset();
     #endif
@@ -191,6 +238,7 @@ class AppContext final : public Comm::AppContext {
 
   private:
   Comm::server::SerializedServer::Ptr m_srv = nullptr;
+  Metric::Reporting::Ptr              m_metrics = nullptr;
 };
 
 

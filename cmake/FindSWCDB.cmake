@@ -11,7 +11,7 @@ if(NOT SWC_BUILD_PKG OR SWC_BUILD_PKG STREQUAL "lib-core")
 else ()
   SET_DEPS(NAME "SWC_LIB_CORE"        REQUIRED TRUE   STATIC libswcdb_core.a        SHARED swcdb_core         INCLUDE swcdb/core/Compat.h)
   SET_DEPS(NAME "SWC_LIB_CORE_CONFIG" REQUIRED TRUE   STATIC libswcdb_core_config.a SHARED swcdb_core_config)
-  
+
   if(NOT SWC_BUILD_PKG OR NOT SWC_BUILD_PKG MATCHES "^lib-fs" OR SWC_BUILD_PKG STREQUAL "lib-fs-broker")
     SET_DEPS(NAME "SWC_LIB_CORE_COMM"   REQUIRED TRUE   STATIC libswcdb_core_comm.a   SHARED swcdb_core_comm)
   endif()
@@ -25,7 +25,7 @@ endif()
 
 if(NOT SWC_BUILD_PKG STREQUAL "lib-core")
 
-  if(NOT SWC_BUILD_PKG MATCHES "^lib-fs" AND NOT SWC_BUILD_PKG STREQUAL "fsbroker")
+  if(NOT SWC_BUILD_PKG MATCHES "^lib-fs") # AND NOT SWC_BUILD_PKG STREQUAL "fsbroker"
     if(NOT SWC_BUILD_PKG OR SWC_BUILD_PKG STREQUAL "lib")
       SET(SWC_LIB_TARGET swcdb)
     else()

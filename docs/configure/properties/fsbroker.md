@@ -28,6 +28,11 @@ _default_ **```swc.FsBroker.workers=32```**
 The number of Application handlers. \
 _default_ **```swc.FsBroker.handlers=8```**
 
+* ### swc.FsBroker.metrics.enabled
+```BOOL```
+Enable or Disable FsBroker Metrics Monitoring. \
+_default_ **```swc.FsBroker.metrics.enabled=true```**
+
 * ### swc.fs.broker.host
 ```STRING```
 The FsBroker host (default resolve by hostname). \
@@ -49,7 +54,12 @@ _default_ **```swc.fs.broker.port=17000```**
 The encoding to use in communication, options PLAIN/ZSTD/SNAPPY/ZLIB.
 > If address of local & remote is the same, the Encoder is set to PLAIN.
 
-  _default_ **```swc.FsBroker.comm.encoder=ZSTD```**
+_default_ **```swc.FsBroker.comm.encoder=ZSTD```**
+
+* ### swc.FsBroker.metrics.report.interval
+```G_INT32```
+The Metrics Reporting Interval in Seconds. Zero(=0) skips metrics update.\
+_default_ **```swc.FsBroker.metrics.report.interval=300```**
 
 
 
