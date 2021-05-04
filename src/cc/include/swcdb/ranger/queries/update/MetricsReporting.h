@@ -27,9 +27,12 @@ class Reporting final : public Common::Query::Update::Metric::Reporting {
             : Common::Query::Update::Metric::Reporting(io, cfg_intval_ms) {
   }
 
-  void configure(const char* host, const Comm::EndPoints& endpoints) {
+  void configure_rgr(const char* host, const Comm::EndPoints& endpoints) {
     Common::Query::Update::Metric::Reporting::configure(
-      "swcdb", "rgr", host, endpoints, Comm::Protocol::Rgr::Command::MAX_CMD);
+      "swcdb", "rgr", host, endpoints,
+      Comm::Protocol::Rgr::Command::MAX_CMD
+    );
+
     // ++ Ranger Metrics
   }
 

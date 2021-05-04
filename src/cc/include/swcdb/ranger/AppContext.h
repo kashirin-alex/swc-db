@@ -100,7 +100,7 @@ class AppContext final : public Comm::AppContext {
     id_mngr->request();
 
     if(m_metrics) {
-      m_metrics->configure(host.c_str(), endpoints);
+      m_metrics->configure_rgr(host.c_str(), endpoints);
       m_metrics->start();
     }
   }
@@ -307,7 +307,7 @@ class AppContext final : public Comm::AppContext {
 
   Comm::Protocol::Mngr::Req::RgrMngId::Ptr  id_mngr = nullptr;
   Comm::server::SerializedServer::Ptr       m_srv = nullptr;
-  Ranger::Metric::Reporting::Ptr            m_metrics = nullptr;
+  Metric::Reporting::Ptr                    m_metrics = nullptr;
   std::shared_ptr<Comm::IoContext::ExecutorWorkGuard> m_guard;
 
 };
