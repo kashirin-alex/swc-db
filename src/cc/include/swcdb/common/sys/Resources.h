@@ -147,10 +147,10 @@ class Resources final {
   }
 
   SWC_CAN_INLINE
-  uint32_t cpu_usage() const noexcept {
+  uint8_t cpu_usage() const noexcept {
     return m_cpu_percentage;
   }
-  
+
   SWC_CAN_INLINE
   uint32_t available_mem_mb() const noexcept {
     return (ram.total - ram.reserved) / 1024 / 1024;
@@ -161,8 +161,8 @@ class Resources final {
   }
 
   void print(std::ostream& out) const {
-    out << "Resources(";
-    ram.print(out << "Mem-MB-", 1048576);
+    out << "Resources(CPU=" << int(m_cpu_percentage) << '%'
+    ram.print(out << " Mem-MB-", 1048576);
     out << ')';
   }
 
@@ -290,7 +290,7 @@ class Resources final {
         }
       }
     }
-    
+
 
     if(!(next_major_chk % 2)) {
       std::ifstream buffer("/proc/self/stat");
@@ -319,9 +319,9 @@ class Resources final {
           std::swap(stat_chk, chk);
           std::swap(stat_utime, utime);
           std::swap(stat_stime, stime);
-          chk = ((stat_chk - chk) * sysconf(_SC_CLK_TCK) * m_concurrency.load()) / 100;
-          utime = (stat_utime - utime) / chk;
-          stime = (stat_stime - stime) / chk;
+          chk = ((stat_chk - chk) * sysconf(_SC_CLK_TCK) * m_concurrency.load());
+          utime = ((stat_utime - utime) * 100) / chk;
+          stime = ((stat_stime - stime) * 100) / chk;
           m_cpu_percentage.store((m_cpu_percentage.load() + utime + stime) / 2);
           if(m_notifiers) {
             m_notifiers->cpu_user(utime);
@@ -408,7 +408,7 @@ class Resources final {
 
   Core::Atomic<uint32_t>              m_concurrency;
   Core::Atomic<uint32_t>              m_cpu_mhz;
-  Core::Atomic<uint32_t>              m_cpu_percentage;
+  Core::Atomic<uint8_t>               m_cpu_percentage;
 
   uint64_t                            stat_chk;
   uint64_t                            stat_utime;
