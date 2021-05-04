@@ -39,6 +39,11 @@ void Settings::init_app_options(){
         Core::Encoder::repr_encoding),
      "The encoding to use in communication, options PLAIN/ZSTD/SNAPPY/ZLIB")
 
+    ("swc.mngr.metrics.enabled", boo(true),
+     "Enable or Disable Metrics Monitoring")
+    ("swc.mngr.metrics.report.interval", g_i32(300),
+     "Metrics Reporting Interval in Seconds")
+
     ("swc.mngr.role.connection.probes", g_i32(3),
      "Number of tries Mngr tries to connect to other manager")
     ("swc.mngr.role.connection.timeout", g_i32(1000),

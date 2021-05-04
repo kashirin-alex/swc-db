@@ -7,12 +7,16 @@
 #define swcdb_manager_MngrEnv_h
 
 
-#include "swcdb/db/Columns/Schemas.h"
-#include "swcdb/manager/db/Columns.h"
+#include "swcdb/common/sys/Resources.h"
 
+#include "swcdb/db/Protocol/Commands.h"
+#include "swcdb/db/Columns/Schemas.h"
+
+#include "swcdb/manager/db/Columns.h"
 #include "swcdb/manager/MngrRole.h"
 #include "swcdb/manager/Rangers.h"
 #include "swcdb/manager/MngdColumns.h"
+#include "swcdb/manager/queries/update/MetricsReporting.h"
 
 
 namespace SWC { namespace Env {
@@ -33,6 +37,16 @@ class Mngr final {
   SWC_CAN_INLINE
   static void post(T_Handler&& handler)  {
     m_env->app_io->post(std::move(handler));
+  }
+
+  SWC_CAN_INLINE
+  static Manager::Metric::Reporting::Ptr& metrics_track() noexcept {
+    return m_env->_reporting;
+  }
+
+  SWC_CAN_INLINE
+  static Common::Resources& res() noexcept {
+    return m_env->_resources;
   }
 
   static DB::Schemas* schemas() noexcept {
@@ -69,6 +83,26 @@ class Mngr final {
             SWC::Env::Config::settings()->get_i32("swc.mngr.handlers")
           )
         ),
+        cfg_ram_percent_allowed(100, nullptr),
+        cfg_ram_percent_reserved(0, nullptr),
+        cfg_ram_release_rate(100, nullptr),
+        _reporting(
+          SWC::Env::Config::settings()->get_bool("swc.mngr.metrics.enabled")
+            ? std::make_shared<Manager::Metric::Reporting>(
+                app_io,
+                SWC::Env::Config::settings()
+                  ->get<SWC::Config::Property::V_GINT32>(
+                    "swc.mngr.metrics.report.interval"))
+            : nullptr
+        ),
+        _resources(
+          app_io,
+          &cfg_ram_percent_allowed,
+          &cfg_ram_percent_reserved,
+          &cfg_ram_release_rate,
+          nullptr,
+          _reporting ? &_reporting->hardware : nullptr
+        ),
         m_role(app_io, endpoints),
         m_rangers(app_io) {
   }
@@ -77,9 +111,14 @@ class Mngr final {
 
   Comm::IoContextPtr                  app_io;
 
+  SWC::Config::Property::V_GINT32     cfg_ram_percent_allowed;
+  SWC::Config::Property::V_GINT32     cfg_ram_percent_reserved;
+  SWC::Config::Property::V_GINT32     cfg_ram_release_rate;
   private:
 
   inline static std::shared_ptr<Mngr> m_env = nullptr;
+  Manager::Metric::Reporting::Ptr     _reporting;
+  Common::Resources                   _resources;
   DB::Schemas                         m_schemas;
   Manager::Columns                    m_columns;
   Manager::MngrRole                   m_role;
@@ -101,6 +140,9 @@ class Mngr final {
 namespace SWC { namespace Env {
 
 void Mngr::stop() {
+  if(m_env->_reporting)
+    m_env->_reporting->stop();
+
   m_env->m_role.stop();
 }
 

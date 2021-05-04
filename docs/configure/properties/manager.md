@@ -33,6 +33,10 @@ _default_ **```swc.mngr.handlers=256```**
 The number of DB-Clients handlers. \
 _default_ **```swc.mngr.clients.handlers=8```**
 
+* ### swc.mngr.metrics.enabled
+```BOOL```
+Enable or Disable Manager Metrics Monitoring. \
+_default_ **```swc.mngr.metrics.enabled=true```**
 
 
 ***
@@ -46,6 +50,11 @@ The encoding to use in communication, options PLAIN/ZSTD/SNAPPY/ZLIB.
 > If address of local & remote is the same, the Encoder is set to PLAIN.
 
   _default_ **```swc.mngr.comm.encoder=ZSTD```**
+
+* ### swc.mngr.metrics.report.interval
+```G_INT32```
+The Metrics Reporting Interval in Seconds. Zero(=0) skips metrics update.\
+_default_ **```swc.mngr.metrics.report.interval=300```**
 
 * ### swc.mngr.role.request.timeout
 ```G_INT32```
