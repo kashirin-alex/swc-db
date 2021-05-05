@@ -201,12 +201,13 @@ int32_t Fds::add(const FS::SmartFd::Ptr& smartfd) {
 }
 
 FS::SmartFd::Ptr Fds::remove(int32_t fd) {
+  FS::SmartFd::Ptr smartfd;
   {
     Core::MutexSptd::scope lock(m_mutex);
     auto it = find(fd);
     if(it == end())
       return nullptr;
-    FS::SmartFd::Ptr smartfd = std::move(it->second);
+    smartfd = std::move(it->second);
     erase(it);
   }
   if(auto& m = Env::FsBroker::metrics_track())
