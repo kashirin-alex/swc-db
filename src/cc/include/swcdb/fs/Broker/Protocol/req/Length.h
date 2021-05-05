@@ -17,9 +17,11 @@ namespace FsBroker {  namespace Req {
 class Length final : public Base {
   public:
 
-  Length(uint32_t timeout, const std::string& name,
+  Length(FS::Statistics& stats,
+         uint32_t timeout, const std::string& name,
          FS::Callback::LengthCb_t&& cb)
         : Base(
+            stats, FS::Statistics::LENGTH_ASYNC,
             Buffers::make(
               Params::LengthReq(name),
               0,

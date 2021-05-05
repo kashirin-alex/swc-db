@@ -21,9 +21,11 @@ class ReadSync final : public BaseSync, public Base {
   bool    allocated;
   size_t  amount;
 
-  ReadSync(uint32_t timeout, FS::SmartFd::Ptr& smartfd,
+  ReadSync(FS::Statistics& stats,
+           uint32_t timeout, FS::SmartFd::Ptr& smartfd,
            void* dst, size_t len, bool allocated)
           : Base(
+              stats, FS::Statistics::READ_SYNC,
               Buffers::make(
                 Params::ReadReq(smartfd->fd(), len),
                 0,

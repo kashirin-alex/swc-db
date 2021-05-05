@@ -18,8 +18,10 @@ class ReadAllSync final : public BaseSync, public Base {
 
   StaticBuffer* buffer;
 
-  ReadAllSync(uint32_t timeout, const std::string& name, StaticBuffer* dst)
+  ReadAllSync(FS::Statistics& stats,
+              uint32_t timeout, const std::string& name, StaticBuffer* dst)
               : Base(
+                  stats, FS::Statistics::READ_ALL_SYNC,
                   Buffers::make(
                     Params::ReadAllReq(name),
                     0,

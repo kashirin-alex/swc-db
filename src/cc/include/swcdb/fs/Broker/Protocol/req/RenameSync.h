@@ -17,9 +17,11 @@ namespace FsBroker {  namespace Req {
 class RenameSync final : public BaseSync, public Base {
   public:
 
-  RenameSync(uint32_t timeout,
+  RenameSync(FS::Statistics& stats,
+             uint32_t timeout,
              const std::string& from, const std::string& to)
             : Base(
+                stats, FS::Statistics::RENAME_SYNC,
                 Buffers::make(
                   Params::RenameReq(from, to),
                   0,

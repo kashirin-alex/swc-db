@@ -17,9 +17,11 @@ namespace FsBroker {  namespace Req {
 class Rename final : public Base {
   public:
 
-  Rename(uint32_t timeout, const std::string& from, const std::string& to,
+  Rename(FS::Statistics& stats,
+         uint32_t timeout, const std::string& from, const std::string& to,
          FS::Callback::RenameCb_t&& cb)
         : Base(
+            stats, FS::Statistics::RENAME_ASYNC,
             Buffers::make(
               Params::RenameReq(from, to),
               0,

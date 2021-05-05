@@ -17,10 +17,12 @@ namespace FsBroker {  namespace Req {
 class Write final : public Base {
   public:
 
-  Write(uint32_t timeout, FS::SmartFd::Ptr& smartfd,
+  Write(FS::Statistics& stats,
+        uint32_t timeout, FS::SmartFd::Ptr& smartfd,
         uint8_t replication, int64_t blksz, StaticBuffer& buffer,
         FS::Callback::WriteCb_t&& cb)
         : Base(
+            stats, FS::Statistics::WRITE_ASYNC,
             Buffers::make(
               Params::WriteReq(
                 smartfd->filepath(), smartfd->flags(),
@@ -40,8 +42,8 @@ class Write final : public Base {
   }
 
   private:
-  FS::SmartFd::Ptr               smartfd;
-  const FS::Callback::WriteCb_t  cb;
+  FS::SmartFd::Ptr                smartfd;
+  const FS::Callback::WriteCb_t   cb;
 
 };
 

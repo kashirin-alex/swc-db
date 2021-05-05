@@ -17,8 +17,10 @@ namespace FsBroker {  namespace Req {
 class RemoveSync final : public BaseSync, public Base {
   public:
 
-  RemoveSync(uint32_t timeout, const std::string& name)
+  RemoveSync(FS::Statistics& stats,
+             uint32_t timeout, const std::string& name)
             : Base(
+                stats, FS::Statistics::REMOVE_SYNC,
                 Buffers::make(
                   Params::RemoveReq(name),
                   0,

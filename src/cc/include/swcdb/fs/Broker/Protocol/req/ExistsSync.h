@@ -19,8 +19,10 @@ class ExistsSync final : public BaseSync, public Base {
 
   bool state;
 
-  ExistsSync(uint32_t timeout, const std::string& name)
+  ExistsSync(FS::Statistics& stats,
+             uint32_t timeout, const std::string& name)
             : Base(
+                stats, FS::Statistics::EXISTS_SYNC,
                 Buffers::make(
                   Params::ExistsReq(name),
                   0,

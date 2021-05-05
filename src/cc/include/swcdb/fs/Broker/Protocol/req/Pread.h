@@ -17,10 +17,12 @@ namespace FsBroker {  namespace Req {
 class Pread final : public Base {
   public:
 
-  Pread(uint32_t timeout, FS::SmartFd::Ptr& smartfd,
+  Pread(FS::Statistics& stats,
+        uint32_t timeout, FS::SmartFd::Ptr& smartfd,
         uint64_t offset, size_t len,
         FS::Callback::PreadCb_t&& cb)
         : Base(
+            stats, FS::Statistics::PREAD_ASYNC,
             Buffers::make(
               Params::PreadReq(smartfd->fd(), offset, len),
               0,

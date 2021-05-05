@@ -17,8 +17,10 @@ namespace FsBroker {  namespace Req {
 class FlushSync final : public BaseSync, public Base {
   public:
 
-  FlushSync(uint32_t timeout, FS::SmartFd::Ptr& smartfd)
+  FlushSync(FS::Statistics& stats,
+            uint32_t timeout, FS::SmartFd::Ptr& smartfd)
             : Base(
+                stats, FS::Statistics::FLUSH_SYNC,
                 Buffers::make(
                   Params::FlushReq(smartfd->fd()),
                   0,

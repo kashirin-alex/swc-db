@@ -21,6 +21,7 @@ class Close final : public Base {
         FS::SmartFd::Ptr& smartfd,
         FS::Callback::CloseCb_t&& cb)
         : Base(
+            fs->statistics, FS::Statistics::CLOSE_ASYNC,
             Buffers::make(
               Params::CloseReq(smartfd->fd()),
               0,

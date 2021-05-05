@@ -17,9 +17,11 @@ namespace FsBroker {  namespace Req {
 class Mkdirs final : public Base {
   public:
 
-  Mkdirs(uint32_t timeout, const std::string& name,
+  Mkdirs(FS::Statistics& stats,
+         uint32_t timeout, const std::string& name,
          FS::Callback::MkdirsCb_t&& cb)
         : Base(
+            stats, FS::Statistics::MKDIRS_ASYNC,
             Buffers::make(
               Params::MkdirsReq(name),
               0,

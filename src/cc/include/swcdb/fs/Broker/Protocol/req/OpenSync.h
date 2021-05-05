@@ -21,6 +21,7 @@ class OpenSync final : public BaseSync, public Base {
            uint32_t timeout, FS::SmartFd::Ptr& smartfd,
            int32_t bufsz)
           : Base(
+              fs->statistics, FS::Statistics::OPEN_SYNC,
               Buffers::make(
                 Params::OpenReq(smartfd->filepath(), smartfd->flags(), bufsz),
                 0,

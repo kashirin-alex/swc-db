@@ -19,8 +19,10 @@ class LengthSync final : public BaseSync, public Base {
 
   size_t length;
 
-  LengthSync(uint32_t timeout, const std::string& name)
+  LengthSync(FS::Statistics& stats,
+             uint32_t timeout, const std::string& name)
             : Base(
+                stats, FS::Statistics::LENGTH_SYNC,
                 Buffers::make(
                   Params::LengthReq(name),
                   0,

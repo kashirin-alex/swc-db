@@ -22,6 +22,7 @@ namespace FsBroker {  namespace Req {
 bool Base::is_rsp(const Event::Ptr& ev, int cmd,
                   const uint8_t **ptr, size_t *remain) {
   // SWC_LOGF(LOG_DEBUG, "handle: %s", ev->to_str().c_str());
+  tracker.stop();
 
   switch(ev->type) {
     case Event::Type::ESTABLISHED:

@@ -18,9 +18,11 @@ class CombiPreadSync final : public BaseSync, public Base {
 
   StaticBuffer* buffer;
 
-  CombiPreadSync(uint32_t timeout, const FS::SmartFd::Ptr& smartfd,
+  CombiPreadSync(FS::Statistics& stats,
+                 uint32_t timeout, const FS::SmartFd::Ptr& smartfd,
                  uint64_t offset, uint32_t amount, StaticBuffer* dst)
                 : Base(
+                    stats, FS::Statistics::COMBI_PREAD_SYNC,
                     Buffers::make(
                       Params::CombiPreadReq(smartfd, offset, amount),
                       0,

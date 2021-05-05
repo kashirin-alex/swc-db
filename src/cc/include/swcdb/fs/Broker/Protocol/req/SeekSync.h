@@ -17,8 +17,10 @@ namespace FsBroker {  namespace Req {
 class SeekSync final : public BaseSync, public Base {
   public:
 
-  SeekSync(uint32_t timeout, FS::SmartFd::Ptr& smartfd, size_t offset)
+  SeekSync(FS::Statistics& stats,
+           uint32_t timeout, FS::SmartFd::Ptr& smartfd, size_t offset)
           : Base(
+              stats, FS::Statistics::SEEK_SYNC,
               Buffers::make(
                 Params::SeekReq(smartfd->fd(), offset),
                 0,

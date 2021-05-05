@@ -17,10 +17,12 @@ namespace FsBroker {  namespace Req {
 class Append final : public Base {
   public:
 
-  Append(uint32_t timeout, FS::SmartFd::Ptr& smartfd,
+  Append(FS::Statistics& stats,
+         uint32_t timeout, FS::SmartFd::Ptr& smartfd,
          StaticBuffer& buffer, FS::Flags flags,
          FS::Callback::AppendCb_t&& cb)
         : Base(
+            stats, FS::Statistics::APPEND_ASYNC,
             Buffers::make(
               Params::AppendReq(smartfd->fd(), flags),
               buffer,

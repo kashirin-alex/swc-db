@@ -17,8 +17,10 @@ namespace FsBroker {  namespace Req {
 class RmdirSync final : public BaseSync, public Base {
   public:
 
-  RmdirSync(uint32_t timeout, const std::string& name)
+  RmdirSync(FS::Statistics& stats,
+            uint32_t timeout, const std::string& name)
             : Base(
+                stats, FS::Statistics::RMDIR_SYNC,
                 Buffers::make(
                   Params::RmdirReq(name),
                   0,

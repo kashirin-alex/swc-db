@@ -19,9 +19,11 @@ class AppendSync final : public BaseSync, public Base {
 
   size_t amount;
 
-  AppendSync(uint32_t timeout, FS::SmartFd::Ptr& smartfd,
-          StaticBuffer& buffer, FS::Flags flags)
+  AppendSync(FS::Statistics& stats,
+             uint32_t timeout, FS::SmartFd::Ptr& smartfd,
+             StaticBuffer& buffer, FS::Flags flags)
         : Base(
+            stats, FS::Statistics::APPEND_SYNC,
             Buffers::make(
               Params::AppendReq(smartfd->fd(), flags),
               buffer,

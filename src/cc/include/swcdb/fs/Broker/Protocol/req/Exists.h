@@ -17,9 +17,11 @@ namespace FsBroker {  namespace Req {
 class Exists final : public Base {
   public:
 
-  Exists(uint32_t timeout, const std::string& name,
+  Exists(FS::Statistics& stats,
+         uint32_t timeout, const std::string& name,
          FS::Callback::ExistsCb_t&& cb)
         : Base(
+            stats, FS::Statistics::EXISTS_ASYNC,
             Buffers::make(
               Params::ExistsReq(name),
               0,

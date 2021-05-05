@@ -19,9 +19,11 @@ class ReaddirSync final : public BaseSync, public Base {
 
   FS::DirentList& listing;
 
-  ReaddirSync(uint32_t timeout, const std::string& name,
+  ReaddirSync(FS::Statistics& stats,
+              uint32_t timeout, const std::string& name,
               FS::DirentList& listing)
               : Base(
+                  stats, FS::Statistics::READDIR_SYNC,
                   Buffers::make(
                     Params::ReaddirReq(name),
                     0,

@@ -17,9 +17,11 @@ namespace FsBroker {  namespace Req {
 class ReadAll final : public Base {
   public:
 
-  ReadAll(uint32_t timeout, const std::string& name,
+  ReadAll(FS::Statistics& stats,
+          uint32_t timeout, const std::string& name,
           FS::Callback::ReadAllCb_t&& cb)
           : Base(
+              stats, FS::Statistics::READ_ALL_ASYNC,
               Buffers::make(
                 Params::ReadAllReq(name),
                 0,

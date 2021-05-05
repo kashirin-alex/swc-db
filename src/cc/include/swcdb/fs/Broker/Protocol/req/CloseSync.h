@@ -20,6 +20,7 @@ class CloseSync final : public BaseSync, public Base {
   CloseSync(const FS::FileSystem::Ptr& fs, uint32_t timeout,
             FS::SmartFd::Ptr& smartfd)
             : Base(
+                fs->statistics, FS::Statistics::CLOSE_SYNC,
                 Buffers::make(
                   Params::CloseReq(smartfd->fd()),
                   0,

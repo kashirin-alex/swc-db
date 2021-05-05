@@ -21,6 +21,7 @@ class Open final : public Base {
        uint32_t timeout, FS::SmartFd::Ptr& smartfd, int32_t bufsz,
        FS::Callback::OpenCb_t&& cb)
       : Base(
+          fs->statistics, FS::Statistics::OPEN_ASYNC,
           Buffers::make(
             Params::OpenReq(smartfd->filepath(), smartfd->flags(), bufsz),
             0,

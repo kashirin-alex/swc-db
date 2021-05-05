@@ -21,9 +21,11 @@ class PreadSync final : public BaseSync, public Base {
   bool    allocated;
   size_t  amount;
 
-  PreadSync(uint32_t timeout, FS::SmartFd::Ptr& smartfd,
+  PreadSync(FS::Statistics& stats,
+            uint32_t timeout, FS::SmartFd::Ptr& smartfd,
             uint64_t offset, void* dst, size_t len, bool allocated)
             : Base(
+                stats, FS::Statistics::PREAD_SYNC,
                 Buffers::make(
                   Params::PreadReq(smartfd->fd(), offset, len),
                   0,

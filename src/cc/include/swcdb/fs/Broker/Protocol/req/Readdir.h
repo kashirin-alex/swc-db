@@ -17,9 +17,11 @@ namespace FsBroker {  namespace Req {
 class Readdir final : public Base {
   public:
 
-  Readdir(uint32_t timeout, const std::string& name,
+  Readdir(FS::Statistics& stats,
+          uint32_t timeout, const std::string& name,
           FS::Callback::ReaddirCb_t&& cb)
           : Base(
+              stats, FS::Statistics::READDIR_ASYNC,
               Buffers::make(
                 Params::ReaddirReq(name),
                 0,

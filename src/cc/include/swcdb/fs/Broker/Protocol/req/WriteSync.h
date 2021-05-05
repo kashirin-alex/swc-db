@@ -18,9 +18,11 @@ class WriteSync final : public BaseSync, public Base {
 
   public:
 
-  WriteSync(uint32_t timeout, FS::SmartFd::Ptr& smartfd,
+  WriteSync(FS::Statistics& stats,
+            uint32_t timeout, FS::SmartFd::Ptr& smartfd,
             uint8_t replication, int64_t blksz, StaticBuffer& buffer)
             : Base(
+                stats, FS::Statistics::WRITE_SYNC,
                 Buffers::make(
                   Params::WriteReq(
                     smartfd->filepath(), smartfd->flags(),

@@ -23,6 +23,7 @@ class Create final : public Base {
          int32_t bufsz, uint8_t replication, int64_t blksz,
          FS::Callback::CreateCb_t&& cb)
          : Base(
+            fs->statistics, FS::Statistics::CREATE_ASYNC,
             Buffers::make(
               Params::CreateReq(
                 smartfd->filepath(), smartfd->flags(),

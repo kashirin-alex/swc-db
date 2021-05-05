@@ -17,9 +17,11 @@ namespace FsBroker {  namespace Req {
 class Read final : public Base {
   public:
 
-  Read(uint32_t timeout, FS::SmartFd::Ptr& smartfd, size_t len,
+  Read(FS::Statistics& stats,
+       uint32_t timeout, FS::SmartFd::Ptr& smartfd, size_t len,
        FS::Callback::ReadCb_t&& cb)
       : Base(
+          stats, FS::Statistics::READ_ASYNC,
           Buffers::make(
             Params::ReadReq(smartfd->fd(), len),
             0,

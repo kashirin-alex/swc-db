@@ -17,10 +17,12 @@ namespace FsBroker {  namespace Req {
 class CombiPread final : public Base {
   public:
 
-  CombiPread(uint32_t timeout, const FS::SmartFd::Ptr& smartfd,
+  CombiPread(FS::Statistics& stats,
+             uint32_t timeout, const FS::SmartFd::Ptr& smartfd,
              uint64_t offset, uint32_t amount,
              FS::Callback::CombiPreadCb_t&& cb)
             : Base(
+                stats, FS::Statistics::COMBI_PREAD_ASYNC,
                 Buffers::make(
                   Params::CombiPreadReq(smartfd, offset, amount),
                   0,

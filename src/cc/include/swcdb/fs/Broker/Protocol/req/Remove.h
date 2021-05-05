@@ -17,9 +17,11 @@ namespace FsBroker {  namespace Req {
 class Remove final : public Base {
   public:
 
-  Remove(uint32_t timeout, const std::string& name,
+  Remove(FS::Statistics& stats,
+         uint32_t timeout, const std::string& name,
          FS::Callback::RemoveCb_t&& cb)
         : Base(
+            stats, FS::Statistics::REMOVE_ASYNC,
             Buffers::make(
               Params::RemoveReq(name),
               0,

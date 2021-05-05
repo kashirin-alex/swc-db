@@ -22,6 +22,7 @@ class CreateSync final : public BaseSync, public Base {
              uint32_t timeout, FS::SmartFd::Ptr& smartfd,
              int32_t bufsz, uint8_t replication, int64_t blksz)
             : Base(
+                fs->statistics, FS::Statistics::CREATE_SYNC,
                 Buffers::make(
                   Params::CreateReq(
                     smartfd->filepath(), smartfd->flags(),

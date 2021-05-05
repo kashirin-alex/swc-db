@@ -19,11 +19,13 @@ class Base : public DispatchHandler {
 
   using Ptr = BasePtr;
 
-  Buffers::Ptr  cbp;
-  int           error;
+  FS::Statistics::Metric::Tracker tracker;
+  int                             error;
+  Buffers::Ptr                    cbp;
 
-  Base(const Buffers::Ptr& cbp = nullptr)
-      : cbp(cbp), error(Error::OK) {
+  Base(FS::Statistics& stats, FS::Statistics::Command cmd,
+       const Buffers::Ptr& cbp = nullptr)
+      : tracker(stats.tracker(cmd)), error(Error::OK), cbp(cbp) {
   }
 
   virtual ~Base() { }

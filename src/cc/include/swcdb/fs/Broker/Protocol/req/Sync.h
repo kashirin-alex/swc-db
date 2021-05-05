@@ -17,9 +17,11 @@ namespace FsBroker {  namespace Req {
 class Sync final : public Base {
   public:
 
-  Sync(uint32_t timeout, FS::SmartFd::Ptr& smartfd,
+  Sync(FS::Statistics& stats,
+       uint32_t timeout, FS::SmartFd::Ptr& smartfd,
        FS::Callback::SyncCb_t&& cb)
        : Base(
+          stats, FS::Statistics::SYNC_ASYNC,
           Buffers::make(
             Params::SyncReq(smartfd->fd()),
             0,
