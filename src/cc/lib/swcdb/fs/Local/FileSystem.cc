@@ -59,6 +59,7 @@ std::string FileSystemLocal::to_string() const {
 
 
 bool FileSystemLocal::exists(int& err, const std::string& name) {
+  auto tracker = statistics.tracker(Statistics::EXISTS_SYNC);
   std::string abspath;
   get_abspath(name, abspath);
   struct stat statbuf;
@@ -70,6 +71,7 @@ bool FileSystemLocal::exists(int& err, const std::string& name) {
 }
 
 void FileSystemLocal::remove(int& err, const std::string& name) {
+  auto tracker = statistics.tracker(Statistics::REMOVE_SYNC);
   std::string abspath;
   get_abspath(name, abspath);
   errno = 0;
@@ -85,6 +87,7 @@ void FileSystemLocal::remove(int& err, const std::string& name) {
 }
 
 size_t FileSystemLocal::length(int& err, const std::string& name) {
+  auto tracker = statistics.tracker(Statistics::LENGTH_SYNC);
   std::string abspath;
   get_abspath(name, abspath);
   errno = 0;
@@ -130,6 +133,7 @@ int _mkdirs(std::string& dirname) {
 }
 
 void FileSystemLocal::mkdirs(int& err, const std::string& name) {
+  auto tracker = statistics.tracker(Statistics::MKDIRS_SYNC);
   std::string abspath;
   get_abspath(name, abspath, 1);
   SWC_LOGF(LOG_DEBUG, "mkdirs path='%s'", abspath.c_str());
@@ -142,6 +146,7 @@ void FileSystemLocal::mkdirs(int& err, const std::string& name) {
 
 void FileSystemLocal::readdir(int& err, const std::string& name,
                               DirentList& results) {
+  auto tracker = statistics.tracker(Statistics::READDIR_SYNC);
   std::string abspath;
   get_abspath(name, abspath);
   SWC_LOGF(LOG_DEBUG, "Readdir dir='%s'", abspath.c_str());
@@ -188,6 +193,7 @@ void FileSystemLocal::readdir(int& err, const std::string& name,
 }
 
 void FileSystemLocal::rmdir(int& err, const std::string& name) {
+  auto tracker = statistics.tracker(Statistics::RMDIR_SYNC);
   std::string abspath;
   get_abspath(name, abspath);
   std::error_code ec;
@@ -203,6 +209,7 @@ void FileSystemLocal::rmdir(int& err, const std::string& name) {
 
 void FileSystemLocal::rename(int& err, const std::string& from,
                               const std::string& to)  {
+  auto tracker = statistics.tracker(Statistics::RENAME_SYNC);
   std::string abspath_from;
   get_abspath(from, abspath_from);
   std::string abspath_to;
@@ -222,6 +229,7 @@ void FileSystemLocal::rename(int& err, const std::string& from,
 void FileSystemLocal::create(int& err, SmartFd::Ptr& smartfd,
                              int32_t bufsz, uint8_t replication,
                              int64_t blksz) {
+  auto tracker = statistics.tracker(Statistics::CREATE_SYNC);
   std::string abspath;
   get_abspath(smartfd->filepath(), abspath);
   SWC_LOGF(LOG_DEBUG, "create %s bufsz=%d replication=%d blksz=%ld",
@@ -265,6 +273,7 @@ void FileSystemLocal::create(int& err, SmartFd::Ptr& smartfd,
 }
 
 void FileSystemLocal::open(int& err, SmartFd::Ptr& smartfd, int32_t bufsz) {
+  auto tracker = statistics.tracker(Statistics::OPEN_SYNC);
   std::string abspath;
   get_abspath(smartfd->filepath(), abspath);
   SWC_LOGF(LOG_DEBUG, "open %s, bufsz=%d",
@@ -324,6 +333,7 @@ ssize_t _read(int fd, uint8_t* ptr, size_t n) noexcept {
 
 size_t FileSystemLocal::read(int& err, SmartFd::Ptr& smartfd,
                              void *dst, size_t amount) {
+  auto tracker = statistics.tracker(Statistics::READ_SYNC);
   SWC_LOGF(LOG_DEBUG, "read %s amount=%lu",
             smartfd->to_string().c_str(), amount);
   /*
@@ -379,6 +389,7 @@ ssize_t _pread(int fd, off_t offset, uint8_t* ptr, size_t n) noexcept {
 size_t FileSystemLocal::pread(int& err, SmartFd::Ptr& smartfd,
                               uint64_t offset, void* dst,
                               size_t amount) {
+  auto tracker = statistics.tracker(Statistics::PREAD_SYNC);
   SWC_LOGF(LOG_DEBUG, "pread %s offset=%lu amount=%lu",
             smartfd->to_string().c_str(), offset, amount);
 
@@ -419,6 +430,7 @@ bool _write(int fd, const uint8_t* ptr, size_t nleft) noexcept {
 
 size_t FileSystemLocal::append(int& err, SmartFd::Ptr& smartfd,
                                StaticBuffer& buffer, Flags flags) {
+  auto tracker = statistics.tracker(Statistics::APPEND_SYNC);
   SWC_LOGF(LOG_DEBUG, "append %s amount=%lu flags=%d",
             smartfd->to_string().c_str(), buffer.size, flags);
 
@@ -455,6 +467,7 @@ size_t FileSystemLocal::append(int& err, SmartFd::Ptr& smartfd,
 }
 
 void FileSystemLocal::seek(int& err, SmartFd::Ptr& smartfd, size_t offset) {
+  auto tracker = statistics.tracker(Statistics::SEEK_SYNC);
   SWC_LOGF(LOG_DEBUG, "seek %s offset=%lu",
             smartfd->to_string().c_str(), offset);
 
@@ -476,6 +489,7 @@ void FileSystemLocal::flush(int& err, SmartFd::Ptr& smartfd) {
 }
 
 void FileSystemLocal::sync(int& err, SmartFd::Ptr& smartfd) {
+  auto tracker = statistics.tracker(Statistics::SYNC_SYNC);
   SWC_LOGF(LOG_DEBUG, "sync %s", smartfd->to_string().c_str());
 
   errno = 0;
@@ -487,6 +501,7 @@ void FileSystemLocal::sync(int& err, SmartFd::Ptr& smartfd) {
 }
 
 void FileSystemLocal::close(int& err, SmartFd::Ptr& smartfd) {
+  auto tracker = statistics.tracker(Statistics::CLOSE_SYNC);
   SWC_LOGF(LOG_DEBUG, "close %s", smartfd->to_string().c_str());
   int32_t fd = smartfd->invalidate();
   if(fd != -1) {
