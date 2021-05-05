@@ -39,6 +39,8 @@ class FileSystemBroker final : public FileSystem {
 
   Type get_type() const noexcept override;
 
+  Type get_type_underlying() const noexcept override;
+
   std::string to_string() const override;
 
   bool send_request(Comm::Protocol::FsBroker::Req::BasePtr hdlr);

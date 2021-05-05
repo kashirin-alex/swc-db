@@ -55,7 +55,7 @@ class Interface final : public std::enable_shared_from_this<Interface> {
 
   ~Interface();
 
-  Type get_type() const noexcept;
+  Type get_type_underlying() const noexcept;
 
   FileSystem::Ptr get_fs() noexcept;
 

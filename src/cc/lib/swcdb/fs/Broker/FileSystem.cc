@@ -99,7 +99,8 @@ Comm::EndPoints FileSystemBroker::get_endpoints() {
     "swc.fs.broker.host", "");
   if(host.empty()) {
     char hostname[256];
-    gethostname(hostname, sizeof(hostname));
+    if(gethostname(hostname, sizeof(hostname)) == -1)
+      SWC_THROW(errno, "gethostname");
     host.append(hostname);
   }
 
@@ -153,6 +154,10 @@ void FileSystemBroker::stop() {
 }
 
 Type FileSystemBroker::get_type() const noexcept {
+  return Type::BROKER;
+}
+
+Type FileSystemBroker::get_type_underlying() const noexcept {
   return m_type_underlying;
 }
 

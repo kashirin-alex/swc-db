@@ -130,8 +130,8 @@ Interface::~Interface() {
   }
 }
 
-Type Interface::get_type() const noexcept {
-  return m_fs->get_type();
+Type Interface::get_type_underlying() const noexcept {
+  return m_fs->get_type_underlying();
 }
 
 FileSystem::Ptr Interface::get_fs() noexcept {

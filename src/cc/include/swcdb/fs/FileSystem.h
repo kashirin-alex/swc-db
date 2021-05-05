@@ -10,6 +10,7 @@
 #include "swcdb/fs/SmartFd.h"
 #include "swcdb/fs/Dirent.h"
 #include "swcdb/fs/Callbacks.h"
+//#include "swcdb/fs/Statistics.h"
 
 
 namespace SWC { namespace FS {
@@ -66,6 +67,7 @@ class FileSystem : public std::enable_shared_from_this<FileSystem> {
 
   const Config::Property::V_GINT32::Ptr cfg_fds_max;
 
+  //Statistics            statistics;
   Core::Atomic<size_t>  fds_count;
   Core::AtomicBool      m_run;
 
@@ -76,6 +78,8 @@ class FileSystem : public std::enable_shared_from_this<FileSystem> {
   virtual void stop();
 
   virtual Type get_type() const noexcept;
+
+  virtual Type get_type_underlying() const noexcept;
 
   virtual std::string to_string() const = 0;
 

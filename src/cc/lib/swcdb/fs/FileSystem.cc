@@ -86,6 +86,10 @@ Type FileSystem::get_type() const noexcept {
   return Type::UNKNOWN;
 }
 
+Type FileSystem::get_type_underlying() const noexcept {
+  return get_type();
+}
+
 std::string FileSystem::to_string() const {
   return format(
     "(type=UNKNOWN path_root=%s path_data=%s)",

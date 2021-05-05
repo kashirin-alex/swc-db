@@ -33,14 +33,22 @@ class AppContext final : public Comm::AppContext {
 
   void handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) override {
 
-    if(ev->type == Comm::Event::Type::DISCONNECT)
-      return;
+    switch(ev->type) {
+      case Comm::Event::Type::DISCONNECT:
+      case Comm::Event::Type::ESTABLISHED:
+        return;
+      default: {
+        /*
+        const uint8_t *ptr;
+        size_t remain;
+        if(Comm::Protocol::FsBroker::Req::Base().is_rsp(
+            ev, ev->header.command, &ptr, &remain))
+        */
+        SWC_LOG_OUT(LOG_WARN,  ev->print(SWC_LOG_OSTREAM << "Unhandled "); );
+        break;
+      }
+    }
 
-    const uint8_t *ptr;
-    size_t remain;
-    if(Comm::Protocol::FsBroker::Req::Base().is_rsp(
-        ev, ev->header.command, &ptr, &remain))
-      SWC_LOG_OUT(LOG_WARN,  ev->print(SWC_LOG_OSTREAM << "Unhandled "); );
   }
 };
 

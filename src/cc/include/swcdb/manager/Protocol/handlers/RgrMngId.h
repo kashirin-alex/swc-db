@@ -26,7 +26,7 @@ void rgr_mng_id(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     req_params.decode(&ptr, &remain);
 
     if(!Env::Mngr::role()->is_active_role(DB::Types::MngrRole::RANGERS)) {
-      SWC_LOG_OUT(LOG_DEBUG, 
+      SWC_LOG_OUT(LOG_DEBUG,
         SWC_LOG_OSTREAM << "MNGR NOT ACTIVE, flag=" << req_params.flag
                         << " rgrid=" << req_params.rgrid;
         req_params.print(SWC_LOG_OSTREAM << ' ');
@@ -41,9 +41,9 @@ void rgr_mng_id(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
       case Params::RgrMngId::Flag::RS_REQ: {
         rsp_params.rgrid = rangers->rgr_set_id(req_params.endpoints);
         rsp_params.flag = Params::RgrMngId::Flag::MNGR_ASSIGNED;
-        rsp_params.fs = Env::FsInterface::interface()->get_type();
+        rsp_params.fs = Env::FsInterface::interface()->get_type_underlying();
 
-        SWC_LOG_OUT(LOG_DEBUG, 
+        SWC_LOG_OUT(LOG_DEBUG,
           SWC_LOG_OSTREAM << "RS_REQ, rgrid=" << rsp_params.rgrid;
           req_params.print(SWC_LOG_OSTREAM << ' ');
         );
@@ -52,16 +52,16 @@ void rgr_mng_id(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
 
       case Params::RgrMngId::Flag::RS_ACK: {
         if(rangers->rgr_ack_id(req_params.rgrid, req_params.endpoints)) {
-          SWC_LOG_OUT(LOG_DEBUG, 
-            SWC_LOG_OSTREAM 
+          SWC_LOG_OUT(LOG_DEBUG,
+            SWC_LOG_OSTREAM
               << "RS_ACK, rgrid=" << req_params.rgrid;
             req_params.print(SWC_LOG_OSTREAM << ' ');
           );
           rsp_params.flag = Params::RgrMngId::Flag::MNGR_ACK;
 
         } else {
-          SWC_LOG_OUT(LOG_DEBUG, 
-            SWC_LOG_OSTREAM 
+          SWC_LOG_OUT(LOG_DEBUG,
+            SWC_LOG_OSTREAM
               << "RS_ACK(MNGR_REREQ), rgrid=" << req_params.rgrid;
             req_params.print(SWC_LOG_OSTREAM << ' ');
           );
@@ -73,13 +73,13 @@ void rgr_mng_id(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
       case Params::RgrMngId::Flag::RS_DISAGREE: {
         rsp_params.rgrid = rangers->rgr_had_id(
           req_params.rgrid, req_params.endpoints);
-        
+
         rsp_params.flag = rsp_params.rgrid
           ? Params::RgrMngId::Flag::MNGR_REASSIGN
           : Params::RgrMngId::Flag::MNGR_ACK;
 
         SWC_LOG_OUT(LOG_DEBUG,
-          SWC_LOG_OSTREAM << "RS_DISAGREE, rgr_had_id=" << req_params.rgrid 
+          SWC_LOG_OSTREAM << "RS_DISAGREE, rgr_had_id=" << req_params.rgrid
             << " > rgrid=" << rsp_params.rgrid;
           req_params.print(SWC_LOG_OSTREAM << ' ');
         );
@@ -89,7 +89,7 @@ void rgr_mng_id(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
       case Params::RgrMngId::Flag::RS_SHUTTINGDOWN: {
         rangers->rgr_shutdown(req_params.rgrid, req_params.endpoints);
 
-        SWC_LOG_OUT(LOG_DEBUG, 
+        SWC_LOG_OUT(LOG_DEBUG,
           SWC_LOG_OSTREAM << "RS_SHUTTINGDOWN, rgrid=" << req_params.rgrid;
           req_params.print(SWC_LOG_OSTREAM << ' ');
         );
@@ -101,7 +101,7 @@ void rgr_mng_id(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
 
       default: {
         err = Error::NOT_IMPLEMENTED;
-        SWC_LOG_OUT(LOG_WARN, 
+        SWC_LOG_OUT(LOG_WARN,
           SWC_LOG_OSTREAM << "NOT_IMPLEMENTED flag=" << req_params.flag;
         );
         break;
@@ -120,7 +120,7 @@ void rgr_mng_id(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     conn->send_response(cbp);
 
 }
-  
+
 
 }}}}}
 

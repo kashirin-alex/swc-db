@@ -131,7 +131,8 @@ class RgrMngId: public client::ConnQueue::ReqBase {
         auto rgr_data = Env::Rgr::rgr_data();
 
         if(rsp_params.flag == Params::RgrMngId::Flag::MNGR_ASSIGNED &&
-           rsp_params.fs != Env::FsInterface::interface()->get_type()) {
+           rsp_params.fs
+            != Env::FsInterface::interface()->get_type_underlying()) {
 
           SWC_LOG_OUT(LOG_ERROR,
             SWC_LOG_OSTREAM
