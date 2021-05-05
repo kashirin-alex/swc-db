@@ -38,7 +38,7 @@ class Reporting final : public Common::Query::Update::Metric::Reporting {
       Comm::Protocol::FsBroker::Command::MAX_CMD
     );
 
-    //level->metrics.emplace_back(new Item_FS(Env::FsInterface::fs()));
+    level->metrics.emplace_back(new Item_FS(Env::FsInterface::fs()));
     level->metrics.emplace_back(fds);
   }
 

@@ -23,7 +23,7 @@ void Statistics::Metric::add(uint48_t ns) noexcept {
   lock();
   if(UINT64_MAX - m_total > ns) {
     ++m_count;
-    m_total += ns;
+    m_total += uint64_t(ns);
   }
   if(!m_min || m_min > ns)
     m_min = ns;

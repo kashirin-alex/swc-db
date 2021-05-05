@@ -9,6 +9,7 @@
 
 
 #include "swcdb/common/sys/Resources.h"
+#include "swcdb/fs/Interface.h"
 #include "swcdb/db/client/Query/Update/Handlers/Metrics.h"
 
 
@@ -435,6 +436,94 @@ class Item_CPU : public Base {
     nthreads.reset();
     cpu_u_perc.reset();
     cpu_s_perc.reset();
+  }
+
+};
+
+
+
+class Item_FS : public Base {
+  /* Cell-Serialization:
+      key:    [levels, "fs", {type}]
+      value:  (FIELD_{type} + FS_{cmd}):I:{value}, ...
+  */
+
+  public:
+
+  static const uint8_t FIELD_MIN    = 0;
+  static const uint8_t FIELD_MAX    = FS::Statistics::Command::MAX * 1;
+  static const uint8_t FIELD_AVG    = FS::Statistics::Command::MAX * 2;
+  static const uint8_t FIELD_COUNT  = FS::Statistics::Command::MAX * 3;
+
+  typedef std::unique_ptr<Item_FS> Ptr;
+  FS::FileSystem::Ptr              fs;
+
+  Item_FS(const FS::FileSystem::Ptr& fs) noexcept : fs(fs) { }
+
+  virtual ~Item_FS() { }
+
+
+  virtual void report(uint64_t for_ns, client::Query::Update::Handlers::Base::Column* colp,
+                      const DB::Cell::KeyVec& parent_key) override {
+    FS::Statistics stats;
+    fs->statistics.gather(stats);
+
+    size_t sz = 0;
+    for(uint8_t cmd=0; cmd < FS::Statistics::Command::MAX; ++cmd) {
+      auto& m = stats.metrics[cmd];
+      if(m.m_count) {
+        sz += 8
+          + Serialization::encoded_length_vi64(m.m_min)
+          + Serialization::encoded_length_vi64(m.m_max)
+          + Serialization::encoded_length_vi64(m.m_total/m.m_count)
+          + Serialization::encoded_length_vi64(m.m_count);
+      }
+    }
+    if(!sz)
+      return;
+
+    DB::Cell::Serial::Value::FieldsWriter wfields;
+    wfields.ensure(sz);
+
+    for(uint8_t cmd=0; cmd < FS::Statistics::Command::MAX; ++cmd) {
+      auto& m = stats.metrics[cmd];
+      if(m.m_count)
+        wfields.add(FIELD_MIN + cmd,  int64_t(m.m_min));
+    }
+    for(uint8_t cmd=0; cmd < FS::Statistics::Command::MAX; ++cmd) {
+      auto& m = stats.metrics[cmd];
+      if(m.m_count)
+        wfields.add(FIELD_MAX + cmd,  int64_t(m.m_max));
+    }
+    for(uint8_t cmd=0; cmd < FS::Statistics::Command::MAX; ++cmd) {
+      auto& m = stats.metrics[cmd];
+      if(m.m_count)
+        wfields.add(FIELD_AVG + cmd,  int64_t(m.m_total/m.m_count));
+    }
+    for(uint8_t cmd=0; cmd < FS::Statistics::Command::MAX; ++cmd) {
+      auto& m = stats.metrics[cmd];
+      if(m.m_count)
+        wfields.add(FIELD_COUNT + cmd,  int64_t(m.m_count));
+    }
+
+    DB::Cell::KeyVec key;
+    key.reserve(parent_key.size() + 2);
+    key.copy(parent_key);
+    key.add("fs");
+    key.add(FS::to_string(fs->get_type()));
+
+    DB::Cells::Cell cell;
+    cell.flag = DB::Cells::INSERT;
+    cell.set_time_order_desc(true);
+    cell.set_timestamp(for_ns);
+    cell.key.add(key);
+
+    cell.set_value(wfields.base, wfields.fill(), false);
+    colp->add(cell);
+  }
+
+  virtual void reset() override {
+    fs->statistics.reset();
   }
 
 };

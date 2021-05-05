@@ -210,12 +210,12 @@ class AppContext final : public Comm::AppContext {
 
     auto guard = m_srv->stop_accepting(); // no further requests accepted
 
-    Env::FsBroker::shuttingdown();
-
     if(m_metrics) {
       Env::Clients::get()->rgr->stop();
       Env::Clients::get()->mngr->stop();
     }
+
+    Env::FsBroker::shuttingdown();
 
     Env::IoCtx::io()->stop();
 

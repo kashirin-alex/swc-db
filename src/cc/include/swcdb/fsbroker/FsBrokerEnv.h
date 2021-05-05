@@ -146,7 +146,7 @@ class FsBroker final {
         SWC_LOGF(LOG_WARN,
           "In-process=%ld fs-use-count=%ld check=%lu",
           m_in_process.load(), fs.use_count(), n);
-    } while(m_in_process || fs.use_count() > 2);
+    } while(m_in_process || fs.use_count() > 2 + bool(_reporting));
 
     int err;
     for(FS::SmartFd::Ptr fd; (fd = m_fds.pop_next()); ) {

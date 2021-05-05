@@ -102,6 +102,10 @@ struct Statistics {
   };
 
   Statistics() noexcept { }
+  Statistics(const Statistics&)            = delete;
+  Statistics(Statistics&&)                 = delete;
+  Statistics& operator=(const Statistics&) = delete;
+  Statistics& operator=(Statistics&&)      = delete;
 
   SWC_CAN_INLINE
   Metric::Tracker tracker(Command cmd) noexcept {
