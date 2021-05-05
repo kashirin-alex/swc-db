@@ -231,6 +231,7 @@ std::string FileSystemCeph::to_string() const {
 
 
 bool FileSystemCeph::exists(int& err, const std::string& name) {
+  auto tracker = statistics.tracker(Statistics::EXISTS_SYNC);
   std::string abspath;
   get_abspath(name, abspath);
 
@@ -251,6 +252,7 @@ bool FileSystemCeph::exists(int& err, const std::string& name) {
 }
 
 void FileSystemCeph::remove(int& err, const std::string& name) {
+  auto tracker = statistics.tracker(Statistics::REMOVE_SYNC);
   std::string abspath;
   get_abspath(name, abspath);
   errno = 0;
@@ -270,6 +272,7 @@ void FileSystemCeph::remove(int& err, const std::string& name) {
 }
 
 size_t FileSystemCeph::length(int& err, const std::string& name) {
+  auto tracker = statistics.tracker(Statistics::LENGTH_SYNC);
   std::string abspath;
   get_abspath(name, abspath);
 
@@ -292,6 +295,7 @@ size_t FileSystemCeph::length(int& err, const std::string& name) {
 }
 
 void FileSystemCeph::mkdirs(int& err, const std::string& name) {
+  auto tracker = statistics.tracker(Statistics::MKDIRS_SYNC);
   std::string abspath;
   get_abspath(name, abspath);
   SWC_LOGF(LOG_DEBUG, "mkdirs path='%s'", abspath.c_str());
@@ -306,6 +310,7 @@ void FileSystemCeph::mkdirs(int& err, const std::string& name) {
 
 void FileSystemCeph::readdir(int& err, const std::string& name,
                              DirentList& results) {
+  auto tracker = statistics.tracker(Statistics::READDIR_SYNC);
   std::string abspath;
   get_abspath(name, abspath);
   SWC_LOGF(LOG_DEBUG, "Readdir dir='%s'", abspath.c_str());
@@ -352,6 +357,7 @@ void FileSystemCeph::readdir(int& err, const std::string& name,
 }
 
 void FileSystemCeph::rmdir(int& err, const std::string& name) {
+  auto tracker = statistics.tracker(Statistics::RMDIR_SYNC);
   std::string abspath;
   get_abspath(name, abspath);
 
@@ -402,7 +408,8 @@ void FileSystemCeph::rmdir(int& err, const std::string& name) {
 }
 
 void FileSystemCeph::rename(int& err, const std::string& from,
-                            const std::string& to)  {
+                            const std::string& to) {
+  auto tracker = statistics.tracker(Statistics::RENAME_SYNC);
   std::string abspath_from;
   get_abspath(from, abspath_from);
   std::string abspath_to;
@@ -427,6 +434,7 @@ void FileSystemCeph::rename(int& err, const std::string& from,
 void FileSystemCeph::create(int& err, SmartFd::Ptr& smartfd,
                             int32_t bufsz, uint8_t replication,
                             int64_t objsz) {
+  auto tracker = statistics.tracker(Statistics::CREATE_SYNC);
   std::string abspath;
   get_abspath(smartfd->filepath(), abspath);
   SWC_LOGF(LOG_DEBUG, "create %s bufsz=%d replication=%d objsz=%ld",
@@ -477,6 +485,7 @@ void FileSystemCeph::create(int& err, SmartFd::Ptr& smartfd,
 }
 
 void FileSystemCeph::open(int& err, SmartFd::Ptr& smartfd, int32_t bufsz) {
+  auto tracker = statistics.tracker(Statistics::OPEN_SYNC);
   std::string abspath;
   get_abspath(smartfd->filepath(), abspath);
   SWC_LOGF(LOG_DEBUG, "open %s bufsz=%d",
@@ -511,6 +520,7 @@ void FileSystemCeph::open(int& err, SmartFd::Ptr& smartfd, int32_t bufsz) {
 
 size_t FileSystemCeph::read(int& err, SmartFd::Ptr& smartfd,
                             void *dst, size_t amount) {
+  auto tracker = statistics.tracker(Statistics::READ_SYNC);
   SWC_LOGF(LOG_DEBUG, "read %s amount=%lu",
             smartfd->to_string().c_str(), amount);
 
@@ -541,6 +551,7 @@ size_t FileSystemCeph::read(int& err, SmartFd::Ptr& smartfd,
 
 size_t FileSystemCeph::pread(int& err, SmartFd::Ptr& smartfd,
                              uint64_t offset, void *dst, size_t amount) {
+  auto tracker = statistics.tracker(Statistics::PREAD_SYNC);
   SWC_LOGF(LOG_DEBUG, "pread %s offset=%lu amount=%lu",
             smartfd->to_string().c_str(), offset, amount);
 
@@ -570,6 +581,7 @@ size_t FileSystemCeph::pread(int& err, SmartFd::Ptr& smartfd,
 
 size_t FileSystemCeph::append(int& err, SmartFd::Ptr& smartfd,
                                 StaticBuffer& buffer, Flags flags) {
+  auto tracker = statistics.tracker(Statistics::APPEND_SYNC);
 
   SWC_LOGF(LOG_DEBUG, "append %s amount=%lu flags=%d",
             smartfd->to_string().c_str(), buffer.size, flags);
@@ -605,6 +617,7 @@ size_t FileSystemCeph::append(int& err, SmartFd::Ptr& smartfd,
 }
 
 void FileSystemCeph::seek(int& err, SmartFd::Ptr& smartfd, size_t offset) {
+  auto tracker = statistics.tracker(Statistics::SEEK_SYNC);
   SWC_LOGF(LOG_DEBUG, "seek %s offset=%lu",
             smartfd->to_string().c_str(), offset);
 
@@ -624,6 +637,7 @@ void FileSystemCeph::seek(int& err, SmartFd::Ptr& smartfd, size_t offset) {
 }
 
 void FileSystemCeph::flush(int& err, SmartFd::Ptr& smartfd) {
+  auto tracker = statistics.tracker(Statistics::FLUSH_SYNC);
   SWC_LOGF(LOG_DEBUG, "flush %s", smartfd->to_string().c_str());
 
   errno = 0;
@@ -639,6 +653,7 @@ void FileSystemCeph::flush(int& err, SmartFd::Ptr& smartfd) {
 }
 
 void FileSystemCeph::sync(int& err, SmartFd::Ptr& smartfd) {
+  auto tracker = statistics.tracker(Statistics::SYNC_SYNC);
   SWC_LOGF(LOG_DEBUG, "sync %s", smartfd->to_string().c_str());
 
   errno = 0;
@@ -654,6 +669,7 @@ void FileSystemCeph::sync(int& err, SmartFd::Ptr& smartfd) {
 }
 
 void FileSystemCeph::close(int& err, SmartFd::Ptr& smartfd) {
+  auto tracker = statistics.tracker(Statistics::CLOSE_SYNC);
   SWC_LOGF(LOG_DEBUG, "close %s", smartfd->to_string().c_str());
   int32_t fd = smartfd->invalidate();
   if(fd != -1) {
