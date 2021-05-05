@@ -26,30 +26,9 @@ class Fds final : private std::unordered_map<int32_t, FS::SmartFd::Ptr> {
 
   //~Fds() { }
 
-  int32_t add(const FS::SmartFd::Ptr& smartfd) {
-    assign_fd:
-      Core::MutexSptd::scope lock(m_mutex);
-      if(!emplace(++m_next_fd < 1 ? m_next_fd=1 : m_next_fd, smartfd).second)
-        goto assign_fd;
-      for(auto it = begin(); it != end(); ++it) {
-        if(it->first != m_next_fd && it->second->fd() == smartfd->fd()) {
-          erase(it);
-          break;
-        }
-      }
-      return m_next_fd;
-  }
+  int32_t add(const FS::SmartFd::Ptr& smartfd);
 
-  FS::SmartFd::Ptr remove(int32_t fd) {
-    Core::MutexSptd::scope lock(m_mutex);
-
-    auto it = find(fd);
-    if(it == end())
-      return nullptr;
-    FS::SmartFd::Ptr smartfd = std::move(it->second);
-    erase(it);
-    return smartfd;
-  }
+  FS::SmartFd::Ptr remove(int32_t fd);
 
   FS::SmartFd::Ptr select(int32_t fd) noexcept {
     Core::MutexSptd::scope lock(m_mutex);
@@ -193,6 +172,47 @@ class FsBroker final {
   inline static std::shared_ptr<FsBroker> m_env = nullptr;
 
 };
+
+
+} // namespace Env
+
+
+
+namespace FsBroker {
+
+
+int32_t Fds::add(const FS::SmartFd::Ptr& smartfd) {
+  int32_t fd;
+  assign_fd: {
+    Core::MutexSptd::scope lock(m_mutex);
+    if(!emplace(++m_next_fd < 1 ? m_next_fd=1 : m_next_fd, smartfd).second)
+      goto assign_fd;
+    for(auto it = begin(); it != end(); ++it) {
+      if(it->first != m_next_fd && it->second->fd() == smartfd->fd()) {
+        erase(it);
+        break;
+      }
+    }
+    fd = m_next_fd;
+  }
+  if(auto& m = Env::FsBroker::metrics_track())
+    m->fds->increment();
+  return fd;
+}
+
+FS::SmartFd::Ptr Fds::remove(int32_t fd) {
+  {
+    Core::MutexSptd::scope lock(m_mutex);
+    auto it = find(fd);
+    if(it == end())
+      return nullptr;
+    FS::SmartFd::Ptr smartfd = std::move(it->second);
+    erase(it);
+  }
+  if(auto& m = Env::FsBroker::metrics_track())
+    m->fds->decrement();
+  return smartfd;
+}
 
 
 }}

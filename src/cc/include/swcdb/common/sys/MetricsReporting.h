@@ -453,9 +453,9 @@ class Reporting : public client::Query::Update::Handlers::Metric::Reporting {
               net(nullptr) {
   }
 
-  virtual void configure(const char* group_name, const char* inst_name,
-                         const char* host, const Comm::EndPoints& endpoints,
-                         uint8_t max_ev_cmd) {
+  virtual Level* configure(const char* group_name, const char* inst_name,
+                           const char* host, const Comm::EndPoints& endpoints,
+                           uint8_t max_ev_cmd) {
     auto level = host ? get_level(host) : nullptr;
     if(group_name)
       level = level ? level->get_level(group_name) : get_level(group_name);
@@ -473,6 +473,7 @@ class Reporting : public client::Query::Update::Handlers::Metric::Reporting {
     bool using_net_secure = Env::Config::settings()->get_bool("swc.comm.ssl");
     net = new Item_Net(endpoints, using_net_secure, max_ev_cmd);
     level->metrics.emplace_back(net);
+    return level;
   }
 
   virtual ~Reporting() { }

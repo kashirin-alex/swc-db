@@ -24,20 +24,22 @@ class Reporting final : public Common::Query::Update::Metric::Reporting {
 
   Reporting(const Comm::IoContextPtr& io,
             Config::Property::V_GINT32::Ptr cfg_intval_ms)
-            : Common::Query::Update::Metric::Reporting(io, cfg_intval_ms) {
+            : Common::Query::Update::Metric::Reporting(io, cfg_intval_ms),
+              fds(new Item_CountVolume("fds")) {
   }
 
   void configure_fsbroker(const char* host, const Comm::EndPoints& endpoints) {
-    Common::Query::Update::Metric::Reporting::configure(
+    auto level = Common::Query::Update::Metric::Reporting::configure(
       "swcdb", "fsbroker", host, endpoints,
       Comm::Protocol::FsBroker::Command::MAX_CMD
     );
 
-    // ++ FsBroker Metrics
+    level->metrics.emplace_back(fds);
   }
 
   virtual ~Reporting() { }
 
+  Item_CountVolume* fds;
 };
 
 
