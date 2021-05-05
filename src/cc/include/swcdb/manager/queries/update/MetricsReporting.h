@@ -32,7 +32,8 @@ class Reporting final : public Common::Query::Update::Metric::Reporting {
     if(gethostname(hostname, sizeof(hostname)) == -1)
       SWC_THROW(errno, "gethostname");
 
-    auto level = Common::Query::Update::Metric::Reporting::configure(
+    //auto level =
+    Common::Query::Update::Metric::Reporting::configure(
       "swcdb", "mngr", hostname, endpoints,
       Comm::Protocol::Mngr::Command::MAX_CMD
     );
