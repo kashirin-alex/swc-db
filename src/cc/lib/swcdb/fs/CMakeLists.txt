@@ -14,6 +14,7 @@ if(NOT SWC_BUILD_PKG OR SWC_BUILD_PKG STREQUAL "lib-fs")
 
 set(swcdb_fscore_sources
   ${SWC_VERSION_SRC}
+  Statistics.cc
   Dirent.cc
   SmartFd.cc
   Settings.cc
