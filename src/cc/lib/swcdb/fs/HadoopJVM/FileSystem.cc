@@ -296,6 +296,7 @@ void FileSystemHadoopJVM::need_reconnect(
 
 
 bool FileSystemHadoopJVM::exists(int& err, const std::string& name) {
+  auto tracker = statistics.tracker(Statistics::EXISTS_SYNC);
   std::string abspath;
   get_abspath(name, abspath);
 
@@ -313,6 +314,7 @@ bool FileSystemHadoopJVM::exists(int& err, const std::string& name) {
 }
 
 void FileSystemHadoopJVM::remove(int& err, const std::string& name) {
+  auto tracker = statistics.tracker(Statistics::REMOVE_SYNC);
   std::string abspath;
   get_abspath(name, abspath);
   int tmperr = Error::OK;
@@ -332,6 +334,7 @@ void FileSystemHadoopJVM::remove(int& err, const std::string& name) {
 }
 
 size_t FileSystemHadoopJVM::length(int& err, const std::string& name) {
+  auto tracker = statistics.tracker(Statistics::LENGTH_SYNC);
   std::string abspath;
   get_abspath(name, abspath);
   hdfsFileInfo *fileInfo;
@@ -354,6 +357,7 @@ size_t FileSystemHadoopJVM::length(int& err, const std::string& name) {
 }
 
 void FileSystemHadoopJVM::mkdirs(int& err, const std::string& name) {
+  auto tracker = statistics.tracker(Statistics::MKDIRS_SYNC);
   std::string abspath;
   get_abspath(name, abspath);
 
@@ -370,6 +374,7 @@ void FileSystemHadoopJVM::mkdirs(int& err, const std::string& name) {
 
 void FileSystemHadoopJVM::readdir(int& err, const std::string& name,
                                   DirentList& results) {
+  auto tracker = statistics.tracker(Statistics::READDIR_SYNC);
   std::string abspath;
   get_abspath(name, abspath);
   hdfsFileInfo *fileInfo;
@@ -404,6 +409,7 @@ void FileSystemHadoopJVM::readdir(int& err, const std::string& name,
 }
 
 void FileSystemHadoopJVM::rmdir(int& err, const std::string& name) {
+  auto tracker = statistics.tracker(Statistics::RMDIR_SYNC);
   std::string abspath;
   get_abspath(name, abspath);
   int tmperr = Error::OK;
@@ -423,6 +429,7 @@ void FileSystemHadoopJVM::rmdir(int& err, const std::string& name) {
 
 void FileSystemHadoopJVM::rename(int& err, const std::string& from,
                                  const std::string& to)  {
+  auto tracker = statistics.tracker(Statistics::RENAME_SYNC);
   std::string abspath_from;
   get_abspath(from, abspath_from);
   std::string abspath_to;
@@ -442,6 +449,7 @@ void FileSystemHadoopJVM::rename(int& err, const std::string& from,
 void FileSystemHadoopJVM::create(int& err, SmartFd::Ptr& smartfd,
                                  int32_t bufsz, uint8_t replication,
                                  int64_t blksz) {
+  auto tracker = statistics.tracker(Statistics::CREATE_SYNC);
   std::string abspath;
   get_abspath(smartfd->filepath(), abspath);
 
@@ -481,6 +489,7 @@ void FileSystemHadoopJVM::create(int& err, SmartFd::Ptr& smartfd,
 
 void FileSystemHadoopJVM::open(int& err, SmartFd::Ptr& smartfd,
                                int32_t bufsz) {
+  auto tracker = statistics.tracker(Statistics::OPEN_SYNC);
   std::string abspath;
   get_abspath(smartfd->filepath(), abspath);
   int oflags = O_RDONLY;
@@ -512,6 +521,7 @@ void FileSystemHadoopJVM::open(int& err, SmartFd::Ptr& smartfd,
 
 size_t FileSystemHadoopJVM::read(int& err, SmartFd::Ptr& smartfd,
               void *dst, size_t amount) {
+  auto tracker = statistics.tracker(Statistics::READ_SYNC);
   auto hadoop_fd = get_fd(smartfd);
   size_t ret = 0;
   int tmperr = Error::OK;
@@ -544,6 +554,7 @@ size_t FileSystemHadoopJVM::read(int& err, SmartFd::Ptr& smartfd,
 
 size_t FileSystemHadoopJVM::pread(int& err, SmartFd::Ptr& smartfd,
                                uint64_t offset, void *dst, size_t amount) {
+  auto tracker = statistics.tracker(Statistics::PREAD_SYNC);
   auto hadoop_fd = get_fd(smartfd);
   size_t ret = 0;
   int tmperr = Error::OK;
@@ -577,6 +588,7 @@ size_t FileSystemHadoopJVM::pread(int& err, SmartFd::Ptr& smartfd,
 
 size_t FileSystemHadoopJVM::append(int& err, SmartFd::Ptr& smartfd,
                                 StaticBuffer& buffer, Flags flags) {
+  auto tracker = statistics.tracker(Statistics::APPEND_SYNC);
   auto hadoop_fd = get_fd(smartfd);
   ssize_t nwritten = 0;
 
@@ -620,6 +632,7 @@ size_t FileSystemHadoopJVM::append(int& err, SmartFd::Ptr& smartfd,
 
 void FileSystemHadoopJVM::seek(int& err, SmartFd::Ptr& smartfd,
                                size_t offset) {
+  auto tracker = statistics.tracker(Statistics::SEEK_SYNC);
   auto hadoop_fd = get_fd(smartfd);
 
   auto fs = get_fs(err);
@@ -643,6 +656,7 @@ void FileSystemHadoopJVM::seek(int& err, SmartFd::Ptr& smartfd,
 }
 
 void FileSystemHadoopJVM::flush(int& err, SmartFd::Ptr& smartfd) {
+  auto tracker = statistics.tracker(Statistics::FLUSH_SYNC);
   auto hadoop_fd = get_fd(smartfd);
 
   auto fs = get_fs(err);
@@ -664,6 +678,7 @@ void FileSystemHadoopJVM::flush(int& err, SmartFd::Ptr& smartfd) {
 }
 
 void FileSystemHadoopJVM::sync(int& err, SmartFd::Ptr& smartfd) {
+  auto tracker = statistics.tracker(Statistics::SYNC_SYNC);
   auto hadoop_fd = get_fd(smartfd);
 
   auto fs = get_fs(err);
@@ -685,6 +700,7 @@ void FileSystemHadoopJVM::sync(int& err, SmartFd::Ptr& smartfd) {
 }
 
 void FileSystemHadoopJVM::close(int& err, SmartFd::Ptr& smartfd) {
+  auto tracker = statistics.tracker(Statistics::CLOSE_SYNC);
   auto hadoop_fd = get_fd(smartfd);
   SWC_LOGF(LOG_DEBUG, "close %s", hadoop_fd->to_string().c_str());
 
