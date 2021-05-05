@@ -129,7 +129,8 @@ SerializedServer::SerializedServer(
     host = host.append(settings->get_str("host"));
   else {
     char hostname[256];
-    gethostname(hostname, sizeof(hostname));
+    if(gethostname(hostname, sizeof(hostname)) == -1)
+      SWC_THROW(errno, "gethostname");
     host.append(hostname);
   }
 

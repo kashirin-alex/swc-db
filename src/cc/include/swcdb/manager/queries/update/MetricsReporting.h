@@ -27,12 +27,17 @@ class Reporting final : public Common::Query::Update::Metric::Reporting {
             : Common::Query::Update::Metric::Reporting(io, cfg_intval_ms) {
   }
 
-  void configure_mngr(const char* host, const Comm::EndPoints& endpoints) {
-    Common::Query::Update::Metric::Reporting::configure(
-      "swcdb", "mngr", host, endpoints,
+  void configure_mngr(const char*, const Comm::EndPoints& endpoints) {
+    char hostname[256];
+    if(gethostname(hostname, sizeof(hostname)) == -1)
+      SWC_THROW(errno, "gethostname");
+
+    auto level = Common::Query::Update::Metric::Reporting::configure(
+      "swcdb", "mngr", hostname, endpoints,
       Comm::Protocol::Mngr::Command::MAX_CMD
     );
 
+    //level->metrics.emplace_back(new Item_FS(Env::FsInterface::fs()));
     // ++ Manager Metrics
   }
 

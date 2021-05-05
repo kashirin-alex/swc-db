@@ -59,11 +59,12 @@ int run() {
     addrs = settings->get_strs("addr");
 
   std::string host;
-  if(settings->has("host"))
+  if(settings->has("host")) {
     host = host.append(settings->get_str("host"));
-  else {
+  } else {
     char hostname[256];
-    gethostname(hostname, sizeof(hostname));
+    if(gethostname(hostname, sizeof(hostname)) == -1)
+      SWC_THROW(errno, "gethostname");
     host.append(hostname);
   }
 

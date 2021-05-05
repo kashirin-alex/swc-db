@@ -27,9 +27,13 @@ class Reporting final : public Common::Query::Update::Metric::Reporting {
             : Common::Query::Update::Metric::Reporting(io, cfg_intval_ms) {
   }
 
-  void configure_thriftbroker(const char* host, const Comm::EndPoints& endpoints) {
+  void configure_thriftbroker(const char*, const Comm::EndPoints& endpoints) {
+    char hostname[256];
+    if(gethostname(hostname, sizeof(hostname)) == -1)
+      SWC_THROW(errno, "gethostname");
+
     Common::Query::Update::Metric::Reporting::configure(
-      "swcdb", "thriftbroker", host, endpoints, 0
+      "swcdb", "thriftbroker", hostname, endpoints, 0
     );
 
     // ++ ThriftBroker Metrics

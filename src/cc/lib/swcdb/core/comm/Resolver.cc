@@ -277,10 +277,8 @@ void Resolver::get_local_networks(int& err,
                                   std::vector<asio::ip::network_v4>& nets_v4,
                                   std::vector<asio::ip::network_v6>& nets_v6)
                                   {
-  errno = 0;
   char hostname[256];
-  err = gethostname(hostname, sizeof(hostname));
-  if(err == -1) {
+  if(gethostname(hostname, sizeof(hostname)) == -1) {
     err = errno;
     return;
   }

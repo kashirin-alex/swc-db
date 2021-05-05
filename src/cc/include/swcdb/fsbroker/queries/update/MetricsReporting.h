@@ -28,12 +28,17 @@ class Reporting final : public Common::Query::Update::Metric::Reporting {
               fds(new Item_CountVolume("fds")) {
   }
 
-  void configure_fsbroker(const char* host, const Comm::EndPoints& endpoints) {
+  void configure_fsbroker(const char*, const Comm::EndPoints& endpoints) {
+    char hostname[256];
+    if(gethostname(hostname, sizeof(hostname)) == -1)
+      SWC_THROW(errno, "gethostname");
+
     auto level = Common::Query::Update::Metric::Reporting::configure(
-      "swcdb", "fsbroker", host, endpoints,
+      "swcdb", "fsbroker", hostname, endpoints,
       Comm::Protocol::FsBroker::Command::MAX_CMD
     );
 
+    //level->metrics.emplace_back(new Item_FS(Env::FsInterface::fs()));
     level->metrics.emplace_back(fds);
   }
 

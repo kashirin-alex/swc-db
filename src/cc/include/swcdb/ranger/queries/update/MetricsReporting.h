@@ -27,12 +27,17 @@ class Reporting final : public Common::Query::Update::Metric::Reporting {
             : Common::Query::Update::Metric::Reporting(io, cfg_intval_ms) {
   }
 
-  void configure_rgr(const char* host, const Comm::EndPoints& endpoints) {
-    Common::Query::Update::Metric::Reporting::configure(
-      "swcdb", "rgr", host, endpoints,
+  void configure_rgr(const char*, const Comm::EndPoints& endpoints) {
+    char hostname[256];
+    if(gethostname(hostname, sizeof(hostname)) == -1)
+      SWC_THROW(errno, "gethostname");
+
+    auto level = Common::Query::Update::Metric::Reporting::configure(
+      "swcdb", "rgr", hostname, endpoints,
       Comm::Protocol::Rgr::Command::MAX_CMD
     );
 
+    //level->metrics.emplace_back(new Item_FS(Env::FsInterface::fs()));
     // ++ Ranger Metrics
   }
 
