@@ -43,11 +43,22 @@ _default_ **```swc.ThriftBroker.timeout=900000```**
 The number of SWC-DB clients handlers. \
 _default_ **```swc.ThriftBroker.clients.handlers=8```**
 
+* ### swc.ThriftBroker.metrics.enabled
+```BOOL```
+Enable or Disable ThriftBroker Metrics Monitoring. \
+_default_ **```swc.ThriftBroker.metrics.enabled=true```**
+
 
 
 ***
 
  > **_The configuration properties applicable for dynamic reloading_**
+
+* ### swc.ThriftBroker.metrics.report.interval
+```G_INT32```
+The Metrics Reporting Interval in Seconds. Zero(=0) skips metrics update.\
+_default_ **```swc.ThriftBroker.metrics.report.interval=300```**
+
 
 ***
 

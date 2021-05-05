@@ -8,6 +8,7 @@
 
 
 #include "swcdb/db/client/Clients.h"
+#include "swcdb/thrift/broker/ThriftBrokerEnv.h"
 #include "swcdb/thrift/broker/AppHandler.h"
 
 
@@ -42,6 +43,7 @@ class AppContext final : virtual public BrokerIfFactory,
         std::make_shared<client::ContextRanger>()
       )
     );
+    Env::ThriftBroker::init();
 
     //Env::FsInterface::init(FS::fs_type(settings->get_str("swc.fs")));
 
@@ -52,6 +54,13 @@ class AppContext final : virtual public BrokerIfFactory,
         period,
         [](){Env::Config::settings()->check_dynamic_files();}
       );
+    }
+  }
+
+  void init(const std::string& host, const Comm::EndPoints& endpoints) {
+    if((m_metrics = Env::ThriftBroker::metrics_track())) {
+      m_metrics->configure_thriftbroker(host.c_str(), endpoints);
+      m_metrics->start();
     }
   }
 
@@ -136,6 +145,8 @@ class AppContext final : virtual public BrokerIfFactory,
 
   void stop() {
 
+    Env::ThriftBroker::stop();
+
     Env::Clients::get()->rgr->stop();
     Env::Clients::get()->mngr->stop();
     Env::IoCtx::io()->stop();
@@ -149,6 +160,7 @@ class AppContext final : virtual public BrokerIfFactory,
 
     #if defined(SWC_ENABLE_SANITIZER)
       std::this_thread::sleep_for(std::chrono::seconds(2));
+      m_metrics = nullptr;
       Env::Clients::reset();
       Env::IoCtx::reset();
     #endif
@@ -158,6 +170,8 @@ class AppContext final : virtual public BrokerIfFactory,
   Core::AtomicBool                              m_run;
   std::condition_variable                       m_cv;
   Core::CompletionCounter<size_t>               m_connections;
+  Metric::Reporting::Ptr                        m_metrics = nullptr;
+
 };
 
 
