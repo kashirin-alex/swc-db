@@ -450,10 +450,11 @@ class Item_FS : public Base {
 
   public:
 
-  static const uint8_t FIELD_MIN    = 0;
-  static const uint8_t FIELD_MAX    = FS::Statistics::Command::MAX * 1;
-  static const uint8_t FIELD_AVG    = FS::Statistics::Command::MAX * 2;
-  static const uint8_t FIELD_COUNT  = FS::Statistics::Command::MAX * 3;
+  static const uint8_t FIELD_FDS    = 0;
+  static const uint8_t FIELD_MIN    = 1;
+  static const uint8_t FIELD_MAX    = 1 + FS::Statistics::Command::MAX * 1;
+  static const uint8_t FIELD_AVG    = 1 + FS::Statistics::Command::MAX * 2;
+  static const uint8_t FIELD_COUNT  = 1 + FS::Statistics::Command::MAX * 3;
 
   typedef std::unique_ptr<Item_FS> Ptr;
   FS::FileSystem::Ptr              fs;
@@ -467,8 +468,11 @@ class Item_FS : public Base {
                       const DB::Cell::KeyVec& parent_key) override {
     FS::Statistics stats;
     fs->statistics.gather(stats);
+    uint64_t open_fds = fs->statistics.fds_count.load();
 
-    size_t sz = 0;
+    size_t sz = open_fds
+      ? (2 + Serialization::encoded_length_vi64(open_fds))
+      : 0;
     for(uint8_t cmd=0; cmd < FS::Statistics::Command::MAX; ++cmd) {
       auto& m = stats.metrics[cmd];
       if(m.m_count) {
@@ -484,6 +488,9 @@ class Item_FS : public Base {
 
     DB::Cell::Serial::Value::FieldsWriter wfields;
     wfields.ensure(sz);
+
+    if(open_fds)
+      wfields.add(FIELD_FDS, int64_t(open_fds));
 
     for(uint8_t cmd=0; cmd < FS::Statistics::Command::MAX; ++cmd) {
       auto& m = stats.metrics[cmd];

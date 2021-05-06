@@ -70,16 +70,16 @@ FileSystem::FileSystem(const Configurables& config)
       path_data(
         normalize_pathname(
           Env::Config::settings()->get_str("swc.fs.path.data"))),
-      cfg_fds_max(config.cfg_fds_max), fds_count(0), m_run(true) {
+      cfg_fds_max(config.cfg_fds_max), m_run(true) {
 }
 
 FileSystem::~FileSystem() { }
 
 void FileSystem::stop() {
   m_run.store(false);
-  if(fds_count.load())
+  if(statistics.fds_count.load())
     SWC_LOGF(LOG_WARN, "FS %s remained with open-fds=%lu",
-             to_string().c_str(), fds_count.load());
+             to_string().c_str(), statistics.fds_count.load());
 }
 
 Type FileSystem::get_type() const noexcept {
@@ -116,19 +116,19 @@ void FileSystem::get_abspath(const std::string& name, std::string& abspath,
 }
 
 void FileSystem::fd_open_incr() noexcept {
-  fds_count.fetch_add(1);
+  statistics.fds_count.fetch_add(1);
 }
 
 void FileSystem::fd_open_decr() noexcept {
-  fds_count.fetch_sub(1);
+  statistics.fds_count.fetch_sub(1);
 }
 
 bool FileSystem::need_fds() const noexcept {
-  return fds_count >= size_t(cfg_fds_max->get());
+  return statistics.fds_count >= size_t(cfg_fds_max->get());
 }
 
 size_t FileSystem::fds_open() const noexcept {
-  return fds_count.load();
+  return statistics.fds_count.load();
 }
 
 

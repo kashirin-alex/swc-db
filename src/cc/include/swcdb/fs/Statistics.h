@@ -101,7 +101,7 @@ struct Statistics {
     uint64_t m_total;
   };
 
-  Statistics() noexcept { }
+  Statistics() noexcept : fds_count(0) { }
   Statistics(const Statistics&)            = delete;
   Statistics(Statistics&&)                 = delete;
   Statistics& operator=(const Statistics&) = delete;
@@ -117,6 +117,7 @@ struct Statistics {
   void reset() noexcept;
 
   Metric metrics[Command::MAX];
+  Core::Atomic<uint64_t> fds_count;
 
 };
 
