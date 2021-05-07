@@ -41,6 +41,13 @@ class Clients final {
 
   //~Clients() { }
 
+  void stop();
+
+  bool stopping() const noexcept {
+    return !running;
+  }
+
+  Core::AtomicBool                running;
   const Mngr::Groups::Ptr         mngrs_groups;
   Comm::client::ConnQueuesPtr     mngr;
   Comm::client::ConnQueuesPtr     rgr;
@@ -61,7 +68,7 @@ class Clients final {
 
   static void init(const client::Clients::Ptr& clients);
 
-  static client::Clients::Ptr get();
+  static client::Clients::Ptr& get();
 
   static const Clients& ref() noexcept;
 

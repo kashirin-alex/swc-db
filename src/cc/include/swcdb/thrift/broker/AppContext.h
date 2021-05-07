@@ -147,8 +147,7 @@ class AppContext final : virtual public BrokerIfFactory,
 
     Env::ThriftBroker::stop();
 
-    Env::Clients::get()->rgr->stop();
-    Env::Clients::get()->mngr->stop();
+    Env::Clients::get()->stop();
     Env::IoCtx::io()->stop();
 
     //Env::FsInterface::interface()->stop();
@@ -160,7 +159,10 @@ class AppContext final : virtual public BrokerIfFactory,
 
     #if defined(SWC_ENABLE_SANITIZER)
       std::this_thread::sleep_for(std::chrono::seconds(2));
-      m_metrics = nullptr;
+      if(m_metrics) {
+        m_metrics->wait();
+        m_metrics = nullptr;
+      }
       Env::Clients::reset();
       Env::IoCtx::reset();
     #endif

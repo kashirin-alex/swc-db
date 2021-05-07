@@ -254,6 +254,8 @@ class Reporting : public BaseSingleColumn {
   }
 
   virtual void stop();
+  
+  virtual void wait();
 
   Level* get_level(const char* name);
 

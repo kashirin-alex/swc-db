@@ -962,8 +962,7 @@ int main(int argc, char** argv) {
   SWC::Utils::LoadGenerator::generate();
 
   SWC_CAN_QUICK_EXIT(EXIT_SUCCESS);
-  SWC::Env::Clients::get()->rgr->stop();
-  SWC::Env::Clients::get()->mngr->stop();
+  SWC::Env::Clients::get()->stop();
   SWC::Env::IoCtx::io()->stop();
 
   std::this_thread::sleep_for(std::chrono::seconds(2));

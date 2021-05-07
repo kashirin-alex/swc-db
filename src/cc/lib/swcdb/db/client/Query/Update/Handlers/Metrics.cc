@@ -185,8 +185,15 @@ void Reporting::stop() {
     Core::MutexSptd::scope lock(m_mutex);
     m_timer.cancel();
   }
-  while(completion.count())
+}
+
+void Reporting::wait() {
+  for(size_t n=0; completion.count(); ++n) {
+    if(n % 30000)
+      SWC_LOGF(LOG_WARN, "Reporting::wait completion=%lu",
+               completion.count());
     std::this_thread::sleep_for(std::chrono::microseconds(100));
+  }
 }
 
 Level* Reporting::get_level(const char* _name) {

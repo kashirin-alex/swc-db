@@ -17,8 +17,8 @@ Comm::IoContextPtr default_io() {
 Clients::Clients(Comm::IoContextPtr ioctx,
                  const ContextManager::Ptr& mngr_ctx,
                  const ContextRanger::Ptr& rgr_ctx)
-    : mngrs_groups(std::make_shared<Mngr::Groups>()->init()),
-
+    : running(true),
+      mngrs_groups(std::make_shared<Mngr::Groups>()->init()),
       mngr(std::make_shared<Comm::client::ConnQueues>(
         std::make_shared<Comm::client::Serialized>(
           "MANAGER",
@@ -60,7 +60,14 @@ Clients::Clients(Comm::IoContextPtr ioctx,
           "swc.client.Rgr.range.res.expiry")) {
 }
 
+void Clients::stop() {
+  running.store(false);
+  rgr->stop();
+  mngr->stop();
+}
+
 } // namespace client
+
 
 
 namespace Env {
@@ -69,7 +76,7 @@ void Clients::init(const client::Clients::Ptr& clients) {
   m_env = std::make_shared<Clients>(clients);
 }
 
-client::Clients::Ptr Clients::get() {
+client::Clients::Ptr& Clients::get() {
   SWC_ASSERT(m_env);
   return m_env->m_clients;
 }
