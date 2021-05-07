@@ -60,48 +60,38 @@ std::string FileSystemLocal::to_string() const {
 
 bool FileSystemLocal::exists(int& err, const std::string& name) {
   auto tracker = statistics.tracker(Statistics::EXISTS_SYNC);
+  SWC_FS_EXISTS_START(name);
   std::string abspath;
   get_abspath(name, abspath);
   struct stat statbuf;
   errno = 0;
   bool state = !::stat(abspath.c_str(), &statbuf);
   err = errno == ENOENT ? Error::OK : errno;
-  SWC_LOGF(LOG_DEBUG, "exists state='%d' path='%s'", state, abspath.c_str());
+  SWC_FS_EXISTS_FINISH(err, abspath, state, tracker);
   return state;
 }
 
 void FileSystemLocal::remove(int& err, const std::string& name) {
   auto tracker = statistics.tracker(Statistics::REMOVE_SYNC);
+  SWC_FS_REMOVE_START(name);
   std::string abspath;
   get_abspath(name, abspath);
   errno = 0;
-  if(::unlink(abspath.c_str()) == -1) {
-    if(errno != ENOENT) {
-      err = errno;
-      SWC_LOGF(LOG_ERROR, "remove('%s') failed - %d(%s)",
-                abspath.c_str(), errno, Error::get_text(errno));
-      return;
-    }
-  }
-  SWC_LOGF(LOG_DEBUG, "remove('%s')", abspath.c_str());
+  err = ::unlink(abspath.c_str())==-1 && errno != ENOENT ? errno : Error::OK;
+  SWC_FS_REMOVE_FINISH(err, abspath, tracker);
 }
 
 size_t FileSystemLocal::length(int& err, const std::string& name) {
   auto tracker = statistics.tracker(Statistics::LENGTH_SYNC);
+  SWC_FS_LENGTH_START(name);
   std::string abspath;
   get_abspath(name, abspath);
-  errno = 0;
 
-  size_t len = 0;
   struct stat statbuf;
-  if(stat(abspath.c_str(), &statbuf)) {
-    err = errno;
-    SWC_LOGF(LOG_ERROR, "length('%s') failed - %d(%s)",
-              abspath.c_str(), errno, Error::get_text(errno));
-    return len;
-  }
-  len = statbuf.st_size;
-  SWC_LOGF(LOG_DEBUG, "length len='%lu' path='%s'", len, abspath.c_str());
+  errno = 0;
+  size_t len = stat(abspath.c_str(), &statbuf) ? 0 : statbuf.st_size;
+  err = errno;
+  SWC_FS_LENGTH_FINISH(err, abspath, len, tracker);
   return len;
 }
 
@@ -134,22 +124,19 @@ int _mkdirs(std::string& dirname) {
 
 void FileSystemLocal::mkdirs(int& err, const std::string& name) {
   auto tracker = statistics.tracker(Statistics::MKDIRS_SYNC);
+  SWC_FS_MKDIRS_START(name);
   std::string abspath;
   get_abspath(name, abspath, 1);
-  SWC_LOGF(LOG_DEBUG, "mkdirs path='%s'", abspath.c_str());
-
-  if((err = _mkdirs(abspath)))
-    SWC_LOGF(LOG_ERROR, "mkdirs failed: %d(%s) at path='%s'",
-              err, Error::get_text(err), abspath.c_str());
-
+  err = _mkdirs(abspath);
+  SWC_FS_MKDIRS_FINISH(err, abspath, tracker);
 }
 
 void FileSystemLocal::readdir(int& err, const std::string& name,
                               DirentList& results) {
   auto tracker = statistics.tracker(Statistics::READDIR_SYNC);
+  SWC_FS_READDIR_START(name);
   std::string abspath;
   get_abspath(name, abspath);
-  SWC_LOGF(LOG_DEBUG, "Readdir dir='%s'", abspath.c_str());
 
   DIR* dirp;
   std::string full_entry_path;
@@ -185,129 +172,113 @@ void FileSystemLocal::readdir(int& err, const std::string& name,
   err = errno;
 
   _finish:
-  if(err)
-    SWC_LOGF(LOG_ERROR, "Readdir failed: %d(%s), %s",
-              err, Error::get_text(err), abspath.c_str());
-  if(dirp)
-    closedir(dirp);
+    if(dirp)
+      closedir(dirp);
+    SWC_FS_READDIR_FINISH(err, abspath, results.size(), tracker);
 }
 
 void FileSystemLocal::rmdir(int& err, const std::string& name) {
   auto tracker = statistics.tracker(Statistics::RMDIR_SYNC);
+  SWC_FS_RMDIR_START(name);
   std::string abspath;
   get_abspath(name, abspath);
   std::error_code ec;
   std::filesystem::remove_all(abspath, ec);
-  if (ec) {
-    err = ec.value();
-    SWC_LOGF(LOG_ERROR, "rmdir('%s') failed - %s",
-              abspath.c_str(), Error::get_text(errno));
-    return;
-  }
-  SWC_LOGF(LOG_DEBUG, "rmdir('%s')", abspath.c_str());
+  err = ec.value();
+  SWC_FS_RMDIR_FINISH(err, abspath, tracker);
 }
 
 void FileSystemLocal::rename(int& err, const std::string& from,
                               const std::string& to)  {
   auto tracker = statistics.tracker(Statistics::RENAME_SYNC);
+  SWC_FS_RENAME_START(from, to);
   std::string abspath_from;
   get_abspath(from, abspath_from);
   std::string abspath_to;
   get_abspath(to, abspath_to);
   std::error_code ec;
   std::filesystem::rename(abspath_from, abspath_to, ec);
-  if (ec) {
-    err = ec.value();
-    SWC_LOGF(LOG_ERROR, "rename('%s' to '%s') failed - %s",
-              abspath_from.c_str(), abspath_to.c_str(), Error::get_text(errno));
-    return;
-  }
-  SWC_LOGF(LOG_DEBUG, "rename('%s' to '%s')",
-            abspath_from.c_str(), abspath_to.c_str());
+  err = ec.value();
+  SWC_FS_RENAME_FINISH(err, abspath_from, abspath_to, tracker);
 }
 
 void FileSystemLocal::create(int& err, SmartFd::Ptr& smartfd,
                              int32_t bufsz, uint8_t replication,
                              int64_t blksz) {
   auto tracker = statistics.tracker(Statistics::CREATE_SYNC);
+  SWC_FS_CREATE_START(smartfd, bufsz, replication, blksz);
   std::string abspath;
   get_abspath(smartfd->filepath(), abspath);
-  SWC_LOGF(LOG_DEBUG, "create %s bufsz=%d replication=%d blksz=%ld",
-            smartfd->to_string().c_str(), bufsz, replication, blksz);
 
   int oflags = O_WRONLY | O_CREAT
     | (smartfd->flags() & OpenFlags::OPEN_FLAG_OVERWRITE ? O_TRUNC : O_APPEND);
 
-#ifdef O_DIRECT
-  if (m_directio && smartfd->flags() & OpenFlags::OPEN_FLAG_DIRECTIO)
-    oflags |= O_DIRECT;
-#endif
+  #ifdef O_DIRECT
+    if (m_directio && smartfd->flags() & OpenFlags::OPEN_FLAG_DIRECTIO)
+      oflags |= O_DIRECT;
+  #endif
 
   /* Open the file */
+  int tmperr;
   errno = 0;
   smartfd->fd(::open(abspath.c_str(), oflags, 0644));
   if (!smartfd->valid()) {
-    err = errno;
-    SWC_LOGF(LOG_ERROR, "create failed: %d(%s), %s",
-              errno, Error::get_text(errno), smartfd->to_string().c_str());
-
-    if(err == EACCES || err == ENOENT)
+    tmperr = errno;
+    if(tmperr == EACCES || tmperr == ENOENT)
       err = Error::FS_PATH_NOT_FOUND;
-    else if (err == EPERM)
+    else if (tmperr == EPERM)
       err = Error::FS_PERMISSION_DENIED;
-    return;
+    else
+      err = tmperr;
+  } else {
+    err = tmperr = Error::OK;
+    fd_open_incr();
+    #if defined(__APPLE__)
+      #ifdef F_NOCACHE
+        fcntl(smartfd->fd(), F_NOCACHE, 1);
+      #endif
+    #elif defined(__sun__)
+      if (m_directio)
+        directio(smartfd->fd(), DIRECTIO_ON);
+    #endif
   }
-  fd_open_incr();
-  SWC_LOGF(LOG_DEBUG, "created %s bufsz=%d replication=%d blksz=%ld",
-            smartfd->to_string().c_str(), bufsz, replication, blksz);
-
-#if defined(__APPLE__)
-#ifdef F_NOCACHE
-  fcntl(smartfd->fd(), F_NOCACHE, 1);
-#endif
-#elif defined(__sun__)
-  if (m_directio)
-    directio(smartfd->fd(), DIRECTIO_ON);
-#endif
-
+  SWC_FS_CREATE_FINISH(tmperr, smartfd, fds_open(), tracker);
 }
 
 void FileSystemLocal::open(int& err, SmartFd::Ptr& smartfd, int32_t bufsz) {
   auto tracker = statistics.tracker(Statistics::OPEN_SYNC);
+  SWC_FS_OPEN_START(smartfd, bufsz);
   std::string abspath;
   get_abspath(smartfd->filepath(), abspath);
-  SWC_LOGF(LOG_DEBUG, "open %s, bufsz=%d",
-            smartfd->to_string().c_str(), bufsz);
 
   int oflags = O_RDONLY;
-
-#ifdef O_DIRECT
-  if(m_directio && smartfd->flags() & OpenFlags::OPEN_FLAG_DIRECTIO)
-    oflags |= O_DIRECT;
-#endif
+  #ifdef O_DIRECT
+    if(m_directio && smartfd->flags() & OpenFlags::OPEN_FLAG_DIRECTIO)
+      oflags |= O_DIRECT;
+  #endif
 
   /* Open the file */
+  int tmperr;
   errno = 0;
   smartfd->fd(::open(abspath.c_str(), oflags));
   if (!smartfd->valid()) {
-    err = errno;
-    SWC_LOGF(LOG_ERROR, "open failed: %d(%s), %s",
-              errno, Error::get_text(errno), smartfd->to_string().c_str());
-
-    if(err == EACCES || err == ENOENT)
+    tmperr = errno;
+    if(tmperr == EACCES || tmperr == ENOENT)
       err = Error::FS_PATH_NOT_FOUND;
-    else if (err == EPERM)
+    else if (tmperr == EPERM)
       err = Error::FS_PERMISSION_DENIED;
-    return;
+    else
+      err = tmperr;
+  } else {
+    err = tmperr = Error::OK;
+    fd_open_incr();
+
+    #if defined(__sun__)
+      if(m_directio)
+        directio(smartfd->fd(), DIRECTIO_ON);
+    #endif
   }
-  fd_open_incr();
-  SWC_LOGF(LOG_DEBUG, "opened %s", smartfd->to_string().c_str());
-
-#if defined(__sun__)
-  if(m_directio)
-    directio(smartfd->fd(), DIRECTIO_ON);
-#endif
-
+  SWC_FS_OPEN_FINISH(tmperr, smartfd, fds_open(), tracker);
 }
 
 
@@ -334,18 +305,7 @@ ssize_t _read(int fd, uint8_t* ptr, size_t n) noexcept {
 size_t FileSystemLocal::read(int& err, SmartFd::Ptr& smartfd,
                              void *dst, size_t amount) {
   auto tracker = statistics.tracker(Statistics::READ_SYNC);
-  SWC_LOGF(LOG_DEBUG, "read %s amount=%lu",
-            smartfd->to_string().c_str(), amount);
-  /*
-  uint64_t offset;
-  if ((offset = (uint64_t)lseek(smartfd->fd(), 0, SEEK_CUR)) == (uint64_t)-1) {
-    err = errno;
-    SWC_LOGF(LOG_ERROR, "read, lseek failed: %d(%s), %s offset=%lu",
-              errno, Error::get_text(errno), smartfd->to_string().c_str(), offset);
-    return nread;
-  }
-  */
-
+  SWC_FS_READ_START(smartfd, amount);
   size_t ret;
   errno = 0;
   ssize_t nread = _read(smartfd->fd(), static_cast<uint8_t*>(dst), amount);
@@ -353,15 +313,11 @@ size_t FileSystemLocal::read(int& err, SmartFd::Ptr& smartfd,
     ret = 0;
     nread = 0;
     err = errno;
-    SWC_LOGF(LOG_ERROR, "read failed: %d(%s), %s",
-              errno, Error::get_text(errno), smartfd->to_string().c_str());
   } else {
-    if((ret = nread) != amount)
-      err = Error::FS_EOF;
+    err = (ret = nread) == amount ? Error::OK : Error::FS_EOF;
     smartfd->forward(ret);
-    SWC_LOGF(LOG_DEBUG, "read(ed) %s amount=%lu eof=%d",
-              smartfd->to_string().c_str(), ret, err == Error::FS_EOF);
   }
+  SWC_FS_READ_FINISH(err, smartfd, ret, tracker);
   return ret;
 }
 
@@ -390,8 +346,7 @@ size_t FileSystemLocal::pread(int& err, SmartFd::Ptr& smartfd,
                               uint64_t offset, void* dst,
                               size_t amount) {
   auto tracker = statistics.tracker(Statistics::PREAD_SYNC);
-  SWC_LOGF(LOG_DEBUG, "pread %s offset=%lu amount=%lu",
-            smartfd->to_string().c_str(), offset, amount);
+  SWC_FS_PREAD_START(smartfd, offset, amount);
 
   size_t ret;
   errno = 0;
@@ -401,15 +356,11 @@ size_t FileSystemLocal::pread(int& err, SmartFd::Ptr& smartfd,
     ret = 0;
     nread = 0;
     err = errno;
-    SWC_LOGF(LOG_ERROR, "pread failed: %d(%s), %s",
-              errno, Error::get_text(errno), smartfd->to_string().c_str());
   } else {
-    if((ret = nread) != amount)
-      err = Error::FS_EOF;
+    err = (ret = nread) == amount ? Error::OK : Error::FS_EOF;
     smartfd->pos(offset + ret);
-    SWC_LOGF(LOG_DEBUG, "pread(ed) %s amount=%lu  eof=%d",
-              smartfd->to_string().c_str(), ret, err == Error::FS_EOF);
   }
+  SWC_FS_PREAD_FINISH(err, smartfd, ret, tracker);
   return ret;
 }
 
@@ -431,57 +382,38 @@ bool _write(int fd, const uint8_t* ptr, size_t nleft) noexcept {
 size_t FileSystemLocal::append(int& err, SmartFd::Ptr& smartfd,
                                StaticBuffer& buffer, Flags flags) {
   auto tracker = statistics.tracker(Statistics::APPEND_SYNC);
-  SWC_LOGF(LOG_DEBUG, "append %s amount=%lu flags=%d",
-            smartfd->to_string().c_str(), buffer.size, flags);
-
-  /*
-  if(smartfd->pos()
-    && lseek(smartfd->fd(), 0, SEEK_CUR) == (uint64_t)-1) {
-    err = errno;
-    SWC_LOGF(LOG_ERROR, "append, lseek failed: %d(%s), %s",
-              errno, Error::get_text(errno), smartfd->to_string().c_str());
-    return 0;
-  }
-  */
+  SWC_FS_APPEND_START(smartfd, buffer.size, flags);
 
   errno = 0;
   if(!_write(smartfd->fd(), buffer.base, buffer.size)) {
     err = errno ? errno : ECANCELED;
-    SWC_LOGF(LOG_ERROR, "write failed: %d(%s), %s",
-              err, Error::get_text(err), smartfd->to_string().c_str());
-    return 0;
-  }
-  smartfd->forward(buffer.size);
-
-  if(flags == Flags::FLUSH || flags == Flags::SYNC) {
-    if(fsync(smartfd->fd())) {
+  } else {
+    smartfd->forward(buffer.size);
+    if((flags == Flags::FLUSH || flags == Flags::SYNC) &&
+       ::fsync(smartfd->fd())) {
       err = errno;
-      SWC_LOGF(LOG_ERROR, "write, fsync failed: %d(%s), %s",
-                errno, Error::get_text(errno), smartfd->to_string().c_str());
+    } else {
+      err = Error::OK;
     }
   }
-
-  SWC_LOGF(LOG_DEBUG, "appended %s written=%lu",
-            smartfd->to_string().c_str(), buffer.size);
+  SWC_FS_APPEND_FINISH(err, smartfd, buffer.size, tracker);
   return buffer.size;
 }
 
 void FileSystemLocal::seek(int& err, SmartFd::Ptr& smartfd, size_t offset) {
   auto tracker = statistics.tracker(Statistics::SEEK_SYNC);
-  SWC_LOGF(LOG_DEBUG, "seek %s offset=%lu",
-            smartfd->to_string().c_str(), offset);
+  SWC_FS_SEEK_START(smartfd, offset);
 
   errno = 0;
-  uint64_t at = lseek(smartfd->fd(), offset, SEEK_SET);
-  if (at == uint64_t(-1) || at != offset || errno) {
-    err = errno;
-    SWC_LOGF(LOG_ERROR, "seek failed - %d(%s) %s",
-              err, Error::get_text(errno), smartfd->to_string().c_str());
-    if(!errno)
+  uint64_t at = ::lseek(smartfd->fd(), offset, SEEK_SET);
+  err = errno;
+  if (at == uint64_t(-1) || at != offset || err) {
+    if(!err)
       smartfd->pos(at);
-    return;
+  } else {
+    smartfd->pos(offset);
   }
-  smartfd->pos(offset);
+  SWC_FS_SEEK_FINISH(err, smartfd, tracker);
 }
 
 void FileSystemLocal::flush(int& err, SmartFd::Ptr& smartfd) {
@@ -490,19 +422,16 @@ void FileSystemLocal::flush(int& err, SmartFd::Ptr& smartfd) {
 
 void FileSystemLocal::sync(int& err, SmartFd::Ptr& smartfd) {
   auto tracker = statistics.tracker(Statistics::SYNC_SYNC);
-  SWC_LOGF(LOG_DEBUG, "sync %s", smartfd->to_string().c_str());
+  SWC_FS_SYNC_START(smartfd);
 
-  errno = 0;
-  if(fsync(smartfd->fd()) != Error::OK) {
-    err = errno;
-    SWC_LOGF(LOG_ERROR, "sync failed - %d(%s) %s",
-              err, Error::get_text(errno), smartfd->to_string().c_str());
-  }
+  err = ::fsync(smartfd->fd()) ? errno : Error::OK;
+  SWC_FS_SYNC_FINISH(err, smartfd, tracker);
 }
 
 void FileSystemLocal::close(int& err, SmartFd::Ptr& smartfd) {
   auto tracker = statistics.tracker(Statistics::CLOSE_SYNC);
-  SWC_LOGF(LOG_DEBUG, "close %s", smartfd->to_string().c_str());
+  SWC_FS_CLOSE_START(smartfd);
+
   int32_t fd = smartfd->invalidate();
   if(fd != -1) {
     errno = 0;
@@ -512,6 +441,7 @@ void FileSystemLocal::close(int& err, SmartFd::Ptr& smartfd) {
   } else {
     err = EBADR;
   }
+  SWC_FS_CLOSE_FINISH(err, smartfd, tracker);
 }
 
 

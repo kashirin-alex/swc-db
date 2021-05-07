@@ -11,6 +11,7 @@
 #include "swcdb/fs/Dirent.h"
 #include "swcdb/fs/Callbacks.h"
 #include "swcdb/fs/Statistics.h"
+#include "swcdb/fs/Logger.h"
 
 
 namespace SWC { namespace FS {

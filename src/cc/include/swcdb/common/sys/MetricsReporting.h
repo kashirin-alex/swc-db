@@ -454,7 +454,8 @@ class Item_FS : public Base {
   static const uint8_t FIELD_MIN    = 1;
   static const uint8_t FIELD_MAX    = 1 + FS::Statistics::Command::MAX * 1;
   static const uint8_t FIELD_AVG    = 1 + FS::Statistics::Command::MAX * 2;
-  static const uint8_t FIELD_COUNT  = 1 + FS::Statistics::Command::MAX * 3;
+  static const uint8_t FIELD_ERROR  = 1 + FS::Statistics::Command::MAX * 3;
+  static const uint8_t FIELD_COUNT  = 1 + FS::Statistics::Command::MAX * 4;
 
   typedef std::unique_ptr<Item_FS> Ptr;
   FS::FileSystem::Ptr              fs;
@@ -480,6 +481,7 @@ class Item_FS : public Base {
           + Serialization::encoded_length_vi64(m.m_min)
           + Serialization::encoded_length_vi64(m.m_max)
           + Serialization::encoded_length_vi64(m.m_total/m.m_count)
+          + (m.m_error? (2+Serialization::encoded_length_vi64(m.m_error)) :0)
           + Serialization::encoded_length_vi64(m.m_count);
       }
     }
@@ -506,6 +508,11 @@ class Item_FS : public Base {
       auto& m = stats.metrics[cmd];
       if(m.m_count)
         wfields.add(FIELD_AVG + cmd,  int64_t(m.m_total/m.m_count));
+    }
+    for(uint8_t cmd=0; cmd < FS::Statistics::Command::MAX; ++cmd) {
+      auto& m = stats.metrics[cmd];
+      if(m.m_error)
+        wfields.add(FIELD_ERROR + cmd,  int64_t(m.m_error));
     }
     for(uint8_t cmd=0; cmd < FS::Statistics::Command::MAX; ++cmd) {
       auto& m = stats.metrics[cmd];

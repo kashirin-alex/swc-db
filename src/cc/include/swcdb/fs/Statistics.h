@@ -66,19 +66,14 @@ struct Statistics {
 
     struct Tracker : Time::Measure_ns {
       Tracker(Metric* m) noexcept;
-      Tracker(Tracker&& other) noexcept
-        : Time::Measure_ns(std::move(*this)), m(other.m.exchange(nullptr)) {
-      }
-      Tracker(const Tracker&)            = delete;
-      Tracker& operator=(const Tracker&) = delete;
-      Tracker& operator=(Tracker&&)      = delete;
-      ~Tracker() { stop(); }
-      void stop() noexcept;
-
-      std::atomic<Metric*> m;
+      void stop(bool err) noexcept;
+      Metric* m;
     };
 
-    Metric() noexcept : m_count(0), m_min(0), m_max(0), m_total(0) { }
+    Metric() noexcept
+      : m_error(0), m_count(0),
+        m_min(0), m_max(0), m_total(0) {
+    }
     Metric(const Metric&)            = delete;
     Metric(Metric&&)                 = delete;
     Metric& operator=(const Metric&) = delete;
@@ -89,15 +84,16 @@ struct Statistics {
       return Tracker(this);
     }
 
-    void add(uint48_t ns) noexcept;
+    void add(bool err, uint64_t ns) noexcept;
 
     void gather(Metric& m) noexcept;
 
     void reset() noexcept;
 
-    uint24_t m_count;
-    uint48_t m_min;
-    uint48_t m_max;
+    uint24_t m_error;
+    uint32_t m_count;
+    uint64_t m_min;
+    uint64_t m_max;
     uint64_t m_total;
   };
 

@@ -22,7 +22,6 @@ namespace FsBroker {  namespace Req {
 bool Base::is_rsp(const Event::Ptr& ev, int cmd,
                   const uint8_t **ptr, size_t *remain) {
   // SWC_LOGF(LOG_DEBUG, "handle: %s", ev->to_str().c_str());
-  tracker.stop();
 
   switch(ev->type) {
     case Event::Type::ESTABLISHED:
@@ -67,10 +66,7 @@ void Base::handle_write(const Event::Ptr& ev, FS::SmartFd::Ptr& smartfd) {
   smartfd->fd(-1);
   smartfd->pos(0);
 
-  SWC_LOG_OUT(LOG_DEBUG,
-    Error::print(SWC_LOG_OSTREAM << "write ", error);
-    smartfd->print(SWC_LOG_OSTREAM << ' ');
-  );
+  SWC_FS_WRITE_FINISH(error, smartfd, tracker);
 }
 
 void Base::handle_sync(const Event::Ptr& ev, FS::SmartFd::Ptr& smartfd) {
@@ -89,11 +85,7 @@ void Base::handle_sync(const Event::Ptr& ev, FS::SmartFd::Ptr& smartfd) {
     default:
       break;
   }
-
-  SWC_LOG_OUT(LOG_DEBUG,
-    Error::print(SWC_LOG_OSTREAM << "sync ", error);
-    smartfd->print(SWC_LOG_OSTREAM << ' ');
-  );
+  SWC_FS_SYNC_FINISH(error, smartfd, tracker);
 }
 
 void Base::handle_seek(const Event::Ptr& ev, FS::SmartFd::Ptr& smartfd) {
@@ -121,11 +113,7 @@ void Base::handle_seek(const Event::Ptr& ev, FS::SmartFd::Ptr& smartfd) {
     default:
       break;
   }
-
-  SWC_LOG_OUT(LOG_DEBUG,
-    Error::print(SWC_LOG_OSTREAM << "seek ", error);
-    smartfd->print(SWC_LOG_OSTREAM << ' ');
-  );
+  SWC_FS_SEEK_FINISH(error, smartfd, tracker);
 }
 
 void Base::handle_rmdir(const Event::Ptr& ev, const std::string& name) {
@@ -135,7 +123,7 @@ void Base::handle_rmdir(const Event::Ptr& ev, const std::string& name) {
   if(!is_rsp(ev, FUNCTION_RMDIR, &ptr, &remain))
     return;
 
-  SWC_LOGF(LOG_DEBUG, "rmdir path='%s' error='%d'", name.c_str(), error);
+  SWC_FS_RMDIR_FINISH(error, name, tracker);
 }
 
 void Base::handle_rename(const Event::Ptr& ev,
@@ -146,12 +134,11 @@ void Base::handle_rename(const Event::Ptr& ev,
   if(!is_rsp(ev, FUNCTION_RENAME, &ptr, &remain))
     return;
 
-  SWC_LOGF(LOG_DEBUG, "rename '%s' to '%s' error='%d'",
-            from.c_str(), to.c_str(), error);
+  SWC_FS_RENAME_FINISH(error, from, to, tracker);
 }
 
 void Base::handle_readdir(const Event::Ptr& ev, const std::string& name,
-                          FS::DirentList& listing) {
+                          FS::DirentList& results) {
   const uint8_t *ptr;
   size_t remain;
 
@@ -162,16 +149,14 @@ void Base::handle_readdir(const Event::Ptr& ev, const std::string& name,
     try {
       Params::ReaddirRsp params;
       params.decode(&ptr, &remain);
-      listing = std::move(params.listing);
+      results = std::move(params.listing);
 
     } catch(...) {
       const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
       error = e.code();
     }
   }
-
-  SWC_LOGF(LOG_DEBUG, "readdir path='%s' error='%d' sz='%lu'",
-             name.c_str(), error, listing.size());
+  SWC_FS_READDIR_FINISH(error, name, results.size(), tracker);
 }
 
 void Base::handle_remove(const Event::Ptr& ev, const std::string& name) {
@@ -181,7 +166,7 @@ void Base::handle_remove(const Event::Ptr& ev, const std::string& name) {
   if(!is_rsp(ev, FUNCTION_REMOVE, &ptr, &remain))
     return;
 
-  SWC_LOGF(LOG_DEBUG, "remove path='%s' error='%d'", name.c_str(), error);
+  SWC_FS_REMOVE_FINISH(error, name, tracker);
 }
 
 void Base::handle_read(const Event::Ptr& ev, FS::SmartFd::Ptr& smartfd,
@@ -212,12 +197,7 @@ void Base::handle_read(const Event::Ptr& ev, FS::SmartFd::Ptr& smartfd,
     default:
       break;
   }
-
-  SWC_LOG_OUT(LOG_DEBUG,
-    SWC_LOG_PRINTF("read amount=%lu ", amount);
-    Error::print(SWC_LOG_OSTREAM, error);
-    smartfd->print(SWC_LOG_OSTREAM << ' ');
-  );
+  SWC_FS_READ_FINISH(error, smartfd, amount, tracker);
 }
 
 void Base::handle_read_all(const Event::Ptr& ev, const std::string& name) {
@@ -227,10 +207,7 @@ void Base::handle_read_all(const Event::Ptr& ev, const std::string& name) {
   if(!is_rsp(ev, FUNCTION_READ_ALL, &ptr, &remain))
     return;
 
-  SWC_LOGF(LOG_DEBUG, "read-all %s amount='%lu' error='%d'",
-                        name.c_str(),
-                        ev->data_ext.size,
-                        error);
+  SWC_FS_READALL_FINISH(error, name, ev->data_ext.size, tracker);
 }
 
 void Base::handle_pread(const Event::Ptr& ev, FS::SmartFd::Ptr& smartfd,
@@ -261,12 +238,7 @@ void Base::handle_pread(const Event::Ptr& ev, FS::SmartFd::Ptr& smartfd,
     default:
       break;
   }
-
-  SWC_LOG_OUT(LOG_DEBUG,
-    SWC_LOG_PRINTF("pread amount=%lu ", amount);
-    Error::print(SWC_LOG_OSTREAM, error);
-    smartfd->print(SWC_LOG_OSTREAM << ' ');
-  );
+  SWC_FS_PREAD_FINISH(error, smartfd, amount, tracker);
 }
 
 void Base::handle_combi_pread(const Event::Ptr& ev,
@@ -277,11 +249,7 @@ void Base::handle_combi_pread(const Event::Ptr& ev,
   if(!is_rsp(ev, FUNCTION_COMBI_PREAD, &ptr, &remain))
     return;
 
-  SWC_LOG_OUT(LOG_DEBUG,
-    SWC_LOG_PRINTF("combi-pread amount=%lu ", ev->data_ext.size);
-    Error::print(SWC_LOG_OSTREAM, error);
-    smartfd->print(SWC_LOG_OSTREAM << ' ');
-  );
+  SWC_FS_COMBI_PREAD_FINISH(error, smartfd, ev->data_ext.size, tracker);
 }
 
 void Base::handle_open(const FS::FileSystem::Ptr& fs, const Event::Ptr& ev,
@@ -305,12 +273,7 @@ void Base::handle_open(const FS::FileSystem::Ptr& fs, const Event::Ptr& ev,
       error = e.code();
     }
   }
-
-  SWC_LOG_OUT(LOG_DEBUG,
-    SWC_LOG_PRINTF("open fds-open=%lu ", fs->fds_open());
-    Error::print(SWC_LOG_OSTREAM, error);
-    smartfd->print(SWC_LOG_OSTREAM << ' ');
-  );
+  SWC_FS_OPEN_FINISH(error, smartfd, fs->fds_open(), tracker);
 }
 
 void Base::handle_mkdirs(const Event::Ptr& ev, const std::string& name) {
@@ -320,7 +283,7 @@ void Base::handle_mkdirs(const Event::Ptr& ev, const std::string& name) {
   if(!is_rsp(ev, FUNCTION_MKDIRS, &ptr, &remain))
     return;
 
-  SWC_LOGF(LOG_DEBUG, "mkdirs path='%s' error='%d'", name.c_str(), error);
+  SWC_FS_MKDIRS_FINISH(error, name, tracker);
 }
 
 void Base::handle_length(const Event::Ptr& ev, const std::string& name,
@@ -342,9 +305,7 @@ void Base::handle_length(const Event::Ptr& ev, const std::string& name,
       error = e.code();
     }
   }
-
-  SWC_LOGF(LOG_DEBUG, "length path='%s' error='%d' length='%lu'",
-           name.c_str(), error, length);
+  SWC_FS_LENGTH_FINISH(error, name, length, tracker);
 }
 
 void Base::handle_flush(const Event::Ptr& ev, FS::SmartFd::Ptr& smartfd) {
@@ -361,11 +322,7 @@ void Base::handle_flush(const Event::Ptr& ev, FS::SmartFd::Ptr& smartfd) {
     default:
       break;
   }
-
-  SWC_LOG_OUT(LOG_DEBUG,
-    Error::print(SWC_LOG_OSTREAM << "flush ", error);
-    smartfd->print(SWC_LOG_OSTREAM << ' ');
-  );
+  SWC_FS_FLUSH_FINISH(error, smartfd, tracker);
 }
 
 void Base::handle_exists(const Event::Ptr& ev, const std::string& name,
@@ -387,9 +344,7 @@ void Base::handle_exists(const Event::Ptr& ev, const std::string& name,
       error = e.code();
     }
   }
-
-  SWC_LOGF(LOG_DEBUG, "exists path='%s' error='%d' state='%d'",
-           name.c_str(), error, state);
+  SWC_FS_EXISTS_FINISH(error, name, state, tracker);
 }
 
 void Base::handle_create(const FS::FileSystem::Ptr& fs, const Event::Ptr& ev,
@@ -413,12 +368,7 @@ void Base::handle_create(const FS::FileSystem::Ptr& fs, const Event::Ptr& ev,
       error = e.code();
     }
   }
-
-  SWC_LOG_OUT(LOG_DEBUG,
-    SWC_LOG_PRINTF("create fds-open=%lu ", fs->fds_open());
-    Error::print(SWC_LOG_OSTREAM, error);
-    smartfd->print(SWC_LOG_OSTREAM << ' ');
-  );
+  SWC_FS_CREATE_FINISH(error, smartfd, fs->fds_open(), tracker);
 }
 
 void Base::handle_close(const FS::FileSystem::Ptr& fs, const Event::Ptr& ev,
@@ -442,12 +392,7 @@ void Base::handle_close(const FS::FileSystem::Ptr& fs, const Event::Ptr& ev,
     default:
       break;
   }
-
-  SWC_LOG_OUT(LOG_DEBUG,
-    SWC_LOG_PRINTF("close fds-open=%lu ", fs->fds_open());
-    Error::print(SWC_LOG_OSTREAM, error);
-    smartfd->print(SWC_LOG_OSTREAM << ' ');
-  );
+  SWC_FS_CLOSE_FINISH(error, smartfd, tracker);
 }
 
 void Base::handle_append(const Event::Ptr& ev, FS::SmartFd::Ptr& smartfd,
@@ -478,12 +423,7 @@ void Base::handle_append(const Event::Ptr& ev, FS::SmartFd::Ptr& smartfd,
     default:
       break;
   }
-
-  SWC_LOG_OUT(LOG_DEBUG,
-    SWC_LOG_PRINTF("append amount=%lu ", amount);
-    Error::print(SWC_LOG_OSTREAM, error);
-    smartfd->print(SWC_LOG_OSTREAM << ' ');
-  );
+  SWC_FS_APPEND_FINISH(error, smartfd, amount, tracker);
 }
 
 }}}}}

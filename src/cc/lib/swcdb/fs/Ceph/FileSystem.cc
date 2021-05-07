@@ -232,6 +232,7 @@ std::string FileSystemCeph::to_string() const {
 
 bool FileSystemCeph::exists(int& err, const std::string& name) {
   auto tracker = statistics.tracker(Statistics::EXISTS_SYNC);
+  SWC_FS_EXISTS_START(name);
   std::string abspath;
   get_abspath(name, abspath);
 
@@ -246,13 +247,13 @@ bool FileSystemCeph::exists(int& err, const std::string& name) {
   bool state = !err;
   if(err == ENOENT)
     err = Error::OK;
-  SWC_LOGF(LOG_DEBUG, "exists state='%d' err='%d' path='%s'",
-            state, err, abspath.c_str());
+  SWC_FS_EXISTS_FINISH(err, abspath, state, tracker);
   return state;
 }
 
 void FileSystemCeph::remove(int& err, const std::string& name) {
   auto tracker = statistics.tracker(Statistics::REMOVE_SYNC);
+  SWC_FS_REMOVE_START(name);
   std::string abspath;
   get_abspath(name, abspath);
   errno = 0;
@@ -261,18 +262,15 @@ void FileSystemCeph::remove(int& err, const std::string& name) {
   if(err < 0)
     err = -err;
   else if(errno)
-    err = errno == ENOENT ? Error::OK : errno;
-
-  if(err) {
-    SWC_LOGF(LOG_ERROR, "remove('%s') failed - %s",
-              abspath.c_str(), Error::get_text(err));
-    return;
-  }
-  SWC_LOGF(LOG_DEBUG, "remove('%s')", abspath.c_str());
+    err = errno;
+  if(err == ENOENT)
+    err = Error::OK;
+  SWC_FS_REMOVE_FINISH(err, abspath, tracker);
 }
 
 size_t FileSystemCeph::length(int& err, const std::string& name) {
   auto tracker = statistics.tracker(Statistics::LENGTH_SYNC);
+  SWC_FS_LENGTH_START(name);
   std::string abspath;
   get_abspath(name, abspath);
 
@@ -284,21 +282,16 @@ size_t FileSystemCeph::length(int& err, const std::string& name) {
     err = -err;
   else if(errno)
     err = errno;
-  if(err) {
-    SWC_LOGF(LOG_ERROR, "length('%s') failed - %s",
-              abspath.c_str(), Error::get_text(err));
-    return 0;
-  }
-
-  SWC_LOGF(LOG_DEBUG, "length len='%lu' path='%s'", stx.stx_size, abspath.c_str());
-  return stx.stx_size;
+  size_t len = err ? 0 : stx.stx_size;
+  SWC_FS_LENGTH_FINISH(err, abspath, len, tracker);
+  return len;
 }
 
 void FileSystemCeph::mkdirs(int& err, const std::string& name) {
   auto tracker = statistics.tracker(Statistics::MKDIRS_SYNC);
+  SWC_FS_MKDIRS_START(name);
   std::string abspath;
   get_abspath(name, abspath);
-  SWC_LOGF(LOG_DEBUG, "mkdirs path='%s'", abspath.c_str());
 
   errno = 0;
   err = ceph_mkdirs(m_filesystem, abspath.c_str(), 644);
@@ -306,27 +299,25 @@ void FileSystemCeph::mkdirs(int& err, const std::string& name) {
     err = -err;
   else if(errno)
     err = errno;
+  SWC_FS_MKDIRS_FINISH(err, abspath, tracker);
 }
 
 void FileSystemCeph::readdir(int& err, const std::string& name,
                              DirentList& results) {
   auto tracker = statistics.tracker(Statistics::READDIR_SYNC);
+  SWC_FS_READDIR_START(name);
   std::string abspath;
   get_abspath(name, abspath);
-  SWC_LOGF(LOG_DEBUG, "Readdir dir='%s'", abspath.c_str());
 
   errno = 0;
-	struct ceph_dir_result *dirp;
+	struct ceph_dir_result* dirp = nullptr;
 	err = ceph_opendir(m_filesystem, abspath.c_str(), &dirp);
   if(err < 0)
     err = -err;
   else if(errno)
     err = errno;
-  if(err) {
-    SWC_LOGF(LOG_ERROR, "readdir('%s') failed - %s",
-              abspath.c_str(), Error::get_text(err));
-    return;
-  }
+  if(err)
+    goto _finish;
 
   struct dirent de;
 	struct ceph_statx stx;
@@ -347,32 +338,32 @@ void FileSystemCeph::readdir(int& err, const std::string& name,
     entry.length = stx.stx_size;
     entry.last_modification_time = stx.stx_mtime.tv_sec;
   }
-
-  ceph_closedir(m_filesystem, dirp);
-
   if(err < 0)
     err = -err;
   else if(errno)
     err = errno;
+
+  _finish:
+    if(dirp)
+      ceph_closedir(m_filesystem, dirp);
+    SWC_FS_READDIR_FINISH(err, abspath, results.size(), tracker);
 }
 
 void FileSystemCeph::rmdir(int& err, const std::string& name) {
   auto tracker = statistics.tracker(Statistics::RMDIR_SYNC);
+  SWC_FS_RMDIR_START(name);
   std::string abspath;
   get_abspath(name, abspath);
 
   errno = 0;
-	struct ceph_dir_result *dirp;
+	struct ceph_dir_result* dirp = nullptr;
 	err = ceph_opendir(m_filesystem, abspath.c_str(), &dirp);
   if(err < 0)
     err = -err;
   else if(errno)
     err = errno;
-  if(err) {
-    SWC_LOGF(LOG_ERROR, "readdir('%s') failed - %s",
-              abspath.c_str(), Error::get_text(err));
-    return;
-  }
+  if(err)
+    goto _finish;
 
   struct dirent de;
 	struct ceph_statx stx;
@@ -395,21 +386,20 @@ void FileSystemCeph::rmdir(int& err, const std::string& name) {
   if(err < 0)
     err = -err;
   else if(errno)
-    err = errno == ENOENT ? Error::OK : errno;
-
-  ceph_closedir(m_filesystem, dirp);
-
-  if(err < 0)
-    err = -err;
-  else if(errno)
     err = errno;
+  if(err == ENOENT)
+    err = Error::OK;
 
-  SWC_LOGF(LOG_DEBUG, "rmdir('%s')", abspath.c_str());
+  _finish:
+    if(dirp)
+      ceph_closedir(m_filesystem, dirp);
+    SWC_FS_RMDIR_FINISH(err, abspath, tracker);
 }
 
 void FileSystemCeph::rename(int& err, const std::string& from,
                             const std::string& to) {
   auto tracker = statistics.tracker(Statistics::RENAME_SYNC);
+  SWC_FS_RENAME_START(from, to);
   std::string abspath_from;
   get_abspath(from, abspath_from);
   std::string abspath_to;
@@ -421,13 +411,7 @@ void FileSystemCeph::rename(int& err, const std::string& from,
     err = -err;
   else if(errno)
     err = errno;
-  if(err) {
-    SWC_LOGF(LOG_ERROR, "rename('%s' to '%s') failed - %s",
-              abspath_from.c_str(), abspath_to.c_str(), Error::get_text(err));
-    return;
-  }
-  SWC_LOGF(LOG_DEBUG, "rename('%s' to '%s')",
-            abspath_from.c_str(), abspath_to.c_str());
+  SWC_FS_RENAME_FINISH(err, abspath_from, abspath_to, tracker);
 }
 
 
@@ -435,10 +419,6 @@ void FileSystemCeph::create(int& err, SmartFd::Ptr& smartfd,
                             int32_t bufsz, uint8_t replication,
                             int64_t objsz) {
   auto tracker = statistics.tracker(Statistics::CREATE_SYNC);
-  std::string abspath;
-  get_abspath(smartfd->filepath(), abspath);
-  SWC_LOGF(LOG_DEBUG, "create %s bufsz=%d replication=%d objsz=%ld",
-            smartfd->to_string().c_str(), bufsz, replication, objsz);
 
   int oflags = O_WRONLY | O_CREAT;
   if(!(smartfd->flags() & OpenFlags::OPEN_FLAG_OVERWRITE))
@@ -455,74 +435,69 @@ void FileSystemCeph::create(int& err, SmartFd::Ptr& smartfd,
     objsz /= 512;
     objsz *= 512;
   }
+  SWC_FS_CREATE_START(smartfd, bufsz, replication, objsz);
+  std::string abspath;
+  get_abspath(smartfd->filepath(), abspath);
 
   errno = 0;
-  err = ceph_open_layout(m_filesystem, abspath.c_str(), oflags, 644,
+  int tmperr = ceph_open_layout(m_filesystem, abspath.c_str(), oflags, 644,
  		                     0, 0, objsz, nullptr);
-  if(err < 0) {
-    err = -err;
-  } else if(err > 0) {
-    smartfd->fd(err);
-    err = Error::OK;
+  if(tmperr < 0) {
+    tmperr = -tmperr;
+  } else if(tmperr > 0) {
+    smartfd->fd(tmperr);
+    fd_open_incr();
+    err = tmperr = Error::OK;
   } else if(errno) {
-    err = errno;
+    tmperr = errno;
   }
-
-  if (err) {
+  if(tmperr) {
     smartfd->fd(-1);
-    SWC_LOGF(LOG_ERROR, "create failed: %d(%s) objsz=%ld, %s ",
-              err, Error::get_text(err), objsz, smartfd->to_string().c_str());
-
-    if(err == EACCES || err == ENOENT)
+    if(tmperr == EACCES || tmperr == ENOENT)
       err = Error::FS_PATH_NOT_FOUND;
-    else if (err == EPERM)
+    else if (tmperr == EPERM)
       err = Error::FS_PERMISSION_DENIED;
-    return;
+    else
+      err = tmperr;
   }
-  fd_open_incr();
-  SWC_LOGF(LOG_DEBUG, "created %s bufsz=%d replication=%d objsz=%ld",
-            smartfd->to_string().c_str(), bufsz, replication, objsz);
+  SWC_FS_CREATE_FINISH(tmperr, smartfd, fds_open(), tracker);
 }
 
 void FileSystemCeph::open(int& err, SmartFd::Ptr& smartfd, int32_t bufsz) {
   auto tracker = statistics.tracker(Statistics::OPEN_SYNC);
+  SWC_FS_OPEN_START(smartfd, bufsz);
   std::string abspath;
   get_abspath(smartfd->filepath(), abspath);
-  SWC_LOGF(LOG_DEBUG, "open %s bufsz=%d",
-            smartfd->to_string().c_str(), bufsz);
 
   int oflags = O_RDONLY;
   errno = 0;
-  err = ceph_open(m_filesystem, abspath.c_str(), oflags, 0);
-  if(err < 0) {
-    err = -err;
-  } else if(err > 0) {
-    smartfd->fd(err);
-    err = Error::OK;
+  int tmperr = ceph_open(m_filesystem, abspath.c_str(), oflags, 0);
+  if(tmperr < 0) {
+    tmperr = -tmperr;
+  } else if(tmperr > 0) {
+    smartfd->fd(tmperr);
+    fd_open_incr();
+    err = tmperr = Error::OK;
   } else if(errno) {
-    err = errno;
+    tmperr = errno;
   }
 
-  if (err) {
+  if(tmperr) {
     smartfd->fd(-1);
-    SWC_LOGF(LOG_ERROR, "open failed: %d(%s), %s",
-              err, Error::get_text(err), smartfd->to_string().c_str());
-
-    if(err == EACCES || err == ENOENT)
+    if(tmperr == EACCES || tmperr == ENOENT)
       err = Error::FS_PATH_NOT_FOUND;
-    else if (err == EPERM)
+    else if (tmperr == EPERM)
       err = Error::FS_PERMISSION_DENIED;
-    return;
+    else
+      err = tmperr;
   }
-  fd_open_incr();
-  SWC_LOGF(LOG_DEBUG, "opened %s", smartfd->to_string().c_str());
+  SWC_FS_OPEN_FINISH(tmperr, smartfd, fds_open(), tracker);
 }
 
 size_t FileSystemCeph::read(int& err, SmartFd::Ptr& smartfd,
                             void *dst, size_t amount) {
   auto tracker = statistics.tracker(Statistics::READ_SYNC);
-  SWC_LOGF(LOG_DEBUG, "read %s amount=%lu",
-            smartfd->to_string().c_str(), amount);
+  SWC_FS_READ_START(smartfd, amount);
 
   size_t ret;
   errno = 0;
@@ -532,19 +507,18 @@ size_t FileSystemCeph::read(int& err, SmartFd::Ptr& smartfd,
     err = -nread;
   else if(errno)
     err = errno;
+  else
+    err = Error::OK;
 
   if(err) {
     ret = 0;
     nread = 0;
-    SWC_LOGF(LOG_ERROR, "read failed: %d(%s), %s",
-              err, Error::get_text(err), smartfd->to_string().c_str());
   } else {
     if((ret = nread) != amount)
       err = Error::FS_EOF;
     smartfd->forward(nread);
-    SWC_LOGF(LOG_DEBUG, "read(ed) %s amount=%lu eof=%d",
-              smartfd->to_string().c_str(), ret, err == Error::FS_EOF);
   }
+  SWC_FS_READ_FINISH(err, smartfd, ret, tracker);
   return ret;
 }
 
@@ -552,8 +526,7 @@ size_t FileSystemCeph::read(int& err, SmartFd::Ptr& smartfd,
 size_t FileSystemCeph::pread(int& err, SmartFd::Ptr& smartfd,
                              uint64_t offset, void *dst, size_t amount) {
   auto tracker = statistics.tracker(Statistics::PREAD_SYNC);
-  SWC_LOGF(LOG_DEBUG, "pread %s offset=%lu amount=%lu",
-            smartfd->to_string().c_str(), offset, amount);
+  SWC_FS_PREAD_START(smartfd, offset, amount);
 
   size_t ret;
   errno = 0;
@@ -563,28 +536,23 @@ size_t FileSystemCeph::pread(int& err, SmartFd::Ptr& smartfd,
     err = -nread;
   else if(errno)
     err = errno;
+  else
+    err = Error::OK;
 
   if(err) {
     ret = 0;
     nread = 0;
-    SWC_LOGF(LOG_ERROR, "pread failed: %d(%s), %s",
-              err, Error::get_text(err), smartfd->to_string().c_str());
-  } else {
-    if((ret = nread) != amount)
-      err = Error::FS_EOF;
-    smartfd->pos(offset + nread);
-    SWC_LOGF(LOG_DEBUG, "pread(ed) %s amount=%lu eof=%d",
-              smartfd->to_string().c_str(), ret, err == Error::FS_EOF);
+  } else if((ret = nread) != amount) {
+    err = Error::FS_EOF;
   }
+  SWC_FS_PREAD_FINISH(err, smartfd, ret, tracker);
   return ret;
 }
 
 size_t FileSystemCeph::append(int& err, SmartFd::Ptr& smartfd,
                                 StaticBuffer& buffer, Flags flags) {
   auto tracker = statistics.tracker(Statistics::APPEND_SYNC);
-
-  SWC_LOGF(LOG_DEBUG, "append %s amount=%lu flags=%d",
-            smartfd->to_string().c_str(), buffer.size, flags);
+  SWC_FS_APPEND_START(smartfd, buffer.size, flags);
 
   ssize_t nwritten = 0;
   errno = 0;
@@ -598,28 +566,27 @@ size_t FileSystemCeph::append(int& err, SmartFd::Ptr& smartfd,
     err = errno;
   else if(nwritten != ssize_t(buffer.size))
     err = ECANCELED;
+  else
+    err = Error::OK;
 
-  if(err) {
-    SWC_LOGF(LOG_ERROR, "write failed: %d(%s), %s",
-              err, Error::get_text(err), smartfd->to_string().c_str());
-    return 0;
+  if(!err) {
+    if (flags == Flags::FLUSH)
+      flush(err, smartfd);
+    else if (flags == Flags::SYNC)
+      sync(err, smartfd);
   }
-  smartfd->forward(nwritten);
-
-  if (flags == Flags::FLUSH)
-    flush(err, smartfd);
-  else if (flags == Flags::SYNC)
-    sync(err, smartfd);
-
-  SWC_LOGF(LOG_DEBUG, "appended %s amount=%ld",
-            smartfd->to_string().c_str(), nwritten);
+  if(err) {
+    nwritten = 0;
+  } else {
+    smartfd->forward(nwritten);
+  }
+  SWC_FS_APPEND_FINISH(err, smartfd, nwritten, tracker);
   return nwritten;
 }
 
 void FileSystemCeph::seek(int& err, SmartFd::Ptr& smartfd, size_t offset) {
   auto tracker = statistics.tracker(Statistics::SEEK_SYNC);
-  SWC_LOGF(LOG_DEBUG, "seek %s offset=%lu",
-            smartfd->to_string().c_str(), offset);
+  SWC_FS_SEEK_START(smartfd, offset);
 
   errno = 0;
   err = ceph_lseek(m_filesystem, smartfd->fd(), offset, SEEK_SET);
@@ -627,18 +594,15 @@ void FileSystemCeph::seek(int& err, SmartFd::Ptr& smartfd, size_t offset) {
     err = -err;
   else if(errno)
     err = errno;
-
-  if(err) {
-    SWC_LOGF(LOG_ERROR, "seek failed - %d(%s) %s",
-               err, Error::get_text(err), smartfd->to_string().c_str());
-    return;
+  if(!err) {
+    smartfd->pos(offset);
   }
-  smartfd->pos(offset);
+  SWC_FS_SEEK_FINISH(err, smartfd, tracker);
 }
 
 void FileSystemCeph::flush(int& err, SmartFd::Ptr& smartfd) {
   auto tracker = statistics.tracker(Statistics::FLUSH_SYNC);
-  SWC_LOGF(LOG_DEBUG, "flush %s", smartfd->to_string().c_str());
+  SWC_FS_FLUSH_START(smartfd);
 
   errno = 0;
   err = ceph_fsync(m_filesystem, smartfd->fd(), true);
@@ -646,15 +610,12 @@ void FileSystemCeph::flush(int& err, SmartFd::Ptr& smartfd) {
     err = -err;
   else if(errno)
     err = errno;
-
-  if (err)
-    SWC_LOGF(LOG_ERROR, "flush failed: %d(%s), %s",
-              err, Error::get_text(err), smartfd->to_string().c_str());
+  SWC_FS_FLUSH_FINISH(err, smartfd, tracker);
 }
 
 void FileSystemCeph::sync(int& err, SmartFd::Ptr& smartfd) {
   auto tracker = statistics.tracker(Statistics::SYNC_SYNC);
-  SWC_LOGF(LOG_DEBUG, "sync %s", smartfd->to_string().c_str());
+  SWC_FS_SYNC_START(smartfd);
 
   errno = 0;
   err = ceph_fsync(m_filesystem, smartfd->fd(), false);
@@ -662,15 +623,13 @@ void FileSystemCeph::sync(int& err, SmartFd::Ptr& smartfd) {
     err = -err;
   else if(errno)
     err = errno;
-
-  if (err)
-    SWC_LOGF(LOG_ERROR, "sync failed: %d(%s), %s",
-              err, Error::get_text(err), smartfd->to_string().c_str());
+  SWC_FS_SYNC_FINISH(err, smartfd, tracker);
 }
 
 void FileSystemCeph::close(int& err, SmartFd::Ptr& smartfd) {
   auto tracker = statistics.tracker(Statistics::CLOSE_SYNC);
-  SWC_LOGF(LOG_DEBUG, "close %s", smartfd->to_string().c_str());
+  SWC_FS_CLOSE_START(smartfd);
+
   int32_t fd = smartfd->invalidate();
   if(fd != -1) {
     errno = 0;
@@ -679,14 +638,11 @@ void FileSystemCeph::close(int& err, SmartFd::Ptr& smartfd) {
       err = -err;
     else if(errno)
       err = errno;
-
-    if(err)
-      SWC_LOGF(LOG_ERROR, "close, failed: %d(%s), %s",
-                 err, Error::get_text(err), smartfd->to_string().c_str());
     fd_open_decr();
   } else {
     err = EBADR;
   }
+  SWC_FS_CLOSE_FINISH(err, smartfd, tracker);
 }
 
 

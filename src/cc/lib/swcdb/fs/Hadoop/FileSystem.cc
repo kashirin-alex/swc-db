@@ -268,9 +268,10 @@ void FileSystemHadoop::need_reconnect(
 
 
 bool FileSystemHadoop::exists(int& err, const std::string& name) {
+  auto tracker = statistics.tracker(Statistics::EXISTS_SYNC);
+  SWC_FS_EXISTS_START(name);
   std::string abspath;
   get_abspath(name, abspath);
-
   bool state = false;
   auto fs = get_fs(err);
   if(!err) {
@@ -278,32 +279,30 @@ bool FileSystemHadoop::exists(int& err, const std::string& name) {
     state = false; //!hdfsExists(fs->srv, abspath.c_str());
     need_reconnect(err = errno == ENOENT ? Error::OK : errno, fs);
   }
-  SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG,
-    "exists('%s') state='%d' - %d(%s)",
-    abspath.c_str(), state, err, Error::get_text(err));
+  SWC_FS_EXISTS_FINISH(err, abspath, state, tracker);
   return state;
 }
 
 void FileSystemHadoop::remove(int& err, const std::string& name) {
+  auto tracker = statistics.tracker(Statistics::REMOVE_SYNC);
+  SWC_FS_REMOVE_START(name);
   std::string abspath;
   get_abspath(name, abspath);
-  int tmperr = Error::OK;
 
   auto fs = get_fs(err);
   if(!err) {
     errno = 0;
     if (true) { // hdfsDelete(fs->srv, abspath.c_str(), false) == -1) {
-      tmperr = errno;
-      need_reconnect(
-        err = (errno == EIO || errno == ENOENT ? Error::OK: errno), fs);
+      err = (errno == EIO || errno == ENOENT ? Error::OK: errno);
+      need_reconnect(err, fs);
     }
   }
-  SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG,
-    "remove('%s') - %d(%s)",
-    abspath.c_str(), tmperr, Error::get_text(tmperr));
+  SWC_FS_REMOVE_FINISH(err, abspath, tracker);
 }
 
 size_t FileSystemHadoop::length(int& err, const std::string& name) {
+  auto tracker = statistics.tracker(Statistics::LENGTH_SYNC);
+  SWC_FS_LENGTH_START(name);
   std::string abspath;
   get_abspath(name, abspath);
   //hdfsFileInfo *fileInfo;
@@ -319,13 +318,13 @@ size_t FileSystemHadoop::length(int& err, const std::string& name) {
       //hdfsFreeFileInfo(fileInfo, 1);
     }
   }
-  SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG,
-    "length('%s') len='%lu' - %d(%s)",
-    abspath.c_str(), len, err, Error::get_text(err));
+  SWC_FS_LENGTH_FINISH(err, abspath, len, tracker);
   return len;
 }
 
 void FileSystemHadoop::mkdirs(int& err, const std::string& name) {
+  auto tracker = statistics.tracker(Statistics::MKDIRS_SYNC);
+  SWC_FS_MKDIRS_START(name);
   std::string abspath;
   get_abspath(name, abspath);
 
@@ -335,13 +334,13 @@ void FileSystemHadoop::mkdirs(int& err, const std::string& name) {
     if(false) //hdfsCreateDirectory(fs->srv, abspath.c_str()) == -1)
       need_reconnect(err = errno, fs);
   }
-  SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG,
-    "mkdirs('%s') - %d(%s)",
-    abspath.c_str(), err, Error::get_text(err));
+  SWC_FS_MKDIRS_FINISH(err, abspath, tracker);
 }
 
 void FileSystemHadoop::readdir(int& err, const std::string& name,
                                DirentList& results) {
+  auto tracker = statistics.tracker(Statistics::READDIR_SYNC);
+  SWC_FS_READDIR_START(name);
   std::string abspath;
   get_abspath(name, abspath);
   (void)results;
@@ -375,31 +374,30 @@ void FileSystemHadoop::readdir(int& err, const std::string& name,
     }
   }
   */
-  SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG,
-    "readdir('%s') - %d(%s)",
-    abspath.c_str(), err, Error::get_text(err));
+  SWC_FS_READDIR_FINISH(err, abspath, results.size(), tracker);
 }
 
 void FileSystemHadoop::rmdir(int& err, const std::string& name) {
+  auto tracker = statistics.tracker(Statistics::RMDIR_SYNC);
+  SWC_FS_RMDIR_START(name);
   std::string abspath;
   get_abspath(name, abspath);
-  int tmperr = Error::OK;
 
   auto fs = get_fs(err);
   if(!err) {
     errno = 0;
     if(false) { // hdfsDelete(fs->srv, abspath.c_str(), true) == -1) {
-      // io error(not-exists)
-      need_reconnect(err = (tmperr = errno) == EIO ? ENOENT: tmperr, fs);
+      err = errno == EIO ? ENOENT: errno;
+      need_reconnect(err, fs);
     }
   }
-  SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG,
-    "rmdir('%s') - %d(%s)",
-    abspath.c_str(), tmperr, Error::get_text(tmperr));
+  SWC_FS_RMDIR_FINISH(err == ENOENT? Error::OK : err, abspath, tracker);
 }
 
 void FileSystemHadoop::rename(int& err, const std::string& from,
                                  const std::string& to)  {
+  auto tracker = statistics.tracker(Statistics::RENAME_SYNC);
+  SWC_FS_RENAME_START(from, to);
   std::string abspath_from;
   get_abspath(from, abspath_from);
   std::string abspath_to;
@@ -411,14 +409,14 @@ void FileSystemHadoop::rename(int& err, const std::string& from,
     if(false) // hdfsRename(fs->srv, abspath_from.c_str(), abspath_to.c_str()) == -1)
       need_reconnect(err = errno == EIO ? ENOENT : errno, fs);
   }
-  SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG,
-    "rename('%s' to '%s') - %d(%s)",
-    abspath_from.c_str(), abspath_to.c_str(), err, Error::get_text(err));
+  SWC_FS_RENAME_FINISH(err, abspath_from, abspath_to, tracker);
 }
 
 void FileSystemHadoop::create(int& err, SmartFd::Ptr& smartfd,
                                  int32_t bufsz, uint8_t replication,
                                  int64_t blksz) {
+  auto tracker = statistics.tracker(Statistics::CREATE_SYNC);
+  SWC_FS_CREATE_START(smartfd, bufsz, replication, blksz);
   std::string abspath;
   get_abspath(smartfd->filepath(), abspath);
 
@@ -429,10 +427,10 @@ void FileSystemHadoop::create(int& err, SmartFd::Ptr& smartfd,
   if (bufsz <= -1)
     bufsz = 0;
   blksz = blksz <= hdfs_cfg_min_blk_sz ? 0 : (blksz/512)*512;
-  int tmperr = Error::OK;
+  int tmperr;
 
   auto fs = get_fs(err);
-  if(!err) {
+  if(!(tmperr = err)) {
     auto hadoop_fd = get_fd(smartfd);
     errno = 0;
     /* Open the file */
@@ -441,35 +439,36 @@ void FileSystemHadoop::create(int& err, SmartFd::Ptr& smartfd,
     // fd = hdfsOpenFile(
       // fs->srv, abspath.c_str(), oflags, bufsz, replication, blksz);
     if(!fd) {
-      need_reconnect(tmperr = err = errno, fs);
+      need_reconnect(tmperr = errno, fs);
       hadoop_fd->file(fd);
       hadoop_fd->fd(-1);
 
-      if(err == EACCES || err == ENOENT)
+      if(tmperr == EACCES || tmperr == ENOENT)
         err = Error::FS_PATH_NOT_FOUND;
-      else if (err == EPERM)
+      else if (tmperr == EPERM)
         err = Error::FS_PERMISSION_DENIED;
+      else
+        err = tmperr;
     } else {
       hadoop_fd->file(fd);
       hadoop_fd->fd(m_nxt_fd.add_rslt(1));
       fd_open_incr();
     }
   }
-  SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG,
-    "create %d(%s) bufsz=%d replication=%d blksz=%ld %s",
-    tmperr, Error::get_text(tmperr), bufsz, replication, blksz,
-    smartfd->to_string().c_str());
+  SWC_FS_CREATE_FINISH(tmperr, smartfd, fds_open(), tracker);
 }
 
 void FileSystemHadoop::open(int& err, SmartFd::Ptr& smartfd,
                                int32_t bufsz) {
+  auto tracker = statistics.tracker(Statistics::OPEN_SYNC);
+  SWC_FS_OPEN_START(smartfd, bufsz);
   std::string abspath;
   get_abspath(smartfd->filepath(), abspath);
   int oflags = O_RDONLY;
-  int tmperr = Error::OK;
+  int tmperr;
 
   auto fs = get_fs(err);
-  if(!err) {
+  if(!(tmperr = err)) {
     auto hadoop_fd = get_fd(smartfd);
     errno = 0;
     /* Open the file */
@@ -479,68 +478,57 @@ void FileSystemHadoop::open(int& err, SmartFd::Ptr& smartfd,
     //fd = hdfsOpenFile(fs->srv, abspath.c_str(), oflags,
     //                        bufsz<=-1 ? 0 : bufsz, 0, 0);
     if(!fd) {
-      need_reconnect(err = tmperr = errno, fs);
+      need_reconnect(tmperr = errno, fs);
       hadoop_fd->file(fd);
       hadoop_fd->fd(-1);
 
-      if(err == EACCES || err == ENOENT)
+      if(tmperr == EACCES || tmperr == ENOENT)
         err = Error::FS_PATH_NOT_FOUND;
-      else if (err == EPERM)
+      else if (tmperr == EPERM)
         err = Error::FS_PERMISSION_DENIED;
+      else
+        err = tmperr;
     } else {
       hadoop_fd->file(fd);
       hadoop_fd->fd(m_nxt_fd.add_rslt(1));
       fd_open_incr();
     }
   }
-  SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG,
-    "open %d(%s) %s",
-    tmperr, Error::get_text(tmperr), smartfd->to_string().c_str());
+  SWC_FS_OPEN_FINISH(tmperr, smartfd, fds_open(), tracker);
 }
 
 size_t FileSystemHadoop::read(int& err, SmartFd::Ptr& smartfd,
               void *dst, size_t amount) {
+  auto tracker = statistics.tracker(Statistics::READ_SYNC);
   auto hadoop_fd = get_fd(smartfd);
+  SWC_FS_READ_START(hadoop_fd, amount);
   size_t ret = 0;
-  int tmperr = Error::OK;
 
   auto fs = get_fs(err);
   if(!err) {
-    /*
-    uint64_t offset;
-    if ((offset = (uint64_t)hdfsTell(fs->srv, hadoop_fd->file()))
-                  == (uint64_t)-1) {
-      err = errno;
-      SWC_LOGF(LOG_ERROR, "read, tell failed: %d(%s), %s offset=%lu",
-                err, Error::get_text(err), smartfd->to_string().c_str(), offset);
-      return nread;
-    }
-    */
     (void)dst;
     errno = 0;
     ssize_t nread = -1; //(ssize_t)hdfsRead(fs->srv, hadoop_fd->file(),
                         //              dst, (tSize)amount);
     if(nread == -1) {
       nread = 0;
-      need_reconnect(err = tmperr = errno, fs);
+      need_reconnect(err = errno, fs);
     } else {
       if((ret = nread) != amount)
         err = Error::FS_EOF;
       hadoop_fd->forward(nread);
     }
   }
-  SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG,
-    "read %d(%s) amount=%lu/%lu eof=%d %s",
-    tmperr, Error::get_text(tmperr), ret, amount, err == Error::FS_EOF,
-    hadoop_fd->to_string().c_str());
+  SWC_FS_READ_FINISH(err, hadoop_fd, ret, tracker);
   return ret;
 }
 
 size_t FileSystemHadoop::pread(int& err, SmartFd::Ptr& smartfd,
                                uint64_t offset, void *dst, size_t amount) {
+  auto tracker = statistics.tracker(Statistics::PREAD_SYNC);
   auto hadoop_fd = get_fd(smartfd);
+  SWC_FS_PREAD_START(hadoop_fd, offset, amount);
   size_t ret = 0;
-  int tmperr = Error::OK;
 
   auto fs = get_fs(err);
   if(!err) {
@@ -550,23 +538,22 @@ size_t FileSystemHadoop::pread(int& err, SmartFd::Ptr& smartfd,
       // fs->srv, hadoop_fd->file(), (tOffset)offset, dst, (tSize)amount);
     if(nread == -1) {
       nread = 0;
-      need_reconnect(err = tmperr = errno, fs);
+      need_reconnect(err = errno, fs);
     } else {
       if((ret = nread) != amount)
         err = Error::FS_EOF;
       hadoop_fd->pos(offset + nread);
     }
   }
-  SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG,
-    "pread %d(%s) offset=%lu amount=%lu/%lu eof=%d %s",
-    tmperr, Error::get_text(tmperr), offset, ret, amount,
-    err == Error::FS_EOF, hadoop_fd->to_string().c_str());
+  SWC_FS_PREAD_FINISH(err, hadoop_fd, ret, tracker);
   return ret;
 }
 
 size_t FileSystemHadoop::append(int& err, SmartFd::Ptr& smartfd,
                                 StaticBuffer& buffer, Flags flags) {
+  auto tracker = statistics.tracker(Statistics::APPEND_SYNC);
   auto hadoop_fd = get_fd(smartfd);
+  SWC_FS_APPEND_START(hadoop_fd, buffer.size, flags);
   ssize_t nwritten = 0;
 
   auto fs = get_fs(err);
@@ -592,22 +579,19 @@ size_t FileSystemHadoop::append(int& err, SmartFd::Ptr& smartfd,
       if(flags == Flags::FLUSH || flags == Flags::SYNC) {
         if(true) { //hdfsFlush(fs->srv, hadoop_fd->file()) == -1) {
           need_reconnect(err = errno, fs);
-          SWC_LOGF(LOG_ERROR, "append-fsync %d(%s) %s",
-                    err, Error::get_text(err), smartfd->to_string().c_str());
         }
       }
     }
   }
-  SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG,
-    "append %d(%s) amount=%lu flags=%d %s",
-    err, Error::get_text(err), buffer.size, flags,
-    hadoop_fd->to_string().c_str());
+  SWC_FS_APPEND_FINISH(err, hadoop_fd, nwritten, tracker);
   return nwritten;
 }
 
 void FileSystemHadoop::seek(int& err, SmartFd::Ptr& smartfd,
                                size_t offset) {
+  auto tracker = statistics.tracker(Statistics::SEEK_SYNC);
   auto hadoop_fd = get_fd(smartfd);
+  SWC_FS_SEEK_START(hadoop_fd, offset);
 
   auto fs = get_fs(err);
   if(!err) {
@@ -617,13 +601,13 @@ void FileSystemHadoop::seek(int& err, SmartFd::Ptr& smartfd,
     else
       hadoop_fd->pos(offset);
   }
-  SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG,
-    "seek %d(%s) offset=%lu %s",
-    err, Error::get_text(err), offset, hadoop_fd->to_string().c_str());
+  SWC_FS_SEEK_FINISH(err, hadoop_fd, tracker);
 }
 
 void FileSystemHadoop::flush(int& err, SmartFd::Ptr& smartfd) {
+  auto tracker = statistics.tracker(Statistics::FLUSH_SYNC);
   auto hadoop_fd = get_fd(smartfd);
+  SWC_FS_FLUSH_START(hadoop_fd);
 
   auto fs = get_fs(err);
   if(!err) {
@@ -631,13 +615,13 @@ void FileSystemHadoop::flush(int& err, SmartFd::Ptr& smartfd) {
     if(true)//hdfsHFlush(fs->srv, hadoop_fd->file()) == -1)
       need_reconnect(err = errno, fs);
   }
-  SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG,
-    "flush %d(%s) %s",
-    err, Error::get_text(err), hadoop_fd->to_string().c_str());
+  SWC_FS_FLUSH_FINISH(err, hadoop_fd, tracker);
 }
 
 void FileSystemHadoop::sync(int& err, SmartFd::Ptr& smartfd) {
+  auto tracker = statistics.tracker(Statistics::SYNC_SYNC);
   auto hadoop_fd = get_fd(smartfd);
+  SWC_FS_SYNC_START(hadoop_fd);
 
   auto fs = get_fs(err);
   if(!err) {
@@ -645,14 +629,13 @@ void FileSystemHadoop::sync(int& err, SmartFd::Ptr& smartfd) {
     if(true)//hdfsHSync(fs->srv, hadoop_fd->file()) == -1)
       need_reconnect(err = errno, fs);
   }
-  SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG,
-    "sync %d(%s) %s",
-    err, Error::get_text(err), hadoop_fd->to_string().c_str());
+  SWC_FS_SYNC_FINISH(err, hadoop_fd, tracker);
 }
 
 void FileSystemHadoop::close(int& err, SmartFd::Ptr& smartfd) {
+  auto tracker = statistics.tracker(Statistics::CLOSE_SYNC);
   auto hadoop_fd = get_fd(smartfd);
-  SWC_LOGF(LOG_DEBUG, "close %s", hadoop_fd->to_string().c_str());
+  SWC_FS_CLOSE_START(hadoop_fd);
 
   if(hadoop_fd->file()) {
     fd_open_decr();
@@ -667,11 +650,9 @@ void FileSystemHadoop::close(int& err, SmartFd::Ptr& smartfd) {
     err = EBADR;
   }
   hadoop_fd->fd(-1);
-  smartfd->pos(0);
+  hadoop_fd->pos(0);
 
-  SWC_LOGF(err ? LOG_ERROR: LOG_DEBUG,
-    "close %d(%s) %s",
-    err, Error::get_text(err), hadoop_fd->to_string().c_str());
+  SWC_FS_CLOSE_FINISH(err, hadoop_fd, tracker);
 }
 
 
