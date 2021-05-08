@@ -51,8 +51,12 @@ ColumnMng::ColumnMng(const Params::ColumnMng& params,
 }
 
 void ColumnMng::handle_no_conn() {
-  clear_endpoints();
-  run();
+  if(Env::Clients::get()->stopping()) {
+    cb(req(), Error::CLIENT_STOPPING);
+  } else {
+    clear_endpoints();
+    run();
+  }
 }
 
 bool ColumnMng::run() {
@@ -60,8 +64,12 @@ bool ColumnMng::run() {
     Env::Clients::get()->mngrs_groups->select(
       DB::Types::MngrRole::SCHEMAS, endpoints);
     if(endpoints.empty()) {
-      MngrActive::make(
-        DB::Types::MngrRole::SCHEMAS, shared_from_this())->run();
+      if(Env::Clients::get()->stopping()) {
+        cb(req(), Error::CLIENT_STOPPING);
+      } else {
+        MngrActive::make(
+          DB::Types::MngrRole::SCHEMAS, shared_from_this())->run();
+      }
       return false;
     }
   }

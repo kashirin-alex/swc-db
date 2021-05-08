@@ -50,6 +50,16 @@ class Base : public std::enable_shared_from_this<Base>{
 
   virtual void response(int err=Error::OK) = 0;
 
+
+  virtual int error() noexcept {
+    return state_error;
+  }
+
+  virtual void error(int err) noexcept {
+    int at = Error::OK;
+    state_error.compare_exchange_weak(at, err);
+  }
+
   protected:
 
   virtual ~Base() { }

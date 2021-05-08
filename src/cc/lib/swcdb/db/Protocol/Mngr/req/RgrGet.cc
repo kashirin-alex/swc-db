@@ -48,15 +48,23 @@ RgrGet::RgrGet(const Params::RgrGetReq& params,
 }
 
 void RgrGet::handle_no_conn() {
-  clear_endpoints();
-  run();
+  if(Env::Clients::get()->stopping()) {
+    cb(req(), Params::RgrGetRsp(Error::CLIENT_STOPPING));
+  } else {
+    clear_endpoints();
+    run();
+  }
 }
 
 bool RgrGet::run() {
   if(endpoints.empty()) {
     Env::Clients::get()->mngrs_groups->select(cid, endpoints);
     if(endpoints.empty()) {
-      MngrActive::make(cid, shared_from_this())->run();
+      if(Env::Clients::get()->stopping()) {
+        cb(req(), Params::RgrGetRsp(Error::CLIENT_STOPPING));
+      } else {
+        MngrActive::make(cid, shared_from_this())->run();
+      }
       return false;
     }
   }

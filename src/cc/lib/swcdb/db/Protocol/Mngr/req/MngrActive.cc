@@ -57,19 +57,19 @@ void MngrActive::run_within(uint32_t t_ms) {
 }
 
 void MngrActive::handle_no_conn() {
-  if(hosts.size() == ++nxt) {
+  if(Env::Clients::get()->stopping() ||
+     !Env::Clients::get()->mngr->service->io()->running) {
+    hdlr->run();
+  } else if(hosts.size() == ++nxt) {
     nxt = 0;
     hosts.clear();
     run_within(1000);
-    return;
+  } else {
+    run();
   }
-  run();
 }
 
 bool MngrActive::run() {
-  if(Env::IoCtx::stopping())
-    return false;
-
   if(hosts.empty()) {
     Env::Clients::get()->mngrs_groups->hosts(role, cid, hosts, group_host);
     if(hosts.empty()) {
@@ -79,7 +79,6 @@ bool MngrActive::run() {
       return false;
     }
   }
-
   Env::Clients::get()->mngr->get(hosts.at(nxt))->put(req());
   return true;
 }

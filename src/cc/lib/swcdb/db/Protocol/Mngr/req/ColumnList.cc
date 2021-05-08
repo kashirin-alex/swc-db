@@ -38,8 +38,12 @@ ColumnList::ColumnList(const Params::ColumnListReq& params,
 }
 
 void ColumnList::handle_no_conn() {
-  clear_endpoints();
-  run();
+  if(Env::Clients::get()->stopping()) {
+    cb(req(), Error::CLIENT_STOPPING, Params::ColumnListRsp());
+  } else {
+    clear_endpoints();
+    run();
+  }
 }
 
 bool ColumnList::run() {
@@ -47,8 +51,12 @@ bool ColumnList::run() {
     Env::Clients::get()->mngrs_groups->select(
       DB::Types::MngrRole::SCHEMAS, endpoints);
     if(endpoints.empty()) {
-      MngrActive::make(
-        DB::Types::MngrRole::SCHEMAS, shared_from_this())->run();
+      if(Env::Clients::get()->stopping()) {
+        cb(req(), Error::CLIENT_STOPPING, Params::ColumnListRsp());
+      } else {
+        MngrActive::make(
+          DB::Types::MngrRole::SCHEMAS, shared_from_this())->run();
+      }
       return false;
     }
   }

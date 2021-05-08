@@ -124,7 +124,7 @@ enum Code : int32_t {
 
   CLIENT_DATA_REMAINED                         = SWC_ERRNO_APP_BEGIN + 64,
   CLIENT_MISMATCHED_CID                        = SWC_ERRNO_APP_BEGIN + 65,
-
+  CLIENT_STOPPING                              = SWC_ERRNO_APP_BEGIN + 66,
 
 };
 

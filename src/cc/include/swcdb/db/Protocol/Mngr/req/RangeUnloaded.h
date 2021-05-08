@@ -46,15 +46,23 @@ class RangeUnloaded: public client::ConnQueue::ReqBase {
   virtual ~RangeUnloaded() { }
 
   void handle_no_conn() override {
-    clear_endpoints();
-    run();
+    if(Env::Clients::get()->stopping()) {
+      cb(req(), Params::RangeUnloadedRsp(Error::CLIENT_STOPPING));
+    } else {
+      clear_endpoints();
+      run();
+    }
   }
 
   bool run() override {
     if(endpoints.empty()) {
       Env::Clients::get()->mngrs_groups->select(cid, endpoints);
       if(endpoints.empty()) {
-        MngrActive::make(cid, shared_from_this())->run();
+        if(Env::Clients::get()->stopping()) {
+          cb(req(), Params::RangeUnloadedRsp(Error::CLIENT_STOPPING));
+        } else {
+          MngrActive::make(cid, shared_from_this())->run();
+        }
         return false;
       }
     }

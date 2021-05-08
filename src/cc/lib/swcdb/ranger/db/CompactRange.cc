@@ -751,6 +751,7 @@ void CompactRange::mngr_create_range(uint32_t split_at) {
         rsp.err, Error::get_text(rsp.err), cid, rsp.rid);
 
       if(!ptr->m_stopped && rsp.err &&
+         rsp.err != Error::CLIENT_STOPPING &&
          rsp.err != Error::COLUMN_NOT_EXISTS &&
          rsp.err != Error::COLUMN_MARKED_REMOVED &&
          rsp.err != Error::COLUMN_NOT_READY) {
@@ -872,6 +873,7 @@ void CompactRange::split(rid_t new_rid, uint32_t split_at) {
             "Compact::Mngr::Req::RangeUnloaded err=%d(%s) %lu/%lu",
             rsp.err, Error::get_text(rsp.err), cid, new_rid);
           if(rsp.err && !ptr->m_stopped && !Env::Rgr::is_not_accepting() &&
+             rsp.err != Error::CLIENT_STOPPING &&
              rsp.err != Error::COLUMN_NOT_EXISTS &&
              rsp.err != Error::COLUMN_MARKED_REMOVED &&
              rsp.err != Error::COLUMN_NOT_READY) {

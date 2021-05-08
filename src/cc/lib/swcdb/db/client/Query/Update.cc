@@ -136,6 +136,11 @@ void Committer::located_on_manager(
         hdlr->error(cid, rsp.err);
       return hdlr->response(rsp.err);
     }
+    case Error::CLIENT_STOPPING: {
+      SWC_LOCATOR_RSP_DEBUG("mngr_located_master STOPPED");
+      hdlr->error(rsp.err);
+      return hdlr->response(rsp.err);
+    }
     default: {
       SWC_LOCATOR_RSP_DEBUG("mngr_located_master RETRYING");
       return base->request_again();
@@ -299,6 +304,11 @@ void Committer::located_ranger(
       SWC_LOCATOR_RSP_DEBUG("rgr_located");
       if(cid == colp->get_cid())
         hdlr->error(cid, rsp.err);
+      return hdlr->response(rsp.err);
+    }
+    case Error::CLIENT_STOPPING: {
+      SWC_LOCATOR_RSP_DEBUG("rgr_located STOPPED");
+      hdlr->error(rsp.err);
       return hdlr->response(rsp.err);
     }
     default: {

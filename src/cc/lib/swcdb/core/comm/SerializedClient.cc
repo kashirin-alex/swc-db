@@ -177,7 +177,7 @@ ConnHandlerPtr Serialized::_get_connection(
       uint32_t probes, bool preserve) {
 
   ConnHandlerPtr conn = nullptr;
-  if(endpoints.empty()){
+  if(endpoints.empty()) {
     SWC_LOGF(LOG_WARN, "get_connection: %s, Empty-Endpoints",
                         m_srv_name.c_str());
     return conn;
@@ -185,7 +185,7 @@ ConnHandlerPtr Serialized::_get_connection(
 
   ServerConnections::Ptr srv;
   uint32_t tries = probes;
-  do {
+  if(m_run && m_ioctx->running) do {
 
     for(auto& endpoint : endpoints){
       srv = get_srv(endpoint);
@@ -201,7 +201,7 @@ ConnHandlerPtr Serialized::_get_connection(
     std::this_thread::sleep_for(
       std::chrono::milliseconds(3000)); // ? cfg-setting
 
-  } while (m_run.load() && (!probes || --tries));
+  } while (m_run && m_ioctx->running && (!probes || --tries));
 
   return conn;
 }
@@ -232,6 +232,11 @@ void Serialized::_get_connection(
       const std::chrono::milliseconds& timeout,
       uint32_t probes, uint32_t tries,
       size_t next, bool preserve) {
+
+  if(!m_run || !m_ioctx->running) {
+    cb(nullptr);
+    return;
+  }
 
   if(next == endpoints.size())
     next = 0;

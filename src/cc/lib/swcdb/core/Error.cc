@@ -107,6 +107,7 @@ std::map<const int, const char *> text_map {
 
   { Error::CLIENT_DATA_REMAINED,            "Data remained on client input" },
   { Error::CLIENT_MISMATCHED_CID,           "cid of response mismatching the cid of request"},
+  { Error::CLIENT_STOPPING,                 "client stopping"},
 
 };
 

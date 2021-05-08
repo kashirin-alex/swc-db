@@ -142,6 +142,10 @@ ColumnStatus::ColumnStatus(const Params::Report::ReqColumnStatus& params,
 }
 
 bool ColumnStatus::run() {
+  if(Env::Clients::get()->stopping()) {
+    cb(req(), Error::CLIENT_STOPPING, Params::Report::RspColumnStatus());
+    return false;
+  }
   if(endpoints.empty()) {
     Env::Clients::get()->mngrs_groups->select(cid, endpoints);
     if(endpoints.empty()) {
@@ -202,6 +206,10 @@ RangersStatus::RangersStatus(cid_t cid, RangersStatus::Cb_t&& cb,
 }
 
 bool RangersStatus::run() {
+  if(Env::Clients::get()->stopping()) {
+    cb(req(), Error::CLIENT_STOPPING, Params::Report::RspRangersStatus());
+    return false;
+  }
   if(endpoints.empty()) {
     bool no_cid = cid == DB::Schema::NO_CID;
     if(no_cid)

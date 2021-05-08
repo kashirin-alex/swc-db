@@ -116,6 +116,7 @@ class RangeSplit final {
               "RangeSplit::Mngr::Req::RangeUnloaded err=%d(%s) %lu/%lu",
               rsp.err, Error::get_text(rsp.err), cid, new_rid);
             if(rsp.err && !Env::Rgr::is_not_accepting() &&
+               rsp.err != Error::CLIENT_STOPPING &&
                rsp.err != Error::COLUMN_NOT_EXISTS &&
                rsp.err != Error::COLUMN_MARKED_REMOVED &&
                rsp.err != Error::COLUMN_NOT_READY) {
@@ -154,6 +155,7 @@ class RangeSplit final {
           rsp.err, Error::get_text(rsp.err), range->cfg->cid, rsp.rid);
 
         if(rsp.err &&
+           rsp.err != Error::CLIENT_STOPPING &&
            rsp.err != Error::COLUMN_NOT_EXISTS &&
            rsp.err != Error::COLUMN_MARKED_REMOVED &&
            rsp.err != Error::COLUMN_NOT_READY) {

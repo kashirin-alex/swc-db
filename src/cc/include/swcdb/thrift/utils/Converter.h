@@ -23,6 +23,8 @@ void exception(int err, const std::string& msg = "");
 void exception(int err, const std::string& msg) {
   // switch on err with exception error type
   Exception e;
+  if(err == Error::CLIENT_STOPPING)
+    err = Error::SERVER_SHUTTING_DOWN;
   e.__set_code(err);
   e.__set_message(msg + " - " + Error::get_text(err));
   SWC_LOG_OUT(LOG_DEBUG, e.printTo(SWC_LOG_OSTREAM); );

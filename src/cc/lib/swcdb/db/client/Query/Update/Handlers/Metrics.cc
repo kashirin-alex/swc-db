@@ -189,7 +189,7 @@ void Reporting::stop() {
 
 void Reporting::wait() {
   for(size_t n=0; completion.count(); ++n) {
-    if(n % 30000)
+    if(n % 30000 == 0)
       SWC_LOGF(LOG_WARN, "Reporting::wait completion=%lu",
                completion.count());
     std::this_thread::sleep_for(std::chrono::microseconds(100));
@@ -216,7 +216,7 @@ void Reporting::response(int err) {
   if(!completion.is_last())
     return;
 
-  if(!err && requires_commit()) {
+  if(!err && running && requires_commit()) {
     Update::commit(shared_from_this(), &column);
     return;
   }
@@ -227,8 +227,8 @@ void Reporting::response(int err) {
     error(Error::CLIENT_DATA_REMAINED);
 
   if(error() || column.error()) {
-    SWC_LOG(LOG_WARN, "Problem Updating Statistics");
-
+    SWC_LOGF(LOG_WARN, "Problem Updating Statistics error(hdlr=%d, colm=%d)",
+                        error(), column.error());
     // reset-state
     column.state_error.store(Error::OK);
     state_error.store(Error::OK);

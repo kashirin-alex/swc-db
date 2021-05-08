@@ -59,8 +59,12 @@ ColumnGet::ColumnGet(const Params::ColumnGetReq& params,
 }
 
 void ColumnGet::handle_no_conn() {
-  clear_endpoints();
-  run();
+  if(Env::Clients::get()->stopping()) {
+    cb(req(), Error::CLIENT_STOPPING, Params::ColumnGetRsp());
+  } else {
+    clear_endpoints();
+    run();
+  }
 }
 
 bool ColumnGet::run() {
@@ -69,8 +73,12 @@ bool ColumnGet::run() {
     Env::Clients::get()->mngrs_groups->select(
       DB::Types::MngrRole::SCHEMAS, endpoints);
     if(endpoints.empty()) {
-      MngrActive::make(
-        DB::Types::MngrRole::SCHEMAS, shared_from_this())->run();
+      if(Env::Clients::get()->stopping()) {
+        cb(req(), Error::CLIENT_STOPPING, Params::ColumnGetRsp());
+      } else {
+        MngrActive::make(
+          DB::Types::MngrRole::SCHEMAS, shared_from_this())->run();
+      }
       return false;
     }
   }

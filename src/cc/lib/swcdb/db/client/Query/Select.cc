@@ -329,6 +329,11 @@ bool Scanner::mngr_located_master(
       }
       return true;
     }
+    case Error::CLIENT_STOPPING: {
+      SWC_SCANNER_RSP_DEBUG("mngr_located_master STOPPED");
+      selector->error(rsp.err);
+      return true;
+    }
     case Error::RANGE_NOT_FOUND: {
       if(master_mngr_next) {
         master_mngr_next = false;
@@ -523,6 +528,11 @@ bool Scanner::mngr_resolved_rgr_meta(
       }
       return true;
     }
+    case Error::CLIENT_STOPPING: {
+      SWC_SCANNER_RSP_DEBUG("mngr_resolved_rgr_meta STOPPED");
+      selector->error(rsp.err);
+      return true;
+    }
     default: {
       SWC_SCANNER_RSP_DEBUG("mngr_resolved_rgr_meta RETRYING");
       if(selector->valid()) {
@@ -686,8 +696,7 @@ bool Scanner::mngr_resolved_rgr_select(
     }
     case Error::COLUMN_NOT_EXISTS: {
       SWC_SCANNER_RSP_DEBUG("mngr_resolved_rgr_select QUIT");
-      int at = Error::OK; // rsp.err = Error::CONSIST_ERRORS;
-      selector->state_error.compare_exchange_weak(at, rsp.err);
+      selector->error(rsp.err); // rsp.err = Error::CONSIST_ERRORS;
       selector->error(data_cid, rsp.err);
       return true;
     }
@@ -698,6 +707,11 @@ bool Scanner::mngr_resolved_rgr_select(
         data_req_base->request_again();
         return false;
       }
+      return true;
+    }
+    case Error::CLIENT_STOPPING: {
+      SWC_SCANNER_RSP_DEBUG("mngr_resolved_rgr_select STOPPED");
+      selector->error(rsp.err);
       return true;
     }
     default: {
