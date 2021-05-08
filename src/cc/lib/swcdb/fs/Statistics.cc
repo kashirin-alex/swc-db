@@ -10,13 +10,6 @@
 namespace SWC { namespace FS {
 
 
-Statistics::Metric::Tracker::Tracker(Metric* m) noexcept : m(m) { }
-
-void Statistics::Metric::Tracker::stop(bool err) noexcept {
-  m->add(err, elapsed());
-}
-
-
 void Statistics::Metric::add(bool err, uint64_t ns) noexcept {
   lock();
   if(UINT64_MAX - m_total > ns) {

@@ -17,6 +17,11 @@ _default_ **```swc.fs.local.cfg.dyn=```**
 The Local FileSystem's base root path. \
 _default_ **```swc.fs.local.path.root=```**
 
+* ### swc.fs.local.metrics.enabled
+```BOOL```
+Enable or Disable Metrics tracking. \
+_default_ **```swc.fs.local.metrics.enabled=true```**
+
 
  > ***
  > **_The configuration properties applicable for dynamic reloading_**

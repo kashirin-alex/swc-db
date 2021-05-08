@@ -57,7 +57,14 @@ template<typename ClockT, typename DurationT>
 struct Measure : std::chrono::time_point<ClockT> {
 
   SWC_CAN_INLINE
-  Measure() : std::chrono::time_point<ClockT>(ClockT::now()) { }
+  Measure() noexcept
+          : std::chrono::time_point<ClockT>(ClockT::now()) {
+  }
+
+  SWC_CAN_INLINE
+  Measure(std::chrono::time_point<ClockT>::duration&& v) noexcept
+          : std::chrono::time_point<ClockT>(v) {
+  }
 
   SWC_CAN_INLINE
   void restart() noexcept {
@@ -72,13 +79,13 @@ struct Measure : std::chrono::time_point<ClockT> {
 
 };
 
-typedef Measure<std::chrono::steady_clock, std::chrono::nanoseconds>  
+typedef Measure<std::chrono::steady_clock, std::chrono::nanoseconds>
   Measure_ns;
 typedef Measure<std::chrono::steady_clock, std::chrono::microseconds>
   Measure_us;
 typedef Measure<std::chrono::steady_clock, std::chrono::milliseconds>
   Measure_ms;
-typedef Measure<std::chrono::steady_clock, std::chrono::seconds> 
+typedef Measure<std::chrono::steady_clock, std::chrono::seconds>
   Measure_sec;
 
 

@@ -63,6 +63,9 @@ Configurables apply_broker() {
     ("swc.fs.broker.port", Config::i16(17000),
      "FsBroker port")
 
+    ("swc.fs.broker.metrics.enabled", Config::boo(true),
+     "Enable or Disable Metrics Tracking")
+
     ("swc.fs.broker.handlers", Config::i32(48),
      "Handlers for broker tasks")
 
@@ -89,6 +92,8 @@ Configurables apply_broker() {
   Configurables config;
   config.cfg_fds_max = Env::Config::settings()
     ->get<Config::Property::V_GINT32>("swc.fs.broker.fds.max");
+  config.stats_enabled = Env::Config::settings()->get_bool(
+    "swc.fs.broker.metrics.enabled");
   return config;
 }
 

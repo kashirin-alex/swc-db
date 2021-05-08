@@ -27,6 +27,10 @@ _default_ **```swc.fs.broker.port=17000```**
 The Handlers for broker tasks. \
 _default_ **```swc.fs.broker.handlers=48```**
 
+* ### swc.fs.broker.metrics.enabled
+```BOOL```
+Enable or Disable Metrics tracking. \
+_default_ **```swc.fs.broker.metrics.enabled=true```**
 
 
 ***

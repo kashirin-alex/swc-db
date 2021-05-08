@@ -70,7 +70,8 @@ FileSystem::FileSystem(const Configurables& config)
       path_data(
         normalize_pathname(
           Env::Config::settings()->get_str("swc.fs.path.data"))),
-      cfg_fds_max(config.cfg_fds_max), m_run(true) {
+      cfg_fds_max(config.cfg_fds_max), m_run(true),
+      statistics(config.stats_enabled) {
 }
 
 FileSystem::~FileSystem() { }

@@ -23,6 +23,10 @@ Configurables apply_hadoop_jvm() {
       "Namenode Port")
     ("swc.fs.hadoop_jvm.user", Config::str(),
       "HadoopJVM user")
+
+    ("swc.fs.hadoop_jvm.metrics.enabled", Config::boo(true),
+     "Enable or Disable Metrics Tracking")
+
     ("swc.fs.hadoop_jvm.fds.max", Config::g_i32(256),
       "Max Open Fds for opt. without closing")
     ("swc.fs.hadoop_jvm.reconnect.delay.ms", Config::g_i32(3000),
@@ -39,6 +43,8 @@ Configurables apply_hadoop_jvm() {
     "swc.fs.hadoop_jvm.path.root");
   config.cfg_fds_max = Env::Config::settings()
     ->get<Config::Property::V_GINT32>("swc.fs.hadoop_jvm.fds.max");
+  config.stats_enabled = Env::Config::settings()->get_bool(
+    "swc.fs.hadoop_jvm.metrics.enabled");
   return config;
 }
 

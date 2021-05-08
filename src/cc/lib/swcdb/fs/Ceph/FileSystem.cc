@@ -43,6 +43,9 @@ Configurables apply_ceph() {
     ("swc.fs.ceph.mon.addr", Config::str(),
       "The ceph config value for 'mon_addr'")
 
+    ("swc.fs.ceph.metrics.enabled", Config::boo(true),
+     "Enable or Disable Metrics Tracking")
+
     ("swc.fs.ceph.fds.max", Config::g_i32(256),
       "Max Open Fds for opt. without closing")
   ;
@@ -57,6 +60,8 @@ Configurables apply_ceph() {
     "swc.fs.ceph.path.root");
   config.cfg_fds_max = Env::Config::settings()
     ->get<Config::Property::V_GINT32>("swc.fs.ceph.fds.max");
+  config.stats_enabled = Env::Config::settings()->get_bool(
+    "swc.fs.ceph.metrics.enabled");
   return config;
 }
 

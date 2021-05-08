@@ -17,10 +17,15 @@ _default_ **```swc.fs.hadoop_jvm.cfg.dyn=```**
 The Hadoop-JVM FileSystem's base root path. \
 _default_ **```swc.fs.hadoop_jvm.path.root=```**
 
+* ### swc.fs.hadoop_jvm.metrics.enabled
+```BOOL```
+Enable or Disable Metrics tracking. \
+_default_ **```swc.fs.hadoop_jvm.metrics.enabled=true```**
+
 
 * ### swc.fs.hadoop_jvm.namenode
 ```STRINGS```
-The Namenode Host + optionally the :Port, many key=value allowed. 
+The Namenode Host + optionally the :Port, many key=value allowed.
 > The hadoop ```.xml``` confgiurations are used, if not set.
 
   _default_ **```swc.fs.hadoop_jvm.namenode=```**

@@ -467,7 +467,7 @@ class Item_FS : public Base {
 
   virtual void report(uint64_t for_ns, client::Query::Update::Handlers::Base::Column* colp,
                       const DB::Cell::KeyVec& parent_key) override {
-    FS::Statistics stats;
+    FS::Statistics stats(true);
     fs->statistics.gather(stats);
     uint64_t open_fds = fs->statistics.fds_count.load();
 

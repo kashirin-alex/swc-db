@@ -37,7 +37,9 @@ class Reporting final : public Common::Query::Update::Metric::Reporting {
       Comm::Protocol::Rgr::Command::MAX_CMD
     );
 
-    level->metrics.emplace_back(new Item_FS(Env::FsInterface::fs()));
+    auto fs = Env::FsInterface::fs();
+    if(fs->statistics.enabled)
+      level->metrics.emplace_back(new Item_FS(fs));
     // ++ Ranger Metrics
   }
 

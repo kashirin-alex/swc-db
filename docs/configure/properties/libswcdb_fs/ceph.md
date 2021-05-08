@@ -17,6 +17,11 @@ _default_ **```swc.fs.ceph.cfg.dyn=```**
 The Ceph FileSystem's base root path. \
 _default_ **```swc.fs.ceph.path.root=```**
 
+* ### swc.fs.ceph.metrics.enabled
+```BOOL```
+Enable or Disable Metrics tracking. \
+_default_ **```swc.fs.ceph.metrics.enabled=true```**
+
 * ### swc.fs.ceph.client.id
 ```STRING```
 The CephFs Client-Id to use. \

@@ -31,6 +31,10 @@ Configurables apply_hadoop() {
       "Hadoop user")
     ("swc.fs.hadoop.handlers", Config::i32(48),
       "Handlers for hadoop tasks")
+
+    ("swc.fs.hadoop.metrics.enabled", Config::boo(true),
+     "Enable or Disable Metrics Tracking")
+
     ("swc.fs.hadoop.fds.max", Config::g_i32(256),
       "Max Open Fds for opt. without closing")
   ;
@@ -45,6 +49,8 @@ Configurables apply_hadoop() {
     "swc.fs.hadoop.path.root");
   config.cfg_fds_max = Env::Config::settings()
     ->get<Config::Property::V_GINT32>("swc.fs.hadoop.fds.max");
+  config.stats_enabled = Env::Config::settings()->get_bool(
+    "swc.fs.hadoop.metrics.enabled");
   return config;
 }
 

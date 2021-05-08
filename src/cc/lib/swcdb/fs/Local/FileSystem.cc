@@ -19,6 +19,10 @@ Configurables apply_local() {
      "Local FileSystem's base root path")
     ("swc.fs.local.cfg.dyn", Config::strs(),
      "Dyn-config file")
+
+    ("swc.fs.local.metrics.enabled", Config::boo(true),
+     "Enable or Disable Metrics Tracking")
+
     ("swc.fs.local.fds.max", Config::g_i32(1024),
       "Max Open Fds for opt. without closing")
   ;
@@ -32,6 +36,8 @@ Configurables apply_local() {
     "swc.fs.local.path.root");
   config.cfg_fds_max = Env::Config::settings()
     ->get<Config::Property::V_GINT32>("swc.fs.local.fds.max");
+  config.stats_enabled = Env::Config::settings()->get_bool(
+    "swc.fs.local.metrics.enabled");
   return config;
 }
 
