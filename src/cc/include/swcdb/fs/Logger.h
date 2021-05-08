@@ -59,7 +59,7 @@
 
 #define SWC_FS_LENGTH_FINISH(_error, _path, _len, _tracker) \
   _SWC_FS_ERR(_error, "length", _tracker, \
-    SWC_LOG_OSTREAM << "len=" << _len << " path='" << _path << '\''; \
+    SWC_LOG_OSTREAM << " len=" << _len << " path='" << _path << '\''; \
   );
 
 
@@ -119,7 +119,7 @@
 
 #define SWC_FS_READALL_FINISH(_error, _name, _amount, _tracker) \
   _SWC_FS_ERR(_error, "readall", _tracker, \
-    SWC_LOG_OSTREAM << " file='" << _name << "' amount=" << _amount; \
+    SWC_LOG_OSTREAM << " file='" << _name << "' amt=" << _amount; \
   );
 
 
@@ -131,7 +131,7 @@
   SWC_LOG_OUT(LOG_DEBUG, \
     _smartfd->print( \
       SWC_LOG_OSTREAM << "create bufsz=" << _bufsz \
-                      << " replicas=" << _replication \
+                      << " replicas=" << int(_replication) \
                       << " blksz=" << _blksz << ' '); \
   );
 
@@ -157,9 +157,9 @@
 #define SWC_FS_WRITE_START(_smartfd, _replication, _blksz, _amount) \
   SWC_LOG_OUT(LOG_DEBUG, \
     _smartfd->print( \
-      SWC_LOG_OSTREAM << "write replicas=" << _replication \
+      SWC_LOG_OSTREAM << "write replicas=" << int(_replication) \
                       << " blksz=" << _blksz \
-                      << " amount=" << _amount << ' '); \
+                      << " amt=" << _amount << ' '); \
   );
 
 #define SWC_FS_WRITE_FINISH(_error, _smartfd, _tracker) \
@@ -171,15 +171,15 @@
 
 #define SWC_FS_READ_START(_smartfd, _amount) \
   SWC_LOG_OUT(LOG_DEBUG, \
-    _smartfd->print(SWC_LOG_OSTREAM << "read amount=" << _amount << ' '); \
+    _smartfd->print(SWC_LOG_OSTREAM << "read amt=" << _amount << ' '); \
   );
 
 #define SWC_FS_READ_FINISH(_error, _smartfd, _amount, _tracker) \
   _SWC_FS_FD_ERR( \
     _error && _error == Error::FS_EOF ? Error::OK : _error, \
     "read", _smartfd, _tracker, \
-    SWC_LOG_OSTREAM << " amount=" << _amount \
-                    << " eof=" << (_error == Error::FS_EOF); \
+    SWC_LOG_OSTREAM << " amt=" << _amount; \
+    if(_error == Error::FS_EOF) SWC_LOG_OSTREAM << "EOF"; \
   );
 
 
@@ -187,15 +187,15 @@
 #define SWC_FS_PREAD_START(_smartfd, _offset, _amount) \
   SWC_LOG_OUT(LOG_DEBUG, \
     _smartfd->print(SWC_LOG_OSTREAM \
-      << "pread offset=" << _offset << "amount=" << _amount << ' '); \
+      << "pread offset=" << _offset << " amt=" << _amount << ' '); \
   );
 
 #define SWC_FS_PREAD_FINISH(_error, _smartfd, _amount, _tracker) \
   _SWC_FS_FD_ERR( \
     _error && _error == Error::FS_EOF ? Error::OK : _error, \
     "pread", _smartfd, _tracker, \
-    SWC_LOG_OSTREAM << " amount=" << _amount \
-                    << " eof=" << (_error == Error::FS_EOF); \
+    SWC_LOG_OSTREAM << " amt=" << _amount; \
+    if(_error == Error::FS_EOF) SWC_LOG_OSTREAM << "EOF"; \
   );
 
 
@@ -203,15 +203,15 @@
 #define SWC_FS_COMBI_PREAD_START(_smartfd, _offset, _amount) \
   SWC_LOG_OUT(LOG_DEBUG, \
     _smartfd->print(SWC_LOG_OSTREAM \
-      << "combi-pread offset=" << _offset << "amount=" << _amount << ' '); \
+      << "combi-pread offset=" << _offset << " amt=" << _amount << ' '); \
   );
 
 #define SWC_FS_COMBI_PREAD_FINISH(_error, _smartfd, _amount, _tracker) \
   _SWC_FS_FD_ERR( \
     _error && _error == Error::FS_EOF ? Error::OK : _error, \
     "combi-pread", _smartfd, _tracker, \
-    SWC_LOG_OSTREAM << " amount=" << _amount \
-                    << " eof=" << (_error == Error::FS_EOF); \
+    SWC_LOG_OSTREAM << " amt=" << _amount; \
+    if(_error == Error::FS_EOF) SWC_LOG_OSTREAM << "EOF"; \
   );
 
 
@@ -219,12 +219,12 @@
 #define SWC_FS_APPEND_START(_smartfd, _amount, _flags) \
   SWC_LOG_OUT(LOG_DEBUG, \
     _smartfd->print(SWC_LOG_OSTREAM \
-      << "append amount=" << _amount << " flags=" << int(_flags) << ' '); \
+      << "append amt=" << _amount << " flags=" << int(_flags) << ' '); \
   );
 
 #define SWC_FS_APPEND_FINISH(_error, _smartfd, _amount, _tracker) \
   _SWC_FS_FD_ERR(_error, "append", _smartfd, _tracker, \
-    SWC_LOG_OSTREAM << " amount=" << _amount; \
+    SWC_LOG_OSTREAM << " amt=" << _amount; \
   );
 
 

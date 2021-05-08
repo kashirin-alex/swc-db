@@ -230,7 +230,7 @@ void Settings::init_process(bool with_pid_file, const char* port_cfg) {
         buffer.close();
       }
       if(old_pid.empty()) {
-        std::cerr << "Problem reading pid-file='" << pid_file << '\'';
+        std::cerr << "Problem reading pid-file=" << pid_file;
         if(errno)
           Error::print(std::cerr << ' ', errno);
         std::cerr << std::endl;
@@ -273,7 +273,7 @@ void Settings::init_process(bool with_pid_file, const char* port_cfg) {
       pid_file_buff.close();
     }
     if(errno) {
-      std::cerr << "Problem writing pid-file='" << pid_file << '\'';
+      std::cerr << "Problem writing pid-file=" << pid_file;
       if(errno)
         Error::print(std::cerr << ' ', errno);
       std::cerr << std::endl;
@@ -281,7 +281,7 @@ void Settings::init_process(bool with_pid_file, const char* port_cfg) {
     }
 
     std::cout << "Executing '"<< executable
-              << "' with pid-file='" << pid_file << '\'' << std::endl;
+              << "' with pid-file=" << pid_file << std::endl;
   }
 
   executable.append(".");

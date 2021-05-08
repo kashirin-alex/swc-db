@@ -77,12 +77,12 @@ void SmartFd::forward(uint64_t nbytes) noexcept {
 }
 
 std::string SmartFd::to_string() const {
-  return format("SmartFd(filepath='%s' flags=%u fd=%d pos=%lu)",
+  return format("Fd('%s' flags=%u fd=%d pos=%lu)",
     m_filepath.c_str(), m_flags.load(), m_fd.load(), m_pos.load());
 }
 
 void SmartFd::print(std::ostream& out) const {
-  out << "SmartFd(filepath='" << m_filepath
+  out << "Fd('" << m_filepath
       << "' flags=" << m_flags.load()
       << " fd=" << m_fd.load()
       << " pos=" << m_pos.load()

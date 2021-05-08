@@ -44,11 +44,6 @@ bool Base::is_rsp(const Event::Ptr& ev, int cmd,
       *remain = ev->data.size - 4;
     }
   }
-
-  if(error &&
-     (cmd != FUNCTION_READ_ALL || error != Error::FS_PATH_NOT_FOUND))
-    SWC_LOGF(LOG_ERROR, "error=%d(%s)", error, Error::get_text(error));
-
   return true;
 }
 
