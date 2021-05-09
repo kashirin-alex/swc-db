@@ -93,7 +93,7 @@ class Item_Net : public Base {
     Common::Stats::MinMaxAvgCount_Safe<uint64_t> bytes_recv;
     std::vector<Core::Atomic<uint64_t>>          commands;
 
-    Addr(const Comm::EndPoint& endpoint, uint8_t max_ev_cmd)
+    Addr(const Comm::EndPoint& endpoint, uint8_t max_ev_cmd) noexcept 
         : addr(endpoint.address()),
           conn_open(0), conn_accept(0), conn_est(0),
           commands(max_ev_cmd) {
@@ -111,7 +111,7 @@ class Item_Net : public Base {
 
   virtual ~Item_Net() { }
 
-  Addr* get(const asio::ip::address& for_addr, bool secure) {
+  Addr* get(const asio::ip::address& for_addr, bool secure) const noexcept {
     for(auto& addr : m_addresses[secure]) {
       if(addr->addr.is_unspecified() || addr->addr == for_addr)
         return addr.get();
@@ -119,39 +119,50 @@ class Item_Net : public Base {
     return nullptr;
   }
 
-  void accepted(const Comm::EndPoint& endpoint, bool secure) {
+  void accepted(const Comm::EndPoint& endpoint, bool secure) noexcept {
     if(Addr* addr = get(endpoint.address(), secure))
       addr->conn_accept.fetch_add(1);
   }
 
-  void connected(const Comm::ConnHandlerPtr& conn) {
+  void connected() noexcept {
+    Addr* addr = m_addresses[0].front().get();
+    addr->conn_open.fetch_add(1);
+    addr->conn_est.fetch_add(1);
+  }
+
+  void disconnected() noexcept {
+    Addr* addr = m_addresses[0].front().get();
+    addr->conn_open.fetch_sub(1);
+  }
+
+  void connected(const Comm::ConnHandlerPtr& conn) noexcept {
     if(Addr* addr = get(conn->endpoint_local.address(), conn->is_secure())) {
       addr->conn_open.fetch_add(1);
       addr->conn_est.fetch_add(1);
     }
   }
 
-  void disconnected(const Comm::ConnHandlerPtr& conn) {
+  void disconnected(const Comm::ConnHandlerPtr& conn) noexcept {
     if(Addr* addr = get(conn->endpoint_local.address(), conn->is_secure()))
       addr->conn_open.fetch_sub(1);
   }
 
-  void command(const Comm::ConnHandlerPtr& conn, uint8_t cmd) {
+  void command(const Comm::ConnHandlerPtr& conn, uint8_t cmd) noexcept {
     if(Addr* addr = get(conn->endpoint_local.address(), conn->is_secure()))
       addr->commands[cmd].fetch_add(1);
   }
 
-  void error(const Comm::ConnHandlerPtr& conn) {
+  void error(const Comm::ConnHandlerPtr& conn) noexcept {
     if(Addr* addr = get(conn->endpoint_local.address(), conn->is_secure()))
       addr->commands.back().fetch_add(1);
   }
 
-  void sent(const Comm::ConnHandlerPtr& conn, size_t bytes) {
+  void sent(const Comm::ConnHandlerPtr& conn, size_t bytes) noexcept {
     if(Addr* addr = get(conn->endpoint_local.address(), conn->is_secure()))
       addr->bytes_sent.add(bytes);
   }
 
-  void received(const Comm::ConnHandlerPtr& conn, size_t bytes) {
+  void received(const Comm::ConnHandlerPtr& conn, size_t bytes) noexcept {
     if(Addr* addr = get(conn->endpoint_local.address(), conn->is_secure()))
       addr->bytes_recv.add(bytes);
   }

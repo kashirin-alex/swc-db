@@ -82,7 +82,7 @@ int run() {
 
 
   auto app_ctx = std::make_shared<AppContext>();
-  app_ctx->init(host, endpoints);
+  app_ctx->init(host, {endpoints.front()}); //missing socket->getLocalAddr
 
   std::vector<std::unique_ptr<std::thread>> threads;
   std::vector<std::shared_ptr<thrift::server::TThreadPoolServer>> servers;

@@ -91,8 +91,8 @@ class AppContext final : virtual public BrokerIfFactory,
     } catch(...) {
       SWC_LOG_CURRENT_EXCEPTION("");
     }
-    //if(m_metrics)
-    //  m_metrics->net->connected(conn);
+    if(m_metrics)
+      m_metrics->net->connected();
     Core::MutexSptd::scope lock(m_mutex_handlers);
     m_handlers.emplace_back(handler);
     return handler;
@@ -119,10 +119,10 @@ class AppContext final : virtual public BrokerIfFactory,
         SWC_LOG_OSTREAM << "Connection Closed(hdlr=" << size_t(handler)
           << " BAD CAST) open=" << remain_open; );
     }
-    //if(m_metrics)
-    //  m_metrics->net->disconnected(conn);
+    if(m_metrics)
+      m_metrics->net->disconnected();
     Core::MutexSptd::scope lock(m_mutex_handlers);
-    for(auto it = m_handlers.begin(); it < m_handlers.end(); ++it) {
+    for(auto it = m_handlers.begin(); it != m_handlers.end(); ++it) {
       if(it->get() == hdlr) {
         m_handlers.erase(it);
         break;
