@@ -19,6 +19,46 @@ namespace Metric {
 using namespace client::Query::Update::Handlers::Metric;
 
 
+
+namespace { // local namespace
+
+static size_t encoded_length(
+        const Common::Stats::MinMaxAvgCount<uint64_t>& value,
+        bool with_count) noexcept {
+  size_t sz = 0;
+  if(value.count) {
+    uint64_t avg = value.avg();
+    if(avg != value.min)
+      sz += 2 + Serialization::encoded_length_vi64(value.min);
+    if(avg != value.max)
+      sz += 2 + Serialization::encoded_length_vi64(value.max);
+    sz += 2 + Serialization::encoded_length_vi64(avg);
+    if(with_count)
+      sz += 2 + Serialization::encoded_length_vi64(value.count);
+  }
+  return sz;
+}
+
+static void add_value(
+        const Common::Stats::MinMaxAvgCount<uint64_t>& value,
+        uint8_t field_start, bool with_count,
+        DB::Cell::Serial::Value::FieldsWriter& wfields) noexcept {
+  if(value.count) {
+    uint64_t avg = value.avg();
+    if(avg != value.min)
+      wfields.add(field_start, int64_t(value.min));
+    if(avg != value.max)
+      wfields.add(field_start + 1, int64_t(value.max));
+    wfields.add(field_start + 2, int64_t(avg));
+    if(with_count)
+      wfields.add(field_start + 3, int64_t(value.count));
+  }
+}
+
+}
+
+
+
 class Item_Net : public Base {
   /* Cell-Serialization:
       key:    [levels, "net", "{address}", is_secure()?"SECURE":"PLAIN"]
@@ -26,6 +66,7 @@ class Item_Net : public Base {
   */
 
   public:
+  typedef std::unique_ptr<Item_CountVolume> Ptr;
 
   static const uint8_t FIELD_CONN_OPEN        = 0;
   static const uint8_t FIELD_CONN_ACC         = 1;
@@ -43,16 +84,14 @@ class Item_Net : public Base {
 
   static const uint8_t FIELD_EV_COMMAND_START = 100; // {100 + CMD}
 
-  typedef std::unique_ptr<Item_CountVolume> Ptr;
-
   struct Addr {
-    const asio::ip::address             addr;
-    Core::Atomic<uint64_t>              conn_open;
-    Core::Atomic<uint64_t>              conn_accept;
-    Core::Atomic<uint64_t>              conn_est;
-    MinMaxAvgCount                      bytes_sent;
-    MinMaxAvgCount                      bytes_recv;
-    std::vector<Core::Atomic<uint64_t>> commands;
+    const asio::ip::address                      addr;
+    Core::Atomic<uint64_t>                       conn_open;
+    Core::Atomic<uint64_t>                       conn_accept;
+    Core::Atomic<uint64_t>                       conn_est;
+    Common::Stats::MinMaxAvgCount_Safe<uint64_t> bytes_sent;
+    Common::Stats::MinMaxAvgCount_Safe<uint64_t> bytes_recv;
+    std::vector<Core::Atomic<uint64_t>>          commands;
 
     Addr(const Comm::EndPoint& endpoint, uint8_t max_ev_cmd)
         : addr(endpoint.address()),
@@ -124,14 +163,8 @@ class Item_Net : public Base {
     int64_t conn_open = 0;
     int64_t conn_accept = 0;
     int64_t conn_est = 0;
-    uint64_t bytes_sent_min = 0;
-    uint64_t bytes_sent_max = 0;
-    uint64_t bytes_sent_avg = 0;
-    uint64_t bytes_sent_trx = 0;
-    uint64_t bytes_recv_min = 0;
-    uint64_t bytes_recv_max = 0;
-    uint64_t bytes_recv_avg = 0;
-    uint64_t bytes_recv_trx = 0;
+    Common::Stats::MinMaxAvgCount<uint64_t> bytes_sent;
+    Common::Stats::MinMaxAvgCount<uint64_t> bytes_recv;
 
     bool secure = false;
     _do_layer:
@@ -156,24 +189,11 @@ class Item_Net : public Base {
       if((conn_est = addr->conn_est.exchange(0)))
         sz += 2 + Serialization::encoded_length_vi64(conn_est);
 
-      addr->bytes_sent.exchange_reset(
-        bytes_sent_min, bytes_sent_max, bytes_sent_avg, bytes_sent_trx);
-      if(bytes_sent_trx) {
-        sz += 8;
-        sz += Serialization::encoded_length_vi64(bytes_sent_min);
-        sz += Serialization::encoded_length_vi64(bytes_sent_max);
-        sz += Serialization::encoded_length_vi64(bytes_sent_avg);
-        sz += Serialization::encoded_length_vi64(bytes_sent_trx);
-      }
-      addr->bytes_recv.exchange_reset(
-        bytes_recv_min, bytes_recv_max, bytes_recv_avg, bytes_recv_trx);
-      if(bytes_recv_trx) {
-        sz += 8;
-        sz += Serialization::encoded_length_vi64(bytes_recv_min);
-        sz += Serialization::encoded_length_vi64(bytes_recv_max);
-        sz += Serialization::encoded_length_vi64(bytes_recv_avg);
-        sz += Serialization::encoded_length_vi64(bytes_recv_trx);
-      }
+      addr->bytes_sent.gather(bytes_sent);
+      sz += encoded_length(bytes_sent, true);
+      addr->bytes_recv.gather(bytes_recv);
+      sz += encoded_length(bytes_recv, true);
+
       std::vector<int64_t> counts(addr->commands.size());
       auto it = counts.begin();
       for(auto& c : addr->commands) {
@@ -192,18 +212,8 @@ class Item_Net : public Base {
       if(conn_est) {
         wfields.add(FIELD_CONN_EST, conn_est);
       }
-      if(bytes_sent_trx) {
-        wfields.add(FIELD_BYTES_SENT_MIN, int64_t(bytes_sent_min));
-        wfields.add(FIELD_BYTES_SENT_MAX, int64_t(bytes_sent_max));
-        wfields.add(FIELD_BYTES_SENT_AVG, int64_t(bytes_sent_avg));
-        wfields.add(FIELD_BYTES_SENT_TRX, int64_t(bytes_sent_trx));
-      }
-      if(bytes_recv_trx) {
-        wfields.add(FIELD_BYTES_RECV_MIN, int64_t(bytes_recv_min));
-        wfields.add(FIELD_BYTES_RECV_MAX, int64_t(bytes_recv_max));
-        wfields.add(FIELD_BYTES_RECV_AVG, int64_t(bytes_recv_avg));
-        wfields.add(FIELD_BYTES_RECV_TRX, int64_t(bytes_recv_trx));
-      }
+      add_value(bytes_sent, FIELD_BYTES_SENT_MIN, true, wfields);
+      add_value(bytes_recv, FIELD_BYTES_RECV_MIN, true, wfields);
       for(size_t i=0; i < counts.size(); ++i) {
         if(counts[i])
           wfields.add(i + FIELD_EV_COMMAND_START, counts[i]);
@@ -245,38 +255,48 @@ class Item_Net : public Base {
 };
 
 
-class Item_Memory : public Base {
+
+class Item_Mem : public Base {
   /* Cell-Serialization:
       key:    [levels, "mem"]
       value:  {FIELD_ID}:I:{value}, ...
   */
 
   public:
+  typedef std::unique_ptr<Item_Mem> Ptr;
 
-  static const uint8_t FIELD_RSS_MIN = 0;
-  static const uint8_t FIELD_RSS_MAX = 1;
-  static const uint8_t FIELD_RSS_AVG = 2;
+  static const uint8_t FIELD_RSS_FREE_MIN = 0;
+  static const uint8_t FIELD_RSS_FREE_MAX = 1;
+  static const uint8_t FIELD_RSS_FREE_AVG = 2;
 
-  typedef std::unique_ptr<Item_Memory> Ptr;
+  static const uint8_t FIELD_RSS_USED_MIN = 3;
+  static const uint8_t FIELD_RSS_USED_MAX = 4;
+  static const uint8_t FIELD_RSS_USED_AVG = 5;
 
-  MinMaxAvgCount  rss;
+  static const uint8_t FIELD_RSS_USED_REG_MIN = 6;
+  static const uint8_t FIELD_RSS_USED_REG_MAX = 7;
+  static const uint8_t FIELD_RSS_USED_REG_AVG = 8;
 
-  Item_Memory() noexcept { }
+  Common::Stats::MinMaxAvgCount_Safe<uint64_t>  rss_free;
+  Common::Stats::MinMaxAvgCount_Safe<uint64_t>  rss_used;
+  Common::Stats::MinMaxAvgCount_Safe<uint64_t>  rss_used_reg;
 
-  virtual ~Item_Memory() { }
+  Item_Mem() noexcept { }
 
-  void add_rss(uint64_t mbytes) noexcept {
-    rss.add(mbytes);
-  }
+  virtual ~Item_Mem() { }
 
   virtual void report(uint64_t for_ns, client::Query::Update::Handlers::Base::Column* colp,
                       const DB::Cell::KeyVec& parent_key) override {
-    uint64_t rss_min = 0;
-    uint64_t rss_max = 0;
-    uint64_t rss_avg = 0;
-    uint64_t rss_samples = 0;
-    rss.exchange_reset(rss_min, rss_max, rss_avg, rss_samples);
-    if(!rss_samples)
+    Common::Stats::MinMaxAvgCount<uint64_t> _rss_free;
+    rss_free.gather(_rss_free);
+
+    Common::Stats::MinMaxAvgCount<uint64_t> _rss_used;
+    rss_used.gather(_rss_used);
+
+    Common::Stats::MinMaxAvgCount<uint64_t> _rss_used_reg;
+    rss_used_reg.gather(_rss_used_reg);
+
+    if(!_rss_free.count && !_rss_used.count && !_rss_used_reg.count)
       return;
 
     DB::Cell::KeyVec key;
@@ -290,26 +310,31 @@ class Item_Memory : public Base {
     cell.set_timestamp(for_ns);
     cell.key.add(key);
 
-    size_t sz = 6;
-    sz += Serialization::encoded_length_vi64(rss_min);
-    sz += Serialization::encoded_length_vi64(rss_max);
-    sz += Serialization::encoded_length_vi64(rss_avg);
+    size_t sz = encoded_length(_rss_free, false);
+    sz += encoded_length(_rss_used, false);
+    sz += encoded_length(_rss_used_reg, false);
 
     DB::Cell::Serial::Value::FieldsWriter wfields;
     wfields.ensure(sz);
-    wfields.add(FIELD_RSS_MIN,  int64_t(rss_min));
-    wfields.add(FIELD_RSS_MAX,  int64_t(rss_max));
-    wfields.add(FIELD_RSS_AVG,  int64_t(rss_avg));
+    if(_rss_free.count)
+      add_value(_rss_free,      FIELD_RSS_FREE_MIN,     false, wfields);
+    if(_rss_used.count)
+      add_value(_rss_used,      FIELD_RSS_USED_MIN,     false, wfields);
+    if(_rss_used_reg.count)
+      add_value(_rss_used_reg,  FIELD_RSS_USED_REG_MIN, false, wfields);
 
     cell.set_value(wfields.base, wfields.fill(), false);
     colp->add(cell);
   }
 
   virtual void reset() override {
-    rss.reset();
+    rss_free.reset();
+    rss_used.reset();
+    rss_used_reg.reset();
   }
 
 };
+
 
 
 class Item_CPU : public Base {
@@ -319,64 +344,42 @@ class Item_CPU : public Base {
   */
 
   public:
+  typedef std::unique_ptr<Item_CPU> Ptr;
 
-  static const uint8_t FIELD_NTHREADS_MIN = 0;
-  static const uint8_t FIELD_NTHREADS_MAX = 1;
-  static const uint8_t FIELD_NTHREADS_AVG = 2;
-
-  static const uint8_t FIELD_CPU_U_PERC_MIN = 3;
-  static const uint8_t FIELD_CPU_U_PERC_MAX = 4;
-  static const uint8_t FIELD_CPU_U_PERC_AVG = 5;
+  static const uint8_t FIELD_CPU_U_PERC_MIN = 0;
+  static const uint8_t FIELD_CPU_U_PERC_MAX = 1;
+  static const uint8_t FIELD_CPU_U_PERC_AVG = 2;
 
   static const uint8_t FIELD_CPU_S_PERC_MIN = 3;
   static const uint8_t FIELD_CPU_S_PERC_MAX = 4;
   static const uint8_t FIELD_CPU_S_PERC_AVG = 5;
 
-  typedef std::unique_ptr<Item_CPU> Ptr;
+  static const uint8_t FIELD_NTHREADS_MIN   = 6;
+  static const uint8_t FIELD_NTHREADS_MAX   = 7;
+  static const uint8_t FIELD_NTHREADS_AVG   = 8;
 
-  MinMaxAvgCount  nthreads;
-  MinMaxAvgCount  cpu_u_perc;
-  MinMaxAvgCount  cpu_s_perc;
+  Common::Stats::MinMaxAvgCount_Safe<uint64_t>  percent_user;
+  Common::Stats::MinMaxAvgCount_Safe<uint64_t>  percent_sys;
+  Common::Stats::MinMaxAvgCount_Safe<uint64_t>  nthreads;
 
   Item_CPU() noexcept { }
 
   virtual ~Item_CPU() { }
 
-  void add_threads(uint64_t num) noexcept {
-    nthreads.add(num);
-  }
-
-  void add_cpu_u(uint64_t perc) noexcept {
-    cpu_u_perc.add(perc);
-  }
-  void add_cpu_s(uint64_t perc) noexcept {
-    cpu_s_perc.add(perc);
-  }
-
-  virtual void report(uint64_t for_ns, client::Query::Update::Handlers::Base::Column* colp,
+  virtual void report(uint64_t for_ns,
+                      client::Query::Update::Handlers::Base::Column* colp,
                       const DB::Cell::KeyVec& parent_key) override {
-    uint64_t nthreads_min = 0;
-    uint64_t nthreads_max = 0;
-    uint64_t nthreads_avg = 0;
-    uint64_t nthreads_samples = 0;
-    nthreads.exchange_reset(
-      nthreads_min, nthreads_max, nthreads_avg, nthreads_samples);
 
-    uint64_t cpu_u_perc_min = 0;
-    uint64_t cpu_u_perc_max = 0;
-    uint64_t cpu_u_perc_avg = 0;
-    uint64_t cpu_u_perc_samples = 0;
-    cpu_u_perc.exchange_reset(
-      cpu_u_perc_min, cpu_u_perc_max, cpu_u_perc_avg, cpu_u_perc_samples);
+    Common::Stats::MinMaxAvgCount<uint64_t> _percent_user;
+    percent_user.gather(_percent_user);
 
-    uint64_t cpu_s_perc_min = 0;
-    uint64_t cpu_s_perc_max = 0;
-    uint64_t cpu_s_perc_avg = 0;
-    uint64_t cpu_s_perc_samples = 0;
-    cpu_s_perc.exchange_reset(
-      cpu_s_perc_min, cpu_s_perc_max, cpu_s_perc_avg, cpu_s_perc_samples);
+    Common::Stats::MinMaxAvgCount<uint64_t> _percent_sys;
+    percent_sys.gather(_percent_sys);
 
-    if(!nthreads_samples && !cpu_u_perc_samples && !cpu_s_perc_samples)
+    Common::Stats::MinMaxAvgCount<uint64_t> _nthreads;
+    nthreads.gather(_nthreads);
+
+    if(!_percent_user.count && !_percent_sys.count && !_nthreads.count)
       return;
 
     DB::Cell::KeyVec key;
@@ -390,52 +393,29 @@ class Item_CPU : public Base {
     cell.set_timestamp(for_ns);
     cell.key.add(key);
 
-    size_t sz = 0;
-    DB::Cell::Serial::Value::FieldsWriter wfields;
-    if(nthreads_samples) {
-      sz += 6;
-      sz += Serialization::encoded_length_vi64(nthreads_min);
-      sz += Serialization::encoded_length_vi64(nthreads_max);
-      sz += Serialization::encoded_length_vi64(nthreads_avg);
-    }
-    if(cpu_u_perc_samples) {
-      sz += 6;
-      sz += Serialization::encoded_length_vi64(cpu_u_perc_min);
-      sz += Serialization::encoded_length_vi64(cpu_u_perc_max);
-      sz += Serialization::encoded_length_vi64(cpu_u_perc_avg);
-    }
-    if(cpu_s_perc_samples) {
-      sz += 6;
-      sz += Serialization::encoded_length_vi64(cpu_s_perc_min);
-      sz += Serialization::encoded_length_vi64(cpu_s_perc_max);
-      sz += Serialization::encoded_length_vi64(cpu_s_perc_avg);
-    }
+    size_t sz = encoded_length(_percent_user, false);
+    sz += encoded_length(_percent_sys, false);
+    sz += encoded_length(_nthreads, false);
 
+    DB::Cell::Serial::Value::FieldsWriter wfields;
     wfields.ensure(sz);
-    if(nthreads_samples) {
-      wfields.add(FIELD_NTHREADS_MIN,  int64_t(nthreads_min));
-      wfields.add(FIELD_NTHREADS_MAX,  int64_t(nthreads_max));
-      wfields.add(FIELD_NTHREADS_AVG,  int64_t(nthreads_avg));
-    }
-    if(cpu_u_perc_samples) {
-      wfields.add(FIELD_CPU_U_PERC_MIN,  int64_t(cpu_u_perc_min));
-      wfields.add(FIELD_CPU_U_PERC_MAX,  int64_t(cpu_u_perc_max));
-      wfields.add(FIELD_CPU_U_PERC_AVG,  int64_t(cpu_u_perc_avg));
-    }
-    if(cpu_s_perc_samples) {
-      wfields.add(FIELD_CPU_S_PERC_MIN,  int64_t(cpu_s_perc_min));
-      wfields.add(FIELD_CPU_S_PERC_MAX,  int64_t(cpu_s_perc_max));
-      wfields.add(FIELD_CPU_S_PERC_AVG,  int64_t(cpu_s_perc_avg));
-    }
+    if(_percent_user.count)
+      add_value(_percent_user,  FIELD_CPU_U_PERC_MIN, false, wfields);
+    if(_percent_sys.count)
+      add_value(_percent_sys,   FIELD_CPU_S_PERC_MIN, false, wfields);
+    if(_nthreads.count)
+      add_value(_nthreads,      FIELD_NTHREADS_MIN,   false, wfields);
 
     cell.set_value(wfields.base, wfields.fill(), false);
     colp->add(cell);
+
+    // set_interval(reportp->cfg_intval->get()/10);
   }
 
   virtual void reset() override {
+    percent_user.reset();
+    percent_sys.reset();
     nthreads.reset();
-    cpu_u_perc.reset();
-    cpu_s_perc.reset();
   }
 
 };
@@ -477,12 +457,15 @@ class Item_FS : public Base {
     for(uint8_t cmd=0; cmd < FS::Statistics::Command::MAX; ++cmd) {
       auto& m = stats.metrics[cmd];
       if(m.m_count) {
-        sz += 8
-          + Serialization::encoded_length_vi64(m.m_min)
-          + Serialization::encoded_length_vi64(m.m_max)
-          + Serialization::encoded_length_vi64(m.m_total/m.m_count)
-          + (m.m_error? (2+Serialization::encoded_length_vi64(m.m_error)) :0)
-          + Serialization::encoded_length_vi64(m.m_count);
+        uint64_t avg = m.m_total/m.m_count;
+        if(avg != m.m_min)
+          sz += 2 + Serialization::encoded_length_vi64(m.m_min);
+        if(avg != m.m_max)
+          sz += 2 + Serialization::encoded_length_vi64(m.m_max);
+        sz += 2 + Serialization::encoded_length_vi64(avg);
+        if(m.m_error)
+          sz += 2 + Serialization::encoded_length_vi64(m.m_error);
+        sz += 2 + Serialization::encoded_length_vi64(m.m_count);
       }
     }
     if(!sz)
@@ -496,12 +479,12 @@ class Item_FS : public Base {
 
     for(uint8_t cmd=0; cmd < FS::Statistics::Command::MAX; ++cmd) {
       auto& m = stats.metrics[cmd];
-      if(m.m_count)
+      if(m.m_count && m.m_total/m.m_count != m.m_min)
         wfields.add(FIELD_MIN + cmd,  int64_t(m.m_min));
     }
     for(uint8_t cmd=0; cmd < FS::Statistics::Command::MAX; ++cmd) {
       auto& m = stats.metrics[cmd];
-      if(m.m_count)
+      if(m.m_count && m.m_total/m.m_count != m.m_max)
         wfields.add(FIELD_MAX + cmd,  int64_t(m.m_max));
     }
     for(uint8_t cmd=0; cmd < FS::Statistics::Command::MAX; ++cmd) {
@@ -550,15 +533,14 @@ class Reporting : public client::Query::Update::Handlers::Metric::Reporting {
   typedef std::shared_ptr<Reporting> Ptr;
 
   Reporting(const Comm::IoContextPtr& io,
-            Config::Property::V_GINT32::Ptr cfg_intval_ms)
-            : client::Query::Update::Handlers::Metric::Reporting(
-                io, cfg_intval_ms),
-              net(nullptr) {
+            Config::Property::V_GINT32::Ptr cfg_intval)
+      : client::Query::Update::Handlers::Metric::Reporting(io, cfg_intval),
+        system(this), cpu(nullptr), mem(nullptr), net(nullptr) {
   }
 
   virtual Level* configure(const char* group_name, const char* inst_name,
                            const char* host, const Comm::EndPoints& endpoints,
-                           uint8_t max_ev_cmd) {
+                           uint8_t max_cmd) {
     auto level = host ? get_level(host) : nullptr;
     if(group_name)
       level = level ? level->get_level(group_name) : get_level(group_name);
@@ -570,45 +552,56 @@ class Reporting : public client::Query::Update::Handlers::Metric::Reporting {
     }
     SWC_ASSERT(level);
 
-    level->metrics.emplace_back(hardware._mem);
-    level->metrics.emplace_back(hardware._cpu);
-
-    bool using_net_secure = Env::Config::settings()->get_bool("swc.comm.ssl");
-    net = new Item_Net(endpoints, using_net_secure, max_ev_cmd);
-    level->metrics.emplace_back(net);
+    level->metrics.emplace_back(cpu = system.cpu);
+    level->metrics.emplace_back(mem = system.mem);
+    level->metrics.emplace_back(net = new Item_Net(
+      endpoints, Env::Config::settings()->get_bool("swc.comm.ssl"), max_cmd));
     return level;
   }
 
   virtual ~Reporting() { }
 
 
-  struct Hardware final : Common::Resources::Notifiers {
-    Item_Memory*  _mem;
-    Item_CPU*     _cpu;
+  struct System final : SWC::System::Notifier {
+    Reporting* reporting;
+    Item_CPU*  cpu;
+    Item_Mem*  mem;
 
-    Hardware() noexcept
-      : _mem(new Item_Memory()),
-        _cpu(new Item_CPU()) {
+    System(Reporting* reporting)
+          : reporting(reporting), cpu(new Item_CPU()), mem(new Item_Mem()) { }
+
+    void rss_used_reg(size_t bytes) noexcept override {
+      mem->rss_used_reg.add(bytes / 1048576);
     }
 
-    void rss(uint64_t bytes) override {
-      _mem->add_rss(bytes / 1048576);
+    void rss_free(size_t bytes) noexcept override {
+      mem->rss_free.add(bytes / 1048576);
     }
 
-    void threads(uint64_t num) override {
-      _cpu->add_threads(num);
+    void rss_used(size_t bytes) noexcept override {
+      mem->rss_used.add(bytes / 1048576);
     }
 
-    void cpu_user(uint64_t perc) override {
-      _cpu->add_cpu_u(perc);
+    void cpu_user(size_t perc_milli) noexcept override {
+      cpu->percent_user.add(perc_milli);
     }
 
-    void cpu_sys(uint64_t perc) override {
-      _cpu->add_cpu_s(perc);
+    void cpu_sys(size_t perc_milli) noexcept override {
+      cpu->percent_sys.add(perc_milli);
     }
 
-  } hardware;
+    void cpu_threads(size_t threads) noexcept override {
+      cpu->nthreads.add(threads);
+    }
 
+    uint64_t get_cpu_ms_interval() const noexcept override {
+      return reporting->cfg_intval->get() * 1000;
+    }
+
+  } system;
+
+  Item_CPU* cpu;
+  Item_Mem* mem;
   Item_Net* net;
 
 };

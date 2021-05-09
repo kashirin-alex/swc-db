@@ -40,6 +40,7 @@ void Settings::init_app_options(){
      "The encoding to use in communication, options PLAIN/ZSTD/SNAPPY/ZLIB")
 
     ("swc.rgr.maintenance.handlers", i32(2), "Number of Maintenance Handlers")
+
     ("swc.rgr.ram.allowed.percent", g_i32(33),
      "Memory RSS % allowed without freeing/releasing")
     ("swc.rgr.ram.reserved.percent", g_i32(33),

@@ -7,52 +7,119 @@
 #define swcdb_Common_Stats_Stat_h
 
 
+#include "swcdb/core/MutexAtomic.h"
+
 
 namespace SWC { namespace Common { namespace Stats {
 
-class Stat {
+
+
+template<typename ValueT>
+struct MinMaxAvgCount {
+  ValueT  count;
+  ValueT  total;
+  ValueT  min;
+  ValueT  max;
+
+  SWC_CAN_INLINE
+  MinMaxAvgCount() noexcept : count(0), total(0), min(0), max(0) { }
+
+  SWC_CAN_INLINE
+  void add(ValueT v) noexcept {
+    if(std::numeric_limits<ValueT>::max() - total > v) {
+      ++count;
+      total += v;
+    }
+    if(v > max)
+      max = v;
+    if(!min || v < min)
+      min = v;
+  }
+
+  SWC_CAN_INLINE
+  ValueT avg() const noexcept {
+    return count ? (total/count) : 0;
+  }
+
+  SWC_CAN_INLINE
+  void gather(MinMaxAvgCount<ValueT>& to) noexcept {
+    to.count = count;
+    to.min = min;
+    to.max = max;
+    to.total = total;
+    reset();
+  }
+
+  SWC_CAN_INLINE
+  void reset() noexcept {
+    count = total = min = max = 0;
+  }
+};
+
+
+
+template<typename ValueT>
+class MinMaxAvgCount_Safe {
   public:
 
-  Stat() noexcept : m_count(0), m_avg(0), m_min(-1), m_max(0) { }
-
-  virtual ~Stat() { }
-
-  void add(uint64_t v) {
+  void add(ValueT v) noexcept {
     Core::MutexAtomic::scope lock(m_mutex);
-    m_avg *= m_count;
-    m_avg += v;
-    m_avg /= ++m_count;
-    if(v > m_max)
-      m_max = v;
-    if(v < m_min)
-      m_min = v;
+    m_value.add(v);
   }
 
-  uint64_t avg() {
+  ValueT count() const noexcept {
     Core::MutexAtomic::scope lock(m_mutex);
-    return m_avg;
-  }
-  uint64_t max() {
-    Core::MutexAtomic::scope lock(m_mutex);
-    return m_max;
-  }
-  uint64_t min() {
-    Core::MutexAtomic::scope lock(m_mutex);
-    return m_min;
+    return m_value.count;
   }
 
-  uint64_t count() {
+  ValueT total() const noexcept {
     Core::MutexAtomic::scope lock(m_mutex);
-    return m_count;
+    return m_value.total;
+  }
+
+  ValueT avg() const noexcept {
+    Core::MutexAtomic::scope lock(m_mutex);
+    return m_value.avg();
+  }
+
+  ValueT max() const noexcept {
+    Core::MutexAtomic::scope lock(m_mutex);
+    return m_value.max;
+  }
+
+  ValueT min() const noexcept {
+    Core::MutexAtomic::scope lock(m_mutex);
+    return m_value.min;
+  }
+
+  void gather(MinMaxAvgCount<ValueT>& to) noexcept {
+    Core::MutexAtomic::scope lock(m_mutex);
+    m_value.gather(to);
+  }
+
+  void reset() noexcept {
+    Core::MutexAtomic::scope lock(m_mutex);
+    m_value.reset();
+  }
+
+  void print(std::ostream& out) const {
+    ValueT min, max, avg;
+    {
+      Core::MutexAtomic::scope lock(m_mutex);
+      min = m_value.min;
+      max =  m_value.max;
+      avg = m_value.avg();
+    }
+    out << "(min=" << min << " max=" << max << " avg=" << avg << ')';
   }
 
   private:
-  Core::MutexAtomic   m_mutex;
-  uint64_t            m_count;
-  uint64_t            m_avg;
-  uint64_t            m_min;
-  uint64_t            m_max;
+  mutable Core::MutexAtomic m_mutex;
+  MinMaxAvgCount<ValueT>    m_value;
 };
+
+
+typedef MinMaxAvgCount_Safe<uint64_t> Stat;
 
 }}}
 

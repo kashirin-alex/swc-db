@@ -54,6 +54,21 @@ _default_ **```swc.ThriftBroker.metrics.enabled=true```**
 
  > **_The configuration properties applicable for dynamic reloading_**
 
+* ### swc.ThriftBroker.ram.allowed.percent
+```G_INT32```
+The Memory RSS % allowed without freeing/releasing. \
+_default_ **```swc.ThriftBroker.ram.allowed.percent=33```**
+
+* ### swc.ThriftBroker.ram.reserved.percent
+```G_INT32```
+The Memory Total % reserved, threshold of low-memory enter state. \
+_default_ **```swc.ThriftBroker.ram.reserved.percent=33```**
+
+* ### swc.ThriftBroker.ram.release.rate
+```G_INT32```
+The Memory release-rate (malloc dependable). \
+_default_ **```swc.ThriftBroker.ram.release.rate=100```**
+
 * ### swc.ThriftBroker.metrics.report.interval
 ```G_INT32```
 The Metrics Reporting Interval in Seconds. Zero(=0) skips metrics update.\

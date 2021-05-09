@@ -45,7 +45,7 @@ class Mngr final {
   }
 
   SWC_CAN_INLINE
-  static Common::Resources& res() noexcept {
+  static System::Resources& res() noexcept {
     return m_env->_resources;
   }
 
@@ -100,8 +100,8 @@ class Mngr final {
           &cfg_ram_percent_allowed,
           &cfg_ram_percent_reserved,
           &cfg_ram_release_rate,
-          nullptr,
-          _reporting ? &_reporting->hardware : nullptr
+          _reporting ? &_reporting->system : nullptr,
+          nullptr
         ),
         m_role(app_io, endpoints),
         m_rangers(app_io) {
@@ -118,7 +118,7 @@ class Mngr final {
 
   inline static std::shared_ptr<Mngr> m_env = nullptr;
   Manager::Metric::Reporting::Ptr     _reporting;
-  Common::Resources                   _resources;
+  System::Resources                   _resources;
   DB::Schemas                         m_schemas;
   Manager::Columns                    m_columns;
   Manager::MngrRole                   m_role;
@@ -134,6 +134,7 @@ class Mngr final {
 #include "swcdb/manager/Rangers.cc"
 #include "swcdb/manager/MngdColumns.cc"
 #include "swcdb/manager/ColumnHealthCheck.cc"
+#include "swcdb/manager/queries/update/MetricsReporting.cc"
 
 
 
@@ -147,5 +148,6 @@ void Mngr::stop() {
 }
 
 }}
+
 
 #endif // swcdb_manager_MngrEnv_h

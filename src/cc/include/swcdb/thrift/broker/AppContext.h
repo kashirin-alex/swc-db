@@ -29,8 +29,8 @@ class AppContext final : virtual public BrokerIfFactory,
  public:
 
   AppContext() : m_run(true) {
-    auto settings = Env::Config::settings();
-    Env::IoCtx::init(settings->get_i32("swc.ThriftBroker.clients.handlers"));
+    Env::IoCtx::init(
+      Env::Config::settings()->get_i32("swc.ThriftBroker.clients.handlers"));
 
     int sig = 0;
     Env::IoCtx::io()->set_signals();
@@ -43,11 +43,17 @@ class AppContext final : virtual public BrokerIfFactory,
         std::make_shared<client::ContextRanger>()
       )
     );
-    Env::ThriftBroker::init();
-
     //Env::FsInterface::init(FS::fs_type(settings->get_str("swc.fs")));
+  }
 
-    auto period = settings->get<Config::Property::V_GINT32>(
+  void init(const std::string& host, const Comm::EndPoints& endpoints) {
+    Env::ThriftBroker::init(
+      [ptr=shared_from_this()] (size_t bytes) {
+        return ptr->release(bytes);
+      }
+    );
+
+    auto period = Env::Config::settings()->get<Config::Property::V_GINT32>(
       "swc.cfg.dyn.period");
     if(period->get()) {
       Env::IoCtx::io()->set_periodic_timer(
@@ -55,9 +61,6 @@ class AppContext final : virtual public BrokerIfFactory,
         [](){Env::Config::settings()->check_dynamic_files();}
       );
     }
-  }
-
-  void init(const std::string& host, const Comm::EndPoints& endpoints) {
     if((m_metrics = Env::ThriftBroker::metrics_track())) {
       m_metrics->configure_thriftbroker(host.c_str(), endpoints);
       m_metrics->start();
@@ -88,6 +91,10 @@ class AppContext final : virtual public BrokerIfFactory,
     } catch(...) {
       SWC_LOG_CURRENT_EXCEPTION("");
     }
+    //if(m_metrics)
+    //  m_metrics->net->connected(conn);
+    Core::MutexSptd::scope lock(m_mutex_handlers);
+    m_handlers.emplace_back(handler);
     return handler;
   }
 
@@ -112,7 +119,15 @@ class AppContext final : virtual public BrokerIfFactory,
         SWC_LOG_OSTREAM << "Connection Closed(hdlr=" << size_t(handler)
           << " BAD CAST) open=" << remain_open; );
     }
-    delete hdlr;
+    //if(m_metrics)
+    //  m_metrics->net->disconnected(conn);
+    Core::MutexSptd::scope lock(m_mutex_handlers);
+    for(auto it = m_handlers.begin(); it < m_handlers.end(); ++it) {
+      if(it->get() == hdlr) {
+        m_handlers.erase(it);
+        break;
+      }
+    }
   }
 
   void shutting_down(const std::error_code& ec, const int& sig) {
@@ -168,10 +183,38 @@ class AppContext final : virtual public BrokerIfFactory,
     #endif
   }
 
+  size_t release(size_t bytes) {
+    size_t released = 0;
+    try {
+      std::shared_ptr<AppHandler> handler;
+      for(size_t idx=0;;++idx) {
+        {
+          Core::MutexSptd::scope lock(m_mutex_handlers);
+          if(idx >= m_handlers.size())
+            break;
+          handler = *(m_handlers.begin() + idx);
+        }
+        size_t sz = handler->updaters_commit(bytes);
+        if(bytes) {
+          if(bytes <= (released += sz))
+            break;
+          bytes -= sz;
+        }
+      }
+    } catch (...) {
+      SWC_LOG_CURRENT_EXCEPTION("");
+    }
+    return released;
+  }
+
   std::mutex                                    m_mutex;
   Core::AtomicBool                              m_run;
   std::condition_variable                       m_cv;
   Core::CompletionCounter<size_t>               m_connections;
+
+  Core::MutexSptd                               m_mutex_handlers;
+  std::vector<std::shared_ptr<AppHandler>>      m_handlers;
+
   Metric::Reporting::Ptr                        m_metrics = nullptr;
 
 };

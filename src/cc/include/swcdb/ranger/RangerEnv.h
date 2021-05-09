@@ -101,7 +101,7 @@ class Rgr final {
   }
 
   SWC_CAN_INLINE
-  static Common::Resources& res() noexcept {
+  static System::Resources& res() noexcept {
     return m_env->_resources;
   }
 
@@ -151,7 +151,7 @@ class Rgr final {
   Ranger::Columns*                              _columns;
   client::Query::Update::Handlers::Common::Ptr  _update_hdlr;
   Ranger::Metric::Reporting::Ptr                _reporting;
-  Common::Resources                             _resources;
+  System::Resources                             _resources;
 
   explicit Rgr();
 
@@ -248,8 +248,8 @@ Rgr::Rgr()
           "swc.rgr.ram.reserved.percent"),
         SWC::Env::Config::settings()->get<SWC::Config::Property::V_GINT32>(
           "swc.rgr.ram.release.rate"),
-        [this](size_t bytes) { return _columns->release(bytes); },
-        _reporting ? &_reporting->hardware : nullptr
+        _reporting ? &_reporting->system : nullptr,
+        [this](size_t bytes) { return _columns->release(bytes); }
       ),
       m_shuttingdown(false), m_not_accepting(false),
       m_in_process(0), m_scan_reserved_bytes(0) {
@@ -317,6 +317,9 @@ void Rgr::compaction_schedule(uint32_t ms) {
 
 
 }} // namespace SWC::Env
+
+
+#include "swcdb/ranger/queries/update/MetricsReporting.cc"
 
 
 #endif // swcdb_ranger_RangerEnv_h

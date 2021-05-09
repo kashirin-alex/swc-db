@@ -39,6 +39,13 @@ void Settings::init_app_options() {
     ("swc.ThriftBroker.clients.handlers", i32(8),
       "The number of SWC-DB clients handlers")
 
+    ("swc.ThriftBroker.ram.allowed.percent", g_i32(33),
+     "Memory RSS % allowed without freeing/releasing")
+    ("swc.ThriftBroker.ram.reserved.percent", g_i32(33),
+     "Memory Total % reserved, threshold of low-memory enter state")
+    ("swc.ThriftBroker.ram.release.rate", g_i32(100),
+     "Memory release-rate (malloc dependable)")
+
     ("swc.ThriftBroker.metrics.enabled", boo(true),
      "Enable or Disable Metrics Monitoring")
     ("swc.ThriftBroker.metrics.report.interval", g_i32(300),

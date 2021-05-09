@@ -16,9 +16,9 @@ namespace SWC { namespace Env {
 class ThriftBroker final {
   public:
 
-  static void init() {
+  static void init(System::Mem::ReleaseCall_t&& release_call) {
     SWC_ASSERT(!m_env);
-    m_env = std::make_shared<ThriftBroker>();
+    m_env = std::make_shared<ThriftBroker>(std::move(release_call));
   }
 
   SWC_CAN_INLINE
@@ -27,7 +27,7 @@ class ThriftBroker final {
   }
 
   SWC_CAN_INLINE
-  static Common::Resources& res() noexcept {
+  static System::Resources& res() noexcept {
     return m_env->_resources;
   }
 
@@ -41,11 +41,8 @@ class ThriftBroker final {
   }
 
 
-  ThriftBroker()
-      : cfg_ram_percent_allowed(100, nullptr),
-        cfg_ram_percent_reserved(0, nullptr),
-        cfg_ram_release_rate(100, nullptr),
-        _reporting(
+  ThriftBroker(System::Mem::ReleaseCall_t&& release_call)
+      : _reporting(
           SWC::Env::Config::settings()->get_bool("swc.ThriftBroker.metrics.enabled")
             ? std::make_shared<SWC::ThriftBroker::Metric::Reporting>(
                 Env::IoCtx::io(),
@@ -56,27 +53,31 @@ class ThriftBroker final {
         ),
         _resources(
           Env::IoCtx::io(),
-          &cfg_ram_percent_allowed,
-          &cfg_ram_percent_reserved,
-          &cfg_ram_release_rate,
-          nullptr,
-          _reporting ? &_reporting->hardware : nullptr
+          SWC::Env::Config::settings()->get<SWC::Config::Property::V_GINT32>(
+            "swc.ThriftBroker.ram.allowed.percent"),
+          SWC::Env::Config::settings()->get<SWC::Config::Property::V_GINT32>(
+            "swc.ThriftBroker.ram.reserved.percent"),
+          SWC::Env::Config::settings()->get<SWC::Config::Property::V_GINT32>(
+            "swc.ThriftBroker.ram.release.rate"),
+          _reporting ? &_reporting->system : nullptr,
+          std::move(release_call)
         ) {
   }
 
-  SWC::Config::Property::V_GINT32     cfg_ram_percent_allowed;
-  SWC::Config::Property::V_GINT32     cfg_ram_percent_reserved;
-  SWC::Config::Property::V_GINT32     cfg_ram_release_rate;
   private:
 
   inline static std::shared_ptr<ThriftBroker> m_env = nullptr;
   SWC::ThriftBroker::Metric::Reporting::Ptr   _reporting;
-  Common::Resources                           _resources;
+  System::Resources                           _resources;
 
 };
 
 
 }} // SWC::Env namespace
+
+
+
+#include "swcdb/thrift/broker/queries/update/MetricsReporting.cc"
 
 
 #endif // swcdb_thrift_broker_ThriftBrokerEnv_h

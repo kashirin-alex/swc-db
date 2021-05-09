@@ -23,26 +23,9 @@ class Reporting final : public Common::Query::Update::Metric::Reporting {
   typedef std::shared_ptr<Reporting> Ptr;
 
   Reporting(const Comm::IoContextPtr& io,
-            Config::Property::V_GINT32::Ptr cfg_intval_ms)
-            : Common::Query::Update::Metric::Reporting(io, cfg_intval_ms),
-              fds(new Item_CountVolume("fds")) {
-  }
+            Config::Property::V_GINT32::Ptr cfg_intval);
 
-  void configure_fsbroker(const char*, const Comm::EndPoints& endpoints) {
-    char hostname[256];
-    if(gethostname(hostname, sizeof(hostname)) == -1)
-      SWC_THROW(errno, "gethostname");
-
-    auto level = Common::Query::Update::Metric::Reporting::configure(
-      "swcdb", "fsbroker", hostname, endpoints,
-      Comm::Protocol::FsBroker::Command::MAX_CMD
-    );
-
-    auto fs = Env::FsInterface::fs();
-    if(fs->statistics.enabled)
-      level->metrics.emplace_back(new Item_FS(fs));
-    level->metrics.emplace_back(fds);
-  }
+  void configure_fsbroker(const char*, const Comm::EndPoints& endpoints);
 
   virtual ~Reporting() { }
 

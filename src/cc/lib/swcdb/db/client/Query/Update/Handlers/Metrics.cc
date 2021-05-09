@@ -47,12 +47,9 @@ Level* Level::get_level(const char* _name, bool inner) {
 void Item_MinMaxAvgCount::report(uint64_t for_ns,
                                  Handlers::Base::Column* colp,
                                  const DB::Cell::KeyVec& parent_key) {
-  uint64_t _min = 0;
-  uint64_t _max = 0;
-  uint64_t _avg = 0;
-  uint64_t _count = 0;
-  exchange_reset(_min, _max, _avg, _count);
-  if(!_count)
+  SWC::Common::Stats::MinMaxAvgCount<uint64_t> value;
+  gather(value);
+  if(!value.count)
     return;
 
   DB::Cell::KeyVec key;
@@ -66,18 +63,23 @@ void Item_MinMaxAvgCount::report(uint64_t for_ns,
   cell.set_timestamp(for_ns);
   cell.key.add(key);
 
+  size_t sz = 4;
+  uint64_t avg = value.avg();
+  if(avg != value.min)
+    sz += 2 + Serialization::encoded_length_vi64(value.min);
+  if(avg != value.max)
+    sz += 2 + Serialization::encoded_length_vi64(value.max);
+  sz += Serialization::encoded_length_vi64(avg);
+  sz += Serialization::encoded_length_vi64(value.count);
+
   DB::Cell::Serial::Value::FieldsWriter wfields;
-  wfields.ensure(
-    + Serialization::encoded_length_vi64(_min)
-    + Serialization::encoded_length_vi64(_max)
-    + Serialization::encoded_length_vi64(_avg)
-    + Serialization::encoded_length_vi64(_count)
-    + 8
-  );
-  wfields.add(FIELD_ID_MIN,   int64_t(_min));
-  wfields.add(FIELD_ID_MAX,   int64_t(_max));
-  wfields.add(FIELD_ID_AVG,   int64_t(_avg));
-  wfields.add(FIELD_ID_COUNT, int64_t(_count));
+  wfields.ensure(sz);
+  if(avg != value.min)
+    wfields.add(FIELD_ID_MIN,   int64_t(value.min));
+  if(avg != value.max)
+    wfields.add(FIELD_ID_MAX,   int64_t(value.max));
+  wfields.add(FIELD_ID_AVG,   int64_t(avg));
+  wfields.add(FIELD_ID_COUNT, int64_t(value.count));
   cell.set_value(wfields.base, wfields.fill(), false);
 
   colp->add(cell);

@@ -56,6 +56,7 @@ class Fds final : private std::unordered_map<int32_t, FS::SmartFd::Ptr> {
 } // namespace FsBroker
 
 
+
 namespace Env {
 class FsBroker final {
   public:
@@ -79,7 +80,7 @@ class FsBroker final {
   }
 
   SWC_CAN_INLINE
-  static Common::Resources& res() noexcept {
+  static System::Resources& res() noexcept {
     return m_env->_resources;
   }
 
@@ -117,8 +118,8 @@ class FsBroker final {
         &cfg_ram_percent_allowed,
         &cfg_ram_percent_reserved,
         &cfg_ram_release_rate,
-        nullptr,
-        _reporting ? &_reporting->hardware : nullptr
+        _reporting ? &_reporting->system : nullptr,
+        nullptr
       ),
       m_shuttingdown(false), m_in_process(0) {
   }
@@ -165,7 +166,7 @@ class FsBroker final {
 
   private:
   SWC::FsBroker::Metric::Reporting::Ptr   _reporting;
-  Common::Resources                       _resources;
+  System::Resources                       _resources;
   Core::AtomicBool                        m_shuttingdown;
   Core::Atomic<int64_t>                   m_in_process;
   SWC::FsBroker::Fds                      m_fds;
@@ -217,5 +218,10 @@ FS::SmartFd::Ptr Fds::remove(int32_t fd) {
 
 
 }}
+
+
+
+#include "swcdb/fsbroker/queries/update/MetricsReporting.cc"
+
 
 #endif // swcdb_fsbroker_FsBrokerEnv_h

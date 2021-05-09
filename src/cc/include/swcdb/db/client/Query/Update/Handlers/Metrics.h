@@ -11,6 +11,7 @@
 #include "swcdb/core/Compat.h"
 #include "swcdb/db/Cells/CellValueSerialFields.h"
 #include "swcdb/db/client/Query/UpdateHandlerBaseSingleColumn.h"
+#include "swcdb/common/Stats/Stat.h"
 
 
 namespace SWC { namespace client { namespace Query { namespace Update {
@@ -73,49 +74,13 @@ class Level : public Base {
 
 
 
-struct MinMaxAvgCount {
-  Core::MutexAtomic m_mutex;
-  uint64_t          m_min;
-  uint64_t          m_max;
-  uint64_t          m_total;
-  uint64_t          m_count;
-
-  MinMaxAvgCount() noexcept : m_min(0), m_max(0), m_total(0), m_count(0) { }
-
-  void add(uint64_t v) noexcept {
-    Core::MutexAtomic::scope lock(m_mutex);
-    if(UINT64_MAX - m_total >= v) {
-      m_total += v;
-      ++m_count;
-    }
-    if(!m_min || v < m_min)
-      m_min = v;
-    if(v > m_max)
-      m_max = v;
-  }
-
-  void exchange_reset(uint64_t& min, uint64_t& max,
-                      uint64_t& avg, uint64_t& count) {
-    Core::MutexAtomic::scope lock(m_mutex);
-    if((count = m_count)) {
-      min = m_min;
-      max = m_max;
-      avg = m_total / m_count;
-      m_min = m_max = m_total = m_count = 0;
-    }
-  }
-
-  void reset() noexcept {
-    Core::MutexAtomic::scope lock(m_mutex);
-    m_min = m_max = m_total = m_count = 0;
-  }
-};
-
-class Item_MinMaxAvgCount : protected MinMaxAvgCount, public Base {
+class Item_MinMaxAvgCount :
+      public SWC::Common::Stats::MinMaxAvgCount_Safe<uint64_t>,
+      public Base {
   public:
   typedef std::unique_ptr<Item_MinMaxAvgCount> Ptr;
 
-  using MinMaxAvgCount::add;
+  using SWC::Common::Stats::MinMaxAvgCount_Safe<uint64_t>::add;
 
   const std::string name;
 
@@ -127,7 +92,7 @@ class Item_MinMaxAvgCount : protected MinMaxAvgCount, public Base {
                       const DB::Cell::KeyVec& parent_key) override;
 
   virtual void reset() override {
-    MinMaxAvgCount::reset();
+    SWC::Common::Stats::MinMaxAvgCount_Safe<uint64_t>::reset();
   }
 
 };
@@ -254,7 +219,7 @@ class Reporting : public BaseSingleColumn {
   }
 
   virtual void stop();
-  
+
   virtual void wait();
 
   Level* get_level(const char* name);

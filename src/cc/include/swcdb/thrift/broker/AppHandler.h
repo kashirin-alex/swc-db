@@ -522,12 +522,31 @@ class AppHandler final : virtual public BrokerIf {
     updater_close();
   }
 
+  size_t updaters_commit(size_t release = 0) {
+    size_t released = 0;
+    client::Query::Update::Handlers::Common::Ptr hdlr;
+    for(size_t idx=0;;++idx) {
+      {
+        Core::MutexSptd::scope lock(m_mutex);
+        if(idx >= m_updaters.size())
+          break;
+        auto it = m_updaters.begin();
+        for(size_t n=0; n < idx; ++it, ++n);
+        hdlr = it->second;
+      }
+      if(size_t sz = hdlr->size_bytes()) {
+        client::Query::Update::commit(hdlr);
+        if(release && release <= (released += sz))
+          break;
+      }
+    }
+    return released;
+  }
 
   private:
 
   void updater_close() {
-    client::Query::Update::Handlers::Common::Ptr hdlr;
-    for(;;) {
+    for(client::Query::Update::Handlers::Common::Ptr hdlr;;) {
       {
         Core::MutexSptd::scope lock(m_mutex);
         auto it = m_updaters.begin();

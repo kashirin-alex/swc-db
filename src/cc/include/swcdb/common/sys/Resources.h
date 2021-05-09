@@ -11,413 +11,162 @@
 #include "swcdb/core/config/Property.h"
 #include "swcdb/core/comm/IoContext.h"
 
-#include <sys/sysinfo.h>
-#include <fstream>
 
 
-#if defined TCMALLOC_MINIMAL || defined TCMALLOC
-#include <gperftools/malloc_extension.h>
+namespace SWC { namespace System {
 
-#elif defined MIMALLOC
-#include <mimalloc.h>
+struct Notifier {
 
-#endif
+  virtual void rss_used_reg(size_t) noexcept = 0;
+  virtual void rss_free(size_t)     noexcept = 0;
+  virtual void rss_used(size_t)     noexcept = 0;
+
+  virtual void cpu_user(size_t)     noexcept = 0;
+  virtual void cpu_sys(size_t)      noexcept = 0;
+  virtual void cpu_threads(size_t)  noexcept = 0;
+
+  virtual uint64_t get_cpu_ms_interval() const noexcept = 0;
+
+  virtual ~Notifier() { }
+
+};
+
+}}
 
 
-namespace SWC { namespace Common {
+
+#include "swcdb/common/sys/Resource_Mem.h"
+#include "swcdb/common/sys/Resource_CPU.h"
+
+
+
+namespace SWC { namespace System {
+
 
 class Resources final {
-  static const uint32_t MAX_RAM_CHK_INTVAL_MS = 5000;
-
   public:
-
-  struct Notifiers {
-    virtual ~Notifiers() { }
-    virtual void rss(uint64_t bytes) = 0;
-    virtual void threads(uint64_t num) = 0;
-    virtual void cpu_user(uint64_t perc) = 0;
-    virtual void cpu_sys(uint64_t perc) = 0;
-  };
+  CPU cpu;
+  Mem mem;
 
   Resources(const Comm::IoContextPtr& ioctx,
             Config::Property::V_GINT32::Ptr ram_percent_allowed,
             Config::Property::V_GINT32::Ptr ram_percent_reserved,
             Config::Property::V_GINT32::Ptr ram_release_rate,
-            std::function<size_t(size_t)>&& release_call=nullptr,
-            Notifiers* m_notifiers=nullptr)
-            : cfg_ram_percent_allowed(ram_percent_allowed),
-              cfg_ram_percent_reserved(ram_percent_reserved),
-              cfg_ram_release_rate(ram_release_rate),
-              m_timer(ioctx->executor()),
-              m_release_call(std::move(release_call)),
-              m_notifiers(m_notifiers),
-              next_major_chk(99),
-              ram(MAX_RAM_CHK_INTVAL_MS),
-              m_concurrency(0), m_cpu_mhz(0), m_cpu_percentage(0),
-              stat_chk(0), stat_utime(0), stat_stime(0) {
-
-#if defined TCMALLOC_MINIMAL || defined TCMALLOC
-    release_rate_default = MallocExtension::instance()->GetMemoryReleaseRate();
-    if(release_rate_default < 0)
-      release_rate_default = 0;
-#else
-    (void)cfg_ram_release_rate->get(); // in-case unused
-#endif
-
+            Notifier* notifier=nullptr,
+            Mem::ReleaseCall_t&& release_call=nullptr)
+            : cpu(notifier),
+              mem(
+                ram_percent_allowed,
+                ram_percent_reserved,
+                ram_release_rate,
+                notifier,
+                std::move(release_call)
+              ),
+              running(false),
+              m_timer(ioctx->executor()) {
     checker();
   }
 
-  Resources(const Resources& other) = delete;
-
-  Resources(const Resources&& other) = delete;
-
+  Resources(const Resources& other)           = delete;
+  Resources(Resources&& other)                = delete;
   Resources operator=(const Resources& other) = delete;
+  Resources operator=(Resources&& other)      = delete;
 
   //~Resources() { }
 
   SWC_CAN_INLINE
   bool is_low_mem_state() const noexcept {
-    return ram.free < ram.reserved;
+    return mem.is_low_mem_state();
   }
 
   SWC_CAN_INLINE
   size_t need_ram() const noexcept {
-    return is_low_mem_state()
-            ? ram.used_reg.load()
-            : (ram.used > ram.allowed
-                ? ram.used - ram.allowed
-                : (ram.used_reg > ram.allowed
-                    ? ram.used_reg - ram.allowed
-                    : 0
-                  )
-              );
+    return mem.need_ram();
   }
 
   SWC_CAN_INLINE
   size_t avail_ram() const noexcept {
-    return !is_low_mem_state() && ram.allowed > ram.used_reg
-            ? (ram.allowed > ram.used ? ram.allowed - ram.used_reg : 0)
-            : 0;
+    return mem.avail_ram();
   }
 
   SWC_CAN_INLINE
   bool need_ram(uint32_t sz) const noexcept {
-    return is_low_mem_state() || ram.free < sz * 2 ||
-           (ram.used_reg + sz > ram.allowed || ram.used + sz > ram.allowed);
+    return mem.need_ram(sz);
   }
 
+  SWC_CAN_INLINE
   void adj_mem_usage(ssize_t sz) noexcept {
-    if(sz) {
-      m_mutex.lock();
-      if(sz < 0 && ram.used_reg < size_t(-sz))
-        ram.used_reg.store(0);
-      else
-        ram.used_reg.fetch_add(sz);
-      m_mutex.unlock();
-    }
+    mem.adj_mem_usage(sz);
   }
 
+  SWC_CAN_INLINE
   void more_mem_usage(size_t sz) noexcept {
-    if(sz) {
-      m_mutex.lock();
-      ram.used_reg.fetch_add(sz);
-      m_mutex.unlock();
-    }
-  }
-
-  void less_mem_usage(size_t sz) noexcept {
-    if(sz) {
-      m_mutex.lock();
-      if(ram.used_reg < sz)
-        ram.used_reg.store(0);
-      else
-        ram.used_reg.fetch_sub(sz);
-      m_mutex.unlock();
-    }
-  }
-
-  SWC_CAN_INLINE
-  uint32_t concurrency() const noexcept {
-    return m_concurrency;
-  }
-
-  SWC_CAN_INLINE
-  uint32_t available_cpu_mhz() const noexcept {
-    return m_cpu_mhz;
-  }
-
-  SWC_CAN_INLINE
-  uint32_t cpu_usage() const noexcept {
-    return m_cpu_percentage;
+    mem.more_mem_usage(sz);
   }
 
   SWC_CAN_INLINE
   uint32_t available_mem_mb() const noexcept {
-    return (ram.total - ram.reserved) / 1024 / 1024;
+    return mem.available_mem_mb();
+  }
+
+  SWC_CAN_INLINE
+  void less_mem_usage(size_t sz) noexcept {
+    mem.less_mem_usage(sz);
+  }
+
+  SWC_CAN_INLINE
+  uint32_t concurrency() const noexcept {
+    return cpu.concurrency;
+  }
+
+  SWC_CAN_INLINE
+  uint32_t available_cpu_mhz() const noexcept {
+    return cpu.mhz;
+  }
+
+  SWC_CAN_INLINE
+  uint32_t cpu_usage() const noexcept {
+    return cpu.usage;
   }
 
   void stop() {
     m_timer.cancel();
+    while(running)
+      std::this_thread::sleep_for(std::chrono::milliseconds(2));
   }
 
   void print(std::ostream& out) const {
-    out << "Resources(CPU=" << m_cpu_percentage << "%m";
-    ram.print(out << " Mem-MB-", 1048576);
+    out << "Resources(";
+    cpu.print(out << "CPU-");
+    mem.print(out << " Mem-MB-", 1048576);
     out << ')';
   }
 
   private:
 
-  void malloc_release() {
-  #if defined TCMALLOC_MINIMAL || defined TCMALLOC
-    if(ram.used > ram.allowed || is_low_mem_state()) {
-      auto inst = MallocExtension::instance();
-      inst->SetMemoryReleaseRate(cfg_ram_release_rate->get());
-      inst->ReleaseFreeMemory();
-      inst->SetMemoryReleaseRate(release_rate_default);
+  void checker() noexcept {
+    running.store(true);
+    uint64_t ts = Time::now_ms();
+    uint64_t t1 = mem.check(ts);
+    uint64_t t2 = cpu.check(ts);
+    try {
+      schedule(t1 < t2 ? t1 : t2);
+    } catch(...) {
+      SWC_LOG_CURRENT_EXCEPTION("");
     }
-
-  #elif defined MIMALLOC
-    if(ram.used > ram.allowed || is_low_mem_state()) {
-      mi_collect(true);
-    }
-  #endif
+    running.store(false);
   }
 
-  void checker() {
-    refresh_stats();
-
-    size_t bytes = 0;
-    if(is_low_mem_state() || (bytes = need_ram())) {
-      if(m_release_call) {
-        size_t released_bytes = m_release_call(bytes);
-        SWC_LOG_OUT(LOG_DEBUG,
-          print(SWC_LOG_OSTREAM);
-          SWC_LOG_OSTREAM
-            << " mem-released=" << released_bytes << '/' << bytes;
-        );
-      }
-
-      malloc_release();
-    }
-
-    schedule();
-  }
-
-  void refresh_stats() {
-
-    if(!(++next_major_chk % (is_low_mem_state() ? 10 : 100))) {
-      page_size = sysconf(_SC_PAGE_SIZE);
-
-      std::ifstream buffer("/proc/meminfo");
-      if(buffer.is_open()) {
-        size_t sz = 0;
-        std::string tmp;
-        uint8_t looking(2);
-        Component::Bytes* metric(nullptr);
-        do {
-          buffer >> tmp;
-          if(tmp.length() == 9 &&
-             Condition::str_eq(tmp.c_str(), "MemTotal:", 9)) {
-            metric = &ram.total;
-          } else
-          if(tmp.length() == 13 &&
-             Condition::str_eq(tmp.c_str(), "MemAvailable:", 13)) {
-            metric = &ram.free;
-          }
-          if(metric) {
-            buffer >> sz >> tmp;
-            metric->store(
-              sz * (tmp.front() == 'k'
-                    ? 1024
-                    : (tmp.front() == 'm' ? 1048576 : 0))
-            );
-            metric = nullptr;
-            --looking;
-          }
-        } while (looking && !buffer.eof());
-        buffer.close();
-      }
-      /*
-      ram.total   = page_size * sysconf(_SC_PHYS_PAGES);
-      ram.free    = page_size * sysconf(_SC_AVPHYS_PAGES);
-      */
-      ram.allowed.store((ram.total/100) * cfg_ram_percent_allowed->get());
-      ram.reserved.store((ram.total/100) * cfg_ram_percent_reserved->get());
-
-      ram.chk_ms.store(ram.allowed / 3000); //~= ram-buff
-      if(ram.chk_ms > MAX_RAM_CHK_INTVAL_MS)
-        ram.chk_ms.store(MAX_RAM_CHK_INTVAL_MS);
-
-      if(!(next_major_chk % 100) && is_low_mem_state())
-        SWC_LOG_OUT(LOG_WARN, print(SWC_LOG_OSTREAM << "Low-Memory state "););
-
-      size_t concurrency = !m_concurrency || !(next_major_chk % 100)
-        ? std::thread::hardware_concurrency() : 0;
-      if(concurrency) {
-        std::ifstream buffer(
-          "/sys/devices/system/cpu/cpufreq/policy0/cpuinfo_max_freq");
-        if(buffer.is_open()) {
-          size_t khz = 0;
-          buffer >> khz;
-          buffer.close();
-          if(khz) {
-            m_cpu_mhz.store(concurrency * (khz/1000));
-            m_concurrency.store(concurrency);
-          }
-        } else {
-          std::ifstream buffer("/proc/cpuinfo");
-          if(buffer.is_open()) {
-            size_t mhz = 0;
-            std::string tmp;
-            size_t tmp_speed = 0;
-            do {
-              buffer >> tmp;
-              if(Condition::str_eq(tmp.c_str(), "cpu", 3)) {
-                buffer >> tmp;
-                if(Condition::str_eq(tmp.c_str(), "MHz", 3)) {
-                  buffer >> tmp >> tmp_speed;
-                  mhz += tmp_speed;
-                }
-              }
-            } while (!buffer.eof());
-            buffer.close();
-            if(mhz) {
-              m_cpu_mhz.store(mhz);
-              m_concurrency.store(concurrency);
-            }
-          }
-        }
-      }
-    }
-
-
-    if(!(next_major_chk % 2)) {
-      std::ifstream buffer("/proc/self/stat");
-      if(buffer.is_open()) {
-        std::string str_tmp;
-        uint64_t tmp = 0, utime = 0, stime = 0, nthreads = 0;
-        buffer >> tmp >> str_tmp >> str_tmp
-               >> tmp >> tmp >> tmp
-               >> tmp >> tmp >> tmp
-               >> tmp >> tmp >> tmp
-               >> tmp >> utime >> stime
-               >> tmp >> tmp >> tmp
-               >> tmp >> nthreads;
-        buffer.close();
-
-        if(m_notifiers) {
-          m_notifiers->threads(nthreads);
-        }
-
-        uint64_t chk = ::time(nullptr);
-        if(!stat_chk) {
-          stat_chk = chk;
-          stat_utime = utime;
-          stat_stime = stime;
-        } else if(m_concurrency && chk > stat_chk) {
-          std::swap(stat_chk, chk);
-          std::swap(stat_utime, utime);
-          std::swap(stat_stime, stime);
-          chk = ((stat_chk - chk) * sysconf(_SC_CLK_TCK) * m_concurrency.load());
-          utime = ((stat_utime - utime) * 100000) / chk;
-          stime = ((stat_stime - stime) * 100000) / chk;
-          m_cpu_percentage.store((m_cpu_percentage.load() + utime + stime) / 2);
-          if(m_notifiers) {
-            m_notifiers->cpu_user(utime);
-            m_notifiers->cpu_sys(stime);
-          }
-        }
-      }
-    }
-
-
-    {
-      std::ifstream buffer("/proc/self/statm");
-      if(buffer.is_open()) {
-        size_t sz = 0, rss = 0;
-        buffer >> sz >> rss;
-        buffer.close();
-        rss *= page_size;
-        ram.used.store(ram.used > ram.allowed || ram.used > rss
-                        ? (ram.used + rss) / 2 : rss);
-        if(m_notifiers)
-          m_notifiers->rss(rss);
-      }
-    }
-  }
-
-  void schedule() {
-    m_timer.expires_after(std::chrono::milliseconds(ram.chk_ms));
-    m_timer.async_wait(
-      [this](const asio::error_code& ec) {
-        if(ec == asio::error::operation_aborted)
-          return;
-        try {
-          checker();
-        } catch(...) {
-          const Error::Exception& e = SWC_CURRENT_EXCEPTION("Resources:checker");
-          SWC_LOG_OUT(LOG_ERROR,
-            print(SWC_LOG_OSTREAM);
-            SWC_LOG_OSTREAM << e;
-          );
-          schedule();
-        }
+  void schedule(uint64_t intval) {
+    m_timer.expires_after(std::chrono::milliseconds(intval));
+    m_timer.async_wait([this](const asio::error_code& ec) {
+      if(ec != asio::error::operation_aborted)
+        checker();
     });
   }
 
-  struct Component final {
-    typedef Core::Atomic<size_t> Bytes;
-    Bytes   total;
-    Bytes   free;
-    Bytes   used;
-    Bytes   used_reg;
-    Bytes   allowed;
-    Bytes   reserved;
-    Core::Atomic<uint32_t> chk_ms;
-
-    Component(uint32_t ms=0) noexcept
-              : total(0), free(0), used(0), used_reg(0),
-                allowed(0), reserved(0), chk_ms(ms) { }
-
-    void print(std::ostream& out, size_t base = 1) const {
-      out << "Res("
-          << "total=" << (total/base)
-          << " free=" << (free/base)
-          << " used=" << (used_reg/base) << '/' << (used/base)
-          << " allowed=" << (allowed/base)
-          << " reserved=" << (reserved/base)
-          << ')';
-    }
-  };
-
-
-  Config::Property::V_GINT32::Ptr     cfg_ram_percent_allowed;
-  Config::Property::V_GINT32::Ptr     cfg_ram_percent_reserved;
-  Config::Property::V_GINT32::Ptr     cfg_ram_release_rate;
-  asio::high_resolution_timer         m_timer;
-
-  const std::function<size_t(size_t)> m_release_call;
-  Notifiers*                          m_notifiers;
-  int8_t                              next_major_chk;
-
-  Core::MutexAtomic                   m_mutex;
-  uint32_t                            page_size;
-  Component                           ram;
-  // Component                     storage;
-
-  Core::Atomic<uint32_t>              m_concurrency;
-  Core::Atomic<uint32_t>              m_cpu_mhz;
-  Core::Atomic<uint32_t>              m_cpu_percentage;
-
-  uint64_t                            stat_chk;
-  uint64_t                            stat_utime;
-  uint64_t                            stat_stime;
-
-#if defined TCMALLOC_MINIMAL || defined TCMALLOC
-  double release_rate_default;
-#endif
-
+  Core::AtomicBool              running;
+  asio::high_resolution_timer   m_timer;
 
 };
 
