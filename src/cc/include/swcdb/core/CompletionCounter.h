@@ -30,8 +30,8 @@ struct CompletionCounter final: private Core::Atomic<CountT> {
   //~CompletionCounter() noexcept { }
 
   SWC_CAN_INLINE
-  void increment() noexcept {
-    Core::Atomic<CountT>::fetch_add(1);
+  void increment(CountT v=1) noexcept {
+    Core::Atomic<CountT>::fetch_add(v);
   }
 
   SWC_CAN_INLINE

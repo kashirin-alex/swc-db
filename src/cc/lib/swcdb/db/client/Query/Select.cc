@@ -49,13 +49,15 @@ void scan(int& err,
           const DB::Specs::Scan& specs) {
   std::vector<DB::Schema::Ptr> schemas(specs.columns.size());
   auto it_seq = schemas.begin();
+  size_t count = 0;
   for(auto& col : specs.columns) {
     auto schema = Env::Clients::get()->schemas->get(err, col->cid);
     if(err)
       return;
     *it_seq++ = schema;
-    hdlr->completion.increment();
+    count += col->size();
   }
+  hdlr->completion.increment(count);
 
   it_seq = schemas.begin();
   for(auto& col : specs.columns) {
@@ -77,13 +79,15 @@ void scan(int& err,
           DB::Specs::Scan&& specs) {
   std::vector<DB::Schema::Ptr> schemas(specs.columns.size());
   auto it_seq = schemas.begin();
+  size_t count = 0;
   for(auto& col : specs.columns) {
     auto schema = Env::Clients::get()->schemas->get(err, col->cid);
     if(err)
       return;
     *it_seq++ = schema;
-    hdlr->completion.increment();
+    count += col->size();
   }
+  hdlr->completion.increment(count);
 
   it_seq = schemas.begin();
   for(auto& col : specs.columns) {
