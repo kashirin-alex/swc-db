@@ -26,7 +26,7 @@ static size_t encoded_length(
         const Common::Stats::MinMaxAvgCount<uint64_t>& value,
         bool with_count) noexcept {
   size_t sz = 0;
-  if(value.count) {
+  if(value.count && value.total) {
     uint64_t avg = value.avg();
     if(avg != value.min)
       sz += 2 + Serialization::encoded_length_vi64(value.min);
@@ -43,7 +43,7 @@ static void add_value(
         const Common::Stats::MinMaxAvgCount<uint64_t>& value,
         uint8_t field_start, bool with_count,
         DB::Cell::Serial::Value::FieldsWriter& wfields) noexcept {
-  if(value.count) {
+  if(value.count && value.total) {
     uint64_t avg = value.avg();
     if(avg != value.min)
       wfields.add(field_start, int64_t(value.min));
@@ -296,7 +296,10 @@ class Item_Mem : public Base {
     Common::Stats::MinMaxAvgCount<uint64_t> _rss_used_reg;
     rss_used_reg.gather(_rss_used_reg);
 
-    if(!_rss_free.count && !_rss_used.count && !_rss_used_reg.count)
+    size_t sz = encoded_length(_rss_free, false);
+    sz += encoded_length(_rss_used, false);
+    sz += encoded_length(_rss_used_reg, false);
+    if(!sz)
       return;
 
     DB::Cell::KeyVec key;
@@ -310,18 +313,12 @@ class Item_Mem : public Base {
     cell.set_timestamp(for_ns);
     cell.key.add(key);
 
-    size_t sz = encoded_length(_rss_free, false);
-    sz += encoded_length(_rss_used, false);
-    sz += encoded_length(_rss_used_reg, false);
 
     DB::Cell::Serial::Value::FieldsWriter wfields;
     wfields.ensure(sz);
-    if(_rss_free.count)
-      add_value(_rss_free,      FIELD_RSS_FREE_MIN,     false, wfields);
-    if(_rss_used.count)
-      add_value(_rss_used,      FIELD_RSS_USED_MIN,     false, wfields);
-    if(_rss_used_reg.count)
-      add_value(_rss_used_reg,  FIELD_RSS_USED_REG_MIN, false, wfields);
+    add_value(_rss_free,      FIELD_RSS_FREE_MIN,     false, wfields);
+    add_value(_rss_used,      FIELD_RSS_USED_MIN,     false, wfields);
+    add_value(_rss_used_reg,  FIELD_RSS_USED_REG_MIN, false, wfields);
 
     cell.set_value(wfields.base, wfields.fill(), false);
     colp->add(cell);
@@ -379,7 +376,10 @@ class Item_CPU : public Base {
     Common::Stats::MinMaxAvgCount<uint64_t> _nthreads;
     nthreads.gather(_nthreads);
 
-    if(!_percent_user.count && !_percent_sys.count && !_nthreads.count)
+    size_t sz = encoded_length(_percent_user, false);
+    sz += encoded_length(_percent_sys, false);
+    sz += encoded_length(_nthreads, false);
+    if(!sz)
       return;
 
     DB::Cell::KeyVec key;
@@ -393,18 +393,11 @@ class Item_CPU : public Base {
     cell.set_timestamp(for_ns);
     cell.key.add(key);
 
-    size_t sz = encoded_length(_percent_user, false);
-    sz += encoded_length(_percent_sys, false);
-    sz += encoded_length(_nthreads, false);
-
     DB::Cell::Serial::Value::FieldsWriter wfields;
     wfields.ensure(sz);
-    if(_percent_user.count)
-      add_value(_percent_user,  FIELD_CPU_U_PERC_MIN, false, wfields);
-    if(_percent_sys.count)
-      add_value(_percent_sys,   FIELD_CPU_S_PERC_MIN, false, wfields);
-    if(_nthreads.count)
-      add_value(_nthreads,      FIELD_NTHREADS_MIN,   false, wfields);
+    add_value(_percent_user,  FIELD_CPU_U_PERC_MIN, false, wfields);
+    add_value(_percent_sys,   FIELD_CPU_S_PERC_MIN, false, wfields);
+    add_value(_nthreads,      FIELD_NTHREADS_MIN,   false, wfields);
 
     cell.set_value(wfields.base, wfields.fill(), false);
     colp->add(cell);

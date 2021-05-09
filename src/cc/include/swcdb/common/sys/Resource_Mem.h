@@ -54,7 +54,8 @@ class Mem {
         cfg_release_rate(ram_release_rate),
         free(0), used(0), used_reg(0), total(0), allowed(0), reserved(0),
         notifier(notifier), release_call(std::move(release_call)),
-        page_size(sysconf(_SC_PAGE_SIZE)) {
+        page_size(sysconf(_SC_PAGE_SIZE)),
+        stat_chk(0), ts_low_state(0) {
 
     #if defined TCMALLOC_MINIMAL || defined TCMALLOC
     release_rate_default = MallocExtension::instance()->GetMemoryReleaseRate();
@@ -193,10 +194,6 @@ class Mem {
       allowed.store((total/100) * cfg_percent_allowed->get());
       reserved.store((total/100) * cfg_percent_reserved->get());
 
-      if(is_low_mem_state() && stat_chk - stat_chk > 10000)
-        SWC_LOG_OUT(LOG_WARN,
-          print(SWC_LOG_OSTREAM << "Low-Memory state ");
-        );
       stat_chk = ts;
       if(notifier)
         notifier->rss_free(free.load());
@@ -213,8 +210,13 @@ class Mem {
     if(notifier)
       notifier->rss_used(rss);
 
-    if(is_low_mem_state())
+    if(is_low_mem_state()) {
+      if(ts_low_state + 10000 < ts) {
+        ts_low_state = ts;
+        SWC_LOG_OUT(LOG_WARN, print(SWC_LOG_OSTREAM << "Low-Memory state "););
+      }
       return URGENT_MS;
+    }
     uint64_t ms = allowed / 3000; // ~= mem-bw-buffer
     return ms > MAX_MS ? MAX_MS : ms;
   }
@@ -251,6 +253,7 @@ class Mem {
   const ReleaseCall_t release_call;
   uint32_t            page_size;
   uint64_t            stat_chk;
+  uint64_t            ts_low_state;
   Core::MutexAtomic   m_mutex;
 
   #if defined TCMALLOC_MINIMAL || defined TCMALLOC
