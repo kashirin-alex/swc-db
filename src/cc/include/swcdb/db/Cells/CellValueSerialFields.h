@@ -282,12 +282,24 @@ struct FieldsWriter final : DynamicBuffer {
 
   void add(uint24_t fid, const uint8_t* data, uint32_t len);
 
+  SWC_CAN_INLINE
   void add(const std::string& data) {
     add(reinterpret_cast<const uint8_t*>(data.c_str()), data.size());
   }
 
+  SWC_CAN_INLINE
   void add(uint24_t fid, const std::string& data) {
     add(fid, reinterpret_cast<const uint8_t*>(data.c_str()), data.size());
+  }
+
+  SWC_CAN_INLINE
+  void add(const char* data, uint32_t len) {
+    add(reinterpret_cast<const uint8_t*>(data), len);
+  }
+
+  SWC_CAN_INLINE
+  void add(uint24_t fid, const char* data, uint32_t len) {
+    add(fid, reinterpret_cast<const uint8_t*>(data), len);
   }
 
 
