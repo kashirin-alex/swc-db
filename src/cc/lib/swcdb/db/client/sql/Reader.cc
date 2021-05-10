@@ -259,6 +259,31 @@ void Reader::read_double_t(long double& value, bool& was_set,
   }
 }
 
+void Reader::read_duration_secs(uint64_t& value, bool& was_set, const char* stop) {
+  std::string buf;
+  read(buf, stop ? stop : "),]");
+  try {
+    size_t pos = 0;
+    value = std::stoull(buf.c_str(), &pos);
+    was_set = true;
+    if(pos == buf.size())
+      return;
+    const char* p = buf.c_str() + pos;
+    if(      *p == 'w' || Condition::str_case_eq(p, "week", 4))
+      value *= 60 * 60 * 24 * 7;
+    else if (*p == 'd' || Condition::str_case_eq(p, "day", 3))
+      value *= 60 * 60 * 24;
+    else if (*p == 'h' || Condition::str_case_eq(p, "hour", 4))
+      value *= 60 * 60;
+    else if (*p == 'm' ||Condition::str_case_eq(p, "minute", 6))
+      value *= 60;
+    else
+      error_msg(Error::SQL_PARSE_ERROR, " unknown duration: "+std::string(p));
+  } catch(...) {
+    error_msg(Error::SQL_PARSE_ERROR, " signed 64-bit integer out of range");
+  }
+}
+
 DB::Types::Encoder Reader::read_encoder() {
   std::string encoder;
   read(encoder, ")");

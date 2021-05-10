@@ -348,7 +348,7 @@ The Expression of Value Condition dependable on the [Schema's column value type]
 
 
 * ##### The Condition-Timestamp syntax
-The Condition of Timestamp is an interval of from Timestamp to Timestamp, optionally to apply only one side with VALUE on right. It can be defined only by the Comparators NE, EQ, GT, LT, GE and LE. The VALUE can be a Timestamp in nanoseconds or a Date and Time in format ```"YYYY/MM/DDD HH:mm:ss.nanoseconds"```.  \
+The Condition of Timestamp is an interval of from Timestamp to Timestamp, optionally to apply only one side with VALUE on right. It can be defined only by the Comparators NE, EQ, GT, LT, GE and LE. The VALUE can be a Timestamp in nanoseconds or a Date and Time in format ```"YYYY/MM/DD HH:mm:ss.nanoseconds"```.  \
 ***```VALUE``` [``` COMP ```] ``` timestamp ``` [``` COMP ```] ```VALUE```***
 
 
@@ -407,7 +407,7 @@ The Syntax depends on the Flags and available definitions.
 * ##### An **INSERT** Flag with version-timestamp config:
   ```cell(``` ``` INSERT ``` ```,``` ``` Column ID|NAME ``` ```,``` ``` Key ``` ```,``` ``` TIME_ORDER ``` ```,``` ``` TIMESTAMP ``` ```,``` ``` VALUE-DATA ``` ```) ```
   > * _TIME_ODER_ options are ```ASC```/```DESC``` - empty-```entry,``` defaults to ```DESC``` .
-  > * _TIMESTAMP_ in nanoseconds or a Date and Time in format ```"YYYY/MM/DDD HH:mm:ss.nanoseconds"```, empty-field is auto-assign.
+  > * _TIMESTAMP_ in nanoseconds or a Date and Time in format ```"YYYY/MM/DD HH:mm:ss.nanoseconds"```, empty-field is auto-assign.
 
 * ##### An **INSERT** Flag for a SERIAL Column Type:
   As other **INSERT** with or without timestamp whereas ``` VALUE-DATA ``` defined in a serialization format. \
