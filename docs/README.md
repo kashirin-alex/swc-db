@@ -84,17 +84,20 @@ the VOLUME is the right choice whereas the FC_VOLUME unlike tree-wise on fractio
 
 #### The Master Ranges and Meta Ranges in SWC-DB
 SWC-DB use a self-explanatory master-ranges that define ranges to meta-ranges of data-ranges(cells-range) whereas on range-locator scan includes the
-Key comparison on the comparators of request, resulting in most narrowed ranges for the scan of cells. For the purpose SWC-DB have reserved columns \
-  1: Ranges("SYS_MASTER_LEXIC") \
-  2: Ranges("SYS_MASTER_VOLUME") \
-  3: Ranges("SYS_MASTER_FC_LEXIC") \
-  4: Ranges("SYS_MASTER_FC_VOLUME") \
-  5: Ranges("SYS_META_LEXIC") \
-  6: Ranges("SYS_META_VOLUME") \
-  7: Ranges("SYS_META_FC_LEXIC") \
-  8: Ranges("SYS_META_FC_VOLUME") \
-  9: Statistics("SYS_STATS") \
-The Statistics column used for internal systems monitoring and it can be used like any other counter column (keeping for the purpose) with fraction of [period, role, instance, metric] with a counter value.
+Key comparison on the comparators of request, resulting in most narrowed ranges for the scan of cells. For the purpose SWC-DB have reserved system-columns \
+  1:  Ranges("SYS_MASTER_LEXIC") \
+  2:  Ranges("SYS_MASTER_VOLUME") \
+  3:  Ranges("SYS_MASTER_FC_LEXIC") \
+  4:  Ranges("SYS_MASTER_FC_VOLUME") \
+  5:  Ranges("SYS_META_LEXIC") \
+  6:  Ranges("SYS_META_VOLUME") \
+  7:  Ranges("SYS_META_FC_LEXIC") \
+  8:  Ranges("SYS_META_FC_VOLUME") \
+  9:  Definers("SYS_DEFINE_LEXIC") \
+  10: Definers("SYS_DEFINE_VOLUME") \
+  11: Statistics("SYS_STATS")
+* The Definers columns are SERIAL type columns and these columns used for system's internal column-definitions of metrics-data serialization saved to SYS_STATS. These columns can be used, as any column, whereas requires first fraction to be the CID of a column for the serialization defintions.
+* The Statistics column used for internal systems monitoring and it can be used like any other serial-column (keeping for the purpose) with fraction of [period, host, group, role, id, component, part, type] with value of serialized merics data.
 
 
 #### The Persistent Storage in SWC-DB

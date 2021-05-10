@@ -170,7 +170,7 @@ void Item_CountVolume::report(uint64_t for_ns, Handlers::Base::Column* colp,
 Reporting::Reporting(const Comm::IoContextPtr& io,
                      Config::Property::V_GINT32::Ptr cfg_intval)
             : BaseSingleColumn(
-                9, DB::Types::KeySeq::LEXIC, 1, 0, DB::Types::Column::SERIAL),
+                11, DB::Types::KeySeq::LEXIC, 1, 0, DB::Types::Column::SERIAL),
               io(io),
               cfg_intval(cfg_intval),
               running(false),

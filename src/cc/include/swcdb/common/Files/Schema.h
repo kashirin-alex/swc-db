@@ -20,7 +20,7 @@ namespace Common {
 namespace Files { namespace Schema {
 
 
-const uint8_t SYS_CID_END = DB::Types::MetaColumn::CID_META_END + 1;
+const uint8_t SYS_CID_END = DB::Types::MetaColumn::CID_META_END + 3;
 
 const uint8_t HEADER_SIZE = 13;
 const uint8_t HEADER_OFFSET_CHKSUM = 9;
@@ -133,6 +133,14 @@ DB::Schema::Ptr load(int &err, cid_t cid,
       err = Error::OK;
       schema->col_name.append("SYS_");
       if(cid == 9) {
+        schema->col_name.append("DEFINE_LEXIC");
+        schema->col_type = DB::Types::Column::SERIAL;
+        schema->col_seq = DB::Types::KeySeq::LEXIC;
+      } else if(cid == 10) {
+        schema->col_name.append("DEFINE_VOLUME");
+        schema->col_type = DB::Types::Column::SERIAL;
+        schema->col_seq = DB::Types::KeySeq::VOLUME;
+      } else if(cid == 11) {
         schema->col_name.append("STATS");
         schema->col_type = DB::Types::Column::SERIAL;
         schema->col_seq = DB::Types::KeySeq::LEXIC;
