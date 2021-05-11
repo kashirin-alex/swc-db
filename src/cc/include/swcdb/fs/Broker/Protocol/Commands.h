@@ -6,6 +6,10 @@
 #ifndef swcdb_fs_Broker_Protocol_Commands_h
 #define swcdb_fs_Broker_Protocol_Commands_h
 
+
+#include "swcdb/core/Compat.h"
+
+
 namespace SWC { namespace Comm { namespace Protocol {
 
 
@@ -39,14 +43,30 @@ namespace FsBroker {
     FUNCTION_WRITE        = 0x11,   ///< Write
     FUNCTION_READ_ALL     = 0x12,   ///< ReadAll
     FUNCTION_COMBI_PREAD  = 0x13,   ///< CombiPread open+pread+close
-    
+
     FUNCTION_DEBUG        = 0x14,   ///< Debug
     FUNCTION_STATUS       = 0x14,   ///< Status
     FUNCTION_SHUTDOWN     = 0x14,   ///< Shutdown
     MAX_CMD               = 0x14    ///< Maximum code marker
   };
+
+  struct Commands {
+    static uint8_t max_command() noexcept {
+      return MAX_CMD;
+    }
+    static const char* to_string(uint8_t cmd) noexcept;
+  };
+
 }
 
 }}}
+
+
+
+#if defined(SWC_IMPL_SOURCE) or \
+    (defined(FS_BROKER_APP) and !defined(BUILTIN_FS_BROKER))
+#include "swcdb/fs/Broker/Protocol/Commands.cc"
+#endif
+
 
 #endif // swcdb_fs_Broker_Protocol_Commands_h

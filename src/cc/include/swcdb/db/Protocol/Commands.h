@@ -7,6 +7,9 @@
 #define swcdb_db_Protocol_Commands_h
 
 
+#include "swcdb/core/Compat.h"
+
+
 namespace SWC { namespace Comm { namespace Protocol {
 
 
@@ -36,6 +39,13 @@ namespace Rgr {
     MAX_CMD              = 0x0D
   };
 
+
+  struct Commands {
+    static uint8_t max_command() noexcept {
+      return MAX_CMD;
+    }
+    static const char* to_string(uint8_t cmd) noexcept;
+  };
 }
 
 
@@ -55,7 +65,7 @@ namespace Mngr {
     COLUMN_MNG           = 0x03,
     COLUMN_UPDATE        = 0x04,
     COLUMN_GET           = 0x05,
-    COLUMN_LIST          = 0x06, 
+    COLUMN_LIST          = 0x06,
     COLUMN_COMPACT       = 0x07,
     RGR_MNG_ID           = 0x08,
     RGR_UPDATE           = 0x09,
@@ -68,6 +78,12 @@ namespace Mngr {
     MAX_CMD              = 0x10
   };
 
+  struct Commands {
+    static uint8_t max_command() noexcept {
+      return MAX_CMD;
+    }
+    static const char* to_string(uint8_t cmd) noexcept;
+  };
 }
 
 

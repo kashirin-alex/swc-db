@@ -47,6 +47,7 @@ set(FILE_SYSTEMS ${FILE_SYSTEMS} broker)
 set(swcdb_fsBroker_sources
   ${SWC_VERSION_SRC}
   Broker/FileSystem.cc
+  Broker/Protocol/Commands.cc
   Broker/Protocol/params/Append.cc
   Broker/Protocol/params/Close.cc
   Broker/Protocol/params/Create.cc
