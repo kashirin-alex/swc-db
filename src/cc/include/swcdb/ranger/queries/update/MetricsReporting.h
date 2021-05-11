@@ -29,6 +29,8 @@ class Reporting final : public Common::Query::Update::Metric::Reporting {
 
   virtual ~Reporting() { }
 
+  Item_Net<Comm::Protocol::Rgr::Commands>* net;
+
 };
 
 

@@ -4,15 +4,26 @@
  */
 
 
-#include "swcdb/db/client/Query/Update/Handlers/Metrics.h"
-#include "swcdb/db/client/Query/Update.h"
 #include "swcdb/db/client/Clients.h"
+#include "swcdb/db/client/Query/Update.h"
+#include "swcdb/db/client/Query/UpdateHandlerCommon.h"
+#include "swcdb/db/client/Query/Update/Handlers/Metrics.h"
 
 
 namespace SWC { namespace client { namespace Query { namespace Update {
 namespace Handlers { namespace Metric {
 
 
+
+void Level::definitions(Handlers::Base::Column* colp,
+                        const DB::Cell::KeyVec& parent_key) {
+  DB::Cell::KeyVec key;
+  key.reserve(parent_key.size() + 1);
+  key.copy(parent_key);
+  key.add(name);
+  for(auto& m : metrics)
+    m->definitions(colp, key);
+}
 
 void Level::report(uint64_t for_ns, Handlers::Base::Column* colp,
                    const DB::Cell::KeyVec& parent_key) {
@@ -173,7 +184,7 @@ Reporting::Reporting(const Comm::IoContextPtr& io,
                 11, DB::Types::KeySeq::LEXIC, 1, 0, DB::Types::Column::SERIAL),
               io(io),
               cfg_intval(cfg_intval),
-              running(false),
+              running(false), m_defined(false),
               m_timer(io->executor()) {
   timeout.store(Env::Clients::ref().cfg_send_timeout->get());
   timeout_ratio.store(Env::Clients::ref().cfg_send_timeout_ratio->get());
@@ -229,8 +240,11 @@ void Reporting::response(int err) {
     error(Error::CLIENT_DATA_REMAINED);
 
   if(error() || column.error()) {
-    SWC_LOGF(LOG_WARN, "Problem Updating Statistics error(hdlr=%d, colm=%d)",
-                        error(), column.error());
+    SWC_LOG_OUT(LOG_WARN,
+      SWC_LOG_OSTREAM << "Problem Updating Statistics";
+      Error::print(SWC_LOG_OSTREAM << " hdlr=", error());
+      Error::print(SWC_LOG_OSTREAM << " colm=", column.error());
+    );
     // reset-state
     column.state_error.store(Error::OK);
     state_error.store(Error::OK);
@@ -246,6 +260,28 @@ void Reporting::report() {
     for(auto& m : metrics)
       m->reset();
     return schedule();
+  }
+
+  if(!m_defined) {
+    auto hdlr = client::Query::Update::Handlers::Common::make();
+    auto& col = hdlr->create(
+      9, DB::Types::KeySeq::LEXIC, 1, 0, DB::Types::Column::SERIAL);
+
+    DB::Cell::KeyVec key;
+    key.add("11");
+    for(auto& m : metrics)
+      m->definitions(col.get(), key);
+
+    Update::commit(hdlr, col.get());
+    hdlr->wait();
+    if(!hdlr->error()) {
+      m_defined = true;
+    } else {
+      SWC_LOG_OUT(LOG_WARN,
+        SWC_LOG_OSTREAM << "Problem Updating Definitions";
+        Error::print(SWC_LOG_OSTREAM << " hdlr=", hdlr->error());
+      );
+    }
   }
 
   DB::Cell::KeyVec key;

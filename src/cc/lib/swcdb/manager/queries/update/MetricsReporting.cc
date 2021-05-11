@@ -12,7 +12,8 @@ namespace SWC { namespace Manager { namespace Metric {
 
 Reporting::Reporting(const Comm::IoContextPtr& io,
                      Config::Property::V_GINT32::Ptr cfg_intval)
-        : Common::Query::Update::Metric::Reporting(io, cfg_intval) {
+        : Common::Query::Update::Metric::Reporting(io, cfg_intval),
+          net(nullptr) {
 }
 
 void Reporting::configure_mngr(const char*,
@@ -22,9 +23,12 @@ void Reporting::configure_mngr(const char*,
     SWC_THROW(errno, "gethostname");
 
   auto level = Common::Query::Update::Metric::Reporting::configure(
-    "swcdb", "mngr", hostname, endpoints,
-    Comm::Protocol::Mngr::Command::MAX_CMD
+    "swcdb", "mngr", hostname, endpoints
   );
+
+  level->metrics.emplace_back(
+    net = new Item_Net<Comm::Protocol::Mngr::Commands>(
+      endpoints, Env::Config::settings()->get_bool("swc.comm.ssl")));
 
   auto fs = Env::FsInterface::fs();
   if(fs->statistics.enabled)

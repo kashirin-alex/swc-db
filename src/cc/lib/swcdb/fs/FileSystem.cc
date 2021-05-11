@@ -47,19 +47,19 @@ Type fs_type(const std::string& fs_name) {
 const char* to_string(Type typ) noexcept {
   switch(typ) {
     case Type::LOCAL:
-      return "Local";
+      return "local";
     case Type::BROKER:
-      return "Broker";
+      return "broker";
     case Type::HADOOP:
-      return "Hadoop";
+      return "hadoop";
     case Type::HADOOP_JVM:
-      return "HadoopJVM";
+      return "hadoopJVM";
     case Type::CEPH:
-      return "Ceph";
+      return "ceph";
     case Type::CUSTOM:
-      return "Custom";
+      return "custom";
     default:
-      return "Unknown";
+      return "unknown";
   }
 }
 

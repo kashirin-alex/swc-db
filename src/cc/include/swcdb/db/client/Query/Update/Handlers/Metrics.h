@@ -39,6 +39,9 @@ struct Base {
 
   virtual ~Base() { }
 
+  virtual void definitions(Handlers::Base::Column* colp,
+                           const DB::Cell::KeyVec& parent_key) = 0;
+
   virtual void report(uint64_t for_ns, Handlers::Base::Column* colp,
                       const DB::Cell::KeyVec& parent_key) = 0;
 
@@ -62,6 +65,9 @@ class Level : public Base {
   Level(const char* name) : name(name) { }
 
   virtual ~Level() { }
+
+  virtual void definitions(Handlers::Base::Column* colp,
+                           const DB::Cell::KeyVec& parent_key) override;
 
   virtual void report(uint64_t for_ns, Handlers::Base::Column* colp,
                       const DB::Cell::KeyVec& parent_key) override;
@@ -243,6 +249,7 @@ class Reporting : public BaseSingleColumn {
 
   void schedule();
 
+  bool                        m_defined;
   asio::high_resolution_timer m_timer;
 
 };

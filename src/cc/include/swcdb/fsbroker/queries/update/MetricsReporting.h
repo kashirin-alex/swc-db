@@ -29,7 +29,9 @@ class Reporting final : public Common::Query::Update::Metric::Reporting {
 
   virtual ~Reporting() { }
 
-  Item_CountVolume* fds;
+  Item_Net<Comm::Protocol::FsBroker::Commands>* net;
+  Item_CountVolume*                             fds;
+
 };
 
 

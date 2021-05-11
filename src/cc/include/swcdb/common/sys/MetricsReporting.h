@@ -58,7 +58,7 @@ static void add_value(
 }
 
 
-
+template<typename CommandsT>
 class Item_Net : public Base {
   /* Cell-Serialization:
       key:    [levels, "net", "{address}", is_secure()?"SECURE":"PLAIN"]
@@ -93,19 +93,18 @@ class Item_Net : public Base {
     Common::Stats::MinMaxAvgCount_Safe<uint64_t> bytes_recv;
     std::vector<Core::Atomic<uint64_t>>          commands;
 
-    Addr(const Comm::EndPoint& endpoint, uint8_t max_ev_cmd) noexcept 
+    Addr(const Comm::EndPoint& endpoint) noexcept
         : addr(endpoint.address()),
           conn_open(0), conn_accept(0), conn_est(0),
-          commands(max_ev_cmd) {
+          commands(CommandsT::max_command()) {
     }
   };
 
-  Item_Net(const Comm::EndPoints& endpoints,
-           bool using_secure, uint8_t max_ev_cmd) {
+  Item_Net(const Comm::EndPoints& endpoints, bool using_secure) {
     for(uint8_t secure = 0; secure <= using_secure; ++secure) {
       m_addresses[secure].reserve(endpoints.size());
       for(auto& endpoint : endpoints)
-        m_addresses[secure].emplace_back(new Addr(endpoint, max_ev_cmd));
+        m_addresses[secure].emplace_back(new Addr(endpoint));
     }
   }
 
@@ -167,6 +166,54 @@ class Item_Net : public Base {
       addr->bytes_recv.add(bytes);
   }
 
+  virtual void definitions(client::Query::Update::Handlers::Base::Column* colp,
+                           const DB::Cell::KeyVec& parent_key) override {
+    bool secure = false;
+    _do_layer:
+    for(auto& addr : m_addresses[secure]) {
+      DB::Cell::KeyVec key;
+      key.reserve(parent_key.size() + 3);
+      key.copy(parent_key);
+      key.add("net");
+      key.add(addr->addr.to_string());
+      key.add(secure ? "SECURE" : "PLAIN");
+
+      DB::Cells::Cell cell;
+      cell.flag = DB::Cells::INSERT;
+      cell.set_time_order_desc(true);
+      cell.key.add(key);
+
+      DB::Cell::Serial::Value::FieldsWriter wfields;
+      wfields.ensure(214 + addr->commands.size() * 11);
+      wfields.add(FIELD_CONN_OPEN, "Open Connections", 16);
+      wfields.add(FIELD_CONN_ACC, "Accepted Connections", 20);
+      wfields.add(FIELD_CONN_EST, "Connections Established", 23);
+
+      wfields.add(FIELD_BYTES_SENT_MIN,  "Send Bytes Minimum", 18);
+      wfields.add(FIELD_BYTES_SENT_MAX,  "Send Bytes Maximum", 18);
+      wfields.add(FIELD_BYTES_SENT_AVG,  "Send Bytes Average", 18);
+      wfields.add(FIELD_BYTES_SENT_TRX,  "Send Transactions", 17);
+
+      wfields.add(FIELD_BYTES_RECV_MIN,  "Receive Bytes Minimum", 21);
+      wfields.add(FIELD_BYTES_RECV_MAX,  "Receive Bytes Maximum", 21);
+      wfields.add(FIELD_BYTES_RECV_AVG,  "Receive Bytes Average", 21);
+      wfields.add(FIELD_BYTES_RECV_TRX,  "Receive Transactions", 21);
+
+      for(size_t i=0; i < addr->commands.size(); ++i) {
+        std::string cmd(CommandsT::to_string(i));
+        wfields.add(i + FIELD_EV_COMMAND_START, cmd + " Requests");
+      }
+      cell.set_value(DB::Types::Encoder::ZSTD, wfields.base, wfields.fill());
+
+      colp->add(cell);
+    }
+
+    if(!secure) {
+      secure = true;
+      if(!m_addresses[secure].empty())
+        goto _do_layer;
+    }
+  }
 
   virtual void report(uint64_t for_ns,
                       client::Query::Update::Handlers::Base::Column* colp,
@@ -296,6 +343,37 @@ class Item_Mem : public Base {
 
   virtual ~Item_Mem() { }
 
+  virtual void definitions(client::Query::Update::Handlers::Base::Column* colp,
+                           const DB::Cell::KeyVec& parent_key) override {
+    DB::Cell::KeyVec key;
+    key.reserve(parent_key.size() + 1);
+    key.copy(parent_key);
+    key.add("mem");
+
+    DB::Cells::Cell cell;
+    cell.flag = DB::Cells::INSERT;
+    cell.set_time_order_desc(true);
+    cell.key.add(key);
+
+    DB::Cell::Serial::Value::FieldsWriter wfields;
+    wfields.ensure(177);
+
+    wfields.add(FIELD_RSS_FREE_MIN, "RSS Free Minimal", 16);
+    wfields.add(FIELD_RSS_FREE_MAX, "RSS Free Maximal", 16);
+    wfields.add(FIELD_RSS_FREE_AVG, "RSS Free Average", 16);
+
+    wfields.add(FIELD_RSS_USED_MIN, "RSS Used Minimal", 16);
+    wfields.add(FIELD_RSS_USED_MAX, "RSS Used Maximal", 16);
+    wfields.add(FIELD_RSS_USED_AVG, "RSS Used Average", 16);
+
+    wfields.add(FIELD_RSS_USED_REG_MIN, "RSS Registred Minimal", 21);
+    wfields.add(FIELD_RSS_USED_REG_MAX, "RSS Registred Maximal", 21);
+    wfields.add(FIELD_RSS_USED_REG_AVG, "RSS Registred Average", 21);
+
+    cell.set_value(DB::Types::Encoder::ZSTD ,wfields.base, wfields.fill());
+    colp->add(cell);
+  }
+
   virtual void report(uint64_t for_ns, client::Query::Update::Handlers::Base::Column* colp,
                       const DB::Cell::KeyVec& parent_key) override {
     Common::Stats::MinMaxAvgCount<uint64_t> _rss_free;
@@ -374,6 +452,37 @@ class Item_CPU : public Base {
 
   virtual ~Item_CPU() { }
 
+  virtual void definitions(client::Query::Update::Handlers::Base::Column* colp,
+                           const DB::Cell::KeyVec& parent_key) override {
+    DB::Cell::KeyVec key;
+    key.reserve(parent_key.size() + 1);
+    key.copy(parent_key);
+    key.add("cpu");
+
+    DB::Cells::Cell cell;
+    cell.flag = DB::Cells::INSERT;
+    cell.set_time_order_desc(true);
+    cell.key.add(key);
+
+    DB::Cell::Serial::Value::FieldsWriter wfields;
+    wfields.ensure(150);
+
+    wfields.add(FIELD_CPU_U_PERC_MIN, "User %m Minimal", 15);
+    wfields.add(FIELD_CPU_U_PERC_MAX, "User %m Maximal", 15);
+    wfields.add(FIELD_CPU_U_PERC_AVG, "User %m Average", 15);
+
+    wfields.add(FIELD_CPU_S_PERC_MIN, "Sys %m Minimal", 14);
+    wfields.add(FIELD_CPU_S_PERC_MAX, "Sys %m Maximal", 14);
+    wfields.add(FIELD_CPU_S_PERC_AVG, "Sys %m Average", 14);
+
+    wfields.add(FIELD_NTHREADS_MIN, "Threads Minimal", 15);
+    wfields.add(FIELD_NTHREADS_MAX, "Threads Maximal", 15);
+    wfields.add(FIELD_NTHREADS_AVG, "Threads Average", 15);
+
+    cell.set_value(DB::Types::Encoder::ZSTD ,wfields.base, wfields.fill());
+    colp->add(cell);
+  }
+
   virtual void report(uint64_t for_ns,
                       client::Query::Update::Handlers::Base::Column* colp,
                       const DB::Cell::KeyVec& parent_key) override {
@@ -412,8 +521,6 @@ class Item_CPU : public Base {
 
     cell.set_value(wfields.base, wfields.fill(), false);
     colp->add(cell);
-
-    // set_interval(reportp->cfg_intval->get()/10);
   }
 
   virtual void reset() override {
@@ -448,8 +555,37 @@ class Item_FS : public Base {
 
   virtual ~Item_FS() { }
 
+  virtual void definitions(client::Query::Update::Handlers::Base::Column* colp,
+                           const DB::Cell::KeyVec& parent_key) override {
+    DB::Cell::KeyVec key;
+    key.reserve(parent_key.size() + 2);
+    key.copy(parent_key);
+    key.add("fs");
+    key.add(FS::to_string(fs->get_type()));
 
-  virtual void report(uint64_t for_ns, client::Query::Update::Handlers::Base::Column* colp,
+    DB::Cells::Cell cell;
+    cell.flag = DB::Cells::INSERT;
+    cell.set_time_order_desc(true);
+    cell.key.add(key);
+
+    DB::Cell::Serial::Value::FieldsWriter wfields;
+    wfields.ensure(FS::Statistics::Command::MAX * 200);
+
+    wfields.add(FIELD_FDS, "Open FDs", 8);
+    for(uint8_t i=0; i < FS::Statistics::Command::MAX; ++i) {
+      std::string cmd(FS::Statistics::to_string(FS::Statistics::Command(i)));
+      wfields.add(FIELD_MIN + i, cmd + " Latency ns Minimum");
+      wfields.add(FIELD_MAX + i, cmd + " Latency ns Maximum");
+      wfields.add(FIELD_AVG + i, cmd + " Latency ns Average");
+      wfields.add(FIELD_ERROR + i, cmd + " Errors Count");
+      wfields.add(FIELD_COUNT + i, cmd + " Requests Count");
+    }
+    cell.set_value(DB::Types::Encoder::ZSTD ,wfields.base, wfields.fill());
+    colp->add(cell);
+  }
+
+  virtual void report(uint64_t for_ns,
+                      client::Query::Update::Handlers::Base::Column* colp,
                       const DB::Cell::KeyVec& parent_key) override {
     FS::Statistics stats(true);
     fs->statistics.gather(stats);
@@ -475,38 +611,6 @@ class Item_FS : public Base {
     if(!sz)
       return;
 
-    DB::Cell::Serial::Value::FieldsWriter wfields;
-    wfields.ensure(sz);
-
-    if(open_fds)
-      wfields.add(FIELD_FDS, int64_t(open_fds));
-
-    for(uint8_t cmd=0; cmd < FS::Statistics::Command::MAX; ++cmd) {
-      auto& m = stats.metrics[cmd];
-      if(m.m_count && m.m_total/m.m_count != m.m_min)
-        wfields.add(FIELD_MIN + cmd,  int64_t(m.m_min));
-    }
-    for(uint8_t cmd=0; cmd < FS::Statistics::Command::MAX; ++cmd) {
-      auto& m = stats.metrics[cmd];
-      if(m.m_count && m.m_total/m.m_count != m.m_max)
-        wfields.add(FIELD_MAX + cmd,  int64_t(m.m_max));
-    }
-    for(uint8_t cmd=0; cmd < FS::Statistics::Command::MAX; ++cmd) {
-      auto& m = stats.metrics[cmd];
-      if(m.m_count)
-        wfields.add(FIELD_AVG + cmd,  int64_t(m.m_total/m.m_count));
-    }
-    for(uint8_t cmd=0; cmd < FS::Statistics::Command::MAX; ++cmd) {
-      auto& m = stats.metrics[cmd];
-      if(m.m_error)
-        wfields.add(FIELD_ERROR + cmd,  int64_t(m.m_error));
-    }
-    for(uint8_t cmd=0; cmd < FS::Statistics::Command::MAX; ++cmd) {
-      auto& m = stats.metrics[cmd];
-      if(m.m_count)
-        wfields.add(FIELD_COUNT + cmd,  int64_t(m.m_count));
-    }
-
     DB::Cell::KeyVec key;
     key.reserve(parent_key.size() + 2);
     key.copy(parent_key);
@@ -518,6 +622,27 @@ class Item_FS : public Base {
     cell.set_time_order_desc(true);
     cell.set_timestamp(for_ns);
     cell.key.add(key);
+
+    DB::Cell::Serial::Value::FieldsWriter wfields;
+    wfields.ensure(sz);
+
+    if(open_fds)
+      wfields.add(FIELD_FDS, int64_t(open_fds));
+
+    for(uint8_t cmd=0; cmd < FS::Statistics::Command::MAX; ++cmd) {
+      auto& m = stats.metrics[cmd];
+      if(m.m_count) {
+        uint64_t avg = m.m_total/m.m_count;
+        if(avg != m.m_min)
+          wfields.add(FIELD_MIN + cmd,  int64_t(m.m_min));
+        if(avg != m.m_max)
+          wfields.add(FIELD_MAX + cmd,  int64_t(m.m_max));
+        wfields.add(FIELD_AVG + cmd,  int64_t(avg));
+        if(m.m_error)
+          wfields.add(FIELD_ERROR + cmd,  int64_t(m.m_error));
+        wfields.add(FIELD_COUNT + cmd,  int64_t(m.m_count));
+      }
+    }
 
     cell.set_value(wfields.base, wfields.fill(), false);
     colp->add(cell);
@@ -539,12 +664,11 @@ class Reporting : public client::Query::Update::Handlers::Metric::Reporting {
   Reporting(const Comm::IoContextPtr& io,
             Config::Property::V_GINT32::Ptr cfg_intval)
       : client::Query::Update::Handlers::Metric::Reporting(io, cfg_intval),
-        system(this), cpu(nullptr), mem(nullptr), net(nullptr) {
+        system(this), cpu(nullptr), mem(nullptr) {
   }
 
   virtual Level* configure(const char* group_name, const char* inst_name,
-                           const char* host, const Comm::EndPoints& endpoints,
-                           uint8_t max_cmd) {
+                           const char* host, const Comm::EndPoints& endpoints) {
     auto level = host ? get_level(host) : nullptr;
     if(group_name)
       level = level ? level->get_level(group_name) : get_level(group_name);
@@ -558,8 +682,6 @@ class Reporting : public client::Query::Update::Handlers::Metric::Reporting {
 
     level->metrics.emplace_back(cpu = system.cpu);
     level->metrics.emplace_back(mem = system.mem);
-    level->metrics.emplace_back(net = new Item_Net(
-      endpoints, Env::Config::settings()->get_bool("swc.comm.ssl"), max_cmd));
     return level;
   }
 
@@ -606,7 +728,6 @@ class Reporting : public client::Query::Update::Handlers::Metric::Reporting {
 
   Item_CPU* cpu;
   Item_Mem* mem;
-  Item_Net* net;
 
 };
 

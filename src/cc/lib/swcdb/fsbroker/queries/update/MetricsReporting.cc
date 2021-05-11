@@ -10,10 +10,41 @@
 namespace SWC { namespace FsBroker { namespace Metric {
 
 
+
+class Item_Fds : public Item_CountVolume {
+  public:
+  Item_Fds() : Item_CountVolume("fds") { }
+
+  virtual ~Item_Fds() { }
+
+  void definitions(client::Query::Update::Handlers::Base::Column* colp,
+                   const DB::Cell::KeyVec& parent_key) override {
+    DB::Cell::KeyVec key;
+    key.reserve(parent_key.size() + 1);
+    key.copy(parent_key);
+    key.add(name);
+
+    DB::Cells::Cell cell;
+    cell.flag = DB::Cells::INSERT;
+    cell.set_time_order_desc(true);
+    cell.key.add(key);
+
+    DB::Cell::Serial::Value::FieldsWriter wfields;
+    wfields.ensure(13);
+    wfields.add(FIELD_ID_COUNT,  "Openings", 8);
+    wfields.add(FIELD_ID_VOLUME, "Open FDs", 8);
+    cell.set_value(wfields.base, wfields.fill(), false);
+
+    colp->add(cell);
+  }
+};
+
+
+
 Reporting::Reporting(const Comm::IoContextPtr& io,
                      Config::Property::V_GINT32::Ptr cfg_intval)
           : Common::Query::Update::Metric::Reporting(io, cfg_intval),
-            fds(new Item_CountVolume("fds")) {
+            net(nullptr), fds(new Item_Fds()) {
 }
 
 void Reporting::configure_fsbroker(const char*, const Comm::EndPoints& endpoints) {
@@ -22,9 +53,12 @@ void Reporting::configure_fsbroker(const char*, const Comm::EndPoints& endpoints
     SWC_THROW(errno, "gethostname");
 
   auto level = Common::Query::Update::Metric::Reporting::configure(
-    "swcdb", "fsbroker", hostname, endpoints,
-    Comm::Protocol::FsBroker::Command::MAX_CMD
+    "swcdb", "fsbroker", hostname, endpoints
   );
+
+  level->metrics.emplace_back(
+    net = new Item_Net<Comm::Protocol::FsBroker::Commands>(
+      endpoints, Env::Config::settings()->get_bool("swc.comm.ssl")));
 
   auto fs = Env::FsInterface::fs();
   if(fs->statistics.enabled)

@@ -17,6 +17,18 @@ namespace SWC { namespace ThriftBroker { namespace Metric {
 using namespace Common::Query::Update::Metric;
 
 
+
+struct Commands {
+  static uint8_t max_command() {
+    return 0;
+  }
+  static const char* to_string(uint8_t) noexcept {
+    return "NOIMPL";
+  }
+};
+
+
+
 class Reporting final : public Common::Query::Update::Metric::Reporting {
   public:
 
@@ -28,6 +40,8 @@ class Reporting final : public Common::Query::Update::Metric::Reporting {
   void configure_thriftbroker(const char*, const Comm::EndPoints& endpoints);
 
   virtual ~Reporting() { }
+
+  Item_Net<Commands>* net;
 
 };
 
