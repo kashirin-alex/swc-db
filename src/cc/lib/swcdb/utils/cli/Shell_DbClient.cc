@@ -10,7 +10,7 @@
 
 #include "swcdb/common/Stats/FlowRate.h"
 
-#include "swcdb/db/Types/MetaColumn.h"
+#include "swcdb/db/Types/SystemColumn.h"
 
 #include "swcdb/fs/Interface.h"
 #include "swcdb/common/Files/TSV.h"
@@ -359,7 +359,7 @@ void DbClient::display(
   do {
     count_state = cells_count;
     for(cid_t cid : hdlr->get_cids()) {
-      meta = !DB::Types::MetaColumn::is_data(cid);;
+      meta = !DB::Types::SystemColumn::is_data(cid);;
       schema = Env::Clients::get()->schemas->get(err, cid);
       cells.free();
       hdlr->get_cells(cid, cells);

@@ -3,7 +3,7 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#include "swcdb/db/Types/MetaColumn.h"
+#include "swcdb/db/Types/SystemColumn.h"
 #include "swcdb/db/client/Clients.h"
 #include "swcdb/db/client/Query/Select.h"
 
@@ -133,8 +133,8 @@ Scanner::Scanner(const Handlers::Base::Ptr& hdlr,
               selector(hdlr),
               col_seq(col_seq),
               interval(interval),
-              master_cid(DB::Types::MetaColumn::get_master_cid(col_seq)),
-              meta_cid(DB::Types::MetaColumn::get_meta_cid(col_seq)),
+              master_cid(DB::Types::SystemColumn::get_master_cid(col_seq)),
+              meta_cid(DB::Types::SystemColumn::get_meta_cid(col_seq)),
               data_cid(cid),
               master_rid(0),
               meta_rid(0),
@@ -153,8 +153,8 @@ Scanner::Scanner(const Handlers::Base::Ptr& hdlr,
               selector(hdlr),
               col_seq(col_seq),
               interval(std::move(interval)),
-              master_cid(DB::Types::MetaColumn::get_master_cid(col_seq)),
-              meta_cid(DB::Types::MetaColumn::get_meta_cid(col_seq)),
+              master_cid(DB::Types::SystemColumn::get_master_cid(col_seq)),
+              meta_cid(DB::Types::SystemColumn::get_meta_cid(col_seq)),
               data_cid(cid),
               master_rid(0),
               meta_rid(0),
@@ -269,13 +269,13 @@ void Scanner::mngr_locate_master() {
   }
   ***/
 
-  if(DB::Types::MetaColumn::is_data(data_cid)) {
+  if(DB::Types::SystemColumn::is_data(data_cid)) {
     auto data_cid_str = std::to_string(data_cid);
     params.range_begin.insert(0, data_cid_str);
     params.range_end.insert(0, data_cid_str);
   }
-  if(!DB::Types::MetaColumn::is_master(data_cid)) {
-    auto meta_cid_str = DB::Types::MetaColumn::get_meta_cid_str(col_seq);
+  if(!DB::Types::SystemColumn::is_master(data_cid)) {
+    auto meta_cid_str = DB::Types::SystemColumn::get_meta_cid_str(col_seq);
     params.range_begin.insert(0, meta_cid_str);
     params.range_end.insert(0, meta_cid_str);
   }
@@ -320,7 +320,7 @@ bool Scanner::mngr_located_master(
       Env::Clients::get()->rangers.set(rsp.cid, rsp.rid, rsp.endpoints);
       master_mngr_next = true;
       master_mngr_offset.copy(rsp.range_begin);
-      if(DB::Types::MetaColumn::is_master(data_cid)) {
+      if(DB::Types::SystemColumn::is_master(data_cid)) {
         data_rid = rsp.rid;
         data_req_base = req;
         data_endpoints = rsp.endpoints;
@@ -388,8 +388,8 @@ void Scanner::rgr_locate_master() {
 
   params.range_begin.insert(0, data_cid_str);
   params.range_end.insert(0, data_cid_str);
-  if(DB::Types::MetaColumn::is_data(data_cid)) {
-    auto meta_cid_str = DB::Types::MetaColumn::get_meta_cid_str(col_seq);
+  if(DB::Types::SystemColumn::is_data(data_cid)) {
+    auto meta_cid_str = DB::Types::SystemColumn::get_meta_cid_str(col_seq);
     params.range_begin.insert(0, meta_cid_str);
     params.range_end.insert(0, meta_cid_str);
     if(master_rgr_next)
@@ -439,7 +439,7 @@ void Scanner::rgr_located_master(
       SWC_SCANNER_RSP_DEBUG("rgr_located_master");
       master_rgr_next = true;
       master_rgr_offset.copy(rsp.range_begin);
-      if(DB::Types::MetaColumn::is_meta(data_cid)) {
+      if(DB::Types::SystemColumn::is_meta(data_cid)) {
         data_rid = rsp.rid;
         data_req_base = req;
         mngr_resolve_rgr_select();

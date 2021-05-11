@@ -596,7 +596,7 @@ void Rangers::next_rgr(const Range::Ptr& range, Ranger::Ptr& rs_set) {
        interm_ranges >= rgr->interm_ranges &&
        rgr->load_scale >= best &&
        (!(state & RangerState::SHUTTINGDOWN) ||
-        (n_rgrs == 1 && !DB::Types::MetaColumn::is_data(range->cfg->cid)) )) {
+        (n_rgrs == 1 && !DB::Types::SystemColumn::is_data(range->cfg->cid)) )) {
       best = rgr->load_scale;
       interm_ranges = rgr->interm_ranges;
       rs_set = rgr;

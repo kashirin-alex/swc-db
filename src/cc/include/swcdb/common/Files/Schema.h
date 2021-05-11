@@ -9,7 +9,7 @@
 
 
 #include "swcdb/core/Checksum.h"
-#include "swcdb/db/Types/MetaColumn.h"
+#include "swcdb/db/Types/SystemColumn.h"
 
 
 namespace SWC {
@@ -19,8 +19,6 @@ namespace Common {
 
 namespace Files { namespace Schema {
 
-
-const uint8_t SYS_CID_END = DB::Types::MetaColumn::CID_META_END + 3;
 
 const uint8_t HEADER_SIZE = 13;
 const uint8_t HEADER_OFFSET_CHKSUM = 9;
@@ -129,27 +127,25 @@ DB::Schema::Ptr load(int &err, cid_t cid,
     schema = DB::Schema::make();
     schema->cid = cid;
 
-    if(cid <= SYS_CID_END) {
+    if(cid <= DB::Types::SystemColumn::SYS_CID_END) {
       err = Error::OK;
       schema->col_name.append("SYS_");
-      if(cid == 9) {
-        schema->col_name.append("DEFINE_LEXIC");
-        schema->col_type = DB::Types::Column::SERIAL;
-        schema->col_seq = DB::Types::KeySeq::LEXIC;
-      } else if(cid == 10) {
-        schema->col_name.append("DEFINE_VOLUME");
-        schema->col_type = DB::Types::Column::SERIAL;
-        schema->col_seq = DB::Types::KeySeq::VOLUME;
-      } else if(cid == 11) {
+      if(cid == DB::Types::SystemColumn::SYS_CID_STATS) {
         schema->col_name.append("STATS");
         schema->col_type = DB::Types::Column::SERIAL;
         schema->col_seq = DB::Types::KeySeq::LEXIC;
         schema->cell_ttl = 2419200; // default 4-weeks
+
+      } else if(cid == DB::Types::SystemColumn::SYS_CID_DEFINE_LEXIC) {
+        schema->col_name.append("DEFINE_LEXIC");
+        schema->col_type = DB::Types::Column::SERIAL;
+        schema->col_seq = DB::Types::KeySeq::LEXIC;
+
       } else {
         schema->col_type = DB::Types::Column::SERIAL;
-        schema->col_seq = DB::Types::MetaColumn::get_seq_type(cid);
+        schema->col_seq = DB::Types::SystemColumn::get_seq_type(cid);
         schema->col_name.append(
-          DB::Types::MetaColumn::is_master(cid) ? "MASTER_": "META_");
+          DB::Types::SystemColumn::is_master(cid) ? "MASTER_": "META_");
         schema->col_name.append(
           DB::Types::to_string(schema->col_seq));
       }

@@ -8,7 +8,7 @@
 #define swcdb_manager_db_Columns_h
 
 
-#include "swcdb/db/Types/MetaColumn.h"
+#include "swcdb/db/Types/SystemColumn.h"
 #include "swcdb/fs/Interface.h"
 
 #include "swcdb/manager/db/ColumnCfg.h"
@@ -77,8 +77,8 @@ class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
     Range::Ptr range = nullptr;
     iterator it;
     Core::MutexSptd::scope lock(m_mutex);
-    for(cid_t cid = DB::Types::MetaColumn::CID_MASTER_BEGIN;
-        cid <= DB::Types::MetaColumn::CID_META_END; ++cid) {
+    for(cid_t cid = DB::Types::SystemColumn::CID_MASTER_BEGIN;
+        cid <= DB::Types::SystemColumn::CID_META_END; ++cid) {
       if((it = find(cid)) != end()) {
         if((range = it->second->get_next_unassigned())) {
           col = it->second;
@@ -87,7 +87,7 @@ class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
         if(it->second->state() != Column::State::OK)
           waiting_meta = true;
       }
-      if(waiting_meta && cid == DB::Types::MetaColumn::CID_MASTER_END)
+      if(waiting_meta && cid == DB::Types::SystemColumn::CID_MASTER_END)
         return nullptr;
     }
     if(waiting_meta)

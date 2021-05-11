@@ -37,7 +37,7 @@ set(swcdb_sources
   Types/Column.cc
   Types/Range.cc
   Types/KeySeq.cc
-  Types/MetaColumn.cc
+  Types/SystemColumn.cc
   Types/MngrRole.cc
   Types/MngrColumnState.cc
   Types/MngrRangeState.cc

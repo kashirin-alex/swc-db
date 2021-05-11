@@ -139,8 +139,8 @@ class Column final : private std::vector<Range::Ptr> {
                        const DB::Cell::Key& range_end,
                        bool next_range) {
     bool found = false;
-    uint32_t any_is = DB::Types::MetaColumn::is_master(cfg->cid)
-      ? 2 : (DB::Types::MetaColumn::is_meta(cfg->cid) ? 1 : 0);
+    uint32_t any_is = DB::Types::SystemColumn::is_master(cfg->cid)
+      ? 2 : (DB::Types::SystemColumn::is_meta(cfg->cid) ? 1 : 0);
 
     Core::SharedLock lock(m_mutex);
     for(auto& range : *this) {

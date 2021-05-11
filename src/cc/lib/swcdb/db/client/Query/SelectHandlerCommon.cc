@@ -3,7 +3,7 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#include "swcdb/db/Types/MetaColumn.h"
+
 #include "swcdb/db/client/Clients.h"
 #include "swcdb/db/client/Query/SelectHandlerCommon.h"
 
@@ -16,7 +16,7 @@ namespace Handlers {
 
 Common::Common(Cb_t&& cb, bool rsp_partials,
                const Comm::IoContextPtr& io) noexcept
-              : valid_state(true), 
+              : valid_state(true),
                 m_cb(std::move(cb)), m_dispatcher_io(io),
                 m_notify(m_cb && rsp_partials),
                 m_sending_result(false) {

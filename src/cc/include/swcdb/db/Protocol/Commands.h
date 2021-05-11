@@ -87,6 +87,13 @@ namespace Mngr {
 }
 
 
+
 }}}
+
+
+#ifdef SWC_IMPL_SOURCE
+#include "swcdb/db/Protocol/Commands.cc"
+#endif
+
 
 #endif // swcdb_db_Protocol_Commands_h

@@ -38,7 +38,7 @@ _The proven test with SWC-DB v0.4.9, on one machine(CPU Intel E3-1246V3 RAM 32GB
 | **a Time Series DB**                                  | **```✔```**  | without relational propotions |
 | **an Object Oriented DB**                              | **```–✔```** | binary key(Fractions) and value allowed, user defined Serialization IO or/and Serializations available with the SERIAL column-type |
 | **a XML DB / Tripel Stores**                          | **```–✔```** | require Native XML Client process XML-schema to Database structure |
-| **a Schema Free DB**                                  | **```✔```**  | except to data/column type, schema/column-definition is without inner data schematics | 
+| **a Schema Free DB**                                  | **```✔```**  | except to data/column type, schema/column-definition is without inner data schematics |
 | **a DB with User Concepts (Access Controls)**         | **```✗```**  |     |
 | **a Shard Partitioning DB**                           | **```✔```**  |     |
 | **a Spatial DB**                                      | **```✔```**  | user defined Fractions order and sequence in a Cell Key |
@@ -84,20 +84,29 @@ the VOLUME is the right choice whereas the FC_VOLUME unlike tree-wise on fractio
 
 #### The Master Ranges and Meta Ranges in SWC-DB
 SWC-DB use a self-explanatory master-ranges that define ranges to meta-ranges of data-ranges(cells-range) whereas on range-locator scan includes the
-Key comparison on the comparators of request, resulting in most narrowed ranges for the scan of cells. For the purpose SWC-DB have reserved system-columns \
-  1:  Ranges("SYS_MASTER_LEXIC") \
-  2:  Ranges("SYS_MASTER_VOLUME") \
-  3:  Ranges("SYS_MASTER_FC_LEXIC") \
-  4:  Ranges("SYS_MASTER_FC_VOLUME") \
-  5:  Ranges("SYS_META_LEXIC") \
-  6:  Ranges("SYS_META_VOLUME") \
-  7:  Ranges("SYS_META_FC_LEXIC") \
-  8:  Ranges("SYS_META_FC_VOLUME") \
-  9:  Definers("SYS_DEFINE_LEXIC") \
-  10: Definers("SYS_DEFINE_VOLUME") \
-  11: Statistics("SYS_STATS")
-* The Definers columns are SERIAL type columns and these columns used for system's internal column-definitions of metrics-data serialization saved to SYS_STATS. These columns can be used, as any column, whereas requires first fraction to be the CID of a column for the serialization defintions.
-* The Statistics column used for internal systems monitoring and it can be used like any other serial-column (keeping for the purpose) with fraction of [period, host, group, role, id, component, part, type] with value of serialized merics data.
+Key comparison on the comparators of request, resulting in most narrowed ranges for the scan of cells.\
+**SWC-DB have reserved system-columns for the purposes:**
+1)  Ranges("SYS_MASTER_LEXIC") \
+  The Meta-Column ranges with Lexical Key-Sequence.
+2)  Ranges("SYS_MASTER_VOLUME") \
+  The Meta-Column ranges with Volumetric Key-Sequence.
+3)  Ranges("SYS_MASTER_FC_LEXIC") \
+  The Meta-Column ranges with Fractions-Count Lexical Key-Sequence.
+4)  Ranges("SYS_MASTER_FC_VOLUME") \
+  The Meta-Column ranges with Fractions-Count Volumetric Key-Sequence.
+5)  Ranges("SYS_META_LEXIC") \
+  The Data-Columns ranges with Lexical Key-Sequence.
+6)  Ranges("SYS_META_VOLUME") \
+  The Data-Columns ranges with Volumetric Key-Sequence.
+7)  Ranges("SYS_META_FC_LEXIC") \
+  The Data-Columns ranges with Fractions-Count Lexical Key-Sequence.
+8)  Ranges("SYS_META_FC_VOLUME") \
+  The Data-Columns ranges with Fractions-Count Volumetric Key-Sequence.
+9)  Statistics("SYS_STATS") \
+  The Statistics column used for internal systems monitoring and it can be used like any other serial-column with Lexic Key-Sequence (keeping for the purpose) with fractions of [period, host, group, role, id, component, part, type] with value of serialized merics data.
+10) Definers("SYS_DEFINE_LEXIC") \
+  The Definer columns is SERIAL type column with Lexic Key Sequence and the column is used for system's internal column-definitions of metrics-data serialization saved to SYS_STATS. The SYS_DEFINE_LEXIC column can be used as any column, whereas requires first fraction to be the CID of a column for the serialization defintions.
+
 
 
 #### The Persistent Storage in SWC-DB

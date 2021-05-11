@@ -328,12 +328,12 @@ void MngdColumns::remove(const DB::Schema::Ptr& schema,
   if(!Env::Mngr::role()->is_active_role(DB::Types::MngrRole::SCHEMAS))
     Env::Mngr::schemas()->remove(schema->cid);
 
-  if(DB::Types::MetaColumn::is_master(schema->cid))
+  if(DB::Types::SystemColumn::is_master(schema->cid))
     return update(
       ColumnMngFunc::INTERNAL_ACK_DELETE, schema, Error::OK, req_id);
 
-  cid_t meta_cid = DB::Types::MetaColumn::get_sys_cid(
-    schema->col_seq, DB::Types::MetaColumn::get_range_type(schema->cid));
+  cid_t meta_cid = DB::Types::SystemColumn::get_sys_cid(
+    schema->col_seq, DB::Types::SystemColumn::get_range_type(schema->cid));
   DB::Specs::Interval spec(DB::Types::Column::SERIAL);
   spec.flags.set_only_keys();
   auto& key_intval = spec.key_intervals.add();
@@ -422,7 +422,7 @@ bool MngdColumns::initialize() {
     err = Error::OK;
   }
   // initialize / recover sys-columns
-  for(cid_t cid=1; cid <= Common::Files::Schema::SYS_CID_END; ++cid) {
+  for(cid_t cid=1; cid <= DB::Types::SystemColumn::SYS_CID_END; ++cid) {
     if(std::find(entries.begin(), entries.end(), cid) == entries.end()) {
       Column::create(err, cid);
       entries.push_back(cid);
@@ -544,7 +544,7 @@ bool MngdColumns::columns_load() {
 }
 
 cid_t MngdColumns::get_next_cid() {
-  cid_t cid = Common::Files::Schema::SYS_CID_END;
+  cid_t cid = DB::Types::SystemColumn::SYS_CID_END;
   while(++cid && Env::Mngr::schemas()->get(cid));
   // if schema does exist on fs (? sanity-check)
   return cid; // err !cid
@@ -596,7 +596,7 @@ void MngdColumns::update(int &err, DB::Schema::Ptr& schema,
   if(old->col_seq != schema->col_seq ||
      DB::Types::is_counter(old->col_type)
       != DB::Types::is_counter(schema->col_type) ||
-     (schema->cid <= Common::Files::Schema::SYS_CID_END &&
+     (schema->cid <= DB::Types::SystemColumn::SYS_CID_END &&
       !Condition::str_eq(schema->col_name, old->col_name) )) {
     err = Error::COLUMN_CHANGE_INCOMPATIBLE;
     return;
@@ -605,7 +605,7 @@ void MngdColumns::update(int &err, DB::Schema::Ptr& schema,
   if(DB::Types::is_counter(schema->col_type))
     schema->cell_versions = 1;
 
-  if(schema->cid < Common::Files::Schema::SYS_CID_END) {
+  if(schema->cid < DB::Types::SystemColumn::SYS_CID_END) {
     //different values bad for range-colms
     schema->cell_versions = 1;
     schema->cell_ttl = 0;
@@ -766,7 +766,7 @@ void MngdColumns::run_actions() {
           else if(schema->cid != req->schema->cid ||
                   !Condition::str_eq(req->schema->col_name, schema->col_name))
             err = Error::COLUMN_SCHEMA_NAME_NOT_CORRES;
-          else if(schema->cid <= Common::Files::Schema::SYS_CID_END)
+          else if(schema->cid <= DB::Types::SystemColumn::SYS_CID_END)
             err = Error::COLUMN_SCHEMA_IS_SYSTEM;
           else
             req->schema = schema;

@@ -181,7 +181,8 @@ void Item_CountVolume::report(uint64_t for_ns, Handlers::Base::Column* colp,
 Reporting::Reporting(const Comm::IoContextPtr& io,
                      Config::Property::V_GINT32::Ptr cfg_intval)
             : BaseSingleColumn(
-                11, DB::Types::KeySeq::LEXIC, 1, 0, DB::Types::Column::SERIAL),
+                DB::Types::SystemColumn::SYS_CID_STATS,
+                DB::Types::KeySeq::LEXIC, 1, 0, DB::Types::Column::SERIAL),
               io(io),
               cfg_intval(cfg_intval),
               running(false), m_defined(false),
@@ -265,10 +266,11 @@ void Reporting::report() {
   if(!m_defined) {
     auto hdlr = client::Query::Update::Handlers::Common::make();
     auto& col = hdlr->create(
-      9, DB::Types::KeySeq::LEXIC, 1, 0, DB::Types::Column::SERIAL);
+      DB::Types::SystemColumn::SYS_CID_DEFINE_LEXIC,
+      DB::Types::KeySeq::LEXIC, 1, 0, DB::Types::Column::SERIAL);
 
     DB::Cell::KeyVec key;
-    key.add("11");
+    key.add(std::to_string(DB::Types::SystemColumn::SYS_CID_STATS));
     for(auto& m : metrics)
       m->definitions(col.get(), key);
 

@@ -4,7 +4,7 @@
  */
 
 
-#include "swcdb/db/Types/MetaColumn.h"
+#include "swcdb/db/Types/SystemColumn.h"
 #include "swcdb/ranger/db/Range.h"
 
 #include "swcdb/ranger/Protocol/Rgr/req/RangeUnload.h"
@@ -196,7 +196,7 @@ void Range::state(int& err) const {
 bool Range::state_unloading() const noexcept {
   return Env::Rgr::is_shuttingdown() ||
          (Env::Rgr::is_not_accepting() &&
-          DB::Types::MetaColumn::is_data(cfg->cid));
+          DB::Types::SystemColumn::is_data(cfg->cid));
 }
 
 void Range::add(Callback::RangeQueryUpdate* req) {

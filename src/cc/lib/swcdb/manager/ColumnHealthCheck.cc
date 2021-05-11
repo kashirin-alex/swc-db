@@ -192,12 +192,12 @@ void ColumnHealthCheck::finishing(bool finished_range) {
 
   auto merger = std::make_shared<ColumnMerger>(
     shared_from_this(), std::move(m_mergeable_ranges));
-  if(DB::Types::MetaColumn::is_master(col->cfg->cid)) {
+  if(DB::Types::SystemColumn::is_master(col->cfg->cid)) {
     return merger->run_master();
   }
 
-  cid_t meta_cid = DB::Types::MetaColumn::get_sys_cid(
-    col->cfg->key_seq, DB::Types::MetaColumn::get_range_type(col->cfg->cid));
+  cid_t meta_cid = DB::Types::SystemColumn::get_sys_cid(
+    col->cfg->key_seq, DB::Types::SystemColumn::get_range_type(col->cfg->cid));
   DB::Specs::Interval spec(DB::Types::Column::SERIAL);
   auto& key_intval = spec.key_intervals.add();
   key_intval.start.reserve(2);
@@ -490,11 +490,11 @@ void ColumnHealthCheck::ColumnMerger::RangesMerger::handle(
     col_merger->col_checker->col->remove_range(range->rid);
 
   if(!merged.empty() &&
-     !DB::Types::MetaColumn::is_master(main_range->cfg->cid)) {
+     !DB::Types::SystemColumn::is_master(main_range->cfg->cid)) {
     auto hdlr = client::Query::Update::Handlers::Common::make();
-    cid_t meta_cid = DB::Types::MetaColumn::get_sys_cid(
+    cid_t meta_cid = DB::Types::SystemColumn::get_sys_cid(
       main_range->cfg->key_seq,
-      DB::Types::MetaColumn::get_range_type(main_range->cfg->cid));
+      DB::Types::SystemColumn::get_range_type(main_range->cfg->cid));
     auto& col = hdlr->create(
       meta_cid, main_range->cfg->key_seq, 1, 0, DB::Types::Column::SERIAL);
     for(auto& cell : col_merger->cells) {

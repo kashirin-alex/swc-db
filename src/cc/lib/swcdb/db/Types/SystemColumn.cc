@@ -6,10 +6,10 @@
 
 
 #include "swcdb/core/Compat.h"
-#include "swcdb/db/Types/MetaColumn.h"
+#include "swcdb/db/Types/SystemColumn.h"
 
 
-namespace SWC { namespace DB { namespace Types {  namespace MetaColumn {
+namespace SWC { namespace DB { namespace Types {  namespace SystemColumn {
 
 
 SWC_SHOULD_INLINE

@@ -150,7 +150,7 @@ RangePtr Column::internal_create(int& err, rid_t rid, bool compacting) {
   Core::MutexSptd::scope lock(m_mutex);
   if(Env::Rgr::is_shuttingdown() ||
      (Env::Rgr::is_not_accepting() &&
-      DB::Types::MetaColumn::is_data(cfg->cid))) {
+      DB::Types::SystemColumn::is_data(cfg->cid))) {
     err = Error::SERVER_SHUTTING_DOWN;
   } else if(cfg->deleting) {
     err = Error::COLUMN_MARKED_REMOVED;

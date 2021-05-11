@@ -82,7 +82,7 @@ void Schemas::matching(const std::vector<Schemas::Pattern>& patterns,
                        std::vector<Schema::Ptr>& entries, bool no_sys) {
   Core::MutexSptd::scope lock(m_mutex);
   for(const auto& it : *this) {
-    if(no_sys && it.second->cid <= 11)
+    if(no_sys && it.second->cid <= DB::Types::SystemColumn::SYS_CID_END)
       continue;
     for(auto& pattern : patterns) {
       if(Condition::is_matching_extended(

@@ -47,9 +47,9 @@ class ColumnCfg final : public Core::NotMovableSharedPtr<ColumnCfg> {
   ColumnCfg(const cid_t cid, const DB::Schema& schema)
       : cid(cid),
         range_type(
-          DB::Types::MetaColumn::get_range_type(cid)),
+          DB::Types::SystemColumn::get_range_type(cid)),
         meta_cid(
-          DB::Types::MetaColumn::get_sys_cid(schema.col_seq, range_type)),
+          DB::Types::SystemColumn::get_sys_cid(schema.col_seq, range_type)),
         key_seq(schema.col_seq),
         deleting(false) {
     update(schema);

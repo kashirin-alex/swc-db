@@ -5,7 +5,7 @@
 
 
 #include "swcdb/db/client/Query/Update.h"
-#include "swcdb/db/Types/MetaColumn.h"
+#include "swcdb/db/Types/SystemColumn.h"
 #include "swcdb/db/client/Clients.h"
 #include "swcdb/db/Protocol/Rgr/req/RangeQueryUpdate.h"
 
@@ -100,13 +100,13 @@ void Committer::locate_on_manager() {
     return hdlr->response();
 
   Comm::Protocol::Mngr::Params::RgrGetReq params(
-    DB::Types::MetaColumn::get_master_cid(colp->get_sequence()));
+    DB::Types::SystemColumn::get_master_cid(colp->get_sequence()));
   params.range_begin.copy(*key_start.get());
-  if(DB::Types::MetaColumn::is_data(cid))
+  if(DB::Types::SystemColumn::is_data(cid))
     params.range_begin.insert(0, std::to_string(cid));
-  if(!DB::Types::MetaColumn::is_master(cid))
+  if(!DB::Types::SystemColumn::is_master(cid))
     params.range_begin.insert(
-      0, DB::Types::MetaColumn::get_meta_cid_str(colp->get_sequence()));
+      0, DB::Types::SystemColumn::get_meta_cid_str(colp->get_sequence()));
 
   SWC_LOCATOR_REQ_DEBUG("mngr_locate_master");
 
@@ -159,7 +159,7 @@ void Committer::located_on_manager(
     hdlr, base,
     rsp.rid
   );
-  DB::Types::MetaColumn::is_master(colp->get_cid())
+  DB::Types::SystemColumn::is_master(colp->get_cid())
     ? committer->commit_data(rsp.endpoints, base)
     : committer->locate_on_ranger(rsp.endpoints);
 
@@ -185,12 +185,12 @@ void Committer::locate_on_ranger(const Comm::EndPoints& endpoints) {
   params.flags |= Comm::Protocol::Rgr::Params::RangeLocateReq::COMMIT;
 
   params.range_begin.copy(*key_start.get());
-  if(!DB::Types::MetaColumn::is_master(colp->get_cid())) {
+  if(!DB::Types::SystemColumn::is_master(colp->get_cid())) {
     params.range_begin.insert(0, std::to_string(colp->get_cid()));
     if(type == DB::Types::Range::MASTER &&
-       DB::Types::MetaColumn::is_data(colp->get_cid()))
+       DB::Types::SystemColumn::is_data(colp->get_cid()))
       params.range_begin.insert(
-        0, DB::Types::MetaColumn::get_meta_cid_str(colp->get_sequence()));
+        0, DB::Types::SystemColumn::get_meta_cid_str(colp->get_sequence()));
   }
 
   SWC_LOCATOR_REQ_DEBUG("rgr_locate");
@@ -279,7 +279,7 @@ void Committer::resolve_on_manager() {
       committer->located_ranger(req, rsp);
     }
   );
-  if(!DB::Types::MetaColumn::is_master(cid)) {
+  if(!DB::Types::SystemColumn::is_master(cid)) {
     auto profile = hdlr->profile.mngr_res();
     Comm::Protocol::Mngr::Params::RgrGetRsp rsp(cid, rid);
     if(Env::Clients::get()->rangers.get(cid, rid, rsp.endpoints)) {
@@ -324,7 +324,7 @@ void Committer::located_ranger(
 
   SWC_LOCATOR_RSP_DEBUG("rgr_located");
 
-  if(!DB::Types::MetaColumn::is_master(rsp.cid))
+  if(!DB::Types::SystemColumn::is_master(rsp.cid))
     Env::Clients::get()->rangers.set(rsp.cid, rsp.rid, rsp.endpoints);
 
   proceed_on_ranger(base, rsp);
@@ -337,12 +337,12 @@ void Committer::proceed_on_ranger(
     return hdlr->response();
   switch(type) {
     case DB::Types::Range::MASTER: {
-      if(!DB::Types::MetaColumn::is_master(colp->get_cid()))
+      if(!DB::Types::SystemColumn::is_master(colp->get_cid()))
         goto do_next_locate;
       break;
     }
     case DB::Types::Range::META: {
-      if(!DB::Types::MetaColumn::is_meta(colp->get_cid()))
+      if(!DB::Types::SystemColumn::is_meta(colp->get_cid()))
         goto do_next_locate;
       break;
     }
@@ -360,7 +360,7 @@ void Committer::proceed_on_ranger(
   return hdlr->response();
 
   do_next_locate: {
-    (DB::Types::MetaColumn::is_master(cid)
+    (DB::Types::SystemColumn::is_master(cid)
       ? std::make_shared<Committer>(
           type,
           rsp.cid, colp, key_start,

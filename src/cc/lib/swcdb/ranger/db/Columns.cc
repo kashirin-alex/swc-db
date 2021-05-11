@@ -48,7 +48,7 @@ void Columns::load_range(const DB::Schema& schema,
   ColumnPtr col;
   if(Env::Rgr::is_shuttingdown() ||
      (Env::Rgr::is_not_accepting() &&
-      DB::Types::MetaColumn::is_data(req->cid))) {
+      DB::Types::SystemColumn::is_data(req->cid))) {
     err = Error::SERVER_SHUTTING_DOWN;
 
   } else {
@@ -73,7 +73,7 @@ void Columns::load_range(const DB::Schema& schema,
 
     } else if(Env::Rgr::is_shuttingdown() ||
               (Env::Rgr::is_not_accepting() &&
-               DB::Types::MetaColumn::is_data(req->cid))) {
+               DB::Types::SystemColumn::is_data(req->cid))) {
       err = Error::SERVER_SHUTTING_DOWN;
     }
   }
@@ -96,11 +96,11 @@ void Columns::unload(cid_t cid_begin, cid_t cid_end,
 
 void Columns::unload_all(bool validation) {
   auto req = std::make_shared<Callback::ColumnsUnloadAll>(validation);
-  unload(9, 0, req);
+  unload(DB::Types::SystemColumn::CID_META_END + 1, 0, req);
   req->wait();
 
   req = std::make_shared<Callback::ColumnsUnloadAll>(validation);
-  unload(5, 0, req);
+  unload(DB::Types::SystemColumn::CID_META_BEGIN, 0, req);
   req->wait();
 
   req = std::make_shared<Callback::ColumnsUnloadAll>(validation);
@@ -137,7 +137,7 @@ size_t Columns::release(size_t bytes) {
       for(size_t i=0; i<offset && it != end(); ++it, ++i);
       if(it == end())
         break;
-      if(!DB::Types::MetaColumn::is_data(it->first))
+      if(!DB::Types::SystemColumn::is_data(it->first))
         continue;
       col = it->second;
     }

@@ -19,7 +19,7 @@ RangeLoad::RangeLoad(const Comm::ConnHandlerPtr& conn,
 void RangeLoad::loaded(int& err) {
   if(!err && (Env::Rgr::is_shuttingdown() ||
               (Env::Rgr::is_not_accepting() &&
-               DB::Types::MetaColumn::is_data(cid))))
+               DB::Types::SystemColumn::is_data(cid))))
     err = Error::SERVER_SHUTTING_DOWN;
 
   RangePtr range;
