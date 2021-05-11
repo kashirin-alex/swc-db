@@ -23,6 +23,13 @@ namespace Handlers {
 namespace Metric {
 
 
+enum Aggregation : uint8_t {
+  SUM = 0x00,
+  AVG = 0x01,
+  MIN = 0x02,
+  MAX = 0x03
+};
+
 
 static const uint24_t FIELD_ID_MIN    = uint24_t(0);
 static const uint24_t FIELD_ID_MAX    = uint24_t(1);
@@ -39,6 +46,12 @@ struct Base {
 
   virtual ~Base() { }
 
+  /* serialization of definitions: index based cross map
+      field-id: 0 type: LIST-INT64 values: Metrics FIELD-ID
+      field-id: 1 type: LIST-BYTES values: Metrics FIELD-NAME
+      field-id: 2 type: LIST-BYTES values: Metrics FIELD-LABEL
+      field-id: 3 type: LIST-INT64 values: Metrics Aggregation-TYPE
+  */
   virtual void definitions(Handlers::Base::Column* colp,
                            const DB::Cell::KeyVec& parent_key) = 0;
 

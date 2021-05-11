@@ -183,28 +183,91 @@ class Item_Net : public Base {
       cell.set_time_order_desc(true);
       cell.key.add(key);
 
-      DB::Cell::Serial::Value::FieldsWriter wfields;
-      wfields.ensure(214 + addr->commands.size() * 11);
-      wfields.add(FIELD_CONN_OPEN, "Open Connections", 16);
-      wfields.add(FIELD_CONN_ACC, "Accepted Connections", 20);
-      wfields.add(FIELD_CONN_EST, "Connections Established", 23);
 
-      wfields.add(FIELD_BYTES_SENT_MIN,  "Send Bytes Minimum", 18);
-      wfields.add(FIELD_BYTES_SENT_MAX,  "Send Bytes Maximum", 18);
-      wfields.add(FIELD_BYTES_SENT_AVG,  "Send Bytes Average", 18);
-      wfields.add(FIELD_BYTES_SENT_TRX,  "Send Transactions", 17);
+      std::vector<int64_t>     ids;
+      std::vector<std::string> names;
+      std::vector<std::string> labels;
+      std::vector<int64_t>     aggregations;
+      ids.reserve(11 + addr->commands.size());
+      names.reserve(ids.size());
+      labels.reserve(ids.size());
+      aggregations.reserve(ids.size());
 
-      wfields.add(FIELD_BYTES_RECV_MIN,  "Receive Bytes Minimum", 21);
-      wfields.add(FIELD_BYTES_RECV_MAX,  "Receive Bytes Maximum", 21);
-      wfields.add(FIELD_BYTES_RECV_AVG,  "Receive Bytes Average", 21);
-      wfields.add(FIELD_BYTES_RECV_TRX,  "Receive Transactions", 21);
+      ids.push_back(FIELD_CONN_OPEN);
+      names.push_back("open");
+      labels.push_back("Open Connections");
+      aggregations.push_back(Aggregation::MAX);
+
+      ids.push_back(FIELD_CONN_ACC);
+      names.push_back("accept");
+      labels.push_back("Accepted Connections");
+      aggregations.push_back(Aggregation::SUM);
+
+      ids.push_back(FIELD_CONN_EST);
+      names.push_back("established");
+      labels.push_back("Connections Established");
+      aggregations.push_back(Aggregation::SUM);
+
+      ids.push_back(FIELD_BYTES_SENT_MIN);
+      names.push_back("sent_min");
+      labels.push_back("Send Bytes Minimum");
+      aggregations.push_back(Aggregation::MIN);
+
+      ids.push_back(FIELD_BYTES_SENT_MAX);
+      names.push_back("sent_max");
+      labels.push_back("Send Bytes Maximum");
+      aggregations.push_back(Aggregation::MAX);
+
+      ids.push_back(FIELD_BYTES_SENT_AVG);
+      names.push_back("sent_avg");
+      labels.push_back("Send Bytes Average");
+      aggregations.push_back(Aggregation::AVG);
+
+      ids.push_back(FIELD_BYTES_SENT_TRX);
+      names.push_back("send_trx");
+      labels.push_back("Send Transactions");
+      aggregations.push_back(Aggregation::SUM);
+
+
+      ids.push_back(FIELD_BYTES_RECV_MIN);
+      names.push_back("recv_min");
+      labels.push_back("Receive Bytes Minimum");
+      aggregations.push_back(Aggregation::MIN);
+
+      ids.push_back(FIELD_BYTES_RECV_MAX);
+      names.push_back("recv_max");
+      labels.push_back("Receive Bytes Maximum");
+      aggregations.push_back(Aggregation::MAX);
+
+      ids.push_back(FIELD_BYTES_RECV_AVG);
+      names.push_back("recv_avg");
+      labels.push_back("Receive Bytes Average");
+      aggregations.push_back(Aggregation::AVG);
+
+      ids.push_back(FIELD_BYTES_RECV_TRX);
+      names.push_back("recv_trx");
+      labels.push_back("Receive Transactions");
+      aggregations.push_back(Aggregation::SUM);
 
       for(size_t i=0; i < addr->commands.size(); ++i) {
         std::string cmd(CommandsT::to_string(i));
-        wfields.add(i + FIELD_EV_COMMAND_START, cmd + " Requests");
+        ids.push_back(i + FIELD_EV_COMMAND_START);
+        names.push_back(cmd);
+        labels.push_back(cmd + " Requests");
+        aggregations.push_back(Aggregation::SUM);
       }
+      size_t sz = 12 + 2 * ids.size();
+      for(uint8_t i=0; i < names.size(); ++i) {
+        sz += names[i].size();
+        sz += labels[i].size();
+      }
+      DB::Cell::Serial::Value::FieldsWriter wfields;
+      wfields.ensure(sz);
+      wfields.add(ids);
+      wfields.add(names);
+      wfields.add(labels);
+      wfields.add(aggregations);
       cell.set_value(DB::Types::Encoder::ZSTD, wfields.base, wfields.fill());
-
       colp->add(cell);
     }
 
@@ -356,20 +419,50 @@ class Item_Mem : public Base {
     cell.key.add(key);
 
     DB::Cell::Serial::Value::FieldsWriter wfields;
-    wfields.ensure(177);
-
-    wfields.add(FIELD_RSS_FREE_MIN, "RSS Free Minimal", 16);
-    wfields.add(FIELD_RSS_FREE_MAX, "RSS Free Maximal", 16);
-    wfields.add(FIELD_RSS_FREE_AVG, "RSS Free Average", 16);
-
-    wfields.add(FIELD_RSS_USED_MIN, "RSS Used Minimal", 16);
-    wfields.add(FIELD_RSS_USED_MAX, "RSS Used Maximal", 16);
-    wfields.add(FIELD_RSS_USED_AVG, "RSS Used Average", 16);
-
-    wfields.add(FIELD_RSS_USED_REG_MIN, "RSS Registred Minimal", 21);
-    wfields.add(FIELD_RSS_USED_REG_MAX, "RSS Registred Maximal", 21);
-    wfields.add(FIELD_RSS_USED_REG_AVG, "RSS Registred Average", 21);
-
+    wfields.add(std::vector<int64_t>({
+      FIELD_RSS_FREE_MIN,
+      FIELD_RSS_FREE_MAX,
+      FIELD_RSS_FREE_AVG,
+      FIELD_RSS_USED_MIN,
+      FIELD_RSS_USED_MAX,
+      FIELD_RSS_USED_AVG,
+      FIELD_RSS_USED_REG_MIN,
+      FIELD_RSS_USED_REG_MAX,
+      FIELD_RSS_USED_REG_AVG,
+    }));
+    wfields.add(std::vector<std::string>({
+      "rss_free_min",
+      "rss_free_max",
+      "rss_free_avg",
+      "rss_used_min",
+      "rss_used_min",
+      "rss_used_avg",
+      "rss_reg_min",
+      "rss_reg_max",
+      "rss_reg_avg"
+    }));
+    wfields.add(std::vector<std::string>({
+      "RSS Free Minimal",
+      "RSS Free Maximal",
+      "RSS Free Average",
+      "RSS Used Minimal",
+      "RSS Used Maximal",
+      "RSS Used Average",
+      "RSS Registred Minimal",
+      "RSS Registred Maximal",
+      "RSS Registred Average"
+    }));
+    wfields.add(std::vector<int64_t>({
+      Aggregation::MIN,
+      Aggregation::MAX,
+      Aggregation::AVG,
+      Aggregation::MIN,
+      Aggregation::MAX,
+      Aggregation::AVG,
+      Aggregation::MIN,
+      Aggregation::MAX,
+      Aggregation::AVG,
+    }));
     cell.set_value(DB::Types::Encoder::ZSTD ,wfields.base, wfields.fill());
     colp->add(cell);
   }
@@ -465,21 +558,51 @@ class Item_CPU : public Base {
     cell.key.add(key);
 
     DB::Cell::Serial::Value::FieldsWriter wfields;
-    wfields.ensure(150);
-
-    wfields.add(FIELD_CPU_U_PERC_MIN, "User %m Minimal", 15);
-    wfields.add(FIELD_CPU_U_PERC_MAX, "User %m Maximal", 15);
-    wfields.add(FIELD_CPU_U_PERC_AVG, "User %m Average", 15);
-
-    wfields.add(FIELD_CPU_S_PERC_MIN, "Sys %m Minimal", 14);
-    wfields.add(FIELD_CPU_S_PERC_MAX, "Sys %m Maximal", 14);
-    wfields.add(FIELD_CPU_S_PERC_AVG, "Sys %m Average", 14);
-
-    wfields.add(FIELD_NTHREADS_MIN, "Threads Minimal", 15);
-    wfields.add(FIELD_NTHREADS_MAX, "Threads Maximal", 15);
-    wfields.add(FIELD_NTHREADS_AVG, "Threads Average", 15);
-
-    cell.set_value(DB::Types::Encoder::ZSTD ,wfields.base, wfields.fill());
+    wfields.add(std::vector<int64_t>({
+      FIELD_CPU_U_PERC_MIN,
+      FIELD_CPU_U_PERC_MAX,
+      FIELD_CPU_U_PERC_AVG,
+      FIELD_CPU_S_PERC_MIN,
+      FIELD_CPU_S_PERC_MAX,
+      FIELD_CPU_S_PERC_AVG,
+      FIELD_NTHREADS_MIN,
+      FIELD_NTHREADS_MAX,
+      FIELD_NTHREADS_AVG,
+    }));
+    wfields.add(std::vector<std::string>({
+      "u_min",
+      "u_max",
+      "u_avg",
+      "s_min",
+      "s_min",
+      "s_avg",
+      "t_min",
+      "t_max",
+      "t_avg"
+    }));
+    wfields.add(std::vector<std::string>({
+      "User %m Minimal",
+      "User %m Maximal",
+      "User %m Average",
+      "Sys %m Minimal",
+      "Sys %m Maximal",
+      "Sys %m Average",
+      "Threads Minimal",
+      "Threads Maximal",
+      "Threads Average"
+    }));
+    wfields.add(std::vector<int64_t>({
+      Aggregation::MIN,
+      Aggregation::MAX,
+      Aggregation::AVG,
+      Aggregation::MIN,
+      Aggregation::MAX,
+      Aggregation::AVG,
+      Aggregation::MIN,
+      Aggregation::MAX,
+      Aggregation::AVG,
+    }));
+    cell.set_value(DB::Types::Encoder::ZSTD, wfields.base, wfields.fill());
     colp->add(cell);
   }
 
@@ -568,19 +691,55 @@ class Item_FS : public Base {
     cell.set_time_order_desc(true);
     cell.key.add(key);
 
-    DB::Cell::Serial::Value::FieldsWriter wfields;
-    wfields.ensure(FS::Statistics::Command::MAX * 200);
+    std::vector<int64_t>     ids;
+    std::vector<std::string> names;
+    std::vector<std::string> labels;
+    std::vector<int64_t>     aggregations;
+    ids.reserve(1 + FS::Statistics::Command::MAX * 5);
+    names.reserve(ids.size());
+    labels.reserve(ids.size());
+    aggregations.reserve(ids.size());
 
-    wfields.add(FIELD_FDS, "Open FDs", 8);
+    ids.push_back(FIELD_FDS);
+    names.push_back("open");
+    labels.push_back("Open File Descriptors");
+    aggregations.push_back(Aggregation::MAX);
+
     for(uint8_t i=0; i < FS::Statistics::Command::MAX; ++i) {
       std::string cmd(FS::Statistics::to_string(FS::Statistics::Command(i)));
-      wfields.add(FIELD_MIN + i, cmd + " Latency ns Minimum");
-      wfields.add(FIELD_MAX + i, cmd + " Latency ns Maximum");
-      wfields.add(FIELD_AVG + i, cmd + " Latency ns Average");
-      wfields.add(FIELD_ERROR + i, cmd + " Errors Count");
-      wfields.add(FIELD_COUNT + i, cmd + " Requests Count");
+      ids.push_back(FIELD_MIN + i);
+      ids.push_back(FIELD_MAX + i);
+      ids.push_back(FIELD_AVG + i);
+      ids.push_back(FIELD_ERROR + i);
+      ids.push_back(FIELD_COUNT + i);
+      names.push_back(cmd + "_min");
+      names.push_back(cmd + "_max");
+      names.push_back(cmd + "_avg");
+      names.push_back(cmd + "_error");
+      names.push_back(cmd + "_count");
+      labels.push_back(cmd + " Latency ns Minimum");
+      labels.push_back(cmd + " Latency ns Maximum");
+      labels.push_back(cmd + " Latency ns Average");
+      labels.push_back(cmd + " Errors Count");
+      labels.push_back(cmd + " Requests Count");
+      aggregations.push_back(Aggregation::MIN);
+      aggregations.push_back(Aggregation::MAX);
+      aggregations.push_back(Aggregation::AVG);
+      aggregations.push_back(Aggregation::SUM);
+      aggregations.push_back(Aggregation::SUM);
     }
-    cell.set_value(DB::Types::Encoder::ZSTD ,wfields.base, wfields.fill());
+    size_t sz = 12 + 2 * ids.size();
+    for(uint8_t i=0; i < names.size(); ++i) {
+      sz += names[i].size();
+      sz += labels[i].size();
+    }
+    DB::Cell::Serial::Value::FieldsWriter wfields;
+    wfields.ensure(sz);
+    wfields.add(ids);
+    wfields.add(names);
+    wfields.add(labels);
+    wfields.add(aggregations);
+    cell.set_value(DB::Types::Encoder::ZSTD, wfields.base, wfields.fill());
     colp->add(cell);
   }
 

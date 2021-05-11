@@ -30,11 +30,12 @@ class Item_Fds : public Item_CountVolume {
     cell.key.add(key);
 
     DB::Cell::Serial::Value::FieldsWriter wfields;
-    wfields.ensure(13);
-    wfields.add(FIELD_ID_COUNT,  "Openings", 8);
-    wfields.add(FIELD_ID_VOLUME, "Open FDs", 8);
-    cell.set_value(wfields.base, wfields.fill(), false);
+    wfields.add(std::vector<int64_t>({FIELD_ID_COUNT, FIELD_ID_VOLUME}));
+    wfields.add(std::vector<std::string>({"opened", "open"}));
+    wfields.add(std::vector<std::string>({"Openings", "Open FDs"}));
+    wfields.add(std::vector<int64_t>({Aggregation::SUM, Aggregation::MAX}));
 
+    cell.set_value(DB::Types::Encoder::ZSTD, wfields.base, wfields.fill());
     colp->add(cell);
   }
 };
