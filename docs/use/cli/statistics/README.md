@@ -45,7 +45,8 @@ Usage Help:  'command' [options];
                                   component='STRING' part='STRING' type='STRING' AND .. ;
                        -> list metrics;
                           # List all metrics definitions
-  truncate           truncate host='STRING' group='STRING' role='STRING' id='STRING'
+  truncate           truncate last='DURATION' since='DATETIME' agg='DURATION'
+                              host='STRING' group='STRING' role='STRING' id='STRING'
                               component='STRING' part='STRING'
                               type='STRING' AND ..;
                        -> truncate;

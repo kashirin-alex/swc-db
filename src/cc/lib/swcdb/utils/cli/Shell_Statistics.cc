@@ -66,7 +66,8 @@ Statistics::Statistics()
   options.push_back(
     new Option(
       "truncate",
-      {"truncate host='STRING' group='STRING' role='STRING' id='STRING'",
+      {"truncate last='DURATION' since='DATETIME' agg='DURATION'",
+       "         host='STRING' group='STRING' role='STRING' id='STRING'",
        "         component='STRING' part='STRING'",
        "         type='STRING' AND ..;",
        "  -> truncate;",
@@ -91,7 +92,7 @@ Statistics::Statistics()
       {"list stat-names;"},
       [this](std::string&) {
         SWC_PRINT << "stat-names: ";
-        for(auto it=m_stat_names.begin(); it < m_stat_names.end();) {
+        for(auto it=m_stat_names.begin(); it != m_stat_names.end();) {
           SWC_LOG_OSTREAM << '"' << *it << '"';
           if(++it != m_stat_names.end())
             SWC_LOG_OSTREAM<< ", ";
@@ -743,7 +744,7 @@ bool Statistics::truncate() {
 
   Core::Atomic<size_t> deleted_count(0);
   auto hdlr = client::Query::Select::Handlers::Common::make(
-    [this, updater, col_updated,
+    [updater, col_updated,
      state_errorp=&state_error, countp=&deleted_count]
     (const client::Query::Select::Handlers::Common::Ptr& hdlr) {
       if(hdlr->state_error && !state_errorp->load())
