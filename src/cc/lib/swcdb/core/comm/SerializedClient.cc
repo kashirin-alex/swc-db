@@ -140,7 +140,7 @@ Serialized::Serialized(std::string&& srv_name, const IoContextPtr& ioctx,
               m_use_ssl(Env::Config::settings()->get_bool("swc.comm.ssl")),
               m_ssl_cfg(m_use_ssl ? new ConfigSSL() : nullptr),
               m_run(true) {
-  SWC_LOGF(LOG_INFO, "Init: %s", m_srv_name.c_str());
+  SWC_LOGF(LOG_DEBUG, "Init: %s", m_srv_name.c_str());
 }
 
 ServerConnections::Ptr Serialized::get_srv(const EndPoint& endpoint) {

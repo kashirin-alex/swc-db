@@ -92,7 +92,7 @@ void Common::response_partials() {
 }
 
 bool Common::wait_on_partials() {
-  return get_size_bytes() > buff_sz * buff_ahead;
+  return valid() && get_size_bytes() > buff_sz * buff_ahead;
 }
 
 void Common::wait() {
@@ -108,7 +108,7 @@ void Common::wait() {
         );
       }
     }
-    if(m_notify && !empty()) {
+    if(m_notify && valid() && !empty()) {
       if(!m_sending_result.running())
         send_result();
       goto _wait;

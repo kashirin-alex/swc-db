@@ -45,7 +45,7 @@ struct Fraction final : public std::string {
 
   void decode(const uint8_t** bufp, size_t* remainp);
 
-  void print(std::ostream& out, bool pretty) const;
+  void print(std::ostream& out, bool pretty=true) const;
 
   template<Types::KeySeq T_seq> // internal use
   bool _is_matching(const uint8_t* ptr, uint32_t len) const;
