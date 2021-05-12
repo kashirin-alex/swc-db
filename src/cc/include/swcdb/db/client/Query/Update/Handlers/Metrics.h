@@ -29,6 +29,7 @@ enum Aggregation : uint8_t {
   MIN = 0x02,
   MAX = 0x03
 };
+const char* aggregation_to_string(uint8_t agg) noexcept;
 
 
 static const uint24_t FIELD_ID_MIN    = uint24_t(0);

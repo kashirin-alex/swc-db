@@ -14,6 +14,21 @@ namespace SWC { namespace client { namespace Query { namespace Update {
 namespace Handlers { namespace Metric {
 
 
+const char* aggregation_to_string(uint8_t agg) noexcept {
+  switch(agg) {
+    case Aggregation::SUM:
+      return "SUM";
+    case Aggregation::AVG:
+      return "AVG";
+    case Aggregation::MIN:
+      return "MIN";
+    case Aggregation::MAX:
+      return "MAX";
+    default:
+      return "UNKNOWN";
+  }
+}
+
 
 void Level::definitions(Handlers::Base::Column* colp,
                         const DB::Cell::KeyVec& parent_key) {
