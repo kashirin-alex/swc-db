@@ -9,6 +9,7 @@
 #include "swcdb/utils/cli/Shell_Manager.h"
 #include "swcdb/utils/cli/Shell_Ranger.h"
 #include "swcdb/utils/cli/Shell_Fs.h"
+#include "swcdb/utils/cli/Shell_Statistics.h"
 #include <iomanip>
 #include <queue>
 
@@ -37,6 +38,9 @@ int run() {
 
   if(settings->has("filesystem"))
     return Fs().run();
+
+  if(settings->has("statistics"))
+    return Statistics().run();
 
   try {
     return DbClient().run();

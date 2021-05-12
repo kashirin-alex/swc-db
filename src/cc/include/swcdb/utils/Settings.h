@@ -49,16 +49,17 @@ void Settings::init_app_options() {
     usage_str("SWC-DB(utils) Usage: %s 'command' [options]\n\nOptions:")
   )
   .add_options()
-   ("command,cmd",  str("shell"),  
+   ("command,cmd",  str("shell"),
    "Command to execute shell|status|report|custom (1st arg token)")
    ("command",  1)
 
    ("lib-path",  str(install_path+"/lib/"), "Path to utilities libraries")
    ("lib",  str(), "Utility-Library of the custom command")
 
-   ("ranger,rgr",    "Work with Ranger")
-   ("manager,mngr",  "Work with Manager")
-   ("filesystem,fs", "Work with FileSystem type by swc.fs='type'")
+   ("ranger,rgr",                 "Work with Ranger")
+   ("manager,mngr",               "Work with Manager")
+   ("filesystem,fs",              "Work with FileSystem type by swc.fs='type'")
+   ("statistics,stats,monit",     "Work with Statistics monitor")
    // default work with DbClient
   ;
 

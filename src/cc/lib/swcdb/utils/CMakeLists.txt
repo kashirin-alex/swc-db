@@ -18,6 +18,7 @@ set(swcdb_utils_shell_sources
   cli/Shell_Manager.cc
   cli/Shell_Ranger.cc
   cli/Shell_Fs.cc
+  cli/Shell_Statistics.cc
 )
 
 ADD_LIB_TARGET(
