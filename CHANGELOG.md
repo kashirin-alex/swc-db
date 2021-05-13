@@ -10,7 +10,45 @@
 
 ### [SWC-DB master](https://github.com/kashirin-alex/swc-db/tree/master) (upcoming-release)
 
-
+    added source core/Comparators.cc
+    added reasonable cases of std::string::reserve
+    removed namespace FileUtils & added FS::FileSystemLocal specialized funcs
+    added cmake definer -DSWC_WITHOUT_THRIFT=ON/OFF
+    added host-arg Comm::AppContext::init(host, EndPoints&) 
+    added Comm::AppContext::{net_bytes_sent,received,accepted}
+    added ConfigSSL::need_ssl(const EndPoint& local, const EndPoint& remote)
+    fixed Client/Server need-ssl, local!=remove and remote not in secure nets
+    added client:: Clients::stop() and bool Clients::stopping()
+    added Error::CLIENT_STOPPING & cases to skip/stop clients requests
+    added callback if Clients::stopping() before Req::MngrActive
+    fixed client::Query::Select::scan completion at many col-intvals
+    fixed client::Query::Select::Handlers:Common, return at not valid_state
+    fixed misalignment/cast of cell-ttl seconds(uint32_t) to nanoseconds
+    added Core::Time::Measure<,> and typedef Time::Measure_{ns,us,ms,sec}
+    added virtual FS::Type FS::FileSystem::get_type_underlying()
+    added BOOL Configurations Properties:
+        swc.{rgr,mngr,fsbroker,ThriftBroker}.metrics.enabled
+        swc.fs.{local,hadoop,hadoop_jvm,ceph,broker}.metrics.enabled
+    added G_INT32 Configurations Properties:
+        swc.{rgr,mngr,fsbroker,ThriftBroker}.metrics.report.interval
+    added struct FS::Statistics,::Metric,::Tracker - fs/Statistics.{h,cc}
+    added fs/Logger.h (Common FileSystem Logging Macros)
+    added struct Comm::Protocol::{FsBroker,Mngr,Rgr}::Commands
+    added {db,fs/Broker}/Protocol/Commands.cc
+    added System Reserved Column now is 10 columns (CID[1-10])
+    renamed files & namespace MetaColumn to SystemColumn
+    added cid_t SystemColumn::SYS_CID_{STATS,DEFINE_LEXIC,END}
+    changed SYS_CID_STATS to cid=9 and SYS_CID_DEFINE_LEXIC set to cid=10
+    changed class Resources namepace to System from Common
+    added class System::Resource::{CPU,Mem} and struct System::Notifier
+    changed System::Resources stoage with Resource::{CPU cpu, Mem mem}
+    added Common::Resources& Env::{Mngr,FsBroker}::res()
+    added namespace client::Query::Update::Handlers::Metric (Metrics.h,cc)
+    added include/common/sys/MetricsReporting.h
+    added class {Ranger,Manager,FsBroker,Thriftbroker}::Metric::Reporting
+    added class SWC::Env::ThriftBroker - thrift/broker/ThriftBrokerEnv.h
+    added Statistics Client CLI "SWC-DB(statistics)>" (bin/swcdb --statistics)
+    resolved issue #6 Services & Components statistic
 
 [_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.5.0...master)
 ******
