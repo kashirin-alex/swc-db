@@ -33,15 +33,17 @@ class Statistics : public Interface {
   bool truncate();
 
   struct ReadGroup {
-    uint64_t last = 0;
-    int64_t since = 0;
-    uint32_t agg  = 0;
-    DB::Specs::Key key;
-    std::string metric;
+    uint64_t        last;
+    int64_t         since;
+    uint32_t        agg;
+    DB::Specs::Key  key;
+    std::string     metric;
+    ReadGroup() noexcept : last(0), since(0), agg(0) { }
     void print(std::ostream& out, const Statistics* ptr) const;
   };
 
   struct MetricDefinition {
+    uint24_t    relation;
     uint24_t    id;
     uint8_t     agg;
     std::string name;
@@ -59,14 +61,24 @@ class Statistics : public Interface {
   };
 
   struct Stats {
-    StatsDefinition*      defined = nullptr;
-    time_t                ts = 0;
-    std::vector<uint24_t> ids;
-    std::vector<int64_t>  values;
-    std::vector<int64_t>  counts;
+    Stats(const StatsDefinition* defined, time_t ts) noexcept
+          : defined(defined), ts(ts) { }
     void print(std::ostream& out, const ReadGroup& group,
                Statistics* ptr) const;
-    void add(size_t metric_idx, uint24_t field_id, int64_t value) noexcept;
+    void add(const std::vector<Stats>* datasp,
+             size_t metric_idx, uint24_t field_id, int64_t value) noexcept;
+    struct Data {
+      const uint24_t id;
+      uint8_t        flag;
+      int64_t        total;
+      int64_t        count;
+      int64_t        last;
+      Data(uint24_t id) noexcept
+          : id(id), flag(0), total(0), count(0), last(0) { }
+    };
+    const StatsDefinition*  defined;
+    const time_t            ts;
+    std::vector<Data>       values;
   };
 
   std::string                   m_message;

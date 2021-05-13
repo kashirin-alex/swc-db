@@ -24,18 +24,19 @@ namespace Metric {
 
 
 enum Aggregation : uint8_t {
-  SUM = 0x00,
-  AVG = 0x01,
-  MIN = 0x02,
-  MAX = 0x03
+  SUM      = 0x00,
+  MIN      = 0x01,
+  MAX      = 0x02,
+  AVG      = 0x03,
+  AVG_PROP = 0x04,
 };
 const char* aggregation_to_string(uint8_t agg) noexcept;
 
 
 static const uint24_t FIELD_ID_MIN    = uint24_t(0);
 static const uint24_t FIELD_ID_MAX    = uint24_t(1);
-static const uint24_t FIELD_ID_AVG    = uint24_t(2);
-static const uint24_t FIELD_ID_COUNT  = uint24_t(3);
+static const uint24_t FIELD_ID_COUNT  = uint24_t(2);
+static const uint24_t FIELD_ID_AVG    = uint24_t(3);
 static const uint24_t FIELD_ID_VOLUME = uint24_t(4);
 
 
@@ -47,15 +48,22 @@ struct Base {
 
   virtual ~Base() { }
 
-  /* serialization of definitions: index based cross map
-      field-id: 0 type: LIST-INT64 values: Metrics FIELD-ID
-      field-id: 1 type: LIST-BYTES values: Metrics FIELD-NAME
-      field-id: 2 type: LIST-BYTES values: Metrics FIELD-LABEL
-      field-id: 3 type: LIST-INT64 values: Metrics Aggregation-TYPE
+  /* For using with 'bin/swcdb --statistics'
+    serialization of definitions: index based cross map
+      field-id:0 type:LIST-INT64 values: [FIELD-ID]
+      field-id:1 type LIST-BYTES values: [FIELD-NAME], Opt defaults-ID
+      field-id:2 type:LIST-BYTES values: [FIELD-LABEL], Opt defaults-NAME
+      field-id:3 type:LIST-INT64 values: [AGG-TYPE], Opt defaults-SUM
+      field-id:4 type:LIST-INT64 values: [relation], Opt defaults-No(0)
   */
   virtual void definitions(Handlers::Base::Column* colp,
                            const DB::Cell::KeyVec& parent_key) = 0;
 
+  /* For using with 'bin/swcdb --statistics'
+    serialization of metrics:
+      [field-id:# type:INT64 value: INT64]
+      * Propotional Average require order [SUM, AVG_PROP]
+  */
   virtual void report(uint64_t for_ns, Handlers::Base::Column* colp,
                       const DB::Cell::KeyVec& parent_key) = 0;
 

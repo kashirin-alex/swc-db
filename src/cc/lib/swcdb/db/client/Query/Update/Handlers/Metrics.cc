@@ -18,12 +18,14 @@ const char* aggregation_to_string(uint8_t agg) noexcept {
   switch(agg) {
     case Aggregation::SUM:
       return "SUM";
-    case Aggregation::AVG:
-      return "AVG";
     case Aggregation::MIN:
       return "MIN";
     case Aggregation::MAX:
       return "MAX";
+    case Aggregation::AVG:
+      return "AVG";
+    case Aggregation::AVG_PROP:
+      return "AVG_PROP";
     default:
       return "UNKNOWN";
   }
@@ -104,8 +106,8 @@ void Item_MinMaxAvgCount::report(uint64_t for_ns,
     wfields.add(FIELD_ID_MIN,   int64_t(value.min));
   if(avg != value.max)
     wfields.add(FIELD_ID_MAX,   int64_t(value.max));
-  wfields.add(FIELD_ID_AVG,   int64_t(avg));
   wfields.add(FIELD_ID_COUNT, int64_t(value.count));
+  wfields.add(FIELD_ID_AVG,   int64_t(avg));
   cell.set_value(wfields.base, wfields.fill(), false);
 
   colp->add(cell);

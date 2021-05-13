@@ -129,7 +129,7 @@ void Statistics::ReadGroup::print(std::ostream& out,
       key[i].print(out << ' ' << ptr->m_stat_names[i]);
   }
   if(!metric.empty())
-    out << "metric=" << metric << ' ';
+    out << " metric=" << metric << ' ';
 }
 
 
@@ -317,10 +317,11 @@ Statistics::StatsDefinition::StatsDefinition(const DB::Cells::Cell& cell) {
 
   std::vector<int64_t>      ids;
   std::vector<int64_t>      aggregations;
+  std::vector<int64_t>      relations;
   std::vector<std::string>  names;
   std::vector<std::string>  labels;
 
-  for(uint24_t i=0; remain && i < 4; ++i) {
+  while(remain) {
     switch(DB::Cell::Serial::Value::read_type(&ptr, &remain)) {
       case DB::Cell::Serial::Value::Type::LIST_INT64: {
         DB::Cell::Serial::Value::Field_LIST_INT64 value(&ptr, &remain);
@@ -328,6 +329,8 @@ Statistics::StatsDefinition::StatsDefinition(const DB::Cells::Cell& cell) {
           value.convert_to(ids);
         else if(value.fid == 3)
           value.convert_to(aggregations);
+        else if(value.fid == 4)
+          value.convert_to(relations);
         break;
       }
       case DB::Cell::Serial::Value::Type::LIST_BYTES: {
@@ -346,13 +349,23 @@ Statistics::StatsDefinition::StatsDefinition(const DB::Cells::Cell& cell) {
 
   for(size_t i =0; i < ids.size(); ++i) {
     metrics[i].id = ids[i];
-    if(i < aggregations.size())
-      metrics[i].agg = aggregations[i];
+    metrics[i].relation = i < relations.size() ? relations[i] : 0;
+    metrics[i].agg = i < aggregations.size() ? aggregations[i] : 0;
     if(i < names.size())
       metrics[i].name = std::move(names[i]);
+    else
+      metrics[i].name = std::to_string(ids[i]);
     if(i < labels.size())
       metrics[i].label = std::move(labels[i]);
+    else
+      metrics[i].label = metrics[i].name;
   }
+
+  std::sort(
+    metrics.begin(), metrics.end(),
+    [](const MetricDefinition& a, const MetricDefinition& b) {
+      return a.id < b.id;
+  });
 }
 
 bool Statistics::StatsDefinition::has_metric(const std::string& name,
@@ -385,6 +398,7 @@ void Statistics::StatsDefinition::print(std::ostream& out,
   if(only_property)
     return;
 
+  size_t len_relation = 8;
   size_t len_id    = 2;
   size_t len_name  = 6;
   size_t len_label = 5;
@@ -396,23 +410,29 @@ void Statistics::StatsDefinition::print(std::ostream& out,
     size_t tmp = std::to_string(uint32_t(metric.id)).length();
     if(len_id < tmp)
       len_id = tmp;
+    tmp = std::to_string(uint32_t(metric.relation)).length();
+    if(len_relation < tmp)
+      len_relation = tmp;
   }
+  len_relation += 3;
   len_id += 3;
   len_name += 3;
   len_label += 3;
 
   out << '\n';
-  out << std::left << std::setw(3) << " "
-      << std::left << std::setw(len_id) << "ID"
-      << std::left << std::setw(len_name) << "Metric"
-      << std::left << std::setw(len_label) << "Label"
+  out << std::left << std::setw(3)            << " "
+      << std::left << std::setw(len_name)     << "Metric"
+      << std::left << std::setw(len_id)       << "ID"
+      << std::left << std::setw(len_label)    << "Label"
+      << std::left << std::setw(len_relation) << "Relation"
       << std::left << "Aggregation";
   out << std::endl;
   for(auto& metric : metrics) {
-    out << std::left << std::setw(3) << " "
-        << std::left << std::setw(len_id) << metric.id
-        << std::left << std::setw(len_name) << metric.name
-        << std::left << std::setw(len_label) << metric.label
+    out << std::left << std::setw(3)            << " "
+        << std::left << std::setw(len_name)     << metric.name
+        << std::left << std::setw(len_id)       << metric.id
+        << std::left << std::setw(len_label)    << metric.label
+        << std::left << std::setw(len_relation) << metric.relation
         << std::left
         << client::Query::Update::Handlers::Metric::aggregation_to_string(
             metric.agg);
@@ -501,21 +521,24 @@ void Statistics::Stats::print(std::ostream& out, const ReadGroup& group,
   defined->print(out, ptr, true);
   out << '\n';
 
-  size_t len_label = 5;
+  size_t len_name = 5;
   size_t len_value = 5;
   for(auto& m : defined->metrics) {
-    for(size_t i=0; i < ids.size(); ++i) {
-      if(m.id != ids[i])
+    for(auto& data : values) {
+      if(m.id != data.id)
         continue;
-      if(len_label < m.label.length())
-        len_label = m.label.length();
-      size_t tmp = std::to_string(values[i]/counts[i]).length();
+      if(len_name < m.name.length())
+        len_name = m.name.length();
+      size_t tmp = std::to_string(
+        data.count ? data.total/data.count : data.total).length();
+      if(data.flag && data.count > 1)
+        tmp += 7;
       if(len_value < tmp)
         len_value = tmp;
       break;
     }
   }
-  len_label += 3;
+  len_name += 3;
   len_value += 3;
 
   char res[20];
@@ -528,64 +551,90 @@ void Statistics::Stats::print(std::ostream& out, const ReadGroup& group,
   }
   out << std::endl;
 
-  out << std::left << std::setw(3) << " "
-      << std::left << std::setw(len_label) << "Label"
+  out << std::left << std::setw(3)         << " "
+      << std::left << std::setw(len_name)  << "Metric"
       << std::left << std::setw(len_value) << "Value"
-      << std::left << "Metric";
+      << std::left << "Label";
   out << std::endl;
 
-
   for(auto& m : defined->metrics) {
-    for(size_t i=0; i < ids.size(); ++i) {
-      if(m.id != ids[i])
+    for(auto& data : values) {
+      if(m.id != data.id)
         continue;
-      out << std::left << std::setw(3) << " "
-          << std::left << std::setw(len_label) << m.label
-          << std::left << std::setw(len_value) << values[i]/counts[i]
-          << std::left << m.name;
+      std::string value(
+        std::to_string(data.count ? data.total/data.count : data.total));
+      if(data.flag && data.count > 1)
+        value.append("(!prop)");
+      out << std::left << std::setw(3)         << " "
+          << std::left << std::setw(len_name)  << m.name
+          << std::left << std::setw(len_value) << value
+          << std::left << m.label;
       out << std::endl;
       break;
     }
   }
 }
 
-void Statistics::Stats::add(size_t metric_idx, uint24_t field_id,
+void Statistics::Stats::add(const std::vector<Stats>* datasp,
+                            size_t metric_idx, uint24_t field_id,
                             int64_t value) noexcept {
   size_t idx = 0;
   bool found = false;
-  for(;idx < ids.size(); ++idx) {
-    if((found = ids[idx] == field_id))
+  for(;idx < values.size(); ++idx) {
+    if((found = values[idx].id == field_id))
       break;
   }
-  auto& m = defined->metrics[metric_idx];
   if(!found) {
-    ids.push_back(field_id);
-    values.push_back(value);
-    counts.push_back(1);
-    return;
+    idx = values.size();
+    values.emplace_back(field_id);
   }
+  auto& data = values[idx];
+
+  auto& m = defined->metrics[metric_idx];
   switch(m.agg) {
     case client::Query::Update::Handlers::Metric::Aggregation::MAX: {
-      if(value > values[idx])
-        values[idx] = value;
+      if(!found || value > data.total)
+        data.total = value;
       break;
     }
     case client::Query::Update::Handlers::Metric::Aggregation::MIN: {
-      if(value < values[idx])
-        values[idx] = value;
+      if(!found || value < data.total)
+        data.total = value;
       break;
     }
-    case client::Query::Update::Handlers::Metric::Aggregation::SUM: {
-      values[idx] += value;
-      break;
+    case client::Query::Update::Handlers::Metric::Aggregation::AVG_PROP: {
+      /* Proportional Average, such-for Latency Avg or Ev-Bytes */
+      if(!data.flag) {
+        for(auto& stat : *datasp) {
+          if(defined != stat.defined || ts != stat.ts)
+            continue;
+          for(auto& other_m : defined->metrics) {
+            if(other_m.agg !=
+                client::Query::Update::Handlers::Metric::Aggregation::SUM ||
+               m.relation != other_m.relation)
+              continue;
+            for(auto& other_v : stat.values) {
+              if(other_v.id == other_m.id) {
+                data.count += other_v.last;
+                data.total += value * other_v.last;
+                return;
+              }
+            }
+          }
+        }
+        data.flag = 1;
+      }
+      [[fallthrough]];
     }
     case client::Query::Update::Handlers::Metric::Aggregation::AVG: {
-      values[idx] += value;
-      ++counts[idx];
+      ++data.count;
+      data.total += value;
       break;
     }
-    default:
+    default: {
+      data.total += data.last = value;
       break;
+    }
   }
 }
 
@@ -631,7 +680,7 @@ bool Statistics::show() {
 
     std::vector<Stats> stats_datas;
     auto hdlr = client::Query::Select::Handlers::Common::make(
-      [this, &g, &stats_datas]
+      [this, &g, datasp=&stats_datas]
       (const client::Query::Select::Handlers::Common::Ptr& hdlr) {
         DB::Cells::Result cells;
         if(!err && !(err = hdlr->state_error)) {
@@ -668,19 +717,15 @@ bool Statistics::show() {
                   continue;
 
                 Stats* statsp = nullptr;
-                for(auto& stats : stats_datas) {
+                for(auto& stats : *datasp) {
                   if(stats.defined == &defined &&
                      (!g.agg || (stats.ts + g.agg > ts && stats.ts <= ts))) {
                     statsp = &stats;
                     break;
                   }
                 }
-                if(!statsp) {
-                  statsp = &stats_datas.emplace_back();
-                  statsp->defined = &defined;
-                  statsp->ts = ts;
-                }
-                statsp->add(metric_idx, field.fid, field.value);
+                (statsp ? statsp : &datasp->emplace_back(&defined, ts))
+                  ->add(datasp, metric_idx, field.fid, field.value);
               }
               /*
               SWC_PRINT << "";

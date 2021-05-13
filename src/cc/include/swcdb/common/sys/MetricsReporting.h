@@ -32,9 +32,9 @@ static size_t encoded_length(
       sz += 2 + Serialization::encoded_length_vi64(value.min);
     if(avg != value.max)
       sz += 2 + Serialization::encoded_length_vi64(value.max);
-    sz += 2 + Serialization::encoded_length_vi64(avg);
     if(with_count)
       sz += 2 + Serialization::encoded_length_vi64(value.count);
+    sz += 2 + Serialization::encoded_length_vi64(avg);
   }
   return sz;
 }
@@ -49,9 +49,9 @@ static void add_value(
       wfields.add(field_start, int64_t(value.min));
     if(avg != value.max)
       wfields.add(field_start + 1, int64_t(value.max));
-    wfields.add(field_start + 2, int64_t(avg));
     if(with_count)
-      wfields.add(field_start + 3, int64_t(value.count));
+      wfields.add(field_start + 2, int64_t(value.count));
+    wfields.add(field_start + 2 + with_count, int64_t(avg));
   }
 }
 
@@ -64,25 +64,24 @@ class Item_Net : public Base {
       key:    [levels, "net", "{address}", is_secure()?"SECURE":"PLAIN"]
       value:  {FIELD_ID}:I:{value}, ...
   */
+  static constexpr const uint8_t FIELD_CONN_OPEN        = 0;
+  static constexpr const uint8_t FIELD_CONN_ACC         = 1;
+  static constexpr const uint8_t FIELD_CONN_EST         = 2;
+
+  static constexpr const uint8_t FIELD_BYTES_SENT_MIN   = 3;
+  static constexpr const uint8_t FIELD_BYTES_SENT_MAX   = 4;
+  static constexpr const uint8_t FIELD_BYTES_SENT_TRX   = 5;
+  static constexpr const uint8_t FIELD_BYTES_SENT_AVG   = 6;
+
+  static constexpr const uint8_t FIELD_BYTES_RECV_MIN   = 7;
+  static constexpr const uint8_t FIELD_BYTES_RECV_MAX   = 8;
+  static constexpr const uint8_t FIELD_BYTES_RECV_TRX   = 9;
+  static constexpr const uint8_t FIELD_BYTES_RECV_AVG   = 10;
+
+  static constexpr const uint8_t FIELD_EV_COMMAND_START = 100; // {100 + CMD}
 
   public:
   typedef std::unique_ptr<Item_CountVolume> Ptr;
-
-  static const uint8_t FIELD_CONN_OPEN        = 0;
-  static const uint8_t FIELD_CONN_ACC         = 1;
-  static const uint8_t FIELD_CONN_EST         = 2;
-
-  static const uint8_t FIELD_BYTES_SENT_MIN   = 3;
-  static const uint8_t FIELD_BYTES_SENT_MAX   = 4;
-  static const uint8_t FIELD_BYTES_SENT_AVG   = 5;
-  static const uint8_t FIELD_BYTES_SENT_TRX   = 6;
-
-  static const uint8_t FIELD_BYTES_RECV_MIN   = 7;
-  static const uint8_t FIELD_BYTES_RECV_MAX   = 8;
-  static const uint8_t FIELD_BYTES_RECV_AVG   = 9;
-  static const uint8_t FIELD_BYTES_RECV_TRX   = 10;
-
-  static const uint8_t FIELD_EV_COMMAND_START = 100; // {100 + CMD}
 
   struct Addr {
     const asio::ip::address                      addr;
@@ -188,10 +187,60 @@ class Item_Net : public Base {
       std::vector<std::string> names;
       std::vector<std::string> labels;
       std::vector<int64_t>     aggregations;
+      std::vector<int64_t>     relations;
       ids.reserve(11 + addr->commands.size());
       names.reserve(ids.size());
       labels.reserve(ids.size());
       aggregations.reserve(ids.size());
+
+      ids.push_back(FIELD_BYTES_SENT_MIN);
+      names.push_back("sent_min");
+      labels.push_back("Send Bytes Minimum");
+      aggregations.push_back(Aggregation::MIN);
+      relations.push_back(1);
+
+      ids.push_back(FIELD_BYTES_SENT_MAX);
+      names.push_back("sent_max");
+      labels.push_back("Send Bytes Maximum");
+      aggregations.push_back(Aggregation::MAX);
+      relations.push_back(1);
+
+      ids.push_back(FIELD_BYTES_SENT_TRX);
+      names.push_back("send_trx");
+      labels.push_back("Send Transactions");
+      aggregations.push_back(Aggregation::SUM);
+      relations.push_back(1);
+
+      ids.push_back(FIELD_BYTES_SENT_AVG);
+      names.push_back("sent_avg");
+      labels.push_back("Send Bytes Average");
+      aggregations.push_back(Aggregation::AVG_PROP);
+      relations.push_back(1);
+
+
+      ids.push_back(FIELD_BYTES_RECV_MIN);
+      names.push_back("recv_min");
+      labels.push_back("Receive Bytes Minimum");
+      aggregations.push_back(Aggregation::MIN);
+      relations.push_back(2);
+
+      ids.push_back(FIELD_BYTES_RECV_MAX);
+      names.push_back("recv_max");
+      labels.push_back("Receive Bytes Maximum");
+      aggregations.push_back(Aggregation::MAX);
+      relations.push_back(2);
+
+      ids.push_back(FIELD_BYTES_RECV_TRX);
+      names.push_back("recv_trx");
+      labels.push_back("Receive Transactions");
+      aggregations.push_back(Aggregation::SUM);
+      relations.push_back(2);
+
+      ids.push_back(FIELD_BYTES_RECV_AVG);
+      names.push_back("recv_avg");
+      labels.push_back("Receive Bytes Average");
+      aggregations.push_back(Aggregation::AVG_PROP);
+      relations.push_back(2);
 
       ids.push_back(FIELD_CONN_OPEN);
       names.push_back("open");
@@ -201,62 +250,18 @@ class Item_Net : public Base {
       ids.push_back(FIELD_CONN_ACC);
       names.push_back("accept");
       labels.push_back("Accepted Connections");
-      aggregations.push_back(Aggregation::SUM);
 
       ids.push_back(FIELD_CONN_EST);
       names.push_back("established");
       labels.push_back("Connections Established");
-      aggregations.push_back(Aggregation::SUM);
-
-      ids.push_back(FIELD_BYTES_SENT_MIN);
-      names.push_back("sent_min");
-      labels.push_back("Send Bytes Minimum");
-      aggregations.push_back(Aggregation::MIN);
-
-      ids.push_back(FIELD_BYTES_SENT_MAX);
-      names.push_back("sent_max");
-      labels.push_back("Send Bytes Maximum");
-      aggregations.push_back(Aggregation::MAX);
-
-      ids.push_back(FIELD_BYTES_SENT_AVG);
-      names.push_back("sent_avg");
-      labels.push_back("Send Bytes Average");
-      aggregations.push_back(Aggregation::AVG);
-
-      ids.push_back(FIELD_BYTES_SENT_TRX);
-      names.push_back("send_trx");
-      labels.push_back("Send Transactions");
-      aggregations.push_back(Aggregation::SUM);
-
-
-      ids.push_back(FIELD_BYTES_RECV_MIN);
-      names.push_back("recv_min");
-      labels.push_back("Receive Bytes Minimum");
-      aggregations.push_back(Aggregation::MIN);
-
-      ids.push_back(FIELD_BYTES_RECV_MAX);
-      names.push_back("recv_max");
-      labels.push_back("Receive Bytes Maximum");
-      aggregations.push_back(Aggregation::MAX);
-
-      ids.push_back(FIELD_BYTES_RECV_AVG);
-      names.push_back("recv_avg");
-      labels.push_back("Receive Bytes Average");
-      aggregations.push_back(Aggregation::AVG);
-
-      ids.push_back(FIELD_BYTES_RECV_TRX);
-      names.push_back("recv_trx");
-      labels.push_back("Receive Transactions");
-      aggregations.push_back(Aggregation::SUM);
 
       for(size_t i=0; i < addr->commands.size(); ++i) {
         std::string cmd(CommandsT::to_string(i));
         ids.push_back(i + FIELD_EV_COMMAND_START);
         names.push_back(cmd);
         labels.push_back(cmd + " Requests");
-        aggregations.push_back(Aggregation::SUM);
       }
-      size_t sz = 12 + 2 * ids.size();
+      size_t sz = 15 + 2 * ids.size() + relations.size();
       for(uint8_t i=0; i < names.size(); ++i) {
         sz += names[i].size();
         sz += labels[i].size();
@@ -267,6 +272,7 @@ class Item_Net : public Base {
       wfields.add(names);
       wfields.add(labels);
       wfields.add(aggregations);
+      wfields.add(relations);
       cell.set_value(DB::Types::Encoder::ZSTD, wfields.base, wfields.fill());
       colp->add(cell);
     }
@@ -326,15 +332,14 @@ class Item_Net : public Base {
       DB::Cell::Serial::Value::FieldsWriter wfields;
       wfields.ensure(sz);
 
-      wfields.add(FIELD_CONN_OPEN,  conn_open);
-      if(conn_accept) {
-        wfields.add(FIELD_CONN_ACC, conn_accept);
-      }
-      if(conn_est) {
-        wfields.add(FIELD_CONN_EST, conn_est);
-      }
       add_value(bytes_sent, FIELD_BYTES_SENT_MIN, true, wfields);
       add_value(bytes_recv, FIELD_BYTES_RECV_MIN, true, wfields);
+
+      wfields.add(FIELD_CONN_OPEN,  conn_open);
+      if(conn_accept)
+        wfields.add(FIELD_CONN_ACC, conn_accept);
+      if(conn_est)
+        wfields.add(FIELD_CONN_EST, conn_est);
       for(size_t i=0; i < counts.size(); ++i) {
         if(counts[i])
           wfields.add(i + FIELD_EV_COMMAND_START, counts[i]);
@@ -382,21 +387,20 @@ class Item_Mem : public Base {
       key:    [levels, "mem"]
       value:  {FIELD_ID}:I:{value}, ...
   */
+  static constexpr const uint8_t FIELD_RSS_FREE_MIN = 0;
+  static constexpr const uint8_t FIELD_RSS_FREE_MAX = 1;
+  static constexpr const uint8_t FIELD_RSS_FREE_AVG = 2;
+
+  static constexpr const uint8_t FIELD_RSS_USED_MIN = 3;
+  static constexpr const uint8_t FIELD_RSS_USED_MAX = 4;
+  static constexpr const uint8_t FIELD_RSS_USED_AVG = 5;
+
+  static constexpr const uint8_t FIELD_RSS_USED_REG_MIN = 6;
+  static constexpr const uint8_t FIELD_RSS_USED_REG_MAX = 7;
+  static constexpr const uint8_t FIELD_RSS_USED_REG_AVG = 8;
 
   public:
   typedef std::unique_ptr<Item_Mem> Ptr;
-
-  static const uint8_t FIELD_RSS_FREE_MIN = 0;
-  static const uint8_t FIELD_RSS_FREE_MAX = 1;
-  static const uint8_t FIELD_RSS_FREE_AVG = 2;
-
-  static const uint8_t FIELD_RSS_USED_MIN = 3;
-  static const uint8_t FIELD_RSS_USED_MAX = 4;
-  static const uint8_t FIELD_RSS_USED_AVG = 5;
-
-  static const uint8_t FIELD_RSS_USED_REG_MIN = 6;
-  static const uint8_t FIELD_RSS_USED_REG_MAX = 7;
-  static const uint8_t FIELD_RSS_USED_REG_AVG = 8;
 
   Common::Stats::MinMaxAvgCount_Safe<uint64_t>  rss_free;
   Common::Stats::MinMaxAvgCount_Safe<uint64_t>  rss_used;
@@ -435,7 +439,7 @@ class Item_Mem : public Base {
       "rss_free_max",
       "rss_free_avg",
       "rss_used_min",
-      "rss_used_min",
+      "rss_used_max",
       "rss_used_avg",
       "rss_reg_min",
       "rss_reg_max",
@@ -521,21 +525,20 @@ class Item_CPU : public Base {
       key:    [levels, "cpu"]
       value:  {FIELD_ID}:I:{value}, ...
   */
+  static constexpr const uint8_t FIELD_CPU_U_PERC_MIN = 0;
+  static constexpr const uint8_t FIELD_CPU_U_PERC_MAX = 1;
+  static constexpr const uint8_t FIELD_CPU_U_PERC_AVG = 2;
+
+  static constexpr const uint8_t FIELD_CPU_S_PERC_MIN = 3;
+  static constexpr const uint8_t FIELD_CPU_S_PERC_MAX = 4;
+  static constexpr const uint8_t FIELD_CPU_S_PERC_AVG = 5;
+
+  static constexpr const uint8_t FIELD_NTHREADS_MIN   = 6;
+  static constexpr const uint8_t FIELD_NTHREADS_MAX   = 7;
+  static constexpr const uint8_t FIELD_NTHREADS_AVG   = 8;
 
   public:
   typedef std::unique_ptr<Item_CPU> Ptr;
-
-  static const uint8_t FIELD_CPU_U_PERC_MIN = 0;
-  static const uint8_t FIELD_CPU_U_PERC_MAX = 1;
-  static const uint8_t FIELD_CPU_U_PERC_AVG = 2;
-
-  static const uint8_t FIELD_CPU_S_PERC_MIN = 3;
-  static const uint8_t FIELD_CPU_S_PERC_MAX = 4;
-  static const uint8_t FIELD_CPU_S_PERC_AVG = 5;
-
-  static const uint8_t FIELD_NTHREADS_MIN   = 6;
-  static const uint8_t FIELD_NTHREADS_MAX   = 7;
-  static const uint8_t FIELD_NTHREADS_AVG   = 8;
 
   Common::Stats::MinMaxAvgCount_Safe<uint64_t>  percent_user;
   Common::Stats::MinMaxAvgCount_Safe<uint64_t>  percent_sys;
@@ -574,7 +577,7 @@ class Item_CPU : public Base {
       "u_max",
       "u_avg",
       "s_min",
-      "s_min",
+      "s_max",
       "s_avg",
       "t_min",
       "t_max",
@@ -661,15 +664,14 @@ class Item_FS : public Base {
       key:    [levels, "fs", {type}]
       value:  (FIELD_{type} + FS_{cmd}):I:{value}, ...
   */
+  static constexpr const uint8_t FIELD_FDS    = 0;
+  static constexpr const uint8_t FIELD_MIN    = 1;
+  static constexpr const uint8_t FIELD_MAX    = 2;
+  static constexpr const uint8_t FIELD_COUNT  = 3;
+  static constexpr const uint8_t FIELD_AVG    = 4;
+  static constexpr const uint8_t FIELD_ERROR  = 5;
 
   public:
-
-  static const uint8_t FIELD_FDS    = 0;
-  static const uint8_t FIELD_MIN    = 1;
-  static const uint8_t FIELD_MAX    = 1 + FS::Statistics::Command::MAX * 1;
-  static const uint8_t FIELD_AVG    = 1 + FS::Statistics::Command::MAX * 2;
-  static const uint8_t FIELD_ERROR  = 1 + FS::Statistics::Command::MAX * 3;
-  static const uint8_t FIELD_COUNT  = 1 + FS::Statistics::Command::MAX * 4;
 
   typedef std::unique_ptr<Item_FS> Ptr;
   FS::FileSystem::Ptr              fs;
@@ -691,6 +693,7 @@ class Item_FS : public Base {
     cell.set_time_order_desc(true);
     cell.key.add(key);
 
+    std::vector<int64_t>     relations;
     std::vector<int64_t>     ids;
     std::vector<std::string> names;
     std::vector<std::string> labels;
@@ -698,37 +701,50 @@ class Item_FS : public Base {
     ids.reserve(1 + FS::Statistics::Command::MAX * 5);
     names.reserve(ids.size());
     labels.reserve(ids.size());
-    aggregations.reserve(ids.size());
+    aggregations.reserve(2 + FS::Statistics::Command::MAX * 4);
+    relations.reserve(1 + FS::Statistics::Command::MAX * 2);
 
+    int64_t relation=0;
+    for(uint8_t i, c=0; c < FS::Statistics::Command::MAX; ++c) {
+      std::string cmd(FS::Statistics::to_string(FS::Statistics::Command(c)));
+      i = c * 5;
+      ids.push_back(FIELD_COUNT + i);
+      ids.push_back(FIELD_AVG + i);
+      names.push_back(cmd + "_count");
+      names.push_back(cmd + "_avg");
+      labels.push_back(cmd + " Requests Count");
+      labels.push_back(cmd + " Latency ns Average");
+      aggregations.push_back(Aggregation::SUM);
+      aggregations.push_back(Aggregation::AVG_PROP);
+      relations.push_back(++relation);
+      relations.push_back(relation);
+    }
     ids.push_back(FIELD_FDS);
     names.push_back("open");
     labels.push_back("Open File Descriptors");
     aggregations.push_back(Aggregation::MAX);
 
-    for(uint8_t i=0; i < FS::Statistics::Command::MAX; ++i) {
-      std::string cmd(FS::Statistics::to_string(FS::Statistics::Command(i)));
+    for(uint8_t i, c=0; c < FS::Statistics::Command::MAX; ++c) {
+      std::string cmd(FS::Statistics::to_string(FS::Statistics::Command(c)));
+      i = c * 5;
       ids.push_back(FIELD_MIN + i);
       ids.push_back(FIELD_MAX + i);
-      ids.push_back(FIELD_AVG + i);
-      ids.push_back(FIELD_ERROR + i);
-      ids.push_back(FIELD_COUNT + i);
       names.push_back(cmd + "_min");
       names.push_back(cmd + "_max");
-      names.push_back(cmd + "_avg");
-      names.push_back(cmd + "_error");
-      names.push_back(cmd + "_count");
       labels.push_back(cmd + " Latency ns Minimum");
       labels.push_back(cmd + " Latency ns Maximum");
-      labels.push_back(cmd + " Latency ns Average");
-      labels.push_back(cmd + " Errors Count");
-      labels.push_back(cmd + " Requests Count");
       aggregations.push_back(Aggregation::MIN);
       aggregations.push_back(Aggregation::MAX);
-      aggregations.push_back(Aggregation::AVG);
-      aggregations.push_back(Aggregation::SUM);
-      aggregations.push_back(Aggregation::SUM);
     }
-    size_t sz = 12 + 2 * ids.size();
+    for(uint8_t i, c=0; c < FS::Statistics::Command::MAX; ++c) {
+      std::string cmd(FS::Statistics::to_string(FS::Statistics::Command(c)));
+      i = c * 5;
+      ids.push_back(FIELD_ERROR + i);
+      names.push_back(cmd + "_error");
+      labels.push_back(cmd + " Errors Count");
+    }
+
+    size_t sz = 15 + 3 * ids.size();
     for(uint8_t i=0; i < names.size(); ++i) {
       sz += names[i].size();
       sz += labels[i].size();
@@ -739,6 +755,7 @@ class Item_FS : public Base {
     wfields.add(names);
     wfields.add(labels);
     wfields.add(aggregations);
+    wfields.add(relations);
     cell.set_value(DB::Types::Encoder::ZSTD, wfields.base, wfields.fill());
     colp->add(cell);
   }
@@ -788,18 +805,19 @@ class Item_FS : public Base {
     if(open_fds)
       wfields.add(FIELD_FDS, int64_t(open_fds));
 
-    for(uint8_t cmd=0; cmd < FS::Statistics::Command::MAX; ++cmd) {
+    for(uint8_t i, cmd=0; cmd < FS::Statistics::Command::MAX; ++cmd) {
       auto& m = stats.metrics[cmd];
       if(m.m_count) {
+        i = cmd * 5;
         uint64_t avg = m.m_total/m.m_count;
         if(avg != m.m_min)
-          wfields.add(FIELD_MIN + cmd,  int64_t(m.m_min));
+          wfields.add(FIELD_MIN + i,  int64_t(m.m_min));
         if(avg != m.m_max)
-          wfields.add(FIELD_MAX + cmd,  int64_t(m.m_max));
-        wfields.add(FIELD_AVG + cmd,  int64_t(avg));
+          wfields.add(FIELD_MAX + i,  int64_t(m.m_max));
+        wfields.add(FIELD_COUNT + i,  int64_t(m.m_count));
+        wfields.add(FIELD_AVG + i,    int64_t(avg));
         if(m.m_error)
-          wfields.add(FIELD_ERROR + cmd,  int64_t(m.m_error));
-        wfields.add(FIELD_COUNT + cmd,  int64_t(m.m_count));
+          wfields.add(FIELD_ERROR + i,  int64_t(m.m_error));
       }
     }
 
