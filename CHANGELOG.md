@@ -14,7 +14,7 @@
     added reasonable cases of std::string::reserve
     removed namespace FileUtils & added FS::FileSystemLocal specialized funcs
     added cmake definer -DSWC_WITHOUT_THRIFT=ON/OFF
-    added host-arg Comm::AppContext::init(host, EndPoints&) 
+    added host-arg Comm::AppContext::init(host, EndPoints&)
     added Comm::AppContext::{net_bytes_sent,received,accepted}
     added ConfigSSL::need_ssl(const EndPoint& local, const EndPoint& remote)
     fixed Client/Server need-ssl, local!=remove and remote not in secure nets
@@ -49,6 +49,8 @@
     added class SWC::Env::ThriftBroker - thrift/broker/ThriftBrokerEnv.h
     added Statistics Client CLI "SWC-DB(statistics)>" (bin/swcdb --statistics)
     resolved issue #6 Services & Components statistic
+    changed Config::Properties::get_*,defaulted,to_string to const scope
+    changed use cases of Env::Clients in libswcdb.so to client::Clients::Ptr
 
 [_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.5.0...master)
 ******

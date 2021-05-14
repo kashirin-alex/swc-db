@@ -21,12 +21,15 @@ foreach(fs ${FILE_SYSTEMS})
     )
   endif()
 
-  add_test(NAME test-fs_client-${fs}
-    COMMAND fs_client
-      --swc.fs=${fs}
-      --swc.fs.lib.${fs}=${CMAKE_INSTALL_PREFIX}/lib/libswcdb_fs_${fs}.so
-      --swc.cfg.path=${CMAKE_INSTALL_PREFIX}/etc/swcdb/
-  )
+  string(TOUPPER ${fs} TYPE)
+  if(NOT SWC_SKIP_TEST_FS_${TYPE})
+    add_test(NAME test-fs_client-${fs}
+      COMMAND fs_client
+        --swc.fs=${fs}
+        --swc.fs.lib.${fs}=${CMAKE_INSTALL_PREFIX}/lib/libswcdb_fs_${fs}.so
+        --swc.cfg.path=${CMAKE_INSTALL_PREFIX}/etc/swcdb/
+    )
+  endif()
 
   if(fs STREQUAL "broker")
     add_test(
