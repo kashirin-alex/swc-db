@@ -51,74 +51,74 @@ class Properties {
 
   bool has(const char* name) const noexcept;
 
-  bool defaulted(const char* name);
+  bool defaulted(const char* name) const;
 
-  std::string to_string(const char* name);
+  std::string to_string(const char* name) const;
 
   void get_names(std::vector<std::string>& names) const;
 
   void remove(const char* name);
 
-  Property::Value::Ptr get_ptr(const char* name, bool null_ok=false);
+  Property::Value::Ptr get_ptr(const char* name, bool null_ok=false) const;
 
   template <typename T>
-  T* get(const char* name) {
+  T* get(const char* name) const {
     return Property::Value::get_pointer<T>(get_ptr(name));
   }
 
-  std::string get_str(const char* name) {
+  std::string get_str(const char* name) const {
     return get<Property::V_STRING>(name)->get();
   }
 
-  std::string get_str(const char* name, const std::string& v) {
+  std::string get_str(const char* name, const std::string& v) const {
     return has(name) ? get_str(name) : v;
   }
 
-  Strings get_strs(const char* name) {
+  Strings get_strs(const char* name) const {
     return get<Property::V_STRINGS>(name)->get();
   }
 
-  bool get_bool(const char* name) {
+  bool get_bool(const char* name) const {
     return get<Property::V_BOOL>(name)->get();
   }
 
-  bool get_bool(const char* name, bool v) {
+  bool get_bool(const char* name, bool v) const {
     return has(name) ? get_bool(name) : v;
   }
 
-  bool get_gbool(const char* name) {
+  bool get_gbool(const char* name) const {
     return get<Property::V_GBOOL>(name)->get();
   }
 
-  int32_t get_enum(const char* name) {
+  int32_t get_enum(const char* name) const {
     return get<Property::V_ENUM>(name)->get();
   }
 
-  int32_t get_genum(const char* name) {
+  int32_t get_genum(const char* name) const {
     return get<Property::V_GENUM>(name)->get();
   }
 
-  uint8_t get_i8(const char* name) {
+  uint8_t get_i8(const char* name) const {
     return get<Property::V_UINT8>(name)->get();
   }
 
-  uint16_t get_i16(const char* name) {
+  uint16_t get_i16(const char* name) const {
     return get<Property::V_UINT16>(name)->get();
   }
 
-  uint16_t get_i16(const char* name, uint16_t v) {
+  uint16_t get_i16(const char* name, uint16_t v) const {
     return has(name) ? get_i16(name) : v;
   }
 
-  int32_t get_i32(const char* name) {
+  int32_t get_i32(const char* name) const {
     return get<Property::V_INT32>(name)->get();
   }
 
-  int32_t get_i32(const char* name, int32_t v) {
+  int32_t get_i32(const char* name, int32_t v) const {
     return has(name) ? get_i32(name) : v;
   }
 
-  int64_t get_i64(const char* name) {
+  int64_t get_i64(const char* name) const {
     return get<Property::V_INT64>(name)->get();
   }
 

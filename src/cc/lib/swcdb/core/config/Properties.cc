@@ -91,11 +91,11 @@ namespace SWC { namespace Config {
     return false;
   }
 
-  bool Properties::defaulted(const char* name) {
+  bool Properties::defaulted(const char* name) const {
     return get_ptr(name)->is_default();
   }
 
-  std::string Properties::to_string(const char* name) {
+  std::string Properties::to_string(const char* name) const {
     return get_ptr(name)->to_string();
   }
 
@@ -115,7 +115,8 @@ namespace SWC { namespace Config {
   }
 
 
-  Property::Value::Ptr Properties::get_ptr(const char* name, bool null_ok) {
+  Property::Value::Ptr Properties::get_ptr(const char* name,
+                                           bool null_ok) const {
     for(auto it=m_map.begin(); it!=m_map.end(); ++it) {
       if(Condition::str_eq(it->first.c_str(), name))
         return it->second;
