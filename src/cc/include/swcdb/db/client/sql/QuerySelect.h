@@ -16,7 +16,8 @@ namespace SWC { namespace client { namespace SQL {
 class QuerySelect final : public Reader {
 
   public:
-  QuerySelect(const std::string& sql, DB::Specs::Scan& specs,
+  QuerySelect(const Clients::Ptr& clients,
+              const std::string& sql, DB::Specs::Scan& specs,
               std::string& message);
 
   int parse_select();
@@ -57,6 +58,7 @@ class QuerySelect final : public Reader {
 
   void read_flags(DB::Specs::Flags& flags);
 
+  Clients::Ptr      clients;
   DB::Specs::Scan&  specs;
 };
 

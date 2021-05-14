@@ -18,11 +18,13 @@ namespace Rgr { namespace Req {
 class Report: public client::ConnQueue::ReqBase {
   public:
 
-  Report(const EndPoints& endpoints,
+  Report(const SWC::client::Clients::Ptr& clients,
+         const EndPoints& endpoints,
          Params::Report::Function func,
          const uint32_t timeout);
 
-  Report(const EndPoints& endpoints,
+  Report(const SWC::client::Clients::Ptr& clients,
+         const EndPoints& endpoints,
          Params::Report::Function func,
          const Serializable& params,
          const uint32_t timeout);
@@ -32,8 +34,8 @@ class Report: public client::ConnQueue::ReqBase {
   bool run() override;
 
   protected:
-
-  EndPoints   endpoints;
+  SWC::client::Clients::Ptr clients;
+  EndPoints                 endpoints;
 
 };
 
@@ -46,11 +48,13 @@ class ReportRes: public Report {
                              const int&,
                              const Params::Report::RspRes&)> Cb_t;
 
-  static void request(const EndPoints& endpoints,
+  static void request(const SWC::client::Clients::Ptr& clients,
+                      const EndPoints& endpoints,
                       Cb_t&& cb,
                       const uint32_t timeout = 10000);
 
-  ReportRes(const EndPoints& endpoints,
+  ReportRes(const SWC::client::Clients::Ptr& clients,
+            const EndPoints& endpoints,
             Cb_t&& cb,
             const uint32_t timeout);
 
@@ -75,11 +79,13 @@ class ReportCids: public Report {
                              const int&,
                              const Params::Report::RspCids&)> Cb_t;
 
-  static void request(const EndPoints& endpoints,
+  static void request(const SWC::client::Clients::Ptr& clients,
+                      const EndPoints& endpoints,
                       Cb_t&& cb,
                       const uint32_t timeout = 10000);
 
-  ReportCids(const EndPoints& endpoints,
+  ReportCids(const SWC::client::Clients::Ptr& clients,
+             const EndPoints& endpoints,
              Cb_t&& cb,
              const uint32_t timeout);
 
@@ -104,12 +110,14 @@ class ReportColumnRids: public Report {
                              const int&,
                              const Params::Report::RspColumnRids&)> Cb_t;
 
-  static void request(const EndPoints& endpoints,
+  static void request(const SWC::client::Clients::Ptr& clients,
+                      const EndPoints& endpoints,
                       cid_t cid,
                       Cb_t&& cb,
                       const uint32_t timeout = 10000);
 
-  ReportColumnRids(const EndPoints& endpoints,
+  ReportColumnRids(const SWC::client::Clients::Ptr& clients,
+                   const EndPoints& endpoints,
                    cid_t cid,
                    Cb_t&& cb,
                    const uint32_t timeout);
@@ -135,20 +143,24 @@ class ReportColumnsRanges: public Report {
                              const int&,
                              const Params::Report::RspColumnsRanges&)> Cb_t;
 
-  static void request(const EndPoints& endpoints,
+  static void request(const SWC::client::Clients::Ptr& clients,
+                      const EndPoints& endpoints,
                       Cb_t&& cb,
                       const uint32_t timeout = 10000);
 
-  static void request(const EndPoints& endpoints,
+  static void request(const SWC::client::Clients::Ptr& clients,
+                      const EndPoints& endpoints,
                       cid_t cid,
                       Cb_t&& cb,
                       const uint32_t timeout = 10000);
 
-  ReportColumnsRanges(const EndPoints& endpoints,
+  ReportColumnsRanges(const SWC::client::Clients::Ptr& clients,
+                      const EndPoints& endpoints,
                       Cb_t&& cb,
                       const uint32_t timeout);
 
-  ReportColumnsRanges(const EndPoints& endpoints,
+  ReportColumnsRanges(const SWC::client::Clients::Ptr& clients,
+                      const EndPoints& endpoints,
                       cid_t cid,
                       Cb_t&& cb,
                       const uint32_t timeout);

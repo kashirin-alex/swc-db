@@ -195,19 +195,17 @@ void Item_CountVolume::report(uint64_t for_ns, Handlers::Base::Column* colp,
 
 
 
-Reporting::Reporting(const Comm::IoContextPtr& io,
+Reporting::Reporting(const Clients::Ptr& clients,
+                     const Comm::IoContextPtr& io,
                      Config::Property::V_GINT32::Ptr cfg_intval)
             : BaseSingleColumn(
+                clients,
                 DB::Types::SystemColumn::SYS_CID_STATS,
                 DB::Types::KeySeq::LEXIC, 1, 0, DB::Types::Column::SERIAL),
               io(io),
               cfg_intval(cfg_intval),
               running(false), m_defined(false),
               m_timer(io->executor()) {
-  timeout.store(Env::Clients::ref().cfg_send_timeout->get());
-  timeout_ratio.store(Env::Clients::ref().cfg_send_timeout_ratio->get());
-  buff_sz.store(Env::Clients::ref().cfg_send_buff_sz->get());
-  buff_ahead.store(Env::Clients::ref().cfg_send_ahead->get());
 }
 
 void Reporting::stop() {
@@ -281,7 +279,7 @@ void Reporting::report() {
   }
 
   if(!m_defined) {
-    auto hdlr = client::Query::Update::Handlers::Common::make();
+    auto hdlr = client::Query::Update::Handlers::Common::make(clients);
     auto& col = hdlr->create(
       DB::Types::SystemColumn::SYS_CID_DEFINE_LEXIC,
       DB::Types::KeySeq::LEXIC, 1, 0, DB::Types::Column::SERIAL);

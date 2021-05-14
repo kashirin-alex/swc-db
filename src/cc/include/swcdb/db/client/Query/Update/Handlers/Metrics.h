@@ -235,7 +235,8 @@ class Reporting : public BaseSingleColumn {
   std::vector<Metric::Base::Ptr>     metrics;
   Core::AtomicBool                   running;
 
-  Reporting(const Comm::IoContextPtr& io,
+  Reporting(const Clients::Ptr& clients,
+            const Comm::IoContextPtr& io,
             Config::Property::V_GINT32::Ptr cfg_intval);
 
   virtual ~Reporting() { }

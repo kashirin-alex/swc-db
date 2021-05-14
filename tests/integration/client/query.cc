@@ -125,6 +125,7 @@ class Test {
     schema->cell_versions = counter ? 1 : cell_versions;
 
     Comm::Protocol::Mngr::Req::ColumnMng::request(
+      Env::Clients::get(),
       Comm::Protocol::Mngr::Req::ColumnMng::Func::CREATE,
       schema, [this] (Comm::client::ConnQueue::ReqBase::Ptr req_ptr, int err) {
         if(err && err != Error::COLUMN_SCHEMA_NAME_EXISTS) {
@@ -144,6 +145,7 @@ class Test {
     SWC_LOG(LOG_DEBUG, "delete_column");
 
     Comm::Protocol::Mngr::Req::ColumnMng::request(
+      Env::Clients::get(),
       Comm::Protocol::Mngr::Req::ColumnMng::Func::DELETE,
       schema, [this, cb] (Comm::client::ConnQueue::ReqBase::Ptr req_ptr, int err) {
         if(err && err != Error::COLUMN_SCHEMA_NAME_NOT_EXISTS) {
@@ -165,7 +167,8 @@ class Test {
   void expect_empty_column() {
     SWC_LOG(LOG_DEBUG, "expect_empty_column");
 
-    auto hdlr = client::Query::Select::Handlers::Common::make();
+    auto hdlr = client::Query::Select::Handlers::Common::make(
+      Env::Clients::get());
 
     auto intval = DB::Specs::Interval::make_ptr();
     intval->flags.offset = 0;
@@ -194,7 +197,8 @@ class Test {
   void expect_one_at_offset() {
     SWC_LOG(LOG_DEBUG, "expect_one_at_offset");
 
-    auto hdlr = client::Query::Select::Handlers::Common::make();
+    auto hdlr = client::Query::Select::Handlers::Common::make(
+      Env::Clients::get());
 
     auto intval = DB::Specs::Interval::make_ptr();
     intval->flags.offset = ncells * nfractions - 1;
@@ -287,6 +291,7 @@ class Test {
     expect_empty_column();
 
     auto hdlr = client::Query::Update::Handlers::Common::make(
+      Env::Clients::get(),
       [this](const client::Query::Update::Handlers::Common::Ptr& _hdlr) {
         SWC_PRINT << "query_insert: \n";
         _hdlr->profile.print(SWC_LOG_OSTREAM);
@@ -346,6 +351,7 @@ class Test {
     apply_cell_key(key, i, f);
 
     auto hdlr = client::Query::Select::Handlers::Common::make(
+      Env::Clients::get(),
       [this, ts=Time::now_ns(), key=DB::Cell::Key(key, true), i, f]
       (const client::Query::Select::Handlers::Common::Ptr& hdlr) {
         time_select += Time::now_ns() - ts;
@@ -386,6 +392,7 @@ class Test {
     SWC_LOG(LOG_DEBUG, "query_delete");
 
     auto hdlr = client::Query::Update::Handlers::Common::make(
+      Env::Clients::get(),
       [this](const client::Query::Update::Handlers::Common::Ptr& hdlr) {
         SWC_PRINT << "query_delete: \n";
         hdlr->profile.print(SWC_LOG_OSTREAM);
@@ -429,6 +436,7 @@ int main(int argc, char** argv) {
 
   SWC::Env::Clients::init(
     std::make_shared<SWC::client::Clients>(
+      *SWC::Env::Config::settings(),
       nullptr,
       nullptr, // std::make_shared<SWC::client::ManagerContext>()
       nullptr  // std::make_shared<SWC::client::RangerContext>()

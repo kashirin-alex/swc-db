@@ -10,10 +10,11 @@
 
 namespace SWC { namespace client { namespace SQL {
 
-ColumnList::ColumnList(const std::string& sql,
+ColumnList::ColumnList(const Clients::Ptr& clients, const std::string& sql,
                        std::vector<DB::Schema::Ptr>& schemas,
                        std::string& message)
-                      : Reader(sql, message), schemas(schemas) {
+                      : Reader(sql, message),
+                        clients(clients), schemas(schemas) {
 }
 
 int ColumnList::parse_list_columns(const char* expect_cmd,
@@ -124,7 +125,7 @@ void ColumnList::read_columns(std::vector<DB::Schema::Ptr>& cols,
       read(col_name, stop);
       if(col_name.empty())
         break;
-      cols.push_back(get_schema(col_name));
+      cols.push_back(get_schema(clients, col_name));
     }
     col_name.clear();
   }

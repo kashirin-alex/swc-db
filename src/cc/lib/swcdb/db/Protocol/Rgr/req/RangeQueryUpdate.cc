@@ -16,24 +16,26 @@ namespace Rgr { namespace Req {
 SWC_SHOULD_INLINE
 void
 RangeQueryUpdate::request(
+        const SWC::client::Clients::Ptr& clients,
         const Params::RangeQueryUpdateReq& params,
         const DynamicBuffer::Ptr& buffer,
         const EndPoints& endpoints,
         RangeQueryUpdate::Cb_t&& cb,
         const uint32_t timeout) {
   std::make_shared<RangeQueryUpdate>(
-    params, buffer, endpoints, std::move(cb), timeout)->run();
+    clients, params, buffer, endpoints, std::move(cb), timeout)->run();
 }
 
 
 RangeQueryUpdate::RangeQueryUpdate(
+                const SWC::client::Clients::Ptr& clients,
                 const Params::RangeQueryUpdateReq& params,
                 const DynamicBuffer::Ptr& buffer,
                 const EndPoints& endpoints,
                 RangeQueryUpdate::Cb_t&& cb,
                 const uint32_t timeout)
                 : client::ConnQueue::ReqBase(false),
-                  endpoints(endpoints), cb(std::move(cb)) {
+                  clients(clients), endpoints(endpoints), cb(std::move(cb)) {
   // timeout by buffer->fill() bytes ratio
   StaticBuffer snd_buf(buffer->base, buffer->fill(), false);
   cbp = Buffers::make(params, snd_buf, 0, RANGE_QUERY_UPDATE, timeout);
@@ -44,7 +46,7 @@ void RangeQueryUpdate::handle_no_conn() {
 }
 
 bool RangeQueryUpdate::run() {
-  Env::Clients::get()->rgr->get(endpoints)->put(req());
+  clients->rgr->get(endpoints)->put(req());
   return true;
 }
 

@@ -70,10 +70,11 @@ Cmd recognize_cmd(int& err, const std::string& sql, std::string& message) {
   return Cmd::UNKNOWN;
 }
 
-void parse_select(int& err, const std::string& sql,
+void parse_select(int& err, const Clients::Ptr& clients,
+                  const std::string& sql,
                   DB::Specs::Scan& specs,
                   uint8_t& display_flags, std::string& message) {
-  QuerySelect parser(sql, specs, message);
+  QuerySelect parser(clients, sql, specs, message);
   err = parser.parse_select();
   if(!err)
     parser.parse_display_flags(display_flags);
@@ -88,29 +89,32 @@ void parse_update(int& err, const std::string& sql,
     parser.parse_display_flags(display_flags);
 }
 
-void parse_list_columns(int& err, const std::string& sql,
+void parse_list_columns(int& err, const Clients::Ptr& clients,
+                        const std::string& sql,
                         std::vector<DB::Schema::Ptr>& schemas,
                         std::string& message, const char* expect_cmd) {
-  ColumnList parser(sql, schemas, message);
+  ColumnList parser(clients, sql, schemas, message);
   err = parser.parse_list_columns(expect_cmd);
 }
 
-void parse_list_columns(int& err, const std::string& sql,
+void parse_list_columns(int& err, const Clients::Ptr& clients,
+                        const std::string& sql,
                         std::vector<DB::Schema::Ptr>& schemas,
                         Comm::Protocol::Mngr::Params::ColumnListReq& params,
                         std::string& message, const char* expect_cmd) {
-  ColumnList parser(sql, schemas, message);
+  ColumnList parser(clients, sql, schemas, message);
   err = parser.parse_list_columns(expect_cmd);
   if(!parser.patterns.empty())
     params.patterns = std::move(parser.patterns);
 }
 
-void parse_list_columns(int& err, const std::string& sql,
+void parse_list_columns(int& err, const Clients::Ptr& clients,
+                        const std::string& sql,
                         std::vector<DB::Schema::Ptr>& schemas,
                         Comm::Protocol::Mngr::Params::ColumnListReq& params,
                         uint8_t& output_flags,
                         std::string& message, const char* expect_cmd) {
-  ColumnList parser(sql, schemas, message);
+  ColumnList parser(clients, sql, schemas, message);
   err = parser.parse_list_columns(expect_cmd, output_flags);
   if(!parser.patterns.empty())
     params.patterns = std::move(parser.patterns);
@@ -131,13 +135,14 @@ void parse_column_schema(int& err, const std::string& sql,
   err = parser.parse(func);
 }
 
-void parse_dump(int& err, const std::string& sql,
+void parse_dump(int& err, const Clients::Ptr& clients,
+                const std::string& sql,
                 std::string& fs, std::string& filepath,
                 uint64_t& split_size, std::string& ext, int& level,
                 DB::Specs::Scan& specs,
                 uint8_t& output_flags, uint8_t& display_flags,
                 std::string& message) {
-  QuerySelect parser(sql, specs, message);
+  QuerySelect parser(clients, sql, specs, message);
   err = parser.parse_dump(fs, filepath, split_size, ext, level);
   if(!err)
     parser.parse_output_flags(output_flags);

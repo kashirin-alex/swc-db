@@ -838,9 +838,11 @@ class Reporting : public client::Query::Update::Handlers::Metric::Reporting {
 
   typedef std::shared_ptr<Reporting> Ptr;
 
-  Reporting(const Comm::IoContextPtr& io,
+  Reporting(const SWC::client::Clients::Ptr& clients,
+            const Comm::IoContextPtr& io,
             Config::Property::V_GINT32::Ptr cfg_intval)
-      : client::Query::Update::Handlers::Metric::Reporting(io, cfg_intval),
+      : client::Query::Update::Handlers::Metric::Reporting(
+          clients, io, cfg_intval),
         system(this), cpu(nullptr), mem(nullptr) {
   }
 

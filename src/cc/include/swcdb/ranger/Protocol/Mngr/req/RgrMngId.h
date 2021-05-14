@@ -78,6 +78,7 @@ class RgrMngId: public client::ConnQueue::ReqBase {
         DB::Types::MngrRole::RANGERS, endpoints);
       if(endpoints.empty()) {
         MngrActive::make(
+          Env::Clients::get(),
           DB::Types::MngrRole::RANGERS, shared_from_this())->run();
         return false;
       }

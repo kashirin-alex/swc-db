@@ -54,8 +54,10 @@ std::string get_name(int n, bool modified=false){
 void check_delete(int num_of_cols, bool modified) {
   Core::Semaphore sem(num_of_cols, num_of_cols);
 
+  auto clients = Env::Clients::get();
   for(int n=1; n<=num_of_cols; ++n) {
     Comm::Protocol::Mngr::Req::ColumnGet::schema(
+      clients,
       get_name(n, modified),
       [&sem]
       (Comm::client::ConnQueue::ReqBase::Ptr req_ptr,
@@ -72,6 +74,7 @@ void check_delete(int num_of_cols, bool modified) {
         }
 
         Comm::Protocol::Mngr::Req::ColumnMng::request(
+          Env::Clients::get(),
           Comm::Protocol::Mngr::Req::ColumnMng::Func::DELETE,
           rsp.schema,
           [&sem]
@@ -110,9 +113,10 @@ void check_get(size_t num_of_cols, bool modified,
       exist
     ));
   }
-
+  auto clients = Env::Clients::get();
   for(auto& req : expected){
     Comm::Protocol::Mngr::Req::ColumnGet::schema(
+      clients,
       req->name,
       [req, latency, verbose, start_ts=std::chrono::system_clock::now()]
       (Comm::client::ConnQueue::ReqBase::Ptr req_ptr,
@@ -173,6 +177,7 @@ void check_get(size_t num_of_cols, bool modified,
 
   for(auto& req : expected){
     Comm::Protocol::Mngr::Req::ColumnGet::cid(
+      clients,
       req->name,
       [req, latency, verbose, start_ts=std::chrono::system_clock::now()]
       (Comm::client::ConnQueue::ReqBase::Ptr req_ptr,
@@ -241,6 +246,7 @@ void chk(Comm::Protocol::Mngr::Req::ColumnMng::Func func, size_t num_of_cols,
   std::cout << "########### chk func=" << func << " ###########\n";
   auto latency = std::make_shared<Common::Stats::Stat>();
 
+  auto clients = Env::Clients::get();
   for(size_t n=1;n<=num_of_cols;++n) {
 
     auto schema = DB::Schema::make();
@@ -253,6 +259,7 @@ void chk(Comm::Protocol::Mngr::Req::ColumnMng::Func func, size_t num_of_cols,
     schema->blk_cells = 9876543;
 
     Comm::Protocol::Mngr::Req::ColumnMng::request(
+      clients,
       func, schema,
       [func, latency, verbose, start_ts=std::chrono::system_clock::now()]
       (Comm::client::ConnQueue::ReqBase::Ptr req_ptr, int err){
@@ -314,9 +321,11 @@ void chk_rename(size_t num_of_cols, bool verbose=false){
 
   std::vector<std::shared_ptr<ExpctedRsp>> expected;
 
+  auto clients = Env::Clients::get();
   for(size_t n=1; n<=num_of_cols;++n){
     std::string name = get_name(n, false);
     Comm::Protocol::Mngr::Req::ColumnGet::schema(
+      clients,
       name,
       [n, latency, verbose, start_ts=std::chrono::system_clock::now()]
       (Comm::client::ConnQueue::ReqBase::Ptr req_ptr,
@@ -339,6 +348,7 @@ void chk_rename(size_t num_of_cols, bool verbose=false){
             << "to   " << new_schema->to_string() << SWC_PRINT_CLOSE;
 
         Comm::Protocol::Mngr::Req::ColumnMng::request(
+          Env::Clients::get(),
           Comm::Protocol::Mngr::Req::ColumnMng::Func::MODIFY,
           new_schema,
           [latency, start_ts]
@@ -380,6 +390,7 @@ int main(int argc, char** argv) {
 
   Env::Clients::init(
     std::make_shared<client::Clients>(
+      *Env::Config::settings(),
       nullptr,
       nullptr, // std::make_shared<client::ManagerContext>()
       nullptr  // std::make_shared<client::RangerContext>()

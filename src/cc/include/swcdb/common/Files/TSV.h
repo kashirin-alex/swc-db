@@ -21,6 +21,7 @@ namespace TSV {
 
 class FileWriter {
   public:
+  client::Clients::Ptr clients;
   int         err = Error::OK;
   std::string base_path;
   std::string file_ext = ".tsv";
@@ -30,8 +31,9 @@ class FileWriter {
   size_t      cells_count = 0;
   size_t      cells_bytes = 0;
   size_t      file_num = 0;
-
-  FileWriter() { }
+  FileWriter(const client::Clients::Ptr& clients)
+            : clients(clients) {
+  }
 
   virtual ~FileWriter() { }
 
@@ -81,7 +83,7 @@ class FileWriter {
   void write(
         const client::Query::Select::Handlers::BaseUnorderedMap::Ptr& hdlr) {
     for(cid_t cid : hdlr->get_cids()) {
-      schemas.emplace(cid, Env::Clients::get()->schemas->get(err, cid));
+      schemas.emplace(cid, clients->schemas->get(err, cid));
       if(err)
         break;
     }
@@ -285,7 +287,7 @@ class FileWriter {
 
 class FileReader {
   public:
-
+  client::Clients::Ptr clients;
   int             err = Error::CANCELLED;
   cid_t           cid = DB::Schema::NO_CID;
   std::string     base_path;
@@ -295,7 +297,9 @@ class FileReader {
   size_t          resend_cells = 0;
   size_t          cells_bytes = 0;
 
-  FileReader() { }
+  FileReader(const client::Clients::Ptr& clients)
+            : clients(clients) {
+  }
 
   virtual ~FileReader() { }
 
@@ -333,7 +337,7 @@ class FileReader {
     if(fds.empty()) {
       err = ENOENT;
     } else {
-      schema = Env::Clients::get()->schemas->get(err, cid);
+      schema = clients->schemas->get(err, cid);
     }
   }
 
@@ -341,7 +345,7 @@ class FileReader {
     if(err)
       return nullptr;
 
-    auto hdlr = client::Query::Update::Handlers::Common::make();
+    auto hdlr = client::Query::Update::Handlers::Common::make(clients);
     hdlr->create(schema);
 
     for(auto& fd : fds) {

@@ -56,6 +56,7 @@ class AppContext final : public Comm::AppContext {
     Env::IoCtx::init(settings->get_i32("swc.mngr.clients.handlers"));
     Env::Clients::init(
       std::make_shared<client::Clients>(
+        *settings,
         Env::IoCtx::io(),
         std::make_shared<client::Mngr::ContextManager>(),
         std::make_shared<client::ContextRanger>()

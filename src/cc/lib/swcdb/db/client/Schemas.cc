@@ -101,7 +101,7 @@ void Schemas::_request(int& err, cid_t cid,
   std::promise<int> res;
 
   Comm::Protocol::Mngr::Req::ColumnGet::schema(
-    cid,
+    _clients->shared(), cid,
     [schema=&schema, await=&res]
     (const Comm::client::ConnQueue::ReqBase::Ptr& req,
       int error, const Comm::Protocol::Mngr::Params::ColumnGetRsp& rsp) {
@@ -126,7 +126,7 @@ void Schemas::_request(int& err, const std::string& name,
   std::promise<int> res;
 
   Comm::Protocol::Mngr::Req::ColumnGet::schema(
-    name,
+    _clients->shared(), name,
     [schema=&schema, await=&res]
     (const Comm::client::ConnQueue::ReqBase::Ptr& req,
       int error, const Comm::Protocol::Mngr::Params::ColumnGetRsp& rsp) {
@@ -154,7 +154,7 @@ void Schemas::_request(int& err,
 
   std::promise<int> res;
   Comm::Protocol::Mngr::Req::ColumnList::request(
-    params,
+    _clients->shared(), params,
     [&schemas, await=&res]
     (const Comm::client::ConnQueue::ReqBase::Ptr& req, int error,
      const Comm::Protocol::Mngr::Params::ColumnListRsp& rsp) {

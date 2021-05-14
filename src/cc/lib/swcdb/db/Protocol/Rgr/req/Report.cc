@@ -14,16 +14,18 @@ namespace Rgr { namespace Req {
 
 
 
-Report::Report(const EndPoints& endpoints,
+Report::Report(const SWC::client::Clients::Ptr& clients,
+               const EndPoints& endpoints,
                Params::Report::Function func,
                const uint32_t timeout)
               : client::ConnQueue::ReqBase(false, Buffers::make(1)),
-                endpoints(endpoints) {
+                clients(clients), endpoints(endpoints) {
   cbp->append_i8(func);
   cbp->header.set(REPORT, timeout);
 }
 
-Report::Report(const EndPoints& endpoints,
+Report::Report(const SWC::client::Clients::Ptr& clients,
+               const EndPoints& endpoints,
                Params::Report::Function func,
                const Serializable& params,
                const uint32_t timeout)
@@ -31,28 +33,32 @@ Report::Report(const EndPoints& endpoints,
                   false,
                   Buffers::make(params, 1, REPORT, timeout)
                 ),
-                endpoints(endpoints) {
+                clients(clients), endpoints(endpoints) {
   cbp->append_i8(func);
 }
 
 bool Report::run() {
-  Env::Clients::get()->rgr->get(endpoints)->put(req());
+  clients->rgr->get(endpoints)->put(req());
   return true;
 }
 
 
 
 SWC_SHOULD_INLINE
-void ReportRes::request(const EndPoints& endpoints,
+void ReportRes::request(const SWC::client::Clients::Ptr& clients,
+                        const EndPoints& endpoints,
                         ReportRes::Cb_t&& cb,
                         const uint32_t timeout) {
-  std::make_shared<ReportRes>(endpoints, std::move(cb), timeout)->run();
+  std::make_shared<ReportRes>(
+    clients, endpoints, std::move(cb), timeout)->run();
 }
 
-ReportRes::ReportRes(const EndPoints& endpoints,
+ReportRes::ReportRes(const SWC::client::Clients::Ptr& clients,
+                     const EndPoints& endpoints,
                      ReportRes::Cb_t&& cb,
                      const uint32_t timeout)
                      : Report(
+                        clients,
                         endpoints,
                         Params::Report::Function::RESOURCES,
                         timeout
@@ -91,16 +97,20 @@ void ReportRes::handle(ConnHandlerPtr, const Event::Ptr& ev) {
 
 
 SWC_SHOULD_INLINE
-void ReportCids::request(const EndPoints& endpoints,
+void ReportCids::request(const SWC::client::Clients::Ptr& clients,
+                         const EndPoints& endpoints,
                          ReportCids::Cb_t&& cb,
                          const uint32_t timeout) {
-  std::make_shared<ReportCids>(endpoints, std::move(cb), timeout)->run();
+  std::make_shared<ReportCids>(
+    clients, endpoints, std::move(cb), timeout)->run();
 }
 
-ReportCids::ReportCids(const EndPoints& endpoints,
+ReportCids::ReportCids(const SWC::client::Clients::Ptr& clients,
+                       const EndPoints& endpoints,
                        ReportCids::Cb_t&& cb,
                        const uint32_t timeout)
                       : Report(
+                          clients,
                           endpoints,
                           Params::Report::Function::CIDS,
                           timeout
@@ -139,19 +149,22 @@ void ReportCids::handle(ConnHandlerPtr, const Event::Ptr& ev) {
 
 
 SWC_SHOULD_INLINE
-void ReportColumnRids::request(const EndPoints& endpoints,
+void ReportColumnRids::request(const SWC::client::Clients::Ptr& clients,
+                               const EndPoints& endpoints,
                                cid_t cid,
                                ReportColumnRids::Cb_t&& cb,
                                const uint32_t timeout) {
   std::make_shared<ReportColumnRids>(
-    endpoints, cid, std::move(cb), timeout)->run();
+    clients, endpoints, cid, std::move(cb), timeout)->run();
 }
 
-ReportColumnRids::ReportColumnRids(const EndPoints& endpoints,
+ReportColumnRids::ReportColumnRids(const SWC::client::Clients::Ptr& clients,
+                                   const EndPoints& endpoints,
                                    cid_t cid,
                                    ReportColumnRids::Cb_t&& cb,
                                    const uint32_t timeout)
                                   : Report(
+                                      clients,
                                       endpoints,
                                       Params::Report::Function::COLUMN_RIDS,
                                       Params::Report::ReqColumn(cid),
@@ -191,27 +204,31 @@ void ReportColumnRids::handle(ConnHandlerPtr, const Event::Ptr& ev) {
 
 
 SWC_SHOULD_INLINE
-void ReportColumnsRanges::request(const EndPoints& endpoints,
+void ReportColumnsRanges::request(const SWC::client::Clients::Ptr& clients,
+                                  const EndPoints& endpoints,
                                   ReportColumnsRanges::Cb_t&& cb,
                                   const uint32_t timeout) {
   std::make_shared<ReportColumnsRanges>(
-    endpoints, std::move(cb), timeout)->run();
+    clients, endpoints, std::move(cb), timeout)->run();
 }
 
 SWC_SHOULD_INLINE
-void ReportColumnsRanges::request(const EndPoints& endpoints,
+void ReportColumnsRanges::request(const SWC::client::Clients::Ptr& clients,
+                                  const EndPoints& endpoints,
                                   cid_t cid,
                                   ReportColumnsRanges::Cb_t&& cb,
                                   const uint32_t timeout) {
   std::make_shared<ReportColumnsRanges>(
-    endpoints, cid, std::move(cb), timeout)->run();
+    clients, endpoints, cid, std::move(cb), timeout)->run();
 }
 
 ReportColumnsRanges::ReportColumnsRanges(
+            const SWC::client::Clients::Ptr& clients,
             const EndPoints& endpoints,
             ReportColumnsRanges::Cb_t&& cb,
             const uint32_t timeout)
             : Report(
+                clients,
                 endpoints,
                 Params::Report::Function::COLUMNS_RANGES,
                 timeout
@@ -219,11 +236,13 @@ ReportColumnsRanges::ReportColumnsRanges(
 }
 
 ReportColumnsRanges::ReportColumnsRanges(
+          const SWC::client::Clients::Ptr& clients,
           const EndPoints& endpoints,
           cid_t cid,
           ReportColumnsRanges::Cb_t&& cb,
           const uint32_t timeout)
           : Report(
+              clients,
               endpoints,
               Params::Report::Function::COLUMN_RANGES,
               Params::Report::ReqColumn(cid),

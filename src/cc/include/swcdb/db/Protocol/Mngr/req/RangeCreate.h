@@ -23,30 +23,35 @@ class RangeCreate: public client::ConnQueue::ReqBase {
   typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&,
                              const Params::RangeCreateRsp&)> Cb_t;
 
-  static void request(cid_t cid, rgrid_t rgrid,
+  static void request(const SWC::client::Clients::Ptr& clients,
+                      cid_t cid, rgrid_t rgrid,
                       Cb_t&& cb, const uint32_t timeout = 10000) {
-    request(Params::RangeCreateReq(cid, rgrid), std::move(cb), timeout);
+    request(
+      clients, Params::RangeCreateReq(cid, rgrid), std::move(cb), timeout);
   }
 
-  static inline void request(const Params::RangeCreateReq& params,
+  static inline void request(const SWC::client::Clients::Ptr& clients,
+                             const Params::RangeCreateReq& params,
                              Cb_t&& cb, const uint32_t timeout = 10000) {
-    std::make_shared<RangeCreate>(params, std::move(cb), timeout)->run();
+    std::make_shared<RangeCreate>(
+      clients, params, std::move(cb), timeout)->run();
   }
 
 
-  RangeCreate(const Params::RangeCreateReq& params, Cb_t&& cb,
+  RangeCreate(const SWC::client::Clients::Ptr& clients,
+              const Params::RangeCreateReq& params, Cb_t&& cb,
               const uint32_t timeout)
               : client::ConnQueue::ReqBase(
                   false,
                   Buffers::make(params, 0, RANGE_CREATE, timeout)
                 ),
-                cb(std::move(cb)), cid(params.cid) {
+                clients(clients), cb(std::move(cb)), cid(params.cid) {
   }
 
   virtual ~RangeCreate() { }
 
   void handle_no_conn() override {
-    if(Env::Clients::get()->stopping()) {
+    if(clients->stopping()) {
       cb(req(), Params::RangeCreateRsp(Error::CLIENT_STOPPING));
     } else {
       clear_endpoints();
@@ -56,17 +61,17 @@ class RangeCreate: public client::ConnQueue::ReqBase {
 
   bool run() override {
     if(endpoints.empty()) {
-      Env::Clients::get()->mngrs_groups->select(cid, endpoints);
+      clients->mngrs_groups->select(cid, endpoints);
       if(endpoints.empty()) {
-        if(Env::Clients::get()->stopping()) {
+        if(clients->stopping()) {
           cb(req(), Params::RangeCreateRsp(Error::CLIENT_STOPPING));
         } else {
-          MngrActive::make(cid, shared_from_this())->run();
+          MngrActive::make(clients, cid, shared_from_this())->run();
         }
         return false;
       }
     }
-    Env::Clients::get()->mngr->get(endpoints)->put(req());
+    clients->mngr->get(endpoints)->put(req());
     return true;
   }
 
@@ -94,13 +99,15 @@ class RangeCreate: public client::ConnQueue::ReqBase {
   private:
 
   void clear_endpoints() {
-    Env::Clients::get()->mngrs_groups->remove(endpoints);
+    clients->mngrs_groups->remove(endpoints);
     endpoints.clear();
   }
 
-  const Cb_t      cb;
-  const cid_t     cid;
-  EndPoints       endpoints;
+  SWC::client::Clients::Ptr clients;
+  const Cb_t                cb;
+  const cid_t               cid;
+  EndPoints                 endpoints;
+
 };
 
 

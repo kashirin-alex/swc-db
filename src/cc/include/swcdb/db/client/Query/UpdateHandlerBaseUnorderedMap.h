@@ -22,7 +22,9 @@ class BaseUnorderedMap
   typedef std::shared_ptr<BaseUnorderedMap>             Ptr;
   typedef std::unordered_map<cid_t, ColumnMutable::Ptr> Map;
 
-  BaseUnorderedMap() noexcept { }
+  BaseUnorderedMap(const Clients::Ptr& clients) noexcept
+                  : Base(clients) {
+  }
 
   BaseUnorderedMap(const BaseUnorderedMap&) = delete;
 

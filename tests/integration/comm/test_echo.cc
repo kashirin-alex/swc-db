@@ -149,6 +149,7 @@ int main(int argc, char** argv) {
 
   Env::Clients::init(
     std::make_shared<client::Clients>(
+      *Env::Config::settings(),
       nullptr,
       nullptr, // std::make_shared<client::ManagerContext>()
       nullptr  // std::make_shared<client::RangerContext>()

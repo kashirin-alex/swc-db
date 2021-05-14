@@ -8,7 +8,7 @@
 
 
 #include "swcdb/db/Protocol/Mngr/params/ColumnGet.h"
-#include "swcdb/core/comm/ClientConnQueue.h"
+#include "swcdb/db/client/Clients.h"
 
 
 namespace SWC { namespace Comm { namespace Protocol {
@@ -23,23 +23,29 @@ class ColumnGet: public client::ConnQueue::ReqBase {
                              int, const Params::ColumnGetRsp&)> Cb_t;
 
 
-  static void schema(const std::string& name, Cb_t&& cb,
+  static void schema(const SWC::client::Clients::Ptr& clients,
+                     const std::string& name, Cb_t&& cb,
                      const uint32_t timeout = 10000);
 
-  static void schema(cid_t cid, Cb_t&& cb,
+  static void schema(const SWC::client::Clients::Ptr& clients,
+                     cid_t cid, Cb_t&& cb,
                      const uint32_t timeout = 10000);
 
-  static void cid(const std::string& name, Cb_t&& cb,
+  static void cid(const SWC::client::Clients::Ptr& clients,
+                  const std::string& name, Cb_t&& cb,
                   const uint32_t timeout = 10000);
 
-  static void request(Flag flag, const std::string& name, Cb_t&& cb,
+  static void request(const SWC::client::Clients::Ptr& clients,
+                      Flag flag, const std::string& name, Cb_t&& cb,
                       const uint32_t timeout = 10000);
 
-  static void request(Flag flag, cid_t cid, Cb_t&& cb,
+  static void request(const SWC::client::Clients::Ptr& clients,
+                      Flag flag, cid_t cid, Cb_t&& cb,
                       const uint32_t timeout = 10000);
 
 
-  ColumnGet(const Params::ColumnGetReq& params, Cb_t&& cb,
+  ColumnGet(const SWC::client::Clients::Ptr& clients,
+            const Params::ColumnGetReq& params, Cb_t&& cb,
             const uint32_t timeout);
 
   virtual ~ColumnGet() { }
@@ -54,8 +60,9 @@ class ColumnGet: public client::ConnQueue::ReqBase {
 
   void clear_endpoints();
 
-  const Cb_t  cb;
-  EndPoints   endpoints;
+  SWC::client::Clients::Ptr clients;
+  const Cb_t                cb;
+  EndPoints                 endpoints;
 };
 
 

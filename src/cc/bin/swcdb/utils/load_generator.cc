@@ -610,7 +610,8 @@ void update_data(const std::vector<DB::Schema::Ptr>& schemas, uint8_t flag,
 
   std::vector<client::Query::Update::Handlers::Base::Column*> colms;
 
-  auto hdlr = client::Query::Update::Handlers::Common::make();
+  auto hdlr = client::Query::Update::Handlers::Common::make(
+    Env::Clients::get());
   for(auto& schema : schemas)
     colms.push_back(hdlr->create(schema).get());
 
@@ -766,7 +767,8 @@ void select_data(const std::vector<DB::Schema::Ptr>& schemas, size_t seed) {
       intval.set_opt__key_equal();
       intval.flags.limit = versions;
 
-      auto hdlr = client::Query::Select::Handlers::Common::make();
+      auto hdlr = client::Query::Select::Handlers::Common::make(
+        Env::Clients::get());
       for(auto& schema : schemas)
         client::Query::Select::scan(hdlr, schema, std::move(intval));
 
@@ -812,6 +814,7 @@ void select_data(const std::vector<DB::Schema::Ptr>& schemas, size_t seed) {
       );
     }
     auto hdlr = client::Query::Select::Handlers::Common::make(
+      Env::Clients::get(),
       [&select_bytes, &select_count, &schemas]
       (const client::Query::Select::Handlers::Common::Ptr& hdlr) {
         for(auto& schema : schemas) {
@@ -863,6 +866,7 @@ void make_work_load(const std::vector<DB::Schema::Ptr>& schemas) {
     for(auto& schema : schemas) {
       std::promise<int>  res;
       Comm::Protocol::Mngr::Req::ColumnMng::request(
+        Env::Clients::get(),
         Comm::Protocol::Mngr::Req::ColumnMng::Func::DELETE,
         schema,
         [await=&res]
@@ -924,6 +928,7 @@ void generate() {
   // CREATE COLUMN
   std::promise<int>  res;
   Comm::Protocol::Mngr::Req::ColumnMng::request(
+    Env::Clients::get(),
     Comm::Protocol::Mngr::Req::ColumnMng::Func::CREATE,
     schema,
     [await=&res]
@@ -953,6 +958,7 @@ int main(int argc, char** argv) {
 
   SWC::Env::Clients::init(
     std::make_shared<SWC::client::Clients>(
+      *SWC::Env::Config::settings(),
       nullptr, // Env::IoCtx::io(),
       nullptr, // std::make_shared<client::ManagerContext>()
       nullptr  // std::make_shared<client::RangerContext>()

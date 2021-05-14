@@ -342,6 +342,7 @@ void MngdColumns::remove(const DB::Schema::Ptr& schema,
   key_intval.start.add("", Condition::GE);
 
   auto hdlr = client::Query::Select::Handlers::Common::make(
+    Env::Clients::get(),
     [this, req_id, schema, meta_cid]
     (const client::Query::Select::Handlers::Common::Ptr& hdlr) {
       DB::Cells::Result cells;
@@ -372,6 +373,7 @@ void MngdColumns::remove(const DB::Schema::Ptr& schema,
       );
 
       auto updater = client::Query::Update::Handlers::Common::make(
+        Env::Clients::get(),
         [this, req_id, schema, meta_cid]
         (const client::Query::Update::Handlers::Common::Ptr& hdlr) {
           int err = hdlr->error();

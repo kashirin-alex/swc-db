@@ -15,13 +15,11 @@ namespace SWC { namespace client { namespace Query { namespace Update {
 namespace Handlers {
 
 
-Common::Common(Cb_t&& cb, const Comm::IoContextPtr& io) noexcept
-              : valid_state(true),
+Common::Common(const Clients::Ptr& clients,
+               Cb_t&& cb, const Comm::IoContextPtr& io) noexcept
+              : BaseUnorderedMap(clients),
+                valid_state(true),
                 m_cb(std::move(cb)), m_dispatcher_io(io) {
-  timeout.store(Env::Clients::ref().cfg_send_timeout->get());
-  timeout_ratio.store(Env::Clients::ref().cfg_send_timeout_ratio->get());
-  buff_sz.store(Env::Clients::ref().cfg_send_buff_sz->get());
-  buff_ahead.store(Env::Clients::ref().cfg_send_ahead->get());
 }
 
 bool Common::requires_commit() noexcept {

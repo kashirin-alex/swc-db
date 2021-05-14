@@ -153,6 +153,7 @@ DbClient::DbClient()
   //Env::IoCtx::init(settings->get_i32("swc.client.handlers"));
   Env::Clients::init(
     std::make_shared<client::Clients>(
+      *Env::Config::settings(),
       nullptr, // Env::IoCtx::io(),
       nullptr, // std::make_shared<client::ManagerContext>()
       nullptr  // std::make_shared<client::RangerContext>()
@@ -172,6 +173,7 @@ bool DbClient::mng_column(Comm::Protocol::Mngr::Req::ColumnMng::Func func,
 
   std::promise<int> res;
   Comm::Protocol::Mngr::Req::ColumnMng::request(
+    Env::Clients::get(),
     func, schema,
     [await=&res]
     (const Comm::client::ConnQueue::ReqBase::Ptr&, int error) {
@@ -201,8 +203,9 @@ bool DbClient::compact_column(std::string& cmd) {
   std::vector<DB::Schema::Ptr> schemas;
   Comm::Protocol::Mngr::Params::ColumnListReq params;
   std::string message;
+  auto clients = Env::Clients::get();
   client::SQL::parse_list_columns(
-    err, cmd, schemas, params, message, "compact");
+    err, clients, cmd, schemas, params, message, "compact");
   if(err)
     return error(message);
 
@@ -210,6 +213,7 @@ bool DbClient::compact_column(std::string& cmd) {
     // get all schemas or on patterns
     std::promise<int> res;
     Comm::Protocol::Mngr::Req::ColumnList::request(
+      clients,
       params,
       [&schemas, await=&res]
       (const Comm::client::ConnQueue::ReqBase::Ptr&, int error,
@@ -233,6 +237,7 @@ bool DbClient::compact_column(std::string& cmd) {
   Core::Atomic<size_t> proccessing(schemas.size());
   for(auto& schema : schemas) {
     Comm::Protocol::Mngr::Req::ColumnCompact::request(
+      clients,
       schema->cid,
       [schema, &proccessing, await=&res]
       (const Comm::client::ConnQueue::ReqBase::Ptr&,
@@ -257,8 +262,9 @@ bool DbClient::list_columns(std::string& cmd) {
   Comm::Protocol::Mngr::Params::ColumnListReq params;
   std::string message;
   uint8_t output_flags = 0;
+  auto clients = Env::Clients::get();
   client::SQL::parse_list_columns(
-    err, cmd, schemas, params, output_flags, message, "list");
+    err, clients, cmd, schemas, params, output_flags, message, "list");
   if(err)
     return error(message);
 
@@ -266,6 +272,7 @@ bool DbClient::list_columns(std::string& cmd) {
     // get all schemas or on patterns
     std::promise<int> res;
     Comm::Protocol::Mngr::Req::ColumnList::request(
+      clients,
       params,
       [&schemas, await=&res]
       (const Comm::client::ConnQueue::ReqBase::Ptr&, int error,
@@ -313,7 +320,8 @@ bool DbClient::select(std::string& cmd) {
 
   std::string message;
   DB::Specs::Scan specs;
-  client::SQL::parse_select(err, cmd, specs, display_flags, message);
+  auto clients = Env::Clients::get();
+  client::SQL::parse_select(err, clients, cmd, specs, display_flags, message);
   if(err)
     return error(message);
 
@@ -325,6 +333,7 @@ bool DbClient::select(std::string& cmd) {
   }
 
   auto hdlr = client::Query::Select::Handlers::Common::make(
+    clients,
     [this, &display_flags, &cells_count, &cells_bytes]
     (const client::Query::Select::Handlers::Common::Ptr& hdlr) {
       display(hdlr, display_flags, cells_count, cells_bytes);
@@ -356,11 +365,12 @@ void DbClient::display(
   DB::Cells::Result cells;
   bool meta;
   size_t count_state;
+  auto clients = Env::Clients::get();
   do {
     count_state = cells_count;
     for(cid_t cid : hdlr->get_cids()) {
       meta = !DB::Types::SystemColumn::is_data(cid);;
-      schema = Env::Clients::get()->schemas->get(err, cid);
+      schema = clients->schemas->get(err, cid);
       cells.free();
       hdlr->get_cells(cid, cells);
 
@@ -388,7 +398,8 @@ bool DbClient::update(std::string& cmd) {
   Time::Measure_ns t_measure;
   uint8_t display_flags = 0;
 
-  auto hdlr = client::Query::Update::Handlers::Common::make();
+  auto hdlr = client::Query::Update::Handlers::Common::make(
+    Env::Clients::get());
   std::string message;
   client::SQL::parse_update(err, cmd, hdlr, display_flags, message);
   if(err)
@@ -415,7 +426,7 @@ bool DbClient::update(std::string& cmd) {
 // LOAD
 bool DbClient::load(std::string& cmd) {
   Time::Measure_ns t_measure;
-  DB::Cells::TSV::FileReader reader;
+  DB::Cells::TSV::FileReader reader(Env::Clients::get());
 
   std::string fs;
   uint8_t display_flags = 0;
@@ -467,7 +478,7 @@ bool DbClient::load(std::string& cmd) {
 // DUMP
 bool DbClient::dump(std::string& cmd) {
   Time::Measure_ns t_measure;
-  DB::Cells::TSV::FileWriter writer;
+  DB::Cells::TSV::FileWriter writer(Env::Clients::get());
 
   std::string fs;
   std::string ext;
@@ -476,7 +487,7 @@ bool DbClient::dump(std::string& cmd) {
   uint8_t display_flags = 0;
   std::string message;
   client::SQL::parse_dump(
-    err, cmd,
+    err, writer.clients, cmd,
     fs, writer.base_path, writer.split_size, ext, level,
     specs,
     writer.output_flags, display_flags,
@@ -508,6 +519,7 @@ bool DbClient::dump(std::string& cmd) {
   }
 
   auto hdlr = client::Query::Select::Handlers::Common::make(
+    writer.clients,
     [&writer]
     (const client::Query::Select::Handlers::Common::Ptr& hdlr) {
       writer.write(hdlr);

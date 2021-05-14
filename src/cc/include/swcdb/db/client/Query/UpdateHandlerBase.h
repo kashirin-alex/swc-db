@@ -8,9 +8,9 @@
 
 
 #include "swcdb/core/CompletionCounter.h"
-#include "swcdb/db/client/Query/Profiling.h"
-#include "swcdb/db/Columns/Schema.h"
 #include "swcdb/db/Cells/Cell.h"
+#include "swcdb/db/client/Query/Profiling.h"
+#include "swcdb/db/client/Clients.h"
 
 
 namespace SWC { namespace client { namespace Query { namespace Update {
@@ -74,6 +74,7 @@ class Base : public std::enable_shared_from_this<Base> {
   };
 
 
+  Clients::Ptr                      clients;
   Profiling                         profile;
   Core::Atomic<int>                 state_error;
   Core::CompletionCounter<uint64_t> completion;
@@ -83,9 +84,13 @@ class Base : public std::enable_shared_from_this<Base> {
   Core::Atomic<uint32_t>            buff_sz;
   Core::Atomic<uint8_t>             buff_ahead;
 
-  Base() noexcept
-      : state_error(Error::OK), completion(0),
-        timeout(0), timeout_ratio(1000), buff_sz(0), buff_ahead(0) {
+  Base(const Clients::Ptr& clients) noexcept
+      : clients(clients),
+        state_error(Error::OK), completion(0),
+        timeout(clients->cfg_send_timeout->get()),
+        timeout_ratio(clients->cfg_send_timeout_ratio->get()),
+        buff_sz(clients->cfg_send_buff_sz->get()),
+        buff_ahead(clients->cfg_send_ahead->get()) {
   }
 
   virtual bool valid() noexcept = 0;

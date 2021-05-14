@@ -16,15 +16,17 @@ namespace Rgr { namespace Req {
 
 SWC_SHOULD_INLINE
 void
-RangeQuerySelect::request(const Params::RangeQuerySelectReq& params,
+RangeQuerySelect::request(const SWC::client::Clients::Ptr& clients,
+                          const Params::RangeQuerySelectReq& params,
                           const EndPoints& endpoints,
                           RangeQuerySelect::Cb_t&& cb,
                           const uint32_t timeout) {
   std::make_shared<RangeQuerySelect>(
-    params, endpoints, std::move(cb), timeout)->run();
+    clients, params, endpoints, std::move(cb), timeout)->run();
 }
 
-RangeQuerySelect::RangeQuerySelect(const Params::RangeQuerySelectReq& params,
+RangeQuerySelect::RangeQuerySelect(const SWC::client::Clients::Ptr& clients,
+                                   const Params::RangeQuerySelectReq& params,
                                    const EndPoints& endpoints,
                                    RangeQuerySelect::Cb_t&& cb,
                                    const uint32_t timeout)
@@ -32,7 +34,8 @@ RangeQuerySelect::RangeQuerySelect(const Params::RangeQuerySelectReq& params,
                       false,
                       Buffers::make(params, 0, RANGE_QUERY_SELECT, timeout)
                     ),
-                    endpoints(endpoints), cb(std::move(cb)) {
+                    endpoints(endpoints),
+                    clients(clients), cb(std::move(cb)) {
 }
 
 void RangeQuerySelect::handle_no_conn() {
@@ -40,7 +43,7 @@ void RangeQuerySelect::handle_no_conn() {
 }
 
 bool RangeQuerySelect::run() {
-  Env::Clients::get()->rgr->get(endpoints)->put(req());
+  clients->rgr->get(endpoints)->put(req());
   return true;
 }
 

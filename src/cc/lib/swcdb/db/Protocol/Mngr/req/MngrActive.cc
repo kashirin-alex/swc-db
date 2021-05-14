@@ -5,7 +5,6 @@
 
 
 #include "swcdb/db/Protocol/Mngr/req/MngrActive.h"
-#include "swcdb/db/client/Clients.h"
 #include "swcdb/db/Protocol/Commands.h"
 
 
@@ -13,22 +12,8 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace Mngr { namespace Req {
 
 
-
-MngrActive::Ptr MngrActive::make(const cid_t& cid,
-                                 const DispatchHandler::Ptr& hdlr,
-                                 uint32_t timeout_ms) {
-  return std::make_shared<MngrActive>(
-    DB::Types::MngrRole::COLUMNS, cid, hdlr, timeout_ms);
-}
-
-MngrActive::Ptr MngrActive::make(const uint8_t& role,
-                                 const DispatchHandler::Ptr& hdlr,
-                                 uint32_t timeout_ms) {
-  return std::make_shared<MngrActive>(
-    role, DB::Schema::NO_CID, hdlr, timeout_ms);
-}
-
-MngrActive::MngrActive(const uint8_t& role, const cid_t& cid,
+MngrActive::MngrActive(const SWC::client::Clients::Ptr& clients,
+                       const uint8_t& role, const cid_t& cid,
                        const DispatchHandler::Ptr& hdlr, uint32_t timeout_ms)
                       : client::ConnQueue::ReqBase(
                           false,
@@ -38,9 +23,10 @@ MngrActive::MngrActive(const uint8_t& role, const cid_t& cid,
                             MNGR_ACTIVE, timeout_ms
                           )
                         ),
+                        clients(clients),
                         role(role), cid(cid), hdlr(hdlr), nxt(0),
                         timer(asio::high_resolution_timer(
-                          Env::Clients::get()->mngr->service->io()->executor())),
+                          clients->mngr->service->io()->executor())),
                         timeout_ms(timeout_ms) {
 }
 
@@ -57,8 +43,8 @@ void MngrActive::run_within(uint32_t t_ms) {
 }
 
 void MngrActive::handle_no_conn() {
-  if(Env::Clients::get()->stopping() ||
-     !Env::Clients::get()->mngr->service->io()->running) {
+  if(clients->stopping() ||
+     !clients->mngr->service->io()->running) {
     hdlr->run();
   } else if(hosts.size() == ++nxt) {
     nxt = 0;
@@ -71,7 +57,7 @@ void MngrActive::handle_no_conn() {
 
 bool MngrActive::run() {
   if(hosts.empty()) {
-    Env::Clients::get()->mngrs_groups->hosts(role, cid, hosts, group_host);
+    clients->mngrs_groups->hosts(role, cid, hosts, group_host);
     if(hosts.empty()) {
       SWC_LOGF(LOG_WARN, "Empty cfg of mngr.host for role=%d cid=%lu",
                role, cid);
@@ -79,7 +65,7 @@ bool MngrActive::run() {
       return false;
     }
   }
-  Env::Clients::get()->mngr->get(hosts.at(nxt))->put(req());
+  clients->mngr->get(hosts.at(nxt))->put(req());
   return true;
 }
 
@@ -96,7 +82,7 @@ void MngrActive::handle(ConnHandlerPtr, const Event::Ptr& ev) {
 
       if(params.available && params.endpoints.size()) {
         group_host.endpoints = params.endpoints;
-        Env::Clients::get()->mngrs_groups->add(group_host);
+        clients->mngrs_groups->add(group_host);
         hdlr->run();
         return;
       }

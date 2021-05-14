@@ -740,6 +740,7 @@ void CompactRange::finalize() {
 
 void CompactRange::mngr_create_range(uint32_t split_at) {
   Comm::Protocol::Mngr::Req::RangeCreate::request(
+    Env::Clients::get(),
     range->cfg->cid,
     Env::Rgr::rgr_data()->rgrid,
     [split_at, cid=range->cfg->cid, ptr=shared()]
@@ -769,6 +770,7 @@ void CompactRange::mngr_create_range(uint32_t split_at) {
 void CompactRange::mngr_remove_range(const RangePtr& new_range) {
   std::promise<void> res;
   Comm::Protocol::Mngr::Req::RangeRemove::request(
+    Env::Clients::get(),
     new_range->cfg->cid,
     new_range->rid,
     [new_range, await=&res]
@@ -865,6 +867,7 @@ void CompactRange::split(rid_t new_rid, uint32_t split_at) {
       col->internal_unload(hdlr->range->rid);
 
       Comm::Protocol::Mngr::Req::RangeUnloaded::request(
+        Env::Clients::get(),
         hdlr->range->cfg->cid, hdlr->range->rid,
         [ptr, cid=col->cfg->cid, new_rid=hdlr->range->rid]
         (const Comm::client::ConnQueue::ReqBase::Ptr& req,

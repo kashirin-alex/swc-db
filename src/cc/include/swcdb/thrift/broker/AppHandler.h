@@ -110,12 +110,13 @@ class AppHandler final : virtual public BrokerIf {
 
   /* SQL QUERY */
   client::Query::Select::Handlers::Common::Ptr sync_select(const std::string& sql) {
-    auto hdlr = client::Query::Select::Handlers::Common::make();
+    auto hdlr = client::Query::Select::Handlers::Common::make(
+      Env::Clients::get());
     int err = Error::OK;
     DB::Specs::Scan specs;
     std::string message;
     uint8_t display_flags = 0;
-    client::SQL::parse_select(err, sql, specs, display_flags, message);
+    client::SQL::parse_select(err, hdlr->clients, sql, specs, display_flags, message);
     if(!err) {
       client::Query::Select::scan(err, hdlr, std::move(specs));
       if(!err)
@@ -194,7 +195,8 @@ class AppHandler final : virtual public BrokerIf {
     if(updater_id)
       updater(updater_id, hdlr);
     else
-      hdlr = client::Query::Update::Handlers::Common::make();
+      hdlr = client::Query::Update::Handlers::Common::make(
+        Env::Clients::get());
 
     std::string message;
     uint8_t display_flags = 0;
@@ -244,7 +246,8 @@ class AppHandler final : virtual public BrokerIf {
 
   /* SPECS SCAN QUERY */
   client::Query::Select::Handlers::Common::Ptr sync_select(const SpecScan& spec) {
-    auto hdlr = client::Query::Select::Handlers::Common::make();
+    auto hdlr = client::Query::Select::Handlers::Common::make(
+      Env::Clients::get());
     int err = Error::OK;
     DB::Specs::Scan specs;
 
@@ -255,7 +258,7 @@ class AppHandler final : virtual public BrokerIf {
     DB::Specs::Interval::Ptr dbintval;
 
     for(auto& col : spec.columns) {
-      schema = Env::Clients::get()->schemas->get(err, col.cid);
+      schema = hdlr->clients->schemas->get(err, col.cid);
       if(!schema)
         Converter::exception(err, "cid=" + std::to_string(col.cid));
 
@@ -270,7 +273,7 @@ class AppHandler final : virtual public BrokerIf {
     }
 
     for(auto& col : spec.columns_serial) {
-      schema = Env::Clients::get()->schemas->get(err, col.cid);
+      schema = hdlr->clients->schemas->get(err, col.cid);
       if(!schema)
         Converter::exception(err, "cid=" + std::to_string(col.cid));
 
@@ -362,7 +365,8 @@ class AppHandler final : virtual public BrokerIf {
         it != m_updaters.end();
         it = m_updaters.find(++id)
     );
-    m_updaters[id] = client::Query::Update::Handlers::Common::make();
+    m_updaters[id] = client::Query::Update::Handlers::Common::make(
+      Env::Clients::get());
     if(buffer_size)
       m_updaters[id]->buff_sz.store(buffer_size);
     return id;
@@ -388,7 +392,8 @@ class AppHandler final : virtual public BrokerIf {
     if(updater_id)
       updater(updater_id, hdlr);
     else
-      hdlr = client::Query::Update::Handlers::Common::make();
+      hdlr = client::Query::Update::Handlers::Common::make(
+        Env::Clients::get());
 
     int err = Error::OK;
     DB::Cells::Cell dbcell;
@@ -396,7 +401,7 @@ class AppHandler final : virtual public BrokerIf {
     for(auto& col_cells : cells) {
       auto col = hdlr->get(cid = col_cells.first);
       if(!col) {
-        auto schema = Env::Clients::get()->schemas->get(err, cid);
+        auto schema = hdlr->clients->schemas->get(err, cid);
         if(err)
           Converter::exception(err);
         col = hdlr->create(schema);
@@ -437,7 +442,8 @@ class AppHandler final : virtual public BrokerIf {
     if(updater_id)
       updater(updater_id, hdlr);
     else
-      hdlr = client::Query::Update::Handlers::Common::make();
+      hdlr = client::Query::Update::Handlers::Common::make(
+        Env::Clients::get());
 
     int err = Error::OK;
     DB::Cells::Cell dbcell;
@@ -445,7 +451,7 @@ class AppHandler final : virtual public BrokerIf {
     for(auto& col_cells : cells) {
       auto col = hdlr->get(cid = col_cells.first);
       if(!col) {
-        auto schema = Env::Clients::get()->schemas->get(err, cid);
+        auto schema = hdlr->clients->schemas->get(err, cid);
         if(err)
           Converter::exception(err);
         col = hdlr->create(schema);
@@ -582,14 +588,15 @@ class AppHandler final : virtual public BrokerIf {
                    std::vector<DB::Schema::Ptr>& dbschemas) {
     Comm::Protocol::Mngr::Params::ColumnListReq params;
     std::string message;
+    auto clients = Env::Clients::get();
     client::SQL::parse_list_columns(
-      err, sql, dbschemas, params, message, cmd);
+      err, clients, sql, dbschemas, params, message, cmd);
     if(err)
       Converter::exception(err, message);
 
     if(!params.patterns.empty()) {
       std::vector<DB::Schema::Ptr> schemas;
-      Env::Clients::get()->schemas->get(err, params.patterns, schemas);
+      clients->schemas->get(err, params.patterns, schemas);
       if(err && err != Error::COLUMN_SCHEMA_MISSING)
         Converter::exception(
           err, "problem getting columns schemas on patterns");
@@ -599,6 +606,7 @@ class AppHandler final : virtual public BrokerIf {
     } else if(dbschemas.empty()) { // get all schemas
       std::promise<int> res;
       Comm::Protocol::Mngr::Req::ColumnList::request(
+        clients,
         [&dbschemas, await=&res]
         (const Comm::client::ConnQueue::ReqBase::Ptr&, int error,
          const Comm::Protocol::Mngr::Params::ColumnListRsp& rsp) {
@@ -615,6 +623,7 @@ class AppHandler final : virtual public BrokerIf {
 
   void get_schemas(int& err, const SpecSchemas& spec,
                    std::vector<DB::Schema::Ptr>& dbschemas) {
+    auto clients = Env::Clients::get();
     if(!spec.patterns.empty()) {
       std::vector<DB::Schemas::Pattern> dbpatterns;
       dbpatterns.resize(spec.patterns.size());
@@ -624,7 +633,7 @@ class AppHandler final : virtual public BrokerIf {
         dbpatterns[i].value = pattern.value;
         ++i;
       }
-      Env::Clients::get()->schemas->get(err, dbpatterns, dbschemas);
+      clients->schemas->get(err, dbpatterns, dbschemas);
       if(err && err != Error::COLUMN_SCHEMA_MISSING)
         Converter::exception(
           err, "problem getting columns schemas on patterns");
@@ -633,7 +642,7 @@ class AppHandler final : virtual public BrokerIf {
 
     DB::Schema::Ptr schema;
     for(auto& cid : spec.cids) {
-      schema = Env::Clients::get()->schemas->get(err, cid);
+      schema = clients->schemas->get(err, cid);
       if(!schema && !err)
         err = Error::COLUMN_SCHEMA_MISSING;
       if(err)
@@ -643,7 +652,7 @@ class AppHandler final : virtual public BrokerIf {
     }
 
     for(auto& name : spec.names) {
-      schema = Env::Clients::get()->schemas->get(err, name);
+      schema = clients->schemas->get(err, name);
       if(!schema && !err)
         err = Error::COLUMN_SCHEMA_MISSING;
       if(err)
@@ -655,6 +664,7 @@ class AppHandler final : virtual public BrokerIf {
     if(spec.patterns.empty() && dbschemas.empty()) { // get all schemas
       std::promise<int> res;
       Comm::Protocol::Mngr::Req::ColumnList::request(
+        clients,
         [&dbschemas, await=&res]
         (const Comm::client::ConnQueue::ReqBase::Ptr&, int error,
          const Comm::Protocol::Mngr::Params::ColumnListRsp& rsp) {
@@ -673,6 +683,7 @@ class AppHandler final : virtual public BrokerIf {
                   DB::Schema::Ptr& schema) {
     std::promise<int> res;
     Comm::Protocol::Mngr::Req::ColumnMng::request(
+      Env::Clients::get(),
       func, schema,
       [await=&res] (const Comm::client::ConnQueue::ReqBase::Ptr&, int error) {
         await->set_value(error);
@@ -706,9 +717,11 @@ class AppHandler final : virtual public BrokerIf {
     size_t sz = dbschemas.size();
     Core::Semaphore sem(sz, sz);
     _return.resize(sz);
+    auto clients = Env::Clients::get();
     for(size_t idx = 0; idx < sz; ++idx) {
       auto& r = _return[idx];
       Comm::Protocol::Mngr::Req::ColumnCompact::request(
+        clients,
         (r.cid = dbschemas[idx]->cid),
         [&sem, err=&r.err]
         (const Comm::client::ConnQueue::ReqBase::Ptr&,
@@ -728,11 +741,12 @@ class AppHandler final : virtual public BrokerIf {
     DB::Schema::Ptr schema;
     DB::Cells::Result cells;
 
+    auto clients = Env::Clients::get();
     for(cid_t cid : hdlr->get_cids()) {
       cells.free();
       hdlr->get_cells(cid, cells);
 
-      schema = Env::Clients::get()->schemas->get(err, cid);
+      schema = clients->schemas->get(err, cid);
       if(err)
         return;
       switch(schema->col_type) {
@@ -772,11 +786,12 @@ class AppHandler final : virtual public BrokerIf {
     DB::Schema::Ptr schema;
     DB::Cells::Result cells;
 
+    auto clients = Env::Clients::get();
     for(cid_t cid : hdlr->get_cids()) {
       cells.free();
       hdlr->get_cells(cid, cells);
 
-      schema = Env::Clients::get()->schemas->get(err, cid);
+      schema = clients->schemas->get(err, cid);
       if(err)
         return;
       auto& _col = _return[schema->col_name];
@@ -816,11 +831,12 @@ class AppHandler final : virtual public BrokerIf {
     DB::Schema::Ptr schema;
     DB::Cells::Result cells;
 
+    auto clients = Env::Clients::get();
     for(cid_t cid : hdlr->get_cids()) {
       cells.free();
       hdlr->get_cells(cid, cells);
 
-      schema = Env::Clients::get()->schemas->get(err, cid);
+      schema = clients->schemas->get(err, cid);
       if(err)
         return;
       switch(schema->col_type) {
@@ -870,13 +886,14 @@ class AppHandler final : virtual public BrokerIf {
     DB::Schema::Ptr schema;
     DB::Cells::Result cells;
 
+    auto clients = Env::Clients::get();
     std::vector<std::string> key;
 
     for(cid_t cid : hdlr->get_cids()) {
       cells.free();
       hdlr->get_cells(cid, cells);
 
-      schema = Env::Clients::get()->schemas->get(err, cid);
+      schema = clients->schemas->get(err, cid);
       if(err)
         return;
       switch(schema->col_type) {

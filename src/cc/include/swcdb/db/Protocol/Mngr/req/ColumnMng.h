@@ -8,7 +8,7 @@
 
 
 #include "swcdb/db/Protocol/Mngr/params/ColumnMng.h"
-#include "swcdb/core/comm/ClientConnQueue.h"
+#include "swcdb/db/client/Clients.h"
 
 
 namespace SWC { namespace Comm { namespace Protocol {
@@ -22,21 +22,26 @@ class ColumnMng: public client::ConnQueue::ReqBase {
   typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&,
                              int)> Cb_t;
 
-  static void create(const DB::Schema::Ptr& schema, Cb_t&& cb,
+  static void create(const SWC::client::Clients::Ptr& clients,
+                     const DB::Schema::Ptr& schema, Cb_t&& cb,
                      const uint32_t timeout = 10000);
 
-  static void modify(const DB::Schema::Ptr& schema, Cb_t&& cb,
+  static void modify(const SWC::client::Clients::Ptr& clients,
+                     const DB::Schema::Ptr& schema, Cb_t&& cb,
                      const uint32_t timeout = 10000);
 
-  static void remove(const DB::Schema::Ptr& schema, Cb_t&& cb,
+  static void remove(const SWC::client::Clients::Ptr& clients,
+                     const DB::Schema::Ptr& schema, Cb_t&& cb,
                      const uint32_t timeout = 10000);
 
-  static void request(Func func,
+  static void request(const SWC::client::Clients::Ptr& clients,
+                      Func func,
                       const DB::Schema::Ptr& schema, Cb_t&& cb,
                       const uint32_t timeout = 10000);
 
 
-  ColumnMng(const Params::ColumnMng& params, Cb_t&& cb,
+  ColumnMng(const SWC::client::Clients::Ptr& clients,
+            const Params::ColumnMng& params, Cb_t&& cb,
             const uint32_t timeout);
 
   virtual ~ColumnMng() { }
@@ -51,8 +56,9 @@ class ColumnMng: public client::ConnQueue::ReqBase {
 
   void clear_endpoints();
 
-  const Cb_t  cb;
-  EndPoints   endpoints;
+  SWC::client::Clients::Ptr clients;
+  const Cb_t                cb;
+  EndPoints                 endpoints;
 };
 
 

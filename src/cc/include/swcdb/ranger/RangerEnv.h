@@ -230,7 +230,8 @@ Rgr::Rgr()
       _compaction(nullptr),
       _columns(new Ranger::Columns()),
       _update_hdlr(
-        client::Query::Update::Handlers::Common::make(nullptr, app_io)),
+        client::Query::Update::Handlers::Common::make(
+          Env::Clients::get(), nullptr, app_io)),
       _reporting(
         SWC::Env::Config::settings()->get_bool("swc.rgr.metrics.enabled")
           ? std::make_shared<Ranger::Metric::Reporting>(

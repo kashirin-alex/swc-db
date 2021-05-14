@@ -9,7 +9,7 @@
 
 #include "swcdb/db/Cells/CellKey.h"
 #include "swcdb/db/Cells/CellValueSerialFields.h"
-#include "swcdb/db/Columns/Schemas.h"
+#include "swcdb/db/client/Clients.h"
 
 
 namespace SWC { namespace client { namespace SQL {
@@ -60,10 +60,12 @@ class Reader {
 
   void expect_token(const char* token, uint8_t token_len, bool& found);
 
-  DB::Schema::Ptr get_schema(const std::string& col);
+  DB::Schema::Ptr get_schema(const Clients::Ptr& clients,
+                             const std::string& col);
 
   std::vector<DB::Schema::Ptr>
-  get_schema(const  std::vector<DB::Schemas::Pattern>& patterns);
+  get_schema(const Clients::Ptr& clients,
+             const std::vector<DB::Schemas::Pattern>& patterns);
 
   void read(std::string& buf,
             const char* stop = nullptr, bool keep_escape=false);

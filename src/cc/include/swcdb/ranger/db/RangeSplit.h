@@ -108,6 +108,7 @@ class RangeSplit final {
         hdlr->range->compacting(Range::COMPACT_NONE);
         col->internal_unload(hdlr->range->rid);
         Comm::Protocol::Mngr::Req::RangeUnloaded::request(
+          Env::Clients::get(),
           col->cfg->cid, hdlr->range->rid,
           [cid=col->cfg->cid, new_rid=hdlr->range->rid]
           (const Comm::client::ConnQueue::ReqBase::Ptr& req,
@@ -145,6 +146,7 @@ class RangeSplit final {
   void mngr_create_range(int& err, rid_t& new_rid) {
     std::promise<void>  res;
     Comm::Protocol::Mngr::Req::RangeCreate::request(
+      Env::Clients::get(),
       range->cfg->cid,
       Env::Rgr::rgr_data()->rgrid,
       [&] (const Comm::client::ConnQueue::ReqBase::Ptr& req,
@@ -173,6 +175,7 @@ class RangeSplit final {
   void mngr_remove_range(const RangePtr& new_range) {
     std::promise<void> res;
     Comm::Protocol::Mngr::Req::RangeRemove::request(
+      Env::Clients::get(),
       new_range->cfg->cid,
       new_range->rid,
       [&] (const Comm::client::ConnQueue::ReqBase::Ptr& req,

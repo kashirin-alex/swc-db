@@ -45,7 +45,8 @@ enum Cmd : uint8_t {
 
 Cmd recognize_cmd(int& err, const std::string& sql, std::string& message);
 
-void parse_select(int& err, const std::string& sql,
+void parse_select(int& err, const Clients::Ptr& clients,
+                  const std::string& sql,
                   DB::Specs::Scan& specs,
                   uint8_t& display_flags, std::string& message);
 
@@ -53,16 +54,19 @@ void parse_update(int& err, const std::string& sql,
                   const Query::Update::Handlers::BaseUnorderedMap::Ptr& hdlr,
                   uint8_t& display_flags, std::string& message);
 
-void parse_list_columns(int& err, const std::string& sql,
+void parse_list_columns(int& err, const Clients::Ptr& clients,
+                        const std::string& sql,
                         std::vector<DB::Schema::Ptr>& schemas,
                         std::string& message, const char* expect_cmd);
 
-void parse_list_columns(int& err, const std::string& sql,
+void parse_list_columns(int& err, const Clients::Ptr& clients,
+                        const std::string& sql,
                         std::vector<DB::Schema::Ptr>& schemas,
                         Comm::Protocol::Mngr::Params::ColumnListReq& params,
                         std::string& message, const char* expect_cmd);
 
-void parse_list_columns(int& err, const std::string& sql,
+void parse_list_columns(int& err, const Clients::Ptr& clients,
+                        const std::string& sql,
                         std::vector<DB::Schema::Ptr>& schemas,
                         Comm::Protocol::Mngr::Params::ColumnListReq& params,
                         uint8_t& output_flags,
@@ -76,7 +80,8 @@ void parse_column_schema(int& err, const std::string& sql,
                          Comm::Protocol::Mngr::Req::ColumnMng::Func* func,
                          DB::Schema::Ptr& schema, std::string& message);
 
-void parse_dump(int& err, const std::string& sql,
+void parse_dump(int& err, const Clients::Ptr& clients,
+                const std::string& sql,
                 std::string& fs, std::string& filepath,
                 uint64_t& split_size, std::string& ext, int& level,
                 DB::Specs::Scan& specs,

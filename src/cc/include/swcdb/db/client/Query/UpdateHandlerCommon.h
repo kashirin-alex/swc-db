@@ -20,15 +20,17 @@ class Common : public BaseUnorderedMap {
   typedef std::shared_ptr<Common>                 Ptr;
   typedef std::function<void(const Common::Ptr&)> Cb_t;
 
-  static Ptr make(Cb_t&& cb=nullptr, const Comm::IoContextPtr& io=nullptr) {
-    return std::make_shared<Common>(std::move(cb), io);
+  static Ptr make(const Clients::Ptr& clients,
+                  Cb_t&& cb=nullptr, const Comm::IoContextPtr& io=nullptr) {
+    return std::make_shared<Common>(clients, std::move(cb), io);
   }
 
   using Base::error;
 
   Core::AtomicBool valid_state;
 
-  Common(Cb_t&& cb, const Comm::IoContextPtr& io=nullptr) noexcept;
+  Common(const Clients::Ptr& clients,
+         Cb_t&& cb, const Comm::IoContextPtr& io=nullptr) noexcept;
 
   virtual ~Common() { }
 

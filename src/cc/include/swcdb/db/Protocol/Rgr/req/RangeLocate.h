@@ -21,12 +21,14 @@ class RangeLocate: public client::ConnQueue::ReqBase {
   typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&,
                              const Params::RangeLocateRsp&)> Cb_t;
 
-  static void request(const Params::RangeLocateReq& params,
+  static void request(const SWC::client::Clients::Ptr& clients,
+                      const Params::RangeLocateReq& params,
                       const EndPoints& endpoints,
                       Cb_t&& cb,
                       const uint32_t timeout = 10000);
 
-  RangeLocate(const Params::RangeLocateReq& params,
+  RangeLocate(const SWC::client::Clients::Ptr& clients,
+              const Params::RangeLocateReq& params,
               const EndPoints& endpoints,
               Cb_t&& cb,
               const uint32_t timeout);
@@ -39,8 +41,9 @@ class RangeLocate: public client::ConnQueue::ReqBase {
 
   void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
 
-  const EndPoints  endpoints;
-  const Cb_t       cb;
+  SWC::client::Clients::Ptr clients;
+  const EndPoints           endpoints;
+  const Cb_t                cb;
 
 };
 

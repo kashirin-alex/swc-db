@@ -7,8 +7,8 @@
 #define swcdb_db_protocol_req_RgrGet_h
 
 
-#include "swcdb/core/comm/ClientConnQueue.h"
 #include "swcdb/db/Protocol/Mngr/params/RgrGet.h"
+#include "swcdb/db/client/Clients.h"
 
 
 namespace SWC { namespace Comm { namespace Protocol {
@@ -21,16 +21,20 @@ class RgrGet: public client::ConnQueue::ReqBase {
   typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&,
                              const Params::RgrGetRsp&)> Cb_t;
 
-  static void request(cid_t cid, rid_t rid, bool next_range,
+  static void request(const SWC::client::Clients::Ptr& clients,
+                      cid_t cid, rid_t rid, bool next_range,
                       Cb_t&& cb, const uint32_t timeout = 10000);
 
-  static void request(const Params::RgrGetReq& params,
+  static void request(const SWC::client::Clients::Ptr& clients,
+                      const Params::RgrGetReq& params,
                       Cb_t&& cb, const uint32_t timeout = 10000);
 
-  static Ptr make(const Params::RgrGetReq& params,
+  static Ptr make(const SWC::client::Clients::Ptr& clients,
+                  const Params::RgrGetReq& params,
                   Cb_t&& cb, const uint32_t timeout = 10000);
 
-  RgrGet(const Params::RgrGetReq& params, Cb_t&& cb,
+  RgrGet(const SWC::client::Clients::Ptr& clients,
+         const Params::RgrGetReq& params, Cb_t&& cb,
          const uint32_t timeout);
 
   virtual ~RgrGet() { }
@@ -45,9 +49,10 @@ class RgrGet: public client::ConnQueue::ReqBase {
 
   void clear_endpoints();
 
-  const Cb_t        cb;
-  EndPoints         endpoints;
-  cid_t             cid;
+  SWC::client::Clients::Ptr clients;
+  const Cb_t                cb;
+  EndPoints                 endpoints;
+  cid_t                     cid;
 };
 
 

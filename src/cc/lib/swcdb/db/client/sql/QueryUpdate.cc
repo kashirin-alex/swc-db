@@ -105,7 +105,7 @@ int QueryUpdate::parse_load(std::string& fs, std::string& filepath,
   if(err)
     return err;
 
-  auto schema = get_schema(col);
+  auto schema = get_schema(hdlr->clients, col);
   if(!err)
     cid = schema->cid;
   return err;
@@ -190,7 +190,7 @@ void QueryUpdate::read_cell(cid_t& cid, DB::Cells::Cell& cell,
     expect_comma(comma);
   if(err)
     return;
-  auto schema = get_schema(col);
+  auto schema = get_schema(hdlr->clients, col);
   if(err)
     return;
   cid = schema->cid;

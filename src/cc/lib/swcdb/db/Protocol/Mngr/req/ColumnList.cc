@@ -15,30 +15,35 @@ namespace Mngr { namespace Req {
 
 
 SWC_SHOULD_INLINE
-void ColumnList::request(ColumnList::Cb_t&& cb,
+void ColumnList::request(const SWC::client::Clients::Ptr& clients,
+                         ColumnList::Cb_t&& cb,
                          const uint32_t timeout) {
-  request(Params::ColumnListReq(), std::move(cb), timeout);
+  request(
+    clients, Params::ColumnListReq(), std::move(cb), timeout);
 }
 
 SWC_SHOULD_INLINE
-void ColumnList::request(const Params::ColumnListReq& params,
+void ColumnList::request(const SWC::client::Clients::Ptr& clients,
+                         const Params::ColumnListReq& params,
                          ColumnList::Cb_t&& cb,
                          const uint32_t timeout) {
-  std::make_shared<ColumnList>(params, std::move(cb), timeout)->run();
+  std::make_shared<ColumnList>(
+    clients, params, std::move(cb), timeout)->run();
 }
 
-ColumnList::ColumnList(const Params::ColumnListReq& params,
+ColumnList::ColumnList(const SWC::client::Clients::Ptr& clients,
+                       const Params::ColumnListReq& params,
                        ColumnList::Cb_t&& cb,
                        const uint32_t timeout)
                       : client::ConnQueue::ReqBase(
                           false,
                           Buffers::make(params, 0, COLUMN_LIST, timeout)
                         ),
-                        cb(std::move(cb)) {
+                        clients(clients), cb(std::move(cb)) {
 }
 
 void ColumnList::handle_no_conn() {
-  if(Env::Clients::get()->stopping()) {
+  if(clients->stopping()) {
     cb(req(), Error::CLIENT_STOPPING, Params::ColumnListRsp());
   } else {
     clear_endpoints();
@@ -48,19 +53,19 @@ void ColumnList::handle_no_conn() {
 
 bool ColumnList::run() {
   if(endpoints.empty()) {
-    Env::Clients::get()->mngrs_groups->select(
+    clients->mngrs_groups->select(
       DB::Types::MngrRole::SCHEMAS, endpoints);
     if(endpoints.empty()) {
-      if(Env::Clients::get()->stopping()) {
+      if(clients->stopping()) {
         cb(req(), Error::CLIENT_STOPPING, Params::ColumnListRsp());
       } else {
         MngrActive::make(
-          DB::Types::MngrRole::SCHEMAS, shared_from_this())->run();
+          clients, DB::Types::MngrRole::SCHEMAS, shared_from_this())->run();
       }
       return false;
     }
   }
-  Env::Clients::get()->mngr->get(endpoints)->put(req());
+  clients->mngr->get(endpoints)->put(req());
   return true;
 }
 
@@ -87,7 +92,7 @@ void ColumnList::handle(ConnHandlerPtr, const Event::Ptr& ev) {
 }
 
 void ColumnList::clear_endpoints() {
-  Env::Clients::get()->mngrs_groups->remove(endpoints);
+  clients->mngrs_groups->remove(endpoints);
   endpoints.clear();
 }
 

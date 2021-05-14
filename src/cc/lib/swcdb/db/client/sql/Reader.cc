@@ -134,14 +134,15 @@ void Reader::expect_token(const char* token, uint8_t token_len, bool& found) {
   error_msg(Error::SQL_PARSE_ERROR, "missing '"+std::string(token)+"'");
 }
 
-DB::Schema::Ptr Reader::get_schema(const std::string& col) {
+DB::Schema::Ptr Reader::get_schema(const Clients::Ptr& clients,
+                                   const std::string& col) {
   DB::Schema::Ptr schema;
   if(std::find_if(col.begin(), col.end(),
       [](unsigned char c){ return !std::isdigit(c); } ) != col.end()){
-    schema = Env::Clients::get()->schemas->get(err, col);
+    schema = clients->schemas->get(err, col);
   } else {
     try {
-      schema = Env::Clients::get()->schemas->get(err, std::stoll(col));
+      schema = clients->schemas->get(err, std::stoll(col));
     } catch(...) {
       const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
       err = e.code();
@@ -153,8 +154,9 @@ DB::Schema::Ptr Reader::get_schema(const std::string& col) {
 }
 
 std::vector<DB::Schema::Ptr>
-Reader::get_schema(const std::vector<DB::Schemas::Pattern>& patterns) {
-  auto schemas = Env::Clients::get()->schemas->get(err, patterns);
+Reader::get_schema(const Clients::Ptr& clients,
+                   const std::vector<DB::Schemas::Pattern>& patterns) {
+  auto schemas = clients->schemas->get(err, patterns);
   if(err) {
     std::string msg("problem getting columns on patterns=[");
     for(auto& p : patterns) {

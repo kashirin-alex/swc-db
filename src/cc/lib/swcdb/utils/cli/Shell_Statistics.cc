@@ -107,6 +107,7 @@ Statistics::Statistics()
   //Env::IoCtx::init(settings->get_i32("swc.client.handlers"));
   Env::Clients::init(
     std::make_shared<client::Clients>(
+      *Env::Config::settings(),
       nullptr, // Env::IoCtx::io(),
       nullptr, // std::make_shared<client::ManagerContext>()
       nullptr  // std::make_shared<client::RangerContext>()
@@ -464,6 +465,7 @@ void Statistics::set_definitions(DB::Specs::Scan& specs) {
   }
 
   auto hdlr = client::Query::Select::Handlers::Common::make(
+    Env::Clients::get(),
     [this]
     (const client::Query::Select::Handlers::Common::Ptr& hdlr) {
       DB::Cells::Result cells;
@@ -680,6 +682,7 @@ bool Statistics::show() {
 
     std::vector<Stats> stats_datas;
     auto hdlr = client::Query::Select::Handlers::Common::make(
+      Env::Clients::get(),
       [this, &g, datasp=&stats_datas]
       (const client::Query::Select::Handlers::Common::Ptr& hdlr) {
         DB::Cells::Result cells;
@@ -776,6 +779,7 @@ bool Statistics::truncate() {
   Core::Atomic<int> state_error(Error::OK);
 
   auto updater = client::Query::Update::Handlers::Common::make(
+    Env::Clients::get(),
     [state_errorp=&state_error]
     (const client::Query::Update::Handlers::Common::Ptr& hdlr) noexcept {
       if(hdlr->error())
@@ -789,6 +793,7 @@ bool Statistics::truncate() {
 
   Core::Atomic<size_t> deleted_count(0);
   auto hdlr = client::Query::Select::Handlers::Common::make(
+    updater->clients,
     [updater, col_updated,
      state_errorp=&state_error, countp=&deleted_count]
     (const client::Query::Select::Handlers::Common::Ptr& hdlr) {

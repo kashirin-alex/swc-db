@@ -14,28 +14,33 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace Mngr { namespace Req {
 
 
-Report::Report(Params::Report::Function func, const uint32_t timeout)
-              : client::ConnQueue::ReqBase(false, Buffers::make(1)) {
+Report::Report(const SWC::client::Clients::Ptr& clients,
+               Params::Report::Function func, const uint32_t timeout)
+              : client::ConnQueue::ReqBase(false, Buffers::make(1)),
+                clients(clients) {
   cbp->append_i8(func);
   cbp->header.set(REPORT, timeout);
 }
 
-Report::Report(const EndPoints& endpoints,
+Report::Report(const SWC::client::Clients::Ptr& clients,
+               const EndPoints& endpoints,
                Params::Report::Function func,
                const uint32_t timeout)
               : client::ConnQueue::ReqBase(false, Buffers::make(1)),
-                endpoints(endpoints) {
+                clients(clients), endpoints(endpoints) {
   cbp->append_i8(func);
   cbp->header.set(REPORT, timeout);
 }
 
-Report::Report(const Serializable& params,
+Report::Report(const SWC::client::Clients::Ptr& clients,
+               const Serializable& params,
                Params::Report::Function func,
                const uint32_t timeout)
               : client::ConnQueue::ReqBase(
                   false,
                   Buffers::make(params, 1, REPORT, timeout)
-                ) {
+                ),
+                clients(clients) {
   cbp->append_i8(func);
 }
 
@@ -45,31 +50,37 @@ void Report::handle_no_conn() {
 }
 
 void Report::clear_endpoints() {
-  Env::Clients::get()->mngrs_groups->remove(endpoints);
+  clients->mngrs_groups->remove(endpoints);
   endpoints.clear();
 }
 
 
 
 SWC_SHOULD_INLINE
-void ClusterStatus::request(const EndPoints& endpoints,
+void ClusterStatus::request(const SWC::client::Clients::Ptr& clients,
+                            const EndPoints& endpoints,
                             ClusterStatus::Cb_t&& cb,
                             const uint32_t timeout) {
-  std::make_shared<ClusterStatus>(endpoints, std::move(cb), timeout)->run();
+  std::make_shared<ClusterStatus>(
+    clients, endpoints, std::move(cb), timeout)->run();
 }
 
 SWC_SHOULD_INLINE
 ClusterStatus::Ptr
-ClusterStatus::make(const EndPoints& endpoints,
+ClusterStatus::make(const SWC::client::Clients::Ptr& clients,
+                    const EndPoints& endpoints,
                     ClusterStatus::Cb_t&& cb,
                     const uint32_t timeout) {
-  return std::make_shared<ClusterStatus>(endpoints, std::move(cb), timeout);
+  return std::make_shared<ClusterStatus>(
+    clients, endpoints, std::move(cb), timeout);
 }
 
-ClusterStatus::ClusterStatus(const EndPoints& endpoints,
+ClusterStatus::ClusterStatus(const SWC::client::Clients::Ptr& clients,
+                             const EndPoints& endpoints,
                              ClusterStatus::Cb_t&& cb,
                              const uint32_t timeout)
                             : Report(
+                                clients,
                                 endpoints,
                                 Params::Report::Function::CLUSTER_STATUS,
                                 timeout
@@ -77,7 +88,7 @@ ClusterStatus::ClusterStatus(const EndPoints& endpoints,
 }
 
 bool ClusterStatus::run() {
-  Env::Clients::get()->mngr->get(endpoints)->put(req());
+  clients->mngr->get(endpoints)->put(req());
   return true;
 }
 
@@ -111,29 +122,37 @@ void ClusterStatus::handle(ConnHandlerPtr, const Event::Ptr& ev) {
 
 
 SWC_SHOULD_INLINE
-void ColumnStatus::request(cid_t cid, ColumnStatus::Cb_t&& cb,
+void ColumnStatus::request(const SWC::client::Clients::Ptr& clients,
+                           cid_t cid, ColumnStatus::Cb_t&& cb,
                            const uint32_t timeout) {
-  request(Params::Report::ReqColumnStatus(cid), std::move(cb), timeout);
+  request(
+    clients, Params::Report::ReqColumnStatus(cid), std::move(cb), timeout);
 }
 
 SWC_SHOULD_INLINE
-void ColumnStatus::request(const Params::Report::ReqColumnStatus& params,
+void ColumnStatus::request(const SWC::client::Clients::Ptr& clients,
+                           const Params::Report::ReqColumnStatus& params,
                            ColumnStatus::Cb_t&& cb,
                            const uint32_t timeout) {
-  std::make_shared<ColumnStatus>(params, std::move(cb), timeout)->run();
+  std::make_shared<ColumnStatus>(
+    clients, params, std::move(cb), timeout)->run();
 }
 
 SWC_SHOULD_INLINE
 ColumnStatus::Ptr
-ColumnStatus::make(const Params::Report::ReqColumnStatus& params,
+ColumnStatus::make(const SWC::client::Clients::Ptr& clients,
+                   const Params::Report::ReqColumnStatus& params,
                    ColumnStatus::Cb_t&& cb, const uint32_t timeout) {
-  return std::make_shared<ColumnStatus>(params, std::move(cb), timeout);
+  return std::make_shared<ColumnStatus>(
+    clients, params, std::move(cb), timeout);
 }
 
-ColumnStatus::ColumnStatus(const Params::Report::ReqColumnStatus& params,
+ColumnStatus::ColumnStatus(const SWC::client::Clients::Ptr& clients,
+                           const Params::Report::ReqColumnStatus& params,
                            ColumnStatus::Cb_t&& cb,
                            const uint32_t timeout)
                           : Report(
+                              clients,
                               params,
                               Params::Report::Function::COLUMN_STATUS,
                               timeout
@@ -142,18 +161,18 @@ ColumnStatus::ColumnStatus(const Params::Report::ReqColumnStatus& params,
 }
 
 bool ColumnStatus::run() {
-  if(Env::Clients::get()->stopping()) {
+  if(clients->stopping()) {
     cb(req(), Error::CLIENT_STOPPING, Params::Report::RspColumnStatus());
     return false;
   }
   if(endpoints.empty()) {
-    Env::Clients::get()->mngrs_groups->select(cid, endpoints);
+    clients->mngrs_groups->select(cid, endpoints);
     if(endpoints.empty()) {
-      MngrActive::make(cid, shared_from_this())->run();
+      MngrActive::make(clients, cid, shared_from_this())->run();
       return false;
     }
   }
-  Env::Clients::get()->mngr->get(endpoints)->put(req());
+  clients->mngr->get(endpoints)->put(req());
   return true;
 }
 
@@ -185,49 +204,55 @@ void ColumnStatus::handle(ConnHandlerPtr, const Event::Ptr& ev) {
 
 
 SWC_SHOULD_INLINE
-void RangersStatus::request(cid_t cid, RangersStatus::Cb_t&& cb,
+void RangersStatus::request(const SWC::client::Clients::Ptr& clients,
+                            cid_t cid, RangersStatus::Cb_t&& cb,
                             const uint32_t timeout) {
-  std::make_shared<RangersStatus>(cid, std::move(cb), timeout)->run();
+  std::make_shared<RangersStatus>(
+    clients, cid, std::move(cb), timeout)->run();
 }
 
 SWC_SHOULD_INLINE
 RangersStatus::Ptr
-RangersStatus::make(cid_t cid, RangersStatus::Cb_t&& cb,
+RangersStatus::make(const SWC::client::Clients::Ptr& clients,
+                    cid_t cid, RangersStatus::Cb_t&& cb,
                     const uint32_t timeout) {
-  return std::make_shared<RangersStatus>(cid, std::move(cb), timeout);
+  return std::make_shared<RangersStatus>(
+    clients, cid, std::move(cb), timeout);
 }
 
-RangersStatus::RangersStatus(cid_t cid, RangersStatus::Cb_t&& cb,
+RangersStatus::RangersStatus(const SWC::client::Clients::Ptr& clients,
+                             cid_t cid, RangersStatus::Cb_t&& cb,
                              const uint32_t timeout)
                             : Report(
+                                clients,
                                 Params::Report::Function::RANGERS_STATUS,
                                 timeout
                               ), cb(std::move(cb)), cid(cid) {
 }
 
 bool RangersStatus::run() {
-  if(Env::Clients::get()->stopping()) {
+  if(clients->stopping()) {
     cb(req(), Error::CLIENT_STOPPING, Params::Report::RspRangersStatus());
     return false;
   }
   if(endpoints.empty()) {
     bool no_cid = cid == DB::Schema::NO_CID;
     if(no_cid)
-      Env::Clients::get()->mngrs_groups->select(
+      clients->mngrs_groups->select(
         DB::Types::MngrRole::RANGERS, endpoints);
     else
-      Env::Clients::get()->mngrs_groups->select(cid, endpoints);
+      clients->mngrs_groups->select(cid, endpoints);
 
     if(endpoints.empty()) {
       if(no_cid)
         MngrActive::make(
-          DB::Types::MngrRole::RANGERS, shared_from_this())->run();
+          clients, DB::Types::MngrRole::RANGERS, shared_from_this())->run();
       else
-        MngrActive::make(cid, shared_from_this())->run();
+        MngrActive::make(clients, cid, shared_from_this())->run();
       return false;
     }
   }
-  Env::Clients::get()->mngr->get(endpoints)->put(req());
+  clients->mngr->get(endpoints)->put(req());
   return true;
 }
 
@@ -259,24 +284,30 @@ void RangersStatus::handle(ConnHandlerPtr, const Event::Ptr& ev) {
 
 
 SWC_SHOULD_INLINE
-void ManagersStatus::request(const EndPoints& endpoints,
+void ManagersStatus::request(const SWC::client::Clients::Ptr& clients,
+                             const EndPoints& endpoints,
                              ManagersStatus::Cb_t&& cb,
                              const uint32_t timeout) {
-  std::make_shared<ManagersStatus>(endpoints, std::move(cb), timeout)->run();
+  std::make_shared<ManagersStatus>(
+    clients, endpoints, std::move(cb), timeout)->run();
 }
 
 SWC_SHOULD_INLINE
 ManagersStatus::Ptr
-ManagersStatus::make(const EndPoints& endpoints,
+ManagersStatus::make(const SWC::client::Clients::Ptr& clients,
+                     const EndPoints& endpoints,
                      ManagersStatus::Cb_t&& cb,
                      const uint32_t timeout) {
-  return std::make_shared<ManagersStatus>(endpoints, std::move(cb), timeout);
+  return std::make_shared<ManagersStatus>(
+    clients, endpoints, std::move(cb), timeout);
 }
 
-ManagersStatus::ManagersStatus(const EndPoints& endpoints,
+ManagersStatus::ManagersStatus(const SWC::client::Clients::Ptr& clients,
+                               const EndPoints& endpoints,
                                ManagersStatus::Cb_t&& cb,
                                const uint32_t timeout)
                               : Report(
+                                  clients,
                                   endpoints,
                                   Params::Report::Function::MANAGERS_STATUS,
                                   timeout
@@ -285,15 +316,15 @@ ManagersStatus::ManagersStatus(const EndPoints& endpoints,
 
 bool ManagersStatus::run() {
   if(endpoints.empty()) {
-    Env::Clients::get()->mngrs_groups->select(
+    clients->mngrs_groups->select(
       DB::Types::MngrRole::SCHEMAS, endpoints);
     if(endpoints.empty()) {
       MngrActive::make(
-        DB::Types::MngrRole::SCHEMAS, shared_from_this())->run();
+        clients, DB::Types::MngrRole::SCHEMAS, shared_from_this())->run();
       return false;
     }
   }
-  Env::Clients::get()->mngr->get(endpoints)->put(req());
+  clients->mngr->get(endpoints)->put(req());
   return true;
 }
 

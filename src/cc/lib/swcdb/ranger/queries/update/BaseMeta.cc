@@ -12,13 +12,11 @@ namespace SWC { namespace Ranger { namespace Query { namespace Update {
 
 BaseMeta::BaseMeta(const RangePtr& range)
                   : client::Query::Update::Handlers::BaseSingleColumn(
+                      Env::Clients::get(),
                       range->cfg->meta_cid, range->cfg->key_seq, 1, 0,
-                      DB::Types::Column::SERIAL),
+                      DB::Types::Column::SERIAL
+                    ),
                     range(range) {
-  timeout.store(Env::Clients::ref().cfg_send_timeout->get());
-  timeout_ratio.store(Env::Clients::ref().cfg_send_timeout_ratio->get());
-  buff_sz.store(Env::Clients::ref().cfg_send_buff_sz->get());
-  buff_ahead.store(Env::Clients::ref().cfg_send_ahead->get());
 }
 
 bool BaseMeta::valid() noexcept {

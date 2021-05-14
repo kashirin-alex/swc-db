@@ -15,51 +15,57 @@ namespace Mngr { namespace Req {
 
 
 SWC_SHOULD_INLINE
-void ColumnGet::schema(const std::string& name, ColumnGet::Cb_t&& cb,
-                        const uint32_t timeout) {
-  request(Flag::SCHEMA_BY_NAME, name, std::move(cb), timeout);
-}
-
-SWC_SHOULD_INLINE
-void ColumnGet::schema(cid_t cid, ColumnGet::Cb_t&& cb,
+void ColumnGet::schema(const SWC::client::Clients::Ptr& clients,
+                       const std::string& name, ColumnGet::Cb_t&& cb,
                        const uint32_t timeout) {
-  request(Flag::SCHEMA_BY_ID, cid, std::move(cb), timeout);
+  request(clients, Flag::SCHEMA_BY_NAME, name, std::move(cb), timeout);
 }
 
 SWC_SHOULD_INLINE
-void ColumnGet::cid(const std::string& name, ColumnGet::Cb_t&& cb,
+void ColumnGet::schema(const SWC::client::Clients::Ptr& clients,
+                       cid_t cid, ColumnGet::Cb_t&& cb,
+                       const uint32_t timeout) {
+  request(clients, Flag::SCHEMA_BY_ID, cid, std::move(cb), timeout);
+}
+
+SWC_SHOULD_INLINE
+void ColumnGet::cid(const SWC::client::Clients::Ptr& clients,
+                    const std::string& name, ColumnGet::Cb_t&& cb,
                     const uint32_t timeout) {
-  request(Flag::ID_BY_NAME, name, std::move(cb), timeout);
+  request(clients, Flag::ID_BY_NAME, name, std::move(cb), timeout);
 }
 
 SWC_SHOULD_INLINE
-void ColumnGet::request(ColumnGet::Flag flag, const std::string& name,
+void ColumnGet::request(const SWC::client::Clients::Ptr& clients,
+                        ColumnGet::Flag flag, const std::string& name,
                         ColumnGet::Cb_t&& cb,
                         const uint32_t timeout) {
   std::make_shared<ColumnGet>(
-    Params::ColumnGetReq(flag, name), std::move(cb), timeout)->run();
+    clients, Params::ColumnGetReq(flag, name), std::move(cb), timeout)->run();
 }
 
 SWC_SHOULD_INLINE
-void ColumnGet::request(ColumnGet::Flag flag, cid_t cid,
+void ColumnGet::request(const SWC::client::Clients::Ptr& clients,
+                        ColumnGet::Flag flag, cid_t cid,
                         ColumnGet::Cb_t&& cb, const uint32_t timeout) {
   std::make_shared<ColumnGet>(
-    Params::ColumnGetReq(flag, cid), std::move(cb), timeout)->run();
+    clients, Params::ColumnGetReq(flag, cid), std::move(cb), timeout)->run();
 }
 
 
-ColumnGet::ColumnGet(const Params::ColumnGetReq& params,
+ColumnGet::ColumnGet(const SWC::client::Clients::Ptr& clients,
+                     const Params::ColumnGetReq& params,
                      ColumnGet::Cb_t&& cb,
                      const uint32_t timeout)
                     : client::ConnQueue::ReqBase(
                         false,
                         Buffers::make(params, 0, COLUMN_GET, timeout)
                       ),
-                      cb(std::move(cb)) {
+                      clients(clients), cb(std::move(cb)) {
 }
 
 void ColumnGet::handle_no_conn() {
-  if(Env::Clients::get()->stopping()) {
+  if(clients->stopping()) {
     cb(req(), Error::CLIENT_STOPPING, Params::ColumnGetRsp());
   } else {
     clear_endpoints();
@@ -70,19 +76,19 @@ void ColumnGet::handle_no_conn() {
 bool ColumnGet::run() {
   if(endpoints.empty()) {
     // ColumnGet not like ColumnList (can be any mngr if by cid)
-    Env::Clients::get()->mngrs_groups->select(
+    clients->mngrs_groups->select(
       DB::Types::MngrRole::SCHEMAS, endpoints);
     if(endpoints.empty()) {
-      if(Env::Clients::get()->stopping()) {
+      if(clients->stopping()) {
         cb(req(), Error::CLIENT_STOPPING, Params::ColumnGetRsp());
       } else {
         MngrActive::make(
-          DB::Types::MngrRole::SCHEMAS, shared_from_this())->run();
+          clients, DB::Types::MngrRole::SCHEMAS, shared_from_this())->run();
       }
       return false;
     }
   }
-  Env::Clients::get()->mngr->get(endpoints)->put(req());
+  clients->mngr->get(endpoints)->put(req());
   return true;
 }
 
@@ -109,7 +115,7 @@ void ColumnGet::handle(ConnHandlerPtr, const Event::Ptr& ev) {
 }
 
 void ColumnGet::clear_endpoints() {
-  Env::Clients::get()->mngrs_groups->remove(endpoints);
+  clients->mngrs_groups->remove(endpoints);
   endpoints.clear();
 }
 

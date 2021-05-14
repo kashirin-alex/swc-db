@@ -25,6 +25,8 @@ class Settings final : public Properties {
 
   public:
 
+  typedef std::shared_ptr<Settings> Ptr;
+
   ParserConfig    cmdline_desc;
   ParserConfig    file_desc;
 
@@ -102,7 +104,7 @@ class Config final {
     return m_env;
   }
 
-  static SWC::Config::Settings* settings() {
+  static SWC::Config::Settings::Ptr& settings() {
     SWC_ASSERT(m_env);
     return m_env->m_settings;
   }
@@ -113,14 +115,11 @@ class Config final {
 
   Config() : m_settings(new SWC::Config::Settings()) { }
 
-  ~Config() {
-    if(m_settings)
-      delete m_settings;
-  }
+  ~Config() { }
 
   private:
-  SWC::Config::Settings*  m_settings;
-  inline static Ptr       m_env = nullptr;
+  SWC::Config::Settings::Ptr m_settings;
+  inline static Ptr          m_env = nullptr;
 
 };
 }

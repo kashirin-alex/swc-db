@@ -15,40 +15,47 @@ namespace Mngr { namespace Req {
 
 
 SWC_SHOULD_INLINE
-void RgrGet::request(cid_t cid,
+void RgrGet::request(const SWC::client::Clients::Ptr& clients,
+                     cid_t cid,
                      rid_t rid,
                      bool next_range,
                      RgrGet::Cb_t&& cb,
                      const uint32_t timeout) {
-  request(Params::RgrGetReq(cid, rid, next_range), std::move(cb), timeout);
+  request(
+    clients, Params::RgrGetReq(cid, rid, next_range), std::move(cb), timeout);
 }
 
 SWC_SHOULD_INLINE
-void RgrGet::request(const Params::RgrGetReq& params,
+void RgrGet::request(const SWC::client::Clients::Ptr& clients,
+                     const Params::RgrGetReq& params,
                      RgrGet::Cb_t&& cb,
                      const uint32_t timeout) {
-  std::make_shared<RgrGet>(params, std::move(cb), timeout)->run();
+  std::make_shared<RgrGet>(
+    clients, params, std::move(cb), timeout)->run();
 }
 
 SWC_SHOULD_INLINE
-RgrGet::Ptr RgrGet::make(const Params::RgrGetReq& params,
+RgrGet::Ptr RgrGet::make(const SWC::client::Clients::Ptr& clients,
+                         const Params::RgrGetReq& params,
                          RgrGet::Cb_t&& cb,
                          const uint32_t timeout) {
-  return std::make_shared<RgrGet>(params, std::move(cb), timeout);
+  return std::make_shared<RgrGet>(
+    clients, params, std::move(cb), timeout);
 }
 
-RgrGet::RgrGet(const Params::RgrGetReq& params,
+RgrGet::RgrGet(const SWC::client::Clients::Ptr& clients,
+               const Params::RgrGetReq& params,
                RgrGet::Cb_t&& cb,
                const uint32_t timeout)
               : client::ConnQueue::ReqBase(
                   false,
                   Buffers::make(params, 0 ,RGR_GET, timeout)
                 ),
-                cb(std::move(cb)), cid(params.cid) {
+                clients(clients), cb(std::move(cb)), cid(params.cid) {
 }
 
 void RgrGet::handle_no_conn() {
-  if(Env::Clients::get()->stopping()) {
+  if(clients->stopping()) {
     cb(req(), Params::RgrGetRsp(Error::CLIENT_STOPPING));
   } else {
     clear_endpoints();
@@ -58,17 +65,17 @@ void RgrGet::handle_no_conn() {
 
 bool RgrGet::run() {
   if(endpoints.empty()) {
-    Env::Clients::get()->mngrs_groups->select(cid, endpoints);
+    clients->mngrs_groups->select(cid, endpoints);
     if(endpoints.empty()) {
-      if(Env::Clients::get()->stopping()) {
+      if(clients->stopping()) {
         cb(req(), Params::RgrGetRsp(Error::CLIENT_STOPPING));
       } else {
-        MngrActive::make(cid, shared_from_this())->run();
+        MngrActive::make(clients, cid, shared_from_this())->run();
       }
       return false;
     }
   }
-  Env::Clients::get()->mngr->get(endpoints)->put(req());
+  clients->mngr->get(endpoints)->put(req());
   return true;
 }
 
@@ -94,7 +101,7 @@ void RgrGet::handle(ConnHandlerPtr, const Event::Ptr& ev) {
 }
 
 void RgrGet::clear_endpoints() {
-  Env::Clients::get()->mngrs_groups->remove(endpoints);
+  clients->mngrs_groups->remove(endpoints);
   endpoints.clear();
 }
 

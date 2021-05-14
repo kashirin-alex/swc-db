@@ -18,12 +18,15 @@ namespace Mngr { namespace Req {
 class Report: public client::ConnQueue::ReqBase {
   public:
 
-  Report(Params::Report::Function func, const uint32_t timeout);
+  Report(const SWC::client::Clients::Ptr& clients,
+         Params::Report::Function func, const uint32_t timeout);
 
-  Report(const EndPoints& endpoints, Params::Report::Function func,
+  Report(const SWC::client::Clients::Ptr& clients,
+         const EndPoints& endpoints, Params::Report::Function func,
          const uint32_t timeout);
 
-  Report(const Serializable& params, Params::Report::Function func,
+  Report(const SWC::client::Clients::Ptr& clients,
+         const Serializable& params, Params::Report::Function func,
          const uint32_t timeout);
 
   virtual ~Report() { }
@@ -34,7 +37,8 @@ class Report: public client::ConnQueue::ReqBase {
 
   void clear_endpoints();
 
-  EndPoints   endpoints;
+  SWC::client::Clients::Ptr clients;
+  EndPoints                 endpoints;
 };
 
 
@@ -46,13 +50,16 @@ class ClusterStatus: public Report {
   typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&,
                              const int&)> Cb_t;
 
-  static void request(const EndPoints& endpoints,
+  static void request(const SWC::client::Clients::Ptr& clients,
+                      const EndPoints& endpoints,
                       Cb_t&& cb, const uint32_t timeout = 10000);
 
-  static Ptr make(const EndPoints& endpoints,
+  static Ptr make(const SWC::client::Clients::Ptr& clients,
+                  const EndPoints& endpoints,
                   Cb_t&& cb, const uint32_t timeout = 10000);
 
-  ClusterStatus(const EndPoints& endpoints,
+  ClusterStatus(const SWC::client::Clients::Ptr& clients,
+                const EndPoints& endpoints,
                 Cb_t&& cb, const uint32_t timeout);
 
   virtual ~ClusterStatus() { }
@@ -79,16 +86,20 @@ class ColumnStatus: public Report {
                              const int&,
                              const Params::Report::RspColumnStatus&)> Cb_t;
 
-  static void request(cid_t cid, Cb_t&& cb,
+  static void request(const SWC::client::Clients::Ptr& clients,
+                      cid_t cid, Cb_t&& cb,
                       const uint32_t timeout = 10000);
 
-  static void request(const Params::Report::ReqColumnStatus& params,
+  static void request(const SWC::client::Clients::Ptr& clients,
+                      const Params::Report::ReqColumnStatus& params,
                       Cb_t&& cb, const uint32_t timeout = 10000);
 
-  static Ptr make(const Params::Report::ReqColumnStatus& params,
+  static Ptr make(const SWC::client::Clients::Ptr& clients,
+                  const Params::Report::ReqColumnStatus& params,
                   Cb_t&& cb, const uint32_t timeout = 10000);
 
-  ColumnStatus(const Params::Report::ReqColumnStatus& params,
+  ColumnStatus(const SWC::client::Clients::Ptr& clients,
+               const Params::Report::ReqColumnStatus& params,
                Cb_t&& cb, const uint32_t timeout);
 
   virtual ~ColumnStatus() { }
@@ -114,13 +125,16 @@ class RangersStatus: public Report {
                              const int&,
                              const Params::Report::RspRangersStatus&)> Cb_t;
 
-  static void request(cid_t cid, Cb_t&& cb,
+  static void request(const SWC::client::Clients::Ptr& clients,
+                      cid_t cid, Cb_t&& cb,
                       const uint32_t timeout = 10000);
 
-  static Ptr make(cid_t cid, Cb_t&& cb,
+  static Ptr make(const SWC::client::Clients::Ptr& clients,
+                  cid_t cid, Cb_t&& cb,
                   const uint32_t timeout = 10000);
 
-  RangersStatus(cid_t cid, Cb_t&& cb,
+  RangersStatus(const SWC::client::Clients::Ptr& clients,
+                cid_t cid, Cb_t&& cb,
                 const uint32_t timeout);
 
   virtual ~RangersStatus() { }
@@ -146,13 +160,16 @@ class ManagersStatus: public Report {
                              const int&,
                              const Params::Report::RspManagersStatus&)> Cb_t;
 
-  static void request(const EndPoints& endpoints, Cb_t&& cb,
+  static void request(const SWC::client::Clients::Ptr& clients,
+                      const EndPoints& endpoints, Cb_t&& cb,
                       const uint32_t timeout = 10000);
 
-  static Ptr make(const EndPoints& endpoints, Cb_t&& cb,
+  static Ptr make(const SWC::client::Clients::Ptr& clients,
+                  const EndPoints& endpoints, Cb_t&& cb,
                   const uint32_t timeout = 10000);
 
-  ManagersStatus(const EndPoints& endpoints, Cb_t&& cb,
+  ManagersStatus(const SWC::client::Clients::Ptr& clients,
+                 const EndPoints& endpoints, Cb_t&& cb,
                  const uint32_t timeout);
 
   virtual ~ManagersStatus() { }

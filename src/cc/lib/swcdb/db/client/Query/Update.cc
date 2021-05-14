@@ -111,6 +111,7 @@ void Committer::locate_on_manager() {
   SWC_LOCATOR_REQ_DEBUG("mngr_locate_master");
 
   Comm::Protocol::Mngr::Req::RgrGet::request(
+    hdlr->clients,
     params,
     [profile=hdlr->profile.mngr_locate(), committer=shared_from_this()]
     (const ReqBase::Ptr& req,
@@ -196,6 +197,7 @@ void Committer::locate_on_ranger(const Comm::EndPoints& endpoints) {
   SWC_LOCATOR_REQ_DEBUG("rgr_locate");
 
   Comm::Protocol::Rgr::Req::RangeLocate::request(
+    hdlr->clients,
     params, endpoints,
     [profile=hdlr->profile.rgr_locate(type), committer=shared_from_this()]
     (const ReqBase::Ptr& req,
@@ -224,13 +226,13 @@ void Committer::located_on_ranger(
     case Error::SERVER_SHUTTING_DOWN:
     case Error::COMM_NOT_CONNECTED: {
       SWC_LOCATOR_RSP_DEBUG("rgr_located RETRYING");
-      Env::Clients::get()->rangers.remove(cid, rid);
+      hdlr->clients->rangers.remove(cid, rid);
       return parent->request_again();
     }
     default: {
       SWC_LOCATOR_RSP_DEBUG("rgr_located RETRYING");
       if(rsp.err != Error::REQUEST_TIMEOUT)
-        Env::Clients::get()->rangers.remove(cid, rid);
+        hdlr->clients->rangers.remove(cid, rid);
       return base->request_again();
     }
   }
@@ -271,6 +273,7 @@ void Committer::resolve_on_manager() {
 
   Comm::Protocol::Mngr::Params::RgrGetReq params(cid, rid);
   auto req = Comm::Protocol::Mngr::Req::RgrGet::make(
+    hdlr->clients,
     params,
     [profile=hdlr->profile.mngr_res(), committer=shared_from_this()]
     (const ReqBase::Ptr& req,
@@ -282,7 +285,7 @@ void Committer::resolve_on_manager() {
   if(!DB::Types::SystemColumn::is_master(cid)) {
     auto profile = hdlr->profile.mngr_res();
     Comm::Protocol::Mngr::Params::RgrGetRsp rsp(cid, rid);
-    if(Env::Clients::get()->rangers.get(cid, rid, rsp.endpoints)) {
+    if(hdlr->clients->rangers.get(cid, rid, rsp.endpoints)) {
       profile.add_cached(Error::OK);
       SWC_LOCATOR_RSP_DEBUG("mngr_resolve_rgr Cache hit");
       return proceed_on_ranger(req, rsp);
@@ -325,7 +328,7 @@ void Committer::located_ranger(
   SWC_LOCATOR_RSP_DEBUG("rgr_located");
 
   if(!DB::Types::SystemColumn::is_master(rsp.cid))
-    Env::Clients::get()->rangers.set(rsp.cid, rsp.rid, rsp.endpoints);
+    hdlr->clients->rangers.set(rsp.cid, rsp.rid, rsp.endpoints);
 
   proceed_on_ranger(base, rsp);
 }
@@ -352,7 +355,7 @@ void Committer::proceed_on_ranger(
   }
 
   if(cid != rsp.cid || colp->get_cid() != cid) {
-    Env::Clients::get()->rangers.remove(cid, rid);
+    hdlr->clients->rangers.remove(cid, rid);
     SWC_LOCATOR_RSP_DEBUG("rgr_located RETRYING(cid no match)");
     return (parent ? parent : base)->request_again();;
   }
@@ -391,6 +394,7 @@ void Committer::commit_data(
     workload->increment();
 
     Comm::Protocol::Rgr::Req::RangeQueryUpdate::request(
+      hdlr->clients,
       Comm::Protocol::Rgr::Params::RangeQueryUpdateReq(colp->get_cid(), rid),
       cells_buff,
       endpoints,

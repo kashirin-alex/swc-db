@@ -23,10 +23,12 @@ class BaseSingleColumn : public Base {
 
   ColumnMutable column;
 
-  BaseSingleColumn(const cid_t cid, DB::Types::KeySeq seq,
+  BaseSingleColumn(const Clients::Ptr& clients,
+                   const cid_t cid, DB::Types::KeySeq seq,
                    uint32_t versions, uint32_t ttl_secs,
                    DB::Types::Column type)
-                  : column(cid, seq, versions, ttl_secs, type) {
+                  : Base(clients),
+                    column(cid, seq, versions, ttl_secs, type) {
   }
 
   BaseSingleColumn(const BaseSingleColumn&) = delete;

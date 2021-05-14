@@ -25,8 +25,8 @@ class BaseSingleColumn : public Base {
 
   const cid_t         cid;
 
-  BaseSingleColumn(const cid_t cid) noexcept
-                  : cid(cid) {
+  BaseSingleColumn(const Clients::Ptr& clients, const cid_t cid) noexcept
+                  : Base(clients), cid(cid) {
   }
 
   virtual ~BaseSingleColumn() { }

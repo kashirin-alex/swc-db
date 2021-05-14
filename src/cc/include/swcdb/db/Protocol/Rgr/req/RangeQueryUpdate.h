@@ -23,14 +23,16 @@ class RangeQueryUpdate: public client::ConnQueue::ReqBase {
                              const Params::RangeQueryUpdateRsp&)> Cb_t;
 
   static void
-  request(const Params::RangeQueryUpdateReq& params,
+  request(const SWC::client::Clients::Ptr& clients,
+          const Params::RangeQueryUpdateReq& params,
           const DynamicBuffer::Ptr& buffer,
           const EndPoints& endpoints,
           Cb_t&& cb,
           const uint32_t timeout = 10000);
 
 
-  RangeQueryUpdate(const Params::RangeQueryUpdateReq& params,
+  RangeQueryUpdate(const SWC::client::Clients::Ptr& clients,
+                   const Params::RangeQueryUpdateReq& params,
                    const DynamicBuffer::Ptr& buffer,
                    const EndPoints& endpoints,
                    Cb_t&& cb,
@@ -45,9 +47,9 @@ class RangeQueryUpdate: public client::ConnQueue::ReqBase {
   void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
 
   private:
-
-  EndPoints       endpoints;
-  const Cb_t      cb;
+  SWC::client::Clients::Ptr clients;
+  EndPoints                 endpoints;
+  const Cb_t                cb;
 };
 
 

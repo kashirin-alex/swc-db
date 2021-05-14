@@ -44,7 +44,8 @@ class Item_Fds : public Item_CountVolume {
 
 Reporting::Reporting(const Comm::IoContextPtr& io,
                      Config::Property::V_GINT32::Ptr cfg_intval)
-          : Common::Query::Update::Metric::Reporting(io, cfg_intval),
+          : Common::Query::Update::Metric::Reporting(
+              Env::Clients::get(), io, cfg_intval),
             net(nullptr), fds(new Item_Fds()) {
 }
 

@@ -11,9 +11,6 @@
 #include "swcdb/db/client/Settings.h"
 #include "swcdb/db/client/ContextManager.h"
 #include "swcdb/db/client/ContextRanger.h"
-#include "swcdb/db/client/Schemas.h"
-#include "swcdb/db/client/mngr/Groups.h"
-#include "swcdb/db/client/rgr/Rangers.h"
 
 
 namespace SWC {
@@ -26,20 +23,37 @@ namespace SWC {
  */
 namespace client {
 
+class Clients;
+
+}}
+
+
+#include "swcdb/db/client/Schemas.h"
+#include "swcdb/db/client/mngr/Groups.h"
+#include "swcdb/db/client/rgr/Rangers.h"
+
+
+namespace SWC { namespace client {
+
 
 Comm::IoContextPtr default_io();
 
 
-class Clients final {
+class Clients : public std::enable_shared_from_this<Clients>{
   public:
 
   typedef std::shared_ptr<Clients> Ptr;
 
-  Clients(Comm::IoContextPtr ioctx,
+  Clients(const Config::Settings& settings,
+          Comm::IoContextPtr ioctx,
           const ContextManager::Ptr& mngr_ctx,
           const ContextRanger::Ptr& rgr_ctx);
 
   //~Clients() { }
+
+  Ptr shared() {
+    return shared_from_this();
+  }
 
   void stop();
 
@@ -47,12 +61,22 @@ class Clients final {
     return !running;
   }
 
-  Core::AtomicBool                running;
-  const Mngr::Groups::Ptr         mngrs_groups;
-  Comm::client::ConnQueuesPtr     mngr;
-  Comm::client::ConnQueuesPtr     rgr;
-  Schemas::Ptr                    schemas;
-  Rangers                         rangers;
+  Core::AtomicBool                            running;
+
+  const SWC::Config::Property::V_GINT32::Ptr  cfg_send_buff_sz;
+  const SWC::Config::Property::V_GUINT8::Ptr  cfg_send_ahead;
+  const SWC::Config::Property::V_GINT32::Ptr  cfg_send_timeout;
+  const SWC::Config::Property::V_GINT32::Ptr  cfg_send_timeout_ratio;
+
+  const SWC::Config::Property::V_GINT32::Ptr  cfg_recv_buff_sz;
+  const SWC::Config::Property::V_GUINT8::Ptr  cfg_recv_ahead;
+  const SWC::Config::Property::V_GINT32::Ptr  cfg_recv_timeout;
+
+  const Mngr::Groups::Ptr                     mngrs_groups;
+  Comm::client::ConnQueuesPtr                 mngr;
+  Comm::client::ConnQueuesPtr                 rgr;
+  Schemas::Ptr                                schemas;
+  Rangers                                     rangers;
 
 };
 
@@ -74,16 +98,7 @@ class Clients final {
 
   static void reset() noexcept;
 
-  const SWC::Config::Property::V_GINT32::Ptr      cfg_send_buff_sz;
-  const SWC::Config::Property::V_GUINT8::Ptr      cfg_send_ahead;
-  const SWC::Config::Property::V_GINT32::Ptr      cfg_send_timeout;
-  const SWC::Config::Property::V_GINT32::Ptr      cfg_send_timeout_ratio;
-
-  const SWC::Config::Property::V_GINT32::Ptr      cfg_recv_buff_sz;
-  const SWC::Config::Property::V_GUINT8::Ptr      cfg_recv_ahead;
-  const SWC::Config::Property::V_GINT32::Ptr      cfg_recv_timeout;
-
-  Clients(const client::Clients::Ptr& clients);
+  Clients(const client::Clients::Ptr& clients) noexcept;
 
   //~Clients() { }
 

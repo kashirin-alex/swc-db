@@ -23,24 +23,29 @@ class RangeRemove: public client::ConnQueue::ReqBase {
   typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&,
                              const Params::RangeRemoveRsp&)> Cb_t;
 
-  static void request(cid_t cid, rid_t rid,
+  static void request(const SWC::client::Clients::Ptr& clients,
+                      cid_t cid, rid_t rid,
                       Cb_t&& cb, const uint32_t timeout = 10000) {
-    request(Params::RangeRemoveReq(cid, rid), std::move(cb), timeout);
+    request(
+      clients, Params::RangeRemoveReq(cid, rid), std::move(cb), timeout);
   }
 
-  static inline void request(const Params::RangeRemoveReq& params,
+  static inline void request(const SWC::client::Clients::Ptr& clients,
+                             const Params::RangeRemoveReq& params,
                              Cb_t&& cb, const uint32_t timeout = 10000) {
-    std::make_shared<RangeRemove>(params, std::move(cb), timeout)->run();
+    std::make_shared<RangeRemove>(
+      clients, params, std::move(cb), timeout)->run();
   }
 
 
-  RangeRemove(const Params::RangeRemoveReq& params, Cb_t&& cb,
+  RangeRemove(const SWC::client::Clients::Ptr& clients,
+              const Params::RangeRemoveReq& params, Cb_t&& cb,
               const uint32_t timeout)
               : client::ConnQueue::ReqBase(
                   false,
                   Buffers::make(params, 0, RANGE_REMOVE, timeout)
                 ),
-                cb(std::move(cb)), cid(params.cid) {
+                clients(clients), cb(std::move(cb)), cid(params.cid) {
   }
 
   virtual ~RangeRemove() { }
@@ -52,13 +57,13 @@ class RangeRemove: public client::ConnQueue::ReqBase {
 
   bool run() override {
     if(endpoints.empty()) {
-      Env::Clients::get()->mngrs_groups->select(cid, endpoints);
+      clients->mngrs_groups->select(cid, endpoints);
       if(endpoints.empty()) {
-        MngrActive::make(cid, shared_from_this())->run();
+        MngrActive::make(clients, cid, shared_from_this())->run();
         return false;
       }
     }
-    Env::Clients::get()->mngr->get(endpoints)->put(req());
+    clients->mngr->get(endpoints)->put(req());
     return true;
   }
 
@@ -86,13 +91,14 @@ class RangeRemove: public client::ConnQueue::ReqBase {
   private:
 
   void clear_endpoints() {
-    Env::Clients::get()->mngrs_groups->remove(endpoints);
+    clients->mngrs_groups->remove(endpoints);
     endpoints.clear();
   }
 
-  const Cb_t      cb;
-  const cid_t     cid;
-  EndPoints       endpoints;
+  SWC::client::Clients::Ptr clients;
+  const Cb_t                cb;
+  const cid_t               cid;
+  EndPoints                 endpoints;
 };
 
 

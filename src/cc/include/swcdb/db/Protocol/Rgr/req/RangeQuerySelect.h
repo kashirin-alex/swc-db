@@ -22,14 +22,16 @@ class RangeQuerySelect: public client::ConnQueue::ReqBase {
                              const Params::RangeQuerySelectRsp&)> Cb_t;
 
   static void
-  request(const Params::RangeQuerySelectReq& params,
+  request(const SWC::client::Clients::Ptr& clients,
+          const Params::RangeQuerySelectReq& params,
           const EndPoints& endpoints,
           Cb_t&& cb,
           const uint32_t timeout = 10000);
 
   EndPoints     endpoints;
 
-  RangeQuerySelect(const Params::RangeQuerySelectReq& params,
+  RangeQuerySelect(const SWC::client::Clients::Ptr& clients,
+                   const Params::RangeQuerySelectReq& params,
                    const EndPoints& endpoints,
                    Cb_t&& cb,
                    const uint32_t timeout);
@@ -43,8 +45,8 @@ class RangeQuerySelect: public client::ConnQueue::ReqBase {
   void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
 
   private:
-
-  const Cb_t    cb;
+  SWC::client::Clients::Ptr clients;
+  const Cb_t                cb;
 };
 
 

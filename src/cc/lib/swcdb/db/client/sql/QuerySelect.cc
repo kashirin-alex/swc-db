@@ -56,9 +56,11 @@ namespace {
 
 }
 
-QuerySelect::QuerySelect(const std::string& sql, DB::Specs::Scan& specs,
+QuerySelect::QuerySelect(const Clients::Ptr& clients,
+                         const std::string& sql, DB::Specs::Scan& specs,
                          std::string& message)
-                        : Reader(sql, message), specs(specs) {
+                        : Reader(sql, message),
+                          clients(clients), specs(specs) {
 }
 
 int QuerySelect::parse_select() {
@@ -394,7 +396,7 @@ void QuerySelect::read_columns_intervals() {
 }
 
 DB::Schema::Ptr QuerySelect::add_column(const std::string& col) {
-  auto schema = get_schema(col);
+  auto schema = get_schema(clients, col);
   if(err)
     return nullptr;
   for(auto& col : specs.columns) {
@@ -407,7 +409,7 @@ DB::Schema::Ptr QuerySelect::add_column(const std::string& col) {
 
 void QuerySelect::add_column(const std::vector<DB::Schemas::Pattern>& patterns,
                            std::vector<DB::Schema::Ptr>& cols) {
-  auto schemas = get_schema(patterns);
+  auto schemas = get_schema(clients, patterns);
   if(err)
   return;
 

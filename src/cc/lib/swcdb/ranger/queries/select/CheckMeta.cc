@@ -20,13 +20,8 @@ void CheckMeta::run(const RangePtr& range,
 CheckMeta::CheckMeta(const RangePtr& range,
                      const Callback::RangeLoad::Ptr& req)
           : client::Query::Select::Handlers::BaseSingleColumn(
-              range->cfg->meta_cid),
+              Env::Clients::get(), range->cfg->meta_cid),
             range(range), req(req), spec(DB::Types::Column::SERIAL) {
-
-    buff_sz.store(Env::Clients::ref().cfg_recv_buff_sz->get());
-    buff_ahead.store(Env::Clients::ref().cfg_recv_ahead->get());
-    timeout.store(Env::Clients::ref().cfg_recv_timeout->get());
-
     auto& key_intval = spec.key_intervals.add();
     key_intval.start.reserve(2);
     key_intval.start.add(std::to_string(range->cfg->cid), Condition::EQ);

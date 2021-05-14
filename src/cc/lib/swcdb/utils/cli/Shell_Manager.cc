@@ -2,7 +2,7 @@
  * SWC-DB© Copyright since 2019 Alex Kashirin <kashirin.alex@gmail.com>
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
- 
+
 
 #include "swcdb/utils/cli/Shell_Manager.h"
 #include "swcdb/db/client/Clients.h"
@@ -13,52 +13,53 @@
 namespace SWC { namespace Utils { namespace shell {
 
 
-Mngr::Mngr() 
+Mngr::Mngr()
   : Interface("\033[32mSWC-DB(\033[36mmngr\033[32m)\033[33m> \033[00m",
               "/tmp/.swc-cli-manager-history") {
 
   options.push_back(
     new Option(
-      "cluster", 
+      "cluster",
       {"report cluster-status state by error",
       "cluster;"},
-      [ptr=this](std::string& cmd){return ptr->cluster_status(cmd);}, 
+      [ptr=this](std::string& cmd){return ptr->cluster_status(cmd);},
       new re2::RE2("(?i)^(cluster)(\\s|$)")
     )
   );
 
   options.push_back(
     new Option(
-      "status", 
+      "status",
       {"report managers status by mngr-endpoint, of Schema-Role or by All",
       "status [Schemas(default) | ALL | endpoint=HOST/IP(|PORT)];"},
-      [ptr=this](std::string& cmd){return ptr->managers_status(cmd);}, 
+      [ptr=this](std::string& cmd){return ptr->managers_status(cmd);},
       new re2::RE2("(?i)^(report|status)(\\s|$)")
     )
   );
 
   options.push_back(
     new Option(
-      "column-status", 
+      "column-status",
       {"report column status with ranges status",
       "column-status [cid=CID | name=NAME];"},
-      [ptr=this](std::string& cmd){return ptr->column_status(cmd);}, 
+      [ptr=this](std::string& cmd){return ptr->column_status(cmd);},
       new re2::RE2("(?i)^(report-column|column-status)")
     )
   );
 
   options.push_back(
     new Option(
-      "rangers-status", 
+      "rangers-status",
       {"report rangers status by Manager of column or Rangers-Role",
       "rangers-status [without | cid=CID | name=NAME];"},
-      [ptr=this](std::string& cmd){return ptr->rangers_status(cmd);}, 
+      [ptr=this](std::string& cmd){return ptr->rangers_status(cmd);},
       new re2::RE2("(?i)^(report-rangers|rangers-status)")
     )
   );
 
   Env::Clients::init(
     std::make_shared<client::Clients>(
+      *Env::Config::settings(),
       nullptr,
       nullptr, // std::make_shared<client::ManagerContext>()
       nullptr  // std::make_shared<client::RangerContext>()
@@ -68,9 +69,9 @@ Mngr::Mngr()
 
 bool Mngr::cluster_status(std::string&) {
   std::string message;
-
+  auto clients = Env::Clients::get();
   client::Mngr::Hosts hosts;
-  auto groups = Env::Clients::get()->mngrs_groups->get_groups();
+  auto groups = clients->mngrs_groups->get_groups();
   for(auto& g : groups) {
     auto tmp =  g->get_hosts();
     hosts.insert(hosts.end(), tmp.begin(), tmp.end());
@@ -84,8 +85,9 @@ bool Mngr::cluster_status(std::string&) {
   for(auto& endpoints : hosts) {
     std::promise<void>  r_promise;
     Comm::Protocol::Mngr::Req::ClusterStatus::request(
+      clients,
       endpoints,
-      [this, await=&r_promise] 
+      [this, await=&r_promise]
       (const Comm::client::ConnQueue::ReqBase::Ptr&, const int& error) {
         err = error;
         await->set_value();
@@ -93,21 +95,21 @@ bool Mngr::cluster_status(std::string&) {
     );
     r_promise.get_future().wait();
     if(err) {
-      SWC_PRINT << "code=" << err 
+      SWC_PRINT << "code=" << err
                 << " msg=" << Error::get_text(err) << SWC_PRINT_CLOSE;
       message.append(Error::get_text(err));
       message.append("\n");
       return error(message);
     }
   }
-  SWC_PRINT << "code=" << err 
+  SWC_PRINT << "code=" << err
             << " msg=" << Error::get_text(err) << SWC_PRINT_CLOSE;
   return true;
 }
 
 bool Mngr::managers_status(std::string& cmd) {
   std::string message;
-
+  auto clients = Env::Clients::get();
   size_t at = cmd.find_first_of(" ");
   cmd = cmd.substr(at+1);
   client::SQL::Reader reader(cmd, message);
@@ -126,7 +128,7 @@ bool Mngr::managers_status(std::string& cmd) {
       return error(message);
     if(host_or_ips.empty())
       return error("Missing Endpoint");
-    
+
     while(reader.found_space());
     uint16_t port;
     bool was_set = false;
@@ -134,17 +136,17 @@ bool Mngr::managers_status(std::string& cmd) {
       reader.read_uint16_t(port, was_set);
       if(reader.err)
         return error(message);
-    } 
+    }
     if(!was_set)
       port = Env::Config::settings()->get_i16("swc.mngr.port");
-    
+
     std::vector<std::string> ips;
     std::string host;
-    if(Comm::Resolver::is_ipv4_address(host_or_ips) || 
+    if(Comm::Resolver::is_ipv4_address(host_or_ips) ||
        Comm::Resolver::is_ipv6_address(host_or_ips))
       ips.push_back(host_or_ips);
     else
-      host = host_or_ips; 
+      host = host_or_ips;
 
     hosts.push_back(
       Comm::Resolver::get_endpoints(
@@ -155,7 +157,7 @@ bool Mngr::managers_status(std::string& cmd) {
       return error("Missing Endpoint");
 
   } else if(reader.found_token("all", 3)) {
-    auto groups = Env::Clients::get()->mngrs_groups->get_groups();
+    auto groups = clients->mngrs_groups->get_groups();
     for(auto& g : groups) {
       auto tmp =  g->get_hosts();
       hosts.insert(hosts.end(), tmp.begin(), tmp.end());
@@ -168,6 +170,7 @@ bool Mngr::managers_status(std::string& cmd) {
   for(auto& endpoints : hosts) {
     std::promise<void>  r_promise;
     Comm::Protocol::Mngr::Req::ManagersStatus::request(
+      clients,
       endpoints,
       [endpoints, await=&r_promise]
       (const Comm::client::ConnQueue::ReqBase::Ptr& req, const int& error,
@@ -199,6 +202,7 @@ bool Mngr::column_status(std::string& cmd) {
   cmd = cmd.substr(at+1);
   cid_t cid = DB::Schema::NO_CID;
   client::SQL::Reader reader(cmd, message);
+  auto clients = Env::Clients::get();
   while(reader.found_space());
 
   if(reader.found_token("cid", 3)) {
@@ -217,13 +221,13 @@ bool Mngr::column_status(std::string& cmd) {
     reader.expect_eq();
     if(reader.err)
       return error(message);
-    
+
     std::string col_name;
     reader.read(col_name, " ");
     if(col_name.empty())
       return error("Missing Column Name");
-    
-    auto schema = reader.get_schema(col_name);
+
+    auto schema = reader.get_schema(clients, col_name);
     if(reader.err)
       return error(message);
     cid = schema->cid;
@@ -235,8 +239,9 @@ bool Mngr::column_status(std::string& cmd) {
 
   std::promise<void>  r_promise;
   Comm::Protocol::Mngr::Req::ColumnStatus::request(
+    clients,
     Comm::Protocol::Mngr::Params::Report::ReqColumnStatus(cid),
-    [this, await=&r_promise] 
+    [this, await=&r_promise]
     (const Comm::client::ConnQueue::ReqBase::Ptr&, const int& error,
      const Comm::Protocol::Mngr::Params::Report::RspColumnStatus& rsp) {
       if(!(err = error)) {
@@ -264,6 +269,7 @@ bool Mngr::rangers_status(std::string& cmd) {
   cmd = cmd.substr(at+1);
   cid_t cid = DB::Schema::NO_CID;
   client::SQL::Reader reader(cmd, message);
+  auto clients = Env::Clients::get();
   while(reader.found_space());
 
   if(reader.found_token("cid", 3)) {
@@ -282,13 +288,13 @@ bool Mngr::rangers_status(std::string& cmd) {
     reader.expect_eq();
     if(reader.err)
       return error(message);
-    
+
     std::string col_name;
     reader.read(col_name, " ");
     if(col_name.empty())
       return error("Missing Column Name");
-    
-    auto schema = reader.get_schema(col_name);
+
+    auto schema = reader.get_schema(clients, col_name);
     if(reader.err)
       return error(message);
     cid = schema->cid;
@@ -296,8 +302,9 @@ bool Mngr::rangers_status(std::string& cmd) {
 
   std::promise<void>  r_promise;
   Comm::Protocol::Mngr::Req::RangersStatus::request(
+    clients,
     cid,
-    [this, await=&r_promise] 
+    [this, await=&r_promise]
     (const Comm::client::ConnQueue::ReqBase::Ptr&, const int& error,
      const Comm::Protocol::Mngr::Params::Report::RspRangersStatus& rsp) {
       if(!(err = error)) {

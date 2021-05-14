@@ -14,15 +14,17 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace Rgr { namespace Req {
 
 SWC_SHOULD_INLINE
-void RangeLocate::request(const Params::RangeLocateReq& params,
+void RangeLocate::request(const SWC::client::Clients::Ptr& clients,
+                          const Params::RangeLocateReq& params,
                           const EndPoints& endpoints,
                           RangeLocate::Cb_t&& cb,
                           const uint32_t timeout) {
   std::make_shared<RangeLocate>(
-    params, endpoints, std::move(cb), timeout)->run();
+    clients, params, endpoints, std::move(cb), timeout)->run();
 }
 
-RangeLocate::RangeLocate(const Params::RangeLocateReq& params,
+RangeLocate::RangeLocate(const SWC::client::Clients::Ptr& clients,
+                         const Params::RangeLocateReq& params,
                          const EndPoints& endpoints,
                          RangeLocate::Cb_t&& cb,
                          const uint32_t timeout)
@@ -30,6 +32,7 @@ RangeLocate::RangeLocate(const Params::RangeLocateReq& params,
                             false,
                             Buffers::make(params, 0, RANGE_LOCATE, timeout)
                           ),
+                          clients(clients),
                           endpoints(endpoints), cb(std::move(cb)) {
 }
 
@@ -38,7 +41,7 @@ void RangeLocate::handle_no_conn() {
 }
 
 bool RangeLocate::run() {
-  Env::Clients::get()->rgr->get(endpoints)->put(req());
+  clients->rgr->get(endpoints)->put(req());
   return true;
 }
 

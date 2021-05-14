@@ -38,6 +38,7 @@ class AppContext final : virtual public BrokerIfFactory,
 
     Env::Clients::init(
       std::make_shared<client::Clients>(
+        *Env::Config::settings(),
         Env::IoCtx::io(),
         std::make_shared<client::ContextManager>(),
         std::make_shared<client::ContextRanger>()

@@ -16,8 +16,9 @@ class Schemas final : private DB::Schemas {
 
   typedef std::shared_ptr<Schemas> Ptr;
 
-  Schemas(const Config::Property::V_GINT32::Ptr expiry_ms) noexcept
-          : m_expiry_ms(expiry_ms) {
+  Schemas(Clients* _clients,
+          const Config::Property::V_GINT32::Ptr expiry_ms) noexcept
+          : _clients(_clients), m_expiry_ms(expiry_ms) {
   }
 
   //~Schemas() { }
@@ -46,6 +47,7 @@ class Schemas final : private DB::Schemas {
                 const std::vector<DB::Schemas::Pattern>& patterns,
                 std::vector<DB::Schema::Ptr>& schemas);
 
+  Clients*                            _clients;
   std::unordered_map<cid_t, int64_t>  m_track; // .second {time,queue(promises)}
   Config::Property::V_GINT32::Ptr     m_expiry_ms;
 

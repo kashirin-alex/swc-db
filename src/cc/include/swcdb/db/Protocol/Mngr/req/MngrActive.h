@@ -7,7 +7,7 @@
 #define swcdb_db_protocol_mngr_req_MngrActive_h
 
 
-#include "swcdb/core/comm/ClientConnQueue.h"
+#include "swcdb/db/client/Clients.h"
 #include "swcdb/db/Protocol/Mngr/params/MngrActive.h"
 #include "swcdb/db/client/mngr/Groups.h"
 
@@ -20,16 +20,22 @@ class MngrActive : public client::ConnQueue::ReqBase {
   public:
   typedef std::shared_ptr<MngrActive> Ptr;
 
-  const uint8_t role;
-  const cid_t   cid;
+  static Ptr make(const SWC::client::Clients::Ptr& clients,
+                  const cid_t& cid, const DispatchHandler::Ptr& hdlr,
+                  uint32_t timeout_ms=60000) {
+    return std::make_shared<MngrActive>(
+      clients, DB::Types::MngrRole::COLUMNS, cid, hdlr, timeout_ms);
+  }
 
-  static Ptr make(const cid_t& cid, const DispatchHandler::Ptr& hdlr,
-                  uint32_t timeout_ms=60000);
+  static Ptr make(const SWC::client::Clients::Ptr& clients,
+                  const uint8_t& role, const DispatchHandler::Ptr& hdlr,
+                  uint32_t timeout_ms=60000){
+    return std::make_shared<MngrActive>(
+      clients, role, DB::Schema::NO_CID, hdlr, timeout_ms);
+  }
 
-  static Ptr make(const uint8_t& role, const DispatchHandler::Ptr& hdlr,
-                  uint32_t timeout_ms=60000);
-
-  MngrActive(const uint8_t& role, const cid_t& cid,
+  MngrActive(const SWC::client::Clients::Ptr& clients,
+             const uint8_t& role, const cid_t& cid,
              const DispatchHandler::Ptr& hdlr, uint32_t timeout_ms);
 
   virtual ~MngrActive() { }
@@ -43,6 +49,9 @@ class MngrActive : public client::ConnQueue::ReqBase {
   void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
 
   private:
+  SWC::client::Clients::Ptr             clients;
+  const uint8_t                         role;
+  const cid_t                           cid;
   DispatchHandler::Ptr                  hdlr;
   size_t                                nxt;
   SWC::client::Mngr::Hosts              hosts;
@@ -50,7 +59,7 @@ class MngrActive : public client::ConnQueue::ReqBase {
   asio::high_resolution_timer           timer;
 
   protected:
-  const uint32_t  timeout_ms;
+  const uint32_t                        timeout_ms;
 };
 
 }}}}}

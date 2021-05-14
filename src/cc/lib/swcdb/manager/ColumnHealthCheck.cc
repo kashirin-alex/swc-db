@@ -205,6 +205,7 @@ void ColumnHealthCheck::finishing(bool finished_range) {
   key_intval.start.add("", Condition::GE);
 
   auto hdlr = client::Query::Select::Handlers::Common::make(
+    Env::Clients::get(),
     [merger, meta_cid]
     (const client::Query::Select::Handlers::Common::Ptr& hdlr) {
       int err = hdlr->state_error;
@@ -491,7 +492,8 @@ void ColumnHealthCheck::ColumnMerger::RangesMerger::handle(
 
   if(!merged.empty() &&
      !DB::Types::SystemColumn::is_master(main_range->cfg->cid)) {
-    auto hdlr = client::Query::Update::Handlers::Common::make();
+    auto hdlr = client::Query::Update::Handlers::Common::make(
+      Env::Clients::get());
     cid_t meta_cid = DB::Types::SystemColumn::get_sys_cid(
       main_range->cfg->key_seq,
       DB::Types::SystemColumn::get_range_type(main_range->cfg->cid));

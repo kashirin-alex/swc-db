@@ -71,7 +71,8 @@ void generate_criteo_logs() {
   fractions.resize(39 + separate_days);
   // value (clicks)
 
-  auto hdlr = SWC::client::Query::Update::Handlers::Common::make();
+  auto hdlr = SWC::client::Query::Update::Handlers::Common::make(
+    SWC::Env::Clients::get());
   auto schema = create_column();
   auto& col = hdlr->create(schema);
 
@@ -187,6 +188,7 @@ SWC::DB::Schema::Ptr create_column() {
   // CREATE COLUMN
   std::promise<int>  res;
   SWC::Comm::Protocol::Mngr::Req::ColumnMng::request(
+    SWC::Env::Clients::get(),
     SWC::Comm::Protocol::Mngr::Req::ColumnMng::Func::CREATE,
     schema,
     [await=&res] (const SWC::Comm::client::ConnQueue::ReqBase::Ptr&, int err) {
@@ -219,6 +221,7 @@ int main(int argc, char** argv) {
 
   SWC::Env::Clients::init(
     std::make_shared<SWC::client::Clients>(
+      *SWC::Env::Config::settings(),
       nullptr, // Env::IoCtx::io(),
       nullptr, // std::make_shared<client::ManagerContext>()
       nullptr  // std::make_shared<client::RangerContext>()

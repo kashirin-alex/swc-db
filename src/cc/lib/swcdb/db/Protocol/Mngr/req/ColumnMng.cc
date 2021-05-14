@@ -16,42 +16,47 @@ namespace Mngr { namespace Req {
 
 
 SWC_SHOULD_INLINE
-void ColumnMng::create(const DB::Schema::Ptr& schema,
+void ColumnMng::create(const SWC::client::Clients::Ptr& clients,
+                       const DB::Schema::Ptr& schema,
                        ColumnMng::Cb_t&& cb, const uint32_t timeout) {
-  request(Func::CREATE, schema, std::move(cb), timeout);
+  request(clients, Func::CREATE, schema, std::move(cb), timeout);
 }
 
 SWC_SHOULD_INLINE
-void ColumnMng::modify(const DB::Schema::Ptr& schema,
+void ColumnMng::modify(const SWC::client::Clients::Ptr& clients,
+                       const DB::Schema::Ptr& schema,
                        ColumnMng::Cb_t&& cb, const uint32_t timeout) {
-  request(Func::MODIFY, schema, std::move(cb), timeout);
+  request(clients, Func::MODIFY, schema, std::move(cb), timeout);
 }
 
 SWC_SHOULD_INLINE
-void ColumnMng::remove(const DB::Schema::Ptr& schema,
+void ColumnMng::remove(const SWC::client::Clients::Ptr& clients,
+                       const DB::Schema::Ptr& schema,
                        ColumnMng::Cb_t&& cb, const uint32_t timeout) {
-  request(Func::DELETE, schema, std::move(cb), timeout);
+  request(clients, Func::DELETE, schema, std::move(cb), timeout);
 }
 
 SWC_SHOULD_INLINE
-void ColumnMng::request(ColumnMng::Func func, const DB::Schema::Ptr& schema,
+void ColumnMng::request(const SWC::client::Clients::Ptr& clients,
+                        ColumnMng::Func func, const DB::Schema::Ptr& schema,
                         ColumnMng::Cb_t&& cb, const uint32_t timeout) {
   std::make_shared<ColumnMng>(
-    Params::ColumnMng(func, schema), std::move(cb), timeout)->run();
+    clients, Params::ColumnMng(func, schema), std::move(cb), timeout)->run();
 }
 
 
-ColumnMng::ColumnMng(const Params::ColumnMng& params,
+ColumnMng::ColumnMng(const SWC::client::Clients::Ptr& clients,
+                     const Params::ColumnMng& params,
                      ColumnMng::Cb_t&& cb, const uint32_t timeout)
                     : client::ConnQueue::ReqBase(
                         false,
                         Buffers::make(params, 0, COLUMN_MNG, timeout)
                       ),
-                      cb(std::move(cb)) {
+                      clients(clients), cb(std::move(cb)) {
 }
 
 void ColumnMng::handle_no_conn() {
-  if(Env::Clients::get()->stopping()) {
+  if(clients->stopping()) {
     cb(req(), Error::CLIENT_STOPPING);
   } else {
     clear_endpoints();
@@ -61,19 +66,19 @@ void ColumnMng::handle_no_conn() {
 
 bool ColumnMng::run() {
   if(endpoints.empty()) {
-    Env::Clients::get()->mngrs_groups->select(
+    clients->mngrs_groups->select(
       DB::Types::MngrRole::SCHEMAS, endpoints);
     if(endpoints.empty()) {
-      if(Env::Clients::get()->stopping()) {
+      if(clients->stopping()) {
         cb(req(), Error::CLIENT_STOPPING);
       } else {
         MngrActive::make(
-          DB::Types::MngrRole::SCHEMAS, shared_from_this())->run();
+          clients, DB::Types::MngrRole::SCHEMAS, shared_from_this())->run();
       }
       return false;
     }
   }
-  Env::Clients::get()->mngr->get(endpoints)->put(req());
+  clients->mngr->get(endpoints)->put(req());
   return true;
 }
 
@@ -85,7 +90,7 @@ void ColumnMng::handle(ConnHandlerPtr, const Event::Ptr& ev) {
 }
 
 void ColumnMng::clear_endpoints() {
-  Env::Clients::get()->mngrs_groups->remove(endpoints);
+  clients->mngrs_groups->remove(endpoints);
   endpoints.clear();
 }
 
