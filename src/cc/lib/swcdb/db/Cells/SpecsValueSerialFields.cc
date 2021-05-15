@@ -762,9 +762,10 @@ is_matching(std::vector<Field*>& fields_ptr,
 }
 
 bool Fields::is_matching(const Cells::Cell& cell) {
-  std::vector<Field*> fields_ptr(fields.size());
-  for(size_t i=0; i< fields.size(); ++i)
-    fields_ptr[i] = fields[i].get();
+  std::vector<Field*> fields_ptr;
+  fields_ptr.reserve(fields.size());
+  for(auto& p : fields)
+    fields_ptr.emplace_back(p.get());
 
   StaticBuffer v;
   cell.get_value(v);

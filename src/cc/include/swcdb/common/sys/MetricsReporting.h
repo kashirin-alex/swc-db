@@ -321,12 +321,11 @@ class Item_Net : public Base {
       addr->bytes_recv.gather(bytes_recv);
       sz += encoded_length(bytes_recv, true);
 
-      std::vector<int64_t> counts(addr->commands.size());
-      auto it = counts.begin();
+      std::vector<int64_t> counts;
+      counts.reserve(addr->commands.size());
       for(auto& c : addr->commands) {
-        if((*it = c.exchange(0)))
-          sz += 2 + Serialization::encoded_length_vi64(*it);
-        ++it;
+        if(int64_t v = counts.emplace_back(c.exchange(0)))
+          sz += 2 + Serialization::encoded_length_vi64(v);
       }
 
       DB::Cell::Serial::Value::FieldsWriter wfields;

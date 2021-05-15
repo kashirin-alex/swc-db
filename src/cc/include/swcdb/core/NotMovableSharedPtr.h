@@ -13,17 +13,17 @@ template<class T>
 class NotMovableSharedPtr : public std::shared_ptr<T> {
   public:
 
-  NotMovableSharedPtr<T>() noexcept { }
+  NotMovableSharedPtr() noexcept { }
 
-  NotMovableSharedPtr<T>(T* other) noexcept
+  NotMovableSharedPtr(T* other) noexcept
                     : std::shared_ptr<T>(other) {
   }
 
-  NotMovableSharedPtr<T>(const std::shared_ptr<T>& other) noexcept
+  NotMovableSharedPtr(const std::shared_ptr<T>& other) noexcept
                     : std::shared_ptr<T>(other) {
   }
 
-  NotMovableSharedPtr<T>(const std::shared_ptr<T>&&) = delete;
+  NotMovableSharedPtr(const std::shared_ptr<T>&&) = delete;
 
   NotMovableSharedPtr<T>& operator=(const std::shared_ptr<T>&) = delete;
 
