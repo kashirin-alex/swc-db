@@ -3,11 +3,11 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swcdb_db_client_Query_UpdateHandlerBaseSingleColumn_h
-#define swcdb_db_client_Query_UpdateHandlerBaseSingleColumn_h
+#ifndef swcdb_db_client_Query_Update_Handlers_BaseSingleColumn_h
+#define swcdb_db_client_Query_Update_Handlers_BaseSingleColumn_h
 
 
-#include "swcdb/db/client/Query/UpdateHandlerBaseColumnMutable.h"
+#include "swcdb/db/client/Query/Update/Handlers/BaseColumnMutable.h"
 
 
 namespace SWC { namespace client { namespace Query { namespace Update {
@@ -81,4 +81,4 @@ class BaseSingleColumn : public Base {
 
 
 
-#endif // swcdb_db_client_Query_UpdateHandlerBaseSingleColumn_h
+#endif // swcdb_db_client_Query_Update_Handlers_BaseSingleColumn_h

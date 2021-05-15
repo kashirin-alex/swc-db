@@ -4,8 +4,8 @@
  */
 
 
-#include "swcdb/db/client/Query/UpdateHandlerCommon.h"
-#include "swcdb/db/client/Query/Update.h"
+#include "swcdb/db/client/Query/Update/Handlers/Common.h"
+#include "swcdb/db/client/Query/Update/Committer.h"
 #include "swcdb/db/client/Clients.h"
 
 

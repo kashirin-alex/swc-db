@@ -4,7 +4,7 @@
  */
 
 
-#include "swcdb/db/client/Query/SelectHandlerBaseSingleColumn.h"
+#include "swcdb/db/client/Query/Select/Handlers/BaseSingleColumn.h"
 
 
 namespace SWC { namespace client { namespace Query { namespace Select {

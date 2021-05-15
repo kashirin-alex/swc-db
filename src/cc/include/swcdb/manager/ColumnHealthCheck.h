@@ -9,8 +9,8 @@
 
 
 #include "swcdb/core/CompletionCounter.h"
-#include "swcdb/db/client/Query/Select.h"
-#include "swcdb/db/client/Query/Update.h"
+#include "swcdb/db/client/Query/Select/Scanner.h"
+#include "swcdb/db/client/Query/Update/Committer.h"
 
 
 namespace SWC { namespace Manager {

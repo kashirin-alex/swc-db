@@ -4,7 +4,7 @@
  */
 
 
-#include "swcdb/db/client/Query/UpdateHandlerBaseUnorderedMap.h"
+#include "swcdb/db/client/Query/Update/Handlers/BaseUnorderedMap.h"
 
 
 namespace SWC { namespace client { namespace Query { namespace Update {

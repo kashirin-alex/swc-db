@@ -80,15 +80,15 @@ set(swcdb_sources
   client/ContextRanger.cc
   client/rgr/Rangers.cc
   client/mngr/Groups.cc
-  client/Query/UpdateHandlerBaseColumnMutable.cc
-  client/Query/UpdateHandlerBaseUnorderedMap.cc
-  client/Query/UpdateHandlerCommon.cc
-  client/Query/Update.cc
+  client/Query/Update/Handlers/BaseColumnMutable.cc
+  client/Query/Update/Handlers/BaseUnorderedMap.cc
+  client/Query/Update/Handlers/Common.cc
+  client/Query/Update/Committer.cc
   client/Query/Update/Handlers/Metrics.cc
-  client/Query/SelectHandlerBaseUnorderedMap.cc
-  client/Query/SelectHandlerBaseSingleColumn.cc
-  client/Query/SelectHandlerCommon.cc
-  client/Query/Select.cc
+  client/Query/Select/Handlers/BaseUnorderedMap.cc
+  client/Query/Select/Handlers/BaseSingleColumn.cc
+  client/Query/Select/Handlers/Common.cc
+  client/Query/Select/Scanner.cc
   client/sql/SQL.cc
   client/sql/Reader.cc
   client/sql/ColumnList.cc

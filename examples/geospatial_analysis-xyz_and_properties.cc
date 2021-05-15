@@ -9,7 +9,7 @@
 
 
 #include "swcdb/db/client/Clients.h"
-#include "swcdb/db/client/Query/UpdateHandlerCommon.h"
+#include "swcdb/db/client/Query/Update/Handlers/Common.h"
 #include "swcdb/db/Protocol/Mngr/req/ColumnMng.h"
 #include "swcdb/common/Stats/FlowRate.h"
 

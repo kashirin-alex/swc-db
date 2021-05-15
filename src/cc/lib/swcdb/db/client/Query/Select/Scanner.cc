@@ -4,7 +4,7 @@
  */
 
 #include "swcdb/db/Types/SystemColumn.h"
-#include "swcdb/db/client/Query/Select.h"
+#include "swcdb/db/client/Query/Select/Scanner.h"
 
 
 namespace SWC { namespace client { namespace Query { namespace Select {

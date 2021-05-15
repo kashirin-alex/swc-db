@@ -4,7 +4,7 @@
  */
 
 
-#include "swcdb/db/client/Query/UpdateHandlerBaseColumnMutable.h"
+#include "swcdb/db/client/Query/Update/Handlers/BaseColumnMutable.h"
 
 
 namespace SWC { namespace client { namespace Query { namespace Update {

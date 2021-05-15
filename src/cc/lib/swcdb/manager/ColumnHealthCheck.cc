@@ -8,7 +8,7 @@
 #include "swcdb/manager/ColumnHealthCheck.h"
 #include "swcdb/manager/Protocol/Rgr/req/RangeIsLoaded.h"
 #include "swcdb/manager/Protocol/Rgr/req/RangeUnoadForMerge.h"
-#include "swcdb/db/client/Query/SelectHandlerCommon.h"
+#include "swcdb/db/client/Query/Select/Handlers/Common.h"
 #include "swcdb/db/Cells/CellValueSerialFields.h"
 
 

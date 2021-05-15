@@ -3,11 +3,11 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swcdb_db_client_Query_Select_Handler_BaseSingleColumn_h
-#define swcdb_db_client_Query_Select_Handler_BaseSingleColumn_h
+#ifndef swcdb_db_client_Query_Select_Handlers_BaseSingleColumn_h
+#define swcdb_db_client_Query_Select_Handlers_BaseSingleColumn_h
 
 
-#include "swcdb/db/client/Query/SelectHandlerBase.h"
+#include "swcdb/db/client/Query/Select/Handlers/Base.h"
 #include "swcdb/db/Cells/Result.h"
 #include "swcdb/db/Cells/SpecsInterval.h"
 
@@ -59,8 +59,8 @@ class BaseSingleColumn : public Base {
 
 
 #ifdef SWC_IMPL_SOURCE
-#include "swcdb/db/client/Query/SelectHandlerBaseSingleColumn.cc"
+#include "swcdb/db/client/Query/Select/Handlers/BaseSingleColumn.cc"
 #endif
 
 
-#endif // swcdb_db_client_Query_Select_Handler_BaseSingleColumn_h
+#endif // swcdb_db_client_Query_Select_Handlers_BaseSingleColumn_h

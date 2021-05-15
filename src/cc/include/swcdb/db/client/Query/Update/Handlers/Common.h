@@ -3,11 +3,11 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swcdb_db_client_Query_UpdateHandlerCommon_h
-#define swcdb_db_client_Query_UpdateHandlerCommon_h
+#ifndef swcdb_db_client_Query_Update_Handlers_Common_h
+#define swcdb_db_client_Query_Update_Handlers_Common_h
 
 
-#include "swcdb/db/client/Query/UpdateHandlerBaseUnorderedMap.h"
+#include "swcdb/db/client/Query/Update/Handlers/BaseUnorderedMap.h"
 
 
 namespace SWC { namespace client { namespace Query { namespace Update {
@@ -63,8 +63,8 @@ class Common : public BaseUnorderedMap {
 
 
 #ifdef SWC_IMPL_SOURCE
-#include "swcdb/db/client/Query/UpdateHandlerCommon.cc"
+#include "swcdb/db/client/Query/Update/Handlers/Common.cc"
 #endif
 
 
-#endif // swcdb_db_client_Query_UpdateHandlerCommon_h
+#endif // swcdb_db_client_Query_Update_Handlers_Common_h

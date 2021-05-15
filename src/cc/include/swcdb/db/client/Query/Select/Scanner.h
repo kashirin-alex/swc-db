@@ -3,12 +3,12 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swcdb_db_client_Query_Select_h
-#define swcdb_db_client_Query_Select_h
+#ifndef swcdb_db_client_Query_Select_Scanner_h
+#define swcdb_db_client_Query_Select_Scanner_h
 
 
-#include "swcdb/db/client/Query/SelectHandlerBase.h"
-#include "swcdb/db/client/Query/SelectHandlerBaseUnorderedMap.h"
+#include "swcdb/db/client/Query/Select/Handlers/Base.h"
+#include "swcdb/db/client/Query/Select/Handlers/BaseUnorderedMap.h"
 
 #include "swcdb/db/Protocol/Mngr/req/RgrGet.h"
 #include "swcdb/db/Protocol/Rgr/req/RangeLocate.h"
@@ -161,8 +161,8 @@ class Scanner final : public std::enable_shared_from_this<Scanner> {
 
 
 #ifdef SWC_IMPL_SOURCE
-#include "swcdb/db/client/Query/Select.cc"
+#include "swcdb/db/client/Query/Select/Scanner.cc"
 #endif
 
 
-#endif // swcdb_db_client_Query_Select_h
+#endif // swcdb_db_client_Query_Select_Scanner_h

@@ -3,8 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swcdb_db_client_Query_UpdateHandlerBase_h
-#define swcdb_db_client_Query_UpdateHandlerBase_h
+#ifndef swcdb_db_client_Query_Update_Handlers_Base_h
+#define swcdb_db_client_Query_Update_Handlers_Base_h
 
 
 #include "swcdb/core/CompletionCounter.h"
@@ -140,4 +140,4 @@ class Base : public std::enable_shared_from_this<Base> {
 }}}}}
 
 
-#endif // swcdb_db_client_Query_UpdateHandlerBase_h
+#endif // swcdb_db_client_Query_Update_Handlers_Base_h

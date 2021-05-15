@@ -3,11 +3,11 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swcdb_db_client_Query_Select_Handler_Common_h
-#define swcdb_db_client_Query_Select_Handler_Common_h
+#ifndef swcdb_db_client_Query_Select_Handlers_Common_h
+#define swcdb_db_client_Query_Select_Handlers_Common_h
 
 
-#include "swcdb/db/client/Query/SelectHandlerBaseUnorderedMap.h"
+#include "swcdb/db/client/Query/Select/Handlers/BaseUnorderedMap.h"
 #include "swcdb/db/Cells/SpecsScan.h"
 
 
@@ -74,8 +74,8 @@ class Common : public BaseUnorderedMap {
 
 
 #ifdef SWC_IMPL_SOURCE
-#include "swcdb/db/client/Query/SelectHandlerCommon.cc"
+#include "swcdb/db/client/Query/Select/Handlers/Common.cc"
 #endif
 
 
-#endif // swcdb_db_client_Query_Select_Handler_Common_h
+#endif // swcdb_db_client_Query_Select_Handlers_Common_h

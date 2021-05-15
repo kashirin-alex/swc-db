@@ -3,8 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swcdb_db_client_Query_Select_Handler_Base_h
-#define swcdb_db_client_Query_Select_Handler_Base_h
+#ifndef swcdb_db_client_Query_Select_Handlers_Base_h
+#define swcdb_db_client_Query_Select_Handlers_Base_h
 
 
 #include "swcdb/core/CompletionCounter.h"
@@ -78,8 +78,8 @@ class Base : public std::enable_shared_from_this<Base>{
 
 /* if not only pure functions
 #ifdef SWC_IMPL_SOURCE
-#include "swcdb/db/client/Query/SelectHandlerBase.cc"
+#include "swcdb/db/client/Query/Select/Handlers/Base.cc"
 #endif
 */
 
-#endif // swcdb_db_client_Query_Select_Handler_Base_h
+#endif // swcdb_db_client_Query_Select_Handlers_Base_h

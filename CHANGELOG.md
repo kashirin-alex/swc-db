@@ -51,6 +51,9 @@
     resolved issue #6 Services & Components statistic
     changed Config::Properties::get_*,defaulted,to_string to const scope
     changed use cases of Env::Clients in libswcdb.so to client::Clients::Ptr
+    moved Query/*{Update,Select}*Handlers.* to dirs {Update,Select}/Handlers/*
+    renamed Query/Update/Update.{h,cc} to Query/Update/Committer.{h,cc}
+    renamed Query/Select/Select.{h,cc} to Query/Select/Scanner.{h,cc}
 
 [_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.5.0...master)
 ******

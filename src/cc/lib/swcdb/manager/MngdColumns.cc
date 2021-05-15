@@ -8,10 +8,10 @@
 #include "swcdb/manager/MngdColumns.h"
 #include "swcdb/manager/Protocol/Mngr/req/ColumnUpdate.h"
 
-#include "swcdb/db/client/Query/Select.h"
-#include "swcdb/db/client/Query/Update.h"
-#include "swcdb/db/client/Query/SelectHandlerCommon.h"
-#include "swcdb/db/client/Query/UpdateHandlerCommon.h"
+#include "swcdb/db/client/Query/Select/Scanner.h"
+#include "swcdb/db/client/Query/Update/Committer.h"
+#include "swcdb/db/client/Query/Select/Handlers/Common.h"
+#include "swcdb/db/client/Query/Update/Handlers/Common.h"
 
 
 namespace SWC { namespace Manager {

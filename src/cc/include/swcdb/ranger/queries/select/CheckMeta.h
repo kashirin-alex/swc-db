@@ -7,7 +7,7 @@
 #define swcdb_ranger_queries_select_CheckMeta_h
 
 
-#include "swcdb/db/client/Query/SelectHandlerBaseSingleColumn.h"
+#include "swcdb/db/client/Query/Select/Handlers/BaseSingleColumn.h"
 
 
 namespace SWC { namespace Ranger {

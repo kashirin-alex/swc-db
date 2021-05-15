@@ -14,8 +14,8 @@
 
 #include <thrift/transport/TSocket.h>
 
-#include "swcdb/db/client/Query/SelectHandlerCommon.h"
-#include "swcdb/db/client/Query/UpdateHandlerCommon.h"
+#include "swcdb/db/client/Query/Select/Handlers/Common.h"
+#include "swcdb/db/client/Query/Update/Handlers/Common.h"
 
 
 namespace SWC {

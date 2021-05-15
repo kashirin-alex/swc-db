@@ -13,9 +13,9 @@
 #include "swcdb/common/Files/RgrData.h"
 
 #include "swcdb/db/Protocol/Commands.h"
-#include "swcdb/db/client/Query/Select.h"
-#include "swcdb/db/client/Query/Update.h"
-#include "swcdb/db/client/Query/UpdateHandlerCommon.h"
+#include "swcdb/db/client/Query/Select/Scanner.h"
+#include "swcdb/db/client/Query/Update/Committer.h"
+#include "swcdb/db/client/Query/Update/Handlers/Common.h"
 #include "swcdb/ranger/queries/update/MetricsReporting.h"
 
 

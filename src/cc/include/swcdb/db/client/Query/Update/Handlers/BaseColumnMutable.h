@@ -3,11 +3,11 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swcdb_db_client_Query_UpdateHandlerBaseColumnMutable_h
-#define swcdb_db_client_Query_UpdateHandlerBaseColumnMutable_h
+#ifndef swcdb_db_client_Query_Update_Handlers_BaseColumnMutable_h
+#define swcdb_db_client_Query_Update_Handlers_BaseColumnMutable_h
 
 
-#include "swcdb/db/client/Query/UpdateHandlerBase.h"
+#include "swcdb/db/client/Query/Update/Handlers/Base.h"
 #include "swcdb/core/MutexSptd.h"
 #include "swcdb/db/Cells/Mutable.h"
 
@@ -91,8 +91,8 @@ class ColumnMutable : public Base::Column {
 
 
 #ifdef SWC_IMPL_SOURCE
-#include "swcdb/db/client/Query/UpdateHandlerBaseColumnMutable.cc"
+#include "swcdb/db/client/Query/Update/Handlers/BaseColumnMutable.cc"
 #endif
 
 
-#endif // swcdb_db_client_Query_UpdateHandlerBaseColumnMutable_h
+#endif // swcdb_db_client_Query_Update_Handlers_BaseColumnMutable_h

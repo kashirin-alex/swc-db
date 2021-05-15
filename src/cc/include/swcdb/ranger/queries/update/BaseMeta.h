@@ -7,7 +7,7 @@
 #define swcdb_ranger_queries_update_BaseMeta_h
 
 
-#include "swcdb/db/client/Query/UpdateHandlerBaseSingleColumn.h"
+#include "swcdb/db/client/Query/Update/Handlers/BaseSingleColumn.h"
 
 
 namespace SWC { namespace Ranger {

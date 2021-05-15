@@ -4,11 +4,11 @@
  */
 
 
-#ifndef swcdb_db_client_Query_Update_h
-#define swcdb_db_client_Query_Update_h
+#ifndef swcdb_db_client_Query_Update_Committer_h
+#define swcdb_db_client_Query_Update_Committer_h
 
 
-#include "swcdb/db/client/Query/UpdateHandlerBase.h"
+#include "swcdb/db/client/Query/Update/Handlers/Base.h"
 #include "swcdb/db/Types/Range.h"
 #include "swcdb/db/Protocol/Mngr/req/RgrGet.h"
 #include "swcdb/db/Protocol/Rgr/req/RangeLocate.h"
@@ -100,8 +100,8 @@ class Committer final : public std::enable_shared_from_this<Committer> {
 
 
 #ifdef SWC_IMPL_SOURCE
-#include "swcdb/db/client/Query/Update.cc"
+#include "swcdb/db/client/Query/Update/Committer.cc"
 #endif
 
 
-#endif // swcdb_db_client_Query_Update_h
+#endif // swcdb_db_client_Query_Update_Committer_h

@@ -9,11 +9,11 @@
 #include "swcdb/db/client/Clients.h"
 #include "swcdb/db/Protocol/Mngr/req/ColumnMng.h"
 #include "swcdb/db/Protocol/Mngr/req/ColumnGet.h"
-#include "swcdb/db/client/Query/Select.h"
-#include "swcdb/db/client/Query/Update.h"
+#include "swcdb/db/client/Query/Select/Scanner.h"
+#include "swcdb/db/client/Query/Update/Committer.h"
 #include "swcdb/db/Cells/CellValueSerialFields.h"
-#include "swcdb/db/client/Query/SelectHandlerCommon.h"
-#include "swcdb/db/client/Query/UpdateHandlerCommon.h"
+#include "swcdb/db/client/Query/Select/Handlers/Common.h"
+#include "swcdb/db/client/Query/Update/Handlers/Common.h"
 
 
 namespace SWC {
