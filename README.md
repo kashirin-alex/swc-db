@@ -1,5 +1,5 @@
 # **SWC-DB©** &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;   ![SWC-DB](docs/logo-small.png)
-## SWC-DB© (_Super Wide Column Database_) - High Performance Scalable Database
+## SWC-DB© (_Super Wide Column Database_) - DBMS
 
 
 
