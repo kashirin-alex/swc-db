@@ -13,7 +13,15 @@
 #include "swcdb/db/client/Query/Update/Handlers/Metrics.h"
 
 
-namespace SWC { namespace Common { namespace Query { namespace Update {
+namespace SWC { namespace Common {
+
+//! The SWC-DB Common Query C++ namespace 'SWC::Common::Query'
+namespace Query {
+
+//! The SWC-DB Common Update Query C++ namespace 'SWC::Common::Query::Update'
+namespace Update {
+
+//! The SWC-DB Common Metric Update Query C++ namespace 'SWC::Common::Query::Update::Metric'
 namespace Metric {
 
 using namespace client::Query::Update::Handlers::Metric;

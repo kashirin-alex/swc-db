@@ -11,7 +11,10 @@
 #include "swcdb/common/sys/MetricsReporting.h"
 
 
-namespace SWC { namespace Ranger { namespace Metric {
+namespace SWC { namespace Ranger {
+
+//! The SWC-DB Ranger Metric C++ namespace 'SWC::Ranger::Metric'
+namespace Metric {
 
 
 using namespace Common::Query::Update::Metric;

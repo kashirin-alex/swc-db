@@ -11,7 +11,10 @@
 #include "swcdb/common/sys/MetricsReporting.h"
 
 
-namespace SWC { namespace ThriftBroker { namespace Metric {
+namespace SWC { namespace ThriftBroker {
+
+//! The SWC-DB ThriftBroker Metric C++ namespace 'SWC::ThriftBroker::Metric'
+namespace Metric {
 
 
 using namespace Common::Query::Update::Metric;

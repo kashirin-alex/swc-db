@@ -11,7 +11,10 @@
 #include "swcdb/common/sys/MetricsReporting.h"
 
 
-namespace SWC { namespace Manager { namespace Metric {
+namespace SWC { namespace Manager {
+
+//! The SWC-DB Manager Metric C++ namespace 'SWC::Manager::Metric'
+namespace Metric {
 
 
 using namespace Common::Query::Update::Metric;

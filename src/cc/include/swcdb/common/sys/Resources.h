@@ -13,7 +13,11 @@
 
 
 
-namespace SWC { namespace System {
+namespace SWC {
+
+
+//! The SWC-DB System C++ namespace 'SWC::System'
+namespace System {
 
 struct Notifier {
 

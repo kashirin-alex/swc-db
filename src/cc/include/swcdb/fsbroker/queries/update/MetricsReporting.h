@@ -11,7 +11,10 @@
 #include "swcdb/common/sys/MetricsReporting.h"
 
 
-namespace SWC { namespace FsBroker { namespace Metric {
+namespace SWC { namespace FsBroker {
+
+//! The SWC-DB FsBroker Metric C++ namespace 'SWC::FsBroker::Metric'
+namespace Metric {
 
 
 using namespace Common::Query::Update::Metric;

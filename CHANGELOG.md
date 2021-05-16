@@ -10,6 +10,16 @@
 
 ### [SWC-DB master](https://github.com/kashirin-alex/swc-db/tree/master) (upcoming-release)
 
+    
+
+[_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.5.1...master)
+******
+
+
+
+
+### [SWC-DB v0.5.1](https://github.com/kashirin-alex/swc-db/releases/tag/v0.5.1) (2021-05-16)
+
     added source core/Comparators.cc
     added reasonable cases of std::string::reserve
     removed namespace FileUtils & added FS::FileSystemLocal specialized funcs
@@ -55,13 +65,13 @@
     renamed Query/Update/Update.{h,cc} to Query/Update/Committer.{h,cc}
     renamed Query/Select/Select.{h,cc} to Query/Select/Scanner.{h,cc}
 
-[_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.5.0...master)
+[_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.5.0...v0.5.1)
 ******
 
 
 
 
-### [SWC-DB v0.5.0](https://github.com/kashirin-alex/swc-db/tree/master) (2021-04-26)
+### [SWC-DB v0.5.0](https://github.com/kashirin-alex/swc-db/releases/tag/v0.5.0) (2021-04-26)
 
     changed Comm::ConnHandler use _buff_header[MAX_LENGTH] instead temp allocs
     fixed use of invalid Iterator in Mutable::write_and_free
