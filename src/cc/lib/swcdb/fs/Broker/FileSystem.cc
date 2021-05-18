@@ -60,7 +60,7 @@ Configurables apply_broker() {
 
     ("swc.fs.broker.host", Config::str(),
      "FsBroker host (default by hostname)")
-    ("swc.fs.broker.port", Config::i16(17000),
+    ("swc.fs.broker.port", Config::i16(14000),
      "FsBroker port")
 
     ("swc.fs.broker.metrics.enabled", Config::boo(true),

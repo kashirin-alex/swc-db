@@ -24,7 +24,7 @@ void Settings::init_app_options() {
   file_desc.add_options()
     ("swc.fs.broker.host", str(),
       "FsBroker host (default resolve by hostname)")
-    ("swc.fs.broker.port", i16(17000),
+    ("swc.fs.broker.port", i16(14000),
       "FsBroker port")
 
     ("swc.FsBroker.cfg", str(),

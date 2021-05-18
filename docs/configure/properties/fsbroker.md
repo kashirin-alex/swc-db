@@ -41,7 +41,7 @@ _default_ **```swc.fs.broker.host=```**
 * ### swc.fs.broker.port
 ```INT16```
 The FsBroker port. \
-_default_ **```swc.fs.broker.port=17000```**
+_default_ **```swc.fs.broker.port=14000```**
 
 
 
