@@ -22,6 +22,7 @@
   * swcdb-manager
   * swcdb-ranger
   * swcdb-fsbroker
+  * swcdb-broker
   * swcdb-thriftbroker
   * swcdb-utils
 

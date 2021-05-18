@@ -62,6 +62,7 @@ endif()
 
 #add_subdirectory(manager)
 #add_subdirectory(ranger)
+#add_subdirectory(broker)
 #add_subdirectory(thriftbroker)
 
 
@@ -85,6 +86,7 @@ ADD_EXEC_TARGET(
 endif()
 
 
+
 # swcdbManager
 if(NOT SWC_BUILD_PKG OR SWC_BUILD_PKG STREQUAL "manager")
 ADD_EXEC_TARGET(
@@ -102,6 +104,25 @@ ADD_EXEC_TARGET(
   FLAGS   ${FLAGS}
 )
 endif()
+
+
+
+# swcdbBroker
+if(NOT SWC_BUILD_PKG OR SWC_BUILD_PKG STREQUAL "broker")
+ADD_EXEC_TARGET(
+  NAME    swcdbBroker
+  SRCS    broker/main.cc
+          ${SWC_VERSION_SRC}
+  TARGETS ${TARGETS}
+
+  SHARED  ${SHARED}
+          ${SWC_LIB_LIBRARIES_SHARED}
+  STATIC  ${STATIC}
+          ${SWC_LIB_LIBRARIES_STATIC}
+  FLAGS   ${FLAGS}
+)
+endif()
+
 
 
 # swcdbThriftBroker
@@ -136,6 +157,7 @@ ADD_EXEC_TARGET(
 endif()
 
 
+
 # swcdbFsBroker
 if(NOT SWC_BUILD_PKG OR SWC_BUILD_PKG STREQUAL "fsbroker")
 ADD_EXEC_TARGET(
@@ -162,6 +184,7 @@ ADD_EXEC_TARGET(
 endif()
 
 
+
 if(NOT SWC_BUILD_PKG OR SWC_BUILD_PKG STREQUAL "utils")
 
 # swcdb
@@ -180,6 +203,7 @@ ADD_EXEC_TARGET(
 
   ONLY_DYN TRUE
 )
+
 
 
 # swcdb_load_generator

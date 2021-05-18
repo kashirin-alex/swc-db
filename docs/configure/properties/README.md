@@ -8,13 +8,14 @@ sort: 2
 
 # The SWC-DB Configuration Properties
   **Any configuration property, if it is shown for ```./program``` with ```--help``` or ```--help-config```, can be a Command Line argument by using it with a prefix ```--``` while Command Line argument is not a cfg-file property** .
-  
+
   **_Configuration Properties by Program & Library:_**
   * [The SWC-DB Configurations Library ```libswcdb_core_config```](#the-initial-libswcdb_core_config---configuration-properties)
   * [The SWC-DB Communications Library ```libswcdb_core_comm```](#the-initial-communications-libswcdb_core_comm---configuration-properties)
   * [The SWC-DB Manager Program ```swcdbManager```](manager.html)
   * [The SWC-DB Ranger Program ```swcdbRanger```](ranger.html)
   * [The SWC-DB Filesystem Broker Program ```swcdbFsBroker```](fsbroker.html)
+  * [The SWC-DB Broker Program ```swcdbBroker```](broker.html)
   * [The SWC-DB Thrift Broker Program ```swcdbThriftBroker```](thriftbroker.html)
   * [The SWC-DB Filesystem Library ```libswcdb_fs```](libswcdb_fs/)
   * [The SWC-DB Client Library ```libswcdb```](libswcdb.html)

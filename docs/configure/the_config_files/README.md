@@ -46,7 +46,7 @@ The value of a property defaults to type String, the available specialized value
   INT64,
   DOUBLE,
   STRING,
-  ENUM] 
+  ENUM]
   * many-values [
   STRINGS,
   INT64S,
@@ -77,6 +77,7 @@ _**The following cfg-files for roles are used:**_
 | Manager       |             | ```swc_mngr.cfg```          | ```swc_mngr.dyn.cfg```         |
 | Ranger        |             | ```swc_rgr.cfg```           | ```swc_rgr.dyn.cfg```          |
 | FsBroker      |             | ```swc_fsbroker.cfg```      | ```swc_fsbroker.dyn.cfg```     |
+| Broker        |             | ```swc_bkr.cfg```           | ```swc_bkr.dyn.cfg```          |
 | ThriftBroker  |             | ```swc_thriftbroker.cfg```  | ```swc_thriftbroker.dyn.cfg``` |
 |               |             |                             |                                |
 | libswcdb_fs_* | Type of FS  |                             |                                |

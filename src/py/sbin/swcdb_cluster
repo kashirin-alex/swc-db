@@ -91,9 +91,9 @@ def swcdb_read_config():
     # set managers (ssh-addr, [addresses], host)
     swcdb_set_hosts("swc.mngr.host")
 
-    # read & set [Rangers, ThriftBrokers, Additional FsBrokers]
+    # read & set [Rangers, Brokers, ThriftBrokers, Additional FsBrokers]
     swcdb_get_config(swcdb_cfg["swc.cfg.path"][-1] + "swc.cluster.cfg")
-    for role in ["swc.cluster.rgr.host", "swc.cluster.thriftbroker.host", "swc.cluster.fsbroker.host"]:
+    for role in ["swc.cluster.rgr.host", "swc.cluster.bkr.host", "swc.cluster.thriftbroker.host", "swc.cluster.fsbroker.host"]:
         if role not in swcdb_cfg:
             swcdb_cfg[role] = []
             continue
@@ -110,7 +110,7 @@ def swcdb_read_config():
         [cfg[0] for cfg in swcdb_cfg["swc.cluster.fsbroker.host"]]
     ))
     swcdb_remote_hosts += list(set(
-        host for host in [cfg[0] for cfg in swcdb_cfg["swc.cluster.thriftbroker.host"]] + swcdb_fsbrokers
+        host for host in [cfg[0] for cfg in swcdb_cfg["swc.cluster.bkr.host"]] + [cfg[0] for cfg in swcdb_cfg["swc.cluster.thriftbroker.host"]] + swcdb_fsbrokers
         if host not in [swcdb_source_host, "localhost"]
     ))
 
@@ -414,6 +414,38 @@ def kill_rangers(c):
     #
 
 
+# swcdbBroker
+
+@fabric.task
+def start_brokers(c):
+    opts = swcdb_common_options()
+    for saddr, addrs, host in swcdb_cfg["swc.cluster.bkr.host"]:
+        with fabric.Connection(saddr) as c:
+            swcdb_print("start-brokers", c, c.run(
+                " ".join([
+                    swcdb_install_path+"/bin/swcdbBroker",
+                    ((" --host=" + host) if host else "".join([" --addr=" + addr for addr in addrs]) if addrs else "")
+                ] + opts),
+                hide=True)
+            )
+    #
+
+
+@fabric.task
+def stop_brokers(c):
+    for saddr in set(cfg[0] for cfg in swcdb_cfg["swc.cluster.bkr.host"]):
+        with fabric.Connection(saddr) as c:
+            swcdb_stop_proc("stop-brokers", "swcdbBroker", c, True)
+    #
+
+@fabric.task
+def kill_brokers(c):
+    for saddr in set(cfg[0] for cfg in swcdb_cfg["swc.cluster.bkr.host"]):
+        with fabric.Connection(saddr) as c:
+            swcdb_stop_proc("kill-brokers", "swcdbBroker", c, False)
+    #
+
+
 # swcdbThriftBroker
 
 @fabric.task
@@ -454,6 +486,7 @@ def start(c):
             ("fsbrokers",       start_fsbrokers),
             ("managers",        start_managers),
             ("rangers",         start_rangers),
+            ("brokers",         start_brokers),
             ("thriftbrokers",   start_thriftbrokers)]:
         print("-- starting " + name + " --")
         run(c)
@@ -470,6 +503,7 @@ def start(c):
 def stop(c):
     for name, run in [
             ("thriftbrokers",   stop_thriftbrokers),
+            ("brokers",         stop_brokers),
             ("rangers",         stop_rangers),
             ("managers",        stop_managers),
             ("fsbrokers",       stop_fsbrokers)]:
@@ -484,6 +518,7 @@ def stop(c):
 def kill(c):
     for name, run in [
             ("thriftbrokers",   kill_thriftbrokers),
+            ("brokers",         kill_brokers),
             ("rangers",         kill_rangers),
             ("managers",        kill_managers),
             ("fsbrokers",       kill_fsbrokers)]:

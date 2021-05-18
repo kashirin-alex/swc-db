@@ -19,6 +19,25 @@ void Settings::init_client_options() {
      "Manager default port if not defined in swc.mngr.host")
     ("swc.rgr.port", i16(16000), "Ranger port")
 
+    ("swc.bkr.host", g_strs(Strings({"localhost"})),
+     "Broker Host: \"(hostname or ips-csv)|port\"")
+    ("swc.bkr.port", i16(17000), "Broker port")
+
+    ("swc.client.Bkr.connection.timeout", g_i32(10000),
+     "Broker client connect timeout")
+    ("swc.client.Bkr.connection.probes", g_i32(1),
+     "Broker client connect probes")
+    ("swc.client.Bkr.connection.keepalive", g_i32(30000),
+     "Broker client connection keepalive for ms since last action")
+
+    ("swc.client.Bkr.comm.encoder",
+      g_enum(
+        int(SWC_DEFAULT_COMM_ENCODER),
+        nullptr,
+        Core::Encoder::from_string_encoding,
+        Core::Encoder::repr_encoding),
+     "The encoding to use in communication, options PLAIN/ZSTD/SNAPPY/ZLIB")
+
     ("swc.client.Rgr.connection.timeout", g_i32(10000),
      "Ranger client connect timeout")
     ("swc.client.Rgr.connection.probes", g_i32(1),

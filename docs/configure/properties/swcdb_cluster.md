@@ -18,7 +18,7 @@ The Full-Path or Uri to the SWC-DB `tar` archive package. An archive package fro
 
 * ### swc.cluster.rgr.host
 ```STRINGS```
-A Ranger host, value in format ```default|hostname|port``` OR ```default|ip,ip,ip|port```. The hostname/ips need to be accessible from the source-host. 
+A Ranger host, value in format ```default|hostname|port``` OR ```default|ip,ip,ip|port```. The hostname/ips need to be accessible from the source-host.
 > without ```|port``` - no port applied and Program uses the default port \
 > with ```default|``` - hostname/address used for ssh, no host applied to the Program and Program will use the default addresses.
 
@@ -27,19 +27,28 @@ A Ranger host, value in format ```default|hostname|port``` OR ```default|ip,ip,i
 
 * ### swc.cluster.fsbroker.host
 ```STRINGS```
-A FsBroker host, value in format ```default|hostname|port``` OR ```default|ip,ip,ip|port```. The hostname/ips need to be accessible from the source-host. 
+A FsBroker host, value in format ```default|hostname|port``` OR ```default|ip,ip,ip|port```. The hostname/ips need to be accessible from the source-host.
 > without ```|port``` - no port applied and Program uses the default port \
 > with ```default|``` - hostname/address used for ssh, no host applied to the Program and Program will use the default addresses.
 
   _default_ **```swc.cluster.fsbroker.host=```**
 
 
+* ### swc.cluster.bkr.host
+```STRINGS```
+A Broker host, value in format ```default|hostname|port``` OR ```default|ip,ip,ip|port```. The hostname/ips need to be accessible from the source-host.
+> without ```|port``` - no port applied and Program uses the default port \
+> with ```default|``` - hostname/address used for ssh, no host applied to the Program and Program will use the default addresses.
+
+  _default_ **```swc.cluster.bkr.host=```**
+
+
 
 * ### swc.cluster.thriftbroker.host
 ```STRINGS```
-A ThriftBroker host, value in format ```default|hostname|port``` OR ```default|ip,ip,ip|port```. The hostname/ips need to be accessible from the source-host. 
+A ThriftBroker host, value in format ```default|hostname|port``` OR ```default|ip,ip,ip|port```. The hostname/ips need to be accessible from the source-host.
 > without ```|port``` - no port applied and Program uses the default port \
-> with ```default|``` - hostname/address used for ssh, no host applied to the Program and Program will use the default addresses.
+> with ```default|``` - hostname/address used for ssh, no host applied to the Program and Program will use ```localhost``` address.
 
   _default_ **```swc.cluster.thriftbroker.host=```**
 

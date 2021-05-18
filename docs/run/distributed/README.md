@@ -16,14 +16,14 @@ cd sbin/;
 ## the Utility 'swcdb_cluster '
 
   **swcdb_cluster needs to set [as by instructions]({{ site.baseurl }}/install/swcdb_cluster/)**
-  
+
   _List the available commdand of swcdb_cluster_
 
 ```
 ./swcdb_cluster --help;
 ```
 
-```text 
+```text
 Usage: swcdb_cluster [--core-opts] <subcommand> [--subcommand-opts] ...
 
 Subcommands:
@@ -33,6 +33,7 @@ Subcommands:
   kill-fsbrokers
   kill-managers
   kill-rangers
+  kill-brokers
   kill-thriftbrokers
   push-config
   shell
@@ -40,11 +41,13 @@ Subcommands:
   start-fsbrokers
   start-managers
   start-rangers
+  start-brokers
   start-thriftbrokers
   stop
   stop-fsbrokers
   stop-managers
   stop-rangers
+  stop-brokers
   stop-thriftbrokers
   wait-ready
 
@@ -62,7 +65,7 @@ In order to proceed with the `deploy` command, you should have configured by the
     * copy all the files of SWC-DB install-path to all the hosts of the SWC-DB cluster
 
 ```
-./swcdb_cluster deploy; 
+./swcdb_cluster deploy;
 ```
 
 ### To start the configured SWC-DB cluster

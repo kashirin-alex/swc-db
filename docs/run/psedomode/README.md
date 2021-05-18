@@ -25,7 +25,7 @@ sbin/swcdb_cluster start;
 ```
 
 
-* ### start each server independently 
+* ### start each server independently
 ```
 cd bin; # continue to work from 'bin' folder
 ```
@@ -42,7 +42,11 @@ cd bin; # continue to work from 'bin' folder
 ```
 ./swcdbRanger --daemon;
 ```
-  4. #### start swcdbThriftBroker
+  4. #### start swcdbBroker
+```
+./swcdbBroker --host=localhost --daemon;
+```
+  5. #### start swcdbThriftBroker
 ```
 ./swcdbThriftBroker --host=localhost --daemon;
 ```
@@ -65,9 +69,10 @@ sbin/swcdb_cluster stop;
 * ### stop with SIGINT
 By the runtime order dependency for each PID of a server/program/swcdbProgramName:
   1. swcdbThriftBroker
-  2. swcdbRanger
-  3. swcdbManager
-  4. swcdbFsBroker
+  2. swcdbBroker
+  3. swcdbRanger
+  4. swcdbManager
+  5. swcdbFsBroker
 
   ```bash
 ps aux | grep swcdbProgramName;
