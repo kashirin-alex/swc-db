@@ -22,9 +22,8 @@ using namespace Common::Query::Update::Metric;
 
 
 struct Commands {
-  static uint8_t max_command() {
-    return 0;
-  }
+  static constexpr const uint8_t MAX = 1;
+
   static const char* to_string(uint8_t) noexcept {
     return "NOIMPL";
   }

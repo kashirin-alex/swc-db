@@ -98,12 +98,11 @@ class Item_Net : public Base {
     Core::Atomic<uint64_t>                       conn_est;
     Common::Stats::MinMaxAvgCount_Safe<uint64_t> bytes_sent;
     Common::Stats::MinMaxAvgCount_Safe<uint64_t> bytes_recv;
-    std::vector<Core::Atomic<uint64_t>>          commands;
+    Core::Atomic<uint64_t>                       commands[CommandsT::MAX];
 
     Addr(const Comm::EndPoint& endpoint) noexcept
         : addr(endpoint.address()),
-          conn_open(0), conn_accept(0), conn_est(0),
-          commands(CommandsT::max_command()) {
+          conn_open(0), conn_accept(0), conn_est(0) {
     }
   };
 
@@ -160,7 +159,7 @@ class Item_Net : public Base {
 
   void error(const Comm::ConnHandlerPtr& conn) noexcept {
     if(Addr* addr = get(conn->endpoint_local.address(), conn->is_secure()))
-      addr->commands.back().fetch_add(1);
+      addr->commands[CommandsT::MAX - 1].fetch_add(1);
   }
 
   void sent(const Comm::ConnHandlerPtr& conn, size_t bytes) noexcept {
@@ -196,7 +195,7 @@ class Item_Net : public Base {
       std::vector<std::string> labels;
       std::vector<int64_t>     aggregations;
       std::vector<int64_t>     relations;
-      ids.reserve(11 + addr->commands.size());
+      ids.reserve(11 + CommandsT::MAX);
       names.reserve(ids.size());
       labels.reserve(ids.size());
       aggregations.reserve(ids.size());
@@ -263,14 +262,14 @@ class Item_Net : public Base {
       names.push_back("established");
       labels.push_back("Connections Established");
 
-      for(size_t i=0; i < addr->commands.size(); ++i) {
+      for(uint8_t i=0; i < CommandsT::MAX; ++i) {
         std::string cmd(CommandsT::to_string(i));
         ids.push_back(i + FIELD_EV_COMMAND_START);
         names.push_back(cmd);
         labels.push_back(cmd + " Requests");
       }
       size_t sz = 15 + 2 * ids.size() + relations.size();
-      for(uint8_t i=0; i < names.size(); ++i) {
+      for(size_t i=0; i < names.size(); ++i) {
         sz += names[i].size();
         sz += labels[i].size();
       }
@@ -329,11 +328,10 @@ class Item_Net : public Base {
       addr->bytes_recv.gather(bytes_recv);
       sz += encoded_length(bytes_recv, true);
 
-      std::vector<int64_t> counts;
-      counts.reserve(addr->commands.size());
-      for(auto& c : addr->commands) {
-        if(int64_t v = counts.emplace_back(c.exchange(0)))
-          sz += 2 + Serialization::encoded_length_vi64(v);
+      int64_t counts[CommandsT::MAX];
+      for(uint8_t i=0; i < CommandsT::MAX; ++i) {
+        if((counts[i] = addr->commands[i].exchange(0)))
+          sz += 2 + Serialization::encoded_length_vi64(counts[i]);
       }
 
       DB::Cell::Serial::Value::FieldsWriter wfields;
@@ -347,7 +345,7 @@ class Item_Net : public Base {
         wfields.add(FIELD_CONN_ACC, conn_accept);
       if(conn_est)
         wfields.add(FIELD_CONN_EST, conn_est);
-      for(size_t i=0; i < counts.size(); ++i) {
+      for(uint8_t i=0; i < CommandsT::MAX; ++i) {
         if(counts[i])
           wfields.add(i + FIELD_EV_COMMAND_START, counts[i]);
       }

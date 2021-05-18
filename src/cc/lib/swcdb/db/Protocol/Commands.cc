@@ -93,4 +93,33 @@ const char* Commands::to_string(uint8_t cmd) noexcept {
 }
 
 
+
+
+
+namespace Bkr {
+
+
+const char* Commands::to_string(uint8_t cmd) noexcept {
+  switch(cmd) {
+    case COLUMN_GET:
+      return "COLUMN_GET";
+    case COLUMN_LIST:
+      return "COLUMN_LIST";
+    case COLUMN_COMPACT:
+      return "COLUMN_COMPACT";
+    case COLUMN_MNG:
+      return "COLUMN_MNG";
+    case CELLS_UPDATE:
+      return "CELLS_UPDATE";
+    case CELLS_SELECT:
+      return "CELLS_SELECT";
+    default:
+      return "NOIMPL";
+  }
+}
+
+
+}
+
+
 }}}

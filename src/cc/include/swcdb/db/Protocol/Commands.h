@@ -41,9 +41,8 @@ namespace Rgr {
 
 
   struct Commands {
-    static uint8_t max_command() noexcept {
-      return MAX_CMD;
-    }
+    static constexpr const uint8_t MAX = MAX_CMD;
+
     static const char* to_string(uint8_t cmd) noexcept;
   };
 }
@@ -79,9 +78,39 @@ namespace Mngr {
   };
 
   struct Commands {
-    static uint8_t max_command() noexcept {
-      return MAX_CMD;
-    }
+    static constexpr const uint8_t MAX = MAX_CMD;
+
+    static const char* to_string(uint8_t cmd) noexcept;
+  };
+}
+
+
+
+/**
+ * @brief The SWC-DB Broker Communications Protocol C++ namespace 'SWC::Comm::Protocol::Bkr'
+ *
+ * \ingroup Database
+ */
+namespace Bkr {
+
+  // Broker Protocol Commands
+  enum Command : uint8_t {
+    NOT_IMPLEMENTED      = 0x00,
+
+    COLUMN_GET           = 0x01,
+    COLUMN_LIST          = 0x02,
+    COLUMN_COMPACT       = 0x03,
+    COLUMN_MNG           = 0x04,
+    
+    CELLS_UPDATE         = 0x05,
+    CELLS_SELECT         = 0x06,
+
+    MAX_CMD              = 0x07
+  };
+
+  struct Commands {
+    static constexpr const uint8_t MAX = MAX_CMD;
+
     static const char* to_string(uint8_t cmd) noexcept;
   };
 }
