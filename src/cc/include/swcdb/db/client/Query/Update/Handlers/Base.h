@@ -63,6 +63,8 @@ class Base : public std::enable_shared_from_this<Base> {
                                         const DB::Cell::Key& key_end,
                                         size_t buff_sz, bool& more) = 0;
 
+    virtual DynamicBuffer::Ptr get_buff(size_t buff_sz, bool& more) = 0;
+
     virtual void error(int err) noexcept = 0;
 
     virtual bool error() noexcept  = 0;

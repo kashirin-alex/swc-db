@@ -293,6 +293,32 @@ bool Mutable::write_and_free(const DB::Cell::Key& key_start,
   return false;
 }
 
+bool Mutable::write_and_free(DynamicBuffer& cells, uint32_t threshold) {
+  bool more = _size;
+  if(!more)
+    return more;
+
+  cells.ensure(_bytes < threshold? _bytes: threshold);
+
+  size_t count = 0;
+  auto it = Iterator(&buckets);
+  for(Cell* cell; it && (!threshold || threshold > cells.fill()); ++it) {
+    cell = *it.item;
+    ++count;
+    if(!cell->has_expired(ttl))
+      cell->write(cells);
+  }
+  if(count) {
+    if(count == _size) {
+      free();
+    } else {
+      _remove(it, count);
+      return it;
+    }
+  }
+  return false;
+}
+
 void Mutable::print(std::ostream& out, bool with_cells) const {
   out << "Cells(size=" << size() << '/' << _size
       << " bytes=" << _bytes

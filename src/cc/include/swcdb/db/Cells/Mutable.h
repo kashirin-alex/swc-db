@@ -295,6 +295,8 @@ class Mutable final {
                       const DB::Cell::Key& key_finish,
                       DynamicBuffer& cells, uint32_t threshold);
 
+  bool write_and_free(DynamicBuffer& cells, uint32_t threshold);
+
 
   void print(std::ostream& out, bool with_cells=false) const;
 

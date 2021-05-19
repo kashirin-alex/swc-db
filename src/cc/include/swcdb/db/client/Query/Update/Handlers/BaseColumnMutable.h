@@ -70,6 +70,8 @@ class ColumnMutable : public Base::Column {
                                       const DB::Cell::Key& key_end,
                                       size_t buff_sz, bool& more) override;
 
+  virtual DynamicBuffer::Ptr get_buff(size_t buff_sz, bool& more) override;
+
   virtual void error(int err) noexcept override {
     int at = Error::OK;
     state_error.compare_exchange_weak(at, err);
