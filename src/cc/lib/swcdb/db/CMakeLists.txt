@@ -76,19 +76,29 @@ set(swcdb_sources
   client/Settings.cc
   client/Clients.cc
   client/Schemas.cc
-  client/ContextManager.cc
-  client/ContextRanger.cc
-  client/rgr/Rangers.cc
-  client/mngr/Groups.cc
+
+  client/service/mngr/ContextManager.cc
+  client/service/mngr/Groups.cc
+  client/service/mngr/Managers.cc
+
+  client/service/rgr/ContextRanger.cc
+  client/service/rgr/Cache.cc
+  client/service/rgr/Rangers.cc
+
+  client/service/bkr/ContextBroker.cc
+  client/service/bkr/Brokers.cc
+
   client/Query/Update/Handlers/BaseColumnMutable.cc
   client/Query/Update/Handlers/BaseUnorderedMap.cc
   client/Query/Update/Handlers/Common.cc
   client/Query/Update/Committer.cc
   client/Query/Update/Handlers/Metrics.cc
+
   client/Query/Select/Handlers/BaseUnorderedMap.cc
   client/Query/Select/Handlers/BaseSingleColumn.cc
   client/Query/Select/Handlers/Common.cc
   client/Query/Select/Scanner.cc
+
   client/sql/SQL.cc
   client/sql/Reader.cc
   client/sql/ColumnList.cc
