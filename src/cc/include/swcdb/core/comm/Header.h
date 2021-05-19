@@ -20,9 +20,11 @@ struct Header final {
   static const uint8_t FIXED_LENGTH     = PREFIX_LENGTH + 16;
   static const uint8_t MAX_LENGTH       = FIXED_LENGTH + 15 * 2;
 
-  static const uint8_t FLAG_REQUEST_BIT         = 0x1;
-  static const uint8_t FLAG_REQUEST_MASK        = 0xE;
-  static const uint8_t FLAG_RESPONSE_IGNORE_BIT = 0x2;
+  static const uint8_t FLAG_REQUEST_BIT           = 0x01;
+  static const uint8_t FLAG_REQUEST_MASK          = 0xFE;
+
+  static const uint8_t FLAG_RESPONSE_IGNORE_BIT   = 0x02;
+  static const uint8_t FLAG_RESPONSE_PARTIAL_BIT  = 0x04;
 
 
   Header(uint64_t cmd=0, uint32_t timeout=0) noexcept

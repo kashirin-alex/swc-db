@@ -388,12 +388,17 @@ void ConnHandler::disconnected() {
 void ConnHandler::run_pending(const Event::Ptr& ev) {
   Pending pending;
   if(ev->header.id && !(ev->header.flags & Header::FLAG_REQUEST_BIT)) {
+    bool partial = ev->header.flags & Header::FLAG_RESPONSE_PARTIAL_BIT;
     {
       Core::MutexSptd::scope lock(m_mutex);
       auto it = m_pending.find(ev->header.id);
       if(it != m_pending.end()) {
-        pending = std::move(it->second);
-        m_pending.erase(it);
+        if(partial) {
+          pending.hdlr = it->second.hdlr;
+        } else {
+          pending = std::move(it->second);
+          m_pending.erase(it);
+        }
       }
     }
     if(pending.timer)
