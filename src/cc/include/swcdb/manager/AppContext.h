@@ -59,8 +59,8 @@ class AppContext final : public Comm::AppContext {
         *settings,
         Env::IoCtx::io(),
         std::make_shared<client::Mngr::ContextManager>(),
-        std::make_shared<client::ContextRanger>(*settings),
-        std::make_shared<client::ContextBroker>(*settings)
+        std::make_shared<client::ContextRanger>(*settings)/*,
+        std::make_shared<client::ContextBroker>(*settings)*/
       )
     );
 
