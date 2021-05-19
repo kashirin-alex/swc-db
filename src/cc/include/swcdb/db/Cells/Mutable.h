@@ -205,6 +205,11 @@ class Mutable final {
                    const uint32_t max_revs=1, const uint64_t ttl_ns=0,
                    const Types::Column type=Types::Column::PLAIN);
 
+  explicit Mutable(const Types::KeySeq key_seq,
+                   const uint32_t max_revs, const uint64_t ttl_ns,
+                   const Types::Column type,
+                   const StaticBuffer& buffer);
+
   explicit Mutable(Mutable& other);
 
   Mutable(const Mutable&&) = delete;

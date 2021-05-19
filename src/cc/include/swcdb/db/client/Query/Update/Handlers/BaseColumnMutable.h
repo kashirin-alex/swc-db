@@ -28,6 +28,11 @@ class ColumnMutable : public Base::Column {
                 uint32_t versions, uint32_t ttl_secs,
                 DB::Types::Column type);
 
+  ColumnMutable(const cid_t cid, DB::Types::KeySeq seq,
+                uint32_t versions, uint32_t ttl_secs,
+                DB::Types::Column type,
+                const StaticBuffer& buffer);
+
   ColumnMutable(const Column&) = delete;
 
   ColumnMutable(const Column&&) = delete;

@@ -31,6 +31,15 @@ class BaseSingleColumn : public Base {
                     column(cid, seq, versions, ttl_secs, type) {
   }
 
+  BaseSingleColumn(const Clients::Ptr& clients,
+                   const cid_t cid, DB::Types::KeySeq seq,
+                   uint32_t versions, uint32_t ttl_secs,
+                   DB::Types::Column type,
+                   const StaticBuffer& buffer)
+                  : Base(clients),
+                    column(cid, seq, versions, ttl_secs, type, buffer) {
+  }
+
   BaseSingleColumn(const BaseSingleColumn&) = delete;
 
   BaseSingleColumn(const BaseSingleColumn&&) = delete;

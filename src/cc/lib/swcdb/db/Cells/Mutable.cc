@@ -26,6 +26,17 @@ Mutable::Mutable(const Types::KeySeq key_seq,
   buckets.emplace_back(make_bucket(0));
 }
 
+Mutable::Mutable(const Types::KeySeq key_seq,
+                 const uint32_t max_revs, const uint64_t ttl_ns,
+                 const Types::Column type,
+                 const StaticBuffer& buffer)
+                : key_seq(key_seq),
+                  type(type), max_revs(max_revs), ttl(ttl_ns),
+                  _bytes(0), _size(0) {
+  buckets.emplace_back(make_bucket(0));
+  add_sorted(buffer.base, buffer.size);
+}
+
 Mutable::Mutable(Mutable& other)
                 : key_seq(other.key_seq), type(other.type),
                   max_revs(other.max_revs), ttl(other.ttl),
