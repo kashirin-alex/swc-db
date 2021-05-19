@@ -34,7 +34,7 @@ class BaseSingleColumn : public Base {
 
   virtual void error(const cid_t _cid, int err) override;
 
-  virtual bool add_cells(const cid_t _cid, const StaticBuffer& buffer,
+  virtual bool add_cells(const cid_t _cid, StaticBuffer& buffer,
                          bool reached_limit,
                          DB::Specs::Interval& interval) override;
 

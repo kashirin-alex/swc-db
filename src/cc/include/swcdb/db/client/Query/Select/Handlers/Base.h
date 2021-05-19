@@ -48,7 +48,7 @@ class Base : public std::enable_shared_from_this<Base>{
 
   virtual void error(const cid_t cid, int err) = 0;
 
-  virtual bool add_cells(const cid_t cid, const StaticBuffer& buffer,
+  virtual bool add_cells(const cid_t cid, StaticBuffer& buffer,
                          bool reached_limit,
                          DB::Specs::Interval& interval) = 0;
 

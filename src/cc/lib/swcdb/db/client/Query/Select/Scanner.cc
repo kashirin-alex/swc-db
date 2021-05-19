@@ -212,7 +212,7 @@ void Scanner::print(std::ostream& out) {
   out << ')';
 }
 
-bool Scanner::add_cells(const StaticBuffer& buffer, bool reached_limit) {
+bool Scanner::add_cells(StaticBuffer& buffer, bool reached_limit) {
   return selector->add_cells(data_cid, buffer, reached_limit, interval);
 }
 
@@ -749,7 +749,7 @@ void Scanner::rgr_select() {
     params, data_endpoints,
     [profile=selector->profile.rgr_data(), scanner=shared_from_this()]
     (const ReqBase::Ptr& req,
-     const Comm::Protocol::Rgr::Params::RangeQuerySelectRsp& rsp) {
+     Comm::Protocol::Rgr::Params::RangeQuerySelectRsp& rsp) {
       profile.add(rsp.err);
       scanner->rgr_selected(req, rsp);
     },
@@ -759,7 +759,7 @@ void Scanner::rgr_select() {
 
 void Scanner::rgr_selected(
                 const ReqBase::Ptr& req,
-                const Comm::Protocol::Rgr::Params::RangeQuerySelectRsp& rsp) {
+                Comm::Protocol::Rgr::Params::RangeQuerySelectRsp& rsp) {
   retry_point = RETRY_POINT_NONE;
   switch(rsp.err) {
     case Error::OK: {

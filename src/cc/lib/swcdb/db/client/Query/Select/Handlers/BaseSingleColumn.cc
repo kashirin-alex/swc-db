@@ -18,7 +18,7 @@ void BaseSingleColumn::error(const cid_t _cid, int err) {
     at, _cid == cid ? err : Error::CLIENT_MISMATCHED_CID);
 }
 
-bool BaseSingleColumn::add_cells(const cid_t _cid, const StaticBuffer& buffer,
+bool BaseSingleColumn::add_cells(const cid_t _cid, StaticBuffer& buffer,
                                  bool reached_limit,
                                  DB::Specs::Interval& interval) {
   if(_cid != cid) {

@@ -13,7 +13,7 @@ namespace Handlers {
 
 
 
-bool BaseUnorderedMap::Rsp::add_cells(const StaticBuffer& buffer,
+bool BaseUnorderedMap::Rsp::add_cells(StaticBuffer& buffer,
                                       bool reached_limit,
                                       DB::Specs::Interval& interval) {
   Core::MutexSptd::scope lock(m_mutex);
@@ -77,7 +77,7 @@ void BaseUnorderedMap::error(const cid_t cid, int err) {
   get_columnn(cid)->error(err);
 }
 
-bool BaseUnorderedMap::add_cells(const cid_t cid, const StaticBuffer& buffer,
+bool BaseUnorderedMap::add_cells(const cid_t cid, StaticBuffer& buffer,
                        bool reached_limit, DB::Specs::Interval& interval) {
   return get_columnn(cid)->add_cells(buffer, reached_limit, interval);
 }

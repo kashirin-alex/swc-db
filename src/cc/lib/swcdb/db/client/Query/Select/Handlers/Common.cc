@@ -24,7 +24,7 @@ Common::Common(const Clients::Ptr& clients,
                 m_sending_result(false) {
 }
 
-bool Common::add_cells(const cid_t cid, const StaticBuffer& buffer,
+bool Common::add_cells(const cid_t cid, StaticBuffer& buffer,
                        bool reached_limit, DB::Specs::Interval& interval) {
   bool more = BaseUnorderedMap::add_cells(
     cid, buffer, reached_limit, interval);

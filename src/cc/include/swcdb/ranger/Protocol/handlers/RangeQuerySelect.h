@@ -48,7 +48,8 @@ void range_query_select(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
   }
 
   if(err) {
-    conn->send_response(Buffers::make(ev, Params::RangeQuerySelectRsp(err)));
+    Params::RangeQuerySelectRsp rsp(err);
+    conn->send_response(Buffers::make(ev, rsp));
   } else {
     range->scan(
       std::make_shared<Ranger::Callback::RangeQuerySelect>(

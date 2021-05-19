@@ -32,7 +32,7 @@ class BaseUnorderedMap : public Base {
 
   virtual void error(const cid_t cid, int err) override;
 
-  virtual bool add_cells(const cid_t cid, const StaticBuffer& buffer,
+  virtual bool add_cells(const cid_t cid, StaticBuffer& buffer,
                          bool reached_limit,
                          DB::Specs::Interval& interval) override;
 
@@ -51,7 +51,7 @@ class BaseUnorderedMap : public Base {
 
     //~Rsp() { }
 
-    bool add_cells(const StaticBuffer& buffer, bool reached_limit,
+    bool add_cells(StaticBuffer& buffer, bool reached_limit,
                    DB::Specs::Interval& interval);
 
     void get_cells(DB::Cells::Result& cells);

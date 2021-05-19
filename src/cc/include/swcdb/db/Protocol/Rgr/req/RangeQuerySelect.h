@@ -19,7 +19,7 @@ class RangeQuerySelect: public client::ConnQueue::ReqBase {
   public:
 
   typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&,
-                             const Params::RangeQuerySelectRsp&)> Cb_t;
+                             Params::RangeQuerySelectRsp&)> Cb_t;
 
   static void
   request(const SWC::client::Clients::Ptr& clients,

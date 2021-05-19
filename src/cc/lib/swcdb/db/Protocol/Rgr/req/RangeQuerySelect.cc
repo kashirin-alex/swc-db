@@ -39,7 +39,8 @@ RangeQuerySelect::RangeQuerySelect(const SWC::client::Clients::Ptr& clients,
 }
 
 void RangeQuerySelect::handle_no_conn() {
-  cb(req(), Params::RangeQuerySelectRsp(Error::COMM_NOT_CONNECTED));
+  Params::RangeQuerySelectRsp rsp(Error::COMM_NOT_CONNECTED);
+  cb(req(), rsp);
 }
 
 bool RangeQuerySelect::run() {

@@ -105,7 +105,7 @@ class Scanner final : public std::enable_shared_from_this<Scanner> {
 
   void print(std::ostream& out);
 
-  bool add_cells(const StaticBuffer& buffer, bool reached_limit);
+  bool add_cells(StaticBuffer& buffer, bool reached_limit);
 
   void response_if_last();
 
@@ -151,7 +151,7 @@ class Scanner final : public std::enable_shared_from_this<Scanner> {
 
   void rgr_selected(
       const ReqBase::Ptr& req,
-      const Comm::Protocol::Rgr::Params::RangeQuerySelectRsp& rsp);
+      Comm::Protocol::Rgr::Params::RangeQuerySelectRsp& rsp);
 
 };
 

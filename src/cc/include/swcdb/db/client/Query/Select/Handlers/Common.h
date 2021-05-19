@@ -38,7 +38,7 @@ class Common : public BaseUnorderedMap {
 
   virtual bool valid() noexcept override;
 
-  virtual bool add_cells(const cid_t cid, const StaticBuffer& buffer,
+  virtual bool add_cells(const cid_t cid, StaticBuffer& buffer,
                          bool reached_limit,
                          DB::Specs::Interval& interval) override;
 
