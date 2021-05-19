@@ -36,7 +36,7 @@ void column_mng(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
 
   conn->send_error(err , "", ev);
 }
-  
+
 
 }}}}}
 

@@ -78,7 +78,8 @@ void BaseUnorderedMap::error(const cid_t cid, int err) {
 }
 
 bool BaseUnorderedMap::add_cells(const cid_t cid, StaticBuffer& buffer,
-                       bool reached_limit, DB::Specs::Interval& interval) {
+                                 bool reached_limit,
+                                 DB::Specs::Interval& interval) {
   return get_columnn(cid)->add_cells(buffer, reached_limit, interval);
 }
 

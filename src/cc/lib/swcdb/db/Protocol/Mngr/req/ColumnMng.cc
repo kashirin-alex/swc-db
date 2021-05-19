@@ -40,8 +40,14 @@ SWC_SHOULD_INLINE
 void ColumnMng::request(const SWC::client::Clients::Ptr& clients,
                         ColumnMng::Func func, const DB::Schema::Ptr& schema,
                         ColumnMng::Cb_t&& cb, const uint32_t timeout) {
-  std::make_shared<ColumnMng>(
-    clients, Params::ColumnMng(func, schema), std::move(cb), timeout)->run();
+  request(clients, Params::ColumnMng(func, schema), std::move(cb), timeout);
+}
+
+SWC_SHOULD_INLINE
+void ColumnMng::request(const SWC::client::Clients::Ptr& clients,
+                        const Params::ColumnMng& params,
+                        ColumnMng::Cb_t&& cb, const uint32_t timeout) {
+  std::make_shared<ColumnMng>(clients, params, std::move(cb), timeout)->run();
 }
 
 

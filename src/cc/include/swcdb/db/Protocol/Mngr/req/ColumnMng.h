@@ -39,6 +39,9 @@ class ColumnMng: public client::ConnQueue::ReqBase {
                       const DB::Schema::Ptr& schema, Cb_t&& cb,
                       const uint32_t timeout = 10000);
 
+  static void request(const SWC::client::Clients::Ptr& clients,
+                      const Params::ColumnMng& params, Cb_t&& cb,
+                      const uint32_t timeout = 10000);
 
   ColumnMng(const SWC::client::Clients::Ptr& clients,
             const Params::ColumnMng& params, Cb_t&& cb,
