@@ -16,14 +16,13 @@
 #include "swcdb/broker/BrokerEnv.h"
 
 #include "swcdb/common/Protocol/handlers/NotImplemented.h"
-/*
-#include "swcdb/broker/Protocol/handlers/column_get.h"
-#include "swcdb/broker/Protocol/handlers/column_list.h"
-#include "swcdb/broker/Protocol/handlers/column_compact.h"
-#include "swcdb/broker/Protocol/handlers/column_mng.h"
-#include "swcdb/broker/Protocol/handlers/cells_update.h"
-#include "swcdb/broker/Protocol/handlers/cells_select.h"
-*/
+#include "swcdb/broker/Protocol/handlers/ColumnGet.h"
+#include "swcdb/broker/Protocol/handlers/ColumnList.h"
+#include "swcdb/broker/Protocol/handlers/ColumnCompact.h"
+#include "swcdb/broker/Protocol/handlers/ColumnMng.h"
+#include "swcdb/broker/Protocol/handlers/CellsUpdate.h"
+#include "swcdb/broker/Protocol/handlers/CellsSelect.h"
+
 
 namespace SWC { namespace Broker {
 
@@ -124,7 +123,7 @@ class AppContext final : public Comm::AppContext {
       case Comm::Event::Type::MESSAGE: {
         Env::Bkr::in_process(1);
         switch(ev->header.command) {
-          /*
+
           case Comm::Protocol::Bkr::Command::COLUMN_GET:
             Env::Bkr::post([conn, ev]() {
               if(!ev->expired())
@@ -166,11 +165,12 @@ class AppContext final : public Comm::AppContext {
                 Comm::Protocol::Bkr::Handler::cells_select(conn, ev);
             });
             break;
-          */
+
           default:
             Comm::Protocol::Common::Handler::not_implemented(conn, ev);
             if(m_metrics)
               m_metrics->net->error(conn);
+            Env::Bkr::in_process(-1);
             return;
         }
         if(m_metrics)

@@ -73,6 +73,9 @@ set(swcdb_sources
   Protocol/Mngr/params/Report.cc
   Protocol/Mngr/req/Report.cc
 
+  Protocol/Bkr/params/CellsSelect.cc
+  Protocol/Bkr/params/CellsUpdate.cc
+
   client/Settings.cc
   client/Clients.cc
   client/Schemas.cc
