@@ -44,7 +44,7 @@ void scan(const Handlers::Base::Ptr& hdlr,
 }
 
 void scan(int& err,
-          const Handlers::BaseUnorderedMap::Ptr& hdlr,
+          const Handlers::Base::Ptr& hdlr,
           const DB::Specs::Scan& specs) {
   std::vector<DB::Schema::Ptr> schemas(specs.columns.size());
   auto it_seq = schemas.begin();
@@ -74,7 +74,7 @@ void scan(int& err,
 }
 
 void scan(int& err,
-          const Handlers::BaseUnorderedMap::Ptr& hdlr,
+          const Handlers::Base::Ptr& hdlr,
           DB::Specs::Scan&& specs) {
   std::vector<DB::Schema::Ptr> schemas(specs.columns.size());
   auto it_seq = schemas.begin();

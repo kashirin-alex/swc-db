@@ -43,11 +43,11 @@ extern void scan(const Handlers::Base::Ptr& hdlr,
                  DB::Specs::Interval&& intval);
 
 extern void scan(int& err,
-                 const Handlers::BaseUnorderedMap::Ptr& hdlr,
+                 const Handlers::Base::Ptr& hdlr,
                  const DB::Specs::Scan& specs);
 
 extern void scan(int& err,
-                 const Handlers::BaseUnorderedMap::Ptr& hdlr,
+                 const Handlers::Base::Ptr& hdlr,
                  DB::Specs::Scan&& specs);
 
 
