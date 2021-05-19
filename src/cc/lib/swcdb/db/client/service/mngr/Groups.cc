@@ -4,7 +4,7 @@
  */
 
 
-#include "swcdb/db/client/mngr/Groups.h"
+#include "swcdb/db/client/service/mngr/Groups.h"
 #include "swcdb/db/client/Settings.h"
 
 
@@ -308,7 +308,7 @@ void Groups::print(std::ostream& out) {
     group->print(out);
 }
 
-void Groups::add(Groups::GroupHost& g_host) {
+void Groups::add(Groups::GroupHost&& g_host) {
   Core::MutexSptd::scope lock(m_mutex);
 
   for(auto it=m_active_g_host.begin(); it != m_active_g_host.end(); ++it) {
@@ -317,11 +317,11 @@ void Groups::add(Groups::GroupHost& g_host) {
     if(g_host.role == it->role &&
        g_host.cid_begin == it->cid_begin &&
        g_host.cid_end == it->cid_end) {
-      it->endpoints = g_host.endpoints;
+      it->endpoints = std::move(g_host.endpoints);
       return;
     }
   }
-  m_active_g_host.push_back(g_host);
+  m_active_g_host.emplace_back(std::move(g_host));
 }
 
 void Groups::remove(const Comm::EndPoints& endpoints) {

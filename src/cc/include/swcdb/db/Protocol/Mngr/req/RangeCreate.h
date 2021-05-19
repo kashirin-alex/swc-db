@@ -61,7 +61,7 @@ class RangeCreate: public client::ConnQueue::ReqBase {
 
   bool run() override {
     if(endpoints.empty()) {
-      clients->mngrs_groups->select(cid, endpoints);
+      clients->get_mngr(cid, endpoints);
       if(endpoints.empty()) {
         if(clients->stopping()) {
           cb(req(), Params::RangeCreateRsp(Error::CLIENT_STOPPING));
@@ -71,7 +71,7 @@ class RangeCreate: public client::ConnQueue::ReqBase {
         return false;
       }
     }
-    clients->mngr->get(endpoints)->put(req());
+    clients->get_mngr_queue(endpoints)->put(req());
     return true;
   }
 
@@ -99,7 +99,7 @@ class RangeCreate: public client::ConnQueue::ReqBase {
   private:
 
   void clear_endpoints() {
-    clients->mngrs_groups->remove(endpoints);
+    clients->remove_mngr(endpoints);
     endpoints.clear();
   }
 

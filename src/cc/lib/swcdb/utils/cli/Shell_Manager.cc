@@ -71,7 +71,7 @@ bool Mngr::cluster_status(std::string&) {
   std::string message;
   auto clients = Env::Clients::get();
   client::Mngr::Hosts hosts;
-  auto groups = clients->mngrs_groups->get_groups();
+  auto groups = clients->managers.groups->get_groups();
   for(auto& g : groups) {
     auto tmp =  g->get_hosts();
     hosts.insert(hosts.end(), tmp.begin(), tmp.end());
@@ -157,7 +157,7 @@ bool Mngr::managers_status(std::string& cmd) {
       return error("Missing Endpoint");
 
   } else if(reader.found_token("all", 3)) {
-    auto groups = clients->mngrs_groups->get_groups();
+    auto groups = clients->managers.groups->get_groups();
     for(auto& g : groups) {
       auto tmp =  g->get_hosts();
       hosts.insert(hosts.end(), tmp.begin(), tmp.end());

@@ -8,88 +8,133 @@
 
 namespace SWC { namespace client {
 
+
 Comm::IoContextPtr default_io() {
   if(!Env::IoCtx::ok())
     Env::IoCtx::init(8);
   return Env::IoCtx::io();
 }
 
+
+Clients::Clients(const Config::Settings& settings,
+                 Comm::IoContextPtr ioctx,
+                 const ContextManager::Ptr& mngr_ctx,
+                 const ContextRanger::Ptr& rgr_ctx,
+                 const ContextBroker::Ptr& bkr_ctx)
+    : running(true), flags(Flag::BROKER | Flag::SCHEMA),
+      cfg_send_buff_sz(
+        settings.get<SWC::Config::Property::V_GINT32>(
+          "swc.client.send.buffer")),
+      cfg_send_ahead(
+        settings.get<SWC::Config::Property::V_GUINT8>(
+          "swc.client.send.ahead")),
+      cfg_send_timeout(
+        settings.get<SWC::Config::Property::V_GINT32>(
+          "swc.client.send.timeout")),
+      cfg_send_timeout_ratio(
+        settings.get<SWC::Config::Property::V_GINT32>(
+          "swc.client.send.timeout.bytes.ratio")),
+
+      cfg_recv_buff_sz(
+        settings.get<SWC::Config::Property::V_GINT32>(
+          "swc.client.recv.buffer")),
+      cfg_recv_ahead(
+        settings.get<SWC::Config::Property::V_GUINT8>(
+          "swc.client.recv.ahead")),
+      cfg_recv_timeout(
+        settings.get<SWC::Config::Property::V_GINT32>(
+          "swc.client.recv.timeout")),
+
+      schemas(
+        this,
+        settings.get<Config::Property::V_GINT32>(
+          "swc.client.schema.expiry")),
+      managers(settings, ioctx ? ioctx: ioctx = default_io(), mngr_ctx),
+      rangers(settings, ioctx, rgr_ctx),
+      brokers(settings, ioctx, bkr_ctx) {
+}
+
 Clients::Clients(const Config::Settings& settings,
                  Comm::IoContextPtr ioctx,
                  const ContextManager::Ptr& mngr_ctx,
                  const ContextRanger::Ptr& rgr_ctx)
-    : running(true),
+    : running(true), flags(Flag::DEFAULT),
       cfg_send_buff_sz(
-         settings.get<SWC::Config::Property::V_GINT32>(
+        settings.get<SWC::Config::Property::V_GINT32>(
           "swc.client.send.buffer")),
       cfg_send_ahead(
-         settings.get<SWC::Config::Property::V_GUINT8>(
+        settings.get<SWC::Config::Property::V_GUINT8>(
           "swc.client.send.ahead")),
       cfg_send_timeout(
-         settings.get<SWC::Config::Property::V_GINT32>(
+        settings.get<SWC::Config::Property::V_GINT32>(
           "swc.client.send.timeout")),
       cfg_send_timeout_ratio(
-         settings.get<SWC::Config::Property::V_GINT32>(
+        settings.get<SWC::Config::Property::V_GINT32>(
           "swc.client.send.timeout.bytes.ratio")),
 
       cfg_recv_buff_sz(
-         settings.get<SWC::Config::Property::V_GINT32>(
+        settings.get<SWC::Config::Property::V_GINT32>(
           "swc.client.recv.buffer")),
       cfg_recv_ahead(
-         settings.get<SWC::Config::Property::V_GUINT8>(
+        settings.get<SWC::Config::Property::V_GUINT8>(
           "swc.client.recv.ahead")),
       cfg_recv_timeout(
-         settings.get<SWC::Config::Property::V_GINT32>(
+        settings.get<SWC::Config::Property::V_GINT32>(
           "swc.client.recv.timeout")),
 
-      mngrs_groups(std::make_shared<Mngr::Groups>()->init()),
-      mngr(std::make_shared<Comm::client::ConnQueues>(
-        std::make_shared<Comm::client::Serialized>(
-          "MANAGER",
-          ioctx ? ioctx: ioctx = default_io(),
-          mngr_ctx ? mngr_ctx : std::make_shared<ContextManager>()
-        ),
-         settings.get<Config::Property::V_GINT32>(
-          "swc.client.Mngr.connection.timeout"),
-         settings.get<Config::Property::V_GINT32>(
-          "swc.client.Mngr.connection.probes"),
-         settings.get<Config::Property::V_GINT32>(
-          "swc.client.Mngr.connection.keepalive"),
-         settings.get<Config::Property::V_GINT32>(
-          "swc.client.request.again.delay")
-      )),
+      schemas(
+        this,
+        settings.get<Config::Property::V_GINT32>(
+          "swc.client.schema.expiry")),
+      managers(settings, ioctx ? ioctx: ioctx = default_io(), mngr_ctx),
+      rangers(settings, ioctx, rgr_ctx) {
+}
 
-      rgr(std::make_shared<Comm::client::ConnQueues>(
-        std::make_shared<Comm::client::Serialized>(
-          "RANGER",
-          ioctx,
-          rgr_ctx ? rgr_ctx : std::make_shared<ContextRanger>()
-        ),
-         settings.get<Config::Property::V_GINT32>(
-          "swc.client.Rgr.connection.timeout"),
-         settings.get<Config::Property::V_GINT32>(
-          "swc.client.Rgr.connection.probes"),
-         settings.get<Config::Property::V_GINT32>(
-          "swc.client.Rgr.connection.keepalive"),
-         settings.get<Config::Property::V_GINT32>(
-          "swc.client.request.again.delay")
-      )),
+Clients::Clients(const Config::Settings& settings,
+                 Comm::IoContextPtr ioctx,
+                 const ContextBroker::Ptr& bkr_ctx)
+    : running(true), flags(Flag::BROKER),
+      cfg_send_buff_sz(
+        settings.get<SWC::Config::Property::V_GINT32>(
+          "swc.client.send.buffer")),
+      cfg_send_ahead(
+        settings.get<SWC::Config::Property::V_GUINT8>(
+          "swc.client.send.ahead")),
+      cfg_send_timeout(
+        settings.get<SWC::Config::Property::V_GINT32>(
+          "swc.client.send.timeout")),
+      cfg_send_timeout_ratio(
+        settings.get<SWC::Config::Property::V_GINT32>(
+          "swc.client.send.timeout.bytes.ratio")),
 
-      schemas(std::make_shared<Schemas>(
-         this,
-         settings.get<Config::Property::V_GINT32>(
-          "swc.client.schema.expiry"))),
+      cfg_recv_buff_sz(
+        settings.get<SWC::Config::Property::V_GINT32>(
+          "swc.client.recv.buffer")),
+      cfg_recv_ahead(
+        settings.get<SWC::Config::Property::V_GUINT8>(
+          "swc.client.recv.ahead")),
+      cfg_recv_timeout(
+        settings.get<SWC::Config::Property::V_GINT32>(
+          "swc.client.recv.timeout")),
 
-      rangers(
-         settings.get<Config::Property::V_GINT32>(
-          "swc.client.Rgr.range.res.expiry")) {
+      schemas(
+        this,
+        settings.get<Config::Property::V_GINT32>(
+          "swc.client.schema.expiry")),
+      brokers(settings, ioctx ? ioctx: ioctx = default_io(), bkr_ctx) {
 }
 
 void Clients::stop() {
   running.store(false);
-  rgr->stop();
-  mngr->stop();
+
+  if(brokers.queues)
+    brokers.queues->stop();
+  if(rangers.queues)
+    rangers.queues->stop();
+  if(managers.queues)
+    managers.queues->stop();
 }
+
 
 } // namespace client
 

@@ -65,7 +65,7 @@ void RgrGet::handle_no_conn() {
 
 bool RgrGet::run() {
   if(endpoints.empty()) {
-    clients->mngrs_groups->select(cid, endpoints);
+    clients->get_mngr(cid, endpoints);
     if(endpoints.empty()) {
       if(clients->stopping()) {
         cb(req(), Params::RgrGetRsp(Error::CLIENT_STOPPING));
@@ -75,7 +75,7 @@ bool RgrGet::run() {
       return false;
     }
   }
-  clients->mngr->get(endpoints)->put(req());
+  clients->get_mngr_queue(endpoints)->put(req());
   return true;
 }
 
@@ -101,7 +101,7 @@ void RgrGet::handle(ConnHandlerPtr, const Event::Ptr& ev) {
 }
 
 void RgrGet::clear_endpoints() {
-  clients->mngrs_groups->remove(endpoints);
+  clients->remove_mngr(endpoints);
   endpoints.clear();
 }
 

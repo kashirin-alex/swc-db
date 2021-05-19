@@ -50,7 +50,7 @@ void scan(int& err,
   auto it_seq = schemas.begin();
   size_t count = 0;
   for(auto& col : specs.columns) {
-    auto schema = hdlr->clients->schemas->get(err, col->cid);
+    auto schema = hdlr->clients->get_schema(err, col->cid);
     if(err)
       return;
     *it_seq++ = schema;
@@ -80,7 +80,7 @@ void scan(int& err,
   auto it_seq = schemas.begin();
   size_t count = 0;
   for(auto& col : specs.columns) {
-    auto schema = hdlr->clients->schemas->get(err, col->cid);
+    auto schema = hdlr->clients->get_schema(err, col->cid);
     if(err)
       return;
     *it_seq++ = schema;
@@ -317,7 +317,7 @@ bool Scanner::mngr_located_master(
       }
 
       SWC_SCANNER_RSP_DEBUG("mngr_located_master");
-      selector->clients->rangers.set(rsp.cid, rsp.rid, rsp.endpoints);
+      selector->clients->rgr_cache_set(rsp.cid, rsp.rid, rsp.endpoints);
       master_mngr_next = true;
       master_mngr_offset.copy(rsp.range_begin);
       if(DB::Types::SystemColumn::is_master(data_cid)) {
@@ -419,7 +419,7 @@ void Scanner::rgr_located_master(
     case Error::OK: {
       if(!rsp.rid) { // sake check (must be an err rsp)
         SWC_SCANNER_RSP_DEBUG("rgr_located_master RETRYING(no rid)");
-        selector->clients->rangers.remove(master_cid, master_rid);
+        selector->clients->rgr_cache_remove(master_cid, master_rid);
         if(selector->valid()) {
           if(!retry_point)
             retry_point = RETRY_POINT_MASTER;
@@ -429,7 +429,7 @@ void Scanner::rgr_located_master(
       }
       if(meta_cid != rsp.cid) { // sake check (must be an err rsp)
         SWC_SCANNER_RSP_DEBUG("rgr_located_master RETRYING(cid no match)");
-        selector->clients->rangers.remove(master_cid, master_rid);
+        selector->clients->rgr_cache_remove(master_cid, master_rid);
         if(selector->valid()) {
           if(!retry_point)
             retry_point = RETRY_POINT_MASTER;
@@ -464,7 +464,7 @@ void Scanner::rgr_located_master(
     case Error::SERVER_SHUTTING_DOWN:
     case Error::COMM_NOT_CONNECTED: {
       SWC_SCANNER_RSP_DEBUG("rgr_located_master RETRYING");
-      selector->clients->rangers.remove(master_cid, master_rid);
+      selector->clients->rgr_cache_remove(master_cid, master_rid);
       if(selector->valid()) {
         if(!retry_point)
           retry_point = RETRY_POINT_MASTER;
@@ -490,7 +490,7 @@ void Scanner::mngr_resolve_rgr_meta() {
 
   auto profile = selector->profile.mngr_res();
 
-  if(selector->clients->rangers.get(meta_cid, meta_rid, meta_endpoints)) {
+  if(selector->clients->rgr_cache_get(meta_cid, meta_rid, meta_endpoints)) {
     profile.add_cached(Error::OK);
     debug_res_cache("mngr_resolved_rgr_meta Cache hit",
                     meta_cid, meta_rid, meta_endpoints);
@@ -520,7 +520,7 @@ bool Scanner::mngr_resolved_rgr_meta(
     case Error::OK: {
       SWC_SCANNER_RSP_DEBUG("mngr_resolved_rgr_meta");
       meta_endpoints = rsp.endpoints;
-      selector->clients->rangers.set(meta_cid, meta_rid, rsp.endpoints);
+      selector->clients->rgr_cache_set(meta_cid, meta_rid, rsp.endpoints);
       rgr_locate_meta();
       return true;
     }
@@ -604,7 +604,7 @@ void Scanner::rgr_located_meta(
     case Error::OK: {
       if(!rsp.rid) { // sake check (must be an err rsp)
         SWC_SCANNER_RSP_DEBUG("rgr_located_meta RETRYING(no rid)");
-        selector->clients->rangers.remove(meta_cid, meta_rid);
+        selector->clients->rgr_cache_remove(meta_cid, meta_rid);
         if(selector->valid()) {
           if(!retry_point)
             retry_point = RETRY_POINT_META;
@@ -614,7 +614,7 @@ void Scanner::rgr_located_meta(
       }
       if(data_cid != rsp.cid) { // sake check (must be an err rsp)
         SWC_SCANNER_RSP_DEBUG("rgr_located_meta RETRYING(cid no match)");
-        selector->clients->rangers.remove(meta_cid, meta_rid);
+        selector->clients->rgr_cache_remove(meta_cid, meta_rid);
         if(selector->valid()) {
           if(!retry_point)
             retry_point = RETRY_POINT_META;
@@ -641,7 +641,7 @@ void Scanner::rgr_located_meta(
     case Error::COMM_NOT_CONNECTED:
     case Error::SERVER_SHUTTING_DOWN: {
       SWC_SCANNER_RSP_DEBUG("rgr_located_meta RETRYING");
-      selector->clients->rangers.remove(meta_cid, meta_rid);
+      selector->clients->rgr_cache_remove(meta_cid, meta_rid);
       if(selector->valid()) {
         if(!retry_point)
           retry_point = RETRY_POINT_META;
@@ -668,7 +668,7 @@ void Scanner::mngr_resolve_rgr_select() {
 
   auto profile = selector->profile.mngr_res();
 
-  if(selector->clients->rangers.get(data_cid, data_rid, data_endpoints)) {
+  if(selector->clients->rgr_cache_get(data_cid, data_rid, data_endpoints)) {
     profile.add_cached(Error::OK);
     debug_res_cache("mngr_resolved_rgr_select Cache hit",
                     data_cid, data_rid, data_endpoints);
@@ -698,7 +698,7 @@ bool Scanner::mngr_resolved_rgr_select(
     case Error::OK: {
       SWC_SCANNER_RSP_DEBUG("mngr_resolved_rgr_select");
       data_endpoints = rsp.endpoints;
-      selector->clients->rangers.set(data_cid, data_rid, rsp.endpoints);
+      selector->clients->rgr_cache_set(data_cid, data_rid, rsp.endpoints);
       rgr_select();
       return true;
     }
@@ -775,7 +775,7 @@ void Scanner::rgr_selected(
     case Error::SERVER_SHUTTING_DOWN:
     case Error::COMM_NOT_CONNECTED: {
       SWC_SCANNER_RSP_DEBUG("rgr_selected RETRYING");
-      selector->clients->rangers.remove(data_cid, data_rid);
+      selector->clients->rgr_cache_remove(data_cid, data_rid);
       if(selector->valid()) {
         retry_point = RETRY_POINT_DATA;
         return data_req_base->request_again();

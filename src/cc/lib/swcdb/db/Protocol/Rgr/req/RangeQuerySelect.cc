@@ -43,7 +43,7 @@ void RangeQuerySelect::handle_no_conn() {
 }
 
 bool RangeQuerySelect::run() {
-  clients->rgr->get(endpoints)->put(req());
+  clients->get_rgr_queue(endpoints)->put(req());
   return true;
 }
 

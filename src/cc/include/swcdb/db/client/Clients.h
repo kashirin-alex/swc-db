@@ -9,8 +9,11 @@
 
 #include "swcdb/core/comm/ClientConnQueues.h"
 #include "swcdb/db/client/Settings.h"
-#include "swcdb/db/client/ContextManager.h"
-#include "swcdb/db/client/ContextRanger.h"
+
+#include "swcdb/db/client/service/mngr/Managers.h"
+#include "swcdb/db/client/service/rgr/Rangers.h"
+#include "swcdb/db/client/service/bkr/Brokers.h"
+
 
 
 namespace SWC {
@@ -27,10 +30,8 @@ class Clients;
 
 }}
 
-
 #include "swcdb/db/client/Schemas.h"
-#include "swcdb/db/client/mngr/Groups.h"
-#include "swcdb/db/client/rgr/Rangers.h"
+
 
 
 namespace SWC { namespace client {
@@ -41,13 +42,28 @@ Comm::IoContextPtr default_io();
 
 class Clients : public std::enable_shared_from_this<Clients>{
   public:
-
   typedef std::shared_ptr<Clients> Ptr;
+
+  enum Flag : uint8_t {
+    DEFAULT = 0x01,
+    BROKER = 0x02,
+    SCHEMA = 0x04,
+  };
+
+  Clients(const Config::Settings& settings,
+          Comm::IoContextPtr ioctx,
+          const ContextManager::Ptr& mngr_ctx,
+          const ContextRanger::Ptr& rgr_ctx,
+          const ContextBroker::Ptr& bkr_ctx);
 
   Clients(const Config::Settings& settings,
           Comm::IoContextPtr ioctx,
           const ContextManager::Ptr& mngr_ctx,
           const ContextRanger::Ptr& rgr_ctx);
+
+  Clients(const Config::Settings& settings,
+          Comm::IoContextPtr ioctx,
+          const ContextBroker::Ptr& bkr_ctx);
 
   //~Clients() { }
 
@@ -61,22 +77,100 @@ class Clients : public std::enable_shared_from_this<Clients>{
     return !running;
   }
 
-  Core::AtomicBool                            running;
+  void set_flags(uint8_t _flags) noexcept {
+    flags.store(_flags);
+  }
 
-  const SWC::Config::Property::V_GINT32::Ptr  cfg_send_buff_sz;
-  const SWC::Config::Property::V_GUINT8::Ptr  cfg_send_ahead;
-  const SWC::Config::Property::V_GINT32::Ptr  cfg_send_timeout;
-  const SWC::Config::Property::V_GINT32::Ptr  cfg_send_timeout_ratio;
 
-  const SWC::Config::Property::V_GINT32::Ptr  cfg_recv_buff_sz;
-  const SWC::Config::Property::V_GUINT8::Ptr  cfg_recv_ahead;
-  const SWC::Config::Property::V_GINT32::Ptr  cfg_recv_timeout;
+  DB::Schema::Ptr get_schema(int& err, cid_t cid) {
+    return schemas.get(err, cid);
+  }
 
-  const Mngr::Groups::Ptr                     mngrs_groups;
-  Comm::client::ConnQueuesPtr                 mngr;
-  Comm::client::ConnQueuesPtr                 rgr;
-  Schemas::Ptr                                schemas;
-  Rangers                                     rangers;
+  DB::Schema::Ptr get_schema(int& err, const std::string& name) {
+    return schemas.get(err, name);
+  }
+
+  void get_schema(int& err, const std::vector<DB::Schemas::Pattern>& patterns,
+                  std::vector<DB::Schema::Ptr>& _schemas) {
+    schemas.get(err, patterns, _schemas);
+  }
+
+  std::vector<DB::Schema::Ptr>
+  get_schema(int& err, const std::vector<DB::Schemas::Pattern>& patterns) {
+    return schemas.get(err, patterns);
+  }
+
+
+  void rgr_cache_remove(const cid_t cid, const rid_t rid) {
+    rangers.cache.remove(cid, rid);
+  }
+
+  bool rgr_cache_get(const cid_t cid, const rid_t rid,
+                     Comm::EndPoints& endpoints) {
+    return rangers.cache.get(cid, rid, endpoints);
+  }
+
+  void rgr_cache_set(const cid_t cid, const rid_t rid,
+                     const Comm::EndPoints& endpoints) {
+    rangers.cache.set(cid, rid, endpoints);
+  }
+
+
+  Comm::IoContextPtr get_mngr_io() {
+    return managers.queues->service->io();
+  }
+
+  Comm::client::Host::Ptr get_mngr_queue(const Comm::EndPoints& endpoints) {
+    return managers.queues->get(endpoints);
+  }
+
+
+  Comm::IoContextPtr get_rgr_io() {
+    return rangers.queues->service->io();
+  }
+
+  Comm::client::Host::Ptr get_rgr_queue(const Comm::EndPoints& endpoints) {
+    return rangers.queues->get(endpoints);
+  }
+
+
+  Comm::IoContextPtr get_bkr_io() {
+    return brokers.queues->service->io();
+  }
+
+  Comm::client::Host::Ptr get_bkr_queue(const Comm::EndPoints& endpoints) {
+    return brokers.queues->get(endpoints);
+  }
+
+  void get_mngr(const cid_t& cid, Comm::EndPoints& endpoints) {
+    managers.groups->select(cid, endpoints);
+  }
+
+  void get_mngr(const uint8_t& role, Comm::EndPoints& endpoints) {
+    managers.groups->select(role, endpoints);
+  }
+
+  void remove_mngr(const Comm::EndPoints& endpoints) {
+    managers.groups->remove(endpoints);
+  }
+
+
+  Core::AtomicBool                       running;
+  Core::Atomic<uint8_t>                  flags;
+
+  const Config::Property::V_GINT32::Ptr  cfg_send_buff_sz;
+  const Config::Property::V_GUINT8::Ptr  cfg_send_ahead;
+  const Config::Property::V_GINT32::Ptr  cfg_send_timeout;
+  const Config::Property::V_GINT32::Ptr  cfg_send_timeout_ratio;
+
+  const Config::Property::V_GINT32::Ptr  cfg_recv_buff_sz;
+  const Config::Property::V_GUINT8::Ptr  cfg_recv_ahead;
+  const Config::Property::V_GINT32::Ptr  cfg_recv_timeout;
+
+  Schemas                                schemas;
+  Managers                               managers;
+  Rangers                                rangers;
+  Brokers                                brokers;
 
 };
 

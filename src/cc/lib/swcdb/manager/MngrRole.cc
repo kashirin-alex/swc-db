@@ -205,7 +205,7 @@ void MngrRole::fill_states(const MngrsStatus& states, uint64_t token,
     if(!is_group_off(host))
       continue;
     auto hosts_pr_group =
-        Env::Clients::get()->mngrs_groups->get_endpoints(
+        Env::Clients::get()->managers.groups->get_endpoints(
         host->role, host->cid_begin, host->cid_end);
     for(auto& h : hosts_pr_group) {
       if(Comm::has_endpoint(h, host->endpoints)
@@ -339,7 +339,7 @@ void MngrRole::print(std::ostream& out) {
 }
 
 void MngrRole::_apply_cfg() {
-  auto groups = Env::Clients::get()->mngrs_groups->get_groups();
+  auto groups = Env::Clients::get()->managers.groups->get_groups();
   std::vector<Comm::EndPoint> tmp;
   for(auto& g : groups) {
     // SWC_LOG(LOG_DEBUG,  g->to_string().c_str());
@@ -369,7 +369,7 @@ void MngrRole::_apply_cfg() {
       m_states.erase(it);
   }
 
-  m_local_groups = Env::Clients::get()->mngrs_groups->get_groups(
+  m_local_groups = Env::Clients::get()->managers.groups->get_groups(
     m_local_endpoints);
 }
 
@@ -454,7 +454,7 @@ void MngrRole::managers_checker(size_t next, size_t total, bool flw) {
   if(host_chk->conn && host_chk->conn->is_open())
     return set_mngr_inchain(host_chk->conn);
 
-  Env::Clients::get()->mngr->service->get_connection(
+  Env::Clients::get()->managers.queues->service->get_connection(
     host_chk->endpoints,
     [this, host_chk, next, total, flw] (const Comm::ConnHandlerPtr& conn) {
       manager_checker(host_chk, next, total, flw, conn);

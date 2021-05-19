@@ -46,7 +46,7 @@ void RangeQueryUpdate::handle_no_conn() {
 }
 
 bool RangeQueryUpdate::run() {
-  clients->rgr->get(endpoints)->put(req());
+  clients->get_rgr_queue(endpoints)->put(req());
   return true;
 }
 

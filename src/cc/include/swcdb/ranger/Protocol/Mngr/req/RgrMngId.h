@@ -74,8 +74,7 @@ class RgrMngId: public client::ConnQueue::ReqBase {
 
   bool run() override {
     if(endpoints.empty()) {
-      Env::Clients::get()->mngrs_groups->select(
-        DB::Types::MngrRole::RANGERS, endpoints);
+      Env::Clients::get()->get_mngr(DB::Types::MngrRole::RANGERS, endpoints);
       if(endpoints.empty()) {
         MngrActive::make(
           Env::Clients::get(),
@@ -83,7 +82,7 @@ class RgrMngId: public client::ConnQueue::ReqBase {
         return false;
       }
     }
-    Env::Clients::get()->mngr->get(endpoints)->put(req());
+    Env::Clients::get()->get_mngr_queue(endpoints)->put(req());
     return true;
   }
 
@@ -179,7 +178,7 @@ class RgrMngId: public client::ConnQueue::ReqBase {
   private:
 
   void clear_endpoints() {
-    Env::Clients::get()->mngrs_groups->remove(endpoints);
+    Env::Clients::get()->remove_mngr(endpoints);
     endpoints.clear();
   }
 

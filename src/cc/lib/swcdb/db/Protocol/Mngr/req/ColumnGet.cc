@@ -76,8 +76,7 @@ void ColumnGet::handle_no_conn() {
 bool ColumnGet::run() {
   if(endpoints.empty()) {
     // ColumnGet not like ColumnList (can be any mngr if by cid)
-    clients->mngrs_groups->select(
-      DB::Types::MngrRole::SCHEMAS, endpoints);
+    clients->get_mngr(DB::Types::MngrRole::SCHEMAS, endpoints);
     if(endpoints.empty()) {
       if(clients->stopping()) {
         cb(req(), Error::CLIENT_STOPPING, Params::ColumnGetRsp());
@@ -88,7 +87,7 @@ bool ColumnGet::run() {
       return false;
     }
   }
-  clients->mngr->get(endpoints)->put(req());
+  clients->get_mngr_queue(endpoints)->put(req());
   return true;
 }
 
@@ -115,7 +114,7 @@ void ColumnGet::handle(ConnHandlerPtr, const Event::Ptr& ev) {
 }
 
 void ColumnGet::clear_endpoints() {
-  clients->mngrs_groups->remove(endpoints);
+  clients->remove_mngr(endpoints);
   endpoints.clear();
 }
 

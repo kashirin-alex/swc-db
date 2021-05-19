@@ -8,7 +8,7 @@
 
 
 #include "swcdb/db/Protocol/Common/params/HostEndPoints.h"
-#include "swcdb/db/client/mngr/Groups.h"
+#include "swcdb/db/client/service/mngr/Groups.h"
 
 
 namespace SWC { namespace Comm { namespace Protocol {

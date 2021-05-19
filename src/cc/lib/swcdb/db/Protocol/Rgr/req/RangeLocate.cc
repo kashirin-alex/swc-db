@@ -41,7 +41,7 @@ void RangeLocate::handle_no_conn() {
 }
 
 bool RangeLocate::run() {
-  clients->rgr->get(endpoints)->put(req());
+  clients->get_rgr_queue(endpoints)->put(req());
   return true;
 }
 

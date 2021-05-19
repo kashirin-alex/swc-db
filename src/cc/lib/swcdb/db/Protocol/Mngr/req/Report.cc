@@ -50,7 +50,7 @@ void Report::handle_no_conn() {
 }
 
 void Report::clear_endpoints() {
-  clients->mngrs_groups->remove(endpoints);
+  clients->remove_mngr(endpoints);
   endpoints.clear();
 }
 
@@ -88,7 +88,7 @@ ClusterStatus::ClusterStatus(const SWC::client::Clients::Ptr& clients,
 }
 
 bool ClusterStatus::run() {
-  clients->mngr->get(endpoints)->put(req());
+  clients->get_mngr_queue(endpoints)->put(req());
   return true;
 }
 
@@ -166,13 +166,13 @@ bool ColumnStatus::run() {
     return false;
   }
   if(endpoints.empty()) {
-    clients->mngrs_groups->select(cid, endpoints);
+    clients->get_mngr(cid, endpoints);
     if(endpoints.empty()) {
       MngrActive::make(clients, cid, shared_from_this())->run();
       return false;
     }
   }
-  clients->mngr->get(endpoints)->put(req());
+  clients->get_mngr_queue(endpoints)->put(req());
   return true;
 }
 
@@ -238,10 +238,9 @@ bool RangersStatus::run() {
   if(endpoints.empty()) {
     bool no_cid = cid == DB::Schema::NO_CID;
     if(no_cid)
-      clients->mngrs_groups->select(
-        DB::Types::MngrRole::RANGERS, endpoints);
+      clients->get_mngr(DB::Types::MngrRole::RANGERS, endpoints);
     else
-      clients->mngrs_groups->select(cid, endpoints);
+      clients->get_mngr(cid, endpoints);
 
     if(endpoints.empty()) {
       if(no_cid)
@@ -252,7 +251,7 @@ bool RangersStatus::run() {
       return false;
     }
   }
-  clients->mngr->get(endpoints)->put(req());
+  clients->get_mngr_queue(endpoints)->put(req());
   return true;
 }
 
@@ -316,15 +315,14 @@ ManagersStatus::ManagersStatus(const SWC::client::Clients::Ptr& clients,
 
 bool ManagersStatus::run() {
   if(endpoints.empty()) {
-    clients->mngrs_groups->select(
-      DB::Types::MngrRole::SCHEMAS, endpoints);
+    clients->get_mngr(DB::Types::MngrRole::SCHEMAS, endpoints);
     if(endpoints.empty()) {
       MngrActive::make(
         clients, DB::Types::MngrRole::SCHEMAS, shared_from_this())->run();
       return false;
     }
   }
-  clients->mngr->get(endpoints)->put(req());
+  clients->get_mngr_queue(endpoints)->put(req());
   return true;
 }
 

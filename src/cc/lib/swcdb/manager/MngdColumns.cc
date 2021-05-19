@@ -482,7 +482,7 @@ bool MngdColumns::columns_load() {
     }
   }
 
-  auto groups = Env::Clients::get()->mngrs_groups->get_groups();
+  auto groups = Env::Clients::get()->managers.groups->get_groups();
   if(groups.empty())
     SWC_LOG(LOG_WARN, "Empty Managers Groups")
 

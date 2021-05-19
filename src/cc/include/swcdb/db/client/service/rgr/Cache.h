@@ -3,14 +3,16 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swcdb_db_client_rgr_Rangers_h
-#define swcdb_db_client_rgr_Rangers_h
+#ifndef swcdb_db_client_rgr_Cache_h
+#define swcdb_db_client_rgr_Cache_h
 
 
 #include "swcdb/db/Types/Identifiers.h"
 #include "swcdb/db/client/Settings.h"
 #include "swcdb/core/comm/Resolver.h"
 #include <unordered_map>
+
+#include "swcdb/db/client/service/rgr/ContextRanger.h"
 
 
 namespace SWC { namespace client {
@@ -24,7 +26,7 @@ struct RangeEndPoints final {
 };
 
 
-class Rangers final
+class CachedRangers final
     : private std::unordered_map<
         cid_t, std::unordered_map<rid_t, RangeEndPoints*>> {
 
@@ -33,9 +35,9 @@ class Rangers final
 
   public:
 
-  Rangers(const Config::Property::V_GINT32::Ptr expiry_ms) noexcept;
+  CachedRangers(const Config::Property::V_GINT32::Ptr expiry_ms) noexcept;
 
-  ~Rangers();
+  ~CachedRangers();
 
   void clear();
 
@@ -60,7 +62,7 @@ class Rangers final
 }}
 
 #ifdef SWC_IMPL_SOURCE
-#include "swcdb/db/client/rgr/Rangers.cc"
+#include "swcdb/db/client/service/rgr/Cache.cc"
 #endif
 
-#endif // swcdb_db_client_rgr_Rangers_h
+#endif // swcdb_db_client_rgr_Cache_h

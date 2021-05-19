@@ -80,8 +80,8 @@ class Checker {
   }
 
   void get_conn(){
-    Env::Clients::get()->mngr->service->get_connection(
-      Env::Clients::get()->mngrs_groups->get_endpoints(
+    Env::Clients::get()->managers.queues->service->get_connection(
+      Env::Clients::get()->managers.groups->get_endpoints(
         DB::Types::MngrRole::SCHEMAS, 0, 0),
       [this](Comm::ConnHandlerPtr conn){
         if(!conn || !conn->is_open()){

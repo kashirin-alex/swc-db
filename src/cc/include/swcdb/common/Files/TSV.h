@@ -83,7 +83,7 @@ class FileWriter {
   void write(
         const client::Query::Select::Handlers::BaseUnorderedMap::Ptr& hdlr) {
     for(cid_t cid : hdlr->get_cids()) {
-      schemas.emplace(cid, clients->schemas->get(err, cid));
+      schemas.emplace(cid, clients->get_schema(err, cid));
       if(err)
         break;
     }
@@ -337,7 +337,7 @@ class FileReader {
     if(fds.empty()) {
       err = ENOENT;
     } else {
-      schema = clients->schemas->get(err, cid);
+      schema = clients->get_schema(err, cid);
     }
   }
 

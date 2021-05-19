@@ -641,7 +641,7 @@ void Range::last_rgr_chk(int &err, const Callback::RangeLoad::Ptr& req) {
       rgr_data->print(SWC_LOG_OSTREAM << " NEW=");
     );
 
-    Env::Clients::get()->rgr->get(rs_last->endpoints)->put(
+    Env::Clients::get()->get_rgr_queue(rs_last->endpoints)->put(
       std::make_shared<Comm::Protocol::Rgr::Req::RangeUnload>(
         shared_from_this(), req)
     );

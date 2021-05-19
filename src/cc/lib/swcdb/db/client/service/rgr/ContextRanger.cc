@@ -3,16 +3,15 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#include "swcdb/db/client/Settings.h"
-#include "swcdb/db/client/ContextRanger.h"
+#include "swcdb/db/client/service/rgr/ContextRanger.h"
 #include "swcdb/db/Protocol/Commands.h"
 
 
 namespace SWC { namespace client {
 
-ContextRanger::ContextRanger()
+ContextRanger::ContextRanger(const Config::Settings& settings)
     : Comm::AppContext(
-        Env::Config::settings()->get<Config::Property::V_GENUM>(
+        settings.get<Config::Property::V_GENUM>(
           "swc.client.Rgr.comm.encoder")) {
 }
 

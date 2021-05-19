@@ -26,7 +26,7 @@ MngrActive::MngrActive(const SWC::client::Clients::Ptr& clients,
                         clients(clients),
                         role(role), cid(cid), hdlr(hdlr), nxt(0),
                         timer(asio::high_resolution_timer(
-                          clients->mngr->service->io()->executor())),
+                          clients->get_mngr_io()->executor())),
                         timeout_ms(timeout_ms) {
 }
 
@@ -43,8 +43,7 @@ void MngrActive::run_within(uint32_t t_ms) {
 }
 
 void MngrActive::handle_no_conn() {
-  if(clients->stopping() ||
-     !clients->mngr->service->io()->running) {
+  if(clients->stopping() || !clients->get_mngr_io()->running) {
     hdlr->run();
   } else if(hosts.size() == ++nxt) {
     nxt = 0;
@@ -57,7 +56,7 @@ void MngrActive::handle_no_conn() {
 
 bool MngrActive::run() {
   if(hosts.empty()) {
-    clients->mngrs_groups->hosts(role, cid, hosts, group_host);
+    clients->managers.groups->hosts(role, cid, hosts, group_host);
     if(hosts.empty()) {
       SWC_LOGF(LOG_WARN, "Empty cfg of mngr.host for role=%d cid=%lu",
                role, cid);
@@ -65,7 +64,7 @@ bool MngrActive::run() {
       return false;
     }
   }
-  clients->mngr->get(hosts.at(nxt))->put(req());
+  clients->get_mngr_queue(hosts.at(nxt))->put(req());
   return true;
 }
 
@@ -81,8 +80,8 @@ void MngrActive::handle(ConnHandlerPtr, const Event::Ptr& ev) {
       params.decode(&ptr, &remain);
 
       if(params.available && params.endpoints.size()) {
-        group_host.endpoints = params.endpoints;
-        clients->mngrs_groups->add(group_host);
+        group_host.endpoints = std::move(params.endpoints);
+        clients->managers.groups->add(std::move(group_host));
         hdlr->run();
         return;
       }

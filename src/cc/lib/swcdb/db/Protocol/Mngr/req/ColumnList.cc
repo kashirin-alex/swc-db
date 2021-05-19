@@ -53,8 +53,7 @@ void ColumnList::handle_no_conn() {
 
 bool ColumnList::run() {
   if(endpoints.empty()) {
-    clients->mngrs_groups->select(
-      DB::Types::MngrRole::SCHEMAS, endpoints);
+    clients->get_mngr(DB::Types::MngrRole::SCHEMAS, endpoints);
     if(endpoints.empty()) {
       if(clients->stopping()) {
         cb(req(), Error::CLIENT_STOPPING, Params::ColumnListRsp());
@@ -65,7 +64,7 @@ bool ColumnList::run() {
       return false;
     }
   }
-  clients->mngr->get(endpoints)->put(req());
+  clients->get_mngr_queue(endpoints)->put(req());
   return true;
 }
 
@@ -92,7 +91,7 @@ void ColumnList::handle(ConnHandlerPtr, const Event::Ptr& ev) {
 }
 
 void ColumnList::clear_endpoints() {
-  clients->mngrs_groups->remove(endpoints);
+  clients->remove_mngr(endpoints);
   endpoints.clear();
 }
 

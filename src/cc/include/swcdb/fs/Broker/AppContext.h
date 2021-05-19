@@ -23,9 +23,9 @@ namespace FsBroker {
 class AppContext final : public Comm::AppContext {
   public:
 
-  AppContext()
+  AppContext(const Config::Settings& settings)
       : Comm::AppContext(
-          Env::Config::settings()->get<Config::Property::V_GENUM>(
+          settings.get<Config::Property::V_GENUM>(
             "swc.fs.broker.comm.encoder")) {
   }
 

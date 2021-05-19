@@ -59,7 +59,7 @@ void ColumnCompact::handle_no_conn() {
 
 bool ColumnCompact::run() {
   if(endpoints.empty()) {
-    clients->mngrs_groups->select(cid, endpoints);
+    clients->get_mngr(cid, endpoints);
     if(endpoints.empty()) {
       if(clients->stopping()) {
         cb(req(), Params::ColumnCompactRsp(Error::CLIENT_STOPPING));
@@ -69,7 +69,7 @@ bool ColumnCompact::run() {
       return false;
     }
   }
-  clients->mngr->get(endpoints)->put(req());
+  clients->get_mngr_queue(endpoints)->put(req());
   return true;
 }
 
@@ -95,7 +95,7 @@ void ColumnCompact::handle(ConnHandlerPtr, const Event::Ptr& ev) {
 }
 
 void ColumnCompact::clear_endpoints() {
-  clients->mngrs_groups->remove(endpoints);
+  clients->remove_mngr(endpoints);
   endpoints.clear();
 }
 

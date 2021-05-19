@@ -16,7 +16,7 @@ namespace Mngr {
 class ContextManager final : public client::ContextManager {
   public:
 
-  ContextManager() { }
+  ContextManager() : client::ContextManager(*Env::Config::settings()) { }
 
   virtual ~ContextManager() { }
 

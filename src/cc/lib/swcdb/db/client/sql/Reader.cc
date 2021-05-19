@@ -139,10 +139,10 @@ DB::Schema::Ptr Reader::get_schema(const Clients::Ptr& clients,
   DB::Schema::Ptr schema;
   if(std::find_if(col.begin(), col.end(),
       [](unsigned char c){ return !std::isdigit(c); } ) != col.end()){
-    schema = clients->schemas->get(err, col);
+    schema = clients->get_schema(err, col);
   } else {
     try {
-      schema = clients->schemas->get(err, std::stoll(col));
+      schema = clients->get_schema(err, std::stoll(col));
     } catch(...) {
       const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
       err = e.code();
@@ -156,7 +156,7 @@ DB::Schema::Ptr Reader::get_schema(const Clients::Ptr& clients,
 std::vector<DB::Schema::Ptr>
 Reader::get_schema(const Clients::Ptr& clients,
                    const std::vector<DB::Schemas::Pattern>& patterns) {
-  auto schemas = clients->schemas->get(err, patterns);
+  auto schemas = clients->get_schema(err, patterns);
   if(err) {
     std::string msg("problem getting columns on patterns=[");
     for(auto& p : patterns) {

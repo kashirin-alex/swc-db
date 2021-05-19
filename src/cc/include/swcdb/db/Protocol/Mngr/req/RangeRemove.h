@@ -57,13 +57,13 @@ class RangeRemove: public client::ConnQueue::ReqBase {
 
   bool run() override {
     if(endpoints.empty()) {
-      clients->mngrs_groups->select(cid, endpoints);
+      clients->get_mngr(cid, endpoints);
       if(endpoints.empty()) {
         MngrActive::make(clients, cid, shared_from_this())->run();
         return false;
       }
     }
-    clients->mngr->get(endpoints)->put(req());
+    clients->get_mngr_queue(endpoints)->put(req());
     return true;
   }
 
@@ -91,7 +91,7 @@ class RangeRemove: public client::ConnQueue::ReqBase {
   private:
 
   void clear_endpoints() {
-    clients->mngrs_groups->remove(endpoints);
+    clients->remove_mngr(endpoints);
     endpoints.clear();
   }
 

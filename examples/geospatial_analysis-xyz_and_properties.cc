@@ -256,7 +256,7 @@ SWC::DB::Schema::Ptr create_column() {
   SWC_ASSERT(!res.get_future().get());
 
   int err = SWC::Error::OK;
-  schema = SWC::Env::Clients::get()->schemas->get(err, schema->col_name);
+  schema = SWC::Env::Clients::get()->get_schema(err, schema->col_name);
   SWC_ASSERT(!err);
   SWC_ASSERT(schema);
   SWC_ASSERT(schema->cid);

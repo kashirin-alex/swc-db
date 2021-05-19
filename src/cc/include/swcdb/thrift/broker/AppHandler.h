@@ -258,7 +258,7 @@ class AppHandler final : virtual public BrokerIf {
     DB::Specs::Interval::Ptr dbintval;
 
     for(auto& col : spec.columns) {
-      schema = hdlr->clients->schemas->get(err, col.cid);
+      schema = hdlr->clients->get_schema(err, col.cid);
       if(!schema)
         Converter::exception(err, "cid=" + std::to_string(col.cid));
 
@@ -273,7 +273,7 @@ class AppHandler final : virtual public BrokerIf {
     }
 
     for(auto& col : spec.columns_serial) {
-      schema = hdlr->clients->schemas->get(err, col.cid);
+      schema = hdlr->clients->get_schema(err, col.cid);
       if(!schema)
         Converter::exception(err, "cid=" + std::to_string(col.cid));
 
@@ -401,7 +401,7 @@ class AppHandler final : virtual public BrokerIf {
     for(auto& col_cells : cells) {
       auto col = hdlr->get(cid = col_cells.first);
       if(!col) {
-        auto schema = hdlr->clients->schemas->get(err, cid);
+        auto schema = hdlr->clients->get_schema(err, cid);
         if(err)
           Converter::exception(err);
         col = hdlr->create(schema);
@@ -451,7 +451,7 @@ class AppHandler final : virtual public BrokerIf {
     for(auto& col_cells : cells) {
       auto col = hdlr->get(cid = col_cells.first);
       if(!col) {
-        auto schema = hdlr->clients->schemas->get(err, cid);
+        auto schema = hdlr->clients->get_schema(err, cid);
         if(err)
           Converter::exception(err);
         col = hdlr->create(schema);
@@ -596,7 +596,7 @@ class AppHandler final : virtual public BrokerIf {
 
     if(!params.patterns.empty()) {
       std::vector<DB::Schema::Ptr> schemas;
-      clients->schemas->get(err, params.patterns, schemas);
+      clients->get_schema(err, params.patterns, schemas);
       if(err && err != Error::COLUMN_SCHEMA_MISSING)
         Converter::exception(
           err, "problem getting columns schemas on patterns");
@@ -633,7 +633,7 @@ class AppHandler final : virtual public BrokerIf {
         dbpatterns[i].value = pattern.value;
         ++i;
       }
-      clients->schemas->get(err, dbpatterns, dbschemas);
+      clients->get_schema(err, dbpatterns, dbschemas);
       if(err && err != Error::COLUMN_SCHEMA_MISSING)
         Converter::exception(
           err, "problem getting columns schemas on patterns");
@@ -642,7 +642,7 @@ class AppHandler final : virtual public BrokerIf {
 
     DB::Schema::Ptr schema;
     for(auto& cid : spec.cids) {
-      schema = clients->schemas->get(err, cid);
+      schema = clients->get_schema(err, cid);
       if(!schema && !err)
         err = Error::COLUMN_SCHEMA_MISSING;
       if(err)
@@ -652,7 +652,7 @@ class AppHandler final : virtual public BrokerIf {
     }
 
     for(auto& name : spec.names) {
-      schema = clients->schemas->get(err, name);
+      schema = clients->get_schema(err, name);
       if(!schema && !err)
         err = Error::COLUMN_SCHEMA_MISSING;
       if(err)
@@ -695,9 +695,9 @@ class AppHandler final : virtual public BrokerIf {
       Converter::exception(err);
 
     if(schema->cid != DB::Schema::NO_CID)
-      Env::Clients::get()->schemas->remove(schema->cid);
+      Env::Clients::get()->schemas.remove(schema->cid);
     else
-      Env::Clients::get()->schemas->remove(schema->col_name);
+      Env::Clients::get()->schemas.remove(schema->col_name);
   }
 
   static void process_results(
@@ -746,7 +746,7 @@ class AppHandler final : virtual public BrokerIf {
       cells.free();
       hdlr->get_cells(cid, cells);
 
-      schema = clients->schemas->get(err, cid);
+      schema = clients->get_schema(err, cid);
       if(err)
         return;
       switch(schema->col_type) {
@@ -791,7 +791,7 @@ class AppHandler final : virtual public BrokerIf {
       cells.free();
       hdlr->get_cells(cid, cells);
 
-      schema = clients->schemas->get(err, cid);
+      schema = clients->get_schema(err, cid);
       if(err)
         return;
       auto& _col = _return[schema->col_name];
@@ -836,7 +836,7 @@ class AppHandler final : virtual public BrokerIf {
       cells.free();
       hdlr->get_cells(cid, cells);
 
-      schema = clients->schemas->get(err, cid);
+      schema = clients->get_schema(err, cid);
       if(err)
         return;
       switch(schema->col_type) {
@@ -893,7 +893,7 @@ class AppHandler final : virtual public BrokerIf {
       cells.free();
       hdlr->get_cells(cid, cells);
 
-      schema = clients->schemas->get(err, cid);
+      schema = clients->get_schema(err, cid);
       if(err)
         return;
       switch(schema->col_type) {

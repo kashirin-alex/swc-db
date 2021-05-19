@@ -4,28 +4,30 @@
  */
 
 
-#include "swcdb/db/client/rgr/Rangers.h"
+#include "swcdb/db/client/service/rgr/Cache.h"
 #include "swcdb/core/Time.h"
 
 namespace SWC { namespace client {
 
-Rangers::Rangers(const Config::Property::V_GINT32::Ptr expiry_ms) noexcept
-                : m_expiry_ms(expiry_ms) {
+
+CachedRangers::CachedRangers(
+        const Config::Property::V_GINT32::Ptr expiry_ms) noexcept
+        : m_expiry_ms(expiry_ms) {
 }
 
-Rangers::~Rangers() {
+CachedRangers::~CachedRangers() {
   for(auto c : *this) {
     for(auto r : c.second)
       delete r.second;
   }
 }
 
-void Rangers::clear() {
+void CachedRangers::clear() {
   Core::MutexSptd::scope lock(m_mutex);
   Map::clear();
 }
 
-void Rangers::clear_expired() {
+void CachedRangers::clear_expired() {
   auto ms = Time::now_ms();
 
   Core::MutexSptd::scope lock(m_mutex);
@@ -45,7 +47,7 @@ void Rangers::clear_expired() {
   }
 }
 
-void Rangers::remove(const cid_t cid, const rid_t rid) {
+void CachedRangers::remove(const cid_t cid, const rid_t rid) {
   Core::MutexSptd::scope lock(m_mutex);
 
   auto c = find(cid);
@@ -60,8 +62,8 @@ void Rangers::remove(const cid_t cid, const rid_t rid) {
     erase(c);
 }
 
-bool Rangers::get(const cid_t cid, const rid_t rid,
-                  Comm::EndPoints& endpoints) {
+bool CachedRangers::get(const cid_t cid, const rid_t rid,
+                        Comm::EndPoints& endpoints) {
   bool found = false;
 
   Core::MutexSptd::scope lock(m_mutex);
@@ -77,8 +79,8 @@ bool Rangers::get(const cid_t cid, const rid_t rid,
   return found;
 }
 
-void Rangers::set(const cid_t cid, const rid_t rid,
-                  const Comm::EndPoints& endpoints) {
+void CachedRangers::set(const cid_t cid, const rid_t rid,
+                        const Comm::EndPoints& endpoints) {
   auto r_new = new RangeEndPoints(Time::now_ms(), endpoints);
 
   Core::MutexSptd::scope lock(m_mutex);

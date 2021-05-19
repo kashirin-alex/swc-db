@@ -135,7 +135,8 @@ FileSystemBroker::FileSystemBroker()
       std::make_shared<Comm::client::Serialized>(
         "FS-BROKER",
         m_io,
-        std::make_shared<client::FsBroker::AppContext>()
+        std::make_shared<client::FsBroker::AppContext>(
+          *Env::Config::settings())
       )
     ),
     m_type_underlying(fs_type(

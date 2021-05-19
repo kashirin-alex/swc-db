@@ -894,7 +894,7 @@ void generate() {
 
   std::vector<DB::Schema::Ptr> schemas;
   int err = Error::OK;
-  Env::Clients::get()->schemas->get(err, patterns, schemas);
+  Env::Clients::get()->get_schema(err, patterns, schemas);
   if(schemas.size() == ncolumns) {
     quit_error(err);
     make_work_load(schemas);
@@ -941,7 +941,7 @@ void generate() {
   }
 
   schemas.clear();
-  Env::Clients::get()->schemas->get(err, patterns, schemas);
+  Env::Clients::get()->get_schema(err, patterns, schemas);
   if(schemas.size() != ncolumns)
     quit_error(Error::INVALID_ARGUMENT);
 

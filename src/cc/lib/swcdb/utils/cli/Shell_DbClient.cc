@@ -192,9 +192,9 @@ bool DbClient::mng_column(Comm::Protocol::Mngr::Req::ColumnMng::Func func,
     return error(message);
   }
   if(schema->cid != DB::Schema::NO_CID)
-    Env::Clients::get()->schemas->remove(schema->cid);
+    Env::Clients::get()->schemas.remove(schema->cid);
   else
-    Env::Clients::get()->schemas->remove(schema->col_name);
+    Env::Clients::get()->schemas.remove(schema->col_name);
   return true;
 }
 
@@ -370,7 +370,7 @@ void DbClient::display(
     count_state = cells_count;
     for(cid_t cid : hdlr->get_cids()) {
       meta = !DB::Types::SystemColumn::is_data(cid);;
-      schema = clients->schemas->get(err, cid);
+      schema = clients->get_schema(err, cid);
       cells.free();
       hdlr->get_cells(cid, cells);
 

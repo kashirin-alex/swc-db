@@ -29,8 +29,8 @@ class AppContext final : virtual public BrokerIfFactory,
  public:
 
   AppContext() : m_run(true) {
-    Env::IoCtx::init(
-      Env::Config::settings()->get_i32("swc.ThriftBroker.clients.handlers"));
+    auto settings = Env::Config::settings();
+    Env::IoCtx::init(settings->get_i32("swc.ThriftBroker.clients.handlers"));
 
     int sig = 0;
     Env::IoCtx::io()->set_signals();
@@ -38,10 +38,10 @@ class AppContext final : virtual public BrokerIfFactory,
 
     Env::Clients::init(
       std::make_shared<client::Clients>(
-        *Env::Config::settings(),
+        *settings,
         Env::IoCtx::io(),
-        std::make_shared<client::ContextManager>(),
-        std::make_shared<client::ContextRanger>()
+        std::make_shared<client::ContextManager>(*settings),
+        std::make_shared<client::ContextRanger>(*settings)
       )
     );
     //Env::FsInterface::init(FS::fs_type(settings->get_str("swc.fs")));

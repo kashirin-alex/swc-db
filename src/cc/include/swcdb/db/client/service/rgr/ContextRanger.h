@@ -3,19 +3,21 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swcdb_db_client_ContextRanger_h
-#define swcdb_db_client_ContextRanger_h
+#ifndef swcdb_db_client_rgr_ContextRanger_h
+#define swcdb_db_client_rgr_ContextRanger_h
 
+#include "swcdb/db/client/Settings.h"
 #include "swcdb/core/comm/ConnHandler.h"
 
 namespace SWC { namespace client {
+
 
 class ContextRanger : public Comm::AppContext {
   public:
 
   typedef std::shared_ptr<ContextRanger> Ptr;
 
-  ContextRanger();
+  ContextRanger(const Config::Settings& settings);
 
   virtual ~ContextRanger() { }
 
@@ -23,12 +25,13 @@ class ContextRanger : public Comm::AppContext {
 
 };
 
+
 }}
 
 
 
 #ifdef SWC_IMPL_SOURCE
-#include "swcdb/db/client/ContextRanger.cc"
+#include "swcdb/db/client/service/rgr/ContextRanger.cc"
 #endif
 
-#endif // swcdb_db_client_ContextRanger_h
+#endif // swcdb_db_client_rgr_ContextRanger_h

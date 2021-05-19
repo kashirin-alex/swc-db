@@ -113,7 +113,7 @@ class Test {
     SWC_LOG(LOG_DEBUG, "create_column");
 
     int err = Error::OK;
-    if((schema = Env::Clients::get()->schemas->get(err, col_name)))
+    if((schema = Env::Clients::get()->get_schema(err, col_name)))
       return delete_column([this](){ create_column(); });
 
     schema = DB::Schema::make();
@@ -134,7 +134,7 @@ class Test {
                     << SWC_PRINT_CLOSE;
           return req_ptr->request_again();
         }
-        schema = Env::Clients::get()->schemas->get(err, col_name);
+        schema = Env::Clients::get()->get_schema(err, col_name);
         query_insert();
       },
       10000
@@ -155,7 +155,7 @@ class Test {
           return req_ptr->request_again();
         }
 
-        Env::Clients::get()->schemas->remove(schema->cid);
+        Env::Clients::get()->schemas.remove(schema->cid);
         schema = nullptr;
         cb();
       },

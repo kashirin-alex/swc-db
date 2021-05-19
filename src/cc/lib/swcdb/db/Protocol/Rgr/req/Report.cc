@@ -38,7 +38,7 @@ Report::Report(const SWC::client::Clients::Ptr& clients,
 }
 
 bool Report::run() {
-  clients->rgr->get(endpoints)->put(req());
+  clients->get_rgr_queue(endpoints)->put(req());
   return true;
 }
 

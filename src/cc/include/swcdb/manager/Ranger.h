@@ -70,7 +70,7 @@ class Ranger final : public Comm::Protocol::Common::Params::HostEndPoints {
   }
 
   void init_queue() {
-    m_queue = Env::Clients::get()->rgr->get(endpoints);
+    m_queue = Env::Clients::get()->get_rgr_queue(endpoints);
   }
 
   void put(const Comm::client::ConnQueue::ReqBase::Ptr& req) {

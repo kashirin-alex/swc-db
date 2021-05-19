@@ -93,7 +93,7 @@ class Groups final : private std::vector<Group::Ptr>,
 
   void print(std::ostream& out);
 
-  void add(GroupHost& g_host);
+  void add(GroupHost&& g_host);
 
   void remove(const Comm::EndPoints& endpoints);
 
@@ -114,7 +114,7 @@ class Groups final : private std::vector<Group::Ptr>,
 }}}
 
 #ifdef SWC_IMPL_SOURCE
-#include "swcdb/db/client/mngr/Groups.cc"
+#include "swcdb/db/client/service/mngr/Groups.cc"
 #endif
 
 
