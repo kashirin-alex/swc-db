@@ -86,7 +86,8 @@ void BrokerCommitter::commit_data() {
             );
             if(workload->is_last()) {
               SWC_BROKER_COMMIT_RSP_DEBUG("bkr_commit RETRYING");
-              committer->commit_data();
+              committer->run();
+              committer->hdlr->response();
             }
             return;
           }

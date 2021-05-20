@@ -962,7 +962,7 @@ int main(int argc, char** argv) {
       nullptr, // Env::IoCtx::io(),
       nullptr, // std::make_shared<client::ManagerContext>()
       nullptr  // std::make_shared<client::RangerContext>()
-    )
+    )->init()
   );
 
   SWC::Utils::LoadGenerator::generate();

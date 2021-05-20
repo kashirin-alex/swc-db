@@ -394,7 +394,7 @@ int main(int argc, char** argv) {
       nullptr,
       nullptr, // std::make_shared<client::ManagerContext>()
       nullptr  // std::make_shared<client::RangerContext>()
-    )
+    )->init()
   );
 
 

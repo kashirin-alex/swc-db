@@ -93,7 +93,7 @@ class AppContext final : public Comm::AppContext {
           std::make_shared<client::ContextManager>(*settings),
           std::make_shared<client::ContextRanger>(*settings)
           /*std::make_shared<client::ContextBroker>(*settings)*/
-        )
+        )->init()
       );
     }
     Env::FsBroker::init();

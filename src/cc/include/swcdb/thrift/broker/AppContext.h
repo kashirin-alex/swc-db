@@ -42,7 +42,7 @@ class AppContext final : virtual public BrokerIfFactory,
         Env::IoCtx::io(),
         std::make_shared<client::ContextManager>(*settings),
         std::make_shared<client::ContextRanger>(*settings)
-      )
+      )->init()
     );
     //Env::FsInterface::init(FS::fs_type(settings->get_str("swc.fs")));
   }

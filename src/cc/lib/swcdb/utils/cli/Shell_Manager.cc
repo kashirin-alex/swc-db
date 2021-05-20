@@ -63,7 +63,7 @@ Mngr::Mngr()
       nullptr,
       nullptr, // std::make_shared<client::ManagerContext>()
       nullptr  // std::make_shared<client::RangerContext>()
-    )
+    )->init()
   );
 }
 

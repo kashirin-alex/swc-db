@@ -225,7 +225,7 @@ int main(int argc, char** argv) {
       SWC::Env::IoCtx::io(),
       nullptr, // std::make_shared<SWC::client::ManagerContext>()
       nullptr  // std::make_shared<SWC::client::RangerContext>()
-    )
+    )->init()
   );
 
   SWC::Env::Rgr::init();

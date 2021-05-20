@@ -46,7 +46,7 @@ class AppContext final : public Comm::AppContext {
         Env::IoCtx::io(),
         std::make_shared<client::ContextManager>(*settings),
         std::make_shared<client::ContextRanger>(*settings)
-      )
+      )->init()
     );
 
     Env::Bkr::init();

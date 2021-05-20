@@ -71,6 +71,15 @@ class Clients : public std::enable_shared_from_this<Clients>{
     return shared_from_this();
   }
 
+  Ptr init() {
+    if(has_brokers()) {
+      brokers.cfg_hosts->set_cb_on_chg(
+        [ptr=shared()]() noexcept { ptr->brokers.on_cfg_update(); }
+      );
+    }
+    return shared();
+  }
+
   void stop();
 
   bool stopping() const noexcept {
@@ -81,8 +90,8 @@ class Clients : public std::enable_shared_from_this<Clients>{
     flags.store(_flags);
   }
 
-  bool has_brokers() const noexcept {
-    return bool(brokers.queues);
+  bool has_brokers() noexcept {
+    return bool(brokers.queues) && brokers.has_endpoints();
   }
 
   DB::Schema::Ptr get_schema(int& err, cid_t cid) {

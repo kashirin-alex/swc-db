@@ -440,7 +440,7 @@ int main(int argc, char** argv) {
       nullptr,
       nullptr, // std::make_shared<SWC::client::ManagerContext>()
       nullptr  // std::make_shared<SWC::client::RangerContext>()
-    )
+    )->init()
   );
 
   auto settings = SWC::Env::Config::settings();

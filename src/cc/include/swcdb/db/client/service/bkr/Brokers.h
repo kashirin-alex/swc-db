@@ -18,7 +18,11 @@ namespace SWC { namespace client {
 class Brokers {
   public:
 
-  Brokers() noexcept : queues(nullptr), cfg_hosts(nullptr) { }
+  Brokers() noexcept
+          : queues(nullptr),
+            cfg_hosts(nullptr),
+            cfg_port(0) {
+  }
 
   Brokers(const Config::Settings& settings,
           Comm::IoContextPtr ioctx,
@@ -26,10 +30,19 @@ class Brokers {
 
   //~Brokers() { }
 
-  Comm::EndPoints get_endpoints() const;
+  void on_cfg_update() noexcept;
+
+  Comm::EndPoints get_endpoints();
+
+  bool has_endpoints() noexcept;
 
   const Comm::client::ConnQueuesPtr        queues;
   const Config::Property::V_GSTRINGS::Ptr  cfg_hosts;
+  const uint16_t                           cfg_port;
+
+  private:
+  Core::MutexSptd m_mutex;
+  Comm::EndPoints m_endpoints;
 };
 
 
