@@ -75,6 +75,7 @@ set(swcdb_sources
 
   Protocol/Bkr/params/CellsSelect.cc
   Protocol/Bkr/params/CellsUpdate.cc
+  Protocol/Bkr/req/CellsUpdate.cc
 
   client/Settings.cc
   client/Clients.cc
@@ -95,6 +96,7 @@ set(swcdb_sources
   client/Query/Update/Handlers/BaseUnorderedMap.cc
   client/Query/Update/Handlers/Common.cc
   client/Query/Update/Committer.cc
+  client/Query/Update/BrokerCommitter.cc
   client/Query/Update/Handlers/Metrics.cc
 
   client/Query/Select/Handlers/BaseUnorderedMap.cc
