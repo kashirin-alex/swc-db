@@ -85,14 +85,17 @@ class Base : public std::enable_shared_from_this<Base> {
   Core::Atomic<uint32_t>            timeout_ratio;
   Core::Atomic<uint32_t>            buff_sz;
   Core::Atomic<uint8_t>             buff_ahead;
+  const Clients::Flag               executor;
 
-  Base(const Clients::Ptr& clients) noexcept
+  Base(const Clients::Ptr& clients,
+       Clients::Flag executor=Clients::Flag::DEFAULT) noexcept
       : clients(clients),
         state_error(Error::OK), completion(0),
         timeout(clients->cfg_send_timeout->get()),
         timeout_ratio(clients->cfg_send_timeout_ratio->get()),
         buff_sz(clients->cfg_send_buff_sz->get()),
-        buff_ahead(clients->cfg_send_ahead->get()) {
+        buff_ahead(clients->cfg_send_ahead->get()),
+        executor(executor) {
   }
 
   virtual bool valid() noexcept = 0;
@@ -130,11 +133,38 @@ class Base : public std::enable_shared_from_this<Base> {
     return reset ? m_resend_cells.exchange(0) : m_resend_cells.load();
   }
 
+  void commit() {
+    completion.increment();
+    std::vector<Column*> cols;
+    next(cols);
+    for(auto colp : cols)
+      commit(colp);
+    response();
+  }
+
+  void commit(const cid_t cid) {
+    commit(next(cid));
+  }
+
+  void commit(Column* colp) {
+    completion.increment();
+    if(colp && !colp->empty())
+      _execute(colp);
+    response();
+  }
+
   protected:
+
+  virtual void _execute(Column* colp) {
+    default_executor(colp);
+  }
 
   virtual ~Base() { }
 
   private:
+
+  void default_executor(Column* colp);
+
   Core::Atomic<size_t>              m_resend_cells;
 };
 

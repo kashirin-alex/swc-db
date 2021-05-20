@@ -17,7 +17,8 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace Bkr { namespace Handler {
 
 
-class Updater : public SWC::client::Query::Update::Handlers::BaseSingleColumn {
+class Updater final
+    : public SWC::client::Query::Update::Handlers::BaseSingleColumn {
   public:
   typedef std::shared_ptr<Updater> Ptr;
 
@@ -38,16 +39,16 @@ class Updater : public SWC::client::Query::Update::Handlers::BaseSingleColumn {
 
   virtual ~Updater() { }
 
-  virtual bool valid() noexcept override {
+  bool valid() noexcept override {
     return !error() && !ev->expired() && conn->is_open();
   }
 
-  virtual void response(int err=Error::OK) override {
+  void response(int err=Error::OK) override {
     if(!completion.is_last())
       return;
 
     if(!err && requires_commit()) {
-      SWC::client::Query::Update::commit(shared_from_this(), &column);
+      commit(&column);
       return;
     }
 
@@ -83,7 +84,7 @@ void cells_update(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
       auto schema = Env::Clients::get()->get_schema(err, params.cid);
       if(!err) {
         auto hdlr = std::make_shared<Updater>(schema, conn, ev);
-        SWC::client::Query::Update::commit(hdlr, &hdlr->column);
+        hdlr->commit(&hdlr->column);
         return;
       }
     }

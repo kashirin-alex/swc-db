@@ -32,7 +32,7 @@ bool BaseMeta::is_last_rsp(int err) {
     return false;
 
   if(!err && requires_commit()) {
-    client::Query::Update::commit(shared_from_this(), &column);
+    commit(&column);
     return false;
   }
 

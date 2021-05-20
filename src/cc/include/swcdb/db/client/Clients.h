@@ -81,6 +81,9 @@ class Clients : public std::enable_shared_from_this<Clients>{
     flags.store(_flags);
   }
 
+  bool has_brokers() const noexcept {
+    return bool(brokers.queues);
+  }
 
   DB::Schema::Ptr get_schema(int& err, cid_t cid) {
     return schemas.get(err, cid);
@@ -211,6 +214,7 @@ class Clients final {
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/db/client/Clients.cc"
 #include "swcdb/db/client/Schemas.cc"
+#include "swcdb/db/client/Query/Update/Handlers/Base.cc"
 #endif
 
 

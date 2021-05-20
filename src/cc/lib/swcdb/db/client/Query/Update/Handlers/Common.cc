@@ -16,8 +16,9 @@ namespace Handlers {
 
 
 Common::Common(const Clients::Ptr& clients,
-               Cb_t&& cb, const Comm::IoContextPtr& io) noexcept
-              : BaseUnorderedMap(clients),
+               Cb_t&& cb, const Comm::IoContextPtr& io,
+               Clients::Flag executor) noexcept
+              : BaseUnorderedMap(clients, executor),
                 valid_state(true),
                 m_cb(std::move(cb)), m_dispatcher_io(io) {
 }
@@ -37,7 +38,7 @@ void Common::response(int err) {
   }
 
   if(!err && requires_commit()) {
-    commit(shared_from_this());
+    commit();
     Core::ScopedLock lock(m_mutex);
     return m_cv.notify_all();
   }
@@ -101,12 +102,12 @@ bool Common::wait_ahead_buffers(uint64_t from) {
 
 void Common::commit_or_wait(Base::Column* colp, uint64_t from) {
   if(wait_ahead_buffers(from))
-    colp ? commit(shared_from_this(), colp) : commit(shared_from_this());
+    colp ? commit(colp) : commit();
 }
 
 void Common::commit_if_need() {
   if(!completion.count() && size_bytes())
-    commit(shared_from_this());
+    commit();
 }
 
 

@@ -13,36 +13,6 @@
 namespace SWC { namespace client { namespace Query { namespace Update {
 
 
-void commit(const Handlers::Base::Ptr& hdlr) {
-  hdlr->completion.increment();
-
-  std::vector<Handlers::Base::Column*> cols;
-  hdlr->next(cols);
-  for(auto colp : cols)
-    commit(hdlr, colp);
-
-  hdlr->response();
-}
-
-void commit(const Handlers::Base::Ptr& hdlr, const cid_t cid) {
-  commit(hdlr, hdlr->next(cid));
-}
-
-void commit(const Handlers::Base::Ptr& hdlr, Handlers::Base::Column* colp) {
-  hdlr->completion.increment();
-
-  if(colp && !colp->empty()) {
-    std::make_shared<Committer>(
-      DB::Types::Range::MASTER,
-      colp->get_cid(), colp, colp->get_first_key(),
-      hdlr
-    )->locate_on_manager();
-  }
-
-  hdlr->response();
-}
-
-
 
 #define SWC_LOCATOR_REQ_DEBUG(msg) \
   SWC_LOG_OUT(LOG_DEBUG, params.print(SWC_LOG_OSTREAM << msg << ' '); );

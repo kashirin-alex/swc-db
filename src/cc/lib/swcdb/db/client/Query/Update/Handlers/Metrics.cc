@@ -201,7 +201,8 @@ Reporting::Reporting(const Clients::Ptr& clients,
             : BaseSingleColumn(
                 clients,
                 DB::Types::SystemColumn::SYS_CID_STATS,
-                DB::Types::KeySeq::LEXIC, 1, 0, DB::Types::Column::SERIAL),
+                DB::Types::KeySeq::LEXIC, 1, 0, DB::Types::Column::SERIAL,
+                clients->has_brokers() ? Clients::BROKER : Clients::DEFAULT),
               io(io),
               cfg_intval(cfg_intval),
               running(false), m_defined(false),
@@ -246,7 +247,7 @@ void Reporting::response(int err) {
     return;
 
   if(!err && running && requires_commit()) {
-    Update::commit(shared_from_this(), &column);
+    commit(&column);
     return;
   }
 
@@ -289,7 +290,7 @@ void Reporting::report() {
     for(auto& m : metrics)
       m->definitions(col.get(), key);
 
-    Update::commit(hdlr, col.get());
+    hdlr->commit(col.get());
     hdlr->wait();
     if(!hdlr->error()) {
       m_defined = true;
@@ -308,9 +309,7 @@ void Reporting::report() {
 
   profile.reset();
 
-  column.empty()
-    ? schedule()
-    : Update::commit(shared_from_this(), &column);
+  column.empty() ? schedule() : commit(&column);
 }
 
 void Reporting::schedule() {

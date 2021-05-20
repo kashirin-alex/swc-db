@@ -503,7 +503,7 @@ void Range::on_change(bool removal,
     }
   }
 
-  client::Query::Update::commit(hdlr, &hdlr->column);
+  hdlr->commit(&hdlr->column);
   /* INSERT master-range(
       col-{1,4}), key[cid+m_interval(data(cid)+key)], value[end, rid, min, max]
      INSERT meta-range(

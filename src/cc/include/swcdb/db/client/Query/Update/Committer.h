@@ -16,23 +16,23 @@
 
 namespace SWC { namespace client { namespace Query {
 
-
-
 //! The SWC-DB Query Update C++ namespace 'SWC::client::Query::Update'
 namespace Update {
 
 
 
-void commit(const Handlers::Base::Ptr& hdlr);
-
-void commit(const Handlers::Base::Ptr& hdlr, const cid_t cid);
-
-void commit(const Handlers::Base::Ptr& hdlr, Handlers::Base::Column* colp);
-
-
-
 class Committer final : public std::enable_shared_from_this<Committer> {
   public:
+
+  static void execute(const Handlers::Base::Ptr& hdlr,
+                      Handlers::Base::Column* colp) {
+    std::make_shared<Committer>(
+    DB::Types::Range::MASTER,
+      colp->get_cid(), colp, colp->get_first_key(),
+      hdlr
+    )->locate_on_manager();
+  }
+
   const DB::Types::Range    type;
   const cid_t               cid;
   Handlers::Base::Column*   colp;

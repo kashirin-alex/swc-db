@@ -408,7 +408,7 @@ bool DbClient::update(std::string& cmd) {
   size_t cells_count = hdlr->size();
   size_t cells_bytes = hdlr->size_bytes();
 
-  client::Query::Update::commit(hdlr);
+  hdlr->commit();
   hdlr->wait();
 
   if(display_flags & DB::DisplayFlag::STATS)

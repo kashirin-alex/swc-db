@@ -92,6 +92,7 @@ set(swcdb_sources
   client/service/bkr/ContextBroker.cc
   client/service/bkr/Brokers.cc
 
+  client/Query/Update/Handlers/Base.cc
   client/Query/Update/Handlers/BaseColumnMutable.cc
   client/Query/Update/Handlers/BaseUnorderedMap.cc
   client/Query/Update/Handlers/Common.cc

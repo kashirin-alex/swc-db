@@ -687,7 +687,7 @@ void update_data(const std::vector<DB::Schema::Ptr>& schemas, uint8_t flag,
           ++added_count;
           added_bytes += cell.encoded_length();
           if(cellatime) {
-            client::Query::Update::commit(hdlr, col);
+            hdlr->commit(col);
             hdlr->wait();
           } else {
             hdlr->commit_or_wait();

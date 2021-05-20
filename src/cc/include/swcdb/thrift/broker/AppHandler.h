@@ -208,7 +208,7 @@ class AppHandler final : virtual public BrokerIf {
     if(updater_id) {
       hdlr->commit_or_wait();
     } else {
-      client::Query::Update::commit(hdlr);
+      hdlr->commit();
       hdlr->wait();
     }
     if((err = hdlr->error()))
@@ -428,7 +428,7 @@ class AppHandler final : virtual public BrokerIf {
     if(updater_id) {
       hdlr->commit_or_wait();
     } else {
-      client::Query::Update::commit(hdlr);
+      hdlr->commit();
       hdlr->wait();
     }
     if((err = hdlr->error()))
@@ -517,7 +517,7 @@ class AppHandler final : virtual public BrokerIf {
     if(updater_id) {
       hdlr->commit_or_wait();
     } else {
-      client::Query::Update::commit(hdlr);
+      hdlr->commit();
       hdlr->wait();
     }
     if((err = hdlr->error()))
@@ -541,7 +541,7 @@ class AppHandler final : virtual public BrokerIf {
         hdlr = it->second;
       }
       if(size_t sz = hdlr->size_bytes()) {
-        client::Query::Update::commit(hdlr);
+        hdlr->commit();
         if(release && release <= (released += sz))
           break;
       }

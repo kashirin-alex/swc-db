@@ -26,8 +26,9 @@ class BaseSingleColumn : public Base {
   BaseSingleColumn(const Clients::Ptr& clients,
                    const cid_t cid, DB::Types::KeySeq seq,
                    uint32_t versions, uint32_t ttl_secs,
-                   DB::Types::Column type)
-                  : Base(clients),
+                   DB::Types::Column type,
+                   Clients::Flag executor=Clients::DEFAULT)
+                  : Base(clients, executor),
                     column(cid, seq, versions, ttl_secs, type) {
   }
 
