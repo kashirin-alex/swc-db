@@ -98,7 +98,7 @@ void Compaction::run(bool initial) {
   uint8_t added = 0;
   RangePtr range  = nullptr;
   for(ColumnPtr col = nullptr;
-      !stopped() && !Env::Rgr::res().is_low_mem_state() &&
+      !stopped() && (!m_running || !Env::Rgr::res().is_low_mem_state()) &&
       (col || (col = Env::Rgr::columns()->get_next(m_idx_cid)) ); ) {
 
     if(col->removing()) {
