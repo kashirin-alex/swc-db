@@ -25,10 +25,11 @@ class Selector final : public SWC::client::Query::Select::Handlers::Base {
 
   ConnHandlerPtr  conn;
   Event::Ptr      ev;
+  bool            sent;
 
   Selector(const ConnHandlerPtr& conn, const Event::Ptr& ev)
           : SWC::client::Query::Select::Handlers::Base(Env::Clients::get()),
-            conn(conn), ev(ev) {
+            conn(conn), ev(ev), sent(false) {
   }
 
   virtual ~Selector() { }
@@ -45,46 +46,27 @@ class Selector final : public SWC::client::Query::Select::Handlers::Base {
     return 0;
   }
 
-  bool add_cells(const cid_t cid, StaticBuffer& buffer,
+  bool add_cells(const cid_t, StaticBuffer& buffer,
                  bool reached_limit, DB::Specs::Interval& interval) override {
-    bool more = true;
-    size_t recved = 0;
-    DB::Cells::Cell last;
-    const uint8_t* ptr = buffer.base;
-    size_t remain = buffer.size;
-    while(remain) {
-      last.read(&ptr, &remain);
-      ++recved;
+    if(!ev->expired() && conn->is_open()) {
+      conn->send_response(
+        Buffers::make(
+          ev,
+          Params::CellsSelectRsp(
+            state_error, reached_limit, interval.flags.offset),
+          buffer
+        )
+      );
     }
-
-    if(interval.flags.limit) {
-      if(interval.flags.limit <= recved) {
-        interval.flags.limit = 0;
-        more = false;
-        goto _send_partial;
-      }
-      interval.flags.limit -= recved;
-    }
-    if(reached_limit) {
-      interval.offset_key.copy(last.key);
-      interval.offset_rev = last.get_timestamp();
-    }
-
-    _send_partial:
-      auto cbp = Buffers::make(
-        ev, Params::CellsSelectRsp(Error::OK, cid, true), buffer);
-      cbp->header.flags |= Comm::Header::FLAG_RESPONSE_PARTIAL_BIT;
-      conn->send_response(cbp);
-
-    return more;
+    sent = true;
+    return false;
   }
 
   void response(int err) override {
     SWC::client::Query::Select::Handlers::Base::error(err);
 
     profile.finished();
-
-    if(!ev->expired() && conn->is_open()) {
+    if(!sent && !ev->expired() && conn->is_open()) {
       conn->send_response(
         Buffers::make(ev, Params::CellsSelectRsp(state_error)));
     }
@@ -106,10 +88,12 @@ void cells_select(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     params.decode(&ptr, &remain);
 
     auto hdlr = std::make_shared<Selector>(conn, ev);
-    SWC::client::Query::Select::scan(err, hdlr, std::move(params.specs));
-    if(!err)
+    auto schema = Env::Clients::get()->get_schema(err, params.cid);
+    if(!err) {
+      SWC::client::Query::Select::scan(
+        hdlr, schema, std::move(params.interval));
       return;
-
+    }
   } catch(...) {
     const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
     SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );

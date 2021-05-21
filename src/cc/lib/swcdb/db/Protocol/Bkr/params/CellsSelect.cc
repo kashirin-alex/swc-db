@@ -13,52 +13,60 @@ namespace Bkr { namespace Params {
 
 
 
+CellsSelectReq::CellsSelectReq(cid_t cid,
+                               const DB::Specs::Interval& interval)
+                              : cid(cid), interval(interval) {
+}
+
 void CellsSelectReq::print(std::ostream& out) const {
-  specs.print(out << "CellsSelectReq(");
+  out << "CellsSelectReq(cid=" << cid;
+  interval.print(out << ' ');
   out << ')';
 }
 
 size_t CellsSelectReq::internal_encoded_length() const {
-  return specs.encoded_length();
+  return  Serialization::encoded_length_vi64(cid)
+        + interval.encoded_length();
 }
 
 void CellsSelectReq::internal_encode(uint8_t** bufp) const {
-  specs.encode(bufp);
+  Serialization::encode_vi64(bufp, cid);
+  interval.encode(bufp);
 }
 
-void CellsSelectReq::internal_decode(const uint8_t** bufp, size_t* remainp) {
-  specs.decode(bufp, remainp);
+void CellsSelectReq::internal_decode(const uint8_t** bufp,
+                                          size_t* remainp) {
+  cid = Serialization::decode_vi64(bufp, remainp);
+  interval.decode(bufp, remainp, true);
 }
-
 
 
 
 void CellsSelectRsp::print(std::ostream& out) const {
   Error::print(out << "CellsSelectRsp(", err);
-  if(!err)
-    out << " cid=" << cid << " more=" << more;
-  out << ')';
+  out << " reached_limit=" << reached_limit
+      << " offset=" << offset
+      << " data.size=" << data.size
+      << ')';
 }
 
 size_t CellsSelectRsp::internal_encoded_length() const {
-  return  Serialization::encoded_length_vi32(err) +
-          (err ? 0 : (Serialization::encoded_length_vi64(cid) + 1));
+  return Serialization::encoded_length_vi32(err)
+        + 1
+        + Serialization::encoded_length_vi64(offset);
 }
 
 void CellsSelectRsp::internal_encode(uint8_t** bufp) const {
   Serialization::encode_vi32(bufp, err);
-  if(!err) {
-    Serialization::encode_vi64(bufp, cid);
-    Serialization::encode_bool(bufp, more);
-  }
+  Serialization::encode_bool(bufp, reached_limit);
+  Serialization::encode_vi64(bufp, offset);
 }
 
 void CellsSelectRsp::internal_decode(const uint8_t** bufp,
                                           size_t* remainp) {
-  if(!(err = Serialization::decode_vi32(bufp, remainp))) {
-    cid = Serialization::decode_vi64(bufp, remainp);
-    more = Serialization::decode_bool(bufp, remainp);
-  }
+  err = Serialization::decode_vi32(bufp, remainp);
+  reached_limit = Serialization::decode_bool(bufp, remainp);
+  offset = Serialization::decode_vi64(bufp, remainp);
 }
 
 

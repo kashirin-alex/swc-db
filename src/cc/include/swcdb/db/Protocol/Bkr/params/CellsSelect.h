@@ -20,17 +20,14 @@ class CellsSelectReq final : public Serializable {
 
   CellsSelectReq() noexcept { }
 
-  CellsSelectReq(const DB::Specs::Scan& specs)
-                : specs(specs) { }
-
-  CellsSelectReq(DB::Specs::Scan&& specs) noexcept
-                : specs(std::move(specs)) { }
+  CellsSelectReq(cid_t cid, const DB::Specs::Interval& interval);
 
   //~CellsSelectReq() { }
 
   void print(std::ostream& out) const;
 
-  DB::Specs::Scan specs;
+  cid_t                cid;
+  DB::Specs::Interval  interval;
 
   private:
 
@@ -47,22 +44,25 @@ class CellsSelectReq final : public Serializable {
 class CellsSelectRsp final : public Serializable {
   public:
 
-  CellsSelectRsp(int err, cid_t cid=0, bool more=false) noexcept
-                 : err(err), cid(cid), more(more) {
+  CellsSelectRsp(int err = Error::OK, bool reached_limit=false,
+                 uint64_t offset=0) noexcept
+                : err(err), reached_limit(reached_limit),
+                  offset(offset) {
   }
 
-  CellsSelectRsp(int err, StaticBuffer& buffer) noexcept
-                 : err(err), cid(0), more(false), data(buffer) {
+  CellsSelectRsp(int err, StaticBuffer& data) noexcept
+                : err(err), reached_limit(false),
+                  offset(0), data(data) {
   }
 
   //~CellsSelectRsp() { }
 
   void print(std::ostream& out) const;
 
-  int32_t       err;
-  cid_t         cid;
-  bool          more;
-  StaticBuffer  data;
+  int32_t         err;
+  bool            reached_limit;
+  uint64_t        offset;
+  StaticBuffer    data;
 
   private:
 
