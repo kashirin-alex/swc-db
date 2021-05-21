@@ -73,9 +73,10 @@ set(swcdb_sources
   Protocol/Mngr/params/Report.cc
   Protocol/Mngr/req/Report.cc
 
-  Protocol/Bkr/params/CellsSelect.cc
   Protocol/Bkr/params/CellsUpdate.cc
   Protocol/Bkr/req/CellsUpdate.cc
+  Protocol/Bkr/params/CellsSelect.cc
+  Protocol/Bkr/req/Scanner_CellsSelect.cc
 
   client/Settings.cc
   client/Clients.cc
@@ -104,6 +105,7 @@ set(swcdb_sources
   client/Query/Select/Handlers/BaseSingleColumn.cc
   client/Query/Select/Handlers/Common.cc
   client/Query/Select/Scanner.cc
+  client/Query/Select/BrokerScanner.cc
 
   client/sql/SQL.cc
   client/sql/Reader.cc
