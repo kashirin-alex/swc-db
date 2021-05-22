@@ -25,8 +25,9 @@ class BaseSingleColumn : public Base {
 
   const cid_t         cid;
 
-  BaseSingleColumn(const Clients::Ptr& clients, const cid_t cid) noexcept
-                  : Base(clients), cid(cid) {
+  BaseSingleColumn(const Clients::Ptr& clients, const cid_t cid,
+                   Clients::Flag executor=Clients::DEFAULT) noexcept
+                  : Base(clients, executor), cid(cid) {
   }
 
   virtual ~BaseSingleColumn() { }

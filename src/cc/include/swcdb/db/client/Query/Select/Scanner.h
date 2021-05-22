@@ -17,45 +17,30 @@
 
 namespace SWC { namespace client { namespace Query {
 
-
-
 //! The SWC-DB Query Select C++ namespace 'SWC::client::Query::Select'
 namespace Select {
 
 
 
-extern void scan(const Handlers::Base::Ptr& hdlr,
-                 DB::Types::KeySeq key_seq,
-                 cid_t cid,
-                 const DB::Specs::Interval& intval);
-
-extern void scan(const Handlers::Base::Ptr& hdlr,
-                 DB::Types::KeySeq key_seq,
-                 cid_t cid,
-                 DB::Specs::Interval&& intval);
-
-extern void scan(const Handlers::Base::Ptr& hdlr,
-                 const DB::Schema::Ptr& schema,
-                 const DB::Specs::Interval& intval);
-
-extern void scan(const Handlers::Base::Ptr& hdlr,
-                 const DB::Schema::Ptr& schema,
-                 DB::Specs::Interval&& intval);
-
-extern void scan(int& err,
-                 const Handlers::Base::Ptr& hdlr,
-                 const DB::Specs::Scan& specs);
-
-extern void scan(int& err,
-                 const Handlers::Base::Ptr& hdlr,
-                 DB::Specs::Scan&& specs);
-
-
 class Scanner final : public std::enable_shared_from_this<Scanner> {
   public:
 
-  typedef std::shared_ptr<Scanner>        Ptr;
+  static void execute(const Handlers::Base::Ptr& hdlr,
+                      DB::Types::KeySeq key_seq, cid_t cid,
+                      const DB::Specs::Interval& intval) {
+    std::make_shared<Scanner>(
+      hdlr, key_seq, intval, cid)->mngr_locate_master();
+  }
 
+  static void execute(const Handlers::Base::Ptr& hdlr,
+                      DB::Types::KeySeq key_seq, cid_t cid,
+                      DB::Specs::Interval&& intval) {
+    std::make_shared<Scanner>(
+      hdlr, key_seq, std::move(intval), cid)->mngr_locate_master();
+  }
+
+
+  typedef std::shared_ptr<Scanner>        Ptr;
   Core::CompletionCounter<uint64_t>       completion;
 
   Handlers::Base::Ptr                     selector;

@@ -13,8 +13,7 @@ namespace SWC { namespace Ranger { namespace Query { namespace Select {
 void CheckMeta::run(const RangePtr& range,
                     const Callback::RangeLoad::Ptr& req) {
   auto hdlr = std::make_shared<CheckMeta>(range, req);
-  client::Query::Select::scan(
-    hdlr, range->cfg->key_seq, hdlr->cid, hdlr->spec);
+  hdlr->scan(range->cfg->key_seq, hdlr->cid, hdlr->spec);
 }
 
 CheckMeta::CheckMeta(const RangePtr& range,

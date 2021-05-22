@@ -101,6 +101,7 @@ set(swcdb_sources
   client/Query/Update/BrokerCommitter.cc
   client/Query/Update/Handlers/Metrics.cc
 
+  client/Query/Select/Handlers/Base.cc
   client/Query/Select/Handlers/BaseUnorderedMap.cc
   client/Query/Select/Handlers/BaseSingleColumn.cc
   client/Query/Select/Handlers/Common.cc

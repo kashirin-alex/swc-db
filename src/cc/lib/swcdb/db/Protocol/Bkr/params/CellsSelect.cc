@@ -44,7 +44,7 @@ void CellsSelectReq::internal_decode(const uint8_t** bufp,
 
 void CellsSelectRsp::print(std::ostream& out) const {
   Error::print(out << "CellsSelectRsp(", err);
-  out << " reached_limit=" << reached_limit
+  out << " more=" << more
       << " offset=" << offset
       << " data.size=" << data.size
       << ')';
@@ -58,14 +58,14 @@ size_t CellsSelectRsp::internal_encoded_length() const {
 
 void CellsSelectRsp::internal_encode(uint8_t** bufp) const {
   Serialization::encode_vi32(bufp, err);
-  Serialization::encode_bool(bufp, reached_limit);
+  Serialization::encode_bool(bufp, more);
   Serialization::encode_vi64(bufp, offset);
 }
 
 void CellsSelectRsp::internal_decode(const uint8_t** bufp,
                                           size_t* remainp) {
   err = Serialization::decode_vi32(bufp, remainp);
-  reached_limit = Serialization::decode_bool(bufp, remainp);
+  more = Serialization::decode_bool(bufp, remainp);
   offset = Serialization::decode_vi64(bufp, remainp);
 }
 

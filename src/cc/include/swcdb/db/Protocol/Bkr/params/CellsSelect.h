@@ -44,15 +44,13 @@ class CellsSelectReq final : public Serializable {
 class CellsSelectRsp final : public Serializable {
   public:
 
-  CellsSelectRsp(int err = Error::OK, bool reached_limit=false,
+  CellsSelectRsp(int err = Error::OK, bool more=false,
                  uint64_t offset=0) noexcept
-                : err(err), reached_limit(reached_limit),
-                  offset(offset) {
+                : err(err), more(more), offset(offset) {
   }
 
   CellsSelectRsp(int err, StaticBuffer& data) noexcept
-                : err(err), reached_limit(false),
-                  offset(0), data(data) {
+                : err(err), more(false), offset(0), data(data) {
   }
 
   //~CellsSelectRsp() { }
@@ -60,7 +58,7 @@ class CellsSelectRsp final : public Serializable {
   void print(std::ostream& out) const;
 
   int32_t         err;
-  bool            reached_limit;
+  bool            more;
   uint64_t        offset;
   StaticBuffer    data;
 

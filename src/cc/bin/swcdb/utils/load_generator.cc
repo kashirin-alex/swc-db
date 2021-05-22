@@ -770,7 +770,7 @@ void select_data(const std::vector<DB::Schema::Ptr>& schemas, size_t seed) {
       auto hdlr = client::Query::Select::Handlers::Common::make(
         Env::Clients::get());
       for(auto& schema : schemas)
-        client::Query::Select::scan(hdlr, schema, std::move(intval));
+        hdlr->scan(schema, std::move(intval));
 
       hdlr->wait();
       if(expect_empty) {
@@ -827,7 +827,7 @@ void select_data(const std::vector<DB::Schema::Ptr>& schemas, size_t seed) {
       true
     );
     int err = Error::OK;
-    client::Query::Select::scan(err, hdlr, std::move(specs));
+    hdlr->scan(err, std::move(specs));
     SWC_ASSERT(!err);
 
     hdlr->wait();

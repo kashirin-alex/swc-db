@@ -118,7 +118,7 @@ class AppHandler final : virtual public BrokerIf {
     uint8_t display_flags = 0;
     client::SQL::parse_select(err, hdlr->clients, sql, specs, display_flags, message);
     if(!err) {
-      client::Query::Select::scan(err, hdlr, std::move(specs));
+      hdlr->scan(err, std::move(specs));
       if(!err)
         hdlr->wait();
     }
@@ -288,7 +288,7 @@ class AppHandler final : virtual public BrokerIf {
     }
 
     if(!err) {
-      client::Query::Select::scan(err, hdlr, std::move(specs));
+      hdlr->scan(err, std::move(specs));
       if(!err)
         hdlr->wait();
     }

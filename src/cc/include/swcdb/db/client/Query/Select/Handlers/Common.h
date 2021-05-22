@@ -24,15 +24,18 @@ class Common : public BaseUnorderedMap {
 
   static Ptr make(const Clients::Ptr& clients,
                   Cb_t&& cb=nullptr, bool rsp_partials=false,
-                  const Comm::IoContextPtr& io=nullptr) {
-    return std::make_shared<Common>(clients, std::move(cb), rsp_partials, io);
+                  const Comm::IoContextPtr& io=nullptr,
+                  Clients::Flag executor=Clients::DEFAULT) {
+    return std::make_shared<Common>(
+      clients, std::move(cb), rsp_partials, io, executor);
   }
 
   Core::AtomicBool valid_state;
 
   Common(const Clients::Ptr& clients,
          Cb_t&& cb, bool rsp_partials=false,
-         const Comm::IoContextPtr& io=nullptr) noexcept;
+         const Comm::IoContextPtr& io=nullptr,
+         Clients::Flag executor=Clients::DEFAULT) noexcept;
 
   virtual ~Common() { }
 

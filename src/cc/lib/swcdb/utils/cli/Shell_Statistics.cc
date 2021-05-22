@@ -488,7 +488,7 @@ void Statistics::set_definitions(DB::Specs::Scan& specs) {
     true
   );
 
-  client::Query::Select::scan(err, hdlr, specs);
+  hdlr->scan(err, specs);
   if(!err)
     hdlr->wait();
 }
@@ -744,8 +744,7 @@ bool Statistics::show() {
       true
     );
 
-    client::Query::Select::scan(
-      hdlr,
+    hdlr->scan(
       DB::Types::KeySeq::LEXIC,
       DB::Types::SystemColumn::SYS_CID_STATS,
       std::move(spec)
@@ -860,7 +859,7 @@ bool Statistics::truncate() {
       g.print(SWC_LOG_OSTREAM << "\n\t", this);
   );
 
-  client::Query::Select::scan(err, hdlr, specs);
+  hdlr->scan(err, specs);
   state_error.store(err);
   if(!state_error) {
     hdlr->wait();

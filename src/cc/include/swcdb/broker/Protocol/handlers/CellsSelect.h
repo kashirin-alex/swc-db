@@ -47,13 +47,12 @@ class Selector final : public SWC::client::Query::Select::Handlers::Base {
   }
 
   bool add_cells(const cid_t, StaticBuffer& buffer,
-                 bool reached_limit, DB::Specs::Interval& interval) override {
+                 bool, DB::Specs::Interval& interval) override {
     if(!ev->expired() && conn->is_open()) {
       conn->send_response(
         Buffers::make(
           ev,
-          Params::CellsSelectRsp(
-            state_error, reached_limit, interval.flags.offset),
+          Params::CellsSelectRsp(state_error, true, interval.flags.offset),
           buffer
         )
       );
@@ -68,7 +67,7 @@ class Selector final : public SWC::client::Query::Select::Handlers::Base {
     profile.finished();
     if(!sent && !ev->expired() && conn->is_open()) {
       conn->send_response(
-        Buffers::make(ev, Params::CellsSelectRsp(state_error)));
+        Buffers::make(ev, Params::CellsSelectRsp(state_error, false)));
     }
     Env::Bkr::in_process(-1);
   }
@@ -90,8 +89,7 @@ void cells_select(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     auto hdlr = std::make_shared<Selector>(conn, ev);
     auto schema = Env::Clients::get()->get_schema(err, params.cid);
     if(!err) {
-      SWC::client::Query::Select::scan(
-        hdlr, schema, std::move(params.interval));
+      hdlr->scan(schema, std::move(params.interval));
       return;
     }
   } catch(...) {

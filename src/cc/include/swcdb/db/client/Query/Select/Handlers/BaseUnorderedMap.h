@@ -23,8 +23,9 @@ class BaseUnorderedMap : public Base {
 
   typedef std::shared_ptr<BaseUnorderedMap>   Ptr;
 
-  BaseUnorderedMap(const Clients::Ptr& clients) noexcept
-                  : Base(clients) {
+  BaseUnorderedMap(const Clients::Ptr& clients,
+                   Clients::Flag executor=Clients::DEFAULT) noexcept
+                  : Base(clients, executor) {
   }
 
   virtual ~BaseUnorderedMap() { }

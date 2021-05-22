@@ -221,8 +221,7 @@ void ColumnHealthCheck::finishing(bool finished_range) {
     false,
     Env::Mngr::io()
   );
-  client::Query::Select::scan(
-    hdlr, col->cfg->key_seq, meta_cid, std::move(spec));
+  hdlr->scan(col->cfg->key_seq, meta_cid, std::move(spec));
 }
 
 

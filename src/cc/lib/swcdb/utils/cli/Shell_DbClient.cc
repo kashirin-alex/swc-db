@@ -340,7 +340,7 @@ bool DbClient::select(std::string& cmd) {
     },
     true // cb on partial rsp
   );
-  client::Query::Select::scan(err, hdlr, std::move(specs));
+  hdlr->scan(err, std::move(specs));
   if(!err)
     hdlr->wait();
 
@@ -528,7 +528,8 @@ bool DbClient::dump(std::string& cmd) {
     },
     true // cb on partial rsp
   );
-  client::Query::Select::scan(err, hdlr, std::move(specs));
+
+  hdlr->scan(err, std::move(specs));
   if(!err)
     hdlr->wait();
 

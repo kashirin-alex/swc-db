@@ -401,8 +401,7 @@ void MngdColumns::remove(const DB::Schema::Ptr& schema,
     false,
     Env::Mngr::io()
   );
-  client::Query::Select::scan(
-    hdlr, schema->col_seq, meta_cid, std::move(spec));
+  hdlr->scan(schema->col_seq, meta_cid, std::move(spec));
 }
 
 

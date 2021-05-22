@@ -178,7 +178,7 @@ class Test {
       DB::Specs::Column::make_ptr(schema->cid, {intval}));
 
     int err = Error::OK;
-    client::Query::Select::scan(err, hdlr, specs);
+    hdlr->scan(err, specs);
     if(err) {
       SWC_PRINT << "expect_empty_column err="
                 << err << "(" << Error::get_text(err) << ")"
@@ -208,7 +208,7 @@ class Test {
       DB::Specs::Column::make_ptr(schema->cid, {intval}));
 
     int err = Error::OK;
-    client::Query::Select::scan(err, hdlr, std::move(specs));
+    hdlr->scan(err, std::move(specs));
     SWC_ASSERT(!err);
 
     hdlr->wait();
@@ -384,7 +384,7 @@ class Test {
     intval.flags.limit = counter ? 1 : cell_versions;
     SWC_LOG(LOG_DEBUG, intval.to_string());
 
-    client::Query::Select::scan(hdlr, schema, std::move(intval));
+    hdlr->scan(schema, std::move(intval));
   }
 
 

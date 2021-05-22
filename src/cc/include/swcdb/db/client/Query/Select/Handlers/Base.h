@@ -8,7 +8,7 @@
 
 
 #include "swcdb/core/CompletionCounter.h"
-#include "swcdb/db/Cells/SpecsInterval.h"
+#include "swcdb/db/Cells/SpecsScan.h"
 #include "swcdb/db/client/Query/Profiling.h"
 #include "swcdb/db/client/Clients.h"
 
@@ -35,13 +35,16 @@ class Base : public std::enable_shared_from_this<Base>{
   Core::Atomic<uint32_t>            timeout;
   Core::Atomic<uint32_t>            buff_sz;
   Core::Atomic<uint8_t>             buff_ahead;
+  const Clients::Flag               executor;
 
-  Base(const Clients::Ptr& clients) noexcept
+  Base(const Clients::Ptr& clients,
+       Clients::Flag executor=Clients::DEFAULT) noexcept
       : clients(clients),
         state_error(Error::OK), completion(0),
         timeout(clients->cfg_recv_timeout->get()),
         buff_sz(clients->cfg_recv_buff_sz->get()),
-        buff_ahead(clients->cfg_recv_ahead->get()) {
+        buff_ahead(clients->cfg_recv_ahead->get()),
+        executor(executor) {
   }
 
   virtual bool valid() noexcept = 0;
@@ -66,9 +69,67 @@ class Base : public std::enable_shared_from_this<Base>{
     state_error.compare_exchange_weak(at, err);
   }
 
+  void scan(const DB::Schema::Ptr& schema,
+            const DB::Specs::Interval& intval) {
+    _execute(schema->col_seq, schema->cid, intval);
+  }
+
+  void scan(const DB::Schema::Ptr& schema,
+            DB::Specs::Interval&& intval) {
+    _execute(schema->col_seq, schema->cid, std::move(intval));
+  }
+
+  void scan(DB::Types::KeySeq key_seq, cid_t cid,
+            const DB::Specs::Interval& intval) {
+    _execute(key_seq, cid, intval);
+  }
+
+  void scan(DB::Types::KeySeq key_seq, cid_t cid,
+            DB::Specs::Interval&& intval) {
+    _execute(key_seq, cid, std::move(intval));
+  }
+
+  void scan(int& err, const DB::Specs::Scan& specs) {
+    _execute(err, specs);
+  }
+
+  void scan(int& err, DB::Specs::Scan&& specs) {
+    _execute(err, std::move(specs));
+  }
+
   protected:
 
+  virtual void _execute(DB::Types::KeySeq key_seq, cid_t cid,
+                        const DB::Specs::Interval& intval) {
+    default_executor(key_seq, cid, intval);
+  }
+
+  virtual void _execute(DB::Types::KeySeq key_seq, cid_t cid,
+                        DB::Specs::Interval&& intval) {
+    default_executor(key_seq, cid, std::move(intval));
+  }
+
+  virtual void _execute(int& err, const DB::Specs::Scan& specs) {
+    default_executor(err, specs);
+  }
+
+  virtual void _execute(int& err, DB::Specs::Scan&& specs) {
+    default_executor(err, std::move(specs));
+  }
+
   virtual ~Base() { }
+
+  private:
+
+  void default_executor(DB::Types::KeySeq key_seq, cid_t cid,
+                        const DB::Specs::Interval& intval);
+
+  void default_executor(DB::Types::KeySeq key_seq, cid_t cid,
+                        DB::Specs::Interval&& intval);
+
+  void default_executor(int& err, const DB::Specs::Scan& specs);
+
+  void default_executor(int& err, DB::Specs::Scan&& specs);
 
 };
 
@@ -76,10 +137,5 @@ class Base : public std::enable_shared_from_this<Base>{
 
 }}}}}
 
-/* if not only pure functions
-#ifdef SWC_IMPL_SOURCE
-#include "swcdb/db/client/Query/Select/Handlers/Base.cc"
-#endif
-*/
 
 #endif // swcdb_db_client_Query_Select_Handlers_Base_h

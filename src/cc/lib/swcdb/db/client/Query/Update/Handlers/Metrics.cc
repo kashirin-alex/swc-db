@@ -280,7 +280,8 @@ void Reporting::report() {
   }
 
   if(!m_defined) {
-    auto hdlr = client::Query::Update::Handlers::Common::make(clients);
+    auto hdlr = client::Query::Update::Handlers::Common::make(
+      clients, nullptr, io, executor);
     auto& col = hdlr->create(
       DB::Types::SystemColumn::SYS_CID_DEFINE_LEXIC,
       DB::Types::KeySeq::LEXIC, 1, 0, DB::Types::Column::SERIAL);

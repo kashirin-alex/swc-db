@@ -224,6 +224,7 @@ class Clients final {
 #include "swcdb/db/client/Clients.cc"
 #include "swcdb/db/client/Schemas.cc"
 #include "swcdb/db/client/Query/Update/Handlers/Base.cc"
+#include "swcdb/db/client/Query/Select/Handlers/Base.cc"
 #endif
 
 

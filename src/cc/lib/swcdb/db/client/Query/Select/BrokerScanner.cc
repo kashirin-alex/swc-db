@@ -30,7 +30,7 @@ BrokerScanner::BrokerScanner(const Handlers::Base::Ptr& hdlr,
 }
 
 void BrokerScanner::print(std::ostream& out) {
-  out << "BrokerScanner(cid" << cid << ' ';
+  out << "BrokerScanner(cid=" << cid << ' ';
   interval.print(out);
   out << " completion=" << selector->completion.count()
       << ')';
@@ -41,7 +41,6 @@ bool BrokerScanner::add_cells(StaticBuffer& buffer, bool reached_limit) {
 }
 
 void BrokerScanner::select() {
-  selector->completion.increment();
   Comm::Protocol::Bkr::Params::CellsSelectReq params(cid, interval);
   SWC_SCANNER_REQ_DEBUG("bkr_select");
   Comm::Protocol::Bkr::Req::Scanner_CellsSelect::request(
@@ -56,9 +55,10 @@ void BrokerScanner::selected(const ReqBase::Ptr& req,
       if(interval.flags.offset)
         interval.flags.offset = rsp.offset;
 
-      if(!rsp.data.size || add_cells(rsp.data, rsp.reached_limit))
-        if(rsp.reached_limit && selector->valid())
-          select();
+      if(!rsp.data.size || add_cells(rsp.data, rsp.more)) {
+        if(rsp.more && selector->valid())
+          return select();
+      }
       break;
     }
     default: {
@@ -69,7 +69,7 @@ void BrokerScanner::selected(const ReqBase::Ptr& req,
     }
   }
   if(selector->completion.is_last())
-    selector->response(Error::OK);
+    selector->response(rsp.err);
 }
 
 

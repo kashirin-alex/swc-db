@@ -63,7 +63,7 @@ jobs:
       run: |
         git clone --branch asio-1-18-1 https://github.com/chriskohlhoff/asio.git
         if [[ ${{ matrix.runs-on }} =~ ^ubuntu-* ]]; then
-          # sudo apt-get update -y
+          sudo apt-get update -y
           # sudo apt-get upgrade -y
           # CORE-PREREQUISITES
           sudo apt-get install -y \

@@ -18,6 +18,17 @@ namespace SWC { namespace client { namespace Query { namespace Select {
 class BrokerScanner : public std::enable_shared_from_this<BrokerScanner>  {
   public:
 
+  static void execute(const Handlers::Base::Ptr& hdlr,
+                      cid_t cid, const DB::Specs::Interval& intval) {
+    std::make_shared<BrokerScanner>(hdlr, intval, cid)->select();
+  }
+
+  static void execute(const Handlers::Base::Ptr& hdlr,
+                      cid_t cid, DB::Specs::Interval&& intval) {
+    std::make_shared<BrokerScanner>(hdlr, std::move(intval), cid)->select();
+  }
+
+
   typedef std::shared_ptr<BrokerScanner>  Ptr;
   Handlers::Base::Ptr                     selector;
   DB::Specs::Interval                     interval;
