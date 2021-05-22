@@ -64,11 +64,17 @@ class Selector final : public SWC::client::Query::Select::Handlers::Base {
   void response(int err) override {
     SWC::client::Query::Select::Handlers::Base::error(err);
 
-    profile.finished();
     if(!sent && !ev->expired() && conn->is_open()) {
       conn->send_response(
         Buffers::make(ev, Params::CellsSelectRsp(state_error, false)));
     }
+    profile.finished();
+
+    SWC_LOG_OUT(LOG_DEBUG,
+      profile.print(SWC_LOG_OSTREAM << "Select-");
+      Error::print(SWC_LOG_OSTREAM << ' ', state_error);
+    );
+
     Env::Bkr::in_process(-1);
   }
 };

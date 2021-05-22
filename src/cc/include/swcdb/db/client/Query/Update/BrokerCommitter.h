@@ -9,6 +9,8 @@
 
 
 #include "swcdb/db/client/Query/Update/Handlers/Base.h"
+#include "swcdb/db/Protocol/Bkr/params/CellsUpdate.h"
+
 
 
 namespace SWC { namespace client { namespace Query { namespace Update {
@@ -21,11 +23,14 @@ class BrokerCommitter final
 
   static void execute(const Handlers::Base::Ptr& hdlr,
                       Handlers::Base::Column* colp) {
-    std::make_shared<BrokerCommitter>(hdlr, colp)->run();
+    std::make_shared<BrokerCommitter>(hdlr, colp)->commit();
   }
 
-  Query::Update::Handlers::Base::Ptr     hdlr;
-  Query::Update::Handlers::Base::Column* colp;
+
+  typedef std::shared_ptr<BrokerCommitter>  Ptr;
+  Query::Update::Handlers::Base::Ptr        hdlr;
+  Query::Update::Handlers::Base::Column*    colp;
+  Core::CompletionCounter<>                 workload;
 
   BrokerCommitter(const Query::Update::Handlers::Base::Ptr& hdlr,
                   Query::Update::Handlers::Base::Column* colp) noexcept;
@@ -34,13 +39,11 @@ class BrokerCommitter final
 
   void print(std::ostream& out);
 
-  void run();
+  void commit();
 
-  private:
-
-  void commit_data();
-
-  Comm::EndPoints endpoints;
+  void committed(ReqBase::Ptr req,
+                 const Comm::Protocol::Bkr::Params::CellsUpdateRsp& rsp,
+                 const DynamicBuffer::Ptr& cells_buff);
 
 };
 
@@ -49,6 +52,7 @@ class BrokerCommitter final
 
 
 #ifdef SWC_IMPL_SOURCE
+#include "swcdb/db/Protocol/Bkr/req/Committer_CellsUpdate.cc"
 #include "swcdb/db/client/Query/Update/BrokerCommitter.cc"
 #endif
 

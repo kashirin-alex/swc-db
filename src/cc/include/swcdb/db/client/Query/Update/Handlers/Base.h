@@ -96,6 +96,8 @@ class Base : public std::enable_shared_from_this<Base> {
         buff_sz(clients->cfg_send_buff_sz->get()),
         buff_ahead(clients->cfg_send_ahead->get()),
         executor(executor) {
+    if(!timeout_ratio)
+      timeout_ratio.store(1000);
   }
 
   virtual bool valid() noexcept = 0;

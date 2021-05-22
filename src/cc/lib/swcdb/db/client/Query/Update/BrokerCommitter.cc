@@ -5,8 +5,7 @@
 
 
 #include "swcdb/db/client/Query/Update/BrokerCommitter.h"
-#include "swcdb/db/client/Clients.h"
-#include "swcdb/db/Protocol/Bkr/req/CellsUpdate.h"
+#include "swcdb/db/Protocol/Bkr/req/Committer_CellsUpdate.h"
 
 
 namespace SWC { namespace client { namespace Query { namespace Update {
@@ -15,9 +14,9 @@ namespace SWC { namespace client { namespace Query { namespace Update {
 
 #define SWC_BROKER_COMMIT_RSP_DEBUG(msg) \
   SWC_LOG_OUT(LOG_DEBUG, \
-    committer->print(SWC_LOG_OSTREAM << msg << ' '); \
+    print(SWC_LOG_OSTREAM << msg << ' '); \
     rsp.print(SWC_LOG_OSTREAM << ' '); \
-    SWC_LOG_OSTREAM << << " buff-sz=" << cells_buff->fill(); \
+    SWC_LOG_OSTREAM << " buff-sz=" << cells_buff->fill(); \
   );
 
 
@@ -31,79 +30,58 @@ BrokerCommitter::BrokerCommitter(
 void BrokerCommitter::print(std::ostream& out) {
   out << "BrokerCommitter(cid=" << colp->get_cid()
       << " completion=" << hdlr->completion.count()
-      << " endpoints=[";
-  for(auto& e : endpoints)
-    out << e << ',';
-  out << "])";
+      << ')';
 }
 
-void BrokerCommitter::run() {
+void BrokerCommitter::commit() {
   hdlr->completion.increment();
-  while((endpoints = hdlr->clients->brokers.get_endpoints()).empty()) {
-    SWC_LOG(LOG_ERROR, "Broker hosts cfg 'swc.bkr.host' is empty, waiting!");
-    std::this_thread::sleep_for(std::chrono::seconds(3));
-  }
-  if(hdlr->valid())
-    commit_data();
-  hdlr->response();
-}
+  if(!hdlr->valid())
+    return hdlr->response();
 
-void BrokerCommitter::commit_data() {
-  hdlr->completion.increment();
-
+  workload.increment();
   bool more = true;
   DynamicBuffer::Ptr cells_buff;
-  auto workload = std::make_shared<Core::CompletionCounter<>>(1);
 
   while(more && hdlr->valid() &&
         (cells_buff = colp->get_buff(hdlr->buff_sz, more))) {
-    workload->increment();
-
-    Comm::Protocol::Bkr::Req::CellsUpdate::request(
-      hdlr->clients, endpoints, colp->get_cid(), cells_buff,
-      [workload, cells_buff,
-       profile=hdlr->profile.rgr_data(), committer=shared_from_this()]
-      (ReqBase::Ptr req,
-       const Comm::Protocol::Bkr::Params::CellsUpdateRsp& rsp) {
-        profile.add(rsp.err);
-        switch(rsp.err) {
-
-          case Error::OK: {
-            SWC_BROKER_COMMIT_RSP_DEBUG("bkr_commit");
-            if(workload->is_last())
-              committer->hdlr->response();
-            return;
-          }
-
-          case Error::REQUEST_TIMEOUT: {
-            SWC_BROKER_COMMIT_RSP_DEBUG("bkr_commit RETRYING");
-            if(committer->hdlr->valid())
-              return req->request_again();
-            [[fallthrough]];
-          }
-
-          default: {
-            committer->hdlr->add_resend_count(
-              committer->colp->add(*cells_buff.get())
-            );
-            if(workload->is_last()) {
-              SWC_BROKER_COMMIT_RSP_DEBUG("bkr_commit RETRYING");
-              committer->run();
-              committer->hdlr->response();
-            }
-            return;
-          }
-
-        }
-      },
-
-      hdlr->timeout + cells_buff->fill()/hdlr->timeout_ratio
-    );
-
+    workload.increment();
+    Comm::Protocol::Bkr::Req::Committer_CellsUpdate::request(
+      shared_from_this(), cells_buff);
   }
 
-  if(workload->is_last())
+  if(workload.is_last())
     hdlr->response();
+}
+
+void BrokerCommitter::committed(
+                ReqBase::Ptr req,
+                const Comm::Protocol::Bkr::Params::CellsUpdateRsp& rsp,
+                const DynamicBuffer::Ptr& cells_buff) {
+  switch(rsp.err) {
+    case Error::OK: {
+      SWC_BROKER_COMMIT_RSP_DEBUG("bkr_commit");
+      if(workload.is_last())
+        hdlr->response();
+      return;
+    }
+
+    case Error::REQUEST_TIMEOUT: {
+      SWC_BROKER_COMMIT_RSP_DEBUG("bkr_commit RETRYING");
+      if(hdlr->valid())
+        return req->request_again();
+      [[fallthrough]];
+    }
+
+    default: {
+      hdlr->add_resend_count(colp->add(*cells_buff.get()));
+      if(workload.is_last()) {
+        SWC_BROKER_COMMIT_RSP_DEBUG("bkr_commit RETRYING");
+        commit();
+        hdlr->response();
+      }
+      return;
+    }
+  }
 }
 
 

@@ -75,6 +75,7 @@ set(swcdb_sources
 
   Protocol/Bkr/params/CellsUpdate.cc
   Protocol/Bkr/req/CellsUpdate.cc
+  Protocol/Bkr/req/Committer_CellsUpdate.cc
   Protocol/Bkr/params/CellsSelect.cc
   Protocol/Bkr/req/Scanner_CellsSelect.cc
 

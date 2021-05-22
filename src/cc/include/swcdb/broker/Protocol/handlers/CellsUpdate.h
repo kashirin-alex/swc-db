@@ -61,13 +61,14 @@ class Updater final
       conn->send_response(
         Buffers::make(ev, Params::CellsUpdateRsp(error())));
     }
-
     profile.finished();
-    SWC_LOG_OUT(LOG_INFO,
-      SWC_LOG_OSTREAM << "Column(" << column.cid << ") ";
-      Error::print(SWC_LOG_OSTREAM, err);
+
+    SWC_LOG_OUT(LOG_DEBUG,
+      SWC_LOG_OSTREAM << "Column(" << column.cid << ")";
       profile.print(SWC_LOG_OSTREAM << " Update-");
+      Error::print(SWC_LOG_OSTREAM << ' ', error());
     );
+
     Env::Bkr::in_process(-1);
   }
 
