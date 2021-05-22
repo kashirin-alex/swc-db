@@ -312,19 +312,18 @@ bool Mutable::write_and_free(DynamicBuffer& cells, uint32_t threshold) {
   cells.ensure(_bytes < threshold? _bytes: threshold);
 
   size_t count = 0;
-  auto it = Iterator(&buckets);
-  for(Cell* cell; it && (!threshold || threshold > cells.fill()); ++it) {
-    cell = *it.item;
+  Iterator it_start = Iterator(&buckets);
+  for(auto it=it_start; it && (!threshold || threshold>cells.fill()); ++it) {
     ++count;
-    if(!cell->has_expired(ttl))
-      cell->write(cells);
+    if(!(*it.item)->has_expired(ttl))
+      (*it.item)->write(cells);
   }
   if(count) {
     if(count == _size) {
       free();
     } else {
-      _remove(it, count);
-      return it;
+      _remove(it_start, count);
+      return it_start;
     }
   }
   return false;

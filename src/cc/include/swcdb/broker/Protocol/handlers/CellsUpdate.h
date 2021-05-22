@@ -57,12 +57,17 @@ class Updater final
     else if(!empty())
       error(Error::CLIENT_DATA_REMAINED);
 
-    profile.finished();
-
     if(!ev->expired() && conn->is_open()) {
       conn->send_response(
         Buffers::make(ev, Params::CellsUpdateRsp(error())));
     }
+
+    profile.finished();
+    SWC_LOG_OUT(LOG_INFO,
+      SWC_LOG_OSTREAM << "Column(" << column.cid << ") ";
+      Error::print(SWC_LOG_OSTREAM, err);
+      profile.print(SWC_LOG_OSTREAM << " Update-");
+    );
     Env::Bkr::in_process(-1);
   }
 

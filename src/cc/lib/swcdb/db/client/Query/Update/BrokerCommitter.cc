@@ -17,6 +17,7 @@ namespace SWC { namespace client { namespace Query { namespace Update {
   SWC_LOG_OUT(LOG_DEBUG, \
     committer->print(SWC_LOG_OSTREAM << msg << ' '); \
     rsp.print(SWC_LOG_OSTREAM << ' '); \
+    SWC_LOG_OSTREAM << << " buff-sz=" << cells_buff->fill(); \
   );
 
 
@@ -28,7 +29,8 @@ BrokerCommitter::BrokerCommitter(
 }
 
 void BrokerCommitter::print(std::ostream& out) {
-  out << "BrokerCommitter(completion=" << hdlr->completion.count()
+  out << "BrokerCommitter(cid=" << colp->get_cid()
+      << " completion=" << hdlr->completion.count()
       << " endpoints=[";
   for(auto& e : endpoints)
     out << e << ',';
