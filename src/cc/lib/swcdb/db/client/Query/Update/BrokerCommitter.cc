@@ -66,17 +66,20 @@ void BrokerCommitter::committed(
     }
 
     case Error::REQUEST_TIMEOUT: {
-      SWC_BROKER_COMMIT_RSP_DEBUG("bkr_commit RETRYING");
-      if(hdlr->valid())
+      if(hdlr->valid()) {
+        SWC_BROKER_COMMIT_RSP_DEBUG("bkr_commit RETRYING");
         return req->request_again();
+      }
       [[fallthrough]];
     }
 
     default: {
       hdlr->add_resend_count(colp->add(*cells_buff.get()));
       if(workload.is_last()) {
-        SWC_BROKER_COMMIT_RSP_DEBUG("bkr_commit RETRYING");
-        commit();
+        if(hdlr->valid()) {
+          SWC_BROKER_COMMIT_RSP_DEBUG("bkr_commit RETRYING");
+          commit();
+        }
         hdlr->response();
       }
       return;

@@ -19,11 +19,13 @@ Scanner_CellsSelect::Scanner_CellsSelect(
             false,
             Buffers::make(params, 0, CELLS_SELECT, scanner->selector->timeout)
           ),
-          scanner(scanner) {
+          scanner(scanner),
+          profile(scanner->selector->profile.bkr()) {
 }
 
 void Scanner_CellsSelect::handle_no_conn() {
   Params::CellsSelectRsp rsp(Error::COMM_NOT_CONNECTED);
+  profile.add(rsp.err);
   scanner->selected(req(), rsp);
 }
 
@@ -62,6 +64,7 @@ void Scanner_CellsSelect::handle(ConnHandlerPtr,
       rsp_params.err = e.code();
     }
   }
+  profile.add(rsp_params.err);
   scanner->selected(req(), rsp_params);
 }
 

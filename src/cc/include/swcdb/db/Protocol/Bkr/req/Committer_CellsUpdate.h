@@ -27,6 +27,7 @@ class Committer_CellsUpdate: public client::ConnQueue::ReqBase {
   typedef std::shared_ptr<Committer_CellsUpdate>    Ptr;
   SWC::client::Query::Update::BrokerCommitter::Ptr  committer;
   DynamicBuffer::Ptr                                buffer;
+  SWC::client::Query::Profiling::Component::Start   profile;
 
   Committer_CellsUpdate(
         const SWC::client::Query::Update::BrokerCommitter::Ptr& committer,

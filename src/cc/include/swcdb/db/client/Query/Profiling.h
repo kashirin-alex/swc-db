@@ -109,6 +109,7 @@ struct Profiling {
   Component _rgr_locate_master;
   Component _rgr_locate_meta;
   Component _rgr_data;
+  Component _bkr;
 
   void finished() noexcept {
     ts_finish.store(Time::now_ns());
@@ -135,12 +136,17 @@ struct Profiling {
     return Component::Start(_rgr_data);
   }
 
+  Component::Start bkr() noexcept {
+    return Component::Start(_bkr);
+  }
+
   Profiling& operator+=(const Profiling& other) noexcept {
     _mngr_locate += other._mngr_locate;
     _mngr_res += other._mngr_res;
     _rgr_locate_master += other._rgr_locate_master;
     _rgr_locate_meta += other._rgr_locate_meta;
     _rgr_data += other._rgr_data;
+    _bkr += other._bkr;
     return *this;
   }
 
@@ -150,32 +156,58 @@ struct Profiling {
     _rgr_locate_master.reset();
     _rgr_locate_meta.reset();
     _rgr_data.reset();
+    _bkr.reset();
     ts_start.store(Time::now_ns());
     ts_finish.store(ts_start);
   }
 
   void display(std::ostream& out) const {
-    _mngr_locate.display(
-      out << " Mngr Locate:            ");
-    _mngr_res.display(
-      out << " Mngr Resolve:           ");
-    _rgr_locate_master.display(
-      out << " Rgr Locate Master:      ");
-    _rgr_locate_meta.display(
-      out << " Rgr Locate Meta:        ");
-    _rgr_data.display(
-      out << " Rgr Data:               ");
+    if(_mngr_locate.time)
+      _mngr_locate.display(
+        out << " Mngr Locate:            ");
+    if(_mngr_res.time)
+      _mngr_res.display(
+        out << " Mngr Resolve:           ");
+    if(_rgr_locate_master.time)
+      _rgr_locate_master.display(
+        out << " Rgr Locate Master:      ");
+    if(_rgr_locate_meta.time)
+      _rgr_locate_meta.display(
+        out << " Rgr Locate Meta:        ");
+    if(_rgr_data.time)
+      _rgr_data.display(
+        out << " Rgr Data:               ");
+    if(_bkr.time)
+      _bkr.display(
+        out << " Bkr:                    ");
     out  << std::flush;
   }
 
   void print(std::ostream& out) const {
     out << "Profile(took=" << (ts_finish - ts_start) << "ns";
-    _mngr_locate.print(out << " mngr[locate");
-    _mngr_res.print(out << " res");
-    _rgr_locate_master.print(out << "] rgr[locate-master");
-    _rgr_locate_meta.print(out << " locate-meta");
-    _rgr_data.print(out << " data");
-    out << "])";
+    if(_mngr_locate.time || _mngr_res.time) {
+      out << " mngr[";
+      if(_mngr_locate.time)
+        _mngr_locate.print(out << "locate");
+      if(_mngr_res.time)
+        _mngr_res.print(out << " res");
+      out << ']';
+    }
+    if(_rgr_locate_master.time || _rgr_locate_meta.time || _rgr_data.time) {
+      out << " rgr[";
+      if(_rgr_locate_master.time)
+        _rgr_locate_master.print(out << "locate-master");
+      if(_rgr_locate_meta.time)
+        _rgr_locate_meta.print(out << " locate-meta");
+      if(_rgr_data.time)
+        _rgr_data.print(out << " data");
+      out << ']';
+    }
+    if(_bkr.time) {
+      _bkr.print(out << " bkr[");
+      out << ']';
+    }
+    out << ')';
   }
 
   std::string to_string() const {

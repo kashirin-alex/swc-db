@@ -26,6 +26,7 @@ class Scanner_CellsSelect: public client::ConnQueue::ReqBase {
 
   typedef std::shared_ptr<Scanner_CellsSelect>    Ptr;
   SWC::client::Query::Select::BrokerScanner::Ptr  scanner;
+  SWC::client::Query::Profiling::Component::Start profile;
 
   Scanner_CellsSelect(
         const SWC::client::Query::Select::BrokerScanner::Ptr& scanner,

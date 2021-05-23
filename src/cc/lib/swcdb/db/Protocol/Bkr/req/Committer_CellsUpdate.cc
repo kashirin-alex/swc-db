@@ -18,7 +18,8 @@ Committer_CellsUpdate::Committer_CellsUpdate(
         const SWC::client::Query::Update::BrokerCommitter::Ptr& committer,
         const DynamicBuffer::Ptr& buffer)
         : client::ConnQueue::ReqBase(false),
-          committer(committer), buffer(buffer) {
+          committer(committer), buffer(buffer),
+          profile(committer->hdlr->profile.bkr()) {
   StaticBuffer snd_buf(buffer->base, buffer->fill(), false);
   cbp = Buffers::make(
     Params::CellsUpdateReq(committer->colp->get_cid()),
@@ -28,8 +29,9 @@ Committer_CellsUpdate::Committer_CellsUpdate(
 }
 
 void Committer_CellsUpdate::handle_no_conn() {
-  committer->committed(
-    req(), Params::CellsUpdateRsp(Error::COMM_NOT_CONNECTED), buffer);
+  Params::CellsUpdateRsp rsp(Error::COMM_NOT_CONNECTED);
+  profile.add(rsp.err);
+  committer->committed(req(), rsp, buffer);
 }
 
 bool Committer_CellsUpdate::run() {
@@ -66,7 +68,7 @@ void Committer_CellsUpdate::handle(ConnHandlerPtr, const Event::Ptr& ev) {
       rsp_params.err = e.code();
     }
   }
-
+  profile.add(rsp_params.err);
   committer->committed(req(), rsp_params, buffer);
 }
 
