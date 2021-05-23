@@ -19,7 +19,7 @@ Committer_CellsUpdate::Committer_CellsUpdate(
         const DynamicBuffer::Ptr& buffer)
         : client::ConnQueue::ReqBase(false),
           committer(committer), buffer(buffer),
-          profile(committer->hdlr->profile.bkr()) {
+          profile(committer->hdlr->profile.bkr()), bkr_idx(0) {
   StaticBuffer snd_buf(buffer->base, buffer->fill(), false);
   cbp = Buffers::make(
     Params::CellsUpdateReq(committer->colp->get_cid()),
@@ -29,16 +29,24 @@ Committer_CellsUpdate::Committer_CellsUpdate(
 }
 
 void Committer_CellsUpdate::handle_no_conn() {
+  if(committer->hdlr->valid()) {
+    if(bkr_idx) {
+      run();
+      ++bkr_idx;
+      return;
+    }
+    ++bkr_idx;
+  }
   Params::CellsUpdateRsp rsp(Error::COMM_NOT_CONNECTED);
   profile.add(rsp.err);
   committer->committed(req(), rsp, buffer);
 }
 
 bool Committer_CellsUpdate::run() {
-  auto& hdlr = committer->hdlr;
+  auto& clients = committer->hdlr->clients;
   EndPoints endpoints;
-  while(hdlr->valid() &&
-        (endpoints = hdlr->clients->brokers.get_endpoints()).empty()) {
+  while(committer->hdlr->valid() &&
+        (endpoints = clients->brokers.get_endpoints(bkr_idx)).empty()) {
     SWC_LOG(LOG_ERROR,
       "Broker hosts cfg 'swc.bkr.host' is empty, waiting!");
     std::this_thread::sleep_for(std::chrono::seconds(3));
@@ -47,7 +55,7 @@ bool Committer_CellsUpdate::run() {
     handle_no_conn();
     return false;
   }
-  hdlr->clients->get_bkr_queue(endpoints)->put(req());
+  clients->get_bkr_queue(endpoints)->put(req());
   return true;
 }
 

@@ -19,7 +19,7 @@ void Settings::init_client_options() {
      "Manager default port if not defined in swc.mngr.host")
     ("swc.rgr.port", i16(16000), "Ranger port")
 
-    ("swc.bkr.host", g_strs(Strings({"localhost"})),
+    ("swc.bkr.host", g_strs(Strings()),
      "Broker Host: \"(hostname or ips-csv)|port\"")
     ("swc.bkr.port", i16(17000), "Broker port")
 

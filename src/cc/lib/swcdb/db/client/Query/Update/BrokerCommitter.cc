@@ -65,6 +65,7 @@ void BrokerCommitter::committed(
       return;
     }
 
+    case Error::COMM_NOT_CONNECTED:
     case Error::REQUEST_TIMEOUT: {
       if(hdlr->valid()) {
         SWC_BROKER_COMMIT_RSP_DEBUG("bkr_commit RETRYING");

@@ -82,7 +82,7 @@ Multiple ```swc.mngr.host``` require aligment of Role/s and the Column-Intervals
 ```G_STRINGS```
 The Broker Host/s. Client will try to establish connection and proceed with the Broker hosts available by the order specified. \
 Value in format ```{ENDPOINTS}```|```PORT```, if PORT not specified ```swc.bkr.port``` is applied, ENDPOINTS a FQDN or comma-separated IPs as ```IPv4,IPv4,IPv6```.\
-_default_ **```swc.bkr.host=localhost|17000```**
+_default_ **```swc.bkr.host=```**
 
 * ### swc.client.Bkr.connection.timeout
 ```G_INT32```

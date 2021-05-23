@@ -40,6 +40,8 @@ class Scanner_CellsSelect: public client::ConnQueue::ReqBase {
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override;
 
+  private:
+  size_t bkr_idx;
 };
 
 

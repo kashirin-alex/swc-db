@@ -91,7 +91,7 @@ class Clients : public std::enable_shared_from_this<Clients>{
   }
 
   bool has_brokers() noexcept {
-    return bool(brokers.queues) && brokers.has_endpoints();
+    return bool(brokers.queues);
   }
 
   DB::Schema::Ptr get_schema(int& err, cid_t cid) {

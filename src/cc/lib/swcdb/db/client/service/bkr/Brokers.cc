@@ -36,18 +36,22 @@ Brokers::Brokers(const Config::Settings& settings,
 void Brokers::on_cfg_update() noexcept {
   try {
     Config::Strings hosts(cfg_hosts->get());
-    if(hosts.empty())
+    if(hosts.empty()) {
+      set({});
       return;
-    Comm::EndPoints endpoints;
-    endpoints.reserve(hosts.size());
+    }
+    BrokersEndPoints _brokers;
+    _brokers.reserve(hosts.size());
 
     uint16_t port;
     size_t at;
     for(auto& host_str : hosts) {
+      if(host_str.empty())
+        continue;
       if((at = host_str.find_first_of('|')) == std::string::npos) {
         port = cfg_port;
       } else {
-        Config::Property::from_string(host_str.substr(++at), &port);
+        Config::Property::from_string(host_str.substr(at + 1), &port);
         host_str = host_str.substr(0, at);
       }
       std::vector<std::string> ips;
@@ -68,27 +72,45 @@ void Brokers::on_cfg_update() noexcept {
 
       auto tmp = Comm::Resolver::get_endpoints(port, ips, host, {});
       if(!tmp.empty())
-        endpoints.insert(endpoints.end(), tmp.begin(), tmp.end());
+        _brokers.emplace_back(std::move(tmp));
     }
 
-    if(endpoints.empty())
-      return;
+    SWC_LOG_OUT(LOG_DEBUG,
+      SWC_LOG_OSTREAM << "Broker Hosts (size=" << _brokers.size() << "): ";
+      for(size_t n=0; n<_brokers.size(); ++n) {
+        SWC_LOG_OSTREAM  << "\n  " << n << ": ";
+        for(auto& e : _brokers[n])
+          SWC_LOG_OSTREAM  << e << ',';
+      }
+    );
+    set(_brokers);
 
-    Core::MutexSptd::scope lock(m_mutex);
-    m_endpoints = std::move(endpoints);
   } catch(...) {
     SWC_LOG_CURRENT_EXCEPTION("");
   }
+
 }
 
-Comm::EndPoints Brokers::get_endpoints() {
+Comm::EndPoints Brokers::get_endpoints(size_t& idx) {
   Core::MutexSptd::scope lock(m_mutex);
-  return m_endpoints;
+  return m_brokers.empty()
+    ? Comm::EndPoints()
+    : idx < m_brokers.size() ? m_brokers[idx] : m_brokers[(idx=0)];
 }
 
 bool Brokers::has_endpoints() noexcept {
   Core::MutexSptd::scope lock(m_mutex);
-  return !m_endpoints.empty();
+  return !m_brokers.empty() && !m_brokers.front().empty();
+}
+
+void Brokers::set(BrokersEndPoints&& _brokers) {
+  Core::MutexSptd::scope lock(m_mutex);
+  m_brokers = std::move(_brokers);
+}
+
+void Brokers::set(const BrokersEndPoints& _brokers) {
+  Core::MutexSptd::scope lock(m_mutex);
+  m_brokers = _brokers;
 }
 
 

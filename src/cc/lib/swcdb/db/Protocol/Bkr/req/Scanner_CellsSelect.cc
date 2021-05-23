@@ -20,20 +20,28 @@ Scanner_CellsSelect::Scanner_CellsSelect(
             Buffers::make(params, 0, CELLS_SELECT, scanner->selector->timeout)
           ),
           scanner(scanner),
-          profile(scanner->selector->profile.bkr()) {
+          profile(scanner->selector->profile.bkr()), bkr_idx(0) {
 }
 
 void Scanner_CellsSelect::handle_no_conn() {
+  if(scanner->selector->valid()) {
+    if(bkr_idx) {
+      run();
+      ++bkr_idx;
+      return;
+    }
+    ++bkr_idx;
+  }
   Params::CellsSelectRsp rsp(Error::COMM_NOT_CONNECTED);
   profile.add(rsp.err);
   scanner->selected(req(), rsp);
 }
 
 bool Scanner_CellsSelect::run() {
-  auto& selector = scanner->selector;
+  auto& clients = scanner->selector->clients;
   EndPoints endpoints;
-  while(selector->valid() &&
-        (endpoints = selector->clients->brokers.get_endpoints()).empty()) {
+  while(scanner->selector->valid() &&
+        (endpoints = clients->brokers.get_endpoints(bkr_idx)).empty()) {
     SWC_LOG(LOG_ERROR,
       "Broker hosts cfg 'swc.bkr.host' is empty, waiting!");
     std::this_thread::sleep_for(std::chrono::seconds(3));
@@ -42,7 +50,7 @@ bool Scanner_CellsSelect::run() {
     handle_no_conn();
     return false;
   }
-  selector->clients->get_bkr_queue(endpoints)->put(req());
+  clients->get_bkr_queue(endpoints)->put(req());
   return true;
 }
 
