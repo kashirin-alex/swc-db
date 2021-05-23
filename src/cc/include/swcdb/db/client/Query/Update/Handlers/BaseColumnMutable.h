@@ -22,7 +22,7 @@ class ColumnMutable : public Base::Column {
   typedef std::shared_ptr<ColumnMutable>     Ptr;
 
   Core::Atomic<int> state_error;
-  const cid_t       cid;
+  cid_t             cid;
 
   ColumnMutable(const cid_t cid, DB::Types::KeySeq seq,
                 uint32_t versions, uint32_t ttl_secs,

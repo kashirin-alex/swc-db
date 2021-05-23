@@ -6,7 +6,6 @@
 
 #include "swcdb/db/client/Clients.h"
 #include "swcdb/db/client/Query/Update/Committer.h"
-#include "swcdb/db/client/Query/Update/Handlers/Common.h"
 #include "swcdb/db/client/Query/Update/Handlers/Metrics.h"
 
 
@@ -200,12 +199,12 @@ Reporting::Reporting(const Clients::Ptr& clients,
                      Config::Property::V_GINT32::Ptr cfg_intval)
             : BaseSingleColumn(
                 clients,
-                DB::Types::SystemColumn::SYS_CID_STATS,
+                DB::Types::SystemColumn::SYS_CID_DEFINE_LEXIC,
                 DB::Types::KeySeq::LEXIC, 1, 0, DB::Types::Column::SERIAL,
                 clients->has_brokers() ? Clients::BROKER : Clients::DEFAULT),
               io(io),
               cfg_intval(cfg_intval),
-              running(false), m_defined(false),
+              running(false),
               m_timer(io->executor()) {
 }
 
@@ -256,18 +255,23 @@ void Reporting::response(int err) {
   else if(!empty())
     error(Error::CLIENT_DATA_REMAINED);
 
+  profile.finished();
+
   if(error() || column.error()) {
     SWC_LOG_OUT(LOG_WARN,
-      SWC_LOG_OSTREAM << "Problem Updating Statistics";
+      SWC_LOG_OSTREAM << "Problem Updating Statistics cid=" << column.cid;
       Error::print(SWC_LOG_OSTREAM << " hdlr=", error());
       Error::print(SWC_LOG_OSTREAM << " colm=", column.error());
     );
     // reset-state
     column.state_error.store(Error::OK);
     state_error.store(Error::OK);
+  } else if(column.cid == DB::Types::SystemColumn::SYS_CID_DEFINE_LEXIC) {
+    column.cid = DB::Types::SystemColumn::SYS_CID_STATS;
+    report();
+    return;
   }
 
-  profile.finished();
   schedule();
 }
 
@@ -278,36 +282,19 @@ void Reporting::report() {
       m->reset();
     return schedule();
   }
-
-  if(!m_defined) {
-    auto hdlr = client::Query::Update::Handlers::Common::make(
-      clients, nullptr, io, executor);
-    auto& col = hdlr->create(
-      DB::Types::SystemColumn::SYS_CID_DEFINE_LEXIC,
-      DB::Types::KeySeq::LEXIC, 1, 0, DB::Types::Column::SERIAL);
-
-    DB::Cell::KeyVec key;
-    key.add(std::to_string(DB::Types::SystemColumn::SYS_CID_STATS));
-    for(auto& m : metrics)
-      m->definitions(col.get(), key);
-
-    hdlr->commit(col.get());
-    hdlr->wait();
-    if(!hdlr->error()) {
-      m_defined = true;
-    } else {
-      SWC_LOG_OUT(LOG_WARN,
-        SWC_LOG_OSTREAM << "Problem Updating Definitions";
-        Error::print(SWC_LOG_OSTREAM << " hdlr=", hdlr->error());
-      );
-    }
-  }
+  if(!running)
+    return;
 
   DB::Cell::KeyVec key;
-  uint64_t for_ns = apply_time(intval, key);
-  for(auto& m : metrics)
-    m->report(for_ns, &column, key);
-
+  if(column.cid == DB::Types::SystemColumn::SYS_CID_DEFINE_LEXIC) {
+    key.add(std::to_string(DB::Types::SystemColumn::SYS_CID_STATS));
+    for(auto& m : metrics)
+      m->definitions(&column, key);
+  } else {
+    uint64_t for_ns = apply_time(intval, key);
+    for(auto& m : metrics)
+      m->report(for_ns, &column, key);
+  }
   profile.reset();
 
   column.empty() ? schedule() : commit(&column);

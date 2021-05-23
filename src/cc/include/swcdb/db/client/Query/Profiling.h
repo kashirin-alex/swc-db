@@ -203,10 +203,8 @@ struct Profiling {
         _rgr_data.print(out << " data");
       out << ']';
     }
-    if(_bkr.time) {
-      _bkr.print(out << " bkr[");
-      out << ']';
-    }
+    if(_bkr.time)
+      _bkr.print(out << " bkr");
     out << ')';
   }
 
