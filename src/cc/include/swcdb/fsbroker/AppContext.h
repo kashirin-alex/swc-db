@@ -87,12 +87,18 @@ class AppContext final : public Comm::AppContext {
 
     if(settings->get_bool("swc.FsBroker.metrics.enabled")) {
       Env::Clients::init(
-        std::make_shared<client::Clients>(
-          *settings,
-          Env::IoCtx::io(),
-          std::make_shared<client::ContextManager>(*settings),
-          std::make_shared<client::ContextRanger>(*settings)
-          /*std::make_shared<client::ContextBroker>(*settings)*/
+        (settings->get_bool("swc.FsBroker.metrics.report.broker")
+          ? std::make_shared<client::Clients>(
+              *settings,
+              Env::IoCtx::io(),
+              std::make_shared<client::ContextBroker>(*settings)
+            )
+          : std::make_shared<client::Clients>(
+              *settings,
+              Env::IoCtx::io(),
+              std::make_shared<client::ContextManager>(*settings),
+              std::make_shared<client::ContextRanger>(*settings)
+            )
         )->init()
       );
     }

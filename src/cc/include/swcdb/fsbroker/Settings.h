@@ -40,6 +40,8 @@ void Settings::init_app_options() {
 
     ("swc.FsBroker.metrics.enabled", boo(true),
      "Enable or Disable Metrics Monitoring")
+    ("swc.FsBroker.metrics.report.broker", boo(true),
+     "Report Metrics via Broker Client")
     ("swc.FsBroker.metrics.report.interval", g_i32(300),
      "Metrics Reporting Interval in Seconds")
 

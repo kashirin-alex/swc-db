@@ -237,7 +237,8 @@ class Reporting : public BaseSingleColumn {
 
   Reporting(const Clients::Ptr& clients,
             const Comm::IoContextPtr& io,
-            Config::Property::V_GINT32::Ptr cfg_intval);
+            Config::Property::V_GINT32::Ptr cfg_intval,
+            Clients::Flag executor=client::Clients::DEFAULT);
 
   virtual ~Reporting() { }
 

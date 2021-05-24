@@ -33,6 +33,11 @@ _default_ **```swc.FsBroker.handlers=8```**
 Enable or Disable FsBroker Metrics Monitoring. \
 _default_ **```swc.FsBroker.metrics.enabled=true```**
 
+* ### swc.FsBroker.metrics.report.broker
+```BOOL```
+Report Metrics via Broker Client. \
+_default_ **```swc.FsBroker.metrics.report.broker=true```**
+
 * ### swc.fs.broker.host
 ```STRING```
 The FsBroker host (default resolve by hostname). \

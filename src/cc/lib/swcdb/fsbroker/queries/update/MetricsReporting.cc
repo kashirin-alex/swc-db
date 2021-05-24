@@ -42,10 +42,18 @@ class Item_Fds : public Item_CountVolume {
 
 
 
-Reporting::Reporting(const Comm::IoContextPtr& io,
-                     Config::Property::V_GINT32::Ptr cfg_intval)
+Reporting::Reporting()
           : Common::Query::Update::Metric::Reporting(
-              Env::Clients::get(), io, cfg_intval),
+              Env::Clients::get(),
+              Env::IoCtx::io(),
+              Env::Config::settings()
+                ->get<Config::Property::V_GINT32>(
+                  "swc.FsBroker.metrics.report.interval"),
+              Env::Config::settings()->get_bool(
+                "swc.FsBroker.metrics.report.broker")
+                ? client::Clients::BROKER
+                : client::Clients::DEFAULT
+            ),
             net(nullptr), fds(new Item_Fds()) {
 }
 

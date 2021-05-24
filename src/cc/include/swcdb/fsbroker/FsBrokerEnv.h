@@ -106,11 +106,7 @@ class FsBroker final {
       cfg_ram_release_rate(100, nullptr),
       _reporting(
         SWC::Env::Config::settings()->get_bool("swc.FsBroker.metrics.enabled")
-          ? std::make_shared<SWC::FsBroker::Metric::Reporting>(
-              Env::IoCtx::io(),
-              SWC::Env::Config::settings()
-                ->get<SWC::Config::Property::V_GINT32>(
-                  "swc.FsBroker.metrics.report.interval"))
+          ? std::make_shared<SWC::FsBroker::Metric::Reporting>()
           : nullptr
       ),
       _resources(

@@ -845,9 +845,10 @@ class Reporting : public client::Query::Update::Handlers::Metric::Reporting {
 
   Reporting(const SWC::client::Clients::Ptr& clients,
             const Comm::IoContextPtr& io,
-            Config::Property::V_GINT32::Ptr cfg_intval)
+            Config::Property::V_GINT32::Ptr cfg_intval,
+            client::Clients::Flag executor=client::Clients::DEFAULT)
       : client::Query::Update::Handlers::Metric::Reporting(
-          clients, io, cfg_intval),
+          clients, io, cfg_intval, executor),
         system(this), cpu(nullptr), mem(nullptr) {
   }
 

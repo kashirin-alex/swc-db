@@ -196,12 +196,14 @@ void Item_CountVolume::report(uint64_t for_ns, Handlers::Base::Column* colp,
 
 Reporting::Reporting(const Clients::Ptr& clients,
                      const Comm::IoContextPtr& io,
-                     Config::Property::V_GINT32::Ptr cfg_intval)
+                     Config::Property::V_GINT32::Ptr cfg_intval,
+                     Clients::Flag executor)
             : BaseSingleColumn(
                 clients,
                 DB::Types::SystemColumn::SYS_CID_DEFINE_LEXIC,
                 DB::Types::KeySeq::LEXIC, 1, 0, DB::Types::Column::SERIAL,
-                clients->has_brokers() ? Clients::BROKER : Clients::DEFAULT),
+                executor
+              ),
               io(io),
               cfg_intval(cfg_intval),
               running(false),
