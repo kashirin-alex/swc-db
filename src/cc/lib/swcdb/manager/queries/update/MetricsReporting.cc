@@ -10,10 +10,16 @@
 namespace SWC { namespace Manager { namespace Metric {
 
 
-Reporting::Reporting(const Comm::IoContextPtr& io,
-                     Config::Property::V_GINT32::Ptr cfg_intval)
+Reporting::Reporting(const Comm::IoContextPtr& io)
         : Common::Query::Update::Metric::Reporting(
-            Env::Clients::get(), io, cfg_intval),
+            Env::Clients::get(),
+            io,
+            Env::Config::settings()->get<Config::Property::V_GINT32>(
+              "swc.mngr.metrics.report.interval"),
+            Env::Config::settings()->get_bool(
+              "swc.mngr.metrics.report.broker")
+              ? client::Clients::BROKER : client::Clients::DEFAULT
+          ),
           net(nullptr) {
 }
 

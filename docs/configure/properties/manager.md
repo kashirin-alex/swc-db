@@ -38,6 +38,11 @@ _default_ **```swc.mngr.clients.handlers=8```**
 Enable or Disable Manager Metrics Monitoring. \
 _default_ **```swc.mngr.metrics.enabled=true```**
 
+* ### swc.mngr.metrics.report.broker
+```BOOL```
+Report Metrics via Broker Client. \
+_default_ **```swc.mngr.metrics.report.broker=true```**
+
 
 ***
 

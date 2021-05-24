@@ -88,11 +88,7 @@ class Mngr final {
         cfg_ram_release_rate(100, nullptr),
         _reporting(
           SWC::Env::Config::settings()->get_bool("swc.mngr.metrics.enabled")
-            ? std::make_shared<Manager::Metric::Reporting>(
-                app_io,
-                SWC::Env::Config::settings()
-                  ->get<SWC::Config::Property::V_GINT32>(
-                    "swc.mngr.metrics.report.interval"))
+            ? std::make_shared<Manager::Metric::Reporting>(app_io)
             : nullptr
         ),
         _resources(
