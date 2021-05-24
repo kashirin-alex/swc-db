@@ -50,7 +50,8 @@ void Settings::init_app_options(){
 
     ("swc.rgr.metrics.enabled", boo(true),
      "Enable or Disable Metrics Monitoring")
-
+    ("swc.rgr.metrics.report.broker", boo(true),
+     "Report Metrics via Broker Client")
     ("swc.rgr.metrics.report.interval", g_i32(300),
      "Metrics Reporting Interval in Seconds")
 

@@ -45,6 +45,11 @@ _default_ **```swc.rgr.clients.handlers=8```**
 Enable or Disable Ranger Metrics Monitoring. \
 _default_ **```swc.rgr.metrics.enabled=true```**
 
+* ### swc.rgr.metrics.report.broker
+```BOOL```
+Report Metrics via Broker Client. \
+_default_ **```swc.rgr.metrics.report.broker=true```**
+
 
 ***
 

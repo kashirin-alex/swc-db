@@ -234,11 +234,7 @@ Rgr::Rgr()
           Env::Clients::get(), nullptr, app_io)),
       _reporting(
         SWC::Env::Config::settings()->get_bool("swc.rgr.metrics.enabled")
-          ? std::make_shared<Ranger::Metric::Reporting>(
-              app_io,
-              SWC::Env::Config::settings()
-                ->get<SWC::Config::Property::V_GINT32>(
-                  "swc.rgr.metrics.report.interval"))
+          ? std::make_shared<Ranger::Metric::Reporting>(app_io)
           : nullptr
       ),
       _resources(
