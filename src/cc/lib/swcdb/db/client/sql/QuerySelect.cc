@@ -1096,29 +1096,18 @@ void QuerySelect::read_timestamp(DB::Specs::Timestamp& start,
 void QuerySelect::read_flags(DB::Specs::Flags& flags) {
 
   bool any = true;
-  bool was_set;
   while(any && remain && !err) {
     if(found_space())
       continue;
 
     if((any = found_token(TOKEN_LIMIT, LEN_LIMIT))) {
       expect_eq();
-      int64_t v;
-      read_int64_t(v, was_set = false);
-      if(was_set) {
-        flags.limit = v;
-        flags.was_set = was_set;
-      }
+      read_uint64_t(flags.limit, flags.was_set);
       continue;
     }
     if((any = found_token(TOKEN_OFFSET, LEN_OFFSET))) {
       expect_eq();
-      int64_t v;
-      read_int64_t(v, was_set = false);
-      if(was_set) {
-        flags.offset = v;
-        flags.was_set = was_set;
-      }
+      read_uint64_t(flags.offset, flags.was_set);
       continue;
     }
     if((any = found_token(TOKEN_MAX_VERS, LEN_MAX_VERS))) {

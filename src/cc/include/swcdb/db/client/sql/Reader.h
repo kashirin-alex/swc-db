@@ -80,6 +80,9 @@ class Reader {
   void read_int64_t(int64_t& value, bool& was_set,
                     const char* stop=nullptr);
 
+  void read_uint64_t(uint64_t& value, bool& was_set,
+                    const char* stop=nullptr);
+
   void read_double_t(long double& value, bool& was_set,
                      const char* stop=nullptr);
 

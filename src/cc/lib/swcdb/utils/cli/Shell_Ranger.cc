@@ -62,7 +62,7 @@ bool Rgr::read_endpoint(std::string& host_or_ips,
     std::string port_str = host_or_ips.substr(at+1);
     host_or_ips = host_or_ips.substr(0, at);
     try {
-      if((port = std::stol(port_str)) > UINT16_MAX )
+      if((port = std::stoul(port_str)) > UINT16_MAX )
         err = ERANGE;
     } catch(...) {
       const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
@@ -151,11 +151,8 @@ bool Rgr::report(std::string& cmd) {
   if(reader.found_token("cid", 3)) {
     reader.expect_eq();
     if(!reader.err) {
-      int64_t _cid;
       bool was_set = false;
-      reader.read_int64_t(_cid, was_set);
-      if(was_set)
-        cid = _cid;
+      reader.read_uint64_t(cid, was_set);
     }
     if(reader.err)
       return error(message);

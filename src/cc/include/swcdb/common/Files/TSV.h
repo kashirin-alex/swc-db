@@ -548,7 +548,7 @@ class FileReader {
     while(remain) {
       if(*ptr == ',' || *ptr == '\t') {
         flen.push_back(
-          std::stol(std::string(reinterpret_cast<const char*>(s), ptr-s)));
+          std::stoul(std::string(reinterpret_cast<const char*>(s), ptr-s)));
         if(*ptr == '\t')
           break;
         if(!--remain)
@@ -601,7 +601,7 @@ class FileReader {
       return false;
 
     if(Types::is_counter(typ)) {
-      int64_t counter = std::stol(
+      int64_t counter = std::stoll(
         std::string(reinterpret_cast<const char*>(s), ptr-s));
       int64_t eq_rev = TIMESTAMP_NULL;
       uint8_t op = 0;
@@ -626,7 +626,7 @@ class FileReader {
           }
           if(!remain)
             return false;
-          eq_rev = std::stol(
+          eq_rev = std::stoll(
             std::string(reinterpret_cast<const char*>(s), ptr-s));
         }
       }
@@ -645,7 +645,7 @@ class FileReader {
       if(!remain)
         return false;
 
-      cell.vlen = std::stol(
+      cell.vlen = std::stoul(
         std::string(reinterpret_cast<const char*>(s), ptr-s));
       if(--remain < cell.vlen+1)
         return false;

@@ -171,9 +171,9 @@ void Interface::get_structured_ids(int& err, const std::string& base_path,
     if(entry.name.back() == ID_SPLIT_LAST) {
       id_name.append(entry.name.substr(0, entry.name.length()-1));
       try {
-        entries.push_back(strtoll(id_name.c_str(), nullptr, 0));
+        entries.push_back(std::stoull(id_name));
       } catch(...){
-        SWC_LOGF(LOG_ERROR, "Error converting id_name=%s to int64",
+        SWC_LOGF(LOG_ERROR, "Error converting id_name=%s to uint64",
                   id_name.c_str());
       }
       continue;

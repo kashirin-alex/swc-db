@@ -142,7 +142,7 @@ DB::Schema::Ptr Reader::get_schema(const Clients::Ptr& clients,
     schema = clients->get_schema(err, col);
   } else {
     try {
-      schema = clients->get_schema(err, std::stoll(col));
+      schema = clients->get_schema(err, std::stoull(col));
     } catch(...) {
       const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
       err = e.code();
@@ -244,6 +244,20 @@ void Reader::read_int64_t(int64_t& value, bool& was_set, const char* stop) {
     was_set = true;
   } catch(...) {
     error_msg(Error::SQL_PARSE_ERROR, " signed 64-bit integer out of range");
+  }
+}
+
+void Reader::read_uint64_t(uint64_t& value, bool& was_set, const char* stop) {
+  std::string buf;
+  read(buf, stop ? stop : "),]");
+  if(err)
+    return;
+  try {
+    value = std::stoull(buf);
+    was_set = true;
+  } catch(...) {
+    error_msg(
+      Error::SQL_PARSE_ERROR, " unsigned 64-bit integer out of range");
   }
 }
 

@@ -114,10 +114,7 @@ void ColumnSchema::read_schema_options(ColumnSchema::Func func) {
       expect_eq();
       if(err)
         return;
-      int64_t v;
-      read_int64_t(v, was_set = false);
-      if(was_set)
-        schema->cid = v;
+      read_uint64_t(schema->cid, was_set = false);
       continue;
     }
 

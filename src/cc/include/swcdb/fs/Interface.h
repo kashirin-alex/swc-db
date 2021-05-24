@@ -36,7 +36,7 @@
 
 namespace SWC { namespace FS {
 
-typedef std::vector<int64_t> IdEntries_t;
+typedef std::vector<uint64_t> IdEntries_t;
 const int   ID_SPLIT_LEN  = 3;
 const char  ID_SPLIT_LAST = 'g';
 

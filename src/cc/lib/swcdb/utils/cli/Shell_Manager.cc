@@ -208,11 +208,8 @@ bool Mngr::column_status(std::string& cmd) {
   if(reader.found_token("cid", 3)) {
     reader.expect_eq();
     if(!reader.err) {
-      int64_t _cid;
       bool was_set = false;
-      reader.read_int64_t(_cid, was_set);
-      if(was_set)
-        cid = _cid;
+      reader.read_uint64_t(cid, was_set);
     }
     if(reader.err)
       return error(message);
@@ -275,11 +272,8 @@ bool Mngr::rangers_status(std::string& cmd) {
   if(reader.found_token("cid", 3)) {
     reader.expect_eq();
     if(!reader.err) {
-      int64_t _cid;
       bool was_set = false;
-      reader.read_int64_t(_cid, was_set);
-      if(was_set)
-        cid = _cid;
+      reader.read_uint64_t(cid, was_set);
     }
     if(reader.err)
       return error(message);

@@ -176,7 +176,7 @@ void Readers::load_from_path(int &err) {
   for(auto& entry : dirs) {
     if(entry.name.find(".cs", entry.name.length()-3) != std::string::npos) {
       auto idn = entry.name.substr(0, entry.name.length()-3);
-      entries.push_back(strtoll(idn.c_str(), nullptr, 0));
+      entries.push_back(strtoull(idn.c_str(), nullptr, 0));
     }
   }
 
