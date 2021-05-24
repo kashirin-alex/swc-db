@@ -172,6 +172,9 @@ void Settings::init_app_options() {
   );
 
   cmdline_desc.add_options()
+    ("with-broker", boo(false)->zero_token(),
+     "Query applicable requests with Broker")
+
     ("gen-insert", boo(true),   "Generate new data")
     ("gen-select", boo(false),  "Select generated data")
     ("gen-delete", boo(false),  "Delete generated data")
@@ -611,7 +614,14 @@ void update_data(const std::vector<DB::Schema::Ptr>& schemas, uint8_t flag,
   std::vector<client::Query::Update::Handlers::Base::Column*> colms;
 
   auto hdlr = client::Query::Update::Handlers::Common::make(
-    Env::Clients::get());
+    Env::Clients::get(),
+    nullptr,
+    nullptr,
+    settings->get_bool("with-broker")
+      ? client::Clients::BROKER
+      : client::Clients::DEFAULT
+  );
+
   for(auto& schema : schemas)
     colms.push_back(hdlr->create(schema).get());
 
@@ -768,7 +778,12 @@ void select_data(const std::vector<DB::Schema::Ptr>& schemas, size_t seed) {
       intval.flags.limit = versions;
 
       auto hdlr = client::Query::Select::Handlers::Common::make(
-        Env::Clients::get());
+        Env::Clients::get(),
+        nullptr, false, nullptr,
+        settings->get_bool("with-broker")
+          ? client::Clients::BROKER
+          : client::Clients::DEFAULT
+      );
       for(auto& schema : schemas)
         hdlr->scan(schema, std::move(intval));
 
@@ -824,7 +839,11 @@ void select_data(const std::vector<DB::Schema::Ptr>& schemas, size_t seed) {
           select_bytes += cells.size_bytes();
         }
       },
-      true
+      true,
+      nullptr,
+      settings->get_bool("with-broker")
+        ? client::Clients::BROKER
+        : client::Clients::DEFAULT
     );
     int err = Error::OK;
     hdlr->scan(err, std::move(specs));
@@ -961,9 +980,19 @@ int main(int argc, char** argv) {
       *SWC::Env::Config::settings(),
       nullptr, // Env::IoCtx::io(),
       nullptr, // std::make_shared<client::ManagerContext>()
-      nullptr  // std::make_shared<client::RangerContext>()
+      nullptr, // std::make_shared<client::RangerContext>()
+      nullptr  // std::make_shared<client::BrokerContext>()
     )->init()
   );
+
+  auto period = SWC::Env::Config::settings()->get<
+    SWC::Config::Property::V_GINT32>("swc.cfg.dyn.period");
+  if(period->get()) {
+    SWC::Env::IoCtx::io()->set_periodic_timer(
+      period,
+      [](){SWC::Env::Config::settings()->check_dynamic_files();}
+    );
+  }
 
   SWC::Utils::LoadGenerator::generate();
 

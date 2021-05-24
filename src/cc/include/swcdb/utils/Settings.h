@@ -49,12 +49,15 @@ void Settings::init_app_options() {
     usage_str("SWC-DB(utils) Usage: %s 'command' [options]\n\nOptions:")
   )
   .add_options()
-   ("command,cmd",  str("shell"),
+   ("command,cmd", str("shell"),
    "Command to execute shell|status|report|custom (1st arg token)")
    ("command",  1)
 
-   ("lib-path",  str(install_path+"/lib/"), "Path to utilities libraries")
-   ("lib",  str(), "Utility-Library of the custom command")
+   ("lib-path", str(install_path+"/lib/"), "Path to utilities libraries")
+   ("lib", str(), "Utility-Library of the custom command")
+
+   ("with-broker", boo(false)->zero_token(),
+    "Query applicable requests with Broker")
 
    ("ranger,rgr",                 "Work with Ranger")
    ("manager,mngr",               "Work with Manager")

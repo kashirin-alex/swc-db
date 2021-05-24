@@ -156,10 +156,15 @@ DbClient::DbClient()
       *Env::Config::settings(),
       nullptr, // Env::IoCtx::io(),
       nullptr, // std::make_shared<client::ManagerContext>()
-      nullptr  // std::make_shared<client::RangerContext>()
+      nullptr, // std::make_shared<client::RangerContext>()
+      nullptr  // std::make_shared<client::BrokerContext>()
     )->init()
   );
 
+  SWC_ASSERT(
+    !SWC::Env::Config::settings()->get_bool("with-broker") ||
+    SWC::Env::Clients::get()->brokers.has_endpoints()
+  );
 }
 
 // CREATE/MODIFY/DELETE COLUMN
@@ -338,8 +343,13 @@ bool DbClient::select(std::string& cmd) {
     (const client::Query::Select::Handlers::Common::Ptr& hdlr) {
       display(hdlr, display_flags, cells_count, cells_bytes);
     },
-    true // cb on partial rsp
+    true, // cb on partial rsp
+    nullptr,
+    Env::Config::settings()->get_bool("with-broker")
+      ? client::Clients::BROKER
+      : client::Clients::DEFAULT
   );
+
   hdlr->scan(err, std::move(specs));
   if(!err)
     hdlr->wait();
@@ -399,7 +409,13 @@ bool DbClient::update(std::string& cmd) {
   uint8_t display_flags = 0;
 
   auto hdlr = client::Query::Update::Handlers::Common::make(
-    Env::Clients::get());
+    Env::Clients::get(),
+    nullptr,
+    nullptr,
+    Env::Config::settings()->get_bool("with-broker")
+      ? client::Clients::BROKER
+      : client::Clients::DEFAULT
+  );
   std::string message;
   client::SQL::parse_update(err, cmd, hdlr, display_flags, message);
   if(err)
@@ -451,7 +467,11 @@ bool DbClient::load(std::string& cmd) {
   if(err)
     return error(reader.message);
 
-  auto hdlr = reader.read_and_load();
+  auto hdlr = reader.read_and_load(
+    Env::Config::settings()->get_bool("with-broker")
+      ? client::Clients::BROKER
+      : client::Clients::DEFAULT
+  );
 
   if(display_flags & DB::DisplayFlag::STATS) {
     client::Query::Profiling tmp;
@@ -526,7 +546,11 @@ bool DbClient::dump(std::string& cmd) {
       if(writer.err)
         hdlr->valid_state.store(false);
     },
-    true // cb on partial rsp
+    true, // cb on partial rsp
+    nullptr,
+    Env::Config::settings()->get_bool("with-broker")
+      ? client::Clients::BROKER
+      : client::Clients::DEFAULT
   );
 
   hdlr->scan(err, std::move(specs));

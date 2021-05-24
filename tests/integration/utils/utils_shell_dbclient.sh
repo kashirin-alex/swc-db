@@ -3,12 +3,13 @@
 
 SWCDB_INSTALL_PATH=$1; shift
 SWCDB_SOURCE_PATH=$1; shift
+SWCDB_WITH_BROKER=$1; shift
 
-if [ -z $SWCDB_INSTALL_PATH ];then 
+if [ -z $SWCDB_INSTALL_PATH ];then
   SWCDB_INSTALL_PATH="/opt/swcdb";
 fi
 
-if [ -z $NUM_CELLS ];then 
+if [ -z $NUM_CELLS ];then
   NUM_CELLS=1000000;
 fi
 
@@ -25,7 +26,7 @@ do_test() {
 	if $@
 	then
 		echo "OK: " $@;
-	else 
+	else
 		exit 1;
 	fi
 }
@@ -33,25 +34,25 @@ do_test() {
 ## CREATE TEST DATA
 ${SWCDB_INSTALL_PATH}/bin/swcdb_load_generator -l=warn \
   --gen-col-name="test-shell-dbclient-" \
-  --gen-cells=${NUM_CELLS} --swc.cfg.path=${SWCDB_SOURCE_PATH}/;
+  --gen-cells=${NUM_CELLS} --swc.cfg.path=${SWCDB_SOURCE_PATH}/ ${SWCDB_WITH_BROKER};
 
 
 ## DUMP 1st sample
 do_test echo "dump col='test-shell-dbclient-1' into path='dumps/dbclient/' DISPLAY_STATS; quit;" | \
-				${SWCDB_INSTALL_PATH}/bin/swcdb shell --debug --swc.cfg.path=${SWCDB_SOURCE_PATH}/;
+				${SWCDB_INSTALL_PATH}/bin/swcdb shell --debug --swc.cfg.path=${SWCDB_SOURCE_PATH}/ ${SWCDB_WITH_BROKER};
 
 
 ## LOAD 1st sample
 do_test echo "create column(name='test-shell-dbclient_load'); quit;" | \
-				${SWCDB_INSTALL_PATH}/bin/swcdb shell --debug --swc.cfg.path=${SWCDB_SOURCE_PATH}/;
+				${SWCDB_INSTALL_PATH}/bin/swcdb shell --debug --swc.cfg.path=${SWCDB_SOURCE_PATH}/ ${SWCDB_WITH_BROKER};
 
 do_test echo "load from path='dumps/dbclient/' into col='test-shell-dbclient_load' DISPLAY_STATS; quit;" | \
-				${SWCDB_INSTALL_PATH}/bin/swcdb shell --debug --swc.cfg.path=${SWCDB_SOURCE_PATH}/;
+				${SWCDB_INSTALL_PATH}/bin/swcdb shell --debug --swc.cfg.path=${SWCDB_SOURCE_PATH}/ ${SWCDB_WITH_BROKER};
 
 
 ## DUMP 2nd sample
 do_test echo "dump col='test-shell-dbclient_load' into path='dumps/dbclient_afterload/' DISPLAY_STATS; quit;" | \
-				${SWCDB_INSTALL_PATH}/bin/swcdb shell --debug --swc.cfg.path=${SWCDB_SOURCE_PATH}/;
+				${SWCDB_INSTALL_PATH}/bin/swcdb shell --debug --swc.cfg.path=${SWCDB_SOURCE_PATH}/ ${SWCDB_WITH_BROKER};
 
 
 ## COMPARE 1st with 2nd sample

@@ -6,7 +6,12 @@
 
 
 add_test(
-  NAME    utils_shell_dbclient 
-  COMMAND bash ${CMAKE_CURRENT_SOURCE_DIR}/utils_shell_dbclient.sh ${CMAKE_INSTALL_PREFIX} ${CMAKE_CURRENT_SOURCE_DIR}
+  NAME    utils_shell_dbclient
+  COMMAND bash ${CMAKE_CURRENT_SOURCE_DIR}/utils_shell_dbclient.sh ${CMAKE_INSTALL_PREFIX} ${CMAKE_CURRENT_SOURCE_DIR} 
+)
+
+add_test(
+  NAME    utils_shell_dbclient_broker
+  COMMAND bash ${CMAKE_CURRENT_SOURCE_DIR}/utils_shell_dbclient.sh ${CMAKE_INSTALL_PREFIX} ${CMAKE_CURRENT_SOURCE_DIR} --with-broker
 )
 

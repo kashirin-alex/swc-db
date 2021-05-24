@@ -341,11 +341,13 @@ class FileReader {
     }
   }
 
-  client::Query::Update::Handlers::Common::Ptr read_and_load() {
+  client::Query::Update::Handlers::Common::Ptr
+  read_and_load(client::Clients::Flag flag) {
     if(err)
       return nullptr;
 
-    auto hdlr = client::Query::Update::Handlers::Common::make(clients);
+    auto hdlr = client::Query::Update::Handlers::Common::make(
+      clients, nullptr, nullptr, flag);
     hdlr->create(schema);
 
     for(auto& fd : fds) {

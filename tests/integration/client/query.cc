@@ -26,6 +26,9 @@ void Settings::init_app_options(){
   init_client_options();
 
   cmdline_desc.add_options()
+    ("with-broker", boo(false)->zero_token(),
+     "Query applicable requests with Broker")
+
     ("ncells", i64(1000), "number of cells, total=cells*(counter||versions)")
     ("nfractions", i32(26), "Number of Fractions per cell key")
 
@@ -119,6 +122,7 @@ class Test {
     schema = DB::Schema::make();
     schema->col_type = col_type;
     schema->col_name = col_name;
+    schema->cid = std::hash<std::string>()(col_name);
     schema->col_seq = col_seq;
     schema->cs_size = 200000000;
     schema->blk_cells = 10000;
@@ -168,7 +172,14 @@ class Test {
     SWC_LOG(LOG_DEBUG, "expect_empty_column");
 
     auto hdlr = client::Query::Select::Handlers::Common::make(
-      Env::Clients::get());
+      Env::Clients::get(),
+      nullptr,
+      false,
+      nullptr,
+      Env::Config::settings()->get_bool("with-broker")
+        ? client::Clients::BROKER
+        : client::Clients::DEFAULT
+    );
 
     auto intval = DB::Specs::Interval::make_ptr();
     intval->flags.offset = 0;
@@ -198,7 +209,14 @@ class Test {
     SWC_LOG(LOG_DEBUG, "expect_one_at_offset");
 
     auto hdlr = client::Query::Select::Handlers::Common::make(
-      Env::Clients::get());
+      Env::Clients::get(),
+      nullptr,
+      false,
+      nullptr,
+      Env::Config::settings()->get_bool("with-broker")
+        ? client::Clients::BROKER
+        : client::Clients::DEFAULT
+    );
 
     auto intval = DB::Specs::Interval::make_ptr();
     intval->flags.offset = ncells * nfractions - 1;
@@ -300,7 +318,11 @@ class Test {
         SWC_ASSERT(!_hdlr->error());
         expect_one_at_offset();
         query_select(0, 0);
-      }
+      },
+      nullptr,
+      Env::Config::settings()->get_bool("with-broker")
+        ? client::Clients::BROKER
+        : client::Clients::DEFAULT
     );
 
     hdlr->completion.increment();
@@ -374,7 +396,12 @@ class Test {
         }
 
         query_select(i, f + 1);
-      }
+      },
+      false,
+      nullptr,
+      Env::Config::settings()->get_bool("with-broker")
+        ? client::Clients::BROKER
+        : client::Clients::DEFAULT
     );
 
     DB::Specs::Interval intval;
@@ -408,7 +435,11 @@ class Test {
           }
           cv.notify_all();
         });
-      }
+      },
+      nullptr,
+      Env::Config::settings()->get_bool("with-broker")
+        ? client::Clients::BROKER
+        : client::Clients::DEFAULT
     );
 
     auto& col = hdlr->create(schema);
@@ -438,9 +469,15 @@ int main(int argc, char** argv) {
     std::make_shared<SWC::client::Clients>(
       *SWC::Env::Config::settings(),
       nullptr,
-      nullptr, // std::make_shared<SWC::client::ManagerContext>()
-      nullptr  // std::make_shared<SWC::client::RangerContext>()
+      nullptr, // std::make_shared<client::ManagerContext>()
+      nullptr, // std::make_shared<client::RangerContext>()
+      nullptr  // std::make_shared<client::BrokerContext>()
     )->init()
+  );
+
+  SWC_ASSERT(
+    !SWC::Env::Config::settings()->get_bool("with-broker") ||
+    SWC::Env::Clients::get()->brokers.has_endpoints()
   );
 
   auto settings = SWC::Env::Config::settings();
@@ -467,7 +504,9 @@ int main(int argc, char** argv) {
                 + "-c"
                 + std::to_string(test.ncells)
                 + "-f"
-                + std::to_string(test.nfractions);
+                + std::to_string(test.nfractions)
+                + "-bkr"
+                + std::to_string(settings->get_bool("with-broker"));
   test.run();
 
   SWC::Env::IoCtx::io()->stop();

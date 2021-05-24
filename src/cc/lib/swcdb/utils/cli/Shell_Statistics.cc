@@ -110,10 +110,15 @@ Statistics::Statistics()
       *Env::Config::settings(),
       nullptr, // Env::IoCtx::io(),
       nullptr, // std::make_shared<client::ManagerContext>()
-      nullptr  // std::make_shared<client::RangerContext>()
+      nullptr, // std::make_shared<client::RangerContext>()
+      nullptr  // std::make_shared<client::BrokerContext>()
     )->init()
   );
 
+  SWC_ASSERT(
+    !SWC::Env::Config::settings()->get_bool("with-broker") ||
+    SWC::Env::Clients::get()->brokers.has_endpoints()
+  );
 }
 
 
@@ -485,7 +490,11 @@ void Statistics::set_definitions(DB::Specs::Scan& specs) {
         }
       }
     },
-    true
+    true,
+    nullptr,
+    Env::Config::settings()->get_bool("with-broker")
+      ? client::Clients::BROKER
+      : client::Clients::DEFAULT
   );
 
   hdlr->scan(err, specs);
@@ -741,7 +750,11 @@ bool Statistics::show() {
           }
         }
       },
-      true
+      true,
+      nullptr,
+      Env::Config::settings()->get_bool("with-broker")
+        ? client::Clients::BROKER
+        : client::Clients::DEFAULT
     );
 
     hdlr->scan(
@@ -783,7 +796,11 @@ bool Statistics::truncate() {
     (const client::Query::Update::Handlers::Common::Ptr& hdlr) noexcept {
       if(hdlr->error())
         state_errorp->store(hdlr->error());
-    }
+    },
+    nullptr,
+    Env::Config::settings()->get_bool("with-broker")
+      ? client::Clients::BROKER
+      : client::Clients::DEFAULT
   );
   auto& col_updated = updater->create(
     DB::Types::SystemColumn::SYS_CID_STATS,
@@ -819,7 +836,11 @@ bool Statistics::truncate() {
         countp->fetch_add(1);
       }
     },
-    true
+    true,
+    nullptr,
+    Env::Config::settings()->get_bool("with-broker")
+      ? client::Clients::BROKER
+      : client::Clients::DEFAULT
   );
 
   DB::Specs::Scan specs;
