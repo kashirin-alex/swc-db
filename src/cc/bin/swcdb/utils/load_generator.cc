@@ -7,10 +7,14 @@
 #include "swcdb/core/comm/Settings.h"
 
 #include "swcdb/db/client/Clients.h"
-#include "swcdb/db/Protocol/Mngr/req/ColumnMng.h"
-#include "swcdb/db/Protocol/Mngr/req/ColumnGet.h"
+
+#include "swcdb/db/Protocol/Mngr/params/ColumnMng.h"
+#include "swcdb/db/Protocol/Mngr/req/ColumnMng_Sync.h"
+#include "swcdb/db/Protocol/Bkr/req/ColumnMng_Sync.h"
+
 #include "swcdb/db/client/Query/Select/Scanner.h"
 #include "swcdb/db/client/Query/Update/Committer.h"
+
 #include "swcdb/db/Cells/CellValueSerialFields.h"
 #include "swcdb/db/client/Query/Select/Handlers/Common.h"
 #include "swcdb/db/client/Query/Update/Handlers/Common.h"
@@ -882,19 +886,16 @@ void make_work_load(const std::vector<DB::Schema::Ptr>& schemas) {
     update_data(schemas, DB::Cells::DELETE, seed);
 
   if(settings->get_bool("gen-delete-column")) {
+    int err = Error::OK;
+    bool with_broker = Env::Config::settings()->get_bool("with-broker");
+    auto func = Comm::Protocol::Mngr::Params::ColumnMng::Function::DELETE;
     for(auto& schema : schemas) {
-      std::promise<int>  res;
-      Comm::Protocol::Mngr::Req::ColumnMng::request(
-        Env::Clients::get(),
-        Comm::Protocol::Mngr::Req::ColumnMng::Func::DELETE,
-        schema,
-        [await=&res]
-        (const Comm::client::ConnQueue::ReqBase::Ptr&, int err) {
-          await->set_value(err);
-        },
-        10000
-      );
-      quit_error(res.get_future().get());
+      with_broker
+        ? Comm::Protocol::Bkr::Req::ColumnMng_Sync::request(
+            Env::Clients::get(), func, schema, err, 10000)
+        : Comm::Protocol::Mngr::Req::ColumnMng_Sync::request(
+            Env::Clients::get(), func, schema, err, 10000);
+      quit_error(err);
     }
   }
 
@@ -945,18 +946,13 @@ void generate() {
   schema->compact_percent = settings->get_i8("gen-compaction-percent");
 
   // CREATE COLUMN
-  std::promise<int>  res;
-  Comm::Protocol::Mngr::Req::ColumnMng::request(
-    Env::Clients::get(),
-    Comm::Protocol::Mngr::Req::ColumnMng::Func::CREATE,
-    schema,
-    [await=&res]
-    (const Comm::client::ConnQueue::ReqBase::Ptr&, int err) {
-      await->set_value(err);
-    },
-    10000
-  );
-  quit_error(res.get_future().get());
+  auto func = Comm::Protocol::Mngr::Params::ColumnMng::Function::CREATE;
+  Env::Config::settings()->get_bool("with-broker")
+    ? Comm::Protocol::Bkr::Req::ColumnMng_Sync::request(
+        Env::Clients::get(), func, schema, err, 10000)
+    : Comm::Protocol::Mngr::Req::ColumnMng_Sync::request(
+        Env::Clients::get(), func, schema, err, 10000);
+  quit_error(err);
   }
 
   schemas.clear();

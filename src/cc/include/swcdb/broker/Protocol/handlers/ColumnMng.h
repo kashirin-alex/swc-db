@@ -20,19 +20,24 @@ class ColumnMng final : public Protocol::Mngr::Req::ColumnMng_Base {
 
   ConnHandlerPtr  conn;
   Event::Ptr      ev;
+  DB::Schema::Ptr schema;
 
   ColumnMng(const SWC::client::Clients::Ptr& clients,
             const Protocol::Mngr::Params::ColumnMng& params,
             const ConnHandlerPtr& conn, const Event::Ptr& ev)
             : Protocol::Mngr::Req::ColumnMng_Base(
                 clients, params, ev->header.timeout_ms),
-              conn(conn), ev(ev) {
+              conn(conn), ev(ev), schema(params.schema) {
   }
 
   virtual ~ColumnMng() { }
 
   void callback(int err) override {
     err ? conn->send_error(err , "", ev) : conn->response_ok(ev);
+
+    schema->cid == DB::Schema::NO_CID
+      ? Env::Clients::get()->schemas.remove(schema->col_name)
+      : Env::Clients::get()->schemas.remove(schema->cid);
     Env::Bkr::in_process(-1);
   }
 

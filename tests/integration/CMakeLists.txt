@@ -29,6 +29,8 @@ add_subdirectory("fs")
 
 add_subdirectory("manager")
 
+add_subdirectory("broker")
+
 add_subdirectory("ranger")
 
 add_subdirectory("client")

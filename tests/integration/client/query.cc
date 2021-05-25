@@ -7,14 +7,14 @@
 #include "swcdb/core/comm/Settings.h"
 
 #include "swcdb/db/client/Clients.h"
-#include "swcdb/db/Protocol/Mngr/req/ColumnMng.h"
-#include "swcdb/db/Protocol/Mngr/req/ColumnGet.h"
 #include "swcdb/db/client/Query/Select/Scanner.h"
 #include "swcdb/db/client/Query/Update/Committer.h"
 #include "swcdb/db/Cells/CellValueSerialFields.h"
 #include "swcdb/db/client/Query/Select/Handlers/Common.h"
 #include "swcdb/db/client/Query/Update/Handlers/Common.h"
 
+#include "swcdb/db/Protocol/Mngr/req/ColumnMng.h"
+#include "swcdb/db/Protocol/Bkr/req/ColumnMng.h"
 
 namespace SWC {
 
@@ -77,6 +77,8 @@ class Test {
   std::mutex                mutex;
   std::condition_variable   cv;
 
+  bool                      with_broker;
+
   DB::Types::Column         col_type;
   DB::Types::KeySeq         col_seq;
   std::string               col_name;
@@ -128,10 +130,8 @@ class Test {
     schema->blk_cells = 10000;
     schema->cell_versions = counter ? 1 : cell_versions;
 
-    Comm::Protocol::Mngr::Req::ColumnMng::request(
-      Env::Clients::get(),
-      Comm::Protocol::Mngr::Req::ColumnMng::Func::CREATE,
-      schema, [this] (Comm::client::ConnQueue::ReqBase::Ptr req_ptr, int err) {
+    auto _cb = [this]
+      (Comm::client::ConnQueue::ReqBase::Ptr req_ptr, int err) {
         if(err && err != Error::COLUMN_SCHEMA_NAME_EXISTS) {
           SWC_PRINT << "ColumnMng::CREATE err="
                     << err << "(" << Error::get_text(err) << ")"
@@ -140,18 +140,21 @@ class Test {
         }
         schema = Env::Clients::get()->get_schema(err, col_name);
         query_insert();
-      },
-      10000
-    );
+      };
+
+    auto func = Comm::Protocol::Mngr::Req::ColumnMng::Func::CREATE;
+    with_broker
+      ? Comm::Protocol::Bkr::Req::ColumnMng::request(
+          Env::Clients::get(), func, schema, std::move(_cb), 10000)
+      : Comm::Protocol::Mngr::Req::ColumnMng::request(
+          Env::Clients::get(), func, schema, std::move(_cb), 10000);
   }
 
   void delete_column(const std::function<void()>& cb) {
     SWC_LOG(LOG_DEBUG, "delete_column");
 
-    Comm::Protocol::Mngr::Req::ColumnMng::request(
-      Env::Clients::get(),
-      Comm::Protocol::Mngr::Req::ColumnMng::Func::DELETE,
-      schema, [this, cb] (Comm::client::ConnQueue::ReqBase::Ptr req_ptr, int err) {
+    auto _cb = [this, cb]
+      (Comm::client::ConnQueue::ReqBase::Ptr req_ptr, int err) {
         if(err && err != Error::COLUMN_SCHEMA_NAME_NOT_EXISTS) {
           SWC_PRINT << "ColumnMng::DELETE err="
                     << err << "(" << Error::get_text(err) << ")"
@@ -162,9 +165,14 @@ class Test {
         Env::Clients::get()->schemas.remove(schema->cid);
         schema = nullptr;
         cb();
-      },
-      10000
-    );
+      };
+
+    auto func = Comm::Protocol::Mngr::Req::ColumnMng::Func::DELETE;
+    with_broker
+      ? Comm::Protocol::Bkr::Req::ColumnMng::request(
+          Env::Clients::get(), func, schema, std::move(_cb), 10000)
+      : Comm::Protocol::Mngr::Req::ColumnMng::request(
+          Env::Clients::get(), func, schema, std::move(_cb), 10000);
   }
 
 
@@ -176,7 +184,7 @@ class Test {
       nullptr,
       false,
       nullptr,
-      Env::Config::settings()->get_bool("with-broker")
+      with_broker
         ? client::Clients::BROKER
         : client::Clients::DEFAULT
     );
@@ -213,7 +221,7 @@ class Test {
       nullptr,
       false,
       nullptr,
-      Env::Config::settings()->get_bool("with-broker")
+      with_broker
         ? client::Clients::BROKER
         : client::Clients::DEFAULT
     );
@@ -320,7 +328,7 @@ class Test {
         query_select(0, 0);
       },
       nullptr,
-      Env::Config::settings()->get_bool("with-broker")
+      with_broker
         ? client::Clients::BROKER
         : client::Clients::DEFAULT
     );
@@ -399,7 +407,7 @@ class Test {
       },
       false,
       nullptr,
-      Env::Config::settings()->get_bool("with-broker")
+      with_broker
         ? client::Clients::BROKER
         : client::Clients::DEFAULT
     );
@@ -437,7 +445,7 @@ class Test {
         });
       },
       nullptr,
-      Env::Config::settings()->get_bool("with-broker")
+      with_broker
         ? client::Clients::BROKER
         : client::Clients::DEFAULT
     );
@@ -483,6 +491,7 @@ int main(int argc, char** argv) {
   auto settings = SWC::Env::Config::settings();
 
   SWC::Test test;
+  test.with_broker = settings->get_bool("with-broker");
 
   test.col_type = SWC::DB::Types::Column(settings->get_genum("col-type"));
   test.col_seq = SWC::DB::Types::KeySeq(settings->get_genum("col-seq"));
@@ -506,7 +515,7 @@ int main(int argc, char** argv) {
                 + "-f"
                 + std::to_string(test.nfractions)
                 + "-bkr"
-                + std::to_string(settings->get_bool("with-broker"));
+                + std::to_string(test.with_broker);
   test.run();
 
   SWC::Env::IoCtx::io()->stop();

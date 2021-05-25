@@ -46,8 +46,8 @@ class Clients : public std::enable_shared_from_this<Clients>{
 
   enum Flag : uint8_t {
     DEFAULT = 0x01,
-    BROKER = 0x02,
-    SCHEMA = 0x04,
+    BROKER  = 0x02,
+    SCHEMA  = 0x04,
   };
 
   Clients(const Config::Settings& settings,

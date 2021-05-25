@@ -6,6 +6,8 @@
 #include "swcdb/db/client/Clients.h"
 #include "swcdb/db/Protocol/Mngr/req/ColumnGet_Sync.h"
 #include "swcdb/db/Protocol/Mngr/req/ColumnList_Sync.h"
+#include "swcdb/db/Protocol/Bkr/req/ColumnGet_Sync.h"
+#include "swcdb/db/Protocol/Bkr/req/ColumnList_Sync.h"
 
 namespace SWC { namespace client {
 
@@ -98,16 +100,28 @@ Schemas::get(int& err, const std::vector<DB::Schemas::Pattern>& patterns) {
 
 void Schemas::_request(int& err, cid_t cid,
                        DB::Schema::Ptr& schema) {
-  Comm::Protocol::Mngr::Req::ColumnGet_Sync::schema(
-    _clients->shared(), err, cid, schema, 300000);
+  switch(_clients->flags) {
+    case Clients::Flag::DEFAULT |Clients::Flag::BROKER |Clients::Flag::SCHEMA:
+    case Clients::Flag::BROKER:
+      return Comm::Protocol::Bkr::Req::ColumnGet_Sync::schema(
+        _clients->shared(), err, cid, schema, 300000);
+    default:
+      return Comm::Protocol::Mngr::Req::ColumnGet_Sync::schema(
+        _clients->shared(), err, cid, schema, 300000);
+  }
 }
 
 void Schemas::_request(int& err, const std::string& name,
                        DB::Schema::Ptr& schema) {
-  Comm::Protocol::Mngr::Req::ColumnGet_Sync::schema(
-    _clients->shared(), err, name, schema, 300000);
-
-  //if(_clients->flags & Clients::Flag::DEFAULT) {
+  switch(_clients->flags) {
+    case Clients::Flag::DEFAULT |Clients::Flag::BROKER |Clients::Flag::SCHEMA:
+    case Clients::Flag::BROKER:
+      return Comm::Protocol::Bkr::Req::ColumnGet_Sync::schema(
+        _clients->shared(), err, name, schema, 300000);
+    default:
+      return Comm::Protocol::Mngr::Req::ColumnGet_Sync::schema(
+        _clients->shared(), err, name, schema, 300000);
+  }
 }
 
 void Schemas::_request(int& err,
@@ -115,8 +129,15 @@ void Schemas::_request(int& err,
                        std::vector<DB::Schema::Ptr>& schemas) {
   Comm::Protocol::Mngr::Params::ColumnListReq params;
   params.patterns = patterns;
-  Comm::Protocol::Mngr::Req::ColumnList_Sync::request(
-    _clients->shared(), params, err, schemas, 300000);
+  switch(_clients->flags) {
+    case Clients::Flag::DEFAULT |Clients::Flag::BROKER |Clients::Flag::SCHEMA:
+    case Clients::Flag::BROKER:
+      return Comm::Protocol::Bkr::Req::ColumnList_Sync::request(
+        _clients->shared(), params, err, schemas, 300000);
+    default:
+      return Comm::Protocol::Mngr::Req::ColumnList_Sync::request(
+        _clients->shared(), params, err, schemas, 300000);
+  }
 }
 
 

@@ -84,6 +84,16 @@ set(swcdb_sources
   Protocol/Bkr/req/Committer_CellsUpdate.cc
   Protocol/Bkr/params/CellsSelect.cc
   Protocol/Bkr/req/Scanner_CellsSelect.cc
+  Protocol/Bkr/req/ColumnCompact_Base.cc
+  Protocol/Bkr/req/ColumnCompact.cc
+  Protocol/Bkr/req/ColumnCompact_Sync.cc
+  Protocol/Bkr/req/ColumnGet.cc
+  Protocol/Bkr/req/ColumnGet_Sync.cc
+  Protocol/Bkr/req/ColumnList.cc
+  Protocol/Bkr/req/ColumnList_Sync.cc
+  Protocol/Bkr/req/ColumnMng_Base.cc
+  Protocol/Bkr/req/ColumnMng.cc
+  Protocol/Bkr/req/ColumnMng_Sync.cc
 
   client/Settings.cc
   client/Clients.cc

@@ -21,7 +21,7 @@ Clients::Clients(const Config::Settings& settings,
                  const ContextManager::Ptr& mngr_ctx,
                  const ContextRanger::Ptr& rgr_ctx,
                  const ContextBroker::Ptr& bkr_ctx)
-    : running(true), flags(Flag::BROKER | Flag::SCHEMA),
+    : running(true), flags(Flag::DEFAULT | Flag::BROKER | Flag::SCHEMA),
       cfg_send_buff_sz(
         settings.get<SWC::Config::Property::V_GINT32>(
           "swc.client.send.buffer")),

@@ -20,13 +20,19 @@
 #include "swcdb/db/Protocol/Mngr/req/ColumnGet_Sync.h"
 #include "swcdb/db/Protocol/Mngr/req/ColumnList_Sync.h"
 
+#include "swcdb/db/Protocol/Bkr/req/ColumnMng_Sync.h"
+#include "swcdb/db/Protocol/Bkr/req/ColumnCompact_Sync.h"
+#include "swcdb/db/Protocol/Bkr/req/ColumnGet_Sync.h"
+#include "swcdb/db/Protocol/Bkr/req/ColumnList_Sync.h"
+
 
 namespace SWC { namespace Utils { namespace shell {
 
 
 DbClient::DbClient()
   : Interface("\033[32mSWC-DB(\033[36mclient\033[32m)\033[33m> \033[00m",
-              "/tmp/.swc-cli-dbclient-history") {
+              "/tmp/.swc-cli-dbclient-history"),
+    with_broker(Env::Config::settings()->get_bool("with-broker")) {
 
   options.push_back(
     new Option(
@@ -166,8 +172,7 @@ DbClient::DbClient()
   );
 
   SWC_ASSERT(
-    !SWC::Env::Config::settings()->get_bool("with-broker") ||
-    SWC::Env::Clients::get()->brokers.has_endpoints()
+    !with_broker || SWC::Env::Clients::get()->brokers.has_endpoints()
   );
 }
 
@@ -181,8 +186,11 @@ bool DbClient::mng_column(
   if(err)
     return error(message);
 
-  Comm::Protocol::Mngr::Req::ColumnMng_Sync::request(
-    Env::Clients::get(), func, schema, err, 1800000);
+  with_broker
+    ? Comm::Protocol::Bkr::Req::ColumnMng_Sync::request(
+        Env::Clients::get(), func, schema, err, 1800000)
+    : Comm::Protocol::Mngr::Req::ColumnMng_Sync::request(
+        Env::Clients::get(), func, schema, err, 1800000);
   if(err) {
     message.append(Error::get_text(err));
     message.append("\n");
@@ -208,8 +216,11 @@ bool DbClient::compact_column(std::string& cmd) {
   if(!params.patterns.empty() || schemas.empty()) {
     // get all schemas or on patterns
     std::vector<DB::Schema::Ptr> _schemas;
-    Comm::Protocol::Mngr::Req::ColumnList_Sync::request(
-      clients, params, err, _schemas, 300000);
+    with_broker
+      ? Comm::Protocol::Bkr::Req::ColumnList_Sync::request(
+          clients, params, err, _schemas, 300000)
+      : Comm::Protocol::Mngr::Req::ColumnList_Sync::request(
+          clients, params, err, _schemas, 300000);
     if(err) {
       message.append(Error::get_text(err));
       message.append("\n");
@@ -221,8 +232,11 @@ bool DbClient::compact_column(std::string& cmd) {
       schemas.insert(schemas.end(), _schemas.begin(), _schemas.end());
   }
   for(auto& schema : schemas) {
-    Comm::Protocol::Mngr::Req::ColumnCompact_Sync::request(
-      clients, schema->cid, err, 300000);
+    with_broker
+      ? Comm::Protocol::Bkr::Req::ColumnCompact_Sync::request(
+          clients, schema->cid, err, 300000)
+      : Comm::Protocol::Mngr::Req::ColumnCompact_Sync::request(
+          clients, schema->cid, err, 300000);
     SWC_PRINT << "Compactig Column cid=" << schema->cid
               << " '" << schema->col_name << "' ";
     Error::print(SWC_LOG_OSTREAM, err);
@@ -246,8 +260,11 @@ bool DbClient::list_columns(std::string& cmd) {
   if(!params.patterns.empty() || schemas.empty()) {
     // get all schemas or on patterns
     std::vector<DB::Schema::Ptr> _schemas;
-    Comm::Protocol::Mngr::Req::ColumnList_Sync::request(
-      clients, params, err, _schemas, 300000);
+    with_broker
+      ? Comm::Protocol::Bkr::Req::ColumnList_Sync::request(
+          clients, params, err, _schemas, 300000)
+      : Comm::Protocol::Mngr::Req::ColumnList_Sync::request(
+          clients, params, err, _schemas, 300000);
     if(err) {
       message.append(Error::get_text(err));
       message.append("\n");
@@ -308,7 +325,7 @@ bool DbClient::select(std::string& cmd) {
     },
     true, // cb on partial rsp
     nullptr,
-    Env::Config::settings()->get_bool("with-broker")
+    with_broker
       ? client::Clients::BROKER
       : client::Clients::DEFAULT
   );
@@ -375,7 +392,7 @@ bool DbClient::update(std::string& cmd) {
     Env::Clients::get(),
     nullptr,
     nullptr,
-    Env::Config::settings()->get_bool("with-broker")
+    with_broker
       ? client::Clients::BROKER
       : client::Clients::DEFAULT
   );
@@ -431,7 +448,7 @@ bool DbClient::load(std::string& cmd) {
     return error(reader.message);
 
   auto hdlr = reader.read_and_load(
-    Env::Config::settings()->get_bool("with-broker")
+    with_broker
       ? client::Clients::BROKER
       : client::Clients::DEFAULT
   );
@@ -511,7 +528,7 @@ bool DbClient::dump(std::string& cmd) {
     },
     true, // cb on partial rsp
     nullptr,
-    Env::Config::settings()->get_bool("with-broker")
+    with_broker
       ? client::Clients::BROKER
       : client::Clients::DEFAULT
   );

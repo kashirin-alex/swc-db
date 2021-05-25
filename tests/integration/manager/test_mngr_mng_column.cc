@@ -11,9 +11,11 @@
 
 #include "swcdb/db/Cells/SpecsScan.h"
 
+#if !defined(CLIENT_EXECUTOR)
 #include "swcdb/db/Protocol/Mngr/req/ColumnMng.h"
 #include "swcdb/db/Protocol/Mngr/req/ColumnGet.h"
-#include "swcdb/db/Protocol/Mngr/req/RgrGet.h"
+namespace ProtocolExecutor = SWC::Comm::Protocol::Mngr;
+#endif
 
 #include "swcdb/common/Stats/Stat.h"
 
@@ -27,6 +29,7 @@ void Settings::init_app_options(){
 }
 void Settings::init_post_cmd_args() { }
 }}
+
 
 using namespace SWC;
 
@@ -56,7 +59,7 @@ void check_delete(int num_of_cols, bool modified) {
 
   auto clients = Env::Clients::get();
   for(int n=1; n<=num_of_cols; ++n) {
-    Comm::Protocol::Mngr::Req::ColumnGet::schema(
+    ProtocolExecutor::Req::ColumnGet::schema(
       clients,
       get_name(n, modified),
       [&sem]
@@ -73,9 +76,9 @@ void check_delete(int num_of_cols, bool modified) {
           return;
         }
 
-        Comm::Protocol::Mngr::Req::ColumnMng::request(
+        ProtocolExecutor::Req::ColumnMng::request(
           Env::Clients::get(),
-          Comm::Protocol::Mngr::Req::ColumnMng::Func::DELETE,
+          Comm::Protocol::Mngr::Params::ColumnMng::Function::DELETE,
           rsp.schema,
           [&sem]
           (Comm::client::ConnQueue::ReqBase::Ptr req_ptr, int err){
@@ -115,7 +118,7 @@ void check_get(size_t num_of_cols, bool modified,
   }
   auto clients = Env::Clients::get();
   for(auto& req : expected){
-    Comm::Protocol::Mngr::Req::ColumnGet::schema(
+    ProtocolExecutor::Req::ColumnGet::schema(
       clients,
       req->name,
       [req, latency, verbose, start_ts=std::chrono::system_clock::now()]
@@ -176,7 +179,7 @@ void check_get(size_t num_of_cols, bool modified,
   latency = std::make_shared<Common::Stats::Stat>();
 
   for(auto& req : expected){
-    Comm::Protocol::Mngr::Req::ColumnGet::cid(
+    ProtocolExecutor::Req::ColumnGet::cid(
       clients,
       req->name,
       [req, latency, verbose, start_ts=std::chrono::system_clock::now()]
@@ -239,7 +242,8 @@ void check_get(size_t num_of_cols, bool modified,
 }
 
 
-void chk(Comm::Protocol::Mngr::Req::ColumnMng::Func func, size_t num_of_cols,
+void chk(Comm::Protocol::Mngr::Params::ColumnMng::Function func,
+         size_t num_of_cols,
          DB::Types::Encoder blk_encoding,
          bool modified, bool verbose=false) {
 
@@ -258,7 +262,7 @@ void chk(Comm::Protocol::Mngr::Req::ColumnMng::Func func, size_t num_of_cols,
     schema->blk_size = 3;
     schema->blk_cells = 9876543;
 
-    Comm::Protocol::Mngr::Req::ColumnMng::request(
+    ProtocolExecutor::Req::ColumnMng::request(
       clients,
       func, schema,
       [func, latency, verbose, start_ts=std::chrono::system_clock::now()]
@@ -269,14 +273,14 @@ void chk(Comm::Protocol::Mngr::Req::ColumnMng::Func func, size_t num_of_cols,
               std::chrono::system_clock::now() - start_ts).count();
 
         if(err != Error::OK && (
-            (func == Comm::Protocol::Mngr::Req::ColumnMng::Func::CREATE
+            (func == Comm::Protocol::Mngr::Params::ColumnMng::Function::CREATE
               && err != Error::COLUMN_SCHEMA_NAME_EXISTS)
             ||
-            (func == Comm::Protocol::Mngr::Req::ColumnMng::Func::DELETE
+            (func == Comm::Protocol::Mngr::Params::ColumnMng::Function::DELETE
               && err != Error::COLUMN_SCHEMA_NAME_NOT_EXISTS
               && err != Error::COLUMN_SCHEMA_NAME_NOT_CORRES)
             ||
-            (func == Comm::Protocol::Mngr::Req::ColumnMng::Func::MODIFY
+            (func == Comm::Protocol::Mngr::Params::ColumnMng::Function::MODIFY
               && err != Error::COLUMN_SCHEMA_NAME_NOT_EXISTS
               && err != Error::COLUMN_SCHEMA_NOT_DIFFERENT )
           )) {
@@ -324,7 +328,7 @@ void chk_rename(size_t num_of_cols, bool verbose=false){
   auto clients = Env::Clients::get();
   for(size_t n=1; n<=num_of_cols;++n){
     std::string name = get_name(n, false);
-    Comm::Protocol::Mngr::Req::ColumnGet::schema(
+    ProtocolExecutor::Req::ColumnGet::schema(
       clients,
       name,
       [n, latency, verbose, start_ts=std::chrono::system_clock::now()]
@@ -347,9 +351,9 @@ void chk_rename(size_t num_of_cols, bool verbose=false){
             << "from " << rsp.schema->to_string() << "\n"
             << "to   " << new_schema->to_string() << SWC_PRINT_CLOSE;
 
-        Comm::Protocol::Mngr::Req::ColumnMng::request(
+        ProtocolExecutor::Req::ColumnMng::request(
           Env::Clients::get(),
-          Comm::Protocol::Mngr::Req::ColumnMng::Func::MODIFY,
+          Comm::Protocol::Mngr::Params::ColumnMng::Function::MODIFY,
           new_schema,
           [latency, start_ts]
           (Comm::client::ConnQueue::ReqBase::Ptr req_ptr, int err){
@@ -394,6 +398,9 @@ int main(int argc, char** argv) {
       nullptr,
       nullptr, // std::make_shared<client::ManagerContext>()
       nullptr  // std::make_shared<client::RangerContext>()
+#if CLIENT_EXECUTOR == BROKER
+,nullptr
+#endif
     )->init()
   );
 
@@ -403,7 +410,7 @@ int main(int argc, char** argv) {
   check_delete(num_of_cols, false);
   check_delete(num_of_cols, true);
 
-  chk(Comm::Protocol::Mngr::Req::ColumnMng::Func::CREATE,
+  chk(Comm::Protocol::Mngr::Params::ColumnMng::Function::CREATE,
       num_of_cols, DB::Types::Encoder::PLAIN, false);
   check_get(num_of_cols, false, DB::Types::Encoder::PLAIN);
   std::cout << "\n";
@@ -415,7 +422,7 @@ int main(int argc, char** argv) {
   check_get(num_of_cols, true, DB::Types::Encoder::PLAIN, true);
   std::cout << "\n";
 
-  chk(Comm::Protocol::Mngr::Req::ColumnMng::Func::MODIFY,
+  chk(Comm::Protocol::Mngr::Params::ColumnMng::Function::MODIFY,
       num_of_cols, DB::Types::Encoder::SNAPPY, true);
   check_get(num_of_cols, true, DB::Types::Encoder::SNAPPY);
   std::cout << "\n";

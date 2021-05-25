@@ -16,6 +16,8 @@ class DbClient : public Interface {
 
   public:
 
+  const bool with_broker;
+
   DbClient();
 
   bool mng_column(Comm::Protocol::Mngr::Params::ColumnMng::Function func,
