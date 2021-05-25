@@ -6,9 +6,6 @@
 
 
 #include "swcdb/db/Protocol/Mngr/req/ColumnMng.h"
-#include "swcdb/db/Protocol/Mngr/req/MngrActive.h"
-#include "swcdb/db/client/Clients.h"
-#include "swcdb/db/Protocol/Commands.h"
 
 
 namespace SWC { namespace Comm { namespace Protocol {
@@ -54,49 +51,12 @@ void ColumnMng::request(const SWC::client::Clients::Ptr& clients,
 ColumnMng::ColumnMng(const SWC::client::Clients::Ptr& clients,
                      const Params::ColumnMng& params,
                      ColumnMng::Cb_t&& cb, const uint32_t timeout)
-                    : client::ConnQueue::ReqBase(
-                        false,
-                        Buffers::make(params, 0, COLUMN_MNG, timeout)
-                      ),
-                      clients(clients), cb(std::move(cb)) {
+                    : ColumnMng_Base(clients, params, timeout),
+                      cb(std::move(cb)) {
 }
 
-void ColumnMng::handle_no_conn() {
-  if(clients->stopping()) {
-    cb(req(), Error::CLIENT_STOPPING);
-  } else {
-    clear_endpoints();
-    run();
-  }
-}
-
-bool ColumnMng::run() {
-  if(endpoints.empty()) {
-    clients->get_mngr(DB::Types::MngrRole::SCHEMAS, endpoints);
-    if(endpoints.empty()) {
-      if(clients->stopping()) {
-        cb(req(), Error::CLIENT_STOPPING);
-      } else {
-        MngrActive::make(
-          clients, DB::Types::MngrRole::SCHEMAS, shared_from_this())->run();
-      }
-      return false;
-    }
-  }
-  clients->get_mngr_queue(endpoints)->put(req());
-  return true;
-}
-
-void ColumnMng::handle(ConnHandlerPtr, const Event::Ptr& ev) {
-  if(ev->type == Event::Type::DISCONNECT)
-    return handle_no_conn();
-
-  cb(req(), ev->response_code());
-}
-
-void ColumnMng::clear_endpoints() {
-  clients->remove_mngr(endpoints);
-  endpoints.clear();
+void ColumnMng::callback(int error) {
+  cb(req(), error);
 }
 
 

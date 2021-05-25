@@ -15,6 +15,10 @@
 #include "swcdb/fs/Interface.h"
 #include "swcdb/common/Files/TSV.h"
 
+#include "swcdb/db/Protocol/Mngr/req/ColumnMng_Sync.h"
+#include "swcdb/db/Protocol/Mngr/req/ColumnCompact_Sync.h"
+#include "swcdb/db/Protocol/Mngr/req/ColumnGet_Sync.h"
+#include "swcdb/db/Protocol/Mngr/req/ColumnList_Sync.h"
 
 
 namespace SWC { namespace Utils { namespace shell {
@@ -30,7 +34,7 @@ DbClient::DbClient()
       {"add column|schema (schema definitions [name=value ]);"},
       [ptr=this](std::string& cmd){
         return ptr->mng_column(
-          Comm::Protocol::Mngr::Req::ColumnMng::Func::CREATE, cmd);
+          Comm::Protocol::Mngr::Params::ColumnMng::Function::CREATE, cmd);
       },
       new re2::RE2(
         "(?i)^(add|create)\\s+(column|schema)(.*|$)")
@@ -42,7 +46,7 @@ DbClient::DbClient()
       {"modify column|schema (schema definitions [name=value ]);"},
       [ptr=this](std::string& cmd){
         return ptr->mng_column(
-          Comm::Protocol::Mngr::Req::ColumnMng::Func::MODIFY, cmd);
+          Comm::Protocol::Mngr::Params::ColumnMng::Function::MODIFY, cmd);
       },
       new re2::RE2(
         "(?i)^(modify|change|update)\\s+(column|schema)(.*|$)")
@@ -54,7 +58,7 @@ DbClient::DbClient()
       {"delete column|schema (schema definitions [name=value ]);"},
       [ptr=this](std::string& cmd){
         return ptr->mng_column(
-          Comm::Protocol::Mngr::Req::ColumnMng::Func::DELETE, cmd);
+          Comm::Protocol::Mngr::Params::ColumnMng::Function::DELETE, cmd);
       },
       new re2::RE2(
         "(?i)^(delete|remove)\\s+(column|schema)(.*|$)")
@@ -168,38 +172,25 @@ DbClient::DbClient()
 }
 
 // CREATE/MODIFY/DELETE COLUMN
-bool DbClient::mng_column(Comm::Protocol::Mngr::Req::ColumnMng::Func func,
-                          std::string& cmd) {
+bool DbClient::mng_column(
+                  Comm::Protocol::Mngr::Params::ColumnMng::Function func,
+                  std::string& cmd) {
   std::string message;
   DB::Schema::Ptr schema;
   client::SQL::parse_column_schema(err, cmd, func, schema, message);
   if(err)
     return error(message);
 
-  std::promise<int> res;
-  Comm::Protocol::Mngr::Req::ColumnMng::request(
-    Env::Clients::get(),
-    func, schema,
-    [await=&res]
-    (const Comm::client::ConnQueue::ReqBase::Ptr&, int error) {
-      /*if(err && Func::CREATE && err != Error::COLUMN_SCHEMA_NAME_EXISTS) {
-        req->request_again();
-        return;
-      }*/
-      await->set_value(error);
-    },
-    1800000
-  );
-
-  if((err = res.get_future().get())) {
+  Comm::Protocol::Mngr::Req::ColumnMng_Sync::request(
+    Env::Clients::get(), func, schema, err, 1800000);
+  if(err) {
     message.append(Error::get_text(err));
     message.append("\n");
     return error(message);
   }
-  if(schema->cid != DB::Schema::NO_CID)
-    Env::Clients::get()->schemas.remove(schema->cid);
-  else
-    Env::Clients::get()->schemas.remove(schema->col_name);
+  schema->cid == DB::Schema::NO_CID
+    ? Env::Clients::get()->schemas.remove(schema->col_name)
+    : Env::Clients::get()->schemas.remove(schema->cid);
   return true;
 }
 
@@ -216,48 +207,27 @@ bool DbClient::compact_column(std::string& cmd) {
 
   if(!params.patterns.empty() || schemas.empty()) {
     // get all schemas or on patterns
-    std::promise<int> res;
-    Comm::Protocol::Mngr::Req::ColumnList::request(
-      clients,
-      params,
-      [&schemas, await=&res]
-      (const Comm::client::ConnQueue::ReqBase::Ptr&, int error,
-       const Comm::Protocol::Mngr::Params::ColumnListRsp& rsp) {
-        if(!error)
-          schemas.insert(
-            schemas.end(), rsp.schemas.begin(), rsp.schemas.end());
-        await->set_value(error);
-      },
-      300000
-    );
-    if((err = res.get_future().get())) {
+    std::vector<DB::Schema::Ptr> _schemas;
+    Comm::Protocol::Mngr::Req::ColumnList_Sync::request(
+      clients, params, err, _schemas, 300000);
+    if(err) {
       message.append(Error::get_text(err));
       message.append("\n");
       return error(message);
     }
+    if(schemas.empty())
+      schemas = std::move(_schemas);
+    else
+      schemas.insert(schemas.end(), _schemas.begin(), _schemas.end());
   }
-  if(schemas.empty())
-    return true;
-  std::promise<void> res;
-  Core::Atomic<size_t> proccessing(schemas.size());
   for(auto& schema : schemas) {
-    Comm::Protocol::Mngr::Req::ColumnCompact::request(
-      clients,
-      schema->cid,
-      [schema, &proccessing, await=&res]
-      (const Comm::client::ConnQueue::ReqBase::Ptr&,
-       const Comm::Protocol::Mngr::Params::ColumnCompactRsp& rsp) {
-        SWC_PRINT << "Compactig Column cid=" << schema->cid
-                  << " '" << schema->col_name << "' err=" << rsp.err
-                  << "(" << Error::get_text(rsp.err) << ")"
-                  << SWC_PRINT_CLOSE;
-        if(proccessing.fetch_sub(1) == 1)
-          await->set_value();
-      },
-      300000
-    );
+    Comm::Protocol::Mngr::Req::ColumnCompact_Sync::request(
+      clients, schema->cid, err, 300000);
+    SWC_PRINT << "Compactig Column cid=" << schema->cid
+              << " '" << schema->col_name << "' ";
+    Error::print(SWC_LOG_OSTREAM, err);
+    SWC_LOG_OSTREAM << SWC_PRINT_CLOSE;
   }
-  res.get_future().wait();
   return true;
 }
 
@@ -275,25 +245,18 @@ bool DbClient::list_columns(std::string& cmd) {
 
   if(!params.patterns.empty() || schemas.empty()) {
     // get all schemas or on patterns
-    std::promise<int> res;
-    Comm::Protocol::Mngr::Req::ColumnList::request(
-      clients,
-      params,
-      [&schemas, await=&res]
-      (const Comm::client::ConnQueue::ReqBase::Ptr&, int error,
-       const Comm::Protocol::Mngr::Params::ColumnListRsp& rsp) {
-        if(!error)
-          schemas.insert(
-            schemas.end(), rsp.schemas.begin(), rsp.schemas.end());
-        await->set_value(error);
-      },
-      300000
-    );
-    if((err = res.get_future().get())) {
+    std::vector<DB::Schema::Ptr> _schemas;
+    Comm::Protocol::Mngr::Req::ColumnList_Sync::request(
+      clients, params, err, _schemas, 300000);
+    if(err) {
       message.append(Error::get_text(err));
       message.append("\n");
       return error(message);
     }
+    if(schemas.empty())
+      schemas = std::move(_schemas);
+    else
+      schemas.insert(schemas.end(), _schemas.begin(), _schemas.end());
   }
 
   std::sort(

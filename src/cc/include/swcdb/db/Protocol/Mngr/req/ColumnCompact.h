@@ -7,15 +7,14 @@
 #define swcdb_db_protocol_req_ColumnCompact_h
 
 
-#include "swcdb/core/comm/ClientConnQueue.h"
-#include "swcdb/db/Protocol/Mngr/params/ColumnCompact.h"
+#include "swcdb/db/Protocol/Mngr/req/ColumnCompact_Base.h"
 
 
 namespace SWC { namespace Comm { namespace Protocol {
 namespace Mngr { namespace Req {
 
 
-class ColumnCompact: public client::ConnQueue::ReqBase {
+class ColumnCompact: public ColumnCompact_Base {
   public:
 
   typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&,
@@ -35,20 +34,11 @@ class ColumnCompact: public client::ConnQueue::ReqBase {
 
   virtual ~ColumnCompact() { }
 
-  void handle_no_conn() override;
-
-  bool run() override;
-
-  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
+  protected:
+  void callback(const Params::ColumnCompactRsp& rsp) override;
 
   private:
-
-  void clear_endpoints();
-
-  SWC::client::Clients::Ptr clients;
   const Cb_t                cb;
-  const cid_t               cid;
-  EndPoints                 endpoints;
 };
 
 

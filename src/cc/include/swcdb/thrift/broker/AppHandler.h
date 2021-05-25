@@ -17,6 +17,11 @@
 #include "swcdb/db/client/Query/Select/Handlers/Common.h"
 #include "swcdb/db/client/Query/Update/Handlers/Common.h"
 
+#include "swcdb/db/Protocol/Mngr/req/ColumnMng.h"
+#include "swcdb/db/Protocol/Mngr/req/ColumnGet.h"
+#include "swcdb/db/Protocol/Mngr/req/ColumnList.h"
+#include "swcdb/db/Protocol/Mngr/req/ColumnCompact.h"
+
 
 namespace SWC {
 namespace thrift = apache::thrift;

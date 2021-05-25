@@ -3,8 +3,8 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swcdb_db_protocol_mngr_req_ColumnMng_h
-#define swcdb_db_protocol_mngr_req_ColumnMng_h
+#ifndef swcdb_db_protocol_mngr_req_ColumnMng_Sync_h
+#define swcdb_db_protocol_mngr_req_ColumnMng_Sync_h
 
 
 #include "swcdb/db/Protocol/Mngr/req/ColumnMng_Base.h"
@@ -14,44 +14,43 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace Mngr { namespace Req {
 
 
-class ColumnMng: public ColumnMng_Base {
+class ColumnMng_Sync: public ColumnMng_Base {
   public:
 
-  typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&,
-                             int)> Cb_t;
-
   static void create(const SWC::client::Clients::Ptr& clients,
-                     const DB::Schema::Ptr& schema, Cb_t&& cb,
+                     const DB::Schema::Ptr& schema, int& err,
                      const uint32_t timeout = 10000);
 
   static void modify(const SWC::client::Clients::Ptr& clients,
-                     const DB::Schema::Ptr& schema, Cb_t&& cb,
+                     const DB::Schema::Ptr& schema, int& err,
                      const uint32_t timeout = 10000);
 
   static void remove(const SWC::client::Clients::Ptr& clients,
-                     const DB::Schema::Ptr& schema, Cb_t&& cb,
+                     const DB::Schema::Ptr& schema, int& err,
                      const uint32_t timeout = 10000);
 
   static void request(const SWC::client::Clients::Ptr& clients,
-                      Func func,
-                      const DB::Schema::Ptr& schema, Cb_t&& cb,
+                      Params::ColumnMng::Function func,
+                      const DB::Schema::Ptr& schema, int& err,
                       const uint32_t timeout = 10000);
 
   static void request(const SWC::client::Clients::Ptr& clients,
-                      const Params::ColumnMng& params, Cb_t&& cb,
+                      const Params::ColumnMng& params, int& err,
                       const uint32_t timeout = 10000);
 
-  ColumnMng(const SWC::client::Clients::Ptr& clients,
-            const Params::ColumnMng& params, Cb_t&& cb,
-            const uint32_t timeout);
+  std::promise<void> await;
 
-  virtual ~ColumnMng() { }
+  ColumnMng_Sync(const SWC::client::Clients::Ptr& clients,
+                 const Params::ColumnMng& params, int& err,
+                 const uint32_t timeout);
+
+  virtual ~ColumnMng_Sync() { }
 
   protected:
   virtual void callback(int err) override;
 
   private:
-  const Cb_t                cb;
+  int& err;
 
 };
 
@@ -60,7 +59,7 @@ class ColumnMng: public ColumnMng_Base {
 
 
 #ifdef SWC_IMPL_SOURCE
-#include "swcdb/db/Protocol/Mngr/req/ColumnMng.cc"
+#include "swcdb/db/Protocol/Mngr/req/ColumnMng_Sync.cc"
 #endif
 
-#endif // swcdb_db_protocol_mngr_req_ColumnMng_h
+#endif // swcdb_db_protocol_mngr_req_ColumnMng_Sync_h

@@ -121,16 +121,18 @@ void parse_list_columns(int& err, const Clients::Ptr& clients,
 }
 
 
-void parse_column_schema(int& err, const std::string& sql,
-                        Comm::Protocol::Mngr::Req::ColumnMng::Func func,
-                        DB::Schema::Ptr& schema, std::string& message) {
+void parse_column_schema(
+        int& err, const std::string& sql,
+        Comm::Protocol::Mngr::Params::ColumnMng::Function func,
+        DB::Schema::Ptr& schema, std::string& message) {
   ColumnSchema parser(sql, schema, message);
   err = parser.parse(func);
 }
 
-void parse_column_schema(int& err, const std::string& sql,
-                        Comm::Protocol::Mngr::Req::ColumnMng::Func* func,
-                        DB::Schema::Ptr& schema, std::string& message) {
+void parse_column_schema(
+        int& err, const std::string& sql,
+        Comm::Protocol::Mngr::Params::ColumnMng::Function* func,
+        DB::Schema::Ptr& schema, std::string& message) {
   ColumnSchema parser(sql, schema, message);
   err = parser.parse(func);
 }

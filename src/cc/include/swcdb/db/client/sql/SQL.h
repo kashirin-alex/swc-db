@@ -10,10 +10,8 @@
 
 #include "swcdb/db/client/Clients.h"
 
-#include "swcdb/db/Protocol/Mngr/req/ColumnMng.h"
-#include "swcdb/db/Protocol/Mngr/req/ColumnGet.h"
-#include "swcdb/db/Protocol/Mngr/req/ColumnList.h"
-#include "swcdb/db/Protocol/Mngr/req/ColumnCompact.h"
+#include "swcdb/db/Protocol/Mngr/params/ColumnMng.h"
+#include "swcdb/db/Protocol/Mngr/params/ColumnList.h"
 
 #include "swcdb/db/client/Query/Select/Scanner.h"
 #include "swcdb/db/client/Query/Update/Committer.h"
@@ -72,13 +70,15 @@ void parse_list_columns(int& err, const Clients::Ptr& clients,
                         uint8_t& output_flags,
                         std::string& message, const char* expect_cmd);
 
-void parse_column_schema(int& err, const std::string& sql,
-                         Comm::Protocol::Mngr::Req::ColumnMng::Func func,
-                         DB::Schema::Ptr& schema, std::string& message);
+void parse_column_schema(
+        int& err, const std::string& sql,
+        Comm::Protocol::Mngr::Params::ColumnMng::Function func,
+        DB::Schema::Ptr& schema, std::string& message);
 
-void parse_column_schema(int& err, const std::string& sql,
-                         Comm::Protocol::Mngr::Req::ColumnMng::Func* func,
-                         DB::Schema::Ptr& schema, std::string& message);
+void parse_column_schema(
+        int& err, const std::string& sql,
+        Comm::Protocol::Mngr::Params::ColumnMng::Function* func,
+        DB::Schema::Ptr& schema, std::string& message);
 
 void parse_dump(int& err, const Clients::Ptr& clients,
                 const std::string& sql,

@@ -4,8 +4,8 @@
  */
 
 #include "swcdb/db/client/Clients.h"
-#include "swcdb/db/Protocol/Mngr/req/ColumnGet.h"
-#include "swcdb/db/Protocol/Mngr/req/ColumnList.h"
+#include "swcdb/db/Protocol/Mngr/req/ColumnGet_Sync.h"
+#include "swcdb/db/Protocol/Mngr/req/ColumnList_Sync.h"
 
 namespace SWC { namespace client {
 
@@ -98,81 +98,25 @@ Schemas::get(int& err, const std::vector<DB::Schemas::Pattern>& patterns) {
 
 void Schemas::_request(int& err, cid_t cid,
                        DB::Schema::Ptr& schema) {
-  std::promise<int> res;
-  if(_clients->flags & Clients::Flag::DEFAULT) {
-    Comm::Protocol::Mngr::Req::ColumnGet::schema(
-      _clients->shared(), cid,
-      [schema=&schema, await=&res]
-      (const Comm::client::ConnQueue::ReqBase::Ptr& req,
-        int error, const Comm::Protocol::Mngr::Params::ColumnGetRsp& rsp) {
-        if(error == Error::REQUEST_TIMEOUT) {
-          SWC_PRINT << " error=" << error
-                    << "(" << Error::get_text(error) << ")" << SWC_PRINT_CLOSE;
-          req->request_again();
-          return;
-        }
-        if(!error)
-          *schema = rsp.schema;
-        await->set_value(error);
-      },
-      300000
-    );
-  }
-  err = res.get_future().get();
+  Comm::Protocol::Mngr::Req::ColumnGet_Sync::schema(
+    _clients->shared(), err, cid, schema, 300000);
 }
 
 void Schemas::_request(int& err, const std::string& name,
                        DB::Schema::Ptr& schema) {
-  std::promise<int> res;
-  if(_clients->flags & Clients::Flag::DEFAULT) {
-    Comm::Protocol::Mngr::Req::ColumnGet::schema(
-      _clients->shared(), name,
-      [schema=&schema, await=&res]
-      (const Comm::client::ConnQueue::ReqBase::Ptr& req,
-        int error, const Comm::Protocol::Mngr::Params::ColumnGetRsp& rsp) {
-        if(error == Error::REQUEST_TIMEOUT) {
-          SWC_PRINT << " error=" << error
-                    << "(" << Error::get_text(error) << ")" << SWC_PRINT_CLOSE;
-          req->request_again();
-          return;
-        }
-        if(!error)
-          *schema = rsp.schema;
-        await->set_value(error);
-      },
-      300000
-    );
-  }
-  err = res.get_future().get();
+  Comm::Protocol::Mngr::Req::ColumnGet_Sync::schema(
+    _clients->shared(), err, name, schema, 300000);
+
+  //if(_clients->flags & Clients::Flag::DEFAULT) {
 }
 
 void Schemas::_request(int& err,
                        const std::vector<DB::Schemas::Pattern>& patterns,
                        std::vector<DB::Schema::Ptr>& schemas) {
-  std::promise<int> res;
-  if(_clients->flags & Clients::Flag::DEFAULT) {
-    Comm::Protocol::Mngr::Params::ColumnListReq params;
-    params.patterns = patterns;
-
-    Comm::Protocol::Mngr::Req::ColumnList::request(
-      _clients->shared(), params,
-      [&schemas, await=&res]
-      (const Comm::client::ConnQueue::ReqBase::Ptr& req, int error,
-       const Comm::Protocol::Mngr::Params::ColumnListRsp& rsp) {
-        if(error == Error::REQUEST_TIMEOUT) {
-          SWC_PRINT << " error=" << error
-                    << "(" << Error::get_text(error) << ")" << SWC_PRINT_CLOSE;
-          req->request_again();
-          return;
-        }
-        if(!error)
-          schemas = rsp.schemas;
-        await->set_value(error);
-      },
-      300000
-    );
-  }
-  err = res.get_future().get();
+  Comm::Protocol::Mngr::Params::ColumnListReq params;
+  params.patterns = patterns;
+  Comm::Protocol::Mngr::Req::ColumnList_Sync::request(
+    _clients->shared(), params, err, schemas, 300000);
 }
 
 
