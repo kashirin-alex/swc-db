@@ -7,11 +7,36 @@
 #ifndef swcdb_broker_Protocol_handlers_ColumnCompact_h
 #define swcdb_broker_Protocol_handlers_ColumnCompact_h
 
-#include "swcdb/db/Protocol/Mngr/req/ColumnCompact.h"
+#include "swcdb/db/Protocol/Mngr/req/ColumnCompact_Base.h"
 
 
 namespace SWC { namespace Comm { namespace Protocol {
 namespace Bkr { namespace Handler {
+
+
+
+class ColumnCompact final : public Protocol::Mngr::Req::ColumnCompact_Base {
+  public:
+
+  ConnHandlerPtr  conn;
+  Event::Ptr      ev;
+
+  ColumnCompact(const SWC::client::Clients::Ptr& clients,
+                const Protocol::Mngr::Params::ColumnCompactReq& params,
+                const ConnHandlerPtr& conn, const Event::Ptr& ev)
+                : Protocol::Mngr::Req::ColumnCompact_Base(
+                    clients, params, ev->header.timeout_ms),
+                  conn(conn), ev(ev) {
+  }
+
+  virtual ~ColumnCompact() { }
+
+  void callback(const Protocol::Mngr::Params::ColumnCompactRsp& rsp) override {
+    conn->send_response(Buffers::make(ev, rsp));
+    Env::Bkr::in_process(-1);
+  }
+
+};
 
 
 void column_compact(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
@@ -22,16 +47,8 @@ void column_compact(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     Protocol::Mngr::Params::ColumnCompactReq params;
     params.decode(&ptr, &remain);
 
-    Protocol::Mngr::Req::ColumnCompact::request(
-      Env::Clients::get(),
-      params,
-      [conn, ev]
-      (const client::ConnQueue::ReqBase::Ptr&,
-       const Protocol::Mngr::Params::ColumnCompactRsp& rsp) noexcept {
-        conn->send_response(Buffers::make(ev, rsp));
-        Env::Bkr::in_process(-1);
-      }
-    );
+    std::make_shared<ColumnCompact>(
+      Env::Clients::get(), params, conn, ev)->run();
 
   } catch(...) {
     const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
