@@ -126,43 +126,49 @@ class AppContext final : public Comm::AppContext {
 
           case Comm::Protocol::Bkr::Command::COLUMN_GET:
             Env::Bkr::post([conn, ev]() {
-              if(!ev->expired())
-                Comm::Protocol::Bkr::Handler::column_get(conn, ev);
+              ev->expired() || !conn->is_open()
+                ? Env::Bkr::in_process(-1)
+                : Comm::Protocol::Bkr::Handler::column_get(conn, ev);
             });
             break;
 
           case Comm::Protocol::Bkr::Command::COLUMN_LIST:
             Env::Bkr::post([conn, ev]() {
-              if(!ev->expired())
-                Comm::Protocol::Bkr::Handler::column_list(conn, ev);
+              ev->expired() || !conn->is_open()
+                ? Env::Bkr::in_process(-1)
+                : Comm::Protocol::Bkr::Handler::column_list(conn, ev);
             });
             break;
 
           case Comm::Protocol::Bkr::Command::COLUMN_COMPACT:
             Env::Bkr::post([conn, ev]() {
-              if(!ev->expired())
-                Comm::Protocol::Bkr::Handler::column_compact(conn, ev);
+              ev->expired() || !conn->is_open()
+                ? Env::Bkr::in_process(-1)
+                : Comm::Protocol::Bkr::Handler::column_compact(conn, ev);
             });
             break;
 
           case Comm::Protocol::Bkr::Command::COLUMN_MNG:
             Env::Bkr::post([conn, ev]() {
-              if(!ev->expired())
-                Comm::Protocol::Bkr::Handler::column_mng(conn, ev);
+              ev->expired() || !conn->is_open()
+                ? Env::Bkr::in_process(-1)
+                : Comm::Protocol::Bkr::Handler::column_mng(conn, ev);
             });
             break;
 
           case Comm::Protocol::Bkr::Command::CELLS_UPDATE:
             Env::Bkr::post([conn, ev]() {
-              if(!ev->expired())
-                Comm::Protocol::Bkr::Handler::cells_update(conn, ev);
+              ev->expired() || !conn->is_open()
+                ? Env::Bkr::in_process(-1)
+                : Comm::Protocol::Bkr::Handler::cells_update(conn, ev);
             });
             break;
 
           case Comm::Protocol::Bkr::Command::CELLS_SELECT:
             Env::Bkr::post([conn, ev]() {
-              if(!ev->expired())
-                Comm::Protocol::Bkr::Handler::cells_select(conn, ev);
+              ev->expired() || !conn->is_open()
+                ? Env::Bkr::in_process(-1)
+                : Comm::Protocol::Bkr::Handler::cells_select(conn, ev);
             });
             break;
 

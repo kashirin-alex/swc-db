@@ -108,19 +108,19 @@ bool has_endpoint(const EndPoints& endpoints,
 
 size_t endpoints_hash(const EndPoints& endpoints) {
   std::string s;
+  s.reserve(23 * endpoints.size());
   for(auto& endpoint : endpoints) {
     s.append(endpoint.address().to_string());
     s.append(":");
     s.append(std::to_string(endpoint.port()));
+    s.append("_");
   }
   std::hash<std::string> hasher;
   return hasher(s);
 }
 
-size_t endpoint_hash(const EndPoint& endpoint) {
-  std::hash<std::string> hasher;
-  return hasher(
-    endpoint.address().to_string() + "_" + std::to_string(endpoint.port()));
+size_t endpoint_hash(const EndPoint& endpoint) noexcept {
+  return std::hash<EndPoint>()(endpoint);
 }
 
 

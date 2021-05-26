@@ -134,7 +134,7 @@ void ConnHandler::write(ConnHandler::Outgoing& outgoing) {
     // send request/response without sent/rsp-ack
     if(cbuf->expired())
       return write_next();
-    do_async_write(
+    if(connected) do_async_write(
       cbuf->get_buffers(),
       [cbuf, conn=ptr()] (const asio::error_code& ec, uint32_t bytes) {
         if(ec) {
@@ -155,7 +155,7 @@ void ConnHandler::write(ConnHandler::Outgoing& outgoing) {
       if(cbuf->expired())
         return write_next();
 
-      do_async_write(
+      if(connected) do_async_write(
         cbuf->get_buffers(),
         [cbuf, hdlr=std::move(outgoing.hdlr), conn=ptr()]
         (const asio::error_code& ec, uint32_t bytes) {
@@ -212,6 +212,9 @@ void ConnHandler::write(ConnHandler::Outgoing& outgoing) {
       );
     }
   }
+
+  if(!connected)
+    return do_close();
 
   do_async_write(
     cbuf->get_buffers(),
