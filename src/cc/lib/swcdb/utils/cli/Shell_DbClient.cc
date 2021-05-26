@@ -162,18 +162,36 @@ DbClient::DbClient()
 
   //Env::IoCtx::init(settings->get_i32("swc.client.handlers"));
   Env::Clients::init(
-    std::make_shared<client::Clients>(
-      *Env::Config::settings(),
-      nullptr, // Env::IoCtx::io(),
-      nullptr, // std::make_shared<client::ManagerContext>()
-      nullptr, // std::make_shared<client::RangerContext>()
-      nullptr  // std::make_shared<client::BrokerContext>()
+    (with_broker
+      ? std::make_shared<client::Clients>(
+          *Env::Config::settings(),
+          nullptr, // Env::IoCtx::io(),
+          nullptr  // std::make_shared<client::BrokerContext>()
+        )
+      : std::make_shared<client::Clients>(
+          *Env::Config::settings(),
+          nullptr, // Env::IoCtx::io(),
+          nullptr, // std::make_shared<client::ManagerContext>()
+          nullptr  // std::make_shared<client::RangerContext>()
+        )
     )->init()
   );
 
   SWC_ASSERT(
     !with_broker || SWC::Env::Clients::get()->brokers.has_endpoints()
   );
+}
+
+DbClient::~DbClient() {
+  #if defined(SWC_ENABLE_SANITIZER)
+    Env::Clients::get()->stop();
+    std::this_thread::sleep_for(std::chrono::seconds(3));
+    Env::IoCtx::io()->stop();
+    std::this_thread::sleep_for(std::chrono::seconds(3));
+    Env::Clients::reset();
+    Env::IoCtx::reset();
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+  #endif
 }
 
 // CREATE/MODIFY/DELETE COLUMN

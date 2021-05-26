@@ -4,7 +4,7 @@
  */
 
 
-#define CLIENT_EXECUTOR BROKER
+#define CLIENT_EXECUTOR 2
 
 #include "swcdb/db/Protocol/Bkr/req/ColumnMng.h"
 #include "swcdb/db/Protocol/Bkr/req/ColumnGet.h"

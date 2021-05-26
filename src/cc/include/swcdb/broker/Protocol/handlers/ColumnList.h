@@ -24,6 +24,8 @@ void column_list(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     Protocol::Mngr::Params::ColumnListReq req_params;
     req_params.decode(&ptr, &remain);
     Env::Clients::get()->get_schema(err, req_params.patterns, rsp.schemas);
+    if(err == Error::COLUMN_SCHEMA_MISSING)
+      err = Error::OK;
 
   } catch(...) {
     const Error::Exception& e = SWC_CURRENT_EXCEPTION("");

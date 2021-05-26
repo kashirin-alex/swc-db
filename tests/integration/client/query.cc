@@ -474,12 +474,18 @@ int main(int argc, char** argv) {
   SWC::Env::Config::init(argc, argv);
 
   SWC::Env::Clients::init(
-    std::make_shared<SWC::client::Clients>(
-      *SWC::Env::Config::settings(),
-      nullptr,
-      nullptr, // std::make_shared<client::ManagerContext>()
-      nullptr, // std::make_shared<client::RangerContext>()
-      nullptr  // std::make_shared<client::BrokerContext>()
+    (SWC::Env::Config::settings()->get_bool("with-broker")
+      ? std::make_shared<SWC::client::Clients>(
+          *SWC::Env::Config::settings(),
+          nullptr, // Env::IoCtx::io(),
+          nullptr  // std::make_shared<client::BrokerContext>()
+        )
+      : std::make_shared<SWC::client::Clients>(
+          *SWC::Env::Config::settings(),
+          nullptr, // Env::IoCtx::io(),
+          nullptr, // std::make_shared<client::ManagerContext>()
+          nullptr  // std::make_shared<client::RangerContext>()
+        )
     )->init()
   );
 

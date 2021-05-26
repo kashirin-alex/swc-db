@@ -29,26 +29,28 @@ namespace SWC { namespace Utils { namespace shell {
 
 int run() {
   auto settings = SWC::Env::Config::settings();
-
-  if(settings->has("ranger"))
-    return Rgr().run();
-
-  if(settings->has("manager"))
-    return Mngr().run();
-
-  if(settings->has("filesystem"))
-    return Fs().run();
-
-  if(settings->has("statistics"))
-    return Statistics().run();
-
+  int res;
   try {
-    return DbClient().run();
+    if(settings->has("ranger"))
+      res = Rgr().run();
+    else if(settings->has("manager"))
+      res = Mngr().run();
+    else if(settings->has("filesystem"))
+      res = Fs().run();
+    else if(settings->has("statistics"))
+      res = Statistics().run();
+    else
+      res = DbClient().run();
   } catch(...) {
     SWC_PRINT << SWC_CURRENT_EXCEPTION("") << SWC_PRINT_CLOSE;
+    res = 1;
   }
 
-  return 1;
+  #if defined(SWC_ENABLE_SANITIZER)
+    SWC::Env::Config::reset();
+  #endif
+
+  return res;
 }
 
 Interface::Interface(std::string&& prompt, std::string&& history)

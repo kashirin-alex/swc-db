@@ -971,17 +971,24 @@ void generate() {
 int main(int argc, char** argv) {
   SWC::Env::Config::init(argc, argv);
 
+  auto settings = SWC::Env::Config::settings();
   SWC::Env::Clients::init(
-    std::make_shared<SWC::client::Clients>(
-      *SWC::Env::Config::settings(),
-      nullptr, // Env::IoCtx::io(),
-      nullptr, // std::make_shared<client::ManagerContext>()
-      nullptr, // std::make_shared<client::RangerContext>()
-      nullptr  // std::make_shared<client::BrokerContext>()
+    (settings->get_bool("with-broker")
+      ? std::make_shared<SWC::client::Clients>(
+          *settings,
+          nullptr, // Env::IoCtx::io(),
+          nullptr  // std::make_shared<client::BrokerContext>()
+        )
+      : std::make_shared<SWC::client::Clients>(
+          *settings,
+          nullptr, // Env::IoCtx::io(),
+          nullptr, // std::make_shared<client::ManagerContext>()
+          nullptr  // std::make_shared<client::RangerContext>()
+        )
     )->init()
   );
 
-  auto period = SWC::Env::Config::settings()->get<
+  auto period = settings->get<
     SWC::Config::Property::V_GINT32>("swc.cfg.dyn.period");
   if(period->get()) {
     SWC::Env::IoCtx::io()->set_periodic_timer(

@@ -12,6 +12,7 @@
 #include "swcdb/db/Cells/SpecsScan.h"
 
 #if !defined(CLIENT_EXECUTOR)
+#define CLIENT_EXECUTOR 1
 #include "swcdb/db/Protocol/Mngr/req/ColumnMng.h"
 #include "swcdb/db/Protocol/Mngr/req/ColumnGet.h"
 namespace ProtocolExecutor = SWC::Comm::Protocol::Mngr;
@@ -396,11 +397,12 @@ int main(int argc, char** argv) {
     std::make_shared<client::Clients>(
       *Env::Config::settings(),
       nullptr,
-      nullptr, // std::make_shared<client::ManagerContext>()
-      nullptr  // std::make_shared<client::RangerContext>()
-#if CLIENT_EXECUTOR == BROKER
-,nullptr
-#endif
+      #if CLIENT_EXECUTOR == 2
+        nullptr  // std::make_shared<client::BrokerContext>()
+      #else
+        nullptr, // std::make_shared<client::ManagerContext>()
+        nullptr  // std::make_shared<client::RangerContext>()
+      #endif
     )->init()
   );
 

@@ -63,6 +63,7 @@ class AppContext final : public Comm::AppContext {
         std::make_shared<client::ContextBroker>(*settings)
       )->init()
     );
+    Env::Clients::get()->set_flags__schemas_via_default();
 
     Env::FsInterface::init(FS::fs_type(settings->get_str("swc.fs")));
   }

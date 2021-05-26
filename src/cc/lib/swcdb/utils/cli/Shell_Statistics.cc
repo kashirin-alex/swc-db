@@ -26,6 +26,7 @@ static const std::vector<std::string> default_stat_names = {
 Statistics::Statistics()
   : Interface("\033[32mSWC-DB(\033[36mstatistics\033[32m)\033[33m> \033[00m",
               "/tmp/.swc-cli-statistics-history"),
+    with_broker(Env::Config::settings()->get_bool("with-broker")),
     m_stat_names(default_stat_names) {
 
   options.push_back(
@@ -106,18 +107,23 @@ Statistics::Statistics()
 
   //Env::IoCtx::init(settings->get_i32("swc.client.handlers"));
   Env::Clients::init(
-    std::make_shared<client::Clients>(
-      *Env::Config::settings(),
-      nullptr, // Env::IoCtx::io(),
-      nullptr, // std::make_shared<client::ManagerContext>()
-      nullptr, // std::make_shared<client::RangerContext>()
-      nullptr  // std::make_shared<client::BrokerContext>()
+    (with_broker
+      ? std::make_shared<client::Clients>(
+          *Env::Config::settings(),
+          nullptr, // Env::IoCtx::io(),
+          nullptr  // std::make_shared<client::BrokerContext>()
+        )
+      : std::make_shared<client::Clients>(
+          *Env::Config::settings(),
+          nullptr, // Env::IoCtx::io(),
+          nullptr, // std::make_shared<client::ManagerContext>()
+          nullptr  // std::make_shared<client::RangerContext>()
+        )
     )->init()
   );
 
   SWC_ASSERT(
-    !SWC::Env::Config::settings()->get_bool("with-broker") ||
-    SWC::Env::Clients::get()->brokers.has_endpoints()
+    !with_broker || SWC::Env::Clients::get()->brokers.has_endpoints()
   );
 }
 
@@ -492,7 +498,7 @@ void Statistics::set_definitions(DB::Specs::Scan& specs) {
     },
     true,
     nullptr,
-    Env::Config::settings()->get_bool("with-broker")
+    with_broker
       ? client::Clients::BROKER
       : client::Clients::DEFAULT
   );
@@ -752,7 +758,7 @@ bool Statistics::show() {
       },
       true,
       nullptr,
-      Env::Config::settings()->get_bool("with-broker")
+      with_broker
         ? client::Clients::BROKER
         : client::Clients::DEFAULT
     );
@@ -798,7 +804,7 @@ bool Statistics::truncate() {
         state_errorp->store(hdlr->error());
     },
     nullptr,
-    Env::Config::settings()->get_bool("with-broker")
+    with_broker
       ? client::Clients::BROKER
       : client::Clients::DEFAULT
   );
@@ -838,7 +844,7 @@ bool Statistics::truncate() {
     },
     true,
     nullptr,
-    Env::Config::settings()->get_bool("with-broker")
+    with_broker
       ? client::Clients::BROKER
       : client::Clients::DEFAULT
   );

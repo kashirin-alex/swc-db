@@ -90,6 +90,10 @@ class Clients : public std::enable_shared_from_this<Clients>{
     flags.store(_flags);
   }
 
+  void set_flags__schemas_via_default() noexcept {
+    set_flags(Flag::DEFAULT | Flag::BROKER);
+  }
+
   bool has_brokers() noexcept {
     return bool(brokers.queues);
   }

@@ -18,6 +18,8 @@ namespace SWC { namespace Utils { namespace shell {
 class Statistics : public Interface {
   public:
 
+  const bool with_broker;
+
   Statistics();
 
   private:

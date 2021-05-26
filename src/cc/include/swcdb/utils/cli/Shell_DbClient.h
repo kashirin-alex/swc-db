@@ -20,6 +20,8 @@ class DbClient : public Interface {
 
   DbClient();
 
+  ~DbClient();
+
   bool mng_column(Comm::Protocol::Mngr::Params::ColumnMng::Function func,
                   std::string& cmd);
 
