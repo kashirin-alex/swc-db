@@ -29,24 +29,23 @@ class Bkr final {
 
   static void start();
 
-  static void shuttingdown();
-
-  static void wait_if_in_process();
-
-  static bool is_not_accepting() noexcept {
-    return m_env->m_not_accepting;
+  static void shuttingdown() {
+    m_env->_shuttingdown();
   }
 
-  static bool is_shuttingdown() noexcept {
-    return m_env->m_shuttingdown;
-  }
-
-  static int64_t in_process() noexcept {
-    return m_env->m_in_process;
+  static bool can_process() noexcept {
+    if(m_env->m_not_accepting)
+      return false;
+    m_env->m_in_process.fetch_add(1);
+    return true;
   }
 
   static void in_process(int64_t count) noexcept {
     m_env->m_in_process.fetch_add(count);
+  }
+
+  static void processed() noexcept {
+    m_env->m_in_process.fetch_sub(1);
   }
 
   static Bkr* get() noexcept {
@@ -85,9 +84,13 @@ class Bkr final {
   ~Bkr();
 
   private:
+
+  void _shuttingdown();
+
+  void wait_if_in_process();
+
   inline static std::shared_ptr<Bkr>   m_env = nullptr;
 
-  Core::AtomicBool                     m_shuttingdown;
   Core::AtomicBool                     m_not_accepting;
   Core::Atomic<int64_t>                m_in_process;
 
@@ -128,8 +131,7 @@ Bkr::Bkr()
         _reporting ? &_reporting->system : nullptr,
         [this](size_t bytes) noexcept { (void)this; (void)bytes; return 0; }
       ),
-      m_shuttingdown(false), m_not_accepting(false),
-      m_in_process(0) {
+      m_not_accepting(false), m_in_process(0) {
 }
 
 Bkr::~Bkr() {
@@ -138,25 +140,23 @@ Bkr::~Bkr() {
 void Bkr::start() {
 }
 
-void Bkr::shuttingdown() {
-  m_env->m_not_accepting.store(true);
+void Bkr::_shuttingdown() {
+  m_not_accepting.store(true);
 
-  if(m_env->_reporting)
-    m_env->_reporting->stop();
+  if(_reporting)
+    _reporting->stop();
 
   wait_if_in_process();
 
-  m_env->m_shuttingdown.store(true);
-
-  m_env->_resources.stop();
+  _resources.stop();
 }
 
 void Bkr::wait_if_in_process() {
   size_t n = 0;
-  while(in_process()) {
+  while(m_in_process) {
     std::this_thread::sleep_for(std::chrono::milliseconds(200));
     if(!(++n % 10))
-      SWC_LOGF(LOG_WARN, "In-process=%ld check=%lu", in_process(), n);
+      SWC_LOGF(LOG_WARN, "In-process=%ld check=%lu", m_in_process.load(), n);
   }
 }
 

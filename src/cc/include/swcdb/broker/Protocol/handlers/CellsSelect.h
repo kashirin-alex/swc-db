@@ -75,7 +75,7 @@ class Selector final : public SWC::client::Query::Select::Handlers::Base {
       Error::print(SWC_LOG_OSTREAM << ' ', state_error);
     );
 
-    Env::Bkr::in_process(-1);
+    Env::Bkr::processed();
   }
 };
 
@@ -104,7 +104,7 @@ void cells_select(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     err = e.code();
   }
   conn->send_response(Buffers::make(ev, Params::CellsSelectRsp(err)));
-  Env::Bkr::in_process(-1);
+  Env::Bkr::processed();
 }
 
 

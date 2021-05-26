@@ -38,7 +38,7 @@ class ColumnMng final : public Protocol::Mngr::Req::ColumnMng_Base {
     schema->cid == DB::Schema::NO_CID
       ? Env::Clients::get()->schemas.remove(schema->col_name)
       : Env::Clients::get()->schemas.remove(schema->cid);
-    Env::Bkr::in_process(-1);
+    Env::Bkr::processed();
   }
 
 };
@@ -59,7 +59,7 @@ void column_mng(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
     SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
     conn->send_error(e.code() , "", ev);
-    Env::Bkr::in_process(-1);
+    Env::Bkr::processed();
   }
 }
 

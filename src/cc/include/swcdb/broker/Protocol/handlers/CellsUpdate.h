@@ -69,7 +69,7 @@ class Updater final
       Error::print(SWC_LOG_OSTREAM << ' ', error());
     );
 
-    Env::Bkr::in_process(-1);
+    Env::Bkr::processed();
   }
 
 };
@@ -101,7 +101,7 @@ void cells_update(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     err = e.code();
   }
   conn->send_response(Buffers::make(ev, Params::CellsUpdateRsp(err)));
-  Env::Bkr::in_process(-1);
+  Env::Bkr::processed();
 }
 
 

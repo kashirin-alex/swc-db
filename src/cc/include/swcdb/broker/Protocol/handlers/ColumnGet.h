@@ -58,7 +58,7 @@ void column_get(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
   cbp->append_i32(err);
   conn->send_response(cbp);
 
-  Env::Bkr::in_process(-1);
+  Env::Bkr::processed();
 }
 
 

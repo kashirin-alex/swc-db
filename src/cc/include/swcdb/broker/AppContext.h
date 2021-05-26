@@ -96,10 +96,8 @@ class AppContext final : public Comm::AppContext {
   void handle(Comm::ConnHandlerPtr conn, const Comm::Event::Ptr& ev) override {
     // SWC_LOG_OUT(LOG_DEBUG, ev->print(SWC_LOG_OSTREAM << "handle: "); );
 
-    #if defined(SWC_ENABLE_SANITIZER)
-      if(Env::Bkr::is_shuttingdown())
-        return conn->do_close();
-    #endif
+    if(!Env::Bkr::can_process())
+      return conn->do_close();
 
     switch (ev->type) {
 
@@ -127,7 +125,7 @@ class AppContext final : public Comm::AppContext {
           case Comm::Protocol::Bkr::Command::COLUMN_GET:
             Env::Bkr::post([conn, ev]() {
               ev->expired() || !conn->is_open()
-                ? Env::Bkr::in_process(-1)
+                ? Env::Bkr::processed()
                 : Comm::Protocol::Bkr::Handler::column_get(conn, ev);
             });
             break;
@@ -135,7 +133,7 @@ class AppContext final : public Comm::AppContext {
           case Comm::Protocol::Bkr::Command::COLUMN_LIST:
             Env::Bkr::post([conn, ev]() {
               ev->expired() || !conn->is_open()
-                ? Env::Bkr::in_process(-1)
+                ? Env::Bkr::processed()
                 : Comm::Protocol::Bkr::Handler::column_list(conn, ev);
             });
             break;
@@ -143,7 +141,7 @@ class AppContext final : public Comm::AppContext {
           case Comm::Protocol::Bkr::Command::COLUMN_COMPACT:
             Env::Bkr::post([conn, ev]() {
               ev->expired() || !conn->is_open()
-                ? Env::Bkr::in_process(-1)
+                ? Env::Bkr::processed()
                 : Comm::Protocol::Bkr::Handler::column_compact(conn, ev);
             });
             break;
@@ -151,7 +149,7 @@ class AppContext final : public Comm::AppContext {
           case Comm::Protocol::Bkr::Command::COLUMN_MNG:
             Env::Bkr::post([conn, ev]() {
               ev->expired() || !conn->is_open()
-                ? Env::Bkr::in_process(-1)
+                ? Env::Bkr::processed()
                 : Comm::Protocol::Bkr::Handler::column_mng(conn, ev);
             });
             break;
@@ -159,7 +157,7 @@ class AppContext final : public Comm::AppContext {
           case Comm::Protocol::Bkr::Command::CELLS_UPDATE:
             Env::Bkr::post([conn, ev]() {
               ev->expired() || !conn->is_open()
-                ? Env::Bkr::in_process(-1)
+                ? Env::Bkr::processed()
                 : Comm::Protocol::Bkr::Handler::cells_update(conn, ev);
             });
             break;
@@ -167,17 +165,18 @@ class AppContext final : public Comm::AppContext {
           case Comm::Protocol::Bkr::Command::CELLS_SELECT:
             Env::Bkr::post([conn, ev]() {
               ev->expired() || !conn->is_open()
-                ? Env::Bkr::in_process(-1)
+                ? Env::Bkr::processed()
                 : Comm::Protocol::Bkr::Handler::cells_select(conn, ev);
             });
             break;
 
-          default:
+          default: {
             Comm::Protocol::Common::Handler::not_implemented(conn, ev);
             if(m_metrics)
               m_metrics->net->error(conn);
-            Env::Bkr::in_process(-1);
+            Env::Bkr::in_process(-2);
             return;
+          }
         }
         if(m_metrics)
           m_metrics->net->command(conn, ev->header.command);
@@ -191,6 +190,7 @@ class AppContext final : public Comm::AppContext {
         break;
       }
     }
+    Env::Bkr::processed();
   }
 
   void net_bytes_sent(const Comm::ConnHandlerPtr& conn, size_t b) override {

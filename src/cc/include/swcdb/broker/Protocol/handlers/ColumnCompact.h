@@ -33,7 +33,7 @@ class ColumnCompact final : public Protocol::Mngr::Req::ColumnCompact_Base {
 
   void callback(const Protocol::Mngr::Params::ColumnCompactRsp& rsp) override {
     conn->send_response(Buffers::make(ev, rsp));
-    Env::Bkr::in_process(-1);
+    Env::Bkr::processed();
   }
 
 };
@@ -55,7 +55,7 @@ void column_compact(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
     conn->send_response(
       Buffers::make(ev, Protocol::Mngr::Params::ColumnCompactRsp(e.code())));
-    Env::Bkr::in_process(-1);
+    Env::Bkr::processed();
   }
 
 }
