@@ -24,14 +24,15 @@ ColumnCompact_Base::ColumnCompact_Base(
                                   COLUMN_COMPACT, timeout
                                 )
                               ),
-                              clients(clients), bkr_idx(0) {
+                              clients(clients) {
 }
 
 void ColumnCompact_Base::handle_no_conn() {
   if(clients->stopping()) {
     callback(Mngr::Params::ColumnCompactRsp(Error::CLIENT_STOPPING));
+  } else if(_bkr_idx.turn_around(clients->brokers)) {
+    request_again();
   } else {
-    ++bkr_idx;
     run();
   }
 }
@@ -39,7 +40,7 @@ void ColumnCompact_Base::handle_no_conn() {
 bool ColumnCompact_Base::run() {
   EndPoints endpoints;
   while(!clients->stopping() &&
-        (endpoints = clients->brokers.get_endpoints(bkr_idx)).empty()) {
+        (endpoints = clients->brokers.get_endpoints(_bkr_idx)).empty()) {
     SWC_LOG(LOG_ERROR,
       "Broker hosts cfg 'swc.bkr.host' is empty, waiting!");
     std::this_thread::sleep_for(std::chrono::seconds(3));

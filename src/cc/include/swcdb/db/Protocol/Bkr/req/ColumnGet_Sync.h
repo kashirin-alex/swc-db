@@ -50,10 +50,10 @@ class ColumnGet_Sync: public client::ConnQueue::ReqBase {
 
   private:
 
-  SWC::client::Clients::Ptr clients;
-  int&                      err;
-  DB::Schema::Ptr&          _schema;
-  size_t                    bkr_idx;
+  SWC::client::Clients::Ptr       clients;
+  int&                            err;
+  DB::Schema::Ptr&                _schema;
+  SWC::client::Brokers::BrokerIdx _bkr_idx;
 
 };
 

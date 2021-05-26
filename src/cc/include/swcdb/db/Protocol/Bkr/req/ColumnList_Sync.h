@@ -40,10 +40,10 @@ class ColumnList_Sync: public client::ConnQueue::ReqBase {
 
   private:
 
-  SWC::client::Clients::Ptr     clients;
-  int&                          err;
-  std::vector<DB::Schema::Ptr>& schemas;
-  size_t                        bkr_idx;
+  SWC::client::Clients::Ptr       clients;
+  int&                            err;
+  std::vector<DB::Schema::Ptr>&   schemas;
+  SWC::client::Brokers::BrokerIdx _bkr_idx;
 
 };
 

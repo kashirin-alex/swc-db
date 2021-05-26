@@ -36,8 +36,8 @@ class ColumnCompact_Base: public client::ConnQueue::ReqBase {
 
   private:
 
-  SWC::client::Clients::Ptr clients;
-  size_t                    bkr_idx;
+  SWC::client::Clients::Ptr       clients;
+  SWC::client::Brokers::BrokerIdx _bkr_idx;
 
 };
 

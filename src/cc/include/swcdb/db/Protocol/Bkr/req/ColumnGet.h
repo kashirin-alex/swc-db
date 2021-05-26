@@ -58,9 +58,9 @@ class ColumnGet: public client::ConnQueue::ReqBase {
 
   private:
 
-  SWC::client::Clients::Ptr clients;
-  const Cb_t                cb;
-  size_t                    bkr_idx;
+  SWC::client::Clients::Ptr       clients;
+  const Cb_t                      cb;
+  SWC::client::Brokers::BrokerIdx _bkr_idx;
 
 };
 

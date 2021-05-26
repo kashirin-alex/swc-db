@@ -91,11 +91,16 @@ void Brokers::on_cfg_update() noexcept {
 
 }
 
-Comm::EndPoints Brokers::get_endpoints(size_t& idx) {
+size_t Brokers::size() noexcept {
+  Core::MutexSptd::scope lock(m_mutex);
+  return m_brokers.size();
+}
+
+Comm::EndPoints Brokers::get_endpoints(Brokers::BrokerIdx& idx) noexcept {
   Core::MutexSptd::scope lock(m_mutex);
   return m_brokers.empty()
     ? Comm::EndPoints()
-    : idx < m_brokers.size() ? m_brokers[idx] : m_brokers[(idx=0)];
+    : m_brokers[idx.pos >= m_brokers.size() ? (idx.pos = 0) : idx.pos];
 }
 
 bool Brokers::has_endpoints() noexcept {
@@ -111,6 +116,13 @@ void Brokers::set(BrokersEndPoints&& _brokers) {
 void Brokers::set(const BrokersEndPoints& _brokers) {
   Core::MutexSptd::scope lock(m_mutex);
   m_brokers = _brokers;
+}
+
+bool Brokers::BrokerIdx::turn_around(Brokers& brks) noexcept {
+  if(++pos < brks.size())
+    return false;
+  pos = 0;
+  return true;
 }
 
 

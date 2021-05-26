@@ -20,6 +20,12 @@ class Brokers {
 
   typedef std::vector<Comm::EndPoints> BrokersEndPoints;
 
+  struct BrokerIdx {
+    size_t  pos;
+    BrokerIdx() noexcept : pos(0) { }
+    bool turn_around(Brokers& brks) noexcept;
+  };
+
   Brokers() noexcept : queues(nullptr), cfg_hosts(nullptr), cfg_port(0) {
   }
 
@@ -31,7 +37,9 @@ class Brokers {
 
   void on_cfg_update() noexcept;
 
-  Comm::EndPoints get_endpoints(size_t& idx);
+  size_t size() noexcept;
+
+  Comm::EndPoints get_endpoints(BrokerIdx& idx) noexcept;
 
   bool has_endpoints() noexcept;
 
