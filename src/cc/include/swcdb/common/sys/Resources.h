@@ -10,7 +10,7 @@
 
 #include "swcdb/core/config/Property.h"
 #include "swcdb/core/comm/IoContext.h"
-
+#include "swcdb/core/CompletionCounter.h"
 
 
 namespace SWC {
@@ -66,7 +66,7 @@ class Resources final {
                 notifier,
                 std::move(release_call)
               ),
-              running(false),
+              running(0),
               m_timer(ioctx->executor()) {
     checker();
   }
@@ -134,9 +134,12 @@ class Resources final {
   }
 
   void stop() {
-    m_timer.cancel();
-    while(running)
+    for(;;) {
+      m_timer.cancel();
+      if(!running.count())
+        break;
       std::this_thread::sleep_for(std::chrono::milliseconds(2));
+    }
   }
 
   void print(std::ostream& out) const {
@@ -149,7 +152,7 @@ class Resources final {
   private:
 
   void checker() noexcept {
-    running.store(true);
+    running.increment();
     uint64_t ts = Time::now_ms();
     uint64_t t1 = mem.check(ts);
     uint64_t t2 = cpu.check(ts);
@@ -158,7 +161,6 @@ class Resources final {
     } catch(...) {
       SWC_LOG_CURRENT_EXCEPTION("");
     }
-    running.store(false);
   }
 
   void schedule(uint64_t intval) {
@@ -166,11 +168,12 @@ class Resources final {
     m_timer.async_wait([this](const asio::error_code& ec) {
       if(ec != asio::error::operation_aborted)
         checker();
+      running.is_last();
     });
   }
 
-  Core::AtomicBool              running;
-  asio::high_resolution_timer   m_timer;
+  Core::CompletionCounter<uint8_t>  running;
+  asio::steady_timer                m_timer;
 
 };
 
