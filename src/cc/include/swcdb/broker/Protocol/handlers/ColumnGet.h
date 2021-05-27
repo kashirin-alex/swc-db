@@ -7,44 +7,95 @@
 #ifndef swcdb_broker_Protocol_handlers_ColumnGet_h
 #define swcdb_broker_Protocol_handlers_ColumnGet_h
 
-#include "swcdb/db/Protocol/Mngr/params/ColumnGet.h"
+
+#include "swcdb/db/Protocol/Mngr/req/ColumnGet_Base.h"
 
 
 namespace SWC { namespace Comm { namespace Protocol {
 namespace Bkr { namespace Handler {
 
 
-DB::Schema::Ptr get_schema(
-        int &err,
-        const Protocol::Mngr::Params::ColumnGetReq& params) {
+class ColumnGet final : public Mngr::Req::ColumnGet_Base {
+  public:
+
+  ConnHandlerPtr                   conn;
+  Event::Ptr                       ev;
+  Mngr::Params::ColumnGetReq::Flag flag;
+
+  ColumnGet(const SWC::client::Clients::Ptr& clients,
+            Mngr::Params::ColumnGetReq::Flag flag,
+            const Mngr::Params::ColumnGetReq& params,
+            const ConnHandlerPtr& conn, const Event::Ptr& ev)
+            : Mngr::Req::ColumnGet_Base(
+                clients, params, ev->header.timeout_ms),
+              conn(conn), ev(ev), flag(flag) {
+  }
+
+  virtual ~ColumnGet() { }
+
+  bool valid() override {
+    return !ev->expired() && conn->is_open();
+  }
+
+  void callback(int err, const Mngr::Params::ColumnGetRsp& rsp) override {
+    if(valid()) {
+      auto cbp = err
+        ? Buffers::make(ev, 4)
+        : Buffers::make(ev, Mngr::Params::ColumnGetRsp(flag, rsp.schema), 4);
+      cbp->append_i32(
+        err == Error::CLIENT_STOPPING ? Error::SERVER_SHUTTING_DOWN : err);
+      conn->send_response(cbp);
+    }
+    if(!err)
+      Env::Clients::get()->schemas.set(rsp.schema);
+    Env::Bkr::processed();
+  }
+
+};
+
+
+DB::Schema::Ptr get_schema(int &err,
+                           const Mngr::Params::ColumnGetReq& params) {
   switch(params.flag) {
-    case Protocol::Mngr::Params::ColumnGetReq::Flag::SCHEMA_BY_ID:
-      return Env::Clients::get()->get_schema(err, params.cid);
-
-    case Protocol::Mngr::Params::ColumnGetReq::Flag::SCHEMA_BY_NAME:
-      return Env::Clients::get()->get_schema(err, params.name);
-
-    case Protocol::Mngr::Params::ColumnGetReq::Flag::ID_BY_NAME:
-      return Env::Clients::get()->get_schema(err, params.name);
-
+    case Mngr::Params::ColumnGetReq::Flag::SCHEMA_BY_ID:
+      return Env::Clients::get()->schemas.get(params.cid);
+    case Mngr::Params::ColumnGetReq::Flag::SCHEMA_BY_NAME:
+    case Mngr::Params::ColumnGetReq::Flag::ID_BY_NAME:
+      return Env::Clients::get()->schemas.get(params.name);
     default:
       err = Error::COLUMN_UNKNOWN_GET_FLAG;
       return nullptr;
   }
 }
 
+
 void column_get(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
   int err = Error::OK;
-  Protocol::Mngr::Params::ColumnGetReq params;
-  Protocol::Mngr::Params::ColumnGetRsp rsp_params;
-
   try {
     const uint8_t *ptr = ev->data.base;
     size_t remain = ev->data.size;
 
+    Mngr::Params::ColumnGetReq params;
     params.decode(&ptr, &remain);
-    rsp_params.flag = params.flag;
-    rsp_params.schema = get_schema(err, params);
+
+    auto schema = get_schema(err, params);
+    if(err)
+      goto _send_error;
+
+    if(schema) {
+      auto cbp = Buffers::make(
+        ev, Mngr::Params::ColumnGetRsp(params.flag, schema), 4);
+      cbp->append_i32(Error::OK);
+      conn->send_response(cbp);
+
+    } else {
+      auto flag = params.flag;
+      if(flag == Mngr::Params::ColumnGetReq::Flag::ID_BY_NAME)
+        params.flag = Mngr::Params::ColumnGetReq::Flag::SCHEMA_BY_NAME;
+
+      std::make_shared<ColumnGet>(
+        Env::Clients::get(), flag, params, conn, ev)->run();
+    }
 
   } catch(...) {
     const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
@@ -52,14 +103,13 @@ void column_get(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     err = e.code();
   }
 
-  auto cbp = err
-    ? Buffers::make(ev, 4)
-    : Buffers::make(ev, rsp_params, 4);
-  cbp->append_i32(err);
-  conn->send_response(cbp);
-
-  Env::Bkr::processed();
+  _send_error:
+    auto cbp =  Buffers::make(ev, 4);
+    cbp->append_i32(err);
+    conn->send_response(cbp);
+    Env::Bkr::processed();
 }
+
 
 
 }}}}}

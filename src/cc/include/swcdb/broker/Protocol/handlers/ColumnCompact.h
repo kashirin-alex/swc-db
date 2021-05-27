@@ -7,6 +7,7 @@
 #ifndef swcdb_broker_Protocol_handlers_ColumnCompact_h
 #define swcdb_broker_Protocol_handlers_ColumnCompact_h
 
+
 #include "swcdb/db/Protocol/Mngr/req/ColumnCompact_Base.h"
 
 
@@ -15,16 +16,16 @@ namespace Bkr { namespace Handler {
 
 
 
-class ColumnCompact final : public Protocol::Mngr::Req::ColumnCompact_Base {
+class ColumnCompact final : public Mngr::Req::ColumnCompact_Base {
   public:
 
   ConnHandlerPtr  conn;
   Event::Ptr      ev;
 
   ColumnCompact(const SWC::client::Clients::Ptr& clients,
-                const Protocol::Mngr::Params::ColumnCompactReq& params,
+                const Mngr::Params::ColumnCompactReq& params,
                 const ConnHandlerPtr& conn, const Event::Ptr& ev)
-                : Protocol::Mngr::Req::ColumnCompact_Base(
+                : Mngr::Req::ColumnCompact_Base(
                     clients, params, ev->header.timeout_ms),
                   conn(conn), ev(ev) {
   }
@@ -35,9 +36,14 @@ class ColumnCompact final : public Protocol::Mngr::Req::ColumnCompact_Base {
     return !ev->expired() && conn->is_open();
   }
 
-  void callback(const Protocol::Mngr::Params::ColumnCompactRsp& rsp) override {
+  void callback(const Mngr::Params::ColumnCompactRsp& rsp) override {
     if(valid())
-      conn->send_response(Buffers::make(ev, rsp));
+      conn->send_response(Buffers::make(
+        ev,
+        rsp.err == Error::CLIENT_STOPPING
+          ? Mngr::Params::ColumnCompactRsp(Error::SERVER_SHUTTING_DOWN)
+          : rsp
+      ));
     Env::Bkr::processed();
   }
 
@@ -49,7 +55,7 @@ void column_compact(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     const uint8_t *ptr = ev->data.base;
     size_t remain = ev->data.size;
 
-    Protocol::Mngr::Params::ColumnCompactReq params;
+    Mngr::Params::ColumnCompactReq params;
     params.decode(&ptr, &remain);
 
     std::make_shared<ColumnCompact>(
@@ -59,7 +65,7 @@ void column_compact(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
     SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
     conn->send_response(
-      Buffers::make(ev, Protocol::Mngr::Params::ColumnCompactRsp(e.code())));
+      Buffers::make(ev, Mngr::Params::ColumnCompactRsp(e.code())));
     Env::Bkr::processed();
   }
 

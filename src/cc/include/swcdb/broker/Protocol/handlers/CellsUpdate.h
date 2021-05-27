@@ -58,8 +58,14 @@ class Updater final
       error(Error::CLIENT_DATA_REMAINED);
 
     if(!ev->expired() && conn->is_open()) {
-      conn->send_response(
-        Buffers::make(ev, Params::CellsUpdateRsp(error())));
+      conn->send_response(Buffers::make(
+        ev,
+        Params::CellsUpdateRsp(
+          error() == Error::CLIENT_STOPPING
+            ? Error::SERVER_SHUTTING_DOWN
+            : error()
+        )
+      ));
     }
     profile.finished();
 

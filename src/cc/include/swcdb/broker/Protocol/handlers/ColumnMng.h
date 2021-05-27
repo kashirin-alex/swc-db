@@ -7,6 +7,7 @@
 #ifndef swcdb_broker_Protocol_handlers_ColumnMng_h
 #define swcdb_broker_Protocol_handlers_ColumnMng_h
 
+
 #include "swcdb/db/Protocol/Mngr/req/ColumnMng_Base.h"
 
 
@@ -15,7 +16,7 @@ namespace Bkr { namespace Handler {
 
 
 
-class ColumnMng final : public Protocol::Mngr::Req::ColumnMng_Base {
+class ColumnMng final : public Mngr::Req::ColumnMng_Base {
   public:
 
   ConnHandlerPtr  conn;
@@ -23,9 +24,9 @@ class ColumnMng final : public Protocol::Mngr::Req::ColumnMng_Base {
   DB::Schema::Ptr schema;
 
   ColumnMng(const SWC::client::Clients::Ptr& clients,
-            const Protocol::Mngr::Params::ColumnMng& params,
+            const Mngr::Params::ColumnMng& params,
             const ConnHandlerPtr& conn, const Event::Ptr& ev)
-            : Protocol::Mngr::Req::ColumnMng_Base(
+            : Mngr::Req::ColumnMng_Base(
                 clients, params, ev->header.timeout_ms),
               conn(conn), ev(ev), schema(params.schema) {
   }
@@ -38,7 +39,13 @@ class ColumnMng final : public Protocol::Mngr::Req::ColumnMng_Base {
 
   void callback(int err) override {
     if(valid())
-      err ? conn->send_error(err , "", ev) : conn->response_ok(ev);
+      err
+        ? conn->send_error(
+            err == Error::CLIENT_STOPPING ? Error::SERVER_SHUTTING_DOWN : err,
+            "",
+            ev
+          )
+        : conn->response_ok(ev);
 
     schema->cid == DB::Schema::NO_CID
       ? Env::Clients::get()->schemas.remove(schema->col_name)
@@ -54,7 +61,7 @@ void column_mng(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     const uint8_t *ptr = ev->data.base;
     size_t remain = ev->data.size;
 
-    Protocol::Mngr::Params::ColumnMng params;
+    Mngr::Params::ColumnMng params;
     params.decode(&ptr, &remain);
 
     std::make_shared<ColumnMng>(

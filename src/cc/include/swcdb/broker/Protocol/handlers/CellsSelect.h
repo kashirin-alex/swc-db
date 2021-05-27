@@ -49,13 +49,17 @@ class Selector final : public SWC::client::Query::Select::Handlers::Base {
   bool add_cells(const cid_t, StaticBuffer& buffer,
                  bool, DB::Specs::Interval& interval) override {
     if(!ev->expired() && conn->is_open()) {
-      conn->send_response(
-        Buffers::make(
-          ev,
-          Params::CellsSelectRsp(state_error, true, interval.flags.offset),
-          buffer
-        )
-      );
+      conn->send_response(Buffers::make(
+        ev,
+        Params::CellsSelectRsp(
+          state_error == Error::CLIENT_STOPPING
+            ? Error::SERVER_SHUTTING_DOWN
+            : state_error,
+          true,
+          interval.flags.offset
+        ),
+        buffer
+      ));
     }
     sent = true;
     return false;
@@ -65,8 +69,12 @@ class Selector final : public SWC::client::Query::Select::Handlers::Base {
     SWC::client::Query::Select::Handlers::Base::error(err);
 
     if(!sent && !ev->expired() && conn->is_open()) {
-      conn->send_response(
-        Buffers::make(ev, Params::CellsSelectRsp(state_error, false)));
+      conn->send_response(Buffers::make(ev, Params::CellsSelectRsp(
+        state_error == Error::CLIENT_STOPPING
+          ? Error::SERVER_SHUTTING_DOWN
+          : state_error,
+        false
+      )));
     }
     profile.finished();
 
