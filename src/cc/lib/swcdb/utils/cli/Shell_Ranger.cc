@@ -47,6 +47,16 @@ Rgr::Rgr()
   );
 }
 
+Rgr::~Rgr() {
+  Env::Clients::get()->stop();
+  #if defined(SWC_ENABLE_SANITIZER)
+    Env::IoCtx::io()->stop();
+    std::this_thread::sleep_for(std::chrono::seconds(2));
+    Env::Clients::reset();
+    Env::IoCtx::reset();
+  #endif
+}
+
 bool Rgr::read_endpoint(std::string& host_or_ips,
                         Comm::EndPoints& endpoints) {
   host_or_ips.erase(

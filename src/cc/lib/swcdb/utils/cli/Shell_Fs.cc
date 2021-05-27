@@ -34,9 +34,12 @@ Fs::Fs()
 }
 
 Fs::~Fs() {
-  Env::FsInterface::reset();
+  Env::FsInterface::interface()->stop();
+  #if defined(SWC_ENABLE_SANITIZER)
+    std::this_thread::sleep_for(std::chrono::seconds(2));
+    Env::FsInterface::reset();
+  #endif
 }
-
 
 bool Fs::ls(const std::string& cmd) {
 

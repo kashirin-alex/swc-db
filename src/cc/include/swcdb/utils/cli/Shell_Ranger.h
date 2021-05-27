@@ -13,17 +13,21 @@
 namespace SWC { namespace Utils { namespace shell {
 
 
-class Rgr : public Interface {
+class Rgr final : public Interface {
   public:
 
   Rgr();
+
+  virtual ~Rgr();
+
+  private:
 
   bool read_endpoint(std::string& host_or_ips, Comm::EndPoints& endpoints);
 
   bool report_resources(std::string& cmd);
 
   bool report(std::string& cmd);
-  
+
 };
 
 

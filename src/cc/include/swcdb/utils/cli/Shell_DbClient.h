@@ -6,21 +6,24 @@
 #ifndef swcdb_utils_ShellDbClient_h
 #define swcdb_utils_ShellDbClient_h
 
+
 #include "swcdb/utils/cli/Shell.h"
 #include "swcdb/db/client/sql/SQL.h"
+
 
 namespace SWC { namespace Utils { namespace shell {
 
 
-class DbClient : public Interface {
-
+class DbClient final : public Interface {
   public:
 
   const bool with_broker;
 
   DbClient();
 
-  ~DbClient();
+  virtual ~DbClient();
+
+  private:
 
   bool mng_column(Comm::Protocol::Mngr::Params::ColumnMng::Function func,
                   std::string& cmd);

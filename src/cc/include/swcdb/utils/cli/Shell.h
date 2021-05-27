@@ -26,17 +26,28 @@ namespace SWC { namespace Utils {
 namespace shell {
 
 
+enum CLI : uint8_t {
+  QUIT_CLI    = 0x00,
+  DBCLIENT    = 0x01,
+  MANAGER     = 0x02,
+  RANGER      = 0x03,
+  FILESYSTEM  = 0x04,
+  STATISTICS  = 0x05
+};
+
+
 int run();
 
-class Interface {
 
+class Interface {
   public:
+
   Interface(std::string&& prompt="CLI>",
             std::string&& history="/tmp/.swc-cli-history");
 
   virtual ~Interface();
 
-  int run();
+  CLI run();
 
   protected:
 
@@ -62,11 +73,14 @@ class Interface {
   };
 
   mutable int          err;
+  CLI                  _state;
   std::vector<Option*> options;
 
   bool error(const std::string& message);
 
   virtual bool quit(std::string& cmd) const;
+
+  virtual bool switch_to(std::string& cmd);
 
   virtual bool help(std::string& cmd) const;
 

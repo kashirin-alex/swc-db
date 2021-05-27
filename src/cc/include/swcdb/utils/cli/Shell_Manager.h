@@ -12,10 +12,14 @@
 namespace SWC { namespace Utils { namespace shell {
 
 
-class Mngr : public Interface {
+class Mngr final : public Interface {
   public:
 
   Mngr();
+
+  virtual ~Mngr();
+
+  private:
 
   bool cluster_status(std::string&);
 

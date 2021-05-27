@@ -44,7 +44,12 @@ int run(const std::string& cmd, bool custom=false) {
     SWC_THROWF(Error::CONFIG_BAD_VALUE,
               "Shared Lib %s, link(%s) fail: %s handle=%p\n",
               lib_path.c_str(), handler_name.c_str(), err, handle);
-  return reinterpret_cast<swcdb_utils_run_t*>(f_new_ptr)();
+  int res = reinterpret_cast<swcdb_utils_run_t*>(f_new_ptr)();
+
+  SWC_CAN_QUICK_EXIT(res);
+  reinterpret_cast<swcdb_utils_apply_cfg_t*>(f_cfg_ptr)(nullptr);
+  dlclose(handle);
+  return res;
 }
 
 
@@ -61,13 +66,20 @@ int not_implemented(const std::string& cmd) {
 int main(int argc, char** argv) {
   SWC::Env::Config::init(argc, argv);
 
-  const auto& command = SWC::Env::Config::settings()->get_str("command");
+  int res;
+  {
+    const auto& command = SWC::Env::Config::settings()->get_str("command");
 
-  if(SWC::Condition::str_case_eq(command.data(), "shell", command.size()))
-    return SWC::Utils::run(command);
+    if(SWC::Condition::str_case_eq(command.data(), "shell", command.size())) {
+      res = SWC::Utils::run(command);
+    } else if(SWC::Condition::str_case_eq(
+                command.data(), "custom", command.size())) {
+      res = SWC::Utils::run("command", true);
+    } else {
+      res = SWC::Utils::not_implemented(command);
+    }
+  }
 
-  if(SWC::Condition::str_case_eq(command.data(), "custom", command.size()))
-    return SWC::Utils::run("command", true);
-
-  return SWC::Utils::not_implemented(command);
+  SWC::Env::Config::reset();
+  return res;
 }

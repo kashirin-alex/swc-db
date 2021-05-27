@@ -183,14 +183,12 @@ DbClient::DbClient()
 }
 
 DbClient::~DbClient() {
+  Env::Clients::get()->stop();
   #if defined(SWC_ENABLE_SANITIZER)
-    Env::Clients::get()->stop();
-    std::this_thread::sleep_for(std::chrono::seconds(3));
     Env::IoCtx::io()->stop();
-    std::this_thread::sleep_for(std::chrono::seconds(3));
+    std::this_thread::sleep_for(std::chrono::seconds(2));
     Env::Clients::reset();
     Env::IoCtx::reset();
-    std::this_thread::sleep_for(std::chrono::seconds(1));
   #endif
 }
 

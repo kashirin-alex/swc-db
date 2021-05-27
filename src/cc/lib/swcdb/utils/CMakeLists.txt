@@ -11,6 +11,10 @@ if(USE_GNU_READLINE)
   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_GNU_READLINE")
 endif()
 
+if(SWC_ENABLE_SANITIZER)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DSWC_ENABLE_SANITIZER")
+endif()
+
 set(swcdb_utils_shell_sources
   ${SWC_VERSION_SRC}
   cli/Shell.cc

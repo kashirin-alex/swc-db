@@ -15,12 +15,14 @@ namespace SWC { namespace Utils { namespace shell {
 
 
 
-class Statistics : public Interface {
+class Statistics final : public Interface {
   public:
 
   const bool with_broker;
 
   Statistics();
+
+  virtual ~Statistics();
 
   private:
 

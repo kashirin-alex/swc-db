@@ -12,11 +12,14 @@
 namespace SWC { namespace Utils { namespace shell {
 
 
-class Fs : public Interface {
+class Fs final : public Interface {
   public:
+
   Fs();
 
   virtual ~Fs();
+
+  private:
 
   bool ls(const std::string& cmd);
 

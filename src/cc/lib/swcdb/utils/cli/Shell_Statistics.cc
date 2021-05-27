@@ -127,6 +127,15 @@ Statistics::Statistics()
   );
 }
 
+Statistics::~Statistics() {
+  Env::Clients::get()->stop();
+  #if defined(SWC_ENABLE_SANITIZER)
+    Env::IoCtx::io()->stop();
+    std::this_thread::sleep_for(std::chrono::seconds(2));
+    Env::Clients::reset();
+    Env::IoCtx::reset();
+  #endif
+}
 
 void Statistics::ReadGroup::print(std::ostream& out,
                                   const Statistics* ptr) const {

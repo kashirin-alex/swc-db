@@ -28,33 +28,52 @@ namespace SWC { namespace Utils { namespace shell {
 
 
 int run() {
-  auto settings = SWC::Env::Config::settings();
-  int res;
   try {
+    uint8_t cli;
+    {
+    auto settings = SWC::Env::Config::settings();
     if(settings->has("ranger"))
-      res = Rgr().run();
+      cli = CLI::RANGER;
     else if(settings->has("manager"))
-      res = Mngr().run();
+      cli = CLI::MANAGER;
     else if(settings->has("filesystem"))
-      res = Fs().run();
+      cli = CLI::FILESYSTEM;
     else if(settings->has("statistics"))
-      res = Statistics().run();
+      cli = CLI::STATISTICS;
     else
-      res = DbClient().run();
+      cli = CLI::DBCLIENT;
+    }
+    for(std::unique_ptr<Interface> ptr; cli; cli=ptr->run()) {
+      ptr.reset(nullptr);
+      switch(cli) {
+        case CLI::DBCLIENT:
+          ptr.reset(new DbClient);
+          break;
+        case CLI::MANAGER:
+          ptr.reset(new Mngr);
+          break;
+        case CLI::RANGER:
+          ptr.reset(new Rgr);
+          break;
+        case CLI::FILESYSTEM:
+          ptr.reset(new Fs);
+          break;
+        case CLI::STATISTICS:
+          ptr.reset(new Statistics);
+          break;
+      }
+    }
   } catch(...) {
     SWC_PRINT << SWC_CURRENT_EXCEPTION("") << SWC_PRINT_CLOSE;
-    res = 1;
+    SWC_CAN_QUICK_EXIT(EXIT_FAILURE);
+    return 1;
   }
-
-  #if defined(SWC_ENABLE_SANITIZER)
-    SWC::Env::Config::reset();
-  #endif
-
-  return res;
+  SWC_CAN_QUICK_EXIT(EXIT_SUCCESS);
+  return 0;
 }
 
 Interface::Interface(std::string&& prompt, std::string&& history)
-                    : err(Error::OK),
+                    : err(Error::OK), _state(CLI::QUIT_CLI),
                       prompt(std::move(prompt)), history(std::move(history)) {
   init();
 }
@@ -64,7 +83,7 @@ Interface::~Interface() {
     delete o;
 }
 
-int Interface::run() {
+CLI Interface::run() {
 
   read_history(history.c_str());
   char* line;
@@ -149,7 +168,7 @@ int Interface::run() {
     free(line);
   }
 
-  return 0;
+  return _state;
 }
 
 void Interface::init() {
@@ -169,9 +188,52 @@ void Interface::init() {
       new re2::RE2("(?i)^(help)(\\s+|$)")
     )
   );
+  options.push_back(
+    new Option(
+      "switch to",
+      {"Switch to other CLI, options: rgr|mngr|fs|stats|client"},
+      [ptr=this](std::string& cmd){return ptr->switch_to(cmd);},
+      new re2::RE2("(?i)^(switch\\s+to)(\\s+|$)")
+    )
+  );
 }
 
 bool Interface::quit(std::string&) const {
+  return false;
+}
+
+bool Interface::switch_to(std::string& cmd)  {
+  std::string message;
+  client::SQL::Reader parser(cmd, message);
+  bool found;
+
+  parser.seek_space();
+  parser.expect_token("switch", 6, found = false);
+  if(parser.err) {
+    err = parser.err;
+    return error(message);
+  }
+  parser.seek_space();
+  parser.expect_token("to", 2, found = false);
+  if(parser.err) {
+    err = parser.err;
+    return error(message);
+  }
+  parser.seek_space();
+  if(parser.found_token("client", 6)) {
+    _state = CLI::DBCLIENT;
+  } else if(parser.found_token("mngr", 4)) {
+    _state = CLI::MANAGER;
+  } else if(parser.found_token("rgr", 3)) {
+    _state = CLI::RANGER;
+  } else if(parser.found_token("fs", 2)) {
+    _state = CLI::FILESYSTEM;
+  } else if(parser.found_token("stats", 5)) {
+    _state = CLI::STATISTICS;
+  } else {
+    err = Error::INVALID_ARGUMENT;
+    return error("Bad Interface Option");
+  }
   return false;
 }
 
