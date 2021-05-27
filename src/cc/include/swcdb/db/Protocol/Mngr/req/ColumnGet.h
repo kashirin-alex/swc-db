@@ -7,15 +7,14 @@
 #define swcdb_db_protocol_mngr_req_ColumnGet_h
 
 
-#include "swcdb/db/Protocol/Mngr/params/ColumnGet.h"
-#include "swcdb/db/client/Clients.h"
+#include "swcdb/db/Protocol/Mngr/req/ColumnGet_Base.h"
 
 
 namespace SWC { namespace Comm { namespace Protocol {
 namespace Mngr { namespace Req {
 
 
-class ColumnGet: public client::ConnQueue::ReqBase {
+class ColumnGet: public ColumnGet_Base {
   public:
 
   using Flag = Params::ColumnGetReq::Flag;
@@ -50,19 +49,11 @@ class ColumnGet: public client::ConnQueue::ReqBase {
 
   virtual ~ColumnGet() { }
 
-  void handle_no_conn() override;
-
-  bool run() override;
-
-  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
+  protected:
+  virtual void callback(int err, const Params::ColumnGetRsp& rsp) override;
 
   private:
-
-  void clear_endpoints();
-
-  SWC::client::Clients::Ptr clients;
   const Cb_t                cb;
-  EndPoints                 endpoints;
 };
 
 

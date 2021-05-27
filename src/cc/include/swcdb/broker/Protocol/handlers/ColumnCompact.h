@@ -31,8 +31,13 @@ class ColumnCompact final : public Protocol::Mngr::Req::ColumnCompact_Base {
 
   virtual ~ColumnCompact() { }
 
+  bool valid() override {
+    return !ev->expired() && conn->is_open();
+  }
+
   void callback(const Protocol::Mngr::Params::ColumnCompactRsp& rsp) override {
-    conn->send_response(Buffers::make(ev, rsp));
+    if(valid())
+      conn->send_response(Buffers::make(ev, rsp));
     Env::Bkr::processed();
   }
 

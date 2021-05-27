@@ -7,15 +7,14 @@
 #define swcdb_db_protocol_mngr_req_ColumnGet_Sync_h
 
 
-#include "swcdb/db/Protocol/Mngr/params/ColumnGet.h"
-#include "swcdb/db/client/Clients.h"
+#include "swcdb/db/Protocol/Mngr/req/ColumnGet_Base.h"
 
 
 namespace SWC { namespace Comm { namespace Protocol {
 namespace Mngr { namespace Req {
 
 
-class ColumnGet_Sync: public client::ConnQueue::ReqBase {
+class ColumnGet_Sync: public ColumnGet_Base {
   public:
 
   static void schema(const SWC::client::Clients::Ptr& clients,
@@ -42,18 +41,10 @@ class ColumnGet_Sync: public client::ConnQueue::ReqBase {
 
   virtual ~ColumnGet_Sync() { }
 
-  void handle_no_conn() override;
-
-  bool run() override;
-
-  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
+  protected:
+  virtual void callback(int err, const Params::ColumnGetRsp& rsp) override;
 
   private:
-
-  void clear_endpoints();
-
-  SWC::client::Clients::Ptr clients;
-  EndPoints                 endpoints;
   int&                      err;
   DB::Schema::Ptr&          _schema;
 };

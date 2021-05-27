@@ -26,7 +26,7 @@ ColumnMng_Base::ColumnMng_Base(const SWC::client::Clients::Ptr& clients,
 }
 
 void ColumnMng_Base::handle_no_conn() {
-  if(clients->stopping()) {
+  if(clients->stopping() || !valid()) {
     callback(Error::CLIENT_STOPPING);
   } else {
     clear_endpoints();
@@ -38,7 +38,7 @@ bool ColumnMng_Base::run() {
   if(endpoints.empty()) {
     clients->get_mngr(DB::Types::MngrRole::SCHEMAS, endpoints);
     if(endpoints.empty()) {
-      if(clients->stopping()) {
+      if(clients->stopping() || !valid()) {
         callback(Error::CLIENT_STOPPING);
       } else {
         MngrActive::make(

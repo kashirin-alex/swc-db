@@ -32,8 +32,13 @@ class ColumnMng final : public Protocol::Mngr::Req::ColumnMng_Base {
 
   virtual ~ColumnMng() { }
 
+  bool valid() override {
+    return !ev->expired() && conn->is_open();
+  }
+
   void callback(int err) override {
-    err ? conn->send_error(err , "", ev) : conn->response_ok(ev);
+    if(valid())
+      err ? conn->send_error(err , "", ev) : conn->response_ok(ev);
 
     schema->cid == DB::Schema::NO_CID
       ? Env::Clients::get()->schemas.remove(schema->col_name)

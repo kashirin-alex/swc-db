@@ -29,7 +29,7 @@ ColumnCompact_Base::ColumnCompact_Base(
 }
 
 void ColumnCompact_Base::handle_no_conn() {
-  if(clients->stopping()) {
+  if(clients->stopping() || !valid()) {
     callback(Params::ColumnCompactRsp(Error::CLIENT_STOPPING));
   } else {
     clear_endpoints();
@@ -41,7 +41,7 @@ bool ColumnCompact_Base::run() {
   if(endpoints.empty()) {
     clients->get_mngr(cid, endpoints);
     if(endpoints.empty()) {
-      if(clients->stopping()) {
+      if(clients->stopping() || !valid()) {
         callback(Params::ColumnCompactRsp(Error::CLIENT_STOPPING));
       } else {
         MngrActive::make(clients, cid, shared_from_this())->run();
