@@ -25,7 +25,7 @@ ColumnMng_Base::ColumnMng_Base(const SWC::client::Clients::Ptr& clients,
 }
 
 void ColumnMng_Base::handle_no_conn() {
-  if(clients->stopping()) {
+  if(clients->stopping() || !valid()) {
     callback(Error::CLIENT_STOPPING);
   } else if(_bkr_idx.turn_around(clients->brokers)) {
     request_again();
@@ -37,6 +37,7 @@ void ColumnMng_Base::handle_no_conn() {
 bool ColumnMng_Base::run() {
   EndPoints endpoints;
   while(!clients->stopping() &&
+        valid() &&
         (endpoints = clients->brokers.get_endpoints(_bkr_idx)).empty()) {
     SWC_LOG(LOG_ERROR,
       "Broker hosts cfg 'swc.bkr.host' is empty, waiting!");

@@ -4,32 +4,27 @@
  */
 
 
-#include "swcdb/db/Protocol/Bkr/req/ColumnCompact_Base.h"
+#include "swcdb/db/Protocol/Bkr/req/ColumnGet_Base.h"
 #include "swcdb/db/Protocol/Commands.h"
 
 
 namespace SWC { namespace Comm { namespace Protocol {
 namespace Bkr { namespace Req {
 
-
-
-ColumnCompact_Base::ColumnCompact_Base(
-                            const SWC::client::Clients::Ptr& clients,
-                            const Mngr::Params::ColumnCompactReq& params,
-                            const uint32_t timeout)
-                            : client::ConnQueue::ReqBase(
-                                false,
-                                Buffers::make(
-                                  params, 0,
-                                  COLUMN_COMPACT, timeout
-                                )
-                              ),
-                              clients(clients) {
+ColumnGet_Base::ColumnGet_Base(
+                const SWC::client::Clients::Ptr& clients,
+                const Mngr::Params::ColumnGetReq& params,
+                const uint32_t timeout)
+                : client::ConnQueue::ReqBase(
+                    false,
+                    Buffers::make(params, 0, COLUMN_GET, timeout)
+                  ),
+                  clients(clients) {
 }
 
-void ColumnCompact_Base::handle_no_conn() {
+void ColumnGet_Base::handle_no_conn() {
   if(clients->stopping() || !valid()) {
-    callback(Mngr::Params::ColumnCompactRsp(Error::CLIENT_STOPPING));
+    callback(Error::CLIENT_STOPPING, Mngr::Params::ColumnGetRsp());
   } else if(_bkr_idx.turn_around(clients->brokers)) {
     request_again();
   } else {
@@ -37,7 +32,7 @@ void ColumnCompact_Base::handle_no_conn() {
   }
 }
 
-bool ColumnCompact_Base::run() {
+bool ColumnGet_Base::run() {
   EndPoints endpoints;
   while(!clients->stopping() &&
         valid() &&
@@ -54,24 +49,31 @@ bool ColumnCompact_Base::run() {
   return true;
 }
 
-void ColumnCompact_Base::handle(ConnHandlerPtr, const Event::Ptr& ev) {
+void ColumnGet_Base::handle(ConnHandlerPtr, const Event::Ptr& ev) {
   if(ev->type == Event::Type::DISCONNECT)
     return handle_no_conn();
 
-  Mngr::Params::ColumnCompactRsp rsp(ev->error);
-  if(!rsp.err) {
+  Mngr::Params::ColumnGetRsp rsp;
+  int err = ev->response_code();
+  if(!err) {
     try {
-      const uint8_t *ptr = ev->data.base;
-      size_t remain = ev->data.size;
+      const uint8_t *ptr = ev->data.base + 4;
+      size_t remain = ev->data.size - 4;
       rsp.decode(&ptr, &remain);
 
     } catch(...) {
       const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
       SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
-      rsp.err = e.code();
+      err = e.code();
     }
+
+  } else if(err == Error::REQUEST_TIMEOUT) {
+    SWC_LOG_OUT(LOG_INFO, Error::print(SWC_LOG_OSTREAM, err); );
+    request_again();
+    return;
   }
-  callback(rsp);
+
+  callback(err, rsp);
 }
 
 

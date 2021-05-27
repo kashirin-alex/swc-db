@@ -31,11 +31,9 @@ class ColumnCompact_Base: public client::ConnQueue::ReqBase {
   void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
 
   protected:
-
   virtual void callback(const Mngr::Params::ColumnCompactRsp& rsp) = 0;
 
   private:
-
   SWC::client::Clients::Ptr       clients;
   SWC::client::Brokers::BrokerIdx _bkr_idx;
 

@@ -7,15 +7,14 @@
 #define swcdb_db_protocol_bkr_req_ColumnGet_h
 
 
-#include "swcdb/db/Protocol/Mngr/params/ColumnGet.h"
-#include "swcdb/db/client/Clients.h"
+#include "swcdb/db/Protocol/Bkr/req/ColumnGet_Base.h"
 
 
 namespace SWC { namespace Comm { namespace Protocol {
 namespace Bkr { namespace Req {
 
 
-class ColumnGet: public client::ConnQueue::ReqBase {
+class ColumnGet: public ColumnGet_Base {
   public:
 
   using Flag = Mngr::Params::ColumnGetReq::Flag;
@@ -50,17 +49,12 @@ class ColumnGet: public client::ConnQueue::ReqBase {
 
   virtual ~ColumnGet() { }
 
-  void handle_no_conn() override;
-
-  bool run() override;
-
-  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
+  protected:
+  virtual void callback(int error,
+                        const Mngr::Params::ColumnGetRsp& rsp)  override;
 
   private:
-
-  SWC::client::Clients::Ptr       clients;
   const Cb_t                      cb;
-  SWC::client::Brokers::BrokerIdx _bkr_idx;
 
 };
 

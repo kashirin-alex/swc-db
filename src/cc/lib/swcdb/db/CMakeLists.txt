@@ -87,8 +87,10 @@ set(swcdb_sources
   Protocol/Bkr/req/ColumnCompact_Base.cc
   Protocol/Bkr/req/ColumnCompact.cc
   Protocol/Bkr/req/ColumnCompact_Sync.cc
+  Protocol/Bkr/req/ColumnGet_Base.cc
   Protocol/Bkr/req/ColumnGet.cc
   Protocol/Bkr/req/ColumnGet_Sync.cc
+  Protocol/Bkr/req/ColumnList_Base.cc
   Protocol/Bkr/req/ColumnList.cc
   Protocol/Bkr/req/ColumnList_Sync.cc
   Protocol/Bkr/req/ColumnMng_Base.cc

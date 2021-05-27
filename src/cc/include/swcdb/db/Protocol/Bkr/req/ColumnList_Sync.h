@@ -7,15 +7,14 @@
 #define swcdb_db_protocol_bkr_req_ColumnList_Sync_h
 
 
-#include "swcdb/db/Protocol/Mngr/params/ColumnList.h"
-#include "swcdb/db/client/Clients.h"
+#include "swcdb/db/Protocol/Bkr/req/ColumnList_Base.h"
 
 
 namespace SWC { namespace Comm { namespace Protocol {
 namespace Bkr { namespace Req {
 
 
-class ColumnList_Sync: public client::ConnQueue::ReqBase {
+class ColumnList_Sync: public ColumnList_Base {
   public:
 
   static void request(const SWC::client::Clients::Ptr& clients,
@@ -32,18 +31,13 @@ class ColumnList_Sync: public client::ConnQueue::ReqBase {
 
   virtual ~ColumnList_Sync() { }
 
-  void handle_no_conn() override;
-
-  bool run() override;
-
-  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
+  protected:
+  virtual void callback(int error,
+                        const Mngr::Params::ColumnListRsp& rsp) override;
 
   private:
-
-  SWC::client::Clients::Ptr       clients;
   int&                            err;
   std::vector<DB::Schema::Ptr>&   schemas;
-  SWC::client::Brokers::BrokerIdx _bkr_idx;
 
 };
 
