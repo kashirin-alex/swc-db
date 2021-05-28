@@ -119,6 +119,7 @@ class AppContext final : public Comm::AppContext {
         break;
 
       case Comm::Event::Type::MESSAGE: {
+        Env::Bkr::in_process(1);
         switch(ev->header.command) {
 
           case Comm::Protocol::Bkr::Command::COLUMN_GET:
@@ -149,7 +150,7 @@ class AppContext final : public Comm::AppContext {
             Comm::Protocol::Common::Handler::not_implemented(conn, ev);
             if(m_metrics)
               m_metrics->net->error(conn);
-            Env::Bkr::processed();
+            Env::Bkr::in_process(-2);
             return;
           }
         }
