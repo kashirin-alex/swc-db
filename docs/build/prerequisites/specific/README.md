@@ -14,7 +14,7 @@ _use latest version from https://sourceforge.net/projects/asio/_
 ```bash
 
 mkdir asio; cd asio;
-ASIO_VERSION="1.18.1";
+ASIO_VERSION="1.18.2";
 wget https://sourceforge.net/projects/asio/files/asio/${ASIO_VERSION}%20%28Stable%29/asio-${ASIO_VERSION}.tar.gz/download \
  -O asio-${ASIO_VERSION}.tar.gz;
 tar -xf asio-${ASIO_VERSION}.tar.gz;

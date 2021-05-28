@@ -27,6 +27,7 @@ SWC-DB(mngr)> help;
 Usage Help:  'command' [options];
   quit              Quit or Exit the Console
   help              Commands help information
+  switch to         Switch to other CLI, options: rgr|mngr|fs|stats|client
   cluster           report cluster-status state by error
                     cluster;
   status            report managers status by mngr-endpoint, of Schema-Role or by All

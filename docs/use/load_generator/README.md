@@ -70,10 +70,16 @@ Options:
   --help -[h]                             Show this help message and exit                                              true
   --help-config                           Show help message for config properties                                      true
   --quiet                                 Negate verbose                                                               false
+  --swc.bkr.host                          Broker Host: "(hostname or ips-csv)|port"                                    []
+  --swc.bkr.port                          Broker port                                                                  17000
   --swc.cfg                               Main configuration file                                                      swc.cfg
   --swc.cfg.dyn                           Main dynamic configuration file                                              []
   --swc.cfg.dyn.period                    Dynamic cfg-file check interval in ms, zero without                          600000
   --swc.cfg.path                          Path of configuration files                                                  /opt/swcdb/etc/swcdb/
+  --swc.client.Bkr.comm.encoder           The encoding to use in communication, options PLAIN/ZSTD/SNAPPY/ZLIB         ZSTD  # (4)
+  --swc.client.Bkr.connection.keepalive   Broker client connection keepalive for ms since last action                  30000
+  --swc.client.Bkr.connection.probes      Broker client connect probes                                                 1
+  --swc.client.Bkr.connection.timeout     Broker client connect timeout                                                10000
   --swc.client.Mngr.comm.encoder          The encoding to use in communication, options PLAIN/ZSTD/SNAPPY/ZLIB         ZSTD  # (4)
   --swc.client.Mngr.connection.keepalive  Manager client connection keepalive for ms since last action                 30000
   --swc.client.Mngr.connection.probes     Manager client connect probes                                                1
@@ -99,6 +105,7 @@ Options:
   --swc.rgr.port                          Ranger port                                                                  16000
   --verbose                               Show more verbose output                                                     false
   --version -[v]                          Show version information and exit                                            true
+  --with-broker                           Query applicable requests with Broker                                        false
 
 ```
 

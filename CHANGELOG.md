@@ -10,7 +10,45 @@
 
 ### [SWC-DB master](https://github.com/kashirin-alex/swc-db/tree/master) (upcoming-release)
 
-    
+    added SWC-DB Broker program (bin/swcdbBroker)
+    changed default "swc.fs.broker.port" to port 14000
+    added libswcdb (swc.cfg) configuration properties:
+        * swc.bkr.{cfg,port}
+    added libswcdb (swc.dyn.cfg) configuration properties:
+        * swc.bkr.host
+        * swc.client.Bkr.connection.{timeout,probes,keepalive}
+        * swc.client.Bkr.comm.encoder
+    added sbin/swcdb_cluster cfg "swc.cluster.bkr.host"
+    added sbin/swcdb_cluster commands {start,stop,kill}-brokers
+    changed Ranger run at most and at least one Compaction on low-memory-state
+    added Comm::Header::FLAG_RESPONSE_PARTIAL_BIT
+    added DB::Cells::Mutable constructor with StaticBuffer
+    added DB::Cells::Mutable::write_and_free(DynamicBuffer&, uint32_t)
+    added new /db/client/service/{rgr,mngr,bkr} source paths
+    added Clients::Flag to client::Query::{Update,Select}::Handlers::Base ctor
+    added client::Clients ctors with additionally and only ContextBroker
+    added helper client::Clients::*functions* to underlying types
+    added Query::Update::Handlers::Base::{commit,_execute,default_executor}(.)
+    added Query::Select::Handlers::Base::{scan,_execute,default_executor}(.)
+    removed void client::Query::{Update::commit,Select::scan}
+    added client/Query/Update/Handlers/Base.cc
+    added Broker component to client::Query::Profiling
+    changed print/display only with time consumed in client::Query::Profiling
+    changed single handler for stats and definer columns in Metric::Reporting
+    added client::SQL::Reader::read_uint64_t
+    fixed missing/bad use cases of s/str-to-unsigned instead signed
+    added "--with-broker" option to utilities programs and extended tests
+    added BOOL cfg swc.{mngr,rgr,FsBroker}.metrics.report.broker=true
+    added Base & Specialized Protocol::Mngr::Req::Column{Get,List,Mng,Compact}
+    changed type of System::Resources::running to Core::CompletionCounter
+    added Utils::shell::Interface support of "switch to CLI" command
+    added client::Schemas::get(cid/name),set(schema/s)
+    moved Comm::ConnQueueReqBase::valid() to Comm::DispatchHandler::valid()
+    changed functions Comm::DispatchHandler::{handle,handle_no_conn} to pure
+    removed source file core/comm/DispatchHandler.cc
+    added cond. case of client::ConnQueue::ReqBase::valid() to Mngr::Req proto
+    updated for ASIO-0.18.2
+    resolved issue #9 SWC-DB Query Broker - Program
 
 [_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.5.1...master)
 ******

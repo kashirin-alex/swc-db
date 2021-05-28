@@ -300,13 +300,15 @@ void Settings::init_process(bool with_pid_file, const char* port_cfg) {
   }
 }
 
-std::string Settings::usage_str(const char *usage) {
+std::string Settings::usage_str(const char* usage) {
   std::string tmp(swcdb_copyrights());
   tmp.append("\n");
   if(!usage)
     tmp.append(format("Usage: %s [options]\n\nOptions:", executable.c_str()));
   else if(strstr(usage, "%s"))
     tmp.append(format_unsafe(usage, executable.c_str()));
+  else
+    tmp.append(usage);
   return tmp;
 }
 

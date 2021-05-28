@@ -26,6 +26,7 @@ SWC-DB(statistics)> help;
 Usage Help:  'command' [options];
   quit               Quit or Exit the Console
   help               Commands help information
+  switch to          Switch to other CLI, options: rgr|mngr|fs|stats|client
   show               show last='DURATION' since='DATETIME' agg='DURATION'
                           host='STRING' group='STRING' role='STRING' id='STRING'
                           component='STRING' part='STRING' type='STRING' metric='STRING'

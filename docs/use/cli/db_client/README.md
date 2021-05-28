@@ -28,6 +28,7 @@ SWC-DB(client)> help;
 Usage Help:  'command' [options];
   quit              Quit or Exit the Console
   help              Commands help information
+  switch to         Switch to other CLI, options: rgr|mngr|fs|stats|client
   add column        add column|schema (schema definitions [name=value ]);
   modify column     modify column|schema (schema definitions [name=value ]);
   delete column     delete column|schema (schema definitions [name=value ]);

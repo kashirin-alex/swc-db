@@ -27,6 +27,7 @@ SWC-DB(rgr)> help;
 Usage Help:  'command' [options];
   quit                Quit or Exit the Console
   help                Commands help information
+  switch to           Switch to other CLI, options: rgr|mngr|fs|stats|client
   report-resources    report Ranger resources
                       report-resources endpoint/hostname[|port];
   report              report loaded column or all and opt. ranges on a Ranger

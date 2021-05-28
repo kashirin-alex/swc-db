@@ -30,10 +30,11 @@ SWC-DB(fs-broker)> help;
 
 ```bash
 Usage Help:  'command' [options];
-  quit    Quit or Exit the Console
-  help    Commands help information
-  list    list directory contents
-          list 'path';
+  quit         Quit or Exit the Console
+  help         Commands help information
+  switch to    Switch to other CLI, options: rgr|mngr|fs|stats|client
+  list         list directory contents
+               list 'path';
 
 SWC-DB(fs-broker)>
 ```

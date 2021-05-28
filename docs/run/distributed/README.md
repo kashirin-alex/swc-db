@@ -30,24 +30,24 @@ Subcommands:
 
   deploy
   kill
+  kill-brokers
   kill-fsbrokers
   kill-managers
   kill-rangers
-  kill-brokers
   kill-thriftbrokers
   push-config
   shell
   start
+  start-brokers
   start-fsbrokers
   start-managers
   start-rangers
-  start-brokers
   start-thriftbrokers
   stop
+  stop-brokers
   stop-fsbrokers
   stop-managers
   stop-rangers
-  stop-brokers
   stop-thriftbrokers
   wait-ready
 

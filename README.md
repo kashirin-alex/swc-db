@@ -62,7 +62,7 @@ _All the documentations are based on the ./docs/_.
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with this program. 
+    along with this program.
     If not, see <https://github.com/kashirin-alex/swc-db/blob/master/LICENSE>.
 
 
@@ -89,15 +89,15 @@ The notice below of license shall be used:
 
     SWC-DB implement third-party sources and binaries in dynamic or static form.
 
-    The Third-Party license permissions, limitations and conditions 
-    vary between the types of implementation depends on a SWC-DB release. 
-    
-    Whereas to this SWC-DB license under GPLv3 license 
+    The Third-Party license permissions, limitations and conditions
+    vary between the types of implementation depends on a SWC-DB release.
+
+    Whereas to this SWC-DB license under GPLv3 license
     the applied implication is the 'static' form,
-    While 'dynamic' applied to 
+    While 'dynamic' applied to
      libpam_swcdb_max_retries, libswcdb_fs_hadoop_jvm, libswcdb_fs_ceph.
 
-    The Third-Party License notices available at: 
+    The Third-Party License notices available at:
      <https://github.com/kashirin-alex/swc-db/blob/master/NOTICE.md>
 
 

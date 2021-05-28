@@ -172,6 +172,10 @@ In worst case of outdated data being used with a request the Ranger return an er
   * [Make]({{ site.baseurl }}/build/make/)
   * [Documentations]({{ site.baseurl }}/build/documentations/)
   * [Test]({{ site.baseurl }}/build/test/)
+* SUPPORT & LICENSE
+  * [Support on SWC-DB]({{ site.baseurl }}/support_license/support.html)
+  * [License of SWC-DB]({{ site.baseurl }}/support_license/license.html)
+
 
 
 
