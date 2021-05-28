@@ -87,6 +87,7 @@ void column_get(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
         ev, Mngr::Params::ColumnGetRsp(params.flag, schema), 4);
       cbp->append_i32(Error::OK);
       conn->send_response(cbp);
+      Env::Bkr::processed();
 
     } else {
       auto flag = params.flag;
