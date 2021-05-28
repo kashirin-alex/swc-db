@@ -23,6 +23,8 @@ class MngrState : public client::ConnQueue::ReqBase {
 
   virtual ~MngrState() { }
 
+  void handle_no_conn() override { }
+
   void disconnected(const ConnHandlerPtr& conn);
 
   void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;

@@ -44,6 +44,8 @@ class ColumnUpdate : public client::ConnQueue::ReqBase {
 
   virtual ~ColumnUpdate() { }
 
+  void handle_no_conn() override { }
+
   void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override {
     if(!is_rsp(ev))
       return;

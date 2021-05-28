@@ -20,9 +20,11 @@ class DispatchHandler : public std::enable_shared_from_this<DispatchHandler> {
 
   typedef std::shared_ptr<DispatchHandler> Ptr;
 
-  virtual void handle(ConnHandlerPtr conn, const Event::Ptr& ev);
+  virtual void handle(ConnHandlerPtr conn, const Event::Ptr& ev) = 0;
 
-  virtual bool run();
+  virtual bool run() { return false; }
+
+  virtual bool valid() { return true; }
 
   protected:
 

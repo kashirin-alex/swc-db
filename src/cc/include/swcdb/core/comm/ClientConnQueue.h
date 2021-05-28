@@ -24,11 +24,15 @@ class ConnQueueReqBase : public DispatchHandler {
 
   typedef std::shared_ptr<ConnQueueReqBase> Ptr;
 
-  ConnQueueReqBase(bool insistent, const Buffers::Ptr& cbp=nullptr) noexcept;
+  ConnQueueReqBase(bool insistent, const Buffers::Ptr& cbp=nullptr) noexcept
+                  : insistent(insistent), cbp(cbp), queue(nullptr) {
+  }
 
-  Ptr req() noexcept;
+  Ptr req() noexcept {
+    return std::dynamic_pointer_cast<ConnQueueReqBase>(shared_from_this());
+  }
 
-  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
+  //void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
 
   bool is_timeout(const Event::Ptr& ev);
 
@@ -36,9 +40,7 @@ class ConnQueueReqBase : public DispatchHandler {
 
   void request_again();
 
-  virtual bool valid();
-
-  virtual void handle_no_conn();
+  virtual void handle_no_conn() = 0;
 
   void print(std::ostream& out);
 

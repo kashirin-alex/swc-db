@@ -9,23 +9,6 @@ namespace SWC { namespace Comm { namespace client {
 
 
 
-ConnQueueReqBase::ConnQueueReqBase(bool insistent, const Buffers::Ptr& cbp)
-                                  noexcept
-                                  : insistent(insistent), cbp(cbp),
-                                    queue(nullptr) {
-}
-
-SWC_SHOULD_INLINE
-ConnQueueReqBase::Ptr ConnQueueReqBase::req() noexcept {
-  return std::dynamic_pointer_cast<ConnQueueReqBase>(shared_from_this());
-}
-
-void ConnQueueReqBase::handle(ConnHandlerPtr, const Event::Ptr& ev) {
-  if(!is_rsp(ev))
-    return;
-  // SWC_LOGF(LOG_DEBUG, "handle: %s", ev->to_str().c_str());
-}
-
 bool ConnQueueReqBase::is_timeout(const Event::Ptr& ev) {
   bool out = ev->error == Error::Code::REQUEST_TIMEOUT;
   if(out)
@@ -48,10 +31,6 @@ void ConnQueueReqBase::request_again() {
   else
     queue->delay(req());
 }
-
-bool ConnQueueReqBase::valid() { return true; }
-
-void ConnQueueReqBase::handle_no_conn() { }
 
 void ConnQueueReqBase::print(std::ostream& out) {
   cbp->header.print(out << "ReqBase(insistent=" << insistent << ' ');
