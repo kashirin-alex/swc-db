@@ -32,7 +32,7 @@ DB::Schema::Ptr get_schema(int &err, const Params::ColumnGetReq& params) {
 }
 
 void mngr_update_response(const ConnHandlerPtr& conn, const Event::Ptr& ev,
-                          int err, Params::ColumnGetReq::Flag flag, 
+                          int err, Params::ColumnGetReq::Flag flag,
                           const DB::Schema::Ptr& schema) {
   if(!err && !schema)
     err = Error::COLUMN_SCHEMA_NAME_NOT_EXISTS;
@@ -55,7 +55,7 @@ void column_get(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     Params::ColumnGetReq req_params;
     req_params.decode(&ptr, &remain);
     flag = req_params.flag;
-      
+
     DB::Schema::Ptr schema;
     if(Env::Mngr::mngd_columns()->is_schemas_mngr(err)) {
       if(!err)
@@ -87,7 +87,7 @@ void column_get(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
   } catch(...) {
     const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
     SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
-    
+
     flag = Params::ColumnGetReq::Flag::ID_BY_NAME;
     mngr_update_response(conn, ev, e.code(), flag, nullptr);
   }

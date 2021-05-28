@@ -28,8 +28,10 @@ ColumnCompact_Base::ColumnCompact_Base(
 }
 
 void ColumnCompact_Base::handle_no_conn() {
-  if(clients->stopping() || !valid()) {
+  if(clients->stopping()) {
     callback(Mngr::Params::ColumnCompactRsp(Error::CLIENT_STOPPING));
+  } else if(!valid()) {
+    callback(Mngr::Params::ColumnCompactRsp(Error::CANCELLED));
   } else if(_bkr_idx.turn_around(clients->brokers)) {
     request_again();
   } else {

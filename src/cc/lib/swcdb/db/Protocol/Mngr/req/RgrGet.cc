@@ -57,6 +57,8 @@ RgrGet::RgrGet(const SWC::client::Clients::Ptr& clients,
 void RgrGet::handle_no_conn() {
   if(clients->stopping()) {
     cb(req(), Params::RgrGetRsp(Error::CLIENT_STOPPING));
+  } else if(!valid()) {
+    cb(req(), Params::RgrGetRsp(Error::CANCELLED));
   } else {
     clear_endpoints();
     run();
@@ -69,7 +71,10 @@ bool RgrGet::run() {
     if(endpoints.empty()) {
       if(clients->stopping()) {
         cb(req(), Params::RgrGetRsp(Error::CLIENT_STOPPING));
+      } else if(!valid()) {
+        cb(req(), Params::RgrGetRsp(Error::CANCELLED));
       } else {
+        SWC_LOGF(LOG_DEBUG, "RgrGet req mngr-active for cid=%lu", cid);
         MngrActive::make(clients, cid, shared_from_this())->run();
       }
       return false;

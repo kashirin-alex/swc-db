@@ -26,8 +26,10 @@ ColumnGet_Base::ColumnGet_Base(
 }
 
 void ColumnGet_Base::handle_no_conn() {
-  if(clients->stopping() || !valid()) {
+  if(clients->stopping()) {
     callback(Error::CLIENT_STOPPING, Params::ColumnGetRsp());
+  } else if(!valid()) {
+    callback(Error::CANCELLED, Params::ColumnGetRsp());
   } else {
     clear_endpoints();
     run();
@@ -39,8 +41,10 @@ bool ColumnGet_Base::run() {
     // ColumnGet not like ColumnList (can be any mngr if by cid)
     clients->get_mngr(DB::Types::MngrRole::SCHEMAS, endpoints);
     if(endpoints.empty()) {
-      if(clients->stopping() || !valid()) {
+      if(clients->stopping()) {
         callback(Error::CLIENT_STOPPING, Params::ColumnGetRsp());
+      } else if(!valid()) {
+        callback(Error::CANCELLED, Params::ColumnGetRsp());
       } else {
         MngrActive::make(
           clients, DB::Types::MngrRole::SCHEMAS, shared_from_this())->run();

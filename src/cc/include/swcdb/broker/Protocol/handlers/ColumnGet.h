@@ -96,6 +96,7 @@ void column_get(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
       std::make_shared<ColumnGet>(
         Env::Clients::get(), flag, params, conn, ev)->run();
     }
+    return;
 
   } catch(...) {
     const Error::Exception& e = SWC_CURRENT_EXCEPTION("");

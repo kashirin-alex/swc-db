@@ -23,8 +23,10 @@ ColumnGet_Base::ColumnGet_Base(
 }
 
 void ColumnGet_Base::handle_no_conn() {
-  if(clients->stopping() || !valid()) {
+  if(clients->stopping()) {
     callback(Error::CLIENT_STOPPING, Mngr::Params::ColumnGetRsp());
+  } else if(!valid()) {
+    callback(Error::CANCELLED, Mngr::Params::ColumnGetRsp());
   } else if(_bkr_idx.turn_around(clients->brokers)) {
     request_again();
   } else {

@@ -31,6 +31,12 @@ MngrActive::MngrActive(const SWC::client::Clients::Ptr& clients,
 }
 
 void MngrActive::run_within(uint32_t t_ms) {
+  if(!hdlr->valid() ||
+     clients->stopping() ||
+     !clients->get_mngr_io()->running) {
+    hdlr->run();
+    return;
+  }
   timer.cancel();
   timer.expires_after(std::chrono::milliseconds(t_ms));
   timer.async_wait(
@@ -43,7 +49,10 @@ void MngrActive::run_within(uint32_t t_ms) {
 }
 
 void MngrActive::handle_no_conn() {
-  if(clients->stopping() || !clients->get_mngr_io()->running) {
+  SWC_LOGF(LOG_DEBUG, "MngrActive(role=%d cid=%lu) no-conn", role, cid);
+  if(!hdlr->valid() ||
+     clients->stopping() ||
+     !clients->get_mngr_io()->running) {
     hdlr->run();
   } else if(hosts.size() == ++nxt) {
     nxt = 0;

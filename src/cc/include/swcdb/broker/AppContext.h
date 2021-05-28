@@ -119,62 +119,37 @@ class AppContext final : public Comm::AppContext {
         break;
 
       case Comm::Event::Type::MESSAGE: {
-        Env::Bkr::in_process(1);
         switch(ev->header.command) {
 
           case Comm::Protocol::Bkr::Command::COLUMN_GET:
-            Env::Bkr::post([conn, ev]() {
-              ev->expired() || !conn->is_open()
-                ? Env::Bkr::processed()
-                : Comm::Protocol::Bkr::Handler::column_get(conn, ev);
-            });
+            Comm::Protocol::Bkr::Handler::column_get(conn, ev);
             break;
 
           case Comm::Protocol::Bkr::Command::COLUMN_LIST:
-            Env::Bkr::post([conn, ev]() {
-              ev->expired() || !conn->is_open()
-                ? Env::Bkr::processed()
-                : Comm::Protocol::Bkr::Handler::column_list(conn, ev);
-            });
+            Comm::Protocol::Bkr::Handler::column_list(conn, ev);
             break;
 
           case Comm::Protocol::Bkr::Command::COLUMN_COMPACT:
-            Env::Bkr::post([conn, ev]() {
-              ev->expired() || !conn->is_open()
-                ? Env::Bkr::processed()
-                : Comm::Protocol::Bkr::Handler::column_compact(conn, ev);
-            });
+            Comm::Protocol::Bkr::Handler::column_compact(conn, ev);
             break;
 
           case Comm::Protocol::Bkr::Command::COLUMN_MNG:
-            Env::Bkr::post([conn, ev]() {
-              ev->expired() || !conn->is_open()
-                ? Env::Bkr::processed()
-                : Comm::Protocol::Bkr::Handler::column_mng(conn, ev);
-            });
+            Comm::Protocol::Bkr::Handler::column_mng(conn, ev);
             break;
 
           case Comm::Protocol::Bkr::Command::CELLS_UPDATE:
-            Env::Bkr::post([conn, ev]() {
-              ev->expired() || !conn->is_open()
-                ? Env::Bkr::processed()
-                : Comm::Protocol::Bkr::Handler::cells_update(conn, ev);
-            });
+            Comm::Protocol::Bkr::Handler::cells_update(conn, ev);
             break;
 
           case Comm::Protocol::Bkr::Command::CELLS_SELECT:
-            Env::Bkr::post([conn, ev]() {
-              ev->expired() || !conn->is_open()
-                ? Env::Bkr::processed()
-                : Comm::Protocol::Bkr::Handler::cells_select(conn, ev);
-            });
+            Comm::Protocol::Bkr::Handler::cells_select(conn, ev);
             break;
 
           default: {
             Comm::Protocol::Common::Handler::not_implemented(conn, ev);
             if(m_metrics)
               m_metrics->net->error(conn);
-            Env::Bkr::in_process(-2);
+            Env::Bkr::processed();
             return;
           }
         }

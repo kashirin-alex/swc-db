@@ -25,8 +25,10 @@ ColumnMng_Base::ColumnMng_Base(const SWC::client::Clients::Ptr& clients,
 }
 
 void ColumnMng_Base::handle_no_conn() {
-  if(clients->stopping() || !valid()) {
+  if(clients->stopping()) {
     callback(Error::CLIENT_STOPPING);
+  } else if(!valid()) {
+    callback(Error::CANCELLED);
   } else if(_bkr_idx.turn_around(clients->brokers)) {
     request_again();
   } else {

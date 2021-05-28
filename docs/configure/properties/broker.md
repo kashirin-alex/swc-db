@@ -26,12 +26,12 @@ _default_ **```swc.bkr.workers=32```**
 * ### swc.bkr.handlers
 ```INT32```
 The number of Application handlers. \
-_default_ **```swc.bkr.handlers=8```**
+_default_ **```swc.bkr.handlers=4```**
 
 * ### swc.bkr.clients.handlers
 ```INT32```
 The number of DB-Clients handlers. \
-_default_ **```swc.bkr.clients.handlers=8```**
+_default_ **```swc.bkr.clients.handlers=32```**
 
 * ### swc.bkr.metrics.enabled
 ```BOOL```

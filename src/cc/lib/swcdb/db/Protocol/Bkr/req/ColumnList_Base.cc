@@ -24,8 +24,10 @@ ColumnList_Base::ColumnList_Base(
 }
 
 void ColumnList_Base::handle_no_conn() {
-  if(clients->stopping() || !valid()) {
+  if(clients->stopping()) {
     callback(Error::CLIENT_STOPPING, Mngr::Params::ColumnListRsp());
+  } else if(!valid()) {
+    callback(Error::CANCELLED, Mngr::Params::ColumnListRsp());
   } else if(_bkr_idx.turn_around(clients->brokers)) {
     request_again();
   } else {

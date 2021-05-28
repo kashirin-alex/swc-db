@@ -25,8 +25,10 @@ ColumnList_Base::ColumnList_Base(
 }
 
 void ColumnList_Base::handle_no_conn() {
-  if(clients->stopping() || !valid()) {
+  if(clients->stopping()) {
     callback(Error::CLIENT_STOPPING, Params::ColumnListRsp());
+  } else if(!valid()) {
+    callback(Error::CANCELLED, Params::ColumnListRsp());
   } else {
     clear_endpoints();
     run();
@@ -37,8 +39,10 @@ bool ColumnList_Base::run() {
   if(endpoints.empty()) {
     clients->get_mngr(DB::Types::MngrRole::SCHEMAS, endpoints);
     if(endpoints.empty()) {
-      if(clients->stopping() || !valid()) {
+      if(clients->stopping()) {
         callback(Error::CLIENT_STOPPING, Params::ColumnListRsp());
+      } else if(!valid()) {
+        callback(Error::CANCELLED, Params::ColumnListRsp());
       } else {
         MngrActive::make(
           clients, DB::Types::MngrRole::SCHEMAS, shared_from_this())->run();
