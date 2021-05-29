@@ -10,8 +10,8 @@
 namespace SWC { namespace FS {
 
 
-Configurables apply_hadoop_jvm() {
-  Env::Config::settings()->file_desc.add_options()
+Configurables* apply_hadoop_jvm(Configurables* config) {
+  config->settings->file_desc.add_options()
     ("swc.fs.hadoop_jvm.path.root", Config::str(""),
       "HadoopJVM FileSystem's base root path")
     ("swc.fs.hadoop_jvm.cfg.dyn", Config::strs(),
@@ -33,17 +33,16 @@ Configurables apply_hadoop_jvm() {
       "In ms delay use of connection after re-connect")
   ;
 
-  Env::Config::settings()->parse_file(
-    Env::Config::settings()->get_str("swc.fs.hadoop_jvm.cfg", ""),
+  config->settings->parse_file(
+    config->settings->get_str("swc.fs.hadoop_jvm.cfg", ""),
     "swc.fs.hadoop_jvm.cfg.dyn"
   );
 
-  Configurables config;
-  config.path_root = Env::Config::settings()->get_str(
+  config->path_root = config->settings->get_str(
     "swc.fs.hadoop_jvm.path.root");
-  config.cfg_fds_max = Env::Config::settings()
+  config->cfg_fds_max = config->settings
     ->get<Config::Property::V_GINT32>("swc.fs.hadoop_jvm.fds.max");
-  config.stats_enabled = Env::Config::settings()->get_bool(
+  config->stats_enabled = config->settings->get_bool(
     "swc.fs.hadoop_jvm.metrics.enabled");
   return config;
 }
@@ -119,12 +118,12 @@ FileSystemHadoopJVM::get_fd(SmartFd::Ptr& smartfd){
 }
 
 
-FileSystemHadoopJVM::FileSystemHadoopJVM()
-    : FileSystem(apply_hadoop_jvm()),
+FileSystemHadoopJVM::FileSystemHadoopJVM(Configurables* config)
+    : FileSystem(apply_hadoop_jvm(config)),
       m_nxt_fd(0), m_connecting(false),
       m_fs(setup_connection()),
       cfg_use_delay(
-        Env::Config::settings()->get<Config::Property::V_GINT32>(
+        settings->get<Config::Property::V_GINT32>(
           "swc.fs.hadoop_jvm.reconnect.delay.ms")) {
 }
 
@@ -191,7 +190,6 @@ FileSystemHadoopJVM::setup_connection() {
 }
 
 bool FileSystemHadoopJVM::initialize(FileSystemHadoopJVM::Service::Ptr& fs) {
-  auto settings = Env::Config::settings();
 
   hdfsFS connection = nullptr;
   if (settings->has("swc.fs.hadoop_jvm.namenode")) {
@@ -721,10 +719,8 @@ void FileSystemHadoopJVM::close(int& err, SmartFd::Ptr& smartfd) {
 
 
 extern "C" {
-SWC::FS::FileSystem* fs_make_new_hadoop_jvm() {
-  return static_cast<SWC::FS::FileSystem*>(new SWC::FS::FileSystemHadoopJVM());
-}
-void fs_apply_cfg_hadoop_jvm(SWC::Env::Config::Ptr env) {
-  SWC::Env::Config::set(env);
+SWC::FS::FileSystem* fs_make_new_hadoop_jvm(SWC::FS::Configurables* config) {
+  return static_cast<SWC::FS::FileSystem*>(
+    new SWC::FS::FileSystemHadoopJVM(config));
 }
 }

@@ -23,15 +23,16 @@ typedef std::shared_ptr<Base> BasePtr;
 
 namespace FS {
 
-Configurables apply_broker();
+
+Configurables* apply_broker(Configurables* config);
 
 
 class FileSystemBroker final : public FileSystem {
   public:
 
-  static Comm::EndPoints get_endpoints();
+  static Comm::EndPoints get_endpoints(const Config::Settings::Ptr& settings);
 
-  FileSystemBroker();
+  FileSystemBroker(Configurables* config);
 
   virtual ~FileSystemBroker();
 
@@ -175,8 +176,7 @@ class FileSystemBroker final : public FileSystem {
 
 
 extern "C" {
-SWC::FS::FileSystem* fs_make_new_broker();
-void fs_apply_cfg_broker(SWC::Env::Config::Ptr env);
+SWC::FS::FileSystem* fs_make_new_broker(SWC::FS::Configurables* config);
 }
 
 #ifdef SWC_IMPL_SOURCE

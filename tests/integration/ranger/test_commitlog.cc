@@ -45,8 +45,9 @@ void count_all_cells(size_t num_cells, Ranger::Blocks& blocks) {
 int main(int argc, char** argv) {
   Env::Config::init(argc, argv);
 
-  Env::FsInterface::init(FS::fs_type(
-    Env::Config::settings()->get_str("swc.fs")));
+  Env::FsInterface::init(
+    Env::Config::settings(),
+    FS::fs_type(Env::Config::settings()->get_str("swc.fs")));
 
   Env::IoCtx::init(8);
   Env::Clients::init(

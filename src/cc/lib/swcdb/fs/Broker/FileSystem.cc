@@ -53,8 +53,8 @@
 namespace SWC { namespace FS {
 
 
-Configurables apply_broker() {
-  Env::Config::settings()->file_desc.add_options()
+Configurables* apply_broker(Configurables* config) {
+  config->settings->file_desc.add_options()
     ("swc.fs.broker.cfg.dyn", Config::strs(),
      "Dyn-config file")
 
@@ -85,22 +85,23 @@ Configurables apply_broker() {
     ("swc.fs.broker.fds.max", Config::g_i32(256),
       "Max Open Fds for opt. without closing")
   ;
-  Env::Config::settings()->parse_file(
-    Env::Config::settings()->get_str("swc.fs.broker.cfg", ""),
+  config->settings->parse_file(
+    config->settings->get_str("swc.fs.broker.cfg", ""),
     "swc.fs.broker.cfg.dyn"
   );
-  Configurables config;
-  config.cfg_fds_max = Env::Config::settings()
+
+  config->cfg_fds_max = config->settings
     ->get<Config::Property::V_GINT32>("swc.fs.broker.fds.max");
-  config.stats_enabled = Env::Config::settings()->get_bool(
+  config->stats_enabled = config->settings->get_bool(
     "swc.fs.broker.metrics.enabled");
   return config;
 }
 
 
 
-Comm::EndPoints FileSystemBroker::get_endpoints() {
-  std::string host = Env::Config::settings()->get_str(
+Comm::EndPoints 
+FileSystemBroker::get_endpoints(const Config::Settings::Ptr& settings) {
+  std::string host = settings->get_str(
     "swc.fs.broker.host", "");
   if(host.empty()) {
     char hostname[256];
@@ -112,7 +113,7 @@ Comm::EndPoints FileSystemBroker::get_endpoints() {
   std::vector<Comm::Network> nets;
   asio::error_code ec;
   Comm::Resolver::get_networks(
-    Env::Config::settings()->get_strs("swc.comm.network.priority"), nets, ec);
+    settings->get_strs("swc.comm.network.priority"), nets, ec);
   if(ec)
     SWC_THROWF(Error::CONFIG_BAD_VALUE,
               "swc.comm.network.priority error(%s)",
@@ -120,33 +121,33 @@ Comm::EndPoints FileSystemBroker::get_endpoints() {
 
   Config::Strings addr;
   return Comm::Resolver::get_endpoints(
-    Env::Config::settings()->get_i16("swc.fs.broker.port"),
+    settings->get_i16("swc.fs.broker.port"),
     addr, host, nets, true
   );
 }
 
 
 
-FileSystemBroker::FileSystemBroker()
-  : FileSystem(apply_broker()),
+FileSystemBroker::FileSystemBroker(Configurables* config)
+  : FileSystem(apply_broker(config)),
     m_io(std::make_shared<Comm::IoContext>("FsBroker",
-      Env::Config::settings()->get_i32("swc.fs.broker.handlers"))),
+      settings->get_i32("swc.fs.broker.handlers"))),
     m_service(
       std::make_shared<Comm::client::Serialized>(
         "FS-BROKER",
         m_io,
         std::make_shared<client::FsBroker::AppContext>(
-          *Env::Config::settings())
+          *settings)
       )
     ),
     m_type_underlying(fs_type(
-      Env::Config::settings()->get_str("swc.fs.broker.underlying"))),
-    m_endpoints(get_endpoints()),
+      settings->get_str("swc.fs.broker.underlying"))),
+    m_endpoints(get_endpoints(settings)),
     cfg_timeout(
-      Env::Config::settings()->get<Config::Property::V_GINT32>(
+      settings->get<Config::Property::V_GINT32>(
         "swc.fs.broker.timeout")),
     cfg_timeout_ratio(
-      Env::Config::settings()->get<Config::Property::V_GINT32>(
+      settings->get<Config::Property::V_GINT32>(
         "swc.fs.broker.timeout.bytes.ratio")) {
 }
 
@@ -639,10 +640,8 @@ void FileSystemBroker::close(Callback::CloseCb_t&& cb,
 
 
 extern "C" {
-SWC::FS::FileSystem* fs_make_new_broker(){
-  return static_cast<SWC::FS::FileSystem*>(new SWC::FS::FileSystemBroker());
-}
-void fs_apply_cfg_broker(SWC::Env::Config::Ptr env){
-  SWC::Env::Config::set(env);
+SWC::FS::FileSystem* fs_make_new_broker(SWC::FS::Configurables* config) {
+  return static_cast<SWC::FS::FileSystem*>(
+    new SWC::FS::FileSystemBroker(config));
 }
 }

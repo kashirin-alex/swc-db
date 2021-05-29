@@ -214,8 +214,9 @@ void read_cs(SWC::csid_t csid, SWC::Ranger::RangePtr range,
 int main(int argc, char** argv) {
 
   SWC::Env::Config::init(argc, argv);
-  SWC::Env::FsInterface::init(SWC::FS::fs_type(
-    SWC::Env::Config::settings()->get_str("swc.fs")));
+  SWC::Env::FsInterface::init(
+    SWC::Env::Config::settings(),
+    SWC::FS::fs_type(SWC::Env::Config::settings()->get_str("swc.fs")));
 
 
   SWC::Env::IoCtx::init(8);

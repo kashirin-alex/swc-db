@@ -83,7 +83,7 @@ class AppContext final : public Comm::AppContext {
 
     auto fs_type = FS::fs_type(settings->get_str("swc.fs.broker.underlying"));
     SWC_ASSERT(fs_type != FS::Type::BROKER);
-    Env::FsInterface::init(fs_type);
+    Env::FsInterface::init(settings, fs_type);
 
     if(settings->get_bool("swc.FsBroker.metrics.enabled")) {
       Env::Clients::init(

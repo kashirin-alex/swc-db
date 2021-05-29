@@ -14,8 +14,8 @@
 
 namespace SWC { namespace FS {
 
-Configurables apply_hadoop();
 
+Configurables* apply_hadoop(Configurables* config);
 
 
 class FileSystemHadoop final : public FileSystem {
@@ -33,7 +33,7 @@ class FileSystemHadoop final : public FileSystem {
     hdfs::FileSystem*     srv;
   };
 
-  FileSystemHadoop();
+  FileSystemHadoop(Configurables* config);
 
   virtual ~FileSystemHadoop();
 
@@ -160,8 +160,7 @@ class FileSystemHadoop final : public FileSystem {
 
 
 extern "C" {
-SWC::FS::FileSystem* fs_make_new_hadoop();
-void fs_apply_cfg_hadoop(SWC::Env::Config::Ptr env);
+SWC::FS::FileSystem* fs_make_new_hadoop(SWC::FS::Configurables* config);
 }
 
 #ifdef SWC_IMPL_SOURCE

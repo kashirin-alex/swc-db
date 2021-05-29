@@ -16,19 +16,22 @@ void hold_delay() {
 }
 }
 
-Interface::Interface(Type typ) : m_type(typ), m_fs(use_filesystem()) {
+Interface::Interface(const Config::Settings::Ptr& settings, Type typ)
+                    : m_type(typ), m_fs(use_filesystem(settings)) {
 
   SWC_LOGF(LOG_INFO, "INIT-%s", to_string().c_str());
 }
 
-FileSystem::Ptr Interface::use_filesystem() {
-  std::string fs_name;
+FileSystem::Ptr
+Interface::use_filesystem(const Config::Settings::Ptr& settings) {
+  Configurables config(settings);
 
-  switch(m_type){
+  std::string fs_name;
+  switch(m_type) {
 
     case Type::LOCAL:{
 #if defined (BUILTIN_FS_LOCAL) || defined (BUILTIN_FS_ALL)
-      return std::make_shared<FileSystemLocal>();
+      return std::make_shared<FileSystemLocal>(&config);
 #endif
       fs_name.append("local");
       break;
@@ -36,7 +39,7 @@ FileSystem::Ptr Interface::use_filesystem() {
 
     case Type::BROKER:{
 #if defined (BUILTIN_FS_BROKER) || defined (BUILTIN_FS_ALL)
-      return std::make_shared<FileSystemBroker>();
+      return std::make_shared<FileSystemBroker>(&config);
 #endif
       fs_name.append("broker");
       break;
@@ -44,7 +47,7 @@ FileSystem::Ptr Interface::use_filesystem() {
 
     case Type::HADOOP: {
 #if defined (BUILTIN_FS_HADOOP) || defined (BUILTIN_FS_ALL)
-      return std::make_shared<FileSystemHadoop>();
+      return std::make_shared<FileSystemHadoop>(&config);
 #endif
       fs_name.append("hadoop");
       break;
@@ -52,7 +55,7 @@ FileSystem::Ptr Interface::use_filesystem() {
 
     case Type::HADOOP_JVM: {
 #if defined (BUILTIN_FS_HADOOP_JVM) || defined (BUILTIN_FS_ALL)
-      return std::make_shared<FileSystemHadoopJVM>();
+      return std::make_shared<FileSystemHadoopJVM>(&config);
 #endif
       fs_name.append("hadoop_jvm");
       break;
@@ -60,7 +63,7 @@ FileSystem::Ptr Interface::use_filesystem() {
 
     case Type::CEPH:{
 #if defined (BUILTIN_FS_CEPH) || defined (BUILTIN_FS_ALL)
-      return std::make_shared<FileSystemCeph>();
+      return std::make_shared<FileSystemCeph>(&config);
 #endif
       fs_name.append("ceph");
       break;
@@ -79,12 +82,11 @@ FileSystem::Ptr Interface::use_filesystem() {
 
   std::string cfg_lib("swc.fs.lib." + fs_name);
   std::string fs_lib;
-  if(Env::Config::settings()->has(cfg_lib.c_str())) {
-    fs_lib = Env::Config::settings()->get_str(cfg_lib.c_str());
+  if(settings->has(cfg_lib.c_str())) {
+    fs_lib = settings->get_str(cfg_lib.c_str());
   } else {
-    fs_lib.reserve(
-      Env::Config::settings()->install_path.length() + 20 + fs_name.length());
-    fs_lib.append(Env::Config::settings()->install_path);
+    fs_lib.reserve(settings->install_path.length() + 20 + fs_name.length());
+    fs_lib.append(settings->install_path);
     fs_lib.append("/lib/libswcdb_fs_"); // (./lib/libswcdb_fs_local.so)
     fs_lib.append(fs_name);
     fs_lib.append(".so");
@@ -98,24 +100,16 @@ FileSystem::Ptr Interface::use_filesystem() {
               fs_lib.c_str(), err);
 
   err = dlerror();
-  std::string handler_name =  "fs_apply_cfg_"+fs_name;
-  void* f_cfg_ptr = dlsym(handle, handler_name.c_str());
-  if (err || !f_cfg_ptr)
-    SWC_THROWF(Error::CONFIG_BAD_VALUE,
-              "Shared Lib %s, link(%s) fail: %s handle=%p\n",
-              fs_lib.c_str(), handler_name.c_str(), err, handle);
-  reinterpret_cast<fs_apply_cfg_t*>(f_cfg_ptr)(Env::Config::get());
-
-  err = dlerror();
-  handler_name =  "fs_make_new_"+fs_name;
+  std::string handler_name("fs_make_new_" + fs_name);
   void* f_new_ptr = dlsym(handle, handler_name.c_str());
   if (err || !f_new_ptr)
     SWC_THROWF(Error::CONFIG_BAD_VALUE,
               "Shared Lib %s, link(%s) fail: %s handle=%p\n",
               fs_lib.c_str(), handler_name.c_str(), err, handle);
 
-  loaded_dl = {.lib=handle, .cfg=f_cfg_ptr, .make=f_new_ptr};
-  return FileSystem::Ptr(reinterpret_cast<fs_make_new_t*>(f_new_ptr)());
+  loaded_dl = {.lib=handle, .make=f_new_ptr};
+  return FileSystem::Ptr(
+    reinterpret_cast<fs_make_new_t*>(f_new_ptr)(&config));
 }
 
 Interface::Ptr Interface::ptr() noexcept {
@@ -125,7 +119,6 @@ Interface::Ptr Interface::ptr() noexcept {
 Interface::~Interface() {
   m_fs = nullptr;
   if(loaded_dl.lib) {
-    reinterpret_cast<fs_apply_cfg_t*>(loaded_dl.cfg)(nullptr);
     dlclose(loaded_dl.lib);
   }
 }
@@ -523,8 +516,9 @@ void set_structured_id(const std::string& number, std::string& s) {
 
 namespace Env {
 
-void FsInterface::init(FS::Type typ) {
-  m_env = std::make_shared<FsInterface>(typ);
+void FsInterface::init(const SWC::Config::Settings::Ptr& settings,
+                      FS::Type typ) {
+  m_env = std::make_shared<FsInterface>(settings, typ);
 }
 
 FsInterface::Ptr FsInterface::get() noexcept {
@@ -545,8 +539,9 @@ void FsInterface::reset() noexcept {
   m_env = nullptr;
 }
 
-FsInterface::FsInterface(FS::Type typ)
-                        : m_interface(new FS::Interface(typ)) {}
+FsInterface::FsInterface(const SWC::Config::Settings::Ptr& settings,
+                         FS::Type typ)
+                        : m_interface(new FS::Interface(settings ,typ)) {}
 
 }
 

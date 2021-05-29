@@ -16,8 +16,8 @@ extern "C" {
 namespace SWC { namespace FS {
 
 
-Configurables apply_hadoop() {
-  Env::Config::settings()->file_desc.add_options()
+Configurables* apply_hadoop(Configurables* config) {
+  config->settings->file_desc.add_options()
     ("swc.fs.hadoop.path.root", Config::str(""),
       "Hadoop FileSystem's base root path")
     ("swc.fs.hadoop.cfg.dyn", Config::strs(),
@@ -39,17 +39,16 @@ Configurables apply_hadoop() {
       "Max Open Fds for opt. without closing")
   ;
 
-  Env::Config::settings()->parse_file(
-    Env::Config::settings()->get_str("swc.fs.hadoop.cfg", ""),
+  config->settings->parse_file(
+    config->settings->get_str("swc.fs.hadoop.cfg", ""),
     "swc.fs.hadoop.cfg.dyn"
   );
 
-  Configurables config;
-  config.path_root = Env::Config::settings()->get_str(
+  config->path_root = config->settings->get_str(
     "swc.fs.hadoop.path.root");
-  config.cfg_fds_max = Env::Config::settings()
+  config->cfg_fds_max = config->settings
     ->get<Config::Property::V_GINT32>("swc.fs.hadoop.fds.max");
-  config.stats_enabled = Env::Config::settings()->get_bool(
+  config->stats_enabled = config->settings->get_bool(
     "swc.fs.hadoop.metrics.enabled");
   return config;
 }
@@ -98,8 +97,8 @@ FileSystemHadoop::get_fd(SmartFd::Ptr& smartfd){
 }
 
 
-FileSystemHadoop::FileSystemHadoop()
-    : FileSystem(apply_hadoop()),
+FileSystemHadoop::FileSystemHadoop(Configurables* config)
+    : FileSystem(apply_hadoop(config)),
       m_nxt_fd(0), m_connecting(false),
       m_fs(setup_connection()) {
 }
@@ -167,7 +166,6 @@ FileSystemHadoop::setup_connection() {
 }
 
 bool FileSystemHadoop::initialize(FileSystemHadoop::Service::Ptr& fs) {
-  auto settings = Env::Config::settings();
 
   hdfs::ConfigParser parser;
   if(!parser.LoadDefaultResources())
@@ -672,10 +670,8 @@ void FileSystemHadoop::close(int& err, SmartFd::Ptr& smartfd) {
 
 
 extern "C" {
-SWC::FS::FileSystem* fs_make_new_hadoop() {
-  return static_cast<SWC::FS::FileSystem*>(new SWC::FS::FileSystemHadoop());
-}
-void fs_apply_cfg_hadoop(SWC::Env::Config::Ptr env) {
-  SWC::Env::Config::set(env);
+SWC::FS::FileSystem* fs_make_new_hadoop(SWC::FS::Configurables* config) {
+  return static_cast<SWC::FS::FileSystem*>(
+    new SWC::FS::FileSystemHadoop(config));
 }
 }

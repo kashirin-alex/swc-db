@@ -46,9 +46,14 @@ enum Flags : uint8_t {
 
 
 struct Configurables {
-  Config::Property::V_GINT32::Ptr cfg_fds_max = nullptr;
+  Config::Settings::Ptr           settings;
+  Config::Property::V_GINT32::Ptr cfg_fds_max;
   std::string                     path_root;
   bool                            stats_enabled;
+  Configurables(const Config::Settings::Ptr& settings) noexcept
+                : settings(settings),
+                  cfg_fds_max(nullptr), stats_enabled(false) {
+  }
 };
 
 
@@ -67,12 +72,13 @@ class FileSystem : public std::enable_shared_from_this<FileSystem> {
   const std::string path_root;
   const std::string path_data;
 
+  const Config::Settings::Ptr           settings;
   const Config::Property::V_GINT32::Ptr cfg_fds_max;
 
   Core::AtomicBool      m_run;
   Statistics            statistics;
 
-  FileSystem(const Configurables& config);
+  FileSystem(const Configurables* config);
 
   virtual ~FileSystem();
 
@@ -205,9 +211,7 @@ class FileSystem : public std::enable_shared_from_this<FileSystem> {
 
 
 extern "C"{
-typedef SWC::FS::FileSystem* fs_make_new_t();
-
-typedef void fs_apply_cfg_t(SWC::Env::Config::Ptr env);
+typedef SWC::FS::FileSystem* fs_make_new_t(SWC::FS::Configurables*);
 }
 
 

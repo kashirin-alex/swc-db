@@ -11,13 +11,13 @@
 namespace SWC { namespace FS {
 
 
-Configurables apply_local();
+Configurables* apply_local();
 
 
 class FileSystemLocal final : public FileSystem {
   public:
 
-  FileSystemLocal();
+  FileSystemLocal(Configurables* config);
 
   virtual ~FileSystemLocal();
 
@@ -100,8 +100,7 @@ class FileSystemLocal final : public FileSystem {
 
 
 extern "C" {
-SWC::FS::FileSystem* fs_make_new_local();
-void fs_apply_cfg_local(SWC::Env::Config::Ptr env);
+SWC::FS::FileSystem* fs_make_new_local(SWC::FS::Configurables* config);
 }
 
 #ifdef SWC_IMPL_SOURCE

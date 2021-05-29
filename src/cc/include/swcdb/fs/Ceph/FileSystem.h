@@ -14,14 +14,13 @@
 namespace SWC { namespace FS {
 
 
-Configurables apply_ceph();
+Configurables* apply_ceph(Configurables* config);
 
 
 class FileSystemCeph final : public FileSystem {
   public:
 
-
-  FileSystemCeph();
+  FileSystemCeph(Configurables* config);
 
   void setup_connection();
 
@@ -116,8 +115,7 @@ class FileSystemCeph final : public FileSystem {
 
 
 extern "C" {
-SWC::FS::FileSystem* fs_make_new_ceph();
-void fs_apply_cfg_ceph(SWC::Env::Config::Ptr env);
+SWC::FS::FileSystem* fs_make_new_ceph(SWC::FS::Configurables* config);
 }
 
 #ifdef SWC_IMPL_SOURCE

@@ -13,8 +13,8 @@
 namespace SWC { namespace FS {
 
 
-Configurables apply_local() {
-  Env::Config::settings()->file_desc.add_options()
+Configurables* apply_local(Configurables* config) {
+  config->settings->file_desc.add_options()
     ("swc.fs.local.path.root", Config::str(""),
      "Local FileSystem's base root path")
     ("swc.fs.local.cfg.dyn", Config::strs(),
@@ -26,26 +26,25 @@ Configurables apply_local() {
     ("swc.fs.local.fds.max", Config::g_i32(1024),
       "Max Open Fds for opt. without closing")
   ;
-  Env::Config::settings()->parse_file(
-    Env::Config::settings()->get_str("swc.fs.local.cfg", ""),
+  config->settings->parse_file(
+    config->settings->get_str("swc.fs.local.cfg", ""),
     "swc.fs.local.cfg.dyn"
   );
 
-  Configurables config;
-  config.path_root = Env::Config::settings()->get_str(
+  config->path_root = config->settings->get_str(
     "swc.fs.local.path.root");
-  config.cfg_fds_max = Env::Config::settings()
-    ->get<Config::Property::V_GINT32>("swc.fs.local.fds.max");
-  config.stats_enabled = Env::Config::settings()->get_bool(
+  config->cfg_fds_max = config->settings->get<Config::Property::V_GINT32>(
+    "swc.fs.local.fds.max");
+  config->stats_enabled = config->settings->get_bool(
     "swc.fs.local.metrics.enabled");
   return config;
 }
 
 
-FileSystemLocal::FileSystemLocal()
-                : FileSystem(apply_local()) {
-  m_directio = Env::Config::settings()->get_bool(
-    "swc.fs.local.DirectIO", false);
+FileSystemLocal::FileSystemLocal(Configurables* config)
+                : FileSystem(apply_local(config)),
+                  m_directio(settings->get_bool(
+                    "swc.fs.local.DirectIO", false)) {
 }
 
 FileSystemLocal::~FileSystemLocal() { }
@@ -458,10 +457,8 @@ void FileSystemLocal::close(int& err, SmartFd::Ptr& smartfd) {
 
 
 extern "C" {
-SWC::FS::FileSystem* fs_make_new_local(){
-  return static_cast<SWC::FS::FileSystem*>(new SWC::FS::FileSystemLocal());
-}
-void fs_apply_cfg_local(SWC::Env::Config::Ptr env){
-  SWC::Env::Config::set(env);
+SWC::FS::FileSystem* fs_make_new_local(SWC::FS::Configurables* config) {
+  return static_cast<SWC::FS::FileSystem*>(
+    new SWC::FS::FileSystemLocal(config));
 }
 }

@@ -19,8 +19,9 @@ Fs::Fs()
               "/tmp/.swc-cli-fs-" +
               Env::Config::settings()->get_str("swc.fs") + "-history") {
 
-  Env::FsInterface::init(FS::fs_type(
-    Env::Config::settings()->get_str("swc.fs")));
+  Env::FsInterface::init(
+    Env::Config::settings(),
+    FS::fs_type(Env::Config::settings()->get_str("swc.fs")));
 
   options.push_back(
     new Option(

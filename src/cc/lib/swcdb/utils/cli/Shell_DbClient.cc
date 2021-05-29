@@ -451,8 +451,10 @@ bool DbClient::load(std::string& cmd) {
 
   FS::Interface::Ptr fs_interface;
   try {
-    fs_interface.reset(new FS::Interface(FS::fs_type(
-      fs.empty() ? Env::Config::settings()->get_str("swc.fs") : fs)));
+    fs_interface.reset(new FS::Interface(
+      Env::Config::settings(),
+      FS::fs_type(
+        fs.empty() ? Env::Config::settings()->get_str("swc.fs") : fs)));
   } catch(...) {
     const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
     err = e.code();
@@ -516,8 +518,10 @@ bool DbClient::dump(std::string& cmd) {
 
   FS::Interface::Ptr fs_interface;
   try {
-    fs_interface.reset(new FS::Interface(FS::fs_type(
-      fs.empty() ? Env::Config::settings()->get_str("swc.fs") : fs)));
+    fs_interface.reset(new FS::Interface(
+      Env::Config::settings(),
+      FS::fs_type(
+        fs.empty() ? Env::Config::settings()->get_str("swc.fs") : fs)));
   } catch(...) {
     const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
     err = e.code();

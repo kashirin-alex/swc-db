@@ -64,14 +64,14 @@ const char* to_string(Type typ) noexcept {
 }
 
 
-FileSystem::FileSystem(const Configurables& config)
-    : path_root(config.path_root.empty()
-        ? "" : normalize_pathname(config.path_root)),
+FileSystem::FileSystem(const Configurables* config)
+    : path_root(config->path_root.empty()
+        ? "" : normalize_pathname(config->path_root)),
       path_data(
-        normalize_pathname(
-          Env::Config::settings()->get_str("swc.fs.path.data"))),
-      cfg_fds_max(config.cfg_fds_max), m_run(true),
-      statistics(config.stats_enabled) {
+        normalize_pathname(config->settings->get_str("swc.fs.path.data"))),
+      settings(config->settings),
+      cfg_fds_max(config->cfg_fds_max), m_run(true),
+      statistics(config->stats_enabled) {
 }
 
 FileSystem::~FileSystem() { }

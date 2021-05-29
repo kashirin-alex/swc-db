@@ -14,8 +14,8 @@ extern "C" {
 namespace SWC { namespace FS {
 
 
-Configurables apply_ceph() {
-  Env::Config::settings()->file_desc.add_options()
+Configurables* apply_ceph(Configurables* config) {
+  config->settings->file_desc.add_options()
     ("swc.fs.ceph.path.root", Config::str(""),
       "Ceph FileSystem's base root path")
     ("swc.fs.ceph.cfg.dyn", Config::strs(),
@@ -50,17 +50,16 @@ Configurables apply_ceph() {
       "Max Open Fds for opt. without closing")
   ;
 
-  Env::Config::settings()->parse_file(
-    Env::Config::settings()->get_str("swc.fs.ceph.cfg", ""),
+  config->settings->parse_file(
+    config->settings->get_str("swc.fs.ceph.cfg", ""),
     "swc.fs.ceph.cfg.dyn"
   );
 
-  Configurables config;
-  config.path_root = Env::Config::settings()->get_str(
+  config->path_root = config->settings->get_str(
     "swc.fs.ceph.path.root");
-  config.cfg_fds_max = Env::Config::settings()
+  config->cfg_fds_max = config->settings
     ->get<Config::Property::V_GINT32>("swc.fs.ceph.fds.max");
-  config.stats_enabled = Env::Config::settings()->get_bool(
+  config->stats_enabled = config->settings->get_bool(
     "swc.fs.ceph.metrics.enabled");
   return config;
 }
@@ -68,14 +67,13 @@ Configurables apply_ceph() {
 
 
 
-FileSystemCeph::FileSystemCeph()
-        : FileSystem(apply_ceph()),
+FileSystemCeph::FileSystemCeph(Configurables* config)
+        : FileSystem(apply_ceph(config)),
           m_filesystem(nullptr), m_perm(nullptr) {
   setup_connection();
 }
 
 void FileSystemCeph::setup_connection() {
-  auto settings = Env::Config::settings();
 
   uint32_t tries=0;
   while(m_run && !initialize()) {
@@ -125,7 +123,6 @@ void FileSystemCeph::setup_connection() {
 }
 
 bool FileSystemCeph::initialize() {
-  auto settings = Env::Config::settings();
 
   int err;
   errno = 0;
@@ -660,10 +657,8 @@ void FileSystemCeph::close(int& err, SmartFd::Ptr& smartfd) {
 
 
 extern "C" {
-SWC::FS::FileSystem* fs_make_new_ceph() {
-  return static_cast<SWC::FS::FileSystem*>(new SWC::FS::FileSystemCeph());
-}
-void fs_apply_cfg_ceph(SWC::Env::Config::Ptr env) {
-  SWC::Env::Config::set(env);
+SWC::FS::FileSystem* fs_make_new_ceph(SWC::FS::Configurables* config) {
+  return static_cast<SWC::FS::FileSystem*>(
+    new SWC::FS::FileSystemCeph(config));
 }
 }

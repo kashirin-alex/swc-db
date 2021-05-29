@@ -47,9 +47,9 @@ class Interface final : public std::enable_shared_from_this<Interface> {
 
   typedef std::shared_ptr<Interface> Ptr;
 
-  Interface(Type typ);
+  Interface(const Config::Settings::Ptr& settings, Type typ);
 
-  FileSystem::Ptr use_filesystem();
+  FileSystem::Ptr use_filesystem(const Config::Settings::Ptr& settings);
 
   Ptr ptr() noexcept;
 
@@ -134,7 +134,7 @@ class FsInterface final {
 
   typedef std::shared_ptr<FsInterface> Ptr;
 
-  static void init(FS::Type typ);
+  static void init(const SWC::Config::Settings::Ptr& settings, FS::Type typ);
 
   static Ptr get() noexcept;
 
@@ -144,7 +144,7 @@ class FsInterface final {
 
   static void reset() noexcept;
 
-  FsInterface(FS::Type typ);
+  FsInterface(const SWC::Config::Settings::Ptr& settings, FS::Type typ);
 
   //~FsInterface() { }
 
