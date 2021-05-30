@@ -755,6 +755,7 @@ void select_data(const std::vector<DB::Schema::Ptr>& schemas, size_t seed) {
 
   uint32_t progress = settings->get_i32("gen-progress");
   bool cellatime = settings->get_bool("gen-cell-a-time");
+  bool with_broker = settings->get_bool("with-broker");
 
   size_t select_count = 0;
   size_t select_bytes = 0;
@@ -784,7 +785,7 @@ void select_data(const std::vector<DB::Schema::Ptr>& schemas, size_t seed) {
       auto hdlr = client::Query::Select::Handlers::Common::make(
         Env::Clients::get(),
         nullptr, false, nullptr,
-        settings->get_bool("with-broker")
+        with_broker
           ? client::Clients::BROKER
           : client::Clients::DEFAULT
       );
@@ -845,7 +846,7 @@ void select_data(const std::vector<DB::Schema::Ptr>& schemas, size_t seed) {
       },
       true,
       nullptr,
-      settings->get_bool("with-broker")
+      with_broker
         ? client::Clients::BROKER
         : client::Clients::DEFAULT
     );

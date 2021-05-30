@@ -29,6 +29,18 @@ namespace SWC { namespace Broker {
 
 
 class AppContext final : public Comm::AppContext {
+
+  // in-order of Protocol::Bkr::Command
+  static constexpr const Comm::AppHandler_t handlers[] = {
+    &Comm::Protocol::Common::Handler::not_implemented,
+    &Comm::Protocol::Bkr::Handler::column_get,
+    &Comm::Protocol::Bkr::Handler::column_list,
+    &Comm::Protocol::Bkr::Handler::column_compact,
+    &Comm::Protocol::Bkr::Handler::column_mng,
+    &Comm::Protocol::Bkr::Handler::cells_update,
+    &Comm::Protocol::Bkr::Handler::cells_select,
+  };
+
   public:
 
   static std::shared_ptr<AppContext> make() {
@@ -119,43 +131,22 @@ class AppContext final : public Comm::AppContext {
         break;
 
       case Comm::Event::Type::MESSAGE: {
-        Env::Bkr::in_process(1);
-        switch(ev->header.command) {
+        if(!ev->header.command ||
+           ev->header.command >= Comm::Protocol::Bkr::MAX_CMD) {
+          Comm::Protocol::Common::Handler::not_implemented(conn, ev);
+          if(m_metrics)
+            m_metrics->net->error(conn);
 
-          case Comm::Protocol::Bkr::Command::COLUMN_GET:
-            Comm::Protocol::Bkr::Handler::column_get(conn, ev);
-            break;
-
-          case Comm::Protocol::Bkr::Command::COLUMN_LIST:
-            Comm::Protocol::Bkr::Handler::column_list(conn, ev);
-            break;
-
-          case Comm::Protocol::Bkr::Command::COLUMN_COMPACT:
-            Comm::Protocol::Bkr::Handler::column_compact(conn, ev);
-            break;
-
-          case Comm::Protocol::Bkr::Command::COLUMN_MNG:
-            Comm::Protocol::Bkr::Handler::column_mng(conn, ev);
-            break;
-
-          case Comm::Protocol::Bkr::Command::CELLS_UPDATE:
-            Comm::Protocol::Bkr::Handler::cells_update(conn, ev);
-            break;
-
-          case Comm::Protocol::Bkr::Command::CELLS_SELECT:
-            Comm::Protocol::Bkr::Handler::cells_select(conn, ev);
-            break;
-
-          default: {
-            Comm::Protocol::Common::Handler::not_implemented(conn, ev);
-            if(m_metrics)
-              m_metrics->net->error(conn);
-            Env::Bkr::in_process(-2);
-            return;
-          }
+        } else {
+          Env::Bkr::in_process(1);
+          Env::Bkr::post([conn, ev]() {
+            ev->expired() || !conn->is_open()
+              ? Env::Bkr::processed()
+              : handlers[ev->header.command](conn, ev);
+          });
+          if(m_metrics)
+            m_metrics->net->command(conn, ev->header.command);
         }
-        if(m_metrics)
-          m_metrics->net->command(conn, ev->header.command);
         break;
       }
 
