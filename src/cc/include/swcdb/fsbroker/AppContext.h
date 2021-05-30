@@ -157,17 +157,22 @@ class AppContext final : public Comm::AppContext {
         break;
 
       case Comm::Event::Type::MESSAGE: {
-        uint8_t cmd = ev->header.command >= Comm::Protocol::FsBroker::MAX_CMD
-                        ? uint8_t(Comm::Protocol::FsBroker::NOT_IMPLEMENTED)
-                        : ev->header.command;
-        Env::IoCtx::post([cmd, conn, ev]() {
-          if(!ev->expired())
-            handlers[cmd](conn, ev);
-          Env::FsBroker::in_process(-1);
-        });
-        if(m_metrics)
-          m_metrics->net->command(conn, cmd);
-        return;
+        if(!ev->header.command ||
+            ev->header.command >= Comm::Protocol::FsBroker::MAX_CMD) {
+          Comm::Protocol::Common::Handler::not_implemented(conn, ev);
+          if(m_metrics)
+            m_metrics->net->error(conn);
+        } else {
+          Env::FsBroker::in_process(1);
+          Env::IoCtx::post([conn, ev]() {
+            if(!ev->expired() && conn->is_open())
+              handlers[ev->header.command](conn, ev);
+            Env::FsBroker::in_process(-1);
+          });
+          if(m_metrics)
+            m_metrics->net->command(conn, ev->header.command);
+        }
+        break;
       }
 
       default:
