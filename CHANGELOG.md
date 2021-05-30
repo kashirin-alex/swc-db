@@ -10,6 +10,16 @@
 
 ### [SWC-DB master](https://github.com/kashirin-alex/swc-db/tree/master) (upcoming-release)
 
+
+
+[_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.5.2...master)
+******
+
+
+
+
+### [SWC-DB v0.5.2](https://github.com/kashirin-alex/swc-db/releases/tag/v0.5.2) (2021-05-30)
+
     added SWC-DB Broker program (bin/swcdbBroker)
     changed default "swc.fs.broker.port" to port 14000
     added libswcdb (swc.cfg) configuration properties:
@@ -21,6 +31,7 @@
     added sbin/swcdb_cluster cfg "swc.cluster.bkr.host"
     added sbin/swcdb_cluster commands {start,stop,kill}-brokers
     changed Ranger run at most and at least one Compaction on low-memory-state
+    changed Protocol::INST::Commands::max_command() to uint8_t MAX constexpr
     added Comm::Header::FLAG_RESPONSE_PARTIAL_BIT
     added DB::Cells::Mutable constructor with StaticBuffer
     added DB::Cells::Mutable::write_and_free(DynamicBuffer&, uint32_t)
@@ -47,10 +58,11 @@
     changed functions Comm::DispatchHandler::{handle,handle_no_conn} to pure
     removed source file core/comm/DispatchHandler.cc
     added cond. case of client::ConnQueue::ReqBase::valid() to Mngr::Req proto
+    added FS::FileSystem::settings & FS::Interface ctor Config::Settings::Ptr
     updated for ASIO-0.18.2
     resolved issue #9 SWC-DB Query Broker - Program
 
-[_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.5.1...master)
+[_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.5.1...v0.5.2)
 ******
 
 
