@@ -21,7 +21,8 @@ Fs::Fs()
 
   Env::FsInterface::init(
     Env::Config::settings(),
-    FS::fs_type(Env::Config::settings()->get_str("swc.fs")));
+    FS::fs_type(Env::Config::settings()->get_str("swc.fs"))
+  );
 
   options.push_back(
     new Option(

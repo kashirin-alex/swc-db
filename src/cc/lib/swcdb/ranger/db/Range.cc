@@ -574,9 +574,9 @@ void Range::internal_create(int &err, const CellStore::Writers& w_cellstores) {
   if(err)
     return;
 
-  const auto& fs = Env::FsInterface::interface();
+  const auto& fs_if = Env::FsInterface::interface();
   for(auto& cs : w_cellstores) {
-    fs->rename(
+    fs_if->rename(
       err,
       cs->smartfd->filepath(),
       get_path_cs(cs->csid)
@@ -593,7 +593,7 @@ void Range::internal_create(int &err, const CellStore::Writers& w_cellstores) {
   }
 
   RangeData::save(err, blocks.cellstores);
-  fs->remove(err, DB::RangeBase::get_path_ranger(m_path));
+  fs_if->remove(err, DB::RangeBase::get_path_ranger(m_path));
   err = Error::OK;
 }
 

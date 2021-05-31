@@ -68,7 +68,9 @@ class AppContext final : public Comm::AppContext {
     Env::Clients::get()->set_flags__schemas_via_default();
 
     Env::FsInterface::init(
-      settings, FS::fs_type(settings->get_str("swc.fs")));
+      settings,
+      FS::fs_type(settings->get_str("swc.fs"))
+    );
   }
 
   void init(const std::string& host,

@@ -27,7 +27,7 @@ void write(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
 
     auto smartfd = FS::SmartFd::make_ptr(
       std::move(params.fname), params.flags);
-    auto fs = Env::FsInterface::fs();
+    const auto& fs = Env::FsInterface::fs();
 
     //Env::FsInterface::fs()->write(
     //  err, smartfd, params.replication, params.blksz, ev->data_ext

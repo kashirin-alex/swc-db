@@ -47,7 +47,8 @@ int main(int argc, char** argv) {
 
   Env::FsInterface::init(
     Env::Config::settings(),
-    FS::fs_type(Env::Config::settings()->get_str("swc.fs")));
+    FS::fs_type(Env::Config::settings()->get_str("swc.fs"))
+  );
 
   Env::Clients::init(
     client::Clients::make(

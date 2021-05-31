@@ -216,8 +216,8 @@ int main(int argc, char** argv) {
   SWC::Env::Config::init(argc, argv);
   SWC::Env::FsInterface::init(
     SWC::Env::Config::settings(),
-    SWC::FS::fs_type(SWC::Env::Config::settings()->get_str("swc.fs")));
-
+    SWC::FS::fs_type(SWC::Env::Config::settings()->get_str("swc.fs"))
+  );
 
   SWC::Env::Clients::init(
     SWC::client::Clients::make(

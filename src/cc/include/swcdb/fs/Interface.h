@@ -51,13 +51,17 @@ class Interface final : public std::enable_shared_from_this<Interface> {
 
   FileSystem::Ptr use_filesystem(const Config::Settings::Ptr& settings);
 
-  Ptr ptr() noexcept;
+  Ptr ptr() noexcept {
+    return shared_from_this();
+  }
 
   ~Interface();
 
   Type get_type_underlying() const noexcept;
 
-  FileSystem::Ptr get_fs() noexcept;
+  FileSystem::Ptr& get_fs()  noexcept {
+    return m_fs;
+  }
 
   std::string to_string() const;
 
@@ -126,6 +130,7 @@ void set_structured_id(const std::string& number, std::string& s);
 } // namespace FS
 
 
+
 namespace Env {
 
 class FsInterface final {
@@ -136,13 +141,21 @@ class FsInterface final {
 
   static void init(const SWC::Config::Settings::Ptr& settings, FS::Type typ);
 
-  static Ptr get() noexcept;
+  static Ptr& get() noexcept {
+    return m_env;
+  }
 
-  static FS::Interface::Ptr& interface();
+  static FS::Interface::Ptr& interface() noexcept {
+    return m_env->m_interface;
+  }
 
-  static FS::FileSystem::Ptr fs();
+  static FS::FileSystem::Ptr& fs() noexcept {
+    return m_env->m_interface->get_fs();
+  }
 
-  static void reset() noexcept;
+  static void reset() noexcept {
+    m_env = nullptr;
+  }
 
   FsInterface(const SWC::Config::Settings::Ptr& settings, FS::Type typ);
 
@@ -152,9 +165,11 @@ class FsInterface final {
   FS::Interface::Ptr  m_interface = nullptr;
   inline static Ptr   m_env = nullptr;
 };
-}
 
-}
+
+} // Env
+
+} // SWC
 
 
 #ifdef SWC_IMPL_SOURCE

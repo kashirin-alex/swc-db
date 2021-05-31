@@ -31,7 +31,7 @@ void read_all(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     FS::SmartFd::Ptr smartfd;
     int32_t fd = -1;
     size_t len;
-    auto fs = Env::FsInterface::fs();
+    const auto& fs = Env::FsInterface::fs();
     if(!fs->exists(err, params.name)) {
       if(!err)
         err = Error::FS_PATH_NOT_FOUND;

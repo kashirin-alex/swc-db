@@ -61,7 +61,9 @@ class AppContext final : public Comm::AppContext {
     );
 
     Env::FsInterface::init(
-      settings, FS::fs_type(settings->get_str("swc.fs")));
+      settings,
+      FS::fs_type(settings->get_str("swc.fs"))
+    );
 
     Env::Rgr::init();
 

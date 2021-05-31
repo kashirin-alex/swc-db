@@ -27,7 +27,7 @@ void combi_pread(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     params.decode(&ptr, &remain);
 
     int32_t fd = -1;
-    auto fs = Env::FsInterface::fs();
+    const auto& fs = Env::FsInterface::fs();
 
     fs->open(err, params.smartfd);
     if(!params.smartfd->valid()) {

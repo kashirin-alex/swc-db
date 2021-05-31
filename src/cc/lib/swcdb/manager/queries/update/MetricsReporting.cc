@@ -37,7 +37,7 @@ void Reporting::configure_mngr(const char*,
     net = new Item_Net<Comm::Protocol::Mngr::Commands>(
       endpoints, Env::Config::settings()->get_bool("swc.comm.ssl")));
 
-  auto fs = Env::FsInterface::fs();
+  const auto& fs = Env::FsInterface::fs();
   if(fs->statistics.enabled)
     level->metrics.emplace_back(new Item_FS(fs));
   // ++ Manager Metrics

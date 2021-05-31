@@ -30,41 +30,41 @@ Interface::use_filesystem(const Config::Settings::Ptr& settings) {
   switch(m_type) {
 
     case Type::LOCAL:{
-#if defined (BUILTIN_FS_LOCAL) || defined (BUILTIN_FS_ALL)
-      return std::make_shared<FileSystemLocal>(&config);
-#endif
+      #if defined (BUILTIN_FS_LOCAL) || defined (BUILTIN_FS_ALL)
+        return std::make_shared<FileSystemLocal>(&config);
+      #endif
       fs_name.append("local");
       break;
     }
 
     case Type::BROKER:{
-#if defined (BUILTIN_FS_BROKER) || defined (BUILTIN_FS_ALL)
-      return std::make_shared<FileSystemBroker>(&config);
-#endif
+      #if defined (BUILTIN_FS_BROKER) || defined (BUILTIN_FS_ALL)
+        return std::make_shared<FileSystemBroker>(&config);
+      #endif
       fs_name.append("broker");
       break;
     }
 
     case Type::HADOOP: {
-#if defined (BUILTIN_FS_HADOOP) || defined (BUILTIN_FS_ALL)
-      return std::make_shared<FileSystemHadoop>(&config);
-#endif
+      #if defined (BUILTIN_FS_HADOOP) || defined (BUILTIN_FS_ALL)
+        return std::make_shared<FileSystemHadoop>(&config);
+      #endif
       fs_name.append("hadoop");
       break;
     }
 
     case Type::HADOOP_JVM: {
-#if defined (BUILTIN_FS_HADOOP_JVM) || defined (BUILTIN_FS_ALL)
-      return std::make_shared<FileSystemHadoopJVM>(&config);
-#endif
+      #if defined (BUILTIN_FS_HADOOP_JVM) || defined (BUILTIN_FS_ALL)
+        return std::make_shared<FileSystemHadoopJVM>(&config);
+      #endif
       fs_name.append("hadoop_jvm");
       break;
     }
 
     case Type::CEPH:{
-#if defined (BUILTIN_FS_CEPH) || defined (BUILTIN_FS_ALL)
-      return std::make_shared<FileSystemCeph>(&config);
-#endif
+      #if defined (BUILTIN_FS_CEPH) || defined (BUILTIN_FS_ALL)
+        return std::make_shared<FileSystemCeph>(&config);
+      #endif
       fs_name.append("ceph");
       break;
     }
@@ -112,9 +112,6 @@ Interface::use_filesystem(const Config::Settings::Ptr& settings) {
     reinterpret_cast<fs_make_new_t*>(f_new_ptr)(&config));
 }
 
-Interface::Ptr Interface::ptr() noexcept {
-  return shared_from_this();
-}
 
 Interface::~Interface() {
   m_fs = nullptr;
@@ -125,10 +122,6 @@ Interface::~Interface() {
 
 Type Interface::get_type_underlying() const noexcept {
   return m_fs->get_type_underlying();
-}
-
-FileSystem::Ptr Interface::get_fs() noexcept {
-  return m_fs;
 }
 
 std::string Interface::to_string() const {
@@ -514,35 +507,20 @@ void set_structured_id(const std::string& number, std::string& s) {
 } // namespace FS
 
 
+
 namespace Env {
 
 void FsInterface::init(const SWC::Config::Settings::Ptr& settings,
-                      FS::Type typ) {
+                       FS::Type typ) {
   m_env = std::make_shared<FsInterface>(settings, typ);
-}
-
-FsInterface::Ptr FsInterface::get() noexcept {
-  return m_env;
-}
-
-FS::Interface::Ptr& FsInterface::interface() {
-  SWC_ASSERT(m_env);
-  return m_env->m_interface;
-}
-
-FS::FileSystem::Ptr FsInterface::fs() {
-  SWC_ASSERT(m_env);
-  return m_env->m_interface->get_fs();
-}
-
-void FsInterface::reset() noexcept {
-  m_env = nullptr;
 }
 
 FsInterface::FsInterface(const SWC::Config::Settings::Ptr& settings,
                          FS::Type typ)
-                        : m_interface(new FS::Interface(settings ,typ)) {}
+                        : m_interface(new FS::Interface(settings ,typ)) {
+}
 
 }
+
 
 } // namespace SWC
