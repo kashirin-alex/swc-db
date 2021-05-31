@@ -475,14 +475,14 @@ int main(int argc, char** argv) {
 
   SWC::Env::Clients::init(
     (SWC::Env::Config::settings()->get_bool("with-broker")
-      ? std::make_shared<SWC::client::Clients>(
+      ? SWC::client::Clients::make(
           *SWC::Env::Config::settings(),
-          nullptr, // Env::IoCtx::io(),
+          SWC::Comm::IoContext::make("Clients", 8),
           nullptr  // std::make_shared<client::BrokerContext>()
         )
-      : std::make_shared<SWC::client::Clients>(
+      : SWC::client::Clients::make(
           *SWC::Env::Config::settings(),
-          nullptr, // Env::IoCtx::io(),
+          SWC::Comm::IoContext::make("Clients", 8),
           nullptr, // std::make_shared<client::ManagerContext>()
           nullptr  // std::make_shared<client::RangerContext>()
         )
@@ -524,7 +524,7 @@ int main(int argc, char** argv) {
                 + std::to_string(test.with_broker);
   test.run();
 
-  SWC::Env::IoCtx::io()->stop();
+  SWC::Env::Clients::get()->stop();
   std::cout << " ### EXIT ###\n";
 
   exit(0);

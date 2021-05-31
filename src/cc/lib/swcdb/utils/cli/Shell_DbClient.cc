@@ -32,7 +32,22 @@ namespace SWC { namespace Utils { namespace shell {
 DbClient::DbClient()
   : Interface("\033[32mSWC-DB(\033[36mclient\033[32m)\033[33m> \033[00m",
               "/tmp/.swc-cli-dbclient-history"),
-    with_broker(Env::Config::settings()->get_bool("with-broker")) {
+    with_broker(Env::Config::settings()->get_bool("with-broker")),
+    clients(
+      (with_broker
+        ? client::Clients::make(
+            *Env::Config::settings(),
+            Comm::IoContext::make("DbClient", 8),
+            nullptr  // std::make_shared<client::BrokerContext>()
+          )
+        : client::Clients::make(
+            *Env::Config::settings(),
+            Comm::IoContext::make("DbClient", 8),
+            nullptr, // std::make_shared<client::ManagerContext>()
+            nullptr  // std::make_shared<client::RangerContext>()
+          )
+      )->init()
+    ) {
 
   options.push_back(
     new Option(
@@ -159,37 +174,11 @@ DbClient::DbClient()
     )
   );
 
-
-  //Env::IoCtx::init(settings->get_i32("swc.client.handlers"));
-  Env::Clients::init(
-    (with_broker
-      ? std::make_shared<client::Clients>(
-          *Env::Config::settings(),
-          nullptr, // Env::IoCtx::io(),
-          nullptr  // std::make_shared<client::BrokerContext>()
-        )
-      : std::make_shared<client::Clients>(
-          *Env::Config::settings(),
-          nullptr, // Env::IoCtx::io(),
-          nullptr, // std::make_shared<client::ManagerContext>()
-          nullptr  // std::make_shared<client::RangerContext>()
-        )
-    )->init()
-  );
-
-  SWC_ASSERT(
-    !with_broker || SWC::Env::Clients::get()->brokers.has_endpoints()
-  );
+  SWC_ASSERT(!with_broker || clients->brokers.has_endpoints());
 }
 
 DbClient::~DbClient() {
-  Env::Clients::get()->stop();
-  #if defined(SWC_ENABLE_SANITIZER)
-    Env::IoCtx::io()->stop();
-    std::this_thread::sleep_for(std::chrono::seconds(2));
-    Env::Clients::reset();
-    Env::IoCtx::reset();
-  #endif
+  clients->stop();
 }
 
 // CREATE/MODIFY/DELETE COLUMN
@@ -204,17 +193,17 @@ bool DbClient::mng_column(
 
   with_broker
     ? Comm::Protocol::Bkr::Req::ColumnMng_Sync::request(
-        Env::Clients::get(), func, schema, err, 1800000)
+        clients, func, schema, err, 1800000)
     : Comm::Protocol::Mngr::Req::ColumnMng_Sync::request(
-        Env::Clients::get(), func, schema, err, 1800000);
+        clients, func, schema, err, 1800000);
   if(err) {
     message.append(Error::get_text(err));
     message.append("\n");
     return error(message);
   }
   schema->cid == DB::Schema::NO_CID
-    ? Env::Clients::get()->schemas.remove(schema->col_name)
-    : Env::Clients::get()->schemas.remove(schema->cid);
+    ? clients->schemas.remove(schema->col_name)
+    : clients->schemas.remove(schema->cid);
   return true;
 }
 
@@ -223,7 +212,6 @@ bool DbClient::compact_column(std::string& cmd) {
   std::vector<DB::Schema::Ptr> schemas;
   Comm::Protocol::Mngr::Params::ColumnListReq params;
   std::string message;
-  auto clients = Env::Clients::get();
   client::SQL::parse_list_columns(
     err, clients, cmd, schemas, params, message, "compact");
   if(err)
@@ -267,7 +255,6 @@ bool DbClient::list_columns(std::string& cmd) {
   Comm::Protocol::Mngr::Params::ColumnListReq params;
   std::string message;
   uint8_t output_flags = 0;
-  auto clients = Env::Clients::get();
   client::SQL::parse_list_columns(
     err, clients, cmd, schemas, params, output_flags, message, "list");
   if(err)
@@ -321,7 +308,6 @@ bool DbClient::select(std::string& cmd) {
 
   std::string message;
   DB::Specs::Scan specs;
-  auto clients = Env::Clients::get();
   client::SQL::parse_select(err, clients, cmd, specs, display_flags, message);
   if(err)
     return error(message);
@@ -371,7 +357,6 @@ void DbClient::display(
   DB::Cells::Result cells;
   bool meta;
   size_t count_state;
-  auto clients = Env::Clients::get();
   do {
     count_state = cells_count;
     for(cid_t cid : hdlr->get_cids()) {
@@ -405,7 +390,7 @@ bool DbClient::update(std::string& cmd) {
   uint8_t display_flags = 0;
 
   auto hdlr = client::Query::Update::Handlers::Common::make(
-    Env::Clients::get(),
+    clients,
     nullptr,
     nullptr,
     with_broker
@@ -438,7 +423,7 @@ bool DbClient::update(std::string& cmd) {
 // LOAD
 bool DbClient::load(std::string& cmd) {
   Time::Measure_ns t_measure;
-  DB::Cells::TSV::FileReader reader(Env::Clients::get());
+  DB::Cells::TSV::FileReader reader(clients);
 
   std::string fs;
   uint8_t display_flags = 0;
@@ -496,7 +481,7 @@ bool DbClient::load(std::string& cmd) {
 // DUMP
 bool DbClient::dump(std::string& cmd) {
   Time::Measure_ns t_measure;
-  DB::Cells::TSV::FileWriter writer(Env::Clients::get());
+  DB::Cells::TSV::FileWriter writer(clients);
 
   std::string fs;
   std::string ext;

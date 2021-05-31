@@ -27,6 +27,21 @@ Statistics::Statistics()
   : Interface("\033[32mSWC-DB(\033[36mstatistics\033[32m)\033[33m> \033[00m",
               "/tmp/.swc-cli-statistics-history"),
     with_broker(Env::Config::settings()->get_bool("with-broker")),
+    clients(
+      (with_broker
+        ? client::Clients::make(
+            *Env::Config::settings(),
+            Comm::IoContext::make("Statistics", 8),
+            nullptr  // std::make_shared<client::BrokerContext>()
+          )
+        : client::Clients::make(
+            *Env::Config::settings(),
+            Comm::IoContext::make("Statistics", 8),
+            nullptr, // std::make_shared<client::ManagerContext>()
+            nullptr  // std::make_shared<client::RangerContext>()
+          )
+      )->init()
+    ),
     m_stat_names(default_stat_names) {
 
   options.push_back(
@@ -105,36 +120,11 @@ Statistics::Statistics()
     )
   );
 
-  //Env::IoCtx::init(settings->get_i32("swc.client.handlers"));
-  Env::Clients::init(
-    (with_broker
-      ? std::make_shared<client::Clients>(
-          *Env::Config::settings(),
-          nullptr, // Env::IoCtx::io(),
-          nullptr  // std::make_shared<client::BrokerContext>()
-        )
-      : std::make_shared<client::Clients>(
-          *Env::Config::settings(),
-          nullptr, // Env::IoCtx::io(),
-          nullptr, // std::make_shared<client::ManagerContext>()
-          nullptr  // std::make_shared<client::RangerContext>()
-        )
-    )->init()
-  );
-
-  SWC_ASSERT(
-    !with_broker || SWC::Env::Clients::get()->brokers.has_endpoints()
-  );
+  SWC_ASSERT(!with_broker || clients->brokers.has_endpoints());
 }
 
 Statistics::~Statistics() {
-  Env::Clients::get()->stop();
-  #if defined(SWC_ENABLE_SANITIZER)
-    Env::IoCtx::io()->stop();
-    std::this_thread::sleep_for(std::chrono::seconds(2));
-    Env::Clients::reset();
-    Env::IoCtx::reset();
-  #endif
+  clients->stop();
 }
 
 void Statistics::ReadGroup::print(std::ostream& out,
@@ -485,7 +475,7 @@ void Statistics::set_definitions(DB::Specs::Scan& specs) {
   }
 
   auto hdlr = client::Query::Select::Handlers::Common::make(
-    Env::Clients::get(),
+    clients,
     [this]
     (const client::Query::Select::Handlers::Common::Ptr& hdlr) {
       DB::Cells::Result cells;
@@ -706,7 +696,7 @@ bool Statistics::show() {
 
     std::vector<Stats> stats_datas;
     auto hdlr = client::Query::Select::Handlers::Common::make(
-      Env::Clients::get(),
+      clients,
       [this, &g, datasp=&stats_datas]
       (const client::Query::Select::Handlers::Common::Ptr& hdlr) {
         DB::Cells::Result cells;
@@ -806,7 +796,7 @@ bool Statistics::truncate() {
   Core::Atomic<int> state_error(Error::OK);
 
   auto updater = client::Query::Update::Handlers::Common::make(
-    Env::Clients::get(),
+    clients,
     [state_errorp=&state_error]
     (const client::Query::Update::Handlers::Common::Ptr& hdlr) noexcept {
       if(hdlr->error())

@@ -51,11 +51,13 @@ class AppContext final : public Comm::AppContext {
       "swc.bkr.cfg.dyn"
     );
 
-    Env::IoCtx::init(settings->get_i32("swc.bkr.clients.handlers"));
     Env::Clients::init(
-      std::make_shared<client::Clients>(
+      client::Clients::make(
         *settings,
-        Env::IoCtx::io(),
+        Comm::IoContext::make(
+          "Clients",
+          settings->get_i32("swc.bkr.clients.handlers")
+        ),
         std::make_shared<client::ContextManager>(*settings),
         std::make_shared<client::ContextRanger>(*settings)
       )->init()
@@ -207,7 +209,6 @@ class AppContext final : public Comm::AppContext {
     Env::Bkr::shuttingdown();
 
     Env::Clients::get()->stop();
-    Env::IoCtx::io()->stop();
 
     Env::Bkr::io()->stop();
 
@@ -222,7 +223,6 @@ class AppContext final : public Comm::AppContext {
       m_srv = nullptr;
       Env::Bkr::reset();
       Env::Clients::reset();
-      Env::IoCtx::reset();
     #endif
 
     guard = nullptr;

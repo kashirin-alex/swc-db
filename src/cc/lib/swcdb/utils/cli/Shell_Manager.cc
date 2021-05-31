@@ -5,7 +5,6 @@
 
 
 #include "swcdb/utils/cli/Shell_Manager.h"
-#include "swcdb/db/client/Clients.h"
 #include "swcdb/db/Protocol/Mngr/req/Report.h"
 #include "swcdb/db/client/sql/Reader.h"
 
@@ -15,7 +14,14 @@ namespace SWC { namespace Utils { namespace shell {
 
 Mngr::Mngr()
   : Interface("\033[32mSWC-DB(\033[36mmngr\033[32m)\033[33m> \033[00m",
-              "/tmp/.swc-cli-manager-history") {
+              "/tmp/.swc-cli-manager-history"),
+    clients(client::Clients::make(
+      *Env::Config::settings(),
+      Comm::IoContext::make("Mngr", 8),
+      nullptr, // std::make_shared<client::ManagerContext>()
+      nullptr  // std::make_shared<client::RangerContext>()
+      )->init()
+    ) {
 
   options.push_back(
     new Option(
@@ -56,30 +62,14 @@ Mngr::Mngr()
       new re2::RE2("(?i)^(report-rangers|rangers-status)")
     )
   );
-
-  Env::Clients::init(
-    std::make_shared<client::Clients>(
-      *Env::Config::settings(),
-      nullptr,
-      nullptr, // std::make_shared<client::ManagerContext>()
-      nullptr  // std::make_shared<client::RangerContext>()
-    )->init()
-  );
 }
 
 Mngr::~Mngr() {
-  Env::Clients::get()->stop();
-  #if defined(SWC_ENABLE_SANITIZER)
-    Env::IoCtx::io()->stop();
-    std::this_thread::sleep_for(std::chrono::seconds(2));
-    Env::Clients::reset();
-    Env::IoCtx::reset();
-  #endif
+  clients->stop();
 }
 
 bool Mngr::cluster_status(std::string&) {
   std::string message;
-  auto clients = Env::Clients::get();
   client::Mngr::Hosts hosts;
   auto groups = clients->managers.groups->get_groups();
   for(auto& g : groups) {
@@ -119,7 +109,6 @@ bool Mngr::cluster_status(std::string&) {
 
 bool Mngr::managers_status(std::string& cmd) {
   std::string message;
-  auto clients = Env::Clients::get();
   size_t at = cmd.find_first_of(" ");
   cmd = cmd.substr(at+1);
   client::SQL::Reader reader(cmd, message);
@@ -212,7 +201,6 @@ bool Mngr::column_status(std::string& cmd) {
   cmd = cmd.substr(at+1);
   cid_t cid = DB::Schema::NO_CID;
   client::SQL::Reader reader(cmd, message);
-  auto clients = Env::Clients::get();
   while(reader.found_space());
 
   if(reader.found_token("cid", 3)) {
@@ -276,7 +264,6 @@ bool Mngr::rangers_status(std::string& cmd) {
   cmd = cmd.substr(at+1);
   cid_t cid = DB::Schema::NO_CID;
   client::SQL::Reader reader(cmd, message);
-  auto clients = Env::Clients::get();
   while(reader.found_space());
 
   if(reader.found_token("cid", 3)) {

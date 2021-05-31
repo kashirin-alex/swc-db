@@ -17,7 +17,8 @@ namespace SWC { namespace Utils { namespace shell {
 class DbClient final : public Interface {
   public:
 
-  const bool with_broker;
+  const bool            with_broker;
+  client::Clients::Ptr  clients;
 
   DbClient();
 

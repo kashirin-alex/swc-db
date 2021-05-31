@@ -9,15 +9,38 @@
 namespace SWC { namespace client {
 
 
-Comm::IoContextPtr default_io() {
-  if(!Env::IoCtx::ok())
-    Env::IoCtx::init(8);
-  return Env::IoCtx::io();
+
+Clients::Ptr Clients::make(
+          const Config::Settings& settings,
+          const Comm::IoContextPtr& io_ctx,
+          const ContextManager::Ptr& mngr_ctx,
+          const ContextRanger::Ptr& rgr_ctx,
+          const ContextBroker::Ptr& bkr_ctx) {
+  return Clients::Ptr(new Clients(
+    settings, io_ctx, mngr_ctx, rgr_ctx, bkr_ctx));
+}
+
+Clients::Ptr Clients::make(
+          const Config::Settings& settings,
+          const Comm::IoContextPtr& io_ctx,
+          const ContextManager::Ptr& mngr_ctx,
+          const ContextRanger::Ptr& rgr_ctx) {
+  return Clients::Ptr(new Clients(
+    settings, io_ctx, mngr_ctx, rgr_ctx));
+}
+
+Clients::Ptr Clients::make(
+          const Config::Settings& settings,
+          const Comm::IoContextPtr& io_ctx,
+          const ContextBroker::Ptr& bkr_ctx) {
+  return Clients::Ptr(new Clients(
+    settings, io_ctx, bkr_ctx));
 }
 
 
+
 Clients::Clients(const Config::Settings& settings,
-                 Comm::IoContextPtr ioctx,
+                 const Comm::IoContextPtr& io_ctx,
                  const ContextManager::Ptr& mngr_ctx,
                  const ContextRanger::Ptr& rgr_ctx,
                  const ContextBroker::Ptr& bkr_ctx)
@@ -45,17 +68,18 @@ Clients::Clients(const Config::Settings& settings,
         settings.get<SWC::Config::Property::V_GINT32>(
           "swc.client.recv.timeout")),
 
+      io_ctx(io_ctx),
       schemas(
         this,
         settings.get<Config::Property::V_GINT32>(
           "swc.client.schema.expiry")),
-      managers(settings, ioctx ? ioctx: ioctx = default_io(), mngr_ctx),
-      rangers(settings, ioctx, rgr_ctx),
-      brokers(settings, ioctx, bkr_ctx) {
+      managers(settings, io_ctx, mngr_ctx),
+      rangers(settings, io_ctx, rgr_ctx),
+      brokers(settings, io_ctx, bkr_ctx) {
 }
 
 Clients::Clients(const Config::Settings& settings,
-                 Comm::IoContextPtr ioctx,
+                 const Comm::IoContextPtr& io_ctx,
                  const ContextManager::Ptr& mngr_ctx,
                  const ContextRanger::Ptr& rgr_ctx)
     : running(true), flags(Flag::DEFAULT),
@@ -82,16 +106,17 @@ Clients::Clients(const Config::Settings& settings,
         settings.get<SWC::Config::Property::V_GINT32>(
           "swc.client.recv.timeout")),
 
+      io_ctx(io_ctx),
       schemas(
         this,
         settings.get<Config::Property::V_GINT32>(
           "swc.client.schema.expiry")),
-      managers(settings, ioctx ? ioctx: ioctx = default_io(), mngr_ctx),
-      rangers(settings, ioctx, rgr_ctx) {
+      managers(settings, io_ctx, mngr_ctx),
+      rangers(settings, io_ctx, rgr_ctx) {
 }
 
 Clients::Clients(const Config::Settings& settings,
-                 Comm::IoContextPtr ioctx,
+                 const Comm::IoContextPtr& io_ctx,
                  const ContextBroker::Ptr& bkr_ctx)
     : running(true), flags(Flag::BROKER),
       cfg_send_buff_sz(
@@ -117,14 +142,15 @@ Clients::Clients(const Config::Settings& settings,
         settings.get<SWC::Config::Property::V_GINT32>(
           "swc.client.recv.timeout")),
 
+      io_ctx(io_ctx),
       schemas(
         this,
         settings.get<Config::Property::V_GINT32>(
           "swc.client.schema.expiry")),
-      brokers(settings, ioctx ? ioctx: ioctx = default_io(), bkr_ctx) {
+      brokers(settings, io_ctx, bkr_ctx) {
 }
 
-void Clients::stop() {
+void Clients::stop_services() {
   running.store(false);
 
   if(brokers.queues)
@@ -134,6 +160,12 @@ void Clients::stop() {
   if(managers.queues)
     managers.queues->stop();
 }
+
+void Clients::stop() {
+  stop_services();
+  stop_io();
+}
+
 
 
 } // namespace client
@@ -145,22 +177,6 @@ namespace Env {
 void Clients::init(const client::Clients::Ptr& clients) {
   m_env = std::make_shared<Clients>(clients);
 }
-
-client::Clients::Ptr& Clients::get() {
-  SWC_ASSERT(m_env);
-  return m_env->m_clients;
-}
-
-const Clients& Clients::ref() noexcept {
-  return *m_env.get();
-}
-
-void Clients::reset() noexcept {
-  m_env = nullptr;
-}
-
-Clients::Clients(const client::Clients::Ptr& clients) noexcept
-                : m_clients(clients) { }
 
 }
 

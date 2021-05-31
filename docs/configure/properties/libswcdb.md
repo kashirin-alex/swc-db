@@ -22,7 +22,7 @@ _default_ **```swc.rgr.port=16000```**
 * ### swc.bkr.port
 ```INT16```
 The Broker default port, value used if not defined in ```swc.bkr.host```. \
-_default_ **```swc.rgr.port=17000```**
+_default_ **```swc.bkr.port=17000```**
 
 
 ***

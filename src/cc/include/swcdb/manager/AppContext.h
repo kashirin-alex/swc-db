@@ -53,11 +53,13 @@ class AppContext final : public Comm::AppContext {
       "swc.mngr.cfg.dyn"
     );
 
-    Env::IoCtx::init(settings->get_i32("swc.mngr.clients.handlers"));
     Env::Clients::init(
-      std::make_shared<client::Clients>(
+      client::Clients::make(
         *settings,
-        Env::IoCtx::io(),
+        Comm::IoContext::make(
+          "Clients",
+           settings->get_i32("swc.mngr.clients.handlers")
+        ),
         std::make_shared<client::Mngr::ContextManager>(),
         std::make_shared<client::ContextRanger>(*settings),
         std::make_shared<client::ContextBroker>(*settings)
@@ -284,7 +286,6 @@ class AppContext final : public Comm::AppContext {
     Env::Mngr::stop();
 
     Env::Clients::get()->stop();
-    Env::IoCtx::io()->stop();
 
     Env::FsInterface::interface()->stop();
 
@@ -302,7 +303,6 @@ class AppContext final : public Comm::AppContext {
       Env::Mngr::reset();
       Env::Clients::reset();
       Env::FsInterface::reset();
-      Env::IoCtx::reset();
     #endif
 
     guard = nullptr;

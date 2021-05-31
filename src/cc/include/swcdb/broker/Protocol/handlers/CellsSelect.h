@@ -27,7 +27,7 @@ class Selector final : public SWC::client::Query::Select::Handlers::Base {
   Event::Ptr      ev;
   bool            sent;
 
-  Selector(const ConnHandlerPtr& conn, const Event::Ptr& ev)
+  Selector(const ConnHandlerPtr& conn, const Event::Ptr& ev) noexcept
           : SWC::client::Query::Select::Handlers::Base(Env::Clients::get()),
             conn(conn), ev(ev), sent(false) {
   }

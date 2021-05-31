@@ -117,24 +117,14 @@ void Common::wait() {
 }
 
 void Common::send_result() {
-  auto hdlr = std::dynamic_pointer_cast<Common>(shared_from_this());
-  if(m_dispatcher_io) {
-    m_dispatcher_io->post([this, hdlr](){
-      m_cb(hdlr);
+  (m_dispatcher_io ? m_dispatcher_io : clients->get_io())->post(
+    [hdlr = std::dynamic_pointer_cast<Common>(shared_from_this())](){
+      hdlr->m_cb(hdlr);
 
-      Core::ScopedLock lock(m_mutex);
-      m_sending_result.stop();
-      m_cv.notify_all();
+      Core::ScopedLock lock(hdlr->m_mutex);
+      hdlr->m_sending_result.stop();
+      hdlr->m_cv.notify_all();
     });
-  } else {
-    Env::IoCtx::post([this, hdlr](){
-      m_cb(hdlr);
-
-      Core::ScopedLock lock(m_mutex);
-      m_sending_result.stop();
-      m_cv.notify_all();
-    });
-  }
 }
 
 

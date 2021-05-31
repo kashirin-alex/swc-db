@@ -37,7 +37,7 @@ class AppContext final : virtual public BrokerIfFactory,
     shutting_down(std::error_code(), sig);
 
     Env::Clients::init(
-      std::make_shared<client::Clients>(
+      client::Clients::make(
         *settings,
         Env::IoCtx::io(),
         std::make_shared<client::ContextManager>(*settings),
@@ -166,7 +166,7 @@ class AppContext final : virtual public BrokerIfFactory,
 
     Env::ThriftBroker::stop();
 
-    Env::Clients::get()->stop();
+    Env::Clients::get()->stop_services();
     Env::IoCtx::io()->stop();
 
     //Env::FsInterface::interface()->stop();

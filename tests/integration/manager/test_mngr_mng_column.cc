@@ -394,9 +394,9 @@ int main(int argc, char** argv) {
   Env::Config::init(argc, argv);
 
   Env::Clients::init(
-    std::make_shared<client::Clients>(
+    client::Clients::make(
       *Env::Config::settings(),
-      nullptr,
+      Comm::IoContext::make("Clients", 8),
       #if CLIENT_EXECUTOR == 2
         nullptr  // std::make_shared<client::BrokerContext>()
       #else
@@ -441,7 +441,7 @@ int main(int argc, char** argv) {
   exit(0);
 
 
-  Env::IoCtx::io()->stop();
+  Env::Clients::get()->stop();
   std::cout << " ### EXIT ###\n";
   return 0;
 }

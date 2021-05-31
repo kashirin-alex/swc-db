@@ -219,11 +219,10 @@ int main(int argc, char** argv) {
     SWC::FS::fs_type(SWC::Env::Config::settings()->get_str("swc.fs")));
 
 
-  SWC::Env::IoCtx::init(8);
   SWC::Env::Clients::init(
-    std::make_shared<SWC::client::Clients>(
+    SWC::client::Clients::make(
       *SWC::Env::Config::settings(),
-      SWC::Env::IoCtx::io(),
+      SWC::Comm::IoContext::make("Clients", 8),
       nullptr, // std::make_shared<SWC::client::ManagerContext>()
       nullptr  // std::make_shared<SWC::client::RangerContext>()
     )->init()
@@ -365,9 +364,10 @@ int main(int argc, char** argv) {
   range = nullptr;
 
   SWC::Env::Rgr::shuttingdown();
+  SWC::Env::Clients::get()->stop();
+
   SWC::Env::Rgr::reset();
   SWC::Env::Clients::reset();
-  SWC::Env::IoCtx::reset();
   SWC::Env::FsInterface::reset();
   SWC::Env::Config::reset();
   std::this_thread::sleep_for(std::chrono::milliseconds(50));

@@ -109,7 +109,8 @@ Bkr::Bkr()
         Comm::IoContext::make(
           "Broker",
           SWC::Env::Config::settings()->get_i32(
-            "swc.bkr.handlers"))
+            "swc.bkr.handlers")
+        )
       ),
       _reporting(
         SWC::Env::Config::settings()->get_bool("swc.bkr.metrics.enabled")

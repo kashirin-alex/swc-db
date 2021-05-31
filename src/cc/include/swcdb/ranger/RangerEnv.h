@@ -219,13 +219,15 @@ Rgr::Rgr()
         Comm::IoContext::make(
           "Ranger",
           SWC::Env::Config::settings()->get_i32(
-            "swc.rgr.handlers"))
+            "swc.rgr.handlers")
+        )
       ),
       mnt_io(
         Comm::IoContext::make(
           "Maintenance",
           SWC::Env::Config::settings()->get_i32(
-            "swc.rgr.maintenance.handlers"))
+            "swc.rgr.maintenance.handlers")
+        )
       ),
       _compaction(nullptr),
       _columns(new Ranger::Columns()),

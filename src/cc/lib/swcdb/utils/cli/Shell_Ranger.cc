@@ -5,7 +5,6 @@
 
 
 #include "swcdb/utils/cli/Shell_Ranger.h"
-#include "swcdb/db/client/Clients.h"
 #include "swcdb/db/Protocol/Rgr/req/Report.h"
 #include "swcdb/db/client/sql/Reader.h"
 
@@ -15,7 +14,14 @@ namespace SWC { namespace Utils { namespace shell {
 
 Rgr::Rgr()
   : Interface("\033[32mSWC-DB(\033[36mrgr\033[32m)\033[33m> \033[00m",
-              "/tmp/.swc-cli-ranger-history") {
+              "/tmp/.swc-cli-ranger-history"),
+    clients(client::Clients::make(
+      *Env::Config::settings(),
+      Comm::IoContext::make("Rgr", 8),
+      nullptr, // std::make_shared<client::ManagerContext>()
+      nullptr  // std::make_shared<client::RangerContext>()
+      )->init()
+    ) {
 
   options.push_back(
     new Option(
@@ -36,25 +42,10 @@ Rgr::Rgr()
       new re2::RE2("(?i)^(report)")
     )
   );
-
-  Env::Clients::init(
-    std::make_shared<client::Clients>(
-      *Env::Config::settings(),
-      nullptr,
-      nullptr, // std::make_shared<client::ManagerContext>()
-      nullptr  // std::make_shared<client::RangerContext>()
-    )->init()
-  );
 }
 
 Rgr::~Rgr() {
-  Env::Clients::get()->stop();
-  #if defined(SWC_ENABLE_SANITIZER)
-    Env::IoCtx::io()->stop();
-    std::this_thread::sleep_for(std::chrono::seconds(2));
-    Env::Clients::reset();
-    Env::IoCtx::reset();
-  #endif
+  clients->stop();
 }
 
 bool Rgr::read_endpoint(std::string& host_or_ips,
@@ -125,7 +116,7 @@ bool Rgr::report_resources(std::string& cmd) {
 
   std::promise<void>  r_promise;
   Comm::Protocol::Rgr::Req::ReportRes::request(
-    Env::Clients::get(),
+    clients,
     endpoints,
     [this, await=&r_promise]
     (const Comm::client::ConnQueue::ReqBase::Ptr&, const int& error,
@@ -156,7 +147,6 @@ bool Rgr::report(std::string& cmd) {
   cid_t cid = DB::Schema::NO_CID;
 
   client::SQL::Reader reader(cmd, message);
-  auto clients = Env::Clients::get();
   while(reader.found_space());
   if(reader.found_token("cid", 3)) {
     reader.expect_eq();

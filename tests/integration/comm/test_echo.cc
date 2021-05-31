@@ -148,9 +148,9 @@ int main(int argc, char** argv) {
   Env::Config::init(argc, argv);
 
   Env::Clients::init(
-    std::make_shared<client::Clients>(
+    client::Clients::make(
       *Env::Config::settings(),
-      nullptr,
+      Comm::IoContext::make("Clients", 8),
       nullptr, // std::make_shared<client::ManagerContext>()
       nullptr  // std::make_shared<client::RangerContext>()
     )
@@ -166,7 +166,7 @@ int main(int argc, char** argv) {
     Env::Config::settings()->get_i32("threads")
   );
 
-  Env::IoCtx::io()->stop();
+  Env::Clients::get()->stop();
 
   return 0;
 }

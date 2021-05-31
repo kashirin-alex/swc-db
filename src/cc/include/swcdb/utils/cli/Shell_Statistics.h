@@ -9,6 +9,7 @@
 
 #include "swcdb/utils/cli/Shell.h"
 #include "swcdb/db/client/sql/SQL.h"
+#include "swcdb/db/client/Clients.h"
 
 
 namespace SWC { namespace Utils { namespace shell {
@@ -18,7 +19,8 @@ namespace SWC { namespace Utils { namespace shell {
 class Statistics final : public Interface {
   public:
 
-  const bool with_broker;
+  const bool            with_broker;
+  client::Clients::Ptr  clients;
 
   Statistics();
 

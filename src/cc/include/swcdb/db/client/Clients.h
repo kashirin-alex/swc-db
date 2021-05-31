@@ -37,10 +37,25 @@ class Clients;
 namespace SWC { namespace client {
 
 
-Comm::IoContextPtr default_io();
 
+class Clients : public std::enable_shared_from_this<Clients> {
+  protected:
 
-class Clients : public std::enable_shared_from_this<Clients>{
+  Clients(const Config::Settings& settings,
+          const Comm::IoContextPtr& io_ctx,
+          const ContextManager::Ptr& mngr_ctx,
+          const ContextRanger::Ptr& rgr_ctx,
+          const ContextBroker::Ptr& bkr_ctx);
+
+  Clients(const Config::Settings& settings,
+          const Comm::IoContextPtr& io_ctx,
+          const ContextManager::Ptr& mngr_ctx,
+          const ContextRanger::Ptr& rgr_ctx);
+
+  Clients(const Config::Settings& settings,
+          const Comm::IoContextPtr& io_ctx,
+          const ContextBroker::Ptr& bkr_ctx);
+
   public:
   typedef std::shared_ptr<Clients> Ptr;
 
@@ -50,20 +65,20 @@ class Clients : public std::enable_shared_from_this<Clients>{
     SCHEMA  = 0x04,
   };
 
-  Clients(const Config::Settings& settings,
-          Comm::IoContextPtr ioctx,
-          const ContextManager::Ptr& mngr_ctx,
-          const ContextRanger::Ptr& rgr_ctx,
-          const ContextBroker::Ptr& bkr_ctx);
+  static Ptr make(const Config::Settings& settings,
+                  const Comm::IoContextPtr& io_ctx,
+                  const ContextManager::Ptr& mngr_ctx,
+                  const ContextRanger::Ptr& rgr_ctx,
+                  const ContextBroker::Ptr& bkr_ctx);
 
-  Clients(const Config::Settings& settings,
-          Comm::IoContextPtr ioctx,
-          const ContextManager::Ptr& mngr_ctx,
-          const ContextRanger::Ptr& rgr_ctx);
+  static Ptr make(const Config::Settings& settings,
+                  const Comm::IoContextPtr& io_ctx,
+                  const ContextManager::Ptr& mngr_ctx,
+                  const ContextRanger::Ptr& rgr_ctx);
 
-  Clients(const Config::Settings& settings,
-          Comm::IoContextPtr ioctx,
-          const ContextBroker::Ptr& bkr_ctx);
+  static Ptr make(const Config::Settings& settings,
+                  const Comm::IoContextPtr& io_ctx,
+                  const ContextBroker::Ptr& bkr_ctx);
 
   //~Clients() { }
 
@@ -80,6 +95,12 @@ class Clients : public std::enable_shared_from_this<Clients>{
     return shared();
   }
 
+  void stop_services();
+
+  void stop_io() {
+    io_ctx->stop();
+  }
+
   void stop();
 
   bool stopping() const noexcept {
@@ -92,6 +113,10 @@ class Clients : public std::enable_shared_from_this<Clients>{
 
   void set_flags__schemas_via_default() noexcept {
     set_flags(Flag::DEFAULT | Flag::BROKER);
+  }
+
+  Comm::IoContextPtr& get_io() noexcept {
+    return io_ctx;
   }
 
   bool has_brokers() noexcept {
@@ -183,6 +208,7 @@ class Clients : public std::enable_shared_from_this<Clients>{
   const Config::Property::V_GUINT8::Ptr  cfg_recv_ahead;
   const Config::Property::V_GINT32::Ptr  cfg_recv_timeout;
 
+  Comm::IoContextPtr                     io_ctx;
   Schemas                                schemas;
   Managers                               managers;
   Rangers                                rangers;
@@ -202,13 +228,21 @@ class Clients final {
 
   static void init(const client::Clients::Ptr& clients);
 
-  static client::Clients::Ptr& get();
+  static client::Clients::Ptr& get() noexcept {
+    return m_env->m_clients;
+  }
 
-  static const Clients& ref() noexcept;
+  static const Clients& ref() noexcept {
+    return *m_env.get();
+  }
 
-  static void reset() noexcept;
+  static void reset() noexcept {
+    m_env = nullptr;
+  }
 
-  Clients(const client::Clients::Ptr& clients) noexcept;
+  Clients(const client::Clients::Ptr& clients) noexcept
+          : m_clients(clients) {
+  }
 
   //~Clients() { }
 

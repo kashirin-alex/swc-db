@@ -275,9 +275,9 @@ int main(int argc, char** argv) {
   SWC::Env::Config::init(argc, argv);
 
   SWC::Env::Clients::init(
-    std::make_shared<SWC::client::Clients>(
+    SWC::client::Clients::make(
       *SWC::Env::Config::settings(),
-      nullptr, // Env::IoCtx::io(),
+      SWC::Comm::IoContext::make("Clients", 8),
       nullptr, // std::make_shared<client::ManagerContext>()
       nullptr  // std::make_shared<client::RangerContext>()
     )->init()
@@ -285,7 +285,7 @@ int main(int argc, char** argv) {
 
   Examples::generate_sample_data();
 
-  SWC::Env::IoCtx::io()->stop();
+  SWC::Env::Clients::get()->stop();
 
   return 0;
 }

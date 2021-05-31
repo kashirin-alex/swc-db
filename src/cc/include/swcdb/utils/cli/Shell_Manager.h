@@ -7,6 +7,7 @@
 #define swcdb_utils_ShellManager_h
 
 #include "swcdb/utils/cli/Shell.h"
+#include "swcdb/db/client/Clients.h"
 
 
 namespace SWC { namespace Utils { namespace shell {
@@ -14,6 +15,8 @@ namespace SWC { namespace Utils { namespace shell {
 
 class Mngr final : public Interface {
   public:
+
+  client::Clients::Ptr  clients;
 
   Mngr();
 

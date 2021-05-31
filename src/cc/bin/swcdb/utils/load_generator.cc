@@ -179,6 +179,8 @@ void Settings::init_app_options() {
     ("with-broker", boo(false)->zero_token(),
      "Query applicable requests with Broker")
 
+    ("gen-handlers", i32(8), "Number of client Handlers")
+
     ("gen-insert", boo(true),   "Generate new data")
     ("gen-select", boo(false),  "Select generated data")
     ("gen-delete", boo(false),  "Delete generated data")
@@ -973,16 +975,22 @@ int main(int argc, char** argv) {
   SWC::Env::Config::init(argc, argv);
 
   auto settings = SWC::Env::Config::settings();
+
+  auto io = SWC::Comm::IoContext::make(
+    "LoadGenerator",
+    settings->get_i32("gen-handlers")
+  );
+
   SWC::Env::Clients::init(
     (settings->get_bool("with-broker")
-      ? std::make_shared<SWC::client::Clients>(
+      ? SWC::client::Clients::make(
           *settings,
-          nullptr, // Env::IoCtx::io(),
+          io,
           nullptr  // std::make_shared<client::BrokerContext>()
         )
-      : std::make_shared<SWC::client::Clients>(
+      : SWC::client::Clients::make(
           *settings,
-          nullptr, // Env::IoCtx::io(),
+          io,
           nullptr, // std::make_shared<client::ManagerContext>()
           nullptr  // std::make_shared<client::RangerContext>()
         )
@@ -992,7 +1000,7 @@ int main(int argc, char** argv) {
   auto period = settings->get<
     SWC::Config::Property::V_GINT32>("swc.cfg.dyn.period");
   if(period->get()) {
-    SWC::Env::IoCtx::io()->set_periodic_timer(
+    io->set_periodic_timer(
       period,
       [](){SWC::Env::Config::settings()->check_dynamic_files();}
     );
@@ -1002,11 +1010,9 @@ int main(int argc, char** argv) {
 
   SWC_CAN_QUICK_EXIT(EXIT_SUCCESS);
   SWC::Env::Clients::get()->stop();
-  SWC::Env::IoCtx::io()->stop();
 
   std::this_thread::sleep_for(std::chrono::seconds(2));
   SWC::Env::Clients::reset();
-  SWC::Env::IoCtx::reset();
   SWC::Env::Config::reset();
   std::this_thread::sleep_for(std::chrono::seconds(1));
 

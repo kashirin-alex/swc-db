@@ -8,6 +8,7 @@
 
 #include "swcdb/utils/cli/Shell.h"
 #include "swcdb/core/comm/Resolver.h"
+#include "swcdb/db/client/Clients.h"
 
 
 namespace SWC { namespace Utils { namespace shell {
@@ -15,6 +16,8 @@ namespace SWC { namespace Utils { namespace shell {
 
 class Rgr final : public Interface {
   public:
+
+  client::Clients::Ptr  clients;
 
   Rgr();
 
