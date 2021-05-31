@@ -99,7 +99,7 @@ Configurables* apply_broker(Configurables* config) {
 
 
 
-Comm::EndPoints 
+Comm::EndPoints
 FileSystemBroker::get_endpoints(const Config::Settings::Ptr& settings) {
   std::string host = settings->get_str(
     "swc.fs.broker.host", "");
@@ -134,10 +134,10 @@ FileSystemBroker::FileSystemBroker(Configurables* config)
       settings->get_i32("swc.fs.broker.handlers"))),
     m_service(
       std::make_shared<Comm::client::Serialized>(
+        *settings,
         "FS-BROKER",
         m_io,
-        std::make_shared<client::FsBroker::AppContext>(
-          *settings)
+        std::make_shared<client::FsBroker::AppContext>(*settings)
       )
     ),
     m_type_underlying(fs_type(

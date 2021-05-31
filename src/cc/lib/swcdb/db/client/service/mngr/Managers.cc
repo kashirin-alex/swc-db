@@ -14,6 +14,7 @@ Managers::Managers(const Config::Settings& settings,
                    const ContextManager::Ptr& mngr_ctx)
     : queues(std::make_shared<Comm::client::ConnQueues>(
         std::make_shared<Comm::client::Serialized>(
+          settings,
           "MANAGER",
           ioctx,
           mngr_ctx ? mngr_ctx : std::make_shared<ContextManager>(settings)
@@ -27,7 +28,7 @@ Managers::Managers(const Config::Settings& settings,
         settings.get<Config::Property::V_GINT32>(
           "swc.client.request.again.delay")
       )),
-      groups(std::make_shared<Mngr::Groups>()->init()) {
+      groups(std::make_shared<Mngr::Groups>(settings)->init()) {
 }
 
 }} //namespace SWC::client

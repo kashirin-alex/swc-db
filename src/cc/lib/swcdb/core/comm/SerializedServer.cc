@@ -107,26 +107,28 @@ void Acceptor::do_accept_plain() noexcept {
 
 
 SerializedServer::SerializedServer(
+    const Config::Settings& settings,
     std::string&& name,
     uint32_t reactors, uint32_t workers,
-    const char* port_cfg_name,
+    uint16_t port,
     AppContext::Ptr app_ctx
   ) : m_appname(std::move(name)), m_run(true),
-      m_ssl_cfg(Env::Config::settings()->get_bool("swc.comm.ssl")
-                ? new ConfigSSL(false) : nullptr) {
+      m_ssl_cfg(
+        settings.get_bool("swc.comm.ssl")
+          ? new ConfigSSL(settings, false)
+          : nullptr
+      ) {
 
   SWC_LOGF(LOG_INFO, "STARTING SERVER: %s, reactors=%u, workers=%u",
            m_appname.c_str(), reactors, workers);
 
-  auto settings = Env::Config::settings();
-
   Config::Strings addrs;
-  if(settings->has("addr"))
-    addrs = settings->get_strs("addr");
+  if(settings.has("addr"))
+    addrs = settings.get_strs("addr");
 
   std::string host;
-  if(settings->has("host"))
-    host = host.append(settings->get_str("host"));
+  if(settings.has("host"))
+    host = host.append(settings.get_str("host"));
   else {
     char hostname[256];
     if(gethostname(hostname, sizeof(hostname)) == -1)
@@ -137,14 +139,14 @@ SerializedServer::SerializedServer(
   Networks nets;
   asio::error_code ec;
   Resolver::get_networks(
-    settings->get_strs("swc.comm.network.priority"), nets, ec);
+    settings.get_strs("swc.comm.network.priority"), nets, ec);
   if(ec)
     SWC_THROWF(Error::CONFIG_BAD_VALUE,
               "swc.comm.network.priority error(%s)",
               ec.message().c_str());
 
   EndPoints endpoints = Resolver::get_endpoints(
-    settings->get_i16(port_cfg_name),
+    port,
     addrs,
     host,
     nets,

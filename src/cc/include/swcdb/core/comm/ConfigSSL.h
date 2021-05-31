@@ -20,7 +20,7 @@ class ConfigSSL final {
   typedef std::function<
     void(const ConnHandlerPtr&, const asio::error_code&)> HandshakeCb_t;
 
-  ConfigSSL(bool is_client=true);
+  ConfigSSL(const Config::Settings& settings, bool is_client=true);
 
   //~ConfigSSL() { }
 
@@ -48,7 +48,8 @@ class ConfigSSL final {
 
   private:
 
-  void load_file(std::string filepath, std::string& to) const;
+  void load_file(const std::string& pathbase,
+                 std::string filepath, std::string& to) const;
 
   std::vector<asio::ip::network_v4> nets_v4;
   std::vector<asio::ip::network_v6> nets_v6;

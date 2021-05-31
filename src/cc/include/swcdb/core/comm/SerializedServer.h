@@ -57,9 +57,9 @@ class SerializedServer final {
   typedef std::shared_ptr<SerializedServer> Ptr;
 
   SerializedServer(
+    const Config::Settings& settings,
     std::string&& name,
-    uint32_t reactors, uint32_t workers,
-    const char* port_cfg_name,
+    uint32_t reactors, uint32_t workers, uint16_t port,
     AppContext::Ptr app_ctx
   );
 

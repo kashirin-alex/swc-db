@@ -10,6 +10,7 @@
 #include "swcdb/db/Types/Identifiers.h"
 #include "swcdb/db/Types/MngrRole.h"
 #include "swcdb/core/comm/Resolver.h"
+#include "swcdb/db/client/Settings.h"
 
 
 namespace SWC { namespace client { namespace Mngr {
@@ -70,9 +71,9 @@ class Groups final : private std::vector<Group::Ptr>,
   typedef std::shared_ptr<Groups> Ptr;
   typedef std::vector<Group::Ptr> Vec;
 
-  Groups();
+  Groups(const Config::Settings& settings);
 
-  Groups(const Vec& groups, const std::vector<Comm::Network>& nets);
+  Groups(const Groups& other, Groups::Vec&&);
 
   //~Groups() { }
 
@@ -106,9 +107,12 @@ class Groups final : private std::vector<Group::Ptr>,
   void _add_host(uint8_t role, cid_t cid_begin, cid_t cid_end,
                  uint16_t port, std::string host_or_ips);
 
-  Core::MutexSptd             m_mutex;
-  std::vector<GroupHost>      m_active_g_host;
-  std::vector<Comm::Network>  m_nets;
+  Config::Property::V_GSTRINGS::Ptr cfg_hosts;
+  const uint16_t                    cfg_port;
+
+  Core::MutexSptd                   m_mutex;
+  std::vector<GroupHost>            m_active_g_host;
+  std::vector<Comm::Network>        m_nets;
 };
 
 }}}

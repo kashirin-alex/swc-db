@@ -27,10 +27,11 @@ int run() {
   auto app_ctx = std::make_shared<AppContext>();
 
   auto srv = std::make_shared<Comm::server::SerializedServer>(
+    *Env::Config::settings(),
     "FS-BROKER",
     Env::Config::settings()->get_i32("swc.FsBroker.reactors"),
     Env::Config::settings()->get_i32("swc.FsBroker.workers"),
-    "swc.fs.broker.port",
+    Env::Config::settings()->get_i16("swc.fs.broker.port"),
     app_ctx
   );
   app_ctx->set_srv(srv);

@@ -14,6 +14,7 @@ Brokers::Brokers(const Config::Settings& settings,
                  const ContextBroker::Ptr& bkr_ctx)
     : queues(std::make_shared<Comm::client::ConnQueues>(
         std::make_shared<Comm::client::Serialized>(
+          settings,
           "BROKER",
           ioctx,
           bkr_ctx ? bkr_ctx : std::make_shared<ContextBroker>(settings)

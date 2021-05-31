@@ -5,7 +5,6 @@
 
 
 #include "swcdb/db/client/service/mngr/Groups.h"
-#include "swcdb/db/client/Settings.h"
 
 
 namespace SWC { namespace client { namespace Mngr {
@@ -88,10 +87,13 @@ void Group::_get_host(const Comm::EndPoint& point,
 }
 
 
-Groups::Groups() {
+Groups::Groups(const Config::Settings& settings)
+        : cfg_hosts(
+            settings.get<Config::Property::V_GSTRINGS>("swc.mngr.host")),
+          cfg_port(settings.get_i16("swc.mngr.port")) {
   asio::error_code ec;
   Comm::Resolver::get_networks(
-    Env::Config::settings()->get_strs("swc.comm.network.priority"),
+    settings.get_strs("swc.comm.network.priority"),
     m_nets, ec
   );
   if(ec)
@@ -101,15 +103,15 @@ Groups::Groups() {
 }
 
 
-Groups::Groups(const Groups::Vec& groups,
-               const std::vector<Comm::Network>& nets)
-               : Vec(groups), m_nets(nets) {
+Groups::Groups(const Groups& other, Groups::Vec&& groups)
+               : Vec(std::move(groups)),
+                 cfg_hosts(other.cfg_hosts), cfg_port(other.cfg_port),
+                 m_nets(other.m_nets) {
 }
 
 Groups::Ptr Groups::init() {
-  Env::Config::settings()->get<Config::Property::V_GSTRINGS>("swc.mngr.host")
-    ->set_cb_on_chg([cb=shared_from_this()]{cb->on_cfg_update();});
-
+  cfg_hosts->set_cb_on_chg(
+    [cb=shared_from_this()]{ cb->on_cfg_update(); });
   on_cfg_update();
   return shared_from_this();
 }
@@ -117,18 +119,14 @@ Groups::Ptr Groups::init() {
 Groups::Ptr Groups::copy() {
   Vec groups;
   Core::MutexSptd::scope lock(m_mutex);
+  groups.reserve(size());
   for(auto& group : *this)
     groups.push_back(group->copy());
-  return std::make_shared<Groups>(groups, m_nets);
+  return std::make_shared<Groups>(*this, std::move(groups));
 }
 
 void Groups::on_cfg_update() {
   SWC_LOG(LOG_DEBUG, "update_cfg()");
-
-  Config::Property::V_GSTRINGS::Ptr cfg_mngr_hosts
-    = Env::Config::settings()->get<Config::Property::V_GSTRINGS>(
-      "swc.mngr.host");
-  uint16_t default_port = Env::Config::settings()->get_i16("swc.mngr.port");
 
   uint8_t role;
   int64_t col_begin;
@@ -140,18 +138,17 @@ void Groups::on_cfg_update() {
   size_t at_chk;
   size_t at_offset;
 
-  int c = cfg_mngr_hosts->size();
-  std::string cfg;
+  auto hosts = cfg_hosts->get();
+  int n = 0;
   std::string cfg_chk;
 
   bool support = m_mutex.lock();
   clear();
-  for(int n=0; n<c; ++n) {
-    cfg = cfg_mngr_hosts->get_item(n);
-    SWC_LOGF(LOG_DEBUG, "cfg=%d swc.mngr.host=%s", n, cfg.c_str());
+  for(auto& cfg : hosts) {
+    SWC_LOGF(LOG_DEBUG, "cfg=%d swc.mngr.host=%s", n++, cfg.c_str());
 
     if((at = cfg.find_first_of('|')) == std::string::npos) {
-      _add_host(DB::Types::MngrRole::ALL, 0, 0, default_port, cfg);
+      _add_host(DB::Types::MngrRole::ALL, 0, 0, cfg_port, cfg);
       continue;
     }
 
@@ -197,7 +194,7 @@ void Groups::on_cfg_update() {
     cfg_chk = cfg.substr(at_offset);
     if((at_chk = cfg_chk.find_first_of('|')) == std::string::npos) {
       host_or_ips = cfg_chk;
-      port = default_port;
+      port = cfg_port;
     } else {
       host_or_ips = cfg_chk.substr(0, at_chk);
       Config::Property::from_string(cfg_chk.substr(++at_chk), &port);

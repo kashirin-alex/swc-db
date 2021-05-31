@@ -14,6 +14,7 @@ Rangers::Rangers(const Config::Settings& settings,
                  const ContextRanger::Ptr& rgr_ctx)
     : queues(std::make_shared<Comm::client::ConnQueues>(
         std::make_shared<Comm::client::Serialized>(
+          settings,
           "RANGER",
           ioctx,
           rgr_ctx ? rgr_ctx : std::make_shared<ContextRanger>(settings)

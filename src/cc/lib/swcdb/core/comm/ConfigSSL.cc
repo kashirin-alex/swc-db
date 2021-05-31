@@ -12,21 +12,21 @@
 namespace SWC { namespace Comm {
 
 
-ConfigSSL::ConfigSSL(bool is_client)
+ConfigSSL::ConfigSSL(const Config::Settings& settings, bool is_client)
                     : ctx(is_client
                             ? asio::ssl::context::tlsv13_client
                             : asio::ssl::context::tlsv13_server) {
-  auto settings = Env::Config::settings();
-  set_networks(settings->get_strs("swc.comm.ssl.secure.network"), is_client);
+  set_networks(settings.get_strs("swc.comm.ssl.secure.network"), is_client);
 
-  std::string ciphers = settings->get_str("swc.comm.ssl.ciphers", "");
+  std::string ciphers = settings.get_str("swc.comm.ssl.ciphers", "");
   if(!ciphers.empty())
     SSL_CTX_set_cipher_list(
       ctx.native_handle(), ciphers.c_str());
 
+  const std::string pathbase(settings.get_str("swc.cfg.path"));
   std::string ca;
-  if(settings->has("swc.comm.ssl.ca"))
-    load_file(settings->get_str("swc.comm.ssl.ca"), ca);
+  if(settings.has("swc.comm.ssl.ca"))
+    load_file(pathbase, settings.get_str("swc.comm.ssl.ca"), ca);
   if(ca.empty()) {
     ctx.set_default_verify_paths();
   } else {
@@ -44,7 +44,7 @@ ConfigSSL::ConfigSSL(bool is_client)
       | asio::ssl::context::no_tlsv1_1
       | asio::ssl::context::no_tlsv1_2
     );
-    subject_name = settings->get_str("swc.comm.ssl.subject_name", "");
+    subject_name = settings.get_str("swc.comm.ssl.subject_name", "");
     if(!subject_name.empty())
       ctx.set_verify_mode(asio::ssl::verify_peer);
 
@@ -64,12 +64,12 @@ ConfigSSL::ConfigSSL(bool is_client)
     );
 
     std::string  crt;
-    load_file(settings->get_str("swc.comm.ssl.crt"), crt);
+    load_file(pathbase, settings.get_str("swc.comm.ssl.crt"), crt);
     ctx.use_certificate(
       asio::const_buffer(crt.data(), crt.length()), asio::ssl::context::pem);
 
     std::string  key;
-    load_file(settings->get_str("swc.comm.ssl.key"), key);
+    load_file(pathbase, settings.get_str("swc.comm.ssl.key"), key);
     ctx.use_rsa_private_key(
       asio::const_buffer(key.data(), key.length()), asio::ssl::context::pem);
   }
@@ -170,12 +170,13 @@ ConfigSSL::make_client(AppContext::Ptr& app_ctx,
   );
 }
 
-void ConfigSSL::load_file(std::string filepath, std::string& to) const {
+void ConfigSSL::load_file(const std::string& pathbase,
+                          std::string filepath, std::string& to) const {
   to.clear();
   int err = Error::OK;
   try {
     if(filepath.front() != '.' && filepath.front() != '/')
-      filepath = Env::Config::settings()->get_str("swc.cfg.path") + filepath;
+      filepath = pathbase + filepath;
 
     std::ifstream istrm(filepath, std::ios::binary | std::ios::ate);
     if(istrm.is_open()) {
