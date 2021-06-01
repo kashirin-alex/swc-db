@@ -49,6 +49,8 @@ class RangeQueryUpdateRsp final : public Serializable {
                       : err(err), cells_added(0) {
   }
 
+  RangeQueryUpdateRsp(int err, const uint8_t* ptr, size_t remain) noexcept;
+
   //~RangeQueryUpdateRsp() { }
 
   void print(std::ostream& out) const;
