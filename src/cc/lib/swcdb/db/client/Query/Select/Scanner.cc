@@ -5,6 +5,7 @@
 
 #include "swcdb/db/Types/SystemColumn.h"
 #include "swcdb/db/client/Query/Select/Scanner.h"
+#include "swcdb/db/Protocol/Mngr/req/RgrGet_Query.h"
 
 
 namespace SWC { namespace client { namespace Query { namespace Select {
@@ -115,6 +116,46 @@ void Scanner::print(std::ostream& out) {
   out << ')';
 }
 
+
+struct Scanner::Callback {
+  struct mngr_locate_master {
+    SWC_CAN_INLINE
+    static void callback(const Ptr& scanner,
+                         const ReqBase::Ptr& req,
+                         Profiling::Component::Start& profile,
+                         const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
+      profile.add(rsp.err || !rsp.rid);
+      if(scanner->mngr_located_master(req, rsp))
+        scanner->response_if_last();
+    };
+  };
+
+  struct mngr_resolve_rgr_meta {
+    SWC_CAN_INLINE
+    static void callback(const Ptr& scanner,
+                         const ReqBase::Ptr& req,
+                         Profiling::Component::Start& profile,
+                         const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
+      profile.add(rsp.err || !rsp.rid || rsp.endpoints.empty());
+      if(scanner->mngr_resolved_rgr_meta(req, rsp))
+        scanner->response_if_last();
+    }
+  };
+
+  struct mngr_resolve_rgr_select {
+    SWC_CAN_INLINE
+    static void callback(const Ptr& scanner,
+                         const ReqBase::Ptr& req,
+                         Profiling::Component::Start& profile,
+                         const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
+      profile.add(rsp.err || !rsp.rid || rsp.endpoints.empty());
+      if(scanner->mngr_resolved_rgr_select(req, rsp))
+        scanner->response_if_last();
+    }
+  };
+};
+
+
 bool Scanner::add_cells(StaticBuffer& buffer, bool reached_limit) {
   return selector->add_cells(data_cid, buffer, reached_limit, interval);
 }
@@ -183,18 +224,9 @@ void Scanner::mngr_locate_master() {
   }
 
   SWC_SCANNER_REQ_DEBUG("mngr_locate_master");
-  Comm::Protocol::Mngr::Req::RgrGet::request(
-    selector->clients,
-    params,
-    [profile=selector->profile.mngr_locate(),
-     scanner=shared_from_this()]
-    (const ReqBase::Ptr& req,
-     const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
-      profile.add(rsp.err || !rsp.rid);
-      if(scanner->mngr_located_master(req, rsp))
-        scanner->response_if_last();
-    }
-  );
+  Comm::Protocol::Mngr::Req::RgrGet_Query
+    <Ptr, Callback::mngr_locate_master>
+      ::request(shared_from_this(), params, selector->profile.mngr_locate());
 }
 
 bool Scanner::mngr_located_master(
@@ -403,17 +435,9 @@ void Scanner::mngr_resolve_rgr_meta() {
 
   Comm::Protocol::Mngr::Params::RgrGetReq params(meta_cid, meta_rid);
   SWC_SCANNER_REQ_DEBUG("mngr_resolve_rgr_meta");
-  Comm::Protocol::Mngr::Req::RgrGet::request(
-    selector->clients,
-    params,
-    [profile, scanner=shared_from_this()]
-    (const ReqBase::Ptr& req,
-     const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
-      profile.add(rsp.err || !rsp.rid || rsp.endpoints.empty());
-      if(scanner->mngr_resolved_rgr_meta(req, rsp))
-        scanner->response_if_last();
-    }
-  );
+  Comm::Protocol::Mngr::Req::RgrGet_Query
+    <Ptr, Callback::mngr_resolve_rgr_meta>
+      ::request(shared_from_this(), params, profile);
 }
 
 bool Scanner::mngr_resolved_rgr_meta(
@@ -581,17 +605,9 @@ void Scanner::mngr_resolve_rgr_select() {
 
   Comm::Protocol::Mngr::Params::RgrGetReq params(data_cid, data_rid);
   SWC_SCANNER_REQ_DEBUG("mngr_resolve_rgr_select");
-  Comm::Protocol::Mngr::Req::RgrGet::request(
-    selector->clients,
-    params,
-    [profile, scanner=shared_from_this()]
-    (const ReqBase::Ptr& req,
-     const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
-      profile.add(rsp.err || !rsp.rid || rsp.endpoints.empty());
-      if(scanner->mngr_resolved_rgr_select(req, rsp))
-        scanner->response_if_last();
-    }
-  );
+  Comm::Protocol::Mngr::Req::RgrGet_Query
+    <Ptr, Callback::mngr_resolve_rgr_select>
+      ::request(shared_from_this(), params, profile);
 }
 
 bool Scanner::mngr_resolved_rgr_select(

@@ -51,19 +51,23 @@ struct Profiling {
       Component&    _m;
       const int64_t ts;
 
+      SWC_CAN_INLINE
       Start(Component& m) noexcept
             : _m(m), ts(Time::now_ns()) {
       }
 
+      SWC_CAN_INLINE
       void add(bool err) const noexcept {
         _m.add(ts, err);
       }
 
+      SWC_CAN_INLINE
       void add_cached(bool err) const noexcept {
         _m.add_cached(ts, err);
       }
     };
 
+    SWC_CAN_INLINE
     Start start() noexcept {
       return Start(*this);
     }
@@ -115,14 +119,17 @@ struct Profiling {
     ts_finish.store(Time::now_ns());
   }
 
+  SWC_CAN_INLINE
   Component::Start mngr_locate() noexcept {
     return Component::Start(_mngr_locate);
   }
 
+  SWC_CAN_INLINE
   Component::Start mngr_res() noexcept {
     return Component::Start(_mngr_res);
   }
 
+  SWC_CAN_INLINE
   Component::Start rgr_locate(DB::Types::Range type) noexcept {
     switch(type) {
       case DB::Types::Range::MASTER:
@@ -132,10 +139,12 @@ struct Profiling {
     }
   }
 
+  SWC_CAN_INLINE
   Component::Start rgr_data() noexcept {
     return Component::Start(_rgr_data);
   }
 
+  SWC_CAN_INLINE
   Component::Start bkr() noexcept {
     return Component::Start(_bkr);
   }

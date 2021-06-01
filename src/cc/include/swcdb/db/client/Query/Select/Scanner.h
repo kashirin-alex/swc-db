@@ -10,7 +10,7 @@
 #include "swcdb/db/client/Query/Select/Handlers/Base.h"
 #include "swcdb/db/client/Query/Select/Handlers/BaseUnorderedMap.h"
 
-#include "swcdb/db/Protocol/Mngr/req/RgrGet.h"
+#include "swcdb/db/Protocol/Mngr/req/RgrGet_Base.h"
 #include "swcdb/db/Protocol/Rgr/req/RangeLocate.h"
 #include "swcdb/db/Protocol/Rgr/req/RangeQuerySelect.h"
 
@@ -85,6 +85,18 @@ class Scanner final : public std::enable_shared_from_this<Scanner> {
 
   //~Scanner() { }
 
+  bool valid() noexcept {
+    return selector->valid();
+  }
+
+  Clients::Ptr& get_clients() noexcept {
+    return selector->clients;
+  }
+
+  Profiling& get_profile() noexcept {
+    return selector->profile;
+  }
+
   void debug_res_cache(const char* msg, cid_t cid, rid_t rid,
                        const Comm::EndPoints& endpoints);
 
@@ -137,6 +149,8 @@ class Scanner final : public std::enable_shared_from_this<Scanner> {
   void rgr_selected(
       const ReqBase::Ptr& req,
       Comm::Protocol::Rgr::Params::RangeQuerySelectRsp& rsp);
+
+  struct Callback;
 
 };
 

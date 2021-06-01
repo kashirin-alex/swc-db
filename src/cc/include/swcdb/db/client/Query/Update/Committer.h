@@ -10,7 +10,7 @@
 
 #include "swcdb/db/client/Query/Update/Handlers/Base.h"
 #include "swcdb/db/Types/Range.h"
-#include "swcdb/db/Protocol/Mngr/req/RgrGet.h"
+#include "swcdb/db/Protocol/Mngr/req/RgrGet_Base.h"
 #include "swcdb/db/Protocol/Rgr/req/RangeLocate.h"
 
 
@@ -33,6 +33,7 @@ class Committer final : public std::enable_shared_from_this<Committer> {
     )->locate_on_manager();
   }
 
+  typedef std::shared_ptr<Committer> Ptr;
   const DB::Types::Range    type;
   const cid_t               cid;
   Handlers::Base::Column*   colp;
@@ -60,6 +61,18 @@ class Committer final : public std::enable_shared_from_this<Committer> {
             const DB::Cell::Key& key_finish);
 
   //~Committer() { }
+
+  bool valid() noexcept {
+    return hdlr->valid();
+  }
+
+  Clients::Ptr& get_clients() noexcept {
+    return hdlr->clients;
+  }
+
+  Profiling& get_profile() noexcept {
+    return hdlr->profile;
+  }
 
   void print(std::ostream& out);
 
@@ -92,6 +105,8 @@ class Committer final : public std::enable_shared_from_this<Committer> {
   void commit_data(
       const Comm::EndPoints& endpoints,
       const ReqBase::Ptr& base);
+
+  struct Callback;
 
 };
 

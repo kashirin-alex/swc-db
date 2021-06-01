@@ -8,7 +8,7 @@
 #include "swcdb/db/Types/SystemColumn.h"
 #include "swcdb/db/client/Clients.h"
 #include "swcdb/db/Protocol/Rgr/req/RangeQueryUpdate.h"
-
+#include "swcdb/db/Protocol/Mngr/req/RgrGet_Query.h"
 
 namespace SWC { namespace client { namespace Query { namespace Update {
 
@@ -64,6 +64,32 @@ void Committer::print(std::ostream& out) {
   out << ')';
 }
 
+
+struct Committer::Callback {
+  struct locate_on_manager {
+    SWC_CAN_INLINE
+    static void callback(const Ptr& committer,
+                         const ReqBase::Ptr& req,
+                         Profiling::Component::Start& profile,
+                         const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
+      profile.add(rsp.err || !rsp.rid);
+      committer->located_on_manager(req, rsp);
+    };
+  };
+
+  struct locate_ranger {
+    SWC_CAN_INLINE
+    static void callback(const Ptr& committer,
+                         const ReqBase::Ptr& req,
+                         Profiling::Component::Start& profile,
+                         const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
+      profile.add(rsp.err || !rsp.rid || rsp.endpoints.empty());
+      committer->located_ranger(req, rsp);
+    }
+  };
+};
+
+
 void Committer::locate_on_manager() {
   hdlr->completion.increment();
   if(!hdlr->valid())
@@ -79,17 +105,9 @@ void Committer::locate_on_manager() {
       0, DB::Types::SystemColumn::get_meta_cid_str(colp->get_sequence()));
 
   SWC_LOCATOR_REQ_DEBUG("mngr_locate_master");
-
-  Comm::Protocol::Mngr::Req::RgrGet::request(
-    hdlr->clients,
-    params,
-    [profile=hdlr->profile.mngr_locate(), committer=shared_from_this()]
-    (const ReqBase::Ptr& req,
-     const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
-      profile.add(rsp.err || !rsp.rid);
-      committer->located_on_manager(req, rsp);
-    }
-  );
+  Comm::Protocol::Mngr::Req::RgrGet_Query
+    <Ptr, Callback::locate_on_manager>
+      ::request(shared_from_this(), params, hdlr->profile.mngr_locate());
 }
 
 
@@ -242,16 +260,9 @@ void Committer::resolve_on_manager() {
     return hdlr->response();
 
   Comm::Protocol::Mngr::Params::RgrGetReq params(cid, rid);
-  auto req = Comm::Protocol::Mngr::Req::RgrGet::make(
-    hdlr->clients,
-    params,
-    [profile=hdlr->profile.mngr_res(), committer=shared_from_this()]
-    (const ReqBase::Ptr& req,
-     const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
-      profile.add(rsp.err || !rsp.rid || rsp.endpoints.empty());
-      committer->located_ranger(req, rsp);
-    }
-  );
+  auto req = Comm::Protocol::Mngr::Req::RgrGet_Query
+    <Ptr, Callback::locate_ranger>
+      ::make(shared_from_this(), params, hdlr->profile.mngr_res());
   if(!DB::Types::SystemColumn::is_master(cid)) {
     auto profile = hdlr->profile.mngr_res();
     Comm::Protocol::Mngr::Params::RgrGetRsp rsp(cid, rid);
