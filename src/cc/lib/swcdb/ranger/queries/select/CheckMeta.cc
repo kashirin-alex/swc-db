@@ -45,8 +45,10 @@ void CheckMeta::response(int err) {
   profile.finished();
 
   Env::Rgr::post(
-    [this, hdlr=std::dynamic_pointer_cast<CheckMeta>(shared_from_this())]() {
-      range->check_meta(hdlr); });
+    [hdlr=std::dynamic_pointer_cast<CheckMeta>(shared_from_this())]() {
+      hdlr->range->check_meta(hdlr);
+    }
+  );
 }
 
 

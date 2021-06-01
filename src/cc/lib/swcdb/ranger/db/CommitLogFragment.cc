@@ -524,14 +524,14 @@ void Fragment::remove(int &err) {
 void Fragment::remove(int&, Core::Semaphore* sem) {
   if(m_smartfd->valid()) {
     Env::FsInterface::interface()->close(
-      [frag=ptr(), sem](int err, FS::SmartFd::Ptr) {
+      [sem, frag=ptr()](int err, FS::SmartFd::Ptr) {
         frag->remove(err=Error::OK, sem);
       },
       m_smartfd
     );
   } else if(mark_removed()) {
     Env::FsInterface::interface()->remove(
-      [frag=ptr(), sem](int) noexcept { sem->release(); },
+      [sem, frag=ptr()](int) noexcept { sem->release(); },
       m_smartfd->filepath()
     );
   }

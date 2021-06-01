@@ -80,8 +80,8 @@ void Common::response_partials() {
       if(wait_on_partials()) {
         m_cv.wait(
           lock_wait,
-          [this, hdlr=shared_from_this()] () {
-            return !m_sending_result || !wait_on_partials();
+          [hdlr = std::dynamic_pointer_cast<Common>(shared_from_this())] () {
+            return !hdlr->m_sending_result || !hdlr->wait_on_partials();
           }
         );
       }
@@ -102,8 +102,8 @@ void Common::wait() {
       if(m_sending_result || completion.count()) {
         m_cv.wait(
           lock_wait,
-          [this, hdlr=shared_from_this()] () {
-            return !m_sending_result && !completion.count();
+          [hdlr = std::dynamic_pointer_cast<Common>(shared_from_this())] () {
+            return !hdlr->m_sending_result && !hdlr->completion.count();
           }
         );
       }
