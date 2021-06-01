@@ -3,9 +3,11 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
+
 #include "swcdb/db/Types/SystemColumn.h"
 #include "swcdb/db/client/Query/Select/Scanner.h"
 #include "swcdb/db/Protocol/Mngr/req/RgrGet_Query.h"
+#include "swcdb/db/Protocol/Rgr/req/RangeLocate_Query.h"
 
 
 namespace SWC { namespace client { namespace Query { namespace Select {
@@ -151,6 +153,30 @@ struct Scanner::Callback {
       profile.add(rsp.err || !rsp.rid || rsp.endpoints.empty());
       if(scanner->mngr_resolved_rgr_select(req, rsp))
         scanner->response_if_last();
+    }
+  };
+
+  struct rgr_locate_master {
+    SWC_CAN_INLINE
+    static void callback(
+        const Ptr& scanner,
+        const ReqBase::Ptr& req,
+        Profiling::Component::Start& profile,
+        const Comm::Protocol::Rgr::Params::RangeLocateRsp& rsp) {
+      profile.add(!rsp.rid || rsp.err);
+      scanner->rgr_located_master(req, rsp);
+    }
+  };
+
+  struct rgr_locate_meta {
+    SWC_CAN_INLINE
+    static void callback(
+        const Ptr& scanner,
+        const ReqBase::Ptr& req,
+        Profiling::Component::Start& profile,
+        const Comm::Protocol::Rgr::Params::RangeLocateRsp& rsp) {
+      profile.add(!rsp.rid || rsp.err);
+      scanner->rgr_located_meta(req, rsp);
     }
   };
 };
@@ -332,17 +358,14 @@ void Scanner::rgr_locate_master() {
   }
 
   SWC_SCANNER_REQ_DEBUG("rgr_locate_master");
-  Comm::Protocol::Rgr::Req::RangeLocate::request(
-    selector->clients,
-    params, master_rgr_endpoints,
-    [profile=selector->profile.rgr_locate(DB::Types::Range::MASTER),
-     scanner=shared_from_this()]
-    (const ReqBase::Ptr& req,
-     const Comm::Protocol::Rgr::Params::RangeLocateRsp& rsp) {
-      profile.add(!rsp.rid || rsp.err);
-      scanner->rgr_located_master(req, rsp);
-    }
-  );
+  Comm::Protocol::Rgr::Req::RangeLocate_Query
+    <Ptr, Callback::rgr_locate_master>
+      ::request(
+          shared_from_this(),
+          params,
+          master_rgr_endpoints,
+          selector->profile.rgr_locate(DB::Types::Range::MASTER)
+        );
 }
 
 void Scanner::rgr_located_master(
@@ -509,17 +532,14 @@ void Scanner::rgr_locate_meta() {
   params.range_end.insert(0, data_cid_str);
 
   SWC_SCANNER_REQ_DEBUG("rgr_locate_meta");
-  Comm::Protocol::Rgr::Req::RangeLocate::request(
-    selector->clients,
-    params, meta_endpoints,
-    [profile=selector->profile.rgr_locate(DB::Types::Range::META),
-     scanner=shared_from_this()]
-    (const ReqBase::Ptr& req,
-     const Comm::Protocol::Rgr::Params::RangeLocateRsp& rsp) {
-      profile.add(!rsp.rid || rsp.err);
-      scanner->rgr_located_meta(req, rsp);
-    }
-  );
+  Comm::Protocol::Rgr::Req::RangeLocate_Query
+    <Ptr, Callback::rgr_locate_meta>
+      ::request(
+          shared_from_this(),
+          params,
+          meta_endpoints,
+          selector->profile.rgr_locate(DB::Types::Range::META)
+      );
 }
 
 void Scanner::rgr_located_meta(

@@ -7,8 +7,10 @@
 #include "swcdb/db/client/Query/Update/Committer.h"
 #include "swcdb/db/Types/SystemColumn.h"
 #include "swcdb/db/client/Clients.h"
-#include "swcdb/db/Protocol/Rgr/req/RangeQueryUpdate.h"
 #include "swcdb/db/Protocol/Mngr/req/RgrGet_Query.h"
+#include "swcdb/db/Protocol/Rgr/req/RangeLocate_Query.h"
+#include "swcdb/db/Protocol/Rgr/req/RangeQueryUpdate.h"
+
 
 namespace SWC { namespace client { namespace Query { namespace Update {
 
@@ -85,6 +87,23 @@ struct Committer::Callback {
                          const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
       profile.add(rsp.err || !rsp.rid || rsp.endpoints.empty());
       committer->located_ranger(req, rsp);
+    }
+  };
+
+  struct locate_on_ranger {
+    SWC_CAN_INLINE
+    static void callback(
+            const Ptr& committer,
+            const ReqBase::Ptr& req,
+            Profiling::Component::Start& profile,
+            const Comm::Protocol::Rgr::Params::RangeLocateRsp& rsp) {
+      profile.add(!rsp.rid || rsp.err);
+      committer->located_on_ranger(
+        std::dynamic_pointer_cast<
+          Comm::Protocol::Rgr::Req::RangeLocate_Query<Ptr, locate_on_ranger>
+            >(req)->endpoints,
+        req, rsp
+      );
     }
   };
 };
@@ -182,22 +201,15 @@ void Committer::locate_on_ranger(const Comm::EndPoints& endpoints) {
         0, DB::Types::SystemColumn::get_meta_cid_str(colp->get_sequence()));
   }
 
-  SWC_LOCATOR_REQ_DEBUG("rgr_locate");
-
-  Comm::Protocol::Rgr::Req::RangeLocate::request(
-    hdlr->clients,
-    params, endpoints,
-    [profile=hdlr->profile.rgr_locate(type), committer=shared_from_this()]
-    (const ReqBase::Ptr& req,
-     const Comm::Protocol::Rgr::Params::RangeLocateRsp& rsp) {
-      profile.add(!rsp.rid || rsp.err);
-      committer->located_on_ranger(
-        std::dynamic_pointer_cast<
-          Comm::Protocol::Rgr::Req::RangeLocate>(req)->endpoints,
-        req, rsp
-      );
-    }
-  );
+  SWC_LOCATOR_REQ_DEBUG("locate_on_ranger");
+  Comm::Protocol::Rgr::Req::RangeLocate_Query
+    <Ptr, Callback::locate_on_ranger>
+      ::request(
+          shared_from_this(),
+          params,
+          endpoints,
+          hdlr->profile.rgr_locate(type)
+        );
 }
 
 void Committer::located_on_ranger(

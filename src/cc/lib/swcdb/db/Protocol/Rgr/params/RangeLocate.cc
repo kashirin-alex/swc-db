@@ -56,7 +56,8 @@ void RangeLocateReq::internal_decode(const uint8_t** bufp, size_t* remainp) {
 
 
 RangeLocateRsp::RangeLocateRsp(int err,
-                               const uint8_t *ptr, size_t remain) noexcept {
+                               const uint8_t *ptr, size_t remain) noexcept
+                              : err(err), cid(0), rid(0) {
   if(!err) try {
     decode(&ptr, &remain);
   } catch(...) {
