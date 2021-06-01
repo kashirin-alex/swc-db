@@ -46,24 +46,12 @@ bool RangeLocate::run() {
 }
 
 void RangeLocate::handle(ConnHandlerPtr, const Event::Ptr& ev) {
-  if(ev->type == Event::Type::DISCONNECT)
-    return handle_no_conn();
-
-  Params::RangeLocateRsp rsp_params(ev->error);
-  if(!rsp_params.err) {
-    try {
-      const uint8_t *ptr = ev->data.base;
-      size_t remain = ev->data.size;
-      rsp_params.decode(&ptr, &remain);
-
-    } catch(...) {
-      const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
-      SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
-      rsp_params.err = e.code();
-    }
-  }
-
-  cb(req(), rsp_params);
+  ev->type == Event::Type::DISCONNECT
+    ? handle_no_conn()
+    : cb(
+        req(),
+        Params::RangeLocateRsp(ev->error, ev->data.base, ev->data.size)
+      );
 }
 
 

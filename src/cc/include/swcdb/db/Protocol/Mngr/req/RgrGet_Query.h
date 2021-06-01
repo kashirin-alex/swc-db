@@ -72,7 +72,7 @@ class RgrGet_Query : public RgrGet_Base {
   }
 
   virtual void callback(const Params::RgrGetRsp& rsp) override {
-		ActionT::callback(query, req(), profile, rsp);
+    ActionT::callback(query, req(), profile, rsp);
   }
 
   QueryT                                          query;

@@ -55,6 +55,16 @@ void RangeLocateReq::internal_decode(const uint8_t** bufp, size_t* remainp) {
 
 
 
+RangeLocateRsp::RangeLocateRsp(int err,
+                               const uint8_t *ptr, size_t remain) noexcept {
+  if(!err) try {
+    decode(&ptr, &remain);
+  } catch(...) {
+    const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
+    err = e.code();
+    SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
+  }
+}
 
 void RangeLocateRsp::print(std::ostream& out) const {
   out << "RangeLocated(";

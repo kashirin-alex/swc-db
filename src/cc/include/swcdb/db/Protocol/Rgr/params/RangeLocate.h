@@ -57,6 +57,8 @@ class RangeLocateRsp final : public Serializable {
                 : err(err), cid(0), rid(0) {
   }
 
+  RangeLocateRsp(int err, const uint8_t* ptr, size_t remain) noexcept;
+
   //~RangeLocateRsp() { }
 
   void print(std::ostream& out) const;
