@@ -21,9 +21,9 @@ void mngr_state(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     req_params.decode(&ptr, &remain);
 
     Env::Mngr::role()->fill_states(
-      req_params.states, req_params.token, 
+      req_params.states, req_params.token,
       nullptr // std::make_shared<ResponseCallback>(conn, ev)
-    ); 
+    );
 
     Env::Mngr::role()->update_manager_addr(
       conn->endpoint_remote_hash(), req_params.mngr_host);
@@ -36,7 +36,7 @@ void mngr_state(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     conn->send_error(e.code(), "", ev);
   }
 }
-  
+
 
 }}}}}
 

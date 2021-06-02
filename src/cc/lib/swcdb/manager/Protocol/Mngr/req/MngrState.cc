@@ -26,26 +26,13 @@ MngrState::MngrState(const ResponseCallback::Ptr& cb,
               cb(cb) {
 }
 
-void MngrState::disconnected(const ConnHandlerPtr&) {
-  //Env::Mngr::role()->disconnection(
-  //  conn->endpoint_remote, conn->endpoint_local);
-}
-
 void MngrState::handle(ConnHandlerPtr conn, const Event::Ptr& ev) {
-
-  if(ev->type == Event::Type::DISCONNECT) {
-    //disconnected(conn);
-    return;
-  }
-  if(client::ConnQueue::ReqBase::is_timeout(ev))
+  if(ev->type == Event::Type::DISCONNECT)
     return;
 
   if(ev->response_code() == Error::OK) {
-    if(cb) {
-      //SWC_PRINT << "response_ok, cb=" << size_t(cb.get())
-      //          << " rsp, err=" << ev->to_str() << SWC_PRINT_CLOSE;
+    if(cb)
       cb->response_ok();
-    }
   } else {
     conn->do_close();
   }

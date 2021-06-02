@@ -32,10 +32,6 @@ class ConnQueueReqBase : public DispatchHandler {
     return std::dynamic_pointer_cast<ConnQueueReqBase>(shared_from_this());
   }
 
-  bool is_timeout(const Event::Ptr& ev);
-
-  bool is_rsp(const Event::Ptr& ev);
-
   void request_again();
 
   virtual void handle_no_conn() = 0;

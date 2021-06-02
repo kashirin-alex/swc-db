@@ -25,8 +25,6 @@ class MngrState : public client::ConnQueue::ReqBase {
 
   void handle_no_conn() override { }
 
-  void disconnected(const ConnHandlerPtr& conn);
-
   void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
 
   private:

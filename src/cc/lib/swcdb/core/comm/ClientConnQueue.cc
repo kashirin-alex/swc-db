@@ -9,22 +9,6 @@ namespace SWC { namespace Comm { namespace client {
 
 
 
-bool ConnQueueReqBase::is_timeout(const Event::Ptr& ev) {
-  bool out = ev->error == Error::Code::REQUEST_TIMEOUT;
-  if(out)
-    request_again();
-  return out;
-}
-
-bool ConnQueueReqBase::is_rsp(const Event::Ptr& ev) {
-  if(ev->type == Event::Type::DISCONNECT ||
-     ev->error == Error::Code::REQUEST_TIMEOUT) {
-    request_again();
-    return false;
-  }
-  return true;
-}
-
 void ConnQueueReqBase::request_again() {
   if(!queue)
     run();
@@ -36,6 +20,7 @@ void ConnQueueReqBase::print(std::ostream& out) {
   cbp->header.print(out << "ReqBase(insistent=" << insistent << ' ');
   out << ')';
 }
+
 
 
 ConnQueue::ConnQueue(const IoContextPtr& ioctx,
