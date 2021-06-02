@@ -57,6 +57,9 @@ class RangeQuerySelectRsp final : public Serializable {
                         offset(0), data(data) {
   }
 
+  RangeQuerySelectRsp(int err, const uint8_t *ptr, size_t remain,
+                      StaticBuffer& data) noexcept;
+
   //~RangeQuerySelectRsp() { }
 
   void print(std::ostream& out) const;

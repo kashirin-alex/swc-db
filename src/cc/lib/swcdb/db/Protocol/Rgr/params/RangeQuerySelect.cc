@@ -46,6 +46,19 @@ void RangeQuerySelectReq::internal_decode(const uint8_t** bufp,
 
 
 
+RangeQuerySelectRsp::RangeQuerySelectRsp(
+              int err, const uint8_t* ptr, size_t remain,
+              StaticBuffer& data) noexcept
+              : err(err), reached_limit(false), offset(0), data(data) {
+  if(!err) try {
+    decode(&ptr, &remain);
+  } catch(...) {
+    const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
+    err = e.code();
+    SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
+  }
+}
+
 void RangeQuerySelectRsp::print(std::ostream& out) const {
   Error::print(out << "RangeQuerySelectRsp(", err);
   out << " reached_limit=" << reached_limit

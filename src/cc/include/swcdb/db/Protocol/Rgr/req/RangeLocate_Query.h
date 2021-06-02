@@ -24,15 +24,16 @@ class RangeLocate_Query : public client::ConnQueue::ReqBase {
   typedef std::shared_ptr<RangeLocate_Query> Ptr;
   const EndPoints                            endpoints;
 
+  SWC_CAN_INLINE
   static void request(
         const QueryT& query,
         const Params::RangeLocateReq& params,
         const EndPoints& endpoints,
         const SWC::client::Query::Profiling::Component::Start& profile,
         const uint32_t timeout = 10000) {
-    Ptr(new RangeLocate_Query(
-      query, params, endpoints, profile, timeout
-    ))->run();
+    query->get_clients()->get_rgr_queue(endpoints)->put(
+      Ptr(new RangeLocate_Query(query, params, endpoints, profile, timeout))
+    );
   }
 
   virtual ~RangeLocate_Query() { }
@@ -48,11 +49,6 @@ class RangeLocate_Query : public client::ConnQueue::ReqBase {
     );
   }
 
-  bool run() override {
-    query->get_clients()->get_rgr_queue(endpoints)->put(req());
-    return true;
-  }
-
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
     ev->type == Event::Type::DISCONNECT
       ? handle_no_conn()
@@ -64,6 +60,7 @@ class RangeLocate_Query : public client::ConnQueue::ReqBase {
 
   protected:
 
+  SWC_CAN_INLINE
   RangeLocate_Query(
         const QueryT& query,
         const Params::RangeLocateReq& params,

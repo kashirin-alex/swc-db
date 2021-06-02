@@ -52,21 +52,9 @@ void RangeQuerySelect::handle(ConnHandlerPtr, const Event::Ptr& ev) {
   if(ev->type == Event::Type::DISCONNECT)
     return handle_no_conn();
 
-  Params::RangeQuerySelectRsp rsp_params(ev->error, ev->data_ext);
-  if(!rsp_params.err) {
-    try {
-      const uint8_t *ptr = ev->data.base;
-      size_t remain = ev->data.size;
-      rsp_params.decode(&ptr, &remain);
-
-    } catch(...) {
-      const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
-      SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
-      rsp_params.err = e.code();
-    }
-  }
-
-  cb(req(), rsp_params);
+  Params::RangeQuerySelectRsp rsp(
+    ev->error, ev->data.base, ev->data.size, ev->data_ext);
+  cb(req(), rsp);
 }
 
 }}}}}

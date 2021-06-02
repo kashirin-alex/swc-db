@@ -10,9 +10,9 @@
 #include "swcdb/db/client/Query/Select/Handlers/Base.h"
 #include "swcdb/db/client/Query/Select/Handlers/BaseUnorderedMap.h"
 
-#include "swcdb/db/Protocol/Mngr/req/RgrGet_Base.h"
-#include "swcdb/db/Protocol/Rgr/req/RangeLocate.h"
-#include "swcdb/db/Protocol/Rgr/req/RangeQuerySelect.h"
+#include "swcdb/db/Protocol/Mngr/params/RgrGet.h"
+#include "swcdb/db/Protocol/Rgr/params/RangeLocate.h"
+#include "swcdb/db/Protocol/Rgr/params/RangeQuerySelect.h"
 
 
 namespace SWC { namespace client { namespace Query {

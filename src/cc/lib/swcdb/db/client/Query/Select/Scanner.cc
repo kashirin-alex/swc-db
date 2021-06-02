@@ -8,6 +8,7 @@
 #include "swcdb/db/client/Query/Select/Scanner.h"
 #include "swcdb/db/Protocol/Mngr/req/RgrGet_Query.h"
 #include "swcdb/db/Protocol/Rgr/req/RangeLocate_Query.h"
+#include "swcdb/db/Protocol/Rgr/req/RangeQuerySelect_Query.h"
 
 
 namespace SWC { namespace client { namespace Query { namespace Select {
@@ -179,6 +180,19 @@ struct Scanner::Callback {
       scanner->rgr_located_meta(req, rsp);
     }
   };
+
+  struct rgr_select {
+    SWC_CAN_INLINE
+    static void callback(
+        const Ptr& scanner,
+        const ReqBase::Ptr& req,
+        Profiling::Component::Start& profile,
+        Comm::Protocol::Rgr::Params::RangeQuerySelectRsp& rsp) {
+      profile.add(rsp.err);
+      scanner->rgr_selected(req, rsp);
+    }
+  };
+
 };
 
 
@@ -683,17 +697,15 @@ void Scanner::rgr_select() {
     data_cid, data_rid, interval);
 
   SWC_SCANNER_REQ_DEBUG("rgr_select");
-  Comm::Protocol::Rgr::Req::RangeQuerySelect::request(
-    selector->clients,
-    params, data_endpoints,
-    [profile=selector->profile.rgr_data(), scanner=shared_from_this()]
-    (const ReqBase::Ptr& req,
-     Comm::Protocol::Rgr::Params::RangeQuerySelectRsp& rsp) {
-      profile.add(rsp.err);
-      scanner->rgr_selected(req, rsp);
-    },
-    selector->timeout
-  );
+  Comm::Protocol::Rgr::Req::RangeQuerySelect_Query
+    <Ptr, Callback::rgr_select>
+      ::request(
+          shared_from_this(),
+          params,
+          data_endpoints,
+          selector->profile.rgr_data(),
+          selector->timeout
+        );
 }
 
 void Scanner::rgr_selected(
