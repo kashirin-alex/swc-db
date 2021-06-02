@@ -17,10 +17,10 @@
 #include "swcdb/db/client/Query/Select/Handlers/Common.h"
 #include "swcdb/db/client/Query/Update/Handlers/Common.h"
 
-#include "swcdb/db/Protocol/Mngr/req/ColumnMng.h"
-#include "swcdb/db/Protocol/Mngr/req/ColumnGet.h"
-#include "swcdb/db/Protocol/Mngr/req/ColumnList.h"
-#include "swcdb/db/Protocol/Mngr/req/ColumnCompact.h"
+#include "swcdb/db/Protocol/Mngr/req/ColumnMng_Sync.h"
+#include "swcdb/db/Protocol/Mngr/req/ColumnGet_Sync.h"
+#include "swcdb/db/Protocol/Mngr/req/ColumnList_Sync.h"
+#include "swcdb/db/Protocol/Mngr/req/ColumnCompact_Sync.h"
 
 
 namespace SWC {
@@ -94,7 +94,7 @@ class AppHandler final : virtual public BrokerIf {
     int err = Error::OK;
     std::string message;
     DB::Schema::Ptr schema;
-    auto func = Comm::Protocol::Mngr::Req::ColumnMng::Func::CREATE;
+    auto func = Comm::Protocol::Mngr::Params::ColumnMng::Function::CREATE;
     client::SQL::parse_column_schema(
       err, sql,
       &func,
@@ -236,7 +236,7 @@ class AppHandler final : virtual public BrokerIf {
     DB::Schema::Ptr dbschema = DB::Schema::make();
     Converter::set(schema, dbschema);
     mng_column(
-      Comm::Protocol::Mngr::Req::ColumnMng::Func(uint8_t(func)),
+      Comm::Protocol::Mngr::Params::ColumnMng::Function(uint8_t(func)),
       dbschema
     );
   }
@@ -609,19 +609,9 @@ class AppHandler final : virtual public BrokerIf {
       dbschemas.insert(dbschemas.end(), schemas.begin(), schemas.end());
 
     } else if(dbschemas.empty()) { // get all schemas
-      std::promise<int> res;
-      Comm::Protocol::Mngr::Req::ColumnList::request(
-        clients,
-        [&dbschemas, await=&res]
-        (const Comm::client::ConnQueue::ReqBase::Ptr&, int error,
-         const Comm::Protocol::Mngr::Params::ColumnListRsp& rsp) {
-          if(!error)
-            dbschemas = rsp.schemas;
-          await->set_value(error);
-        },
-        300000
-      );
-      if((err = res.get_future().get()))
+      Comm::Protocol::Mngr::Req::ColumnList_Sync::request(
+        clients, params, err, dbschemas, 300000);
+      if(err)
         Converter::exception(err);
     }
   }
@@ -667,35 +657,20 @@ class AppHandler final : virtual public BrokerIf {
     }
 
     if(spec.patterns.empty() && dbschemas.empty()) { // get all schemas
-      std::promise<int> res;
-      Comm::Protocol::Mngr::Req::ColumnList::request(
-        clients,
-        [&dbschemas, await=&res]
-        (const Comm::client::ConnQueue::ReqBase::Ptr&, int error,
-         const Comm::Protocol::Mngr::Params::ColumnListRsp& rsp) {
-          if(!error)
-            dbschemas = rsp.schemas;
-          await->set_value(error);
-        },
-        300000
+      Comm::Protocol::Mngr::Req::ColumnList_Sync::request(
+        clients, Comm::Protocol::Mngr::Params::ColumnListReq(),
+        err, dbschemas, 300000
       );
-      if((err = res.get_future().get()))
+      if(err)
         Converter::exception(err);
     }
   }
 
-  void mng_column(Comm::Protocol::Mngr::Req::ColumnMng::Func func,
+  void mng_column(Comm::Protocol::Mngr::Params::ColumnMng::Function func,
                   DB::Schema::Ptr& schema) {
-    std::promise<int> res;
-    Comm::Protocol::Mngr::Req::ColumnMng::request(
-      Env::Clients::get(),
-      func, schema,
-      [await=&res] (const Comm::client::ConnQueue::ReqBase::Ptr&, int error) {
-        await->set_value(error);
-      },
-      300000
-    );
-    int err = res.get_future().get();
+    int err = Error::OK;
+    Comm::Protocol::Mngr::Req::ColumnMng_Sync::request(
+      Env::Clients::get(), func, schema, err, 300000);
     if(err)
       Converter::exception(err);
 
@@ -720,24 +695,14 @@ class AppHandler final : virtual public BrokerIf {
           int&, std::vector<DB::Schema::Ptr>& dbschemas,
           CompactResults& _return) {
     size_t sz = dbschemas.size();
-    Core::Semaphore sem(sz, sz);
     _return.resize(sz);
     auto clients = Env::Clients::get();
     for(size_t idx = 0; idx < sz; ++idx) {
       auto& r = _return[idx];
-      Comm::Protocol::Mngr::Req::ColumnCompact::request(
-        clients,
-        (r.cid = dbschemas[idx]->cid),
-        [&sem, err=&r.err]
-        (const Comm::client::ConnQueue::ReqBase::Ptr&,
-         const Comm::Protocol::Mngr::Params::ColumnCompactRsp& rsp) noexcept {
-          *err = rsp.err;
-          sem.release();
-        },
-        300000
-      );
+      r.cid = dbschemas[idx]->cid;
+      Comm::Protocol::Mngr::Req::ColumnCompact_Sync::request(
+        clients, r.cid, r.err, 300000);
     }
-    sem.wait_all();
   }
 
   static void process_results(

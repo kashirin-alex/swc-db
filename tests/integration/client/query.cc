@@ -142,7 +142,7 @@ class Test {
         query_insert();
       };
 
-    auto func = Comm::Protocol::Mngr::Req::ColumnMng::Func::CREATE;
+    auto func = Comm::Protocol::Mngr::Params::ColumnMng::Function::CREATE;
     with_broker
       ? Comm::Protocol::Bkr::Req::ColumnMng::request(
           Env::Clients::get(), func, schema, std::move(_cb), 10000)
@@ -167,7 +167,7 @@ class Test {
         cb();
       };
 
-    auto func = Comm::Protocol::Mngr::Req::ColumnMng::Func::DELETE;
+    auto func = Comm::Protocol::Mngr::Params::ColumnMng::Function::DELETE;
     with_broker
       ? Comm::Protocol::Bkr::Req::ColumnMng::request(
           Env::Clients::get(), func, schema, std::move(_cb), 10000)

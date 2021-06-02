@@ -10,7 +10,7 @@
 
 #include "swcdb/db/client/Clients.h"
 #include "swcdb/db/client/Query/Update/Handlers/Common.h"
-#include "swcdb/db/Protocol/Mngr/req/ColumnMng.h"
+#include "swcdb/db/Protocol/Mngr/req/ColumnMng_Sync.h"
 #include "swcdb/common/Stats/FlowRate.h"
 
 #include <random>
@@ -243,19 +243,16 @@ SWC::DB::Schema::Ptr create_column() {
   */
 
   // CREATE COLUMN
-  std::promise<int>  res;
-  SWC::Comm::Protocol::Mngr::Req::ColumnMng::request(
+  int err = SWC::Error::OK;
+  SWC::Comm::Protocol::Mngr::Req::ColumnMng_Sync::request(
     SWC::Env::Clients::get(),
-    SWC::Comm::Protocol::Mngr::Req::ColumnMng::Func::CREATE,
+    SWC::Comm::Protocol::Mngr::Params::ColumnMng::Function::CREATE,
     schema,
-    [await=&res] (const SWC::Comm::client::ConnQueue::ReqBase::Ptr&, int err) {
-      await->set_value(err);
-    },
+    err,
     10000
   );
-  SWC_ASSERT(!res.get_future().get());
+  SWC_ASSERT(!err);
 
-  int err = SWC::Error::OK;
   schema = SWC::Env::Clients::get()->get_schema(err, schema->col_name);
   SWC_ASSERT(!err);
   SWC_ASSERT(schema);
