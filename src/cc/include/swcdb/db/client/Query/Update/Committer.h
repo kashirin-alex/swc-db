@@ -10,8 +10,9 @@
 
 #include "swcdb/db/client/Query/Update/Handlers/Base.h"
 #include "swcdb/db/Types/Range.h"
-#include "swcdb/db/Protocol/Mngr/req/RgrGet_Base.h"
-#include "swcdb/db/Protocol/Rgr/req/RangeLocate.h"
+#include "swcdb/db/Protocol/Mngr/params/RgrGet.h"
+#include "swcdb/db/Protocol/Rgr/params/RangeLocate.h"
+#include "swcdb/db/Protocol/Rgr/params/RangeQueryUpdate.h"
 
 
 namespace SWC { namespace client { namespace Query {
@@ -33,15 +34,16 @@ class Committer final : public std::enable_shared_from_this<Committer> {
     )->locate_on_manager();
   }
 
-  typedef std::shared_ptr<Committer> Ptr;
-  const DB::Types::Range    type;
-  const cid_t               cid;
-  Handlers::Base::Column*   colp;
-  DB::Cell::Key::Ptr        key_start;
-  Handlers::Base::Ptr       hdlr;
-  ReqBase::Ptr              parent;
-  const rid_t               rid;
-  const DB::Cell::Key       key_finish;
+  typedef std::shared_ptr<Committer>  Ptr;
+  const DB::Types::Range              type;
+  Core::CompletionCounter<uint32_t>   workload;
+  const cid_t                         cid;
+  Handlers::Base::Column*             colp;
+  DB::Cell::Key::Ptr                  key_start;
+  Handlers::Base::Ptr                 hdlr;
+  ReqBase::Ptr                        parent;
+  const rid_t                         rid;
+  const DB::Cell::Key                 key_finish;
 
   Committer(const DB::Types::Range type,
             const cid_t cid,
@@ -105,6 +107,12 @@ class Committer final : public std::enable_shared_from_this<Committer> {
   void commit_data(
       const Comm::EndPoints& endpoints,
       const ReqBase::Ptr& base);
+
+  void committed_data(
+      const DynamicBuffer::Ptr& cells_buff,
+      const ReqBase::Ptr& base,
+      const ReqBase::Ptr& req,
+      const Comm::Protocol::Rgr::Params::RangeQueryUpdateRsp& rsp);
 
   struct Callback;
 

@@ -9,7 +9,7 @@
 #include "swcdb/db/client/Clients.h"
 #include "swcdb/db/Protocol/Mngr/req/RgrGet_Query.h"
 #include "swcdb/db/Protocol/Rgr/req/RangeLocate_Query.h"
-#include "swcdb/db/Protocol/Rgr/req/RangeQueryUpdate.h"
+#include "swcdb/db/Protocol/Rgr/req/RangeQueryUpdate_Query.h"
 
 
 namespace SWC { namespace client { namespace Query { namespace Update {
@@ -25,12 +25,6 @@ namespace SWC { namespace client { namespace Query { namespace Update {
     rsp.print(SWC_LOG_OSTREAM << ' '); \
   );
 
-#define SWC_UPDATER_LOCATOR_RSP_DEBUG(msg) \
-  SWC_LOG_OUT(LOG_DEBUG, \
-    committer->print(SWC_LOG_OSTREAM << msg << ' '); \
-    rsp.print(SWC_LOG_OSTREAM << ' '); \
-  );
-
 
 
 Committer::Committer(const DB::Types::Range type,
@@ -40,7 +34,9 @@ Committer::Committer(const DB::Types::Range type,
                      const Handlers::Base::Ptr& hdlr,
                      const ReqBase::Ptr& parent,
                      const rid_t rid) noexcept
-              : type(type), cid(cid), colp(colp), key_start(key_start),
+              : type(type), workload(0),
+                cid(cid), colp(colp),
+                key_start(key_start),
                 hdlr(hdlr), parent(parent), rid(rid) {
 }
 
@@ -52,7 +48,9 @@ Committer::Committer(const DB::Types::Range type,
                      const ReqBase::Ptr& parent,
                      const rid_t rid,
                      const DB::Cell::Key& key_finish)
-              : type(type), cid(cid), colp(colp), key_start(key_start),
+              : type(type), workload(0),
+                cid(cid), colp(colp),
+                key_start(key_start),
                 hdlr(hdlr), parent(parent), rid(rid), key_finish(key_finish) {
 }
 
@@ -106,6 +104,31 @@ struct Committer::Callback {
       );
     }
   };
+
+  struct commit_data {
+    Profiling::Component::Start  profile;
+    DynamicBuffer::Ptr           cells_buff;
+    ReqBase::Ptr                 base;
+
+    SWC_CAN_INLINE
+    commit_data(
+            Profiling& profile,
+            const DynamicBuffer::Ptr& cells_buff,
+            const ReqBase::Ptr& base) noexcept
+            : profile(profile.rgr_data()),
+              cells_buff(cells_buff), base(base) {
+    }
+
+    SWC_CAN_INLINE
+    void callback(
+            const Ptr& committer,
+            const ReqBase::Ptr& req,
+            const Comm::Protocol::Rgr::Params::RangeQueryUpdateRsp& rsp) {
+      profile.add(rsp.err);
+      committer->committed_data(cells_buff, base, req, rsp);
+    }
+  };
+
 };
 
 
@@ -379,82 +402,92 @@ void Committer::commit_data(
 
   bool more = true;
   DynamicBuffer::Ptr cells_buff;
-  auto workload = std::make_shared<Core::CompletionCounter<>>(1);
+  workload.increment();
 
   while(more && hdlr->valid() &&
         (cells_buff = colp->get_buff(
           *key_start.get(), key_finish, hdlr->buff_sz, more))) {
-    workload->increment();
+    workload.increment();
 
-    Comm::Protocol::Rgr::Req::RangeQueryUpdate::request(
-      hdlr->clients,
-      Comm::Protocol::Rgr::Params::RangeQueryUpdateReq(colp->get_cid(), rid),
-      cells_buff,
-      endpoints,
-      [workload, cells_buff, base,
-       profile=hdlr->profile.rgr_data(), committer=shared_from_this()]
-      (ReqBase::Ptr req,
-       const Comm::Protocol::Rgr::Params::RangeQueryUpdateRsp& rsp) {
-        profile.add(rsp.err);
-        switch(rsp.err) {
-
-          case Error::OK: {
-            SWC_UPDATER_LOCATOR_RSP_DEBUG("rgr_commit");
-            if(workload->is_last())
-              committer->hdlr->response();
-            return;
-          }
-
-          case Error::REQUEST_TIMEOUT: {
-            SWC_UPDATER_LOCATOR_RSP_DEBUG("rgr_commit RETRYING");
-            return req->request_again();
-          }
-
-          case Error::RANGE_BAD_INTERVAL:
-          case Error::RANGE_BAD_CELLS_INPUT: {
-            SWC_UPDATER_LOCATOR_RSP_DEBUG("rgr_commit RETRYING");
-            size_t resend = committer->colp->add(
-              *cells_buff.get(), rsp.range_prev_end, rsp.range_end,
-              rsp.cells_added, rsp.err == Error::RANGE_BAD_CELLS_INPUT);
-            committer->hdlr->add_resend_count(resend);
-
-            if(workload->is_last()) {
-              auto nxt_start = committer->colp->get_key_next(rsp.range_end);
-              if(nxt_start) {
-                std::make_shared<Committer>(
-                  DB::Types::Range::MASTER,
-                  committer->colp->get_cid(), committer->colp, nxt_start,
-                  committer->hdlr
-                )->locate_on_manager();
-               }
-              committer->hdlr->response();
-            }
-            return;
-          }
-
-          default: {
-            committer->hdlr->add_resend_count(
-              committer->colp->add(*cells_buff.get())
-            );
-            if(workload->is_last()) {
-              SWC_UPDATER_LOCATOR_RSP_DEBUG("rgr_commit RETRYING");
-              base->request_again();
-            }
-            return;
-          }
-
-        }
-      },
-
-      hdlr->timeout + cells_buff->fill()/hdlr->timeout_ratio
-    );
-
+    Comm::Protocol::Rgr::Req::RangeQueryUpdate_Query
+      <Ptr, Callback::commit_data>
+        ::request(
+            shared_from_this(),
+            Callback::commit_data(
+              hdlr->profile,
+              cells_buff,
+              base
+            ),
+            Comm::Protocol::Rgr::Params::RangeQueryUpdateReq(
+              colp->get_cid(), rid),
+            cells_buff,
+            endpoints,
+            hdlr->timeout + cells_buff->fill()/hdlr->timeout_ratio
+          );
   }
-
-  if(workload->is_last())
+  if(workload.is_last())
     hdlr->response();
 }
 
 
+#define SWC_UPDATER_LOCATOR_RSP_DEBUG(msg) \
+  SWC_LOG_OUT(LOG_DEBUG, \
+    print(SWC_LOG_OSTREAM << msg << ' '); \
+    rsp.print(SWC_LOG_OSTREAM << ' '); \
+  );
+
+void Committer::committed_data(
+        const DynamicBuffer::Ptr& cells_buff,
+        const ReqBase::Ptr& base,
+        const ReqBase::Ptr& req,
+        const Comm::Protocol::Rgr::Params::RangeQueryUpdateRsp& rsp) {
+  switch(rsp.err) {
+    case Error::OK: {
+      SWC_UPDATER_LOCATOR_RSP_DEBUG("rgr_commit");
+      if(workload.is_last())
+        hdlr->response();
+      return;
+    }
+
+    case Error::REQUEST_TIMEOUT: {
+      SWC_UPDATER_LOCATOR_RSP_DEBUG("rgr_commit RETRYING");
+      return req->request_again();
+    }
+
+    case Error::RANGE_BAD_INTERVAL:
+    case Error::RANGE_BAD_CELLS_INPUT: {
+      SWC_UPDATER_LOCATOR_RSP_DEBUG("rgr_commit RETRYING");
+      size_t resend = colp->add(
+        *cells_buff.get(), rsp.range_prev_end, rsp.range_end,
+        rsp.cells_added, rsp.err == Error::RANGE_BAD_CELLS_INPUT
+      );
+      hdlr->add_resend_count(resend);
+
+      if(workload.is_last()) {
+        auto nxt_start = colp->get_key_next(rsp.range_end);
+        if(nxt_start) {
+          std::make_shared<Committer>(
+            DB::Types::Range::MASTER,
+            colp->get_cid(), colp, nxt_start,
+            hdlr
+          )->locate_on_manager();
+        }
+        hdlr->response();
+      }
+      return;
+    }
+
+    default: {
+      hdlr->add_resend_count(colp->add(*cells_buff.get()));
+      if(workload.is_last()) {
+        SWC_UPDATER_LOCATOR_RSP_DEBUG("rgr_commit RETRYING");
+        base->request_again();
+      }
+      return;
+    }
+  }
+}
+
+#undef SWC_UPDATER_LOCATOR_RSP_DEBUG
 
 }}}}
