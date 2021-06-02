@@ -73,8 +73,9 @@ def swcdb_set_hosts(swcdb_role):
                     break
         swcdb_cfg[swcdb_role][i] = [
             addrs[0] if addrs else host,
-            [addr + ("-" if port else "") + port for addr in addrs] if addrs and not default else None,
-            (host + (":" if port else "") + port) if host and not default else None
+            addrs if addrs and not default else None,
+            host if host and not default else None,
+            port
         ]
     #
 
@@ -131,6 +132,19 @@ def swcdb_common_options(daemon=True):
         if len(swcdb_cfg[n]) > 1:
             opts.append("--" + n + "=" + swcdb_cfg[n][-1])
     return opts
+    #
+
+
+def swcdb_set_exec_args(port_arg, addrs, host, port):
+    args = []
+    if host:
+        args.append("--host=" + host)
+    elif addrs:
+        for ip in addrs:
+            args.append("--addr=" + ip)
+    if port:
+        args.append("--" + port_arg + "=" + port)
+    return " ".join(args)
     #
 
 
@@ -313,13 +327,13 @@ def push_config_host(c):
 @fabric.task
 def start_fsbrokers(c):
     opts = swcdb_common_options()
-    for saddr, addrs, host in swcdb_cfg["swc.cluster.fsbroker.host"]:
+    for saddr, addrs, host, port in swcdb_cfg["swc.cluster.fsbroker.host"]:
         with fabric.Connection(saddr) as c:
             swcdb_print("start-fsbrokers", c, c.run(
                 " ".join([
                     'source /etc/profile;',
                     swcdb_install_path+"/bin/swcdbFsBroker",
-                    ((" --host=" + host) if host else "".join([" --addr=" + addr for addr in addrs]) if addrs else "")
+                    swcdb_set_exec_args("swc.fs.broker.port", addrs, host, port)
                 ] + opts),
                 hide=True)
             )
@@ -355,12 +369,12 @@ def kill_fsbrokers(c):
 @fabric.task
 def start_managers(c):
     opts = swcdb_common_options()
-    for saddr, addrs, host in swcdb_cfg["swc.mngr.host"]:
+    for saddr, addrs, host, port in swcdb_cfg["swc.mngr.host"]:
         with fabric.Connection(saddr) as c:
             swcdb_print("start-managers", c, c.run(
                 " ".join([
                     swcdb_install_path+"/bin/swcdbManager",
-                    ((" --host=" + host) if host else "".join([" --addr=" + addr for addr in addrs]) if addrs else "")
+                    swcdb_set_exec_args("swc.mngr.port", addrs, host, port)
                 ] + opts),
                 hide=True)
             )
@@ -387,12 +401,12 @@ def kill_managers(c):
 @fabric.task
 def start_rangers(c):
     opts = swcdb_common_options()
-    for saddr, addrs, host in swcdb_cfg["swc.cluster.rgr.host"]:
+    for saddr, addrs, host, port in swcdb_cfg["swc.cluster.rgr.host"]:
         with fabric.Connection(saddr) as c:
             swcdb_print("start-rangers", c, c.run(
                 " ".join([
                     swcdb_install_path+"/bin/swcdbRanger",
-                    ((" --host=" + host) if host else "".join([" --addr=" + addr for addr in addrs]) if addrs else "")
+                    swcdb_set_exec_args("swc.rgr.port", addrs, host, port)
                 ] + opts),
                 hide=True)
             )
@@ -419,12 +433,12 @@ def kill_rangers(c):
 @fabric.task
 def start_brokers(c):
     opts = swcdb_common_options()
-    for saddr, addrs, host in swcdb_cfg["swc.cluster.bkr.host"]:
+    for saddr, addrs, host, port in swcdb_cfg["swc.cluster.bkr.host"]:
         with fabric.Connection(saddr) as c:
             swcdb_print("start-brokers", c, c.run(
                 " ".join([
                     swcdb_install_path+"/bin/swcdbBroker",
-                    ((" --host=" + host) if host else "".join([" --addr=" + addr for addr in addrs]) if addrs else "")
+                    swcdb_set_exec_args("swc.bkr.port", addrs, host, port)
                 ] + opts),
                 hide=True)
             )
@@ -451,12 +465,12 @@ def kill_brokers(c):
 @fabric.task
 def start_thriftbrokers(c):
     opts = swcdb_common_options()
-    for saddr, addrs, host in swcdb_cfg["swc.cluster.thriftbroker.host"]:
+    for saddr, addrs, host, port in swcdb_cfg["swc.cluster.thriftbroker.host"]:
         with fabric.Connection(saddr) as c:
             swcdb_print("start-thriftbrokers", c, c.run(
                 " ".join([
                     swcdb_install_path+"/bin/swcdbThriftBroker",
-                    ((" --host=" + host) if host else "".join([" --addr=" + addr for addr in addrs]) if addrs else "")
+                    swcdb_set_exec_args("swc.ThriftBroker.port", addrs, host, port)
                 ] + opts),
                 hide=True)
             )
