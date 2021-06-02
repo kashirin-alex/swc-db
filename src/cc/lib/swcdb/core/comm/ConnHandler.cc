@@ -295,17 +295,17 @@ void ConnHandler::recved_header(const Event::Ptr& ev, asio::error_code ec,
              ev->header.header_len);
     do_close_recv();
   } else if(ev->header.buffers) {
-    recv_buffers(ev, 0);
+    recv_buffers(ev);
   } else {
     received(ev);
   }
 }
 
-void ConnHandler::recv_buffers(const Event::Ptr& ev, uint8_t n) {
+void ConnHandler::recv_buffers(const Event::Ptr& ev) {
 
   StaticBuffer* buffer;
   size_t remain;
-  if(!n) {
+  if(!ev->data.size) {
     buffer = &ev->data;
     remain = ev->header.data.size;
   } else {
@@ -317,20 +317,20 @@ void ConnHandler::recv_buffers(const Event::Ptr& ev, uint8_t n) {
   do_async_read(
     buffer->base,
     remain,
-    [ev, n, ptr=ptr()](const asio::error_code& ec, size_t filled) {
-      ptr->recved_buffer(ev, ec, n, filled);
+    [ev, ptr=ptr()](const asio::error_code& ec, size_t filled) {
+      ptr->recved_buffer(ev, ec, filled);
     }
   );
 }
 
 SWC_SHOULD_INLINE
-void ConnHandler::recved_buffer(const Event::Ptr& ev, asio::error_code ec,
-                                uint8_t n, size_t filled) {
+void ConnHandler::recved_buffer(const Event::Ptr& ev,
+                                asio::error_code ec, size_t filled) {
   m_recv_bytes += filled;
   if(!ec) {
     StaticBuffer* buffer;
     uint32_t checksum;
-    if(!n) {
+    if(!ev->data_ext.size) {
       buffer = &ev->data;
       checksum = ev->header.data.chksum;
     } else {
@@ -346,14 +346,17 @@ void ConnHandler::recved_buffer(const Event::Ptr& ev, asio::error_code ec,
   if(ec) {
     SWC_LOG_OUT(LOG_WARN,
       SWC_LOG_OSTREAM
-        << "read, REQUEST PAYLOAD_TRUNCATED: n(" << int(n) << ") ";
+        << "read, REQUEST PAYLOAD_TRUNCATED: nbuff("
+        << (bool(ev->data.size) + bool(ev->data_ext.size))
+        << ") ";
       ev->print(SWC_LOG_OSTREAM);
     );
     do_close_recv();
-  } else if(ev->header.buffers == ++n) {
+  } else if(ev->header.buffers == bool(ev->data.size) +
+                                  bool(ev->data_ext.size)) {
     received(ev);
   } else {
-    recv_buffers(ev, n);
+    recv_buffers(ev);
   }
 }
 
