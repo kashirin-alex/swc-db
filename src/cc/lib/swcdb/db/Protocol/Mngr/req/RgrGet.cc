@@ -46,7 +46,7 @@ RgrGet::RgrGet(const SWC::client::Clients::Ptr& clients,
                 clients(clients), cb(std::move(cb)) {
 }
 
-void RgrGet::callback(const Params::RgrGetRsp& rsp) {
+void RgrGet::callback(Params::RgrGetRsp& rsp) {
   cb(req(), rsp);
 }
 

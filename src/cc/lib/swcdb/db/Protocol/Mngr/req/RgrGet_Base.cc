@@ -24,9 +24,11 @@ RgrGet_Base::RgrGet_Base(const Params::RgrGetReq& params,
 
 void RgrGet_Base::handle_no_conn() {
   if(get_clients()->stopping()) {
-    callback(Params::RgrGetRsp(Error::CLIENT_STOPPING));
+    Params::RgrGetRsp rsp(Error::CLIENT_STOPPING);
+    callback(rsp);
   } else if(!valid()) {
-    callback(Params::RgrGetRsp(Error::CANCELLED));
+    Params::RgrGetRsp rsp(Error::CANCELLED);
+    callback(rsp);
   } else {
     clear_endpoints();
     run();
@@ -38,9 +40,11 @@ bool RgrGet_Base::run() {
     get_clients()->get_mngr(cid, endpoints);
     if(endpoints.empty()) {
       if(get_clients()->stopping()) {
-        callback(Params::RgrGetRsp(Error::CLIENT_STOPPING));
+        Params::RgrGetRsp rsp(Error::CLIENT_STOPPING);
+        callback(rsp);
       } else if(!valid()) {
-        callback(Params::RgrGetRsp(Error::CANCELLED));
+        Params::RgrGetRsp rsp(Error::CANCELLED);
+        callback(rsp);
       } else {
         SWC_LOGF(LOG_DEBUG, "RgrGet req mngr-active for cid=%lu", cid);
         MngrActive::make(get_clients(), cid, shared_from_this())->run();

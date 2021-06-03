@@ -7,7 +7,7 @@
 #include "swcdb/db/Types/SystemColumn.h"
 #include "swcdb/db/client/Query/Select/Scanner.h"
 #include "swcdb/db/Protocol/Mngr/req/RgrGet_Query.h"
-#include "swcdb/db/Protocol/Rgr/req/RangeLocate_Query.h"
+#include "swcdb/db/Protocol/Rgr/req/RangeLocate.h"
 #include "swcdb/db/Protocol/Rgr/req/RangeQuerySelect_Query.h"
 
 
@@ -120,13 +120,28 @@ void Scanner::print(std::ostream& out) {
 }
 
 
+struct ReqDataBase {
+  Scanner::Ptr scanner;
+  ReqDataBase(const Scanner::Ptr& scanner) noexcept
+              : scanner(scanner) { }
+  SWC_CAN_INLINE
+  client::Clients::Ptr& get_clients() noexcept {
+    return scanner->selector->clients;
+  }
+  SWC_CAN_INLINE
+  bool valid() {
+    return scanner->selector->valid();
+  }
+};
+
+
 struct Scanner::Callback {
   struct mngr_locate_master {
     SWC_CAN_INLINE
     static void callback(const Ptr& scanner,
                          const ReqBase::Ptr& req,
                          Profiling::Component::Start& profile,
-                         const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
+                         Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
       profile.add(rsp.err || !rsp.rid);
       if(scanner->mngr_located_master(req, rsp))
         scanner->response_if_last();
@@ -138,7 +153,7 @@ struct Scanner::Callback {
     static void callback(const Ptr& scanner,
                          const ReqBase::Ptr& req,
                          Profiling::Component::Start& profile,
-                         const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
+                         Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
       profile.add(rsp.err || !rsp.rid || rsp.endpoints.empty());
       if(scanner->mngr_resolved_rgr_meta(req, rsp))
         scanner->response_if_last();
@@ -150,34 +165,10 @@ struct Scanner::Callback {
     static void callback(const Ptr& scanner,
                          const ReqBase::Ptr& req,
                          Profiling::Component::Start& profile,
-                         const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
+                         Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
       profile.add(rsp.err || !rsp.rid || rsp.endpoints.empty());
       if(scanner->mngr_resolved_rgr_select(req, rsp))
         scanner->response_if_last();
-    }
-  };
-
-  struct rgr_locate_master {
-    SWC_CAN_INLINE
-    static void callback(
-        const Ptr& scanner,
-        const ReqBase::Ptr& req,
-        Profiling::Component::Start& profile,
-        const Comm::Protocol::Rgr::Params::RangeLocateRsp& rsp) {
-      profile.add(!rsp.rid || rsp.err);
-      scanner->rgr_located_master(req, rsp);
-    }
-  };
-
-  struct rgr_locate_meta {
-    SWC_CAN_INLINE
-    static void callback(
-        const Ptr& scanner,
-        const ReqBase::Ptr& req,
-        Profiling::Component::Start& profile,
-        const Comm::Protocol::Rgr::Params::RangeLocateRsp& rsp) {
-      profile.add(!rsp.rid || rsp.err);
-      scanner->rgr_located_meta(req, rsp);
     }
   };
 
@@ -271,7 +262,7 @@ void Scanner::mngr_locate_master() {
 
 bool Scanner::mngr_located_master(
         const ReqBase::Ptr& req,
-        const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
+        Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
   switch(rsp.err) {
     case Error::OK: {
       if(!rsp.rid) {
@@ -298,12 +289,12 @@ bool Scanner::mngr_located_master(
       if(DB::Types::SystemColumn::is_master(data_cid)) {
         data_rid = rsp.rid;
         data_req_base = req;
-        data_endpoints = rsp.endpoints;
+        data_endpoints = std::move(rsp.endpoints);
         rgr_select();
       } else {
         master_rid = rsp.rid;
         master_rgr_req_base = req;
-        master_rgr_endpoints = rsp.endpoints;
+        master_rgr_endpoints = std::move(rsp.endpoints);
         rgr_locate_master();
       }
       return true;
@@ -372,14 +363,23 @@ void Scanner::rgr_locate_master() {
   }
 
   SWC_SCANNER_REQ_DEBUG("rgr_locate_master");
-  Comm::Protocol::Rgr::Req::RangeLocate_Query
-    <Ptr, Callback::rgr_locate_master>
-      ::request(
-          shared_from_this(),
-          params,
-          master_rgr_endpoints,
-          selector->profile.rgr_locate(DB::Types::Range::MASTER)
-        );
+  struct ReqData : ReqDataBase {
+    Profiling::Component::Start profile;
+    SWC_CAN_INLINE
+    ReqData(const Ptr& scanner) noexcept
+            : ReqDataBase(scanner),
+              profile(scanner->selector->profile.rgr_locate(
+                DB::Types::Range::MASTER)) { }
+    SWC_CAN_INLINE
+    void callback(const ReqBase::Ptr& req,
+                  const Comm::Protocol::Rgr::Params::RangeLocateRsp& rsp) {
+      profile.add(!rsp.rid || rsp.err);
+      scanner->rgr_located_master(req, rsp);
+    }
+  };
+
+  Comm::Protocol::Rgr::Req::RangeLocate<ReqData>
+    ::request(params, master_rgr_endpoints, 10000, shared_from_this());
 }
 
 void Scanner::rgr_located_master(
@@ -479,12 +479,12 @@ void Scanner::mngr_resolve_rgr_meta() {
 
 bool Scanner::mngr_resolved_rgr_meta(
         const ReqBase::Ptr& req,
-        const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
+        Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
   switch(rsp.err) {
     case Error::OK: {
       SWC_SCANNER_RSP_DEBUG("mngr_resolved_rgr_meta");
-      meta_endpoints = rsp.endpoints;
       selector->clients->rgr_cache_set(meta_cid, meta_rid, rsp.endpoints);
+      meta_endpoints = std::move(rsp.endpoints);
       rgr_locate_meta();
       return true;
     }
@@ -546,14 +546,23 @@ void Scanner::rgr_locate_meta() {
   params.range_end.insert(0, data_cid_str);
 
   SWC_SCANNER_REQ_DEBUG("rgr_locate_meta");
-  Comm::Protocol::Rgr::Req::RangeLocate_Query
-    <Ptr, Callback::rgr_locate_meta>
-      ::request(
-          shared_from_this(),
-          params,
-          meta_endpoints,
-          selector->profile.rgr_locate(DB::Types::Range::META)
-      );
+  struct ReqData : ReqDataBase {
+    Profiling::Component::Start profile;
+    SWC_CAN_INLINE
+    ReqData(const Ptr& scanner) noexcept
+            : ReqDataBase(scanner),
+              profile(scanner->selector->profile.rgr_locate(
+                DB::Types::Range::META)) { }
+    SWC_CAN_INLINE
+    void callback(const ReqBase::Ptr& req,
+                  const Comm::Protocol::Rgr::Params::RangeLocateRsp& rsp) {
+      profile.add(!rsp.rid || rsp.err);
+      scanner->rgr_located_meta(req, rsp);
+    }
+  };
+
+  Comm::Protocol::Rgr::Req::RangeLocate<ReqData>
+    ::request(params, meta_endpoints, 10000, shared_from_this());
 }
 
 void Scanner::rgr_located_meta(
@@ -646,12 +655,12 @@ void Scanner::mngr_resolve_rgr_select() {
 
 bool Scanner::mngr_resolved_rgr_select(
         const ReqBase::Ptr& req,
-        const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
+        Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
   switch(rsp.err) {
     case Error::OK: {
       SWC_SCANNER_RSP_DEBUG("mngr_resolved_rgr_select");
-      data_endpoints = rsp.endpoints;
       selector->clients->rgr_cache_set(data_cid, data_rid, rsp.endpoints);
+      data_endpoints = std::move(rsp.endpoints);
       rgr_select();
       return true;
     }

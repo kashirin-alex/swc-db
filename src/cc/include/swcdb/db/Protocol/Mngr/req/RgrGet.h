@@ -18,7 +18,7 @@ class RgrGet: public RgrGet_Base {
   public:
 
   typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&,
-                             const Params::RgrGetRsp&)> Cb_t;
+                             Params::RgrGetRsp&)> Cb_t;
 
   static void request(const SWC::client::Clients::Ptr& clients,
                       cid_t cid, rid_t rid, bool next_range,
@@ -44,7 +44,7 @@ class RgrGet: public RgrGet_Base {
     return clients;
   }
 
-  virtual void callback(const Params::RgrGetRsp&) override;
+  virtual void callback(Params::RgrGetRsp&) override;
 
 
   private:

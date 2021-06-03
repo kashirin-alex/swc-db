@@ -103,8 +103,8 @@ void RgrGetRsp::internal_decode(const uint8_t** bufp, size_t* remainp) {
     rid = Serialization::decode_vi64(bufp, remainp);
     Common::Params::HostEndPoints::internal_decode(bufp, remainp);
     if(cid == 1) {
-      range_end.decode(bufp, remainp, true);
-      range_begin.decode(bufp, remainp, true);
+      range_end.decode(bufp, remainp, false);
+      range_begin.decode(bufp, remainp, false);
     }
   }
 }

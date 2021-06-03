@@ -113,7 +113,7 @@ class Scanner final : public std::enable_shared_from_this<Scanner> {
 
   bool mngr_located_master(
       const ReqBase::Ptr& base,
-      const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp);
+      Comm::Protocol::Mngr::Params::RgrGetRsp& rsp);
 
 
   void rgr_locate_master();
@@ -127,7 +127,7 @@ class Scanner final : public std::enable_shared_from_this<Scanner> {
 
   bool mngr_resolved_rgr_meta(
       const ReqBase::Ptr& base,
-      const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp);
+      Comm::Protocol::Mngr::Params::RgrGetRsp& rsp);
 
 
   void rgr_locate_meta();
@@ -141,7 +141,7 @@ class Scanner final : public std::enable_shared_from_this<Scanner> {
 
   bool mngr_resolved_rgr_select(
       const ReqBase::Ptr& base,
-      const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp);
+      Comm::Protocol::Mngr::Params::RgrGetRsp& rsp);
 
 
   void rgr_select();

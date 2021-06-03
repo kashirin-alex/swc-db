@@ -102,8 +102,8 @@ void RangeLocateRsp::internal_decode(const uint8_t** bufp, size_t* remainp) {
   if(!(err = Serialization::decode_vi32(bufp, remainp))) {
     cid = Serialization::decode_vi64(bufp, remainp);
     rid = Serialization::decode_vi64(bufp, remainp);
-    range_end.decode(bufp, remainp, true);
-    range_begin.decode(bufp, remainp, true);
+    range_end.decode(bufp, remainp, false);
+    range_begin.decode(bufp, remainp, false);
   }
 }
 

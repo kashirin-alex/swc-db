@@ -84,13 +84,12 @@ class Committer final : public std::enable_shared_from_this<Committer> {
 
   void located_on_manager(
       const ReqBase::Ptr& base,
-      const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp);
+      Comm::Protocol::Mngr::Params::RgrGetRsp& rsp);
 
-  void locate_on_ranger(
-      const Comm::EndPoints& endpoints);
+  void locate_on_ranger(Comm::EndPoints&& endpoints);
 
   void located_on_ranger(
-      const Comm::EndPoints& endpoints,
+      Comm::EndPoints&& endpoints,
       const ReqBase::Ptr& base,
       const Comm::Protocol::Rgr::Params::RangeLocateRsp& rsp);
 
@@ -98,11 +97,11 @@ class Committer final : public std::enable_shared_from_this<Committer> {
 
   void located_ranger(
       const ReqBase::Ptr& base,
-      const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp);
+      Comm::Protocol::Mngr::Params::RgrGetRsp& rsp);
 
   void proceed_on_ranger(
       const ReqBase::Ptr& base,
-      const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp);
+      Comm::Protocol::Mngr::Params::RgrGetRsp& rsp);
 
   void commit_data(
       const Comm::EndPoints& endpoints,

@@ -71,7 +71,7 @@ class RgrGet_Query : public RgrGet_Base {
     return query->get_clients();
   }
 
-  virtual void callback(const Params::RgrGetRsp& rsp) override {
+  virtual void callback(Params::RgrGetRsp& rsp) override {
     ActionT::callback(query, req(), profile, rsp);
   }
 

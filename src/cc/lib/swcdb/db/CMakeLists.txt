@@ -52,7 +52,6 @@ set(swcdb_sources
   Protocol/Rgr/params/ColumnCompact.cc
   Protocol/Rgr/req/ColumnCompact.cc
   Protocol/Rgr/params/RangeLocate.cc
-  Protocol/Rgr/req/RangeLocate.cc
   Protocol/Rgr/params/RangeQueryUpdate.cc
   Protocol/Rgr/req/RangeQueryUpdate.cc
   Protocol/Rgr/params/RangeQuerySelect.cc

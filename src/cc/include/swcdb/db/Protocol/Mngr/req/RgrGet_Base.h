@@ -32,7 +32,7 @@ class RgrGet_Base: public client::ConnQueue::ReqBase {
 
   virtual SWC::client::Clients::Ptr& get_clients() noexcept = 0;
 
-  virtual void callback(const Params::RgrGetRsp&) = 0;
+  virtual void callback(Params::RgrGetRsp&) = 0;
 
   private:
 

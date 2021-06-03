@@ -8,7 +8,7 @@
 #include "swcdb/db/Types/SystemColumn.h"
 #include "swcdb/db/client/Clients.h"
 #include "swcdb/db/Protocol/Mngr/req/RgrGet_Query.h"
-#include "swcdb/db/Protocol/Rgr/req/RangeLocate_Query.h"
+#include "swcdb/db/Protocol/Rgr/req/RangeLocate.h"
 #include "swcdb/db/Protocol/Rgr/req/RangeQueryUpdate_Query.h"
 
 
@@ -65,13 +65,28 @@ void Committer::print(std::ostream& out) {
 }
 
 
+struct ReqDataBase {
+  Committer::Ptr committer;
+  ReqDataBase(const Committer::Ptr& committer) noexcept
+              : committer(committer) { }
+  SWC_CAN_INLINE
+  client::Clients::Ptr& get_clients() noexcept {
+    return committer->hdlr->clients;
+  }
+  SWC_CAN_INLINE
+  bool valid() {
+    return committer->hdlr->valid();
+  }
+};
+
+
 struct Committer::Callback {
   struct locate_on_manager {
     SWC_CAN_INLINE
     static void callback(const Ptr& committer,
                          const ReqBase::Ptr& req,
                          Profiling::Component::Start& profile,
-                         const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
+                         Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
       profile.add(rsp.err || !rsp.rid);
       committer->located_on_manager(req, rsp);
     };
@@ -82,26 +97,9 @@ struct Committer::Callback {
     static void callback(const Ptr& committer,
                          const ReqBase::Ptr& req,
                          Profiling::Component::Start& profile,
-                         const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
+                         Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
       profile.add(rsp.err || !rsp.rid || rsp.endpoints.empty());
       committer->located_ranger(req, rsp);
-    }
-  };
-
-  struct locate_on_ranger {
-    SWC_CAN_INLINE
-    static void callback(
-            const Ptr& committer,
-            const ReqBase::Ptr& req,
-            Profiling::Component::Start& profile,
-            const Comm::Protocol::Rgr::Params::RangeLocateRsp& rsp) {
-      profile.add(!rsp.rid || rsp.err);
-      committer->located_on_ranger(
-        std::dynamic_pointer_cast<
-          Comm::Protocol::Rgr::Req::RangeLocate_Query<Ptr, locate_on_ranger>
-            >(req)->endpoints,
-        req, rsp
-      );
     }
   };
 
@@ -155,7 +153,7 @@ void Committer::locate_on_manager() {
 
 void Committer::located_on_manager(
       const ReqBase::Ptr& base,
-      const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
+      Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
   if(!hdlr->valid())
     return hdlr->response();
   switch(rsp.err) {
@@ -191,8 +189,8 @@ void Committer::located_on_manager(
     rsp.rid
   );
   DB::Types::SystemColumn::is_master(colp->get_cid())
-    ? committer->commit_data(rsp.endpoints, base)
-    : committer->locate_on_ranger(rsp.endpoints);
+    ? committer->commit_data(std::move(rsp.endpoints), base)
+    : committer->locate_on_ranger(std::move(rsp.endpoints));
 
   if(!rsp.range_end.empty()) {
     auto next_key_start = colp->get_key_next(rsp.range_end);
@@ -207,7 +205,7 @@ void Committer::located_on_manager(
   hdlr->response();
 }
 
-void Committer::locate_on_ranger(const Comm::EndPoints& endpoints) {
+void Committer::locate_on_ranger(Comm::EndPoints&& endpoints) {
   hdlr->completion.increment();
   if(!hdlr->valid())
     return hdlr->response();
@@ -225,18 +223,30 @@ void Committer::locate_on_ranger(const Comm::EndPoints& endpoints) {
   }
 
   SWC_LOCATOR_REQ_DEBUG("locate_on_ranger");
-  Comm::Protocol::Rgr::Req::RangeLocate_Query
-    <Ptr, Callback::locate_on_ranger>
-      ::request(
-          shared_from_this(),
-          params,
-          endpoints,
-          hdlr->profile.rgr_locate(type)
-        );
+  struct ReqData : ReqDataBase {
+    Profiling::Component::Start profile;
+    Comm::EndPoints             endpoints;
+    SWC_CAN_INLINE
+    ReqData(const Ptr& committer, Comm::EndPoints& endpoints,
+            DB::Types::Range type) noexcept
+            : ReqDataBase(committer),
+              profile(committer->hdlr->profile.rgr_locate(type)),
+              endpoints(std::move(endpoints)) { }
+    SWC_CAN_INLINE
+    void callback(const ReqBase::Ptr& req,
+                  const Comm::Protocol::Rgr::Params::RangeLocateRsp& rsp) {
+      profile.add(!rsp.rid || rsp.err);
+      committer->located_on_ranger(std::move(endpoints), req, rsp);
+    }
+  };
+
+  auto req = Comm::Protocol::Rgr::Req::RangeLocate<ReqData>
+    ::make(params, 10000, shared_from_this(), std::move(endpoints), type);
+  req->request(req, req->data.endpoints);
 }
 
 void Committer::located_on_ranger(
-      const Comm::EndPoints& endpoints,
+      Comm::EndPoints&& endpoints,
       const ReqBase::Ptr& base,
       const Comm::Protocol::Rgr::Params::RangeLocateRsp& rsp) {
   if(!hdlr->valid())
@@ -283,7 +293,7 @@ void Committer::located_on_ranger(
         cid, colp, next_key_start,
         hdlr, base,
         rid
-      )->locate_on_ranger(endpoints);
+      )->locate_on_ranger(std::move(endpoints));
     }
   }
   hdlr->response();
@@ -313,7 +323,7 @@ void Committer::resolve_on_manager() {
 
 void Committer::located_ranger(
       const ReqBase::Ptr& base,
-      const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
+      Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
   if(!hdlr->valid())
     return hdlr->response();
   switch(rsp.err) {
@@ -351,7 +361,7 @@ void Committer::located_ranger(
 
 void Committer::proceed_on_ranger(
       const ReqBase::Ptr& base,
-      const Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
+      Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
   if(!hdlr->valid())
     return hdlr->response();
   switch(type) {
@@ -390,7 +400,7 @@ void Committer::proceed_on_ranger(
           rsp.cid, colp, key_start,
           hdlr, base,
           rsp.rid)
-    )->locate_on_ranger(rsp.endpoints);
+    )->locate_on_ranger(std::move(rsp.endpoints));
     return hdlr->response();
   }
 }
