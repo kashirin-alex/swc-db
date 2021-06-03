@@ -8,56 +8,102 @@
 
 
 #include "swcdb/db/Protocol/Mngr/req/RgrGet_Base.h"
+#include "swcdb/db/Protocol/Common/req/handler_data.h"
 
 
 namespace SWC { namespace Comm { namespace Protocol {
 namespace Mngr { namespace Req {
 
 
-class RgrGet: public RgrGet_Base {
+template<typename DataT>
+class RgrGet final : public RgrGet_Base {
   public:
 
-  typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&,
-                             Params::RgrGetRsp&)> Cb_t;
+  typedef std::shared_ptr<RgrGet> Ptr;
+  DataT                           data;
 
-  static void request(const SWC::client::Clients::Ptr& clients,
-                      cid_t cid, rid_t rid, bool next_range,
-                      Cb_t&& cb, const uint32_t timeout = 10000);
+  template<typename... DataArgsT>
+  SWC_CAN_INLINE
+  static Ptr make(
+        const Params::RgrGetReq& params,
+        const uint32_t timeout,
+        DataArgsT&&... args) {
+    return Ptr(new RgrGet(params, timeout, args...));
+  }
 
-  static void request(const SWC::client::Clients::Ptr& clients,
-                      const Params::RgrGetReq& params,
-                      Cb_t&& cb, const uint32_t timeout = 10000);
+  template<typename... DataArgsT>
+  SWC_CAN_INLINE
+  static void request(
+        const Params::RgrGetReq& params,
+        const uint32_t timeout,
+        DataArgsT&&... args) {
+    make(params, timeout, args...)->run();
+  }
 
-  static Ptr make(const SWC::client::Clients::Ptr& clients,
-                  const Params::RgrGetReq& params,
-                  Cb_t&& cb, const uint32_t timeout = 10000);
+  template<typename... DataArgsT>
+  SWC_CAN_INLINE
+  static void request(
+        cid_t cid, rid_t rid, bool next_range,
+        const uint32_t timeout,
+        DataArgsT&&... args) {
+    request(Params::RgrGetReq(cid, rid, next_range), timeout, args...);
+  }
 
   virtual ~RgrGet() { }
 
   protected:
 
-  RgrGet(const SWC::client::Clients::Ptr& clients,
-         const Params::RgrGetReq& params, Cb_t&& cb,
-         const uint32_t timeout);
-
-  virtual SWC::client::Clients::Ptr& get_clients() noexcept override {
-    return clients;
+  template<typename... DataArgsT>
+  SWC_CAN_INLINE
+  RgrGet(
+        const Params::RgrGetReq& params,
+        const uint32_t timeout,
+        DataArgsT&&... args)
+      : RgrGet_Base(params, timeout),
+        data(args...) {
   }
 
-  virtual void callback(Params::RgrGetRsp&) override;
+  SWC::client::Clients::Ptr& get_clients() noexcept override {
+    return data.get_clients();
+  }
 
+  bool valid() override {
+    return data.valid();
+  }
 
-  private:
-  SWC::client::Clients::Ptr clients;
-  const Cb_t                cb;
+  void callback(Params::RgrGetRsp& rsp) override {
+    data.callback(req(), rsp);
+  }
+
 };
+
+
+
+/** Functional_RgrGet - a default CbT DataT STL
+  ```
+  using data_t = Comm::Protocol::Mngr::Req::Functional_RgrGet;
+  auto cb = [](void* datap,
+               const Comm::client::ConnQueue::ReqBase::Ptr&,
+               Comm::Protocol::Mngr::Params::RgrGetRsp&) noexcept {
+    data_t::Ptr datap = data_t::cast(_datap);
+    (void)(datap->clients);
+    ...;
+  };
+  Comm::Protocol::Mngr::Req::RgrGet<data_t>::request(
+    params, 10000, clients, std::move(cb));
+  ```
+*/
+
+typedef Common::Req::function<
+  std::function<void(
+    void*,
+    const client::ConnQueue::ReqBase::Ptr&,
+    Params::RgrGetRsp&
+  )>
+> Functional_RgrGet;
 
 
 }}}}}
 
-
-#ifdef SWC_IMPL_SOURCE
-#include "swcdb/db/Protocol/Mngr/req/RgrGet.cc"
-#endif
 
 #endif // swcdb_db_protocol_req_RgrGet_h

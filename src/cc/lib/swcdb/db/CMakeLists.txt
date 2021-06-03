@@ -61,7 +61,6 @@ set(swcdb_sources
   Protocol/Mngr/req/MngrActive.cc
   Protocol/Mngr/params/RgrGet.cc
   Protocol/Mngr/req/RgrGet_Base.cc
-  Protocol/Mngr/req/RgrGet.cc
   Protocol/Mngr/params/ColumnCompact.cc
   Protocol/Mngr/req/ColumnCompact_Base.cc
   Protocol/Mngr/req/ColumnCompact.cc

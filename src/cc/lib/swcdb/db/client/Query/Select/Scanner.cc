@@ -6,7 +6,7 @@
 
 #include "swcdb/db/Types/SystemColumn.h"
 #include "swcdb/db/client/Query/Select/Scanner.h"
-#include "swcdb/db/Protocol/Mngr/req/RgrGet_Query.h"
+#include "swcdb/db/Protocol/Mngr/req/RgrGet.h"
 #include "swcdb/db/Protocol/Rgr/req/RangeLocate.h"
 #include "swcdb/db/Protocol/Rgr/req/RangeQuerySelect_Query.h"
 
@@ -136,42 +136,6 @@ struct ReqDataBase {
 
 
 struct Scanner::Callback {
-  struct mngr_locate_master {
-    SWC_CAN_INLINE
-    static void callback(const Ptr& scanner,
-                         const ReqBase::Ptr& req,
-                         Profiling::Component::Start& profile,
-                         Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
-      profile.add(rsp.err || !rsp.rid);
-      if(scanner->mngr_located_master(req, rsp))
-        scanner->response_if_last();
-    };
-  };
-
-  struct mngr_resolve_rgr_meta {
-    SWC_CAN_INLINE
-    static void callback(const Ptr& scanner,
-                         const ReqBase::Ptr& req,
-                         Profiling::Component::Start& profile,
-                         Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
-      profile.add(rsp.err || !rsp.rid || rsp.endpoints.empty());
-      if(scanner->mngr_resolved_rgr_meta(req, rsp))
-        scanner->response_if_last();
-    }
-  };
-
-  struct mngr_resolve_rgr_select {
-    SWC_CAN_INLINE
-    static void callback(const Ptr& scanner,
-                         const ReqBase::Ptr& req,
-                         Profiling::Component::Start& profile,
-                         Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
-      profile.add(rsp.err || !rsp.rid || rsp.endpoints.empty());
-      if(scanner->mngr_resolved_rgr_select(req, rsp))
-        scanner->response_if_last();
-    }
-  };
-
   struct rgr_select {
     SWC_CAN_INLINE
     static void callback(
@@ -255,9 +219,23 @@ void Scanner::mngr_locate_master() {
   }
 
   SWC_SCANNER_REQ_DEBUG("mngr_locate_master");
-  Comm::Protocol::Mngr::Req::RgrGet_Query
-    <Ptr, Callback::mngr_locate_master>
-      ::request(shared_from_this(), params, selector->profile.mngr_locate());
+  struct ReqData : ReqDataBase {
+    Profiling::Component::Start profile;
+    SWC_CAN_INLINE
+    ReqData(const Ptr& scanner) noexcept
+            : ReqDataBase(scanner),
+              profile(scanner->selector->profile.mngr_locate()) { }
+    SWC_CAN_INLINE
+    void callback(const ReqBase::Ptr& req,
+                  Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
+      profile.add(rsp.err || !rsp.rid);
+      if(scanner->mngr_located_master(req, rsp))
+        scanner->response_if_last();
+    }
+  };
+
+  Comm::Protocol::Mngr::Req::RgrGet<ReqData>
+    ::request(params, 10000, shared_from_this());
 }
 
 bool Scanner::mngr_located_master(
@@ -472,9 +450,22 @@ void Scanner::mngr_resolve_rgr_meta() {
 
   Comm::Protocol::Mngr::Params::RgrGetReq params(meta_cid, meta_rid);
   SWC_SCANNER_REQ_DEBUG("mngr_resolve_rgr_meta");
-  Comm::Protocol::Mngr::Req::RgrGet_Query
-    <Ptr, Callback::mngr_resolve_rgr_meta>
-      ::request(shared_from_this(), params, profile);
+  struct ReqData : ReqDataBase {
+    Profiling::Component::Start profile;
+    SWC_CAN_INLINE
+    ReqData(const Ptr& scanner, Profiling::Component::Start& profile) noexcept
+            : ReqDataBase(scanner), profile(profile) { }
+    SWC_CAN_INLINE
+    void callback(const ReqBase::Ptr& req,
+                  Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
+      profile.add(rsp.err || !rsp.rid || rsp.endpoints.empty());
+      if(scanner->mngr_resolved_rgr_meta(req, rsp))
+        scanner->response_if_last();
+    }
+  };
+
+  Comm::Protocol::Mngr::Req::RgrGet<ReqData>
+    ::request(params, 10000, shared_from_this(), profile);
 }
 
 bool Scanner::mngr_resolved_rgr_meta(
@@ -648,9 +639,22 @@ void Scanner::mngr_resolve_rgr_select() {
 
   Comm::Protocol::Mngr::Params::RgrGetReq params(data_cid, data_rid);
   SWC_SCANNER_REQ_DEBUG("mngr_resolve_rgr_select");
-  Comm::Protocol::Mngr::Req::RgrGet_Query
-    <Ptr, Callback::mngr_resolve_rgr_select>
-      ::request(shared_from_this(), params, profile);
+  struct ReqData : ReqDataBase {
+    Profiling::Component::Start profile;
+    SWC_CAN_INLINE
+    ReqData(const Ptr& scanner, Profiling::Component::Start& profile) noexcept
+            : ReqDataBase(scanner), profile(profile) { }
+    SWC_CAN_INLINE
+    void callback(const ReqBase::Ptr& req,
+                  Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
+      profile.add(rsp.err || !rsp.rid || rsp.endpoints.empty());
+      if(scanner->mngr_resolved_rgr_select(req, rsp))
+        scanner->response_if_last();
+    }
+  };
+
+  Comm::Protocol::Mngr::Req::RgrGet<ReqData>
+    ::request(params, 10000, shared_from_this(), profile);
 }
 
 bool Scanner::mngr_resolved_rgr_select(

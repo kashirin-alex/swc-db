@@ -7,7 +7,7 @@
 #include "swcdb/db/client/Query/Update/Committer.h"
 #include "swcdb/db/Types/SystemColumn.h"
 #include "swcdb/db/client/Clients.h"
-#include "swcdb/db/Protocol/Mngr/req/RgrGet_Query.h"
+#include "swcdb/db/Protocol/Mngr/req/RgrGet.h"
 #include "swcdb/db/Protocol/Rgr/req/RangeLocate.h"
 #include "swcdb/db/Protocol/Rgr/req/RangeQueryUpdate_Query.h"
 
@@ -81,27 +81,6 @@ struct ReqDataBase {
 
 
 struct Committer::Callback {
-  struct locate_on_manager {
-    SWC_CAN_INLINE
-    static void callback(const Ptr& committer,
-                         const ReqBase::Ptr& req,
-                         Profiling::Component::Start& profile,
-                         Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
-      profile.add(rsp.err || !rsp.rid);
-      committer->located_on_manager(req, rsp);
-    };
-  };
-
-  struct locate_ranger {
-    SWC_CAN_INLINE
-    static void callback(const Ptr& committer,
-                         const ReqBase::Ptr& req,
-                         Profiling::Component::Start& profile,
-                         Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
-      profile.add(rsp.err || !rsp.rid || rsp.endpoints.empty());
-      committer->located_ranger(req, rsp);
-    }
-  };
 
   struct commit_data {
     Profiling::Component::Start  profile;
@@ -145,9 +124,22 @@ void Committer::locate_on_manager() {
       0, DB::Types::SystemColumn::get_meta_cid_str(colp->get_sequence()));
 
   SWC_LOCATOR_REQ_DEBUG("mngr_locate_master");
-  Comm::Protocol::Mngr::Req::RgrGet_Query
-    <Ptr, Callback::locate_on_manager>
-      ::request(shared_from_this(), params, hdlr->profile.mngr_locate());
+  struct ReqData : ReqDataBase {
+    Profiling::Component::Start profile;
+    SWC_CAN_INLINE
+    ReqData(const Ptr& committer) noexcept
+            : ReqDataBase(committer),
+              profile(committer->hdlr->profile.mngr_locate()) { }
+    SWC_CAN_INLINE
+    void callback(const ReqBase::Ptr& req,
+                  Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
+      profile.add(rsp.err || !rsp.rid);
+      committer->located_on_manager(req, rsp);
+    };
+  };
+
+  Comm::Protocol::Mngr::Req::RgrGet<ReqData>
+    ::request(params, 10000, shared_from_this());
 }
 
 
@@ -304,10 +296,24 @@ void Committer::resolve_on_manager() {
   if(!hdlr->valid())
     return hdlr->response();
 
+  struct ReqData : ReqDataBase {
+    Profiling::Component::Start profile;
+    SWC_CAN_INLINE
+    ReqData(const Ptr& committer) noexcept
+            : ReqDataBase(committer),
+              profile(committer->hdlr->profile.mngr_res()) { }
+    SWC_CAN_INLINE
+    void callback(const ReqBase::Ptr& req,
+                  Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
+      profile.add(rsp.err || !rsp.rid || rsp.endpoints.empty());
+      committer->located_ranger(req, rsp);
+    };
+  };
+
   Comm::Protocol::Mngr::Params::RgrGetReq params(cid, rid);
-  auto req = Comm::Protocol::Mngr::Req::RgrGet_Query
-    <Ptr, Callback::locate_ranger>
-      ::make(shared_from_this(), params, hdlr->profile.mngr_res());
+  auto req = Comm::Protocol::Mngr::Req::RgrGet<ReqData>
+    ::make(params, 10000, shared_from_this());
+
   if(!DB::Types::SystemColumn::is_master(cid)) {
     auto profile = hdlr->profile.mngr_res();
     Comm::Protocol::Mngr::Params::RgrGetRsp rsp(cid, rid);
