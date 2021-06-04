@@ -84,8 +84,8 @@ void RangeQueryUpdateRsp::internal_decode(const uint8_t** bufp,
   err = Serialization::decode_vi32(bufp, remainp);
   cells_added = Serialization::decode_vi32(bufp, remainp);
   if(err == Error::RANGE_BAD_INTERVAL) {
-    range_prev_end.decode(bufp, remainp, true);
-    range_end.decode(bufp, remainp, true);
+    range_prev_end.decode(bufp, remainp, false);
+    range_end.decode(bufp, remainp, false);
   }
 }
 

@@ -9,7 +9,7 @@
 #include "swcdb/db/client/Clients.h"
 #include "swcdb/db/Protocol/Mngr/req/RgrGet.h"
 #include "swcdb/db/Protocol/Rgr/req/RangeLocate.h"
-#include "swcdb/db/Protocol/Rgr/req/RangeQueryUpdate_Query.h"
+#include "swcdb/db/Protocol/Rgr/req/RangeQueryUpdate.h"
 
 
 namespace SWC { namespace client { namespace Query { namespace Update {
@@ -77,35 +77,6 @@ struct ReqDataBase {
   bool valid() {
     return committer->hdlr->valid();
   }
-};
-
-
-struct Committer::Callback {
-
-  struct commit_data {
-    Profiling::Component::Start  profile;
-    DynamicBuffer::Ptr           cells_buff;
-    ReqBase::Ptr                 base;
-
-    SWC_CAN_INLINE
-    commit_data(
-            Profiling& profile,
-            const DynamicBuffer::Ptr& cells_buff,
-            const ReqBase::Ptr& base) noexcept
-            : profile(profile.rgr_data()),
-              cells_buff(cells_buff), base(base) {
-    }
-
-    SWC_CAN_INLINE
-    void callback(
-            const Ptr& committer,
-            const ReqBase::Ptr& req,
-            const Comm::Protocol::Rgr::Params::RangeQueryUpdateRsp& rsp) {
-      profile.add(rsp.err);
-      committer->committed_data(cells_buff, base, req, rsp);
-    }
-  };
-
 };
 
 
@@ -416,6 +387,27 @@ void Committer::commit_data(
       const ReqBase::Ptr& base) {
   hdlr->completion.increment();
 
+  struct ReqData : ReqDataBase {
+    Profiling::Component::Start  profile;
+    DynamicBuffer::Ptr           cells_buff;
+    ReqBase::Ptr                 base;
+    SWC_CAN_INLINE
+    ReqData(const Ptr& committer,
+            const DynamicBuffer::Ptr& cells_buff,
+            const ReqBase::Ptr& base) noexcept
+            : ReqDataBase(committer),
+              profile(committer->hdlr->profile.rgr_data()),
+              cells_buff(cells_buff), base(base) {
+    }
+    SWC_CAN_INLINE
+    void callback(
+            const ReqBase::Ptr& req,
+            const Comm::Protocol::Rgr::Params::RangeQueryUpdateRsp& rsp) {
+      profile.add(rsp.err);
+      committer->committed_data(cells_buff, base, req, rsp);
+    }
+  };
+
   bool more = true;
   DynamicBuffer::Ptr cells_buff;
   workload.increment();
@@ -425,21 +417,17 @@ void Committer::commit_data(
           *key_start.get(), key_finish, hdlr->buff_sz, more))) {
     workload.increment();
 
-    Comm::Protocol::Rgr::Req::RangeQueryUpdate_Query
-      <Ptr, Callback::commit_data>
-        ::request(
-            shared_from_this(),
-            Callback::commit_data(
-              hdlr->profile,
-              cells_buff,
-              base
-            ),
-            Comm::Protocol::Rgr::Params::RangeQueryUpdateReq(
-              colp->get_cid(), rid),
-            cells_buff,
-            endpoints,
-            hdlr->timeout + cells_buff->fill()/hdlr->timeout_ratio
-          );
+    Comm::Protocol::Rgr::Req::RangeQueryUpdate<ReqData>
+      ::request(
+          Comm::Protocol::Rgr::Params::RangeQueryUpdateReq(
+            colp->get_cid(), rid),
+          *cells_buff.get(),
+          hdlr->timeout + cells_buff->fill()/hdlr->timeout_ratio,
+          endpoints,
+          shared_from_this(),
+          cells_buff,
+          base
+        );
   }
   if(workload.is_last())
     hdlr->response();

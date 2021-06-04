@@ -7,57 +7,136 @@
 #define swcdb_db_protocol_rgr_req_RangeQueryUpdate_h
 
 
-
-#include "swcdb/core/comm/ClientConnQueue.h"
 #include "swcdb/db/Protocol/Rgr/params/RangeQueryUpdate.h"
+#include "swcdb/core/comm/ClientConnQueue.h"
+#include "swcdb/db/Protocol/Commands.h"
+#include "swcdb/db/Protocol/Common/req/handler_data.h"
 
 
 namespace SWC { namespace Comm { namespace Protocol {
 namespace Rgr { namespace Req {
 
 
-class RangeQueryUpdate: public client::ConnQueue::ReqBase {
+template<typename DataT>
+class RangeQueryUpdate final : public client::ConnQueue::ReqBase {
   public:
 
-  typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&,
-                             const Params::RangeQueryUpdateRsp&)> Cb_t;
+  typedef std::shared_ptr<RangeQueryUpdate> Ptr;
+  DataT                                     data;
 
-  static void
-  request(const SWC::client::Clients::Ptr& clients,
-          const Params::RangeQueryUpdateReq& params,
-          const DynamicBuffer::Ptr& buffer,
-          const EndPoints& endpoints,
-          Cb_t&& cb,
-          const uint32_t timeout = 10000);
+  template<typename... DataArgsT>
+  SWC_CAN_INLINE
+  static Ptr make(
+        const Params::RangeQueryUpdateReq& params,
+        StaticBuffer& snd_buf,
+        const uint32_t timeout,
+        DataArgsT&&... args) {
+    return Ptr(new RangeQueryUpdate(
+      Buffers::make(params, snd_buf, 0, RANGE_QUERY_UPDATE, timeout),
+      args...
+    ));
+  }
 
+  template<typename... DataArgsT>
+  SWC_CAN_INLINE
+  static Ptr make(
+        const Params::RangeQueryUpdateReq& params,
+        const DynamicBuffer& buffer,
+        const uint32_t timeout,
+        DataArgsT&&... args) {
+    StaticBuffer snd_buf(buffer.base, buffer.fill(), false);
+    return make(params, snd_buf, timeout, args...);
+  }
 
-  RangeQueryUpdate(const SWC::client::Clients::Ptr& clients,
-                   const Params::RangeQueryUpdateReq& params,
-                   const DynamicBuffer::Ptr& buffer,
-                   const EndPoints& endpoints,
-                   Cb_t&& cb,
-                   const uint32_t timeout);
+  SWC_CAN_INLINE
+  static void request(const Ptr& req, const EndPoints& endpoints) {
+    req->data.get_clients()->get_rgr_queue(endpoints)->put(req);
+  }
+
+  template<typename... DataArgsT>
+  SWC_CAN_INLINE
+  static void request(
+        const Params::RangeQueryUpdateReq& params,
+        StaticBuffer& snd_buf,
+        const uint32_t timeout,
+        const EndPoints& endpoints,
+        DataArgsT&&... args) {
+    request(make(params, snd_buf, timeout, args...), endpoints);
+  }
+
+  template<typename... DataArgsT>
+  SWC_CAN_INLINE
+  static void request(
+        const Params::RangeQueryUpdateReq& params,
+        const DynamicBuffer& buffer,
+        const uint32_t timeout,
+        const EndPoints& endpoints,
+        DataArgsT&&... args) {
+    request(make(params, buffer, timeout, args...), endpoints);
+  }
 
   virtual ~RangeQueryUpdate() { }
 
-  void handle_no_conn() override;
+  bool valid() override {
+    return data.valid();
+  }
 
-  bool run() override;
+  void handle_no_conn() override {
+    data.callback(
+      req(),
+      Params::RangeQueryUpdateRsp(Error::COMM_NOT_CONNECTED)
+    );
+  }
 
-  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
+  void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
+    ev->type == Event::Type::DISCONNECT
+      ? handle_no_conn()
+      : data.callback(
+          req(),
+          Params::RangeQueryUpdateRsp(ev->error, ev->data.base, ev->data.size)
+        );
+  }
 
-  private:
-  SWC::client::Clients::Ptr clients;
-  EndPoints                 endpoints;
-  const Cb_t                cb;
+  protected:
+
+  template<typename... DataArgsT>
+  SWC_CAN_INLINE
+  RangeQueryUpdate(const Buffers::Ptr& cbp, DataArgsT&&... args)
+                  : client::ConnQueue::ReqBase(false, cbp),
+                    data(args...) {
+  }
+
 };
+
+
+
+/** Functional_RangeQueryUpdate - a default CbT DataT STL
+  ```
+  using data_t = Comm::Protocol::Rgr::Req::Functional_RangeQueryUpdate;
+  auto cb = [](void* datap,
+               const Comm::client::ConnQueue::ReqBase::Ptr&,
+               const Comm::Protocol::Rgr::Params::RangeQueryUpdateRsp&) {
+    data_t::Ptr datap = data_t::cast(_datap);
+    (void)(datap->clients);
+    ...;
+  };
+  Comm::Protocol::Rgr::Req::RangeQueryUpdate<data_t>::request(
+    params, dynbuffer, endpoints, 10000, clients, std::move(cb));
+  ```
+*/
+
+typedef Common::Req::function<
+  std::function<void(
+    void*,
+    const client::ConnQueue::ReqBase::Ptr&,
+    const Params::RangeQueryUpdateRsp&
+  )>
+> Functional_RangeQueryUpdate;
+
+
 
 
 }}}}}
 
-
-#ifdef SWC_IMPL_SOURCE
-#include "swcdb/db/Protocol/Rgr/req/RangeQueryUpdate.cc"
-#endif
 
 #endif // swcdb_db_protocol_rgr_req_RangeQueryUpdate_h

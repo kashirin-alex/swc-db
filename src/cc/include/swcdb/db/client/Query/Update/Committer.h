@@ -113,8 +113,6 @@ class Committer final : public std::enable_shared_from_this<Committer> {
       const ReqBase::Ptr& req,
       const Comm::Protocol::Rgr::Params::RangeQueryUpdateRsp& rsp);
 
-  struct Callback;
-
 };
 
 
