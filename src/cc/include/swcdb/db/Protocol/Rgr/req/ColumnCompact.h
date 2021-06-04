@@ -16,21 +16,26 @@ namespace Rgr { namespace Req {
 class ColumnCompact : public client::ConnQueue::ReqBase {
   public:
 
-  ColumnCompact(cid_t cid);
+  ColumnCompact(cid_t cid)
+                : client::ConnQueue::ReqBase(
+                    false,
+                    Buffers::make(
+                      Params::ColumnCompactReq(cid), 0, COLUMN_COMPACT, 60000)
+                  ) { }
 
   virtual ~ColumnCompact() { }
 
-  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
+  void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
+    if(ev->type != Event::Type::DISCONNECT &&
+       Params::ColumnCompactRsp(ev->error, ev->data.base, ev->data.size).err)
+      return request_again();
+  }
 
-  void handle_no_conn() override;
+  void handle_no_conn() override { }
 
 };
 
 }}}}}
 
-
-#ifdef SWC_IMPL_SOURCE
-#include "swcdb/db/Protocol/Rgr/req/ColumnCompact.cc"
-#endif
 
 #endif // swcdb_db_protocol_rgr_req_ColumnCompact_h

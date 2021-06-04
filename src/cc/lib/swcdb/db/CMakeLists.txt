@@ -50,7 +50,6 @@ set(swcdb_sources
   Protocol/Rgr/params/Report.cc
   Protocol/Rgr/req/Report.cc
   Protocol/Rgr/params/ColumnCompact.cc
-  Protocol/Rgr/req/ColumnCompact.cc
   Protocol/Rgr/params/RangeLocate.cc
   Protocol/Rgr/params/RangeQueryUpdate.cc
   Protocol/Rgr/params/RangeQuerySelect.cc

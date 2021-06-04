@@ -34,6 +34,17 @@ void ColumnCompactReq::internal_decode(const uint8_t** bufp, size_t* remainp) {
 
 
 
+ColumnCompactRsp::ColumnCompactRsp(int err, const uint8_t* ptr,
+                                   size_t remain) noexcept : err(err) {
+  if(!err) try {
+    decode(&ptr, &remain);
+  } catch(...) {
+    const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
+    err = e.code();
+    SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
+  }
+}
+
 std::string ColumnCompactRsp::to_string() const {
   std::string s("ColumnCompactRsp(");
   s.append("err=");
