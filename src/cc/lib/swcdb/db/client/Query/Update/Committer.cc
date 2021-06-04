@@ -389,15 +389,15 @@ void Committer::commit_data(
 
   struct ReqData : ReqDataBase {
     Profiling::Component::Start  profile;
-    DynamicBuffer::Ptr           cells_buff;
+    DynamicBuffer                cells_buff;
     ReqBase::Ptr                 base;
     SWC_CAN_INLINE
     ReqData(const Ptr& committer,
-            const DynamicBuffer::Ptr& cells_buff,
+            DynamicBuffer& cells_buff,
             const ReqBase::Ptr& base) noexcept
             : ReqDataBase(committer),
               profile(committer->hdlr->profile.rgr_data()),
-              cells_buff(cells_buff), base(base) {
+              cells_buff(std::move(cells_buff)), base(base) {
     }
     SWC_CAN_INLINE
     void callback(
@@ -409,23 +409,23 @@ void Committer::commit_data(
   };
 
   bool more = true;
-  DynamicBuffer::Ptr cells_buff;
+  DynamicBuffer cells_buff;
   workload.increment();
 
   while(more && hdlr->valid() &&
-        (cells_buff = colp->get_buff(
-          *key_start.get(), key_finish, hdlr->buff_sz, more))) {
+        colp->get_buff(
+          *key_start.get(), key_finish, hdlr->buff_sz, more, cells_buff)) {
     workload.increment();
 
     Comm::Protocol::Rgr::Req::RangeQueryUpdate<ReqData>
       ::request(
           Comm::Protocol::Rgr::Params::RangeQueryUpdateReq(
             colp->get_cid(), rid),
-          *cells_buff.get(),
-          hdlr->timeout + cells_buff->fill()/hdlr->timeout_ratio,
+          cells_buff,
+          hdlr->timeout + cells_buff.fill()/hdlr->timeout_ratio,
           endpoints,
           shared_from_this(),
-          cells_buff,
+          std::move(cells_buff),
           base
         );
   }
@@ -441,7 +441,7 @@ void Committer::commit_data(
   );
 
 void Committer::committed_data(
-        const DynamicBuffer::Ptr& cells_buff,
+        const DynamicBuffer& cells_buff,
         const ReqBase::Ptr& base,
         const ReqBase::Ptr& req,
         const Comm::Protocol::Rgr::Params::RangeQueryUpdateRsp& rsp) {
@@ -462,7 +462,7 @@ void Committer::committed_data(
     case Error::RANGE_BAD_CELLS_INPUT: {
       SWC_UPDATER_LOCATOR_RSP_DEBUG("rgr_commit RETRYING");
       size_t resend = colp->add(
-        *cells_buff.get(), rsp.range_prev_end, rsp.range_end,
+        cells_buff, rsp.range_prev_end, rsp.range_end,
         rsp.cells_added, rsp.err == Error::RANGE_BAD_CELLS_INPUT
       );
       hdlr->add_resend_count(resend);
@@ -482,7 +482,7 @@ void Committer::committed_data(
     }
 
     default: {
-      hdlr->add_resend_count(colp->add(*cells_buff.get()));
+      hdlr->add_resend_count(colp->add(cells_buff));
       if(workload.is_last()) {
         SWC_UPDATER_LOCATOR_RSP_DEBUG("rgr_commit RETRYING");
         base->request_again();

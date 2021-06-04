@@ -108,7 +108,7 @@ class Committer final : public std::enable_shared_from_this<Committer> {
       const ReqBase::Ptr& base);
 
   void committed_data(
-      const DynamicBuffer::Ptr& cells_buff,
+      const DynamicBuffer& cells_buff,
       const ReqBase::Ptr& base,
       const ReqBase::Ptr& req,
       const Comm::Protocol::Rgr::Params::RangeQueryUpdateRsp& rsp);
