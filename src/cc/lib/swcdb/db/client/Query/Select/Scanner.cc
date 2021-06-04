@@ -690,7 +690,7 @@ void Scanner::rgr_select() {
   if(!selector->valid())
     return response_if_last();
 
-  Comm::Protocol::Rgr::Params::RangeQuerySelectReq params(
+  Comm::Protocol::Rgr::Params::RangeQuerySelectReqRef params(
     data_cid, data_rid, interval);
 
   SWC_SCANNER_REQ_DEBUG("rgr_select");

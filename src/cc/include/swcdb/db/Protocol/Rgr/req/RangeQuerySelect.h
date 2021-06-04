@@ -27,7 +27,7 @@ class RangeQuerySelect final : public client::ConnQueue::ReqBase {
   template<typename... DataArgsT>
   SWC_CAN_INLINE
   static Ptr make(
-        const Params::RangeQuerySelectReq& params,
+        const Params::RangeQuerySelectReqRef& params,
         const uint32_t timeout,
         DataArgsT&&... args) {
     return Ptr(new RangeQuerySelect(params, timeout, args...));
@@ -41,7 +41,7 @@ class RangeQuerySelect final : public client::ConnQueue::ReqBase {
   template<typename... DataArgsT>
   SWC_CAN_INLINE
   static void request(
-        const Params::RangeQuerySelectReq& params,
+        const Params::RangeQuerySelectReqRef& params,
         const uint32_t timeout,
         const EndPoints& endpoints,
         DataArgsT&&... args) {
@@ -73,7 +73,7 @@ class RangeQuerySelect final : public client::ConnQueue::ReqBase {
   template<typename... DataArgsT>
   SWC_CAN_INLINE
   RangeQuerySelect(
-        const Params::RangeQuerySelectReq& params,
+        const Params::RangeQuerySelectReqRef& params,
         const uint32_t timeout,
         DataArgsT&&... args)
         : client::ConnQueue::ReqBase(

@@ -43,6 +43,35 @@ class RangeQuerySelectReq final : public Serializable {
 
 
 
+class RangeQuerySelectReqRef final : public Serializable {
+  public:
+
+  RangeQuerySelectReqRef(cid_t cid, rid_t rid,
+                         const DB::Specs::Interval& interval) noexcept
+                         : cid(cid), rid(rid), interval(interval) {
+  }
+
+  //~RangeQuerySelectReqRef() { }
+
+  void print(std::ostream& out) const;
+
+  cid_t                      cid;
+  rid_t                      rid;
+  const DB::Specs::Interval& interval;
+
+  private:
+
+  size_t internal_encoded_length() const override;
+
+  void internal_encode(uint8_t** bufp) const override;
+
+  // not-optional/available
+  void internal_decode(const uint8_t**, size_t*) override { }
+
+};
+
+
+
 class RangeQuerySelectRsp final : public Serializable {
   public:
 

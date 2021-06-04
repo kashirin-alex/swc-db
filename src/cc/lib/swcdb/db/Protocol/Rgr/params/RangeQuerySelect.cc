@@ -46,6 +46,29 @@ void RangeQuerySelectReq::internal_decode(const uint8_t** bufp,
 
 
 
+
+void RangeQuerySelectReqRef::print(std::ostream& out) const {
+  out << "RangeQuerySelectReq(cid=" << cid << " rid=" << rid;
+  interval.print(out << ' ');
+  out << ')';
+}
+
+size_t RangeQuerySelectReqRef::internal_encoded_length() const {
+  return  Serialization::encoded_length_vi64(cid)
+        + Serialization::encoded_length_vi64(rid)
+        + interval.encoded_length();
+}
+
+void RangeQuerySelectReqRef::internal_encode(uint8_t** bufp) const {
+  Serialization::encode_vi64(bufp, cid);
+  Serialization::encode_vi64(bufp, rid);
+  interval.encode(bufp);
+}
+
+
+
+
+
 RangeQuerySelectRsp::RangeQuerySelectRsp(
               int err, const uint8_t* ptr, size_t remain,
               StaticBuffer& data) noexcept
