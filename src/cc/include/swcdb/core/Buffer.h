@@ -59,6 +59,15 @@ struct Buffer {
     }
   }
 
+  Buffer(BufferT&& other) SWC_NOEXCEPT
+        : own(other.own), size(other.size), base(other.base) {
+    if(own) {
+      other.own = false;
+      other.size = 0;
+      other.base = nullptr;
+    }
+  }
+
   template<typename OtherT>
   Buffer(OtherT& other) SWC_NOEXCEPT;
 
@@ -145,6 +154,11 @@ struct BufferDyn : BufferT {
 
   BufferDyn(size_t sz)
             : BufferT(sz), ptr(BufferT::base), mark(BufferT::base) {
+  }
+
+  BufferDyn(BufferDyn&& other) SWC_NOEXCEPT
+            : BufferT(std::move(other)), ptr(other.ptr), mark(other.mark) {
+    other.ptr = other.mark = nullptr;
   }
 
   //~BufferDyn() { }
