@@ -16,7 +16,7 @@ namespace SWC { namespace client { namespace Query { namespace Update {
   SWC_LOG_OUT(LOG_DEBUG, \
     print(SWC_LOG_OSTREAM << msg << ' '); \
     rsp.print(SWC_LOG_OSTREAM << ' '); \
-    SWC_LOG_OSTREAM << " buff-sz=" << cells_buff->fill(); \
+    SWC_LOG_OSTREAM << " buff-sz=" << cells_buff.fill(); \
   );
 
 
@@ -40,13 +40,13 @@ void BrokerCommitter::commit() {
 
   workload.increment();
   bool more = true;
-  DynamicBuffer::Ptr cells_buff;
+  DynamicBuffer cells_buff;
 
   while(more && hdlr->valid() &&
-        (cells_buff = colp->get_buff(hdlr->buff_sz, more))) {
+        colp->get_buff(hdlr->buff_sz, more, cells_buff)) {
     workload.increment();
     Comm::Protocol::Bkr::Req::Committer_CellsUpdate::request(
-      shared_from_this(), cells_buff);
+      shared_from_this(), std::move(cells_buff));
   }
 
   if(workload.is_last())
@@ -56,7 +56,7 @@ void BrokerCommitter::commit() {
 void BrokerCommitter::committed(
                 ReqBase::Ptr req,
                 const Comm::Protocol::Bkr::Params::CellsUpdateRsp& rsp,
-                const DynamicBuffer::Ptr& cells_buff) {
+                const DynamicBuffer& cells_buff) {
   switch(rsp.err) {
     case Error::OK: {
       SWC_BROKER_COMMIT_RSP_DEBUG("bkr_commit");
@@ -75,7 +75,7 @@ void BrokerCommitter::committed(
     }
 
     default: {
-      hdlr->add_resend_count(colp->add(*cells_buff.get()));
+      hdlr->add_resend_count(colp->add(cells_buff));
       if(workload.is_last()) {
         if(hdlr->valid()) {
           SWC_BROKER_COMMIT_RSP_DEBUG("bkr_commit RETRYING");

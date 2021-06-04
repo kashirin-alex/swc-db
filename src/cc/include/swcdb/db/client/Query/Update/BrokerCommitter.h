@@ -43,7 +43,7 @@ class BrokerCommitter final
 
   void committed(ReqBase::Ptr req,
                  const Comm::Protocol::Bkr::Params::CellsUpdateRsp& rsp,
-                 const DynamicBuffer::Ptr& cells_buff);
+                 const DynamicBuffer& cells_buff);
 
 };
 

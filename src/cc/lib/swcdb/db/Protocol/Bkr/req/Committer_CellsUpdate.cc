@@ -16,15 +16,15 @@ namespace Bkr { namespace Req {
 
 Committer_CellsUpdate::Committer_CellsUpdate(
         const SWC::client::Query::Update::BrokerCommitter::Ptr& committer,
-        const DynamicBuffer::Ptr& buffer)
+        DynamicBuffer&& _buffer)
         : client::ConnQueue::ReqBase(false),
-          committer(committer), buffer(buffer),
+          committer(committer), buffer(std::move(_buffer)),
           profile(committer->hdlr->profile.bkr()) {
-  StaticBuffer snd_buf(buffer->base, buffer->fill(), false);
+  StaticBuffer snd_buf(buffer.base, buffer.fill(), false);
   cbp = Buffers::make(
     Params::CellsUpdateReq(committer->colp->get_cid()),
     snd_buf, 0, CELLS_UPDATE,
-    committer->hdlr->timeout + buffer->fill()/committer->hdlr->timeout_ratio
+    committer->hdlr->timeout + buffer.fill()/committer->hdlr->timeout_ratio
   );
 }
 

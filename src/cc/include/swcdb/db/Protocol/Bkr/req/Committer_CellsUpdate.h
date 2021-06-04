@@ -20,18 +20,19 @@ class Committer_CellsUpdate: public client::ConnQueue::ReqBase {
 
   static void request(
         const SWC::client::Query::Update::BrokerCommitter::Ptr& committer,
-        const DynamicBuffer::Ptr& buffer) {
-    std::make_shared<Committer_CellsUpdate>(committer, buffer)->run();
+        DynamicBuffer&& buffer) {
+    std::make_shared<Committer_CellsUpdate>(
+      committer, std::move(buffer))->run();
   }
 
   typedef std::shared_ptr<Committer_CellsUpdate>    Ptr;
   SWC::client::Query::Update::BrokerCommitter::Ptr  committer;
-  DynamicBuffer::Ptr                                buffer;
+  DynamicBuffer                                     buffer;
   SWC::client::Query::Profiling::Component::Start   profile;
 
   Committer_CellsUpdate(
         const SWC::client::Query::Update::BrokerCommitter::Ptr& committer,
-        const DynamicBuffer::Ptr& buffer);
+        DynamicBuffer&& buffer);
 
   virtual ~Committer_CellsUpdate() { }
 
