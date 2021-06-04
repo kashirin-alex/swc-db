@@ -98,25 +98,25 @@ void ColumnMutable::add(const DB::Cells::Cell& cell) {
   m_cells.add_raw(cell);
 }
 
-DynamicBuffer::Ptr ColumnMutable::get_buff(const DB::Cell::Key& key_start,
-                                           const DB::Cell::Key& key_end,
-                                           size_t buff_sz, bool& more) {
-  auto cells_buff = std::make_shared<DynamicBuffer>();
+bool ColumnMutable::get_buff(const DB::Cell::Key& key_start,
+                             const DB::Cell::Key& key_end,
+                             size_t buff_sz, bool& more,
+                             DynamicBuffer& cells_buff) {
   {
     Core::MutexSptd::scope lock(m_mutex);
     more = m_cells.write_and_free(
-      key_start, key_end, *cells_buff.get(), buff_sz);
+      key_start, key_end, cells_buff, buff_sz);
   }
-  return cells_buff->fill() ? cells_buff : nullptr;
+  return cells_buff.fill();
 }
 
-DynamicBuffer::Ptr ColumnMutable::get_buff(size_t buff_sz, bool& more) {
-  auto cells_buff = std::make_shared<DynamicBuffer>();
+bool ColumnMutable::get_buff(size_t buff_sz, bool& more,
+                             DynamicBuffer& cells_buff) {
   {
     Core::MutexSptd::scope lock(m_mutex);
-    more = m_cells.write_and_free(*cells_buff.get(), buff_sz);
+    more = m_cells.write_and_free(cells_buff, buff_sz);
   }
-  return cells_buff->fill() ? cells_buff : nullptr;
+  return cells_buff.fill();
 }
 
 

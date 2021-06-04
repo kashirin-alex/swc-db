@@ -71,11 +71,13 @@ class ColumnMutable : public Base::Column {
 
   virtual void add(const DB::Cells::Cell& cell) override;
 
-  virtual DynamicBuffer::Ptr get_buff(const DB::Cell::Key& key_start,
-                                      const DB::Cell::Key& key_end,
-                                      size_t buff_sz, bool& more) override;
+  virtual bool get_buff(const DB::Cell::Key& key_start,
+                        const DB::Cell::Key& key_end,
+                        size_t buff_sz, bool& more,
+                        DynamicBuffer& cells_buff) override;
 
-  virtual DynamicBuffer::Ptr get_buff(size_t buff_sz, bool& more) override;
+  virtual bool get_buff(size_t buff_sz, bool& more,
+                        DynamicBuffer& cells_buff) override;
 
   virtual void error(int err) noexcept override {
     int at = Error::OK;

@@ -59,11 +59,29 @@ class Base : public std::enable_shared_from_this<Base> {
 
     virtual void add(const DB::Cells::Cell& cell) = 0;
 
-    virtual DynamicBuffer::Ptr get_buff(const DB::Cell::Key& key_start,
-                                        const DB::Cell::Key& key_end,
-                                        size_t buff_sz, bool& more) = 0;
+    virtual bool get_buff(const DB::Cell::Key& key_start,
+                          const DB::Cell::Key& key_end,
+                          size_t buff_sz, bool& more,
+                          DynamicBuffer& cells_buff) = 0;
 
-    virtual DynamicBuffer::Ptr get_buff(size_t buff_sz, bool& more) = 0;
+    virtual bool get_buff(size_t buff_sz, bool& more,
+                          DynamicBuffer& cells_buff) = 0;
+
+    DynamicBuffer::Ptr get_buff(const DB::Cell::Key& key_start,
+                                const DB::Cell::Key& key_end,
+                                size_t buff_sz, bool& more) {
+      DynamicBuffer cells_buff;
+      return get_buff(key_start, key_end, buff_sz, more, cells_buff)
+        ? std::make_shared<DynamicBuffer>(std::move(cells_buff))
+        : nullptr;
+    }
+
+    DynamicBuffer::Ptr get_buff(size_t buff_sz, bool& more) {
+      DynamicBuffer cells_buff;
+      return get_buff(buff_sz, more, cells_buff)
+        ? std::make_shared<DynamicBuffer>(std::move(cells_buff))
+        : nullptr;
+    }
 
     virtual void error(int err) noexcept = 0;
 
