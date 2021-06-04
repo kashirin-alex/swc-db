@@ -53,7 +53,6 @@ set(swcdb_sources
   Protocol/Rgr/params/RangeLocate.cc
   Protocol/Rgr/params/RangeQueryUpdate.cc
   Protocol/Rgr/params/RangeQuerySelect.cc
-  Protocol/Rgr/req/RangeQuerySelect.cc
 
   Protocol/Mngr/params/MngrActive.cc
   Protocol/Mngr/req/MngrActive.cc

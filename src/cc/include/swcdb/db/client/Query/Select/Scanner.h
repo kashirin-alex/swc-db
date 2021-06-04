@@ -150,8 +150,6 @@ class Scanner final : public std::enable_shared_from_this<Scanner> {
       const ReqBase::Ptr& req,
       Comm::Protocol::Rgr::Params::RangeQuerySelectRsp& rsp);
 
-  struct Callback;
-
 };
 
 

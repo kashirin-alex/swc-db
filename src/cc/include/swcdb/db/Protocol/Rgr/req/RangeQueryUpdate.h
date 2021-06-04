@@ -121,7 +121,7 @@ class RangeQueryUpdate final : public client::ConnQueue::ReqBase {
     ...;
   };
   Comm::Protocol::Rgr::Req::RangeQueryUpdate<data_t>::request(
-    params, dynbuffer, endpoints, 10000, clients, std::move(cb));
+    params, buffer, timeout, endpoints, clients, std::move(cb));
   ```
 */
 
