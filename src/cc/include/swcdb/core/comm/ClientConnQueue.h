@@ -34,8 +34,6 @@ class ConnQueueReqBase : public DispatchHandler {
 
   void request_again();
 
-  virtual void handle_no_conn() = 0;
-
   void print(std::ostream& out);
 
   const bool            insistent;

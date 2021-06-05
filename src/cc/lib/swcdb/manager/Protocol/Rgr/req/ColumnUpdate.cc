@@ -23,7 +23,7 @@ ColumnUpdate::ColumnUpdate(const Manager::Ranger::Ptr& rgr,
 }
 
 void ColumnUpdate::handle(ConnHandlerPtr, const Event::Ptr& ev) {
-  if(ev->type == Event::Type::DISCONNECT || ev->response_code())
+  if(ev->response_code())
     return handle_no_conn();
 
   col->change_rgr_schema(rgr->rgrid, schema->revision);

@@ -47,10 +47,8 @@ class ColumnUpdate : public client::ConnQueue::ReqBase {
   void handle_no_conn() override { }
 
   void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override {
-    if(ev->type != Event::Type::DISCONNECT &&
-       ev->response_code() != Error::OK) {
+    if(ev->response_code())
       conn->do_close();
-    }
   }
 
 };

@@ -33,6 +33,9 @@ class Base : public DispatchHandler {
   bool is_rsp(const Event::Ptr& ev, int cmd,
               const uint8_t **ptr, size_t *remain);
 
+  void handle_no_conn() override {
+    handle(nullptr, nullptr);
+  }
 
   protected:
 

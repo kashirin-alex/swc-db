@@ -53,9 +53,6 @@ bool Scanner_CellsSelect::run() {
 
 void Scanner_CellsSelect::handle(ConnHandlerPtr,
                                  const Event::Ptr& ev) {
-  if(ev->type == Event::Type::DISCONNECT)
-    return handle_no_conn();
-
   Params::CellsSelectRsp rsp_params(ev->error, ev->data_ext);
   if(!rsp_params.err) {
     try {

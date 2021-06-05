@@ -27,10 +27,7 @@ MngrState::MngrState(const ResponseCallback::Ptr& cb,
 }
 
 void MngrState::handle(ConnHandlerPtr conn, const Event::Ptr& ev) {
-  if(ev->type == Event::Type::DISCONNECT)
-    return;
-
-  if(ev->response_code() == Error::OK) {
+  if(!ev->response_code()) {
     if(cb)
       cb->response_ok();
   } else {

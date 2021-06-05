@@ -57,9 +57,6 @@ bool RgrGet_Base::run() {
 }
 
 void RgrGet_Base::handle(ConnHandlerPtr, const Event::Ptr& ev) {
-  if(ev->type == Event::Type::DISCONNECT)
-    return handle_no_conn();
-
   Params::RgrGetRsp rsp_params(ev->error);
   if(!rsp_params.err) {
     try {

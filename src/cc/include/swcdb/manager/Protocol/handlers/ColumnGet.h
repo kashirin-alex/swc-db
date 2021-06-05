@@ -56,9 +56,6 @@ class MngrColumnGet : public client::ConnQueue::ReqBase {
   }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
-    if(ev->type == Event::Type::DISCONNECT)
-      return handle_no_conn();
-
     Params::ColumnGetRsp params;
     int err = ev->response_code();
     if(!err) {

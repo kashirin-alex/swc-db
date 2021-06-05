@@ -48,6 +48,10 @@ class Echo : public DispatchHandler {
     return conn->send_request(cbp, shared_from_this());
   }
 
+  void handle_no_conn() override {
+    cb(false);
+  }
+
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
     //SWC_LOGF(LOG_DEBUG, "handle: %s", ev->to_str().c_str());
 

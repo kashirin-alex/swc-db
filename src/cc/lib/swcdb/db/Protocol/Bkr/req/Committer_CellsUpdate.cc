@@ -56,9 +56,6 @@ bool Committer_CellsUpdate::run() {
 }
 
 void Committer_CellsUpdate::handle(ConnHandlerPtr, const Event::Ptr& ev) {
-  if(ev->type == Event::Type::DISCONNECT)
-    return handle_no_conn();
-
   Params::CellsUpdateRsp rsp_params(ev->error);
   if(!rsp_params.err) {
     try {

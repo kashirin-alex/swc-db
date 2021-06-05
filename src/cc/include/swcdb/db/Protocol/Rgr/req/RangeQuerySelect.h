@@ -60,9 +60,6 @@ class RangeQuerySelect final : public client::ConnQueue::ReqBase {
   }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
-    if(ev->type == Event::Type::DISCONNECT)
-      return handle_no_conn();
-
     Params::RangeQuerySelectRsp rsp(
       ev->error, ev->data.base, ev->data.size, ev->data_ext);
     data.callback(req(), rsp);

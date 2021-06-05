@@ -28,7 +28,7 @@ RangeLoad::RangeLoad(const Manager::Ranger::Ptr& rgr,
 }
 
 void RangeLoad::handle(ConnHandlerPtr, const Event::Ptr& ev) {
-  if(!valid() || ev->type == Event::Type::DISCONNECT)
+  if(!valid())
     return handle_no_conn();
 
   Params::RangeLoaded params(range->cfg->key_seq);

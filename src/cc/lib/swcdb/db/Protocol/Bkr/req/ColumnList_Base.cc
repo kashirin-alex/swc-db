@@ -53,9 +53,6 @@ bool ColumnList_Base::run() {
 }
 
 void ColumnList_Base::handle(ConnHandlerPtr, const Event::Ptr& ev) {
-  if(ev->type == Event::Type::DISCONNECT)
-    return handle_no_conn();
-
   Mngr::Params::ColumnListRsp rsp;
   int err = ev->response_code();
   if(!err) {

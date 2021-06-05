@@ -54,9 +54,6 @@ bool ColumnMng_Base::run() {
 }
 
 void ColumnMng_Base::handle(ConnHandlerPtr, const Event::Ptr& ev) {
-  if(ev->type == Event::Type::DISCONNECT)
-    return handle_no_conn();
-
   callback(ev->response_code());
 }
 

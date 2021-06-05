@@ -63,12 +63,10 @@ class RangeLocate final : public client::ConnQueue::ReqBase {
   }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
-    ev->type == Event::Type::DISCONNECT
-      ? handle_no_conn()
-      : data.callback(
-          req(),
-          Params::RangeLocateRsp(ev->error, ev->data.base, ev->data.size)
-        );
+    data.callback(
+      req(),
+      Params::RangeLocateRsp(ev->error, ev->data.base, ev->data.size)
+    );
   }
 
   protected:

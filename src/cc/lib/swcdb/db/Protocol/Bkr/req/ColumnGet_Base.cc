@@ -52,9 +52,6 @@ bool ColumnGet_Base::run() {
 }
 
 void ColumnGet_Base::handle(ConnHandlerPtr, const Event::Ptr& ev) {
-  if(ev->type == Event::Type::DISCONNECT)
-    return handle_no_conn();
-
   Mngr::Params::ColumnGetRsp rsp;
   int err = ev->response_code();
   if(!err) {

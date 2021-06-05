@@ -20,10 +20,11 @@ namespace FsBroker {  namespace Req {
 
 
 bool Base::is_rsp(const Event::Ptr& ev, int cmd,
-                  const uint8_t **ptr, size_t *remain) {
+                  const uint8_t** ptr, size_t* remain) {
   // SWC_LOGF(LOG_DEBUG, "handle: %s", ev->to_str().c_str());
-
-  if(!(error = ev->error)) {
+  if(!ev) {
+    error = Error::COMM_NOT_CONNECTED;
+  } else if(!(error = ev->error)) {
     if(ev->header.command != cmd) {
       error = Error::NOT_IMPLEMENTED;
       SWC_LOGF(LOG_ERROR, "error=%d(%s) cmd=%d",

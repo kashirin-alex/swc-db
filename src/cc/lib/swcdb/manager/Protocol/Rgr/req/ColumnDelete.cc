@@ -25,7 +25,7 @@ ColumnDelete::ColumnDelete(const Manager::Ranger::Ptr& rgr,
 }
 
 void ColumnDelete::handle(ConnHandlerPtr, const Event::Ptr& ev) {
-  if(ev->type == Event::Type::DISCONNECT || ev->response_code())
+  if(ev->response_code())
     return handle_no_conn();
 
   remove();

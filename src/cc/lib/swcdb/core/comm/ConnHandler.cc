@@ -375,10 +375,9 @@ void ConnHandler::received(const Event::Ptr& ev) noexcept {
 
 void ConnHandler::disconnected() noexcept {
   try {
-    auto ev = Event::make(Event::Type::DISCONNECT, Error::COMM_NOT_CONNECTED);
     for(Outgoing outgoing; !m_outgoing.deactivating(outgoing); ) {
       if(outgoing.hdlr)
-        outgoing.hdlr->handle(ptr(), ev);
+        outgoing.hdlr->handle_no_conn();
     }
     for(Pending pending; ;) {
       {
@@ -390,7 +389,7 @@ void ConnHandler::disconnected() noexcept {
       }
       if(pending.timer)
         pending.timer->cancel();
-      pending.hdlr->handle(ptr(), ev);
+      pending.hdlr->handle_no_conn();
     }
 
   } catch(...) {

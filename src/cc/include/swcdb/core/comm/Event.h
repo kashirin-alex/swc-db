@@ -23,7 +23,6 @@ class Event final {
   enum Type : uint8_t {
     ERROR       = 0x00,  ///< %Error event
     MESSAGE     = 0x01,  ///< Request/response message event
-    DISCONNECT  = 0x02,  ///< Connection disconnected event
   };
 
   typedef std::shared_ptr<Event> Ptr;

@@ -70,9 +70,6 @@ void ReportRes::handle_no_conn() {
 }
 
 void ReportRes::handle(ConnHandlerPtr, const Event::Ptr& ev) {
-  if(ev->type == Event::Type::DISCONNECT)
-    return handle_no_conn();
-
   Params::Report::RspRes rsp_params;
   int err = ev->error;
   if(!err) {
@@ -122,9 +119,6 @@ void ReportCids::handle_no_conn() {
 }
 
 void ReportCids::handle(ConnHandlerPtr, const Event::Ptr& ev) {
-  if(ev->type == Event::Type::DISCONNECT)
-    return handle_no_conn();
-
   Params::Report::RspCids rsp_params;
   int err = ev->error;
   if(!err) {
@@ -177,9 +171,6 @@ void ReportColumnRids::handle_no_conn() {
 }
 
 void ReportColumnRids::handle(ConnHandlerPtr, const Event::Ptr& ev) {
-  if(ev->type == Event::Type::DISCONNECT)
-    return handle_no_conn();
-
   Params::Report::RspColumnRids rsp_params;
   int err = ev->error;
   if(!err) {
@@ -255,9 +246,6 @@ void ReportColumnsRanges::handle_no_conn() {
 }
 
 void ReportColumnsRanges::handle(ConnHandlerPtr, const Event::Ptr& ev) {
-  if(ev->type == Event::Type::DISCONNECT)
-    return handle_no_conn();
-
   Params::Report::RspColumnsRanges rsp_params;
   int err = ev->error;
   if(!err) {

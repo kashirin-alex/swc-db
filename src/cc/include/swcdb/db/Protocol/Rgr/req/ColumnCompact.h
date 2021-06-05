@@ -26,8 +26,7 @@ class ColumnCompact : public client::ConnQueue::ReqBase {
   virtual ~ColumnCompact() { }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
-    if(ev->type != Event::Type::DISCONNECT &&
-       Params::ColumnCompactRsp(ev->error, ev->data.base, ev->data.size).err)
+    if(Params::ColumnCompactRsp(ev->error, ev->data.base, ev->data.size).err)
       return request_again();
   }
 

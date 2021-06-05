@@ -57,9 +57,6 @@ bool ColumnCompact_Base::run() {
 }
 
 void ColumnCompact_Base::handle(ConnHandlerPtr, const Event::Ptr& ev) {
-  if(ev->type == Event::Type::DISCONNECT)
-    return handle_no_conn();
-
   Mngr::Params::ColumnCompactRsp rsp(ev->error);
   if(!rsp.err) {
     try {

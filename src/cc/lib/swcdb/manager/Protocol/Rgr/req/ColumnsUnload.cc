@@ -27,9 +27,6 @@ ColumnsUnload::ColumnsUnload(const Manager::Ranger::Ptr& rgr,
 }
 
 void ColumnsUnload::handle(ConnHandlerPtr, const Event::Ptr& ev) {
-  if(ev->type == Event::Type::DISCONNECT)
-    return handle_no_conn();
-
   Params::ColumnsUnloadRsp rsp_params;
   int err = ev->error;
   if(!err) {

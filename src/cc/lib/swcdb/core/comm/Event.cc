@@ -68,9 +68,6 @@ void Event::print(std::ostream& out) const {
     header.print(out << "MESSAGE ");
     out << " buffers-sz(" << data.size << ',' << data_ext.size << ')';
     break;
-  case DISCONNECT:
-    out << "DISCONNECT";
-    break;
   default:
     out << "UKNOWN(" << int(type) << ')';
     break;

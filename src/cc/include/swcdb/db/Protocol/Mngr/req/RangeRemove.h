@@ -68,9 +68,6 @@ class RangeRemove: public client::ConnQueue::ReqBase {
   }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
-    if(ev->type == Event::Type::DISCONNECT)
-      return handle_no_conn();
-
     Params::RangeRemoveRsp rsp_params(ev->error);
     if(!rsp_params.err) {
       try {

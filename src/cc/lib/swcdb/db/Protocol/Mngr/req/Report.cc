@@ -97,9 +97,6 @@ void ClusterStatus::handle_no_conn() {
 }
 
 void ClusterStatus::handle(ConnHandlerPtr, const Event::Ptr& ev) {
-  if(ev->type == Event::Type::DISCONNECT)
-    return handle_no_conn();
-
   int err = ev->error;
   if(!err) {
     try {
@@ -177,9 +174,6 @@ bool ColumnStatus::run() {
 }
 
 void ColumnStatus::handle(ConnHandlerPtr, const Event::Ptr& ev) {
-  if(ev->type == Event::Type::DISCONNECT)
-    return handle_no_conn();
-
   Params::Report::RspColumnStatus rsp_params;
   int err = ev->error;
   if(!err) {
@@ -256,9 +250,6 @@ bool RangersStatus::run() {
 }
 
 void RangersStatus::handle(ConnHandlerPtr, const Event::Ptr& ev) {
-  if(ev->type == Event::Type::DISCONNECT)
-    return handle_no_conn();
-
   Params::Report::RspRangersStatus rsp_params;
   int err = ev->error;
   if(!err) {
@@ -331,9 +322,6 @@ void ManagersStatus::handle_no_conn() {
 }
 
 void ManagersStatus::handle(ConnHandlerPtr, const Event::Ptr& ev) {
-  if(ev->type == Event::Type::DISCONNECT)
-    return handle_no_conn();
-
   Params::Report::RspManagersStatus rsp_params;
   int err = ev->error;
   if(!err) {
