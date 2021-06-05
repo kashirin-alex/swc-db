@@ -108,7 +108,7 @@ class AppContext final : public Comm::AppContext {
       m_metrics->net->connected(conn);
   }
 
-  void handle_disconnect(Comm::ConnHandlerPtr conn) override {
+  void handle_disconnect(Comm::ConnHandlerPtr conn) noexcept override {
     m_srv->connection_del(conn);
     Env::Mngr::role()->disconnection(
       conn->endpoint_remote, conn->endpoint_local, true);

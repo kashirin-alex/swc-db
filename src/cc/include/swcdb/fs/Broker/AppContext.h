@@ -33,7 +33,7 @@ class AppContext final : public Comm::AppContext {
 
   void handle_established(Comm::ConnHandlerPtr) override { }
 
-  void handle_disconnect(Comm::ConnHandlerPtr) override { }
+  void handle_disconnect(Comm::ConnHandlerPtr) noexcept override { }
 
   void handle(Comm::ConnHandlerPtr, const Comm::Event::Ptr& ev) override {
     SWC_LOG_OUT(LOG_WARN,  ev->print(SWC_LOG_OSTREAM << "Unhandled "); );

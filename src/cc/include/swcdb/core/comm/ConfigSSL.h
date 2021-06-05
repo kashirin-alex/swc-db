@@ -35,7 +35,7 @@ class ConfigSSL final {
                    SocketPlain& socket) const;
 
 
-  std::shared_ptr<ConnHandlerSSL>
+  ConnHandlerSSL::Ptr
   make_client(AppContext::Ptr& app_ctx, SocketPlain& socket) const;
 
   ConnHandlerPtr

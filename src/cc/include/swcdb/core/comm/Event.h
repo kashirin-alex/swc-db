@@ -17,7 +17,7 @@ namespace SWC { namespace Comm {
 
 class Event final {
 
-  protected:
+  private:
 
   SWC_CAN_INLINE
   explicit Event(int error) noexcept : expiry_ms(0), error(error) { }

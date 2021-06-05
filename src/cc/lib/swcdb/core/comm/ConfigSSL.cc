@@ -126,7 +126,7 @@ bool ConfigSSL::need_ssl(const EndPoint& local,
 
 void ConfigSSL::make_server(AppContext::Ptr& app_ctx,
                             SocketPlain& socket) const {
-  auto conn = std::make_shared<ConnHandlerSSL>(app_ctx, ctx, socket);
+  auto conn = ConnHandlerSSL::make(app_ctx, ctx, socket);
   conn->handshake(
     SocketSSL::server,
     [conn] (const asio::error_code& ec) {
@@ -141,10 +141,10 @@ void ConfigSSL::make_server(AppContext::Ptr& app_ctx,
 }
 
 
-std::shared_ptr<ConnHandlerSSL>
+ConnHandlerSSL::Ptr
 ConfigSSL::make_client(AppContext::Ptr& app_ctx,
                        SocketPlain& socket) const {
-  auto conn = std::make_shared<ConnHandlerSSL>(app_ctx, ctx, socket);
+  auto conn = ConnHandlerSSL::make(app_ctx, ctx, socket);
   if(!subject_name.empty())
     conn->set_verify(asio::ssl::host_name_verification(subject_name));
   return conn;

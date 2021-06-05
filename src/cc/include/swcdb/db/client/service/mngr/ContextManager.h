@@ -23,7 +23,7 @@ class ContextManager : public Comm::AppContext {
 
   void handle_established(Comm::ConnHandlerPtr) override { }
 
-  void handle_disconnect(Comm::ConnHandlerPtr) override { }
+  void handle_disconnect(Comm::ConnHandlerPtr) noexcept override { }
 
   void handle(Comm::ConnHandlerPtr conn, const Comm::Event::Ptr& ev) override;
 

@@ -89,23 +89,19 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
   public:
 
+  ConnHandler(const ConnHandler&)             = delete;
+  ConnHandler(ConnHandler&&)                  = delete;
+  ConnHandler& operator=(const ConnHandler&)  = delete;
+  ConnHandler& operator=(ConnHandler&&)       = delete;
+
   Core::AtomicBool      connected;
   const AppContext::Ptr app_ctx;
   EndPoint              endpoint_remote;
   EndPoint              endpoint_local;
 
-  ConnHandler(AppContext::Ptr& app_ctx) noexcept
-              : connected(true), app_ctx(app_ctx), m_next_req_id(0),
-                m_recv_bytes(0) {
-  }
+  size_t endpoint_remote_hash() const noexcept;
 
-  ConnHandlerPtr ptr() noexcept {
-    return shared_from_this();
-  }
-
-  size_t endpoint_remote_hash() const;
-
-  size_t endpoint_local_hash() const;
+  size_t endpoint_local_hash() const noexcept;
 
   Core::Encoder::Type get_encoder() const noexcept;
 
@@ -121,7 +117,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
   bool due();
 
-  virtual void do_close() = 0;
+  virtual void do_close() noexcept = 0;
 
   bool send_error(int error, const std::string& msg,
                   const Event::Ptr& ev) noexcept;
@@ -136,6 +132,15 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   void print(std::ostream& out) const;
 
   protected:
+
+  ConnHandler(AppContext::Ptr& app_ctx) noexcept
+              : connected(true), app_ctx(app_ctx), m_next_req_id(0),
+                m_recv_bytes(0) {
+  }
+
+  ConnHandlerPtr ptr() noexcept {
+    return shared_from_this();
+  }
 
   virtual ~ConnHandler() { }
 
@@ -153,7 +158,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
       std::function<void(const asio::error_code&, size_t)>&& hdlr)
       noexcept = 0;
 
-  void do_close_run();
+  void do_close_run() noexcept;
 
   void disconnected() noexcept;
 
@@ -181,7 +186,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
   void received(const Event::Ptr& ev) noexcept;
 
-  void do_close_recv() {
+  void do_close_recv() noexcept {
     if(m_recv_bytes)
       app_ctx->net_bytes_received(ptr(), m_recv_bytes);
     do_close();
@@ -207,14 +212,17 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
 
 
+
 class ConnHandlerPlain final : public ConnHandler {
   public:
 
-  ConnHandlerPlain(AppContext::Ptr& app_ctx, SocketPlain& socket) noexcept;
+  typedef std::shared_ptr<ConnHandlerPlain> Ptr;
+
+  static Ptr make(AppContext::Ptr& app_ctx, SocketPlain& socket);
 
   virtual ~ConnHandlerPlain();
 
-  void do_close() override;
+  void do_close() noexcept override;
 
   bool is_open() const noexcept override;
 
@@ -235,22 +243,28 @@ class ConnHandlerPlain final : public ConnHandler {
     noexcept override;
 
   private:
+
+  ConnHandlerPlain(AppContext::Ptr& app_ctx, SocketPlain& socket) noexcept;
+
   SocketPlain  m_sock;
 
 };
 
 
+
 class ConnHandlerSSL final : public ConnHandler {
   public:
 
-  ConnHandlerSSL(AppContext::Ptr& app_ctx, asio::ssl::context& ssl_ctx,
-                 SocketPlain& socket) noexcept;
+  typedef std::shared_ptr<ConnHandlerSSL> Ptr;
+
+  static Ptr make(AppContext::Ptr& app_ctx, asio::ssl::context& ssl_ctx,
+                  SocketPlain& socket);
 
   virtual ~ConnHandlerSSL();
 
   bool is_secure() const noexcept override { return true; }
 
-  void do_close() override;
+  void do_close() noexcept override;
 
   bool is_open() const noexcept override;
 
@@ -282,6 +296,10 @@ class ConnHandlerSSL final : public ConnHandler {
     noexcept override;
 
   private:
+
+  ConnHandlerSSL(AppContext::Ptr& app_ctx, asio::ssl::context& ssl_ctx,
+                 SocketPlain& socket) noexcept;
+
   SocketSSL                               m_sock;
   asio::strand<SocketSSL::executor_type>  m_strand;
 

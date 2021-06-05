@@ -32,7 +32,7 @@ class AppContext : public std::enable_shared_from_this<AppContext> {
 
   virtual void handle_established(ConnHandlerPtr conn) = 0;
 
-  virtual void handle_disconnect(ConnHandlerPtr conn) = 0;
+  virtual void handle_disconnect(ConnHandlerPtr conn) noexcept = 0;
 
   virtual void handle(ConnHandlerPtr conn, const Event::Ptr& ev) = 0;
 

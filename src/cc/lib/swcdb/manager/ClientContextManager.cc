@@ -7,7 +7,7 @@
 namespace SWC { namespace client { namespace Mngr {
 
 
-void ContextManager::handle_disconnect(Comm::ConnHandlerPtr conn) {
+void ContextManager::handle_disconnect(Comm::ConnHandlerPtr conn) noexcept {
   Env::Mngr::role()->disconnection(
     conn->endpoint_remote, conn->endpoint_local);
 }

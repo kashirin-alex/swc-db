@@ -124,7 +124,7 @@ class AppContext final : public Comm::AppContext {
       m_metrics->net->connected(conn);
   }
 
-  void handle_disconnect(Comm::ConnHandlerPtr conn) override {
+  void handle_disconnect(Comm::ConnHandlerPtr conn) noexcept override {
     m_srv->connection_del(conn);
     if(m_metrics)
       m_metrics->net->disconnected(conn);

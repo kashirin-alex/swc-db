@@ -20,7 +20,7 @@ class ContextManager final : public client::ContextManager {
 
   virtual ~ContextManager() { }
 
-  void handle_disconnect(Comm::ConnHandlerPtr) override;
+  void handle_disconnect(Comm::ConnHandlerPtr) noexcept override;
 
 };
 

@@ -14,12 +14,12 @@ namespace SWC { namespace Comm {
 
 
 SWC_SHOULD_INLINE
-size_t ConnHandler::endpoint_remote_hash() const {
+size_t ConnHandler::endpoint_remote_hash() const noexcept {
   return endpoint_hash(endpoint_remote);
 }
 
 SWC_SHOULD_INLINE
-size_t ConnHandler::endpoint_local_hash() const {
+size_t ConnHandler::endpoint_local_hash() const noexcept {
   return endpoint_hash(endpoint_local);
 }
 
@@ -57,7 +57,7 @@ bool ConnHandler::due() {
   return m_outgoing.is_active() || m_outgoing.size() || pending_read();
 }
 
-void ConnHandler::do_close_run() {
+void ConnHandler::do_close_run() noexcept {
   app_ctx->handle_disconnect(ptr());
 }
 
@@ -436,6 +436,11 @@ void ConnHandler::run_pending(const Event::Ptr& ev) {
 
 
 
+ConnHandlerPlain::Ptr
+ConnHandlerPlain::make(AppContext::Ptr& app_ctx, SocketPlain& socket) {
+  return ConnHandlerPlain::Ptr(new ConnHandlerPlain(app_ctx, socket));
+}
+
 ConnHandlerPlain::ConnHandlerPlain(AppContext::Ptr& app_ctx,
                                    SocketPlain& socket) noexcept
                                   : ConnHandler(app_ctx),
@@ -450,7 +455,7 @@ ConnHandlerPlain::~ConnHandlerPlain() {
   }
 }
 
-void ConnHandlerPlain::do_close() {
+void ConnHandlerPlain::do_close() noexcept {
   bool at = true;
   if(connected.compare_exchange_weak(at, false)) {
     if(m_sock.is_open()) {
@@ -500,6 +505,12 @@ void ConnHandlerPlain::read(uint8_t** bufp, size_t* remainp,
 
 
 
+ConnHandlerSSL::Ptr
+ConnHandlerSSL::make(AppContext::Ptr& app_ctx, asio::ssl::context& ssl_ctx,
+                     SocketPlain& socket) {
+  return ConnHandlerSSL::Ptr(new ConnHandlerSSL(app_ctx, ssl_ctx, socket));
+}
+
 ConnHandlerSSL::ConnHandlerSSL(AppContext::Ptr& app_ctx,
                                asio::ssl::context& ssl_ctx,
                                SocketPlain& socket) noexcept
@@ -516,7 +527,7 @@ ConnHandlerSSL::~ConnHandlerSSL() {
   }
 }
 
-void ConnHandlerSSL::do_close() {
+void ConnHandlerSSL::do_close() noexcept {
   bool at = true;
   if(connected.compare_exchange_weak(at, false)) {
     if(m_sock.lowest_layer().is_open()) {

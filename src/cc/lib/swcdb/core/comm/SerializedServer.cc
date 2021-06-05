@@ -62,7 +62,7 @@ void Acceptor::do_accept_mixed() noexcept {
           if(need_ssl) {
             m_ssl_cfg->make_server(m_app_ctx, new_sock);
           } else {
-            auto conn = std::make_shared<ConnHandlerPlain>(m_app_ctx, new_sock);
+            auto conn = ConnHandlerPlain::make(m_app_ctx, new_sock);
             conn->new_connection();
           }
         } else if(new_sock.is_open()) {
@@ -90,7 +90,7 @@ void Acceptor::do_accept_plain() noexcept {
       }
 
       if(new_sock.is_open()) try {
-        auto conn = std::make_shared<ConnHandlerPlain>(m_app_ctx, new_sock);
+        auto conn = ConnHandlerPlain::make(m_app_ctx, new_sock);
         conn->new_connection();
       } catch(...) {
         SWC_LOG_CURRENT_EXCEPTION("");
