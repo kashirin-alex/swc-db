@@ -124,40 +124,26 @@ class AppContext final : public Comm::AppContext {
     if(!Env::Bkr::can_process())
       return conn->do_close();
 
-    switch (ev->type) {
+    if(ev->error) {
+      m_metrics->net->error(conn);
 
-      case Comm::Event::Type::ERROR:
-        if(m_metrics)
-          m_metrics->net->error(conn);
-        break;
+    } else if(!ev->header.command ||
+               ev->header.command >= Comm::Protocol::Bkr::MAX_CMD) {
+      Comm::Protocol::Common::Handler::not_implemented(conn, ev);
+      if(m_metrics)
+        m_metrics->net->error(conn);
 
-      case Comm::Event::Type::MESSAGE: {
-        if(!ev->header.command ||
-           ev->header.command >= Comm::Protocol::Bkr::MAX_CMD) {
-          Comm::Protocol::Common::Handler::not_implemented(conn, ev);
-          if(m_metrics)
-            m_metrics->net->error(conn);
-
-        } else {
-          Env::Bkr::in_process(1);
-          Env::Bkr::post([conn, ev]() {
-            ev->expired() || !conn->is_open()
-              ? Env::Bkr::processed()
-              : handlers[ev->header.command](conn, ev);
-          });
-          if(m_metrics)
-            m_metrics->net->command(conn, ev->header.command);
-        }
-        break;
-      }
-
-      default: {
-        SWC_LOGF(LOG_WARN, "Unimplemented event-type (%d)", int(ev->type));
-        if(m_metrics)
-          m_metrics->net->error(conn);
-        break;
-      }
+    } else {
+      Env::Bkr::in_process(1);
+      Env::Bkr::post([conn, ev]() {
+        ev->expired() || !conn->is_open()
+          ? Env::Bkr::processed()
+          : handlers[ev->header.command](conn, ev);
+      });
+      if(m_metrics)
+        m_metrics->net->command(conn, ev->header.command);
     }
+
     Env::Bkr::processed();
   }
 

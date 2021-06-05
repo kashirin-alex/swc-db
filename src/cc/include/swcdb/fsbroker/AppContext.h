@@ -149,38 +149,26 @@ class AppContext final : public Comm::AppContext {
     if(!Env::FsBroker::can_process())
       return conn->do_close();
 
-    switch (ev->type) {
-      case Comm::Event::Type::ERROR:
-        if(m_metrics)
-          m_metrics->net->error(conn);
-        break;
+    if(ev->error) {
+      m_metrics->net->error(conn);
 
-      case Comm::Event::Type::MESSAGE: {
-        if(!ev->header.command ||
-            ev->header.command >= Comm::Protocol::FsBroker::MAX_CMD) {
-          Comm::Protocol::Common::Handler::not_implemented(conn, ev);
-          if(m_metrics)
-            m_metrics->net->error(conn);
-        } else {
-          Env::FsBroker::in_process(1);
-          Env::IoCtx::post([conn, ev]() {
-            if(!ev->expired() && conn->is_open())
-              handlers[ev->header.command](conn, ev);
-            Env::FsBroker::in_process(-1);
-          });
-          if(m_metrics)
-            m_metrics->net->command(conn, ev->header.command);
-        }
-        break;
-      }
+    } else if(!ev->header.command ||
+               ev->header.command >= Comm::Protocol::FsBroker::MAX_CMD) {
+      Comm::Protocol::Common::Handler::not_implemented(conn, ev);
+      if(m_metrics)
+        m_metrics->net->error(conn);
 
-      default:
-        SWC_LOGF(LOG_WARN, "Unimplemented event-type (%d)", int(ev->type));
-        if(m_metrics)
-          m_metrics->net->error(conn);
-        break;
-
+    } else {
+      Env::FsBroker::in_process(1);
+      Env::IoCtx::post([conn, ev]() {
+        if(!ev->expired() && conn->is_open())
+          handlers[ev->header.command](conn, ev);
+        Env::FsBroker::in_process(-1);
+      });
+      if(m_metrics)
+        m_metrics->net->command(conn, ev->header.command);
     }
+
     Env::FsBroker::in_process(-1);
   }
 

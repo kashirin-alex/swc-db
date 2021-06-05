@@ -124,120 +124,108 @@ class AppContext final : public Comm::AppContext {
         return conn->do_close();
     #endif
 
-    switch (ev->type) {
-
-      case Comm::Event::Type::ERROR:
-        //rangers->decommision(event->addr);
-        if(m_metrics)
-          m_metrics->net->error(conn);
-        break;
-
-      case Comm::Event::Type::MESSAGE: {
-        switch(ev->header.command) {
-
-          case Comm::Protocol::Mngr::Command::MNGR_STATE:
-            Env::Mngr::post([conn, ev]() {
-              if(!ev->expired())
-                Comm::Protocol::Mngr::Handler::mngr_state(conn, ev);
-            });
-            break;
-
-          case Comm::Protocol::Mngr::Command::MNGR_ACTIVE:
-            Comm::Protocol::Mngr::Handler::mngr_active(conn, ev);
-            break;
-
-          case Comm::Protocol::Mngr::Command::COLUMN_MNG:
-            Comm::Protocol::Mngr::Handler::column_mng(conn, ev);
-            break;
-
-          case Comm::Protocol::Mngr::Command::COLUMN_UPDATE:
-            Env::Mngr::post([conn, ev]() {
-              if(!ev->expired())
-                Comm::Protocol::Mngr::Handler::column_update(conn, ev);
-            });
-            break;
-
-          case Comm::Protocol::Mngr::Command::COLUMN_GET:
-            Comm::Protocol::Mngr::Handler::column_get(conn, ev);
-            break;
-
-          case Comm::Protocol::Mngr::Command::COLUMN_LIST:
-            Comm::Protocol::Mngr::Handler::column_list(conn, ev);
-            break;
-
-          case Comm::Protocol::Mngr::Command::COLUMN_COMPACT:
-            Comm::Protocol::Mngr::Handler::column_compact(conn, ev);
-            break;
-
-          case Comm::Protocol::Mngr::Command::RGR_MNG_ID:
-            Env::Mngr::post([conn, ev]() {
-              if(!ev->expired())
-                Comm::Protocol::Mngr::Handler::rgr_mng_id(conn, ev);
-            });
-            break;
-
-          case Comm::Protocol::Mngr::Command::RGR_UPDATE:
-            Env::Mngr::post([conn, ev]() {
-              if(!ev->expired())
-                Comm::Protocol::Mngr::Handler::rgr_update(conn, ev);
-            });
-            break;
-
-          case Comm::Protocol::Mngr::Command::RGR_GET:
-            Comm::Protocol::Mngr::Handler::rgr_get(conn, ev);
-            break;
-
-          case Comm::Protocol::Mngr::Command::RANGE_CREATE:
-            Env::Mngr::post([conn, ev]() {
-              if(!ev->expired())
-                Comm::Protocol::Mngr::Handler::range_create(conn, ev);
-            });
-            break;
-
-          case Comm::Protocol::Mngr::Command::RANGE_UNLOADED:
-            Comm::Protocol::Mngr::Handler::range_unloaded(conn, ev);
-            break;
-
-          case Comm::Protocol::Mngr::Command::RANGE_REMOVE:
-            Env::Mngr::post([conn, ev]() {
-              if(!ev->expired())
-                Comm::Protocol::Mngr::Handler::range_remove(conn, ev);
-            });
-            break;
-
-          case Comm::Protocol::Mngr::Command::REPORT:
-            Env::Mngr::post([conn, ev]() {
-              if(!ev->expired())
-                Comm::Protocol::Mngr::Handler::report(conn, ev);
-            });
-            break;
-
-          case Comm::Protocol::Mngr::Command::DO_ECHO:
-            Comm::Protocol::Mngr::Handler::do_echo(conn, ev);
-            break;
-
-          default:
-            Comm::Protocol::Common::Handler::not_implemented(conn, ev);
-            if(m_metrics)
-              m_metrics->net->error(conn);
-            return;
-
-          //&Comm::Protocol::Mngr::Handler::debug,
-          //&Comm::Protocol::Mngr::Handler::status,
-          //&Comm::Protocol::Mngr::Handler::shutdown
-        }
-        if(m_metrics)
-          m_metrics->net->command(conn, ev->header.command);
-        break;
-      }
-
-      default:
-        SWC_LOGF(LOG_WARN, "Unimplemented event-type (%d)", int(ev->type));
-        if(m_metrics)
-          m_metrics->net->error(conn);
-        break;
-
+    if(ev->error) {
+      m_metrics->net->error(conn);
+      return;
     }
+
+    switch(ev->header.command) {
+
+      case Comm::Protocol::Mngr::Command::MNGR_STATE:
+        Env::Mngr::post([conn, ev]() {
+          if(!ev->expired())
+            Comm::Protocol::Mngr::Handler::mngr_state(conn, ev);
+        });
+        break;
+
+      case Comm::Protocol::Mngr::Command::MNGR_ACTIVE:
+        Comm::Protocol::Mngr::Handler::mngr_active(conn, ev);
+        break;
+
+      case Comm::Protocol::Mngr::Command::COLUMN_MNG:
+        Comm::Protocol::Mngr::Handler::column_mng(conn, ev);
+            break;
+
+      case Comm::Protocol::Mngr::Command::COLUMN_UPDATE:
+        Env::Mngr::post([conn, ev]() {
+          if(!ev->expired())
+            Comm::Protocol::Mngr::Handler::column_update(conn, ev);
+        });
+        break;
+
+      case Comm::Protocol::Mngr::Command::COLUMN_GET:
+        Comm::Protocol::Mngr::Handler::column_get(conn, ev);
+        break;
+
+      case Comm::Protocol::Mngr::Command::COLUMN_LIST:
+        Comm::Protocol::Mngr::Handler::column_list(conn, ev);
+        break;
+
+      case Comm::Protocol::Mngr::Command::COLUMN_COMPACT:
+        Comm::Protocol::Mngr::Handler::column_compact(conn, ev);
+        break;
+
+      case Comm::Protocol::Mngr::Command::RGR_MNG_ID:
+        Env::Mngr::post([conn, ev]() {
+          if(!ev->expired())
+            Comm::Protocol::Mngr::Handler::rgr_mng_id(conn, ev);
+        });
+        break;
+
+      case Comm::Protocol::Mngr::Command::RGR_UPDATE:
+        Env::Mngr::post([conn, ev]() {
+          if(!ev->expired())
+            Comm::Protocol::Mngr::Handler::rgr_update(conn, ev);
+        });
+        break;
+
+      case Comm::Protocol::Mngr::Command::RGR_GET:
+        Comm::Protocol::Mngr::Handler::rgr_get(conn, ev);
+        break;
+
+      case Comm::Protocol::Mngr::Command::RANGE_CREATE:
+        Env::Mngr::post([conn, ev]() {
+          if(!ev->expired())
+            Comm::Protocol::Mngr::Handler::range_create(conn, ev);
+        });
+        break;
+
+      case Comm::Protocol::Mngr::Command::RANGE_UNLOADED:
+        Comm::Protocol::Mngr::Handler::range_unloaded(conn, ev);
+        break;
+
+      case Comm::Protocol::Mngr::Command::RANGE_REMOVE:
+        Env::Mngr::post([conn, ev]() {
+          if(!ev->expired())
+            Comm::Protocol::Mngr::Handler::range_remove(conn, ev);
+        });
+        break;
+
+      case Comm::Protocol::Mngr::Command::REPORT:
+        Env::Mngr::post([conn, ev]() {
+          if(!ev->expired())
+            Comm::Protocol::Mngr::Handler::report(conn, ev);
+        });
+        break;
+
+      case Comm::Protocol::Mngr::Command::DO_ECHO:
+        Comm::Protocol::Mngr::Handler::do_echo(conn, ev);
+        break;
+
+      //&Comm::Protocol::Mngr::Handler::debug,
+      //&Comm::Protocol::Mngr::Handler::status,
+      //&Comm::Protocol::Mngr::Handler::shutdown
+
+      default: {
+        Comm::Protocol::Common::Handler::not_implemented(conn, ev);
+        if(m_metrics)
+          m_metrics->net->error(conn);
+        return;
+      }
+    }
+
+    if(m_metrics)
+      m_metrics->net->command(conn, ev->header.command);
   }
 
   void net_bytes_sent(const Comm::ConnHandlerPtr& conn, size_t b)

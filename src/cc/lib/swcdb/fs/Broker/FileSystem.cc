@@ -181,9 +181,7 @@ bool FileSystemBroker::send_request(
   Comm::ConnHandlerPtr conn = nullptr;
   do {
     if(!m_run) {
-      auto ev = Comm::Event::make(
-        Comm::Event::Type::ERROR, Error::SERVER_SHUTTING_DOWN);
-      hdlr->handle(conn, ev);
+      hdlr->handle(conn, Comm::Event::make(Error::SERVER_SHUTTING_DOWN));
       return true;
     }
   } while(!(conn = m_service->get_connection(

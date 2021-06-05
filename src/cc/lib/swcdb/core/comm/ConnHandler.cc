@@ -153,8 +153,7 @@ void ConnHandler::write(ConnHandler::Outgoing& outgoing) {
           if(!ec)
             conn->write_next();
 
-          auto ev = Event::make(
-            Event::Type::ERROR, ec ? Error::COMM_SEND_ERROR : Error::OK);
+          auto ev = Event::make(ec ? Error::COMM_SEND_ERROR : Error::OK);
           ev->header.initialize_from_response(cbuf->header);
           hdlr->handle(conn, ev);
           if(ec)
@@ -195,7 +194,7 @@ void ConnHandler::write(ConnHandler::Outgoing& outgoing) {
         [cbuf, conn=ptr()] (const asio::error_code& ec) {
           if(ec == asio::error::operation_aborted)
             return;
-          auto ev = Event::make(Event::Type::ERROR, Error::REQUEST_TIMEOUT);
+          auto ev = Event::make(Error::REQUEST_TIMEOUT);
           ev->header.initialize_from_request(cbuf->header);
           ev->header.flags &= Header::FLAG_REQUEST_MASK;
           conn->run_pending(ev);
@@ -241,7 +240,7 @@ void ConnHandler::recved_header_pre(const asio::error_code& ec, size_t filled) {
   if(ec || filled != Header::PREFIX_LENGTH)
     return do_close_recv();
 
-  auto ev = Event::make(Event::Type::MESSAGE, Error::OK);
+  auto ev = Event::make(Error::OK);
   try {
     const uint8_t* buf = _buf_header;
     ev->header.decode_prefix(&buf, &filled);

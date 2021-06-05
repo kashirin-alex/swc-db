@@ -17,22 +17,18 @@ namespace SWC { namespace Comm {
 
 class Event final {
 
-  public:
+  protected:
 
-  /** Enumeration for event types.*/
-  enum Type : uint8_t {
-    ERROR       = 0x00,  ///< %Error event
-    MESSAGE     = 0x01,  ///< Request/response message event
-  };
+  SWC_CAN_INLINE
+  explicit Event(int error) noexcept : expiry_ms(0), error(error) { }
+
+  public:
 
   typedef std::shared_ptr<Event> Ptr;
 
-  static Ptr make(Type type, int error) {
-    return std::make_shared<Event>(type, error);
-  }
-
-  explicit Event(Type type_, int error_) noexcept
-                : type(type_), error(error_), expiry_ms(0) {
+  SWC_CAN_INLINE
+  static Ptr make(int error) {
+    return Ptr(new Event(error));
   }
 
   //~Event() { }
@@ -47,16 +43,16 @@ class Event final {
 
   bool expired(int64_t within=0) const noexcept;
 
-  int32_t response_code();
+  int32_t response_code() const noexcept;
 
   void print(std::ostream& out) const;
 
-  Type                type;
-  int                 error;
   int64_t             expiry_ms;
   StaticBuffer        data;     //!< Primary data buffer
   StaticBuffer        data_ext; //!< Extended buffer
   Header              header;
+  int                 error;
+
 };
 
 }} // namespace SWC::Comm

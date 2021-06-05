@@ -138,104 +138,93 @@ class AppContext final : public Comm::AppContext {
         return conn->do_close();
     #endif
 
-    switch (ev->type) {
+    if(ev->error) {
+      m_metrics->net->error(conn);
+      return;
+    }
 
-      case Comm::Event::Type::ERROR:
-        if(m_metrics)
-          m_metrics->net->error(conn);
+    switch(Env::Rgr::rgr_data()->rgrid
+            ? Comm::Protocol::Rgr::Command(ev->header.command)
+            : Comm::Protocol::Rgr::Command::MAX_CMD) {
+
+      case Comm::Protocol::Rgr::Command::MAX_CMD:
+        conn->send_error(Error::RGR_NOT_READY, "", ev);
         break;
 
-      case Comm::Event::Type::MESSAGE: {
-        switch(Env::Rgr::rgr_data()->rgrid
-                ? Comm::Protocol::Rgr::Command(ev->header.command)
-                : Comm::Protocol::Rgr::Command::MAX_CMD) {
-
-          case Comm::Protocol::Rgr::Command::MAX_CMD:
-            conn->send_error(Error::RGR_NOT_READY, "", ev);
-            break;
-
-          case Comm::Protocol::Rgr::Command::ASSIGN_ID_NEEDED: // not-used
-            Comm::Protocol::Rgr::Handler::assign_id(conn, ev, id_mngr);
-            break;
-
-          case Comm::Protocol::Rgr::Command::COLUMN_DELETE:
-            Comm::Protocol::Rgr::Handler::column_delete(conn, ev);
-            break;
-
-          case Comm::Protocol::Rgr::Command::COLUMN_COMPACT:
-            Comm::Protocol::Rgr::Handler::column_compact(conn, ev);
-            break;
-
-          case Comm::Protocol::Rgr::Command::SCHEMA_UPDATE:
-            Comm::Protocol::Rgr::Handler::column_update(conn, ev);
-            break;
-
-          case Comm::Protocol::Rgr::Command::COLUMNS_UNLOAD:
-            Comm::Protocol::Rgr::Handler::columns_unload(conn, ev);
-            break;
-
-          case Comm::Protocol::Rgr::Command::RANGE_IS_LOADED:
-            Comm::Protocol::Rgr::Handler::range_is_loaded(conn, ev);
-            break;
-
-          case Comm::Protocol::Rgr::Command::RANGE_LOAD:
-            Env::Rgr::post([conn, ev]() {
-              if(!ev->expired())
-                Comm::Protocol::Rgr::Handler::range_load(conn, ev);
-            });
-            break;
-
-          case Comm::Protocol::Rgr::Command::RANGE_UNLOAD:
-            Comm::Protocol::Rgr::Handler::range_unload(conn, ev);
-            break;
-
-          case Comm::Protocol::Rgr::Command::RANGE_LOCATE:
-            Env::Rgr::post([conn, ev]() {
-              if(!ev->expired())
-                Comm::Protocol::Rgr::Handler::range_locate(conn, ev);
-            });
-            break;
-
-          case Comm::Protocol::Rgr::Command::RANGE_QUERY_UPDATE:
-            Comm::Protocol::Rgr::Handler::range_query_update(conn, ev);
-            break;
-
-          case Comm::Protocol::Rgr::Command::RANGE_QUERY_SELECT:
-            Env::Rgr::post([conn, ev]() {
-              if(!ev->expired())
-                Comm::Protocol::Rgr::Handler::range_query_select(conn, ev);
-            });
-            break;
-
-          case Comm::Protocol::Rgr::Command::REPORT:
-            Env::Rgr::post([conn, ev]() {
-              if(!ev->expired())
-                Comm::Protocol::Rgr::Handler::report(conn, ev);
-            });
-            break;
-
-          default:
-            Comm::Protocol::Common::Handler::not_implemented(conn, ev);
-            if(m_metrics)
-              m_metrics->net->error(conn);
-            return;
-
-          //&Comm::Protocol::Rgr::Handler::debug,
-          //&Comm::Protocol::Rgr::Handler::status,
-          //&Comm::Protocol::Rgr::Handler::shutdown
-        }
-        if(m_metrics)
-          m_metrics->net->command(conn, ev->header.command);
+      case Comm::Protocol::Rgr::Command::ASSIGN_ID_NEEDED: // not-used
+        Comm::Protocol::Rgr::Handler::assign_id(conn, ev, id_mngr);
         break;
-      }
+
+      case Comm::Protocol::Rgr::Command::COLUMN_DELETE:
+        Comm::Protocol::Rgr::Handler::column_delete(conn, ev);
+        break;
+
+      case Comm::Protocol::Rgr::Command::COLUMN_COMPACT:
+        Comm::Protocol::Rgr::Handler::column_compact(conn, ev);
+        break;
+
+      case Comm::Protocol::Rgr::Command::SCHEMA_UPDATE:
+        Comm::Protocol::Rgr::Handler::column_update(conn, ev);
+        break;
+
+      case Comm::Protocol::Rgr::Command::COLUMNS_UNLOAD:
+        Comm::Protocol::Rgr::Handler::columns_unload(conn, ev);
+        break;
+
+      case Comm::Protocol::Rgr::Command::RANGE_IS_LOADED:
+        Comm::Protocol::Rgr::Handler::range_is_loaded(conn, ev);
+        break;
+
+      case Comm::Protocol::Rgr::Command::RANGE_LOAD:
+        Env::Rgr::post([conn, ev]() {
+          if(!ev->expired())
+            Comm::Protocol::Rgr::Handler::range_load(conn, ev);
+        });
+        break;
+
+      case Comm::Protocol::Rgr::Command::RANGE_UNLOAD:
+        Comm::Protocol::Rgr::Handler::range_unload(conn, ev);
+        break;
+
+      case Comm::Protocol::Rgr::Command::RANGE_LOCATE:
+        Env::Rgr::post([conn, ev]() {
+          if(!ev->expired())
+            Comm::Protocol::Rgr::Handler::range_locate(conn, ev);
+        });
+        break;
+
+      case Comm::Protocol::Rgr::Command::RANGE_QUERY_UPDATE:
+        Comm::Protocol::Rgr::Handler::range_query_update(conn, ev);
+        break;
+
+      case Comm::Protocol::Rgr::Command::RANGE_QUERY_SELECT:
+        Env::Rgr::post([conn, ev]() {
+          if(!ev->expired())
+            Comm::Protocol::Rgr::Handler::range_query_select(conn, ev);
+        });
+        break;
+
+      case Comm::Protocol::Rgr::Command::REPORT:
+        Env::Rgr::post([conn, ev]() {
+          if(!ev->expired())
+            Comm::Protocol::Rgr::Handler::report(conn, ev);
+        });
+        break;
+
+      //&Comm::Protocol::Rgr::Handler::debug,
+      //&Comm::Protocol::Rgr::Handler::status,
+      //&Comm::Protocol::Rgr::Handler::shutdown
 
       default: {
-        SWC_LOGF(LOG_WARN, "Unimplemented event-type (%d)", int(ev->type));
+        Comm::Protocol::Common::Handler::not_implemented(conn, ev);
         if(m_metrics)
           m_metrics->net->error(conn);
-        break;
+        return;
       }
     }
+
+    if(m_metrics)
+      m_metrics->net->command(conn, ev->header.command);
   }
 
   void net_bytes_sent(const Comm::ConnHandlerPtr& conn, size_t b)

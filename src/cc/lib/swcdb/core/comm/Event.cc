@@ -24,7 +24,6 @@ void Event::decode_buffers() {
   }
 
   if(err) {
-    type = Event::Type::ERROR;
     error = Error::REQUEST_TRUNCATED_PAYLOAD;
     data.free();
     data_ext.free();
@@ -39,8 +38,8 @@ bool Event::expired(int64_t within) const noexcept {
   return expiry_ms && Time::now_ms() > (expiry_ms - within);
 }
 
-int32_t Event::response_code() {
-  if(error || type == Event::ERROR)
+int32_t Event::response_code() const noexcept {
+  if(error)
     return error;
 
   const uint8_t *ptr = data.base;
@@ -59,21 +58,13 @@ int32_t Event::response_code() {
 }
 
 void Event::print(std::ostream& out) const {
-  out << "Event: type=";
-  switch(type) {
-  case ERROR:
-    out << "ERROR";
-    break;
-  case MESSAGE:
+  out <<  "Event: ";
+  if(error) {
+    Error::print(out << "ERROR ", error);
+  } else {
     header.print(out << "MESSAGE ");
     out << " buffers-sz(" << data.size << ',' << data_ext.size << ')';
-    break;
-  default:
-    out << "UKNOWN(" << int(type) << ')';
-    break;
   }
-  if(error)
-    Error::print(out << ' ', error);
 }
 
 
