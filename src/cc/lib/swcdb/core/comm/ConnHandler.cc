@@ -33,13 +33,11 @@ Core::Encoder::Type ConnHandler::get_encoder() const noexcept {
 
 void ConnHandler::new_connection() {
   auto sock = socket_layer();
-  {
-    Core::MutexSptd::scope lock(m_mutex);
-    endpoint_remote = sock->remote_endpoint();
-    endpoint_local = sock->local_endpoint();
-  }
+  endpoint_remote = sock->remote_endpoint();
+  endpoint_local = sock->local_endpoint();
   SWC_LOG_OUT(LOG_DEBUG, print(SWC_LOG_OSTREAM << "New-"); );
-  run(Event::make(Event::Type::ESTABLISHED, Error::OK));
+
+  app_ctx->handle_established(ptr());
 
   read();
 }
@@ -59,15 +57,8 @@ bool ConnHandler::due() {
   return m_outgoing.is_active() || m_outgoing.size() || pending_read();
 }
 
-SWC_SHOULD_INLINE
-void ConnHandler::run(const Event::Ptr& ev) {
-  //if(ev->header.flags & Header::FLAG_REQUEST_BIT)
-  app_ctx->handle(ptr(), ev);
-}
-
 void ConnHandler::do_close_run() {
-  //SWC_LOG_OUT(LOG_DEBUG, print(SWC_LOG_OSTREAM << "Closed-"); );
-  run(Event::make(Event::Type::DISCONNECT, Error::OK));
+  app_ctx->handle_disconnect(ptr());
 }
 
 bool ConnHandler::send_error(int error, const std::string& msg,
@@ -230,7 +221,7 @@ void ConnHandler::write(ConnHandler::Outgoing& outgoing) {
   );
 }
 
-void ConnHandler::read() {
+void ConnHandler::read() noexcept {
   if(!connected)
     return;
 
@@ -360,7 +351,7 @@ void ConnHandler::recved_buffer(const Event::Ptr& ev,
   }
 }
 
-void ConnHandler::received(const Event::Ptr& ev) {
+void ConnHandler::received(const Event::Ptr& ev) noexcept {
   if(ev->header.flags & Header::FLAG_REQUEST_BIT)
     ev->received();
 
@@ -368,26 +359,48 @@ void ConnHandler::received(const Event::Ptr& ev) {
 
   read();
 
-  run_pending(ev);
+  try {
+    run_pending(ev);
+  } catch(...) {
+    try {
+      const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
+      SWC_LOG_OUT(LOG_ERROR,
+        print(SWC_LOG_OSTREAM << ' ');
+        ev->print(SWC_LOG_OSTREAM << ' ');
+        SWC_LOG_OSTREAM << ' ' << e;
+      );
+    } catch(...) { }
+  }
 }
 
-void ConnHandler::disconnected() {
-  auto ev = Event::make(Event::Type::DISCONNECT, Error::COMM_NOT_CONNECTED);
-  for(Outgoing outgoing; !m_outgoing.deactivating(outgoing); ) {
-    if(outgoing.hdlr)
-      outgoing.hdlr->handle(ptr(), ev);
-  }
-  for(Pending pending; ;) {
-    {
-      Core::MutexSptd::scope lock(m_mutex);
-      if(m_pending.empty())
-        return;
-      pending = std::move(m_pending.begin()->second);
-      m_pending.erase(m_pending.begin());
+void ConnHandler::disconnected() noexcept {
+  try {
+    auto ev = Event::make(Event::Type::DISCONNECT, Error::COMM_NOT_CONNECTED);
+    for(Outgoing outgoing; !m_outgoing.deactivating(outgoing); ) {
+      if(outgoing.hdlr)
+        outgoing.hdlr->handle(ptr(), ev);
     }
-    if(pending.timer)
-      pending.timer->cancel();
-    pending.hdlr->handle(ptr(), ev);
+    for(Pending pending; ;) {
+      {
+        Core::MutexSptd::scope lock(m_mutex);
+        if(m_pending.empty())
+          return;
+        pending = std::move(m_pending.begin()->second);
+        m_pending.erase(m_pending.begin());
+      }
+      if(pending.timer)
+        pending.timer->cancel();
+      pending.hdlr->handle(ptr(), ev);
+    }
+
+  } catch(...) {
+    try {
+      const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
+      SWC_LOG_OUT(LOG_ERROR,
+        print(SWC_LOG_OSTREAM << ' ');
+        SWC_LOG_OSTREAM << ' ' << e;
+      );
+    } catch(...) { }
   }
 }
 
@@ -417,7 +430,7 @@ void ConnHandler::run_pending(const Event::Ptr& ev) {
   if(pending.hdlr) {
     pending.hdlr->handle(ptr(), ev);
   } else {
-    run(ev);
+    app_ctx->handle(ptr(), ev);
   }
 }
 

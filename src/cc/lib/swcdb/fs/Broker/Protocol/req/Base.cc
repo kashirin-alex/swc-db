@@ -23,18 +23,7 @@ bool Base::is_rsp(const Event::Ptr& ev, int cmd,
                   const uint8_t **ptr, size_t *remain) {
   // SWC_LOGF(LOG_DEBUG, "handle: %s", ev->to_str().c_str());
 
-  switch(ev->type) {
-    case Event::Type::ESTABLISHED:
-      return false;
-    case Event::Type::DISCONNECT:
-    case Event::Type::ERROR:
-      error = ev->error;
-      break;
-    default:
-      break;
-  }
-
-  if(!error) {
+  if(!(error = ev->error)) {
     if(ev->header.command != cmd) {
       error = Error::NOT_IMPLEMENTED;
       SWC_LOGF(LOG_ERROR, "error=%d(%s) cmd=%d",

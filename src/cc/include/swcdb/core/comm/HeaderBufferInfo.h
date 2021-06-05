@@ -16,9 +16,17 @@ namespace SWC { namespace Comm {
 
 struct BufferInfo final {
 
-  BufferInfo() noexcept;
+  BufferInfo()  noexcept
+    : size(0),
+      size_plain(0),
+      chksum(0),
+      encoder(Core::Encoder::Type::PLAIN) {
+  }
 
-  void reset() noexcept;
+  void reset() noexcept {
+    size = size_plain = chksum = 0;
+    encoder = Core::Encoder::Type::PLAIN;
+  }
 
   uint8_t encoded_length() const noexcept;
 
@@ -33,9 +41,9 @@ struct BufferInfo final {
   void print(std::ostream& out) const;
 
   uint32_t            size;        //!< Buffer size
-  Core::Encoder::Type encoder;     //!< Buffer Encoder
   uint32_t            size_plain;  //!< Buffer set if Encoder not PLAIN
   uint32_t            chksum;      //!< Buffer checksum
+  Core::Encoder::Type encoder;     //!< Buffer Encoder
 
 } __attribute__((packed));
 

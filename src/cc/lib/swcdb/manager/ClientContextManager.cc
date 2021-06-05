@@ -7,34 +7,9 @@
 namespace SWC { namespace client { namespace Mngr {
 
 
-void ContextManager::disconnected(const Comm::ConnHandlerPtr& conn) {
+void ContextManager::handle_disconnect(Comm::ConnHandlerPtr conn) {
   Env::Mngr::role()->disconnection(
     conn->endpoint_remote, conn->endpoint_local);
-}
-
-void ContextManager::handle(Comm::ConnHandlerPtr conn,
-                            const Comm::Event::Ptr& ev) {
-
-  switch (ev->type) {
-
-    case Comm::Event::Type::DISCONNECT: {
-      disconnected(conn);
-      return;
-    }
-
-    case Comm::Event::Type::MESSAGE:
-    case Comm::Event::Type::ERROR: {
-      SWC_LOG_OUT(LOG_WARN,  ev->print(SWC_LOG_OSTREAM << "unhandled: "); );
-      break;
-    }
-
-    case Comm::Event::Type::ESTABLISHED:
-    default: {
-      break;
-    }
-
-  }
-
 }
 
 

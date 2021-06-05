@@ -30,6 +30,10 @@ class AppContext : public std::enable_shared_from_this<AppContext> {
 
   virtual void stop();
 
+  virtual void handle_established(ConnHandlerPtr conn) = 0;
+
+  virtual void handle_disconnect(ConnHandlerPtr conn) = 0;
+
   virtual void handle(ConnHandlerPtr conn, const Event::Ptr& ev) = 0;
 
   virtual void net_bytes_sent(const ConnHandlerPtr&, size_t) noexcept { }

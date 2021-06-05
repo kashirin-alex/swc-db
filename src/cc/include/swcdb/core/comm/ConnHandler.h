@@ -121,17 +121,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
   bool due();
 
-  void run(const Event::Ptr& ev);
-
   virtual void do_close() = 0;
-
-  void do_close_recv() {
-    if(m_recv_bytes)
-      app_ctx->net_bytes_received(ptr(), m_recv_bytes);
-    do_close();
-  }
-
-  void do_close_run();
 
   bool send_error(int error, const std::string& msg,
                   const Event::Ptr& ev) noexcept;
@@ -163,7 +153,9 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
       std::function<void(const asio::error_code&, size_t)>&& hdlr)
       noexcept = 0;
 
-  void disconnected();
+  void do_close_run();
+
+  void disconnected() noexcept;
 
   Core::MutexSptd m_mutex;
 
@@ -175,7 +167,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
   void write(Outgoing& outgoing);
 
-  void read();
+  void read() noexcept;
 
   void recved_header_pre(const asio::error_code& ec, size_t filled);
 
@@ -187,7 +179,13 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   void recved_buffer(const Event::Ptr& ev,
                      asio::error_code ec, size_t filled);
 
-  void received(const Event::Ptr& ev);
+  void received(const Event::Ptr& ev) noexcept;
+
+  void do_close_recv() {
+    if(m_recv_bytes)
+      app_ctx->net_bytes_received(ptr(), m_recv_bytes);
+    do_close();
+  }
 
   void run_pending(const Event::Ptr& ev);
 

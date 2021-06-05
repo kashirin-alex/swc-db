@@ -60,19 +60,16 @@ int32_t Event::response_code() {
 
 void Event::print(std::ostream& out) const {
   out << "Event: type=";
-  switch(type){
-  case ESTABLISHED:
-    out << "ESTABLISHED";
-    break;
-  case DISCONNECT:
-    out << "DISCONNECT";
+  switch(type) {
+  case ERROR:
+    out << "ERROR";
     break;
   case MESSAGE:
     header.print(out << "MESSAGE ");
     out << " buffers-sz(" << data.size << ',' << data_ext.size << ')';
     break;
-  case ERROR:
-    out << "ERROR";
+  case DISCONNECT:
+    out << "DISCONNECT";
     break;
   default:
     out << "UKNOWN(" << int(type) << ')';

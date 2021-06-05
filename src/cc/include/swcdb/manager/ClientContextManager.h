@@ -20,9 +20,7 @@ class ContextManager final : public client::ContextManager {
 
   virtual ~ContextManager() { }
 
-  void disconnected(const Comm::ConnHandlerPtr& conn);
-
-  void handle(Comm::ConnHandlerPtr conn, const Comm::Event::Ptr& ev) override;
+  void handle_disconnect(Comm::ConnHandlerPtr) override;
 
 };
 

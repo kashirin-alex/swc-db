@@ -21,6 +21,10 @@ class ContextBroker : public Comm::AppContext {
 
   virtual ~ContextBroker() { }
 
+  void handle_established(Comm::ConnHandlerPtr) override { }
+
+  void handle_disconnect(Comm::ConnHandlerPtr) override { }
+
   void handle(Comm::ConnHandlerPtr conn, const Comm::Event::Ptr& ev) override;
 
 };

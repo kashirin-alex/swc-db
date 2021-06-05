@@ -17,20 +17,7 @@ ContextRanger::ContextRanger(const Config::Settings& settings)
 
 void ContextRanger::handle(Comm::ConnHandlerPtr, //conn
                            const Comm::Event::Ptr& ev) {
-  switch (ev->type) {
-
-    case Comm::Event::Type::ERROR:
-    case Comm::Event::Type::MESSAGE: {
-      SWC_LOG_OUT(LOG_WARN,  ev->print(SWC_LOG_OSTREAM << "unhandled: "); );
-      break;
-    }
-
-    case Comm::Event::Type::DISCONNECT:
-    case Comm::Event::Type::ESTABLISHED:
-    default: {
-      break;
-    }
-  }
+  SWC_LOG_OUT(LOG_WARN,  ev->print(SWC_LOG_OSTREAM << "unhandled: "); );
 }
 
 }}

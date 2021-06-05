@@ -9,7 +9,6 @@
 
 
 #include "swcdb/core/comm/Event.h"
-#include "swcdb/core/comm/AppContext.h"
 
 
 namespace SWC { namespace Comm {

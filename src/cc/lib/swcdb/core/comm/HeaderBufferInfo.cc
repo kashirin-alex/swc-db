@@ -12,21 +12,6 @@
 namespace SWC { namespace Comm {
 
 
-BufferInfo::BufferInfo() noexcept
-  : size(0),
-    encoder(Core::Encoder::Type::PLAIN),
-    size_plain(0),
-    chksum(0) {
-}
-
-SWC_SHOULD_INLINE
-void BufferInfo::reset() noexcept {
-  size = 0;
-  encoder = Core::Encoder::Type::PLAIN;
-  size_plain = 0;
-  chksum = 0;
-}
-
 uint8_t BufferInfo::encoded_length() const noexcept {
   uint8_t sz = Serialization::encoded_length_vi32(size) + 5;
   if(encoder != Core::Encoder::Type::PLAIN)

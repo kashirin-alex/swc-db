@@ -106,6 +106,17 @@ class AppContext final : public Comm::AppContext {
 
   virtual ~AppContext() { }
 
+  void handle_established(Comm::ConnHandlerPtr conn) override {
+    m_srv->connection_add(conn);
+    if(m_metrics)
+      m_metrics->net->connected(conn);
+  }
+
+  void handle_disconnect(Comm::ConnHandlerPtr conn) override {
+    m_srv->connection_del(conn);
+    if(m_metrics)
+      m_metrics->net->disconnected(conn);
+  }
 
   void handle(Comm::ConnHandlerPtr conn, const Comm::Event::Ptr& ev) override {
     // SWC_LOG_OUT(LOG_DEBUG, ev->print(SWC_LOG_OSTREAM << "handle: "); );
@@ -114,18 +125,6 @@ class AppContext final : public Comm::AppContext {
       return conn->do_close();
 
     switch (ev->type) {
-
-      case Comm::Event::Type::ESTABLISHED:
-        m_srv->connection_add(conn);
-        if(m_metrics)
-          m_metrics->net->connected(conn);
-        break;
-
-      case Comm::Event::Type::DISCONNECT:
-        m_srv->connection_del(conn);
-        if(m_metrics)
-          m_metrics->net->disconnected(conn);
-        break;
 
       case Comm::Event::Type::ERROR:
         if(m_metrics)
