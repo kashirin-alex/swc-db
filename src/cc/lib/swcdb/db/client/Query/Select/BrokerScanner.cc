@@ -41,7 +41,7 @@ bool BrokerScanner::add_cells(StaticBuffer& buffer, bool reached_limit) {
 }
 
 void BrokerScanner::select() {
-  Comm::Protocol::Bkr::Params::CellsSelectReq params(cid, interval);
+  Comm::Protocol::Bkr::Params::CellsSelectReqRef params(cid, interval);
   SWC_SCANNER_REQ_DEBUG("bkr_select");
   Comm::Protocol::Bkr::Req::Scanner_CellsSelect::request(
     shared_from_this(), params);

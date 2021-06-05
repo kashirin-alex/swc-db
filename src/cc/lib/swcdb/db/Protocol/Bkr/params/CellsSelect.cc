@@ -42,6 +42,24 @@ void CellsSelectReq::internal_decode(const uint8_t** bufp,
 
 
 
+
+void CellsSelectReqRef::print(std::ostream& out) const {
+  out << "CellsSelectReq(cid=" << cid;
+  interval.print(out << ' ');
+  out << ')';
+}
+
+size_t CellsSelectReqRef::internal_encoded_length() const {
+  return  Serialization::encoded_length_vi64(cid)
+        + interval.encoded_length();
+}
+
+void CellsSelectReqRef::internal_encode(uint8_t** bufp) const {
+  Serialization::encode_vi64(bufp, cid);
+  interval.encode(bufp);
+}
+
+
 void CellsSelectRsp::print(std::ostream& out) const {
   Error::print(out << "CellsSelectRsp(", err);
   out << " more=" << more

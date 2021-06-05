@@ -20,7 +20,7 @@ class Scanner_CellsSelect: public client::ConnQueue::ReqBase {
 
   static void request(
         const SWC::client::Query::Select::BrokerScanner::Ptr& scanner,
-        const Params::CellsSelectReq& params) {
+        const Params::CellsSelectReqRef& params) {
     std::make_shared<Scanner_CellsSelect>(scanner, params)->run();
   }
 
@@ -30,7 +30,7 @@ class Scanner_CellsSelect: public client::ConnQueue::ReqBase {
 
   Scanner_CellsSelect(
         const SWC::client::Query::Select::BrokerScanner::Ptr& scanner,
-        const Params::CellsSelectReq& params);
+        const Params::CellsSelectReqRef& params);
 
   virtual ~Scanner_CellsSelect() { }
 

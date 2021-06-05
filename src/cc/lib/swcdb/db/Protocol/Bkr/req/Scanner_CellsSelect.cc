@@ -14,7 +14,7 @@ namespace Bkr { namespace Req {
 
 Scanner_CellsSelect::Scanner_CellsSelect(
         const SWC::client::Query::Select::BrokerScanner::Ptr& scanner,
-        const Params::CellsSelectReq& params)
+        const Params::CellsSelectReqRef& params)
         : client::ConnQueue::ReqBase(
             false,
             Buffers::make(params, 0, CELLS_SELECT, scanner->selector->timeout)

@@ -41,6 +41,32 @@ class CellsSelectReq final : public Serializable {
 
 
 
+class CellsSelectReqRef final : public Serializable {
+  public:
+
+  CellsSelectReqRef(cid_t cid, const DB::Specs::Interval& interval) noexcept
+                    : cid(cid), interval(interval) { }
+
+  //~CellsSelectReqRef() { }
+
+  void print(std::ostream& out) const;
+
+  cid_t                       cid;
+  const DB::Specs::Interval&  interval;
+
+  private:
+
+  size_t internal_encoded_length() const override;
+
+  void internal_encode(uint8_t** bufp) const override;
+
+  // not-available/option
+  void internal_decode(const uint8_t**, size_t*) override { }
+
+};
+
+
+
 class CellsSelectRsp final : public Serializable {
   public:
 
