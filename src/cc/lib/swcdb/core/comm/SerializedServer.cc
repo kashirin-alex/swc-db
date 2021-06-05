@@ -72,7 +72,7 @@ void Acceptor::do_accept_mixed() noexcept {
         SWC_LOG_CURRENT_EXCEPTION("");
         new_sock.close(ec);
       }
-      m_app_ctx->accepted(local_endpoint(), need_ssl);
+      m_app_ctx->net_accepted(local_endpoint(), need_ssl);
 
       do_accept_mixed();
     }
@@ -97,7 +97,7 @@ void Acceptor::do_accept_plain() noexcept {
         std::error_code ec;
         new_sock.close(ec);
       }
-      m_app_ctx->accepted(local_endpoint(), false);
+      m_app_ctx->net_accepted(local_endpoint(), false);
 
       do_accept_plain();
     }

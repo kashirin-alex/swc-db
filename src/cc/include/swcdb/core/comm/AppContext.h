@@ -32,11 +32,11 @@ class AppContext : public std::enable_shared_from_this<AppContext> {
 
   virtual void handle(ConnHandlerPtr conn, const Event::Ptr& ev) = 0;
 
-  virtual void net_bytes_sent(const ConnHandlerPtr&, size_t) { }
+  virtual void net_bytes_sent(const ConnHandlerPtr&, size_t) noexcept { }
 
-  virtual void net_bytes_received(const ConnHandlerPtr&, size_t) { }
+  virtual void net_bytes_received(const ConnHandlerPtr&, size_t) noexcept { }
 
-  virtual void accepted(const EndPoint&, bool) { }
+  virtual void net_accepted(const EndPoint&, bool) noexcept { }
 
   protected:
 

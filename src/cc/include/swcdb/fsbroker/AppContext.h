@@ -185,17 +185,20 @@ class AppContext final : public Comm::AppContext {
     Env::FsBroker::in_process(-1);
   }
 
-  void net_bytes_sent(const Comm::ConnHandlerPtr& conn, size_t b) override {
+  void net_bytes_sent(const Comm::ConnHandlerPtr& conn, size_t b)
+                      noexcept override {
     if(m_metrics)
       m_metrics->net->sent(conn, b);
   }
 
-  void net_bytes_received(const Comm::ConnHandlerPtr& conn, size_t b) override {
+  void net_bytes_received(const Comm::ConnHandlerPtr& conn, size_t b)
+                          noexcept override {
     if(m_metrics)
       m_metrics->net->received(conn, b);
   }
 
-  void accepted(const Comm::EndPoint& endpoint, bool secure) override {
+  void net_accepted(const Comm::EndPoint& endpoint, bool secure)
+                    noexcept override {
     if(m_metrics)
       m_metrics->net->accepted(endpoint, secure);
   }
