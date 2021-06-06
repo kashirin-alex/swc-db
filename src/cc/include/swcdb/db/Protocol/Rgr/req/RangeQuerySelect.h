@@ -74,7 +74,6 @@ class RangeQuerySelect final : public client::ConnQueue::ReqBase {
         const uint32_t timeout,
         DataArgsT&&... args)
         : client::ConnQueue::ReqBase(
-            false,
             Buffers::make(params, 0, RANGE_QUERY_SELECT, timeout)
           ),
           data(args...) {

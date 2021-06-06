@@ -22,7 +22,6 @@ class RangeIsLoaded : public client::ConnQueue::ReqBase {
   RangeIsLoaded(const Manager::ColumnHealthCheck::RangerCheck::Ptr& checker,
                 const Manager::Range::Ptr& range, uint32_t timeout=60000)
                 : client::ConnQueue::ReqBase(
-                    false,
                     Buffers::make(
                       Params::RangeIsLoaded(range->cfg->cid, range->rid),
                       0,

@@ -17,13 +17,14 @@ class RgrUpdate : public client::ConnQueue::ReqBase {
 
   RgrUpdate(const Manager::RangerList &hosts, bool sync_all)
             : client::ConnQueue::ReqBase(
-                true,
                 Buffers::make(
                   Params::RgrUpdate(hosts, sync_all), 0, RGR_UPDATE, 60000)
               ) {
   }
 
   virtual ~RgrUpdate() { }
+
+  bool insistent() noexcept override { return true; }
 
   void handle_no_conn() override { }
 

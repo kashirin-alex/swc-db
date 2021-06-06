@@ -10,14 +10,14 @@ namespace SWC { namespace Comm { namespace client {
 
 
 void ConnQueueReqBase::request_again() {
-  if(!queue)
-    run();
-  else
+  if(queue)
     queue->delay(req());
+  else
+    run();
 }
 
 void ConnQueueReqBase::print(std::ostream& out) {
-  cbp->header.print(out << "ReqBase(insistent=" << insistent << ' ');
+  cbp->header.print(out << "ReqBase(insistent=" << insistent() << ' ');
   out << ')';
 }
 
@@ -96,7 +96,7 @@ EndPoint ConnQueue::get_endpoint_local() noexcept {
 }
 
 void ConnQueue::put(const ConnQueue::ReqBase::Ptr& req) {
-  if(!req->queue)
+  if(req->queue.get() != this)
     req->queue = shared_from_this();
   bool make_conn;
   {
@@ -183,7 +183,7 @@ void ConnQueue::run_queue() {
       req = front();
     }
     if(req->valid() && (!conn || !conn->send_request(req->cbp, req))) {
-      if(req->insistent) {
+      if(req->insistent()) {
         m_q_state.stop();
         req->handle_no_conn();
         break;

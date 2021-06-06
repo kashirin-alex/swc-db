@@ -19,7 +19,6 @@ ColumnCompact_Base::ColumnCompact_Base(
                             const Params::ColumnCompactReq& params,
                             const uint32_t timeout)
                             : client::ConnQueue::ReqBase(
-                                false,
                                 Buffers::make(
                                   params, 0,
                                   COLUMN_COMPACT, timeout

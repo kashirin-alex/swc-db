@@ -17,7 +17,6 @@ ColumnList_Base::ColumnList_Base(
                       const Mngr::Params::ColumnListReq& params,
                       const uint32_t timeout)
                       : client::ConnQueue::ReqBase(
-                          false,
                           Buffers::make(params, 0, COLUMN_LIST, timeout)
                         ),
                         clients(clients) {

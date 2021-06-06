@@ -18,7 +18,6 @@ class ColumnCompact : public client::ConnQueue::ReqBase {
 
   ColumnCompact(cid_t cid)
                 : client::ConnQueue::ReqBase(
-                    false,
                     Buffers::make(
                       Params::ColumnCompactReq(cid), 0, COLUMN_COMPACT, 60000)
                   ) { }

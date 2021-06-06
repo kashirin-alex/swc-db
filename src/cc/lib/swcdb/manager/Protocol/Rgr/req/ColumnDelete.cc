@@ -15,7 +15,6 @@ ColumnDelete::ColumnDelete(const Manager::Ranger::Ptr& rgr,
                            const DB::Schema::Ptr& schema,
                            uint64_t req_id)
           : client::ConnQueue::ReqBase(
-              false,
               Buffers::make(
                 Common::Params::ColumnId(schema->cid),
                 0,

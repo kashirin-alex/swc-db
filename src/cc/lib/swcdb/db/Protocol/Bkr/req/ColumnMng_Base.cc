@@ -18,7 +18,6 @@ ColumnMng_Base::ColumnMng_Base(const SWC::client::Clients::Ptr& clients,
                                const Mngr::Params::ColumnMng& params,
                                const uint32_t timeout)
                     : client::ConnQueue::ReqBase(
-                        false,
                         Buffers::make(params, 0, COLUMN_MNG, timeout)
                       ),
                       clients(clients) {

@@ -17,7 +17,6 @@ RangeUnload::RangeUnload(const Ranger::RangePtr& range,
                          const Ranger::Callback::RangeLoad::Ptr& req,
                          uint32_t timeout)
         : client::ConnQueue::ReqBase(
-            false,
             Buffers::make(
               Params::RangeUnload(range->cfg->cid, range->rid),
               0,

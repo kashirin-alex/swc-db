@@ -11,7 +11,7 @@ namespace Rgr { namespace Req {
 
 
 ReportRes::ReportRes(const Manager::Ranger::Ptr& rgr)
-                    : client::ConnQueue::ReqBase(false, Buffers::make(1)),
+                    : client::ConnQueue::ReqBase(Buffers::make(1)),
                       rgr(rgr) {
   cbp->append_i8(Params::Report::Function::RESOURCES);
   cbp->header.set(REPORT, 60000);

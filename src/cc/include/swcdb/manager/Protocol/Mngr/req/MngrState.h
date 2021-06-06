@@ -23,6 +23,8 @@ class MngrState : public client::ConnQueue::ReqBase {
 
   virtual ~MngrState() { }
 
+  bool insistent() noexcept override { return true; }
+
   void handle_no_conn() override { }
 
   void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;

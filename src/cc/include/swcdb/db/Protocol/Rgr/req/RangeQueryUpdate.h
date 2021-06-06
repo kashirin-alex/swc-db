@@ -100,7 +100,7 @@ class RangeQueryUpdate final : public client::ConnQueue::ReqBase {
   template<typename... DataArgsT>
   SWC_CAN_INLINE
   RangeQueryUpdate(const Buffers::Ptr& cbp, DataArgsT&&... args)
-                  : client::ConnQueue::ReqBase(false, cbp),
+                  : client::ConnQueue::ReqBase(cbp),
                     data(args...) {
   }
 

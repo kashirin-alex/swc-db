@@ -19,7 +19,6 @@ ColumnGet_Base::ColumnGet_Base(
                 const Params::ColumnGetReq& params,
                 const uint32_t timeout)
                 : client::ConnQueue::ReqBase(
-                    false,
                     Buffers::make(params, 0, COLUMN_GET, timeout)
                   ),
                   clients(clients) {

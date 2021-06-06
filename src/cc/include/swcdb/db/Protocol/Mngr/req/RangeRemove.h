@@ -42,7 +42,6 @@ class RangeRemove: public client::ConnQueue::ReqBase {
               const Params::RangeRemoveReq& params, Cb_t&& cb,
               const uint32_t timeout)
               : client::ConnQueue::ReqBase(
-                  false,
                   Buffers::make(params, 0, RANGE_REMOVE, timeout)
                 ),
                 clients(clients), cb(std::move(cb)), cid(params.cid) {

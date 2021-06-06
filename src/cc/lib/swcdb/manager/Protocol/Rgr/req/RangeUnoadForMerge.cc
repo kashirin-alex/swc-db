@@ -15,7 +15,6 @@ RangeUnoadForMerge::RangeUnoadForMerge(
     const Manager::Range::Ptr& range,
     uint32_t timeout)
         : client::ConnQueue::ReqBase(
-            false,
             Buffers::make(
               Params::RangeUnload(
                 range->cfg->cid, range->rid,

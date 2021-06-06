@@ -16,7 +16,6 @@ namespace Rgr { namespace Req {
 ColumnsUnload::ColumnsUnload(const Manager::Ranger::Ptr& rgr,
                              cid_t cid_begin, cid_t cid_end)
             : client::ConnQueue::ReqBase(
-                false,
                 Buffers::make(
                   Common::Params::ColumnsInterval(cid_begin, cid_end),
                   0,

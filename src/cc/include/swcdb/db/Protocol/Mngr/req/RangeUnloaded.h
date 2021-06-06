@@ -42,7 +42,6 @@ class RangeUnloaded: public client::ConnQueue::ReqBase {
                 const Params::RangeUnloadedReq& params, Cb_t&& cb,
                 const uint32_t timeout)
                 : client::ConnQueue::ReqBase(
-                    false,
                     Buffers::make(params, 0, RANGE_UNLOADED, timeout)
                   ),
                   clients(clients), cb(std::move(cb)), cid(params.cid) {

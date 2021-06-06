@@ -16,7 +16,6 @@ MngrState::MngrState(const ResponseCallback::Ptr& cb,
                      const EndPoint& mngr_host,
                      uint32_t timeout)
             : client::ConnQueue::ReqBase(
-                true,
                 Buffers::make(
                   Params::MngrState(states, token, mngr_host),
                   0,

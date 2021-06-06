@@ -19,7 +19,6 @@ class ColumnUpdate : public client::ConnQueue::ReqBase {
                const DB::Schema::Ptr& schema,
                int err, uint64_t id)
               : client::ConnQueue::ReqBase(
-                  true,
                   Buffers::make(
                     Params::ColumnUpdate(function, schema, err, id),
                     0,
@@ -30,7 +29,6 @@ class ColumnUpdate : public client::ConnQueue::ReqBase {
   ColumnUpdate(cid_t cid_begin, cid_t cid_end,
                std::vector<cid_t>&& columns)
               : client::ConnQueue::ReqBase(
-                  true,
                   Buffers::make(
                     Params::ColumnUpdate(
                       Params::ColumnMng::Function::INTERNAL_EXPECT,
@@ -44,7 +42,9 @@ class ColumnUpdate : public client::ConnQueue::ReqBase {
 
   virtual ~ColumnUpdate() { }
 
-  void handle_no_conn() override { }
+  void handle_no_conn() override {
+    Env::Mngr::role()->req_mngr_inchain(req());
+  }
 
   void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override {
     if(ev->response_code())

@@ -17,7 +17,7 @@ namespace Bkr { namespace Req {
 Committer_CellsUpdate::Committer_CellsUpdate(
         const SWC::client::Query::Update::BrokerCommitter::Ptr& committer,
         DynamicBuffer&& _buffer)
-        : client::ConnQueue::ReqBase(false),
+        : client::ConnQueue::ReqBase(nullptr),
           committer(committer), buffer(std::move(_buffer)),
           profile(committer->hdlr->profile.bkr()) {
   StaticBuffer snd_buf(buffer.base, buffer.fill(), false);

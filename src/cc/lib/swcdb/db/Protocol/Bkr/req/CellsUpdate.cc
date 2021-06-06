@@ -36,7 +36,7 @@ CellsUpdate::CellsUpdate(
         const DynamicBuffer::Ptr& buffer,
         CellsUpdate::Cb_t&& cb,
         const uint32_t timeout)
-        : client::ConnQueue::ReqBase(false),
+        : client::ConnQueue::ReqBase(nullptr),
           clients(clients),
           endpoints(endpoints),
           cb(std::move(cb)) {

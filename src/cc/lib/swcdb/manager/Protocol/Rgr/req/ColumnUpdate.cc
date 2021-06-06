@@ -15,7 +15,6 @@ ColumnUpdate::ColumnUpdate(const Manager::Ranger::Ptr& rgr,
                            const DB::Schema::Ptr& schema,
                            uint64_t req_id)
               : client::ConnQueue::ReqBase(
-                  false,
                   Buffers::make(
                     Params::ColumnUpdate(schema), 0, SCHEMA_UPDATE, 60000)
                 ),

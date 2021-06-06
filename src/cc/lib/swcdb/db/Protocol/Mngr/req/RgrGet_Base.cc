@@ -16,7 +16,6 @@ namespace Mngr { namespace Req {
 RgrGet_Base::RgrGet_Base(const Params::RgrGetReq& params,
                          const uint32_t timeout)
               : client::ConnQueue::ReqBase(
-                  false,
                   Buffers::make(params, 0 ,RGR_GET, timeout)
                 ),
                 cid(params.cid) {

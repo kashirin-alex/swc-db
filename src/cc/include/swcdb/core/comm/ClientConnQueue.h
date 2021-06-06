@@ -23,22 +23,21 @@ class ConnQueueReqBase : public DispatchHandler {
   public:
 
   typedef std::shared_ptr<ConnQueueReqBase> Ptr;
+  Buffers::Ptr                              cbp;
+  ConnQueuePtr                              queue;
 
-  ConnQueueReqBase(bool insistent, const Buffers::Ptr& cbp=nullptr) noexcept
-                  : insistent(insistent), cbp(cbp), queue(nullptr) {
-  }
+  ConnQueueReqBase(const Buffers::Ptr& cbp=nullptr) noexcept
+                  : cbp(cbp), queue(nullptr) { }
 
   Ptr req() noexcept {
     return std::dynamic_pointer_cast<ConnQueueReqBase>(shared_from_this());
   }
 
+  virtual bool insistent() noexcept { return false; };
+
   void request_again();
 
   void print(std::ostream& out);
-
-  const bool            insistent;
-  Buffers::Ptr          cbp;
-  ConnQueuePtr          queue;
 
   protected:
 

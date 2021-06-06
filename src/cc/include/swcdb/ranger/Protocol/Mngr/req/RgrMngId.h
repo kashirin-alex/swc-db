@@ -20,7 +20,7 @@ class RgrMngId: public client::ConnQueue::ReqBase {
 
   RgrMngId(const IoContextPtr& ioctx,
            std::function<void()>&& cb = nullptr)
-          : client::ConnQueue::ReqBase(false, nullptr),
+          : client::ConnQueue::ReqBase(nullptr),
             cfg_check_interval(
               Env::Config::settings()->get<Config::Property::V_GINT32>(
                 "swc.rgr.id.validation.interval")),

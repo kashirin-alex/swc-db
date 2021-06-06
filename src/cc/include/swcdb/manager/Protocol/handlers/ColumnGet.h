@@ -37,7 +37,6 @@ class MngrColumnGet : public client::ConnQueue::ReqBase {
                 Params::ColumnGetReq::Flag flag,
                 const Params::ColumnGetReq& params)
                 : client::ConnQueue::ReqBase(
-                    false,
                     Buffers::make(
                       params, 0, COLUMN_GET, ev->header.timeout_ms)
                   ),

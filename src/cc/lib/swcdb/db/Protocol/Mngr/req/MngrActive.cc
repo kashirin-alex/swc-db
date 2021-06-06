@@ -16,7 +16,6 @@ MngrActive::MngrActive(const SWC::client::Clients::Ptr& clients,
                        const uint8_t& role, const cid_t& cid,
                        const DispatchHandler::Ptr& hdlr, uint32_t timeout_ms)
                       : client::ConnQueue::ReqBase(
-                          false,
                           Buffers::make(
                             Params::MngrActiveReq(role, cid),
                             0,

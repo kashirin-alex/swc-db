@@ -17,7 +17,6 @@ RangeUnload::RangeUnload(const Manager::Ranger::Ptr& rgr,
                          bool ignore_error,
                          uint32_t timeout)
         : client::ConnQueue::ReqBase(
-            false,
             Buffers::make(
               Params::RangeUnload(range->cfg->cid, range->rid),
               0,
