@@ -9,6 +9,7 @@
 
 #include "swcdb/db/Protocol/Bkr/params/CellsUpdate.h"
 #include "swcdb/db/client/Query/Update/BrokerCommitter.h"
+#include "swcdb/db/Protocol/Commands.h"
 
 
 namespace SWC { namespace Comm { namespace Protocol {
@@ -21,8 +22,16 @@ class Committer_CellsUpdate: public client::ConnQueue::ReqBase {
   static void request(
         const SWC::client::Query::Update::BrokerCommitter::Ptr& committer,
         DynamicBuffer&& buffer) {
+    StaticBuffer snd_buf(buffer.base, buffer.fill(), false);
     std::make_shared<Committer_CellsUpdate>(
-      committer, std::move(buffer))->run();
+      committer,
+      std::move(buffer),
+      Buffers::make(
+        Params::CellsUpdateReq(committer->colp->get_cid()),
+        snd_buf, 0, CELLS_UPDATE,
+        committer->hdlr->timeout + buffer.fill()/committer->hdlr->timeout_ratio
+      )
+    )->run();
   }
 
   typedef std::shared_ptr<Committer_CellsUpdate>    Ptr;
@@ -32,7 +41,12 @@ class Committer_CellsUpdate: public client::ConnQueue::ReqBase {
 
   Committer_CellsUpdate(
         const SWC::client::Query::Update::BrokerCommitter::Ptr& committer,
-        DynamicBuffer&& buffer);
+        DynamicBuffer&& buffer,
+        Buffers::Ptr&& cbp) noexcept
+        : client::ConnQueue::ReqBase(std::move(cbp)),
+          committer(committer), buffer(std::move(buffer)),
+          profile(committer->hdlr->profile.bkr()) {
+  }
 
   virtual ~Committer_CellsUpdate() { }
 

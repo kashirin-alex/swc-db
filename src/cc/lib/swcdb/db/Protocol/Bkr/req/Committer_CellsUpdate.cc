@@ -5,28 +5,12 @@
 
 
 #include "swcdb/db/Protocol/Bkr/req/Committer_CellsUpdate.h"
-#include "swcdb/db/Protocol/Commands.h"
 
 
 
 namespace SWC { namespace Comm { namespace Protocol {
 namespace Bkr { namespace Req {
 
-
-
-Committer_CellsUpdate::Committer_CellsUpdate(
-        const SWC::client::Query::Update::BrokerCommitter::Ptr& committer,
-        DynamicBuffer&& _buffer)
-        : client::ConnQueue::ReqBase(nullptr),
-          committer(committer), buffer(std::move(_buffer)),
-          profile(committer->hdlr->profile.bkr()) {
-  StaticBuffer snd_buf(buffer.base, buffer.fill(), false);
-  cbp = Buffers::make(
-    Params::CellsUpdateReq(committer->colp->get_cid()),
-    snd_buf, 0, CELLS_UPDATE,
-    committer->hdlr->timeout + buffer.fill()/committer->hdlr->timeout_ratio
-  );
-}
 
 void Committer_CellsUpdate::handle_no_conn() {
   if(committer->hdlr->valid() &&

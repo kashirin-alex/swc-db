@@ -26,8 +26,12 @@ class ConnQueueReqBase : public DispatchHandler {
   Buffers::Ptr                              cbp;
   ConnQueuePtr                              queue;
 
-  ConnQueueReqBase(const Buffers::Ptr& cbp=nullptr) noexcept
-                  : cbp(cbp), queue(nullptr) { }
+  ConnQueueReqBase(Buffers::Ptr&& cbp) noexcept
+                  : cbp(std::move(cbp)), queue(nullptr) { }
+
+  ConnQueueReqBase(Buffers::Ptr&& cbp,
+                   const ConnQueuePtr& queue) noexcept
+                  : cbp(std::move(cbp)), queue(queue) { }
 
   Ptr req() noexcept {
     return std::dynamic_pointer_cast<ConnQueueReqBase>(shared_from_this());

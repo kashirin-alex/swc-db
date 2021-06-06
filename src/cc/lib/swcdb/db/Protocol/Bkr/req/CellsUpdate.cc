@@ -22,9 +22,13 @@ CellsUpdate::request(
         const DynamicBuffer::Ptr& buffer,
         CellsUpdate::Cb_t&& cb,
         const uint32_t timeout) {
+  StaticBuffer snd_buf(buffer->base, buffer->fill(), false);
   std::make_shared<CellsUpdate>(
-    clients, endpoints,
-    Params::CellsUpdateReq(cid), buffer, std::move(cb), timeout
+    clients,
+    endpoints,
+    Buffers::make(
+      Params::CellsUpdateReq(cid), snd_buf, 0, CELLS_UPDATE, timeout),
+    std::move(cb)
   )->run();
 }
 
@@ -32,17 +36,12 @@ CellsUpdate::request(
 CellsUpdate::CellsUpdate(
         const SWC::client::Clients::Ptr& clients,
         const EndPoints& endpoints,
-        const Params::CellsUpdateReq& params,
-        const DynamicBuffer::Ptr& buffer,
-        CellsUpdate::Cb_t&& cb,
-        const uint32_t timeout)
-        : client::ConnQueue::ReqBase(nullptr),
+        Buffers::Ptr&& cbp,
+        CellsUpdate::Cb_t&& cb)
+        : client::ConnQueue::ReqBase(std::move(cbp)),
           clients(clients),
           endpoints(endpoints),
           cb(std::move(cb)) {
-  // timeout by buffer->fill() bytes ratio
-  StaticBuffer snd_buf(buffer->base, buffer->fill(), false);
-  cbp = Buffers::make(params, snd_buf, 0, CELLS_UPDATE, timeout);
 }
 
 void CellsUpdate::handle_no_conn() {

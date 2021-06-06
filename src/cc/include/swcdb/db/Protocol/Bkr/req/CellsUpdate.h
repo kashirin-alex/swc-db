@@ -33,10 +33,8 @@ class CellsUpdate: public client::ConnQueue::ReqBase {
 
   CellsUpdate(const SWC::client::Clients::Ptr& clients,
               const EndPoints& endpoints,
-              const Params::CellsUpdateReq& params,
-              const DynamicBuffer::Ptr& buffer,
-              Cb_t&& cb,
-              const uint32_t timeout);
+              Buffers::Ptr&& cbp,
+              Cb_t&& cb);
 
   virtual ~CellsUpdate() { }
 
