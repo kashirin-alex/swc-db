@@ -42,9 +42,9 @@ class ColumnUpdate : public client::ConnQueue::ReqBase {
 
   virtual ~ColumnUpdate() { }
 
-  void handle_no_conn() override {
-    Env::Mngr::role()->req_mngr_inchain(req());
-  }
+  bool insistent() noexcept override { return true; }
+
+  void handle_no_conn() override { }
 
   void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override {
     if(ev->response_code())
