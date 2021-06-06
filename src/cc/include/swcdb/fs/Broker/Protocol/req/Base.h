@@ -23,11 +23,6 @@ class Base : public DispatchHandler {
   int                             error;
   Buffers::Ptr                    cbp;
 
-  Base(FS::Statistics& stats, FS::Statistics::Command cmd,
-       const Buffers::Ptr& cbp = nullptr)
-      : tracker(stats.tracker(cmd)), error(Error::OK), cbp(cbp) {
-  }
-
   virtual ~Base() { }
 
   bool is_rsp(const Event::Ptr& ev, int cmd,
@@ -38,6 +33,10 @@ class Base : public DispatchHandler {
   }
 
   protected:
+
+  Base(FS::Statistics& stats, FS::Statistics::Command cmd, Buffers::Ptr&& cbp)
+      : tracker(stats.tracker(cmd)), error(Error::OK), cbp(std::move(cbp)) {
+  }
 
   /* common (Sync & Async) handlers */
 
