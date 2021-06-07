@@ -17,9 +17,12 @@ namespace FsBroker {  namespace Params {
 class PreadReq final : public Serializable {
   public:
 
-  PreadReq();
+  SWC_CAN_INLINE
+  PreadReq() noexcept : fd(-1) { }
 
-  PreadReq(int32_t fd, uint64_t offset, uint32_t amount);
+  SWC_CAN_INLINE
+  PreadReq(int32_t fd, uint64_t offset, uint32_t amount) noexcept
+          : fd(fd), offset(offset), amount(amount) { }
 
   int32_t   fd;
   uint64_t  offset;

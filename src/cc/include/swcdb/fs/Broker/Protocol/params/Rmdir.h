@@ -16,9 +16,11 @@ namespace FsBroker {  namespace Params {
 class RmdirReq final : public Serializable {
   public:
 
-  RmdirReq();
+  SWC_CAN_INLINE
+  RmdirReq() noexcept { }
 
-  RmdirReq(const std::string& dname);
+  SWC_CAN_INLINE
+  RmdirReq(const std::string& dname) : dname(dname) { }
 
   std::string dname;
 

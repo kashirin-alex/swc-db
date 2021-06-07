@@ -17,9 +17,11 @@ namespace FsBroker {  namespace Params {
 class ExistsReq final : public Serializable {
   public:
 
-  ExistsReq();
+  SWC_CAN_INLINE
+  ExistsReq() noexcept { }
 
-  ExistsReq(const std::string& fname);
+  SWC_CAN_INLINE
+  ExistsReq(const std::string& fname) : fname(fname) { }
 
   std::string fname;
 
@@ -39,9 +41,11 @@ class ExistsReq final : public Serializable {
 class ExistsRsp final : public Serializable {
   public:
 
-  ExistsRsp();
+  SWC_CAN_INLINE
+  ExistsRsp() noexcept { }
 
-  ExistsRsp(bool exists);
+  SWC_CAN_INLINE
+  ExistsRsp(bool exists) noexcept : exists(exists) { }
 
   bool exists;
 

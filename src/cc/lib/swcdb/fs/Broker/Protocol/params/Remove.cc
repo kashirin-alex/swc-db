@@ -11,10 +11,6 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Params {
 
 
-RemoveReq::RemoveReq() {}
-
-RemoveReq::RemoveReq(const std::string& fname) : fname(fname) {}
-
 size_t RemoveReq::internal_encoded_length() const {
   return Serialization::encoded_length_bytes(fname.size());
 }
@@ -26,5 +22,6 @@ void RemoveReq::internal_encode(uint8_t** bufp) const {
 void RemoveReq::internal_decode(const uint8_t** bufp, size_t* remainp) {
   fname = Serialization::decode_bytes_string(bufp, remainp);
 }
+
 
 }}}}}

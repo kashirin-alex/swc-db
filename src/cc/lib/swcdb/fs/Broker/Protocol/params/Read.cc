@@ -11,11 +11,6 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Params {
 
 
-ReadReq::ReadReq(): fd(-1) {}
-
-ReadReq::ReadReq(int32_t fd, uint32_t amount)
-                : fd(fd), amount(amount) {}
-
 size_t ReadReq::internal_encoded_length() const {
   return Serialization::encoded_length_vi32(fd)
        + Serialization::encoded_length_vi32(amount);
@@ -31,13 +26,6 @@ void ReadReq::internal_decode(const uint8_t** bufp, size_t* remainp) {
   amount = Serialization::decode_vi32(bufp, remainp);
 }
 
-
-
-
-ReadRsp::ReadRsp() {}
-
-ReadRsp::ReadRsp(uint64_t offset) 
-                : offset(offset) {}
 
 
 size_t ReadRsp::internal_encoded_length() const {

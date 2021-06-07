@@ -17,9 +17,12 @@ namespace FsBroker {  namespace Params {
 class ReadReq final : public Serializable {
   public:
 
-  ReadReq();
+  SWC_CAN_INLINE
+  ReadReq() noexcept : fd(-1) { }
 
-  ReadReq(int32_t fd, uint32_t amount);
+  SWC_CAN_INLINE
+  ReadReq(int32_t fd, uint32_t amount) noexcept : fd(fd), amount(amount) { }
+
 
   int32_t   fd;
   uint32_t  amount;
@@ -39,9 +42,11 @@ class ReadReq final : public Serializable {
 class ReadRsp final : public Serializable {
   public:
 
-  ReadRsp();
+  SWC_CAN_INLINE
+  ReadRsp() noexcept { }
 
-  ReadRsp(uint64_t offset);
+  SWC_CAN_INLINE
+  ReadRsp(uint64_t offset) noexcept : offset(offset) { }
 
   uint64_t offset;
 

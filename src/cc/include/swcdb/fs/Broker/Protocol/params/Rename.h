@@ -17,9 +17,12 @@ namespace FsBroker {  namespace Params {
 class RenameReq final : public Serializable {
   public:
 
-  RenameReq();
+  SWC_CAN_INLINE
+  RenameReq() noexcept { }
 
-  RenameReq(const std::string& from, const std::string& to);
+  SWC_CAN_INLINE
+  RenameReq(const std::string& from, const std::string& to)
+            : from(from), to(to) { }
 
   std::string from;
   std::string to;

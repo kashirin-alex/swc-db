@@ -16,9 +16,11 @@ namespace FsBroker {  namespace Params {
 class SyncReq final : public Serializable {
   public:
 
-  SyncReq();
+  SWC_CAN_INLINE
+  SyncReq() noexcept : fd(-1) { }
 
-  SyncReq(int32_t fd);
+  SWC_CAN_INLINE
+  SyncReq(int32_t fd) noexcept : fd(fd) { }
 
   int32_t fd;
 

@@ -11,11 +11,6 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Params {
 
 
-AppendReq::AppendReq(): fd(-1), flags(0) { }
-
-AppendReq::AppendReq(int32_t fd, uint8_t flags)
-                    : fd(fd), flags(flags) { }
-
 size_t AppendReq::internal_encoded_length() const {
     return Serialization::encoded_length_vi32(fd) + 1;
 }
@@ -31,12 +26,6 @@ void AppendReq::internal_decode(const uint8_t** bufp, size_t* remainp) {
 }
 
 
-
-
-AppendRsp::AppendRsp(): amount(0) {}
-
-AppendRsp::AppendRsp(uint64_t offset, uint32_t amount)
-                    : offset(offset), amount(amount) {}
 
 size_t AppendRsp::internal_encoded_length() const {
     return Serialization::encoded_length_vi64(offset)

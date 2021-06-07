@@ -10,10 +10,6 @@
 namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Params {
 
-SeekReq::SeekReq(): fd(-1) {}
-
-SeekReq::SeekReq(int32_t fd, size_t offset)
-                : fd(fd), offset(offset) {}
 
 size_t SeekReq::internal_encoded_length() const {
   return Serialization::encoded_length_vi32(fd)
@@ -31,10 +27,6 @@ void SeekReq::internal_decode(const uint8_t** bufp, size_t* remainp) {
 }
 
 
-
-SeekRsp::SeekRsp() {}
-
-SeekRsp::SeekRsp(size_t offset) : offset(offset) {}
 
 size_t SeekRsp::internal_encoded_length() const {
   return Serialization::encoded_length_vi64(offset);

@@ -11,10 +11,6 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Params {
 
 
-CloseReq::CloseReq(): fd(-1) { }
-
-CloseReq::CloseReq(int32_t fd): fd(fd) { }
-
 size_t CloseReq::internal_encoded_length() const {
   return Serialization::encoded_length_vi32(fd);
 }

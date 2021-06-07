@@ -18,9 +18,11 @@ namespace FsBroker {  namespace Params {
 class AppendReq final : public Serializable {
   public:
 
-  AppendReq();
+  SWC_CAN_INLINE
+  AppendReq() noexcept : fd(-1), flags(0) { }
 
-  AppendReq(int32_t fd, uint8_t flags);
+  SWC_CAN_INLINE
+  AppendReq(int32_t fd, uint8_t flags) noexcept : fd(fd), flags(flags) { }
 
   int32_t fd;
   uint8_t flags;
@@ -41,9 +43,12 @@ class AppendReq final : public Serializable {
 class AppendRsp final : public Serializable {
   public:
 
-  AppendRsp();
+  SWC_CAN_INLINE
+  AppendRsp() noexcept : amount(0) { }
 
-  AppendRsp(uint64_t offset, uint32_t amount);
+  SWC_CAN_INLINE
+  AppendRsp(uint64_t offset, uint32_t amount) noexcept
+            : offset(offset), amount(amount) { }
 
   uint64_t offset {};
   uint32_t amount {};

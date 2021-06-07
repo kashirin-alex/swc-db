@@ -11,9 +11,6 @@
 namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Params {
 
-SyncReq::SyncReq(): fd(-1) { }
-
-SyncReq::SyncReq(int32_t fd) : fd(fd) { }
 
 size_t SyncReq::internal_encoded_length() const {
   return Serialization::encoded_length_vi32(fd);

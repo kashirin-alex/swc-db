@@ -17,15 +17,17 @@ namespace FsBroker {  namespace Params {
 class CombiPreadReq final : public Serializable {
   public:
 
-  CombiPreadReq();
+  SWC_CAN_INLINE
+  CombiPreadReq() noexcept { }
 
+  SWC_CAN_INLINE
   CombiPreadReq(const FS::SmartFd::Ptr& smartfd,
-                uint64_t offset, uint32_t amount);
+                uint64_t offset, uint32_t amount) noexcept
+                : smartfd(smartfd), offset(offset), amount(amount) { }
 
   FS::SmartFd::Ptr  smartfd;
   uint64_t          offset;
   uint32_t          amount;
-
 
   private:
 

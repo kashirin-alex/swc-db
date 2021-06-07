@@ -17,9 +17,11 @@ namespace FsBroker {  namespace Params {
 class ReadAllReq final : public Serializable {
   public:
 
-  ReadAllReq();
+  SWC_CAN_INLINE
+  ReadAllReq() noexcept { }
 
-  ReadAllReq(const std::string& name);
+  SWC_CAN_INLINE
+  ReadAllReq(const std::string& name) : name(name) { }
 
   std::string name;
 

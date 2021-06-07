@@ -17,9 +17,11 @@ namespace FsBroker {  namespace Params {
 class CloseReq final : public Serializable {
   public:
 
-  CloseReq();
+  SWC_CAN_INLINE
+  CloseReq() noexcept : fd(-1) { }
 
-  CloseReq(int32_t fd);
+  SWC_CAN_INLINE
+  CloseReq(int32_t fd) noexcept : fd(fd) { }
 
   int32_t fd;
 

@@ -10,9 +10,6 @@
 namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Params {
 
-ExistsReq::ExistsReq() {}
-
-ExistsReq::ExistsReq(const std::string& fname) : fname(fname) {}
 
 size_t ExistsReq::internal_encoded_length() const {
   return Serialization::encoded_length_bytes(fname.size());
@@ -27,11 +24,6 @@ void ExistsReq::internal_decode(const uint8_t** bufp, size_t* remainp) {
 }
 
 
-
-
-ExistsRsp::ExistsRsp() {}
-
-ExistsRsp::ExistsRsp(bool exists) : exists(exists) {}
 
 size_t ExistsRsp::internal_encoded_length() const {
   return 1;

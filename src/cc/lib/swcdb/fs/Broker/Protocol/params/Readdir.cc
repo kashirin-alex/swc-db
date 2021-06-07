@@ -11,10 +11,6 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Params {
 
 
-ReaddirReq::ReaddirReq() {}
-
-ReaddirReq::ReaddirReq(const std::string& dirname) : dirname(dirname) {}
-
 size_t ReaddirReq::internal_encoded_length() const {
   return Serialization::encoded_length_bytes(dirname.size());
 }

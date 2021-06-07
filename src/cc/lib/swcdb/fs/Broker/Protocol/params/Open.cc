@@ -11,11 +11,6 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Params {
 
 
-OpenReq::OpenReq() { }
-
-OpenReq::OpenReq(const std::string& fname, uint32_t flags, int32_t bufsz)
-                : fname(fname), flags(flags), bufsz(bufsz) { }
-
 size_t OpenReq::internal_encoded_length() const {
   return Serialization::encoded_length_vi32(flags)
        + Serialization::encoded_length_vi32(bufsz)
@@ -35,10 +30,6 @@ void OpenReq::internal_decode(const uint8_t** bufp, size_t* remainp) {
 }
 
 
-
-OpenRsp::OpenRsp(): fd(-1) {}
-
-OpenRsp::OpenRsp(int32_t fd): fd(fd) {}
 
 size_t OpenRsp::internal_encoded_length() const {
   return Serialization::encoded_length_vi32(fd);

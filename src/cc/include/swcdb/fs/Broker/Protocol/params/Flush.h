@@ -17,9 +17,11 @@ namespace FsBroker {  namespace Params {
 class FlushReq final : public Serializable {
   public:
 
-  FlushReq();
+  SWC_CAN_INLINE
+  FlushReq() noexcept : fd(-1) { }
 
-  FlushReq(int32_t fd);
+  SWC_CAN_INLINE
+  FlushReq(int32_t fd) noexcept : fd(fd) { }
 
   int32_t fd;
 

@@ -17,9 +17,12 @@ namespace FsBroker {  namespace Params {
 class OpenReq final : public Serializable {
   public:
 
-  OpenReq();
+  SWC_CAN_INLINE
+  OpenReq() noexcept { }
 
-  OpenReq(const std::string& fname, uint32_t flags, int32_t bufsz);
+  SWC_CAN_INLINE
+  OpenReq(const std::string& fname, uint32_t flags, int32_t bufsz)
+          : fname(fname), flags(flags), bufsz(bufsz) { }
 
   std::string fname;
   uint32_t    flags;
@@ -41,9 +44,11 @@ class OpenReq final : public Serializable {
 class OpenRsp final : public Serializable {
   public:
 
-  OpenRsp();
+  SWC_CAN_INLINE
+  OpenRsp() noexcept : fd(-1) { }
 
-  OpenRsp(int32_t fd);
+  SWC_CAN_INLINE
+  OpenRsp(int32_t fd) noexcept : fd(fd) { }
 
   int32_t fd;
 

@@ -17,9 +17,11 @@ namespace FsBroker {  namespace Params {
 class MkdirsReq final : public Serializable {
   public:
 
-  MkdirsReq();
+  SWC_CAN_INLINE
+  MkdirsReq() noexcept { }
 
-  MkdirsReq(const std::string& dirname);
+  SWC_CAN_INLINE
+  MkdirsReq(const std::string& dirname) : dirname(dirname) { }
 
   std::string dirname;
 

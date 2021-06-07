@@ -11,11 +11,6 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Params {
 
 
-PreadReq::PreadReq(): fd(-1) { }
-
-PreadReq::PreadReq(int32_t fd, uint64_t offset, uint32_t amount)
-                  : fd(fd), offset(offset), amount(amount) { }
-
 size_t PreadReq::internal_encoded_length() const {
   return Serialization::encoded_length_vi32(fd)
        + Serialization::encoded_length_vi64(offset)

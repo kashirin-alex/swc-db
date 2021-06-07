@@ -18,9 +18,11 @@ namespace FsBroker {  namespace Params {
 class ReaddirReq final : public Serializable {
   public:
 
-  ReaddirReq();
+  SWC_CAN_INLINE
+  ReaddirReq() noexcept { }
 
-  ReaddirReq(const std::string& dirname);
+  SWC_CAN_INLINE
+  ReaddirReq(const std::string& dirname) : dirname(dirname) { }
 
   std::string dirname;
 
@@ -40,7 +42,8 @@ class ReaddirRsp final : public Serializable {
 
   FS::DirentList listing;
 
-  ReaddirRsp() { }
+  SWC_CAN_INLINE
+  ReaddirRsp() noexcept { }
 
   private:
 

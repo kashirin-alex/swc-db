@@ -11,10 +11,6 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Params {
 
 
-MkdirsReq::MkdirsReq() {}
-
-MkdirsReq::MkdirsReq(const std::string& dirname) : dirname(dirname) {}
-
 size_t MkdirsReq::internal_encoded_length() const {
   return Serialization::encoded_length_bytes(dirname.size());
 }

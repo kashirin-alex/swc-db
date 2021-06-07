@@ -15,9 +15,13 @@ namespace SWC { namespace FS {
 /// Directory entry
 struct Dirent final  {
 
+  SWC_CAN_INLINE
   Dirent() noexcept { }
 
-  Dirent(const char* s, int64_t mod_time, bool is_dir, uint64_t length);
+  SWC_CAN_INLINE
+  Dirent(const char* s, int64_t mod_time, bool is_dir, uint64_t length)
+        : name(s), last_modification_time(mod_time),
+          is_dir(is_dir), length(length) { }
 
   /// File or Directory name
   std::string   name;

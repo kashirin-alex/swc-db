@@ -10,10 +10,6 @@
 namespace SWC { namespace FS {
 
 
-Dirent::Dirent(const char* s, int64_t mod_time, bool is_dir, uint64_t length)
-              : name(s), last_modification_time(mod_time),
-                is_dir(is_dir), length(length) {
-}
 
 std::string Dirent::to_string() const {
   std::string s("Dirent(");

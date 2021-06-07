@@ -17,9 +17,11 @@ namespace FsBroker {  namespace Params {
 class LengthReq final : public Serializable {
   public:
 
-  LengthReq();
+  SWC_CAN_INLINE
+  LengthReq() noexcept { }
 
-  LengthReq(const std::string& fname);
+  SWC_CAN_INLINE
+  LengthReq(const std::string& fname) : fname(fname) { }
 
   std::string fname;
 
@@ -38,9 +40,11 @@ class LengthReq final : public Serializable {
 class LengthRsp final : public Serializable {
   public:
 
-  LengthRsp();
+  SWC_CAN_INLINE
+  LengthRsp() noexcept { }
 
-  LengthRsp(size_t length);
+  SWC_CAN_INLINE
+  LengthRsp(size_t length) noexcept : length(length) { }
 
   size_t length;
 

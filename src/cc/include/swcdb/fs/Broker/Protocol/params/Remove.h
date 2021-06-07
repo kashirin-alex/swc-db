@@ -17,9 +17,11 @@ namespace FsBroker {  namespace Params {
 class RemoveReq final : public Serializable {
   public:
 
-  RemoveReq();
+  SWC_CAN_INLINE
+  RemoveReq() noexcept { }
 
-  RemoveReq(const std::string& fname);
+  SWC_CAN_INLINE
+  RemoveReq(const std::string& fname) : fname(fname) { }
 
   std::string fname;
 

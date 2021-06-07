@@ -10,9 +10,6 @@
 namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Params {
 
-LengthReq::LengthReq() {}
-
-LengthReq::LengthReq(const std::string& fname) : fname(fname) {}
 
 size_t LengthReq::internal_encoded_length() const {
   return Serialization::encoded_length_bytes(fname.size());
@@ -27,9 +24,6 @@ void LengthReq::internal_decode(const uint8_t** bufp, size_t* remainp) {
 }
 
 
-LengthRsp::LengthRsp() {}
-
-LengthRsp::LengthRsp(size_t length) : length(length) {}
 
 size_t LengthRsp::internal_encoded_length() const {
   return Serialization::encoded_length_vi64(length);

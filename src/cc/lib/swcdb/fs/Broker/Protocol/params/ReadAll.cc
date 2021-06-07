@@ -11,11 +11,6 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Params {
 
 
-ReadAllReq::ReadAllReq() {}
-
-ReadAllReq::ReadAllReq(const std::string& name)
-                      : name(name) {}
-
 size_t ReadAllReq::internal_encoded_length() const {
   return Serialization::encoded_length_bytes(name.size());
 }

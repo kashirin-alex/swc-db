@@ -11,10 +11,6 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Params {
 
 
-FlushReq::FlushReq(): fd(-1) { }
-
-FlushReq::FlushReq(int32_t fd): fd(fd) { }
-
 size_t FlushReq::internal_encoded_length() const {
   return Serialization::encoded_length_vi32(fd);
 }

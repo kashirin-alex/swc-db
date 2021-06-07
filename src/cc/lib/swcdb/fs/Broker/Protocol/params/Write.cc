@@ -12,14 +12,6 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Params {
 
 
-WriteReq::WriteReq() {}
-
-WriteReq::WriteReq(const std::string& fname, uint32_t flags,
-                   uint8_t replication, int64_t blksz)
-                  : fname(fname), flags(flags),
-                    replication(replication), blksz(blksz) {
-}
-
 size_t WriteReq::internal_encoded_length() const {
   return Serialization::encoded_length_vi32(flags)
        + 1

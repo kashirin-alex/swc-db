@@ -17,10 +17,14 @@ namespace FsBroker {  namespace Params {
 class CreateReq final : public Serializable {
   public:
 
-  CreateReq();
+  SWC_CAN_INLINE
+  CreateReq() noexcept { }
 
+  SWC_CAN_INLINE
   CreateReq(const std::string& fname, uint32_t flags, int32_t bufsz,
-            uint8_t replication, int64_t blksz);
+            uint8_t replication, int64_t blksz)
+            : fname(fname), flags(flags), bufsz(bufsz),
+              replication(replication), blksz(blksz) { }
 
   std::string fname;
   uint32_t    flags;

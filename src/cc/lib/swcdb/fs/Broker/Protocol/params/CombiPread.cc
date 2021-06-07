@@ -12,12 +12,6 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Params {
 
 
-CombiPreadReq::CombiPreadReq() {}
-
-CombiPreadReq::CombiPreadReq(const FS::SmartFd::Ptr& smartfd,
-                             uint64_t offset, uint32_t amount)
-                            : smartfd(smartfd), offset(offset), amount(amount) {}
-
 size_t CombiPreadReq::internal_encoded_length() const {
   return Serialization::encoded_length_bytes(smartfd->filepath().size())
        + Serialization::encoded_length_vi64(offset)

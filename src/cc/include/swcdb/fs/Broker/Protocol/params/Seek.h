@@ -17,9 +17,11 @@ namespace FsBroker {  namespace Params {
 class SeekReq final : public Serializable {
   public:
 
-  SeekReq();
+  SWC_CAN_INLINE
+  SeekReq() noexcept : fd(-1) { }
 
-  SeekReq(int32_t fd, size_t offset);
+  SWC_CAN_INLINE
+  SeekReq(int32_t fd, size_t offset) noexcept : fd(fd), offset(offset) { }
 
   int32_t   fd;
   uint64_t  offset;
@@ -40,9 +42,11 @@ class SeekReq final : public Serializable {
 class SeekRsp final : public Serializable {
   public:
 
-  SeekRsp();
+  SWC_CAN_INLINE
+  SeekRsp() noexcept { }
 
-  SeekRsp(size_t offset);
+  SWC_CAN_INLINE
+  SeekRsp(size_t offset) noexcept : offset(offset) { }
 
   uint64_t offset;
 
