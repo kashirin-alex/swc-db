@@ -14,7 +14,10 @@ namespace Rgr { namespace Params {
 class RangeIsLoaded final : public Common::Params::ColRangeId {
   public:
 
+  SWC_CAN_INLINE
   RangeIsLoaded() noexcept { }
+
+  SWC_CAN_INLINE
   RangeIsLoaded(cid_t cid, rid_t rid) noexcept
                 : Common::Params::ColRangeId(cid, rid) { }
   //~RangeIsLoaded() { }
@@ -30,12 +33,14 @@ class RangeIsLoadedRsp final : public Serializable {
     CAN_MERGE = 0x01
   };
 
+  SWC_CAN_INLINE
   RangeIsLoadedRsp(int err) noexcept
                    : err(err), flags(NONE) {
   }
 
   //~RangeIsLoadedRsp() { }
 
+  SWC_CAN_INLINE
   void can_be_merged() {
     flags |= CAN_MERGE;
   }

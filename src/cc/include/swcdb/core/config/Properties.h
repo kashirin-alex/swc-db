@@ -27,9 +27,12 @@ class Properties {
 
   Core::MutexSptd    mutex;
 
-  Properties() noexcept;
+  SWC_CAN_INLINE
+  Properties() noexcept { }
 
-  ~Properties();
+  ~Properties() {
+    reset();
+  }
 
   void reset();
 

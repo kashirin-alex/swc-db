@@ -19,6 +19,7 @@ namespace SWC { namespace client {
 class Managers  {
   public:
 
+  SWC_CAN_INLINE
   Managers() noexcept : queues(nullptr), groups(nullptr) { }
 
   Managers(const Config::Settings& settings,

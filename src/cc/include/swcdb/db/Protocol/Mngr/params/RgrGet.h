@@ -19,6 +19,7 @@ namespace Mngr { namespace Params {
 class RgrGetReq final : public Serializable {
   public:
 
+  SWC_CAN_INLINE
   RgrGetReq(cid_t cid=0, rid_t rid=0, bool next_range=false) noexcept
             : cid(cid), rid(rid), next_range(next_range) {
   }
@@ -48,10 +49,12 @@ class RgrGetReq final : public Serializable {
 class RgrGetRsp final : public Common::Params::HostEndPoints {
   public:
 
+  SWC_CAN_INLINE
   RgrGetRsp(int err = Error::OK) noexcept
             : err(err), cid(0), rid(0) {
   }
 
+  SWC_CAN_INLINE
   RgrGetRsp(cid_t cid, rid_t rid) noexcept
             : err(Error::OK), cid(cid), rid(rid) {
   }

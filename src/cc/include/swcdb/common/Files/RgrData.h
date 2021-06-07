@@ -44,6 +44,7 @@ class RgrData final {
     return data;
   }
 
+  SWC_CAN_INLINE
   RgrData() noexcept : version(VERSION), rgrid(0), timestamp(0) { }
 
   void read(int &err, const std::string& filepath) {

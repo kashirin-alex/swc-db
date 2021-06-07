@@ -18,9 +18,13 @@ namespace Bkr { namespace Params {
 class CellsSelectReq final : public Serializable {
   public:
 
+  SWC_CAN_INLINE
   CellsSelectReq() noexcept { }
 
-  CellsSelectReq(cid_t cid, const DB::Specs::Interval& interval);
+  SWC_CAN_INLINE
+  CellsSelectReq(cid_t cid, const DB::Specs::Interval& interval)
+                : cid(cid), interval(interval) {
+  }
 
   //~CellsSelectReq() { }
 
@@ -44,6 +48,7 @@ class CellsSelectReq final : public Serializable {
 class CellsSelectReqRef final : public Serializable {
   public:
 
+  SWC_CAN_INLINE
   CellsSelectReqRef(cid_t cid, const DB::Specs::Interval& interval) noexcept
                     : cid(cid), interval(interval) { }
 
@@ -70,11 +75,13 @@ class CellsSelectReqRef final : public Serializable {
 class CellsSelectRsp final : public Serializable {
   public:
 
+  SWC_CAN_INLINE
   CellsSelectRsp(int err = Error::OK, bool more=false,
                  uint64_t offset=0) noexcept
                 : err(err), more(more), offset(offset) {
   }
 
+  SWC_CAN_INLINE
   CellsSelectRsp(int err, StaticBuffer& data) noexcept
                 : err(err), more(false), offset(0), data(data) {
   }

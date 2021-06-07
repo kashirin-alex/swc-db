@@ -8,15 +8,15 @@
 
 #include "swcdb/core/Compat.h"
 
-namespace SWC { 
+namespace SWC {
 
 namespace DB { namespace Types { } }
 
 
-typedef uint64_t cid_t;  
-typedef uint64_t rid_t; 
-typedef uint64_t rgrid_t; 
-typedef uint32_t csid_t; 
+typedef uint64_t cid_t;
+typedef uint64_t rid_t;
+typedef uint64_t rgrid_t;
+typedef uint32_t csid_t;
 
 
 }

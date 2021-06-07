@@ -24,14 +24,24 @@ class ColumnMutable : public Base::Column {
   Core::Atomic<int> state_error;
   cid_t             cid;
 
+  SWC_CAN_INLINE
   ColumnMutable(const cid_t cid, DB::Types::KeySeq seq,
                 uint32_t versions, uint32_t ttl_secs,
-                DB::Types::Column type);
+                DB::Types::Column type)
+    : state_error(Error::OK),
+      cid(cid),
+      m_cells(seq, versions, uint64_t(ttl_secs) * 1000000000, type) {
+  }
 
+  SWC_CAN_INLINE
   ColumnMutable(const cid_t cid, DB::Types::KeySeq seq,
                 uint32_t versions, uint32_t ttl_secs,
                 DB::Types::Column type,
-                const StaticBuffer& buffer);
+                const StaticBuffer& buffer)
+    : state_error(Error::OK),
+      cid(cid),
+      m_cells(seq, versions, uint64_t(ttl_secs) * 1000000000, type, buffer) {
+  }
 
   ColumnMutable(const Column&) = delete;
 

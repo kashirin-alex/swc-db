@@ -14,6 +14,7 @@ namespace SWC { namespace client {
 class Schemas final : private DB::Schemas {
   public:
 
+  SWC_CAN_INLINE
   Schemas(Clients* _clients,
           const Config::Property::V_GINT32::Ptr expiry_ms) noexcept
           : _clients(_clients), m_expiry_ms(expiry_ms) {

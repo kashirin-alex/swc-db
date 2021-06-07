@@ -18,6 +18,7 @@ template <class ItemT>
 class QueueSafeStated final : private std::queue<ItemT> {
   public:
 
+  SWC_CAN_INLINE
   explicit QueueSafeStated() noexcept { }
 
   //~QueueSafeStated() { }

@@ -5,7 +5,6 @@
 
 
 
-#include "swcdb/core/Compat.h"
 #include "swcdb/db/Types/Column.h"
 
 
@@ -111,17 +110,6 @@ Column column_type_from(const std::string& typ) noexcept {
       break;
   }
   return Column::UNKNOWN;
-}
-
-
-SWC_SHOULD_INLINE
-std::string repr_col_type(int typ) {
-  return to_string(Column(typ));
-}
-
-SWC_SHOULD_INLINE
-int from_string_col_type(const std::string& typ) noexcept {
-  return int(column_type_from(typ));
 }
 
 

@@ -24,14 +24,30 @@ const cid_t SYS_CID_DEFINE_LEXIC = 10;
 const cid_t SYS_CID_END = SYS_CID_DEFINE_LEXIC;
 
 
-bool is_master(cid_t cid) noexcept;
+SWC_CAN_INLINE
+bool is_master(cid_t cid) noexcept {
+  return cid <= CID_MASTER_END;
+}
 
-bool is_meta(cid_t cid) noexcept;
+SWC_CAN_INLINE
+bool is_meta(cid_t cid) noexcept {
+  return cid >= CID_META_BEGIN && cid <= CID_META_END;
+}
 
-bool is_data(cid_t cid) noexcept;
+SWC_CAN_INLINE
+bool is_data(cid_t cid) noexcept {
+  return cid > CID_META_END;
+}
 
+SWC_CAN_INLINE
+Range get_range_type(cid_t cid) noexcept {
+  if(cid <= CID_MASTER_END)
+    return Range::MASTER;
+  if(cid <= CID_META_END)
+    return Range::META;
+  return Range::DATA;
+}
 
-Range get_range_type(cid_t cid) noexcept;
 
 KeySeq get_seq_type(cid_t cid) noexcept;
 

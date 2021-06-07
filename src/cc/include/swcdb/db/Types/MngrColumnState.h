@@ -6,9 +6,9 @@
 #ifndef swcdb_db_types_MngrColumnState_h
 #define swcdb_db_types_MngrColumnState_h
 
-#include <string>
+#include "swcdb/core/Compat.h"
 
-namespace SWC { namespace DB { namespace Types { 
+namespace SWC { namespace DB { namespace Types {
 
 
 namespace MngrColumn {
@@ -30,6 +30,6 @@ const char* to_string(MngrColumn::State state) noexcept;
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/db/Types/MngrColumnState.cc"
-#endif 
+#endif
 
 #endif // swcdb_db_types_MngrColumnState_h

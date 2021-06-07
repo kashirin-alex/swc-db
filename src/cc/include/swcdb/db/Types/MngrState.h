@@ -6,9 +6,9 @@
 #ifndef swcdb_db_types_MngrState_h
 #define swcdb_db_types_MngrState_h
 
-#include <string>
+#include "swcdb/core/Compat.h"
 
-namespace SWC { namespace DB { namespace Types { 
+namespace SWC { namespace DB { namespace Types {
 
 
 enum class MngrState : uint8_t {
@@ -28,6 +28,6 @@ const char* to_string(MngrState state) noexcept;
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/db/Types/MngrState.cc"
-#endif 
+#endif
 
 #endif // swcdb_db_types_MngrState_h

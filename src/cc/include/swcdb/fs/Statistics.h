@@ -67,13 +67,13 @@ struct Statistics {
   struct Metric : Core::MutexAtomic {
 
     struct Tracker : Time::Measure_ns {
+      SWC_CAN_INLINE
       Tracker() noexcept
               : Time::Measure_ns(Time::Measure_ns::duration::zero()),
                 m(nullptr) {
       }
-      Tracker(Metric* m) noexcept
-              : m(m) {
-      }
+      SWC_CAN_INLINE
+      Tracker(Metric* m) noexcept : m(m) { }
       void stop(bool err) noexcept {
         if(m) m->add(err, elapsed());
       }

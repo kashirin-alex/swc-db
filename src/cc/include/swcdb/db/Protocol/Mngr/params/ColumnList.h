@@ -18,6 +18,7 @@ namespace Mngr { namespace Params {
 class ColumnListReq final : public Serializable {
   public:
 
+  SWC_CAN_INLINE
   ColumnListReq() noexcept { }
 
   //~ColumnListReq() { }
@@ -39,6 +40,7 @@ class ColumnListReq final : public Serializable {
 class ColumnListRsp final : public Serializable {
   public:
 
+  SWC_CAN_INLINE
   ColumnListRsp() noexcept { }
 
   //~ColumnListRsp() { }

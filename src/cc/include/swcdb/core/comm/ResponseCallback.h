@@ -23,15 +23,19 @@ class ResponseCallback: public std::enable_shared_from_this<ResponseCallback> {
 
   virtual ~ResponseCallback() { };
 
-  virtual void run();
+  virtual void run() { }
 
   bool expired(int64_t within=0) const noexcept;
 
   virtual void response(int& err);
 
-  virtual void response_ok();
+  virtual void response_ok() {
+    m_conn->response_ok(m_ev);
+  }
 
-  virtual void send_error(int err, const std::string &msg);
+  virtual void send_error(int err, const std::string &msg) {
+    m_conn->send_error(err , msg, m_ev);
+  }
 
   protected:
   ConnHandlerPtr m_conn;

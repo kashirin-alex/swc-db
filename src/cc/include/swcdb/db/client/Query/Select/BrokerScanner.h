@@ -20,12 +20,12 @@ class BrokerScanner : public std::enable_shared_from_this<BrokerScanner>  {
 
   static void execute(const Handlers::Base::Ptr& hdlr,
                       cid_t cid, const DB::Specs::Interval& intval) {
-    std::make_shared<BrokerScanner>(hdlr, intval, cid)->select();
+    Ptr(new BrokerScanner(hdlr, intval, cid))->select();
   }
 
   static void execute(const Handlers::Base::Ptr& hdlr,
                       cid_t cid, DB::Specs::Interval&& intval) {
-    std::make_shared<BrokerScanner>(hdlr, std::move(intval), cid)->select();
+    Ptr(new BrokerScanner(hdlr, std::move(intval), cid))->select();
   }
 
 
@@ -34,21 +34,23 @@ class BrokerScanner : public std::enable_shared_from_this<BrokerScanner>  {
   DB::Specs::Interval                     interval;
   const cid_t                             cid;
 
+  SWC_CAN_INLINE
   BrokerScanner(const Handlers::Base::Ptr& hdlr,
                 DB::Specs::Interval&& interval,
                 const cid_t cid) noexcept
                 : selector(hdlr), interval(std::move(interval)), cid(cid) {
   }
 
+  SWC_CAN_INLINE
   BrokerScanner(const Handlers::Base::Ptr& hdlr,
                 const DB::Specs::Interval& interval,
-                const cid_t cid);
+                const cid_t cid)
+                : selector(hdlr), interval(interval), cid(cid) {
+  }
 
   virtual ~BrokerScanner() { }
 
   void print(std::ostream& out);
-
-  bool add_cells(StaticBuffer& buffer, bool reached_limit);
 
   void select();
 

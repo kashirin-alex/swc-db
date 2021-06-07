@@ -26,12 +26,14 @@ class Schema final {
 
   static constexpr const cid_t     NO_CID = 0;
 
+  SWC_CAN_INLINE
   static Ptr make() {
-    return std::make_shared<Schema>();
+    return Ptr(new Schema());
   }
 
+  SWC_CAN_INLINE
   static Ptr make(const Ptr& other) {
-    return std::make_shared<Schema>(*other.get());
+    return Ptr(new Schema(*other.get()));
   }
 
   Schema() noexcept;

@@ -23,6 +23,6 @@ std::string to_string(uint8_t role);
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/db/Types/MngrRole.cc"
-#endif 
+#endif
 
 #endif // swcdb_db_types_MngrRole_h

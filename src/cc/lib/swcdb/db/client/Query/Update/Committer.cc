@@ -27,33 +27,6 @@ namespace SWC { namespace client { namespace Query { namespace Update {
 
 
 
-Committer::Committer(const DB::Types::Range type,
-                     const cid_t cid,
-                     Handlers::Base::Column* colp,
-                     const DB::Cell::Key::Ptr& key_start,
-                     const Handlers::Base::Ptr& hdlr,
-                     const ReqBase::Ptr& parent,
-                     const rid_t rid) noexcept
-              : type(type), workload(0),
-                cid(cid), colp(colp),
-                key_start(key_start),
-                hdlr(hdlr), parent(parent), rid(rid) {
-}
-
-Committer::Committer(const DB::Types::Range type,
-                     const cid_t cid,
-                     Handlers::Base::Column* colp,
-                     const DB::Cell::Key::Ptr& key_start,
-                     const Handlers::Base::Ptr& hdlr,
-                     const ReqBase::Ptr& parent,
-                     const rid_t rid,
-                     const DB::Cell::Key& key_finish)
-              : type(type), workload(0),
-                cid(cid), colp(colp),
-                key_start(key_start),
-                hdlr(hdlr), parent(parent), rid(rid), key_finish(key_finish) {
-}
-
 void Committer::print(std::ostream& out) {
   out << "Committer(type=" << DB::Types::to_string(type)
       << " cid=" << cid << " rid=" << rid
@@ -67,8 +40,8 @@ void Committer::print(std::ostream& out) {
 
 struct ReqDataBase {
   Committer::Ptr committer;
-  ReqDataBase(const Committer::Ptr& committer) noexcept
-              : committer(committer) { }
+  SWC_CAN_INLINE
+  ReqDataBase(const Committer::Ptr& inst) noexcept : committer(inst) { }
   SWC_CAN_INLINE
   client::Clients::Ptr& get_clients() noexcept {
     return committer->hdlr->clients;
@@ -145,12 +118,12 @@ void Committer::located_on_manager(
 
   SWC_LOCATOR_RSP_DEBUG("mngr_located_master");
 
-  auto committer = std::make_shared<Committer>(
+  Ptr committer(new Committer(
     DB::Types::Range::MASTER,
     rsp.cid, colp, key_start,
     hdlr, base,
     rsp.rid
-  );
+  ));
   DB::Types::SystemColumn::is_master(colp->get_cid())
     ? committer->commit_data(std::move(rsp.endpoints), base)
     : committer->locate_on_ranger(std::move(rsp.endpoints));
@@ -158,11 +131,11 @@ void Committer::located_on_manager(
   if(!rsp.range_end.empty()) {
     auto next_key_start = colp->get_key_next(rsp.range_end);
     if(next_key_start) {
-      std::make_shared<Committer>(
+      Ptr(new Committer(
         DB::Types::Range::MASTER,
         colp->get_cid(), colp, next_key_start,
         hdlr
-      )->locate_on_manager();
+      ))->locate_on_manager();
     }
   }
   hdlr->response();
@@ -239,24 +212,24 @@ void Committer::located_on_ranger(
 
   SWC_LOCATOR_RSP_DEBUG("rgr_located");
 
-  std::make_shared<Committer>(
+  Ptr(new Committer(
     type == DB::Types::Range::MASTER
             ? DB::Types::Range::META
             : DB::Types::Range::DATA,
     rsp.cid, colp, key_start,
     hdlr, base,
     rsp.rid, rsp.range_end
-  )->resolve_on_manager();
+  ))->resolve_on_manager();
 
   if(!rsp.range_end.empty()) {
     auto next_key_start = colp->get_key_next(rsp.range_end);
     if(next_key_start) {
-      std::make_shared<Committer>(
+      Ptr(new Committer(
         type,
         cid, colp, next_key_start,
         hdlr, base,
         rid
-      )->locate_on_ranger(std::move(endpoints));
+      ))->locate_on_ranger(std::move(endpoints));
     }
   }
   hdlr->response();
@@ -366,13 +339,14 @@ void Committer::proceed_on_ranger(
   return hdlr->response();
 
   do_next_locate: {
-    (DB::Types::SystemColumn::is_master(cid)
-      ? std::make_shared<Committer>(
+     Ptr(
+      DB::Types::SystemColumn::is_master(cid)
+      ? new Committer(
           type,
           rsp.cid, colp, key_start,
           hdlr, base,
           rsp.rid, rsp.range_end)
-      : std::make_shared<Committer>(
+      : new Committer(
           type,
           rsp.cid, colp, key_start,
           hdlr, base,
@@ -470,11 +444,11 @@ void Committer::committed_data(
       if(workload.is_last()) {
         auto nxt_start = colp->get_key_next(rsp.range_end);
         if(nxt_start) {
-          std::make_shared<Committer>(
+          Ptr(new Committer(
             DB::Types::Range::MASTER,
             colp->get_cid(), colp, nxt_start,
             hdlr
-          )->locate_on_manager();
+          ))->locate_on_manager();
         }
         hdlr->response();
       }

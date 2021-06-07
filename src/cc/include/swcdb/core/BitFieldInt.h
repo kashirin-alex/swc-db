@@ -15,117 +15,142 @@ struct BitFieldInt final {
 
   T data : SZ;
 
-  BitFieldInt() { }
+  SWC_CAN_INLINE
+  BitFieldInt() noexcept { }
 
   template<typename FROM_T>
-  BitFieldInt(const FROM_T& v) : data(v) { }
+  SWC_CAN_INLINE
+  BitFieldInt(const FROM_T& v) noexcept : data(v) { }
 
-  operator bool() const {
+  SWC_CAN_INLINE
+  operator bool() const noexcept {
     return data;
   }
 
-  BitFieldInt<T, SZ>& operator++() {
+  SWC_CAN_INLINE
+  BitFieldInt<T, SZ>& operator++() noexcept {
     ++data;
     return *this;
   }
-  BitFieldInt<T, SZ> operator++(int) {
+  SWC_CAN_INLINE
+  BitFieldInt<T, SZ> operator++(int) noexcept {
     BitFieldInt<T, SZ> tmp(data);
     ++data;
     return tmp;
   }
-  BitFieldInt<T, SZ>& operator--() {
+  SWC_CAN_INLINE
+  BitFieldInt<T, SZ>& operator--() noexcept {
     --data;
     return *this;
   }
-  BitFieldInt<T, SZ> operator--(int) {
+  SWC_CAN_INLINE
+  BitFieldInt<T, SZ> operator--(int) noexcept {
     BitFieldInt<T, SZ> tmp(data);
     --data;
     return tmp;
   }
 
 
-  BitFieldInt<T, SZ>& operator+=(const BitFieldInt<T, SZ>& v) {
+  SWC_CAN_INLINE
+  BitFieldInt<T, SZ>& operator+=(const BitFieldInt<T, SZ>& v) noexcept {
     data += v.data;
     return *this;
   }
-  BitFieldInt<T, SZ>& operator-=(const BitFieldInt<T, SZ>& v) {
+  SWC_CAN_INLINE
+  BitFieldInt<T, SZ>& operator-=(const BitFieldInt<T, SZ>& v) noexcept {
     data -= v.data;
     return *this;
   }
-  BitFieldInt<T, SZ>& operator/=(const BitFieldInt<T, SZ>& v) {
+  SWC_CAN_INLINE
+  BitFieldInt<T, SZ>& operator/=(const BitFieldInt<T, SZ>& v) noexcept {
     data /= v.data;
     return *this;
   }
-  BitFieldInt<T, SZ>& operator*=(const BitFieldInt<T, SZ>& v) {
+  SWC_CAN_INLINE
+  BitFieldInt<T, SZ>& operator*=(const BitFieldInt<T, SZ>& v) noexcept {
     data *= v.data;
     return *this;
   }
-  BitFieldInt<T, SZ>& operator>>=(const BitFieldInt<T, SZ>& v) {
+  SWC_CAN_INLINE
+  BitFieldInt<T, SZ>& operator>>=(const BitFieldInt<T, SZ>& v) noexcept {
     data >>= v.data;
     return *this;
   }
-  BitFieldInt<T, SZ>& operator<<=(const BitFieldInt<T, SZ>& v) {
+  SWC_CAN_INLINE
+  BitFieldInt<T, SZ>& operator<<=(const BitFieldInt<T, SZ>& v) noexcept {
     data <<= v.data;
     return *this;
   }
-  BitFieldInt<T, SZ>& operator|=(const BitFieldInt<T, SZ>& v) {
+  SWC_CAN_INLINE
+  BitFieldInt<T, SZ>& operator|=(const BitFieldInt<T, SZ>& v) noexcept {
     data |= v.data;
     return *this;
   }
 
 
   template<typename IN_T>
-  BitFieldInt<T, SZ>& operator+=(const IN_T& v) {
+  SWC_CAN_INLINE
+  BitFieldInt<T, SZ>& operator+=(const IN_T& v) noexcept {
     data += v;
     return *this;
   }
   template<typename IN_T>
-  BitFieldInt<T, SZ>& operator-=(const IN_T& v) {
+  SWC_CAN_INLINE
+  BitFieldInt<T, SZ>& operator-=(const IN_T& v) noexcept {
     data -= v;
     return *this;
   }
   template<typename IN_T>
-  BitFieldInt<T, SZ>& operator/=(const IN_T& v) {
+  SWC_CAN_INLINE
+  BitFieldInt<T, SZ>& operator/=(const IN_T& v) noexcept {
     data /= v;
     return *this;
   }
   template<typename IN_T>
-  BitFieldInt<T, SZ>& operator*=(const IN_T& v) {
+  SWC_CAN_INLINE
+  BitFieldInt<T, SZ>& operator*=(const IN_T& v) noexcept {
     data *= v;
     return *this;
   }
   template<typename IN_T>
-  BitFieldInt<T, SZ>& operator<<=(const IN_T& v) {
+  SWC_CAN_INLINE
+  BitFieldInt<T, SZ>& operator<<=(const IN_T& v) noexcept {
     data <<= v;
     return *this;
   }
   template<typename IN_T>
-  BitFieldInt<T, SZ>& operator>>=(const IN_T& v) {
+  SWC_CAN_INLINE
+  BitFieldInt<T, SZ>& operator>>=(const IN_T& v) noexcept {
     data >>= v;
     return *this;
   }
   template<typename IN_T>
-  BitFieldInt<T, SZ>& operator|=(const IN_T& v) {
+  SWC_CAN_INLINE
+  BitFieldInt<T, SZ>& operator|=(const IN_T& v) noexcept {
     data |= v;
     return *this;
   }
   template<typename IN_T>
-  BitFieldInt<T, SZ>& operator&=(const IN_T& v) {
+  SWC_CAN_INLINE
+  BitFieldInt<T, SZ>& operator&=(const IN_T& v) noexcept {
     data &= v;
     return *this;
   }
   template<typename IN_T>
-  BitFieldInt<T, SZ>& operator^=(const IN_T& v) {
+  SWC_CAN_INLINE
+  BitFieldInt<T, SZ>& operator^=(const IN_T& v) noexcept {
     data ^= v;
     return *this;
   }
 
   template<typename TO_T>
-  operator TO_T() const {
+  SWC_CAN_INLINE
+  operator TO_T() const noexcept {
     return data;
   }
   template<class T2, uint8_t SZ2>
-  operator BitFieldInt<T2, SZ2>() const {
+  SWC_CAN_INLINE
+  operator BitFieldInt<T2, SZ2>() const noexcept {
     return BitFieldInt<T2, SZ2>(data);
   }
 
@@ -246,7 +271,7 @@ template<class T, uint8_t SZ, typename IN_T> \
 extern SWC_CAN_INLINE \
 BitFieldInt<T, SZ> \
 operator _op_ (const BitFieldInt<T, SZ>& v1, \
-               const IN_T& v2) { \
+               const IN_T& v2) noexcept { \
   return BitFieldInt<T, SZ>(v1.data _op_ v2);\
 }
 SWC_BITFIELD_op_T(+)
@@ -265,7 +290,7 @@ template<typename IN_T, class T, uint8_t SZ> \
 extern SWC_CAN_INLINE \
 BitFieldInt<T, SZ> \
 operator _op_ (const IN_T& v1, \
-               const BitFieldInt<T, SZ>& v2) { \
+               const BitFieldInt<T, SZ>& v2) noexcept { \
   return v1 _op_ v2.data;\
 }
 SWC_T_op_BITFIELD(+)
@@ -286,7 +311,7 @@ template<class T1, uint8_t SZ1, class T2, uint8_t SZ2> \
 extern SWC_CAN_INLINE \
 BitFieldInt<T1, SZ1> \
 operator _op_ (const BitFieldInt<T1, SZ1>& v1, \
-               const BitFieldInt<T2, SZ2>& v2) { \
+               const BitFieldInt<T2, SZ2>& v2) noexcept { \
   return BitFieldInt<T1, SZ1>(v1.data _op_ v2.data); \
 }
 SWC_BITFIELD1_op_BITFIELD2(+)
@@ -305,7 +330,7 @@ SWC_BITFIELD1_op_BITFIELD2(^)
 #define SWC_T_vs_BITFIELD(_vs_) \
 template<typename IN_T, class T, uint8_t SZ> \
 extern SWC_CAN_INLINE \
-bool operator _vs_ (const IN_T& v1, const BitFieldInt<T, SZ>& v2) { \
+bool operator _vs_ (const IN_T& v1, const BitFieldInt<T, SZ>& v2) noexcept { \
   return v1 _vs_ v2.data; \
 }
 SWC_T_vs_BITFIELD(==)
@@ -321,7 +346,7 @@ SWC_T_vs_BITFIELD(>)
 #define SWC_BITFIELD_vs_T(_vs_) \
 template<class T, uint8_t SZ, typename IN_T> \
 extern SWC_CAN_INLINE \
-bool operator _vs_ (const BitFieldInt<T, SZ>& v1, const IN_T& v2) { \
+bool operator _vs_ (const BitFieldInt<T, SZ>& v1, const IN_T& v2) noexcept { \
   return v1.data _vs_ v2; \
 }
 SWC_BITFIELD_vs_T(==)
@@ -338,7 +363,7 @@ SWC_BITFIELD_vs_T(>)
 template<class T1, uint8_t SZ1, class T2, uint8_t SZ2> \
 extern SWC_CAN_INLINE \
 bool operator _vs_ (const BitFieldInt<T1, SZ1>& v1, \
-                    const BitFieldInt<T2, SZ2>& v2) { \
+                    const BitFieldInt<T2, SZ2>& v2) noexcept { \
   return v1.data _vs_ v2.data; \
 }
 SWC_BITFIELD1_vs_BITFIELD2(==)

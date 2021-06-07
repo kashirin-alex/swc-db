@@ -6,7 +6,7 @@
 #ifndef swcdb_db_types_MngrRangerState_h
 #define swcdb_db_types_MngrRangerState_h
 
-#include <string>
+#include "swcdb/core/Compat.h"
 
 namespace SWC { namespace DB { namespace Types {
 

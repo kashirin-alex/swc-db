@@ -10,7 +10,7 @@
 #include "swcdb/core/MutexSptd.h"
 #include <queue>
 
-  
+
 namespace SWC { namespace Core {
 
 
@@ -22,6 +22,7 @@ class QueueSafe : private std::queue<ItemT> {
 
   typedef ItemT  value_type;
 
+  SWC_CAN_INLINE
   explicit QueueSafe() noexcept { }
 
   //~QueueSafe() { }

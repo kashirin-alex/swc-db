@@ -73,16 +73,6 @@ int BaseUnorderedMap::Rsp::error() noexcept {
 
 
 
-void BaseUnorderedMap::error(const cid_t cid, int err) {
-  get_columnn(cid)->error(err);
-}
-
-bool BaseUnorderedMap::add_cells(const cid_t cid, StaticBuffer& buffer,
-                                 bool reached_limit,
-                                 DB::Specs::Interval& interval) {
-  return get_columnn(cid)->add_cells(buffer, reached_limit, interval);
-}
-
 size_t BaseUnorderedMap::get_size_bytes() noexcept {
   size_t sz = 0;
   Core::MutexSptd::scope lock(m_mutex);
@@ -104,14 +94,6 @@ BaseUnorderedMap::Rsp::Ptr& BaseUnorderedMap::get_columnn(const cid_t cid) {
   return c;
 }
 
-void BaseUnorderedMap::get_cells(const cid_t cid, DB::Cells::Result& cells) {
-  get_columnn(cid)->get_cells(cells);
-}
-
-size_t BaseUnorderedMap::get_size(const cid_t cid) {
-  return get_columnn(cid)->get_size();
-}
-
 bool BaseUnorderedMap::empty() noexcept {
   Core::MutexSptd::scope lock(m_mutex);
   for(const auto& col : m_columns)
@@ -127,10 +109,6 @@ std::vector<cid_t> BaseUnorderedMap::get_cids() {
   for(const auto& col : m_columns)
     list[i++] = col.first;
   return list;
-}
-
-void BaseUnorderedMap::free(const cid_t cid) {
-  get_columnn(cid)->free();
 }
 
 void BaseUnorderedMap::remove(const cid_t cid) {

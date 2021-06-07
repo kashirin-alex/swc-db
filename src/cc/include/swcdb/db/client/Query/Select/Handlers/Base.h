@@ -37,6 +37,7 @@ class Base : public std::enable_shared_from_this<Base>{
   Core::Atomic<uint8_t>             buff_ahead;
   const Clients::Flag               executor;
 
+  SWC_CAN_INLINE
   Base(const Clients::Ptr& clients,
        Clients::Flag executor=Clients::DEFAULT) noexcept
       : clients(clients),
@@ -69,30 +70,36 @@ class Base : public std::enable_shared_from_this<Base>{
     state_error.compare_exchange_weak(at, err);
   }
 
+  SWC_CAN_INLINE
   void scan(const DB::Schema::Ptr& schema,
             const DB::Specs::Interval& intval) {
     _execute(schema->col_seq, schema->cid, intval);
   }
 
+  SWC_CAN_INLINE
   void scan(const DB::Schema::Ptr& schema,
             DB::Specs::Interval&& intval) {
     _execute(schema->col_seq, schema->cid, std::move(intval));
   }
 
+  SWC_CAN_INLINE
   void scan(DB::Types::KeySeq key_seq, cid_t cid,
             const DB::Specs::Interval& intval) {
     _execute(key_seq, cid, intval);
   }
 
+  SWC_CAN_INLINE
   void scan(DB::Types::KeySeq key_seq, cid_t cid,
             DB::Specs::Interval&& intval) {
     _execute(key_seq, cid, std::move(intval));
   }
 
+  SWC_CAN_INLINE
   void scan(int& err, const DB::Specs::Scan& specs) {
     _execute(err, specs);
   }
 
+  SWC_CAN_INLINE
   void scan(int& err, DB::Specs::Scan&& specs) {
     _execute(err, std::move(specs));
   }

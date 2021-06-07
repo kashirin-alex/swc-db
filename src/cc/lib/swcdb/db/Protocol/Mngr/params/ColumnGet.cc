@@ -12,8 +12,6 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace Mngr { namespace Params {
 
 
-ColumnGetReq::ColumnGetReq(ColumnGetReq::Flag flag, const std::string& name)
-                          : flag(flag), name(name) {}
 
 size_t ColumnGetReq::internal_encoded_length() const {
   return 1 +

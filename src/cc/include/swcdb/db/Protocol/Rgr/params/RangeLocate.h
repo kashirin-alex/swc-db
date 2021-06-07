@@ -25,6 +25,7 @@ class RangeLocateReq final : public Serializable {
   static const uint8_t RANGE_END_REST = 0x08;
   static const uint8_t KEY_EQUAL      = 0x10;
 
+  SWC_CAN_INLINE
   RangeLocateReq(cid_t cid=0, rid_t rid=0) noexcept
                 : cid(cid), rid(rid), flags(0) {
   }
@@ -53,6 +54,7 @@ class RangeLocateReq final : public Serializable {
 class RangeLocateRsp final : public Serializable {
   public:
 
+  SWC_CAN_INLINE
   RangeLocateRsp(int err = Error::OK) noexcept
                 : err(err), cid(0), rid(0) {
   }

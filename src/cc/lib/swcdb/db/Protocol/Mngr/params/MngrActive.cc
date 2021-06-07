@@ -29,30 +29,16 @@ void MngrActiveReq::internal_decode(const uint8_t** bufp, size_t* remainp) {
 
 
 
-MngrActiveRsp::MngrActiveRsp(const EndPoints& endpoints)
-                            : Common::Params::HostEndPoints(endpoints),
-                              available(endpoints.size()>0) {
-}
-
 size_t MngrActiveRsp::internal_encoded_length() const {
-  size_t len = 1;
-  if(available)
-    len += Common::Params::HostEndPoints::internal_encoded_length();
-  return len;
+  return Common::Params::HostEndPoints::internal_encoded_length();
 }
 
 void MngrActiveRsp::internal_encode(uint8_t** bufp) const {
-  Serialization::encode_bool(bufp, available);
-  if(available) {
-    Common::Params::HostEndPoints::internal_encode(bufp);
-  }
+  Common::Params::HostEndPoints::internal_encode(bufp);
 }
 
 void MngrActiveRsp::internal_decode(const uint8_t** bufp, size_t* remainp) {
-  available = Serialization::decode_bool(bufp, remainp);
-  if(available) {
-    Common::Params::HostEndPoints::internal_decode(bufp, remainp);
-  }
+  Common::Params::HostEndPoints::internal_decode(bufp, remainp);
 }
 
 

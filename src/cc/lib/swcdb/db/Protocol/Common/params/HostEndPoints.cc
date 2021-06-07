@@ -12,9 +12,6 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace Common { namespace Params {
 
 
-HostEndPoints::HostEndPoints(const EndPoints& points)
-                            : endpoints(points) { }
-
 void HostEndPoints::set(const EndPoints& points) {
   endpoints.clear();
   endpoints.assign(points.begin(), points.end());
@@ -34,11 +31,10 @@ void HostEndPoints::internal_encode(uint8_t** bufp) const {
 }
 
 void HostEndPoints::internal_decode(const uint8_t** bufp, size_t* remainp) {
-  size_t len = Serialization::decode_vi32(bufp, remainp);
   endpoints.clear();
-  endpoints.resize(len);
-  for(size_t i=0;i<len;++i)
-    endpoints[i] = Serialization::decode(bufp, remainp);
+  endpoints.resize(Serialization::decode_vi32(bufp, remainp));
+  for(auto& endpoint : endpoints)
+    endpoint = Serialization::decode(bufp, remainp);
 }
 
 void HostEndPoints::print(std::ostream& out) const {

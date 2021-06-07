@@ -13,25 +13,6 @@ namespace Handlers {
 
 
 
-ColumnMutable::ColumnMutable(const cid_t cid, DB::Types::KeySeq seq,
-                             uint32_t versions, uint32_t ttl_secs,
-                             DB::Types::Column type)
-            : state_error(Error::OK),
-              cid(cid),
-              m_cells(seq, versions, uint64_t(ttl_secs) * 1000000000, type) {
-}
-
-ColumnMutable::ColumnMutable(const cid_t cid, DB::Types::KeySeq seq,
-                             uint32_t versions, uint32_t ttl_secs,
-                             DB::Types::Column type,
-                             const StaticBuffer& buffer)
-            : state_error(Error::OK),
-              cid(cid),
-              m_cells(
-                seq, versions, uint64_t(ttl_secs) * 1000000000, type,
-                buffer) {
-}
-
 void ColumnMutable::print(std::ostream& out) {
   out << "(cid=" << cid;
   {

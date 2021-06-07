@@ -23,6 +23,7 @@ class BaseSingleColumn : public Base {
 
   ColumnMutable column;
 
+  SWC_CAN_INLINE
   BaseSingleColumn(const Clients::Ptr& clients,
                    const cid_t cid, DB::Types::KeySeq seq,
                    uint32_t versions, uint32_t ttl_secs,
@@ -32,6 +33,7 @@ class BaseSingleColumn : public Base {
                     column(cid, seq, versions, ttl_secs, type) {
   }
 
+  SWC_CAN_INLINE
   BaseSingleColumn(const Clients::Ptr& clients,
                    const cid_t cid, DB::Types::KeySeq seq,
                    uint32_t versions, uint32_t ttl_secs,
@@ -80,6 +82,7 @@ class BaseSingleColumn : public Base {
   }
 
 
+  SWC_CAN_INLINE
   size_t size() noexcept {
     return column.size();
   }

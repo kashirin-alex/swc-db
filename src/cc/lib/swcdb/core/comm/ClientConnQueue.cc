@@ -23,30 +23,6 @@ void ConnQueueReqBase::print(std::ostream& out) {
 
 
 
-ConnQueue::ConnQueue(const IoContextPtr& ioctx,
-                     const Config::Property::V_GINT32::Ptr keepalive_ms,
-                     const Config::Property::V_GINT32::Ptr again_delay_ms)
-                    : cfg_keepalive_ms(keepalive_ms),
-                      cfg_again_delay_ms(again_delay_ms),
-                      m_ioctx(ioctx), m_conn(nullptr),
-                      m_connecting(false),
-                      m_timer(cfg_keepalive_ms
-                        ? new asio::high_resolution_timer(m_ioctx->executor())
-                        : nullptr
-                      ) {
-}
-
-ConnQueue::~ConnQueue() {
-  if(m_timer)
-    delete m_timer;
-}
-
-bool ConnQueue::connect() {
-  return false; // not implemented by default
-}
-
-void ConnQueue::close_issued() { }
-
 void ConnQueue::stop() {
   if(m_timer) {
     Core::MutexSptd::scope lock(m_mutex);

@@ -23,6 +23,7 @@ class BaseUnorderedMap : public Base {
 
   typedef std::shared_ptr<BaseUnorderedMap>   Ptr;
 
+  SWC_CAN_INLINE
   BaseUnorderedMap(const Clients::Ptr& clients,
                    Clients::Flag executor=Clients::DEFAULT) noexcept
                   : Base(clients, executor) {
@@ -31,23 +32,32 @@ class BaseUnorderedMap : public Base {
   virtual ~BaseUnorderedMap() { }
 
 
-  virtual void error(const cid_t cid, int err) override;
+  virtual void error(const cid_t cid, int err) override {
+    get_columnn(cid)->error(err);
+  }
 
   virtual bool add_cells(const cid_t cid, StaticBuffer& buffer,
                          bool reached_limit,
-                         DB::Specs::Interval& interval) override;
+                         DB::Specs::Interval& interval) override {
+    return get_columnn(cid)->add_cells(buffer, reached_limit, interval);
+  }
 
   virtual size_t get_size_bytes() noexcept override;
 
-  virtual void get_cells(const cid_t cid, DB::Cells::Result& cells);
+  virtual void get_cells(const cid_t cid, DB::Cells::Result& cells) {
+    get_columnn(cid)->get_cells(cells);
+  }
 
-  virtual void free(const cid_t cid);
+  virtual void free(const cid_t cid) {
+    get_columnn(cid)->free();
+  }
 
 
   struct Rsp final {
     public:
     typedef std::shared_ptr<Rsp> Ptr;
 
+    SWC_CAN_INLINE
     Rsp() noexcept : m_err(Error::OK) { }
 
     //~Rsp() { }
@@ -80,7 +90,10 @@ class BaseUnorderedMap : public Base {
 
   Rsp::Ptr& get_columnn(const cid_t cid);
 
-  size_t get_size(const cid_t cid);
+  SWC_CAN_INLINE
+  size_t get_size(const cid_t cid) {
+    return get_columnn(cid)->get_size();
+  }
 
   bool empty() noexcept;
 

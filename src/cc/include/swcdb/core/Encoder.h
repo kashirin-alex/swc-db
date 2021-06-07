@@ -38,10 +38,15 @@ const char* to_string(Type typ) noexcept;
 
 Type encoding_from(const std::string& typ) noexcept;
 
-std::string repr_encoding(int typ);
+SWC_CAN_INLINE
+std::string repr_encoding(int typ) {
+  return Encoder::to_string(Encoder::Type(typ));
+}
 
-int from_string_encoding(const std::string& typ) noexcept;
-
+SWC_CAN_INLINE
+int from_string_encoding(const std::string& typ) noexcept {
+  return int(Encoder::encoding_from(typ));
+}
 
 
 

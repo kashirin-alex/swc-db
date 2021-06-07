@@ -33,7 +33,10 @@ class Acceptor final : protected asio::ip::tcp::acceptor {
 
   //~Acceptor() { }
 
-  asio::ip::tcp::acceptor* sock() noexcept;
+  SWC_CAN_INLINE
+  asio::ip::tcp::acceptor* sock() noexcept {
+    return this;
+  }
 
   protected:
 

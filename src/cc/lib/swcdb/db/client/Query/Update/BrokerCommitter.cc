@@ -21,12 +21,6 @@ namespace SWC { namespace client { namespace Query { namespace Update {
 
 
 
-BrokerCommitter::BrokerCommitter(
-        const Query::Update::Handlers::Base::Ptr& hdlr,
-        Query::Update::Handlers::Base::Column* colp) noexcept
-        : hdlr(hdlr), colp(colp) {
-}
-
 void BrokerCommitter::print(std::ostream& out) {
   out << "BrokerCommitter(cid=" << colp->get_cid()
       << " completion=" << hdlr->completion.count()

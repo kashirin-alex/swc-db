@@ -13,11 +13,6 @@ namespace SWC { namespace Core {
 
 // STREAM-OUT
 
-BufferStreamOut::BufferStreamOut(size_t pre_alloc, size_t commit_size)
-                : error(Error::OK),
-                  pre_alloc(pre_alloc), commit_size(commit_size) {
-}
-
 bool BufferStreamOut::empty() const {
   return !buffer.fill();
 }
@@ -189,8 +184,6 @@ void BufferStreamOut_ENCODER::get(StaticBuffer& output) {
 
 
 // STREAM-IN
-
-BufferStreamIn::BufferStreamIn() : error(Error::OK) { }
 
 bool BufferStreamIn::empty() const {
   return !buffer.fill();

@@ -51,6 +51,7 @@ struct ScopedLock final {
     }
   }
 
+  SWC_CAN_INLINE
   ~ScopedLock() noexcept {
     _m.unlock();
   }

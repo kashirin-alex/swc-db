@@ -20,6 +20,7 @@ namespace SWC { namespace client {
 struct RangeEndPoints final {
   const int64_t           ts;
   const Comm::EndPoints   endpoints;
+  SWC_CAN_INLINE
   RangeEndPoints(const int64_t ts, const Comm::EndPoints& endpoints)
                 : ts(ts), endpoints(endpoints) {
   }
@@ -35,7 +36,10 @@ class CachedRangers final
 
   public:
 
-  CachedRangers(const Config::Property::V_GINT32::Ptr expiry_ms) noexcept;
+  SWC_CAN_INLINE
+  CachedRangers(const Config::Property::V_GINT32::Ptr expiry_ms) noexcept
+                : m_expiry_ms(expiry_ms) {
+  }
 
   ~CachedRangers();
 

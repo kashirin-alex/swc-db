@@ -19,6 +19,7 @@ namespace SWC { namespace client {
 class Rangers {
   public:
 
+  SWC_CAN_INLINE
   Rangers() noexcept : queues(nullptr), cache(nullptr) { }
 
   Rangers(const Config::Settings& settings,

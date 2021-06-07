@@ -6,28 +6,14 @@
 #include "swcdb/core/Exception.h"
 #include "swcdb/core/comm/IoContext.h"
 
-namespace SWC {
+namespace SWC { namespace Comm {
 
-namespace Comm {
-
-IoContextPtr IoContext::make(std::string&& _name, int32_t size) {
-  return std::make_shared<IoContext>(std::move(_name), size);
-}
 
 IoContext::IoContext(std::string&& _name, int32_t size)
                     : running(true), name(std::move(_name)),
                       pool(size), m_size(size) {
   SWC_LOGF(LOG_DEBUG, "Starting IO-ctx(%s) size=%d", name.c_str(), m_size);
   SWC_ASSERT(m_size > 0);
-}
-
-int32_t IoContext::get_size() const noexcept {
-  return m_size; // asio::query(executor(), asio::execution::occupancy);
-}
-
-SWC_SHOULD_INLINE
-IoContext::Executor IoContext::executor() noexcept {
-  return pool.get_executor();
 }
 
 void IoContext::set_signals() {
@@ -66,42 +52,4 @@ void IoContext::stop() {
 }
 
 
-} // namespace Comm
-
-
-
-namespace Env {
-
-void IoCtx::init(int32_t size) {
-  m_env = std::make_shared<IoCtx>(size);
-}
-
-bool IoCtx::ok() noexcept {
-  return bool(m_env);
-}
-
-SWC_SHOULD_INLINE
-Comm::IoContextPtr IoCtx::io() {
-  SWC_ASSERT(ok());
-  return m_env->m_io;
-}
-
-SWC_SHOULD_INLINE
-bool IoCtx::stopping() noexcept {
-  return !m_env->m_io->running;
-}
-
-void IoCtx::reset() noexcept {
-  m_env = nullptr;
-}
-
-IoCtx::IoCtx(int32_t size)
-            : m_io(std::make_shared<Comm::IoContext>("Env", size)) {
-}
-
-
-} // namespace Env
-
-
-
-} // namespace SWC
+}}

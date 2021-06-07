@@ -23,7 +23,7 @@ class BrokerCommitter final
 
   static void execute(const Handlers::Base::Ptr& hdlr,
                       Handlers::Base::Column* colp) {
-    std::make_shared<BrokerCommitter>(hdlr, colp)->commit();
+    Ptr(new BrokerCommitter(hdlr, colp))->commit();
   }
 
 
@@ -32,8 +32,11 @@ class BrokerCommitter final
   Query::Update::Handlers::Base::Column*    colp;
   Core::CompletionCounter<>                 workload;
 
+  SWC_CAN_INLINE
   BrokerCommitter(const Query::Update::Handlers::Base::Ptr& hdlr,
-                  Query::Update::Handlers::Base::Column* colp) noexcept;
+                  Query::Update::Handlers::Base::Column* colp) noexcept
+                  : hdlr(hdlr), colp(colp) {
+  }
 
   //~BrokerCommitter() { }
 

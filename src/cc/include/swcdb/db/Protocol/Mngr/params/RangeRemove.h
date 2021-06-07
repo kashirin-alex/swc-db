@@ -16,6 +16,7 @@ namespace Mngr { namespace Params {
 class RangeRemoveReq final : public Serializable {
   public:
 
+  SWC_CAN_INLINE
   RangeRemoveReq(cid_t cid=0, rid_t rid=0) noexcept
                 : cid(cid), rid(rid) {
   }
@@ -58,6 +59,7 @@ class RangeRemoveReq final : public Serializable {
 class RangeRemoveRsp final : public Serializable {
   public:
 
+  SWC_CAN_INLINE
   RangeRemoveRsp(int err = Error::OK) noexcept : err(err) { }
 
   //~RangeRemoveRsp() { }

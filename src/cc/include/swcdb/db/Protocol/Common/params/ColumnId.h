@@ -15,9 +15,8 @@ namespace Common { namespace Params {
 class ColumnId : public Serializable {
   public:
 
-  ColumnId(cid_t cid = DB::Schema::NO_CID)
-          : cid(cid){
-  }
+  SWC_CAN_INLINE
+  ColumnId(cid_t cid = DB::Schema::NO_CID) noexcept : cid(cid) { }
 
   //~ColumnId() { }
 

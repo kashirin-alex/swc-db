@@ -24,7 +24,10 @@ class AppContext : public std::enable_shared_from_this<AppContext> {
 
   const Config::Property::V_GENUM::Ptr cfg_encoder;
 
-  AppContext(Config::Property::V_GENUM::Ptr cfg_encoder) noexcept;
+  SWC_CAN_INLINE
+  AppContext(Config::Property::V_GENUM::Ptr cfg_encoder) noexcept
+            : cfg_encoder(cfg_encoder) {
+  }
 
   virtual void init(const std::string&, const EndPoints&) { }
 

@@ -332,17 +332,4 @@ void Settings::check_dynamic_files() {
 }
 
 
-Settings::DynFile::DynFile(std::string&& filename) noexcept
-                          : filename(std::move(filename)),
-                            modified(0) {
-}
-
-bool Settings::DynFile::operator==(const DynFile& other) const noexcept {
-  return other == filename;
-}
-bool Settings::DynFile::operator==(const std::string& other) const noexcept {
-  return Condition::str_eq(filename, other);
-}
-
-
 }} // namespace SWC::Config

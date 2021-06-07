@@ -10,10 +10,6 @@
 namespace SWC { namespace client {
 
 
-CachedRangers::CachedRangers(
-        const Config::Property::V_GINT32::Ptr expiry_ms) noexcept
-        : m_expiry_ms(expiry_ms) {
-}
 
 CachedRangers::~CachedRangers() {
   for(auto c : *this) {

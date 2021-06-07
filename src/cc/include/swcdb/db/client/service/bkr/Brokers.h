@@ -22,12 +22,13 @@ class Brokers {
 
   struct BrokerIdx {
     size_t  pos;
+    SWC_CAN_INLINE
     BrokerIdx() noexcept : pos(0) { }
     bool turn_around(Brokers& brks) noexcept;
   };
 
-  Brokers() noexcept : queues(nullptr), cfg_hosts(nullptr), cfg_port(0) {
-  }
+  SWC_CAN_INLINE
+  Brokers() noexcept : queues(nullptr), cfg_hosts(nullptr), cfg_port(0) { }
 
   Brokers(const Config::Settings& settings,
           Comm::IoContextPtr ioctx,

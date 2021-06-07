@@ -13,12 +13,13 @@ template<class T>
 class NotMovableSharedPtr : public std::shared_ptr<T> {
   public:
 
+  SWC_CAN_INLINE
   NotMovableSharedPtr() noexcept { }
 
-  NotMovableSharedPtr(T* other) noexcept
-                    : std::shared_ptr<T>(other) {
-  }
+  SWC_CAN_INLINE
+  NotMovableSharedPtr(T* other) noexcept : std::shared_ptr<T>(other) { }
 
+  SWC_CAN_INLINE
   NotMovableSharedPtr(const std::shared_ptr<T>& other) noexcept
                     : std::shared_ptr<T>(other) {
   }

@@ -16,6 +16,7 @@ namespace Mngr { namespace Params {
 class RangeUnloadedReq final : public Serializable {
   public:
 
+  SWC_CAN_INLINE
   RangeUnloadedReq(cid_t cid=0, rid_t rid=0) noexcept
                   : cid(cid), rid(rid) {
   }
@@ -58,6 +59,7 @@ class RangeUnloadedReq final : public Serializable {
 class RangeUnloadedRsp final : public Serializable {
   public:
 
+  SWC_CAN_INLINE
   RangeUnloadedRsp(int err = Error::OK) noexcept : err(err) {}
 
   //~RangeUnloadedRsp() { }

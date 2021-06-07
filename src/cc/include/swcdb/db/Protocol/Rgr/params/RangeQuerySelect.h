@@ -18,10 +18,14 @@ namespace Rgr { namespace Params {
 class RangeQuerySelectReq final : public Serializable {
   public:
 
+  SWC_CAN_INLINE
   RangeQuerySelectReq() noexcept { }
 
+  SWC_CAN_INLINE
   RangeQuerySelectReq(cid_t cid, rid_t rid,
-                      const DB::Specs::Interval& interval);
+                      const DB::Specs::Interval& interval)
+                      : cid(cid), rid(rid), interval(interval) {
+  }
 
   //~RangeQuerySelectReq() { }
 
@@ -46,6 +50,7 @@ class RangeQuerySelectReq final : public Serializable {
 class RangeQuerySelectReqRef final : public Serializable {
   public:
 
+  SWC_CAN_INLINE
   RangeQuerySelectReqRef(cid_t cid, rid_t rid,
                          const DB::Specs::Interval& interval) noexcept
                          : cid(cid), rid(rid), interval(interval) {
@@ -75,12 +80,14 @@ class RangeQuerySelectReqRef final : public Serializable {
 class RangeQuerySelectRsp final : public Serializable {
   public:
 
+  SWC_CAN_INLINE
   RangeQuerySelectRsp(int err = Error::OK, bool reached_limit=false,
                       uint64_t offset=0) noexcept
                       : err(err), reached_limit(reached_limit),
                         offset(offset) {
   }
 
+  SWC_CAN_INLINE
   RangeQuerySelectRsp(int err, StaticBuffer& data) noexcept
                       : err(err), reached_limit(false),
                         offset(0), data(data) {

@@ -13,11 +13,6 @@ namespace Bkr { namespace Params {
 
 
 
-CellsSelectReq::CellsSelectReq(cid_t cid,
-                               const DB::Specs::Interval& interval)
-                              : cid(cid), interval(interval) {
-}
-
 void CellsSelectReq::print(std::ostream& out) const {
   out << "CellsSelectReq(cid=" << cid;
   interval.print(out << ' ');

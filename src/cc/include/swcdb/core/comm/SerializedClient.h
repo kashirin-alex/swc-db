@@ -36,9 +36,14 @@ class ServerConnections final :
   using Core::QueueSafe<ConnHandlerPtr>::empty;
   using Core::QueueSafe<ConnHandlerPtr>::push;
 
+  SWC_CAN_INLINE
   ServerConnections(const std::string& srv_name, const EndPoint& endpoint,
                     const IoContextPtr& ioctx, const AppContext::Ptr& ctx,
-                    ConfigSSL* ssl_cfg);
+                    ConfigSSL* ssl_cfg)
+                    : m_srv_name(srv_name), m_endpoint(endpoint),
+                      m_ioctx(ioctx), m_ctx(ctx),
+                      m_ssl_cfg(ssl_cfg) {
+  }
 
   //~ServerConnections() { }
 
@@ -97,7 +102,10 @@ class Serialized final :
 
   void close(ConnHandlerPtr& conn);
 
-  IoContextPtr io() noexcept;
+  SWC_CAN_INLINE
+  IoContextPtr io() noexcept {
+    return m_ioctx;
+  }
 
   void print(std::ostream& out, ConnHandlerPtr& conn);
 

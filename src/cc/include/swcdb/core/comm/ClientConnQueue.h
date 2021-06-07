@@ -26,13 +26,16 @@ class ConnQueueReqBase : public DispatchHandler {
   Buffers::Ptr                              cbp;
   ConnQueuePtr                              queue;
 
+  SWC_CAN_INLINE
   ConnQueueReqBase(Buffers::Ptr&& cbp) noexcept
                   : cbp(std::move(cbp)), queue(nullptr) { }
 
+  SWC_CAN_INLINE
   ConnQueueReqBase(Buffers::Ptr&& cbp,
                    const ConnQueuePtr& queue) noexcept
                   : cbp(std::move(cbp)), queue(queue) { }
 
+  SWC_CAN_INLINE
   Ptr req() noexcept {
     return std::dynamic_pointer_cast<ConnQueueReqBase>(shared_from_this());
   }
@@ -58,15 +61,29 @@ class ConnQueue :
 
   typedef ConnQueueReqBase ReqBase;
 
+  SWC_CAN_INLINE
   ConnQueue(const IoContextPtr& ioctx,
             const Config::Property::V_GINT32::Ptr keepalive_ms=nullptr,
-            const Config::Property::V_GINT32::Ptr again_delay_ms=nullptr);
+            const Config::Property::V_GINT32::Ptr again_delay_ms=nullptr)
+            : cfg_keepalive_ms(keepalive_ms),
+              cfg_again_delay_ms(again_delay_ms),
+              m_ioctx(ioctx), m_conn(nullptr),
+              m_connecting(false),
+              m_timer(cfg_keepalive_ms
+                        ? new asio::high_resolution_timer(m_ioctx->executor())
+                        : nullptr) {
+  }
 
-  virtual ~ConnQueue();
+  virtual ~ConnQueue() {
+    if(m_timer)
+      delete m_timer;
+  }
 
-  virtual bool connect();
+  virtual bool connect()  {
+    return false; // not implemented by default
+  }
 
-  virtual void close_issued();
+  virtual void close_issued() { }
 
   void stop();
 

@@ -21,13 +21,20 @@ class Schemas : private std::unordered_map<cid_t, Schema::Ptr> {
   public:
 
   struct Pattern {
+
+    SWC_CAN_INLINE
     Pattern() noexcept { }
+
+    SWC_CAN_INLINE
     Pattern(Condition::Comp comp, const std::string& value)
-            : comp(comp), value(value) { }
+            : comp(comp), value(value) {
+    }
+
     Condition::Comp comp;
     std::string     value;
   };
 
+  SWC_CAN_INLINE
   Schemas() noexcept { }
 
   //~Schemas() { }

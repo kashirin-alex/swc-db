@@ -13,17 +13,6 @@
 namespace SWC { namespace Comm { namespace client {
 
 
-SWC_SHOULD_INLINE
-ServerConnections::ServerConnections(const std::string& srv_name,
-                                     const EndPoint& endpoint,
-                                     const IoContextPtr& ioctx,
-                                     const AppContext::Ptr& ctx,
-                                     ConfigSSL* ssl_cfg)
-                                    : m_srv_name(srv_name),
-                                      m_endpoint(endpoint),
-                                      m_ioctx(ioctx), m_ctx(ctx),
-                                      m_ssl_cfg(ssl_cfg) {
-}
 
 void ServerConnections::reusable(ConnHandlerPtr& conn, bool preserve) {
   while(pop(&(conn = nullptr)) && !conn->is_open());
@@ -293,10 +282,6 @@ void Serialized::close(ConnHandlerPtr& conn) {
   Core::MutexSptd::scope lock(m_mutex);
   if((it = find(hash)) != end() && it->second->empty())
     erase(it);
-}
-
-IoContextPtr Serialized::io() noexcept {
-  return m_ioctx;
 }
 
 void Serialized::print(std::ostream& out, ConnHandlerPtr& conn) {

@@ -7,7 +7,7 @@
 #define swcdb_core_QueuePointer_h
 
 #include "swcdb/core/MutexAtomic.h"
-  
+
 namespace SWC { namespace Core {
 
 
@@ -18,10 +18,12 @@ class QueuePointer : private MutexAtomic {
   typedef PtrT  value_type;
 
   struct Pointer {
+    SWC_CAN_INLINE
     Pointer() noexcept : _other(nullptr) { }
     PtrT _other;
   };
 
+  SWC_CAN_INLINE
   explicit QueuePointer() noexcept : _back(nullptr), _front(nullptr) { }
 
   QueuePointer(const QueuePointer&) = delete;

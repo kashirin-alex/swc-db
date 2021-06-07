@@ -22,7 +22,10 @@ class RangeUnload final : public Common::Params::ColRangeId {
     CHECK_EMPTY  = 0x01
   };
 
+  SWC_CAN_INLINE
   RangeUnload() noexcept : flags(NONE) { }
+
+  SWC_CAN_INLINE
   RangeUnload(cid_t cid, rid_t rid, uint8_t flags=NONE) noexcept
              : Common::Params::ColRangeId(cid, rid), flags(flags) {
   }
@@ -58,6 +61,7 @@ class RangeUnloadRsp final : public Serializable {
     EMPTY        = 0x01
   };
 
+  SWC_CAN_INLINE
   RangeUnloadRsp(int err) noexcept : err(err), flags(NONE) { }
 
   //~RangeUnloadRsp() { }

@@ -36,6 +36,7 @@ enum Function : uint8_t {
 class ReqColumnStatus final : public Serializable {
   public:
 
+  SWC_CAN_INLINE
   ReqColumnStatus(cid_t cid = DB::Schema::NO_CID)
                   noexcept : cid(cid) {
   }
@@ -58,6 +59,7 @@ class ReqColumnStatus final : public Serializable {
 class RspColumnStatus final : public Serializable {
   public:
 
+  SWC_CAN_INLINE
   RspColumnStatus() noexcept
                   : state(DB::Types::MngrColumn::State::NOTSET) {
   }
@@ -100,6 +102,7 @@ class RspColumnStatus final : public Serializable {
 class RspRangersStatus final : public Serializable {
   public:
 
+  SWC_CAN_INLINE
   RspRangersStatus() noexcept { }
 
   //~RspRangersStatus() { }
@@ -142,6 +145,7 @@ class RspRangersStatus final : public Serializable {
 class RspManagersStatus final : public Serializable {
   public:
 
+  SWC_CAN_INLINE
   RspManagersStatus() noexcept { }
 
   //~RspManagersStatus() { }

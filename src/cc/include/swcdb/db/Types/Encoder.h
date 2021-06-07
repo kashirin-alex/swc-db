@@ -9,7 +9,7 @@
 #include "swcdb/core/Encoder.h"
 
 
-namespace SWC { namespace DB { namespace Types { 
+namespace SWC { namespace DB { namespace Types {
 
 // apply Encoder for the schematics of the Types
 using Encoder = Core::Encoder::Type;

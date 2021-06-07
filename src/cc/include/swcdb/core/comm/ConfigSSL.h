@@ -26,10 +26,16 @@ class ConfigSSL final {
 
   void set_networks(const Config::Strings& networks, bool with_local);
 
-  bool need_ssl(const EndPoint& remote) const noexcept;
+  SWC_CAN_INLINE
+  bool need_ssl(const EndPoint& remote) const noexcept {
+    return !Resolver::is_network(remote, nets_v4, nets_v6);
+  }
 
-  bool need_ssl(const EndPoint& local, const EndPoint& remote) const noexcept;
-
+  SWC_CAN_INLINE
+  bool need_ssl(const EndPoint& local,
+                const EndPoint& remote) const noexcept {
+    return local.address() != remote.address() && need_ssl(remote);
+  }
 
   void make_server(AppContext::Ptr& app_ctx,
                    SocketPlain& socket) const;

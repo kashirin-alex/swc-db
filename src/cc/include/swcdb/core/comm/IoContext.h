@@ -38,8 +38,9 @@ class IoContext final : public std::enable_shared_from_this<IoContext> {
   typedef asio::thread_pool::executor_type    Executor;
   typedef asio::executor_work_guard<Executor> ExecutorWorkGuard;
 
-  static IoContextPtr make(std::string&& _name, int32_t size);
-
+  static IoContextPtr make(std::string&& _name, int32_t size) {
+    return std::make_shared<IoContext>(std::move(_name), size);
+  }
 
   Core::AtomicBool                     running;
   const std::string                    name;
@@ -51,9 +52,15 @@ class IoContext final : public std::enable_shared_from_this<IoContext> {
 
   //~IoContext() { }
 
-  int32_t get_size() const noexcept;
+  SWC_CAN_INLINE
+  int32_t get_size() const noexcept {
+    return m_size; // asio::query(executor(), asio::execution::occupancy);
+  }
 
-  Executor executor() noexcept;
+  SWC_CAN_INLINE
+  Executor executor() noexcept {
+    return pool.get_executor();
+  }
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
@@ -87,11 +94,20 @@ namespace Env {
 class IoCtx final {
   public:
 
-  static void init(int32_t size);
+  SWC_CAN_INLINE
+  static void init(int32_t size) {
+    m_env = std::make_shared<IoCtx>(size);
+  }
 
-  static bool ok() noexcept;
+  SWC_CAN_INLINE
+  static bool ok() noexcept {
+    return bool(m_env);
+  }
 
-  static Comm::IoContextPtr io();
+  static Comm::IoContextPtr io() {
+    SWC_ASSERT(ok());
+    return m_env->m_io;
+  }
 
   template <typename T_Handler>
   SWC_CAN_INLINE
@@ -99,11 +115,19 @@ class IoCtx final {
     m_env->m_io->post(std::move(handler));
   }
 
-  static bool stopping() noexcept;
+  SWC_CAN_INLINE
+  static bool stopping() noexcept {
+    return !m_env->m_io->running;
+  }
 
-  static void reset() noexcept;
+  static void reset() noexcept {
+    m_env = nullptr;
+  }
 
-  IoCtx(int32_t size);
+  SWC_CAN_INLINE
+  IoCtx(int32_t size)
+        : m_io(std::make_shared<Comm::IoContext>("Env", size)) {
+  }
 
   //~IoCtx() { }
 

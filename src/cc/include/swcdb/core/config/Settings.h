@@ -70,9 +70,18 @@ class Settings final : public Properties {
   struct DynFile {
     const std::string filename;
     time_t            modified;
-    DynFile(std::string&& filename) noexcept;
-    bool operator==(const DynFile& other) const noexcept;
-    bool operator==(const std::string& other) const noexcept;
+    SWC_CAN_INLINE
+    DynFile(std::string&& filename) noexcept
+            : filename(std::move(filename)), modified(0) {
+    }
+    SWC_CAN_INLINE
+    bool operator==(const DynFile& other) const noexcept {
+      return other == filename;
+    }
+    SWC_CAN_INLINE
+    bool operator==(const std::string& other) const noexcept {
+      return Condition::str_eq(filename, other);
+    }
   };
   std::vector<DynFile> m_dyn_files;
 };

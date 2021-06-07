@@ -5,36 +5,12 @@
 
 
 
-#include "swcdb/core/Compat.h"
 #include "swcdb/db/Types/SystemColumn.h"
 
 
 namespace SWC { namespace DB { namespace Types {  namespace SystemColumn {
 
 
-SWC_SHOULD_INLINE
-bool is_master(cid_t cid) noexcept {
-  return cid <= CID_MASTER_END;
-}
-
-SWC_SHOULD_INLINE
-bool is_meta(cid_t cid) noexcept {
-  return cid >= CID_META_BEGIN && cid <= CID_META_END;
-}
-
-SWC_SHOULD_INLINE
-bool is_data(cid_t cid) noexcept {
-  return cid > CID_META_END;
-}
-
-
-Range get_range_type(cid_t cid) noexcept {
-  if(cid <= CID_MASTER_END)
-    return Range::MASTER;
-  if(cid <= CID_META_END)
-    return Range::META;
-  return Range::DATA;
-}
 
 KeySeq get_seq_type(cid_t cid) noexcept {
   switch(cid) {

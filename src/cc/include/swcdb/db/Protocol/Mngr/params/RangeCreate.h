@@ -16,6 +16,7 @@ namespace Mngr { namespace Params {
 class RangeCreateReq final : public Serializable {
   public:
 
+  SWC_CAN_INLINE
   RangeCreateReq(cid_t cid=0, rgrid_t rgrid=0) noexcept
                  : cid(cid), rgrid(rgrid) {
   }
@@ -58,6 +59,7 @@ class RangeCreateReq final : public Serializable {
 class RangeCreateRsp final : public Serializable {
   public:
 
+  SWC_CAN_INLINE
   RangeCreateRsp(int err = Error::OK) noexcept : err(err), rid(0) { }
 
   //~RangeCreateRsp() { }

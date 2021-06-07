@@ -15,8 +15,8 @@ namespace Rgr { namespace Params {
 class ColumnsUnloadRsp final : public Serializable {
   public:
 
+  SWC_CAN_INLINE
   ColumnsUnloadRsp(int err = Error::OK) noexcept : err(err) { }
-
 
   //~ColumnsUnloadRsp() { }
 

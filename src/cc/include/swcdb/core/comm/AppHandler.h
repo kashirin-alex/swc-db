@@ -18,6 +18,7 @@ typedef void (*AppHandler_t)(const ConnHandlerPtr& conn,
 class AppHandler {
   public:
 
+  SWC_CAN_INLINE
   AppHandler(const ConnHandlerPtr& conn, const Event::Ptr& ev) noexcept
             : m_conn(conn), m_ev(ev) {
   }

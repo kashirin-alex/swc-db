@@ -18,6 +18,7 @@ namespace Mngr { namespace Params {
 class MngrActiveReq final : public Serializable {
   public:
 
+  SWC_CAN_INLINE
   MngrActiveReq(uint8_t role=DB::Types::MngrRole::COLUMNS, cid_t cid=0)
                 noexcept : role(role), cid(cid) {
   }
@@ -42,13 +43,15 @@ class MngrActiveReq final : public Serializable {
 class MngrActiveRsp final : public Common::Params::HostEndPoints {
   public:
 
+  SWC_CAN_INLINE
   MngrActiveRsp() noexcept { }
 
-  MngrActiveRsp(const EndPoints& endpoints);
+  SWC_CAN_INLINE
+  MngrActiveRsp(const EndPoints& endpoints)
+                : Common::Params::HostEndPoints(endpoints) {
+  }
 
   //~MngrActiveRsp() { }
-
-  bool available;
 
   private:
 

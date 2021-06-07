@@ -47,12 +47,18 @@ class ConnQueues final :
   const Config::Property::V_GINT32::Ptr    cfg_keepalive_ms;
   const Config::Property::V_GINT32::Ptr    cfg_again_delay_ms;
 
-
+  SWC_CAN_INLINE
   ConnQueues(const Serialized::Ptr service,
              const Config::Property::V_GINT32::Ptr timeout,
              const Config::Property::V_GINT32::Ptr probes,
              const Config::Property::V_GINT32::Ptr keepalive_ms,
-             const Config::Property::V_GINT32::Ptr again_delay_ms) noexcept;
+             const Config::Property::V_GINT32::Ptr again_delay_ms) noexcept
+            : service(service),
+              cfg_conn_timeout(timeout),
+              cfg_conn_probes(probes),
+              cfg_keepalive_ms(keepalive_ms),
+              cfg_again_delay_ms(again_delay_ms) {
+  }
 
   //~ConnQueues() { }
 
@@ -69,6 +75,16 @@ class ConnQueues final :
   Core::MutexSptd m_mutex;
 
 };
+
+
+
+SWC_CAN_INLINE
+Host::Host(const ConnQueuesPtr queues, const EndPoints& endpoints,
+           const Config::Property::V_GINT32::Ptr keepalive_ms,
+           const Config::Property::V_GINT32::Ptr again_delay_ms)
+          : ConnQueue(queues->service->io(), keepalive_ms, again_delay_ms),
+            endpoints(endpoints), queues(queues) {
+}
 
 
 

@@ -87,7 +87,7 @@ void MngrActive::handle(ConnHandlerPtr, const Event::Ptr& ev) {
       Params::MngrActiveRsp params;
       params.decode(&ptr, &remain);
 
-      if(params.available && params.endpoints.size()) {
+      if(params.endpoints.size()) {
         group_host.endpoints = std::move(params.endpoints);
         clients->managers.groups->add(std::move(group_host));
         hdlr->run();

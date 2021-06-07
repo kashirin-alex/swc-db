@@ -5,7 +5,6 @@
 
 
 #include "swcdb/core/comm/Buffers.h"
-#include "swcdb/core/Serialization.h"
 #include "swcdb/core/Checksum.h"
 
 namespace SWC { namespace Comm {
@@ -15,86 +14,6 @@ static const uint16_t BUFFER_CHUNK_SZ = 4096;
 }
 
 
-SWC_SHOULD_INLINE
-Buffers::Ptr
-Buffers::create_error_message(const Event::Ptr& ev,
-                              int error, const char *msg, uint16_t len) {
-  auto cbp = Buffers::make(ev, 4 + Serialization::encoded_length_bytes(len));
-  Serialization::encode_i32(&cbp->data_ptr, error);
-  Serialization::encode_bytes(&cbp->data_ptr, msg, len);
-  return cbp;
-}
-
-
-/* Init Common */
-Buffers::Buffers(uint32_t reserve)
-                : expiry_ms(0) {
-  if(reserve)
-    set_data(reserve);
-}
-
-Buffers::Buffers(const Serializable& params, uint32_t reserve)
-                : expiry_ms(0) {
-  set_data(params, reserve);
-}
-
-Buffers::Buffers(const Serializable& params, StaticBuffer& buffer,
-                 uint32_t reserve)
-                : expiry_ms(0), buf_ext(buffer) {
-  set_data(params, reserve);
-}
-
-Buffers::Buffers(StaticBuffer& buffer, uint32_t reserve)
-                : expiry_ms(0), buf_ext(buffer) {
-  if(reserve)
-    set_data(reserve);
-}
-
-
-/* Init Request */
-Buffers::Buffers(const Serializable& params, uint32_t reserve,
-                 uint64_t cmd, uint32_t timeout)
-                : header(cmd, timeout), expiry_ms(0) {
-  set_data(params, reserve);
-}
-
-Buffers::Buffers(const Serializable& params, StaticBuffer& buffer,
-                 uint32_t reserve,
-                 uint64_t cmd, uint32_t timeout)
-                : header(cmd, timeout), expiry_ms(0),
-                  buf_ext(buffer) {
-  set_data(params, reserve);
-}
-
-
-/* Init Response */
-Buffers::Buffers(const Event::Ptr& ev, uint32_t reserve)
-                : header(ev->header), expiry_ms(ev->expiry_ms) {
-  if(reserve)
-    set_data(reserve);
-}
-
-Buffers::Buffers(const Event::Ptr& ev,
-                 const Serializable& params, uint32_t reserve)
-                : header(ev->header), expiry_ms(ev->expiry_ms) {
-  set_data(params, reserve);
-}
-
-Buffers::Buffers(const Event::Ptr& ev,
-                 const Serializable& params, StaticBuffer& buffer,
-                 uint32_t reserve)
-                : header(ev->header), expiry_ms(ev->expiry_ms),
-                  buf_ext(buffer) {
-  set_data(params, reserve);
-}
-
-Buffers::Buffers(const Event::Ptr& ev,
-                 StaticBuffer& buffer, uint32_t reserve)
-                : header(ev->header), expiry_ms(ev->expiry_ms),
-                  buf_ext(buffer) {
-  if(reserve)
-    set_data(reserve);
-}
 
 void Buffers::set_data(uint32_t sz) {
   if(buf_data.size)
@@ -112,29 +31,12 @@ void Buffers::set_data(const Serializable& params, uint32_t reserve) {
   data_ptr = buf_data.base;
 }
 
-void Buffers::prepare(Core::Encoder::Type encoder) {
-  if(buf_data.size) {
-    header.data.encode(encoder, buf_data);
-    if(buf_ext.size)
-      header.data_ext.encode(encoder, buf_ext);
-  }
-}
-
-SWC_SHOULD_INLINE
-bool Buffers::expired() const noexcept {
-  return expiry_ms && Time::now_ms() > expiry_ms;
-}
-
-SWC_SHOULD_INLINE
-uint8_t Buffers::write_header() {
-  uint8_t len = header.encoded_length();
-  uint8_t* buf = buf_header;
-  header.encode(&buf);
-  return len;
-}
-
 std::vector<asio::const_buffer> Buffers::get_buffers() {
-  uint8_t buf_header_len = write_header();
+  uint8_t buf_header_len = header.encoded_length();
+  {
+    uint8_t* buf = buf_header;
+    header.encode(&buf); // write_header
+  }
 
   size_t nchunks = 1;
 
@@ -169,16 +71,6 @@ std::vector<asio::const_buffer> Buffers::get_buffers() {
       *++it = asio::const_buffer(p, (buf_ext.base + buf_ext.size) - p);
   }
   return buffers;
-}
-
-SWC_SHOULD_INLINE
-void Buffers::append_i8(uint8_t ival) noexcept {
-  Serialization::encode_i8(&data_ptr, ival);
-}
-
-SWC_SHOULD_INLINE
-void Buffers::append_i32(uint32_t ival) noexcept {
-  Serialization::encode_i32(&data_ptr, ival);
 }
 
 

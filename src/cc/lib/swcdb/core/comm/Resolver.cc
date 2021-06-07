@@ -12,9 +12,6 @@ namespace SWC {
 
 namespace Serialization {
 
-uint8_t encoded_length(const Comm::EndPoint& endpoint) noexcept {
-  return 3 + (endpoint.address().is_v4() ? 4 : 16);
-}
 
 void encode(uint8_t** bufp, const Comm::EndPoint& endpoint) {
   Serialization::encode_bool(bufp, endpoint.address().is_v4());
@@ -74,19 +71,6 @@ void decode(const uint8_t** bufp, size_t* remainp,
 
 
 namespace Comm {
-
-
-Network::Network(const asio::ip::network_v4& v4) noexcept
-  : is_v4(true), v4(v4) {
-}
-
-Network::Network(const asio::ip::network_v6& v6) noexcept
-  : is_v4(false), v6(v6) {
-}
-
-Network::Network(const Network& net) noexcept
-  : is_v4(net.is_v4), v4(net.v4), v6(net.v6) {
-}
 
 
 bool has_endpoint(const EndPoint& e1,

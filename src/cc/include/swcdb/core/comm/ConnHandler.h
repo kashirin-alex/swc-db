@@ -33,16 +33,20 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     Buffers::Ptr                  cbuf;
     DispatchHandler::Ptr          hdlr;
 
+    SWC_CAN_INLINE
     Outgoing() noexcept : cbuf(nullptr), hdlr(nullptr) { }
 
+    SWC_CAN_INLINE
     Outgoing(Buffers::Ptr&& cbuf, DispatchHandler::Ptr&& hdlr) noexcept
             : cbuf(std::move(cbuf)), hdlr(std::move(hdlr)) {
     }
 
+    SWC_CAN_INLINE
     Outgoing(Outgoing&& other) noexcept
            : cbuf(std::move(other.cbuf)), hdlr(std::move(other.hdlr)) {
     }
 
+    SWC_CAN_INLINE
     Outgoing& operator=(Outgoing&& other) noexcept {
       cbuf = std::move(other.cbuf);
       hdlr = std::move(other.hdlr);
@@ -58,17 +62,21 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     DispatchHandler::Ptr          hdlr;
     asio::high_resolution_timer*  timer;
 
+    SWC_CAN_INLINE
     Pending() noexcept : hdlr(nullptr), timer(nullptr) { }
 
+    SWC_CAN_INLINE
     Pending(DispatchHandler::Ptr&& hdlr) noexcept
            : hdlr(std::move(hdlr)), timer(nullptr) {
     }
 
+    SWC_CAN_INLINE
     Pending(Pending&& other) noexcept
            : hdlr(std::move(other.hdlr)), timer(other.timer) {
       other.timer = nullptr;
     }
 
+    SWC_CAN_INLINE
     Pending& operator=(Pending&& other) noexcept {
       hdlr = std::move(other.hdlr);
       timer = other.timer;
@@ -80,6 +88,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
     Pending& operator=(const Pending&)  = delete;
 
+    SWC_CAN_INLINE
     ~Pending() {
       if(timer)
         delete timer;
@@ -99,11 +108,23 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   EndPoint              endpoint_remote;
   EndPoint              endpoint_local;
 
-  size_t endpoint_remote_hash() const noexcept;
+  SWC_CAN_INLINE
+  size_t endpoint_remote_hash() const noexcept {
+    return endpoint_hash(endpoint_remote);
+  }
 
-  size_t endpoint_local_hash() const noexcept;
+  SWC_CAN_INLINE
+  size_t endpoint_local_hash() const noexcept {
+    return endpoint_hash(endpoint_local);
+  }
 
-  Core::Encoder::Type get_encoder() const noexcept;
+  SWC_CAN_INLINE
+  Core::Encoder::Type get_encoder() const noexcept {
+    return !app_ctx->cfg_encoder ||
+            endpoint_local.address() == endpoint_remote.address()
+              ? Core::Encoder::Type::PLAIN
+              : Core::Encoder::Type(app_ctx->cfg_encoder->get());
+  }
 
   virtual bool is_secure() const noexcept { return false; };
 
@@ -113,9 +134,10 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
   size_t pending_read() noexcept;
 
-  size_t pending_write();
-
-  bool due();
+  SWC_CAN_INLINE
+  bool due() {
+    return m_outgoing.is_active() || m_outgoing.size() || pending_read();
+  }
 
   virtual void do_close() noexcept = 0;
 
@@ -133,11 +155,13 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
   protected:
 
+  SWC_CAN_INLINE
   ConnHandler(AppContext::Ptr& app_ctx) noexcept
               : connected(true), app_ctx(app_ctx), m_next_req_id(0),
                 m_recv_bytes(0) {
   }
 
+  SWC_CAN_INLINE
   ConnHandlerPtr ptr() noexcept {
     return shared_from_this();
   }
@@ -186,6 +210,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
   void received(const Event::Ptr& ev) noexcept;
 
+  SWC_CAN_INLINE
   void do_close_recv() noexcept {
     if(m_recv_bytes)
       app_ctx->net_bytes_received(ptr(), m_recv_bytes);

@@ -24,13 +24,16 @@ class ColumnGetReq final : public Serializable {
     ID_BY_NAME      = 0x2
   };
 
+  SWC_CAN_INLINE
   ColumnGetReq() noexcept { }
 
-  ColumnGetReq(Flag flag, const std::string& name);
-
-  ColumnGetReq(Flag flag, cid_t cid)
-               noexcept : flag(flag), cid(cid) {
+  SWC_CAN_INLINE
+  ColumnGetReq(Flag flag, const std::string& name)
+               : flag(flag), name(name) {
   }
+
+  SWC_CAN_INLINE
+  ColumnGetReq(Flag flag, cid_t cid) noexcept : flag(flag), cid(cid) { }
 
   //~ColumnGetReq() { }
 
@@ -53,11 +56,12 @@ class ColumnGetReq final : public Serializable {
 class ColumnGetRsp final : public Serializable {
   public:
 
+  SWC_CAN_INLINE
   ColumnGetRsp() noexcept { }
 
+  SWC_CAN_INLINE
   ColumnGetRsp(ColumnGetReq::Flag flag, const DB::Schema::Ptr& schema)
-               noexcept : flag(flag), schema(schema) {
-  }
+               noexcept : flag(flag), schema(schema) { }
 
   //~ColumnGetRsp() { }
 

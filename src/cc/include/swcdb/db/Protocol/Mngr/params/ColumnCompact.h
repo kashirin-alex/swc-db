@@ -18,6 +18,7 @@ namespace Mngr { namespace Params {
 class ColumnCompactReq final : public Serializable {
   public:
 
+  SWC_CAN_INLINE
   ColumnCompactReq(cid_t cid=0) noexcept : cid(cid) { }
 
   //~ColumnCompactReq() { }
@@ -41,6 +42,7 @@ class ColumnCompactReq final : public Serializable {
 class ColumnCompactRsp final : public Serializable {
   public:
 
+  SWC_CAN_INLINE
   ColumnCompactRsp(int err = Error::OK) noexcept : err(err) { }
 
   //~ColumnCompactRsp() { }

@@ -15,8 +15,10 @@ namespace Rgr { namespace Params {
 class RangeLoad final : public Common::Params::ColRangeId {
   public:
 
-  RangeLoad() noexcept {}
+  SWC_CAN_INLINE
+  RangeLoad() noexcept { }
 
+  SWC_CAN_INLINE
   RangeLoad(cid_t cid, rid_t rid, const DB::Schema::Ptr& schema) noexcept
             : Common::Params::ColRangeId(cid, rid), schema(schema) {
   }
@@ -46,6 +48,7 @@ class RangeLoad final : public Common::Params::ColRangeId {
 class RangeLoaded final : public Serializable {
   public:
 
+  SWC_CAN_INLINE
   RangeLoaded(const DB::Types::KeySeq key_seq) noexcept
               : intval(false), interval(key_seq) {
   }

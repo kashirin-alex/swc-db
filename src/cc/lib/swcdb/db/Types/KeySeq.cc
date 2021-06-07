@@ -5,7 +5,6 @@
 
 
 
-#include "swcdb/core/Compat.h"
 #include "swcdb/db/Types/KeySeq.h"
 
 
@@ -89,15 +88,5 @@ KeySeq range_seq_from(const std::string& typ) noexcept {
   return KeySeq::UNKNOWN;
 }
 
-
-SWC_SHOULD_INLINE
-std::string repr_range_seq(int typ) {
-  return to_string(KeySeq(typ));
-}
-
-SWC_SHOULD_INLINE
-int from_string_range_seq(const std::string& typ) noexcept {
-  return int(range_seq_from(typ));
-}
 
 }}}

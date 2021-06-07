@@ -14,11 +14,11 @@ namespace Rgr { namespace Params {
 class ColumnUpdate final : public Serializable {
   public:
 
+  SWC_CAN_INLINE
   ColumnUpdate() noexcept { }
 
-  ColumnUpdate(const DB::Schema::Ptr& schema) noexcept
-              : schema(schema) {
-  }
+  SWC_CAN_INLINE
+  ColumnUpdate(const DB::Schema::Ptr& schema) noexcept : schema(schema) { }
 
   //~ColumnUpdate() { }
 

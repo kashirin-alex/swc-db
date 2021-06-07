@@ -33,7 +33,7 @@ const char* to_string(MngrColumn::State state) noexcept {
 
     case MngrColumn::State::DELETED:
       return MngrColumn_State_DELETED;
-      
+
     default:
       return MngrColumn_State_UNKNOWN;
   }

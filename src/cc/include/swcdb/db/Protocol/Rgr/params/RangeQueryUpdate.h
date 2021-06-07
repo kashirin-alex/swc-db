@@ -18,10 +18,11 @@ namespace Rgr { namespace Params {
 class RangeQueryUpdateReq final : public Serializable {
   public:
 
+  SWC_CAN_INLINE
   RangeQueryUpdateReq() noexcept { }
 
-  RangeQueryUpdateReq(cid_t cid, rid_t rid) noexcept
-                      : cid(cid), rid(rid) { }
+  SWC_CAN_INLINE
+  RangeQueryUpdateReq(cid_t cid, rid_t rid) noexcept : cid(cid), rid(rid) { }
 
   //~RangeQueryUpdateReq() { }
 
@@ -45,6 +46,7 @@ class RangeQueryUpdateReq final : public Serializable {
 class RangeQueryUpdateRsp final : public Serializable {
   public:
 
+  SWC_CAN_INLINE
   RangeQueryUpdateRsp(int err = Error::OK) noexcept
                       : err(err), cells_added(0) {
   }

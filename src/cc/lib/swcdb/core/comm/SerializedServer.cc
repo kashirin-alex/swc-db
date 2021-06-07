@@ -41,10 +41,6 @@ void Acceptor::stop() {
   }
 }
 
-asio::ip::tcp::acceptor* Acceptor::sock() noexcept {
-  return this;
-}
-
 void Acceptor::do_accept_mixed() noexcept {
   async_accept(
     [this](std::error_code ec, asio::ip::tcp::socket new_sock) {

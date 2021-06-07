@@ -25,6 +25,7 @@ class BaseSingleColumn : public Base {
 
   const cid_t         cid;
 
+  SWC_CAN_INLINE
   BaseSingleColumn(const Clients::Ptr& clients, const cid_t cid,
                    Clients::Flag executor=Clients::DEFAULT) noexcept
                   : Base(clients, executor), cid(cid) {

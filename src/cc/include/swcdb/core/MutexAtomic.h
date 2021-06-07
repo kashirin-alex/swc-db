@@ -17,6 +17,7 @@ namespace SWC { namespace Core {
 class MutexAtomic {
   public:
 
+  SWC_CAN_INLINE
   explicit MutexAtomic() noexcept : want(0) { }
 
   MutexAtomic(const MutexAtomic&)             = delete;
@@ -78,6 +79,7 @@ class MutexAtomic {
 
     scope(const MutexAtomic& m) noexcept : _m(m) {  _m.lock(); }
 
+    SWC_CAN_INLINE
     ~scope() noexcept { _m.unlock(); }
 
     scope(const scope&)             = delete;

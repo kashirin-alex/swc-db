@@ -32,9 +32,11 @@ namespace Params {
 class HostEndPoints : public Serializable {
   public:
 
+  SWC_CAN_INLINE
   HostEndPoints() noexcept { }
 
-  HostEndPoints(const EndPoints& points);
+  SWC_CAN_INLINE
+  HostEndPoints(const EndPoints& points) : endpoints(points) { }
 
   //~HostEndPoints() { }
 

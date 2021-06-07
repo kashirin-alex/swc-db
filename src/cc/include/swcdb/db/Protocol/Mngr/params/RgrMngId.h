@@ -16,71 +16,73 @@ namespace Mngr { namespace Params {
 class RgrMngId final : public Common::Params::HostEndPoints {
   public:
 
-    enum Flag : uint8_t {
-      MNGR_ASSIGNED   = 1,
-      MNGR_NOT_ACTIVE = 2,
-      MNGR_REASSIGN   = 3,
-      MNGR_REREQ      = 4,
-      MNGR_ACK        = 5,
-      RS_REQ          = 6, // >= params with host endpoints
+  enum Flag : uint8_t {
+    MNGR_ASSIGNED   = 1,
+    MNGR_NOT_ACTIVE = 2,
+    MNGR_REASSIGN   = 3,
+    MNGR_REREQ      = 4,
+    MNGR_ACK        = 5,
+    RS_REQ          = 6, // >= params with host endpoints
       RS_ACK          = 7,
-      RS_DISAGREE     = 8,
-      RS_SHUTTINGDOWN = 9
+    RS_DISAGREE     = 8,
+    RS_SHUTTINGDOWN = 9
     };
 
-    RgrMngId() noexcept {}
+  SWC_CAN_INLINE
+  RgrMngId() noexcept {}
 
-    RgrMngId(rgrid_t rgrid, Flag flag, const EndPoints& endpoints)
-            : Common::Params::HostEndPoints(endpoints),
-              rgrid(rgrid), flag(flag) {
-    }
+  SWC_CAN_INLINE
+  RgrMngId(rgrid_t rgrid, Flag flag, const EndPoints& endpoints)
+          : Common::Params::HostEndPoints(endpoints),
+            rgrid(rgrid), flag(flag) {
+  }
 
-    //~RgrMngId() {}
+  //~RgrMngId() {}
 
-    rgrid_t         rgrid;
-    Flag            flag;
-    FS::Type        fs;
+  rgrid_t         rgrid;
+  Flag            flag;
+  FS::Type        fs;
 
   private:
 
-    size_t internal_encoded_length() const override {
-      size_t len = 1;
-      if(flag != Flag::MNGR_NOT_ACTIVE && flag != Flag::MNGR_ACK)
-        len += Serialization::encoded_length_vi64(rgrid);
+  size_t internal_encoded_length() const override {
+    size_t len = 1;
+    if(flag != Flag::MNGR_NOT_ACTIVE && flag != Flag::MNGR_ACK)
+      len += Serialization::encoded_length_vi64(rgrid);
 
-      if(flag >= Flag::RS_REQ)
-        len +=  Common::Params::HostEndPoints::internal_encoded_length();
+    if(flag >= Flag::RS_REQ)
+      len +=  Common::Params::HostEndPoints::internal_encoded_length();
 
-      if(flag == Flag::MNGR_ASSIGNED)
-        ++len; // fs-type
-      return len;
-    }
+    if(flag == Flag::MNGR_ASSIGNED)
+      ++len; // fs-type
+    return len;
+  }
 
-    void internal_encode(uint8_t** bufp) const override {
-      Serialization::encode_i8(bufp, flag);
-      if(flag != Flag::MNGR_NOT_ACTIVE && flag != Flag::MNGR_ACK)
-        Serialization::encode_vi64(bufp, rgrid);
+  void internal_encode(uint8_t** bufp) const override {
+    Serialization::encode_i8(bufp, flag);
+    if(flag != Flag::MNGR_NOT_ACTIVE && flag != Flag::MNGR_ACK)
+      Serialization::encode_vi64(bufp, rgrid);
 
-      if(flag >= Flag::RS_REQ)
-        Common::Params::HostEndPoints::internal_encode(bufp);
+    if(flag >= Flag::RS_REQ)
+      Common::Params::HostEndPoints::internal_encode(bufp);
 
-      if(flag == Flag::MNGR_ASSIGNED)
-        Serialization::encode_i8(bufp, fs);
-    }
+    if(flag == Flag::MNGR_ASSIGNED)
+      Serialization::encode_i8(bufp, fs);
+  }
 
   void internal_decode(const uint8_t** bufp, size_t* remainp) override {
-      flag = Flag(Serialization::decode_i8(bufp, remainp));
-      if(flag != Flag::MNGR_NOT_ACTIVE && flag != Flag::MNGR_ACK)
-        rgrid = Serialization::decode_vi64(bufp, remainp);
+    flag = Flag(Serialization::decode_i8(bufp, remainp));
+    if(flag != Flag::MNGR_NOT_ACTIVE && flag != Flag::MNGR_ACK)
+      rgrid = Serialization::decode_vi64(bufp, remainp);
 
-      if(flag >= Flag::RS_REQ)
-        Common::Params::HostEndPoints::internal_decode(bufp, remainp);
+    if(flag >= Flag::RS_REQ)
+      Common::Params::HostEndPoints::internal_decode(bufp, remainp);
 
-      if(flag == Flag::MNGR_ASSIGNED)
-        fs = FS::Type(Serialization::decode_i8(bufp, remainp));
-    }
+    if(flag == Flag::MNGR_ASSIGNED)
+      fs = FS::Type(Serialization::decode_i8(bufp, remainp));
+  }
 
-  };
+};
 
 
 }}}}}

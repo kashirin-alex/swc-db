@@ -23,21 +23,11 @@ namespace SWC { namespace client { namespace Query { namespace Select {
 
 
 
-BrokerScanner::BrokerScanner(const Handlers::Base::Ptr& hdlr,
-                             const DB::Specs::Interval& interval,
-                             const cid_t cid)
-                            : selector(hdlr), interval(interval), cid(cid) {
-}
-
 void BrokerScanner::print(std::ostream& out) {
   out << "BrokerScanner(cid=" << cid << ' ';
   interval.print(out);
   out << " completion=" << selector->completion.count()
       << ')';
-}
-
-bool BrokerScanner::add_cells(StaticBuffer& buffer, bool reached_limit) {
-  return selector->add_cells(cid, buffer, reached_limit, interval);
 }
 
 void BrokerScanner::select() {
@@ -55,7 +45,8 @@ void BrokerScanner::selected(const ReqBase::Ptr& req,
       if(interval.flags.offset)
         interval.flags.offset = rsp.offset;
 
-      if(!rsp.data.size || add_cells(rsp.data, rsp.more)) {
+      if(!rsp.data.size ||
+         selector->add_cells(cid, rsp.data, rsp.more, interval)) {
         if(rsp.more && selector->valid())
           return select();
       }

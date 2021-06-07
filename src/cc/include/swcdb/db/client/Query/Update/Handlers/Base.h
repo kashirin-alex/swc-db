@@ -31,6 +31,7 @@ class Base : public std::enable_shared_from_this<Base> {
     public:
     typedef std::shared_ptr<Column>     Ptr;
 
+    SWC_CAN_INLINE
     Column() noexcept { }
 
     virtual void print(std::ostream& out) = 0;
@@ -67,6 +68,7 @@ class Base : public std::enable_shared_from_this<Base> {
     virtual bool get_buff(size_t buff_sz, bool& more,
                           DynamicBuffer& cells_buff) = 0;
 
+    SWC_CAN_INLINE
     DynamicBuffer::Ptr get_buff(const DB::Cell::Key& key_start,
                                 const DB::Cell::Key& key_end,
                                 size_t buff_sz, bool& more) {
@@ -76,6 +78,7 @@ class Base : public std::enable_shared_from_this<Base> {
         : nullptr;
     }
 
+    SWC_CAN_INLINE
     DynamicBuffer::Ptr get_buff(size_t buff_sz, bool& more) {
       DynamicBuffer cells_buff;
       return get_buff(buff_sz, more, cells_buff)
@@ -105,6 +108,7 @@ class Base : public std::enable_shared_from_this<Base> {
   Core::Atomic<uint8_t>             buff_ahead;
   const Clients::Flag               executor;
 
+  SWC_CAN_INLINE
   Base(const Clients::Ptr& clients,
        Clients::Flag executor=Clients::Flag::DEFAULT) noexcept
       : clients(clients),
@@ -145,10 +149,12 @@ class Base : public std::enable_shared_from_this<Base> {
   }
 
 
+  SWC_CAN_INLINE
   void add_resend_count(size_t count) noexcept {
     m_resend_cells.fetch_add(count);
   }
 
+  SWC_CAN_INLINE
   size_t get_resend_count(bool reset = true) noexcept {
     return reset ? m_resend_cells.exchange(0) : m_resend_cells.load();
   }
@@ -162,6 +168,7 @@ class Base : public std::enable_shared_from_this<Base> {
     response();
   }
 
+  SWC_CAN_INLINE
   void commit(const cid_t cid) {
     commit(next(cid));
   }

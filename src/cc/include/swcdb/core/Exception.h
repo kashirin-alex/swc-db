@@ -49,26 +49,32 @@ class Exception final : public std::exception {
 
   ~Exception();
 
+  SWC_CAN_INLINE
   int code() const noexcept {
     return _code;
   }
 
+  SWC_CAN_INLINE
   virtual const char* what() const noexcept override {
     return _msg.c_str();
   }
 
+  SWC_CAN_INLINE
   int line() const noexcept {
     return _line;
   }
 
+  SWC_CAN_INLINE
   const char* func() const noexcept {
     return _func;
   }
 
+  SWC_CAN_INLINE
   const char* file() const noexcept {
     return _file;
   }
 
+  SWC_CAN_INLINE
   const char* inner_what() const noexcept {
     return _inner_msg.c_str();
   }

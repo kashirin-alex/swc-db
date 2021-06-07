@@ -115,6 +115,7 @@ struct Profiling {
   Component _rgr_data;
   Component _bkr;
 
+  SWC_CAN_INLINE
   void finished() noexcept {
     ts_finish.store(Time::now_ns());
   }

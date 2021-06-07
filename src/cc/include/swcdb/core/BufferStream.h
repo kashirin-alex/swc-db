@@ -22,7 +22,12 @@ namespace SWC { namespace Core {
 class BufferStreamOut {
   public:
   int error;
-  BufferStreamOut(size_t pre_alloc = 12582912, size_t commit_size = 8388608);
+
+  SWC_CAN_INLINE
+  BufferStreamOut(size_t pre_alloc = 12582912, size_t commit_size = 8388608)
+                  noexcept  : error(Error::OK),
+                              pre_alloc(pre_alloc), commit_size(commit_size) {
+  }
 
   virtual ~BufferStreamOut() { }
 
@@ -111,7 +116,9 @@ class BufferStreamOut_ENCODER : public BufferStreamOut {
 class BufferStreamIn {
   public:
   int  error;
-  BufferStreamIn();
+
+  SWC_CAN_INLINE
+  BufferStreamIn() noexcept : error(Error::OK) { }
 
   virtual ~BufferStreamIn() {}
 

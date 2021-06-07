@@ -31,6 +31,7 @@ enum Function : uint8_t {
 class ReqColumn final : public Serializable {
   public:
 
+  SWC_CAN_INLINE
   ReqColumn(cid_t cid = 0) noexcept : cid(cid) { }
 
   //~ReqColumn() { }
@@ -52,6 +53,7 @@ class ReqColumn final : public Serializable {
 class RspRes final : public Serializable {
   public:
 
+  SWC_CAN_INLINE
   RspRes() noexcept { }
 
   //~RspRes() { }
@@ -77,6 +79,7 @@ class RspRes final : public Serializable {
 class RspCids final : public Serializable {
   public:
 
+  SWC_CAN_INLINE
   RspCids() noexcept { }
 
   //~RspCids() { }
@@ -100,6 +103,7 @@ class RspCids final : public Serializable {
 class RspColumnRids final : public Serializable {
   public:
 
+  SWC_CAN_INLINE
   RspColumnRids() noexcept { }
 
   //~RspColumnRids() { }
@@ -125,6 +129,7 @@ class RspColumnsRanges final : public Serializable {
 
   struct Range {
 
+    SWC_CAN_INLINE
     Range(DB::Types::KeySeq seq) noexcept : interval(seq) { }
 
     static bool before(Range* r1, Range* r2);
@@ -155,7 +160,7 @@ class RspColumnsRanges final : public Serializable {
 
     ~Column();
 
-    size_t encoded_length () const;
+    size_t encoded_length() const;
 
     void encode(uint8_t** bufp) const;
 
@@ -166,6 +171,7 @@ class RspColumnsRanges final : public Serializable {
   };
 
 
+  SWC_CAN_INLINE
   explicit RspColumnsRanges() noexcept : rgrid(0) { }
 
   RspColumnsRanges(rgrid_t rgrid, const EndPoints& endpoints);

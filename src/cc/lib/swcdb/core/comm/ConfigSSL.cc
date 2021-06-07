@@ -112,18 +112,6 @@ void ConfigSSL::set_networks(const Config::Strings& networks,
 }
 
 
-SWC_SHOULD_INLINE
-bool ConfigSSL::need_ssl(const EndPoint& remote) const noexcept {
-  return !Resolver::is_network(remote, nets_v4, nets_v6);
-}
-
-SWC_SHOULD_INLINE
-bool ConfigSSL::need_ssl(const EndPoint& local,
-                         const EndPoint& remote) const noexcept {
-  return local.address() != remote.address() && need_ssl(remote);
-}
-
-
 void ConfigSSL::make_server(AppContext::Ptr& app_ctx,
                             SocketPlain& socket) const {
   auto conn = ConnHandlerSSL::make(app_ctx, ctx, socket);

@@ -28,15 +28,15 @@ class Scanner final : public std::enable_shared_from_this<Scanner> {
   static void execute(const Handlers::Base::Ptr& hdlr,
                       DB::Types::KeySeq key_seq, cid_t cid,
                       const DB::Specs::Interval& intval) {
-    std::make_shared<Scanner>(
-      hdlr, key_seq, intval, cid)->mngr_locate_master();
+    Ptr(new Scanner(
+      hdlr, key_seq, intval, cid))->mngr_locate_master();
   }
 
   static void execute(const Handlers::Base::Ptr& hdlr,
                       DB::Types::KeySeq key_seq, cid_t cid,
                       DB::Specs::Interval&& intval) {
-    std::make_shared<Scanner>(
-      hdlr, key_seq, std::move(intval), cid)->mngr_locate_master();
+    Ptr(new Scanner(
+      hdlr, key_seq, std::move(intval), cid))->mngr_locate_master();
   }
 
 
@@ -76,23 +76,56 @@ class Scanner final : public std::enable_shared_from_this<Scanner> {
   Scanner(const Handlers::Base::Ptr& hdlr,
           const DB::Types::KeySeq col_seq,
           const DB::Specs::Interval& interval,
-          const cid_t cid);
+          const cid_t cid)
+          : completion(0),
+            selector(hdlr),
+            col_seq(col_seq),
+            interval(interval),
+            master_cid(DB::Types::SystemColumn::get_master_cid(col_seq)),
+            meta_cid(DB::Types::SystemColumn::get_meta_cid(col_seq)),
+            data_cid(cid),
+            master_rid(0),
+            meta_rid(0),
+            data_rid(0),
+            master_mngr_next(false),
+            master_rgr_next(false),
+            meta_next(false),
+            retry_point(RETRY_POINT_NONE) {
+  }
 
   Scanner(const Handlers::Base::Ptr& hdlr,
           const DB::Types::KeySeq col_seq,
           DB::Specs::Interval&& interval,
-          const cid_t cid) noexcept;
+          const cid_t cid) noexcept
+          : completion(0),
+            selector(hdlr),
+            col_seq(col_seq),
+            interval(std::move(interval)),
+            master_cid(DB::Types::SystemColumn::get_master_cid(col_seq)),
+            meta_cid(DB::Types::SystemColumn::get_meta_cid(col_seq)),
+            data_cid(cid),
+            master_rid(0),
+            meta_rid(0),
+            data_rid(0),
+            master_mngr_next(false),
+            master_rgr_next(false),
+            meta_next(false),
+            retry_point(RETRY_POINT_NONE) {
+  }
 
   //~Scanner() { }
 
+  SWC_CAN_INLINE
   bool valid() noexcept {
     return selector->valid();
   }
 
+  SWC_CAN_INLINE
   Clients::Ptr& get_clients() noexcept {
     return selector->clients;
   }
 
+  SWC_CAN_INLINE
   Profiling& get_profile() noexcept {
     return selector->profile;
   }
@@ -101,8 +134,6 @@ class Scanner final : public std::enable_shared_from_this<Scanner> {
                        const Comm::EndPoints& endpoints);
 
   void print(std::ostream& out);
-
-  bool add_cells(StaticBuffer& buffer, bool reached_limit);
 
   void response_if_last();
 
@@ -149,6 +180,12 @@ class Scanner final : public std::enable_shared_from_this<Scanner> {
   void rgr_selected(
       const ReqBase::Ptr& req,
       Comm::Protocol::Rgr::Params::RangeQuerySelectRsp& rsp);
+
+  private:
+  static constexpr const uint8_t RETRY_POINT_NONE   = 0;
+  static constexpr const uint8_t RETRY_POINT_MASTER = 1;
+  static constexpr const uint8_t RETRY_POINT_META   = 2;
+  static constexpr const uint8_t RETRY_POINT_DATA   = 3;
 
 };
 

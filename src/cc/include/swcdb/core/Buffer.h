@@ -39,18 +39,22 @@ struct Buffer {
   }
 
 
+  SWC_CAN_INLINE
   explicit Buffer() SWC_NOEXCEPT
                   : own(false), size(0), base(nullptr) {
   }
 
+  SWC_CAN_INLINE
   Buffer(size_t sz)
         : own(sz), size(sz), base(size ? allocate(size) : nullptr) {
   }
 
+  SWC_CAN_INLINE
   Buffer(value_type* data, size_t sz, bool take_ownership) SWC_NOEXCEPT
         : own(take_ownership), size(sz), base(data) {
   }
 
+  SWC_CAN_INLINE
   Buffer(BufferT& other) SWC_NOEXCEPT
         : own(other.own), size(other.size), base(other.base) {
     if(own) {
@@ -59,6 +63,7 @@ struct Buffer {
     }
   }
 
+  SWC_CAN_INLINE
   Buffer(BufferT&& other) SWC_NOEXCEPT
         : own(other.own), size(other.size), base(other.base) {
     if(own) {
@@ -82,12 +87,14 @@ struct Buffer {
       delete [] base;
   }
 
+  SWC_CAN_INLINE
   void free() SWC_NOEXCEPT {
     _free();
     size = 0;
     base = nullptr;
   }
 
+  SWC_CAN_INLINE
   void reallocate(size_t len) {
     _free();
     own = true;
@@ -148,14 +155,17 @@ struct BufferDyn : BufferT {
   typedef std::shared_ptr<BufferDyn> Ptr;
 
 
+  SWC_CAN_INLINE
   explicit BufferDyn() SWC_NOEXCEPT
                     : ptr(nullptr), mark(nullptr)  {
   }
 
+  SWC_CAN_INLINE
   BufferDyn(size_t sz)
             : BufferT(sz), ptr(BufferT::base), mark(BufferT::base) {
   }
 
+  SWC_CAN_INLINE
   BufferDyn(BufferDyn&& other) SWC_NOEXCEPT
             : BufferT(std::move(other)), ptr(other.ptr), mark(other.mark) {
     other.ptr = other.mark = nullptr;
@@ -163,6 +173,7 @@ struct BufferDyn : BufferT {
 
   //~BufferDyn() { }
 
+  SWC_CAN_INLINE
   void free() {
     BufferT::free();
     ptr = mark = nullptr;

@@ -31,44 +31,88 @@ namespace FS {
 
 /// Smart FileDescriptor
 
-struct SmartFd {
+class SmartFd {
   public:
 
   typedef std::shared_ptr<SmartFd> Ptr;
 
+  SWC_CAN_INLINE
   static Ptr make_ptr(const std::string& filepath, uint32_t flags,
-                      int32_t fd=-1, uint64_t pos=0);
+                      int32_t fd=-1, uint64_t pos=0) {
+    return Ptr(new SmartFd(filepath, flags, fd, pos));
+  }
 
+  SWC_CAN_INLINE
   static Ptr make_ptr(std::string&& filepath, uint32_t flags,
-                      int32_t fd=-1, uint64_t pos=0);
+                      int32_t fd=-1, uint64_t pos=0) {
+    return Ptr(new SmartFd(std::move(filepath), flags, fd, pos));
+  }
 
+  SWC_CAN_INLINE
   SmartFd(const std::string& filepath, uint32_t flags,
-          int32_t fd=-1, uint64_t pos=0);
+          int32_t fd=-1, uint64_t pos=0)
+          : m_filepath(filepath), m_flags(flags), m_fd(fd), m_pos(pos) {
+  }
 
+  SWC_CAN_INLINE
   SmartFd(std::string&& filepath, uint32_t flags,
-          int32_t fd=-1, uint64_t pos=0) noexcept;
+          int32_t fd=-1, uint64_t pos=0) noexcept
+          : m_filepath(std::move(filepath)),
+            m_flags(flags), m_fd(fd), m_pos(pos) {
+  }
 
   virtual ~SmartFd() { }
 
-  const std::string& filepath() const noexcept;
+  SWC_CAN_INLINE
+  const std::string& filepath() const noexcept {
+    return m_filepath;
+  }
 
-  void flags(uint32_t flags) noexcept;
+  SWC_CAN_INLINE
+  void flags(uint32_t flags) noexcept {
+    m_flags.store(flags);
+  }
 
-  uint32_t flags() const noexcept;
+  SWC_CAN_INLINE
+  uint32_t flags() const noexcept {
+    return m_flags;
+  }
 
-  void fd(int32_t fd) noexcept;
+  SWC_CAN_INLINE
+  void fd(int32_t fd) noexcept {
+    m_fd.store(fd);
+  }
 
-  int32_t fd() const noexcept;
+  SWC_CAN_INLINE
+  int32_t fd() const noexcept {
+    return m_fd;
+  }
 
-  bool valid() const noexcept;
+  SWC_CAN_INLINE
+  bool valid() const noexcept {
+    return m_fd != -1;
+  }
 
-  int32_t invalidate() noexcept;
+  SWC_CAN_INLINE
+  int32_t invalidate() noexcept {
+    m_pos.store(0);
+    return m_fd.exchange(-1);
+  }
 
-  void pos(uint64_t pos) noexcept;
+  SWC_CAN_INLINE
+  void pos(uint64_t pos) noexcept {
+    m_pos.store(pos);
+  }
 
-  uint64_t pos() const noexcept;
+  SWC_CAN_INLINE
+  uint64_t pos() const noexcept {
+    return m_pos;
+  }
 
-  void forward(uint64_t pos) noexcept;
+  SWC_CAN_INLINE
+  void forward(uint64_t nbytes) noexcept {
+    m_pos.fetch_add(nbytes);
+  }
 
   std::string to_string() const;
 

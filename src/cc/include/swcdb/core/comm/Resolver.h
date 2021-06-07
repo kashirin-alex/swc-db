@@ -17,16 +17,23 @@ namespace SWC {
 namespace Comm {
 
 typedef asio::ip::tcp::endpoint EndPoint;
-typedef std::vector<EndPoint> EndPoints;
+typedef std::vector<EndPoint>   EndPoints;
 
 struct Network {
   bool                        is_v4;
   const asio::ip::network_v4  v4;
   const asio::ip::network_v6  v6;
 
-  Network(const asio::ip::network_v4& v4) noexcept;
-  Network(const asio::ip::network_v6& v6) noexcept;
-  Network(const Network& net) noexcept;
+  SWC_CAN_INLINE
+  Network(const asio::ip::network_v4& v4) noexcept : is_v4(true), v4(v4) { }
+
+  SWC_CAN_INLINE
+  Network(const asio::ip::network_v6& v6) noexcept : is_v4(false), v6(v6) { }
+
+  SWC_CAN_INLINE
+  Network(const Network& net) noexcept
+          : is_v4(net.is_v4), v4(net.v4), v6(net.v6) {
+  }
 };
 
 typedef std::vector<Network> Networks;
@@ -37,7 +44,10 @@ typedef std::vector<Network> Networks;
 
 namespace Serialization {
 
-uint8_t encoded_length(const Comm::EndPoint& endpoint) noexcept;
+SWC_CAN_INLINE
+uint8_t encoded_length(const Comm::EndPoint& endpoint) noexcept {
+  return 3 + (endpoint.address().is_v4() ? 4 : 16);
+}
 
 void encode(uint8_t** bufp, const Comm::EndPoint& endpoint);
 

@@ -22,6 +22,7 @@ class BaseUnorderedMap
   typedef std::shared_ptr<BaseUnorderedMap>             Ptr;
   typedef std::unordered_map<cid_t, ColumnMutable::Ptr> Map;
 
+  SWC_CAN_INLINE
   BaseUnorderedMap(const Clients::Ptr& clients,
                    Clients::Flag executor=Clients::DEFAULT) noexcept
                   : Base(clients, executor) {
@@ -49,6 +50,7 @@ class BaseUnorderedMap
   virtual void error(cid_t cid, int err) noexcept override;
 
 
+  SWC_CAN_INLINE
   ColumnMutable::Ptr& create(const DB::Schema::Ptr& schema) {
     return create(
       schema->cid, schema->col_seq,

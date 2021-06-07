@@ -17,10 +17,11 @@ namespace Bkr { namespace Params {
 class CellsUpdateReq final : public Serializable {
   public:
 
+  SWC_CAN_INLINE
   CellsUpdateReq() noexcept { }
 
-  CellsUpdateReq(cid_t cid) noexcept
-                : cid(cid) { }
+  SWC_CAN_INLINE
+  CellsUpdateReq(cid_t cid) noexcept : cid(cid) { }
 
   //~CellsUpdateReq() { }
 
@@ -43,9 +44,8 @@ class CellsUpdateReq final : public Serializable {
 class CellsUpdateRsp final : public Serializable {
   public:
 
-  CellsUpdateRsp(int err = Error::OK) noexcept
-                 : err(err) {
-  }
+  SWC_CAN_INLINE
+  CellsUpdateRsp(int err = Error::OK) noexcept : err(err) { }
 
   //~CellsUpdateRsp() { }
 

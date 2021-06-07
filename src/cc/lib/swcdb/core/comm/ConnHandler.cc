@@ -13,24 +13,6 @@ namespace SWC { namespace Comm {
 
 
 
-SWC_SHOULD_INLINE
-size_t ConnHandler::endpoint_remote_hash() const noexcept {
-  return endpoint_hash(endpoint_remote);
-}
-
-SWC_SHOULD_INLINE
-size_t ConnHandler::endpoint_local_hash() const noexcept {
-  return endpoint_hash(endpoint_local);
-}
-
-SWC_SHOULD_INLINE
-Core::Encoder::Type ConnHandler::get_encoder() const noexcept {
-  return !app_ctx->cfg_encoder ||
-         endpoint_local.address() == endpoint_remote.address()
-          ? Core::Encoder::Type::PLAIN
-          : Core::Encoder::Type(app_ctx->cfg_encoder->get());
-}
-
 void ConnHandler::new_connection() {
   auto sock = socket_layer();
   endpoint_remote = sock->remote_endpoint();
@@ -45,16 +27,6 @@ void ConnHandler::new_connection() {
 size_t ConnHandler::pending_read() noexcept {
   Core::MutexSptd::scope lock(m_mutex);
   return m_pending.size();
-}
-
-SWC_SHOULD_INLINE
-size_t ConnHandler::pending_write() {
-  return m_outgoing.size() + m_outgoing.is_active();
-}
-
-SWC_SHOULD_INLINE
-bool ConnHandler::due() {
-  return m_outgoing.is_active() || m_outgoing.size() || pending_read();
 }
 
 void ConnHandler::do_close_run() noexcept {

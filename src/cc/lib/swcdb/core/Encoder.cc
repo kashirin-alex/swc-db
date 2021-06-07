@@ -94,16 +94,6 @@ Encoder::Type Encoder::encoding_from(const std::string& typ) noexcept {
   return Encoder::Type::UNKNOWN;
 }
 
-SWC_SHOULD_INLINE
-std::string Encoder::repr_encoding(int typ) {
-  return Encoder::to_string(Encoder::Type(typ));
-}
-
-SWC_SHOULD_INLINE
-int Encoder::from_string_encoding(const std::string& typ) noexcept {
-  return int(Encoder::encoding_from(typ));
-}
-
 
 
 void Encoder::decode(

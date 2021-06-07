@@ -6,7 +6,7 @@
 #ifndef swcdb_db_types_Column_h
 #define swcdb_db_types_Column_h
 
-#include <string>
+#include "swcdb/core/Compat.h"
 
 namespace SWC { namespace DB {
 
@@ -33,9 +33,16 @@ const char* to_string(Column typ) noexcept;
 Column column_type_from(const std::string& typ) noexcept;
 
 
-std::string repr_col_type(int typ);
+SWC_CAN_INLINE
+std::string repr_col_type(int typ) {
+  return to_string(Column(typ));
+}
 
-int from_string_col_type(const std::string& typ) noexcept;
+SWC_CAN_INLINE
+int from_string_col_type(const std::string& typ) noexcept {
+  return int(column_type_from(typ));
+}
+
 
 }}}
 

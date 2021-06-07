@@ -24,7 +24,7 @@ namespace SWC {
  *  \addtogroup Core
  *  @{
  */
-  
+
 enum LogPriority : uint8_t {
   LOG_EMERG  = 0,
   LOG_FATAL  = 0,
@@ -71,14 +71,17 @@ class LogWriter final {
     m_priority.store(level);
   }
 
+  SWC_CAN_INLINE
   uint8_t get_level() const noexcept {
     return m_priority;
   }
 
+  SWC_CAN_INLINE
   bool is_enabled(uint8_t level) const noexcept {
     return level <= m_priority;
   }
 
+  SWC_CAN_INLINE
   bool show_line_numbers() const noexcept {
     return m_show_line_numbers;
   }

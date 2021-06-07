@@ -103,6 +103,7 @@ class Clients : public std::enable_shared_from_this<Clients> {
 
   void stop();
 
+  SWC_CAN_INLINE
   bool stopping() const noexcept {
     return !running;
   }
@@ -115,6 +116,7 @@ class Clients : public std::enable_shared_from_this<Clients> {
     set_flags(Flag::DEFAULT | Flag::BROKER);
   }
 
+  SWC_CAN_INLINE
   Comm::IoContextPtr& get_io() noexcept {
     return io_ctx;
   }
@@ -123,74 +125,90 @@ class Clients : public std::enable_shared_from_this<Clients> {
     return bool(brokers.queues);
   }
 
+  SWC_CAN_INLINE
   DB::Schema::Ptr get_schema(int& err, cid_t cid) {
     return schemas.get(err, cid);
   }
 
+  SWC_CAN_INLINE
   DB::Schema::Ptr get_schema(int& err, const std::string& name) {
     return schemas.get(err, name);
   }
 
+  SWC_CAN_INLINE
   void get_schema(int& err, const std::vector<DB::Schemas::Pattern>& patterns,
                   std::vector<DB::Schema::Ptr>& _schemas) {
     schemas.get(err, patterns, _schemas);
   }
 
+  SWC_CAN_INLINE
   std::vector<DB::Schema::Ptr>
   get_schema(int& err, const std::vector<DB::Schemas::Pattern>& patterns) {
     return schemas.get(err, patterns);
   }
 
 
+  SWC_CAN_INLINE
   void rgr_cache_remove(const cid_t cid, const rid_t rid) {
     rangers.cache.remove(cid, rid);
   }
 
+  SWC_CAN_INLINE
   bool rgr_cache_get(const cid_t cid, const rid_t rid,
                      Comm::EndPoints& endpoints) {
     return rangers.cache.get(cid, rid, endpoints);
   }
 
+  SWC_CAN_INLINE
   void rgr_cache_set(const cid_t cid, const rid_t rid,
                      const Comm::EndPoints& endpoints) {
     rangers.cache.set(cid, rid, endpoints);
   }
 
 
+  SWC_CAN_INLINE
   Comm::IoContextPtr get_mngr_io() {
     return managers.queues->service->io();
   }
 
+  SWC_CAN_INLINE
   Comm::client::Host::Ptr get_mngr_queue(const Comm::EndPoints& endpoints) {
     return managers.queues->get(endpoints);
   }
 
 
+  SWC_CAN_INLINE
   Comm::IoContextPtr get_rgr_io() {
     return rangers.queues->service->io();
   }
 
+  SWC_CAN_INLINE
   Comm::client::Host::Ptr get_rgr_queue(const Comm::EndPoints& endpoints) {
     return rangers.queues->get(endpoints);
   }
 
 
+  SWC_CAN_INLINE
   Comm::IoContextPtr get_bkr_io() {
     return brokers.queues->service->io();
   }
 
+  SWC_CAN_INLINE
   Comm::client::Host::Ptr get_bkr_queue(const Comm::EndPoints& endpoints) {
     return brokers.queues->get(endpoints);
   }
 
+  SWC_CAN_INLINE
   void get_mngr(const cid_t& cid, Comm::EndPoints& endpoints) {
     managers.groups->select(cid, endpoints);
   }
 
+  SWC_CAN_INLINE
   void get_mngr(const uint8_t& role, Comm::EndPoints& endpoints) {
     managers.groups->select(role, endpoints);
   }
 
+  SWC_CAN_INLINE
   void remove_mngr(const Comm::EndPoints& endpoints) {
     managers.groups->remove(endpoints);
   }

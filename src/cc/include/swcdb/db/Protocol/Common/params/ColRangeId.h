@@ -15,9 +15,8 @@ namespace Common { namespace Params {
 class ColRangeId : public Serializable {
   public:
 
-  ColRangeId(cid_t cid = 0, rid_t rid = 0)
-            : cid(cid), rid(rid){
-  }
+  SWC_CAN_INLINE
+  ColRangeId(cid_t cid = 0, rid_t rid = 0) noexcept : cid(cid), rid(rid) { }
 
   //~ColRangeId() { }
 

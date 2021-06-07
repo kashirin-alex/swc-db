@@ -36,8 +36,10 @@ class ColumnMng : public Serializable {
     INTERNAL_EXPECT       = 9,
   };
 
+  SWC_CAN_INLINE
   ColumnMng() noexcept { }
 
+  SWC_CAN_INLINE
   ColumnMng(Function function, const DB::Schema::Ptr& schema) noexcept
             : function(function), schema(schema) {
   }

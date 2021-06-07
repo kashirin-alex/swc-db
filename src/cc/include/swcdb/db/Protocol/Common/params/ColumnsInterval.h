@@ -15,8 +15,9 @@ namespace Common { namespace Params {
 class ColumnsInterval : public Serializable {
   public:
 
+  SWC_CAN_INLINE
   ColumnsInterval(cid_t cid_begin = DB::Schema::NO_CID,
-                  cid_t cid_end = DB::Schema::NO_CID)
+                  cid_t cid_end = DB::Schema::NO_CID) noexcept
                  : cid_begin(cid_begin), cid_end(cid_end) {
   }
 
