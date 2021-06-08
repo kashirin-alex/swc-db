@@ -76,42 +76,12 @@ class Scanner final : public std::enable_shared_from_this<Scanner> {
   Scanner(const Handlers::Base::Ptr& hdlr,
           const DB::Types::KeySeq col_seq,
           const DB::Specs::Interval& interval,
-          const cid_t cid)
-          : completion(0),
-            selector(hdlr),
-            col_seq(col_seq),
-            interval(interval),
-            master_cid(DB::Types::SystemColumn::get_master_cid(col_seq)),
-            meta_cid(DB::Types::SystemColumn::get_meta_cid(col_seq)),
-            data_cid(cid),
-            master_rid(0),
-            meta_rid(0),
-            data_rid(0),
-            master_mngr_next(false),
-            master_rgr_next(false),
-            meta_next(false),
-            retry_point(RETRY_POINT_NONE) {
-  }
+          const cid_t cid);
 
   Scanner(const Handlers::Base::Ptr& hdlr,
           const DB::Types::KeySeq col_seq,
           DB::Specs::Interval&& interval,
-          const cid_t cid) noexcept
-          : completion(0),
-            selector(hdlr),
-            col_seq(col_seq),
-            interval(std::move(interval)),
-            master_cid(DB::Types::SystemColumn::get_master_cid(col_seq)),
-            meta_cid(DB::Types::SystemColumn::get_meta_cid(col_seq)),
-            data_cid(cid),
-            master_rid(0),
-            meta_rid(0),
-            data_rid(0),
-            master_mngr_next(false),
-            master_rgr_next(false),
-            meta_next(false),
-            retry_point(RETRY_POINT_NONE) {
-  }
+          const cid_t cid) noexcept;
 
   //~Scanner() { }
 

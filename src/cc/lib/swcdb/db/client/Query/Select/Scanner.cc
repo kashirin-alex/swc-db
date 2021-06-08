@@ -26,6 +26,52 @@ namespace SWC { namespace client { namespace Query { namespace Select {
 
 
 
+static const uint8_t RETRY_POINT_NONE   = 0;
+static const uint8_t RETRY_POINT_MASTER = 1;
+static const uint8_t RETRY_POINT_META   = 2;
+static const uint8_t RETRY_POINT_DATA   = 3;
+
+
+Scanner::Scanner(const Handlers::Base::Ptr& hdlr,
+                 const DB::Types::KeySeq col_seq,
+                 const DB::Specs::Interval& interval,
+                 const cid_t cid)
+            : completion(0),
+              selector(hdlr),
+              col_seq(col_seq),
+              interval(interval),
+              master_cid(DB::Types::SystemColumn::get_master_cid(col_seq)),
+              meta_cid(DB::Types::SystemColumn::get_meta_cid(col_seq)),
+              data_cid(cid),
+              master_rid(0),
+              meta_rid(0),
+              data_rid(0),
+              master_mngr_next(false),
+              master_rgr_next(false),
+              meta_next(false),
+              retry_point(RETRY_POINT_NONE) {
+}
+
+Scanner::Scanner(const Handlers::Base::Ptr& hdlr,
+                 const DB::Types::KeySeq col_seq,
+                 DB::Specs::Interval&& interval,
+                 const cid_t cid) noexcept
+            : completion(0),
+              selector(hdlr),
+              col_seq(col_seq),
+              interval(std::move(interval)),
+              master_cid(DB::Types::SystemColumn::get_master_cid(col_seq)),
+              meta_cid(DB::Types::SystemColumn::get_meta_cid(col_seq)),
+              data_cid(cid),
+              master_rid(0),
+              meta_rid(0),
+              data_rid(0),
+              master_mngr_next(false),
+              master_rgr_next(false),
+              meta_next(false),
+              retry_point(RETRY_POINT_NONE) {
+}
+
 void Scanner::debug_res_cache(const char* msg, cid_t cid, rid_t rid,
                               const Comm::EndPoints& endpoints) {
   SWC_LOG_OUT(LOG_DEBUG,

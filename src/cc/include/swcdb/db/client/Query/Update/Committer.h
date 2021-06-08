@@ -51,12 +51,7 @@ class Committer final : public std::enable_shared_from_this<Committer> {
             const DB::Cell::Key::Ptr& key_start,
             const Handlers::Base::Ptr& hdlr,
             const ReqBase::Ptr& parent=nullptr,
-            const rid_t rid=0) noexcept
-            : type(type), workload(0),
-              cid(cid), colp(colp),
-              key_start(key_start),
-              hdlr(hdlr), parent(parent), rid(rid) {
-  }
+            const rid_t rid=0) noexcept;
 
   Committer(const DB::Types::Range type,
             const cid_t cid,
@@ -65,12 +60,7 @@ class Committer final : public std::enable_shared_from_this<Committer> {
             const Handlers::Base::Ptr& hdlr,
             const ReqBase::Ptr& parent,
             const rid_t rid,
-            const DB::Cell::Key& key_finish)
-            : type(type), workload(0),
-              cid(cid), colp(colp),
-              key_start(key_start),
-              hdlr(hdlr), parent(parent), rid(rid), key_finish(key_finish) {
-  }
+            const DB::Cell::Key& key_finish);
 
   //~Committer() { }
 

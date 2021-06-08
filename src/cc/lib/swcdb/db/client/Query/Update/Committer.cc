@@ -27,6 +27,33 @@ namespace SWC { namespace client { namespace Query { namespace Update {
 
 
 
+Committer::Committer(const DB::Types::Range type,
+                     const cid_t cid,
+                     Handlers::Base::Column* colp,
+                     const DB::Cell::Key::Ptr& key_start,
+                     const Handlers::Base::Ptr& hdlr,
+                     const ReqBase::Ptr& parent,
+                     const rid_t rid) noexcept
+              : type(type), workload(0),
+                cid(cid), colp(colp),
+                key_start(key_start),
+                hdlr(hdlr), parent(parent), rid(rid) {
+}
+
+Committer::Committer(const DB::Types::Range type,
+                     const cid_t cid,
+                     Handlers::Base::Column* colp,
+                     const DB::Cell::Key::Ptr& key_start,
+                     const Handlers::Base::Ptr& hdlr,
+                     const ReqBase::Ptr& parent,
+                     const rid_t rid,
+                     const DB::Cell::Key& key_finish)
+              : type(type), workload(0),
+                cid(cid), colp(colp),
+                key_start(key_start),
+                hdlr(hdlr), parent(parent), rid(rid), key_finish(key_finish) {
+}
+
 void Committer::print(std::ostream& out) {
   out << "Committer(type=" << DB::Types::to_string(type)
       << " cid=" << cid << " rid=" << rid
