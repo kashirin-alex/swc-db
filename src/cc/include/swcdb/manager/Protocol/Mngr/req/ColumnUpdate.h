@@ -14,7 +14,9 @@ namespace Mngr { namespace Req {
 
 class ColumnUpdate : public client::ConnQueue::ReqBase {
   public:
+  typedef std::shared_ptr<ColumnUpdate> Ptr;
 
+  SWC_CAN_INLINE
   ColumnUpdate(Params::ColumnMng::Function function,
                const DB::Schema::Ptr& schema,
                int err, uint64_t id)
@@ -26,6 +28,7 @@ class ColumnUpdate : public client::ConnQueue::ReqBase {
                   )) {
   }
 
+  SWC_CAN_INLINE
   ColumnUpdate(cid_t cid_begin, cid_t cid_end,
                std::vector<cid_t>&& columns)
               : client::ConnQueue::ReqBase(

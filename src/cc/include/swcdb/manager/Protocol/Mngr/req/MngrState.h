@@ -14,6 +14,7 @@ namespace Mngr {namespace Req {
 
 class MngrState : public client::ConnQueue::ReqBase {
   public:
+  typedef std::shared_ptr<MngrState> Ptr;
 
   MngrState(const ResponseCallback::Ptr& cb,
             const Manager::MngrsStatus& states,

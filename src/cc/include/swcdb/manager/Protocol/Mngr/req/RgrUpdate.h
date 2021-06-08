@@ -14,7 +14,9 @@ namespace Mngr { namespace Req {
 
 class RgrUpdate : public client::ConnQueue::ReqBase {
   public:
+  typedef std::shared_ptr<RgrUpdate> Ptr;
 
+  SWC_CAN_INLINE
   RgrUpdate(const Manager::RangerList &hosts, bool sync_all)
             : client::ConnQueue::ReqBase(
                 Buffers::make(

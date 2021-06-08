@@ -20,6 +20,7 @@ class ColumnCfg final : public Core::NotMovableSharedPtr<ColumnCfg> {
   const cid_t             cid;
   const DB::Types::KeySeq key_seq;
 
+  SWC_CAN_INLINE
   ColumnCfg(const DB::Schema::Ptr& schema) noexcept
             : cid(schema->cid), key_seq(schema->col_seq) {
   }

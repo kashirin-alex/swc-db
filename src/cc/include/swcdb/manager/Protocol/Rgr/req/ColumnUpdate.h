@@ -13,6 +13,7 @@ namespace Rgr { namespace Req {
 
 class ColumnUpdate : public client::ConnQueue::ReqBase {
   public:
+  typedef std::shared_ptr<ColumnUpdate> Ptr;
 
   ColumnUpdate(const Manager::Ranger::Ptr& rgr,
                const Manager::Column::Ptr& col,

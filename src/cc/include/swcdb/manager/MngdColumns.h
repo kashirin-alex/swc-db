@@ -18,9 +18,10 @@ class MngdColumns final {
                            public Comm::ResponseCallback {
     typedef std::shared_ptr<ColumnReq> Ptr;
     uint64_t id;
+    SWC_CAN_INLINE
     ColumnReq(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev)
-              noexcept
-              : Comm::ResponseCallback(conn, ev), id(0) { }
+              noexcept : Comm::ResponseCallback(conn, ev), id(0) {
+    }
   };
 
   MngdColumns();

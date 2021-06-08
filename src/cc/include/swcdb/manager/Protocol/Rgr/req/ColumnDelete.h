@@ -13,6 +13,7 @@ namespace Rgr { namespace Req {
 
 class ColumnDelete : public client::ConnQueue::ReqBase  {
   public:
+  typedef std::shared_ptr<ColumnDelete> Ptr;
 
   ColumnDelete(const Manager::Ranger::Ptr& rgr,
                const DB::Schema::Ptr& schema,

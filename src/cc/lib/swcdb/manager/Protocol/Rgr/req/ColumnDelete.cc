@@ -11,6 +11,7 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace Rgr { namespace Req {
 
 
+SWC_SHOULD_INLINE
 ColumnDelete::ColumnDelete(const Manager::Ranger::Ptr& rgr,
                            const DB::Schema::Ptr& schema,
                            uint64_t req_id)
@@ -39,6 +40,7 @@ void ColumnDelete::handle_no_conn() {
   }
 }
 
+SWC_SHOULD_INLINE
 void ColumnDelete::remove() {
   Env::Mngr::mngd_columns()->remove(schema, rgr->rgrid, req_id);
 }

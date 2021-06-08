@@ -42,6 +42,7 @@ class Column final : private std::vector<Range::Ptr> {
 
   const ColumnCfg::Ptr cfg;
 
+  SWC_CAN_INLINE
   Column(const DB::Schema::Ptr& schema)
         : cfg(new ColumnCfg(schema)),
           m_state(State::LOADING), m_check_ts(0) {
@@ -165,11 +166,12 @@ class Column final : private std::vector<Range::Ptr> {
       range->set(interval);
 
       if(size() > 1) {
-        auto it = std::find_if(
-          begin(), end(), [rid=range->rid](const Range::Ptr& range)
-                          {return range->rid == rid;});
-        if(it != end())
-          erase(it);
+        for(auto it = begin(); it < end(); ++it) {
+          if(range->rid == (*it)->rid) {
+            erase(it);
+            break;
+          }
+        }
         bool added = false;
         for(auto it=begin(); it != end(); ++it) {
           if((*it)->after(range)) {
@@ -321,16 +323,14 @@ class Column final : private std::vector<Range::Ptr> {
 
   void remove_range(rid_t rid) {
     Core::ScopedLock lock(m_mutex);
-
-    if(!size())
-      return;
-    auto it = std::find_if(begin(), end(), [rid](const Range::Ptr& range)
-                                           {return range->rid == rid;});
-    if(it == end())
-      return;
-    (*it)->set_deleted();
-    erase(it);
-    apply_loaded_state();
+    for(auto it = begin(); it < end(); ++it) {
+      if(rid == (*it)->rid) {
+        (*it)->set_deleted();
+        erase(it);
+        apply_loaded_state();
+        break;
+      }
+    }
   }
 
   bool do_remove() {
@@ -415,9 +415,17 @@ class Column final : private std::vector<Range::Ptr> {
 
   rid_t _get_next_rid() {
     rid_t rid = 0;
-    while(++rid && std::find_if(
-      begin(), end(), [rid](const Range::Ptr& range)
-      { return range->rid == rid; }) != end());
+    for(bool unused; ++rid; ) {
+      unused = true;
+      for(auto& range : *this) {
+        if(range->rid == rid) {
+          unused = false;
+          break;
+        }
+      }
+      if(unused)
+        break;
+    }
     return rid;
   }
 

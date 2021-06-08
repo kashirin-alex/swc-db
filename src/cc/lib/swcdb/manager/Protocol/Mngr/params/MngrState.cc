@@ -10,13 +10,6 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace Mngr { namespace Params {
 
 
-MngrState::MngrState() {}
-
-MngrState::MngrState(Manager::MngrsStatus states,
-                     uint64_t token,
-                     const EndPoint& mngr_host)
-                    : states(states), token(token), mngr_host(mngr_host) {
-}
 
 size_t MngrState::internal_encoded_length() const {
   size_t len = 12 + Serialization::encoded_length(mngr_host);
@@ -39,9 +32,10 @@ void MngrState::internal_decode(const uint8_t** bufp, size_t* remainp) {
   mngr_host = Serialization::decode(bufp, remainp);
   states.clear();
   states.resize(len);
-  for(size_t i =0; i<len; ++i)
-    (states[i] = std::make_shared<Manager::MngrStatus>())
-      ->decode(bufp, remainp);
+  for(auto& h : states) {
+    h.reset(new Manager::MngrStatus());
+    h->decode(bufp, remainp);
+  }
 }
 
 

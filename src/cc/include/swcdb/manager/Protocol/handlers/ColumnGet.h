@@ -32,7 +32,9 @@ void mngr_update_response(const ConnHandlerPtr& conn, const Event::Ptr& ev,
 
 class MngrColumnGet : public client::ConnQueue::ReqBase {
   public:
+  typedef std::shared_ptr<MngrColumnGet> Ptr;
 
+  SWC_CAN_INLINE
   MngrColumnGet(const ConnHandlerPtr& conn, const Event::Ptr& ev,
                 Params::ColumnGetReq::Flag flag,
                 const Params::ColumnGetReq& params)
@@ -129,7 +131,7 @@ void column_get(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
       params.flag = Params::ColumnGetReq::Flag::SCHEMA_BY_NAME;
 
     Env::Mngr::role()->req_mngr_inchain(
-      std::make_shared<MngrColumnGet>(conn, ev, flag, params));
+      MngrColumnGet::Ptr(new MngrColumnGet(conn, ev, flag, params)));
 
   } catch(...) {
     const Error::Exception& e = SWC_CURRENT_EXCEPTION("");

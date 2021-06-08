@@ -20,7 +20,8 @@ void column_mng(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     const uint8_t *ptr = ev->data.base;
     size_t remain = ev->data.size;
 
-    auto req = std::make_shared<Manager::MngdColumns::ColumnReq>(conn, ev);
+    Manager::MngdColumns::ColumnReq::Ptr req(
+      new Manager::MngdColumns::ColumnReq(conn, ev));
     req->decode(&ptr, &remain);
 
     if(Env::Mngr::mngd_columns()->is_schemas_mngr(err) && !err)

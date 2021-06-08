@@ -36,6 +36,11 @@ class Schema final {
     return Ptr(new Schema(*other.get()));
   }
 
+  SWC_CAN_INLINE
+  static Ptr make(const uint8_t** bufp, size_t* remainp) {
+    return Ptr(new Schema(bufp, remainp));
+  }
+
   Schema() noexcept;
 
   Schema(const Schema& other);

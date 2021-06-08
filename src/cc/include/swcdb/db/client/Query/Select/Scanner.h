@@ -151,12 +151,6 @@ class Scanner final : public std::enable_shared_from_this<Scanner> {
       const ReqBase::Ptr& req,
       Comm::Protocol::Rgr::Params::RangeQuerySelectRsp& rsp);
 
-  private:
-  static constexpr const uint8_t RETRY_POINT_NONE   = 0;
-  static constexpr const uint8_t RETRY_POINT_MASTER = 1;
-  static constexpr const uint8_t RETRY_POINT_META   = 2;
-  static constexpr const uint8_t RETRY_POINT_DATA   = 3;
-
 };
 
 

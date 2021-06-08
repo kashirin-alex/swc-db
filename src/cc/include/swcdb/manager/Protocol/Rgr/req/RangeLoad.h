@@ -12,6 +12,7 @@ namespace Rgr { namespace Req {
 
 class RangeLoad : public client::ConnQueue::ReqBase {
   public:
+  typedef std::shared_ptr<RangeLoad> Ptr;
 
   RangeLoad(const Manager::Ranger::Ptr& rgr,
             const Manager::Column::Ptr& col,

@@ -13,6 +13,7 @@ namespace SWC { namespace Manager {
 
 struct RangerResources {
 
+  SWC_CAN_INLINE
   RangerResources(rgrid_t rgrid = 0,
                   uint32_t mem = 0, uint32_t cpu = 0, size_t ranges = 0)
                   noexcept
@@ -79,7 +80,9 @@ class RangersResources final : private std::vector<RangerResources> {
     for(auto& rgr : rangers) {
       if(rgr->state == RangerState::ACK ||
          rgr->state == RangerState::MARKED_OFFLINE) {
-        rgr->put(std::make_shared<Comm::Protocol::Rgr::Req::ReportRes>(rgr));
+        rgr->put(Comm::Protocol::Rgr::Req::ReportRes::Ptr(
+          new Comm::Protocol::Rgr::Req::ReportRes(rgr)
+        ));
         ++m_due;
       }
     }

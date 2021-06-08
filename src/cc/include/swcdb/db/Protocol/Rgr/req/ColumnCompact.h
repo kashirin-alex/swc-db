@@ -15,6 +15,7 @@ namespace Rgr { namespace Req {
 
 class ColumnCompact : public client::ConnQueue::ReqBase {
   public:
+  typedef std::shared_ptr<ColumnCompact> Ptr;
 
   ColumnCompact(cid_t cid)
                 : client::ConnQueue::ReqBase(

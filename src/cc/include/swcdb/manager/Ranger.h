@@ -20,11 +20,13 @@ class Ranger final : public Comm::Protocol::Common::Params::HostEndPoints {
 
   typedef std::shared_ptr<Ranger> Ptr;
 
+  SWC_CAN_INLINE
   Ranger() noexcept
           : rgrid(0), state(RangerState::NONE),
             failures(0), interm_ranges(0), load_scale(0), m_rebalance(0) {
   }
 
+  SWC_CAN_INLINE
   Ranger(rgrid_t rgrid, const Comm::EndPoints& endpoints)
         : Comm::Protocol::Common::Params::HostEndPoints(endpoints),
           rgrid(rgrid), state(RangerState::NONE),
@@ -73,6 +75,7 @@ class Ranger final : public Comm::Protocol::Common::Params::HostEndPoints {
     m_queue = Env::Clients::get()->get_rgr_queue(endpoints);
   }
 
+  SWC_CAN_INLINE
   void put(const Comm::client::ConnQueue::ReqBase::Ptr& req) {
     m_queue->put(req);
   }

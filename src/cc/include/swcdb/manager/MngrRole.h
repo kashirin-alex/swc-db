@@ -22,6 +22,7 @@ class MngrRole final {
 
   //~MngrRole() { }
 
+  SWC_CAN_INLINE
   bool running() const noexcept {
     return m_run;
   }

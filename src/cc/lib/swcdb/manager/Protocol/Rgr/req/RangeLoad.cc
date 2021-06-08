@@ -10,6 +10,7 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace Rgr { namespace Req {
 
 
+SWC_SHOULD_INLINE
 RangeLoad::RangeLoad(const Manager::Ranger::Ptr& rgr,
                      const Manager::Column::Ptr& col,
                      const Manager::Range::Ptr& range,

@@ -28,6 +28,7 @@ class Range final {
   const ColumnCfg::Ptr  cfg;
   const rid_t           rid;
 
+  SWC_CAN_INLINE
   Range(const ColumnCfg::Ptr& cfg, const rid_t rid)
         : cfg(cfg), rid(rid),
           m_path(DB::RangeBase::get_path(cfg->cid, rid)),

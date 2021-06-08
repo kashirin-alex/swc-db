@@ -15,8 +15,10 @@ namespace Mngr { namespace Params {
 class RgrUpdate final : public Serializable {
   public:
 
+  SWC_CAN_INLINE
   RgrUpdate() noexcept { }
 
+  SWC_CAN_INLINE
   RgrUpdate(const Manager::RangerList& hosts, bool sync_all)
             : hosts(hosts), sync_all(sync_all) {
   }
@@ -48,12 +50,12 @@ class RgrUpdate final : public Serializable {
 
   void internal_decode(const uint8_t** bufp, size_t* remainp) override {
     sync_all = Serialization::decode_bool(bufp, remainp);
-    size_t len = Serialization::decode_vi32(bufp, remainp);
     hosts.clear();
-    hosts.resize(len);
-    for(size_t i =0; i<len; ++i)
-      (hosts[i] = std::make_shared<Manager::Ranger>())
-        ->decode(bufp, remainp);
+    hosts.resize(Serialization::decode_vi32(bufp, remainp));
+    for(auto& h : hosts) {
+      h.reset(new Manager::Ranger());
+      h->decode(bufp, remainp);
+    }
   }
 
 };

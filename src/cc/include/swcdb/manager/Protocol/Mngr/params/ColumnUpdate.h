@@ -15,13 +15,16 @@ namespace Mngr { namespace Params {
 class ColumnUpdate final : public Serializable {
   public:
 
+  SWC_CAN_INLINE
   ColumnUpdate() noexcept { }
 
+  SWC_CAN_INLINE
   ColumnUpdate(ColumnMng::Function function,
                const DB::Schema::Ptr& schema, int err, uint64_t id) noexcept
               : function(function), id(id), schema(schema), err(err) {
   }
 
+  SWC_CAN_INLINE
   ColumnUpdate(ColumnMng::Function function,
                cid_t cid_begin, cid_t cid_end,
                std::vector<cid_t>&& columns) noexcept
@@ -113,7 +116,7 @@ class ColumnUpdate final : public Serializable {
         break;
       }
       default : {
-        schema = std::make_shared<DB::Schema>(bufp, remainp);
+        schema.reset(new DB::Schema(bufp, remainp));
         err = Serialization::decode_vi32(bufp, remainp);
         break;
       }

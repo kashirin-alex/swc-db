@@ -16,7 +16,7 @@ MngrRole::MngrRole(const Comm::IoContextPtr& app_io,
       m_local_active_role(DB::Types::MngrRole::NONE),
       m_check_timer(asio::high_resolution_timer(app_io->executor())),
       m_run(true),
-      m_mngr_inchain(std::make_shared<Comm::client::ConnQueue>(app_io)),
+      m_mngr_inchain(new Comm::client::ConnQueue(app_io)),
       cfg_conn_probes(
         Env::Config::settings()->get<Config::Property::V_GINT32>(
           "swc.mngr.role.connection.probes")),
@@ -62,15 +62,18 @@ void MngrRole::schedule_checkin(uint32_t t_ms) {
   SWC_LOGF(LOG_DEBUG, "MngrRole managers_checkin scheduled in ms=%u", t_ms);
 }
 
+SWC_SHOULD_INLINE
 bool MngrRole::is_active(cid_t cid) {
   auto host = active_mngr(cid);
   return host && Comm::has_endpoint(host->endpoints, m_local_endpoints);
 }
 
+SWC_SHOULD_INLINE
 bool MngrRole::is_active_role(uint8_t role) {
   return m_local_active_role & role;
 }
 
+SWC_SHOULD_INLINE
 MngrStatus::Ptr MngrRole::active_mngr(cid_t cid) {
   Core::SharedLock lock(m_mutex);
   for(auto& host : m_states) {
@@ -83,6 +86,7 @@ MngrStatus::Ptr MngrRole::active_mngr(cid_t cid) {
   return nullptr;
 }
 
+SWC_SHOULD_INLINE
 MngrStatus::Ptr MngrRole::active_mngr_role(uint8_t role) {
   Core::SharedLock lock(m_mutex);
   for(auto& host : m_states) {
@@ -116,10 +120,12 @@ void MngrRole::get_states(MngrsStatus& states) {
   states.assign(m_states.begin(), m_states.end());
 }
 
+SWC_SHOULD_INLINE
 Comm::EndPoint MngrRole::get_inchain_endpoint() const {
   return m_mngr_inchain->get_endpoint_remote();
 }
 
+SWC_SHOULD_INLINE
 void MngrRole::req_mngr_inchain(
       const Comm::client::ConnQueue::ReqBase::Ptr& req) {
   m_mngr_inchain->put(req);
@@ -228,11 +234,13 @@ void MngrRole::fill_states(const MngrsStatus& states, uint64_t token,
       if(!token)
         token = m_local_token;
 
-      req_mngr_inchain(std::make_shared<Comm::Protocol::Mngr::Req::MngrState>(
-        cb, m_states, token, m_local_endpoints[0],
-        (cfg_conn_probes->get() * cfg_conn_timeout->get()
-        + cfg_req_timeout->get()) * m_states.size()
-        ));
+      req_mngr_inchain(Comm::Protocol::Mngr::Req::MngrState::Ptr(
+        new Comm::Protocol::Mngr::Req::MngrState(
+          cb, m_states, token, m_local_endpoints[0],
+          (cfg_conn_probes->get() * cfg_conn_timeout->get()
+          + cfg_req_timeout->get()) * m_states.size()
+        )
+      ));
       //  schedule_checkin(3000);
       return;
     }

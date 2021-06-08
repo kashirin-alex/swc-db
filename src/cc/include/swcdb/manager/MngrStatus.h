@@ -17,8 +17,10 @@ class MngrStatus final : public Comm::Protocol::Common::Params::HostEndPoints {
 
   typedef std::shared_ptr<MngrStatus> Ptr;
 
+  SWC_CAN_INLINE
   MngrStatus() noexcept {}
 
+  SWC_CAN_INLINE
   MngrStatus(uint8_t role, cid_t begin, cid_t end,
              const Comm::EndPoints& points,
              Comm::ConnHandlerPtr c, uint32_t pr)
@@ -30,6 +32,7 @@ class MngrStatus final : public Comm::Protocol::Common::Params::HostEndPoints {
 
   //~MngrStatus() { }
 
+  SWC_CAN_INLINE
   bool eq_grouping(const MngrStatus& other) const {
     return role == other.role &&
            cid_begin == other.cid_begin &&

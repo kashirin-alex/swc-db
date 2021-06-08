@@ -26,7 +26,7 @@ class Mngr final {
 
   static void init(const Comm::EndPoints& endpoints) {
     SWC_ASSERT(!m_env);
-    m_env = std::make_shared<Mngr>(endpoints);
+    m_env.reset(new Mngr(endpoints));
   }
 
   static Comm::IoContextPtr io() noexcept {
@@ -88,7 +88,7 @@ class Mngr final {
         cfg_ram_release_rate(100, nullptr),
         _reporting(
           SWC::Env::Config::settings()->get_bool("swc.mngr.metrics.enabled")
-            ? std::make_shared<Manager::Metric::Reporting>(app_io)
+            ? new Manager::Metric::Reporting(app_io)
             : nullptr
         ),
         _resources(

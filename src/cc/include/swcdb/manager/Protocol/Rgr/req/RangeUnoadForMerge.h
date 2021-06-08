@@ -14,6 +14,7 @@ namespace Rgr { namespace Req {
 
 class RangeUnoadForMerge : public client::ConnQueue::ReqBase {
   public:
+  typedef std::shared_ptr<RangeUnoadForMerge> Ptr;
 
   RangeUnoadForMerge(
     const Manager::Ranger::Ptr& rgr,

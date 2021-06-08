@@ -13,6 +13,7 @@ namespace Rgr { namespace Req {
 
 class ReportRes : public client::ConnQueue::ReqBase {
   public:
+  typedef std::shared_ptr<ReportRes> Ptr;
 
   ReportRes(const Manager::Ranger::Ptr& rgr);
 

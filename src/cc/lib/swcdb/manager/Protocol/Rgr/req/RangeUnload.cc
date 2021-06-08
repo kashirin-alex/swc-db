@@ -11,6 +11,7 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace Rgr { namespace Req {
 
 
+SWC_SHOULD_INLINE
 RangeUnload::RangeUnload(const Manager::Ranger::Ptr& rgr,
                          const Manager::Column::Ptr& col,
                          const Manager::Range::Ptr& range,

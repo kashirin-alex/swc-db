@@ -9,6 +9,7 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace Rgr { namespace Req {
 
 
+SWC_SHOULD_INLINE
 RangeUnoadForMerge::RangeUnoadForMerge(
     const Manager::Ranger::Ptr& rgr,
     const Manager::ColumnHealthCheck::ColumnMerger::RangesMerger::Ptr& merger,

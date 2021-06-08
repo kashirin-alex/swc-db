@@ -10,6 +10,7 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace Rgr { namespace Req {
 
 
+SWC_SHOULD_INLINE
 ReportRes::ReportRes(const Manager::Ranger::Ptr& rgr)
                     : client::ConnQueue::ReqBase(Buffers::make(1)),
                       rgr(rgr) {

@@ -13,6 +13,7 @@ namespace Rgr { namespace Req {
 
 class ColumnsUnload : public client::ConnQueue::ReqBase  {
   public:
+  typedef std::shared_ptr<ColumnsUnload> Ptr;
 
   ColumnsUnload(const Manager::Ranger::Ptr& rgr,
                 cid_t cid_begin, cid_t cid_end);

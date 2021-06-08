@@ -67,6 +67,7 @@ void Rangers::stop(bool shuttingdown) {
     wait_health_check();
 }
 
+SWC_SHOULD_INLINE
 bool Rangers::empty() noexcept {
   Core::MutexSptd::scope lock(m_mutex);
   return m_rangers.empty();
@@ -135,6 +136,7 @@ Ranger::Ptr Rangers::rgr_get(const rgrid_t rgrid) {
   return nullptr;
 }
 
+SWC_SHOULD_INLINE
 void Rangers::rgr_get(const rgrid_t rgrid, Comm::EndPoints& endpoints) {
   Core::MutexSptd::scope lock(m_mutex);
   for(auto& rgr : m_rangers) {
@@ -233,6 +235,7 @@ void Rangers::rgr_shutdown(rgrid_t, const Comm::EndPoints& endpoints) {
 }
 
 
+SWC_SHOULD_INLINE
 void Rangers::sync() {
   changes(m_rangers, true);
 }
@@ -295,9 +298,10 @@ void Rangers::update_status(const RangerList& new_rgr_status, bool sync_all) {
                       h->state == RangerState::MARKED_OFFLINE) {
               cid_t cid_begin, cid_end = DB::Schema::NO_CID;
               if(Env::Mngr::mngd_columns()->active(cid_begin, cid_end))
-                h->put(
-                  std::make_shared<Comm::Protocol::Rgr::Req::ColumnsUnload>(
-                    h, cid_begin, cid_end));
+                h->put(Comm::Protocol::Rgr::Req::ColumnsUnload::Ptr(
+                  new Comm::Protocol::Rgr::Req::ColumnsUnload(
+                    h, cid_begin, cid_end)
+                ));
               h->failures.store(0);
             }
           } else {
@@ -347,9 +351,9 @@ void Rangers::update_status(const RangerList& new_rgr_status, bool sync_all) {
       auto col = Env::Mngr::columns()->get_column(err, range->cfg->cid);
       if(err || !h->can_rebalance())
         break;
-      h->put(
-        std::make_shared<Comm::Protocol::Rgr::Req::RangeUnload>(
-          h, col, range, true));
+      h->put(Comm::Protocol::Rgr::Req::RangeUnload::Ptr(
+        new Comm::Protocol::Rgr::Req::RangeUnload(h, col, range, true)
+      ));
       h->interm_ranges.fetch_add(1);
     }
     if(h->rebalance() && !sync_all) {
@@ -412,8 +416,11 @@ bool Rangers::update(const Column::Ptr& col, const DB::Schema::Ptr& schema,
         undergo = true;
         if(ack_required) {
           rgr->put(
-            std::make_shared<Comm::Protocol::Rgr::Req::ColumnUpdate>(
-              rgr, col, schema, req_id));
+            Comm::Protocol::Rgr::Req::ColumnUpdate::Ptr(
+              new Comm::Protocol::Rgr::Req::ColumnUpdate(
+                rgr, col, schema, req_id)
+            )
+          );
         }
       }
     }
@@ -428,9 +435,9 @@ void Rangers::column_delete(const DB::Schema::Ptr& schema, uint64_t req_id,
     for(auto& rgr : m_rangers) {
       if(rgrid != rgr->rgrid)
         continue;
-      rgr->put(
-        std::make_shared<Comm::Protocol::Rgr::Req::ColumnDelete>(
-          rgr, schema, req_id));
+      rgr->put(Comm::Protocol::Rgr::Req::ColumnDelete::Ptr(
+        new Comm::Protocol::Rgr::Req::ColumnDelete(rgr, schema, req_id)
+      ));
     }
   }
 }
@@ -443,9 +450,9 @@ void Rangers::column_compact(const Column::Ptr& col) {
     for(auto& rgr : m_rangers) {
       if(rgr->failures < cfg_rgr_failures->get() &&
          rgr->state == RangerState::ACK && rgr->rgrid == rgrid) {
-        rgr->put(
-          std::make_shared<Comm::Protocol::Rgr::Req::ColumnCompact>(
-            col->cfg->cid));
+        rgr->put(Comm::Protocol::Rgr::Req::ColumnCompact::Ptr(
+          new Comm::Protocol::Rgr::Req::ColumnCompact(col->cfg->cid)
+        ));
       }
     }
   }
@@ -543,8 +550,9 @@ void Rangers::assign_ranges_run() {
     if(!state)
       m_assign.stop();
 
-    rgr->put(std::make_shared<Comm::Protocol::Rgr::Req::RangeLoad>(
-      rgr, col, range, schema));
+    rgr->put(Comm::Protocol::Rgr::Req::RangeLoad::Ptr(
+      new Comm::Protocol::Rgr::Req::RangeLoad(rgr, col, range, schema)
+    ));
     if(!state)
       return;
   }
@@ -683,9 +691,11 @@ void Rangers::_changes(const RangerList& hosts, bool sync_all) {
     size_t n = hosts.cend() - from;
     it += n > 1000 ? 1000 : n;
     Env::Mngr::role()->req_mngr_inchain(
-      std::make_shared<Comm::Protocol::Mngr::Req::RgrUpdate>(
-        RangerList(from, it),
-        sync_all
+      Comm::Protocol::Mngr::Req::RgrUpdate::Ptr(
+        new Comm::Protocol::Mngr::Req::RgrUpdate(
+          RangerList(from, it),
+          sync_all
+        )
       )
     );
   }

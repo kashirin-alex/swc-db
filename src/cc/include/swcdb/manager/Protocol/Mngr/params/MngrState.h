@@ -15,11 +15,14 @@ namespace Mngr { namespace Params {
 class MngrState final : public Serializable {
   public:
 
-  MngrState();
+  SWC_CAN_INLINE
+  MngrState() noexcept { }
 
+  SWC_CAN_INLINE
   MngrState(Manager::MngrsStatus states,
-            uint64_t token,
-            const EndPoint& mngr_host);
+            uint64_t token, const EndPoint& mngr_host)
+            : states(states), token(token), mngr_host(mngr_host) {
+  }
 
   Manager::MngrsStatus  states;
   uint64_t              token;

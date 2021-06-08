@@ -13,6 +13,7 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace Rgr { namespace Req {
 
 
+SWC_SHOULD_INLINE
 ColumnsUnload::ColumnsUnload(const Manager::Ranger::Ptr& rgr,
                              cid_t cid_begin, cid_t cid_end)
             : client::ConnQueue::ReqBase(
@@ -65,7 +66,7 @@ void ColumnsUnload::handle(ConnHandlerPtr, const Event::Ptr& ev) {
       if(!assigned || assigned->state != Manager::RangerState::ACK)
         continue;
 
-      assigned->put(std::make_shared<RangeUnload>(assigned, col, range));
+      assigned->put(RangeUnload::Ptr(new RangeUnload(assigned, col, range)));
     }
   }
 }

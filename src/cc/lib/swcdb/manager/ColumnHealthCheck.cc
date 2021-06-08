@@ -15,6 +15,7 @@
 namespace SWC { namespace Manager {
 
 
+SWC_SHOULD_INLINE
 ColumnHealthCheck::RangerCheck::RangerCheck(
                 const ColumnHealthCheck::Ptr& col_checker,
                 const Ranger::Ptr& rgr)
@@ -95,9 +96,9 @@ void ColumnHealthCheck::RangerCheck::_add_range(const Range::Ptr& range) {
   } else {
     col_checker->completion.increment();
     ++m_checkings;
-    rgr->put(
-      std::make_shared<Comm::Protocol::Rgr::Req::RangeIsLoaded>(
-        shared_from_this(), range));
+    rgr->put(Comm::Protocol::Rgr::Req::RangeIsLoaded::Ptr(
+      new Comm::Protocol::Rgr::Req::RangeIsLoaded(shared_from_this(), range)
+    ));
     SWC_LOGF(LOG_DEBUG, "Column-Health START range(%lu/%lu) rgr=%lu",
              range->cfg->cid, range->rid, rgr->rgrid.load());
   }
@@ -106,6 +107,7 @@ void ColumnHealthCheck::RangerCheck::_add_range(const Range::Ptr& range) {
 
 
 
+SWC_SHOULD_INLINE
 ColumnHealthCheck::ColumnHealthCheck(const Column::Ptr& col,
                                      int64_t check_ts, uint32_t check_intval)
                                     : col(col), check_ts(check_ts),
@@ -190,8 +192,8 @@ void ColumnHealthCheck::finishing(bool finished_range) {
     return;
   }
 
-  auto merger = std::make_shared<ColumnMerger>(
-    shared_from_this(), std::move(m_mergeable_ranges));
+  ColumnMerger::Ptr merger(new ColumnMerger(
+    shared_from_this(), std::move(m_mergeable_ranges)));
   if(DB::Types::SystemColumn::is_master(col->cfg->cid)) {
     return merger->run_master();
   }
@@ -226,6 +228,7 @@ void ColumnHealthCheck::finishing(bool finished_range) {
 
 
 
+SWC_SHOULD_INLINE
 ColumnHealthCheck::ColumnMerger::ColumnMerger(
             const ColumnHealthCheck::Ptr& col_checker,
             std::vector<Range::Ptr>&& ranges) noexcept
@@ -347,6 +350,7 @@ void ColumnHealthCheck::ColumnMerger::completion() {
 
 
 
+SWC_SHOULD_INLINE
 ColumnHealthCheck::ColumnMerger::RangesMerger::RangesMerger(
                 const ColumnMerger::Ptr& col_merger,
                 std::vector<Range::Ptr>&& ranges) noexcept
@@ -360,12 +364,13 @@ void ColumnHealthCheck::ColumnMerger::RangesMerger::run() {
     if(rgrid) {
       auto rgr = Env::Mngr::rangers()->rgr_get(rgrid);
       if(rgr) {
-        rgr->put(
-          std::make_shared<Comm::Protocol::Rgr::Req::RangeUnoadForMerge>(
-             rgr, shared_from_this(), range));
-          SWC_LOGF(LOG_DEBUG,
-            "Column-Health MERGE-UNLOAD range(%lu/%lu) rgr=%lu",
-            range->cfg->cid, range->rid, rgr->rgrid.load());
+        rgr->put(Comm::Protocol::Rgr::Req::RangeUnoadForMerge::Ptr(
+          new Comm::Protocol::Rgr::Req::RangeUnoadForMerge(
+             rgr, shared_from_this(), range)
+        ));
+        SWC_LOGF(LOG_DEBUG,
+          "Column-Health MERGE-UNLOAD range(%lu/%lu) rgr=%lu",
+          range->cfg->cid, range->rid, rgr->rgrid.load());
         continue;
       }
     }

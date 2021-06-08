@@ -15,10 +15,12 @@ namespace Rgr { namespace Req {
 
 class RangeIsLoaded : public client::ConnQueue::ReqBase {
   public:
+  typedef std::shared_ptr<RangeIsLoaded> Ptr;
 
   const Manager::ColumnHealthCheck::RangerCheck::Ptr   checker;
   const Manager::Range::Ptr                            range;
 
+  SWC_CAN_INLINE
   RangeIsLoaded(const Manager::ColumnHealthCheck::RangerCheck::Ptr& checker,
                 const Manager::Range::Ptr& range, uint32_t timeout=60000)
                 : client::ConnQueue::ReqBase(

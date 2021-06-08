@@ -10,6 +10,8 @@
 namespace SWC { namespace Comm { namespace Protocol {
 namespace Rgr { namespace Req {
 
+
+SWC_SHOULD_INLINE
 ColumnUpdate::ColumnUpdate(const Manager::Ranger::Ptr& rgr,
                            const Manager::Column::Ptr& col,
                            const DB::Schema::Ptr& schema,
