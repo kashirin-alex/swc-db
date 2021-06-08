@@ -17,6 +17,7 @@ class RangeLocateScan : public ReqScan {
 
   typedef std::shared_ptr<RangeLocateScan> Ptr;
 
+  SWC_CAN_INLINE
   RangeLocateScan(const Comm::ConnHandlerPtr& conn,
                   const Comm::Event::Ptr& ev,
                   const DB::Cell::Key& range_begin,

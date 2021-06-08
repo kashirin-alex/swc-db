@@ -24,8 +24,8 @@ void column_delete(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
 
     auto col = Env::Rgr::columns()->get_column(params.cid);
     if(col)
-      col->add_managing(std::make_shared<Ranger::Callback::ColumnDelete>(
-        conn, ev, params.cid));
+      col->add_managing(Ranger::Callback::ColumnDelete::Ptr(
+        new Ranger::Callback::ColumnDelete(conn, ev, params.cid)));
     else
       conn->response_ok(ev);
 

@@ -7,6 +7,7 @@
 
 namespace SWC { namespace Ranger { namespace CommitLog {
 
+SWC_SHOULD_INLINE
 Compact::Group::Group(Compact* compact, uint8_t worker)
                       : worker(worker), error(Error::OK),
                         compact(compact),
@@ -20,6 +21,7 @@ Compact::Group::Group(Compact* compact, uint8_t worker)
                         ) {
 }
 
+SWC_SHOULD_INLINE
 Compact::Group::~Group() {
   if(!m_cells.empty())
     Env::Rgr::res().less_mem_usage(m_cells.size_of_internal());
@@ -98,7 +100,7 @@ void Compact::Group::write() {
   do {
     DynamicBuffer cells;
     DB::Cells::Interval interval(m_cells.key_seq);
-    auto buff_write = std::make_shared<StaticBuffer>();
+    StaticBuffer::Ptr buff_write(new StaticBuffer());
     sz = m_cells.size_of_internal();
     m_cells.write_and_free(
       cells, cells_count = 0, interval,

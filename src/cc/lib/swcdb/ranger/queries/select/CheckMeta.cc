@@ -10,12 +10,14 @@
 namespace SWC { namespace Ranger { namespace Query { namespace Select {
 
 
+SWC_SHOULD_INLINE
 void CheckMeta::run(const RangePtr& range,
                     const Callback::RangeLoad::Ptr& req) {
-  auto hdlr = std::make_shared<CheckMeta>(range, req);
+  Ptr hdlr(new CheckMeta(range, req));
   hdlr->scan(range->cfg->key_seq, hdlr->cid, hdlr->spec);
 }
 
+SWC_SHOULD_INLINE
 CheckMeta::CheckMeta(const RangePtr& range,
                      const Callback::RangeLoad::Ptr& req)
           : client::Query::Select::Handlers::BaseSingleColumn(

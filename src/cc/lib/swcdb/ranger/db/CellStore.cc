@@ -49,6 +49,7 @@ Read::Ptr Read::make(int& err, const csid_t csid,
   );
 }
 
+SWC_SHOULD_INLINE
 bool Read::load_trailer(int& err, FS::SmartFd::Ptr& smartfd,
                          uint32_t& cell_revs,
                          uint32_t& blks_idx_count,
@@ -115,6 +116,7 @@ bool Read::load_trailer(int& err, FS::SmartFd::Ptr& smartfd,
   return loaded;
 }
 
+SWC_SHOULD_INLINE
 void Read::load_blocks_index(int& err, FS::SmartFd::Ptr& smartfd,
                               DB::Cell::Key& prev_key_end,
                               DB::Cell::Key& key_end,
@@ -250,6 +252,7 @@ void Read::load_blocks_index(int& err, FS::SmartFd::Ptr& smartfd,
 
 //
 
+SWC_SHOULD_INLINE
 Read::Read(const csid_t csid,
            DB::Cell::Key&& prev_key_end,
            DB::Cell::Key&& key_end,
@@ -284,6 +287,7 @@ size_t Read::size_of() const {
       ;
 }
 
+SWC_SHOULD_INLINE
 const std::string& Read::filepath() const {
   return smartfd->filepath();
 }
@@ -403,6 +407,7 @@ void Read::print(std::ostream& out, bool minimal) const {
 
 
 
+SWC_SHOULD_INLINE
 Write::Write(const csid_t csid, std::string&& filepath,
              const RangePtr& range, uint32_t cell_revs)
             : csid(csid),
@@ -457,6 +462,7 @@ void Write::block(int& err, DynamicBuffer& blk_buff) {
   );
 }
 
+SWC_SHOULD_INLINE
 void Write::write_blocks_index(int& err, uint32_t& blks_idx_count) {
   interval.free();
   if(m_blocks.empty())
@@ -529,6 +535,7 @@ void Write::write_blocks_index(int& err, uint32_t& blks_idx_count) {
   } while (it != m_blocks.end());
 }
 
+SWC_SHOULD_INLINE
 void Write::write_trailer(int& err) {
   uint64_t blks_idx_offset = size;
   uint32_t blks_idx_count = 0;
@@ -554,6 +561,7 @@ void Write::write_trailer(int& err) {
   size += buff_write.size;
 }
 
+SWC_SHOULD_INLINE
 void Write::close_and_validate(int& err) {
   Env::FsInterface::interface()->close(err, smartfd);
 

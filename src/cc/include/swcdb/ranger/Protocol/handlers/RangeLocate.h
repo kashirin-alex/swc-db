@@ -47,16 +47,16 @@ void range_locate(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
 
   } else {
 
-    Ranger::ReqScan::Ptr req;
+    Ranger::ReqScan* req;
     if(params.flags & Params::RangeLocateReq::COMMIT) {
-      req = std::make_shared<Ranger::Callback::RangeLocateScanCommit>(
+      req = new Ranger::Callback::RangeLocateScanCommit(
         conn, ev,
         params.range_begin, //params.range_end,
         range,
         params.flags
       );
     } else {
-      req = std::make_shared<Ranger::Callback::RangeLocateScan>(
+      req = new Ranger::Callback::RangeLocateScan(
         conn, ev,
         params.range_begin, params.range_end,
         range,
@@ -67,7 +67,7 @@ void range_locate(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
         req->spec.offset_key.copy(params.range_offset);
     }
 
-    range->scan(req);
+    range->scan(Ranger::ReqScan::Ptr(req));
   }
 
 }

@@ -31,6 +31,7 @@ class ManageBase : public Comm::ResponseCallback {
 
   Action action;
 
+  SWC_CAN_INLINE
   ManageBase(const Comm::ConnHandlerPtr& conn,
              const Comm::Event::Ptr& ev,
              Action action)

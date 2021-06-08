@@ -81,7 +81,9 @@ class ReqScan  : public DB::Cells::ReqScan {
 
 class ReqScanBlockLoader : public ReqScan {
   public:
+  typedef std::shared_ptr<ReqScanBlockLoader>  Ptr;
 
+  SWC_CAN_INLINE
   ReqScanBlockLoader(uint32_t blk_size) noexcept
       : ReqScan(ReqScan::Type::BLK_PRELOAD, false, 1, blk_size) {
   }
@@ -104,7 +106,7 @@ class ReqScanTest : public ReqScan {
 
   typedef std::shared_ptr<ReqScanTest>  Ptr;
 
-  static Ptr make() { return std::make_shared<ReqScanTest>(); }
+  static Ptr make() { return Ptr(new ReqScanTest()); }
 
   ReqScanTest() noexcept { }
 

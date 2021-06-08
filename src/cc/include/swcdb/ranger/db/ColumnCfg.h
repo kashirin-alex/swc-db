@@ -44,6 +44,7 @@ class ColumnCfg final : public Core::NotMovableSharedPtr<ColumnCfg> {
   mutable Core::AtomicBool                        deleting;
 
 
+  SWC_CAN_INLINE
   ColumnCfg(const cid_t cid, const DB::Schema& schema)
       : cid(cid),
         range_type(
@@ -84,14 +85,17 @@ class ColumnCfg final : public Core::NotMovableSharedPtr<ColumnCfg> {
     compact_perc.store(schema.compact_percent);
   }
 
+  SWC_CAN_INLINE
   DB::Types::Column column_type() const {
     return col_type.load();
   }
 
+  SWC_CAN_INLINE
   uint32_t cell_versions() const {
     return c_versions.load();
   }
 
+  SWC_CAN_INLINE
   uint64_t cell_ttl() const {
     return c_ttl.load();
   }

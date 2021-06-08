@@ -75,6 +75,7 @@ void Read::load_header(int& err, FS::SmartFd::Ptr& smartfd,
   }
 }
 
+SWC_SHOULD_INLINE
 Read::Read(Header&& header) noexcept
           : header(std::move(header)), cellstore(nullptr),
             m_state(header.size_plain ? State::NONE : State::LOADED),
@@ -83,6 +84,7 @@ Read::Read(Header&& header) noexcept
   Env::Rgr::res().more_mem_usage(size_of());
 }
 
+SWC_SHOULD_INLINE
 void Read::init(CellStore::Read* _cellstore) noexcept {
   cellstore = _cellstore;
 }
@@ -119,6 +121,7 @@ bool Read::load(BlockLoader* loader) {
   }
 }
 
+SWC_SHOULD_INLINE
 void Read::load() {
   Env::Rgr::post([this](){ load_open(Error::OK); });
 }
@@ -318,6 +321,7 @@ void Read::load_finish(int err) {
 
 
 
+SWC_SHOULD_INLINE
 Write::Write(Header&& header) noexcept
             : header(std::move(header)), released(false) {
   Env::Rgr::res().more_mem_usage(
@@ -334,6 +338,7 @@ Write::~Write() {
   );
 }
 
+SWC_SHOULD_INLINE
 void Write::encode(int& err, DynamicBuffer& cells, DynamicBuffer& output,
                    Header& header) {
   header.size_plain = cells.fill();

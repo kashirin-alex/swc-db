@@ -7,6 +7,7 @@
 namespace SWC { namespace Ranger { namespace Callback {
 
 
+SWC_SHOULD_INLINE
 ColumnsUnload::ColumnsUnload(const Comm::ConnHandlerPtr& conn,
                              const Comm::Event::Ptr& ev,
                              bool completely) noexcept

@@ -95,15 +95,16 @@ void Columns::unload(cid_t cid_begin, cid_t cid_end,
 }
 
 void Columns::unload_all(bool validation) {
-  auto req = std::make_shared<Callback::ColumnsUnloadAll>(validation);
+  Callback::ColumnsUnloadAll::Ptr req(
+    new Callback::ColumnsUnloadAll(validation));
   unload(DB::Types::SystemColumn::CID_META_END + 1, 0, req);
   req->wait();
 
-  req = std::make_shared<Callback::ColumnsUnloadAll>(validation);
+  req.reset(new Callback::ColumnsUnloadAll(validation));
   unload(DB::Types::SystemColumn::CID_META_BEGIN, 0, req);
   req->wait();
 
-  req = std::make_shared<Callback::ColumnsUnloadAll>(validation);
+  req.reset(new Callback::ColumnsUnloadAll(validation));
   unload(0, 0, req);
   req->wait();
 }

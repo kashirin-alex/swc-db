@@ -98,6 +98,7 @@ Mutable::Iterator Mutable::It(size_t offset) noexcept {
   return Iterator(&buckets, offset);
 }
 
+SWC_SHOULD_INLINE
 size_t Mutable::size_of_internal() const noexcept {
   return  _bytes
         + _size * (sizeof(Cell*) + sizeof(Cell))

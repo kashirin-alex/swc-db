@@ -7,6 +7,7 @@
 namespace SWC { namespace Ranger { namespace Callback {
 
 
+SWC_SHOULD_INLINE
 ColumnsUnloadAll::ColumnsUnloadAll(bool validation)
                                   : ColumnsUnload(nullptr, nullptr, false),
                                     validation(validation)  {

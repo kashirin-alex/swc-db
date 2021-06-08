@@ -18,11 +18,13 @@ struct CompactRange::InBlock final : Core::QueuePointer<InBlock*>::Pointer {
 
   const bool is_last;
 
+  SWC_CAN_INLINE
   InBlock(const DB::Types::KeySeq key_seq) noexcept
           : is_last(true),
             header(key_seq), err(Error::OK), last_cell(nullptr) {
   }
 
+  SWC_CAN_INLINE
   InBlock(const DB::Types::KeySeq key_seq, size_t size,
           InBlock* inblock = nullptr)
           : is_last(false),
@@ -40,6 +42,7 @@ struct CompactRange::InBlock final : Core::QueuePointer<InBlock*>::Pointer {
 
   //~InBlock() { }
 
+  SWC_CAN_INLINE
   size_t cell_avg_size() const {
     return cells.fill()/header.cells_count;
   }
@@ -574,12 +577,12 @@ csid_t CompactRange::create_cs(int& err) {
     Core::MutexSptd::scope lock(m_mutex);
     csid += cellstores.size();
   }
-  cs_writer = std::make_shared<CellStore::Write>(
+  cs_writer.reset(new CellStore::Write( 
     csid,
     range->get_path_cs_on(Range::CELLSTORES_TMP_DIR, csid),
     range,
     spec.flags.max_versions
-  );
+  ));
   cs_writer->create(err, -1, range->cfg->file_replication(), blk_size);
 
   if(!m_chk_final) {

@@ -24,11 +24,12 @@ class Range::MetaRegOnLoadReq : public Query::Update::BaseMeta {
 
   static Ptr make(const RangePtr& range,
                   const Callback::RangeLoad::Ptr& req) {
-    return std::make_shared<MetaRegOnLoadReq>(range, req);
+    return Ptr(new MetaRegOnLoadReq(range, req));
   }
 
   Callback::RangeLoad::Ptr req;
 
+  SWC_CAN_INLINE
   MetaRegOnLoadReq(const RangePtr& range, const Callback::RangeLoad::Ptr& req)
                   : Query::Update::BaseMeta(range), req(req) {
   }
@@ -146,24 +147,29 @@ bool Range::can_be_merged() {
         !blocks.cellstores.size_bytes(false);
 }
 
+SWC_SHOULD_INLINE
 void Range::_get_interval(DB::Cells::Interval& interval) const {
   interval.copy(m_interval);
 }
 
+SWC_SHOULD_INLINE
 void Range::_get_interval(DB::Cell::Key& key_begin,
                           DB::Cell::Key& key_end) const {
   key_begin.copy(m_interval.key_begin);
   key_end.copy(m_interval.key_end);
 }
 
+SWC_SHOULD_INLINE
 bool Range::_is_any_begin() const {
   return m_interval.key_begin.empty();
 }
 
+SWC_SHOULD_INLINE
 bool Range::_is_any_end() const {
   return m_interval.key_end.empty();
 }
 
+SWC_SHOULD_INLINE
 void Range::schema_update(bool compact) {
   blocks.schema_update();
   if(compact)
@@ -193,17 +199,20 @@ void Range::state(int& err) const {
   }
 }
 
+SWC_SHOULD_INLINE
 bool Range::state_unloading() const noexcept {
   return Env::Rgr::is_shuttingdown() ||
          (Env::Rgr::is_not_accepting() &&
           DB::Types::SystemColumn::is_data(cfg->cid));
 }
 
+SWC_SHOULD_INLINE
 void Range::add(Callback::RangeQueryUpdate* req) {
   m_q_add.push(req);
   run_add_queue();
 }
 
+SWC_SHOULD_INLINE
 void Range::scan(const ReqScan::Ptr& req) {
   {
     Core::ScopedLock lock(m_mutex);
@@ -242,6 +251,7 @@ void Range::scan(const ReqScan::Ptr& req) {
   blocks.processing_decrement();
 }
 
+SWC_SHOULD_INLINE
 void Range::scan_internal(const ReqScan::Ptr& req) {
   blocks.scan(std::move(req));
 }
@@ -427,10 +437,12 @@ bool Range::compact_possible(bool minor) {
   return true;
 }
 
+SWC_SHOULD_INLINE
 void Range::compact_require(bool require) {
   m_require_compact.store(require);
 }
 
+SWC_SHOULD_INLINE
 bool Range::compact_required() {
   return m_require_compact;
 }
@@ -642,8 +654,9 @@ void Range::last_rgr_chk(int &err, const Callback::RangeLoad::Ptr& req) {
     );
 
     Env::Clients::get()->get_rgr_queue(rs_last->endpoints)->put(
-      std::make_shared<Comm::Protocol::Rgr::Req::RangeUnload>(
-        shared_from_this(), req)
+      Comm::Protocol::Rgr::Req::RangeUnload::Ptr(
+        new Comm::Protocol::Rgr::Req::RangeUnload(shared_from_this(), req)
+      )
     );
 
   } else {
@@ -842,6 +855,7 @@ bool Range::wait(uint8_t from_state, bool incr) {
   return waited;
 }
 
+SWC_SHOULD_INLINE
 void Range::run_add_queue() {
   if(m_adding.fetch_add(1) < Env::Rgr::get()->cfg_req_add_concurrency->get())
     Env::Rgr::post([ptr=shared_from_this()](){ ptr->_run_add_queue(); });
@@ -855,12 +869,14 @@ class Range::MetaRegOnAddReq : public Query::Update::BaseMeta {
   public:
   typedef std::shared_ptr<MetaRegOnAddReq>     Ptr;
 
+  SWC_CAN_INLINE
   static Ptr make(const RangePtr& range, Callback::RangeQueryUpdate* req) {
-    return std::make_shared<MetaRegOnAddReq>(range, req);
+    return Ptr(new MetaRegOnAddReq(range, req));
   }
 
   Callback::RangeQueryUpdate* req;
 
+  SWC_CAN_INLINE
   MetaRegOnAddReq(const RangePtr& range, Callback::RangeQueryUpdate* req)
                 : Query::Update::BaseMeta(range), req(req) {
   }

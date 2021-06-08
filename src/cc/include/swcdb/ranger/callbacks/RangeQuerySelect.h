@@ -14,6 +14,9 @@ namespace SWC { namespace Ranger { namespace Callback {
 class RangeQuerySelect : public ReqScan {
   public:
 
+  typedef std::shared_ptr<RangeQuerySelect> Ptr;
+
+  SWC_CAN_INLINE
   RangeQuerySelect(const Comm::ConnHandlerPtr& conn,
                    const Comm::Event::Ptr& ev,
                    DB::Specs::Interval&& req_spec,
@@ -44,10 +47,12 @@ class RangeQuerySelect : public ReqScan {
     Env::Rgr::res().less_mem_usage(size_of());
   }
 
+  SWC_CAN_INLINE
   size_t size_of() const {
     return sizeof(*this) + sizeof(Ptr) + spec.size_of_internal();
   }
 
+  SWC_CAN_INLINE
   void ensure_size() {
     if(profile.cells_count) {
       size_t avg = cells.fill() / profile.cells_count;

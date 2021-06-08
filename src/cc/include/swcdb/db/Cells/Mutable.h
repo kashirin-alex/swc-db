@@ -222,6 +222,7 @@ class Mutable final {
 
   void free();
 
+  SWC_CAN_INLINE
   void reset(const uint32_t revs=1, const uint64_t ttl_ns=0,
              const Types::Column typ=Types::Column::PLAIN) {
     free();
@@ -235,14 +236,17 @@ class Mutable final {
 
   Iterator It(size_t offset = 0) noexcept;
 
+  SWC_CAN_INLINE
   size_t size() const noexcept {
     return _size;
   }
 
+  SWC_CAN_INLINE
   size_t size_bytes() const noexcept {
     return _bytes;
   }
 
+  SWC_CAN_INLINE
   bool empty() const noexcept {
     return !_size; //return buckets.empty() || buckets.front()->empty();
   }
@@ -264,6 +268,7 @@ class Mutable final {
 
   void add_sorted(const Cell& cell, bool no_value=false);
 
+  SWC_CAN_INLINE
   void add_sorted_no_cpy(Cell* cell) {
     _add(cell);
     _push_back(cell);
@@ -284,10 +289,12 @@ class Mutable final {
 
   Cell* takeout(size_t idx);
 
+  SWC_CAN_INLINE
   Cell* takeout_begin(size_t idx) {
     return takeout(idx);
   }
 
+  SWC_CAN_INLINE
   Cell* takeout_end(size_t idx) {
     return takeout(size() - idx);
   }
@@ -335,6 +342,7 @@ class Mutable final {
 
   bool split(Mutable& cells, bool loaded);
 
+  SWC_CAN_INLINE
   bool can_split() const noexcept {
     return buckets.size() > 1;
   }

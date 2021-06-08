@@ -14,6 +14,7 @@ namespace Rgr { namespace Req {
 
 class RangeUnload : public client::ConnQueue::ReqBase {
   public:
+  typedef std::shared_ptr<RangeUnload>   Ptr;
 
   RangeUnload(const Ranger::RangePtr& range,
               const Ranger::Callback::RangeLoad::Ptr& req,

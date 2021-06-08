@@ -25,12 +25,14 @@ const char* Fragment::to_string(Fragment::State state) noexcept {
 }
 
 
+SWC_SHOULD_INLINE
 Fragment::Ptr Fragment::make_read(int& err, std::string&& filepath,
                                   const DB::Types::KeySeq key_seq) {
   auto smartfd = FS::SmartFd::make_ptr(std::move(filepath), 0);
   return make_read(err, smartfd, key_seq);
 }
 
+SWC_SHOULD_INLINE
 Fragment::Ptr Fragment::make_read(int& err, FS::SmartFd::Ptr& smartfd,
                                   const DB::Types::KeySeq key_seq) {
   uint8_t                     version = 0;
@@ -59,6 +61,7 @@ Fragment::Ptr Fragment::make_read(int& err, FS::SmartFd::Ptr& smartfd,
   ));
 }
 
+SWC_SHOULD_INLINE
 void Fragment::load_header(int& err, FS::SmartFd::Ptr& smartfd,
                            uint8_t& version,
                            DB::Cells::Interval& interval,
@@ -130,6 +133,7 @@ void Fragment::load_header(int& err, FS::SmartFd::Ptr& smartfd,
 }
 
 
+SWC_SHOULD_INLINE
 Fragment::Ptr Fragment::make_write(int& err, std::string&& filepath,
                                    DB::Cells::Interval&& interval,
                                    DB::Types::Encoder encoder,
@@ -170,6 +174,7 @@ Fragment::Ptr Fragment::make_write(int& err, std::string&& filepath,
   return Fragment::Ptr(frag);
 }
 
+SWC_SHOULD_INLINE
 void Fragment::write(int& err,
                      const uint8_t version,
                      const DB::Cells::Interval& interval,
@@ -215,6 +220,7 @@ void Fragment::write(int& err,
 }
 
 
+SWC_SHOULD_INLINE
 Fragment::Fragment(const FS::SmartFd::Ptr& smartfd,
                    const uint8_t version,
                   DB::Cells::Interval&& interval,
@@ -235,6 +241,7 @@ Fragment::Fragment(const FS::SmartFd::Ptr& smartfd,
   Env::Rgr::res().more_mem_usage(size_of());
 }
 
+SWC_SHOULD_INLINE
 Fragment::~Fragment() {
   Env::Rgr::res().less_mem_usage(
     size_of() +
@@ -247,6 +254,7 @@ Fragment::Ptr Fragment::ptr() {
   return shared_from_this();
 }
 
+SWC_SHOULD_INLINE
 size_t Fragment::size_of() const noexcept {
   return sizeof(*this)
         + interval.size_of_internal()

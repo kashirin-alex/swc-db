@@ -25,9 +25,10 @@ void range_unload(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
 
     auto col = Env::Rgr::columns()->get_column(params.cid);
     if(col) {
-      col->add_managing(
-        std::make_shared<Ranger::Callback::RangeUnload>(
-          conn, ev, params.cid, params.rid, true ));
+      col->add_managing(Ranger::Callback::RangeUnload::Ptr(
+        new Ranger::Callback::RangeUnload(
+          conn, ev, params.cid, params.rid, true)
+      ));
       return;
     }
   } catch(...) {

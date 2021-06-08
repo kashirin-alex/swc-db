@@ -35,7 +35,7 @@ class Rgr final {
 
   static void init() {
     SWC_ASSERT(!m_env);
-    m_env = std::make_shared<Rgr>();
+    m_env.reset(new Rgr());
   }
 
   static void start();
@@ -236,8 +236,8 @@ Rgr::Rgr()
           Env::Clients::get(), nullptr, app_io)),
       _reporting(
         SWC::Env::Config::settings()->get_bool("swc.rgr.metrics.enabled")
-          ? std::make_shared<Ranger::Metric::Reporting>(app_io)
-          : nullptr
+        ? new Ranger::Metric::Reporting(app_io)
+        : nullptr
       ),
       _resources(
         app_io,

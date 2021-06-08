@@ -24,7 +24,8 @@ void columns_unload(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
 
     Env::Rgr::columns()->unload(
       params.cid_begin, params.cid_end,
-      std::make_shared<Ranger::Callback::ColumnsUnload>(conn, ev, true)
+      Ranger::Callback::ColumnsUnload::Ptr(
+        new Ranger::Callback::ColumnsUnload(conn, ev, true))
     );
 
   } catch(...) {

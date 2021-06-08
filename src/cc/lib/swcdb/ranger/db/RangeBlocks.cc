@@ -9,11 +9,13 @@
 namespace SWC { namespace Ranger {
 
 
+SWC_SHOULD_INLINE
 Blocks::Blocks(const DB::Types::KeySeq key_seq)
               : commitlog(key_seq),
                 m_block(nullptr), m_processing(0) {
 }
 
+SWC_SHOULD_INLINE
 void Blocks::init(const RangePtr& for_range) {
   range = for_range;
   commitlog.init(range);
@@ -99,6 +101,7 @@ void Blocks::apply_new(int &err,
   commitlog.remove(err, fragments_old);
 }
 
+SWC_SHOULD_INLINE
 void Blocks::add_logged(const DB::Cells::Cell& cell) {
 
   commitlog.add(cell);
@@ -368,6 +371,7 @@ void Blocks::print(std::ostream& out, bool minimal) {
     << ')';
 }
 
+SWC_SHOULD_INLINE
 size_t Blocks::_size() {
   size_t sz = 0;
   for(Block::Ptr blk=m_block; blk; blk=blk->next)
@@ -375,6 +379,7 @@ size_t Blocks::_size() {
   return sz;
 }
 
+SWC_SHOULD_INLINE
 size_t Blocks::_size_bytes() {
   size_t sz = 0;
   for(Block::Ptr blk=m_block; blk; blk=blk->next)
@@ -382,6 +387,7 @@ size_t Blocks::_size_bytes() {
   return sz;
 }
 
+SWC_SHOULD_INLINE
 bool Blocks::_processing() const noexcept {
   if(m_processing)
     return true;

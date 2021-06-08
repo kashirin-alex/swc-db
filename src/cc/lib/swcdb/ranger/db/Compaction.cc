@@ -42,10 +42,12 @@ bool Compaction::log_compact_possible() noexcept {
   return ok;
 }
 
+SWC_SHOULD_INLINE
 void Compaction::log_compact_finished() noexcept {
   m_log_compactions.fetch_sub(1);
 }
 
+SWC_SHOULD_INLINE
 bool Compaction::available() noexcept {
   return m_running < cfg_max_range->get();
 }
@@ -87,6 +89,7 @@ void Compaction::schedule(uint32_t t_ms) {
   _schedule(t_ms);
 }
 
+SWC_SHOULD_INLINE
 bool Compaction::stopped() {
   return !m_run;
 }
@@ -190,12 +193,7 @@ uint8_t Compaction::compact(const RangePtr& range) {
   SWC_LOGF(LOG_INFO, "COMPACT-STARTED %lu/%lu %s",
            range->cfg->cid, range->rid, need.c_str());
 
-  auto req = std::make_shared<CompactRange>(
-    this,
-    range,
-    cs_size,
-    blk_size
-  );
+  CompactRange::Ptr req(new CompactRange(this, range, cs_size, blk_size));
   {
     Core::ScopedLock lock(m_mutex);
     m_compacting.push_back(req);

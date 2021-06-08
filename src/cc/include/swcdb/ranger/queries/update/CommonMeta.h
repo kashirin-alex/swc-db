@@ -15,12 +15,14 @@ class CommonMeta : public BaseMeta {
   typedef std::shared_ptr<CommonMeta>     Ptr;
   typedef std::function<void(const Ptr&)> Cb_t;
 
+  SWC_CAN_INLINE
   static Ptr make(const RangePtr& range, Cb_t&& cb) {
-    return std::make_shared<CommonMeta>(range, std::move(cb));
+    return Ptr(new CommonMeta(range, std::move(cb)));
   }
 
   const Cb_t cb;
 
+  SWC_CAN_INLINE
   CommonMeta(const RangePtr& range, Cb_t&& cb)
             : BaseMeta(range), cb(std::move(cb)) {
   }

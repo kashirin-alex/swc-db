@@ -25,8 +25,9 @@ void range_load(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
 
     Env::Rgr::columns()->load_range(
       *params.schema.get(),
-      std::make_shared<Ranger::Callback::RangeLoad>(
-        conn, ev, params.cid, params.rid));
+      Ranger::Callback::RangeLoad::Ptr(
+        new Ranger::Callback::RangeLoad(conn, ev, params.cid, params.rid))
+    );
 
   } catch(...) {
     const Error::Exception& e = SWC_CURRENT_EXCEPTION("");

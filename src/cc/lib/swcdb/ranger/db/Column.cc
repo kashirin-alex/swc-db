@@ -10,6 +10,7 @@ namespace SWC { namespace Ranger {
 
 
 
+SWC_SHOULD_INLINE
 Column::Column(const cid_t cid, const DB::Schema& schema)
               : cfg(new ColumnCfg(cid, schema)) {
   Env::Rgr::in_process(1);

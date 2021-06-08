@@ -18,6 +18,7 @@ Block::Ptr Block::make(const DB::Cells::Interval& interval,
   return new Block(interval, blocks, state);
 }
 
+SWC_SHOULD_INLINE
 Block::Block(const DB::Cells::Interval& interval,
              Blocks* blocks, State state)
             : blocks(blocks), next(nullptr), prev(nullptr),
@@ -32,6 +33,7 @@ Block::Block(const DB::Cells::Interval& interval,
   Env::Rgr::res().more_mem_usage(size_of());
 }
 
+SWC_SHOULD_INLINE
 Block::~Block() {
   Env::Rgr::res().less_mem_usage(
     size_of() +
@@ -39,6 +41,7 @@ Block::~Block() {
   );
 }
 
+SWC_SHOULD_INLINE
 size_t Block::size_of() const noexcept {
   return sizeof(*this);
 }
@@ -91,6 +94,7 @@ bool Block::is_consist(const DB::Cells::Interval& intval) const {
     (intval.key_begin.empty() || is_in_end(intval.key_begin));
 }
 
+SWC_SHOULD_INLINE
 bool Block::is_in_end(const DB::Cell::Key& key) const {
   Core::MutexAtomic::scope lock(m_mutex_intval);
   return _is_in_end(key);
@@ -129,13 +133,16 @@ bool Block::includes_end(const DB::Specs::Interval& spec) const {
          spec.is_in_previous(m_cells.key_seq, m_prev_key_end);
 }
 
+SWC_SHOULD_INLINE
 void Block::preload() {
   Env::Rgr::post([this](){
-    scan(std::make_shared<ReqScanBlockLoader>(
-      blocks->range->cfg->block_size()));
+    scan(ReqScanBlockLoader::Ptr(
+      new ReqScanBlockLoader(blocks->range->cfg->block_size())
+    ));
   });
 }
 
+SWC_SHOULD_INLINE
 bool Block::add_logged(const DB::Cells::Cell& cell) {
   if(!is_in_end(cell.key))
     return false;

@@ -117,6 +117,7 @@ void Readers::get_prev_key_end(uint32_t idx, DB::Cell::Key& key) const {
   key.copy((*(begin()+idx))->prev_key_end);
 }
 
+SWC_SHOULD_INLINE
 void Readers::get_key_end(DB::Cell::Key& key) const {
   return key.copy(back()->key_end);
 }

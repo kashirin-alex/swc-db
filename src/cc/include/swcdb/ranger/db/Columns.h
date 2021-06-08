@@ -37,6 +37,7 @@ class Columns final : private std::unordered_map<cid_t, ColumnPtr> {
 
   typedef Columns* Ptr;
 
+  SWC_CAN_INLINE
   Columns() noexcept { }
 
   //~Columns() { }

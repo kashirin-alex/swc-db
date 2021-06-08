@@ -30,6 +30,7 @@ class ColumnsUnloadAll : public ColumnsUnload {
     promise.set_value();
   }
 
+  SWC_CAN_INLINE
   void wait() {
     promise.get_future().wait();
   }

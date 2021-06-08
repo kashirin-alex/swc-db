@@ -14,6 +14,7 @@ namespace SWC { namespace Ranger { namespace CommitLog {
 static const uint8_t MAX_FRAGMENTS_NARROW = 20;
 
 
+SWC_SHOULD_INLINE
 Fragments::Fragments(const DB::Types::KeySeq key_seq)
                     : stopping(false), m_cells(key_seq), m_roll_chk(0),
                       m_compacting(false), m_deleting(false),
@@ -47,6 +48,7 @@ void Fragments::schema_update() {
   );
 }
 
+SWC_SHOULD_INLINE
 void Fragments::add(const DB::Cells::Cell& cell) {
   {
     Core::ScopedLock lock(m_mutex_cells);
@@ -81,7 +83,7 @@ void Fragments::commit_new_fragment(bool finalize) {
         break;
     }
 
-    auto buff_write = std::make_shared<StaticBuffer>();
+    StaticBuffer::Ptr buff_write(new StaticBuffer());
     {
       DynamicBuffer cells;
       uint32_t cells_count = 0;
@@ -306,6 +308,7 @@ void Fragments::load_cells(BlockLoader* loader, bool& is_final,
   }
 }
 
+SWC_SHOULD_INLINE
 void Fragments::_load_cells(BlockLoader* loader, Fragments::Vec& frags,
                             uint8_t& vol) {
   for(auto& frag : *this) {
@@ -481,6 +484,7 @@ size_t Fragments::size() noexcept {
   return Vec::size();
 }
 
+SWC_SHOULD_INLINE
 size_t Fragments::size_bytes(bool only_loaded) {
   return _size_bytes(only_loaded);
 }
@@ -545,6 +549,7 @@ void Fragments::print(std::ostream& out, bool minimal) {
 }
 
 
+SWC_SHOULD_INLINE
 bool Fragments::_need_roll() const {
   auto ratio = range->cfg->log_rollout_ratio();
   auto bytes = range->cfg->block_size();

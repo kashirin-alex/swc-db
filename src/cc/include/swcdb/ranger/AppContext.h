@@ -38,8 +38,9 @@ namespace SWC { namespace Ranger {
 
 class AppContext final : public Comm::AppContext {
   public:
+  typedef std::shared_ptr<AppContext> Ptr;
 
-  static std::shared_ptr<AppContext> make() {
+  static Ptr make() {
     auto settings = Env::Config::settings();
 
     settings->parse_file(
@@ -76,15 +77,15 @@ class AppContext final : public Comm::AppContext {
       );
     }
 
-    auto app = std::make_shared<AppContext>();
-    app->id_mngr = std::make_shared<Comm::Protocol::Mngr::Req::RgrMngId>(
+    Ptr app(new AppContext());
+    app->id_mngr.reset(new Comm::Protocol::Mngr::Req::RgrMngId(
       Env::Rgr::io(),
       [app]() {
         std::shared_ptr<std::thread> d(new std::thread);
         *d.get() = std::thread([d, app]{ app->stop(); });
         d->detach();
       }
-    );
+    ));
     return app;
   }
 
