@@ -166,7 +166,7 @@ class Column final : private std::vector<Range::Ptr> {
       range->set(interval);
 
       if(size() > 1) {
-        for(auto it = begin(); it < end(); ++it) {
+        for(auto it = begin(); it != end(); ++it) {
           if(range->rid == (*it)->rid) {
             erase(it);
             break;
@@ -323,7 +323,7 @@ class Column final : private std::vector<Range::Ptr> {
 
   void remove_range(rid_t rid) {
     Core::ScopedLock lock(m_mutex);
-    for(auto it = begin(); it < end(); ++it) {
+    for(auto it = begin(); it != end(); ++it) {
       if(rid == (*it)->rid) {
         (*it)->set_deleted();
         erase(it);
