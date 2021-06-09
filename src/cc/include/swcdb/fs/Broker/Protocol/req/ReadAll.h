@@ -16,7 +16,9 @@ namespace FsBroker {  namespace Req {
 
 class ReadAll final : public Base {
   public:
+  typedef std::shared_ptr<ReadAll> Ptr;
 
+  SWC_CAN_INLINE
   ReadAll(FS::Statistics& stats,
           uint32_t timeout, const std::string& name,
           FS::Callback::ReadAllCb_t&& cb)

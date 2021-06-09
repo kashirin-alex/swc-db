@@ -16,7 +16,9 @@ namespace FsBroker {  namespace Req {
 
 class CloseSync final : public BaseSync, public Base {
   public:
+  typedef std::shared_ptr<CloseSync> Ptr;
 
+  SWC_CAN_INLINE
   CloseSync(const FS::FileSystem::Ptr& fs, uint32_t timeout,
             FS::SmartFd::Ptr& smartfd)
             : Base(

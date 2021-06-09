@@ -16,7 +16,9 @@ namespace FsBroker {  namespace Req {
 
 class OpenSync final : public BaseSync, public Base {
   public:
+  typedef std::shared_ptr<OpenSync> Ptr;
 
+  SWC_CAN_INLINE
   OpenSync(const FS::FileSystem::Ptr& fs,
            uint32_t timeout, FS::SmartFd::Ptr& smartfd,
            int32_t bufsz)

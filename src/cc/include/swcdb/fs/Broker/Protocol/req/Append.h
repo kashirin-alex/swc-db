@@ -16,7 +16,9 @@ namespace FsBroker {  namespace Req {
 
 class Append final : public Base {
   public:
+  typedef std::shared_ptr<Append> Ptr;
 
+  SWC_CAN_INLINE
   Append(FS::Statistics& stats,
          uint32_t timeout, FS::SmartFd::Ptr& smartfd,
          StaticBuffer& buffer, FS::Flags flags,

@@ -26,7 +26,9 @@ namespace ThriftBroker {
 
 class AppContext final : virtual public BrokerIfFactory,
                          public std::enable_shared_from_this<AppContext> {
- public:
+  public:
+
+  typedef std::shared_ptr<AppContext> Ptr;
 
   AppContext() : m_run(true) {
     auto settings = Env::Config::settings();
@@ -40,8 +42,10 @@ class AppContext final : virtual public BrokerIfFactory,
       client::Clients::make(
         *settings,
         Env::IoCtx::io(),
-        std::make_shared<client::ContextManager>(*settings),
-        std::make_shared<client::ContextRanger>(*settings)
+        client::ContextManager::Ptr(
+          new client::ContextManager(*settings)),
+        client::ContextRanger::Ptr(
+          new client::ContextRanger(*settings))
       )->init()
     );
     /*

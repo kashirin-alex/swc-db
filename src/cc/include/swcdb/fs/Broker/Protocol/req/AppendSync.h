@@ -16,9 +16,11 @@ namespace FsBroker {  namespace Req {
 
 class AppendSync final : public BaseSync, public Base {
   public:
+  typedef std::shared_ptr<AppendSync> Ptr;
 
   size_t amount;
 
+  SWC_CAN_INLINE
   AppendSync(FS::Statistics& stats,
              uint32_t timeout, FS::SmartFd::Ptr& smartfd,
              StaticBuffer& buffer, FS::Flags flags)

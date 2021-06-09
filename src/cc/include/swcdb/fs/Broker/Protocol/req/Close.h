@@ -16,7 +16,9 @@ namespace FsBroker {  namespace Req {
 
 class Close final : public Base {
   public:
+  typedef std::shared_ptr<Close> Ptr;
 
+  SWC_CAN_INLINE
   Close(const FS::FileSystem::Ptr& fs, uint32_t timeout,
         FS::SmartFd::Ptr& smartfd,
         FS::Callback::CloseCb_t&& cb)

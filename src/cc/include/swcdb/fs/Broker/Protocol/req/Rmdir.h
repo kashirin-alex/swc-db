@@ -16,7 +16,9 @@ namespace FsBroker {  namespace Req {
 
 class Rmdir final : public Base {
   public:
+  typedef std::shared_ptr<Rmdir> Ptr;
 
+  SWC_CAN_INLINE
   Rmdir(FS::Statistics& stats,
         uint32_t timeout, const std::string& name,
         FS::Callback::RmdirCb_t&& cb)

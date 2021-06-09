@@ -55,9 +55,12 @@ class AppContext final : public Comm::AppContext {
           "Clients",
            settings->get_i32("swc.rgr.clients.handlers")
         ),
-        std::make_shared<client::ContextManager>(*settings),
-        std::make_shared<client::ContextRanger>(*settings),
-        std::make_shared<client::ContextBroker>(*settings)
+        client::ContextManager::Ptr(
+          new client::ContextManager(*settings)),
+        client::ContextRanger::Ptr(
+          new client::ContextRanger(*settings)),
+        client::ContextBroker::Ptr(
+          new client::ContextBroker(*settings))
       )->init()
     );
 

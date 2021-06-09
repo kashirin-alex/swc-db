@@ -16,7 +16,9 @@ namespace FsBroker {  namespace Req {
 
 class Sync final : public Base {
   public:
+  typedef std::shared_ptr<Sync> Ptr;
 
+  SWC_CAN_INLINE
   Sync(FS::Statistics& stats,
        uint32_t timeout, FS::SmartFd::Ptr& smartfd,
        FS::Callback::SyncCb_t&& cb)

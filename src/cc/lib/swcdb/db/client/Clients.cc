@@ -175,7 +175,7 @@ void Clients::stop() {
 namespace Env {
 
 void Clients::init(const client::Clients::Ptr& clients) {
-  m_env = std::make_shared<Clients>(clients);
+  m_env.reset(new Clients(clients));
 }
 
 }

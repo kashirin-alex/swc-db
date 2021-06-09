@@ -16,9 +16,11 @@ namespace FsBroker {  namespace Req {
 
 class ExistsSync final : public BaseSync, public Base {
   public:
+  typedef std::shared_ptr<ExistsSync> Ptr;
 
   bool state;
 
+  SWC_CAN_INLINE
   ExistsSync(FS::Statistics& stats,
              uint32_t timeout, const std::string& name)
             : Base(

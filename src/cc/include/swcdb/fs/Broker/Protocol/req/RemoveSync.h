@@ -16,7 +16,9 @@ namespace FsBroker {  namespace Req {
 
 class RemoveSync final : public BaseSync, public Base {
   public:
+  typedef std::shared_ptr<RemoveSync> Ptr;
 
+  SWC_CAN_INLINE
   RemoveSync(FS::Statistics& stats,
              uint32_t timeout, const std::string& name)
             : Base(

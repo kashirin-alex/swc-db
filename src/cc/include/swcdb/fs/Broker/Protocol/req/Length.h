@@ -16,7 +16,9 @@ namespace FsBroker {  namespace Req {
 
 class Length final : public Base {
   public:
+  typedef std::shared_ptr<Length> Ptr;
 
+  SWC_CAN_INLINE
   Length(FS::Statistics& stats,
          uint32_t timeout, const std::string& name,
          FS::Callback::LengthCb_t&& cb)

@@ -23,6 +23,8 @@ namespace FsBroker {
 class AppContext final : public Comm::AppContext {
   public:
 
+  typedef std::shared_ptr<AppContext> Ptr;
+
   AppContext(const Config::Settings& settings)
       : Comm::AppContext(
           settings.get<Config::Property::V_GENUM>(

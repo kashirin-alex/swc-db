@@ -16,7 +16,9 @@ namespace FsBroker {  namespace Req {
 
 class Seek final : public Base {
   public:
+  typedef std::shared_ptr<Seek> Ptr;
 
+  SWC_CAN_INLINE
   Seek(FS::Statistics& stats,
        uint32_t timeout, FS::SmartFd::Ptr& smartfd, size_t offset,
        FS::Callback::SeekCb_t&& cb)

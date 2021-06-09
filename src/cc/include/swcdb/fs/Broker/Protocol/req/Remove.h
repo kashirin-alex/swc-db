@@ -16,7 +16,9 @@ namespace FsBroker {  namespace Req {
 
 class Remove final : public Base {
   public:
+  typedef std::shared_ptr<Remove> Ptr;
 
+  SWC_CAN_INLINE
   Remove(FS::Statistics& stats,
          uint32_t timeout, const std::string& name,
          FS::Callback::RemoveCb_t&& cb)

@@ -15,9 +15,11 @@ namespace FsBroker {  namespace Req {
 
 class ReadAllSync final : public BaseSync, public Base {
   public:
+  typedef std::shared_ptr<ReadAllSync> Ptr;
 
   StaticBuffer* buffer;
 
+  SWC_CAN_INLINE
   ReadAllSync(FS::Statistics& stats,
               uint32_t timeout, const std::string& name, StaticBuffer* dst)
               : Base(

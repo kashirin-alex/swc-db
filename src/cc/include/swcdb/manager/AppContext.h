@@ -42,6 +42,8 @@ namespace SWC { namespace Manager {
 class AppContext final : public Comm::AppContext {
   public:
 
+  typedef std::shared_ptr<AppContext> Ptr;
+
   AppContext()
       : Comm::AppContext(
           Env::Config::settings()->get<Config::Property::V_GENUM>(
@@ -60,9 +62,12 @@ class AppContext final : public Comm::AppContext {
           "Clients",
            settings->get_i32("swc.mngr.clients.handlers")
         ),
-        std::make_shared<client::Mngr::ContextManager>(),
-        std::make_shared<client::ContextRanger>(*settings),
-        std::make_shared<client::ContextBroker>(*settings)
+        client::Mngr::ContextManager::Ptr(
+          new client::Mngr::ContextManager()),
+        client::ContextRanger::Ptr(
+          new client::ContextRanger(*settings)),
+        client::ContextBroker::Ptr(
+          new client::ContextBroker(*settings))
       )->init()
     );
     Env::Clients::get()->set_flags__schemas_via_default();

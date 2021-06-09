@@ -16,7 +16,9 @@ namespace FsBroker {  namespace Req {
 
 class Read final : public Base {
   public:
+  typedef std::shared_ptr<Read> Ptr;
 
+  SWC_CAN_INLINE
   Read(FS::Statistics& stats,
        uint32_t timeout, FS::SmartFd::Ptr& smartfd, size_t len,
        FS::Callback::ReadCb_t&& cb)

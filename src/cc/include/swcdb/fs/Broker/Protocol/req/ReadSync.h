@@ -16,11 +16,13 @@ namespace FsBroker {  namespace Req {
 
 class ReadSync final : public BaseSync, public Base {
   public:
+  typedef std::shared_ptr<ReadSync> Ptr;
 
   void*   buffer;
   bool    allocated;
   size_t  amount;
 
+  SWC_CAN_INLINE
   ReadSync(FS::Statistics& stats,
            uint32_t timeout, FS::SmartFd::Ptr& smartfd,
            void* dst, size_t len, bool allocated)

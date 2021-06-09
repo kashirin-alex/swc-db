@@ -16,7 +16,9 @@ namespace FsBroker {  namespace Req {
 
 class Flush final : public Base {
   public:
+  typedef std::shared_ptr<Flush> Ptr;
 
+  SWC_CAN_INLINE
   Flush(FS::Statistics& stats,
         uint32_t timeout, FS::SmartFd::Ptr& smartfd,
         FS::Callback::FlushCb_t&& cb)

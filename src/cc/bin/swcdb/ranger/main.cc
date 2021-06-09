@@ -26,13 +26,15 @@ int run() {
   {
   auto app_ctx = AppContext::make();
 
-  auto srv = std::make_shared<Comm::server::SerializedServer>(
-    *Env::Config::settings(),
-    "RANGER",
-    Env::Config::settings()->get_i32("swc.rgr.reactors"),
-    Env::Config::settings()->get_i32("swc.rgr.workers"),
-    Env::Config::settings()->get_i16("swc.rgr.port"),
-    app_ctx
+  Comm::server::SerializedServer::Ptr srv(
+    new Comm::server::SerializedServer(
+      *Env::Config::settings(),
+      "RANGER",
+      Env::Config::settings()->get_i32("swc.rgr.reactors"),
+      Env::Config::settings()->get_i32("swc.rgr.workers"),
+      Env::Config::settings()->get_i16("swc.rgr.port"),
+      app_ctx
+    )
   );
   app_ctx->set_srv(srv);
   srv->run();

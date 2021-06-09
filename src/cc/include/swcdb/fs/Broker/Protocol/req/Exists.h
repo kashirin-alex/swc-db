@@ -16,7 +16,9 @@ namespace FsBroker {  namespace Req {
 
 class Exists final : public Base {
   public:
+  typedef std::shared_ptr<Exists> Ptr;
 
+  SWC_CAN_INLINE
   Exists(FS::Statistics& stats,
          uint32_t timeout, const std::string& name,
          FS::Callback::ExistsCb_t&& cb)

@@ -16,11 +16,13 @@ namespace FsBroker {  namespace Req {
 
 class PreadSync final : public BaseSync, public Base {
   public:
+  typedef std::shared_ptr<PreadSync> Ptr;
 
   void*   buffer;
   bool    allocated;
   size_t  amount;
 
+  SWC_CAN_INLINE
   PreadSync(FS::Statistics& stats,
             uint32_t timeout, FS::SmartFd::Ptr& smartfd,
             uint64_t offset, void* dst, size_t len, bool allocated)

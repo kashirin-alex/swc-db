@@ -24,15 +24,17 @@ int run() {
   SWC_TRY_OR_LOG("",
 
   {
-  auto app_ctx = std::make_shared<AppContext>();
+  AppContext::Ptr app_ctx(new AppContext());
 
-  auto srv = std::make_shared<Comm::server::SerializedServer>(
-    *Env::Config::settings(),
-    "FS-BROKER",
-    Env::Config::settings()->get_i32("swc.FsBroker.reactors"),
-    Env::Config::settings()->get_i32("swc.FsBroker.workers"),
-    Env::Config::settings()->get_i16("swc.fs.broker.port"),
-    app_ctx
+  Comm::server::SerializedServer::Ptr srv(
+    new Comm::server::SerializedServer(
+      *Env::Config::settings(),
+      "FS-BROKER",
+      Env::Config::settings()->get_i32("swc.FsBroker.reactors"),
+      Env::Config::settings()->get_i32("swc.FsBroker.workers"),
+      Env::Config::settings()->get_i16("swc.fs.broker.port"),
+      app_ctx
+    )
   );
   app_ctx->set_srv(srv);
   srv->run();

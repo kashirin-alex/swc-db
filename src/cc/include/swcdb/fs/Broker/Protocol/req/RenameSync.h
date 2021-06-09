@@ -16,7 +16,9 @@ namespace FsBroker {  namespace Req {
 
 class RenameSync final : public BaseSync, public Base {
   public:
+  typedef std::shared_ptr<RenameSync> Ptr;
 
+  SWC_CAN_INLINE
   RenameSync(FS::Statistics& stats,
              uint32_t timeout,
              const std::string& from, const std::string& to)

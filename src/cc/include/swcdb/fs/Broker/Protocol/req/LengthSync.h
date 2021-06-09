@@ -16,9 +16,11 @@ namespace FsBroker {  namespace Req {
 
 class LengthSync final : public BaseSync, public Base {
   public:
+  typedef std::shared_ptr<LengthSync> Ptr;
 
   size_t length;
 
+  SWC_CAN_INLINE
   LengthSync(FS::Statistics& stats,
              uint32_t timeout, const std::string& name)
             : Base(

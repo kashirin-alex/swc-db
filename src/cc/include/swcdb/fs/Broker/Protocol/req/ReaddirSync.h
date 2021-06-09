@@ -16,9 +16,11 @@ namespace FsBroker {  namespace Req {
 
 class ReaddirSync final : public BaseSync, public Base {
   public:
+  typedef std::shared_ptr<ReaddirSync> Ptr;
 
   FS::DirentList& listing;
 
+  SWC_CAN_INLINE
   ReaddirSync(FS::Statistics& stats,
               uint32_t timeout, const std::string& name,
               FS::DirentList& listing)

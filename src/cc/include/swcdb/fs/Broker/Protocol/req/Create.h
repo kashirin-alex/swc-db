@@ -17,7 +17,9 @@ namespace FsBroker {  namespace Req {
 
 class Create final : public Base {
   public:
+  typedef std::shared_ptr<Create> Ptr;
 
+  SWC_CAN_INLINE
   Create(const FS::FileSystem::Ptr& fs,
          uint32_t timeout, FS::SmartFd::Ptr& smartfd,
          int32_t bufsz, uint8_t replication, int64_t blksz,

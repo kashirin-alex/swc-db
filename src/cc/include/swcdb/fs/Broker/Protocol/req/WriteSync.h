@@ -15,9 +15,10 @@ namespace FsBroker {  namespace Req {
 
 
 class WriteSync final : public BaseSync, public Base {
-
   public:
+  typedef std::shared_ptr<WriteSync> Ptr;
 
+  SWC_CAN_INLINE
   WriteSync(FS::Statistics& stats,
             uint32_t timeout, FS::SmartFd::Ptr& smartfd,
             uint8_t replication, int64_t blksz, StaticBuffer& buffer)

@@ -16,7 +16,9 @@ namespace FsBroker {  namespace Req {
 
 class Mkdirs final : public Base {
   public:
+  typedef std::shared_ptr<Mkdirs> Ptr;
 
+  SWC_CAN_INLINE
   Mkdirs(FS::Statistics& stats,
          uint32_t timeout, const std::string& name,
          FS::Callback::MkdirsCb_t&& cb)

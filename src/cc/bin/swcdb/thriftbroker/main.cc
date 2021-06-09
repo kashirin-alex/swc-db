@@ -81,7 +81,7 @@ int run() {
     reactors, workers, transport.c_str());
 
 
-  auto app_ctx = std::make_shared<AppContext>();
+  AppContext::Ptr app_ctx(new AppContext());
   app_ctx->init(host, {endpoints.front()}); //missing socket->getLocalAddr
 
   std::vector<std::unique_ptr<std::thread>> threads;
@@ -99,8 +99,8 @@ int run() {
       bool is_plain = true; // if use_ssl && need ssl.. transportFactory.reset(..)
       std::shared_ptr<thrift::transport::TServerSocket> socket;
       if(!reactor) {
-        socket = std::make_shared<thrift::transport::TServerSocket>(
-          endpoint.address().to_string(), endpoint.port());
+        socket.reset(new thrift::transport::TServerSocket(
+          endpoint.address().to_string(), endpoint.port()));
       } else {
         continue;
         //1st socket->getSocketFD dup >> init socket from fd (per reactor)

@@ -15,9 +15,11 @@ namespace FsBroker {  namespace Req {
 
 class CombiPreadSync final : public BaseSync, public Base {
   public:
+  typedef std::shared_ptr<CombiPreadSync> Ptr;
 
   StaticBuffer* buffer;
 
+  SWC_CAN_INLINE
   CombiPreadSync(FS::Statistics& stats,
                  uint32_t timeout, const FS::SmartFd::Ptr& smartfd,
                  uint64_t offset, uint32_t amount, StaticBuffer* dst)

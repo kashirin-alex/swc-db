@@ -16,7 +16,9 @@ namespace FsBroker {  namespace Req {
 
 class Pread final : public Base {
   public:
+  typedef std::shared_ptr<Pread> Ptr;
 
+  SWC_CAN_INLINE
   Pread(FS::Statistics& stats,
         uint32_t timeout, FS::SmartFd::Ptr& smartfd,
         uint64_t offset, size_t len,

@@ -17,7 +17,9 @@ namespace FsBroker {  namespace Req {
 
 class CreateSync final : public BaseSync, public Base {
   public:
+  typedef std::shared_ptr<CreateSync> Ptr;
 
+  SWC_CAN_INLINE
   CreateSync(const FS::FileSystem::Ptr& fs,
              uint32_t timeout, FS::SmartFd::Ptr& smartfd,
              int32_t bufsz, uint8_t replication, int64_t blksz)

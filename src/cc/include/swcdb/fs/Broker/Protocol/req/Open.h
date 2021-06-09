@@ -16,7 +16,9 @@ namespace FsBroker {  namespace Req {
 
 class Open final : public Base {
   public:
+  typedef std::shared_ptr<Open> Ptr;
 
+  SWC_CAN_INLINE
   Open(const FS::FileSystem::Ptr& fs,
        uint32_t timeout, FS::SmartFd::Ptr& smartfd, int32_t bufsz,
        FS::Callback::OpenCb_t&& cb)

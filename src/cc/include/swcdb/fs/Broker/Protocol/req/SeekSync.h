@@ -16,7 +16,9 @@ namespace FsBroker {  namespace Req {
 
 class SeekSync final : public BaseSync, public Base {
   public:
+  typedef std::shared_ptr<SeekSync> Ptr;
 
+  SWC_CAN_INLINE
   SeekSync(FS::Statistics& stats,
            uint32_t timeout, FS::SmartFd::Ptr& smartfd, size_t offset)
           : Base(

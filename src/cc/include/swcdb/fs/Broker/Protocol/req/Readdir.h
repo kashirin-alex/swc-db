@@ -16,7 +16,9 @@ namespace FsBroker {  namespace Req {
 
 class Readdir final : public Base {
   public:
+  typedef std::shared_ptr<Readdir> Ptr;
 
+  SWC_CAN_INLINE
   Readdir(FS::Statistics& stats,
           uint32_t timeout, const std::string& name,
           FS::Callback::ReaddirCb_t&& cb)

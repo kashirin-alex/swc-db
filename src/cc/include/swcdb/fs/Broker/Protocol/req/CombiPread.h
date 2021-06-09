@@ -16,7 +16,9 @@ namespace FsBroker {  namespace Req {
 
 class CombiPread final : public Base {
   public:
+  typedef std::shared_ptr<CombiPread> Ptr;
 
+  SWC_CAN_INLINE
   CombiPread(FS::Statistics& stats,
              uint32_t timeout, const FS::SmartFd::Ptr& smartfd,
              uint64_t offset, uint32_t amount,

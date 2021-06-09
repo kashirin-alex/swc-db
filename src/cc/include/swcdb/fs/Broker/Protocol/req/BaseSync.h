@@ -17,12 +17,17 @@ namespace FsBroker {  namespace Req {
 class BaseSync : private std::promise<void> {
   public:
 
+  SWC_CAN_INLINE
+  BaseSync() { }
+
+  SWC_CAN_INLINE
   void wait() {
     get_future().wait();
   }
 
   protected:
 
+  SWC_CAN_INLINE
   void acknowledge() {
     set_value();
   }

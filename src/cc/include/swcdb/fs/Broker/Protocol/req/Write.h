@@ -16,7 +16,9 @@ namespace FsBroker {  namespace Req {
 
 class Write final : public Base {
   public:
+  typedef std::shared_ptr<Write> Ptr;
 
+  SWC_CAN_INLINE
   Write(FS::Statistics& stats,
         uint32_t timeout, FS::SmartFd::Ptr& smartfd,
         uint8_t replication, int64_t blksz, StaticBuffer& buffer,

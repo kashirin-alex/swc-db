@@ -16,7 +16,9 @@ namespace FsBroker {  namespace Req {
 
 class FlushSync final : public BaseSync, public Base {
   public:
+  typedef std::shared_ptr<FlushSync> Ptr;
 
+  SWC_CAN_INLINE
   FlushSync(FS::Statistics& stats,
             uint32_t timeout, FS::SmartFd::Ptr& smartfd)
             : Base(

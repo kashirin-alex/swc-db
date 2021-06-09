@@ -72,6 +72,8 @@ class AppContext final : public Comm::AppContext {
 
   public:
 
+  typedef std::shared_ptr<AppContext> Ptr;
+
   AppContext()
       : Comm::AppContext(
           Env::Config::settings()->get<Config::Property::V_GENUM>(
@@ -91,13 +93,16 @@ class AppContext final : public Comm::AppContext {
           ? client::Clients::make(
               *settings,
               Env::IoCtx::io(),
-              std::make_shared<client::ContextBroker>(*settings)
+              client::ContextBroker::Ptr(
+                new client::ContextBroker(*settings))
             )
           : client::Clients::make(
               *settings,
               Env::IoCtx::io(),
-              std::make_shared<client::ContextManager>(*settings),
-              std::make_shared<client::ContextRanger>(*settings)
+              client::ContextManager::Ptr(
+                new client::ContextManager(*settings)),
+              client::ContextRanger::Ptr(
+                new client::ContextRanger(*settings))
             )
         )->init()
       );
