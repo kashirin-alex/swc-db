@@ -170,7 +170,7 @@ SerializedServer::SerializedServer(
           m_io_contexts.back()->executor(),
           endpoint
         );
-        m_acceptors.push_back(std::make_shared<Acceptor>(
+        m_acceptors.emplace_back(new Acceptor(
           acceptor, app_ctx, ssl_conn ? m_ssl_cfg : nullptr));
         endpoints_final.push_back(m_acceptors[i]->sock()->local_endpoint());
 
@@ -179,7 +179,7 @@ SerializedServer::SerializedServer(
           m_io_contexts.back()->executor(),
           endpoint.protocol(), dup(m_acceptors[i]->sock()->native_handle())
         );
-        m_acceptors.push_back(std::make_shared<Acceptor>(
+        m_acceptors.emplace_back(new Acceptor(
           acceptor, app_ctx, ssl_conn ? m_ssl_cfg : nullptr));
       }
     }

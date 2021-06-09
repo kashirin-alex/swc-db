@@ -27,6 +27,7 @@ class Selector final : public SWC::client::Query::Select::Handlers::Base {
   Event::Ptr      ev;
   bool            sent;
 
+  SWC_CAN_INLINE
   Selector(const ConnHandlerPtr& conn, const Event::Ptr& ev) noexcept
           : SWC::client::Query::Select::Handlers::Base(Env::Clients::get()),
             conn(conn), ev(ev), sent(false) {
@@ -100,10 +101,10 @@ void cells_select(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     Params::CellsSelectReq params;
     params.decode(&ptr, &remain);
 
-    auto hdlr = std::make_shared<Selector>(conn, ev);
     auto schema = Env::Clients::get()->get_schema(err, params.cid);
     if(!err) {
-      hdlr->scan(schema, std::move(params.interval));
+      Selector::Ptr(new Selector(conn, ev))
+        ->scan(schema, std::move(params.interval));
       return;
     }
   } catch(...) {

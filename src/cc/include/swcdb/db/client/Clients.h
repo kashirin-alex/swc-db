@@ -246,10 +246,12 @@ class Clients final {
 
   static void init(const client::Clients::Ptr& clients);
 
+  SWC_CAN_INLINE
   static client::Clients::Ptr& get() noexcept {
     return m_env->m_clients;
   }
 
+  SWC_CAN_INLINE
   static const Clients& ref() noexcept {
     return *m_env.get();
   }

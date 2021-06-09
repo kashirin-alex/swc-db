@@ -44,46 +44,57 @@ class Rgr final {
 
   static void wait_if_in_process();
 
+  SWC_CAN_INLINE
   static Common::Files::RgrData* rgr_data() noexcept {
     return &m_env->m_rgr_data;
   }
 
+  SWC_CAN_INLINE
   static bool is_not_accepting() noexcept {
     return m_env->m_not_accepting;
   }
 
+  SWC_CAN_INLINE
   static bool is_shuttingdown() noexcept {
     return m_env->m_shuttingdown;
   }
 
+  SWC_CAN_INLINE
   static int64_t in_process() noexcept {
     return m_env->m_in_process;
   }
 
+  SWC_CAN_INLINE
   static void in_process(int64_t count) noexcept {
     m_env->m_in_process.fetch_add(count);
   }
 
+  SWC_CAN_INLINE
   static size_t scan_reserved_bytes() noexcept {
     return m_env->m_scan_reserved_bytes;
   }
 
+  SWC_CAN_INLINE
   static void scan_reserved_bytes_add(uint32_t bytes) noexcept {
     m_env->m_scan_reserved_bytes.fetch_add(bytes);
   }
 
+  SWC_CAN_INLINE
   static void scan_reserved_bytes_sub(uint32_t bytes) noexcept {
     m_env->m_scan_reserved_bytes.fetch_sub(bytes);
   }
 
+  SWC_CAN_INLINE
   static Rgr* get() noexcept {
     return m_env.get();
   }
 
+  SWC_CAN_INLINE
   static Comm::IoContextPtr maintenance_io() noexcept {
     return m_env->mnt_io;
   }
 
+  SWC_CAN_INLINE
   static Comm::IoContextPtr io() noexcept {
     return m_env->app_io;
   }
@@ -113,14 +124,17 @@ class Rgr final {
 
   static void compaction_schedule(uint32_t ms);
 
+  SWC_CAN_INLINE
   static Ranger::Columns* columns() noexcept {
     return m_env->_columns;
   }
 
+  SWC_CAN_INLINE
   static client::Query::Update::Handlers::Common* updater() noexcept {
     return m_env->_update_hdlr.get();
   }
 
+  SWC_CAN_INLINE
   static Ranger::Metric::Reporting::Ptr& metrics_track() noexcept {
     return m_env->_reporting;
   }
@@ -297,18 +311,22 @@ void Rgr::wait_if_in_process() {
   }
 }
 
+SWC_CAN_INLINE
 bool Rgr::log_compact_possible() noexcept {
   return m_env->_compaction->log_compact_possible();
 }
 
+SWC_CAN_INLINE
 void Rgr::log_compact_finished() noexcept {
   return m_env->_compaction->log_compact_finished();
 }
 
+SWC_CAN_INLINE
 bool Rgr::compaction_available() noexcept {
   return m_env->_compaction->available();
 }
 
+SWC_CAN_INLINE
 void Rgr::compaction_schedule(uint32_t ms) {
   if(m_env && m_env->_compaction)
     m_env->_compaction->schedule(ms);

@@ -29,6 +29,7 @@ class Mngr final {
     m_env.reset(new Mngr(endpoints));
   }
 
+  SWC_CAN_INLINE
   static Comm::IoContextPtr io() noexcept {
     return m_env->app_io;
   }
@@ -49,22 +50,27 @@ class Mngr final {
     return m_env->_resources;
   }
 
+  SWC_CAN_INLINE
   static DB::Schemas* schemas() noexcept {
     return &m_env->m_schemas;
   }
 
+  SWC_CAN_INLINE
   static Manager::Columns* columns() noexcept {
     return &m_env->m_columns;
   }
 
+  SWC_CAN_INLINE
   static Manager::MngrRole* role() noexcept {
     return &m_env->m_role;
   }
 
+  SWC_CAN_INLINE
   static Manager::Rangers* rangers() noexcept {
     return &m_env->m_rangers;
   }
 
+  SWC_CAN_INLINE
   static Manager::MngdColumns* mngd_columns() noexcept {
     return &m_env->m_mngd_columns;
   }

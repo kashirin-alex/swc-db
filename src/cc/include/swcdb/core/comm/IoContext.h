@@ -39,7 +39,7 @@ class IoContext final : public std::enable_shared_from_this<IoContext> {
   typedef asio::executor_work_guard<Executor> ExecutorWorkGuard;
 
   static IoContextPtr make(std::string&& _name, int32_t size) {
-    return std::make_shared<IoContext>(std::move(_name), size);
+    return IoContextPtr(new IoContext(std::move(_name), size));
   }
 
   Core::AtomicBool                     running;
@@ -96,7 +96,7 @@ class IoCtx final {
 
   SWC_CAN_INLINE
   static void init(int32_t size) {
-    m_env = std::make_shared<IoCtx>(size);
+    m_env.reset(new IoCtx(size));
   }
 
   SWC_CAN_INLINE
@@ -125,9 +125,7 @@ class IoCtx final {
   }
 
   SWC_CAN_INLINE
-  IoCtx(int32_t size)
-        : m_io(std::make_shared<Comm::IoContext>("Env", size)) {
-  }
+  IoCtx(int32_t size) : m_io(new Comm::IoContext("Env", size)) { }
 
   //~IoCtx() { }
 

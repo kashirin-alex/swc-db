@@ -35,11 +35,11 @@ class RgrData final {
   static const uint8_t VERSION = 1;
 
   static Ptr get_rgr(int &err, const std::string& filepath) {
-    Ptr data = std::make_shared<RgrData>();
+    Ptr data(new RgrData());
     try{
       data->read(err, filepath);
     } catch(...){
-      data = std::make_shared<RgrData>();
+      data.reset(new RgrData());
     }
     return data;
   }

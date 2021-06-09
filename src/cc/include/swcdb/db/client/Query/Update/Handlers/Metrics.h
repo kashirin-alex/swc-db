@@ -137,6 +137,7 @@ class Item_Count : public Base {
 
   virtual ~Item_Count() { }
 
+  SWC_CAN_INLINE
   void increment() {
     m_count.fetch_add(1);
   }
@@ -165,10 +166,12 @@ class Item_Volume : public Base {
 
   virtual ~Item_Volume() { }
 
+  SWC_CAN_INLINE
   void increment() {
     m_volume.fetch_add(1);
   }
 
+  SWC_CAN_INLINE
   void decrement() {
     m_volume.fetch_sub(1);
   }
@@ -198,11 +201,13 @@ class Item_CountVolume : public Base {
 
   virtual ~Item_CountVolume() { }
 
+  SWC_CAN_INLINE
   void increment() {
     m_count.fetch_add(1);
     m_volume.fetch_add(1);
   }
 
+  SWC_CAN_INLINE
   void decrement() {
     m_volume.fetch_sub(1);
   }

@@ -14,6 +14,7 @@ namespace Mngr { namespace Req {
 
 
 
+SWC_SHOULD_INLINE
 ColumnGet_Base::ColumnGet_Base(
                 const SWC::client::Clients::Ptr& clients,
                 const Params::ColumnGetReq& params,

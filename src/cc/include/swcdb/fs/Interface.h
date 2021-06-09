@@ -141,14 +141,17 @@ class FsInterface final {
 
   static void init(const SWC::Config::Settings::Ptr& settings, FS::Type typ);
 
+  SWC_CAN_INLINE
   static Ptr& get() noexcept {
     return m_env;
   }
 
+  SWC_CAN_INLINE
   static FS::Interface::Ptr& interface() noexcept {
     return m_env->m_interface;
   }
 
+  SWC_CAN_INLINE
   static FS::FileSystem::Ptr& fs() noexcept {
     return m_env->m_interface->get_fs();
   }

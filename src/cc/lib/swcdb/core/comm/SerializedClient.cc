@@ -139,7 +139,7 @@ ServerConnections::Ptr Serialized::get_srv(const EndPoint& endpoint) {
   if((it = find(hash)) == end())
     it = emplace(
       hash,
-      std::make_shared<ServerConnections>(
+      new ServerConnections(
         m_srv_name, endpoint, m_ioctx, m_ctx,
         m_use_ssl && m_ssl_cfg->need_ssl(endpoint) ? m_ssl_cfg : nullptr
       )

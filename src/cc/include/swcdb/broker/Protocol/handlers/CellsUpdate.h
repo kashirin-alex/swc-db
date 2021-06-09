@@ -25,6 +25,7 @@ class Updater final
   ConnHandlerPtr  conn;
   Event::Ptr      ev;
 
+  SWC_CAN_INLINE
   Updater(const DB::Schema::Ptr& schema,
           const ConnHandlerPtr& conn, const Event::Ptr& ev)
           : SWC::client::Query::Update::Handlers::BaseSingleColumn(
@@ -95,7 +96,7 @@ void cells_update(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     } else {
       auto schema = Env::Clients::get()->get_schema(err, params.cid);
       if(!err) {
-        auto hdlr = std::make_shared<Updater>(schema, conn, ev);
+        Updater::Ptr hdlr(new Updater(schema, conn, ev));
         hdlr->commit(&hdlr->column);
         return;
       }

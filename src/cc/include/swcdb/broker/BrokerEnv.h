@@ -24,7 +24,7 @@ class Bkr final {
 
   static void init() {
     SWC_ASSERT(!m_env);
-    m_env = std::make_shared<Bkr>();
+    m_env.reset(new Bkr());
   }
 
   static void start();
@@ -33,6 +33,7 @@ class Bkr final {
     m_env->_shuttingdown();
   }
 
+  SWC_CAN_INLINE
   static bool can_process() noexcept {
     if(m_env->m_not_accepting)
       return false;
@@ -40,18 +41,22 @@ class Bkr final {
     return true;
   }
 
+  SWC_CAN_INLINE
   static void in_process(int64_t count) noexcept {
     m_env->m_in_process.fetch_add(count);
   }
 
+  SWC_CAN_INLINE
   static void processed() noexcept {
     m_env->m_in_process.fetch_sub(1);
   }
 
+  SWC_CAN_INLINE
   static Bkr* get() noexcept {
     return m_env.get();
   }
 
+  SWC_CAN_INLINE
   static Comm::IoContextPtr io() noexcept {
     return m_env->app_io;
   }
@@ -67,6 +72,7 @@ class Bkr final {
     return m_env->_resources;
   }
 
+  SWC_CAN_INLINE
   static Broker::Metric::Reporting::Ptr& metrics_track() noexcept {
     return m_env->_reporting;
   }
@@ -114,7 +120,7 @@ Bkr::Bkr()
       ),
       _reporting(
         SWC::Env::Config::settings()->get_bool("swc.bkr.metrics.enabled")
-          ? std::make_shared<Broker::Metric::Reporting>(
+          ? new Broker::Metric::Reporting(
               app_io,
               SWC::Env::Config::settings()
                 ->get<SWC::Config::Property::V_GINT32>(

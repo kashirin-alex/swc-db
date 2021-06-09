@@ -18,7 +18,7 @@ class ThriftBroker final {
 
   static void init(System::Mem::ReleaseCall_t&& release_call) {
     SWC_ASSERT(!m_env);
-    m_env = std::make_shared<ThriftBroker>(std::move(release_call));
+    m_env.reset(new ThriftBroker(std::move(release_call)));
   }
 
   SWC_CAN_INLINE
@@ -44,7 +44,7 @@ class ThriftBroker final {
   ThriftBroker(System::Mem::ReleaseCall_t&& release_call)
       : _reporting(
           SWC::Env::Config::settings()->get_bool("swc.ThriftBroker.metrics.enabled")
-            ? std::make_shared<SWC::ThriftBroker::Metric::Reporting>(
+            ? new SWC::ThriftBroker::Metric::Reporting(
                 Env::IoCtx::io(),
                 SWC::Env::Config::settings()
                   ->get<SWC::Config::Property::V_GINT32>(

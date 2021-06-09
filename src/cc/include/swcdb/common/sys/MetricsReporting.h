@@ -89,7 +89,7 @@ class Item_Net : public Base {
   static constexpr const uint8_t FIELD_EV_COMMAND_START = 100; // {100 + CMD}
 
   public:
-  typedef std::unique_ptr<Item_CountVolume> Ptr;
+  typedef std::unique_ptr<Item_Net> Ptr;
 
   struct Addr {
     const asio::ip::address                      addr;

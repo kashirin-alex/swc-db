@@ -18,10 +18,13 @@ namespace Bkr { namespace Handler {
 class ColumnGet final : public Mngr::Req::ColumnGet_Base {
   public:
 
+  typedef std::shared_ptr<ColumnGet> Ptr;
+
   ConnHandlerPtr                   conn;
   Event::Ptr                       ev;
   Mngr::Params::ColumnGetReq::Flag flag;
 
+  SWC_CAN_INLINE
   ColumnGet(const SWC::client::Clients::Ptr& clients,
             Mngr::Params::ColumnGetReq::Flag flag,
             const Mngr::Params::ColumnGetReq& params,
@@ -54,6 +57,7 @@ class ColumnGet final : public Mngr::Req::ColumnGet_Base {
 };
 
 
+SWC_CAN_INLINE
 DB::Schema::Ptr get_schema(int &err,
                            const Mngr::Params::ColumnGetReq& params) {
   switch(params.flag) {
@@ -94,8 +98,8 @@ void column_get(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
       if(flag == Mngr::Params::ColumnGetReq::Flag::ID_BY_NAME)
         params.flag = Mngr::Params::ColumnGetReq::Flag::SCHEMA_BY_NAME;
 
-      std::make_shared<ColumnGet>(
-        Env::Clients::get(), flag, params, conn, ev)->run();
+      ColumnGet::Ptr(new ColumnGet(
+        Env::Clients::get(), flag, params, conn, ev))->run();
     }
     return;
 

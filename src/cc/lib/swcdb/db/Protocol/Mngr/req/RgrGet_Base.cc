@@ -13,6 +13,7 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace Mngr { namespace Req {
 
 
+SWC_SHOULD_INLINE
 RgrGet_Base::RgrGet_Base(const Params::RgrGetReq& params,
                          const uint32_t timeout)
               : client::ConnQueue::ReqBase(

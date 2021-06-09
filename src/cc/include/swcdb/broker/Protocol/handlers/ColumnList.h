@@ -18,9 +18,12 @@ namespace Bkr { namespace Handler {
 class ColumnList final : public Mngr::Req::ColumnList_Base {
   public:
 
+  typedef std::shared_ptr<ColumnList> Ptr;
+
   ConnHandlerPtr  conn;
   Event::Ptr      ev;
 
+  SWC_CAN_INLINE
   ColumnList(const SWC::client::Clients::Ptr& clients,
             const Mngr::Params::ColumnListReq& params,
             const ConnHandlerPtr& conn, const Event::Ptr& ev)
@@ -58,8 +61,8 @@ void column_list(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     Mngr::Params::ColumnListReq params;
     params.decode(&ptr, &remain);
 
-    std::make_shared<ColumnList>(
-      Env::Clients::get(), params, conn, ev)->run();
+    ColumnList::Ptr(new ColumnList(
+      Env::Clients::get(), params, conn, ev))->run();
 
   } catch(...) {
     const Error::Exception& e = SWC_CURRENT_EXCEPTION("");

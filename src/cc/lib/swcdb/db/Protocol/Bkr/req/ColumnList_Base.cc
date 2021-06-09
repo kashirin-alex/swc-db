@@ -12,6 +12,7 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace Bkr { namespace Req {
 
 
+SWC_SHOULD_INLINE
 ColumnList_Base::ColumnList_Base(
                       const SWC::client::Clients::Ptr& clients,
                       const Mngr::Params::ColumnListReq& params,

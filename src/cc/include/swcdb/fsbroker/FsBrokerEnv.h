@@ -30,6 +30,7 @@ class Fds final : private std::unordered_map<int32_t, FS::SmartFd::Ptr> {
 
   FS::SmartFd::Ptr remove(int32_t fd);
 
+  SWC_CAN_INLINE
   FS::SmartFd::Ptr select(int32_t fd) noexcept {
     Core::MutexSptd::scope lock(m_mutex);
 
@@ -63,9 +64,10 @@ class FsBroker final {
 
   static void init() {
     SWC_ASSERT(!m_env);
-    m_env = std::make_shared<FsBroker>();
+    m_env.reset(new FsBroker());
   }
 
+  SWC_CAN_INLINE
   static SWC::FsBroker::Fds& fds() noexcept {
     return m_env->m_fds;
   }
@@ -84,14 +86,17 @@ class FsBroker final {
     return m_env->_resources;
   }
 
+  SWC_CAN_INLINE
   static int64_t in_process() noexcept {
     return m_env->m_in_process;
   }
 
+  SWC_CAN_INLINE
   static void in_process(int64_t count) noexcept {
     m_env->m_in_process.fetch_add(count);
   }
 
+  SWC_CAN_INLINE
   static bool can_process() noexcept {
     return m_env->_can_process();
   }
@@ -106,7 +111,7 @@ class FsBroker final {
       cfg_ram_release_rate(100, nullptr),
       _reporting(
         SWC::Env::Config::settings()->get_bool("swc.FsBroker.metrics.enabled")
-          ? std::make_shared<SWC::FsBroker::Metric::Reporting>()
+          ? new SWC::FsBroker::Metric::Reporting()
           : nullptr
       ),
       _resources(
@@ -177,7 +182,7 @@ class FsBroker final {
 
 namespace FsBroker {
 
-
+SWC_CAN_INLINE
 int32_t Fds::add(const FS::SmartFd::Ptr& smartfd) {
   int32_t fd;
   assign_fd: {
@@ -197,6 +202,7 @@ int32_t Fds::add(const FS::SmartFd::Ptr& smartfd) {
   return fd;
 }
 
+SWC_CAN_INLINE
 FS::SmartFd::Ptr Fds::remove(int32_t fd) {
   FS::SmartFd::Ptr smartfd;
   {

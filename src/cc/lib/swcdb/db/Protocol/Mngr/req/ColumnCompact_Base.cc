@@ -14,6 +14,7 @@ namespace Mngr { namespace Req {
 
 
 
+SWC_SHOULD_INLINE
 ColumnCompact_Base::ColumnCompact_Base(
                             const SWC::client::Clients::Ptr& clients,
                             const Params::ColumnCompactReq& params,

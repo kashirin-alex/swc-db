@@ -19,9 +19,12 @@ namespace Bkr { namespace Handler {
 class ColumnCompact final : public Mngr::Req::ColumnCompact_Base {
   public:
 
+  typedef std::shared_ptr<ColumnCompact> Ptr;
+
   ConnHandlerPtr  conn;
   Event::Ptr      ev;
 
+  SWC_CAN_INLINE
   ColumnCompact(const SWC::client::Clients::Ptr& clients,
                 const Mngr::Params::ColumnCompactReq& params,
                 const ConnHandlerPtr& conn, const Event::Ptr& ev)
@@ -58,8 +61,8 @@ void column_compact(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     Mngr::Params::ColumnCompactReq params;
     params.decode(&ptr, &remain);
 
-    std::make_shared<ColumnCompact>(
-      Env::Clients::get(), params, conn, ev)->run();
+    ColumnCompact::Ptr(new ColumnCompact(
+      Env::Clients::get(), params, conn, ev))->run();
 
   } catch(...) {
     const Error::Exception& e = SWC_CURRENT_EXCEPTION("");

@@ -31,7 +31,7 @@ Interface::use_filesystem(const Config::Settings::Ptr& settings) {
 
     case Type::LOCAL:{
       #if defined (BUILTIN_FS_LOCAL) || defined (BUILTIN_FS_ALL)
-        return std::make_shared<FileSystemLocal>(&config);
+        return FileSystem::Ptr(new FileSystemLocal(&config));
       #endif
       fs_name.append("local");
       break;
@@ -39,7 +39,7 @@ Interface::use_filesystem(const Config::Settings::Ptr& settings) {
 
     case Type::BROKER:{
       #if defined (BUILTIN_FS_BROKER) || defined (BUILTIN_FS_ALL)
-        return std::make_shared<FileSystemBroker>(&config);
+        return FileSystem::Ptr(new FileSystemBroker(&config));
       #endif
       fs_name.append("broker");
       break;
@@ -47,7 +47,7 @@ Interface::use_filesystem(const Config::Settings::Ptr& settings) {
 
     case Type::HADOOP: {
       #if defined (BUILTIN_FS_HADOOP) || defined (BUILTIN_FS_ALL)
-        return std::make_shared<FileSystemHadoop>(&config);
+        return FileSystem::Ptr(new FileSystemHadoop(&config));
       #endif
       fs_name.append("hadoop");
       break;
@@ -55,7 +55,7 @@ Interface::use_filesystem(const Config::Settings::Ptr& settings) {
 
     case Type::HADOOP_JVM: {
       #if defined (BUILTIN_FS_HADOOP_JVM) || defined (BUILTIN_FS_ALL)
-        return std::make_shared<FileSystemHadoopJVM>(&config);
+        return FileSystem::Ptr(new FileSystemHadoopJVM(&config));
       #endif
       fs_name.append("hadoop_jvm");
       break;
@@ -63,7 +63,7 @@ Interface::use_filesystem(const Config::Settings::Ptr& settings) {
 
     case Type::CEPH:{
       #if defined (BUILTIN_FS_CEPH) || defined (BUILTIN_FS_ALL)
-        return std::make_shared<FileSystemCeph>(&config);
+        return FileSystem::Ptr(new FileSystemCeph(&config));
       #endif
       fs_name.append("ceph");
       break;
@@ -512,7 +512,7 @@ namespace Env {
 
 void FsInterface::init(const SWC::Config::Settings::Ptr& settings,
                        FS::Type typ) {
-  m_env = std::make_shared<FsInterface>(settings, typ);
+  m_env.reset(new FsInterface(settings, typ));
 }
 
 FsInterface::FsInterface(const SWC::Config::Settings::Ptr& settings,

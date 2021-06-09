@@ -130,10 +130,10 @@ FileSystemBroker::get_endpoints(const Config::Settings::Ptr& settings) {
 
 FileSystemBroker::FileSystemBroker(Configurables* config)
   : FileSystem(apply_broker(config)),
-    m_io(std::make_shared<Comm::IoContext>("FsBroker",
+    m_io(new Comm::IoContext("FsBroker",
       settings->get_i32("swc.fs.broker.handlers"))),
     m_service(
-      std::make_shared<Comm::client::Serialized>(
+      new Comm::client::Serialized(
         *settings,
         "FS-BROKER",
         m_io,

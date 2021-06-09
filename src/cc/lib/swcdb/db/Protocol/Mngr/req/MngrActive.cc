@@ -12,6 +12,7 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace Mngr { namespace Req {
 
 
+SWC_SHOULD_INLINE
 MngrActive::MngrActive(const SWC::client::Clients::Ptr& clients,
                        const uint8_t& role, const cid_t& cid,
                        const DispatchHandler::Ptr& hdlr, uint32_t timeout_ms)

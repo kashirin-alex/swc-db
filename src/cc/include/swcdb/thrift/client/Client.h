@@ -38,7 +38,7 @@ namespace Thrift {}
 
 
 
-namespace SWC { 
+namespace SWC {
 namespace thrift = apache::thrift;
 namespace Thrift {
 
@@ -87,7 +87,7 @@ class Client : public CommClient, public ServiceClient {
 
   static Ptr make(const std::string& host, const uint16_t port,
                   const uint32_t timeout_ms=900000) {
-    return std::make_shared<Client>(host, port, timeout_ms);
+    return Ptr(new Client(host, port, timeout_ms));
   }
 
   Client(const std::string& host, const uint16_t port,

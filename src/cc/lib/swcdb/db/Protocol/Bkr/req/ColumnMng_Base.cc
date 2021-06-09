@@ -13,7 +13,7 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace Bkr { namespace Req {
 
 
-
+SWC_SHOULD_INLINE
 ColumnMng_Base::ColumnMng_Base(const SWC::client::Clients::Ptr& clients,
                                const Mngr::Params::ColumnMng& params,
                                const uint32_t timeout)

@@ -106,7 +106,7 @@ void load(int &err, const std::string& filepath, DB::Schema::Ptr& schema) {
      !Core::checksum_i32_chk(chksum_data, ptr, sz)) {
     err = Error::CHECKSUM_MISMATCH;
   } else {
-    schema = std::make_shared<DB::Schema>(&ptr, &sz);
+    schema.reset(new DB::Schema(&ptr, &sz));
   }
 }
 

@@ -43,7 +43,9 @@ class AppContext final : public Comm::AppContext {
 
   public:
 
-  static std::shared_ptr<AppContext> make() {
+  typedef std::shared_ptr<AppContext> Ptr;
+
+  static Ptr make() {
     auto settings = Env::Config::settings();
 
     settings->parse_file(
@@ -74,8 +76,7 @@ class AppContext final : public Comm::AppContext {
       );
     }
 
-    auto app = std::make_shared<AppContext>();
-    return app;
+    return Ptr(new AppContext());
   }
 
   AppContext()

@@ -52,15 +52,15 @@ Configurables* apply_hadoop_jvm(Configurables* config) {
 FileSystemHadoopJVM::SmartFdHadoopJVM::Ptr
 FileSystemHadoopJVM::SmartFdHadoopJVM::make_ptr(
         const std::string& filepath, uint32_t flags) {
-  return std::make_shared<SmartFdHadoopJVM>(filepath, flags);
+  return SmartFdHadoopJVM::Ptr(new SmartFdHadoopJVM(filepath, flags));
 }
 
 FileSystemHadoopJVM::SmartFdHadoopJVM::Ptr
 FileSystemHadoopJVM::SmartFdHadoopJVM::make_ptr(SmartFd::Ptr& smart_fd) {
-  return std::make_shared<SmartFdHadoopJVM>(
+  return SmartFdHadoopJVM::Ptr(new SmartFdHadoopJVM(
     smart_fd->filepath(), smart_fd->flags(),
     smart_fd->fd(), smart_fd->pos()
-  );
+  ));
 }
 
 FileSystemHadoopJVM::SmartFdHadoopJVM::SmartFdHadoopJVM(
@@ -254,9 +254,12 @@ bool FileSystemHadoopJVM::initialize(FileSystemHadoopJVM::Service::Ptr& fs) {
     SWC_LOGF(LOG_INFO,
       "FS-HadoopJVM, connecting to default namenode=%s", value);
   }
-
-  return bool(
-    fs = connection ? std::make_shared<Service>(connection) : nullptr);
+  if(connection) {
+    fs.reset(new Service(connection));
+    return true;
+  }
+  fs = nullptr;
+  return false;
 }
 
 FileSystemHadoopJVM::Service::Ptr FileSystemHadoopJVM::get_fs(int& err) {

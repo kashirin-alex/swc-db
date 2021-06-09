@@ -107,9 +107,9 @@ class Config final {
     m_env = env;
   }
 
-  static Ptr get() {
+  static Ptr& get() {
     if(!m_env)
-      m_env = std::make_shared<Config>();
+      m_env.reset(new Config());
     return m_env;
   }
 

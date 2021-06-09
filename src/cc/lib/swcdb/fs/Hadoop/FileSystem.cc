@@ -58,15 +58,15 @@ Configurables* apply_hadoop(Configurables* config) {
 FileSystemHadoop::SmartFdHadoop::Ptr
 FileSystemHadoop::SmartFdHadoop::make_ptr(
       const std::string& filepath, uint32_t flags) {
-  return std::make_shared<SmartFdHadoop>(filepath, flags);
+  return SmartFdHadoop::Ptr(new SmartFdHadoop(filepath, flags));
 }
 
 FileSystemHadoop::SmartFdHadoop::Ptr
 FileSystemHadoop::SmartFdHadoop::make_ptr(SmartFd::Ptr& smart_fd) {
-  return std::make_shared<SmartFdHadoop>(
+  return SmartFdHadoop::Ptr(new SmartFdHadoop(
     smart_fd->filepath(), smart_fd->flags(),
     smart_fd->fd(), smart_fd->pos()
-  );
+  ));
 }
 
 FileSystemHadoop::SmartFdHadoop::SmartFdHadoop(
@@ -225,7 +225,7 @@ bool FileSystemHadoop::initialize(FileSystemHadoop::Service::Ptr& fs) {
 
   if(status.ok()) {
     SWC_LOGF(LOG_INFO, "%s", fs_info.str("FS-Hadoop").c_str());
-    fs = std::make_shared<Service>(connection);
+    fs.reset(new Service(connection));
   } else {
     delete connection;
   }

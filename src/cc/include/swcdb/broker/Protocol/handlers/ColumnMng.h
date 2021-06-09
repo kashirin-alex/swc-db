@@ -19,10 +19,13 @@ namespace Bkr { namespace Handler {
 class ColumnMng final : public Mngr::Req::ColumnMng_Base {
   public:
 
+  typedef std::shared_ptr<ColumnMng> Ptr;
+
   ConnHandlerPtr  conn;
   Event::Ptr      ev;
   DB::Schema::Ptr schema;
 
+  SWC_CAN_INLINE
   ColumnMng(const SWC::client::Clients::Ptr& clients,
             const Mngr::Params::ColumnMng& params,
             const ConnHandlerPtr& conn, const Event::Ptr& ev)
@@ -64,8 +67,8 @@ void column_mng(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     Mngr::Params::ColumnMng params;
     params.decode(&ptr, &remain);
 
-    std::make_shared<ColumnMng>(
-      Env::Clients::get(), params, conn, ev)->run();
+    ColumnMng::Ptr(new ColumnMng(
+      Env::Clients::get(), params, conn, ev))->run();
 
   } catch(...) {
     const Error::Exception& e = SWC_CURRENT_EXCEPTION("");

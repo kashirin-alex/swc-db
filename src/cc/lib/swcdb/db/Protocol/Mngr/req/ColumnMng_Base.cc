@@ -15,6 +15,7 @@ namespace Mngr { namespace Req {
 
 
 
+SWC_SHOULD_INLINE
 ColumnMng_Base::ColumnMng_Base(const SWC::client::Clients::Ptr& clients,
                                const Params::ColumnMng& params,
                                const uint32_t timeout)
