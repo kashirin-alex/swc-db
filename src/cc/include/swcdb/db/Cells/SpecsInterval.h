@@ -30,23 +30,25 @@ class Interval {
   typedef std::shared_ptr<Interval> Ptr;
 
   static Ptr make_ptr(Types::Column col_type = Types::Column::UNKNOWN) {
-    return std::make_shared<Interval>(col_type);
+    return Ptr(new Interval(col_type));
   }
 
   static Ptr make_ptr(const uint8_t** bufp, size_t* remainp) {
-    return std::make_shared<Interval>(bufp, remainp);
+    return Ptr(new Interval(bufp, remainp));
   }
 
   static Ptr make_ptr(const Interval& other) {
-    return std::make_shared<Interval>(other);
+    return Ptr(new Interval(other));
   }
 
   static Ptr make_ptr(Interval&& other) {
-    return std::make_shared<Interval>(std::move(other));
+    return Ptr(new Interval(std::move(other)));
   }
 
 
-  explicit Interval(Types::Column col_type = Types::Column::UNKNOWN) noexcept;
+  explicit Interval(Types::Column col_type = Types::Column::UNKNOWN) noexcept
+                    : values(col_type), offset_rev(0), options(0) {
+  }
 
   explicit Interval(const Cell::Key& range_begin, const Cell::Key& range_end);
 

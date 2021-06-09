@@ -20,18 +20,20 @@ class MngrActive : public client::ConnQueue::ReqBase {
   public:
   typedef std::shared_ptr<MngrActive> Ptr;
 
+  SWC_CAN_INLINE
   static Ptr make(const SWC::client::Clients::Ptr& clients,
                   const cid_t& cid, const DispatchHandler::Ptr& hdlr,
                   uint32_t timeout_ms=60000) {
-    return std::make_shared<MngrActive>(
-      clients, DB::Types::MngrRole::COLUMNS, cid, hdlr, timeout_ms);
+    return Ptr(new MngrActive(
+      clients, DB::Types::MngrRole::COLUMNS, cid, hdlr, timeout_ms));
   }
 
+  SWC_CAN_INLINE
   static Ptr make(const SWC::client::Clients::Ptr& clients,
                   const uint8_t& role, const DispatchHandler::Ptr& hdlr,
-                  uint32_t timeout_ms=60000){
-    return std::make_shared<MngrActive>(
-      clients, role, DB::Schema::NO_CID, hdlr, timeout_ms);
+                  uint32_t timeout_ms=60000) {
+    return Ptr(new MngrActive(
+      clients, role, DB::Schema::NO_CID, hdlr, timeout_ms));
   }
 
   MngrActive(const SWC::client::Clients::Ptr& clients,

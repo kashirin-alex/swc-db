@@ -23,7 +23,7 @@ Group::Group(uint8_t role, cid_t cid_begin, cid_t cid_end,
 }
 
 Group::Ptr Group::copy() {
-  return std::make_shared<Group>(role, cid_begin, cid_end, get_hosts());
+  return Group::Ptr(new Group(role, cid_begin, cid_end, get_hosts()));
 }
 
 void Group::add_host(Comm::EndPoints& new_endpoints) {
@@ -122,7 +122,7 @@ Groups::Ptr Groups::copy() {
   groups.reserve(size());
   for(auto& group : *this)
     groups.push_back(group->copy());
-  return std::make_shared<Groups>(*this, std::move(groups));
+  return Groups::Ptr(new Groups(*this, std::move(groups)));
 }
 
 void Groups::on_cfg_update() {

@@ -64,7 +64,7 @@ void ColumnGetRsp::internal_decode(const uint8_t** bufp, size_t* remainp) {
    if(flag == ColumnGetReq::Flag::ID_BY_NAME)
     cid = Serialization::decode_vi64(bufp, remainp);
   else
-    schema = std::make_shared<DB::Schema>(bufp, remainp);
+    schema.reset(new DB::Schema(bufp, remainp));
 }
 
 

@@ -83,7 +83,7 @@ size_t BaseUnorderedMap::get_size_bytes() noexcept {
 
 void BaseUnorderedMap::add_column(const cid_t cid) {
   Core::MutexSptd::scope lock(m_mutex);
-  m_columns.emplace(cid, std::make_shared<Rsp>());
+  m_columns.emplace(cid, new Rsp());
 }
 
 BaseUnorderedMap::Rsp::Ptr& BaseUnorderedMap::get_columnn(const cid_t cid) {

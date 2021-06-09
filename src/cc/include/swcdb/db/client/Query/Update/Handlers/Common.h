@@ -20,10 +20,11 @@ class Common : public BaseUnorderedMap {
   typedef std::shared_ptr<Common>                 Ptr;
   typedef std::function<void(const Common::Ptr&)> Cb_t;
 
+  SWC_CAN_INLINE
   static Ptr make(const Clients::Ptr& clients,
                   Cb_t&& cb=nullptr, const Comm::IoContextPtr& io=nullptr,
                   Clients::Flag executor=Clients::DEFAULT) {
-    return std::make_shared<Common>(clients, std::move(cb), io, executor);
+    return Ptr(new Common(clients, std::move(cb), io, executor));
   }
 
   using Base::error;

@@ -12,13 +12,15 @@ namespace SWC { namespace client {
 Brokers::Brokers(const Config::Settings& settings,
                  Comm::IoContextPtr ioctx,
                  const ContextBroker::Ptr& bkr_ctx)
-    : queues(std::make_shared<Comm::client::ConnQueues>(
-        std::make_shared<Comm::client::Serialized>(
+    : queues(new Comm::client::ConnQueues(
+        Comm::client::Serialized::Ptr(new Comm::client::Serialized(
           settings,
           "BROKER",
           ioctx,
-          bkr_ctx ? bkr_ctx : std::make_shared<ContextBroker>(settings)
-        ),
+          bkr_ctx
+            ? bkr_ctx
+            : ContextBroker::Ptr(new ContextBroker(settings))
+        )),
          settings.get<Config::Property::V_GINT32>(
           "swc.client.Bkr.connection.timeout"),
          settings.get<Config::Property::V_GINT32>(

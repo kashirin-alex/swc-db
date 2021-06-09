@@ -21,29 +21,34 @@ class Column final : public std::vector<Interval::Ptr> {
   typedef std::shared_ptr<Column>    Ptr;
 
   static Ptr make_ptr(cid_t cid=0, uint32_t reserve=0) {
-    return std::make_shared<Column>(cid, reserve);
+    return Ptr(new Column(cid, reserve));
   }
 
   static Ptr make_ptr(cid_t cid, const Intervals& intervals) {
-    return std::make_shared<Column>(cid, intervals);
+    return Ptr(new Column(cid, intervals));
   }
 
   static Ptr make_ptr(const uint8_t** bufp, size_t* remainp) {
-    return std::make_shared<Column>(bufp, remainp);
+    return Ptr(new Column(bufp, remainp));
   }
 
   static Ptr make_ptr(const Column& other) {
-    return std::make_shared<Column>(other);
+    return Ptr(new Column(other));
   }
 
   static Ptr make_ptr(Ptr other) {
-    return std::make_shared<Column>(*other.get());
+    return Ptr(new Column(*other.get()));
   }
 
 
-  explicit Column(cid_t cid=0, uint32_t reserve=0);
+  explicit Column(cid_t cid=0, uint32_t _reserve=0)
+                  : cid(cid) {
+    reserve(_reserve);
+  }
 
-  explicit Column(cid_t cid, const Intervals& intervals);
+  explicit Column(cid_t cid, const Intervals& intervals)
+                  : Intervals(intervals), cid(cid) {
+  }
 
   explicit Column(const uint8_t** bufp, size_t* remainp) {
     decode(bufp, remainp);

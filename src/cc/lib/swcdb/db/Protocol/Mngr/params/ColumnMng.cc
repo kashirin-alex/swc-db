@@ -23,7 +23,7 @@ void ColumnMng::internal_encode(uint8_t** bufp) const {
 
 void ColumnMng::internal_decode(const uint8_t** bufp, size_t* remainp) {
   function = Function(Serialization::decode_i8(bufp, remainp));
-  schema = std::make_shared<DB::Schema>(bufp, remainp);
+  schema.reset(new DB::Schema(bufp, remainp));
 }
 
 

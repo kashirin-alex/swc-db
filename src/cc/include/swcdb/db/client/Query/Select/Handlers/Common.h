@@ -22,12 +22,13 @@ class Common : public BaseUnorderedMap {
   typedef std::shared_ptr<Common>   Ptr;
   typedef std::function<void(Ptr)>  Cb_t;
 
+  SWC_CAN_INLINE
   static Ptr make(const Clients::Ptr& clients,
                   Cb_t&& cb=nullptr, bool rsp_partials=false,
                   const Comm::IoContextPtr& io=nullptr,
                   Clients::Flag executor=Clients::DEFAULT) {
-    return std::make_shared<Common>(
-      clients, std::move(cb), rsp_partials, io, executor);
+    return Ptr(new Common(
+      clients, std::move(cb), rsp_partials, io, executor));
   }
 
   Core::AtomicBool valid_state;

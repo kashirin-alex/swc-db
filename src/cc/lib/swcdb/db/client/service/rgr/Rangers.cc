@@ -12,13 +12,15 @@ namespace SWC { namespace client {
 Rangers::Rangers(const Config::Settings& settings,
                  Comm::IoContextPtr ioctx,
                  const ContextRanger::Ptr& rgr_ctx)
-    : queues(std::make_shared<Comm::client::ConnQueues>(
-        std::make_shared<Comm::client::Serialized>(
+    : queues(new Comm::client::ConnQueues(
+        Comm::client::Serialized::Ptr(new Comm::client::Serialized(
           settings,
           "RANGER",
           ioctx,
-          rgr_ctx ? rgr_ctx : std::make_shared<ContextRanger>(settings)
-        ),
+          rgr_ctx
+            ? rgr_ctx
+            : ContextRanger::Ptr(new ContextRanger(settings))
+        )),
         settings.get<Config::Property::V_GINT32>(
           "swc.client.Rgr.connection.timeout"),
         settings.get<Config::Property::V_GINT32>(

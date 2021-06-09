@@ -193,11 +193,12 @@ class Mutable final {
   };
 
 
+  SWC_CAN_INLINE
   static Ptr make(const Types::KeySeq key_seq,
                   const uint32_t max_revs=1,
                   const uint64_t ttl_ns=0,
                   const Types::Column type=Types::Column::PLAIN) {
-    return std::make_shared<Mutable>(key_seq, max_revs, ttl_ns, type);
+    return Ptr(new Mutable(key_seq, max_revs, ttl_ns, type));
   }
 
 
@@ -210,9 +211,9 @@ class Mutable final {
                    const Types::Column type,
                    const StaticBuffer& buffer);
 
-  explicit Mutable(Mutable& other);
+  explicit Mutable(Mutable&& other);
 
-  Mutable(const Mutable&&) = delete;
+  Mutable(const Mutable&) = delete;
 
   Mutable& operator=(const Mutable& other) = delete;
 

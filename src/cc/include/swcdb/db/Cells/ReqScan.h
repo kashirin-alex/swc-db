@@ -159,7 +159,7 @@ class ReqScanTest : public ReqScan {
 
   typedef std::shared_ptr<ReqScanTest>  Ptr;
 
-  static Ptr make() { return std::make_shared<ReqScanTest>(); }
+  static Ptr make() { return Ptr(new ReqScanTest()); }
 
   ReqScanTest() noexcept { }
 

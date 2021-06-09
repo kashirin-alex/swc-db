@@ -10,6 +10,7 @@
 namespace SWC { namespace DB { namespace Cells {
 
 
+SWC_SHOULD_INLINE
 Mutable::Bucket* Mutable::make_bucket(uint16_t reserve) {
   auto bucket = new Bucket;
   if(reserve)
@@ -37,12 +38,11 @@ Mutable::Mutable(const Types::KeySeq key_seq,
   add_sorted(buffer.base, buffer.size);
 }
 
-Mutable::Mutable(Mutable& other)
+Mutable::Mutable(Mutable&& other)
                 : key_seq(other.key_seq), type(other.type),
                   max_revs(other.max_revs), ttl(other.ttl),
-                  buckets(other.buckets),
+                  buckets(std::move(other.buckets)),
                   _bytes(other.size_bytes()), _size(other.size()) {
-  other.buckets.clear();
   other.free();
 }
 

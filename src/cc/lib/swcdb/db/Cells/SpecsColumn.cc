@@ -11,14 +11,6 @@
 namespace SWC { namespace DB { namespace Specs {
 
 
-Column::Column(cid_t cid, uint32_t _reserve)
-               : cid(cid) {
-  reserve(_reserve);
-}
-
-Column::Column(cid_t cid, const Intervals& intervals)
-                : Intervals(intervals), cid(cid) {
-}
 
 void Column::copy(const Column &other) {
   cid = other.cid;

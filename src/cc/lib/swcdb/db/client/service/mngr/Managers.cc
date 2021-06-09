@@ -12,13 +12,15 @@ namespace SWC { namespace client {
 Managers::Managers(const Config::Settings& settings,
                    Comm::IoContextPtr ioctx,
                    const ContextManager::Ptr& mngr_ctx)
-    : queues(std::make_shared<Comm::client::ConnQueues>(
-        std::make_shared<Comm::client::Serialized>(
+    : queues(new Comm::client::ConnQueues(
+        Comm::client::Serialized::Ptr(new Comm::client::Serialized(
           settings,
           "MANAGER",
           ioctx,
-          mngr_ctx ? mngr_ctx : std::make_shared<ContextManager>(settings)
-        ),
+          mngr_ctx
+            ? mngr_ctx
+            : ContextManager::Ptr(new ContextManager(settings))
+        )),
         settings.get<Config::Property::V_GINT32>(
           "swc.client.Mngr.connection.timeout"),
         settings.get<Config::Property::V_GINT32>(
@@ -28,7 +30,7 @@ Managers::Managers(const Config::Settings& settings,
         settings.get<Config::Property::V_GINT32>(
           "swc.client.request.again.delay")
       )),
-      groups(std::make_shared<Mngr::Groups>(settings)->init()) {
+      groups(Mngr::Groups::Ptr(new Mngr::Groups(settings))->init()) {
 }
 
 }} //namespace SWC::client

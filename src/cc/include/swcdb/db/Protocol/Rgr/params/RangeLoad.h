@@ -40,7 +40,7 @@ class RangeLoad final : public Common::Params::ColRangeId {
 
   void internal_decode(const uint8_t** bufp, size_t* remainp) override {
     ColRangeId::internal_decode(bufp, remainp);
-    schema = std::make_shared<DB::Schema>(bufp, remainp);
+    schema.reset(new DB::Schema(bufp, remainp));
   }
 
 };

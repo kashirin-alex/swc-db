@@ -38,7 +38,7 @@ size_t ColumnMutable::size_bytes() noexcept {
 }
 
 DB::Cell::Key::Ptr ColumnMutable::get_first_key() {
-  auto key = std::make_shared<DB::Cell::Key>();
+  DB::Cell::Key::Ptr key(new DB::Cell::Key());
   Core::MutexSptd::scope lock(m_mutex);
   if(m_cells.size())
     m_cells.get(0, *key.get());
@@ -47,13 +47,14 @@ DB::Cell::Key::Ptr ColumnMutable::get_first_key() {
 
 DB::Cell::Key::Ptr
 ColumnMutable::get_key_next(const DB::Cell::Key& eval_key, bool start_key) {
-  auto key = std::make_shared<DB::Cell::Key>();
-  Core::MutexSptd::scope lock(m_mutex);
-  if(eval_key.empty() ||
-    !m_cells.get(
-      eval_key, start_key? Condition::GE : Condition::GT, *key.get()))
+  if(eval_key.empty())
     return nullptr;
-  return key;
+  DB::Cell::Key key;
+  Core::MutexSptd::scope lock(m_mutex);
+  return
+    m_cells.get(eval_key, start_key ? Condition::GE : Condition::GT, key)
+      ? DB::Cell::Key::Ptr(new DB::Cell::Key(std::move(key)))
+      : nullptr;
 }
 
 size_t ColumnMutable::add(const DynamicBuffer& cells,

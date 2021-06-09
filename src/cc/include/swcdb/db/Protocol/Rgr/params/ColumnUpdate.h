@@ -35,7 +35,7 @@ class ColumnUpdate final : public Serializable {
   }
 
   void internal_decode(const uint8_t** bufp, size_t* remainp) override {
-    schema = std::make_shared<DB::Schema>(bufp, remainp);
+    schema.reset(new DB::Schema(bufp, remainp));
   }
 
 };

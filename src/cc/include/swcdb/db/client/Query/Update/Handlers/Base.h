@@ -73,17 +73,21 @@ class Base : public std::enable_shared_from_this<Base> {
                                 const DB::Cell::Key& key_end,
                                 size_t buff_sz, bool& more) {
       DynamicBuffer cells_buff;
-      return get_buff(key_start, key_end, buff_sz, more, cells_buff)
-        ? std::make_shared<DynamicBuffer>(std::move(cells_buff))
-        : nullptr;
+      return DynamicBuffer::Ptr(
+        get_buff(key_start, key_end, buff_sz, more, cells_buff)
+          ? new DynamicBuffer(std::move(cells_buff))
+          : nullptr
+      );
     }
 
     SWC_CAN_INLINE
     DynamicBuffer::Ptr get_buff(size_t buff_sz, bool& more) {
       DynamicBuffer cells_buff;
-      return get_buff(buff_sz, more, cells_buff)
-        ? std::make_shared<DynamicBuffer>(std::move(cells_buff))
-        : nullptr;
+      return DynamicBuffer::Ptr(
+        get_buff(buff_sz, more, cells_buff)
+          ? new DynamicBuffer(std::move(cells_buff))
+          : nullptr
+      );
     }
 
     virtual void error(int err) noexcept = 0;
