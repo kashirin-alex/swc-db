@@ -7,36 +7,71 @@
 #define swcdb_db_protocol_mngr_req_ColumnList_Sync_h
 
 
-#include "swcdb/db/Protocol/Mngr/req/ColumnList_Base.h"
+#include "swcdb/db/Protocol/Mngr/req/ColumnList.h"
 
 
 namespace SWC { namespace Comm { namespace Protocol {
 namespace Mngr { namespace Req {
 
 
-class ColumnList_Sync: public ColumnList_Base {
+class ColumnList_Sync {
   public:
 
-  static void request(const SWC::client::Clients::Ptr& clients,
-                      const Params::ColumnListReq& params,
-                      int& err, std::vector<DB::Schema::Ptr>& schemas,
-                      const uint32_t timeout = 10000);
+  template<typename... DataArgsT>
+  SWC_CAN_INLINE
+  static std::shared_ptr<ColumnList<ColumnList_Sync>> 
+  make(const Params::ColumnListReq& params,
+       const uint32_t timeout,
+       DataArgsT&&... args) {
+    return ColumnList<ColumnList_Sync>::make(params, timeout, args...);
+  }
 
-  std::promise<void> await;
+  template<typename... DataArgsT>
+  SWC_CAN_INLINE
+  static void request(const Params::ColumnListReq& params,
+                      const uint32_t timeout,
+                      DataArgsT&&... args) {
+    auto req = make(params, timeout, args...);
+    auto res = req->data.await.get_future();
+    req->run();
+    res.get();
+  }
 
+
+  std::promise<void>        await;
+
+  SWC_CAN_INLINE
   ColumnList_Sync(const SWC::client::Clients::Ptr& clients,
-                  const Params::ColumnListReq& params,
-                  int& err, std::vector<DB::Schema::Ptr>& schemas,
-                  const uint32_t timeout);
+                 int& err, std::vector<DB::Schema::Ptr>& schemas) noexcept
+                 : clients(clients), err(err), schemas(schemas) {
+  }
 
-  virtual ~ColumnList_Sync() { }
+  // ~ColumnList_Sync() { }
 
-  protected:
-  virtual void callback(int err, const Params::ColumnListRsp& rsp) override;
+  SWC_CAN_INLINE
+  SWC::client::Clients::Ptr& get_clients() noexcept {
+    return clients;
+  }
+
+  SWC_CAN_INLINE
+  bool valid() {
+    return true;
+  }
+
+  SWC_CAN_INLINE
+  void callback(const client::ConnQueue::ReqBase::Ptr&,
+                int error,
+                const Params::ColumnListRsp& rsp) {
+    err = error;
+    schemas = std::move(rsp.schemas);
+    await.set_value();
+  }
 
   private:
+  SWC::client::Clients::Ptr     clients;
   int&                          err;
   std::vector<DB::Schema::Ptr>& schemas;
+
 };
 
 
@@ -44,8 +79,5 @@ class ColumnList_Sync: public ColumnList_Base {
 }}}}}
 
 
-#ifdef SWC_IMPL_SOURCE
-#include "swcdb/db/Protocol/Mngr/req/ColumnList_Sync.cc"
-#endif
 
 #endif // swcdb_db_protocol_mngr_req_ColumnList_Sync_h

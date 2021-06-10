@@ -8,37 +8,38 @@
 #define swcdb_broker_Protocol_handlers_ColumnList_h
 
 
-#include "swcdb/db/Protocol/Mngr/req/ColumnList_Base.h"
+#include "swcdb/db/Protocol/Mngr/req/ColumnList.h"
 
 
 namespace SWC { namespace Comm { namespace Protocol {
 namespace Bkr { namespace Handler {
 
 
-class ColumnList final : public Mngr::Req::ColumnList_Base {
-  public:
+struct ColumnList {
 
-  typedef std::shared_ptr<ColumnList> Ptr;
-
-  ConnHandlerPtr  conn;
-  Event::Ptr      ev;
+  ConnHandlerPtr conn;
+  Event::Ptr     ev;
 
   SWC_CAN_INLINE
-  ColumnList(const SWC::client::Clients::Ptr& clients,
-            const Mngr::Params::ColumnListReq& params,
-            const ConnHandlerPtr& conn, const Event::Ptr& ev)
-            : Mngr::Req::ColumnList_Base(
-                clients, params, ev->header.timeout_ms),
-              conn(conn), ev(ev) {
+  ColumnList(const ConnHandlerPtr& conn, const Event::Ptr& ev) noexcept
+            : conn(conn), ev(ev) {
   }
 
-  virtual ~ColumnList() { }
+  //~ColumnList() { }
 
-  bool valid() override {
+  SWC_CAN_INLINE
+  SWC::client::Clients::Ptr& get_clients() noexcept {
+    return Env::Clients::get();
+  }
+
+  SWC_CAN_INLINE
+  bool valid() {
     return !ev->expired() && conn->is_open();
   }
 
-  void callback(int err, const Mngr::Params::ColumnListRsp& rsp) override {
+  SWC_CAN_INLINE
+  void callback(const client::ConnQueue::ReqBase::Ptr&,
+                int err, const Mngr::Params::ColumnListRsp& rsp) {
     if(valid()) {
       auto cbp = err ? Buffers::make(ev, 4) : Buffers::make(ev, rsp, 4);
       cbp->append_i32(
@@ -61,8 +62,8 @@ void column_list(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     Mngr::Params::ColumnListReq params;
     params.decode(&ptr, &remain);
 
-    ColumnList::Ptr(new ColumnList(
-      Env::Clients::get(), params, conn, ev))->run();
+    Mngr::Req::ColumnList<ColumnList>::request(
+      params, ev->header.timeout_ms, conn, ev);
 
   } catch(...) {
     const Error::Exception& e = SWC_CURRENT_EXCEPTION("");

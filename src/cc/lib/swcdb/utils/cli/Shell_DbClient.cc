@@ -222,9 +222,9 @@ bool DbClient::compact_column(std::string& cmd) {
     std::vector<DB::Schema::Ptr> _schemas;
     with_broker
       ? Comm::Protocol::Bkr::Req::ColumnList_Sync::request(
-          clients, params, err, _schemas, 300000)
+          params, 300000, clients, err, _schemas)
       : Comm::Protocol::Mngr::Req::ColumnList_Sync::request(
-          clients, params, err, _schemas, 300000);
+          params, 300000, clients, err, _schemas);
     if(err) {
       message.append(Error::get_text(err));
       message.append("\n");
@@ -238,9 +238,9 @@ bool DbClient::compact_column(std::string& cmd) {
   for(auto& schema : schemas) {
     with_broker
       ? Comm::Protocol::Bkr::Req::ColumnCompact_Sync::request(
-          clients, schema->cid, err, 300000)
+          schema->cid, 300000, clients, err)
       : Comm::Protocol::Mngr::Req::ColumnCompact_Sync::request(
-          clients, schema->cid, err, 300000);
+          schema->cid, 300000, clients, err);
     SWC_PRINT << "Compactig Column cid=" << schema->cid
               << " '" << schema->col_name << "' ";
     Error::print(SWC_LOG_OSTREAM, err);
@@ -265,9 +265,9 @@ bool DbClient::list_columns(std::string& cmd) {
     std::vector<DB::Schema::Ptr> _schemas;
     with_broker
       ? Comm::Protocol::Bkr::Req::ColumnList_Sync::request(
-          clients, params, err, _schemas, 300000)
+          params, 300000, clients, err, _schemas)
       : Comm::Protocol::Mngr::Req::ColumnList_Sync::request(
-          clients, params, err, _schemas, 300000);
+          params, 300000, clients, err, _schemas);
     if(err) {
       message.append(Error::get_text(err));
       message.append("\n");

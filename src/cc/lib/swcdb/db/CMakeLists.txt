@@ -60,16 +60,10 @@ set(swcdb_sources
   Protocol/Mngr/req/RgrGet_Base.cc
   Protocol/Mngr/params/ColumnCompact.cc
   Protocol/Mngr/req/ColumnCompact_Base.cc
-  Protocol/Mngr/req/ColumnCompact.cc
-  Protocol/Mngr/req/ColumnCompact_Sync.cc
   Protocol/Mngr/params/ColumnGet.cc
   Protocol/Mngr/req/ColumnGet_Base.cc
-  Protocol/Mngr/req/ColumnGet.cc
-  Protocol/Mngr/req/ColumnGet_Sync.cc
   Protocol/Mngr/params/ColumnList.cc
   Protocol/Mngr/req/ColumnList_Base.cc
-  Protocol/Mngr/req/ColumnList.cc
-  Protocol/Mngr/req/ColumnList_Sync.cc
   Protocol/Mngr/params/ColumnMng.cc
   Protocol/Mngr/req/ColumnMng_Base.cc
   Protocol/Mngr/req/ColumnMng.cc
@@ -83,14 +77,8 @@ set(swcdb_sources
   Protocol/Bkr/params/CellsSelect.cc
   Protocol/Bkr/req/Scanner_CellsSelect.cc
   Protocol/Bkr/req/ColumnCompact_Base.cc
-  Protocol/Bkr/req/ColumnCompact.cc
-  Protocol/Bkr/req/ColumnCompact_Sync.cc
   Protocol/Bkr/req/ColumnGet_Base.cc
-  Protocol/Bkr/req/ColumnGet.cc
-  Protocol/Bkr/req/ColumnGet_Sync.cc
   Protocol/Bkr/req/ColumnList_Base.cc
-  Protocol/Bkr/req/ColumnList.cc
-  Protocol/Bkr/req/ColumnList_Sync.cc
   Protocol/Bkr/req/ColumnMng_Base.cc
   Protocol/Bkr/req/ColumnMng.cc
   Protocol/Bkr/req/ColumnMng_Sync.cc

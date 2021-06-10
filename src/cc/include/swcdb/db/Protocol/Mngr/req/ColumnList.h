@@ -14,39 +14,89 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace Mngr { namespace Req {
 
 
-class ColumnList: public ColumnList_Base {
+template<typename DataT>
+class ColumnList final : public ColumnList_Base {
   public:
 
-  typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&,
-                             int, const Params::ColumnListRsp&)> Cb_t;
+  typedef std::shared_ptr<ColumnList> Ptr;
+  DataT                               data;
 
-  static void request(const SWC::client::Clients::Ptr& clients,
-                      Cb_t&& cb, const uint32_t timeout = 10000);
+  template<typename... DataArgsT>
+  SWC_CAN_INLINE
+  static Ptr make(
+        const Params::ColumnListReq& params,
+        const uint32_t timeout,
+        DataArgsT&&... args) {
+    return Ptr(new ColumnList(params, timeout, args...));
+  }
 
-  static void request(const SWC::client::Clients::Ptr& clients,
-                      const Params::ColumnListReq& params,
-                      Cb_t&& cb, const uint32_t timeout = 10000);
-
-  ColumnList(const SWC::client::Clients::Ptr& clients,
-             const Params::ColumnListReq& params, Cb_t&& cb,
-             const uint32_t timeout);
+  template<typename... DataArgsT>
+  SWC_CAN_INLINE
+  static void request(
+        const Params::ColumnListReq& params,
+        const uint32_t timeout,
+        DataArgsT&&... args) {
+    make(params, timeout, args...)->run();
+  }
 
   virtual ~ColumnList() { }
 
   protected:
-  virtual void callback(int err, const Params::ColumnListRsp& rsp) override;
 
-  private:
-  const Cb_t                cb;
+  template<typename... DataArgsT>
+  SWC_CAN_INLINE
+  ColumnList(
+        const Params::ColumnListReq& params,
+        const uint32_t timeout,
+        DataArgsT&&... args)
+      : ColumnList_Base(params, timeout),
+        data(args...) {
+  }
+
+  SWC::client::Clients::Ptr& get_clients() noexcept override {
+    return data.get_clients();
+  }
+
+  bool valid() override {
+    return data.valid();
+  }
+
+  void callback(int err, const Params::ColumnListRsp& rsp) override {
+    data.callback(req(), err, rsp);
+  }
+
 };
+
+
+/** Functional_ColumnList - a default CbT DataT STL
+  ```
+  using data_t = Comm::Protocol::Mngr::Req::Functional_ColumnList;
+  auto cb = [](void* datap,
+               const Comm::client::ConnQueue::ReqBase::Ptr&,
+               int err,
+               const Comm::Protocol::Mngr::Params::ColumnListRsp&) noexcept {
+    data_t::Ptr datap = data_t::cast(_datap);
+    (void)(datap->clients);
+    ...;
+  };
+  Comm::Protocol::Mngr::Req::ColumnList<data_t>::request(
+    params, timeout, clients, std::move(cb));
+  ```
+*/
+
+typedef Common::Req::function<
+  std::function<void(
+    void*,
+    const client::ConnQueue::ReqBase::Ptr&,
+    int err,
+    const Params::ColumnListRsp&
+  )>
+> Functional_ColumnList;
 
 
 
 }}}}}
 
 
-#ifdef SWC_IMPL_SOURCE
-#include "swcdb/db/Protocol/Mngr/req/ColumnList.cc"
-#endif
 
 #endif // swcdb_db_protocol_mngr_req_ColumnList_h

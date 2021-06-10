@@ -16,17 +16,14 @@ namespace Mngr { namespace Req {
 
 SWC_SHOULD_INLINE
 ColumnGet_Base::ColumnGet_Base(
-                const SWC::client::Clients::Ptr& clients,
-                const Params::ColumnGetReq& params,
-                const uint32_t timeout)
-                : client::ConnQueue::ReqBase(
-                    Buffers::make(params, 0, COLUMN_GET, timeout)
-                  ),
-                  clients(clients) {
+        const Params::ColumnGetReq& params,
+        const uint32_t timeout)
+        : client::ConnQueue::ReqBase(
+            Buffers::make(params, 0, COLUMN_GET, timeout)) {
 }
 
 void ColumnGet_Base::handle_no_conn() {
-  if(clients->stopping()) {
+  if(get_clients()->stopping()) {
     callback(Error::CLIENT_STOPPING, Params::ColumnGetRsp());
   } else if(!valid()) {
     callback(Error::CANCELLED, Params::ColumnGetRsp());
@@ -39,20 +36,21 @@ void ColumnGet_Base::handle_no_conn() {
 bool ColumnGet_Base::run() {
   if(endpoints.empty()) {
     // ColumnGet not like ColumnList (can be any mngr if by cid)
-    clients->get_mngr(DB::Types::MngrRole::SCHEMAS, endpoints);
+    get_clients()->get_mngr(DB::Types::MngrRole::SCHEMAS, endpoints);
     if(endpoints.empty()) {
-      if(clients->stopping()) {
+      if(get_clients()->stopping()) {
         callback(Error::CLIENT_STOPPING, Params::ColumnGetRsp());
       } else if(!valid()) {
         callback(Error::CANCELLED, Params::ColumnGetRsp());
       } else {
         MngrActive::make(
-          clients, DB::Types::MngrRole::SCHEMAS, shared_from_this())->run();
+          get_clients(), DB::Types::MngrRole::SCHEMAS, shared_from_this()
+        )->run();
       }
       return false;
     }
   }
-  clients->get_mngr_queue(endpoints)->put(req());
+  get_clients()->get_mngr_queue(endpoints)->put(req());
   return true;
 }
 
@@ -81,7 +79,7 @@ void ColumnGet_Base::handle(ConnHandlerPtr, const Event::Ptr& ev) {
 }
 
 void ColumnGet_Base::clear_endpoints() {
-  clients->remove_mngr(endpoints);
+  get_clients()->remove_mngr(endpoints);
   endpoints.clear();
 }
 

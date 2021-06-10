@@ -8,63 +8,142 @@
 
 
 #include "swcdb/db/Protocol/Bkr/req/ColumnGet_Base.h"
+#include "swcdb/db/Protocol/Common/req/handler_data.h"
 
 
 namespace SWC { namespace Comm { namespace Protocol {
 namespace Bkr { namespace Req {
 
 
-class ColumnGet: public ColumnGet_Base {
+template<typename DataT>
+class ColumnGet final : public ColumnGet_Base {
   public:
 
-  using Flag = Mngr::Params::ColumnGetReq::Flag;
-  typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&,
-                             int, const Mngr::Params::ColumnGetRsp&)> Cb_t;
+  typedef std::shared_ptr<ColumnGet>  Ptr;
+  DataT                               data;
 
+  template<typename... DataArgsT>
+  SWC_CAN_INLINE
+  static Ptr make(
+        const Mngr::Params::ColumnGetReq& params,
+        const uint32_t timeout,
+        DataArgsT&&... args) {
+    return Ptr(new ColumnGet(params, timeout, args...));
+  }
 
-  static void schema(const SWC::client::Clients::Ptr& clients,
-                     const std::string& name, Cb_t&& cb,
-                     const uint32_t timeout = 10000);
+  template<typename... DataArgsT>
+  SWC_CAN_INLINE
+  static void request(
+        const Mngr::Params::ColumnGetReq& params,
+        const uint32_t timeout,
+        DataArgsT&&... args) {
+    make(params, timeout, args...)->run();
+  }
 
-  static void schema(const SWC::client::Clients::Ptr& clients,
-                     cid_t cid, Cb_t&& cb,
-                     const uint32_t timeout = 10000);
+  template<typename... DataArgsT>
+  SWC_CAN_INLINE
+  static void request(Mngr::Params::ColumnGetReq::Flag flag,
+                      const std::string& name,
+                      const uint32_t timeout,
+                      DataArgsT&&... args) {
+    request(Mngr::Params::ColumnGetReq(flag, name), timeout, args...);
+  }
 
-  static void cid(const SWC::client::Clients::Ptr& clients,
-                  const std::string& name, Cb_t&& cb,
-                  const uint32_t timeout = 10000);
+  template<typename... DataArgsT>
+  SWC_CAN_INLINE
+  static void request(Mngr::Params::ColumnGetReq::Flag flag,
+                      cid_t cid,
+                      const uint32_t timeout,
+                      DataArgsT&&... args) {
+    request(Mngr::Params::ColumnGetReq(flag, cid), timeout, args...);
+  }
 
-  static void request(const SWC::client::Clients::Ptr& clients,
-                      Flag flag, const std::string& name, Cb_t&& cb,
-                      const uint32_t timeout = 10000);
+  template<typename... DataArgsT>
+  SWC_CAN_INLINE
+  static void schema(const std::string& name,
+                     const uint32_t timeout,
+                     DataArgsT&&... args) {
+    request(
+      Mngr::Params::ColumnGetReq::Flag::SCHEMA_BY_NAME, name, timeout, args...);
+  }
 
-  static void request(const SWC::client::Clients::Ptr& clients,
-                      Flag flag, cid_t cid, Cb_t&& cb,
-                      const uint32_t timeout = 10000);
+  template<typename... DataArgsT>
+  SWC_CAN_INLINE
+  static void schema(cid_t cid,
+                     const uint32_t timeout,
+                     DataArgsT&&... args) {
+    request(
+      Mngr::Params::ColumnGetReq::Flag::SCHEMA_BY_ID, cid, timeout, args...);
+  }
 
-
-  ColumnGet(const SWC::client::Clients::Ptr& clients,
-            const Mngr::Params::ColumnGetReq& params, Cb_t&& cb,
-            const uint32_t timeout);
+  template<typename... DataArgsT>
+  SWC_CAN_INLINE
+  static void cid(const std::string& name,
+                  const uint32_t timeout,
+                  DataArgsT&&... args) {
+    request(
+      Mngr::Params::ColumnGetReq::Flag::ID_BY_NAME, name, timeout, args...);
+  }
 
   virtual ~ColumnGet() { }
 
   protected:
-  virtual void callback(int error,
-                        const Mngr::Params::ColumnGetRsp& rsp)  override;
 
-  private:
-  const Cb_t                      cb;
+  template<typename... DataArgsT>
+  SWC_CAN_INLINE
+  ColumnGet(
+        const Mngr::Params::ColumnGetReq& params,
+        const uint32_t timeout,
+        DataArgsT&&... args)
+      : ColumnGet_Base(params, timeout),
+        data(args...) {
+  }
+
+  SWC::client::Clients::Ptr& get_clients() noexcept override {
+    return data.get_clients();
+  }
+
+  bool valid() override {
+    return data.valid();
+  }
+
+  void callback(int err, const Mngr::Params::ColumnGetRsp& rsp) override {
+    data.callback(req(), err, rsp);
+  }
 
 };
+
+
+
+/** Functional_ColumnGet - a default CbT DataT STL
+  ```
+  using data_t = Comm::Protocol::Bkr::Req::Functional_ColumnGet;
+  auto cb = [](void* datap,
+               const Comm::client::ConnQueue::ReqBase::Ptr&,
+               int err,
+               const Comm::Protocol::Mngr::Params::ColumnGetRsp&) noexcept {
+    data_t::Ptr datap = data_t::cast(_datap);
+    (void)(datap->clients);
+    ...;
+  };
+  Comm::Protocol::Bkr::Req::ColumnGet<data_t>::request(
+    params/cid/name, timeout, clients, std::move(cb));
+  ```
+*/
+
+typedef Common::Req::function<
+  std::function<void(
+    void*,
+    const client::ConnQueue::ReqBase::Ptr&,
+    int err,
+    Mngr::Params::ColumnGetRsp&
+  )>
+> Functional_ColumnGet;
 
 
 
 }}}}}
 
 
-#ifdef SWC_IMPL_SOURCE
-#include "swcdb/db/Protocol/Bkr/req/ColumnGet.cc"
-#endif
 
 #endif // swcdb_db_protocol_bkr_req_ColumnGet_h

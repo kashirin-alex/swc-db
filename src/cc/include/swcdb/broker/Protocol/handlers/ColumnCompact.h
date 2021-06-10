@@ -8,38 +8,38 @@
 #define swcdb_broker_Protocol_handlers_ColumnCompact_h
 
 
-#include "swcdb/db/Protocol/Mngr/req/ColumnCompact_Base.h"
+#include "swcdb/db/Protocol/Mngr/req/ColumnCompact.h"
 
 
 namespace SWC { namespace Comm { namespace Protocol {
 namespace Bkr { namespace Handler {
 
 
+struct ColumnCompact {
 
-class ColumnCompact final : public Mngr::Req::ColumnCompact_Base {
-  public:
-
-  typedef std::shared_ptr<ColumnCompact> Ptr;
-
-  ConnHandlerPtr  conn;
-  Event::Ptr      ev;
+  ConnHandlerPtr conn;
+  Event::Ptr     ev;
 
   SWC_CAN_INLINE
-  ColumnCompact(const SWC::client::Clients::Ptr& clients,
-                const Mngr::Params::ColumnCompactReq& params,
-                const ConnHandlerPtr& conn, const Event::Ptr& ev)
-                : Mngr::Req::ColumnCompact_Base(
-                    clients, params, ev->header.timeout_ms),
-                  conn(conn), ev(ev) {
+  ColumnCompact(const ConnHandlerPtr& conn, const Event::Ptr& ev) noexcept
+                : conn(conn), ev(ev) {
   }
 
-  virtual ~ColumnCompact() { }
+  //~ColumnCompact() { }
 
-  bool valid() override {
+  SWC_CAN_INLINE
+  SWC::client::Clients::Ptr& get_clients() noexcept {
+    return Env::Clients::get();
+  }
+
+  SWC_CAN_INLINE
+  bool valid() {
     return !ev->expired() && conn->is_open();
   }
 
-  void callback(const Mngr::Params::ColumnCompactRsp& rsp) override {
+  SWC_CAN_INLINE
+  void callback(const client::ConnQueue::ReqBase::Ptr&,
+                const Mngr::Params::ColumnCompactRsp& rsp) {
     if(valid())
       conn->send_response(Buffers::make(
         ev,
@@ -61,8 +61,8 @@ void column_compact(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     Mngr::Params::ColumnCompactReq params;
     params.decode(&ptr, &remain);
 
-    ColumnCompact::Ptr(new ColumnCompact(
-      Env::Clients::get(), params, conn, ev))->run();
+    Mngr::Req::ColumnCompact<ColumnCompact>::request(
+      params, ev->header.timeout_ms, conn, ev);
 
   } catch(...) {
     const Error::Exception& e = SWC_CURRENT_EXCEPTION("");

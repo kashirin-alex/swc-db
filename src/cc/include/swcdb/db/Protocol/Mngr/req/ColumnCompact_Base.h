@@ -18,8 +18,7 @@ namespace Mngr { namespace Req {
 class ColumnCompact_Base: public client::ConnQueue::ReqBase {
   public:
 
-  ColumnCompact_Base(const SWC::client::Clients::Ptr& clients,
-                     const Params::ColumnCompactReq& params,
+  ColumnCompact_Base(const Params::ColumnCompactReq& params,
                      const uint32_t timeout);
 
   virtual ~ColumnCompact_Base() { }
@@ -32,13 +31,14 @@ class ColumnCompact_Base: public client::ConnQueue::ReqBase {
 
   protected:
 
+  virtual SWC::client::Clients::Ptr& get_clients() noexcept = 0;
+
   virtual void callback(const Params::ColumnCompactRsp& rsp) = 0;
 
   private:
 
   void clear_endpoints();
 
-  SWC::client::Clients::Ptr clients;
   const cid_t               cid;
   EndPoints                 endpoints;
 };

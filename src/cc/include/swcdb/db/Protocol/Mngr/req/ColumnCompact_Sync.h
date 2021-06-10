@@ -7,44 +7,81 @@
 #define swcdb_db_protocol_req_ColumnCompact_Sync_h
 
 
-#include "swcdb/db/Protocol/Mngr/req/ColumnCompact_Base.h"
+#include "swcdb/db/Protocol/Mngr/req/ColumnCompact.h"
 
 
 namespace SWC { namespace Comm { namespace Protocol {
 namespace Mngr { namespace Req {
 
 
-class ColumnCompact_Sync: public ColumnCompact_Base {
+class ColumnCompact_Sync {
   public:
 
-  static void request(const SWC::client::Clients::Ptr& clients,
-                      cid_t cid, int& err, const uint32_t timeout = 10000);
+  template<typename... DataArgsT>
+  SWC_CAN_INLINE
+  static std::shared_ptr<ColumnCompact<ColumnCompact_Sync>> 
+  make(const Params::ColumnCompactReq& params,
+       const uint32_t timeout,
+       DataArgsT&&... args) {
+    return ColumnCompact<ColumnCompact_Sync>::make(params, timeout, args...);
+  }
 
-  static void request(const SWC::client::Clients::Ptr& clients,
-                      const Params::ColumnCompactReq& params,
-                      int& err, const uint32_t timeout = 10000);
+  template<typename... DataArgsT>
+  SWC_CAN_INLINE
+  static void request(const Params::ColumnCompactReq& params,
+                      const uint32_t timeout,
+                      DataArgsT&&... args) {
+    auto req = make(params, timeout, args...);
+    auto res = req->data.await.get_future();
+    req->run();
+    res.get();
+  }
+
+  template<typename... DataArgsT>
+  SWC_CAN_INLINE
+  static void request(cid_t cid,
+                      const uint32_t timeout,
+                      DataArgsT&&... args) {
+    request(Params::ColumnCompactReq(cid), timeout, args...);
+  }
 
   std::promise<void>       await;
 
+  SWC_CAN_INLINE
   ColumnCompact_Sync(const SWC::client::Clients::Ptr& clients,
-                     const Params::ColumnCompactReq& params, int& err,
-                     const uint32_t timeout);
+                     int& err) noexcept
+                    : clients(clients), err(err) {
+  }
 
-  virtual ~ColumnCompact_Sync() { }
+  // ~ColumnCompact_Sync() { }
 
-  protected:
-  void callback(const Params::ColumnCompactRsp& rsp) override;
+  SWC_CAN_INLINE
+  SWC::client::Clients::Ptr& get_clients() noexcept {
+    return clients;
+  }
+
+  SWC_CAN_INLINE
+  bool valid() {
+    return true;
+  }
+
+  SWC_CAN_INLINE
+  void callback(const client::ConnQueue::ReqBase::Ptr&,
+                const Params::ColumnCompactRsp& rsp) {
+    err = rsp.err;
+    await.set_value();
+  }
 
   private:
-  int&                     err;
+  SWC::client::Clients::Ptr clients;
+  int&                       err;
+
 };
+
 
 
 }}}}}
 
 
-#ifdef SWC_IMPL_SOURCE
-#include "swcdb/db/Protocol/Mngr/req/ColumnCompact_Sync.cc"
-#endif
 
 #endif // swcdb_db_protocol_req_ColumnCompact_Sync_h

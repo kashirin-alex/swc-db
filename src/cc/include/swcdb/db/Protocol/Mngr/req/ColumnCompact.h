@@ -8,45 +8,103 @@
 
 
 #include "swcdb/db/Protocol/Mngr/req/ColumnCompact_Base.h"
+#include "swcdb/db/Protocol/Common/req/handler_data.h"
 
 
 namespace SWC { namespace Comm { namespace Protocol {
 namespace Mngr { namespace Req {
 
 
-class ColumnCompact: public ColumnCompact_Base {
+template<typename DataT>
+class ColumnCompact final : public ColumnCompact_Base {
   public:
 
-  typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&,
-                             const Params::ColumnCompactRsp&)> Cb_t;
+  typedef std::shared_ptr<ColumnCompact>  Ptr;
+  DataT                                   data;
 
-  static void request(const SWC::client::Clients::Ptr& clients,
-                      cid_t cid, Cb_t&& cb,
-                      const uint32_t timeout = 10000);
+  template<typename... DataArgsT>
+  SWC_CAN_INLINE
+  static Ptr make(
+        const Params::ColumnCompactReq& params,
+        const uint32_t timeout,
+        DataArgsT&&... args) {
+    return Ptr(new ColumnCompact(params, timeout, args...));
+  }
 
-  static void request(const SWC::client::Clients::Ptr& clients,
-                      const Params::ColumnCompactReq& params,
-                      Cb_t&& cb, const uint32_t timeout = 10000);
+  template<typename... DataArgsT>
+  SWC_CAN_INLINE
+  static void request(
+        const Params::ColumnCompactReq& params,
+        const uint32_t timeout,
+        DataArgsT&&... args) {
+    make(params, timeout, args...)->run();
+  }
 
-  ColumnCompact(const SWC::client::Clients::Ptr& clients,
-                const Params::ColumnCompactReq& params, Cb_t&& cb,
-                const uint32_t timeout);
+  template<typename... DataArgsT>
+  SWC_CAN_INLINE
+  static void request(cid_t cid,
+                      const uint32_t timeout,
+                      DataArgsT&&... args) {
+    request(Params::ColumnCompactReq(cid), timeout, args...);
+  }
 
   virtual ~ColumnCompact() { }
 
   protected:
-  void callback(const Params::ColumnCompactRsp& rsp) override;
 
-  private:
-  const Cb_t                cb;
+  template<typename... DataArgsT>
+  SWC_CAN_INLINE
+  ColumnCompact(
+        const Params::ColumnCompactReq& params,
+        const uint32_t timeout,
+        DataArgsT&&... args)
+      : ColumnCompact_Base(params, timeout),
+        data(args...) {
+  }
+
+  SWC::client::Clients::Ptr& get_clients() noexcept override {
+    return data.get_clients();
+  }
+
+  bool valid() override {
+    return data.valid();
+  }
+
+  void callback(const Params::ColumnCompactRsp& rsp) override {
+    data.callback(req(), rsp);
+  }
+
 };
+
+
+
+/** Functional_ColumnCompact - a default CbT DataT STL
+  ```
+  using data_t = Comm::Protocol::Mngr::Req::Functional_ColumnCompact;
+  auto cb = [](void* datap,
+               const Comm::client::ConnQueue::ReqBase::Ptr&,
+               const Comm::Protocol::Mngr::Params::ColumnCompactRsp&) noexcept {
+    data_t::Ptr datap = data_t::cast(_datap);
+    (void)(datap->clients);
+    ...;
+  };
+  Comm::Protocol::Mngr::Req::ColumnCompact<data_t>::request(
+    params/cid/name, timeout, clients, std::move(cb));
+  ```
+*/
+
+typedef Common::Req::function<
+  std::function<void(
+    void*,
+    const client::ConnQueue::ReqBase::Ptr&,
+    Params::ColumnCompactRsp&
+  )>
+> Functional_ColumnCompact;
+
 
 
 }}}}}
 
 
-#ifdef SWC_IMPL_SOURCE
-#include "swcdb/db/Protocol/Mngr/req/ColumnCompact.cc"
-#endif
 
 #endif // swcdb_db_protocol_req_ColumnCompact_h

@@ -46,6 +46,17 @@ struct ExpctedRsp final {
   Core::Atomic<int>   chks;
 };
 
+struct ReqDataBase {
+  SWC_CAN_INLINE
+  client::Clients::Ptr& get_clients() noexcept {
+    return Env::Clients::get();
+  }
+  SWC_CAN_INLINE
+  bool valid() {
+    return true;
+  }
+};
+
 std::string get_name(int n, bool modified=false){
   std::string name("column-");
   name.append(std::to_string(n));
@@ -58,47 +69,47 @@ std::string get_name(int n, bool modified=false){
 void check_delete(int num_of_cols, bool modified) {
   Core::Semaphore sem(num_of_cols, num_of_cols);
 
-  auto clients = Env::Clients::get();
+  struct ReqData : ReqDataBase {
+    Core::Semaphore* sem;
+    SWC_CAN_INLINE
+    ReqData(Core::Semaphore* sem) noexcept : sem(sem) { }
+    SWC_CAN_INLINE
+    void callback(const Comm::client::ConnQueue::ReqBase::Ptr& req_ptr,
+                  int err,
+                  const Comm::Protocol::Mngr::Params::ColumnGetRsp& rsp) { 
+      if(err)
+        SWC_PRINT << "ColumnGet err=" << err
+                  << "(" << Error::get_text(err) << ")"
+                  << SWC_PRINT_CLOSE;
+      if(err == Error::REQUEST_TIMEOUT)
+        return req_ptr->request_again();
+      if(err) {
+        sem->release();
+        return;
+      }
+      ProtocolExecutor::Req::ColumnMng::request(
+        Env::Clients::get(),
+        Comm::Protocol::Mngr::Params::ColumnMng::Function::DELETE,
+        rsp.schema,
+        [sem=sem]
+        (Comm::client::ConnQueue::ReqBase::Ptr req_ptr, int err){
+          if(err)
+            SWC_PRINT << "ColumnMng DELETE err=" << err
+                      << "(" << Error::get_text(err) << ")"
+                      << SWC_PRINT_CLOSE;
+          if(err == Error::REQUEST_TIMEOUT)
+            return req_ptr->request_again();
+          sem->release();
+        },
+        300000
+      );
+    }
+  };
+
   for(int n=1; n<=num_of_cols; ++n) {
-    ProtocolExecutor::Req::ColumnGet::schema(
-      clients,
-      get_name(n, modified),
-      [&sem]
-      (Comm::client::ConnQueue::ReqBase::Ptr req_ptr,
-       int err, const Comm::Protocol::Mngr::Params::ColumnGetRsp& rsp) {
-        if(err)
-          SWC_PRINT << "ColumnGet err=" << err
-                    << "(" << Error::get_text(err) << ")"
-                    << SWC_PRINT_CLOSE;
-        if(err == Error::REQUEST_TIMEOUT)
-          return req_ptr->request_again();
-        if(err) {
-          sem.release();
-          return;
-        }
-
-        ProtocolExecutor::Req::ColumnMng::request(
-          Env::Clients::get(),
-          Comm::Protocol::Mngr::Params::ColumnMng::Function::DELETE,
-          rsp.schema,
-          [&sem]
-          (Comm::client::ConnQueue::ReqBase::Ptr req_ptr, int err){
-            if(err)
-              SWC_PRINT << "ColumnMng DELETE err=" << err
-                        << "(" << Error::get_text(err) << ")"
-                        << SWC_PRINT_CLOSE;
-            if(err == Error::REQUEST_TIMEOUT)
-              return req_ptr->request_again();
-            sem.release();
-          },
-          300000
-        );
-
-      },
-      300000
-    );
+    ProtocolExecutor::Req::ColumnGet<ReqData>::schema(
+      get_name(n, modified), 300000, &sem);
   }
-
   sem.wait_all();
 }
 
@@ -117,51 +128,64 @@ void check_get(size_t num_of_cols, bool modified,
       exist
     ));
   }
-  auto clients = Env::Clients::get();
-  for(auto& req : expected){
-    ProtocolExecutor::Req::ColumnGet::schema(
-      clients,
-      req->name,
-      [req, latency, verbose, start_ts=std::chrono::system_clock::now()]
-      (Comm::client::ConnQueue::ReqBase::Ptr req_ptr,
-        int err, const Comm::Protocol::Mngr::Params::ColumnGetRsp& rsp) {
+  
+  struct ReqDataByName : ReqDataBase {
+    std::shared_ptr<ExpctedRsp>           req;
+    std::shared_ptr<Common::Stats::Stat>  latency;
+    bool                                  verbose;
+    int64_t                               start_ts;
+    SWC_CAN_INLINE
+    ReqDataByName(const std::shared_ptr<ExpctedRsp>& req,
+                  const std::shared_ptr<Common::Stats::Stat>& latency,
+                  bool verbose) noexcept 
+            : req(req), latency(latency),
+              verbose(verbose), start_ts(Time::now_ns()) {
+    }
+    SWC_CAN_INLINE
+    void callback(const Comm::client::ConnQueue::ReqBase::Ptr& req_ptr,
+                  int err,
+                  const Comm::Protocol::Mngr::Params::ColumnGetRsp& rsp) {
+      if(err == Error::REQUEST_TIMEOUT) {
+        std::cout << " err=" << err << "(" << Error::get_text(err) << ") \n";
+        req_ptr->request_again();
+        return;
+      }
 
-        if(err == Error::REQUEST_TIMEOUT) {
-          std::cout << " err=" << err << "(" << Error::get_text(err) << ") \n";
-          req_ptr->request_again();
-          return;
-        }
+      uint64_t took  = Time::now_ns() - start_ts;
+      latency->add(took);
+      if(verbose)
+        std::cout << "ColumnGetRsp: exists="<< req->exists << " took=" << took
+                  << " count=" << latency->count()
+                  << " err=" << err << "(" << Error::get_text(err) << ") "
+                  << " " << (err==Error::OK?rsp.schema->to_string().c_str():"NULL")
+                   << "\n";
 
-        uint64_t took  = std::chrono::duration_cast<std::chrono::nanoseconds>(
-                          std::chrono::system_clock::now() - start_ts).count();
-        latency->add(took);
-        if(verbose)
-          std::cout << "ColumnGetRsp: exists="<< req->exists << " took=" << took
-                    << " count=" << latency->count()
-                    << " err=" << err << "(" << Error::get_text(err) << ") "
-                    << " " << (err==Error::OK?rsp.schema->to_string().c_str():"NULL")
-                     << "\n";
-
-        if(err==Error::OK){
-          if(!req->exists) {
-            std::cerr << " SHOULDN'T exist name=" << req->name << "\n";
-            exit(1);
-          }
-          if(req->blk_encoding != rsp.schema->blk_encoding) {
-            std::cerr << " blk_encoding don't match \n";
-            exit(1);
-          }
-          if(!Condition::str_eq(req->name, rsp.schema->col_name)) {
-            std::cerr << " name don't match \n";
-            exit(1);
-          }
-        } else if(req->exists){
-          std::cerr << " SHOULD exist name=" << req->name << "\n";
+      if(err==Error::OK){
+        if(!req->exists) {
+          std::cerr << " SHOULDN'T exist name=" << req->name << "\n";
           exit(1);
         }
-        req->chks.fetch_add(1);
-      },
-      300000
+        if(req->blk_encoding != rsp.schema->blk_encoding) {
+          std::cerr << " blk_encoding don't match \n";
+          exit(1);
+        }
+        if(!Condition::str_eq(req->name, rsp.schema->col_name)) {
+          std::cerr << " name don't match \n";
+          exit(1);
+        }
+      } else if(req->exists){
+        std::cerr << " SHOULD exist name=" << req->name << "\n";
+        exit(1);
+      }
+      req->chks.fetch_add(1);
+    }
+  };
+
+  for(auto& req : expected) {
+    ProtocolExecutor::Req::ColumnGet<ReqDataByName>::schema(
+      req->name,
+      300000,
+      req, latency, verbose
     );
   }
 
@@ -179,44 +203,56 @@ void check_get(size_t num_of_cols, bool modified,
   std::cout << "########### get_id_by_name ###########\n";
   latency = std::make_shared<Common::Stats::Stat>();
 
-  for(auto& req : expected){
-    ProtocolExecutor::Req::ColumnGet::cid(
-      clients,
-      req->name,
-      [req, latency, verbose, start_ts=std::chrono::system_clock::now()]
-      (Comm::client::ConnQueue::ReqBase::Ptr req_ptr,
-       int err, const Comm::Protocol::Mngr::Params::ColumnGetRsp& rsp) {
+  struct ReqDataByCID : ReqDataBase {
+    std::shared_ptr<ExpctedRsp>           req;
+    std::shared_ptr<Common::Stats::Stat>  latency;
+    bool                                  verbose;
+    int64_t                               start_ts;
+    SWC_CAN_INLINE
+    ReqDataByCID(const std::shared_ptr<ExpctedRsp>& req,
+                 const std::shared_ptr<Common::Stats::Stat>& latency,
+                 bool verbose) noexcept 
+            : req(req), latency(latency),
+              verbose(verbose), start_ts(Time::now_ns()) {
+    }
+    SWC_CAN_INLINE
+    void callback(const Comm::client::ConnQueue::ReqBase::Ptr& req_ptr,
+                  int err,
+                  const Comm::Protocol::Mngr::Params::ColumnGetRsp& rsp) {
+      if(err == Error::REQUEST_TIMEOUT) {
+        std::cout << " err=" << err << "(" << Error::get_text(err) << ") \n";
+        req_ptr->request_again();
+        return;
+      }
 
-        if(err == Error::REQUEST_TIMEOUT) {
-          std::cout << " err=" << err << "(" << Error::get_text(err) << ") \n";
-          req_ptr->request_again();
-          return;
-        }
+      uint64_t took = Time::now_ns() - start_ts;
+      latency->add(took);
 
-        uint64_t took  = std::chrono::duration_cast<std::chrono::nanoseconds>(
-                          std::chrono::system_clock::now() - start_ts).count();
-        latency->add(took);
+      if(verbose)
+        std::cout << "ColumnGetRsp: exists="<< req->exists
+                  << " took=" << took
+                  << " count=" << latency->count()
+                  << " err=" << err << "(" << Error::get_text(err) << ") "
+                  << " " << (err==Error::OK?rsp.cid:-1) << "\n";
 
-        if(verbose)
-          std::cout << "ColumnGetRsp: exists="<< req->exists
-                    << " took=" << took
-                    << " count=" << latency->count()
-                    << " err=" << err << "(" << Error::get_text(err) << ") "
-                    << " " << (err==Error::OK?rsp.cid:-1) << "\n";
-
-        if(err==Error::OK){
-          if(!req->exists) {
-            std::cerr << " SHOULDN'T exist name=" << req->name << "\n";
-            exit(1);
-          }
-        } else if(req->exists){
-          std::cerr << " SHOULD exist name=" << req->name << "\n";
+      if(err==Error::OK){
+        if(!req->exists) {
+          std::cerr << " SHOULDN'T exist name=" << req->name << "\n";
           exit(1);
         }
-        req->chks.fetch_add(1);
+      } else if(req->exists){
+        std::cerr << " SHOULD exist name=" << req->name << "\n";
+        exit(1);
+      }
+      req->chks.fetch_add(1);
+    }
+  };
 
-      },
-      300000
+  for(auto& req : expected) {
+    ProtocolExecutor::Req::ColumnGet<ReqDataByCID>::cid(
+      req->name,
+      300000,
+      req, latency, verbose
     );
   }
 
@@ -266,12 +302,10 @@ void chk(Comm::Protocol::Mngr::Params::ColumnMng::Function func,
     ProtocolExecutor::Req::ColumnMng::request(
       clients,
       func, schema,
-      [func, latency, verbose, start_ts=std::chrono::system_clock::now()]
+      [func, latency, verbose, start_ts=Time::now_ns()]
       (Comm::client::ConnQueue::ReqBase::Ptr req_ptr, int err){
 
-        uint64_t took
-          = std::chrono::duration_cast<std::chrono::nanoseconds>(
-              std::chrono::system_clock::now() - start_ts).count();
+        uint64_t took = Time::now_ns() - start_ts;
 
         if(err != Error::OK && (
             (func == Comm::Protocol::Mngr::Params::ColumnMng::Function::CREATE
@@ -326,53 +360,62 @@ void chk_rename(size_t num_of_cols, bool verbose=false){
 
   std::vector<std::shared_ptr<ExpctedRsp>> expected;
 
-  auto clients = Env::Clients::get();
+  struct ReqData : ReqDataBase {
+    size_t                                n;
+    std::shared_ptr<Common::Stats::Stat>  latency;
+    bool                                  verbose;
+    int64_t                               start_ts;
+    SWC_CAN_INLINE
+    ReqData(size_t n,
+            const std::shared_ptr<Common::Stats::Stat>& latency,
+            bool verbose) noexcept 
+            : n(n), latency(latency),
+              verbose(verbose), start_ts(Time::now_ns()) {
+    }
+    SWC_CAN_INLINE
+    void callback(const Comm::client::ConnQueue::ReqBase::Ptr& req_ptr,
+                  int err,
+                  const Comm::Protocol::Mngr::Params::ColumnGetRsp& rsp) {
+      if(err == Error::REQUEST_TIMEOUT) {
+        SWC_PRINT << " err=" << err << "(" << Error::get_text(err) << ")"
+                  << SWC_PRINT_CLOSE;
+        req_ptr->request_again();
+        return;
+      }
+
+      auto new_schema = DB::Schema::make(rsp.schema);
+      new_schema->col_name = get_name(n, true);
+      new_schema->revision = 2;
+
+      if(verbose)
+        SWC_PRINT << "modify name: \n"
+          << "from " << rsp.schema->to_string() << "\n"
+          << "to   " << new_schema->to_string() << SWC_PRINT_CLOSE;
+
+      ProtocolExecutor::Req::ColumnMng::request(
+        Env::Clients::get(),
+        Comm::Protocol::Mngr::Params::ColumnMng::Function::MODIFY,
+        new_schema,
+        [latency=latency, start_ts=start_ts]
+        (Comm::client::ConnQueue::ReqBase::Ptr req_ptr, int err){
+          if(err != Error::OK
+            && err != Error::COLUMN_SCHEMA_NAME_NOT_EXISTS
+            && err != Error::COLUMN_SCHEMA_NOT_DIFFERENT){
+
+            req_ptr->request_again();
+            return;
+          }
+          latency->add(Time::now_ns() - start_ts);
+        },
+        300000
+      );
+    }
+  };
+
   for(size_t n=1; n<=num_of_cols;++n){
-    std::string name = get_name(n, false);
-    ProtocolExecutor::Req::ColumnGet::schema(
-      clients,
-      name,
-      [n, latency, verbose, start_ts=std::chrono::system_clock::now()]
-      (Comm::client::ConnQueue::ReqBase::Ptr req_ptr,
-       int err, const Comm::Protocol::Mngr::Params::ColumnGetRsp& rsp) {
-
-        if(err == Error::REQUEST_TIMEOUT) {
-          SWC_PRINT << " err=" << err << "(" << Error::get_text(err) << ")"
-                    << SWC_PRINT_CLOSE;
-          req_ptr->request_again();
-          return;
-        }
-
-        auto new_schema = DB::Schema::make(rsp.schema);
-        new_schema->col_name = get_name(n, true);
-        new_schema->revision = 2;
-
-        if(verbose)
-          SWC_PRINT << "modify name: \n"
-            << "from " << rsp.schema->to_string() << "\n"
-            << "to   " << new_schema->to_string() << SWC_PRINT_CLOSE;
-
-        ProtocolExecutor::Req::ColumnMng::request(
-          Env::Clients::get(),
-          Comm::Protocol::Mngr::Params::ColumnMng::Function::MODIFY,
-          new_schema,
-          [latency, start_ts]
-          (Comm::client::ConnQueue::ReqBase::Ptr req_ptr, int err){
-            if(err != Error::OK
-              && err != Error::COLUMN_SCHEMA_NAME_NOT_EXISTS
-              && err != Error::COLUMN_SCHEMA_NOT_DIFFERENT){
-
-              req_ptr->request_again();
-              return;
-            }
-            uint64_t took = std::chrono::duration_cast<std::chrono::nanoseconds>(
-              std::chrono::system_clock::now() - start_ts).count();
-            latency->add(took);
-          },
-          300000
-        );
-      }// ,
-       // 600000
+    ProtocolExecutor::Req::ColumnGet<ReqData>::schema(
+      get_name(n, false), 300000,
+      n, latency, verbose
     );
   }
 

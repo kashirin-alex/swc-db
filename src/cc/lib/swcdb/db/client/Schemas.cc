@@ -139,10 +139,10 @@ void Schemas::_request(int& err, cid_t cid,
     case Clients::Flag::DEFAULT |Clients::Flag::BROKER |Clients::Flag::SCHEMA:
     case Clients::Flag::BROKER:
       return Comm::Protocol::Bkr::Req::ColumnGet_Sync::schema(
-        _clients->shared(), err, cid, schema, 300000);
+        cid, 300000, _clients->shared(), err, schema);
     default:
       return Comm::Protocol::Mngr::Req::ColumnGet_Sync::schema(
-        _clients->shared(), err, cid, schema, 300000);
+        cid, 300000, _clients->shared(), err, schema);
   }
 }
 
@@ -152,10 +152,10 @@ void Schemas::_request(int& err, const std::string& name,
     case Clients::Flag::DEFAULT |Clients::Flag::BROKER |Clients::Flag::SCHEMA:
     case Clients::Flag::BROKER:
       return Comm::Protocol::Bkr::Req::ColumnGet_Sync::schema(
-        _clients->shared(), err, name, schema, 300000);
+        name, 300000, _clients->shared(), err, schema);
     default:
       return Comm::Protocol::Mngr::Req::ColumnGet_Sync::schema(
-        _clients->shared(), err, name, schema, 300000);
+        name, 300000, _clients->shared(), err, schema);
   }
 }
 
@@ -168,10 +168,10 @@ void Schemas::_request(int& err,
     case Clients::Flag::DEFAULT |Clients::Flag::BROKER |Clients::Flag::SCHEMA:
     case Clients::Flag::BROKER:
       return Comm::Protocol::Bkr::Req::ColumnList_Sync::request(
-        _clients->shared(), params, err, schemas, 300000);
+        params, 300000, _clients->shared(), err, schemas);
     default:
       return Comm::Protocol::Mngr::Req::ColumnList_Sync::request(
-        _clients->shared(), params, err, schemas, 300000);
+        params, 300000, _clients->shared(), err, schemas);
   }
 }
 

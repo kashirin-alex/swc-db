@@ -16,20 +16,15 @@ namespace Mngr { namespace Req {
 
 SWC_SHOULD_INLINE
 ColumnCompact_Base::ColumnCompact_Base(
-                            const SWC::client::Clients::Ptr& clients,
-                            const Params::ColumnCompactReq& params,
-                            const uint32_t timeout)
-                            : client::ConnQueue::ReqBase(
-                                Buffers::make(
-                                  params, 0,
-                                  COLUMN_COMPACT, timeout
-                                )
-                              ),
-                              clients(clients), cid(params.cid) {
+        const Params::ColumnCompactReq& params,
+        const uint32_t timeout)
+        : client::ConnQueue::ReqBase(
+            Buffers::make(params, 0, COLUMN_COMPACT, timeout)),
+          cid(params.cid) {
 }
 
 void ColumnCompact_Base::handle_no_conn() {
-  if(clients->stopping()) {
+  if(get_clients()->stopping()) {
     callback(Params::ColumnCompactRsp(Error::CLIENT_STOPPING));
   } else if(!valid()) {
     callback(Params::ColumnCompactRsp(Error::CANCELLED));
@@ -41,19 +36,19 @@ void ColumnCompact_Base::handle_no_conn() {
 
 bool ColumnCompact_Base::run() {
   if(endpoints.empty()) {
-    clients->get_mngr(cid, endpoints);
+    get_clients()->get_mngr(cid, endpoints);
     if(endpoints.empty()) {
-      if(clients->stopping()) {
+      if(get_clients()->stopping()) {
         callback(Params::ColumnCompactRsp(Error::CLIENT_STOPPING));
       } else if(!valid()) {
         callback(Params::ColumnCompactRsp(Error::CANCELLED));
       } else {
-        MngrActive::make(clients, cid, shared_from_this())->run();
+        MngrActive::make(get_clients(), cid, shared_from_this())->run();
       }
       return false;
     }
   }
-  clients->get_mngr_queue(endpoints)->put(req());
+  get_clients()->get_mngr_queue(endpoints)->put(req());
   return true;
 }
 
@@ -75,7 +70,7 @@ void ColumnCompact_Base::handle(ConnHandlerPtr, const Event::Ptr& ev) {
 }
 
 void ColumnCompact_Base::clear_endpoints() {
-  clients->remove_mngr(endpoints);
+  get_clients()->remove_mngr(endpoints);
   endpoints.clear();
 }
 

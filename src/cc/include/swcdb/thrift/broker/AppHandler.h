@@ -610,7 +610,7 @@ class AppHandler final : virtual public BrokerIf {
 
     } else if(dbschemas.empty()) { // get all schemas
       Comm::Protocol::Mngr::Req::ColumnList_Sync::request(
-        clients, params, err, dbschemas, 300000);
+        params, 300000, clients, err, dbschemas);
       if(err)
         Converter::exception(err);
     }
@@ -658,8 +658,8 @@ class AppHandler final : virtual public BrokerIf {
 
     if(spec.patterns.empty() && dbschemas.empty()) { // get all schemas
       Comm::Protocol::Mngr::Req::ColumnList_Sync::request(
-        clients, Comm::Protocol::Mngr::Params::ColumnListReq(),
-        err, dbschemas, 300000
+        Comm::Protocol::Mngr::Params::ColumnListReq(), 300000,
+        clients, err, dbschemas
       );
       if(err)
         Converter::exception(err);
@@ -701,7 +701,7 @@ class AppHandler final : virtual public BrokerIf {
       auto& r = _return[idx];
       r.cid = dbschemas[idx]->cid;
       Comm::Protocol::Mngr::Req::ColumnCompact_Sync::request(
-        clients, r.cid, r.err, 300000);
+        r.cid, 300000, clients, r.err);
     }
   }
 

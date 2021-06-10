@@ -8,39 +8,41 @@
 #define swcdb_broker_Protocol_handlers_ColumnGet_h
 
 
-#include "swcdb/db/Protocol/Mngr/req/ColumnGet_Base.h"
+#include "swcdb/db/Protocol/Mngr/req/ColumnGet.h"
 
 
 namespace SWC { namespace Comm { namespace Protocol {
 namespace Bkr { namespace Handler {
 
 
-class ColumnGet final : public Mngr::Req::ColumnGet_Base {
-  public:
-
-  typedef std::shared_ptr<ColumnGet> Ptr;
+struct ColumnGet {
 
   ConnHandlerPtr                   conn;
   Event::Ptr                       ev;
   Mngr::Params::ColumnGetReq::Flag flag;
 
   SWC_CAN_INLINE
-  ColumnGet(const SWC::client::Clients::Ptr& clients,
-            Mngr::Params::ColumnGetReq::Flag flag,
-            const Mngr::Params::ColumnGetReq& params,
-            const ConnHandlerPtr& conn, const Event::Ptr& ev)
-            : Mngr::Req::ColumnGet_Base(
-                clients, params, ev->header.timeout_ms),
-              conn(conn), ev(ev), flag(flag) {
+  ColumnGet(const ConnHandlerPtr& conn,
+            const Event::Ptr& ev,
+            Mngr::Params::ColumnGetReq::Flag flag)
+            : conn(conn), ev(ev), flag(flag) {
   }
 
-  virtual ~ColumnGet() { }
+  //~ColumnGet() { }
 
-  bool valid() override {
+  SWC_CAN_INLINE
+  SWC::client::Clients::Ptr& get_clients() noexcept {
+    return Env::Clients::get();
+  }
+
+  SWC_CAN_INLINE
+  bool valid() {
     return !ev->expired() && conn->is_open();
   }
 
-  void callback(int err, const Mngr::Params::ColumnGetRsp& rsp) override {
+  SWC_CAN_INLINE
+  void callback(const client::ConnQueue::ReqBase::Ptr&,
+                int err, const Mngr::Params::ColumnGetRsp& rsp) {
     if(valid()) {
       auto cbp = err
         ? Buffers::make(ev, 4)
@@ -98,8 +100,8 @@ void column_get(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
       if(flag == Mngr::Params::ColumnGetReq::Flag::ID_BY_NAME)
         params.flag = Mngr::Params::ColumnGetReq::Flag::SCHEMA_BY_NAME;
 
-      ColumnGet::Ptr(new ColumnGet(
-        Env::Clients::get(), flag, params, conn, ev))->run();
+      Mngr::Req::ColumnGet<ColumnGet>::request(
+        params, ev->header.timeout_ms, conn, ev, flag);
     }
     return;
 

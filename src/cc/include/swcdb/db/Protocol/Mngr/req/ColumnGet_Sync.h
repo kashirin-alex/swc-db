@@ -7,55 +7,99 @@
 #define swcdb_db_protocol_mngr_req_ColumnGet_Sync_h
 
 
-#include "swcdb/db/Protocol/Mngr/req/ColumnGet_Base.h"
+#include "swcdb/db/Protocol/Mngr/req/ColumnGet.h"
 
 
 namespace SWC { namespace Comm { namespace Protocol {
 namespace Mngr { namespace Req {
 
 
-class ColumnGet_Sync: public ColumnGet_Base {
+class ColumnGet_Sync {
   public:
 
-  static void schema(const SWC::client::Clients::Ptr& clients,
-                     int& err, const std::string& name,
-                     DB::Schema::Ptr& _schema,
-                     const uint32_t timeout = 10000);
+  template<typename... DataArgsT>
+  SWC_CAN_INLINE
+  static std::shared_ptr<ColumnGet<ColumnGet_Sync>> 
+  make(const Params::ColumnGetReq& params,
+       const uint32_t timeout,
+       DataArgsT&&... args) {
+    return ColumnGet<ColumnGet_Sync>::make(params, timeout, args...);
+  }
 
-  static void schema(const SWC::client::Clients::Ptr& clients,
-                     int& err, cid_t cid,
-                     DB::Schema::Ptr& _schema,
-                     const uint32_t timeout = 10000);
+  template<typename... DataArgsT>
+  SWC_CAN_INLINE
+  static void request(const Params::ColumnGetReq& params,
+                      const uint32_t timeout,
+                      DataArgsT&&... args) {
+    auto req = make(params, timeout, args...);
+    auto res = req->data.await.get_future();
+    req->run();
+    res.get();
+  }
 
-  static void request(const SWC::client::Clients::Ptr& clients,
-                      const Params::ColumnGetReq& params,
-                      int& err, DB::Schema::Ptr& _schema,
-                      const uint32_t timeout = 10000);
+  template<typename... DataArgsT>
+  SWC_CAN_INLINE
+  static void schema(const std::string& name,
+                     const uint32_t timeout,
+                     DataArgsT&&... args) {
+    request(
+      Params::ColumnGetReq(Params::ColumnGetReq::Flag::SCHEMA_BY_NAME, name),
+      timeout,
+      args...
+    );
+  }
 
-  std::promise<void> await;
+  template<typename... DataArgsT>
+  SWC_CAN_INLINE
+  static void schema(cid_t cid,
+                     const uint32_t timeout,
+                     DataArgsT&&... args) {
+    request(
+      Params::ColumnGetReq(Params::ColumnGetReq::Flag::SCHEMA_BY_ID, cid),
+      timeout,
+      args...
+    );
+  }
 
+  std::promise<void>        await;
+
+  SWC_CAN_INLINE
   ColumnGet_Sync(const SWC::client::Clients::Ptr& clients,
-                 const Params::ColumnGetReq& params,
-                 int& err, DB::Schema::Ptr& _schema,
-                 const uint32_t timeout);
+                 int& err, DB::Schema::Ptr& _schema) noexcept
+                 : clients(clients), err(err), _schema(_schema) {
+  }
 
-  virtual ~ColumnGet_Sync() { }
+  // ~ColumnGet_Sync() { }
 
-  protected:
-  virtual void callback(int err, const Params::ColumnGetRsp& rsp) override;
+  SWC_CAN_INLINE
+  SWC::client::Clients::Ptr& get_clients() noexcept {
+    return clients;
+  }
+
+  SWC_CAN_INLINE
+  bool valid() {
+    return true;
+  }
+
+  SWC_CAN_INLINE
+  void callback(const client::ConnQueue::ReqBase::Ptr&,
+                int error,
+                const Params::ColumnGetRsp& rsp) {
+    err = error;
+    _schema = std::move(rsp.schema);
+    await.set_value();
+  }
 
   private:
+  SWC::client::Clients::Ptr clients;
   int&                      err;
   DB::Schema::Ptr&          _schema;
+
 };
 
 
 
 }}}}}
 
-
-#ifdef SWC_IMPL_SOURCE
-#include "swcdb/db/Protocol/Mngr/req/ColumnGet_Sync.cc"
-#endif
 
 #endif // swcdb_db_protocol_mngr_req_ColumnGet_Sync_h

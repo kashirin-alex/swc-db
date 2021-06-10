@@ -18,8 +18,7 @@ namespace Bkr { namespace Req {
 class ColumnGet_Base: public client::ConnQueue::ReqBase {
   public:
 
-  ColumnGet_Base(const SWC::client::Clients::Ptr& clients,
-                 const Mngr::Params::ColumnGetReq& params,
+  ColumnGet_Base(const Mngr::Params::ColumnGetReq& params,
                  const uint32_t timeout);
 
   virtual ~ColumnGet_Base() { }
@@ -31,10 +30,12 @@ class ColumnGet_Base: public client::ConnQueue::ReqBase {
   void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
 
   protected:
+
+  virtual SWC::client::Clients::Ptr& get_clients() noexcept = 0;
+
   virtual void callback(int error, const Mngr::Params::ColumnGetRsp& rsp) = 0;
 
   private:
-  SWC::client::Clients::Ptr       clients;
   SWC::client::Brokers::BrokerIdx _bkr_idx;
 
 };

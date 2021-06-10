@@ -15,17 +15,14 @@ namespace Mngr { namespace Req {
 
 SWC_SHOULD_INLINE
 ColumnList_Base::ColumnList_Base(
-                      const SWC::client::Clients::Ptr& clients,
-                      const Params::ColumnListReq& params,
-                      const uint32_t timeout)
-                      : client::ConnQueue::ReqBase(
-                          Buffers::make(params, 0, COLUMN_LIST, timeout)
-                        ),
-                        clients(clients) {
+        const Params::ColumnListReq& params,
+        const uint32_t timeout)
+        : client::ConnQueue::ReqBase(
+            Buffers::make(params, 0, COLUMN_LIST, timeout)) {
 }
 
 void ColumnList_Base::handle_no_conn() {
-  if(clients->stopping()) {
+  if(get_clients()->stopping()) {
     callback(Error::CLIENT_STOPPING, Params::ColumnListRsp());
   } else if(!valid()) {
     callback(Error::CANCELLED, Params::ColumnListRsp());
@@ -37,20 +34,21 @@ void ColumnList_Base::handle_no_conn() {
 
 bool ColumnList_Base::run() {
   if(endpoints.empty()) {
-    clients->get_mngr(DB::Types::MngrRole::SCHEMAS, endpoints);
+    get_clients()->get_mngr(DB::Types::MngrRole::SCHEMAS, endpoints);
     if(endpoints.empty()) {
-      if(clients->stopping()) {
+      if(get_clients()->stopping()) {
         callback(Error::CLIENT_STOPPING, Params::ColumnListRsp());
       } else if(!valid()) {
         callback(Error::CANCELLED, Params::ColumnListRsp());
       } else {
         MngrActive::make(
-          clients, DB::Types::MngrRole::SCHEMAS, shared_from_this())->run();
+          get_clients(), DB::Types::MngrRole::SCHEMAS, shared_from_this()
+        )->run();
       }
       return false;
     }
   }
-  clients->get_mngr_queue(endpoints)->put(req());
+  get_clients()->get_mngr_queue(endpoints)->put(req());
   return true;
 }
 
@@ -78,7 +76,7 @@ void ColumnList_Base::handle(ConnHandlerPtr, const Event::Ptr& ev) {
 }
 
 void ColumnList_Base::clear_endpoints() {
-  clients->remove_mngr(endpoints);
+  get_clients()->remove_mngr(endpoints);
   endpoints.clear();
 }
 
