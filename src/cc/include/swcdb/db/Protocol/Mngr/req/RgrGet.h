@@ -51,6 +51,11 @@ class RgrGet final : public RgrGet_Base {
 
   virtual ~RgrGet() { }
 
+  void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
+    Params::RgrGetRsp rsp(ev->error, ev->data.base, ev->data.size);
+    data.callback(req(), rsp);
+  }
+
   protected:
 
   template<typename... DataArgsT>

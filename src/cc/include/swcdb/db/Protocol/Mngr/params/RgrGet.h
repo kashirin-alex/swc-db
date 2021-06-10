@@ -58,6 +58,8 @@ class RgrGetRsp final : public Common::Params::HostEndPoints {
   RgrGetRsp(cid_t cid, rid_t rid) noexcept
             : err(Error::OK), cid(cid), rid(rid) {
   }
+  
+  RgrGetRsp(int err, const uint8_t* ptr, size_t remain) noexcept;
 
   //~RgrGetRsp() { }
 

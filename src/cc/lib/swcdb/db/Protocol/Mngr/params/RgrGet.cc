@@ -55,6 +55,16 @@ void RgrGetReq::internal_decode(const uint8_t** bufp, size_t* remainp) {
 }
 
 
+RgrGetRsp::RgrGetRsp(int err, const uint8_t* ptr, size_t remain) noexcept
+                    : err(err) { 
+  if(!err) try {
+    decode(&ptr, &remain);
+  } catch(...) {
+    const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
+    err = e.code();
+    SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
+  }
+}
 
 void RgrGetRsp::print(std::ostream& out) const {
   out << "Ranger(";

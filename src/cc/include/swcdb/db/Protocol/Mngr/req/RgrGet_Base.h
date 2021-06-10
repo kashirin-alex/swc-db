@@ -9,24 +9,28 @@
 
 #include "swcdb/db/Protocol/Mngr/params/RgrGet.h"
 #include "swcdb/db/client/Clients.h"
+#include "swcdb/db/Protocol/Commands.h"
 
 
 namespace SWC { namespace Comm { namespace Protocol {
 namespace Mngr { namespace Req {
 
 
-class RgrGet_Base: public client::ConnQueue::ReqBase {
+class RgrGet_Base : public client::ConnQueue::ReqBase {
   public:
 
-  RgrGet_Base(const Params::RgrGetReq& params, const uint32_t timeout);
+  SWC_CAN_INLINE
+  RgrGet_Base(const Params::RgrGetReq& params, const uint32_t timeout)
+              : client::ConnQueue::ReqBase(
+                  Buffers::make(params, 0 ,RGR_GET, timeout)),
+                cid(params.cid) {
+  }
 
   virtual ~RgrGet_Base() { }
 
   void handle_no_conn() override;
 
   bool run() override;
-
-  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
 
   protected:
 
@@ -35,8 +39,6 @@ class RgrGet_Base: public client::ConnQueue::ReqBase {
   virtual void callback(Params::RgrGetRsp&) = 0;
 
   private:
-
-  void clear_endpoints();
 
   EndPoints                 endpoints;
   cid_t                     cid;

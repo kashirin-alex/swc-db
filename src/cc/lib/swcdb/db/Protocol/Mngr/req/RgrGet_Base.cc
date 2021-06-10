@@ -4,7 +4,6 @@
  */
 
 
-#include "swcdb/db/Protocol/Commands.h"
 #include "swcdb/db/Protocol/Mngr/req/MngrActive.h"
 #include "swcdb/db/Protocol/Mngr/req/RgrGet_Base.h"
 
@@ -13,14 +12,6 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace Mngr { namespace Req {
 
 
-SWC_SHOULD_INLINE
-RgrGet_Base::RgrGet_Base(const Params::RgrGetReq& params,
-                         const uint32_t timeout)
-              : client::ConnQueue::ReqBase(
-                  Buffers::make(params, 0 ,RGR_GET, timeout)
-                ),
-                cid(params.cid) {
-}
 
 void RgrGet_Base::handle_no_conn() {
   if(get_clients()->stopping()) {
@@ -30,7 +21,8 @@ void RgrGet_Base::handle_no_conn() {
     Params::RgrGetRsp rsp(Error::CANCELLED);
     callback(rsp);
   } else {
-    clear_endpoints();
+    get_clients()->remove_mngr(endpoints);
+    endpoints.clear();
     run();
   }
 }
@@ -56,28 +48,6 @@ bool RgrGet_Base::run() {
   return true;
 }
 
-void RgrGet_Base::handle(ConnHandlerPtr, const Event::Ptr& ev) {
-  Params::RgrGetRsp rsp_params(ev->error);
-  if(!rsp_params.err) {
-    try {
-      const uint8_t *ptr = ev->data.base;
-      size_t remain = ev->data.size;
-      rsp_params.decode(&ptr, &remain);
-
-    } catch(...) {
-      const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
-      SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
-      rsp_params.err = e.code();
-    }
-  }
-
-  callback(rsp_params);
-}
-
-void RgrGet_Base::clear_endpoints() {
-  get_clients()->remove_mngr(endpoints);
-  endpoints.clear();
-}
 
 
 }}}}}
