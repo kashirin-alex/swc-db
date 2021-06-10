@@ -47,11 +47,15 @@ class ReportRes: public Report {
   typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&,
                              const int&,
                              const Params::Report::RspRes&)> Cb_t;
+  typedef std::shared_ptr<ReportRes> Ptr;
 
   static void request(const SWC::client::Clients::Ptr& clients,
                       const EndPoints& endpoints,
                       Cb_t&& cb,
-                      const uint32_t timeout = 10000);
+                      const uint32_t timeout = 10000) {
+    Ptr(new ReportRes(
+      clients, endpoints, std::move(cb), timeout))->run();
+  }
 
   ReportRes(const SWC::client::Clients::Ptr& clients,
             const EndPoints& endpoints,
@@ -78,11 +82,16 @@ class ReportCids: public Report {
   typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&,
                              const int&,
                              const Params::Report::RspCids&)> Cb_t;
+  typedef std::shared_ptr<ReportCids> Ptr;
 
+  SWC_CAN_INLINE
   static void request(const SWC::client::Clients::Ptr& clients,
                       const EndPoints& endpoints,
                       Cb_t&& cb,
-                      const uint32_t timeout = 10000);
+                      const uint32_t timeout = 10000) {
+    Ptr(new ReportCids(
+      clients, endpoints, std::move(cb), timeout))->run();
+  }
 
   ReportCids(const SWC::client::Clients::Ptr& clients,
              const EndPoints& endpoints,
@@ -109,12 +118,16 @@ class ReportColumnRids: public Report {
   typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&,
                              const int&,
                              const Params::Report::RspColumnRids&)> Cb_t;
+  typedef std::shared_ptr<ReportColumnRids> Ptr;
 
   static void request(const SWC::client::Clients::Ptr& clients,
                       const EndPoints& endpoints,
                       cid_t cid,
                       Cb_t&& cb,
-                      const uint32_t timeout = 10000);
+                      const uint32_t timeout = 10000) {
+    Ptr(new ReportColumnRids(
+      clients, endpoints, cid, std::move(cb), timeout))->run();
+  }
 
   ReportColumnRids(const SWC::client::Clients::Ptr& clients,
                    const EndPoints& endpoints,
@@ -142,17 +155,27 @@ class ReportColumnsRanges: public Report {
   typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&,
                              const int&,
                              const Params::Report::RspColumnsRanges&)> Cb_t;
+  typedef std::shared_ptr<ReportColumnsRanges> Ptr;
 
+  SWC_CAN_INLINE
   static void request(const SWC::client::Clients::Ptr& clients,
                       const EndPoints& endpoints,
                       Cb_t&& cb,
-                      const uint32_t timeout = 10000);
+                      const uint32_t timeout = 10000) {
+    Ptr(new ReportColumnsRanges(
+      clients, endpoints, std::move(cb), timeout))->run();
+  }
 
+  SWC_CAN_INLINE
   static void request(const SWC::client::Clients::Ptr& clients,
                       const EndPoints& endpoints,
                       cid_t cid,
                       Cb_t&& cb,
-                      const uint32_t timeout = 10000);
+                      const uint32_t timeout = 10000) {
+    Ptr(new ReportColumnsRanges(
+      clients, endpoints, cid, std::move(cb), timeout))->run();
+  }
+
 
   ReportColumnsRanges(const SWC::client::Clients::Ptr& clients,
                       const EndPoints& endpoints,

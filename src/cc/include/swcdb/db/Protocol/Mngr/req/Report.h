@@ -49,14 +49,21 @@ class ClusterStatus: public Report {
 
   typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&,
                              const int&)> Cb_t;
+  typedef std::shared_ptr<ClusterStatus> Ptr;
 
+  SWC_CAN_INLINE
   static void request(const SWC::client::Clients::Ptr& clients,
                       const EndPoints& endpoints,
-                      Cb_t&& cb, const uint32_t timeout = 10000);
+                      Cb_t&& cb, const uint32_t timeout = 10000) {
+    make(clients, endpoints, std::move(cb), timeout)->run();
+  }
 
+  SWC_CAN_INLINE
   static Ptr make(const SWC::client::Clients::Ptr& clients,
                   const EndPoints& endpoints,
-                  Cb_t&& cb, const uint32_t timeout = 10000);
+                  Cb_t&& cb, const uint32_t timeout = 10000) {
+    return Ptr(new ClusterStatus(clients, endpoints, std::move(cb), timeout));
+  }
 
   ClusterStatus(const SWC::client::Clients::Ptr& clients,
                 const EndPoints& endpoints,
@@ -85,18 +92,29 @@ class ColumnStatus: public Report {
   typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&,
                              const int&,
                              const Params::Report::RspColumnStatus&)> Cb_t;
+  typedef std::shared_ptr<ColumnStatus> Ptr;
 
+  SWC_CAN_INLINE
   static void request(const SWC::client::Clients::Ptr& clients,
                       cid_t cid, Cb_t&& cb,
-                      const uint32_t timeout = 10000);
+                      const uint32_t timeout = 10000) {
+    request(
+      clients, Params::Report::ReqColumnStatus(cid), std::move(cb), timeout);
+  }
 
+  SWC_CAN_INLINE
   static void request(const SWC::client::Clients::Ptr& clients,
                       const Params::Report::ReqColumnStatus& params,
-                      Cb_t&& cb, const uint32_t timeout = 10000);
+                      Cb_t&& cb, const uint32_t timeout = 10000) {
+    make(clients, params, std::move(cb), timeout)->run();
+  }
 
+  SWC_CAN_INLINE
   static Ptr make(const SWC::client::Clients::Ptr& clients,
                   const Params::Report::ReqColumnStatus& params,
-                  Cb_t&& cb, const uint32_t timeout = 10000);
+                  Cb_t&& cb, const uint32_t timeout = 10000) {
+    return Ptr(new ColumnStatus(clients, params, std::move(cb), timeout));
+  }
 
   ColumnStatus(const SWC::client::Clients::Ptr& clients,
                const Params::Report::ReqColumnStatus& params,
@@ -124,14 +142,21 @@ class RangersStatus: public Report {
   typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&,
                              const int&,
                              const Params::Report::RspRangersStatus&)> Cb_t;
+  typedef std::shared_ptr<RangersStatus> Ptr;
 
+  SWC_CAN_INLINE
   static void request(const SWC::client::Clients::Ptr& clients,
                       cid_t cid, Cb_t&& cb,
-                      const uint32_t timeout = 10000);
+                      const uint32_t timeout = 10000) {
+    make(clients, cid, std::move(cb), timeout)->run();
+  }
 
+  SWC_CAN_INLINE
   static Ptr make(const SWC::client::Clients::Ptr& clients,
                   cid_t cid, Cb_t&& cb,
-                  const uint32_t timeout = 10000);
+                  const uint32_t timeout = 10000) {
+    return Ptr(new RangersStatus(clients, cid, std::move(cb), timeout));
+  }
 
   RangersStatus(const SWC::client::Clients::Ptr& clients,
                 cid_t cid, Cb_t&& cb,
@@ -159,14 +184,22 @@ class ManagersStatus: public Report {
   typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&,
                              const int&,
                              const Params::Report::RspManagersStatus&)> Cb_t;
+  typedef std::shared_ptr<ManagersStatus> Ptr;
 
+  SWC_CAN_INLINE
   static void request(const SWC::client::Clients::Ptr& clients,
                       const EndPoints& endpoints, Cb_t&& cb,
-                      const uint32_t timeout = 10000);
+                      const uint32_t timeout = 10000) {
+    make(clients, endpoints, std::move(cb), timeout)->run();
+  }
 
+  SWC_CAN_INLINE
   static Ptr make(const SWC::client::Clients::Ptr& clients,
                   const EndPoints& endpoints, Cb_t&& cb,
-                  const uint32_t timeout = 10000);
+                  const uint32_t timeout = 10000) {
+    return Ptr(new ManagersStatus(
+      clients, endpoints, std::move(cb), timeout));
+  }
 
   ManagersStatus(const SWC::client::Clients::Ptr& clients,
                  const EndPoints& endpoints, Cb_t&& cb,

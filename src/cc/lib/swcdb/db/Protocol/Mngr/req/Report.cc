@@ -55,24 +55,7 @@ void Report::clear_endpoints() {
 
 
 
-SWC_SHOULD_INLINE
-void ClusterStatus::request(const SWC::client::Clients::Ptr& clients,
-                            const EndPoints& endpoints,
-                            ClusterStatus::Cb_t&& cb,
-                            const uint32_t timeout) {
-  std::make_shared<ClusterStatus>(
-    clients, endpoints, std::move(cb), timeout)->run();
-}
 
-SWC_SHOULD_INLINE
-ClusterStatus::Ptr
-ClusterStatus::make(const SWC::client::Clients::Ptr& clients,
-                    const EndPoints& endpoints,
-                    ClusterStatus::Cb_t&& cb,
-                    const uint32_t timeout) {
-  return std::make_shared<ClusterStatus>(
-    clients, endpoints, std::move(cb), timeout);
-}
 
 ClusterStatus::ClusterStatus(const SWC::client::Clients::Ptr& clients,
                              const EndPoints& endpoints,
@@ -117,31 +100,6 @@ void ClusterStatus::handle(ConnHandlerPtr, const Event::Ptr& ev) {
 
 
 
-SWC_SHOULD_INLINE
-void ColumnStatus::request(const SWC::client::Clients::Ptr& clients,
-                           cid_t cid, ColumnStatus::Cb_t&& cb,
-                           const uint32_t timeout) {
-  request(
-    clients, Params::Report::ReqColumnStatus(cid), std::move(cb), timeout);
-}
-
-SWC_SHOULD_INLINE
-void ColumnStatus::request(const SWC::client::Clients::Ptr& clients,
-                           const Params::Report::ReqColumnStatus& params,
-                           ColumnStatus::Cb_t&& cb,
-                           const uint32_t timeout) {
-  std::make_shared<ColumnStatus>(
-    clients, params, std::move(cb), timeout)->run();
-}
-
-SWC_SHOULD_INLINE
-ColumnStatus::Ptr
-ColumnStatus::make(const SWC::client::Clients::Ptr& clients,
-                   const Params::Report::ReqColumnStatus& params,
-                   ColumnStatus::Cb_t&& cb, const uint32_t timeout) {
-  return std::make_shared<ColumnStatus>(
-    clients, params, std::move(cb), timeout);
-}
 
 ColumnStatus::ColumnStatus(const SWC::client::Clients::Ptr& clients,
                            const Params::Report::ReqColumnStatus& params,
@@ -196,22 +154,7 @@ void ColumnStatus::handle(ConnHandlerPtr, const Event::Ptr& ev) {
 
 
 
-SWC_SHOULD_INLINE
-void RangersStatus::request(const SWC::client::Clients::Ptr& clients,
-                            cid_t cid, RangersStatus::Cb_t&& cb,
-                            const uint32_t timeout) {
-  std::make_shared<RangersStatus>(
-    clients, cid, std::move(cb), timeout)->run();
-}
 
-SWC_SHOULD_INLINE
-RangersStatus::Ptr
-RangersStatus::make(const SWC::client::Clients::Ptr& clients,
-                    cid_t cid, RangersStatus::Cb_t&& cb,
-                    const uint32_t timeout) {
-  return std::make_shared<RangersStatus>(
-    clients, cid, std::move(cb), timeout);
-}
 
 RangersStatus::RangersStatus(const SWC::client::Clients::Ptr& clients,
                              cid_t cid, RangersStatus::Cb_t&& cb,
@@ -272,24 +215,7 @@ void RangersStatus::handle(ConnHandlerPtr, const Event::Ptr& ev) {
 
 
 
-SWC_SHOULD_INLINE
-void ManagersStatus::request(const SWC::client::Clients::Ptr& clients,
-                             const EndPoints& endpoints,
-                             ManagersStatus::Cb_t&& cb,
-                             const uint32_t timeout) {
-  std::make_shared<ManagersStatus>(
-    clients, endpoints, std::move(cb), timeout)->run();
-}
 
-SWC_SHOULD_INLINE
-ManagersStatus::Ptr
-ManagersStatus::make(const SWC::client::Clients::Ptr& clients,
-                     const EndPoints& endpoints,
-                     ManagersStatus::Cb_t&& cb,
-                     const uint32_t timeout) {
-  return std::make_shared<ManagersStatus>(
-    clients, endpoints, std::move(cb), timeout);
-}
 
 ManagersStatus::ManagersStatus(const SWC::client::Clients::Ptr& clients,
                                const EndPoints& endpoints,
