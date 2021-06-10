@@ -6,20 +6,12 @@
 
 #include "swcdb/db/Protocol/Mngr/req/ColumnList_Base.h"
 #include "swcdb/db/Protocol/Mngr/req/MngrActive.h"
-#include "swcdb/db/Protocol/Commands.h"
 
 
 namespace SWC { namespace Comm { namespace Protocol {
 namespace Mngr { namespace Req {
 
 
-SWC_SHOULD_INLINE
-ColumnList_Base::ColumnList_Base(
-        const Params::ColumnListReq& params,
-        const uint32_t timeout)
-        : client::ConnQueue::ReqBase(
-            Buffers::make(params, 0, COLUMN_LIST, timeout)) {
-}
 
 void ColumnList_Base::handle_no_conn() {
   if(get_clients()->stopping()) {
@@ -27,7 +19,8 @@ void ColumnList_Base::handle_no_conn() {
   } else if(!valid()) {
     callback(Error::CANCELLED, Params::ColumnListRsp());
   } else {
-    clear_endpoints();
+    get_clients()->remove_mngr(endpoints);
+    endpoints.clear();
     run();
   }
 }
@@ -75,10 +68,6 @@ void ColumnList_Base::handle(ConnHandlerPtr, const Event::Ptr& ev) {
   callback(err, rsp);
 }
 
-void ColumnList_Base::clear_endpoints() {
-  get_clients()->remove_mngr(endpoints);
-  endpoints.clear();
-}
 
 
 }}}}}

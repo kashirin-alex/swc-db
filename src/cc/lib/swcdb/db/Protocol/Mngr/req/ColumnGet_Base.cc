@@ -14,21 +14,14 @@ namespace Mngr { namespace Req {
 
 
 
-SWC_SHOULD_INLINE
-ColumnGet_Base::ColumnGet_Base(
-        const Params::ColumnGetReq& params,
-        const uint32_t timeout)
-        : client::ConnQueue::ReqBase(
-            Buffers::make(params, 0, COLUMN_GET, timeout)) {
-}
-
 void ColumnGet_Base::handle_no_conn() {
   if(get_clients()->stopping()) {
     callback(Error::CLIENT_STOPPING, Params::ColumnGetRsp());
   } else if(!valid()) {
     callback(Error::CANCELLED, Params::ColumnGetRsp());
   } else {
-    clear_endpoints();
+    get_clients()->remove_mngr(endpoints);
+    endpoints.clear();
     run();
   }
 }
@@ -76,11 +69,6 @@ void ColumnGet_Base::handle(ConnHandlerPtr, const Event::Ptr& ev) {
   }
 
   callback(err, rsp);
-}
-
-void ColumnGet_Base::clear_endpoints() {
-  get_clients()->remove_mngr(endpoints);
-  endpoints.clear();
 }
 
 

@@ -14,22 +14,14 @@ namespace Mngr { namespace Req {
 
 
 
-SWC_SHOULD_INLINE
-ColumnCompact_Base::ColumnCompact_Base(
-        const Params::ColumnCompactReq& params,
-        const uint32_t timeout)
-        : client::ConnQueue::ReqBase(
-            Buffers::make(params, 0, COLUMN_COMPACT, timeout)),
-          cid(params.cid) {
-}
-
 void ColumnCompact_Base::handle_no_conn() {
   if(get_clients()->stopping()) {
     callback(Params::ColumnCompactRsp(Error::CLIENT_STOPPING));
   } else if(!valid()) {
     callback(Params::ColumnCompactRsp(Error::CANCELLED));
   } else {
-    clear_endpoints();
+    get_clients()->remove_mngr(endpoints);
+    endpoints.clear();
     run();
   }
 }
@@ -67,11 +59,6 @@ void ColumnCompact_Base::handle(ConnHandlerPtr, const Event::Ptr& ev) {
     }
   }
   callback(rsp);
-}
-
-void ColumnCompact_Base::clear_endpoints() {
-  get_clients()->remove_mngr(endpoints);
-  endpoints.clear();
 }
 
 

@@ -9,6 +9,7 @@
 
 #include "swcdb/db/Protocol/Mngr/params/ColumnList.h"
 #include "swcdb/db/client/Clients.h"
+#include "swcdb/db/Protocol/Commands.h"
 
 
 namespace SWC { namespace Comm { namespace Protocol {
@@ -18,8 +19,12 @@ namespace Bkr { namespace Req {
 class ColumnList_Base: public client::ConnQueue::ReqBase {
   public:
 
+  SWC_CAN_INLINE
   ColumnList_Base(const Mngr::Params::ColumnListReq& params,
-                  const uint32_t timeout);
+                  const uint32_t timeout)
+        : client::ConnQueue::ReqBase(
+            Buffers::make(params, 0, COLUMN_LIST, timeout)) {
+  }
 
   virtual ~ColumnList_Base() { }
 

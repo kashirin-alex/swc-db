@@ -9,6 +9,7 @@
 
 #include "swcdb/db/Protocol/Mngr/params/ColumnGet.h"
 #include "swcdb/db/client/Clients.h"
+#include "swcdb/db/Protocol/Commands.h"
 
 
 namespace SWC { namespace Comm { namespace Protocol {
@@ -18,8 +19,12 @@ namespace Mngr { namespace Req {
 class ColumnGet_Base: public client::ConnQueue::ReqBase {
   public:
 
+  SWC_CAN_INLINE
   ColumnGet_Base(const Params::ColumnGetReq& params,
-                 const uint32_t timeout);
+                 const uint32_t timeout)
+        : client::ConnQueue::ReqBase(
+            Buffers::make(params, 0, COLUMN_GET, timeout)) {
+  }
 
   virtual ~ColumnGet_Base() { }
 
@@ -36,8 +41,6 @@ class ColumnGet_Base: public client::ConnQueue::ReqBase {
   virtual void callback(int error, const Params::ColumnGetRsp& rsp) = 0;
 
   private:
-
-  void clear_endpoints();
 
   EndPoints                 endpoints;
 };

@@ -40,8 +40,6 @@ class ColumnMng_Base: public client::ConnQueue::ReqBase {
 
   private:
 
-  void clear_endpoints();
-
   EndPoints                 endpoints;
 };
 

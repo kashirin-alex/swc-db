@@ -20,7 +20,8 @@ void ColumnMng_Base::handle_no_conn() {
   } else if(!valid()) {
     callback(Error::CANCELLED);
   } else {
-    clear_endpoints();
+    get_clients()->remove_mngr(endpoints);
+    endpoints.clear();
     run();
   }
 }
@@ -45,10 +46,6 @@ bool ColumnMng_Base::run() {
   return true;
 }
 
-void ColumnMng_Base::clear_endpoints() {
-  get_clients()->remove_mngr(endpoints);
-  endpoints.clear();
-}
 
 
 }}}}}

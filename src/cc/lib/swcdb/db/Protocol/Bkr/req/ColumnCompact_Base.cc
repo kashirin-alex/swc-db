@@ -12,13 +12,6 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace Bkr { namespace Req {
 
 
-SWC_SHOULD_INLINE
-ColumnCompact_Base::ColumnCompact_Base(
-        const Mngr::Params::ColumnCompactReq& params,
-        const uint32_t timeout)
-        : client::ConnQueue::ReqBase(
-            Buffers::make(params, 0, COLUMN_COMPACT, timeout)) {
-}
 
 void ColumnCompact_Base::handle_no_conn() {
   if(get_clients()->stopping()) {
