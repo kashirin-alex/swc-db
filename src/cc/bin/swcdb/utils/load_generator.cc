@@ -895,9 +895,9 @@ void make_work_load(const std::vector<DB::Schema::Ptr>& schemas) {
     for(auto& schema : schemas) {
       with_broker
         ? Comm::Protocol::Bkr::Req::ColumnMng_Sync::request(
-            Env::Clients::get(), func, schema, err, 10000)
+            func, schema, 10000, Env::Clients::get(), err)
         : Comm::Protocol::Mngr::Req::ColumnMng_Sync::request(
-            Env::Clients::get(), func, schema, err, 10000);
+            func, schema, 10000, Env::Clients::get(), err);
       quit_error(err);
     }
   }
@@ -952,9 +952,9 @@ void generate() {
   auto func = Comm::Protocol::Mngr::Params::ColumnMng::Function::CREATE;
   Env::Config::settings()->get_bool("with-broker")
     ? Comm::Protocol::Bkr::Req::ColumnMng_Sync::request(
-        Env::Clients::get(), func, schema, err, 10000)
+        func, schema, 10000, Env::Clients::get(), err)
     : Comm::Protocol::Mngr::Req::ColumnMng_Sync::request(
-        Env::Clients::get(), func, schema, err, 10000);
+        func, schema, 10000, Env::Clients::get(), err);
   quit_error(err);
   }
 

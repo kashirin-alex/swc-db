@@ -8,7 +8,7 @@
 #define swcdb_broker_Protocol_handlers_ColumnMng_h
 
 
-#include "swcdb/db/Protocol/Mngr/req/ColumnMng_Base.h"
+#include "swcdb/db/Protocol/Mngr/req/ColumnMng.h"
 
 
 namespace SWC { namespace Comm { namespace Protocol {
@@ -16,31 +16,32 @@ namespace Bkr { namespace Handler {
 
 
 
-class ColumnMng final : public Mngr::Req::ColumnMng_Base {
-  public:
-
-  typedef std::shared_ptr<ColumnMng> Ptr;
+struct ColumnMng  {
 
   ConnHandlerPtr  conn;
   Event::Ptr      ev;
   DB::Schema::Ptr schema;
 
   SWC_CAN_INLINE
-  ColumnMng(const SWC::client::Clients::Ptr& clients,
-            const Mngr::Params::ColumnMng& params,
-            const ConnHandlerPtr& conn, const Event::Ptr& ev)
-            : Mngr::Req::ColumnMng_Base(
-                clients, params, ev->header.timeout_ms),
-              conn(conn), ev(ev), schema(params.schema) {
+  ColumnMng(const ConnHandlerPtr& conn, const Event::Ptr& ev,
+            const DB::Schema::Ptr& schema) noexcept
+            : conn(conn), ev(ev), schema(schema) {
   }
 
-  virtual ~ColumnMng() { }
+  //~ColumnMng() { }
 
-  bool valid() override {
+  SWC_CAN_INLINE
+  SWC::client::Clients::Ptr& get_clients() noexcept {
+    return Env::Clients::get();
+  }
+  
+  SWC_CAN_INLINE
+  bool valid() {
     return !ev->expired() && conn->is_open();
   }
 
-  void callback(int err) override {
+  SWC_CAN_INLINE
+  void callback(const client::ConnQueue::ReqBase::Ptr&, int err) {
     if(valid())
       err
         ? conn->send_error(
@@ -67,8 +68,8 @@ void column_mng(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     Mngr::Params::ColumnMng params;
     params.decode(&ptr, &remain);
 
-    ColumnMng::Ptr(new ColumnMng(
-      Env::Clients::get(), params, conn, ev))->run();
+    Mngr::Req::ColumnMng<ColumnMng>::request(
+      params, ev->header.timeout_ms, conn, ev, params.schema);
 
   } catch(...) {
     const Error::Exception& e = SWC_CURRENT_EXCEPTION("");

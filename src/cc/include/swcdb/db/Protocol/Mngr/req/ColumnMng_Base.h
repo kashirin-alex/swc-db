@@ -9,6 +9,7 @@
 
 #include "swcdb/db/client/Clients.h"
 #include "swcdb/db/Protocol/Mngr/params/ColumnMng.h"
+#include "swcdb/db/Protocol/Commands.h"
 
 
 namespace SWC { namespace Comm { namespace Protocol {
@@ -18,11 +19,12 @@ namespace Mngr { namespace Req {
 class ColumnMng_Base: public client::ConnQueue::ReqBase {
   public:
 
-  using Func = Params::ColumnMng::Function;
-
-  ColumnMng_Base(const SWC::client::Clients::Ptr& clients,
-                 const Params::ColumnMng& params,
-                 const uint32_t timeout);
+  SWC_CAN_INLINE
+  ColumnMng_Base(const Params::ColumnMng& params,
+                 const uint32_t timeout)
+                : client::ConnQueue::ReqBase(
+                    Buffers::make(params, 0, COLUMN_MNG, timeout)) {
+  }
 
   virtual ~ColumnMng_Base() { }
 
@@ -30,9 +32,9 @@ class ColumnMng_Base: public client::ConnQueue::ReqBase {
 
   bool run() override;
 
-  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
-
   protected:
+
+  virtual SWC::client::Clients::Ptr& get_clients() noexcept = 0;
 
   virtual void callback(int error) = 0;
 
@@ -40,7 +42,6 @@ class ColumnMng_Base: public client::ConnQueue::ReqBase {
 
   void clear_endpoints();
 
-  SWC::client::Clients::Ptr clients;
   EndPoints                 endpoints;
 };
 

@@ -66,8 +66,6 @@ set(swcdb_sources
   Protocol/Mngr/req/ColumnList_Base.cc
   Protocol/Mngr/params/ColumnMng.cc
   Protocol/Mngr/req/ColumnMng_Base.cc
-  Protocol/Mngr/req/ColumnMng.cc
-  Protocol/Mngr/req/ColumnMng_Sync.cc
   Protocol/Mngr/params/Report.cc
   Protocol/Mngr/req/Report.cc
 
@@ -80,8 +78,6 @@ set(swcdb_sources
   Protocol/Bkr/req/ColumnGet_Base.cc
   Protocol/Bkr/req/ColumnList_Base.cc
   Protocol/Bkr/req/ColumnMng_Base.cc
-  Protocol/Bkr/req/ColumnMng.cc
-  Protocol/Bkr/req/ColumnMng_Sync.cc
 
   client/Settings.cc
   client/Clients.cc

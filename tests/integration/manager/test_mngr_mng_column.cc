@@ -87,22 +87,24 @@ void check_delete(int num_of_cols, bool modified) {
         sem->release();
         return;
       }
-      ProtocolExecutor::Req::ColumnMng::request(
-        Env::Clients::get(),
-        Comm::Protocol::Mngr::Params::ColumnMng::Function::DELETE,
-        rsp.schema,
-        [sem=sem]
-        (Comm::client::ConnQueue::ReqBase::Ptr req_ptr, int err){
-          if(err)
-            SWC_PRINT << "ColumnMng DELETE err=" << err
-                      << "(" << Error::get_text(err) << ")"
-                      << SWC_PRINT_CLOSE;
-          if(err == Error::REQUEST_TIMEOUT)
-            return req_ptr->request_again();
-          sem->release();
-        },
-        300000
-      );
+      ProtocolExecutor::Req::ColumnMng
+        <ProtocolExecutor::Req::Functional_ColumnMng>
+          ::request(
+            Comm::Protocol::Mngr::Params::ColumnMng::Function::DELETE,
+            rsp.schema,
+            300000,
+            Env::Clients::get(),
+            [sem=sem]
+            (void*, Comm::client::ConnQueue::ReqBase::Ptr req_ptr, int err) {
+              if(err)
+              SWC_PRINT << "ColumnMng DELETE err=" << err
+                        << "(" << Error::get_text(err) << ")"
+                        << SWC_PRINT_CLOSE;
+              if(err == Error::REQUEST_TIMEOUT)
+                return req_ptr->request_again();
+              sem->release();
+            }
+          );
     }
   };
 
@@ -299,11 +301,13 @@ void chk(Comm::Protocol::Mngr::Params::ColumnMng::Function func,
     schema->blk_size = 3;
     schema->blk_cells = 9876543;
 
-    ProtocolExecutor::Req::ColumnMng::request(
+    ProtocolExecutor::Req::ColumnMng
+      <ProtocolExecutor::Req::Functional_ColumnMng>
+    ::request(
+      func, schema, 300000,
       clients,
-      func, schema,
       [func, latency, verbose, start_ts=Time::now_ns()]
-      (Comm::client::ConnQueue::ReqBase::Ptr req_ptr, int err){
+      (void*, Comm::client::ConnQueue::ReqBase::Ptr req_ptr, int err) {
 
         uint64_t took = Time::now_ns() - start_ts;
 
@@ -336,9 +340,8 @@ void chk(Comm::Protocol::Mngr::Params::ColumnMng::Function func,
             << " max=" << latency->max()
             << " count=" << latency->count()
             << SWC_PRINT_CLOSE;
-      },
-      300000
-      );
+      }
+    );
 
   }
 
@@ -392,12 +395,15 @@ void chk_rename(size_t num_of_cols, bool verbose=false){
           << "from " << rsp.schema->to_string() << "\n"
           << "to   " << new_schema->to_string() << SWC_PRINT_CLOSE;
 
-      ProtocolExecutor::Req::ColumnMng::request(
-        Env::Clients::get(),
+      ProtocolExecutor::Req::ColumnMng
+        <ProtocolExecutor::Req::Functional_ColumnMng>
+      ::request(
         Comm::Protocol::Mngr::Params::ColumnMng::Function::MODIFY,
         new_schema,
+        300000,
+        Env::Clients::get(),
         [latency=latency, start_ts=start_ts]
-        (Comm::client::ConnQueue::ReqBase::Ptr req_ptr, int err){
+        (void*, Comm::client::ConnQueue::ReqBase::Ptr req_ptr, int err) {
           if(err != Error::OK
             && err != Error::COLUMN_SCHEMA_NAME_NOT_EXISTS
             && err != Error::COLUMN_SCHEMA_NOT_DIFFERENT){
@@ -406,8 +412,7 @@ void chk_rename(size_t num_of_cols, bool verbose=false){
             return;
           }
           latency->add(Time::now_ns() - start_ts);
-        },
-        300000
+        }
       );
     }
   };

@@ -8,59 +8,132 @@
 
 
 #include "swcdb/db/Protocol/Mngr/req/ColumnMng_Base.h"
+#include "swcdb/db/Protocol/Common/req/handler_data.h"
 
 
 namespace SWC { namespace Comm { namespace Protocol {
 namespace Mngr { namespace Req {
 
 
-class ColumnMng: public ColumnMng_Base {
+template<typename DataT>
+class ColumnMng final : public ColumnMng_Base {
   public:
 
-  typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&,
-                             int)> Cb_t;
+  typedef std::shared_ptr<ColumnMng>  Ptr;
+  DataT                               data;
 
-  static void create(const SWC::client::Clients::Ptr& clients,
-                     const DB::Schema::Ptr& schema, Cb_t&& cb,
-                     const uint32_t timeout = 10000);
+  template<typename... DataArgsT>
+  SWC_CAN_INLINE
+  static Ptr make(
+        const Params::ColumnMng& params,
+        const uint32_t timeout,
+        DataArgsT&&... args) {
+    return Ptr(new ColumnMng(params, timeout, args...));
+  }
 
-  static void modify(const SWC::client::Clients::Ptr& clients,
-                     const DB::Schema::Ptr& schema, Cb_t&& cb,
-                     const uint32_t timeout = 10000);
+  template<typename... DataArgsT>
+  SWC_CAN_INLINE
+  static void request(
+        const Params::ColumnMng& params,
+        const uint32_t timeout,
+        DataArgsT&&... args) {
+    make(params, timeout, args...)->run();
+  }
 
-  static void remove(const SWC::client::Clients::Ptr& clients,
-                     const DB::Schema::Ptr& schema, Cb_t&& cb,
-                     const uint32_t timeout = 10000);
+  template<typename... DataArgsT>
+  SWC_CAN_INLINE
+  static void request(Params::ColumnMng::Function func,
+                      const DB::Schema::Ptr& schema,
+                      const uint32_t timeout,
+                      DataArgsT&&... args) {
+    request(Params::ColumnMng(func, schema), timeout, args...);
+  }
 
-  static void request(const SWC::client::Clients::Ptr& clients,
-                      Func func,
-                      const DB::Schema::Ptr& schema, Cb_t&& cb,
-                      const uint32_t timeout = 10000);
+  template<typename... DataArgsT>
+  SWC_CAN_INLINE
+  static void create(const DB::Schema::Ptr& schema,
+                     const uint32_t timeout,
+                     DataArgsT&&... args) {
+    request(Params::ColumnMng::Function::CREATE, schema, timeout, args...);
+  }
 
-  static void request(const SWC::client::Clients::Ptr& clients,
-                      const Params::ColumnMng& params, Cb_t&& cb,
-                      const uint32_t timeout = 10000);
+  template<typename... DataArgsT>
+  SWC_CAN_INLINE
+  static void modify(const DB::Schema::Ptr& schema,
+                     const uint32_t timeout,
+                     DataArgsT&&... args) {
+    request(Params::ColumnMng::Function::MODIFY, schema, timeout, args...);
+  }
 
-  ColumnMng(const SWC::client::Clients::Ptr& clients,
-            const Params::ColumnMng& params, Cb_t&& cb,
-            const uint32_t timeout);
+  template<typename... DataArgsT>
+  SWC_CAN_INLINE
+  static void remove(const DB::Schema::Ptr& schema,
+                     const uint32_t timeout,
+                     DataArgsT&&... args) {
+    request(Params::ColumnMng::Function::DELETE, schema, timeout, args...);
+  }
 
   virtual ~ColumnMng() { }
 
-  protected:
-  virtual void callback(int err) override;
+  void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
+    data.callback(req(), ev->response_code());
+  }
 
-  private:
-  const Cb_t                cb;
+  protected:
+
+  template<typename... DataArgsT>
+  SWC_CAN_INLINE
+  ColumnMng(
+        const Params::ColumnMng& params,
+        const uint32_t timeout,
+        DataArgsT&&... args)
+      : ColumnMng_Base(params, timeout),
+        data(args...) {
+  }
+
+  SWC::client::Clients::Ptr& get_clients() noexcept override {
+    return data.get_clients();
+  }
+
+  bool valid() override {
+    return data.valid();
+  }
+
+  void callback(int err) override {
+    data.callback(req(), err);
+  }
 
 };
+
+
+
+/** Functional_ColumnMng - a default CbT DataT STL
+  ```
+  using data_t = Comm::Protocol::Mngr::Req::Functional_ColumnMng;
+  auto cb = [](void* datap,
+               const Comm::client::ConnQueue::ReqBase::Ptr&,
+               int err) noexcept {
+    data_t::Ptr datap = data_t::cast(_datap);
+    (void)(datap->clients);
+    ...;
+  };
+  Comm::Protocol::Mngr::Req::ColumnMng<data_t>::request(
+    params/(func, schema), timeout, clients, std::move(cb));
+  ```
+*/
+
+typedef Common::Req::function<
+  std::function<void(
+    void*,
+    const client::ConnQueue::ReqBase::Ptr&,
+    int err
+  )>
+> Functional_ColumnMng;
+
 
 
 }}}}}
 
 
-#ifdef SWC_IMPL_SOURCE
-#include "swcdb/db/Protocol/Mngr/req/ColumnMng.cc"
-#endif
 
 #endif // swcdb_db_protocol_mngr_req_ColumnMng_h

@@ -670,7 +670,7 @@ class AppHandler final : virtual public BrokerIf {
                   DB::Schema::Ptr& schema) {
     int err = Error::OK;
     Comm::Protocol::Mngr::Req::ColumnMng_Sync::request(
-      Env::Clients::get(), func, schema, err, 300000);
+      func, schema, 300000, Env::Clients::get(), err);
     if(err)
       Converter::exception(err);
 

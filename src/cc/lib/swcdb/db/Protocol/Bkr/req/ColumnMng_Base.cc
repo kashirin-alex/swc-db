@@ -6,29 +6,19 @@
 
 
 #include "swcdb/db/Protocol/Bkr/req/ColumnMng_Base.h"
-#include "swcdb/db/Protocol/Commands.h"
 
 
 namespace SWC { namespace Comm { namespace Protocol {
 namespace Bkr { namespace Req {
 
 
-SWC_SHOULD_INLINE
-ColumnMng_Base::ColumnMng_Base(const SWC::client::Clients::Ptr& clients,
-                               const Mngr::Params::ColumnMng& params,
-                               const uint32_t timeout)
-                    : client::ConnQueue::ReqBase(
-                        Buffers::make(params, 0, COLUMN_MNG, timeout)
-                      ),
-                      clients(clients) {
-}
 
 void ColumnMng_Base::handle_no_conn() {
-  if(clients->stopping()) {
+  if(get_clients()->stopping()) {
     callback(Error::CLIENT_STOPPING);
   } else if(!valid()) {
     callback(Error::CANCELLED);
-  } else if(_bkr_idx.turn_around(clients->brokers)) {
+  } else if(_bkr_idx.turn_around(get_clients()->brokers)) {
     request_again();
   } else {
     run();
@@ -37,9 +27,9 @@ void ColumnMng_Base::handle_no_conn() {
 
 bool ColumnMng_Base::run() {
   EndPoints endpoints;
-  while(!clients->stopping() &&
+  while(!get_clients()->stopping() &&
         valid() &&
-        (endpoints = clients->brokers.get_endpoints(_bkr_idx)).empty()) {
+        (endpoints=get_clients()->brokers.get_endpoints(_bkr_idx)).empty()) {
     SWC_LOG(LOG_ERROR,
       "Broker hosts cfg 'swc.bkr.host' is empty, waiting!");
     std::this_thread::sleep_for(std::chrono::seconds(3));
@@ -48,12 +38,8 @@ bool ColumnMng_Base::run() {
     handle_no_conn();
     return false;
   }
-  clients->get_bkr_queue(endpoints)->put(req());
+  get_clients()->get_bkr_queue(endpoints)->put(req());
   return true;
-}
-
-void ColumnMng_Base::handle(ConnHandlerPtr, const Event::Ptr& ev) {
-  callback(ev->response_code());
 }
 
 

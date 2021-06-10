@@ -131,7 +131,7 @@ class Test {
     schema->cell_versions = counter ? 1 : cell_versions;
 
     auto _cb = [this]
-      (Comm::client::ConnQueue::ReqBase::Ptr req_ptr, int err) {
+      (void*, Comm::client::ConnQueue::ReqBase::Ptr req_ptr, int err) {
         if(err && err != Error::COLUMN_SCHEMA_NAME_EXISTS) {
           SWC_PRINT << "ColumnMng::CREATE err="
                     << err << "(" << Error::get_text(err) << ")"
@@ -139,22 +139,26 @@ class Test {
           return req_ptr->request_again();
         }
         schema = Env::Clients::get()->get_schema(err, col_name);
+        //auto data = ProtocolExecutor::Req::Functional_ColumnMng::cast(datap);
+        //schema = data->get_clients()->get_schema(err, col_name);
         query_insert();
       };
 
     auto func = Comm::Protocol::Mngr::Params::ColumnMng::Function::CREATE;
     with_broker
-      ? Comm::Protocol::Bkr::Req::ColumnMng::request(
-          Env::Clients::get(), func, schema, std::move(_cb), 10000)
-      : Comm::Protocol::Mngr::Req::ColumnMng::request(
-          Env::Clients::get(), func, schema, std::move(_cb), 10000);
+      ? Comm::Protocol::Bkr::Req::ColumnMng
+          <Comm::Protocol::Bkr::Req::Functional_ColumnMng>
+            ::request(func, schema, 10000, Env::Clients::get(), std::move(_cb))
+      : Comm::Protocol::Mngr::Req::ColumnMng
+          <Comm::Protocol::Mngr::Req::Functional_ColumnMng>
+            ::request(func, schema, 10000, Env::Clients::get(), std::move(_cb));
   }
 
   void delete_column(const std::function<void()>& cb) {
     SWC_LOG(LOG_DEBUG, "delete_column");
 
     auto _cb = [this, cb]
-      (Comm::client::ConnQueue::ReqBase::Ptr req_ptr, int err) {
+      (void*, Comm::client::ConnQueue::ReqBase::Ptr req_ptr, int err) {
         if(err && err != Error::COLUMN_SCHEMA_NAME_NOT_EXISTS) {
           SWC_PRINT << "ColumnMng::DELETE err="
                     << err << "(" << Error::get_text(err) << ")"
@@ -162,6 +166,8 @@ class Test {
           return req_ptr->request_again();
         }
 
+        //auto data = ProtocolExecutor::Req::Functional_ColumnMng::cast(datap);
+        //data->get_clients()->schemas.remove(schema->cid);
         Env::Clients::get()->schemas.remove(schema->cid);
         schema = nullptr;
         cb();
@@ -169,10 +175,12 @@ class Test {
 
     auto func = Comm::Protocol::Mngr::Params::ColumnMng::Function::DELETE;
     with_broker
-      ? Comm::Protocol::Bkr::Req::ColumnMng::request(
-          Env::Clients::get(), func, schema, std::move(_cb), 10000)
-      : Comm::Protocol::Mngr::Req::ColumnMng::request(
-          Env::Clients::get(), func, schema, std::move(_cb), 10000);
+      ? Comm::Protocol::Bkr::Req::ColumnMng
+          <Comm::Protocol::Bkr::Req::Functional_ColumnMng>
+            ::request(func, schema, 10000, Env::Clients::get(), std::move(_cb))
+      : Comm::Protocol::Mngr::Req::ColumnMng
+          <Comm::Protocol::Mngr::Req::Functional_ColumnMng>
+            ::request(func, schema, 10000, Env::Clients::get(), std::move(_cb));
   }
 
 

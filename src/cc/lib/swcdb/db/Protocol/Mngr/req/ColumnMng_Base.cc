@@ -7,7 +7,6 @@
 
 #include "swcdb/db/Protocol/Mngr/req/ColumnMng_Base.h"
 #include "swcdb/db/Protocol/Mngr/req/MngrActive.h"
-#include "swcdb/db/Protocol/Commands.h"
 
 
 namespace SWC { namespace Comm { namespace Protocol {
@@ -15,18 +14,8 @@ namespace Mngr { namespace Req {
 
 
 
-SWC_SHOULD_INLINE
-ColumnMng_Base::ColumnMng_Base(const SWC::client::Clients::Ptr& clients,
-                               const Params::ColumnMng& params,
-                               const uint32_t timeout)
-                    : client::ConnQueue::ReqBase(
-                        Buffers::make(params, 0, COLUMN_MNG, timeout)
-                      ),
-                      clients(clients) {
-}
-
 void ColumnMng_Base::handle_no_conn() {
-  if(clients->stopping()) {
+  if(get_clients()->stopping()) {
     callback(Error::CLIENT_STOPPING);
   } else if(!valid()) {
     callback(Error::CANCELLED);
@@ -38,29 +27,26 @@ void ColumnMng_Base::handle_no_conn() {
 
 bool ColumnMng_Base::run() {
   if(endpoints.empty()) {
-    clients->get_mngr(DB::Types::MngrRole::SCHEMAS, endpoints);
+    get_clients()->get_mngr(DB::Types::MngrRole::SCHEMAS, endpoints);
     if(endpoints.empty()) {
-      if(clients->stopping()) {
+      if(get_clients()->stopping()) {
         callback(Error::CLIENT_STOPPING);
       } else if(!valid()) {
         callback(Error::CANCELLED);
       } else {
         MngrActive::make(
-          clients, DB::Types::MngrRole::SCHEMAS, shared_from_this())->run();
+          get_clients(), DB::Types::MngrRole::SCHEMAS, shared_from_this()
+        )->run();
       }
       return false;
     }
   }
-  clients->get_mngr_queue(endpoints)->put(req());
+  get_clients()->get_mngr_queue(endpoints)->put(req());
   return true;
 }
 
-void ColumnMng_Base::handle(ConnHandlerPtr, const Event::Ptr& ev) {
-  callback(ev->response_code());
-}
-
 void ColumnMng_Base::clear_endpoints() {
-  clients->remove_mngr(endpoints);
+  get_clients()->remove_mngr(endpoints);
   endpoints.clear();
 }
 

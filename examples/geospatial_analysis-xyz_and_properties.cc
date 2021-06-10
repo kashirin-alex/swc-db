@@ -245,11 +245,11 @@ SWC::DB::Schema::Ptr create_column() {
   // CREATE COLUMN
   int err = SWC::Error::OK;
   SWC::Comm::Protocol::Mngr::Req::ColumnMng_Sync::request(
-    SWC::Env::Clients::get(),
     SWC::Comm::Protocol::Mngr::Params::ColumnMng::Function::CREATE,
     schema,
-    err,
-    10000
+    10000,
+    SWC::Env::Clients::get(),
+    err
   );
   SWC_ASSERT(!err);
 

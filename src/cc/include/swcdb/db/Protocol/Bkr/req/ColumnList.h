@@ -8,6 +8,7 @@
 
 
 #include "swcdb/db/Protocol/Bkr/req/ColumnList_Base.h"
+#include "swcdb/db/Protocol/Common/req/handler_data.h"
 
 
 namespace SWC { namespace Comm { namespace Protocol {

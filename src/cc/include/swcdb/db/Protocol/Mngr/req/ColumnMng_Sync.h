@@ -7,59 +7,104 @@
 #define swcdb_db_protocol_mngr_req_ColumnMng_Sync_h
 
 
-#include "swcdb/db/Protocol/Mngr/req/ColumnMng_Base.h"
+#include "swcdb/db/Protocol/Mngr/req/ColumnMng.h"
 
 
 namespace SWC { namespace Comm { namespace Protocol {
 namespace Mngr { namespace Req {
 
 
-class ColumnMng_Sync: public ColumnMng_Base {
+class ColumnMng_Sync {
   public:
 
-  static void create(const SWC::client::Clients::Ptr& clients,
-                     const DB::Schema::Ptr& schema, int& err,
-                     const uint32_t timeout = 10000);
+  template<typename... DataArgsT>
+  SWC_CAN_INLINE
+  static std::shared_ptr<ColumnMng<ColumnMng_Sync>> 
+  make(const Params::ColumnMng& params,
+       const uint32_t timeout,
+       DataArgsT&&... args) {
+    return ColumnMng<ColumnMng_Sync>::make(params, timeout, args...);
+  }
 
-  static void modify(const SWC::client::Clients::Ptr& clients,
-                     const DB::Schema::Ptr& schema, int& err,
-                     const uint32_t timeout = 10000);
+  template<typename... DataArgsT>
+  SWC_CAN_INLINE
+  static void request(const Params::ColumnMng& params,
+                      const uint32_t timeout,
+                      DataArgsT&&... args) {
+    auto req = make(params, timeout, args...);
+    auto res = req->data.await.get_future();
+    req->run();
+    res.get();
+  }
 
-  static void remove(const SWC::client::Clients::Ptr& clients,
-                     const DB::Schema::Ptr& schema, int& err,
-                     const uint32_t timeout = 10000);
+  template<typename... DataArgsT>
+  SWC_CAN_INLINE
+  static void request(Params::ColumnMng::Function func,
+                      const DB::Schema::Ptr& schema,
+                      const uint32_t timeout,
+                      DataArgsT&&... args) {
+    request(Params::ColumnMng(func, schema), timeout, args...);
+  }
 
-  static void request(const SWC::client::Clients::Ptr& clients,
-                      Params::ColumnMng::Function func,
-                      const DB::Schema::Ptr& schema, int& err,
-                      const uint32_t timeout = 10000);
+  template<typename... DataArgsT>
+  SWC_CAN_INLINE
+  static void create(const DB::Schema::Ptr& schema,
+                     const uint32_t timeout,
+                     DataArgsT&&... args) {
+    request(Params::ColumnMng::Function::CREATE, schema, timeout, args...);
+  }
 
-  static void request(const SWC::client::Clients::Ptr& clients,
-                      const Params::ColumnMng& params, int& err,
-                      const uint32_t timeout = 10000);
+  template<typename... DataArgsT>
+  SWC_CAN_INLINE
+  static void modify(const DB::Schema::Ptr& schema,
+                     const uint32_t timeout,
+                     DataArgsT&&... args) {
+    request(Params::ColumnMng::Function::MODIFY, schema, timeout, args...);
+  }
 
-  std::promise<void> await;
+  template<typename... DataArgsT>
+  SWC_CAN_INLINE
+  static void remove(const DB::Schema::Ptr& schema,
+                     const uint32_t timeout,
+                     DataArgsT&&... args) {
+    request(Params::ColumnMng::Function::DELETE, schema, timeout, args...);
+  }
 
-  ColumnMng_Sync(const SWC::client::Clients::Ptr& clients,
-                 const Params::ColumnMng& params, int& err,
-                 const uint32_t timeout);
+  std::promise<void>       await;
 
-  virtual ~ColumnMng_Sync() { }
+  SWC_CAN_INLINE
+  ColumnMng_Sync(const SWC::client::Clients::Ptr& clients, int& err) noexcept
+                : clients(clients), err(err) {
+  }
 
-  protected:
-  virtual void callback(int err) override;
+  // ~ColumnMng_Sync() { }
+
+  SWC_CAN_INLINE
+  SWC::client::Clients::Ptr& get_clients() noexcept {
+    return clients;
+  }
+
+  SWC_CAN_INLINE
+  bool valid() {
+    return true;
+  }
+
+  SWC_CAN_INLINE
+  void callback(const client::ConnQueue::ReqBase::Ptr&, int error) {
+    err = error;
+    await.set_value();
+  }
 
   private:
-  int& err;
+  SWC::client::Clients::Ptr clients;
+  int&                       err;
 
 };
+
 
 
 }}}}}
 
 
-#ifdef SWC_IMPL_SOURCE
-#include "swcdb/db/Protocol/Mngr/req/ColumnMng_Sync.cc"
-#endif
 
 #endif // swcdb_db_protocol_mngr_req_ColumnMng_Sync_h

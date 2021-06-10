@@ -193,9 +193,9 @@ bool DbClient::mng_column(
 
   with_broker
     ? Comm::Protocol::Bkr::Req::ColumnMng_Sync::request(
-        clients, func, schema, err, 1800000)
+        func, schema, 1800000, clients, err)
     : Comm::Protocol::Mngr::Req::ColumnMng_Sync::request(
-        clients, func, schema, err, 1800000);
+        func, schema, 1800000, clients, err);
   if(err) {
     message.append(Error::get_text(err));
     message.append("\n");
