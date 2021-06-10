@@ -44,23 +44,6 @@ bool ColumnCompact_Base::run() {
   return true;
 }
 
-void ColumnCompact_Base::handle(ConnHandlerPtr, const Event::Ptr& ev) {
-  Params::ColumnCompactRsp rsp(ev->error);
-  if(!rsp.err) {
-    try {
-      const uint8_t *ptr = ev->data.base;
-      size_t remain = ev->data.size;
-      rsp.decode(&ptr, &remain);
-
-    } catch(...) {
-      const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
-      SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
-      rsp.err = e.code();
-    }
-  }
-  callback(rsp);
-}
-
 
 
 }}}}}

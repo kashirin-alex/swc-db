@@ -45,6 +45,8 @@ class ColumnCompactRsp final : public Serializable {
   SWC_CAN_INLINE
   ColumnCompactRsp(int err = Error::OK) noexcept : err(err) { }
 
+  ColumnCompactRsp(int err, const uint8_t* ptr, size_t remain) noexcept;
+
   //~ColumnCompactRsp() { }
 
   int err;

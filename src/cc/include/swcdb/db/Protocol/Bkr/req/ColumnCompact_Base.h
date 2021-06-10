@@ -32,8 +32,6 @@ class ColumnCompact_Base: public client::ConnQueue::ReqBase {
 
   bool run() override;
 
-  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
-
   protected:
 
   virtual SWC::client::Clients::Ptr& get_clients() noexcept = 0;

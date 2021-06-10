@@ -50,6 +50,13 @@ class ColumnCompact final : public ColumnCompact_Base {
 
   virtual ~ColumnCompact() { }
 
+  void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
+    data.callback(
+      req(),
+      Mngr::Params::ColumnCompactRsp(ev->error, ev->data.base, ev->data.size)
+    );
+  }
+
   protected:
 
   template<typename... DataArgsT>
