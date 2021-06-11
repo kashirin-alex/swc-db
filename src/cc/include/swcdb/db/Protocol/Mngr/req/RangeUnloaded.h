@@ -43,6 +43,10 @@ class RangeUnloaded final : public client::ConnQueue::ReqBase {
 
   virtual ~RangeUnloaded() { }
 
+  bool valid() override {
+    return data.valid();
+  }
+
   void handle_no_conn() override {
     if(data.get_clients()->stopping()) {
       data.callback(
