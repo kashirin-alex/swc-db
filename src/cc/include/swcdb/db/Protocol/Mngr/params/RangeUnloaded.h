@@ -60,7 +60,18 @@ class RangeUnloadedRsp final : public Serializable {
   public:
 
   SWC_CAN_INLINE
-  RangeUnloadedRsp(int err = Error::OK) noexcept : err(err) {}
+  RangeUnloadedRsp(int err = Error::OK) noexcept : err(err) { }
+
+  RangeUnloadedRsp(int err, const uint8_t* ptr, size_t remain) noexcept
+                  : err(err) {
+    if(!err) try {
+      decode(&ptr, &remain);
+    } catch(...) {
+      const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
+      err = e.code();
+      SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
+    }
+  }
 
   //~RangeUnloadedRsp() { }
 

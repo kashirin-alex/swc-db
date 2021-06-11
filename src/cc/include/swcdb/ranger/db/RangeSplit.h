@@ -107,23 +107,48 @@ class RangeSplit final {
             hdlr->error(), Error::get_text(hdlr->error()));
         hdlr->range->compacting(Range::COMPACT_NONE);
         col->internal_unload(hdlr->range->rid);
-        Comm::Protocol::Mngr::Req::RangeUnloaded::request(
-          Env::Clients::get(),
-          col->cfg->cid, hdlr->range->rid,
-          [cid=col->cfg->cid, new_rid=hdlr->range->rid]
-          (const Comm::client::ConnQueue::ReqBase::Ptr& req,
-           const Comm::Protocol::Mngr::Params::RangeUnloadedRsp& rsp) {
+
+        struct ReqData {
+          const cid_t cid;
+          const rid_t new_rid;
+          SWC_CAN_INLINE
+          ReqData(cid_t cid, rid_t new_rid) noexcept
+                  : cid(cid), new_rid(new_rid) {
+          }
+          SWC_CAN_INLINE
+          cid_t get_cid() const noexcept {
+            return cid;
+          }
+          SWC_CAN_INLINE
+          client::Clients::Ptr& get_clients() noexcept {
+            return Env::Clients::get();
+          }
+          SWC_CAN_INLINE
+          bool valid() noexcept {
+            return !Env::Rgr::is_not_accepting();
+          }
+          SWC_CAN_INLINE
+          void callback(
+              const Comm::client::ConnQueue::ReqBase::Ptr& req,
+              const Comm::Protocol::Mngr::Params::RangeUnloadedRsp& rsp) {
             SWC_LOGF(LOG_DEBUG,
               "RangeSplit::Mngr::Req::RangeUnloaded err=%d(%s) %lu/%lu",
               rsp.err, Error::get_text(rsp.err), cid, new_rid);
-            if(rsp.err && !Env::Rgr::is_not_accepting() &&
+            if(rsp.err && valid() &&
                rsp.err != Error::CLIENT_STOPPING &&
                rsp.err != Error::COLUMN_NOT_EXISTS &&
                rsp.err != Error::COLUMN_MARKED_REMOVED &&
                rsp.err != Error::COLUMN_NOT_READY) {
               req->request_again();
             }
-        });
+          }
+        };
+        Comm::Protocol::Mngr::Req::RangeUnloaded<ReqData>::request(
+          Comm::Protocol::Mngr::Params::RangeUnloadedReq(
+            col->cfg->cid, hdlr->range->rid),
+          10000,
+          col->cfg->cid, hdlr->range->rid
+        );
 
         range->expand_and_align(true, Query::Update::CommonMeta::make(
           range,

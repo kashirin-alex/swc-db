@@ -869,23 +869,47 @@ void CompactRange::split(rid_t new_rid, uint32_t split_at) {
       hdlr->range->compacting(Range::COMPACT_NONE);
       col->internal_unload(hdlr->range->rid);
 
-      Comm::Protocol::Mngr::Req::RangeUnloaded::request(
-        Env::Clients::get(),
-        hdlr->range->cfg->cid, hdlr->range->rid,
-        [ptr, cid=col->cfg->cid, new_rid=hdlr->range->rid]
-        (const Comm::client::ConnQueue::ReqBase::Ptr& req,
-         const Comm::Protocol::Mngr::Params::RangeUnloadedRsp& rsp) {
+      struct ReqData  {
+        CompactRange::Ptr ptr;
+        const rid_t       new_rid;
+        SWC_CAN_INLINE
+        ReqData(const CompactRange::Ptr& ptr, rid_t new_rid)
+                noexcept : ptr(ptr), new_rid(new_rid) {
+        }
+        SWC_CAN_INLINE
+        cid_t get_cid() const noexcept {
+          return ptr->range->cfg->cid;
+        }
+        SWC_CAN_INLINE
+        client::Clients::Ptr& get_clients() noexcept {
+          return Env::Clients::get();
+        }
+        SWC_CAN_INLINE
+        bool valid() noexcept {
+          return !ptr->m_stopped && !Env::Rgr::is_not_accepting();
+        }
+        SWC_CAN_INLINE
+        void callback(
+            const Comm::client::ConnQueue::ReqBase::Ptr& req,
+            const Comm::Protocol::Mngr::Params::RangeUnloadedRsp& rsp) {
           SWC_LOGF(LOG_DEBUG,
             "Compact::Mngr::Req::RangeUnloaded err=%d(%s) %lu/%lu",
-            rsp.err, Error::get_text(rsp.err), cid, new_rid);
-          if(rsp.err && !ptr->m_stopped && !Env::Rgr::is_not_accepting() &&
+            rsp.err, Error::get_text(rsp.err), get_cid(), new_rid);
+          if(rsp.err && valid() &&
              rsp.err != Error::CLIENT_STOPPING &&
              rsp.err != Error::COLUMN_NOT_EXISTS &&
              rsp.err != Error::COLUMN_MARKED_REMOVED &&
              rsp.err != Error::COLUMN_NOT_READY) {
             req->request_again();
           }
-      });
+        }
+      };
+      Comm::Protocol::Mngr::Req::RangeUnloaded<ReqData>::request(
+        Comm::Protocol::Mngr::Params::RangeUnloadedReq(
+          hdlr->range->cfg->cid, hdlr->range->rid),
+        10000,
+        ptr, hdlr->range->rid
+      );
   }));
 
   range->expand_and_align(true, Query::Update::CommonMeta::make(

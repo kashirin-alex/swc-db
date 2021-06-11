@@ -7,102 +7,102 @@
 #define swcdb_db_protocol_req_RangeUnloaded_h
 
 
-#include "swcdb/db/Protocol/Commands.h"
-
 #include "swcdb/db/Protocol/Mngr/req/MngrActive.h"
 #include "swcdb/db/Protocol/Mngr/params/RangeUnloaded.h"
+#include "swcdb/db/Protocol/Commands.h"
 
 
 namespace SWC { namespace Comm { namespace Protocol {
 namespace Mngr { namespace Req {
 
 
-class RangeUnloaded: public client::ConnQueue::ReqBase {
+template<typename DataT>
+class RangeUnloaded final : public client::ConnQueue::ReqBase {
   public:
 
-  typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&,
-                             const Params::RangeUnloadedRsp&)> Cb_t;
+  typedef std::shared_ptr<RangeUnloaded> Ptr;
+  DataT                                  data;
 
-  static void request(const SWC::client::Clients::Ptr& clients,
-                      cid_t cid, rid_t rid,
-                      Cb_t&& cb, const uint32_t timeout = 10000){
-    request(
-      clients, Params::RangeUnloadedReq(cid, rid), std::move(cb), timeout);
+  template<typename... DataArgsT>
+  SWC_CAN_INLINE
+  static Ptr make(
+        const Params::RangeUnloadedReq& params,
+        const uint32_t timeout,
+        DataArgsT&&... args) {
+    return Ptr(new RangeUnloaded(params, timeout, args...));
   }
 
-  static inline void request(const SWC::client::Clients::Ptr& clients,
-                             const Params::RangeUnloadedReq& params,
-                             Cb_t&& cb, const uint32_t timeout = 10000) {
-    std::make_shared<RangeUnloaded>(
-      clients, params, std::move(cb), timeout)->run();
-  }
-
-
-  RangeUnloaded(const SWC::client::Clients::Ptr& clients,
-                const Params::RangeUnloadedReq& params, Cb_t&& cb,
-                const uint32_t timeout)
-                : client::ConnQueue::ReqBase(
-                    Buffers::make(params, 0, RANGE_UNLOADED, timeout)
-                  ),
-                  clients(clients), cb(std::move(cb)), cid(params.cid) {
+  template<typename... DataArgsT>
+  SWC_CAN_INLINE
+  static void request(
+        const Params::RangeUnloadedReq& params,
+        const uint32_t timeout,
+        DataArgsT&&... args) {
+    make(params, timeout, args...)->run();
   }
 
   virtual ~RangeUnloaded() { }
 
   void handle_no_conn() override {
-    if(clients->stopping()) {
-      cb(req(), Params::RangeUnloadedRsp(Error::CLIENT_STOPPING));
+    if(data.get_clients()->stopping()) {
+      data.callback(
+        req(), Params::RangeUnloadedRsp(Error::CLIENT_STOPPING));
+    } else if(!data.valid()) {
+      data.callback(
+        req(), Params::RangeUnloadedRsp(Error::CANCELLED));
     } else {
-      clear_endpoints();
+      data.get_clients()->remove_mngr(endpoints);
+      endpoints.clear();
       run();
     }
   }
 
   bool run() override {
     if(endpoints.empty()) {
-      clients->get_mngr(cid, endpoints);
+      data.get_clients()->get_mngr(data.get_cid(), endpoints);
       if(endpoints.empty()) {
-        if(clients->stopping()) {
-          cb(req(), Params::RangeUnloadedRsp(Error::CLIENT_STOPPING));
+        if(data.get_clients()->stopping()) {
+          data.callback(
+            req(), Params::RangeUnloadedRsp(Error::CLIENT_STOPPING));
+        } else if(!data.valid()) {
+          data.callback(
+            req(), Params::RangeUnloadedRsp(Error::CANCELLED));
         } else {
-          MngrActive::make(clients, cid, shared_from_this())->run();
+          MngrActive::make(
+            data.get_clients(), data.get_cid(), shared_from_this()
+          )->run();
         }
         return false;
       }
     }
-    clients->get_mngr_queue(endpoints)->put(req());
+    data.get_clients()->get_mngr_queue(endpoints)->put(req());
     return true;
   }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
-    Params::RangeUnloadedRsp rsp_params(ev->error);
-    if(!rsp_params.err) {
-      try {
-        const uint8_t *ptr = ev->data.base;
-        size_t remain = ev->data.size;
-        rsp_params.decode(&ptr, &remain);
+    data.callback(
+      req(),
+      Params::RangeUnloadedRsp(ev->error, ev->data.base, ev->data.size)
+    );
+  }
 
-      } catch(...) {
-        const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
-        SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
-        rsp_params.err = e.code();
-      }
-    }
+  protected:
 
-    cb(req(), rsp_params);
+  template<typename... DataArgsT>
+  SWC_CAN_INLINE
+  RangeUnloaded(
+        const Params::RangeUnloadedReq& params,
+        const uint32_t timeout,
+        DataArgsT&&... args)
+      : client::ConnQueue::ReqBase(
+          Buffers::make(params, 0, RANGE_UNLOADED, timeout)
+        ),
+        data(args...) {
   }
 
   private:
-
-  void clear_endpoints() {
-    clients->remove_mngr(endpoints);
-    endpoints.clear();
-  }
-
-  SWC::client::Clients::Ptr clients;
-  const Cb_t                cb;
-  const cid_t               cid;
   EndPoints                 endpoints;
+
 };
 
 
