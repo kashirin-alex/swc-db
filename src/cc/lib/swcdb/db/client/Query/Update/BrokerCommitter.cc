@@ -93,6 +93,7 @@ void BrokerCommitter::committed(
 
     case Error::COLUMN_NOT_EXISTS: {
       SWC_BROKER_COMMIT_RSP_DEBUG("bkr_commit");
+      hdlr->add_resend_count(colp->add(cells_buff));
       hdlr->error(colp->get_cid(), rsp.err);
       if(workload.is_last())
         hdlr->response(rsp.err);
@@ -101,6 +102,7 @@ void BrokerCommitter::committed(
 
     case Error::CLIENT_STOPPING: {
       SWC_BROKER_COMMIT_RSP_DEBUG("bkr_commit STOPPED");
+      hdlr->add_resend_count(colp->add(cells_buff));
       hdlr->error(rsp.err);
       if(workload.is_last())
         hdlr->response(rsp.err);
