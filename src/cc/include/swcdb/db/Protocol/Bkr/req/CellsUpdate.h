@@ -3,59 +3,150 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swcdb_db_protocol_bkr_req_CellsUpdate_h
-#define swcdb_db_protocol_bkr_req_CellsUpdate_h
+#ifndef swcdb_db_protocol_bkr_req_Committer_CellsUpdate_h
+#define swcdb_db_protocol_bkr_req_Committer_CellsUpdate_h
 
 
-
-#include "swcdb/core/comm/ClientConnQueue.h"
 #include "swcdb/db/Protocol/Bkr/params/CellsUpdate.h"
+#include "swcdb/db/Protocol/Commands.h"
+#include "swcdb/db/Protocol/Common/req/handler_data.h"
 
 
 namespace SWC { namespace Comm { namespace Protocol {
 namespace Bkr { namespace Req {
 
 
-class CellsUpdate: public client::ConnQueue::ReqBase {
+template<typename DataT>
+class CellsUpdate final : public client::ConnQueue::ReqBase {
   public:
 
-  typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&,
-                             const Params::CellsUpdateRsp&)> Cb_t;
+  typedef std::shared_ptr<CellsUpdate> Ptr;
+  DataT                                data;
 
-  static void
-  request(const SWC::client::Clients::Ptr& clients,
-          const EndPoints& endpoints,
-          cid_t cid,
-          const DynamicBuffer::Ptr& buffer,
-          Cb_t&& cb,
-          const uint32_t timeout = 10000);
+  template<typename... DataArgsT>
+  SWC_CAN_INLINE
+  static Ptr make(
+        const Params::CellsUpdateReq& params,
+        StaticBuffer& snd_buf,
+        const uint32_t timeout,
+        DataArgsT&&... args) {
+    return Ptr(new CellsUpdate(
+      Buffers::make(params, snd_buf, 0, CELLS_UPDATE, timeout),
+      args...
+    ));
+  }
 
+  template<typename... DataArgsT>
+  SWC_CAN_INLINE
+  static Ptr make(
+        const Params::CellsUpdateReq& params,
+        const DynamicBuffer& buffer,
+        const uint32_t timeout,
+        DataArgsT&&... args) {
+    StaticBuffer snd_buf(buffer.base, buffer.fill(), false);
+    return make(params, snd_buf, timeout, args...);
+  }
 
-  CellsUpdate(const SWC::client::Clients::Ptr& clients,
-              const EndPoints& endpoints,
-              Buffers::Ptr&& cbp,
-              Cb_t&& cb);
+  template<typename... DataArgsT>
+  SWC_CAN_INLINE
+  static void request(
+        const Params::CellsUpdateReq& params,
+        StaticBuffer& snd_buf,
+        const uint32_t timeout,
+        DataArgsT&&... args) {
+    make(params, snd_buf, timeout, args...)->run();
+  }
+
+  template<typename... DataArgsT>
+  SWC_CAN_INLINE
+  static void request(
+        const Params::CellsUpdateReq& params,
+        const DynamicBuffer& buffer,
+        const uint32_t timeout,
+        DataArgsT&&... args) {
+    make(params, buffer, timeout, args...)->run();
+  }
 
   virtual ~CellsUpdate() { }
 
-  void handle_no_conn() override;
+  bool run() override {
+    auto& clients = data.get_clients();
+    EndPoints endpoints;
+    while(data.valid() &&
+          (endpoints = clients->brokers.get_endpoints(_bkr_idx)).empty()) {
+      SWC_LOG(LOG_ERROR, "Broker hosts cfg 'swc.bkr.host' is empty, waiting!");
+      std::this_thread::sleep_for(std::chrono::seconds(3));
+    }
+    if(endpoints.empty()) {
+      handle_no_conn();
+      return false;
+    }
+    clients->get_bkr_queue(endpoints)->put(req());
+    return true;
+  }
 
-  bool run() override;
+  bool valid() override {
+    return data.valid();
+  }
 
-  void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
+  void handle_no_conn() override {
+    if(data.valid() && !_bkr_idx.turn_around(data.get_clients()->brokers)) {
+      run();
+    } else {
+      data.callback(req(), Params::CellsUpdateRsp(Error::COMM_NOT_CONNECTED));
+    }
+  }
+
+  void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
+    data.callback(
+      req(),
+      Params::CellsUpdateRsp(ev->error, ev->data.base, ev->data.size)
+    );
+  }
+
+  protected:
+
+  template<typename... DataArgsT>
+  SWC_CAN_INLINE
+  CellsUpdate(Buffers::Ptr&& cbp, DataArgsT&&... args)
+              : client::ConnQueue::ReqBase(std::move(cbp)),
+                data(args...) {
+  }
 
   private:
-  SWC::client::Clients::Ptr clients;
-  EndPoints                 endpoints;
-  const Cb_t                cb;
+  SWC::client::Brokers::BrokerIdx _bkr_idx;
+
 };
+
+
+
+/** Functional_CellsUpdate - a default CbT DataT STL
+  ```
+  using data_t = Comm::Protocol::Bkr::Req::Functional_CellsUpdate;
+  auto cb = [](void* datap,
+               const Comm::client::ConnQueue::ReqBase::Ptr&,
+               const Comm::Protocol::Bkr::Params::CellsUpdateRsp&) {
+    data_t::Ptr datap = data_t::cast(_datap);
+    (void)(datap->clients);
+    ...;
+  };
+  Comm::Protocol::Bkr::Req::CellsUpdate<data_t>::request(
+    params, buffer, timeout, clients, std::move(cb));
+  ```
+*/
+
+typedef Common::Req::function<
+  std::function<void(
+    void*,
+    const client::ConnQueue::ReqBase::Ptr&,
+    const Params::CellsUpdateRsp&
+  )>
+> Functional_CellsUpdate;
+
 
 
 }}}}}
 
 
-#ifdef SWC_IMPL_SOURCE
-#include "swcdb/db/Protocol/Bkr/req/CellsUpdate.cc"
-#endif
 
-#endif // swcdb_db_protocol_bkr_req_CellsUpdate_h
+#endif // swcdb_db_protocol_bkr_req_Committer_CellsUpdate_h

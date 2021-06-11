@@ -5,8 +5,7 @@
 
 
 #include "swcdb/db/client/Query/Update/BrokerCommitter.h"
-#include "swcdb/db/Protocol/Bkr/req/Committer_CellsUpdate.h"
-
+#include "swcdb/db/Protocol/Bkr/req/CellsUpdate.h"
 
 namespace SWC { namespace client { namespace Query { namespace Update {
 
@@ -32,6 +31,33 @@ void BrokerCommitter::commit() {
   if(!hdlr->valid())
     return hdlr->response();
 
+  struct ReqData {
+    Ptr                          committer;
+    Profiling::Component::Start  profile;
+    DynamicBuffer                cells_buff;
+    SWC_CAN_INLINE
+    ReqData(const Ptr& committer, DynamicBuffer& cells_buff) noexcept
+            : committer(committer),
+              profile(committer->hdlr->profile.bkr()),
+              cells_buff(std::move(cells_buff)) {
+    }
+    SWC_CAN_INLINE
+    client::Clients::Ptr& get_clients() noexcept {
+      return committer->hdlr->clients;
+    }
+    SWC_CAN_INLINE
+    bool valid() {
+      return committer->hdlr->valid();
+    }
+    SWC_CAN_INLINE
+    void callback(
+            const ReqBase::Ptr& req,
+            const Comm::Protocol::Bkr::Params::CellsUpdateRsp& rsp) {
+      profile.add(rsp.err);
+      committer->committed(req, rsp, cells_buff);
+    }
+  };
+
   workload.increment();
   bool more = true;
   DynamicBuffer cells_buff;
@@ -39,8 +65,14 @@ void BrokerCommitter::commit() {
   while(more && hdlr->valid() &&
         colp->get_buff(hdlr->buff_sz, more, cells_buff)) {
     workload.increment();
-    Comm::Protocol::Bkr::Req::Committer_CellsUpdate::request(
-      shared_from_this(), std::move(cells_buff));
+    Comm::Protocol::Bkr::Req::CellsUpdate<ReqData>
+      ::request(
+          Comm::Protocol::Bkr::Params::CellsUpdateReq(colp->get_cid()),
+          cells_buff,
+          hdlr->timeout + cells_buff.fill()/hdlr->timeout_ratio,
+          shared_from_this(),
+          std::move(cells_buff)
+        );
   }
 
   if(workload.is_last())
@@ -56,6 +88,22 @@ void BrokerCommitter::committed(
       SWC_BROKER_COMMIT_RSP_DEBUG("bkr_commit");
       if(workload.is_last())
         hdlr->response();
+      return;
+    }
+
+    case Error::COLUMN_NOT_EXISTS: {
+      SWC_BROKER_COMMIT_RSP_DEBUG("bkr_commit");
+      hdlr->error(colp->get_cid(), rsp.err);
+      if(workload.is_last())
+        hdlr->response(rsp.err);
+      return;
+    }
+
+    case Error::CLIENT_STOPPING: {
+      SWC_BROKER_COMMIT_RSP_DEBUG("bkr_commit STOPPED");
+      hdlr->error(rsp.err);
+      if(workload.is_last())
+        hdlr->response(rsp.err);
       return;
     }
 

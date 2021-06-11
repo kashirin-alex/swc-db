@@ -42,6 +42,8 @@ class BrokerCommitter final
 
   void print(std::ostream& out);
 
+  private:
+
   void commit();
 
   void committed(ReqBase::Ptr req,
@@ -55,7 +57,6 @@ class BrokerCommitter final
 
 
 #ifdef SWC_IMPL_SOURCE
-#include "swcdb/db/Protocol/Bkr/req/Committer_CellsUpdate.cc"
 #include "swcdb/db/client/Query/Update/BrokerCommitter.cc"
 #endif
 

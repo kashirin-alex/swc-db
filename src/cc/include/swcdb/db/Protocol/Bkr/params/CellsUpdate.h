@@ -47,6 +47,8 @@ class CellsUpdateRsp final : public Serializable {
   SWC_CAN_INLINE
   CellsUpdateRsp(int err = Error::OK) noexcept : err(err) { }
 
+  CellsUpdateRsp(int err, const uint8_t* ptr, size_t remain) noexcept;
+
   //~CellsUpdateRsp() { }
 
   void print(std::ostream& out) const;
