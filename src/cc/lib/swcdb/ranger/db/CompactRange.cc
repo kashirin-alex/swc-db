@@ -791,34 +791,6 @@ void CompactRange::mngr_create_range(uint32_t split_at) {
   );
 }
 
-void CompactRange::mngr_remove_range(const RangePtr& new_range) {
-  std::promise<void> res;
-  Comm::Protocol::Mngr::Req::RangeRemove::request(
-    Env::Clients::get(),
-    new_range->cfg->cid,
-    new_range->rid,
-    [new_range, await=&res]
-    (const Comm::client::ConnQueue::ReqBase::Ptr& req,
-     const Comm::Protocol::Mngr::Params::RangeRemoveRsp& rsp) {
-
-      SWC_LOGF(LOG_DEBUG,
-        "Compact::Mngr::Req::RangeRemove err=%d(%s) %lu/%lu",
-        rsp.err, Error::get_text(rsp.err),
-        new_range->cfg->cid, new_range->rid);
-
-      if(rsp.err &&
-         rsp.err != Error::COLUMN_NOT_EXISTS &&
-         rsp.err != Error::COLUMN_MARKED_REMOVED &&
-         rsp.err != Error::COLUMN_NOT_READY) {
-         req->request_again();
-      } else {
-        await->set_value();
-      }
-    }
-  );
-  res.get_future().get();
-}
-
 void CompactRange::split(rid_t new_rid, uint32_t split_at) {
   ColumnPtr col = Env::Rgr::columns()->get_column(range->cfg->cid);
   if(!col || col->removing())

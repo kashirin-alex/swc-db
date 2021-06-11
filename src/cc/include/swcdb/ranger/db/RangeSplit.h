@@ -11,6 +11,58 @@
 namespace SWC { namespace Ranger {
 
 
+static void mngr_remove_range(const RangePtr& new_range) {
+  std::promise<void> res;
+  struct ReqData {
+    const RangePtr&     new_range;
+    std::promise<void>& res;
+    SWC_CAN_INLINE
+    ReqData(const RangePtr& new_range, std::promise<void>& res)
+            noexcept : new_range(new_range), res(res) {
+    }
+    SWC_CAN_INLINE
+    cid_t get_cid() const noexcept {
+      return new_range->cfg->cid;
+    }
+    SWC_CAN_INLINE
+    client::Clients::Ptr& get_clients() noexcept {
+      return Env::Clients::get();
+    }
+    SWC_CAN_INLINE
+    bool valid() noexcept {
+      return true;
+    }
+    SWC_CAN_INLINE
+    void callback(
+        const Comm::client::ConnQueue::ReqBase::Ptr& req,
+        const Comm::Protocol::Mngr::Params::RangeRemoveRsp& rsp) {
+
+      SWC_LOGF(LOG_DEBUG,
+        "Mngr::Req::RangeRemove err=%d(%s) %lu/%lu",
+        rsp.err, Error::get_text(rsp.err),
+        new_range->cfg->cid, new_range->rid);
+
+      if(rsp.err &&
+         rsp.err != Error::COLUMN_NOT_EXISTS &&
+         rsp.err != Error::COLUMN_MARKED_REMOVED &&
+         rsp.err != Error::COLUMN_NOT_READY) {
+         req->request_again();
+      } else {
+        res.set_value();
+      }
+    }
+  };
+  Comm::Protocol::Mngr::Req::RangeRemove<ReqData>::request(
+    Comm::Protocol::Mngr::Params::RangeRemoveReq(
+      new_range->cfg->cid, new_range->rid),
+    10000,
+    new_range, res
+  );
+  res.get_future().wait();
+}
+
+
+
 class RangeSplit final {
   public:
 
@@ -220,33 +272,6 @@ class RangeSplit final {
       range->cfg->cid, err, new_rid, res
     );
     res.get_future().wait();
-  }
-
-  void mngr_remove_range(const RangePtr& new_range) {
-    std::promise<void> res;
-    Comm::Protocol::Mngr::Req::RangeRemove::request(
-      Env::Clients::get(),
-      new_range->cfg->cid,
-      new_range->rid,
-      [&] (const Comm::client::ConnQueue::ReqBase::Ptr& req,
-           const Comm::Protocol::Mngr::Params::RangeRemoveRsp& rsp) {
-
-        SWC_LOGF(LOG_DEBUG,
-          "RangeSplit::Mngr::Req::RangeRemove err=%d(%s) %lu/%lu",
-          rsp.err, Error::get_text(rsp.err),
-          new_range->cfg->cid, new_range->rid);
-
-        if(rsp.err &&
-           rsp.err != Error::COLUMN_NOT_EXISTS &&
-           rsp.err != Error::COLUMN_MARKED_REMOVED &&
-           rsp.err != Error::COLUMN_NOT_READY) {
-           req->request_again();
-        } else {
-          res.set_value();
-        }
-      }
-    );
-    res.get_future().get();
   }
 
   const RangePtr range;

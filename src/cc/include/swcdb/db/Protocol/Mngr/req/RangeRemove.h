@@ -17,85 +17,95 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace Mngr { namespace Req {
 
 
-class RangeRemove: public client::ConnQueue::ReqBase {
+template<typename DataT>
+class RangeRemove final : public client::ConnQueue::ReqBase {
   public:
 
-  typedef std::function<void(const client::ConnQueue::ReqBase::Ptr&,
-                             const Params::RangeRemoveRsp&)> Cb_t;
+  typedef std::shared_ptr<RangeRemove> Ptr;
+  DataT                                data;
 
-  static void request(const SWC::client::Clients::Ptr& clients,
-                      cid_t cid, rid_t rid,
-                      Cb_t&& cb, const uint32_t timeout = 10000) {
-    request(
-      clients, Params::RangeRemoveReq(cid, rid), std::move(cb), timeout);
+  template<typename... DataArgsT>
+  SWC_CAN_INLINE
+  static Ptr make(
+        const Params::RangeRemoveReq& params,
+        const uint32_t timeout,
+        DataArgsT&&... args) {
+    return Ptr(new RangeRemove(params, timeout, args...));
   }
 
-  static inline void request(const SWC::client::Clients::Ptr& clients,
-                             const Params::RangeRemoveReq& params,
-                             Cb_t&& cb, const uint32_t timeout = 10000) {
-    std::make_shared<RangeRemove>(
-      clients, params, std::move(cb), timeout)->run();
-  }
-
-
-  RangeRemove(const SWC::client::Clients::Ptr& clients,
-              const Params::RangeRemoveReq& params, Cb_t&& cb,
-              const uint32_t timeout)
-              : client::ConnQueue::ReqBase(
-                  Buffers::make(params, 0, RANGE_REMOVE, timeout)
-                ),
-                clients(clients), cb(std::move(cb)), cid(params.cid) {
+  template<typename... DataArgsT>
+  SWC_CAN_INLINE
+  static void request(
+        const Params::RangeRemoveReq& params,
+        const uint32_t timeout,
+        DataArgsT&&... args) {
+    make(params, timeout, args...)->run();
   }
 
   virtual ~RangeRemove() { }
 
   void handle_no_conn() override {
-    clear_endpoints();
-    run();
+    if(data.get_clients()->stopping()) {
+      data.callback(
+        req(), Params::RangeRemoveRsp(Error::CLIENT_STOPPING));
+    } else if(!data.valid()) {
+      data.callback(
+        req(), Params::RangeRemoveRsp(Error::CANCELLED));
+    } else {
+      data.get_clients()->remove_mngr(endpoints);
+      endpoints.clear();
+      run();
+    }
   }
 
   bool run() override {
     if(endpoints.empty()) {
-      clients->get_mngr(cid, endpoints);
+      data.get_clients()->get_mngr(data.get_cid(), endpoints);
       if(endpoints.empty()) {
-        MngrActive::make(clients, cid, shared_from_this())->run();
+        if(data.get_clients()->stopping()) {
+          data.callback(
+            req(), Params::RangeRemoveRsp(Error::CLIENT_STOPPING));
+        } else if(!data.valid()) {
+          data.callback(
+            req(), Params::RangeRemoveRsp(Error::CANCELLED));
+        } else {
+          MngrActive::make(
+            data.get_clients(), data.get_cid(), shared_from_this()
+          )->run();
+        }
         return false;
       }
     }
-    clients->get_mngr_queue(endpoints)->put(req());
+    data.get_clients()->get_mngr_queue(endpoints)->put(req());
     return true;
   }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
-    Params::RangeRemoveRsp rsp_params(ev->error);
-    if(!rsp_params.err) {
-      try {
-        const uint8_t *ptr = ev->data.base;
-        size_t remain = ev->data.size;
-        rsp_params.decode(&ptr, &remain);
+    data.callback(
+      req(),
+      Params::RangeRemoveRsp(ev->error, ev->data.base, ev->data.size)
+    );
+  }
 
-      } catch(...) {
-        const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
-        SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
-        rsp_params.err = e.code();
-      }
-    }
+  protected:
 
-    cb(req(), rsp_params);
+  template<typename... DataArgsT>
+  SWC_CAN_INLINE
+  RangeRemove(
+        const Params::RangeRemoveReq& params,
+        const uint32_t timeout,
+        DataArgsT&&... args)
+      : client::ConnQueue::ReqBase(
+          Buffers::make(params, 0, RANGE_REMOVE, timeout)
+        ),
+        data(args...) {
   }
 
   private:
-
-  void clear_endpoints() {
-    clients->remove_mngr(endpoints);
-    endpoints.clear();
-  }
-
-  SWC::client::Clients::Ptr clients;
-  const Cb_t                cb;
-  const cid_t               cid;
   EndPoints                 endpoints;
+
 };
+
 
 
 }}}}}

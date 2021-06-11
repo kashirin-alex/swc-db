@@ -62,6 +62,17 @@ class RangeRemoveRsp final : public Serializable {
   SWC_CAN_INLINE
   RangeRemoveRsp(int err = Error::OK) noexcept : err(err) { }
 
+  RangeRemoveRsp(int err, const uint8_t* ptr, size_t remain) noexcept
+                : err(err) {
+    if(!err) try {
+      decode(&ptr, &remain);
+    } catch(...) {
+      const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
+      err = e.code();
+      SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
+    }
+  }
+
   //~RangeRemoveRsp() { }
 
   int             err;

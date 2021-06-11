@@ -76,8 +76,6 @@ class CompactRange final : public ReqScan {
 
   void mngr_create_range(uint32_t split_at);
 
-  void mngr_remove_range(const RangePtr& new_range);
-
   void split(rid_t new_rid, uint32_t split_at);
 
   void apply_new(bool clear = false);
