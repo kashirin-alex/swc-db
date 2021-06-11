@@ -242,7 +242,7 @@ class RangeSplit final {
       }
       SWC_CAN_INLINE
       bool valid() noexcept {
-        return !Env::Rgr::is_not_accepting();
+        return true;
       }
       SWC_CAN_INLINE
       void callback(
@@ -252,7 +252,7 @@ class RangeSplit final {
           "RangeSplit::Mngr::Req::RangeCreate err=%d(%s) %lu/%lu",
           rsp.err, Error::get_text(rsp.err), cid, rsp.rid);
 
-        if(rsp.err && valid() &&
+        if(rsp.err && !Env::Rgr::is_not_accepting() &&
            rsp.err != Error::CLIENT_STOPPING &&
            rsp.err != Error::COLUMN_NOT_EXISTS &&
            rsp.err != Error::COLUMN_MARKED_REMOVED &&
