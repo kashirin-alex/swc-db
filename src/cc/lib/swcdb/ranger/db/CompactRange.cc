@@ -742,19 +742,34 @@ void CompactRange::finalize() {
 }
 
 void CompactRange::mngr_create_range(uint32_t split_at) {
-  Comm::Protocol::Mngr::Req::RangeCreate::request(
-    Env::Clients::get(),
-    range->cfg->cid,
-    Env::Rgr::rgr_data()->rgrid,
-    [split_at, cid=range->cfg->cid, ptr=shared()]
-    (const Comm::client::ConnQueue::ReqBase::Ptr& req,
-     const Comm::Protocol::Mngr::Params::RangeCreateRsp& rsp) {
-
+  struct ReqData {
+    CompactRange::Ptr ptr;
+    uint32_t          split_at;
+    SWC_CAN_INLINE
+    ReqData(const CompactRange::Ptr& ptr, uint32_t split_at)
+            noexcept : ptr(ptr), split_at(split_at) {
+    }
+    SWC_CAN_INLINE
+    cid_t get_cid() const noexcept {
+      return ptr->range->cfg->cid;
+    }
+    SWC_CAN_INLINE
+    client::Clients::Ptr& get_clients() noexcept {
+      return Env::Clients::get();
+    }
+    SWC_CAN_INLINE
+    bool valid() noexcept {
+      return !ptr->m_stopped && !Env::Rgr::is_not_accepting();
+    }
+    SWC_CAN_INLINE
+    void callback(
+        const Comm::client::ConnQueue::ReqBase::Ptr& req,
+        const Comm::Protocol::Mngr::Params::RangeCreateRsp& rsp) {
       SWC_LOGF(LOG_DEBUG,
         "Compact::Mngr::Req::RangeCreate err=%d(%s) %lu/%lu",
-        rsp.err, Error::get_text(rsp.err), cid, rsp.rid);
+        rsp.err, Error::get_text(rsp.err), get_cid(), rsp.rid);
 
-      if(!ptr->m_stopped && rsp.err &&
+      if(rsp.err && valid() &&
          rsp.err != Error::CLIENT_STOPPING &&
          rsp.err != Error::COLUMN_NOT_EXISTS &&
          rsp.err != Error::COLUMN_MARKED_REMOVED &&
@@ -767,6 +782,12 @@ void CompactRange::mngr_create_range(uint32_t split_at) {
       else
         ptr->apply_new();
     }
+  };
+  Comm::Protocol::Mngr::Req::RangeCreate<ReqData>::request(
+    Comm::Protocol::Mngr::Params::RangeCreateReq(
+      range->cfg->cid, Env::Rgr::rgr_data()->rgrid),
+    10000,
+    shared(), split_at
   );
 }
 

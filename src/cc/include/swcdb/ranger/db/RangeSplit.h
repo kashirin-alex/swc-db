@@ -170,18 +170,37 @@ class RangeSplit final {
 
   void mngr_create_range(int& err, rid_t& new_rid) {
     std::promise<void>  res;
-    Comm::Protocol::Mngr::Req::RangeCreate::request(
-      Env::Clients::get(),
-      range->cfg->cid,
-      Env::Rgr::rgr_data()->rgrid,
-      [&] (const Comm::client::ConnQueue::ReqBase::Ptr& req,
-           const Comm::Protocol::Mngr::Params::RangeCreateRsp& rsp) {
 
+    struct ReqData {
+      const cid_t         cid;
+      int&                err;
+      rid_t&              new_rid;
+      std::promise<void>& res;
+      SWC_CAN_INLINE
+      ReqData(cid_t cid, int& err, rid_t& new_rid, std::promise<void>& res)
+              noexcept : cid(cid), err(err), new_rid(new_rid), res(res) {
+      }
+      SWC_CAN_INLINE
+      cid_t get_cid() const noexcept {
+        return cid;
+      }
+      SWC_CAN_INLINE
+      client::Clients::Ptr& get_clients() noexcept {
+        return Env::Clients::get();
+      }
+      SWC_CAN_INLINE
+      bool valid() noexcept {
+        return !Env::Rgr::is_not_accepting();
+      }
+      SWC_CAN_INLINE
+      void callback(
+          const Comm::client::ConnQueue::ReqBase::Ptr& req,
+          const Comm::Protocol::Mngr::Params::RangeCreateRsp& rsp) {
         SWC_LOGF(LOG_DEBUG,
           "RangeSplit::Mngr::Req::RangeCreate err=%d(%s) %lu/%lu",
-          rsp.err, Error::get_text(rsp.err), range->cfg->cid, rsp.rid);
+          rsp.err, Error::get_text(rsp.err), cid, rsp.rid);
 
-        if(rsp.err &&
+        if(rsp.err && valid() &&
            rsp.err != Error::CLIENT_STOPPING &&
            rsp.err != Error::COLUMN_NOT_EXISTS &&
            rsp.err != Error::COLUMN_MARKED_REMOVED &&
@@ -193,6 +212,12 @@ class RangeSplit final {
         new_rid = rsp.rid;
         res.set_value();
       }
+    };
+    Comm::Protocol::Mngr::Req::RangeCreate<ReqData>::request(
+      Comm::Protocol::Mngr::Params::RangeCreateReq(
+        range->cfg->cid, Env::Rgr::rgr_data()->rgrid),
+      10000,
+      range->cfg->cid, err, new_rid, res
     );
     res.get_future().wait();
   }
