@@ -30,7 +30,7 @@ static void mngr_remove_range(const RangePtr& new_range) {
     }
     SWC_CAN_INLINE
     bool valid() noexcept {
-      return true;
+      return !Env::Rgr::is_not_accepting();
     }
     SWC_CAN_INLINE
     void callback(
@@ -42,7 +42,7 @@ static void mngr_remove_range(const RangePtr& new_range) {
         rsp.err, Error::get_text(rsp.err),
         new_range->cfg->cid, new_range->rid);
 
-      if(rsp.err &&
+      if(rsp.err && valid() &&
          rsp.err != Error::COLUMN_NOT_EXISTS &&
          rsp.err != Error::COLUMN_MARKED_REMOVED &&
          rsp.err != Error::COLUMN_NOT_READY) {
@@ -242,7 +242,7 @@ class RangeSplit final {
       }
       SWC_CAN_INLINE
       bool valid() noexcept {
-        return true;
+        return !Env::Rgr::is_not_accepting();
       }
       SWC_CAN_INLINE
       void callback(
@@ -252,7 +252,7 @@ class RangeSplit final {
           "RangeSplit::Mngr::Req::RangeCreate err=%d(%s) %lu/%lu",
           rsp.err, Error::get_text(rsp.err), cid, rsp.rid);
 
-        if(rsp.err && !Env::Rgr::is_not_accepting() &&
+        if(rsp.err && valid() &&
            rsp.err != Error::CLIENT_STOPPING &&
            rsp.err != Error::COLUMN_NOT_EXISTS &&
            rsp.err != Error::COLUMN_MARKED_REMOVED &&
