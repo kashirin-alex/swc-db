@@ -5,7 +5,7 @@
 
 
 #include "swcdb/db/client/Query/Select/BrokerScanner.h"
-#include "swcdb/db/Protocol/Bkr/req/Scanner_CellsSelect.h"
+#include "swcdb/db/Protocol/Bkr/req/CellsSelect.h"
 
 
 namespace SWC { namespace client { namespace Query { namespace Select {
@@ -33,8 +33,31 @@ void BrokerScanner::print(std::ostream& out) {
 void BrokerScanner::select() {
   Comm::Protocol::Bkr::Params::CellsSelectReqRef params(cid, interval);
   SWC_SCANNER_REQ_DEBUG("bkr_select");
-  Comm::Protocol::Bkr::Req::Scanner_CellsSelect::request(
-    shared_from_this(), params);
+  struct ReqData {
+    Ptr                         scanner;
+    Profiling::Component::Start profile;
+    SWC_CAN_INLINE
+    ReqData(const Ptr& scanner) noexcept
+            : scanner(scanner),
+              profile(scanner->selector->profile.bkr()) {
+    }
+    SWC_CAN_INLINE
+    client::Clients::Ptr& get_clients() noexcept {
+      return scanner->selector->clients;
+    }
+    SWC_CAN_INLINE
+    bool valid() {
+      return scanner->selector->valid();
+    }
+    SWC_CAN_INLINE
+    void callback(const ReqBase::Ptr& req,
+                  Comm::Protocol::Bkr::Params::CellsSelectRsp& rsp) {
+      profile.add(rsp.err);
+      scanner->selected(req, rsp);
+    }
+  };
+  Comm::Protocol::Bkr::Req::CellsSelect<ReqData>
+    ::request(params, selector->timeout, shared_from_this());
 }
 
 void BrokerScanner::selected(const ReqBase::Ptr& req,

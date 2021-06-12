@@ -55,6 +55,19 @@ void CellsSelectReqRef::internal_encode(uint8_t** bufp) const {
 }
 
 
+
+CellsSelectRsp::CellsSelectRsp(int err, const uint8_t* ptr, size_t remain,
+                               StaticBuffer& data) noexcept
+                              : err(err), more(false), offset(0), data(data) {
+  if(!err) try {
+    decode(&ptr, &remain);
+  } catch(...) {
+    const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
+    err = e.code();
+    SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
+  }
+}
+
 void CellsSelectRsp::print(std::ostream& out) const {
   Error::print(out << "CellsSelectRsp(", err);
   out << " more=" << more

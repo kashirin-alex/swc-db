@@ -81,10 +81,8 @@ class CellsSelectRsp final : public Serializable {
                 : err(err), more(more), offset(offset) {
   }
 
-  SWC_CAN_INLINE
-  CellsSelectRsp(int err, StaticBuffer& data) noexcept
-                : err(err), more(false), offset(0), data(data) {
-  }
+  CellsSelectRsp(int err, const uint8_t* ptr, size_t remain,
+                 StaticBuffer& data) noexcept;
 
   //~CellsSelectRsp() { }
 

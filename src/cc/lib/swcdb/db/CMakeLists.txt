@@ -71,7 +71,6 @@ set(swcdb_sources
 
   Protocol/Bkr/params/CellsUpdate.cc
   Protocol/Bkr/params/CellsSelect.cc
-  Protocol/Bkr/req/Scanner_CellsSelect.cc
   Protocol/Bkr/req/ColumnCompact_Base.cc
   Protocol/Bkr/req/ColumnGet_Base.cc
   Protocol/Bkr/req/ColumnList_Base.cc

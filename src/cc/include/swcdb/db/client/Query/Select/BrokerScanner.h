@@ -52,6 +52,8 @@ class BrokerScanner : public std::enable_shared_from_this<BrokerScanner>  {
 
   void print(std::ostream& out);
 
+  private:
+
   void select();
 
   void selected(const ReqBase::Ptr& req,
@@ -64,7 +66,6 @@ class BrokerScanner : public std::enable_shared_from_this<BrokerScanner>  {
 
 
 #ifdef SWC_IMPL_SOURCE
-#include "swcdb/db/Protocol/Bkr/req/Scanner_CellsSelect.cc"
 #include "swcdb/db/client/Query/Select/BrokerScanner.cc"
 #endif
 
