@@ -26,27 +26,6 @@ void ColumnGet_Base::handle_no_conn() {
   }
 }
 
-bool ColumnGet_Base::run() {
-  if(endpoints.empty()) {
-    // ColumnGet not like ColumnList (can be any mngr if by cid)
-    get_clients()->get_mngr(DB::Types::MngrRole::SCHEMAS, endpoints);
-    if(endpoints.empty()) {
-      if(get_clients()->stopping()) {
-        callback(Error::CLIENT_STOPPING, Params::ColumnGetRsp());
-      } else if(!valid()) {
-        callback(Error::CANCELLED, Params::ColumnGetRsp());
-      } else {
-        MngrActive::make(
-          get_clients(), DB::Types::MngrRole::SCHEMAS, shared_from_this()
-        )->run();
-      }
-      return false;
-    }
-  }
-  get_clients()->get_mngr_queue(endpoints)->put(req());
-  return true;
-}
-
 void ColumnGet_Base::handle(ConnHandlerPtr, const Event::Ptr& ev) {
   Params::ColumnGetRsp rsp;
   int err = ev->response_code();

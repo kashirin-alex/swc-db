@@ -28,20 +28,23 @@ class Managers  {
 
   //~Managers() { }
 
+  bool put(const ClientsPtr& clients,
+           const cid_t& cid, Comm::EndPoints& endpoints,
+           const Comm::client::ConnQueue::ReqBase::Ptr& req);
+
+  bool put_role_schemas(const ClientsPtr& clients,
+                        Comm::EndPoints& endpoints,
+                        const Comm::client::ConnQueue::ReqBase::Ptr& req);
+
   const Comm::client::ConnQueuesPtr queues;
   const Mngr::Groups::Ptr           groups;
+
 };
 
 
 
 }} // namespace SWC::client
 
-
-
-
-#ifdef SWC_IMPL_SOURCE
-#include "swcdb/db/client/service/mngr/Managers.cc"
-#endif
 
 
 #endif // swcdb_db_client_mngr_Managers_h

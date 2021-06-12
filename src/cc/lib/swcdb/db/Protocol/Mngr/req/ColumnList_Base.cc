@@ -25,26 +25,6 @@ void ColumnList_Base::handle_no_conn() {
   }
 }
 
-bool ColumnList_Base::run() {
-  if(endpoints.empty()) {
-    get_clients()->get_mngr(DB::Types::MngrRole::SCHEMAS, endpoints);
-    if(endpoints.empty()) {
-      if(get_clients()->stopping()) {
-        callback(Error::CLIENT_STOPPING, Params::ColumnListRsp());
-      } else if(!valid()) {
-        callback(Error::CANCELLED, Params::ColumnListRsp());
-      } else {
-        MngrActive::make(
-          get_clients(), DB::Types::MngrRole::SCHEMAS, shared_from_this()
-        )->run();
-      }
-      return false;
-    }
-  }
-  get_clients()->get_mngr_queue(endpoints)->put(req());
-  return true;
-}
-
 void ColumnList_Base::handle(ConnHandlerPtr, const Event::Ptr& ev) {
   Params::ColumnListRsp rsp;
   int err = ev->response_code();

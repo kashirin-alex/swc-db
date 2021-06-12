@@ -31,7 +31,9 @@ class ColumnCompact_Base: public client::ConnQueue::ReqBase {
 
   void handle_no_conn() override;
 
-  bool run() override;
+  bool run() override {
+    return get_clients()->managers.put(get_clients(), cid, endpoints, req());
+  }
 
   protected:
 

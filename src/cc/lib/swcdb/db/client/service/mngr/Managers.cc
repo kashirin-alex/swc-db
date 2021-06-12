@@ -4,7 +4,9 @@
  */
 
 
+#include "swcdb/db/client/Clients.h"
 #include "swcdb/db/client/service/mngr/Managers.h"
+#include "swcdb/db/Protocol/Mngr/req/MngrActive.h"
 
 namespace SWC { namespace client {
 
@@ -32,6 +34,47 @@ Managers::Managers(const Config::Settings& settings,
       )),
       groups(Mngr::Groups::Ptr(new Mngr::Groups(settings))->init()) {
 }
+
+bool Managers::put(const ClientsPtr& clients,
+                   const cid_t& cid, Comm::EndPoints& endpoints,
+                   const Comm::client::ConnQueue::ReqBase::Ptr& req) {
+  if(endpoints.empty()) {
+    groups->select(cid, endpoints);
+    if(endpoints.empty()) {
+      if(clients->stopping() || !req->valid()) {
+        req->handle_no_conn();
+      } else {
+        Comm::Protocol::Mngr::Req::MngrActive::make(
+          clients, cid, req)->run();
+      }
+      return false;
+    }
+  }
+  queues->get(endpoints)->put(req);
+  return true;
+}
+
+bool Managers::put_role_schemas(
+                   const ClientsPtr& clients,
+                   Comm::EndPoints& endpoints,
+                   const Comm::client::ConnQueue::ReqBase::Ptr& req) {
+  if(endpoints.empty()) {
+    groups->select(DB::Types::MngrRole::SCHEMAS, endpoints);
+    if(endpoints.empty()) {
+      if(clients->stopping() || !req->valid()) {
+        req->handle_no_conn();
+      } else {
+        Comm::Protocol::Mngr::Req::MngrActive::make(
+          clients, DB::Types::MngrRole::SCHEMAS, req)->run();
+      }
+      return false;
+    }
+  }
+  queues->get(endpoints)->put(req);
+  return true;
+}
+
+
 
 }} //namespace SWC::client
 

@@ -27,27 +27,6 @@ void RgrGet_Base::handle_no_conn() {
   }
 }
 
-bool RgrGet_Base::run() {
-  if(endpoints.empty()) {
-    get_clients()->get_mngr(cid, endpoints);
-    if(endpoints.empty()) {
-      if(get_clients()->stopping()) {
-        Params::RgrGetRsp rsp(Error::CLIENT_STOPPING);
-        callback(rsp);
-      } else if(!valid()) {
-        Params::RgrGetRsp rsp(Error::CANCELLED);
-        callback(rsp);
-      } else {
-        SWC_LOGF(LOG_DEBUG, "RgrGet req mngr-active for cid=%lu", cid);
-        MngrActive::make(get_clients(), cid, shared_from_this())->run();
-      }
-      return false;
-    }
-  }
-  get_clients()->get_mngr_queue(endpoints)->put(req());
-  return true;
-}
-
 
 
 }}}}}

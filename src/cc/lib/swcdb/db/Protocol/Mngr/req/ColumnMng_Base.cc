@@ -26,26 +26,6 @@ void ColumnMng_Base::handle_no_conn() {
   }
 }
 
-bool ColumnMng_Base::run() {
-  if(endpoints.empty()) {
-    get_clients()->get_mngr(DB::Types::MngrRole::SCHEMAS, endpoints);
-    if(endpoints.empty()) {
-      if(get_clients()->stopping()) {
-        callback(Error::CLIENT_STOPPING);
-      } else if(!valid()) {
-        callback(Error::CANCELLED);
-      } else {
-        MngrActive::make(
-          get_clients(), DB::Types::MngrRole::SCHEMAS, shared_from_this()
-        )->run();
-      }
-      return false;
-    }
-  }
-  get_clients()->get_mngr_queue(endpoints)->put(req());
-  return true;
-}
-
 
 
 }}}}}

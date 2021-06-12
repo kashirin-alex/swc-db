@@ -62,25 +62,8 @@ class RangeCreate final : public client::ConnQueue::ReqBase {
   }
 
   bool run() override {
-    if(endpoints.empty()) {
-      data.get_clients()->get_mngr(data.get_cid(), endpoints);
-      if(endpoints.empty()) {
-        if(data.get_clients()->stopping()) {
-          data.callback(
-            req(), Params::RangeCreateRsp(Error::CLIENT_STOPPING));
-        } else if(!data.valid()) {
-          data.callback(
-            req(), Params::RangeCreateRsp(Error::CANCELLED));
-        } else {
-          MngrActive::make(
-            data.get_clients(), data.get_cid(), shared_from_this()
-          )->run();
-        }
-        return false;
-      }
-    }
-    data.get_clients()->get_mngr_queue(endpoints)->put(req());
-    return true;
+    return data.get_clients()->managers.put(
+      data.get_clients(), data.get_cid(), endpoints, req());
   }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {

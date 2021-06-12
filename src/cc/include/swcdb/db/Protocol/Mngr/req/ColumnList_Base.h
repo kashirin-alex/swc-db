@@ -30,7 +30,10 @@ class ColumnList_Base: public client::ConnQueue::ReqBase {
 
   void handle_no_conn() override;
 
-  bool run() override;
+  bool run() override {
+    return get_clients()->managers.put_role_schemas(
+      get_clients(), endpoints, req());
+  }
 
   void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
 

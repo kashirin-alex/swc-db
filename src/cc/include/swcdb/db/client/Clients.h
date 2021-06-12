@@ -10,12 +10,6 @@
 #include "swcdb/core/comm/ClientConnQueues.h"
 #include "swcdb/db/client/Settings.h"
 
-#include "swcdb/db/client/service/mngr/Managers.h"
-#include "swcdb/db/client/service/rgr/Rangers.h"
-#include "swcdb/db/client/service/bkr/Brokers.h"
-
-
-
 namespace SWC {
 
 
@@ -27,9 +21,13 @@ namespace SWC {
 namespace client {
 
 class Clients;
+typedef std::shared_ptr<Clients> ClientsPtr;
 
 }}
 
+#include "swcdb/db/client/service/mngr/Managers.h"
+#include "swcdb/db/client/service/rgr/Rangers.h"
+#include "swcdb/db/client/service/bkr/Brokers.h"
 #include "swcdb/db/client/Schemas.h"
 
 
@@ -57,7 +55,7 @@ class Clients : public std::enable_shared_from_this<Clients> {
           const ContextBroker::Ptr& bkr_ctx);
 
   public:
-  typedef std::shared_ptr<Clients> Ptr;
+  using Ptr = ClientsPtr;
 
   enum Flag : uint8_t {
     DEFAULT = 0x01,
@@ -281,6 +279,7 @@ class Clients final {
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/db/client/Clients.cc"
 #include "swcdb/db/client/Schemas.cc"
+#include "swcdb/db/client/service/mngr/Managers.cc"
 #include "swcdb/db/client/Query/Update/Handlers/Base.cc"
 #include "swcdb/db/client/Query/Select/Handlers/Base.cc"
 #endif
