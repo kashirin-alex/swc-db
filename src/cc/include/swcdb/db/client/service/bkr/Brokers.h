@@ -40,13 +40,15 @@ class Brokers {
 
   size_t size() noexcept;
 
-  Comm::EndPoints get_endpoints(BrokerIdx& idx) noexcept;
+  bool get(BrokerIdx& idx, Comm::EndPoints& endpoints);
 
   bool has_endpoints() noexcept;
 
   void set(BrokersEndPoints&& endpoints);
 
   void set(const BrokersEndPoints& endpoints);
+
+  bool put(const Comm::client::ConnQueue::ReqBase::Ptr& req, BrokerIdx& idx);
 
   const Comm::client::ConnQueuesPtr        queues;
   const Config::Property::V_GSTRINGS::Ptr  cfg_hosts;

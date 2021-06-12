@@ -59,7 +59,7 @@ class ColumnList final : public ColumnList_Base {
   }
 
   bool valid() override {
-    return data.valid();
+    return data.valid() && !data.get_clients()->stopping();
   }
 
   void callback(int err, const Mngr::Params::ColumnListRsp& rsp) override {

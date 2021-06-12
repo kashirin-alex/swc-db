@@ -25,23 +25,6 @@ void ColumnList_Base::handle_no_conn() {
   }
 }
 
-bool ColumnList_Base::run() {
-  EndPoints endpoints;
-  while(!get_clients()->stopping() &&
-        valid() &&
-        (endpoints=get_clients()->brokers.get_endpoints(_bkr_idx)).empty()) {
-    SWC_LOG(LOG_ERROR,
-      "Broker hosts cfg 'swc.bkr.host' is empty, waiting!");
-    std::this_thread::sleep_for(std::chrono::seconds(3));
-  }
-  if(endpoints.empty()) {
-    handle_no_conn();
-    return false;
-  }
-  get_clients()->get_bkr_queue(endpoints)->put(req());
-  return true;
-}
-
 void ColumnList_Base::handle(ConnHandlerPtr, const Event::Ptr& ev) {
   Mngr::Params::ColumnListRsp rsp;
   int err = ev->response_code();

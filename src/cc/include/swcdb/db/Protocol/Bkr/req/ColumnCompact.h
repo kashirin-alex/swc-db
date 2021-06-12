@@ -74,7 +74,7 @@ class ColumnCompact final : public ColumnCompact_Base {
   }
 
   bool valid() override {
-    return data.valid();
+    return data.valid() && !data.get_clients()->stopping();
   }
 
   void callback(const Mngr::Params::ColumnCompactRsp& rsp) override {

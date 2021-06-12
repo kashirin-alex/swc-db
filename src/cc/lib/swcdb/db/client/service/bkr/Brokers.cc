@@ -99,11 +99,13 @@ size_t Brokers::size() noexcept {
   return m_brokers.size();
 }
 
-Comm::EndPoints Brokers::get_endpoints(Brokers::BrokerIdx& idx) noexcept {
+bool Brokers::get(Brokers::BrokerIdx& idx, Comm::EndPoints& endpoints) {
   Core::MutexSptd::scope lock(m_mutex);
   return m_brokers.empty()
-    ? Comm::EndPoints()
-    : m_brokers[idx.pos >= m_brokers.size() ? (idx.pos = 0) : idx.pos];
+    ? false
+    : !(endpoints = m_brokers[idx.pos >= m_brokers.size()
+                        ? (idx.pos = 0)
+                        : idx.pos]).empty();
 }
 
 bool Brokers::has_endpoints() noexcept {
@@ -121,12 +123,38 @@ void Brokers::set(const BrokersEndPoints& _brokers) {
   m_brokers = _brokers;
 }
 
+bool Brokers::put(const Comm::client::ConnQueue::ReqBase::Ptr& req,
+                  Brokers::BrokerIdx& idx) {
+  for(Comm::EndPoints endpoints;;) {
+    {
+      Core::MutexSptd::scope lock(m_mutex);
+      if(!m_brokers.empty()) {
+        endpoints = m_brokers[idx.pos >= m_brokers.size()
+          ? (idx.pos = 0)
+          : idx.pos];
+      }
+    }
+    if(!endpoints.empty()) {
+      queues->get(endpoints)->put(req);
+      return true;
+    }
+    if(!req->valid()) {
+      req->handle_no_conn();
+      return false;
+    }
+    SWC_LOG(LOG_ERROR,
+      "Broker hosts cfg 'swc.bkr.host' is empty, waiting!");
+    std::this_thread::sleep_for(std::chrono::seconds(3));
+  }
+}
+
 bool Brokers::BrokerIdx::turn_around(Brokers& brks) noexcept {
   if(++pos < brks.size())
     return false;
   pos = 0;
   return true;
 }
+
 
 
 }} //namespace SWC::client

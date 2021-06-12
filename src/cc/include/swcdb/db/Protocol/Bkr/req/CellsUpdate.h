@@ -70,23 +70,11 @@ class CellsUpdate final : public client::ConnQueue::ReqBase {
   virtual ~CellsUpdate() { }
 
   bool run() override {
-    auto& clients = data.get_clients();
-    EndPoints endpoints;
-    while(data.valid() &&
-          (endpoints = clients->brokers.get_endpoints(_bkr_idx)).empty()) {
-      SWC_LOG(LOG_ERROR, "Broker hosts cfg 'swc.bkr.host' is empty, waiting!");
-      std::this_thread::sleep_for(std::chrono::seconds(3));
-    }
-    if(endpoints.empty()) {
-      handle_no_conn();
-      return false;
-    }
-    clients->get_bkr_queue(endpoints)->put(req());
-    return true;
+    return data.get_clients()->brokers.put(req(), _bkr_idx);
   }
 
   bool valid() override {
-    return data.valid();
+    return data.valid() && !data.get_clients()->stopping();
   }
 
   void handle_no_conn() override {
