@@ -34,7 +34,7 @@ void Scan::copy(const Scan &other) {
   columns.resize(other.columns.size());
   int i = 0;
   for(const auto& col : other.columns)
-    columns[i++] = Column::make_ptr(col);
+    columns[i++].reset(new Column(*col.get()));
   flags.copy(other.flags);
 }
 
@@ -83,7 +83,7 @@ void Scan::decode(const uint8_t** bufp, size_t* remainp) {
   free();
   columns.resize(Serialization::decode_vi32(bufp, remainp));
   for(auto& col : columns)
-    col = Column::make_ptr(bufp, remainp);
+    col.reset(new Column(bufp, remainp));
   flags.decode(bufp, remainp);
 }
 

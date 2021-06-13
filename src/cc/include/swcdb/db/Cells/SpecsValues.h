@@ -25,21 +25,37 @@ class Values : public std::vector<Value> {
 
   Types::Column col_type;
 
+  SWC_CAN_INLINE
   Values(Types::Column col_type = Types::Column::UNKNOWN) noexcept
         : col_type(col_type) {
   }
 
+  SWC_CAN_INLINE
+  Values(Values&& other) noexcept
+        : Vec(std::move(other)), col_type(other.col_type) {
+  }
+
+  SWC_CAN_INLINE
+  Values& operator=(const Values& other) {
+    copy(other);
+    return *this;
+  }
+
+  SWC_CAN_INLINE
+  Values& operator=(Values&& other) noexcept {
+    move(other);
+    return *this;
+  }
+
+  SWC_CAN_INLINE
+  void move(Values& other) noexcept {
+    Vec::operator=(std::move(other));
+    col_type = other.col_type;
+  }
+
   Values(const Values& other);
 
-  Values(Values&& other) noexcept;
-
-  Values& operator=(const Values& other);
-
-  Values& operator=(Values&& other) noexcept;
-
   void copy(const Values& other);
-
-  void move(Values& other) noexcept;
 
   Value& add(Condition::Comp comp=Condition::EQ);
 
@@ -51,11 +67,40 @@ class Values : public std::vector<Value> {
 
   bool is_matching(const Cells::Cell& cell) const;
 
-  size_t encoded_length() const noexcept;
+  SWC_CAN_INLINE
+  size_t encoded_length() const noexcept {
+    size_t sz = 0;
+    size_t c = 0;
+    for(const auto& value : *this) {
+      if(value.comp != Condition::NONE) {
+        ++c;
+        sz += value.encoded_length();
+      }
+    }
+    return Serialization::encoded_length_vi64(c) + sz;
+  }
 
-  void encode(uint8_t** bufp) const;
+  SWC_CAN_INLINE
+  void encode(uint8_t** bufp) const {
+    size_t c = 0;
+    for(const auto& value : *this) {
+      if(value.comp != Condition::NONE)
+        ++c;
+    }
+    Serialization::encode_vi64(bufp, c);
+    for(const auto& value : *this) {
+      if(value.comp != Condition::NONE)
+        value.encode(bufp);
+    }
+  }
 
-  void decode(const uint8_t** bufp, size_t* remainp, bool owner=false);
+  SWC_CAN_INLINE
+  void decode(const uint8_t** bufp, size_t* remainp, bool owner=false) {
+    clear();
+    resize(Serialization::decode_vi64(bufp, remainp));
+    for(auto& value : *this)
+      value.decode(bufp, remainp, owner);
+  }
 
   void print(std::ostream& out) const;
 
@@ -63,6 +108,52 @@ class Values : public std::vector<Value> {
                const std::string& offset) const;
 
 };
+
+
+
+SWC_CAN_INLINE
+size_t Values::size_of_internal() const noexcept {
+  size_t sz = sizeof(*this);
+  for(const auto& value : *this)
+    sz += sizeof(value) + value.size;
+  return sz;
+}
+
+SWC_CAN_INLINE
+bool Values::is_matching(const Cells::Cell& cell) const {
+  if(empty())
+    return true;
+
+  switch(col_type) {
+    case Types::Column::PLAIN: {
+      for(const auto& value : *this) {
+        if(!value.is_matching_plain(cell))
+          return false;
+      }
+      return true;
+    }
+    case Types::Column::SERIAL: {
+      for(const auto& value : *this) {
+        if(!value.is_matching_serial(cell))
+          return false;
+      }
+      return true;
+    }
+    case Types::Column::COUNTER_I64:
+    case Types::Column::COUNTER_I32:
+    case Types::Column::COUNTER_I16:
+    case Types::Column::COUNTER_I8: {
+      for(const auto& value : *this) {
+        if(!value.is_matching_counter(cell))
+          return false;
+      }
+      return true;
+    }
+    default:
+      return false;
+  }
+}
+
 
 
 }}}

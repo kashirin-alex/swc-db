@@ -11,25 +11,6 @@
 namespace SWC { namespace DB { namespace Specs {
 
 
-bool Timestamp::equal(const Timestamp &other) const noexcept {
-  return value == other.value && comp == other.comp;
-}
-
-size_t Timestamp::encoded_length() const noexcept {
-  return 1 + (comp == Condition::NONE? 0: 8);
-}
-
-void Timestamp::encode(uint8_t** bufp) const {
-  Serialization::encode_i8(bufp, comp);
-  if(comp != Condition::NONE)
-    Serialization::encode_i64(bufp, value);
-}
-
-void Timestamp::decode(const uint8_t** bufp, size_t* remainp){
-  comp = Condition::Comp(Serialization::decode_i8(bufp, remainp));
-  if(comp != Condition::NONE)
-    value = Serialization::decode_i64(bufp, remainp);
-}
 
 void Timestamp::display(std::ostream& out) const {
   out << Condition::to_string(comp) << " \"" << value << "\"";

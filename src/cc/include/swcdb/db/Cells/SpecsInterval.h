@@ -24,31 +24,33 @@ namespace SWC { namespace DB { namespace Specs {
 class Interval {
   public:
 
-  static const uint8_t OPT_KEY_EQUAL      = 0x01;
-  static const uint8_t OPT_RANGE_END_REST = 0x02;
+  static constexpr const uint8_t OPT_KEY_EQUAL      = 0x01;
+  static constexpr const uint8_t OPT_RANGE_END_REST = 0x02;
 
   typedef std::shared_ptr<Interval> Ptr;
 
+  SWC_CAN_INLINE
   static Ptr make_ptr(Types::Column col_type = Types::Column::UNKNOWN) {
     return Ptr(new Interval(col_type));
   }
 
+  SWC_CAN_INLINE
   static Ptr make_ptr(const uint8_t** bufp, size_t* remainp) {
     return Ptr(new Interval(bufp, remainp));
   }
 
+  SWC_CAN_INLINE
   static Ptr make_ptr(const Interval& other) {
     return Ptr(new Interval(other));
   }
 
+  SWC_CAN_INLINE
   static Ptr make_ptr(Interval&& other) {
     return Ptr(new Interval(std::move(other)));
   }
 
 
-  explicit Interval(Types::Column col_type = Types::Column::UNKNOWN) noexcept
-                    : values(col_type), offset_rev(0), options(0) {
-  }
+  explicit Interval(Types::Column col_type = Types::Column::UNKNOWN) noexcept;
 
   explicit Interval(const Cell::Key& range_begin, const Cell::Key& range_end);
 
@@ -82,6 +84,7 @@ class Interval {
 
   bool equal(const Interval& other) const noexcept;
 
+  SWC_CAN_INLINE
   bool is_matching(const Types::KeySeq key_seq,
                    const Cell::Key& key,
                    int64_t timestamp, bool desc) const {
@@ -98,10 +101,12 @@ class Interval {
     }
   }
 
+  SWC_CAN_INLINE
   bool is_matching(int64_t timestamp, bool desc) const noexcept {
     return desc ? offset_rev > timestamp : offset_rev < timestamp;
   }
 
+  SWC_CAN_INLINE
   bool is_matching(const Types::KeySeq key_seq,
                    const Cells::Cell& cell, bool& stop) const {
     return
@@ -136,24 +141,42 @@ class Interval {
 
   void decode(const uint8_t** bufp, size_t* remainp, bool owner=false);
 
+  SWC_CAN_INLINE
   void set_opt__key_equal() noexcept {
     options |= OPT_KEY_EQUAL;
   }
 
+  SWC_CAN_INLINE
   void set_opt__range_end_rest() noexcept {
     options |= OPT_RANGE_END_REST;
   }
 
+  SWC_CAN_INLINE
   bool has_opt__key_equal() const noexcept {
     return options & OPT_KEY_EQUAL;
   }
 
+  SWC_CAN_INLINE
   bool has_opt__range_end_rest() const noexcept {
     return options & OPT_RANGE_END_REST;
   }
 
-  void apply_possible_range_pure();
+  SWC_CAN_INLINE
+  void apply_possible_range_pure() {
+    if(key_intervals.empty())
+      return;
 
+    if(range_begin.empty()) {
+      apply_possible_range(range_begin, false, false, true);
+    }
+    if(range_end.empty()) {
+      apply_possible_range(range_end, true, true, true);
+      if(!range_end.empty() && !has_opt__key_equal())
+        set_opt__range_end_rest();
+    }
+  }
+
+  SWC_CAN_INLINE
   void apply_possible_range(DB::Cell::Key& begin, DB::Cell::Key& end,
                             bool* end_restp = nullptr) const {
     apply_possible_range_begin(begin);
@@ -187,6 +210,104 @@ class Interval {
   uint8_t       options;
 
 };
+
+
+
+SWC_CAN_INLINE
+size_t Interval::size_of_internal() const noexcept {
+  return range_begin.size + range_end.size
+        + key_intervals.size_of_internal()
+        + values.size_of_internal()
+        + offset_key.size;
+}
+
+SWC_CAN_INLINE
+bool Interval::is_matching_begin(const Types::KeySeq key_seq,
+                                 const DB::Cell::Key& key) const {
+  if(!range_begin.empty()) switch(key_seq) {
+
+    case Types::KeySeq::LEXIC:
+      return
+        DB::KeySeq::compare_opt_lexic(
+          range_begin, key, range_begin.count, true
+        ) != Condition::LT;
+
+    case Types::KeySeq::VOLUME:
+      return
+        DB::KeySeq::compare_opt_volume(
+          range_begin, key, range_begin.count, true
+        ) != Condition::LT;
+
+    case Types::KeySeq::FC_LEXIC:
+      return
+        DB::KeySeq::compare_opt_fc_lexic(
+          range_begin, key, key.count, true
+        ) != Condition::LT;
+
+    case Types::KeySeq::FC_VOLUME:
+      return
+        DB::KeySeq::compare_opt_fc_volume(
+          range_begin, key, key.count, true
+        ) != Condition::LT;
+
+    default:
+      break;
+  }
+  return true;
+}
+
+SWC_CAN_INLINE
+bool Interval::is_matching_end(const Types::KeySeq key_seq,
+                               const DB::Cell::Key& key) const {
+  if(!range_end.empty()) switch(key_seq) {
+
+    case Types::KeySeq::LEXIC:
+      return
+        DB::KeySeq::compare_opt_lexic(
+          range_end, key,
+          has_opt__range_end_rest() && !has_opt__key_equal()
+            ? range_end.count : key.count,
+          true
+        ) != Condition::GT;
+
+    case Types::KeySeq::VOLUME:
+      return
+        DB::KeySeq::compare_opt_volume(
+          range_end, key,
+          has_opt__range_end_rest() && !has_opt__key_equal()
+            ? range_end.count : key.count,
+          true
+        ) != Condition::GT;
+
+    case Types::KeySeq::FC_LEXIC:
+      return
+        (has_opt__key_equal()
+          ? key.count < range_end.count
+          : has_opt__range_end_rest()) ||
+        DB::KeySeq::compare_opt_fc_lexic(
+          range_end, key,
+          has_opt__range_end_rest() && !has_opt__key_equal()
+            ? range_end.count : key.count,
+          true
+        ) != Condition::GT;
+
+    case Types::KeySeq::FC_VOLUME:
+      return
+        (has_opt__key_equal()
+          ? key.count < range_end.count
+          : has_opt__range_end_rest()) ||
+        DB::KeySeq::compare_opt_fc_volume(
+          range_end, key,
+          has_opt__range_end_rest() && !has_opt__key_equal()
+            ? range_end.count : key.count,
+          true
+        ) != Condition::GT;
+    default:
+      break;
+  }
+  return true;
+}
+
 
 
 }}}

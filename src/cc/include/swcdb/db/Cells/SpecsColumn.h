@@ -20,40 +20,49 @@ class Column final : public std::vector<Interval::Ptr> {
   typedef std::vector<Interval::Ptr> Intervals;
   typedef std::shared_ptr<Column>    Ptr;
 
+  SWC_CAN_INLINE
   static Ptr make_ptr(cid_t cid=0, uint32_t reserve=0) {
     return Ptr(new Column(cid, reserve));
   }
 
+  SWC_CAN_INLINE
   static Ptr make_ptr(cid_t cid, const Intervals& intervals) {
     return Ptr(new Column(cid, intervals));
   }
 
+  SWC_CAN_INLINE
   static Ptr make_ptr(const uint8_t** bufp, size_t* remainp) {
     return Ptr(new Column(bufp, remainp));
   }
 
+  SWC_CAN_INLINE
   static Ptr make_ptr(const Column& other) {
     return Ptr(new Column(other));
   }
 
+  SWC_CAN_INLINE
   static Ptr make_ptr(Ptr other) {
     return Ptr(new Column(*other.get()));
   }
 
 
+  SWC_CAN_INLINE
   explicit Column(cid_t cid=0, uint32_t _reserve=0)
                   : cid(cid) {
     reserve(_reserve);
   }
 
+  SWC_CAN_INLINE
   explicit Column(cid_t cid, const Intervals& intervals)
                   : Intervals(intervals), cid(cid) {
   }
 
+  SWC_CAN_INLINE
   explicit Column(const uint8_t** bufp, size_t* remainp) {
     decode(bufp, remainp);
   }
 
+  SWC_CAN_INLINE
   explicit Column(const Column& other) : Intervals() {
     copy(other);
   }

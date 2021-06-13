@@ -11,6 +11,9 @@
 namespace SWC { namespace DB { namespace Specs {
 
 
+Interval::Interval(Types::Column col_type) noexcept
+                  : values(col_type), offset_rev(0), options(0) {
+}
 
 Interval::Interval(const Cell::Key& range_begin, const Cell::Key& range_end)
                   : range_begin(range_begin), range_end(range_end),
@@ -93,13 +96,6 @@ void Interval::free() {
   offset_key.free();
 }
 
-size_t Interval::size_of_internal() const noexcept {
-  return range_begin.size + range_end.size
-        + key_intervals.size_of_internal()
-        + values.size_of_internal()
-        + offset_key.size;
-}
-
 bool Interval::equal(const Interval& other) const noexcept {
   return  ts_start.equal(other.ts_start) &&
           ts_finish.equal(other.ts_finish) &&
@@ -113,90 +109,6 @@ bool Interval::equal(const Interval& other) const noexcept {
           offset_rev == other.offset_rev ;
 }
 
-bool Interval::is_matching_begin(const Types::KeySeq key_seq,
-                                 const DB::Cell::Key& key) const {
-  if(!range_begin.empty()) switch(key_seq) {
-
-    case Types::KeySeq::LEXIC:
-      return
-        DB::KeySeq::compare_opt_lexic(
-          range_begin, key, range_begin.count, true
-        ) != Condition::LT;
-
-    case Types::KeySeq::VOLUME:
-      return
-        DB::KeySeq::compare_opt_volume(
-          range_begin, key, range_begin.count, true
-        ) != Condition::LT;
-
-    case Types::KeySeq::FC_LEXIC:
-      return
-        DB::KeySeq::compare_opt_fc_lexic(
-          range_begin, key, key.count, true
-        ) != Condition::LT;
-
-    case Types::KeySeq::FC_VOLUME:
-      return
-        DB::KeySeq::compare_opt_fc_volume(
-          range_begin, key, key.count, true
-        ) != Condition::LT;
-
-    default:
-      break;
-  }
-  return true;
-}
-
-bool Interval::is_matching_end(const Types::KeySeq key_seq,
-                               const DB::Cell::Key& key) const {
-  if(!range_end.empty()) switch(key_seq) {
-
-    case Types::KeySeq::LEXIC:
-      return
-        DB::KeySeq::compare_opt_lexic(
-          range_end, key,
-          has_opt__range_end_rest() && !has_opt__key_equal()
-            ? range_end.count : key.count,
-          true
-        ) != Condition::GT;
-
-    case Types::KeySeq::VOLUME:
-      return
-        DB::KeySeq::compare_opt_volume(
-          range_end, key,
-          has_opt__range_end_rest() && !has_opt__key_equal()
-            ? range_end.count : key.count,
-          true
-        ) != Condition::GT;
-
-    case Types::KeySeq::FC_LEXIC:
-      return
-        (has_opt__key_equal()
-          ? key.count < range_end.count
-          : has_opt__range_end_rest()) ||
-        DB::KeySeq::compare_opt_fc_lexic(
-          range_end, key,
-          has_opt__range_end_rest() && !has_opt__key_equal()
-            ? range_end.count : key.count,
-          true
-        ) != Condition::GT;
-
-    case Types::KeySeq::FC_VOLUME:
-      return
-        (has_opt__key_equal()
-          ? key.count < range_end.count
-          : has_opt__range_end_rest()) ||
-        DB::KeySeq::compare_opt_fc_volume(
-          range_end, key,
-          has_opt__range_end_rest() && !has_opt__key_equal()
-            ? range_end.count : key.count,
-          true
-        ) != Condition::GT;
-    default:
-      break;
-  }
-  return true;
-}
 
 SWC_SHOULD_INLINE
 bool Interval::is_in_previous(const Types::KeySeq key_seq,
@@ -303,20 +215,6 @@ void Interval::decode(const uint8_t** bufp, size_t* remainp, bool owner) {
   offset_key.decode(bufp, remainp, owner);
   offset_rev = Serialization::decode_vi64(bufp, remainp);
   options = Serialization::decode_i8(bufp, remainp);
-}
-
-void Interval::apply_possible_range_pure() {
-  if(key_intervals.empty())
-    return;
-
-  if(range_begin.empty()) {
-    apply_possible_range(range_begin, false, false, true);
-  }
-  if(range_end.empty()) {
-    apply_possible_range(range_end, true, true, true);
-    if(!range_end.empty() && !has_opt__key_equal())
-      set_opt__range_end_rest();
-  }
 }
 
 void Interval::apply_possible_range_begin(DB::Cell::Key& begin) const {

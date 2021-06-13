@@ -13,24 +13,11 @@ namespace Serial { namespace Value {
 
 
 
-// Field Base
-Field::Field(const uint8_t** bufp, size_t* remainp)
-            : fid(Serialization::decode_vi24(bufp, remainp)) {
-}
-
-size_t Field::encoded_length() const noexcept {
-  return 1 + Serialization::encoded_length_vi24(fid);
-}
-
-void Field::encode(uint8_t** bufp, Type type) const {
-  Serialization::encode_i8(bufp, type);
-  Serialization::encode_vi24(bufp, fid);
-}
-//
-
-
-
 // Field INT64
+Field_INT64::Field_INT64(uint24_t fid, Condition::Comp comp, int64_t value)
+                        : Field(fid), comp(comp), value(value) {
+}
+
 Field_INT64::Field_INT64(const uint8_t** bufp, size_t* remainp)
         : Field(bufp, remainp),
           comp(Condition::Comp(Serialization::decode_i8(bufp, remainp))),
@@ -63,6 +50,11 @@ void Field_INT64::print(std::ostream& out) const {
 
 
 // Field DOUBLE
+Field_DOUBLE::Field_DOUBLE(uint24_t fid, Condition::Comp comp,
+                           const long double& value)
+                          : Field(fid), comp(comp), value(value) {
+}
+
 Field_DOUBLE::Field_DOUBLE(const uint8_t** bufp, size_t* remainp)
         : Field(bufp, remainp),
           comp(Condition::Comp(Serialization::decode_i8(bufp, remainp))),
@@ -156,6 +148,11 @@ void Field_BYTES::print(std::ostream& out) const {
 
 
 // Field KEY
+
+Field_KEY::Field_KEY(uint24_t fid, Types::KeySeq seq)
+                    : Field(fid), seq(seq) {
+}
+
 Field_KEY::Field_KEY(uint24_t fid, Types::KeySeq seq, const Key& key)
                     : Field(fid), seq(seq), key(key) {
 }
@@ -190,6 +187,10 @@ void Field_KEY::print(std::ostream& out) const {
 
 
 // Field LIST_INT64
+Field_LIST_INT64::Field_LIST_INT64(uint24_t fid, Condition::Comp comp)
+                                  : Field(fid), comp(comp) {
+}
+
 Field_LIST_INT64::Field_LIST_INT64(uint24_t fid, Condition::Comp comp,
                                    const std::vector<Item>& items)
                                   : Field(fid),
@@ -403,6 +404,10 @@ void Field_LIST_INT64::print(std::ostream& out) const {
 
 
 // Field LIST_BYTES
+Field_LIST_BYTES::Field_LIST_BYTES(uint24_t fid, Condition::Comp comp)
+                                  : Field(fid), comp(comp) {
+}
+
 Field_LIST_BYTES::Field_LIST_BYTES(uint24_t fid, Condition::Comp comp,
                                    const std::vector<Item>& items)
                                   : Field(fid),

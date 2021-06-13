@@ -18,7 +18,7 @@ void Column::copy(const Column &other) {
   resize(other.size());
   int i = 0;
   for(const auto& intval : other)
-    (*this)[i++] = Interval::make_ptr(*intval.get());
+    (*this)[i++].reset(new Interval(*intval.get()));
 }
 
 Interval::Ptr& Column::add(Types::Column col_type) {
@@ -56,7 +56,7 @@ void Column::decode(const uint8_t** bufp, size_t* remainp) {
   cid = Serialization::decode_vi64(bufp, remainp);
   resize(Serialization::decode_vi32(bufp, remainp));
   for(auto& intval : *this)
-    intval = Interval::make_ptr(bufp, remainp);
+    intval.reset(new Interval(bufp, remainp));
 }
 
 std::string Column::to_string() const {

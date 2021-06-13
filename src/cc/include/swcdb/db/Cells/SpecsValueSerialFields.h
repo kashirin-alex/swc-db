@@ -41,19 +41,29 @@ struct Field {
 
   uint24_t fid;
 
+  SWC_CAN_INLINE
   Field(uint24_t fid) noexcept : fid(fid) { }
 
-  Field(const uint8_t** bufp, size_t* remainp);
+  SWC_CAN_INLINE
+  Field(const uint8_t** bufp, size_t* remainp)
+        : fid(Serialization::decode_vi24(bufp, remainp)) {
+  }
 
   virtual ~Field() { }
 
   virtual Type type() const noexcept = 0;
 
-  virtual size_t encoded_length() const noexcept;
+  virtual size_t encoded_length() const noexcept {
+    return 1 + Serialization::encoded_length_vi24(fid);
+  }
 
   virtual void encode(uint8_t** bufp) const = 0;
 
-  void encode(uint8_t** bufp, Type type) const;
+  SWC_CAN_INLINE
+  void encode(uint8_t** bufp, Type type) const {
+    Serialization::encode_i8(bufp, type);
+    Serialization::encode_vi24(bufp, fid);
+  }
 
   virtual bool is_matching(Cell::Serial::Value::Field* vfieldp) = 0;
 
@@ -67,12 +77,12 @@ struct Field {
 // Field INT64
 struct Field_INT64 : Field {
 
+  SWC_CAN_INLINE
   static Field::Ptr make(uint24_t fid, Condition::Comp comp, int64_t value) {
-    return std::make_unique<Field_INT64>(fid, comp, value);
+    return Field::Ptr(new Field_INT64(fid, comp, value));
   }
 
-  Field_INT64(uint24_t fid, Condition::Comp comp, int64_t value)
-             : Field(fid), comp(comp), value(value) { }
+  Field_INT64(uint24_t fid, Condition::Comp comp, int64_t value);
 
   Field_INT64(const uint8_t** bufp, size_t* remainp);
 
@@ -98,13 +108,13 @@ struct Field_INT64 : Field {
 // Field DOUBLE
 struct Field_DOUBLE : Field {
 
+  SWC_CAN_INLINE
   static Field::Ptr make(uint24_t fid, Condition::Comp comp,
                          const long double& value) {
-    return std::make_unique<Field_DOUBLE>(fid, comp, value);
+    return Field::Ptr(new Field_DOUBLE(fid, comp, value));
   }
 
-  Field_DOUBLE(uint24_t fid, Condition::Comp comp, const long double& value)
-             : Field(fid), comp(comp), value(value) { }
+  Field_DOUBLE(uint24_t fid, Condition::Comp comp, const long double& value);
 
   Field_DOUBLE(const uint8_t** bufp, size_t* remainp);
 
@@ -130,11 +140,13 @@ struct Field_DOUBLE : Field {
 // Field BYTES
 struct Field_BYTES : Field {
 
+  SWC_CAN_INLINE
   static Field::Ptr make(uint24_t fid, Condition::Comp comp,
                          const uint8_t* ptr, size_t len) {
-    return std::make_unique<Field_BYTES>(fid, comp, ptr, len, true);
+    return Field::Ptr(new Field_BYTES(fid, comp, ptr, len, true));
   }
 
+  SWC_CAN_INLINE
   static Field::Ptr make(uint24_t fid, Condition::Comp comp,
                          const std::string& value) {
     return make(
@@ -170,19 +182,19 @@ struct Field_BYTES : Field {
 // Field KEY
 struct Field_KEY : Field {
 
+  SWC_CAN_INLINE
   static std::unique_ptr<Field_KEY>
   make(uint24_t fid, Types::KeySeq seq) {
-    return std::make_unique<Field_KEY>(fid, seq);
+    return std::unique_ptr<Field_KEY>(new Field_KEY(fid, seq));
   }
 
+  SWC_CAN_INLINE
   static Field::Ptr
   make(uint24_t fid, Types::KeySeq seq, const Key& key) {
-    return std::make_unique<Field_KEY>(fid, seq, key);
+    return Field::Ptr(new Field_KEY(fid, seq, key));
   }
 
-  Field_KEY(uint24_t fid, Types::KeySeq seq)
-           : Field(fid), seq(seq) {
-  }
+  Field_KEY(uint24_t fid, Types::KeySeq seq);
 
   Field_KEY(uint24_t fid, Types::KeySeq seq, const Key& key);
 
@@ -214,24 +226,26 @@ struct Field_LIST_INT64 : Field {
   struct Item {
     Condition::Comp comp;
     int64_t         value;
+    SWC_CAN_INLINE
     Item() noexcept { }
+    SWC_CAN_INLINE
     Item(Condition::Comp comp, int64_t value) noexcept
           : comp(comp), value(value) { }
   };
 
+  SWC_CAN_INLINE
   static std::unique_ptr<Field_LIST_INT64>
   make(uint24_t fid, Condition::Comp comp) {
-    return std::make_unique<Field_LIST_INT64>(fid, comp);
+    return std::unique_ptr<Field_LIST_INT64>(new Field_LIST_INT64(fid, comp));
   }
 
+  SWC_CAN_INLINE
   static Field::Ptr
   make(uint24_t fid, Condition::Comp comp, const std::vector<Item>& items) {
-    return std::make_unique<Field_LIST_INT64>(fid, comp, items);
+    return Field::Ptr(new Field_LIST_INT64(fid, comp, items));
   }
 
-  Field_LIST_INT64(uint24_t fid, Condition::Comp comp)
-                  : Field(fid), comp(comp) {
-  }
+  Field_LIST_INT64(uint24_t fid, Condition::Comp comp);
 
   Field_LIST_INT64(uint24_t fid, Condition::Comp comp,
                    const std::vector<Item>& items);
@@ -264,24 +278,26 @@ struct Field_LIST_BYTES : Field {
   struct Item {
     Condition::Comp comp;
     std::string     value;
+    SWC_CAN_INLINE
     Item() noexcept { }
+    SWC_CAN_INLINE
     Item(Condition::Comp comp, const std::string& value)
         : comp(comp), value(value) { }
   };
 
+  SWC_CAN_INLINE
   static std::unique_ptr<Field_LIST_BYTES>
   make(uint24_t fid, Condition::Comp comp) {
-    return std::make_unique<Field_LIST_BYTES>(fid, comp);
+    return std::unique_ptr<Field_LIST_BYTES>(new Field_LIST_BYTES(fid, comp));
   }
 
+  SWC_CAN_INLINE
   static Field::Ptr
   make(uint24_t fid, Condition::Comp comp, const std::vector<Item>& items) {
-    return std::make_unique<Field_LIST_BYTES>(fid, comp, items);
+    return Field::Ptr(new Field_LIST_BYTES(fid, comp, items));
   }
 
-  Field_LIST_BYTES(uint24_t fid, Condition::Comp comp)
-                  : Field(fid), comp(comp) {
-  }
+  Field_LIST_BYTES(uint24_t fid, Condition::Comp comp);
 
   Field_LIST_BYTES(uint24_t fid, Condition::Comp comp,
                    const std::vector<Item>& items);
@@ -311,6 +327,7 @@ struct Field_LIST_BYTES : Field {
 //
 struct Fields {
 
+  SWC_CAN_INLINE
   Fields() noexcept { }
 
   Fields(const uint8_t* ptr, size_t len);
