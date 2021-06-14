@@ -58,7 +58,7 @@ void Key::add(const std::vector<KeyVec::Fraction>& fractions) {
 }
 
 template<typename T>
-SWC_CAN_INLINE
+SWC_SHOULD_INLINE
 void Key::add(const T cbegin,  const T cend) {
   if(cbegin == cend)
     return;
