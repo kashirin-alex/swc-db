@@ -30,6 +30,7 @@ using namespace client::Query::Update::Handlers::Metric;
 
 namespace { // local namespace
 
+SWC_CAN_INLINE
 static size_t encoded_length(
         const Common::Stats::MinMaxAvgCount<uint64_t>& value,
         bool with_count) noexcept {
@@ -47,6 +48,7 @@ static size_t encoded_length(
   return sz;
 }
 
+SWC_CAN_INLINE
 static void add_value(
         const Common::Stats::MinMaxAvgCount<uint64_t>& value,
         uint8_t field_start, bool with_count,
@@ -100,6 +102,7 @@ class Item_Net : public Base {
     Common::Stats::MinMaxAvgCount_Safe<uint64_t> bytes_recv;
     Core::Atomic<uint64_t>                       commands[CommandsT::MAX];
 
+    SWC_CAN_INLINE
     Addr(const Comm::EndPoint& endpoint) noexcept
         : addr(endpoint.address()),
           conn_open(0), conn_accept(0), conn_est(0) {
@@ -116,6 +119,7 @@ class Item_Net : public Base {
 
   virtual ~Item_Net() { }
 
+  SWC_CAN_INLINE
   Addr* get(const asio::ip::address& for_addr, bool secure) const noexcept {
     for(auto& addr : m_addresses[secure]) {
       if(addr->addr.is_unspecified() || addr->addr == for_addr)
@@ -124,22 +128,26 @@ class Item_Net : public Base {
     return nullptr;
   }
 
+  SWC_CAN_INLINE
   void accepted(const Comm::EndPoint& endpoint, bool secure) noexcept {
     if(Addr* addr = get(endpoint.address(), secure))
       addr->conn_accept.fetch_add(1);
   }
 
+  SWC_CAN_INLINE
   void connected() noexcept {
     Addr* addr = m_addresses[0].front().get();
     addr->conn_open.fetch_add(1);
     addr->conn_est.fetch_add(1);
   }
 
+  SWC_CAN_INLINE
   void disconnected() noexcept {
     Addr* addr = m_addresses[0].front().get();
     addr->conn_open.fetch_sub(1);
   }
 
+  SWC_CAN_INLINE
   void connected(const Comm::ConnHandlerPtr& conn) noexcept {
     if(Addr* addr = get(conn->endpoint_local.address(), conn->is_secure())) {
       addr->conn_open.fetch_add(1);
@@ -147,26 +155,31 @@ class Item_Net : public Base {
     }
   }
 
+  SWC_CAN_INLINE
   void disconnected(const Comm::ConnHandlerPtr& conn) noexcept {
     if(Addr* addr = get(conn->endpoint_local.address(), conn->is_secure()))
       addr->conn_open.fetch_sub(1);
   }
 
+  SWC_CAN_INLINE
   void command(const Comm::ConnHandlerPtr& conn, uint8_t cmd) noexcept {
     if(Addr* addr = get(conn->endpoint_local.address(), conn->is_secure()))
       addr->commands[cmd].fetch_add(1);
   }
 
+  SWC_CAN_INLINE
   void error(const Comm::ConnHandlerPtr& conn) noexcept {
     if(Addr* addr = get(conn->endpoint_local.address(), conn->is_secure()))
       addr->commands[CommandsT::MAX - 1].fetch_add(1);
   }
 
+  SWC_CAN_INLINE
   void sent(const Comm::ConnHandlerPtr& conn, size_t bytes) noexcept {
     if(Addr* addr = get(conn->endpoint_local.address(), conn->is_secure()))
       addr->bytes_sent.add(bytes);
   }
 
+  SWC_CAN_INLINE
   void received(const Comm::ConnHandlerPtr& conn, size_t bytes) noexcept {
     if(Addr* addr = get(conn->endpoint_local.address(), conn->is_secure()))
       addr->bytes_recv.add(bytes);

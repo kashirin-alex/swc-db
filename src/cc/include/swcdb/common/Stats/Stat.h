@@ -62,41 +62,49 @@ template<typename ValueT>
 class MinMaxAvgCount_Safe {
   public:
 
+  SWC_CAN_INLINE
   void add(ValueT v) noexcept {
     Core::MutexAtomic::scope lock(m_mutex);
     m_value.add(v);
   }
 
+  SWC_CAN_INLINE
   ValueT count() const noexcept {
     Core::MutexAtomic::scope lock(m_mutex);
     return m_value.count;
   }
 
+  SWC_CAN_INLINE
   ValueT total() const noexcept {
     Core::MutexAtomic::scope lock(m_mutex);
     return m_value.total;
   }
 
+  SWC_CAN_INLINE
   ValueT avg() const noexcept {
     Core::MutexAtomic::scope lock(m_mutex);
     return m_value.avg();
   }
 
+  SWC_CAN_INLINE
   ValueT max() const noexcept {
     Core::MutexAtomic::scope lock(m_mutex);
     return m_value.max;
   }
 
+  SWC_CAN_INLINE
   ValueT min() const noexcept {
     Core::MutexAtomic::scope lock(m_mutex);
     return m_value.min;
   }
 
+  SWC_CAN_INLINE
   void gather(MinMaxAvgCount<ValueT>& to) noexcept {
     Core::MutexAtomic::scope lock(m_mutex);
     m_value.gather(to);
   }
 
+  SWC_CAN_INLINE
   void reset() noexcept {
     Core::MutexAtomic::scope lock(m_mutex);
     m_value.reset();
