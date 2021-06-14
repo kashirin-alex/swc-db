@@ -8,11 +8,10 @@
 #include "swcdb/db/Cells/Cell.h"
 #include "swcdb/db/Cells/CellValueSerialFields.h"
 
-#include "swcdb/core/Time.h"
-#include "swcdb/core/Serialization.h"
 
 
 namespace SWC { namespace DB { namespace Cells {
+
 
 
 const char* to_string(Flag flag) noexcept {
@@ -45,90 +44,6 @@ Flag flag_from(const uint8_t* rptr, uint32_t len) noexcept {
   return Flag::NONE;
 }
 
-SWC_SHOULD_INLINE
-Cell::Cell(const Cell& other)
-  : key(other.key), own(other.vlen), flag(other.flag),
-    control(other.control),
-    vlen(other.vlen),
-    timestamp(other.timestamp),
-    revision(other.revision),
-    value(_value(other.value)) {
-}
-
-SWC_SHOULD_INLINE
-Cell::Cell(const Cell& other, bool no_value)
-  : key(other.key), own(!no_value && other.vlen), flag(other.flag),
-    control(no_value ? other.control & HAVE_ENCODER_MASK : other.control),
-    vlen(own ? other.vlen : 0),
-    timestamp(other.timestamp),
-    revision(other.revision),
-    value(_value(other.value)) {
-}
-
-SWC_SHOULD_INLINE
-Cell::Cell(const uint8_t** bufp, size_t* remainp, bool own)
-          : own(own),
-            flag(Serialization::decode_i8(bufp, remainp)) {
-  key.decode(bufp, remainp, own);
-  control = Serialization::decode_i8(bufp, remainp);
-
-  if(control & HAVE_TIMESTAMP)
-    timestamp = Serialization::decode_i64(bufp, remainp);
-  else if(control & AUTO_TIMESTAMP)
-    timestamp = AUTO_ASSIGN;
-
-  if(control & HAVE_REVISION)
-    revision = Serialization::decode_i64(bufp, remainp);
-  else if(control & REV_IS_TS)
-    revision = timestamp;
-
-  if((vlen = Serialization::decode_vi32(bufp, remainp))) {
-    if(*remainp < vlen)
-      SWC_THROWF(Error::SERIALIZATION_INPUT_OVERRUN,
-        "Read Cell(key=%s) value", key.to_string().c_str());
-    value = own ? _value(*bufp) : const_cast<uint8_t*>(*bufp);
-    *bufp += vlen;
-    *remainp -= vlen;
-  } else {
-    value = nullptr;
-  }
-}
-
-SWC_SHOULD_INLINE
-void Cell::move(Cell& other) noexcept {
-  _free();
-  own       = other.own;
-  key.move(other.key);
-  flag      = other.flag;
-  control   = other.control;
-  timestamp = other.timestamp;
-  revision  = other.revision;
-  value     = other.value;
-  vlen      = other.vlen;
-  other.value = nullptr;
-  other.vlen = 0;
-}
-
-void Cell::copy(const Cell& other, bool no_value) {
-  key.copy(other.key);
-  flag      = other.flag;
-  control   = other.control;
-  timestamp = other.timestamp;
-  revision  = other.revision;
-
-  if(no_value) {
-    control &= HAVE_ENCODER_MASK;
-    free();
-  } else {
-    set_value(other.value, other.vlen, true);
-  }
-}
-
-void Cell::set_value(uint8_t* v, uint32_t len, bool owner) {
-  _free();
-  vlen = len;
-  value = (own = owner) ? _value(v) : v;
-}
 
 void Cell::set_value(Types::Encoder encoder, const uint8_t* v, uint32_t len) {
   _free();
@@ -177,133 +92,6 @@ void Cell::get_value(StaticBuffer& v, bool owner) const {
   }
 }
 
-void Cell::get_value(std::string& v) const {
-  v.clear();
-  if(vlen) {
-    StaticBuffer _v;
-    get_value(_v);
-    v.append(reinterpret_cast<const char*>(_v.base), _v.size);
-  }
-}
-
-void Cell::set_counter(uint8_t op, int64_t v, Types::Column typ, int64_t rev) {
-  _free();
-  own = true;
-
-  switch(typ) {
-    case Types::Column::COUNTER_I8:
-      v = int8_t(v);
-      break;
-    case Types::Column::COUNTER_I16:
-      v = int16_t(v);
-      break;
-    case Types::Column::COUNTER_I32:
-      v = int32_t(v);
-      break;
-    default:
-      break;
-  }
-
-  vlen = 1 + Serialization::encoded_length_vi64(v);
-  if(op & OP_EQUAL && rev != TIMESTAMP_NULL) {
-    op |= HAVE_REVISION;
-    vlen += Serialization::encoded_length_vi64(rev);
-  }
-
-  uint8_t* ptr = (value = new uint8_t[vlen]);
-  Serialization::encode_vi64(&ptr, v);
-  *ptr++ = op;
-  if(op & HAVE_REVISION)
-    Serialization::encode_vi64(&ptr, rev);
-  // +? i64's storing epochs
-}
-
-uint8_t Cell::get_counter_op() const {
-  const uint8_t* ptr = value;
-  Serialization::decode_vi64(&ptr);
-  return *ptr;
-}
-
-int64_t Cell::get_counter() const {
-  const uint8_t *ptr = value;
-  return Serialization::decode_vi64(&ptr);
-}
-
-int64_t Cell::get_counter(uint8_t& op, int64_t& rev) const {
-  const uint8_t *ptr = value;
-  int64_t v = Serialization::decode_vi64(&ptr);
-  rev = ((op = *ptr) & HAVE_REVISION)
-        ? Serialization::decode_vi64(&++ptr)
-        : TIMESTAMP_NULL;
-  return v;
-}
-
-void Cell::read(const uint8_t** bufp, size_t* remainp, bool owner) {
-
-  flag = Serialization::decode_i8(bufp, remainp);
-  key.decode(bufp, remainp, owner);
-  control = Serialization::decode_i8(bufp, remainp);
-
-  if(control & HAVE_TIMESTAMP)
-    timestamp = Serialization::decode_i64(bufp, remainp);
-  else if(control & AUTO_TIMESTAMP)
-    timestamp = AUTO_ASSIGN;
-
-  if(control & HAVE_REVISION)
-    revision = Serialization::decode_i64(bufp, remainp);
-  else if(control & REV_IS_TS)
-    revision = timestamp;
-
-  _free();
-  own = owner;
-  if((vlen = Serialization::decode_vi32(bufp, remainp))) {
-    if(*remainp < vlen)
-      SWC_THROWF(Error::SERIALIZATION_INPUT_OVERRUN,
-        "Read Cell(key=%s) value", key.to_string().c_str());
-    value = own ? _value(*bufp) : const_cast<uint8_t*>(*bufp);
-    *bufp += vlen;
-    *remainp -= vlen;
-  } else {
-    value = nullptr;
-  }
-}
-
-uint32_t Cell::encoded_length(bool no_value) const noexcept {
-  uint32_t len = key.encoded_length();
-  len += 2;
-  if(control & HAVE_TIMESTAMP)
-    len += 8;
-  if(control & HAVE_REVISION)
-    len += 8;
-  if(no_value)
-    return ++len;
-  len += Serialization::encoded_length_vi32(vlen);
-  return len += vlen;
-}
-
-void Cell::write(DynamicBuffer &dst_buf, bool no_value) const {
-  dst_buf.ensure(encoded_length( no_value || (no_value = !vlen) ));
-
-  Serialization::encode_i8(&dst_buf.ptr, flag);
-  key.encode(&dst_buf.ptr);
-
-  uint8_t ctrl = control;
-  if(no_value)
-    ctrl &= HAVE_ENCODER_MASK;
-
-  Serialization::encode_i8(&dst_buf.ptr, ctrl);
-  if(ctrl & HAVE_TIMESTAMP)
-    Serialization::encode_i64(&dst_buf.ptr, timestamp);
-  if(ctrl & HAVE_REVISION)
-    Serialization::encode_i64(&dst_buf.ptr, revision);
-
-  if(no_value) {
-    Serialization::encode_i8(&dst_buf.ptr, 0);
-  } else {
-    Serialization::encode_vi32(&dst_buf.ptr, vlen);
-    dst_buf.add_unchecked(value, vlen);
-  }
-}
 
 bool Cell::equal(const Cell& other) const noexcept {
   return  flag == other.flag &&
@@ -313,14 +101,6 @@ bool Cell::equal(const Cell& other) const noexcept {
           vlen == other.vlen &&
           key.equal(other.key) &&
           Condition::mem_eq(value, other.value, vlen);
-}
-
-bool Cell::is_removing(const int64_t& rev) const noexcept {
-  return rev != AUTO_ASSIGN && removal() && (
-    (flag == DELETE  && get_timestamp() >= rev )
-    ||
-    (flag == DELETE_VERSION && get_timestamp() == rev )
-    );
 }
 
 
@@ -453,12 +233,6 @@ void Cell::print(std::ostream& out, Types::Column typ) const {
   out << ')';
 }
 
-SWC_SHOULD_INLINE
-uint8_t* Cell::_value(const uint8_t* v) {
-  return vlen
-    ? static_cast<uint8_t*>(memcpy(new uint8_t[vlen], v, vlen))
-    : nullptr;
-}
 
 
 }}}

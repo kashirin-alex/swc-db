@@ -52,6 +52,23 @@ Type read_type(const uint8_t** bufp, size_t* remainp);
 uint24_t read_field_id(const uint8_t** bufp, size_t* remainp);
 
 void skip_type_and_id(const uint8_t** bufp, size_t* remainp);
+
+
+SWC_CAN_INLINE
+Type read_type(const uint8_t** bufp, size_t* remainp) {
+  return Type(Serialization::decode_i8(bufp, remainp));
+}
+
+SWC_CAN_INLINE
+uint24_t read_field_id(const uint8_t** bufp, size_t* remainp) {
+  return Serialization::decode_vi24(bufp, remainp);
+}
+
+SWC_CAN_INLINE
+void skip_type_and_id(const uint8_t** bufp, size_t* remainp) {
+  read_type(bufp, remainp);
+  read_field_id(bufp, remainp);
+}
 //
 
 
@@ -82,6 +99,27 @@ struct Field {
   virtual void print(std::ostream& out) const = 0;
 
 };
+
+SWC_CAN_INLINE
+Field::Field(const uint8_t** bufp, size_t* remainp)
+            : fid(Serialization::decode_vi24(bufp, remainp)) {
+}
+
+SWC_CAN_INLINE
+size_t Field::encoded_length() const noexcept {
+  return 1 + Serialization::encoded_length_vi24(fid);
+}
+
+SWC_CAN_INLINE
+void Field::encode(uint8_t** bufp, Type type) const {
+  Serialization::encode_i8(bufp, type);
+  Serialization::encode_vi24(bufp, fid);
+}
+
+SWC_CAN_INLINE
+void Field::decode(const uint8_t** bufp, size_t* remainp) {
+  fid = Serialization::decode_vi24(bufp, remainp);
+}
 //
 
 
@@ -261,26 +299,45 @@ cell.set_value(encoder, wfields.base, wfields.fill());
 */
 struct FieldsWriter final : DynamicBuffer {
 
+  SWC_CAN_INLINE
   FieldsWriter() noexcept : index_count(0) { }
 
   //~FieldsWriter() { }
 
-  void add(Field* field);
+  SWC_CAN_INLINE
+  void add(Field* field) {
+    ensure(field->encoded_length());
+    field->encode(&ptr);
+  }
 
-
-  void add(const int64_t& value);
 
   void add(uint24_t fid, const int64_t& value);
 
-
-  void add(const long double& value);
-
   void add(uint24_t fid, const long double& value);
 
-
-  void add(const uint8_t* data, uint32_t len);
-
   void add(uint24_t fid, const uint8_t* data, uint32_t len);
+
+  void add(uint24_t fid, const Key& key);
+
+  void add(uint24_t fid, const std::vector<int64_t>& items);
+
+  void add(uint24_t fid, const std::vector<std::string>& items);
+
+
+  SWC_CAN_INLINE
+  void add(const int64_t& value) {
+    add(index_count++, value);
+  }
+
+  SWC_CAN_INLINE
+  void add(const long double& value) {
+    add(index_count++, value);
+  }
+
+  SWC_CAN_INLINE
+  void add(const uint8_t* data, uint32_t len) {
+    add(index_count++, data, len);
+  }
 
   SWC_CAN_INLINE
   void add(const std::string& data) {
@@ -302,20 +359,20 @@ struct FieldsWriter final : DynamicBuffer {
     add(fid, reinterpret_cast<const uint8_t*>(data), len);
   }
 
+  SWC_CAN_INLINE
+  void add(const Key& key) {
+    add(index_count++, key);
+  }
 
-  void add(const Key& key);
+  SWC_CAN_INLINE
+  void add(const std::vector<int64_t>& items) {
+    add(index_count++, items);
+  }
 
-  void add(uint24_t fid, const Key& key);
-
-
-  void add(const std::vector<int64_t>& items);
-
-  void add(uint24_t fid, const std::vector<int64_t>& items);
-
-
-  void add(const std::vector<std::string>& items);
-
-  void add(uint24_t fid, const std::vector<std::string>& items);
+  SWC_CAN_INLINE
+  void add(const std::vector<std::string>& items) {
+    add(index_count++, items);
+  }
 
 
   std::string to_string() const;

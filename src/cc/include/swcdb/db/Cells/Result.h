@@ -29,22 +29,31 @@ class Result final : private std::vector<Cell*> {
   size_t            bytes;
   uint64_t          ttl;
 
+  SWC_CAN_INLINE
   explicit Result(const uint64_t ttl_ns=0) noexcept
                   : bytes(0), ttl(ttl_ns) {
   }
 
-  explicit Result(Result&& other) noexcept;
+  SWC_CAN_INLINE
+  explicit Result(Result&& other) noexcept
+                  : std::vector<Cell*>(std::move(other)),
+                    bytes(other.bytes), ttl(other.ttl) {
+    other.bytes = 0;
+  }
 
   Result(const Result& other) = delete;
 
   Result& operator=(const Result& other) = delete;
 
+  SWC_CAN_INLINE
   ~Result() {
-    free();
+    if(!empty())
+      free();
   }
 
   void free();
 
+  SWC_CAN_INLINE
   size_t size_bytes() const noexcept {
     return bytes;
   }
@@ -72,6 +81,68 @@ class Result final : private std::vector<Cell*> {
              bool with_cells=false) const;
 
 };
+
+
+
+SWC_CAN_INLINE
+void Result::free() {
+  for(auto cell : *this)
+    if(cell)
+      delete cell;
+  clear();
+  bytes = 0;
+}
+
+SWC_CAN_INLINE
+void Result::take(Result& other) {
+  if(empty()) {
+    std::vector<Cell*>::operator=(std::move(other));
+    bytes = other.bytes;
+  } else {
+    insert(end(), other.begin(), other.end());
+    other.clear();
+    bytes += other.bytes;
+  }
+  other.bytes = 0;
+}
+
+SWC_CAN_INLINE
+void Result::add(const Cell& cell, bool no_value) {
+  Cell* adding = new Cell(cell, no_value);
+  push_back(adding);
+  bytes += adding->encoded_length();
+}
+
+SWC_CAN_INLINE
+size_t Result::add(const uint8_t* ptr, size_t remain) {
+  size_t count = 0;
+  bytes += remain;
+  while(remain) {
+    push_back(new Cell(&ptr, &remain, true));
+    ++count;
+  }
+  return count;
+}
+
+
+SWC_CAN_INLINE
+Cell* Result::takeout_begin(size_t idx) {
+  auto it = begin() + idx;
+  Cell* cell = *it;
+  erase(it);
+  bytes -= cell->encoded_length();
+  return cell;
+}
+
+SWC_CAN_INLINE
+Cell* Result::takeout_end(size_t idx) {
+  auto it = end() - idx;
+  Cell* cell = *it;
+  erase(it);
+  bytes -= cell->encoded_length();
+  return cell;
+}
+
 
 
 }}}

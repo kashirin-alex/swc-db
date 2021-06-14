@@ -128,7 +128,7 @@ class Key final : public std::vector<Fraction> {
   explicit Key() noexcept { }
 
   SWC_CAN_INLINE
-  explicit Key(Key&& other) noexcept 
+  explicit Key(Key&& other) noexcept
               : std::vector<Fraction>(std::move(other)) {
   }
 

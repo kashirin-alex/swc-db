@@ -32,6 +32,7 @@ class MutableVec final : private std::vector<Mutable*> {
   uint64_t            ttl;
   Types::Column       type;
 
+  SWC_CAN_INLINE
   explicit MutableVec(const Types::KeySeq key_seq, uint32_t split_size=100000,
                       const uint32_t max_revs=1, const uint64_t ttl_ns=0,
                       const Types::Column type=Types::Column::PLAIN) noexcept
@@ -53,17 +54,36 @@ class MutableVec final : private std::vector<Mutable*> {
                  const uint32_t revs=1, const uint64_t ttl_ns=0,
                  const Types::Column typ=Types::Column::PLAIN) noexcept;
 
+  SWC_CAN_INLINE
   bool empty() const noexcept {
     return Vec::empty();
   }
 
-  size_t size() const noexcept;
+  SWC_CAN_INLINE
+  size_t size() const noexcept {
+    size_t sz = 0;
+    for(auto cells : *this)
+      sz += cells->size();
+    return sz;
+  }
 
-  size_t size_bytes() const noexcept;
+  SWC_CAN_INLINE
+  size_t size_bytes() const noexcept {
+    size_t sz = 0;
+    for(auto cells : *this)
+      sz += cells->size_bytes();
+    return sz;
+  }
 
-  size_t size_of_internal() const noexcept;
-
-  bool split(Mutable& cells, iterator it);
+  SWC_CAN_INLINE
+  size_t size_of_internal() const noexcept {
+    size_t sz = 0;
+    for(auto cells : *this) {
+      sz += cells->size_of_internal();
+      sz += sizeof(cells);
+    }
+    return sz;
+  }
 
   void add_sorted(const Cell& cell);
 
@@ -75,7 +95,44 @@ class MutableVec final : private std::vector<Mutable*> {
                       Interval& intval, uint32_t threshold,
                       uint32_t max_cells);
 
+  private:
+
+  bool split(Mutable& cells, iterator it);
+
 };
+
+
+
+SWC_CAN_INLINE
+MutableVec::~MutableVec() {
+  for(auto cells : *this)
+    delete cells;
+}
+
+SWC_CAN_INLINE
+void MutableVec::free() {
+  for(auto cells : *this)
+    delete cells;
+  clear();
+}
+
+SWC_CAN_INLINE
+bool MutableVec::split(Mutable& cells, MutableVec::iterator it) {
+  if(cells.size() >= split_size && cells.can_split()) {
+    cells.split(**insert(it, new Mutable(key_seq, max_revs, ttl, type)));
+    return true;
+  }
+  return false;
+}
+
+SWC_CAN_INLINE
+void MutableVec::add_sorted(const Cell& cell) {
+  if(Vec::empty())
+    push_back(new Mutable(key_seq, max_revs, ttl, type));
+  back()->add_sorted(cell);
+  split(*back(), end());
+}
+
 
 
 }}}

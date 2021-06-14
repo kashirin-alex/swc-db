@@ -11,16 +11,7 @@
 namespace SWC { namespace DB { namespace Cells {
 
 
-MutableVec::~MutableVec() {
-  for(auto cells : *this)
-    delete cells;
-}
 
-void MutableVec::free() {
-  for(auto cells : *this)
-    delete cells;
-  clear();
-}
 
 SWC_SHOULD_INLINE
 void MutableVec::configure(uint32_t split,
@@ -32,44 +23,6 @@ void MutableVec::configure(uint32_t split,
   type = typ;
   for(auto cells : *this)
     cells->configure(max_revs, ttl, type);
-}
-
-size_t MutableVec::size() const noexcept {
-  size_t sz = 0;
-  for(auto cells : *this)
-    sz += cells->size();
-  return sz;
-}
-
-size_t MutableVec::size_bytes() const noexcept {
-  size_t sz = 0;
-  for(auto cells : *this)
-    sz += cells->size_bytes();
-  return sz;
-}
-
-size_t MutableVec::size_of_internal() const noexcept {
-  size_t sz = 0;
-  for(auto cells : *this) {
-    sz += cells->size_of_internal();
-    sz += sizeof(cells);
-  }
-  return sz;
-}
-
-bool MutableVec::split(Mutable& cells, MutableVec::iterator it) {
-  if(cells.size() >= split_size && cells.can_split()) {
-    cells.split(**insert(it, new Mutable(key_seq, max_revs, ttl, type)));
-    return true;
-  }
-  return false;
-}
-
-void MutableVec::add_sorted(const Cell& cell) {
-  if(Vec::empty())
-    push_back(new Mutable(key_seq, max_revs, ttl, type));
-  back()->add_sorted(cell);
-  split(*back(), end());
 }
 
 void MutableVec::add_raw(const Cell& cell) {

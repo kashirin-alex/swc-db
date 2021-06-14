@@ -10,65 +10,6 @@
 namespace SWC { namespace DB { namespace Cells {
 
 
-Result::Result(Result&& other) noexcept
-              : std::vector<Cell*>(std::move(other)),
-                bytes(other.bytes), ttl(other.ttl) {
-  other.bytes = 0;
-}
-
-void Result::free() {
-  for(auto cell : *this)
-    if(cell)
-      delete cell;
-  clear();
-  bytes = 0;
-}
-
-void Result::take(Result& other) {
-  if(empty()) {
-    std::vector<Cell*>::operator=(std::move(other));
-    bytes = other.bytes;
-  } else {
-    insert(end(), other.begin(), other.end());
-    other.clear();
-    bytes += other.bytes;
-  }
-  other.bytes = 0;
-}
-
-void Result::add(const Cell& cell, bool no_value) {
-  Cell* adding;
-  push_back(adding = new Cell(cell, no_value));
-  bytes += adding->encoded_length();
-}
-
-size_t Result::add(const uint8_t* ptr, size_t remain) {
-  size_t count = 0;
-  bytes += remain;
-  while(remain) {
-    push_back(new Cell(&ptr, &remain, true));
-    ++count;
-  }
-  return count;
-}
-
-
-Cell* Result::takeout_begin(size_t idx) {
-  auto it = begin() + idx;
-  Cell* cell = *it;
-  erase(it);
-  bytes -= cell->encoded_length();
-  return cell;
-}
-
-Cell* Result::takeout_end(size_t idx) {
-  auto it = end() - idx;
-  Cell* cell = *it;
-  erase(it);
-  bytes -= cell->encoded_length();
-  return cell;
-}
-
 
 void Result::write(DynamicBuffer& cells) const {
   cells.ensure(bytes);
@@ -118,6 +59,7 @@ void Result::write_and_free(DynamicBuffer& cells, uint32_t& cell_count,
   } while(it != begin());
   erase(begin(), it_end);
 }
+
 
 void Result::print(std::ostream& out, Types::Column col_type,
                    bool with_cells) const {

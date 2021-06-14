@@ -20,21 +20,46 @@ class ReqScan : public Comm::ResponseCallback {
 
   typedef std::shared_ptr<ReqScan>  Ptr;
 
+  SWC_CAN_INLINE
   ReqScan() noexcept
           : Comm::ResponseCallback(nullptr, nullptr),
             only_keys(false), offset(0) {
   }
 
-  ReqScan(const DB::Specs::Interval& spec);
+  SWC_CAN_INLINE
+  ReqScan(const DB::Specs::Interval& spec)
+          : Comm::ResponseCallback(nullptr, nullptr),
+            spec(spec),
+            only_keys(spec.flags.is_only_keys()),
+            offset(spec.flags.offset) {
+  }
 
+  SWC_CAN_INLINE
   ReqScan(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev,
-          DB::Specs::Interval&& spec);
+          DB::Specs::Interval&& spec)
+          : Comm::ResponseCallback(conn, ev),
+            spec(std::move(spec)),
+            only_keys(spec.flags.is_only_keys()),
+            offset(spec.flags.offset) {
+  }
 
+  SWC_CAN_INLINE
   ReqScan(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev,
-          const DB::Specs::Interval& spec);
+          const DB::Specs::Interval& spec)
+          : Comm::ResponseCallback(conn, ev),
+            spec(spec),
+            only_keys(spec.flags.is_only_keys()),
+            offset(spec.flags.offset) {
+  }
 
+  SWC_CAN_INLINE
   ReqScan(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev,
-          const DB::Cell::Key& range_begin, const DB::Cell::Key& range_end);
+          const DB::Cell::Key& range_begin, const DB::Cell::Key& range_end)
+          : Comm::ResponseCallback(conn, ev),
+            spec(range_begin, range_end),
+            only_keys(false),
+            offset(0) {
+  }
 
   ReqScan(const ReqScan&) = delete;
 
@@ -88,6 +113,7 @@ class ReqScan : public Comm::ResponseCallback {
     uint64_t blocks_scanned   = 0;
     uint64_t block_time_scan  = 0;
 
+    SWC_CAN_INLINE
     void finished() {
       ts_finish = Time::now_ns();
     }
@@ -103,11 +129,13 @@ class ReqScan : public Comm::ResponseCallback {
       ++cells_skipped;
     }
 
+    SWC_CAN_INLINE
     void add_block_locate(int64_t ts) {
       ++blocks_located;
       block_time_locate += Time::now_ns() - ts;
     }
 
+    SWC_CAN_INLINE
     void add_block_load(int64_t ts, size_t count_cs_blocks,
                                     size_t count_fragments) {
       ++blocks_loaded;
@@ -116,6 +144,7 @@ class ReqScan : public Comm::ResponseCallback {
       blocks_fragments += count_fragments;
     }
 
+    SWC_CAN_INLINE
     void add_block_scan(int64_t ts) {
       ++blocks_scanned;
       block_time_scan += Time::now_ns() - ts;
@@ -159,8 +188,10 @@ class ReqScanTest : public ReqScan {
 
   typedef std::shared_ptr<ReqScanTest>  Ptr;
 
+  SWC_CAN_INLINE
   static Ptr make() { return Ptr(new ReqScanTest()); }
 
+  SWC_CAN_INLINE
   ReqScanTest() noexcept { }
 
   bool reached_limits() override {

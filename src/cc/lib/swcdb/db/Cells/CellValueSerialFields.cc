@@ -36,41 +36,9 @@ const char* to_string(Type typ) noexcept {
       return "UNKNOWN";
   }
 }
-
-Type read_type(const uint8_t** bufp, size_t* remainp) {
-  return Type(Serialization::decode_i8(bufp, remainp));
-}
-
-uint24_t read_field_id(const uint8_t** bufp, size_t* remainp) {
-  return Serialization::decode_vi24(bufp, remainp);
-}
-
-void skip_type_and_id(const uint8_t** bufp, size_t* remainp) {
-  read_type(bufp, remainp);
-  read_field_id(bufp, remainp);
-}
 //
 
 
-
-//
-Field::Field(const uint8_t** bufp, size_t* remainp)
-            : fid(Serialization::decode_vi24(bufp, remainp)) {
-}
-
-size_t Field::encoded_length() const noexcept {
-  return 1 + Serialization::encoded_length_vi24(fid);
-}
-
-void Field::encode(uint8_t** bufp, Type type) const {
-  Serialization::encode_i8(bufp, type);
-  Serialization::encode_vi24(bufp, fid);
-}
-
-void Field::decode(const uint8_t** bufp, size_t* remainp) {
-  fid = Serialization::decode_vi24(bufp, remainp);
-}
-//
 
 
 
@@ -350,25 +318,8 @@ void Field_LIST_BYTES::print(std::ostream& out) const {
 
 
 //
-void FieldsWriter::add(Field* field) {
-  ensure(field->encoded_length());
-  field->encode(&ptr);
-}
-
-
-void FieldsWriter::add(const int64_t& value) {
-  Field_INT64 field(index_count++, value);
-  add(&field);
-}
-
 void FieldsWriter::add(uint24_t fid, const int64_t& value) {
   Field_INT64 field(fid, value);
-  add(&field);
-}
-
-
-void FieldsWriter::add(const long double& value) {
-  Field_DOUBLE field(index_count++, value);
   add(&field);
 }
 
@@ -377,20 +328,8 @@ void FieldsWriter::add(uint24_t fid, const long double& value) {
   add(&field);
 }
 
-
-void FieldsWriter::add(const uint8_t* data, uint32_t len) {
-  Field_BYTES field(index_count++, data, len);
-  add(&field);
-}
-
 void FieldsWriter::add(uint24_t fid, const uint8_t* data, uint32_t len) {
   Field_BYTES field(fid, data, len);
-  add(&field);
-}
-
-
-void FieldsWriter::add(const Key& key) {
-  Field_KEY field(index_count++, key);
   add(&field);
 }
 
@@ -399,20 +338,8 @@ void FieldsWriter::add(uint24_t fid, const Key& key) {
   add(&field);
 }
 
-
-void FieldsWriter::add(const std::vector<int64_t>& items) {
-  Field_LIST_INT64 field(index_count++, items);
-  add(&field);
-}
-
 void FieldsWriter::add(uint24_t fid, const std::vector<int64_t>& items) {
   Field_LIST_INT64 field(fid, items);
-  add(&field);
-}
-
-
-void FieldsWriter::add(const std::vector<std::string>& items) {
-  Field_LIST_BYTES field(index_count++, items);
   add(&field);
 }
 

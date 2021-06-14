@@ -16,7 +16,6 @@ set(swcdb_sources
   Cells/CellKey.cc
   Cells/CellValueSerialFields.cc
   Cells/Cell.cc
-  Cells/KeyComparator.cc
 
   Cells/SpecsScan.cc
   Cells/SpecsColumn.cc

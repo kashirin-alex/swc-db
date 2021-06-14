@@ -9,6 +9,7 @@
 
 
 #include "swcdb/core/Compat.h"
+#include "swcdb/core/Serialization.h"
 
 
 namespace SWC { namespace DB { namespace Cell {
@@ -24,15 +25,27 @@ class KeyVec final : public VecFraction {
 
   using VecFraction::size;
 
+  SWC_CAN_INLINE
   explicit KeyVec() noexcept { }
 
-  explicit KeyVec(KeyVec&& other) noexcept;
+  SWC_CAN_INLINE
+  explicit KeyVec(KeyVec&& other) noexcept
+                  : VecFraction(std::move(other)) {
+  }
 
   explicit KeyVec(const KeyVec& other);
 
   //~KeyVec() { }
 
-  size_t size_of_internal() const noexcept;
+  SWC_CAN_INLINE
+  size_t size_of_internal() const noexcept {
+    size_t sz = 0;
+    for(auto& f : *this) {
+      sz += sizeof(f);
+      sz += f.length();
+    }
+    return sz;
+  }
 
   KeyVec& operator=(const KeyVec&) = delete;
 
@@ -40,43 +53,91 @@ class KeyVec final : public VecFraction {
 
   bool equal(const KeyVec &other) const noexcept;
 
-  void add(const Fraction& fraction);
+  SWC_CAN_INLINE
+  void add(const Fraction& fraction) {
+    add(fraction.data(), fraction.length());
+  }
 
-  void add(const std::string& fraction);
+  SWC_CAN_INLINE
+  void add(const std::string& fraction) {
+    add(fraction.c_str(), fraction.length());
+  }
 
-  void add(const char* fraction);
+  SWC_CAN_INLINE
+  void add(const char* fraction) {
+    add(fraction, strlen(fraction));
+  }
 
-  void add(const char* fraction, const uint32_t len);
+  SWC_CAN_INLINE
+  void add(const char* fraction, const uint32_t len)  {
+    add(reinterpret_cast<const uint8_t*>(fraction), len);
+  }
 
   void add(const uint8_t* fraction, const uint32_t len);
 
-  void insert(const uint32_t idx, const Fraction& fraction);
+  SWC_CAN_INLINE
+  void insert(const uint32_t idx, const Fraction& fraction) {
+    insert(idx, fraction.data(), fraction.length());
+  }
 
-  void insert(const uint32_t idx, const std::string& fraction);
+  SWC_CAN_INLINE
+  void insert(const uint32_t idx, const std::string& fraction) {
+    insert(idx, fraction.c_str(), fraction.length());
+  }
 
-  void insert(const uint32_t idx, const char* fraction);
+  SWC_CAN_INLINE
+  void insert(const uint32_t idx, const char* fraction) {
+    insert(idx, fraction, strlen(fraction));
+  }
 
-  void insert(const uint32_t idx, const char* fraction, const uint32_t len);
+  SWC_CAN_INLINE
+  void insert(const uint32_t idx, const char* fraction, const uint32_t len) {
+    insert(idx, reinterpret_cast<const uint8_t*>(fraction), len);
+  }
 
   void insert(const uint32_t idx, const uint8_t* fraction, const uint32_t len);
 
-  void set(const uint32_t idx, const Fraction& fraction);
+  SWC_CAN_INLINE
+  void set(const uint32_t idx, const Fraction& fraction) {
+    set(idx, fraction.data(), fraction.length());
+  }
 
-  void set(const uint32_t idx, const std::string& fraction);
+  SWC_CAN_INLINE
+  void set(const uint32_t idx, const std::string& fraction) {
+    set(idx, fraction.c_str(), fraction.length());
+  }
 
-  void set(const uint32_t idx, const char* fraction);
+  SWC_CAN_INLINE
+  void set(const uint32_t idx, const char* fraction) {
+    set(idx, fraction, strlen(fraction));
+  }
 
-  void set(const uint32_t idx, const char* fraction, const uint32_t len);
+  SWC_CAN_INLINE
+  void set(const uint32_t idx, const char* fraction, const uint32_t len) {
+    set(idx, reinterpret_cast<const uint8_t*>(fraction), len);
+  }
 
   void set(const uint32_t idx, const uint8_t* fraction, const uint32_t len);
 
   void remove(const uint32_t idx);
 
-  const Fraction& get(const uint32_t idx) const;
+  SWC_CAN_INLINE
+  const Fraction& get(const uint32_t idx) const {
+    return (*this)[idx];
+  }
 
-  void get(const uint32_t idx, Fraction& fraction) const;
+  SWC_CAN_INLINE
+  void get(const uint32_t idx, Fraction& fraction) const {
+    fraction = (*this)[idx];
+  }
 
-  void get(const uint32_t idx, std::string& fraction) const;
+  SWC_CAN_INLINE
+  void get(const uint32_t idx, std::string& fraction) const {
+    fraction.assign(
+      reinterpret_cast<const char*>((*this)[idx].data()),
+      (*this)[idx].size()
+    );
+  }
 
   uint32_t encoded_length() const noexcept;
 
@@ -94,6 +155,80 @@ class KeyVec final : public VecFraction {
   }
 
 };
+
+
+
+SWC_CAN_INLINE
+KeyVec::KeyVec(const KeyVec& other)
+               : VecFraction(other) {
+}
+
+SWC_CAN_INLINE
+void KeyVec::copy(const KeyVec &other) {
+  clear();
+  assign(other.cbegin(), other.cend());
+}
+
+SWC_CAN_INLINE
+bool KeyVec::equal(const KeyVec &other) const noexcept {
+  return *this == other;
+}
+
+SWC_CAN_INLINE
+void KeyVec::add(const uint8_t* fraction, const uint32_t len) {
+  emplace_back(fraction, len);
+}
+
+SWC_CAN_INLINE
+void KeyVec::insert(const uint32_t idx, const uint8_t* fraction,
+                    const uint32_t len) {
+  emplace(cbegin() + idx, fraction, len);
+}
+
+SWC_CAN_INLINE
+void KeyVec::set(const uint32_t idx, const uint8_t* fraction,
+                 const uint32_t len) {
+  (*this)[idx].assign(fraction, len);
+}
+
+SWC_CAN_INLINE
+void KeyVec::remove(const uint32_t idx) {
+  if(idx < size())
+    erase(cbegin() + idx);
+}
+
+SWC_CAN_INLINE
+uint32_t KeyVec::encoded_length() const noexcept {
+  uint32_t len = Serialization::encoded_length_vi32(size());
+  for(auto it = cbegin(); it != cend(); ++it)
+    len += Serialization::encoded_length_vi32(it->length()) + it->length();
+  return len;
+}
+
+SWC_CAN_INLINE
+void KeyVec::encode(uint8_t** bufp) const {
+  Serialization::encode_vi32(bufp, size());
+  uint32_t len;
+  for(auto it = cbegin(); it != cend(); ++it) {
+    Serialization::encode_vi32(bufp, len = it->length());
+    memcpy(*bufp, it->data(), len);
+    *bufp += len;
+  }
+}
+
+SWC_CAN_INLINE
+void KeyVec::decode(const uint8_t** bufp, size_t* remainp) {
+  clear();
+  resize(Serialization::decode_vi32(bufp, remainp));
+  uint32_t len;
+  for(auto it = begin(); it != end(); ++it) {
+    *remainp -= len = Serialization::decode_vi32(bufp, remainp);
+    it->assign(*bufp, len);
+    *bufp += len;
+  }
+}
+
+
 
 }}}
 
