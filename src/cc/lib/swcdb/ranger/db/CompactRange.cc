@@ -47,6 +47,7 @@ struct CompactRange::InBlock final : Core::QueuePointer<InBlock*>::Pointer {
     return cells.fill()/header.cells_count;
   }
 
+  SWC_CAN_INLINE
   void add(const DB::Cells::Cell& cell) {
     ++header.cells_count;
     cells.set_mark(); // start of last cell
@@ -54,6 +55,7 @@ struct CompactRange::InBlock final : Core::QueuePointer<InBlock*>::Pointer {
     last_cell = cells.mark;
   }
 
+  SWC_CAN_INLINE
   void set_offset(DB::Specs::Interval& spec) const {
     const uint8_t* ptr = last_cell;
     size_t remain = cells.ptr - ptr;
@@ -62,6 +64,7 @@ struct CompactRange::InBlock final : Core::QueuePointer<InBlock*>::Pointer {
     spec.offset_rev = cell.timestamp;
   }
 
+  SWC_CAN_INLINE
   void move_last(InBlock* to) {
     const uint8_t* ptr = last_cell;
     size_t remain = cells.ptr - ptr;
@@ -97,6 +100,7 @@ struct CompactRange::InBlock final : Core::QueuePointer<InBlock*>::Pointer {
       header.is_any |= CellStore::Block::Header::ANY_END;
   }
 
+  SWC_CAN_INLINE
   void finalize_encode(DB::Types::Encoder encoding) {
     header.encoder = encoding;
     DynamicBuffer output;
@@ -490,6 +494,7 @@ void CompactRange::request_more() {
       [ptr=shared()](){ ptr->range->scan_internal(ptr->get_req_scan()); });
 }
 
+SWC_CAN_INLINE
 void CompactRange::process_interval() {
   Time::Measure_ns t_measure;
   _do: {
@@ -509,6 +514,7 @@ void CompactRange::process_interval() {
   request_more();
 }
 
+SWC_CAN_INLINE
 void CompactRange::process_encode() {
   Time::Measure_ns t_measure;
   _do: {
@@ -528,6 +534,7 @@ void CompactRange::process_encode() {
   request_more();
 }
 
+SWC_CAN_INLINE
 void CompactRange::process_write() {
   Time::Measure_ns t_measure;
   int err = Error::OK;
@@ -601,6 +608,7 @@ csid_t CompactRange::create_cs(int& err) {
 
 }
 
+SWC_CAN_INLINE
 void CompactRange::write_cells(int& err, InBlock* in_block) {
   if(!cs_writer) {
     if(create_cs(err) == 1 && range->_is_any_begin())
@@ -741,6 +749,7 @@ void CompactRange::finalize() {
 
 }
 
+SWC_CAN_INLINE
 void CompactRange::mngr_create_range(uint32_t split_at) {
   struct ReqData {
     CompactRange::Ptr ptr;

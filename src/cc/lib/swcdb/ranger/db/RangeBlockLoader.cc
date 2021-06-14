@@ -33,11 +33,13 @@ void BlockLoader::run() {
 }
 
 //CellStores
+SWC_SHOULD_INLINE
 void BlockLoader::add(CellStore::Block::Read::Ptr blk) {
   Core::MutexSptd::scope lock(m_mutex);
   m_cs_blocks.push(blk);
 }
 
+SWC_SHOULD_INLINE
 void BlockLoader::loaded_blk() {
   {
     Core::MutexSptd::scope lock(m_mutex);

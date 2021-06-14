@@ -45,6 +45,7 @@ void Blocks::processing_decrement() {
   m_processing.fetch_sub(1);
 }
 
+SWC_SHOULD_INLINE
 void Blocks::load(int& err) {
   commitlog.load(err);
   cellstores.load(err);
@@ -77,11 +78,13 @@ void Blocks::remove(int&) {
   processing_decrement();
 }
 
+SWC_SHOULD_INLINE
 void Blocks::expand(DB::Cells::Interval& intval) {
   cellstores.expand(intval);
   commitlog.expand(intval);
 }
 
+SWC_SHOULD_INLINE
 void Blocks::expand_and_align(DB::Cells::Interval& intval) {
   cellstores.expand_and_align(intval);
   commitlog.expand_and_align(intval);
@@ -159,12 +162,13 @@ void Blocks::scan(ReqScan::Ptr req, Block::Ptr blk_ptr) {
 
       } else {
         support = m_mutex.lock();
-        blk_ptr = (*(m_blocks_idx.begin() + (
-          req->spec.offset_key.empty()
-            ? (req->spec.range_begin.empty()
-              ? 0 : _narrow(req->spec.range_begin))
-            : _narrow(req->spec.offset_key)
-        )));
+        blk_ptr = (*(m_blocks_idx.begin() +
+          _narrow(
+            req->spec.offset_key.empty()
+              ? req->spec.range_begin
+              : req->spec.offset_key
+          )
+        ));
       }
       m_mutex.unlock(support);
 
@@ -444,6 +448,7 @@ void Blocks::init_blocks(int& err) {
     blk->free_key_end();
 }
 
+SWC_SHOULD_INLINE
 size_t Blocks::_get_block_idx(Block::Ptr blk) const {
   for(auto it=m_blocks_idx.begin(); it != m_blocks_idx.end();++it)
     if(*it == blk)
@@ -451,6 +456,7 @@ size_t Blocks::_get_block_idx(Block::Ptr blk) const {
   return 0; // eq m_block;
 }
 
+SWC_SHOULD_INLINE
 size_t Blocks::_narrow(const DB::Cell::Key& key) const {
   size_t offset = 0;
   if(key.empty() || m_blocks_idx.size() <= MAX_IDX_NARROW)

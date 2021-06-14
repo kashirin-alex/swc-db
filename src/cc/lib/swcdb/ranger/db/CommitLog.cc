@@ -21,6 +21,7 @@ Fragments::Fragments(const DB::Types::KeySeq key_seq)
                       m_sem(5), m_last_id(0) {
 }
 
+SWC_SHOULD_INLINE
 void Fragments::init(const RangePtr& for_range) {
 
   range = for_range;
@@ -147,6 +148,7 @@ void Fragments::commit_new_fragment(bool finalize) {
     try_compact();
 }
 
+SWC_SHOULD_INLINE
 void Fragments::add(Fragment::Ptr& frag) {
   Core::ScopedLock lock(m_mutex);
   _add(frag);
@@ -297,6 +299,7 @@ void Fragments::expand_and_align(DB::Cells::Interval& intval) {
   }
 }
 
+SWC_SHOULD_INLINE
 void Fragments::load_cells(BlockLoader* loader, bool& is_final,
                            Fragments::Vec& frags, uint8_t vol) {
   uint8_t base = vol;
@@ -473,6 +476,7 @@ size_t Fragments::cells_count(bool only_current) {
   return count;
 }
 
+SWC_SHOULD_INLINE
 bool Fragments::empty() {
   Core::SharedLock lock1(m_mutex);
   Core::SharedLock lock2(m_mutex_cells);
@@ -511,6 +515,7 @@ uint64_t Fragments::next_id() {
   return _next_id();
 }
 
+SWC_CAN_INLINE
 uint64_t Fragments::_next_id() {
   uint64_t new_id = Time::now_ns();
   if(m_last_id == new_id) {
@@ -630,6 +635,7 @@ bool Fragments::_need_compact_major() {
   return need;
 }
 
+SWC_CAN_INLINE
 bool Fragments::_processing() const noexcept {
   if(m_commit)
     return true;
@@ -650,6 +656,7 @@ size_t Fragments::_size_bytes(bool only_loaded) {
   return size;
 }
 
+SWC_CAN_INLINE
 size_t Fragments::_narrow(const DB::Cell::Key& key) const {
   size_t offset = 0;
   if(key.empty() || Vec::size() <= MAX_FRAGMENTS_NARROW)

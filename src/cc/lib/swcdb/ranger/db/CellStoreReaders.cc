@@ -10,6 +10,7 @@
 namespace SWC { namespace Ranger { namespace CellStore {
 
 
+SWC_SHOULD_INLINE
 void Readers::load(int& err) {
   if(empty()) {
     err = Error::SERIALIZATION_INPUT_OVERRUN;
@@ -50,6 +51,7 @@ int64_t Readers::get_ts_earliest() const {
   return ts;
 }
 
+SWC_SHOULD_INLINE
 size_t Readers::blocks_count() const {
   size_t  sz = 0;
   for(auto cs : *this)
@@ -57,6 +59,7 @@ size_t Readers::blocks_count() const {
   return sz;
 }
 
+SWC_SHOULD_INLINE
 size_t Readers::release(size_t bytes) {
   size_t released = 0;
   for(auto cs : *this) {
@@ -93,6 +96,7 @@ void Readers::clear() {
   _free();
 }
 
+SWC_SHOULD_INLINE
 void Readers::load_cells(BlockLoader* loader) {
   for(auto cs : *this) {
     if(loader->block->is_consist(cs->interval)) {
@@ -104,6 +108,7 @@ void Readers::load_cells(BlockLoader* loader) {
   }
 }
 
+SWC_SHOULD_INLINE
 void Readers::get_blocks(int& err, std::vector<Block::Read::Ptr>& to) const {
   for(auto cs : *this) {
     cs->get_blocks(err, to);
@@ -166,6 +171,7 @@ void Readers::decode(int &err, const uint8_t** ptr, size_t* remain) {
   }
 }
 
+SWC_SHOULD_INLINE
 void Readers::load_from_path(int &err) {
 
   FS::DirentList dirs;

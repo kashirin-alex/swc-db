@@ -292,6 +292,7 @@ const std::string& Read::filepath() const {
   return smartfd->filepath();
 }
 
+SWC_SHOULD_INLINE
 void Read::load_cells(BlockLoader* loader) {
   for(auto blk : blocks) {
     if(loader->block->is_consist(blk->header.interval)) {
@@ -306,15 +307,18 @@ void Read::load_cells(BlockLoader* loader) {
   }
 }
 
+SWC_SHOULD_INLINE
 void Read::_run_queued() {
   Block::Read::Ptr blk = nullptr;
   m_queue.deactivating(&blk) ? _release_fd() : blk->load();
 }
 
+SWC_SHOULD_INLINE
 void Read::get_blocks(int&, std::vector<Block::Read::Ptr>& to) const {
   to.insert(to.end(), blocks.begin(), blocks.end());
 }
 
+SWC_SHOULD_INLINE
 size_t Read::release(size_t bytes) {
   size_t released = 0;
   for(auto blk : blocks) {
@@ -351,6 +355,7 @@ void Read::remove(int &err) {
   Env::FsInterface::interface()->remove(err, smartfd->filepath());
 }
 
+SWC_SHOULD_INLINE
 bool Read::processing() const noexcept{
   if(m_queue.is_active())
     return true;

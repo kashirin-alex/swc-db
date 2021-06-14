@@ -261,6 +261,7 @@ void Compact::finalized() {
   m_cb ? m_cb(this) : log->finish_compact(this);
 }
 
+SWC_SHOULD_INLINE
 std::string Compact::get_filepath(const int64_t frag) const {
   std::string s(log->range->get_path(Range::LOG_TMP_DIR));
   std::string tmp(std::to_string(frag));

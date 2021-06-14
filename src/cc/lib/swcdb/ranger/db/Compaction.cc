@@ -31,6 +31,7 @@ Compaction::Compaction()
             m_idx_cid(0), m_idx_rid(0)  {
 }
 
+SWC_SHOULD_INLINE
 bool Compaction::log_compact_possible() noexcept {
   if(m_log_chk.running())
     return false;
@@ -80,10 +81,12 @@ void Compaction::stop() {
   m_schedule.stop();
 }
 
+SWC_SHOULD_INLINE
 void Compaction::schedule() {
   schedule(cfg_check_interval->get());
 }
 
+SWC_SHOULD_INLINE
 void Compaction::schedule(uint32_t t_ms) {
   Core::ScopedLock lock(m_mutex);
   _schedule(t_ms);
@@ -222,6 +225,7 @@ void Compaction::compacted(const CompactRange::Ptr req,
     m_compacting.erase(it);
 }
 
+SWC_SHOULD_INLINE
 void Compaction::compacted() {
   uint8_t ran = m_running.fetch_sub(1);
   if(ran == cfg_max_range->get()) {

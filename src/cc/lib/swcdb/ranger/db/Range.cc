@@ -22,6 +22,7 @@ class Range::MetaRegOnLoadReq : public Query::Update::BaseMeta {
   public:
   typedef std::shared_ptr<MetaRegOnLoadReq>     Ptr;
 
+  SWC_CAN_INLINE
   static Ptr make(const RangePtr& range,
                   const Callback::RangeLoad::Ptr& req) {
     return Ptr(new MetaRegOnLoadReq(range, req));
@@ -71,6 +72,7 @@ const char* to_string(Range::State state) noexcept {
 
 
 
+SWC_CAN_INLINE
 Range::Range(const ColumnCfg::Ptr& cfg, const rid_t rid)
             : cfg(cfg), rid(rid),
               blocks(cfg->key_seq),
@@ -84,6 +86,7 @@ Range::Range(const ColumnCfg::Ptr& cfg, const rid_t rid)
   Env::Rgr::res().more_mem_usage(size_of());
 }
 
+SWC_CAN_INLINE
 void Range::init() {
   blocks.init(shared_from_this());
 }
@@ -93,6 +96,7 @@ Range::~Range() {
   Env::Rgr::in_process(-1);
 }
 
+SWC_CAN_INLINE
 size_t Range::size_of() const {
   return sizeof(*this) + sizeof(RangePtr);
 }
@@ -105,10 +109,12 @@ std::string Range::get_path(const std::string suff) const {
   return s;
 }
 
+SWC_CAN_INLINE
 std::string Range::get_path_cs(const csid_t csid) const {
   return get_path_cs_on(DB::RangeBase::CELLSTORES_DIR, csid);
 }
 
+SWC_CAN_INLINE
 std::string Range::get_path_cs_on(const std::string folder,
                                   const csid_t csid) const {
   return DB::RangeBase::get_path_cs(m_path, folder, csid);
@@ -120,6 +126,7 @@ Common::Files::RgrData::Ptr Range::get_last_rgr(int &err) {
     err, DB::RangeBase::get_path_ranger(m_path));
 }
 
+SWC_SHOULD_INLINE
 uint24_t Range::known_interval_count() {
   Core::MutexAtomic::scope lock(m_mutex_intval);
   return m_interval.key_end.empty()
@@ -127,6 +134,7 @@ uint24_t Range::known_interval_count() {
           : m_interval.key_end.count;
 }
 
+SWC_SHOULD_INLINE
 void Range::get_interval(DB::Cells::Interval& interval) {
   Core::MutexAtomic::scope lock(m_mutex_intval);
   Core::MutexAtomic::scope lock_align(m_mutex_intval_alignment);
@@ -181,16 +189,19 @@ void Range::set_state(Range::State new_state) {
   m_state.store(new_state);
 }
 
+SWC_CAN_INLINE
 bool Range::is_loaded() {
   Core::SharedLock lock(m_mutex);
   return m_state == State::LOADED;
 }
 
+SWC_CAN_INLINE
 bool Range::deleted() {
   Core::SharedLock lock(m_mutex);
   return m_state == State::DELETED;
 }
 
+SWC_CAN_INLINE
 void Range::state(int& err) const {
   if(m_state != State::LOADED) {
     err = m_state == State::DELETED
@@ -380,6 +391,7 @@ void Range::wait_queue() {
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
 }
 
+SWC_SHOULD_INLINE
 bool Range::compacting() {
   Core::SharedLock lock(m_mutex);
   return m_compacting != COMPACT_NONE;
@@ -571,6 +583,7 @@ void Range::expand_and_align(bool w_chg_chk,
     : hdlr->callback();
 }
 
+SWC_SHOULD_INLINE
 void Range::internal_create_folders(int& err) {
   Env::FsInterface::interface()->mkdirs(
     err, get_path(DB::RangeBase::LOG_DIR));

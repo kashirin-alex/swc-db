@@ -100,6 +100,7 @@ size_t Read::size_of() const noexcept {
   return sizeof(*this) + header.interval.size_of_internal();
 }
 
+SWC_SHOULD_INLINE
 bool Read::load(BlockLoader* loader) {
   m_processing.fetch_add(1);
   auto at(State::NONE);
@@ -126,6 +127,7 @@ void Read::load() {
   Env::Rgr::post([this](){ load_open(Error::OK); });
 }
 
+SWC_SHOULD_INLINE
 void Read::load_cells(int&, Ranger::Block::Ptr cells_block) {
   bool was_splitted = false;
   ssize_t remain_hint = m_buffer.size
@@ -150,6 +152,7 @@ void Read::processing_decrement() noexcept {
   m_processing.fetch_sub(1);
 }
 
+SWC_SHOULD_INLINE
 size_t Read::release() {
   size_t released = 0;
   bool support;
@@ -169,6 +172,7 @@ size_t Read::release() {
   return released;
 }
 
+SWC_SHOULD_INLINE
 bool Read::processing() noexcept {
   bool support;
   bool busy = m_processing ||
@@ -189,6 +193,7 @@ bool Read::loaded() const noexcept {
   return m_state == State::LOADED;
 }
 
+SWC_SHOULD_INLINE
 bool Read::loaded(int& err) noexcept {
   Core::MutexSptd::scope lock(m_mutex);
   return !(err = m_err) && loaded();

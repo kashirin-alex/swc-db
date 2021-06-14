@@ -345,6 +345,7 @@ void Fragment::load(Fragment::LoadCb_t&& cb) {
   }
 }
 
+SWC_SHOULD_INLINE
 void Fragment::load_cells(int&, Ranger::Block::Ptr cells_block) {
   ssize_t remain_hint(0);
   if(!marked_removed()) {
@@ -369,6 +370,7 @@ void Fragment::load_cells(int&, Ranger::Block::Ptr cells_block) {
     release();
 }
 
+SWC_SHOULD_INLINE
 void Fragment::load_cells(int&, DB::Cells::MutableVec& cells) {
   if(!marked_removed()) {
     if(m_buffer.size) {
@@ -402,6 +404,7 @@ void Fragment::load_cells(int&, DB::Cells::MutableVec& cells) {
   processing_decrement();
 }
 
+SWC_SHOULD_INLINE
 void Fragment::split(int&, const DB::Cell::Key& key,
                      Fragments::Ptr log_left, Fragments::Ptr log_right) {
   if(!marked_removed()) {
@@ -471,6 +474,7 @@ bool Fragment::loaded() const noexcept {
   return m_state == State::LOADED;
 }
 
+SWC_SHOULD_INLINE
 bool Fragment::loaded(int& err) noexcept {
   Core::MutexSptd::scope lock(m_mutex);
   return !(err = m_err) && loaded();
@@ -491,6 +495,7 @@ size_t Fragment::size_bytes_encoded() const noexcept {
   return size_enc;
 }
 
+SWC_SHOULD_INLINE
 bool Fragment::processing() noexcept {
   bool support;
   bool busy = m_processing ||

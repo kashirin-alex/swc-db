@@ -10,12 +10,14 @@
 namespace SWC { namespace Ranger {
 
 
+SWC_CAN_INLINE
 ColumnPtr Columns::get_column(const cid_t cid) {
   Core::MutexSptd::scope lock(m_mutex);
   auto it = find(cid);
   return it == end() ? nullptr : it->second;
 }
 
+SWC_CAN_INLINE
 RangePtr Columns::get_range(int &err, const cid_t cid, const rid_t rid) {
   ColumnPtr col = get_column(cid);
   if(!col)
