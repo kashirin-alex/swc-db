@@ -77,6 +77,7 @@ class MutexAtomic {
   class scope final {
     public:
 
+    SWC_CAN_INLINE
     scope(const MutexAtomic& m) noexcept : _m(m) {  _m.lock(); }
 
     SWC_CAN_INLINE

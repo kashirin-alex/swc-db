@@ -33,12 +33,14 @@ class QueueSafe : private std::queue<ItemT> {
 
   QueueSafe& operator=(const QueueSafe&) = delete;
 
+  SWC_CAN_INLINE
   void push(const ItemT& item) {
     auto support(m_mutex.lock());
     QBase::push(item);
     m_mutex.unlock(support);
   }
 
+  SWC_CAN_INLINE
   bool push_and_is_1st(const ItemT& item) {
     bool chk;
     MutexSptd::scope lock(m_mutex);
@@ -47,27 +49,32 @@ class QueueSafe : private std::queue<ItemT> {
     return chk;
   }
 
+  SWC_CAN_INLINE
   ItemT& front() noexcept {
     MutexSptd::scope lock(m_mutex);
     return QBase::front();
   }
 
+  SWC_CAN_INLINE
   bool empty() noexcept {
     MutexSptd::scope lock(m_mutex);
     return QBase::empty();
   }
 
+  SWC_CAN_INLINE
   size_t size() noexcept {
     MutexSptd::scope lock(m_mutex);
     return QBase::size();
   }
 
+  SWC_CAN_INLINE
   bool pop_and_more() {
     MutexSptd::scope lock(m_mutex);
     QBase::pop();
     return !QBase::empty();
   }
 
+  SWC_CAN_INLINE
   bool pop(ItemT* item) {
     MutexSptd::scope lock(m_mutex);
     if(QBase::empty())

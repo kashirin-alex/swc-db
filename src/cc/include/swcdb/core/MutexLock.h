@@ -18,7 +18,7 @@ namespace SWC { namespace Core {
 
 struct SharedLock final : public std::shared_lock<std::shared_mutex> {
 
-  //SWC_SHOULD_NOT_INLINE
+  SWC_CAN_INLINE
   SharedLock(std::shared_mutex& m) noexcept
             : std::shared_lock<std::shared_mutex>(m, std::defer_lock) {
     _again: try {
@@ -42,7 +42,7 @@ struct ScopedLock final {
 
   MutexT& _m;
 
-  //SWC_SHOULD_NOT_INLINE
+  SWC_CAN_INLINE
   ScopedLock(MutexT& m) noexcept : _m(m) {
     _again: try {
       _m.lock();
@@ -67,7 +67,7 @@ struct ScopedLock final {
 template<typename MutexT>
 struct UniqueLock final : public std::unique_lock<MutexT> {
 
-  //SWC_SHOULD_NOT_INLINE
+  SWC_CAN_INLINE
   UniqueLock(MutexT& m) noexcept
             : std::unique_lock<MutexT>(m, std::defer_lock) {
     _again: try {

@@ -33,6 +33,7 @@ class QueuePointer : private MutexAtomic {
   QueuePointer& operator=(const QueuePointer&) = delete;
 
 
+  SWC_CAN_INLINE
   bool push_and_is_1st(PtrT& ptr) noexcept {
     lock();
     bool has(_front);
@@ -41,12 +42,14 @@ class QueuePointer : private MutexAtomic {
     return !has;
   }
 
+  SWC_CAN_INLINE
   void push(PtrT& ptr) noexcept {
     lock();
     _push(ptr);
     unlock();
   }
 
+  SWC_CAN_INLINE
   bool empty() noexcept {
     lock();
     bool has(_front);
@@ -54,6 +57,7 @@ class QueuePointer : private MutexAtomic {
     return !has;
   }
 
+  SWC_CAN_INLINE
   PtrT front() noexcept {
     PtrT ptr;
     lock();
@@ -62,6 +66,7 @@ class QueuePointer : private MutexAtomic {
     return ptr;
   }
 
+  SWC_CAN_INLINE
   bool pop_and_more() noexcept {
     lock();
     _front = std::move(_front->_other);
@@ -72,6 +77,7 @@ class QueuePointer : private MutexAtomic {
     return more;
   }
 
+  SWC_CAN_INLINE
   bool pop(PtrT* ptr) noexcept {
     lock();
     *ptr = std::move(_front);
@@ -81,6 +87,7 @@ class QueuePointer : private MutexAtomic {
     return bool(*ptr);
   }
 
+  SWC_CAN_INLINE
   PtrT next() noexcept {
     lock();
     PtrT ptr(std::move(_front));

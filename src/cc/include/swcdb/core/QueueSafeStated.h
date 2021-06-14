@@ -30,12 +30,14 @@ class QueueSafeStated final : private std::queue<ItemT> {
   QueueSafeStated& operator=(const QueueSafeStated&) = delete;
 
 
+  SWC_CAN_INLINE
   void push(const ItemT& item) {
     auto support(m_mutex.lock());
     QBase::push(item);
     m_mutex.unlock(support);
   }
 
+  SWC_CAN_INLINE
   void push(ItemT&& item) {
     auto support(m_mutex.lock());
     QBase::push(std::move(item));
@@ -43,31 +45,37 @@ class QueueSafeStated final : private std::queue<ItemT> {
   }
 
 
+  SWC_CAN_INLINE
   ItemT& front() noexcept {
     MutexSptd::scope lock(m_mutex);
     return QBase::front();
   }
 
+  SWC_CAN_INLINE
   bool empty() noexcept {
     MutexSptd::scope lock(m_mutex);
     return QBase::empty();
   }
 
+  SWC_CAN_INLINE
   size_t size() noexcept {
     MutexSptd::scope lock(m_mutex);
     return QBase::size();
   }
 
+  SWC_CAN_INLINE
   bool is_active() noexcept {
     MutexSptd::scope lock(m_mutex);
     return m_state;
   }
 
+  SWC_CAN_INLINE
   bool activating() noexcept {
     MutexSptd::scope lock(m_mutex);
     return (m_state || QBase::empty()) ? false : (m_state = true);
   }
 
+  SWC_CAN_INLINE
   bool deactivating() {
     MutexSptd::scope lock(m_mutex);
     QBase::pop();
@@ -76,12 +84,14 @@ class QueueSafeStated final : private std::queue<ItemT> {
     return !m_state;
   }
 
+  SWC_CAN_INLINE
   void deactivate() noexcept {
     MutexSptd::scope lock(m_mutex);
     m_state = false;
   }
 
 
+  SWC_CAN_INLINE
   bool activating(const ItemT& item) {
     MutexSptd::scope lock(m_mutex);
     if(m_state) {
@@ -91,6 +101,7 @@ class QueueSafeStated final : private std::queue<ItemT> {
     return m_state = true;
   }
 
+  SWC_CAN_INLINE
   bool deactivating(ItemT* item) {
     MutexSptd::scope lock(m_mutex);
     if(QBase::empty()) {
@@ -103,6 +114,7 @@ class QueueSafeStated final : private std::queue<ItemT> {
   }
 
 
+  SWC_CAN_INLINE
   bool activating(ItemT& item) {
     MutexSptd::scope lock(m_mutex);
     if(m_state) {
@@ -112,6 +124,7 @@ class QueueSafeStated final : private std::queue<ItemT> {
     return m_state = true;
   }
 
+  SWC_CAN_INLINE
   bool deactivating(ItemT& item) {
     MutexSptd::scope lock(m_mutex);
     if(QBase::empty()) {

@@ -26,6 +26,7 @@ class MutexSptd final : private MutexAtomic {
 
   //~MutexSptd() noexcept { }
 
+  SWC_CAN_INLINE
   bool lock_except() {
     if(MutexAtomic::try_lock())
       return true;
@@ -34,6 +35,7 @@ class MutexSptd final : private MutexAtomic {
     return false;
   }
 
+  SWC_CAN_INLINE
   bool lock() noexcept {
     if(MutexAtomic::try_lock())
       return true;
@@ -49,6 +51,7 @@ class MutexSptd final : private MutexAtomic {
     return false;
   }
 
+  SWC_CAN_INLINE
   bool try_full_lock(bool& support) noexcept {
     if(MutexAtomic::try_lock()) {
       support = true;
@@ -64,6 +67,7 @@ class MutexSptd final : private MutexAtomic {
     return false;
   }
 
+  SWC_CAN_INLINE
   void unlock(const bool& support) noexcept {
     MutexAtomic::unlock();
     if(!support)
@@ -73,8 +77,10 @@ class MutexSptd final : private MutexAtomic {
   class scope_except final {
     public:
 
+    SWC_CAN_INLINE
     scope_except(MutexSptd& m) : _m(m), _support(m.lock_except()) { }
 
+    SWC_CAN_INLINE
     ~scope_except() noexcept { _m.unlock(_support); }
 
     scope_except(const scope_except&)             = delete;
@@ -90,8 +96,10 @@ class MutexSptd final : private MutexAtomic {
   class scope final {
     public:
 
+    SWC_CAN_INLINE
     scope(MutexSptd& m) noexcept : _m(m), _support(m.lock()) { }
 
+    SWC_CAN_INLINE
     ~scope() noexcept { _m.unlock(_support); }
 
     scope(const scope&)             = delete;
