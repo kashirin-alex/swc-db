@@ -10,7 +10,39 @@
 
 ### [SWC-DB master](https://github.com/kashirin-alex/swc-db/tree/master) (upcoming-release)
 
-
+    removed cases of Env::Config and Env::IoCtx in namespace Comm and client
+    added Comm::IoContextPtr io_ctx storage in client::Clients class
+    removed IoContextPtr client::Clients::default_io()
+    added separate stop for io and services in client::Clients class
+    removed cases of SWC_ASSERT in Env::FsInterface
+    changed swcdb_cluser apply start port-arg by service-port cfg-property
+    removed Comm::client::ConnQueueReqBase::{is_timeout,is_rsp}(ev)
+    changed bool client::ConnQueueReqBase::insistent to virtual insistent()
+    added Comm::AppContext handle_{established,disconnect} = 0 and overriders
+    changed ConnHadler call on app_ctx->handle_established at new_connection
+    changed ConnHadler call on app_ctx->handle_disconnect at do_close_run
+    removed Comm::ConnHandler::run(const Event::Ptr& ev)
+    removed Comm::ConnHandler::recved_{header,header_pre,buffer}
+    removed enum Comm::Event::Type and Event rrror determined by ev->error
+    added Core::Buffer(BufferT&&) and Core::BufferDyn(BufferDyn&&)
+    added bool Update::Handlers::Base::Column::get_buff(... ,DynamicBuffer&)
+    added encode-minimal Protocol::Rgr::Params::RangeQuerySelectReqRef
+    added encode-minimal Protocol::Bkr::Params::CellsSelectReqRef
+    added Params Rsp ctors with (int, const uint8_t*, size_t/,StaticBuffer&):
+      Mngr::Params: RgrGet, Range{Unloaded,Create,Remove}, ColumnCompact
+      Rgr::Params:  RangeQuery{Update,Select}, RangeLocate, ColumnCompact
+      Bkr::Params:  Cells{Select,Update}Rsp
+    changed Requests to a STL class with DataT requirements for request-type:
+      Mngr::Req: RgrGet<DataT>,
+                 Range{Unloaded, Create, Remove}<DataT>
+                 Column{Get, List, Compact, Mng}<DataT>
+      Rgr::Req:  Range{Locate, QuerySelect, QueryUpdate}<DataT>
+      Bkr::Req:  Column{Get, List, Compact, Mng}<DataT>
+                 Cells{Update, Select}<DataT>
+    removed std::make_shared<..> use cases and changed ctors to Ptr(new ..)
+    added bool client::Brokers::put(ReqBase::Ptr, Idx)
+    added bool client::Manager::{put, put_role_schemas}(ReqBase::Ptr, ...)
+    changed pref. some-defintions in header with SWC_CAN_INLINE of Performance
 
 [_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.5.2...master)
 ******
