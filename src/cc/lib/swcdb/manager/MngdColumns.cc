@@ -64,6 +64,7 @@ bool MngdColumns::is_schemas_mngr(int& err) {
   return false;
 }
 
+SWC_CAN_INLINE
 bool MngdColumns::has_active() noexcept {
   Core::MutexSptd::scope lock(m_mutex_active);
   return m_cid_active;
@@ -86,6 +87,7 @@ bool MngdColumns::active(cid_t& cid_begin, cid_t& cid_end) noexcept {
   return m_cid_active;
 }
 
+SWC_CAN_INLINE
 bool MngdColumns::expected_ready() noexcept {
   Core::MutexSptd::scope lock(m_mutex_expect);
   return m_expected_ready;

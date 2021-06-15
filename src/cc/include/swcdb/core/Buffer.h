@@ -77,6 +77,7 @@ struct Buffer {
   Buffer(OtherT& other) SWC_NOEXCEPT;
 
 
+  SWC_CAN_INLINE
   ~Buffer() {
     _free();
   }
@@ -101,6 +102,7 @@ struct Buffer {
     base = allocate(size = len);
   }
 
+  SWC_CAN_INLINE
   void grow(size_t len) {
     if(base) {
       size_t            size_old = size;
@@ -115,6 +117,7 @@ struct Buffer {
     own = true;
   }
 
+  SWC_CAN_INLINE
   void assign(const value_type* data, size_t len) {
     reallocate(len);
     memcpy(base, data, length_base_byte(len));
@@ -230,6 +233,7 @@ struct BufferDyn : BufferT {
     }
   }
 
+  SWC_CAN_INLINE
   value_type* add_unchecked(const value_type* data, size_t len) SWC_NOEXCEPT {
     if(!data)
       return ptr;
@@ -239,7 +243,6 @@ struct BufferDyn : BufferT {
     return rptr;
   }
 
-  SWC_CAN_INLINE
   value_type* add(const value_type* data, size_t len) {
     ensure(len);
     return add_unchecked(data, len);

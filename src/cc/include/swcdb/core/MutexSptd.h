@@ -51,7 +51,7 @@ class MutexSptd final : private MutexAtomic {
     return false;
   }
 
-  SWC_CAN_INLINE
+  //SWC_CAN_INLINE
   bool try_full_lock(bool& support) noexcept {
     if(MutexAtomic::try_lock()) {
       support = true;
@@ -96,7 +96,7 @@ class MutexSptd final : private MutexAtomic {
   class scope final {
     public:
 
-    SWC_CAN_INLINE
+    //SWC_CAN_INLINE
     scope(MutexSptd& m) noexcept : _m(m), _support(m.lock()) { }
 
     SWC_CAN_INLINE

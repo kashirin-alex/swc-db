@@ -89,11 +89,13 @@ class Column final : private std::vector<Range::Ptr> {
     return true;
   }
 
+  SWC_CAN_INLINE
   State state() {
     Core::SharedLock lock(m_mutex);
     return m_state;
   }
 
+  SWC_CAN_INLINE
   void state(int& err) {
     Core::SharedLock lock(m_mutex);
     if(m_state == State::OK)
@@ -407,6 +409,7 @@ class Column final : private std::vector<Range::Ptr> {
     out << "])";
   }
 
+  SWC_CAN_INLINE
   void _set_loading() {
     State at(State::OK);
     if(m_state.compare_exchange_weak(at, State::LOADING))

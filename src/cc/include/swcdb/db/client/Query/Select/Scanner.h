@@ -25,6 +25,7 @@ namespace Select {
 class Scanner final : public std::enable_shared_from_this<Scanner> {
   public:
 
+  SWC_CAN_INLINE
   static void execute(const Handlers::Base::Ptr& hdlr,
                       DB::Types::KeySeq key_seq, cid_t cid,
                       const DB::Specs::Interval& intval) {
@@ -32,6 +33,7 @@ class Scanner final : public std::enable_shared_from_this<Scanner> {
       hdlr, key_seq, intval, cid))->mngr_locate_master();
   }
 
+  SWC_CAN_INLINE
   static void execute(const Handlers::Base::Ptr& hdlr,
                       DB::Types::KeySeq key_seq, cid_t cid,
                       DB::Specs::Interval&& intval) {

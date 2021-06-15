@@ -127,6 +127,7 @@ class FsBroker final {
 
   //~FsBroker() { }
 
+  SWC_CAN_INLINE
   bool _can_process() noexcept {
     if(m_shuttingdown)
       return false;

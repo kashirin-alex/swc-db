@@ -29,6 +29,7 @@ class ReqScan  : public DB::Cells::ReqScan {
 
   typedef std::shared_ptr<ReqScan>  Ptr;
 
+  SWC_CAN_INLINE
   ReqScan(Type type=Type::QUERY, bool release_block=false,
           uint8_t readahead=1, uint32_t blk_size=0)
           noexcept
@@ -39,6 +40,7 @@ class ReqScan  : public DB::Cells::ReqScan {
     Env::Rgr::scan_reserved_bytes_add(blk_size * SWC_SCAN_RSVD_BUFFS);
   }
 
+  SWC_CAN_INLINE
   ReqScan(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev,
           const DB::Cell::Key& range_begin, const DB::Cell::Key& range_end,
           uint32_t blk_size)
@@ -50,6 +52,7 @@ class ReqScan  : public DB::Cells::ReqScan {
     Env::Rgr::scan_reserved_bytes_add(blk_size * SWC_SCAN_RSVD_BUFFS);
   }
 
+  SWC_CAN_INLINE
   ReqScan(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev,
           DB::Specs::Interval&& spec, uint32_t blk_size)
           : DB::Cells::ReqScan(conn, ev, std::move(spec)),
@@ -66,6 +69,7 @@ class ReqScan  : public DB::Cells::ReqScan {
     Env::Rgr::scan_reserved_bytes_sub(blk_size * SWC_SCAN_RSVD_BUFFS);
   }
 
+  SWC_CAN_INLINE
   Ptr get_req_scan() noexcept {
     return std::dynamic_pointer_cast<ReqScan>(shared_from_this());
   }

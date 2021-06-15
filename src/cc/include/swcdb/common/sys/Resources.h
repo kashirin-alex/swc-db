@@ -163,6 +163,7 @@ class Resources final {
     }
   }
 
+  SWC_CAN_INLINE
   void schedule(uint64_t intval) {
     m_timer.expires_after(std::chrono::milliseconds(intval));
     m_timer.async_wait([this](const asio::error_code& ec) {

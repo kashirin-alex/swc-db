@@ -71,6 +71,7 @@ class Ranger final : public Comm::Protocol::Common::Params::HostEndPoints {
     Comm::Protocol::Common::Params::HostEndPoints::internal_decode(bufp, remainp);
   }
 
+  SWC_CAN_INLINE
   void init_queue() {
     m_queue = Env::Clients::get()->get_rgr_queue(endpoints);
   }
@@ -84,16 +85,19 @@ class Ranger final : public Comm::Protocol::Common::Params::HostEndPoints {
     m_queue->stop();
   }
 
+  SWC_CAN_INLINE
   void rebalance(uint8_t num) {
     Core::MutexAtomic::scope lock(m_mutex);
     m_rebalance = num;
   }
 
+  SWC_CAN_INLINE
   uint8_t rebalance() const {
     Core::MutexAtomic::scope lock(m_mutex);
     return m_rebalance;
   }
 
+  SWC_CAN_INLINE
   bool can_rebalance() {
     Core::MutexAtomic::scope lock(m_mutex);
     if(m_rebalance) {

@@ -72,6 +72,7 @@ struct Profiling {
       return Start(*this);
     }
 
+    SWC_CAN_INLINE
     void add(uint64_t ts, bool err) noexcept {
       time.fetch_add(Time::now_ns() - ts);
       count.fetch_add(1);
@@ -79,6 +80,7 @@ struct Profiling {
         error.fetch_add(1);
     }
 
+    SWC_CAN_INLINE
     void add_cached(uint64_t ts, bool err) noexcept {
       add(ts, err);
       cache.fetch_add(1);

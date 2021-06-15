@@ -25,6 +25,7 @@ namespace Update {
 class Committer final : public std::enable_shared_from_this<Committer> {
   public:
 
+  SWC_CAN_INLINE
   static void execute(const Handlers::Base::Ptr& hdlr,
                       Handlers::Base::Column* colp) {
     Ptr(new Committer(

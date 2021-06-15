@@ -51,6 +51,7 @@ class Interface final : public std::enable_shared_from_this<Interface> {
 
   FileSystem::Ptr use_filesystem(const Config::Settings::Ptr& settings);
 
+  SWC_CAN_INLINE
   Ptr ptr() noexcept {
     return shared_from_this();
   }
@@ -59,6 +60,7 @@ class Interface final : public std::enable_shared_from_this<Interface> {
 
   Type get_type_underlying() const noexcept;
 
+  SWC_CAN_INLINE
   FileSystem::Ptr& get_fs()  noexcept {
     return m_fs;
   }

@@ -32,16 +32,14 @@ class QueueSafeStated final : private std::queue<ItemT> {
 
   SWC_CAN_INLINE
   void push(const ItemT& item) {
-    auto support(m_mutex.lock());
+    MutexSptd::scope lock(m_mutex);
     QBase::push(item);
-    m_mutex.unlock(support);
   }
 
   SWC_CAN_INLINE
   void push(ItemT&& item) {
-    auto support(m_mutex.lock());
+    MutexSptd::scope lock(m_mutex);
     QBase::push(std::move(item));
-    m_mutex.unlock(support);
   }
 
 

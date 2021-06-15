@@ -40,31 +40,37 @@ class Range final {
 
   //~Range() { }
 
+  SWC_CAN_INLINE
   State state() {
     Core::SharedLock lock(m_mutex);
     return m_state;
   }
 
+  SWC_CAN_INLINE
   bool deleted() {
     Core::SharedLock lock(m_mutex);
     return m_state == State::DELETED;
   }
 
+  SWC_CAN_INLINE
   bool assigned() {
     Core::SharedLock lock(m_mutex);
     return m_state == State::ASSIGNED;
   }
 
+  SWC_CAN_INLINE
   bool queued() {
     Core::SharedLock lock(m_mutex);
     return m_state == State::QUEUED;
   }
 
+  SWC_CAN_INLINE
   bool need_assign() {
     Core::SharedLock lock(m_mutex);
     return m_state == State::NOTSET;
   }
 
+  SWC_CAN_INLINE
   bool assigned(rgrid_t rgrid) {
     Core::SharedLock lock(m_mutex);
     return m_state == State::ASSIGNED && m_rgrid == rgrid;
@@ -98,11 +104,13 @@ class Range final {
     return m_rgrid;
   }
 
+  SWC_CAN_INLINE
   void set_rgr_id(rgrid_t rgrid) {
     Core::ScopedLock lock(m_mutex);
     m_rgrid = rgrid;
   }
 
+  SWC_CAN_INLINE
   Common::Files::RgrData::Ptr get_last_rgr(int &err) {
     Core::ScopedLock lock(m_mutex);
     if(!m_last_rgr)
@@ -111,6 +119,7 @@ class Range final {
     return m_last_rgr;
   }
 
+  SWC_CAN_INLINE
   void clear_last_rgr() {
     Core::ScopedLock lock(m_mutex);
     m_last_rgr = nullptr;
@@ -157,6 +166,7 @@ class Range final {
     return range->before(m_key_end);
   }
 
+  SWC_CAN_INLINE
   bool before(const DB::Cell::Key& key) {
     Core::SharedLock lock(m_mutex);
     return m_key_end.empty() ||

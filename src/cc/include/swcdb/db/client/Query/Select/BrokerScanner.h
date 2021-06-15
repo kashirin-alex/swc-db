@@ -18,11 +18,13 @@ namespace SWC { namespace client { namespace Query { namespace Select {
 class BrokerScanner : public std::enable_shared_from_this<BrokerScanner>  {
   public:
 
+  SWC_CAN_INLINE
   static void execute(const Handlers::Base::Ptr& hdlr,
                       cid_t cid, const DB::Specs::Interval& intval) {
     Ptr(new BrokerScanner(hdlr, intval, cid))->select();
   }
 
+  SWC_CAN_INLINE
   static void execute(const Handlers::Base::Ptr& hdlr,
                       cid_t cid, DB::Specs::Interval&& intval) {
     Ptr(new BrokerScanner(hdlr, std::move(intval), cid))->select();

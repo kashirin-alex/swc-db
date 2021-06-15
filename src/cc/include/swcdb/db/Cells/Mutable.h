@@ -137,6 +137,7 @@ class Mutable final {
         item = (*bucket)->begin();
     }
 
+    SWC_CAN_INLINE
     void insert(Cell* value) {
       item = (*bucket)->insert(item, value);
 
@@ -155,6 +156,7 @@ class Mutable final {
       }
     }
 
+    SWC_CAN_INLINE
     void remove() noexcept {
       item = (*bucket)->erase(item);
       if((*bucket)->empty() && buckets->size() > 1) {
@@ -166,6 +168,7 @@ class Mutable final {
       }
     }
 
+    SWC_CAN_INLINE
     void remove(size_t number) noexcept {
       while(number) {
         if(item == (*bucket)->begin() && number >= (*bucket)->size()) {

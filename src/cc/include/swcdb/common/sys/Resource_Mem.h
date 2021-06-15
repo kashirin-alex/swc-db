@@ -109,6 +109,7 @@ class Mem {
            (used_reg + sz > allowed || used + sz > allowed);
   }
 
+  SWC_CAN_INLINE
   void adj_mem_usage(ssize_t sz) noexcept {
     if(sz) {
       m_mutex.lock();
@@ -120,6 +121,7 @@ class Mem {
     }
   }
 
+  SWC_CAN_INLINE
   void more_mem_usage(size_t sz) noexcept {
     if(sz) {
       m_mutex.lock();
@@ -133,6 +135,7 @@ class Mem {
     return (total - reserved) / 1024 / 1024;
   }
 
+  SWC_CAN_INLINE
   void less_mem_usage(size_t sz) noexcept {
     if(sz) {
       m_mutex.lock();

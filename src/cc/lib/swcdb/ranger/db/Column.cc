@@ -22,6 +22,7 @@ Column::~Column() {
   Env::Rgr::in_process(-1);
 }
 
+SWC_CAN_INLINE
 size_t Column::size_of() const noexcept {
   return sizeof(*this) + sizeof(ColumnPtr);
 }
