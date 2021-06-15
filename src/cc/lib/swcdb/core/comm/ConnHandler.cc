@@ -200,67 +200,57 @@ void ConnHandler::read() noexcept {
   do_async_read(
     _buf_header,
     Header::PREFIX_LENGTH,
-    [ptr=ptr()] (const asio::error_code& ec, size_t filled) {
-      ptr->recved_header_pre(ec, filled);
-    }
-  );
-}
+    [conn=ptr()] (const asio::error_code& ec, size_t filled) {
+      conn->m_recv_bytes += filled;
+      if(ec || filled != Header::PREFIX_LENGTH)
+        return conn->do_close_recv();
 
-SWC_SHOULD_INLINE
-void ConnHandler::recved_header_pre(const asio::error_code& ec, size_t filled) {
-  m_recv_bytes += filled;
-  if(ec || filled != Header::PREFIX_LENGTH)
-    return do_close_recv();
-
-  auto ev = Event::make(Error::OK);
-  try {
-    const uint8_t* buf = _buf_header;
-    ev->header.decode_prefix(&buf, &filled);
-  } catch(...) {
-    ev->header.header_len = 0;
-  }
-
-  if(!ev->header.header_len) {
-    SWC_LOGF(LOG_WARN, "read, REQUEST HEADER_PREFIX_TRUNCATED: remain=%lu",
-             filled);
-    return do_close_recv();
-  }
-
-  do_async_read(
-    _buf_header + Header::PREFIX_LENGTH,
-    ev->header.header_len - Header::PREFIX_LENGTH,
-    [ev, ptr=ptr()](const asio::error_code& ec, size_t filled) {
-      ptr->recved_header(ev, ec, filled);
-    }
-  );
-}
-
-SWC_SHOULD_INLINE
-void ConnHandler::recved_header(const Event::Ptr& ev, asio::error_code ec,
-                                size_t filled) {
-  m_recv_bytes += filled;
-  if(!ec) {
-    if(filled + Header::PREFIX_LENGTH != ev->header.header_len) {
-      ec = asio::error::eof;
-    } else {
-      filled = ev->header.header_len;
+      auto ev = Event::make(Error::OK);
       try {
-        const uint8_t* buf = _buf_header;
-        ev->header.decode(&buf, &filled);
+        const uint8_t* buf = conn->_buf_header;
+        ev->header.decode_prefix(&buf, &filled);
       } catch(...) {
-        ec = asio::error::eof;
+        ev->header.header_len = 0;
       }
+
+      if(!ev->header.header_len) {
+        SWC_LOGF(
+          LOG_WARN, "read, REQUEST HEADER_PREFIX_TRUNCATED: remain=%lu",
+          filled);
+        return conn->do_close_recv();
+      }
+
+      conn->do_async_read(
+        conn->_buf_header + Header::PREFIX_LENGTH,
+        ev->header.header_len - Header::PREFIX_LENGTH,
+        [ev, conn](asio::error_code ec, size_t filled) {
+          conn->m_recv_bytes += filled;
+          if(!ec) {
+            if(filled + Header::PREFIX_LENGTH != ev->header.header_len) {
+              ec = asio::error::eof;
+            } else {
+              filled = ev->header.header_len;
+              try {
+                const uint8_t* buf = conn->_buf_header;
+                ev->header.decode(&buf, &filled);
+              } catch(...) {
+                ec = asio::error::eof;
+              }
+            }
+          }
+          if(ec) {
+            SWC_LOGF(LOG_WARN, "read, REQUEST HEADER_TRUNCATED: len=%d",
+                     ev->header.header_len);
+            conn->do_close_recv();
+          } else if(ev->header.buffers) {
+            conn->recv_buffers(ev);
+          } else {
+            conn->received(ev);
+          }
+        }
+      );
     }
-  }
-  if(ec) {
-    SWC_LOGF(LOG_WARN, "read, REQUEST HEADER_TRUNCATED: len=%d",
-             ev->header.header_len);
-    do_close_recv();
-  } else if(ev->header.buffers) {
-    recv_buffers(ev);
-  } else {
-    received(ev);
-  }
+  );
 }
 
 void ConnHandler::recv_buffers(const Event::Ptr& ev) {
@@ -279,47 +269,41 @@ void ConnHandler::recv_buffers(const Event::Ptr& ev) {
   do_async_read(
     buffer->base,
     remain,
-    [ev, ptr=ptr()](const asio::error_code& ec, size_t filled) {
-      ptr->recved_buffer(ev, ec, filled);
+    [ev, conn=ptr()](asio::error_code ec, size_t filled) {
+      conn->m_recv_bytes += filled;
+      if(!ec) {
+        StaticBuffer* buffer;
+        uint32_t checksum;
+        if(!ev->data_ext.size) {
+          buffer = &ev->data;
+          checksum = ev->header.data.chksum;
+        } else {
+          buffer = &ev->data_ext;
+          checksum = ev->header.data_ext.chksum;
+        }
+
+        if(filled != buffer->size ||
+           !Core::checksum_i32_chk(checksum, buffer->base, buffer->size)) {
+          ec = asio::error::eof;
+        }
+      }
+      if(ec) {
+        SWC_LOG_OUT(LOG_WARN,
+          SWC_LOG_OSTREAM
+            << "read, REQUEST PAYLOAD_TRUNCATED: nbuff("
+            << (bool(ev->data.size) + bool(ev->data_ext.size))
+            << ") ";
+          ev->print(SWC_LOG_OSTREAM);
+        );
+        conn->do_close_recv();
+      } else if(ev->header.buffers == bool(ev->data.size) +
+                                      bool(ev->data_ext.size)) {
+        conn->received(ev);
+      } else {
+        conn->recv_buffers(ev);
+      }
     }
   );
-}
-
-SWC_SHOULD_INLINE
-void ConnHandler::recved_buffer(const Event::Ptr& ev,
-                                asio::error_code ec, size_t filled) {
-  m_recv_bytes += filled;
-  if(!ec) {
-    StaticBuffer* buffer;
-    uint32_t checksum;
-    if(!ev->data_ext.size) {
-      buffer = &ev->data;
-      checksum = ev->header.data.chksum;
-    } else {
-      buffer = &ev->data_ext;
-      checksum = ev->header.data_ext.chksum;
-    }
-
-    if(filled != buffer->size ||
-       !Core::checksum_i32_chk(checksum, buffer->base, buffer->size)) {
-      ec = asio::error::eof;
-    }
-  }
-  if(ec) {
-    SWC_LOG_OUT(LOG_WARN,
-      SWC_LOG_OSTREAM
-        << "read, REQUEST PAYLOAD_TRUNCATED: nbuff("
-        << (bool(ev->data.size) + bool(ev->data_ext.size))
-        << ") ";
-      ev->print(SWC_LOG_OSTREAM);
-    );
-    do_close_recv();
-  } else if(ev->header.buffers == bool(ev->data.size) +
-                                  bool(ev->data_ext.size)) {
-    received(ev);
-  } else {
-    recv_buffers(ev);
-  }
 }
 
 void ConnHandler::received(const Event::Ptr& ev) noexcept {

@@ -198,15 +198,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
   void read() noexcept;
 
-  void recved_header_pre(const asio::error_code& ec, size_t filled);
-
-  void recved_header(const Event::Ptr& ev, asio::error_code ec,
-                     size_t filled);
-
   void recv_buffers(const Event::Ptr& ev);
-
-  void recved_buffer(const Event::Ptr& ev,
-                     asio::error_code ec, size_t filled);
 
   void received(const Event::Ptr& ev) noexcept;
 
@@ -220,6 +212,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   void run_pending(const Event::Ptr& ev);
 
   struct PendingHash {
+    SWC_CAN_INLINE
     size_t operator()(const uint32_t id) const {
       return id >> 12;
     }
